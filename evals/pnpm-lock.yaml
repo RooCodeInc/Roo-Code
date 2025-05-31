@@ -253,8 +253,8 @@ importers:
         specifier: ^0.43.0
         version: 0.43.1(@libsql/client@0.15.6)
       drizzle-zod:
-        specifier: ^0.7.0
-        version: 0.7.1(drizzle-orm@0.43.1(@libsql/client@0.15.6))(zod@3.24.4)
+        specifier: ^0.8.0
+        version: 0.8.2(drizzle-orm@0.43.1(@libsql/client@0.15.6))(zod@3.24.4)
       p-map:
         specifier: ^7.0.3
         version: 7.0.3
@@ -2207,11 +2207,11 @@ packages:
       sqlite3:
         optional: true
 
-  drizzle-zod@0.7.1:
-    resolution: {integrity: sha512-nZzALOdz44/AL2U005UlmMqaQ1qe5JfanvLujiTHiiT8+vZJTBFhj3pY4Vk+L6UWyKFfNmLhk602Hn4kCTynKQ==}
+  drizzle-zod@0.8.2:
+    resolution: {integrity: sha512-9Do/16OjFFNrQDZgvMtxtDDwKWbFOxUAIwNPKX98SfxrP8H18vhN1BvNXbhelLcdgCE7GEaXDJqBjMExSkhpkA==}
     peerDependencies:
       drizzle-orm: '>=0.36.0'
-      zod: '>=3.0.0'
+      zod: ^3.25.1
 
   dunder-proto@1.0.1:
     resolution: {integrity: sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A==}
@@ -5810,7 +5810,7 @@ snapshots:
     optionalDependencies:
       '@libsql/client': 0.15.6
 
-  drizzle-zod@0.7.1(drizzle-orm@0.43.1(@libsql/client@0.15.6))(zod@3.24.4):
+  drizzle-zod@0.8.2(drizzle-orm@0.43.1(@libsql/client@0.15.6))(zod@3.24.4):
     dependencies:
       drizzle-orm: 0.43.1(@libsql/client@0.15.6)
       zod: 3.24.4
