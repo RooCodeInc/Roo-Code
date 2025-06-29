@@ -99,6 +99,10 @@ export interface ExtensionStateContextType extends ExtensionState {
 	setMcpEnabled: (value: boolean) => void
 	enableMcpServerCreation: boolean
 	setEnableMcpServerCreation: (value: boolean) => void
+	mcpMaxImagesPerResponse: number
+	setMcpMaxImagesPerResponse: (value: number) => void
+	mcpMaxImageSizeMB: number
+	setMcpMaxImageSizeMB: (value: number) => void
 	remoteControlEnabled: boolean
 	setRemoteControlEnabled: (value: boolean) => void
 	taskSyncEnabled: boolean
@@ -204,6 +208,8 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		terminalShellIntegrationTimeout: 4000,
 		mcpEnabled: true,
 		enableMcpServerCreation: false,
+		mcpMaxImagesPerResponse: 20,
+		mcpMaxImageSizeMB: 10,
 		remoteControlEnabled: false,
 		taskSyncEnabled: false,
 		featureRoomoteControlEnabled: false,
@@ -471,10 +477,13 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		setMcpEnabled: (value) => setState((prevState) => ({ ...prevState, mcpEnabled: value })),
 		setEnableMcpServerCreation: (value) =>
 			setState((prevState) => ({ ...prevState, enableMcpServerCreation: value })),
+		setMcpMaxImagesPerResponse: (value) =>
+			setState((prevState) => ({ ...prevState, mcpMaxImagesPerResponse: value })),
+		setMcpMaxImageSizeMB: (value) => setState((prevState) => ({ ...prevState, mcpMaxImageSizeMB: value })),
 		setRemoteControlEnabled: (value) => setState((prevState) => ({ ...prevState, remoteControlEnabled: value })),
 		setTaskSyncEnabled: (value) => setState((prevState) => ({ ...prevState, taskSyncEnabled: value }) as any),
 		setFeatureRoomoteControlEnabled: (value) =>
-			setState((prevState) => ({ ...prevState, featureRoomoteControlEnabled: value })),
+			setState((prevState) => ({ ...prevState, featureRoomoteControlEnabled: value })),		
 		setAlwaysApproveResubmit: (value) => setState((prevState) => ({ ...prevState, alwaysApproveResubmit: value })),
 		setRequestDelaySeconds: (value) => setState((prevState) => ({ ...prevState, requestDelaySeconds: value })),
 		setCurrentApiConfigName: (value) => setState((prevState) => ({ ...prevState, currentApiConfigName: value })),
