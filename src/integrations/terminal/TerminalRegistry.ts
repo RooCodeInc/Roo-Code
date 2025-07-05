@@ -177,10 +177,16 @@ export class TerminalRegistry {
 			})
 		}
 
-		// Second priority: Find any available terminal with matching directory.
+		// Second priority: Find any available terminal with matching directory
+		// that is not assigned to a different task.
 		if (!terminal) {
 			terminal = terminals.find((t) => {
 				if (t.busy || t.provider !== provider) {
+					return false
+				}
+
+				// Don't reuse terminals assigned to different tasks
+				if (taskId && t.taskId && t.taskId !== taskId) {
 					return false
 				}
 
@@ -195,9 +201,28 @@ export class TerminalRegistry {
 		}
 
 		// Third priority: Find any non-busy terminal (only if directory is not
-		// required).
+		// required AND no terminals exist with different working directories).
+		// This prevents reusing terminals that have changed their working directory.
 		if (!terminal && !requiredCwd) {
-			terminal = terminals.find((t) => !t.busy && t.provider === provider)
+			terminal = terminals.find((t) => {
+				if (t.busy || t.provider !== provider) {
+					return false
+				}
+
+				// Don't reuse terminals assigned to different tasks
+				if (taskId && t.taskId && t.taskId !== taskId) {
+					return false
+				}
+
+				// Only reuse terminals that are still in the requested working directory
+				// or have no shell integration (fallback to initial CWD)
+				const terminalCwd = t.getCurrentWorkingDirectory()
+				if (!terminalCwd) {
+					return false
+				}
+
+				return arePathsEqual(vscode.Uri.file(cwd).fsPath, terminalCwd)
+			})
 		}
 
 		// If no suitable terminal found, create a new one.
