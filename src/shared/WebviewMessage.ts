@@ -157,6 +157,7 @@ export interface WebviewMessage {
 		| "language"
 		| "maxReadFileLine"
 		| "maxImageFileSize"
+		| "maxTotalImageMemory"
 		| "maxConcurrentFileReads"
 		| "searchFiles"
 		| "toggleApiConfigPin"

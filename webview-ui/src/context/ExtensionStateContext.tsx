@@ -202,6 +202,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		renderContext: "sidebar",
 		maxReadFileLine: -1, // Default max read file line limit
 		maxImageFileSize: 5, // Default max image file size in MB
+		maxTotalImageMemory: 20, // Default max total image memory in MB
 		pinnedApiConfigs: {}, // Empty object for pinned API configs
 		terminalZshOhMy: false, // Default Oh My Zsh integration setting
 		maxConcurrentFileReads: 5, // Default concurrent file reads
