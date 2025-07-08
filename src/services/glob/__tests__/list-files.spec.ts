@@ -32,6 +32,7 @@ vi.mock("../../path", () => ({
 
 import { listFiles } from "../list-files"
 import * as childProcess from "child_process"
+import * as fs from "fs"
 
 describe("list-files symlink support", () => {
 	beforeEach(() => {
@@ -119,5 +120,126 @@ describe("list-files symlink support", () => {
 		// Platform-agnostic path check - verify the last argument is the resolved path
 		const expectedPath = path.resolve("/test/dir")
 		expect(args[args.length - 1]).toBe(expectedPath)
+	})
+})
+
+describe("hidden directory exclusion", () => {
+	beforeEach(() => {
+		vi.clearAllMocks()
+	})
+
+	it("should exclude .git subdirectories from recursive directory listing", async () => {
+		// Mock filesystem structure with .git subdirectories
+		const mockReaddir = vi.fn()
+		vi.mocked(fs.promises).readdir = mockReaddir
+
+		// Mock the directory structure:
+		// /test/
+		//   .git/
+		//     hooks/
+		//     objects/
+		//   src/
+		//     components/
+		mockReaddir
+			.mockResolvedValueOnce([
+				{ name: ".git", isDirectory: () => true, isSymbolicLink: () => false },
+				{ name: "src", isDirectory: () => true, isSymbolicLink: () => false },
+			])
+			.mockResolvedValueOnce([
+				// src subdirectories (should be included)
+				{ name: "components", isDirectory: () => true, isSymbolicLink: () => false },
+			])
+			.mockResolvedValueOnce([]) // components/ is empty
+
+		// Mock ripgrep to return no files
+		const mockSpawn = vi.mocked(childProcess.spawn)
+		const mockProcess = {
+			stdout: {
+				on: vi.fn((event, callback) => {
+					if (event === "data") {
+						// No files returned
+					}
+				}),
+			},
+			stderr: {
+				on: vi.fn(),
+			},
+			on: vi.fn((event, callback) => {
+				if (event === "close") {
+					setTimeout(() => callback(0), 10)
+				}
+			}),
+			kill: vi.fn(),
+		}
+		mockSpawn.mockReturnValue(mockProcess as any)
+
+		// Call listFiles with recursive=true
+		const [result] = await listFiles("/test", true, 100)
+
+		// Verify that .git subdirectories are NOT included
+		const directories = result.filter((item) => item.endsWith("/"))
+
+		// More specific checks - look for exact paths
+		const hasSrcDir = directories.some((dir) => dir.endsWith("/test/src/") || dir.endsWith("src/"))
+		const hasComponentsDir = directories.some(
+			(dir) =>
+				dir.endsWith("/test/src/components/") || dir.endsWith("src/components/") || dir.includes("components/"),
+		)
+		const hasGitDir = directories.some((dir) => dir.includes(".git/"))
+
+		// Should include src/ and src/components/ but NOT .git/ or its subdirectories
+		expect(hasSrcDir).toBe(true)
+		expect(hasComponentsDir).toBe(true)
+
+		// Should NOT include .git (hidden directories are excluded)
+		expect(hasGitDir).toBe(false)
+	})
+
+	it("should allow explicit targeting of hidden directories", async () => {
+		// Mock filesystem structure for explicit .roo-memory targeting
+		const mockReaddir = vi.fn()
+		vi.mocked(fs.promises).readdir = mockReaddir
+
+		// Mock .roo-memory directory contents
+		mockReaddir.mockResolvedValueOnce([
+			{ name: "tasks", isDirectory: () => true, isSymbolicLink: () => false },
+			{ name: "context", isDirectory: () => true, isSymbolicLink: () => false },
+		])
+
+		// Mock ripgrep to return no files
+		const mockSpawn = vi.mocked(childProcess.spawn)
+		const mockProcess = {
+			stdout: {
+				on: vi.fn((event, callback) => {
+					if (event === "data") {
+						// No files returned
+					}
+				}),
+			},
+			stderr: {
+				on: vi.fn(),
+			},
+			on: vi.fn((event, callback) => {
+				if (event === "close") {
+					setTimeout(() => callback(0), 10)
+				}
+			}),
+			kill: vi.fn(),
+		}
+		mockSpawn.mockReturnValue(mockProcess as any)
+
+		// Call listFiles explicitly targeting .roo-memory directory
+		const [result] = await listFiles("/test/.roo-memory", true, 100)
+
+		// When explicitly targeting a hidden directory, its subdirectories should be included
+		const directories = result.filter((item) => item.endsWith("/"))
+
+		const hasTasksDir = directories.some((dir) => dir.includes(".roo-memory/tasks/") || dir.includes("tasks/"))
+		const hasContextDir = directories.some(
+			(dir) => dir.includes(".roo-memory/context/") || dir.includes("context/"),
+		)
+
+		expect(hasTasksDir).toBe(true)
+		expect(hasContextDir).toBe(true)
 	})
 })
