@@ -9,10 +9,15 @@ import { DEFAULT_MAX_SEARCH_RESULTS, DEFAULT_SEARCH_MIN_SCORE } from "../../cons
 vitest.mock("@qdrant/js-client-rest")
 vitest.mock("crypto")
 vitest.mock("../../../../utils/path")
-vitest.mock("path", () => ({
-	...vitest.importActual("path"),
-	sep: "/",
-}))
+vitest.mock("path", async () => {
+	const actual = await vitest.importActual("path")
+	return {
+		...actual,
+		sep: "/",
+		resolve: vitest.fn((root, filePath) => `${root}/${filePath}`),
+		normalize: vitest.fn((path) => path),
+	}
+})
 
 const mockQdrantClientInstance = {
 	getCollection: vitest.fn(),
@@ -1289,6 +1294,157 @@ describe("QdrantVectorStore", () => {
 			const callArgs = mockQdrantClientInstance.query.mock.calls[0][1]
 			expect(callArgs.limit).toBe(DEFAULT_MAX_SEARCH_RESULTS)
 			expect(callArgs.score_threshold).toBe(DEFAULT_SEARCH_MIN_SCORE)
+		})
+	})
+	describe("deletePointsByMultipleFilePaths", () => {
+		const CHUNK_SIZE = 100 // As defined in the implementation
+		const MAX_RETRIES = 3 // As defined as MAX_BATCH_RETRIES in constants
+
+		beforeEach(() => {
+			// Mock timers to control retry logic in tests
+			vitest.useFakeTimers()
+			vitest.spyOn(console, "warn").mockImplementation(() => {})
+			vitest.spyOn(console, "error").mockImplementation(() => {})
+		})
+
+		afterEach(() => {
+			vitest.useRealTimers()
+		})
+
+		it("should handle an empty filePaths array gracefully", async () => {
+			await vectorStore.deletePointsByMultipleFilePaths([])
+			expect(mockQdrantClientInstance.delete).not.toHaveBeenCalled()
+		})
+
+		it("should delete a small batch of file paths in a single call", async () => {
+			const filePaths = ["src/file1.ts", "src/file2.ts"]
+			mockQdrantClientInstance.delete.mockResolvedValue({} as any)
+
+			await vectorStore.deletePointsByMultipleFilePaths(filePaths)
+
+			expect(mockQdrantClientInstance.delete).toHaveBeenCalledTimes(1)
+			const callArgs = mockQdrantClientInstance.delete.mock.calls[0][1]
+			expect(callArgs.filter.should).toHaveLength(2)
+		})
+
+		it("should split a large batch of file paths into multiple chunks", async () => {
+			const filePaths = Array.from({ length: 250 }, (_, i) => `src/file${i + 1}.ts`)
+			mockQdrantClientInstance.delete.mockResolvedValue({} as any)
+
+			await vectorStore.deletePointsByMultipleFilePaths(filePaths)
+
+			expect(mockQdrantClientInstance.delete).toHaveBeenCalledTimes(3) // 250 paths / 100 per chunk = 3 chunks
+			expect(mockQdrantClientInstance.delete.mock.calls[0][1].filter.should).toHaveLength(CHUNK_SIZE)
+			expect(mockQdrantClientInstance.delete.mock.calls[1][1].filter.should).toHaveLength(CHUNK_SIZE)
+			expect(mockQdrantClientInstance.delete.mock.calls[2][1].filter.should).toHaveLength(50)
+		})
+
+		it("should retry a failing chunk and succeed on the third attempt", async () => {
+			const filePaths = ["src/fail-then-succeed.ts"]
+			const deleteError = new Error("Qdrant unavailable")
+
+			mockQdrantClientInstance.delete
+				.mockRejectedValueOnce(deleteError)
+				.mockRejectedValueOnce(deleteError)
+				.mockResolvedValue({} as any)
+
+			const deletePromise = vectorStore.deletePointsByMultipleFilePaths(filePaths)
+
+			// Advance timers for each retry (INITIAL_RETRY_DELAY_MS = 500)
+			await vitest.advanceTimersByTimeAsync(500) // First retry delay (500ms)
+			await vitest.advanceTimersByTimeAsync(1000) // Second retry delay (500 * 2 = 1000ms)
+
+			await deletePromise
+
+			expect(mockQdrantClientInstance.delete).toHaveBeenCalledTimes(3)
+			expect(console.warn).toHaveBeenCalledTimes(2) // Warnings for the two failed attempts
+			expect(console.warn).toHaveBeenCalledWith(
+				expect.stringContaining("attempt 1/3. Retrying in 500ms..."),
+				deleteError.message,
+			)
+			expect(console.warn).toHaveBeenCalledWith(
+				expect.stringContaining("attempt 2/3. Retrying in 1000ms..."),
+				deleteError.message,
+			)
+		})
+
+		it("should throw an aggregated error if one chunk fails after all retries", async () => {
+			const filePaths = Array.from({ length: 150 }, (_, i) => `src/file${i + 1}.ts`)
+			const deleteError = new Error("Persistent failure")
+
+			// First chunk fails consistently, second chunk succeeds
+			mockQdrantClientInstance.delete
+				.mockRejectedValueOnce(deleteError)
+				.mockRejectedValueOnce(deleteError)
+				.mockRejectedValueOnce(deleteError)
+				.mockResolvedValue({} as any)
+
+			const deletePromise = vectorStore.deletePointsByMultipleFilePaths(filePaths)
+
+			// Advance timers for all retries of the first chunk (INITIAL_RETRY_DELAY_MS = 500)
+			await vitest.advanceTimersByTimeAsync(500) // First retry delay (500ms)
+			await vitest.advanceTimersByTimeAsync(1000) // Second retry delay (500 * 2 = 1000ms)
+			await vitest.advanceTimersByTimeAsync(2000) // Third retry delay (500 * 4 = 2000ms)
+
+			await expect(deletePromise).rejects.toThrow(
+				"Failed to delete 100 file paths across 1 chunks. Chunks failed: 1. First error: Persistent failure",
+			)
+
+			expect(mockQdrantClientInstance.delete).toHaveBeenCalledTimes(MAX_RETRIES + 1) // 3 retries for chunk 1 + 1 success for chunk 2
+			expect(console.error).toHaveBeenCalledTimes(1)
+			expect(console.error).toHaveBeenCalledWith(
+				`Failed to delete chunk 1 after ${MAX_RETRIES} attempts:`,
+				deleteError.message,
+			)
+
+			// Ensure all timers are run to completion
+			await vitest.runAllTimersAsync()
+		})
+
+		it("should throw an aggregated error if all chunks fail", async () => {
+			const filePaths = Array.from({ length: 220 }, (_, i) => `src/file${i + 1}.ts`)
+			const deleteError = new Error("Total cluster failure")
+
+			// All chunks fail
+			mockQdrantClientInstance.delete.mockRejectedValue(deleteError)
+
+			const deletePromise = vectorStore.deletePointsByMultipleFilePaths(filePaths)
+
+			// Advance timers for all retries of all chunks (INITIAL_RETRY_DELAY_MS = 500)
+			// Chunk 1 retries (3 attempts with exponential backoff)
+			await vitest.advanceTimersByTimeAsync(500) // First retry delay (500ms)
+			await vitest.advanceTimersByTimeAsync(1000) // Second retry delay (500 * 2 = 1000ms)
+			await vitest.advanceTimersByTimeAsync(2000) // Third retry delay (500 * 4 = 2000ms)
+			// Chunk 2 retries
+			await vitest.advanceTimersByTimeAsync(500) // First retry delay (500ms)
+			await vitest.advanceTimersByTimeAsync(1000) // Second retry delay (500 * 2 = 1000ms)
+			await vitest.advanceTimersByTimeAsync(2000) // Third retry delay (500 * 4 = 2000ms)
+			// Chunk 3 retries
+			await vitest.advanceTimersByTimeAsync(500) // First retry delay (500ms)
+			await vitest.advanceTimersByTimeAsync(1000) // Second retry delay (500 * 2 = 1000ms)
+			await vitest.advanceTimersByTimeAsync(2000) // Third retry delay (500 * 4 = 2000ms)
+
+			await expect(deletePromise).rejects.toThrow(
+				"Failed to delete 220 file paths across 3 chunks. Chunks failed: 1, 2, 3. First error: Total cluster failure",
+			)
+
+			expect(mockQdrantClientInstance.delete).toHaveBeenCalledTimes(MAX_RETRIES * 3) // 3 chunks * 3 retries each
+			expect(console.error).toHaveBeenCalledTimes(3)
+			expect(console.error).toHaveBeenCalledWith(
+				`Failed to delete chunk 1 after ${MAX_RETRIES} attempts:`,
+				deleteError.message,
+			)
+			expect(console.error).toHaveBeenCalledWith(
+				`Failed to delete chunk 2 after ${MAX_RETRIES} attempts:`,
+				deleteError.message,
+			)
+			expect(console.error).toHaveBeenCalledWith(
+				`Failed to delete chunk 3 after ${MAX_RETRIES} attempts:`,
+				deleteError.message,
+			)
+
+			// Ensure all timers are run to completion
+			await vitest.runAllTimersAsync()
 		})
 	})
 })

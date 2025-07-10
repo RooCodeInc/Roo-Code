@@ -4,7 +4,12 @@ import * as path from "path"
 import { getWorkspacePath } from "../../../utils/path"
 import { IVectorStore } from "../interfaces/vector-store"
 import { Payload, VectorStoreSearchResult } from "../interfaces"
-import { DEFAULT_MAX_SEARCH_RESULTS, DEFAULT_SEARCH_MIN_SCORE } from "../constants"
+import {
+	DEFAULT_MAX_SEARCH_RESULTS,
+	DEFAULT_SEARCH_MIN_SCORE,
+	MAX_BATCH_RETRIES,
+	INITIAL_RETRY_DELAY_MS,
+} from "../constants"
 import { t } from "../../../i18n"
 
 /**
@@ -333,29 +338,84 @@ export class QdrantVectorStore implements IVectorStore {
 			return
 		}
 
-		try {
-			const workspaceRoot = getWorkspacePath()
-			const normalizedPaths = filePaths.map((filePath) => {
-				const absolutePath = path.resolve(workspaceRoot, filePath)
-				return path.normalize(absolutePath)
-			})
+		const CHUNK_SIZE = 100
+		const workspaceRoot = getWorkspacePath()
+		const normalizedPaths = filePaths.map((filePath) => {
+			const absolutePath = path.resolve(workspaceRoot, filePath)
+			return path.normalize(absolutePath)
+		})
 
-			const filter = {
-				should: normalizedPaths.map((normalizedPath) => ({
-					key: "filePath",
-					match: {
-						value: normalizedPath,
-					},
-				})),
+		const failedChunks: { chunkIndex: number; paths: string[]; error: Error }[] = []
+
+		// Process paths in chunks
+		for (let i = 0; i < normalizedPaths.length; i += CHUNK_SIZE) {
+			const chunk = normalizedPaths.slice(i, i + CHUNK_SIZE)
+			const chunkIndex = Math.floor(i / CHUNK_SIZE)
+
+			// Retry logic with exponential backoff
+			let retryCount = 0
+			let lastError: Error | null = null
+
+			while (retryCount < MAX_BATCH_RETRIES) {
+				try {
+					const filter = {
+						should: chunk.map((normalizedPath) => ({
+							key: "filePath",
+							match: {
+								value: normalizedPath,
+							},
+						})),
+					}
+
+					await this.client.delete(this.collectionName, {
+						filter,
+						wait: true,
+					})
+
+					// Success - break out of retry loop
+					break
+				} catch (error) {
+					lastError = error instanceof Error ? error : new Error(String(error))
+					retryCount++
+
+					if (retryCount < MAX_BATCH_RETRIES) {
+						// Calculate exponential backoff delay
+						const delay = INITIAL_RETRY_DELAY_MS * Math.pow(2, retryCount - 1)
+						console.warn(
+							`Failed to delete chunk ${chunkIndex + 1} (paths ${i + 1}-${Math.min(i + CHUNK_SIZE, normalizedPaths.length)}), ` +
+								`attempt ${retryCount}/${MAX_BATCH_RETRIES}. Retrying in ${delay}ms...`,
+							lastError.message,
+						)
+
+						// Wait before retrying
+						await new Promise((resolve) => setTimeout(resolve, delay))
+					}
+				}
 			}
 
-			await this.client.delete(this.collectionName, {
-				filter,
-				wait: true,
-			})
-		} catch (error) {
-			console.error("Failed to delete points by file paths:", error)
-			throw error
+			// If all retries failed, log the error and continue to next chunk
+			if (retryCount === MAX_BATCH_RETRIES && lastError) {
+				console.error(
+					`Failed to delete chunk ${chunkIndex + 1} after ${MAX_BATCH_RETRIES} attempts:`,
+					lastError.message,
+				)
+				failedChunks.push({
+					chunkIndex,
+					paths: chunk,
+					error: lastError,
+				})
+			}
+		}
+
+		// If any chunks failed, throw an aggregated error
+		if (failedChunks.length > 0) {
+			const totalFailedPaths = failedChunks.reduce((sum, chunk) => sum + chunk.paths.length, 0)
+			const errorMessage =
+				`Failed to delete ${totalFailedPaths} file paths across ${failedChunks.length} chunks. ` +
+				`Chunks failed: ${failedChunks.map((c) => c.chunkIndex + 1).join(", ")}. ` +
+				`First error: ${failedChunks[0].error.message}`
+
+			throw new Error(errorMessage)
 		}
 	}
 

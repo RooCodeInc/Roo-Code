@@ -309,11 +309,16 @@ export class DirectoryScanner implements IDirectoryScanner {
 							`[DirectoryScanner] Failed to delete points for ${uniqueFilePaths.length} files before upsert in workspace ${scanWorkspace}:`,
 							deleteError,
 						)
-						// Re-throw the error with workspace context
-						throw new Error(
-							`Failed to delete points for ${uniqueFilePaths.length} files. Workspace: ${scanWorkspace}. ${deleteError instanceof Error ? deleteError.message : String(deleteError)}`,
-							{ cause: deleteError },
-						)
+						// Log the error and call onError callback if it exists, but continue processing
+						if (onError) {
+							onError(
+								new Error(
+									`Failed to delete points for ${uniqueFilePaths.length} files. Workspace: ${scanWorkspace}. ${deleteError instanceof Error ? deleteError.message : String(deleteError)}`,
+									{ cause: deleteError },
+								),
+							)
+						}
+						// Continue processing instead of throwing
 					}
 				}
 				// --- End Deletion Step ---

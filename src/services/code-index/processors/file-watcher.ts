@@ -203,6 +203,8 @@ export class FileWatcher implements IFileWatcher {
 				}
 			} catch (error) {
 				overallBatchError = error as Error
+				// Log the full, potentially multi-line, aggregated error message
+				console.error(`[FileWatcher] Failed to delete points for ${allPathsToClearFromDB.size} files:`, error)
 				for (const path of pathsToExplicitlyDelete) {
 					batchResults.push({ path, status: "error", error: error as Error })
 					processedCountInBatch++
