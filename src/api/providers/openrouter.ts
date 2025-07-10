@@ -82,10 +82,13 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		// other providers (including Gemini), so we need to explicitly disable
 		// i We should generalize this using the logic in `getModelParams`, but
 		// this is easier for now.
-		if (
-			(modelId === "google/gemini-2.5-pro-preview" || modelId === "google/gemini-2.5-pro") &&
-			typeof reasoning === "undefined"
-		) {
+		// Handle backward compatibility for legacy preview model names
+		let mappedModelId = modelId
+		if (this.isLegacyGeminiPreviewModel(modelId)) {
+			mappedModelId = "google/gemini-2.5-pro"
+		}
+
+		if (mappedModelId === "google/gemini-2.5-pro" && typeof reasoning === "undefined") {
 			reasoning = { exclude: true }
 		}
 
@@ -241,5 +244,9 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 
 		const completion = response as OpenAI.Chat.ChatCompletion
 		return completion.choices[0]?.message?.content || ""
+	}
+
+	private isLegacyGeminiPreviewModel(modelId: string): boolean {
+		return modelId === "google/gemini-2.5-pro-preview"
 	}
 }

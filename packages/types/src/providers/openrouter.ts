@@ -78,7 +78,6 @@ export const OPEN_ROUTER_REASONING_BUDGET_MODELS = new Set([
 	"anthropic/claude-3.7-sonnet:beta",
 	"anthropic/claude-opus-4",
 	"anthropic/claude-sonnet-4",
-	"google/gemini-2.5-pro-preview",
 	"google/gemini-2.5-pro",
 	"google/gemini-2.5-flash-preview-05-20",
 	"google/gemini-2.5-flash",

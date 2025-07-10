@@ -131,7 +131,15 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 
 	override getModel() {
 		const modelId = this.options.apiModelId
-		let id = modelId && modelId in geminiModels ? (modelId as GeminiModelId) : geminiDefaultModelId
+
+		// Handle backward compatibility for legacy preview model names
+		let mappedModelId = modelId
+		if (modelId && this.isLegacyPreviewModel(modelId)) {
+			mappedModelId = "gemini-2.5-pro"
+		}
+
+		let id =
+			mappedModelId && mappedModelId in geminiModels ? (mappedModelId as GeminiModelId) : geminiDefaultModelId
 		const info: ModelInfo = geminiModels[id]
 		const params = getModelParams({ format: "gemini", modelId: id, model: info, settings: this.options })
 
@@ -140,6 +148,15 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 		// The actual model ID honored by Gemini's API does not have this
 		// suffix.
 		return { id: id.endsWith(":thinking") ? id.replace(":thinking", "") : id, info, ...params }
+	}
+
+	protected isLegacyPreviewModel(modelId: string): boolean {
+		const legacyPreviewModels = [
+			"gemini-2.5-pro-preview-03-25",
+			"gemini-2.5-pro-preview-05-06",
+			"gemini-2.5-pro-preview-06-05",
+		]
+		return legacyPreviewModels.includes(modelId)
 	}
 
 	async completePrompt(prompt: string): Promise<string> {
