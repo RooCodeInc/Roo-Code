@@ -315,31 +315,44 @@ export async function presentAssistantMessage(cline: Task) {
 				pushToolResult(formatResponse.toolError(errorString))
 			}
 
-			// If block is partial, remove partial closing tag so its not
-			// presented to user.
+			// Remove partial closing tags during streaming and complete erroneous
+			// closing tags that some models (like qwen2.5-72b-instruct) add to tool calls.
 			const removeClosingTag = (tag: ToolParamName, text?: string): string => {
-				if (!block.partial) {
-					return text || ""
-				}
-
 				if (!text) {
 					return ""
 				}
 
-				// This regex dynamically constructs a pattern to match the
-				// closing tag:
-				// - Optionally matches whitespace before the tag.
-				// - Matches '<' or '</' optionally followed by any subset of
-				//   characters from the tag name.
-				const tagRegex = new RegExp(
-					`\\s?<\/?${tag
-						.split("")
-						.map((char) => `(?:${char})?`)
-						.join("")}$`,
-					"g",
-				)
+				let cleanedText = text
 
-				return text.replace(tagRegex, "")
+				// For MCP tools, some models incorrectly add complete closing tags
+				// like "</use_mcp_tool>" to the tool parameters. Remove these first.
+				if (block.name === "use_mcp_tool" || block.name === "access_mcp_resource") {
+					// Remove complete erroneous closing tags for MCP tools
+					// This handles both single and multiple occurrences, and also handles cases
+					// where partial tags might follow complete tags
+					cleanedText = cleanedText.replace(/<\/use_mcp_tool>/g, "").trimEnd()
+					cleanedText = cleanedText.replace(/<\/access_mcp_resource>/g, "").trimEnd()
+				}
+
+				// Handle partial closing tags during streaming (original logic)
+				if (block.partial) {
+					// This regex dynamically constructs a pattern to match the
+					// closing tag:
+					// - Optionally matches whitespace before the tag.
+					// - Matches '<' or '</' optionally followed by any subset of
+					//   characters from the tag name.
+					const tagRegex = new RegExp(
+						`\\s?<\/?${tag
+							.split("")
+							.map((char) => `(?:${char})?`)
+							.join("")}$`,
+						"g",
+					)
+
+					cleanedText = cleanedText.replace(tagRegex, "")
+				}
+
+				return cleanedText
 			}
 
 			if (block.name !== "browser_action") {
