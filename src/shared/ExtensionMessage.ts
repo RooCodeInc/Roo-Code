@@ -105,6 +105,7 @@ export interface ExtensionMessage {
 		| "shareTaskSuccess"
 		| "codeIndexSettingsSaved"
 		| "codeIndexSecretStatus"
+		| "showAllWorkspacesTasks"
 	text?: string
 	payload?: any // Add a generic payload for now, can refine later
 	action?:
@@ -231,6 +232,7 @@ export type ExtensionState = Pick<
 	version: string
 	clineMessages: ClineMessage[]
 	currentTaskItem?: HistoryItem
+	showAllWorkspacesTasks: boolean
 	apiConfiguration?: ProviderSettings
 	uriScheme?: string
 	shouldShowAnnouncement: boolean

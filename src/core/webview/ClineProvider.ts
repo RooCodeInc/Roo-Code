@@ -1409,6 +1409,7 @@ export class ClineProvider
 			profileThresholds,
 			alwaysAllowFollowupQuestions,
 			followupAutoApproveTimeoutMs,
+			showAllWorkspacesTasks,
 		} = await this.getState()
 
 		const telemetryKey = process.env.POSTHOG_API_KEY
@@ -1522,6 +1523,7 @@ export class ClineProvider
 			hasOpenedModeSelector: this.getGlobalState("hasOpenedModeSelector") ?? false,
 			alwaysAllowFollowupQuestions: alwaysAllowFollowupQuestions ?? false,
 			followupAutoApproveTimeoutMs: followupAutoApproveTimeoutMs ?? 60000,
+			showAllWorkspacesTasks: showAllWorkspacesTasks ?? false,
 		}
 	}
 
@@ -1675,6 +1677,7 @@ export class ClineProvider
 				codebaseIndexEmbedderModelId: "",
 			},
 			profileThresholds: stateValues.profileThresholds ?? {},
+			showAllWorkspacesTasks: stateValues.showAllWorkspacesTasks ?? false,
 		}
 	}
 
