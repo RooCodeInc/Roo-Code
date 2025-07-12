@@ -287,4 +287,168 @@ describe("runClaudeCode", () => {
 		consoleErrorSpy.mockRestore()
 		await generator.return(undefined)
 	})
+
+	test("should use command line argument for short system prompts", async () => {
+		const { runClaudeCode } = await import("../run")
+		const shortSystemPrompt = "You are a helpful assistant"
+		const options = {
+			systemPrompt: shortSystemPrompt,
+			messages: [{ role: "user" as const, content: "Hello" }],
+		}
+
+		const generator = runClaudeCode(options)
+
+		// Consume at least one item to trigger process spawn
+		await generator.next()
+
+		// Clean up the generator
+		await generator.return(undefined)
+
+		// Verify execa was called with system prompt as command line argument
+		const [, args, execaOptions] = mockExeca.mock.calls[0]
+		expect(args).toContain("--system-prompt")
+		expect(args).toContain(shortSystemPrompt)
+
+		// Verify no environment variable was set for short prompt
+		expect(execaOptions.env?.CLAUDE_CODE_SYSTEM_PROMPT).toBeUndefined()
+	})
+
+	test("should use environment variable for long system prompts to avoid Windows ENAMETOOLONG error", async () => {
+		const { runClaudeCode } = await import("../run")
+		// Create a system prompt longer than MAX_COMMAND_LINE_LENGTH (7000 chars)
+		const longSystemPrompt = "You are a helpful assistant. " + "A".repeat(7000)
+		const options = {
+			systemPrompt: longSystemPrompt,
+			messages: [{ role: "user" as const, content: "Hello" }],
+		}
+
+		const generator = runClaudeCode(options)
+
+		// Consume at least one item to trigger process spawn
+		await generator.next()
+
+		// Clean up the generator
+		await generator.return(undefined)
+
+		// Verify execa was called without --system-prompt in command line arguments
+		const [, args, execaOptions] = mockExeca.mock.calls[0]
+		expect(args).not.toContain("--system-prompt")
+		expect(args).not.toContain(longSystemPrompt)
+
+		// Verify environment variable was set with the long system prompt
+		expect(execaOptions.env?.CLAUDE_CODE_SYSTEM_PROMPT).toBe(longSystemPrompt)
+	})
+
+	test("should handle exactly MAX_COMMAND_LINE_LENGTH system prompt using command line", async () => {
+		const { runClaudeCode } = await import("../run")
+		// Create a system prompt exactly at the threshold (7000 chars)
+		const exactLengthPrompt = "A".repeat(7000)
+		const options = {
+			systemPrompt: exactLengthPrompt,
+			messages: [{ role: "user" as const, content: "Hello" }],
+		}
+
+		const generator = runClaudeCode(options)
+
+		// Consume at least one item to trigger process spawn
+		await generator.next()
+
+		// Clean up the generator
+		await generator.return(undefined)
+
+		// Verify execa was called with system prompt as command line argument (at threshold)
+		const [, args, execaOptions] = mockExeca.mock.calls[0]
+		expect(args).toContain("--system-prompt")
+		expect(args).toContain(exactLengthPrompt)
+
+		// Verify no environment variable was set
+		expect(execaOptions.env?.CLAUDE_CODE_SYSTEM_PROMPT).toBeUndefined()
+	})
+
+	test("should handle system prompt one character over threshold using environment variable", async () => {
+		const { runClaudeCode } = await import("../run")
+		// Create a system prompt one character over the threshold (7001 chars)
+		const overThresholdPrompt = "A".repeat(7001)
+		const options = {
+			systemPrompt: overThresholdPrompt,
+			messages: [{ role: "user" as const, content: "Hello" }],
+		}
+
+		const generator = runClaudeCode(options)
+
+		// Consume at least one item to trigger process spawn
+		await generator.next()
+
+		// Clean up the generator
+		await generator.return(undefined)
+
+		// Verify execa was called without --system-prompt in command line arguments
+		const [, args, execaOptions] = mockExeca.mock.calls[0]
+		expect(args).not.toContain("--system-prompt")
+		expect(args).not.toContain(overThresholdPrompt)
+
+		// Verify environment variable was set
+		expect(execaOptions.env?.CLAUDE_CODE_SYSTEM_PROMPT).toBe(overThresholdPrompt)
+	})
+
+	test("should preserve existing environment variables when using CLAUDE_CODE_SYSTEM_PROMPT", async () => {
+		const { runClaudeCode } = await import("../run")
+
+		// Mock process.env to have some existing variables
+		const originalEnv = process.env
+		process.env = {
+			...originalEnv,
+			EXISTING_VAR: "existing_value",
+			PATH: "/usr/bin:/bin",
+		}
+
+		const longSystemPrompt = "You are a helpful assistant. " + "A".repeat(7000)
+		const options = {
+			systemPrompt: longSystemPrompt,
+			messages: [{ role: "user" as const, content: "Hello" }],
+		}
+
+		const generator = runClaudeCode(options)
+
+		// Consume at least one item to trigger process spawn
+		await generator.next()
+
+		// Clean up the generator
+		await generator.return(undefined)
+
+		// Verify environment variables include both existing and new ones
+		const [, , execaOptions] = mockExeca.mock.calls[0]
+		expect(execaOptions.env).toEqual({
+			...process.env,
+			CLAUDE_CODE_MAX_OUTPUT_TOKENS: expect.any(String), // Always set by the implementation
+			CLAUDE_CODE_SYSTEM_PROMPT: longSystemPrompt,
+		})
+
+		// Restore original environment
+		process.env = originalEnv
+	})
+
+	test("should work with empty system prompt", async () => {
+		const { runClaudeCode } = await import("../run")
+		const options = {
+			systemPrompt: "",
+			messages: [{ role: "user" as const, content: "Hello" }],
+		}
+
+		const generator = runClaudeCode(options)
+
+		// Consume at least one item to trigger process spawn
+		await generator.next()
+
+		// Clean up the generator
+		await generator.return(undefined)
+
+		// Verify execa was called with empty system prompt as command line argument
+		const [, args, execaOptions] = mockExeca.mock.calls[0]
+		expect(args).toContain("--system-prompt")
+		expect(args).toContain("")
+
+		// Verify no environment variable was set
+		expect(execaOptions.env?.CLAUDE_CODE_SYSTEM_PROMPT).toBeUndefined()
+	})
 })

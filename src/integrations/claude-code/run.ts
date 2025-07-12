@@ -110,6 +110,10 @@ const claudeCodeTools = [
 
 const CLAUDE_CODE_TIMEOUT = 600000 // 10 minutes
 
+// Windows has a command line length limit of ~8191 characters
+// If the system prompt is too long, we'll use an environment variable instead
+const MAX_COMMAND_LINE_LENGTH = 7000 // Conservative limit to account for other arguments
+
 function runProcess({
 	systemPrompt,
 	messages,
@@ -119,10 +123,17 @@ function runProcess({
 }: ClaudeCodeOptions & { maxOutputTokens?: number }) {
 	const claudePath = path || "claude"
 
-	const args = [
-		"-p",
-		"--system-prompt",
-		systemPrompt,
+	// Check if system prompt is too long for command line
+	const useEnvForSystemPrompt = systemPrompt.length > MAX_COMMAND_LINE_LENGTH
+
+	const args = ["-p"]
+
+	// Only add --system-prompt to command line if it's short enough
+	if (!useEnvForSystemPrompt) {
+		args.push("--system-prompt", systemPrompt)
+	}
+
+	args.push(
 		"--verbose",
 		"--output-format",
 		"stream-json",
@@ -131,32 +142,41 @@ function runProcess({
 		// Roo Code will handle recursive calls
 		"--max-turns",
 		"1",
-	]
+	)
 
 	if (modelId) {
 		args.push("--model", modelId)
+	}
+
+	const env: Record<string, string> = {
+		...process.env,
+		// Use the configured value, or the environment variable, or default to CLAUDE_CODE_DEFAULT_MAX_OUTPUT_TOKENS
+		CLAUDE_CODE_MAX_OUTPUT_TOKENS:
+			maxOutputTokens?.toString() ||
+			process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS ||
+			CLAUDE_CODE_DEFAULT_MAX_OUTPUT_TOKENS.toString(),
+	}
+
+	// If system prompt is too long, pass it via environment variable
+	if (useEnvForSystemPrompt) {
+		env.CLAUDE_CODE_SYSTEM_PROMPT = systemPrompt
 	}
 
 	const child = execa(claudePath, args, {
 		stdin: "pipe",
 		stdout: "pipe",
 		stderr: "pipe",
-		env: {
-			...process.env,
-			// Use the configured value, or the environment variable, or default to CLAUDE_CODE_DEFAULT_MAX_OUTPUT_TOKENS
-			CLAUDE_CODE_MAX_OUTPUT_TOKENS:
-				maxOutputTokens?.toString() ||
-				process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS ||
-				CLAUDE_CODE_DEFAULT_MAX_OUTPUT_TOKENS.toString(),
-		},
+		env,
 		cwd,
 		maxBuffer: 1024 * 1024 * 1000,
 		timeout: CLAUDE_CODE_TIMEOUT,
 	})
 
 	// Write messages to stdin after process is spawned
-	// This avoids the E2BIG error on Linux when passing large messages as command line arguments
+	// This avoids the E2BIG error on Linux and ENAMETOOLONG error on Windows when passing large data as command line arguments
 	// Linux has a per-argument limit of ~128KiB for execve() system calls
+	// Windows has a total command line length limit of ~8191 characters
+	// For system prompts, we use environment variables when they exceed the safe limit
 	const messagesJson = JSON.stringify(messages)
 
 	// Use setImmediate to ensure the process has been spawned before writing to stdin
