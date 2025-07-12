@@ -228,6 +228,8 @@ export type ExtensionState = Pick<
 	| "codebaseIndexConfig"
 	| "codebaseIndexModels"
 	| "profileThresholds"
+	| "includeDiagnosticMessages"
+	| "maxDiagnosticMessages"
 > & {
 	version: string
 	clineMessages: ClineMessage[]
