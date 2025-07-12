@@ -29,6 +29,8 @@ import { CloudService } from "@roo-code/cloud"
 // api
 import { ApiHandler, ApiHandlerCreateMessageMetadata, buildApiHandler } from "../../api"
 import { ApiStream } from "../../api/transform/stream"
+import { UnifiedErrorHandler } from "../../api/error-handling/UnifiedErrorHandler"
+import { ErrorContext } from "../interfaces/types"
 
 // shared
 import { findLastIndex } from "../../shared/array"
@@ -89,6 +91,27 @@ import { getMessagesSinceLastSummary, summarizeConversation } from "../condense"
 import { maybeRemoveImageBlocks } from "../../api/transform/image-cleaning"
 import { restoreTodoListForTask } from "../tools/updateTodoListTool"
 
+// State management
+import { TaskStateLock } from "./TaskStateLock"
+import { StreamStateManager } from "./StreamStateManager"
+import { EventBus } from "../events/EventBus"
+import {
+	StreamEventType,
+	UIUpdateEvent,
+	PartialMessageCleanupEvent,
+	ConversationHistoryUpdateEvent,
+	StreamStateChangeEvent,
+	StreamChunkEvent,
+	StreamErrorEvent,
+	StreamAbortEvent,
+	DiffUpdateEvent,
+	TaskProgressEvent,
+	ErrorDisplayEvent,
+} from "../events/types"
+import { DependencyContainer, ServiceKeys, initializeContainer } from "../di/DependencyContainer"
+import { IRateLimitManager } from "../interfaces/IRateLimitManager"
+import { UIEventHandler } from "../ui/UIEventHandler"
+
 // Constants
 const MAX_EXPONENTIAL_BACKOFF_SECONDS = 600 // 10 minutes
 
@@ -147,15 +170,20 @@ export class Task extends EventEmitter<ClineEvents> {
 	// API
 	readonly apiConfiguration: ProviderSettings
 	api: ApiHandler
-	private static lastGlobalApiRequestTime?: number
 	private consecutiveAutoApprovedRequestsCount: number = 0
+	private rateLimitManager: IRateLimitManager
 
 	/**
 	 * Reset the global API request timestamp. This should only be used for testing.
 	 * @internal
 	 */
 	static resetGlobalApiRequestTime(): void {
-		Task.lastGlobalApiRequestTime = undefined
+		// Initialize container if not already done
+		initializeContainer()
+		const rateLimitManager = DependencyContainer.getInstance().resolve<IRateLimitManager>(
+			ServiceKeys.GLOBAL_RATE_LIMIT_MANAGER,
+		)
+		rateLimitManager.reset()
 	}
 
 	toolRepetitionDetector: ToolRepetitionDetector
@@ -196,18 +224,96 @@ export class Task extends EventEmitter<ClineEvents> {
 	checkpointService?: RepoPerTaskCheckpointService
 	checkpointServiceInitializing = false
 
-	// Streaming
-	isWaitingForFirstChunk = false
-	isStreaming = false
-	currentStreamingContentIndex = 0
-	assistantMessageContent: AssistantMessageContent[] = []
-	presentAssistantMessageLocked = false
-	presentAssistantMessageHasPendingUpdates = false
-	userMessageContent: (Anthropic.TextBlockParam | Anthropic.ImageBlockParam)[] = []
-	userMessageContentReady = false
-	didRejectTool = false
-	didAlreadyUseTool = false
-	didCompleteReadingStream = false
+	// Streaming - These properties are now managed by StreamStateManager
+	// We keep getters/setters for backward compatibility
+	get isWaitingForFirstChunk(): boolean {
+		return this.streamStateManager.getState().isWaitingForFirstChunk
+	}
+	set isWaitingForFirstChunk(value: boolean) {
+		this.streamStateManager.updateState({ isWaitingForFirstChunk: value })
+	}
+
+	get isStreaming(): boolean {
+		return this.streamStateManager.getState().isStreaming
+	}
+	set isStreaming(value: boolean) {
+		if (value) {
+			this.streamStateManager.markStreamingStarted()
+		} else {
+			this.streamStateManager.markStreamingCompleted()
+		}
+	}
+
+	get currentStreamingContentIndex(): number {
+		return this.streamStateManager.getState().currentStreamingContentIndex
+	}
+	set currentStreamingContentIndex(value: number) {
+		this.streamStateManager.updateState({ currentStreamingContentIndex: value })
+	}
+
+	get assistantMessageContent(): AssistantMessageContent[] {
+		return this.streamStateManager.getState().assistantMessageContent
+	}
+	set assistantMessageContent(value: AssistantMessageContent[]) {
+		this.streamStateManager.updateState({ assistantMessageContent: value })
+	}
+
+	get presentAssistantMessageLocked(): boolean {
+		return this.streamStateManager.getState().presentAssistantMessageLocked
+	}
+	set presentAssistantMessageLocked(value: boolean) {
+		this.streamStateManager.updateState({ presentAssistantMessageLocked: value })
+	}
+
+	get presentAssistantMessageHasPendingUpdates(): boolean {
+		return this.streamStateManager.getState().presentAssistantMessageHasPendingUpdates
+	}
+	set presentAssistantMessageHasPendingUpdates(value: boolean) {
+		this.streamStateManager.updateState({ presentAssistantMessageHasPendingUpdates: value })
+	}
+
+	get userMessageContent(): (Anthropic.TextBlockParam | Anthropic.ImageBlockParam)[] {
+		return this.streamStateManager.getState().userMessageContent as (
+			| Anthropic.TextBlockParam
+			| Anthropic.ImageBlockParam
+		)[]
+	}
+	set userMessageContent(value: (Anthropic.TextBlockParam | Anthropic.ImageBlockParam)[]) {
+		this.streamStateManager.updateState({ userMessageContent: value as Anthropic.Messages.ContentBlockParam[] })
+	}
+
+	get userMessageContentReady(): boolean {
+		return this.streamStateManager.getState().userMessageContentReady
+	}
+	set userMessageContentReady(value: boolean) {
+		this.streamStateManager.updateState({ userMessageContentReady: value })
+	}
+
+	get didRejectTool(): boolean {
+		return this.streamStateManager.getState().didRejectTool
+	}
+	set didRejectTool(value: boolean) {
+		this.streamStateManager.updateState({ didRejectTool: value })
+	}
+
+	get didAlreadyUseTool(): boolean {
+		return this.streamStateManager.getState().didAlreadyUseTool
+	}
+	set didAlreadyUseTool(value: boolean) {
+		this.streamStateManager.updateState({ didAlreadyUseTool: value })
+	}
+
+	get didCompleteReadingStream(): boolean {
+		return this.streamStateManager.getState().didCompleteReadingStream
+	}
+	set didCompleteReadingStream(value: boolean) {
+		this.streamStateManager.updateState({ didCompleteReadingStream: value })
+	}
+
+	// Stream state management
+	private streamStateManager: StreamStateManager
+	private eventBus: EventBus
+	private uiEventHandler: UIEventHandler
 
 	constructor({
 		provider,
@@ -250,6 +356,14 @@ export class Task extends EventEmitter<ClineEvents> {
 		this.apiConfiguration = apiConfiguration
 		this.api = buildApiHandler(apiConfiguration)
 
+		// Initialize dependency container if not already done
+		initializeContainer()
+
+		// Get the rate limit manager from the container
+		this.rateLimitManager = DependencyContainer.getInstance().resolve<IRateLimitManager>(
+			ServiceKeys.GLOBAL_RATE_LIMIT_MANAGER,
+		)
+
 		this.urlContentFetcher = new UrlContentFetcher(provider.context)
 		this.browserSession = new BrowserSession(provider.context)
 		this.diffEnabled = enableDiff
@@ -289,6 +403,12 @@ export class Task extends EventEmitter<ClineEvents> {
 		}
 
 		this.toolRepetitionDetector = new ToolRepetitionDetector(this.consecutiveMistakeLimit)
+		this.eventBus = EventBus.getInstance()
+		this.streamStateManager = new StreamStateManager(this.taskId, this.eventBus)
+		this.uiEventHandler = new UIEventHandler(this.workspacePath, this.eventBus, this.diffViewProvider)
+
+		// Subscribe to StreamStateManager events
+		this.setupStreamEventHandlers()
 
 		onCreated?.(this)
 
@@ -317,6 +437,73 @@ export class Task extends EventEmitter<ClineEvents> {
 		}
 
 		return [instance, promise]
+	}
+
+	private setupStreamEventHandlers(): void {
+		const eventBus = this.streamStateManager.getEventBus()
+
+		// Subscribe to stream state change events
+		eventBus.on(StreamEventType.STREAM_STATE_CHANGED, (event: StreamStateChangeEvent) => {
+			// Handle stream state changes
+			if (event.state === "completed" || event.state === "aborted") {
+				// Stream has finished, we can process any pending operations
+				this.processStreamCompletion()
+			}
+		})
+
+		// Subscribe to stream completed events
+		eventBus.on(StreamEventType.STREAM_COMPLETED, (event: StreamStateChangeEvent) => {
+			// Handle stream completion
+			this.processStreamCompletion()
+		})
+
+		// Subscribe to stream aborted events
+		eventBus.on(StreamEventType.STREAM_ABORTED, (event: StreamAbortEvent) => {
+			// Handle stream abort
+			this.handleStreamAbort(event)
+		})
+
+		// UI events are now handled by UIEventHandler, no direct UI coupling needed here
+
+		// Subscribe to partial message cleanup events
+		eventBus.on(StreamEventType.PARTIAL_MESSAGE_CLEANUP_NEEDED, (event: PartialMessageCleanupEvent) => {
+			// Handle partial message cleanup
+			this.handlePartialMessageCleanup()
+		})
+
+		// Subscribe to conversation history update events
+		eventBus.on(StreamEventType.CONVERSATION_HISTORY_UPDATE_NEEDED, (event: ConversationHistoryUpdateEvent) => {
+			// Add to conversation history
+			this.addToApiConversationHistory({
+				role: event.role,
+				content: event.content,
+			}).catch(console.error)
+		})
+	}
+
+	private processStreamCompletion(): void {
+		// This method will be called when the stream completes
+		// It can trigger any pending operations that were waiting for stream completion
+		// For now, we'll just log it
+		console.log(`Stream completed for task ${this.taskId}`)
+	}
+
+	private handleStreamAbort(event: StreamAbortEvent): void {
+		// Handle stream abort
+		console.log(`Stream aborted for task ${this.taskId}: ${event.cancelReason}`)
+		if (event.streamingFailedMessage) {
+			console.error(`Streaming failed: ${event.streamingFailedMessage}`)
+		}
+	}
+
+	private handlePartialMessageCleanup(): void {
+		// Handle cleanup of partial messages
+		const lastMessage = this.clineMessages.at(-1)
+		if (lastMessage && lastMessage.partial) {
+			lastMessage.partial = false
+			// Save the updated message
+			this.saveClineMessages().catch(console.error)
+		}
 	}
 
 	// API Messages
@@ -1063,11 +1250,16 @@ export class Task extends EventEmitter<ClineEvents> {
 
 		try {
 			// If we're not streaming then `abortStream` won't be called
-			if (this.isStreaming && this.diffViewProvider.isEditing) {
-				this.diffViewProvider.revertChanges().catch(console.error)
+			if (this.isStreaming) {
+				// Emit event to revert diff changes instead of direct call
+				this.eventBus.emitEvent(StreamEventType.DIFF_UPDATE_NEEDED, {
+					taskId: this.taskId,
+					timestamp: Date.now(),
+					action: "revert",
+				} as DiffUpdateEvent)
 			}
 		} catch (error) {
-			console.error("Error reverting diff changes:", error)
+			console.error("Error emitting diff revert event:", error)
 		}
 	}
 
@@ -1292,37 +1484,8 @@ export class Task extends EventEmitter<ClineEvents> {
 			}
 
 			const abortStream = async (cancelReason: ClineApiReqCancelReason, streamingFailedMessage?: string) => {
-				if (this.diffViewProvider.isEditing) {
-					await this.diffViewProvider.revertChanges() // closes diff view
-				}
-
-				// if last message is a partial we need to update and save it
-				const lastMessage = this.clineMessages.at(-1)
-
-				if (lastMessage && lastMessage.partial) {
-					// lastMessage.ts = Date.now() DO NOT update ts since it is used as a key for virtuoso list
-					lastMessage.partial = false
-					// instead of streaming partialMessage events, we do a save and post like normal to persist to disk
-					console.log("updating partial message", lastMessage)
-					// await this.saveClineMessages()
-				}
-
-				// Let assistant know their response was interrupted for when task is resumed
-				await this.addToApiConversationHistory({
-					role: "assistant",
-					content: [
-						{
-							type: "text",
-							text:
-								assistantMessage +
-								`\n\n[${
-									cancelReason === "streaming_failed"
-										? "Response interrupted by API Error"
-										: "Response interrupted by user"
-								}]`,
-						},
-					],
-				})
+				// Use StreamStateManager to handle abort
+				await this.streamStateManager.abortStreamSafely(cancelReason, streamingFailedMessage)
 
 				// Update `api_req_started` to have cancelled and cost, so that
 				// we can display the cost of the partial stream.
@@ -1334,18 +1497,15 @@ export class Task extends EventEmitter<ClineEvents> {
 				this.didFinishAbortingStream = true
 			}
 
-			// Reset streaming state.
-			this.currentStreamingContentIndex = 0
-			this.assistantMessageContent = []
-			this.didCompleteReadingStream = false
-			this.userMessageContent = []
-			this.userMessageContentReady = false
-			this.didRejectTool = false
-			this.didAlreadyUseTool = false
-			this.presentAssistantMessageLocked = false
-			this.presentAssistantMessageHasPendingUpdates = false
+			// Reset streaming state using StreamStateManager
+			await this.streamStateManager.resetToInitialState()
 
-			await this.diffViewProvider.reset()
+			// Emit event to reset diff view instead of direct call
+			this.eventBus.emitEvent(StreamEventType.DIFF_UPDATE_NEEDED, {
+				taskId: this.taskId,
+				timestamp: Date.now(),
+				action: "reset",
+			} as DiffUpdateEvent)
 
 			// Yields only if the first chunk is successful, otherwise will
 			// allow the user to retry the request (most likely due to rate
@@ -1691,12 +1851,7 @@ export class Task extends EventEmitter<ClineEvents> {
 
 		// Use the shared timestamp so that subtasks respect the same rate-limit
 		// window as their parent tasks.
-		if (Task.lastGlobalApiRequestTime) {
-			const now = Date.now()
-			const timeSinceLastRequest = now - Task.lastGlobalApiRequestTime
-			const rateLimit = apiConfiguration?.rateLimitSeconds || 0
-			rateLimitDelay = Math.ceil(Math.max(0, rateLimit * 1000 - timeSinceLastRequest) / 1000)
-		}
+		rateLimitDelay = await this.rateLimitManager.calculateDelay(apiConfiguration?.rateLimitSeconds || 0)
 
 		// Only show rate limiting message if we're not retrying. If retrying, we'll include the delay there.
 		if (rateLimitDelay > 0 && retryAttempt === 0) {
@@ -1710,7 +1865,7 @@ export class Task extends EventEmitter<ClineEvents> {
 
 		// Update last request time before making the request so that subsequent
 		// requests — even from new subtasks — will honour the provider's rate-limit.
-		Task.lastGlobalApiRequestTime = Date.now()
+		await this.rateLimitManager.updateLastRequestTime()
 
 		const systemPrompt = await this.getSystemPrompt()
 		const { contextTokens } = this.getTokenUsage()
@@ -1803,36 +1958,24 @@ export class Task extends EventEmitter<ClineEvents> {
 			this.isWaitingForFirstChunk = false
 		} catch (error) {
 			this.isWaitingForFirstChunk = false
+
+			// Use UnifiedErrorHandler for consistent error handling
+			const errorContext: ErrorContext = {
+				isStreaming: false, // First chunk failure, not streaming yet
+				provider: this.api.getModel().id,
+				modelId: this.api.getModel().id,
+				retryAttempt,
+				requestId: metadata.taskId,
+			}
+
+			const errorResponse = UnifiedErrorHandler.handle(error, errorContext)
+
 			// note that this api_req_failed ask is unique in that we only present this option if the api hasn't streamed any content yet (ie it fails on the first chunk due), as it would allow them to hit a retry button. However if the api failed mid-stream, it could be in any arbitrary state where some tools may have executed, so that error is handled differently and requires cancelling the task entirely.
-			if (autoApprovalEnabled && alwaysApproveResubmit) {
-				let errorMsg
-
-				if (error.error?.metadata?.raw) {
-					errorMsg = JSON.stringify(error.error.metadata.raw, null, 2)
-				} else if (error.message) {
-					errorMsg = error.message
-				} else {
-					errorMsg = "Unknown error"
-				}
-
+			if (autoApprovalEnabled && alwaysApproveResubmit && errorResponse.shouldRetry) {
 				const baseDelay = requestDelaySeconds || 5
-				let exponentialDelay = Math.min(
-					Math.ceil(baseDelay * Math.pow(2, retryAttempt)),
-					MAX_EXPONENTIAL_BACKOFF_SECONDS,
-				)
-
-				// If the error is a 429, and the error details contain a retry delay, use that delay instead of exponential backoff
-				if (error.status === 429) {
-					const geminiRetryDetails = error.errorDetails?.find(
-						(detail: any) => detail["@type"] === "type.googleapis.com/google.rpc.RetryInfo",
-					)
-					if (geminiRetryDetails) {
-						const match = geminiRetryDetails?.retryDelay?.match(/^(\d+)s$/)
-						if (match) {
-							exponentialDelay = Number(match[1]) + 1
-						}
-					}
-				}
+				let exponentialDelay =
+					errorResponse.retryDelay ||
+					Math.min(Math.ceil(baseDelay * Math.pow(2, retryAttempt)), MAX_EXPONENTIAL_BACKOFF_SECONDS)
 
 				// Wait for the greater of the exponential delay or the rate limit delay
 				const finalDelay = Math.max(exponentialDelay, rateLimitDelay)
@@ -1841,7 +1984,7 @@ export class Task extends EventEmitter<ClineEvents> {
 				for (let i = finalDelay; i > 0; i--) {
 					await this.say(
 						"api_req_retry_delayed",
-						`${errorMsg}\n\nRetry attempt ${retryAttempt + 1}\nRetrying in ${i} seconds...`,
+						`${errorResponse.formattedMessage}\n\nRetry attempt ${retryAttempt + 1}\nRetrying in ${i} seconds...`,
 						undefined,
 						true,
 					)
@@ -1850,7 +1993,7 @@ export class Task extends EventEmitter<ClineEvents> {
 
 				await this.say(
 					"api_req_retry_delayed",
-					`${errorMsg}\n\nRetry attempt ${retryAttempt + 1}\nRetrying now...`,
+					`${errorResponse.formattedMessage}\n\nRetry attempt ${retryAttempt + 1}\nRetrying now...`,
 					undefined,
 					false,
 				)
@@ -1861,10 +2004,7 @@ export class Task extends EventEmitter<ClineEvents> {
 
 				return
 			} else {
-				const { response } = await this.ask(
-					"api_req_failed",
-					error.message ?? JSON.stringify(serializeError(error), null, 2),
-				)
+				const { response } = await this.ask("api_req_failed", errorResponse.formattedMessage)
 
 				if (response !== "yesButtonClicked") {
 					// This will never happen since if noButtonClicked, we will
