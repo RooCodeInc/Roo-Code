@@ -151,6 +151,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	const textAreaRef = useRef<HTMLTextAreaElement>(null)
 	const [sendingDisabled, setSendingDisabled] = useState(false)
 	const [selectedImages, setSelectedImages] = useState<string[]>([])
+	const [selectedFiles, setSelectedFiles] = useState<Array<{ type: string; data: string; name: string; mimeType: string; size: number }>>([])
 
 	// we need to hold on to the ask because useEffect > lastMessage will always let us know when an ask comes in and handle it, but by the time handleMessage is called, the last message might not be the ask anymore (it could be a say that followed)
 	const [clineAsk, setClineAsk] = useState<ClineAsk | undefined>(undefined)
@@ -698,6 +699,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	const { info: model } = useSelectedModel(apiConfiguration)
 
 	const selectImages = useCallback(() => vscode.postMessage({ type: "selectImages" }), [])
+	const selectFiles = useCallback(() => vscode.postMessage({ type: "selectFiles" }), [])
 
 	const shouldDisableImages =
 		!model?.supportsImages || sendingDisabled || selectedImages.length >= MAX_IMAGES_PER_MESSAGE
@@ -725,6 +727,12 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 						setSelectedImages((prevImages) =>
 							[...prevImages, ...newImages].slice(0, MAX_IMAGES_PER_MESSAGE),
 						)
+					}
+					break
+				case "selectedFiles":
+					const newFiles = message.files ?? []
+					if (newFiles.length > 0) {
+						setSelectedFiles((prevFiles) => [...prevFiles, ...newFiles])
 					}
 					break
 				case "invoke":
@@ -1823,6 +1831,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				setSelectedImages={setSelectedImages}
 				onSend={() => handleSendMessage(inputValue, selectedImages)}
 				onSelectImages={selectImages}
+				onSelectFiles={selectFiles}
 				shouldDisableImages={shouldDisableImages}
 				onHeightChange={() => {
 					if (isAtBottom) {

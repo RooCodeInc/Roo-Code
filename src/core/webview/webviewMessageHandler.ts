@@ -30,6 +30,7 @@ import { Terminal } from "../../integrations/terminal/Terminal"
 import { openFile } from "../../integrations/misc/open-file"
 import { openImage, saveImage } from "../../integrations/misc/image-handler"
 import { selectImages } from "../../integrations/misc/process-images"
+import { selectFiles } from "../../integrations/misc/process-files"
 import { getTheme } from "../../integrations/theme/getTheme"
 import { discoverChromeHostUrl, tryChromeHostUrl } from "../../services/browser/browserDiscovery"
 import { searchWorkspaceFiles } from "../../services/search/file-search"
@@ -417,6 +418,10 @@ export const webviewMessageHandler = async (
 		case "selectImages":
 			const images = await selectImages()
 			await provider.postMessageToWebview({ type: "selectedImages", images })
+			break
+		case "selectFiles":
+			const files = await selectFiles()
+			await provider.postMessageToWebview({ type: "selectedFiles", files })
 			break
 		case "exportCurrentTask":
 			const currentTaskId = provider.getCurrentCline()?.taskId

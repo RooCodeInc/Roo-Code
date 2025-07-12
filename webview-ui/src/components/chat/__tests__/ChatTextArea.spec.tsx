@@ -52,6 +52,7 @@ describe("ChatTextArea", () => {
 		sendingDisabled: false,
 		selectApiConfigDisabled: false,
 		onSelectImages: vi.fn(),
+		onSelectFiles: vi.fn(),
 		shouldDisableImages: false,
 		placeholderText: "Type a message...",
 		selectedImages: [],
