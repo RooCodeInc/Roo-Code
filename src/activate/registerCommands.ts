@@ -126,6 +126,7 @@ const getCommandsMap = ({ context, outputChannel, provider }: RegisterCommandOpt
 		return openClineInNewTab({ context, outputChannel })
 	},
 	openInNewTab: () => openClineInNewTab({ context, outputChannel }),
+	openInThisTab: () => openClineInThisTab({ context, outputChannel }),
 	settingsButtonClicked: () => {
 		const visibleProvider = getVisibleProviderOrLog(outputChannel)
 
@@ -220,35 +221,42 @@ const getCommandsMap = ({ context, outputChannel, provider }: RegisterCommandOpt
 	},
 })
 
-export const openClineInNewTab = async ({ context, outputChannel }: Omit<RegisterCommandOptions, "provider">) => {
+/**
+ * Opens Roo Code in a tab with configurable column targeting and locking behavior
+ */
+const openClineInTab = async (
+	{ context, outputChannel }: Omit<RegisterCommandOptions, "provider">,
+	options: {
+		useNewColumn: boolean
+		lockEditorGroup: boolean
+	},
+): Promise<ClineProvider> => {
 	// (This example uses webviewProvider activation event which is necessary to
 	// deserialize cached webview, but since we use retainContextWhenHidden, we
 	// don't need to use that event).
 	// https://github.com/microsoft/vscode-extension-samples/blob/main/webview-sample/src/extension.ts
 	const contextProxy = await ContextProxy.getInstance(context)
 	const codeIndexManager = CodeIndexManager.getInstance(context)
+	const tabProvider = new ClineProvider(context, outputChannel, "editor", contextProxy, codeIndexManager)
 
-	// Get the existing MDM service instance to ensure consistent policy enforcement
-	let mdmService: MdmService | undefined
-	try {
-		mdmService = MdmService.getInstance()
-	} catch (error) {
-		// MDM service not initialized, which is fine - extension can work without it
-		mdmService = undefined
+	let targetCol: vscode.ViewColumn
+
+	if (options.useNewColumn) {
+		const lastCol = Math.max(...vscode.window.visibleTextEditors.map((editor) => editor.viewColumn || 0))
+
+		// Check if there are any visible text editors, otherwise open a new group
+		// to the right.
+		const hasVisibleEditors = vscode.window.visibleTextEditors.length > 0
+
+		if (!hasVisibleEditors) {
+			await vscode.commands.executeCommand("workbench.action.newGroupRight")
+		}
+
+		targetCol = hasVisibleEditors ? Math.max(lastCol + 1, 1) : vscode.ViewColumn.Two
+	} else {
+		// Use the active column instead of creating a new one
+		targetCol = vscode.ViewColumn.Active
 	}
-
-	const tabProvider = new ClineProvider(context, outputChannel, "editor", contextProxy, codeIndexManager, mdmService)
-	const lastCol = Math.max(...vscode.window.visibleTextEditors.map((editor) => editor.viewColumn || 0))
-
-	// Check if there are any visible text editors, otherwise open a new group
-	// to the right.
-	const hasVisibleEditors = vscode.window.visibleTextEditors.length > 0
-
-	if (!hasVisibleEditors) {
-		await vscode.commands.executeCommand("workbench.action.newGroupRight")
-	}
-
-	const targetCol = hasVisibleEditors ? Math.max(lastCol + 1, 1) : vscode.ViewColumn.Two
 
 	const newPanel = vscode.window.createWebviewPanel(ClineProvider.tabPanelId, "Roo Code", targetCol, {
 		enableScripts: true,
@@ -290,8 +298,18 @@ export const openClineInNewTab = async ({ context, outputChannel }: Omit<Registe
 	)
 
 	// Lock the editor group so clicking on files doesn't open them over the panel.
-	await delay(100)
-	await vscode.commands.executeCommand("workbench.action.lockEditorGroup")
+	if (options.lockEditorGroup) {
+		await delay(100)
+		await vscode.commands.executeCommand("workbench.action.lockEditorGroup")
+	}
 
 	return tabProvider
+}
+
+export const openClineInNewTab = async ({ context, outputChannel }: Omit<RegisterCommandOptions, "provider">) => {
+	return openClineInTab({ context, outputChannel }, { useNewColumn: true, lockEditorGroup: true })
+}
+
+export const openClineInThisTab = async ({ context, outputChannel }: Omit<RegisterCommandOptions, "provider">) => {
+	return openClineInTab({ context, outputChannel }, { useNewColumn: false, lockEditorGroup: false })
 }
