@@ -55,6 +55,7 @@ export interface ExtensionMessage {
 		| "state"
 		| "selectedImages"
 		| "theme"
+		| "historyItems"
 		| "workspaceUpdated"
 		| "invoke"
 		| "messageUpdated"
@@ -105,6 +106,12 @@ export interface ExtensionMessage {
 		| "shareTaskSuccess"
 		| "codeIndexSettingsSaved"
 		| "codeIndexSecretStatus"
+		| "taskDeletedConfirmation"
+		| "loggingOperation"
+		| "upgradeStatus"
+		| "upgradeComplete"
+		| "scanTaskHistoryResult"
+		| "rebuildHistoryIndexesResult"
 	text?: string
 	payload?: any // Add a generic payload for now, can refine later
 	action?:
@@ -143,12 +150,13 @@ export interface ExtensionMessage {
 	values?: Record<string, any>
 	requestId?: string
 	promptText?: string
-	results?: { path: string; type: "file" | "folder"; label?: string }[]
+	results?: { path: string; type: "file" | "folder"; label?: string }[] | any
 	error?: string
 	setting?: string
 	value?: any
 	hasContent?: boolean // For checkRulesDirectoryResult
-	items?: MarketplaceItem[]
+	items?: MarketplaceItem[] | HistoryItem[]
+	log?: string
 	userInfo?: CloudUserInfo
 	organizationAllowList?: OrganizationAllowList
 	tab?: string
@@ -234,8 +242,6 @@ export type ExtensionState = Pick<
 	apiConfiguration?: ProviderSettings
 	uriScheme?: string
 	shouldShowAnnouncement: boolean
-
-	taskHistory: HistoryItem[]
 
 	writeDelayMs: number
 	requestDelaySeconds: number
