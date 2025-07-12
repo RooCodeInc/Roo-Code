@@ -172,6 +172,7 @@ export class Task extends EventEmitter<ClineEvents> {
 	diffViewProvider: DiffViewProvider
 	diffStrategy?: DiffStrategy
 	diffEnabled: boolean = false
+	enableTodoList: boolean = true
 	fuzzyMatchThreshold: number
 	didEditFile: boolean = false
 
@@ -1609,6 +1610,7 @@ export class Task extends EventEmitter<ClineEvents> {
 		const state = await this.providerRef.deref()?.getState()
 
 		const {
+			apiConfiguration,
 			browserViewportSize,
 			mode,
 			customModes,
@@ -1621,6 +1623,9 @@ export class Task extends EventEmitter<ClineEvents> {
 			maxConcurrentFileReads,
 			maxReadFileLine,
 		} = state ?? {}
+
+		// Extract enableTodoList from provider settings
+		const enableTodoList = apiConfiguration?.enableTodoList ?? true
 
 		return await (async () => {
 			const provider = this.providerRef.deref()
@@ -1648,6 +1653,7 @@ export class Task extends EventEmitter<ClineEvents> {
 				maxReadFileLine !== -1,
 				{
 					maxConcurrentFileReads,
+					enableTodoList,
 				},
 			)
 		})()

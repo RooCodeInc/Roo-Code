@@ -975,17 +975,17 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 						<div className="mt-4">
 							<button
 								onClick={() => setIsAdvancedSettingsOpen(!isAdvancedSettingsOpen)}
-								className="flex items-center text-xs text-vscode-foreground hover:text-vscode-textLink-foreground focus:outline-none"
+								className="flex items-center gap-2 text-xs text-vscode-foreground hover:text-vscode-textLink-foreground focus:outline-none w-full text-left"
 								aria-expanded={isAdvancedSettingsOpen}>
 								<span
-									className={`codicon codicon-${isAdvancedSettingsOpen ? "chevron-down" : "chevron-right"} mr-1`}></span>
+									className={`codicon codicon-${isAdvancedSettingsOpen ? "chevron-down" : "chevron-right"} flex-shrink-0`}></span>
 								<span className="text-base font-semibold">
 									{t("settings:codeIndex.advancedConfigLabel")}
 								</span>
 							</button>
 
 							{isAdvancedSettingsOpen && (
-								<div className="mt-4 space-y-4">
+								<div className="mt-4 space-y-4 pl-0">
 									{/* Search Score Threshold Slider */}
 									<div className="space-y-2">
 										<div className="flex items-center gap-2">

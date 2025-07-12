@@ -537,6 +537,9 @@
 		}
 	},
 	"advanced": {
+		"section": {
+			"label": "Geavanceerde instellingen"
+		},
 		"diff": {
 			"label": "Bewerken via diffs inschakelen",
 			"description": "Indien ingeschakeld kan Roo sneller bestanden bewerken en worden afgekorte volledige-bestandswijzigingen automatisch geweigerd. Werkt het beste met het nieuwste Claude 3.7 Sonnet-model.",
@@ -557,6 +560,10 @@
 				"label": "Matchnauwkeurigheid",
 				"description": "Deze schuifregelaar bepaalt hoe nauwkeurig codeblokken moeten overeenkomen bij het toepassen van diffs. Lagere waarden laten flexibelere matching toe maar verhogen het risico op verkeerde vervangingen. Gebruik waarden onder 100% met uiterste voorzichtigheid."
 			}
+		},
+		"todoList": {
+			"label": "Todo-lijsten inschakelen",
+			"description": "Wanneer ingeschakeld, kan Roo todo-lijsten maken en bijwerken om taakvoortgang bij te houden. Dit helpt bij het organiseren van complexe taken in beheersbare stappen."
 		}
 	},
 	"experimental": {

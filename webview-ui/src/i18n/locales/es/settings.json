@@ -537,6 +537,9 @@
 		}
 	},
 	"advanced": {
+		"section": {
+			"label": "Configuración avanzada"
+		},
 		"diff": {
 			"label": "Habilitar edición a través de diffs",
 			"description": "Cuando está habilitado, Roo podrá editar archivos más rápidamente y rechazará automáticamente escrituras completas de archivos truncados. Funciona mejor con el último modelo Claude 3.7 Sonnet.",
@@ -557,6 +560,10 @@
 				"label": "Precisión de coincidencia",
 				"description": "Este control deslizante controla cuán precisamente deben coincidir las secciones de código al aplicar diffs. Valores más bajos permiten coincidencias más flexibles pero aumentan el riesgo de reemplazos incorrectos. Use valores por debajo del 100% con extrema precaución."
 			}
+		},
+		"todoList": {
+			"label": "Habilitar listas de tareas",
+			"description": "Cuando está habilitado, Roo podrá crear y actualizar listas de tareas para hacer seguimiento del progreso de las tareas. Esto ayuda a organizar tareas complejas en pasos manejables."
 		}
 	},
 	"experimental": {

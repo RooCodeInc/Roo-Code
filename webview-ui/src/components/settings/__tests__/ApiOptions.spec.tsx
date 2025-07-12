@@ -20,7 +20,17 @@ vi.mock("@vscode/webview-ui-toolkit/react", () => ({
 	VSCodeLink: ({ children, href }: any) => <a href={href}>{children}</a>,
 	VSCodeRadio: ({ value, checked }: any) => <input type="radio" value={value} checked={checked} />,
 	VSCodeRadioGroup: ({ children }: any) => <div>{children}</div>,
-	VSCodeButton: ({ children }: any) => <div>{children}</div>,
+	VSCodeButton: ({ children, onClick, ...props }: any) => (
+		<button onClick={onClick} {...props}>
+			{children}
+		</button>
+	),
+	VSCodeCheckbox: ({ children, checked, onChange, ...props }: any) => (
+		<label {...props}>
+			<input type="checkbox" checked={checked} onChange={onChange} />
+			{children}
+		</label>
+	),
 }))
 
 // Mock other components
@@ -251,6 +261,11 @@ describe("ApiOptions", () => {
 				fuzzyMatchThreshold: 0.95,
 			},
 		})
+
+		// First, expand the advanced settings section by clicking the button
+		const expandButton = screen.getByRole("button", { name: /settings:advanced.section.label/i })
+		fireEvent.click(expandButton)
+
 		// Check for DiffSettingsControl by looking for text content
 		expect(screen.getByText(/enable editing through diffs/i)).toBeInTheDocument()
 		expect(screen.getByTestId("temperature-control")).toBeInTheDocument()

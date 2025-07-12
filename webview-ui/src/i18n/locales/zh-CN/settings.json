@@ -537,6 +537,9 @@
 		}
 	},
 	"advanced": {
+		"section": {
+			"label": "高级设置"
+		},
 		"diff": {
 			"label": "启用diff更新",
 			"description": "启用后，Roo 将能够通过差异算法写入，避免模型输出完整文件，以降低Token消耗。与最新的 Claude 3.7 Sonnet 模型配合最佳。",
@@ -557,6 +560,10 @@
 				"label": "匹配精度",
 				"description": "控制代码匹配的精确程度。数值越低匹配越宽松（容错率高但风险大），建议保持100%以确保安全。"
 			}
+		},
+		"todoList": {
+			"label": "启用待办事项列表",
+			"description": "启用后，Roo 将能够创建和更新待办事项列表来跟踪任务进度。这有助于将复杂任务组织成可管理的步骤。"
 		}
 	},
 	"experimental": {

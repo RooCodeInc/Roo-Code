@@ -537,6 +537,9 @@
 		}
 	},
 	"advanced": {
+		"section": {
+			"label": "Paramètres avancés"
+		},
 		"diff": {
 			"label": "Activer l'édition via des diffs",
 			"description": "Lorsque cette option est activée, Roo pourra éditer des fichiers plus rapidement et rejettera automatiquement les écritures de fichiers complets tronqués. Fonctionne mieux avec le dernier modèle Claude 3.7 Sonnet.",
@@ -557,6 +560,10 @@
 				"label": "Précision de correspondance",
 				"description": "Ce curseur contrôle la précision avec laquelle les sections de code doivent correspondre lors de l'application des diffs. Des valeurs plus basses permettent des correspondances plus flexibles mais augmentent le risque de remplacements incorrects. Utilisez des valeurs inférieures à 100 % avec une extrême prudence."
 			}
+		},
+		"todoList": {
+			"label": "Activer les listes de tâches",
+			"description": "Lorsque activé, Roo pourra créer et mettre à jour des listes de tâches pour suivre le progrès des tâches. Cela aide à organiser les tâches complexes en étapes gérables."
 		}
 	},
 	"experimental": {

@@ -537,6 +537,9 @@
 		}
 	},
 	"advanced": {
+		"section": {
+			"label": "Configuració avançada"
+		},
 		"diff": {
 			"label": "Habilitar edició mitjançant diffs",
 			"description": "Quan està habilitat, Roo podrà editar fitxers més ràpidament i rebutjarà automàticament escriptures completes de fitxers truncats. Funciona millor amb l'últim model Claude 3.7 Sonnet.",
@@ -557,6 +560,10 @@
 				"label": "Precisió de coincidència",
 				"description": "Aquest control lliscant controla amb quina precisió han de coincidir les seccions de codi en aplicar diffs. Valors més baixos permeten coincidències més flexibles però augmenten el risc de reemplaçaments incorrectes. Utilitzeu valors per sota del 100% amb extrema precaució."
 			}
+		},
+		"todoList": {
+			"label": "Habilita llistes de tasques",
+			"description": "Quan està habilitat, Roo podrà crear i actualitzar llistes de tasques per fer seguiment del progrés de les tasques. Això ajuda a organitzar tasques complexes en passos manejables."
 		}
 	},
 	"experimental": {

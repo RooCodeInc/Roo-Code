@@ -537,6 +537,9 @@
 		}
 	},
 	"advanced": {
+		"section": {
+			"label": "Ustawienia zaawansowane"
+		},
 		"diff": {
 			"label": "Włącz edycję przez różnice",
 			"description": "Gdy włączone, Roo będzie w stanie edytować pliki szybciej i automatycznie odrzuci obcięte pełne zapisy plików. Działa najlepiej z najnowszym modelem Claude 3.7 Sonnet.",
@@ -557,6 +560,10 @@
 				"label": "Precyzja dopasowania",
 				"description": "Ten suwak kontroluje, jak dokładnie sekcje kodu muszą pasować podczas stosowania różnic. Niższe wartości umożliwiają bardziej elastyczne dopasowywanie, ale zwiększają ryzyko nieprawidłowych zamian. Używaj wartości poniżej 100% z najwyższą ostrożnością."
 			}
+		},
+		"todoList": {
+			"label": "Włącz listy zadań",
+			"description": "Gdy włączone, Roo będzie mógł tworzyć i aktualizować listy zadań do śledzenia postępu zadań. To pomaga organizować złożone zadania w zarządzalne kroki."
 		}
 	},
 	"experimental": {

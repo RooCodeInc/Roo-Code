@@ -541,6 +541,9 @@
 		}
 	},
 	"advanced": {
+		"section": {
+			"label": "Pengaturan Lanjutan"
+		},
 		"diff": {
 			"label": "Aktifkan editing melalui diff",
 			"description": "Ketika diaktifkan, Roo akan dapat mengedit file lebih cepat dan akan secara otomatis menolak penulisan file penuh yang terpotong. Bekerja terbaik dengan model Claude 3.7 Sonnet terbaru.",
@@ -561,6 +564,10 @@
 				"label": "Presisi pencocokan",
 				"description": "Slider ini mengontrol seberapa tepat bagian kode harus cocok saat menerapkan diff. Nilai yang lebih rendah memungkinkan pencocokan yang lebih fleksibel tetapi meningkatkan risiko penggantian yang salah. Gunakan nilai di bawah 100% dengan sangat hati-hati."
 			}
+		},
+		"todoList": {
+			"label": "Aktifkan daftar tugas",
+			"description": "Ketika diaktifkan, Roo akan dapat membuat dan memperbarui daftar tugas untuk melacak kemajuan tugas. Ini membantu mengorganisir tugas kompleks menjadi langkah-langkah yang dapat dikelola."
 		}
 	},
 	"experimental": {

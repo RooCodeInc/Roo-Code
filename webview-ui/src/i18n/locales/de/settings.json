@@ -537,6 +537,9 @@
 		}
 	},
 	"advanced": {
+		"section": {
+			"label": "Erweiterte Einstellungen"
+		},
 		"diff": {
 			"label": "Bearbeitung durch Diffs aktivieren",
 			"description": "Wenn aktiviert, kann Roo Dateien schneller bearbeiten und lehnt automatisch abgeschnittene vollständige Dateischreibvorgänge ab. Funktioniert am besten mit dem neuesten Claude 3.7 Sonnet-Modell.",
@@ -557,6 +560,10 @@
 				"label": "Übereinstimmungspräzision",
 				"description": "Dieser Schieberegler steuert, wie genau Codeabschnitte bei der Anwendung von Diffs übereinstimmen müssen. Niedrigere Werte ermöglichen eine flexiblere Übereinstimmung, erhöhen aber das Risiko falscher Ersetzungen. Verwenden Sie Werte unter 100 % mit äußerster Vorsicht."
 			}
+		},
+		"todoList": {
+			"label": "Todo-Listen aktivieren",
+			"description": "Wenn aktiviert, kann Roo Todo-Listen erstellen und aktualisieren, um den Aufgabenfortschritt zu verfolgen. Dies hilft dabei, komplexe Aufgaben in überschaubare Schritte zu organisieren."
 		}
 	},
 	"experimental": {

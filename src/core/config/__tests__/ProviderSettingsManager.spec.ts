@@ -66,6 +66,7 @@ describe("ProviderSettingsManager", () => {
 						rateLimitSecondsMigrated: true,
 						diffSettingsMigrated: true,
 						openAiHeadersMigrated: true,
+						todoListSettingsMigrated: true,
 					},
 				}),
 			)

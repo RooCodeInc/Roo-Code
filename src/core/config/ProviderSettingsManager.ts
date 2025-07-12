@@ -25,6 +25,7 @@ export const providerProfilesSchema = z.object({
 		.object({
 			rateLimitSecondsMigrated: z.boolean().optional(),
 			diffSettingsMigrated: z.boolean().optional(),
+			todoListSettingsMigrated: z.boolean().optional(),
 			openAiHeadersMigrated: z.boolean().optional(),
 		})
 		.optional(),
@@ -47,6 +48,7 @@ export class ProviderSettingsManager {
 		migrations: {
 			rateLimitSecondsMigrated: true, // Mark as migrated on fresh installs
 			diffSettingsMigrated: true, // Mark as migrated on fresh installs
+			todoListSettingsMigrated: true, // Mark as migrated on fresh installs
 			openAiHeadersMigrated: true, // Mark as migrated on fresh installs
 		},
 	}
@@ -112,6 +114,7 @@ export class ProviderSettingsManager {
 					providerProfiles.migrations = {
 						rateLimitSecondsMigrated: false,
 						diffSettingsMigrated: false,
+						todoListSettingsMigrated: false,
 						openAiHeadersMigrated: false,
 					} // Initialize with default values
 					isDirty = true
@@ -126,6 +129,12 @@ export class ProviderSettingsManager {
 				if (!providerProfiles.migrations.diffSettingsMigrated) {
 					await this.migrateDiffSettings(providerProfiles)
 					providerProfiles.migrations.diffSettingsMigrated = true
+					isDirty = true
+				}
+
+				if (!providerProfiles.migrations.todoListSettingsMigrated) {
+					await this.migrateTodoListSettings(providerProfiles)
+					providerProfiles.migrations.todoListSettingsMigrated = true
 					isDirty = true
 				}
 
@@ -201,6 +210,22 @@ export class ProviderSettingsManager {
 			}
 		} catch (error) {
 			console.error(`[MigrateDiffSettings] Failed to migrate diff settings:`, error)
+		}
+	}
+
+	private async migrateTodoListSettings(providerProfiles: ProviderProfiles) {
+		try {
+			// No backfill required - this is a new provider-level setting
+			// Default to true (enabled) for all existing profiles
+			const defaultTodoListEnabled = true
+
+			for (const [_name, apiConfig] of Object.entries(providerProfiles.apiConfigs)) {
+				if (apiConfig.enableTodoList === undefined) {
+					apiConfig.enableTodoList = defaultTodoListEnabled
+				}
+			}
+		} catch (error) {
+			console.error(`[MigrateTodoListSettings] Failed to migrate todo list settings:`, error)
 		}
 	}
 
