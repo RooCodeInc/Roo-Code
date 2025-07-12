@@ -108,6 +108,9 @@ export class ClineProvider
 	private marketplaceManager: MarketplaceManager
 	private mdmService?: MdmService
 
+	// Instance-specific mode state to prevent cross-window interference
+	private instanceMode?: Mode
+
 	public isViewLaunched = false
 	public settingsImportedAt?: number
 	public readonly latestAnnouncementId = "jul-09-2025-3-23-0" // Update for v3.23.0 announcement
@@ -130,6 +133,9 @@ export class ClineProvider
 		this.codeIndexManager = codeIndexManager
 		this.mdmService = mdmService
 		this.updateGlobalState("codebaseIndexModels", EMBEDDING_MODEL_PROFILES)
+
+		// Initialize instance mode with current global mode for backward compatibility
+		this.instanceMode = this.contextProxy.getValue("mode") ?? defaultModeSlug
 
 		// Start configuration loading (which might trigger indexing) in the background.
 		// Don't await, allowing activation to continue immediately.
@@ -805,7 +811,8 @@ export class ClineProvider
 			cline.emit("taskModeSwitched", cline.taskId, newMode)
 		}
 
-		await this.updateGlobalState("mode", newMode)
+		// Store mode in instance-specific storage to prevent cross-window interference
+		this.instanceMode = newMode
 
 		// Load the saved API config for the new mode if it exists
 		const savedConfigId = await this.providerSettingsManager.getModeConfigId(newMode)
@@ -1505,7 +1512,7 @@ export class ClineProvider
 			currentApiConfigName: currentApiConfigName ?? "default",
 			listApiConfigMeta: listApiConfigMeta ?? [],
 			pinnedApiConfigs: pinnedApiConfigs ?? {},
-			mode: mode ?? defaultModeSlug,
+			mode: this.instanceMode ?? mode ?? defaultModeSlug,
 			customModePrompts: customModePrompts ?? {},
 			customSupportPrompts: customSupportPrompts ?? {},
 			enhancementApiConfigId,
@@ -1662,7 +1669,7 @@ export class ClineProvider
 			terminalZshP10k: stateValues.terminalZshP10k ?? false,
 			terminalZdotdir: stateValues.terminalZdotdir ?? false,
 			terminalCompressProgressBar: stateValues.terminalCompressProgressBar ?? true,
-			mode: stateValues.mode ?? defaultModeSlug,
+			mode: this.instanceMode ?? stateValues.mode ?? defaultModeSlug,
 			language: stateValues.language ?? formatLanguage(vscode.env.language),
 			mcpEnabled: stateValues.mcpEnabled ?? true,
 			enableMcpServerCreation: stateValues.enableMcpServerCreation ?? true,

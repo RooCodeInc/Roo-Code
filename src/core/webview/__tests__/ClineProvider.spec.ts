@@ -1648,8 +1648,12 @@ describe("ClineProvider", () => {
 			// Switch to architect mode
 			await provider.handleModeSwitch("architect")
 
-			// Verify mode was updated
-			expect(mockContext.globalState.update).toHaveBeenCalledWith("mode", "architect")
+			// Verify mode was NOT updated in global state (instance-specific now)
+			expect(mockContext.globalState.update).not.toHaveBeenCalledWith("mode", "architect")
+
+			// Verify the provider's instance mode was updated
+			const state = await provider.getState()
+			expect(state.mode).toBe("architect")
 
 			// Verify saved config was loaded
 			expect(provider.providerSettingsManager.getModeConfigId).toHaveBeenCalledWith("architect")
@@ -1680,8 +1684,12 @@ describe("ClineProvider", () => {
 			// Switch to architect mode
 			await provider.handleModeSwitch("architect")
 
-			// Verify mode was updated
-			expect(mockContext.globalState.update).toHaveBeenCalledWith("mode", "architect")
+			// Verify mode was NOT updated in global state (instance-specific now)
+			expect(mockContext.globalState.update).not.toHaveBeenCalledWith("mode", "architect")
+
+			// Verify the provider's instance mode was updated
+			const state = await provider.getState()
+			expect(state.mode).toBe("architect")
 
 			// Verify current config was saved as default for new mode
 			expect(provider.providerSettingsManager.setModeConfig).toHaveBeenCalledWith("architect", "current-id")
