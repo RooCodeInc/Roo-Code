@@ -312,7 +312,6 @@ function isDirectoryExplicitlyIgnored(dirName: string): boolean {
 	return false
 }
 
-
 /**
  * Combine file and directory results and format them properly
  */

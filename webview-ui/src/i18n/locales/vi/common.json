@@ -51,5 +51,13 @@
 		"success": {
 			"imageDataUriCopied": "URI dữ liệu hình ảnh đã được sao chép vào clipboard"
 		}
+	},
+	"confirmation": {
+		"delete_message": "Xóa Tin Nhắn",
+		"delete_warning": "Xóa tin nhắn này sẽ xóa tất cả các tin nhắn tiếp theo trong cuộc trò chuyện. Bạn có muốn tiếp tục không?",
+		"edit_message": "Chỉnh Sửa Tin Nhắn",
+		"edit_warning": "Chỉnh sửa tin nhắn này sẽ xóa tất cả các tin nhắn tiếp theo trong cuộc trò chuyện. Bạn có muốn tiếp tục không?",
+		"proceed": "Tiếp Tục",
+		"dont_show_again": "Không hiển thị lại"
 	}
 }

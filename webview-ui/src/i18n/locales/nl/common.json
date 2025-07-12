@@ -51,5 +51,13 @@
 		"success": {
 			"imageDataUriCopied": "Afbeelding data-URI gekopieerd naar klembord"
 		}
+	},
+	"confirmation": {
+		"delete_message": "Bericht Verwijderen",
+		"delete_warning": "Het verwijderen van dit bericht zal alle volgende berichten in het gesprek verwijderen. Wil je doorgaan?",
+		"edit_message": "Bericht Bewerken",
+		"edit_warning": "Het bewerken van dit bericht zal alle volgende berichten in het gesprek verwijderen. Wil je doorgaan?",
+		"proceed": "Doorgaan",
+		"dont_show_again": "Niet meer tonen"
 	}
 }

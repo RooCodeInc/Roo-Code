@@ -857,4 +857,210 @@ describe("ChatTextArea", () => {
 			expect(apiConfigDropdown).toHaveAttribute("disabled")
 		})
 	})
+	describe("edit mode functionality", () => {
+		it("should show edit button instead of send button when isEditMode is true", () => {
+			;(useExtensionState as ReturnType<typeof vi.fn>).mockReturnValue({
+				filePaths: [],
+				openedTabs: [],
+				taskHistory: [],
+				cwd: "/test/workspace",
+			})
+
+			render(<ChatTextArea {...defaultProps} isEditMode={true} />)
+
+			// Should show edit button (codicon-edit)
+			const editButton = screen.getByRole("button", {
+				name: (_, element) => {
+					return element.querySelector(".codicon-edit") !== null
+				},
+			})
+			expect(editButton).toBeInTheDocument()
+
+			// Should not show send button (codicon-send)
+			const sendButton = screen.queryByRole("button", {
+				name: (_, element) => {
+					return element.querySelector(".codicon-send") !== null
+				},
+			})
+			expect(sendButton).not.toBeInTheDocument()
+		})
+
+		it("should show send button when isEditMode is false", () => {
+			;(useExtensionState as ReturnType<typeof vi.fn>).mockReturnValue({
+				filePaths: [],
+				openedTabs: [],
+				taskHistory: [],
+				cwd: "/test/workspace",
+			})
+
+			render(<ChatTextArea {...defaultProps} isEditMode={false} />)
+
+			// Should show send button (codicon-send)
+			const sendButton = screen.getByRole("button", {
+				name: (_, element) => {
+					return element.querySelector(".codicon-send") !== null
+				},
+			})
+			expect(sendButton).toBeInTheDocument()
+
+			// Should not show edit button (codicon-edit)
+			const editButton = screen.queryByRole("button", {
+				name: (_, element) => {
+					return element.querySelector(".codicon-edit") !== null
+				},
+			})
+			expect(editButton).not.toBeInTheDocument()
+		})
+
+		it("should show cancel button in edit mode", () => {
+			;(useExtensionState as ReturnType<typeof vi.fn>).mockReturnValue({
+				filePaths: [],
+				openedTabs: [],
+				taskHistory: [],
+				cwd: "/test/workspace",
+			})
+
+			render(<ChatTextArea {...defaultProps} isEditMode={true} />)
+
+			// Should show cancel button with text "Cancel"
+			const cancelButton = screen.getByRole("button", { name: /cancel/i })
+			expect(cancelButton).toBeInTheDocument()
+			expect(cancelButton).toHaveTextContent("Cancel")
+		})
+
+		it("should not show cancel button when not in edit mode", () => {
+			;(useExtensionState as ReturnType<typeof vi.fn>).mockReturnValue({
+				filePaths: [],
+				openedTabs: [],
+				taskHistory: [],
+				cwd: "/test/workspace",
+			})
+
+			render(<ChatTextArea {...defaultProps} isEditMode={false} />)
+
+			// Should not show cancel button
+			const cancelButton = screen.queryByRole("button", { name: /cancel/i })
+			expect(cancelButton).not.toBeInTheDocument()
+		})
+
+		it("should call onSend when edit button is clicked", () => {
+			const onSend = vi.fn()
+			;(useExtensionState as ReturnType<typeof vi.fn>).mockReturnValue({
+				filePaths: [],
+				openedTabs: [],
+				taskHistory: [],
+				cwd: "/test/workspace",
+			})
+
+			render(<ChatTextArea {...defaultProps} isEditMode={true} onSend={onSend} />)
+
+			const editButton = screen.getByRole("button", {
+				name: (_, element) => {
+					return element.querySelector(".codicon-edit") !== null
+				},
+			})
+
+			fireEvent.click(editButton)
+			expect(onSend).toHaveBeenCalledTimes(1)
+		})
+
+		it("should call onCancel when cancel button is clicked", () => {
+			const onCancel = vi.fn()
+			;(useExtensionState as ReturnType<typeof vi.fn>).mockReturnValue({
+				filePaths: [],
+				openedTabs: [],
+				taskHistory: [],
+				cwd: "/test/workspace",
+			})
+
+			render(<ChatTextArea {...defaultProps} isEditMode={true} onCancel={onCancel} />)
+
+			const cancelButton = screen.getByRole("button", { name: /cancel/i })
+
+			fireEvent.click(cancelButton)
+			expect(onCancel).toHaveBeenCalledTimes(1)
+		})
+
+		it("should disable edit button when sendingDisabled is true", () => {
+			;(useExtensionState as ReturnType<typeof vi.fn>).mockReturnValue({
+				filePaths: [],
+				openedTabs: [],
+				taskHistory: [],
+				cwd: "/test/workspace",
+			})
+
+			render(<ChatTextArea {...defaultProps} isEditMode={true} sendingDisabled={true} />)
+
+			const editButton = screen.getByRole("button", {
+				name: (_, element) => {
+					return element.querySelector(".codicon-edit") !== null
+				},
+			})
+
+			expect(editButton).toBeDisabled()
+		})
+
+		it("should disable cancel button when sendingDisabled is true", () => {
+			;(useExtensionState as ReturnType<typeof vi.fn>).mockReturnValue({
+				filePaths: [],
+				openedTabs: [],
+				taskHistory: [],
+				cwd: "/test/workspace",
+			})
+
+			render(<ChatTextArea {...defaultProps} isEditMode={true} sendingDisabled={true} />)
+
+			const cancelButton = screen.getByRole("button", { name: /cancel/i })
+			expect(cancelButton).toBeDisabled()
+		})
+
+		it("should have correct tooltip for edit button", () => {
+			;(useExtensionState as ReturnType<typeof vi.fn>).mockReturnValue({
+				filePaths: [],
+				openedTabs: [],
+				taskHistory: [],
+				cwd: "/test/workspace",
+			})
+
+			render(<ChatTextArea {...defaultProps} isEditMode={true} />)
+
+			const editButton = screen.getByRole("button", {
+				name: (_, element) => {
+					return element.querySelector(".codicon-edit") !== null
+				},
+			})
+
+			// Check that the button has the correct aria-label (which is used for tooltip)
+			expect(editButton).toHaveAttribute("aria-label", expect.stringMatching(/save/i))
+		})
+
+		it("should position cancel button correctly relative to camera button", () => {
+			;(useExtensionState as ReturnType<typeof vi.fn>).mockReturnValue({
+				filePaths: [],
+				openedTabs: [],
+				taskHistory: [],
+				cwd: "/test/workspace",
+			})
+
+			const { container } = render(<ChatTextArea {...defaultProps} isEditMode={true} />)
+
+			const cancelButton = screen.getByRole("button", { name: /cancel/i })
+			const cameraButton = screen.getByRole("button", {
+				name: (_, element) => {
+					return element.querySelector(".codicon-device-camera") !== null
+				},
+			})
+
+			// Both buttons should be in the same container (bottom toolbar)
+			const bottomToolbar = container.querySelector(".flex.items-center.gap-0\\.5.shrink-0")
+			expect(bottomToolbar).toContainElement(cancelButton)
+			expect(bottomToolbar).toContainElement(cameraButton)
+
+			// Cancel button should come before camera button in DOM order
+			const buttons = bottomToolbar?.querySelectorAll("button")
+			const cancelIndex = Array.from(buttons || []).indexOf(cancelButton as HTMLButtonElement)
+			const cameraIndex = Array.from(buttons || []).indexOf(cameraButton as HTMLButtonElement)
+			expect(cancelIndex).toBeLessThan(cameraIndex)
+		})
+	})
 })
