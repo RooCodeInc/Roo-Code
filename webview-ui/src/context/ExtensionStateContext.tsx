@@ -352,7 +352,17 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 
 	useEffect(() => {
 		vscode.postMessage({ type: "webviewDidLaunch" })
-	}, [])
+
+		// Set a timeout to prevent infinite loading if state message is never received
+		const loadingTimeout = setTimeout(() => {
+			if (!didHydrateState) {
+				console.warn("Webview state hydration timeout - forcing hydration to prevent infinite loading")
+				setDidHydrateState(true)
+			}
+		}, 10000) // 10 second timeout
+
+		return () => clearTimeout(loadingTimeout)
+	}, [didHydrateState])
 
 	const contextValue: ExtensionStateContextType = {
 		...state,

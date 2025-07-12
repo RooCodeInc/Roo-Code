@@ -252,14 +252,29 @@ export const webviewMessageHandler = async (
 
 	switch (message.type) {
 		case "webviewDidLaunch":
-			// Load custom modes first
-			const customModes = await provider.customModesManager.getCustomModes()
-			await updateGlobalState("customModes", customModes)
+			try {
+				// Load custom modes first
+				const customModes = await provider.customModesManager.getCustomModes()
+				await updateGlobalState("customModes", customModes)
 
-			provider.postStateToWebview()
-			provider.workspaceTracker?.initializeFilePaths() // Don't await.
+				// Ensure state is posted to webview - this is critical for preventing loading screen hang
+				await provider.postStateToWebview()
+				provider.workspaceTracker?.initializeFilePaths() // Don't await.
 
-			getTheme().then((theme) => provider.postMessageToWebview({ type: "theme", text: JSON.stringify(theme) }))
+				getTheme().then((theme) =>
+					provider.postMessageToWebview({ type: "theme", text: JSON.stringify(theme) }),
+				)
+			} catch (error) {
+				provider.log(`Error during webview launch: ${error instanceof Error ? error.message : String(error)}`)
+				// Even if there's an error, try to post state to prevent infinite loading
+				try {
+					await provider.postStateToWebview()
+				} catch (fallbackError) {
+					provider.log(
+						`Fallback state posting also failed: ${fallbackError instanceof Error ? fallbackError.message : String(fallbackError)}`,
+					)
+				}
+			}
 
 			// If MCP Hub is already initialized, update the webview with
 			// current server list.

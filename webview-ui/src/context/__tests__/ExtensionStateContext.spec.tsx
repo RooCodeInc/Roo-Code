@@ -244,4 +244,33 @@ describe("mergeExtensionState", () => {
 			multiFileApplyDiff: true,
 		})
 	})
+
+	it("forces hydration after timeout when state message is never received", async () => {
+		// Mock timers to control timeout behavior
+		vi.useFakeTimers()
+
+		const TestTimeoutComponent = () => {
+			const { didHydrateState } = useExtensionState()
+			return <div data-testid="hydration-state">{didHydrateState.toString()}</div>
+		}
+
+		render(
+			<ExtensionStateContextProvider>
+				<TestTimeoutComponent />
+			</ExtensionStateContextProvider>,
+		)
+
+		// Initially should not be hydrated
+		expect(screen.getByTestId("hydration-state").textContent).toBe("false")
+
+		// Fast-forward time by 10 seconds (the timeout duration)
+		act(() => {
+			vi.advanceTimersByTime(10000)
+		})
+
+		// Should now be hydrated due to timeout
+		expect(screen.getByTestId("hydration-state").textContent).toBe("true")
+
+		vi.useRealTimers()
+	})
 })
