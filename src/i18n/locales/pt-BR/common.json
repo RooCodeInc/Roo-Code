@@ -105,7 +105,8 @@
 		"organization_share_link_copied": "Link de compartilhamento da organização copiado para a área de transferência!",
 		"public_share_link_copied": "Link de compartilhamento público copiado para a área de transferência!",
 		"mode_exported": "Modo '{{mode}}' exportado com sucesso",
-		"mode_imported": "Modo importado com sucesso"
+		"mode_imported": "Modo importado com sucesso",
+		"command_whitelisted": "O padrão de comando '{{pattern}}' foi adicionado à lista de comandos permitidos"
 	},
 	"answers": {
 		"yes": "Sim",

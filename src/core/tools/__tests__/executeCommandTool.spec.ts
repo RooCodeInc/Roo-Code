@@ -52,7 +52,45 @@ beforeEach(() => {
 			return
 		}
 
-		const didApprove = await askApproval("command", block.params.command)
+		// Handle suggestions if provided
+		let commandWithSuggestions = block.params.command
+		if (block.params.suggestions) {
+			let suggestions = block.params.suggestions
+			// Handle both array and string formats
+			if (typeof suggestions === "string") {
+				const suggestionsString = suggestions
+
+				// First try to parse as JSON array
+				if (suggestionsString.trim().startsWith("[")) {
+					try {
+						suggestions = JSON.parse(suggestionsString)
+					} catch (jsonError) {
+						// Fall through to XML parsing
+					}
+				}
+
+				// If not JSON or JSON parsing failed, try to parse individual <suggest> tags
+				if (!Array.isArray(suggestions)) {
+					const individualSuggestMatches = suggestionsString.match(/<suggest>(.*?)<\/suggest>/g)
+					if (individualSuggestMatches) {
+						suggestions = individualSuggestMatches
+							.map((match) => {
+								const content = match.match(/<suggest>(.*?)<\/suggest>/)
+								return content ? content[1] : ""
+							})
+							.filter((suggestion) => suggestion.length > 0)
+					} else {
+						// If no XML tags found, treat as single suggestion
+						suggestions = [suggestions]
+					}
+				}
+			}
+			if (Array.isArray(suggestions) && suggestions.length > 0) {
+				commandWithSuggestions = `${block.params.command}\n<suggestions>\n${suggestions.join("\n")}\n</suggestions>`
+			}
+		}
+
+		const didApprove = await askApproval("command", commandWithSuggestions)
 		if (!didApprove) {
 			return
 		}
@@ -264,6 +302,239 @@ describe("executeCommandTool", () => {
 			expect(mockPushToolResult).toHaveBeenCalled()
 			expect(mockAskApproval).not.toHaveBeenCalled()
 			expect(mockExecuteCommand).not.toHaveBeenCalled()
+		})
+	})
+
+	describe("Suggestions functionality", () => {
+		it("should pass command with suggestions when suggestions are provided as array", async () => {
+			// Setup
+			mockToolUse.params.command = "npm install"
+			mockToolUse.params.suggestions = JSON.stringify([
+				"npm install --save",
+				"npm install --save-dev",
+				"npm install --global",
+			])
+
+			// Execute
+			await executeCommandTool(
+				mockCline as unknown as Task,
+				mockToolUse,
+				mockAskApproval as unknown as AskApproval,
+				mockHandleError as unknown as HandleError,
+				mockPushToolResult as unknown as PushToolResult,
+				mockRemoveClosingTag as unknown as RemoveClosingTag,
+			)
+
+			// Verify
+			const expectedCommandWithSuggestions = `npm install
+<suggestions>
+npm install --save
+npm install --save-dev
+npm install --global
+</suggestions>`
+			expect(mockAskApproval).toHaveBeenCalledWith("command", expectedCommandWithSuggestions)
+			expect(mockExecuteCommand).toHaveBeenCalled()
+			expect(mockPushToolResult).toHaveBeenCalledWith("Command executed")
+		})
+
+		it("should pass command with suggestions when suggestions are provided as JSON string", async () => {
+			// Setup
+			mockToolUse.params.command = "git commit"
+			mockToolUse.params.suggestions =
+				'["git commit -m \\"Initial commit\\"", "git commit --amend", "git commit --no-verify"]'
+
+			// Execute
+			await executeCommandTool(
+				mockCline as unknown as Task,
+				mockToolUse,
+				mockAskApproval as unknown as AskApproval,
+				mockHandleError as unknown as HandleError,
+				mockPushToolResult as unknown as PushToolResult,
+				mockRemoveClosingTag as unknown as RemoveClosingTag,
+			)
+
+			// Verify
+			const expectedCommandWithSuggestions = `git commit
+<suggestions>
+git commit -m "Initial commit"
+git commit --amend
+git commit --no-verify
+</suggestions>`
+			expect(mockAskApproval).toHaveBeenCalledWith("command", expectedCommandWithSuggestions)
+			expect(mockExecuteCommand).toHaveBeenCalled()
+			expect(mockPushToolResult).toHaveBeenCalledWith("Command executed")
+		})
+
+		it("should handle single suggestion as string", async () => {
+			// Setup
+			mockToolUse.params.command = "docker run"
+			mockToolUse.params.suggestions = "docker run -it ubuntu:latest"
+
+			// Execute
+			await executeCommandTool(
+				mockCline as unknown as Task,
+				mockToolUse,
+				mockAskApproval as unknown as AskApproval,
+				mockHandleError as unknown as HandleError,
+				mockPushToolResult as unknown as PushToolResult,
+				mockRemoveClosingTag as unknown as RemoveClosingTag,
+			)
+
+			// Verify
+			const expectedCommandWithSuggestions = `docker run
+<suggestions>
+docker run -it ubuntu:latest
+</suggestions>`
+			expect(mockAskApproval).toHaveBeenCalledWith("command", expectedCommandWithSuggestions)
+			expect(mockExecuteCommand).toHaveBeenCalled()
+			expect(mockPushToolResult).toHaveBeenCalledWith("Command executed")
+		})
+
+		it("should handle empty suggestions array", async () => {
+			// Setup
+			mockToolUse.params.command = "ls"
+			mockToolUse.params.suggestions = JSON.stringify([])
+
+			// Execute
+			await executeCommandTool(
+				mockCline as unknown as Task,
+				mockToolUse,
+				mockAskApproval as unknown as AskApproval,
+				mockHandleError as unknown as HandleError,
+				mockPushToolResult as unknown as PushToolResult,
+				mockRemoveClosingTag as unknown as RemoveClosingTag,
+			)
+
+			// Verify - should pass command without suggestions
+			expect(mockAskApproval).toHaveBeenCalledWith("command", "ls")
+			expect(mockExecuteCommand).toHaveBeenCalled()
+			expect(mockPushToolResult).toHaveBeenCalledWith("Command executed")
+		})
+
+		it("should handle invalid JSON string in suggestions", async () => {
+			// Setup
+			mockToolUse.params.command = "echo test"
+			mockToolUse.params.suggestions = "invalid json {"
+
+			// Execute
+			await executeCommandTool(
+				mockCline as unknown as Task,
+				mockToolUse,
+				mockAskApproval as unknown as AskApproval,
+				mockHandleError as unknown as HandleError,
+				mockPushToolResult as unknown as PushToolResult,
+				mockRemoveClosingTag as unknown as RemoveClosingTag,
+			)
+
+			// Verify - should treat invalid JSON as single suggestion
+			const expectedCommandWithSuggestions = `echo test
+<suggestions>
+invalid json {
+</suggestions>`
+			expect(mockAskApproval).toHaveBeenCalledWith("command", expectedCommandWithSuggestions)
+			expect(mockExecuteCommand).toHaveBeenCalled()
+			expect(mockPushToolResult).toHaveBeenCalledWith("Command executed")
+		})
+
+		it("should parse individual <suggest> XML tags correctly", async () => {
+			// Setup
+			mockToolUse.params.command = "npm install"
+			mockToolUse.params.suggestions =
+				"<suggest>npm install --save</suggest><suggest>npm install --save-dev</suggest><suggest>npm install --global</suggest>"
+
+			// Execute
+			await executeCommandTool(
+				mockCline as unknown as Task,
+				mockToolUse,
+				mockAskApproval as unknown as AskApproval,
+				mockHandleError as unknown as HandleError,
+				mockPushToolResult as unknown as PushToolResult,
+				mockRemoveClosingTag as unknown as RemoveClosingTag,
+			)
+
+			// Verify
+			const expectedCommandWithSuggestions = `npm install
+<suggestions>
+npm install --save
+npm install --save-dev
+npm install --global
+</suggestions>`
+			expect(mockAskApproval).toHaveBeenCalledWith("command", expectedCommandWithSuggestions)
+			expect(mockExecuteCommand).toHaveBeenCalled()
+			expect(mockPushToolResult).toHaveBeenCalledWith("Command executed")
+		})
+
+		it("should parse single <suggest> XML tag correctly", async () => {
+			// Setup
+			mockToolUse.params.command = "git push"
+			mockToolUse.params.suggestions = "<suggest>git push origin main</suggest>"
+
+			// Execute
+			await executeCommandTool(
+				mockCline as unknown as Task,
+				mockToolUse,
+				mockAskApproval as unknown as AskApproval,
+				mockHandleError as unknown as HandleError,
+				mockPushToolResult as unknown as PushToolResult,
+				mockRemoveClosingTag as unknown as RemoveClosingTag,
+			)
+
+			// Verify
+			const expectedCommandWithSuggestions = `git push
+<suggestions>
+git push origin main
+</suggestions>`
+			expect(mockAskApproval).toHaveBeenCalledWith("command", expectedCommandWithSuggestions)
+			expect(mockExecuteCommand).toHaveBeenCalled()
+			expect(mockPushToolResult).toHaveBeenCalledWith("Command executed")
+		})
+
+		it("should handle mixed content with <suggest> tags", async () => {
+			// Setup
+			mockToolUse.params.command = "docker run"
+			mockToolUse.params.suggestions =
+				"Some text before <suggest>docker run -it ubuntu</suggest> and <suggest>docker run -d nginx</suggest> with text after"
+
+			// Execute
+			await executeCommandTool(
+				mockCline as unknown as Task,
+				mockToolUse,
+				mockAskApproval as unknown as AskApproval,
+				mockHandleError as unknown as HandleError,
+				mockPushToolResult as unknown as PushToolResult,
+				mockRemoveClosingTag as unknown as RemoveClosingTag,
+			)
+
+			// Verify
+			const expectedCommandWithSuggestions = `docker run
+<suggestions>
+docker run -it ubuntu
+docker run -d nginx
+</suggestions>`
+			expect(mockAskApproval).toHaveBeenCalledWith("command", expectedCommandWithSuggestions)
+			expect(mockExecuteCommand).toHaveBeenCalled()
+			expect(mockPushToolResult).toHaveBeenCalledWith("Command executed")
+		})
+
+		it("should work normally when no suggestions are provided", async () => {
+			// Setup
+			mockToolUse.params.command = "pwd"
+			// No suggestions property
+
+			// Execute
+			await executeCommandTool(
+				mockCline as unknown as Task,
+				mockToolUse,
+				mockAskApproval as unknown as AskApproval,
+				mockHandleError as unknown as HandleError,
+				mockPushToolResult as unknown as PushToolResult,
+				mockRemoveClosingTag as unknown as RemoveClosingTag,
+			)
+
+			// Verify - should pass command without suggestions
+			expect(mockAskApproval).toHaveBeenCalledWith("command", "pwd")
+			expect(mockExecuteCommand).toHaveBeenCalled()
+			expect(mockPushToolResult).toHaveBeenCalledWith("Command executed")
 		})
 	})
 })

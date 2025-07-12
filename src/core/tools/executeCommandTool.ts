@@ -51,7 +51,54 @@ export async function executeCommandTool(
 			cline.consecutiveMistakeCount = 0
 
 			command = unescapeHtmlEntities(command) // Unescape HTML entities.
-			const didApprove = await askApproval("command", command)
+
+			// Parse suggestions if provided
+			let suggestions: string[] | undefined
+			if (block.params.suggestions) {
+				try {
+					// Handle if suggestions is already an array (from direct tool use)
+					if (Array.isArray(block.params.suggestions)) {
+						suggestions = block.params.suggestions
+					} else if (typeof block.params.suggestions === "string") {
+						const suggestionsString = block.params.suggestions
+
+						// First try to parse as JSON array
+						if (suggestionsString.trim().startsWith("[")) {
+							try {
+								const parsed = JSON.parse(suggestionsString)
+								if (Array.isArray(parsed)) {
+									suggestions = parsed
+								}
+							} catch (jsonError) {
+								// Fall through to XML parsing
+							}
+						}
+
+						// If not JSON or JSON parsing failed, try to parse individual <suggest> tags
+						if (!suggestions) {
+							const individualSuggestMatches = suggestionsString.match(/<suggest>(.*?)<\/suggest>/g)
+							if (individualSuggestMatches) {
+								suggestions = individualSuggestMatches
+									.map((match) => {
+										const content = match.match(/<suggest>(.*?)<\/suggest>/)
+										return content ? content[1] : ""
+									})
+									.filter((suggestion) => suggestion.length > 0)
+							}
+						}
+					}
+				} catch (e) {
+					// If parsing fails, ignore suggestions
+					console.warn("Failed to parse suggestions:", e)
+				}
+			}
+
+			// Pass suggestions as part of the command text in a structured format
+			const commandWithSuggestions = suggestions
+				? `${command}\n<suggestions>${JSON.stringify(suggestions)}</suggestions>`
+				: command
+
+			const didApprove = await askApproval("command", commandWithSuggestions)
 
 			if (!didApprove) {
 				return

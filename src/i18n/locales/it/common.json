@@ -101,7 +101,8 @@
 		"organization_share_link_copied": "Link di condivisione organizzazione copiato negli appunti!",
 		"public_share_link_copied": "Link di condivisione pubblica copiato negli appunti!",
 		"mode_exported": "Modalità '{{mode}}' esportata con successo",
-		"mode_imported": "Modalità importata con successo"
+		"mode_imported": "Modalità importata con successo",
+		"command_whitelisted": "Il modello di comando '{{pattern}}' è stato aggiunto all'elenco dei comandi consentiti"
 	},
 	"answers": {
 		"yes": "Sì",

@@ -190,6 +190,11 @@
 		"wantsToViewDefinitionsOutsideWorkspace": "Roo quiere ver nombres de definiciones de código fuente utilizados en este directorio (fuera del espacio de trabajo):",
 		"didViewDefinitionsOutsideWorkspace": "Roo vio nombres de definiciones de código fuente utilizados en este directorio (fuera del espacio de trabajo):"
 	},
+	"command": {
+		"addToWhitelist": "Añadir a los comandos de ejecución automática permitidos",
+		"whitelistDescription": "Selecciona patrones de comandos para aprobar automáticamente en el futuro:",
+		"addSelected": "Añadir patrones seleccionados"
+	},
 	"commandOutput": "Salida del comando",
 	"response": "Respuesta",
 	"arguments": "Argumentos",
@@ -318,5 +323,14 @@
 	},
 	"versionIndicator": {
 		"ariaLabel": "Versión {{version}} - Haz clic para ver las notas de la versión"
+	},
+	"commandExecution": {
+		"whitelistSuggestions": "Suggested patterns to whitelist for automatic approval:",
+		"running": "Running",
+		"pid": "PID: {{pid}}",
+		"exited": "Exited ({{exitCode}})",
+		"addToAllowedCommands": "Add to Allowed Auto-Execute Commands",
+		"allowAllNpmRun": "Allow all npm run commands",
+		"allowAllNpm": "Allow all npm commands"
 	}
 }

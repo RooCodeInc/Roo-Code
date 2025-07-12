@@ -105,7 +105,8 @@
 		"organization_share_link_copied": "Enllaç de compartició d'organització copiat al porta-retalls!",
 		"public_share_link_copied": "Enllaç de compartició pública copiat al porta-retalls!",
 		"mode_exported": "Mode '{{mode}}' exportat correctament",
-		"mode_imported": "Mode importat correctament"
+		"mode_imported": "Mode importat correctament",
+		"command_whitelisted": "El patró d'ordres '{{pattern}}' s'ha afegit a la llista d'ordres permeses"
 	},
 	"answers": {
 		"yes": "Sí",

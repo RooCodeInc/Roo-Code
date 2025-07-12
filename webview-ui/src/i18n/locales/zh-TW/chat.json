@@ -190,6 +190,11 @@
 		"wantsToViewDefinitionsOutsideWorkspace": "Roo 想要檢視此目錄（工作區外）中使用的原始碼定義名稱：",
 		"didViewDefinitionsOutsideWorkspace": "Roo 已檢視此目錄（工作區外）中使用的原始碼定義名稱："
 	},
+	"command": {
+		"addToWhitelist": "新增至允許的自動執行命令",
+		"whitelistDescription": "選取未來要自動核准的命令模式：",
+		"addSelected": "新增選取的模式"
+	},
 	"commandOutput": "命令輸出",
 	"response": "回應",
 	"arguments": "參數",
@@ -318,5 +323,14 @@
 	},
 	"versionIndicator": {
 		"ariaLabel": "版本 {{version}} - 點擊查看發布說明"
+	},
+	"commandExecution": {
+		"whitelistSuggestions": "建議的白名單模式，用於自動核准：",
+		"running": "執行中",
+		"pid": "PID: {{pid}}",
+		"exited": "已結束 ({{exitCode}})",
+		"addToAllowedCommands": "新增至允許的自動執行命令",
+		"allowAllNpmRun": "允許所有 npm run 命令",
+		"allowAllNpm": "允許所有 npm 命令"
 	}
 }

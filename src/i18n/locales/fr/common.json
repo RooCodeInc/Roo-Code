@@ -101,7 +101,8 @@
 		"organization_share_link_copied": "Lien de partage d'organisation copié dans le presse-papiers !",
 		"public_share_link_copied": "Lien de partage public copié dans le presse-papiers !",
 		"mode_exported": "Mode '{{mode}}' exporté avec succès",
-		"mode_imported": "Mode importé avec succès"
+		"mode_imported": "Mode importé avec succès",
+		"command_whitelisted": "Le modèle de commande '{{pattern}}' a été ajouté à la liste des commandes autorisées"
 	},
 	"answers": {
 		"yes": "Oui",

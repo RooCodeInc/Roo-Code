@@ -190,6 +190,11 @@
 		"wantsToViewDefinitionsOutsideWorkspace": "Roo vol veure noms de definicions de codi font utilitzats en aquest directori (fora de l'espai de treball):",
 		"didViewDefinitionsOutsideWorkspace": "Roo ha vist noms de definicions de codi font utilitzats en aquest directori (fora de l'espai de treball):"
 	},
+	"command": {
+		"addToWhitelist": "Afegeix a les ordres d'execució automàtica permeses",
+		"whitelistDescription": "Seleccioneu els patrons d'ordres per aprovar-los automàticament en el futur:",
+		"addSelected": "Afegeix els patrons seleccionats"
+	},
 	"commandOutput": "Sortida de l'ordre",
 	"response": "Resposta",
 	"arguments": "Arguments",
@@ -318,5 +323,14 @@
 	},
 	"versionIndicator": {
 		"ariaLabel": "Versió {{version}} - Feu clic per veure les notes de llançament"
+	},
+	"commandExecution": {
+		"whitelistSuggestions": "Suggested patterns to whitelist for automatic approval:",
+		"running": "Running",
+		"pid": "PID: {{pid}}",
+		"exited": "Exited ({{exitCode}})",
+		"addToAllowedCommands": "Add to Allowed Auto-Execute Commands",
+		"allowAllNpmRun": "Allow all npm run commands",
+		"allowAllNpm": "Allow all npm commands"
 	}
 }

@@ -190,6 +190,11 @@
 		"wantsToViewDefinitionsOutsideWorkspace": "Roo가 이 디렉토리(워크스페이스 외부)에서 사용된 소스 코드 정의 이름을 보고 싶어합니다:",
 		"didViewDefinitionsOutsideWorkspace": "Roo가 이 디렉토리(워크스페이스 외부)에서 사용된 소스 코드 정의 이름을 보았습니다:"
 	},
+	"command": {
+		"addToWhitelist": "허용된 자동 실행 명령에 추가",
+		"whitelistDescription": "이후에 자동으로 승인할 명령 패턴을 선택하세요:",
+		"addSelected": "선택한 패턴 추가"
+	},
 	"commandOutput": "명령 출력",
 	"response": "응답",
 	"arguments": "인수",
@@ -318,5 +323,14 @@
 	},
 	"versionIndicator": {
 		"ariaLabel": "버전 {{version}} - 릴리스 노트를 보려면 클릭하세요"
+	},
+	"commandExecution": {
+		"whitelistSuggestions": "Suggested patterns to whitelist for automatic approval:",
+		"running": "Running",
+		"pid": "PID: {{pid}}",
+		"exited": "Exited ({{exitCode}})",
+		"addToAllowedCommands": "Add to Allowed Auto-Execute Commands",
+		"allowAllNpmRun": "Allow all npm run commands",
+		"allowAllNpm": "Allow all npm commands"
 	}
 }

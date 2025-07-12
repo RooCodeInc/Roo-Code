@@ -190,6 +190,11 @@
 		"wantsToViewDefinitionsOutsideWorkspace": "Roo想查看此目录中使用的源代码定义名称（工作区外）:",
 		"didViewDefinitionsOutsideWorkspace": "Roo已查看此目录中使用的源代码定义名称（工作区外）:"
 	},
+	"command": {
+		"addToWhitelist": "添加到允许的自动执行命令",
+		"whitelistDescription": "选择将来要自动批准的命令模式：",
+		"addSelected": "添加选定的模式"
+	},
 	"commandOutput": "命令输出",
 	"response": "响应",
 	"arguments": "参数",
@@ -318,5 +323,14 @@
 	},
 	"versionIndicator": {
 		"ariaLabel": "版本 {{version}} - 点击查看发布说明"
+	},
+	"commandExecution": {
+		"whitelistSuggestions": "建议的白名单模式，用于自动批准：",
+		"running": "运行中",
+		"pid": "PID: {{pid}}",
+		"exited": "已退出 ({{exitCode}})",
+		"addToAllowedCommands": "添加到允许的自动执行命令",
+		"allowAllNpmRun": "允许所有 npm run 命令",
+		"allowAllNpm": "允许所有 npm 命令"
 	}
 }

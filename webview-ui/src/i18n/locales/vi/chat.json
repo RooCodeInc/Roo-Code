@@ -190,6 +190,11 @@
 		"wantsToViewDefinitionsOutsideWorkspace": "Roo muốn xem tên định nghĩa mã nguồn được sử dụng trong thư mục này (ngoài không gian làm việc):",
 		"didViewDefinitionsOutsideWorkspace": "Roo đã xem tên định nghĩa mã nguồn được sử dụng trong thư mục này (ngoài không gian làm việc):"
 	},
+	"command": {
+		"addToWhitelist": "Thêm vào các lệnh được phép tự động thực thi",
+		"whitelistDescription": "Chọn các mẫu lệnh để tự động phê duyệt trong tương lai:",
+		"addSelected": "Thêm các mẫu đã chọn"
+	},
 	"commandOutput": "Kết quả lệnh",
 	"response": "Phản hồi",
 	"arguments": "Tham số",
@@ -318,5 +323,14 @@
 	},
 	"versionIndicator": {
 		"ariaLabel": "Phiên bản {{version}} - Nhấp để xem ghi chú phát hành"
+	},
+	"commandExecution": {
+		"whitelistSuggestions": "Suggested patterns to whitelist for automatic approval:",
+		"running": "Running",
+		"pid": "PID: {{pid}}",
+		"exited": "Exited ({{exitCode}})",
+		"addToAllowedCommands": "Add to Allowed Auto-Execute Commands",
+		"allowAllNpmRun": "Allow all npm run commands",
+		"allowAllNpm": "Allow all npm commands"
 	}
 }

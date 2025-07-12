@@ -101,7 +101,8 @@
 		"image_copied_to_clipboard": "Image data URI copied to clipboard",
 		"image_saved": "Image saved to {{path}}",
 		"mode_exported": "Mode '{{mode}}' exported successfully",
-		"mode_imported": "Mode imported successfully"
+		"mode_imported": "Mode imported successfully",
+		"command_whitelisted": "Command pattern '{{pattern}}' has been added to the allowed commands list"
 	},
 	"answers": {
 		"yes": "Yes",

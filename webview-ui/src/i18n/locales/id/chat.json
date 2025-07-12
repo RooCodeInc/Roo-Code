@@ -212,6 +212,11 @@
 		"didSearch_other": "Ditemukan {{count}} hasil",
 		"resultTooltip": "Skor kemiripan: {{score}} (klik untuk membuka file)"
 	},
+	"command": {
+		"addToWhitelist": "Tambahkan ke Perintah Eksekusi Otomatis yang Diizinkan",
+		"whitelistDescription": "Pilih pola perintah untuk disetujui secara otomatis di masa mendatang:",
+		"addSelected": "Tambahkan Pola yang Dipilih"
+	},
 	"commandOutput": "Output Perintah",
 	"response": "Respons",
 	"arguments": "Argumen",
@@ -324,5 +329,14 @@
 	},
 	"versionIndicator": {
 		"ariaLabel": "Versi {{version}} - Klik untuk melihat catatan rilis"
+	},
+	"commandExecution": {
+		"whitelistSuggestions": "Suggested patterns to whitelist for automatic approval:",
+		"running": "Running",
+		"pid": "PID: {{pid}}",
+		"exited": "Exited ({{exitCode}})",
+		"addToAllowedCommands": "Add to Allowed Auto-Execute Commands",
+		"allowAllNpmRun": "Allow all npm run commands",
+		"allowAllNpm": "Allow all npm commands"
 	}
 }

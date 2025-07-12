@@ -101,7 +101,8 @@
 		"organization_share_link_copied": "Tautan berbagi organisasi disalin ke clipboard!",
 		"public_share_link_copied": "Tautan berbagi publik disalin ke clipboard!",
 		"mode_exported": "Mode '{{mode}}' berhasil diekspor",
-		"mode_imported": "Mode berhasil diimpor"
+		"mode_imported": "Mode berhasil diimpor",
+		"command_whitelisted": "Pola perintah '{{pattern}}' telah ditambahkan ke daftar perintah yang diizinkan"
 	},
 	"answers": {
 		"yes": "Ya",

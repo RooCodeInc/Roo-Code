@@ -101,7 +101,8 @@
 		"organization_share_link_copied": "Organisations-Freigabelink in die Zwischenablage kopiert!",
 		"public_share_link_copied": "Öffentlicher Freigabelink in die Zwischenablage kopiert!",
 		"mode_exported": "Modus '{{mode}}' erfolgreich exportiert",
-		"mode_imported": "Modus erfolgreich importiert"
+		"mode_imported": "Modus erfolgreich importiert",
+		"command_whitelisted": "Befehlsmuster '{{pattern}}' wurde zur Liste der erlaubten Befehle hinzugefügt"
 	},
 	"answers": {
 		"yes": "Ja",

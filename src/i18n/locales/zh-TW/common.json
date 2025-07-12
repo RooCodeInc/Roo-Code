@@ -101,7 +101,8 @@
 		"organization_share_link_copied": "組織分享連結已複製到剪貼簿！",
 		"public_share_link_copied": "公開分享連結已複製到剪貼簿！",
 		"mode_exported": "模式 '{{mode}}' 已成功匯出",
-		"mode_imported": "模式已成功匯入"
+		"mode_imported": "模式已成功匯入",
+		"command_whitelisted": "命令模式 '{{pattern}}' 已新增至允許的命令清單中"
 	},
 	"answers": {
 		"yes": "是",

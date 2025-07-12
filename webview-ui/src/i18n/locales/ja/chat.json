@@ -190,6 +190,11 @@
 		"wantsToViewDefinitionsOutsideWorkspace": "Rooはこのディレクトリ（ワークスペース外）で使用されているソースコード定義名を表示したい:",
 		"didViewDefinitionsOutsideWorkspace": "Rooはこのディレクトリ（ワークスペース外）で使用されているソースコード定義名を表示しました:"
 	},
+	"command": {
+		"addToWhitelist": "許可された自動実行コマンドに追加",
+		"whitelistDescription": "今後自動的に承認するコマンドパターンを選択してください:",
+		"addSelected": "選択したパターンを追加"
+	},
 	"commandOutput": "コマンド出力",
 	"response": "応答",
 	"arguments": "引数",
@@ -318,5 +323,14 @@
 	},
 	"versionIndicator": {
 		"ariaLabel": "バージョン {{version}} - クリックしてリリースノートを表示"
+	},
+	"commandExecution": {
+		"whitelistSuggestions": "Suggested patterns to whitelist for automatic approval:",
+		"running": "Running",
+		"pid": "PID: {{pid}}",
+		"exited": "Exited ({{exitCode}})",
+		"addToAllowedCommands": "Add to Allowed Auto-Execute Commands",
+		"allowAllNpmRun": "Allow all npm run commands",
+		"allowAllNpm": "Allow all npm commands"
 	}
 }
