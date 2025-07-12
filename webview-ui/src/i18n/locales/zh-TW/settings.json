@@ -280,6 +280,34 @@
 		"cacheUsageNote": "注意：如果您沒有看到快取使用情況，請嘗試選擇其他模型，然後重新選擇您想要的模型。",
 		"vscodeLmModel": "語言模型",
 		"vscodeLmWarning": "注意：此整合功能仍處於實驗階段，各供應商的支援程度可能不同。如果出現模型不支援的錯誤，通常是供應商方面的問題。",
+		"geminiParameters": {
+			"topK": {
+				"title": "Top K",
+				"description": "控制要考慮的最高機率代幣數量。"
+			},
+			"topP": {
+				"title": "Top P",
+				"description": "控制生成時累積機率閾值。"
+			},
+			"maxOutputTokens": {
+				"title": "最大輸出代幣",
+				"description": "控制模型可返回的最大代幣數量。"
+			},
+			"urlContext": {
+				"title": "啟用 URL 上下文",
+				"description": "允許在生成期間從提供的 URL 獲取頁面內容並將其包含在上下文中。"
+			},
+			"groundingSearch": {
+				"title": "啟用使用 Google 搜索進行基礎支持",
+				"description": "在生成期間使用 Google 搜索以獲取最新資訊並將其包含在上下文中。"
+			}
+		},
+		"geminiSections": {
+			"modelParameters": {
+				"title": "進階設定",
+				"description": "調整溫度、top-p 和其他進階設定。"
+			}
+		},
 		"googleCloudSetup": {
 			"title": "要使用 Google Cloud Vertex AI，您需要：",
 			"step1": "1. 建立 Google Cloud 帳戶，啟用 Vertex AI API 並啟用所需的 Claude 模型。",

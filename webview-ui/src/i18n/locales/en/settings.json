@@ -280,6 +280,34 @@
 		"cacheUsageNote": "Note: If you don't see cache usage, try selecting a different model and then selecting your desired model again.",
 		"vscodeLmModel": "Language Model",
 		"vscodeLmWarning": "Note: This is a very experimental integration and provider support will vary. If you get an error about a model not being supported, that's an issue on the provider's end.",
+		"geminiSections": {
+			"modelParameters": {
+				"title": "Advanced Settings",
+				"description": "Fine-tune topP, topK and maxOutputTokens"
+			}
+		},
+		"geminiParameters": {
+			"topK": {
+				"title": "Top K",
+				"description": "Controls the number of highest probability tokens to consider for each step. Higher values increase diversity, lower values make output more focused and deterministic."
+			},
+			"topP": {
+				"title": "Top P",
+				"description": "Controls the cumulative probability of tokens to consider (nucleus sampling). Values closer to 1.0 increase diversity, while lower values make output more focused."
+			},
+			"maxOutputTokens": {
+				"title": "Max Output Tokens",
+				"description": "Maximum number of tokens the model can generate in a single response. Higher values allow longer responses but increase token usage and costs."
+			},
+			"urlContext": {
+				"title": "Enable URL Context",
+				"description": "Allows Gemini to access and process URLs for additional context when generating responses. Useful for tasks requiring web content analysis."
+			},
+			"groundingSearch": {
+				"title": "Enable Grounding with Google Search",
+				"description": "Enables Gemini to search Google for current information and ground responses in real-time data. Useful for queries requiring up-to-date information."
+			}
+		},
 		"googleCloudSetup": {
 			"title": "To use Google Cloud Vertex AI, you need to:",
 			"step1": "1. Create a Google Cloud account, enable the Vertex AI API & enable the desired Claude models.",
