@@ -919,7 +919,24 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 
 	const isAutoApproved = useCallback(
 		(message: ClineMessage | undefined) => {
+			// First check if auto-approval is enabled AND we have at least one permission
 			if (!autoApprovalEnabled || !message || message.type !== "ask") {
+				return false
+			}
+
+			// Check if ANY auto-approve option is enabled
+			const hasAnyAutoApproveEnabled =
+				alwaysAllowReadOnly ||
+				alwaysAllowWrite ||
+				alwaysAllowBrowser ||
+				alwaysAllowExecute ||
+				alwaysAllowMcp ||
+				alwaysAllowModeSwitch ||
+				alwaysAllowSubtasks ||
+				alwaysAllowFollowupQuestions ||
+				alwaysAllowUpdateTodoList
+
+			if (!hasAnyAutoApproveEnabled) {
 				return false
 			}
 

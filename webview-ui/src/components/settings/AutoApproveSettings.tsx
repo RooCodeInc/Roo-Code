@@ -1,15 +1,17 @@
-import { HTMLAttributes, useState } from "react"
+import { HTMLAttributes, useState, useMemo } from "react"
 import { X } from "lucide-react"
 
 import { useAppTranslation } from "@/i18n/TranslationContext"
 import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
 import { vscode } from "@/utils/vscode"
-import { Button, Input, Slider } from "@/components/ui"
+import { Button, Input, Slider, StandardTooltip } from "@/components/ui"
 
 import { SetCachedStateField } from "./types"
 import { SectionHeader } from "./SectionHeader"
 import { Section } from "./Section"
 import { AutoApproveToggle } from "./AutoApproveToggle"
+import { useExtensionState } from "@/context/ExtensionStateContext"
+import { useAutoApprovalState } from "@/hooks/useAutoApprovalState"
 
 type AutoApproveSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	alwaysAllowReadOnly?: boolean
@@ -73,6 +75,36 @@ export const AutoApproveSettings = ({
 }: AutoApproveSettingsProps) => {
 	const { t } = useAppTranslation()
 	const [commandInput, setCommandInput] = useState("")
+	const { autoApprovalEnabled, setAutoApprovalEnabled } = useExtensionState()
+
+	const toggles = useMemo(
+		() => ({
+			alwaysAllowReadOnly,
+			alwaysAllowWrite,
+			alwaysAllowExecute,
+			alwaysAllowBrowser,
+			alwaysAllowMcp,
+			alwaysAllowModeSwitch,
+			alwaysAllowSubtasks,
+			alwaysApproveResubmit,
+			alwaysAllowFollowupQuestions,
+			alwaysAllowUpdateTodoList,
+		}),
+		[
+			alwaysAllowReadOnly,
+			alwaysAllowWrite,
+			alwaysAllowExecute,
+			alwaysAllowBrowser,
+			alwaysAllowMcp,
+			alwaysAllowModeSwitch,
+			alwaysAllowSubtasks,
+			alwaysApproveResubmit,
+			alwaysAllowFollowupQuestions,
+			alwaysAllowUpdateTodoList,
+		],
+	)
+
+	const { hasEnabledOptions, effectiveAutoApprovalEnabled } = useAutoApprovalState(toggles, autoApprovalEnabled)
 
 	const handleAddCommand = () => {
 		const currentCommands = allowedCommands ?? []
@@ -89,6 +121,25 @@ export const AutoApproveSettings = ({
 		<div {...props}>
 			<SectionHeader description={t("settings:autoApprove.description")}>
 				<div className="flex items-center gap-2">
+					<StandardTooltip content={!hasEnabledOptions ? t("chat:autoApprove.selectOptionsFirst") : ""}>
+						<VSCodeCheckbox
+							checked={effectiveAutoApprovalEnabled}
+							disabled={!hasEnabledOptions}
+							aria-label={
+								hasEnabledOptions
+									? t("settings:autoApprove.toggleAriaLabel")
+									: t("settings:autoApprove.disabledAriaLabel")
+							}
+							onChange={() => {
+								if (!hasEnabledOptions) {
+									return
+								}
+								const newValue = !(autoApprovalEnabled ?? false)
+								setAutoApprovalEnabled(newValue)
+								vscode.postMessage({ type: "autoApprovalEnabled", bool: newValue })
+							}}
+						/>
+					</StandardTooltip>
 					<span className="codicon codicon-check w-4" />
 					<div>{t("settings:sections.autoApprove")}</div>
 				</div>
