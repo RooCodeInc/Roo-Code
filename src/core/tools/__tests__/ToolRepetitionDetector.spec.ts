@@ -302,4 +302,213 @@ describe("ToolRepetitionDetector", () => {
 			expect(result3.askUser).toBeDefined()
 		})
 	})
+
+	// ===== Non-Continuous Pattern Detection tests =====
+	describe("non-continuous pattern detection", () => {
+		it("should detect ABAB pattern repetition", () => {
+			const detector = new ToolRepetitionDetector(5) // Set high limit to focus on pattern detection
+
+			// Create ABAB pattern
+			detector.check(createToolUse("toolA", "toolA"))
+			detector.check(createToolUse("toolB", "toolB"))
+			detector.check(createToolUse("toolA", "toolA"))
+			const result = detector.check(createToolUse("toolB", "toolB"))
+
+			expect(result.allowExecution).toBe(false)
+			expect(result.askUser).toBeDefined()
+			expect(result.askUser?.messageKey).toBe("mistake_limit_reached")
+		})
+
+		it("should detect ABCABC pattern repetition", () => {
+			const detector = new ToolRepetitionDetector(10) // Set high limit to focus on pattern detection
+
+			// Create ABCABC pattern
+			detector.check(createToolUse("toolA", "toolA"))
+			detector.check(createToolUse("toolB", "toolB"))
+			detector.check(createToolUse("toolC", "toolC"))
+			detector.check(createToolUse("toolA", "toolA"))
+			detector.check(createToolUse("toolB", "toolB"))
+			const result = detector.check(createToolUse("toolC", "toolC"))
+
+			expect(result.allowExecution).toBe(false)
+			expect(result.askUser).toBeDefined()
+		})
+
+		it("should detect ABAB pattern (2 repetitions)", () => {
+			const detector = new ToolRepetitionDetector(10)
+
+			// Create ABAB pattern (2 repetitions of AB)
+			// First AB
+			detector.check(createToolUse("toolA", "toolA"))
+			detector.check(createToolUse("toolB", "toolB"))
+			// Second AB - should trigger after completing the second repetition
+			detector.check(createToolUse("toolA", "toolA"))
+			const result = detector.check(createToolUse("toolB", "toolB"))
+
+			expect(result.allowExecution).toBe(false)
+			expect(result.askUser).toBeDefined()
+		})
+
+		it("should not detect pattern with insufficient repetitions", () => {
+			const detector = new ToolRepetitionDetector(10)
+
+			// Create AB pattern only once (not enough repetitions)
+			const result1 = detector.check(createToolUse("toolA", "toolA"))
+			const result2 = detector.check(createToolUse("toolB", "toolB"))
+
+			expect(result1.allowExecution).toBe(true)
+			expect(result2.allowExecution).toBe(true)
+		})
+
+		it("should allow different tools without pattern", () => {
+			const detector = new ToolRepetitionDetector(10)
+
+			// Create sequence without repetitive pattern
+			const result1 = detector.check(createToolUse("toolA", "toolA"))
+			const result2 = detector.check(createToolUse("toolB", "toolB"))
+			const result3 = detector.check(createToolUse("toolC", "toolC"))
+			const result4 = detector.check(createToolUse("toolD", "toolD"))
+
+			expect(result1.allowExecution).toBe(true)
+			expect(result2.allowExecution).toBe(true)
+			expect(result3.allowExecution).toBe(true)
+			expect(result4.allowExecution).toBe(true)
+		})
+
+		it("should detect pattern with different parameters", () => {
+			const detector = new ToolRepetitionDetector(10)
+
+			// Create ABAB pattern with different parameters
+			detector.check(createToolUse("read_file", "read_file", { path: "file1.ts" }))
+			detector.check(createToolUse("write_to_file", "write_to_file", { path: "file2.ts", content: "test" }))
+			detector.check(createToolUse("read_file", "read_file", { path: "file1.ts" }))
+			const result = detector.check(
+				createToolUse("write_to_file", "write_to_file", { path: "file2.ts", content: "test" }),
+			)
+
+			expect(result.allowExecution).toBe(false)
+			expect(result.askUser).toBeDefined()
+		})
+
+		it("should reset pattern detection after limit reached", () => {
+			const detector = new ToolRepetitionDetector(10)
+
+			// Create ABAB pattern to trigger detection
+			detector.check(createToolUse("toolA", "toolA"))
+			detector.check(createToolUse("toolB", "toolB"))
+			detector.check(createToolUse("toolA", "toolA"))
+			const limitResult = detector.check(createToolUse("toolB", "toolB"))
+			expect(limitResult.allowExecution).toBe(false)
+
+			// After reset, should allow new tools
+			const result = detector.check(createToolUse("toolC", "toolC"))
+			expect(result.allowExecution).toBe(true)
+		})
+
+		it("should handle complex patterns like ABCDEFABCDEF", () => {
+			const detector = new ToolRepetitionDetector(15)
+
+			// Create ABCDEFABCDEF pattern
+			const tools = ["toolA", "toolB", "toolC", "toolD", "toolE", "toolF"]
+
+			// First iteration
+			for (const tool of tools) {
+				detector.check(createToolUse(tool, tool))
+			}
+
+			// Second iteration - should trigger on the last tool
+			for (let i = 0; i < tools.length - 1; i++) {
+				detector.check(createToolUse(tools[i], tools[i]))
+			}
+
+			const result = detector.check(createToolUse(tools[tools.length - 1], tools[tools.length - 1]))
+			expect(result.allowExecution).toBe(false)
+			expect(result.askUser).toBeDefined()
+		})
+
+		it("should not detect pattern when tools are similar but not identical", () => {
+			const detector = new ToolRepetitionDetector(10)
+
+			// Create similar but not identical pattern - different tools entirely
+			detector.check(createToolUse("read_file", "read_file", { path: "file1.ts" }))
+			detector.check(createToolUse("write_to_file", "write_to_file", { path: "file2.ts" })) // Different tool
+			detector.check(createToolUse("read_file", "read_file", { path: "file1.ts" }))
+			const result = detector.check(createToolUse("list_files", "list_files", { path: "." })) // Different tool
+
+			expect(result.allowExecution).toBe(true) // Should allow since tools are different
+		})
+
+		it("should detect pattern when same tool has different parameters in repetitive sequence", () => {
+			const detector = new ToolRepetitionDetector(10)
+
+			// Create pattern with same tool but different parameters - this IS a repetitive pattern
+			detector.check(createToolUse("read_file", "read_file", { path: "file1.ts" }))
+			detector.check(createToolUse("read_file", "read_file", { path: "file2.ts" })) // Different parameter
+			detector.check(createToolUse("read_file", "read_file", { path: "file1.ts" }))
+			const result = detector.check(createToolUse("read_file", "read_file", { path: "file2.ts" }))
+
+			expect(result.allowExecution).toBe(false) // Should detect pattern even with different parameters
+			expect(result.askUser).toBeDefined()
+		})
+
+		it("should handle edge case with minimum pattern length", () => {
+			const detector = new ToolRepetitionDetector(10)
+
+			// Test minimum pattern length (2)
+			detector.check(createToolUse("toolA", "toolA"))
+			detector.check(createToolUse("toolB", "toolB"))
+			detector.check(createToolUse("toolA", "toolA"))
+			const result = detector.check(createToolUse("toolB", "toolB"))
+
+			expect(result.allowExecution).toBe(false)
+			expect(result.askUser).toBeDefined()
+		})
+	})
+
+	// ===== Integration tests for both consecutive and pattern detection =====
+	describe("integration: consecutive and pattern detection", () => {
+		it("should prioritize consecutive detection over pattern detection", () => {
+			const detector = new ToolRepetitionDetector(2)
+
+			// This should trigger consecutive detection before pattern detection
+			detector.check(createToolUse("toolA", "toolA"))
+			const result = detector.check(createToolUse("toolA", "toolA"))
+
+			expect(result.allowExecution).toBe(false)
+			expect(result.askUser).toBeDefined()
+		})
+
+		it("should detect patterns when consecutive limit is higher", () => {
+			const detector = new ToolRepetitionDetector(10) // High consecutive limit
+
+			// Create ABAB pattern - should be caught by pattern detection
+			detector.check(createToolUse("toolA", "toolA"))
+			detector.check(createToolUse("toolB", "toolB"))
+			detector.check(createToolUse("toolA", "toolA"))
+			const result = detector.check(createToolUse("toolB", "toolB"))
+
+			expect(result.allowExecution).toBe(false)
+			expect(result.askUser).toBeDefined()
+		})
+
+		it("should work correctly after multiple resets", () => {
+			const detector = new ToolRepetitionDetector(2)
+
+			// First reset via consecutive detection
+			detector.check(createToolUse("toolA", "toolA"))
+			const firstLimit = detector.check(createToolUse("toolA", "toolA"))
+			expect(firstLimit.allowExecution).toBe(false)
+
+			// Second reset via pattern detection
+			detector.check(createToolUse("toolB", "toolB"))
+			detector.check(createToolUse("toolC", "toolC"))
+			detector.check(createToolUse("toolB", "toolB"))
+			const secondLimit = detector.check(createToolUse("toolC", "toolC"))
+			expect(secondLimit.allowExecution).toBe(false)
+
+			// Should work normally after resets
+			const result = detector.check(createToolUse("toolD", "toolD"))
+			expect(result.allowExecution).toBe(true)
+		})
+	})
 })
