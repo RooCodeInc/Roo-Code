@@ -105,6 +105,7 @@ export enum ContextMenuOptionType {
 	Git = "git",
 	NoResults = "noResults",
 	Mode = "mode", // Add mode type
+	EditorContext = "editorContext", // Add editor context type
 }
 
 export interface ContextMenuQueryItem {
@@ -192,6 +193,7 @@ export function getContextMenuOptions(
 		}
 
 		return [
+			{ type: ContextMenuOptionType.EditorContext },
 			{ type: ContextMenuOptionType.Problems },
 			{ type: ContextMenuOptionType.Terminal },
 			{ type: ContextMenuOptionType.URL },

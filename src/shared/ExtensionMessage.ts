@@ -105,8 +105,16 @@ export interface ExtensionMessage {
 		| "shareTaskSuccess"
 		| "codeIndexSettingsSaved"
 		| "codeIndexSecretStatus"
+		| "editorContext"
 	text?: string
 	payload?: any // Add a generic payload for now, can refine later
+	editorContext?: {
+		filePath?: string
+		selectedText?: string
+		startLine?: number
+		endLine?: number
+		diagnostics?: any[]
+	}
 	action?:
 		| "chatButtonClicked"
 		| "mcpButtonClicked"

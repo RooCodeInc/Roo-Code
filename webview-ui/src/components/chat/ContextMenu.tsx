@@ -91,6 +91,8 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 				return <span>Problems</span>
 			case ContextMenuOptionType.Terminal:
 				return <span>Terminal</span>
+			case ContextMenuOptionType.EditorContext:
+				return <span>Current Editor Context</span>
 			case ContextMenuOptionType.URL:
 				return <span>Paste URL to fetch contents</span>
 			case ContextMenuOptionType.NoResults:
@@ -173,6 +175,8 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 				return "warning"
 			case ContextMenuOptionType.Terminal:
 				return "terminal"
+			case ContextMenuOptionType.EditorContext:
+				return "edit"
 			case ContextMenuOptionType.URL:
 				return "link"
 			case ContextMenuOptionType.Git:

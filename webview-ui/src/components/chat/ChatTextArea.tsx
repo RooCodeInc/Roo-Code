@@ -96,6 +96,21 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 		const [fileSearchResults, setFileSearchResults] = useState<SearchResult[]>([])
 		const [searchLoading, setSearchLoading] = useState(false)
 		const [searchRequestId, setSearchRequestId] = useState<string>("")
+		const [isDraggingOver, setIsDraggingOver] = useState(false)
+		const [textAreaBaseHeight, setTextAreaBaseHeight] = useState<number | undefined>(undefined)
+		const [showContextMenu, setShowContextMenu] = useState(false)
+		const [cursorPosition, setCursorPosition] = useState(0)
+		const [searchQuery, setSearchQuery] = useState("")
+		const textAreaRef = useRef<HTMLTextAreaElement | null>(null)
+		const [isMouseDownOnMenu, setIsMouseDownOnMenu] = useState(false)
+		const highlightLayerRef = useRef<HTMLDivElement>(null)
+		const [selectedMenuIndex, setSelectedMenuIndex] = useState(-1)
+		const [selectedType, setSelectedType] = useState<ContextMenuOptionType | null>(null)
+		const [justDeletedSpaceAfterMention, setJustDeletedSpaceAfterMention] = useState(false)
+		const [intendedCursorPosition, setIntendedCursorPosition] = useState<number | null>(null)
+		const contextMenuContainerRef = useRef<HTMLDivElement>(null)
+		const [isEnhancingPrompt, setIsEnhancingPrompt] = useState(false)
+		const [isFocused, setIsFocused] = useState(false)
 
 		// Close dropdown when clicking outside.
 		useEffect(() => {
@@ -135,28 +150,63 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					if (message.requestId === searchRequestId) {
 						setFileSearchResults(message.results || [])
 					}
+				} else if (message.type === "editorContext") {
+					// Handle editor context response
+					if (message.editorContext && textAreaRef.current) {
+						const editorContext = message.editorContext
+						let insertValue = ""
+
+						if (editorContext.filePath) {
+							// Format: filename:startLine-endLine (selected text preview)
+							const fileName = editorContext.filePath.split("/").pop() || editorContext.filePath
+							let contextText = fileName
+
+							if (editorContext.startLine !== undefined) {
+								if (
+									editorContext.endLine !== undefined &&
+									editorContext.endLine !== editorContext.startLine
+								) {
+									contextText += `:${editorContext.startLine}-${editorContext.endLine}`
+								} else {
+									contextText += `:${editorContext.startLine}`
+								}
+							}
+
+							if (editorContext.selectedText && editorContext.selectedText.trim()) {
+								const preview = editorContext.selectedText.trim().substring(0, 50)
+								contextText += ` (${preview}${editorContext.selectedText.length > 50 ? "..." : ""})`
+							}
+
+							insertValue = contextText
+						} else {
+							insertValue = "current-editor"
+						}
+
+						const { newValue, mentionIndex } = insertMention(
+							textAreaRef.current.value,
+							cursorPosition,
+							insertValue,
+						)
+
+						setInputValue(newValue)
+						const newCursorPosition = newValue.indexOf(" ", mentionIndex + insertValue.length) + 1
+						setCursorPosition(newCursorPosition)
+						setIntendedCursorPosition(newCursorPosition)
+
+						// Scroll to cursor
+						setTimeout(() => {
+							if (textAreaRef.current) {
+								textAreaRef.current.blur()
+								textAreaRef.current.focus()
+							}
+						}, 0)
+					}
 				}
 			}
 
 			window.addEventListener("message", messageHandler)
 			return () => window.removeEventListener("message", messageHandler)
-		}, [setInputValue, searchRequestId])
-
-		const [isDraggingOver, setIsDraggingOver] = useState(false)
-		const [textAreaBaseHeight, setTextAreaBaseHeight] = useState<number | undefined>(undefined)
-		const [showContextMenu, setShowContextMenu] = useState(false)
-		const [cursorPosition, setCursorPosition] = useState(0)
-		const [searchQuery, setSearchQuery] = useState("")
-		const textAreaRef = useRef<HTMLTextAreaElement | null>(null)
-		const [isMouseDownOnMenu, setIsMouseDownOnMenu] = useState(false)
-		const highlightLayerRef = useRef<HTMLDivElement>(null)
-		const [selectedMenuIndex, setSelectedMenuIndex] = useState(-1)
-		const [selectedType, setSelectedType] = useState<ContextMenuOptionType | null>(null)
-		const [justDeletedSpaceAfterMention, setJustDeletedSpaceAfterMention] = useState(false)
-		const [intendedCursorPosition, setIntendedCursorPosition] = useState<number | null>(null)
-		const contextMenuContainerRef = useRef<HTMLDivElement>(null)
-		const [isEnhancingPrompt, setIsEnhancingPrompt] = useState(false)
-		const [isFocused, setIsFocused] = useState(false)
+		}, [setInputValue, searchRequestId, cursorPosition])
 
 		// Use custom hook for prompt history navigation
 		const { handleHistoryNavigation, resetHistoryNavigation, resetOnInputChange } = usePromptHistory({
@@ -277,6 +327,12 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 						insertValue = "problems"
 					} else if (type === ContextMenuOptionType.Terminal) {
 						insertValue = "terminal"
+					} else if (type === ContextMenuOptionType.EditorContext) {
+						// Request editor context from backend
+						vscode.postMessage({ type: "requestEditorContext" })
+						setShowContextMenu(false)
+						setSelectedType(null)
+						return
 					} else if (type === ContextMenuOptionType.Git) {
 						insertValue = value || ""
 					}

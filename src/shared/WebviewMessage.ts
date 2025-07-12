@@ -194,6 +194,8 @@ export interface WebviewMessage {
 		| "checkRulesDirectoryResult"
 		| "saveCodeIndexSettingsAtomic"
 		| "requestCodeIndexSecretStatus"
+		| "requestEditorContext"
+		| "editorContext"
 	text?: string
 	editedMessageContent?: string
 	tab?: "settings" | "history" | "mcp" | "modes" | "chat" | "marketplace" | "account"
@@ -252,6 +254,13 @@ export interface WebviewMessage {
 		codeIndexQdrantApiKey?: string
 		codebaseIndexOpenAiCompatibleApiKey?: string
 		codebaseIndexGeminiApiKey?: string
+	}
+	editorContext?: {
+		filePath?: string
+		selectedText?: string
+		startLine?: number
+		endLine?: number
+		diagnostics?: any[]
 	}
 }
 

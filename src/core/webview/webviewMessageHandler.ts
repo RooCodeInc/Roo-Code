@@ -2212,6 +2212,26 @@ export const webviewMessageHandler = async (
 			break
 		}
 
+		case "requestEditorContext": {
+			try {
+				const { EditorUtils } = await import("../../integrations/editor/EditorUtils")
+				const editorContext = await EditorUtils.getEditorContext()
+
+				await provider.postMessageToWebview({
+					type: "editorContext",
+					editorContext: editorContext || undefined,
+				})
+			} catch (error) {
+				provider.log(
+					`Error getting editor context: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`,
+				)
+				await provider.postMessageToWebview({
+					type: "editorContext",
+					editorContext: undefined,
+				})
+			}
+			break
+		}
 		case "switchTab": {
 			if (message.tab) {
 				// Capture tab shown event for all switchTab messages (which are user-initiated)
