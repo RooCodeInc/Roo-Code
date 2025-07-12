@@ -287,6 +287,11 @@ export const ChatRowContent = ({
 					/>,
 					<span style={{ color: normalColor, fontWeight: "bold" }}>{t("chat:questions.hasQuestion")}</span>,
 				]
+			case "tool_timeout":
+				return [
+					<span className="codicon codicon-clock" style={{ color: errorColor, marginBottom: "-1.5px" }} />,
+					<span style={{ color: errorColor, fontWeight: "bold" }}>{t("chat:toolTimeout")}</span>,
+				]
 			default:
 				return [null, null]
 		}

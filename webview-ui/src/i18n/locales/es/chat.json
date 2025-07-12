@@ -1,4 +1,5 @@
 {
+	"toolTimeout": "Tiempo de espera de herramienta agotado: Sugiriendo alternativas...",
 	"greeting": "Bienvenido a Roo Code",
 	"task": {
 		"title": "Tarea",

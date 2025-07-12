@@ -318,5 +318,6 @@
 	},
 	"versionIndicator": {
 		"ariaLabel": "版本 {{version}} - 點擊查看發布說明"
-	}
+	},
+	"toolTimeout": "自動工具逾時：正在建議替代方案..."
 }

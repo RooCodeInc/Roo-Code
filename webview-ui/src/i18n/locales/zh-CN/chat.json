@@ -318,5 +318,6 @@
 	},
 	"versionIndicator": {
 		"ariaLabel": "版本 {{version}} - 点击查看发布说明"
-	}
+	},
+	"toolTimeout": "自动工具超时：正在建议替代方案..."
 }

@@ -318,5 +318,6 @@
 	},
 	"versionIndicator": {
 		"ariaLabel": "Phiên bản {{version}} - Nhấp để xem ghi chú phát hành"
-	}
+	},
+	"toolTimeout": "Tự động hết thời gian chờ công cụ: Đang đề xuất các lựa chọn thay thế..."
 }

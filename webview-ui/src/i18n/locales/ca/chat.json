@@ -216,6 +216,7 @@
 		"hasQuestion": "Roo té una pregunta:"
 	},
 	"taskCompleted": "Tasca completada",
+	"toolTimeout": "Temps d'espera de l'eina esgotat: Suggerint alternatives...",
 	"powershell": {
 		"issues": "Sembla que estàs tenint problemes amb Windows PowerShell, si us plau consulta aquesta documentació per a més informació."
 	},

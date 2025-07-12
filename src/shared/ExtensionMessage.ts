@@ -227,6 +227,8 @@ export type ExtensionState = Pick<
 	| "codebaseIndexConfig"
 	| "codebaseIndexModels"
 	| "profileThresholds"
+	| "toolExecutionTimeoutMs"
+	| "timeoutFallbackEnabled"
 > & {
 	version: string
 	clineMessages: ClineMessage[]

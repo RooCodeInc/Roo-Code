@@ -216,6 +216,7 @@
 		"hasQuestion": "Roo hat eine Frage:"
 	},
 	"taskCompleted": "Aufgabe abgeschlossen",
+	"toolTimeout": "Automatische Tool-Zeitüberschreitung: Schlage Alternativen vor...",
 	"powershell": {
 		"issues": "Es scheint, dass du Probleme mit Windows PowerShell hast, bitte sieh dir dies an"
 	},

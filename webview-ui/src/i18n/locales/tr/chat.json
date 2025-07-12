@@ -1,4 +1,5 @@
 {
+	"toolTimeout": "Otomatik araç zaman aşımı: Alternatifler öneriliyor...",
 	"greeting": "Roo Code'a Hoş Geldiniz",
 	"task": {
 		"title": "Görev",

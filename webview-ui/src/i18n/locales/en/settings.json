@@ -186,6 +186,18 @@
 			"title": "Max Requests",
 			"description": "Automatically make this many API requests before asking for approval to continue with the task.",
 			"unlimited": "Unlimited"
+		},
+		"timeout": {
+			"label": "Timeout",
+			"description": "Configure how Roo handles tool operations that exceed their timeout limits",
+			"timeoutFallbackEnabled": {
+				"label": "Enable timeout handling",
+				"description": "Automatically timeout long-running tool operations and suggest fallback options."
+			},
+			"toolExecutionTimeoutMs": {
+				"label": "Tool execution timeout (ms)",
+				"description": "Maximum time to wait for tool operations before triggering timeout handling (1000-1800000ms)"
+			}
 		}
 	},
 	"providers": {

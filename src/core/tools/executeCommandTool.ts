@@ -14,6 +14,9 @@ import { unescapeHtmlEntities } from "../../utils/text-normalization"
 import { ExitCodeDetails, RooTerminalCallbacks, RooTerminalProcess } from "../../integrations/terminal/types"
 import { TerminalRegistry } from "../../integrations/terminal/TerminalRegistry"
 import { Terminal } from "../../integrations/terminal/Terminal"
+import { ToolExecutionWrapper, TimeoutFallbackHandler } from "../timeout"
+
+const DEFAULT_TOOL_EXECUTION_TIMEOUT_MS = 60000 // 1 minute default
 
 class ShellIntegrationError extends Error {}
 
@@ -60,7 +63,11 @@ export async function executeCommandTool(
 			const executionId = cline.lastMessageTs?.toString() ?? Date.now().toString()
 			const clineProvider = await cline.providerRef.deref()
 			const clineProviderState = await clineProvider?.getState()
-			const { terminalOutputLineLimit = 500, terminalShellIntegrationDisabled = false } = clineProviderState ?? {}
+			const {
+				terminalOutputLineLimit = 500,
+				terminalShellIntegrationDisabled = false,
+				toolExecutionTimeoutMs = 60000, // 1 minute default
+			} = clineProviderState ?? {}
 
 			const options: ExecuteCommandOptions = {
 				executionId,
@@ -68,6 +75,7 @@ export async function executeCommandTool(
 				customCwd,
 				terminalShellIntegrationDisabled,
 				terminalOutputLineLimit,
+				timeoutMs: toolExecutionTimeoutMs,
 			}
 
 			try {
@@ -113,6 +121,7 @@ export type ExecuteCommandOptions = {
 	customCwd?: string
 	terminalShellIntegrationDisabled?: boolean
 	terminalOutputLineLimit?: number
+	timeoutMs?: number
 }
 
 export async function executeCommand(
@@ -123,7 +132,66 @@ export async function executeCommand(
 		customCwd,
 		terminalShellIntegrationDisabled = false,
 		terminalOutputLineLimit = 500,
+		timeoutMs,
 	}: ExecuteCommandOptions,
+): Promise<[boolean, ToolResponse]> {
+	// Get timeout from settings if not provided
+	const clineProvider = await cline.providerRef.deref()
+	const clineProviderState = await clineProvider?.getState()
+	const defaultTimeoutMs = clineProviderState?.toolExecutionTimeoutMs ?? DEFAULT_TOOL_EXECUTION_TIMEOUT_MS
+	const actualTimeoutMs = timeoutMs ?? defaultTimeoutMs
+	const timeoutFallbackEnabled = clineProviderState?.timeoutFallbackEnabled ?? true
+
+	// Wrap the command execution with timeout
+	const timeoutResult = await ToolExecutionWrapper.execute(
+		async (signal: AbortSignal) => {
+			return executeCommandInternal(cline, {
+				executionId,
+				command,
+				customCwd,
+				terminalShellIntegrationDisabled,
+				terminalOutputLineLimit,
+				signal,
+			})
+		},
+		{
+			toolName: "execute_command",
+			taskId: cline.taskId,
+			timeoutMs: actualTimeoutMs,
+			enableFallback: timeoutFallbackEnabled,
+		},
+		actualTimeoutMs,
+	)
+
+	// Handle timeout result
+	if (timeoutResult.timedOut && timeoutResult.fallbackTriggered) {
+		const fallbackResponse = await TimeoutFallbackHandler.createTimeoutResponse(
+			"execute_command",
+			actualTimeoutMs,
+			timeoutResult.executionTimeMs,
+			{ command },
+			cline,
+		)
+		return [false, fallbackResponse]
+	}
+
+	if (!timeoutResult.success) {
+		return [false, formatResponse.toolError(timeoutResult.error?.message)]
+	}
+
+	return timeoutResult.result!
+}
+
+async function executeCommandInternal(
+	cline: Task,
+	{
+		executionId,
+		command,
+		customCwd,
+		terminalShellIntegrationDisabled = false,
+		terminalOutputLineLimit = 500,
+		signal,
+	}: ExecuteCommandOptions & { signal: AbortSignal },
 ): Promise<[boolean, ToolResponse]> {
 	let workingDir: string
 
@@ -211,8 +279,27 @@ export async function executeCommand(
 	const process = terminal.runCommand(command, callbacks)
 	cline.terminalProcess = process
 
-	await process
-	cline.terminalProcess = undefined
+	// Handle abort signal for timeout cancellation
+	const abortHandler = () => {
+		if (process && typeof process.abort === "function") {
+			process.abort()
+		}
+		cline.terminalProcess = undefined
+	}
+
+	if (signal.aborted) {
+		abortHandler()
+		throw new Error("Command execution was cancelled due to timeout")
+	}
+
+	signal.addEventListener("abort", abortHandler)
+
+	try {
+		await process
+	} finally {
+		signal.removeEventListener("abort", abortHandler)
+		cline.terminalProcess = undefined
+	}
 
 	if (shellIntegrationError) {
 		throw new ShellIntegrationError(shellIntegrationError)

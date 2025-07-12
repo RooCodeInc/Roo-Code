@@ -1409,6 +1409,8 @@ export class ClineProvider
 			profileThresholds,
 			alwaysAllowFollowupQuestions,
 			followupAutoApproveTimeoutMs,
+			toolExecutionTimeoutMs,
+			timeoutFallbackEnabled,
 		} = await this.getState()
 
 		const telemetryKey = process.env.POSTHOG_API_KEY
@@ -1522,6 +1524,8 @@ export class ClineProvider
 			hasOpenedModeSelector: this.getGlobalState("hasOpenedModeSelector") ?? false,
 			alwaysAllowFollowupQuestions: alwaysAllowFollowupQuestions ?? false,
 			followupAutoApproveTimeoutMs: followupAutoApproveTimeoutMs ?? 60000,
+			toolExecutionTimeoutMs: toolExecutionTimeoutMs ?? 60000,
+			timeoutFallbackEnabled: timeoutFallbackEnabled ?? false,
 		}
 	}
 
@@ -1634,6 +1638,8 @@ export class ClineProvider
 			terminalZshP10k: stateValues.terminalZshP10k ?? false,
 			terminalZdotdir: stateValues.terminalZdotdir ?? false,
 			terminalCompressProgressBar: stateValues.terminalCompressProgressBar ?? true,
+			toolExecutionTimeoutMs: stateValues.toolExecutionTimeoutMs ?? 60000,
+			timeoutFallbackEnabled: stateValues.timeoutFallbackEnabled ?? false,
 			mode: stateValues.mode ?? defaultModeSlug,
 			language: stateValues.language ?? formatLanguage(vscode.env.language),
 			mcpEnabled: stateValues.mcpEnabled ?? true,

@@ -1,4 +1,5 @@
 {
+	"toolTimeout": "자동 도구 타임아웃: 대안을 제안하고 있습니다...",
 	"greeting": "Roo Code에 오신 것을 환영합니다",
 	"task": {
 		"title": "작업",
