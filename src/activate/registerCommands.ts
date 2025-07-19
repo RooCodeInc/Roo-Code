@@ -238,7 +238,16 @@ export const openClineInNewTab = async ({ context, outputChannel }: Omit<Registe
 	}
 
 	const tabProvider = new ClineProvider(context, outputChannel, "editor", contextProxy, codeIndexManager, mdmService)
-	const lastCol = Math.max(...vscode.window.visibleTextEditors.map((editor) => editor.viewColumn || 0))
+	const lastCol = Math.max(
+		...vscode.window.visibleTextEditors.map((editor) => {
+			try {
+				return editor.viewColumn || 0
+			} catch {
+				// Editor might be disposed
+				return 0
+			}
+		}),
+	)
 
 	// Check if there are any visible text editors, otherwise open a new group
 	// to the right.

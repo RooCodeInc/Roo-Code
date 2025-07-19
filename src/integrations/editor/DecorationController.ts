@@ -19,6 +19,7 @@ export class DecorationController {
 	private decorationType: DecorationType
 	private editor: vscode.TextEditor
 	private ranges: vscode.Range[] = []
+	private isDisposed: boolean = false
 
 	constructor(decorationType: DecorationType, editor: vscode.TextEditor) {
 		this.decorationType = decorationType
@@ -35,8 +36,13 @@ export class DecorationController {
 	}
 
 	addLines(startIndex: number, numLines: number) {
-		// Guard against invalid inputs
-		if (startIndex < 0 || numLines <= 0) {
+		// Guard against invalid inputs or disposed state
+		if (startIndex < 0 || numLines <= 0 || this.isDisposed) {
+			return
+		}
+
+		// Check if editor is still valid before using it
+		if (!this.isEditorValid()) {
 			return
 		}
 
@@ -48,15 +54,43 @@ export class DecorationController {
 			this.ranges.push(new vscode.Range(startIndex, 0, endLine, Number.MAX_SAFE_INTEGER))
 		}
 
-		this.editor.setDecorations(this.getDecoration(), this.ranges)
+		try {
+			this.editor.setDecorations(this.getDecoration(), this.ranges)
+		} catch (error) {
+			// Editor was disposed between check and use
+			console.debug("DecorationController: Failed to set decorations, editor may be disposed", error)
+		}
 	}
 
 	clear() {
+		if (this.isDisposed) {
+			return
+		}
+
 		this.ranges = []
-		this.editor.setDecorations(this.getDecoration(), this.ranges)
+
+		if (!this.isEditorValid()) {
+			return
+		}
+
+		try {
+			this.editor.setDecorations(this.getDecoration(), this.ranges)
+		} catch (error) {
+			// Editor was disposed between check and use
+			console.debug("DecorationController: Failed to clear decorations, editor may be disposed", error)
+		}
 	}
 
 	updateOverlayAfterLine(line: number, totalLines: number) {
+		if (this.isDisposed) {
+			return
+		}
+
+		// Check if editor is still valid before using it
+		if (!this.isEditorValid()) {
+			return
+		}
+
 		// Remove any existing ranges that start at or after the current line
 		this.ranges = this.ranges.filter((range) => range.end.line < line)
 
@@ -71,11 +105,55 @@ export class DecorationController {
 		}
 
 		// Apply the updated decorations
-		this.editor.setDecorations(this.getDecoration(), this.ranges)
+		try {
+			this.editor.setDecorations(this.getDecoration(), this.ranges)
+		} catch (error) {
+			// Editor was disposed between check and use
+			console.debug("DecorationController: Failed to update overlay, editor may be disposed", error)
+		}
 	}
 
 	setActiveLine(line: number) {
+		if (this.isDisposed) {
+			return
+		}
+
+		// Check if editor is still valid before using it
+		if (!this.isEditorValid()) {
+			return
+		}
+
 		this.ranges = [new vscode.Range(line, 0, line, Number.MAX_SAFE_INTEGER)]
-		this.editor.setDecorations(this.getDecoration(), this.ranges)
+
+		try {
+			this.editor.setDecorations(this.getDecoration(), this.ranges)
+		} catch (error) {
+			// Editor was disposed between check and use
+			console.debug("DecorationController: Failed to set active line, editor may be disposed", error)
+		}
+	}
+
+	/**
+	 * Checks if the editor is still valid and not disposed
+	 */
+	private isEditorValid(): boolean {
+		try {
+			// Try to access a property that would throw if disposed
+			// The document property is a good indicator
+			const _ = this.editor.document
+			return true
+		} catch {
+			// Editor is disposed
+			this.isDisposed = true
+			return false
+		}
+	}
+
+	/**
+	 * Marks this controller as disposed
+	 */
+	dispose() {
+		this.isDisposed = true
+		this.clear()
 	}
 }

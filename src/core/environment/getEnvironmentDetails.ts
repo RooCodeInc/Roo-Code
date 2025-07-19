@@ -37,8 +37,15 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 	details += "\n\n# VSCode Visible Files"
 
 	const visibleFilePaths = vscode.window.visibleTextEditors
-		?.map((editor) => editor.document?.uri?.fsPath)
-		.filter(Boolean)
+		?.map((editor) => {
+			try {
+				return editor.document?.uri?.fsPath
+			} catch {
+				// Editor might be disposed
+				return null
+			}
+		})
+		.filter((fsPath): fsPath is string => fsPath !== null && fsPath !== undefined)
 		.map((absolutePath) => path.relative(cline.cwd, absolutePath))
 		.slice(0, maxWorkspaceFiles)
 

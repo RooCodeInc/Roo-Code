@@ -99,8 +99,12 @@ export class DiffViewProvider {
 		this.fadedOverlayController = new DecorationController("fadedOverlay", this.activeDiffEditor)
 		this.activeLineController = new DecorationController("activeLine", this.activeDiffEditor)
 		// Apply faded overlay to all lines initially.
-		this.fadedOverlayController.addLines(0, this.activeDiffEditor.document.lineCount)
-		this.scrollEditorToLine(0) // Will this crash for new files?
+		try {
+			this.fadedOverlayController.addLines(0, this.activeDiffEditor.document.lineCount)
+			this.scrollEditorToLine(0)
+		} catch (error) {
+			console.debug("DiffViewProvider: Failed to initialize decorations", error)
+		}
 		this.streamedLines = []
 	}
 
@@ -117,7 +121,14 @@ export class DiffViewProvider {
 		}
 
 		const diffEditor = this.activeDiffEditor
-		const document = diffEditor?.document
+
+		// Check if editor is still valid
+		let document: vscode.TextDocument | undefined
+		try {
+			document = diffEditor?.document
+		} catch {
+			throw new Error("Text editor is disposed, unable to edit file...")
+		}
 
 		if (!diffEditor || !document) {
 			throw new Error("User closed text editor, unable to edit file...")
@@ -125,8 +136,13 @@ export class DiffViewProvider {
 
 		// Place cursor at the beginning of the diff editor to keep it out of
 		// the way of the stream animation, but do this without stealing focus
-		const beginningOfDocument = new vscode.Position(0, 0)
-		diffEditor.selection = new vscode.Selection(beginningOfDocument, beginningOfDocument)
+		try {
+			const beginningOfDocument = new vscode.Position(0, 0)
+			diffEditor.selection = new vscode.Selection(beginningOfDocument, beginningOfDocument)
+		} catch (error) {
+			// Editor might be disposed, continue with the update
+			console.debug("DiffViewProvider: Failed to set selection", error)
+		}
 
 		const endLine = accumulatedLines.length
 		// Replace all content up to the current line with accumulated lines.
@@ -176,12 +192,15 @@ export class DiffViewProvider {
 			await vscode.workspace.applyEdit(finalEdit)
 
 			// Clear all decorations at the end (after applying final edit).
-			this.fadedOverlayController.clear()
-			this.activeLineController.clear()
+			this.fadedOverlayController?.clear()
+			this.activeLineController?.clear()
 		}
 	}
 
-	async saveChanges(diagnosticsEnabled: boolean = true, writeDelayMs: number = DEFAULT_WRITE_DELAY_MS): Promise<{
+	async saveChanges(
+		diagnosticsEnabled: boolean = true,
+		writeDelayMs: number = DEFAULT_WRITE_DELAY_MS,
+	): Promise<{
 		newProblemsMessage: string | undefined
 		userEdits: string | undefined
 		finalContent: string | undefined
@@ -216,22 +235,22 @@ export class DiffViewProvider {
 		// and can address them accordingly. If problems don't change immediately after
 		// applying a fix, won't be notified, which is generally fine since the
 		// initial fix is usually correct and it may just take time for linters to catch up.
-		
+
 		let newProblemsMessage = ""
-		
+
 		if (diagnosticsEnabled) {
 			// Add configurable delay to allow linters time to process and clean up issues
 			// like unused imports (especially important for Go and other languages)
 			// Ensure delay is non-negative
 			const safeDelayMs = Math.max(0, writeDelayMs)
-			
+
 			try {
 				await delay(safeDelayMs)
 			} catch (error) {
 				// Log error but continue - delay failure shouldn't break the save operation
 				console.warn(`Failed to apply write delay: ${error}`)
 			}
-			
+
 			const postDiagnostics = vscode.languages.getDiagnostics()
 
 			const newProblems = await diagnosticsToProblemsString(
@@ -549,13 +568,19 @@ export class DiffViewProvider {
 	}
 
 	private scrollEditorToLine(line: number) {
-		if (this.activeDiffEditor) {
-			const scrollLine = line + 4
+		if (!this.activeDiffEditor) {
+			return
+		}
 
+		try {
+			const scrollLine = line + 4
 			this.activeDiffEditor.revealRange(
 				new vscode.Range(scrollLine, 0, scrollLine, 0),
 				vscode.TextEditorRevealType.InCenter,
 			)
+		} catch (error) {
+			// Editor might be disposed
+			console.debug("DiffViewProvider: Failed to scroll editor", error)
 		}
 	}
 
@@ -564,25 +589,30 @@ export class DiffViewProvider {
 			return
 		}
 
-		const currentContent = this.activeDiffEditor.document.getText()
-		const diffs = diff.diffLines(this.originalContent || "", currentContent)
+		try {
+			const currentContent = this.activeDiffEditor.document.getText()
+			const diffs = diff.diffLines(this.originalContent || "", currentContent)
 
-		let lineCount = 0
+			let lineCount = 0
 
-		for (const part of diffs) {
-			if (part.added || part.removed) {
-				// Found the first diff, scroll to it without stealing focus.
-				this.activeDiffEditor.revealRange(
-					new vscode.Range(lineCount, 0, lineCount, 0),
-					vscode.TextEditorRevealType.InCenter,
-				)
+			for (const part of diffs) {
+				if (part.added || part.removed) {
+					// Found the first diff, scroll to it without stealing focus.
+					this.activeDiffEditor.revealRange(
+						new vscode.Range(lineCount, 0, lineCount, 0),
+						vscode.TextEditorRevealType.InCenter,
+					)
 
-				return
+					return
+				}
+
+				if (!part.removed) {
+					lineCount += part.count || 0
+				}
 			}
-
-			if (!part.removed) {
-				lineCount += part.count || 0
-			}
+		} catch (error) {
+			// Editor might be disposed
+			console.debug("DiffViewProvider: Failed to scroll to first diff", error)
 		}
 	}
 
@@ -599,6 +629,16 @@ export class DiffViewProvider {
 	}
 
 	async reset(): Promise<void> {
+		// Dispose decoration controllers before clearing references
+		if (this.fadedOverlayController) {
+			this.fadedOverlayController.dispose()
+			this.fadedOverlayController = undefined
+		}
+		if (this.activeLineController) {
+			this.activeLineController.dispose()
+			this.activeLineController = undefined
+		}
+
 		await this.closeAllDiffViews()
 		this.editType = undefined
 		this.isEditing = false
@@ -606,8 +646,6 @@ export class DiffViewProvider {
 		this.createdDirs = []
 		this.documentWasOpen = false
 		this.activeDiffEditor = undefined
-		this.fadedOverlayController = undefined
-		this.activeLineController = undefined
 		this.streamedLines = []
 		this.preDiagnostics = []
 	}
