@@ -518,7 +518,14 @@ export class Task extends EventEmitter<ClineEvents> {
 			await this.addToClineMessages({ ts: askTs, type: "ask", ask: type, text, isProtected })
 		}
 
-		await pWaitFor(() => this.askResponse !== undefined || this.lastMessageTs !== askTs, { interval: 100 })
+		await pWaitFor(() => this.askResponse !== undefined || this.lastMessageTs !== askTs || this.abort, {
+			interval: 100,
+		})
+
+		// If the task was aborted while waiting for a response, throw an abort error
+		if (this.abort) {
+			throw new Error(`[RooCode#ask] task ${this.taskId}.${this.instanceId} aborted while waiting for response`)
+		}
 
 		if (this.lastMessageTs !== askTs) {
 			// Could happen if we send multiple asks in a row i.e. with
@@ -785,6 +792,12 @@ export class Task extends EventEmitter<ClineEvents> {
 	}
 
 	private async resumeTaskFromHistory() {
+		// Clear any lingering ask promise state from previous task instances
+		// This prevents "Current ask promise was ignored" errors when resuming
+		this.askResponse = undefined
+		this.askResponseText = undefined
+		this.askResponseImages = undefined
+
 		const modifiedClineMessages = await this.getSavedClineMessages()
 
 		// Remove any resume messages that may have been added before
@@ -1083,6 +1096,14 @@ export class Task extends EventEmitter<ClineEvents> {
 		}
 
 		this.abort = true
+
+		// Clear any pending ask promise state to prevent "Current ask promise was ignored" errors
+		// when resuming from history
+		this.askResponse = undefined
+		this.askResponseText = undefined
+		this.askResponseImages = undefined
+		// Don't clear lastMessageTs here as it might be used by other parts of the code
+
 		this.emit("taskAborted")
 
 		try {
