@@ -181,7 +181,10 @@ export class DiffViewProvider {
 		}
 	}
 
-	async saveChanges(diagnosticsEnabled: boolean = true, writeDelayMs: number = DEFAULT_WRITE_DELAY_MS): Promise<{
+	async saveChanges(
+		diagnosticsEnabled: boolean = true,
+		writeDelayMs: number = DEFAULT_WRITE_DELAY_MS,
+	): Promise<{
 		newProblemsMessage: string | undefined
 		userEdits: string | undefined
 		finalContent: string | undefined
@@ -216,22 +219,22 @@ export class DiffViewProvider {
 		// and can address them accordingly. If problems don't change immediately after
 		// applying a fix, won't be notified, which is generally fine since the
 		// initial fix is usually correct and it may just take time for linters to catch up.
-		
+
 		let newProblemsMessage = ""
-		
+
 		if (diagnosticsEnabled) {
 			// Add configurable delay to allow linters time to process and clean up issues
 			// like unused imports (especially important for Go and other languages)
 			// Ensure delay is non-negative
 			const safeDelayMs = Math.max(0, writeDelayMs)
-			
+
 			try {
 				await delay(safeDelayMs)
 			} catch (error) {
 				// Log error but continue - delay failure shouldn't break the save operation
 				console.warn(`Failed to apply write delay: ${error}`)
 			}
-			
+
 			const postDiagnostics = vscode.languages.getDiagnostics()
 
 			const newProblems = await diagnosticsToProblemsString(
@@ -549,7 +552,7 @@ export class DiffViewProvider {
 	}
 
 	private scrollEditorToLine(line: number) {
-		if (this.activeDiffEditor) {
+		if (this.activeDiffEditor && this.isEditorValid(this.activeDiffEditor)) {
 			const scrollLine = line + 4
 
 			this.activeDiffEditor.revealRange(
@@ -560,7 +563,7 @@ export class DiffViewProvider {
 	}
 
 	scrollToFirstDiff() {
-		if (!this.activeDiffEditor) {
+		if (!this.activeDiffEditor || !this.isEditorValid(this.activeDiffEditor)) {
 			return
 		}
 
@@ -599,6 +602,14 @@ export class DiffViewProvider {
 	}
 
 	async reset(): Promise<void> {
+		// Dispose decoration controllers before clearing references
+		if (this.fadedOverlayController) {
+			this.fadedOverlayController.dispose()
+		}
+		if (this.activeLineController) {
+			this.activeLineController.dispose()
+		}
+
 		await this.closeAllDiffViews()
 		this.editType = undefined
 		this.isEditing = false
@@ -610,5 +621,26 @@ export class DiffViewProvider {
 		this.activeLineController = undefined
 		this.streamedLines = []
 		this.preDiagnostics = []
+	}
+
+	private isEditorValid(editor: vscode.TextEditor): boolean {
+		// Check if the editor is still valid by verifying it exists in visible editors
+		// and its document hasn't been closed
+		try {
+			// In test environments, visibleTextEditors might be empty, so also check if document exists
+			const isInVisibleEditors = vscode.window.visibleTextEditors.includes(editor)
+			const hasValidDocument = editor.document && !editor.document.isClosed
+
+			// If we're in a test environment (no visible editors), rely on document validity
+			// Otherwise, check both conditions
+			if (vscode.window.visibleTextEditors.length === 0) {
+				return hasValidDocument
+			}
+
+			return isInVisibleEditors && hasValidDocument
+		} catch {
+			// If accessing editor properties throws, it's disposed
+			return false
+		}
 	}
 }
