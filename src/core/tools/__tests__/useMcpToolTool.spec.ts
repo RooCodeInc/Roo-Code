@@ -743,9 +743,9 @@ describe("useMcpToolTool", () => {
 			expect(sayCall[2]).toHaveLength(1)
 			expect(sayCall[2][0]).toContain(smallBase64)
 
-			// Should log warning about size exceeding limit
+			// Should log warning about size exceeding limit (either early check or full validation)
 			expect(consoleSpy).toHaveBeenCalledWith(
-				expect.stringMatching(/MCP image exceeds size limit: .* > 1MB\. Image will be ignored\./),
+				expect.stringMatching(/MCP image (likely exceeds size limit|exceeds size limit)/),
 			)
 
 			expect(mockPushToolResult).toHaveBeenCalledWith(

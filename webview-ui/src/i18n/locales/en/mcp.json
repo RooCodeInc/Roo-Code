@@ -60,7 +60,8 @@
 	"execution": {
 		"running": "Running",
 		"completed": "Completed",
-		"error": "Error"
+		"error": "Error",
+		"imageCountTooltip": "{{count}} image(s) in response"
 	},
 	"imageSettings": {
 		"maxImagesLabel": "Max Images",

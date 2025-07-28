@@ -218,7 +218,9 @@ export const McpExecution = ({
 						{(responseText && responseText.length > 0) || (images && images.length > 0) ? (
 							<div className="flex items-center gap-1">
 								{images && images.length > 0 && (
-									<div className="flex items-center gap-1 text-xs text-vscode-descriptionForeground">
+									<div
+										className="flex items-center gap-1 text-xs text-vscode-descriptionForeground"
+										title={t("execution.imageCountTooltip", { count: images.length })}>
 										<span className="codicon codicon-file-media" />
 										<span>{images.length}</span>
 									</div>

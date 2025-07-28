@@ -6,6 +6,7 @@ import { McpExecutionStatus } from "@roo-code/types"
 import { t } from "../../i18n"
 
 const SUPPORTED_IMAGE_TYPES = ["image/png", "image/jpeg", "image/gif", "image/webp"]
+const BASE64_REGEX = /^[A-Za-z0-9+/]*={0,2}$/
 
 interface McpToolParams {
 	server_name?: string
@@ -216,8 +217,8 @@ async function processToolContent(toolResult: any, cline: Task): Promise<{ text:
 
 	// Get MCP settings from the extension's global state
 	const state = await cline.providerRef.deref()?.getState()
-	const maxImagesPerResponse = state?.mcpMaxImagesPerResponse ?? 20
-	const maxImageSizeMB = state?.mcpMaxImageSizeMB ?? 10
+	const maxImagesPerResponse = Math.max(1, Math.min(100, state?.mcpMaxImagesPerResponse ?? 20))
+	const maxImageSizeMB = Math.max(0.1, Math.min(50, state?.mcpMaxImageSizeMB ?? 10))
 
 	toolResult.content.forEach((item: any) => {
 		if (item.type === "text") {
@@ -240,9 +241,17 @@ async function processToolContent(toolResult: any, cline: Task): Promise<{ text:
 							return
 						}
 
+						// Quick size check before full validation to prevent memory spikes
+						const approximateSizeMB = (item.data.length * 0.75) / (1024 * 1024)
+						if (approximateSizeMB > maxImageSizeMB * 1.5) {
+							console.warn(
+								`MCP image likely exceeds size limit based on string length: ~${approximateSizeMB.toFixed(2)}MB`,
+							)
+							return
+						}
+
 						// Basic validation for base64 format
-						const base64Regex = /^[A-Za-z0-9+/]*={0,2}$/
-						if (!base64Regex.test(item.data.replace(/\s/g, ""))) {
+						if (!BASE64_REGEX.test(item.data.replace(/\s/g, ""))) {
 							console.warn("Invalid MCP ImageContent: base64 data contains invalid characters")
 							return
 						}

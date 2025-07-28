@@ -1,5 +1,6 @@
 import React, { useState, useRef, useLayoutEffect, memo } from "react"
 import { useWindowSize } from "react-use"
+import { useTranslation } from "react-i18next"
 import { vscode } from "@src/utils/vscode"
 
 interface ThumbnailsProps {
@@ -10,6 +11,7 @@ interface ThumbnailsProps {
 }
 
 const Thumbnails = ({ images, style, setImages, onHeightChange }: ThumbnailsProps) => {
+	const { t } = useTranslation("common")
 	const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
 	const [failedImages, setFailedImages] = useState<Set<number>>(new Set())
 	const containerRef = useRef<HTMLDivElement>(null)
@@ -75,7 +77,7 @@ const Thumbnails = ({ images, style, setImages, onHeightChange }: ThumbnailsProp
 								cursor: "pointer",
 							}}
 							onClick={() => handleImageClick(image)}
-							title="Failed to load image">
+							title={t("thumbnails.failedToLoad")}>
 							<span
 								className="codicon codicon-file-media"
 								style={{
@@ -86,7 +88,7 @@ const Thumbnails = ({ images, style, setImages, onHeightChange }: ThumbnailsProp
 					) : (
 						<img
 							src={image}
-							alt={`Thumbnail ${index + 1}`}
+							alt={t("thumbnails.altText", { index: index + 1 })}
 							style={{
 								width: 34,
 								height: 34,
