@@ -72,6 +72,7 @@ export enum TelemetryEventName {
 	CONSECUTIVE_MISTAKE_ERROR = "Consecutive Mistake Error",
 	CODE_INDEX_ERROR = "Code Index Error",
 	TELEMETRY_SETTINGS_CHANGED = "Telemetry Settings Changed",
+	SLASH_COMMAND_USED = "Slash Command Used",
 }
 
 /**
@@ -201,6 +202,7 @@ export const rooCodeTelemetryEventSchema = z.discriminatedUnion("type", [
 			TelemetryEventName.TAB_SHOWN,
 			TelemetryEventName.MODE_SETTINGS_CHANGED,
 			TelemetryEventName.CUSTOM_MODE_CREATED,
+			TelemetryEventName.SLASH_COMMAND_USED,
 		]),
 		properties: telemetryPropertiesSchema,
 	}),

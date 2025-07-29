@@ -39,6 +39,9 @@ import {
 import { TelemetryService } from "@roo-code/telemetry"
 import { CloudService, BridgeOrchestrator } from "@roo-code/cloud"
 
+// utils
+import { detectSlashCommands } from "../../utils/slashCommandDetection"
+
 // api
 import { ApiHandler, ApiHandlerCreateMessageMetadata, buildApiHandler } from "../../api"
 import { ApiStream, GroundingSource } from "../../api/transform/stream"
@@ -925,8 +928,16 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				})
 			}
 		}
-	}
 
+		// Detect and track slash command usage
+		if (askResponse === "messageResponse" && text && TelemetryService.hasInstance()) {
+			const slashCommands = detectSlashCommands(text)
+			for (const command of slashCommands) {
+				TelemetryService.instance.captureSlashCommandUsed(this.taskId, command.type, command.commandName)
+			}
+		}
+	}
+	
 	public approveAsk({ text, images }: { text?: string; images?: string[] } = {}) {
 		this.handleWebviewAskResponse("yesButtonClicked", text, images)
 	}
