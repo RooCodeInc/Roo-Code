@@ -39,9 +39,6 @@ import {
 import { TelemetryService } from "@roo-code/telemetry"
 import { CloudService, BridgeOrchestrator } from "@roo-code/cloud"
 
-// utils
-import { detectSlashCommands } from "../../utils/slashCommandDetection"
-
 // api
 import { ApiHandler, ApiHandlerCreateMessageMetadata, buildApiHandler } from "../../api"
 import { ApiStream, GroundingSource } from "../../api/transform/stream"
@@ -903,7 +900,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.askResponse = askResponse
 		this.askResponseText = text
 		this.askResponseImages = images
-
 		// Create a checkpoint whenever the user sends a message.
 		// Use allowEmpty=true to ensure a checkpoint is recorded even if there are no file changes.
 		// Suppress the checkpoint_saved chat row for this particular checkpoint to keep the timeline clean.
@@ -926,14 +922,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				this.saveClineMessages().catch((error) => {
 					console.error("Failed to save answered follow-up state:", error)
 				})
-			}
-		}
-
-		// Detect and track slash command usage
-		if (askResponse === "messageResponse" && text && TelemetryService.hasInstance()) {
-			const slashCommands = detectSlashCommands(text)
-			for (const command of slashCommands) {
-				TelemetryService.instance.captureSlashCommandUsed(this.taskId, command.type, command.commandName)
 			}
 		}
 	}
