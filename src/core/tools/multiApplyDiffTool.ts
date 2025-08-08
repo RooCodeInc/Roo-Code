@@ -2,6 +2,7 @@ import path from "path"
 import fs from "fs/promises"
 
 import { TelemetryService } from "@roo-code/telemetry"
+import { readFileWithEncodingDetection } from "../../utils/encoding"
 import { DEFAULT_WRITE_DELAY_MS } from "@roo-code/types"
 
 import { ClineSayTool } from "../../shared/ExtensionMessage"
@@ -457,7 +458,7 @@ Original error: ${errorMessage}`
 			const fileExists = opResult.fileExists!
 
 			try {
-				let originalContent: string | null = await fs.readFile(absolutePath, "utf-8")
+				let originalContent: string | null = await readFileWithEncodingDetection(absolutePath)
 				let beforeContent: string | null = originalContent
 				let successCount = 0
 				let formattedError = ""
@@ -611,7 +612,7 @@ ${errorDetails ? `\nTechnical details:\n${errorDetails}\n` : ""}
 						cline.diffViewProvider.scrollToFirstDiff()
 					} else {
 						// For direct save, we still need to set originalContent
-						cline.diffViewProvider.originalContent = await fs.readFile(absolutePath, "utf-8")
+						cline.diffViewProvider.originalContent = await readFileWithEncodingDetection(absolutePath)
 					}
 
 					// Ask for approval (same for both flows)
@@ -646,7 +647,7 @@ ${errorDetails ? `\nTechnical details:\n${errorDetails}\n` : ""}
 					if (isPreventFocusDisruptionEnabled) {
 						// Direct file write without diff view or opening the file
 						cline.diffViewProvider.editType = "modify"
-						cline.diffViewProvider.originalContent = await fs.readFile(absolutePath, "utf-8")
+						cline.diffViewProvider.originalContent = await readFileWithEncodingDetection(absolutePath)
 						await cline.diffViewProvider.saveDirectly(
 							relPath,
 							originalContent!,

@@ -4,6 +4,7 @@ import * as vscode from "vscode"
 import fs from "fs/promises"
 
 import { Task } from "../task/Task"
+import { readFileWithEncodingDetection } from "../../utils/encoding"
 import { ClineSayTool } from "../../shared/ExtensionMessage"
 import { formatResponse } from "../prompts/responses"
 import { ToolUse, AskApproval, HandleError, PushToolResult, RemoveClosingTag } from "../../shared/tools"
