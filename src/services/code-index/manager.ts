@@ -315,16 +315,49 @@ export class CodeIndexManager {
 		const ignorePath = path.join(workspacePath, ".gitignore")
 		try {
 			const content = await fs.readFile(ignorePath, "utf8")
-			ignoreInstance.add(content)
-			ignoreInstance.add(".gitignore")
+
+			// Try to add the gitignore patterns, but handle invalid regex patterns gracefully
+			try {
+				ignoreInstance.add(content)
+				ignoreInstance.add(".gitignore")
+			} catch (ignoreError) {
+				// Log warning about invalid patterns but continue with indexing
+				console.warn(
+					`Warning: .gitignore contains invalid patterns that could not be parsed. Some files may not be properly ignored during indexing. Error: ${
+						ignoreError instanceof Error ? ignoreError.message : String(ignoreError)
+					}`,
+				)
+
+				// Try to add individual lines to identify and skip problematic patterns
+				const lines = content.split("\n")
+				for (const line of lines) {
+					const trimmedLine = line.trim()
+					// Skip empty lines and comments
+					if (!trimmedLine || trimmedLine.startsWith("#")) {
+						continue
+					}
+
+					try {
+						// Create a new ignore instance to test each pattern
+						const testIgnore = ignore()
+						testIgnore.add(trimmedLine)
+						// If successful, add to the main instance
+						ignoreInstance.add(trimmedLine)
+					} catch (lineError) {
+						console.warn(`Skipping invalid .gitignore pattern: "${trimmedLine}"`)
+					}
+				}
+
+				// Always add .gitignore itself to the ignore list
+				try {
+					ignoreInstance.add(".gitignore")
+				} catch {
+					// Even this basic pattern failed, but continue anyway
+				}
+			}
 		} catch (error) {
-			// Should never happen: reading file failed even though it exists
-			console.error("Unexpected error loading .gitignore:", error)
-			TelemetryService.instance.captureEvent(TelemetryEventName.CODE_INDEX_ERROR, {
-				error: error instanceof Error ? error.message : String(error),
-				stack: error instanceof Error ? error.stack : undefined,
-				location: "_recreateServices",
-			})
+			// File reading error - .gitignore might not exist or be inaccessible
+			console.info(".gitignore file not found or could not be read, proceeding without gitignore patterns")
 		}
 
 		// (Re)Create shared service instances

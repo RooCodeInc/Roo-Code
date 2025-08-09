@@ -2,6 +2,14 @@ import { CodeIndexManager } from "../manager"
 import { CodeIndexServiceFactory } from "../service-factory"
 import type { MockedClass } from "vitest"
 import * as path from "path"
+import * as fs from "fs/promises"
+import ignore from "ignore"
+
+// Mock fs/promises module
+vi.mock("fs/promises")
+
+// Mock ignore module
+vi.mock("ignore")
 
 // Mock vscode module
 vi.mock("vscode", () => {
@@ -579,6 +587,241 @@ describe("CodeIndexManager - handleSettingsChange regression", () => {
 
 			// Cleanup
 			consoleErrorSpy.mockRestore()
+		})
+	})
+
+	describe("gitignore pattern handling", () => {
+		let mockIgnoreInstance: any
+		let mockConfigManager: any
+		let mockCacheManager: any
+		let mockServiceFactoryInstance: any
+
+		beforeEach(() => {
+			// Reset mocks
+			vi.clearAllMocks()
+
+			// Mock ignore instance
+			mockIgnoreInstance = {
+				add: vi.fn(),
+				ignores: vi.fn(() => false),
+			}
+
+			// Mock the ignore module to return our mock instance
+			vi.mocked(ignore).mockReturnValue(mockIgnoreInstance)
+
+			// Mock config manager
+			mockConfigManager = {
+				loadConfiguration: vi.fn().mockResolvedValue({ requiresRestart: false }),
+				isFeatureConfigured: true,
+				isFeatureEnabled: true,
+				getConfig: vi.fn().mockReturnValue({
+					isConfigured: true,
+					embedderProvider: "openai",
+					modelId: "text-embedding-3-small",
+					openAiOptions: { openAiNativeApiKey: "test-key" },
+					qdrantUrl: "http://localhost:6333",
+					qdrantApiKey: "test-key",
+					searchMinScore: 0.4,
+				}),
+			}
+			;(manager as any)._configManager = mockConfigManager
+
+			// Mock cache manager
+			mockCacheManager = {
+				initialize: vi.fn(),
+				clearCacheFile: vi.fn(),
+			}
+			;(manager as any)._cacheManager = mockCacheManager
+
+			// Mock service factory
+			mockServiceFactoryInstance = {
+				createServices: vi.fn().mockReturnValue({
+					embedder: { embedderInfo: { name: "openai" } },
+					vectorStore: {},
+					scanner: {},
+					fileWatcher: {
+						onDidStartBatchProcessing: vi.fn(),
+						onBatchProgressUpdate: vi.fn(),
+						watch: vi.fn(),
+						stopWatcher: vi.fn(),
+						dispose: vi.fn(),
+					},
+				}),
+				validateEmbedder: vi.fn().mockResolvedValue({ valid: true }),
+			}
+			MockedCodeIndexServiceFactory.mockImplementation(() => mockServiceFactoryInstance as any)
+		})
+
+		it("should handle invalid gitignore patterns gracefully", async () => {
+			// Arrange - Mock .gitignore with invalid pattern
+			const invalidGitignoreContent = `
+# Valid patterns
+node_modules/
+*.log
+
+# Invalid pattern - character range out of order
+pqh[A-/]
+
+# More valid patterns
+dist/
+.env
+`
+			;(fs.readFile as any).mockResolvedValue(invalidGitignoreContent)
+
+			// Make the first add() call throw an error (simulating invalid pattern)
+			let addCallCount = 0
+			mockIgnoreInstance.add.mockImplementation((pattern: string) => {
+				addCallCount++
+				// Throw on first call (full content), succeed on individual patterns
+				if (addCallCount === 1) {
+					throw new Error(
+						"Invalid regular expression: /^pqh[A-\\/](?=$|\\/$)/i: Range out of order in character class",
+					)
+				}
+				// Throw on the specific invalid pattern
+				if (pattern.includes("pqh[A-/]")) {
+					throw new Error(
+						"Invalid regular expression: /^pqh[A-\\/](?=$|\\/$)/i: Range out of order in character class",
+					)
+				}
+			})
+
+			// Spy on console methods
+			const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
+
+			// Act
+			await (manager as any)._recreateServices()
+
+			// Assert - Should have logged warnings
+			expect(consoleWarnSpy).toHaveBeenCalledWith(
+				expect.stringContaining("Warning: .gitignore contains invalid patterns"),
+			)
+			expect(consoleWarnSpy).toHaveBeenCalledWith(
+				expect.stringContaining('Skipping invalid .gitignore pattern: "pqh[A-/]"'),
+			)
+
+			// Should have attempted to add valid patterns individually
+			expect(mockIgnoreInstance.add).toHaveBeenCalled()
+
+			// Should not throw an error - service creation should continue
+			expect(mockServiceFactoryInstance.createServices).toHaveBeenCalled()
+			expect(mockServiceFactoryInstance.validateEmbedder).toHaveBeenCalled()
+
+			// Cleanup
+			consoleWarnSpy.mockRestore()
+		})
+
+		it("should process valid gitignore patterns normally", async () => {
+			// Arrange - Mock .gitignore with all valid patterns
+			const validGitignoreContent = `
+# Valid patterns
+node_modules/
+*.log
+dist/
+.env
+`
+			;(fs.readFile as any).mockResolvedValue(validGitignoreContent)
+
+			// All add() calls succeed
+			mockIgnoreInstance.add.mockImplementation(() => {})
+
+			// Spy on console methods
+			const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
+
+			// Act
+			await (manager as any)._recreateServices()
+
+			// Assert - Should not have logged any warnings
+			expect(consoleWarnSpy).not.toHaveBeenCalled()
+
+			// Should have added the content and .gitignore itself
+			expect(mockIgnoreInstance.add).toHaveBeenCalledWith(validGitignoreContent)
+			expect(mockIgnoreInstance.add).toHaveBeenCalledWith(".gitignore")
+
+			// Service creation should proceed normally
+			expect(mockServiceFactoryInstance.createServices).toHaveBeenCalled()
+			expect(mockServiceFactoryInstance.validateEmbedder).toHaveBeenCalled()
+
+			// Cleanup
+			consoleWarnSpy.mockRestore()
+		})
+
+		it("should handle missing .gitignore file gracefully", async () => {
+			// Arrange - Mock file not found error
+			;(fs.readFile as any).mockRejectedValue(new Error("ENOENT: no such file or directory"))
+
+			// Spy on console methods
+			const consoleInfoSpy = vi.spyOn(console, "info").mockImplementation(() => {})
+
+			// Act
+			await (manager as any)._recreateServices()
+
+			// Assert - Should log info message
+			expect(consoleInfoSpy).toHaveBeenCalledWith(
+				".gitignore file not found or could not be read, proceeding without gitignore patterns",
+			)
+
+			// Should not attempt to add patterns
+			expect(mockIgnoreInstance.add).not.toHaveBeenCalled()
+
+			// Service creation should proceed normally
+			expect(mockServiceFactoryInstance.createServices).toHaveBeenCalled()
+			expect(mockServiceFactoryInstance.validateEmbedder).toHaveBeenCalled()
+
+			// Cleanup
+			consoleInfoSpy.mockRestore()
+		})
+
+		it("should handle mixed valid and invalid patterns", async () => {
+			// Arrange - Mock .gitignore with mix of valid and invalid patterns
+			const mixedGitignoreContent = `
+node_modules/
+pqh[A-/]
+*.log
+[Z-A]invalid
+dist/
+`
+			;(fs.readFile as any).mockResolvedValue(mixedGitignoreContent)
+
+			// Make add() throw on invalid patterns
+			mockIgnoreInstance.add.mockImplementation((pattern: string) => {
+				if (pattern === mixedGitignoreContent) {
+					throw new Error("Invalid patterns detected")
+				}
+				if (pattern.includes("[A-/]") || pattern.includes("[Z-A]")) {
+					throw new Error("Invalid character range")
+				}
+			})
+
+			// Spy on console methods
+			const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
+
+			// Act
+			await (manager as any)._recreateServices()
+
+			// Assert - Should have logged warnings for invalid patterns
+			expect(consoleWarnSpy).toHaveBeenCalledWith(
+				expect.stringContaining("Warning: .gitignore contains invalid patterns"),
+			)
+			expect(consoleWarnSpy).toHaveBeenCalledWith(
+				expect.stringContaining('Skipping invalid .gitignore pattern: "pqh[A-/]"'),
+			)
+			expect(consoleWarnSpy).toHaveBeenCalledWith(
+				expect.stringContaining('Skipping invalid .gitignore pattern: "[Z-A]invalid"'),
+			)
+
+			// Should have attempted to add valid patterns
+			expect(mockIgnoreInstance.add).toHaveBeenCalledWith("node_modules/")
+			expect(mockIgnoreInstance.add).toHaveBeenCalledWith("*.log")
+			expect(mockIgnoreInstance.add).toHaveBeenCalledWith("dist/")
+			expect(mockIgnoreInstance.add).toHaveBeenCalledWith(".gitignore")
+
+			// Service creation should proceed normally
+			expect(mockServiceFactoryInstance.createServices).toHaveBeenCalled()
+			expect(mockServiceFactoryInstance.validateEmbedder).toHaveBeenCalled()
+
+			// Cleanup
+			consoleWarnSpy.mockRestore()
 		})
 	})
 })
