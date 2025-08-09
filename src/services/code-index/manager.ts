@@ -9,8 +9,7 @@ import { CodeIndexServiceFactory } from "./service-factory"
 import { CodeIndexSearchService } from "./search-service"
 import { CodeIndexOrchestrator } from "./orchestrator"
 import { CacheManager } from "./cache-manager"
-import fs from "fs/promises"
-import ignore from "ignore"
+import { createIgnoreInstanceFromFile } from "./utils/gitignore-parser"
 import path from "path"
 import { t } from "../../i18n"
 import { TelemetryService } from "@roo-code/telemetry"
@@ -304,7 +303,6 @@ export class CodeIndexManager {
 			this._cacheManager!,
 		)
 
-		const ignoreInstance = ignore()
 		const workspacePath = getWorkspacePath()
 
 		if (!workspacePath) {
@@ -312,18 +310,19 @@ export class CodeIndexManager {
 			return
 		}
 
+		// Use the new gitignore parser that properly handles gitignore glob patterns
 		const ignorePath = path.join(workspacePath, ".gitignore")
-		try {
-			const content = await fs.readFile(ignorePath, "utf8")
-			ignoreInstance.add(content)
-			ignoreInstance.add(".gitignore")
-		} catch (error) {
-			// Should never happen: reading file failed even though it exists
-			console.error("Unexpected error loading .gitignore:", error)
+		const { ignoreInstance, parseResult } = await createIgnoreInstanceFromFile(ignorePath, true)
+
+		// Log telemetry if there were any issues parsing patterns
+		if (parseResult && (parseResult.invalidPatterns.length > 0 || parseResult.transformedPatterns.length > 0)) {
+			// Use CODE_INDEX_ERROR with a warning level indicator since CODE_INDEX_WARNING doesn't exist
 			TelemetryService.instance.captureEvent(TelemetryEventName.CODE_INDEX_ERROR, {
-				error: error instanceof Error ? error.message : String(error),
-				stack: error instanceof Error ? error.stack : undefined,
 				location: "_recreateServices",
+				level: "warning",
+				invalidPatternCount: parseResult.invalidPatterns.length,
+				transformedPatternCount: parseResult.transformedPatterns.length,
+				message: "Some gitignore patterns required transformation or were skipped",
 			})
 		}
 
