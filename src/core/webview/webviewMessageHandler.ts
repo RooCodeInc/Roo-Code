@@ -2597,5 +2597,10 @@ export const webviewMessageHandler = async (
 			}
 			break
 		}
+		case "requestPersistentUsageData": {
+			// Load persistent usage data asynchronously
+			provider.loadPersistentUsageDataAsync()
+			break
+		}
 	}
 }
