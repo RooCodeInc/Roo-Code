@@ -60,7 +60,12 @@ async function showLinuxNotification(options: NotificationOptions): Promise<void
 
 	try {
 		await execa("notify-send", [title, fullMessage])
-	} catch (error) {
+	} catch (error: any) {
+		if (error.code === "ENOENT") {
+			throw new Error(
+				"notify-send is not installed. Please install libnotify-bin (apt install libnotify-bin on Debian/Ubuntu)",
+			)
+		}
 		throw new Error(`Failed to show Linux notification: ${error}`)
 	}
 }
