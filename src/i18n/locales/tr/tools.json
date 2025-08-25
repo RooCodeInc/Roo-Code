@@ -14,5 +14,17 @@
 		"errors": {
 			"policy_restriction": "Politika kısıtlamaları nedeniyle yeni görev oluşturulamadı."
 		}
+	},
+	"errors": {
+		"fileNotFound": "Dosya Bulunamadı",
+		"parseError": "Ayrıştırma Hatası",
+		"commandTimeout": "Komut Zaman Aşımı",
+		"permissionDenied": "İzin Reddedildi",
+		"networkError": "Ağ Hatası",
+		"invalidInput": "Geçersiz Giriş",
+		"operationFailed": "İşlem Başarısız Oldu",
+		"resourceNotFound": "Kaynak Bulunamadı",
+		"configurationError": "Yapılandırma Hatası",
+		"authenticationFailed": "Kimlik Doğrulama Başarısız"
 	}
 }

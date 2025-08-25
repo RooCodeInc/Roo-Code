@@ -14,5 +14,17 @@
 		"errors": {
 			"policy_restriction": "Không thể tạo nhiệm vụ mới do hạn chế chính sách."
 		}
+	},
+	"errors": {
+		"fileNotFound": "Không tìm thấy tệp",
+		"parseError": "Lỗi phân tích cú pháp",
+		"commandTimeout": "Hết thời gian chờ lệnh",
+		"permissionDenied": "Quyền bị từ chối",
+		"networkError": "Lỗi mạng",
+		"invalidInput": "Đầu vào không hợp lệ",
+		"operationFailed": "Thao tác thất bại",
+		"resourceNotFound": "Không tìm thấy tài nguyên",
+		"configurationError": "Lỗi cấu hình",
+		"authenticationFailed": "Xác thực không thành công"
 	}
 }

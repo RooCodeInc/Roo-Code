@@ -14,5 +14,17 @@
 		"errors": {
 			"policy_restriction": "ポリシー制限により新しいタスクを作成できませんでした。"
 		}
+	},
+	"errors": {
+		"fileNotFound": "ファイルが見つかりません",
+		"parseError": "解析エラー",
+		"commandTimeout": "コマンドタイムアウト",
+		"permissionDenied": "権限がありません",
+		"networkError": "ネットワークエラー",
+		"invalidInput": "無効な入力",
+		"operationFailed": "操作に失敗しました",
+		"resourceNotFound": "リソースが見つかりません",
+		"configurationError": "設定エラー",
+		"authenticationFailed": "認証に失敗しました"
 	}
 }

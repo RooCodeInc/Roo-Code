@@ -14,5 +14,17 @@
 		"errors": {
 			"policy_restriction": "Не удалось создать новую задачу из-за ограничений политики."
 		}
+	},
+	"errors": {
+		"fileNotFound": "Файл не найден",
+		"parseError": "Ошибка синтаксического анализа",
+		"commandTimeout": "Тайм-аут команды",
+		"permissionDenied": "В доступе отказано",
+		"networkError": "Сетевая ошибка",
+		"invalidInput": "Неверный ввод",
+		"operationFailed": "Операция не удалась",
+		"resourceNotFound": "Ресурс не найден",
+		"configurationError": "Ошибка конфигурации",
+		"authenticationFailed": "Сбой аутентификации"
 	}
 }

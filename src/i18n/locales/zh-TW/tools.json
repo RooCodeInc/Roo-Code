@@ -14,5 +14,17 @@
 		"errors": {
 			"policy_restriction": "由於政策限制，無法建立新工作。"
 		}
+	},
+	"errors": {
+		"fileNotFound": "找不到檔案",
+		"parseError": "解析錯誤",
+		"commandTimeout": "指令逾時",
+		"permissionDenied": "權限遭拒",
+		"networkError": "網路錯誤",
+		"invalidInput": "無效輸入",
+		"operationFailed": "操作失敗",
+		"resourceNotFound": "找不到資源",
+		"configurationError": "設定錯誤",
+		"authenticationFailed": "驗證失敗"
 	}
 }

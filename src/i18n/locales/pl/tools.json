@@ -14,5 +14,17 @@
 		"errors": {
 			"policy_restriction": "Nie udało się utworzyć nowego zadania z powodu ograniczeń polityki."
 		}
+	},
+	"errors": {
+		"fileNotFound": "Nie znaleziono pliku",
+		"parseError": "Błąd parsowania",
+		"commandTimeout": "Przekroczono limit czasu polecenia",
+		"permissionDenied": "Odmowa dostępu",
+		"networkError": "Błąd sieci",
+		"invalidInput": "Nieprawidłowe dane wejściowe",
+		"operationFailed": "Operacja nie powiodła się",
+		"resourceNotFound": "Nie znaleziono zasobu",
+		"configurationError": "Błąd konfiguracji",
+		"authenticationFailed": "Uwierzytelnianie nie powiodło się"
 	}
 }

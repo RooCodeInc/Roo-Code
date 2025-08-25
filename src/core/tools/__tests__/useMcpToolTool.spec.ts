@@ -8,7 +8,12 @@ import { ToolUse } from "../../../shared/tools"
 vi.mock("../../prompts/responses", () => ({
 	formatResponse: {
 		toolResult: vi.fn((result: string) => `Tool result: ${result}`),
-		toolError: vi.fn((error: string) => `Tool error: ${error}`),
+		toolError: vi.fn((error: string, toolName?: string) => {
+			if (toolName) {
+				return `Tool Call Error: ${toolName}\n<error>\n${error}\n</error>`
+			}
+			return `Tool Execution Error\n<error>\n${error}\n</error>`
+		}),
 		invalidMcpToolArgumentError: vi.fn((server: string, tool: string) => `Invalid args for ${server}:${tool}`),
 	},
 }))
@@ -136,8 +141,18 @@ describe("useMcpToolTool", () => {
 
 			expect(mockTask.consecutiveMistakeCount).toBe(1)
 			expect(mockTask.recordToolError).toHaveBeenCalledWith("use_mcp_tool")
-			expect(mockTask.say).toHaveBeenCalledWith("error", expect.stringContaining("invalid JSON argument"))
-			expect(mockPushToolResult).toHaveBeenCalledWith("Tool error: Invalid args for test_server:test_tool")
+			expect(mockTask.say).toHaveBeenCalledWith(
+				"error",
+				expect.stringContaining("invalid JSON argument"),
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				{ title: "tools:errors.invalidInput" },
+			)
+			expect(mockPushToolResult).toHaveBeenCalledWith(
+				"Tool Call Error: use_mcp_tool\n<error>\nInvalid args for test_server:test_tool\n</error>",
+			)
 		})
 	})
 

@@ -14,5 +14,17 @@
 		"errors": {
 			"policy_restriction": "由于策略限制，无法创建新任务。"
 		}
+	},
+	"errors": {
+		"fileNotFound": "文件未找到",
+		"parseError": "解析错误",
+		"commandTimeout": "命令超时",
+		"permissionDenied": "权限被拒绝",
+		"networkError": "网络错误",
+		"invalidInput": "无效输入",
+		"operationFailed": "操作失败",
+		"resourceNotFound": "资源未找到",
+		"configurationError": "配置错误",
+		"authenticationFailed": "认证失败"
 	}
 }

@@ -14,5 +14,17 @@
 		"errors": {
 			"policy_restriction": "Falha ao criar nova tarefa devido a restrições de política."
 		}
+	},
+	"errors": {
+		"fileNotFound": "Arquivo não encontrado",
+		"parseError": "Erro de análise",
+		"commandTimeout": "Tempo limite do comando",
+		"permissionDenied": "Permissão negada",
+		"networkError": "Erro de rede",
+		"invalidInput": "Entrada inválida",
+		"operationFailed": "A operação falhou",
+		"resourceNotFound": "Recurso não encontrado",
+		"configurationError": "Erro de configuração",
+		"authenticationFailed": "Falha na autenticação"
 	}
 }

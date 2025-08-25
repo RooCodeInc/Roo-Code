@@ -14,5 +14,17 @@
 		"errors": {
 			"policy_restriction": "정책 제한으로 인해 새 작업을 생성하지 못했습니다."
 		}
+	},
+	"errors": {
+		"fileNotFound": "파일을 찾을 수 없음",
+		"parseError": "파싱 오류",
+		"commandTimeout": "명령 시간 초과",
+		"permissionDenied": "권한 거부됨",
+		"networkError": "네트워크 오류",
+		"invalidInput": "잘못된 입력",
+		"operationFailed": "작업 실패",
+		"resourceNotFound": "리소스를 찾을 수 없음",
+		"configurationError": "구성 오류",
+		"authenticationFailed": "인증 실패"
 	}
 }

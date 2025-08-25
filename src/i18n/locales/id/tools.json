@@ -17,5 +17,17 @@
 		"errors": {
 			"policy_restriction": "Gagal membuat tugas baru karena pembatasan kebijakan."
 		}
+	},
+	"errors": {
+		"fileNotFound": "File Tidak Ditemukan",
+		"parseError": "Kesalahan Parse",
+		"commandTimeout": "Waktu Tunggu Perintah Habis",
+		"permissionDenied": "Izin Ditolak",
+		"networkError": "Kesalahan Jaringan",
+		"invalidInput": "Input Tidak Valid",
+		"operationFailed": "Operasi Gagal",
+		"resourceNotFound": "Sumber Daya Tidak Ditemukan",
+		"configurationError": "Kesalahan Konfigurasi",
+		"authenticationFailed": "Autentikasi Gagal"
 	}
 }

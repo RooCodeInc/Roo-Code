@@ -14,5 +14,17 @@
 		"errors": {
 			"policy_restriction": "No se pudo crear una nueva tarea debido a restricciones de política."
 		}
+	},
+	"errors": {
+		"fileNotFound": "Archivo no encontrado",
+		"parseError": "Error de análisis",
+		"commandTimeout": "Tiempo de espera del comando agotado",
+		"permissionDenied": "Permiso denegado",
+		"networkError": "Error de red",
+		"invalidInput": "Entrada no válida",
+		"operationFailed": "La operación falló",
+		"resourceNotFound": "Recurso no encontrado",
+		"configurationError": "Error de configuración",
+		"authenticationFailed": "Fallo de autenticación"
 	}
 }

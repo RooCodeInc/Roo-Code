@@ -14,5 +14,17 @@
 		"errors": {
 			"policy_restriction": "Impossibile creare una nuova attività a causa di restrizioni di policy."
 		}
+	},
+	"errors": {
+		"fileNotFound": "File non trovato",
+		"parseError": "Errore di parsing",
+		"commandTimeout": "Timeout del comando",
+		"permissionDenied": "Permesso negato",
+		"networkError": "Errore di rete",
+		"invalidInput": "Input non valido",
+		"operationFailed": "Operazione non riuscita",
+		"resourceNotFound": "Risorsa non trovata",
+		"configurationError": "Errore di configurazione",
+		"authenticationFailed": "Autenticazione non riuscita"
 	}
 }

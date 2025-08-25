@@ -14,5 +14,17 @@
 		"errors": {
 			"policy_restriction": "No s'ha pogut crear una nova tasca a causa de restriccions de política."
 		}
+	},
+	"errors": {
+		"fileNotFound": "Fitxer no trobat",
+		"parseError": "Error d'anàlisi",
+		"commandTimeout": "Temps d'espera de l'ordre exhaurit",
+		"permissionDenied": "Permís denegat",
+		"networkError": "Error de xarxa",
+		"invalidInput": "Entrada no vàlida",
+		"operationFailed": "L'operació ha fallat",
+		"resourceNotFound": "Recurs no trobat",
+		"configurationError": "Error de configuració",
+		"authenticationFailed": "Error d'autenticació"
 	}
 }

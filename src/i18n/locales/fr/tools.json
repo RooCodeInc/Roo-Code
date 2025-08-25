@@ -14,5 +14,17 @@
 		"errors": {
 			"policy_restriction": "Impossible de créer une nouvelle tâche en raison de restrictions de politique."
 		}
+	},
+	"errors": {
+		"fileNotFound": "Fichier non trouvé",
+		"parseError": "Erreur d'analyse",
+		"commandTimeout": "Délai d'attente de la commande dépassé",
+		"permissionDenied": "Autorisation refusée",
+		"networkError": "Erreur réseau",
+		"invalidInput": "Entrée invalide",
+		"operationFailed": "L'opération a échoué",
+		"resourceNotFound": "Ressource non trouvée",
+		"configurationError": "Erreur de configuration",
+		"authenticationFailed": "Échec de l'authentification"
 	}
 }

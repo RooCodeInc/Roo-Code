@@ -14,5 +14,17 @@
 		"errors": {
 			"policy_restriction": "Kan geen nieuwe taak aanmaken vanwege beleidsbeperkingen."
 		}
+	},
+	"errors": {
+		"fileNotFound": "Bestand niet gevonden",
+		"parseError": "Parseerfout",
+		"commandTimeout": "Commando time-out",
+		"permissionDenied": "Toestemming geweigerd",
+		"networkError": "Netwerkfout",
+		"invalidInput": "Ongeldige invoer",
+		"operationFailed": "Bewerking mislukt",
+		"resourceNotFound": "Bron niet gevonden",
+		"configurationError": "Configuratiefout",
+		"authenticationFailed": "Authenticatie mislukt"
 	}
 }
