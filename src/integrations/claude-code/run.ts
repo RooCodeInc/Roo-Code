@@ -37,6 +37,13 @@ export async function* runClaudeCode(
 	} catch (error: any) {
 		// Handle ENOENT errors immediately when spawning the process
 		if (error.code === "ENOENT" || error.message?.includes("ENOENT")) {
+			// Check if this is a PowerShell script error on Windows
+			const isWindows = os.platform() === "win32"
+			const isPowerShellScript = isWindows && claudePath.toLowerCase().endsWith(".ps1")
+			if (isPowerShellScript && error.message?.includes("powershell.exe")) {
+				// PowerShell itself is not found
+				throw new Error(`PowerShell is not available or not in PATH. Original error: ${error.message}`)
+			}
 			throw createClaudeCodeNotFoundError(claudePath, error)
 		}
 		throw error
@@ -65,7 +72,17 @@ export async function* runClaudeCode(
 		process.on("error", (err) => {
 			// Enhance ENOENT errors with helpful installation guidance
 			if (err.message.includes("ENOENT") || (err as any).code === "ENOENT") {
-				processState.error = createClaudeCodeNotFoundError(claudePath, err)
+				// Check if this is a PowerShell script error on Windows
+				const isWindows = os.platform() === "win32"
+				const isPowerShellScript = isWindows && claudePath.toLowerCase().endsWith(".ps1")
+				if (isPowerShellScript && err.message?.includes("powershell.exe")) {
+					// PowerShell itself is not found
+					processState.error = new Error(
+						`PowerShell is not available or not in PATH. Original error: ${err.message}`,
+					)
+				} else {
+					processState.error = createClaudeCodeNotFoundError(claudePath, err)
+				}
 			} else {
 				processState.error = err
 			}
@@ -153,8 +170,22 @@ function runProcess({
 	const claudePath = path || "claude"
 	const isWindows = os.platform() === "win32"
 
+	// Check if the path is a PowerShell script on Windows
+	const isPowerShellScript = isWindows && claudePath.toLowerCase().endsWith(".ps1")
+
 	// Build args based on platform
-	const args = ["-p"]
+	let executablePath: string
+	let args: string[]
+
+	if (isPowerShellScript) {
+		// For PowerShell scripts on Windows, execute through PowerShell
+		executablePath = "powershell.exe"
+		args = ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", claudePath, "-p"]
+	} else {
+		// For regular executables
+		executablePath = claudePath
+		args = ["-p"]
+	}
 
 	// Pass system prompt as flag on non-Windows, via stdin on Windows (avoids cmd length limits)
 	if (!isWindows) {
@@ -176,7 +207,7 @@ function runProcess({
 		args.push("--model", modelId)
 	}
 
-	const child = execa(claudePath, args, {
+	const child = execa(executablePath, args, {
 		stdin: "pipe",
 		stdout: "pipe",
 		stderr: "pipe",
