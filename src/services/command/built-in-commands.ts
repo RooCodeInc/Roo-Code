@@ -41,6 +41,8 @@ Please analyze this codebase and create an AGENTS.md file containing:
     
     1. Quick scan for existing docs
        - AI assistant rules (.cursorrules, CLAUDE.md, AGENTS.md, .roorules)
+       - Check for existing AGENTS.md in root directory
+       - Check for existing AGENTS.md in .roo/rules-code/, .roo/rules-debug/, .roo/rules-ask/, .roo/rules-architect/
        - README and key documentation
     
     2. Identify stack
@@ -87,6 +89,9 @@ Please analyze this codebase and create an AGENTS.md file containing:
   Follow the comprehensive analysis workflow to:
   
   1. **Discovery Phase**: Find existing documentation and AI assistant rules
+     - Check for existing AGENTS.md in root directory
+     - Check for existing AGENTS.md files in .roo/rules-*/ directories
+     - If found, read and improve them rather than replacing
   2. **Project Identification**: Identify language, stack, and build system
   3. **Command Extraction**: Extract and verify essential commands
   4. **Architecture Mapping**: Create visual flow diagrams of core processes
@@ -100,7 +105,8 @@ Please analyze this codebase and create an AGENTS.md file containing:
 
 <output_structure>
   <main_file>
-    Create AGENTS.md with ONLY non-obvious information:
+    Create or update AGENTS.md with ONLY non-obvious information:
+    - If AGENTS.md exists, read it first and improve/update it
     - Header: "# AGENTS.md\\n\\nThis file provides guidance to agents when working with code in this repository."
     - Build/lint/test commands - ONLY if they differ from standard package.json scripts
     - Code style - ONLY project-specific rules not covered by linter configs
@@ -138,9 +144,11 @@ Please analyze this codebase and create an AGENTS.md file containing:
         └── AGENTS.md           # Architect mode specific instructions
     \`\`\`
     
-    Create mode-specific AGENTS.md files in:
+    Create or update mode-specific AGENTS.md files in:
     
     .roo/rules-code/AGENTS.md - ONLY non-obvious coding rules discovered by reading files:
+    - Check if this file already exists and read it first
+    - Improve and update existing content rather than replacing
     - Custom utilities that replace standard approaches
     - Non-standard patterns unique to this project
     - Hidden dependencies or coupling between components
@@ -157,6 +165,8 @@ Please analyze this codebase and create an AGENTS.md file containing:
     \`\`\`
     
     .roo/rules-debug/AGENTS.md - ONLY non-obvious debugging discoveries:
+    - Check if this file already exists and read it first
+    - Improve and update existing content rather than replacing
     - Hidden log locations not mentioned in docs
     - Non-standard debugging tools or flags
     - Gotchas that cause silent failures
@@ -173,6 +183,8 @@ Please analyze this codebase and create an AGENTS.md file containing:
     \`\`\`
     
     .roo/rules-ask/AGENTS.md - ONLY non-obvious documentation context:
+    - Check if this file already exists and read it first
+    - Improve and update existing content rather than replacing
     - Hidden or misnamed documentation
     - Counterintuitive code organization
     - Misleading folder names or structures
@@ -189,6 +201,8 @@ Please analyze this codebase and create an AGENTS.md file containing:
     \`\`\`
     
     .roo/rules-architect/AGENTS.md - ONLY non-obvious architectural constraints:
+    - Check if this file already exists and read it first
+    - Improve and update existing content rather than replacing
     - Hidden coupling between components
     - Undocumented architectural decisions
     - Non-standard patterns that must be followed
