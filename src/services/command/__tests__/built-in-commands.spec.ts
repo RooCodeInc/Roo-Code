@@ -29,7 +29,9 @@ describe("Built-in Commands", () => {
 			expect(initCommand).toBeDefined()
 			expect(initCommand!.content).toContain("AGENTS.md")
 			expect(initCommand!.content).toContain(".roo/rules-")
-			expect(initCommand!.description).toBe("Initialize a project with recommended rules and configuration")
+			expect(initCommand!.description).toBe(
+				"Analyze codebase and create concise AGENTS.md files for AI assistants",
+			)
 		})
 	})
 
@@ -42,7 +44,9 @@ describe("Built-in Commands", () => {
 			expect(initCommand!.source).toBe("built-in")
 			expect(initCommand!.filePath).toBe("<built-in:init>")
 			expect(initCommand!.content).toContain("AGENTS.md")
-			expect(initCommand!.description).toBe("Initialize a project with recommended rules and configuration")
+			expect(initCommand!.description).toBe(
+				"Analyze codebase and create concise AGENTS.md files for AI assistants",
+			)
 		})
 
 		it("should return undefined for non-existent command", async () => {
@@ -86,13 +90,15 @@ describe("Built-in Commands", () => {
 			expect(content).toContain("Build/lint/test commands")
 			expect(content).toContain("Code style guidelines")
 			expect(content).toContain("mode-specific rule directories")
-			expect(content).toContain("refer to the system prompt")
+			expect(content).toContain("analysis_workflow")
 
 			// Should mention important concepts
 			expect(content).toContain("AGENTS.md")
 			expect(content).toContain(".roo/rules-")
-			expect(content).toContain("four core modes")
-			expect(content).toContain("mode-specific AGENTS.md files")
+			expect(content).toContain("rules-code")
+			expect(content).toContain("rules-debug")
+			expect(content).toContain("rules-ask")
+			expect(content).toContain("rules-architect")
 		})
 	})
 })
