@@ -18,6 +18,7 @@ import {
 	mistralModels,
 	moonshotModels,
 	openAiNativeModels,
+	qwenCodeModels,
 	rooModels,
 	sambaNovaModels,
 	sapAiCoreModels,
@@ -49,6 +50,7 @@ export const providerNames = [
 	"moonshot",
 	"deepseek",
 	"doubao",
+	"qwen-code",
 	"unbound",
 	"requesty",
 	"human-relay",
@@ -313,6 +315,10 @@ const ioIntelligenceSchema = apiModelIdProviderModelSchema.extend({
 	ioIntelligenceApiKey: z.string().optional(),
 })
 
+const qwenCodeSchema = apiModelIdProviderModelSchema.extend({
+	qwenCodeOauthPath: z.string().optional(),
+})
+
 const rooSchema = apiModelIdProviderModelSchema.extend({
 	// No additional fields needed - uses cloud authentication
 })
@@ -364,6 +370,7 @@ export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProv
 	fireworksSchema.merge(z.object({ apiProvider: z.literal("fireworks") })),
 	featherlessSchema.merge(z.object({ apiProvider: z.literal("featherless") })),
 	ioIntelligenceSchema.merge(z.object({ apiProvider: z.literal("io-intelligence") })),
+	qwenCodeSchema.merge(z.object({ apiProvider: z.literal("qwen-code") })),
 	rooSchema.merge(z.object({ apiProvider: z.literal("roo") })),
 	sapAiCoreSchema.merge(z.object({ apiProvider: z.literal("sapaicore") })),
 	defaultSchema,
@@ -403,6 +410,7 @@ export const providerSettingsSchema = z.object({
 	...fireworksSchema.shape,
 	...featherlessSchema.shape,
 	...ioIntelligenceSchema.shape,
+	...qwenCodeSchema.shape,
 	...rooSchema.shape,
 	...sapAiCoreSchema.shape,
 	...codebaseIndexProviderSchema.shape,
@@ -520,6 +528,7 @@ export const MODELS_BY_PROVIDER: Record<
 		label: "OpenAI",
 		models: Object.keys(openAiNativeModels),
 	},
+	"qwen-code": { id: "qwen-code", label: "Qwen Code", models: Object.keys(qwenCodeModels) },
 	roo: { id: "roo", label: "Roo", models: Object.keys(rooModels) },
 	sambanova: {
 		id: "sambanova",

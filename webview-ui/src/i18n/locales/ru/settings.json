@@ -811,7 +811,8 @@
 		"sapAiCoreBaseUrl": "Базовый URL SAP AI Core обязателен.",
 		"sapAiCoreClientId": "ID клиента SAP AI Core обязателен.",
 		"sapAiCoreClientSecret": "Секрет клиента SAP AI Core обязателен.",
-		"sapAiCoreTokenUrl": "URL токена SAP AI Core обязателен."
+		"sapAiCoreTokenUrl": "URL токена SAP AI Core обязателен.",
+		"qwenCodeOauthPath": "Вы должны указать допустимый путь к учетным данным OAuth"
 	},
 	"placeholders": {
 		"apiKey": "Введите API-ключ...",

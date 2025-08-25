@@ -811,7 +811,8 @@
 		"sapAiCoreBaseUrl": "URL Base SAP AI Core é obrigatória.",
 		"sapAiCoreClientId": "ID do Cliente SAP AI Core é obrigatório.",
 		"sapAiCoreClientSecret": "Segredo do Cliente SAP AI Core é obrigatório.",
-		"sapAiCoreTokenUrl": "URL do Token SAP AI Core é obrigatória."
+		"sapAiCoreTokenUrl": "URL do Token SAP AI Core é obrigatória.",
+		"qwenCodeOauthPath": "Você deve fornecer um caminho válido de credenciais OAuth"
 	},
 	"placeholders": {
 		"apiKey": "Digite a chave API...",

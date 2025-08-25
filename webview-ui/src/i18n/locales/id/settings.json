@@ -840,7 +840,8 @@
 		"sapAiCoreBaseUrl": "SAP AI Core Base URL diperlukan.",
 		"sapAiCoreClientId": "SAP AI Core Client ID diperlukan.",
 		"sapAiCoreClientSecret": "SAP AI Core Client Secret diperlukan.",
-		"sapAiCoreTokenUrl": "SAP AI Core Token URL diperlukan."
+		"sapAiCoreTokenUrl": "SAP AI Core Token URL diperlukan.",
+		"qwenCodeOauthPath": "Kamu harus memberikan jalur kredensial OAuth yang valid"
 	},
 	"placeholders": {
 		"apiKey": "Masukkan API Key...",

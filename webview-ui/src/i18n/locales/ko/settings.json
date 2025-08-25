@@ -811,7 +811,8 @@
 		"sapAiCoreBaseUrl": "SAP AI Core Base URL이 필요합니다.",
 		"sapAiCoreClientId": "SAP AI Core Client ID가 필요합니다.",
 		"sapAiCoreClientSecret": "SAP AI Core Client Secret이 필요합니다.",
-		"sapAiCoreTokenUrl": "SAP AI Core Token URL이 필요합니다."
+		"sapAiCoreTokenUrl": "SAP AI Core Token URL이 필요합니다.",
+		"qwenCodeOauthPath": "유효한 OAuth 자격 증명 경로를 제공해야 합니다"
 	},
 	"placeholders": {
 		"apiKey": "API 키 입력...",

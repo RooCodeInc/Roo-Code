@@ -811,7 +811,8 @@
 		"sapAiCoreBaseUrl": "SAP AI Core Basis-URL is vereist.",
 		"sapAiCoreClientId": "SAP AI Core Client ID is vereist.",
 		"sapAiCoreClientSecret": "SAP AI Core Client Secret is vereist.",
-		"sapAiCoreTokenUrl": "SAP AI Core Token URL is vereist."
+		"sapAiCoreTokenUrl": "SAP AI Core Token URL is vereist.",
+		"qwenCodeOauthPath": "Je moet een geldig OAuth-referentiepad opgeven"
 	},
 	"placeholders": {
 		"apiKey": "Voer API-sleutel in...",

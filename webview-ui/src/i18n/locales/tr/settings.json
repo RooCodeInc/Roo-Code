@@ -811,7 +811,8 @@
 		"sapAiCoreBaseUrl": "SAP AI Core Temel URL gereklidir.",
 		"sapAiCoreClientId": "SAP AI Core İstemci Kimliği gereklidir.",
 		"sapAiCoreClientSecret": "SAP AI Core İstemci Sırrı gereklidir.",
-		"sapAiCoreTokenUrl": "SAP AI Core Token URL gereklidir."
+		"sapAiCoreTokenUrl": "SAP AI Core Token URL gereklidir.",
+		"qwenCodeOauthPath": "Geçerli bir OAuth kimlik bilgileri yolu sağlamalısın"
 	},
 	"placeholders": {
 		"apiKey": "API anahtarını girin...",

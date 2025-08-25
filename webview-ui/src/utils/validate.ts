@@ -147,6 +147,11 @@ function validateModelsAndKeysProvided(apiConfiguration: ProviderSettings): stri
 			}
 			if (!apiConfiguration.apiModelId) {
 				return i18next.t("settings:validation.modelId")
+      }
+      break
+		case "qwen-code":
+			if (!apiConfiguration.qwenCodeOauthPath) {
+				return i18next.t("settings:validation.qwenCodeOauthPath")
 			}
 			break
 	}

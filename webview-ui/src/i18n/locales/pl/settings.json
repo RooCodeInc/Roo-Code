@@ -811,7 +811,8 @@
 		"sapAiCoreBaseUrl": "Bazowy URL SAP AI Core jest wymagany.",
 		"sapAiCoreClientId": "ID klienta SAP AI Core jest wymagany.",
 		"sapAiCoreClientSecret": "Sekret klienta SAP AI Core jest wymagany.",
-		"sapAiCoreTokenUrl": "URL tokena SAP AI Core jest wymagany."
+		"sapAiCoreTokenUrl": "URL tokena SAP AI Core jest wymagany.",
+		"qwenCodeOauthPath": "Musisz podać prawidłową ścieżkę do poświadczeń OAuth"
 	},
 	"placeholders": {
 		"apiKey": "Wprowadź klucz API...",
