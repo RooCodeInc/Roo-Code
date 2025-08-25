@@ -632,7 +632,6 @@ export class SapAiCoreHandler extends BaseProvider implements SingleCompletionHa
 		]
 
 		const geminiModels = ["gemini-2.5-flash", "gemini-2.5-pro"]
-		console.log(model.id)
 		// Check if model is supported before getting deployment
 		if (
 			!anthropicModels.includes(model.id) &&
