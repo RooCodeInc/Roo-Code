@@ -48,6 +48,7 @@ import {
 	fireworksDefaultModelId,
 	ioIntelligenceDefaultModelId,
 	ioIntelligenceModels,
+	vercelAiGatewayDefaultModelId,
 	BEDROCK_CLAUDE_SONNET_4_MODEL_ID,
 } from "@roo-code/types"
 
@@ -294,6 +295,11 @@ function getSelectedModel({
 			const id = apiConfiguration.ioIntelligenceModelId ?? ioIntelligenceDefaultModelId
 			const info =
 				routerModels["io-intelligence"]?.[id] ?? ioIntelligenceModels[id as keyof typeof ioIntelligenceModels]
+			return { id, info }
+		}
+		case "vercel-ai-gateway": {
+			const id = apiConfiguration.vercelAiGatewayModelId ?? vercelAiGatewayDefaultModelId
+			const info = routerModels["vercel-ai-gateway"]?.[id]
 			return { id, info }
 		}
 		// case "anthropic":

@@ -83,6 +83,14 @@ const WelcomeView = () => {
 									description: t("welcome:routers.openrouter.description"),
 									authUrl: getOpenRouterAuthUrl(uriScheme),
 								},
+								{
+									slug: "vercel-ai-gateway",
+									name: "Vercel AI Gateway",
+									description: t("welcome:routers.vercelAiGateway.description"),
+									incentive: t("welcome:routers.vercelAiGateway.incentive"),
+									authUrl:
+										"https://vercel.com/d?to=%2F%5Bteam%5D%2F%7E%2Fai%2Fapi-keys&title=AI+Gateway+API+Key",
+								},
 							]
 
 							// Shuffle providers based on machine ID (will be consistent for the same machine)

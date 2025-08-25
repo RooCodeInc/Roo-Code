@@ -47,6 +47,7 @@ export const providerNames = [
 	"zai",
 	"fireworks",
 	"io-intelligence",
+	"vercel-ai-gateway",
 ] as const
 
 export const providerNamesSchema = z.enum(providerNames)
@@ -288,6 +289,11 @@ const ioIntelligenceSchema = apiModelIdProviderModelSchema.extend({
 	ioIntelligenceApiKey: z.string().optional(),
 })
 
+const vercelAiGatewaySchema = baseProviderSettingsSchema.extend({
+	vercelAiGatewayApiKey: z.string().optional(),
+	vercelAiGatewayModelId: z.string().optional(),
+})
+
 const defaultSchema = z.object({
 	apiProvider: z.undefined(),
 })
@@ -324,6 +330,7 @@ export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProv
 	zaiSchema.merge(z.object({ apiProvider: z.literal("zai") })),
 	fireworksSchema.merge(z.object({ apiProvider: z.literal("fireworks") })),
 	ioIntelligenceSchema.merge(z.object({ apiProvider: z.literal("io-intelligence") })),
+	vercelAiGatewaySchema.merge(z.object({ apiProvider: z.literal("vercel-ai-gateway") })),
 	defaultSchema,
 ])
 
@@ -360,6 +367,7 @@ export const providerSettingsSchema = z.object({
 	...zaiSchema.shape,
 	...fireworksSchema.shape,
 	...ioIntelligenceSchema.shape,
+	...vercelAiGatewaySchema.shape,
 	...codebaseIndexProviderSchema.shape,
 })
 
@@ -386,6 +394,7 @@ export const MODEL_ID_KEYS: Partial<keyof ProviderSettings>[] = [
 	"litellmModelId",
 	"huggingFaceModelId",
 	"ioIntelligenceModelId",
+	"vercelAiGatewayModelId",
 ]
 
 export const getModelId = (settings: ProviderSettings): string | undefined => {

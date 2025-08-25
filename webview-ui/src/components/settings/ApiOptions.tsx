@@ -32,6 +32,7 @@ import {
 	mainlandZAiDefaultModelId,
 	fireworksDefaultModelId,
 	ioIntelligenceDefaultModelId,
+	vercelAiGatewayDefaultModelId,
 } from "@roo-code/types"
 
 import { vscode } from "@src/utils/vscode"
@@ -86,6 +87,7 @@ import {
 	XAI,
 	ZAi,
 	Fireworks,
+	VercelAiGateway,
 } from "./providers"
 
 import { MODELS_BY_PROVIDER, PROVIDERS } from "./constants"
@@ -323,6 +325,7 @@ const ApiOptions = ({
 				},
 				fireworks: { field: "apiModelId", default: fireworksDefaultModelId },
 				"io-intelligence": { field: "ioIntelligenceModelId", default: ioIntelligenceDefaultModelId },
+				"vercel-ai-gateway": { field: "vercelAiGatewayModelId", default: vercelAiGatewayDefaultModelId },
 				openai: { field: "openAiModelId" },
 				ollama: { field: "ollamaModelId" },
 				lmstudio: { field: "lmStudioModelId" },
@@ -555,6 +558,16 @@ const ApiOptions = ({
 				<IOIntelligence
 					apiConfiguration={apiConfiguration}
 					setApiConfigurationField={setApiConfigurationField}
+					organizationAllowList={organizationAllowList}
+					modelValidationError={modelValidationError}
+				/>
+			)}
+
+			{selectedProvider === "vercel-ai-gateway" && (
+				<VercelAiGateway
+					apiConfiguration={apiConfiguration}
+					setApiConfigurationField={setApiConfigurationField}
+					routerModels={routerModels}
 					organizationAllowList={organizationAllowList}
 					modelValidationError={modelValidationError}
 				/>

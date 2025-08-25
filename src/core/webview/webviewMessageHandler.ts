@@ -546,6 +546,7 @@ export const webviewMessageHandler = async (
 				{ key: "requesty", options: { provider: "requesty", apiKey: apiConfiguration.requestyApiKey } },
 				{ key: "glama", options: { provider: "glama" } },
 				{ key: "unbound", options: { provider: "unbound", apiKey: apiConfiguration.unboundApiKey } },
+				{ key: "vercel-ai-gateway", options: { provider: "vercel-ai-gateway" } },
 			]
 
 			// Add IO Intelligence if API key is provided
