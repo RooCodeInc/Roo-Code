@@ -13,6 +13,7 @@ import { fileExistsAtPath } from "../../utils/fs"
 import { RecordSource } from "../context-tracking/FileContextTrackerTypes"
 import { DEFAULT_WRITE_DELAY_MS } from "@roo-code/types"
 import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
+import { t } from "../../i18n"
 
 /**
  * Tool for performing search and replace operations on files
@@ -135,7 +136,7 @@ export async function searchAndReplaceTool(
 			cline.consecutiveMistakeCount++
 			cline.recordToolError("search_and_replace")
 			const formattedError = formatResponse.toolError(
-				`File does not exist at path: ${absolutePath}\nThe specified file could not be found. Please verify the file path and try again.`,
+				t("tools:errors.fileNotFoundSimple", { path: absolutePath }),
 			)
 			await cline.say("error", formattedError)
 			pushToolResult(formattedError)
@@ -152,9 +153,10 @@ export async function searchAndReplaceTool(
 		} catch (error) {
 			cline.consecutiveMistakeCount++
 			cline.recordToolError("search_and_replace")
-			const errorMessage = `Error reading file: ${absolutePath}\nFailed to read the file content: ${
-				error instanceof Error ? error.message : String(error)
-			}\nPlease verify file permissions and try again.`
+			const errorMessage = t("tools:errors.fileReadError", {
+				path: absolutePath,
+				error: error instanceof Error ? error.message : String(error),
+			})
 			const formattedError = formatResponse.toolError(errorMessage)
 			await cline.say("error", formattedError)
 			pushToolResult(formattedError)

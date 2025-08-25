@@ -16,6 +16,7 @@ import { detectCodeOmission } from "../../integrations/editor/detect-omission"
 import { unescapeHtmlEntities } from "../../utils/text-normalization"
 import { DEFAULT_WRITE_DELAY_MS } from "@roo-code/types"
 import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
+import { t } from "../../i18n"
 
 export async function writeToFileTool(
 	cline: Task,
@@ -145,9 +146,10 @@ export async function writeToFileTool(
 				// Use more specific error message for line_count that provides guidance based on the situation
 				await cline.say(
 					"error",
-					`Roo tried to use write_to_file${
-						relPath ? ` for '${relPath.toPosix()}'` : ""
-					} but the required parameter 'line_count' was missing or truncated after ${actualLineCount} lines of content were written. Retrying...`,
+					t("tools:errors.lineCountMissing", {
+						relPath: relPath ? ` for '${relPath.toPosix()}'` : "",
+						actualLineCount,
+					}),
 				)
 
 				pushToolResult(

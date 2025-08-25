@@ -15,6 +15,13 @@ vi.mock("../../prompts/responses", () => ({
 
 vi.mock("../../../i18n", () => ({
 	t: vi.fn((key: string, params?: any) => {
+		// Handle the new tools error messages
+		if (key === "tools:errors.missingRequiredParameter.withPath" && params) {
+			return `Roo tried to use ${params.toolName} for '${params.relPath}' without value for required parameter '${params.paramName}'. Retrying...`
+		}
+		if (key === "tools:errors.missingRequiredParameter.withoutPath" && params) {
+			return `Roo tried to use ${params.toolName} without value for required parameter '${params.paramName}'. Retrying...`
+		}
 		if (key === "mcp:errors.invalidJsonArgument" && params?.toolName) {
 			return `Roo tried to use ${params.toolName} with an invalid JSON argument. Retrying...`
 		}

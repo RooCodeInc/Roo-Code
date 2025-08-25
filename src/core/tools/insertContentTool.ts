@@ -12,6 +12,7 @@ import { fileExistsAtPath } from "../../utils/fs"
 import { insertGroups } from "../diff/insert-groups"
 import { DEFAULT_WRITE_DELAY_MS } from "@roo-code/types"
 import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
+import { t } from "../../i18n"
 
 export async function insertContentTool(
 	cline: Task,
@@ -86,7 +87,7 @@ export async function insertContentTool(
 			if (lineNumber > 1) {
 				cline.consecutiveMistakeCount++
 				cline.recordToolError("insert_content")
-				const formattedError = `Cannot insert content at line ${lineNumber} into a non-existent file. For new files, 'line' must be 0 (to append) or 1 (to insert at the beginning).`
+				const formattedError = t("tools:errors.insertContentNewFile", { lineNumber })
 				await cline.say("error", formattedError)
 				pushToolResult(formattedError)
 				return

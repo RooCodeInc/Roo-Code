@@ -1053,12 +1053,17 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	}
 
 	async sayAndCreateMissingParamError(toolName: ToolName, paramName: string, relPath?: string) {
-		await this.say(
-			"error",
-			`Roo tried to use ${toolName}${
-				relPath ? ` for '${relPath.toPosix()}'` : ""
-			} without value for required parameter '${paramName}'. Retrying...`,
-		)
+		const errorMessage = relPath
+			? t("tools:errors.missingRequiredParameter.withPath", {
+					toolName,
+					relPath: relPath.toPosix(),
+					paramName,
+				})
+			: t("tools:errors.missingRequiredParameter.withoutPath", {
+					toolName,
+					paramName,
+				})
+		await this.say("error", errorMessage)
 		return formatResponse.toolError(formatResponse.missingToolParameterError(paramName))
 	}
 
@@ -2135,10 +2140,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// If there's no assistant_responses, that means we got no text
 					// or tool_use content blocks from API which we should assume is
 					// an error.
-					await this.say(
-						"error",
-						"Unexpected API Response: The language model did not provide any assistant messages. This may indicate an issue with the API or the model's output.",
-					)
+					await this.say("error", t("common:errors.unexpectedApiResponse"))
 
 					await this.addToApiConversationHistory({
 						role: "assistant",

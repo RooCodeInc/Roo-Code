@@ -35,6 +35,7 @@ import { Task } from "../task/Task"
 import { codebaseSearchTool } from "../tools/codebaseSearchTool"
 import { experiments, EXPERIMENT_IDS } from "../../shared/experiments"
 import { applyDiffToolLegacy } from "../tools/applyDiffTool"
+import { t } from "../../i18n"
 
 /**
  * Processes and presents assistant message content to the user interface.
@@ -316,7 +317,10 @@ export async function presentAssistantMessage(cline: Task) {
 
 				await cline.say(
 					"error",
-					`Error ${action}:\n${error.message ?? JSON.stringify(serializeError(error), null, 2)}`,
+					t("tools:errors.toolExecutionError", {
+						action,
+						error: error.message ?? JSON.stringify(serializeError(error), null, 2),
+					}),
 				)
 
 				pushToolResult(formatResponse.toolError(errorString))
