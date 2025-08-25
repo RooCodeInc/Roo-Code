@@ -136,9 +136,28 @@ async function scanCommandDirectory(
 		const entries = await fs.readdir(dirPath, { withFileTypes: true })
 
 		for (const entry of entries) {
-			// Check for both regular files and symbolic links
-			if ((entry.isFile() || entry.isSymbolicLink()) && isMarkdownFile(entry.name)) {
+			// Only process markdown files
+			if (isMarkdownFile(entry.name)) {
 				const filePath = path.join(dirPath, entry.name)
+
+				// Check if entry is a valid file or a symbolic link pointing to a file
+				let isValidFile = false
+				if (entry.isFile()) {
+					isValidFile = true
+				} else if (entry.isSymbolicLink()) {
+					try {
+						const stats = await fs.stat(filePath) // follows the symlink
+						isValidFile = stats.isFile()
+					} catch {
+						// Broken symlink or points to non-existent target
+						isValidFile = false
+					}
+				}
+
+				if (!isValidFile) {
+					continue
+				}
+
 				const commandName = getCommandNameFromFile(entry.name)
 
 				try {
