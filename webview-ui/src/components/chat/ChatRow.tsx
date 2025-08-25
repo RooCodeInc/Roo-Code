@@ -118,6 +118,8 @@ export const ChatRowContent = ({
 	const [reasoningCollapsed, setReasoningCollapsed] = useState(true)
 	const [isDiffErrorExpanded, setIsDiffErrorExpanded] = useState(false)
 	const [showCopySuccess, setShowCopySuccess] = useState(false)
+	const [isErrorExpanded, setIsErrorExpanded] = useState(false) // Default collapsed like diff_error
+	const [showErrorCopySuccess, setShowErrorCopySuccess] = useState(false)
 	const [isEditing, setIsEditing] = useState(false)
 	const [editedContent, setEditedContent] = useState("")
 	const [editMode, setEditMode] = useState<Mode>(mode || "code")
@@ -213,7 +215,7 @@ export const ChatRowContent = ({
 					<span
 						className="codicon codicon-error"
 						style={{ color: errorColor, marginBottom: "-1.5px" }}></span>,
-					<span style={{ color: errorColor, fontWeight: "bold" }}>{t("chat:error")}</span>,
+					<span style={{ color: errorColor, fontWeight: "bold" }}>{message.title || t("chat:error")}</span>,
 				]
 			case "mistake_limit_reached":
 				return [
@@ -855,56 +857,32 @@ export const ChatRowContent = ({
 				case "diff_error":
 					return (
 						<div>
-							<div
-								style={{
-									marginTop: "0px",
-									overflow: "hidden",
-									marginBottom: "8px",
-								}}>
+							<div className="mt-0 overflow-hidden mb-2">
 								<div
-									style={{
-										borderBottom: isDiffErrorExpanded
-											? "1px solid var(--vscode-editorGroup-border)"
-											: "none",
-										fontWeight: "normal",
-										fontSize: "var(--vscode-font-size)",
-										color: "var(--vscode-editor-foreground)",
-										display: "flex",
-										alignItems: "center",
-										justifyContent: "space-between",
-										cursor: "pointer",
-									}}
-									onClick={() => setIsDiffErrorExpanded(!isDiffErrorExpanded)}>
-									<div
-										style={{
-											display: "flex",
-											alignItems: "center",
-											gap: "10px",
-											flexGrow: 1,
-										}}>
+									className={`${
+										isDiffErrorExpanded ? "border-b border-vscode-editorGroup-border" : ""
+									} font-normal text-base text-vscode-editor-foreground flex items-center justify-between cursor-pointer focus:outline focus:outline-2 focus:outline-vscode-focusBorder`}
+									role="button"
+									tabIndex={0}
+									aria-expanded={isDiffErrorExpanded}
+									aria-label={t("chat:diffError.title")}
+									onClick={() => setIsDiffErrorExpanded(!isDiffErrorExpanded)}
+									onKeyDown={(e) => {
+										if (e.key === "Enter" || e.key === " ") {
+											e.preventDefault()
+											setIsDiffErrorExpanded(!isDiffErrorExpanded)
+										}
+									}}>
+									<div className="flex items-center gap-2.5 flex-grow">
 										<span
-											className="codicon codicon-warning"
-											style={{
-												color: "var(--vscode-editorWarning-foreground)",
-												opacity: 0.8,
-												fontSize: 16,
-												marginBottom: "-1.5px",
-											}}></span>
-										<span style={{ fontWeight: "bold" }}>{t("chat:diffError.title")}</span>
+											className="codicon codicon-warning text-vscode-editorWarning-foreground opacity-80"
+											style={{ fontSize: 16, marginBottom: "-1.5px" }}></span>
+										<span className="font-bold">{t("chat:diffError.title")}</span>
 									</div>
-									<div style={{ display: "flex", alignItems: "center" }}>
+									<div className="flex items-center">
 										<VSCodeButton
 											appearance="icon"
-											style={{
-												padding: "3px",
-												height: "24px",
-												marginRight: "4px",
-												color: "var(--vscode-editor-foreground)",
-												display: "flex",
-												alignItems: "center",
-												justifyContent: "center",
-												background: "transparent",
-											}}
+											className="p-[3px] h-6 mr-1 text-vscode-editor-foreground flex items-center justify-center bg-transparent"
 											onClick={(e) => {
 												e.stopPropagation()
 
@@ -929,12 +907,7 @@ export const ChatRowContent = ({
 									</div>
 								</div>
 								{isDiffErrorExpanded && (
-									<div
-										style={{
-											padding: "8px",
-											backgroundColor: "var(--vscode-editor-background)",
-											borderTop: "none",
-										}}>
+									<div className="p-2 bg-vscode-editor-background">
 										<CodeBlock source={message.text || ""} language="xml" />
 									</div>
 								)}
@@ -1132,15 +1105,58 @@ export const ChatRowContent = ({
 					)
 				case "error":
 					return (
-						<>
-							{title && (
-								<div style={headerStyle}>
-									{icon}
-									{title}
+						<div>
+							<div className="mt-0 overflow-hidden mb-2">
+								<div
+									className={`${
+										isErrorExpanded ? "border-b border-vscode-editorGroup-border" : ""
+									} font-normal text-base text-vscode-editor-foreground flex items-center justify-between cursor-pointer focus:outline focus:outline-2 focus:outline-vscode-focusBorder`}
+									role="button"
+									tabIndex={0}
+									aria-expanded={isErrorExpanded}
+									aria-label={message.title || t("chat:error")}
+									onClick={() => setIsErrorExpanded(!isErrorExpanded)}
+									onKeyDown={(e) => {
+										if (e.key === "Enter" || e.key === " ") {
+											e.preventDefault()
+											setIsErrorExpanded(!isErrorExpanded)
+										}
+									}}>
+									<div className="flex items-center gap-2.5 flex-grow">
+										<span
+											className="codicon codicon-warning text-vscode-editorWarning-foreground opacity-80"
+											style={{ fontSize: 16, marginBottom: "-1.5px" }}></span>
+										<span className="font-bold">{message.title || t("chat:error")}</span>
+									</div>
+									<div className="flex items-center">
+										<VSCodeButton
+											appearance="icon"
+											className="p-[3px] h-6 mr-1 text-vscode-editor-foreground flex items-center justify-center bg-transparent"
+											onClick={(e) => {
+												e.stopPropagation()
+												copyWithFeedback(message.text || "").then((success) => {
+													if (success) {
+														setShowErrorCopySuccess(true)
+														setTimeout(() => {
+															setShowErrorCopySuccess(false)
+														}, 1000)
+													}
+												})
+											}}>
+											<span
+												className={`codicon codicon-${showErrorCopySuccess ? "check" : "copy"}`}></span>
+										</VSCodeButton>
+										<span
+											className={`codicon codicon-chevron-${isErrorExpanded ? "up" : "down"}`}></span>
+									</div>
 								</div>
-							)}
-							<p style={{ ...pStyle, color: "var(--vscode-errorForeground)" }}>{message.text}</p>
-						</>
+								{isErrorExpanded && (
+									<div className="p-2 bg-vscode-editor-background">
+										<CodeBlock source={message.text || ""} language="xml" />
+									</div>
+								)}
+							</div>
+						</div>
 					)
 				case "completion_result":
 					return (

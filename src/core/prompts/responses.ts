@@ -13,7 +13,10 @@ export const formatResponse = {
 	toolApprovedWithFeedback: (feedback?: string) =>
 		`The user approved this operation and provided the following context:\n<feedback>\n${feedback}\n</feedback>`,
 
-	toolError: (error?: string) => `The tool execution failed with the following error:\n<error>\n${error}\n</error>`,
+	toolError: (error?: string, toolName?: string) => {
+		const title = toolName ? `Tool Call Error: ${toolName}` : "Tool Execution Error"
+		return `${title}\n<error>\n${error}\n</error>`
+	},
 
 	rooIgnoreError: (path: string) =>
 		`Access to ${path} is blocked by the .rooignore file settings. You must try to continue in the task without using this file, or ask the user to update the .rooignore file.`,

@@ -121,7 +121,7 @@ export async function searchAndReplaceTool(
 
 		if (!accessAllowed) {
 			await cline.say("rooignore_error", validRelPath)
-			pushToolResult(formatResponse.toolError(formatResponse.rooIgnoreError(validRelPath)))
+			pushToolResult(formatResponse.toolError(formatResponse.rooIgnoreError(validRelPath), "search_and_replace"))
 			return
 		}
 
@@ -137,7 +137,9 @@ export async function searchAndReplaceTool(
 			const formattedError = formatResponse.toolError(
 				`File does not exist at path: ${absolutePath}\nThe specified file could not be found. Please verify the file path and try again.`,
 			)
-			await cline.say("error", formattedError)
+			await cline.say("error", formattedError, undefined, undefined, undefined, undefined, {
+				title: "File Not Found",
+			})
 			pushToolResult(formattedError)
 			return
 		}
@@ -156,7 +158,9 @@ export async function searchAndReplaceTool(
 				error instanceof Error ? error.message : String(error)
 			}\nPlease verify file permissions and try again.`
 			const formattedError = formatResponse.toolError(errorMessage)
-			await cline.say("error", formattedError)
+			await cline.say("error", formattedError, undefined, undefined, undefined, undefined, {
+				title: "File Read Error",
+			})
 			pushToolResult(formattedError)
 			return
 		}

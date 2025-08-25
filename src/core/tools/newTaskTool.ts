@@ -53,7 +53,7 @@ export async function newTaskTool(
 			// Get the VSCode setting for requiring todos
 			const provider = cline.providerRef.deref()
 			if (!provider) {
-				pushToolResult(formatResponse.toolError("Provider reference lost"))
+				pushToolResult(formatResponse.toolError("Provider reference lost", "new_task"))
 				return
 			}
 			const state = await provider.getState()
@@ -81,7 +81,9 @@ export async function newTaskTool(
 				} catch (error) {
 					cline.consecutiveMistakeCount++
 					cline.recordToolError("new_task")
-					pushToolResult(formatResponse.toolError("Invalid todos format: must be a markdown checklist"))
+					pushToolResult(
+						formatResponse.toolError("Invalid todos format: must be a markdown checklist", "new_task"),
+					)
 					return
 				}
 			}
@@ -95,7 +97,7 @@ export async function newTaskTool(
 			const targetMode = getModeBySlug(mode, state?.customModes)
 
 			if (!targetMode) {
-				pushToolResult(formatResponse.toolError(`Invalid mode: ${mode}`))
+				pushToolResult(formatResponse.toolError(`Invalid mode: ${mode}`, "new_task"))
 				return
 			}
 

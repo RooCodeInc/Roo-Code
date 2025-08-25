@@ -49,7 +49,7 @@ export async function fetchInstructionsTool(
 			const content = await fetchInstructions(task, { mcpHub, diffStrategy, context })
 
 			if (!content) {
-				pushToolResult(formatResponse.toolError(`Invalid instructions request: ${task}`))
+				pushToolResult(formatResponse.toolError(`Invalid instructions request: ${task}`, "fetch_instructions"))
 				return
 			}
 

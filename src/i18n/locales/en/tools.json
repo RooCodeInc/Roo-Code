@@ -14,5 +14,17 @@
 		"errors": {
 			"policy_restriction": "Failed to create new task due to policy restrictions."
 		}
+	},
+	"errors": {
+		"fileNotFound": "File Not Found",
+		"parseError": "Parse Error",
+		"commandTimeout": "Command Timeout",
+		"permissionDenied": "Permission Denied",
+		"networkError": "Network Error",
+		"invalidInput": "Invalid Input",
+		"operationFailed": "Operation Failed",
+		"resourceNotFound": "Resource Not Found",
+		"configurationError": "Configuration Error",
+		"authenticationFailed": "Authentication Failed"
 	}
 }

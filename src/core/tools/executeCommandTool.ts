@@ -47,7 +47,12 @@ export async function executeCommandTool(
 
 			if (ignoredFileAttemptedToAccess) {
 				await task.say("rooignore_error", ignoredFileAttemptedToAccess)
-				pushToolResult(formatResponse.toolError(formatResponse.rooIgnoreError(ignoredFileAttemptedToAccess)))
+				pushToolResult(
+					formatResponse.toolError(
+						formatResponse.rooIgnoreError(ignoredFileAttemptedToAccess),
+						"execute_command",
+					),
+				)
 				return
 			}
 
@@ -271,7 +276,15 @@ export async function executeCommand(
 			if (isTimedOut) {
 				const status: CommandExecutionStatus = { executionId, status: "timeout" }
 				provider?.postMessageToWebview({ type: "commandExecutionStatus", text: JSON.stringify(status) })
-				await task.say("error", t("common:errors:command_timeout", { seconds: commandExecutionTimeoutSeconds }))
+				await task.say(
+					"error",
+					t("common:errors:command_timeout", { seconds: commandExecutionTimeoutSeconds }),
+					undefined,
+					undefined,
+					undefined,
+					undefined,
+					{ title: t("tools:errors.commandTimeout") },
+				)
 				task.terminalProcess = undefined
 
 				return [
