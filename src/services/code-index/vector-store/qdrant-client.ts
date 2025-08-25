@@ -491,8 +491,13 @@ export class QdrantVectorStore implements IVectorStore {
 				// Include first few file paths for debugging (avoid logging too many)
 				samplePaths: filePaths.slice(0, 3),
 			})
+			console.error(
+				`[QdrantVectorStore] Deletion error occurred Stack trace:`,
+				error?.stack || "No stack trace available",
+			)
 
-			throw error
+			// Don't throw - allow the operation to continue despite deletion failure
+			// This prevents workflow disruption when vector store cleanup fails
 		}
 	}
 
