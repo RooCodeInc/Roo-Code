@@ -40,12 +40,14 @@ Please analyze this codebase and create an AGENTS.md file containing:
     If the update_todo_list tool is available, create a todo list with these focused analysis steps:
     
     1. Check for existing AGENTS.md files
-       CRITICAL - Check these EXACT paths:
-       - ./AGENTS.md (root directory)
-       - ./.roo/rules-code/AGENTS.md
-       - ./.roo/rules-debug/AGENTS.md
-       - ./.roo/rules-ask/AGENTS.md
-       - ./.roo/rules-architect/AGENTS.md
+       CRITICAL - Check these EXACT paths IN THE PROJECT ROOT:
+       - AGENTS.md (in project root directory)
+       - .roo/rules-code/AGENTS.md (relative to project root)
+       - .roo/rules-debug/AGENTS.md (relative to project root)
+       - .roo/rules-ask/AGENTS.md (relative to project root)
+       - .roo/rules-architect/AGENTS.md (relative to project root)
+       
+       IMPORTANT: All paths are relative to the project/workspace root, NOT system root!
        
        If ANY of these exist:
        - Read them thoroughly
@@ -93,7 +95,7 @@ Please analyze this codebase and create an AGENTS.md file containing:
          * Then add newly discovered non-obvious patterns
          * Result should be SHORTER and MORE FOCUSED than before
        - If creating new: Follow the non-obvious-only principle
-       - Create mode-specific files in .roo/rules-*/ directories
+       - Create mode-specific files in .roo/rules-*/ directories (IN PROJECT ROOT)
        
     Note: If update_todo_list is not available, proceed with the analysis workflow directly without creating a todo list.
   </todo_list_creation>
@@ -102,13 +104,15 @@ Please analyze this codebase and create an AGENTS.md file containing:
 <analysis_workflow>
   Follow the comprehensive analysis workflow to:
   
-  1. **Discovery Phase**: 
-     CRITICAL - First check for existing AGENTS.md files at these EXACT locations:
-     - ./AGENTS.md (root)
-     - ./.roo/rules-code/AGENTS.md
-     - ./.roo/rules-debug/AGENTS.md
-     - ./.roo/rules-ask/AGENTS.md
-     - ./.roo/rules-architect/AGENTS.md
+  1. **Discovery Phase**:
+     CRITICAL - First check for existing AGENTS.md files at these EXACT locations IN PROJECT ROOT:
+     - AGENTS.md (in project/workspace root)
+     - .roo/rules-code/AGENTS.md (relative to project root)
+     - .roo/rules-debug/AGENTS.md (relative to project root)
+     - .roo/rules-ask/AGENTS.md (relative to project root)
+     - .roo/rules-architect/AGENTS.md (relative to project root)
+     
+     IMPORTANT: The .roo folder should be created in the PROJECT ROOT, not system root!
      
      If found, perform CRITICAL analysis:
      - What information is OBVIOUS and must be DELETED?
@@ -163,13 +167,16 @@ Please analyze this codebase and create an AGENTS.md file containing:
   </main_file>
   
   <mode_specific_files>
-    Create or deeply improve mode-specific AGENTS.md files.
+    Create or deeply improve mode-specific AGENTS.md files IN THE PROJECT ROOT.
     
-    CRITICAL: For each of these paths, check if the file exists FIRST:
-    - ./.roo/rules-code/AGENTS.md
-    - ./.roo/rules-debug/AGENTS.md
-    - ./.roo/rules-ask/AGENTS.md
-    - ./.roo/rules-architect/AGENTS.md
+    CRITICAL: For each of these paths (RELATIVE TO PROJECT ROOT), check if the file exists FIRST:
+    - .roo/rules-code/AGENTS.md (create .roo in project root, not system root!)
+    - .roo/rules-debug/AGENTS.md (relative to project root)
+    - .roo/rules-ask/AGENTS.md (relative to project root)
+    - .roo/rules-architect/AGENTS.md (relative to project root)
+    
+    IMPORTANT: The .roo directory must be created in the current project/workspace root directory,
+    NOT at the system root (/) or home directory. All paths are relative to where the project is located.
     
     If files exist:
     - AGGRESSIVELY DELETE obvious information
@@ -179,18 +186,22 @@ Please analyze this codebase and create an AGENTS.md file containing:
     - Only then add new non-obvious discoveries
     - Files should become SHORTER, not longer
     
-    Example structure:
+    Example structure (ALL IN PROJECT ROOT):
     \`\`\`
-    AGENTS.md                    # General project guidance
-    .roo/
-    ├── rules-code/
-    │   └── AGENTS.md           # Code mode specific instructions
-    ├── rules-debug/
-    │   └── AGENTS.md           # Debug mode specific instructions
-    ├── rules-ask/
-    │   └── AGENTS.md           # Ask mode specific instructions
-    └── rules-architect/
-        └── AGENTS.md           # Architect mode specific instructions
+    project-root/
+    ├── AGENTS.md                    # General project guidance
+    ├── .roo/                        # IN PROJECT ROOT, NOT SYSTEM ROOT!
+    │   ├── rules-code/
+    │   │   └── AGENTS.md           # Code mode specific instructions
+    │   ├── rules-debug/
+    │   │   └── AGENTS.md           # Debug mode specific instructions
+    │   ├── rules-ask/
+    │   │   └── AGENTS.md           # Ask mode specific instructions
+    │   └── rules-architect/
+    │       └── AGENTS.md           # Architect mode specific instructions
+    ├── src/
+    ├── package.json
+    └── ... other project files
     \`\`\`
     
     .roo/rules-code/AGENTS.md - ONLY non-obvious coding rules discovered by reading files:
