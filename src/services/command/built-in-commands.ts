@@ -49,9 +49,11 @@ Please analyze this codebase and create an AGENTS.md file containing:
        
        If ANY of these exist:
        - Read them thoroughly
-       - Analyze what's already documented
-       - Plan improvements: what to add, update, or clean up
-       - Focus on iterating and enhancing, not replacing
+       - CRITICALLY EVALUATE: Remove ALL obvious information
+       - DELETE entries that are standard practice or framework defaults
+       - REMOVE anything that could be guessed without reading files
+       - Only KEEP truly non-obvious, project-specific discoveries
+       - Then add any new non-obvious patterns you discover
        
        Also check for other AI assistant rules:
        - .cursorrules, CLAUDE.md, .roorules
@@ -83,11 +85,13 @@ Please analyze this codebase and create an AGENTS.md file containing:
        - Directory requirements
     
     8. Compile/Update AGENTS.md files
-       - If files exist: Deep dive into improving them
-         * Clean up outdated information
-         * Add newly discovered non-obvious patterns
-         * Reorganize for better clarity
-         * Ensure consistency across all files
+       - If files exist: AGGRESSIVELY clean them up
+         * DELETE all obvious information (even if it was there before)
+         * REMOVE standard practices, framework defaults, common patterns
+         * STRIP OUT anything derivable from file structure or names
+         * ONLY KEEP truly non-obvious discoveries
+         * Then add newly discovered non-obvious patterns
+         * Result should be SHORTER and MORE FOCUSED than before
        - If creating new: Follow the non-obvious-only principle
        - Create mode-specific files in .roo/rules-*/ directories
        
@@ -106,11 +110,12 @@ Please analyze this codebase and create an AGENTS.md file containing:
      - ./.roo/rules-ask/AGENTS.md
      - ./.roo/rules-architect/AGENTS.md
      
-     If found, perform deep analysis:
-     - What information is already captured?
-     - What's outdated or incorrect?
-     - What non-obvious patterns are missing?
-     - How can the organization be improved?
+     If found, perform CRITICAL analysis:
+     - What information is OBVIOUS and must be DELETED?
+     - What violates the non-obvious-only principle?
+     - What would an experienced developer already know?
+     - DELETE first, then consider what to add
+     - The file should get SHORTER, not longer
      
      Also find other AI assistant rules and documentation
      
@@ -130,11 +135,13 @@ Please analyze this codebase and create an AGENTS.md file containing:
     Create or deeply improve AGENTS.md with ONLY non-obvious information:
     
     If AGENTS.md exists:
-    - Perform thorough review and enhancement
-    - Clean up any outdated or obvious information
-    - Add newly discovered non-obvious patterns
-    - Improve organization and clarity
-    - Ensure it follows the non-obvious-only principle
+    - FIRST: Delete ALL obvious information
+    - REMOVE: Standard commands, framework defaults, common patterns
+    - STRIP: Anything that doesn't require file reading to know
+    - EVALUATE: Each line - would an experienced dev be surprised?
+    - If not surprised, DELETE IT
+    - THEN: Add only truly non-obvious new discoveries
+    - Goal: File should be SHORTER and MORE VALUABLE
     
     Content should include:
     - Header: "# AGENTS.md\\n\\nThis file provides guidance to agents when working with code in this repository."
@@ -165,11 +172,12 @@ Please analyze this codebase and create an AGENTS.md file containing:
     - ./.roo/rules-architect/AGENTS.md
     
     If files exist:
-    - Perform deep analysis and improvement
-    - Clean up redundant or obvious information
-    - Add new non-obvious discoveries
-    - Ensure consistency with main AGENTS.md
-    - Reorganize for better clarity
+    - AGGRESSIVELY DELETE obvious information
+    - Remove EVERYTHING that's standard practice
+    - Strip out framework defaults and common patterns
+    - Each remaining line must be surprising/non-obvious
+    - Only then add new non-obvious discoveries
+    - Files should become SHORTER, not longer
     
     Example structure:
     \`\`\`
@@ -259,7 +267,8 @@ Please analyze this codebase and create an AGENTS.md file containing:
   - Be extremely concise - if it's obvious, don't include it
   - Every line should prevent a potential mistake or confusion
   - Test: Would an experienced developer be surprised by this information?
-  - If updating existing files: Ensure deep improvement, not just appending
+  - If updating existing files: DELETE obvious info first, files should get SHORTER
+  - Measure success: Is the file more concise and valuable than before?
 </quality_criteria>
 
 Remember: The goal is to create documentation that enables AI assistants to be immediately productive in this codebase, focusing on project-specific knowledge that isn't obvious from the code structure alone.`,
