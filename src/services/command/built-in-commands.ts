@@ -18,17 +18,23 @@ Please analyze this codebase and create an AGENTS.md file containing:
 </task>
 
 <initialization>
-		<purpose>
-		  Create (or update) a concise AGENTS.md file that enables immediate productivity for AI assistants.
-		  Focus on project-specific, non-obvious information. Prioritize brevity and scannability.
-		  
-		  Usage notes:
-		  - The file you create will be given to agentic coding agents (such as yourself) that operate in this repository
-		  - Keep the main AGENTS.md concise - aim for about 20 lines, but use more if the project complexity requires it
-		  - If there's already an AGENTS.md, improve it
-		  - If there are Claude Code rules (in CLAUDE.md), Cursor rules (in .cursor/rules/ or .cursorrules), or Copilot rules (in .github/copilot-instructions.md), make sure to include them
-		  - Be sure to prefix the file with: "# AGENTS.md\\n\\nThis file provides guidance to agents when working with code in this repository."
-		</purpose>
+  <purpose>
+    Create (or update) a concise AGENTS.md file that enables immediate productivity for AI assistants.
+    Focus ONLY on project-specific, non-obvious information that you had to discover by reading files.
+    
+    CRITICAL: Only include information that is:
+    - Non-obvious (couldn't be guessed from standard practices)
+    - Project-specific (not generic to the framework/language)
+    - Discovered by reading files (config files, code patterns, custom utilities)
+    - Essential for avoiding mistakes or following project conventions
+    
+    Usage notes:
+    - The file you create will be given to agentic coding agents (such as yourself) that operate in this repository
+    - Keep the main AGENTS.md concise - aim for about 20 lines, but use more if the project complexity requires it
+    - If there's already an AGENTS.md, improve it
+    - If there are Claude Code rules (in CLAUDE.md), Cursor rules (in .cursor/rules/ or .cursorrules), or Copilot rules (in .github/copilot-instructions.md), make sure to include them
+    - Be sure to prefix the file with: "# AGENTS.md\\n\\nThis file provides guidance to agents when working with code in this repository."
+  </purpose>
   
   <todo_list_creation>
     If the update_todo_list tool is available, create a todo list with these focused analysis steps:
@@ -50,8 +56,9 @@ Please analyze this codebase and create an AGENTS.md file containing:
        - Key entry points
     
     5. Document critical patterns
-       - Project-specific utilities
-       - Non-standard approaches
+       - Project-specific utilities (that you discovered by reading code)
+       - Non-standard approaches (that differ from typical patterns)
+       - Custom conventions (that aren't obvious from file structure)
     
     6. Extract code style
        - From config files only
@@ -93,18 +100,22 @@ Please analyze this codebase and create an AGENTS.md file containing:
 
 <output_structure>
   <main_file>
-    Create AGENTS.md with:
+    Create AGENTS.md with ONLY non-obvious information:
     - Header: "# AGENTS.md\\n\\nThis file provides guidance to agents when working with code in this repository."
-    - Project overview (brief description, core functionality, key technologies)
-    - Build/lint/test commands - especially for running a single test
-    - Code style guidelines including imports, formatting, types, naming conventions, error handling, etc.
-    - Architecture overview (visual flow diagrams using ASCII/markdown)
-    - Development guides (step-by-step for common tasks)
-    - Project-specific patterns (custom utilities, non-standard approaches)
-    - Testing guidelines (how to write and run tests)
-    - Critical rules (must-follow requirements)
+    - Build/lint/test commands - ONLY if they differ from standard package.json scripts
+    - Code style - ONLY project-specific rules not covered by linter configs
+    - Custom utilities or patterns discovered by reading the code
+    - Non-standard directory structures or file organizations
+    - Project-specific conventions that violate typical practices
+    - Critical gotchas that would cause errors if not followed
     
-    Keep it concise (aim for ~20 lines, but expand as needed for complex projects) and focused on essential, project-specific information.
+    EXCLUDE obvious information like:
+    - Standard npm/yarn commands visible in package.json
+    - Framework defaults (e.g., "React uses JSX")
+    - Common patterns (e.g., "tests go in __tests__ folders")
+    - Information derivable from file extensions or directory names
+    
+    Keep it concise (aim for ~20 lines, but expand as needed for complex projects).
     Include existing AI assistant rules from CLAUDE.md, Cursor rules (.cursor/rules/ or .cursorrules), or Copilot rules (.github/copilot-instructions.md).
   </main_file>
   
@@ -129,92 +140,80 @@ Please analyze this codebase and create an AGENTS.md file containing:
     
     Create mode-specific AGENTS.md files in:
     
-    .roo/rules-code/AGENTS.md - Project-specific coding rules:
-    - Custom utilities that must be used
-    - API patterns and retry mechanisms
-    - UI component guidelines
-    - Database query patterns
-    - Provider implementation requirements
-    - Test coverage requirements
+    .roo/rules-code/AGENTS.md - ONLY non-obvious coding rules discovered by reading files:
+    - Custom utilities that replace standard approaches
+    - Non-standard patterns unique to this project
+    - Hidden dependencies or coupling between components
+    - Required import orders or naming conventions not enforced by linters
     
-    Example of actual rules to document:
+    Example of non-obvious rules worth documenting:
     \`\`\`
-    # Project Coding Rules
-    - All API calls must use the retry mechanism in src/api/providers/utils/
-    - UI components should use Tailwind CSS classes, not inline styles
-    - New providers must implement the Provider interface in packages/types/src/
-    - Database queries must use the query builder in packages/evals/src/db/queries/
-    - Always use safeWriteJson() from src/utils/ instead of JSON.stringify for file writes
-    - Test coverage required for all new features in src/ and webview-ui/
+    # Project Coding Rules (Non-Obvious Only)
+    - Always use safeWriteJson() from src/utils/ instead of JSON.stringify for file writes (prevents corruption)
+    - API retry mechanism in src/api/providers/utils/ is mandatory (not optional as it appears)
+    - Database queries MUST use the query builder in packages/evals/src/db/queries/ (raw SQL will fail)
+    - Provider interface in packages/types/src/ has undocumented required methods
+    - Test files must be in same directory as source for vitest to work (not in separate test folder)
     \`\`\`
     
-    .roo/rules-debug/AGENTS.md - Project-specific debugging approaches:
-    - Where to find logs and debug output
-    - Common debugging tools and commands
-    - Test patterns for reproducing issues
-    - Database and migration debugging
-    - IPC and communication debugging
-    - Build-specific debugging tips
+    .roo/rules-debug/AGENTS.md - ONLY non-obvious debugging discoveries:
+    - Hidden log locations not mentioned in docs
+    - Non-standard debugging tools or flags
+    - Gotchas that cause silent failures
+    - Required environment variables for debugging
     
-    Example of actual rules to document:
+    Example of non-obvious debug rules worth documenting:
     \`\`\`
-    # Project Debug Rules
-    - Check VSCode extension logs in the Debug Console
-    - For webview issues, inspect the webview dev tools via Command Palette
-    - Provider issues: check src/api/providers/__tests__/ for similar test patterns
-    - Database issues: run migrations in packages/evals/src/db/migrations/
-    - IPC communication issues: review packages/ipc/src/ message patterns
-    - Always reproduce in both development and production extension builds
+    # Project Debug Rules (Non-Obvious Only)
+    - Webview dev tools accessed via Command Palette > "Developer: Open Webview Developer Tools" (not F12)
+    - IPC messages fail silently if not wrapped in try/catch in packages/ipc/src/
+    - Production builds require NODE_ENV=production or certain features break without error
+    - Database migrations must run from packages/evals/ directory, not root
+    - Extension logs only visible in "Extension Host" output channel, not Debug Console
     \`\`\`
     
-    .roo/rules-ask/AGENTS.md - Project documentation context:
-    - Repository structure explanation
-    - Where to find examples and patterns
-    - Key documentation locations
-    - Build and test command references
-    - Localization and i18n patterns
-    - Architecture-specific explanations
+    .roo/rules-ask/AGENTS.md - ONLY non-obvious documentation context:
+    - Hidden or misnamed documentation
+    - Counterintuitive code organization
+    - Misleading folder names or structures
+    - Important context not evident from file structure
     
-    Example of actual rules to document:
+    Example of non-obvious documentation rules worth documenting:
     \`\`\`
-    # Project Documentation Rules
-    - Reference the monorepo structure: src/ (VSCode extension), apps/ (web apps), packages/ (shared)
-    - Explain provider patterns by referencing existing ones in src/api/providers/
-    - For UI questions, reference webview-ui/ React components and their patterns
-    - Point to package.json scripts for build/test commands
-    - Reference locales/ for i18n patterns when discussing translations
-    - Always mention the VSCode webview architecture when discussing UI
+    # Project Documentation Rules (Non-Obvious Only)
+    - "src/" contains VSCode extension code, not source for web apps (counterintuitive)
+    - Provider examples in src/api/providers/ are the canonical reference (docs are outdated)
+    - UI runs in VSCode webview with restrictions (no localStorage, limited APIs)
+    - Package.json scripts must be run from specific directories, not root
+    - Locales in root are for extension, webview-ui/src/i18n for UI (two separate systems)
     \`\`\`
     
-    .roo/rules-architect/AGENTS.md - Project architectural considerations:
-    - Extension and plugin architecture
-    - State management patterns
-    - Database schema requirements
-    - Package organization rules
-    - API compatibility requirements
-    - Performance and scaling considerations
+    .roo/rules-architect/AGENTS.md - ONLY non-obvious architectural constraints:
+    - Hidden coupling between components
+    - Undocumented architectural decisions
+    - Non-standard patterns that must be followed
+    - Performance bottlenecks discovered through investigation
     
-    Example of actual rules to document:
+    Example of non-obvious architecture rules worth documenting:
     \`\`\`
-    # Project Architecture Rules
-    - New features must work within VSCode extension + webview architecture
-    - Provider implementations must be stateless and cacheable
-    - UI state management uses React hooks, not external state libraries
-    - Database schema changes require migrations in packages/evals/src/db/migrations/
-    - New packages must follow the existing monorepo structure in packages/
-    - API changes must maintain backward compatibility with existing provider contracts
+    # Project Architecture Rules (Non-Obvious Only)
+    - Providers MUST be stateless - hidden caching layer assumes this
+    - Webview and extension communicate through specific IPC channel patterns only
+    - Database migrations cannot be rolled back - forward-only by design
+    - React hooks required because external state libraries break webview isolation
+    - Monorepo packages have circular dependency on types package (intentional)
     \`\`\`
   </mode_specific_files>
 </output_structure>
 
 <quality_criteria>
-  - Include visual flow diagrams (ASCII/markdown) for architecture
-  - Provide actionable, step-by-step guides
-  - Focus on non-obvious, project-specific information
-  - Include real code examples from the project
-  - Be concise and scannable
-  - Adapt to the specific project needs
-  - Document only what's essential for productivity
+  - ONLY include non-obvious information discovered by reading files
+  - Exclude anything that could be guessed from standard practices
+  - Focus on gotchas, hidden requirements, and counterintuitive patterns
+  - Include specific file paths when referencing custom utilities
+  - Be extremely concise - if it's obvious, don't include it
+  - Every line should prevent a potential mistake or confusion
+  - Test: Would an experienced developer be surprised by this information?
 </quality_criteria>
 
 Remember: The goal is to create documentation that enables AI assistants to be immediately productive in this codebase, focusing on project-specific knowledge that isn't obvious from the code structure alone.`,
