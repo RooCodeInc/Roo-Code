@@ -86,7 +86,7 @@ export default function Privacy() {
 								Your source code does not transit Roo Code servers unless you explicitly choose Roo Code
 								as a model provider (proxy mode).
 							</strong>{" "}
-							When Roo Code is your model provider, your code briefly transits Roo Code servers only to
+							When Roo Code Cloud is your model provider, your code briefly transits Roo Code servers only to
 							forward it to the upstream model, is not stored, and is deleted immediately after
 							forwarding. Otherwise, your code is sent <strong>directly</strong>—via client‑to‑provider
 							TLS—to the model you select. Roo Code never stores, inspects, or trains on your code.
