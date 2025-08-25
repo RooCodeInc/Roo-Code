@@ -4,7 +4,7 @@ import { McpExecution } from "./McpExecution"
 import { useSize } from "react-use"
 import { useTranslation, Trans } from "react-i18next"
 import deepEqual from "fast-deep-equal"
-import { VSCodeBadge, VSCodeButton } from "@vscode/webview-ui-toolkit/react"
+import { VSCodeBadge } from "@vscode/webview-ui-toolkit/react"
 
 import type { ClineMessage } from "@roo-code/types"
 import { Mode } from "@roo/modes"
@@ -14,7 +14,6 @@ import { COMMAND_OUTPUT_STRING } from "@roo/combineCommandSequences"
 import { safeJsonParse } from "@roo/safeJsonParse"
 import { FollowUpData, SuggestionItem } from "@roo-code/types"
 
-import { useCopyToClipboard } from "@src/utils/clipboard"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
 import { findMatchingResourceOrTemplate } from "@src/utils/mcp"
 import { vscode } from "@src/utils/vscode"
@@ -28,7 +27,6 @@ import { MAX_IMAGES_PER_MESSAGE } from "./ChatView"
 import { ToolUseBlock, ToolUseBlockHeader } from "../common/ToolUseBlock"
 import UpdateTodoListToolBlock from "./UpdateTodoListToolBlock"
 import CodeAccordian from "../common/CodeAccordian"
-import CodeBlock from "../common/CodeBlock"
 import MarkdownBlock from "../common/MarkdownBlock"
 import { ReasoningBlock } from "./ReasoningBlock"
 import Thumbnails from "../common/Thumbnails"
@@ -46,6 +44,7 @@ import { CommandExecutionError } from "./CommandExecutionError"
 import { AutoApprovedRequestLimitWarning } from "./AutoApprovedRequestLimitWarning"
 import { CondenseContextErrorRow, CondensingContextRow, ContextCondenseRow } from "./ContextCondenseRow"
 import CodebaseSearchResultsDisplay from "./CodebaseSearchResultsDisplay"
+import { CollapsibleErrorSection } from "./CollapsibleErrorSection"
 
 interface ChatRowProps {
 	message: ClineMessage
@@ -117,14 +116,11 @@ export const ChatRowContent = ({
 	const { mcpServers, alwaysAllowMcp, currentCheckpoint, mode } = useExtensionState()
 	const [reasoningCollapsed, setReasoningCollapsed] = useState(true)
 	const [isDiffErrorExpanded, setIsDiffErrorExpanded] = useState(false)
-	const [showCopySuccess, setShowCopySuccess] = useState(false)
 	const [isErrorExpanded, setIsErrorExpanded] = useState(false) // Default collapsed like diff_error
-	const [showErrorCopySuccess, setShowErrorCopySuccess] = useState(false)
 	const [isEditing, setIsEditing] = useState(false)
 	const [editedContent, setEditedContent] = useState("")
 	const [editMode, setEditMode] = useState<Mode>(mode || "code")
 	const [editImages, setEditImages] = useState<string[]>([])
-	const { copyWithFeedback } = useCopyToClipboard()
 
 	// Handle message events for image selection during edit mode
 	useEffect(() => {
@@ -856,63 +852,13 @@ export const ChatRowContent = ({
 			switch (message.say) {
 				case "diff_error":
 					return (
-						<div>
-							<div className="mt-0 overflow-hidden mb-2">
-								<div
-									className={`${
-										isDiffErrorExpanded ? "border-b border-vscode-editorGroup-border" : ""
-									} font-normal text-base text-vscode-editor-foreground flex items-center justify-between cursor-pointer focus:outline focus:outline-2 focus:outline-vscode-focusBorder`}
-									role="button"
-									tabIndex={0}
-									aria-expanded={isDiffErrorExpanded}
-									aria-label={t("chat:diffError.title")}
-									onClick={() => setIsDiffErrorExpanded(!isDiffErrorExpanded)}
-									onKeyDown={(e) => {
-										if (e.key === "Enter" || e.key === " ") {
-											e.preventDefault()
-											setIsDiffErrorExpanded(!isDiffErrorExpanded)
-										}
-									}}>
-									<div className="flex items-center gap-2.5 flex-grow">
-										<span
-											className="codicon codicon-warning text-vscode-editorWarning-foreground opacity-80"
-											style={{ fontSize: 16, marginBottom: "-1.5px" }}></span>
-										<span className="font-bold">{t("chat:diffError.title")}</span>
-									</div>
-									<div className="flex items-center">
-										<VSCodeButton
-											appearance="icon"
-											className="p-[3px] h-6 mr-1 text-vscode-editor-foreground flex items-center justify-center bg-transparent"
-											onClick={(e) => {
-												e.stopPropagation()
-
-												// Call copyWithFeedback and handle the Promise
-												copyWithFeedback(message.text || "").then((success) => {
-													if (success) {
-														// Show checkmark
-														setShowCopySuccess(true)
-
-														// Reset after a brief delay
-														setTimeout(() => {
-															setShowCopySuccess(false)
-														}, 1000)
-													}
-												})
-											}}>
-											<span
-												className={`codicon codicon-${showCopySuccess ? "check" : "copy"}`}></span>
-										</VSCodeButton>
-										<span
-											className={`codicon codicon-chevron-${isDiffErrorExpanded ? "up" : "down"}`}></span>
-									</div>
-								</div>
-								{isDiffErrorExpanded && (
-									<div className="p-2 bg-vscode-editor-background">
-										<CodeBlock source={message.text || ""} language="xml" />
-									</div>
-								)}
-							</div>
-						</div>
+						<CollapsibleErrorSection
+							title={t("chat:diffError.title")}
+							content={message.text}
+							language="xml"
+							isExpanded={isDiffErrorExpanded}
+							onToggleExpand={() => setIsDiffErrorExpanded(!isDiffErrorExpanded)}
+						/>
 					)
 				case "subtask_result":
 					return (
@@ -1104,59 +1050,16 @@ export const ChatRowContent = ({
 						</div>
 					)
 				case "error":
+					// Detect language based on content - check if it contains XML-like error tags
+					const errorLanguage = message.text?.includes("<error>") ? "xml" : "text"
 					return (
-						<div>
-							<div className="mt-0 overflow-hidden mb-2">
-								<div
-									className={`${
-										isErrorExpanded ? "border-b border-vscode-editorGroup-border" : ""
-									} font-normal text-base text-vscode-editor-foreground flex items-center justify-between cursor-pointer focus:outline focus:outline-2 focus:outline-vscode-focusBorder`}
-									role="button"
-									tabIndex={0}
-									aria-expanded={isErrorExpanded}
-									aria-label={message.title || t("chat:error")}
-									onClick={() => setIsErrorExpanded(!isErrorExpanded)}
-									onKeyDown={(e) => {
-										if (e.key === "Enter" || e.key === " ") {
-											e.preventDefault()
-											setIsErrorExpanded(!isErrorExpanded)
-										}
-									}}>
-									<div className="flex items-center gap-2.5 flex-grow">
-										<span
-											className="codicon codicon-warning text-vscode-editorWarning-foreground opacity-80"
-											style={{ fontSize: 16, marginBottom: "-1.5px" }}></span>
-										<span className="font-bold">{message.title || t("chat:error")}</span>
-									</div>
-									<div className="flex items-center">
-										<VSCodeButton
-											appearance="icon"
-											className="p-[3px] h-6 mr-1 text-vscode-editor-foreground flex items-center justify-center bg-transparent"
-											onClick={(e) => {
-												e.stopPropagation()
-												copyWithFeedback(message.text || "").then((success) => {
-													if (success) {
-														setShowErrorCopySuccess(true)
-														setTimeout(() => {
-															setShowErrorCopySuccess(false)
-														}, 1000)
-													}
-												})
-											}}>
-											<span
-												className={`codicon codicon-${showErrorCopySuccess ? "check" : "copy"}`}></span>
-										</VSCodeButton>
-										<span
-											className={`codicon codicon-chevron-${isErrorExpanded ? "up" : "down"}`}></span>
-									</div>
-								</div>
-								{isErrorExpanded && (
-									<div className="p-2 bg-vscode-editor-background">
-										<CodeBlock source={message.text || ""} language="xml" />
-									</div>
-								)}
-							</div>
-						</div>
+						<CollapsibleErrorSection
+							title={message.title || t("chat:error")}
+							content={message.text}
+							language={errorLanguage}
+							isExpanded={isErrorExpanded}
+							onToggleExpand={() => setIsErrorExpanded(!isErrorExpanded)}
+						/>
 					)
 				case "completion_result":
 					return (
