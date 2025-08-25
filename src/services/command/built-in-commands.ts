@@ -39,11 +39,23 @@ Please analyze this codebase and create an AGENTS.md file containing:
   <todo_list_creation>
     If the update_todo_list tool is available, create a todo list with these focused analysis steps:
     
-    1. Quick scan for existing docs
-       - AI assistant rules (.cursorrules, CLAUDE.md, AGENTS.md, .roorules)
-       - Check for existing AGENTS.md in root directory
-       - Check for existing AGENTS.md in .roo/rules-code/, .roo/rules-debug/, .roo/rules-ask/, .roo/rules-architect/
-       - README and key documentation
+    1. Check for existing AGENTS.md files
+       CRITICAL - Check these EXACT paths:
+       - ./AGENTS.md (root directory)
+       - ./.roo/rules-code/AGENTS.md
+       - ./.roo/rules-debug/AGENTS.md
+       - ./.roo/rules-ask/AGENTS.md
+       - ./.roo/rules-architect/AGENTS.md
+       
+       If ANY of these exist:
+       - Read them thoroughly
+       - Analyze what's already documented
+       - Plan improvements: what to add, update, or clean up
+       - Focus on iterating and enhancing, not replacing
+       
+       Also check for other AI assistant rules:
+       - .cursorrules, CLAUDE.md, .roorules
+       - .cursor/rules/, .github/copilot-instructions.md
     
     2. Identify stack
        - Language, framework, build tools
@@ -70,16 +82,14 @@ Please analyze this codebase and create an AGENTS.md file containing:
        - Framework and run commands
        - Directory requirements
     
-    8. Compile concise AGENTS.md
-       - Essential sections only
-       - Brief, scannable format
-       - Project-specific focus
-       
-    9. Create mode-specific rule directories
-       - Create directory structures for the four core modes: .roo/rules-code/, .roo/rules-ask/, .roo/rules-architect/, .roo/rules-debug/
-       - Create mode-specific AGENTS.md files with rules specific to that mode's purpose and capabilities
-       - These rules should provide additive context and not just repeat the mode definitions
-       - Only include rules that you have high confidence are accurate, valuable, and non-obvious
+    8. Compile/Update AGENTS.md files
+       - If files exist: Deep dive into improving them
+         * Clean up outdated information
+         * Add newly discovered non-obvious patterns
+         * Reorganize for better clarity
+         * Ensure consistency across all files
+       - If creating new: Follow the non-obvious-only principle
+       - Create mode-specific files in .roo/rules-*/ directories
        
     Note: If update_todo_list is not available, proceed with the analysis workflow directly without creating a todo list.
   </todo_list_creation>
@@ -88,10 +98,22 @@ Please analyze this codebase and create an AGENTS.md file containing:
 <analysis_workflow>
   Follow the comprehensive analysis workflow to:
   
-  1. **Discovery Phase**: Find existing documentation and AI assistant rules
-     - Check for existing AGENTS.md in root directory
-     - Check for existing AGENTS.md files in .roo/rules-*/ directories
-     - If found, read and improve them rather than replacing
+  1. **Discovery Phase**: 
+     CRITICAL - First check for existing AGENTS.md files at these EXACT locations:
+     - ./AGENTS.md (root)
+     - ./.roo/rules-code/AGENTS.md
+     - ./.roo/rules-debug/AGENTS.md
+     - ./.roo/rules-ask/AGENTS.md
+     - ./.roo/rules-architect/AGENTS.md
+     
+     If found, perform deep analysis:
+     - What information is already captured?
+     - What's outdated or incorrect?
+     - What non-obvious patterns are missing?
+     - How can the organization be improved?
+     
+     Also find other AI assistant rules and documentation
+     
   2. **Project Identification**: Identify language, stack, and build system
   3. **Command Extraction**: Extract and verify essential commands
   4. **Architecture Mapping**: Create visual flow diagrams of core processes
@@ -105,8 +127,16 @@ Please analyze this codebase and create an AGENTS.md file containing:
 
 <output_structure>
   <main_file>
-    Create or update AGENTS.md with ONLY non-obvious information:
-    - If AGENTS.md exists, read it first and improve/update it
+    Create or deeply improve AGENTS.md with ONLY non-obvious information:
+    
+    If AGENTS.md exists:
+    - Perform thorough review and enhancement
+    - Clean up any outdated or obvious information
+    - Add newly discovered non-obvious patterns
+    - Improve organization and clarity
+    - Ensure it follows the non-obvious-only principle
+    
+    Content should include:
     - Header: "# AGENTS.md\\n\\nThis file provides guidance to agents when working with code in this repository."
     - Build/lint/test commands - ONLY if they differ from standard package.json scripts
     - Code style - ONLY project-specific rules not covered by linter configs
@@ -126,9 +156,20 @@ Please analyze this codebase and create an AGENTS.md file containing:
   </main_file>
   
   <mode_specific_files>
-    Additionally, create mode-specific rule directories and AGENTS.md files.
-    For the complete list of available modes with detailed descriptions, refer to the system prompt.
-    The system prompt contains comprehensive information about each mode's purpose, when to use it, and its specific capabilities.
+    Create or deeply improve mode-specific AGENTS.md files.
+    
+    CRITICAL: For each of these paths, check if the file exists FIRST:
+    - ./.roo/rules-code/AGENTS.md
+    - ./.roo/rules-debug/AGENTS.md
+    - ./.roo/rules-ask/AGENTS.md
+    - ./.roo/rules-architect/AGENTS.md
+    
+    If files exist:
+    - Perform deep analysis and improvement
+    - Clean up redundant or obvious information
+    - Add new non-obvious discoveries
+    - Ensure consistency with main AGENTS.md
+    - Reorganize for better clarity
     
     Example structure:
     \`\`\`
@@ -144,11 +185,7 @@ Please analyze this codebase and create an AGENTS.md file containing:
         └── AGENTS.md           # Architect mode specific instructions
     \`\`\`
     
-    Create or update mode-specific AGENTS.md files in:
-    
     .roo/rules-code/AGENTS.md - ONLY non-obvious coding rules discovered by reading files:
-    - Check if this file already exists and read it first
-    - Improve and update existing content rather than replacing
     - Custom utilities that replace standard approaches
     - Non-standard patterns unique to this project
     - Hidden dependencies or coupling between components
@@ -165,8 +202,6 @@ Please analyze this codebase and create an AGENTS.md file containing:
     \`\`\`
     
     .roo/rules-debug/AGENTS.md - ONLY non-obvious debugging discoveries:
-    - Check if this file already exists and read it first
-    - Improve and update existing content rather than replacing
     - Hidden log locations not mentioned in docs
     - Non-standard debugging tools or flags
     - Gotchas that cause silent failures
@@ -183,8 +218,6 @@ Please analyze this codebase and create an AGENTS.md file containing:
     \`\`\`
     
     .roo/rules-ask/AGENTS.md - ONLY non-obvious documentation context:
-    - Check if this file already exists and read it first
-    - Improve and update existing content rather than replacing
     - Hidden or misnamed documentation
     - Counterintuitive code organization
     - Misleading folder names or structures
@@ -201,8 +234,6 @@ Please analyze this codebase and create an AGENTS.md file containing:
     \`\`\`
     
     .roo/rules-architect/AGENTS.md - ONLY non-obvious architectural constraints:
-    - Check if this file already exists and read it first
-    - Improve and update existing content rather than replacing
     - Hidden coupling between components
     - Undocumented architectural decisions
     - Non-standard patterns that must be followed
@@ -228,6 +259,7 @@ Please analyze this codebase and create an AGENTS.md file containing:
   - Be extremely concise - if it's obvious, don't include it
   - Every line should prevent a potential mistake or confusion
   - Test: Would an experienced developer be surprised by this information?
+  - If updating existing files: Ensure deep improvement, not just appending
 </quality_criteria>
 
 Remember: The goal is to create documentation that enables AI assistants to be immediately productive in this codebase, focusing on project-specific knowledge that isn't obvious from the code structure alone.`,
