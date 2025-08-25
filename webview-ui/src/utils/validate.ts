@@ -134,16 +134,16 @@ function validateModelsAndKeysProvided(apiConfiguration: ProviderSettings): stri
 			break
 		case "sapaicore":
 			if (!apiConfiguration.sapAiCoreBaseUrl) {
-				return i18next.t("settings:validation.sapAiCoreBaseUrl", "SAP AI Core Base URL is required")
+				return i18next.t("settings:validation.sapAiCoreBaseUrl")
 			}
 			if (!apiConfiguration.sapAiCoreClientId) {
-				return i18next.t("settings:validation.sapAiCoreClientId", "SAP AI Core Client ID is required")
+				return i18next.t("settings:validation.sapAiCoreClientId")
 			}
 			if (!apiConfiguration.sapAiCoreClientSecret) {
-				return i18next.t("settings:validation.sapAiCoreClientSecret", "SAP AI Core Client Secret is required")
+				return i18next.t("settings:validation.sapAiCoreClientSecret")
 			}
 			if (!apiConfiguration.sapAiCoreTokenUrl) {
-				return i18next.t("settings:validation.sapAiCoreTokenUrl", "SAP AI Core Token URL is required")
+				return i18next.t("settings:validation.sapAiCoreTokenUrl")
 			}
 			if (!apiConfiguration.apiModelId) {
 				return i18next.t("settings:validation.modelId")

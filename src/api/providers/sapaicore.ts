@@ -31,6 +31,14 @@ export async function getSapAiCoreDeployedModels(options: {
 			client_secret: options.sapAiCoreClientSecret,
 		})
 
+		if (!options.sapAiCoreTokenUrl.startsWith("https://")) {
+			throw new Error("SAP AI Core Token URL must use HTTPS for security")
+		}
+
+		if (!options.sapAiCoreBaseUrl.startsWith("https://")) {
+			throw new Error("SAP AI Core Base URL must use HTTPS for security")
+		}
+
 		const tokenUrl = options.sapAiCoreTokenUrl.replace(/\/+$/, "") + "/oauth/token"
 		const tokenResponse = await axios.post(tokenUrl, payload, {
 			headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -48,8 +56,6 @@ export async function getSapAiCoreDeployedModels(options: {
 		const url = `${options.sapAiCoreBaseUrl}/v2/lm/deployments?$top=10000&$skip=0`
 		const response = await axios.get(url, { headers })
 		const deployments = response.data.resources
-
-		console.log("SAP AI Core deployments response:", JSON.stringify(response.data, null, 2)) // Debug logging
 
 		// Extract model names from running deployments
 		const modelNames = deployments
@@ -76,10 +82,9 @@ export async function getSapAiCoreDeployedModels(options: {
 				return transformedName
 			})
 			.filter((name: string | null) => name !== null)
-			.filter((name: string, index: number, array: string[]) => array.indexOf(name) === index) // Remove duplicates
+			.filter((name: string, index: number, array: string[]) => array.indexOf(name) === index)
 			.sort()
 
-		console.log("SAP AI Core deployed models:", modelNames) // Debug logging
 		return modelNames
 	} catch (error) {
 		console.error("Error fetching SAP AI Core deployed models:", error)
@@ -415,6 +420,29 @@ export function prepareGeminiRequestPayload(
 	return payload
 }
 
+/**
+ * Safely parse JSON with fallback handling for common malformed JSON issues
+ * Used specifically for SAP AI Core streaming responses
+ */
+export function parseJsonSafely(str: string): any {
+	try {
+		// First try standard JSON parsing
+		return JSON.parse(str)
+	} catch (error) {
+		// If that fails, try to fix common JSON issues safely
+		try {
+			// Remove trailing commas and fix other common issues
+			const cleaned = str
+				.replace(/,(\s*[}\]])/g, "$1") // Remove trailing commas
+				.replace(/([{,]\s*)([a-zA-Z_$][a-zA-Z0-9_$]*)\s*:/g, '$1"$2":') // Quote unquoted keys
+			return JSON.parse(cleaned)
+		} catch (secondError) {
+			console.error("Failed to parse JSON safely:", str, secondError)
+			throw secondError
+		}
+	}
+}
+
 export class SapAiCoreHandler extends BaseProvider implements SingleCompletionHandler {
 	private options: SapAiCoreHandlerOptions
 	private token?: Token
@@ -432,7 +460,12 @@ export class SapAiCoreHandler extends BaseProvider implements SingleCompletionHa
 			client_secret: this.options.sapAiCoreClientSecret || "",
 		}
 
-		const tokenUrl = (this.options.sapAiCoreTokenUrl || "").replace(/\/+$/, "") + "/oauth/token"
+		const baseTokenUrl = this.options.sapAiCoreTokenUrl || ""
+		if (!baseTokenUrl.startsWith("https://")) {
+			throw new Error("SAP AI Core Token URL must use HTTPS for security")
+		}
+
+		const tokenUrl = baseTokenUrl.replace(/\/+$/, "") + "/oauth/token"
 		const response = await axios.post(tokenUrl, payload, {
 			headers: { "Content-Type": "application/x-www-form-urlencoded" },
 		})
@@ -451,6 +484,10 @@ export class SapAiCoreHandler extends BaseProvider implements SingleCompletionHa
 	private async getAiCoreDeployments(): Promise<Deployment[]> {
 		if (this.options.sapAiCoreClientSecret === "") {
 			return [{ id: "notconfigured", name: "ai-core-not-configured" }]
+		}
+
+		if (!this.options.sapAiCoreBaseUrl?.startsWith("https://")) {
+			throw new Error("SAP AI Core Base URL must use HTTPS for security")
 		}
 
 		const token = await this.getToken()
@@ -506,10 +543,17 @@ export class SapAiCoreHandler extends BaseProvider implements SingleCompletionHa
 	}
 
 	private hasDeploymentForModel(modelId: string): boolean {
-		return (
-			this.deployments?.some((d) => d.name.split(":")[0].toLowerCase() === modelId.split(":")[0].toLowerCase()) ??
-			false
-		)
+		if (!this.deployments || !Array.isArray(this.deployments)) {
+			return false
+		}
+		return this.deployments.some((d) => {
+			if (!d.name || typeof d.name !== "string") {
+				return false
+			}
+			const deploymentBaseName = d.name.split(":")[0].toLowerCase()
+			const modelBaseName = modelId.split(":")[0].toLowerCase()
+			return deploymentBaseName === modelBaseName
+		})
 	}
 
 	/**
@@ -520,9 +564,19 @@ export class SapAiCoreHandler extends BaseProvider implements SingleCompletionHa
 		try {
 			const deployments = await this.getAiCoreDeployments()
 
+			if (!Array.isArray(deployments)) {
+				return []
+			}
+
 			// Extract base model names (without version) and remove duplicates
 			const modelNames = deployments
-				.map((deployment) => deployment.name.split(":")[0].toLowerCase())
+				.map((deployment) => {
+					if (!deployment.name || typeof deployment.name !== "string") {
+						return null
+					}
+					return deployment.name.split(":")[0].toLowerCase()
+				})
+				.filter((name): name is string => name !== null)
 				.filter((name, index, array) => array.indexOf(name) === index) // Remove duplicates
 				.sort()
 
@@ -538,6 +592,10 @@ export class SapAiCoreHandler extends BaseProvider implements SingleCompletionHa
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
+		if (!this.options.sapAiCoreBaseUrl?.startsWith("https://")) {
+			throw new Error("SAP AI Core Base URL must use HTTPS for security")
+		}
+
 		const token = await this.getToken()
 		const headers = {
 			Authorization: `Bearer ${token}`,
@@ -547,7 +605,6 @@ export class SapAiCoreHandler extends BaseProvider implements SingleCompletionHa
 		}
 
 		const model = this.getModel()
-		const deploymentId = await this.getDeploymentForModel(model.id)
 
 		const anthropicModels = [
 			"anthropic--claude-4-sonnet",
@@ -575,6 +632,17 @@ export class SapAiCoreHandler extends BaseProvider implements SingleCompletionHa
 		]
 
 		const geminiModels = ["gemini-2.5-flash", "gemini-2.5-pro"]
+		console.log(model.id)
+		// Check if model is supported before getting deployment
+		if (
+			!anthropicModels.includes(model.id) &&
+			!openAIModels.includes(model.id) &&
+			!geminiModels.includes(model.id)
+		) {
+			throw new Error(`Unsupported model: ${model.id}`)
+		}
+
+		const deploymentId = await this.getDeploymentForModel(model.id)
 
 		let url: string
 		let payload: any
@@ -664,6 +732,7 @@ export class SapAiCoreHandler extends BaseProvider implements SingleCompletionHa
 			url = `${this.options.sapAiCoreBaseUrl}/v2/inference/deployments/${deploymentId}/models/${model.id}:streamGenerateContent`
 			payload = prepareGeminiRequestPayload(systemPrompt, messages, model, this.options.thinkingBudgetTokens)
 		} else {
+			// This should never be reached due to the earlier model support check
 			throw new Error(`Unsupported model: ${model.id}`)
 		}
 		try {
@@ -712,13 +781,14 @@ export class SapAiCoreHandler extends BaseProvider implements SingleCompletionHa
 				if (error.response.status === 404) {
 					throw new Error(`404 Not Found: ${error.response.data}`)
 				}
+
+				// Handle other HTTP errors
+				throw new Error("Failed to create message")
 			} else if (error.request) {
 				throw new Error("No response received from server")
 			} else {
 				throw new Error(`Error setting up request: ${error.message}`)
 			}
-
-			throw new Error("Failed to create message")
 		}
 	}
 
@@ -773,12 +843,6 @@ export class SapAiCoreHandler extends BaseProvider implements SingleCompletionHa
 	}
 
 	private async *streamCompletionSonnet37(stream: any, _model: { id: SapAiCoreModelId; info: ModelInfo }): ApiStream {
-		function toStrictJson(str: string): string {
-			// Wrap it in parentheses so JS will treat it as an expression
-			const obj = new Function("return " + str)()
-			return JSON.stringify(obj)
-		}
-
 		try {
 			for await (const chunk of stream) {
 				const lines = chunk.toString().split("\n").filter(Boolean)
@@ -788,7 +852,7 @@ export class SapAiCoreHandler extends BaseProvider implements SingleCompletionHa
 						const jsonData = line.slice(6)
 
 						try {
-							const data = JSON.parse(toStrictJson(jsonData))
+							const data = parseJsonSafely(jsonData)
 
 							// Handle metadata (token usage)
 							if (data.metadata?.usage) {
@@ -982,6 +1046,13 @@ export class SapAiCoreHandler extends BaseProvider implements SingleCompletionHa
 		if (modelId && modelId in models) {
 			const id = modelId as SapAiCoreModelId
 			return { id, info: models[id] }
+		}
+
+		// If modelId is provided but not found in models, return it as-is for proper error handling
+		if (modelId) {
+			const id = modelId as SapAiCoreModelId
+			// Use default model info as fallback to prevent crashes, but preserve the unsupported ID
+			return { id, info: models[sapAiCoreDefaultModelId] }
 		}
 
 		return { id: sapAiCoreDefaultModelId, info: models[sapAiCoreDefaultModelId] }

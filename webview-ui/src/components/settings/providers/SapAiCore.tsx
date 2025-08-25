@@ -107,17 +107,17 @@ export const SapAiCore = ({ apiConfiguration, setApiConfigurationField }: SapAiC
 			{/* Show loading/error states for model fetching */}
 			{hasRequiredConfig && isLoading && (
 				<div className="text-sm text-vscode-descriptionForeground">
-					Fetching deployed models from SAP AI Core...
+					{t("settings:providers.sapAiCoreFetchingModels")}
 				</div>
 			)}
 			{hasRequiredConfig && error && (
 				<div className="text-sm text-vscode-errorForeground">
-					Failed to fetch deployed models: {error.message}
+					{t("settings:providers.sapAiCoreFetchModelsFailed")} {error.message}
 				</div>
 			)}
 			{hasRequiredConfig && deployedModelsResponse && !deployedModelsResponse.success && (
 				<div className="text-sm text-vscode-errorForeground">
-					{deployedModelsResponse.error || "Failed to fetch deployed models"}
+					{deployedModelsResponse.error || t("settings:providers.sapAiCoreFetchModelsFailedGeneric")}
 				</div>
 			)}
 
@@ -126,7 +126,7 @@ export const SapAiCore = ({ apiConfiguration, setApiConfigurationField }: SapAiC
 			</div>
 
 			<VSCodeButtonLink href="https://docs.sap.com/docs/sap-ai-core" className="inline-flex items-center gap-1">
-				Learn More
+				{t("settings:providers.sapAiCoreLearnMore")}
 			</VSCodeButtonLink>
 		</>
 	)

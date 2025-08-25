@@ -123,10 +123,10 @@
 			"ollamaBaseUrlRequired": "Ollama base URL is required",
 			"baseUrlRequired": "Base URL is required",
 			"modelDimensionMinValue": "Model dimension must be greater than 0",
-			"sapAiCoreBaseUrl": "SAP AI Core Base URL is required",
-			"sapAiCoreClientId": "SAP AI Core Client ID is required",
-			"sapAiCoreClientSecret": "SAP AI Core Client Secret is required",
-			"sapAiCoreTokenUrl": "SAP AI Core Token URL is required"
+			"sapAiCoreBaseUrl": "SAP AI Core Base URL is required.",
+			"sapAiCoreClientId": "SAP AI Core Client ID is required.",
+			"sapAiCoreClientSecret": "SAP AI Core Client Secret is required.",
+			"sapAiCoreTokenUrl": "SAP AI Core Token URL is required."
 		}
 	},
 	"autoApprove": {
@@ -298,6 +298,10 @@
 		"sapAiCoreClientSecret": "SAP AI Core Client Secret",
 		"sapAiCoreTokenUrl": "SAP AI Core Token URL",
 		"sapAiResourceGroup": "SAP AI Resource Group",
+		"sapAiCoreFetchingModels": "Fetching deployed models from SAP AI Core...",
+		"sapAiCoreFetchModelsFailed": "Failed to fetch deployed models:",
+		"sapAiCoreFetchModelsFailedGeneric": "Failed to fetch deployed models",
+		"sapAiCoreLearnMore": "Learn More",
 		"sapAiCoreDeployedModelsHeader": "Deployed Models (Ready to Use)",
 		"sapAiCoreSupportedModelsHeader": "Not Deployed Models (Require Deployment)",
 		"getHuggingFaceApiKey": "Get Hugging Face API Key",

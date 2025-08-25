@@ -6,6 +6,7 @@ import {
 	prepareSystemMessages,
 	prepareGeminiRequestPayload,
 	processGeminiStreamChunk,
+	parseJsonSafely,
 } from "../sapaicore"
 import { sapAiCoreModels } from "@roo-code/types"
 import type { MessageParam } from "@anthropic-ai/sdk/resources/messages"
@@ -276,6 +277,304 @@ describe("SAP AI Core Utility Functions", () => {
 			expect(result.usageMetadata?.candidatesTokenCount).toBe(50)
 			expect(result.usageMetadata?.thoughtsTokenCount).toBe(25)
 			expect(result.usageMetadata?.cachedContentTokenCount).toBe(10)
+		})
+	})
+
+	describe("parseJsonSafely", () => {
+		beforeEach(() => {
+			// Clear console mocks before each test
+			vitest.clearAllMocks()
+		})
+
+		describe("valid JSON parsing", () => {
+			it("should parse valid JSON strings correctly", () => {
+				const validJson = '{"message": "hello", "count": 42}'
+				const result = parseJsonSafely(validJson)
+
+				expect(result).toEqual({ message: "hello", count: 42 })
+			})
+
+			it("should parse valid JSON arrays", () => {
+				const validJsonArray = '["item1", "item2", 3]'
+				const result = parseJsonSafely(validJsonArray)
+
+				expect(result).toEqual(["item1", "item2", 3])
+			})
+
+			it("should parse valid nested JSON objects", () => {
+				const nestedJson = '{"user": {"name": "John", "age": 30}, "active": true}'
+				const result = parseJsonSafely(nestedJson)
+
+				expect(result).toEqual({
+					user: { name: "John", age: 30 },
+					active: true,
+				})
+			})
+
+			it("should parse JSON with special characters", () => {
+				const jsonWithSpecialChars = '{"text": "Hello\\nWorld\\t!", "emoji": "😀"}'
+				const result = parseJsonSafely(jsonWithSpecialChars)
+
+				expect(result).toEqual({
+					text: "Hello\nWorld\t!",
+					emoji: "😀",
+				})
+			})
+		})
+
+		describe("JSON repair functionality", () => {
+			it("should fix trailing commas in objects", () => {
+				const jsonWithTrailingComma = '{"message": "hello", "count": 42,}'
+				const result = parseJsonSafely(jsonWithTrailingComma)
+
+				expect(result).toEqual({ message: "hello", count: 42 })
+			})
+
+			it("should fix trailing commas in arrays", () => {
+				const jsonWithTrailingComma = '["item1", "item2", 3,]'
+				const result = parseJsonSafely(jsonWithTrailingComma)
+
+				expect(result).toEqual(["item1", "item2", 3])
+			})
+
+			it("should fix multiple trailing commas", () => {
+				const jsonWithMultipleTrailingCommas = '{"items": ["a", "b",], "count": 2,}'
+				const result = parseJsonSafely(jsonWithMultipleTrailingCommas)
+
+				expect(result).toEqual({ items: ["a", "b"], count: 2 })
+			})
+
+			it("should quote unquoted object keys", () => {
+				const jsonWithUnquotedKeys = '{message: "hello", count: 42}'
+				const result = parseJsonSafely(jsonWithUnquotedKeys)
+
+				expect(result).toEqual({ message: "hello", count: 42 })
+			})
+
+			it("should fix mixed issues (trailing commas and unquoted keys)", () => {
+				const malformedJson = '{message: "hello", count: 42, active: true,}'
+				const result = parseJsonSafely(malformedJson)
+
+				expect(result).toEqual({ message: "hello", count: 42, active: true })
+			})
+
+			it("should handle complex nested objects with multiple issues", () => {
+				const complexMalformedJson = '{user: {name: "John", age: 30,}, items: ["a", "b",], active: true,}'
+				const result = parseJsonSafely(complexMalformedJson)
+
+				expect(result).toEqual({
+					user: { name: "John", age: 30 },
+					items: ["a", "b"],
+					active: true,
+				})
+			})
+
+			it("should preserve quoted keys that contain special characters", () => {
+				const jsonWithSpecialKeys = '{"special-key": "value1", "another_key": "value2", normalKey: "value3"}'
+				const result = parseJsonSafely(jsonWithSpecialKeys)
+
+				expect(result).toEqual({
+					"special-key": "value1",
+					another_key: "value2",
+					normalKey: "value3",
+				})
+			})
+
+			it("should handle keys with underscores and dollar signs", () => {
+				const jsonWithSpecialKeys = '{_private: "private", $special: "special", normal_key: "normal"}'
+				const result = parseJsonSafely(jsonWithSpecialKeys)
+
+				expect(result).toEqual({
+					_private: "private",
+					$special: "special",
+					normal_key: "normal",
+				})
+			})
+		})
+
+		describe("error handling", () => {
+			it("should throw error for completely invalid JSON that cannot be repaired", () => {
+				const consoleSpy = vitest.spyOn(console, "error").mockImplementation(() => {})
+				const invalidJson = '{"message": "unclosed string'
+
+				expect(() => parseJsonSafely(invalidJson)).toThrow()
+				expect(consoleSpy).toHaveBeenCalledWith("Failed to parse JSON safely:", invalidJson, expect.any(Error))
+
+				consoleSpy.mockRestore()
+			})
+
+			it("should throw error for malformed JSON with mismatched brackets", () => {
+				const consoleSpy = vitest.spyOn(console, "error").mockImplementation(() => {})
+				const invalidJson = '{"message": "hello", "data": {"nested": "value"}'
+
+				expect(() => parseJsonSafely(invalidJson)).toThrow()
+				expect(consoleSpy).toHaveBeenCalled()
+
+				consoleSpy.mockRestore()
+			})
+
+			it("should throw error for invalid JSON structure", () => {
+				const consoleSpy = vitest.spyOn(console, "error").mockImplementation(() => {})
+				const invalidJson = "{message: hello}" // unquoted value
+
+				expect(() => parseJsonSafely(invalidJson)).toThrow()
+				expect(consoleSpy).toHaveBeenCalled()
+
+				consoleSpy.mockRestore()
+			})
+
+			it("should log original string and error when parsing fails", () => {
+				const consoleSpy = vitest.spyOn(console, "error").mockImplementation(() => {})
+				const invalidJson = "definitely not json"
+
+				expect(() => parseJsonSafely(invalidJson)).toThrow()
+				expect(consoleSpy).toHaveBeenCalledWith("Failed to parse JSON safely:", invalidJson, expect.any(Error))
+
+				consoleSpy.mockRestore()
+			})
+
+			it("should handle empty strings gracefully", () => {
+				const consoleSpy = vitest.spyOn(console, "error").mockImplementation(() => {})
+
+				expect(() => parseJsonSafely("")).toThrow()
+				expect(consoleSpy).toHaveBeenCalled()
+
+				consoleSpy.mockRestore()
+			})
+
+			it("should handle whitespace-only strings", () => {
+				const consoleSpy = vitest.spyOn(console, "error").mockImplementation(() => {})
+
+				expect(() => parseJsonSafely("   \n\t  ")).toThrow()
+				expect(consoleSpy).toHaveBeenCalled()
+
+				consoleSpy.mockRestore()
+			})
+		})
+
+		describe("real-world SAP AI Core scenarios", () => {
+			it("should handle typical SAP AI Core streaming response format", () => {
+				const sapResponse =
+					'{"contentBlockDelta": {"delta": {"text": "Hello world"}}, "metadata": {"usage": {"inputTokens": 10, "outputTokens": 5}}}'
+				const result = parseJsonSafely(sapResponse)
+
+				expect(result).toEqual({
+					contentBlockDelta: {
+						delta: { text: "Hello world" },
+					},
+					metadata: {
+						usage: { inputTokens: 10, outputTokens: 5 },
+					},
+				})
+			})
+
+			it("should handle SAP AI Core response with trailing comma", () => {
+				const sapResponseWithComma =
+					'{"contentBlockDelta": {"delta": {"text": "Hello"}}, "metadata": {"usage": {"inputTokens": 10,}},}'
+				const result = parseJsonSafely(sapResponseWithComma)
+
+				expect(result).toEqual({
+					contentBlockDelta: {
+						delta: { text: "Hello" },
+					},
+					metadata: {
+						usage: { inputTokens: 10 },
+					},
+				})
+			})
+
+			it("should handle SAP AI Core response with reasoning content", () => {
+				const sapResponseWithReasoning =
+					'{"contentBlockDelta": {"delta": {"reasoningContent": {"text": "Let me think..."}, "text": "The answer is"}}, "metadata": {"usage": {"totalTokens": 50}}}'
+				const result = parseJsonSafely(sapResponseWithReasoning)
+
+				expect(result).toEqual({
+					contentBlockDelta: {
+						delta: {
+							reasoningContent: { text: "Let me think..." },
+							text: "The answer is",
+						},
+					},
+					metadata: {
+						usage: { totalTokens: 50 },
+					},
+				})
+			})
+
+			it("should handle complex SAP AI Core cache metadata", () => {
+				const sapCacheResponse =
+					'{"metadata": {"usage": {"inputTokens": 100, "outputTokens": 50, "cacheReadInputTokens": 25, "cacheWriteOutputTokens": 10, "totalTokens": 185,}}}'
+				const result = parseJsonSafely(sapCacheResponse)
+
+				expect(result).toEqual({
+					metadata: {
+						usage: {
+							inputTokens: 100,
+							outputTokens: 50,
+							cacheReadInputTokens: 25,
+							cacheWriteOutputTokens: 10,
+							totalTokens: 185,
+						},
+					},
+				})
+			})
+		})
+
+		describe("edge cases", () => {
+			it("should handle JSON with null values", () => {
+				const jsonWithNull = '{"message": null, "data": {"value": null}}'
+				const result = parseJsonSafely(jsonWithNull)
+
+				expect(result).toEqual({
+					message: null,
+					data: { value: null },
+				})
+			})
+
+			it("should handle JSON with boolean values", () => {
+				const jsonWithBooleans = '{"active": true, "completed": false, "pending": null}'
+				const result = parseJsonSafely(jsonWithBooleans)
+
+				expect(result).toEqual({
+					active: true,
+					completed: false,
+					pending: null,
+				})
+			})
+
+			it("should handle JSON with numeric values including zero", () => {
+				const jsonWithNumbers = '{"count": 0, "temperature": 0.5, "negative": -1, "large": 1000000}'
+				const result = parseJsonSafely(jsonWithNumbers)
+
+				expect(result).toEqual({
+					count: 0,
+					temperature: 0.5,
+					negative: -1,
+					large: 1000000,
+				})
+			})
+
+			it("should handle deeply nested objects", () => {
+				const deeplyNested = '{"level1": {"level2": {"level3": {"level4": {"message": "deep"}}}}}'
+				const result = parseJsonSafely(deeplyNested)
+
+				expect(result).toEqual({
+					level1: {
+						level2: {
+							level3: {
+								level4: { message: "deep" },
+							},
+						},
+					},
+				})
+			})
+
+			it("should handle arrays with mixed types", () => {
+				const mixedArray = '["string", 42, true, null, {"nested": "object"}]'
+				const result = parseJsonSafely(mixedArray)
+
+				expect(result).toEqual(["string", 42, true, null, { nested: "object" }])
+			})
 		})
 	})
 })

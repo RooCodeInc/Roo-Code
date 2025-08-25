@@ -4,8 +4,12 @@ import { SapAiCoreHandler } from "../sapaicore.js"
 import type { ApiHandlerOptions } from "../../../shared/api.js"
 import axios from "axios"
 
-vitest.mock("axios")
-const mockedAxios = vitest.mocked(axios)
+vitest.mock("axios", () => ({
+	default: {
+		post: vitest.fn(),
+		get: vitest.fn(),
+	},
+}))
 
 // Create mock stream that implements async iteration
 function createMockStream(chunks: string[]) {
@@ -66,7 +70,7 @@ describe("SAP AI Core Streaming", () => {
 			]
 
 			const mockStream = createMockStream(streamChunks)
-			mockedAxios.post.mockResolvedValueOnce({ data: mockStream })
+			vi.mocked(axios.post).mockResolvedValueOnce({ data: mockStream })
 
 			const messages = [{ role: "user" as const, content: "Say hello" }]
 			const responses = []
@@ -125,7 +129,7 @@ describe("SAP AI Core Streaming", () => {
 			]
 
 			const mockStream = createMockStream(streamChunks)
-			mockedAxios.post.mockResolvedValueOnce({ data: mockStream })
+			vi.mocked(axios.post).mockResolvedValueOnce({ data: mockStream })
 
 			const messages = [{ role: "user" as const, content: "Say hello" }]
 			const responses = []
@@ -182,7 +186,7 @@ describe("SAP AI Core Streaming", () => {
 			}
 
 			// Mock both the stream and non-stream calls since o3-mini uses non-stream
-			mockedAxios.post
+			vi.mocked(axios.post)
 				.mockResolvedValueOnce({ data: createMockStream([]) }) // First call (stream)
 				.mockResolvedValueOnce(mockResponse) // Second call (non-stream)
 
@@ -228,7 +232,7 @@ describe("SAP AI Core Streaming", () => {
 			]
 
 			const mockStream = createMockStream(streamChunks)
-			mockedAxios.post.mockResolvedValueOnce({ data: mockStream })
+			vi.mocked(axios.post).mockResolvedValueOnce({ data: mockStream })
 
 			const messages = [{ role: "user" as const, content: "Say hello" }]
 			const responses = []
@@ -263,7 +267,7 @@ describe("SAP AI Core Streaming", () => {
 			]
 
 			const mockStream = createMockStream(streamChunks)
-			mockedAxios.post.mockResolvedValueOnce({ data: mockStream })
+			vi.mocked(axios.post).mockResolvedValueOnce({ data: mockStream })
 
 			const messages = [{ role: "user" as const, content: "Say hello" }]
 			const responses = []
@@ -312,7 +316,7 @@ describe("SAP AI Core Streaming", () => {
 			]
 
 			const mockStream = createMockStream(streamChunks)
-			mockedAxios.post.mockResolvedValueOnce({ data: mockStream })
+			vi.mocked(axios.post).mockResolvedValueOnce({ data: mockStream })
 
 			const messages = [{ role: "user" as const, content: "Say hello" }]
 			const responses = []
@@ -348,7 +352,7 @@ describe("SAP AI Core Streaming", () => {
 			]
 
 			const mockStream = createMockStream(streamChunks)
-			mockedAxios.post.mockResolvedValueOnce({ data: mockStream })
+			vi.mocked(axios.post).mockResolvedValueOnce({ data: mockStream })
 
 			const messages = [{ role: "user" as const, content: "Say hello" }]
 			const responses = []
@@ -377,7 +381,7 @@ describe("SAP AI Core Streaming", () => {
 			]
 
 			const mockStream = createMockStream(streamChunks)
-			mockedAxios.post.mockResolvedValueOnce({ data: mockStream })
+			vi.mocked(axios.post).mockResolvedValueOnce({ data: mockStream })
 
 			const consoleSpy = vitest.spyOn(console, "error").mockImplementation(() => {})
 
@@ -405,7 +409,7 @@ describe("SAP AI Core Streaming", () => {
 				},
 			}
 
-			mockedAxios.post.mockResolvedValueOnce({ data: mockStream })
+			vi.mocked(axios.post).mockResolvedValueOnce({ data: mockStream })
 
 			const messages = [{ role: "user" as const, content: "Say hello" }]
 
