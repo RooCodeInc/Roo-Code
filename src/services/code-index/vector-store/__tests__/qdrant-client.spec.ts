@@ -1266,7 +1266,7 @@ describe("QdrantVectorStore", () => {
 				score_threshold: DEFAULT_SEARCH_MIN_SCORE,
 				limit: DEFAULT_MAX_SEARCH_RESULTS,
 				params: {
-					hnsw_ef: 256,
+					hnsw_ef: 128,
 					exact: false,
 				},
 				with_payload: {
@@ -1317,7 +1317,7 @@ describe("QdrantVectorStore", () => {
 				score_threshold: DEFAULT_SEARCH_MIN_SCORE,
 				limit: DEFAULT_MAX_SEARCH_RESULTS,
 				params: {
-					hnsw_ef: 256,
+					hnsw_ef: 128,
 					exact: false,
 				},
 				with_payload: {
@@ -1343,7 +1343,7 @@ describe("QdrantVectorStore", () => {
 				score_threshold: customMinScore,
 				limit: DEFAULT_MAX_SEARCH_RESULTS,
 				params: {
-					hnsw_ef: 256,
+					hnsw_ef: 128,
 					exact: false,
 				},
 				with_payload: {
@@ -1367,7 +1367,7 @@ describe("QdrantVectorStore", () => {
 				score_threshold: DEFAULT_SEARCH_MIN_SCORE,
 				limit: customMaxResults,
 				params: {
-					hnsw_ef: 256,
+					hnsw_ef: 128,
 					exact: false,
 				},
 				with_payload: {
@@ -1514,7 +1514,7 @@ describe("QdrantVectorStore", () => {
 				score_threshold: DEFAULT_SEARCH_MIN_SCORE,
 				limit: DEFAULT_MAX_SEARCH_RESULTS,
 				params: {
-					hnsw_ef: 256,
+					hnsw_ef: 128,
 					exact: false,
 				},
 				with_payload: {
@@ -1579,7 +1579,7 @@ describe("QdrantVectorStore", () => {
 					score_threshold: DEFAULT_SEARCH_MIN_SCORE,
 					limit: DEFAULT_MAX_SEARCH_RESULTS,
 					params: {
-						hnsw_ef: 256,
+						hnsw_ef: 128,
 						exact: false,
 					},
 					with_payload: {
@@ -1605,7 +1605,7 @@ describe("QdrantVectorStore", () => {
 					score_threshold: DEFAULT_SEARCH_MIN_SCORE,
 					limit: DEFAULT_MAX_SEARCH_RESULTS,
 					params: {
-						hnsw_ef: 256,
+						hnsw_ef: 128,
 						exact: false,
 					},
 					with_payload: {
@@ -1629,7 +1629,7 @@ describe("QdrantVectorStore", () => {
 					score_threshold: DEFAULT_SEARCH_MIN_SCORE,
 					limit: DEFAULT_MAX_SEARCH_RESULTS,
 					params: {
-						hnsw_ef: 256,
+						hnsw_ef: 128,
 						exact: false,
 					},
 					with_payload: {
@@ -1653,7 +1653,7 @@ describe("QdrantVectorStore", () => {
 					score_threshold: DEFAULT_SEARCH_MIN_SCORE,
 					limit: DEFAULT_MAX_SEARCH_RESULTS,
 					params: {
-						hnsw_ef: 256,
+						hnsw_ef: 128,
 						exact: false,
 					},
 					with_payload: {
@@ -1677,7 +1677,7 @@ describe("QdrantVectorStore", () => {
 					score_threshold: DEFAULT_SEARCH_MIN_SCORE,
 					limit: DEFAULT_MAX_SEARCH_RESULTS,
 					params: {
-						hnsw_ef: 256,
+						hnsw_ef: 128,
 						exact: false,
 					},
 					with_payload: {
@@ -1708,7 +1708,7 @@ describe("QdrantVectorStore", () => {
 					score_threshold: DEFAULT_SEARCH_MIN_SCORE,
 					limit: DEFAULT_MAX_SEARCH_RESULTS,
 					params: {
-						hnsw_ef: 256,
+						hnsw_ef: 128,
 						exact: false,
 					},
 					with_payload: {
@@ -1739,7 +1739,7 @@ describe("QdrantVectorStore", () => {
 					score_threshold: DEFAULT_SEARCH_MIN_SCORE,
 					limit: DEFAULT_MAX_SEARCH_RESULTS,
 					params: {
-						hnsw_ef: 256,
+						hnsw_ef: 128,
 						exact: false,
 					},
 					with_payload: {
