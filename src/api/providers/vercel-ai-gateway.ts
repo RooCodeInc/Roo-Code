@@ -5,13 +5,14 @@ import {
 	vercelAiGatewayDefaultModelId,
 	vercelAiGatewayDefaultModelInfo,
 	VERCEL_AI_GATEWAY_DEFAULT_TEMPERATURE,
+	VERCEL_AI_GATEWAY_PROMPT_CACHING_MODELS,
 } from "@roo-code/types"
 
 import { ApiHandlerOptions } from "../../shared/api"
 
 import { ApiStream } from "../transform/stream"
 import { convertToOpenAiMessages } from "../transform/openai-format"
-import { addCacheBreakpoints } from "../transform/caching/anthropic"
+import { addCacheBreakpoints } from "../transform/caching/vercel-ai-gateway"
 
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { RouterProvider } from "./router-provider"
@@ -49,9 +50,9 @@ export class VercelAiGatewayHandler extends RouterProvider implements SingleComp
 			...convertToOpenAiMessages(messages),
 		]
 
-		if (modelId.startsWith("anthropic/claude-3")) {
+		if (VERCEL_AI_GATEWAY_PROMPT_CACHING_MODELS.has(modelId) && info.supportsPromptCache) {
 			addCacheBreakpoints(systemPrompt, openAiMessages)
-		} //TODO: add cache breakpoints for other models
+		}
 
 		const body: OpenAI.Chat.ChatCompletionCreateParams = {
 			model: modelId,
