@@ -416,7 +416,7 @@ export class QdrantVectorStore implements IVectorStore {
 				score_threshold: minScore ?? DEFAULT_SEARCH_MIN_SCORE,
 				limit: maxResults ?? DEFAULT_MAX_SEARCH_RESULTS,
 				params: {
-					hnsw_ef: 256, // Increased from 128 for better search precision with on-disk storage
+					hnsw_ef: 128,
 					exact: false,
 				},
 				with_payload: {
