@@ -14,7 +14,11 @@ export interface ModeState {
 // Internal type used when returning modes to callers (webview/handlers).
 // Extends the canonical ModeConfig with source information and an optional
 // UI-only `overridesBuiltin` flag used by the webview.
-export type ModeWithSource = ModeConfig & { source: ModeSource; overridesBuiltin?: boolean }
+export type ModeWithSource = ModeConfig & {
+	source: ModeSource
+	overridesBuiltin?: boolean
+	overriddenBy?: ModeSource
+}
 
 /**
  * ModeManager handles mode operations including enable/disable functionality,
@@ -42,6 +46,14 @@ export class ModeManager {
 			const customOverride = customModes.find((m) => m.slug === mode.slug)
 			if (!customOverride) {
 				allModes.push({ ...mode, source: "builtin" })
+			} else {
+				// Add overridden built-in mode with override information
+				allModes.push({
+					...mode,
+					source: "builtin",
+					disabled: customOverride.disabled,
+					overriddenBy: customOverride.source as ModeSource,
+				})
 			}
 		}
 

@@ -43,6 +43,7 @@ export type ModeSource = "builtin" | "global" | "project"
 export interface ModeWithSource extends ModeConfig {
 	source: ModeSource
 	disabled?: boolean
+	overriddenBy?: ModeSource
 }
 
 interface ModeEnableDisableDialogProps {
@@ -222,6 +223,11 @@ export const ModeEnableDisableDialog: React.FC<ModeEnableDisableDialogProps> = (
 						<Badge variant="outline" className={cn("source-badge text-xs px-1.5 py-0.5", mode.source)}>
 							{SOURCE_INFO[mode.source].icon} {mode.source}
 						</Badge>
+						{mode.overriddenBy && (
+							<Badge variant="secondary" className="text-xs px-1.5 py-0.5">
+								Overridden by {mode.overriddenBy}
+							</Badge>
+						)}
 					</div>
 					{mode.description && (
 						<p className={cn("mode-description text-xs mt-1 truncate", mode.disabled && "disabled")}>
