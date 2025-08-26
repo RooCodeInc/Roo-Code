@@ -25,6 +25,16 @@
 		"operationFailed": "Operation Failed",
 		"resourceNotFound": "Resource Not Found",
 		"configurationError": "Configuration Error",
-		"authenticationFailed": "Authentication Failed"
+		"authenticationFailed": "Authentication Failed",
+		"invalidLineNumber": "Invalid Line Number",
+		"fileAlreadyExists": "File Already Exists",
+		"directoryNotFound": "Directory Not Found",
+		"invalidPath": "Invalid Path",
+		"readError": "Read Error",
+		"writeError": "Write Error",
+		"syntaxError": "Syntax Error",
+		"validationError": "Validation Error",
+		"timeoutError": "Timeout Error",
+		"connectionError": "Connection Error"
 	}
 }

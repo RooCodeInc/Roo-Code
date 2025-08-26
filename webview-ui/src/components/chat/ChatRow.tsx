@@ -768,31 +768,12 @@ export const ChatRowContent = ({
 								/>
 							</span>
 						</div>
-						<div
-							style={{
-								marginTop: "4px",
-								backgroundColor: "var(--vscode-badge-background)",
-								border: "1px solid var(--vscode-badge-background)",
-								borderRadius: "4px 4px 0 0",
-								overflow: "hidden",
-								marginBottom: "2px",
-							}}>
-							<div
-								style={{
-									padding: "9px 10px 9px 14px",
-									backgroundColor: "var(--vscode-badge-background)",
-									borderBottom: "1px solid var(--vscode-editorGroup-border)",
-									fontWeight: "bold",
-									fontSize: "var(--vscode-font-size)",
-									color: "var(--vscode-badge-foreground)",
-									display: "flex",
-									alignItems: "center",
-									gap: "6px",
-								}}>
+						<div className="mt-1 bg-vscode-badge-background border border-vscode-badge-background rounded-t overflow-hidden mb-0.5">
+							<div className="py-[9px] px-[10px] pl-[14px] bg-vscode-badge-background border-b border-vscode-editorGroup-border font-bold text-[length:var(--vscode-font-size)] text-vscode-badge-foreground flex items-center gap-1.5">
 								<span className="codicon codicon-arrow-right"></span>
 								{t("chat:subtasks.newTaskContent")}
 							</div>
-							<div style={{ padding: "12px 16px", backgroundColor: "var(--vscode-editor-background)" }}>
+							<div className="p-3 px-4 bg-vscode-editor-background">
 								<MarkdownBlock markdown={tool.content} />
 							</div>
 						</div>
@@ -805,31 +786,12 @@ export const ChatRowContent = ({
 							{toolIcon("check-all")}
 							<span style={{ fontWeight: "bold" }}>{t("chat:subtasks.wantsToFinish")}</span>
 						</div>
-						<div
-							style={{
-								marginTop: "4px",
-								backgroundColor: "var(--vscode-editor-background)",
-								border: "1px solid var(--vscode-badge-background)",
-								borderRadius: "4px",
-								overflow: "hidden",
-								marginBottom: "8px",
-							}}>
-							<div
-								style={{
-									padding: "9px 10px 9px 14px",
-									backgroundColor: "var(--vscode-badge-background)",
-									borderBottom: "1px solid var(--vscode-editorGroup-border)",
-									fontWeight: "bold",
-									fontSize: "var(--vscode-font-size)",
-									color: "var(--vscode-badge-foreground)",
-									display: "flex",
-									alignItems: "center",
-									gap: "6px",
-								}}>
+						<div className="mt-1 bg-vscode-editor-background border border-vscode-badge-background rounded overflow-hidden mb-2">
+							<div className="py-[9px] px-[10px] pl-[14px] bg-vscode-badge-background border-b border-vscode-editorGroup-border font-bold text-[length:var(--vscode-font-size)] text-vscode-badge-foreground flex items-center gap-1.5">
 								<span className="codicon codicon-check"></span>
 								{t("chat:subtasks.completionContent")}
 							</div>
-							<div style={{ padding: "12px 16px", backgroundColor: "var(--vscode-editor-background)" }}>
+							<div className="p-3 px-4 bg-vscode-editor-background">
 								<MarkdownBlock markdown={t("chat:subtasks.completionInstructions")} />
 							</div>
 						</div>
@@ -856,35 +818,12 @@ export const ChatRowContent = ({
 				case "subtask_result":
 					return (
 						<div>
-							<div
-								style={{
-									marginTop: "0px",
-									backgroundColor: "var(--vscode-badge-background)",
-									border: "1px solid var(--vscode-badge-background)",
-									borderRadius: "0 0 4px 4px",
-									overflow: "hidden",
-									marginBottom: "8px",
-								}}>
-								<div
-									style={{
-										padding: "9px 10px 9px 14px",
-										backgroundColor: "var(--vscode-badge-background)",
-										borderBottom: "1px solid var(--vscode-editorGroup-border)",
-										fontWeight: "bold",
-										fontSize: "var(--vscode-font-size)",
-										color: "var(--vscode-badge-foreground)",
-										display: "flex",
-										alignItems: "center",
-										gap: "6px",
-									}}>
+							<div className="mt-0 bg-vscode-badge-background border border-vscode-badge-background rounded-b overflow-hidden mb-2">
+								<div className="py-[9px] px-[10px] pl-[14px] bg-vscode-badge-background border-b border-vscode-editorGroup-border font-bold text-[length:var(--vscode-font-size)] text-vscode-badge-foreground flex items-center gap-1.5">
 									<span className="codicon codicon-arrow-left"></span>
 									{t("chat:subtasks.resultContent")}
 								</div>
-								<div
-									style={{
-										padding: "12px 16px",
-										backgroundColor: "var(--vscode-editor-background)",
-									}}>
+								<div className="p-3 px-4 bg-vscode-editor-background">
 									<MarkdownBlock markdown={message.text} />
 								</div>
 							</div>
