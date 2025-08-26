@@ -196,16 +196,43 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 
 		setCachedState((prevCachedState) => ({ ...prevCachedState, ...extensionState }))
 		prevApiConfigName.current = currentApiConfigName
+		// Reset change detection when API config changes externally
 		setChangeDetected(false)
-	}, [currentApiConfigName, extensionState, isChangeDetected])
+	}, [currentApiConfigName, extensionState])
 
 	// Bust the cache when settings are imported.
 	useEffect(() => {
 		if (settingsImportedAt) {
 			setCachedState((prevCachedState) => ({ ...prevCachedState, ...extensionState }))
+			// Reset change detection when settings are imported
 			setChangeDetected(false)
 		}
 	}, [settingsImportedAt, extensionState])
+
+	// Reset change detection when extensionState changes from outside the settings dialog
+	// This prevents false positives when mode or API config changes in the main interface
+	useEffect(() => {
+		// Check if the changes are coming from outside the settings dialog
+		// by comparing the extension state with our cached state
+		const isExternalChange =
+			extensionState.mode !== cachedState.mode ||
+			JSON.stringify(extensionState.apiConfiguration) !== JSON.stringify(cachedState.apiConfiguration)
+
+		if (isExternalChange && !isChangeDetected) {
+			// Update cached state to match extension state for external changes
+			setCachedState((prevCachedState) => ({
+				...prevCachedState,
+				mode: extensionState.mode,
+				apiConfiguration: extensionState.apiConfiguration,
+			}))
+		}
+	}, [
+		extensionState.mode,
+		extensionState.apiConfiguration,
+		cachedState.mode,
+		cachedState.apiConfiguration,
+		isChangeDetected,
+	])
 
 	const setCachedStateField: SetCachedStateField<keyof ExtensionStateContextType> = useCallback((field, value) => {
 		setCachedState((prevState) => {
