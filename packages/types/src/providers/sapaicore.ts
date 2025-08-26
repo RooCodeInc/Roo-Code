@@ -58,6 +58,7 @@ export const sapAiCoreModels = {
 		contextWindow: 1_048_576,
 		supportsImages: true,
 		supportsPromptCache: true,
+		maxThinkingTokens: 32_768,
 		description: sapAiCoreModelDescription,
 	},
 	"gemini-2.5-flash": {
@@ -65,6 +66,7 @@ export const sapAiCoreModels = {
 		contextWindow: 1_048_576,
 		supportsImages: true,
 		supportsPromptCache: true,
+		maxThinkingTokens: 24_576,
 		description: sapAiCoreModelDescription,
 	},
 	"gpt-4": {

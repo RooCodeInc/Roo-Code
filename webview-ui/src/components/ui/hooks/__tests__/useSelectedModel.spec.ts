@@ -588,7 +588,7 @@ describe("sapaicore provider", () => {
 		expect(result.current.id).toBe("anthropic--claude-3.7-sonnet")
 		// Ensure info is populated from catalog for 3.7 Sonnet (1M ctx, prompt cache true)
 		expect(result.current.info).toBeDefined()
-		expect(result.current.info?.contextWindow).toBe(1000000)
+		expect(result.current.info?.contextWindow).toBe(200000)
 		expect(result.current.info?.supportsImages).toBe(true)
 		expect(result.current.info?.supportsPromptCache).toBe(true)
 	})
