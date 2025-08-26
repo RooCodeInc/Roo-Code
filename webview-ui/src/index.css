@@ -107,6 +107,7 @@
 	--color-vscode-list-activeSelectionForeground: var(--vscode-list-activeSelectionForeground);
 
 	--color-vscode-toolbar-hoverBackground: var(--vscode-toolbar-hoverBackground);
+	--color-vscode-toolbar-hoverOutline: var(--vscode-toolbar-hoverOutline);
 
 	--color-vscode-panel-border: var(--vscode-panel-border);
 
