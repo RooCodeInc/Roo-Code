@@ -495,10 +495,13 @@ export const ChatRowContent = ({
 			}
 			case "updateTodoList" as any: {
 				const todos = (tool as any).todos || []
+				// Extract diff text from the tool result if available
+				const diffText = (tool as any).diffText || undefined
 				return (
 					<UpdateTodoListToolBlock
 						todos={todos}
 						content={(tool as any).content}
+						diffText={diffText}
 						onChange={(updatedTodos) => {
 							if (typeof vscode !== "undefined" && vscode?.postMessage) {
 								vscode.postMessage({ type: "updateTodoList", payload: { todos: updatedTodos } })

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react"
 import { ToolUseBlock, ToolUseBlockHeader } from "../common/ToolUseBlock"
 import MarkdownBlock from "../common/MarkdownBlock"
+import { TodoListDiff } from "./TodoListDiff"
 
 interface TodoItem {
 	id?: string
@@ -24,6 +25,8 @@ interface UpdateTodoListToolBlockProps {
 	/** Whether editing is allowed (controlled externally) */
 	editable?: boolean
 	userEdited?: boolean
+	/** Diff text to display instead of full list */
+	diffText?: string
 }
 
 const STATUS_OPTIONS = [
@@ -52,6 +55,7 @@ const UpdateTodoListToolBlock: React.FC<UpdateTodoListToolBlockProps> = ({
 	onChange,
 	editable = true,
 	userEdited = false,
+	diffText,
 }) => {
 	const [editTodos, setEditTodos] = useState<TodoItem[]>(
 		todos.length > 0 ? todos.map((todo) => ({ ...todo, id: todo.id || genId() })) : [],
@@ -166,6 +170,43 @@ const UpdateTodoListToolBlock: React.FC<UpdateTodoListToolBlockProps> = ({
 		)
 	}
 
+	// If we have diff text, show the collapsible diff view
+	if (diffText && !isEditing) {
+		return (
+			<ToolUseBlock>
+				<ToolUseBlockHeader>
+					<div className="flex items-center w-full" style={{ width: "100%" }}>
+						<span
+							className="codicon codicon-checklist mr-1.5"
+							style={{ color: "var(--vscode-foreground)" }}
+						/>
+						<span className="font-bold mr-2" style={{ fontWeight: "bold" }}>
+							Todo List
+						</span>
+						<div className="flex-grow" />
+						{editable && (
+							<button
+								onClick={() => setIsEditing(true)}
+								style={{
+									border: "1px solid var(--vscode-button-secondaryBorder)",
+									background: "var(--vscode-button-secondaryBackground)",
+									color: "var(--vscode-button-secondaryForeground)",
+									borderRadius: 4,
+									padding: "2px 8px",
+									cursor: "pointer",
+									fontSize: 13,
+									marginLeft: 8,
+								}}>
+								View Full List
+							</button>
+						)}
+					</div>
+				</ToolUseBlockHeader>
+				<TodoListDiff diffText={diffText} isCollapsed={true} />
+			</ToolUseBlock>
+		)
+	}
+
 	return (
 		<>
 			<ToolUseBlock>
@@ -176,7 +217,7 @@ const UpdateTodoListToolBlock: React.FC<UpdateTodoListToolBlockProps> = ({
 							style={{ color: "var(--vscode-foreground)" }}
 						/>
 						<span className="font-bold mr-2" style={{ fontWeight: "bold" }}>
-							Todo List Updated
+							Todo List {diffText ? "(Full View)" : "Updated"}
 						</span>
 						<div className="flex-grow" />
 						{editable && (
@@ -198,7 +239,7 @@ const UpdateTodoListToolBlock: React.FC<UpdateTodoListToolBlockProps> = ({
 									fontSize: 13,
 									marginLeft: 8,
 								}}>
-								{isEditing ? "Done" : "Edit"}
+								{isEditing ? "Done" : diffText ? "Back to Diff" : "Edit"}
 							</button>
 						)}
 					</div>

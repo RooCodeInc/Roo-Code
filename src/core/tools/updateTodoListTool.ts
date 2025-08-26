@@ -7,6 +7,12 @@ import crypto from "crypto"
 import { TodoItem, TodoStatus, todoStatusSchema } from "@roo-code/types"
 import { getLatestTodo } from "../../shared/todo"
 
+interface TodoDiff {
+	added: TodoItem[]
+	removed: TodoItem[]
+	modified: { old: TodoItem; new: TodoItem }[]
+}
+
 let approvedTodoList: TodoItem[] | undefined = undefined
 
 /**
@@ -144,6 +150,151 @@ function validateTodos(todos: any[]): { valid: boolean; error?: string } {
 }
 
 /**
+ * Generate a diff between two todo lists
+ * @param oldTodos Previous todo list
+ * @param newTodos New todo list
+ * @returns TodoDiff object containing added, removed, and modified items
+ */
+function generateTodoDiff(oldTodos: TodoItem[], newTodos: TodoItem[]): TodoDiff {
+	const diff: TodoDiff = {
+		added: [],
+		removed: [],
+		modified: [],
+	}
+
+	// Create maps to track which items have been matched
+	const oldMatched = new Set<number>()
+	const newMatched = new Set<number>()
+
+	// First pass: Find exact content matches (may have status changes)
+	for (let i = 0; i < oldTodos.length; i++) {
+		if (oldMatched.has(i)) continue
+		const oldItem = oldTodos[i]
+
+		for (let j = 0; j < newTodos.length; j++) {
+			if (newMatched.has(j)) continue
+			const newItem = newTodos[j]
+
+			if (oldItem.content === newItem.content) {
+				oldMatched.add(i)
+				newMatched.add(j)
+
+				// Check if status changed
+				if (oldItem.status !== newItem.status) {
+					diff.modified.push({ old: oldItem, new: newItem })
+				}
+				// If status is same, it's unchanged (not added to diff)
+				break
+			}
+		}
+	}
+
+	// Second pass: Find similar content (modifications)
+	for (let i = 0; i < oldTodos.length; i++) {
+		if (oldMatched.has(i)) continue
+		const oldItem = oldTodos[i]
+
+		// Look for similar items at the same position first
+		if (i < newTodos.length && !newMatched.has(i)) {
+			const newItem = newTodos[i]
+			const similarity = calculateSimilarity(oldItem.content, newItem.content)
+
+			// If items are at same position and somewhat similar, consider them modified
+			if (similarity > 0.3) {
+				oldMatched.add(i)
+				newMatched.add(i)
+				diff.modified.push({ old: oldItem, new: newItem })
+			}
+		}
+	}
+
+	// Third pass: Mark remaining items as removed/added
+	for (let i = 0; i < oldTodos.length; i++) {
+		if (!oldMatched.has(i)) {
+			diff.removed.push(oldTodos[i])
+		}
+	}
+
+	for (let j = 0; j < newTodos.length; j++) {
+		if (!newMatched.has(j)) {
+			diff.added.push(newTodos[j])
+		}
+	}
+
+	return diff
+}
+
+/**
+ * Calculate similarity between two strings (0 to 1)
+ */
+function calculateSimilarity(str1: string, str2: string): number {
+	if (str1 === str2) return 1.0
+	if (str1.length === 0 || str2.length === 0) return 0.0
+
+	// Simple character-based similarity
+	const longer = str1.length > str2.length ? str1 : str2
+	const shorter = str1.length > str2.length ? str2 : str1
+
+	let matches = 0
+	for (let i = 0; i < shorter.length; i++) {
+		if (shorter[i] === longer[i]) {
+			matches++
+		}
+	}
+
+	return matches / longer.length
+}
+
+/**
+ * Format todo diff as a concise string
+ * @param diff TodoDiff object
+ * @returns Formatted diff string
+ */
+function formatTodoDiff(diff: TodoDiff): string {
+	const lines: string[] = []
+
+	if (diff.added.length > 0) {
+		lines.push("Added:")
+		for (const item of diff.added) {
+			const status = item.status === "completed" ? "[x]" : item.status === "in_progress" ? "[-]" : "[ ]"
+			lines.push(`  + ${status} ${item.content}`)
+		}
+	}
+
+	if (diff.removed.length > 0) {
+		if (lines.length > 0) lines.push("")
+		lines.push("Removed:")
+		for (const item of diff.removed) {
+			const status = item.status === "completed" ? "[x]" : item.status === "in_progress" ? "[-]" : "[ ]"
+			lines.push(`  - ${status} ${item.content}`)
+		}
+	}
+
+	if (diff.modified.length > 0) {
+		if (lines.length > 0) lines.push("")
+		lines.push("Modified:")
+		for (const { old, new: newItem } of diff.modified) {
+			if (old.content !== newItem.content) {
+				lines.push(`  ~ "${old.content}" → "${newItem.content}"`)
+			}
+			if (old.status !== newItem.status) {
+				const oldStatus =
+					old.status === "completed" ? "completed" : old.status === "in_progress" ? "in_progress" : "pending"
+				const newStatus =
+					newItem.status === "completed"
+						? "completed"
+						: newItem.status === "in_progress"
+							? "in_progress"
+							: "pending"
+				lines.push(`  ~ Status: ${oldStatus} → ${newStatus}`)
+			}
+		}
+	}
+
+	return lines.length > 0 ? lines.join("\n") : "No changes"
+}
+
+/**
  * Update the todo list for a task.
  * @param cline Task instance
  * @param block ToolUse block
@@ -194,9 +345,15 @@ export async function updateTodoListTool(
 			status: normalizeStatus(t.status),
 		}))
 
+		// Get the previous todo list for diff generation
+		const previousTodos = cline.todoList || []
+		const diff = generateTodoDiff(previousTodos, normalizedTodos)
+		const diffText = formatTodoDiff(diff)
+
 		const approvalMsg = JSON.stringify({
 			tool: "updateTodoList",
 			todos: normalizedTodos,
+			diffText: diffText,
 		})
 		if (block.partial) {
 			await cline.ask("tool", approvalMsg, block.partial).catch(() => {})
@@ -217,18 +374,24 @@ export async function updateTodoListTool(
 				JSON.stringify({
 					tool: "updateTodoList",
 					todos: normalizedTodos,
+					diffText: diffText,
 				}),
 			)
 		}
 
 		await setTodoListForTask(cline, normalizedTodos)
 
-		// If todo list changed, output new todo list in markdown format
+		// Regenerate diff if todos were changed by user
+		const finalDiff = isTodoListChanged ? generateTodoDiff(previousTodos, normalizedTodos) : diff
+		const finalDiffText = isTodoListChanged ? formatTodoDiff(finalDiff) : diffText
+
+		// If todo list changed, output the diff
 		if (isTodoListChanged) {
-			const md = todoListToMarkdown(normalizedTodos)
-			pushToolResult(formatResponse.toolResult("User edits todo:\n\n" + md))
+			pushToolResult(formatResponse.toolResult("User edited todo list:\n\n" + finalDiffText))
+		} else if (finalDiffText !== "No changes") {
+			pushToolResult(formatResponse.toolResult("Todo list updated:\n\n" + finalDiffText))
 		} else {
-			pushToolResult(formatResponse.toolResult("Todo list updated successfully."))
+			pushToolResult(formatResponse.toolResult("Todo list updated (no changes)."))
 		}
 	} catch (error) {
 		await handleError("update todo list", error)

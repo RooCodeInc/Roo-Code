@@ -242,8 +242,11 @@ export async function presentAssistantMessage(cline: Task) {
 				break
 			}
 
-			if (cline.didAlreadyUseTool) {
-				// Ignore any content after a tool has already been used.
+			// Special handling for update_todo_list - it can be used alongside other tools
+			const isUpdateTodoList = block.name === "update_todo_list"
+
+			if (cline.didAlreadyUseTool && !isUpdateTodoList) {
+				// Ignore any content after a tool has already been used (except update_todo_list).
 				cline.userMessageContent.push({
 					type: "text",
 					text: `Tool [${block.name}] was not executed because a tool has already been used in this message. Only one tool may be used per message. You must assess the first tool's result before proceeding to use the next tool.`,
@@ -263,8 +266,10 @@ export async function presentAssistantMessage(cline: Task) {
 
 				// Once a tool result has been collected, ignore all other tool
 				// uses since we should only ever present one tool result per
-				// message.
-				cline.didAlreadyUseTool = true
+				// message. Exception: update_todo_list can be used alongside other tools.
+				if (!isUpdateTodoList) {
+					cline.didAlreadyUseTool = true
+				}
 			}
 
 			const askApproval = async (
