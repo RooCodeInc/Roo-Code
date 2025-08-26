@@ -56,6 +56,7 @@ describe("ModeSelector", () => {
 
 		render(
 			<ModeSelector
+				title="Mode Selector"
 				value={"code" as Mode}
 				onChange={vi.fn()}
 				modeShortcutText="Ctrl+M"
