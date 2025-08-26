@@ -82,7 +82,7 @@ export class RooIgnoreController {
 
 	/**
 	 * Check if a file should be accessible to the LLM
-	 * Automatically resolves symlinks to prevent TOCTOU attacks
+	 * Automatically resolves symlinks
 	 * @param filePath - Path to check (relative to cwd)
 	 * @returns true if file is accessible, false if ignored
 	 */
