@@ -89,6 +89,7 @@ export const IndexingStatusBadge: React.FC<IndexingStatusBadgeProps> = ({ classN
 					<Button
 						variant="ghost"
 						size="sm"
+						aria-label={tooltipText}
 						className={cn(
 							"relative h-7 w-7 p-0",
 							"text-vscode-foreground opacity-85",
