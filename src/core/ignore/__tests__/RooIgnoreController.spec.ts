@@ -225,7 +225,7 @@ describe("RooIgnoreController", () => {
 		})
 
 		/**
-		 * Tests symlink resolution - the simplest test for TOCTOU fix
+		 * Tests symlink resolution
 		 */
 		it("should block symlinks pointing to ignored files", () => {
 			// Mock fsSync.realpathSync to simulate symlink resolution
@@ -241,7 +241,7 @@ describe("RooIgnoreController", () => {
 			// Direct access to ignored file should be blocked
 			expect(controller.validateAccess("node_modules/package.json")).toBe(false)
 
-			// Symlink to ignored file should also be blocked (TOCTOU fix)
+			// Symlink to ignored file should also be blocked
 			expect(controller.validateAccess("config.json")).toBe(false)
 		})
 	})
