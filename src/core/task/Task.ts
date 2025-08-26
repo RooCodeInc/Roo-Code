@@ -2110,8 +2110,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					if (pendingGroundingSources.length > 0) {
 						// Remove any grounding source references that might have been integrated into the message
 						cleanAssistantMessage = assistantMessage
-							.replace(/\[\d+\]\s+[^:\n]+:\s+https?:\/\/[^\s\n]+/g, "")
-							.replace(/Sources?:\s*[\s\S]*?(?=\n\n|\n$|$)/g, "")
+							.replace(/\[\d+\]\s+[^:\n]+:\s+https?:\/\/[^\s\n]+/g, "") // e.g., "[1] Example Source: https://example.com"
+							.replace(/Sources?:\s*[\s\S]*?(?=\n\n|\n$|$)/g, "") // e.g., "Sources: [1](url1), [2](url2)"
 							.trim()
 					}
 
