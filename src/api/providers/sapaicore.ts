@@ -355,6 +355,48 @@ export function processGeminiStreamChunk(data: any): {
 	return result
 }
 
+/**
+ * Safely parse JSON with fallback handling for common malformed JSON issues
+ * Used specifically for SAP AI Core streaming responses
+ */
+export function parseJsonSafely(str: string): any {
+	if (!str || typeof str !== "string" || str.trim() === "") {
+		console.error("Failed to parse JSON safely:", str, new Error("Input must be a non-empty string"))
+		throw new Error("Input must be a non-empty string")
+	}
+
+	try {
+		// First try standard JSON parsing
+		return JSON.parse(str)
+	} catch (error) {
+		// If that fails, try to fix common JSON issues safely
+		try {
+			let cleaned = str.trim()
+			cleaned = cleaned.replace(/,(\s*[}\]])/g, "$1")
+			cleaned = cleaned.replace(/([{,]\s*)([a-zA-Z_$][a-zA-Z0-9_$]*)\s*:/g, '$1"$2":')
+			cleaned = cleaned.replace(/'([^']*?)'/g, '"$1"')
+
+			// Remove any trailing commas at the end
+			cleaned = cleaned.replace(/,\s*$/, "")
+			return JSON.parse(cleaned)
+		} catch (secondError) {
+			// If regex approach fails, try the toStrictJson approach as fallback
+			// but only for trusted SAP AI Core responses
+			try {
+				const obj = new Function("return " + str)()
+				return JSON.stringify(obj)
+			} catch (thirdError) {
+				console.error(
+					"Failed to parse JSON safely:",
+					str,
+					error instanceof Error ? error : new Error("Unknown error"),
+				)
+				throw new Error(`Invalid JSON format: ${error instanceof Error ? error.message : "Unknown error"}`)
+			}
+		}
+	}
+}
+
 function convertAnthropicMessageToGemini(message: Anthropic.Messages.MessageParam) {
 	const role = message.role === "assistant" ? "model" : "user"
 	const parts = []
@@ -418,29 +460,6 @@ export function prepareGeminiRequestPayload(
 	}
 
 	return payload
-}
-
-/**
- * Safely parse JSON with fallback handling for common malformed JSON issues
- * Used specifically for SAP AI Core streaming responses
- */
-export function parseJsonSafely(str: string): any {
-	try {
-		// First try standard JSON parsing
-		return JSON.parse(str)
-	} catch (error) {
-		// If that fails, try to fix common JSON issues safely
-		try {
-			// Remove trailing commas and fix other common issues
-			const cleaned = str
-				.replace(/,(\s*[}\]])/g, "$1") // Remove trailing commas
-				.replace(/([{,]\s*)([a-zA-Z_$][a-zA-Z0-9_$]*)\s*:/g, '$1"$2":') // Quote unquoted keys
-			return JSON.parse(cleaned)
-		} catch (secondError) {
-			console.error("Failed to parse JSON safely:", str, secondError)
-			throw secondError
-		}
-	}
 }
 
 export class SapAiCoreHandler extends BaseProvider implements SingleCompletionHandler {
