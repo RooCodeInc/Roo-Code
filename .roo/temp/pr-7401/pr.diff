@@ -1,0 +1,1695 @@
+diff --git a/packages/types/src/message.ts b/packages/types/src/message.ts
+index 5037370f24f..ed9a7d23bc4 100644
+--- a/packages/types/src/message.ts
++++ b/packages/types/src/message.ts
+@@ -204,6 +204,7 @@ export const clineMessageSchema = z.object({
+ 	ask: clineAskSchema.optional(),
+ 	say: clineSaySchema.optional(),
+ 	text: z.string().optional(),
++	title: z.string().optional(), // Custom title for error messages and other displays
+ 	images: z.array(z.string()).optional(),
+ 	partial: z.boolean().optional(),
+ 	reasoning: z.string().optional(),
+diff --git a/src/core/assistant-message/presentAssistantMessage.ts b/src/core/assistant-message/presentAssistantMessage.ts
+index a8b90728b1e..99945162fb6 100644
+--- a/src/core/assistant-message/presentAssistantMessage.ts
++++ b/src/core/assistant-message/presentAssistantMessage.ts
+@@ -317,9 +317,14 @@ export async function presentAssistantMessage(cline: Task) {
+ 				await cline.say(
+ 					"error",
+ 					`Error ${action}:\n${error.message ?? JSON.stringify(serializeError(error), null, 2)}`,
++					undefined, // images
++					undefined, // partial
++					undefined, // checkpoint
++					undefined, // progressStatus
++					{ title: `Tool Call Error: ${block.name}` }, // Custom title with tool name
+ 				)
+ 
+-				pushToolResult(formatResponse.toolError(errorString))
++				pushToolResult(formatResponse.toolError(errorString, block.name))
+ 			}
+ 
+ 			// If block is partial, remove partial closing tag so its not
+@@ -371,7 +376,7 @@ export async function presentAssistantMessage(cline: Task) {
+ 				)
+ 			} catch (error) {
+ 				cline.consecutiveMistakeCount++
+-				pushToolResult(formatResponse.toolError(error.message))
++				pushToolResult(formatResponse.toolError(error.message, block.name))
+ 				break
+ 			}
+ 
+@@ -410,6 +415,7 @@ export async function presentAssistantMessage(cline: Task) {
+ 					pushToolResult(
+ 						formatResponse.toolError(
+ 							`Tool call repetition limit reached for ${block.name}. Please try a different approach.`,
++							block.name,
+ 						),
+ 					)
+ 					break
+diff --git a/src/core/prompts/__tests__/responses-tool-error.spec.ts b/src/core/prompts/__tests__/responses-tool-error.spec.ts
+new file mode 100644
+index 00000000000..127e4bf921e
+--- /dev/null
++++ b/src/core/prompts/__tests__/responses-tool-error.spec.ts
+@@ -0,0 +1,51 @@
++import { describe, it, expect } from "vitest"
++import { formatResponse } from "../responses"
++
++describe("formatResponse.toolError", () => {
++	it("should format error without tool name when not provided", () => {
++		const error = "Something went wrong"
++		const result = formatResponse.toolError(error)
++
++		expect(result).toBe("Tool Execution Error\n<error>\nSomething went wrong\n</error>")
++	})
++
++	it("should format error with tool name when provided", () => {
++		const error = "Invalid mode: test_mode"
++		const toolName = "switch_mode"
++		const result = formatResponse.toolError(error, toolName)
++
++		expect(result).toBe("Tool Call Error: switch_mode\n<error>\nInvalid mode: test_mode\n</error>")
++	})
++
++	it("should handle undefined error message", () => {
++		const result = formatResponse.toolError(undefined, "new_task")
++
++		expect(result).toBe("Tool Call Error: new_task\n<error>\nundefined\n</error>")
++	})
++
++	it("should work with various tool names", () => {
++		const testCases = [
++			{ toolName: "write_to_file", expected: "Tool Call Error: write_to_file" },
++			{ toolName: "execute_command", expected: "Tool Call Error: execute_command" },
++			{ toolName: "apply_diff", expected: "Tool Call Error: apply_diff" },
++			{ toolName: "new_task", expected: "Tool Call Error: new_task" },
++			{ toolName: "use_mcp_tool", expected: "Tool Call Error: use_mcp_tool" },
++		]
++
++		testCases.forEach(({ toolName, expected }) => {
++			const result = formatResponse.toolError("Test error", toolName)
++			expect(result).toContain(expected)
++		})
++	})
++
++	it("should maintain backward compatibility when tool name is not provided", () => {
++		// This ensures existing code that doesn't pass toolName still works
++		const error = "Legacy error"
++		const result = formatResponse.toolError(error)
++
++		// Should not contain "Tool Call Error:" prefix
++		expect(result).not.toContain("Tool Call Error:")
++		// Should contain generic title
++		expect(result).toContain("Tool Execution Error")
++	})
++})
+diff --git a/src/core/prompts/responses.ts b/src/core/prompts/responses.ts
+index 3f38789fdc9..9d814cfb93d 100644
+--- a/src/core/prompts/responses.ts
++++ b/src/core/prompts/responses.ts
+@@ -13,7 +13,10 @@ export const formatResponse = {
+ 	toolApprovedWithFeedback: (feedback?: string) =>
+ 		`The user approved this operation and provided the following context:\n<feedback>\n${feedback}\n</feedback>`,
+ 
+-	toolError: (error?: string) => `The tool execution failed with the following error:\n<error>\n${error}\n</error>`,
++	toolError: (error?: string, toolName?: string) => {
++		const title = toolName ? `Tool Call Error: ${toolName}` : "Tool Execution Error"
++		return `${title}\n<error>\n${error}\n</error>`
++	},
+ 
+ 	rooIgnoreError: (path: string) =>
+ 		`Access to ${path} is blocked by the .rooignore file settings. You must try to continue in the task without using this file, or ask the user to update the .rooignore file.`,
+diff --git a/src/core/task/Task.ts b/src/core/task/Task.ts
+index 104cb872067..616ef247d07 100644
+--- a/src/core/task/Task.ts
++++ b/src/core/task/Task.ts
+@@ -946,6 +946,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
+ 		options: {
+ 			isNonInteractive?: boolean
+ 			metadata?: Record<string, unknown>
++			title?: string // Optional custom title for error messages
+ 		} = {},
+ 		contextCondense?: ContextCondense,
+ 	): Promise<undefined> {
+@@ -980,6 +981,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
+ 						type: "say",
+ 						say: type,
+ 						text,
++						title: options.title, // Include custom title if provided
+ 						images,
+ 						partial,
+ 						contextCondense,
+@@ -1022,6 +1024,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
+ 						type: "say",
+ 						say: type,
+ 						text,
++						title: options.title, // Include custom title if provided
+ 						images,
+ 						contextCondense,
+ 						metadata: options.metadata,
+@@ -1045,6 +1048,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
+ 				type: "say",
+ 				say: type,
+ 				text,
++				title: options.title, // Include custom title if provided
+ 				images,
+ 				checkpoint,
+ 				contextCondense,
+@@ -1058,8 +1062,13 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
+ 			`Roo tried to use ${toolName}${
+ 				relPath ? ` for '${relPath.toPosix()}'` : ""
+ 			} without value for required parameter '${paramName}'. Retrying...`,
++			undefined, // images
++			undefined, // partial
++			undefined, // checkpoint
++			undefined, // progressStatus
++			{ title: `Tool Call Error: ${toolName}` }, // Custom title for the error
+ 		)
+-		return formatResponse.toolError(formatResponse.missingToolParameterError(paramName))
++		return formatResponse.toolError(formatResponse.missingToolParameterError(paramName), toolName)
+ 	}
+ 
+ 	// Start / Abort / Resume
+@@ -2138,6 +2147,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
+ 					await this.say(
+ 						"error",
+ 						"Unexpected API Response: The language model did not provide any assistant messages. This may indicate an issue with the API or the model's output.",
++						undefined,
++						undefined,
++						undefined,
++						undefined,
++						{ title: "API Response Error" },
+ 					)
+ 
+ 					await this.addToApiConversationHistory({
+diff --git a/src/core/tools/__tests__/insertContentTool.spec.ts b/src/core/tools/__tests__/insertContentTool.spec.ts
+index 5f055fb29a4..27c8e74d7fd 100644
+--- a/src/core/tools/__tests__/insertContentTool.spec.ts
++++ b/src/core/tools/__tests__/insertContentTool.spec.ts
+@@ -226,7 +226,15 @@ describe("insertContentTool", () => {
+ 			expect(mockedFsReadFile).not.toHaveBeenCalled()
+ 			expect(mockCline.consecutiveMistakeCount).toBe(1)
+ 			expect(mockCline.recordToolError).toHaveBeenCalledWith("insert_content")
+-			expect(mockCline.say).toHaveBeenCalledWith("error", expect.stringContaining("non-existent file"))
++			expect(mockCline.say).toHaveBeenCalledWith(
++				"error",
++				expect.stringContaining("non-existent file"),
++				undefined,
++				undefined,
++				undefined,
++				undefined,
++				{ title: "Invalid Line Number" },
++			)
+ 			expect(mockCline.diffViewProvider.update).not.toHaveBeenCalled()
+ 			expect(mockCline.diffViewProvider.pushToolWriteResult).not.toHaveBeenCalled()
+ 		})
+diff --git a/src/core/tools/__tests__/useMcpToolTool.spec.ts b/src/core/tools/__tests__/useMcpToolTool.spec.ts
+index 97893b3a97b..8808478aea8 100644
+--- a/src/core/tools/__tests__/useMcpToolTool.spec.ts
++++ b/src/core/tools/__tests__/useMcpToolTool.spec.ts
+@@ -8,7 +8,12 @@ import { ToolUse } from "../../../shared/tools"
+ vi.mock("../../prompts/responses", () => ({
+ 	formatResponse: {
+ 		toolResult: vi.fn((result: string) => `Tool result: ${result}`),
+-		toolError: vi.fn((error: string) => `Tool error: ${error}`),
++		toolError: vi.fn((error: string, toolName?: string) => {
++			if (toolName) {
++				return `Tool Call Error: ${toolName}\n<error>\n${error}\n</error>`
++			}
++			return `Tool Execution Error\n<error>\n${error}\n</error>`
++		}),
+ 		invalidMcpToolArgumentError: vi.fn((server: string, tool: string) => `Invalid args for ${server}:${tool}`),
+ 	},
+ }))
+@@ -136,8 +141,18 @@ describe("useMcpToolTool", () => {
+ 
+ 			expect(mockTask.consecutiveMistakeCount).toBe(1)
+ 			expect(mockTask.recordToolError).toHaveBeenCalledWith("use_mcp_tool")
+-			expect(mockTask.say).toHaveBeenCalledWith("error", expect.stringContaining("invalid JSON argument"))
+-			expect(mockPushToolResult).toHaveBeenCalledWith("Tool error: Invalid args for test_server:test_tool")
++			expect(mockTask.say).toHaveBeenCalledWith(
++				"error",
++				expect.stringContaining("invalid JSON argument"),
++				undefined,
++				undefined,
++				undefined,
++				undefined,
++				{ title: "tools:errors.invalidInput" },
++			)
++			expect(mockPushToolResult).toHaveBeenCalledWith(
++				"Tool Call Error: use_mcp_tool\n<error>\nInvalid args for test_server:test_tool\n</error>",
++			)
+ 		})
+ 	})
+ 
+diff --git a/src/core/tools/applyDiffTool.ts b/src/core/tools/applyDiffTool.ts
+index 903e3c846ec..abea061ba95 100644
+--- a/src/core/tools/applyDiffTool.ts
++++ b/src/core/tools/applyDiffTool.ts
+@@ -13,6 +13,7 @@ import { fileExistsAtPath } from "../../utils/fs"
+ import { RecordSource } from "../context-tracking/FileContextTrackerTypes"
+ import { unescapeHtmlEntities } from "../../utils/text-normalization"
+ import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
++import { t } from "../../i18n"
+ 
+ export async function applyDiffToolLegacy(
+ 	cline: Task,
+@@ -72,7 +73,7 @@ export async function applyDiffToolLegacy(
+ 
+ 			if (!accessAllowed) {
+ 				await cline.say("rooignore_error", relPath)
+-				pushToolResult(formatResponse.toolError(formatResponse.rooIgnoreError(relPath)))
++				pushToolResult(formatResponse.toolError(formatResponse.rooIgnoreError(relPath), "apply_diff"))
+ 				return
+ 			}
+ 
+@@ -83,7 +84,9 @@ export async function applyDiffToolLegacy(
+ 				cline.consecutiveMistakeCount++
+ 				cline.recordToolError("apply_diff")
+ 				const formattedError = `File does not exist at path: ${absolutePath}\n\n<error_details>\nThe specified file could not be found. Please verify the file path and try again.\n</error_details>`
+-				await cline.say("error", formattedError)
++				await cline.say("error", formattedError, undefined, undefined, undefined, undefined, {
++					title: t("tools:errors.fileNotFound"),
++				})
+ 				pushToolResult(formattedError)
+ 				return
+ 			}
+diff --git a/src/core/tools/askFollowupQuestionTool.ts b/src/core/tools/askFollowupQuestionTool.ts
+index e7369368873..62c707c0eec 100644
+--- a/src/core/tools/askFollowupQuestionTool.ts
++++ b/src/core/tools/askFollowupQuestionTool.ts
+@@ -48,8 +48,16 @@ export async function askFollowupQuestionTool(
+ 				} catch (error) {
+ 					cline.consecutiveMistakeCount++
+ 					cline.recordToolError("ask_followup_question")
+-					await cline.say("error", `Failed to parse operations: ${error.message}`)
+-					pushToolResult(formatResponse.toolError("Invalid operations xml format"))
++					await cline.say(
++						"error",
++						`Failed to parse operations: ${error.message}`,
++						undefined,
++						undefined,
++						undefined,
++						undefined,
++						{ title: "Parse Error" },
++					)
++					pushToolResult(formatResponse.toolError("Invalid operations xml format", "ask_followup_question"))
+ 					return
+ 				}
+ 
+diff --git a/src/core/tools/attemptCompletionTool.ts b/src/core/tools/attemptCompletionTool.ts
+index 5074d7f4e80..b831d68b5ab 100644
+--- a/src/core/tools/attemptCompletionTool.ts
++++ b/src/core/tools/attemptCompletionTool.ts
+@@ -46,6 +46,7 @@ export async function attemptCompletionTool(
+ 		pushToolResult(
+ 			formatResponse.toolError(
+ 				"Cannot complete task while there are incomplete todos. Please finish all todos before attempting completion.",
++				"attempt_completion",
+ 			),
+ 		)
+ 
+diff --git a/src/core/tools/executeCommandTool.ts b/src/core/tools/executeCommandTool.ts
+index 2c7ce0d023e..032cac55794 100644
+--- a/src/core/tools/executeCommandTool.ts
++++ b/src/core/tools/executeCommandTool.ts
+@@ -47,7 +47,12 @@ export async function executeCommandTool(
+ 
+ 			if (ignoredFileAttemptedToAccess) {
+ 				await task.say("rooignore_error", ignoredFileAttemptedToAccess)
+-				pushToolResult(formatResponse.toolError(formatResponse.rooIgnoreError(ignoredFileAttemptedToAccess)))
++				pushToolResult(
++					formatResponse.toolError(
++						formatResponse.rooIgnoreError(ignoredFileAttemptedToAccess),
++						"execute_command",
++					),
++				)
+ 				return
+ 			}
+ 
+@@ -271,7 +276,15 @@ export async function executeCommand(
+ 			if (isTimedOut) {
+ 				const status: CommandExecutionStatus = { executionId, status: "timeout" }
+ 				provider?.postMessageToWebview({ type: "commandExecutionStatus", text: JSON.stringify(status) })
+-				await task.say("error", t("common:errors:command_timeout", { seconds: commandExecutionTimeoutSeconds }))
++				await task.say(
++					"error",
++					t("common:errors.command_timeout", { seconds: commandExecutionTimeoutSeconds }),
++					undefined,
++					undefined,
++					undefined,
++					undefined,
++					{ title: t("tools:errors.commandTimeout") },
++				)
+ 				task.terminalProcess = undefined
+ 
+ 				return [
+diff --git a/src/core/tools/fetchInstructionsTool.ts b/src/core/tools/fetchInstructionsTool.ts
+index 5325f98fbf4..412101a7f20 100644
+--- a/src/core/tools/fetchInstructionsTool.ts
++++ b/src/core/tools/fetchInstructionsTool.ts
+@@ -49,7 +49,7 @@ export async function fetchInstructionsTool(
+ 			const content = await fetchInstructions(task, { mcpHub, diffStrategy, context })
+ 
+ 			if (!content) {
+-				pushToolResult(formatResponse.toolError(`Invalid instructions request: ${task}`))
++				pushToolResult(formatResponse.toolError(`Invalid instructions request: ${task}`, "fetch_instructions"))
+ 				return
+ 			}
+ 
+diff --git a/src/core/tools/insertContentTool.ts b/src/core/tools/insertContentTool.ts
+index b5e85dea305..939254342c1 100644
+--- a/src/core/tools/insertContentTool.ts
++++ b/src/core/tools/insertContentTool.ts
+@@ -64,7 +64,7 @@ export async function insertContentTool(
+ 
+ 		if (!accessAllowed) {
+ 			await cline.say("rooignore_error", relPath)
+-			pushToolResult(formatResponse.toolError(formatResponse.rooIgnoreError(relPath)))
++			pushToolResult(formatResponse.toolError(formatResponse.rooIgnoreError(relPath), "insert_content"))
+ 			return
+ 		}
+ 
+@@ -76,7 +76,9 @@ export async function insertContentTool(
+ 		if (isNaN(lineNumber) || lineNumber < 0) {
+ 			cline.consecutiveMistakeCount++
+ 			cline.recordToolError("insert_content")
+-			pushToolResult(formatResponse.toolError("Invalid line number. Must be a non-negative integer."))
++			pushToolResult(
++				formatResponse.toolError("Invalid line number. Must be a non-negative integer.", "insert_content"),
++			)
+ 			return
+ 		}
+ 
+@@ -87,7 +89,9 @@ export async function insertContentTool(
+ 				cline.consecutiveMistakeCount++
+ 				cline.recordToolError("insert_content")
+ 				const formattedError = `Cannot insert content at line ${lineNumber} into a non-existent file. For new files, 'line' must be 0 (to append) or 1 (to insert at the beginning).`
+-				await cline.say("error", formattedError)
++				await cline.say("error", formattedError, undefined, undefined, undefined, undefined, {
++					title: "Invalid Line Number",
++				})
+ 				pushToolResult(formattedError)
+ 				return
+ 			}
+diff --git a/src/core/tools/newTaskTool.ts b/src/core/tools/newTaskTool.ts
+index 6b650cb94e0..acf1471933d 100644
+--- a/src/core/tools/newTaskTool.ts
++++ b/src/core/tools/newTaskTool.ts
+@@ -53,7 +53,7 @@ export async function newTaskTool(
+ 			// Get the VSCode setting for requiring todos
+ 			const provider = cline.providerRef.deref()
+ 			if (!provider) {
+-				pushToolResult(formatResponse.toolError("Provider reference lost"))
++				pushToolResult(formatResponse.toolError("Provider reference lost", "new_task"))
+ 				return
+ 			}
+ 			const state = await provider.getState()
+@@ -81,7 +81,9 @@ export async function newTaskTool(
+ 				} catch (error) {
+ 					cline.consecutiveMistakeCount++
+ 					cline.recordToolError("new_task")
+-					pushToolResult(formatResponse.toolError("Invalid todos format: must be a markdown checklist"))
++					pushToolResult(
++						formatResponse.toolError("Invalid todos format: must be a markdown checklist", "new_task"),
++					)
+ 					return
+ 				}
+ 			}
+@@ -95,7 +97,7 @@ export async function newTaskTool(
+ 			const targetMode = getModeBySlug(mode, state?.customModes)
+ 
+ 			if (!targetMode) {
+-				pushToolResult(formatResponse.toolError(`Invalid mode: ${mode}`))
++				pushToolResult(formatResponse.toolError(`Invalid mode: ${mode}`, "new_task"))
+ 				return
+ 			}
+ 
+diff --git a/src/core/tools/searchAndReplaceTool.ts b/src/core/tools/searchAndReplaceTool.ts
+index 50f4868b50a..d339ca44502 100644
+--- a/src/core/tools/searchAndReplaceTool.ts
++++ b/src/core/tools/searchAndReplaceTool.ts
+@@ -121,7 +121,7 @@ export async function searchAndReplaceTool(
+ 
+ 		if (!accessAllowed) {
+ 			await cline.say("rooignore_error", validRelPath)
+-			pushToolResult(formatResponse.toolError(formatResponse.rooIgnoreError(validRelPath)))
++			pushToolResult(formatResponse.toolError(formatResponse.rooIgnoreError(validRelPath), "search_and_replace"))
+ 			return
+ 		}
+ 
+@@ -137,7 +137,9 @@ export async function searchAndReplaceTool(
+ 			const formattedError = formatResponse.toolError(
+ 				`File does not exist at path: ${absolutePath}\nThe specified file could not be found. Please verify the file path and try again.`,
+ 			)
+-			await cline.say("error", formattedError)
++			await cline.say("error", formattedError, undefined, undefined, undefined, undefined, {
++				title: "File Not Found",
++			})
+ 			pushToolResult(formattedError)
+ 			return
+ 		}
+@@ -156,7 +158,9 @@ export async function searchAndReplaceTool(
+ 				error instanceof Error ? error.message : String(error)
+ 			}\nPlease verify file permissions and try again.`
+ 			const formattedError = formatResponse.toolError(errorMessage)
+-			await cline.say("error", formattedError)
++			await cline.say("error", formattedError, undefined, undefined, undefined, undefined, {
++				title: "File Read Error",
++			})
+ 			pushToolResult(formattedError)
+ 			return
+ 		}
+diff --git a/src/core/tools/switchModeTool.ts b/src/core/tools/switchModeTool.ts
+index 8ce906b41fc..e2cf3b61d09 100644
+--- a/src/core/tools/switchModeTool.ts
++++ b/src/core/tools/switchModeTool.ts
+@@ -41,7 +41,7 @@ export async function switchModeTool(
+ 
+ 			if (!targetMode) {
+ 				cline.recordToolError("switch_mode")
+-				pushToolResult(formatResponse.toolError(`Invalid mode: ${mode_slug}`))
++				pushToolResult(formatResponse.toolError(`Invalid mode: ${mode_slug}`, "switch_mode"))
+ 				return
+ 			}
+ 
+diff --git a/src/core/tools/updateTodoListTool.ts b/src/core/tools/updateTodoListTool.ts
+index de96c3cc765..09ef2fc6707 100644
+--- a/src/core/tools/updateTodoListTool.ts
++++ b/src/core/tools/updateTodoListTool.ts
+@@ -176,7 +176,12 @@ export async function updateTodoListTool(
+ 		} catch {
+ 			cline.consecutiveMistakeCount++
+ 			cline.recordToolError("update_todo_list")
+-			pushToolResult(formatResponse.toolError("The todos parameter is not valid markdown checklist or JSON"))
++			pushToolResult(
++				formatResponse.toolError(
++					"The todos parameter is not valid markdown checklist or JSON",
++					"update_todo_list",
++				),
++			)
+ 			return
+ 		}
+ 
+@@ -184,7 +189,7 @@ export async function updateTodoListTool(
+ 		if (!valid && !block.partial) {
+ 			cline.consecutiveMistakeCount++
+ 			cline.recordToolError("update_todo_list")
+-			pushToolResult(formatResponse.toolError(error || "todos parameter validation failed"))
++			pushToolResult(formatResponse.toolError(error || "todos parameter validation failed", "update_todo_list"))
+ 			return
+ 		}
+ 
+diff --git a/src/core/tools/useMcpToolTool.ts b/src/core/tools/useMcpToolTool.ts
+index 30dff5ce4fa..b14fb0e6296 100644
+--- a/src/core/tools/useMcpToolTool.ts
++++ b/src/core/tools/useMcpToolTool.ts
+@@ -62,11 +62,20 @@ async function validateParams(
+ 		} catch (error) {
+ 			cline.consecutiveMistakeCount++
+ 			cline.recordToolError("use_mcp_tool")
+-			await cline.say("error", t("mcp:errors.invalidJsonArgument", { toolName: params.tool_name }))
++			await cline.say(
++				"error",
++				t("mcp:errors.invalidJsonArgument", { toolName: params.tool_name }),
++				undefined,
++				undefined,
++				undefined,
++				undefined,
++				{ title: t("tools:errors.invalidInput") },
++			)
+ 
+ 			pushToolResult(
+ 				formatResponse.toolError(
+ 					formatResponse.invalidMcpToolArgumentError(params.server_name, params.tool_name),
++					"use_mcp_tool",
+ 				),
+ 			)
+ 			return { isValid: false }
+diff --git a/src/core/tools/writeToFileTool.ts b/src/core/tools/writeToFileTool.ts
+index e82eab92bc8..152813ebbd5 100644
+--- a/src/core/tools/writeToFileTool.ts
++++ b/src/core/tools/writeToFileTool.ts
+@@ -55,7 +55,7 @@ export async function writeToFileTool(
+ 
+ 	if (!accessAllowed) {
+ 		await cline.say("rooignore_error", relPath)
+-		pushToolResult(formatResponse.toolError(formatResponse.rooIgnoreError(relPath)))
++		pushToolResult(formatResponse.toolError(formatResponse.rooIgnoreError(relPath), "write_to_file"))
+ 		return
+ 	}
+ 
+@@ -153,6 +153,7 @@ export async function writeToFileTool(
+ 				pushToolResult(
+ 					formatResponse.toolError(
+ 						formatResponse.lineCountTruncationError(actualLineCount, isNewFile, diffStrategyEnabled),
++						"write_to_file",
+ 					),
+ 				)
+ 				await cline.diffViewProvider.revertChanges()
+@@ -181,6 +182,7 @@ export async function writeToFileTool(
+ 								`Content appears to be truncated (file has ${
+ 									newContent.split("\n").length
+ 								} lines but was predicted to have ${predictedLineCount} lines), and found comments indicating omitted code (e.g., '// rest of code unchanged', '/* previous code */'). Please provide the complete file content without any omissions if possible, or otherwise use the 'apply_diff' tool to apply the diff to the original file.`,
++								"write_to_file",
+ 							),
+ 						)
+ 						return
+@@ -254,6 +256,7 @@ export async function writeToFileTool(
+ 								`Content appears to be truncated (file has ${
+ 									newContent.split("\n").length
+ 								} lines but was predicted to have ${predictedLineCount} lines), and found comments indicating omitted code (e.g., '// rest of code unchanged', '/* previous code */'). Please provide the complete file content without any omissions if possible, or otherwise use the 'apply_diff' tool to apply the diff to the original file.`,
++								"write_to_file",
+ 							),
+ 						)
+ 						return
+diff --git a/src/i18n/locales/ca/tools.json b/src/i18n/locales/ca/tools.json
+index 0f10b6fc2a1..d6b11e32948 100644
+--- a/src/i18n/locales/ca/tools.json
++++ b/src/i18n/locales/ca/tools.json
+@@ -14,5 +14,17 @@
+ 		"errors": {
+ 			"policy_restriction": "No s'ha pogut crear una nova tasca a causa de restriccions de política."
+ 		}
++	},
++	"errors": {
++		"fileNotFound": "Fitxer no trobat",
++		"parseError": "Error d'anàlisi",
++		"commandTimeout": "Temps d'espera de l'ordre exhaurit",
++		"permissionDenied": "Permís denegat",
++		"networkError": "Error de xarxa",
++		"invalidInput": "Entrada no vàlida",
++		"operationFailed": "L'operació ha fallat",
++		"resourceNotFound": "Recurs no trobat",
++		"configurationError": "Error de configuració",
++		"authenticationFailed": "Error d'autenticació"
+ 	}
+ }
+diff --git a/src/i18n/locales/de/tools.json b/src/i18n/locales/de/tools.json
+index ecf372a50bf..f11f3c53c46 100644
+--- a/src/i18n/locales/de/tools.json
++++ b/src/i18n/locales/de/tools.json
+@@ -14,5 +14,17 @@
+ 		"errors": {
+ 			"policy_restriction": "Neue Aufgabe konnte aufgrund von Richtlinienbeschränkungen nicht erstellt werden."
+ 		}
++	},
++	"errors": {
++		"fileNotFound": "Datei nicht gefunden",
++		"parseError": "Parse-Fehler",
++		"commandTimeout": "Befehl Zeitüberschreitung",
++		"permissionDenied": "Zugriff verweigert",
++		"networkError": "Netzwerkfehler",
++		"invalidInput": "Ungültige Eingabe",
++		"operationFailed": "Vorgang fehlgeschlagen",
++		"resourceNotFound": "Ressource nicht gefunden",
++		"configurationError": "Konfigurationsfehler",
++		"authenticationFailed": "Authentifizierung fehlgeschlagen"
+ 	}
+ }
+diff --git a/src/i18n/locales/en/tools.json b/src/i18n/locales/en/tools.json
+index 5b88affae6f..a35d9396713 100644
+--- a/src/i18n/locales/en/tools.json
++++ b/src/i18n/locales/en/tools.json
+@@ -14,5 +14,17 @@
+ 		"errors": {
+ 			"policy_restriction": "Failed to create new task due to policy restrictions."
+ 		}
++	},
++	"errors": {
++		"fileNotFound": "File Not Found",
++		"parseError": "Parse Error",
++		"commandTimeout": "Command Timeout",
++		"permissionDenied": "Permission Denied",
++		"networkError": "Network Error",
++		"invalidInput": "Invalid Input",
++		"operationFailed": "Operation Failed",
++		"resourceNotFound": "Resource Not Found",
++		"configurationError": "Configuration Error",
++		"authenticationFailed": "Authentication Failed"
+ 	}
+ }
+diff --git a/src/i18n/locales/es/tools.json b/src/i18n/locales/es/tools.json
+index 6fd1cc21222..145b57dd1a8 100644
+--- a/src/i18n/locales/es/tools.json
++++ b/src/i18n/locales/es/tools.json
+@@ -14,5 +14,17 @@
+ 		"errors": {
+ 			"policy_restriction": "No se pudo crear una nueva tarea debido a restricciones de política."
+ 		}
++	},
++	"errors": {
++		"fileNotFound": "Archivo no encontrado",
++		"parseError": "Error de análisis",
++		"commandTimeout": "Tiempo de espera del comando agotado",
++		"permissionDenied": "Permiso denegado",
++		"networkError": "Error de red",
++		"invalidInput": "Entrada no válida",
++		"operationFailed": "La operación falló",
++		"resourceNotFound": "Recurso no encontrado",
++		"configurationError": "Error de configuración",
++		"authenticationFailed": "Fallo de autenticación"
+ 	}
+ }
+diff --git a/src/i18n/locales/fr/tools.json b/src/i18n/locales/fr/tools.json
+index b6d7accebb9..e38381eb571 100644
+--- a/src/i18n/locales/fr/tools.json
++++ b/src/i18n/locales/fr/tools.json
+@@ -14,5 +14,17 @@
+ 		"errors": {
+ 			"policy_restriction": "Impossible de créer une nouvelle tâche en raison de restrictions de politique."
+ 		}
++	},
++	"errors": {
++		"fileNotFound": "Fichier non trouvé",
++		"parseError": "Erreur d'analyse",
++		"commandTimeout": "Délai d'attente de la commande dépassé",
++		"permissionDenied": "Autorisation refusée",
++		"networkError": "Erreur réseau",
++		"invalidInput": "Entrée invalide",
++		"operationFailed": "L'opération a échoué",
++		"resourceNotFound": "Ressource non trouvée",
++		"configurationError": "Erreur de configuration",
++		"authenticationFailed": "Échec de l'authentification"
+ 	}
+ }
+diff --git a/src/i18n/locales/hi/tools.json b/src/i18n/locales/hi/tools.json
+index cbfbd7aef70..e54244a7261 100644
+--- a/src/i18n/locales/hi/tools.json
++++ b/src/i18n/locales/hi/tools.json
+@@ -14,5 +14,17 @@
+ 		"errors": {
+ 			"policy_restriction": "नीति प्रतिबंधों के कारण नया कार्य बनाने में विफल।"
+ 		}
++	},
++	"errors": {
++		"fileNotFound": "फ़ाइल नहीं मिली",
++		"parseError": "पार्स त्रुटि",
++		"commandTimeout": "कमांड टाइमआउट",
++		"permissionDenied": "अनुमति अस्वीकृत",
++		"networkError": "नेटवर्क त्रुटि",
++		"invalidInput": "अमान्य इनपुट",
++		"operationFailed": "ऑपरेशन विफल",
++		"resourceNotFound": "संसाधन नहीं मिला",
++		"configurationError": "कॉन्फ़िगरेशन त्रुटि",
++		"authenticationFailed": "प्रमाणीकरण विफल"
+ 	}
+ }
+diff --git a/src/i18n/locales/id/tools.json b/src/i18n/locales/id/tools.json
+index 3eb8854eff0..ca979f70e13 100644
+--- a/src/i18n/locales/id/tools.json
++++ b/src/i18n/locales/id/tools.json
+@@ -17,5 +17,17 @@
+ 		"errors": {
+ 			"policy_restriction": "Gagal membuat tugas baru karena pembatasan kebijakan."
+ 		}
++	},
++	"errors": {
++		"fileNotFound": "File Tidak Ditemukan",
++		"parseError": "Kesalahan Parse",
++		"commandTimeout": "Waktu Tunggu Perintah Habis",
++		"permissionDenied": "Izin Ditolak",
++		"networkError": "Kesalahan Jaringan",
++		"invalidInput": "Input Tidak Valid",
++		"operationFailed": "Operasi Gagal",
++		"resourceNotFound": "Sumber Daya Tidak Ditemukan",
++		"configurationError": "Kesalahan Konfigurasi",
++		"authenticationFailed": "Autentikasi Gagal"
+ 	}
+ }
+diff --git a/src/i18n/locales/it/tools.json b/src/i18n/locales/it/tools.json
+index 35b114a7198..5a55c0eb4f7 100644
+--- a/src/i18n/locales/it/tools.json
++++ b/src/i18n/locales/it/tools.json
+@@ -14,5 +14,17 @@
+ 		"errors": {
+ 			"policy_restriction": "Impossibile creare una nuova attività a causa di restrizioni di policy."
+ 		}
++	},
++	"errors": {
++		"fileNotFound": "File non trovato",
++		"parseError": "Errore di parsing",
++		"commandTimeout": "Timeout del comando",
++		"permissionDenied": "Permesso negato",
++		"networkError": "Errore di rete",
++		"invalidInput": "Input non valido",
++		"operationFailed": "Operazione non riuscita",
++		"resourceNotFound": "Risorsa non trovata",
++		"configurationError": "Errore di configurazione",
++		"authenticationFailed": "Autenticazione non riuscita"
+ 	}
+ }
+diff --git a/src/i18n/locales/ja/tools.json b/src/i18n/locales/ja/tools.json
+index 257d5aa2013..185908a1b13 100644
+--- a/src/i18n/locales/ja/tools.json
++++ b/src/i18n/locales/ja/tools.json
+@@ -14,5 +14,17 @@
+ 		"errors": {
+ 			"policy_restriction": "ポリシー制限により新しいタスクを作成できませんでした。"
+ 		}
++	},
++	"errors": {
++		"fileNotFound": "ファイルが見つかりません",
++		"parseError": "解析エラー",
++		"commandTimeout": "コマンドタイムアウト",
++		"permissionDenied": "権限がありません",
++		"networkError": "ネットワークエラー",
++		"invalidInput": "無効な入力",
++		"operationFailed": "操作に失敗しました",
++		"resourceNotFound": "リソースが見つかりません",
++		"configurationError": "設定エラー",
++		"authenticationFailed": "認証に失敗しました"
+ 	}
+ }
+diff --git a/src/i18n/locales/ko/tools.json b/src/i18n/locales/ko/tools.json
+index 94b6d8c3770..4ce9840afdd 100644
+--- a/src/i18n/locales/ko/tools.json
++++ b/src/i18n/locales/ko/tools.json
+@@ -14,5 +14,17 @@
+ 		"errors": {
+ 			"policy_restriction": "정책 제한으로 인해 새 작업을 생성하지 못했습니다."
+ 		}
++	},
++	"errors": {
++		"fileNotFound": "파일을 찾을 수 없음",
++		"parseError": "파싱 오류",
++		"commandTimeout": "명령 시간 초과",
++		"permissionDenied": "권한 거부됨",
++		"networkError": "네트워크 오류",
++		"invalidInput": "잘못된 입력",
++		"operationFailed": "작업 실패",
++		"resourceNotFound": "리소스를 찾을 수 없음",
++		"configurationError": "구성 오류",
++		"authenticationFailed": "인증 실패"
+ 	}
+ }
+diff --git a/src/i18n/locales/nl/tools.json b/src/i18n/locales/nl/tools.json
+index 449cd545837..49852c5b9ce 100644
+--- a/src/i18n/locales/nl/tools.json
++++ b/src/i18n/locales/nl/tools.json
+@@ -14,5 +14,17 @@
+ 		"errors": {
+ 			"policy_restriction": "Kan geen nieuwe taak aanmaken vanwege beleidsbeperkingen."
+ 		}
++	},
++	"errors": {
++		"fileNotFound": "Bestand niet gevonden",
++		"parseError": "Parseerfout",
++		"commandTimeout": "Commando time-out",
++		"permissionDenied": "Toestemming geweigerd",
++		"networkError": "Netwerkfout",
++		"invalidInput": "Ongeldige invoer",
++		"operationFailed": "Bewerking mislukt",
++		"resourceNotFound": "Bron niet gevonden",
++		"configurationError": "Configuratiefout",
++		"authenticationFailed": "Authenticatie mislukt"
+ 	}
+ }
+diff --git a/src/i18n/locales/pl/tools.json b/src/i18n/locales/pl/tools.json
+index 979b2f54ae0..196298df9a0 100644
+--- a/src/i18n/locales/pl/tools.json
++++ b/src/i18n/locales/pl/tools.json
+@@ -14,5 +14,17 @@
+ 		"errors": {
+ 			"policy_restriction": "Nie udało się utworzyć nowego zadania z powodu ograniczeń polityki."
+ 		}
++	},
++	"errors": {
++		"fileNotFound": "Nie znaleziono pliku",
++		"parseError": "Błąd parsowania",
++		"commandTimeout": "Przekroczono limit czasu polecenia",
++		"permissionDenied": "Odmowa dostępu",
++		"networkError": "Błąd sieci",
++		"invalidInput": "Nieprawidłowe dane wejściowe",
++		"operationFailed": "Operacja nie powiodła się",
++		"resourceNotFound": "Nie znaleziono zasobu",
++		"configurationError": "Błąd konfiguracji",
++		"authenticationFailed": "Uwierzytelnianie nie powiodło się"
+ 	}
+ }
+diff --git a/src/i18n/locales/pt-BR/tools.json b/src/i18n/locales/pt-BR/tools.json
+index 4e3296fd4a6..a730bdb2b8b 100644
+--- a/src/i18n/locales/pt-BR/tools.json
++++ b/src/i18n/locales/pt-BR/tools.json
+@@ -14,5 +14,17 @@
+ 		"errors": {
+ 			"policy_restriction": "Falha ao criar nova tarefa devido a restrições de política."
+ 		}
++	},
++	"errors": {
++		"fileNotFound": "Arquivo não encontrado",
++		"parseError": "Erro de análise",
++		"commandTimeout": "Tempo limite do comando",
++		"permissionDenied": "Permissão negada",
++		"networkError": "Erro de rede",
++		"invalidInput": "Entrada inválida",
++		"operationFailed": "A operação falhou",
++		"resourceNotFound": "Recurso não encontrado",
++		"configurationError": "Erro de configuração",
++		"authenticationFailed": "Falha na autenticação"
+ 	}
+ }
+diff --git a/src/i18n/locales/ru/tools.json b/src/i18n/locales/ru/tools.json
+index d74918f058e..dc9422bf204 100644
+--- a/src/i18n/locales/ru/tools.json
++++ b/src/i18n/locales/ru/tools.json
+@@ -14,5 +14,17 @@
+ 		"errors": {
+ 			"policy_restriction": "Не удалось создать новую задачу из-за ограничений политики."
+ 		}
++	},
++	"errors": {
++		"fileNotFound": "Файл не найден",
++		"parseError": "Ошибка синтаксического анализа",
++		"commandTimeout": "Тайм-аут команды",
++		"permissionDenied": "В доступе отказано",
++		"networkError": "Сетевая ошибка",
++		"invalidInput": "Неверный ввод",
++		"operationFailed": "Операция не удалась",
++		"resourceNotFound": "Ресурс не найден",
++		"configurationError": "Ошибка конфигурации",
++		"authenticationFailed": "Сбой аутентификации"
+ 	}
+ }
+diff --git a/src/i18n/locales/tr/tools.json b/src/i18n/locales/tr/tools.json
+index 5341a23cb1d..1f69f353672 100644
+--- a/src/i18n/locales/tr/tools.json
++++ b/src/i18n/locales/tr/tools.json
+@@ -14,5 +14,17 @@
+ 		"errors": {
+ 			"policy_restriction": "Politika kısıtlamaları nedeniyle yeni görev oluşturulamadı."
+ 		}
++	},
++	"errors": {
++		"fileNotFound": "Dosya Bulunamadı",
++		"parseError": "Ayrıştırma Hatası",
++		"commandTimeout": "Komut Zaman Aşımı",
++		"permissionDenied": "İzin Reddedildi",
++		"networkError": "Ağ Hatası",
++		"invalidInput": "Geçersiz Giriş",
++		"operationFailed": "İşlem Başarısız Oldu",
++		"resourceNotFound": "Kaynak Bulunamadı",
++		"configurationError": "Yapılandırma Hatası",
++		"authenticationFailed": "Kimlik Doğrulama Başarısız"
+ 	}
+ }
+diff --git a/src/i18n/locales/vi/tools.json b/src/i18n/locales/vi/tools.json
+index 4c5080a1463..66afe1d46a5 100644
+--- a/src/i18n/locales/vi/tools.json
++++ b/src/i18n/locales/vi/tools.json
+@@ -14,5 +14,17 @@
+ 		"errors": {
+ 			"policy_restriction": "Không thể tạo nhiệm vụ mới do hạn chế chính sách."
+ 		}
++	},
++	"errors": {
++		"fileNotFound": "Không tìm thấy tệp",
++		"parseError": "Lỗi phân tích cú pháp",
++		"commandTimeout": "Hết thời gian chờ lệnh",
++		"permissionDenied": "Quyền bị từ chối",
++		"networkError": "Lỗi mạng",
++		"invalidInput": "Đầu vào không hợp lệ",
++		"operationFailed": "Thao tác thất bại",
++		"resourceNotFound": "Không tìm thấy tài nguyên",
++		"configurationError": "Lỗi cấu hình",
++		"authenticationFailed": "Xác thực không thành công"
+ 	}
+ }
+diff --git a/src/i18n/locales/zh-CN/tools.json b/src/i18n/locales/zh-CN/tools.json
+index c0c93d84366..0d108d21918 100644
+--- a/src/i18n/locales/zh-CN/tools.json
++++ b/src/i18n/locales/zh-CN/tools.json
+@@ -14,5 +14,17 @@
+ 		"errors": {
+ 			"policy_restriction": "由于策略限制，无法创建新任务。"
+ 		}
++	},
++	"errors": {
++		"fileNotFound": "文件未找到",
++		"parseError": "解析错误",
++		"commandTimeout": "命令超时",
++		"permissionDenied": "权限被拒绝",
++		"networkError": "网络错误",
++		"invalidInput": "无效输入",
++		"operationFailed": "操作失败",
++		"resourceNotFound": "资源未找到",
++		"configurationError": "配置错误",
++		"authenticationFailed": "认证失败"
+ 	}
+ }
+diff --git a/src/i18n/locales/zh-TW/tools.json b/src/i18n/locales/zh-TW/tools.json
+index b736448c20a..5cf213c4bf4 100644
+--- a/src/i18n/locales/zh-TW/tools.json
++++ b/src/i18n/locales/zh-TW/tools.json
+@@ -14,5 +14,17 @@
+ 		"errors": {
+ 			"policy_restriction": "由於政策限制，無法建立新工作。"
+ 		}
++	},
++	"errors": {
++		"fileNotFound": "找不到檔案",
++		"parseError": "解析錯誤",
++		"commandTimeout": "指令逾時",
++		"permissionDenied": "權限遭拒",
++		"networkError": "網路錯誤",
++		"invalidInput": "無效輸入",
++		"operationFailed": "操作失敗",
++		"resourceNotFound": "找不到資源",
++		"configurationError": "設定錯誤",
++		"authenticationFailed": "驗證失敗"
+ 	}
+ }
+diff --git a/webview-ui/src/components/chat/ChatRow.tsx b/webview-ui/src/components/chat/ChatRow.tsx
+index 4fa921f4435..855030d3767 100644
+--- a/webview-ui/src/components/chat/ChatRow.tsx
++++ b/webview-ui/src/components/chat/ChatRow.tsx
+@@ -4,7 +4,7 @@ import { McpExecution } from "./McpExecution"
+ import { useSize } from "react-use"
+ import { useTranslation, Trans } from "react-i18next"
+ import deepEqual from "fast-deep-equal"
+-import { VSCodeBadge, VSCodeButton } from "@vscode/webview-ui-toolkit/react"
++import { VSCodeBadge } from "@vscode/webview-ui-toolkit/react"
+ 
+ import type { ClineMessage } from "@roo-code/types"
+ import { Mode } from "@roo/modes"
+@@ -14,7 +14,6 @@ import { COMMAND_OUTPUT_STRING } from "@roo/combineCommandSequences"
+ import { safeJsonParse } from "@roo/safeJsonParse"
+ import { FollowUpData, SuggestionItem } from "@roo-code/types"
+ 
+-import { useCopyToClipboard } from "@src/utils/clipboard"
+ import { useExtensionState } from "@src/context/ExtensionStateContext"
+ import { findMatchingResourceOrTemplate } from "@src/utils/mcp"
+ import { vscode } from "@src/utils/vscode"
+@@ -28,7 +27,6 @@ import { MAX_IMAGES_PER_MESSAGE } from "./ChatView"
+ import { ToolUseBlock, ToolUseBlockHeader } from "../common/ToolUseBlock"
+ import UpdateTodoListToolBlock from "./UpdateTodoListToolBlock"
+ import CodeAccordian from "../common/CodeAccordian"
+-import CodeBlock from "../common/CodeBlock"
+ import MarkdownBlock from "../common/MarkdownBlock"
+ import { ReasoningBlock } from "./ReasoningBlock"
+ import Thumbnails from "../common/Thumbnails"
+@@ -46,6 +44,7 @@ import { CommandExecutionError } from "./CommandExecutionError"
+ import { AutoApprovedRequestLimitWarning } from "./AutoApprovedRequestLimitWarning"
+ import { CondenseContextErrorRow, CondensingContextRow, ContextCondenseRow } from "./ContextCondenseRow"
+ import CodebaseSearchResultsDisplay from "./CodebaseSearchResultsDisplay"
++import { CollapsibleErrorSection } from "./CollapsibleErrorSection"
+ 
+ interface ChatRowProps {
+ 	message: ClineMessage
+@@ -117,12 +116,11 @@ export const ChatRowContent = ({
+ 	const { mcpServers, alwaysAllowMcp, currentCheckpoint, mode } = useExtensionState()
+ 	const [reasoningCollapsed, setReasoningCollapsed] = useState(true)
+ 	const [isDiffErrorExpanded, setIsDiffErrorExpanded] = useState(false)
+-	const [showCopySuccess, setShowCopySuccess] = useState(false)
++	const [isErrorExpanded, setIsErrorExpanded] = useState(false) // Default collapsed like diff_error
+ 	const [isEditing, setIsEditing] = useState(false)
+ 	const [editedContent, setEditedContent] = useState("")
+ 	const [editMode, setEditMode] = useState<Mode>(mode || "code")
+ 	const [editImages, setEditImages] = useState<string[]>([])
+-	const { copyWithFeedback } = useCopyToClipboard()
+ 
+ 	// Handle message events for image selection during edit mode
+ 	useEffect(() => {
+@@ -208,13 +206,6 @@ export const ChatRowContent = ({
+ 
+ 	const [icon, title] = useMemo(() => {
+ 		switch (type) {
+-			case "error":
+-				return [
+-					<span
+-						className="codicon codicon-error"
+-						style={{ color: errorColor, marginBottom: "-1.5px" }}></span>,
+-					<span style={{ color: errorColor, fontWeight: "bold" }}>{t("chat:error")}</span>,
+-				]
+ 			case "mistake_limit_reached":
+ 				return [
+ 					<span
+@@ -854,92 +845,13 @@ export const ChatRowContent = ({
+ 			switch (message.say) {
+ 				case "diff_error":
+ 					return (
+-						<div>
+-							<div
+-								style={{
+-									marginTop: "0px",
+-									overflow: "hidden",
+-									marginBottom: "8px",
+-								}}>
+-								<div
+-									style={{
+-										borderBottom: isDiffErrorExpanded
+-											? "1px solid var(--vscode-editorGroup-border)"
+-											: "none",
+-										fontWeight: "normal",
+-										fontSize: "var(--vscode-font-size)",
+-										color: "var(--vscode-editor-foreground)",
+-										display: "flex",
+-										alignItems: "center",
+-										justifyContent: "space-between",
+-										cursor: "pointer",
+-									}}
+-									onClick={() => setIsDiffErrorExpanded(!isDiffErrorExpanded)}>
+-									<div
+-										style={{
+-											display: "flex",
+-											alignItems: "center",
+-											gap: "10px",
+-											flexGrow: 1,
+-										}}>
+-										<span
+-											className="codicon codicon-warning"
+-											style={{
+-												color: "var(--vscode-editorWarning-foreground)",
+-												opacity: 0.8,
+-												fontSize: 16,
+-												marginBottom: "-1.5px",
+-											}}></span>
+-										<span style={{ fontWeight: "bold" }}>{t("chat:diffError.title")}</span>
+-									</div>
+-									<div style={{ display: "flex", alignItems: "center" }}>
+-										<VSCodeButton
+-											appearance="icon"
+-											style={{
+-												padding: "3px",
+-												height: "24px",
+-												marginRight: "4px",
+-												color: "var(--vscode-editor-foreground)",
+-												display: "flex",
+-												alignItems: "center",
+-												justifyContent: "center",
+-												background: "transparent",
+-											}}
+-											onClick={(e) => {
+-												e.stopPropagation()
+-
+-												// Call copyWithFeedback and handle the Promise
+-												copyWithFeedback(message.text || "").then((success) => {
+-													if (success) {
+-														// Show checkmark
+-														setShowCopySuccess(true)
+-
+-														// Reset after a brief delay
+-														setTimeout(() => {
+-															setShowCopySuccess(false)
+-														}, 1000)
+-													}
+-												})
+-											}}>
+-											<span
+-												className={`codicon codicon-${showCopySuccess ? "check" : "copy"}`}></span>
+-										</VSCodeButton>
+-										<span
+-											className={`codicon codicon-chevron-${isDiffErrorExpanded ? "up" : "down"}`}></span>
+-									</div>
+-								</div>
+-								{isDiffErrorExpanded && (
+-									<div
+-										style={{
+-											padding: "8px",
+-											backgroundColor: "var(--vscode-editor-background)",
+-											borderTop: "none",
+-										}}>
+-										<CodeBlock source={message.text || ""} language="xml" />
+-									</div>
+-								)}
+-							</div>
+-						</div>
++						<CollapsibleErrorSection
++							title={t("chat:diffError.title")}
++							content={message.text}
++							language="xml"
++							isExpanded={isDiffErrorExpanded}
++							onToggleExpand={() => setIsDiffErrorExpanded(!isDiffErrorExpanded)}
++						/>
+ 					)
+ 				case "subtask_result":
+ 					return (
+@@ -1131,16 +1043,16 @@ export const ChatRowContent = ({
+ 						</div>
+ 					)
+ 				case "error":
++					// Detect language based on content - check if it contains XML-like error tags
++					const errorLanguage = message.text?.includes("<error>") ? "xml" : "text"
+ 					return (
+-						<>
+-							{title && (
+-								<div style={headerStyle}>
+-									{icon}
+-									{title}
+-								</div>
+-							)}
+-							<p style={{ ...pStyle, color: "var(--vscode-errorForeground)" }}>{message.text}</p>
+-						</>
++						<CollapsibleErrorSection
++							title={message.title || t("chat:error")}
++							content={message.text}
++							language={errorLanguage}
++							isExpanded={isErrorExpanded}
++							onToggleExpand={() => setIsErrorExpanded(!isErrorExpanded)}
++						/>
+ 					)
+ 				case "completion_result":
+ 					return (
+diff --git a/webview-ui/src/components/chat/CollapsibleErrorSection.tsx b/webview-ui/src/components/chat/CollapsibleErrorSection.tsx
+new file mode 100644
+index 00000000000..3ff5af524c8
+--- /dev/null
++++ b/webview-ui/src/components/chat/CollapsibleErrorSection.tsx
+@@ -0,0 +1,73 @@
++import React from "react"
++import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
++import CodeBlock from "../common/CodeBlock"
++import { useCopyToClipboard } from "@src/utils/clipboard"
++
++interface CollapsibleErrorSectionProps {
++	title: string
++	content: string | null | undefined
++	language?: string
++	isExpanded: boolean
++	onToggleExpand: () => void
++}
++
++export const CollapsibleErrorSection: React.FC<CollapsibleErrorSectionProps> = ({
++	title,
++	content,
++	language = "xml",
++	isExpanded,
++	onToggleExpand,
++}) => {
++	const [showCopySuccess, setShowCopySuccess] = React.useState(false)
++	const { copyWithFeedback } = useCopyToClipboard()
++
++	const handleCopy = async (e: React.MouseEvent) => {
++		e.stopPropagation()
++		const success = await copyWithFeedback(content || "")
++		if (success) {
++			setShowCopySuccess(true)
++			setTimeout(() => setShowCopySuccess(false), 1000)
++		}
++	}
++
++	const handleKeyDown = (e: React.KeyboardEvent) => {
++		if (e.key === "Enter" || e.key === " ") {
++			e.preventDefault()
++			onToggleExpand()
++		}
++	}
++
++	return (
++		<div className="mt-0 overflow-hidden mb-2">
++			<div
++				className={`${
++					isExpanded ? "border-b border-vscode-editorGroup-border" : ""
++				} font-normal text-base text-vscode-editor-foreground flex items-center justify-between cursor-pointer focus:outline focus:outline-2 focus:outline-vscode-focusBorder`}
++				role="button"
++				tabIndex={0}
++				aria-expanded={isExpanded}
++				aria-label={title}
++				onClick={onToggleExpand}
++				onKeyDown={handleKeyDown}>
++				<div className="flex items-center gap-2.5 flex-grow">
++					<span className="codicon codicon-warning text-vscode-editorWarning-foreground opacity-80 text-base -mb-0.5"></span>
++					<span className="font-bold">{title}</span>
++				</div>
++				<div className="flex items-center">
++					<VSCodeButton
++						appearance="icon"
++						className="p-[3px] h-6 mr-1 text-vscode-editor-foreground flex items-center justify-center bg-transparent"
++						onClick={handleCopy}>
++						<span className={`codicon codicon-${showCopySuccess ? "check" : "copy"}`}></span>
++					</VSCodeButton>
++					<span className={`codicon codicon-chevron-${isExpanded ? "up" : "down"}`}></span>
++				</div>
++			</div>
++			{isExpanded && (
++				<div className="p-2 bg-vscode-editor-background">
++					<CodeBlock source={content || ""} language={language} />
++				</div>
++			)}
++		</div>
++	)
++}
+diff --git a/webview-ui/src/components/chat/__tests__/ChatRow.spec.tsx b/webview-ui/src/components/chat/__tests__/ChatRow.spec.tsx
+new file mode 100644
+index 00000000000..c5b46651d6e
+--- /dev/null
++++ b/webview-ui/src/components/chat/__tests__/ChatRow.spec.tsx
+@@ -0,0 +1,457 @@
++// npx vitest run src/components/chat/__tests__/ChatRow.spec.tsx
++
++import { render, screen, fireEvent, waitFor } from "@testing-library/react"
++import { describe, it, expect, vi, beforeEach } from "vitest"
++import { ChatRowContent } from "../ChatRow"
++import type { ClineMessage } from "@roo-code/types"
++
++// Mock the clipboard utility
++const mockCopyWithFeedback = vi.fn().mockResolvedValue(true)
++vi.mock("@src/utils/clipboard", () => ({
++	useCopyToClipboard: () => ({
++		copyWithFeedback: mockCopyWithFeedback,
++	}),
++}))
++
++// Mock the extension state context
++vi.mock("@src/context/ExtensionStateContext", () => ({
++	useExtensionState: () => ({
++		mcpServers: [],
++		alwaysAllowMcp: false,
++		currentCheckpoint: null,
++		mode: "code",
++	}),
++}))
++
++// Mock the translation hook
++vi.mock("react-i18next", () => ({
++	useTranslation: () => ({
++		t: (key: string) => {
++			const translations: Record<string, string> = {
++				"chat:error": "Error",
++				"chat:diffError.title": "Edit Unsuccessful",
++			}
++			return translations[key] || key
++		},
++	}),
++	Trans: ({ children }: { children: React.ReactNode }) => <>{children}</>,
++	initReactI18next: {
++		type: "3rdParty",
++		init: () => {},
++	},
++}))
++
++// Mock vscode API
++vi.mock("@src/utils/vscode", () => ({
++	vscode: {
++		postMessage: vi.fn(),
++	},
++}))
++
++// Mock CodeBlock component to avoid Tooltip issues
++vi.mock("../../common/CodeBlock", () => ({
++	default: ({ source }: { source: string }) => <pre>{source}</pre>,
++}))
++
++describe("ChatRow Error Display", () => {
++	const mockOnToggleExpand = vi.fn()
++	const mockOnSuggestionClick = vi.fn()
++	const mockOnBatchFileResponse = vi.fn()
++	const mockOnFollowUpUnmount = vi.fn()
++
++	const baseProps = {
++		isExpanded: false,
++		isLast: false,
++		isStreaming: false,
++		onToggleExpand: mockOnToggleExpand,
++		onSuggestionClick: mockOnSuggestionClick,
++		onBatchFileResponse: mockOnBatchFileResponse,
++		onFollowUpUnmount: mockOnFollowUpUnmount,
++		isFollowUpAnswered: false,
++		editable: false,
++	}
++
++	beforeEach(() => {
++		vi.clearAllMocks()
++	})
++
++	describe("Error Message Display", () => {
++		it("should render error message with collapsible section", () => {
++			const errorMessage: ClineMessage = {
++				ts: Date.now(),
++				type: "say",
++				say: "error",
++				text: "This is an error message",
++			}
++
++			render(<ChatRowContent {...baseProps} message={errorMessage} />)
++
++			// Check that warning icon is present (matching diff_error style)
++			const warningIcon = document.querySelector(".codicon-warning")
++			expect(warningIcon).toBeTruthy()
++
++			// Check that error title is present
++			expect(screen.getByText("Error")).toBeTruthy()
++
++			// Check that error text is NOT visible by default (collapsed)
++			expect(screen.queryByText("This is an error message")).toBeFalsy()
++
++			// Check that chevron-down icon is present (collapsed state)
++			const chevronDown = document.querySelector(".codicon-chevron-down")
++			expect(chevronDown).toBeTruthy()
++
++			// Check that copy button is present
++			const copyButton = document.querySelector(".codicon-copy")
++			expect(copyButton).toBeTruthy()
++		})
++
++		it("should toggle error message visibility when clicked", () => {
++			const errorMessage: ClineMessage = {
++				ts: Date.now(),
++				type: "say",
++				say: "error",
++				text: "This is a collapsible error",
++			}
++
++			render(<ChatRowContent {...baseProps} message={errorMessage} />)
++
++			// Initially collapsed - chevron should be down
++			let chevron = document.querySelector(".codicon-chevron-down")
++			expect(chevron).toBeTruthy()
++			expect(screen.queryByText("This is a collapsible error")).toBeFalsy()
++
++			// Click to expand
++			const header = screen.getByText("Error").closest("div")?.parentElement
++			if (header) {
++				fireEvent.click(header)
++			}
++
++			// After expand - chevron should be up and text visible
++			chevron = document.querySelector(".codicon-chevron-up")
++			expect(chevron).toBeTruthy()
++
++			// The text is now in a CodeBlock (pre element) due to matching diff_error
++			const codeBlock = document.querySelector("pre")
++			expect(codeBlock?.textContent).toBe("This is a collapsible error")
++
++			// Click to collapse again
++			if (header) {
++				fireEvent.click(header)
++			}
++
++			// Should be collapsed again
++			chevron = document.querySelector(".codicon-chevron-down")
++			expect(chevron).toBeTruthy()
++			expect(document.querySelector("pre")).toBeFalsy()
++		})
++
++		it("should handle copy button click for error messages", async () => {
++			const errorMessage: ClineMessage = {
++				ts: Date.now(),
++				type: "say",
++				say: "error",
++				text: "Error to copy",
++			}
++
++			render(<ChatRowContent {...baseProps} message={errorMessage} />)
++
++			// Find and click copy button (VSCodeButton component)
++			const copyIcon = document.querySelector(".codicon-copy")
++			expect(copyIcon).toBeTruthy()
++
++			// Click on the VSCodeButton which contains the copy icon
++			const vscodeButton = copyIcon?.closest("vscode-button")
++			expect(vscodeButton).toBeTruthy()
++
++			if (vscodeButton) {
++				fireEvent.click(vscodeButton)
++			}
++
++			// Verify copy function was called with correct text
++			await waitFor(() => {
++				expect(mockCopyWithFeedback).toHaveBeenCalledWith("Error to copy")
++			})
++		})
++
++		it("should show check icon after successful copy", async () => {
++			const errorMessage: ClineMessage = {
++				ts: Date.now(),
++				type: "say",
++				say: "error",
++				text: "Error to copy with feedback",
++			}
++
++			render(<ChatRowContent {...baseProps} message={errorMessage} />)
++
++			// Initially should show copy icon
++			const copyIcon = document.querySelector(".codicon-copy")
++			expect(copyIcon).toBeTruthy()
++
++			// Click copy button (VSCodeButton component)
++			const vscodeButton = copyIcon?.closest("vscode-button")
++			if (vscodeButton) {
++				fireEvent.click(vscodeButton)
++			}
++
++			// Should show check icon after successful copy
++			await waitFor(() => {
++				const checkIcon = document.querySelector(".codicon-check")
++				expect(checkIcon).toBeTruthy()
++			})
++		})
++
++		it("should handle empty error text gracefully", () => {
++			const errorMessage: ClineMessage = {
++				ts: Date.now(),
++				type: "say",
++				say: "error",
++				text: "",
++			}
++
++			render(<ChatRowContent {...baseProps} message={errorMessage} />)
++
++			// Should still render the collapsible structure
++			expect(screen.getByText("Error")).toBeTruthy()
++			const copyButton = document.querySelector(".codicon-copy")
++			expect(copyButton).toBeTruthy()
++		})
++
++		it("should handle null error text gracefully", () => {
++			const errorMessage: ClineMessage = {
++				ts: Date.now(),
++				type: "say",
++				say: "error",
++				text: null as any,
++			}
++
++			render(<ChatRowContent {...baseProps} message={errorMessage} />)
++
++			// Should still render the collapsible structure
++			expect(screen.getByText("Error")).toBeTruthy()
++			const copyButton = document.querySelector(".codicon-copy")
++			expect(copyButton).toBeTruthy()
++		})
++
++		it("should use warning icon with warning color", () => {
++			const errorMessage: ClineMessage = {
++				ts: Date.now(),
++				type: "say",
++				say: "error",
++				text: "Styled error message",
++			}
++
++			render(<ChatRowContent {...baseProps} message={errorMessage} />)
++
++			// Check that warning icon is present with warning color class
++			const warningIcon = document.querySelector(".codicon-warning")
++			expect(warningIcon).toBeTruthy()
++			// Check that the warning icon has the correct Tailwind class
++			expect(warningIcon?.classList.contains("text-vscode-editorWarning-foreground")).toBeTruthy()
++		})
++
++		it("should display custom title when provided", () => {
++			const errorMessage: ClineMessage = {
++				ts: Date.now(),
++				type: "say",
++				say: "error",
++				text: "This is a custom error",
++				title: "File Not Found",
++			}
++
++			render(<ChatRowContent {...baseProps} message={errorMessage} />)
++
++			// Custom title should be visible
++			expect(screen.getByText("File Not Found")).toBeTruthy()
++			// Default "Error" title should not be visible
++			expect(screen.queryByText("Error")).toBeFalsy()
++		})
++
++		it("should fall back to default 'Error' title when custom title is not provided", () => {
++			const errorMessage: ClineMessage = {
++				ts: Date.now(),
++				type: "say",
++				say: "error",
++				text: "This is a default error",
++				// No title field provided
++			}
++
++			render(<ChatRowContent {...baseProps} message={errorMessage} />)
++
++			// Default "Error" title should be visible
++			expect(screen.getByText("Error")).toBeTruthy()
++		})
++
++		it("should handle empty custom title by falling back to default", () => {
++			const errorMessage: ClineMessage = {
++				ts: Date.now(),
++				type: "say",
++				say: "error",
++				text: "Error with empty title",
++				title: "", // Empty title
++			}
++
++			render(<ChatRowContent {...baseProps} message={errorMessage} />)
++
++			// Should fall back to default "Error" title
++			expect(screen.getByText("Error")).toBeTruthy()
++		})
++
++		it("should display custom title with special characters correctly", () => {
++			const errorMessage: ClineMessage = {
++				ts: Date.now(),
++				type: "say",
++				say: "error",
++				text: "Special character error",
++				title: "Error: File 'test.ts' not found!",
++			}
++
++			render(<ChatRowContent {...baseProps} message={errorMessage} />)
++
++			// Custom title with special characters should be visible
++			expect(screen.getByText("Error: File 'test.ts' not found!")).toBeTruthy()
++		})
++	})
++
++	describe("Diff Error Display", () => {
++		it("should render diff_error with collapsible section", () => {
++			const diffErrorMessage: ClineMessage = {
++				ts: Date.now(),
++				type: "say",
++				say: "diff_error",
++				text: "<error>Diff application failed</error>",
++			}
++
++			render(<ChatRowContent {...baseProps} message={diffErrorMessage} />)
++
++			// Check that warning icon is present
++			const warningIcon = document.querySelector(".codicon-warning")
++			expect(warningIcon).toBeTruthy()
++
++			// Check that diff error title is present
++			expect(screen.getByText("Edit Unsuccessful")).toBeTruthy()
++
++			// Check that copy button is present
++			const copyButton = document.querySelector(".codicon-copy")
++			expect(copyButton).toBeTruthy()
++
++			// Should be collapsed by default for diff_error
++			const chevronDown = document.querySelector(".codicon-chevron-down")
++			expect(chevronDown).toBeTruthy()
++		})
++
++		it("should toggle diff_error visibility when clicked", () => {
++			const diffErrorMessage: ClineMessage = {
++				ts: Date.now(),
++				type: "say",
++				say: "diff_error",
++				text: "<error>Diff content</error>",
++			}
++
++			render(<ChatRowContent {...baseProps} message={diffErrorMessage} />)
++
++			// Initially collapsed
++			let chevron = document.querySelector(".codicon-chevron-down")
++			expect(chevron).toBeTruthy()
++
++			// Click to expand
++			const header = screen.getByText("Edit Unsuccessful").closest("div")?.parentElement
++			if (header) {
++				fireEvent.click(header)
++			}
++
++			// Should be expanded
++			chevron = document.querySelector(".codicon-chevron-up")
++			expect(chevron).toBeTruthy()
++		})
++	})
++
++	describe("Consistency Between Error Types", () => {
++		it("should have similar structure for error and diff_error", () => {
++			const errorMessage: ClineMessage = {
++				ts: Date.now(),
++				type: "say",
++				say: "error",
++				text: "Regular error",
++			}
++
++			const { container: errorContainer } = render(<ChatRowContent {...baseProps} message={errorMessage} />)
++
++			// Both should have collapsible structure
++			const errorChevron = errorContainer.querySelector(".codicon-chevron-up, .codicon-chevron-down")
++			expect(errorChevron).toBeTruthy()
++
++			// Both should have copy button
++			const errorCopyButton = errorContainer.querySelector(".codicon-copy")
++			expect(errorCopyButton).toBeTruthy()
++
++			// Clean up
++			errorContainer.remove()
++
++			const diffErrorMessage: ClineMessage = {
++				ts: Date.now(),
++				type: "say",
++				say: "diff_error",
++				text: "Diff error",
++			}
++
++			const { container: diffErrorContainer } = render(
++				<ChatRowContent {...baseProps} message={diffErrorMessage} />,
++			)
++
++			const diffErrorChevron = diffErrorContainer.querySelector(".codicon-chevron-up, .codicon-chevron-down")
++			expect(diffErrorChevron).toBeTruthy()
++
++			const diffErrorCopyButton = diffErrorContainer.querySelector(".codicon-copy")
++			expect(diffErrorCopyButton).toBeTruthy()
++		})
++
++		it("should handle multi-line error messages", () => {
++			const multiLineError: ClineMessage = {
++				ts: Date.now(),
++				type: "say",
++				say: "error",
++				text: "Line 1\nLine 2\nLine 3\nLine 4",
++			}
++
++			render(<ChatRowContent {...baseProps} message={multiLineError} />)
++
++			// Should render as collapsible
++			const chevron = document.querySelector(".codicon-chevron-up, .codicon-chevron-down")
++			expect(chevron).toBeTruthy()
++
++			// Should have copy button
++			const copyButton = document.querySelector(".codicon-copy")
++			expect(copyButton).toBeTruthy()
++
++			// Click to expand
++			const header = screen.getByText("Error").closest("div")?.parentElement
++			if (header) {
++				fireEvent.click(header)
++			}
++
++			// Text should be visible when expanded (in CodeBlock/pre element)
++			const codeBlock = document.querySelector("pre")
++			expect(codeBlock).toBeTruthy()
++			expect(codeBlock?.textContent).toBe("Line 1\nLine 2\nLine 3\nLine 4")
++		})
++
++		it("should handle very long single-line error messages", () => {
++			const longError: ClineMessage = {
++				ts: Date.now(),
++				type: "say",
++				say: "error",
++				text: "A".repeat(300), // 300 character error
++			}
++
++			render(<ChatRowContent {...baseProps} message={longError} />)
++
++			// Should render as collapsible
++			const chevron = document.querySelector(".codicon-chevron-up, .codicon-chevron-down")
++			expect(chevron).toBeTruthy()
++
++			// Should have copy button
++			const copyButton = document.querySelector(".codicon-copy")
++			expect(copyButton).toBeTruthy()
++		})
++	})
++})

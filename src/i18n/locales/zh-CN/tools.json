@@ -25,6 +25,16 @@
 		"operationFailed": "操作失败",
 		"resourceNotFound": "资源未找到",
 		"configurationError": "配置错误",
-		"authenticationFailed": "认证失败"
+		"authenticationFailed": "认证失败",
+		"invalidLineNumber": "Invalid Line Number",
+		"fileAlreadyExists": "File Already Exists",
+		"directoryNotFound": "Directory Not Found",
+		"invalidPath": "Invalid Path",
+		"readError": "Read Error",
+		"writeError": "Write Error",
+		"syntaxError": "Syntax Error",
+		"validationError": "Validation Error",
+		"timeoutError": "Timeout Error",
+		"connectionError": "Connection Error"
 	}
 }

@@ -1,0 +1,73 @@
+author:	copilot-pull-request-reviewer
+association:	none
+edited:	false
+status:	commented
+--
+## Pull Request Overview
+
+This PR enhances error display in the chat interface by introducing collapsible UI components and contextual error titles for improved user experience and clarity.
+
+- Unified error display UX with collapsible headers, copy-to-clipboard functionality, and visual consistency between regular errors and diff errors
+- Added optional title field to messages for displaying contextual error information like "File Not Found" or "Tool Call Error: <tool_name>"
+- Updated all tool implementations to provide tool-specific error titles and propagate contextual information
+
+### Reviewed Changes
+
+Copilot reviewed 21 out of 21 changed files in this pull request and generated 3 comments.
+
+<details>
+<summary>Show a summary per file</summary>
+
+| File | Description |
+| ---- | ----------- |
+| webview-ui/src/components/chat/ChatRow.tsx | Implements collapsible error UI with copy functionality matching diff_error design |
+| webview-ui/src/components/chat/__tests__/ChatRow.spec.tsx | Comprehensive test suite for error UI behaviors and custom titles |
+| packages/types/src/message.ts | Adds optional title field to message schema |
+| src/core/task/Task.ts | Updates say() method to support custom error titles |
+| src/core/prompts/responses.ts | Enhances toolError formatter to include tool names |
+| src/core/prompts/__tests__/responses-tool-error.spec.ts | Tests for tool error formatting with/without tool names |
+| src/core/assistant-message/presentAssistantMessage.ts | Integrates tool names into error display |
+| src/core/tools/*.ts | Updates all tool files to pass tool names and contextual titles |
+| src/i18n/locales/en/tools.json | Adds common error title translations |
+</details>
+
+
+
+
+
+
+---
+
+<sub>**Tip:** Customize your code reviews with copilot-instructions.md. <a href="/RooCodeInc/Roo-Code/new/main/.github?filename=copilot-instructions.md" class="Link--inTextBlock" target="_blank" rel="noopener noreferrer">Create the file</a> or <a href="https://docs.github.com/en/copilot/customizing-copilot/adding-repository-custom-instructions-for-github-copilot" class="Link--inTextBlock" target="_blank" rel="noopener noreferrer">learn how to get started</a>.</sub>
+--
+author:	roomote
+association:	none
+edited:	false
+status:	commented
+--
+Thank you for this excellent enhancement to error display! The implementation of collapsible UI and contextual titles is well done with great backward compatibility.
+
+## Review Summary
+
+**Positive Aspects:**
+- ✅ Excellent backward compatibility maintained with optional `message.title` field
+- ✅ Comprehensive test coverage added
+- ✅ Good UX parity between error and diff_error displays
+- ✅ Clean implementation of contextual tool error titles
+
+**Suggestions for Improvement:**
+
+1. **Accessibility improvements needed** - The collapsible error UI in `ChatRow.tsx` (lines 1109-1158) lacks proper accessibility attributes. Consider adding `role="button"`, `tabIndex={0}`, `aria-expanded`, and keyboard handlers for Enter/Space keys to match the diff_error implementation which already has these.
+
+2. **Style consistency** - The error UI implementation uses inline style objects while the project guidelines specify using Tailwind CSS classes. The diff_error section already uses Tailwind classes correctly.
+
+3. **i18n consistency issue** - The test file `ChatRow.spec.tsx` expects "Diff Error" as the title, but the actual locale file has "Edit Unsuccessful". This mismatch could cause test failures.
+
+4. **Code duplication** - The collapsible header logic is duplicated between error and diff_error implementations. Consider extracting a shared `CollapsibleHeader` component.
+
+5. **Language detection for CodeBlock** - Generic errors are rendered with `language="xml"`, but not all errors are XML. Consider using "text" by default or auto-detecting when `<error>` tags are present.
+
+6. **Consider centralizing error titles** - Common error titles like "File Not Found", "Parse Error" etc. are currently hardcoded. Consider moving them to i18n files for better maintainability.
+
+Overall, this is a solid implementation that significantly improves the error display UX. The suggestions above are mostly about code consistency and maintainability rather than functionality issues.
+--

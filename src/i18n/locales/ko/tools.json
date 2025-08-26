@@ -25,6 +25,16 @@
 		"operationFailed": "작업 실패",
 		"resourceNotFound": "리소스를 찾을 수 없음",
 		"configurationError": "구성 오류",
-		"authenticationFailed": "인증 실패"
+		"authenticationFailed": "인증 실패",
+		"invalidLineNumber": "Invalid Line Number",
+		"fileAlreadyExists": "File Already Exists",
+		"directoryNotFound": "Directory Not Found",
+		"invalidPath": "Invalid Path",
+		"readError": "Read Error",
+		"writeError": "Write Error",
+		"syntaxError": "Syntax Error",
+		"validationError": "Validation Error",
+		"timeoutError": "Timeout Error",
+		"connectionError": "Connection Error"
 	}
 }

@@ -25,6 +25,16 @@
 		"operationFailed": "Операция не удалась",
 		"resourceNotFound": "Ресурс не найден",
 		"configurationError": "Ошибка конфигурации",
-		"authenticationFailed": "Сбой аутентификации"
+		"authenticationFailed": "Сбой аутентификации",
+		"invalidLineNumber": "Invalid Line Number",
+		"fileAlreadyExists": "File Already Exists",
+		"directoryNotFound": "Directory Not Found",
+		"invalidPath": "Invalid Path",
+		"readError": "Read Error",
+		"writeError": "Write Error",
+		"syntaxError": "Syntax Error",
+		"validationError": "Validation Error",
+		"timeoutError": "Timeout Error",
+		"connectionError": "Connection Error"
 	}
 }

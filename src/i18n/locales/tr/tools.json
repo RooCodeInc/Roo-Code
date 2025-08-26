@@ -25,6 +25,16 @@
 		"operationFailed": "İşlem Başarısız Oldu",
 		"resourceNotFound": "Kaynak Bulunamadı",
 		"configurationError": "Yapılandırma Hatası",
-		"authenticationFailed": "Kimlik Doğrulama Başarısız"
+		"authenticationFailed": "Kimlik Doğrulama Başarısız",
+		"invalidLineNumber": "Invalid Line Number",
+		"fileAlreadyExists": "File Already Exists",
+		"directoryNotFound": "Directory Not Found",
+		"invalidPath": "Invalid Path",
+		"readError": "Read Error",
+		"writeError": "Write Error",
+		"syntaxError": "Syntax Error",
+		"validationError": "Validation Error",
+		"timeoutError": "Timeout Error",
+		"connectionError": "Connection Error"
 	}
 }
