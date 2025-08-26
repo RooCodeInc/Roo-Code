@@ -125,7 +125,9 @@ export const SapAiCore = ({ apiConfiguration, setApiConfigurationField }: SapAiC
 				{t("settings:providers.apiKeyStorageNotice")}
 			</div>
 
-			<VSCodeButtonLink href="https://docs.sap.com/docs/sap-ai-core" className="inline-flex items-center gap-1">
+			<VSCodeButtonLink
+				href="https://help.sap.com/docs/sap-ai-core/sap-ai-core-service-guide/what-is-sap-ai-core"
+				className="inline-flex items-center gap-1">
 				{t("settings:providers.sapAiCoreLearnMore")}
 			</VSCodeButtonLink>
 		</>
