@@ -223,6 +223,7 @@
 		"description": "Sağlayıcılar ve ayarlar arasında hızlıca geçiş yapmak için farklı API yapılandırmalarını kaydedin.",
 		"apiProvider": "API Sağlayıcı",
 		"model": "Model",
+		"modelUnavailable": "kullanılamıyor",
 		"nameEmpty": "İsim boş olamaz",
 		"nameExists": "Bu isme sahip bir profil zaten mevcut",
 		"deleteProfile": "Profili sil",
@@ -795,7 +796,8 @@
 		"label": "Model",
 		"searchPlaceholder": "Ara",
 		"noMatchFound": "Eşleşme bulunamadı",
-		"useCustomModel": "Özel kullan: {{modelId}}"
+		"useCustomModel": "Özel kullan: {{modelId}}",
+		"unavailable": "kullanılamıyor"
 	},
 	"footer": {
 		"feedback": "Herhangi bir sorunuz veya geri bildiriminiz varsa, <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> adresinde bir konu açmaktan veya <redditLink>reddit.com/r/RooCode</redditLink> ya da <discordLink>discord.gg/roocode</discordLink>'a katılmaktan çekinmeyin",

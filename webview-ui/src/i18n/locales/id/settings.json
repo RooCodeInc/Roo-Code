@@ -227,6 +227,7 @@
 		"description": "Simpan konfigurasi API yang berbeda untuk beralih dengan cepat antara provider dan pengaturan.",
 		"apiProvider": "Provider API",
 		"model": "Model",
+		"modelUnavailable": "tidak tersedia",
 		"nameEmpty": "Nama tidak boleh kosong",
 		"nameExists": "Profil dengan nama ini sudah ada",
 		"deleteProfile": "Hapus Profil",
@@ -824,7 +825,8 @@
 		"label": "Model",
 		"searchPlaceholder": "Cari",
 		"noMatchFound": "Tidak ada yang cocok ditemukan",
-		"useCustomModel": "Gunakan kustom: {{modelId}}"
+		"useCustomModel": "Gunakan kustom: {{modelId}}",
+		"unavailable": "tidak tersedia"
 	},
 	"footer": {
 		"feedback": "Jika kamu punya pertanyaan atau feedback, jangan ragu untuk membuka issue di <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> atau bergabung <redditLink>reddit.com/r/RooCode</redditLink> atau <discordLink>discord.gg/roocode</discordLink>",

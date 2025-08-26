@@ -279,11 +279,30 @@ const ApiOptions = ({
 					}))
 			: []
 
-		return availableModels
-	}, [selectedProvider, organizationAllowList, selectedModelId])
+		const modelOptions = [...availableModels]
+
+		// Include the currently selected model if it's been removed
+		if (selectedModelId && !modelOptions.find((opt) => opt.value === selectedModelId)) {
+			modelOptions.unshift({
+				value: selectedModelId,
+				label: `${selectedModelId} (${t("settings:providers.modelUnavailable")})`,
+			})
+		}
+
+		return modelOptions
+	}, [selectedProvider, organizationAllowList, selectedModelId, t])
 
 	const onProviderChange = useCallback(
 		(value: ProviderName) => {
+			// Check if the current model is removed (not in the filtered models list)
+			const currentProviderModels = MODELS_BY_PROVIDER[selectedProvider]
+			const isModelRemoved =
+				selectedModelId &&
+				currentProviderModels &&
+				!Object.keys(
+					filterModels(currentProviderModels, selectedProvider, organizationAllowList) || {},
+				).includes(selectedModelId)
+
 			setApiConfigurationField("apiProvider", value)
 
 			// It would be much easier to have a single attribute that stores
@@ -301,9 +320,7 @@ const ApiOptions = ({
 				// in case we haven't set a default value for a provider
 				if (!defaultValue) return
 
-				// only set default if no model is set, but don't reset invalid models
-				// let users see and decide what to do with invalid model selections
-				const shouldSetDefault = !modelId
+				const shouldSetDefault = !modelId || isModelRemoved
 
 				if (shouldSetDefault) {
 					setApiConfigurationField(field, defaultValue, false)
@@ -368,7 +385,7 @@ const ApiOptions = ({
 				)
 			}
 		},
-		[setApiConfigurationField, apiConfiguration],
+		[setApiConfigurationField, apiConfiguration, selectedProvider, selectedModelId, organizationAllowList],
 	)
 
 	const modelValidationError = useMemo(() => {

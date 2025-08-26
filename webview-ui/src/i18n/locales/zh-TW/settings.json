@@ -223,6 +223,7 @@
 		"description": "儲存不同的 API 設定以快速切換供應商和設定。",
 		"apiProvider": "API 供應商",
 		"model": "模型",
+		"modelUnavailable": "無法使用",
 		"nameEmpty": "名稱不能為空",
 		"nameExists": "已存在同名的設定檔",
 		"deleteProfile": "刪除設定檔",
@@ -795,7 +796,8 @@
 		"label": "模型",
 		"searchPlaceholder": "搜尋",
 		"noMatchFound": "找不到符合的項目",
-		"useCustomModel": "使用自訂模型：{{modelId}}"
+		"useCustomModel": "使用自訂模型：{{modelId}}",
+		"unavailable": "無法使用"
 	},
 	"footer": {
 		"feedback": "若您有任何問題或建議，歡迎至 <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> 提出 issue，或加入 <redditLink>reddit.com/r/RooCode</redditLink> 或 <discordLink>discord.gg/roocode</discordLink> 討論。",

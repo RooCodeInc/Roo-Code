@@ -223,6 +223,7 @@
 		"description": "Deseu diferents configuracions d'API per canviar ràpidament entre proveïdors i configuracions.",
 		"apiProvider": "Proveïdor d'API",
 		"model": "Model",
+		"modelUnavailable": "no disponible",
 		"nameEmpty": "El nom no pot estar buit",
 		"nameExists": "Ja existeix un perfil amb aquest nom",
 		"deleteProfile": "Esborrar perfil",
@@ -794,7 +795,8 @@
 		"label": "Model",
 		"searchPlaceholder": "Cerca",
 		"noMatchFound": "No s'ha trobat cap coincidència",
-		"useCustomModel": "Utilitzar personalitzat: {{modelId}}"
+		"useCustomModel": "Utilitzar personalitzat: {{modelId}}",
+		"unavailable": "no disponible"
 	},
 	"footer": {
 		"feedback": "Si teniu qualsevol pregunta o comentari, no dubteu a obrir un issue a <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> o unir-vos a <redditLink>reddit.com/r/RooCode</redditLink> o <discordLink>discord.gg/roocode</discordLink>",

@@ -223,6 +223,7 @@
 		"description": "Lưu các cấu hình API khác nhau để nhanh chóng chuyển đổi giữa các nhà cung cấp và cài đặt.",
 		"apiProvider": "Nhà cung cấp API",
 		"model": "Mẫu",
+		"modelUnavailable": "không khả dụng",
 		"nameEmpty": "Tên không được để trống",
 		"nameExists": "Đã tồn tại một hồ sơ với tên này",
 		"deleteProfile": "Xóa hồ sơ",
@@ -795,7 +796,8 @@
 		"label": "Mô hình",
 		"searchPlaceholder": "Tìm kiếm",
 		"noMatchFound": "Không tìm thấy kết quả",
-		"useCustomModel": "Sử dụng tùy chỉnh: {{modelId}}"
+		"useCustomModel": "Sử dụng tùy chỉnh: {{modelId}}",
+		"unavailable": "không khả dụng"
 	},
 	"footer": {
 		"feedback": "Nếu bạn có bất kỳ câu hỏi hoặc phản hồi nào, vui lòng mở một vấn đề tại <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> hoặc tham gia <redditLink>reddit.com/r/RooCode</redditLink> hoặc <discordLink>discord.gg/roocode</discordLink>",

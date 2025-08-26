@@ -223,6 +223,7 @@
 		"description": "Guarde diferentes configuraciones de API para cambiar rápidamente entre proveedores y ajustes.",
 		"apiProvider": "Proveedor de API",
 		"model": "Modelo",
+		"modelUnavailable": "no disponible",
 		"nameEmpty": "El nombre no puede estar vacío",
 		"nameExists": "Ya existe un perfil con este nombre",
 		"deleteProfile": "Eliminar perfil",
@@ -794,7 +795,8 @@
 		"label": "Modelo",
 		"searchPlaceholder": "Buscar",
 		"noMatchFound": "No se encontraron coincidencias",
-		"useCustomModel": "Usar personalizado: {{modelId}}"
+		"useCustomModel": "Usar personalizado: {{modelId}}",
+		"unavailable": "no disponible"
 	},
 	"footer": {
 		"feedback": "Si tiene alguna pregunta o comentario, no dude en abrir un issue en <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> o unirse a <redditLink>reddit.com/r/RooCode</redditLink> o <discordLink>discord.gg/roocode</discordLink>",
