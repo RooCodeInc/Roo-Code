@@ -115,7 +115,11 @@
 			"mistralApiKeyRequired": "La chiave API di Mistral è richiesta",
 			"ollamaBaseUrlRequired": "È richiesto l'URL di base di Ollama",
 			"baseUrlRequired": "È richiesto l'URL di base",
-			"modelDimensionMinValue": "La dimensione del modello deve essere maggiore di 0"
+			"modelDimensionMinValue": "La dimensione del modello deve essere maggiore di 0",
+			"sapAiCoreBaseUrl": "È richiesto l'URL di base di SAP AI Core.",
+			"sapAiCoreClientId": "È richiesto l'ID client di SAP AI Core.",
+			"sapAiCoreClientSecret": "È richiesto il segreto client di SAP AI Core.",
+			"sapAiCoreTokenUrl": "È richiesto l'URL del token di SAP AI Core."
 		},
 		"advancedConfigLabel": "Configurazione avanzata",
 		"searchMinScoreLabel": "Soglia punteggio di ricerca",
@@ -800,6 +804,10 @@
 		"modelId": "È necessario fornire un ID modello valido.",
 		"modelSelector": "È necessario fornire un selettore di modello valido.",
 		"openAi": "È necessario fornire un URL base, una chiave API e un ID modello validi.",
+		"sapAiCoreBaseUrl": "È richiesto l'URL di base di SAP AI Core",
+		"sapAiCoreClientId": "È richiesto l'ID client di SAP AI Core",
+		"sapAiCoreClientSecret": "È richiesto il segreto client di SAP AI Core",
+		"sapAiCoreTokenUrl": "È richiesto l'URL del token di SAP AI Core",
 		"arn": {
 			"invalidFormat": "Formato ARN non valido. Verificare i requisiti del formato.",
 			"regionMismatch": "Attenzione: La regione nel tuo ARN ({{arnRegion}}) non corrisponde alla regione selezionata ({{region}}). Questo potrebbe causare problemi di accesso. Il provider utilizzerà la regione dall'ARN."

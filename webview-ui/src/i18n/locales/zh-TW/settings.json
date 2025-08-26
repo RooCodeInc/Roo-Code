@@ -812,11 +812,17 @@
 		"providerNotAllowed": "供應商 '{{provider}}' 不允許用於您的組織。",
 		"modelNotAllowed": "模型 '{{model}}' 不允許用於供應商 '{{provider}}'，您的組織不允許",
 		"profileInvalid": "此設定檔包含您的組織不允許的供應商或模型",
-		"qwenCodeOauthPath": "您必須提供有效的 OAuth 憑證路徑"
+		"qwenCodeOauthPath": "您必須提供有效的 OAuth 憑證路徑",
+		"sapAiCoreBaseUrl": "需要 SAP AI Core 基礎 URL",
+		"sapAiCoreClientId": "需要 SAP AI Core 客戶端 ID",
+		"sapAiCoreClientSecret": "需要 SAP AI Core 客戶端密鑰",
+		"sapAiCoreTokenUrl": "需要 SAP AI Core Token URL"
 	},
 	"placeholders": {
 		"apiKey": "請輸入 API 金鑰...",
 		"profileName": "請輸入設定檔名稱",
+		"clientId": "請輸入客戶端 ID...",
+		"clientSecret": "請輸入客戶端密鑰...",
 		"accessKey": "請輸入存取金鑰...",
 		"secretKey": "請輸入金鑰...",
 		"sessionToken": "請輸入工作階段權杖...",

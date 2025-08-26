@@ -115,7 +115,11 @@
 			"mistralApiKeyRequired": "Mistral API anahtarı gereklidir",
 			"ollamaBaseUrlRequired": "Ollama temel URL'si gereklidir",
 			"baseUrlRequired": "Temel URL'si gereklidir",
-			"modelDimensionMinValue": "Model boyutu 0'dan büyük olmalıdır"
+			"modelDimensionMinValue": "Model boyutu 0'dan büyük olmalıdır",
+			"sapAiCoreBaseUrl": "SAP AI Core Temel URL gereklidir.",
+			"sapAiCoreClientId": "SAP AI Core İstemci Kimliği gereklidir.",
+			"sapAiCoreClientSecret": "SAP AI Core İstemci Sırrı gereklidir.",
+			"sapAiCoreTokenUrl": "SAP AI Core Token URL gereklidir."
 		},
 		"advancedConfigLabel": "Gelişmiş Yapılandırma",
 		"searchMinScoreLabel": "Arama Skoru Eşiği",
@@ -825,6 +829,8 @@
 		"projectId": "Proje ID'sini girin...",
 		"customArn": "ARN girin (örn. arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model)",
 		"baseUrl": "Temel URL'yi girin...",
+		"clientId": "İstemci Kimliğini Girin...",
+		"clientSecret": "İstemci Sırrını Girin...",
 		"modelId": {
 			"lmStudio": "örn. meta-llama-3.1-8b-instruct",
 			"lmStudioDraft": "örn. lmstudio-community/llama-3.2-1b-instruct",

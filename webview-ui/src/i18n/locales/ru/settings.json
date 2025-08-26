@@ -115,7 +115,11 @@
 			"mistralApiKeyRequired": "Требуется API-ключ Mistral",
 			"ollamaBaseUrlRequired": "Требуется базовый URL Ollama",
 			"baseUrlRequired": "Требуется базовый URL",
-			"modelDimensionMinValue": "Размерность модели должна быть больше 0"
+			"modelDimensionMinValue": "Размерность модели должна быть больше 0",
+			"sapAiCoreBaseUrl": "Базовый URL SAP AI Core обязателен.",
+			"sapAiCoreClientId": "ID клиента SAP AI Core обязателен.",
+			"sapAiCoreClientSecret": "Секрет клиента SAP AI Core обязателен.",
+			"sapAiCoreTokenUrl": "URL токена SAP AI Core обязателен."
 		},
 		"advancedConfigLabel": "Расширенная конфигурация",
 		"searchMinScoreLabel": "Порог оценки поиска",
@@ -825,6 +829,8 @@
 		"projectId": "Введите Project ID...",
 		"customArn": "Введите ARN (например, arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model)",
 		"baseUrl": "Введите базовый URL...",
+		"clientId": "Введите ID клиента...",
+		"clientSecret": "Введите секрет клиента...",
 		"modelId": {
 			"lmStudio": "например, meta-llama-3.1-8b-instruct",
 			"lmStudioDraft": "например, lmstudio-community/llama-3.2-1b-instruct",

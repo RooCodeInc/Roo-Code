@@ -115,7 +115,11 @@
 			"mistralApiKeyRequired": "A chave de API Mistral é obrigatória",
 			"ollamaBaseUrlRequired": "A URL base do Ollama é obrigatória",
 			"baseUrlRequired": "A URL base é obrigatória",
-			"modelDimensionMinValue": "A dimensão do modelo deve ser maior que 0"
+			"modelDimensionMinValue": "A dimensão do modelo deve ser maior que 0",
+			"sapAiCoreBaseUrl": "A URL Base do SAP AI Core é obrigatória.",
+			"sapAiCoreClientId": "O ID do Cliente SAP AI Core é obrigatório.",
+			"sapAiCoreClientSecret": "O Segredo do Cliente SAP AI Core é obrigatório.",
+			"sapAiCoreTokenUrl": "A URL do Token SAP AI Core é obrigatória."
 		},
 		"advancedConfigLabel": "Configuração Avançada",
 		"searchMinScoreLabel": "Limite de pontuação de busca",
@@ -825,6 +829,8 @@
 		"projectId": "Digite o ID do projeto...",
 		"customArn": "Digite o ARN (ex: arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model)",
 		"baseUrl": "Digite a URL base...",
+		"clientId": "Digite o ID do Cliente...",
+		"clientSecret": "Digite o Segredo do Cliente...",
 		"modelId": {
 			"lmStudio": "ex: meta-llama-3.1-8b-instruct",
 			"lmStudioDraft": "ex: lmstudio-community/llama-3.2-1b-instruct",

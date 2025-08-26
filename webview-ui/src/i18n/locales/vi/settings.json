@@ -812,11 +812,17 @@
 		"providerNotAllowed": "Nhà cung cấp '{{provider}}' không được phép bởi tổ chức của bạn",
 		"modelNotAllowed": "Mô hình '{{model}}' không được phép cho nhà cung cấp '{{provider}}' bởi tổ chức của bạn",
 		"profileInvalid": "Hồ sơ này chứa một nhà cung cấp hoặc mô hình không được phép bởi tổ chức của bạn",
-		"qwenCodeOauthPath": "Bạn phải cung cấp đường dẫn thông tin xác thực OAuth hợp lệ"
+		"qwenCodeOauthPath": "Bạn phải cung cấp đường dẫn thông tin xác thực OAuth hợp lệ",
+		"sapAiCoreBaseUrl": "Yêu cầu URL cơ sở SAP AI Core",
+		"sapAiCoreClientId": "Yêu cầu ID khách hàng SAP AI Core",
+		"sapAiCoreClientSecret": "Yêu cầu bí mật khách hàng SAP AI Core",
+		"sapAiCoreTokenUrl": "Yêu cầu URL token SAP AI Core"
 	},
 	"placeholders": {
 		"apiKey": "Nhập khóa API...",
 		"profileName": "Nhập tên hồ sơ",
+		"clientId": "Nhập ID khách hàng...",
+		"clientSecret": "Nhập bí mật khách hàng...",
 		"accessKey": "Nhập khóa truy cập...",
 		"secretKey": "Nhập khóa bí mật...",
 		"sessionToken": "Nhập token phiên...",

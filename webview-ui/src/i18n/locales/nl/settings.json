@@ -115,7 +115,11 @@
 			"mistralApiKeyRequired": "Mistral API-sleutel is vereist",
 			"ollamaBaseUrlRequired": "Ollama basis-URL is vereist",
 			"baseUrlRequired": "Basis-URL is vereist",
-			"modelDimensionMinValue": "Modelafmeting moet groter zijn dan 0"
+			"modelDimensionMinValue": "Modelafmeting moet groter zijn dan 0",
+			"sapAiCoreBaseUrl": "SAP AI Core Basis-URL is vereist.",
+			"sapAiCoreClientId": "SAP AI Core Client ID is vereist.",
+			"sapAiCoreClientSecret": "SAP AI Core Client Secret is vereist.",
+			"sapAiCoreTokenUrl": "SAP AI Core Token URL is vereist."
 		},
 		"advancedConfigLabel": "Geavanceerde configuratie",
 		"searchMinScoreLabel": "Zoekscore drempel",
@@ -825,6 +829,8 @@
 		"projectId": "Voer project-ID in...",
 		"customArn": "Voer ARN in (bijv. arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model)",
 		"baseUrl": "Voer basis-URL in...",
+		"clientId": "Voer Client ID in...",
+		"clientSecret": "Voer Client Secret in...",
 		"modelId": {
 			"lmStudio": "bijv. meta-llama-3.1-8b-instruct",
 			"lmStudioDraft": "bijv. lmstudio-community/llama-3.2-1b-instruct",

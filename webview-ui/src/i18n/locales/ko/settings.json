@@ -115,7 +115,11 @@
 			"mistralApiKeyRequired": "Mistral API 키가 필요합니다",
 			"ollamaBaseUrlRequired": "Ollama 기본 URL이 필요합니다",
 			"baseUrlRequired": "기본 URL이 필요합니다",
-			"modelDimensionMinValue": "모델 차원은 0보다 커야 합니다"
+			"modelDimensionMinValue": "모델 차원은 0보다 커야 합니다",
+			"sapAiCoreBaseUrl": "SAP AI Core Base URL이 필요합니다.",
+			"sapAiCoreClientId": "SAP AI Core Client ID가 필요합니다.",
+			"sapAiCoreClientSecret": "SAP AI Core Client Secret이 필요합니다.",
+			"sapAiCoreTokenUrl": "SAP AI Core Token URL이 필요합니다."
 		},
 		"advancedConfigLabel": "고급 구성",
 		"searchMinScoreLabel": "검색 점수 임계값",
@@ -825,6 +829,8 @@
 		"projectId": "프로젝트 ID 입력...",
 		"customArn": "ARN 입력 (예: arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model)",
 		"baseUrl": "기본 URL 입력...",
+		"clientId": "클라이언트 ID 입력...",
+		"clientSecret": "클라이언트 시크릿 입력...",
 		"modelId": {
 			"lmStudio": "예: meta-llama-3.1-8b-instruct",
 			"lmStudioDraft": "예: lmstudio-community/llama-3.2-1b-instruct",
