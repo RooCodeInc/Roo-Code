@@ -19,6 +19,7 @@ export class RooProtectedController {
 		".clinerules*",
 		".roo/**",
 		".vscode/**",
+		"*.code-workspace", // Protect VS Code workspace files to prevent code execution
 		".rooprotected", // For future use
 		"AGENTS.md",
 		"AGENT.md", // Alternative singular form for compatibility
