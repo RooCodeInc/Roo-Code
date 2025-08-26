@@ -206,13 +206,6 @@ export const ChatRowContent = ({
 
 	const [icon, title] = useMemo(() => {
 		switch (type) {
-			case "error":
-				return [
-					<span
-						className="codicon codicon-error"
-						style={{ color: errorColor, marginBottom: "-1.5px" }}></span>,
-					<span style={{ color: errorColor, fontWeight: "bold" }}>{message.title || t("chat:error")}</span>,
-				]
 			case "mistake_limit_reached":
 				return [
 					<span

@@ -278,7 +278,7 @@ export async function executeCommand(
 				provider?.postMessageToWebview({ type: "commandExecutionStatus", text: JSON.stringify(status) })
 				await task.say(
 					"error",
-					t("common:errors:command_timeout", { seconds: commandExecutionTimeoutSeconds }),
+					t("common:errors.command_timeout", { seconds: commandExecutionTimeoutSeconds }),
 					undefined,
 					undefined,
 					undefined,
