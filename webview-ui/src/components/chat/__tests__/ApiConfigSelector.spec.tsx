@@ -49,6 +49,7 @@ describe("ApiConfigSelector", () => {
 	const defaultProps = {
 		value: "config1",
 		displayName: "Config 1",
+		title: "API Config",
 		onChange: mockOnChange,
 		listApiConfigMeta: [
 			{ id: "config1", name: "Config 1" },
