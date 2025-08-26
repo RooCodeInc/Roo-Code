@@ -140,10 +140,19 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 	private ensureClient(): Ollama {
 		if (!this.client) {
 			try {
-				this.client = new Ollama({
+				const clientOptions: any = {
 					host: this.options.ollamaBaseUrl || "http://localhost:11434",
 					// Note: The ollama npm package handles timeouts internally
-				})
+				}
+
+				// Add API key if provided (for Ollama cloud or authenticated instances)
+				if (this.options.ollamaApiKey) {
+					clientOptions.headers = {
+						Authorization: `Bearer ${this.options.ollamaApiKey}`,
+					}
+				}
+
+				this.client = new Ollama(clientOptions)
 			} catch (error: any) {
 				throw new Error(`Error creating Ollama client: ${error.message}`)
 			}

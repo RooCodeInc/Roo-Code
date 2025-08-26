@@ -11,6 +11,7 @@ import { useRouterModels } from "@src/components/ui/hooks/useRouterModels"
 import { vscode } from "@src/utils/vscode"
 
 import { inputEventTransform } from "../transforms"
+import { ApiKeyField } from "../common/ApiKeyField"
 
 type OllamaProps = {
 	apiConfiguration: ProviderSettings
@@ -86,6 +87,15 @@ export const Ollama = ({ apiConfiguration, setApiConfigurationField }: OllamaPro
 				className="w-full">
 				<label className="block font-medium mb-1">{t("settings:providers.ollama.baseUrl")}</label>
 			</VSCodeTextField>
+			{apiConfiguration?.ollamaBaseUrl && (
+				<ApiKeyField
+					initialValue={apiConfiguration?.ollamaApiKey || ""}
+					onChange={(value) => setApiConfigurationField("ollamaApiKey", value)}
+					providerName="Ollama"
+					placeholder={t("settings:placeholders.apiKey.ollama")}
+					helpText={t("settings:providers.ollama.apiKeyHelp")}
+				/>
+			)}
 			<VSCodeTextField
 				value={apiConfiguration?.ollamaModelId || ""}
 				onInput={handleInputChange("ollamaModelId")}
