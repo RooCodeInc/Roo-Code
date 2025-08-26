@@ -67,7 +67,9 @@ describe("ModeSelector", () => {
 	})
 
 	test("falls back to default description when no custom prompt", () => {
-		render(<ModeSelector value={"code" as Mode} onChange={vi.fn()} modeShortcutText="Ctrl+M" />)
+		render(
+			<ModeSelector title="Mode Selector" value={"code" as Mode} onChange={vi.fn()} modeShortcutText="Ctrl+M" />,
+		)
 
 		expect(screen.getByTestId("mode-selector-trigger")).toBeInTheDocument()
 	})
@@ -81,7 +83,14 @@ describe("ModeSelector", () => {
 			groups: ["read", "edit"],
 		}))
 
-		render(<ModeSelector value={"mode-0" as Mode} onChange={vi.fn()} modeShortcutText="Ctrl+M" />)
+		render(
+			<ModeSelector
+				title="Mode Selector"
+				value={"mode-0" as Mode}
+				onChange={vi.fn()}
+				modeShortcutText="Ctrl+M"
+			/>,
+		)
 
 		// Click to open the popover.
 		fireEvent.click(screen.getByTestId("mode-selector-trigger"))
@@ -104,7 +113,14 @@ describe("ModeSelector", () => {
 			groups: ["read", "edit"],
 		}))
 
-		render(<ModeSelector value={"mode-0" as Mode} onChange={vi.fn()} modeShortcutText="Ctrl+M" />)
+		render(
+			<ModeSelector
+				title="Mode Selector"
+				value={"mode-0" as Mode}
+				onChange={vi.fn()}
+				modeShortcutText="Ctrl+M"
+			/>,
+		)
 
 		// Click to open the popover.
 		fireEvent.click(screen.getByTestId("mode-selector-trigger"))
@@ -129,7 +145,14 @@ describe("ModeSelector", () => {
 			groups: ["read", "edit"],
 		}))
 
-		render(<ModeSelector value={"mode-0" as Mode} onChange={vi.fn()} modeShortcutText="Ctrl+M" />)
+		render(
+			<ModeSelector
+				title="Mode Selector"
+				value={"mode-0" as Mode}
+				onChange={vi.fn()}
+				modeShortcutText="Ctrl+M"
+			/>,
+		)
 
 		// Click to open the popover.
 		fireEvent.click(screen.getByTestId("mode-selector-trigger"))
@@ -153,7 +176,13 @@ describe("ModeSelector", () => {
 		}))
 
 		render(
-			<ModeSelector value={"mode-0" as Mode} onChange={vi.fn()} modeShortcutText="Ctrl+M" disableSearch={true} />,
+			<ModeSelector
+				title="Mode Selector"
+				value={"mode-0" as Mode}
+				onChange={vi.fn()}
+				modeShortcutText="Ctrl+M"
+				disableSearch={true}
+			/>,
 		)
 
 		// Click to open the popover.
@@ -180,7 +209,14 @@ describe("ModeSelector", () => {
 		}))
 
 		// Don't pass disableSearch prop (should default to false).
-		render(<ModeSelector value={"mode-0" as Mode} onChange={vi.fn()} modeShortcutText="Ctrl+M" />)
+		render(
+			<ModeSelector
+				title="Mode Selector"
+				value={"mode-0" as Mode}
+				onChange={vi.fn()}
+				modeShortcutText="Ctrl+M"
+			/>,
+		)
 
 		fireEvent.click(screen.getByTestId("mode-selector-trigger"))
 
