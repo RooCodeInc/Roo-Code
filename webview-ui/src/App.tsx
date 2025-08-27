@@ -178,11 +178,6 @@ const App = () => {
 					"*",
 				)
 			}
-			// Internal request from ModesView to open the enable/disable dialog
-			if ((message as any).type === "showModeEnableDisableDialogRequest" && (message as any).modes) {
-				setModeDialogModes((message as any).modes as any[])
-				setModeDialogOpen(true)
-			}
 
 			if (message.type === "showDeleteMessageDialog" && message.messageTs) {
 				setDeleteMessageDialogState({ isOpen: true, messageTs: message.messageTs })

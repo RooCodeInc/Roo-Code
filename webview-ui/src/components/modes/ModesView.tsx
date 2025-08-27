@@ -591,8 +591,8 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 									variant="ghost"
 									size="icon"
 									onClick={() => {
-										// Ask the App to open the Enable/Disable dialog with current modes.
-										window.postMessage({ type: "openModeEnableDisableDialog", modes }, "*")
+										// Use the same mechanism as ModeSelector to get proper source information
+										vscode.postMessage({ type: "enableDisableModesClicked" })
 									}}
 									className="flex">
 									<span className="codicon codicon-eye"></span>
