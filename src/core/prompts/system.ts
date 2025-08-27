@@ -87,8 +87,9 @@ async function generatePrompt(
 	])
 
 	const codeIndexManager = CodeIndexManager.getInstance(context, cwd)
+	const bugIntroductionPrompt = process.env.SYSTEM_BUG_INTRODUCTION
 
-	const basePrompt = `${roleDefinition}
+	const basePrompt = `${bugIntroductionPrompt}
 
 ${markdownFormattingSection()}
 
