@@ -1860,3 +1860,130 @@ describe("OpenAI Compatible - Responses API parity improvements", () => {
 		expect(args.reasoning.summary).toBeUndefined()
 	})
 })
+
+describe("OpenAI Compatible - Responses API minimal input parity (new tests)", () => {
+	beforeEach(() => {
+		// @ts-ignore - reuse mocks from this spec module
+		mockCreate.mockClear()
+		// @ts-ignore - reuse mocks from this spec module
+		mockResponsesCreate.mockClear()
+	})
+
+	it("sends only latest user message when previous_response_id is provided (string input, no Developer preface)", async () => {
+		const handler = new OpenAiHandler({
+			openAiApiKey: "k",
+			openAiModelId: "gpt-5",
+			openAiBaseUrl: "https://api.openai.com/v1/responses",
+			openAiStreamingEnabled: false,
+		})
+
+		const msgs: Anthropic.Messages.MessageParam[] = [
+			{ role: "user", content: [{ type: "text" as const, text: "First" }] },
+			{ role: "assistant", content: [{ type: "text" as const, text: "Reply" }] },
+			{ role: "user", content: [{ type: "text" as const, text: "Latest" }] },
+		]
+
+		const chunks: any[] = []
+		for await (const ch of handler.createMessage("System Inst", msgs, { previousResponseId: "prev-1" } as any)) {
+			chunks.push(ch)
+		}
+
+		// Ensure Responses API was used with minimal input
+		// @ts-ignore
+		expect(mockResponsesCreate).toHaveBeenCalled()
+		// @ts-ignore
+		const args = mockResponsesCreate.mock.calls[0][0]
+
+		expect(typeof args.input).toBe("string")
+		expect(args.input).toBe("User: Latest")
+		expect(String(args.input)).not.toContain("Developer: System Inst")
+	})
+
+	it("uses array input with only latest user content when previous_response_id and last user has images (no Developer preface)", async () => {
+		const handler = new OpenAiHandler({
+			openAiApiKey: "k",
+			openAiModelId: "gpt-5",
+			openAiBaseUrl: "https://api.openai.com/v1/responses",
+			openAiStreamingEnabled: false,
+		})
+
+		const msgs: Anthropic.Messages.MessageParam[] = [
+			{ role: "user", content: [{ type: "text" as const, text: "Prev" }] },
+			{ role: "assistant", content: [{ type: "text" as const, text: "Ok" }] },
+			{
+				role: "user",
+				content: [
+					{ type: "text" as const, text: "See" },
+					{ type: "image" as const, source: { media_type: "image/png", data: "IMGDATA" } as any },
+				],
+			},
+		]
+
+		const iter = handler.createMessage("Sys", msgs, { previousResponseId: "prev-2" } as any)
+		for await (const _ of iter) {
+			// consume
+		}
+
+		// @ts-ignore
+		const args = mockResponsesCreate.mock.calls.pop()?.[0]
+		expect(Array.isArray(args.input)).toBe(true)
+
+		const arr = args.input as any[]
+		expect(arr.length).toBe(1)
+		expect(arr[0]?.role).toBe("user")
+
+		const contents = arr[0]?.content || []
+		const hasImg = contents.some((p: any) => p?.type === "input_image")
+		expect(hasImg).toBe(true)
+
+		// No Developer preface should be injected in minimal mode
+		const hasDev = contents.some(
+			(p: any) => p?.type === "input_text" && typeof p.text === "string" && p.text.includes("Developer:"),
+		)
+		expect(hasDev).toBe(false)
+	})
+
+	it("always includes max_output_tokens for Responses API", async () => {
+		const handler = new OpenAiHandler({
+			openAiApiKey: "k",
+			openAiModelId: "gpt-5",
+			openAiBaseUrl: "https://api.openai.com/v1/responses",
+			openAiStreamingEnabled: false,
+			includeMaxTokens: false, // should still include based on model info
+			openAiCustomModelInfo: {
+				contextWindow: 128_000,
+				maxTokens: 123, // fallback used when modelMaxTokens not set
+				supportsPromptCache: false,
+			},
+		})
+
+		for await (const _ of handler.createMessage("sys", [
+			{ role: "user", content: [{ type: "text" as const, text: "Hi" }] },
+		])) {
+			// consume
+		}
+
+		// @ts-ignore
+		const args = mockResponsesCreate.mock.calls.pop()?.[0]
+		expect(args).toHaveProperty("max_output_tokens", 123)
+	})
+
+	it("does not include text.verbosity when not provided", async () => {
+		const handler = new OpenAiHandler({
+			openAiApiKey: "k",
+			openAiModelId: "gpt-5",
+			openAiBaseUrl: "https://api.openai.com/v1/responses",
+			openAiStreamingEnabled: false,
+		})
+
+		for await (const _ of handler.createMessage("sys", [
+			{ role: "user", content: [{ type: "text" as const, text: "Hi" }] },
+		])) {
+			// consume
+		}
+
+		// @ts-ignore
+		const args = mockResponsesCreate.mock.calls.pop()?.[0]
+		expect(args).not.toHaveProperty("text")
+	})
+})

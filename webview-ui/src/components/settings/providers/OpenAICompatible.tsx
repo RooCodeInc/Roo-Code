@@ -22,6 +22,7 @@ import { inputEventTransform, noTransform } from "../transforms"
 import { ModelPicker } from "../ModelPicker"
 import { R1FormatSetting } from "../R1FormatSetting"
 import { ThinkingBudget } from "../ThinkingBudget"
+import { Verbosity } from "../Verbosity"
 
 type OpenAICompatibleProps = {
 	apiConfiguration: ProviderSettings
@@ -40,6 +41,7 @@ export const OpenAICompatible = ({
 
 	const [azureApiVersionSelected, setAzureApiVersionSelected] = useState(!!apiConfiguration?.azureApiVersion)
 	const [openAiLegacyFormatSelected, setOpenAiLegacyFormatSelected] = useState(!!apiConfiguration?.openAiLegacyFormat)
+	const [verbositySelected, setVerbositySelected] = useState(!!apiConfiguration?.verbosity)
 
 	const [openAiModels, setOpenAiModels] = useState<Record<string, ModelInfo> | null>(null)
 
@@ -279,6 +281,27 @@ export const OpenAICompatible = ({
 							...(apiConfiguration.openAiCustomModelInfo || openAiModelInfoSaneDefaults),
 							supportsReasoningEffort: true,
 						}}
+					/>
+				)}
+			</div>
+			<div className="flex flex-col gap-1">
+				<Checkbox
+					checked={verbositySelected}
+					onChange={(checked: boolean) => {
+						setVerbositySelected(checked)
+						if (!checked) {
+							setApiConfigurationField("verbosity", undefined as any)
+						} else if (!apiConfiguration.verbosity) {
+							setApiConfigurationField("verbosity", "medium" as any)
+						}
+					}}>
+					{t("settings:providers.verbosity.label")}
+				</Checkbox>
+				{verbositySelected && (
+					<Verbosity
+						apiConfiguration={apiConfiguration}
+						setApiConfigurationField={setApiConfigurationField as any}
+						modelInfo={apiConfiguration.openAiCustomModelInfo || openAiModelInfoSaneDefaults}
 					/>
 				)}
 			</div>

@@ -182,21 +182,35 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 			// Build Responses payload (align with OpenAI Native Responses API formatting)
 			// Azure- and Responses-compatible multimodal handling:
-			// - Use array input ONLY when the latest user message contains images
-			// - Include the most recent assistant message as input_text to preserve continuity
-			// - Always include a Developer preface
+			// - Use array input ONLY when the latest user message contains images (initial turn)
+			// - When previous_response_id is present, send only the latest user turn:
+			//   • Text-only => single string "User: ...", no Developer preface
+			//   • With images => one-item array containing only the latest user content (no Developer preface)
 			const lastUserMessage = [...messages].reverse().find((m) => m.role === "user")
 			const lastUserHasImages =
 				!!lastUserMessage &&
 				Array.isArray(lastUserMessage.content) &&
 				lastUserMessage.content.some((b: unknown) => (b as { type?: string } | undefined)?.type === "image")
 
+			// Conversation continuity (parity with OpenAiNativeHandler.prepareGpt5Input)
+			const previousId = metadata?.suppressPreviousResponseId
+				? undefined
+				: (metadata?.previousResponseId ?? this.lastResponseId)
+
+			const minimalInputMode = Boolean(previousId)
+
 			let inputPayload: unknown
-			if (lastUserHasImages && lastUserMessage) {
-				// Select messages to retain context in array mode:
-				// - The most recent assistant message (text-only, as input_text)
-				// - All user messages that contain images
-				// - The latest user message (even if it has no image)
+			if (minimalInputMode && lastUserMessage) {
+				// Minimal-mode: only the latest user message (no Developer preface)
+				if (lastUserHasImages) {
+					// Single-item array with just the latest user content
+					inputPayload = this._toResponsesInput([lastUserMessage])
+				} else {
+					// Single message string "User: ..."
+					inputPayload = this._formatResponsesSingleMessage(lastUserMessage, true)
+				}
+			} else if (lastUserHasImages && lastUserMessage) {
+				// Initial turn with images: include Developer preface and minimal prior context to preserve continuity
 				const lastAssistantMessage = [...messages].reverse().find((m) => m.role === "assistant")
 
 				const messagesForArray = messages.filter((m) => {
@@ -219,14 +233,10 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				}
 				inputPayload = [developerPreface, ...arrayInput]
 			} else {
-				// Pure text history: use compact transcript (includes both user and assistant turns)
+				// Pure text history: full compact transcript (includes both user and assistant turns)
 				inputPayload = this._formatResponsesInput(systemPrompt, messages)
 			}
 			const usedArrayInput = Array.isArray(inputPayload)
-
-			const previousId = metadata?.suppressPreviousResponseId
-				? undefined
-				: (metadata?.previousResponseId ?? this.lastResponseId)
 
 			const basePayload: Record<string, unknown> = {
 				model: modelId,
@@ -262,20 +272,19 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				basePayload.temperature = DEEP_SEEK_DEFAULT_TEMPERATURE
 			}
 
-			// Verbosity: include via text.verbosity (Responses API expectation per openai-native handler)
-			const effectiveVerbosity = this.options.verbosity || verbosity
-			if (effectiveVerbosity) {
+			// Verbosity: include only when explicitly specified in settings
+			if (this.options.verbosity) {
 				;(basePayload as { text?: { verbosity: "low" | "medium" | "high" } }).text = {
-					verbosity: effectiveVerbosity as "low" | "medium" | "high",
+					verbosity: this.options.verbosity as "low" | "medium" | "high",
 				}
 			}
 
-			// Add max_output_tokens if requested (Azure Responses naming)
-			if (this.options.includeMaxTokens === true) {
-				basePayload.max_output_tokens = this.options.modelMaxTokens || modelInfo.maxTokens
-			}
+			// Always include max_output_tokens for Responses API to cap output length
+			const reservedMax = (modelParams as any)?.maxTokens
+			;(basePayload as Record<string, unknown>).max_output_tokens =
+				this.options.modelMaxTokens || reservedMax || modelInfo.maxTokens
 
-			// Non-streaming path (preserves existing behavior and tests)
+			// Non-streaming path
 			if (nonStreaming) {
 				try {
 					const response = await (
@@ -314,10 +323,13 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 						).responses.create(withoutVerbosity)
 						yield* this._yieldResponsesResult(response as unknown, modelInfo)
 					} else if (usedArrayInput && this._isInputTextInvalidError(err)) {
-						// Azure-specific fallback: retry with string transcript when array input is rejected
+						// Azure-specific fallback: retry with a minimal single-message string when array input is rejected
 						const retryPayload: Record<string, unknown> = {
 							...basePayload,
-							input: this._formatResponsesInput(systemPrompt, messages),
+							input:
+								previousId && lastUserMessage
+									? this._formatResponsesSingleMessage(lastUserMessage, true)
+									: this._formatResponsesInput(systemPrompt, messages),
 						}
 						const response = await (
 							this.client as unknown as {
@@ -412,10 +424,13 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 						yield* this._yieldResponsesResult(maybeStreamRetry as unknown, modelInfo)
 					}
 				} else if (usedArrayInput && this._isInputTextInvalidError(err)) {
-					// Azure-specific fallback for streaming: retry with string transcript while keeping stream: true
+					// Azure-specific fallback for streaming: retry with minimal single-message string while keeping stream: true
 					const retryStreamingPayload: Record<string, unknown> = {
 						...streamingPayload,
-						input: this._formatResponsesInput(systemPrompt, messages),
+						input:
+							previousId && lastUserMessage
+								? this._formatResponsesSingleMessage(lastUserMessage, true)
+								: this._formatResponsesInput(systemPrompt, messages),
 					}
 					const maybeStreamRetry = await (
 						this.client as unknown as {
@@ -661,9 +676,9 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 					payload.temperature = this.options.modelTemperature
 				}
 
-				// Verbosity via text.verbosity
+				// Verbosity via text.verbosity - include only when explicitly specified
 				if (this.options.verbosity) {
-					payload.text = { verbosity: this.options.verbosity }
+					payload.text = { verbosity: this.options.verbosity as "low" | "medium" | "high" }
 				}
 
 				// max_output_tokens
