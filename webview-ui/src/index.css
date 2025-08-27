@@ -139,6 +139,12 @@
 	--color-vscode-editorHoverWidget-foreground: var(--vscode-editorHoverWidget-foreground);
 	--color-vscode-editorHoverWidget-background: var(--vscode-editorHoverWidget-background);
 	--color-vscode-editorHoverWidget-border: var(--vscode-editorHoverWidget-border);
+
+	/**
+	 * VSCode tooltip shadow - matches native VSCode tooltip styling
+	 * Uses a subtle shadow for better visibility and depth
+	 */
+	--color-vscode-widget-shadow: var(--vscode-widget-shadow, rgba(0, 0, 0, 0.36));
 }
 
 @layer base {

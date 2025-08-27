@@ -80,6 +80,31 @@ describe("Tooltip", () => {
 			{ timeout: 1000 },
 		)
 	})
+
+	it("should apply VSCode native shadow styling", async () => {
+		const user = userEvent.setup()
+
+		render(
+			<TooltipProvider delayDuration={0}>
+				<Tooltip>
+					<TooltipTrigger>Hover me</TooltipTrigger>
+					<TooltipContent>Tooltip with shadow</TooltipContent>
+				</Tooltip>
+			</TooltipProvider>,
+		)
+
+		const trigger = screen.getByText("Hover me")
+		await user.hover(trigger)
+
+		await waitFor(
+			() => {
+				const tooltips = screen.getAllByText("Tooltip with shadow")
+				const visibleTooltip = tooltips.find((el) => el.getAttribute("role") !== "tooltip")
+				expect(visibleTooltip).toHaveClass("shadow-[0_2px_8px_var(--color-vscode-widget-shadow)]")
+			},
+			{ timeout: 1000 },
+		)
+	})
 })
 
 describe("StandardTooltip", () => {
