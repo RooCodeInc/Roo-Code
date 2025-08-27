@@ -276,7 +276,7 @@ export class ProviderSettingsManager {
 	}
 
 	/**
-	 * Clean model ID by removing prefix before "/" or "."
+	 * Clean model ID by removing prefix before "/"
 	 */
 	private cleanModelId(modelId: string | undefined): string | undefined {
 		if (!modelId) return undefined
@@ -284,10 +284,6 @@ export class ProviderSettingsManager {
 		// Check for "/" and take the part after it
 		if (modelId.includes("/")) {
 			return modelId.split("/").pop()
-		}
-		// Check for "." and take the part after it
-		if (modelId.includes(".")) {
-			return modelId.split(".").pop()
 		}
 
 		return modelId
