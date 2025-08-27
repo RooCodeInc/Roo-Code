@@ -12,7 +12,7 @@ try {
 	console.warn("Failed to load environment variables:", e)
 }
 
-import { CloudService, ExtensionBridgeService } from "@roo-code/cloud"
+import { CloudService, ExtensionBridgeService, type CloudUserInfo } from "@roo-code/cloud"
 import { TelemetryService, PostHogTelemetryClient } from "@roo-code/telemetry"
 
 import "./utils/path" // Necessary to have access to String.prototype.toPosix.
@@ -51,6 +51,11 @@ import { initializeI18n } from "./i18n"
 
 let outputChannel: vscode.OutputChannel
 let extensionContext: vscode.ExtensionContext
+let cloudService: CloudService | undefined
+
+let authStateChangedHandler: (() => void) | undefined
+let settingsUpdatedHandler: (() => void) | undefined
+let userInfoHandler: ((data: { userInfo: CloudUserInfo }) => Promise<void>) | undefined
 
 // This method is called when your extension is activated.
 // Your extension is activated the very first time the command is executed.
@@ -120,36 +125,39 @@ export async function activate(context: vscode.ExtensionContext) {
 	// Initialize the provider *before* the Roo Code Cloud service.
 	const provider = new ClineProvider(context, outputChannel, "sidebar", contextProxy, mdmService)
 
-	const postStateListener = () => ClineProvider.getVisibleInstance()?.postStateToWebview()
-
 	// Initialize Roo Code Cloud service.
-	const cloudService = await CloudService.createInstance(context, cloudLogger, {
-		"auth-state-changed": postStateListener,
-		"settings-updated": postStateListener,
-		"user-info": async ({ userInfo }) => {
-			postStateListener()
+	const postStateListener = () => ClineProvider.getVisibleInstance()?.postStateToWebview()
+	authStateChangedHandler = postStateListener
+	settingsUpdatedHandler = postStateListener
 
-			if (!CloudService.instance.cloudAPI) {
-				cloudLogger("[CloudService] CloudAPI is not initialized")
-				return
-			}
+	userInfoHandler = async ({ userInfo }: { userInfo: any }) => {
+		postStateListener()
 
-			try {
-				const config = await CloudService.instance.cloudAPI.bridgeConfig()
-				cloudLogger(`[CloudService] bridgeConfig -> ${JSON.stringify(config)}`)
+		if (!CloudService.instance.cloudAPI) {
+			cloudLogger("[CloudService] CloudAPI is not initialized")
+			return
+		}
 
-				ExtensionBridgeService.handleRemoteControlState(
-					userInfo,
-					contextProxy.getValue("remoteControlEnabled"),
-					{ ...config, provider, sessionId: vscode.env.sessionId },
-					(message: string) => outputChannel.appendLine(message),
-				)
-			} catch (error) {
-				cloudLogger(
-					`[CloudService] Failed to fetch bridgeConfig: ${error instanceof Error ? error.message : String(error)}`,
-				)
-			}
-		},
+		try {
+			const config = await CloudService.instance.cloudAPI.bridgeConfig()
+
+			ExtensionBridgeService.handleRemoteControlState(
+				userInfo,
+				contextProxy.getValue("remoteControlEnabled"),
+				{ ...config, provider, sessionId: vscode.env.sessionId },
+				(message: string) => outputChannel.appendLine(message),
+			)
+		} catch (error) {
+			cloudLogger(
+				`[CloudService] Failed to fetch bridgeConfig: ${error instanceof Error ? error.message : String(error)}`,
+			)
+		}
+	}
+
+	cloudService = await CloudService.createInstance(context, cloudLogger, {
+		"auth-state-changed": authStateChangedHandler,
+		"settings-updated": settingsUpdatedHandler,
+		"user-info": userInfoHandler,
 	})
 
 	try {
@@ -292,6 +300,28 @@ export async function activate(context: vscode.ExtensionContext) {
 // This method is called when your extension is deactivated.
 export async function deactivate() {
 	outputChannel.appendLine(`${Package.name} extension deactivated`)
+
+	if (cloudService && CloudService.hasInstance()) {
+		try {
+			if (authStateChangedHandler) {
+				CloudService.instance.off("auth-state-changed", authStateChangedHandler)
+			}
+
+			if (settingsUpdatedHandler) {
+				CloudService.instance.off("settings-updated", settingsUpdatedHandler)
+			}
+
+			if (userInfoHandler) {
+				CloudService.instance.off("user-info", userInfoHandler as any)
+			}
+
+			outputChannel.appendLine("CloudService event handlers cleaned up")
+		} catch (error) {
+			outputChannel.appendLine(
+				`Failed to clean up CloudService event handlers: ${error instanceof Error ? error.message : String(error)}`,
+			)
+		}
+	}
 
 	const bridgeService = ExtensionBridgeService.getInstance()
 
