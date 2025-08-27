@@ -68,8 +68,9 @@ export async function getVercelAiGatewayModels(options?: ApiHandlerOptions): Pro
 		for (const model of data) {
 			const { id } = model
 
-			// Include language models for chat and embedding models for codebase indexing
-			if (model.type !== "language" && model.type !== "embedding") {
+			// Only include language models for chat inference
+			// Embedding models are statically defined in embeddingModels.ts
+			if (model.type !== "language") {
 				continue
 			}
 
