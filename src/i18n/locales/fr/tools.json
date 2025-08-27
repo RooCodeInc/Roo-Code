@@ -14,5 +14,27 @@
 		"errors": {
 			"policy_restriction": "Impossible de créer une nouvelle tâche en raison de restrictions de politique."
 		}
+	},
+	"errors": {
+		"fileNotFound": "Fichier non trouvé",
+		"parseError": "Erreur d'analyse",
+		"commandTimeout": "Délai d'attente de la commande dépassé",
+		"permissionDenied": "Autorisation refusée",
+		"networkError": "Erreur réseau",
+		"invalidInput": "Entrée invalide",
+		"operationFailed": "L'opération a échoué",
+		"resourceNotFound": "Ressource non trouvée",
+		"configurationError": "Erreur de configuration",
+		"authenticationFailed": "Échec de l'authentification",
+		"invalidLineNumber": "Invalid Line Number",
+		"fileAlreadyExists": "File Already Exists",
+		"directoryNotFound": "Directory Not Found",
+		"invalidPath": "Invalid Path",
+		"readError": "Read Error",
+		"writeError": "Write Error",
+		"syntaxError": "Syntax Error",
+		"validationError": "Validation Error",
+		"timeoutError": "Timeout Error",
+		"connectionError": "Connection Error"
 	}
 }

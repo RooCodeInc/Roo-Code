@@ -46,6 +46,7 @@ export async function attemptCompletionTool(
 		pushToolResult(
 			formatResponse.toolError(
 				"Cannot complete task while there are incomplete todos. Please finish all todos before attempting completion.",
+				"attempt_completion",
 			),
 		)
 

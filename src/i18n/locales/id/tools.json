@@ -17,5 +17,27 @@
 		"errors": {
 			"policy_restriction": "Gagal membuat tugas baru karena pembatasan kebijakan."
 		}
+	},
+	"errors": {
+		"fileNotFound": "File Tidak Ditemukan",
+		"parseError": "Kesalahan Parse",
+		"commandTimeout": "Waktu Tunggu Perintah Habis",
+		"permissionDenied": "Izin Ditolak",
+		"networkError": "Kesalahan Jaringan",
+		"invalidInput": "Input Tidak Valid",
+		"operationFailed": "Operasi Gagal",
+		"resourceNotFound": "Sumber Daya Tidak Ditemukan",
+		"configurationError": "Kesalahan Konfigurasi",
+		"authenticationFailed": "Autentikasi Gagal",
+		"invalidLineNumber": "Invalid Line Number",
+		"fileAlreadyExists": "File Already Exists",
+		"directoryNotFound": "Directory Not Found",
+		"invalidPath": "Invalid Path",
+		"readError": "Read Error",
+		"writeError": "Write Error",
+		"syntaxError": "Syntax Error",
+		"validationError": "Validation Error",
+		"timeoutError": "Timeout Error",
+		"connectionError": "Connection Error"
 	}
 }

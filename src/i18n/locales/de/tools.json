@@ -14,5 +14,27 @@
 		"errors": {
 			"policy_restriction": "Neue Aufgabe konnte aufgrund von Richtlinienbeschränkungen nicht erstellt werden."
 		}
+	},
+	"errors": {
+		"fileNotFound": "Datei nicht gefunden",
+		"parseError": "Parse-Fehler",
+		"commandTimeout": "Befehl Zeitüberschreitung",
+		"permissionDenied": "Zugriff verweigert",
+		"networkError": "Netzwerkfehler",
+		"invalidInput": "Ungültige Eingabe",
+		"operationFailed": "Vorgang fehlgeschlagen",
+		"resourceNotFound": "Ressource nicht gefunden",
+		"configurationError": "Konfigurationsfehler",
+		"authenticationFailed": "Authentifizierung fehlgeschlagen",
+		"invalidLineNumber": "Invalid Line Number",
+		"fileAlreadyExists": "File Already Exists",
+		"directoryNotFound": "Directory Not Found",
+		"invalidPath": "Invalid Path",
+		"readError": "Read Error",
+		"writeError": "Write Error",
+		"syntaxError": "Syntax Error",
+		"validationError": "Validation Error",
+		"timeoutError": "Timeout Error",
+		"connectionError": "Connection Error"
 	}
 }
