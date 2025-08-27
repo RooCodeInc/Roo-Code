@@ -113,9 +113,12 @@ export const WatsonxAI = ({
 	useEffect(() => {
 		const handleMessage = (event: MessageEvent<ExtensionMessage>) => {
 			const message = event.data
+			console.log("Received message:", message.type, message)
+
 			if (message.type === "singleRouterModelFetchResponse" && !message.success) {
 				const providerName = message.values?.provider as RouterName
 				if (providerName === "watsonx") {
+					console.log("Received error response for watsonx:", message.error)
 					watsonxErrorJustReceived.current = true
 					setRefreshStatus("error")
 					setRefreshError(message.error)
@@ -124,6 +127,7 @@ export const WatsonxAI = ({
 				setWatsonxModels(message.watsonxModels ?? {})
 				if (refreshStatus === "loading") {
 					if (!watsonxErrorJustReceived.current) {
+						console.log("Setting refresh status to success")
 						setRefreshStatus("success")
 					} else {
 						watsonxErrorJustReceived.current = false
@@ -147,6 +151,7 @@ export const WatsonxAI = ({
 	)
 
 	const handleRefreshModels = useCallback(() => {
+		console.log("Refresh models clicked")
 		setRefreshStatus("loading")
 		setRefreshError(undefined)
 		watsonxErrorJustReceived.current = false
@@ -197,6 +202,7 @@ export const WatsonxAI = ({
 			}
 		}
 
+		console.log("Sending requestWatsonxModels message")
 		vscode.postMessage({
 			type: "requestWatsonxModels",
 			values: {
