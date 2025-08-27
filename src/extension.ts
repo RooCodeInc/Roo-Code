@@ -130,7 +130,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	authStateChangedHandler = postStateListener
 	settingsUpdatedHandler = postStateListener
 
-	userInfoHandler = async ({ userInfo }: { userInfo: any }) => {
+	userInfoHandler = async ({ userInfo }: { userInfo: CloudUserInfo }) => {
 		postStateListener()
 
 		if (!CloudService.instance.cloudAPI) {
