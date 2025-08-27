@@ -117,6 +117,9 @@ export async function activate(context: vscode.ExtensionContext) {
 		}
 	}
 
+	// Initialize the provider *before* the Roo Code Cloud service.
+	const provider = new ClineProvider(context, outputChannel, "sidebar", contextProxy, mdmService)
+
 	const postStateListener = () => ClineProvider.getVisibleInstance()?.postStateToWebview()
 
 	// Initialize Roo Code Cloud service.
@@ -162,7 +165,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	// Add to subscriptions for proper cleanup on deactivate.
 	context.subscriptions.push(cloudService)
 
-	const provider = new ClineProvider(context, outputChannel, "sidebar", contextProxy, mdmService)
+	// Finish initializing the provider.
 	TelemetryService.instance.setProvider(provider)
 
 	context.subscriptions.push(
