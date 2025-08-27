@@ -288,7 +288,7 @@ export async function checkpointDiff(cline: Task, { ts, previousCommitHash, comm
 
 		await vscode.commands.executeCommand(
 			"vscode.changes",
-			mode === "full" ? "Changes since task started" : "Changes since previous checkpoint",
+			mode === "full" ? "Changes since task started" : "Changes compare with next checkpoint",
 			changes.map((change) => [
 				vscode.Uri.file(change.paths.absolute),
 				vscode.Uri.parse(`${DIFF_VIEW_URI_SCHEME}:${change.paths.relative}`).with({

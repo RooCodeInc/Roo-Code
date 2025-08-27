@@ -1242,8 +1242,6 @@ describe("ClineProvider", () => {
 				mockApiHistory[2],
 			])
 
-			// Verify createTaskWithHistoryItem was called
-			expect((provider as any).createTaskWithHistoryItem).toHaveBeenCalledWith({ id: "test-task-id" })
 			// createTaskWithHistoryItem is only called when restoring checkpoints or aborting tasks
 			expect((provider as any).createTaskWithHistoryItem).not.toHaveBeenCalled()
 		})
@@ -3723,7 +3721,6 @@ describe("ClineProvider - Comprehensive Edit/Delete Edge Cases", () => {
 
 				// Verify successful operation completed
 				expect(mockCline.overwriteClineMessages).toHaveBeenCalled()
-				expect(provider.createTaskWithHistoryItem).toHaveBeenCalled()
 				// createTaskWithHistoryItem is only called when restoring checkpoints or aborting tasks
 				expect(vscode.window.showErrorMessage).not.toHaveBeenCalled()
 			})

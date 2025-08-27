@@ -299,8 +299,8 @@ describe("Checkpoint functionality", () => {
 			})
 
 			expect(mockCheckpointService.getDiff).toHaveBeenCalledWith({
-				from: undefined,
-				to: "commit2",
+				from: "commit2",
+				to: undefined,
 			})
 			expect(vscode.commands.executeCommand).toHaveBeenCalledWith(
 				"vscode.changes",
@@ -309,7 +309,7 @@ describe("Checkpoint functionality", () => {
 			)
 		})
 
-		it("should show diff for checkpoint mode with previous commit", async () => {
+		it("should show diff for checkpoint mode with next commit", async () => {
 			const mockChanges = [
 				{
 					paths: { absolute: "/test/file.ts", relative: "file.ts" },
@@ -317,11 +317,10 @@ describe("Checkpoint functionality", () => {
 				},
 			]
 			mockCheckpointService.getDiff.mockResolvedValue(mockChanges)
-
+			mockCheckpointService.getCheckpoints = vi.fn(() => ["commit1", "commit2"])
 			await checkpointDiff(mockTask, {
 				ts: 4,
-				previousCommitHash: "commit1",
-				commitHash: "commit2",
+				commitHash: "commit1",
 				mode: "checkpoint",
 			})
 
@@ -331,12 +330,12 @@ describe("Checkpoint functionality", () => {
 			})
 			expect(vscode.commands.executeCommand).toHaveBeenCalledWith(
 				"vscode.changes",
-				"Changes since previous checkpoint",
+				"Changes compare with next checkpoint",
 				expect.any(Array),
 			)
 		})
 
-		it("should find previous checkpoint automatically in checkpoint mode", async () => {
+		it("should find next checkpoint automatically in checkpoint mode", async () => {
 			const mockChanges = [
 				{
 					paths: { absolute: "/test/file.ts", relative: "file.ts" },
@@ -344,15 +343,16 @@ describe("Checkpoint functionality", () => {
 				},
 			]
 			mockCheckpointService.getDiff.mockResolvedValue(mockChanges)
+			mockCheckpointService.getCheckpoints = vi.fn(() => ["commit1", "commit2"])
 
 			await checkpointDiff(mockTask, {
 				ts: 4,
-				commitHash: "commit2",
+				commitHash: "commit1",
 				mode: "checkpoint",
 			})
 
 			expect(mockCheckpointService.getDiff).toHaveBeenCalledWith({
-				from: "commit1", // Should find the previous checkpoint
+				from: "commit1", // Should find the next checkpoint
 				to: "commit2",
 			})
 		})
@@ -385,21 +385,21 @@ describe("Checkpoint functionality", () => {
 	})
 
 	describe("getCheckpointService", () => {
-		it("should return existing service if available", () => {
-			const service = getCheckpointService(mockTask)
+		it("should return existing service if available", async () => {
+			const service = await getCheckpointService(mockTask)
 			expect(service).toBe(mockCheckpointService)
 		})
 
-		it("should return undefined if checkpoints are disabled", () => {
+		it("should return undefined if checkpoints are disabled", async () => {
 			mockTask.enableCheckpoints = false
-			const service = getCheckpointService(mockTask)
+			const service = await getCheckpointService(mockTask)
 			expect(service).toBeUndefined()
 		})
 
-		it("should return undefined if service is still initializing", () => {
+		it("should return undefined if service is still initializing", async () => {
 			mockTask.checkpointService = undefined
 			mockTask.checkpointServiceInitializing = true
-			const service = getCheckpointService(mockTask)
+			const service = await getCheckpointService(mockTask)
 			expect(service).toBeUndefined()
 		})
 
@@ -425,7 +425,7 @@ describe("Checkpoint functionality", () => {
 			mockTask.checkpointService = undefined
 			mockTask.checkpointServiceInitializing = false
 
-			const service = getCheckpointService(mockTask)
+			const service = await getCheckpointService(mockTask)
 
 			expect(service).toBeUndefined()
 			expect(mockTask.enableCheckpoints).toBe(false)
