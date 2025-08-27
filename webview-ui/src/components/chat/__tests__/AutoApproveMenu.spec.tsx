@@ -115,7 +115,7 @@ describe("AutoApproveMenu", () => {
 			expect(screen.getByText("Read-only operations")).toBeInTheDocument()
 		})
 
-		it("should not allow toggling master checkbox when no options are selected", () => {
+		it("should not allow toggling master checkbox when no options are selected", async () => {
 			;(useExtensionState as ReturnType<typeof vi.fn>).mockReturnValue({
 				...defaultExtensionState,
 				autoApprovalEnabled: false,
@@ -123,6 +123,15 @@ describe("AutoApproveMenu", () => {
 			})
 
 			render(<AutoApproveMenu />)
+
+			// Click to open the dropdown
+			const trigger = screen.getByText("Auto-approve")
+			fireEvent.click(trigger)
+
+			// Wait for the dropdown to open
+			await waitFor(() => {
+				expect(screen.getByRole("checkbox")).toBeInTheDocument()
+			})
 
 			// Click on the master checkbox
 			const masterCheckbox = screen.getByRole("checkbox")
@@ -132,7 +141,7 @@ describe("AutoApproveMenu", () => {
 			expect(mockPostMessage).not.toHaveBeenCalled()
 		})
 
-		it("should toggle master checkbox when options are selected", () => {
+		it("should toggle master checkbox when options are selected", async () => {
 			;(useExtensionState as ReturnType<typeof vi.fn>).mockReturnValue({
 				...defaultExtensionState,
 				autoApprovalEnabled: true,
@@ -140,6 +149,15 @@ describe("AutoApproveMenu", () => {
 			})
 
 			render(<AutoApproveMenu />)
+
+			// Click to open the dropdown
+			const trigger = screen.getByText("Auto-approve")
+			fireEvent.click(trigger)
+
+			// Wait for the dropdown to open
+			await waitFor(() => {
+				expect(screen.getByRole("checkbox")).toBeInTheDocument()
+			})
 
 			// Click on the master checkbox
 			const masterCheckbox = screen.getByRole("checkbox")
@@ -164,9 +182,9 @@ describe("AutoApproveMenu", () => {
 
 			render(<AutoApproveMenu />)
 
-			// Expand the menu
-			const menuContainer = screen.getByText("Auto-approve").parentElement
-			fireEvent.click(menuContainer!)
+			// Click to open the dropdown
+			const trigger = screen.getByText("Auto-approve")
+			fireEvent.click(trigger)
 
 			// Wait for the menu to expand and find the read-only button
 			await waitFor(() => {
@@ -192,9 +210,9 @@ describe("AutoApproveMenu", () => {
 
 			render(<AutoApproveMenu />)
 
-			// Expand the menu
-			const menuContainer = screen.getByText("Auto-approve").parentElement
-			fireEvent.click(menuContainer!)
+			// Click to open the dropdown
+			const trigger = screen.getByText("Auto-approve")
+			fireEvent.click(trigger)
 
 			await waitFor(() => {
 				expect(screen.getByTestId("always-allow-write-toggle")).toBeInTheDocument()
@@ -240,9 +258,9 @@ describe("AutoApproveMenu", () => {
 
 			render(<AutoApproveMenu />)
 
-			// Expand the menu
-			const menuContainer = screen.getByText("Auto-approve").parentElement
-			fireEvent.click(menuContainer!)
+			// Click to open the dropdown
+			const trigger = screen.getByText("Auto-approve")
+			fireEvent.click(trigger)
 
 			await waitFor(() => {
 				expect(screen.getByTestId("always-allow-readonly-toggle")).toBeInTheDocument()
@@ -279,9 +297,9 @@ describe("AutoApproveMenu", () => {
 
 			render(<AutoApproveMenu />)
 
-			// Expand the menu
-			const menuContainer = screen.getByText("Auto-approve").parentElement
-			fireEvent.click(menuContainer!)
+			// Click to open the dropdown
+			const trigger = screen.getByText("Auto-approve")
+			fireEvent.click(trigger)
 
 			await waitFor(() => {
 				expect(screen.getByTestId("always-allow-readonly-toggle")).toBeInTheDocument()

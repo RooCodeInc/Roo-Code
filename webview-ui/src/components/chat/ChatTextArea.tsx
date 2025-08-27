@@ -32,6 +32,7 @@ import { SlashCommandsPopover } from "./SlashCommandsPopover"
 import { cn } from "@/lib/utils"
 import { usePromptHistory } from "./hooks/usePromptHistory"
 import { EditModeControls } from "./EditModeControls"
+import AutoApproveMenu from "./AutoApproveMenu"
 
 interface ChatTextAreaProps {
 	inputValue: string
@@ -917,31 +918,58 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 
 		// Helper function to render non-edit mode controls
 		const renderNonEditModeControls = () => (
-			<div className={cn("flex", "justify-between", "items-center", "mt-auto")}>
-				<div className={cn("flex", "items-center", "gap-1", "min-w-0")}>
-					<div className="shrink-0">{renderModeSelector()}</div>
+			<div className={cn("flex", "flex-col", "gap-1", "mt-auto")}>
+				<div className={cn("flex", "justify-between", "items-center")}>
+					<div className={cn("flex", "items-center", "gap-1", "min-w-0", "flex-nowrap")}>
+						<div>{renderModeSelector()}</div>
 
-					<div className={cn("flex-1", "min-w-0", "overflow-hidden")}>
-						<ApiConfigSelector
-							value={currentConfigId}
-							displayName={displayName}
-							disabled={selectApiConfigDisabled}
-							title={t("chat:selectApiConfig")}
-							onChange={handleApiConfigChange}
-							triggerClassName="w-full text-ellipsis overflow-hidden"
-							listApiConfigMeta={listApiConfigMeta || []}
-							pinnedApiConfigs={pinnedApiConfigs}
-							togglePinnedApiConfig={togglePinnedApiConfig}
-						/>
+						<div>
+							<ApiConfigSelector
+								value={currentConfigId}
+								displayName={displayName}
+								disabled={selectApiConfigDisabled}
+								title={t("chat:selectApiConfig")}
+								onChange={handleApiConfigChange}
+								triggerClassName="w-full text-ellipsis overflow-hidden"
+								listApiConfigMeta={listApiConfigMeta || []}
+								pinnedApiConfigs={pinnedApiConfigs}
+								togglePinnedApiConfig={togglePinnedApiConfig}
+							/>
+						</div>
+
+						<div className="grow-1 shrink max-w-100% overflow-hidden">
+							<AutoApproveMenu />
+						</div>
 					</div>
-				</div>
 
-				<div className={cn("flex", "items-center", "gap-0.5", "shrink-0")}>
-					{isTtsPlaying && (
-						<StandardTooltip content={t("chat:stopTts")}>
+					<div className={cn("flex", "items-center", "gap-0.5", "shrink-0")}>
+						{isTtsPlaying && (
+							<StandardTooltip content={t("chat:stopTts")}>
+								<button
+									aria-label={t("chat:stopTts")}
+									onClick={() => vscode.postMessage({ type: "stopTts" })}
+									className={cn(
+										"relative inline-flex items-center justify-center",
+										"bg-transparent border-none p-1.5",
+										"rounded-md min-w-[28px] min-h-[28px]",
+										"text-vscode-foreground opacity-85",
+										"transition-all duration-150",
+										"hover:opacity-100 hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.15)]",
+										"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
+										"active:bg-[rgba(255,255,255,0.1)]",
+										"cursor-pointer",
+									)}>
+									<VolumeX className="w-4 h-4" />
+								</button>
+							</StandardTooltip>
+						)}
+						<SlashCommandsPopover />
+						<IndexingStatusBadge />
+						<StandardTooltip content={t("chat:addImages")}>
 							<button
-								aria-label={t("chat:stopTts")}
-								onClick={() => vscode.postMessage({ type: "stopTts" })}
+								aria-label={t("chat:addImages")}
+								disabled={shouldDisableImages}
+								onClick={!shouldDisableImages ? onSelectImages : undefined}
 								className={cn(
 									"relative inline-flex items-center justify-center",
 									"bg-transparent border-none p-1.5",
@@ -951,36 +979,15 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 									"hover:opacity-100 hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.15)]",
 									"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
 									"active:bg-[rgba(255,255,255,0.1)]",
-									"cursor-pointer",
+									!shouldDisableImages && "cursor-pointer",
+									shouldDisableImages &&
+										"opacity-40 cursor-not-allowed grayscale-[30%] hover:bg-transparent hover:border-[rgba(255,255,255,0.08)] active:bg-transparent",
+									"mr-1",
 								)}>
-								<VolumeX className="w-4 h-4" />
+								<Image className="w-4 h-4" />
 							</button>
 						</StandardTooltip>
-					)}
-					<SlashCommandsPopover />
-					<IndexingStatusBadge />
-					<StandardTooltip content={t("chat:addImages")}>
-						<button
-							aria-label={t("chat:addImages")}
-							disabled={shouldDisableImages}
-							onClick={!shouldDisableImages ? onSelectImages : undefined}
-							className={cn(
-								"relative inline-flex items-center justify-center",
-								"bg-transparent border-none p-1.5",
-								"rounded-md min-w-[28px] min-h-[28px]",
-								"text-vscode-foreground opacity-85",
-								"transition-all duration-150",
-								"hover:opacity-100 hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.15)]",
-								"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
-								"active:bg-[rgba(255,255,255,0.1)]",
-								!shouldDisableImages && "cursor-pointer",
-								shouldDisableImages &&
-									"opacity-40 cursor-not-allowed grayscale-[30%] hover:bg-transparent hover:border-[rgba(255,255,255,0.08)] active:bg-transparent",
-								"mr-1",
-							)}>
-							<Image className="w-4 h-4" />
-						</button>
-					</StandardTooltip>
+					</div>
 				</div>
 			</div>
 		)
