@@ -2097,27 +2097,16 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// Display grounding sources to the user if they exist
 					if (pendingGroundingSources.length > 0) {
 						const citationLinks = pendingGroundingSources.map((source, i) => `[${i + 1}](${source.url})`)
-						const sourcesText = `Sources: ${citationLinks.join(", ")}`
+						const sourcesText = `${t("common:gemini.sources")} ${citationLinks.join(", ")}`
 
 						await this.say("text", sourcesText, undefined, false, undefined, undefined, {
 							isNonInteractive: true,
 						})
 					}
 
-					// Strip grounding sources from assistant message before persisting to API history
-					// This prevents state persistence issues while maintaining user experience
-					let cleanAssistantMessage = assistantMessage
-					if (pendingGroundingSources.length > 0) {
-						// Remove any grounding source references that might have been integrated into the message
-						cleanAssistantMessage = assistantMessage
-							.replace(/\[\d+\]\s+[^:\n]+:\s+https?:\/\/[^\s\n]+/g, "") // e.g., "[1] Example Source: https://example.com"
-							.replace(/Sources?:\s*[\s\S]*?(?=\n\n|\n$|$)/g, "") // e.g., "Sources: [1](url1), [2](url2)"
-							.trim()
-					}
-
 					await this.addToApiConversationHistory({
 						role: "assistant",
-						content: [{ type: "text", text: cleanAssistantMessage }],
+						content: [{ type: "text", text: assistantMessage }],
 					})
 
 					TelemetryService.instance.captureConversationMessage(this.taskId, "assistant")
