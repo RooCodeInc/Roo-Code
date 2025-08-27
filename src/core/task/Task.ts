@@ -579,6 +579,18 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	public async overwriteClineMessages(newMessages: ClineMessage[]) {
 		this.clineMessages = newMessages
+
+		// If deletion or history truncation leaves a condense_context as the last message,
+		// ensure the next API call suppresses previous_response_id so the condensed context is respected.
+		try {
+			const last = this.clineMessages.at(-1)
+			if (last && last.type === "say" && last.say === "condense_context") {
+				this.skipPrevResponseIdOnce = true
+			}
+		} catch {
+			// non-fatal
+		}
+
 		restoreTodoListForTask(this)
 		await this.saveClineMessages()
 	}

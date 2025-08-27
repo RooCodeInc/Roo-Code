@@ -214,9 +214,10 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			input: formattedInput,
 			stream: true,
 			store: metadata?.store !== false, // Default to true unless explicitly set to false
-			// Always include instructions (system prompt) when using previous_response_id
-			// This ensures the system prompt stays up-to-date even if it changes (e.g., mode switch)
-			...(requestPreviousResponseId && { instructions: systemPrompt }),
+			// Always include instructions (system prompt) for Responses API.
+			// Unlike Chat Completions, system/developer roles in input have no special semantics here.
+			// The official way to set system behavior is the top-level `instructions` field.
+			instructions: systemPrompt,
 			...(reasoningEffort && {
 				reasoning: {
 					effort: reasoningEffort,
@@ -316,11 +317,8 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		// This supports both text and images
 		const formattedMessages: any[] = []
 
-		// Add system prompt as developer message
-		formattedMessages.push({
-			role: "developer",
-			content: [{ type: "input_text", text: systemPrompt }],
-		})
+		// Do NOT embed the system prompt as a developer message in the Responses API input.
+		// The Responses API treats roles as free-form; use the top-level `instructions` field instead.
 
 		// Process each message
 		for (const message of messages) {

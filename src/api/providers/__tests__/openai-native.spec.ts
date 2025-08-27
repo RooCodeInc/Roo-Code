@@ -219,12 +219,9 @@ describe("OpenAiNativeHandler", () => {
 			const body1 = (mockFetch.mock.calls[0][1] as any).body as string
 			const parsedBody = JSON.parse(body1)
 			expect(parsedBody.model).toBe("gpt-5-2025-08-07")
-			// Now using structured format with content arrays
+			expect(parsedBody.instructions).toBe("You are a helpful assistant.")
+			// Now using structured format with content arrays (no system prompt in input; it's provided via `instructions`)
 			expect(parsedBody.input).toEqual([
-				{
-					role: "developer",
-					content: [{ type: "input_text", text: "You are a helpful assistant." }],
-				},
 				{
 					role: "user",
 					content: [{ type: "input_text", text: "Hello!" }],
@@ -872,11 +869,8 @@ describe("OpenAiNativeHandler", () => {
 
 			// Verify first request sends full conversation in structured format
 			let firstCallBody = JSON.parse(mockFetch.mock.calls[0][1].body)
+			expect(firstCallBody.instructions).toBe(systemPrompt)
 			expect(firstCallBody.input).toEqual([
-				{
-					role: "developer",
-					content: [{ type: "input_text", text: systemPrompt }],
-				},
 				{
 					role: "user",
 					content: [{ type: "input_text", text: "Hello" }],
@@ -1224,11 +1218,8 @@ describe("GPT-5 streaming event coverage (additional)", () => {
 			const requestBody = JSON.parse(mockFetch.mock.calls[0][1].body)
 			expect(requestBody).toMatchObject({
 				model: "codex-mini-latest",
+				instructions: "You are a helpful coding assistant.",
 				input: [
-					{
-						role: "developer",
-						content: [{ type: "input_text", text: "You are a helpful coding assistant." }],
-					},
 					{
 						role: "user",
 						content: [{ type: "input_text", text: "Write a hello world function" }],
@@ -1321,13 +1312,10 @@ describe("GPT-5 streaming event coverage (additional)", () => {
 				chunks.push(chunk)
 			}
 
-			// Verify the request body includes full conversation in structured format
+			// Verify the request body includes full conversation in structured format (without embedding system prompt)
 			const requestBody = JSON.parse(mockFetch.mock.calls[0][1].body)
+			expect(requestBody.instructions).toBe("You are a helpful assistant.")
 			expect(requestBody.input).toEqual([
-				{
-					role: "developer",
-					content: [{ type: "input_text", text: "You are a helpful assistant." }],
-				},
 				{
 					role: "user",
 					content: [{ type: "input_text", text: "First question" }],
