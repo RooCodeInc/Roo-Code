@@ -105,7 +105,7 @@ export const getModels = async (options: GetModelsOptions): Promise<ModelRecord>
 				models = await getHuggingFaceModels()
 				break
 			case "watsonx":
-				models = await getWatsonxModels(options.apiKey)
+				models = await getWatsonxModels(options.apiKey, false)
 				break
 			default: {
 				// Ensures router is exhaustively checked if RouterName is a strict union.
