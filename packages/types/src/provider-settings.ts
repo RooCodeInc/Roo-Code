@@ -68,6 +68,7 @@ export const providerNames = [
 	"io-intelligence",
 	"roo",
 	"sapaicore",
+	"vercel-ai-gateway",
 ] as const
 
 export const providerNamesSchema = z.enum(providerNames)
@@ -331,6 +332,9 @@ const sapAiCoreSchema = apiModelIdProviderModelSchema.extend({
 	sapAiCoreBaseUrl: z.string().optional(),
 	reasoningEffort: z.string().optional(),
 	thinkingBudgetTokens: z.number().optional(),
+const vercelAiGatewaySchema = baseProviderSettingsSchema.extend({
+	vercelAiGatewayApiKey: z.string().optional(),
+	vercelAiGatewayModelId: z.string().optional(),
 })
 
 const defaultSchema = z.object({
@@ -373,6 +377,7 @@ export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProv
 	qwenCodeSchema.merge(z.object({ apiProvider: z.literal("qwen-code") })),
 	rooSchema.merge(z.object({ apiProvider: z.literal("roo") })),
 	sapAiCoreSchema.merge(z.object({ apiProvider: z.literal("sapaicore") })),
+	vercelAiGatewaySchema.merge(z.object({ apiProvider: z.literal("vercel-ai-gateway") })),
 	defaultSchema,
 ])
 
@@ -413,6 +418,7 @@ export const providerSettingsSchema = z.object({
 	...qwenCodeSchema.shape,
 	...rooSchema.shape,
 	...sapAiCoreSchema.shape,
+	...vercelAiGatewaySchema.shape,
 	...codebaseIndexProviderSchema.shape,
 })
 
@@ -439,6 +445,7 @@ export const MODEL_ID_KEYS: Partial<keyof ProviderSettings>[] = [
 	"litellmModelId",
 	"huggingFaceModelId",
 	"ioIntelligenceModelId",
+	"vercelAiGatewayModelId",
 ]
 
 export const getModelId = (settings: ProviderSettings): string | undefined => {
@@ -455,6 +462,11 @@ export const getApiProtocol = (provider: ProviderName | undefined, modelId?: str
 	}
 
 	if (provider && provider === "vertex" && modelId && modelId.toLowerCase().includes("claude")) {
+		return "anthropic"
+	}
+
+	// Vercel AI Gateway uses anthropic protocol for anthropic models
+	if (provider && provider === "vercel-ai-gateway" && modelId && modelId.toLowerCase().startsWith("anthropic/")) {
 		return "anthropic"
 	}
 
@@ -560,6 +572,7 @@ export const MODELS_BY_PROVIDER: Record<
 	openrouter: { id: "openrouter", label: "OpenRouter", models: [] },
 	requesty: { id: "requesty", label: "Requesty", models: [] },
 	unbound: { id: "unbound", label: "Unbound", models: [] },
+	"vercel-ai-gateway": { id: "vercel-ai-gateway", label: "Vercel AI Gateway", models: [] },
 }
 
 export const dynamicProviders = [
@@ -569,6 +582,7 @@ export const dynamicProviders = [
 	"openrouter",
 	"requesty",
 	"unbound",
+	"vercel-ai-gateway",
 ] as const satisfies readonly ProviderName[]
 
 export type DynamicProvider = (typeof dynamicProviders)[number]

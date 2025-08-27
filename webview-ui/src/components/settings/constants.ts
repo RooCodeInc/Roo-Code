@@ -82,4 +82,5 @@ export const PROVIDERS = [
 	{ value: "io-intelligence", label: "IO Intelligence" },
 	{ value: "roo", label: "Roo Code Cloud" },
 	{ value: "sapaicore", label: "SAP AI Core" },
+	{ value: "vercel-ai-gateway", label: "Vercel AI Gateway" },
 ].sort((a, b) => a.label.localeCompare(b.label))

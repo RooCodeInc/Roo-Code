@@ -54,6 +54,7 @@ import {
 	rooModels,
 	qwenCodeDefaultModelId,
 	qwenCodeModels,
+	vercelAiGatewayDefaultModelId,
 	BEDROCK_CLAUDE_SONNET_4_MODEL_ID,
 	sapAiCoreDefaultModelId,
 	sapAiCoreModels,
@@ -310,9 +311,21 @@ function getSelectedModel({
 			return { id, info }
 		}
 		case "roo": {
-			const id = apiConfiguration.apiModelId ?? rooDefaultModelId
-			const info = rooModels[id as keyof typeof rooModels]
-			return { id, info }
+			const requestedId = apiConfiguration.apiModelId
+
+			// Check if the requested model exists in rooModels
+			if (requestedId && rooModels[requestedId as keyof typeof rooModels]) {
+				return {
+					id: requestedId,
+					info: rooModels[requestedId as keyof typeof rooModels],
+				}
+			}
+
+			// Fallback to default model if requested model doesn't exist or is not specified
+			return {
+				id: rooDefaultModelId,
+				info: rooModels[rooDefaultModelId as keyof typeof rooModels],
+			}
 		}
 
 		case "sapaicore": {
@@ -323,6 +336,11 @@ function getSelectedModel({
 		case "qwen-code": {
 			const id = apiConfiguration.apiModelId ?? qwenCodeDefaultModelId
 			const info = qwenCodeModels[id as keyof typeof qwenCodeModels]
+			return { id, info }
+		}
+		case "vercel-ai-gateway": {
+			const id = apiConfiguration.vercelAiGatewayModelId ?? vercelAiGatewayDefaultModelId
+			const info = routerModels["vercel-ai-gateway"]?.[id]
 			return { id, info }
 		}
 		// case "anthropic":

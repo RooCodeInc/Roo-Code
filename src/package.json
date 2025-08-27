@@ -3,7 +3,7 @@
 	"displayName": "%extension.displayName%",
 	"description": "%extension.description%",
 	"publisher": "RooVeterinaryInc",
-	"version": "3.25.23",
+	"version": "3.26.0",
 	"icon": "assets/icons/icon.png",
 	"galleryBanner": {
 		"color": "#617A91",
@@ -321,9 +321,6 @@
 						"type": "string"
 					},
 					"default": [
-						"npm test",
-						"npm install",
-						"tsc",
 						"git log",
 						"git diff",
 						"git show"
@@ -432,7 +429,7 @@
 		"@mistralai/mistralai": "^1.9.18",
 		"@modelcontextprotocol/sdk": "^1.9.0",
 		"@qdrant/js-client-rest": "^1.14.0",
-		"@roo-code/cloud": "^0.21.0",
+		"@roo-code/cloud": "^0.22.0",
 		"@roo-code/ipc": "workspace:^",
 		"@roo-code/telemetry": "workspace:^",
 		"@roo-code/types": "workspace:^",

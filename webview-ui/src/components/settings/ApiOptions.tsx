@@ -35,7 +35,8 @@ import {
 	featherlessDefaultModelId,
 	ioIntelligenceDefaultModelId,
 	rooDefaultModelId,
-	sapAiCoreDefaultModelId,
+  sapAiCoreDefaultModelId,
+	vercelAiGatewayDefaultModelId,
 } from "@roo-code/types"
 
 import { vscode } from "@src/utils/vscode"
@@ -93,6 +94,7 @@ import {
 	Fireworks,
 	Featherless,
 	SapAiCore,
+	VercelAiGateway,
 } from "./providers"
 
 import { MODELS_BY_PROVIDER, PROVIDERS } from "./constants"
@@ -338,6 +340,7 @@ const ApiOptions = ({
 				"io-intelligence": { field: "ioIntelligenceModelId", default: ioIntelligenceDefaultModelId },
 				roo: { field: "apiModelId", default: rooDefaultModelId },
 				sapaicore: { field: "apiModelId", default: sapAiCoreDefaultModelId },
+				"vercel-ai-gateway": { field: "vercelAiGatewayModelId", default: vercelAiGatewayDefaultModelId },
 				openai: { field: "openAiModelId" },
 				ollama: { field: "ollamaModelId" },
 				lmstudio: { field: "lmStudioModelId" },
@@ -605,6 +608,16 @@ const ApiOptions = ({
 				<IOIntelligence
 					apiConfiguration={apiConfiguration}
 					setApiConfigurationField={setApiConfigurationField}
+					organizationAllowList={organizationAllowList}
+					modelValidationError={modelValidationError}
+				/>
+			)}
+
+			{selectedProvider === "vercel-ai-gateway" && (
+				<VercelAiGateway
+					apiConfiguration={apiConfiguration}
+					setApiConfigurationField={setApiConfigurationField}
+					routerModels={routerModels}
 					organizationAllowList={organizationAllowList}
 					modelValidationError={modelValidationError}
 				/>
