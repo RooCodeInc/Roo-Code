@@ -94,13 +94,16 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	const contextProxy = await ContextProxy.getInstance(context)
 
-	// Initialize code index managers for all workspace folders
+	// Initialize code index managers for all workspace folders.
 	const codeIndexManagers: CodeIndexManager[] = []
+
 	if (vscode.workspace.workspaceFolders) {
 		for (const folder of vscode.workspace.workspaceFolders) {
 			const manager = CodeIndexManager.getInstance(context, folder.uri.fsPath)
+
 			if (manager) {
 				codeIndexManagers.push(manager)
+
 				try {
 					await manager.initialize(contextProxy)
 				} catch (error) {
@@ -108,13 +111,43 @@ export async function activate(context: vscode.ExtensionContext) {
 						`[CodeIndexManager] Error during background CodeIndexManager configuration/indexing for ${folder.uri.fsPath}: ${error.message || error}`,
 					)
 				}
+
 				context.subscriptions.push(manager)
 			}
 		}
 	}
 
+	const postStateListener = () => ClineProvider.getVisibleInstance()?.postStateToWebview()
+
 	// Initialize Roo Code Cloud service.
-	const cloudService = await CloudService.createInstance(context, cloudLogger)
+	const cloudService = await CloudService.createInstance(context, cloudLogger, {
+		"auth-state-changed": postStateListener,
+		"settings-updated": postStateListener,
+		"user-info": async ({ userInfo }) => {
+			postStateListener()
+
+			if (!CloudService.instance.cloudAPI) {
+				cloudLogger("[CloudService] CloudAPI is not initialized")
+				return
+			}
+
+			try {
+				const config = await CloudService.instance.cloudAPI.bridgeConfig()
+				cloudLogger(`[CloudService] bridgeConfig -> ${JSON.stringify(config)}`)
+
+				ExtensionBridgeService.handleRemoteControlState(
+					userInfo,
+					contextProxy.getValue("remoteControlEnabled"),
+					{ ...config, provider, sessionId: vscode.env.sessionId },
+					(message: string) => outputChannel.appendLine(message),
+				)
+			} catch (error) {
+				cloudLogger(
+					`[CloudService] Failed to fetch bridgeConfig: ${error instanceof Error ? error.message : String(error)}`,
+				)
+			}
+		},
+	})
 
 	try {
 		if (cloudService.telemetryClient) {
@@ -125,29 +158,6 @@ export async function activate(context: vscode.ExtensionContext) {
 			`[CloudService] Failed to register TelemetryClient: ${error instanceof Error ? error.message : String(error)}`,
 		)
 	}
-
-	const postStateListener = () => ClineProvider.getVisibleInstance()?.postStateToWebview()
-
-	cloudService.on("auth-state-changed", postStateListener)
-	cloudService.on("settings-updated", postStateListener)
-
-	cloudService.on("user-info", async ({ userInfo }) => {
-		postStateListener()
-
-		const bridgeConfig = await cloudService.cloudAPI?.bridgeConfig().catch(() => undefined)
-
-		if (!bridgeConfig) {
-			outputChannel.appendLine("[CloudService] Failed to get bridge config")
-			return
-		}
-
-		ExtensionBridgeService.handleRemoteControlState(
-			userInfo,
-			contextProxy.getValue("remoteControlEnabled"),
-			{ ...bridgeConfig, provider, sessionId: vscode.env.sessionId },
-			(message: string) => outputChannel.appendLine(message),
-		)
-	})
 
 	// Add to subscriptions for proper cleanup on deactivate.
 	context.subscriptions.push(cloudService)
