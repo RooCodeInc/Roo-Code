@@ -159,61 +159,115 @@ export class ExecaTerminalProcess extends BaseTerminalProcess {
 	public override abort() {
 		this.aborted = true
 
-		// Function to perform the kill operations
-		const performKill = () => {
-			// Try to kill using the subprocess object
-			if (this.subprocess) {
-				try {
-					this.subprocess.kill("SIGKILL")
-				} catch (e) {
-					console.warn(
-						`[ExecaTerminalProcess#abort] Failed to kill subprocess: ${e instanceof Error ? e.message : String(e)}`,
-					)
-				}
-			}
+		// Function to kill entire process tree
+		const killProcessTree = (pid: number, signal: NodeJS.Signals = "SIGKILL") => {
+			return new Promise<void>((resolve) => {
+				psTree(pid, (err, children) => {
+					if (!err && children.length > 0) {
+						const pids = children.map((p) => parseInt(p.PID))
+						console.log(
+							`[ExecaTerminalProcess#abort] Killing process tree for PID ${pid}: ${pids.join(", ")}`,
+						)
 
-			// Kill the stored PID (which should be the actual command after our update)
-			if (this.pid) {
-				try {
-					process.kill(this.pid, "SIGKILL")
-				} catch (e) {
-					console.warn(
-						`[ExecaTerminalProcess#abort] Failed to kill process ${this.pid}: ${e instanceof Error ? e.message : String(e)}`,
-					)
+						// Kill children first (bottom-up approach)
+						for (const childPid of pids.reverse()) {
+							try {
+								process.kill(childPid, signal)
+							} catch (e) {
+								// Process might already be dead
+								console.debug(
+									`[ExecaTerminalProcess#abort] Failed to send ${signal} to child PID ${childPid}: ${e instanceof Error ? e.message : String(e)}`,
+								)
+							}
+						}
+					}
+
+					// Then kill the parent
+					try {
+						process.kill(pid, signal)
+					} catch (e) {
+						console.debug(
+							`[ExecaTerminalProcess#abort] Failed to send ${signal} to parent PID ${pid}: ${e instanceof Error ? e.message : String(e)}`,
+						)
+					}
+
+					resolve()
+				})
+			})
+		}
+
+		// Function to perform the kill operations
+		const performKill = async () => {
+			const command = this.command?.toLowerCase() || ""
+			const needsAggressiveTermination =
+				command.includes("pnpm") ||
+				command.includes("npm") ||
+				command.includes("yarn") ||
+				command.includes("bun")
+
+			if (needsAggressiveTermination) {
+				console.log(
+					`[ExecaTerminalProcess#abort] Detected package manager command, using aggressive termination`,
+				)
+
+				// First try SIGTERM to allow graceful shutdown
+				if (this.subprocess) {
+					try {
+						this.subprocess.kill("SIGTERM")
+					} catch (e) {
+						console.debug(
+							`[ExecaTerminalProcess#abort] Failed to send SIGTERM to subprocess: ${e instanceof Error ? e.message : String(e)}`,
+						)
+					}
+				}
+
+				// Kill the entire process tree with SIGTERM first
+				if (this.pid) {
+					await killProcessTree(this.pid, "SIGTERM")
+				}
+
+				// Wait a bit for graceful shutdown
+				await new Promise((resolve) => setTimeout(resolve, 500))
+
+				// Then force kill with SIGKILL if still running
+				if (this.subprocess && !this.subprocess.killed) {
+					try {
+						this.subprocess.kill("SIGKILL")
+					} catch (e) {
+						console.debug(
+							`[ExecaTerminalProcess#abort] Failed to send SIGKILL to subprocess: ${e instanceof Error ? e.message : String(e)}`,
+						)
+					}
+				}
+
+				// Force kill the entire process tree
+				if (this.pid) {
+					await killProcessTree(this.pid, "SIGKILL")
+				}
+			} else {
+				// For regular commands, use the standard approach
+				if (this.subprocess) {
+					try {
+						this.subprocess.kill("SIGKILL")
+					} catch (e) {
+						console.warn(
+							`[ExecaTerminalProcess#abort] Failed to kill subprocess: ${e instanceof Error ? e.message : String(e)}`,
+						)
+					}
+				}
+
+				// Kill the stored PID and its children
+				if (this.pid) {
+					await killProcessTree(this.pid, "SIGKILL")
 				}
 			}
 		}
 
 		// If PID update is in progress, wait for it before killing
 		if (this.pidUpdatePromise) {
-			this.pidUpdatePromise.then(performKill).catch(() => performKill())
+			this.pidUpdatePromise.then(() => performKill()).catch(() => performKill())
 		} else {
 			performKill()
-		}
-
-		// Continue with the rest of the abort logic
-		if (this.pid) {
-			// Also check for any child processes
-			psTree(this.pid, async (err, children) => {
-				if (!err) {
-					const pids = children.map((p) => parseInt(p.PID))
-					console.error(`[ExecaTerminalProcess#abort] SIGKILL children -> ${pids.join(", ")}`)
-
-					for (const pid of pids) {
-						try {
-							process.kill(pid, "SIGKILL")
-						} catch (e) {
-							console.warn(
-								`[ExecaTerminalProcess#abort] Failed to send SIGKILL to child PID ${pid}: ${e instanceof Error ? e.message : String(e)}`,
-							)
-						}
-					}
-				} else {
-					console.error(
-						`[ExecaTerminalProcess#abort] Failed to get process tree for PID ${this.pid}: ${err.message}`,
-					)
-				}
-			})
 		}
 	}
 

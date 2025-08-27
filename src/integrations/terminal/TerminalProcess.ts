@@ -266,8 +266,41 @@ export class TerminalProcess extends BaseTerminalProcess {
 
 	public override abort() {
 		if (this.isListening) {
-			// Send SIGINT using CTRL+C
-			this.terminal.terminal.sendText("\x03")
+			// For pnpm and similar tools that spawn child processes,
+			// we need to be more aggressive with termination
+			const command = this.command?.toLowerCase() || ""
+			const needsAggressiveTermination =
+				command.includes("pnpm") ||
+				command.includes("npm") ||
+				command.includes("yarn") ||
+				command.includes("bun")
+
+			if (needsAggressiveTermination) {
+				// First try SIGINT (CTRL+C)
+				this.terminal.terminal.sendText("\x03")
+
+				// Then send SIGTERM after a short delay
+				setTimeout(() => {
+					// Send SIGTERM (CTRL+\)
+					this.terminal.terminal.sendText("\x1c")
+				}, 100)
+
+				// Finally, if the terminal supports it, try to kill the process tree
+				setTimeout(() => {
+					// Send SIGKILL as last resort (may not work in all terminals)
+					// This is a more aggressive approach for stubborn processes
+					this.terminal.terminal.sendText("\x03")
+					// Try to send 'exit' command to close the terminal if process is stuck
+					setTimeout(() => {
+						if (this.terminal.busy) {
+							this.terminal.terminal.sendText("exit\n")
+						}
+					}, 500)
+				}, 1000)
+			} else {
+				// Send SIGINT using CTRL+C for regular commands
+				this.terminal.terminal.sendText("\x03")
+			}
 		}
 	}
 

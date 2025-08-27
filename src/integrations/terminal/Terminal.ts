@@ -40,6 +40,18 @@ export class Terminal extends BaseTerminal {
 		return this.terminal.exitStatus !== undefined
 	}
 
+	/**
+	 * Force close the terminal if it's stuck
+	 */
+	public forceClose(): void {
+		try {
+			// Try to dispose the terminal directly
+			this.terminal.dispose()
+		} catch (error) {
+			console.error(`[Terminal] Failed to force close terminal ${this.id}:`, error)
+		}
+	}
+
 	public override runCommand(command: string, callbacks: RooTerminalCallbacks): RooTerminalProcessResultPromise {
 		// We set busy before the command is running because the terminal may be
 		// waiting on terminal integration, and we must prevent another instance
