@@ -313,6 +313,10 @@
 		"getMistralApiKey": "Get Mistral / Codestral API Key",
 		"codestralBaseUrl": "Codestral Base URL (Optional)",
 		"codestralBaseUrlDesc": "Set an alternative URL for the Codestral model.",
+		"mistral": {
+			"useMaximumContextWindow": "Use maximum context window (128k tokens)",
+			"contextWindowWarning": "Using the full 128k context window may significantly degrade performance. Consider using a smaller context for better responsiveness unless you specifically need the extended context."
+		},
 		"xaiApiKey": "xAI API Key",
 		"getXaiApiKey": "Get xAI API Key",
 		"litellmApiKey": "LiteLLM API Key",

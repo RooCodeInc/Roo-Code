@@ -111,6 +111,9 @@ const baseProviderSettingsSchema = z.object({
 
 	// Model verbosity.
 	verbosity: verbosityLevelsSchema.optional(),
+
+	// Context window settings.
+	useMaximumContextWindow: z.boolean().optional(),
 })
 
 // Several of the providers share common model config properties.

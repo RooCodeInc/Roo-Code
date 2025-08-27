@@ -95,7 +95,17 @@ export class MistralHandler extends BaseProvider implements SingleCompletionHand
 
 	override getModel() {
 		const id = this.options.apiModelId ?? mistralDefaultModelId
-		const info = mistralModels[id as MistralModelId] ?? mistralModels[mistralDefaultModelId]
+		let info = mistralModels[id as MistralModelId] ?? mistralModels[mistralDefaultModelId]
+
+		// For magistral-medium-latest, optionally limit context window if useMaximumContextWindow is false
+		if (id === "magistral-medium-latest" && !this.options.useMaximumContextWindow && info.contextWindow > 41000) {
+			// Create a modified info object with reduced context window for better performance
+			info = {
+				...info,
+				contextWindow: 41000 as any, // Use reduced context for better performance
+				maxTokens: 41000 as any, // Match the context window limit
+			}
+		}
 
 		// @TODO: Move this to the `getModelParams` function.
 		const maxTokens = this.options.includeMaxTokens ? info.maxTokens : undefined
