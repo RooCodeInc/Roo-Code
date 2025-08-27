@@ -290,9 +290,9 @@ export const OpenAICompatible = ({
 					onChange={(checked: boolean) => {
 						setVerbositySelected(checked)
 						if (!checked) {
-							setApiConfigurationField("verbosity", undefined as any)
+							setApiConfigurationField("verbosity", undefined)
 						} else if (!apiConfiguration.verbosity) {
-							setApiConfigurationField("verbosity", "medium" as any)
+							setApiConfigurationField("verbosity", "medium")
 						}
 					}}>
 					{t("settings:providers.verbosity.label")}
@@ -300,7 +300,7 @@ export const OpenAICompatible = ({
 				{verbositySelected && (
 					<Verbosity
 						apiConfiguration={apiConfiguration}
-						setApiConfigurationField={setApiConfigurationField as any}
+						setApiConfigurationField={setApiConfigurationField}
 						modelInfo={apiConfiguration.openAiCustomModelInfo || openAiModelInfoSaneDefaults}
 					/>
 				)}
