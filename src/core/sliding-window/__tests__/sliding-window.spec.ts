@@ -1027,6 +1027,154 @@ describe("Sliding Window", () => {
 			// Clean up
 			summarizeSpy.mockRestore()
 		})
+		describe("Token-based thresholds", () => {
+			// Helper function to create messages with specific token counts
+			const createMessages = (count: number, tokensPerMessage: number): ApiMessage[] => {
+				const messages: ApiMessage[] = []
+				for (let i = 0; i < count; i++) {
+					const role = i % 2 === 0 ? "user" : "assistant"
+					// Create content that roughly corresponds to the desired token count
+					// This is a simplification - actual token count depends on the tokenizer
+					const content = "x".repeat(tokensPerMessage * 4) // Rough approximation
+					messages.push({ role: role as "user" | "assistant", content })
+				}
+				return messages
+			}
+
+			it("should trigger condensing when token threshold is reached", async () => {
+				vi.clearAllMocks()
+				const mockCost = 0.05
+				const mockSummarizeResponse: condenseModule.SummarizeResponse = {
+					messages: [
+						{ role: "assistant", content: "Summary", ts: Date.now(), isSummary: true },
+						{ role: "user", content: "Message 8", ts: Date.now() },
+						{ role: "assistant", content: "Response 9", ts: Date.now() },
+						{ role: "user", content: "Message 10", ts: Date.now() },
+					],
+					summary: "Summary of conversation",
+					cost: mockCost,
+					newContextTokens: 400,
+				}
+
+				const summarizeSpy = vi
+					.spyOn(condenseModule, "summarizeConversation")
+					.mockResolvedValue(mockSummarizeResponse)
+
+				const messages = createMessages(10, 100) // 10 messages, 100 tokens each = 1000 tokens
+				const totalTokens = 900 // Excluding last message
+				const contextWindow = 4000
+				const maxTokens = 1000
+
+				const result = await truncateConversationIfNeeded({
+					messages,
+					totalTokens,
+					contextWindow,
+					maxTokens,
+					apiHandler: mockApiHandler,
+					autoCondenseContext: true,
+					autoCondenseContextPercent: 50, // 50% threshold (not reached)
+					systemPrompt: "System prompt",
+					taskId: "test-task",
+					profileThresholds: {
+						"test-profile": 800, // 800 tokens threshold
+					},
+					currentProfileId: "test-profile",
+				})
+
+				// Context should be above 800 token threshold
+				expect(summarizeSpy).toHaveBeenCalled()
+				const callArgs = summarizeSpy.mock.calls[0]
+				expect(callArgs[0]).toEqual(messages) // messages
+				expect(callArgs[1]).toBe(mockApiHandler) // apiHandler
+				expect(callArgs[2]).toBe("System prompt") // systemPrompt
+				expect(callArgs[3]).toBe("test-task") // taskId
+				expect(callArgs[4]).toBeGreaterThan(800) // prevContextTokens should be above threshold
+				expect(callArgs[5]).toBe(true) // automatic trigger
+				expect(callArgs[6]).toBeUndefined() // customCondensingPrompt
+				expect(callArgs[7]).toBeUndefined() // condensingApiHandler
+
+				expect(result.messages).toEqual(mockSummarizeResponse.messages)
+				expect(result.summary).toBe("Summary of conversation")
+				expect(result.cost).toBe(mockCost)
+				expect(result.prevContextTokens).toBeGreaterThan(800) // Should be above threshold
+			})
+
+			it("should not trigger condensing when token threshold is not reached", async () => {
+				vi.clearAllMocks()
+				const summarizeSpy = vi.spyOn(condenseModule, "summarizeConversation")
+
+				const messages = createMessages(10, 50) // 10 messages, 50 tokens each = 500 tokens
+				const totalTokens = 450 // Excluding last message
+				const contextWindow = 4000
+				const maxTokens = 1000
+
+				const result = await truncateConversationIfNeeded({
+					messages,
+					totalTokens,
+					contextWindow,
+					maxTokens,
+					apiHandler: mockApiHandler,
+					autoCondenseContext: true,
+					autoCondenseContextPercent: 50, // 50% threshold (not reached)
+					systemPrompt: "System prompt",
+					taskId: "test-task",
+					profileThresholds: {
+						"test-profile": 1000, // 1000 tokens threshold
+					},
+					currentProfileId: "test-profile",
+				})
+
+				// Context is at 500 tokens (450 + 50 for last message), below 1000 token threshold
+				expect(summarizeSpy).not.toHaveBeenCalled()
+				expect(result.messages).toEqual(messages)
+			})
+
+			it("should prefer token threshold over percentage when both are configured", async () => {
+				vi.clearAllMocks()
+				const mockCost = 0.05
+				const mockSummarizeResponse: condenseModule.SummarizeResponse = {
+					messages: [
+						{ role: "assistant", content: "Summary", ts: Date.now(), isSummary: true },
+						{ role: "user", content: "Message 8", ts: Date.now() },
+						{ role: "assistant", content: "Response 9", ts: Date.now() },
+						{ role: "user", content: "Message 10", ts: Date.now() },
+					],
+					summary: "Summary of conversation",
+					cost: mockCost,
+					newContextTokens: 400,
+				}
+
+				const summarizeSpy = vi
+					.spyOn(condenseModule, "summarizeConversation")
+					.mockResolvedValue(mockSummarizeResponse)
+
+				const messages = createMessages(10, 100) // 10 messages, 100 tokens each = 1000 tokens
+				const totalTokens = 900 // Excluding last message
+				const contextWindow = 4000
+				const maxTokens = 1000
+
+				// Test with token threshold that triggers before percentage
+				const result = await truncateConversationIfNeeded({
+					messages,
+					totalTokens,
+					contextWindow,
+					maxTokens,
+					apiHandler: mockApiHandler,
+					autoCondenseContext: true,
+					autoCondenseContextPercent: 50, // 50% = 2000 tokens (not reached)
+					systemPrompt: "System prompt",
+					taskId: "test-task",
+					profileThresholds: {
+						"test-profile": 800, // 800 tokens threshold (reached)
+					},
+					currentProfileId: "test-profile",
+				})
+
+				// Context is at 1000 tokens, above 800 token threshold but below 50% (2000 tokens)
+				expect(summarizeSpy).toHaveBeenCalled()
+				expect(result.messages).toEqual(mockSummarizeResponse.messages)
+			})
+		})
 	})
 
 	/**
