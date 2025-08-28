@@ -27,6 +27,7 @@
 		"checkpoints": "Kontrol Noktaları",
 		"notifications": "Bildirimler",
 		"contextManagement": "Bağlam",
+		"ui": "Arayüz",
 		"terminal": "Terminal",
 		"prompts": "Promptlar",
 		"experimental": "Deneysel",
@@ -596,6 +597,13 @@
 			"label": "Maksimum toplam görüntü boyutu",
 			"mb": "MB",
 			"description": "Tek bir read_file işleminde işlenen tüm görüntüler için maksimum kümülatif boyut sınırı (MB cinsinden). Birden çok görüntü okurken, her görüntünün boyutu toplama eklenir. Başka bir görüntü eklemek bu sınırı aşacaksa, atlanacaktır."
+		}
+	},
+	"ui": {
+		"description": "Arayüz ve görüntü ayarlarını yapılandırın",
+		"filesChanged": {
+			"label": "Değiştirilen Dosyalara Genel Bakışı Etkinleştir",
+			"description": "Etkinleştirildiğinde, kontrol noktaları arasında değiştirilmiş dosyaları gösteren bir panel görüntüler.\nBu, farklılıkları görüntülemenizi ve bireysel değişiklikleri kabul etmenizi/reddetmenizi sağlar."
 		}
 	},
 	"terminal": {

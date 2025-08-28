@@ -9,6 +9,8 @@ import type {
 	ClineMessage,
 	MarketplaceItem,
 	TodoItem,
+	ClineSay,
+	FileChangeset,
 } from "@roo-code/types"
 import type { CloudUserInfo, OrganizationAllowList, ShareVisibility } from "@roo-code/cloud"
 
@@ -55,9 +57,12 @@ export interface LanguageModelChatSelector {
 	id?: string
 }
 
-// Represents JSON data that is sent from extension to webview, called
-// ExtensionMessage and has 'type' enum which can be 'plusButtonClicked' or
-// 'settingsButtonClicked' or 'hello'. Webview will hold state.
+/**
+ * Message sent from the VS Code extension to the webview UI.
+ * The 'type' union below enumerates outbound notifications and data updates
+ * (e.g., "state", "theme", "indexingStatusUpdate", "filesChanged") that the
+ * webview consumes to render and synchronize state. See the full union below.
+ */
 export interface ExtensionMessage {
 	type:
 		| "action"
@@ -120,6 +125,10 @@ export interface ExtensionMessage {
 		| "showEditMessageDialog"
 		| "commands"
 		| "insertTextIntoTextarea"
+		| "filesChanged"
+		| "checkpoint_created"
+		| "checkpoint_restored"
+		| "say"
 	text?: string
 	payload?: any // Add a generic payload for now, can refine later
 	action?:
@@ -194,6 +203,10 @@ export interface ExtensionMessage {
 	messageTs?: number
 	context?: string
 	commands?: Command[]
+	filesChanged?: FileChangeset // Added filesChanged property
+	checkpoint?: string // For checkpoint_created and checkpoint_restored messages
+	previousCheckpoint?: string // For checkpoint_created message
+	say?: ClineSay // Added say property
 }
 
 export type ExtensionState = Pick<
@@ -324,6 +337,7 @@ export type ExtensionState = Pick<
 	marketplaceInstalledMetadata?: { project: Record<string, any>; global: Record<string, any> }
 	profileThresholds: Record<string, number>
 	hasOpenedModeSelector: boolean
+	filesChangedEnabled: boolean
 }
 
 export interface ClineSayTool {

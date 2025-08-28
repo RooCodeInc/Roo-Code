@@ -27,6 +27,7 @@
 		"checkpoints": "Điểm kiểm tra",
 		"notifications": "Thông báo",
 		"contextManagement": "Ngữ cảnh",
+		"ui": "Giao diện",
 		"terminal": "Terminal",
 		"prompts": "Lời nhắc",
 		"experimental": "Thử nghiệm",
@@ -596,6 +597,13 @@
 			"label": "Kích thước tổng tối đa của hình ảnh",
 			"mb": "MB",
 			"description": "Giới hạn kích thước tích lũy tối đa (tính bằng MB) cho tất cả hình ảnh được xử lý trong một thao tác read_file duy nhất. Khi đọc nhiều hình ảnh, kích thước của mỗi hình ảnh được cộng vào tổng. Nếu việc thêm một hình ảnh khác sẽ vượt quá giới hạn này, nó sẽ bị bỏ qua."
+		}
+	},
+	"ui": {
+		"description": "Cấu hình giao diện và cài đặt hiển thị",
+		"filesChanged": {
+			"label": "Bật Tổng quan về Tệp đã Thay đổi",
+			"description": "Khi được bật, hiển thị một bảng điều khiển hiển thị các tệp đã được sửa đổi giữa các điểm kiểm tra.\nĐiều này cho phép bạn xem các khác biệt và chấp nhận/từ chối các thay đổi riêng lẻ."
 		}
 	},
 	"terminal": {

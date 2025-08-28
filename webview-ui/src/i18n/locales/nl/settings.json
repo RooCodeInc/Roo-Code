@@ -27,6 +27,7 @@
 		"checkpoints": "Checkpoints",
 		"notifications": "Meldingen",
 		"contextManagement": "Context",
+		"ui": "Interface",
 		"terminal": "Terminal",
 		"prompts": "Prompts",
 		"experimental": "Experimenteel",
@@ -596,6 +597,13 @@
 			"profileDescription": "Aangepaste drempelwaarde alleen voor dit profiel (overschrijft globale standaard)",
 			"inheritDescription": "Dit profiel erft de globale standaard drempelwaarde ({{threshold}}%)",
 			"usesGlobal": "(gebruikt globaal {{threshold}}%)"
+		}
+	},
+	"ui": {
+		"description": "Configureer interface en weergave-instellingen",
+		"filesChanged": {
+			"label": "Overzicht van gewijzigde bestanden inschakelen",
+			"description": "Indien ingeschakeld, wordt een paneel weergegeven met bestanden die zijn gewijzigd tussen controlepunten.\nHiermee kunt u verschillen bekijken en afzonderlijke wijzigingen accepteren/weigeren."
 		}
 	},
 	"terminal": {

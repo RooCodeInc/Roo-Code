@@ -8,19 +8,25 @@ import { EXPERIMENT_IDS, experimentConfigsMap } from "@roo/experiments"
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { cn } from "@src/lib/utils"
 
-import { SetExperimentEnabled } from "./types"
+import { SetExperimentEnabled, SetCachedStateField } from "./types"
 import { SectionHeader } from "./SectionHeader"
 import { Section } from "./Section"
 import { ExperimentalFeature } from "./ExperimentalFeature"
+import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
 
 type ExperimentalSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	experiments: Experiments
 	setExperimentEnabled: SetExperimentEnabled
+	// Include Files Changed Overview toggle in Experimental section per review feedback
+	filesChangedEnabled?: boolean
+	setCachedStateField?: SetCachedStateField<"filesChangedEnabled">
 }
 
 export const ExperimentalSettings = ({
 	experiments,
 	setExperimentEnabled,
+	filesChangedEnabled,
+	setCachedStateField,
 	className,
 	...props
 }: ExperimentalSettingsProps) => {
@@ -34,6 +40,24 @@ export const ExperimentalSettings = ({
 					<div>{t("settings:sections.experimental")}</div>
 				</div>
 			</SectionHeader>
+
+			{/* Files Changed Overview (moved from UI section to Experimental) */}
+			{typeof filesChangedEnabled !== "undefined" && setCachedStateField && (
+				<Section>
+					<div>
+						<VSCodeCheckbox
+							checked={filesChangedEnabled}
+							onChange={(e: any) => setCachedStateField("filesChangedEnabled", e.target.checked)}
+							data-testid="files-changed-enabled-checkbox">
+							{/* Reuse existing translation keys to avoid i18n churn */}
+							<label className="block font-medium mb-1">{t("settings:ui.filesChanged.label")}</label>
+						</VSCodeCheckbox>
+						<div className="text-vscode-descriptionForeground text-sm mt-1 mb-3">
+							{t("settings:ui.filesChanged.description")}
+						</div>
+					</div>
+				</Section>
+			)}
 
 			<Section>
 				{Object.entries(experimentConfigsMap)

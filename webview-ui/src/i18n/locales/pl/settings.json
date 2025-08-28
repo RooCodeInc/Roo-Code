@@ -27,6 +27,7 @@
 		"checkpoints": "Punkty kontrolne",
 		"notifications": "Powiadomienia",
 		"contextManagement": "Kontekst",
+		"ui": "Interfejs",
 		"terminal": "Terminal",
 		"prompts": "Podpowiedzi",
 		"experimental": "Eksperymentalne",
@@ -596,6 +597,13 @@
 			"label": "Maksymalny całkowity rozmiar obrazów",
 			"mb": "MB",
 			"description": "Maksymalny skumulowany limit rozmiaru (w MB) dla wszystkich obrazów przetwarzanych w jednej operacji read_file. Podczas odczytu wielu obrazów rozmiar każdego obrazu jest dodawany do sumy. Jeśli dołączenie kolejnego obrazu przekroczyłoby ten limit, zostanie on pominięty."
+		}
+	},
+	"ui": {
+		"description": "Skonfiguruj interfejs i ustawienia wyświetlania",
+		"filesChanged": {
+			"label": "Włącz przegląd zmienionych plików",
+			"description": "Po włączeniu wyświetla panel pokazujący pliki, które zostały zmodyfikowane między punktami kontrolnymi.\nUmożliwia to przeglądanie różnic i akceptowanie/odrzucanie poszczególnych zmian."
 		}
 	},
 	"terminal": {

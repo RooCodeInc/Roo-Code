@@ -27,6 +27,7 @@
 		"checkpoints": "Checkpoints",
 		"notifications": "Notificações",
 		"contextManagement": "Contexto",
+		"ui": "Interface",
 		"terminal": "Terminal",
 		"prompts": "Prompts",
 		"experimental": "Experimental",
@@ -596,6 +597,13 @@
 			"label": "Tamanho total máximo da imagem",
 			"mb": "MB",
 			"description": "Limite máximo de tamanho cumulativo (em MB) para todas as imagens processadas em uma única operação read_file. Ao ler várias imagens, o tamanho de cada imagem é adicionado ao total. Se incluir outra imagem exceder esse limite, ela será ignorada."
+		}
+	},
+	"ui": {
+		"description": "Configure a interface e as configurações de exibição",
+		"filesChanged": {
+			"label": "Ativar Visão Geral de Arquivos Alterados",
+			"description": "Quando ativado, exibe um painel mostrando os arquivos que foram modificados entre os pontos de verificação.\nIsso permite que você visualize as diferenças e aceite/rejeite alterações individuais."
 		}
 	},
 	"terminal": {

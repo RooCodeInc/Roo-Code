@@ -27,6 +27,7 @@
 		"checkpoints": "Punts de control",
 		"notifications": "Notificacions",
 		"contextManagement": "Context",
+		"ui": "Interfície",
 		"terminal": "Terminal",
 		"prompts": "Indicacions",
 		"experimental": "Experimental",
@@ -595,6 +596,13 @@
 			"label": "Mida total màxima d'imatges",
 			"mb": "MB",
 			"description": "Límit de mida acumulativa màxima (en MB) per a totes les imatges processades en una sola operació read_file. Quan es llegeixen múltiples imatges, la mida de cada imatge s'afegeix al total. Si incloure una altra imatge excediria aquest límit, serà omesa."
+		}
+	},
+	"ui": {
+		"description": "Configura la interfície i els paràmetres de visualització",
+		"filesChanged": {
+			"label": "Activa la visió general dels fitxers canviats",
+			"description": "Quan està activat, mostra un panell amb els fitxers que s'han modificat entre punts de control.\nAixò us permet veure les diferències i acceptar/rebutjar canvis individuals."
 		}
 	},
 	"terminal": {

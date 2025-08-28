@@ -27,6 +27,7 @@
 		"checkpoints": "체크포인트",
 		"notifications": "알림",
 		"contextManagement": "컨텍스트",
+		"ui": "인터페이스",
 		"terminal": "터미널",
 		"prompts": "프롬프트",
 		"experimental": "실험적",
@@ -596,6 +597,13 @@
 			"label": "최대 총 이미지 크기",
 			"mb": "MB",
 			"description": "단일 read_file 작업에서 처리되는 모든 이미지의 최대 누적 크기 제한(MB 단위)입니다. 여러 이미지를 읽을 때 각 이미지의 크기가 총계에 추가됩니다. 다른 이미지를 포함하면 이 제한을 초과하는 경우 해당 이미지는 건너뜁니다."
+		}
+	},
+	"ui": {
+		"description": "인터페이스 및 디스플레이 설정 구성",
+		"filesChanged": {
+			"label": "변경된 파일 개요 활성화",
+			"description": "활성화하면 체크포인트 간에 수정된 파일을 보여주는 패널이 표시됩니다.\n이를 통해 차이점을 보고 개별 변경 사항을 수락/거부할 수 있습니다."
 		}
 	},
 	"terminal": {

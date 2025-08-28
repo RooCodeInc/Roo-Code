@@ -27,6 +27,7 @@
 		"checkpoints": "Points de contrôle",
 		"notifications": "Notifications",
 		"contextManagement": "Contexte",
+		"ui": "Interface",
 		"terminal": "Terminal",
 		"prompts": "Invites",
 		"experimental": "Expérimental",
@@ -595,6 +596,13 @@
 			"profileDescription": "Seuil personnalisé pour ce profil uniquement (remplace le défaut global)",
 			"inheritDescription": "Ce profil hérite du seuil par défaut global ({{threshold}}%)",
 			"usesGlobal": "(utilise global {{threshold}}%)"
+		}
+	},
+	"ui": {
+		"description": "Configurer l'interface et les paramètres d'affichage",
+		"filesChanged": {
+			"label": "Activer l'aperçu des fichiers modifiés",
+			"description": "Lorsqu'il est activé, affiche un panneau montrant les fichiers qui ont été modifiés entre les points de contrôle.\nCela vous permet de visualiser les différences et d'accepter/rejeter les modifications individuelles."
 		}
 	},
 	"terminal": {

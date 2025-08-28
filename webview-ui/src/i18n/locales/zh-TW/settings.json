@@ -27,6 +27,7 @@
 		"checkpoints": "檢查點",
 		"notifications": "通知",
 		"contextManagement": "上下文",
+		"ui": "介面",
 		"terminal": "終端機",
 		"prompts": "提示詞",
 		"experimental": "實驗性",
@@ -596,6 +597,13 @@
 			"label": "圖片總大小上限",
 			"mb": "MB",
 			"description": "單次 read_file 操作中處理的所有圖片的最大累計大小限制（MB）。讀取多張圖片時，每張圖片的大小會累加到總大小中。如果包含另一張圖片會超過此限制，則會跳過該圖片。"
+		}
+	},
+	"ui": {
+		"description": "設定介面和顯示設定",
+		"filesChanged": {
+			"label": "啟用已變更檔案總覽",
+			"description": "啟用後，會顯示一個面板，其中顯示检查点之間已修改的檔案。\n這可讓您檢視差異並接受/拒絕個別變更。"
 		}
 	},
 	"terminal": {

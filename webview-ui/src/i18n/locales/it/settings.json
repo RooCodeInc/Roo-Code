@@ -27,6 +27,7 @@
 		"checkpoints": "Punti di controllo",
 		"notifications": "Notifiche",
 		"contextManagement": "Contesto",
+		"ui": "Interfaccia",
 		"terminal": "Terminal",
 		"prompts": "Prompt",
 		"experimental": "Sperimentale",
@@ -596,6 +597,13 @@
 			"label": "Dimensione totale massima immagini",
 			"mb": "MB",
 			"description": "Limite di dimensione cumulativa massima (in MB) per tutte le immagini elaborate in una singola operazione read_file. Durante la lettura di più immagini, la dimensione di ogni immagine viene aggiunta al totale. Se l'inclusione di un'altra immagine supererebbe questo limite, verrà saltata."
+		}
+	},
+	"ui": {
+		"description": "Configura l'interfaccia e le impostazioni di visualizzazione",
+		"filesChanged": {
+			"label": "Abilita la panoramica dei file modificati",
+			"description": "Se abilitato, visualizza un pannello che mostra i file modificati tra i checkpoint.\nCiò consente di visualizzare le differenze e accettare/rifiutare le singole modifiche."
 		}
 	},
 	"terminal": {

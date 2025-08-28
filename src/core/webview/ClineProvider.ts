@@ -87,6 +87,7 @@ import { getSystemPromptFilePath } from "../prompts/sections/custom-system-promp
 import { webviewMessageHandler } from "./webviewMessageHandler"
 import { getNonce } from "./getNonce"
 import { getUri } from "./getUri"
+import { FCOMessageHandler } from "../../services/file-changes/FCOMessageHandler"
 
 /**
  * https://github.com/microsoft/vscode-webview-ui-toolkit-samples/blob/main/default/weather-webview/src/providers/WeatherViewProvider.ts
@@ -117,6 +118,7 @@ export class ClineProvider
 	private taskEventListeners: WeakMap<Task, Array<() => void>> = new WeakMap()
 
 	private recentTasksCache?: string[]
+	private globalFileChangeManager?: import("../../services/file-changes/FileChangeManager").FileChangeManager
 
 	public isViewLaunched = false
 	public settingsImportedAt?: number
@@ -512,6 +514,8 @@ export class ClineProvider
 		this.mcpHub = undefined
 		this.marketplaceManager?.cleanup()
 		this.customModesManager?.dispose()
+		this.globalFileChangeManager?.dispose()
+		this.globalFileChangeManager = undefined
 		this.log("Disposed all disposables")
 		ClineProvider.activeInstances.delete(this)
 
@@ -1073,8 +1077,17 @@ export class ClineProvider
 	 * @param webview A reference to the extension webview
 	 */
 	private setWebviewMessageListener(webview: vscode.Webview) {
-		const onReceiveMessage = async (message: WebviewMessage) =>
-			webviewMessageHandler(this, message, this.marketplaceManager)
+		const onReceiveMessage = async (message: WebviewMessage) => {
+			// Handle FCO messages first
+			const fcoMessageHandler = new FCOMessageHandler(this)
+			if (fcoMessageHandler.shouldHandleMessage(message)) {
+				await fcoMessageHandler.handleMessage(message)
+				return
+			}
+
+			// Delegate to main message handler
+			await webviewMessageHandler(this, message, this.marketplaceManager)
+		}
 
 		const messageDisposable = webview.onDidReceiveMessage(onReceiveMessage)
 		this.webviewDisposables.push(messageDisposable)
@@ -1892,6 +1905,7 @@ export class ClineProvider
 			maxDiagnosticMessages: maxDiagnosticMessages ?? 50,
 			includeTaskHistoryInEnhance: includeTaskHistoryInEnhance ?? true,
 			remoteControlEnabled: remoteControlEnabled ?? false,
+			filesChangedEnabled: this.getGlobalState("filesChangedEnabled") ?? true,
 		}
 	}
 
@@ -2394,6 +2408,22 @@ export class ClineProvider
 				values: currentManager.getCurrentStatus(),
 			})
 		}
+	}
+
+	public getFileChangeManager():
+		| import("../../services/file-changes/FileChangeManager").FileChangeManager
+		| undefined {
+		return this.globalFileChangeManager
+	}
+
+	public async ensureFileChangeManager(): Promise<
+		import("../../services/file-changes/FileChangeManager").FileChangeManager
+	> {
+		if (!this.globalFileChangeManager) {
+			const { FileChangeManager } = await import("../../services/file-changes/FileChangeManager")
+			this.globalFileChangeManager = new FileChangeManager("HEAD")
+		}
+		return this.globalFileChangeManager
 	}
 }
 

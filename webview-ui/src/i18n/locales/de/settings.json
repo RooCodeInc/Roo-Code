@@ -27,6 +27,7 @@
 		"checkpoints": "Kontrollpunkte",
 		"notifications": "Benachrichtigungen",
 		"contextManagement": "Kontext",
+		"ui": "Benutzeroberfläche",
 		"terminal": "Terminal",
 		"prompts": "Eingabeaufforderungen",
 		"experimental": "Experimentell",
@@ -595,6 +596,13 @@
 			"label": "Maximale Gesamtbildgröße",
 			"mb": "MB",
 			"description": "Maximales kumulatives Größenlimit (in MB) für alle Bilder, die in einer einzelnen read_file-Operation verarbeitet werden. Beim Lesen mehrerer Bilder wird die Größe jedes Bildes zur Gesamtsumme addiert. Wenn das Einbeziehen eines weiteren Bildes dieses Limit überschreiten würde, wird es übersprungen."
+		}
+	},
+	"ui": {
+		"description": "Konfiguriere die Benutzeroberfläche und die Anzeigeeinstellungen",
+		"filesChanged": {
+			"label": "Übersicht über geänderte Dateien aktivieren",
+			"description": "Wenn aktiviert, wird ein Panel angezeigt, das die zwischen den Prüfpunkten geänderten Dateien anzeigt.\nDies ermöglicht es dir, Diffs anzuzeigen und einzelne Änderungen zu akzeptieren/abzulehnen."
 		}
 	},
 	"terminal": {

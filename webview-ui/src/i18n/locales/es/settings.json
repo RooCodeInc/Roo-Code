@@ -27,6 +27,7 @@
 		"checkpoints": "Puntos de control",
 		"notifications": "Notificaciones",
 		"contextManagement": "Contexto",
+		"ui": "Interfaz",
 		"terminal": "Terminal",
 		"prompts": "Indicaciones",
 		"experimental": "Experimental",
@@ -595,6 +596,13 @@
 			"profileDescription": "Umbral personalizado solo para este perfil (anula el predeterminado global)",
 			"inheritDescription": "Este perfil hereda el umbral predeterminado global ({{threshold}}%)",
 			"usesGlobal": "(usa global {{threshold}}%)"
+		}
+	},
+	"ui": {
+		"description": "Configurar la interfaz y los ajustes de visualización",
+		"filesChanged": {
+			"label": "Habilitar la vista general de archivos modificados",
+			"description": "Cuando está habilitado, muestra un panel que indica los archivos que se han modificado entre los puntos de control.\nEsto le permite ver las diferencias y aceptar/rechazar cambios individuales."
 		}
 	},
 	"terminal": {
