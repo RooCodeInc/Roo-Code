@@ -128,10 +128,63 @@ describe("OpenAiNativeHandler", () => {
 	})
 
 	describe("completePrompt", () => {
-		it("should throw error for all models since Responses API doesn't support non-streaming", async () => {
-			await expect(handler.completePrompt("Test prompt")).rejects.toThrow(
-				"completePrompt is not supported. Use createMessage (Responses API) instead.",
+		it("should handle non-streaming completion using Responses API", async () => {
+			// Mock the responses.create method to return a non-streaming response
+			mockResponsesCreate.mockResolvedValue({
+				output: [
+					{
+						type: "message",
+						content: [
+							{
+								type: "output_text",
+								text: "This is the completion response",
+							},
+						],
+					},
+				],
+			})
+
+			const result = await handler.completePrompt("Test prompt")
+
+			expect(result).toBe("This is the completion response")
+			expect(mockResponsesCreate).toHaveBeenCalledWith(
+				expect.objectContaining({
+					model: "gpt-4.1",
+					stream: false,
+					store: false,
+					input: [
+						{
+							role: "user",
+							content: [{ type: "input_text", text: "Test prompt" }],
+						},
+					],
+				}),
 			)
+		})
+
+		it("should handle SDK errors in completePrompt", async () => {
+			// Mock SDK to throw an error
+			mockResponsesCreate.mockRejectedValue(new Error("API Error"))
+
+			await expect(handler.completePrompt("Test prompt")).rejects.toThrow(
+				"OpenAI Native completion error: API Error",
+			)
+		})
+
+		it("should return empty string when no text in response", async () => {
+			// Mock the responses.create method to return a response without text
+			mockResponsesCreate.mockResolvedValue({
+				output: [
+					{
+						type: "message",
+						content: [],
+					},
+				],
+			})
+
+			const result = await handler.completePrompt("Test prompt")
+
+			expect(result).toBe("")
 		})
 	})
 
@@ -1235,9 +1288,30 @@ describe("GPT-5 streaming event coverage (additional)", () => {
 				apiModelId: "codex-mini-latest",
 			})
 
-			// Codex Mini now uses the same Responses API as GPT-5, which doesn't support non-streaming
-			await expect(handler.completePrompt("Write a hello world function in Python")).rejects.toThrow(
-				"completePrompt is not supported. Use createMessage (Responses API) instead.",
+			// Mock the responses.create method to return a non-streaming response
+			mockResponsesCreate.mockResolvedValue({
+				output: [
+					{
+						type: "message",
+						content: [
+							{
+								type: "output_text",
+								text: "def hello_world():\n    print('Hello, World!')",
+							},
+						],
+					},
+				],
+			})
+
+			const result = await handler.completePrompt("Write a hello world function in Python")
+
+			expect(result).toBe("def hello_world():\n    print('Hello, World!')")
+			expect(mockResponsesCreate).toHaveBeenCalledWith(
+				expect.objectContaining({
+					model: "codex-mini-latest",
+					stream: false,
+					store: false,
+				}),
 			)
 		})
 
