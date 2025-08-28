@@ -377,6 +377,10 @@
 			"confirm": "Delete"
 		}
 	},
+	"slashCommand": {
+		"wantsToRun": "Roo wants to run slash command:",
+		"didRun": "Roo ran slash command:"
+	},
 	"queuedMessages": {
 		"title": "Queued Messages:",
 		"clickToEdit": "Click to edit message"

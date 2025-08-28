@@ -790,6 +790,62 @@ export const ChatRowContent = ({
 						</div>
 					</>
 				)
+			case "run_slash_command" as any: {
+				const slashCommandInfo = tool as any
+				return (
+					<>
+						<div style={headerStyle}>
+							{toolIcon("terminal-cmd")}
+							<span style={{ fontWeight: "bold" }}>
+								{message.type === "ask"
+									? t("chat:slashCommand.wantsToRun")
+									: t("chat:slashCommand.didRun")}
+							</span>
+						</div>
+						<ToolUseBlock>
+							<ToolUseBlockHeader
+								style={{
+									display: "flex",
+									flexDirection: "column",
+									alignItems: "flex-start",
+									gap: "4px",
+									padding: "10px 12px",
+								}}>
+								<div style={{ display: "flex", alignItems: "center", gap: "8px", width: "100%" }}>
+									<span style={{ fontWeight: "500", fontSize: "var(--vscode-font-size)" }}>
+										/{slashCommandInfo.command}
+									</span>
+									{slashCommandInfo.args && (
+										<span
+											style={{
+												color: "var(--vscode-descriptionForeground)",
+												fontSize: "var(--vscode-font-size)",
+											}}>
+											{slashCommandInfo.args}
+										</span>
+									)}
+								</div>
+								{slashCommandInfo.description && (
+									<div
+										style={{
+											color: "var(--vscode-descriptionForeground)",
+											fontSize: "calc(var(--vscode-font-size) - 1px)",
+										}}>
+										{slashCommandInfo.description}
+									</div>
+								)}
+								{slashCommandInfo.source && (
+									<div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+										<VSCodeBadge style={{ fontSize: "calc(var(--vscode-font-size) - 2px)" }}>
+											{slashCommandInfo.source}
+										</VSCodeBadge>
+									</div>
+								)}
+							</ToolUseBlockHeader>
+						</ToolUseBlock>
+					</>
+				)
+			}
 			default:
 				return null
 		}
@@ -1118,6 +1174,80 @@ export const ChatRowContent = ({
 					return <CodebaseSearchResultsDisplay results={results} />
 				case "user_edit_todos":
 					return <UpdateTodoListToolBlock userEdited onChange={() => {}} />
+				case "tool" as any:
+					// Handle say tool messages
+					const sayTool = safeJsonParse<ClineSayTool>(message.text)
+					if (!sayTool) return null
+
+					switch (sayTool.tool) {
+						case "run_slash_command" as any: {
+							const slashCommandInfo = sayTool as any
+							return (
+								<>
+									<div style={headerStyle}>
+										<span
+											className="codicon codicon-terminal-cmd"
+											style={{
+												color: "var(--vscode-foreground)",
+												marginBottom: "-1.5px",
+											}}></span>
+										<span style={{ fontWeight: "bold" }}>{t("chat:slashCommand.didRun")}</span>
+									</div>
+									<ToolUseBlock>
+										<ToolUseBlockHeader
+											style={{
+												display: "flex",
+												flexDirection: "column",
+												alignItems: "flex-start",
+												gap: "4px",
+												padding: "10px 12px",
+											}}>
+											<div
+												style={{
+													display: "flex",
+													alignItems: "center",
+													gap: "8px",
+													width: "100%",
+												}}>
+												<span
+													style={{ fontWeight: "500", fontSize: "var(--vscode-font-size)" }}>
+													/{slashCommandInfo.command}
+												</span>
+												{slashCommandInfo.args && (
+													<span
+														style={{
+															color: "var(--vscode-descriptionForeground)",
+															fontSize: "var(--vscode-font-size)",
+														}}>
+														{slashCommandInfo.args}
+													</span>
+												)}
+											</div>
+											{slashCommandInfo.description && (
+												<div
+													style={{
+														color: "var(--vscode-descriptionForeground)",
+														fontSize: "calc(var(--vscode-font-size) - 1px)",
+													}}>
+													{slashCommandInfo.description}
+												</div>
+											)}
+											{slashCommandInfo.source && (
+												<div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+													<VSCodeBadge
+														style={{ fontSize: "calc(var(--vscode-font-size) - 2px)" }}>
+														{slashCommandInfo.source}
+													</VSCodeBadge>
+												</div>
+											)}
+										</ToolUseBlockHeader>
+									</ToolUseBlock>
+								</>
+							)
+						}
+						default:
+							return null
+					}
 				default:
 					return (
 						<>

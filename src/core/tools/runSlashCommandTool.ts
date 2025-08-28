@@ -17,7 +17,7 @@ export async function runSlashCommandTool(
 	try {
 		if (block.partial) {
 			const partialMessage = JSON.stringify({
-				tool: "runSlashCommand",
+				tool: "run_slash_command",
 				command: removeClosingTag("command", commandName),
 				args: removeClosingTag("args", args),
 			})
@@ -50,7 +50,7 @@ export async function runSlashCommandTool(
 			}
 
 			const toolMessage = JSON.stringify({
-				tool: "runSlashCommand",
+				tool: "run_slash_command",
 				command: commandName,
 				args: args || "(no arguments)",
 				source: command.source,
