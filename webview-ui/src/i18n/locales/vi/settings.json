@@ -730,6 +730,10 @@
 		"NEW_TASK_REQUIRE_TODOS": {
 			"name": "Yêu cầu danh sách 'todos' cho các nhiệm vụ mới",
 			"description": "Khi được bật, công cụ new_task sẽ yêu cầu cung cấp tham số todos. Điều này đảm bảo tất cả các nhiệm vụ mới bắt đầu với một danh sách mục tiêu rõ ràng. Khi bị tắt (mặc định), tham số todos vẫn là tùy chọn để tương thích ngược."
+		},
+		"IMAGE_GENERATION": {
+			"name": "Bật tạo hình ảnh AI",
+			"description": "Khi được bật, Roo có thể tạo hình ảnh từ lời nhắc văn bản bằng các mô hình tạo hình ảnh của OpenRouter. Yêu cầu khóa API OpenRouter được cấu hình."
 		}
 	},
 	"promptCaching": {

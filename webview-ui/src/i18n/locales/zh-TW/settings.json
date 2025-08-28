@@ -730,6 +730,10 @@
 		"NEW_TASK_REQUIRE_TODOS": {
 			"name": "要求新工作提供 'todos' 列表",
 			"description": "啟用後，new_task 工具將需要提供 todos 參數。這可以確保所有新工作都以明確的目標列表開始。停用時（預設），todos 參數保持可選，以實現向後相容。"
+		},
+		"IMAGE_GENERATION": {
+			"name": "啟用 AI 圖像生成",
+			"description": "啟用後，Roo 可以使用 OpenRouter 的圖像生成模型從文字提示生成圖像。需要設定 OpenRouter API 金鑰。"
 		}
 	},
 	"promptCaching": {
