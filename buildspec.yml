@@ -1,0 +1,42 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 20.19.2
+    commands:
+      - echo Logged in as $(aws sts get-caller-identity --query Account --output text)
+      - npm install -g pnpm
+      
+  pre_build:
+    commands:
+      - echo Build started on `date`
+      - echo Installing dependencies...
+      
+  build:
+    commands:
+      - pnpm install
+      - pnpm build
+      - cd src
+      - pnpm vsix
+      
+  post_build:
+    commands:
+      - echo Build completed on `date`
+      - echo Uploading VSIX file to S3...
+      - COMMIT_HASH=$(git rev-parse --short HEAD)
+      - cd ../bin
+      - VSIX_FILE=$(ls *.vsix)
+      - NEW_NAME=$(echo $VSIX_FILE | sed "s/\.vsix$/-${COMMIT_HASH}.vsix/")
+      - mv $VSIX_FILE $NEW_NAME
+      - aws s3 cp $NEW_NAME $ROO_CODE_ARTIFACT$NEW_NAME
+      - echo Pruning old artifacts...
+      - |
+        if [ ! -z "$MAX_ARTIFACTS" ] && [ "$MAX_ARTIFACTS" -gt 0 ]; then
+          echo "Keeping max $MAX_ARTIFACTS artifacts"
+          aws s3 ls $ROO_CODE_ARTIFACT --recursive | grep "\.vsix$" | sort -k1,2 -r | tail -n +$((MAX_ARTIFACTS + 1)) | while read -r line; do
+            artifact_key=$(echo "$line" | awk '{print $4}')
+            echo "Deleting old artifact: $artifact_key"
+            aws s3 rm $ROO_CODE_ARTIFACT$artifact_key
+          done
+        fi
