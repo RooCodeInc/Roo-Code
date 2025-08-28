@@ -2,6 +2,151 @@ import { ToolArgs } from "../types"
 import { BaseToolSchema } from "./base-tool-schema"
 
 export function generateApplyDiffSchema(args: ToolArgs): BaseToolSchema {
+	if (args?.diffStrategy?.getName() === "MultiFileSearchReplace") {
+		return generateMultipleApplyDiffSchema(args)
+	}
+	const schema: BaseToolSchema = {
+		name: "apply_diff",
+		description:
+			"apply PRECISE, TARGETED modifications to an existing file by searching for specific sections of content and replacing them. This tool is for SURGICAL EDITS ONLY - specific changes to existing code",
+		parameters: [
+			{
+				name: "path",
+				type: "string",
+				description: "The relative path to the file that needs to be modified.",
+				required: true,
+			},
+			{
+				name: "diff",
+				type: "array",
+				description:
+					"An array of diff operations to be applied to the file. CRITICAL: For efficiency, include a large surrounding context (3-5 lines above and below) to combine multiple nearby changes into one operation instead of creating separate diffs for each line.",
+				required: true,
+				items: {
+					name: "diffItem",
+					type: "object",
+					description: "A single search-and-replace operation.",
+					required: true,
+					properties: {
+						d1: {
+							name: "start_line",
+							type: "number",
+							description:
+								"The starting line number of the 'search' block. Required when applying multiple diffs to a single file.",
+							required: true,
+						},
+						d2: {
+							name: "search",
+							type: "string",
+							description:
+								"The exact multi-line block of content to search for in the file. MUST match the original file content exactly (including all whitespace, indentation, tabs, and line breaks). Copy the exact text from the original file with perfect whitespace preservation.",
+							required: true,
+						},
+						d3: {
+							name: "replace",
+							type: "string",
+							description:
+								"The new multi-line content that will replace the search block. Preserve the original indentation structure and include all the context lines from the search block, making only the necessary changes to the target lines. This should be the complete replacement for the entire search block.",
+							required: true,
+						},
+					},
+				},
+			},
+		],
+
+		systemPrompt: `## apply_diff
+Description: Request to apply PRECISE, TARGETED modifications to an existing file by searching for specific sections of content and replacing them. This tool is for SURGICAL EDITS ONLY - specific changes to existing code.
+You can perform multiple distinct search and replace operations within a single \`apply_diff\` call by providing multiple SEARCH/REPLACE blocks in the \`diff\` parameter. This is the preferred way to make several targeted changes efficiently.
+The SEARCH section must exactly match existing content including whitespace and indentation.
+If you're not confident in the exact content to search for, use the read_file tool first to get the exact content.
+When applying the diffs, be extra careful to remember to change any closing brackets or other syntax that may be affected by the diff farther down in the file.
+ALWAYS make as many changes in a single 'apply_diff' request as possible using multiple SEARCH/REPLACE blocks
+
+Parameters:
+- path: (required) The path of the file to modify (relative to the current workspace directory ${args.cwd})
+- diff: (required) The search/replace block defining the changes.
+
+Diff format:
+\`\`\`
+<<<<<<< SEARCH
+:start_line: (required) The line number of original content where the search block starts.
+-------
+[exact content to find including whitespace]
+=======
+[new content to replace with]
+>>>>>>> REPLACE
+
+\`\`\`
+
+
+Example:
+
+Original file:
+\`\`\`
+1 | def calculate_total(items):
+2 |     total = 0
+3 |     for item in items:
+4 |         total += item
+5 |     return total
+\`\`\`
+
+Search/Replace content:
+\`\`\`
+<<<<<<< SEARCH
+:start_line:1
+-------
+def calculate_total(items):
+    total = 0
+    for item in items:
+        total += item
+    return total
+=======
+def calculate_total(items):
+    """Calculate total with 10% markup"""
+    return sum(item * 1.1 for item in items)
+>>>>>>> REPLACE
+
+\`\`\`
+
+Search/Replace content with multiple edits:
+\`\`\`
+<<<<<<< SEARCH
+:start_line:1
+-------
+def calculate_total(items):
+    sum = 0
+=======
+def calculate_sum(items):
+    sum = 0
+>>>>>>> REPLACE
+
+<<<<<<< SEARCH
+:start_line:4
+-------
+        total += item
+    return total
+=======
+        sum += item
+    return sum 
+>>>>>>> REPLACE
+\`\`\`
+
+
+Usage:
+<apply_diff>
+<path>File path here</path>
+<diff>
+Your search/replace content here
+You can use multi search/replace block in one diff block, but make sure to include the line numbers for each block.
+Only use a single line of '=======' between search and replacement content, because multiple '=======' will corrupt the file.
+</diff>
+</apply_diff>`,
+	}
+
+	return schema
+}
+
+function generateMultipleApplyDiffSchema(args: ToolArgs): BaseToolSchema {
 	const schema: BaseToolSchema = {
 		name: "apply_diff",
 		description:

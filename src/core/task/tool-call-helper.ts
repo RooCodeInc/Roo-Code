@@ -161,6 +161,20 @@ export class StreamingToolCallProcessor {
 			originContent: this.accumulatedToolCalls,
 		}
 
+		// Provide a temporary anthropicContent (input) during streaming before final closure
+		const currentState = this.processingStates.get(index)
+		if (currentState && !currentState.functionClosed) {
+			const tmpInput = this.tryBuildTemporaryJson(currentState, toolCall.function.arguments)
+			if (tmpInput != null) {
+				result.anthropicContent = {
+					id: result.toolUserId,
+					name: result.toolName,
+					input: tmpInput,
+					type: "tool_use",
+				}
+			}
+		}
+
 		if (this.processingStates.get(index)?.functionClosed) {
 			let input
 			try {
@@ -482,6 +496,120 @@ export class StreamingToolCallProcessor {
 		}
 		// For simple escapes like \n, \", \\, etc.
 		return str.substring(pos, pos + 2)
+	}
+
+	/**
+	 * Try to synthesize a temporarily-closable JSON string from the current streaming buffer,
+	 * so we can JSON.parse it and expose a usable anthropicContent.input during partial streaming.
+	 * This function does NOT mutate parser state; it only operates on copies.
+	 *
+	 * Strategy:
+	 * - Safely close an in-flight string (key or value), trimming incomplete escapes/unicode.
+	 * - If a key has just finished (no value yet), inject ": null" to complete the pair.
+	 * - If a primitive token is mid-flight (true/false/null/number), attempt to complete it minimally.
+	 * - Trim trailing commas before closing braces.
+	 * - Close any open objects/arrays according to bracketStack, injecting "null" where a value is expected.
+	 * - Try parse; on failure, add one more "null" if needed and retry.
+	 */
+	private tryBuildTemporaryJson(state: ToolCallProcessingState, rawArgs: string): any | null {
+		let s = rawArgs
+
+		if (!s || s.trim().length === 0) {
+			return null
+		}
+
+		const trimTrailingComma = (str: string): string => str.replace(/,(\s*)$/, "$1")
+
+		const completePrimitiveSuffix = (pb: string): string => {
+			// Complete booleans/null prefixes
+			if (/^(t|tr|tru)$/.test(pb)) return "e" // true
+			if (/^(f|fa|fal|fals)$/.test(pb)) return "e" // false
+			if (/^(n|nu|nul)$/.test(pb)) return "l" // null
+			// Complete numeric partials like "-" or "12."
+			if (/^-?$/.test(pb)) return "0"
+			if (/^-?\d+\.$/.test(pb)) return "0"
+			return ""
+		}
+
+		const stripIncompleteUnicodeAtEnd = (input: string): string => {
+			const uniIndex = input.lastIndexOf("\\u")
+			if (uniIndex !== -1) {
+				const tail = input.slice(uniIndex + 2)
+				if (!/^[0-9a-fA-F]{4}$/.test(tail)) {
+					return input.slice(uniIndex) ? input.slice(0, uniIndex) : input
+				}
+			}
+			return input
+		}
+
+		// 1) Handle in-flight strings
+		if (state.inString) {
+			// Drop dangling backslash to avoid invalid escape at buffer end
+			if (s.endsWith("\\")) s = s.slice(0, -1)
+			// Trim incomplete unicode escape (e.g. \u12)
+			s = stripIncompleteUnicodeAtEnd(s)
+			// Close the string
+			s += `"`
+		} else {
+			// 2) Not inside a string; if a primitive token is partially accumulated, try to complete it minimally
+			if (state.primitiveBuffer && state.primitiveBuffer.length > 0) {
+				const suffix = completePrimitiveSuffix(state.primitiveBuffer)
+				if (suffix) s += suffix
+			}
+		}
+
+		// 4) Before closing brackets, remove trailing commas to avoid JSON syntax errors
+		s = trimTrailingComma(s)
+
+		// 5) Close any open objects/arrays per the current stack
+		if (state.bracketStack.length > 0) {
+			for (let i = state.bracketStack.length - 1; i >= 0; i--) {
+				// Always ensure no trailing comma before we append a closer
+				s = trimTrailingComma(s)
+
+				const b = state.bracketStack[i]
+
+				s += b === "{" ? "}" : "]"
+			}
+		}
+
+		// 6) First parse attempt
+		try {
+			return JSON.parse(s)
+		} catch {
+			// 7) Second attempt: add one more null if still dangling and retry
+			try {
+				let s2 = s
+				const lastNonWs = this.findLastNonWhitespaceChar(s2)
+				if (lastNonWs === ":" || state.parserState === ParserState.EXPECT_VALUE) {
+					s2 += "null"
+				}
+				s2 = trimTrailingComma(s2)
+				return JSON.parse(s2)
+			} catch {
+				// 8) Final fallback: repeatedly trim trailing commas and retry
+				let s3 = s
+				for (let k = 0; k < 3; k++) {
+					const trimmed = trimTrailingComma(s3)
+					if (trimmed === s3) break
+					s3 = trimmed
+					try {
+						return JSON.parse(s3)
+					} catch {
+						// continue
+					}
+				}
+				return null
+			}
+		}
+	}
+
+	private findLastNonWhitespaceChar(str: string): string {
+		for (let i = str.length - 1; i >= 0; i--) {
+			const ch = str[i]
+			if (!/\s/.test(ch)) return ch
+		}
+		return ""
 	}
 
 	private onOpenTag(tag: string, toolName: string): string {

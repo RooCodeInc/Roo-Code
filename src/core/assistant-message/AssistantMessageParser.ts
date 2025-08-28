@@ -63,6 +63,9 @@ export class AssistantMessageParser {
 			const char = chunk[i]
 			this.accumulator += char
 			const currentPosition = accumulatorStartLength + i
+			if (this.currentToolUse && toolCallParam?.anthropicContent) {
+				this.currentToolUse.toolUseParam = toolCallParam.anthropicContent
+			}
 
 			// There should not be a param without a tool use.
 			if (this.currentToolUse && this.currentParamName) {
@@ -99,9 +102,6 @@ export class AssistantMessageParser {
 				const currentToolValue = this.accumulator.slice(this.currentToolUseStartIndex)
 				const toolUseClosingTag = `</${this.currentToolUse.name}>`
 				if (currentToolValue.endsWith(toolUseClosingTag)) {
-					if (toolCallParam?.anthropicContent && this.currentToolUse) {
-						this.currentToolUse.toolUseParam = toolCallParam.anthropicContent
-					}
 					// End of a tool use.
 					this.currentToolUse.partial = false
 

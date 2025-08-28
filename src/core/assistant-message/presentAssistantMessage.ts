@@ -492,7 +492,7 @@ export async function presentAssistantMessage(cline: Task) {
 						)
 					}
 
-					if (isMultiFileApplyDiffEnabled || toolCallEnabled) {
+					if (isMultiFileApplyDiffEnabled) {
 						await checkpointSaveAndMark(cline)
 						await applyDiffTool(cline, block, askApproval, handleError, pushToolResult, removeClosingTag)
 					} else {

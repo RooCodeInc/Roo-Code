@@ -378,7 +378,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					EXPERIMENT_IDS.MULTI_FILE_APPLY_DIFF,
 				)
 
-				if (isMultiFileApplyDiffEnabled || this.apiConfiguration?.toolCallEnabled === true) {
+				if (isMultiFileApplyDiffEnabled) {
 					this.diffStrategy = new MultiFileSearchReplaceDiffStrategy(this.fuzzyMatchThreshold)
 				}
 			})
@@ -2083,7 +2083,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						const streamingFailedMessage = this.abort
 							? undefined
 							: (error.message ?? JSON.stringify(serializeError(error), null, 2))
-
+						console.log(error)
 						// Now call abortTask after determining the cancel reason.
 						await this.abortTask()
 						await abortStream(cancelReason, streamingFailedMessage)

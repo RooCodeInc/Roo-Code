@@ -70,7 +70,7 @@ export async function applyDiffTool(
 		)
 
 		// If experiment is disabled, use legacy tool
-		if (!isMultiFileApplyDiffEnabled && !toolCallEnabled) {
+		if (!isMultiFileApplyDiffEnabled) {
 			return applyDiffToolLegacy(cline, block, askApproval, handleError, pushToolResult, removeClosingTag)
 		}
 	}
