@@ -733,7 +733,14 @@
 		},
 		"IMAGE_GENERATION": {
 			"name": "Bật tạo hình ảnh AI",
-			"description": "Khi được bật, Roo có thể tạo hình ảnh từ lời nhắc văn bản bằng các mô hình tạo hình ảnh của OpenRouter. Yêu cầu khóa API OpenRouter được cấu hình."
+			"description": "Khi được bật, Roo có thể tạo hình ảnh từ lời nhắc văn bản bằng các mô hình tạo hình ảnh của OpenRouter. Yêu cầu khóa API OpenRouter được cấu hình.",
+			"openRouterApiKeyLabel": "Khóa API OpenRouter",
+			"openRouterApiKeyPlaceholder": "Nhập khóa API OpenRouter của bạn",
+			"getApiKeyText": "Lấy khóa API của bạn từ",
+			"modelSelectionLabel": "Mô hình tạo hình ảnh",
+			"modelSelectionDescription": "Chọn mô hình để sử dụng cho việc tạo hình ảnh",
+			"warningMissingKey": "⚠️ Khóa API OpenRouter là bắt buộc để tạo hình ảnh. Vui lòng cấu hình ở trên.",
+			"successConfigured": "✓ Tạo hình ảnh đã được cấu hình và sẵn sàng sử dụng"
 		}
 	},
 	"promptCaching": {

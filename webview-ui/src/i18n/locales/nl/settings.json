@@ -733,7 +733,14 @@
 		},
 		"IMAGE_GENERATION": {
 			"name": "AI-afbeeldingsgeneratie inschakelen",
-			"description": "Wanneer ingeschakeld, kan Roo afbeeldingen genereren van tekstprompts met behulp van OpenRouter's afbeeldingsgeneratiemodellen. Vereist een geconfigureerde OpenRouter API-sleutel."
+			"description": "Wanneer ingeschakeld, kan Roo afbeeldingen genereren van tekstprompts met behulp van OpenRouter's afbeeldingsgeneratiemodellen. Vereist een geconfigureerde OpenRouter API-sleutel.",
+			"openRouterApiKeyLabel": "OpenRouter API-sleutel",
+			"openRouterApiKeyPlaceholder": "Voer je OpenRouter API-sleutel in",
+			"getApiKeyText": "Haal je API-sleutel op van",
+			"modelSelectionLabel": "Afbeeldingsgeneratiemodel",
+			"modelSelectionDescription": "Selecteer het model voor afbeeldingsgeneratie",
+			"warningMissingKey": "⚠️ OpenRouter API-sleutel is vereist voor afbeeldingsgeneratie. Configureer deze hierboven.",
+			"successConfigured": "✓ Afbeeldingsgeneratie is geconfigureerd en klaar voor gebruik"
 		}
 	},
 	"promptCaching": {

@@ -61,16 +61,18 @@ export const ImageGenerationSettings = ({
 				<div className="ml-2 space-y-3">
 					{/* API Key Configuration */}
 					<div>
-						<label className="block font-medium mb-1">OpenRouter API Key</label>
+						<label className="block font-medium mb-1">
+							{t("settings:experimental.IMAGE_GENERATION.openRouterApiKeyLabel")}
+						</label>
 						<VSCodeTextField
 							value={openRouterApiKey}
 							onInput={(e: any) => setOpenRouterApiKey(e.target.value)}
-							placeholder="Enter your OpenRouter API key"
+							placeholder={t("settings:experimental.IMAGE_GENERATION.openRouterApiKeyPlaceholder")}
 							className="w-full"
 							type="password"
 						/>
 						<p className="text-vscode-descriptionForeground text-xs mt-1">
-							Get your API key from{" "}
+							{t("settings:experimental.IMAGE_GENERATION.getApiKeyText")}{" "}
 							<a
 								href="https://openrouter.ai/keys"
 								target="_blank"
@@ -83,7 +85,9 @@ export const ImageGenerationSettings = ({
 
 					{/* Model Selection */}
 					<div>
-						<label className="block font-medium mb-1">Image Generation Model</label>
+						<label className="block font-medium mb-1">
+							{t("settings:experimental.IMAGE_GENERATION.modelSelectionLabel")}
+						</label>
 						<VSCodeDropdown
 							value={selectedModel}
 							onChange={(e: any) => setSelectedModel(e.target.value)}
@@ -95,20 +99,20 @@ export const ImageGenerationSettings = ({
 							))}
 						</VSCodeDropdown>
 						<p className="text-vscode-descriptionForeground text-xs mt-1">
-							Select the model to use for image generation
+							{t("settings:experimental.IMAGE_GENERATION.modelSelectionDescription")}
 						</p>
 					</div>
 
 					{/* Status Message */}
 					{enabled && !openRouterApiKey && (
 						<div className="p-2 bg-vscode-editorWarning-background text-vscode-editorWarning-foreground rounded text-sm">
-							⚠️ OpenRouter API key is required for image generation. Please configure it above.
+							{t("settings:experimental.IMAGE_GENERATION.warningMissingKey")}
 						</div>
 					)}
 
 					{enabled && openRouterApiKey && (
 						<div className="p-2 bg-vscode-editorInfo-background text-vscode-editorInfo-foreground rounded text-sm">
-							✓ Image generation is configured and ready to use
+							{t("settings:experimental.IMAGE_GENERATION.successConfigured")}
 						</div>
 					)}
 				</div>

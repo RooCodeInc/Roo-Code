@@ -733,7 +733,14 @@
 		},
 		"IMAGE_GENERATION": {
 			"name": "Abilita generazione immagini AI",
-			"description": "Quando abilitato, Roo può generare immagini da prompt di testo utilizzando i modelli di generazione immagini di OpenRouter. Richiede una chiave API OpenRouter configurata."
+			"description": "Quando abilitato, Roo può generare immagini da prompt di testo utilizzando i modelli di generazione immagini di OpenRouter. Richiede una chiave API OpenRouter configurata.",
+			"openRouterApiKeyLabel": "Chiave API OpenRouter",
+			"openRouterApiKeyPlaceholder": "Inserisci la tua chiave API OpenRouter",
+			"getApiKeyText": "Ottieni la tua chiave API da",
+			"modelSelectionLabel": "Modello di generazione immagini",
+			"modelSelectionDescription": "Seleziona il modello per la generazione di immagini",
+			"warningMissingKey": "⚠️ La chiave API OpenRouter è richiesta per la generazione di immagini. Configurala sopra.",
+			"successConfigured": "✓ La generazione di immagini è configurata e pronta per l'uso"
 		}
 	},
 	"promptCaching": {

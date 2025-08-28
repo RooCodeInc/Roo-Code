@@ -733,7 +733,14 @@
 		},
 		"IMAGE_GENERATION": {
 			"name": "AI görüntü üretimini etkinleştir",
-			"description": "Etkinleştirildiğinde, Roo OpenRouter'ın görüntü üretim modellerini kullanarak metin istemlerinden görüntüler üretebilir. Yapılandırılmış bir OpenRouter API anahtarı gerektirir."
+			"description": "Etkinleştirildiğinde, Roo OpenRouter'ın görüntü üretim modellerini kullanarak metin istemlerinden görüntüler üretebilir. Yapılandırılmış bir OpenRouter API anahtarı gerektirir.",
+			"openRouterApiKeyLabel": "OpenRouter API Anahtarı",
+			"openRouterApiKeyPlaceholder": "OpenRouter API anahtarınızı girin",
+			"getApiKeyText": "API anahtarınızı alın",
+			"modelSelectionLabel": "Görüntü Üretim Modeli",
+			"modelSelectionDescription": "Görüntü üretimi için kullanılacak modeli seçin",
+			"warningMissingKey": "⚠️ Görüntü üretimi için OpenRouter API anahtarı gereklidir. Lütfen yukarıda yapılandırın.",
+			"successConfigured": "✓ Görüntü üretimi yapılandırılmış ve kullanıma hazır"
 		}
 	},
 	"promptCaching": {

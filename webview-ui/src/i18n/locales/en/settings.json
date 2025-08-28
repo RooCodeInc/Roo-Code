@@ -731,7 +731,14 @@
 		},
 		"IMAGE_GENERATION": {
 			"name": "Enable AI image generation",
-			"description": "When enabled, Roo can generate images from text prompts using OpenRouter's image generation models. Requires an OpenRouter API key to be configured."
+			"description": "When enabled, Roo can generate images from text prompts using OpenRouter's image generation models. Requires an OpenRouter API key to be configured.",
+			"openRouterApiKeyLabel": "OpenRouter API Key",
+			"openRouterApiKeyPlaceholder": "Enter your OpenRouter API key",
+			"getApiKeyText": "Get your API key from",
+			"modelSelectionLabel": "Image Generation Model",
+			"modelSelectionDescription": "Select the model to use for image generation",
+			"warningMissingKey": "⚠️ OpenRouter API key is required for image generation. Please configure it above.",
+			"successConfigured": "✓ Image generation is configured and ready to use"
 		}
 	},
 	"promptCaching": {

@@ -732,7 +732,14 @@
 		},
 		"IMAGE_GENERATION": {
 			"name": "KI-Bildgenerierung aktivieren",
-			"description": "Wenn aktiviert, kann Roo Bilder aus Textprompts mit OpenRouters Bildgenerierungsmodellen erstellen. Erfordert einen konfigurierten OpenRouter API-Schlüssel."
+			"description": "Wenn aktiviert, kann Roo Bilder aus Textprompts mit OpenRouters Bildgenerierungsmodellen erstellen. Erfordert einen konfigurierten OpenRouter API-Schlüssel.",
+			"openRouterApiKeyLabel": "OpenRouter API-Schlüssel",
+			"openRouterApiKeyPlaceholder": "Gib deinen OpenRouter API-Schlüssel ein",
+			"getApiKeyText": "Hol dir deinen API-Schlüssel von",
+			"modelSelectionLabel": "Bildgenerierungsmodell",
+			"modelSelectionDescription": "Wähle das Modell für die Bildgenerierung aus",
+			"warningMissingKey": "⚠️ OpenRouter API-Schlüssel ist für Bildgenerierung erforderlich. Bitte konfiguriere ihn oben.",
+			"successConfigured": "✓ Bildgenerierung ist konfiguriert und einsatzbereit"
 		}
 	},
 	"promptCaching": {
