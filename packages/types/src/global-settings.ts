@@ -148,6 +148,12 @@ export const globalSettingsSchema = z.object({
 	hasOpenedModeSelector: z.boolean().optional(),
 	lastModeExportPath: z.string().optional(),
 	lastModeImportPath: z.string().optional(),
+
+	/**
+	 * Custom instruction file paths, directories, or glob patterns.
+	 * Supports single files, directories, glob patterns, and parent directory paths.
+	 */
+	customInstructionPaths: z.array(z.string()).optional(),
 })
 
 export type GlobalSettings = z.infer<typeof globalSettingsSchema>

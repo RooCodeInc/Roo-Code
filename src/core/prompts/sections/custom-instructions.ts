@@ -2,6 +2,7 @@ import fs from "fs/promises"
 import path from "path"
 import * as os from "os"
 import { Dirent } from "fs"
+import { glob } from "glob"
 
 import { isLanguage } from "@roo-code/types"
 
@@ -261,6 +262,128 @@ async function loadAgentRulesFile(cwd: string): Promise<string> {
 	return ""
 }
 
+/**
+ * Load custom instruction files from specified paths, directories, or glob patterns
+ * @param cwd Current working directory for resolving relative paths
+ * @param customPaths Array of paths, directories, or glob patterns
+ * @returns Combined content from all loaded instruction files
+ */
+export async function loadCustomInstructionFiles(cwd: string, customPaths?: string[]): Promise<string> {
+	if (!customPaths || customPaths.length === 0) {
+		return ""
+	}
+
+	const loadedFiles: Array<{ path: string; content: string }> = []
+	const MAX_FILE_SIZE = 1024 * 1024 // 1MB limit per file
+	const ALLOWED_EXTENSIONS = [".md", ".markdown", ".txt"]
+
+	for (const pathPattern of customPaths) {
+		try {
+			// Resolve the path relative to the workspace
+			const resolvedPath = path.isAbsolute(pathPattern) ? pathPattern : path.resolve(cwd, pathPattern)
+
+			// Security validation: ensure path is within workspace or parent directories
+			const normalizedPath = path.normalize(resolvedPath)
+			const normalizedCwd = path.normalize(cwd)
+			const parentDir = path.dirname(normalizedCwd)
+
+			// Allow files within workspace or one level up (for monorepo scenarios)
+			if (!normalizedPath.startsWith(normalizedCwd) && !normalizedPath.startsWith(parentDir)) {
+				console.warn(`Skipping instruction path outside allowed directories: ${pathPattern}`)
+				continue
+			}
+
+			// Check if it's a directory
+			try {
+				const stats = await fs.stat(resolvedPath)
+				if (stats.isDirectory()) {
+					// Load all markdown and text files from the directory
+					const dirFiles = await fs.readdir(resolvedPath, { withFileTypes: true })
+					for (const file of dirFiles) {
+						if (file.isFile()) {
+							const ext = path.extname(file.name).toLowerCase()
+							if (ALLOWED_EXTENSIONS.includes(ext)) {
+								const filePath = path.join(resolvedPath, file.name)
+								const content = await loadSingleFile(filePath, MAX_FILE_SIZE)
+								if (content) {
+									loadedFiles.push({ path: filePath, content })
+								}
+							}
+						}
+					}
+					continue
+				} else if (stats.isFile()) {
+					// It's a single file
+					const ext = path.extname(resolvedPath).toLowerCase()
+					if (ALLOWED_EXTENSIONS.includes(ext)) {
+						const content = await loadSingleFile(resolvedPath, MAX_FILE_SIZE)
+						if (content) {
+							loadedFiles.push({ path: resolvedPath, content })
+						}
+					}
+					continue
+				}
+			} catch (err) {
+				// File/directory doesn't exist, might be a glob pattern
+			}
+
+			// Try as a glob pattern
+			const matches = await glob(pathPattern, {
+				cwd: cwd,
+				absolute: true,
+				nodir: true,
+				ignore: ["**/node_modules/**", "**/.git/**"],
+			})
+
+			for (const matchedFile of matches) {
+				const ext = path.extname(matchedFile).toLowerCase()
+				if (ALLOWED_EXTENSIONS.includes(ext)) {
+					// Apply same security validation
+					const normalizedMatch = path.normalize(matchedFile)
+					if (!normalizedMatch.startsWith(normalizedCwd) && !normalizedMatch.startsWith(parentDir)) {
+						console.warn(`Skipping matched file outside allowed directories: ${matchedFile}`)
+						continue
+					}
+
+					const content = await loadSingleFile(matchedFile, MAX_FILE_SIZE)
+					if (content) {
+						loadedFiles.push({ path: matchedFile, content })
+					}
+				}
+			}
+		} catch (error) {
+			console.warn(`Error processing custom instruction path "${pathPattern}":`, error)
+		}
+	}
+
+	// Combine all loaded content with file headers
+	if (loadedFiles.length === 0) {
+		return ""
+	}
+
+	return loadedFiles
+		.map((file) => `# Custom instructions from ${path.relative(cwd, file.path)}:\n${file.content}`)
+		.join("\n\n")
+}
+
+/**
+ * Load a single file with size validation
+ */
+async function loadSingleFile(filePath: string, maxSize: number): Promise<string | null> {
+	try {
+		const stats = await fs.stat(filePath)
+		if (stats.size > maxSize) {
+			console.warn(`Skipping large instruction file (>${maxSize} bytes): ${filePath}`)
+			return null
+		}
+		const content = await fs.readFile(filePath, "utf-8")
+		return content.trim()
+	} catch (error) {
+		console.warn(`Error reading instruction file "${filePath}":`, error)
+		return null
+	}
+}
+
 export async function addCustomInstructions(
 	modeCustomInstructions: string,
 	globalCustomInstructions: string,
@@ -270,6 +393,7 @@ export async function addCustomInstructions(
 		language?: string
 		rooIgnoreInstructions?: string
 		settings?: SystemPromptSettings
+		customInstructionPaths?: string[]
 	} = {},
 ): Promise<string> {
 	const sections = []
@@ -364,6 +488,14 @@ export async function addCustomInstructions(
 
 	if (rules.length > 0) {
 		sections.push(`Rules:\n\n${rules.join("\n\n")}`)
+	}
+
+	// Load custom instruction files from paths
+	if (options.customInstructionPaths && options.customInstructionPaths.length > 0) {
+		const customFileContent = await loadCustomInstructionFiles(cwd, options.customInstructionPaths)
+		if (customFileContent && customFileContent.trim()) {
+			sections.push(`Custom Instruction Files:\n\n${customFileContent.trim()}`)
+		}
 	}
 
 	const joinedSections = sections.join("\n\n")

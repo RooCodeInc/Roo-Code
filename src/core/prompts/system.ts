@@ -62,6 +62,7 @@ async function generatePrompt(
 	settings?: SystemPromptSettings,
 	todoList?: TodoItem[],
 	modelId?: string,
+	customInstructionPaths?: string[],
 ): Promise<string> {
 	if (!context) {
 		throw new Error("Extension context is required for generating system prompt")
@@ -128,6 +129,7 @@ ${await addCustomInstructions(baseInstructions, globalCustomInstructions || "", 
 	language: language ?? formatLanguage(vscode.env.language),
 	rooIgnoreInstructions,
 	settings,
+	customInstructionPaths,
 })}`
 
 	return basePrompt
@@ -153,6 +155,7 @@ export const SYSTEM_PROMPT = async (
 	settings?: SystemPromptSettings,
 	todoList?: TodoItem[],
 	modelId?: string,
+	customInstructionPaths?: string[],
 ): Promise<string> => {
 	if (!context) {
 		throw new Error("Extension context is required for generating system prompt")
@@ -191,6 +194,7 @@ export const SYSTEM_PROMPT = async (
 				language: language ?? formatLanguage(vscode.env.language),
 				rooIgnoreInstructions,
 				settings,
+				customInstructionPaths,
 			},
 		)
 
@@ -225,5 +229,6 @@ ${customInstructions}`
 		settings,
 		todoList,
 		modelId,
+		customInstructionPaths,
 	)
 }

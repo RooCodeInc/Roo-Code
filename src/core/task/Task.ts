@@ -2228,6 +2228,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			customModes,
 			customModePrompts,
 			customInstructions,
+			customInstructionPaths,
 			experiments,
 			enableMcpServerCreation,
 			browserToolEnabled,
@@ -2271,6 +2272,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				},
 				undefined, // todoList
 				this.api.getModel().id,
+				customInstructionPaths,
 			)
 		})()
 	}
