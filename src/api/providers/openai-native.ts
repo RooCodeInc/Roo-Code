@@ -1165,7 +1165,80 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 	}
 
 	async completePrompt(prompt: string): Promise<string> {
-		// ALL models now use the Responses API which doesn't support non-streaming completion
-		throw new Error(`completePrompt is not supported. Use createMessage (Responses API) instead.`)
+		try {
+			const model = this.getModel()
+			const { verbosity, reasoning } = model
+
+			// Resolve reasoning effort for models that support it
+			const reasoningEffort = this.getReasoningEffort(model)
+
+			// Build request body for Responses API
+			const requestBody: any = {
+				model: model.id,
+				input: [
+					{
+						role: "user",
+						content: [{ type: "input_text", text: prompt }],
+					},
+				],
+				stream: false, // Non-streaming for completePrompt
+				store: false, // Don't store prompt completions
+			}
+
+			// Add reasoning if supported
+			if (reasoningEffort) {
+				requestBody.reasoning = {
+					effort: reasoningEffort,
+					...(this.options.enableGpt5ReasoningSummary ? { summary: "auto" as const } : {}),
+				}
+			}
+
+			// Only include temperature if the model supports it
+			if (model.info.supportsTemperature !== false) {
+				requestBody.temperature =
+					this.options.modelTemperature ??
+					(model.id.startsWith(GPT5_MODEL_PREFIX)
+						? GPT5_DEFAULT_TEMPERATURE
+						: OPENAI_NATIVE_DEFAULT_TEMPERATURE)
+			}
+
+			// Include max_output_tokens if available
+			if (model.maxTokens) {
+				requestBody.max_output_tokens = model.maxTokens
+			}
+
+			// Include text.verbosity only when the model explicitly supports it
+			if (model.info.supportsVerbosity === true) {
+				requestBody.text = { verbosity: (verbosity || "medium") as VerbosityLevel }
+			}
+
+			// Make the non-streaming request
+			const response = await (this.client as any).responses.create(requestBody)
+
+			// Extract text from the response
+			if (response?.output && Array.isArray(response.output)) {
+				for (const outputItem of response.output) {
+					if (outputItem.type === "message" && outputItem.content) {
+						for (const content of outputItem.content) {
+							if (content.type === "output_text" && content.text) {
+								return content.text
+							}
+						}
+					}
+				}
+			}
+
+			// Fallback: check for direct text in response
+			if (response?.text) {
+				return response.text
+			}
+
+			return ""
+		} catch (error) {
+			if (error instanceof Error) {
+				throw new Error(`OpenAI Native completion error: ${error.message}`)
+			}
+			throw error
+		}
 	}
 }
