@@ -31,9 +31,6 @@ export type OpenAiNativeModel = ReturnType<OpenAiNativeHandler["getModel"]>
 // Constants for model identification
 const GPT5_MODEL_PREFIX = "gpt-5"
 
-// Debug flag for logging (can be controlled via environment variable or config)
-const DEBUG_RESPONSES_API = process.env.DEBUG_RESPONSES_API === "true"
-
 export class OpenAiNativeHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
 	private client: OpenAI
@@ -198,7 +195,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		// so requests do not default to very large limits (e.g., 120k).
 		interface Gpt5RequestBody {
 			model: string
-			input: string
+			input: Array<{ role: "user" | "assistant"; content: any[] }>
 			stream: boolean
 			reasoning?: { effort: ReasoningEffortWithMinimal; summary?: "auto" }
 			text?: { verbosity: VerbosityLevel }
@@ -209,7 +206,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			instructions?: string
 		}
 
-		return {
+		const body: Gpt5RequestBody = {
 			model: model.id,
 			input: formattedInput,
 			stream: true,
@@ -224,7 +221,6 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 					...(this.options.enableGpt5ReasoningSummary ? { summary: "auto" as const } : {}),
 				},
 			}),
-			text: { verbosity: (verbosity || "medium") as VerbosityLevel },
 			// Only include temperature if the model supports it
 			...(model.info.supportsTemperature !== false && {
 				temperature:
@@ -238,6 +234,13 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			...(model.maxTokens ? { max_output_tokens: model.maxTokens } : {}),
 			...(requestPreviousResponseId && { previous_response_id: requestPreviousResponseId }),
 		}
+
+		// Include text.verbosity only when the model explicitly supports it
+		if (model.info.supportsVerbosity === true) {
+			body.text = { verbosity: (verbosity || "medium") as VerbosityLevel }
+		}
+
+		return body
 	}
 
 	private async *executeRequest(
@@ -269,11 +272,6 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 
 			if (is400Error && requestBody.previous_response_id && isPreviousResponseError) {
 				// Log the error and retry without the previous_response_id
-				if (DEBUG_RESPONSES_API) {
-					console.debug(
-						`[Responses API] Previous response ID not found (${requestBody.previous_response_id}), retrying without it`,
-					)
-				}
 
 				// Remove the problematic previous_response_id and retry
 				const retryRequestBody = { ...requestBody }
@@ -440,11 +438,6 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 
 				if (response.status === 400 && requestBody.previous_response_id && isPreviousResponseError) {
 					// Log the error and retry without the previous_response_id
-					if (DEBUG_RESPONSES_API) {
-						console.debug(
-							`[Responses API] Previous response ID not found (${requestBody.previous_response_id}), retrying without it`,
-						)
-					}
 
 					// Remove the problematic previous_response_id and retry
 					const retryRequestBody = { ...requestBody }

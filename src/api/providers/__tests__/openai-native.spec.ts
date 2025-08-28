@@ -1375,5 +1375,86 @@ describe("GPT-5 streaming event coverage (additional)", () => {
 				}
 			}).rejects.toThrow("Responses API error: Model overloaded")
 		})
+
+		// New tests: ensure text.verbosity is omitted for models without supportsVerbosity
+		describe("Verbosity gating for non-GPT-5 models", () => {
+			it("should omit text.verbosity for gpt-4.1", async () => {
+				const mockFetch = vitest.fn().mockResolvedValue({
+					ok: true,
+					body: new ReadableStream({
+						start(controller) {
+							controller.enqueue(
+								new TextEncoder().encode('data: {"type":"response.done","response":{}}\n\n'),
+							)
+							controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"))
+							controller.close()
+						},
+					}),
+				})
+				;(global as any).fetch = mockFetch as any
+
+				// Force SDK path to fail so we use fetch fallback
+				mockResponsesCreate.mockRejectedValue(new Error("SDK not available"))
+
+				const handler = new OpenAiNativeHandler({
+					apiModelId: "gpt-4.1",
+					openAiNativeApiKey: "test-api-key",
+					verbosity: "high",
+				})
+
+				const systemPrompt = "You are a helpful assistant."
+				const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Hello!" }]
+				const stream = handler.createMessage(systemPrompt, messages)
+
+				for await (const _ of stream) {
+					// drain
+				}
+
+				const bodyStr = (mockFetch.mock.calls[0][1] as any).body as string
+				const parsedBody = JSON.parse(bodyStr)
+				expect(parsedBody.model).toBe("gpt-4.1")
+				expect(parsedBody.text).toBeUndefined()
+				expect(bodyStr).not.toContain('"verbosity"')
+			})
+
+			it("should omit text.verbosity for gpt-4o", async () => {
+				const mockFetch = vitest.fn().mockResolvedValue({
+					ok: true,
+					body: new ReadableStream({
+						start(controller) {
+							controller.enqueue(
+								new TextEncoder().encode('data: {"type":"response.done","response":{}}\n\n'),
+							)
+							controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"))
+							controller.close()
+						},
+					}),
+				})
+				;(global as any).fetch = mockFetch as any
+
+				// Force SDK path to fail so we use fetch fallback
+				mockResponsesCreate.mockRejectedValue(new Error("SDK not available"))
+
+				const handler = new OpenAiNativeHandler({
+					apiModelId: "gpt-4o",
+					openAiNativeApiKey: "test-api-key",
+					verbosity: "low",
+				})
+
+				const systemPrompt = "You are a helpful assistant."
+				const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Hello!" }]
+				const stream = handler.createMessage(systemPrompt, messages)
+
+				for await (const _ of stream) {
+					// drain
+				}
+
+				const bodyStr = (mockFetch.mock.calls[0][1] as any).body as string
+				const parsedBody = JSON.parse(bodyStr)
+				expect(parsedBody.model).toBe("gpt-4o")
+				expect(parsedBody.text).toBeUndefined()
+				expect(bodyStr).not.toContain('"verbosity"')
+			})
+		})
 	})
 })
