@@ -47,6 +47,9 @@
 		"geminiProvider": "Gemini",
 		"geminiApiKeyLabel": "API-sleutel:",
 		"geminiApiKeyPlaceholder": "Voer uw Gemini API-sleutel in",
+		"vercelAiGatewayProvider": "Vercel AI Gateway",
+		"vercelAiGatewayApiKeyLabel": "API-sleutel",
+		"vercelAiGatewayApiKeyPlaceholder": "Voer uw Vercel AI Gateway API-sleutel in",
 		"mistralProvider": "Mistral",
 		"mistralApiKeyLabel": "API-sleutel:",
 		"mistralApiKeyPlaceholder": "Voer uw Mistral API-sleutel in",
@@ -113,6 +116,7 @@
 			"modelDimensionRequired": "Modelafmeting is vereist",
 			"geminiApiKeyRequired": "Gemini API-sleutel is vereist",
 			"mistralApiKeyRequired": "Mistral API-sleutel is vereist",
+			"vercelAiGatewayApiKeyRequired": "Vercel AI Gateway API-sleutel is vereist",
 			"ollamaBaseUrlRequired": "Ollama basis-URL is vereist",
 			"baseUrlRequired": "Basis-URL is vereist",
 			"modelDimensionMinValue": "Modelafmeting moet groter zijn dan 0",
@@ -741,6 +745,17 @@
 		"NEW_TASK_REQUIRE_TODOS": {
 			"name": "'todos'-lijst vereisen voor nieuwe taken",
 			"description": "Wanneer ingeschakeld, vereist de new_task-tool dat een todos-parameter wordt opgegeven. Dit zorgt ervoor dat alle nieuwe taken beginnen met een duidelijke lijst met doelstellingen. Wanneer uitgeschakeld (standaard), blijft de todos-parameter optioneel voor achterwaartse compatibiliteit."
+		},
+		"IMAGE_GENERATION": {
+			"name": "AI-afbeeldingsgeneratie inschakelen",
+			"description": "Wanneer ingeschakeld, kan Roo afbeeldingen genereren van tekstprompts met behulp van OpenRouter's afbeeldingsgeneratiemodellen. Vereist een geconfigureerde OpenRouter API-sleutel.",
+			"openRouterApiKeyLabel": "OpenRouter API-sleutel",
+			"openRouterApiKeyPlaceholder": "Voer je OpenRouter API-sleutel in",
+			"getApiKeyText": "Haal je API-sleutel op van",
+			"modelSelectionLabel": "Afbeeldingsgeneratiemodel",
+			"modelSelectionDescription": "Selecteer het model voor afbeeldingsgeneratie",
+			"warningMissingKey": "⚠️ OpenRouter API-sleutel is vereist voor afbeeldingsgeneratie. Configureer deze hierboven.",
+			"successConfigured": "✓ Afbeeldingsgeneratie is geconfigureerd en klaar voor gebruik"
 		}
 	},
 	"promptCaching": {

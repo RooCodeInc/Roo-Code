@@ -584,8 +584,8 @@ importers:
         specifier: ^1.14.0
         version: 1.14.0(typescript@5.8.3)
       '@roo-code/cloud':
-        specifier: ^0.22.0
-        version: 0.22.0
+        specifier: ^0.29.0
+        version: 0.29.0
       '@roo-code/ipc':
         specifier: workspace:^
         version: link:../packages/ipc
@@ -661,6 +661,9 @@ importers:
       isbinaryfile:
         specifier: ^5.0.2
         version: 5.0.4
+      jwt-decode:
+        specifier: ^4.0.0
+        version: 4.0.0
       lodash.debounce:
         specifier: ^4.0.8
         version: 4.0.8
@@ -680,8 +683,8 @@ importers:
         specifier: ^0.5.17
         version: 0.5.17
       openai:
-        specifier: ^5.0.0
-        version: 5.5.1(ws@8.18.3)(zod@3.25.61)
+        specifier: ^5.12.2
+        version: 5.12.2(ws@8.18.3)(zod@3.25.61)
       os-name:
         specifier: ^6.0.0
         version: 6.1.0
@@ -3343,11 +3346,11 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@roo-code/cloud@0.22.0':
-    resolution: {integrity: sha512-s1d4wcDYeDzcwr+YypMWDlNKL4f2osOZ3NoIlD36LCfFeMs+hnluZPS1oXX3WHtmPDC76vSzPMfwW2Ef41hEoA==}
+  '@roo-code/cloud@0.29.0':
+    resolution: {integrity: sha512-fXN0mdkd5GezpVrCspe6atUkwvSk5D4wF80g+lc8E3aPVqEAozoI97kHNulRChGlBw7UIdd5xxbr1Z8Jtn+S/Q==}
 
-  '@roo-code/types@1.61.0':
-    resolution: {integrity: sha512-YJdFc6aYfaZ8EN08KbWaKLehRr1dcN3G3CzDjpppb08iehSEUZMycax/ryP5/G4vl34HTdtzyHNMboDen5ElUg==}
+  '@roo-code/types@1.63.0':
+    resolution: {integrity: sha512-pX8ftkDq1CySBbkUTIW9/QEG52ttFT/kl0ID286l0L3W22wpGRUct6PCedNI9kLDM4s5sxaUeZx7b3rUChikkw==}
 
   '@sec-ant/readable-stream@0.4.1':
     resolution: {integrity: sha512-831qok9r2t8AlxLko40y2ebgSDhenenCatLVeW/uBtnHPyhHOvG0C7TvfgecV+wHzIm5KUICgzmVpWS+IMEAeg==}
@@ -7001,6 +7004,10 @@ packages:
   jws@4.0.0:
     resolution: {integrity: sha512-KDncfTmOZoOMTFG4mBlG0qUIOlc03fmzH+ru6RgYVZhPkyiy/92Owlt/8UEN+a4TXR1FQetfIpJE8ApdvdVxTg==}
 
+  jwt-decode@4.0.0:
+    resolution: {integrity: sha512-+KJGIyHgkGuIq3IEBNftfhW/LfWhXUIY6OmyVWjliu5KH1y0fw7VQ8YndE2O4qZdMSd9SqbnC8GOcZEy0Om7sA==}
+    engines: {node: '>=18'}
+
   katex@0.16.22:
     resolution: {integrity: sha512-XCHRdUw4lf3SKBaJe4EvgqIuWwkPSo9XoeO8GjQW94Bp7TWv9hNhzZjZ+OH9yf1UmLygb7DIT5GSFQiyt16zYg==}
     hasBin: true
@@ -7932,8 +7939,8 @@ packages:
     resolution: {integrity: sha512-cxN6aIDPz6rm8hbebcP7vrQNhvRcveZoJU72Y7vskh4oIm+BZwBECnx5nTmrlres1Qapvx27Qo1Auukpf8PKXw==}
     engines: {node: '>=18'}
 
-  openai@5.5.1:
-    resolution: {integrity: sha512-5i19097mGotHA1eFsM6Tjd/tJ8uo9sa5Ysv4Q6bKJ2vtN6rc0MzMrUefXnLXYAJcmMQrC1Efhj0AvfIkXrQamw==}
+  openai@5.12.2:
+    resolution: {integrity: sha512-xqzHHQch5Tws5PcKR2xsZGX9xtch+JQFz5zb14dGqlshmmDAFBFEWmeIpf7wVqWV+w7Emj7jRgkNJakyKE0tYQ==}
     hasBin: true
     peerDependencies:
       ws: ^8.18.0
@@ -12725,10 +12732,11 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.40.2':
     optional: true
 
-  '@roo-code/cloud@0.22.0':
+  '@roo-code/cloud@0.29.0':
     dependencies:
-      '@roo-code/types': 1.61.0
+      '@roo-code/types': 1.63.0
       ioredis: 5.6.1
+      jwt-decode: 4.0.0
       p-wait-for: 5.0.2
       socket.io-client: 4.8.1
       zod: 3.25.76
@@ -12737,7 +12745,7 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@roo-code/types@1.61.0':
+  '@roo-code/types@1.63.0':
     dependencies:
       zod: 3.25.76
 
@@ -17002,6 +17010,8 @@ snapshots:
       jwa: 2.0.1
       safe-buffer: 5.2.1
 
+  jwt-decode@4.0.0: {}
+
   katex@0.16.22:
     dependencies:
       commander: 8.3.0
@@ -18181,7 +18191,7 @@ snapshots:
       is-inside-container: 1.0.0
       is-wsl: 3.1.0
 
-  openai@5.5.1(ws@8.18.3)(zod@3.25.61):
+  openai@5.12.2(ws@8.18.3)(zod@3.25.61):
     optionalDependencies:
       ws: 8.18.3
       zod: 3.25.61

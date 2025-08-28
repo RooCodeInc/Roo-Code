@@ -1357,7 +1357,7 @@ export const webviewMessageHandler = async (
 			await provider.postStateToWebview()
 			break
 		case "showRooIgnoredFiles":
-			await updateGlobalState("showRooIgnoredFiles", message.bool ?? true)
+			await updateGlobalState("showRooIgnoredFiles", message.bool ?? false)
 			await provider.postStateToWebview()
 			break
 		case "hasOpenedModeSelector":
@@ -2147,6 +2147,12 @@ export const webviewMessageHandler = async (
 						settings.codebaseIndexMistralApiKey,
 					)
 				}
+				if (settings.codebaseIndexVercelAiGatewayApiKey !== undefined) {
+					await provider.contextProxy.storeSecret(
+						"codebaseIndexVercelAiGatewayApiKey",
+						settings.codebaseIndexVercelAiGatewayApiKey,
+					)
+				}
 
 				// Send success response first - settings are saved regardless of validation
 				await provider.postMessageToWebview({
@@ -2281,6 +2287,9 @@ export const webviewMessageHandler = async (
 			))
 			const hasGeminiApiKey = !!(await provider.context.secrets.get("codebaseIndexGeminiApiKey"))
 			const hasMistralApiKey = !!(await provider.context.secrets.get("codebaseIndexMistralApiKey"))
+			const hasVercelAiGatewayApiKey = !!(await provider.context.secrets.get(
+				"codebaseIndexVercelAiGatewayApiKey",
+			))
 
 			provider.postMessageToWebview({
 				type: "codeIndexSecretStatus",
@@ -2290,6 +2299,7 @@ export const webviewMessageHandler = async (
 					hasOpenAiCompatibleApiKey,
 					hasGeminiApiKey,
 					hasMistralApiKey,
+					hasVercelAiGatewayApiKey,
 				},
 			})
 			break

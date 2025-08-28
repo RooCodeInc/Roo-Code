@@ -325,6 +325,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 								case "appliedDiff":
 								case "newFileCreated":
 								case "insertContent":
+								case "generateImage":
 									setPrimaryButtonText(t("chat:save.title"))
 									setSecondaryButtonText(t("chat:reject.title"))
 									break
@@ -1047,6 +1048,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				"newFileCreated",
 				"searchAndReplace",
 				"insertContent",
+				"generateImage",
 			].includes(tool.tool)
 		}
 
@@ -1786,8 +1788,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	}
 
 	const areButtonsVisible = showScrollToBottom || primaryButtonText || secondaryButtonText || isStreaming
-
-	console.log("ChatView - render()")
 
 	return (
 		<div

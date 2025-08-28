@@ -50,6 +50,9 @@
 		"mistralProvider": "Mistral",
 		"mistralApiKeyLabel": "Klucz API:",
 		"mistralApiKeyPlaceholder": "Wprowadź swój klucz API Mistral",
+		"vercelAiGatewayProvider": "Vercel AI Gateway",
+		"vercelAiGatewayApiKeyLabel": "Klucz API",
+		"vercelAiGatewayApiKeyPlaceholder": "Wprowadź swój klucz API Vercel AI Gateway",
 		"openaiCompatibleProvider": "Kompatybilny z OpenAI",
 		"openAiKeyLabel": "Klucz API OpenAI",
 		"openAiKeyPlaceholder": "Wprowadź swój klucz API OpenAI",
@@ -113,6 +116,7 @@
 			"modelDimensionRequired": "Wymagany jest wymiar modelu",
 			"geminiApiKeyRequired": "Wymagany jest klucz API Gemini",
 			"mistralApiKeyRequired": "Klucz API Mistral jest wymagany",
+			"vercelAiGatewayApiKeyRequired": "Klucz API Vercel AI Gateway jest wymagany",
 			"ollamaBaseUrlRequired": "Wymagany jest bazowy adres URL Ollama",
 			"baseUrlRequired": "Wymagany jest bazowy adres URL",
 			"modelDimensionMinValue": "Wymiar modelu musi być większy niż 0",
@@ -741,6 +745,17 @@
 		"NEW_TASK_REQUIRE_TODOS": {
 			"name": "Wymagaj listy 'todos' dla nowych zadań",
 			"description": "Gdy włączone, narzędzie new_task będzie wymagało podania parametru todos. Zapewnia to, że wszystkie nowe zadania rozpoczynają się od jasnej listy celów. Gdy wyłączone (domyślnie), parametr todos pozostaje opcjonalny dla zachowania kompatybilności wstecznej."
+		},
+		"IMAGE_GENERATION": {
+			"name": "Włącz generowanie obrazów AI",
+			"description": "Gdy włączone, Roo może generować obrazy z promptów tekstowych używając modeli generowania obrazów OpenRouter. Wymaga skonfigurowanego klucza API OpenRouter.",
+			"openRouterApiKeyLabel": "Klucz API OpenRouter",
+			"openRouterApiKeyPlaceholder": "Wprowadź swój klucz API OpenRouter",
+			"getApiKeyText": "Uzyskaj swój klucz API od",
+			"modelSelectionLabel": "Model generowania obrazów",
+			"modelSelectionDescription": "Wybierz model do generowania obrazów",
+			"warningMissingKey": "⚠️ Klucz API OpenRouter jest wymagany do generowania obrazów. Skonfiguruj go powyżej.",
+			"successConfigured": "✓ Generowanie obrazów jest skonfigurowane i gotowe do użycia"
 		}
 	},
 	"promptCaching": {

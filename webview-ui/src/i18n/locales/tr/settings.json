@@ -50,6 +50,9 @@
 		"mistralProvider": "Mistral",
 		"mistralApiKeyLabel": "API Anahtarı:",
 		"mistralApiKeyPlaceholder": "Mistral API anahtarınızı girin",
+		"vercelAiGatewayProvider": "Vercel AI Gateway",
+		"vercelAiGatewayApiKeyLabel": "API Anahtarı",
+		"vercelAiGatewayApiKeyPlaceholder": "Vercel AI Gateway API anahtarınızı girin",
 		"openaiCompatibleProvider": "OpenAI Uyumlu",
 		"openAiKeyLabel": "OpenAI API Anahtarı",
 		"openAiKeyPlaceholder": "OpenAI API anahtarınızı girin",
@@ -113,6 +116,7 @@
 			"modelDimensionRequired": "Model boyutu gereklidir",
 			"geminiApiKeyRequired": "Gemini API anahtarı gereklidir",
 			"mistralApiKeyRequired": "Mistral API anahtarı gereklidir",
+			"vercelAiGatewayApiKeyRequired": "Vercel AI Gateway API anahtarı gereklidir",
 			"ollamaBaseUrlRequired": "Ollama temel URL'si gereklidir",
 			"baseUrlRequired": "Temel URL'si gereklidir",
 			"modelDimensionMinValue": "Model boyutu 0'dan büyük olmalıdır",
@@ -741,6 +745,17 @@
 		"NEW_TASK_REQUIRE_TODOS": {
 			"name": "Yeni görevler için 'todos' listesi gerektir",
 			"description": "Etkinleştirildiğinde, new_task aracı bir todos parametresi sağlanmasını gerektirir. Bu, tüm yeni görevlerin net bir hedef listesiyle başlamasını sağlar. Devre dışı bırakıldığında (varsayılan), todos parametresi geriye dönük uyumluluk için isteğe bağlı kalır."
+		},
+		"IMAGE_GENERATION": {
+			"name": "AI görüntü üretimini etkinleştir",
+			"description": "Etkinleştirildiğinde, Roo OpenRouter'ın görüntü üretim modellerini kullanarak metin istemlerinden görüntüler üretebilir. Yapılandırılmış bir OpenRouter API anahtarı gerektirir.",
+			"openRouterApiKeyLabel": "OpenRouter API Anahtarı",
+			"openRouterApiKeyPlaceholder": "OpenRouter API anahtarınızı girin",
+			"getApiKeyText": "API anahtarınızı alın",
+			"modelSelectionLabel": "Görüntü Üretim Modeli",
+			"modelSelectionDescription": "Görüntü üretimi için kullanılacak modeli seçin",
+			"warningMissingKey": "⚠️ Görüntü üretimi için OpenRouter API anahtarı gereklidir. Lütfen yukarıda yapılandırın.",
+			"successConfigured": "✓ Görüntü üretimi yapılandırılmış ve kullanıma hazır"
 		}
 	},
 	"promptCaching": {
