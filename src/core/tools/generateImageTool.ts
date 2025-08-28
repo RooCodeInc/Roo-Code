@@ -177,16 +177,12 @@ export async function generateImageTool(
 			cline.didEditFile = true
 
 			// Display the generated image in the chat using a text message with the image
-			await cline.say("text", `Image generated and saved to: ${getReadablePath(cline.cwd, finalPath)}`, [
-				result.imageData,
-			])
+			await cline.say("text", getReadablePath(cline.cwd, finalPath), [result.imageData])
 
 			// Record successful tool usage
 			cline.recordToolUsage("generate_image")
 
-			pushToolResult(
-				formatResponse.toolResult(`Image created successfully at ${getReadablePath(cline.cwd, finalPath)}`),
-			)
+			pushToolResult(formatResponse.toolResult(getReadablePath(cline.cwd, finalPath)))
 
 			return
 		}
