@@ -249,6 +249,7 @@ describe("mergeExtensionState", () => {
 			multiFileApplyDiff: true,
 			preventFocusDisruption: false,
 			newTaskRequireTodos: false,
+			imageGeneration: false,
 		})
 	})
 })

@@ -2,7 +2,7 @@ import { ToolArgs } from "./types"
 
 export function getGenerateImageDescription(args: ToolArgs): string {
 	return `## generate_image
-Description: Request to generate an image using AI models through OpenRouter API. This tool creates images from text prompts and saves them to the specified path. Requires OpenRouter API key to be configured in experimental settings.
+Description: Request to generate an image using AI models through OpenRouter API. This tool creates images from text prompts and saves them to the specified path.
 Parameters:
 - prompt: (required) The text prompt describing the image to generate
 - path: (required) The file path where the generated image should be saved (relative to the current workspace directory ${args.cwd}). The tool will automatically add the appropriate image extension if not provided.
