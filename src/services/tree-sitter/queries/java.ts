@@ -41,6 +41,11 @@ export default `
 (method_declaration
   name: (identifier) @name.definition.method) @definition.method
 
+; Method declarations with type - capture from type start
+(method_declaration
+  type: (_) @definition.method.start
+  name: (identifier) @name.definition.method)
+
 ; Inner class declarations
 (class_declaration
   (class_body
