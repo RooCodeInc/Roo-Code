@@ -1048,6 +1048,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				"newFileCreated",
 				"searchAndReplace",
 				"insertContent",
+				"generateImage",
 			].includes(tool.tool)
 		}
 
@@ -1195,7 +1196,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					return alwaysAllowReadOnly && (!isOutsideWorkspace || alwaysAllowReadOnlyOutsideWorkspace)
 				}
 
-				if (isWriteToolAction(message) || tool?.tool === "generateImage") {
+				if (isWriteToolAction(message)) {
 					return (
 						alwaysAllowWrite &&
 						(!isOutsideWorkspace || alwaysAllowWriteOutsideWorkspace) &&

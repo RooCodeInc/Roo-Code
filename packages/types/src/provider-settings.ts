@@ -112,14 +112,6 @@ const baseProviderSettingsSchema = z.object({
 
 	// Model verbosity.
 	verbosity: verbosityLevelsSchema.optional(),
-
-	// Image generation settings (experimental)
-	imageGenerationSettings: z
-		.object({
-			openRouterApiKey: z.string().optional(),
-			selectedModel: z.string().optional(),
-		})
-		.optional(),
 })
 
 // Several of the providers share common model config properties.
@@ -150,6 +142,13 @@ const openRouterSchema = baseProviderSettingsSchema.extend({
 	openRouterBaseUrl: z.string().optional(),
 	openRouterSpecificProvider: z.string().optional(),
 	openRouterUseMiddleOutTransform: z.boolean().optional(),
+	// Image generation settings (experimental)
+	imageGenerationSettings: z
+		.object({
+			openRouterApiKey: z.string().optional(),
+			selectedModel: z.string().optional(),
+		})
+		.optional(),
 })
 
 const bedrockSchema = apiModelIdProviderModelSchema.extend({
