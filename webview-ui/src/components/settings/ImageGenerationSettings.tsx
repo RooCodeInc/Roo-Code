@@ -29,7 +29,7 @@ export const ImageGenerationSettings = ({
 	const { t } = useAppTranslation()
 
 	// Get image generation settings from apiConfiguration
-	const imageGenerationSettings = apiConfiguration?.imageGenerationSettings || {}
+	const imageGenerationSettings = apiConfiguration?.openRouterImageGenerationSettings || {}
 	const [openRouterApiKey, setOpenRouterApiKey] = useState(imageGenerationSettings.openRouterApiKey || "")
 	const [selectedModel, setSelectedModel] = useState(
 		imageGenerationSettings.selectedModel || IMAGE_GENERATION_MODELS[0].value,
@@ -41,7 +41,7 @@ export const ImageGenerationSettings = ({
 			openRouterApiKey,
 			selectedModel,
 		}
-		setApiConfigurationField("imageGenerationSettings", newSettings)
+		setApiConfigurationField("openRouterImageGenerationSettings", newSettings)
 	}, [openRouterApiKey, selectedModel, setApiConfigurationField])
 
 	return (

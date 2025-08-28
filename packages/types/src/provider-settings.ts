@@ -143,7 +143,7 @@ const openRouterSchema = baseProviderSettingsSchema.extend({
 	openRouterSpecificProvider: z.string().optional(),
 	openRouterUseMiddleOutTransform: z.boolean().optional(),
 	// Image generation settings (experimental)
-	imageGenerationSettings: z
+	openRouterImageGenerationSettings: z
 		.object({
 			openRouterApiKey: z.string().optional(),
 			selectedModel: z.string().optional(),

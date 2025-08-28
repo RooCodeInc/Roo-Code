@@ -74,7 +74,7 @@ export async function generateImageTool(
 
 	// Get OpenRouter API key from experimental settings ONLY (no fallback to profile)
 	const apiConfiguration = state?.apiConfiguration
-	const imageGenerationSettings = apiConfiguration?.imageGenerationSettings
+	const imageGenerationSettings = apiConfiguration?.openRouterImageGenerationSettings
 	const openRouterApiKey = imageGenerationSettings?.openRouterApiKey
 
 	if (!openRouterApiKey) {
