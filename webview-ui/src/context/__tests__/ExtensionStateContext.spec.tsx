@@ -230,6 +230,7 @@ describe("mergeExtensionState", () => {
 				multiFileApplyDiff: true,
 				preventFocusDisruption: false,
 				newTaskRequireTodos: false,
+				imageGeneration: false,
 			} as Record<ExperimentId, boolean>,
 		}
 

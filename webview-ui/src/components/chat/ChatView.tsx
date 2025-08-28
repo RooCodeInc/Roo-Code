@@ -325,6 +325,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 								case "appliedDiff":
 								case "newFileCreated":
 								case "insertContent":
+								case "generateImage":
 									setPrimaryButtonText(t("chat:save.title"))
 									setSecondaryButtonText(t("chat:reject.title"))
 									break
@@ -1194,7 +1195,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					return alwaysAllowReadOnly && (!isOutsideWorkspace || alwaysAllowReadOnlyOutsideWorkspace)
 				}
 
-				if (isWriteToolAction(message)) {
+				if (isWriteToolAction(message) || tool?.tool === "generateImage") {
 					return (
 						alwaysAllowWrite &&
 						(!isOutsideWorkspace || alwaysAllowWriteOutsideWorkspace) &&

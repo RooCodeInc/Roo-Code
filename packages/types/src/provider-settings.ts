@@ -112,6 +112,14 @@ const baseProviderSettingsSchema = z.object({
 
 	// Model verbosity.
 	verbosity: verbosityLevelsSchema.optional(),
+
+	// Image generation settings (experimental)
+	imageGenerationSettings: z
+		.object({
+			openRouterApiKey: z.string().optional(),
+			selectedModel: z.string().optional(),
+		})
+		.optional(),
 })
 
 // Several of the providers share common model config properties.

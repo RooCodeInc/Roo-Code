@@ -728,6 +728,10 @@
 		"NEW_TASK_REQUIRE_TODOS": {
 			"name": "Require 'todos' list for new tasks",
 			"description": "When enabled, the new_task tool will require a todos parameter to be provided. This ensures all new tasks start with a clear list of objectives. When disabled (default), the todos parameter remains optional for backward compatibility."
+		},
+		"IMAGE_GENERATION": {
+			"name": "Enable AI image generation",
+			"description": "When enabled, Roo can generate images from text prompts using OpenRouter's image generation models. Requires an OpenRouter API key to be configured."
 		}
 	},
 	"promptCaching": {
