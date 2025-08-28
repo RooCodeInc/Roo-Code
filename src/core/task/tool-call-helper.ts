@@ -499,17 +499,17 @@ export class StreamingToolCallProcessor {
 	}
 
 	/**
-	 * Try to synthesize a temporarily-closable JSON string from the current streaming buffer,
-	 * so we can JSON.parse it and expose a usable anthropicContent.input during partial streaming.
-	 * This function does NOT mutate parser state; it only operates on copies.
+	 * Attempts to construct a temporarily valid JSON string from the current streaming buffer and parser state,
+	 * allowing JSON.parse to succeed and provide a usable anthropicContent.input during partial tool call streaming.
+	 * This function does NOT mutate the original parser state; it operates only on copies.
 	 *
-	 * Strategy:
-	 * - Safely close an in-flight string (key or value), trimming incomplete escapes/unicode.
-	 * - If a key has just finished (no value yet), inject ": null" to complete the pair.
-	 * - If a primitive token is mid-flight (true/false/null/number), attempt to complete it minimally.
-	 * - Trim trailing commas before closing braces.
-	 * - Close any open objects/arrays according to bracketStack, injecting "null" where a value is expected.
-	 * - Try parse; on failure, add one more "null" if needed and retry.
+	 * Implementation details:
+	 * - If currently parsing a string, closes the string with a quote and removes incomplete escape/unicode sequences.
+	 * - If a primitive value (true/false/null/number) is incomplete, auto-completes it to a valid JSON token.
+	 * - Closes all unclosed object/array brackets, inserting "null" where a value is expected.
+	 * - Removes trailing commas before closing brackets to avoid JSON syntax errors.
+	 * - On initial parse failure, tries to append "null" or repeatedly trim trailing commas and retries parsing.
+	 * - Only used for constructing intermediate JSON during streaming; final result should use fully parsed content.
 	 */
 	private tryBuildTemporaryJson(state: ToolCallProcessingState, rawArgs: string): any | null {
 		let s = rawArgs
@@ -558,10 +558,10 @@ export class StreamingToolCallProcessor {
 			}
 		}
 
-		// 4) Before closing brackets, remove trailing commas to avoid JSON syntax errors
+		// 3) Before closing brackets, remove trailing commas to avoid JSON syntax errors
 		s = trimTrailingComma(s)
 
-		// 5) Close any open objects/arrays per the current stack
+		// 4) Close any open objects/arrays per the current stack
 		if (state.bracketStack.length > 0) {
 			for (let i = state.bracketStack.length - 1; i >= 0; i--) {
 				// Always ensure no trailing comma before we append a closer
@@ -573,11 +573,11 @@ export class StreamingToolCallProcessor {
 			}
 		}
 
-		// 6) First parse attempt
+		// 5) First parse attempt
 		try {
 			return JSON.parse(s)
 		} catch {
-			// 7) Second attempt: add one more null if still dangling and retry
+			// 6) Second attempt: add one more null if still dangling and retry
 			try {
 				let s2 = s
 				const lastNonWs = this.findLastNonWhitespaceChar(s2)
@@ -587,7 +587,7 @@ export class StreamingToolCallProcessor {
 				s2 = trimTrailingComma(s2)
 				return JSON.parse(s2)
 			} catch {
-				// 8) Final fallback: repeatedly trim trailing commas and retry
+				// 7) Final fallback: repeatedly trim trailing commas and retry
 				let s3 = s
 				for (let k = 0; k < 3; k++) {
 					const trimmed = trimTrailingComma(s3)
