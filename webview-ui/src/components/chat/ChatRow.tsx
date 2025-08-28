@@ -46,6 +46,7 @@ import { appendImages } from "@src/utils/imageUtils"
 import { McpExecution } from "./McpExecution"
 import { ChatTextArea } from "./ChatTextArea"
 import { MAX_IMAGES_PER_MESSAGE } from "./ChatView"
+import { useSelectedModel } from "../ui/hooks/useSelectedModel"
 
 interface ChatRowProps {
 	message: ClineMessage
@@ -115,8 +116,8 @@ export const ChatRowContent = ({
 }: ChatRowContentProps) => {
 	const { t } = useTranslation()
 
-	const { mcpServers, alwaysAllowMcp, currentCheckpoint, mode } = useExtensionState()
-
+	const { mcpServers, alwaysAllowMcp, currentCheckpoint, mode, apiConfiguration } = useExtensionState()
+	const { info: model } = useSelectedModel(apiConfiguration)
 	const [reasoningCollapsed, setReasoningCollapsed] = useState(true)
 	const [isDiffErrorExpanded, setIsDiffErrorExpanded] = useState(false)
 	const [showCopySuccess, setShowCopySuccess] = useState(false)
@@ -1115,7 +1116,7 @@ export const ChatRowContent = ({
 										setSelectedImages={setEditImages}
 										onSend={handleSaveEdit}
 										onSelectImages={handleSelectImages}
-										shouldDisableImages={false}
+										shouldDisableImages={!model?.supportsImages}
 										mode={editMode}
 										setMode={setEditMode}
 										modeShortcutText=""

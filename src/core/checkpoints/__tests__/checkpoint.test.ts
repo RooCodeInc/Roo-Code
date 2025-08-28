@@ -317,7 +317,6 @@ describe("Checkpoint functionality", () => {
 				},
 			]
 			mockCheckpointService.getDiff.mockResolvedValue(mockChanges)
-			mockCheckpointService.getCheckpoints = vi.fn(() => ["commit1", "commit2"])
 			await checkpointDiff(mockTask, {
 				ts: 4,
 				commitHash: "commit1",
@@ -343,7 +342,6 @@ describe("Checkpoint functionality", () => {
 				},
 			]
 			mockCheckpointService.getDiff.mockResolvedValue(mockChanges)
-			mockCheckpointService.getCheckpoints = vi.fn(() => ["commit1", "commit2"])
 
 			await checkpointDiff(mockTask, {
 				ts: 4,

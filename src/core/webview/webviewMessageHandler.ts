@@ -105,9 +105,9 @@ export const webviewMessageHandler = async (
 			const { messageIndex } = findMessageIndices(messageTs, currentCline)
 			if (messageIndex !== -1) {
 				// Find the last checkpoint before this message
-				const checkpoints = currentCline.clineMessages
-					.filter((msg) => msg.say === "checkpoint_saved" && msg.ts < messageTs)
-					.sort((a, b) => b.ts - a.ts)
+				const checkpoints = currentCline.clineMessages.filter(
+					(msg) => msg.say === "checkpoint_saved" && msg.ts > messageTs,
+				)
 
 				hasCheckpoint = checkpoints.length > 0
 			} else {
@@ -148,19 +148,19 @@ export const webviewMessageHandler = async (
 			// If checkpoint restoration is requested, find and restore to the last checkpoint before this message
 			if (restoreCheckpoint) {
 				// Find the last checkpoint before this message
-				const checkpoints = currentCline.clineMessages
-					.filter((msg) => msg.say === "checkpoint_saved" && msg.ts < messageTs)
-					.sort((a, b) => b.ts - a.ts)
+				const checkpoints = currentCline.clineMessages.filter(
+					(msg) => msg.say === "checkpoint_saved" && msg.ts > messageTs,
+				)
 
-				const lastCheckpoint = checkpoints[0]
+				const nextCheckpoint = checkpoints[0]
 
-				if (lastCheckpoint && lastCheckpoint.text) {
+				if (nextCheckpoint && nextCheckpoint.text) {
 					await handleCheckpointRestoreOperation({
 						provider,
 						currentCline,
 						messageTs: targetMessage.ts!,
 						messageIndex,
-						checkpoint: { hash: lastCheckpoint.text },
+						checkpoint: { hash: nextCheckpoint.text },
 						operation: "delete",
 					})
 				} else {
@@ -216,9 +216,9 @@ export const webviewMessageHandler = async (
 			const { messageIndex } = findMessageIndices(messageTs, currentCline)
 			if (messageIndex !== -1) {
 				// Find the last checkpoint before this message
-				const checkpoints = currentCline.clineMessages
-					.filter((msg) => msg.say === "checkpoint_saved" && msg.ts < messageTs)
-					.sort((a, b) => b.ts - a.ts)
+				const checkpoints = currentCline.clineMessages.filter(
+					(msg) => msg.say === "checkpoint_saved" && msg.ts > messageTs,
+				)
 
 				hasCheckpoint = checkpoints.length > 0
 			} else {
@@ -269,19 +269,19 @@ export const webviewMessageHandler = async (
 			// If checkpoint restoration is requested, find and restore to the last checkpoint before this message
 			if (restoreCheckpoint) {
 				// Find the last checkpoint before this message
-				const checkpoints = currentCline.clineMessages
-					.filter((msg) => msg.say === "checkpoint_saved" && msg.ts < messageTs)
-					.sort((a, b) => b.ts - a.ts)
+				const checkpoints = currentCline.clineMessages.filter(
+					(msg) => msg.say === "checkpoint_saved" && msg.ts > messageTs,
+				)
 
-				const lastCheckpoint = checkpoints[0]
+				const nextCheckpoint = checkpoints[0]
 
-				if (lastCheckpoint && lastCheckpoint.text) {
+				if (nextCheckpoint && nextCheckpoint.text) {
 					await handleCheckpointRestoreOperation({
 						provider,
 						currentCline,
 						messageTs: targetMessage.ts!,
 						messageIndex,
-						checkpoint: { hash: lastCheckpoint.text },
+						checkpoint: { hash: nextCheckpoint.text },
 						operation: "edit",
 						editData: {
 							editedContent,
