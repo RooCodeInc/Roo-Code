@@ -37,6 +37,6 @@ phases:
           aws s3 ls $ROO_CODE_ARTIFACT --recursive | grep "\.vsix$" | sort -k1,2 -r | tail -n +$((MAX_ARTIFACTS + 1)) | while read -r line; do
             artifact_key=$(echo "$line" | awk '{print $4}')
             echo "Deleting old artifact: $artifact_key"
-            aws s3 rm s3://$(echo $ROO_CODE_ARTIFACT | sed 's|s3://||')$artifact_key
+            aws s3 rm $ROO_CODE_ARTIFACT$artifact_key
           done
         fi
