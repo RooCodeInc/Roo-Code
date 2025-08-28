@@ -1243,7 +1243,16 @@ export class ClineProvider
 	}
 
 	async activateProviderProfile(args: { name: string } | { id: string }) {
+		// Get current settings to preserve experimental settings
+		const currentSettings = this.contextProxy.getProviderSettings()
+
 		const { name, id, ...providerSettings } = await this.providerSettingsManager.activateProfile(args)
+
+		// Preserve openRouterImageGenerationSettings if it exists in current settings
+		// This ensures experimental settings like the image generation API key are not lost
+		if (currentSettings.openRouterImageGenerationSettings) {
+			providerSettings.openRouterImageGenerationSettings = currentSettings.openRouterImageGenerationSettings
+		}
 
 		// See `upsertProviderProfile` for a description of what this is doing.
 		await Promise.all([

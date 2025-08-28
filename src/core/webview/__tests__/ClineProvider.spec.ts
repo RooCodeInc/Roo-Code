@@ -1658,6 +1658,136 @@ describe("ClineProvider", () => {
 			// Verify state was posted to webview
 			expect(mockPostMessage).toHaveBeenCalledWith(expect.objectContaining({ type: "state" }))
 		})
+
+		test("preserves openRouterImageGenerationSettings when switching profiles", async () => {
+			// Set up webview
+			await provider.resolveWebviewView(mockWebviewView)
+			const messageHandler = (mockWebviewView.webview.onDidReceiveMessage as any).mock.calls[0][0]
+
+			// Mock the context proxy to have experimental settings
+			const contextProxy = (provider as any).contextProxy
+			const getProviderSettingsSpy = vi.spyOn(contextProxy, "getProviderSettings")
+			getProviderSettingsSpy.mockReturnValue({
+				apiProvider: "openrouter",
+				openRouterImageGenerationSettings: {
+					openRouterApiKey: "test-experimental-key",
+					selectedModel: "dall-e-3",
+				},
+			})
+
+			// Mock provider settings manager - activateProfile returns the full provider settings
+			const profileSettings = {
+				apiProvider: "anthropic" as const,
+				apiKey: "new-key",
+			}
+
+			;(provider as any).providerSettingsManager = {
+				activateProfile: vi.fn().mockResolvedValue({
+					name: "new-profile",
+					id: "new-profile-id",
+					...profileSettings,
+				}),
+				listConfig: vi.fn().mockResolvedValue([
+					{
+						name: "new-profile",
+						id: "new-profile-id",
+						apiProvider: "anthropic",
+					},
+				]),
+				setModeConfig: vi.fn().mockResolvedValue(undefined),
+			} as any
+
+			// Spy on setProviderSettings to verify the merged settings
+			const setProviderSettingsSpy = vi.spyOn(contextProxy, "setProviderSettings")
+
+			// Spy on activateProviderProfile method
+			const activateProviderProfileSpy = vi.spyOn(provider, "activateProviderProfile")
+
+			// Spy on postStateToWebview
+			const postStateToWebviewSpy = vi.spyOn(provider, "postStateToWebview").mockResolvedValue(undefined)
+
+			// Trigger profile activation via webview message
+			await messageHandler({
+				type: "loadApiConfiguration",
+				text: "new-profile",
+			})
+
+			// Verify that activateProviderProfile was called
+			expect(activateProviderProfileSpy).toHaveBeenCalledWith({ name: "new-profile" })
+
+			// Verify that activateProfile was called
+			expect(provider.providerSettingsManager.activateProfile).toHaveBeenCalledWith({ name: "new-profile" })
+
+			// Verify that setProviderSettings was called with merged settings including experimental settings
+			expect(setProviderSettingsSpy).toHaveBeenCalledWith({
+				apiProvider: "anthropic",
+				apiKey: "new-key",
+				openRouterImageGenerationSettings: {
+					openRouterApiKey: "test-experimental-key",
+					selectedModel: "dall-e-3",
+				},
+			})
+
+			// Verify state was posted to webview
+			expect(postStateToWebviewSpy).toHaveBeenCalled()
+		})
+
+		test("handles missing openRouterImageGenerationSettings when switching profiles", async () => {
+			// Set up webview
+			await provider.resolveWebviewView(mockWebviewView)
+			const messageHandler = (mockWebviewView.webview.onDidReceiveMessage as any).mock.calls[0][0]
+
+			// Mock the context proxy without experimental settings
+			const contextProxy = (provider as any).contextProxy
+			const getProviderSettingsSpy = vi.spyOn(contextProxy, "getProviderSettings")
+			getProviderSettingsSpy.mockReturnValue({
+				apiProvider: "openrouter",
+				// No openRouterImageGenerationSettings
+			})
+
+			// Mock provider settings manager - activateProfile returns the full provider settings
+			const profileSettings = {
+				apiProvider: "anthropic" as const,
+				apiKey: "new-key",
+			}
+
+			;(provider as any).providerSettingsManager = {
+				activateProfile: vi.fn().mockResolvedValue({
+					name: "new-profile",
+					id: "new-profile-id",
+					...profileSettings,
+				}),
+				listConfig: vi.fn().mockResolvedValue([
+					{
+						name: "new-profile",
+						id: "new-profile-id",
+						apiProvider: "anthropic",
+					},
+				]),
+			} as any
+
+			// Spy on setProviderSettings
+			const setProviderSettingsSpy = vi.spyOn(contextProxy, "setProviderSettings")
+
+			// Spy on activateProviderProfile method
+			const activateProviderProfileSpy = vi.spyOn(provider, "activateProviderProfile")
+
+			// Trigger profile activation via webview message
+			await messageHandler({
+				type: "loadApiConfiguration",
+				text: "new-profile",
+			})
+
+			// Verify that activateProviderProfile was called
+			expect(activateProviderProfileSpy).toHaveBeenCalledWith({ name: "new-profile" })
+
+			// Verify that setProviderSettings was called without experimental settings
+			expect(setProviderSettingsSpy).toHaveBeenCalledWith({
+				apiProvider: "anthropic",
+				apiKey: "new-key",
+				// No openRouterImageGenerationSettings
+			})
+		})
 	})
 
 	describe("createTaskWithHistoryItem mode validation", () => {
