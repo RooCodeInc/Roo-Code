@@ -35,21 +35,14 @@ export const ImageGenerationSettings = ({
 		imageGenerationSettings.selectedModel || IMAGE_GENERATION_MODELS[0].value,
 	)
 
-	// Check if we can use OpenRouter API key from profile
-	const profileOpenRouterKey = apiConfiguration?.openRouterApiKey
-	const hasProfileKey = !!profileOpenRouterKey
-	const [useProfileKey, setUseProfileKey] = useState(hasProfileKey && !openRouterApiKey)
-
 	// Update parent state when local state changes
 	useEffect(() => {
 		const newSettings = {
-			openRouterApiKey: useProfileKey ? "" : openRouterApiKey,
+			openRouterApiKey,
 			selectedModel,
 		}
 		setApiConfigurationField("imageGenerationSettings", newSettings)
-	}, [openRouterApiKey, selectedModel, useProfileKey, setApiConfigurationField])
-
-	const effectiveApiKey = useProfileKey ? profileOpenRouterKey : openRouterApiKey
+	}, [openRouterApiKey, selectedModel, setApiConfigurationField])
 
 	return (
 		<div className="space-y-4">
@@ -69,41 +62,23 @@ export const ImageGenerationSettings = ({
 					{/* API Key Configuration */}
 					<div>
 						<label className="block font-medium mb-1">OpenRouter API Key</label>
-						{hasProfileKey && (
-							<div className="mb-2">
-								<VSCodeCheckbox
-									checked={useProfileKey}
-									onChange={(e: any) => setUseProfileKey(e.target.checked)}>
-									<span className="text-sm">Use API key from current profile</span>
-								</VSCodeCheckbox>
-							</div>
-						)}
-						{!useProfileKey && (
-							<>
-								<VSCodeTextField
-									value={openRouterApiKey}
-									onInput={(e: any) => setOpenRouterApiKey(e.target.value)}
-									placeholder="Enter your OpenRouter API key"
-									className="w-full"
-									type="password"
-								/>
-								<p className="text-vscode-descriptionForeground text-xs mt-1">
-									Get your API key from{" "}
-									<a
-										href="https://openrouter.ai/keys"
-										target="_blank"
-										rel="noopener noreferrer"
-										className="text-vscode-textLink-foreground hover:text-vscode-textLink-activeForeground">
-										openrouter.ai/keys
-									</a>
-								</p>
-							</>
-						)}
-						{useProfileKey && (
-							<p className="text-vscode-descriptionForeground text-xs mt-1">
-								Using OpenRouter API key from the current profile configuration
-							</p>
-						)}
+						<VSCodeTextField
+							value={openRouterApiKey}
+							onInput={(e: any) => setOpenRouterApiKey(e.target.value)}
+							placeholder="Enter your OpenRouter API key"
+							className="w-full"
+							type="password"
+						/>
+						<p className="text-vscode-descriptionForeground text-xs mt-1">
+							Get your API key from{" "}
+							<a
+								href="https://openrouter.ai/keys"
+								target="_blank"
+								rel="noopener noreferrer"
+								className="text-vscode-textLink-foreground hover:text-vscode-textLink-activeForeground">
+								openrouter.ai/keys
+							</a>
+						</p>
 					</div>
 
 					{/* Model Selection */}
@@ -125,14 +100,13 @@ export const ImageGenerationSettings = ({
 					</div>
 
 					{/* Status Message */}
-					{enabled && !effectiveApiKey && (
+					{enabled && !openRouterApiKey && (
 						<div className="p-2 bg-vscode-editorWarning-background text-vscode-editorWarning-foreground rounded text-sm">
-							⚠️ OpenRouter API key is required for image generation. Please configure it above or use a
-							profile with an OpenRouter API key.
+							⚠️ OpenRouter API key is required for image generation. Please configure it above.
 						</div>
 					)}
 
-					{enabled && effectiveApiKey && (
+					{enabled && openRouterApiKey && (
 						<div className="p-2 bg-vscode-editorInfo-background text-vscode-editorInfo-foreground rounded text-sm">
 							✓ Image generation is configured and ready to use
 						</div>

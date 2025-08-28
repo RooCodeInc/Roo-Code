@@ -9,31 +9,13 @@ import { getReadablePath } from "../../utils/path"
 import { isPathOutsideWorkspace } from "../../utils/pathUtils"
 import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
 import { safeWriteJson } from "../../utils/safeWriteJson"
+import { OpenRouterHandler } from "../../api/providers/openrouter"
 
 // Hardcoded list of image generation models for now
 const IMAGE_GENERATION_MODELS = [
 	"google/gemini-2.5-flash-image-preview",
 	// Add more models as they become available
 ]
-
-interface ImageGenerationResponse {
-	choices?: Array<{
-		message?: {
-			content?: string
-			images?: Array<{
-				type?: string
-				image_url?: {
-					url?: string
-				}
-			}>
-		}
-	}>
-	error?: {
-		message?: string
-		type?: string
-		code?: string
-	}
-}
 
 export async function generateImageTool(
 	cline: Task,
@@ -90,27 +72,19 @@ export async function generateImageTool(
 	// Check if file is write-protected
 	const isWriteProtected = cline.rooProtectedController?.isWriteProtected(relPath) || false
 
-	// Get OpenRouter API key from settings or profile
-	const imageGenerationSettings = (state as any)?.imageGenerationSettings
-	let openRouterApiKey = imageGenerationSettings?.openRouterApiKey
-
-	// If no API key in settings, check profiles for openRouterApiKey
-	if (!openRouterApiKey) {
-		// Check the current API configuration for OpenRouter key
-		const currentApiConfig = state?.apiConfiguration
-		if (currentApiConfig?.openRouterApiKey) {
-			openRouterApiKey = currentApiConfig.openRouterApiKey
-		}
-	}
+	// Get OpenRouter API key from experimental settings ONLY (no fallback to profile)
+	const apiConfiguration = state?.apiConfiguration
+	const imageGenerationSettings = apiConfiguration?.imageGenerationSettings
+	const openRouterApiKey = imageGenerationSettings?.openRouterApiKey
 
 	if (!openRouterApiKey) {
 		await cline.say(
 			"error",
-			"OpenRouter API key is required for image generation. Please configure it in the Image Generation experimental settings or use a profile with an OpenRouter API key.",
+			"OpenRouter API key is required for image generation. Please configure it in the Image Generation experimental settings.",
 		)
 		pushToolResult(
 			formatResponse.toolError(
-				"OpenRouter API key is required for image generation. Please configure it in the Image Generation experimental settings or use a profile with an OpenRouter API key.",
+				"OpenRouter API key is required for image generation. Please configure it in the Image Generation experimental settings.",
 			),
 		)
 		return
@@ -147,71 +121,27 @@ export async function generateImageTool(
 				return
 			}
 
-			// Call OpenRouter API to generate image
-			const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-				method: "POST",
-				headers: {
-					Authorization: `Bearer ${openRouterApiKey}`,
-					"Content-Type": "application/json",
-					"HTTP-Referer": "https://github.com/RooVetGit/Roo-Code",
-					"X-Title": "Roo Code",
-				},
-				body: JSON.stringify({
-					model: selectedModel,
-					messages: [
-						{
-							role: "user",
-							content: prompt,
-						},
-					],
-					modalities: ["image", "text"],
-				}),
-			})
+			// Create a temporary OpenRouter handler with minimal options
+			const openRouterHandler = new OpenRouterHandler({} as any)
 
-			if (!response.ok) {
-				const errorText = await response.text()
-				let errorMessage = `Failed to generate image: ${response.status} ${response.statusText}`
-				try {
-					const errorJson = JSON.parse(errorText)
-					if (errorJson.error?.message) {
-						errorMessage = `Failed to generate image: ${errorJson.error.message}`
-					}
-				} catch {
-					// Use default error message
-				}
-				await cline.say("error", errorMessage)
-				pushToolResult(formatResponse.toolError(errorMessage))
+			// Call the generateImage method with the explicit API key
+			const result = await openRouterHandler.generateImage(prompt, selectedModel, openRouterApiKey)
+
+			if (!result.success) {
+				await cline.say("error", result.error || "Failed to generate image")
+				pushToolResult(formatResponse.toolError(result.error || "Failed to generate image"))
 				return
 			}
 
-			const result: ImageGenerationResponse = await response.json()
-
-			if (result.error) {
-				const errorMessage = `Failed to generate image: ${result.error.message}`
-				await cline.say("error", errorMessage)
-				pushToolResult(formatResponse.toolError(errorMessage))
-				return
-			}
-
-			// Extract the generated image from the response
-			const images = result.choices?.[0]?.message?.images
-			if (!images || images.length === 0) {
-				const errorMessage = "No image was generated in the response"
-				await cline.say("error", errorMessage)
-				pushToolResult(formatResponse.toolError(errorMessage))
-				return
-			}
-
-			const imageData = images[0]?.image_url?.url
-			if (!imageData) {
-				const errorMessage = "Invalid image data in response"
+			if (!result.imageData) {
+				const errorMessage = "No image data received"
 				await cline.say("error", errorMessage)
 				pushToolResult(formatResponse.toolError(errorMessage))
 				return
 			}
 
 			// Extract base64 data from data URL
-			const base64Match = imageData.match(/^data:image\/(png|jpeg|jpg);base64,(.+)$/)
+			const base64Match = result.imageData.match(/^data:image\/(png|jpeg|jpg);base64,(.+)$/)
 			if (!base64Match) {
 				const errorMessage = "Invalid image format received"
 				await cline.say("error", errorMessage)
@@ -248,8 +178,11 @@ export async function generateImageTool(
 
 			// Display the generated image in the chat using a text message with the image
 			await cline.say("text", `Image generated and saved to: ${getReadablePath(cline.cwd, finalPath)}`, [
-				imageData,
+				result.imageData,
 			])
+
+			// Record successful tool usage
+			cline.recordToolUsage("generate_image")
 
 			pushToolResult(
 				formatResponse.toolResult(`Image created successfully at ${getReadablePath(cline.cwd, finalPath)}`),
