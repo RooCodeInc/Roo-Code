@@ -7,10 +7,11 @@ export const mistralDefaultModelId: MistralModelId = "codestral-latest"
 
 export const mistralModels = {
 	"magistral-medium-latest": {
-		maxTokens: 41_000,
-		contextWindow: 41_000,
+		maxTokens: 128_000,
+		contextWindow: 128_000,
 		supportsImages: false,
 		supportsPromptCache: false,
+		supportsReasoningBudget: true,
 		inputPrice: 2.0,
 		outputPrice: 5.0,
 	},
