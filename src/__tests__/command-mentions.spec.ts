@@ -280,6 +280,65 @@ npm install
 				}
 			})
 		})
+
+		it("should match commands with Chinese characters", () => {
+			const commandRegex =
+				/(?:^|\s)\/([a-zA-Z0-9_\.\-\u4e00-\u9fff\u3040-\u309f\u30a0-\u30ff\uac00-\ud7af]+)(?=\s|$)/g
+
+			const chinesePatterns = [
+				"/中文命令",
+				"/测试文件",
+				"/配置文件",
+				"/部署脚本",
+				"Use /中文 command",
+				"Run /测试 now",
+			]
+
+			chinesePatterns.forEach((pattern) => {
+				const matches = pattern.match(commandRegex)
+				expect(matches).toBeTruthy()
+				expect(matches?.length).toBeGreaterThan(0)
+			})
+		})
+
+		it("should match commands with Japanese characters", () => {
+			const commandRegex =
+				/(?:^|\s)\/([a-zA-Z0-9_\.\-\u4e00-\u9fff\u3040-\u309f\u30a0-\u30ff\uac00-\ud7af]+)(?=\s|$)/g
+
+			const japanesePatterns = ["/テスト", "/ファイル", "/デプロイ", "Use /日本語 command", "Run /テスト now"]
+
+			japanesePatterns.forEach((pattern) => {
+				const matches = pattern.match(commandRegex)
+				expect(matches).toBeTruthy()
+				expect(matches?.length).toBeGreaterThan(0)
+			})
+		})
+
+		it("should match commands with Korean characters", () => {
+			const commandRegex =
+				/(?:^|\s)\/([a-zA-Z0-9_\.\-\u4e00-\u9fff\u3040-\u309f\u30a0-\u30ff\uac00-\ud7af]+)(?=\s|$)/g
+
+			const koreanPatterns = ["/테스트", "/파일", "/배포", "Use /한국어 command", "Run /테스트 now"]
+
+			koreanPatterns.forEach((pattern) => {
+				const matches = pattern.match(commandRegex)
+				expect(matches).toBeTruthy()
+				expect(matches?.length).toBeGreaterThan(0)
+			})
+		})
+
+		it("should match commands with mixed characters", () => {
+			const commandRegex =
+				/(?:^|\s)\/([a-zA-Z0-9_\.\-\u4e00-\u9fff\u3040-\u309f\u30a0-\u30ff\uac00-\ud7af]+)(?=\s|$)/g
+
+			const mixedPatterns = ["/test中文", "/deploy部署", "/file文件123", "/テストtest", "/한국어korean"]
+
+			mixedPatterns.forEach((pattern) => {
+				const matches = pattern.match(commandRegex)
+				expect(matches).toBeTruthy()
+				expect(matches?.length).toBe(1)
+			})
+		})
 	})
 
 	describe("command mention text transformation", () => {
