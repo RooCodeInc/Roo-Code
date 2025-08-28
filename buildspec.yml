@@ -35,7 +35,7 @@ phases:
         if [ ! -z "$MAX_ARTIFACTS" ] && [ "$MAX_ARTIFACTS" -gt 0 ]; then
           echo "Keeping max $MAX_ARTIFACTS artifacts"
           aws s3 ls $ROO_CODE_ARTIFACT --recursive | grep "\.vsix$" | sort -k1,2 -r | tail -n +$((MAX_ARTIFACTS + 1)) | while read -r line; do
-            artifact_key=$(echo "$line" | awk '{print $4}')
+            artifact_key=$(echo "$line" | awk '{print $4}' | xargs basename)
             echo "Deleting old artifact: $artifact_key"
             aws s3 rm $ROO_CODE_ARTIFACT$artifact_key
           done
