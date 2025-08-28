@@ -330,8 +330,9 @@ const sapAiCoreSchema = apiModelIdProviderModelSchema.extend({
 	sapAiCoreTokenUrl: z.string().optional(),
 	sapAiResourceGroup: z.string().optional(),
 	sapAiCoreBaseUrl: z.string().optional(),
-	reasoningEffort: z.string().optional(),
+	reasoningEffort: reasoningEffortWithMinimalSchema.optional(),
 	thinkingBudgetTokens: z.number().optional(),
+})
 const vercelAiGatewaySchema = baseProviderSettingsSchema.extend({
 	vercelAiGatewayApiKey: z.string().optional(),
 	vercelAiGatewayModelId: z.string().optional(),

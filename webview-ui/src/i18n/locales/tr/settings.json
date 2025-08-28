@@ -116,10 +116,10 @@
 			"ollamaBaseUrlRequired": "Ollama temel URL'si gereklidir",
 			"baseUrlRequired": "Temel URL'si gereklidir",
 			"modelDimensionMinValue": "Model boyutu 0'dan büyük olmalıdır",
-			"sapAiCoreBaseUrl": "SAP AI Core Temel URL gereklidir.",
-			"sapAiCoreClientId": "SAP AI Core İstemci Kimliği gereklidir.",
-			"sapAiCoreClientSecret": "SAP AI Core İstemci Sırrı gereklidir.",
-			"sapAiCoreTokenUrl": "SAP AI Core Token URL gereklidir."
+			"sapAiCoreBaseUrl": "SAP AI Core Temel URL gereklidir",
+			"sapAiCoreClientId": "SAP AI Core İstemci Kimliği gereklidir",
+			"sapAiCoreClientSecret": "SAP AI Core İstemci Sırrı gereklidir",
+			"sapAiCoreTokenUrl": "SAP AI Core Token URL gereklidir"
 		},
 		"advancedConfigLabel": "Gelişmiş Yapılandırma",
 		"searchMinScoreLabel": "Arama Skoru Eşiği",

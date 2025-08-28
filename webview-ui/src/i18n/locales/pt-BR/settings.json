@@ -116,10 +116,10 @@
 			"ollamaBaseUrlRequired": "A URL base do Ollama é obrigatória",
 			"baseUrlRequired": "A URL base é obrigatória",
 			"modelDimensionMinValue": "A dimensão do modelo deve ser maior que 0",
-			"sapAiCoreBaseUrl": "A URL Base do SAP AI Core é obrigatória.",
-			"sapAiCoreClientId": "O ID do Cliente SAP AI Core é obrigatório.",
-			"sapAiCoreClientSecret": "O Segredo do Cliente SAP AI Core é obrigatório.",
-			"sapAiCoreTokenUrl": "A URL do Token SAP AI Core é obrigatória."
+			"sapAiCoreBaseUrl": "A URL Base do SAP AI Core é obrigatória",
+			"sapAiCoreClientId": "O ID do Cliente SAP AI Core é obrigatório",
+			"sapAiCoreClientSecret": "O Segredo do Cliente SAP AI Core é obrigatório",
+			"sapAiCoreTokenUrl": "A URL do Token SAP AI Core é obrigatória"
 		},
 		"advancedConfigLabel": "Configuração Avançada",
 		"searchMinScoreLabel": "Limite de pontuação de busca",

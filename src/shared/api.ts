@@ -153,3 +153,11 @@ export type GetModelsOptions =
 	| { provider: "lmstudio"; baseUrl?: string }
 	| { provider: "io-intelligence"; apiKey: string }
 	| { provider: "vercel-ai-gateway" }
+	| {
+			provider: "sapaicore"
+			sapAiCoreClientId: string
+			sapAiCoreClientSecret: string
+			sapAiCoreTokenUrl: string
+			sapAiCoreBaseUrl: string
+			sapAiResourceGroup?: string
+	  }

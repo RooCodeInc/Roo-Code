@@ -116,10 +116,10 @@
 			"ollamaBaseUrlRequired": "需要 Ollama 基礎 URL",
 			"baseUrlRequired": "需要基礎 URL",
 			"modelDimensionMinValue": "模型維度必須大於 0",
-			"sapAiCoreBaseUrl": "需要 SAP AI Core 基礎 URL。",
-			"sapAiCoreClientId": "需要 SAP AI Core 客戶端 ID。",
-			"sapAiCoreClientSecret": "需要 SAP AI Core 客戶端密鑰。",
-			"sapAiCoreTokenUrl": "需要 SAP AI Core Token URL。"
+			"sapAiCoreBaseUrl": "需要 SAP AI Core 基礎 URL",
+			"sapAiCoreClientId": "需要 SAP AI Core 客戶端 ID",
+			"sapAiCoreClientSecret": "需要 SAP AI Core 客戶端密鑰",
+			"sapAiCoreTokenUrl": "需要 SAP AI Core Token URL"
 		},
 		"advancedConfigLabel": "進階設定",
 		"searchMinScoreLabel": "搜尋分數閾值",

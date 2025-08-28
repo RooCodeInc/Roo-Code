@@ -19,16 +19,21 @@ import { GetModelsOptions } from "../../../shared/api"
 import { getOllamaModels } from "./ollama"
 import { getLMStudioModels } from "./lmstudio"
 import { getIOIntelligenceModels } from "./io-intelligence"
+import { getSapAiCoreModels } from "./sapaicore"
+
+// Type for all providers that support model fetching (both router and non-router providers)
+type ModelProvider = RouterName | "sapaicore"
+
 const memoryCache = new NodeCache({ stdTTL: 5 * 60, checkperiod: 5 * 60 })
 
-async function writeModels(router: RouterName, data: ModelRecord) {
-	const filename = `${router}_models.json`
+async function writeModels(provider: ModelProvider, data: ModelRecord) {
+	const filename = `${provider}_models.json`
 	const cacheDir = await getCacheDirectoryPath(ContextProxy.instance.globalStorageUri.fsPath)
 	await safeWriteJson(path.join(cacheDir, filename), data)
 }
 
-async function readModels(router: RouterName): Promise<ModelRecord | undefined> {
-	const filename = `${router}_models.json`
+async function readModels(provider: ModelProvider): Promise<ModelRecord | undefined> {
+	const filename = `${provider}_models.json`
 	const cacheDir = await getCacheDirectoryPath(ContextProxy.instance.globalStorageUri.fsPath)
 	const filePath = path.join(cacheDir, filename)
 	const exists = await fileExistsAtPath(filePath)
@@ -85,6 +90,16 @@ export const getModels = async (options: GetModelsOptions): Promise<ModelRecord>
 			case "vercel-ai-gateway":
 				models = await getVercelAiGatewayModels()
 				break
+			case "sapaicore":
+				// SAP AI Core models endpoint requires authentication credentials
+				models = await getSapAiCoreModels({
+					sapAiCoreClientId: options.sapAiCoreClientId,
+					sapAiCoreClientSecret: options.sapAiCoreClientSecret,
+					sapAiCoreTokenUrl: options.sapAiCoreTokenUrl,
+					sapAiCoreBaseUrl: options.sapAiCoreBaseUrl,
+					sapAiResourceGroup: options.sapAiResourceGroup,
+				})
+				break
 			default: {
 				// Ensures router is exhaustively checked if RouterName is a strict union
 				const exhaustiveCheck: never = provider
@@ -117,8 +132,8 @@ export const getModels = async (options: GetModelsOptions): Promise<ModelRecord>
  * Flush models memory cache for a specific router
  * @param router - The router to flush models for.
  */
-export const flushModels = async (router: RouterName) => {
-	memoryCache.del(router)
+export const flushModels = async (provider: ModelProvider) => {
+	memoryCache.del(provider)
 }
 
 export function getModelsFromCache(provider: string) {

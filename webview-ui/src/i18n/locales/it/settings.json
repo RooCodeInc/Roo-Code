@@ -116,10 +116,10 @@
 			"ollamaBaseUrlRequired": "È richiesto l'URL di base di Ollama",
 			"baseUrlRequired": "È richiesto l'URL di base",
 			"modelDimensionMinValue": "La dimensione del modello deve essere maggiore di 0",
-			"sapAiCoreBaseUrl": "È richiesto l'URL di base di SAP AI Core.",
-			"sapAiCoreClientId": "È richiesto l'ID client di SAP AI Core.",
-			"sapAiCoreClientSecret": "È richiesto il segreto client di SAP AI Core.",
-			"sapAiCoreTokenUrl": "È richiesto l'URL del token di SAP AI Core."
+			"sapAiCoreBaseUrl": "È richiesto l'URL di base di SAP AI Core",
+			"sapAiCoreClientId": "È richiesto l'ID client di SAP AI Core",
+			"sapAiCoreClientSecret": "È richiesto il segreto client di SAP AI Core",
+			"sapAiCoreTokenUrl": "È richiesto l'URL del token di SAP AI Core"
 		},
 		"advancedConfigLabel": "Configurazione avanzata",
 		"searchMinScoreLabel": "Soglia punteggio di ricerca",

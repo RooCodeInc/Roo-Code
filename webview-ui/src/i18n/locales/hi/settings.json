@@ -116,10 +116,10 @@
 			"ollamaBaseUrlRequired": "Ollama आधार URL आवश्यक है",
 			"baseUrlRequired": "आधार URL आवश्यक है",
 			"modelDimensionMinValue": "मॉडल आयाम 0 से बड़ा होना चाहिए",
-			"sapAiCoreBaseUrl": "SAP AI Core बेस URL आवश्यक है।",
-			"sapAiCoreClientId": "SAP AI Core क्लाइंट ID आवश्यक है।",
-			"sapAiCoreClientSecret": "SAP AI Core क्लाइंट सीक्रेट आवश्यक है।",
-			"sapAiCoreTokenUrl": "SAP AI Core टोकन URL आवश्यक है।"
+			"sapAiCoreBaseUrl": "SAP AI Core बेस URL आवश्यक है",
+			"sapAiCoreClientId": "SAP AI Core क्लाइंट ID आवश्यक है",
+			"sapAiCoreClientSecret": "SAP AI Core क्लाइंट सीक्रेट आवश्यक है",
+			"sapAiCoreTokenUrl": "SAP AI Core टोकन URL आवश्यक है"
 		},
 		"advancedConfigLabel": "उन्नत कॉन्फ़िगरेशन",
 		"searchMinScoreLabel": "खोज स्कोर थ्रेसहोल्ड",

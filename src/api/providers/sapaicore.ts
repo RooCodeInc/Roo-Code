@@ -8,13 +8,18 @@ import { SapAiCoreModelId, sapAiCoreDefaultModelId, sapAiCoreModels } from "@roo
 import type { ApiHandlerOptions } from "../../shared/api"
 import type { ApiHandlerCreateMessageMetadata, SingleCompletionHandler } from "../index"
 import { convertToOpenAiMessages } from "../transform/openai-format"
+import { convertToBedrockConverseMessages } from "../transform/bedrock-converse-format"
+import { convertAnthropicContentToGemini } from "../transform/gemini-format"
 import { ApiStream } from "../transform/stream"
+import { addCacheBreakpoints } from "../transform/caching/anthropic"
 import { BaseProvider } from "./base-provider"
+import { getSapAiCoreDeployedModelNames } from "./fetchers/sapaicore"
 
 /**
  * Fetches deployed model names from SAP AI Core
  * @param options SAP AI Core configuration options
  * @returns Promise<string[]> Array of deployed model base names
+ * @deprecated Use getSapAiCoreDeployedModelNames from fetchers/sapaicore instead
  */
 export async function getSapAiCoreDeployedModels(options: {
 	sapAiCoreClientId: string
@@ -23,76 +28,8 @@ export async function getSapAiCoreDeployedModels(options: {
 	sapAiCoreBaseUrl: string
 	sapAiResourceGroup?: string
 }): Promise<string[]> {
-	try {
-		// Authenticate and get token
-		const payload = new URLSearchParams({
-			grant_type: "client_credentials",
-			client_id: options.sapAiCoreClientId,
-			client_secret: options.sapAiCoreClientSecret,
-		})
-
-		if (!options.sapAiCoreTokenUrl.startsWith("https://")) {
-			throw new Error("SAP AI Core Token URL must use HTTPS for security")
-		}
-
-		if (!options.sapAiCoreBaseUrl.startsWith("https://")) {
-			throw new Error("SAP AI Core Base URL must use HTTPS for security")
-		}
-
-		const tokenUrl = options.sapAiCoreTokenUrl.replace(/\/+$/, "") + "/oauth/token"
-		const tokenResponse = await axios.post(tokenUrl, payload, {
-			headers: { "Content-Type": "application/x-www-form-urlencoded" },
-		})
-		const token = tokenResponse.data.access_token
-
-		// Fetch deployments
-		const headers = {
-			Authorization: `Bearer ${token}`,
-			"AI-Resource-Group": options.sapAiResourceGroup || "default",
-			"Content-Type": "application/json",
-			"AI-Client-Type": "Roo-Code",
-		}
-
-		const url = `${options.sapAiCoreBaseUrl}/v2/lm/deployments?$top=10000&$skip=0`
-		const response = await axios.get(url, { headers })
-		const deployments = response.data.resources
-
-		// Extract model names from running deployments
-		const modelNames = deployments
-			.filter((deployment: any) => deployment.targetStatus === "RUNNING")
-			.map((deployment: any) => {
-				// Try both camelCase and snake_case property names
-				const backendDetails =
-					deployment.details?.resources?.backendDetails || deployment.details?.resources?.backend_details
-
-				if (!backendDetails?.model?.name) {
-					return null
-				}
-
-				const modelName = backendDetails.model.name.toLowerCase()
-
-				// Skip orchestration deployments or invalid model names
-				if (!modelName || modelName === "") {
-					return null
-				}
-
-				// Transform model name to match Roo-Code model IDs if needed
-				let transformedName = modelName
-
-				return transformedName
-			})
-			.filter((name: string | null) => name !== null)
-			.filter((name: string, index: number, array: string[]) => array.indexOf(name) === index)
-			.sort()
-
-		return modelNames
-	} catch (error) {
-		console.error("Error fetching SAP AI Core deployed models:", error)
-
-		// For testing purposes when no SAP credentials are available,
-		// return empty array (this will cause the picker to show all supported models)
-		return []
-	}
+	// Delegate to the standardized fetcher implementation
+	return getSapAiCoreDeployedModelNames(options)
 }
 
 interface SapAiCoreHandlerOptions extends ApiHandlerOptions {
@@ -101,7 +38,7 @@ interface SapAiCoreHandlerOptions extends ApiHandlerOptions {
 	sapAiCoreTokenUrl?: string
 	sapAiResourceGroup?: string
 	sapAiCoreBaseUrl?: string
-	reasoningEffort?: string
+	reasoningEffort?: "low" | "medium" | "high" | "minimal"
 	thinkingBudgetTokens?: number
 }
 
@@ -118,173 +55,6 @@ interface Token {
 	token_type: string
 	expires_at: number
 }
-
-// Bedrock namespace containing caching-related functions
-// Define cache point type for AWS Bedrock
-export interface CachePointContentBlock {
-	cachePoint: {
-		type: "default"
-	}
-}
-
-/**
- * Prepares system messages with optional caching support
- */
-export function prepareSystemMessages(systemPrompt: string, enableCaching: boolean): any[] | undefined {
-	if (!systemPrompt) {
-		return undefined
-	}
-
-	if (enableCaching) {
-		return [{ text: systemPrompt }, { cachePoint: { type: "default" } }]
-	}
-
-	return [{ text: systemPrompt }]
-}
-
-/**
- * Applies cache control to messages for prompt caching using AWS Bedrock's cachePoint system
- */
-export function applyCacheControlToMessages(
-	messages: any[],
-	lastUserMsgIndex: number,
-	secondLastMsgUserIndex: number,
-): any[] {
-	return messages.map((message, index) => {
-		// Add cachePoint to the last user message and second-to-last user message
-		if (index === lastUserMsgIndex || index === secondLastMsgUserIndex) {
-			// Clone the message to avoid modifying the original
-			const messageWithCache = { ...message }
-
-			if (messageWithCache.content && Array.isArray(messageWithCache.content)) {
-				// Add cachePoint to the end of the content array
-				messageWithCache.content = [
-					...messageWithCache.content,
-					{
-						cachePoint: {
-							type: "default",
-						},
-					} as CachePointContentBlock,
-				]
-			}
-
-			return messageWithCache
-		}
-
-		return message
-	})
-}
-
-/**
- * Formats messages for models using the Converse API specification
- */
-export function formatMessagesForConverseAPI(messages: Anthropic.Messages.MessageParam[]): any[] {
-	return messages.map((message) => {
-		// Determine role (user or assistant)
-		const role = message.role === "user" ? "user" : "assistant"
-
-		// Process content based on type
-		let content: any[] = []
-
-		if (typeof message.content === "string") {
-			// Simple text content
-			content = [{ text: message.content }]
-		} else if (Array.isArray(message.content)) {
-			// Convert Anthropic content format to Converse API content format
-			const processedContent = message.content
-				.map((item: any) => {
-					// Text content
-					if (item.type === "text") {
-						return { text: item.text }
-					}
-
-					// Image content
-					if (item.type === "image") {
-						return processImageContent(item)
-					}
-
-					// Log unsupported content types for debugging
-					console.warn(`Unsupported content type: ${(item as any).type}`)
-					return null
-				})
-				.filter((item: any): item is any => item !== null)
-
-			content = processedContent
-		}
-
-		// Return formatted message
-		return {
-			role,
-			content,
-		}
-	})
-}
-
-/**
- * Processes image content with proper error handling
- */
-function processImageContent(item: any): any | null {
-	let format: "png" | "jpeg" | "gif" | "webp" = "jpeg" // default format
-
-	// Extract format from media_type if available
-	if (item.source.media_type) {
-		// Extract format from media_type (e.g., "image/jpeg" -> "jpeg")
-		const formatMatch = item.source.media_type.match(/image\/(\w+)/)
-		if (formatMatch && formatMatch[1]) {
-			const extractedFormat = formatMatch[1]
-			// Ensure format is one of the allowed values
-			if (["png", "jpeg", "gif", "webp"].includes(extractedFormat)) {
-				format = extractedFormat as "png" | "jpeg" | "gif" | "webp"
-			}
-		}
-	}
-
-	// Get image data with improved error handling
-	try {
-		let imageData: string
-
-		if (typeof item.source.data === "string") {
-			// Keep as base64 string, just clean the data URI prefix if present
-			imageData = item.source.data.replace(/^data:image\/\w+;base64,/, "")
-		} else if (item.source.data && typeof item.source.data === "object") {
-			// Convert Buffer/Uint8Array to base64 string
-			if (
-				typeof (globalThis as any).Buffer !== "undefined" &&
-				(globalThis as any).Buffer.isBuffer(item.source.data)
-			) {
-				imageData = (item.source.data as any).toString("base64")
-			} else {
-				// Assume Uint8Array - convert to base64
-				const buffer = new Uint8Array(item.source.data as Uint8Array)
-				imageData = btoa(String.fromCharCode(...Array.from(buffer)))
-			}
-		} else {
-			throw new Error("Unsupported image data format")
-		}
-
-		// Validate base64 data
-		if (!imageData || imageData.length === 0) {
-			throw new Error("Empty or invalid image data")
-		}
-
-		return {
-			image: {
-				format,
-				source: {
-					bytes: imageData as any, // Keep as base64 string for Bedrock Converse API compatibility
-				},
-			},
-		}
-	} catch (error) {
-		console.error("Failed to process image content:", error)
-		// Return a text content indicating the error instead of null
-		return {
-			text: `[ERROR: Failed to process image - ${error instanceof Error ? error.message : "Unknown error"}]`,
-		}
-	}
-}
-
-// Gemini specialized functions
 
 /**
  * Process Gemini streaming response with enhanced thinking content support
@@ -360,77 +130,25 @@ export function processGeminiStreamChunk(data: any): {
  * Used specifically for SAP AI Core streaming responses
  */
 export function parseJsonSafely(str: string): any {
-	if (!str || typeof str !== "string" || str.trim() === "") {
-		console.error("Failed to parse JSON safely:", str, new Error("Input must be a non-empty string"))
-		throw new Error("Input must be a non-empty string")
-	}
-
-	try {
-		// First try standard JSON parsing
-		return JSON.parse(str)
-	} catch (error) {
-		// If that fails, try to fix common JSON issues safely
-		try {
-			let cleaned = str.trim()
-			cleaned = cleaned.replace(/,(\s*[}\]])/g, "$1")
-			cleaned = cleaned.replace(/([{,]\s*)([a-zA-Z_$][a-zA-Z0-9_$]*)\s*:/g, '$1"$2":')
-			cleaned = cleaned.replace(/'([^']*?)'/g, '"$1"')
-
-			// Remove any trailing commas at the end
-			cleaned = cleaned.replace(/,\s*$/, "")
-			return JSON.parse(cleaned)
-		} catch (secondError) {
-			// If regex approach fails, try the toStrictJson approach as fallback
-			// but only for trusted SAP AI Core responses
-			try {
-				const obj = new Function("return " + str)()
-				return JSON.stringify(obj)
-			} catch (thirdError) {
-				console.error(
-					"Failed to parse JSON safely:",
-					str,
-					error instanceof Error ? error : new Error("Unknown error"),
-				)
-				throw new Error(`Invalid JSON format: ${error instanceof Error ? error.message : "Unknown error"}`)
-			}
-		}
-	}
-}
-
-function convertAnthropicMessageToGemini(message: Anthropic.Messages.MessageParam) {
-	const role = message.role === "assistant" ? "model" : "user"
-	const parts = []
-
-	if (typeof message.content === "string") {
-		parts.push({ text: message.content })
-	} else if (Array.isArray(message.content)) {
-		for (const block of message.content) {
-			if (block.type === "text") {
-				parts.push({ text: block.text })
-			} else if (block.type === "image") {
-				parts.push({
-					inlineData: {
-						mimeType: block.source.media_type,
-						data: block.source.data,
-					},
-				})
-			}
-		}
-	}
-
-	return { role, parts }
+	// Wrap it in parentheses so JS will treat it as an expression
+	const obj = new Function("return " + str)()
+	return JSON.stringify(obj)
 }
 
 /**
- * Prepare Gemini request payload with thinking configuration
+ * Prepare Gemini request payload with thinking configuration using standardized transforms
  */
-export function prepareGeminiRequestPayload(
+function prepareGeminiRequestPayload(
 	systemPrompt: string,
 	messages: Anthropic.Messages.MessageParam[],
 	model: { id: SapAiCoreModelId; info: ModelInfo },
 	thinkingBudgetTokens?: number,
 ): any {
-	const contents = messages.map(convertAnthropicMessageToGemini)
+	// Use standardized Gemini content conversion
+	const contents = messages.map((message) => ({
+		role: message.role === "assistant" ? "model" : "user",
+		parts: convertAnthropicContentToGemini(message.content),
+	}))
 
 	const payload = {
 		contents,
@@ -449,7 +167,6 @@ export function prepareGeminiRequestPayload(
 
 	// Add thinking config if the model supports it and budget is provided
 	const thinkingBudget = thinkingBudgetTokens ?? 0
-	const maxBudget = model.info.maxThinkingTokens ?? 0
 
 	if (thinkingBudget > 0 && model.info.maxThinkingTokens) {
 		// Add thinking configuration to the payload
@@ -577,33 +294,17 @@ export class SapAiCoreHandler extends BaseProvider implements SingleCompletionHa
 
 	/**
 	 * Get deployed model names for the model picker
+	 * Uses the standardized fetcher implementation
 	 * @returns Promise<string[]> Array of deployed model base names
 	 */
 	async getDeployedModelNames(): Promise<string[]> {
-		try {
-			const deployments = await this.getAiCoreDeployments()
-
-			if (!Array.isArray(deployments)) {
-				return []
-			}
-
-			// Extract base model names (without version) and remove duplicates
-			const modelNames = deployments
-				.map((deployment) => {
-					if (!deployment.name || typeof deployment.name !== "string") {
-						return null
-					}
-					return deployment.name.split(":")[0].toLowerCase()
-				})
-				.filter((name): name is string => name !== null)
-				.filter((name, index, array) => array.indexOf(name) === index) // Remove duplicates
-				.sort()
-
-			return modelNames
-		} catch (error) {
-			console.error("Error fetching deployed model names:", error)
-			return []
-		}
+		return getSapAiCoreDeployedModelNames({
+			sapAiCoreClientId: this.options.sapAiCoreClientId || "",
+			sapAiCoreClientSecret: this.options.sapAiCoreClientSecret || "",
+			sapAiCoreTokenUrl: this.options.sapAiCoreTokenUrl || "",
+			sapAiCoreBaseUrl: this.options.sapAiCoreBaseUrl || "",
+			sapAiResourceGroup: this.options.sapAiResourceGroup,
+		})
 	}
 
 	async *createMessage(
@@ -668,8 +369,8 @@ export class SapAiCoreHandler extends BaseProvider implements SingleCompletionHa
 		if (anthropicModels.includes(model.id)) {
 			url = `${this.options.sapAiCoreBaseUrl}/v2/inference/deployments/${deploymentId}/invoke-with-response-stream`
 
-			// Format messages for Converse API
-			const formattedMessages = formatMessagesForConverseAPI(messages)
+			// Use standardized Bedrock Converse format transformer
+			const formattedMessages = convertToBedrockConverseMessages(messages)
 
 			// Get message indices for caching
 			const userMsgIndices = messages.reduce(
@@ -687,22 +388,23 @@ export class SapAiCoreHandler extends BaseProvider implements SingleCompletionHa
 				// Use converse-stream endpoint with caching support
 				url = `${this.options.sapAiCoreBaseUrl}/v2/inference/deployments/${deploymentId}/converse-stream`
 
-				// Apply caching controls to messages
-				const messagesWithCache = applyCacheControlToMessages(
-					formattedMessages,
-					lastUserMsgIndex,
-					secondLastMsgUserIndex,
-				)
+				const messagesWithCache = convertToBedrockConverseMessages(messages)
 
-				// Prepare system message with caching support
-				const systemMessages = prepareSystemMessages(systemPrompt, true)
+				const lastMessageIndex = messagesWithCache.length - 1
+				if (lastMessageIndex >= 0 && messagesWithCache[lastMessageIndex].role === "user") {
+					const content = messagesWithCache[lastMessageIndex].content
+					if (Array.isArray(content) && content.length > 0) {
+						const lastContent = content[content.length - 1] as any
+						lastContent.cache_control = { type: "ephemeral" }
+					}
+				}
 
 				payload = {
 					inferenceConfig: {
 						maxTokens: model.info.maxTokens,
 						temperature: 0.0,
 					},
-					system: systemMessages,
+					system: [{ text: systemPrompt, cache_control: { type: "ephemeral" } }],
 					messages: messagesWithCache,
 				}
 			} else {
@@ -715,15 +417,13 @@ export class SapAiCoreHandler extends BaseProvider implements SingleCompletionHa
 				}
 			}
 		} else if (openAIModels.includes(model.id)) {
-			const openAiMessages: OpenAI.Chat.ChatCompletionMessageParam[] = [
-				{ role: "system", content: systemPrompt },
-				...convertToOpenAiMessages(messages),
-			]
+			// Use standardized OpenAI message conversion
+			const openAiMessages = convertToOpenAiMessages(messages)
 
 			url = `${this.options.sapAiCoreBaseUrl}/v2/inference/deployments/${deploymentId}/chat/completions?api-version=2024-12-01-preview`
 			payload = {
 				stream: true,
-				messages: openAiMessages,
+				messages: [{ role: "system", content: systemPrompt }, ...openAiMessages],
 				max_tokens: model.info.maxTokens,
 				temperature: 0.0,
 				frequency_penalty: 0,
@@ -732,6 +432,7 @@ export class SapAiCoreHandler extends BaseProvider implements SingleCompletionHa
 				stream_options: { include_usage: true },
 			}
 
+			// Handle reasoning models
 			if (["o1", "o3-mini", "o3", "o4-mini", "gpt-5", "gpt-5-nano", "gpt-5-mini"].includes(model.id)) {
 				delete payload.max_tokens
 				delete payload.temperature
@@ -870,7 +571,7 @@ export class SapAiCoreHandler extends BaseProvider implements SingleCompletionHa
 						const jsonData = line.slice(6)
 
 						try {
-							const data = parseJsonSafely(jsonData)
+							const data = JSON.parse(parseJsonSafely(jsonData))
 
 							// Handle metadata (token usage)
 							if (data.metadata?.usage) {
