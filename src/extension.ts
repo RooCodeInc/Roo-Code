@@ -129,7 +129,43 @@ export async function activate(context: vscode.ExtensionContext) {
 	// Initialize Roo Code Cloud service.
 	const postStateListener = () => ClineProvider.getVisibleInstance()?.postStateToWebview()
 	authStateChangedHandler = postStateListener
-	settingsUpdatedHandler = postStateListener
+
+	// Enhanced settings updated handler that also updates ExtensionBridgeService
+	settingsUpdatedHandler = async () => {
+		// Update ExtensionBridgeService when settings change
+		const userInfo = CloudService.instance.getUserInfo()
+		if (userInfo && CloudService.instance.cloudAPI) {
+			try {
+				const config = await CloudService.instance.cloudAPI.bridgeConfig()
+
+				const isCloudAgent =
+					typeof process.env.ROO_CODE_CLOUD_TOKEN === "string" && process.env.ROO_CODE_CLOUD_TOKEN.length > 0
+
+				const remoteControlEnabled = isCloudAgent
+					? true
+					: (CloudService.instance.getUserSettings()?.settings?.extensionBridgeEnabled ?? false)
+
+				cloudLogger(`[CloudService] Settings updated - remoteControlEnabled = ${remoteControlEnabled}`)
+
+				ExtensionBridgeService.handleRemoteControlState(
+					userInfo,
+					remoteControlEnabled,
+					{
+						...config,
+						provider,
+						sessionId: vscode.env.sessionId,
+					},
+					cloudLogger,
+				)
+			} catch (error) {
+				cloudLogger(
+					`[CloudService] Failed to update ExtensionBridgeService on settings change: ${error instanceof Error ? error.message : String(error)}`,
+				)
+			}
+		}
+
+		postStateListener()
+	}
 
 	userInfoHandler = async ({ userInfo }: { userInfo: CloudUserInfo }) => {
 		postStateListener()
@@ -147,9 +183,13 @@ export async function activate(context: vscode.ExtensionContext) {
 
 			cloudLogger(`[CloudService] isCloudAgent = ${isCloudAgent}, socketBridgeUrl = ${config.socketBridgeUrl}`)
 
+			const remoteControlEnabled = isCloudAgent
+				? true
+				: (CloudService.instance.getUserSettings()?.settings?.extensionBridgeEnabled ?? false)
+
 			ExtensionBridgeService.handleRemoteControlState(
 				userInfo,
-				isCloudAgent ? true : contextProxy.getValue("remoteControlEnabled"),
+				remoteControlEnabled,
 				{
 					...config,
 					provider,
