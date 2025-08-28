@@ -64,7 +64,7 @@ describe("webviewMessageHandler - checkpoint operations", () => {
 			// Call the handler with delete confirmation
 			await webviewMessageHandler(mockProvider, {
 				type: "deleteMessageConfirm",
-				messageTs: 3,
+				messageTs: 1,
 				restoreCheckpoint: true,
 			})
 
@@ -72,8 +72,8 @@ describe("webviewMessageHandler - checkpoint operations", () => {
 			expect(handleCheckpointRestoreOperation).toHaveBeenCalledWith({
 				provider: mockProvider,
 				currentCline: mockCline,
-				messageTs: 3,
-				messageIndex: 2,
+				messageTs: 1,
+				messageIndex: 0,
 				checkpoint: { hash: "abc123" },
 				operation: "delete",
 			})
@@ -107,7 +107,7 @@ describe("webviewMessageHandler - checkpoint operations", () => {
 			// Call the handler with edit confirmation
 			await webviewMessageHandler(mockProvider, {
 				type: "editMessageConfirm",
-				messageTs: 3,
+				messageTs: 1,
 				text: "Edited checkpoint message",
 				restoreCheckpoint: true,
 			})
@@ -116,14 +116,14 @@ describe("webviewMessageHandler - checkpoint operations", () => {
 			expect(handleCheckpointRestoreOperation).toHaveBeenCalledWith({
 				provider: mockProvider,
 				currentCline: mockCline,
-				messageTs: 3,
-				messageIndex: 2,
+				messageTs: 1,
+				messageIndex: 0,
 				checkpoint: { hash: "abc123" },
 				operation: "edit",
 				editData: {
+					apiConversationHistoryIndex: 0,
 					editedContent: "Edited checkpoint message",
 					images: undefined,
-					apiConversationHistoryIndex: 1,
 				},
 			})
 		})

@@ -68,10 +68,9 @@ export const webviewMessageHandler = async (
 	 * Shared utility to find message indices based on timestamp
 	 */
 	const findMessageIndices = (messageTs: number, currentCline: any) => {
-		// Find the exact message by timestamp, not the first one after a cutoff
 		const messageIndex = currentCline.clineMessages.findIndex((msg: ClineMessage) => msg.ts === messageTs)
 		const apiConversationHistoryIndex = currentCline.apiConversationHistory.findIndex(
-			(msg: ApiMessage) => msg.ts === messageTs,
+			(msg: ApiMessage) => msg.ts && msg.ts >= messageTs,
 		)
 		return { messageIndex, apiConversationHistoryIndex }
 	}
@@ -196,6 +195,7 @@ export const webviewMessageHandler = async (
 					taskId: currentCline.taskId,
 					globalStoragePath: provider.contextProxy.globalStorageUri.fsPath,
 				})
+				provider.postStateToWebview()
 			}
 		} catch (error) {
 			console.error("Error in delete message:", error)
@@ -335,6 +335,7 @@ export const webviewMessageHandler = async (
 				text: editedContent,
 				images,
 			})
+			provider.postStateToWebview()
 
 			// Don't initialize with history item for edit operations
 			// The webviewMessageHandler will handle the conversation state
