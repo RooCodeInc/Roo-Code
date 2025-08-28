@@ -6,6 +6,7 @@ phases:
       nodejs: 20.19.2
     commands:
       - echo Logged in as $(aws sts get-caller-identity --query Account --output text)
+      - npm install -g pnpm
       
   pre_build:
     commands:
