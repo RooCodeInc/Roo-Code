@@ -2214,6 +2214,10 @@ export class ClineProvider
 						vscode.ConfigurationTarget.Global,
 					)
 			}
+
+			if (configuration.currentApiConfigName) {
+				await this.setProviderProfile(configuration.currentApiConfigName)
+			}
 		}
 
 		const {
