@@ -122,8 +122,10 @@ export async function newTaskTool(
 			cline.pausedModeSlug = (await provider.getState()).mode ?? defaultModeSlug
 
 			// Create new task instance first (this preserves parent's current mode in its history)
+			// Mark this as an orchestrated subtask so it will include attempt_completion tool
 			const newCline = await provider.createTask(unescapedMessage, undefined, cline, {
 				initialTodos: todoItems,
+				isOrchestrated: true,
 			})
 			if (!newCline) {
 				pushToolResult(t("tools:newTask.errors.policy_restriction"))

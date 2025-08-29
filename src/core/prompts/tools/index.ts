@@ -74,6 +74,7 @@ export function getToolDescriptionsForMode(
 	settings?: Record<string, any>,
 	enableMcpServerCreation?: boolean,
 	modelId?: string,
+	isOrchestrated?: boolean,
 ): string {
 	const config = getModeConfig(mode, customModes)
 	const args: ToolArgs = {
@@ -117,6 +118,13 @@ export function getToolDescriptionsForMode(
 
 	// Add always available tools
 	ALWAYS_AVAILABLE_TOOLS.forEach((tool) => tools.add(tool))
+
+	// Conditionally include attempt_completion based on task context
+	// For orchestrated subtasks, always include it
+	// For standard tasks, check user setting (default is to exclude)
+	if (!isOrchestrated && settings?.allowAttemptCompletion !== true) {
+		tools.delete("attempt_completion")
+	}
 
 	// Conditionally exclude codebase_search if feature is disabled or not configured
 	if (

@@ -145,6 +145,8 @@ export interface ExtensionStateContextType extends ExtensionState {
 	routerModels?: RouterModels
 	alwaysAllowUpdateTodoList?: boolean
 	setAlwaysAllowUpdateTodoList: (value: boolean) => void
+	allowAttemptCompletion?: boolean
+	setAllowAttemptCompletion: (value: boolean) => void
 	includeDiagnosticMessages?: boolean
 	setIncludeDiagnosticMessages: (value: boolean) => void
 	maxDiagnosticMessages?: number
@@ -250,6 +252,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		},
 		codebaseIndexModels: { ollama: {}, openai: {} },
 		alwaysAllowUpdateTodoList: true,
+		allowAttemptCompletion: false,
 		includeDiagnosticMessages: true,
 		maxDiagnosticMessages: 50,
 	})
@@ -303,6 +306,13 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 					// Update followupAutoApproveTimeoutMs if present in state message
 					if ((newState as any).followupAutoApproveTimeoutMs !== undefined) {
 						setFollowupAutoApproveTimeoutMs((newState as any).followupAutoApproveTimeoutMs)
+					}
+					// Update allowAttemptCompletion if present in state message
+					if ((newState as any).allowAttemptCompletion !== undefined) {
+						setState((prevState) => ({
+							...prevState,
+							allowAttemptCompletion: (newState as any).allowAttemptCompletion,
+						}))
 					}
 					// Update includeTaskHistoryInEnhance if present in state message
 					if ((newState as any).includeTaskHistoryInEnhance !== undefined) {
@@ -513,6 +523,10 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		alwaysAllowUpdateTodoList: state.alwaysAllowUpdateTodoList,
 		setAlwaysAllowUpdateTodoList: (value) => {
 			setState((prevState) => ({ ...prevState, alwaysAllowUpdateTodoList: value }))
+		},
+		allowAttemptCompletion: state.allowAttemptCompletion,
+		setAllowAttemptCompletion: (value) => {
+			setState((prevState) => ({ ...prevState, allowAttemptCompletion: value }))
 		},
 		includeDiagnosticMessages: state.includeDiagnosticMessages,
 		setIncludeDiagnosticMessages: (value) => {

@@ -195,6 +195,10 @@
 			"label": "Todo",
 			"description": "Automatically update the to-do list without requiring approval"
 		},
+		"allowAttemptCompletion": {
+			"label": "Completion",
+			"description": "Allow Roo to use the attempt_completion tool to end tasks. When disabled, tasks continue until you manually stop them"
+		},
 		"apiRequestLimit": {
 			"title": "Max Count",
 			"unlimited": "Unlimited"

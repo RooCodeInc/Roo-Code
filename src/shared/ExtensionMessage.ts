@@ -221,6 +221,7 @@ export type ExtensionState = Pick<
 	| "alwaysAllowSubtasks"
 	| "alwaysAllowExecute"
 	| "alwaysAllowUpdateTodoList"
+	| "allowAttemptCompletion"
 	| "allowedCommands"
 	| "deniedCommands"
 	| "allowedMaxRequests"

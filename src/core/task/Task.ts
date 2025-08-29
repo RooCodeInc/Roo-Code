@@ -128,6 +128,7 @@ export type TaskOptions = {
 	taskNumber?: number
 	onCreated?: (task: Task) => void
 	initialTodos?: TodoItem[]
+	isOrchestrated?: boolean
 }
 
 export class Task extends EventEmitter<TaskEvents> implements TaskLike {
@@ -141,6 +142,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	readonly parentTask: Task | undefined = undefined
 	readonly taskNumber: number
 	readonly workspacePath: string
+	readonly isOrchestrated: boolean
 
 	/**
 	 * The mode associated with this task. Persisted across sessions
@@ -291,6 +293,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		taskNumber = -1,
 		onCreated,
 		initialTodos,
+		isOrchestrated = false,
 	}: TaskOptions) {
 		super()
 
@@ -312,6 +315,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		this.instanceId = crypto.randomUUID().slice(0, 8)
 		this.taskNumber = -1
+		this.isOrchestrated = isOrchestrated
 
 		this.rooIgnoreController = new RooIgnoreController(this.cwd)
 		this.rooProtectedController = new RooProtectedController(this.cwd)
@@ -2225,6 +2229,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			maxConcurrentFileReads,
 			maxReadFileLine,
 			apiConfiguration,
+			allowAttemptCompletion,
 		} = state ?? {}
 
 		return await (async () => {
@@ -2258,9 +2263,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					newTaskRequireTodos: vscode.workspace
 						.getConfiguration("roo-cline")
 						.get<boolean>("newTaskRequireTodos", false),
+					allowAttemptCompletion,
 				},
 				undefined, // todoList
 				this.api.getModel().id,
+				this.isOrchestrated,
 			)
 		})()
 	}

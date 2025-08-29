@@ -21,6 +21,7 @@ const AutoApproveMenu = ({ style }: AutoApproveMenuProps) => {
 		autoApprovalEnabled,
 		setAutoApprovalEnabled,
 		alwaysApproveResubmit,
+		allowAttemptCompletion,
 		setAlwaysAllowReadOnly,
 		setAlwaysAllowWrite,
 		setAlwaysAllowExecute,
@@ -31,19 +32,21 @@ const AutoApproveMenu = ({ style }: AutoApproveMenuProps) => {
 		setAlwaysApproveResubmit,
 		setAlwaysAllowFollowupQuestions,
 		setAlwaysAllowUpdateTodoList,
+		setAllowAttemptCompletion,
 	} = useExtensionState()
 
 	const { t } = useAppTranslation()
 
 	const baseToggles = useAutoApprovalToggles()
 
-	// AutoApproveMenu needs alwaysApproveResubmit in addition to the base toggles
+	// AutoApproveMenu needs alwaysApproveResubmit and allowAttemptCompletion in addition to the base toggles
 	const toggles = useMemo(
 		() => ({
 			...baseToggles,
 			alwaysApproveResubmit: alwaysApproveResubmit,
+			allowAttemptCompletion: allowAttemptCompletion,
 		}),
-		[baseToggles, alwaysApproveResubmit],
+		[baseToggles, alwaysApproveResubmit, allowAttemptCompletion],
 	)
 
 	const { hasEnabledOptions, effectiveAutoApprovalEnabled } = useAutoApprovalState(toggles, autoApprovalEnabled)
@@ -84,6 +87,9 @@ const AutoApproveMenu = ({ style }: AutoApproveMenuProps) => {
 				case "alwaysAllowUpdateTodoList":
 					setAlwaysAllowUpdateTodoList(value)
 					break
+				case "allowAttemptCompletion":
+					setAllowAttemptCompletion(value)
+					break
 			}
 
 			// Check if we need to update the master auto-approval state
@@ -119,6 +125,7 @@ const AutoApproveMenu = ({ style }: AutoApproveMenuProps) => {
 			setAlwaysApproveResubmit,
 			setAlwaysAllowFollowupQuestions,
 			setAlwaysAllowUpdateTodoList,
+			setAllowAttemptCompletion,
 			setAutoApprovalEnabled,
 		],
 	)

@@ -16,6 +16,7 @@ type AutoApproveToggles = Pick<
 	| "alwaysAllowExecute"
 	| "alwaysAllowFollowupQuestions"
 	| "alwaysAllowUpdateTodoList"
+	| "allowAttemptCompletion"
 >
 
 export type AutoApproveSetting = keyof AutoApproveToggles
@@ -98,6 +99,13 @@ export const autoApproveSettingsConfig: Record<AutoApproveSetting, AutoApproveCo
 		descriptionKey: "settings:autoApprove.updateTodoList.description",
 		icon: "checklist",
 		testId: "always-allow-update-todo-list-toggle",
+	},
+	allowAttemptCompletion: {
+		key: "allowAttemptCompletion",
+		labelKey: "settings:autoApprove.attemptCompletion.label",
+		descriptionKey: "settings:autoApprove.attemptCompletion.description",
+		icon: "check",
+		testId: "allow-attempt-completion-toggle",
 	},
 }
 
