@@ -129,6 +129,15 @@ export class API extends EventEmitter<RooCodeEvents> implements RooCodeAPI {
 		}
 
 		if (configuration) {
+			// Handle MCP servers if provided in configuration
+			if (configuration.mcpServers && typeof configuration.mcpServers === "object") {
+				const mcpHub = provider.getMcpHub()
+				if (mcpHub) {
+					// Initialize runtime MCP servers
+					await mcpHub.initializeRuntimeMcpServers(configuration.mcpServers)
+				}
+			}
+
 			await provider.setValues(configuration)
 
 			if (configuration.allowedCommands) {
