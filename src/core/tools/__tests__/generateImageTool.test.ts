@@ -7,6 +7,7 @@ import * as pathUtils from "../../../utils/pathUtils"
 import * as fileUtils from "../../../utils/fs"
 import { formatResponse } from "../../prompts/responses"
 import { EXPERIMENT_IDS } from "../../../shared/experiments"
+import { OpenRouterHandler } from "../../../api/providers/openrouter"
 
 // Mock dependencies
 vi.mock("fs/promises")
@@ -139,17 +140,18 @@ describe("generateImageTool", () => {
 				partial: false,
 			}
 
-			// Mock OpenRouter handler
-			const mockOpenRouterHandler = {
-				generateImage: vi.fn().mockResolvedValue({
-					success: true,
-					imageData: "data:image/png;base64,fakebase64data",
-				}),
-			}
+			// Mock the OpenRouterHandler generateImage method
+			const mockGenerateImage = vi.fn().mockResolvedValue({
+				success: true,
+				imageData: "data:image/png;base64,fakebase64data",
+			})
 
-			vi.doMock("../../../api/providers/openrouter", () => ({
-				OpenRouterHandler: vi.fn().mockImplementation(() => mockOpenRouterHandler),
-			}))
+			vi.mocked(OpenRouterHandler).mockImplementation(
+				() =>
+					({
+						generateImage: mockGenerateImage,
+					}) as any,
+			)
 
 			await generateImageTool(
 				mockCline as Task,
@@ -162,6 +164,7 @@ describe("generateImageTool", () => {
 
 			// Should process the complete block
 			expect(mockAskApproval).toHaveBeenCalled()
+			expect(mockGenerateImage).toHaveBeenCalled()
 			expect(mockPushToolResult).toHaveBeenCalled()
 		})
 	})
@@ -279,9 +282,7 @@ describe("generateImageTool", () => {
 			)
 
 			expect(mockCline.say).toHaveBeenCalledWith("error", expect.stringContaining("Input image not found"))
-			expect(mockPushToolResult).toHaveBeenCalledWith(
-				formatResponse.toolError(expect.stringContaining("Input image not found")),
-			)
+			expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("Input image not found"))
 		})
 
 		it("should handle unsupported image format", async () => {
@@ -306,9 +307,7 @@ describe("generateImageTool", () => {
 			)
 
 			expect(mockCline.say).toHaveBeenCalledWith("error", expect.stringContaining("Unsupported image format"))
-			expect(mockPushToolResult).toHaveBeenCalledWith(
-				formatResponse.toolError(expect.stringContaining("Unsupported image format")),
-			)
+			expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("Unsupported image format"))
 		})
 	})
 })
