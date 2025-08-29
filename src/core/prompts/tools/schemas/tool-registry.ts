@@ -18,6 +18,7 @@ import { generateSwitchModeSchema } from "./switch-mode-schema"
 import { generateUpdateTodoListSchema } from "./update-todo-list-schema"
 import { generateUseMcpToolSchema } from "./use-mcp-tool-schema"
 import { generateWriteToFileSchema } from "./write-to-file-schema"
+import { generateGenerateImageSchema } from "./generate-image-schema"
 import { ToolArgs } from "../types"
 import { type ToolName } from "@roo-code/types"
 
@@ -38,6 +39,7 @@ export class ToolRegistry {
 		this.registerTool("codebase_search", generateCodebaseSearchSchema)
 		this.registerTool("execute_command", generateExecuteCommandSchema)
 		this.registerTool("fetch_instructions", generateFetchInstructionsSchema)
+		this.registerTool("generate_image", generateGenerateImageSchema)
 		this.registerTool("insert_content", generateInsertContentSchema)
 		this.registerTool("list_code_definition_names", generateListCodeDefinitionNamesSchema)
 		this.registerTool("list_files", generateListFilesSchema)
