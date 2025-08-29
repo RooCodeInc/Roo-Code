@@ -2,7 +2,7 @@
 
 import * as vscode from "vscode"
 
-import { GLOBAL_STATE_KEYS, SECRET_STATE_KEYS } from "@roo-code/types"
+import { GLOBAL_STATE_KEYS, SECRET_STATE_KEYS, GLOBAL_SECRET_KEYS } from "@roo-code/types"
 
 import { ContextProxy } from "../ContextProxy"
 
@@ -77,8 +77,11 @@ describe("ContextProxy", () => {
 		})
 
 		it("should initialize secret cache with all secret keys", () => {
-			expect(mockSecrets.get).toHaveBeenCalledTimes(SECRET_STATE_KEYS.length)
+			expect(mockSecrets.get).toHaveBeenCalledTimes(SECRET_STATE_KEYS.length + GLOBAL_SECRET_KEYS.length)
 			for (const key of SECRET_STATE_KEYS) {
+				expect(mockSecrets.get).toHaveBeenCalledWith(key)
+			}
+			for (const key of GLOBAL_SECRET_KEYS) {
 				expect(mockSecrets.get).toHaveBeenCalledWith(key)
 			}
 		})
@@ -403,9 +406,12 @@ describe("ContextProxy", () => {
 			for (const key of SECRET_STATE_KEYS) {
 				expect(mockSecrets.delete).toHaveBeenCalledWith(key)
 			}
+			for (const key of GLOBAL_SECRET_KEYS) {
+				expect(mockSecrets.delete).toHaveBeenCalledWith(key)
+			}
 
 			// Total calls should equal the number of secret keys
-			expect(mockSecrets.delete).toHaveBeenCalledTimes(SECRET_STATE_KEYS.length)
+			expect(mockSecrets.delete).toHaveBeenCalledTimes(SECRET_STATE_KEYS.length + GLOBAL_SECRET_KEYS.length)
 		})
 
 		it("should reinitialize caches after reset", async () => {

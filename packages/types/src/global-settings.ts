@@ -43,6 +43,7 @@ export const globalSettingsSchema = z.object({
 	taskHistory: z.array(historyItemSchema).optional(),
 
 	// Image generation settings (experimental) - flattened for simplicity
+	openRouterImageApiKey: z.string().optional(),
 	imageGenerationSelectedModel: z.string().optional(),
 
 	condensingApiConfigId: z.string().optional(),

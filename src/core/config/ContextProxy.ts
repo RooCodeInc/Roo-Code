@@ -85,7 +85,52 @@ export class ContextProxy {
 
 		await Promise.all(promises)
 
+		// Migration: Check for old nested image generation settings and migrate them
+		await this.migrateImageGenerationSettings()
+
 		this._isInitialized = true
+	}
+
+	/**
+	 * Migrates old nested openRouterImageGenerationSettings to the new flattened structure
+	 */
+	private async migrateImageGenerationSettings() {
+		try {
+			// Check if there's an old nested structure
+			const oldNestedSettings = this.originalContext.globalState.get<any>("openRouterImageGenerationSettings")
+
+			if (oldNestedSettings && typeof oldNestedSettings === "object") {
+				logger.info("Migrating old nested image generation settings to flattened structure")
+
+				// Migrate the API key if it exists and we don't already have one
+				if (oldNestedSettings.openRouterApiKey && !this.secretCache.openRouterImageApiKey) {
+					await this.originalContext.secrets.store(
+						"openRouterImageApiKey",
+						oldNestedSettings.openRouterApiKey,
+					)
+					this.secretCache.openRouterImageApiKey = oldNestedSettings.openRouterApiKey
+					logger.info("Migrated openRouterImageApiKey to secrets")
+				}
+
+				// Migrate the selected model if it exists and we don't already have one
+				if (oldNestedSettings.selectedModel && !this.stateCache.imageGenerationSelectedModel) {
+					await this.originalContext.globalState.update(
+						"imageGenerationSelectedModel",
+						oldNestedSettings.selectedModel,
+					)
+					this.stateCache.imageGenerationSelectedModel = oldNestedSettings.selectedModel
+					logger.info("Migrated imageGenerationSelectedModel to global state")
+				}
+
+				// Clean up the old nested structure
+				await this.originalContext.globalState.update("openRouterImageGenerationSettings", undefined)
+				logger.info("Removed old nested openRouterImageGenerationSettings")
+			}
+		} catch (error) {
+			logger.error(
+				`Error during image generation settings migration: ${error instanceof Error ? error.message : String(error)}`,
+			)
+		}
 	}
 
 	public get extensionUri() {
