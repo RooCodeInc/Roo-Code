@@ -39,7 +39,7 @@ import {
 	ORGANIZATION_ALLOW_ALL,
 } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
-import { CloudService, getRooCodeApiUrl } from "@roo-code/cloud"
+import { CloudService, BridgeOrchestrator, getRooCodeApiUrl } from "@roo-code/cloud"
 
 import { Package } from "../../shared/package"
 import { findLast } from "../../shared/array"
@@ -70,7 +70,6 @@ import { fileExistsAtPath } from "../../utils/fs"
 import { setTtsEnabled, setTtsSpeed } from "../../utils/tts"
 import { getWorkspaceGitInfo } from "../../utils/git"
 import { getWorkspacePath } from "../../utils/path"
-import { isRemoteControlEnabled } from "../../utils/remoteControl"
 
 import { setPanel } from "../../activate/registerCommands"
 
@@ -353,7 +352,7 @@ export class ClineProvider
 				await task.abortTask(true)
 			} catch (e) {
 				this.log(
-					`[subtasks] encountered error while aborting task ${task.taskId}.${task.instanceId}: ${e.message}`,
+					`[removeClineFromStack] encountered error while aborting task ${task.taskId}.${task.instanceId}: ${e.message}`,
 				)
 			}
 
@@ -793,7 +792,7 @@ export class ClineProvider
 			parentTask,
 			taskNumber: this.clineStack.length + 1,
 			onCreated: this.taskCreationCallback,
-			enableTaskBridge: isRemoteControlEnabled(cloudUserInfo, remoteControlEnabled),
+			enableBridge: BridgeOrchestrator.isEnabled(cloudUserInfo, remoteControlEnabled),
 			initialTodos: options.initialTodos,
 			...options,
 		})
@@ -801,7 +800,7 @@ export class ClineProvider
 		await this.addClineToStack(task)
 
 		this.log(
-			`[subtasks] ${task.parentTask ? "child" : "parent"} task ${task.taskId}.${task.instanceId} instantiated`,
+			`[createTask] ${task.parentTask ? "child" : "parent"} task ${task.taskId}.${task.instanceId} instantiated`,
 		)
 
 		return task
@@ -863,9 +862,6 @@ export class ClineProvider
 			remoteControlEnabled,
 		} = await this.getState()
 
-		// Determine if TaskBridge should be enabled
-		const enableTaskBridge = isRemoteControlEnabled(cloudUserInfo, remoteControlEnabled)
-
 		const task = new Task({
 			provider: this,
 			apiConfiguration,
@@ -879,13 +875,13 @@ export class ClineProvider
 			parentTask: historyItem.parentTask,
 			taskNumber: historyItem.number,
 			onCreated: this.taskCreationCallback,
-			enableTaskBridge,
+			enableBridge: BridgeOrchestrator.isEnabled(cloudUserInfo, remoteControlEnabled),
 		})
 
 		await this.addClineToStack(task)
 
 		this.log(
-			`[subtasks] ${task.parentTask ? "child" : "parent"} task ${task.taskId}.${task.instanceId} instantiated`,
+			`[createTaskWithHistoryItem] ${task.parentTask ? "child" : "parent"} task ${task.taskId}.${task.instanceId} instantiated`,
 		)
 
 		return task
@@ -1275,7 +1271,7 @@ export class ClineProvider
 			return
 		}
 
-		console.log(`[subtasks] cancelling task ${cline.taskId}.${cline.instanceId}`)
+		console.log(`[cancelTask] cancelling task ${cline.taskId}.${cline.instanceId}`)
 
 		const { historyItem } = await this.getTaskWithId(cline.taskId)
 		// Preserve parent and root task information for history item.
@@ -2196,56 +2192,50 @@ export class ClineProvider
 		return true
 	}
 
-	public async handleRemoteControlToggle(enabled: boolean) {
-		const { CloudService: CloudServiceImport, ExtensionBridgeService } = await import("@roo-code/cloud")
+	public async remoteControlEnabled(enabled: boolean) {
+		const userInfo = CloudService.instance.getUserInfo()
 
-		const userInfo = CloudServiceImport.instance.getUserInfo()
+		const config = await CloudService.instance.cloudAPI?.bridgeConfig().catch(() => undefined)
 
-		const bridgeConfig = await CloudServiceImport.instance.cloudAPI?.bridgeConfig().catch(() => undefined)
-
-		if (!bridgeConfig) {
-			this.log("[ClineProvider#handleRemoteControlToggle] Failed to get bridge config")
+		if (!config) {
+			this.log("[ClineProvider#remoteControlEnabled] Failed to get bridge config")
 			return
 		}
 
-		await ExtensionBridgeService.handleRemoteControlState(
-			userInfo,
-			enabled,
-			{ ...bridgeConfig, provider: this, sessionId: vscode.env.sessionId },
-			(message: string) => this.log(message),
-		)
+		await BridgeOrchestrator.connectOrDisconnect(userInfo, enabled, {
+			...config,
+			provider: this,
+			sessionId: vscode.env.sessionId,
+		})
 
-		if (isRemoteControlEnabled(userInfo, enabled)) {
+		const bridge = BridgeOrchestrator.getInstance()
+
+		if (bridge) {
 			const currentTask = this.getCurrentTask()
 
-			if (currentTask && !currentTask.bridgeService) {
+			if (currentTask && !currentTask.bridge) {
 				try {
-					currentTask.bridgeService = ExtensionBridgeService.getInstance()
-
-					if (currentTask.bridgeService) {
-						await currentTask.bridgeService.subscribeToTask(currentTask)
-					}
+					currentTask.bridge = bridge
+					await currentTask.bridge.subscribeToTask(currentTask)
 				} catch (error) {
-					const message = `[ClineProvider#handleRemoteControlToggle] subscribeToTask failed - ${error instanceof Error ? error.message : String(error)}`
+					const message = `[ClineProvider#remoteControlEnabled] subscribeToTask failed - ${error instanceof Error ? error.message : String(error)}`
 					this.log(message)
 					console.error(message)
 				}
 			}
 		} else {
 			for (const task of this.clineStack) {
-				if (task.bridgeService) {
+				if (task.bridge) {
 					try {
-						await task.bridgeService.unsubscribeFromTask(task.taskId)
-						task.bridgeService = null
+						await task.bridge.unsubscribeFromTask(task.taskId)
+						task.bridge = null
 					} catch (error) {
-						const message = `[ClineProvider#handleRemoteControlToggle] unsubscribeFromTask failed - ${error instanceof Error ? error.message : String(error)}`
+						const message = `[ClineProvider#remoteControlEnabled] unsubscribeFromTask failed - ${error instanceof Error ? error.message : String(error)}`
 						this.log(message)
 						console.error(message)
 					}
 				}
 			}
-
-			ExtensionBridgeService.resetInstance()
 		}
 	}
 
