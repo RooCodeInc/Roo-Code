@@ -1,10 +1,10 @@
-import { io, type Socket } from "socket.io-client"
+import { io, type Socket, type SocketOptions, type ManagerOptions } from "socket.io-client"
 
 import { ConnectionState, type RetryConfig } from "@roo-code/types"
 
 export interface SocketTransportOptions {
 	url: string
-	socketOptions: Record<string, unknown>
+	socketOptions: Partial<ManagerOptions & SocketOptions>
 	onConnect?: () => void | Promise<void>
 	onDisconnect?: (reason: string) => void
 	onReconnect?: (attemptNumber: number) => void | Promise<void>
