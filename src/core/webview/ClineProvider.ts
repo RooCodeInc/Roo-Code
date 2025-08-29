@@ -2097,7 +2097,7 @@ export class ClineProvider
 				}
 			})(),
 			// Add image generation settings
-			openRouterImageApiKey: (stateValues as any).openRouterImageApiKey,
+			openRouterImageApiKey: stateValues.openRouterImageApiKey,
 			imageGenerationSelectedModel: stateValues.imageGenerationSelectedModel,
 		}
 	}
