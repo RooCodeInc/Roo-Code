@@ -2,6 +2,7 @@ import type { Socket } from "socket.io-client"
 
 import {
 	type TaskProviderLike,
+	type TaskProviderEvents,
 	type ExtensionInstance,
 	type ExtensionBridgeCommand,
 	type ExtensionBridgeEvent,
@@ -28,6 +29,7 @@ export class ExtensionChannel extends BaseChannel<
 	private provider: TaskProviderLike
 	private extensionInstance: ExtensionInstance
 	private heartbeatInterval: NodeJS.Timeout | null = null
+	private eventListeners: Map<RooCodeEventName, (...args: unknown[]) => void> = new Map()
 
 	constructor(instanceId: string, userId: string, provider: TaskProviderLike) {
 		super(instanceId)
@@ -115,6 +117,7 @@ export class ExtensionChannel extends BaseChannel<
 
 	protected async handleCleanup(socket: Socket): Promise<void> {
 		this.stopHeartbeat()
+		this.cleanupListeners()
 		await this.unregisterInstance(socket)
 	}
 
@@ -168,17 +171,28 @@ export class ExtensionChannel extends BaseChannel<
 			{ from: RooCodeEventName.TaskIdle, to: ExtensionBridgeEventName.TaskIdle },
 		] as const
 
-		const addListener =
-			(type: ExtensionBridgeEventName) =>
-			(..._args: unknown[]) => {
+		eventMapping.forEach(({ from, to }) => {
+			// Create and store the listener function for cleanup/
+			const listener = (..._args: unknown[]) => {
 				this.publish(ExtensionSocketEvents.EVENT, {
-					type,
+					type: to,
 					instance: this.updateInstance(),
 					timestamp: Date.now(),
 				})
 			}
 
-		eventMapping.forEach(({ from, to }) => this.provider.on(from, addListener(to)))
+			this.eventListeners.set(from, listener)
+			this.provider.on(from, listener)
+		})
+	}
+
+	private cleanupListeners(): void {
+		this.eventListeners.forEach((listener, eventName) => {
+			// Cast is safe because we only store valid event names from eventMapping.
+			this.provider.off(eventName as keyof TaskProviderEvents, listener)
+		})
+
+		this.eventListeners.clear()
 	}
 
 	private updateInstance(): ExtensionInstance {

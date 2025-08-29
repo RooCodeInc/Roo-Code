@@ -20,10 +20,10 @@ type TaskEventListener = {
 	[K in keyof TaskEvents]: (...args: TaskEvents[K]) => void | Promise<void>
 }[keyof TaskEvents]
 
-const TASK_EVENT_MAPPING: Record<TaskBridgeEventName, keyof TaskEvents> = {
-	[TaskBridgeEventName.Message]: RooCodeEventName.Message,
-	[TaskBridgeEventName.TaskModeSwitched]: RooCodeEventName.TaskModeSwitched,
-	[TaskBridgeEventName.TaskInteractive]: RooCodeEventName.TaskInteractive,
+type TaskEventMapping = {
+	from: keyof TaskEvents
+	to: TaskBridgeEventName
+	createPayload: (task: TaskLike, ...args: any[]) => any // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
 /**
@@ -38,6 +38,36 @@ export class TaskChannel extends BaseChannel<
 	private subscribedTasks: Map<string, TaskLike> = new Map()
 	private pendingTasks: Map<string, TaskLike> = new Map()
 	private taskListeners: Map<string, Map<TaskBridgeEventName, TaskEventListener>> = new Map()
+
+	private readonly eventMapping: readonly TaskEventMapping[] = [
+		{
+			from: RooCodeEventName.Message,
+			to: TaskBridgeEventName.Message,
+			createPayload: (task: TaskLike, data: { action: string; message: ClineMessage }) => ({
+				type: TaskBridgeEventName.Message,
+				taskId: task.taskId,
+				action: data.action,
+				message: data.message,
+			}),
+		},
+		{
+			from: RooCodeEventName.TaskModeSwitched,
+			to: TaskBridgeEventName.TaskModeSwitched,
+			createPayload: (task: TaskLike, mode: string) => ({
+				type: TaskBridgeEventName.TaskModeSwitched,
+				taskId: task.taskId,
+				mode,
+			}),
+		},
+		{
+			from: RooCodeEventName.TaskInteractive,
+			to: TaskBridgeEventName.TaskInteractive,
+			createPayload: (task: TaskLike, _taskId: string) => ({
+				type: TaskBridgeEventName.TaskInteractive,
+				taskId: task.taskId,
+			}),
+		},
+	] as const
 
 	constructor(instanceId: string) {
 		super(instanceId)
@@ -157,35 +187,16 @@ export class TaskChannel extends BaseChannel<
 
 		const listeners = new Map<TaskBridgeEventName, TaskEventListener>()
 
-		const onMessage = ({ action, message }: { action: string; message: ClineMessage }) => {
-			this.publish(TaskSocketEvents.EVENT, {
-				type: TaskBridgeEventName.Message,
-				taskId: task.taskId,
-				action,
-				message,
-			})
-		}
-		task.on(RooCodeEventName.Message, onMessage)
-		listeners.set(TaskBridgeEventName.Message, onMessage)
+		this.eventMapping.forEach(({ from, to, createPayload }) => {
+			const listener = (...args: unknown[]) => {
+				const payload = createPayload(task, ...args)
+				this.publish(TaskSocketEvents.EVENT, payload)
+			}
 
-		const onTaskModeSwitched = (mode: string) => {
-			this.publish(TaskSocketEvents.EVENT, {
-				type: TaskBridgeEventName.TaskModeSwitched,
-				taskId: task.taskId,
-				mode,
-			})
-		}
-		task.on(RooCodeEventName.TaskModeSwitched, onTaskModeSwitched)
-		listeners.set(TaskBridgeEventName.TaskModeSwitched, onTaskModeSwitched)
-
-		const onTaskInteractive = (_taskId: string) => {
-			this.publish(TaskSocketEvents.EVENT, {
-				type: TaskBridgeEventName.TaskInteractive,
-				taskId: task.taskId,
-			})
-		}
-		task.on(RooCodeEventName.TaskInteractive, onTaskInteractive)
-		listeners.set(TaskBridgeEventName.TaskInteractive, onTaskInteractive)
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			task.on(from, listener as any)
+			listeners.set(to, listener)
+		})
 
 		this.taskListeners.set(task.taskId, listeners)
 	}
@@ -197,14 +208,18 @@ export class TaskChannel extends BaseChannel<
 			return
 		}
 
-		listeners.forEach((listener, eventName) => {
-			try {
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-				task.off(TASK_EVENT_MAPPING[eventName], listener as any)
-			} catch (error) {
-				console.error(
-					`[TaskChannel] task.off(${TASK_EVENT_MAPPING[eventName]}) failed for task ${task.taskId}: ${error instanceof Error ? error.message : String(error)}`,
-				)
+		this.eventMapping.forEach(({ from, to }) => {
+			const listener = listeners.get(to)
+			if (listener) {
+				try {
+					task.off(from, listener as any) // eslint-disable-line @typescript-eslint/no-explicit-any
+				} catch (error) {
+					console.error(
+						`[TaskChannel] task.off(${from}) failed for task ${task.taskId}: ${
+							error instanceof Error ? error.message : String(error)
+						}`,
+					)
+				}
 			}
 		})
 
