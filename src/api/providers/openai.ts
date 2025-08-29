@@ -286,175 +286,41 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 			// Non-streaming path
 			if (nonStreaming) {
-				try {
-					const response = await (
-						this.client as unknown as {
-							responses: { create: (body: Record<string, unknown>) => Promise<unknown> }
-						}
-					).responses.create(basePayload)
-					yield* this._yieldResponsesResult(response as unknown, modelInfo)
-				} catch (err: unknown) {
-					// Retry without previous_response_id if server rejects it (400 "Previous response ... not found")
-					if (previousId && this._isPreviousResponseNotFoundError(err)) {
-						const { previous_response_id: _omitPrev, ...withoutPrev } = basePayload as {
-							previous_response_id?: unknown
-							[key: string]: unknown
-						}
-						// Clear stored continuity to avoid reusing a bad id
-						this.lastResponseId = undefined
-						const response = await (
-							this.client as unknown as {
-								responses: { create: (body: Record<string, unknown>) => Promise<unknown> }
-							}
-						).responses.create(withoutPrev)
-						yield* this._yieldResponsesResult(response as unknown, modelInfo)
-					}
-					// Graceful downgrade if verbosity is rejected by server (400 unknown/unsupported parameter)
-					else if ("text" in basePayload && this._isVerbosityUnsupportedError(err)) {
-						// Remove text.verbosity and retry once
-						const { text: _omit, ...withoutVerbosity } = basePayload as { text?: unknown } & Record<
-							string,
-							unknown
-						>
-						const response = await (
-							this.client as unknown as {
-								responses: { create: (body: Record<string, unknown>) => Promise<unknown> }
-							}
-						).responses.create(withoutVerbosity)
-						yield* this._yieldResponsesResult(response as unknown, modelInfo)
-					} else if (usedArrayInput && this._isInputTextInvalidError(err)) {
-						// Azure-specific fallback: retry with a minimal single-message string when array input is rejected
-						const retryPayload: Record<string, unknown> = {
-							...basePayload,
-							input:
-								previousId && lastUserMessage
-									? this._formatResponsesSingleMessage(lastUserMessage, true)
-									: this._formatResponsesInput(systemPrompt, messages),
-						}
-						const response = await (
-							this.client as unknown as {
-								responses: { create: (body: Record<string, unknown>) => Promise<unknown> }
-							}
-						).responses.create(retryPayload)
-						yield* this._yieldResponsesResult(response as unknown, modelInfo)
-					} else {
-						throw err
-					}
-				}
+				const response = await this._responsesCreateWithRetries(basePayload, {
+					usedArrayInput,
+					lastUserMessage,
+					previousId,
+					systemPrompt,
+					messages,
+				})
+				yield* this._yieldResponsesResult(response as unknown, modelInfo)
 				return
 			}
 
 			// Streaming path (auto-fallback to non-streaming result if provider ignores stream flag)
 			const streamingPayload: Record<string, unknown> = { ...basePayload, stream: true }
-			try {
-				const maybeStream = await (
-					this.client as unknown as {
-						responses: { create: (body: Record<string, unknown>) => Promise<unknown> }
-					}
-				).responses.create(streamingPayload)
+			const maybeStream = await this._responsesCreateWithRetries(streamingPayload, {
+				usedArrayInput,
+				lastUserMessage,
+				previousId,
+				systemPrompt,
+				messages,
+			})
 
-				const isAsyncIterable = (obj: unknown): obj is AsyncIterable<unknown> =>
-					typeof (obj as AsyncIterable<unknown>)[Symbol.asyncIterator] === "function"
+			const isAsyncIterable = (obj: unknown): obj is AsyncIterable<unknown> =>
+				typeof (obj as AsyncIterable<unknown>)[Symbol.asyncIterator] === "function"
 
-				if (isAsyncIterable(maybeStream)) {
-					for await (const chunk of handleResponsesStream(maybeStream, {
-						onResponseId: (id) => {
-							this.lastResponseId = id
-						},
-					})) {
-						yield chunk
-					}
-				} else {
-					// Some providers may ignore the stream flag and return a complete response
-					yield* this._yieldResponsesResult(maybeStream as unknown, modelInfo)
+			if (isAsyncIterable(maybeStream)) {
+				for await (const chunk of handleResponsesStream(maybeStream, {
+					onResponseId: (id) => {
+						this.lastResponseId = id
+					},
+				})) {
+					yield chunk
 				}
-			} catch (err: unknown) {
-				// Retry without previous_response_id if server rejects it (400 "Previous response ... not found")
-				if (previousId && this._isPreviousResponseNotFoundError(err)) {
-					const { previous_response_id: _omitPrev, ...withoutPrev } = streamingPayload as {
-						previous_response_id?: unknown
-						[key: string]: unknown
-					}
-					this.lastResponseId = undefined
-					const maybeStreamRetry = await (
-						this.client as unknown as {
-							responses: { create: (body: Record<string, unknown>) => Promise<unknown> }
-						}
-					).responses.create(withoutPrev)
-
-					const isAsyncIterable = (obj: unknown): obj is AsyncIterable<unknown> =>
-						typeof (obj as AsyncIterable<unknown>)[Symbol.asyncIterator] === "function"
-
-					if (isAsyncIterable(maybeStreamRetry)) {
-						for await (const chunk of handleResponsesStream(maybeStreamRetry, {
-							onResponseId: (id) => {
-								this.lastResponseId = id
-							},
-						})) {
-							yield chunk
-						}
-					} else {
-						yield* this._yieldResponsesResult(maybeStreamRetry as unknown, modelInfo)
-					}
-				}
-				// Graceful verbosity removal on 400
-				else if ("text" in streamingPayload && this._isVerbosityUnsupportedError(err)) {
-					const { text: _omit, ...withoutVerbosity } = streamingPayload as { text?: unknown } & Record<
-						string,
-						unknown
-					>
-					const maybeStreamRetry = await (
-						this.client as unknown as {
-							responses: { create: (body: Record<string, unknown>) => Promise<unknown> }
-						}
-					).responses.create(withoutVerbosity)
-
-					const isAsyncIterable = (obj: unknown): obj is AsyncIterable<unknown> =>
-						typeof (obj as AsyncIterable<unknown>)[Symbol.asyncIterator] === "function"
-
-					if (isAsyncIterable(maybeStreamRetry)) {
-						for await (const chunk of handleResponsesStream(maybeStreamRetry, {
-							onResponseId: (id) => {
-								this.lastResponseId = id
-							},
-						})) {
-							yield chunk
-						}
-					} else {
-						yield* this._yieldResponsesResult(maybeStreamRetry as unknown, modelInfo)
-					}
-				} else if (usedArrayInput && this._isInputTextInvalidError(err)) {
-					// Azure-specific fallback for streaming: retry with minimal single-message string while keeping stream: true
-					const retryStreamingPayload: Record<string, unknown> = {
-						...streamingPayload,
-						input:
-							previousId && lastUserMessage
-								? this._formatResponsesSingleMessage(lastUserMessage, true)
-								: this._formatResponsesInput(systemPrompt, messages),
-					}
-					const maybeStreamRetry = await (
-						this.client as unknown as {
-							responses: { create: (body: Record<string, unknown>) => Promise<unknown> }
-						}
-					).responses.create(retryStreamingPayload)
-
-					const isAsyncIterable = (obj: unknown): obj is AsyncIterable<unknown> =>
-						typeof (obj as AsyncIterable<unknown>)[Symbol.asyncIterator] === "function"
-
-					if (isAsyncIterable(maybeStreamRetry)) {
-						for await (const chunk of handleResponsesStream(maybeStreamRetry, {
-							onResponseId: (id) => {
-								this.lastResponseId = id
-							},
-						})) {
-							yield chunk
-						}
-					} else {
-						yield* this._yieldResponsesResult(maybeStreamRetry as unknown, modelInfo)
-					}
-				} else {
-					throw err
-				}
+			} else {
+				// Some providers may ignore the stream flag and return a complete response
+				yield* this._yieldResponsesResult(maybeStream as unknown, modelInfo)
 			}
 			return
 		}
@@ -686,25 +552,22 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 					payload.max_output_tokens = this.options.modelMaxTokens || modelInfo.maxTokens
 				}
 
+				const response = await this._responsesCreateWithRetries(payload as unknown as Record<string, unknown>, {
+					usedArrayInput: false,
+					lastUserMessage: undefined,
+					previousId: undefined,
+					systemPrompt: "",
+					messages: [],
+				})
 				try {
-					const response = await this.client.responses.create(payload)
-					try {
-						const respId = (response as { id?: unknown } | undefined)?.id
-						if (typeof respId === "string" && respId.length > 0) {
-							this.lastResponseId = respId
-						}
-					} catch {
-						// ignore
+					const respId = (response as { id?: unknown } | undefined)?.id
+					if (typeof respId === "string" && respId.length > 0) {
+						this.lastResponseId = respId
 					}
-					return this._extractResponsesText(response) ?? ""
-				} catch (err: unknown) {
-					if (payload.text && this._isVerbosityUnsupportedError(err)) {
-						const { text: _omit, ...withoutVerbosity } = payload
-						const response = await this.client.responses.create(withoutVerbosity)
-						return this._extractResponsesText(response) ?? ""
-					}
-					throw err
+				} catch {
+					// ignore
 				}
+				return this._extractResponsesText(response) ?? ""
 			}
 
 			const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {
@@ -1094,6 +957,65 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		const status = typeof statusRaw === "number" ? statusRaw : Number(statusRaw)
 		const msgRaw = (anyErr.message ?? anyErr.error?.message ?? "").toString().toLowerCase()
 		return status === 400 && msgRaw.includes("invalid value") && msgRaw.includes("input_text")
+	}
+
+	/**
+	 * Centralized Responses.create with one-shot retries for common provider errors:
+	 * - 400 "Previous response ... not found" -> drop previous_response_id and retry
+	 * - 400 unknown/unsupported "text.verbosity" -> remove text and retry
+	 * - 400 invalid value for input_text (Azure) -> rebuild single-message string input and retry
+	 * Returns either an AsyncIterable (streaming) or a full response object (non-streaming).
+	 */
+	private async _responsesCreateWithRetries(
+		payload: Record<string, unknown>,
+		opts: {
+			usedArrayInput: boolean
+			lastUserMessage?: Anthropic.Messages.MessageParam
+			previousId?: string
+			systemPrompt: string
+			messages: Anthropic.Messages.MessageParam[]
+		},
+	): Promise<unknown> {
+		const create = (body: Record<string, unknown>) =>
+			(
+				this.client as unknown as { responses: { create: (b: Record<string, unknown>) => Promise<unknown> } }
+			).responses.create(body)
+
+		try {
+			return await create(payload)
+		} catch (err: unknown) {
+			// Retry without previous_response_id if server rejects it
+			if (opts.previousId && this._isPreviousResponseNotFoundError(err)) {
+				const { previous_response_id: _omitPrev, ...withoutPrev } = payload as {
+					previous_response_id?: unknown
+					[key: string]: unknown
+				}
+				this.lastResponseId = undefined
+				return await create(withoutPrev)
+			}
+
+			// Graceful downgrade if verbosity is rejected by server
+			if ("text" in payload && this._isVerbosityUnsupportedError(err)) {
+				const { text: _omit, ...withoutVerbosity } = payload as { text?: unknown } & Record<string, unknown>
+				return await create(withoutVerbosity)
+			}
+
+			// Azure-specific fallback when array input is rejected
+			if (opts.usedArrayInput && this._isInputTextInvalidError(err)) {
+				const fallbackInput =
+					opts.previousId && opts.lastUserMessage
+						? this._formatResponsesSingleMessage(opts.lastUserMessage, true)
+						: this._formatResponsesInput(opts.systemPrompt, opts.messages)
+
+				const retryPayload: Record<string, unknown> = {
+					...payload,
+					input: fallbackInput,
+				}
+				return await create(retryPayload)
+			}
+
+			throw err
+		}
 	}
 	private async *_yieldResponsesResult(response: any, modelInfo: ModelInfo): ApiStream {
 		// Capture response id for continuity when present
