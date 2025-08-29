@@ -637,7 +637,7 @@ describe("SYSTEM_PROMPT", () => {
 		)
 
 		expect(prompt).toContain("update_todo_list")
-		expect(prompt).toContain("## update_todo_list")
+		expect(prompt).toContain('<tool name="update_todo_list">')
 	})
 
 	it("should include update_todo_list tool when todoListEnabled is undefined", async () => {
@@ -669,7 +669,7 @@ describe("SYSTEM_PROMPT", () => {
 		)
 
 		expect(prompt).toContain("update_todo_list")
-		expect(prompt).toContain("## update_todo_list")
+		expect(prompt).toContain('<tool name="update_todo_list">')
 	})
 
 	afterAll(() => {

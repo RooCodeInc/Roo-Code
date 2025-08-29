@@ -1,6 +1,6 @@
 export function getAskFollowupQuestionDescription(): string {
-	return `## ask_followup_question
-Description: Ask the user a question to gather additional information needed to complete the task. Use when you need clarification or more details to proceed effectively.
+	return `<tool name="ask_followup_question">
+<description>Ask the user a question to gather additional information needed to complete the task. Use when you need clarification or more details to proceed effectively.</description>
 
 Parameters:
 - question: (required) A clear, specific question addressing the information needed
@@ -23,5 +23,7 @@ Example:
 <suggest>./config/frontend-config.json</suggest>
 <suggest>./frontend-config.json</suggest>
 </follow_up>
-</ask_followup_question>`
+</ask_followup_question>
+
+</tool>`
 }

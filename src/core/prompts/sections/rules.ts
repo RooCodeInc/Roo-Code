@@ -61,9 +61,7 @@ export function getRulesSection(
 		? "- **CRITICAL: For ANY exploration of code you haven't examined yet in this conversation, you MUST use the `codebase_search` tool FIRST before using search_files or other file exploration tools.** This requirement applies throughout the entire conversation, not just when starting a task. The codebase_search tool uses semantic search to find relevant code based on meaning, not just keywords, making it much more effective for understanding how features are implemented. Even if you've already explored some parts of the codebase, any new area or functionality you need to understand requires using codebase_search first.\n"
 		: ""
 
-	return `====
-
-RULES
+	return `<section name="RULES">
 
 - The project base directory is: ${cwd.toPosix()}
 - All file paths must be relative to this directory. However, commands may change directories in terminals, so respect working directory specified by the response to <execute_command>.
@@ -96,5 +94,7 @@ ${getEditingInstructions(diffStrategy)}
 		supportsComputerUse
 			? " Then if you want to test your work, you might use browser_action to launch the site, wait for the user's response confirming the site was launched along with a screenshot, then perhaps e.g., click a button to test functionality if needed, wait for the user's response confirming the button was clicked along with a screenshot of the new state, before finally closing the browser."
 			: ""
-	}`
+	}
+
+</section>`
 }

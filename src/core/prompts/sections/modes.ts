@@ -13,9 +13,7 @@ export async function getModesSection(context: vscode.ExtensionContext): Promise
 	// Get all modes with their overrides from extension state
 	const allModes = await getAllModesWithPrompts(context)
 
-	let modesContent = `====
-
-MODES
+	let modesContent = `<section name="MODES">
 
 - These are the currently available modes:
 ${allModes
@@ -37,7 +35,8 @@ If the user asks you to create or edit a new mode for this project, you should r
 <fetch_instructions>
 <task>create_mode</task>
 </fetch_instructions>
-`
+
+</section>`
 
 	return modesContent
 }

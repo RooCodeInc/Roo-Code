@@ -4,10 +4,9 @@ import { ToolArgs } from "./types"
  * Get the description for the update_todo_list tool.
  */
 export function getUpdateTodoListDescription(args?: ToolArgs): string {
-	return `## update_todo_list
+	return `<tool name="update_todo_list">
 
-**Description:**
-Replace the entire TODO list with an updated checklist reflecting the current state. Always provide the full list; the system will overwrite the previous one. This tool is designed for step-by-step task tracking, allowing you to confirm completion of each step before updating, update multiple task statuses at once (e.g., mark one as completed and start the next), and dynamically add new todos discovered during long or complex tasks.
+<description>Replace the entire TODO list with an updated checklist reflecting the current state. Always provide the full list; the system will overwrite the previous one. This tool is designed for step-by-step task tracking, allowing you to confirm completion of each step before updating, update multiple task statuses at once (e.g., mark one as completed and start the next), and dynamically add new todos discovered during long or complex tasks.</description>
 
 **Checklist Format:**
 - Use a single-level markdown checklist (no nesting or subtasks).
@@ -72,5 +71,6 @@ Replace the entire TODO list with an updated checklist reflecting the current st
 - Start the next task by marking it as in_progress.
 - Add new todos as soon as they are identified.
 - Use clear, descriptive task names.
-`
+
+</tool>`
 }

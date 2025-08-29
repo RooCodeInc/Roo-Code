@@ -4,8 +4,8 @@ export function getUseMcpToolDescription(args: ToolArgs): string | undefined {
 	if (!args.mcpHub) {
 		return undefined
 	}
-	return `## use_mcp_tool
-Description: Request to use a tool provided by a connected MCP server. Each MCP server can provide multiple tools with different capabilities. Tools have defined input schemas that specify required and optional parameters.
+	return `<tool name="use_mcp_tool">
+<description>Request to use a tool provided by a connected MCP server. Each MCP server can provide multiple tools with different capabilities. Tools have defined input schemas that specify required and optional parameters.</description>
 Parameters:
 - server_name: (required) The name of the MCP server providing the tool
 - tool_name: (required) The name of the tool to execute
@@ -33,5 +33,7 @@ Example: Requesting to use an MCP tool
   "days": 5
 }
 </arguments>
-</use_mcp_tool>`
+</use_mcp_tool>
+
+</tool>`
 }

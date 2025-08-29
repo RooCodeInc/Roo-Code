@@ -9,9 +9,7 @@ export function getCapabilitiesSection(
 	diffStrategy?: DiffStrategy,
 	codeIndexManager?: CodeIndexManager,
 ): string {
-	return `====
-
-CAPABILITIES
+	return `<section name="CAPABILITIES">
 
 - You have access to tools that let you execute CLI commands on the user's computer, list files, view source code definitions, regex search${
 		supportsComputerUse ? ", use the browser" : ""
@@ -38,5 +36,7 @@ CAPABILITIES
 - You have access to MCP servers that may provide additional tools and resources. Each server may provide different capabilities that you can use to accomplish tasks more effectively.
 `
 			: ""
-	}`
+	}
+
+</section>`
 }

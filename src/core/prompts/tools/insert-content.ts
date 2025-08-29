@@ -1,8 +1,8 @@
 import { ToolArgs } from "./types"
 
 export function getInsertContentDescription(args: ToolArgs): string {
-	return `## insert_content
-Description: Use this tool specifically for adding new lines of content into a file without modifying existing content. Specify the line number to insert before, or use line 0 to append to the end. Ideal for adding imports, functions, configuration blocks, log entries, or any multi-line text block.
+	return `<tool name="insert_content">
+<description>Use this tool specifically for adding new lines of content into a file without modifying existing content. Specify the line number to insert before, or use line 0 to append to the end. Ideal for adding imports, functions, configuration blocks, log entries, or any multi-line text block.</description>
 
 Parameters:
 - path: (required) File path relative to workspace directory ${args.cwd.toPosix()}
@@ -29,5 +29,6 @@ Example for appending to the end of file:
 // This is the end of the file
 </content>
 </insert_content>
-`
+
+</tool>`
 }
