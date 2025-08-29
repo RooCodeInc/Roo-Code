@@ -1425,7 +1425,9 @@ export class ClineProvider
 			requestyModelId: apiConfiguration?.requestyModelId || requestyDefaultModelId,
 		}
 
-		await this.upsertProviderProfile(currentApiConfigName, newConfiguration)
+		// Create a new profile with a unique name to trigger settings refresh
+		const newProfileName = currentApiConfigName === "default" ? "requesty-oauth" : currentApiConfigName
+		await this.upsertProviderProfile(newProfileName, newConfiguration)
 	}
 
 	// Task history
