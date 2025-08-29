@@ -163,7 +163,7 @@ export const GLOBAL_SETTINGS_KEYS = globalSettingsSchema.keyof().options
 
 export const rooCodeSettingsSchema = providerSettingsSchema.merge(globalSettingsSchema)
 
-export type RooCodeSettings = GlobalSettings & ProviderSettings
+export type RooCodeSettings = GlobalSettings & ProviderSettings & SecretState
 
 /**
  * SecretState
