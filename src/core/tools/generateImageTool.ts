@@ -40,8 +40,7 @@ export async function generateImageTool(
 		return
 	}
 
-	if (block.partial && (!prompt || !relPath)) {
-		// Wait for complete parameters
+	if (block.partial) {
 		return
 	}
 
