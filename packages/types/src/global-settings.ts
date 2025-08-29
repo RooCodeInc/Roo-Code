@@ -133,6 +133,7 @@ export const globalSettingsSchema = z.object({
 
 	mcpEnabled: z.boolean().optional(),
 	enableMcpServerCreation: z.boolean().optional(),
+	mcpServers: z.record(z.string(), z.any()).optional(),
 
 	remoteControlEnabled: z.boolean().optional(),
 
