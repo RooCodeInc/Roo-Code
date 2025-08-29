@@ -17,6 +17,7 @@ import { CloudService, ExtensionBridgeService } from "@roo-code/cloud"
 import { TelemetryService, PostHogTelemetryClient } from "@roo-code/telemetry"
 
 import "./utils/path" // Necessary to have access to String.prototype.toPosix.
+import { getWorkspacePath } from "./utils/path"
 import { createOutputChannelLogger, createDualLogger } from "./utils/outputChannelLogger"
 
 import { Package } from "./shared/package"
@@ -97,8 +98,12 @@ export async function activate(context: vscode.ExtensionContext) {
 	if (!context.globalState.get("allowedCommands")) {
 		context.globalState.update("allowedCommands", defaultCommands)
 	}
-
 	const contextProxy = await ContextProxy.getInstance(context)
+	// Set the workspace path for the ContextProxy to enable workspace-specific settings
+	const workspacePath = getWorkspacePath()
+	if (workspacePath) {
+		contextProxy.setWorkspacePath(workspacePath)
+	}
 
 	// Initialize code index managers for all workspace folders.
 	const codeIndexManagers: CodeIndexManager[] = []

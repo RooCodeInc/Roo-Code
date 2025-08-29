@@ -2054,10 +2054,15 @@ export const webviewMessageHandler = async (
 				const embedderProviderChanged =
 					currentConfig.codebaseIndexEmbedderProvider !== settings.codebaseIndexEmbedderProvider
 
-				// Save global state settings atomically
+				// Check if this is a workspace-specific setting update
+				const isWorkspaceSpecific = settings.workspaceSpecific === true
+
+				// Save global state settings atomically (always needed for non-enabled settings)
 				const globalStateConfig = {
 					...currentConfig,
-					codebaseIndexEnabled: settings.codebaseIndexEnabled,
+					codebaseIndexEnabled: isWorkspaceSpecific
+						? currentConfig.codebaseIndexEnabled
+						: settings.codebaseIndexEnabled,
 					codebaseIndexQdrantUrl: settings.codebaseIndexQdrantUrl,
 					codebaseIndexEmbedderProvider: settings.codebaseIndexEmbedderProvider,
 					codebaseIndexEmbedderBaseUrl: settings.codebaseIndexEmbedderBaseUrl,
@@ -2070,6 +2075,14 @@ export const webviewMessageHandler = async (
 
 				// Save global state first
 				await updateGlobalState("codebaseIndexConfig", globalStateConfig)
+
+				if (isWorkspaceSpecific) {
+					// Save workspace-specific indexing enabled state
+					const manager = provider.getCurrentWorkspaceCodeIndexManager()
+					if (manager && manager.configManager) {
+						await manager.configManager.setWorkspaceIndexingEnabled(settings.codebaseIndexEnabled)
+					}
+				}
 
 				// Save secrets directly using context proxy
 				if (settings.codeIndexOpenAiKey !== undefined) {
@@ -2316,6 +2329,47 @@ export const webviewMessageHandler = async (
 						error: error instanceof Error ? error.message : String(error),
 					},
 				})
+			}
+			break
+		}
+		case "clearWorkspaceIndexingSetting": {
+			try {
+				const manager = provider.getCurrentWorkspaceCodeIndexManager()
+				if (manager && manager.configManager) {
+					await manager.configManager.clearWorkspaceIndexingSetting()
+					// Send updated status
+					const status = manager.getCurrentStatus()
+					provider.postMessageToWebview({
+						type: "indexingStatusUpdate",
+						values: status,
+					})
+				}
+			} catch (error) {
+				provider.log(
+					`Error clearing workspace indexing setting: ${error instanceof Error ? error.message : String(error)}`,
+				)
+			}
+			break
+		}
+		case "getWorkspaceIndexingSetting": {
+			try {
+				const manager = provider.getCurrentWorkspaceCodeIndexManager()
+				if (manager && manager.configManager) {
+					const workspaceSetting = manager.configManager.getWorkspaceIndexingEnabled()
+					provider.postMessageToWebview({
+						type: "workspaceIndexingSetting",
+						enabled: workspaceSetting,
+					})
+				} else {
+					provider.postMessageToWebview({
+						type: "workspaceIndexingSetting",
+						enabled: undefined,
+					})
+				}
+			} catch (error) {
+				provider.log(
+					`Error getting workspace indexing setting: ${error instanceof Error ? error.message : String(error)}`,
+				)
 			}
 			break
 		}

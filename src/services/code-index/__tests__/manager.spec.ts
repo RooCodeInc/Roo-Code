@@ -538,6 +538,10 @@ describe("CodeIndexManager - handleSettingsChange regression", () => {
 					codebaseIndexSearchMaxResults: 10,
 					codebaseIndexSearchMinScore: 0.4,
 				}),
+				getWorkspaceState: vi.fn().mockReturnValue(undefined),
+				updateWorkspaceState: vi.fn(),
+				setWorkspacePath: vi.fn(),
+				workspacePath: testWorkspacePath,
 			}
 
 			// Re-initialize

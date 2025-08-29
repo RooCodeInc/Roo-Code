@@ -31,6 +31,10 @@ describe("CodeIndexConfigManager", () => {
 			getSecret: vi.fn().mockReturnValue(undefined),
 			refreshSecrets: vi.fn().mockResolvedValue(undefined),
 			updateGlobalState: vi.fn(),
+			getWorkspaceState: vi.fn().mockReturnValue(undefined),
+			updateWorkspaceState: vi.fn(),
+			setWorkspacePath: vi.fn(),
+			workspacePath: undefined,
 		}
 
 		configManager = new CodeIndexConfigManager(mockContextProxy)

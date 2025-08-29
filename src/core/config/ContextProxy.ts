@@ -39,16 +39,23 @@ export class ContextProxy {
 	private stateCache: GlobalState
 	private secretCache: SecretState
 	private _isInitialized = false
+	private _workspacePath: string | undefined
 
-	constructor(context: vscode.ExtensionContext) {
+	constructor(context: vscode.ExtensionContext, workspacePath?: string) {
 		this.originalContext = context
 		this.stateCache = {}
 		this.secretCache = {}
 		this._isInitialized = false
+		this._workspacePath = workspacePath
 	}
 
 	public get isInitialized() {
 		return this._isInitialized
+	}
+
+	// Public getter for workspacePath to allow checking current workspace
+	public get workspacePath(): string | undefined {
+		return this._workspacePath
 	}
 
 	public async initialize() {
@@ -290,6 +297,50 @@ export class ContextProxy {
 		await this.initialize()
 	}
 
+	/**
+	 * Get workspace-specific state value
+	 * Falls back to global state if workspace value doesn't exist
+	 */
+	public getWorkspaceState<T>(key: string, defaultValue?: T): T | undefined {
+		if (!this._workspacePath) {
+			// If no workspace, fall back to global state
+			return this.originalContext.globalState.get<T>(key) ?? defaultValue
+		}
+
+		// Create a workspace-specific key
+		const workspaceKey = `workspace:${this._workspacePath}:${key}`
+		const workspaceValue = this.originalContext.globalState.get<T>(workspaceKey)
+
+		if (workspaceValue !== undefined) {
+			return workspaceValue
+		}
+
+		// Fall back to global state
+		return this.originalContext.globalState.get<T>(key) ?? defaultValue
+	}
+
+	/**
+	 * Update workspace-specific state value
+	 */
+	public async updateWorkspaceState<T>(key: string, value: T): Promise<void> {
+		if (!this._workspacePath) {
+			// If no workspace, update global state
+			await this.originalContext.globalState.update(key, value)
+			return
+		}
+
+		// Create a workspace-specific key
+		const workspaceKey = `workspace:${this._workspacePath}:${key}`
+		await this.originalContext.globalState.update(workspaceKey, value)
+	}
+
+	/**
+	 * Set the workspace path for workspace-specific settings
+	 */
+	public setWorkspacePath(workspacePath: string | undefined): void {
+		this._workspacePath = workspacePath
+	}
+
 	private static _instance: ContextProxy | null = null
 
 	static get instance() {
@@ -300,12 +351,16 @@ export class ContextProxy {
 		return this._instance
 	}
 
-	static async getInstance(context: vscode.ExtensionContext) {
+	static async getInstance(context: vscode.ExtensionContext, workspacePath?: string) {
 		if (this._instance) {
+			// Update workspace path if provided
+			if (workspacePath !== undefined) {
+				this._instance.setWorkspacePath(workspacePath)
+			}
 			return this._instance
 		}
 
-		this._instance = new ContextProxy(context)
+		this._instance = new ContextProxy(context, workspacePath)
 		await this._instance.initialize()
 
 		return this._instance

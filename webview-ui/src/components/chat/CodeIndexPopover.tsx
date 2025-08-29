@@ -57,6 +57,7 @@ interface CodeIndexPopoverProps {
 interface LocalCodeIndexSettings {
 	// Global state settings
 	codebaseIndexEnabled: boolean
+	workspaceIndexingOverride?: boolean | undefined // undefined means use global, true/false means override
 	codebaseIndexQdrantUrl: string
 	codebaseIndexEmbedderProvider: EmbedderProvider
 	codebaseIndexEmbedderBaseUrl?: string
@@ -164,6 +165,7 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 	const [open, setOpen] = useState(false)
 	const [isAdvancedSettingsOpen, setIsAdvancedSettingsOpen] = useState(false)
 	const [isSetupSettingsOpen, setIsSetupSettingsOpen] = useState(false)
+	const [workspaceOverrideEnabled, setWorkspaceOverrideEnabled] = useState(false)
 
 	const [indexingStatus, setIndexingStatus] = useState<IndexingStatus>(externalIndexingStatus)
 
@@ -180,6 +182,7 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 	// Default settings template
 	const getDefaultSettings = (): LocalCodeIndexSettings => ({
 		codebaseIndexEnabled: true,
+		workspaceIndexingOverride: undefined,
 		codebaseIndexQdrantUrl: "",
 		codebaseIndexEmbedderProvider: "openai",
 		codebaseIndexEmbedderBaseUrl: "",
@@ -212,6 +215,7 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 		if (codebaseIndexConfig) {
 			const settings = {
 				codebaseIndexEnabled: codebaseIndexConfig.codebaseIndexEnabled ?? true,
+				workspaceIndexingOverride: undefined,
 				codebaseIndexQdrantUrl: codebaseIndexConfig.codebaseIndexQdrantUrl || "",
 				codebaseIndexEmbedderProvider: codebaseIndexConfig.codebaseIndexEmbedderProvider || "openai",
 				codebaseIndexEmbedderBaseUrl: codebaseIndexConfig.codebaseIndexEmbedderBaseUrl || "",
@@ -235,6 +239,8 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 
 			// Request secret status to check if secrets exist
 			vscode.postMessage({ type: "requestCodeIndexSecretStatus" })
+			// Request workspace-specific setting
+			vscode.postMessage({ type: "getWorkspaceIndexingSetting" })
 		}
 	}, [codebaseIndexConfig])
 
@@ -243,6 +249,7 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 		if (open) {
 			vscode.postMessage({ type: "requestIndexingStatus" })
 			vscode.postMessage({ type: "requestCodeIndexSecretStatus" })
+			vscode.postMessage({ type: "getWorkspaceIndexingSetting" })
 		}
 		const handleMessage = (event: MessageEvent) => {
 			if (event.data.type === "workspaceUpdated") {
@@ -250,6 +257,7 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 				if (open) {
 					vscode.postMessage({ type: "requestIndexingStatus" })
 					vscode.postMessage({ type: "requestCodeIndexSecretStatus" })
+					vscode.postMessage({ type: "getWorkspaceIndexingSetting" })
 				}
 			}
 		}
@@ -296,6 +304,14 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 					// Clear error message after 5 seconds
 					setSaveStatus("idle")
 					setSaveError(null)
+				}
+			} else if (event.data.type === "workspaceIndexingSetting") {
+				// Update workspace override state
+				const hasOverride = event.data.enabled !== undefined
+				setWorkspaceOverrideEnabled(hasOverride)
+				if (hasOverride) {
+					setCurrentSettings((prev) => ({ ...prev, workspaceIndexingOverride: event.data.enabled }))
+					setInitialSettings((prev) => ({ ...prev, workspaceIndexingOverride: event.data.enabled }))
 				}
 			}
 		}
@@ -511,6 +527,12 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 		// Always include codebaseIndexEnabled to ensure it's persisted
 		settingsToSave.codebaseIndexEnabled = currentSettings.codebaseIndexEnabled
 
+		// Handle workspace-specific setting
+		if (workspaceOverrideEnabled && currentSettings.workspaceIndexingOverride !== undefined) {
+			settingsToSave.workspaceSpecific = true
+			settingsToSave.codebaseIndexEnabled = currentSettings.workspaceIndexingOverride
+		}
+
 		// Save settings to backend
 		vscode.postMessage({
 			type: "saveCodeIndexSettingsAtomic",
@@ -586,6 +608,55 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 									<span className="codicon codicon-info text-xs text-vscode-descriptionForeground cursor-help" />
 								</StandardTooltip>
 							</div>
+
+							{/* Workspace-specific override */}
+							{cwd && (
+								<div className="ml-6 mt-2">
+									<div className="flex items-center gap-2">
+										<VSCodeCheckbox
+											checked={workspaceOverrideEnabled}
+											onChange={(e: any) => {
+												const enabled = e.target.checked
+												setWorkspaceOverrideEnabled(enabled)
+												if (enabled) {
+													// When enabling override, set to current global value
+													updateSetting(
+														"workspaceIndexingOverride",
+														currentSettings.codebaseIndexEnabled,
+													)
+												} else {
+													// When disabling override, clear the workspace setting
+													updateSetting("workspaceIndexingOverride", undefined)
+													vscode.postMessage({ type: "clearWorkspaceIndexingSetting" })
+												}
+											}}>
+											<span className="text-sm">
+												{t("settings:codeIndex.workspaceOverrideLabel")}
+											</span>
+										</VSCodeCheckbox>
+										<StandardTooltip content={t("settings:codeIndex.workspaceOverrideDescription")}>
+											<span className="codicon codicon-info text-xs text-vscode-descriptionForeground cursor-help" />
+										</StandardTooltip>
+									</div>
+
+									{workspaceOverrideEnabled && (
+										<div className="ml-6 mt-2">
+											<VSCodeCheckbox
+												checked={
+													currentSettings.workspaceIndexingOverride ??
+													currentSettings.codebaseIndexEnabled
+												}
+												onChange={(e: any) =>
+													updateSetting("workspaceIndexingOverride", e.target.checked)
+												}>
+												<span className="text-sm">
+													{t("settings:codeIndex.workspaceEnableLabel")}
+												</span>
+											</VSCodeCheckbox>
+										</div>
+									)}
+								</div>
+							)}
 						</div>
 
 						{/* Status Section */}

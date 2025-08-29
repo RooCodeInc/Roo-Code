@@ -32,6 +32,11 @@ export class CodeIndexManager {
 	// Flag to prevent race conditions during error recovery
 	private _isRecoveringFromError = false
 
+	// Public getter for configManager to allow workspace-specific settings
+	public get configManager(): CodeIndexConfigManager | undefined {
+		return this._configManager
+	}
+
 	public static getInstance(context: vscode.ExtensionContext, workspacePath?: string): CodeIndexManager | undefined {
 		// If workspacePath is not provided, try to get it from the active editor or first workspace folder
 		if (!workspacePath) {
@@ -119,6 +124,10 @@ export class CodeIndexManager {
 	public async initialize(contextProxy: ContextProxy): Promise<{ requiresRestart: boolean }> {
 		// 1. ConfigManager Initialization and Configuration Loading
 		if (!this._configManager) {
+			// Ensure the ContextProxy has the workspace path set for workspace-specific settings
+			if (this.workspacePath && contextProxy.workspacePath !== this.workspacePath) {
+				contextProxy.setWorkspacePath(this.workspacePath)
+			}
 			this._configManager = new CodeIndexConfigManager(contextProxy)
 		}
 		// Load configuration once to get current state and restart requirements

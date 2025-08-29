@@ -42,8 +42,11 @@ export class CodeIndexConfigManager {
 	 * This eliminates code duplication between initializeWithCurrentConfig() and loadConfiguration().
 	 */
 	private _loadAndSetConfiguration(): void {
-		// Load configuration from storage
-		const codebaseIndexConfig = this.contextProxy?.getGlobalState("codebaseIndexConfig") ?? {
+		// First check for workspace-specific override for indexing enabled state
+		const workspaceIndexEnabled = this.contextProxy?.getWorkspaceState<boolean>("codebaseIndexEnabled")
+
+		// Load global configuration from storage
+		const globalConfig = this.contextProxy?.getGlobalState("codebaseIndexConfig") ?? {
 			codebaseIndexEnabled: true,
 			codebaseIndexQdrantUrl: "http://localhost:6333",
 			codebaseIndexEmbedderProvider: "openai",
@@ -51,6 +54,14 @@ export class CodeIndexConfigManager {
 			codebaseIndexEmbedderModelId: "",
 			codebaseIndexSearchMinScore: undefined,
 			codebaseIndexSearchMaxResults: undefined,
+		}
+
+		// Apply workspace override if it exists
+		const codebaseIndexConfig = {
+			...globalConfig,
+			// Workspace setting overrides global setting if defined
+			codebaseIndexEnabled:
+				workspaceIndexEnabled !== undefined ? workspaceIndexEnabled : globalConfig.codebaseIndexEnabled,
 		}
 
 		const {
@@ -479,5 +490,32 @@ export class CodeIndexConfigManager {
 	 */
 	public get currentSearchMaxResults(): number {
 		return this.searchMaxResults ?? DEFAULT_MAX_SEARCH_RESULTS
+	}
+
+	/**
+	 * Sets the workspace-specific indexing enabled state
+	 * @param enabled Whether indexing should be enabled for this workspace
+	 */
+	public async setWorkspaceIndexingEnabled(enabled: boolean): Promise<void> {
+		await this.contextProxy?.updateWorkspaceState("codebaseIndexEnabled", enabled)
+		// Reload configuration to apply the change
+		await this.loadConfiguration()
+	}
+
+	/**
+	 * Gets the workspace-specific indexing enabled state
+	 * @returns The workspace-specific setting, or undefined if not set
+	 */
+	public getWorkspaceIndexingEnabled(): boolean | undefined {
+		return this.contextProxy?.getWorkspaceState<boolean>("codebaseIndexEnabled")
+	}
+
+	/**
+	 * Clears the workspace-specific indexing setting, reverting to global default
+	 */
+	public async clearWorkspaceIndexingSetting(): Promise<void> {
+		await this.contextProxy?.updateWorkspaceState("codebaseIndexEnabled", undefined)
+		// Reload configuration to apply the change
+		await this.loadConfiguration()
 	}
 }

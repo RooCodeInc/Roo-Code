@@ -206,6 +206,9 @@ export interface WebviewMessage {
 		| "checkRulesDirectoryResult"
 		| "saveCodeIndexSettingsAtomic"
 		| "requestCodeIndexSecretStatus"
+		| "clearWorkspaceIndexingSetting"
+		| "getWorkspaceIndexingSetting"
+		| "workspaceIndexingSetting"
 		| "requestCommands"
 		| "openCommandFile"
 		| "deleteCommand"
@@ -280,6 +283,9 @@ export interface WebviewMessage {
 		codebaseIndexGeminiApiKey?: string
 		codebaseIndexMistralApiKey?: string
 		codebaseIndexVercelAiGatewayApiKey?: string
+
+		// Workspace-specific flag
+		workspaceSpecific?: boolean
 	}
 }
 
