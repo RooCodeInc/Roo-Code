@@ -7,6 +7,8 @@
 
 import Anthropic from "@anthropic-ai/sdk"
 import { ToolCallProviderType } from "../../shared/tools"
+import { getToolRegistry } from "../prompts/tools/schemas/tool-registry"
+import { type ToolName } from "@roo-code/types"
 
 /**
  * Defines the possible states of the JSON parser.
@@ -104,6 +106,8 @@ export class StreamingToolCallProcessor {
 	private processChunkOpenAIFormat(chunk: any): ToolCallParam {
 		let xmlOutput = ""
 		let index = 0
+		// Check if the tool name is valid using the tool registry
+		const toolRegistry = getToolRegistry()
 		for (const delta of chunk) {
 			index = delta.index || 0
 
@@ -128,20 +132,26 @@ export class StreamingToolCallProcessor {
 				toolCall.function.arguments += delta.function.arguments
 			}
 
-			// Output the opening function tag once the name is known.
-			if (toolCall.function.name && !state.functionNameOutputted) {
+			const isValidToolName =
+				toolCall.function.name && toolRegistry.isToolSupported(toolCall.function.name as ToolName)
+
+			// Output the opening function tag once the name is known and valid.
+			if (isValidToolName && !state.functionNameOutputted) {
 				xmlOutput += `<${toolCall.function.name}>`
 				state.functionNameOutputted = true
-			}
-
-			// Process the new arguments chunk.
-			if (toolCall.function.arguments.length > state.arguments.length) {
+				// When we first output the function name, also process any accumulated arguments
+				if (toolCall.function.arguments.length > 0) {
+					state.arguments = toolCall.function.arguments
+					xmlOutput += this.processArguments(state, toolCall.function.name)
+				}
+			} else if (state.functionNameOutputted && toolCall.function.arguments.length > state.arguments.length) {
+				// Process new arguments chunk only if we already have a valid function name
 				state.arguments = toolCall.function.arguments
 				xmlOutput += this.processArguments(state, toolCall.function.name)
 			}
 
 			// Check if the JSON is complete and close the function tag.
-			if (!state.functionClosed && state.bracketStack.length === 0 && state.cursor > 0) {
+			if (isValidToolName && !state.functionClosed && state.bracketStack.length === 0 && state.cursor > 0) {
 				// A simple check to see if we've reached a terminal state.
 				// A more robust check might be necessary for edge cases.
 				const remaining = state.arguments.substring(state.cursor).trim()
@@ -153,17 +163,20 @@ export class StreamingToolCallProcessor {
 		}
 		// the index of GPT-5 tool_call not start by 0
 		const toolCall = this.accumulatedToolCalls[index]
+		const isValidToolName =
+			toolCall?.function?.name && toolRegistry.isToolSupported(toolCall.function.name as ToolName)
+
 		const result: ToolCallParam = {
 			providerType: "openai",
-			toolName: toolCall?.function?.name,
-			toolUserId: toolCall.id || undefined,
+			toolName: isValidToolName ? toolCall.function.name : "",
+			toolUserId: toolCall?.id || undefined,
 			chunkContent: xmlOutput,
 			originContent: this.accumulatedToolCalls,
 		}
 
 		// Provide a temporary anthropicContent (input) during streaming before final closure
 		const currentState = this.processingStates.get(index)
-		if (currentState && !currentState.functionClosed) {
+		if (currentState && !currentState.functionClosed && isValidToolName) {
 			const tmpInput = this.tryBuildTemporaryJson(currentState, toolCall.function.arguments)
 			if (tmpInput != null) {
 				result.anthropicContent = {
@@ -175,7 +188,7 @@ export class StreamingToolCallProcessor {
 			}
 		}
 
-		if (this.processingStates.get(index)?.functionClosed) {
+		if (this.processingStates.get(index)?.functionClosed && isValidToolName) {
 			let input
 			try {
 				input = JSON.parse(toolCall.function.arguments)
@@ -198,11 +211,21 @@ export class StreamingToolCallProcessor {
 	 */
 	public finalize(): string {
 		let finalXml = ""
+		const toolRegistry = getToolRegistry()
+
 		for (let i = 0; i < this.accumulatedToolCalls.length; i++) {
 			const state = this.processingStates.get(i)
 			const toolCall = this.accumulatedToolCalls[i]
 
 			if (!state || !toolCall || state.functionClosed) {
+				continue
+			}
+
+			// Check if the tool name is valid
+			const isValidToolName =
+				toolCall.function.name && toolRegistry.isToolSupported(toolCall.function.name as ToolName)
+
+			if (!isValidToolName) {
 				continue
 			}
 

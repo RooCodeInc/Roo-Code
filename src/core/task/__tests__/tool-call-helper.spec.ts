@@ -16,55 +16,57 @@ describe("StreamingToolCallProcessor", () => {
 	})
 
 	it("should process a simple function call with string arguments", () => {
-		const chunk = [{ index: 0, id: "1", function: { name: "echo", arguments: '{"msg":"hello"}' } }]
+		const chunk = [{ index: 0, id: "1", function: { name: "read_file", arguments: '{"msg":"hello"}' } }]
 		const xml = processor.processChunk(chunk)
-		expect(xml).toContain("<echo>")
+		expect(xml).toContain("<read_file>")
 		expect(xml).toContain("<msg>hello</msg>")
 	})
 
 	it("should handle incremental argument streaming", () => {
-		const chunk1 = [{ index: 0, id: "1", function: { name: "sum", arguments: '{"a":' } }]
+		const chunk1 = [{ index: 0, id: "1", function: { name: "write_to_file", arguments: '{"a":' } }]
 		const chunk2 = [{ index: 0, id: "1", function: { name: "", arguments: '1,"b":2}' } }]
 		let xml = processor.processChunk(chunk1)
-		expect(xml).toContain("<sum>")
+		expect(xml).toContain("<write_to_file>")
 		expect(xml).not.toContain("<a>1</a>")
 		xml += processor.processChunk(chunk2)
 		expect(xml).toContain("<a>1</a>")
 		expect(xml).toContain("<b>2</b>")
-		expect(xml).toContain("</sum>")
+		expect(xml).toContain("</write_to_file>")
 	})
 
 	it("should finalize incomplete tool calls", () => {
-		const chunk = [{ index: 0, id: "1", function: { name: "test", arguments: '{"foo":"bar"' } }]
+		const chunk = [{ index: 0, id: "1", function: { name: "search_files", arguments: '{"foo":"bar"' } }]
 		let finalXml = processor.processChunk(chunk)
 		finalXml += processor.finalize()
 		expect(finalXml).toContain("<foo>bar</foo>")
-		expect(finalXml).toContain("</test>")
+		expect(finalXml).toContain("</search_files>")
 	})
 
 	it("should reset state", () => {
-		const chunk = [{ index: 0, id: "1", function: { name: "resetTest", arguments: '{"x":1}' } }]
+		const chunk = [{ index: 0, id: "1", function: { name: "list_files", arguments: '{"x":1}' } }]
 		processor.processChunk(chunk)
 		processor.reset()
 		const xml = processor.processChunk(chunk)
-		expect(xml).toContain("<resetTest>")
+		expect(xml).toContain("<list_files>")
 		expect(xml).toContain("<x>1</x>")
 	})
 
 	it("should handle multiple tool calls (multi-index)", () => {
 		const chunk = [
-			{ index: 0, id: "1", function: { name: "f1", arguments: '{"a":1}' } },
-			{ index: 1, id: "2", function: { name: "f2", arguments: '{"b":2}' } },
+			{ index: 0, id: "1", function: { name: "execute_command", arguments: '{"a":1}' } },
+			{ index: 1, id: "2", function: { name: "browser_action", arguments: '{"b":2}' } },
 		]
 		const xml = processor.processChunk(chunk)
-		expect(xml).toContain("<f1>")
+		expect(xml).toContain("<execute_command>")
 		expect(xml).toContain("<a>1</a>")
-		expect(xml).toContain("<f2>")
+		expect(xml).toContain("<browser_action>")
 		expect(xml).toContain("<b>2</b>")
 	})
 
 	it("should handle array and nested objects", () => {
-		const chunk = [{ index: 0, id: "1", function: { name: "complex", arguments: '{"arr":[1,2],"obj":{"k":"v"}}' } }]
+		const chunk = [
+			{ index: 0, id: "1", function: { name: "use_mcp_tool", arguments: '{"arr":[1,2],"obj":{"k":"v"}}' } },
+		]
 		const xml = processor.processChunk(chunk)
 		expect(xml).toContain("<arr>")
 		expect(xml).toContain("<obj>")
@@ -76,7 +78,7 @@ describe("StreamingToolCallProcessor", () => {
 				index: 0,
 				id: "1",
 				function: {
-					name: "deep",
+					name: "access_mcp_resource",
 					arguments: '{"level1":{"level2":{"arr":[{"x":1},{"y":[2,3,{"z":"end"}]}],"val":42},"emptyArr":[]}}',
 				},
 			},
@@ -98,7 +100,7 @@ describe("StreamingToolCallProcessor", () => {
 				index: 0,
 				id: "1",
 				function: {
-					name: "streamDeep",
+					name: "ask_followup_question",
 					arguments: '{"foo":{"bar":[{"baz":1},',
 				},
 			},
@@ -124,7 +126,7 @@ describe("StreamingToolCallProcessor", () => {
 			},
 		]
 		let xml = processor.processChunk(chunk1)
-		expect(xml).toContain("<streamDeep>")
+		expect(xml).toContain("<ask_followup_question>")
 		expect(xml).toContain("<foo>")
 		expect(xml).toContain("<bar>")
 		expect(xml).toContain("<baz>1</baz>")
@@ -134,13 +136,13 @@ describe("StreamingToolCallProcessor", () => {
 		expect(xml).toContain("<baz>3</baz>")
 		xml += processor.processChunk(chunk3)
 		expect(xml).toContain("<tail>done</tail>")
-		expect(xml).not.toContain("</streamDeep>")
+		expect(xml).not.toContain("</ask_followup_question>")
 		xml += processor.finalize()
-		expect(xml).toContain("</streamDeep>")
+		expect(xml).toContain("</ask_followup_question>")
 	})
 
 	it("should handle invalid JSON gracefully", () => {
-		const chunk = [{ index: 0, id: "1", function: { name: "bad", arguments: '{"a":' } }]
+		const chunk = [{ index: 0, id: "1", function: { name: "attempt_completion", arguments: '{"a":' } }]
 		expect(() => processor.processChunk(chunk)).not.toThrow()
 		expect(() => processor.finalize()).not.toThrow()
 	})
@@ -305,9 +307,9 @@ describe("StreamingToolCallProcessor", () => {
 describe("handleOpenaiToolCallStreaming", () => {
 	it("should delegate to processor.processChunk", () => {
 		const processor = new StreamingToolCallProcessor()
-		const chunk = [{ index: 0, id: "1", function: { name: "echo", arguments: '{"msg":"hi"}' } }]
+		const chunk = [{ index: 0, id: "1", function: { name: "read_file", arguments: '{"msg":"hi"}' } }]
 		const xml = handleOpenaiToolCallStreaming(processor, chunk, "openai").chunkContent
-		expect(xml).toContain("<echo>")
+		expect(xml).toContain("<read_file>")
 		expect(xml).toContain("<msg>hi</msg>")
 	})
 
@@ -369,5 +371,42 @@ describe("handleOpenaiToolCallStreaming", () => {
 		expect(xml).toContain("true")
 		xml += handleOpenaiToolCallStreaming(processor, chunk3, "openai").chunkContent
 		expect(xml).toContain("252")
+	})
+
+	it("should test read_file multiple file", () => {
+		const processor = new StreamingToolCallProcessor()
+		const input = `{"args": {"file": [{"path": "pom.xml"}, {"path": "build.gradle"}, {"path": "gradle.properties"}]}}`
+		const chunk = [
+			{
+				index: 0,
+				id: "1",
+				function: {
+					name: "",
+					arguments: input,
+				},
+			},
+		]
+		let xml = handleOpenaiToolCallStreaming(processor, chunk, "openai").chunkContent
+		const chunk2 = [
+			{
+				index: 0,
+				id: "1",
+				function: {
+					name: "read_file",
+					arguments: "",
+				},
+			},
+		]
+		xml = handleOpenaiToolCallStreaming(processor, chunk2, "openai").chunkContent
+		expect(xml).toContain("<read_file>")
+		expect(xml).toContain("</read_file>")
+	})
+
+	it("should handle invalid tool names by rejecting them", () => {
+		const processor = new StreamingToolCallProcessor()
+		const chunk = [{ index: 0, id: "1", function: { name: "invalid_tool", arguments: '{"msg":"hello"}' } }]
+		const xml = handleOpenaiToolCallStreaming(processor, chunk, "openai").chunkContent
+		expect(xml).toBe("") // Should produce no output for invalid tools
+		expect(handleOpenaiToolCallStreaming(processor, chunk, "openai").toolName).toBe("") // Tool name should be empty
 	})
 })
