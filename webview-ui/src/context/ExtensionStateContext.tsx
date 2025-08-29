@@ -48,6 +48,15 @@ export interface ExtensionStateContextType extends ExtensionState {
 	setAlwaysAllowFollowupQuestions: (value: boolean) => void // Setter for the new property
 	followupAutoApproveTimeoutMs: number | undefined // Timeout in ms for auto-approving follow-up questions
 	setFollowupAutoApproveTimeoutMs: (value: number) => void // Setter for the timeout
+	apiStatusConfig?: {
+		enabled?: boolean
+		customTexts?: string[]
+		emojisEnabled?: boolean
+		customEmojis?: string[]
+		randomMode?: boolean
+		cycleInterval?: number
+	}
+	setApiStatusConfig: (value: any) => void
 	condensingApiConfigId?: string
 	setCondensingApiConfigId: (value: string) => void
 	customCondensingPrompt?: string
@@ -271,6 +280,14 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		global: {},
 	})
 	const [includeTaskHistoryInEnhance, setIncludeTaskHistoryInEnhance] = useState(true)
+	const [apiStatusConfig, setApiStatusConfig] = useState<{
+		enabled?: boolean
+		customTexts?: string[]
+		emojisEnabled?: boolean
+		customEmojis?: string[]
+		randomMode?: boolean
+		cycleInterval?: number
+	}>({})
 
 	const setListApiConfigMeta = useCallback(
 		(value: ProviderSettingsEntry[]) => setState((prevState) => ({ ...prevState, listApiConfigMeta: value })),
@@ -307,6 +324,10 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 					// Update includeTaskHistoryInEnhance if present in state message
 					if ((newState as any).includeTaskHistoryInEnhance !== undefined) {
 						setIncludeTaskHistoryInEnhance((newState as any).includeTaskHistoryInEnhance)
+					}
+					// Update apiStatusConfig if present in state message
+					if ((newState as any).apiStatusConfig !== undefined) {
+						setApiStatusConfig((newState as any).apiStatusConfig)
 					}
 					// Handle marketplace data if present in state message
 					if (newState.marketplaceItems !== undefined) {
@@ -411,6 +432,8 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		marketplaceItems,
 		marketplaceInstalledMetadata,
 		profileThresholds: state.profileThresholds ?? {},
+		apiStatusConfig,
+		setApiStatusConfig,
 		alwaysAllowFollowupQuestions,
 		followupAutoApproveTimeoutMs,
 		remoteControlEnabled: state.remoteControlEnabled ?? false,

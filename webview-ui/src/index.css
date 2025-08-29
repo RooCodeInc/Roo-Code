@@ -475,6 +475,20 @@ input[cmdk-input]:focus {
 	animation: pulse 1.5s ease-in-out infinite;
 }
 
+@keyframes pulse-subtle {
+	0%,
+	100% {
+		opacity: 0.9;
+	}
+	50% {
+		opacity: 0.3;
+	}
+}
+
+.animate-pulse-subtle {
+	animation: pulse-subtle 2s ease-in-out infinite;
+}
+
 /* Transition utilities */
 .transition-all {
 	transition-property: all;

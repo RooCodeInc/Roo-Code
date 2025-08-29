@@ -343,6 +343,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 			vscode.postMessage({ type: "upsertApiConfiguration", text: currentApiConfigName, apiConfiguration })
 			vscode.postMessage({ type: "telemetrySetting", text: telemetrySetting })
 			vscode.postMessage({ type: "profileThresholds", values: profileThresholds })
+			vscode.postMessage({ type: "apiStatusConfig", values: cachedState.apiStatusConfig || {} })
 			setChangeDetected(false)
 		}
 	}
@@ -723,6 +724,8 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 							experiments={experiments}
 							apiConfiguration={apiConfiguration}
 							setApiConfigurationField={setApiConfigurationField}
+							apiStatusConfig={cachedState.apiStatusConfig}
+							setApiStatusConfig={(value) => setCachedStateField("apiStatusConfig", value)}
 						/>
 					)}
 

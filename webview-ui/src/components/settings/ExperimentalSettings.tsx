@@ -13,12 +13,15 @@ import { SectionHeader } from "./SectionHeader"
 import { Section } from "./Section"
 import { ExperimentalFeature } from "./ExperimentalFeature"
 import { ImageGenerationSettings } from "./ImageGenerationSettings"
+import { AnimatedStatusSettings } from "./AnimatedStatusSettings"
 
 type ExperimentalSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	experiments: Experiments
 	setExperimentEnabled: SetExperimentEnabled
 	apiConfiguration?: any
 	setApiConfigurationField?: any
+	apiStatusConfig?: any
+	setApiStatusConfig?: (value: any) => void
 }
 
 export const ExperimentalSettings = ({
@@ -26,6 +29,8 @@ export const ExperimentalSettings = ({
 	setExperimentEnabled,
 	apiConfiguration,
 	setApiConfigurationField,
+	apiStatusConfig,
+	setApiStatusConfig,
 	className,
 	...props
 }: ExperimentalSettingsProps) => {
@@ -41,6 +46,16 @@ export const ExperimentalSettings = ({
 			</SectionHeader>
 
 			<Section>
+				{/* Add Animated Status Settings at the top */}
+				{setApiStatusConfig && (
+					<div className="mb-4 pb-4 border-b border-vscode-panel-border">
+						<AnimatedStatusSettings
+							apiStatusConfig={apiStatusConfig}
+							setApiStatusConfig={setApiStatusConfig}
+						/>
+					</div>
+				)}
+
 				{Object.entries(experimentConfigsMap)
 					.filter(([key]) => key in EXPERIMENT_IDS)
 					.map((config) => {

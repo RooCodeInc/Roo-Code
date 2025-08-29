@@ -35,6 +35,7 @@ import { FollowUpSuggest } from "./FollowUpSuggest"
 import { BatchFilePermission } from "./BatchFilePermission"
 import { BatchDiffApproval } from "./BatchDiffApproval"
 import { ProgressIndicator } from "./ProgressIndicator"
+import { AnimatedStatusIndicator } from "./AnimatedStatusIndicator"
 import { Markdown } from "./Markdown"
 import { CommandExecution } from "./CommandExecution"
 import { CommandExecutionError } from "./CommandExecutionError"
@@ -252,6 +253,14 @@ export const ChatRowContent = ({
 						<span style={{ color: normalColor, fontWeight: "bold" }}>{t("chat:apiRequest.title")}</span>
 					) : apiRequestFailedMessage ? (
 						<span style={{ color: errorColor, fontWeight: "bold" }}>{t("chat:apiRequest.failed")}</span>
+					) : isStreaming ? (
+						<AnimatedStatusIndicator
+							isStreaming={true}
+							cost={cost}
+							cancelReason={apiReqCancelReason}
+							apiRequestFailedMessage={apiRequestFailedMessage}
+							streamingFailedMessage={apiReqStreamingFailedMessage}
+						/>
 					) : (
 						<span style={{ color: normalColor, fontWeight: "bold" }}>{t("chat:apiRequest.streaming")}</span>
 					),
@@ -267,7 +276,18 @@ export const ChatRowContent = ({
 			default:
 				return [null, null]
 		}
-	}, [type, isCommandExecuting, message, isMcpServerResponding, apiReqCancelReason, cost, apiRequestFailedMessage, t])
+	}, [
+		type,
+		isCommandExecuting,
+		message,
+		isMcpServerResponding,
+		apiReqCancelReason,
+		cost,
+		apiRequestFailedMessage,
+		apiReqStreamingFailedMessage,
+		isStreaming,
+		t,
+	])
 
 	const headerStyle: React.CSSProperties = {
 		display: "flex",
@@ -968,6 +988,9 @@ export const ChatRowContent = ({
 						/>
 					)
 				case "api_req_started":
+					// Check if we should show the animated indicator
+					const showAnimated = isLast && !cost && !apiReqCancelReason && !apiRequestFailedMessage
+
 					return (
 						<>
 							<div
@@ -987,8 +1010,23 @@ export const ChatRowContent = ({
 								}}
 								onClick={handleToggleExpand}>
 								<div style={{ display: "flex", alignItems: "center", gap: "10px", flexGrow: 1 }}>
-									{icon}
-									{title}
+									{showAnimated ? (
+										<>
+											<ProgressIndicator />
+											<AnimatedStatusIndicator
+												isStreaming={true}
+												cost={cost}
+												cancelReason={apiReqCancelReason}
+												apiRequestFailedMessage={apiRequestFailedMessage}
+												streamingFailedMessage={apiReqStreamingFailedMessage}
+											/>
+										</>
+									) : (
+										<>
+											{icon}
+											{title}
+										</>
+									)}
 									<VSCodeBadge
 										style={{ opacity: cost !== null && cost !== undefined && cost > 0 ? 1 : 0 }}>
 										${Number(cost || 0)?.toFixed(4)}
