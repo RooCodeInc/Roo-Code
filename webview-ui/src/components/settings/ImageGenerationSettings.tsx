@@ -6,7 +6,7 @@ interface ImageGenerationSettingsProps {
 	enabled: boolean
 	onChange: (enabled: boolean) => void
 	openRouterImageApiKey?: string
-	imageGenerationSelectedModel?: string
+	openRouterImageGenerationSelectedModel?: string
 	setOpenRouterImageApiKey: (apiKey: string) => void
 	setImageGenerationSelectedModel: (model: string) => void
 }
@@ -22,20 +22,22 @@ export const ImageGenerationSettings = ({
 	enabled,
 	onChange,
 	openRouterImageApiKey,
-	imageGenerationSelectedModel,
+	openRouterImageGenerationSelectedModel,
 	setOpenRouterImageApiKey,
 	setImageGenerationSelectedModel,
 }: ImageGenerationSettingsProps) => {
 	const { t } = useAppTranslation()
 
 	const [apiKey, setApiKey] = useState(openRouterImageApiKey || "")
-	const [selectedModel, setSelectedModel] = useState(imageGenerationSelectedModel || IMAGE_GENERATION_MODELS[0].value)
+	const [selectedModel, setSelectedModel] = useState(
+		openRouterImageGenerationSelectedModel || IMAGE_GENERATION_MODELS[0].value,
+	)
 
 	// Update local state when props change (e.g., when switching profiles)
 	useEffect(() => {
 		setApiKey(openRouterImageApiKey || "")
-		setSelectedModel(imageGenerationSelectedModel || IMAGE_GENERATION_MODELS[0].value)
-	}, [openRouterImageApiKey, imageGenerationSelectedModel])
+		setSelectedModel(openRouterImageGenerationSelectedModel || IMAGE_GENERATION_MODELS[0].value)
+	}, [openRouterImageApiKey, openRouterImageGenerationSelectedModel])
 
 	// Handle API key changes
 	const handleApiKeyChange = (value: string) => {

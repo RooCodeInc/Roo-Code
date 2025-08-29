@@ -1763,7 +1763,7 @@ export class ClineProvider
 			includeTaskHistoryInEnhance,
 			remoteControlEnabled,
 			openRouterImageApiKey,
-			imageGenerationSelectedModel,
+			openRouterImageGenerationSelectedModel,
 		} = await this.getState()
 
 		const telemetryKey = process.env.POSTHOG_API_KEY
@@ -1896,7 +1896,7 @@ export class ClineProvider
 			includeTaskHistoryInEnhance: includeTaskHistoryInEnhance ?? true,
 			remoteControlEnabled,
 			openRouterImageApiKey,
-			imageGenerationSelectedModel,
+			openRouterImageGenerationSelectedModel,
 		}
 	}
 
@@ -2098,7 +2098,7 @@ export class ClineProvider
 			})(),
 			// Add image generation settings
 			openRouterImageApiKey: stateValues.openRouterImageApiKey,
-			imageGenerationSelectedModel: stateValues.imageGenerationSelectedModel,
+			openRouterImageGenerationSelectedModel: stateValues.openRouterImageGenerationSelectedModel,
 		}
 	}
 

@@ -1317,8 +1317,8 @@ export const webviewMessageHandler = async (
 			await provider.contextProxy.setValue("openRouterImageApiKey", message.text)
 			await provider.postStateToWebview()
 			break
-		case "imageGenerationSelectedModel":
-			await provider.contextProxy.setValue("imageGenerationSelectedModel", message.text)
+		case "openRouterImageGenerationSelectedModel":
+			await provider.contextProxy.setValue("openRouterImageGenerationSelectedModel", message.text)
 			await provider.postStateToWebview()
 			break
 		case "showRooIgnoredFiles":

@@ -113,13 +113,13 @@ export class ContextProxy {
 				}
 
 				// Migrate the selected model if it exists and we don't already have one
-				if (oldNestedSettings.selectedModel && !this.stateCache.imageGenerationSelectedModel) {
+				if (oldNestedSettings.selectedModel && !this.stateCache.openRouterImageGenerationSelectedModel) {
 					await this.originalContext.globalState.update(
-						"imageGenerationSelectedModel",
+						"openRouterImageGenerationSelectedModel",
 						oldNestedSettings.selectedModel,
 					)
-					this.stateCache.imageGenerationSelectedModel = oldNestedSettings.selectedModel
-					logger.info("Migrated imageGenerationSelectedModel to global state")
+					this.stateCache.openRouterImageGenerationSelectedModel = oldNestedSettings.selectedModel
+					logger.info("Migrated openRouterImageGenerationSelectedModel to global state")
 				}
 
 				// Clean up the old nested structure

@@ -146,7 +146,7 @@ export async function generateImageTool(
 	}
 
 	// Get selected model from settings or use default
-	const selectedModel = state?.imageGenerationSelectedModel || IMAGE_GENERATION_MODELS[0]
+	const selectedModel = state?.openRouterImageGenerationSelectedModel || IMAGE_GENERATION_MODELS[0]
 
 	// Determine if the path is outside the workspace
 	const fullPath = path.resolve(cline.cwd, removeClosingTag("path", relPath))

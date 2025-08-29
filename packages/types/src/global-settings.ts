@@ -44,7 +44,7 @@ export const globalSettingsSchema = z.object({
 
 	// Image generation settings (experimental) - flattened for simplicity
 	openRouterImageApiKey: z.string().optional(),
-	imageGenerationSelectedModel: z.string().optional(),
+	openRouterImageGenerationSelectedModel: z.string().optional(),
 
 	condensingApiConfigId: z.string().optional(),
 	customCondensingPrompt: z.string().optional(),
