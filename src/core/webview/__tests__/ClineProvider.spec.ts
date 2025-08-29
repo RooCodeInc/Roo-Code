@@ -546,6 +546,8 @@ describe("ClineProvider", () => {
 			profileThresholds: {},
 			hasOpenedModeSelector: false,
 			diagnosticsEnabled: true,
+			openRouterImageApiKey: undefined,
+			imageGenerationSelectedModel: undefined,
 		}
 
 		const message: ExtensionMessage = {

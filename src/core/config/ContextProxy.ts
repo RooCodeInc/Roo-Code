@@ -6,6 +6,7 @@ import {
 	GLOBAL_SETTINGS_KEYS,
 	SECRET_STATE_KEYS,
 	GLOBAL_STATE_KEYS,
+	GLOBAL_SECRET_KEYS,
 	type ProviderSettings,
 	type GlobalSettings,
 	type SecretState,
@@ -61,13 +62,26 @@ export class ContextProxy {
 			}
 		}
 
-		const promises = SECRET_STATE_KEYS.map(async (key) => {
-			try {
-				this.secretCache[key] = await this.originalContext.secrets.get(key)
-			} catch (error) {
-				logger.error(`Error loading secret ${key}: ${error instanceof Error ? error.message : String(error)}`)
-			}
-		})
+		const promises = [
+			...SECRET_STATE_KEYS.map(async (key) => {
+				try {
+					this.secretCache[key] = await this.originalContext.secrets.get(key)
+				} catch (error) {
+					logger.error(
+						`Error loading secret ${key}: ${error instanceof Error ? error.message : String(error)}`,
+					)
+				}
+			}),
+			...GLOBAL_SECRET_KEYS.map(async (key) => {
+				try {
+					this.secretCache[key] = await this.originalContext.secrets.get(key)
+				} catch (error) {
+					logger.error(
+						`Error loading global secret ${key}: ${error instanceof Error ? error.message : String(error)}`,
+					)
+				}
+			}),
+		]
 
 		await Promise.all(promises)
 
@@ -152,20 +166,34 @@ export class ContextProxy {
 	 * This is useful when you need to ensure the cache has the latest values
 	 */
 	async refreshSecrets(): Promise<void> {
-		const promises = SECRET_STATE_KEYS.map(async (key) => {
-			try {
-				this.secretCache[key] = await this.originalContext.secrets.get(key)
-			} catch (error) {
-				logger.error(
-					`Error refreshing secret ${key}: ${error instanceof Error ? error.message : String(error)}`,
-				)
-			}
-		})
+		const promises = [
+			...SECRET_STATE_KEYS.map(async (key) => {
+				try {
+					this.secretCache[key] = await this.originalContext.secrets.get(key)
+				} catch (error) {
+					logger.error(
+						`Error refreshing secret ${key}: ${error instanceof Error ? error.message : String(error)}`,
+					)
+				}
+			}),
+			...GLOBAL_SECRET_KEYS.map(async (key) => {
+				try {
+					this.secretCache[key] = await this.originalContext.secrets.get(key)
+				} catch (error) {
+					logger.error(
+						`Error refreshing global secret ${key}: ${error instanceof Error ? error.message : String(error)}`,
+					)
+				}
+			}),
+		]
 		await Promise.all(promises)
 	}
 
 	private getAllSecretState(): SecretState {
-		return Object.fromEntries(SECRET_STATE_KEYS.map((key) => [key, this.getSecret(key)]))
+		return Object.fromEntries([
+			...SECRET_STATE_KEYS.map((key) => [key, this.getSecret(key as SecretStateKey)]),
+			...GLOBAL_SECRET_KEYS.map((key) => [key, this.getSecret(key as SecretStateKey)]),
+		])
 	}
 
 	/**
@@ -232,18 +260,24 @@ export class ContextProxy {
 	 * RooCodeSettings
 	 */
 
-	public setValue<K extends RooCodeSettingsKey>(key: K, value: RooCodeSettings[K]) {
-		return isSecretStateKey(key) ? this.storeSecret(key, value as string) : this.updateGlobalState(key, value)
+	public async setValue<K extends RooCodeSettingsKey>(key: K, value: RooCodeSettings[K]) {
+		return isSecretStateKey(key)
+			? this.storeSecret(key as SecretStateKey, value as string)
+			: this.updateGlobalState(key as GlobalStateKey, value)
 	}
 
 	public getValue<K extends RooCodeSettingsKey>(key: K): RooCodeSettings[K] {
 		return isSecretStateKey(key)
-			? (this.getSecret(key) as RooCodeSettings[K])
-			: (this.getGlobalState(key) as RooCodeSettings[K])
+			? (this.getSecret(key as SecretStateKey) as RooCodeSettings[K])
+			: (this.getGlobalState(key as GlobalStateKey) as RooCodeSettings[K])
 	}
 
 	public getValues(): RooCodeSettings {
-		return { ...this.getAllGlobalState(), ...this.getAllSecretState() }
+		const globalState = this.getAllGlobalState()
+		const secretState = this.getAllSecretState()
+
+		// Simply merge all states - no nested secrets to handle
+		return { ...globalState, ...secretState }
 	}
 
 	public async setValues(values: RooCodeSettings) {
@@ -285,6 +319,7 @@ export class ContextProxy {
 		await Promise.all([
 			...GLOBAL_STATE_KEYS.map((key) => this.originalContext.globalState.update(key, undefined)),
 			...SECRET_STATE_KEYS.map((key) => this.originalContext.secrets.delete(key)),
+			...GLOBAL_SECRET_KEYS.map((key) => this.originalContext.secrets.delete(key)),
 		])
 
 		await this.initialize()

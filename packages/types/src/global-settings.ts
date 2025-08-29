@@ -42,6 +42,9 @@ export const globalSettingsSchema = z.object({
 	customInstructions: z.string().optional(),
 	taskHistory: z.array(historyItemSchema).optional(),
 
+	// Image generation settings (experimental) - flattened for simplicity
+	imageGenerationSelectedModel: z.string().optional(),
+
 	condensingApiConfigId: z.string().optional(),
 	customCondensingPrompt: z.string().optional(),
 
@@ -200,11 +203,24 @@ export const SECRET_STATE_KEYS = [
 	"featherlessApiKey",
 	"ioIntelligenceApiKey",
 	"vercelAiGatewayApiKey",
-] as const satisfies readonly (keyof ProviderSettings)[]
-export type SecretState = Pick<ProviderSettings, (typeof SECRET_STATE_KEYS)[number]>
+] as const
+
+// Global secrets that are part of GlobalSettings (not ProviderSettings)
+export const GLOBAL_SECRET_KEYS = [
+	"openRouterImageApiKey", // For image generation
+] as const
+
+// Type for the actual secret storage keys
+type ProviderSecretKey = (typeof SECRET_STATE_KEYS)[number]
+type GlobalSecretKey = (typeof GLOBAL_SECRET_KEYS)[number]
+
+// Type representing all secrets that can be stored
+export type SecretState = Pick<ProviderSettings, Extract<ProviderSecretKey, keyof ProviderSettings>> & {
+	[K in GlobalSecretKey]?: string
+}
 
 export const isSecretStateKey = (key: string): key is Keys<SecretState> =>
-	SECRET_STATE_KEYS.includes(key as Keys<SecretState>)
+	SECRET_STATE_KEYS.includes(key as ProviderSecretKey) || GLOBAL_SECRET_KEYS.includes(key as GlobalSecretKey)
 
 /**
  * GlobalState
@@ -213,7 +229,7 @@ export const isSecretStateKey = (key: string): key is Keys<SecretState> =>
 export type GlobalState = Omit<RooCodeSettings, Keys<SecretState>>
 
 export const GLOBAL_STATE_KEYS = [...GLOBAL_SETTINGS_KEYS, ...PROVIDER_SETTINGS_KEYS].filter(
-	(key: Keys<RooCodeSettings>) => !SECRET_STATE_KEYS.includes(key as Keys<SecretState>),
+	(key: Keys<RooCodeSettings>) => !isSecretStateKey(key),
 ) as Keys<GlobalState>[]
 
 export const isGlobalStateKey = (key: string): key is Keys<GlobalState> =>
