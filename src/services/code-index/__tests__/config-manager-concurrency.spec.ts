@@ -38,7 +38,7 @@ describe("CodeIndexConfigManager - Concurrency Settings", () => {
 			expect(config.batchProcessingConcurrency).toBe(BATCH_PROCESSING_CONCURRENCY)
 		})
 
-		it("should use configured values when concurrency settings are provided", () => {
+		it("should use configured values when concurrency settings are provided", async () => {
 			// Setup mock to return custom concurrency config
 			vi.mocked(mockContextProxy.getGlobalState).mockReturnValue({
 				codebaseIndexEnabled: true,
@@ -53,6 +53,8 @@ describe("CodeIndexConfigManager - Concurrency Settings", () => {
 				return ""
 			})
 
+			// Load configuration to pick up the new values
+			await configManager.loadConfiguration()
 			const config = configManager.getConfig()
 
 			expect(config.parsingConcurrency).toBe(25)
