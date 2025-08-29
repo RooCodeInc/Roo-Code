@@ -950,14 +950,12 @@ export const webviewMessageHandler = async (
 			await provider.postStateToWebview()
 			break
 		case "remoteControlEnabled":
-			// Update cloud settings instead of local globalState
 			try {
 				await CloudService.instance.updateUserSettings({
 					extensionBridgeEnabled: message.bool ?? false,
 				})
 			} catch (error) {
 				provider.log(`Failed to update cloud settings for remote control: ${error}`)
-				// Don't fall back to local storage - cloud settings are the source of truth
 			}
 			await provider.remoteControlEnabled(message.bool ?? false)
 			await provider.postStateToWebview()

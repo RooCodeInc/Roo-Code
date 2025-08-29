@@ -129,9 +129,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	const postStateListener = () => ClineProvider.getVisibleInstance()?.postStateToWebview()
 	authStateChangedHandler = postStateListener
 
-	// Enhanced settings updated handler that also updates BridgeOrchestrator
 	settingsUpdatedHandler = async () => {
-		// Update BridgeOrchestrator when settings change
 		const userInfo = CloudService.instance.getUserInfo()
 		if (userInfo && CloudService.instance.cloudAPI) {
 			try {
