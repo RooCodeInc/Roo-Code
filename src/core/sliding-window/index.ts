@@ -124,14 +124,19 @@ export async function truncateConversationIfNeeded({
 
 	// Determine the effective threshold to use
 	let effectiveThreshold = autoCondenseContextPercent
+	let effectiveTokenThreshold: number | undefined = undefined
 	const profileThreshold = profileThresholds[currentProfileId]
+
 	if (profileThreshold !== undefined) {
 		if (profileThreshold === -1) {
 			// Special case: -1 means inherit from global setting
 			effectiveThreshold = autoCondenseContextPercent
 		} else if (profileThreshold >= MIN_CONDENSE_THRESHOLD && profileThreshold <= MAX_CONDENSE_THRESHOLD) {
-			// Valid custom threshold
+			// Valid percentage threshold
 			effectiveThreshold = profileThreshold
+		} else if (profileThreshold > MAX_CONDENSE_THRESHOLD) {
+			// Values above 100 are treated as token counts
+			effectiveTokenThreshold = profileThreshold
 		} else {
 			// Invalid threshold value, fall back to global setting
 			console.warn(
@@ -144,7 +149,13 @@ export async function truncateConversationIfNeeded({
 
 	if (autoCondenseContext) {
 		const contextPercent = (100 * prevContextTokens) / contextWindow
-		if (contextPercent >= effectiveThreshold || prevContextTokens > allowedTokens) {
+		// Check both percentage and token thresholds
+		const shouldCondenseByPercent = contextPercent >= effectiveThreshold
+		const shouldCondenseByTokens =
+			effectiveTokenThreshold !== undefined && prevContextTokens >= effectiveTokenThreshold
+		const shouldCondenseByLimit = prevContextTokens > allowedTokens
+
+		if (shouldCondenseByPercent || shouldCondenseByTokens || shouldCondenseByLimit) {
 			// Attempt to intelligently condense the context
 			const result = await summarizeConversation(
 				messages,
