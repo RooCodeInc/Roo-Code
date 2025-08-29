@@ -178,7 +178,7 @@ export class ExtensionChannel extends BaseChannel<
 		] as const
 
 		eventMapping.forEach(({ from, to }) => {
-			// Create and store the listener function for cleanup/
+			// Create and store the listener function for cleanup.
 			const listener = async (..._args: unknown[]) => {
 				this.publish(ExtensionSocketEvents.EVENT, {
 					type: to,
