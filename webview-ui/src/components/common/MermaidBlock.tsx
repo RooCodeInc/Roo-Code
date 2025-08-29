@@ -87,11 +87,13 @@ interface MermaidBlockProps {
 	code: string
 }
 
-export default function MermaidBlock({ code }: MermaidBlockProps) {
+export default function MermaidBlock({ code: initialCode }: MermaidBlockProps) {
 	const containerRef = useRef<HTMLDivElement>(null)
+	const [code, setCode] = useState(initialCode)
 	const [isLoading, setIsLoading] = useState(false)
 	const [error, setError] = useState<string | null>(null)
 	const [isErrorExpanded, setIsErrorExpanded] = useState(false)
+	const [isFixing, setIsFixing] = useState(false)
 	const { showCopyFeedback, copyWithFeedback } = useCopyToClipboard()
 	const { t } = useAppTranslation()
 
@@ -100,6 +102,23 @@ export default function MermaidBlock({ code }: MermaidBlockProps) {
 		setIsLoading(true)
 		setError(null)
 	}, [code])
+
+	// Listen for fixed diagram response from extension
+	useEffect(() => {
+		const handleMessage = (event: MessageEvent) => {
+			const message = event.data
+			if (message.type === "mermaidDiagramFixed" && message.originalCode === initialCode) {
+				// Update the code with the fixed version
+				setCode(message.fixedCode)
+				setIsFixing(false)
+				setError(null)
+				setIsErrorExpanded(false)
+			}
+		}
+
+		window.addEventListener("message", handleMessage)
+		return () => window.removeEventListener("message", handleMessage)
+	}, [initialCode])
 
 	// 2) Debounce the actual parse/render
 	useDebounceEffect(
@@ -153,6 +172,22 @@ export default function MermaidBlock({ code }: MermaidBlockProps) {
 
 	// Copy functionality handled directly through the copyWithFeedback utility
 
+	const handleFixDiagram = async () => {
+		setIsFixing(true)
+		try {
+			// Send message to extension to fix the diagram
+			vscode.postMessage({
+				type: "fixMermaidDiagram",
+				code: code,
+				error: error || undefined,
+			})
+		} catch (err) {
+			console.error("Error fixing diagram:", err)
+		} finally {
+			setIsFixing(false)
+		}
+	}
+
 	return (
 		<MermaidBlockContainer>
 			{isLoading && <LoadingMessage>{t("common:mermaid.loading")}</LoadingMessage>}
@@ -188,7 +223,16 @@ export default function MermaidBlock({ code }: MermaidBlockProps) {
 								}}></span>
 							<span style={{ fontWeight: "bold" }}>{t("common:mermaid.render_error")}</span>
 						</div>
-						<div style={{ display: "flex", alignItems: "center" }}>
+						<div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+							<FixButton
+								onClick={(e) => {
+									e.stopPropagation()
+									handleFixDiagram()
+								}}
+								disabled={isFixing}>
+								<span className={`codicon codicon-${isFixing ? "loading" : "wrench"}`}></span>
+								<span style={{ marginLeft: "4px" }}>{t("common:mermaid.buttons.fix")}</span>
+							</FixButton>
 							<CopyButton
 								onClick={(e) => {
 									e.stopPropagation()
@@ -306,6 +350,39 @@ const CopyButton = styled.button`
 
 	&:hover {
 		opacity: 0.8;
+	}
+`
+
+const FixButton = styled.button<{ disabled?: boolean }>`
+	padding: 4px 8px;
+	height: 26px;
+	margin-right: 4px;
+	color: var(--vscode-button-foreground);
+	background: var(--vscode-button-background);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border: none;
+	border-radius: 2px;
+	cursor: ${(props) => (props.disabled ? "not-allowed" : "pointer")};
+	opacity: ${(props) => (props.disabled ? 0.5 : 1)};
+	font-size: 12px;
+
+	&:hover:not(:disabled) {
+		background: var(--vscode-button-hoverBackground);
+	}
+
+	.codicon-loading {
+		animation: spin 1s linear infinite;
+	}
+
+	@keyframes spin {
+		from {
+			transform: rotate(0deg);
+		}
+		to {
+			transform: rotate(360deg);
+		}
 	}
 `
 

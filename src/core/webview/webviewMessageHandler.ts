@@ -2657,5 +2657,47 @@ export const webviewMessageHandler = async (
 			vscode.window.showWarningMessage(t("common:mdm.info.organization_requires_auth"))
 			break
 		}
+		case "fixMermaidDiagram": {
+			// Handle Mermaid diagram fixing request
+			const { code, error } = message
+			if (code && error) {
+				try {
+					// Import the MermaidDiagramFixer
+					const { MermaidDiagramFixer } = await import("../../services/mermaid/MermaidDiagramFixer")
+
+					// Get the API configuration
+					const { apiConfiguration } = await provider.getState()
+
+					// Create fixer instance with Gemini API key
+					const fixer = new MermaidDiagramFixer({
+						geminiApiKey: apiConfiguration.geminiApiKey,
+						geminiModel: apiConfiguration.apiModelId,
+					})
+
+					// Fix the diagram
+					const fixedCode = await fixer.fixDiagram(code, error)
+
+					// Send the fixed code back to the webview
+					await provider.postMessageToWebview({
+						type: "mermaidDiagramFixed",
+						originalCode: code,
+						fixedCode: fixedCode,
+					})
+
+					vscode.window.showInformationMessage(
+						t("common:info.mermaid_diagram_fixed") || "Mermaid diagram has been fixed!",
+					)
+				} catch (error) {
+					provider.log(
+						`Error fixing Mermaid diagram: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`,
+					)
+					vscode.window.showErrorMessage(
+						t("common:errors.mermaid.fix_failed") ||
+							`Failed to fix diagram: ${error instanceof Error ? error.message : String(error)}`,
+					)
+				}
+			}
+			break
+		}
 	}
 }

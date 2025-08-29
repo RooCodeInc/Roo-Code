@@ -212,8 +212,11 @@ export interface WebviewMessage {
 		| "createCommand"
 		| "insertTextIntoTextarea"
 		| "showMdmAuthRequiredNotification"
+		| "fixMermaidDiagram"
 	text?: string
 	editedMessageContent?: string
+	code?: string
+	error?: string
 	tab?: "settings" | "history" | "mcp" | "modes" | "chat" | "marketplace" | "account"
 	disabled?: boolean
 	context?: string

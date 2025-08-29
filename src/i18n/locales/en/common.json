@@ -90,7 +90,11 @@
 		"gemini": {
 			"generate_stream": "Gemini generate context stream error: {{error}}",
 			"generate_complete_prompt": "Gemini completion error: {{error}}",
-			"sources": "Sources:"
+			"sources": "Sources:",
+			"api_key_required": "Gemini API key is required for diagram fixing"
+		},
+		"mermaid": {
+			"fix_failed": "Failed to fix Mermaid diagram"
 		},
 		"cerebras": {
 			"authenticationFailed": "Cerebras API authentication failed. Please check your API key is valid and not expired.",
@@ -124,7 +128,8 @@
 		"image_copied_to_clipboard": "Image data URI copied to clipboard",
 		"image_saved": "Image saved to {{path}}",
 		"mode_exported": "Mode '{{mode}}' exported successfully",
-		"mode_imported": "Mode imported successfully"
+		"mode_imported": "Mode imported successfully",
+		"mermaid_diagram_fixed": "Mermaid diagram has been fixed successfully!"
 	},
 	"answers": {
 		"yes": "Yes",

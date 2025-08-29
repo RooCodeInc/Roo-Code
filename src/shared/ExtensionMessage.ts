@@ -122,6 +122,7 @@ export interface ExtensionMessage {
 		| "showEditMessageDialog"
 		| "commands"
 		| "insertTextIntoTextarea"
+		| "mermaidDiagramFixed"
 	text?: string
 	payload?: any // Add a generic payload for now, can refine later
 	action?:
@@ -196,6 +197,8 @@ export interface ExtensionMessage {
 	messageTs?: number
 	context?: string
 	commands?: Command[]
+	originalCode?: string
+	fixedCode?: string
 }
 
 export type ExtensionState = Pick<
