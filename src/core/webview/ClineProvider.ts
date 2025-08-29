@@ -1892,7 +1892,17 @@ export class ClineProvider
 			includeDiagnosticMessages: includeDiagnosticMessages ?? true,
 			maxDiagnosticMessages: maxDiagnosticMessages ?? 50,
 			includeTaskHistoryInEnhance: includeTaskHistoryInEnhance ?? true,
-			remoteControlEnabled: remoteControlEnabled ?? false,
+			remoteControlEnabled: (() => {
+				try {
+					const cloudSettings = CloudService.instance.getUserSettings()
+					return cloudSettings?.settings?.extensionBridgeEnabled ?? false
+				} catch (error) {
+					console.error(
+						`[getStateToPostToWebview] failed to get remote control setting from cloud: ${error instanceof Error ? error.message : String(error)}`,
+					)
+					return false
+				}
+			})(),
 		}
 	}
 
@@ -2080,8 +2090,18 @@ export class ClineProvider
 			maxDiagnosticMessages: stateValues.maxDiagnosticMessages ?? 50,
 			// Add includeTaskHistoryInEnhance setting
 			includeTaskHistoryInEnhance: stateValues.includeTaskHistoryInEnhance ?? true,
-			// Add remoteControlEnabled setting
-			remoteControlEnabled: stateValues.remoteControlEnabled ?? false,
+			// Add remoteControlEnabled setting - get from cloud settings
+			remoteControlEnabled: (() => {
+				try {
+					const cloudSettings = CloudService.instance.getUserSettings()
+					return cloudSettings?.settings?.extensionBridgeEnabled ?? false
+				} catch (error) {
+					console.error(
+						`[getState] failed to get remote control setting from cloud: ${error instanceof Error ? error.message : String(error)}`,
+					)
+					return false
+				}
+			})(),
 		}
 	}
 
