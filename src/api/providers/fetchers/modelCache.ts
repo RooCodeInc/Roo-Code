@@ -10,6 +10,7 @@ import { RouterName, ModelRecord } from "../../../shared/api"
 import { fileExistsAtPath } from "../../../utils/fs"
 
 import { getOpenRouterModels } from "./openrouter"
+import { getVercelAiGatewayModels } from "./vercel-ai-gateway"
 import { getRequestyModels } from "./requesty"
 import { getTarsModels } from "./tars"
 import { getGlamaModels } from "./glama"
@@ -60,7 +61,7 @@ export const getModels = async (options: GetModelsOptions): Promise<ModelRecord>
 				break
 			case "requesty":
 				// Requesty models endpoint requires an API key for per-user custom policies
-				models = await getRequestyModels(options.apiKey)
+				models = await getRequestyModels(options.baseUrl, options.apiKey)
 				break
 			case "tars":
 				// TARS models endpoint requires an API key
@@ -85,6 +86,9 @@ export const getModels = async (options: GetModelsOptions): Promise<ModelRecord>
 				break
 			case "io-intelligence":
 				models = await getIOIntelligenceModels(options.apiKey)
+				break
+			case "vercel-ai-gateway":
+				models = await getVercelAiGatewayModels()
 				break
 			default: {
 				// Ensures router is exhaustively checked if RouterName is a strict union

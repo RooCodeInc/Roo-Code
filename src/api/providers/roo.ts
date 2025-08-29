@@ -1,32 +1,76 @@
+import { Anthropic } from "@anthropic-ai/sdk"
+
 import { rooDefaultModelId, rooModels, type RooModelId } from "@roo-code/types"
 import { CloudService } from "@roo-code/cloud"
 
 import type { ApiHandlerOptions } from "../../shared/api"
+import { ApiStream } from "../transform/stream"
+
+import type { ApiHandlerCreateMessageMetadata } from "../index"
 import { BaseOpenAiCompatibleProvider } from "./base-openai-compatible-provider"
-import { t } from "../../i18n"
 
 export class RooHandler extends BaseOpenAiCompatibleProvider<RooModelId> {
 	constructor(options: ApiHandlerOptions) {
-		// Check if CloudService is available and get the session token.
-		if (!CloudService.hasInstance()) {
-			throw new Error(t("common:errors.roo.authenticationRequired"))
+		// Get the session token if available, but don't throw if not.
+		// The server will handle authentication errors and return appropriate status codes.
+		let sessionToken = ""
+
+		if (CloudService.hasInstance()) {
+			sessionToken = CloudService.instance.authService?.getSessionToken() || ""
 		}
 
-		const sessionToken = CloudService.instance.authService?.getSessionToken()
-
-		if (!sessionToken) {
-			throw new Error(t("common:errors.roo.authenticationRequired"))
-		}
-
+		// Always construct the handler, even without a valid token.
+		// The provider-proxy server will return 401 if authentication fails.
 		super({
 			...options,
 			providerName: "Roo Code Cloud",
-			baseURL: "https://api.roocode.com/proxy/v1",
-			apiKey: sessionToken,
+			baseURL: process.env.ROO_CODE_PROVIDER_URL ?? "https://api.roocode.com/proxy/v1",
+			apiKey: sessionToken || "unauthenticated", // Use a placeholder if no token
 			defaultProviderModelId: rooDefaultModelId,
 			providerModels: rooModels,
 			defaultTemperature: 0.7,
 		})
+	}
+
+	override async *createMessage(
+		systemPrompt: string,
+		messages: Anthropic.Messages.MessageParam[],
+		metadata?: ApiHandlerCreateMessageMetadata,
+	): ApiStream {
+		const stream = await this.createStream(
+			systemPrompt,
+			messages,
+			metadata,
+			metadata?.taskId ? { headers: { "X-Roo-Task-ID": metadata.taskId } } : undefined,
+		)
+
+		for await (const chunk of stream) {
+			const delta = chunk.choices[0]?.delta
+
+			if (delta) {
+				if (delta.content) {
+					yield {
+						type: "text",
+						text: delta.content,
+					}
+				}
+
+				if ("reasoning_content" in delta && typeof delta.reasoning_content === "string") {
+					yield {
+						type: "reasoning",
+						text: delta.reasoning_content,
+					}
+				}
+			}
+
+			if (chunk.usage) {
+				yield {
+					type: "usage",
+					inputTokens: chunk.usage.prompt_tokens || 0,
+					outputTokens: chunk.usage.completion_tokens || 0,
+				}
+			}
+		}
 	}
 
 	override getModel() {
@@ -41,10 +85,10 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<RooModelId> {
 		return {
 			id: modelId as RooModelId,
 			info: {
-				maxTokens: 8192,
+				maxTokens: 16_384,
 				contextWindow: 262_144,
 				supportsImages: false,
-				supportsPromptCache: false,
+				supportsPromptCache: true,
 				inputPrice: 0,
 				outputPrice: 0,
 			},

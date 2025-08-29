@@ -28,6 +28,7 @@ const routerNames = [
 	"lmstudio",
 	"io-intelligence",
 	"tars",
+	"vercel-ai-gateway",
 ] as const
 
 export type RouterName = (typeof routerNames)[number]
@@ -146,10 +147,11 @@ export const getModelMaxOutputTokens = ({
 export type GetModelsOptions =
 	| { provider: "openrouter" }
 	| { provider: "glama" }
-	| { provider: "requesty"; apiKey?: string }
 	| { provider: "tars"; apiKey?: string }
+	| { provider: "requesty"; apiKey?: string; baseUrl?: string }
 	| { provider: "unbound"; apiKey?: string }
 	| { provider: "litellm"; apiKey: string; baseUrl: string }
 	| { provider: "ollama"; baseUrl?: string }
 	| { provider: "lmstudio"; baseUrl?: string }
 	| { provider: "io-intelligence"; apiKey: string }
+	| { provider: "vercel-ai-gateway" }

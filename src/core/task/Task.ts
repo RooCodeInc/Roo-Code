@@ -80,7 +80,7 @@ import { ToolRepetitionDetector } from "../tools/ToolRepetitionDetector"
 import { FileContextTracker } from "../context-tracking/FileContextTracker"
 import { RooIgnoreController } from "../ignore/RooIgnoreController"
 import { RooProtectedController } from "../protect/RooProtectedController"
-import { type AssistantMessageContent, presentAssistantMessage, parseAssistantMessage } from "../assistant-message"
+import { type AssistantMessageContent, presentAssistantMessage } from "../assistant-message"
 import { AssistantMessageParser } from "../assistant-message/AssistantMessageParser"
 import { truncateConversationIfNeeded } from "../sliding-window"
 import { ClineProvider } from "../webview/ClineProvider"
@@ -88,6 +88,7 @@ import { MultiSearchReplaceDiffStrategy } from "../diff/strategies/multi-search-
 import { MultiFileSearchReplaceDiffStrategy } from "../diff/strategies/multi-file-search-replace"
 import { readApiMessages, saveApiMessages, readTaskMessages, saveTaskMessages, taskMetadata } from "../task-persistence"
 import { getEnvironmentDetails } from "../environment/getEnvironmentDetails"
+import { checkContextWindowExceededError } from "../context/context-management/context-error-handling"
 import {
 	type CheckpointDiffOptions,
 	type CheckpointRestoreOptions,
@@ -102,9 +103,12 @@ import { getMessagesSinceLastSummary, summarizeConversation } from "../condense"
 import { maybeRemoveImageBlocks } from "../../api/transform/image-cleaning"
 import { restoreTodoListForTask } from "../tools/updateTodoListTool"
 import { AutoApprovalHandler } from "./AutoApprovalHandler"
+import { Gpt5Metadata, ClineMessageWithMetadata } from "./types"
 
 const MAX_EXPONENTIAL_BACKOFF_SECONDS = 600 // 10 minutes
 const DEFAULT_USAGE_COLLECTION_TIMEOUT_MS = 5000 // 5 seconds
+const FORCED_CONTEXT_REDUCTION_PERCENT = 75 // Keep 75% of context (remove 25%) on context window errors
+const MAX_CONTEXT_WINDOW_RETRIES = 3 // Maximum retries for context window errors
 
 export type TaskOptions = {
 	provider: ClineProvider
@@ -123,6 +127,7 @@ export type TaskOptions = {
 	parentTask?: Task
 	taskNumber?: number
 	onCreated?: (task: Task) => void
+	initialTodos?: TodoItem[]
 }
 
 export class Task extends EventEmitter<TaskEvents> implements TaskLike {
@@ -266,8 +271,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	didRejectTool = false
 	didAlreadyUseTool = false
 	didCompleteReadingStream = false
-	assistantMessageParser?: AssistantMessageParser
-	isAssistantMessageParserEnabled = false
+	assistantMessageParser: AssistantMessageParser
 	private lastUsedInstructions?: string
 	private skipPrevResponseIdOnce: boolean = false
 
@@ -287,6 +291,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		parentTask,
 		taskNumber = -1,
 		onCreated,
+		initialTodos,
 	}: TaskOptions) {
 		super()
 
@@ -350,6 +355,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			TelemetryService.instance.captureTaskCreated(this.taskId)
 		}
 
+		// Initialize the assistant message parser
+		this.assistantMessageParser = new AssistantMessageParser()
+
 		// Only set up diff strategy if diff is enabled.
 		if (this.diffEnabled) {
 			// Default to old strategy, will be updated if experiment is enabled.
@@ -369,6 +377,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 
 		this.toolRepetitionDetector = new ToolRepetitionDetector(this.consecutiveMistakeLimit)
+
+		// Initialize todo list if provided
+		if (initialTodos && initialTodos.length > 0) {
+			this.todoList = initialTodos
+		}
 
 		onCreated?.(this)
 
@@ -578,6 +591,18 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	public async overwriteClineMessages(newMessages: ClineMessage[]) {
 		this.clineMessages = newMessages
+
+		// If deletion or history truncation leaves a condense_context as the last message,
+		// ensure the next API call suppresses previous_response_id so the condensed context is respected.
+		try {
+			const last = this.clineMessages.at(-1)
+			if (last && last.type === "say" && last.say === "condense_context") {
+				this.skipPrevResponseIdOnce = true
+			}
+		} catch {
+			// non-fatal
+		}
+
 		restoreTodoListForTask(this)
 		await this.saveClineMessages()
 	}
@@ -773,13 +798,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			}
 		}
 
-		console.log(
-			`[Task#${this.taskId}] pWaitFor askResponse(${type}) -> blocking (isStatusMutable = ${isStatusMutable}, statusMutationTimeouts = ${statusMutationTimeouts.length})`,
-		)
-
+		// Wait for askResponse to be set
 		await pWaitFor(() => this.askResponse !== undefined || this.lastMessageTs !== askTs, { interval: 100 })
-
-		console.log(`[Task#${this.taskId}] pWaitFor askResponse(${type}) -> unblocked (${this.askResponse})`)
 
 		if (this.lastMessageTs !== askTs) {
 			// Could happen if we send multiple asks in a row i.e. with
@@ -859,17 +879,17 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		const systemPrompt = await this.getSystemPrompt()
 
 		// Get condensing configuration
-		// Using type assertion to handle the case where Phase 1 hasn't been implemented yet
 		const state = await this.providerRef.deref()?.getState()
-		const customCondensingPrompt = state ? (state as any).customCondensingPrompt : undefined
-		const condensingApiConfigId = state ? (state as any).condensingApiConfigId : undefined
-		const listApiConfigMeta = state ? (state as any).listApiConfigMeta : undefined
+		// These properties may not exist in the state type yet, but are used for condensing configuration
+		const customCondensingPrompt = state?.customCondensingPrompt
+		const condensingApiConfigId = state?.condensingApiConfigId
+		const listApiConfigMeta = state?.listApiConfigMeta
 
 		// Determine API handler to use
 		let condensingApiHandler: ApiHandler | undefined
 		if (condensingApiConfigId && listApiConfigMeta && Array.isArray(listApiConfigMeta)) {
-			// Using type assertion for the id property to avoid implicit any
-			const matchingConfig = listApiConfigMeta.find((config: any) => config.id === condensingApiConfigId)
+			// Find matching config by ID
+			const matchingConfig = listApiConfigMeta.find((config) => config.id === condensingApiConfigId)
 			if (matchingConfig) {
 				const profile = await this.providerRef.deref()?.providerSettingsManager.getProfile({
 					id: condensingApiConfigId,
@@ -911,6 +931,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			return
 		}
 		await this.overwriteApiConversationHistory(messages)
+
+		// Set flag to skip previous_response_id on the next API call after manual condense
+		this.skipPrevResponseIdOnce = true
+
 		const contextCondense: ContextCondense = { summary, cost, newContextTokens, prevContextTokens }
 		await this.say(
 			"condense_context",
@@ -988,7 +1012,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					lastMessage.partial = false
 					lastMessage.progressStatus = progressStatus
 					if (options.metadata) {
-						;(lastMessage as any).metadata = options.metadata
+						// Add metadata to the message
+						const messageWithMetadata = lastMessage as ClineMessage & ClineMessageWithMetadata
+						if (!messageWithMetadata.metadata) {
+							messageWithMetadata.metadata = {}
+						}
+						Object.assign(messageWithMetadata.metadata, options.metadata)
 					}
 
 					// Instead of streaming partialMessage events, we do a save
@@ -1075,6 +1104,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// messages from previous session).
 		this.clineMessages = []
 		this.apiConversationHistory = []
+
+		// The todo list is already set in the constructor if initialTodos were provided
+		// No need to add any messages - the todoList property is already set
+
 		await this.providerRef.deref()?.postStateToWebview()
 
 		await this.say("text", task, images)
@@ -1082,7 +1115,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		let imageBlocks: Anthropic.ImageBlockParam[] = formatResponse.imageBlocks(images)
 
-		console.log(`[subtasks] task ${this.taskId}.${this.instanceId} starting`)
+		// Task starting
 
 		await this.initiateTaskLoop([
 			{
@@ -1107,6 +1140,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				role: "user",
 				content: [{ type: "text", text: `[new_task completed] Result: ${lastMessage}` }],
 			})
+
+			// Set skipPrevResponseIdOnce to ensure the next API call sends the full conversation
+			// including the subtask result, not just from before the subtask was created
+			this.skipPrevResponseIdOnce = true
 		} catch (error) {
 			this.providerRef
 				.deref()
@@ -1117,6 +1154,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	}
 
 	private async resumeTaskFromHistory() {
+		// Resuming task from history
+
 		if (this.enableTaskBridge) {
 			try {
 				this.bridgeService = this.bridgeService || ExtensionBridgeService.getInstance()
@@ -1132,6 +1171,18 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 
 		const modifiedClineMessages = await this.getSavedClineMessages()
+
+		// Check for any stored GPT-5 response IDs in the message history
+		const gpt5Messages = modifiedClineMessages.filter(
+			(m): m is ClineMessage & ClineMessageWithMetadata =>
+				m.type === "say" &&
+				m.say === "text" &&
+				!!(m as ClineMessageWithMetadata).metadata?.gpt5?.previous_response_id,
+		)
+		if (gpt5Messages.length > 0) {
+			const lastGpt5Message = gpt5Messages[gpt5Messages.length - 1]
+			// The lastGpt5Message contains the previous_response_id that can be used for continuity
+		}
 
 		// Remove any resume messages that may have been added before
 		const lastRelevantMessageIndex = findLastIndex(
@@ -1362,12 +1413,13 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		await this.overwriteApiConversationHistory(modifiedApiConversationHistory)
 
-		console.log(`[subtasks] task ${this.taskId}.${this.instanceId} resuming from history item`)
+		// Task resuming from history item
 
 		await this.initiateTaskLoop(newUserContent)
 	}
 
 	public dispose(): void {
+		// Disposing task
 		console.log(`[Task] disposing task ${this.taskId}.${this.instanceId}`)
 
 		// Remove all event listeners to prevent memory leaks
@@ -1387,7 +1439,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		if (this.bridgeService) {
 			this.bridgeService
 				.unsubscribeFromTask(this.taskId)
-				.catch((error) => console.error("Error unsubscribing from task bridge:", error))
+				.catch((error: unknown) => console.error("Error unsubscribing from task bridge:", error))
 			this.bridgeService = null
 		}
 
@@ -1438,7 +1490,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	}
 
 	public async abortTask(isAbandoned = false) {
-		console.log(`[subtasks] aborting task ${this.taskId}.${this.instanceId}`)
+		// Aborting task
 
 		// Will stop any autonomously running promises.
 		if (isAbandoned) {
@@ -1602,7 +1654,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			)
 
 			const {
-				showRooIgnoredFiles = true,
+				showRooIgnoredFiles = false,
 				includeDiagnosticMessages = true,
 				maxDiagnosticMessages = 50,
 				maxReadFileLine = -1,
@@ -1737,9 +1789,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				this.didAlreadyUseTool = false
 				this.presentAssistantMessageLocked = false
 				this.presentAssistantMessageHasPendingUpdates = false
-				if (this.assistantMessageParser) {
-					this.assistantMessageParser.reset()
-				}
+				this.assistantMessageParser.reset()
 
 				await this.diffViewProvider.reset()
 
@@ -1780,12 +1830,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 								// Parse raw assistant message chunk into content blocks.
 								const prevLength = this.assistantMessageContent.length
-								if (this.isAssistantMessageParserEnabled && this.assistantMessageParser) {
-									this.assistantMessageContent = this.assistantMessageParser.processChunk(chunk.text)
-								} else {
-									// Use the old parsing method when experiment is disabled
-									this.assistantMessageContent = parseAssistantMessage(assistantMessage)
-								}
+								this.assistantMessageContent = this.assistantMessageParser.processChunk(chunk.text)
 
 								if (this.assistantMessageContent.length > prevLength) {
 									// New content we need to present, reset to
@@ -2044,11 +2089,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				// this.assistantMessageContent.forEach((e) => (e.partial = false))
 
 				// Now that the stream is complete, finalize any remaining partial content blocks
-				if (this.isAssistantMessageParserEnabled && this.assistantMessageParser) {
-					this.assistantMessageParser.finalizeContentBlocks()
-					this.assistantMessageContent = this.assistantMessageParser.getContentBlocks()
-				}
-				// When using old parser, no finalization needed - parsing already happened during streaming
+				this.assistantMessageParser.finalizeContentBlocks()
+				this.assistantMessageContent = this.assistantMessageParser.getContentBlocks()
 
 				if (partialBlocks.length > 0) {
 					// If there is content to update then it will complete and
@@ -2067,9 +2109,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				await this.providerRef.deref()?.postStateToWebview()
 
 				// Reset parser after each complete conversation round
-				if (this.assistantMessageParser) {
-					this.assistantMessageParser.reset()
-				}
+				this.assistantMessageParser.reset()
 
 				// Now add to apiConversationHistory.
 				// Need to save assistant responses to file before proceeding to
@@ -2225,9 +2265,79 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					maxConcurrentFileReads: maxConcurrentFileReads ?? 5,
 					todoListEnabled: apiConfiguration?.todoListEnabled ?? true,
 					useAgentRules: vscode.workspace.getConfiguration("roo-cline").get<boolean>("useAgentRules") ?? true,
+					newTaskRequireTodos: vscode.workspace
+						.getConfiguration("roo-cline")
+						.get<boolean>("newTaskRequireTodos", false),
 				},
+				undefined, // todoList
+				this.api.getModel().id,
 			)
 		})()
+	}
+
+	private getCurrentProfileId(state: any): string {
+		return (
+			state?.listApiConfigMeta?.find((profile: any) => profile.name === state?.currentApiConfigName)?.id ??
+			"default"
+		)
+	}
+
+	private async handleContextWindowExceededError(): Promise<void> {
+		const state = await this.providerRef.deref()?.getState()
+		const { profileThresholds = {} } = state ?? {}
+
+		const { contextTokens } = this.getTokenUsage()
+		const modelInfo = this.api.getModel().info
+		const maxTokens = getModelMaxOutputTokens({
+			modelId: this.api.getModel().id,
+			model: modelInfo,
+			settings: this.apiConfiguration,
+		})
+		const contextWindow = modelInfo.contextWindow
+
+		// Get the current profile ID using the helper method
+		const currentProfileId = this.getCurrentProfileId(state)
+
+		// Log the context window error for debugging
+		console.warn(
+			`[Task#${this.taskId}] Context window exceeded for model ${this.api.getModel().id}. ` +
+				`Current tokens: ${contextTokens}, Context window: ${contextWindow}. ` +
+				`Forcing truncation to ${FORCED_CONTEXT_REDUCTION_PERCENT}% of current context.`,
+		)
+
+		// Force aggressive truncation by keeping only 75% of the conversation history
+		const truncateResult = await truncateConversationIfNeeded({
+			messages: this.apiConversationHistory,
+			totalTokens: contextTokens || 0,
+			maxTokens,
+			contextWindow,
+			apiHandler: this.api,
+			autoCondenseContext: true,
+			autoCondenseContextPercent: FORCED_CONTEXT_REDUCTION_PERCENT,
+			systemPrompt: await this.getSystemPrompt(),
+			taskId: this.taskId,
+			profileThresholds,
+			currentProfileId,
+		})
+
+		if (truncateResult.messages !== this.apiConversationHistory) {
+			await this.overwriteApiConversationHistory(truncateResult.messages)
+		}
+
+		if (truncateResult.summary) {
+			const { summary, cost, prevContextTokens, newContextTokens = 0 } = truncateResult
+			const contextCondense: ContextCondense = { summary, cost, newContextTokens, prevContextTokens }
+			await this.say(
+				"condense_context",
+				undefined /* text */,
+				undefined /* images */,
+				false /* partial */,
+				undefined /* checkpoint */,
+				undefined /* progressStatus */,
+				{ isNonInteractive: true } /* options */,
+				contextCondense,
+			)
+		}
 	}
 
 	public async *attemptApiRequest(retryAttempt: number = 0): ApiStream {
@@ -2253,8 +2363,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		let condensingApiHandler: ApiHandler | undefined
 
 		if (condensingApiConfigId && listApiConfigMeta && Array.isArray(listApiConfigMeta)) {
-			// Using type assertion for the id property to avoid implicit any.
-			const matchingConfig = listApiConfigMeta.find((config: any) => config.id === condensingApiConfigId)
+			// Find matching config by ID
+			const matchingConfig = listApiConfigMeta.find((config) => config.id === condensingApiConfigId)
 
 			if (matchingConfig) {
 				const profile = await this.providerRef.deref()?.providerSettingsManager.getProfile({
@@ -2308,9 +2418,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 			const contextWindow = modelInfo.contextWindow
 
-			const currentProfileId =
-				state?.listApiConfigMeta.find((profile) => profile.name === state?.currentApiConfigName)?.id ??
-				"default"
+			// Get the current profile ID using the helper method
+			const currentProfileId = this.getCurrentProfileId(state)
 
 			const truncateResult = await truncateConversationIfNeeded({
 				messages: this.apiConversationHistory,
@@ -2378,25 +2487,29 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				// Find the last assistant message that has a previous_response_id stored
 				const idx = findLastIndex(
 					this.clineMessages,
-					(m) =>
+					(m): m is ClineMessage & ClineMessageWithMetadata =>
 						m.type === "say" &&
-						(m as any).say === "text" &&
-						(m as any).metadata?.gpt5?.previous_response_id,
+						m.say === "text" &&
+						!!(m as ClineMessageWithMetadata).metadata?.gpt5?.previous_response_id,
 				)
 				if (idx !== -1) {
 					// Use the previous_response_id from the last assistant message for this request
-					previousResponseId = ((this.clineMessages[idx] as any).metadata.gpt5.previous_response_id ||
-						undefined) as string | undefined
+					const message = this.clineMessages[idx] as ClineMessage & ClineMessageWithMetadata
+					previousResponseId = message.metadata?.gpt5?.previous_response_id
 				}
+			} else if (this.skipPrevResponseIdOnce) {
+				// Skipping previous_response_id due to recent condense operation - will send full conversation context
 			}
-		} catch {
+		} catch (error) {
+			console.error(`[Task#${this.taskId}] Error retrieving GPT-5 response ID:`, error)
 			// non-fatal
 		}
 
 		const metadata: ApiHandlerCreateMessageMetadata = {
 			mode: mode,
 			taskId: this.taskId,
-			...(previousResponseId ? { previousResponseId } : {}),
+			// Only include previousResponseId if we're NOT suppressing it
+			...(previousResponseId && !this.skipPrevResponseIdOnce ? { previousResponseId } : {}),
 			// If a condense just occurred, explicitly suppress continuity fallback for the next call
 			...(this.skipPrevResponseIdOnce ? { suppressPreviousResponseId: true } : {}),
 		}
@@ -2417,6 +2530,21 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			this.isWaitingForFirstChunk = false
 		} catch (error) {
 			this.isWaitingForFirstChunk = false
+			const isContextWindowExceededError = checkContextWindowExceededError(error)
+
+			// If it's a context window error and we haven't exceeded max retries for this error type
+			if (isContextWindowExceededError && retryAttempt < MAX_CONTEXT_WINDOW_RETRIES) {
+				console.warn(
+					`[Task#${this.taskId}] Context window exceeded for model ${this.api.getModel().id}. ` +
+						`Retry attempt ${retryAttempt + 1}/${MAX_CONTEXT_WINDOW_RETRIES}. ` +
+						`Attempting automatic truncation...`,
+				)
+				await this.handleContextWindowExceededError()
+				// Retry the request after handling the context window error
+				yield* this.attemptApiRequest(retryAttempt + 1)
+				return
+			}
+
 			// note that this api_req_failed ask is unique in that we only present this option if the api hasn't streamed any content yet (ie it fails on the first chunk due), as it would allow them to hit a retry button. However if the api failed mid-stream, it could be in any arbitrary state where some tools may have executed, so that error is handled differently and requires cancelling the task entirely.
 			if (autoApprovalEnabled && alwaysApproveResubmit) {
 				let errorMsg
@@ -2558,22 +2686,28 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			const modelId = this.api.getModel().id
 			if (!modelId || !modelId.startsWith("gpt-5")) return
 
-			const lastResponseId: string | undefined = (this.api as any)?.getLastResponseId?.()
+			// Check if the API handler has a getLastResponseId method (OpenAiNativeHandler specific)
+			const handler = this.api as ApiHandler & { getLastResponseId?: () => string | undefined }
+			const lastResponseId = handler.getLastResponseId?.()
 			const idx = findLastIndex(
 				this.clineMessages,
-				(m) => m.type === "say" && (m as any).say === "text" && m.partial !== true,
+				(m) => m.type === "say" && m.say === "text" && m.partial !== true,
 			)
 			if (idx !== -1) {
-				const msg = this.clineMessages[idx] as any
-				msg.metadata = msg.metadata ?? {}
-				msg.metadata.gpt5 = {
+				const msg = this.clineMessages[idx] as ClineMessage & ClineMessageWithMetadata
+				if (!msg.metadata) {
+					msg.metadata = {}
+				}
+				const gpt5Metadata: Gpt5Metadata = {
 					...(msg.metadata.gpt5 ?? {}),
 					previous_response_id: lastResponseId,
 					instructions: this.lastUsedInstructions,
 					reasoning_summary: (reasoningMessage ?? "").trim() || undefined,
 				}
+				msg.metadata.gpt5 = gpt5Metadata
 			}
-		} catch {
+		} catch (error) {
+			console.error(`[Task#${this.taskId}] Error persisting GPT-5 metadata:`, error)
 			// Non-fatal error in metadata persistence
 		}
 	}

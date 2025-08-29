@@ -11,6 +11,14 @@ export const reasoningEffortsSchema = z.enum(reasoningEfforts)
 export type ReasoningEffort = z.infer<typeof reasoningEffortsSchema>
 
 /**
+ * ReasoningEffortWithMinimal
+ */
+
+export const reasoningEffortWithMinimalSchema = z.union([reasoningEffortsSchema, z.literal("minimal")])
+
+export type ReasoningEffortWithMinimal = z.infer<typeof reasoningEffortWithMinimalSchema>
+
+/**
  * Verbosity
  */
 
@@ -47,6 +55,8 @@ export const modelInfoSchema = z.object({
 	// Capability flag to indicate whether the model supports an output verbosity parameter
 	supportsVerbosity: z.boolean().optional(),
 	supportsReasoningBudget: z.boolean().optional(),
+	// Capability flag to indicate whether the model supports temperature parameter
+	supportsTemperature: z.boolean().optional(),
 	requiredReasoningBudget: z.boolean().optional(),
 	supportsReasoningEffort: z.boolean().optional(),
 	supportedParameters: z.array(modelParametersSchema).optional(),

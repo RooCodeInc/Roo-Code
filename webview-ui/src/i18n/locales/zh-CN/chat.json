@@ -175,7 +175,11 @@
 		"wantsToInsertAtEnd": "需要在文件末尾添加内容:",
 		"wantsToReadAndXMore": "Roo 想读取此文件以及另外 {{count}} 个文件：",
 		"wantsToReadMultiple": "Roo 想要读取多个文件：",
-		"wantsToApplyBatchChanges": "Roo 想要对多个文件应用更改："
+		"wantsToApplyBatchChanges": "Roo 想要对多个文件应用更改：",
+		"wantsToGenerateImage": "需要生成图片:",
+		"wantsToGenerateImageOutsideWorkspace": "需要在工作区外生成图片:",
+		"wantsToGenerateImageProtected": "需要在受保护位置生成图片:",
+		"didGenerateImage": "已生成图片:"
 	},
 	"directoryOperations": {
 		"wantsToViewTopLevel": "需要查看目录文件列表:",
@@ -265,6 +269,12 @@
 	},
 	"announcement": {
 		"title": "🎉 Roo Code {{version}} 已发布",
+		"stealthModel": {
+			"feature": "Sonic 隐形模型现在是 <bold>Grok Code Fast</bold>！这个高性能推理模型可在 <bold>xAI (Grok)</bold> 提供商下作为 <code>grok-code-fast-1</code> 使用。",
+			"note": "作为对所有关于 Sonic 有用反馈的感谢，xAI 将通过 <bold>Roo Code Cloud</bold> 提供商延长对 <code>grok-code-fast-1</code> 的免费访问权限再一周。",
+			"connectButton": "连接到 Roo Code Cloud",
+			"selectModel": "访问<settingsLink>设置</settingsLink>更新你的提供商配置。"
+		},
 		"description": "Roo Code {{version}} 带来强大的新功能和重大改进，提升您的开发工作流程。",
 		"whatsNew": "新特性",
 		"feature1": "<bold>消息队列</bold>: 在 Roo 工作时将多个消息排队，让你可以不间断地继续规划工作流程。",
@@ -362,7 +372,8 @@
 	"slashCommands": {
 		"tooltip": "管理斜杠命令",
 		"title": "斜杠命令",
-		"description": "创建自定义斜杠命令，快速访问常用提示词和工作流程。<DocsLink>文档</DocsLink>",
+		"description": "使用内置斜杠命令或创建自定义命令，快速访问常用提示词和工作流程。<DocsLink>文档</DocsLink>",
+		"builtInCommands": "内置命令",
 		"globalCommands": "全局命令",
 		"workspaceCommands": "工作区命令",
 		"globalCommand": "全局命令",

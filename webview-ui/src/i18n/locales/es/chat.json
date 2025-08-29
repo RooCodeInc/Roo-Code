@@ -175,7 +175,11 @@
 		"wantsToInsertAtEnd": "Roo quiere añadir contenido al final de este archivo:",
 		"wantsToReadAndXMore": "Roo quiere leer este archivo y {{count}} más:",
 		"wantsToReadMultiple": "Roo quiere leer varios archivos:",
-		"wantsToApplyBatchChanges": "Roo quiere aplicar cambios a múltiples archivos:"
+		"wantsToApplyBatchChanges": "Roo quiere aplicar cambios a múltiples archivos:",
+		"wantsToGenerateImage": "Roo quiere generar una imagen:",
+		"wantsToGenerateImageOutsideWorkspace": "Roo quiere generar una imagen fuera del espacio de trabajo:",
+		"wantsToGenerateImageProtected": "Roo quiere generar una imagen en una ubicación protegida:",
+		"didGenerateImage": "Roo generó una imagen:"
 	},
 	"directoryOperations": {
 		"wantsToViewTopLevel": "Roo quiere ver los archivos de nivel superior en este directorio:",
@@ -265,6 +269,12 @@
 	},
 	"announcement": {
 		"title": "🎉 Roo Code {{version}} publicado",
+		"stealthModel": {
+			"feature": "¡El modelo stealth Sonic ahora es <bold>Grok Code Fast</bold>! Este modelo de razonamiento de alto rendimiento está disponible como <code>grok-code-fast-1</code> bajo el proveedor <bold>xAI (Grok)</bold>.",
+			"note": "Como agradecimiento por todos los comentarios útiles sobre Sonic, xAI está extendiendo el acceso gratuito a <code>grok-code-fast-1</code> por una semana más a través del proveedor <bold>Roo Code Cloud</bold>.",
+			"connectButton": "Conectar con Roo Code Cloud",
+			"selectModel": "Visita <settingsLink>Configuración</settingsLink> para actualizar tu configuración de proveedor."
+		},
 		"description": "Roo Code {{version}} trae poderosas nuevas funcionalidades y mejoras significativas para mejorar tu flujo de trabajo de desarrollo.",
 		"whatsNew": "Novedades",
 		"feature1": "<bold>Cola de Mensajes</bold>: Pon en cola múltiples mensajes mientras Roo está trabajando, permitiéndote continuar planificando tu flujo de trabajo sin interrupciones.",
@@ -362,7 +372,8 @@
 	"slashCommands": {
 		"tooltip": "Gestionar comandos de barra",
 		"title": "Comandos de Barra",
-		"description": "Crea comandos de barra personalizados para acceder rápidamente a prompts y flujos de trabajo utilizados con frecuencia. <DocsLink>Documentación</DocsLink>",
+		"description": "Usa comandos de barra integrados o crea personalizados para acceder rápidamente a prompts y flujos de trabajo utilizados con frecuencia. <DocsLink>Documentación</DocsLink>",
+		"builtInCommands": "Comandos Integrados",
 		"globalCommands": "Comandos Globales",
 		"workspaceCommands": "Comandos del Espacio de Trabajo",
 		"globalCommand": "Comando global",

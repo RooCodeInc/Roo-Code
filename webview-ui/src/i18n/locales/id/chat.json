@@ -185,6 +185,10 @@
 		"wantsToEditOutsideWorkspace": "Roo ingin mengedit file ini di luar workspace:",
 		"wantsToEditProtected": "Roo ingin mengedit file konfigurasi yang dilindungi:",
 		"wantsToApplyBatchChanges": "Roo ingin menerapkan perubahan ke beberapa file:",
+		"wantsToGenerateImage": "Roo ingin menghasilkan gambar:",
+		"wantsToGenerateImageOutsideWorkspace": "Roo ingin menghasilkan gambar di luar workspace:",
+		"wantsToGenerateImageProtected": "Roo ingin menghasilkan gambar di lokasi yang dilindungi:",
+		"didGenerateImage": "Roo telah menghasilkan gambar:",
 		"wantsToCreate": "Roo ingin membuat file baru:",
 		"wantsToSearchReplace": "Roo ingin mencari dan mengganti di file ini:",
 		"didSearchReplace": "Roo melakukan pencarian dan penggantian pada file ini:",
@@ -277,6 +281,12 @@
 	},
 	"announcement": {
 		"title": "🎉 Roo Code {{version}} Dirilis",
+		"stealthModel": {
+			"feature": "Model stealth Sonic kini adalah <bold>Grok Code Fast</bold>! Model penalaran berperforma tinggi ini tersedia sebagai <code>grok-code-fast-1</code> di bawah penyedia <bold>xAI (Grok)</bold>.",
+			"note": "Sebagai ucapan terima kasih atas semua masukan berguna tentang Sonic, xAI memperpanjang akses gratis ke <code>grok-code-fast-1</code> selama satu minggu lagi melalui penyedia <bold>Roo Code Cloud</bold>.",
+			"connectButton": "Hubungkan ke Roo Code Cloud",
+			"selectModel": "Kunjungi <settingsLink>Pengaturan</settingsLink> untuk memperbarui konfigurasi penyedia."
+		},
 		"description": "Roo Code {{version}} menghadirkan fitur-fitur baru yang kuat dan peningkatan signifikan untuk meningkatkan alur kerja pengembangan Anda.",
 		"whatsNew": "Yang Baru",
 		"feature1": "<bold>Antrian Pesan</bold>: Antrikan beberapa pesan saat Roo sedang bekerja, memungkinkan Anda melanjutkan perencanaan alur kerja tanpa gangguan.",
@@ -368,7 +378,8 @@
 	"slashCommands": {
 		"tooltip": "Kelola perintah slash",
 		"title": "Perintah Slash",
-		"description": "Buat perintah slash kustom untuk akses cepat ke prompt dan alur kerja yang sering digunakan. <DocsLink>Dokumentasi</DocsLink>",
+		"description": "Gunakan perintah slash bawaan atau buat kustom untuk akses cepat ke prompt dan alur kerja yang sering digunakan. <DocsLink>Dokumentasi</DocsLink>",
+		"builtInCommands": "Perintah Bawaan",
 		"globalCommands": "Perintah Global",
 		"workspaceCommands": "Perintah Workspace",
 		"globalCommand": "Perintah global",

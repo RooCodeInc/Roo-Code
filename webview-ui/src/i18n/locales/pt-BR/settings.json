@@ -47,6 +47,9 @@
 		"geminiProvider": "Gemini",
 		"geminiApiKeyLabel": "Chave de API:",
 		"geminiApiKeyPlaceholder": "Digite sua chave de API do Gemini",
+		"vercelAiGatewayProvider": "Vercel AI Gateway",
+		"vercelAiGatewayApiKeyLabel": "Chave de API",
+		"vercelAiGatewayApiKeyPlaceholder": "Digite sua chave de API do Vercel AI Gateway",
 		"mistralProvider": "Mistral",
 		"mistralApiKeyLabel": "Chave de API:",
 		"mistralApiKeyPlaceholder": "Digite sua chave de API da Mistral",
@@ -113,6 +116,7 @@
 			"modelDimensionRequired": "A dimensão do modelo é obrigatória",
 			"geminiApiKeyRequired": "A chave de API do Gemini é obrigatória",
 			"mistralApiKeyRequired": "A chave de API Mistral é obrigatória",
+			"vercelAiGatewayApiKeyRequired": "A chave de API do Vercel AI Gateway é obrigatória",
 			"ollamaBaseUrlRequired": "A URL base do Ollama é obrigatória",
 			"baseUrlRequired": "A URL base é obrigatória",
 			"modelDimensionMinValue": "A dimensão do modelo deve ser maior que 0"
@@ -233,6 +237,8 @@
 		"awsCustomArnDesc": "Certifique-se de que a região no ARN corresponde à região AWS selecionada acima.",
 		"openRouterApiKey": "Chave de API OpenRouter",
 		"getOpenRouterApiKey": "Obter chave de API OpenRouter",
+		"vercelAiGatewayApiKey": "Chave API do Vercel AI Gateway",
+		"getVercelAiGatewayApiKey": "Obter chave API do Vercel AI Gateway",
 		"apiKeyStorageNotice": "As chaves de API são armazenadas com segurança no Armazenamento Secreto do VSCode",
 		"glamaApiKey": "Chave de API Glama",
 		"getGlamaApiKey": "Obter chave de API Glama",
@@ -269,6 +275,8 @@
 		"getChutesApiKey": "Obter chave de API Chutes",
 		"fireworksApiKey": "Chave de API Fireworks",
 		"getFireworksApiKey": "Obter chave de API Fireworks",
+		"featherlessApiKey": "Chave de API Featherless",
+		"getFeatherlessApiKey": "Obter chave de API Featherless",
 		"ioIntelligenceApiKey": "Chave de API IO Intelligence",
 		"ioIntelligenceApiKeyPlaceholder": "Insira sua chave de API da IO Intelligence",
 		"getIoIntelligenceApiKey": "Obter chave de API IO Intelligence",
@@ -721,6 +729,21 @@
 		"ASSISTANT_MESSAGE_PARSER": {
 			"name": "Usar o novo parser de mensagens",
 			"description": "Ativa o parser de mensagens em streaming experimental que acelera respostas longas ao processar as mensagens de forma mais eficiente."
+		},
+		"NEW_TASK_REQUIRE_TODOS": {
+			"name": "Exigir lista de 'todos' para novas tarefas",
+			"description": "Quando ativado, a ferramenta new_task exigirá que um parâmetro todos seja fornecido. Isso garante que todas as novas tarefas comecem com uma lista clara de objetivos. Quando desativado (padrão), o parâmetro todos permanece opcional para compatibilidade com versões anteriores."
+		},
+		"IMAGE_GENERATION": {
+			"name": "Habilitar geração de imagens com IA",
+			"description": "Quando habilitado, Roo pode gerar imagens a partir de prompts de texto usando os modelos de geração de imagens do OpenRouter. Requer uma chave de API do OpenRouter configurada.",
+			"openRouterApiKeyLabel": "Chave de API do OpenRouter",
+			"openRouterApiKeyPlaceholder": "Digite sua chave de API do OpenRouter",
+			"getApiKeyText": "Obtenha sua chave de API de",
+			"modelSelectionLabel": "Modelo de Geração de Imagens",
+			"modelSelectionDescription": "Selecione o modelo para geração de imagens",
+			"warningMissingKey": "⚠️ A chave de API do OpenRouter é necessária para geração de imagens. Configure-a acima.",
+			"successConfigured": "✓ A geração de imagens está configurada e pronta para uso"
 		}
 	},
 	"promptCaching": {
@@ -793,7 +816,8 @@
 		"modelAvailability": "O ID do modelo ({{modelId}}) que você forneceu não está disponível. Por favor, escolha outro modelo.",
 		"providerNotAllowed": "O provedor '{{provider}}' não é permitido pela sua organização",
 		"modelNotAllowed": "O modelo '{{model}}' não é permitido para o provedor '{{provider}}' pela sua organização",
-		"profileInvalid": "Este perfil contém um provedor ou modelo que não é permitido pela sua organização"
+		"profileInvalid": "Este perfil contém um provedor ou modelo que não é permitido pela sua organização",
+		"qwenCodeOauthPath": "Você deve fornecer um caminho válido de credenciais OAuth"
 	},
 	"placeholders": {
 		"apiKey": "Digite a chave API...",

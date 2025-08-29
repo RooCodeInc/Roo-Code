@@ -178,6 +178,7 @@ export const SECRET_STATE_KEYS = [
 	"openAiNativeApiKey",
 	"cerebrasApiKey",
 	"deepSeekApiKey",
+	"doubaoApiKey",
 	"moonshotApiKey",
 	"mistralApiKey",
 	"unboundApiKey",
@@ -191,10 +192,14 @@ export const SECRET_STATE_KEYS = [
 	"codebaseIndexOpenAiCompatibleApiKey",
 	"codebaseIndexGeminiApiKey",
 	"codebaseIndexMistralApiKey",
+	"codebaseIndexVercelAiGatewayApiKey",
 	"huggingFaceApiKey",
 	"sambaNovaApiKey",
+	"zaiApiKey",
 	"fireworksApiKey",
+	"featherlessApiKey",
 	"ioIntelligenceApiKey",
+	"vercelAiGatewayApiKey",
 ] as const satisfies readonly (keyof ProviderSettings)[]
 export type SecretState = Pick<ProviderSettings, (typeof SECRET_STATE_KEYS)[number]>
 

@@ -100,7 +100,6 @@ vitest.mock("../../../i18n", () => ({
 // Import after mocks are set up
 import { RooHandler } from "../roo"
 import { CloudService } from "@roo-code/cloud"
-import { t } from "../../../i18n"
 
 describe("RooHandler", () => {
 	let handler: RooHandler
@@ -115,7 +114,7 @@ describe("RooHandler", () => {
 
 	beforeEach(() => {
 		mockOptions = {
-			apiModelId: "roo/sonic",
+			apiModelId: "xai/grok-code-fast-1",
 		}
 		// Set up CloudService mocks for successful authentication
 		mockHasInstanceFn.mockReturnValue(true)
@@ -131,21 +130,25 @@ describe("RooHandler", () => {
 			expect(handler.getModel().id).toBe(mockOptions.apiModelId)
 		})
 
-		it("should throw error if CloudService is not available", () => {
+		it("should not throw error if CloudService is not available", () => {
 			mockHasInstanceFn.mockReturnValue(false)
 			expect(() => {
 				new RooHandler(mockOptions)
-			}).toThrow("Authentication required for Roo Code Cloud")
-			expect(t).toHaveBeenCalledWith("common:errors.roo.authenticationRequired")
+			}).not.toThrow()
+			// Constructor should succeed even without CloudService
+			const handler = new RooHandler(mockOptions)
+			expect(handler).toBeInstanceOf(RooHandler)
 		})
 
-		it("should throw error if session token is not available", () => {
+		it("should not throw error if session token is not available", () => {
 			mockHasInstanceFn.mockReturnValue(true)
 			mockGetSessionTokenFn.mockReturnValue(null)
 			expect(() => {
 				new RooHandler(mockOptions)
-			}).toThrow("Authentication required for Roo Code Cloud")
-			expect(t).toHaveBeenCalledWith("common:errors.roo.authenticationRequired")
+			}).not.toThrow()
+			// Constructor should succeed even without session token
+			const handler = new RooHandler(mockOptions)
+			expect(handler).toBeInstanceOf(RooHandler)
 		})
 
 		it("should initialize with default model if no model specified", () => {
@@ -257,6 +260,7 @@ describe("RooHandler", () => {
 						expect.objectContaining({ role: "user", content: "Second message" }),
 					]),
 				}),
+				undefined,
 			)
 		})
 	})
@@ -308,8 +312,8 @@ describe("RooHandler", () => {
 			const modelInfo = handler.getModel()
 			expect(modelInfo.id).toBe(mockOptions.apiModelId)
 			expect(modelInfo.info).toBeDefined()
-			// roo/sonic is a valid model in rooModels
-			expect(modelInfo.info).toBe(rooModels["roo/sonic"])
+			// xai/grok-code-fast-1 is a valid model in rooModels
+			expect(modelInfo.info).toBe(rooModels["xai/grok-code-fast-1"])
 		})
 
 		it("should return default model when no model specified", () => {
@@ -328,10 +332,10 @@ describe("RooHandler", () => {
 			expect(modelInfo.id).toBe("unknown-model-id")
 			expect(modelInfo.info).toBeDefined()
 			// Should return fallback info for unknown models
-			expect(modelInfo.info.maxTokens).toBe(8192)
+			expect(modelInfo.info.maxTokens).toBe(16_384)
 			expect(modelInfo.info.contextWindow).toBe(262_144)
 			expect(modelInfo.info.supportsImages).toBe(false)
-			expect(modelInfo.info.supportsPromptCache).toBe(false)
+			expect(modelInfo.info.supportsPromptCache).toBe(true)
 			expect(modelInfo.info.inputPrice).toBe(0)
 			expect(modelInfo.info.outputPrice).toBe(0)
 		})
@@ -350,7 +354,7 @@ describe("RooHandler", () => {
 	})
 
 	describe("temperature and model configuration", () => {
-		it("should use default temperature of 0.7", async () => {
+		it("should omit temperature when not explicitly set", async () => {
 			handler = new RooHandler(mockOptions)
 			const stream = handler.createMessage(systemPrompt, messages)
 			for await (const _chunk of stream) {
@@ -358,9 +362,10 @@ describe("RooHandler", () => {
 			}
 
 			expect(mockCreate).toHaveBeenCalledWith(
-				expect.objectContaining({
-					temperature: 0.7,
+				expect.not.objectContaining({
+					temperature: expect.anything(),
 				}),
+				undefined,
 			)
 		})
 
@@ -378,6 +383,7 @@ describe("RooHandler", () => {
 				expect.objectContaining({
 					temperature: 0.9,
 				}),
+				undefined,
 			)
 		})
 
@@ -400,7 +406,7 @@ describe("RooHandler", () => {
 			expect(mockGetSessionTokenFn).toHaveBeenCalled()
 		})
 
-		it("should handle undefined auth service", () => {
+		it("should handle undefined auth service gracefully", () => {
 			mockHasInstanceFn.mockReturnValue(true)
 			// Mock CloudService with undefined authService
 			const originalGetter = Object.getOwnPropertyDescriptor(CloudService, "instance")?.get
@@ -413,7 +419,10 @@ describe("RooHandler", () => {
 
 				expect(() => {
 					new RooHandler(mockOptions)
-				}).toThrow("Authentication required for Roo Code Cloud")
+				}).not.toThrow()
+				// Constructor should succeed even with undefined auth service
+				const handler = new RooHandler(mockOptions)
+				expect(handler).toBeInstanceOf(RooHandler)
 			} finally {
 				// Always restore original getter, even if test fails
 				if (originalGetter) {
@@ -425,12 +434,15 @@ describe("RooHandler", () => {
 			}
 		})
 
-		it("should handle empty session token", () => {
+		it("should handle empty session token gracefully", () => {
 			mockGetSessionTokenFn.mockReturnValue("")
 
 			expect(() => {
 				new RooHandler(mockOptions)
-			}).toThrow("Authentication required for Roo Code Cloud")
+			}).not.toThrow()
+			// Constructor should succeed even with empty session token
+			const handler = new RooHandler(mockOptions)
+			expect(handler).toBeInstanceOf(RooHandler)
 		})
 	})
 })

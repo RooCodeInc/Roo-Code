@@ -29,16 +29,17 @@ import {
 	type TerminalActionId,
 	type TerminalActionPromptType,
 	type HistoryItem,
-	type ClineAsk,
+	type CloudUserInfo,
 	RooCodeEventName,
 	requestyDefaultModelId,
 	openRouterDefaultModelId,
 	glamaDefaultModelId,
 	DEFAULT_TERMINAL_OUTPUT_CHARACTER_LIMIT,
 	DEFAULT_WRITE_DELAY_MS,
+	ORGANIZATION_ALLOW_ALL,
 } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
-import { type CloudUserInfo, CloudService, ORGANIZATION_ALLOW_ALL, getRooCodeApiUrl } from "@roo-code/cloud"
+import { CloudService, getRooCodeApiUrl } from "@roo-code/cloud"
 
 import { Package } from "../../shared/package"
 import { findLast } from "../../shared/array"
@@ -120,7 +121,7 @@ export class ClineProvider
 
 	public isViewLaunched = false
 	public settingsImportedAt?: number
-	public readonly latestAnnouncementId = "jul-29-2025-3-25-0" // Update for v3.25.0 announcement
+	public readonly latestAnnouncementId = "aug-25-2025-grok-code-fast" // Update for Grok Code Fast announcement
 	public readonly providerSettingsManager: ProviderSettingsManager
 	public readonly customModesManager: CustomModesManager
 
@@ -757,7 +758,12 @@ export class ClineProvider
 		options: Partial<
 			Pick<
 				TaskOptions,
-				"enableDiff" | "enableCheckpoints" | "fuzzyMatchThreshold" | "consecutiveMistakeLimit" | "experiments"
+				| "enableDiff"
+				| "enableCheckpoints"
+				| "fuzzyMatchThreshold"
+				| "consecutiveMistakeLimit"
+				| "experiments"
+				| "initialTodos"
 			>
 		> = {},
 	) {
@@ -791,6 +797,7 @@ export class ClineProvider
 			taskNumber: this.clineStack.length + 1,
 			onCreated: this.taskCreationCallback,
 			enableTaskBridge: isRemoteControlEnabled(cloudUserInfo, remoteControlEnabled),
+			initialTodos: options.initialTodos,
 			...options,
 		})
 
@@ -1553,7 +1560,8 @@ export class ClineProvider
 		this.postMessageToWebview({ type: "state", state })
 
 		// Check MDM compliance and send user to account tab if not compliant
-		if (!this.checkMdmCompliance()) {
+		// Only redirect if there's an actual MDM policy requiring authentication
+		if (this.mdmService?.requiresCloudAuth() && !this.checkMdmCompliance()) {
 			await this.postMessageToWebview({ type: "action", action: "accountButtonClicked" })
 		}
 	}
@@ -1790,6 +1798,7 @@ export class ClineProvider
 				? (taskHistory || []).find((item: HistoryItem) => item.id === this.getCurrentTask()?.taskId)
 				: undefined,
 			clineMessages: this.getCurrentTask()?.clineMessages || [],
+			currentTaskTodos: this.getCurrentTask()?.todoList || [],
 			taskHistory: (taskHistory || [])
 				.filter((item: HistoryItem) => item.ts && item.task)
 				.sort((a: HistoryItem, b: HistoryItem) => b.ts - a.ts),
@@ -1842,7 +1851,7 @@ export class ClineProvider
 			telemetrySetting,
 			telemetryKey,
 			machineId,
-			showRooIgnoredFiles: showRooIgnoredFiles ?? true,
+			showRooIgnoredFiles: showRooIgnoredFiles ?? false,
 			language: language ?? formatLanguage(vscode.env.language),
 			renderContext: this.renderContext,
 			maxReadFileLine: maxReadFileLine ?? -1,
@@ -1872,7 +1881,9 @@ export class ClineProvider
 				codebaseIndexSearchMaxResults: codebaseIndexConfig?.codebaseIndexSearchMaxResults,
 				codebaseIndexSearchMinScore: codebaseIndexConfig?.codebaseIndexSearchMinScore,
 			},
-			mdmCompliant: this.checkMdmCompliance(),
+			// Only set mdmCompliant if there's an actual MDM policy
+			// undefined means no MDM policy, true means compliant, false means non-compliant
+			mdmCompliant: this.mdmService?.requiresCloudAuth() ? this.checkMdmCompliance() : undefined,
 			profileThresholds: profileThresholds ?? {},
 			cloudApiUrl: getRooCodeApiUrl(),
 			hasOpenedModeSelector: this.getGlobalState("hasOpenedModeSelector") ?? false,
@@ -2033,7 +2044,7 @@ export class ClineProvider
 			openRouterUseMiddleOutTransform: stateValues.openRouterUseMiddleOutTransform ?? true,
 			browserToolEnabled: stateValues.browserToolEnabled ?? true,
 			telemetrySetting: stateValues.telemetrySetting || "unset",
-			showRooIgnoredFiles: stateValues.showRooIgnoredFiles ?? true,
+			showRooIgnoredFiles: stateValues.showRooIgnoredFiles ?? false,
 			maxReadFileLine: stateValues.maxReadFileLine ?? -1,
 			maxImageFileSize: stateValues.maxImageFileSize ?? 5,
 			maxTotalImageSize: stateValues.maxTotalImageSize ?? 20,
@@ -2172,7 +2183,7 @@ export class ClineProvider
 
 	/**
 	 * Check if the current state is compliant with MDM policy
-	 * @returns true if compliant, false if blocked
+	 * @returns true if compliant or no MDM policy exists, false if MDM policy exists and user is non-compliant
 	 */
 	public checkMdmCompliance(): boolean {
 		if (!this.mdmService) {

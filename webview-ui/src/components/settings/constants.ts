@@ -10,6 +10,7 @@ import {
 	geminiModels,
 	mistralModels,
 	openAiNativeModels,
+	qwenCodeModels,
 	vertexModels,
 	xaiModels,
 	groqModels,
@@ -19,6 +20,7 @@ import {
 	internationalZAiModels,
 	fireworksModels,
 	rooModels,
+	featherlessModels,
 } from "@roo-code/types"
 
 export const MODELS_BY_PROVIDER: Partial<Record<ProviderName, Record<string, ModelInfo>>> = {
@@ -32,6 +34,7 @@ export const MODELS_BY_PROVIDER: Partial<Record<ProviderName, Record<string, Mod
 	gemini: geminiModels,
 	mistral: mistralModels,
 	"openai-native": openAiNativeModels,
+	"qwen-code": qwenCodeModels,
 	vertex: vertexModels,
 	xai: xaiModels,
 	groq: groqModels,
@@ -40,6 +43,7 @@ export const MODELS_BY_PROVIDER: Partial<Record<ProviderName, Record<string, Mod
 	zai: internationalZAiModels,
 	fireworks: fireworksModels,
 	roo: rooModels,
+	featherless: featherlessModels,
 }
 
 export const PROVIDERS = [
@@ -53,6 +57,7 @@ export const PROVIDERS = [
 	{ value: "moonshot", label: "Moonshot" },
 	{ value: "openai-native", label: "OpenAI" },
 	{ value: "openai", label: "OpenAI Compatible" },
+	{ value: "qwen-code", label: "Qwen Code" },
 	{ value: "vertex", label: "GCP Vertex AI" },
 	{ value: "bedrock", label: "Amazon Bedrock" },
 	{ value: "glama", label: "Glama" },
@@ -72,6 +77,8 @@ export const PROVIDERS = [
 	{ value: "sambanova", label: "SambaNova" },
 	{ value: "zai", label: "Z AI" },
 	{ value: "fireworks", label: "Fireworks AI" },
+	{ value: "featherless", label: "Featherless AI" },
 	{ value: "io-intelligence", label: "IO Intelligence" },
 	{ value: "roo", label: "Roo Code Cloud" },
+	{ value: "vercel-ai-gateway", label: "Vercel AI Gateway" },
 ].sort((a, b) => a.label.localeCompare(b.label))

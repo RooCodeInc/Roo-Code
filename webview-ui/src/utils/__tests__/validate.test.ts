@@ -1,6 +1,5 @@
-import type { ProviderSettings } from "@roo-code/types"
+import type { ProviderSettings, OrganizationAllowList } from "@roo-code/types"
 
-import type { OrganizationAllowList } from "@roo/cloud"
 import { RouterModels } from "@roo/api"
 
 import { getModelValidationError, validateApiConfigurationExcludingModelErrors } from "../validate"
@@ -42,6 +41,7 @@ describe("Model Validation Functions", () => {
 		ollama: {},
 		lmstudio: {},
 		"io-intelligence": {},
+		"vercel-ai-gateway": {},
 	}
 
 	const allowAllOrganization: OrganizationAllowList = {

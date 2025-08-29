@@ -15,3 +15,7 @@ export const tarsDefaultModelInfo: ModelInfo = {
 	description:
 		"Claude 3.5 Haiku - Fast and cost-effective with excellent coding capabilities. Ideal for development tasks with 200k context window",
 }
+
+export const tarsModels = {
+	[tarsDefaultModelId]: tarsDefaultModelInfo,
+} as const satisfies Record<string, ModelInfo>

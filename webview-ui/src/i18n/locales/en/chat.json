@@ -182,6 +182,10 @@
 		"wantsToEditOutsideWorkspace": "Roo wants to edit this file outside of the workspace:",
 		"wantsToEditProtected": "Roo wants to edit a protected configuration file:",
 		"wantsToApplyBatchChanges": "Roo wants to apply changes to multiple files:",
+		"wantsToGenerateImage": "Roo wants to generate an image:",
+		"wantsToGenerateImageOutsideWorkspace": "Roo wants to generate an image outside of the workspace:",
+		"wantsToGenerateImageProtected": "Roo wants to generate an image in a protected location:",
+		"didGenerateImage": "Roo generated an image:",
 		"wantsToCreate": "Roo wants to create a new file:",
 		"wantsToSearchReplace": "Roo wants to search and replace in this file:",
 		"didSearchReplace": "Roo performed search and replace on this file:",
@@ -274,13 +278,12 @@
 	},
 	"announcement": {
 		"title": "🎉 Roo Code {{version}} Released",
-		"description": "Roo Code {{version}} brings powerful new features and significant improvements to enhance your development workflow.",
-		"whatsNew": "What's New",
-		"feature1": "<bold>Message Queueing</bold>: Queue multiple messages while Roo is working, allowing you to continue planning your workflow without interruption.",
-		"feature2": "<bold>Custom Slash Commands</bold>: Create personalized slash commands for quick access to frequently used prompts and workflows, with full UI management.",
-		"feature3": "<bold>Enhanced Gemini Tools</bold>: New URL context and Google Search grounding capabilities provide Gemini models with real-time web information and enhanced research abilities.",
-		"hideButton": "Hide announcement",
-		"detailsDiscussLinks": "Get more details and discuss in <discordLink>Discord</discordLink> and <redditLink>Reddit</redditLink> 🚀"
+		"stealthModel": {
+			"feature": "The Sonic stealth model is now <bold>Grok Code Fast</bold>! This high-performance reasoning model is available as <code>grok-code-fast-1</code> under the <bold>xAI (Grok)</bold> provider.",
+			"note": "As a thank you for all the helpful feedback on Sonic, xAI is extending free access to <code>grok-code-fast-1</code> for another week through the <bold>Roo Code Cloud</bold> provider.",
+			"connectButton": "Connect to Roo Code Cloud",
+			"selectModel": "Visit <settingsLink>Settings</settingsLink> to update your provider configuration."
+		}
 	},
 	"reasoning": {
 		"thinking": "Thinking",
@@ -362,7 +365,8 @@
 	"slashCommands": {
 		"tooltip": "Manage slash commands",
 		"title": "Slash Commands",
-		"description": "Create custom slash commands for quick access to frequently used prompts and workflows. <DocsLink>Docs</DocsLink>",
+		"description": "Use built-in slash commands or create custom ones for quick access to frequently used prompts and workflows. <DocsLink>Docs</DocsLink>",
+		"builtInCommands": "Built-in Commands",
 		"globalCommands": "Global Commands",
 		"workspaceCommands": "Workspace Commands",
 		"globalCommand": "Global command",

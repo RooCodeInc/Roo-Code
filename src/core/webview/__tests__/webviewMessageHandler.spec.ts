@@ -180,6 +180,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 		expect(mockGetModels).toHaveBeenCalledWith({ provider: "tars", apiKey: "tars-key" })
 		expect(mockGetModels).toHaveBeenCalledWith({ provider: "glama" })
 		expect(mockGetModels).toHaveBeenCalledWith({ provider: "unbound", apiKey: "unbound-key" })
+		expect(mockGetModels).toHaveBeenCalledWith({ provider: "vercel-ai-gateway" })
 		expect(mockGetModels).toHaveBeenCalledWith({
 			provider: "litellm",
 			apiKey: "litellm-key",
@@ -198,6 +199,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 				litellm: mockModels,
 				ollama: {},
 				lmstudio: {},
+				"vercel-ai-gateway": mockModels,
 			},
 		})
 	})
@@ -287,6 +289,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 				litellm: {},
 				ollama: {},
 				lmstudio: {},
+				"vercel-ai-gateway": mockModels,
 			},
 		})
 	})
@@ -308,6 +311,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 			.mockResolvedValueOnce(mockModels) // tars
 			.mockResolvedValueOnce(mockModels) // glama
 			.mockRejectedValueOnce(new Error("Unbound API error")) // unbound
+			.mockResolvedValueOnce(mockModels) // vercel-ai-gateway
 			.mockRejectedValueOnce(new Error("LiteLLM connection failed")) // litellm
 
 		await webviewMessageHandler(mockClineProvider, {
@@ -326,6 +330,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 				litellm: {},
 				ollama: {},
 				lmstudio: {},
+				"vercel-ai-gateway": mockModels,
 			},
 		})
 
@@ -360,6 +365,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 			.mockRejectedValueOnce(new Error("TARS API error")) // tars
 			.mockRejectedValueOnce(new Error("Glama API error")) // glama
 			.mockRejectedValueOnce(new Error("Unbound API error")) // unbound
+			.mockRejectedValueOnce(new Error("Vercel AI Gateway error")) // vercel-ai-gateway
 			.mockRejectedValueOnce(new Error("LiteLLM connection failed")) // litellm
 
 		await webviewMessageHandler(mockClineProvider, {
