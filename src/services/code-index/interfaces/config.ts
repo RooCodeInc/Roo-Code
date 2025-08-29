@@ -19,6 +19,9 @@ export interface CodeIndexConfig {
 	qdrantApiKey?: string
 	searchMinScore?: number
 	searchMaxResults?: number
+	parsingConcurrency?: number
+	maxPendingBatches?: number
+	batchProcessingConcurrency?: number
 }
 
 /**

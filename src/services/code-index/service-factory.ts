@@ -156,7 +156,12 @@ export class CodeIndexServiceFactory {
 		parser: ICodeParser,
 		ignoreInstance: Ignore,
 	): DirectoryScanner {
-		return new DirectoryScanner(embedder, vectorStore, parser, this.cacheManager, ignoreInstance)
+		const config = this.configManager.getConfig()
+		return new DirectoryScanner(embedder, vectorStore, parser, this.cacheManager, ignoreInstance, {
+			parsingConcurrency: config.parsingConcurrency,
+			maxPendingBatches: config.maxPendingBatches,
+			batchProcessingConcurrency: config.batchProcessingConcurrency,
+		})
 	}
 
 	/**
