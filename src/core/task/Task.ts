@@ -1479,8 +1479,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 	}
 
-	public async abortTask(isAbandoned = false) {
-		// Aborting task
+/**
+	 * Aborts the current task and optionally saves messages.
+	 *
+	 * @param isAbandoned - If true, marks the task as abandoned (no cleanup needed)
+	 * @param skipSave - If true, skips saving messages (used during user cancellation when messages are already saved)
+	 */
+	public async abortTask(isAbandoned = false, skipSave = false) {
+		console.log(`[subtasks] aborting task ${this.taskId}.${this.instanceId}`)
 
 		// Will stop any autonomously running promises.
 		if (isAbandoned) {
@@ -1496,13 +1502,92 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			console.error(`Error during task ${this.taskId}.${this.instanceId} disposal:`, error)
 			// Don't rethrow - we want abort to always succeed
 		}
-		// Save the countdown message in the automatic retry or other content.
-		try {
-			// Save the countdown message in the automatic retry or other content.
-			await this.saveClineMessages()
-		} catch (error) {
-			console.error(`Error saving messages during abort for task ${this.taskId}.${this.instanceId}:`, error)
+
+		// Only save messages if not skipping (e.g., during user cancellation where messages are already saved)
+		if (!skipSave) {
+			try {
+				// Save the countdown message in the automatic retry or other content.
+				await this.saveClineMessages()
+			} catch (error) {
+				console.error(`Error saving messages during abort for task ${this.taskId}.${this.instanceId}:`, error)
+			}
 		}
+	}
+
+	/**
+	 * Reset the task to a resumable state without recreating the instance.
+	 * This is used when canceling a task to avoid unnecessary rerenders.
+	 *
+	 * IMPORTANT: This method cleans up resources to prevent memory leaks
+	 * while preserving the task instance for resumption.
+	 */
+	public async resetToResumableState() {
+		console.log(`[subtasks] resetting task ${this.taskId}.${this.instanceId} to resumable state`)
+
+		// Reset abort flags
+		this.abort = false
+		this.abandoned = false
+
+		// Reset streaming state
+		this.isStreaming = false
+		this.isWaitingForFirstChunk = false
+		this.didFinishAbortingStream = true
+		this.didCompleteReadingStream = false
+
+		// Clear streaming content
+		this.currentStreamingContentIndex = 0
+		this.currentStreamingDidCheckpoint = false
+		this.assistantMessageContent = []
+		this.userMessageContent = []
+		this.userMessageContentReady = false
+		this.didRejectTool = false
+		this.didAlreadyUseTool = false
+		this.presentAssistantMessageLocked = false
+		this.presentAssistantMessageHasPendingUpdates = false
+
+		// Reset API state
+		this.consecutiveMistakeCount = 0
+
+		// Reset ask response state to allow new messages
+		this.askResponse = undefined
+		this.askResponseText = undefined
+		this.askResponseImages = undefined
+
+		// Reset parser if exists
+		if (this.assistantMessageParser) {
+			this.assistantMessageParser.reset()
+		}
+
+		// Only reset diff view if it's actively editing
+		// This avoids unnecessary operations when diff view is not in use
+		if (this.diffViewProvider && this.diffViewProvider.isEditing) {
+			await this.diffViewProvider.reset()
+		}
+
+		// Dispose of resources that could accumulate if tasks are repeatedly cancelled
+		// These will be recreated as needed when the task resumes
+		try {
+			// Close browser sessions to free memory and browser processes
+			if (this.urlContentFetcher) {
+				this.urlContentFetcher.closeBrowser()
+			}
+			if (this.browserSession) {
+				this.browserSession.closeBrowser()
+			}
+
+			// Release any terminals associated with this task
+			// They will be recreated if needed when the task resumes
+			if (this.terminalProcess) {
+				this.terminalProcess.abort()
+				this.terminalProcess = undefined
+			}
+		} catch (error) {
+			console.error(`Error disposing resources during resetToResumableState: ${error}`)
+			// Continue even if resource cleanup fails
+		}
+
+		// Keep messages and history intact for resumption
+		// The task is now ready to be resumed without recreation
 	}
 
 	// Used when a sub-task is launched and the parent task is waiting for it to
@@ -1574,7 +1659,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			const currentUserContent = currentItem.userContent
 			const currentIncludeFileDetails = currentItem.includeFileDetails
 
-			if (this.abort) {
+if (this.abort) {
 				throw new Error(`[RooCode#recursivelyMakeRooRequests] task ${this.taskId}.${this.instanceId} aborted`)
 			}
 
@@ -2699,6 +2784,45 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		} catch (error) {
 			console.error(`[Task#${this.taskId}] Error persisting GPT-5 metadata:`, error)
 			// Non-fatal error in metadata persistence
+		}
+	}
+
+	/**
+	 * Handles the resumption flow after a user cancels a task.
+	 * This method resets the task state, shows the resume prompt,
+	 * and continues with new user input if provided.
+	 *
+	 * @returns Promise<boolean> - true if the task should end, false to continue
+	 */
+	private async handleUserCancellationResume(): Promise<boolean> {
+		try {
+			// Reset the task to a resumable state
+			this.abort = false
+			await this.resetToResumableState()
+
+			// Show the resume prompt
+			const { response, text, images } = await this.ask("resume_task")
+
+			if (response === "messageResponse") {
+				await this.say("user_feedback", text, images)
+				// Continue with the new user input
+				const newUserContent: Anthropic.Messages.ContentBlockParam[] = []
+				if (text) {
+					newUserContent.push({ type: "text", text })
+				}
+				if (images && images.length > 0) {
+					newUserContent.push(...formatResponse.imageBlocks(images))
+				}
+				// Recursively continue with the new content
+				return await this.recursivelyMakeClineRequests(newUserContent)
+			}
+			// If not messageResponse, the task will end
+			return true
+		} catch (error) {
+			// If there's an error during resumption, log it and end the task
+			console.error(`Error during user cancellation resume: ${error}`)
+			// Re-throw to maintain existing error handling behavior
+			throw error
 		}
 	}
 
