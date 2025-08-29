@@ -599,7 +599,7 @@ export class McpHub {
 	private createPlaceholderConnection(
 		name: string,
 		config: z.infer<typeof ServerConfigSchema>,
-		source: "global" | "project",
+		source: "global" | "project" | "runtime",
 		reason: DisableReason,
 	): DisconnectedMcpConnection {
 		return {
@@ -900,10 +900,10 @@ export class McpHub {
 	/**
 	 * Helper method to find a connection by server name and source
 	 * @param serverName The name of the server to find
-	 * @param source Optional source to filter by (global or project)
+	 * @param source Optional source to filter by (global, project, or runtime)
 	 * @returns The matching connection or undefined if not found
 	 */
-	private findConnection(serverName: string, source?: "global" | "project"): McpConnection | undefined {
+	private findConnection(serverName: string, source?: "global" | "project" | "runtime"): McpConnection | undefined {
 		// If source is specified, only find servers with that source
 		if (source !== undefined) {
 			return this.connections.find((conn) => conn.server.name === serverName && conn.server.source === source)
@@ -922,7 +922,7 @@ export class McpHub {
 		)
 	}
 
-	private async fetchToolsList(serverName: string, source?: "global" | "project"): Promise<McpTool[]> {
+	private async fetchToolsList(serverName: string, source?: "global" | "project" | "runtime"): Promise<McpTool[]> {
 		try {
 			// Use the helper method to find the connection
 			const connection = this.findConnection(serverName, source)
@@ -979,7 +979,10 @@ export class McpHub {
 		}
 	}
 
-	private async fetchResourcesList(serverName: string, source?: "global" | "project"): Promise<McpResource[]> {
+	private async fetchResourcesList(
+		serverName: string,
+		source?: "global" | "project" | "runtime",
+	): Promise<McpResource[]> {
 		try {
 			const connection = this.findConnection(serverName, source)
 			if (!connection || connection.type !== "connected") {
@@ -995,7 +998,7 @@ export class McpHub {
 
 	private async fetchResourceTemplatesList(
 		serverName: string,
-		source?: "global" | "project",
+		source?: "global" | "project" | "runtime",
 	): Promise<McpResourceTemplate[]> {
 		try {
 			const connection = this.findConnection(serverName, source)
