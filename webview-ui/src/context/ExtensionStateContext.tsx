@@ -151,6 +151,8 @@ export interface ExtensionStateContextType extends ExtensionState {
 	setMaxDiagnosticMessages: (value: number) => void
 	includeTaskHistoryInEnhance?: boolean
 	setIncludeTaskHistoryInEnhance: (value: boolean) => void
+	uiFontSize?: number
+	setUiFontSize: (value: number) => void
 }
 
 export const ExtensionStateContext = createContext<ExtensionStateContextType | undefined>(undefined)
@@ -239,6 +241,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		autoCondenseContext: true,
 		autoCondenseContextPercent: 100,
 		profileThresholds: {},
+		uiFontSize: 100, // Default UI font size as percentage (100 = 100% = normal size)
 		codebaseIndexConfig: {
 			codebaseIndexEnabled: true,
 			codebaseIndexQdrantUrl: "http://localhost:6333",
@@ -271,6 +274,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		global: {},
 	})
 	const [includeTaskHistoryInEnhance, setIncludeTaskHistoryInEnhance] = useState(true)
+	const [, setUiFontSizeState] = useState(100) // Default to 100%
 
 	const setListApiConfigMeta = useCallback(
 		(value: ProviderSettingsEntry[]) => setState((prevState) => ({ ...prevState, listApiConfigMeta: value })),
@@ -307,6 +311,10 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 					// Update includeTaskHistoryInEnhance if present in state message
 					if ((newState as any).includeTaskHistoryInEnhance !== undefined) {
 						setIncludeTaskHistoryInEnhance((newState as any).includeTaskHistoryInEnhance)
+					}
+					// Update uiFontSize if present in state message
+					if (newState.uiFontSize !== undefined) {
+						setUiFontSizeState(newState.uiFontSize)
 					}
 					// Handle marketplace data if present in state message
 					if (newState.marketplaceItems !== undefined) {
@@ -524,6 +532,11 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		},
 		includeTaskHistoryInEnhance,
 		setIncludeTaskHistoryInEnhance,
+		uiFontSize: state.uiFontSize ?? 100,
+		setUiFontSize: (value) => {
+			setState((prevState) => ({ ...prevState, uiFontSize: value }))
+			setUiFontSizeState(value)
+		},
 	}
 
 	return <ExtensionStateContext.Provider value={contextValue}>{children}</ExtensionStateContext.Provider>

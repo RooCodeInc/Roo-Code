@@ -2663,5 +2663,12 @@ export const webviewMessageHandler = async (
 			vscode.window.showWarningMessage(t("common:mdm.info.organization_requires_auth"))
 			break
 		}
+		case "uiFontSize": {
+			// Store the UI font size preference
+			const fontSize = message.value ?? 100
+			await updateGlobalState("uiFontSize", fontSize)
+			await provider.postStateToWebview()
+			break
+		}
 	}
 }

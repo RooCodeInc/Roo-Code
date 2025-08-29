@@ -326,6 +326,7 @@ export type ExtensionState = Pick<
 	marketplaceInstalledMetadata?: { project: Record<string, any>; global: Record<string, any> }
 	profileThresholds: Record<string, number>
 	hasOpenedModeSelector: boolean
+	uiFontSize?: number // UI font size as percentage (50-200%)
 }
 
 export interface ClineSayTool {

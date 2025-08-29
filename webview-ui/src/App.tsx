@@ -74,6 +74,8 @@ const App = () => {
 		cloudApiUrl,
 		renderContext,
 		mdmCompliant,
+		uiFontSize,
+		setUiFontSize,
 	} = useExtensionState()
 
 	// Create a persistent state manager
@@ -225,6 +227,43 @@ const App = () => {
 			telemetryClient.capture(TelemetryEventName.MARKETPLACE_TAB_VIEWED)
 		}
 	}, [tab])
+
+	// Handle Ctrl + Mouse Wheel for font size adjustment
+	useEffect(() => {
+		const handleWheel = (e: WheelEvent) => {
+			// Check if Ctrl key is pressed (or Cmd on Mac)
+			if (e.ctrlKey || e.metaKey) {
+				e.preventDefault() // Prevent default browser zoom
+
+				const currentSize = uiFontSize || 100
+				const delta = e.deltaY > 0 ? -5 : 5 // Decrease on scroll down, increase on scroll up
+				const newSize = Math.min(200, Math.max(50, currentSize + delta)) // Clamp between 50% and 200%
+
+				if (newSize !== currentSize) {
+					setUiFontSize(newSize)
+					// Send message to extension to persist the setting
+					vscode.postMessage({ type: "uiFontSize", value: newSize })
+				}
+			}
+		}
+
+		// Add event listener with passive: false to allow preventDefault
+		window.addEventListener("wheel", handleWheel, { passive: false })
+
+		return () => {
+			window.removeEventListener("wheel", handleWheel)
+		}
+	}, [uiFontSize, setUiFontSize])
+
+	// Apply font size to the document
+	useEffect(() => {
+		if (uiFontSize) {
+			// Apply the font size as a CSS variable that can be used throughout the app
+			document.documentElement.style.setProperty("--ui-font-scale", `${uiFontSize / 100}`)
+			// Also apply a direct font-size to the body for immediate effect
+			document.documentElement.style.fontSize = `${uiFontSize}%`
+		}
+	}, [uiFontSize])
 
 	if (!didHydrateState) {
 		return null

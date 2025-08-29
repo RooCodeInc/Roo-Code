@@ -148,6 +148,7 @@ export const globalSettingsSchema = z.object({
 	hasOpenedModeSelector: z.boolean().optional(),
 	lastModeExportPath: z.string().optional(),
 	lastModeImportPath: z.string().optional(),
+	uiFontSize: z.number().min(50).max(200).optional(), // UI font size as percentage (50-200%)
 })
 
 export type GlobalSettings = z.infer<typeof globalSettingsSchema>
