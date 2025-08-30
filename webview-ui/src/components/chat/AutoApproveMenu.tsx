@@ -185,7 +185,14 @@ const AutoApproveMenu = ({ style }: AutoApproveMenuProps) => {
 					cursor: "pointer",
 				}}
 				onClick={toggleExpanded}>
-				<div onClick={(e) => e.stopPropagation()}>
+				<div
+					onClick={(e) => {
+						e.stopPropagation()
+						// If no options are selected, clicking the checkbox area should expand the menu
+						if (!hasEnabledOptions) {
+							setIsExpanded(true)
+						}
+					}}>
 					<StandardTooltip
 						content={!hasEnabledOptions ? t("chat:autoApprove.selectOptionsFirst") : undefined}>
 						<VSCodeCheckbox
@@ -202,7 +209,7 @@ const AutoApproveMenu = ({ style }: AutoApproveMenuProps) => {
 									setAutoApprovalEnabled(newValue)
 									vscode.postMessage({ type: "autoApprovalEnabled", bool: newValue })
 								}
-								// If no options enabled, do nothing
+								// If no options enabled, the onClick handler above will expand the menu
 							}}
 						/>
 					</StandardTooltip>
