@@ -91,6 +91,10 @@ const extensions = [
 	"erb",
 	// Visual Basic .NET
 	"vb",
+	// OpenEdge ABL
+	"p",
+	"i",
+	"w",
 ].map((e) => `.${e}`)
 
 export { extensions }
