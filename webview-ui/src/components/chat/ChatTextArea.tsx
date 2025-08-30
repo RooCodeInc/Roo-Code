@@ -1,7 +1,7 @@
 import React, { forwardRef, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { useEvent } from "react-use"
 import DynamicTextArea from "react-textarea-autosize"
-import { VolumeX, Image, WandSparkles, SendHorizontal } from "lucide-react"
+import { VolumeX, Image, WandSparkles, SendHorizontal, Server } from "lucide-react"
 
 import { mentionRegex, mentionRegexGlobal, commandRegexGlobal, unescapeSpaces } from "@roo/context-mentions"
 import { WebviewMessage } from "@roo/WebviewMessage"
@@ -82,6 +82,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			taskHistory,
 			clineMessages,
 			commands,
+			mcpServers,
 		} = useExtensionState()
 
 		// Find the ID and display text for the currently selected API configuration.
@@ -1194,6 +1195,44 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 							</StandardTooltip>
 						)}
 						<SlashCommandsPopover />
+						{mcpServers && mcpServers.length > 0 && (
+							<StandardTooltip content={t("chat:mcpServers")}>
+								<button
+									aria-label={t("chat:mcpServers")}
+									onClick={() => {
+										window.postMessage(
+											{
+												type: "action",
+												action: "mcpButtonClicked",
+											},
+											"*",
+										)
+									}}
+									className={cn(
+										"relative inline-flex items-center justify-center",
+										"bg-transparent border-none p-1.5",
+										"rounded-md min-w-[28px] min-h-[28px]",
+										"text-vscode-foreground opacity-85",
+										"transition-all duration-150",
+										"hover:opacity-100 hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.15)]",
+										"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
+										"active:bg-[rgba(255,255,255,0.1)]",
+										"cursor-pointer",
+									)}>
+									<Server className="w-4 h-4" />
+									{mcpServers.some(
+										(server) => server.status === "disconnected" && !server.disabled,
+									) && (
+										<span
+											className={cn(
+												"absolute top-1 right-1 w-1.5 h-1.5 rounded-full",
+												"bg-red-500",
+											)}
+										/>
+									)}
+								</button>
+							</StandardTooltip>
+						)}
 						<IndexingStatusBadge />
 						<StandardTooltip content={t("chat:addImages")}>
 							<button
