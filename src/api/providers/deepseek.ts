@@ -9,14 +9,38 @@ import { OpenAiHandler } from "./openai"
 
 export class DeepSeekHandler extends OpenAiHandler {
 	constructor(options: ApiHandlerOptions) {
+		// Validate API key before passing to parent constructor
+		const apiKey = options.deepSeekApiKey ?? "not-provided"
+		DeepSeekHandler.validateApiKey(apiKey)
+
 		super({
 			...options,
-			openAiApiKey: options.deepSeekApiKey ?? "not-provided",
+			openAiApiKey: apiKey,
 			openAiModelId: options.apiModelId ?? deepSeekDefaultModelId,
 			openAiBaseUrl: options.deepSeekBaseUrl ?? "https://api.deepseek.com",
 			openAiStreamingEnabled: true,
 			includeMaxTokens: true,
 		})
+	}
+
+	/**
+	 * Validates that the API key contains only ASCII characters.
+	 * Non-ASCII characters in API keys cause ByteString conversion errors.
+	 */
+	private static validateApiKey(apiKey: string): void {
+		if (apiKey && apiKey !== "not-provided") {
+			// Check for non-ASCII characters
+			for (let i = 0; i < apiKey.length; i++) {
+				const charCode = apiKey.charCodeAt(i)
+				if (charCode > 255) {
+					throw new Error(
+						`Invalid DeepSeek API key: contains non-ASCII character at position ${i + 1}. ` +
+							`API keys must contain only ASCII characters (letters, numbers, and standard symbols). ` +
+							`Please check your API key for any accidental non-ASCII characters or spaces.`,
+					)
+				}
+			}
+		}
 	}
 
 	override getModel() {

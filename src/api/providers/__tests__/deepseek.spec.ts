@@ -96,6 +96,60 @@ describe("DeepSeekHandler", () => {
 			expect(handler.getModel().id).toBe(mockOptions.apiModelId)
 		})
 
+		it("should throw error if API key contains non-ASCII characters", () => {
+			expect(() => {
+				new DeepSeekHandler({
+					...mockOptions,
+					deepSeekApiKey: "sk-test中文characters",
+				})
+			}).toThrow("Invalid DeepSeek API key: contains non-ASCII character at position 8")
+		})
+
+		it("should throw error with helpful message for non-ASCII characters", () => {
+			expect(() => {
+				new DeepSeekHandler({
+					...mockOptions,
+					deepSeekApiKey: "sk-test-😀-key",
+				})
+			}).toThrow(/API keys must contain only ASCII characters/)
+		})
+
+		it("should accept valid ASCII-only API keys", () => {
+			expect(() => {
+				new DeepSeekHandler({
+					...mockOptions,
+					deepSeekApiKey: "sk-test-1234567890-abcdefghijklmnopqrstuvwxyz-ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+				})
+			}).not.toThrow()
+		})
+
+		it("should accept API keys with standard symbols", () => {
+			expect(() => {
+				new DeepSeekHandler({
+					...mockOptions,
+					deepSeekApiKey: "sk-test_key-123!@#$%^&*()_+-=[]{}|;:,.<>?/",
+				})
+			}).not.toThrow()
+		})
+
+		it("should not validate when API key is not provided", () => {
+			expect(() => {
+				new DeepSeekHandler({
+					...mockOptions,
+					deepSeekApiKey: undefined,
+				})
+			}).not.toThrow()
+		})
+
+		it("should not validate when API key is 'not-provided'", () => {
+			expect(() => {
+				new DeepSeekHandler({
+					...mockOptions,
+					deepSeekApiKey: "not-provided",
+				})
+			}).not.toThrow()
+		})
+
 		it.skip("should throw error if API key is missing", () => {
 			expect(() => {
 				new DeepSeekHandler({
