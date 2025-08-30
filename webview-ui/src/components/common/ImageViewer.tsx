@@ -158,7 +158,6 @@ export function ImageViewer({
 		if (path.startsWith("./")) return path
 		// If it's an absolute path, extract the relative portion
 		// Look for workspace patterns - match the last segment after any directory separator
-		// This handles various workspace names without hardcoding specific patterns
 		const workspaceMatch = path.match(/\/([^/]+)\/(.+)$/)
 		if (workspaceMatch && workspaceMatch[2]) {
 			// Return relative path from what appears to be the workspace root
