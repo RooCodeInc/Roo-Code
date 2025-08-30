@@ -609,6 +609,8 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 											apiConfiguration,
 										})
 										prevApiConfigName.current = newName
+										// Trigger change detection for profile rename
+										setChangeDetected(true)
 									}}
 									onUpsertConfig={(configName: string) =>
 										vscode.postMessage({
