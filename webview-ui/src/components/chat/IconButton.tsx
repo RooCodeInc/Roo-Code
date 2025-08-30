@@ -39,7 +39,7 @@ export const IconButton: React.FC<IconButtonProps> = ({
 				className,
 			)}
 			disabled={disabled}
-			onClick={!disabled ? onClick : undefined}
+			onClick={onClick}
 			style={{ fontSize: 16.5, ...style }}
 			{...props}>
 			<span className={cn("codicon", iconClass, isLoading && "codicon-modifier-spin")} />
