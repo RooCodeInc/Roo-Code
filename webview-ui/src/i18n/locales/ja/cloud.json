@@ -14,5 +14,5 @@
 	"remoteControl": "Roomote Control",
 	"remoteControlDescription": "Roo Code Cloudでこのワークスペースのタスクをフォローし操作することを有効にする",
 	"visitCloudWebsite": "Roo Code Cloudを訪問",
-	"cloudUrlPillLabel": "Roo Code Cloud URL: "
+	"cloudUrlPillLabel": "Roo Code Cloud URL"
 }

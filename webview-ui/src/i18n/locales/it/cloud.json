@@ -14,5 +14,5 @@
 	"remoteControl": "Roomote Control",
 	"remoteControlDescription": "Abilita il monitoraggio e l'interazione con le attività in questo workspace con Roo Code Cloud",
 	"visitCloudWebsite": "Visita Roo Code Cloud",
-	"cloudUrlPillLabel": "Roo Code Cloud URL: "
+	"cloudUrlPillLabel": "URL di Roo Code Cloud"
 }
