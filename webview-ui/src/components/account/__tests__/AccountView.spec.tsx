@@ -21,6 +21,7 @@ vi.mock("@src/i18n/TranslationContext", () => ({
 				"account:remoteControlDescription":
 					"Enable following and interacting with tasks in this workspace with Roo Code Cloud",
 				"account:profilePicture": "Profile picture",
+				"account:cloudUrlPillLabel": "Roo Code Cloud URL: ",
 			}
 			return translations[key] || key
 		},
@@ -184,7 +185,8 @@ describe("AccountView", () => {
 		)
 
 		// Check that the cloud URL pill is displayed with the staging URL
-		expect(screen.getByText("Roo Code Cloud URL: https://staging.roocode.com")).toBeInTheDocument()
+		expect(screen.getByText(/Roo Code Cloud URL:/)).toBeInTheDocument()
+		expect(screen.getByText("https://staging.roocode.com")).toBeInTheDocument()
 	})
 
 	it("should display cloud URL pill for non-authenticated users when not pointing to production", () => {
@@ -198,7 +200,8 @@ describe("AccountView", () => {
 		)
 
 		// Check that the cloud URL pill is displayed even when not authenticated
-		expect(screen.getByText("Roo Code Cloud URL: https://dev.roocode.com")).toBeInTheDocument()
+		expect(screen.getByText(/Roo Code Cloud URL:/)).toBeInTheDocument()
+		expect(screen.getByText("https://dev.roocode.com")).toBeInTheDocument()
 	})
 
 	it("should not display cloud URL pill when cloudApiUrl is undefined", () => {
