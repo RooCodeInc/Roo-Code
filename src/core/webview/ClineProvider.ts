@@ -111,13 +111,14 @@ export class ClineProvider
 	private view?: vscode.WebviewView | vscode.WebviewPanel
 	private clineStack: Task[] = []
 	private codeIndexStatusSubscription?: vscode.Disposable
-	private currentWorkspaceManager?: CodeIndexManager
+	private codeIndexManager?: CodeIndexManager
 	private _workspaceTracker?: WorkspaceTracker // workSpaceTracker read-only for access outside this class
 	protected mcpHub?: McpHub // Change from private to protected
 	private marketplaceManager: MarketplaceManager
 	private mdmService?: MdmService
 	private taskCreationCallback: (task: Task) => void
 	private taskEventListeners: WeakMap<Task, Array<() => void>> = new WeakMap()
+	private currentWorkspacePath: string | undefined
 
 	private recentTasksCache?: string[]
 
@@ -214,6 +215,8 @@ export class ClineProvider
 		this.initializeCloudProfileSync().catch((error) => {
 			this.log(`Failed to initialize cloud profile sync: ${error}`)
 		})
+
+		this.currentWorkspacePath = getWorkspacePath()
 	}
 
 	/**
@@ -659,7 +662,7 @@ export class ClineProvider
 					this.log("Clearing webview resources for sidebar view")
 					this.clearWebviewResources()
 					// Reset current workspace manager reference when view is disposed
-					this.currentWorkspaceManager = undefined
+					this.codeIndexManager = undefined
 				}
 			},
 			null,
@@ -747,6 +750,7 @@ export class ClineProvider
 			rootTask: historyItem.rootTask,
 			parentTask: historyItem.parentTask,
 			taskNumber: historyItem.number,
+			workspacePath: historyItem.workspace,
 			onCreated: this.taskCreationCallback,
 			enableBridge: BridgeOrchestrator.isEnabled(cloudUserInfo, remoteControlEnabled),
 		})
@@ -1378,6 +1382,10 @@ export class ClineProvider
 		await this.updateGlobalState("taskHistory", updatedTaskHistory)
 		this.recentTasksCache = undefined
 		await this.postStateToWebview()
+	}
+
+	async refreshWorkspace() {
+		this.currentWorkspacePath = getWorkspacePath()
 	}
 
 	async postStateToWebview() {
@@ -2098,7 +2106,7 @@ export class ClineProvider
 		const currentManager = this.getCurrentWorkspaceCodeIndexManager()
 
 		// If the manager hasn't changed, no need to update subscription
-		if (currentManager === this.currentWorkspaceManager) {
+		if (currentManager === this.codeIndexManager) {
 			return
 		}
 
@@ -2109,7 +2117,7 @@ export class ClineProvider
 		}
 
 		// Update the current workspace manager reference
-		this.currentWorkspaceManager = currentManager
+		this.codeIndexManager = currentManager
 
 		// Subscribe to the new manager's progress updates if it exists
 		if (currentManager) {
@@ -2464,6 +2472,6 @@ export class ClineProvider
 	}
 
 	public get cwd() {
-		return getWorkspacePath()
+		return this.currentWorkspacePath || getWorkspacePath()
 	}
 }
