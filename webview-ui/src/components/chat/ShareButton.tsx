@@ -257,15 +257,15 @@ export const ShareButton = ({ item, disabled = false, showLabel = false }: Share
 							<ul className="text-sm text-vscode-descriptionForeground space-y-2">
 								<li className="flex items-start">
 									<span className="mr-2 text-vscode-foreground">•</span>
-									{t("account:cloudBenefitSharing")}
+									{t("cloud:cloudBenefitSharing")}
 								</li>
 								<li className="flex items-start">
 									<span className="mr-2 text-vscode-foreground">•</span>
-									{t("account:cloudBenefitHistory")}
+									{t("cloud:cloudBenefitHistory")}
 								</li>
 								<li className="flex items-start">
 									<span className="mr-2 text-vscode-foreground">•</span>
-									{t("account:cloudBenefitMetrics")}
+									{t("cloud:cloudBenefitMetrics")}
 								</li>
 							</ul>
 						</div>

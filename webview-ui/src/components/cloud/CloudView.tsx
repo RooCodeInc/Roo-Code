@@ -31,6 +31,8 @@ export const CloudView = ({ userInfo, isAuthenticated, cloudApiUrl, onDone }: Cl
 			wasAuthenticatedRef.current = true
 		} else if (wasAuthenticatedRef.current && !isAuthenticated) {
 			// User just logged out successfully
+			// NOTE: Telemetry events use ACCOUNT_* naming for continuity with existing analytics
+			// and to maintain historical data consistency, even though the UI now uses "Cloud" terminology
 			telemetryClient.capture(TelemetryEventName.ACCOUNT_LOGOUT_SUCCESS)
 			wasAuthenticatedRef.current = false
 		}
@@ -38,18 +40,21 @@ export const CloudView = ({ userInfo, isAuthenticated, cloudApiUrl, onDone }: Cl
 
 	const handleConnectClick = () => {
 		// Send telemetry for cloud connect action
+		// NOTE: Using ACCOUNT_* telemetry events for backward compatibility with analytics
 		telemetryClient.capture(TelemetryEventName.ACCOUNT_CONNECT_CLICKED)
 		vscode.postMessage({ type: "rooCloudSignIn" })
 	}
 
 	const handleLogoutClick = () => {
 		// Send telemetry for cloud logout action
+		// NOTE: Using ACCOUNT_* telemetry events for backward compatibility with analytics
 		telemetryClient.capture(TelemetryEventName.ACCOUNT_LOGOUT_CLICKED)
 		vscode.postMessage({ type: "rooCloudSignOut" })
 	}
 
 	const handleVisitCloudWebsite = () => {
 		// Send telemetry for cloud website visit
+		// NOTE: Using ACCOUNT_* telemetry events for backward compatibility with analytics
 		telemetryClient.capture(TelemetryEventName.ACCOUNT_CONNECT_CLICKED)
 		const cloudUrl = cloudApiUrl || "https://app.roocode.com"
 		vscode.postMessage({ type: "openExternal", url: cloudUrl })
