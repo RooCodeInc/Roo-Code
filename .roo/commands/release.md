@@ -41,4 +41,5 @@ argument-hint: patch | minor | major
 11. The GitHub Actions workflow will automatically:
     - Create a version bump PR when changesets are merged to main
     - Update the CHANGELOG.md with proper formatting
+    - Convert PNG image paths in release notes to GitHub raw URLs for proper display
     - Publish the release when the version bump PR is merged

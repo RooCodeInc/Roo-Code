@@ -81,6 +81,10 @@ jobs:
             changelog_content="Release v${current_package_version}"
           else
             echo "Found changelog section for version ${current_package_version}"
+            # Convert relative image paths to full GitHub URLs for proper display in release notes
+            # Use the main branch URL since the images will be merged there before release
+            # Only match .png files to avoid accidentally modifying other references
+            changelog_content=$(echo "$changelog_content" | sed "s|(releases/\([^)]*\.png\))|(https://github.com/${{ github.repository }}/raw/main/releases/\1)|g")
           fi
 
           # Create release with changelog content
