@@ -27,6 +27,14 @@ export function setMinComponentLines(value: number): void {
 	currentMinComponentLines = value
 }
 
+function shouldSkipLineCountCheck(lineCount: number, capture: QueryCapture, language: string) {
+	if (["definition.method", "definition.method.start"].includes(capture.name)) {
+		// In object-oriented programming languages, method signatures are only one line and should not be ignored.
+		return false
+	}
+	return lineCount < getMinComponentLines()
+}
+
 const extensions = [
 	"tla",
 	"js",
@@ -262,7 +270,7 @@ This approach allows us to focus on the most relevant parts of the code (defined
  *
  * @param captures - The captures to process
  * @param lines - The lines of the file
- * @param minComponentLines - Minimum number of lines for a component to be included
+ * @param language - The programming language of the file
  * @returns A formatted string with definitions
  */
 function processCaptures(captures: QueryCapture[], lines: string[], language: string): string | null {
@@ -310,7 +318,7 @@ function processCaptures(captures: QueryCapture[], lines: string[], language: st
 		const lineCount = endLine - startLine + 1
 
 		// Skip components that don't span enough lines
-		if (lineCount < getMinComponentLines()) {
+		if (shouldSkipLineCountCheck(lineCount, capture, language)) {
 			return
 		}
 
