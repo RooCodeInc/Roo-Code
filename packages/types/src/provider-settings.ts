@@ -183,6 +183,7 @@ const openAiSchema = baseProviderSettingsSchema.extend({
 	openAiStreamingEnabled: z.boolean().optional(),
 	openAiHostHeader: z.string().optional(), // Keep temporarily for backward compatibility during migration.
 	openAiHeaders: z.record(z.string(), z.string()).optional(),
+	openAiSkipSystemMessage: z.boolean().optional(), // Skip system message for models that auto-add BOS tokens (e.g., llama.cpp with --jinja)
 })
 
 const ollamaSchema = baseProviderSettingsSchema.extend({
