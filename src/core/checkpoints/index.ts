@@ -181,9 +181,13 @@ export type CheckpointRestoreOptions = {
 	ts: number
 	commitHash: string
 	mode: "preview" | "restore"
+	operation?: "delete" | "edit" // Optional to maintain backward compatibility
 }
 
-export async function checkpointRestore(cline: Task, { ts, commitHash, mode }: CheckpointRestoreOptions) {
+export async function checkpointRestore(
+	cline: Task,
+	{ ts, commitHash, mode, operation = "delete" }: CheckpointRestoreOptions,
+) {
 	const service = await getCheckpointService(cline)
 
 	if (!service) {
@@ -212,7 +216,10 @@ export async function checkpointRestore(cline: Task, { ts, commitHash, mode }: C
 				cline.combineMessages(deletedMessages),
 			)
 
-			await cline.overwriteClineMessages(cline.clineMessages.slice(0, index + 1))
+			// For delete operations, exclude the checkpoint message itself
+			// For edit operations, include the checkpoint message (to be edited)
+			const endIndex = operation === "edit" ? index + 1 : index
+			await cline.overwriteClineMessages(cline.clineMessages.slice(0, endIndex))
 
 			// TODO: Verify that this is working as expected.
 			await cline.say(
@@ -261,14 +268,16 @@ export async function checkpointDiff(cline: Task, { ts, previousCommitHash, comm
 	TelemetryService.instance.captureCheckpointDiffed(cline.taskId)
 
 	let prevHash = commitHash
-	let nextHash: string | undefined
+	let nextHash: string | undefined = undefined
 
-	const checkpoints = typeof service.getCheckpoints === "function" ? service.getCheckpoints() : []
-	const idx = checkpoints.indexOf(commitHash)
-	if (idx !== -1 && idx < checkpoints.length - 1) {
-		nextHash = checkpoints[idx + 1]
-	} else {
-		nextHash = undefined
+	if (mode !== "full") {
+		const checkpoints = cline.clineMessages.filter(({ say }) => say === "checkpoint_saved").map(({ text }) => text!)
+		const idx = checkpoints.indexOf(commitHash)
+		if (idx !== -1 && idx < checkpoints.length - 1) {
+			nextHash = checkpoints[idx + 1]
+		} else {
+			nextHash = undefined
+		}
 	}
 
 	try {
@@ -281,7 +290,7 @@ export async function checkpointDiff(cline: Task, { ts, previousCommitHash, comm
 
 		await vscode.commands.executeCommand(
 			"vscode.changes",
-			mode === "full" ? "Changes since task started" : "Changes since previous checkpoint",
+			mode === "full" ? "Changes since task started" : "Changes compare with next checkpoint",
 			changes.map((change) => [
 				vscode.Uri.file(change.paths.absolute),
 				vscode.Uri.parse(`${DIFF_VIEW_URI_SCHEME}:${change.paths.relative}`).with({
