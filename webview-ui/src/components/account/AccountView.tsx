@@ -18,6 +18,8 @@ type AccountViewProps = {
 	onDone: () => void
 }
 
+const PRODUCTION_CLOUD_URL = "https://app.roocode.com"
+
 export const AccountView = ({ userInfo, isAuthenticated, cloudApiUrl, onDone }: AccountViewProps) => {
 	const { t } = useAppTranslation()
 	const { remoteControlEnabled, setRemoteControlEnabled } = useExtensionState()
@@ -51,8 +53,14 @@ export const AccountView = ({ userInfo, isAuthenticated, cloudApiUrl, onDone }: 
 	const handleVisitCloudWebsite = () => {
 		// Send telemetry for cloud website visit
 		telemetryClient.capture(TelemetryEventName.ACCOUNT_CONNECT_CLICKED)
-		const cloudUrl = cloudApiUrl || "https://app.roocode.com"
+		const cloudUrl = cloudApiUrl || PRODUCTION_CLOUD_URL
 		vscode.postMessage({ type: "openExternal", url: cloudUrl })
+	}
+
+	const handleOpenCloudUrl = () => {
+		if (cloudApiUrl) {
+			vscode.postMessage({ type: "openExternal", url: cloudApiUrl })
+		}
 	}
 
 	const handleRemoteControlToggle = () => {
@@ -180,6 +188,18 @@ export const AccountView = ({ userInfo, isAuthenticated, cloudApiUrl, onDone }: 
 						</VSCodeButton>
 					</div>
 				</>
+			)}
+			{cloudApiUrl && cloudApiUrl !== PRODUCTION_CLOUD_URL && (
+				<div className="mt-6 flex justify-center">
+					<div className="inline-flex items-center px-3 py-1 gap-1 rounded-full bg-vscode-badge-background/50 text-vscode-badge-foreground text-xs">
+						<span className="text-vscode-foreground/75">{t("account:cloudUrlPillLabel")}</span>
+						<button
+							onClick={handleOpenCloudUrl}
+							className="text-vscode-textLink-foreground hover:text-vscode-textLink-activeForeground underline cursor-pointer bg-transparent border-none p-0">
+							{cloudApiUrl}
+						</button>
+					</div>
+				</div>
 			)}
 		</div>
 	)
