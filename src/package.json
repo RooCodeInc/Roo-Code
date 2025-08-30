@@ -400,6 +400,27 @@
 					"type": "boolean",
 					"default": false,
 					"description": "%settings.newTaskRequireTodos.description%"
+				},
+				"roo-cline.codebaseIndexParsingConcurrency": {
+					"type": "number",
+					"default": 10,
+					"minimum": 1,
+					"maximum": 50,
+					"description": "%settings.codebaseIndexParsingConcurrency.description%"
+				},
+				"roo-cline.codebaseIndexMaxPendingBatches": {
+					"type": "number",
+					"default": 20,
+					"minimum": 1,
+					"maximum": 100,
+					"description": "%settings.codebaseIndexMaxPendingBatches.description%"
+				},
+				"roo-cline.codebaseIndexBatchProcessingConcurrency": {
+					"type": "number",
+					"default": 10,
+					"minimum": 1,
+					"maximum": 50,
+					"description": "%settings.codebaseIndexBatchProcessingConcurrency.description%"
 				}
 			}
 		}

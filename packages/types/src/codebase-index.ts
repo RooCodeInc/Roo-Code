@@ -12,6 +12,16 @@ export const CODEBASE_INDEX_DEFAULTS = {
 	MAX_SEARCH_SCORE: 1,
 	DEFAULT_SEARCH_MIN_SCORE: 0.4,
 	SEARCH_SCORE_STEP: 0.05,
+	// Concurrency defaults
+	DEFAULT_PARSING_CONCURRENCY: 10,
+	MIN_PARSING_CONCURRENCY: 1,
+	MAX_PARSING_CONCURRENCY: 50,
+	DEFAULT_MAX_PENDING_BATCHES: 20,
+	MIN_MAX_PENDING_BATCHES: 1,
+	MAX_MAX_PENDING_BATCHES: 100,
+	DEFAULT_BATCH_PROCESSING_CONCURRENCY: 10,
+	MIN_BATCH_PROCESSING_CONCURRENCY: 1,
+	MAX_BATCH_PROCESSING_CONCURRENCY: 50,
 } as const
 
 /**
@@ -36,6 +46,22 @@ export const codebaseIndexConfigSchema = z.object({
 	// OpenAI Compatible specific fields
 	codebaseIndexOpenAiCompatibleBaseUrl: z.string().optional(),
 	codebaseIndexOpenAiCompatibleModelDimension: z.number().optional(),
+	// Concurrency settings
+	codebaseIndexParsingConcurrency: z
+		.number()
+		.min(CODEBASE_INDEX_DEFAULTS.MIN_PARSING_CONCURRENCY)
+		.max(CODEBASE_INDEX_DEFAULTS.MAX_PARSING_CONCURRENCY)
+		.optional(),
+	codebaseIndexMaxPendingBatches: z
+		.number()
+		.min(CODEBASE_INDEX_DEFAULTS.MIN_MAX_PENDING_BATCHES)
+		.max(CODEBASE_INDEX_DEFAULTS.MAX_MAX_PENDING_BATCHES)
+		.optional(),
+	codebaseIndexBatchProcessingConcurrency: z
+		.number()
+		.min(CODEBASE_INDEX_DEFAULTS.MIN_BATCH_PROCESSING_CONCURRENCY)
+		.max(CODEBASE_INDEX_DEFAULTS.MAX_BATCH_PROCESSING_CONCURRENCY)
+		.optional(),
 })
 
 export type CodebaseIndexConfig = z.infer<typeof codebaseIndexConfigSchema>

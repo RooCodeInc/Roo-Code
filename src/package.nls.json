@@ -40,5 +40,8 @@
 	"settings.autoImportSettingsPath.description": "Path to a RooCode configuration file to automatically import on extension startup. Supports absolute paths and paths relative to the home directory (e.g. '~/Documents/roo-code-settings.json'). Leave empty to disable auto-import.",
 	"settings.useAgentRules.description": "Enable loading of AGENTS.md files for agent-specific rules (see https://agent-rules.org/)",
 	"settings.apiRequestTimeout.description": "Maximum time in seconds to wait for API responses (0 = no timeout, 1-3600s, default: 600s). Higher values are recommended for local providers like LM Studio and Ollama that may need more processing time.",
-	"settings.newTaskRequireTodos.description": "Require todos parameter when creating new tasks with the new_task tool"
+	"settings.newTaskRequireTodos.description": "Require todos parameter when creating new tasks with the new_task tool",
+	"settings.codebaseIndexParsingConcurrency.description": "Number of files to parse in parallel during codebase indexing (1-50, default: 10). Increase for faster indexing on powerful machines, decrease for lower-end hardware.",
+	"settings.codebaseIndexMaxPendingBatches.description": "Maximum number of batches to accumulate before waiting during codebase indexing (1-100, default: 20). Higher values may improve throughput but increase memory usage.",
+	"settings.codebaseIndexBatchProcessingConcurrency.description": "Number of batches to process for embeddings/upserts in parallel (1-50, default: 10). Adjust based on your system's capabilities and API rate limits."
 }

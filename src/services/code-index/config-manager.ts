@@ -2,8 +2,15 @@ import { ApiHandlerOptions } from "../../shared/api"
 import { ContextProxy } from "../../core/config/ContextProxy"
 import { EmbedderProvider } from "./interfaces/manager"
 import { CodeIndexConfig, PreviousConfigSnapshot } from "./interfaces/config"
-import { DEFAULT_SEARCH_MIN_SCORE, DEFAULT_MAX_SEARCH_RESULTS } from "./constants"
+import {
+	DEFAULT_SEARCH_MIN_SCORE,
+	DEFAULT_MAX_SEARCH_RESULTS,
+	PARSING_CONCURRENCY,
+	MAX_PENDING_BATCHES,
+	BATCH_PROCESSING_CONCURRENCY,
+} from "./constants"
 import { getDefaultModelId, getModelDimension, getModelScoreThreshold } from "../../shared/embeddingModels"
+import { CODEBASE_INDEX_DEFAULTS } from "@roo-code/types"
 
 /**
  * Manages configuration state and validation for the code indexing feature.
@@ -24,6 +31,9 @@ export class CodeIndexConfigManager {
 	private qdrantApiKey?: string
 	private searchMinScore?: number
 	private searchMaxResults?: number
+	private parsingConcurrency?: number
+	private maxPendingBatches?: number
+	private batchProcessingConcurrency?: number
 
 	constructor(private readonly contextProxy: ContextProxy) {
 		// Initialize with current configuration to avoid false restart triggers
@@ -51,6 +61,9 @@ export class CodeIndexConfigManager {
 			codebaseIndexEmbedderModelId: "",
 			codebaseIndexSearchMinScore: undefined,
 			codebaseIndexSearchMaxResults: undefined,
+			codebaseIndexParsingConcurrency: undefined,
+			codebaseIndexMaxPendingBatches: undefined,
+			codebaseIndexBatchProcessingConcurrency: undefined,
 		}
 
 		const {
@@ -61,6 +74,9 @@ export class CodeIndexConfigManager {
 			codebaseIndexEmbedderModelId,
 			codebaseIndexSearchMinScore,
 			codebaseIndexSearchMaxResults,
+			codebaseIndexParsingConcurrency,
+			codebaseIndexMaxPendingBatches,
+			codebaseIndexBatchProcessingConcurrency,
 		} = codebaseIndexConfig
 
 		const openAiKey = this.contextProxy?.getSecret("codeIndexOpenAiKey") ?? ""
@@ -78,6 +94,9 @@ export class CodeIndexConfigManager {
 		this.qdrantApiKey = qdrantApiKey ?? ""
 		this.searchMinScore = codebaseIndexSearchMinScore
 		this.searchMaxResults = codebaseIndexSearchMaxResults
+		this.parsingConcurrency = codebaseIndexParsingConcurrency
+		this.maxPendingBatches = codebaseIndexMaxPendingBatches
+		this.batchProcessingConcurrency = codebaseIndexBatchProcessingConcurrency
 
 		// Validate and set model dimension
 		const rawDimension = codebaseIndexConfig.codebaseIndexEmbedderModelDimension
@@ -399,6 +418,9 @@ export class CodeIndexConfigManager {
 			qdrantApiKey: this.qdrantApiKey,
 			searchMinScore: this.currentSearchMinScore,
 			searchMaxResults: this.currentSearchMaxResults,
+			parsingConcurrency: this.currentParsingConcurrency,
+			maxPendingBatches: this.currentMaxPendingBatches,
+			batchProcessingConcurrency: this.currentBatchProcessingConcurrency,
 		}
 	}
 
@@ -479,5 +501,29 @@ export class CodeIndexConfigManager {
 	 */
 	public get currentSearchMaxResults(): number {
 		return this.searchMaxResults ?? DEFAULT_MAX_SEARCH_RESULTS
+	}
+
+	/**
+	 * Gets the configured parsing concurrency.
+	 * Returns user setting if configured, otherwise returns default.
+	 */
+	public get currentParsingConcurrency(): number {
+		return this.parsingConcurrency ?? PARSING_CONCURRENCY
+	}
+
+	/**
+	 * Gets the configured maximum pending batches.
+	 * Returns user setting if configured, otherwise returns default.
+	 */
+	public get currentMaxPendingBatches(): number {
+		return this.maxPendingBatches ?? MAX_PENDING_BATCHES
+	}
+
+	/**
+	 * Gets the configured batch processing concurrency.
+	 * Returns user setting if configured, otherwise returns default.
+	 */
+	public get currentBatchProcessingConcurrency(): number {
+		return this.batchProcessingConcurrency ?? BATCH_PROCESSING_CONCURRENCY
 	}
 }

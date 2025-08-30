@@ -30,14 +30,30 @@ import { TelemetryService } from "@roo-code/telemetry"
 import { TelemetryEventName } from "@roo-code/types"
 import { sanitizeErrorMessage } from "../shared/validation-helpers"
 
+export interface DirectoryScannerConfig {
+	parsingConcurrency?: number
+	maxPendingBatches?: number
+	batchProcessingConcurrency?: number
+}
+
 export class DirectoryScanner implements IDirectoryScanner {
+	private readonly parsingConcurrency: number
+	private readonly maxPendingBatches: number
+	private readonly batchProcessingConcurrency: number
+
 	constructor(
 		private readonly embedder: IEmbedder,
 		private readonly qdrantClient: IVectorStore,
 		private readonly codeParser: ICodeParser,
 		private readonly cacheManager: CacheManager,
 		private readonly ignoreInstance: Ignore,
-	) {}
+		config?: DirectoryScannerConfig,
+	) {
+		// Use provided config values or fall back to constants
+		this.parsingConcurrency = config?.parsingConcurrency ?? PARSING_CONCURRENCY
+		this.maxPendingBatches = config?.maxPendingBatches ?? MAX_PENDING_BATCHES
+		this.batchProcessingConcurrency = config?.batchProcessingConcurrency ?? BATCH_PROCESSING_CONCURRENCY
+	}
 
 	/**
 	 * Recursively scans a directory for code blocks in supported files.
@@ -90,8 +106,8 @@ export class DirectoryScanner implements IDirectoryScanner {
 		let skippedCount = 0
 
 		// Initialize parallel processing tools
-		const parseLimiter = pLimit(PARSING_CONCURRENCY) // Concurrency for file parsing
-		const batchLimiter = pLimit(BATCH_PROCESSING_CONCURRENCY) // Concurrency for batch processing
+		const parseLimiter = pLimit(this.parsingConcurrency) // Concurrency for file parsing
+		const batchLimiter = pLimit(this.batchProcessingConcurrency) // Concurrency for batch processing
 		const mutex = new Mutex()
 
 		// Shared batch accumulators (protected by mutex)
@@ -155,7 +171,7 @@ export class DirectoryScanner implements IDirectoryScanner {
 									// Check if batch threshold is met
 									if (currentBatchBlocks.length >= BATCH_SEGMENT_THRESHOLD) {
 										// Wait if we've reached the maximum pending batches
-										while (pendingBatchCount >= MAX_PENDING_BATCHES) {
+										while (pendingBatchCount >= this.maxPendingBatches) {
 											// Wait for at least one batch to complete
 											await Promise.race(activeBatchPromises)
 										}
