@@ -130,6 +130,7 @@ export interface TaskOptions extends CreateTaskOptions {
 	taskNumber?: number
 	onCreated?: (task: Task) => void
 	initialTodos?: TodoItem[]
+	workspacePath?: string
 }
 
 export class Task extends EventEmitter<TaskEvents> implements TaskLike {
@@ -293,6 +294,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		taskNumber = -1,
 		onCreated,
 		initialTodos,
+		workspacePath,
 	}: TaskOptions) {
 		super()
 
@@ -310,7 +312,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// Normal use-case is usually retry similar history task with new workspace.
 		this.workspacePath = parentTask
 			? parentTask.workspacePath
-			: getWorkspacePath(path.join(os.homedir(), "Desktop"))
+			: (workspacePath ?? getWorkspacePath(path.join(os.homedir(), "Desktop")))
 
 		this.instanceId = crypto.randomUUID().slice(0, 8)
 		this.taskNumber = -1
