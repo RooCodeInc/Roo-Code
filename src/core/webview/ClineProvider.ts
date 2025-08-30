@@ -658,9 +658,17 @@ export class ClineProvider
 			setTtsSpeed(ttsSpeed ?? 1)
 		})
 
+		// Set up webview options with proper resource roots
+		const resourceRoots = [this.contextProxy.extensionUri]
+
+		// Add workspace folders to allow access to workspace files
+		if (vscode.workspace.workspaceFolders) {
+			resourceRoots.push(...vscode.workspace.workspaceFolders.map((folder) => folder.uri))
+		}
+
 		webviewView.webview.options = {
 			enableScripts: true,
-			localResourceRoots: [this.contextProxy.extensionUri],
+			localResourceRoots: resourceRoots,
 		}
 
 		webviewView.webview.html =
@@ -2397,6 +2405,32 @@ export class ClineProvider
 				type: "indexingStatusUpdate",
 				values: currentManager.getCurrentStatus(),
 			})
+		}
+	}
+
+	/**
+	 * Convert a file path to a webview-accessible URI
+	 * This method safely converts file paths to URIs that can be loaded in the webview
+	 *
+	 * @param filePath - The absolute file path to convert
+	 * @returns The webview URI string, or the original file URI if conversion fails
+	 */
+	public convertToWebviewUri(filePath: string): string {
+		try {
+			const fileUri = vscode.Uri.file(filePath)
+
+			// Check if we have a webview available
+			if (this.view?.webview) {
+				const webviewUri = this.view.webview.asWebviewUri(fileUri)
+				return webviewUri.toString()
+			}
+
+			// Fallback to file URI if no webview available
+			return fileUri.toString()
+		} catch (error) {
+			console.error("Failed to convert to webview URI:", error)
+			// Return file URI as fallback
+			return vscode.Uri.file(filePath).toString()
 		}
 	}
 }
