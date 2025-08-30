@@ -10,9 +10,14 @@ vi.mock("@src/utils/vscode", () => ({ vscode: { postMessage: vi.fn() } }))
 
 vi.mock("../ApiConfigManager", () => ({
 	__esModule: true,
-	default: ({ currentApiConfigName }: any) => (
+	default: ({ currentApiConfigName, onRenameConfig }: any) => (
 		<div data-testid="api-config-management">
 			<span>Current config: {currentApiConfigName}</span>
+			<button
+				data-testid="rename-profile-button"
+				onClick={() => onRenameConfig && onRenameConfig("oldProfile", "newProfile")}>
+				Rename Profile
+			</button>
 		</div>
 	),
 }))
@@ -135,8 +140,13 @@ vi.mock("@/components/ui", () => ({
 			data-testid={dataTestId}
 		/>
 	),
-	Button: ({ children, onClick, variant, className, "data-testid": dataTestId }: any) => (
-		<button onClick={onClick} data-variant={variant} className={className} data-testid={dataTestId}>
+	Button: ({ children, onClick, variant, className, disabled, "data-testid": dataTestId }: any) => (
+		<button
+			onClick={onClick}
+			data-variant={variant}
+			className={className}
+			disabled={disabled}
+			data-testid={dataTestId}>
 			{children}
 		</button>
 	),
@@ -635,5 +645,144 @@ describe("SettingsView - Duplicate Commands", () => {
 				commands: ["npm test"],
 			}),
 		)
+	})
+})
+
+describe("SettingsView - Profile Rename Change Detection", () => {
+	beforeEach(() => {
+		vi.clearAllMocks()
+	})
+
+	it("enables save button when profile is renamed", () => {
+		// Render settings view
+		renderSettingsView()
+
+		// Rename a profile to trigger change detection
+		const renameButton = screen.getByTestId("rename-profile-button")
+		fireEvent.click(renameButton)
+
+		// Save button should now be enabled due to change detection
+		const saveButton = screen.getByTestId("save-button")
+		expect(saveButton).not.toBeDisabled()
+	})
+
+	it("sends rename message to vscode when profile is renamed", () => {
+		// Render settings view
+		renderSettingsView()
+
+		// Rename a profile
+		const renameButton = screen.getByTestId("rename-profile-button")
+		fireEvent.click(renameButton)
+
+		// Verify that the rename message was sent to vscode
+		expect(vscode.postMessage).toHaveBeenCalledWith(
+			expect.objectContaining({
+				type: "renameApiConfiguration",
+				values: { oldName: "oldProfile", newName: "newProfile" },
+			}),
+		)
+	})
+
+	it("saves changes when save button is clicked after profile rename", () => {
+		// Render settings view
+		renderSettingsView()
+
+		// Rename a profile
+		const renameButton = screen.getByTestId("rename-profile-button")
+		fireEvent.click(renameButton)
+
+		// Click save button
+		const saveButton = screen.getByTestId("save-button")
+		fireEvent.click(saveButton)
+
+		// Verify that all settings are saved, including the renamed configuration
+		expect(vscode.postMessage).toHaveBeenCalledWith(
+			expect.objectContaining({
+				type: "upsertApiConfiguration",
+			}),
+		)
+	})
+
+	it("disables save button after successful save following profile rename", () => {
+		// Render settings view
+		renderSettingsView()
+
+		// Rename a profile
+		const renameButton = screen.getByTestId("rename-profile-button")
+		fireEvent.click(renameButton)
+
+		// Verify save button is enabled
+		const saveButton = screen.getByTestId("save-button")
+		expect(saveButton).not.toBeDisabled()
+
+		// Click save button
+		fireEvent.click(saveButton)
+
+		// Save button should be disabled again after save
+		expect(saveButton).toBeDisabled()
+	})
+
+	it("shows unsaved changes dialog when attempting to leave after profile rename", () => {
+		// Render with activateTab helper
+		const { onDone } = renderSettingsView()
+
+		// Rename a profile to create unsaved changes
+		const renameButton = screen.getByTestId("rename-profile-button")
+		fireEvent.click(renameButton)
+
+		// Try to leave by clicking Done
+		const doneButton = screen.getByText("settings:common.done")
+		fireEvent.click(doneButton)
+
+		// Should show unsaved changes dialog
+		expect(screen.getByText("settings:unsavedChangesDialog.title")).toBeInTheDocument()
+		expect(screen.getByText("settings:unsavedChangesDialog.description")).toBeInTheDocument()
+
+		// Verify onDone was not called yet
+		expect(onDone).not.toHaveBeenCalled()
+	})
+
+	it("allows leaving after discarding changes from profile rename", () => {
+		// Render with activateTab helper
+		const { onDone } = renderSettingsView()
+
+		// Rename a profile to create unsaved changes
+		const renameButton = screen.getByTestId("rename-profile-button")
+		fireEvent.click(renameButton)
+
+		// Try to leave by clicking Done
+		const doneButton = screen.getByText("settings:common.done")
+		fireEvent.click(doneButton)
+
+		// Click discard in the dialog
+		const discardButton = screen.getByTestId("alert-dialog-action")
+		fireEvent.click(discardButton)
+
+		// Verify onDone was called
+		expect(onDone).toHaveBeenCalled()
+	})
+
+	it("stays on page when canceling discard dialog after profile rename", () => {
+		// Render with activateTab helper
+		const { onDone } = renderSettingsView()
+
+		// Rename a profile to create unsaved changes
+		const renameButton = screen.getByTestId("rename-profile-button")
+		fireEvent.click(renameButton)
+
+		// Try to leave by clicking Done
+		const doneButton = screen.getByText("settings:common.done")
+		fireEvent.click(doneButton)
+
+		// Click cancel in the dialog
+		const cancelButton = screen.getByTestId("alert-dialog-cancel")
+		fireEvent.click(cancelButton)
+
+		// Verify onDone was not called
+		expect(onDone).not.toHaveBeenCalled()
+
+		// Verify save button is still enabled (changes not discarded)
+		const saveButton = screen.getByTestId("save-button")
+		expect(saveButton).not.toBeDisabled()
 	})
 })
