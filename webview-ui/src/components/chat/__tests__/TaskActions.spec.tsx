@@ -260,7 +260,7 @@ describe("TaskActions", () => {
 			// Verify popover is not open initially
 			expect(screen.queryByText("Share with Organization")).not.toBeInTheDocument()
 
-			// Simulate user becoming authenticated (e.g., from AccountView)
+			// Simulate user becoming authenticated (e.g., from CloudView)
 			mockUseExtensionState.mockReturnValue({
 				sharingEnabled: true,
 				cloudIsAuthenticated: true,
