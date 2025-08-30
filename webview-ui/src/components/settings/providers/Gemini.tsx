@@ -96,6 +96,28 @@ export const Gemini = ({ apiConfiguration, setApiConfigurationField, fromWelcome
 						<div className="text-sm text-vscode-descriptionForeground mb-3 mt-1.5">
 							{t("settings:providers.geminiParameters.groundingSearch.description")}
 						</div>
+
+						<Checkbox
+							data-testid="checkbox-structured-output"
+							checked={!!apiConfiguration.enableStructuredOutput}
+							onChange={(checked: boolean) =>
+								setApiConfigurationField("enableStructuredOutput", checked)
+							}>
+							{t("settings:providers.geminiParameters.structuredOutput.title")}
+						</Checkbox>
+						<div className="text-sm text-vscode-descriptionForeground mb-3 mt-1.5">
+							{t("settings:providers.geminiParameters.structuredOutput.description")}
+						</div>
+
+						<Checkbox
+							data-testid="checkbox-code-execution"
+							checked={!!apiConfiguration.enableCodeExecution}
+							onChange={(checked: boolean) => setApiConfigurationField("enableCodeExecution", checked)}>
+							{t("settings:providers.geminiParameters.codeExecution.title")}
+						</Checkbox>
+						<div className="text-sm text-vscode-descriptionForeground mb-3 mt-1.5">
+							{t("settings:providers.geminiParameters.codeExecution.description")}
+						</div>
 					</>
 				)}
 			</div>

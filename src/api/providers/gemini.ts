@@ -78,6 +78,23 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 			tools.push({ googleSearch: {} })
 		}
 
+		// Note: Structured Output and Code Execution features are configured in the UI
+		// but not yet implemented in the backend as the Google GenAI library
+		// doesn't support these tool types yet. These will be enabled when
+		// the library adds support for:
+		// - responseSchema for structured output
+		// - codeExecution for code execution capabilities
+
+		// if (this.options.enableStructuredOutput) {
+		//     // Will be enabled when library supports responseSchema
+		//     tools.push({ responseSchema: {} })
+		// }
+
+		// if (this.options.enableCodeExecution) {
+		//     // Will be enabled when library supports codeExecution
+		//     tools.push({ codeExecution: {} })
+		// }
+
 		const config: GenerateContentConfig = {
 			systemInstruction,
 			httpOptions: this.options.googleGeminiBaseUrl ? { baseUrl: this.options.googleGeminiBaseUrl } : undefined,
@@ -210,6 +227,16 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 			if (this.options.enableGrounding) {
 				tools.push({ googleSearch: {} })
 			}
+			// Note: Structured Output and Code Execution features are configured in the UI
+			// but not yet implemented here as the Google GenAI library
+			// doesn't support these tool types yet.
+
+			// if (this.options.enableStructuredOutput) {
+			//     tools.push({ responseSchema: {} })
+			// }
+			// if (this.options.enableCodeExecution) {
+			//     tools.push({ codeExecution: {} })
+			// }
 			const promptConfig: GenerateContentConfig = {
 				httpOptions: this.options.googleGeminiBaseUrl
 					? { baseUrl: this.options.googleGeminiBaseUrl }

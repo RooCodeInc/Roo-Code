@@ -348,6 +348,14 @@
 			"groundingSearch": {
 				"title": "Enable Grounding with Google search",
 				"description": "Connects Gemini to real‑time web data for accurate, up‑to‑date answers with verifiable citations."
+			},
+			"structuredOutput": {
+				"title": "Enable Structured Output",
+				"description": "Allows Gemini to return responses in structured formats like JSON for predictable, machine-readable output."
+			},
+			"codeExecution": {
+				"title": "Enable Code Execution",
+				"description": "Enables Gemini to execute code for mathematical calculations, data analysis, and computational tasks."
 			}
 		},
 		"googleCloudSetup": {
