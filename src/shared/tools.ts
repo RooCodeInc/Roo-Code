@@ -196,6 +196,7 @@ export const TOOL_DISPLAY_NAMES: Record<ToolName, string> = {
 	insert_content: "insert content",
 	search_and_replace: "search and replace",
 	codebase_search: "codebase search",
+	memory_search: "memory search",
 	update_todo_list: "update todo list",
 	generate_image: "generate images",
 } as const
@@ -210,6 +211,7 @@ export const TOOL_GROUPS: Record<ToolGroup, ToolGroupConfig> = {
 			"list_files",
 			"list_code_definition_names",
 			"codebase_search",
+			"memory_search",
 		],
 	},
 	edit: {

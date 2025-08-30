@@ -26,7 +26,9 @@ import { getNewTaskDescription } from "./new-task"
 import { getCodebaseSearchDescription } from "./codebase-search"
 import { getUpdateTodoListDescription } from "./update-todo-list"
 import { getGenerateImageDescription } from "./generate-image"
+import { getMemorySearchDescription } from "./memory-search"
 import { CodeIndexManager } from "../../../services/code-index/manager"
+import { ConversationMemoryManager } from "../../../services/conversation-memory/manager"
 
 // Map of tool names to their description functions
 const toolDescriptionMap: Record<string, (args: ToolArgs) => string | undefined> = {
@@ -50,6 +52,7 @@ const toolDescriptionMap: Record<string, (args: ToolArgs) => string | undefined>
 	use_mcp_tool: (args) => getUseMcpToolDescription(args),
 	access_mcp_resource: (args) => getAccessMcpResourceDescription(args),
 	codebase_search: (args) => getCodebaseSearchDescription(args),
+	memory_search: (args) => getMemorySearchDescription(args),
 	switch_mode: () => getSwitchModeDescription(),
 	new_task: (args) => getNewTaskDescription(args),
 	insert_content: (args) => getInsertContentDescription(args),
@@ -126,6 +129,12 @@ export function getToolDescriptionsForMode(
 		tools.delete("codebase_search")
 	}
 
+	// Conditionally exclude memory_search if feature is disabled or not configured
+	const memoryManager = ConversationMemoryManager.getCurrentWorkspaceManager()
+	if (!memoryManager || !memoryManager.isFeatureEnabled || !memoryManager.isInitialized) {
+		tools.delete("memory_search")
+	}
+
 	// Conditionally exclude update_todo_list if disabled in settings
 	if (settings?.todoListEnabled === false) {
 		tools.delete("update_todo_list")
@@ -171,5 +180,6 @@ export {
 	getInsertContentDescription,
 	getSearchAndReplaceDescription,
 	getCodebaseSearchDescription,
+	getMemorySearchDescription,
 	getGenerateImageDescription,
 }
