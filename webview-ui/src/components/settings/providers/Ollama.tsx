@@ -11,6 +11,7 @@ import { useRouterModels } from "@src/components/ui/hooks/useRouterModels"
 import { vscode } from "@src/utils/vscode"
 
 import { inputEventTransform } from "../transforms"
+import { CompactPromptControl } from "../CompactPromptControl"
 
 type OllamaProps = {
 	apiConfiguration: ProviderSettings
@@ -118,6 +119,11 @@ export const Ollama = ({ apiConfiguration, setApiConfigurationField }: OllamaPro
 					))}
 				</VSCodeRadioGroup>
 			)}
+			<CompactPromptControl
+				compactPromptMode={apiConfiguration?.compactPromptMode}
+				onChange={(value) => setApiConfigurationField("compactPromptMode", value)}
+				providerName="Ollama"
+			/>
 			<div className="text-sm text-vscode-descriptionForeground">
 				{t("settings:providers.ollama.description")}
 				<span className="text-vscode-errorForeground ml-1">{t("settings:providers.ollama.warning")}</span>

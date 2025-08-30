@@ -103,6 +103,7 @@ const baseProviderSettingsSchema = z.object({
 	modelTemperature: z.number().nullish(),
 	rateLimitSeconds: z.number().optional(),
 	consecutiveMistakeLimit: z.number().min(0).optional(),
+	compactPromptMode: z.boolean().optional(),
 
 	// Model reasoning.
 	enableReasoningEffort: z.boolean().optional(),

@@ -368,13 +368,23 @@
 			"draftModelDesc": "Draft model must be from the same model family for speculative decoding to work correctly.",
 			"selectDraftModel": "Select Draft Model",
 			"noModelsFound": "No draft models found. Please ensure LM Studio is running with Server Mode enabled.",
-			"description": "LM Studio allows you to run models locally on your computer. For instructions on how to get started, see their <a>quickstart guide</a>. You will also need to start LM Studio's <b>local server</b> feature to use it with this extension. <span>Note:</span> Roo Code uses complex prompts and works best with Claude models. Less capable models may not work as expected."
+			"description": "LM Studio allows you to run models locally on your computer. For instructions on how to get started, see their <a>quickstart guide</a>. You will also need to start LM Studio's <b>local server</b> feature to use it with this extension. <span>Note:</span> Roo Code uses complex prompts and works best with Claude models. Less capable models may not work as expected.",
+			"compactPrompt": {
+				"title": "Compact Prompt Mode",
+				"description": "Reduces the system prompt size for faster response times with local LLMs. This removes non-essential sections while keeping core functionality.",
+				"providerNote": "Recommended for {{provider}} to prevent timeouts with slower local models"
+			}
 		},
 		"ollama": {
 			"baseUrl": "Base URL (optional)",
 			"modelId": "Model ID",
 			"description": "Ollama allows you to run models locally on your computer. For instructions on how to get started, see their quickstart guide.",
 			"warning": "Note: Roo Code uses complex prompts and works best with Claude models. Less capable models may not work as expected."
+		},
+		"compactPrompt": {
+			"title": "Compact Prompt Mode",
+			"description": "Reduces the system prompt size for faster response times with local LLMs. This removes non-essential sections while keeping core functionality.",
+			"providerNote": "Recommended for {{provider}} to prevent timeouts with slower local models"
 		},
 		"unboundApiKey": "Unbound API Key",
 		"getUnboundApiKey": "Get Unbound API Key",

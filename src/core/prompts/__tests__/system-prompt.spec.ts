@@ -672,6 +672,194 @@ describe("SYSTEM_PROMPT", () => {
 		expect(prompt).toContain("## update_todo_list")
 	})
 
+	describe("Compact Prompt Mode", () => {
+		it("should generate a compact prompt when compactPromptMode is true", async () => {
+			const prompt = await SYSTEM_PROMPT(
+				mockContext,
+				"/test/path",
+				false, // supportsComputerUse
+				undefined, // mcpHub
+				undefined, // diffStrategy
+				undefined, // browserViewportSize
+				defaultModeSlug, // mode
+				undefined, // customModePrompts
+				undefined, // customModes
+				undefined, // globalCustomInstructions
+				undefined, // diffEnabled
+				experiments,
+				true, // enableMcpServerCreation
+				undefined, // language
+				undefined, // rooIgnoreInstructions
+				undefined, // partialReadsEnabled
+				undefined, // settings
+				undefined, // todoList
+				undefined, // modelId
+				true, // compactPromptMode
+			)
+
+			// Compact prompt should be significantly shorter
+			const normalPrompt = await SYSTEM_PROMPT(
+				mockContext,
+				"/test/path",
+				false, // supportsComputerUse
+				undefined, // mcpHub
+				undefined, // diffStrategy
+				undefined, // browserViewportSize
+				defaultModeSlug, // mode
+				undefined, // customModePrompts
+				undefined, // customModes
+				undefined, // globalCustomInstructions
+				undefined, // diffEnabled
+				experiments,
+				true, // enableMcpServerCreation
+				undefined, // language
+				undefined, // rooIgnoreInstructions
+				undefined, // partialReadsEnabled
+				undefined, // settings
+				undefined, // todoList
+				undefined, // modelId
+				false, // compactPromptMode
+			)
+
+			// Compact prompt should be shorter
+			expect(prompt.length).toBeLessThan(normalPrompt.length)
+
+			// Should still contain essential sections
+			expect(prompt).toContain("You are Roo")
+			expect(prompt).toContain("## read_file")
+			expect(prompt).toContain("## write_to_file")
+			expect(prompt).toContain("## list_files")
+			expect(prompt).toContain("## search_files")
+
+			// Should NOT contain non-essential sections
+			expect(prompt).not.toContain("MCP")
+			expect(prompt).not.toContain("browser")
+			expect(prompt).not.toContain("CAPABILITIES")
+			expect(prompt).not.toContain("MODES")
+			expect(prompt).not.toContain("execute_command") // Execute command is not included in compact mode for architect mode
+		})
+
+		it("should generate a normal prompt when compactPromptMode is false", async () => {
+			const prompt = await SYSTEM_PROMPT(
+				mockContext,
+				"/test/path",
+				false, // supportsComputerUse
+				undefined, // mcpHub
+				undefined, // diffStrategy
+				undefined, // browserViewportSize
+				defaultModeSlug, // mode
+				undefined, // customModePrompts
+				undefined, // customModes
+				undefined, // globalCustomInstructions
+				undefined, // diffEnabled
+				experiments,
+				true, // enableMcpServerCreation
+				undefined, // language
+				undefined, // rooIgnoreInstructions
+				undefined, // partialReadsEnabled
+				undefined, // settings
+				undefined, // todoList
+				undefined, // modelId
+				false, // compactPromptMode
+			)
+
+			// Normal prompt should contain all sections
+			expect(prompt).toContain("CAPABILITIES")
+			expect(prompt).toContain("MODES")
+			expect(prompt).toContain("RULES")
+			expect(prompt).toContain("SYSTEM INFORMATION")
+			expect(prompt).toContain("OBJECTIVE")
+		})
+
+		it("should generate a normal prompt when compactPromptMode is undefined", async () => {
+			const prompt = await SYSTEM_PROMPT(
+				mockContext,
+				"/test/path",
+				false, // supportsComputerUse
+				undefined, // mcpHub
+				undefined, // diffStrategy
+				undefined, // browserViewportSize
+				defaultModeSlug, // mode
+				undefined, // customModePrompts
+				undefined, // customModes
+				undefined, // globalCustomInstructions
+				undefined, // diffEnabled
+				experiments,
+				true, // enableMcpServerCreation
+				undefined, // language
+				undefined, // rooIgnoreInstructions
+				undefined, // partialReadsEnabled
+				undefined, // settings
+				undefined, // todoList
+				undefined, // modelId
+				undefined, // compactPromptMode
+			)
+
+			// Should generate normal prompt by default
+			expect(prompt).toContain("CAPABILITIES")
+			expect(prompt).toContain("MODES")
+			expect(prompt).toContain("RULES")
+			expect(prompt).toContain("SYSTEM INFORMATION")
+			expect(prompt).toContain("OBJECTIVE")
+		})
+
+		it("should not include diff tool in compact mode even when diffEnabled is true", async () => {
+			const prompt = await SYSTEM_PROMPT(
+				mockContext,
+				"/test/path",
+				false, // supportsComputerUse
+				undefined, // mcpHub
+				new MultiSearchReplaceDiffStrategy(), // diffStrategy
+				undefined, // browserViewportSize
+				defaultModeSlug, // mode
+				undefined, // customModePrompts
+				undefined, // customModes
+				undefined, // globalCustomInstructions
+				true, // diffEnabled
+				experiments,
+				true, // enableMcpServerCreation
+				undefined, // language
+				undefined, // rooIgnoreInstructions
+				undefined, // partialReadsEnabled
+				undefined, // settings
+				undefined, // todoList
+				undefined, // modelId
+				true, // compactPromptMode
+			)
+
+			// Compact mode doesn't include diff tool to keep prompt minimal
+			expect(prompt).not.toContain("apply_diff")
+		})
+
+		it("should maintain custom instructions in compact mode", async () => {
+			const prompt = await SYSTEM_PROMPT(
+				mockContext,
+				"/test/path",
+				false, // supportsComputerUse
+				undefined, // mcpHub
+				undefined, // diffStrategy
+				undefined, // browserViewportSize
+				defaultModeSlug, // mode
+				undefined, // customModePrompts
+				undefined, // customModes
+				"Test global instructions", // globalCustomInstructions
+				undefined, // diffEnabled
+				experiments,
+				true, // enableMcpServerCreation
+				undefined, // language
+				undefined, // rooIgnoreInstructions
+				undefined, // partialReadsEnabled
+				undefined, // settings
+				undefined, // todoList
+				undefined, // modelId
+				true, // compactPromptMode
+			)
+
+			// Should still include custom instructions
+			expect(prompt).toContain("Test global instructions")
+		})
+	})
+
 	afterAll(() => {
 		vi.restoreAllMocks()
 	})

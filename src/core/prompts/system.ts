@@ -153,6 +153,7 @@ export const SYSTEM_PROMPT = async (
 	settings?: SystemPromptSettings,
 	todoList?: TodoItem[],
 	modelId?: string,
+	compactPromptMode?: boolean,
 ): Promise<string> => {
 	if (!context) {
 		throw new Error("Extension context is required for generating system prompt")
@@ -200,6 +201,62 @@ export const SYSTEM_PROMPT = async (
 ${fileCustomSystemPrompt}
 
 ${customInstructions}`
+	}
+
+	// If compact prompt mode is enabled, generate a minimal prompt
+	if (compactPromptMode) {
+		const { roleDefinition, baseInstructions } = getModeSelection(mode, promptComponent, customModes)
+		const codeIndexManager = CodeIndexManager.getInstance(context, cwd)
+
+		// Generate a compact prompt with only essential sections
+		const compactPrompt = `${roleDefinition}
+
+====
+
+TOOL USE
+
+You have access to tools that are executed upon user approval. Use one tool per message.
+
+# Tools
+
+${getToolDescriptionsForMode(
+	mode,
+	cwd,
+	false, // Disable computer use for compact mode
+	codeIndexManager,
+	undefined, // No diff strategy in compact mode
+	undefined, // No browser viewport
+	undefined, // No MCP in compact mode
+	customModes,
+	experiments,
+	partialReadsEnabled,
+	settings,
+	false, // No MCP server creation
+	modelId,
+)}
+
+====
+
+RULES
+
+- Project directory: ${cwd.toPosix()}
+- Use tools efficiently to accomplish tasks
+- Wait for user response after each tool use
+- Be concise and direct in responses
+
+====
+
+OBJECTIVE
+
+Complete the user's task efficiently using available tools.
+
+${await addCustomInstructions(baseInstructions, globalCustomInstructions || "", cwd, mode, {
+	language: language ?? formatLanguage(vscode.env.language),
+	rooIgnoreInstructions,
+	settings,
+})}`
+
+		return compactPrompt
 	}
 
 	// If diff is disabled, don't pass the diffStrategy

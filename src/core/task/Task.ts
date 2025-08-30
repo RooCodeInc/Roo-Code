@@ -2242,6 +2242,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			apiConfiguration,
 		} = state ?? {}
 
+		// Check if we should use compact prompt mode for local LLM providers
+		const isLocalLLMProvider =
+			this.apiConfiguration.apiProvider === "lmstudio" || this.apiConfiguration.apiProvider === "ollama"
+		const shouldUseCompactPrompt = isLocalLLMProvider && this.apiConfiguration.compactPromptMode
+
 		return await (async () => {
 			const provider = this.providerRef.deref()
 
@@ -2276,6 +2281,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				},
 				undefined, // todoList
 				this.api.getModel().id,
+				shouldUseCompactPrompt,
 			)
 		})()
 	}

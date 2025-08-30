@@ -13,6 +13,7 @@ import { vscode } from "@src/utils/vscode"
 
 import { inputEventTransform } from "../transforms"
 import { ModelRecord } from "@roo/api"
+import { CompactPromptControl } from "../CompactPromptControl"
 
 type LMStudioProps = {
 	apiConfiguration: ProviderSettings
@@ -207,6 +208,11 @@ export const LMStudio = ({ apiConfiguration, setApiConfigurationField }: LMStudi
 					)}
 				</>
 			)}
+			<CompactPromptControl
+				compactPromptMode={apiConfiguration?.compactPromptMode}
+				onChange={(value) => setApiConfigurationField("compactPromptMode", value)}
+				providerName="LM Studio"
+			/>
 			<div className="text-sm text-vscode-descriptionForeground">
 				<Trans
 					i18nKey="settings:providers.lmStudio.description"
