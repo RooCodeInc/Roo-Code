@@ -1161,7 +1161,10 @@ export const ChatRowContent = ({
 					return <UpdateTodoListToolBlock userEdited onChange={() => {}} />
 				case "image":
 					// Parse the JSON to get imageUri and imagePath
-					const imageInfo = JSON.parse(message.text || "{}")
+					const imageInfo = safeJsonParse<{ imageUri: string; imagePath: string }>(message.text || "{}")
+					if (!imageInfo) {
+						return null
+					}
 					return (
 						<div style={{ marginTop: "10px" }}>
 							<ImageBlock imageUri={imageInfo.imageUri} imagePath={imageInfo.imagePath} />

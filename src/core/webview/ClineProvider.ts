@@ -2481,6 +2481,8 @@ export class ClineProvider
 	 *
 	 * @param filePath - The absolute file path to convert
 	 * @returns The webview URI string, or the original file URI if conversion fails
+	 * @throws {Error} When webview is not available
+	 * @throws {TypeError} When file path is invalid
 	 */
 	public convertToWebviewUri(filePath: string): string {
 		try {
@@ -2492,10 +2494,18 @@ export class ClineProvider
 				return webviewUri.toString()
 			}
 
+			// Specific error for no webview available
+			const error = new Error("No webview available for URI conversion")
+			console.error(error.message)
 			// Fallback to file URI if no webview available
 			return fileUri.toString()
 		} catch (error) {
-			console.error("Failed to convert to webview URI:", error)
+			// More specific error handling
+			if (error instanceof TypeError) {
+				console.error("Invalid file path provided for URI conversion:", error)
+			} else {
+				console.error("Failed to convert to webview URI:", error)
+			}
 			// Return file URI as fallback
 			return vscode.Uri.file(filePath).toString()
 		}

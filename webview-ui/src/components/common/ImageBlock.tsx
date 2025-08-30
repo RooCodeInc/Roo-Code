@@ -1,14 +1,37 @@
 import React from "react"
 import { ImageViewer } from "./ImageViewer"
 
+/**
+ * Props for the ImageBlock component
+ */
 interface ImageBlockProps {
-	// For new image generation tool format (preferred)
-	imageUri?: string // The webview-accessible URI for rendering
-	imagePath?: string // The actual file path for display and opening
+	/**
+	 * The webview-accessible URI for rendering the image.
+	 * This is the preferred format for new image generation tools.
+	 * Should be a URI that can be directly loaded in the webview context.
+	 */
+	imageUri?: string
 
-	// For backward compatibility with Mermaid diagrams and old format
-	imageData?: string // Base64 data or regular URL (legacy)
-	path?: string // Optional path for Mermaid diagrams (legacy)
+	/**
+	 * The actual file path for display purposes and file operations.
+	 * Used to show the path to the user and for opening the file in the editor.
+	 * This is typically an absolute or relative path to the image file.
+	 */
+	imagePath?: string
+
+	/**
+	 * Base64 data or regular URL for backward compatibility.
+	 * @deprecated Use imageUri instead for new implementations.
+	 * This is maintained for compatibility with Mermaid diagrams and legacy code.
+	 */
+	imageData?: string
+
+	/**
+	 * Optional path for Mermaid diagrams.
+	 * @deprecated Use imagePath instead for new implementations.
+	 * This is maintained for backward compatibility with existing Mermaid diagram rendering.
+	 */
+	path?: string
 }
 
 export default function ImageBlock({ imageUri, imagePath, imageData, path }: ImageBlockProps) {
