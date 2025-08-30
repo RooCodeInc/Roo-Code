@@ -268,7 +268,8 @@ export const openAiModelInfoSaneDefaults: ModelInfo = {
 
 // https://learn.microsoft.com/en-us/azure/ai-services/openai/api-version-deprecation
 // https://learn.microsoft.com/en-us/azure/ai-services/openai/reference#api-specs
-export const azureOpenAiDefaultApiVersion = "2024-08-01-preview"
+// Updated to support newer models like o3-mini
+export const azureOpenAiDefaultApiVersion = "2025-03-01-preview"
 
 export const OPENAI_NATIVE_DEFAULT_TEMPERATURE = 0
 export const GPT5_DEFAULT_TEMPERATURE = 1.0

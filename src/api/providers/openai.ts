@@ -40,7 +40,8 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		const apiKey = this.options.openAiApiKey ?? "not-provided"
 		const isAzureAiInference = this._isAzureAiInference(this.options.openAiBaseUrl)
 		const urlHost = this._getUrlHost(this.options.openAiBaseUrl)
-		const isAzureOpenAi = urlHost === "azure.com" || urlHost.endsWith(".azure.com") || options.openAiUseAzure
+		// Improved Azure detection: check for various Azure OpenAI URL patterns
+		const isAzureOpenAi = this._isAzureOpenAi(this.options.openAiBaseUrl) || options.openAiUseAzure
 
 		const headers = {
 			...DEFAULT_HEADERS,
@@ -401,6 +402,19 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 	private _isAzureAiInference(baseUrl?: string): boolean {
 		const urlHost = this._getUrlHost(baseUrl)
 		return urlHost.endsWith(".services.ai.azure.com")
+	}
+
+	private _isAzureOpenAi(baseUrl?: string): boolean {
+		if (!baseUrl) return false
+		const urlHost = this._getUrlHost(baseUrl)
+		// Check for various Azure OpenAI URL patterns
+		return (
+			urlHost === "azure.com" ||
+			urlHost.endsWith(".azure.com") ||
+			urlHost.endsWith(".openai.azure.com") ||
+			// Check if URL contains Azure OpenAI specific paths
+			baseUrl.includes("/openai/deployments/")
+		)
 	}
 
 	/**

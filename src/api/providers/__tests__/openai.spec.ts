@@ -12,19 +12,43 @@ const mockCreate = vitest.fn()
 
 vitest.mock("openai", () => {
 	const mockConstructor = vitest.fn()
-	return {
-		__esModule: true,
-		default: mockConstructor.mockImplementation(() => ({
-			chat: {
-				completions: {
-					create: mockCreate.mockImplementation(async (options) => {
-						if (!options.stream) {
-							return {
-								id: "test-completion",
+	const mockImplementation = () => ({
+		chat: {
+			completions: {
+				create: mockCreate.mockImplementation(async (options) => {
+					if (!options.stream) {
+						return {
+							id: "test-completion",
+							choices: [
+								{
+									message: { role: "assistant", content: "Test response", refusal: null },
+									finish_reason: "stop",
+									index: 0,
+								},
+							],
+							usage: {
+								prompt_tokens: 10,
+								completion_tokens: 5,
+								total_tokens: 15,
+							},
+						}
+					}
+
+					return {
+						[Symbol.asyncIterator]: async function* () {
+							yield {
 								choices: [
 									{
-										message: { role: "assistant", content: "Test response", refusal: null },
-										finish_reason: "stop",
+										delta: { content: "Test response" },
+										index: 0,
+									},
+								],
+								usage: null,
+							}
+							yield {
+								choices: [
+									{
+										delta: {},
 										index: 0,
 									},
 								],
@@ -34,38 +58,17 @@ vitest.mock("openai", () => {
 									total_tokens: 15,
 								},
 							}
-						}
-
-						return {
-							[Symbol.asyncIterator]: async function* () {
-								yield {
-									choices: [
-										{
-											delta: { content: "Test response" },
-											index: 0,
-										},
-									],
-									usage: null,
-								}
-								yield {
-									choices: [
-										{
-											delta: {},
-											index: 0,
-										},
-									],
-									usage: {
-										prompt_tokens: 10,
-										completion_tokens: 5,
-										total_tokens: 15,
-									},
-								}
-							},
-						}
-					}),
-				},
+						},
+					}
+				}),
 			},
-		})),
+		},
+	})
+
+	return {
+		__esModule: true,
+		default: mockConstructor.mockImplementation(mockImplementation),
+		AzureOpenAI: mockConstructor.mockImplementation(mockImplementation),
 	}
 })
 
@@ -847,6 +850,46 @@ describe("OpenAiHandler", () => {
 				}),
 				{ path: "/models/chat/completions" },
 			)
+		})
+	})
+
+	describe("Azure OpenAI Detection", () => {
+		it("should detect Azure OpenAI from .openai.azure.com domain", () => {
+			const azureHandler = new OpenAiHandler({
+				...mockOptions,
+				openAiBaseUrl: "https://myresource.openai.azure.com",
+			})
+			expect(azureHandler).toBeInstanceOf(OpenAiHandler)
+			// The handler should use AzureOpenAI client internally
+		})
+
+		it("should detect Azure OpenAI from URL containing /openai/deployments/", () => {
+			const azureHandler = new OpenAiHandler({
+				...mockOptions,
+				openAiBaseUrl: "https://myresource.openai.azure.com/openai/deployments/mymodel",
+			})
+			expect(azureHandler).toBeInstanceOf(OpenAiHandler)
+			// The handler should use AzureOpenAI client internally
+		})
+
+		it("should detect Azure OpenAI when openAiUseAzure is true", () => {
+			const azureHandler = new OpenAiHandler({
+				...mockOptions,
+				openAiBaseUrl: "https://custom-endpoint.com",
+				openAiUseAzure: true,
+			})
+			expect(azureHandler).toBeInstanceOf(OpenAiHandler)
+			// The handler should use AzureOpenAI client internally
+		})
+
+		it("should use updated Azure API version for o3 models", () => {
+			const azureHandler = new OpenAiHandler({
+				...mockOptions,
+				openAiBaseUrl: "https://myresource.openai.azure.com",
+				openAiModelId: "o3-mini",
+			})
+			expect(azureHandler).toBeInstanceOf(OpenAiHandler)
+			// The handler should use the updated API version (2025-03-01-preview)
 		})
 	})
 })
