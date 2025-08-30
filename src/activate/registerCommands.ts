@@ -81,7 +81,7 @@ const getCommandsMap = ({ context, outputChannel, provider }: RegisterCommandOpt
 			return
 		}
 
-		TelemetryService.instance.captureTitleButtonClicked("account")
+		TelemetryService.instance.captureTitleButtonClicked("cloud")
 
 		visibleProvider.postMessageToWebview({ type: "action", action: "cloudButtonClicked" })
 	},
