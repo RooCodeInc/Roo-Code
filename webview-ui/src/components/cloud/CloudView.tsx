@@ -186,6 +186,14 @@ export const CloudView = ({ userInfo, isAuthenticated, cloudApiUrl, onDone }: Cl
 					</div>
 				</>
 			)}
+			{cloudApiUrl && cloudApiUrl !== "https://app.roocode.com" && (
+				<div className="mt-6 flex justify-center">
+					<div className="inline-flex items-center px-3 py-1 gap-1 rounded-full bg-vscode-badge-background/50 text-vscode-badge-foreground text-xs">
+						<span className="text-vscode-foreground/75">Roo Code Cloud URL: </span>
+						<a href="{cloudApiUrl}">{cloudApiUrl}</a>
+					</div>
+				</div>
+			)}
 		</div>
 	)
 }
