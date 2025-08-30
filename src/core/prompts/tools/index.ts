@@ -1,8 +1,8 @@
 import type { ToolName, ModeConfig } from "@roo-code/types"
 
-import { TOOL_GROUPS, ALWAYS_AVAILABLE_TOOLS, DiffStrategy } from "../../../shared/tools"
+import { DiffStrategy } from "../../../shared/tools"
 import { McpHub } from "../../../services/mcp/McpHub"
-import { Mode, getModeConfig, isToolAllowedForMode, getGroupName } from "../../../shared/modes"
+import { Mode } from "../../../shared/modes"
 
 import { ToolArgs } from "./types"
 import { getExecuteCommandDescription } from "./execute-command"
@@ -27,6 +27,8 @@ import { getCodebaseSearchDescription } from "./codebase-search"
 import { getUpdateTodoListDescription } from "./update-todo-list"
 import { getGenerateImageDescription } from "./generate-image"
 import { CodeIndexManager } from "../../../services/code-index/manager"
+import { getToolRegistry } from "./schemas/tool-registry"
+import { getToolAvailability, type ToolAvailabilityArgs } from "./tool-availability"
 
 // Map of tool names to their description functions
 const toolDescriptionMap: Record<string, (args: ToolArgs) => string | undefined> = {
@@ -75,13 +77,15 @@ export function getToolDescriptionsForMode(
 	enableMcpServerCreation?: boolean,
 	modelId?: string,
 ): string {
-	const config = getModeConfig(mode, customModes)
-	const args: ToolArgs = {
+	const toolAvailabilityArgs: ToolAvailabilityArgs = {
+		mode,
 		cwd,
 		supportsComputerUse,
+		codeIndexManager,
 		diffStrategy,
 		browserViewportSize,
 		mcpHub,
+		customModes,
 		partialReadsEnabled,
 		settings: {
 			...settings,
@@ -91,60 +95,21 @@ export function getToolDescriptionsForMode(
 		experiments,
 	}
 
-	const tools = new Set<string>()
+	const { xmlTools } = getToolAvailability(toolAvailabilityArgs)
 
-	// Add tools from mode's groups
-	config.groups.forEach((groupEntry) => {
-		const groupName = getGroupName(groupEntry)
-		const toolGroup = TOOL_GROUPS[groupName]
-		if (toolGroup) {
-			toolGroup.tools.forEach((tool) => {
-				if (
-					isToolAllowedForMode(
-						tool as ToolName,
-						mode,
-						customModes ?? [],
-						undefined,
-						undefined,
-						experiments ?? {},
-					)
-				) {
-					tools.add(tool)
-				}
-			})
-		}
-	})
-
-	// Add always available tools
-	ALWAYS_AVAILABLE_TOOLS.forEach((tool) => tools.add(tool))
-
-	// Conditionally exclude codebase_search if feature is disabled or not configured
-	if (
-		!codeIndexManager ||
-		!(codeIndexManager.isFeatureEnabled && codeIndexManager.isFeatureConfigured && codeIndexManager.isInitialized)
-	) {
-		tools.delete("codebase_search")
+	if (xmlTools.length === 0) {
+		return ""
 	}
 
-	// Conditionally exclude update_todo_list if disabled in settings
-	if (settings?.todoListEnabled === false) {
-		tools.delete("update_todo_list")
-	}
-
-	// Conditionally exclude generate_image if experiment is not enabled
-	if (!experiments?.imageGeneration) {
-		tools.delete("generate_image")
-	}
-
-	// Map tool descriptions for allowed tools
-	const descriptions = Array.from(tools).map((toolName) => {
+	// Map tool descriptions for XML tools only
+	const descriptions = xmlTools.map((toolName) => {
 		const descriptionFn = toolDescriptionMap[toolName]
 		if (!descriptionFn) {
 			return undefined
 		}
 
 		return descriptionFn({
-			...args,
+			...toolAvailabilityArgs,
 			toolOptions: undefined, // No tool options in group-based approach
 		})
 	})
