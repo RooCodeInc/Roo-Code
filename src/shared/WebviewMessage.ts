@@ -174,7 +174,7 @@ export interface WebviewMessage {
 		| "toggleApiConfigPin"
 		| "setHistoryPreviewCollapsed"
 		| "hasOpenedModeSelector"
-		| "accountButtonClicked"
+		| "cloudButtonClicked"
 		| "rooCloudSignIn"
 		| "rooCloudSignOut"
 		| "condenseTaskContextRequest"
