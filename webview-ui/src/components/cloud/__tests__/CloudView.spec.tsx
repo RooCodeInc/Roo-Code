@@ -21,6 +21,7 @@ vi.mock("@src/i18n/TranslationContext", () => ({
 				"cloud:remoteControlDescription":
 					"Enable following and interacting with tasks in this workspace with Roo Code Cloud",
 				"cloud:profilePicture": "Profile picture",
+				"cloud:cloudUrlPillLabel": "Roo Code Cloud URL: ",
 			}
 			return translations[key] || key
 		},
@@ -156,7 +157,7 @@ describe("CloudView", () => {
 		}
 
 		render(
-			<AccountView
+			<CloudView
 				userInfo={mockUserInfo}
 				isAuthenticated={true}
 				cloudApiUrl="https://app.roocode.com"
@@ -175,7 +176,7 @@ describe("CloudView", () => {
 		}
 
 		render(
-			<AccountView
+			<CloudView
 				userInfo={mockUserInfo}
 				isAuthenticated={true}
 				cloudApiUrl="https://staging.roocode.com"
@@ -184,12 +185,13 @@ describe("CloudView", () => {
 		)
 
 		// Check that the cloud URL pill is displayed with the staging URL
-		expect(screen.getByText("Roo Code Cloud URL: https://staging.roocode.com")).toBeInTheDocument()
+		expect(screen.getByText(/Roo Code Cloud URL:/)).toBeInTheDocument()
+		expect(screen.getByText("https://staging.roocode.com")).toBeInTheDocument()
 	})
 
 	it("should display cloud URL pill for non-authenticated users when not pointing to production", () => {
 		render(
-			<AccountView
+			<CloudView
 				userInfo={null}
 				isAuthenticated={false}
 				cloudApiUrl="https://dev.roocode.com"
@@ -198,7 +200,8 @@ describe("CloudView", () => {
 		)
 
 		// Check that the cloud URL pill is displayed even when not authenticated
-		expect(screen.getByText("Roo Code Cloud URL: https://dev.roocode.com")).toBeInTheDocument()
+		expect(screen.getByText(/Roo Code Cloud URL:/)).toBeInTheDocument()
+		expect(screen.getByText("https://dev.roocode.com")).toBeInTheDocument()
 	})
 
 	it("should not display cloud URL pill when cloudApiUrl is undefined", () => {
@@ -207,7 +210,7 @@ describe("CloudView", () => {
 			email: "test@example.com",
 		}
 
-		render(<AccountView userInfo={mockUserInfo} isAuthenticated={true} onDone={() => {}} />)
+		render(<CloudView userInfo={mockUserInfo} isAuthenticated={true} onDone={() => {}} />)
 
 		// Check that the cloud URL pill is NOT displayed when cloudApiUrl is undefined
 		expect(screen.queryByText(/Roo Code Cloud URL:/)).not.toBeInTheDocument()

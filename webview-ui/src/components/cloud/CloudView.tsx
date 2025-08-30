@@ -18,6 +18,8 @@ type CloudViewProps = {
 	onDone: () => void
 }
 
+const PRODUCTION_CLOUD_URL = "https://app.roocode.com"
+
 export const CloudView = ({ userInfo, isAuthenticated, cloudApiUrl, onDone }: CloudViewProps) => {
 	const { t } = useAppTranslation()
 	const { remoteControlEnabled, setRemoteControlEnabled } = useExtensionState()
@@ -56,8 +58,14 @@ export const CloudView = ({ userInfo, isAuthenticated, cloudApiUrl, onDone }: Cl
 		// Send telemetry for cloud website visit
 		// NOTE: Using ACCOUNT_* telemetry events for backward compatibility with analytics
 		telemetryClient.capture(TelemetryEventName.ACCOUNT_CONNECT_CLICKED)
-		const cloudUrl = cloudApiUrl || "https://app.roocode.com"
+		const cloudUrl = cloudApiUrl || PRODUCTION_CLOUD_URL
 		vscode.postMessage({ type: "openExternal", url: cloudUrl })
+	}
+
+	const handleOpenCloudUrl = () => {
+		if (cloudApiUrl) {
+			vscode.postMessage({ type: "openExternal", url: cloudApiUrl })
+		}
 	}
 
 	const handleRemoteControlToggle = () => {
@@ -186,11 +194,15 @@ export const CloudView = ({ userInfo, isAuthenticated, cloudApiUrl, onDone }: Cl
 					</div>
 				</>
 			)}
-			{cloudApiUrl && cloudApiUrl !== "https://app.roocode.com" && (
+			{cloudApiUrl && cloudApiUrl !== PRODUCTION_CLOUD_URL && (
 				<div className="mt-6 flex justify-center">
 					<div className="inline-flex items-center px-3 py-1 gap-1 rounded-full bg-vscode-badge-background/50 text-vscode-badge-foreground text-xs">
-						<span className="text-vscode-foreground/75">Roo Code Cloud URL: </span>
-						<a href="{cloudApiUrl}">{cloudApiUrl}</a>
+						<span className="text-vscode-foreground/75">{t("account:cloudUrlPillLabel")}</span>
+						<button
+							onClick={handleOpenCloudUrl}
+							className="text-vscode-textLink-foreground hover:text-vscode-textLink-activeForeground underline cursor-pointer bg-transparent border-none p-0">
+							{cloudApiUrl}
+						</button>
 					</div>
 				</div>
 			)}
