@@ -38,6 +38,13 @@ export const globalSettingsSchema = z.object({
 	listApiConfigMeta: z.array(providerSettingsEntrySchema).optional(),
 	pinnedApiConfigs: z.record(z.string(), z.boolean()).optional(),
 
+	// Mode and API profile sorting preferences
+	modeSortingMode: z.enum(["alphabetical", "manual"]).optional(),
+	pinnedModes: z.record(z.string(), z.boolean()).optional(),
+	customModeOrder: z.array(z.string()).optional(),
+	apiProfileSortingMode: z.enum(["alphabetical", "manual"]).optional(),
+	customApiProfileOrder: z.array(z.string()).optional(),
+
 	lastShownAnnouncementId: z.string().optional(),
 	customInstructions: z.string().optional(),
 	taskHistory: z.array(historyItemSchema).optional(),
@@ -248,6 +255,13 @@ export const EVALS_SETTINGS: RooCodeSettings = {
 	lastShownAnnouncementId: "jul-09-2025-3-23-0",
 
 	pinnedApiConfigs: {},
+
+	// Default sorting settings
+	modeSortingMode: "alphabetical",
+	pinnedModes: {},
+	customModeOrder: [],
+	apiProfileSortingMode: "alphabetical",
+	customApiProfileOrder: [],
 
 	autoApprovalEnabled: true,
 	alwaysAllowReadOnly: true,

@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils"
 import { useRooPortal } from "@/components/ui/hooks/useRooPortal"
 import { Popover, PopoverContent, PopoverTrigger, StandardTooltip } from "@/components/ui"
 import { useAppTranslation } from "@/i18n/TranslationContext"
+import { useExtensionState } from "@/context/ExtensionStateContext"
 import { vscode } from "@/utils/vscode"
 import { Button } from "@/components/ui"
 
@@ -39,6 +40,9 @@ export const ApiConfigSelector = ({
 	const [searchValue, setSearchValue] = useState("")
 	const portalContainer = useRooPortal("roo-portal")
 
+	// Get sorting preferences from extension state
+	const { apiProfileSortingMode, customApiProfileOrder } = useExtensionState()
+
 	// Create searchable items for fuzzy search.
 	const searchableItems = useMemo(
 		() =>
@@ -65,12 +69,40 @@ export const ApiConfigSelector = ({
 		return matchingItems
 	}, [listApiConfigMeta, searchValue, fzfInstance])
 
+	// Sort configs based on sorting preferences
+	const sortedConfigs = useMemo(() => {
+		const sorted = [...filteredConfigs]
+
+		if (apiProfileSortingMode === "manual" && customApiProfileOrder && customApiProfileOrder.length > 0) {
+			// Sort based on custom order
+			sorted.sort((a, b) => {
+				const aIndex = customApiProfileOrder.indexOf(a.id)
+				const bIndex = customApiProfileOrder.indexOf(b.id)
+
+				// If both are in custom order, sort by their position
+				if (aIndex !== -1 && bIndex !== -1) {
+					return aIndex - bIndex
+				}
+				// If only one is in custom order, it comes first
+				if (aIndex !== -1) return -1
+				if (bIndex !== -1) return 1
+				// Otherwise maintain original order
+				return 0
+			})
+		} else {
+			// Alphabetical sorting (default)
+			sorted.sort((a, b) => a.name.localeCompare(b.name))
+		}
+
+		return sorted
+	}, [filteredConfigs, apiProfileSortingMode, customApiProfileOrder])
+
 	// Separate pinned and unpinned configs.
 	const { pinnedConfigs, unpinnedConfigs } = useMemo(() => {
-		const pinned = filteredConfigs.filter((config) => pinnedApiConfigs?.[config.id])
-		const unpinned = filteredConfigs.filter((config) => !pinnedApiConfigs?.[config.id])
+		const pinned = sortedConfigs.filter((config) => pinnedApiConfigs?.[config.id])
+		const unpinned = sortedConfigs.filter((config) => !pinnedApiConfigs?.[config.id])
 		return { pinnedConfigs: pinned, unpinnedConfigs: unpinned }
-	}, [filteredConfigs, pinnedApiConfigs])
+	}, [sortedConfigs, pinnedApiConfigs])
 
 	const handleSelect = useCallback(
 		(configId: string) => {

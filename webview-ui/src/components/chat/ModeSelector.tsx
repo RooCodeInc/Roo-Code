@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { useAppTranslation } from "@/i18n/TranslationContext"
 import { useRooPortal } from "@/components/ui/hooks/useRooPortal"
-import { Popover, PopoverContent, PopoverTrigger, StandardTooltip } from "@/components/ui"
+import { Popover, PopoverContent, PopoverTrigger, StandardTooltip, Button } from "@/components/ui"
 
 import { IconButton } from "./IconButton"
 
@@ -45,7 +45,14 @@ export const ModeSelector = ({
 	const [searchValue, setSearchValue] = React.useState("")
 	const searchInputRef = React.useRef<HTMLInputElement>(null)
 	const portalContainer = useRooPortal("roo-portal")
-	const { hasOpenedModeSelector, setHasOpenedModeSelector } = useExtensionState()
+	const {
+		hasOpenedModeSelector,
+		setHasOpenedModeSelector,
+		modeSortingMode,
+		pinnedModes,
+		togglePinnedMode,
+		customModeOrder,
+	} = useExtensionState()
 	const { t } = useAppTranslation()
 
 	const trackModeSelectorOpened = React.useCallback(() => {
@@ -99,9 +106,44 @@ export const ModeSelector = ({
 		[descriptionSearchItems],
 	)
 
+	// Sort modes based on sorting preferences
+	const sortedModes = React.useMemo(() => {
+		let sorted = [...modes]
+
+		if (modeSortingMode === "manual" && customModeOrder && customModeOrder.length > 0) {
+			// Sort based on custom order
+			sorted.sort((a, b) => {
+				const aIndex = customModeOrder.indexOf(a.slug)
+				const bIndex = customModeOrder.indexOf(b.slug)
+
+				// If both are in custom order, sort by their position
+				if (aIndex !== -1 && bIndex !== -1) {
+					return aIndex - bIndex
+				}
+				// If only one is in custom order, it comes first
+				if (aIndex !== -1) return -1
+				if (bIndex !== -1) return 1
+				// Otherwise maintain original order
+				return 0
+			})
+		} else {
+			// Alphabetical sorting (default)
+			sorted.sort((a, b) => a.name.localeCompare(b.name))
+		}
+
+		// Apply pinning - pinned modes come first
+		if (pinnedModes) {
+			const pinned = sorted.filter((mode) => pinnedModes[mode.slug])
+			const unpinned = sorted.filter((mode) => !pinnedModes[mode.slug])
+			sorted = [...pinned, ...unpinned]
+		}
+
+		return sorted
+	}, [modes, modeSortingMode, pinnedModes, customModeOrder])
+
 	// Filter modes based on search value using fuzzy search with priority.
 	const filteredModes = React.useMemo(() => {
-		if (!searchValue) return modes
+		if (!searchValue) return sortedModes
 
 		// First search in names/slugs.
 		const nameMatches = nameFzfInstance.find(searchValue)
@@ -118,8 +160,13 @@ export const ModeSelector = ({
 				.map((result) => result.item.original),
 		]
 
-		return combinedResults
-	}, [modes, searchValue, nameFzfInstance, descriptionFzfInstance])
+		// Preserve the sorting order after filtering
+		const sortedFilteredResults = sortedModes.filter((mode) =>
+			combinedResults.some((result) => result.slug === mode.slug),
+		)
+
+		return sortedFilteredResults
+	}, [sortedModes, searchValue, nameFzfInstance, descriptionFzfInstance])
 
 	const onClearSearch = React.useCallback(() => {
 		setSearchValue("")
@@ -230,29 +277,24 @@ export const ModeSelector = ({
 							</div>
 						) : (
 							<div className="py-1">
-								{filteredModes.map((mode) => (
-									<div
-										key={mode.slug}
-										onClick={() => handleSelect(mode.slug)}
-										className={cn(
-											"px-3 py-1.5 text-sm cursor-pointer flex items-center",
-											"hover:bg-vscode-list-hoverBackground",
-											mode.slug === value
-												? "bg-vscode-list-activeSelectionBackground text-vscode-list-activeSelectionForeground"
-												: "",
-										)}
-										data-testid="mode-selector-item">
-										<div className="flex-1 min-w-0">
-											<div className="font-bold truncate">{mode.name}</div>
-											{mode.description && (
-												<div className="text-xs text-vscode-descriptionForeground truncate">
-													{mode.description}
-												</div>
+								{/* Show pinned modes first if any */}
+								{pinnedModes &&
+									Object.keys(pinnedModes).length > 0 &&
+									filteredModes.filter((mode) => pinnedModes[mode.slug]).length > 0 && (
+										<>
+											{filteredModes
+												.filter((mode) => pinnedModes[mode.slug])
+												.map((mode) => renderModeItem(mode, true))}
+											{/* Separator between pinned and unpinned */}
+											{filteredModes.filter((mode) => !pinnedModes[mode.slug]).length > 0 && (
+												<div className="mx-1 my-1 h-px bg-vscode-dropdown-foreground/10" />
 											)}
-										</div>
-										{mode.slug === value && <Check className="ml-auto size-4 p-0.5" />}
-									</div>
-								))}
+										</>
+									)}
+								{/* Show unpinned modes */}
+								{filteredModes
+									.filter((mode) => !pinnedModes || !pinnedModes[mode.slug])
+									.map((mode) => renderModeItem(mode, false))}
 							</div>
 						)}
 					</div>
@@ -301,4 +343,53 @@ export const ModeSelector = ({
 			</PopoverContent>
 		</Popover>
 	)
+
+	function renderModeItem(mode: (typeof modes)[0], isPinned: boolean) {
+		const isSelected = mode.slug === value
+
+		return (
+			<div
+				key={mode.slug}
+				onClick={() => handleSelect(mode.slug)}
+				className={cn(
+					"px-3 py-1.5 text-sm cursor-pointer flex items-center group",
+					"hover:bg-vscode-list-hoverBackground",
+					isSelected
+						? "bg-vscode-list-activeSelectionBackground text-vscode-list-activeSelectionForeground"
+						: "",
+				)}
+				data-testid="mode-selector-item">
+				<div className="flex-1 min-w-0">
+					<div className="font-bold truncate">{mode.name}</div>
+					{mode.description && (
+						<div className="text-xs text-vscode-descriptionForeground truncate">{mode.description}</div>
+					)}
+				</div>
+				<div className="flex items-center gap-1">
+					{isSelected && (
+						<div className="size-5 p-1 flex items-center justify-center">
+							<Check className="size-3" />
+						</div>
+					)}
+					<StandardTooltip content={isPinned ? t("chat:unpin") : t("chat:pin")}>
+						<Button
+							variant="ghost"
+							size="icon"
+							tabIndex={-1}
+							onClick={(e) => {
+								e.stopPropagation()
+								togglePinnedMode?.(mode.slug)
+								vscode.postMessage({ type: "toggleModePin", text: mode.slug })
+							}}
+							className={cn("size-5 flex items-center justify-center", {
+								"opacity-0 group-hover:opacity-100": !isPinned && !isSelected,
+								"bg-accent opacity-100": isPinned,
+							})}>
+							<span className="codicon codicon-pin text-xs opacity-50" />
+						</Button>
+					</StandardTooltip>
+				</div>
+			</div>
+		)
+	}
 }

@@ -44,6 +44,18 @@ export interface ExtensionStateContextType extends ExtensionState {
 	mdmCompliant?: boolean
 	hasOpenedModeSelector: boolean // New property to track if user has opened mode selector
 	setHasOpenedModeSelector: (value: boolean) => void // Setter for the new property
+	// Mode and API profile sorting settings
+	modeSortingMode?: "alphabetical" | "manual"
+	setModeSortingMode: (value: "alphabetical" | "manual") => void
+	pinnedModes?: Record<string, boolean>
+	setPinnedModes: (value: Record<string, boolean>) => void
+	togglePinnedMode: (modeSlug: string) => void
+	customModeOrder?: string[]
+	setCustomModeOrder: (value: string[]) => void
+	apiProfileSortingMode?: "alphabetical" | "manual"
+	setApiProfileSortingMode: (value: "alphabetical" | "manual") => void
+	customApiProfileOrder?: string[]
+	setCustomApiProfileOrder: (value: string[]) => void
 	alwaysAllowFollowupQuestions: boolean // New property for follow-up questions auto-approve
 	setAlwaysAllowFollowupQuestions: (value: boolean) => void // Setter for the new property
 	followupAutoApproveTimeoutMs: number | undefined // Timeout in ms for auto-approving follow-up questions
@@ -225,6 +237,11 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		maxImageFileSize: 5, // Default max image file size in MB
 		maxTotalImageSize: 20, // Default max total image size in MB
 		pinnedApiConfigs: {}, // Empty object for pinned API configs
+		modeSortingMode: "alphabetical" as const, // Default mode sorting
+		pinnedModes: {}, // Empty object for pinned modes
+		customModeOrder: [], // Empty array for custom mode order
+		apiProfileSortingMode: "alphabetical" as const, // Default API profile sorting
+		customApiProfileOrder: [], // Empty array for custom API profile order
 		terminalZshOhMy: false, // Default Oh My Zsh integration setting
 		maxConcurrentFileReads: 5, // Default concurrent file reads
 		terminalZshP10k: false, // Default Powerlevel10k integration setting
@@ -295,7 +312,26 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 			switch (message.type) {
 				case "state": {
 					const newState = message.state!
-					setState((prevState) => mergeExtensionState(prevState, newState))
+					setState((prevState) => {
+						const merged = mergeExtensionState(prevState, newState)
+						// Handle new sorting settings if present
+						if ((newState as any).modeSortingMode !== undefined) {
+							;(merged as any).modeSortingMode = (newState as any).modeSortingMode
+						}
+						if ((newState as any).pinnedModes !== undefined) {
+							;(merged as any).pinnedModes = (newState as any).pinnedModes
+						}
+						if ((newState as any).customModeOrder !== undefined) {
+							;(merged as any).customModeOrder = (newState as any).customModeOrder
+						}
+						if ((newState as any).apiProfileSortingMode !== undefined) {
+							;(merged as any).apiProfileSortingMode = (newState as any).apiProfileSortingMode
+						}
+						if ((newState as any).customApiProfileOrder !== undefined) {
+							;(merged as any).customApiProfileOrder = (newState as any).customApiProfileOrder
+						}
+						return merged
+					})
 					setShowWelcome(!checkExistKey(newState.apiConfiguration))
 					setDidHydrateState(true)
 					// Update alwaysAllowFollowupQuestions if present in state message
@@ -413,6 +449,11 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		marketplaceItems,
 		marketplaceInstalledMetadata,
 		profileThresholds: state.profileThresholds ?? {},
+		modeSortingMode: (state as any).modeSortingMode,
+		pinnedModes: (state as any).pinnedModes,
+		customModeOrder: (state as any).customModeOrder,
+		apiProfileSortingMode: (state as any).apiProfileSortingMode,
+		customApiProfileOrder: (state as any).customApiProfileOrder,
 		alwaysAllowFollowupQuestions,
 		followupAutoApproveTimeoutMs,
 		remoteControlEnabled: state.remoteControlEnabled ?? false,
@@ -505,6 +546,26 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		setHistoryPreviewCollapsed: (value) =>
 			setState((prevState) => ({ ...prevState, historyPreviewCollapsed: value })),
 		setHasOpenedModeSelector: (value) => setState((prevState) => ({ ...prevState, hasOpenedModeSelector: value })),
+		setModeSortingMode: (value) => setState((prevState) => ({ ...prevState, modeSortingMode: value }) as any),
+		setPinnedModes: (value) => setState((prevState) => ({ ...prevState, pinnedModes: value }) as any),
+		togglePinnedMode: (modeSlug) =>
+			setState((prevState) => {
+				const currentPinned = (prevState as any).pinnedModes || {}
+				const newPinned = {
+					...currentPinned,
+					[modeSlug]: !currentPinned[modeSlug],
+				}
+				// If the mode is now unpinned, remove it from the object
+				if (!newPinned[modeSlug]) {
+					delete newPinned[modeSlug]
+				}
+				return { ...prevState, pinnedModes: newPinned } as any
+			}),
+		setCustomModeOrder: (value) => setState((prevState) => ({ ...prevState, customModeOrder: value }) as any),
+		setApiProfileSortingMode: (value) =>
+			setState((prevState) => ({ ...prevState, apiProfileSortingMode: value }) as any),
+		setCustomApiProfileOrder: (value) =>
+			setState((prevState) => ({ ...prevState, customApiProfileOrder: value }) as any),
 		setAutoCondenseContext: (value) => setState((prevState) => ({ ...prevState, autoCondenseContext: value })),
 		setAutoCondenseContextPercent: (value) =>
 			setState((prevState) => ({ ...prevState, autoCondenseContextPercent: value })),

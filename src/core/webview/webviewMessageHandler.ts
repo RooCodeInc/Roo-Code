@@ -1375,6 +1375,45 @@ export const webviewMessageHandler = async (
 				await provider.postStateToWebview()
 			}
 			break
+		case "toggleModePin":
+			if (message.text) {
+				const currentPinned = getGlobalState("pinnedModes") ?? {}
+				const updatedPinned: Record<string, boolean> = { ...currentPinned }
+
+				if (currentPinned[message.text]) {
+					delete updatedPinned[message.text]
+				} else {
+					updatedPinned[message.text] = true
+				}
+
+				await updateGlobalState("pinnedModes", updatedPinned)
+				await provider.postStateToWebview()
+			}
+			break
+		case "modeSortingMode":
+			if (message.text === "alphabetical" || message.text === "manual") {
+				await updateGlobalState("modeSortingMode", message.text)
+				await provider.postStateToWebview()
+			}
+			break
+		case "apiProfileSortingMode":
+			if (message.text === "alphabetical" || message.text === "manual") {
+				await updateGlobalState("apiProfileSortingMode", message.text)
+				await provider.postStateToWebview()
+			}
+			break
+		case "customModeOrder":
+			if (message.values && Array.isArray(message.values)) {
+				await updateGlobalState("customModeOrder", message.values)
+				await provider.postStateToWebview()
+			}
+			break
+		case "customApiProfileOrder":
+			if (message.values && Array.isArray(message.values)) {
+				await updateGlobalState("customApiProfileOrder", message.values)
+				await provider.postStateToWebview()
+			}
+			break
 		case "enhancementApiConfigId":
 			await updateGlobalState("enhancementApiConfigId", message.text)
 			await provider.postStateToWebview()
