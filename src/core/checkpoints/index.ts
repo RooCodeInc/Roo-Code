@@ -181,9 +181,13 @@ export type CheckpointRestoreOptions = {
 	ts: number
 	commitHash: string
 	mode: "preview" | "restore"
+	operation?: "delete" | "edit" // Optional to maintain backward compatibility
 }
 
-export async function checkpointRestore(cline: Task, { ts, commitHash, mode }: CheckpointRestoreOptions) {
+export async function checkpointRestore(
+	cline: Task,
+	{ ts, commitHash, mode, operation = "delete" }: CheckpointRestoreOptions,
+) {
 	const service = await getCheckpointService(cline)
 
 	if (!service) {
@@ -212,7 +216,10 @@ export async function checkpointRestore(cline: Task, { ts, commitHash, mode }: C
 				cline.combineMessages(deletedMessages),
 			)
 
-			await cline.overwriteClineMessages(cline.clineMessages.slice(0, index + 1))
+			// For delete operations, exclude the checkpoint message itself
+			// For edit operations, include the checkpoint message (to be edited)
+			const endIndex = operation === "edit" ? index + 1 : index
+			await cline.overwriteClineMessages(cline.clineMessages.slice(0, endIndex))
 
 			// TODO: Verify that this is working as expected.
 			await cline.say(
