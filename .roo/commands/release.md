@@ -26,8 +26,7 @@ argument-hint: patch | minor | major
     - Without issue: "- Add support for Gemini 2.5 Pro caching (thanks @contributor!)"
 - CRITICAL: Include EVERY SINGLE PR in the changeset - don't assume you know which ones are important. Count the total PRs to verify completeness and cross-reference the list to ensure nothing is missed.
 
-6. Generate a release image:
-    - Use the generate_image tool to create a release image at `releases/[version]-release.png`
+6. If the generate_image tool is available, create a release image at `releases/[version]-release.png`
     - The image should feature a realistic-looking kangaroo doing something human-like that relates to the main highlight of the release
     - Pass `releases/template.png` as the reference image for aspect ratio and kangaroo style
     - Add the generated image to .changeset/v[version].md before the list of changes with format: `![X.Y.Z Release - Description](releases/X.Y.Z-release.png)`
