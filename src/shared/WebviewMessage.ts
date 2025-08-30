@@ -94,6 +94,8 @@ export interface WebviewMessage {
 		| "ttsEnabled"
 		| "ttsSpeed"
 		| "soundVolume"
+		| "showSystemNotification"
+		| "systemNotificationsEnabled"
 		| "diffEnabled"
 		| "enableCheckpoints"
 		| "browserViewportSize"
@@ -284,6 +286,12 @@ export interface WebviewMessage {
 		codebaseIndexGeminiApiKey?: string
 		codebaseIndexMistralApiKey?: string
 		codebaseIndexVercelAiGatewayApiKey?: string
+	}
+	notificationOptions?: {
+		title?: string
+		subtitle?: string
+		message: string
+		force?: boolean // Force notification even if the window is focused
 	}
 }
 
