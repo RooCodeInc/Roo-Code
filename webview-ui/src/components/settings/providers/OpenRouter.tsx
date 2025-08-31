@@ -111,6 +111,16 @@ export const OpenRouter = ({
 							}}
 						/>
 					</Checkbox>
+					<div>
+						<Checkbox
+							checked={apiConfiguration?.openRouterFailoverEnabled ?? true}
+							onChange={handleInputChange("openRouterFailoverEnabled", noTransform)}>
+							Enable automatic failover
+						</Checkbox>
+						<div className="text-sm text-vscode-descriptionForeground mt-1">
+							When enabled, automatically try backup providers if the primary provider fails
+						</div>
+					</div>
 				</>
 			)}
 			<ModelPicker
