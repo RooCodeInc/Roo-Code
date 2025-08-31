@@ -135,14 +135,9 @@ export async function activate(context: vscode.ExtensionContext) {
 		if (data.state === "logged-out") {
 			try {
 				// Disconnect the bridge when user logs out
-				// Pass null userInfo and false for remoteControlEnabled to trigger disconnection
-				await BridgeOrchestrator.connectOrDisconnect(null, false, {
-					userId: "",
-					socketBridgeUrl: "",
-					token: "",
-					provider,
-					sessionId: vscode.env.sessionId,
-				})
+				// When userInfo is null and remoteControlEnabled is false, BridgeOrchestrator
+				// will disconnect. The options parameter is not needed for disconnection.
+				await BridgeOrchestrator.connectOrDisconnect(null, false)
 
 				cloudLogger("[CloudService] BridgeOrchestrator disconnected on logout")
 			} catch (error) {
