@@ -12,7 +12,7 @@ try {
 	console.warn("Failed to load environment variables:", e)
 }
 
-import type { CloudUserInfo } from "@roo-code/types"
+import type { CloudUserInfo, AuthState } from "@roo-code/types"
 import { CloudService, BridgeOrchestrator } from "@roo-code/cloud"
 import { TelemetryService, PostHogTelemetryClient } from "@roo-code/telemetry"
 
@@ -53,7 +53,7 @@ let outputChannel: vscode.OutputChannel
 let extensionContext: vscode.ExtensionContext
 let cloudService: CloudService | undefined
 
-let authStateChangedHandler: (() => void) | undefined
+let authStateChangedHandler: ((data: { state: AuthState; previousState: AuthState }) => Promise<void>) | undefined
 let settingsUpdatedHandler: (() => void) | undefined
 let userInfoHandler: ((data: { userInfo: CloudUserInfo }) => Promise<void>) | undefined
 
@@ -127,7 +127,33 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	// Initialize Roo Code Cloud service.
 	const postStateListener = () => ClineProvider.getVisibleInstance()?.postStateToWebview()
-	authStateChangedHandler = postStateListener
+
+	authStateChangedHandler = async (data: { state: AuthState; previousState: AuthState }) => {
+		postStateListener()
+
+		// Check if user has logged out
+		if (data.state === "logged-out") {
+			try {
+				// Disconnect the bridge when user logs out
+				// Pass null userInfo and false for remoteControlEnabled to trigger disconnection
+				await BridgeOrchestrator.connectOrDisconnect(null, false, {
+					userId: "",
+					socketBridgeUrl: "",
+					token: "",
+					provider,
+					sessionId: vscode.env.sessionId,
+				})
+
+				cloudLogger("[CloudService] BridgeOrchestrator disconnected on logout")
+			} catch (error) {
+				cloudLogger(
+					`[CloudService] Failed to disconnect BridgeOrchestrator on logout: ${
+						error instanceof Error ? error.message : String(error)
+					}`,
+				)
+			}
+		}
+	}
 
 	settingsUpdatedHandler = async () => {
 		const userInfo = CloudService.instance.getUserInfo()
