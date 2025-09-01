@@ -14,6 +14,7 @@ import { ApiStream } from "../transform/stream"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { getApiRequestTimeout } from "./utils/timeout-config"
+import { validateApiKeyForByteString } from "./utils/api-key-validation"
 
 type CompletionUsage = OpenAI.Chat.Completions.ChatCompletionChunk["usage"]
 
@@ -28,6 +29,9 @@ export class OllamaHandler extends BaseProvider implements SingleCompletionHandl
 		// Use the API key if provided (for Ollama cloud or authenticated instances)
 		// Otherwise use "ollama" as a placeholder for local instances
 		const apiKey = this.options.ollamaApiKey || "ollama"
+
+		// Validate API key for ByteString compatibility
+		validateApiKeyForByteString(apiKey, "Ollama")
 
 		const headers: Record<string, string> = {}
 		if (this.options.ollamaApiKey) {

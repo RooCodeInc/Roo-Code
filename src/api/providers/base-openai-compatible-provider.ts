@@ -10,6 +10,7 @@ import { convertToOpenAiMessages } from "../transform/openai-format"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
+import { validateApiKeyForByteString } from "./utils/api-key-validation"
 
 type BaseOpenAiCompatibleProviderOptions<ModelName extends string> = ApiHandlerOptions & {
 	providerName: string
@@ -54,6 +55,9 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 		if (!this.options.apiKey) {
 			throw new Error("API key is required")
 		}
+
+		// Validate API key for ByteString compatibility
+		validateApiKeyForByteString(this.options.apiKey, this.providerName)
 
 		this.client = new OpenAI({
 			baseURL,

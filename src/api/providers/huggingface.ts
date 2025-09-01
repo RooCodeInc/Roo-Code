@@ -8,6 +8,7 @@ import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from ".
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
 import { getHuggingFaceModels, getCachedHuggingFaceModels } from "./fetchers/huggingface"
+import { validateApiKeyForByteString } from "./utils/api-key-validation"
 
 export class HuggingFaceHandler extends BaseProvider implements SingleCompletionHandler {
 	private client: OpenAI
@@ -21,6 +22,9 @@ export class HuggingFaceHandler extends BaseProvider implements SingleCompletion
 		if (!this.options.huggingFaceApiKey) {
 			throw new Error("Hugging Face API key is required")
 		}
+
+		// Validate API key for ByteString compatibility
+		validateApiKeyForByteString(this.options.huggingFaceApiKey, "HuggingFace")
 
 		this.client = new OpenAI({
 			baseURL: "https://router.huggingface.co/v1",

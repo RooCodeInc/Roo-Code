@@ -25,6 +25,7 @@ import { getModelEndpoints } from "./fetchers/modelEndpointCache"
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler } from "../index"
+import { validateApiKeyForByteString } from "./utils/api-key-validation"
 
 // Image generation types
 interface ImageGenerationResponse {
@@ -92,6 +93,9 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 
 		const baseURL = this.options.openRouterBaseUrl || "https://openrouter.ai/api/v1"
 		const apiKey = this.options.openRouterApiKey ?? "not-provided"
+
+		// Validate API key for ByteString compatibility
+		validateApiKeyForByteString(apiKey, "OpenRouter")
 
 		this.client = new OpenAI({ baseURL, apiKey, defaultHeaders: DEFAULT_HEADERS })
 	}

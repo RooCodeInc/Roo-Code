@@ -16,6 +16,7 @@ import { getModels } from "./fetchers/modelCache"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { toRequestyServiceUrl } from "../../shared/utils/requesty"
+import { validateApiKeyForByteString } from "./utils/api-key-validation"
 
 // Requesty usage includes an extra field for Anthropic use cases.
 // Safely cast the prompt token details section to the appropriate structure.
@@ -49,9 +50,14 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 		this.options = options
 		this.baseURL = toRequestyServiceUrl(options.requestyBaseUrl)
 
+		const apiKey = this.options.requestyApiKey ?? "not-provided"
+
+		// Validate API key for ByteString compatibility
+		validateApiKeyForByteString(apiKey, "Requesty")
+
 		this.client = new OpenAI({
 			baseURL: this.baseURL,
-			apiKey: this.options.requestyApiKey ?? "not-provided",
+			apiKey: apiKey,
 			defaultHeaders: DEFAULT_HEADERS,
 		})
 	}

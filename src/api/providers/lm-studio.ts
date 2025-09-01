@@ -15,6 +15,7 @@ import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { getModels, getModelsFromCache } from "./fetchers/modelCache"
 import { getApiRequestTimeout } from "./utils/timeout-config"
+import { validateApiKeyForByteString } from "./utils/api-key-validation"
 
 export class LmStudioHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
@@ -24,9 +25,13 @@ export class LmStudioHandler extends BaseProvider implements SingleCompletionHan
 		super()
 		this.options = options
 
+		// LM Studio uses "noop" as a placeholder API key, but we should still validate if a real key is provided
+		const apiKey = "noop"
+		validateApiKeyForByteString(apiKey, "LM Studio")
+
 		this.client = new OpenAI({
 			baseURL: (this.options.lmStudioBaseUrl || "http://localhost:1234") + "/v1",
-			apiKey: "noop",
+			apiKey: apiKey,
 			timeout: getApiRequestTimeout(),
 		})
 	}
