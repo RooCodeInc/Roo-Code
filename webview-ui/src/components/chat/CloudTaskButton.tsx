@@ -8,6 +8,7 @@ import type { HistoryItem } from "@roo-code/types"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { useCopyToClipboard } from "@/utils/clipboard"
 import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, Input, StandardTooltip } from "@/components/ui"
+import { vscode } from "@/utils/vscode"
 
 interface CloudTaskButtonProps {
 	item?: HistoryItem
@@ -31,8 +32,8 @@ export const CloudTaskButton = ({ item, disabled = false }: CloudTaskButtonProps
 				qrCodeRef.current,
 				cloudTaskUrl,
 				{
-					width: 150,
-					margin: 2,
+					width: 140,
+					margin: 0,
 					color: {
 						dark: "#000000",
 						light: "#FFFFFF",
@@ -74,11 +75,16 @@ export const CloudTaskButton = ({ item, disabled = false }: CloudTaskButtonProps
 					</DialogHeader>
 
 					<div className="flex flex-col space-y-4 text-center">
-						<div className="flex justify-center">
-							<div className="p-[10px] w-[170px] h-[170px] bg-white rounded-lg">
-								<canvas ref={qrCodeRef} />
+						{qrCodeRef && (
+							<div className="flex justify-center">
+								<div
+									className="w-[170px] h-[170px] bg-white rounded-lg border-border cursor-pointer hover:opacity-70 transition-opacity"
+									onClick={() => vscode.postMessage({ type: "openExternal", url: cloudTaskUrl })}
+									title={t("chat:task.openInCloud")}>
+									<canvas ref={qrCodeRef} className="m-[15px]" />
+								</div>
 							</div>
-						</div>
+						)}
 
 						<div className="flex items-center space-x-2">
 							<Input value={cloudTaskUrl} disabled className="flex-1 font-mono text-sm" readOnly />
