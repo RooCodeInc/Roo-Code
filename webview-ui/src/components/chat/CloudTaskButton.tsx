@@ -9,10 +9,6 @@ import { useExtensionState } from "@/context/ExtensionStateContext"
 import { useCopyToClipboard } from "@/utils/clipboard"
 import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, Input, StandardTooltip } from "@/components/ui"
 
-// Use the same URL that getRooCodeApiUrl() from @roo-code/cloud would return
-// This matches the PRODUCTION_ROO_CODE_API_URL constant in packages/cloud/src/config.ts
-const CLOUD_API_URL = "https://app.roocode.com"
-
 interface CloudTaskButtonProps {
 	item?: HistoryItem
 	disabled?: boolean
@@ -21,7 +17,7 @@ interface CloudTaskButtonProps {
 export const CloudTaskButton = ({ item, disabled = false }: CloudTaskButtonProps) => {
 	const [dialogOpen, setDialogOpen] = useState(false)
 	const { t } = useTranslation()
-	const { cloudUserInfo } = useExtensionState()
+	const { cloudUserInfo, cloudApiUrl } = useExtensionState()
 	const { copyWithFeedback, showCopyFeedback } = useCopyToClipboard()
 	const qrCodeRef = useRef<HTMLCanvasElement>(null)
 
