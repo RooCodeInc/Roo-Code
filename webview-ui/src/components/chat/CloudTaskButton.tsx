@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { CloudUpload, Copy, Check } from "lucide-react"
 import QRCode from "qrcode"
@@ -20,16 +20,22 @@ export const CloudTaskButton = ({ item, disabled = false }: CloudTaskButtonProps
 	const { t } = useTranslation()
 	const { cloudUserInfo, cloudApiUrl } = useExtensionState()
 	const { copyWithFeedback, showCopyFeedback } = useCopyToClipboard()
-	const qrCodeRef = useRef<HTMLCanvasElement>(null)
+	const [canvasElement, setCanvasElement] = useState<HTMLCanvasElement | null>(null)
 
 	// Generate the cloud URL for the task
 	const cloudTaskUrl = item?.id ? `${cloudApiUrl}/task/${item.id}` : ""
 
-	// Generate QR code when dialog opens
-	useEffect(() => {
-		if (dialogOpen && qrCodeRef.current && cloudTaskUrl) {
+	// Helper function to generate QR code
+	const generateQRCode = useCallback(
+		(canvas: HTMLCanvasElement, context: string) => {
+			if (!cloudTaskUrl) {
+				console.log(`Skipping QR generation (${context}): No URL available`)
+				return
+			}
+
+			console.log(`Generating QR code (${context})`)
 			QRCode.toCanvas(
-				qrCodeRef.current,
+				canvas,
 				cloudTaskUrl,
 				{
 					width: 140,
@@ -41,12 +47,40 @@ export const CloudTaskButton = ({ item, disabled = false }: CloudTaskButtonProps
 				},
 				(error: Error | null | undefined) => {
 					if (error) {
-						console.error("Error generating QR code:", error)
+						console.error(`Error generating QR code (${context}):`, error)
+					} else {
+						console.log(`QR code generated successfully (${context})`)
 					}
 				},
 			)
+		},
+		[cloudTaskUrl],
+	)
+
+	// Callback ref to capture canvas element when it mounts
+	const canvasRef = useCallback(
+		(node: HTMLCanvasElement | null) => {
+			console.log("Canvas ref callback called with:", node)
+			if (node) {
+				setCanvasElement(node)
+
+				// Try to generate QR code immediately when canvas is available
+				if (dialogOpen) {
+					generateQRCode(node, "on mount")
+				}
+			} else {
+				setCanvasElement(null)
+			}
+		},
+		[dialogOpen, generateQRCode],
+	)
+
+	// Also generate QR code when dialog opens after canvas is available
+	useEffect(() => {
+		if (dialogOpen && canvasElement) {
+			generateQRCode(canvasElement, "in useEffect")
 		}
-	}, [dialogOpen, cloudTaskUrl])
+	}, [dialogOpen, canvasElement, generateQRCode])
 
 	// Check if the button should be shown
 	if (!cloudUserInfo?.extensionBridgeEnabled || !item?.id) {
@@ -75,16 +109,14 @@ export const CloudTaskButton = ({ item, disabled = false }: CloudTaskButtonProps
 					</DialogHeader>
 
 					<div className="flex flex-col space-y-4 text-center">
-						{qrCodeRef && (
-							<div className="flex justify-center">
-								<div
-									className="w-[170px] h-[170px] bg-white rounded-lg border-border cursor-pointer hover:opacity-70 transition-opacity"
-									onClick={() => vscode.postMessage({ type: "openExternal", url: cloudTaskUrl })}
-									title={t("chat:task.openInCloud")}>
-									<canvas ref={qrCodeRef} className="m-[15px]" />
-								</div>
+						<div className="flex justify-center">
+							<div
+								className="w-[170px] h-[170px] bg-white rounded-lg border-border cursor-pointer hover:opacity-70 transition-opacity"
+								onClick={() => vscode.postMessage({ type: "openExternal", url: cloudTaskUrl })}
+								title={t("chat:task.openInCloud")}>
+								<canvas ref={canvasRef} className="m-[15px]" />
 							</div>
-						)}
+						</div>
 
 						<div className="flex items-center space-x-2">
 							<Input value={cloudTaskUrl} disabled className="flex-1 font-mono text-sm" readOnly />
