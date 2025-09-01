@@ -22,7 +22,7 @@ export const CloudTaskButton = ({ item, disabled = false }: CloudTaskButtonProps
 	const qrCodeRef = useRef<HTMLCanvasElement>(null)
 
 	// Generate the cloud URL for the task
-	const cloudTaskUrl = item?.id ? `${CLOUD_API_URL}/task/${item.id}` : ""
+	const cloudTaskUrl = item?.id ? `${cloudApiUrl}/task/${item.id}` : ""
 
 	// Generate QR code when dialog opens
 	useEffect(() => {
