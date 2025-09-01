@@ -109,7 +109,10 @@
 			"modelNotFound": "在 Ollama 中未找到模型 {{modelId}}。請先拉取模型：ollama pull {{modelId}}",
 			"modelNotFoundWithAvailable": "未找到模型 {{modelId}}。可用模型：{{availableModels}}",
 			"modelNotFoundNoModels": "未找到模型 {{modelId}}。沒有可用模型。請先拉取模型：ollama pull {{modelId}}",
-			"completionError": "Ollama 完成錯誤：{{error}}"
+			"completionError": "Ollama 完成錯誤：{{error}}",
+			"clientCreationError": "建立 Ollama 客戶端錯誤：{{error}}",
+			"streamProcessingError": "Ollama 串流處理錯誤：{{error}}",
+			"unknownError": "未知錯誤"
 		},
 		"mode_import_failed": "匯入模式失敗：{{error}}"
 	},

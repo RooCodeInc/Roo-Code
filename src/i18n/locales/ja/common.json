@@ -110,7 +110,10 @@
 			"modelNotFound": "モデル{{modelId}}がOllamaで見つかりません。まずモデルをプルしてください：ollama pull {{modelId}}",
 			"modelNotFoundWithAvailable": "モデル{{modelId}}が見つかりません。利用可能なモデル：{{availableModels}}",
 			"modelNotFoundNoModels": "モデル{{modelId}}が見つかりません。利用可能なモデルがありません。まずモデルをプルしてください：ollama pull {{modelId}}",
-			"completionError": "Ollama完了エラー：{{error}}"
+			"completionError": "Ollama完了エラー：{{error}}",
+			"clientCreationError": "Ollamaクライアント作成エラー：{{error}}",
+			"streamProcessingError": "Ollamaストリーム処理エラー：{{error}}",
+			"unknownError": "不明なエラー"
 		}
 	},
 	"warnings": {

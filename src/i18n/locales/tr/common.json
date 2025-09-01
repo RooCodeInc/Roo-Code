@@ -110,7 +110,10 @@
 			"modelNotFound": "Model {{modelId}} Ollama'da bulunamadı. Önce modeli indirin: ollama pull {{modelId}}",
 			"modelNotFoundWithAvailable": "Model {{modelId}} bulunamadı. Mevcut modeller: {{availableModels}}",
 			"modelNotFoundNoModels": "Model {{modelId}} bulunamadı. Mevcut model yok. Önce modeli indirin: ollama pull {{modelId}}",
-			"completionError": "Ollama tamamlama hatası: {{error}}"
+			"completionError": "Ollama tamamlama hatası: {{error}}",
+			"clientCreationError": "Ollama istemci oluşturma hatası: {{error}}",
+			"streamProcessingError": "Ollama akış işleme hatası: {{error}}",
+			"unknownError": "Bilinmeyen hata"
 		}
 	},
 	"warnings": {

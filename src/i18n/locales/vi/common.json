@@ -110,7 +110,10 @@
 			"modelNotFound": "Không tìm thấy mô hình {{modelId}} trong Ollama. Vui lòng tải mô hình trước với: ollama pull {{modelId}}",
 			"modelNotFoundWithAvailable": "Không tìm thấy mô hình {{modelId}}. Các mô hình có sẵn: {{availableModels}}",
 			"modelNotFoundNoModels": "Không tìm thấy mô hình {{modelId}}. Không có mô hình nào có sẵn. Vui lòng tải mô hình trước với: ollama pull {{modelId}}",
-			"completionError": "Lỗi hoàn thành Ollama: {{error}}"
+			"completionError": "Lỗi hoàn thành Ollama: {{error}}",
+			"clientCreationError": "Lỗi tạo client Ollama: {{error}}",
+			"streamProcessingError": "Lỗi xử lý stream Ollama: {{error}}",
+			"unknownError": "Lỗi không xác định"
 		}
 	},
 	"warnings": {

@@ -110,7 +110,10 @@
 			"modelNotFound": "Model {{modelId}} nie został znaleziony w Ollama. Najpierw pobierz model za pomocą: ollama pull {{modelId}}",
 			"modelNotFoundWithAvailable": "Model {{modelId}} nie został znaleziony. Dostępne modele: {{availableModels}}",
 			"modelNotFoundNoModels": "Model {{modelId}} nie został znaleziony. Brak dostępnych modeli. Najpierw pobierz model za pomocą: ollama pull {{modelId}}",
-			"completionError": "Błąd ukończenia Ollama: {{error}}"
+			"completionError": "Błąd ukończenia Ollama: {{error}}",
+			"clientCreationError": "Błąd tworzenia klienta Ollama: {{error}}",
+			"streamProcessingError": "Błąd przetwarzania strumienia Ollama: {{error}}",
+			"unknownError": "Nieznany błąd"
 		}
 	},
 	"warnings": {

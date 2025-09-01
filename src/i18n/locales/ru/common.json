@@ -110,7 +110,10 @@
 			"modelNotFound": "Модель {{modelId}} не найдена в Ollama. Сначала загрузите модель с помощью: ollama pull {{modelId}}",
 			"modelNotFoundWithAvailable": "Модель {{modelId}} не найдена. Доступные модели: {{availableModels}}",
 			"modelNotFoundNoModels": "Модель {{modelId}} не найдена. Нет доступных моделей. Сначала загрузите модель с помощью: ollama pull {{modelId}}",
-			"completionError": "Ошибка завершения Ollama: {{error}}"
+			"completionError": "Ошибка завершения Ollama: {{error}}",
+			"clientCreationError": "Ошибка создания клиента Ollama: {{error}}",
+			"streamProcessingError": "Ошибка обработки потока Ollama: {{error}}",
+			"unknownError": "Неизвестная ошибка"
 		}
 	},
 	"warnings": {

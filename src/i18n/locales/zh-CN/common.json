@@ -115,7 +115,10 @@
 			"modelNotFound": "在 Ollama 中未找到模型 {{modelId}}。请先拉取模型：ollama pull {{modelId}}",
 			"modelNotFoundWithAvailable": "未找到模型 {{modelId}}。可用模型：{{availableModels}}",
 			"modelNotFoundNoModels": "未找到模型 {{modelId}}。没有可用模型。请先拉取模型：ollama pull {{modelId}}",
-			"completionError": "Ollama 完成错误：{{error}}"
+			"completionError": "Ollama 完成错误：{{error}}",
+			"clientCreationError": "创建 Ollama 客户端错误：{{error}}",
+			"streamProcessingError": "Ollama 流处理错误：{{error}}",
+			"unknownError": "未知错误"
 		}
 	},
 	"warnings": {
