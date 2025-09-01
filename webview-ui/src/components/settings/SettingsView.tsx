@@ -610,7 +610,10 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 										})
 										prevApiConfigName.current = newName
 										// Trigger change detection for profile rename
-										setChangeDetected(true)
+									prevApiConfigName.current = newName
+									// Trigger change detection for profile rename to enable save button
+									// This ensures users can persist renamed profiles
+									setChangeDetected(true)
 									}}
 									onUpsertConfig={(configName: string) =>
 										vscode.postMessage({
