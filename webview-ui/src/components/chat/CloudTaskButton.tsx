@@ -31,7 +31,7 @@ export const CloudTaskButton = ({ item, disabled = false }: CloudTaskButtonProps
 				qrCodeRef.current,
 				cloudTaskUrl,
 				{
-					width: 200,
+					width: 150,
 					margin: 2,
 					color: {
 						dark: "#000000",
@@ -88,8 +88,8 @@ export const CloudTaskButton = ({ item, disabled = false }: CloudTaskButtonProps
 
 						{/* QR Code */}
 						<div className="flex justify-center">
-							<div className="p-4 bg-white rounded-lg">
-								<canvas ref={qrCodeRef} aria-label="QR code for cloud task URL" />
+							<div className="p-[10px] w-[170px] h-[170px] bg-white rounded-lg">
+								<canvas ref={qrCodeRef} />
 							</div>
 						</div>
 					</div>
