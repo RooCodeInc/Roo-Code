@@ -29,7 +29,7 @@ export const CloudTaskButton = ({ item, disabled = false }: CloudTaskButtonProps
 	const generateQRCode = useCallback(
 		(canvas: HTMLCanvasElement, context: string) => {
 			if (!cloudTaskUrl) {
-				console.log(`Skipping QR generation (${context}): No URL available`)
+				// This will run again later when ready
 				return
 			}
 
@@ -48,8 +48,6 @@ export const CloudTaskButton = ({ item, disabled = false }: CloudTaskButtonProps
 				(error: Error | null | undefined) => {
 					if (error) {
 						console.error(`Error generating QR code (${context}):`, error)
-					} else {
-						console.log(`QR code generated successfully (${context})`)
 					}
 				},
 			)
@@ -60,7 +58,6 @@ export const CloudTaskButton = ({ item, disabled = false }: CloudTaskButtonProps
 	// Callback ref to capture canvas element when it mounts
 	const canvasRef = useCallback(
 		(node: HTMLCanvasElement | null) => {
-			console.log("Canvas ref callback called with:", node)
 			if (node) {
 				setCanvasElement(node)
 
