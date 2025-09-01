@@ -403,10 +403,10 @@
 				},
 				"roo-cline.codeIndex.embeddingBatchSize": {
 					"type": "number",
-					"default": 400,
+					"default": 60,
 					"minimum": 1,
-					"maximum": 2048,
-					"description": "The batch size for embedding operations during code indexing. Adjust this based on your API provider's limits. Default is 400."
+					"maximum": 200,
+					"description": "%settings.codeIndex.embeddingBatchSize.description%"
 				}
 			}
 		}
