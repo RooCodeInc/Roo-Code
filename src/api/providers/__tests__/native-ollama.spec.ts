@@ -23,12 +23,6 @@ vitest.mock("../fetchers/ollama", () => ({
 			supportsImages: false,
 			supportsPromptCache: false,
 		},
-		"deepseek-r1": {
-			contextWindow: 32768,
-			maxTokens: 32768,
-			supportsImages: false,
-			supportsPromptCache: false,
-		},
 	}),
 }))
 
@@ -77,34 +71,6 @@ describe("NativeOllamaHandler", () => {
 			expect(results[0]).toEqual({ type: "text", text: "Hello" })
 			expect(results[1]).toEqual({ type: "text", text: " world" })
 			expect(results[2]).toEqual({ type: "usage", inputTokens: 10, outputTokens: 2 })
-		})
-
-		it("should handle DeepSeek R1 models with reasoning detection", async () => {
-			const options: ApiHandlerOptions = {
-				apiModelId: "deepseek-r1",
-				ollamaModelId: "deepseek-r1",
-				ollamaBaseUrl: "http://localhost:11434",
-			}
-
-			handler = new NativeOllamaHandler(options)
-
-			// Mock response with thinking tags
-			mockChat.mockImplementation(async function* () {
-				yield { message: { content: "<think>Let me think" } }
-				yield { message: { content: " about this</think>" } }
-				yield { message: { content: "The answer is 42" } }
-			})
-
-			const stream = handler.createMessage("System", [{ role: "user" as const, content: "Question?" }])
-			const results = []
-
-			for await (const chunk of stream) {
-				results.push(chunk)
-			}
-
-			// Should detect reasoning vs regular text
-			expect(results.some((r) => r.type === "reasoning")).toBe(true)
-			expect(results.some((r) => r.type === "text")).toBe(true)
 		})
 	})
 

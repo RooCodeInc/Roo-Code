@@ -131,7 +131,10 @@
 			"modelNotFound": "Model {{modelId}} no trobat a Ollama. Descarrega el model primer amb: ollama pull {{modelId}}",
 			"modelNotFoundWithAvailable": "Model {{modelId}} no trobat. Models disponibles: {{availableModels}}",
 			"modelNotFoundNoModels": "Model {{modelId}} no trobat. No hi ha models disponibles. Descarrega el model primer amb: ollama pull {{modelId}}",
-			"completionError": "Error de finalització d'Ollama: {{error}}"
+			"completionError": "Error de finalització d'Ollama: {{error}}",
+			"clientCreationError": "Error creant el client d'Ollama: {{error}}",
+			"streamProcessingError": "Error processant el flux d'Ollama: {{error}}",
+			"unknownError": "Error desconegut"
 		},
 		"mode_import_failed": "Ha fallat la importació del mode: {{error}}"
 	},

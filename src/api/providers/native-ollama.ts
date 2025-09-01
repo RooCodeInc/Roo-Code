@@ -7,7 +7,6 @@ import type { ApiHandlerOptions } from "../../shared/api"
 import { getOllamaModels } from "./fetchers/ollama"
 import { XmlMatcher } from "../../utils/xml-matcher"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
-import { t } from "../../i18n"
 
 const TOKEN_ESTIMATION_FACTOR = 4 // Industry standard technique for estimating token counts without actually implementing a parser/tokenizer
 
@@ -297,11 +296,8 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 			const availableModels = Object.keys(this.models)
 			const errorMessage =
 				availableModels.length > 0
-					? t("common:errors.ollama.modelNotFoundWithAvailable", {
-							modelId,
-							availableModels: availableModels.join(", "),
-						})
-					: t("common:errors.ollama.modelNotFoundNoModels", { modelId })
+					? `Model ${modelId} not found. Available models: ${availableModels.join(", ")}`
+					: `Model ${modelId} not found. No models available. Please pull the model first with: ollama pull ${modelId}`
 			throw new Error(errorMessage)
 		}
 

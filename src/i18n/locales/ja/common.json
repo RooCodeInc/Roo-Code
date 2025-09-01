@@ -29,7 +29,6 @@
 		"checkpoint_timeout": "チェックポイントの復元を試みる際にタイムアウトしました。",
 		"checkpoint_failed": "チェックポイントの復元に失敗しました。",
 		"git_not_installed": "チェックポイント機能にはGitが必要です。チェックポイントを有効にするにはGitをインストールしてください。",
-		"nested_git_repos_warning": "{{path}} でネストされたgitリポジトリが検出されたため、チェックポイントが無効になっています。チェックポイントを使用するには、このネストされたgitリポジトリを削除または移動してください。",
 		"no_workspace": "まずプロジェクトフォルダを開いてください",
 		"update_support_prompt": "サポートメッセージの更新に失敗しました",
 		"reset_support_prompt": "サポートメッセージのリセットに失敗しました",
@@ -88,15 +87,6 @@
 			"apiKeyModelPlanMismatch": "API keys and subscription plans allow different models. Make sure the selected model is included in your plan.",
 			"notFound": "Claude Code executable '{{claudePath}}' not found.\n\nPlease install Claude Code CLI:\n1. Visit {{installationUrl}} to download Claude Code\n2. Follow the installation instructions for your operating system\n3. Ensure the 'claude' command is available in your PATH\n4. Alternatively, configure a custom path in Roo settings under 'Claude Code Path'\n\nOriginal error: {{originalError}}"
 		},
-		"message": {
-			"no_active_task_to_delete": "メッセージを削除するアクティブなタスクがありません",
-			"invalid_timestamp_for_deletion": "削除用のメッセージタイムスタンプが無効です",
-			"cannot_delete_missing_timestamp": "メッセージを削除できません：タイムスタンプがありません",
-			"cannot_delete_invalid_timestamp": "メッセージを削除できません：タイムスタンプが無効です",
-			"message_not_found": "タイムスタンプ {{messageTs}} のメッセージが見つかりません",
-			"error_deleting_message": "メッセージ削除エラー：{{error}}",
-			"error_editing_message": "メッセージ編集エラー：{{error}}"
-		},
 		"gemini": {
 			"generate_stream": "Gemini 生成コンテキスト ストリーム エラー: {{error}}",
 			"generate_complete_prompt": "Gemini 完了エラー: {{error}}",
@@ -114,22 +104,18 @@
 		"roo": {
 			"authenticationRequired": "Rooプロバイダーはクラウド認証が必要です。Roo Code Cloudにサインインしてください。"
 		},
-		"api": {
-			"invalidKeyInvalidChars": "API key contains invalid characters."
-		},
-		"manual_url_empty": "Please enter a valid callback URL",
-		"manual_url_no_query": "Invalid callback URL: missing query parameters",
-		"manual_url_missing_params": "Invalid callback URL: missing required parameters (code and state)",
-		"manual_url_auth_failed": "Manual URL authentication failed",
-		"manual_url_auth_error": "Authentication failed",
 		"ollama": {
-			"inputTooLong": "Input message is too long for the selected model. Estimated tokens: {{estimatedTokenCount}}, Max tokens: {{maxTokens}}. To increase the context window size, please set the OLLAMA_NUM_CTX environment variable or see Ollama documentation.",
-			"serviceNotRunning": "Ollama service is not running at {{baseUrl}}. Please start Ollama first.",
-			"modelNotFound": "Model {{modelId}} not found in Ollama. Please pull the model first with: ollama pull {{modelId}}",
-			"modelNotFoundWithAvailable": "Model {{modelId}} not found. Available models: {{availableModels}}",
-			"modelNotFoundNoModels": "Model {{modelId}} not found. No models available. Please pull the model first with: ollama pull {{modelId}}",
-			"completionError": "Ollama completion error: {{error}}"
-		},	},
+			"inputTooLong": "入力メッセージが選択されたモデルには長すぎます。推定トークン数：{{estimatedTokenCount}}、最大トークン数：{{maxTokens}}。コンテキストウィンドウサイズを増やすには、OLLAMA_NUM_CTX環境変数を設定するか、Ollamaドキュメントを参照してください。",
+			"serviceNotRunning": "Ollamaサービスが{{baseUrl}}で実行されていません。まずOllamaを開始してください。",
+			"modelNotFound": "モデル{{modelId}}がOllamaで見つかりません。まずモデルをプルしてください：ollama pull {{modelId}}",
+			"modelNotFoundWithAvailable": "モデル{{modelId}}が見つかりません。利用可能なモデル：{{availableModels}}",
+			"modelNotFoundNoModels": "モデル{{modelId}}が見つかりません。利用可能なモデルがありません。まずモデルをプルしてください：ollama pull {{modelId}}",
+			"completionError": "Ollama完了エラー：{{error}}",
+			"clientCreationError": "Ollamaクライアント作成エラー：{{error}}",
+			"streamProcessingError": "Ollamaストリーム処理エラー：{{error}}",
+			"unknownError": "不明なエラー"
+		}
+	},
 	"warnings": {
 		"no_terminal_content": "選択されたターミナルコンテンツがありません",
 		"missing_task_files": "このタスクのファイルが見つかりません。タスクリストから削除しますか？",
@@ -215,11 +201,6 @@
 		"errors": {
 			"cloud_auth_required": "あなたの組織では Roo Code Cloud 認証が必要です。続行するにはサインインしてください。",
 			"organization_mismatch": "組織の Roo Code Cloud アカウントで認証する必要があります。",
-			"manual_url_empty": "有効なコールバック URL を入力してください",
-			"manual_url_no_query": "無効なコールバック URL：クエリパラメータがありません",
-			"manual_url_missing_params": "無効なコールバック URL：必要なパラメータ（code と state）がありません",
-			"manual_url_auth_failed": "手動 URL 認証が失敗しました",
-			"manual_url_auth_error": "認証に失敗しました",
 			"verification_failed": "組織認証の確認ができませんでした。"
 		},
 		"info": {
@@ -238,9 +219,5 @@
 		"preventCompletionWithOpenTodos": {
 			"description": "Todoリストに未完了のTodoがある場合、タスクの完了を防ぐ"
 		}
-	},
-	"docsLink": {
-		"label": "Docs",
-		"url": "https://docs.roocode.com"
 	}
 }

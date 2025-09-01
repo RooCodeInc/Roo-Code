@@ -29,7 +29,6 @@
 		"checkpoint_timeout": "Upłynął limit czasu podczas próby przywrócenia punktu kontrolnego.",
 		"checkpoint_failed": "Nie udało się przywrócić punktu kontrolnego.",
 		"git_not_installed": "Funkcja punktów kontrolnych wymaga oprogramowania Git. Zainstaluj Git, aby włączyć punkty kontrolne.",
-		"nested_git_repos_warning": "Punkty kontrolne są wyłączone, ponieważ wykryto zagnieżdżone repozytorium git w: {{path}}. Aby używać punktów kontrolnych, usuń lub przenieś to zagnieżdżone repozytorium git.",
 		"no_workspace": "Najpierw otwórz folder projektu",
 		"update_support_prompt": "Nie udało się zaktualizować komunikatu wsparcia",
 		"reset_support_prompt": "Nie udało się zresetować komunikatu wsparcia",
@@ -88,15 +87,6 @@
 			"apiKeyModelPlanMismatch": "API keys and subscription plans allow different models. Make sure the selected model is included in your plan.",
 			"notFound": "Claude Code executable '{{claudePath}}' not found.\n\nPlease install Claude Code CLI:\n1. Visit {{installationUrl}} to download Claude Code\n2. Follow the installation instructions for your operating system\n3. Ensure the 'claude' command is available in your PATH\n4. Alternatively, configure a custom path in Roo settings under 'Claude Code Path'\n\nOriginal error: {{originalError}}"
 		},
-		"message": {
-			"no_active_task_to_delete": "Brak aktywnego zadania do usunięcia wiadomości",
-			"invalid_timestamp_for_deletion": "Nieprawidłowy znacznik czasu wiadomości do usunięcia",
-			"cannot_delete_missing_timestamp": "Nie można usunąć wiadomości: brak znacznika czasu",
-			"cannot_delete_invalid_timestamp": "Nie można usunąć wiadomości: nieprawidłowy znacznik czasu",
-			"message_not_found": "Wiadomość ze znacznikiem czasu {{messageTs}} nie została znaleziona",
-			"error_deleting_message": "Błąd usuwania wiadomości: {{error}}",
-			"error_editing_message": "Błąd edytowania wiadomości: {{error}}"
-		},
 		"gemini": {
 			"generate_stream": "Błąd strumienia kontekstu generowania Gemini: {{error}}",
 			"generate_complete_prompt": "Błąd uzupełniania Gemini: {{error}}",
@@ -114,22 +104,18 @@
 		"roo": {
 			"authenticationRequired": "Dostawca Roo wymaga uwierzytelnienia w chmurze. Zaloguj się do Roo Code Cloud."
 		},
-		"api": {
-			"invalidKeyInvalidChars": "API key contains invalid characters."
-		},
-		"manual_url_empty": "Please enter a valid callback URL",
-		"manual_url_no_query": "Invalid callback URL: missing query parameters",
-		"manual_url_missing_params": "Invalid callback URL: missing required parameters (code and state)",
-		"manual_url_auth_failed": "Manual URL authentication failed",
-		"manual_url_auth_error": "Authentication failed",
 		"ollama": {
-			"inputTooLong": "Input message is too long for the selected model. Estimated tokens: {{estimatedTokenCount}}, Max tokens: {{maxTokens}}. To increase the context window size, please set the OLLAMA_NUM_CTX environment variable or see Ollama documentation.",
-			"serviceNotRunning": "Ollama service is not running at {{baseUrl}}. Please start Ollama first.",
-			"modelNotFound": "Model {{modelId}} not found in Ollama. Please pull the model first with: ollama pull {{modelId}}",
-			"modelNotFoundWithAvailable": "Model {{modelId}} not found. Available models: {{availableModels}}",
-			"modelNotFoundNoModels": "Model {{modelId}} not found. No models available. Please pull the model first with: ollama pull {{modelId}}",
-			"completionError": "Ollama completion error: {{error}}"
-		},	},
+			"inputTooLong": "Wiadomość wejściowa jest za długa dla wybranego modelu. Szacowane tokeny: {{estimatedTokenCount}}, Maksymalne tokeny: {{maxTokens}}. Aby zwiększyć rozmiar okna kontekstu, ustaw zmienną środowiskową OLLAMA_NUM_CTX lub zobacz dokumentację Ollama.",
+			"serviceNotRunning": "Usługa Ollama nie działa na {{baseUrl}}. Najpierw uruchom Ollama.",
+			"modelNotFound": "Model {{modelId}} nie został znaleziony w Ollama. Najpierw pobierz model za pomocą: ollama pull {{modelId}}",
+			"modelNotFoundWithAvailable": "Model {{modelId}} nie został znaleziony. Dostępne modele: {{availableModels}}",
+			"modelNotFoundNoModels": "Model {{modelId}} nie został znaleziony. Brak dostępnych modeli. Najpierw pobierz model za pomocą: ollama pull {{modelId}}",
+			"completionError": "Błąd ukończenia Ollama: {{error}}",
+			"clientCreationError": "Błąd tworzenia klienta Ollama: {{error}}",
+			"streamProcessingError": "Błąd przetwarzania strumienia Ollama: {{error}}",
+			"unknownError": "Nieznany błąd"
+		}
+	},
 	"warnings": {
 		"no_terminal_content": "Nie wybrano zawartości terminala",
 		"missing_task_files": "Pliki tego zadania są brakujące. Czy chcesz usunąć je z listy zadań?",
@@ -215,11 +201,6 @@
 		"errors": {
 			"cloud_auth_required": "Twoja organizacja wymaga uwierzytelnienia Roo Code Cloud. Zaloguj się, aby kontynuować.",
 			"organization_mismatch": "Musisz być uwierzytelniony kontem Roo Code Cloud swojej organizacji.",
-			"manual_url_empty": "Wprowadź prawidłowy URL callback",
-			"manual_url_no_query": "Nieprawidłowy URL callback: brak parametrów zapytania",
-			"manual_url_missing_params": "Nieprawidłowy URL callback: brak wymaganych parametrów (code i state)",
-			"manual_url_auth_failed": "Ręczne uwierzytelnienie URL nie powiodło się",
-			"manual_url_auth_error": "Uwierzytelnienie nie powiodło się",
 			"verification_failed": "Nie można zweryfikować uwierzytelnienia organizacji."
 		},
 		"info": {
@@ -238,9 +219,5 @@
 		"preventCompletionWithOpenTodos": {
 			"description": "Zapobiegaj ukończeniu zadania gdy na liście zadań są nieukończone zadania"
 		}
-	},
-	"docsLink": {
-		"label": "Docs",
-		"url": "https://docs.roocode.com"
 	}
 }

@@ -29,7 +29,6 @@
 		"checkpoint_timeout": "Timeout saat mencoba memulihkan checkpoint.",
 		"checkpoint_failed": "Gagal memulihkan checkpoint.",
 		"git_not_installed": "Git diperlukan untuk fitur checkpoint. Silakan instal Git untuk mengaktifkan checkpoint.",
-		"nested_git_repos_warning": "Checkpoint dinonaktifkan karena repositori git bersarang terdeteksi di: {{path}}. Untuk menggunakan checkpoint, silakan hapus atau pindahkan repositori git bersarang ini.",
 		"no_workspace": "Silakan buka folder proyek terlebih dahulu",
 		"update_support_prompt": "Gagal memperbarui support prompt",
 		"reset_support_prompt": "Gagal mereset support prompt",
@@ -88,15 +87,6 @@
 			"apiKeyModelPlanMismatch": "API keys and subscription plans allow different models. Make sure the selected model is included in your plan.",
 			"notFound": "Claude Code executable '{{claudePath}}' not found.\n\nPlease install Claude Code CLI:\n1. Visit {{installationUrl}} to download Claude Code\n2. Follow the installation instructions for your operating system\n3. Ensure the 'claude' command is available in your PATH\n4. Alternatively, configure a custom path in Roo settings under 'Claude Code Path'\n\nOriginal error: {{originalError}}"
 		},
-		"message": {
-			"no_active_task_to_delete": "Tidak ada tugas aktif untuk menghapus pesan",
-			"invalid_timestamp_for_deletion": "Timestamp pesan tidak valid untuk penghapusan",
-			"cannot_delete_missing_timestamp": "Tidak dapat menghapus pesan: timestamp tidak ada",
-			"cannot_delete_invalid_timestamp": "Tidak dapat menghapus pesan: timestamp tidak valid",
-			"message_not_found": "Pesan dengan timestamp {{messageTs}} tidak ditemukan",
-			"error_deleting_message": "Error menghapus pesan: {{error}}",
-			"error_editing_message": "Error mengedit pesan: {{error}}"
-		},
 		"gemini": {
 			"generate_stream": "Kesalahan aliran konteks pembuatan Gemini: {{error}}",
 			"generate_complete_prompt": "Kesalahan penyelesaian Gemini: {{error}}",
@@ -114,22 +104,18 @@
 		"roo": {
 			"authenticationRequired": "Penyedia Roo memerlukan autentikasi cloud. Silakan masuk ke Roo Code Cloud."
 		},
-		"api": {
-			"invalidKeyInvalidChars": "API key contains invalid characters."
-		},
-		"manual_url_empty": "Please enter a valid callback URL",
-		"manual_url_no_query": "Invalid callback URL: missing query parameters",
-		"manual_url_missing_params": "Invalid callback URL: missing required parameters (code and state)",
-		"manual_url_auth_failed": "Manual URL authentication failed",
-		"manual_url_auth_error": "Authentication failed",
 		"ollama": {
-			"inputTooLong": "Input message is too long for the selected model. Estimated tokens: {{estimatedTokenCount}}, Max tokens: {{maxTokens}}. To increase the context window size, please set the OLLAMA_NUM_CTX environment variable or see Ollama documentation.",
-			"serviceNotRunning": "Ollama service is not running at {{baseUrl}}. Please start Ollama first.",
-			"modelNotFound": "Model {{modelId}} not found in Ollama. Please pull the model first with: ollama pull {{modelId}}",
-			"modelNotFoundWithAvailable": "Model {{modelId}} not found. Available models: {{availableModels}}",
-			"modelNotFoundNoModels": "Model {{modelId}} not found. No models available. Please pull the model first with: ollama pull {{modelId}}",
-			"completionError": "Ollama completion error: {{error}}"
-		},	},
+			"inputTooLong": "Pesan input terlalu panjang untuk model yang dipilih. Perkiraan token: {{estimatedTokenCount}}, Token maksimum: {{maxTokens}}. Untuk meningkatkan ukuran jendela konteks, silakan atur variabel lingkungan OLLAMA_NUM_CTX atau lihat dokumentasi Ollama.",
+			"serviceNotRunning": "Layanan Ollama tidak berjalan di {{baseUrl}}. Silakan jalankan Ollama terlebih dahulu.",
+			"modelNotFound": "Model {{modelId}} tidak ditemukan di Ollama. Silakan unduh model terlebih dahulu dengan: ollama pull {{modelId}}",
+			"modelNotFoundWithAvailable": "Model {{modelId}} tidak ditemukan. Model yang tersedia: {{availableModels}}",
+			"modelNotFoundNoModels": "Model {{modelId}} tidak ditemukan. Tidak ada model yang tersedia. Silakan unduh model terlebih dahulu dengan: ollama pull {{modelId}}",
+			"completionError": "Kesalahan penyelesaian Ollama: {{error}}",
+			"clientCreationError": "Kesalahan membuat klien Ollama: {{error}}",
+			"streamProcessingError": "Kesalahan pemrosesan stream Ollama: {{error}}",
+			"unknownError": "Kesalahan tidak dikenal"
+		}
+	},
 	"warnings": {
 		"no_terminal_content": "Tidak ada konten terminal yang dipilih",
 		"missing_task_files": "File tugas ini hilang. Apakah kamu ingin menghapusnya dari daftar tugas?",
@@ -215,11 +201,6 @@
 		"errors": {
 			"cloud_auth_required": "Organisasi kamu memerlukan autentikasi Roo Code Cloud. Silakan masuk untuk melanjutkan.",
 			"organization_mismatch": "Kamu harus diautentikasi dengan akun Roo Code Cloud organisasi kamu.",
-			"manual_url_empty": "Silakan masukkan URL callback yang valid",
-			"manual_url_no_query": "URL callback tidak valid: parameter query hilang",
-			"manual_url_missing_params": "URL callback tidak valid: parameter yang diperlukan hilang (code dan state)",
-			"manual_url_auth_failed": "Autentikasi URL manual gagal",
-			"manual_url_auth_error": "Autentikasi gagal",
 			"verification_failed": "Tidak dapat memverifikasi autentikasi organisasi."
 		},
 		"info": {
@@ -238,9 +219,5 @@
 		"preventCompletionWithOpenTodos": {
 			"description": "Mencegah penyelesaian tugas ketika ada todo yang belum selesai dalam daftar todo"
 		}
-	},
-	"docsLink": {
-		"label": "Docs",
-		"url": "https://docs.roocode.com"
 	}
 }

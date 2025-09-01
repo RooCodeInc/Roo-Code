@@ -29,7 +29,6 @@
 		"checkpoint_timeout": "Time-out bij het herstellen van checkpoint.",
 		"checkpoint_failed": "Herstellen van checkpoint mislukt.",
 		"git_not_installed": "Git is vereist voor de checkpoint-functie. Installeer Git om checkpoints in te schakelen.",
-		"nested_git_repos_warning": "Checkpoints zijn uitgeschakeld omdat een geneste git-repository is gedetecteerd op: {{path}}. Om checkpoints te gebruiken, verwijder of verplaats deze geneste git-repository.",
 		"no_workspace": "Open eerst een projectmap",
 		"update_support_prompt": "Bijwerken van ondersteuningsprompt mislukt",
 		"reset_support_prompt": "Resetten van ondersteuningsprompt mislukt",
@@ -88,15 +87,6 @@
 			"apiKeyModelPlanMismatch": "API keys and subscription plans allow different models. Make sure the selected model is included in your plan.",
 			"notFound": "Claude Code executable '{{claudePath}}' not found.\n\nPlease install Claude Code CLI:\n1. Visit {{installationUrl}} to download Claude Code\n2. Follow the installation instructions for your operating system\n3. Ensure the 'claude' command is available in your PATH\n4. Alternatively, configure a custom path in Roo settings under 'Claude Code Path'\n\nOriginal error: {{originalError}}"
 		},
-		"message": {
-			"no_active_task_to_delete": "Geen actieve taak om berichten uit te verwijderen",
-			"invalid_timestamp_for_deletion": "Ongeldig bericht tijdstempel voor verwijdering",
-			"cannot_delete_missing_timestamp": "Kan bericht niet verwijderen: tijdstempel ontbreekt",
-			"cannot_delete_invalid_timestamp": "Kan bericht niet verwijderen: ongeldig tijdstempel",
-			"message_not_found": "Bericht met tijdstempel {{messageTs}} niet gevonden",
-			"error_deleting_message": "Fout bij verwijderen van bericht: {{error}}",
-			"error_editing_message": "Fout bij bewerken van bericht: {{error}}"
-		},
 		"gemini": {
 			"generate_stream": "Fout bij het genereren van contextstream door Gemini: {{error}}",
 			"generate_complete_prompt": "Fout bij het voltooien door Gemini: {{error}}",
@@ -114,22 +104,18 @@
 		"roo": {
 			"authenticationRequired": "Roo provider vereist cloud authenticatie. Log in bij Roo Code Cloud."
 		},
-		"api": {
-			"invalidKeyInvalidChars": "API key contains invalid characters."
-		},
-		"manual_url_empty": "Please enter a valid callback URL",
-		"manual_url_no_query": "Invalid callback URL: missing query parameters",
-		"manual_url_missing_params": "Invalid callback URL: missing required parameters (code and state)",
-		"manual_url_auth_failed": "Manual URL authentication failed",
-		"manual_url_auth_error": "Authentication failed",
 		"ollama": {
-			"inputTooLong": "Input message is too long for the selected model. Estimated tokens: {{estimatedTokenCount}}, Max tokens: {{maxTokens}}. To increase the context window size, please set the OLLAMA_NUM_CTX environment variable or see Ollama documentation.",
-			"serviceNotRunning": "Ollama service is not running at {{baseUrl}}. Please start Ollama first.",
-			"modelNotFound": "Model {{modelId}} not found in Ollama. Please pull the model first with: ollama pull {{modelId}}",
-			"modelNotFoundWithAvailable": "Model {{modelId}} not found. Available models: {{availableModels}}",
-			"modelNotFoundNoModels": "Model {{modelId}} not found. No models available. Please pull the model first with: ollama pull {{modelId}}",
-			"completionError": "Ollama completion error: {{error}}"
-		},	},
+			"inputTooLong": "Invoerbericht is te lang voor het geselecteerde model. Geschatte tokens: {{estimatedTokenCount}}, Max tokens: {{maxTokens}}. Om de contextvenstergrootte te vergroten, stel de OLLAMA_NUM_CTX omgevingsvariabele in of zie Ollama documentatie.",
+			"serviceNotRunning": "Ollama service draait niet op {{baseUrl}}. Start eerst Ollama.",
+			"modelNotFound": "Model {{modelId}} niet gevonden in Ollama. Download eerst het model met: ollama pull {{modelId}}",
+			"modelNotFoundWithAvailable": "Model {{modelId}} niet gevonden. Beschikbare modellen: {{availableModels}}",
+			"modelNotFoundNoModels": "Model {{modelId}} niet gevonden. Geen modellen beschikbaar. Download eerst het model met: ollama pull {{modelId}}",
+			"completionError": "Ollama voltooiingsfout: {{error}}",
+			"clientCreationError": "Fout bij het maken van Ollama client: {{error}}",
+			"streamProcessingError": "Ollama stream verwerkingsfout: {{error}}",
+			"unknownError": "Onbekende fout"
+		}
+	},
 	"warnings": {
 		"no_terminal_content": "Geen terminalinhoud geselecteerd",
 		"missing_task_files": "De bestanden van deze taak ontbreken. Wil je deze uit de takenlijst verwijderen?",
@@ -215,11 +201,6 @@
 		"errors": {
 			"cloud_auth_required": "Je organisatie vereist Roo Code Cloud-authenticatie. Log in om door te gaan.",
 			"organization_mismatch": "Je moet geauthenticeerd zijn met het Roo Code Cloud-account van je organisatie.",
-			"manual_url_empty": "Voer een geldige callback-URL in",
-			"manual_url_no_query": "Ongeldige callback-URL: query-parameters ontbreken",
-			"manual_url_missing_params": "Ongeldige callback-URL: vereiste parameters ontbreken (code en state)",
-			"manual_url_auth_failed": "Handmatige URL-authenticatie mislukt",
-			"manual_url_auth_error": "Authenticatie mislukt",
 			"verification_failed": "Kan organisatie-authenticatie niet verifiëren."
 		},
 		"info": {
@@ -238,9 +219,5 @@
 		"preventCompletionWithOpenTodos": {
 			"description": "Voorkom taakafronding wanneer er onvolledige todos in de todolijst staan"
 		}
-	},
-	"docsLink": {
-		"label": "Docs",
-		"url": "https://docs.roocode.com"
 	}
 }

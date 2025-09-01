@@ -29,7 +29,6 @@
 		"checkpoint_timeout": "嘗試恢復檢查點時超時。",
 		"checkpoint_failed": "恢復檢查點失敗。",
 		"git_not_installed": "存檔點功能需要 Git。請安裝 Git 以啟用存檔點。",
-		"nested_git_repos_warning": "存檔點已停用，因為在 {{path}} 偵測到巢狀的 git 儲存庫。要使用存檔點，請移除或重新配置此巢狀的 git 儲存庫。",
 		"no_workspace": "請先開啟專案資料夾",
 		"update_support_prompt": "更新支援訊息失敗",
 		"reset_support_prompt": "重設支援訊息失敗",
@@ -87,15 +86,6 @@
 			"apiKeyModelPlanMismatch": "API 金鑰和訂閱方案允許不同的模型。請確保所選模型包含在您的方案中。",
 			"notFound": "找不到 Claude Code 可執行檔案 '{{claudePath}}'。\n\n請安裝 Claude Code CLI：\n1. 造訪 {{installationUrl}} 下載 Claude Code\n2. 依照作業系統的安裝說明進行操作\n3. 確保 'claude' 指令在 PATH 中可用\n4. 或者在 Roo 設定中的 'Claude Code 路徑' 下設定自訂路徑\n\n原始錯誤：{{originalError}}"
 		},
-		"message": {
-			"no_active_task_to_delete": "沒有可刪除訊息的活躍工作",
-			"invalid_timestamp_for_deletion": "刪除操作的訊息時間戳無效",
-			"cannot_delete_missing_timestamp": "無法刪除訊息：缺少時間戳",
-			"cannot_delete_invalid_timestamp": "無法刪除訊息：時間戳無效",
-			"message_not_found": "未找到時間戳為 {{messageTs}} 的訊息",
-			"error_deleting_message": "刪除訊息時出錯：{{error}}",
-			"error_editing_message": "編輯訊息時出錯：{{error}}"
-		},
 		"gemini": {
 			"generate_stream": "Gemini 產生內容串流錯誤：{{error}}",
 			"generate_complete_prompt": "Gemini 完成錯誤：{{error}}",
@@ -113,22 +103,18 @@
 		"roo": {
 			"authenticationRequired": "Roo 提供者需要雲端認證。請登入 Roo Code Cloud。"
 		},
-		"api": {
-			"invalidKeyInvalidChars": "API key contains invalid characters."
-		},
-		"manual_url_empty": "Please enter a valid callback URL",
-		"manual_url_no_query": "Invalid callback URL: missing query parameters",
-		"manual_url_missing_params": "Invalid callback URL: missing required parameters (code and state)",
-		"manual_url_auth_failed": "Manual URL authentication failed",
-		"manual_url_auth_error": "Authentication failed",
 		"ollama": {
-			"inputTooLong": "Input message is too long for the selected model. Estimated tokens: {{estimatedTokenCount}}, Max tokens: {{maxTokens}}. To increase the context window size, please set the OLLAMA_NUM_CTX environment variable or see Ollama documentation.",
-			"serviceNotRunning": "Ollama service is not running at {{baseUrl}}. Please start Ollama first.",
-			"modelNotFound": "Model {{modelId}} not found in Ollama. Please pull the model first with: ollama pull {{modelId}}",
-			"modelNotFoundWithAvailable": "Model {{modelId}} not found. Available models: {{availableModels}}",
-			"modelNotFoundNoModels": "Model {{modelId}} not found. No models available. Please pull the model first with: ollama pull {{modelId}}",
-			"completionError": "Ollama completion error: {{error}}"
-		},		"mode_import_failed": "匯入模式失敗：{{error}}"
+			"inputTooLong": "輸入訊息對所選模型來說太長。預估 Token 數：{{estimatedTokenCount}}，最大 Token 數：{{maxTokens}}。要增加上下文視窗大小，請設定 OLLAMA_NUM_CTX 環境變數或查看 Ollama 文件。",
+			"serviceNotRunning": "Ollama 服務未在 {{baseUrl}} 執行。請先啟動 Ollama。",
+			"modelNotFound": "在 Ollama 中未找到模型 {{modelId}}。請先拉取模型：ollama pull {{modelId}}",
+			"modelNotFoundWithAvailable": "未找到模型 {{modelId}}。可用模型：{{availableModels}}",
+			"modelNotFoundNoModels": "未找到模型 {{modelId}}。沒有可用模型。請先拉取模型：ollama pull {{modelId}}",
+			"completionError": "Ollama 完成錯誤：{{error}}",
+			"clientCreationError": "建立 Ollama 客戶端錯誤：{{error}}",
+			"streamProcessingError": "Ollama 串流處理錯誤：{{error}}",
+			"unknownError": "未知錯誤"
+		},
+		"mode_import_failed": "匯入模式失敗：{{error}}"
 	},
 	"warnings": {
 		"no_terminal_content": "沒有選擇終端機內容",
@@ -215,11 +201,6 @@
 		"errors": {
 			"cloud_auth_required": "您的組織需要 Roo Code Cloud 身份驗證。請登入以繼續。",
 			"organization_mismatch": "您必須使用組織的 Roo Code Cloud 帳戶進行身份驗證。",
-			"manual_url_empty": "請輸入有效的回呼 URL",
-			"manual_url_no_query": "無效的回呼 URL：缺少查詢參數",
-			"manual_url_missing_params": "無效的回呼 URL：缺少必要參數（code 和 state）",
-			"manual_url_auth_failed": "手動 URL 身份驗證失敗",
-			"manual_url_auth_error": "身份驗證失敗",
 			"verification_failed": "無法驗證組織身份驗證。"
 		},
 		"info": {
@@ -238,9 +219,5 @@
 		"preventCompletionWithOpenTodos": {
 			"description": "當待辦事項清單中有未完成的待辦事項時阻止工作完成"
 		}
-	},
-	"docsLink": {
-		"label": "Docs",
-		"url": "https://docs.roocode.com"
 	}
 }

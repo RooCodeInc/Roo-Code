@@ -29,7 +29,6 @@
 		"checkpoint_timeout": "Expiration du délai lors de la tentative de rétablissement du checkpoint.",
 		"checkpoint_failed": "Échec du rétablissement du checkpoint.",
 		"git_not_installed": "Git est requis pour la fonctionnalité des points de contrôle. Veuillez installer Git pour activer les points de contrôle.",
-		"nested_git_repos_warning": "Les points de contrôle sont désactivés car un dépôt git imbriqué a été détecté à : {{path}}. Pour utiliser les points de contrôle, veuillez supprimer ou déplacer ce dépôt git imbriqué.",
 		"no_workspace": "Veuillez d'abord ouvrir un espace de travail",
 		"update_support_prompt": "Erreur lors de la mise à jour du prompt de support",
 		"reset_support_prompt": "Erreur lors de la réinitialisation du prompt de support",
@@ -88,15 +87,6 @@
 			"apiKeyModelPlanMismatch": "Les clés API et les plans d'abonnement permettent différents modèles. Assurez-vous que le modèle sélectionné est inclus dans votre plan.",
 			"notFound": "Exécutable Claude Code '{{claudePath}}' introuvable.\n\nVeuillez installer Claude Code CLI :\n1. Visitez {{installationUrl}} pour télécharger Claude Code\n2. Suivez les instructions d'installation pour votre système d'exploitation\n3. Assurez-vous que la commande 'claude' est disponible dans votre PATH\n4. Alternativement, configurez un chemin personnalisé dans les paramètres Roo sous 'Chemin de Claude Code'\n\nErreur originale : {{originalError}}"
 		},
-		"message": {
-			"no_active_task_to_delete": "Aucune tâche active pour supprimer des messages",
-			"invalid_timestamp_for_deletion": "Horodatage du message invalide pour la suppression",
-			"cannot_delete_missing_timestamp": "Impossible de supprimer le message : horodatage manquant",
-			"cannot_delete_invalid_timestamp": "Impossible de supprimer le message : horodatage invalide",
-			"message_not_found": "Message avec horodatage {{messageTs}} introuvable",
-			"error_deleting_message": "Erreur lors de la suppression du message : {{error}}",
-			"error_editing_message": "Erreur lors de la modification du message : {{error}}"
-		},
 		"gemini": {
 			"generate_stream": "Erreur du flux de contexte de génération Gemini : {{error}}",
 			"generate_complete_prompt": "Erreur d'achèvement de Gemini : {{error}}",
@@ -114,22 +104,18 @@
 		"roo": {
 			"authenticationRequired": "Le fournisseur Roo nécessite une authentification cloud. Veuillez vous connecter à Roo Code Cloud."
 		},
-		"api": {
-			"invalidKeyInvalidChars": "API key contains invalid characters."
-		},
-		"manual_url_empty": "Please enter a valid callback URL",
-		"manual_url_no_query": "Invalid callback URL: missing query parameters",
-		"manual_url_missing_params": "Invalid callback URL: missing required parameters (code and state)",
-		"manual_url_auth_failed": "Manual URL authentication failed",
-		"manual_url_auth_error": "Authentication failed",
 		"ollama": {
-			"inputTooLong": "Input message is too long for the selected model. Estimated tokens: {{estimatedTokenCount}}, Max tokens: {{maxTokens}}. To increase the context window size, please set the OLLAMA_NUM_CTX environment variable or see Ollama documentation.",
-			"serviceNotRunning": "Ollama service is not running at {{baseUrl}}. Please start Ollama first.",
-			"modelNotFound": "Model {{modelId}} not found in Ollama. Please pull the model first with: ollama pull {{modelId}}",
-			"modelNotFoundWithAvailable": "Model {{modelId}} not found. Available models: {{availableModels}}",
-			"modelNotFoundNoModels": "Model {{modelId}} not found. No models available. Please pull the model first with: ollama pull {{modelId}}",
-			"completionError": "Ollama completion error: {{error}}"
-		},	},
+			"inputTooLong": "Le message d'entrée est trop long pour le modèle sélectionné. Tokens estimés : {{estimatedTokenCount}}, Tokens max : {{maxTokens}}. Pour augmenter la taille de la fenêtre de contexte, veuillez définir la variable d'environnement OLLAMA_NUM_CTX ou consulter la documentation Ollama.",
+			"serviceNotRunning": "Le service Ollama ne fonctionne pas sur {{baseUrl}}. Veuillez d'abord démarrer Ollama.",
+			"modelNotFound": "Modèle {{modelId}} introuvable dans Ollama. Veuillez d'abord télécharger le modèle avec : ollama pull {{modelId}}",
+			"modelNotFoundWithAvailable": "Modèle {{modelId}} introuvable. Modèles disponibles : {{availableModels}}",
+			"modelNotFoundNoModels": "Modèle {{modelId}} introuvable. Aucun modèle disponible. Veuillez d'abord télécharger le modèle avec : ollama pull {{modelId}}",
+			"completionError": "Erreur de complétion Ollama : {{error}}",
+			"clientCreationError": "Erreur lors de la création du client Ollama : {{error}}",
+			"streamProcessingError": "Erreur de traitement du flux Ollama : {{error}}",
+			"unknownError": "Erreur inconnue"
+		}
+	},
 	"warnings": {
 		"no_terminal_content": "Aucun contenu de terminal sélectionné",
 		"missing_task_files": "Les fichiers de cette tâche sont introuvables. Souhaitez-vous la supprimer de la liste des tâches ?",
@@ -215,11 +201,6 @@
 		"errors": {
 			"cloud_auth_required": "Votre organisation nécessite une authentification Roo Code Cloud. Veuillez vous connecter pour continuer.",
 			"organization_mismatch": "Vous devez être authentifié avec le compte Roo Code Cloud de votre organisation.",
-			"manual_url_empty": "Veuillez entrer une URL de callback valide",
-			"manual_url_no_query": "URL de callback invalide : paramètres de requête manquants",
-			"manual_url_missing_params": "URL de callback invalide : paramètres requis manquants (code et state)",
-			"manual_url_auth_failed": "Authentification par URL manuelle échouée",
-			"manual_url_auth_error": "Échec de l'authentification",
 			"verification_failed": "Impossible de vérifier l'authentification de l'organisation."
 		},
 		"info": {
@@ -238,9 +219,5 @@
 		"preventCompletionWithOpenTodos": {
 			"description": "Empêcher la finalisation des tâches lorsqu'il y a des todos incomplets dans la liste de todos"
 		}
-	},
-	"docsLink": {
-		"label": "Docs",
-		"url": "https://docs.roocode.com"
 	}
 }
