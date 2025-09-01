@@ -70,6 +70,7 @@ describe("CloudTaskButton", () => {
 				email: "test@example.com",
 				extensionBridgeEnabled: true,
 			},
+			cloudApiUrl: "https://app.roocode.com",
 		} as any)
 	})
 
@@ -88,6 +89,7 @@ describe("CloudTaskButton", () => {
 				email: "test@example.com",
 				extensionBridgeEnabled: false,
 			},
+			cloudApiUrl: "https://app.roocode.com",
 		} as any)
 
 		render(<CloudTaskButton item={mockItem} />)
@@ -98,6 +100,7 @@ describe("CloudTaskButton", () => {
 	test("does not render when cloudUserInfo is null", () => {
 		mockUseExtensionState.mockReturnValue({
 			cloudUserInfo: null,
+			cloudApiUrl: "https://app.roocode.com",
 		} as any)
 
 		render(<CloudTaskButton item={mockItem} />)
@@ -119,7 +122,7 @@ describe("CloudTaskButton", () => {
 		fireEvent.click(button)
 
 		await waitFor(() => {
-			expect(screen.getByText("chat:task.continueFromAnywhere")).toBeInTheDocument()
+			expect(screen.getByText("chat:task.openInCloud")).toBeInTheDocument()
 		})
 	})
 
@@ -136,18 +139,30 @@ describe("CloudTaskButton", () => {
 		})
 	})
 
-	// Note: QR code generation is tested implicitly through the canvas rendering test below
-
-	test("QR code canvas has proper accessibility attributes", async () => {
+	test("displays intro text in dialog", async () => {
 		render(<CloudTaskButton item={mockItem} />)
 
 		const button = screen.getByTestId("cloud-task-button")
 		fireEvent.click(button)
 
 		await waitFor(() => {
-			const canvas = screen.getByLabelText("QR code for cloud task URL")
+			expect(screen.getByText("chat:task.openInCloudIntro")).toBeInTheDocument()
+		})
+	})
+
+	// Note: QR code generation is tested implicitly through the canvas rendering test below
+
+	test("QR code canvas is rendered", async () => {
+		render(<CloudTaskButton item={mockItem} />)
+
+		const button = screen.getByTestId("cloud-task-button")
+		fireEvent.click(button)
+
+		await waitFor(() => {
+			// Canvas element doesn't have a specific aria label, find it directly
+			const canvas = document.querySelector("canvas")
 			expect(canvas).toBeInTheDocument()
-			expect(canvas.tagName).toBe("CANVAS")
+			expect(canvas?.tagName).toBe("CANVAS")
 		})
 	})
 
@@ -175,7 +190,7 @@ describe("CloudTaskButton", () => {
 		fireEvent.click(button)
 
 		await waitFor(() => {
-			expect(screen.getByText("chat:task.continueFromAnywhere")).toBeInTheDocument()
+			expect(screen.getByText("chat:task.openInCloud")).toBeInTheDocument()
 		})
 
 		// Close dialog by clicking the X button (assuming it exists in Dialog component)
@@ -183,7 +198,7 @@ describe("CloudTaskButton", () => {
 		fireEvent.click(closeButton)
 
 		await waitFor(() => {
-			expect(screen.queryByText("chat:task.continueFromAnywhere")).not.toBeInTheDocument()
+			expect(screen.queryByText("chat:task.openInCloud")).not.toBeInTheDocument()
 		})
 	})
 

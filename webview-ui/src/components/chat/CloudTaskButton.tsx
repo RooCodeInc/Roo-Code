@@ -25,7 +25,6 @@ export const CloudTaskButton = ({ item, disabled = false }: CloudTaskButtonProps
 	// Generate the cloud URL for the task
 	const cloudTaskUrl = item?.id ? `${cloudApiUrl}/task/${item.id}` : ""
 
-	// Helper function to generate QR code
 	const generateQRCode = useCallback(
 		(canvas: HTMLCanvasElement, context: string) => {
 			if (!cloudTaskUrl) {
@@ -33,7 +32,6 @@ export const CloudTaskButton = ({ item, disabled = false }: CloudTaskButtonProps
 				return
 			}
 
-			console.log(`Generating QR code (${context})`)
 			QRCode.toCanvas(
 				canvas,
 				cloudTaskUrl,
@@ -79,7 +77,6 @@ export const CloudTaskButton = ({ item, disabled = false }: CloudTaskButtonProps
 		}
 	}, [dialogOpen, canvasElement, generateQRCode])
 
-	// Check if the button should be shown
 	if (!cloudUserInfo?.extensionBridgeEnabled || !item?.id) {
 		return null
 	}
@@ -105,8 +102,9 @@ export const CloudTaskButton = ({ item, disabled = false }: CloudTaskButtonProps
 						<DialogTitle>{t("chat:task.openInCloud")}</DialogTitle>
 					</DialogHeader>
 
-					<div className="flex flex-col space-y-4 text-center">
-						<div className="flex justify-center">
+					<div className="flex flex-col space-y-4">
+						<p className="text-center md:text-left max-w-80">{t("chat:task.openInCloudIntro")}</p>
+						<div className="flex justify-center md:justify-start">
 							<div
 								className="w-[170px] h-[170px] bg-white rounded-lg border-border cursor-pointer hover:opacity-70 transition-opacity"
 								onClick={() => vscode.postMessage({ type: "openExternal", url: cloudTaskUrl })}
