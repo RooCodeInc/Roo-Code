@@ -79,11 +79,9 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 			messages: [{ role: "system", content: systemPrompt }, ...convertToOpenAiMessages(messages)],
 			stream: true,
 			stream_options: { include_usage: true },
-		}
-
-		// Only include temperature if explicitly set
-		if (this.options.modelTemperature !== undefined) {
-			params.temperature = this.options.modelTemperature
+			// Always include temperature to prevent TabbyApi/ExLlamaV2 crashes
+			// Use explicitly set temperature, or fall back to defaultTemperature (which defaults to 0)
+			temperature: this.options.modelTemperature ?? this.defaultTemperature,
 		}
 
 		return this.client.chat.completions.create(params, requestOptions)

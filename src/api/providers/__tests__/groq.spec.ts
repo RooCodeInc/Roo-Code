@@ -195,7 +195,7 @@ describe("GroqHandler", () => {
 		)
 	})
 
-	it("should omit temperature when modelTemperature is undefined", async () => {
+	it("should include default temperature of 0.5 when modelTemperature is undefined", async () => {
 		const modelId: GroqModelId = "llama-3.1-8b-instant"
 		const handlerWithoutTemp = new GroqHandler({
 			apiModelId: modelId,
@@ -224,13 +224,10 @@ describe("GroqHandler", () => {
 				model: modelId,
 				messages: expect.arrayContaining([{ role: "system", content: systemPrompt }]),
 				stream: true,
+				temperature: 0.5, // Should include Groq's default temperature of 0.5
 			}),
 			undefined,
 		)
-
-		// Verify temperature is NOT included
-		const callArgs = mockCreate.mock.calls[0][0]
-		expect(callArgs).not.toHaveProperty("temperature")
 	})
 
 	it("should include temperature when modelTemperature is explicitly set", async () => {

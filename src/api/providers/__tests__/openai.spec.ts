@@ -316,20 +316,20 @@ describe("OpenAiHandler", () => {
 			expect(callArgs.max_completion_tokens).toBe(4096)
 		})
 
-		it("should omit temperature when modelTemperature is undefined", async () => {
+		it("should include default temperature of 0 when modelTemperature is undefined", async () => {
 			const optionsWithoutTemperature: ApiHandlerOptions = {
 				...mockOptions,
-				// modelTemperature is not set, should not include temperature
+				// modelTemperature is not set, should include default temperature of 0
 			}
 			const handlerWithoutTemperature = new OpenAiHandler(optionsWithoutTemperature)
 			const stream = handlerWithoutTemperature.createMessage(systemPrompt, messages)
 			// Consume the stream to trigger the API call
 			for await (const _chunk of stream) {
 			}
-			// Assert the mockCreate was called without temperature
+			// Assert the mockCreate was called with default temperature of 0
 			expect(mockCreate).toHaveBeenCalled()
 			const callArgs = mockCreate.mock.calls[0][0]
-			expect(callArgs).not.toHaveProperty("temperature")
+			expect(callArgs.temperature).toBe(0)
 		})
 
 		it("should include temperature when modelTemperature is explicitly set to 0", async () => {
@@ -431,6 +431,7 @@ describe("OpenAiHandler", () => {
 				{
 					model: mockOptions.openAiModelId,
 					messages: [{ role: "user", content: "Test prompt" }],
+					temperature: 0, // temperature should always be included with default of 0
 				},
 				{},
 			)
@@ -515,7 +516,7 @@ describe("OpenAiHandler", () => {
 					],
 					stream: true,
 					stream_options: { include_usage: true },
-					// temperature should be omitted when not set
+					temperature: 0, // temperature should always be included with default of 0
 				},
 				{ path: "/models/chat/completions" },
 			)
@@ -562,6 +563,7 @@ describe("OpenAiHandler", () => {
 						{ role: "user", content: systemPrompt },
 						{ role: "user", content: "Hello!" },
 					],
+					temperature: 0, // temperature should always be included with default of 0
 				},
 				{ path: "/models/chat/completions" },
 			)
@@ -579,6 +581,7 @@ describe("OpenAiHandler", () => {
 				{
 					model: azureOptions.openAiModelId,
 					messages: [{ role: "user", content: "Test prompt" }],
+					temperature: 0, // temperature should always be included with default of 0
 				},
 				{ path: "/models/chat/completions" },
 			)

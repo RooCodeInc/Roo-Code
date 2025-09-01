@@ -161,14 +161,9 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				stream: true as const,
 				...(isGrokXAI ? {} : { stream_options: { include_usage: true } }),
 				...(reasoning && reasoning),
-			}
-
-			// Only include temperature if explicitly set
-			if (this.options.modelTemperature !== undefined) {
-				requestOptions.temperature = this.options.modelTemperature
-			} else if (deepseekReasoner) {
-				// DeepSeek Reasoner has a specific default temperature
-				requestOptions.temperature = DEEP_SEEK_DEFAULT_TEMPERATURE
+				// Always include temperature to prevent TabbyApi/ExLlamaV2 crashes
+				// Use explicitly set temperature, or DeepSeek default for reasoner models, or fall back to 0
+				temperature: this.options.modelTemperature ?? (deepseekReasoner ? DEEP_SEEK_DEFAULT_TEMPERATURE : 0),
 			}
 
 			// Add max_tokens if needed
@@ -231,6 +226,9 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 					: enabledLegacyFormat
 						? [systemMessage, ...convertToSimpleMessages(messages)]
 						: [systemMessage, ...convertToOpenAiMessages(messages)],
+				// Always include temperature to prevent TabbyApi/ExLlamaV2 crashes
+				// Use explicitly set temperature, or DeepSeek default for reasoner models, or fall back to 0
+				temperature: this.options.modelTemperature ?? (deepseekReasoner ? DEEP_SEEK_DEFAULT_TEMPERATURE : 0),
 			}
 
 			// Add max_tokens if needed
@@ -276,6 +274,8 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {
 				model: model.id,
 				messages: [{ role: "user", content: prompt }],
+				// Always include temperature to prevent TabbyApi/ExLlamaV2 crashes
+				temperature: this.options.modelTemperature ?? 0,
 			}
 
 			// Add max_tokens if needed
