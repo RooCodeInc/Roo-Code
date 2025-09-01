@@ -23,6 +23,12 @@ vitest.mock("../fetchers/ollama", () => ({
 			supportsImages: false,
 			supportsPromptCache: false,
 		},
+		"deepseek-r1": {
+			contextWindow: 32768,
+			maxTokens: 32768,
+			supportsImages: false,
+			supportsPromptCache: false,
+		},
 	}),
 }))
 

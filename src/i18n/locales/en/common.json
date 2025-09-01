@@ -121,7 +121,15 @@
 		"manual_url_no_query": "Invalid callback URL: missing query parameters",
 		"manual_url_missing_params": "Invalid callback URL: missing required parameters (code and state)",
 		"manual_url_auth_failed": "Manual URL authentication failed",
-		"manual_url_auth_error": "Authentication failed"
+		"manual_url_auth_error": "Authentication failed",
+		"ollama": {
+			"inputTooLong": "Input message is too long for the selected model. Estimated tokens: {{estimatedTokenCount}}, Max tokens: {{maxTokens}}. To increase the context window size, please set the OLLAMA_NUM_CTX environment variable or see Ollama documentation.",
+			"serviceNotRunning": "Ollama service is not running at {{baseUrl}}. Please start Ollama first.",
+			"modelNotFound": "Model {{modelId}} not found in Ollama. Please pull the model first with: ollama pull {{modelId}}",
+			"modelNotFoundWithAvailable": "Model {{modelId}} not found. Available models: {{availableModels}}",
+			"modelNotFoundNoModels": "Model {{modelId}} not found. No models available. Please pull the model first with: ollama pull {{modelId}}",
+			"completionError": "Ollama completion error: {{error}}"
+		}
 	},
 	"warnings": {
 		"no_terminal_content": "No terminal content selected",

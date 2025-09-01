@@ -115,14 +115,21 @@
 			"authenticationRequired": "Roo प्रदाता को क्लाउड प्रमाणीकरण की आवश्यकता है। कृपया Roo Code Cloud में साइन इन करें।"
 		},
 		"api": {
-			"invalidKeyInvalidChars": "API कुंजी में अमान्य वर्ण हैं।"
+			"invalidKeyInvalidChars": "API key contains invalid characters."
 		},
-		"manual_url_empty": "कृपया एक वैध callback URL दर्ज करें",
-		"manual_url_no_query": "अवैध callback URL: क्वेरी पैरामीटर गुम हैं",
-		"manual_url_missing_params": "अवैध callback URL: आवश्यक पैरामीटर गुम हैं (code और state)",
-		"manual_url_auth_failed": "मैनुअल URL प्रमाणीकरण असफल",
-		"manual_url_auth_error": "प्रमाणीकरण असफल"
-	},
+		"manual_url_empty": "Please enter a valid callback URL",
+		"manual_url_no_query": "Invalid callback URL: missing query parameters",
+		"manual_url_missing_params": "Invalid callback URL: missing required parameters (code and state)",
+		"manual_url_auth_failed": "Manual URL authentication failed",
+		"manual_url_auth_error": "Authentication failed",
+		"ollama": {
+			"inputTooLong": "Input message is too long for the selected model. Estimated tokens: {{estimatedTokenCount}}, Max tokens: {{maxTokens}}. To increase the context window size, please set the OLLAMA_NUM_CTX environment variable or see Ollama documentation.",
+			"serviceNotRunning": "Ollama service is not running at {{baseUrl}}. Please start Ollama first.",
+			"modelNotFound": "Model {{modelId}} not found in Ollama. Please pull the model first with: ollama pull {{modelId}}",
+			"modelNotFoundWithAvailable": "Model {{modelId}} not found. Available models: {{availableModels}}",
+			"modelNotFoundNoModels": "Model {{modelId}} not found. No models available. Please pull the model first with: ollama pull {{modelId}}",
+			"completionError": "Ollama completion error: {{error}}"
+		},	},
 	"warnings": {
 		"no_terminal_content": "कोई टर्मिनल सामग्री चयनित नहीं",
 		"missing_task_files": "इस टास्क की फाइलें गायब हैं। क्या आप इसे टास्क सूची से हटाना चाहते हैं?",

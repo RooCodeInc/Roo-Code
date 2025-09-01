@@ -115,14 +115,21 @@
 			"authenticationRequired": "Roo 제공업체는 클라우드 인증이 필요합니다. Roo Code Cloud에 로그인하세요."
 		},
 		"api": {
-			"invalidKeyInvalidChars": "API 키에 유효하지 않은 문자가 포함되어 있습니다."
+			"invalidKeyInvalidChars": "API key contains invalid characters."
 		},
-		"manual_url_empty": "유효한 콜백 URL을 입력하세요",
-		"manual_url_no_query": "유효하지 않은 콜백 URL: 쿼리 매개변수 누락",
-		"manual_url_missing_params": "유효하지 않은 콜백 URL: 필요한 매개변수 누락 (code와 state)",
-		"manual_url_auth_failed": "수동 URL 인증 실패",
-		"manual_url_auth_error": "인증 실패"
-	},
+		"manual_url_empty": "Please enter a valid callback URL",
+		"manual_url_no_query": "Invalid callback URL: missing query parameters",
+		"manual_url_missing_params": "Invalid callback URL: missing required parameters (code and state)",
+		"manual_url_auth_failed": "Manual URL authentication failed",
+		"manual_url_auth_error": "Authentication failed",
+		"ollama": {
+			"inputTooLong": "Input message is too long for the selected model. Estimated tokens: {{estimatedTokenCount}}, Max tokens: {{maxTokens}}. To increase the context window size, please set the OLLAMA_NUM_CTX environment variable or see Ollama documentation.",
+			"serviceNotRunning": "Ollama service is not running at {{baseUrl}}. Please start Ollama first.",
+			"modelNotFound": "Model {{modelId}} not found in Ollama. Please pull the model first with: ollama pull {{modelId}}",
+			"modelNotFoundWithAvailable": "Model {{modelId}} not found. Available models: {{availableModels}}",
+			"modelNotFoundNoModels": "Model {{modelId}} not found. No models available. Please pull the model first with: ollama pull {{modelId}}",
+			"completionError": "Ollama completion error: {{error}}"
+		},	},
 	"warnings": {
 		"no_terminal_content": "선택된 터미널 내용이 없습니다",
 		"missing_task_files": "이 작업의 파일이 누락되었습니다. 작업 목록에서 제거하시겠습니까?",

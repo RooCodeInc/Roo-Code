@@ -125,6 +125,14 @@
 		"manual_url_missing_params": "URL de callback no vàlida: falten paràmetres requerits (code i state)",
 		"manual_url_auth_failed": "Autenticació manual per URL ha fallat",
 		"manual_url_auth_error": "Autenticació fallida",
+		"ollama": {
+			"inputTooLong": "El missatge d'entrada és massa llarg per al model seleccionat. Tokens estimats: {{estimatedTokenCount}}, Tokens màxims: {{maxTokens}}. Per augmentar la mida de la finestra de context, estableix la variable d'entorn OLLAMA_NUM_CTX o consulta la documentació d'Ollama.",
+			"serviceNotRunning": "El servei Ollama no s'està executant a {{baseUrl}}. Inicia Ollama primer.",
+			"modelNotFound": "Model {{modelId}} no trobat a Ollama. Descarrega el model primer amb: ollama pull {{modelId}}",
+			"modelNotFoundWithAvailable": "Model {{modelId}} no trobat. Models disponibles: {{availableModels}}",
+			"modelNotFoundNoModels": "Model {{modelId}} no trobat. No hi ha models disponibles. Descarrega el model primer amb: ollama pull {{modelId}}",
+			"completionError": "Error de finalització d'Ollama: {{error}}"
+		},
 		"mode_import_failed": "Ha fallat la importació del mode: {{error}}"
 	},
 	"warnings": {

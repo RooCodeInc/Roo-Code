@@ -1,12 +1,20 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import { Message, Ollama, type Config as OllamaOptions } from "ollama"
-import { ModelInfo, openAiModelInfoSaneDefaults, DEEP_SEEK_DEFAULT_TEMPERATURE } from "@roo-code/types"
+import { ModelInfo, DEEP_SEEK_DEFAULT_TEMPERATURE } from "@roo-code/types"
 import { ApiStream } from "../transform/stream"
 import { BaseProvider } from "./base-provider"
 import type { ApiHandlerOptions } from "../../shared/api"
 import { getOllamaModels } from "./fetchers/ollama"
 import { XmlMatcher } from "../../utils/xml-matcher"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
+import { t } from "../../i18n"
+
+const TOKEN_ESTIMATION_FACTOR = 4 // Industry standard technique for estimating token counts without actually implementing a parser/tokenizer
+
+function estimateOllamaTokenCount(messages: Message[]): number {
+	const totalChars = messages.reduce((acc, msg) => acc + (msg.content?.length || 0), 0)
+	return Math.ceil(totalChars / TOKEN_ESTIMATION_FACTOR)
+}
 
 function convertToOllamaMessages(anthropicMessages: Anthropic.Messages.MessageParam[]): Message[] {
 	const ollamaMessages: Message[] = []
@@ -131,10 +139,20 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 	protected options: ApiHandlerOptions
 	private client: Ollama | undefined
 	protected models: Record<string, ModelInfo> = {}
+	private isInitialized = false
 
 	constructor(options: ApiHandlerOptions) {
 		super()
 		this.options = options
+		this.initialize()
+	}
+
+	private async initialize(): Promise<void> {
+		if (this.isInitialized) {
+			return
+		}
+		await this.fetchModel()
+		this.isInitialized = true
 	}
 
 	private ensureClient(): Ollama {
@@ -165,14 +183,26 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
+		if (!this.isInitialized) {
+			await this.initialize()
+		}
+
 		const client = this.ensureClient()
-		const { id: modelId, info: modelInfo } = await this.fetchModel()
+		const { id: modelId, info: modelInfo } = this.getModel()
 		const useR1Format = modelId.toLowerCase().includes("deepseek-r1")
 
 		const ollamaMessages: Message[] = [
 			{ role: "system", content: systemPrompt },
 			...convertToOllamaMessages(messages),
 		]
+
+		// Check if the estimated token count exceeds the model's limit
+		const estimatedTokenCount = estimateOllamaTokenCount(ollamaMessages)
+		if (modelInfo.maxTokens && estimatedTokenCount > modelInfo.maxTokens) {
+			throw new Error(
+				`Input message is too long for the selected model. Estimated tokens: ${estimatedTokenCount}, Max tokens: ${modelInfo.maxTokens}. To increase the context window size, please set the OLLAMA_NUM_CTX environment variable or see Ollama documentation.`,
+			)
+		}
 
 		const matcher = new XmlMatcher(
 			"think",
@@ -261,16 +291,34 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 
 	override getModel(): { id: string; info: ModelInfo } {
 		const modelId = this.options.ollamaModelId || ""
+
+		const modelInfo = this.models[modelId]
+		if (!modelInfo) {
+			const availableModels = Object.keys(this.models)
+			const errorMessage =
+				availableModels.length > 0
+					? t("common:errors.ollama.modelNotFoundWithAvailable", {
+							modelId,
+							availableModels: availableModels.join(", "),
+						})
+					: t("common:errors.ollama.modelNotFoundNoModels", { modelId })
+			throw new Error(errorMessage)
+		}
+
 		return {
 			id: modelId,
-			info: this.models[modelId] || openAiModelInfoSaneDefaults,
+			info: modelInfo,
 		}
 	}
 
 	async completePrompt(prompt: string): Promise<string> {
 		try {
+			if (!this.isInitialized) {
+				await this.initialize()
+			}
+
 			const client = this.ensureClient()
-			const { id: modelId } = await this.fetchModel()
+			const { id: modelId } = this.getModel()
 			const useR1Format = modelId.toLowerCase().includes("deepseek-r1")
 
 			const response = await client.chat({

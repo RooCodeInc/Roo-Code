@@ -18,8 +18,8 @@ describe("Ollama Fetcher", () => {
 			const parsedModel = parseOllamaModel(modelData)
 
 			expect(parsedModel).toEqual({
-				maxTokens: 40960,
-				contextWindow: 40960,
+				maxTokens: 4096, // Changed from 40960 - Ollama's quirk fix
+				contextWindow: 4096, // Changed from 40960 - Ollama's quirk fix
 				supportsImages: false,
 				supportsComputerUse: false,
 				supportsPromptCache: true,
@@ -27,7 +27,7 @@ describe("Ollama Fetcher", () => {
 				outputPrice: 0,
 				cacheWritesPrice: 0,
 				cacheReadsPrice: 0,
-				description: "Family: qwen3, Context: 40960, Size: 32.8B",
+				description: "Family: qwen3, Context: 4096, Size: 32.8B", // Changed from 40960
 			})
 		})
 
@@ -43,8 +43,8 @@ describe("Ollama Fetcher", () => {
 			const parsedModel = parseOllamaModel(modelDataWithNullFamilies as any)
 
 			expect(parsedModel).toEqual({
-				maxTokens: 40960,
-				contextWindow: 40960,
+				maxTokens: 4096, // Changed from 40960 - Ollama's quirk fix
+				contextWindow: 4096, // Changed from 40960 - Ollama's quirk fix
 				supportsImages: false,
 				supportsComputerUse: false,
 				supportsPromptCache: true,
@@ -52,8 +52,44 @@ describe("Ollama Fetcher", () => {
 				outputPrice: 0,
 				cacheWritesPrice: 0,
 				cacheReadsPrice: 0,
-				description: "Family: qwen3, Context: 40960, Size: 32.8B",
+				description: "Family: qwen3, Context: 4096, Size: 32.8B", // Changed from 40960
 			})
+		})
+
+		it("should use num_ctx from parameters when available", () => {
+			const modelDataWithNumCtx = {
+				...ollamaModelsData["qwen3-2to16:latest"],
+				parameters: "num_ctx 8192\nstop_token <eos>",
+			}
+
+			const parsedModel = parseOllamaModel(modelDataWithNumCtx as any)
+
+			expect(parsedModel.contextWindow).toBe(8192)
+			expect(parsedModel.maxTokens).toBe(8192)
+			expect(parsedModel.description).toContain("Context: 8192")
+		})
+
+		it("should use OLLAMA_NUM_CTX environment variable as fallback", () => {
+			const originalEnv = process.env.OLLAMA_NUM_CTX
+			process.env.OLLAMA_NUM_CTX = "16384"
+
+			const modelDataWithoutContext = {
+				...ollamaModelsData["qwen3-2to16:latest"],
+				model_info: {}, // No context_length in model_info
+				parameters: undefined, // No parameters
+			}
+
+			const parsedModel = parseOllamaModel(modelDataWithoutContext as any)
+
+			expect(parsedModel.contextWindow).toBe(16384)
+			expect(parsedModel.maxTokens).toBe(16384)
+
+			// Restore original env
+			if (originalEnv !== undefined) {
+				process.env.OLLAMA_NUM_CTX = originalEnv
+			} else {
+				delete process.env.OLLAMA_NUM_CTX
+			}
 		})
 	})
 

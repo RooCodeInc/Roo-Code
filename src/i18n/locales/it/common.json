@@ -115,14 +115,21 @@
 			"authenticationRequired": "Il provider Roo richiede l'autenticazione cloud. Accedi a Roo Code Cloud."
 		},
 		"api": {
-			"invalidKeyInvalidChars": "La chiave API contiene caratteri non validi."
+			"invalidKeyInvalidChars": "API key contains invalid characters."
 		},
-		"manual_url_empty": "Inserisci un URL di callback valido",
-		"manual_url_no_query": "URL di callback non valido: parametri di query mancanti",
-		"manual_url_missing_params": "URL di callback non valido: parametri richiesti mancanti (code e state)",
-		"manual_url_auth_failed": "Autenticazione manuale tramite URL fallita",
-		"manual_url_auth_error": "Autenticazione fallita"
-	},
+		"manual_url_empty": "Please enter a valid callback URL",
+		"manual_url_no_query": "Invalid callback URL: missing query parameters",
+		"manual_url_missing_params": "Invalid callback URL: missing required parameters (code and state)",
+		"manual_url_auth_failed": "Manual URL authentication failed",
+		"manual_url_auth_error": "Authentication failed",
+		"ollama": {
+			"inputTooLong": "Input message is too long for the selected model. Estimated tokens: {{estimatedTokenCount}}, Max tokens: {{maxTokens}}. To increase the context window size, please set the OLLAMA_NUM_CTX environment variable or see Ollama documentation.",
+			"serviceNotRunning": "Ollama service is not running at {{baseUrl}}. Please start Ollama first.",
+			"modelNotFound": "Model {{modelId}} not found in Ollama. Please pull the model first with: ollama pull {{modelId}}",
+			"modelNotFoundWithAvailable": "Model {{modelId}} not found. Available models: {{availableModels}}",
+			"modelNotFoundNoModels": "Model {{modelId}} not found. No models available. Please pull the model first with: ollama pull {{modelId}}",
+			"completionError": "Ollama completion error: {{error}}"
+		},	},
 	"warnings": {
 		"no_terminal_content": "Nessun contenuto del terminale selezionato",
 		"missing_task_files": "I file di questa attività sono mancanti. Vuoi rimuoverla dall'elenco delle attività?",
