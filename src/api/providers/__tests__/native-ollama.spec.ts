@@ -106,7 +106,7 @@ describe("NativeOllamaHandler", () => {
 				for await (const _ of stream) {
 					// consume stream
 				}
-			}).rejects.toThrow("Ollama service is not running")
+			}).rejects.toThrow("errors.ollama.serviceNotRunning")
 		})
 
 		it("should handle model not found errors", async () => {
@@ -120,7 +120,7 @@ describe("NativeOllamaHandler", () => {
 				for await (const _ of stream) {
 					// consume stream
 				}
-			}).rejects.toThrow("Model llama2 not found in Ollama")
+			}).rejects.toThrow("errors.ollama.modelNotFound")
 		})
 	})
 

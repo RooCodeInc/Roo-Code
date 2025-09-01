@@ -7,6 +7,7 @@ import type { ApiHandlerOptions } from "../../shared/api"
 import { getOllamaModels } from "./fetchers/ollama"
 import { XmlMatcher } from "../../utils/xml-matcher"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
+import { t } from "../../i18n"
 
 const TOKEN_ESTIMATION_FACTOR = 4 // Industry standard technique for estimating token counts without actually implementing a parser/tokenizer
 
@@ -171,7 +172,7 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 
 				this.client = new Ollama(clientOptions)
 			} catch (error: any) {
-				throw new Error(`Error creating Ollama client: ${error.message}`)
+				throw new Error(t("common:errors.ollama.clientCreationError", { error: error.message }))
 			}
 		}
 		return this.client
@@ -199,7 +200,7 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 		const estimatedTokenCount = estimateOllamaTokenCount(ollamaMessages)
 		if (modelInfo.maxTokens && estimatedTokenCount > modelInfo.maxTokens) {
 			throw new Error(
-				`Input message is too long for the selected model. Estimated tokens: ${estimatedTokenCount}, Max tokens: ${modelInfo.maxTokens}. To increase the context window size, please set the OLLAMA_NUM_CTX environment variable or see Ollama documentation.`,
+				t("common:errors.ollama.inputTooLong", { estimatedTokenCount, maxTokens: modelInfo.maxTokens }),
 			)
 		}
 
@@ -261,7 +262,11 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 				}
 			} catch (streamError: any) {
 				console.error("Error processing Ollama stream:", streamError)
-				throw new Error(`Ollama stream processing error: ${streamError.message || "Unknown error"}`)
+				throw new Error(
+					t("common:errors.ollama.streamProcessingError", {
+						error: streamError.message || t("common:errors.ollama.unknownError"),
+					}),
+				)
 			}
 		} catch (error: any) {
 			// Enhance error reporting
@@ -270,12 +275,12 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 
 			if (error.code === "ECONNREFUSED") {
 				throw new Error(
-					`Ollama service is not running at ${this.options.ollamaBaseUrl || "http://localhost:11434"}. Please start Ollama first.`,
+					t("common:errors.ollama.serviceNotRunning", {
+						baseUrl: this.options.ollamaBaseUrl || "http://localhost:11434",
+					}),
 				)
 			} else if (statusCode === 404) {
-				throw new Error(
-					`Model ${this.getModel().id} not found in Ollama. Please pull the model first with: ollama pull ${this.getModel().id}`,
-				)
+				throw new Error(t("common:errors.ollama.modelNotFound", { modelId: this.getModel().id }))
 			}
 
 			console.error(`Ollama API error (${statusCode || "unknown"}): ${errorMessage}`)
@@ -296,8 +301,11 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 			const availableModels = Object.keys(this.models)
 			const errorMessage =
 				availableModels.length > 0
-					? `Model ${modelId} not found. Available models: ${availableModels.join(", ")}`
-					: `Model ${modelId} not found. No models available. Please pull the model first with: ollama pull ${modelId}`
+					? t("common:errors.ollama.modelNotFoundWithAvailable", {
+							modelId,
+							availableModels: availableModels.join(", "),
+						})
+					: t("common:errors.ollama.modelNotFoundNoModels", { modelId })
 			throw new Error(errorMessage)
 		}
 
@@ -329,7 +337,7 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 			return response.message?.content || ""
 		} catch (error) {
 			if (error instanceof Error) {
-				throw new Error(`Ollama completion error: ${error.message}`)
+				throw new Error(t("common:errors.ollama.completionError", { error: error.message }))
 			}
 			throw error
 		}
