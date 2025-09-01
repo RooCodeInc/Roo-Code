@@ -49,7 +49,3 @@ logs
 
 # Qdrant
 qdrant_storage/
-
-#Agents
-AGENTS.md
-CLAUDE.md
