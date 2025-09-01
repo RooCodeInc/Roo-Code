@@ -42,7 +42,7 @@ export const CloudTaskButton = ({ item, disabled = false }: CloudTaskButtonProps
 						light: "#FFFFFF",
 					},
 				},
-				(error: Error | null) => {
+				(error: Error | null | undefined) => {
 					if (error) {
 						console.error("Error generating QR code:", error)
 					}
