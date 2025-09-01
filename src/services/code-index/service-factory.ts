@@ -159,14 +159,14 @@ export class CodeIndexServiceFactory {
 		ignoreInstance: Ignore,
 	): DirectoryScanner {
 		// Get the configurable batch size from VSCode settings
-		let batchSize: number | undefined
+		let batchSize: number
 		try {
 			batchSize = vscode.workspace
 				.getConfiguration(Package.name)
 				.get<number>("codeIndex.embeddingBatchSize", BATCH_SEGMENT_THRESHOLD)
 		} catch {
 			// In test environment, vscode.workspace might not be available
-			batchSize = undefined
+			batchSize = BATCH_SEGMENT_THRESHOLD
 		}
 		return new DirectoryScanner(embedder, vectorStore, parser, this.cacheManager, ignoreInstance, batchSize)
 	}
@@ -183,14 +183,14 @@ export class CodeIndexServiceFactory {
 		rooIgnoreController?: RooIgnoreController,
 	): IFileWatcher {
 		// Get the configurable batch size from VSCode settings
-		let batchSize: number | undefined
+		let batchSize: number
 		try {
 			batchSize = vscode.workspace
 				.getConfiguration(Package.name)
 				.get<number>("codeIndex.embeddingBatchSize", BATCH_SEGMENT_THRESHOLD)
 		} catch {
 			// In test environment, vscode.workspace might not be available
-			batchSize = undefined
+			batchSize = BATCH_SEGMENT_THRESHOLD
 		}
 		return new FileWatcher(
 			this.workspacePath,
