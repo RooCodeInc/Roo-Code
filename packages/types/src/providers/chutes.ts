@@ -30,7 +30,7 @@ export type ChutesModelId =
 	| "zai-org/GLM-4.5-Air"
 	| "zai-org/GLM-4.5-FP8"
 	| "moonshotai/Kimi-K2-Instruct-75k"
-	  "Qwen/Qwen3-235B-A22B-Thinking-2507"
+	| "Qwen/Qwen3-235B-A22B-Thinking-2507"
 
 export const chutesDefaultModelId: ChutesModelId = "deepseek-ai/DeepSeek-R1-0528"
 
