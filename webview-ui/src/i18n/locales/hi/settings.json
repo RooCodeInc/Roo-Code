@@ -47,6 +47,9 @@
 		"geminiProvider": "Gemini",
 		"geminiApiKeyLabel": "API कुंजी:",
 		"geminiApiKeyPlaceholder": "अपना जेमिनी एपीआई कुंजी दर्ज करें",
+		"vercelAiGatewayProvider": "Vercel AI Gateway",
+		"vercelAiGatewayApiKeyLabel": "API कुंजी",
+		"vercelAiGatewayApiKeyPlaceholder": "अपनी Vercel AI Gateway API कुंजी दर्ज करें",
 		"mistralProvider": "Mistral",
 		"mistralApiKeyLabel": "API कुंजी:",
 		"mistralApiKeyPlaceholder": "अपनी मिस्ट्रल एपीआई कुंजी दर्ज करें",
@@ -113,6 +116,7 @@
 			"modelDimensionRequired": "मॉडल आयाम आवश्यक है",
 			"geminiApiKeyRequired": "Gemini API कुंजी आवश्यक है",
 			"mistralApiKeyRequired": "मिस्ट्रल एपीआई कुंजी आवश्यक है",
+			"vercelAiGatewayApiKeyRequired": "Vercel AI Gateway API कुंजी आवश्यक है",
 			"ollamaBaseUrlRequired": "Ollama आधार URL आवश्यक है",
 			"baseUrlRequired": "आधार URL आवश्यक है",
 			"modelDimensionMinValue": "मॉडल आयाम 0 से बड़ा होना चाहिए"
@@ -370,6 +374,8 @@
 		"ollama": {
 			"baseUrl": "बेस URL (वैकल्पिक)",
 			"modelId": "मॉडल ID",
+			"apiKey": "Ollama API Key",
+			"apiKeyHelp": "प्रमाणित Ollama इंस्टेंसेस या क्लाउड सेवाओं के लिए वैकल्पिक API key। स्थानीय इंस्टॉलेशन के लिए खाली छोड़ें।",
 			"description": "Ollama आपको अपने कंप्यूटर पर स्थानीय रूप से मॉडल चलाने की अनुमति देता है। आरंभ करने के निर्देशों के लिए, उनकी क्विकस्टार्ट गाइड देखें।",
 			"warning": "नोट: Roo Code जटिल प्रॉम्प्ट्स का उपयोग करता है और Claude मॉडल के साथ सबसे अच्छा काम करता है। कम क्षमता वाले मॉडल अपेक्षित रूप से काम नहीं कर सकते हैं।"
 		},
@@ -726,6 +732,17 @@
 		"NEW_TASK_REQUIRE_TODOS": {
 			"name": "नए कार्यों के लिए 'todos' सूची की आवश्यकता है",
 			"description": "जब सक्षम किया जाता है, तो new_task टूल को todos पैरामीटर प्रदान करने की आवश्यकता होगी। यह सुनिश्चित करता है कि सभी नए कार्य स्पष्ट उद्देश्यों की सूची के साथ शुरू हों। जब अक्षम किया जाता है (डिफ़ॉल्ट), तो todos पैरामीटर पिछड़े संगतता के लिए वैकल्पिक रहता है।"
+		},
+		"IMAGE_GENERATION": {
+			"name": "AI छवि निर्माण सक्षम करें",
+			"description": "जब सक्षम किया जाता है, तो Roo OpenRouter के छवि निर्माण मॉडल का उपयोग करके टेक्स्ट प्रॉम्प्ट से छवियां उत्पन्न कर सकता है। एक कॉन्फ़िगर किए गए OpenRouter API कुंजी की आवश्यकता होती है।",
+			"openRouterApiKeyLabel": "OpenRouter API कुंजी",
+			"openRouterApiKeyPlaceholder": "अपनी OpenRouter API कुंजी दर्ज करें",
+			"getApiKeyText": "अपनी API कुंजी प्राप्त करें",
+			"modelSelectionLabel": "छवि निर्माण मॉडल",
+			"modelSelectionDescription": "छवि निर्माण के लिए उपयोग करने वाला मॉडल चुनें",
+			"warningMissingKey": "⚠️ छवि निर्माण के लिए OpenRouter API कुंजी आवश्यक है। कृपया इसे ऊपर कॉन्फ़िगर करें।",
+			"successConfigured": "✓ छवि निर्माण कॉन्फ़िगर है और उपयोग के लिए तैयार है"
 		}
 	},
 	"promptCaching": {

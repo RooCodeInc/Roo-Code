@@ -4,9 +4,8 @@ import Anthropic from "@anthropic-ai/sdk"
 import * as vscode from "vscode"
 import axios from "axios"
 
-import { type ProviderSettingsEntry, type ClineMessage } from "@roo-code/types"
+import { type ProviderSettingsEntry, type ClineMessage, ORGANIZATION_ALLOW_ALL } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
-import { ORGANIZATION_ALLOW_ALL } from "@roo-code/cloud"
 
 import { ExtensionMessage, ExtensionState } from "../../../shared/ExtensionMessage"
 import { defaultModeSlug } from "../../../shared/modes"
@@ -321,11 +320,10 @@ vi.mock("@roo-code/cloud", () => ({
 			}
 		},
 	},
-	getRooCodeApiUrl: vi.fn().mockReturnValue("https://app.roocode.com"),
-	ORGANIZATION_ALLOW_ALL: {
-		allowAll: true,
-		providers: {},
+	BridgeOrchestrator: {
+		isEnabled: vi.fn().mockReturnValue(false),
 	},
+	getRooCodeApiUrl: vi.fn().mockReturnValue("https://app.roocode.com"),
 }))
 
 afterAll(() => {
@@ -534,7 +532,7 @@ describe("ClineProvider", () => {
 			maxWorkspaceFiles: 200,
 			browserToolEnabled: true,
 			telemetrySetting: "unset",
-			showRooIgnoredFiles: true,
+			showRooIgnoredFiles: false,
 			renderContext: "sidebar",
 			maxReadFileLine: 500,
 			maxImageFileSize: 5,
@@ -548,6 +546,8 @@ describe("ClineProvider", () => {
 			profileThresholds: {},
 			hasOpenedModeSelector: false,
 			diagnosticsEnabled: true,
+			openRouterImageApiKey: undefined,
+			openRouterImageGenerationSelectedModel: undefined,
 		}
 
 		const message: ExtensionMessage = {
@@ -984,8 +984,8 @@ describe("ClineProvider", () => {
 		await provider.resolveWebviewView(mockWebviewView)
 		const messageHandler = (mockWebviewView.webview.onDidReceiveMessage as any).mock.calls[0][0]
 
-		// Default value should be true
-		expect((await provider.getState()).showRooIgnoredFiles).toBe(true)
+		// Default value should be false
+		expect((await provider.getState()).showRooIgnoredFiles).toBe(false)
 
 		// Test showRooIgnoredFiles with true
 		await messageHandler({ type: "showRooIgnoredFiles", bool: true })

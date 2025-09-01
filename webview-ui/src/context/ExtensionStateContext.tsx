@@ -7,9 +7,10 @@ import {
 	type ModeConfig,
 	type ExperimentId,
 	type TodoItem,
+	type TelemetrySetting,
+	type OrganizationAllowList,
+	ORGANIZATION_ALLOW_ALL,
 } from "@roo-code/types"
-
-import { type OrganizationAllowList, ORGANIZATION_ALLOW_ALL } from "@roo/cloud"
 
 import { ExtensionMessage, ExtensionState, MarketplaceInstalledMetadata, Command } from "@roo/ExtensionMessage"
 import { findLastIndex } from "@roo/array"
@@ -18,7 +19,6 @@ import { checkExistKey } from "@roo/checkExistApiConfig"
 import { Mode, defaultModeSlug, defaultPrompts } from "@roo/modes"
 import { CustomSupportPrompts } from "@roo/support-prompt"
 import { experimentDefault } from "@roo/experiments"
-import { TelemetrySetting } from "@roo/TelemetrySetting"
 import { RouterModels } from "@roo/api"
 
 import { vscode } from "@src/utils/vscode"
@@ -252,6 +252,8 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		alwaysAllowUpdateTodoList: true,
 		includeDiagnosticMessages: true,
 		maxDiagnosticMessages: 50,
+		openRouterImageApiKey: "",
+		openRouterImageGenerationSelectedModel: "",
 	})
 
 	const [didHydrateState, setDidHydrateState] = useState(false)

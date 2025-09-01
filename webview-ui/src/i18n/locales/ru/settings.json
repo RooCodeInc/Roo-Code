@@ -47,6 +47,9 @@
 		"geminiProvider": "Gemini",
 		"geminiApiKeyLabel": "Ключ API:",
 		"geminiApiKeyPlaceholder": "Введите свой API-ключ Gemini",
+		"vercelAiGatewayProvider": "Vercel AI Gateway",
+		"vercelAiGatewayApiKeyLabel": "Ключ API",
+		"vercelAiGatewayApiKeyPlaceholder": "Введите свой API-ключ Vercel AI Gateway",
 		"mistralProvider": "Mistral",
 		"mistralApiKeyLabel": "Ключ API:",
 		"mistralApiKeyPlaceholder": "Введите свой API-ключ Mistral",
@@ -113,6 +116,7 @@
 			"modelDimensionRequired": "Требуется размерность модели",
 			"geminiApiKeyRequired": "Требуется ключ API Gemini",
 			"mistralApiKeyRequired": "Требуется API-ключ Mistral",
+			"vercelAiGatewayApiKeyRequired": "Требуется API-ключ Vercel AI Gateway",
 			"ollamaBaseUrlRequired": "Требуется базовый URL Ollama",
 			"baseUrlRequired": "Требуется базовый URL",
 			"modelDimensionMinValue": "Размерность модели должна быть больше 0"
@@ -370,6 +374,8 @@
 		"ollama": {
 			"baseUrl": "Базовый URL (опционально)",
 			"modelId": "ID модели",
+			"apiKey": "API-ключ Ollama",
+			"apiKeyHelp": "Опциональный API-ключ для аутентифицированных экземпляров Ollama или облачных сервисов. Оставьте пустым для локальных установок.",
 			"description": "Ollama позволяет запускать модели локально на вашем компьютере. Для начала ознакомьтесь с кратким руководством.",
 			"warning": "Примечание: Roo Code использует сложные подсказки и лучше всего работает с моделями Claude. Менее мощные модели могут работать некорректно."
 		},
@@ -726,6 +732,17 @@
 		"NEW_TASK_REQUIRE_TODOS": {
 			"name": "Требовать список 'todos' для новых задач",
 			"description": "Если включено, инструмент new_task будет требовать предоставления параметра todos. Это гарантирует, что все новые задачи начинаются с четкого списка целей. Когда отключено (по умолчанию), параметр todos остается необязательным для обратной совместимости."
+		},
+		"IMAGE_GENERATION": {
+			"name": "Включить генерацию изображений ИИ",
+			"description": "Когда включено, Roo может генерировать изображения из текстовых запросов, используя модели генерации изображений OpenRouter. Требует настроенный API-ключ OpenRouter.",
+			"openRouterApiKeyLabel": "API-ключ OpenRouter",
+			"openRouterApiKeyPlaceholder": "Введите ваш API-ключ OpenRouter",
+			"getApiKeyText": "Получите ваш API-ключ от",
+			"modelSelectionLabel": "Модель генерации изображений",
+			"modelSelectionDescription": "Выберите модель для генерации изображений",
+			"warningMissingKey": "⚠️ API-ключ OpenRouter необходим для генерации изображений. Настройте его выше.",
+			"successConfigured": "✓ Генерация изображений настроена и готова к использованию"
 		}
 	},
 	"promptCaching": {

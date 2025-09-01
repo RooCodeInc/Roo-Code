@@ -6,9 +6,9 @@ import {
 	type ModeConfig,
 	type InstallMarketplaceItemOptions,
 	type MarketplaceItem,
+	type ShareVisibility,
 	marketplaceItemSchema,
 } from "@roo-code/types"
-import type { ShareVisibility } from "@roo-code/cloud"
 
 import { Mode } from "./modes"
 
@@ -174,7 +174,7 @@ export interface WebviewMessage {
 		| "toggleApiConfigPin"
 		| "setHistoryPreviewCollapsed"
 		| "hasOpenedModeSelector"
-		| "accountButtonClicked"
+		| "cloudButtonClicked"
 		| "rooCloudSignIn"
 		| "rooCloudSignOut"
 		| "condenseTaskContextRequest"
@@ -212,9 +212,12 @@ export interface WebviewMessage {
 		| "createCommand"
 		| "insertTextIntoTextarea"
 		| "showMdmAuthRequiredNotification"
+		| "imageGenerationSettings"
+		| "openRouterImageApiKey"
+		| "openRouterImageGenerationSelectedModel"
 	text?: string
 	editedMessageContent?: string
-	tab?: "settings" | "history" | "mcp" | "modes" | "chat" | "marketplace" | "account"
+	tab?: "settings" | "history" | "mcp" | "modes" | "chat" | "marketplace" | "cloud"
 	disabled?: boolean
 	context?: string
 	dataUri?: string
@@ -248,6 +251,7 @@ export interface WebviewMessage {
 	messageTs?: number
 	historyPreviewCollapsed?: boolean
 	filters?: { type?: string; search?: string; tags?: string[] }
+	settings?: any
 	url?: string // For openExternal
 	mpItem?: MarketplaceItem
 	mpInstallOptions?: InstallMarketplaceItemOptions
@@ -259,7 +263,13 @@ export interface WebviewMessage {
 		// Global state settings
 		codebaseIndexEnabled: boolean
 		codebaseIndexQdrantUrl: string
-		codebaseIndexEmbedderProvider: "openai" | "ollama" | "openai-compatible" | "gemini" | "mistral"
+		codebaseIndexEmbedderProvider:
+			| "openai"
+			| "ollama"
+			| "openai-compatible"
+			| "gemini"
+			| "mistral"
+			| "vercel-ai-gateway"
 		codebaseIndexEmbedderBaseUrl?: string
 		codebaseIndexEmbedderModelId: string
 		codebaseIndexEmbedderModelDimension?: number // Generic dimension for all providers
@@ -273,6 +283,7 @@ export interface WebviewMessage {
 		codebaseIndexOpenAiCompatibleApiKey?: string
 		codebaseIndexGeminiApiKey?: string
 		codebaseIndexMistralApiKey?: string
+		codebaseIndexVercelAiGatewayApiKey?: string
 	}
 }
 
