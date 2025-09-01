@@ -93,20 +93,31 @@ jobs:
               with:
                   path: apps/vscode-e2e/.vscode-test
                   key: ${{ runner.os }}-vscode-test-${{ env.VSCODE_VERSION }}
-                  restore-keys: |
-                      ${{ runner.os }}-vscode-test-
-            - name: Pre-download VS Code test runtime
+            - name: Pre-download VS Code test runtime with retry
               working-directory: apps/vscode-e2e
               run: |
-                  node -e "
-                  const { downloadAndUnzipVSCode } = require('@vscode/test-electron');
-                  downloadAndUnzipVSCode({ version: process.env.VSCODE_VERSION || '1.101.2' })
-                    .then(() => console.log('✅ VS Code test runtime downloaded successfully'))
-                    .catch(err => {
-                      console.error('❌ Failed to download VS Code:', err);
-                      process.exit(1);
-                    });
-                  "
+                  for attempt in 1 2 3; do
+                    echo "Download attempt $attempt of 3..."
+                    node -e "
+                    const { downloadAndUnzipVSCode } = require('@vscode/test-electron');
+                    downloadAndUnzipVSCode({ version: process.env.VSCODE_VERSION || '1.101.2' })
+                      .then(() => {
+                        console.log('✅ VS Code test runtime downloaded successfully');
+                        process.exit(0);
+                      })
+                      .catch(err => {
+                        console.error('❌ Failed to download VS Code (attempt $attempt):', err);
+                        process.exit(1);
+                      });
+                    " && break || {
+                      if [ $attempt -eq 3 ]; then
+                        echo "All download attempts failed"
+                        exit 1
+                      fi
+                      echo "Retrying in 5 seconds..."
+                      sleep 5
+                    }
+                  done
             - name: Run integration tests
               working-directory: apps/vscode-e2e
               run: xvfb-run -a pnpm test:ci
