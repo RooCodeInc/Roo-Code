@@ -9,8 +9,9 @@ import { useExtensionState } from "@/context/ExtensionStateContext"
 import { useCopyToClipboard } from "@/utils/clipboard"
 import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, Input, StandardTooltip } from "@/components/ui"
 
-// Import the production API URL directly
-const PRODUCTION_ROO_CODE_API_URL = "https://app.roocode.com"
+// Use the same URL that getRooCodeApiUrl() from @roo-code/cloud would return
+// This matches the PRODUCTION_ROO_CODE_API_URL constant in packages/cloud/src/config.ts
+const CLOUD_API_URL = "https://app.roocode.com"
 
 interface CloudTaskButtonProps {
 	item?: HistoryItem
@@ -25,7 +26,7 @@ export const CloudTaskButton = ({ item, disabled = false }: CloudTaskButtonProps
 	const qrCodeRef = useRef<HTMLCanvasElement>(null)
 
 	// Generate the cloud URL for the task
-	const cloudTaskUrl = item?.id ? `${PRODUCTION_ROO_CODE_API_URL}/task/${item.id}` : ""
+	const cloudTaskUrl = item?.id ? `${CLOUD_API_URL}/task/${item.id}` : ""
 
 	// Generate QR code when dialog opens
 	useEffect(() => {
@@ -41,7 +42,7 @@ export const CloudTaskButton = ({ item, disabled = false }: CloudTaskButtonProps
 						light: "#FFFFFF",
 					},
 				},
-				(error) => {
+				(error: Error | null) => {
 					if (error) {
 						console.error("Error generating QR code:", error)
 					}
@@ -64,7 +65,8 @@ export const CloudTaskButton = ({ item, disabled = false }: CloudTaskButtonProps
 					disabled={disabled}
 					className="h-7 w-7 p-1.5 hover:bg-vscode-toolbar-hoverBackground"
 					onClick={() => setDialogOpen(true)}
-					data-testid="cloud-task-button">
+					data-testid="cloud-task-button"
+					aria-label={t("chat:task.openInCloud")}>
 					<CloudUpload className="h-4 w-4" />
 				</Button>
 			</StandardTooltip>
@@ -91,7 +93,7 @@ export const CloudTaskButton = ({ item, disabled = false }: CloudTaskButtonProps
 						{/* QR Code */}
 						<div className="flex justify-center">
 							<div className="p-4 bg-white rounded-lg">
-								<canvas ref={qrCodeRef} />
+								<canvas ref={qrCodeRef} aria-label="QR code for cloud task URL" />
 							</div>
 						</div>
 					</div>
