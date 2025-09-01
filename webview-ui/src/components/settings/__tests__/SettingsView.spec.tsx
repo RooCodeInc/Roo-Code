@@ -9,49 +9,51 @@ import SettingsView from "../SettingsView"
 
 vi.mock("@src/utils/vscode", () => ({ vscode: { postMessage: vi.fn() } }))
 
+const MockApiConfigManager = ({ currentApiConfigName, onRenameConfig }: any) => {
+	const [isRenaming, setIsRenaming] = React.useState(false)
+	const [newName, setNewName] = React.useState("")
+
+	const handleRename = () => {
+		if (isRenaming && newName.trim() && onRenameConfig) {
+			onRenameConfig(currentApiConfigName || "defaultProfile", newName.trim())
+			setIsRenaming(false)
+			setNewName("")
+		} else {
+			setIsRenaming(true)
+			setNewName(currentApiConfigName || "defaultProfile")
+		}
+	}
+
+	return (
+		<div data-testid="api-config-management">
+			<span>Current config: {currentApiConfigName}</span>
+			{isRenaming ? (
+				<div>
+					<input
+						data-testid="rename-input"
+						value={newName}
+						onChange={(e) => setNewName(e.target.value)}
+						placeholder="Enter new profile name"
+					/>
+					<button data-testid="confirm-rename-button" onClick={handleRename}>
+						Confirm
+					</button>
+					<button data-testid="cancel-rename-button" onClick={() => setIsRenaming(false)}>
+						Cancel
+					</button>
+				</div>
+			) : (
+				<button data-testid="rename-profile-button" onClick={handleRename}>
+					Rename Profile
+				</button>
+			)}
+		</div>
+	)
+}
+
 vi.mock("../ApiConfigManager", () => ({
 	__esModule: true,
-	default: ({ currentApiConfigName, onRenameConfig }: any) => {
-		const [isRenaming, setIsRenaming] = React.useState(false)
-		const [newName, setNewName] = React.useState("")
-
-		const handleRename = () => {
-			if (isRenaming && newName.trim() && onRenameConfig) {
-				onRenameConfig(currentApiConfigName || "defaultProfile", newName.trim())
-				setIsRenaming(false)
-				setNewName("")
-			} else {
-				setIsRenaming(true)
-				setNewName(currentApiConfigName || "defaultProfile")
-			}
-		}
-
-		return (
-			<div data-testid="api-config-management">
-				<span>Current config: {currentApiConfigName}</span>
-				{isRenaming ? (
-					<div>
-						<input
-							data-testid="rename-input"
-							value={newName}
-							onChange={(e) => setNewName(e.target.value)}
-							placeholder="Enter new profile name"
-						/>
-						<button data-testid="confirm-rename-button" onClick={handleRename}>
-							Confirm
-						</button>
-						<button data-testid="cancel-rename-button" onClick={() => setIsRenaming(false)}>
-							Cancel
-						</button>
-					</div>
-				) : (
-					<button data-testid="rename-profile-button" onClick={handleRename}>
-						Rename Profile
-					</button>
-				)}
-			</div>
-		)
-	},
+	default: MockApiConfigManager,
 }))
 
 vi.mock("@vscode/webview-ui-toolkit/react", () => ({
