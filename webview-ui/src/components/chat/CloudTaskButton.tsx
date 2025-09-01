@@ -68,13 +68,18 @@ export const CloudTaskButton = ({ item, disabled = false }: CloudTaskButtonProps
 			</StandardTooltip>
 
 			<Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-				<DialogContent className="max-w-md">
+				<DialogContent className="max-w-100">
 					<DialogHeader>
-						<DialogTitle>{t("chat:task.continueFromAnywhere")}</DialogTitle>
+						<DialogTitle>{t("chat:task.openInCloud")}</DialogTitle>
 					</DialogHeader>
 
-					<div className="flex flex-col space-y-4">
-						{/* URL Input with Copy Button */}
+					<div className="flex flex-col space-y-4 text-center">
+						<div className="flex justify-center">
+							<div className="p-[10px] w-[170px] h-[170px] bg-white rounded-lg">
+								<canvas ref={qrCodeRef} />
+							</div>
+						</div>
+
 						<div className="flex items-center space-x-2">
 							<Input value={cloudTaskUrl} disabled className="flex-1 font-mono text-sm" readOnly />
 							<Button
@@ -84,13 +89,6 @@ export const CloudTaskButton = ({ item, disabled = false }: CloudTaskButtonProps
 								className="h-9 w-9">
 								{showCopyFeedback ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
 							</Button>
-						</div>
-
-						{/* QR Code */}
-						<div className="flex justify-center">
-							<div className="p-[10px] w-[170px] h-[170px] bg-white rounded-lg">
-								<canvas ref={qrCodeRef} />
-							</div>
 						</div>
 					</div>
 				</DialogContent>
