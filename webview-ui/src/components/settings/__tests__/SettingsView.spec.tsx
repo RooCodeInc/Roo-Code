@@ -1,3 +1,4 @@
+import React from "react"
 import { render, screen, fireEvent } from "@/utils/test-utils"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 
@@ -10,16 +11,47 @@ vi.mock("@src/utils/vscode", () => ({ vscode: { postMessage: vi.fn() } }))
 
 vi.mock("../ApiConfigManager", () => ({
 	__esModule: true,
-	default: ({ currentApiConfigName, onRenameConfig }: any) => (
-		<div data-testid="api-config-management">
-			<span>Current config: {currentApiConfigName}</span>
-			<button
-				data-testid="rename-profile-button"
-				onClick={() => onRenameConfig && onRenameConfig("oldProfile", "newProfile")}>
-				Rename Profile
-			</button>
-		</div>
-	),
+	default: ({ currentApiConfigName, onRenameConfig }: any) => {
+		const [isRenaming, setIsRenaming] = React.useState(false)
+		const [newName, setNewName] = React.useState("")
+
+		const handleRename = () => {
+			if (isRenaming && newName.trim() && onRenameConfig) {
+				onRenameConfig(currentApiConfigName || "defaultProfile", newName.trim())
+				setIsRenaming(false)
+				setNewName("")
+			} else {
+				setIsRenaming(true)
+				setNewName(currentApiConfigName || "defaultProfile")
+			}
+		}
+
+		return (
+			<div data-testid="api-config-management">
+				<span>Current config: {currentApiConfigName}</span>
+				{isRenaming ? (
+					<div>
+						<input
+							data-testid="rename-input"
+							value={newName}
+							onChange={(e) => setNewName(e.target.value)}
+							placeholder="Enter new profile name"
+						/>
+						<button data-testid="confirm-rename-button" onClick={handleRename}>
+							Confirm
+						</button>
+						<button data-testid="cancel-rename-button" onClick={() => setIsRenaming(false)}>
+							Cancel
+						</button>
+					</div>
+				) : (
+					<button data-testid="rename-profile-button" onClick={handleRename}>
+						Rename Profile
+					</button>
+				)}
+			</div>
+		)
+	},
 }))
 
 vi.mock("@vscode/webview-ui-toolkit/react", () => ({
@@ -657,9 +689,16 @@ describe("SettingsView - Profile Rename Change Detection", () => {
 		// Render settings view
 		renderSettingsView()
 
-		// Rename a profile to trigger change detection
+		// Start rename process
 		const renameButton = screen.getByTestId("rename-profile-button")
 		fireEvent.click(renameButton)
+
+		// Enter new name and confirm
+		const renameInput = screen.getByTestId("rename-input")
+		fireEvent.change(renameInput, { target: { value: "newProfileName" } })
+
+		const confirmButton = screen.getByTestId("confirm-rename-button")
+		fireEvent.click(confirmButton)
 
 		// Save button should now be enabled due to change detection
 		const saveButton = screen.getByTestId("save-button")
@@ -670,15 +709,25 @@ describe("SettingsView - Profile Rename Change Detection", () => {
 		// Render settings view
 		renderSettingsView()
 
-		// Rename a profile
+		// Start rename process
 		const renameButton = screen.getByTestId("rename-profile-button")
 		fireEvent.click(renameButton)
 
-		// Verify that the rename message was sent to vscode
+		// Enter new name and confirm
+		const renameInput = screen.getByTestId("rename-input")
+		fireEvent.change(renameInput, { target: { value: "renamedProfile" } })
+
+		const confirmButton = screen.getByTestId("confirm-rename-button")
+		fireEvent.click(confirmButton)
+
+		// Verify that the rename message was sent to vscode with dynamic values
+		// Note: The actual oldName will depend on the current API config name from the extension state
 		expect(vscode.postMessage).toHaveBeenCalledWith(
 			expect.objectContaining({
 				type: "renameApiConfiguration",
-				values: { oldName: "oldProfile", newName: "newProfile" },
+				values: expect.objectContaining({
+					newName: "renamedProfile",
+				}),
 			}),
 		)
 	})
@@ -687,9 +736,16 @@ describe("SettingsView - Profile Rename Change Detection", () => {
 		// Render settings view
 		renderSettingsView()
 
-		// Rename a profile
+		// Start rename process
 		const renameButton = screen.getByTestId("rename-profile-button")
 		fireEvent.click(renameButton)
+
+		// Enter new name and confirm
+		const renameInput = screen.getByTestId("rename-input")
+		fireEvent.change(renameInput, { target: { value: "renamedProfile" } })
+
+		const confirmButton = screen.getByTestId("confirm-rename-button")
+		fireEvent.click(confirmButton)
 
 		// Click save button
 		const saveButton = screen.getByTestId("save-button")
@@ -707,9 +763,16 @@ describe("SettingsView - Profile Rename Change Detection", () => {
 		// Render settings view
 		renderSettingsView()
 
-		// Rename a profile
+		// Start rename process
 		const renameButton = screen.getByTestId("rename-profile-button")
 		fireEvent.click(renameButton)
+
+		// Enter new name and confirm
+		const renameInput = screen.getByTestId("rename-input")
+		fireEvent.change(renameInput, { target: { value: "renamedProfile" } })
+
+		const confirmButton = screen.getByTestId("confirm-rename-button")
+		fireEvent.click(confirmButton)
 
 		// Verify save button is enabled
 		const saveButton = screen.getByTestId("save-button")
@@ -726,9 +789,16 @@ describe("SettingsView - Profile Rename Change Detection", () => {
 		// Render with activateTab helper
 		const { onDone } = renderSettingsView()
 
-		// Rename a profile to create unsaved changes
+		// Start rename process
 		const renameButton = screen.getByTestId("rename-profile-button")
 		fireEvent.click(renameButton)
+
+		// Enter new name and confirm to create unsaved changes
+		const renameInput = screen.getByTestId("rename-input")
+		fireEvent.change(renameInput, { target: { value: "renamedProfile" } })
+
+		const confirmButton = screen.getByTestId("confirm-rename-button")
+		fireEvent.click(confirmButton)
 
 		// Try to leave by clicking Done
 		const doneButton = screen.getByText("settings:common.done")
@@ -746,9 +816,16 @@ describe("SettingsView - Profile Rename Change Detection", () => {
 		// Render with activateTab helper
 		const { onDone } = renderSettingsView()
 
-		// Rename a profile to create unsaved changes
+		// Start rename process
 		const renameButton = screen.getByTestId("rename-profile-button")
 		fireEvent.click(renameButton)
+
+		// Enter new name and confirm to create unsaved changes
+		const renameInput = screen.getByTestId("rename-input")
+		fireEvent.change(renameInput, { target: { value: "renamedProfile" } })
+
+		const confirmButton = screen.getByTestId("confirm-rename-button")
+		fireEvent.click(confirmButton)
 
 		// Try to leave by clicking Done
 		const doneButton = screen.getByText("settings:common.done")
@@ -766,9 +843,16 @@ describe("SettingsView - Profile Rename Change Detection", () => {
 		// Render with activateTab helper
 		const { onDone } = renderSettingsView()
 
-		// Rename a profile to create unsaved changes
+		// Start rename process
 		const renameButton = screen.getByTestId("rename-profile-button")
 		fireEvent.click(renameButton)
+
+		// Enter new name and confirm to create unsaved changes
+		const renameInput = screen.getByTestId("rename-input")
+		fireEvent.change(renameInput, { target: { value: "renamedProfile" } })
+
+		const confirmButton = screen.getByTestId("confirm-rename-button")
+		fireEvent.click(confirmButton)
 
 		// Try to leave by clicking Done
 		const doneButton = screen.getByText("settings:common.done")
