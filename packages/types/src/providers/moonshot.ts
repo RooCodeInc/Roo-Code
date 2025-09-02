@@ -22,10 +22,10 @@ export const moonshotModels = {
 		contextWindow: 131_072,
 		supportsImages: false,
 		supportsPromptCache: true,
-		inputPrice: 0.6, // $0.60 per million tokens (cache miss)
-		outputPrice: 2.5, // $2.50 per million tokens
+		inputPrice: 2.4, // $2.40 per million tokens (cache miss)
+		outputPrice: 10, // $10.00 per million tokens
 		cacheWritesPrice: 0, // $0 per million tokens (cache miss)
-		cacheReadsPrice: 0.15, // $0.15 per million tokens (cache hit)
+		cacheReadsPrice: 0.6, // $0.60 per million tokens (cache hit)
 		description: `Kimi K2 Turbo is a high-speed version of the state-of-the-art Kimi K2 mixture-of-experts (MoE) language model, with the same 32 billion activated parameters and 1 trillion total parameters, optimized for output speeds of up to 60 tokens per second, peaking at 100 tokens per second.`,
 	},
 } as const satisfies Record<string, ModelInfo>
