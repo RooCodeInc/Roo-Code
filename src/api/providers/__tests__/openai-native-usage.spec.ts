@@ -33,7 +33,7 @@ describe("OpenAiNativeHandler - normalizeUsage", () => {
 				inputTokens: 100,
 				outputTokens: 50,
 				cacheReadTokens: 30,
-				cacheWriteTokens: 70,
+				cacheWriteTokens: 0, // miss tokens are NOT cache writes
 			})
 		})
 
@@ -54,7 +54,7 @@ describe("OpenAiNativeHandler - normalizeUsage", () => {
 				inputTokens: 100, // Derived from 30 + 70
 				outputTokens: 50,
 				cacheReadTokens: 30,
-				cacheWriteTokens: 70,
+				cacheWriteTokens: 0, // miss tokens are NOT cache writes
 			})
 		})
 
@@ -75,7 +75,29 @@ describe("OpenAiNativeHandler - normalizeUsage", () => {
 				inputTokens: 100,
 				outputTokens: 50,
 				cacheReadTokens: 30,
-				cacheWriteTokens: 70,
+				cacheWriteTokens: 0, // miss tokens are NOT cache writes
+			})
+		})
+
+		it("should handle cache_creation_input_tokens for actual cache writes", () => {
+			const usage = {
+				input_tokens: 100,
+				output_tokens: 50,
+				cache_creation_input_tokens: 20,
+				input_tokens_details: {
+					cached_tokens: 30,
+					cache_miss_tokens: 50, // 50 miss + 30 cached + 20 creation = 100 total
+				},
+			}
+
+			const result = (handler as any).normalizeUsage(usage, mockModel)
+
+			expect(result).toMatchObject({
+				type: "usage",
+				inputTokens: 100,
+				outputTokens: 50,
+				cacheReadTokens: 30,
+				cacheWriteTokens: 20, // Actual cache writes from cache_creation_input_tokens
 			})
 		})
 
@@ -274,7 +296,7 @@ describe("OpenAiNativeHandler - normalizeUsage", () => {
 				inputTokens: 100,
 				outputTokens: 50,
 				cacheReadTokens: 20, // From cached_tokens (legacy field comes before details in fallback chain)
-				cacheWriteTokens: 70,
+				cacheWriteTokens: 0, // miss tokens are NOT cache writes
 			})
 		})
 
@@ -296,7 +318,7 @@ describe("OpenAiNativeHandler - normalizeUsage", () => {
 				inputTokens: 100,
 				outputTokens: 50,
 				cacheReadTokens: 30, // From details since no legacy field exists
-				cacheWriteTokens: 70,
+				cacheWriteTokens: 0, // miss tokens are NOT cache writes
 			})
 		})
 
@@ -323,21 +345,20 @@ describe("OpenAiNativeHandler - normalizeUsage", () => {
 	})
 
 	describe("cost calculation", () => {
-		it("should calculate cost using uncached input tokens", () => {
+		it("should pass total input tokens to calculateApiCostOpenAI", () => {
 			const usage = {
 				input_tokens: 100,
 				output_tokens: 50,
-				input_tokens_details: {
-					cached_tokens: 30,
-					cache_miss_tokens: 70,
-				},
+				cache_read_input_tokens: 30,
+				cache_creation_input_tokens: 20,
 			}
 
 			const result = (handler as any).normalizeUsage(usage, mockModel)
 
 			expect(result).toHaveProperty("totalCost")
 			expect(result.totalCost).toBeGreaterThan(0)
-			// Cost should be calculated with uncachedInputTokens = 100 - 30 = 70
+			// calculateApiCostOpenAI handles subtracting cache tokens internally
+			// It will compute: 100 - 30 - 20 = 50 uncached input tokens
 		})
 
 		it("should handle cost calculation with no cache reads", () => {

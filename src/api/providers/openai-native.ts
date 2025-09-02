@@ -66,9 +66,13 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		if (!usage) return undefined
 
 		// Prefer detailed shapes when available (Responses API)
-		const inputDetails = usage.input_tokens_details ?? usage.prompt_tokens_details ?? undefined
-		const cachedFromDetails = inputDetails?.cached_tokens ?? 0
-		const missFromDetails = inputDetails?.cache_miss_tokens ?? 0
+		const inputDetails = usage.input_tokens_details ?? usage.prompt_tokens_details
+
+		// Extract cache information from details with better readability
+		const hasCachedTokens = typeof inputDetails?.cached_tokens === "number"
+		const hasCacheMissTokens = typeof inputDetails?.cache_miss_tokens === "number"
+		const cachedFromDetails = hasCachedTokens ? inputDetails.cached_tokens : 0
+		const missFromDetails = hasCacheMissTokens ? inputDetails.cache_miss_tokens : 0
 
 		// If total input tokens are missing but we have details, derive from them
 		let totalInputTokens = usage.input_tokens ?? usage.prompt_tokens ?? 0
@@ -78,22 +82,22 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 
 		const totalOutputTokens = usage.output_tokens ?? usage.completion_tokens ?? 0
 
-		const cacheWriteTokens = usage.cache_creation_input_tokens ?? usage.cache_write_tokens ?? missFromDetails ?? 0
+		// Note: missFromDetails is NOT used as fallback for cache writes
+		// Cache miss tokens represent tokens that weren't found in cache (part of input)
+		// Cache write tokens represent tokens being written to cache for future use
+		const cacheWriteTokens = usage.cache_creation_input_tokens ?? usage.cache_write_tokens ?? 0
 
 		const cacheReadTokens =
 			usage.cache_read_input_tokens ?? usage.cache_read_tokens ?? usage.cached_tokens ?? cachedFromDetails ?? 0
 
-		// Use uncached input tokens for costing to avoid double-counting with cache reads
-		// This aligns with how Gemini calculates costs (see gemini.ts calculateCost method)
-		const uncachedInputTokens =
-			typeof cacheReadTokens === "number" ? Math.max(0, totalInputTokens - cacheReadTokens) : totalInputTokens
-
+		// Pass total input tokens directly to calculateApiCostOpenAI
+		// The function handles subtracting both cache reads and writes internally (see shared/cost.ts:46)
 		const totalCost = calculateApiCostOpenAI(
 			model.info,
-			uncachedInputTokens,
+			totalInputTokens,
 			totalOutputTokens,
-			cacheWriteTokens || 0,
-			cacheReadTokens || 0,
+			cacheWriteTokens,
+			cacheReadTokens,
 		)
 
 		const reasoningTokens =
@@ -103,8 +107,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 
 		const out: ApiStreamUsageChunk = {
 			type: "usage",
-			// Keep inputTokens as TOTAL input to preserve correct context length,
-			// cost is computed with uncachedInputTokens above.
+			// Keep inputTokens as TOTAL input to preserve correct context length
 			inputTokens: totalInputTokens,
 			outputTokens: totalOutputTokens,
 			cacheWriteTokens,
