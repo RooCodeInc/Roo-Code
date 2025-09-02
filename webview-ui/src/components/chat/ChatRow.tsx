@@ -796,7 +796,7 @@ export const ChatRowContent = ({
 				return (
 					<>
 						<div style={headerStyle}>
-							{toolIcon("terminal-cmd")}
+							{toolIcon("play")}
 							<span style={{ fontWeight: "bold" }}>
 								{message.type === "ask"
 									? t("chat:slashCommand.wantsToRun")
@@ -813,7 +813,7 @@ export const ChatRowContent = ({
 									padding: "10px 12px",
 								}}>
 								<div style={{ display: "flex", alignItems: "center", gap: "8px", width: "100%" }}>
-									<span style={{ fontWeight: "500", fontSize: "var(--vscode-font-size)" }}>
+									<span style={{ fontWeight: "bold", fontSize: "var(--vscode-font-size)" }}>
 										/{slashCommandInfo.command}
 									</span>
 									{slashCommandInfo.args && (
@@ -833,13 +833,6 @@ export const ChatRowContent = ({
 											fontSize: "calc(var(--vscode-font-size) - 1px)",
 										}}>
 										{slashCommandInfo.description}
-									</div>
-								)}
-								{slashCommandInfo.source && (
-									<div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-										<VSCodeBadge style={{ fontSize: "calc(var(--vscode-font-size) - 2px)" }}>
-											{slashCommandInfo.source}
-										</VSCodeBadge>
 									</div>
 								)}
 							</ToolUseBlockHeader>

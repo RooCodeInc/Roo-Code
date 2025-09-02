@@ -1028,6 +1028,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				"listCodeDefinitionNames",
 				"searchFiles",
 				"codebaseSearch",
+				"runSlashCommand",
 			].includes(tool.tool)
 		}
 

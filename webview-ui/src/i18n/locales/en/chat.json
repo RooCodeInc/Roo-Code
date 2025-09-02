@@ -382,8 +382,8 @@
 		}
 	},
 	"slashCommand": {
-		"wantsToRun": "Roo wants to run slash command:",
-		"didRun": "Roo ran slash command:"
+		"wantsToRun": "Roo wants to run a slash command:",
+		"didRun": "Roo ran a slash command:"
 	},
 	"queuedMessages": {
 		"title": "Queued Messages:",

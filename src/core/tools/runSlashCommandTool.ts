@@ -67,7 +67,7 @@ export async function runSlashCommandTool(
 			const toolMessage = JSON.stringify({
 				tool: "run_slash_command",
 				command: commandName,
-				args: args || "(no arguments)",
+				args: args,
 				source: command.source,
 				description: command.description,
 			})
