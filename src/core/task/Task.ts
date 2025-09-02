@@ -34,6 +34,7 @@ import {
 	isIdleAsk,
 	isInteractiveAsk,
 	isResumableAsk,
+	QueuedMessage,
 } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 import { CloudService, BridgeOrchestrator } from "@roo-code/cloud"
@@ -821,7 +822,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			const message = this.messageQueueService.dequeueMessage()
 
 			if (message) {
-				this.submitUserMessage(message.text, message.images)
+				setTimeout(async () => {
+					await this.submitUserMessage(message.text, message.images)
+				}, 0)
 			}
 		}
 
@@ -2756,10 +2759,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	// Getters
 
-	public get cwd() {
-		return this.workspacePath
-	}
-
 	public get taskStatus(): TaskStatus {
 		if (this.interactiveAsk) {
 			return TaskStatus.Interactive
@@ -2778,5 +2777,13 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	public get taskAsk(): ClineMessage | undefined {
 		return this.idleAsk || this.resumableAsk || this.interactiveAsk
+	}
+
+	public get queuedMessages(): QueuedMessage[] {
+		return this.messageQueueService.messages
+	}
+
+	public get cwd() {
+		return this.workspacePath
 	}
 }
