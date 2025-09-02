@@ -10,7 +10,6 @@ import pWaitFor from "p-wait-for"
 import { serializeError } from "serialize-error"
 
 import {
-	type RooCodeSettings,
 	type TaskLike,
 	type TaskMetadata,
 	type TaskEvents,
@@ -42,6 +41,7 @@ import { CloudService, BridgeOrchestrator } from "@roo-code/cloud"
 // api
 import { ApiHandler, ApiHandlerCreateMessageMetadata, buildApiHandler } from "../../api"
 import { ApiStream } from "../../api/transform/stream"
+import { maybeRemoveImageBlocks } from "../../api/transform/image-cleaning"
 
 // shared
 import { findLastIndex } from "../../shared/array"
@@ -79,6 +79,7 @@ import { SYSTEM_PROMPT } from "../prompts/system"
 
 // core modules
 import { ToolRepetitionDetector } from "../tools/ToolRepetitionDetector"
+import { restoreTodoListForTask } from "../tools/updateTodoListTool"
 import { FileContextTracker } from "../context-tracking/FileContextTracker"
 import { RooIgnoreController } from "../ignore/RooIgnoreController"
 import { RooProtectedController } from "../protect/RooProtectedController"
@@ -88,7 +89,14 @@ import { truncateConversationIfNeeded } from "../sliding-window"
 import { ClineProvider } from "../webview/ClineProvider"
 import { MultiSearchReplaceDiffStrategy } from "../diff/strategies/multi-search-replace"
 import { MultiFileSearchReplaceDiffStrategy } from "../diff/strategies/multi-file-search-replace"
-import { readApiMessages, saveApiMessages, readTaskMessages, saveTaskMessages, taskMetadata } from "../task-persistence"
+import {
+	type ApiMessage,
+	readApiMessages,
+	saveApiMessages,
+	readTaskMessages,
+	saveTaskMessages,
+	taskMetadata,
+} from "../task-persistence"
 import { getEnvironmentDetails } from "../environment/getEnvironmentDetails"
 import { checkContextWindowExceededError } from "../context/context-management/context-error-handling"
 import {
@@ -100,12 +108,11 @@ import {
 	checkpointDiff,
 } from "../checkpoints"
 import { processUserContentMentions } from "../mentions/processUserContentMentions"
-import { ApiMessage } from "../task-persistence/apiMessages"
 import { getMessagesSinceLastSummary, summarizeConversation } from "../condense"
-import { maybeRemoveImageBlocks } from "../../api/transform/image-cleaning"
-import { restoreTodoListForTask } from "../tools/updateTodoListTool"
-import { AutoApprovalHandler } from "./AutoApprovalHandler"
 import { Gpt5Metadata, ClineMessageWithMetadata } from "./types"
+import { MessageQueueService } from "../message-queue/MessageQueueService"
+
+import { AutoApprovalHandler } from "./AutoApprovalHandler"
 
 const MAX_EXPONENTIAL_BACKOFF_SECONDS = 600 // 10 minutes
 const DEFAULT_USAGE_COLLECTION_TIMEOUT_MS = 5000 // 5 seconds
@@ -259,6 +266,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	// Task Bridge
 	enableBridge: boolean
 
+	// Message Queue Service
+	public readonly messageQueueService: MessageQueueService
+
 	// Streaming
 	isWaitingForFirstChunk = false
 	isStreaming = false
@@ -356,8 +366,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			TelemetryService.instance.captureTaskCreated(this.taskId)
 		}
 
-		// Initialize the assistant message parser
+		// Initialize the assistant message parser.
 		this.assistantMessageParser = new AssistantMessageParser()
+
+		this.messageQueueService = new MessageQueueService()
+		this.messageQueueService.on("stateChanged", () => this.providerRef.deref()?.postStateToWebview())
 
 		// Only set up diff strategy if diff is enabled.
 		if (this.diffEnabled) {
@@ -759,10 +772,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// The state is mutable if the message is complete and the task will
 		// block (via the `pWaitFor`).
 		const isBlocking = !(this.askResponse !== undefined || this.lastMessageTs !== askTs)
-		const isStatusMutable = !partial && isBlocking
+		const isMessageQueued = !this.messageQueueService.isEmpty()
+		const isStatusMutable = !partial && isBlocking && !isMessageQueued
 		let statusMutationTimeouts: NodeJS.Timeout[] = []
+		let messageQueueTimeout: NodeJS.Timeout | undefined
 
 		if (isStatusMutable) {
+			console.log(`Task#ask will block -> type: ${type}`)
+
 			if (isInteractiveAsk(type)) {
 				statusMutationTimeouts.push(
 					setTimeout(() => {
@@ -797,9 +814,19 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					}, 1_000),
 				)
 			}
+		} else if (isMessageQueued) {
+			console.log("Task#ask will process message queue after a timeout")
+
+			messageQueueTimeout = setTimeout(() => {
+				const message = this.messageQueueService.dequeueMessage()
+
+				if (message) {
+					this.submitUserMessage(message.text, message.images)
+				}
+			}, 1_000)
 		}
 
-		// Wait for askResponse to be set
+		// Wait for askResponse to be set.
 		await pWaitFor(() => this.askResponse !== undefined || this.lastMessageTs !== askTs, { interval: 100 })
 
 		if (this.lastMessageTs !== askTs) {
@@ -816,6 +843,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		// Cancel the timeouts if they are still running.
 		statusMutationTimeouts.forEach((timeout) => clearTimeout(timeout))
+
+		if (messageQueueTimeout) {
+			clearTimeout(messageQueueTimeout)
+		}
 
 		// Switch back to an active state.
 		if (this.idleAsk || this.resumableAsk || this.interactiveAsk) {
@@ -1406,8 +1437,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			newUserContent.push(...formatResponse.imageBlocks(responseImages))
 		}
 
-		// Ensure we have at least some content to send to the API
-		// If newUserContent is empty, add a minimal resumption message
+		// Ensure we have at least some content to send to the API.
+		// If newUserContent is empty, add a minimal resumption message.
 		if (newUserContent.length === 0) {
 			newUserContent.push({
 				type: "text",
@@ -1417,13 +1448,19 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		await this.overwriteApiConversationHistory(modifiedApiConversationHistory)
 
-		// Task resuming from history item
-
+		// Task resuming from history item.
 		await this.initiateTaskLoop(newUserContent)
 	}
 
 	public dispose(): void {
 		console.log(`[Task#dispose] disposing task ${this.taskId}.${this.instanceId}`)
+
+		// Dispose message queue.
+		try {
+			this.messageQueueService.dispose()
+		} catch (error) {
+			console.error("Error disposing message queue:", error)
+		}
 
 		// Remove all event listeners to prevent memory leaks.
 		try {
