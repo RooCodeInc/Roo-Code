@@ -775,7 +775,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		const isMessageQueued = !this.messageQueueService.isEmpty()
 		const isStatusMutable = !partial && isBlocking && !isMessageQueued
 		let statusMutationTimeouts: NodeJS.Timeout[] = []
-		let messageQueueTimeout: NodeJS.Timeout | undefined
 
 		if (isStatusMutable) {
 			console.log(`Task#ask will block -> type: ${type}`)
@@ -815,15 +814,13 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				)
 			}
 		} else if (isMessageQueued) {
-			console.log("Task#ask will process message queue after a timeout")
+			console.log("Task#ask will process message queue")
 
-			messageQueueTimeout = setTimeout(() => {
-				const message = this.messageQueueService.dequeueMessage()
+			const message = this.messageQueueService.dequeueMessage()
 
-				if (message) {
-					this.submitUserMessage(message.text, message.images)
-				}
-			}, 1_000)
+			if (message) {
+				this.submitUserMessage(message.text, message.images)
+			}
 		}
 
 		// Wait for askResponse to be set.
@@ -843,10 +840,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		// Cancel the timeouts if they are still running.
 		statusMutationTimeouts.forEach((timeout) => clearTimeout(timeout))
-
-		if (messageQueueTimeout) {
-			clearTimeout(messageQueueTimeout)
-		}
 
 		// Switch back to an active state.
 		if (this.idleAsk || this.resumableAsk || this.interactiveAsk) {
