@@ -68,25 +68,46 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 
 		const totalInputTokens = usage.input_tokens ?? usage.prompt_tokens ?? 0
 		const totalOutputTokens = usage.output_tokens ?? usage.completion_tokens ?? 0
-		const cacheWriteTokens = usage.cache_creation_input_tokens ?? usage.cache_write_tokens ?? 0
-		const cacheReadTokens = usage.cache_read_input_tokens ?? usage.cache_read_tokens ?? usage.cached_tokens ?? 0
+
+		// Prefer detailed shapes when available (Responses API)
+		const inputDetails = (usage.input_tokens_details || usage.prompt_tokens_details) ?? undefined
+		const cachedFromDetails = typeof inputDetails?.cached_tokens === "number" ? inputDetails.cached_tokens : 0
+		const missFromDetails = typeof inputDetails?.cache_miss_tokens === "number" ? inputDetails.cache_miss_tokens : 0
+
+		const cacheWriteTokens = usage.cache_creation_input_tokens ?? usage.cache_write_tokens ?? missFromDetails ?? 0
+
+		const cacheReadTokens =
+			usage.cache_read_input_tokens ?? usage.cache_read_tokens ?? usage.cached_tokens ?? cachedFromDetails ?? 0
+
+		// Use uncached input tokens for costing to avoid double-counting with cache reads
+		const uncachedInputTokens =
+			typeof cacheReadTokens === "number" ? Math.max(0, totalInputTokens - cacheReadTokens) : totalInputTokens
 
 		const totalCost = calculateApiCostOpenAI(
 			model.info,
-			totalInputTokens,
+			uncachedInputTokens,
 			totalOutputTokens,
 			cacheWriteTokens || 0,
 			cacheReadTokens || 0,
 		)
 
-		return {
+		const reasoningTokens =
+			typeof usage.output_tokens_details?.reasoning_tokens === "number"
+				? usage.output_tokens_details.reasoning_tokens
+				: undefined
+
+		const out: ApiStreamUsageChunk = {
 			type: "usage",
+			// Keep inputTokens as TOTAL input to preserve correct context length,
+			// cost is computed with uncachedInputTokens above.
 			inputTokens: totalInputTokens,
 			outputTokens: totalOutputTokens,
 			cacheWriteTokens,
 			cacheReadTokens,
+			...(typeof reasoningTokens === "number" ? { reasoningTokens } : {}),
 			totalCost,
 		}
+		return out
 	}
 
 	private resolveResponseId(responseId: string | undefined): void {
