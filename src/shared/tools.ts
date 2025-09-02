@@ -65,8 +65,6 @@ export const toolParamNames = [
 	"query",
 	"args",
 	"todos",
-	"command",
-	"args",
 	"prompt",
 	"image",
 ] as const

@@ -138,6 +138,11 @@ export function getToolDescriptionsForMode(
 		tools.delete("generate_image")
 	}
 
+	// Conditionally exclude run_slash_command if experiment is not enabled
+	if (!experiments?.runSlashCommand) {
+		tools.delete("run_slash_command")
+	}
+
 	// Map tool descriptions for allowed tools
 	const descriptions = Array.from(tools).map((toolName) => {
 		const descriptionFn = toolDescriptionMap[toolName]
