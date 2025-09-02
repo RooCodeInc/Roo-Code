@@ -11,6 +11,7 @@ import {
 } from "@roo-code/types"
 
 import { getRooCodeApiUrl } from "./config.js"
+import type { RetryQueue } from "./retry-queue/index.js"
 
 abstract class BaseTelemetryClient implements TelemetryClient {
 	protected providerRef: WeakRef<TelemetryPropertiesProvider> | null = null
@@ -82,18 +83,18 @@ abstract class BaseTelemetryClient implements TelemetryClient {
 }
 
 export class CloudTelemetryClient extends BaseTelemetryClient {
+	private retryQueue: RetryQueue | null = null
+
 	constructor(
 		private authService: AuthService,
 		private settingsService: SettingsService,
-		debug = false,
+		retryQueue?: RetryQueue,
 	) {
-		super(
-			{
-				type: "exclude",
-				events: [TelemetryEventName.TASK_CONVERSATION_MESSAGE],
-			},
-			debug,
-		)
+		super({
+			type: "exclude",
+			events: [TelemetryEventName.TASK_CONVERSATION_MESSAGE],
+		})
+		this.retryQueue = retryQueue || null
 	}
 
 	private async fetch(path: string, options: RequestInit) {
@@ -108,18 +109,39 @@ export class CloudTelemetryClient extends BaseTelemetryClient {
 			return
 		}
 
-		const response = await fetch(`${getRooCodeApiUrl()}/api/${path}`, {
+		const url = `${getRooCodeApiUrl()}/api/${path}`
+		const fetchOptions: RequestInit = {
 			...options,
 			headers: {
 				Authorization: `Bearer ${token}`,
 				"Content-Type": "application/json",
 			},
-		})
+		}
 
-		if (!response.ok) {
-			console.error(
-				`[TelemetryClient#fetch] ${options.method} ${path} -> ${response.status} ${response.statusText}`,
-			)
+		try {
+			const response = await fetch(url, fetchOptions)
+
+			if (!response.ok) {
+				console.error(
+					`[TelemetryClient#fetch] ${options.method} ${path} -> ${response.status} ${response.statusText}`,
+				)
+			}
+
+			return response
+		} catch (error) {
+			console.error(`[TelemetryClient#fetch] Network error for ${options.method} ${path}: ${error}`)
+
+			// Queue for retry if we have a retry queue and it's a network error
+			if (this.retryQueue && error instanceof TypeError && error.message.includes("fetch failed")) {
+				await this.retryQueue.enqueue(
+					url,
+					fetchOptions,
+					"telemetry",
+					`Telemetry: ${options.method} /api/${path}`,
+				)
+			}
+
+			throw error
 		}
 	}
 
@@ -158,6 +180,7 @@ export class CloudTelemetryClient extends BaseTelemetryClient {
 			})
 		} catch (error) {
 			console.error(`[TelemetryClient#capture] Error sending telemetry event: ${error}`)
+			// Error is already queued for retry in the fetch method
 		}
 	}
 
@@ -200,21 +223,35 @@ export class CloudTelemetryClient extends BaseTelemetryClient {
 			}
 
 			// Custom fetch for multipart - don't set Content-Type header (let browser set it)
-			const response = await fetch(`${getRooCodeApiUrl()}/api/events/backfill`, {
+			const url = `${getRooCodeApiUrl()}/api/events/backfill`
+			const fetchOptions: RequestInit = {
 				method: "POST",
 				headers: {
 					Authorization: `Bearer ${token}`,
 					// Note: No Content-Type header - browser will set multipart/form-data with boundary
 				},
 				body: formData,
-			})
+			}
 
-			if (!response.ok) {
-				console.error(
-					`[TelemetryClient#backfillMessages] POST events/backfill -> ${response.status} ${response.statusText}`,
-				)
-			} else if (this.debug) {
-				console.info(`[TelemetryClient#backfillMessages] Successfully uploaded messages for task ${taskId}`)
+			try {
+				const response = await fetch(url, fetchOptions)
+
+				if (!response.ok) {
+					console.error(
+						`[TelemetryClient#backfillMessages] POST events/backfill -> ${response.status} ${response.statusText}`,
+					)
+				}
+			} catch (fetchError) {
+				// For backfill, also queue for retry on network errors
+				if (this.retryQueue && fetchError instanceof TypeError && fetchError.message.includes("fetch failed")) {
+					await this.retryQueue.enqueue(
+						url,
+						fetchOptions,
+						"telemetry",
+						`Telemetry: Backfill messages for task ${taskId}`,
+					)
+				}
+				throw fetchError
 			}
 		} catch (error) {
 			console.error(`[TelemetryClient#backfillMessages] Error uploading messages: ${error}`)

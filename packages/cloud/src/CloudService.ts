@@ -24,6 +24,7 @@ import { StaticSettingsService } from "./StaticSettingsService.js"
 import { CloudTelemetryClient as TelemetryClient } from "./TelemetryClient.js"
 import { CloudShareService } from "./CloudShareService.js"
 import { CloudAPI } from "./CloudAPI.js"
+import { RetryQueue } from "./retry-queue/index.js"
 
 type AuthStateChangedPayload = CloudServiceEvents["auth-state-changed"][0]
 type AuthUserInfoPayload = CloudServiceEvents["user-info"][0]
@@ -73,6 +74,12 @@ export class CloudService extends EventEmitter<CloudServiceEvents> implements Di
 
 	public get cloudAPI() {
 		return this._cloudAPI
+	}
+
+	private _retryQueue: RetryQueue | null = null
+
+	public get retryQueue() {
+		return this._retryQueue
 	}
 
 	private constructor(context: ExtensionContext, log?: (...args: unknown[]) => void) {
@@ -131,7 +138,25 @@ export class CloudService extends EventEmitter<CloudServiceEvents> implements Di
 
 			this._cloudAPI = new CloudAPI(this._authService, this.log)
 
-			this._telemetryClient = new TelemetryClient(this._authService, this._settingsService)
+			// Initialize retry queue with auth header provider
+			this._retryQueue = new RetryQueue(
+				this.context,
+				undefined, // Use default config
+				this.log,
+				() => {
+					// Provide fresh auth headers for retries
+					const sessionToken = this._authService?.getSessionToken()
+					if (sessionToken) {
+						return {
+							Authorization: `Bearer ${sessionToken}`,
+							"X-Organization-Id": this._authService?.getStoredOrganizationId() || "",
+						}
+					}
+					return undefined
+				},
+			)
+
+			this._telemetryClient = new TelemetryClient(this._authService, this._settingsService, this._retryQueue)
 
 			this._shareService = new CloudShareService(this._cloudAPI, this._settingsService, this.log)
 
@@ -296,6 +321,10 @@ export class CloudService extends EventEmitter<CloudServiceEvents> implements Di
 			}
 
 			this.settingsService.dispose()
+		}
+
+		if (this._retryQueue) {
+			this._retryQueue.dispose()
 		}
 
 		this.isInitialized = false
