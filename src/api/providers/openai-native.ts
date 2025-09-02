@@ -17,7 +17,6 @@ import type { ApiHandlerOptions } from "../../shared/api"
 
 import { calculateApiCostOpenAI } from "../../shared/cost"
 
-import { convertToOpenAiMessages } from "../transform/openai-format"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
 
@@ -66,13 +65,18 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 	private normalizeUsage(usage: any, model: OpenAiNativeModel): ApiStreamUsageChunk | undefined {
 		if (!usage) return undefined
 
-		const totalInputTokens = usage.input_tokens ?? usage.prompt_tokens ?? 0
-		const totalOutputTokens = usage.output_tokens ?? usage.completion_tokens ?? 0
-
 		// Prefer detailed shapes when available (Responses API)
-		const inputDetails = (usage.input_tokens_details || usage.prompt_tokens_details) ?? undefined
-		const cachedFromDetails = typeof inputDetails?.cached_tokens === "number" ? inputDetails.cached_tokens : 0
-		const missFromDetails = typeof inputDetails?.cache_miss_tokens === "number" ? inputDetails.cache_miss_tokens : 0
+		const inputDetails = usage.input_tokens_details ?? usage.prompt_tokens_details ?? undefined
+		const cachedFromDetails = inputDetails?.cached_tokens ?? 0
+		const missFromDetails = inputDetails?.cache_miss_tokens ?? 0
+
+		// If total input tokens are missing but we have details, derive from them
+		let totalInputTokens = usage.input_tokens ?? usage.prompt_tokens ?? 0
+		if (totalInputTokens === 0 && inputDetails && (cachedFromDetails > 0 || missFromDetails > 0)) {
+			totalInputTokens = cachedFromDetails + missFromDetails
+		}
+
+		const totalOutputTokens = usage.output_tokens ?? usage.completion_tokens ?? 0
 
 		const cacheWriteTokens = usage.cache_creation_input_tokens ?? usage.cache_write_tokens ?? missFromDetails ?? 0
 
@@ -80,6 +84,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			usage.cache_read_input_tokens ?? usage.cache_read_tokens ?? usage.cached_tokens ?? cachedFromDetails ?? 0
 
 		// Use uncached input tokens for costing to avoid double-counting with cache reads
+		// This aligns with how Gemini calculates costs (see gemini.ts calculateCost method)
 		const uncachedInputTokens =
 			typeof cacheReadTokens === "number" ? Math.max(0, totalInputTokens - cacheReadTokens) : totalInputTokens
 
