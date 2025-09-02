@@ -11,7 +11,7 @@ import { useTranslation } from "react-i18next"
 import { useDebounceEffect } from "@src/utils/useDebounceEffect"
 import { appendImages } from "@src/utils/imageUtils"
 
-import type { ClineAsk, ClineMessage } from "@roo-code/types"
+import type { ClineAsk, ClineMessage, McpServerUse } from "@roo-code/types"
 
 import { ClineSayBrowserAction, ClineSayTool, ExtensionMessage } from "@roo/ExtensionMessage"
 import { McpServer, McpTool } from "@roo/mcp"
@@ -1062,9 +1062,9 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					return true
 				}
 
-				const mcpServerUse = JSON.parse(message.text) as { type: string; serverName: string; toolName: string }
+				const mcpServerUse = JSON.parse(message.text) as McpServerUse
 
-				if (mcpServerUse.type === "use_mcp_tool") {
+				if (mcpServerUse.type === "use_mcp_tool" && mcpServerUse.toolName) {
 					const server = mcpServers?.find((s: McpServer) => s.name === mcpServerUse.serverName)
 					const tool = server?.tools?.find((t: McpTool) => t.name === mcpServerUse.toolName)
 					return tool?.alwaysAllow || false
@@ -1151,12 +1151,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				}
 
 				try {
-					const mcpServerUse = JSON.parse(message.text) as {
-						type: string
-						serverName: string
-						toolName?: string
-						uri?: string
-					}
+					const mcpServerUse = JSON.parse(message.text) as McpServerUse
 
 					if (mcpServerUse.type === "use_mcp_tool") {
 						// For tools, check if the specific tool is always allowed
@@ -1170,6 +1165,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					console.error("Failed to parse MCP server use message:", error)
 					return false
 				}
+				return false
 			}
 
 			if (message.ask === "command") {
