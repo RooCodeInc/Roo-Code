@@ -71,7 +71,7 @@ export class MessageQueueService extends EventEmitter<QueueEvents> {
 			return false
 		}
 
-		console.log("updateMessage", message)
+		message.timestamp = Date.now()
 		message.timestamp = Date.now()
 		message.text = text
 		message.images = images
