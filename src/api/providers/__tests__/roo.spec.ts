@@ -260,7 +260,6 @@ describe("RooHandler", () => {
 						expect.objectContaining({ role: "user", content: "Second message" }),
 					]),
 				}),
-				undefined,
 			)
 		})
 	})
@@ -365,7 +364,6 @@ describe("RooHandler", () => {
 				expect.objectContaining({
 					temperature: 0.7,
 				}),
-				undefined,
 			)
 		})
 
@@ -383,7 +381,6 @@ describe("RooHandler", () => {
 				expect.objectContaining({
 					temperature: 0.9,
 				}),
-				undefined,
 			)
 		})
 
