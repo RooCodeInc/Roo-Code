@@ -268,6 +268,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	// Message Queue Service
 	public readonly messageQueueService: MessageQueueService
+	private messageQueueStateChangedHandler: (() => void) | undefined
 
 	// Streaming
 	isWaitingForFirstChunk = false
@@ -370,7 +371,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.assistantMessageParser = new AssistantMessageParser()
 
 		this.messageQueueService = new MessageQueueService()
-		this.messageQueueService.on("stateChanged", () => this.providerRef.deref()?.postStateToWebview())
+		this.messageQueueStateChangedHandler = () => this.providerRef.deref()?.postStateToWebview()
+		this.messageQueueService.on("stateChanged", this.messageQueueStateChangedHandler)
 
 		// Only set up diff strategy if diff is enabled.
 		if (this.diffEnabled) {
@@ -1448,8 +1450,13 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	public dispose(): void {
 		console.log(`[Task#dispose] disposing task ${this.taskId}.${this.instanceId}`)
 
-		// Dispose message queue.
+		// Dispose message queue and remove event listeners.
 		try {
+			if (this.messageQueueStateChangedHandler) {
+				this.messageQueueService.removeListener("stateChanged", this.messageQueueStateChangedHandler)
+				this.messageQueueStateChangedHandler = undefined
+			}
+
 			this.messageQueueService.dispose()
 		} catch (error) {
 			console.error("Error disposing message queue:", error)
