@@ -231,6 +231,7 @@ describe("mergeExtensionState", () => {
 				preventFocusDisruption: false,
 				newTaskRequireTodos: false,
 				imageGeneration: false,
+				runSlashCommand: false,
 			} as Record<ExperimentId, boolean>,
 		}
 
