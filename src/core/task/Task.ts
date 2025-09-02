@@ -372,7 +372,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.assistantMessageParser = new AssistantMessageParser()
 
 		this.messageQueueService = new MessageQueueService()
-		this.messageQueueStateChangedHandler = () => this.providerRef.deref()?.postStateToWebview()
+
+		this.messageQueueStateChangedHandler = () => {
+			this.emit(RooCodeEventName.TaskUserMessage, this.taskId)
+			this.providerRef.deref()?.postStateToWebview()
+		}
+
 		this.messageQueueService.on("stateChanged", this.messageQueueStateChangedHandler)
 
 		// Only set up diff strategy if diff is enabled.
