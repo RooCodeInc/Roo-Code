@@ -584,21 +584,17 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 
 			if (text || images.length > 0) {
 				if (sendingDisabled) {
-				if (sendingDisabled) {
 					try {
 						console.log("queueMessage", text, images)
 						vscode.postMessage({ type: "queueMessage", text, images })
 						setInputValue("")
 						setSelectedImages([])
 					} catch (error) {
-						console.error("Failed to queue message:", error)
-						// Consider showing user feedback
+						console.error(
+							`Failed to queue message: ${error instanceof Error ? error.message : String(error)}`,
+						)
 					}
-					return
-				}
-					vscode.postMessage({ type: "queueMessage", text, images })
-					setInputValue("")
-					setSelectedImages([])
+
 					return
 				}
 

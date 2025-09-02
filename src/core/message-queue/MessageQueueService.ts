@@ -59,7 +59,6 @@ export class MessageQueueService extends EventEmitter<QueueEvents> {
 		}
 
 		this._messages.splice(index, 1)
-		this._messages.splice(index, 1)
 		this.emit("stateChanged", this._messages)
 		return true
 	}
@@ -71,7 +70,6 @@ export class MessageQueueService extends EventEmitter<QueueEvents> {
 			return false
 		}
 
-		message.timestamp = Date.now()
 		message.timestamp = Date.now()
 		message.text = text
 		message.images = images
