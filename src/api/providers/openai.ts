@@ -105,8 +105,28 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 			let convertedMessages
 
+			// Check if we should skip system message for DeepSeek V3 models with llama.cpp
+			const skipSystemMessage =
+				this.options.openAiSkipSystemMessage &&
+				(modelId.toLowerCase().includes("deepseek") || modelId.toLowerCase().includes("deepseek-v3"))
+
 			if (deepseekReasoner) {
 				convertedMessages = convertToR1Format([{ role: "user", content: systemPrompt }, ...messages])
+			} else if (skipSystemMessage) {
+				// For DeepSeek V3 with llama.cpp, merge system prompt into first user message to avoid duplicate BOS
+				const firstUserMessage = messages.find((msg) => msg.role === "user")
+				if (firstUserMessage) {
+					const modifiedMessages = [...messages]
+					const firstUserIndex = modifiedMessages.findIndex((msg) => msg.role === "user")
+					modifiedMessages[firstUserIndex] = {
+						...firstUserMessage,
+						content: `${systemPrompt}\n\n${typeof firstUserMessage.content === "string" ? firstUserMessage.content : JSON.stringify(firstUserMessage.content)}`,
+					}
+					convertedMessages = convertToOpenAiMessages(modifiedMessages)
+				} else {
+					// If no user message, create one with the system prompt
+					convertedMessages = convertToOpenAiMessages([{ role: "user", content: systemPrompt }, ...messages])
+				}
 			} else if (ark || enabledLegacyFormat) {
 				convertedMessages = [systemMessage, ...convertToSimpleMessages(messages)]
 			} else {
@@ -224,13 +244,37 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				content: systemPrompt,
 			}
 
+			// Check if we should skip system message for DeepSeek V3 models with llama.cpp
+			const skipSystemMessage =
+				this.options.openAiSkipSystemMessage &&
+				(modelId.toLowerCase().includes("deepseek") || modelId.toLowerCase().includes("deepseek-v3"))
+
+			let messagesForRequest
+			if (deepseekReasoner) {
+				messagesForRequest = convertToR1Format([{ role: "user", content: systemPrompt }, ...messages])
+			} else if (skipSystemMessage) {
+				// For DeepSeek V3 with llama.cpp, merge system prompt into first user message
+				const firstUserMessage = messages.find((msg) => msg.role === "user")
+				if (firstUserMessage) {
+					const modifiedMessages = [...messages]
+					const firstUserIndex = modifiedMessages.findIndex((msg) => msg.role === "user")
+					modifiedMessages[firstUserIndex] = {
+						...firstUserMessage,
+						content: `${systemPrompt}\n\n${typeof firstUserMessage.content === "string" ? firstUserMessage.content : JSON.stringify(firstUserMessage.content)}`,
+					}
+					messagesForRequest = convertToOpenAiMessages(modifiedMessages)
+				} else {
+					messagesForRequest = convertToOpenAiMessages([{ role: "user", content: systemPrompt }, ...messages])
+				}
+			} else if (enabledLegacyFormat) {
+				messagesForRequest = [systemMessage, ...convertToSimpleMessages(messages)]
+			} else {
+				messagesForRequest = [systemMessage, ...convertToOpenAiMessages(messages)]
+			}
+
 			const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {
 				model: modelId,
-				messages: deepseekReasoner
-					? convertToR1Format([{ role: "user", content: systemPrompt }, ...messages])
-					: enabledLegacyFormat
-						? [systemMessage, ...convertToSimpleMessages(messages)]
-						: [systemMessage, ...convertToOpenAiMessages(messages)],
+				messages: messagesForRequest,
 			}
 
 			// Add max_tokens if needed
