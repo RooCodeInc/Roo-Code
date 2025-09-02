@@ -1145,7 +1145,31 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			}
 
 			if (message.ask === "use_mcp_server") {
-				return alwaysAllowMcp && isMcpToolAlwaysAllowed(message)
+				// Check if it's a tool or resource access
+				if (!message.text) {
+					return false
+				}
+
+				try {
+					const mcpServerUse = JSON.parse(message.text) as {
+						type: string
+						serverName: string
+						toolName?: string
+						uri?: string
+					}
+
+					if (mcpServerUse.type === "use_mcp_tool") {
+						// For tools, check if the specific tool is always allowed
+						return alwaysAllowMcp && isMcpToolAlwaysAllowed(message)
+					} else if (mcpServerUse.type === "access_mcp_resource") {
+						// For resources, auto-approve if MCP is always allowed
+						// Resources don't have individual alwaysAllow settings like tools do
+						return alwaysAllowMcp
+					}
+				} catch (error) {
+					console.error("Failed to parse MCP server use message:", error)
+					return false
+				}
 			}
 
 			if (message.ask === "command") {
