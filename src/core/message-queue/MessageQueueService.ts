@@ -58,7 +58,7 @@ export class MessageQueueService extends EventEmitter<QueueEvents> {
 			return false
 		}
 
-		console.log("removeMessage", message)
+		this._messages.splice(index, 1)
 		this._messages.splice(index, 1)
 		this.emit("stateChanged", this._messages)
 		return true
