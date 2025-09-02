@@ -184,6 +184,7 @@ export class ClineProvider
 			const onTaskInteractive = (taskId: string) => this.emit(RooCodeEventName.TaskInteractive, taskId)
 			const onTaskResumable = (taskId: string) => this.emit(RooCodeEventName.TaskResumable, taskId)
 			const onTaskIdle = (taskId: string) => this.emit(RooCodeEventName.TaskIdle, taskId)
+			const onTaskUserMessage = (taskId: string) => this.emit(RooCodeEventName.TaskUserMessage, taskId)
 
 			// Attach the listeners.
 			instance.on(RooCodeEventName.TaskStarted, onTaskStarted)
@@ -195,6 +196,7 @@ export class ClineProvider
 			instance.on(RooCodeEventName.TaskInteractive, onTaskInteractive)
 			instance.on(RooCodeEventName.TaskResumable, onTaskResumable)
 			instance.on(RooCodeEventName.TaskIdle, onTaskIdle)
+			instance.on(RooCodeEventName.TaskUserMessage, onTaskUserMessage)
 
 			// Store the cleanup functions for later removal.
 			this.taskEventListeners.set(instance, [
@@ -207,6 +209,7 @@ export class ClineProvider
 				() => instance.off(RooCodeEventName.TaskInteractive, onTaskInteractive),
 				() => instance.off(RooCodeEventName.TaskResumable, onTaskResumable),
 				() => instance.off(RooCodeEventName.TaskIdle, onTaskIdle),
+				() => instance.off(RooCodeEventName.TaskUserMessage, onTaskUserMessage),
 			])
 		}
 

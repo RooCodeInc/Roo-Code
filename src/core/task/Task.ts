@@ -901,6 +901,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					await provider.setProviderProfile(providerProfile)
 				}
 
+				this.emit(RooCodeEventName.TaskUserMessage, this.taskId)
+
 				provider.postMessageToWebview({ type: "invoke", invoke: "sendMessage", text, images })
 			} else {
 				console.error("[Task#submitUserMessage] Provider reference lost")
