@@ -92,7 +92,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		const deepseekReasoner = modelId.includes("deepseek-reasoner") || enabledR1Format
 		const ark = modelUrl.includes(".volces.com")
 
-		if (modelId.includes("o1") || modelId.includes("o3") || modelId.includes("o4")) {
+		if (this.isO3FamilyModel(modelId)) {
 			yield* this.handleO3FamilyMessage(modelId, systemPrompt, messages)
 			return
 		}
@@ -365,6 +365,10 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		}
 	}
 
+	private isO3FamilyModel(modelId: string): boolean {
+		return modelId.includes("o1") || modelId.includes("o3") || modelId.includes("o4")
+	}
+
 	private async *handleStreamResponse(stream: AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>): ApiStream {
 		for await (const chunk of stream) {
 			const delta = chunk.choices[0]?.delta
@@ -404,9 +408,9 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 	}
 
 	/**
-	 * Adds max_completion_tokens to the request body if needed based on provider configuration
+	 * Adds max_tokens or max_completion_tokens to the request body if needed based on provider configuration
 	 * Note: max_tokens is deprecated in favor of max_completion_tokens as per OpenAI documentation
-	 * O3 family models handle max_tokens separately in handleO3FamilyMessage
+	 * O3 family models only support max_completion_tokens, while others use both for compatibility
 	 */
 	private addMaxTokensIfNeeded(
 		requestOptions:
@@ -414,11 +418,19 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			| OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming,
 		modelInfo: ModelInfo,
 	): void {
-		// Only add max_completion_tokens if includeMaxTokens is true
+		// Only add max tokens if includeMaxTokens is true
 		if (this.options.includeMaxTokens === true) {
 			// Use user-configured modelMaxTokens if available, otherwise fall back to model's default maxTokens
-			// Using max_completion_tokens as max_tokens is deprecated
-			requestOptions.max_completion_tokens = this.options.modelMaxTokens || modelInfo.maxTokens
+			const maxTokens = this.options.modelMaxTokens || modelInfo.maxTokens
+
+			if (this.isO3FamilyModel(this.options.openAiModelId ?? "")) {
+				// O3 family models only support max_completion_tokens
+				requestOptions.max_completion_tokens = maxTokens
+			} else {
+				// Other models use both max_tokens and max_completion_tokens for compatibility
+				requestOptions.max_tokens = maxTokens
+				requestOptions.max_completion_tokens = maxTokens
+			}
 		}
 	}
 }
