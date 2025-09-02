@@ -374,6 +374,8 @@
 		"ollama": {
 			"baseUrl": "URL bazowy (opcjonalnie)",
 			"modelId": "ID modelu",
+			"apiKey": "Klucz API Ollama",
+			"apiKeyHelp": "Opcjonalny klucz API dla uwierzytelnionych instancji Ollama lub usług chmurowych. Pozostaw puste dla instalacji lokalnych.",
 			"description": "Ollama pozwala na lokalne uruchamianie modeli na twoim komputerze. Aby rozpocząć, zapoznaj się z przewodnikiem szybkiego startu.",
 			"warning": "Uwaga: Roo Code używa złożonych podpowiedzi i działa najlepiej z modelami Claude. Modele o niższych możliwościach mogą nie działać zgodnie z oczekiwaniami."
 		},
@@ -730,6 +732,17 @@
 		"NEW_TASK_REQUIRE_TODOS": {
 			"name": "Wymagaj listy 'todos' dla nowych zadań",
 			"description": "Gdy włączone, narzędzie new_task będzie wymagało podania parametru todos. Zapewnia to, że wszystkie nowe zadania rozpoczynają się od jasnej listy celów. Gdy wyłączone (domyślnie), parametr todos pozostaje opcjonalny dla zachowania kompatybilności wstecznej."
+		},
+		"IMAGE_GENERATION": {
+			"name": "Włącz generowanie obrazów AI",
+			"description": "Gdy włączone, Roo może generować obrazy z promptów tekstowych używając modeli generowania obrazów OpenRouter. Wymaga skonfigurowanego klucza API OpenRouter.",
+			"openRouterApiKeyLabel": "Klucz API OpenRouter",
+			"openRouterApiKeyPlaceholder": "Wprowadź swój klucz API OpenRouter",
+			"getApiKeyText": "Uzyskaj swój klucz API od",
+			"modelSelectionLabel": "Model generowania obrazów",
+			"modelSelectionDescription": "Wybierz model do generowania obrazów",
+			"warningMissingKey": "⚠️ Klucz API OpenRouter jest wymagany do generowania obrazów. Skonfiguruj go powyżej.",
+			"successConfigured": "✓ Generowanie obrazów jest skonfigurowane i gotowe do użycia"
 		}
 	},
 	"promptCaching": {

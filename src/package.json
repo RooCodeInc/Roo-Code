@@ -3,7 +3,7 @@
 	"displayName": "%extension.displayName%",
 	"description": "%extension.description%",
 	"publisher": "RooVeterinaryInc",
-	"version": "3.26.1",
+	"version": "3.26.4",
 	"icon": "assets/icons/icon.png",
 	"galleryBanner": {
 		"color": "#617A91",
@@ -101,9 +101,9 @@
 				"icon": "$(link-external)"
 			},
 			{
-				"command": "roo-cline.accountButtonClicked",
-				"title": "%command.account.title%",
-				"icon": "$(account)"
+				"command": "roo-cline.cloudButtonClicked",
+				"title": "%command.cloud.title%",
+				"icon": "$(cloud)"
 			},
 			{
 				"command": "roo-cline.settingsButtonClicked",
@@ -234,7 +234,7 @@
 					"when": "view == roo-cline.SidebarProvider"
 				},
 				{
-					"command": "roo-cline.accountButtonClicked",
+					"command": "roo-cline.cloudButtonClicked",
 					"group": "navigation@4",
 					"when": "view == roo-cline.SidebarProvider"
 				},
@@ -276,7 +276,7 @@
 					"when": "activeWebviewPanelId == roo-cline.TabPanelProvider"
 				},
 				{
-					"command": "roo-cline.accountButtonClicked",
+					"command": "roo-cline.cloudButtonClicked",
 					"group": "navigation@4",
 					"when": "activeWebviewPanelId == roo-cline.TabPanelProvider"
 				},
@@ -400,6 +400,13 @@
 					"type": "boolean",
 					"default": false,
 					"description": "%settings.newTaskRequireTodos.description%"
+				},
+				"roo-cline.codeIndex.embeddingBatchSize": {
+					"type": "number",
+					"default": 60,
+					"minimum": 1,
+					"maximum": 200,
+					"description": "%settings.codeIndex.embeddingBatchSize.description%"
 				}
 			}
 		}
@@ -427,13 +434,12 @@
 		"@google/genai": "^1.0.0",
 		"@lmstudio/sdk": "^1.1.1",
 		"@mistralai/mistralai": "^1.9.18",
-		"@modelcontextprotocol/sdk": "^1.9.0",
+		"@modelcontextprotocol/sdk": "1.12.0",
 		"@qdrant/js-client-rest": "^1.14.0",
-		"@roo-code/cloud": "^0.24.0",
+		"@roo-code/cloud": "workspace:^",
 		"@roo-code/ipc": "workspace:^",
 		"@roo-code/telemetry": "workspace:^",
 		"@roo-code/types": "workspace:^",
-		"@types/lodash.debounce": "^4.0.9",
 		"@vscode/codicons": "^0.0.36",
 		"async-mutex": "^0.5.0",
 		"axios": "^1.7.4",
@@ -462,7 +468,7 @@
 		"node-cache": "^5.1.2",
 		"node-ipc": "^12.0.0",
 		"ollama": "^0.5.17",
-		"openai": "^5.0.0",
+		"openai": "^5.12.2",
 		"os-name": "^6.0.0",
 		"p-limit": "^6.2.0",
 		"p-wait-for": "^5.0.2",
@@ -504,6 +510,7 @@
 		"@types/diff": "^5.2.1",
 		"@types/diff-match-patch": "^1.0.36",
 		"@types/glob": "^8.1.0",
+		"@types/lodash.debounce": "^4.0.9",
 		"@types/mocha": "^10.0.10",
 		"@types/node": "20.x",
 		"@types/node-cache": "^4.1.3",

@@ -12,15 +12,28 @@ import { SetExperimentEnabled } from "./types"
 import { SectionHeader } from "./SectionHeader"
 import { Section } from "./Section"
 import { ExperimentalFeature } from "./ExperimentalFeature"
+import { ImageGenerationSettings } from "./ImageGenerationSettings"
 
 type ExperimentalSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	experiments: Experiments
 	setExperimentEnabled: SetExperimentEnabled
+	apiConfiguration?: any
+	setApiConfigurationField?: any
+	openRouterImageApiKey?: string
+	openRouterImageGenerationSelectedModel?: string
+	setOpenRouterImageApiKey?: (apiKey: string) => void
+	setImageGenerationSelectedModel?: (model: string) => void
 }
 
 export const ExperimentalSettings = ({
 	experiments,
 	setExperimentEnabled,
+	apiConfiguration,
+	setApiConfigurationField,
+	openRouterImageApiKey,
+	openRouterImageGenerationSelectedModel,
+	setOpenRouterImageApiKey,
+	setImageGenerationSelectedModel,
 	className,
 	...props
 }: ExperimentalSettingsProps) => {
@@ -48,6 +61,25 @@ export const ExperimentalSettings = ({
 									onChange={(enabled) =>
 										setExperimentEnabled(EXPERIMENT_IDS.MULTI_FILE_APPLY_DIFF, enabled)
 									}
+								/>
+							)
+						}
+						if (
+							config[0] === "IMAGE_GENERATION" &&
+							setOpenRouterImageApiKey &&
+							setImageGenerationSelectedModel
+						) {
+							return (
+								<ImageGenerationSettings
+									key={config[0]}
+									enabled={experiments[EXPERIMENT_IDS.IMAGE_GENERATION] ?? false}
+									onChange={(enabled) =>
+										setExperimentEnabled(EXPERIMENT_IDS.IMAGE_GENERATION, enabled)
+									}
+									openRouterImageApiKey={openRouterImageApiKey}
+									openRouterImageGenerationSelectedModel={openRouterImageGenerationSelectedModel}
+									setOpenRouterImageApiKey={setOpenRouterImageApiKey}
+									setImageGenerationSelectedModel={setImageGenerationSelectedModel}
 								/>
 							)
 						}

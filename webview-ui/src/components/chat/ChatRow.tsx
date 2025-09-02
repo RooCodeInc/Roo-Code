@@ -25,6 +25,7 @@ import CodeBlock from "../common/CodeBlock"
 import MarkdownBlock from "../common/MarkdownBlock"
 import { ReasoningBlock } from "./ReasoningBlock"
 import Thumbnails from "../common/Thumbnails"
+import ImageBlock from "../common/ImageBlock"
 
 import McpResourceRow from "../mcp/McpResourceRow"
 
@@ -846,6 +847,39 @@ export const ChatRowContent = ({
 					</>
 				)
 			}
+			case "generateImage":
+				return (
+					<>
+						<div style={headerStyle}>
+							{tool.isProtected ? (
+								<span
+									className="codicon codicon-lock"
+									style={{ color: "var(--vscode-editorWarning-foreground)", marginBottom: "-1.5px" }}
+								/>
+							) : (
+								toolIcon("file-media")
+							)}
+							<span style={{ fontWeight: "bold" }}>
+								{message.type === "ask"
+									? tool.isProtected
+										? t("chat:fileOperations.wantsToGenerateImageProtected")
+										: tool.isOutsideWorkspace
+											? t("chat:fileOperations.wantsToGenerateImageOutsideWorkspace")
+											: t("chat:fileOperations.wantsToGenerateImage")
+									: t("chat:fileOperations.didGenerateImage")}
+							</span>
+						</div>
+						{message.type === "ask" && (
+							<CodeAccordian
+								path={tool.path}
+								code={tool.content}
+								language="text"
+								isExpanded={isExpanded}
+								onToggleExpand={handleToggleExpand}
+							/>
+						)}
+					</>
+				)
 			default:
 				return null
 		}
@@ -1058,6 +1092,13 @@ export const ChatRowContent = ({
 					return (
 						<div>
 							<Markdown markdown={message.text} partial={message.partial} />
+							{message.images && message.images.length > 0 && (
+								<div style={{ marginTop: "10px" }}>
+									{message.images.map((image, index) => (
+										<ImageBlock key={index} imageData={image} />
+									))}
+								</div>
+							)}
 						</div>
 					)
 				case "user_feedback":
@@ -1248,6 +1289,17 @@ export const ChatRowContent = ({
 						default:
 							return null
 					}
+				case "image":
+					// Parse the JSON to get imageUri and imagePath
+					const imageInfo = safeJsonParse<{ imageUri: string; imagePath: string }>(message.text || "{}")
+					if (!imageInfo) {
+						return null
+					}
+					return (
+						<div style={{ marginTop: "10px" }}>
+							<ImageBlock imageUri={imageInfo.imageUri} imagePath={imageInfo.imagePath} />
+						</div>
+					)
 				default:
 					return (
 						<>

@@ -14,6 +14,7 @@ import {
 } from "@roo-code/types"
 import { CloudService } from "@roo-code/cloud"
 import { TelemetryService } from "@roo-code/telemetry"
+
 import { type ApiMessage } from "../task-persistence/apiMessages"
 
 import { ClineProvider } from "./ClineProvider"
@@ -936,8 +937,8 @@ export const webviewMessageHandler = async (
 			const mcpEnabled = message.bool ?? true
 			await updateGlobalState("mcpEnabled", mcpEnabled)
 
-			// Delegate MCP enable/disable logic to McpHub
 			const mcpHubInstance = provider.getMcpHub()
+
 			if (mcpHubInstance) {
 				await mcpHubInstance.handleMcpEnabledChange(mcpEnabled)
 			}
@@ -949,18 +950,25 @@ export const webviewMessageHandler = async (
 			await provider.postStateToWebview()
 			break
 		case "remoteControlEnabled":
-			await updateGlobalState("remoteControlEnabled", message.bool ?? false)
-			await provider.handleRemoteControlToggle(message.bool ?? false)
+			try {
+				await CloudService.instance.updateUserSettings({
+					extensionBridgeEnabled: message.bool ?? false,
+				})
+			} catch (error) {
+				provider.log(`Failed to update cloud settings for remote control: ${error}`)
+			}
+			await provider.remoteControlEnabled(message.bool ?? false)
 			await provider.postStateToWebview()
 			break
 		case "refreshAllMcpServers": {
 			const mcpHub = provider.getMcpHub()
+
 			if (mcpHub) {
 				await mcpHub.refreshAllConnections()
 			}
+
 			break
 		}
-		// playSound handler removed - now handled directly in the webview
 		case "soundEnabled":
 			const soundEnabled = message.bool ?? true
 			await updateGlobalState("soundEnabled", soundEnabled)
@@ -974,7 +982,7 @@ export const webviewMessageHandler = async (
 		case "ttsEnabled":
 			const ttsEnabled = message.bool ?? true
 			await updateGlobalState("ttsEnabled", ttsEnabled)
-			setTtsEnabled(ttsEnabled) // Add this line to update the tts utility
+			setTtsEnabled(ttsEnabled)
 			await provider.postStateToWebview()
 			break
 		case "ttsSpeed":
@@ -990,6 +998,7 @@ export const webviewMessageHandler = async (
 					onStop: () => provider.postMessageToWebview({ type: "ttsStop", text: message.text }),
 				})
 			}
+
 			break
 		case "stopTts":
 			stopTts()
@@ -1302,6 +1311,14 @@ export const webviewMessageHandler = async (
 		case "language":
 			changeLanguage(message.text ?? "en")
 			await updateGlobalState("language", message.text as Language)
+			await provider.postStateToWebview()
+			break
+		case "openRouterImageApiKey":
+			await provider.contextProxy.setValue("openRouterImageApiKey", message.text)
+			await provider.postStateToWebview()
+			break
+		case "openRouterImageGenerationSelectedModel":
+			await provider.contextProxy.setValue("openRouterImageGenerationSelectedModel", message.text)
 			await provider.postStateToWebview()
 			break
 		case "showRooIgnoredFiles":
@@ -2011,9 +2028,9 @@ export const webviewMessageHandler = async (
 			await provider.postStateToWebview()
 			break
 		}
-		case "accountButtonClicked": {
-			// Navigate to the account tab.
-			provider.postMessageToWebview({ type: "action", action: "accountButtonClicked" })
+		case "cloudButtonClicked": {
+			// Navigate to the cloud tab.
+			provider.postMessageToWebview({ type: "action", action: "cloudButtonClicked" })
 			break
 		}
 		case "rooCloudSignIn": {
