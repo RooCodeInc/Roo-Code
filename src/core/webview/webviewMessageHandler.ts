@@ -1199,6 +1199,17 @@ export const webviewMessageHandler = async (
 
 			await provider.postStateToWebview()
 			break
+		case "taskSyncEnabled":
+			try {
+				await CloudService.instance.updateUserSettings({
+					taskSyncEnabled: message.bool ?? true,
+				})
+			} catch (error) {
+				provider.log(`Failed to update cloud settings for task sync: ${error}`)
+			}
+			await updateGlobalState("taskSyncEnabled", message.bool ?? true)
+			await provider.postStateToWebview()
+			break
 		case "refreshAllMcpServers": {
 			const mcpHub = provider.getMcpHub()
 

@@ -139,6 +139,7 @@ export const globalSettingsSchema = z.object({
 	enableMcpServerCreation: z.boolean().optional(),
 
 	remoteControlEnabled: z.boolean().optional(),
+	taskSyncEnabled: z.boolean().optional(),
 
 	mode: z.string().optional(),
 	modeApiConfigs: z.record(z.string(), z.string()).optional(),
@@ -317,6 +318,7 @@ export const EVALS_SETTINGS: RooCodeSettings = {
 	mcpEnabled: false,
 
 	remoteControlEnabled: false,
+	taskSyncEnabled: true, // Default to true for backward compatibility
 
 	mode: "code", // "architect",
 
