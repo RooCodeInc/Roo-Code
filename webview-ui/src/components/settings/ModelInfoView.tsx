@@ -26,10 +26,9 @@ export const ModelInfoView = ({
 	const { t } = useAppTranslation()
 
 	// Show tiered pricing table for OpenAI Native when model supports non-standard tiers
-	const allowedTiers =
-		(modelInfo?.allowedServiceTiers || []).filter((tier) => tier === "flex" || tier === "priority") ?? []
-	const tierPricing = modelInfo?.serviceTierPricing
-	const shouldShowTierPricingTable = apiProvider === "openai-native" && allowedTiers.length > 0 && !!tierPricing
+	const allowedTierNames =
+		modelInfo?.tiers?.filter((t) => t.name === "flex" || t.name === "priority")?.map((t) => t.name) ?? []
+	const shouldShowTierPricingTable = apiProvider === "openai-native" && allowedTierNames.length > 0
 	const fmt = (n?: number) => (typeof n === "number" ? `${formatPrice(n)}` : "—")
 
 	const baseInfoItems = [
@@ -122,50 +121,74 @@ export const ModelInfoView = ({
 			{shouldShowTierPricingTable && (
 				<div className="mt-2">
 					<div className="text-xs text-vscode-descriptionForeground mb-1">
-						Pricing by service tier (price per 1M tokens)
+						{t("settings:serviceTier.pricingTableTitle")}
 					</div>
 					<div className="border border-vscode-dropdown-border rounded-xs overflow-hidden">
 						<table className="w-full text-sm">
 							<thead className="bg-vscode-dropdown-background">
 								<tr>
-									<th className="text-left px-3 py-1.5">Tier</th>
-									<th className="text-right px-3 py-1.5">Input</th>
-									<th className="text-right px-3 py-1.5">Output</th>
-									<th className="text-right px-3 py-1.5">Cache reads</th>
+									<th className="text-left px-3 py-1.5">{t("settings:serviceTier.columns.tier")}</th>
+									<th className="text-right px-3 py-1.5">
+										{t("settings:serviceTier.columns.input")}
+									</th>
+									<th className="text-right px-3 py-1.5">
+										{t("settings:serviceTier.columns.output")}
+									</th>
+									<th className="text-right px-3 py-1.5">
+										{t("settings:serviceTier.columns.cacheReads")}
+									</th>
 								</tr>
 							</thead>
 							<tbody>
 								<tr className="border-t border-vscode-dropdown-border/60">
-									<td className="px-3 py-1.5">Standard</td>
+									<td className="px-3 py-1.5">{t("settings:serviceTier.standard")}</td>
 									<td className="px-3 py-1.5 text-right">{fmt(modelInfo?.inputPrice)}</td>
 									<td className="px-3 py-1.5 text-right">{fmt(modelInfo?.outputPrice)}</td>
 									<td className="px-3 py-1.5 text-right">{fmt(modelInfo?.cacheReadsPrice)}</td>
 								</tr>
-								{allowedTiers.includes("flex") && (
+								{allowedTierNames.includes("flex") && (
 									<tr className="border-t border-vscode-dropdown-border/60">
-										<td className="px-3 py-1.5">Flex</td>
+										<td className="px-3 py-1.5">{t("settings:serviceTier.flex")}</td>
 										<td className="px-3 py-1.5 text-right">
-											{fmt(tierPricing?.flex?.inputPrice ?? modelInfo?.inputPrice)}
+											{fmt(
+												modelInfo?.tiers?.find((t) => t.name === "flex")?.inputPrice ??
+													modelInfo?.inputPrice,
+											)}
 										</td>
 										<td className="px-3 py-1.5 text-right">
-											{fmt(tierPricing?.flex?.outputPrice ?? modelInfo?.outputPrice)}
+											{fmt(
+												modelInfo?.tiers?.find((t) => t.name === "flex")?.outputPrice ??
+													modelInfo?.outputPrice,
+											)}
 										</td>
 										<td className="px-3 py-1.5 text-right">
-											{fmt(tierPricing?.flex?.cacheReadsPrice ?? modelInfo?.cacheReadsPrice)}
+											{fmt(
+												modelInfo?.tiers?.find((t) => t.name === "flex")?.cacheReadsPrice ??
+													modelInfo?.cacheReadsPrice,
+											)}
 										</td>
 									</tr>
 								)}
-								{allowedTiers.includes("priority") && (
+								{allowedTierNames.includes("priority") && (
 									<tr className="border-t border-vscode-dropdown-border/60">
-										<td className="px-3 py-1.5">Priority</td>
+										<td className="px-3 py-1.5">{t("settings:serviceTier.priority")}</td>
 										<td className="px-3 py-1.5 text-right">
-											{fmt(tierPricing?.priority?.inputPrice ?? modelInfo?.inputPrice)}
+											{fmt(
+												modelInfo?.tiers?.find((t) => t.name === "priority")?.inputPrice ??
+													modelInfo?.inputPrice,
+											)}
 										</td>
 										<td className="px-3 py-1.5 text-right">
-											{fmt(tierPricing?.priority?.outputPrice ?? modelInfo?.outputPrice)}
+											{fmt(
+												modelInfo?.tiers?.find((t) => t.name === "priority")?.outputPrice ??
+													modelInfo?.outputPrice,
+											)}
 										</td>
 										<td className="px-3 py-1.5 text-right">
-											{fmt(tierPricing?.priority?.cacheReadsPrice ?? modelInfo?.cacheReadsPrice)}
+											{fmt(
+												modelInfo?.tiers?.find((t) => t.name === "priority")?.cacheReadsPrice ??
+													modelInfo?.cacheReadsPrice,
+											)}
 										</td>
 									</tr>
 								)}
