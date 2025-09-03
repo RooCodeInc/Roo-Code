@@ -69,6 +69,7 @@
 		"qdrantUrlLabel": "Qdrant URL",
 		"qdrantKeyLabel": "Qdrant Anahtarı:",
 		"startIndexingButton": "Başlat",
+		"resumeIndexingButton": "Resume",
 		"clearIndexDataButton": "İndeks Temizle",
 		"unsavedSettingsMessage": "İndeksleme işlemini başlatmadan önce lütfen ayarlarını kaydet.",
 		"clearDataDialog": {
