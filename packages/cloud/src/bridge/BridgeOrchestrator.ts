@@ -8,6 +8,7 @@ import {
 	type ExtensionBridgeCommand,
 	type TaskBridgeCommand,
 	type StaticAppProperties,
+	type GitProperties,
 	ConnectionState,
 	ExtensionSocketEvents,
 	TaskSocketEvents,
@@ -42,6 +43,7 @@ export class BridgeOrchestrator {
 	private readonly provider: TaskProviderLike
 	private readonly instanceId: string
 	private readonly appProperties: StaticAppProperties
+	private readonly gitProperties?: GitProperties
 
 	// Components
 	private socketTransport: SocketTransport
@@ -79,6 +81,9 @@ export class BridgeOrchestrator {
 		if (!instance) {
 			try {
 				console.log(`[BridgeOrchestrator#connectOrDisconnect] Connecting...`)
+				// Populate telemetry properties before registering the instance.
+				await options.provider.getTelemetryProperties()
+
 				BridgeOrchestrator.instance = new BridgeOrchestrator(options)
 				await BridgeOrchestrator.instance.connect()
 			} catch (error) {
@@ -153,6 +158,7 @@ export class BridgeOrchestrator {
 		this.provider = options.provider
 		this.instanceId = options.sessionId || crypto.randomUUID()
 		this.appProperties = { ...options.provider.appProperties, hostname: os.hostname() }
+		this.gitProperties = options.provider.gitProperties
 
 		this.socketTransport = new SocketTransport({
 			url: this.socketBridgeUrl,
@@ -176,6 +182,7 @@ export class BridgeOrchestrator {
 		this.extensionChannel = new ExtensionChannel({
 			instanceId: this.instanceId,
 			appProperties: this.appProperties,
+			gitProperties: this.gitProperties,
 			userId: this.userId,
 			provider: this.provider,
 		})
@@ -183,6 +190,7 @@ export class BridgeOrchestrator {
 		this.taskChannel = new TaskChannel({
 			instanceId: this.instanceId,
 			appProperties: this.appProperties,
+			gitProperties: this.gitProperties,
 		})
 	}
 
@@ -304,9 +312,6 @@ export class BridgeOrchestrator {
 	}
 
 	private async connect(): Promise<void> {
-		// Populate the app and git properties before registering the instance.
-		await this.provider.getTelemetryProperties()
-
 		await this.socketTransport.connect()
 		this.setupSocketListeners()
 	}

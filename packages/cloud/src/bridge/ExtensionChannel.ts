@@ -37,7 +37,11 @@ export class ExtensionChannel extends BaseChannel<
 	private eventListeners: Map<RooCodeEventName, (...args: unknown[]) => void> = new Map()
 
 	constructor(options: ExtensionChannelOptions) {
-		super({ instanceId: options.instanceId, appProperties: options.appProperties })
+		super({
+			instanceId: options.instanceId,
+			appProperties: options.appProperties,
+			gitProperties: options.gitProperties,
+		})
 
 		this.userId = options.userId
 		this.provider = options.provider
@@ -46,8 +50,8 @@ export class ExtensionChannel extends BaseChannel<
 			instanceId: this.instanceId,
 			userId: this.userId,
 			workspacePath: this.provider.cwd,
-			appProperties: this.provider.appProperties,
-			gitProperties: this.provider.gitProperties,
+			appProperties: this.appProperties,
+			gitProperties: this.gitProperties,
 			lastHeartbeat: Date.now(),
 			task: { taskId: "", taskStatus: TaskStatus.None },
 			taskHistory: [],

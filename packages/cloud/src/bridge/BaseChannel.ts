@@ -1,11 +1,12 @@
 import type { Socket } from "socket.io-client"
 import * as vscode from "vscode"
 
-import { StaticAppProperties } from "@roo-code/types"
+import type { StaticAppProperties, GitProperties } from "@roo-code/types"
 
 export interface BaseChannelOptions {
 	instanceId: string
 	appProperties: StaticAppProperties
+	gitProperties?: GitProperties
 }
 
 /**
@@ -20,10 +21,12 @@ export abstract class BaseChannel<TCommand = unknown, TEventName extends string 
 	protected socket: Socket | null = null
 	protected readonly instanceId: string
 	protected readonly appProperties: StaticAppProperties
+	protected readonly gitProperties?: GitProperties
 
 	constructor(options: BaseChannelOptions) {
 		this.instanceId = options.instanceId
 		this.appProperties = options.appProperties
+		this.gitProperties = options.gitProperties
 	}
 
 	/**
