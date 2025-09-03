@@ -545,6 +545,7 @@ export const webviewMessageHandler = async (
 			const routerModels: Partial<Record<RouterName, ModelRecord>> = {
 				openrouter: {},
 				requesty: {},
+				tars: {},
 				glama: {},
 				unbound: {},
 				litellm: {},
@@ -566,6 +567,7 @@ export const webviewMessageHandler = async (
 
 			const modelFetchPromises: Array<{ key: RouterName; options: GetModelsOptions }> = [
 				{ key: "openrouter", options: { provider: "openrouter" } },
+				{ key: "tars", options: { provider: "tars", apiKey: apiConfiguration.tarsApiKey } },
 				{
 					key: "requesty",
 					options: {

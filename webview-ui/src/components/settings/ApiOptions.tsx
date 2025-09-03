@@ -84,6 +84,7 @@ import {
 	OpenRouter,
 	QwenCode,
 	Requesty,
+	Tars,
 	SambaNova,
 	Unbound,
 	Vertex,
@@ -461,6 +462,16 @@ const ApiOptions = ({
 					setApiConfigurationField={setApiConfigurationField}
 					routerModels={routerModels}
 					refetchRouterModels={refetchRouterModels}
+					organizationAllowList={organizationAllowList}
+					modelValidationError={modelValidationError}
+				/>
+			)}
+
+			{selectedProvider === "tars" && (
+				<Tars
+					apiConfiguration={apiConfiguration}
+					setApiConfigurationField={setApiConfigurationField}
+					routerModels={routerModels}
 					organizationAllowList={organizationAllowList}
 					modelValidationError={modelValidationError}
 				/>

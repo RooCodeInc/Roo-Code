@@ -21,6 +21,7 @@ import {
 	qwenCodeModels,
 	rooModels,
 	sambaNovaModels,
+	tarsModels,
 	vertexModels,
 	vscodeLlmModels,
 	xaiModels,
@@ -66,6 +67,7 @@ export const providerNames = [
 	"featherless",
 	"io-intelligence",
 	"roo",
+	"tars",
 	"vercel-ai-gateway",
 ] as const
 
@@ -259,6 +261,11 @@ const requestySchema = baseProviderSettingsSchema.extend({
 	requestyModelId: z.string().optional(),
 })
 
+const tarsSchema = baseProviderSettingsSchema.extend({
+	tarsApiKey: z.string().optional(),
+	tarsModelId: z.string().optional(),
+})
+
 const humanRelaySchema = baseProviderSettingsSchema
 
 const fakeAiSchema = baseProviderSettingsSchema.extend({
@@ -353,6 +360,7 @@ export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProv
 	moonshotSchema.merge(z.object({ apiProvider: z.literal("moonshot") })),
 	unboundSchema.merge(z.object({ apiProvider: z.literal("unbound") })),
 	requestySchema.merge(z.object({ apiProvider: z.literal("requesty") })),
+	tarsSchema.merge(z.object({ apiProvider: z.literal("tars") })),
 	humanRelaySchema.merge(z.object({ apiProvider: z.literal("human-relay") })),
 	fakeAiSchema.merge(z.object({ apiProvider: z.literal("fake-ai") })),
 	xaiSchema.merge(z.object({ apiProvider: z.literal("xai") })),
@@ -393,6 +401,7 @@ export const providerSettingsSchema = z.object({
 	...moonshotSchema.shape,
 	...unboundSchema.shape,
 	...requestySchema.shape,
+	...tarsSchema.shape,
 	...humanRelaySchema.shape,
 	...fakeAiSchema.shape,
 	...xaiSchema.shape,
@@ -408,6 +417,7 @@ export const providerSettingsSchema = z.object({
 	...ioIntelligenceSchema.shape,
 	...qwenCodeSchema.shape,
 	...rooSchema.shape,
+	...tarsSchema.shape,
 	...vercelAiGatewaySchema.shape,
 	...codebaseIndexProviderSchema.shape,
 })
@@ -538,6 +548,11 @@ export const MODELS_BY_PROVIDER: Record<
 		id: "sambanova",
 		label: "SambaNova",
 		models: Object.keys(sambaNovaModels),
+	},
+	tars: {
+		id: "tars",
+		label: "Tars",
+		models: Object.keys(tarsModels),
 	},
 	vertex: {
 		id: "vertex",
