@@ -26,6 +26,15 @@ describe("runSlashCommandTool", () => {
 			sayAndCreateMissingParamError: vi.fn().mockResolvedValue("Missing parameter error"),
 			ask: vi.fn(),
 			cwd: "/test/project",
+			providerRef: {
+				deref: vi.fn().mockReturnValue({
+					getState: vi.fn().mockResolvedValue({
+						experiments: {
+							runSlashCommand: true,
+						},
+					}),
+				}),
+			},
 		}
 
 		mockAskApproval = vi.fn().mockResolvedValue(true)
@@ -151,9 +160,9 @@ describe("runSlashCommandTool", () => {
 		expect(mockAskApproval).toHaveBeenCalledWith(
 			"tool",
 			JSON.stringify({
-				tool: "runSlashCommand",
+				tool: "run_slash_command",
 				command: "init",
-				args: "(no arguments)",
+				args: undefined,
 				source: "built-in",
 				description: "Analyze codebase and create AGENTS.md",
 			}),
@@ -274,7 +283,7 @@ Deploy application to production`,
 		expect(mockTask.ask).toHaveBeenCalledWith(
 			"tool",
 			JSON.stringify({
-				tool: "runSlashCommand",
+				tool: "run_slash_command",
 				command: "init",
 				args: "",
 			}),
