@@ -349,6 +349,7 @@ export interface ClineSayTool {
 		| "insertContent"
 		| "generateImage"
 		| "imageGenerated"
+		| "runSlashCommand"
 	path?: string
 	diff?: string
 	content?: string
@@ -386,6 +387,11 @@ export interface ClineSayTool {
 	}>
 	question?: string
 	imageData?: string // Base64 encoded image data for generated images
+	// Properties for runSlashCommand tool
+	command?: string
+	args?: string
+	source?: string
+	description?: string
 }
 
 // Must keep in sync with system prompt.

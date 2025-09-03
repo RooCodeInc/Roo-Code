@@ -160,7 +160,7 @@ describe("runSlashCommandTool", () => {
 		expect(mockAskApproval).toHaveBeenCalledWith(
 			"tool",
 			JSON.stringify({
-				tool: "run_slash_command",
+				tool: "runSlashCommand",
 				command: "init",
 				args: undefined,
 				source: "built-in",
@@ -283,7 +283,7 @@ Deploy application to production`,
 		expect(mockTask.ask).toHaveBeenCalledWith(
 			"tool",
 			JSON.stringify({
-				tool: "run_slash_command",
+				tool: "runSlashCommand",
 				command: "init",
 				args: "",
 			}),

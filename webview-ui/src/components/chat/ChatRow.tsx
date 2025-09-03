@@ -791,8 +791,8 @@ export const ChatRowContent = ({
 						</div>
 					</>
 				)
-			case "run_slash_command" as any: {
-				const slashCommandInfo = tool as any
+			case "runSlashCommand": {
+				const slashCommandInfo = tool
 				return (
 					<>
 						<div style={headerStyle}>
@@ -1234,8 +1234,8 @@ export const ChatRowContent = ({
 					if (!sayTool) return null
 
 					switch (sayTool.tool) {
-						case "run_slash_command" as any: {
-							const slashCommandInfo = sayTool as any
+						case "runSlashCommand": {
+							const slashCommandInfo = sayTool
 							return (
 								<>
 									<div style={headerStyle}>
