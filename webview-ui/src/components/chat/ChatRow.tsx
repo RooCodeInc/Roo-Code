@@ -803,47 +803,60 @@ export const ChatRowContent = ({
 									: t("chat:slashCommand.didRun")}
 							</span>
 						</div>
-						<ToolUseBlock>
+						<div
+							style={{
+								marginTop: "4px",
+								backgroundColor: "var(--vscode-editor-background)",
+								border: "1px solid var(--vscode-editorGroup-border)",
+								borderRadius: "4px",
+								overflow: "hidden",
+								cursor: "pointer",
+							}}
+							onClick={handleToggleExpand}>
 							<ToolUseBlockHeader
 								style={{
 									display: "flex",
-									flexDirection: "column",
-									alignItems: "flex-start",
-									gap: "4px",
+									alignItems: "center",
+									justifyContent: "space-between",
 									padding: "10px 12px",
 								}}>
-								<div style={{ display: "flex", alignItems: "center", gap: "8px", width: "100%" }}>
-									<span style={{ fontWeight: "bold", fontSize: "var(--vscode-font-size)" }}>
+								<div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+									<span style={{ fontWeight: "500", fontSize: "var(--vscode-font-size)" }}>
 										/{slashCommandInfo.command}
 									</span>
-									{slashCommandInfo.args && (
-										<span
-											style={{
-												color: "var(--vscode-descriptionForeground)",
-												fontSize: "var(--vscode-font-size)",
-											}}>
-											{slashCommandInfo.args}
-										</span>
-									)}
-								</div>
-								{slashCommandInfo.description && (
-									<div
-										style={{
-											color: "var(--vscode-descriptionForeground)",
-											fontSize: "calc(var(--vscode-font-size) - 1px)",
-										}}>
-										{slashCommandInfo.description}
-									</div>
-								)}
-								{slashCommandInfo.source && (
-									<div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+									{slashCommandInfo.source && (
 										<VSCodeBadge style={{ fontSize: "calc(var(--vscode-font-size) - 2px)" }}>
 											{slashCommandInfo.source}
 										</VSCodeBadge>
-									</div>
-								)}
+									)}
+								</div>
+								<span className={`codicon codicon-chevron-${isExpanded ? "up" : "down"}`}></span>
 							</ToolUseBlockHeader>
-						</ToolUseBlock>
+							{isExpanded && (slashCommandInfo.args || slashCommandInfo.description) && (
+								<div
+									style={{
+										padding: "12px 16px",
+										borderTop: "1px solid var(--vscode-editorGroup-border)",
+										display: "flex",
+										flexDirection: "column",
+										gap: "8px",
+									}}>
+									{slashCommandInfo.args && (
+										<div>
+											<span style={{ fontWeight: "500" }}>Arguments: </span>
+											<span style={{ color: "var(--vscode-descriptionForeground)" }}>
+												{slashCommandInfo.args}
+											</span>
+										</div>
+									)}
+									{slashCommandInfo.description && (
+										<div style={{ color: "var(--vscode-descriptionForeground)" }}>
+											{slashCommandInfo.description}
+										</div>
+									)}
+								</div>
+							)}
+						</div>
 					</>
 				)
 			}

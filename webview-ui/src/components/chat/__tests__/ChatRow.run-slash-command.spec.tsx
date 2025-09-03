@@ -32,13 +32,13 @@ vi.mock("@vscode/webview-ui-toolkit/react", () => ({
 
 const queryClient = new QueryClient()
 
-const renderChatRowWithProviders = (message: any) => {
+const renderChatRowWithProviders = (message: any, isExpanded = false) => {
 	return render(
 		<ExtensionStateContextProvider>
 			<QueryClientProvider client={queryClient}>
 				<ChatRowContent
 					message={message}
-					isExpanded={false}
+					isExpanded={isExpanded}
 					isLast={false}
 					isStreaming={false}
 					onToggleExpand={mockOnToggleExpand}
@@ -95,7 +95,7 @@ describe("ChatRow - run_slash_command tool", () => {
 			partial: false,
 		}
 
-		const { getByText } = renderChatRowWithProviders(message)
+		const { getByText } = renderChatRowWithProviders(message, true) // Pass true to expand
 
 		expect(getByText("Roo wants to run slash command:")).toBeInTheDocument()
 		expect(getByText("/test")).toBeInTheDocument()
