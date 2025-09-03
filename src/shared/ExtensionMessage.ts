@@ -71,6 +71,7 @@ export interface ExtensionMessage {
 		| "invoke"
 		| "messageUpdated"
 		| "mcpServers"
+		| "recommendedMcpConfigs"
 		| "enhancedPrompt"
 		| "commitSearchResults"
 		| "listApiConfig"
@@ -198,6 +199,7 @@ export interface ExtensionMessage {
 	context?: string
 	commands?: Command[]
 	queuedMessages?: QueuedMessage[]
+	recommendations?: any[] // For MCP recommendations
 }
 
 export type ExtensionState = Pick<

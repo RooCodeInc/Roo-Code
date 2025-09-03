@@ -974,6 +974,34 @@ export const webviewMessageHandler = async (
 
 			break
 		}
+		case "getRecommendedMcpConfigs": {
+			const mcpHub = provider.getMcpHub()
+
+			if (mcpHub) {
+				const recommendations = await mcpHub.getRecommendedConfigurations()
+				provider.postMessageToWebview({
+					type: "recommendedMcpConfigs",
+					recommendations,
+				})
+			}
+			break
+		}
+		case "applyRecommendedMcpConfigs": {
+			const mcpHub = provider.getMcpHub()
+
+			if (mcpHub && message.recommendations) {
+				try {
+					await mcpHub.applyRecommendedConfigurations(message.recommendations, message.target || "project")
+					vscode.window.showInformationMessage(
+						t("mcp:info.recommendations_applied", { count: message.recommendations.length }),
+					)
+				} catch (error) {
+					const errorMessage = error instanceof Error ? error.message : String(error)
+					vscode.window.showErrorMessage(t("mcp:errors.apply_recommendations", { error: errorMessage }))
+				}
+			}
+			break
+		}
 		case "soundEnabled":
 			const soundEnabled = message.bool ?? true
 			await updateGlobalState("soundEnabled", soundEnabled)

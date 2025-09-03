@@ -32,6 +32,7 @@ import {
 import { fileExistsAtPath } from "../../utils/fs"
 import { arePathsEqual } from "../../utils/path"
 import { injectVariables } from "../../utils/config"
+import { McpConfigAnalyzer, McpRecommendation } from "./McpConfigAnalyzer"
 
 // Discriminated union for connection states
 export type ConnectedMcpConnection = {
@@ -1783,6 +1784,86 @@ export class McpHub {
 				vscode.window.showErrorMessage(t("mcp:errors.refresh_after_enable"))
 			}
 		}
+	}
+
+	/**
+	 * Analyzes the project and returns MCP configuration recommendations
+	 * @returns Promise<McpRecommendation[]> Array of recommended MCP configurations
+	 */
+	async getRecommendedConfigurations(): Promise<McpRecommendation[]> {
+		const workspaceFolder = vscode.workspace.workspaceFolders?.[0]
+		if (!workspaceFolder) {
+			return []
+		}
+
+		try {
+			const analyzer = new McpConfigAnalyzer(workspaceFolder)
+			const result = await analyzer.analyzeProject()
+			return result.recommendations
+		} catch (error) {
+			console.error("Failed to analyze project for MCP recommendations:", error)
+			return []
+		}
+	}
+
+	/**
+	 * Applies recommended MCP configurations to the settings
+	 * @param recommendations Array of MCP recommendations to apply
+	 * @param target Whether to apply to global or project settings
+	 */
+	async applyRecommendedConfigurations(
+		recommendations: McpRecommendation[],
+		target: "global" | "project" = "project",
+	): Promise<void> {
+		// Determine which config file to update
+		let configPath: string
+		if (target === "project") {
+			// Ensure project MCP directory and file exist
+			const workspaceFolder = vscode.workspace.workspaceFolders?.[0]
+			if (!workspaceFolder) {
+				throw new Error("No workspace folder found")
+			}
+
+			const projectMcpDir = path.join(workspaceFolder.uri.fsPath, ".roo")
+			const projectMcpPath = path.join(projectMcpDir, "mcp.json")
+
+			// Create directory if it doesn't exist
+			await fs.mkdir(projectMcpDir, { recursive: true })
+
+			// Create file if it doesn't exist
+			if (!(await fileExistsAtPath(projectMcpPath))) {
+				await fs.writeFile(projectMcpPath, JSON.stringify({ mcpServers: {} }, null, 2))
+			}
+
+			configPath = projectMcpPath
+		} else {
+			configPath = await this.getMcpSettingsFilePath()
+		}
+
+		// Read existing configuration
+		const content = await fs.readFile(configPath, "utf-8")
+		const config = JSON.parse(content)
+
+		if (!config.mcpServers) {
+			config.mcpServers = {}
+		}
+
+		// Apply each recommendation
+		for (const recommendation of recommendations) {
+			// Only apply if confidence is above threshold (e.g., 70%)
+			if (recommendation.confidence >= 70) {
+				config.mcpServers[recommendation.serverName] = recommendation.config
+			}
+		}
+
+		// Write updated configuration
+		await fs.writeFile(configPath, JSON.stringify(config, null, 2))
+
+		// Update server connections
+		await this.updateServerConnections(config.mcpServers, target)
+
+		// Notify webview of changes
+		await this.notifyWebviewOfServerChanges()
 	}
 
 	async dispose(): Promise<void> {

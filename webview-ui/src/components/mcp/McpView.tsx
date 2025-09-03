@@ -33,6 +33,7 @@ import McpToolRow from "./McpToolRow"
 import McpResourceRow from "./McpResourceRow"
 import McpEnabledToggle from "./McpEnabledToggle"
 import { McpErrorRow } from "./McpErrorRow"
+import McpRecommendations from "./McpRecommendations"
 
 type McpViewProps = {
 	onDone: () => void
@@ -74,6 +75,8 @@ const McpView = ({ onDone }: McpViewProps) => {
 				</div>
 
 				<McpEnabledToggle />
+
+				<McpRecommendations />
 
 				{mcpEnabled && (
 					<>
