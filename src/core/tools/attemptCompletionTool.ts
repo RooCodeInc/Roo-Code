@@ -89,6 +89,21 @@ export async function attemptCompletionTool(
 
 			cline.consecutiveMistakeCount = 0
 
+			// Create final checkpoint to capture the last file edit before completion
+			if (cline.enableCheckpoints) {
+				try {
+					await cline.checkpointSave(true) // Force save to capture any final changes
+					cline.providerRef
+						.deref()
+						?.log("[attemptCompletionTool] Created final checkpoint before task completion")
+				} catch (error) {
+					// Non-critical error, don't fail completion
+					cline.providerRef
+						.deref()
+						?.log(`[attemptCompletionTool] Failed to create final checkpoint: ${error}`)
+				}
+			}
+
 			// Command execution is permanently disabled in attempt_completion
 			// Users must use execute_command tool separately before attempt_completion
 			await cline.say("completion_result", result, undefined, false)

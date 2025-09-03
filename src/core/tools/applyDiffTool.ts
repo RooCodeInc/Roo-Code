@@ -230,6 +230,13 @@ export async function applyDiffToolLegacy(
 			// Get the formatted response message
 			const message = await cline.diffViewProvider.pushToolWriteResult(cline, cline.cwd, !fileExists)
 
+			// Track file as edited by LLM for FCO
+			try {
+				await cline.fileContextTracker.trackFileContext(relPath.toString(), "roo_edited")
+			} catch (error) {
+				console.error("Failed to track file edit in context:", error)
+			}
+
 			// Check for single SEARCH/REPLACE block warning
 			const searchBlocks = (diffContent.match(/<<<<<<< SEARCH/g) || []).length
 			const singleBlockNotice =

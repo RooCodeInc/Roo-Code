@@ -49,8 +49,9 @@ import {
 } from "@src/components/ui"
 
 import { Tab, TabContent, TabHeader, TabList, TabTrigger } from "../common/Tab"
-import { SetCachedStateField, SetExperimentEnabled } from "./types"
+import { SetExperimentEnabled } from "./types"
 import { SectionHeader } from "./SectionHeader"
+import type { SetCachedStateField } from "./types"
 import ApiConfigManager from "./ApiConfigManager"
 import ApiOptions from "./ApiOptions"
 import { AutoApproveSettings } from "./AutoApproveSettings"
@@ -181,6 +182,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		includeDiagnosticMessages,
 		maxDiagnosticMessages,
 		includeTaskHistoryInEnhance,
+		filesChangedEnabled,
 		openRouterImageApiKey,
 		openRouterImageGenerationSelectedModel,
 	} = cachedState
@@ -345,6 +347,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 			vscode.postMessage({ type: "maxConcurrentFileReads", value: cachedState.maxConcurrentFileReads ?? 5 })
 			vscode.postMessage({ type: "includeDiagnosticMessages", bool: includeDiagnosticMessages })
 			vscode.postMessage({ type: "maxDiagnosticMessages", value: maxDiagnosticMessages ?? 50 })
+			vscode.postMessage({ type: "filesChangedEnabled", bool: filesChangedEnabled })
 			vscode.postMessage({ type: "currentApiConfigName", text: currentApiConfigName })
 			vscode.postMessage({ type: "updateExperimental", values: experiments })
 			vscode.postMessage({ type: "alwaysAllowModeSwitch", bool: alwaysAllowModeSwitch })
@@ -742,6 +745,8 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 						<ExperimentalSettings
 							setExperimentEnabled={setExperimentEnabled}
 							experiments={experiments}
+							filesChangedEnabled={filesChangedEnabled}
+							setCachedStateField={setCachedStateField as SetCachedStateField<"filesChangedEnabled">}
 							apiConfiguration={apiConfiguration}
 							setApiConfigurationField={setApiConfigurationField}
 							openRouterImageApiKey={openRouterImageApiKey as string | undefined}

@@ -40,7 +40,9 @@ vi.mock("vscode", () => ({
 		},
 	},
 	window: {
-		createTextEditorDecorationType: vi.fn(),
+		createTextEditorDecorationType: vi.fn(() => ({
+			dispose: vi.fn(),
+		})),
 		showTextDocument: vi.fn(),
 		onDidChangeVisibleTextEditors: vi.fn(() => ({ dispose: vi.fn() })),
 		tabGroups: {

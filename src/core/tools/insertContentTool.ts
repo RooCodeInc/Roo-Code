@@ -176,9 +176,11 @@ export async function insertContentTool(
 			await cline.diffViewProvider.saveChanges(diagnosticsEnabled, writeDelayMs)
 		}
 
-		// Track file edit operation
-		if (relPath) {
-			await cline.fileContextTracker.trackFileContext(relPath, "roo_edited" as RecordSource)
+		// Track file edit operation for FCO
+		try {
+			await cline.fileContextTracker.trackFileContext(relPath, "roo_edited")
+		} catch (error) {
+			console.error("Failed to track file edit in context:", error)
 		}
 
 		cline.didEditFile = true

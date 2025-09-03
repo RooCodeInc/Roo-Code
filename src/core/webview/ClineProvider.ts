@@ -90,6 +90,7 @@ import { getSystemPromptFilePath } from "../prompts/sections/custom-system-promp
 import { webviewMessageHandler } from "./webviewMessageHandler"
 import { getNonce } from "./getNonce"
 import { getUri } from "./getUri"
+import { FCOMessageHandler } from "../../services/file-changes/FCOMessageHandler"
 
 /**
  * https://github.com/microsoft/vscode-webview-ui-toolkit-samples/blob/main/default/weather-webview/src/providers/WeatherViewProvider.ts
@@ -120,6 +121,7 @@ export class ClineProvider
 	private taskEventListeners: WeakMap<Task, Array<() => void>> = new WeakMap()
 
 	private recentTasksCache?: string[]
+	private globalFileChangeManager?: import("../../services/file-changes/FileChangeManager").FileChangeManager
 
 	public isViewLaunched = false
 	public settingsImportedAt?: number
@@ -474,6 +476,8 @@ export class ClineProvider
 		this.mcpHub = undefined
 		this.marketplaceManager?.cleanup()
 		this.customModesManager?.dispose()
+		this.globalFileChangeManager?.dispose()
+		this.globalFileChangeManager = undefined
 		this.log("Disposed all disposables")
 		ClineProvider.activeInstances.delete(this)
 
@@ -710,7 +714,9 @@ export class ClineProvider
 		await this.removeClineFromStack()
 	}
 
-	public async createTaskWithHistoryItem(historyItem: HistoryItem & { rootTask?: Task; parentTask?: Task }) {
+	public async createTaskWithHistoryItem(
+		historyItem: HistoryItem & { rootTask?: Task; parentTask?: Task; preservedFCOState?: any },
+	) {
 		await this.removeClineFromStack()
 
 		// If the history item has a saved mode, restore it and its associated API configuration.
@@ -787,6 +793,37 @@ export class ClineProvider
 		this.log(
 			`[createTaskWithHistoryItem] ${task.parentTask ? "child" : "parent"} task ${task.taskId}.${task.instanceId} instantiated`,
 		)
+
+		// Restore preserved FCO state if provided (from task abort/cancel)
+		if (historyItem.preservedFCOState) {
+			try {
+				const fileChangeManager = await this.ensureFileChangeManager()
+				if (fileChangeManager && historyItem.preservedFCOState.files) {
+					// Restore the file changes in FileChangeManager
+					fileChangeManager.setFiles(historyItem.preservedFCOState.files)
+
+					// Send restored FCO state to webview
+					const filteredChangeset = await fileChangeManager.getLLMOnlyChanges(
+						task.taskId,
+						task.fileContextTracker,
+					)
+
+					if (filteredChangeset.files.length > 0) {
+						this.postMessageToWebview({
+							type: "filesChanged",
+							filesChanged: filteredChangeset,
+						})
+
+						this.log(
+							`[createTaskWithHistoryItem] Restored FCO state with ${filteredChangeset.files.length} LLM-only file changes`,
+						)
+					}
+				}
+			} catch (error) {
+				this.log(`[createTaskWithHistoryItem] Failed to restore FCO state: ${error}`)
+				// Non-critical error, don't fail task creation
+			}
+		}
 
 		return task
 	}
@@ -971,8 +1008,17 @@ export class ClineProvider
 	 * @param webview A reference to the extension webview
 	 */
 	private setWebviewMessageListener(webview: vscode.Webview) {
-		const onReceiveMessage = async (message: WebviewMessage) =>
-			webviewMessageHandler(this, message, this.marketplaceManager)
+		const onReceiveMessage = async (message: WebviewMessage) => {
+			// Handle FCO messages first
+			const fcoMessageHandler = new FCOMessageHandler(this)
+			if (fcoMessageHandler.shouldHandleMessage(message)) {
+				await fcoMessageHandler.handleMessage(message)
+				return
+			}
+
+			// Delegate to main message handler
+			await webviewMessageHandler(this, message, this.marketplaceManager)
+		}
 
 		const messageDisposable = webview.onDidReceiveMessage(onReceiveMessage)
 		this.webviewDisposables.push(messageDisposable)
@@ -1165,9 +1211,46 @@ export class ClineProvider
 
 		await this.postStateToWebview()
 
+	}
+
+	// Task Management
+
+	async cancelTask() {
+		const cline = this.getCurrentTask()
+
+		if (!cline) {
+			return
+		}
+
+		console.log(`[subtasks] cancelling task ${cline.taskId}.${cline.instanceId}`)
+
+		const { historyItem } = await this.getTaskWithId(cline.taskId)
+		// Preserve parent and root task information for history item.
+		const rootTask = cline.rootTask
+		const parentTask = cline.parentTask
+
+		// Preserve FCO state before aborting task to prevent FCO from disappearing
+		let preservedFCOState: any = undefined
+		try {
+			const fileChangeManager = this.getFileChangeManager()
+			if (fileChangeManager) {
+				preservedFCOState = fileChangeManager.getChanges()
+				this.log(`[cancelTask] Preserved FCO state with ${preservedFCOState.files.length} files`)
+			}
+		} catch (error) {
+			this.log(`[cancelTask] Failed to preserve FCO state: ${error}`)
+		}
+
+		cline.abortTask()
+
+
 		if (providerSettings.apiProvider) {
 			this.emit(RooCodeEventName.ProviderProfileChanged, { name, provider: providerSettings.apiProvider })
 		}
+
+		// Clears task again, so we need to abortTask manually above.
+		await this.createTaskWithHistoryItem({ ...historyItem, rootTask, parentTask, preservedFCOState })
+
 	}
 
 	async updateCustomInstructions(instructions?: string) {
@@ -1751,7 +1834,8 @@ export class ClineProvider
 			includeDiagnosticMessages: includeDiagnosticMessages ?? true,
 			maxDiagnosticMessages: maxDiagnosticMessages ?? 50,
 			includeTaskHistoryInEnhance: includeTaskHistoryInEnhance ?? true,
-			remoteControlEnabled,
+			remoteControlEnabled: remoteControlEnabled ?? false,
+			filesChangedEnabled: this.getGlobalState("filesChangedEnabled") ?? true,
 			openRouterImageApiKey,
 			openRouterImageGenerationSelectedModel,
 		}
@@ -1983,7 +2067,7 @@ export class ClineProvider
 	}
 
 	// @deprecated - Use `ContextProxy#getValue` instead.
-	private getGlobalState<K extends keyof GlobalState>(key: K) {
+	public getGlobalState<K extends keyof GlobalState>(key: K) {
 		return this.contextProxy.getValue(key)
 	}
 
@@ -2532,5 +2616,21 @@ export class ClineProvider
 			// Return file URI as fallback
 			return vscode.Uri.file(filePath).toString()
 		}
+	}
+
+	public getFileChangeManager():
+		| import("../../services/file-changes/FileChangeManager").FileChangeManager
+		| undefined {
+		return this.globalFileChangeManager
+	}
+
+	public async ensureFileChangeManager(): Promise<
+		import("../../services/file-changes/FileChangeManager").FileChangeManager
+	> {
+		if (!this.globalFileChangeManager) {
+			const { FileChangeManager } = await import("../../services/file-changes/FileChangeManager")
+			this.globalFileChangeManager = new FileChangeManager("HEAD")
+		}
+		return this.globalFileChangeManager
 	}
 }

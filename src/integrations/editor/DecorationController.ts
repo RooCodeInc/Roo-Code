@@ -1,17 +1,30 @@
 import * as vscode from "vscode"
 
-const fadedOverlayDecorationType = vscode.window.createTextEditorDecorationType({
-	backgroundColor: "rgba(255, 255, 0, 0.1)",
-	opacity: "0.4",
-	isWholeLine: true,
-})
+let fadedOverlayDecorationType: vscode.TextEditorDecorationType | undefined
+let activeLineDecorationType: vscode.TextEditorDecorationType | undefined
 
-const activeLineDecorationType = vscode.window.createTextEditorDecorationType({
-	backgroundColor: "rgba(255, 255, 0, 0.3)",
-	opacity: "1",
-	isWholeLine: true,
-	border: "1px solid rgba(255, 255, 0, 0.5)",
-})
+function getFadedOverlayDecorationType(): vscode.TextEditorDecorationType {
+	if (!fadedOverlayDecorationType) {
+		fadedOverlayDecorationType = vscode.window.createTextEditorDecorationType({
+			backgroundColor: "rgba(255, 255, 0, 0.1)",
+			opacity: "0.4",
+			isWholeLine: true,
+		})
+	}
+	return fadedOverlayDecorationType
+}
+
+function getActiveLineDecorationType(): vscode.TextEditorDecorationType {
+	if (!activeLineDecorationType) {
+		activeLineDecorationType = vscode.window.createTextEditorDecorationType({
+			backgroundColor: "rgba(255, 255, 0, 0.3)",
+			opacity: "1",
+			isWholeLine: true,
+			border: "1px solid rgba(255, 255, 0, 0.5)",
+		})
+	}
+	return activeLineDecorationType
+}
 
 type DecorationType = "fadedOverlay" | "activeLine"
 
@@ -28,9 +41,9 @@ export class DecorationController {
 	getDecoration() {
 		switch (this.decorationType) {
 			case "fadedOverlay":
-				return fadedOverlayDecorationType
+				return getFadedOverlayDecorationType()
 			case "activeLine":
-				return activeLineDecorationType
+				return getActiveLineDecorationType()
 		}
 	}
 
