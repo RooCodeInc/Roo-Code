@@ -12,7 +12,12 @@
 		"title": "Settings",
 		"saveButtonTooltip": "Save changes",
 		"nothingChangedTooltip": "Nothing changed",
-		"doneButtonTooltip": "Discard unsaved changes and close settings panel"
+		"doneButtonTooltip": "Close settings panel"
+	},
+	"status": {
+		"saving": "Saving changes...",
+		"saved": "All changes saved",
+		"error": "Failed to save changes"
 	},
 	"unsavedChangesDialog": {
 		"title": "Unsaved Changes",

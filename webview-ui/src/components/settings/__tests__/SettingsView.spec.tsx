@@ -292,7 +292,7 @@ describe("SettingsView - Sound Settings", () => {
 		expect(screen.queryByTestId("sound-volume-slider")).not.toBeInTheDocument()
 	})
 
-	it("toggles tts setting and sends message to VSCode", () => {
+	it("toggles tts setting and auto-saves to VSCode", async () => {
 		// Render once and get the activateTab helper
 		const { activateTab } = renderSettingsView()
 
@@ -305,9 +305,8 @@ describe("SettingsView - Sound Settings", () => {
 		fireEvent.click(ttsCheckbox)
 		expect(ttsCheckbox).toBeChecked()
 
-		// Click Save to save settings
-		const saveButton = screen.getByTestId("save-button")
-		fireEvent.click(saveButton)
+		// Wait for auto-save debounce (500ms)
+		await new Promise((resolve) => setTimeout(resolve, 600))
 
 		expect(vscode.postMessage).toHaveBeenCalledWith(
 			expect.objectContaining({
@@ -317,7 +316,7 @@ describe("SettingsView - Sound Settings", () => {
 		)
 	})
 
-	it("toggles sound setting and sends message to VSCode", () => {
+	it("toggles sound setting and auto-saves to VSCode", async () => {
 		// Render once and get the activateTab helper
 		const { activateTab } = renderSettingsView()
 
@@ -330,9 +329,8 @@ describe("SettingsView - Sound Settings", () => {
 		fireEvent.click(soundCheckbox)
 		expect(soundCheckbox).toBeChecked()
 
-		// Click Save to save settings
-		const saveButton = screen.getByTestId("save-button")
-		fireEvent.click(saveButton)
+		// Wait for auto-save debounce (500ms)
+		await new Promise((resolve) => setTimeout(resolve, 600))
 
 		expect(vscode.postMessage).toHaveBeenCalledWith(
 			expect.objectContaining({
@@ -376,7 +374,7 @@ describe("SettingsView - Sound Settings", () => {
 		expect(volumeSlider).toHaveValue("0.5")
 	})
 
-	it("updates speed and sends message to VSCode when slider changes", () => {
+	it("updates speed and auto-saves to VSCode when slider changes", async () => {
 		// Render once and get the activateTab helper
 		const { activateTab } = renderSettingsView()
 
@@ -391,9 +389,8 @@ describe("SettingsView - Sound Settings", () => {
 		const speedSlider = screen.getByTestId("tts-speed-slider")
 		fireEvent.change(speedSlider, { target: { value: "0.75" } })
 
-		// Click Save to save settings
-		const saveButton = screen.getByTestId("save-button")
-		fireEvent.click(saveButton)
+		// Wait for auto-save debounce (500ms)
+		await new Promise((resolve) => setTimeout(resolve, 600))
 
 		// Verify message sent to VSCode
 		expect(vscode.postMessage).toHaveBeenCalledWith({
@@ -402,7 +399,7 @@ describe("SettingsView - Sound Settings", () => {
 		})
 	})
 
-	it("updates volume and sends message to VSCode when slider changes", () => {
+	it("updates volume and auto-saves to VSCode when slider changes", async () => {
 		// Render once and get the activateTab helper
 		const { activateTab } = renderSettingsView()
 
@@ -417,9 +414,8 @@ describe("SettingsView - Sound Settings", () => {
 		const volumeSlider = screen.getByTestId("sound-volume-slider")
 		fireEvent.change(volumeSlider, { target: { value: "0.75" } })
 
-		// Click Save to save settings - use getAllByTestId to handle multiple elements
-		const saveButtons = screen.getAllByTestId("save-button")
-		fireEvent.click(saveButtons[0])
+		// Wait for auto-save debounce (500ms)
+		await new Promise((resolve) => setTimeout(resolve, 600))
 
 		// Verify message sent to VSCode
 		expect(vscode.postMessage).toHaveBeenCalledWith({
@@ -536,14 +532,14 @@ describe("SettingsView - Allowed Commands", () => {
 			expect(screen.getByTestId("api-config-management")).toBeInTheDocument()
 		})
 
-		it("shows unsaved changes dialog when clicking Done with unsaved changes", () => {
+		it("does not show unsaved changes dialog with auto-save", () => {
 			// Render once and get the activateTab helper
-			const { activateTab } = renderSettingsView()
+			const { activateTab, onDone } = renderSettingsView()
 
 			// Activate the notifications tab
 			activateTab("notifications")
 
-			// Make a change to create unsaved changes
+			// Make a change (which will auto-save)
 			const soundCheckbox = screen.getByTestId("sound-enabled-checkbox")
 			fireEvent.click(soundCheckbox)
 
@@ -551,8 +547,10 @@ describe("SettingsView - Allowed Commands", () => {
 			const doneButton = screen.getByText("settings:common.done")
 			fireEvent.click(doneButton)
 
-			// Check that unsaved changes dialog is shown
-			expect(screen.getByText("settings:unsavedChangesDialog.title")).toBeInTheDocument()
+			// Check that onDone was called directly (no dialog)
+			expect(onDone).toHaveBeenCalled()
+			// Check that unsaved changes dialog is NOT shown
+			expect(screen.queryByText("settings:unsavedChangesDialog.title")).not.toBeInTheDocument()
 		})
 
 		it("renders with targetSection prop", () => {
@@ -607,7 +605,7 @@ describe("SettingsView - Duplicate Commands", () => {
 		expect(commands).toHaveLength(1)
 	})
 
-	it("saves allowed commands when clicking Save", () => {
+	it("auto-saves allowed commands when added", async () => {
 		// Render once and get the activateTab helper
 		const { activateTab } = renderSettingsView()
 
@@ -624,9 +622,8 @@ describe("SettingsView - Duplicate Commands", () => {
 		const addButton = screen.getByTestId("add-command-button")
 		fireEvent.click(addButton)
 
-		// Click Save - use getAllByTestId to handle multiple elements
-		const saveButtons = screen.getAllByTestId("save-button")
-		fireEvent.click(saveButtons[0])
+		// Wait for auto-save debounce (500ms)
+		await new Promise((resolve) => setTimeout(resolve, 600))
 
 		// Verify VSCode messages were sent
 		expect(vscode.postMessage).toHaveBeenCalledWith(

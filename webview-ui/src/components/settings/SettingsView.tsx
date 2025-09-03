@@ -18,12 +18,13 @@ import {
 	Database,
 	SquareTerminal,
 	FlaskConical,
-	AlertTriangle,
 	Globe,
 	Info,
 	MessageSquare,
 	LucideIcon,
+	Circle,
 } from "lucide-react"
+import { useDebounce } from "react-use"
 
 import type { ProviderSettings, ExperimentId, TelemetrySetting } from "@roo-code/types"
 
@@ -31,22 +32,7 @@ import { vscode } from "@src/utils/vscode"
 import { cn } from "@src/lib/utils"
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { ExtensionStateContextType, useExtensionState } from "@src/context/ExtensionStateContext"
-import {
-	AlertDialog,
-	AlertDialogContent,
-	AlertDialogTitle,
-	AlertDialogDescription,
-	AlertDialogCancel,
-	AlertDialogAction,
-	AlertDialogHeader,
-	AlertDialogFooter,
-	Button,
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-	StandardTooltip,
-} from "@src/components/ui"
+import { Button, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, StandardTooltip } from "@src/components/ui"
 
 import { Tab, TabContent, TabHeader, TabList, TabTrigger } from "../common/Tab"
 import { SetCachedStateField, SetExperimentEnabled } from "./types"
@@ -103,17 +89,16 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 	const extensionState = useExtensionState()
 	const { currentApiConfigName, listApiConfigMeta, uriScheme, settingsImportedAt } = extensionState
 
-	const [isDiscardDialogShow, setDiscardDialogShow] = useState(false)
-	const [isChangeDetected, setChangeDetected] = useState(false)
 	const [errorMessage, setErrorMessage] = useState<string | undefined>(undefined)
 	const [activeTab, setActiveTab] = useState<SectionName>(
 		targetSection && sectionNames.includes(targetSection as SectionName)
 			? (targetSection as SectionName)
 			: "providers",
 	)
+	const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle")
+	const [saveError, setSaveError] = useState<string | undefined>(undefined)
 
 	const prevApiConfigName = useRef(currentApiConfigName)
-	const confirmDialogHandler = useRef<() => void>()
 
 	const [cachedState, setCachedState] = useState(extensionState)
 
@@ -196,14 +181,14 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 
 		setCachedState((prevCachedState) => ({ ...prevCachedState, ...extensionState }))
 		prevApiConfigName.current = currentApiConfigName
-		setChangeDetected(false)
-	}, [currentApiConfigName, extensionState, isChangeDetected])
+		setSaveStatus("idle")
+	}, [currentApiConfigName, extensionState])
 
 	// Bust the cache when settings are imported.
 	useEffect(() => {
 		if (settingsImportedAt) {
 			setCachedState((prevCachedState) => ({ ...prevCachedState, ...extensionState }))
-			setChangeDetected(false)
+			setSaveStatus("idle")
 		}
 	}, [settingsImportedAt, extensionState])
 
@@ -213,7 +198,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 				return prevState
 			}
 
-			setChangeDetected(true)
+			setSaveStatus("idle") // Reset to idle when changes are made
 			return { ...prevState, [field]: value }
 		})
 	}, [])
@@ -232,7 +217,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 				const isInitialSync = !isUserAction && previousValue === undefined && value !== undefined
 
 				if (!isInitialSync) {
-					setChangeDetected(true)
+					setSaveStatus("idle") // Reset to idle when changes are made
 				}
 				return { ...prevState, apiConfiguration: { ...prevState.apiConfiguration, [field]: value } }
 			})
@@ -246,7 +231,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 				return prevState
 			}
 
-			setChangeDetected(true)
+			setSaveStatus("idle") // Reset to idle when changes are made
 			return { ...prevState, experiments: { ...prevState.experiments, [id]: enabled } }
 		})
 	}, [])
@@ -257,21 +242,21 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 				return prevState
 			}
 
-			setChangeDetected(true)
+			setSaveStatus("idle") // Reset to idle when changes are made
 			return { ...prevState, telemetrySetting: setting }
 		})
 	}, [])
 
 	const setOpenRouterImageApiKey = useCallback((apiKey: string) => {
 		setCachedState((prevState) => {
-			setChangeDetected(true)
+			setSaveStatus("idle") // Reset to idle when changes are made
 			return { ...prevState, openRouterImageApiKey: apiKey }
 		})
 	}, [])
 
 	const setImageGenerationSelectedModel = useCallback((model: string) => {
 		setCachedState((prevState) => {
-			setChangeDetected(true)
+			setSaveStatus("idle") // Reset to idle when changes are made
 			return { ...prevState, openRouterImageGenerationSelectedModel: model }
 		})
 	}, [])
@@ -282,15 +267,24 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 				return prevState
 			}
 
-			setChangeDetected(true)
+			setSaveStatus("idle") // Reset to idle when changes are made
 			return { ...prevState, customSupportPrompts: prompts }
 		})
 	}, [])
 
 	const isSettingValid = !errorMessage
 
-	const handleSubmit = () => {
-		if (isSettingValid) {
+	const performSave = useCallback(() => {
+		if (!isSettingValid) {
+			setSaveStatus("error")
+			setSaveError(errorMessage)
+			return
+		}
+
+		setSaveStatus("saving")
+		setSaveError(undefined)
+
+		try {
 			vscode.postMessage({ type: "language", text: language })
 			vscode.postMessage({ type: "alwaysAllowReadOnly", bool: alwaysAllowReadOnly })
 			vscode.postMessage({
@@ -364,44 +358,126 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 				type: "openRouterImageGenerationSelectedModel",
 				text: openRouterImageGenerationSelectedModel,
 			})
-			setChangeDetected(false)
-		}
-	}
 
+			setSaveStatus("saved")
+			// Reset to idle after showing saved status for a bit
+			setTimeout(() => {
+				setSaveStatus("idle")
+			}, 2000)
+		} catch (error) {
+			setSaveStatus("error")
+			setSaveError(error instanceof Error ? error.message : "Failed to save settings")
+		}
+	}, [
+		isSettingValid,
+		errorMessage,
+		language,
+		alwaysAllowReadOnly,
+		alwaysAllowReadOnlyOutsideWorkspace,
+		alwaysAllowWrite,
+		alwaysAllowWriteOutsideWorkspace,
+		alwaysAllowWriteProtected,
+		alwaysAllowExecute,
+		alwaysAllowBrowser,
+		alwaysAllowMcp,
+		allowedCommands,
+		deniedCommands,
+		allowedMaxRequests,
+		allowedMaxCost,
+		autoCondenseContext,
+		autoCondenseContextPercent,
+		browserToolEnabled,
+		soundEnabled,
+		ttsEnabled,
+		ttsSpeed,
+		soundVolume,
+		diffEnabled,
+		enableCheckpoints,
+		browserViewportSize,
+		remoteBrowserHost,
+		remoteBrowserEnabled,
+		fuzzyMatchThreshold,
+		writeDelayMs,
+		screenshotQuality,
+		terminalOutputLineLimit,
+		terminalOutputCharacterLimit,
+		terminalShellIntegrationTimeout,
+		terminalShellIntegrationDisabled,
+		terminalCommandDelay,
+		terminalPowershellCounter,
+		terminalZshClearEolMark,
+		terminalZshOhMy,
+		terminalZshP10k,
+		terminalZdotdir,
+		terminalCompressProgressBar,
+		mcpEnabled,
+		alwaysApproveResubmit,
+		requestDelaySeconds,
+		maxOpenTabsContext,
+		maxWorkspaceFiles,
+		showRooIgnoredFiles,
+		maxReadFileLine,
+		maxImageFileSize,
+		maxTotalImageSize,
+		cachedState.maxConcurrentFileReads,
+		includeDiagnosticMessages,
+		maxDiagnosticMessages,
+		currentApiConfigName,
+		experiments,
+		alwaysAllowModeSwitch,
+		alwaysAllowSubtasks,
+		alwaysAllowFollowupQuestions,
+		alwaysAllowUpdateTodoList,
+		followupAutoApproveTimeoutMs,
+		condensingApiConfigId,
+		customCondensingPrompt,
+		customSupportPrompts,
+		includeTaskHistoryInEnhance,
+		apiConfiguration,
+		telemetrySetting,
+		profileThresholds,
+		openRouterImageApiKey,
+		openRouterImageGenerationSelectedModel,
+	])
+
+	// Auto-save with debouncing
+	useDebounce(
+		() => {
+			// Only auto-save if we have changes (status is idle) and settings are valid
+			if (saveStatus === "idle" && isSettingValid) {
+				performSave()
+			}
+		},
+		500, // 500ms debounce
+		[saveStatus, isSettingValid, performSave],
+	)
+
+	// Simplified checkUnsaveChanges - just execute the action immediately since we auto-save
 	const checkUnsaveChanges = useCallback(
 		(then: () => void) => {
-			if (isChangeDetected) {
-				confirmDialogHandler.current = then
-				setDiscardDialogShow(true)
+			// If we're currently saving, wait for it to complete
+			if (saveStatus === "saving") {
+				// Wait a bit for save to complete, then execute
+				setTimeout(then, 100)
 			} else {
 				then()
 			}
 		},
-		[isChangeDetected],
+		[saveStatus],
 	)
 
 	useImperativeHandle(ref, () => ({ checkUnsaveChanges }), [checkUnsaveChanges])
 
-	const onConfirmDialogResult = useCallback(
-		(confirm: boolean) => {
-			if (confirm) {
-				// Discard changes: Reset state and flag
-				setCachedState(extensionState) // Revert to original state
-				setChangeDetected(false) // Reset change flag
-				confirmDialogHandler.current?.() // Execute the pending action (e.g., tab switch)
-			}
-			// If confirm is false (Cancel), do nothing, dialog closes automatically
-		},
-		[extensionState], // Depend on extensionState to get the latest original state
-	)
-
-	// Handle tab changes with unsaved changes check
+	// Handle tab changes - no need to check for unsaved changes anymore
 	const handleTabChange = useCallback(
 		(newTab: SectionName) => {
-			// Directly switch tab without checking for unsaved changes
+			// Prevent tab switching while saving
+			if (saveStatus === "saving") {
+				return
+			}
 			setActiveTab(newTab)
 		},
-		[], // No dependency on isChangeDetected needed anymore
+		[saveStatus],
 	)
 
 	// Store direct DOM element refs for each tab
@@ -494,26 +570,32 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 				<div className="flex items-center gap-1">
 					<h3 className="text-vscode-foreground m-0">{t("settings:header.title")}</h3>
 				</div>
-				<div className="flex gap-2">
-					<StandardTooltip
-						content={
-							!isSettingValid
-								? errorMessage
-								: isChangeDetected
-									? t("settings:header.saveButtonTooltip")
-									: t("settings:header.nothingChangedTooltip")
-						}>
-						<Button
-							variant={isSettingValid ? "default" : "secondary"}
-							className={!isSettingValid ? "!border-vscode-errorForeground" : ""}
-							onClick={handleSubmit}
-							disabled={!isChangeDetected || !isSettingValid}
-							data-testid="save-button">
-							{t("settings:common.save")}
-						</Button>
-					</StandardTooltip>
+				<div className="flex items-center gap-2">
+					{/* Status indicator */}
+					<div className="flex items-center gap-1">
+						{saveStatus === "saving" && (
+							<StandardTooltip content={t("settings:status.saving")}>
+								<Circle className="w-3 h-3 fill-orange-500 text-orange-500" />
+							</StandardTooltip>
+						)}
+						{saveStatus === "saved" && (
+							<StandardTooltip content={t("settings:status.saved")}>
+								<Circle className="w-3 h-3 fill-green-500 text-green-500" />
+							</StandardTooltip>
+						)}
+						{saveStatus === "error" && (
+							<StandardTooltip content={saveError || t("settings:status.error")}>
+								<Circle className="w-3 h-3 fill-vscode-errorForeground text-vscode-errorForeground" />
+							</StandardTooltip>
+						)}
+						{saveStatus === "idle" && errorMessage && (
+							<StandardTooltip content={errorMessage}>
+								<Circle className="w-3 h-3 fill-gray-500 text-gray-500" />
+							</StandardTooltip>
+						)}
+					</div>
 					<StandardTooltip content={t("settings:header.doneButtonTooltip")}>
-						<Button variant="secondary" onClick={() => checkUnsaveChanges(onDone)}>
+						<Button variant="secondary" onClick={onDone}>
 							{t("settings:common.done")}
 						</Button>
 					</StandardTooltip>
@@ -594,11 +676,13 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 								<ApiConfigManager
 									currentApiConfigName={currentApiConfigName}
 									listApiConfigMeta={listApiConfigMeta}
-									onSelectConfig={(configName: string) =>
-										checkUnsaveChanges(() =>
-											vscode.postMessage({ type: "loadApiConfiguration", text: configName }),
-										)
-									}
+									onSelectConfig={(configName: string) => {
+										// Prevent profile switching while saving
+										if (saveStatus === "saving") {
+											return
+										}
+										vscode.postMessage({ type: "loadApiConfiguration", text: configName })
+									}}
 									onDeleteConfig={(configName: string) =>
 										vscode.postMessage({ type: "deleteApiConfiguration", text: configName })
 									}
@@ -764,28 +848,6 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					)}
 				</TabContent>
 			</div>
-
-			<AlertDialog open={isDiscardDialogShow} onOpenChange={setDiscardDialogShow}>
-				<AlertDialogContent>
-					<AlertDialogHeader>
-						<AlertDialogTitle>
-							<AlertTriangle className="w-5 h-5 text-yellow-500" />
-							{t("settings:unsavedChangesDialog.title")}
-						</AlertDialogTitle>
-						<AlertDialogDescription>
-							{t("settings:unsavedChangesDialog.description")}
-						</AlertDialogDescription>
-					</AlertDialogHeader>
-					<AlertDialogFooter>
-						<AlertDialogCancel onClick={() => onConfirmDialogResult(false)}>
-							{t("settings:unsavedChangesDialog.cancelButton")}
-						</AlertDialogCancel>
-						<AlertDialogAction onClick={() => onConfirmDialogResult(true)}>
-							{t("settings:unsavedChangesDialog.discardButton")}
-						</AlertDialogAction>
-					</AlertDialogFooter>
-				</AlertDialogContent>
-			</AlertDialog>
 		</Tab>
 	)
 })
