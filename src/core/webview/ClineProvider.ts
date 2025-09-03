@@ -2392,8 +2392,12 @@ export class ClineProvider
 	// Modes
 
 	public async getModes(): Promise<{ slug: string; name: string }[]> {
-		const customModes = await this.customModesManager.getCustomModes()
-		return [...DEFAULT_MODES, ...customModes].map((mode) => ({ slug: mode.slug, name: mode.name }))
+		try {
+			const customModes = await this.customModesManager.getCustomModes()
+			return [...DEFAULT_MODES, ...customModes].map(({ slug, name }) => ({ slug, name }))
+		} catch (error) {
+			return DEFAULT_MODES.map(({ slug, name }) => ({ slug, name }))
+		}
 	}
 
 	public async getMode(): Promise<string> {
