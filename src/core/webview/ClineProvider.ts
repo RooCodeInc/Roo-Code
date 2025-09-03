@@ -2095,7 +2095,6 @@ export class ClineProvider
 
 	public async remoteControlEnabled(enabled: boolean) {
 		const userInfo = CloudService.instance.getUserInfo()
-
 		const config = await CloudService.instance.cloudAPI?.bridgeConfig().catch(() => undefined)
 
 		if (!config) {
@@ -2107,6 +2106,7 @@ export class ClineProvider
 			...config,
 			provider: this,
 			sessionId: vscode.env.sessionId,
+			extensionMetadata: Package,
 		})
 
 		const bridge = BridgeOrchestrator.getInstance()

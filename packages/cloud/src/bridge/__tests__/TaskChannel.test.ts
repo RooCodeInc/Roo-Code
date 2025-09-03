@@ -21,6 +21,13 @@ describe("TaskChannel", () => {
 	let mockTask: TaskLike
 	const instanceId = "test-instance-123"
 	const taskId = "test-task-456"
+	const extensionMetadata = {
+		name: "roo-code",
+		publisher: "Roocode",
+		version: "1.0.0",
+		outputChannel: "Roo Code",
+		sha: undefined,
+	}
 
 	beforeEach(() => {
 		// Create mock socket
@@ -75,7 +82,10 @@ describe("TaskChannel", () => {
 		}
 
 		// Create task channel instance
-		taskChannel = new TaskChannel(instanceId)
+		taskChannel = new TaskChannel({
+			instanceId,
+			extensionMetadata,
+		})
 	})
 
 	afterEach(() => {

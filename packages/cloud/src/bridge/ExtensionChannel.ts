@@ -14,7 +14,12 @@ import {
 	HEARTBEAT_INTERVAL_MS,
 } from "@roo-code/types"
 
-import { BaseChannel } from "./BaseChannel.js"
+import { type BaseChannelOptions, BaseChannel } from "./BaseChannel.js"
+
+interface ExtensionChannelOptions extends BaseChannelOptions {
+	userId: string
+	provider: TaskProviderLike
+}
 
 /**
  * Manages the extension-level communication channel.
@@ -31,10 +36,11 @@ export class ExtensionChannel extends BaseChannel<
 	private heartbeatInterval: NodeJS.Timeout | null = null
 	private eventListeners: Map<RooCodeEventName, (...args: unknown[]) => void> = new Map()
 
-	constructor(instanceId: string, userId: string, provider: TaskProviderLike) {
-		super(instanceId)
-		this.userId = userId
-		this.provider = provider
+	constructor(options: ExtensionChannelOptions) {
+		super({ instanceId: options.instanceId, extensionMetadata: options.extensionMetadata })
+
+		this.userId = options.userId
+		this.provider = options.provider
 
 		this.extensionInstance = {
 			instanceId: this.instanceId,
@@ -53,11 +59,12 @@ export class ExtensionChannel extends BaseChannel<
 		this.setupListeners()
 	}
 
-	public async handleCommand(command: ExtensionBridgeCommand): Promise<void> {
+	protected async handleCommandImplementation(command: ExtensionBridgeCommand): Promise<void> {
 		if (command.instanceId !== this.instanceId) {
 			console.log(`[ExtensionChannel] command -> instance id mismatch | ${this.instanceId}`, {
 				messageInstanceId: command.instanceId,
 			})
+
 			return
 		}
 

@@ -6,6 +6,7 @@ import {
 	type CloudUserInfo,
 	type ExtensionBridgeCommand,
 	type TaskBridgeCommand,
+	type ExtensionMetadata,
 	ConnectionState,
 	ExtensionSocketEvents,
 	TaskSocketEvents,
@@ -21,6 +22,7 @@ export interface BridgeOrchestratorOptions {
 	token: string
 	provider: TaskProviderLike
 	sessionId?: string
+	extensionMetadata: ExtensionMetadata
 }
 
 /**
@@ -39,6 +41,7 @@ export class BridgeOrchestrator {
 	private readonly token: string
 	private readonly provider: TaskProviderLike
 	private readonly instanceId: string
+	private readonly extensionMetadata: ExtensionMetadata
 
 	// Components
 	private socketTransport: SocketTransport
@@ -61,66 +64,69 @@ export class BridgeOrchestrator {
 	public static async connectOrDisconnect(
 		userInfo: CloudUserInfo | null,
 		remoteControlEnabled: boolean | undefined,
-		options?: BridgeOrchestratorOptions,
+		options: BridgeOrchestratorOptions,
 	): Promise<void> {
-		const isEnabled = BridgeOrchestrator.isEnabled(userInfo, remoteControlEnabled)
+		if (BridgeOrchestrator.isEnabled(userInfo, remoteControlEnabled)) {
+			await BridgeOrchestrator.connect(options)
+		} else {
+			await BridgeOrchestrator.disconnect()
+		}
+	}
+
+	public static async connect(options: BridgeOrchestratorOptions) {
 		const instance = BridgeOrchestrator.instance
 
-		if (isEnabled) {
-			if (!instance) {
-				if (!options) {
-					console.error(
-						`[BridgeOrchestrator#connectOrDisconnect] Cannot connect: options are required for connection`,
-					)
-					return
-				}
-				try {
-					console.log(`[BridgeOrchestrator#connectOrDisconnect] Connecting...`)
-					BridgeOrchestrator.instance = new BridgeOrchestrator(options)
-					await BridgeOrchestrator.instance.connect()
-				} catch (error) {
-					console.error(
-						`[BridgeOrchestrator#connectOrDisconnect] connect() failed: ${error instanceof Error ? error.message : String(error)}`,
-					)
-				}
-			} else {
-				if (
-					instance.connectionState === ConnectionState.FAILED ||
-					instance.connectionState === ConnectionState.DISCONNECTED
-				) {
-					console.log(
-						`[BridgeOrchestrator#connectOrDisconnect] Re-connecting... (state: ${instance.connectionState})`,
-					)
-
-					instance.reconnect().catch((error) => {
-						console.error(
-							`[BridgeOrchestrator#connectOrDisconnect] reconnect() failed: ${error instanceof Error ? error.message : String(error)}`,
-						)
-					})
-				} else {
-					console.log(
-						`[BridgeOrchestrator#connectOrDisconnect] Already connected or connecting (state: ${instance.connectionState})`,
-					)
-				}
+		if (!instance) {
+			try {
+				console.log(`[BridgeOrchestrator#connectOrDisconnect] Connecting...`)
+				BridgeOrchestrator.instance = new BridgeOrchestrator(options)
+				await BridgeOrchestrator.instance.connect()
+			} catch (error) {
+				console.error(
+					`[BridgeOrchestrator#connectOrDisconnect] connect() failed: ${error instanceof Error ? error.message : String(error)}`,
+				)
 			}
 		} else {
-			if (instance) {
-				try {
-					console.log(
-						`[BridgeOrchestrator#connectOrDisconnect] Disconnecting... (state: ${instance.connectionState})`,
-					)
+			if (
+				instance.connectionState === ConnectionState.FAILED ||
+				instance.connectionState === ConnectionState.DISCONNECTED
+			) {
+				console.log(
+					`[BridgeOrchestrator#connectOrDisconnect] Re-connecting... (state: ${instance.connectionState})`,
+				)
 
-					await instance.disconnect()
-				} catch (error) {
+				instance.reconnect().catch((error) => {
 					console.error(
-						`[BridgeOrchestrator#connectOrDisconnect] disconnect() failed: ${error instanceof Error ? error.message : String(error)}`,
+						`[BridgeOrchestrator#connectOrDisconnect] reconnect() failed: ${error instanceof Error ? error.message : String(error)}`,
 					)
-				} finally {
-					BridgeOrchestrator.instance = null
-				}
+				})
 			} else {
-				console.log(`[BridgeOrchestrator#connectOrDisconnect] Already disconnected`)
+				console.log(
+					`[BridgeOrchestrator#connectOrDisconnect] Already connected or connecting (state: ${instance.connectionState})`,
+				)
 			}
+		}
+	}
+
+	public static async disconnect() {
+		const instance = BridgeOrchestrator.instance
+
+		if (instance) {
+			try {
+				console.log(
+					`[BridgeOrchestrator#connectOrDisconnect] Disconnecting... (state: ${instance.connectionState})`,
+				)
+
+				await instance.disconnect()
+			} catch (error) {
+				console.error(
+					`[BridgeOrchestrator#connectOrDisconnect] disconnect() failed: ${error instanceof Error ? error.message : String(error)}`,
+				)
+			} finally {
+				BridgeOrchestrator.instance = null
+			}
+		} else {
+			console.log(`[BridgeOrchestrator#connectOrDisconnect] Already disconnected`)
 		}
 	}
 
@@ -146,6 +152,7 @@ export class BridgeOrchestrator {
 		this.token = options.token
 		this.provider = options.provider
 		this.instanceId = options.sessionId || crypto.randomUUID()
+		this.extensionMetadata = options.extensionMetadata
 
 		this.socketTransport = new SocketTransport({
 			url: this.socketBridgeUrl,
@@ -166,8 +173,14 @@ export class BridgeOrchestrator {
 			onReconnect: () => this.handleReconnect(),
 		})
 
-		this.extensionChannel = new ExtensionChannel(this.instanceId, this.userId, this.provider)
-		this.taskChannel = new TaskChannel(this.instanceId)
+		this.extensionChannel = new ExtensionChannel({
+			instanceId: this.instanceId,
+			userId: this.userId,
+			provider: this.provider,
+			extensionMetadata: this.extensionMetadata,
+		})
+
+		this.taskChannel = new TaskChannel({ instanceId: this.instanceId, extensionMetadata: this.extensionMetadata })
 	}
 
 	private setupSocketListeners() {
