@@ -161,7 +161,6 @@ export async function activate(context: vscode.ExtensionContext) {
 					...config,
 					provider,
 					sessionId: vscode.env.sessionId,
-					extensionMetadata: Package,
 				})
 			} catch (error) {
 				cloudLogger(
@@ -195,7 +194,6 @@ export async function activate(context: vscode.ExtensionContext) {
 				...config,
 				provider,
 				sessionId: vscode.env.sessionId,
-				extensionMetadata: Package,
 			})
 		} catch (error) {
 			cloudLogger(

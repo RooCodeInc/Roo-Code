@@ -1,4 +1,5 @@
 import crypto from "crypto"
+import os from "os"
 
 import {
 	type TaskProviderLike,
@@ -6,7 +7,7 @@ import {
 	type CloudUserInfo,
 	type ExtensionBridgeCommand,
 	type TaskBridgeCommand,
-	type ExtensionMetadata,
+	type StaticAppProperties,
 	ConnectionState,
 	ExtensionSocketEvents,
 	TaskSocketEvents,
@@ -22,7 +23,6 @@ export interface BridgeOrchestratorOptions {
 	token: string
 	provider: TaskProviderLike
 	sessionId?: string
-	extensionMetadata: ExtensionMetadata
 }
 
 /**
@@ -41,7 +41,7 @@ export class BridgeOrchestrator {
 	private readonly token: string
 	private readonly provider: TaskProviderLike
 	private readonly instanceId: string
-	private readonly extensionMetadata: ExtensionMetadata
+	private readonly appProperties: StaticAppProperties
 
 	// Components
 	private socketTransport: SocketTransport
@@ -152,7 +152,7 @@ export class BridgeOrchestrator {
 		this.token = options.token
 		this.provider = options.provider
 		this.instanceId = options.sessionId || crypto.randomUUID()
-		this.extensionMetadata = options.extensionMetadata
+		this.appProperties = { ...options.provider.appProperties, hostname: os.hostname() }
 
 		this.socketTransport = new SocketTransport({
 			url: this.socketBridgeUrl,
@@ -175,12 +175,15 @@ export class BridgeOrchestrator {
 
 		this.extensionChannel = new ExtensionChannel({
 			instanceId: this.instanceId,
+			appProperties: this.appProperties,
 			userId: this.userId,
 			provider: this.provider,
-			extensionMetadata: this.extensionMetadata,
 		})
 
-		this.taskChannel = new TaskChannel({ instanceId: this.instanceId, extensionMetadata: this.extensionMetadata })
+		this.taskChannel = new TaskChannel({
+			instanceId: this.instanceId,
+			appProperties: this.appProperties,
+		})
 	}
 
 	private setupSocketListeners() {

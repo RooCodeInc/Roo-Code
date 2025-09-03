@@ -6,6 +6,7 @@ import type { Socket } from "socket.io-client"
 import {
 	type TaskLike,
 	type ClineMessage,
+	type StaticAppProperties,
 	RooCodeEventName,
 	TaskBridgeEventName,
 	TaskBridgeCommandName,
@@ -21,12 +22,14 @@ describe("TaskChannel", () => {
 	let mockTask: TaskLike
 	const instanceId = "test-instance-123"
 	const taskId = "test-task-456"
-	const extensionMetadata = {
-		name: "roo-code",
-		publisher: "Roocode",
-		version: "1.0.0",
-		outputChannel: "Roo Code",
-		sha: undefined,
+
+	const appProperties: StaticAppProperties = {
+		appName: "roo-code",
+		appVersion: "1.0.0",
+		vscodeVersion: "1.0.0",
+		platform: "darwin",
+		editorName: "Roo Code",
+		hostname: "test-host",
 	}
 
 	beforeEach(() => {
@@ -84,7 +87,7 @@ describe("TaskChannel", () => {
 		// Create task channel instance
 		taskChannel = new TaskChannel({
 			instanceId,
-			extensionMetadata,
+			appProperties,
 		})
 	})
 
@@ -330,7 +333,7 @@ describe("TaskChannel", () => {
 			channel.subscribedTasks.set(taskId, mockTask)
 		})
 
-		it("should handle Message command", () => {
+		it("should handle Message command", async () => {
 			const command = {
 				type: TaskBridgeCommandName.Message,
 				taskId,
@@ -341,7 +344,7 @@ describe("TaskChannel", () => {
 				},
 			}
 
-			taskChannel.handleCommand(command)
+			await taskChannel.handleCommand(command)
 
 			expect(mockTask.submitUserMessage).toHaveBeenCalledWith(
 				command.payload.text,
@@ -351,7 +354,7 @@ describe("TaskChannel", () => {
 			)
 		})
 
-		it("should handle ApproveAsk command", () => {
+		it("should handle ApproveAsk command", async () => {
 			const command = {
 				type: TaskBridgeCommandName.ApproveAsk,
 				taskId,
@@ -361,12 +364,12 @@ describe("TaskChannel", () => {
 				},
 			}
 
-			taskChannel.handleCommand(command)
+			await taskChannel.handleCommand(command)
 
 			expect(mockTask.approveAsk).toHaveBeenCalledWith(command.payload)
 		})
 
-		it("should handle DenyAsk command", () => {
+		it("should handle DenyAsk command", async () => {
 			const command = {
 				type: TaskBridgeCommandName.DenyAsk,
 				taskId,
@@ -376,12 +379,12 @@ describe("TaskChannel", () => {
 				},
 			}
 
-			taskChannel.handleCommand(command)
+			await taskChannel.handleCommand(command)
 
 			expect(mockTask.denyAsk).toHaveBeenCalledWith(command.payload)
 		})
 
-		it("should log error for unknown task", () => {
+		it("should log error for unknown task", async () => {
 			const errorSpy = vi.spyOn(console, "error")
 
 			const command = {
@@ -393,7 +396,7 @@ describe("TaskChannel", () => {
 				},
 			}
 
-			taskChannel.handleCommand(command)
+			await taskChannel.handleCommand(command)
 
 			expect(errorSpy).toHaveBeenCalledWith(`[TaskChannel] Unable to find task unknown-task`)
 

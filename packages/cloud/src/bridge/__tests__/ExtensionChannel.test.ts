@@ -5,6 +5,7 @@ import type { Socket } from "socket.io-client"
 import {
 	type TaskProviderLike,
 	type TaskProviderEvents,
+	type StaticAppProperties,
 	RooCodeEventName,
 	ExtensionBridgeEventName,
 	ExtensionSocketEvents,
@@ -18,12 +19,14 @@ describe("ExtensionChannel", () => {
 	let extensionChannel: ExtensionChannel
 	const instanceId = "test-instance-123"
 	const userId = "test-user-456"
-	const extensionMetadata = {
-		name: "roo-code",
-		publisher: "Roocode",
-		version: "1.0.0",
-		outputChannel: "Roo Code",
-		sha: undefined,
+
+	const appProperties: StaticAppProperties = {
+		appName: "roo-code",
+		appVersion: "1.0.0",
+		vscodeVersion: "1.0.0",
+		platform: "darwin",
+		editorName: "Roo Code",
+		hostname: "test-host",
 	}
 
 	// Track registered event listeners
@@ -89,7 +92,7 @@ describe("ExtensionChannel", () => {
 		// Create extension channel instance
 		extensionChannel = new ExtensionChannel({
 			instanceId,
-			extensionMetadata,
+			appProperties,
 			userId,
 			provider: mockProvider,
 		})
@@ -169,7 +172,7 @@ describe("ExtensionChannel", () => {
 			// Create a second channel with the same provider
 			const secondChannel = new ExtensionChannel({
 				instanceId: "instance-2",
-				extensionMetadata,
+				appProperties,
 				userId,
 				provider: mockProvider,
 			})

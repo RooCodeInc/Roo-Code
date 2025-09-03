@@ -1,5 +1,3 @@
-import type { ExtensionMetadata } from "@roo-code/types"
-
 import { publisher, name, version } from "../package.json"
 
 // These ENV variables can be defined by ESBuild when building the extension
@@ -8,7 +6,7 @@ import { publisher, name, version } from "../package.json"
 // The build process still needs to emit a modified package.json for consumption
 // by VSCode, but that build artifact is not used during the transpile step of
 // the build, so we still need this override mechanism.
-export const Package: ExtensionMetadata = {
+export const Package = {
 	publisher,
 	name: process.env.PKG_NAME || name,
 	version: process.env.PKG_VERSION || version,

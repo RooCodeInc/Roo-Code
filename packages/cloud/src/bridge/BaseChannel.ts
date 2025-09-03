@@ -1,11 +1,11 @@
 import type { Socket } from "socket.io-client"
 import * as vscode from "vscode"
 
-import { ExtensionMetadata } from "@roo-code/types"
+import { StaticAppProperties } from "@roo-code/types"
 
 export interface BaseChannelOptions {
 	instanceId: string
-	extensionMetadata: ExtensionMetadata
+	appProperties: StaticAppProperties
 }
 
 /**
@@ -19,11 +19,11 @@ export interface BaseChannelOptions {
 export abstract class BaseChannel<TCommand = unknown, TEventName extends string = string, TEventData = unknown> {
 	protected socket: Socket | null = null
 	protected readonly instanceId: string
-	protected readonly extensionMetadata: ExtensionMetadata
+	protected readonly appProperties: StaticAppProperties
 
 	constructor(options: BaseChannelOptions) {
 		this.instanceId = options.instanceId
-		this.extensionMetadata = options.extensionMetadata
+		this.appProperties = options.appProperties
 	}
 
 	/**
@@ -99,10 +99,10 @@ export abstract class BaseChannel<TCommand = unknown, TEventName extends string 
 	 * handleCommandImplementation method.
 	 */
 	public async handleCommand(command: TCommand): Promise<void> {
-		// Common functionality: focus the sidebar
-		await vscode.commands.executeCommand(`${this.extensionMetadata.name}.SidebarProvider.focus`)
+		// Common functionality: focus the sidebar.
+		await vscode.commands.executeCommand(`${this.appProperties.appName}.SidebarProvider.focus`)
 
-		// Delegate to subclass-specific implementation
+		// Delegate to subclass-specific implementation.
 		await this.handleCommandImplementation(command)
 	}
 

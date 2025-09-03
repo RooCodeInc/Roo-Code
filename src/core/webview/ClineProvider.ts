@@ -2106,7 +2106,6 @@ export class ClineProvider
 			...config,
 			provider: this,
 			sessionId: vscode.env.sessionId,
-			extensionMetadata: Package,
 		})
 
 		const bridge = BridgeOrchestrator.getInstance()
