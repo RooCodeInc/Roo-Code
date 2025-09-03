@@ -25,11 +25,11 @@ import { StandardTooltip } from "@src/components/ui"
 
 import Thumbnails from "../common/Thumbnails"
 import { ModeSelector } from "./ModeSelector"
-import { ApiConfigSelector } from "./ApiConfigSelector"
+// import { ApiConfigSelector } from "./ApiConfigSelector"
 import { MAX_IMAGES_PER_MESSAGE } from "./ChatView"
 import ContextMenu from "./ContextMenu"
-import { IndexingStatusBadge } from "./IndexingStatusBadge"
-import { SlashCommandsPopover } from "./SlashCommandsPopover"
+// import { IndexingStatusBadge } from "./IndexingStatusBadge"
+// import { SlashCommandsPopover } from "./SlashCommandsPopover"
 import { usePromptHistory } from "./hooks/usePromptHistory"
 
 interface ChatTextAreaProps {
@@ -54,7 +54,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 		{
 			inputValue,
 			setInputValue,
-			selectApiConfigDisabled,
+			// selectApiConfigDisabled,
 			placeholderText,
 			selectedImages,
 			setSelectedImages,
@@ -72,26 +72,26 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 		const {
 			filePaths,
 			openedTabs,
-			currentApiConfigName,
-			listApiConfigMeta,
+			// currentApiConfigName,
+			// listApiConfigMeta,
 			customModes,
 			customModePrompts,
 			cwd,
-			pinnedApiConfigs,
-			togglePinnedApiConfig,
+			// pinnedApiConfigs,
+			// togglePinnedApiConfig,
 			taskHistory,
 			clineMessages,
 			commands,
 		} = useExtensionState()
 
 		// Find the ID and display text for the currently selected API configuration.
-		const { currentConfigId, displayName } = useMemo(() => {
-			const currentConfig = listApiConfigMeta?.find((config) => config.name === currentApiConfigName)
-			return {
-				currentConfigId: currentConfig?.id || "",
-				displayName: currentApiConfigName || "", // Use the name directly for display.
-			}
-		}, [listApiConfigMeta, currentApiConfigName])
+		// const { currentConfigId, displayName } = useMemo(() => {
+		// 	const currentConfig = listApiConfigMeta?.find((config) => config.name === currentApiConfigName)
+		// 	return {
+		// 		currentConfigId: currentConfig?.id || "",
+		// 		displayName: currentApiConfigName || "", // Use the name directly for display.
+		// 	}
+		// }, [listApiConfigMeta, currentApiConfigName])
 
 		const [gitCommits, setGitCommits] = useState<any[]>([])
 		const [showDropdown, setShowDropdown] = useState(false)
@@ -889,9 +889,9 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			[setMode],
 		)
 
-		const handleApiConfigChange = useCallback((value: string) => {
-			vscode.postMessage({ type: "loadApiConfigurationById", text: value })
-		}, [])
+		// const handleApiConfigChange = useCallback((value: string) => {
+		// 	vscode.postMessage({ type: "loadApiConfigurationById", text: value })
+		// }, [])
 
 		return (
 			<div
@@ -1158,7 +1158,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 								customModePrompts={customModePrompts}
 							/>
 						</div>
-						<div className="max-w-32">
+						{/* <div className="max-w-32">
 							<ApiConfigSelector
 								value={currentConfigId}
 								displayName={displayName}
@@ -1170,7 +1170,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 								pinnedApiConfigs={pinnedApiConfigs}
 								togglePinnedApiConfig={togglePinnedApiConfig}
 							/>
-						</div>
+						</div> */}
 					</div>
 					<div className="flex items-center gap-0.5">
 						{isTtsPlaying && (
@@ -1193,8 +1193,8 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 								</button>
 							</StandardTooltip>
 						)}
-						<SlashCommandsPopover />
-						<IndexingStatusBadge />
+						{/* <SlashCommandsPopover /> */}
+						{/* <IndexingStatusBadge /> */}
 						<StandardTooltip content={t("chat:addImages")}>
 							<button
 								aria-label={t("chat:addImages")}

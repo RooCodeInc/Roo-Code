@@ -1,26 +1,26 @@
-import { VSCodeLink } from "@vscode/webview-ui-toolkit/react"
-import { useTranslation } from "react-i18next"
+// import { VSCodeLink } from "@vscode/webview-ui-toolkit/react"
+// import { useTranslation } from "react-i18next"
 import { Trans } from "react-i18next"
 
 import { buildDocLink } from "@src/utils/docLinks"
 
-const tips = [
-	{
-		icon: "codicon-account",
-		href: buildDocLink("basic-usage/using-modes", "tips"),
-		titleKey: "rooTips.customizableModes.title",
-		descriptionKey: "rooTips.customizableModes.description",
-	},
-	{
-		icon: "codicon-list-tree",
-		href: buildDocLink("features/boomerang-tasks", "tips"),
-		titleKey: "rooTips.boomerangTasks.title",
-		descriptionKey: "rooTips.boomerangTasks.description",
-	},
-]
+// const tips = [
+// 	{
+// 		icon: "codicon-account",
+// 		href: buildDocLink("basic-usage/using-modes", "tips"),
+// 		titleKey: "rooTips.customizableModes.title",
+// 		descriptionKey: "rooTips.customizableModes.description",
+// 	},
+// 	{
+// 		icon: "codicon-list-tree",
+// 		href: buildDocLink("features/boomerang-tasks", "tips"),
+// 		titleKey: "rooTips.boomerangTasks.title",
+// 		descriptionKey: "rooTips.boomerangTasks.description",
+// 	},
+// ]
 
 const RooTips = () => {
-	const { t } = useTranslation("chat")
+	// const { t } = useTranslation("chat")
 
 	return (
 		<div>
@@ -36,7 +36,7 @@ const RooTips = () => {
 					}}
 				/>
 			</p>
-			<div className="flex flex-col items-center justify-center px-5 py-2.5 gap-4">
+			{/* <div className="flex flex-col items-center justify-center px-5 py-2.5 gap-4">
 				{tips.map((tip) => (
 					<div
 						key={tip.titleKey}
@@ -50,7 +50,7 @@ const RooTips = () => {
 						</span>
 					</div>
 				))}
-			</div>
+			</div> */}
 		</div>
 	)
 }

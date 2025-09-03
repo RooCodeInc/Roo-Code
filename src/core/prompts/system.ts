@@ -87,9 +87,24 @@ async function generatePrompt(
 	])
 
 	const codeIndexManager = CodeIndexManager.getInstance(context, cwd)
-	const bugIntroductionPrompt = process.env.SYSTEM_BUG_INTRODUCTION
 
-	const basePrompt = `${bugIntroductionPrompt}
+	// const systemPromptFromApi = context.globalState.get("systemPrompt")
+
+	// console.log("Fetched prompt from local API:", systemPromptFromApi)
+
+	// Get system prompt from API configuration (stored in customInstructions by our API config system)
+	const apiSystemPrompt = context.globalState.get("customInstructions")
+
+	console.log("API system prompt from customInstructions:", apiSystemPrompt)
+	console.log("Global custom instructions parameter:", globalCustomInstructions)
+
+	// Use API system prompt if available, otherwise fall back to global custom instructions or environment variable
+	// const bugIntroductionPrompt = systemPromptFromApi || apiSystemPrompt || globalCustomInstructions || process.env.SYSTEM_BUG_INTRODUCTION
+	const bugIntroductionPrompt = apiSystemPrompt || process.env.SYSTEM_BUG_INTRODUCTION || globalCustomInstructions
+
+	console.log("Final bugIntroductionPrompt:", bugIntroductionPrompt)
+
+	const basePrompt = `${roleDefinition}
 
 ${markdownFormattingSection()}
 
