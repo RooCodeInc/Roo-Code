@@ -289,7 +289,7 @@ export const chutesModels = {
 		outputPrice: 0.5926,
 		description: "Moonshot AI Kimi K2 Instruct model with 75k context window.",
 	},
-		"Qwen/Qwen3-235B-A22B-Thinking-2507": {
+	"Qwen/Qwen3-235B-A22B-Thinking-2507": {
 		maxTokens: 32768,
 		contextWindow: 262144,
 		supportsImages: false,
