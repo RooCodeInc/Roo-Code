@@ -251,6 +251,7 @@ describe("mergeExtensionState", () => {
 			preventFocusDisruption: false,
 			newTaskRequireTodos: false,
 			imageGeneration: false,
+			runSlashCommand: false,
 		})
 	})
 })

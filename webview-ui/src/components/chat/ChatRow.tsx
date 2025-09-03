@@ -835,6 +835,13 @@ export const ChatRowContent = ({
 										{slashCommandInfo.description}
 									</div>
 								)}
+								{slashCommandInfo.source && (
+									<div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+										<VSCodeBadge style={{ fontSize: "calc(var(--vscode-font-size) - 2px)" }}>
+											{slashCommandInfo.source}
+										</VSCodeBadge>
+									</div>
+								)}
 							</ToolUseBlockHeader>
 						</ToolUseBlock>
 					</>
