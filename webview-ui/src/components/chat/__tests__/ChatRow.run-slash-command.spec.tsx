@@ -57,18 +57,18 @@ const mockOnSuggestionClick = vi.fn()
 const mockOnBatchFileResponse = vi.fn()
 const mockOnFollowUpUnmount = vi.fn()
 
-describe("ChatRow - run_slash_command tool", () => {
+describe("ChatRow - runSlashCommand tool", () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
 	})
 
-	it("should display run_slash_command ask message with command only", () => {
+	it("should display runSlashCommand ask message with command only", () => {
 		const message: any = {
 			type: "ask",
 			ask: "tool",
 			ts: Date.now(),
 			text: JSON.stringify({
-				tool: "run_slash_command",
+				tool: "runSlashCommand",
 				command: "init",
 			}),
 			partial: false,
@@ -80,13 +80,13 @@ describe("ChatRow - run_slash_command tool", () => {
 		expect(getByText("/init")).toBeInTheDocument()
 	})
 
-	it("should display run_slash_command ask message with command and args", () => {
+	it("should display runSlashCommand ask message with command and args", () => {
 		const message: any = {
 			type: "ask",
 			ask: "tool",
 			ts: Date.now(),
 			text: JSON.stringify({
-				tool: "run_slash_command",
+				tool: "runSlashCommand",
 				command: "test",
 				args: "focus on unit tests",
 				description: "Run project tests",
@@ -104,13 +104,13 @@ describe("ChatRow - run_slash_command tool", () => {
 		expect(getByText("project")).toBeInTheDocument()
 	})
 
-	it("should display run_slash_command say message", () => {
+	it("should display runSlashCommand say message", () => {
 		const message: any = {
 			type: "say",
 			say: "tool",
 			ts: Date.now(),
 			text: JSON.stringify({
-				tool: "run_slash_command",
+				tool: "runSlashCommand",
 				command: "deploy",
 				source: "global",
 			}),
