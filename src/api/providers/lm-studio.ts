@@ -15,7 +15,7 @@ import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { getModels, getModelsFromCache } from "./fetchers/modelCache"
 import { getApiRequestTimeout } from "./utils/timeout-config"
-import { validateApiKeyForByteString } from "./utils/api-key-validation"
+import { handleOpenAIError } from "./utils/openai-error-handler"
 
 export class LmStudioHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
@@ -25,9 +25,8 @@ export class LmStudioHandler extends BaseProvider implements SingleCompletionHan
 		super()
 		this.options = options
 
-		// LM Studio uses "noop" as a placeholder API key, but we should still validate if a real key is provided
+		// LM Studio uses "noop" as a placeholder API key
 		const apiKey = "noop"
-		validateApiKeyForByteString(apiKey, "LM Studio")
 
 		this.client = new OpenAI({
 			baseURL: (this.options.lmStudioBaseUrl || "http://localhost:1234") + "/v1",
@@ -93,7 +92,12 @@ export class LmStudioHandler extends BaseProvider implements SingleCompletionHan
 				params.draft_model = this.options.lmStudioDraftModelId
 			}
 
-			const results = await this.client.chat.completions.create(params)
+			let results
+			try {
+				results = await this.client.chat.completions.create(params)
+			} catch (error) {
+				throw handleOpenAIError(error, "LM Studio")
+			}
 
 			const matcher = new XmlMatcher(
 				"think",
@@ -169,7 +173,12 @@ export class LmStudioHandler extends BaseProvider implements SingleCompletionHan
 				params.draft_model = this.options.lmStudioDraftModelId
 			}
 
-			const response = await this.client.chat.completions.create(params)
+			let response
+			try {
+				response = await this.client.chat.completions.create(params)
+			} catch (error) {
+				throw handleOpenAIError(error, "LM Studio")
+			}
 			return response.choices[0]?.message.content || ""
 		} catch (error) {
 			throw new Error(

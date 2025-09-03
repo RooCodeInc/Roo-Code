@@ -12,7 +12,7 @@ import { getModelParams } from "../transform/model-params"
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
-import { validateApiKeyForByteString } from "./utils/api-key-validation"
+import { handleOpenAIError } from "./utils/openai-error-handler"
 
 const XAI_DEFAULT_TEMPERATURE = 0
 
@@ -25,9 +25,6 @@ export class XAIHandler extends BaseProvider implements SingleCompletionHandler 
 		this.options = options
 
 		const apiKey = this.options.xaiApiKey ?? "not-provided"
-
-		// Validate API key for ByteString compatibility
-		validateApiKeyForByteString(apiKey, "xAI")
 
 		this.client = new OpenAI({
 			baseURL: "https://api.x.ai/v1",
@@ -55,15 +52,20 @@ export class XAIHandler extends BaseProvider implements SingleCompletionHandler 
 		const { id: modelId, info: modelInfo, reasoning } = this.getModel()
 
 		// Use the OpenAI-compatible API.
-		const stream = await this.client.chat.completions.create({
-			model: modelId,
-			max_tokens: modelInfo.maxTokens,
-			temperature: this.options.modelTemperature ?? XAI_DEFAULT_TEMPERATURE,
-			messages: [{ role: "system", content: systemPrompt }, ...convertToOpenAiMessages(messages)],
-			stream: true,
-			stream_options: { include_usage: true },
-			...(reasoning && reasoning),
-		})
+		let stream
+		try {
+			stream = await this.client.chat.completions.create({
+				model: modelId,
+				max_tokens: modelInfo.maxTokens,
+				temperature: this.options.modelTemperature ?? XAI_DEFAULT_TEMPERATURE,
+				messages: [{ role: "system", content: systemPrompt }, ...convertToOpenAiMessages(messages)],
+				stream: true,
+				stream_options: { include_usage: true },
+				...(reasoning && reasoning),
+			})
+		} catch (error) {
+			throw handleOpenAIError(error, "xAI")
+		}
 
 		for await (const chunk of stream) {
 			const delta = chunk.choices[0]?.delta
@@ -110,11 +112,16 @@ export class XAIHandler extends BaseProvider implements SingleCompletionHandler 
 		const { id: modelId, reasoning } = this.getModel()
 
 		try {
-			const response = await this.client.chat.completions.create({
-				model: modelId,
-				messages: [{ role: "user", content: prompt }],
-				...(reasoning && reasoning),
-			})
+			let response
+			try {
+				response = await this.client.chat.completions.create({
+					model: modelId,
+					messages: [{ role: "user", content: prompt }],
+					...(reasoning && reasoning),
+				})
+			} catch (error) {
+				throw handleOpenAIError(error, "xAI")
+			}
 
 			return response.choices[0]?.message.content || ""
 		} catch (error) {

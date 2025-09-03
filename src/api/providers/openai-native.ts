@@ -22,7 +22,7 @@ import { getModelParams } from "../transform/model-params"
 
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
-import { validateApiKeyForByteString } from "./utils/api-key-validation"
+import { createOpenAIClientWithErrorHandling } from "./utils/openai-error-handler"
 
 export type OpenAiNativeModel = ReturnType<OpenAiNativeHandler["getModel"]>
 
@@ -61,10 +61,10 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		}
 		const apiKey = this.options.openAiNativeApiKey ?? "not-provided"
 
-		// Validate API key for ByteString compatibility
-		validateApiKeyForByteString(apiKey, "OpenAI Native")
-
-		this.client = new OpenAI({ baseURL: this.options.openAiNativeBaseUrl, apiKey })
+		this.client = createOpenAIClientWithErrorHandling(
+			() => new OpenAI({ baseURL: this.options.openAiNativeBaseUrl, apiKey }),
+			"OpenAI Native",
+		)
 	}
 
 	private normalizeUsage(usage: any, model: OpenAiNativeModel): ApiStreamUsageChunk | undefined {

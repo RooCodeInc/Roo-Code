@@ -10,7 +10,7 @@ import { convertToOpenAiMessages } from "../transform/openai-format"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
-import { validateApiKeyForByteString } from "./utils/api-key-validation"
+import { handleOpenAIError } from "./utils/openai-error-handler"
 
 type BaseOpenAiCompatibleProviderOptions<ModelName extends string> = ApiHandlerOptions & {
 	providerName: string
@@ -56,9 +56,6 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 			throw new Error("API key is required")
 		}
 
-		// Validate API key for ByteString compatibility
-		validateApiKeyForByteString(this.options.apiKey, this.providerName)
-
 		this.client = new OpenAI({
 			baseURL,
 			apiKey: this.options.apiKey,
@@ -90,7 +87,11 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 			params.temperature = this.options.modelTemperature
 		}
 
-		return this.client.chat.completions.create(params, requestOptions)
+		try {
+			return this.client.chat.completions.create(params, requestOptions)
+		} catch (error) {
+			throw handleOpenAIError(error, this.providerName)
+		}
 	}
 
 	override async *createMessage(
@@ -131,11 +132,7 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 
 			return response.choices[0]?.message.content || ""
 		} catch (error) {
-			if (error instanceof Error) {
-				throw new Error(`${this.providerName} completion error: ${error.message}`)
-			}
-
-			throw error
+			throw handleOpenAIError(error, this.providerName)
 		}
 	}
 

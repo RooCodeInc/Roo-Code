@@ -8,7 +8,7 @@ import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from ".
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
 import { getHuggingFaceModels, getCachedHuggingFaceModels } from "./fetchers/huggingface"
-import { validateApiKeyForByteString } from "./utils/api-key-validation"
+import { createOpenAIClientWithErrorHandling, handleOpenAIError } from "./utils/openai-error-handler"
 
 export class HuggingFaceHandler extends BaseProvider implements SingleCompletionHandler {
 	private client: OpenAI
@@ -23,14 +23,15 @@ export class HuggingFaceHandler extends BaseProvider implements SingleCompletion
 			throw new Error("Hugging Face API key is required")
 		}
 
-		// Validate API key for ByteString compatibility
-		validateApiKeyForByteString(this.options.huggingFaceApiKey, "HuggingFace")
-
-		this.client = new OpenAI({
-			baseURL: "https://router.huggingface.co/v1",
-			apiKey: this.options.huggingFaceApiKey,
-			defaultHeaders: DEFAULT_HEADERS,
-		})
+		this.client = createOpenAIClientWithErrorHandling(
+			() =>
+				new OpenAI({
+					baseURL: "https://router.huggingface.co/v1",
+					apiKey: this.options.huggingFaceApiKey,
+					defaultHeaders: DEFAULT_HEADERS,
+				}),
+			"HuggingFace",
+		)
 
 		// Try to get cached models first
 		this.modelCache = getCachedHuggingFaceModels()
@@ -68,7 +69,12 @@ export class HuggingFaceHandler extends BaseProvider implements SingleCompletion
 			params.max_tokens = this.options.modelMaxTokens
 		}
 
-		const stream = await this.client.chat.completions.create(params)
+		let stream
+		try {
+			stream = await this.client.chat.completions.create(params)
+		} catch (error) {
+			throw handleOpenAIError(error, "HuggingFace")
+		}
 
 		for await (const chunk of stream) {
 			const delta = chunk.choices[0]?.delta
@@ -101,11 +107,7 @@ export class HuggingFaceHandler extends BaseProvider implements SingleCompletion
 
 			return response.choices[0]?.message.content || ""
 		} catch (error) {
-			if (error instanceof Error) {
-				throw new Error(`Hugging Face completion error: ${error.message}`)
-			}
-
-			throw error
+			throw handleOpenAIError(error, "HuggingFace")
 		}
 	}
 

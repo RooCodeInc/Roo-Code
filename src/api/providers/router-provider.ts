@@ -8,7 +8,6 @@ import { BaseProvider } from "./base-provider"
 import { getModels } from "./fetchers/modelCache"
 
 import { DEFAULT_HEADERS } from "./constants"
-import { validateApiKeyForByteString } from "./utils/api-key-validation"
 
 type RouterProviderOptions = {
 	name: RouterName
@@ -45,9 +44,6 @@ export abstract class RouterProvider extends BaseProvider {
 		this.modelId = modelId
 		this.defaultModelId = defaultModelId
 		this.defaultModelInfo = defaultModelInfo
-
-		// Validate API key for ByteString compatibility
-		validateApiKeyForByteString(apiKey, name)
 
 		this.client = new OpenAI({
 			baseURL,
