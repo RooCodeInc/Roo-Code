@@ -25,7 +25,14 @@ export const ModelInfoView = ({
 }: ModelInfoViewProps) => {
 	const { t } = useAppTranslation()
 
-	const infoItems = [
+	// Show tiered pricing table for OpenAI Native when model supports non-standard tiers
+	const allowedTiers =
+		(modelInfo?.allowedServiceTiers || []).filter((tier) => tier === "flex" || tier === "priority") ?? []
+	const tierPricing = modelInfo?.serviceTierPricing
+	const shouldShowTierPricingTable = apiProvider === "openai-native" && allowedTiers.length > 0 && !!tierPricing
+	const fmt = (n?: number) => (typeof n === "number" ? `${formatPrice(n)}` : "—")
+
+	const baseInfoItems = [
 		typeof modelInfo?.contextWindow === "number" && modelInfo.contextWindow > 0 && (
 			<>
 				<span className="font-medium">{t("settings:modelInfo.contextWindow")}</span>{" "}
@@ -53,6 +60,21 @@ export const ModelInfoView = ({
 			supportsLabel={t("settings:modelInfo.supportsPromptCache")}
 			doesNotSupportLabel={t("settings:modelInfo.noPromptCache")}
 		/>,
+		apiProvider === "gemini" && (
+			<span className="italic">
+				{selectedModelId.includes("pro-preview")
+					? t("settings:modelInfo.gemini.billingEstimate")
+					: t("settings:modelInfo.gemini.freeRequests", {
+							count: selectedModelId && selectedModelId.includes("flash") ? 15 : 2,
+						})}{" "}
+				<VSCodeLink href="https://ai.google.dev/pricing" className="text-sm">
+					{t("settings:modelInfo.gemini.pricingDetails")}
+				</VSCodeLink>
+			</span>
+		),
+	].filter(Boolean)
+
+	const priceInfoItems = [
 		modelInfo?.inputPrice !== undefined && modelInfo.inputPrice > 0 && (
 			<>
 				<span className="font-medium">{t("settings:modelInfo.inputPrice")}:</span>{" "}
@@ -77,19 +99,9 @@ export const ModelInfoView = ({
 				{formatPrice(modelInfo.cacheWritesPrice || 0)} / 1M tokens
 			</>
 		),
-		apiProvider === "gemini" && (
-			<span className="italic">
-				{selectedModelId.includes("pro-preview")
-					? t("settings:modelInfo.gemini.billingEstimate")
-					: t("settings:modelInfo.gemini.freeRequests", {
-							count: selectedModelId && selectedModelId.includes("flash") ? 15 : 2,
-						})}{" "}
-				<VSCodeLink href="https://ai.google.dev/pricing" className="text-sm">
-					{t("settings:modelInfo.gemini.pricingDetails")}
-				</VSCodeLink>
-			</span>
-		),
 	].filter(Boolean)
+
+	const infoItems = shouldShowTierPricingTable ? baseInfoItems : [...baseInfoItems, ...priceInfoItems]
 
 	return (
 		<>
@@ -106,6 +118,62 @@ export const ModelInfoView = ({
 					<div key={index}>{item}</div>
 				))}
 			</div>
+
+			{shouldShowTierPricingTable && (
+				<div className="mt-2">
+					<div className="text-xs text-vscode-descriptionForeground mb-1">
+						Pricing by service tier (price per 1M tokens)
+					</div>
+					<div className="border border-vscode-dropdown-border rounded-xs overflow-hidden">
+						<table className="w-full text-sm">
+							<thead className="bg-vscode-dropdown-background">
+								<tr>
+									<th className="text-left px-3 py-1.5">Tier</th>
+									<th className="text-right px-3 py-1.5">Input</th>
+									<th className="text-right px-3 py-1.5">Output</th>
+									<th className="text-right px-3 py-1.5">Cache reads</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr className="border-t border-vscode-dropdown-border/60">
+									<td className="px-3 py-1.5">Standard</td>
+									<td className="px-3 py-1.5 text-right">{fmt(modelInfo?.inputPrice)}</td>
+									<td className="px-3 py-1.5 text-right">{fmt(modelInfo?.outputPrice)}</td>
+									<td className="px-3 py-1.5 text-right">{fmt(modelInfo?.cacheReadsPrice)}</td>
+								</tr>
+								{allowedTiers.includes("flex") && (
+									<tr className="border-t border-vscode-dropdown-border/60">
+										<td className="px-3 py-1.5">Flex</td>
+										<td className="px-3 py-1.5 text-right">
+											{fmt(tierPricing?.flex?.inputPrice ?? modelInfo?.inputPrice)}
+										</td>
+										<td className="px-3 py-1.5 text-right">
+											{fmt(tierPricing?.flex?.outputPrice ?? modelInfo?.outputPrice)}
+										</td>
+										<td className="px-3 py-1.5 text-right">
+											{fmt(tierPricing?.flex?.cacheReadsPrice ?? modelInfo?.cacheReadsPrice)}
+										</td>
+									</tr>
+								)}
+								{allowedTiers.includes("priority") && (
+									<tr className="border-t border-vscode-dropdown-border/60">
+										<td className="px-3 py-1.5">Priority</td>
+										<td className="px-3 py-1.5 text-right">
+											{fmt(tierPricing?.priority?.inputPrice ?? modelInfo?.inputPrice)}
+										</td>
+										<td className="px-3 py-1.5 text-right">
+											{fmt(tierPricing?.priority?.outputPrice ?? modelInfo?.outputPrice)}
+										</td>
+										<td className="px-3 py-1.5 text-right">
+											{fmt(tierPricing?.priority?.cacheReadsPrice ?? modelInfo?.cacheReadsPrice)}
+										</td>
+									</tr>
+								)}
+							</tbody>
+						</table>
+					</div>
+				</div>
+			)}
 		</>
 	)
 }
