@@ -134,9 +134,9 @@ async function validateToolExists(
 		}
 
 		// Check if the requested tool exists
-		const toolExists = server.tools.some((tool) => tool.name === toolName)
+		const tool = server.tools.find((tool) => tool.name === toolName)
 
-		if (!toolExists) {
+		if (!tool) {
 			// Tool not found - provide list of available tools
 			const availableToolNames = server.tools.map((tool) => tool.name)
 
@@ -155,7 +155,24 @@ async function validateToolExists(
 			return { isValid: false, availableTools: availableToolNames }
 		}
 
-		// Tool exists
+		// Check if the tool is disabled (enabledForPrompt is false)
+		if (tool.enabledForPrompt === false) {
+			// Tool is disabled - only show enabled tools
+			const enabledTools = server.tools.filter((t) => t.enabledForPrompt !== false)
+			const enabledToolNames = enabledTools.map((t) => t.name)
+
+			cline.consecutiveMistakeCount++
+			cline.recordToolError("use_mcp_tool")
+			await cline.say(
+				"error",
+				`Tool '${toolName}' on server '${serverName}' is disabled. Available enabled tools: ${enabledToolNames.length > 0 ? enabledToolNames.join(", ") : "No enabled tools available"}`,
+			)
+
+			pushToolResult(formatResponse.unknownMcpToolError(serverName, toolName, enabledToolNames))
+			return { isValid: false, availableTools: enabledToolNames }
+		}
+
+		// Tool exists and is enabled
 		return { isValid: true, availableTools: server.tools.map((tool) => tool.name) }
 	} catch (error) {
 		// If there's an error during validation, log it but don't block the tool execution
