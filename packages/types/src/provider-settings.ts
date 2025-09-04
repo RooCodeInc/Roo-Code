@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-import { modelInfoSchema, reasoningEffortWithMinimalSchema, verbosityLevelsSchema } from "./model.js"
+import { modelInfoSchema, reasoningEffortWithMinimalSchema, verbosityLevelsSchema, serviceTierSchema } from "./model.js"
 import { codebaseIndexProviderSchema } from "./codebase-index.js"
 import {
 	anthropicModels,
@@ -224,6 +224,9 @@ const geminiCliSchema = apiModelIdProviderModelSchema.extend({
 const openAiNativeSchema = apiModelIdProviderModelSchema.extend({
 	openAiNativeApiKey: z.string().optional(),
 	openAiNativeBaseUrl: z.string().optional(),
+	// OpenAI Responses API service tier for openai-native provider only.
+	// UI should only expose this when the selected model supports flex/priority.
+	openAiNativeServiceTier: serviceTierSchema.optional(),
 })
 
 const mistralSchema = apiModelIdProviderModelSchema.extend({
