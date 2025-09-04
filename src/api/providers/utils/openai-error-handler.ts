@@ -13,17 +13,17 @@ import i18n from "../../../i18n/setup"
  */
 export function handleOpenAIError(error: unknown, providerName: string): Error {
 	if (error instanceof Error) {
+		const msg = error.message || ""
+
 		// Invalid character/ByteString conversion error in API key
-		if (error.message.includes("Cannot convert argument to a ByteString")) {
+		if (msg.includes("Cannot convert argument to a ByteString")) {
 			return new Error(i18n.t("common:errors.api.invalidKeyInvalidChars"))
 		}
 
-		// Add more error message transformations here as needed
-
-		// Return original error if no transformation matches
-		return error
+		// For other Error instances, wrap with provider-specific prefix
+		return new Error(`${providerName} completion error: ${msg}`)
 	}
 
-	// If it's not even an Error object, wrap it
-	return new Error(`${providerName} error: ${String(error)}`)
+	// Non-Error: wrap with provider-specific prefix
+	return new Error(`${providerName} completion error: ${String(error)}`)
 }
