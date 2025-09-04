@@ -806,6 +806,9 @@ importers:
       web-tree-sitter:
         specifier: ^0.25.6
         version: 0.25.6
+      which:
+        specifier: ^5.0.0
+        version: 5.0.0
       workerpool:
         specifier: ^9.2.0
         version: 9.2.0
@@ -876,6 +879,9 @@ importers:
       '@types/vscode':
         specifier: ^1.84.0
         version: 1.100.0
+      '@types/which':
+        specifier: ^3.0.4
+        version: 3.0.4
       '@vscode/test-electron':
         specifier: ^2.5.2
         version: 2.5.2
@@ -4261,6 +4267,9 @@ packages:
 
   '@types/vscode@1.103.0':
     resolution: {integrity: sha512-o4hanZAQdNfsKecexq9L3eHICd0AAvdbLk6hA60UzGXbGH/q8b/9xv2RgR7vV3ZcHuyKVq7b37IGd/+gM4Tu+Q==}
+
+  '@types/which@3.0.4':
+    resolution: {integrity: sha512-liyfuo/106JdlgSchJzXEQCVArk0CvevqPote8F8HgWgJ3dRCcTHgJIsLDuee0kxk/mhbInzIZk3QWSZJ8R+2w==}
 
   '@types/ws@8.18.1':
     resolution: {integrity: sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg==}
@@ -13821,6 +13830,8 @@ snapshots:
 
   '@types/vscode@1.103.0': {}
 
+  '@types/which@3.0.4': {}
+
   '@types/ws@8.18.1':
     dependencies:
       '@types/node': 24.2.1
@@ -13996,7 +14007,7 @@ snapshots:
       sirv: 3.0.1
       tinyglobby: 0.2.14
       tinyrainbow: 2.0.0
-      vitest: 3.2.4(@types/debug@4.1.12)(@types/node@24.2.1)(@vitest/ui@3.2.4)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(tsx@4.19.4)(yaml@2.8.0)
+      vitest: 3.2.4(@types/debug@4.1.12)(@types/node@20.17.50)(@vitest/ui@3.2.4)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(tsx@4.19.4)(yaml@2.8.0)
 
   '@vitest/utils@3.2.4':
     dependencies:

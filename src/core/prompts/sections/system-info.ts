@@ -3,13 +3,14 @@ import osName from "os-name"
 
 import { getShell } from "../../../utils/shell"
 
-export function getSystemInfoSection(cwd: string): string {
+export async function getSystemInfoSection(cwd: string): Promise<string> {
+	const shell = await getShell()
 	let details = `====
 
 SYSTEM INFORMATION
 
 Operating System: ${osName()}
-Default Shell: ${getShell()}
+Default Shell: ${shell}
 Home Directory: ${os.homedir().toPosix()}
 Current Workspace Directory: ${cwd.toPosix()}
 

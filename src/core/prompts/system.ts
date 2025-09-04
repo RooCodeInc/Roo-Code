@@ -120,7 +120,7 @@ ${modesSection}
 
 ${getRulesSection(cwd, supportsComputerUse, effectiveDiffStrategy, codeIndexManager)}
 
-${getSystemInfoSection(cwd)}
+${await getSystemInfoSection(cwd)}
 
 ${getObjectiveSection(codeIndexManager, experiments)}
 

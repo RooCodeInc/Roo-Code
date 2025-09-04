@@ -1,5 +1,6 @@
 import * as vscode from "vscode"
 import { userInfo } from "os"
+import which from "which"
 
 const SHELL_PATHS = {
 	// Windows paths
@@ -19,6 +20,39 @@ const SHELL_PATHS = {
 	TCSH: "/bin/tcsh",
 	FALLBACK: "/bin/sh",
 } as const
+
+const shellPathCache = new Map<string, { path: string; timestamp: number }>()
+const CACHE_TTL = 5 * 60 * 1000
+
+async function validateShellPath(shellPath: string): Promise<string | null> {
+	try {
+		const cached = shellPathCache.get(shellPath)
+		if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+			return cached.path
+		}
+
+		const resolvedPath = await which(shellPath, { nothrow: true })
+
+		if (resolvedPath) {
+			shellPathCache.set(shellPath, {
+				path: resolvedPath,
+				timestamp: Date.now(),
+			})
+			return resolvedPath
+		}
+
+		return null
+	} catch {
+		return null
+	}
+}
+
+/**
+ * Clears the shell path cache (useful for testing)
+ */
+export function clearShellPathCache(): void {
+	shellPathCache.clear()
+}
 
 interface MacTerminalProfile {
 	path?: string
@@ -182,46 +216,59 @@ function getShellFromEnv(): string | null {
 // 4) Publicly Exposed Shell Getter
 // -----------------------------------------------------
 
-export function getShell(): string {
+export async function getShell(): Promise<string> {
 	// 1. Check VS Code config first.
 	if (process.platform === "win32") {
 		// Special logic for Windows
 		const windowsShell = getWindowsShellFromVSCode()
 		if (windowsShell) {
-			return windowsShell
+			const validatedPath = await validateShellPath(windowsShell)
+			if (validatedPath) {
+				return validatedPath
+			}
 		}
 	} else if (process.platform === "darwin") {
 		// macOS from VS Code
 		const macShell = getMacShellFromVSCode()
 		if (macShell) {
-			return macShell
+			const validatedPath = await validateShellPath(macShell)
+			if (validatedPath) {
+				return validatedPath
+			}
 		}
 	} else if (process.platform === "linux") {
 		// Linux from VS Code
 		const linuxShell = getLinuxShellFromVSCode()
 		if (linuxShell) {
-			return linuxShell
+			const validatedPath = await validateShellPath(linuxShell)
+			if (validatedPath) {
+				return validatedPath
+			}
 		}
 	}
 
 	// 2. If no shell from VS Code, try userInfo()
 	const userInfoShell = getShellFromUserInfo()
 	if (userInfoShell) {
-		return userInfoShell
+		const validatedPath = await validateShellPath(userInfoShell)
+		if (validatedPath) {
+			return validatedPath
+		}
 	}
 
 	// 3. If still nothing, try environment variable
 	const envShell = getShellFromEnv()
 	if (envShell) {
-		return envShell
+		const validatedPath = await validateShellPath(envShell)
+		if (validatedPath) {
+			return validatedPath
+		}
 	}
 
-	// 4. Finally, fall back to a default
+	// 4. Finally, fall back to platform-specific defaults
 	if (process.platform === "win32") {
-		// On Windows, if we got here, we have no config, no COMSPEC, and one very messed up operating system.
-		// Use CMD as a last resort
 		return SHELL_PATHS.CMD
+	} else {
+		return SHELL_PATHS.FALLBACK
 	}
-	// On macOS/Linux, fallback to a POSIX shell - This is the behavior of our old shell detection method.
-	return SHELL_PATHS.FALLBACK
 }
