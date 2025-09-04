@@ -87,12 +87,6 @@ async function generatePrompt(
 	])
 
 	const codeIndexManager = CodeIndexManager.getInstance(context, cwd)
-
-	// Get system prompt from API configuration (stored in customInstructions by our API config system)
-	// const apiSystemPrompt = context.globalState.get("customInstructions")
-
-	// Use API system prompt if available, otherwise fall back to global custom instructions or environment variable
-	// const bugIntroductionPrompt = systemPromptFromApi || apiSystemPrompt || globalCustomInstructions || process.env.SYSTEM_BUG_INTRODUCTION
 	const basePrompt = `${roleDefinition}
 
 ${markdownFormattingSection()}

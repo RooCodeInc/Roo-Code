@@ -70,13 +70,6 @@ const WelcomeView = () => {
 						{(() => {
 							// Provider card configuration
 							const providers = [
-								// {
-								// 	slug: "requesty",
-								// 	name: "Requesty",
-								// 	description: t("welcome:routers.requesty.description"),
-								// 	incentive: t("welcome:routers.requesty.incentive"),
-								// 	authUrl: getRequestyAuthUrl(uriScheme),
-								// },
 								{
 									slug: "openrouter",
 									name: "OpenRouter",
