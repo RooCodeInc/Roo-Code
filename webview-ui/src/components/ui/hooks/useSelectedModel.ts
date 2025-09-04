@@ -8,6 +8,7 @@ import {
 	bedrockModels,
 	cerebrasDefaultModelId,
 	cerebrasModels,
+	deepInfraDefaultModelId,
 	deepSeekDefaultModelId,
 	deepSeekModels,
 	moonshotDefaultModelId,
@@ -119,6 +120,11 @@ function getSelectedModel({
 	// users from seeing the default model if their selection is invalid
 	// this gives a better UX than showing the default model
 	switch (provider) {
+		case "deepinfra": {
+			const id = apiConfiguration.deepInfraModelId ?? deepInfraDefaultModelId
+			const info = routerModels.deepinfra?.[id]
+			return { id, info }
+		}
 		case "openrouter": {
 			const id = apiConfiguration.openRouterModelId ?? openRouterDefaultModelId
 			let info = routerModels.openrouter[id]
@@ -339,7 +345,7 @@ function getSelectedModel({
 		// case "human-relay":
 		// case "fake-ai":
 		default: {
-			provider satisfies "anthropic" | "gemini-cli" | "qwen-code" | "human-relay" | "fake-ai"
+			provider satisfies "anthropic" | "gemini-cli" | "human-relay" | "fake-ai"
 			const id = apiConfiguration.apiModelId ?? anthropicDefaultModelId
 			const baseInfo = anthropicModels[id as keyof typeof anthropicModels]
 

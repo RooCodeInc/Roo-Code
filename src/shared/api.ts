@@ -19,6 +19,7 @@ export type ApiHandlerOptions = Omit<ProviderSettings, "apiProvider"> & {
 // RouterName
 
 const routerNames = [
+	"deepinfra",
 	"openrouter",
 	"requesty",
 	"glama",
@@ -144,6 +145,7 @@ export const getModelMaxOutputTokens = ({
 // GetModelsOptions
 
 export type GetModelsOptions =
+	| { provider: "deepinfra"; apiKey?: string }
 	| { provider: "openrouter" }
 	| { provider: "glama" }
 	| { provider: "requesty"; apiKey?: string; baseUrl?: string }

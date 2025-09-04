@@ -19,6 +19,7 @@ import { GetModelsOptions } from "../../../shared/api"
 import { getOllamaModels } from "./ollama"
 import { getLMStudioModels } from "./lmstudio"
 import { getIOIntelligenceModels } from "./io-intelligence"
+import { getDeepInfraModels } from "./deepinfra"
 const memoryCache = new NodeCache({ stdTTL: 5 * 60, checkperiod: 5 * 60 })
 
 async function writeModels(router: RouterName, data: ModelRecord) {
@@ -55,6 +56,10 @@ export const getModels = async (options: GetModelsOptions): Promise<ModelRecord>
 
 	try {
 		switch (provider) {
+			case "deepinfra":
+				// DeepInfra models endpoint requires an API key
+				models = await getDeepInfraModels(options.apiKey)
+				break
 			case "openrouter":
 				models = await getOpenRouterModels()
 				break

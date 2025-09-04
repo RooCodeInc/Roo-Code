@@ -9,6 +9,7 @@ import {
 	AnthropicHandler,
 	AwsBedrockHandler,
 	CerebrasHandler,
+	DeepInfraHandler,
 	OpenRouterHandler,
 	VertexHandler,
 	AnthropicVertexHandler,
@@ -114,6 +115,8 @@ export function buildApiHandler(configuration: ProviderSettings): ApiHandler {
 			return new GeminiHandler(options)
 		case "openai-native":
 			return new OpenAiNativeHandler(options)
+		case "deepinfra":
+			return new DeepInfraHandler(options)
 		case "deepseek":
 			return new DeepSeekHandler(options)
 		case "doubao":

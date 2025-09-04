@@ -6,6 +6,7 @@ import { getModelValidationError, validateApiConfigurationExcludingModelErrors }
 
 describe("Model Validation Functions", () => {
 	const mockRouterModels: RouterModels = {
+		deepinfra: {},
 		openrouter: {
 			"valid-model": {
 				maxTokens: 8192,

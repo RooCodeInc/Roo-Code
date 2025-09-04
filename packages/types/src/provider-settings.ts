@@ -34,6 +34,7 @@ import {
 export const providerNames = [
 	"anthropic",
 	"claude-code",
+	"deepinfra",
 	"glama",
 	"openrouter",
 	"bedrock",
@@ -294,6 +295,11 @@ const cerebrasSchema = apiModelIdProviderModelSchema.extend({
 	cerebrasApiKey: z.string().optional(),
 })
 
+const deepInfraSchema = baseProviderSettingsSchema.extend({
+	deepInfraApiKey: z.string().optional(),
+	deepInfraModelId: z.string().optional(),
+})
+
 const sambaNovaSchema = apiModelIdProviderModelSchema.extend({
 	sambaNovaApiKey: z.string().optional(),
 })
@@ -336,6 +342,7 @@ const defaultSchema = z.object({
 export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProvider", [
 	anthropicSchema.merge(z.object({ apiProvider: z.literal("anthropic") })),
 	claudeCodeSchema.merge(z.object({ apiProvider: z.literal("claude-code") })),
+	deepInfraSchema.merge(z.object({ apiProvider: z.literal("deepinfra") })),
 	glamaSchema.merge(z.object({ apiProvider: z.literal("glama") })),
 	openRouterSchema.merge(z.object({ apiProvider: z.literal("openrouter") })),
 	bedrockSchema.merge(z.object({ apiProvider: z.literal("bedrock") })),
@@ -376,6 +383,7 @@ export const providerSettingsSchema = z.object({
 	apiProvider: providerNamesSchema.optional(),
 	...anthropicSchema.shape,
 	...claudeCodeSchema.shape,
+	...deepInfraSchema.shape,
 	...glamaSchema.shape,
 	...openRouterSchema.shape,
 	...bedrockSchema.shape,
@@ -426,6 +434,7 @@ export const PROVIDER_SETTINGS_KEYS = providerSettingsSchema.keyof().options
 
 export const MODEL_ID_KEYS: Partial<keyof ProviderSettings>[] = [
 	"apiModelId",
+	"deepInfraModelId",
 	"glamaModelId",
 	"openRouterModelId",
 	"openAiModelId",
@@ -489,6 +498,7 @@ export const MODELS_BY_PROVIDER: Record<
 		label: "Chutes AI",
 		models: Object.keys(chutesModels),
 	},
+	deepinfra: { id: "deepinfra", label: "DeepInfra", models: [] },
 	"claude-code": { id: "claude-code", label: "Claude Code", models: Object.keys(claudeCodeModels) },
 	deepseek: {
 		id: "deepseek",
@@ -563,6 +573,7 @@ export const MODELS_BY_PROVIDER: Record<
 }
 
 export const dynamicProviders = [
+	"deepinfra",
 	"glama",
 	"huggingface",
 	"litellm",
