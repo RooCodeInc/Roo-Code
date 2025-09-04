@@ -43,6 +43,7 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 	protected models: ModelRecord = {}
 	private client: OpenAI
 	private baseURL: string
+	private readonly providerName = "Requesty"
 
 	constructor(options: ApiHandlerOptions) {
 		super()
@@ -133,7 +134,7 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 		try {
 			stream = await this.client.chat.completions.create(completionParams)
 		} catch (error) {
-			throw handleOpenAIError(error, "Requesty")
+			throw handleOpenAIError(error, this.providerName)
 		}
 		let lastUsage: any = undefined
 
@@ -174,7 +175,7 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 		try {
 			response = await this.client.chat.completions.create(completionParams)
 		} catch (error) {
-			throw handleOpenAIError(error, "Requesty")
+			throw handleOpenAIError(error, this.providerName)
 		}
 		return response.choices[0]?.message.content || ""
 	}

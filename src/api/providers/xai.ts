@@ -19,6 +19,7 @@ const XAI_DEFAULT_TEMPERATURE = 0
 export class XAIHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
 	private client: OpenAI
+	private readonly providerName = "xAI"
 
 	constructor(options: ApiHandlerOptions) {
 		super()
@@ -64,7 +65,7 @@ export class XAIHandler extends BaseProvider implements SingleCompletionHandler 
 				...(reasoning && reasoning),
 			})
 		} catch (error) {
-			throw handleOpenAIError(error, "xAI")
+			throw handleOpenAIError(error, this.providerName)
 		}
 
 		for await (const chunk of stream) {
@@ -120,7 +121,7 @@ export class XAIHandler extends BaseProvider implements SingleCompletionHandler 
 
 			return response.choices[0]?.message.content || ""
 		} catch (error) {
-			throw handleOpenAIError(error, "xAI")
+			throw handleOpenAIError(error, this.providerName)
 		}
 	}
 }

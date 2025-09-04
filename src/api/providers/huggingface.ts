@@ -14,6 +14,7 @@ export class HuggingFaceHandler extends BaseProvider implements SingleCompletion
 	private client: OpenAI
 	private options: ApiHandlerOptions
 	private modelCache: ModelRecord | null = null
+	private readonly providerName = "HuggingFace"
 
 	constructor(options: ApiHandlerOptions) {
 		super()
@@ -69,7 +70,7 @@ export class HuggingFaceHandler extends BaseProvider implements SingleCompletion
 		try {
 			stream = await this.client.chat.completions.create(params)
 		} catch (error) {
-			throw handleOpenAIError(error, "HuggingFace")
+			throw handleOpenAIError(error, this.providerName)
 		}
 
 		for await (const chunk of stream) {
@@ -103,7 +104,7 @@ export class HuggingFaceHandler extends BaseProvider implements SingleCompletion
 
 			return response.choices[0]?.message.content || ""
 		} catch (error) {
-			throw handleOpenAIError(error, "HuggingFace")
+			throw handleOpenAIError(error, this.providerName)
 		}
 	}
 

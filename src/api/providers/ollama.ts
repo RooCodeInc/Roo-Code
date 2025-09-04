@@ -21,6 +21,7 @@ type CompletionUsage = OpenAI.Chat.Completions.ChatCompletionChunk["usage"]
 export class OllamaHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
 	private client: OpenAI
+	private readonly providerName = "Ollama"
 
 	constructor(options: ApiHandlerOptions) {
 		super()
@@ -65,7 +66,7 @@ export class OllamaHandler extends BaseProvider implements SingleCompletionHandl
 				stream_options: { include_usage: true },
 			})
 		} catch (error) {
-			throw handleOpenAIError(error, "Ollama")
+			throw handleOpenAIError(error, this.providerName)
 		}
 		const matcher = new XmlMatcher(
 			"think",
@@ -123,7 +124,7 @@ export class OllamaHandler extends BaseProvider implements SingleCompletionHandl
 					stream: false,
 				})
 			} catch (error) {
-				throw handleOpenAIError(error, "Ollama")
+				throw handleOpenAIError(error, this.providerName)
 			}
 			return response.choices[0]?.message.content || ""
 		} catch (error) {

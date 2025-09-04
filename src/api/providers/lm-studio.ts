@@ -20,6 +20,7 @@ import { handleOpenAIError } from "./utils/openai-error-handler"
 export class LmStudioHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
 	private client: OpenAI
+	private readonly providerName = "LM Studio"
 
 	constructor(options: ApiHandlerOptions) {
 		super()
@@ -96,7 +97,7 @@ export class LmStudioHandler extends BaseProvider implements SingleCompletionHan
 			try {
 				results = await this.client.chat.completions.create(params)
 			} catch (error) {
-				throw handleOpenAIError(error, "LM Studio")
+				throw handleOpenAIError(error, this.providerName)
 			}
 
 			const matcher = new XmlMatcher(
@@ -177,7 +178,7 @@ export class LmStudioHandler extends BaseProvider implements SingleCompletionHan
 			try {
 				response = await this.client.chat.completions.create(params)
 			} catch (error) {
-				throw handleOpenAIError(error, "LM Studio")
+				throw handleOpenAIError(error, this.providerName)
 			}
 			return response.choices[0]?.message.content || ""
 		} catch (error) {

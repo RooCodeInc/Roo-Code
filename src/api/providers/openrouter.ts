@@ -86,6 +86,7 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 	private client: OpenAI
 	protected models: ModelRecord = {}
 	protected endpoints: ModelRecord = {}
+	private readonly providerName = "OpenRouter"
 
 	constructor(options: ApiHandlerOptions) {
 		super()
@@ -166,7 +167,7 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		try {
 			stream = await this.client.chat.completions.create(completionParams)
 		} catch (error) {
-			throw handleOpenAIError(error, "OpenRouter")
+			throw handleOpenAIError(error, this.providerName)
 		}
 
 		let lastUsage: CompletionUsage | undefined = undefined
@@ -269,7 +270,7 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		try {
 			response = await this.client.chat.completions.create(completionParams)
 		} catch (error) {
-			throw handleOpenAIError(error, "OpenRouter")
+			throw handleOpenAIError(error, this.providerName)
 		}
 
 		if ("error" in response) {
