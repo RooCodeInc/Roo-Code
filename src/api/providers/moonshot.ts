@@ -38,7 +38,7 @@ export class MoonshotHandler extends OpenAiHandler {
 		}
 	}
 
-	// Override to always include max_completion_tokens for Moonshot
+	// Override to always include max_tokens for Moonshot (not max_completion_tokens)
 	protected override addMaxTokensIfNeeded(
 		requestOptions:
 			| OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming
