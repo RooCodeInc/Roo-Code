@@ -254,6 +254,8 @@ export class TerminalProcess extends BaseTerminalProcess {
 		// so that api request stalls to let diagnostics catch up").
 		this.stopHotTimer()
 		this.emit("completed", this.removeEscapeSequences(this.fullOutput))
+		this.lastRetrievedIndex = this.fullOutput.length
+		this.trimRetrievedOutput()
 		this.emit("continue")
 	}
 

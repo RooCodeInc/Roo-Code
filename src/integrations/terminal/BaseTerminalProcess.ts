@@ -137,6 +137,20 @@ export abstract class BaseTerminalProcess extends EventEmitter<RooTerminalProces
 	 */
 	abstract getUnretrievedOutput(): string
 
+	/**
+	 * Trims already retrieved content from the internal output buffer.
+	 *
+	 * This prevents unbounded memory growth when processing large
+	 * command outputs by discarding data that has already been
+	 * consumed by callers of `getUnretrievedOutput`.
+	 */
+	protected trimRetrievedOutput(): void {
+		if (this.lastRetrievedIndex > 0) {
+			this.fullOutput = this.fullOutput.slice(this.lastRetrievedIndex)
+			this.lastRetrievedIndex = 0
+		}
+	}
+
 	protected startHotTimer(data: string) {
 		this.isHot = true
 
