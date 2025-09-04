@@ -1,4 +1,5 @@
 import * as path from "path"
+import * as fs from "fs/promises"
 
 import type { MockedFunction } from "vitest"
 
@@ -10,6 +11,7 @@ import { unescapeHtmlEntities } from "../../../utils/text-normalization"
 import { everyLineHasLineNumbers, stripLineNumbers } from "../../../integrations/misc/extract-text"
 import { ToolUse, ToolResponse } from "../../../shared/tools"
 import { writeToFileTool } from "../writeToFileTool"
+import { experiments, EXPERIMENT_IDS } from "../../../shared/experiments"
 
 vi.mock("path", async () => {
 	const originalPath = await vi.importActual("path")
@@ -25,6 +27,19 @@ vi.mock("path", async () => {
 
 vi.mock("delay", () => ({
 	default: vi.fn(),
+}))
+
+vi.mock("fs/promises", () => ({
+	readFile: vi.fn().mockResolvedValue("original content"),
+}))
+
+vi.mock("../../../shared/experiments", () => ({
+	experiments: {
+		isEnabled: vi.fn().mockReturnValue(false), // Default to disabled
+	},
+	EXPERIMENT_IDS: {
+		PREVENT_FOCUS_DISRUPTION: "preventFocusDisruption",
+	},
 }))
 
 vi.mock("../../../utils/fs", () => ({
@@ -108,6 +123,8 @@ describe("writeToFileTool", () => {
 	const mockedEveryLineHasLineNumbers = everyLineHasLineNumbers as MockedFunction<typeof everyLineHasLineNumbers>
 	const mockedStripLineNumbers = stripLineNumbers as MockedFunction<typeof stripLineNumbers>
 	const mockedPathResolve = path.resolve as MockedFunction<typeof path.resolve>
+	const mockedExperimentsIsEnabled = experiments.isEnabled as MockedFunction<typeof experiments.isEnabled>
+	const mockedFsReadFile = fs.readFile as MockedFunction<typeof fs.readFile>
 
 	const mockCline: any = {}
 	let mockAskApproval: ReturnType<typeof vi.fn>
@@ -127,6 +144,8 @@ describe("writeToFileTool", () => {
 		mockedUnescapeHtmlEntities.mockImplementation((content) => content)
 		mockedEveryLineHasLineNumbers.mockReturnValue(false)
 		mockedStripLineNumbers.mockImplementation((content) => content)
+		mockedExperimentsIsEnabled.mockReturnValue(false) // Default to disabled
+		mockedFsReadFile.mockResolvedValue("original content")
 
 		mockCline.cwd = "/"
 		mockCline.consecutiveMistakeCount = 0
@@ -414,6 +433,100 @@ describe("writeToFileTool", () => {
 
 			expect(mockHandleError).toHaveBeenCalledWith("writing file", expect.any(Error))
 			expect(mockCline.diffViewProvider.reset).toHaveBeenCalled()
+		})
+	})
+
+	describe("PREVENT_FOCUS_DISRUPTION experiment", () => {
+		beforeEach(() => {
+			// Reset the experiments mock for these tests
+			mockedExperimentsIsEnabled.mockReset()
+		})
+
+		it("should NOT save file before user approval when experiment is enabled", async () => {
+			// Enable the PREVENT_FOCUS_DISRUPTION experiment
+			mockedExperimentsIsEnabled.mockReturnValue(true)
+
+			mockCline.providerRef.deref().getState.mockResolvedValue({
+				diagnosticsEnabled: true,
+				writeDelayMs: 1000,
+				experiments: {
+					preventFocusDisruption: true,
+				},
+			})
+
+			// Mock saveDirectly to track when it's called
+			const saveDirectlySpy = vi.fn().mockResolvedValue({
+				newProblemsMessage: "",
+				userEdits: undefined,
+				finalContent: testContent,
+			})
+			mockCline.diffViewProvider.saveDirectly = saveDirectlySpy
+
+			// User rejects the approval
+			mockAskApproval.mockResolvedValue(false)
+
+			await executeWriteFileTool({}, { fileExists: false })
+
+			// Verify that askApproval was called
+			expect(mockAskApproval).toHaveBeenCalled()
+
+			// Verify that saveDirectly was NOT called since user rejected
+			expect(saveDirectlySpy).not.toHaveBeenCalled()
+
+			// Verify that the diffViewProvider state was reset
+			expect(mockCline.diffViewProvider.editType).toBe(undefined)
+			expect(mockCline.diffViewProvider.originalContent).toBe(undefined)
+		})
+
+		it("should save file AFTER user approval when experiment is enabled", async () => {
+			// Enable the PREVENT_FOCUS_DISRUPTION experiment
+			mockedExperimentsIsEnabled.mockReturnValue(true)
+
+			mockCline.providerRef.deref().getState.mockResolvedValue({
+				diagnosticsEnabled: true,
+				writeDelayMs: 1000,
+				experiments: {
+					preventFocusDisruption: true,
+				},
+			})
+
+			// Mock saveDirectly to track when it's called
+			const saveDirectlySpy = vi.fn().mockResolvedValue({
+				newProblemsMessage: "",
+				userEdits: undefined,
+				finalContent: testContent,
+			})
+			mockCline.diffViewProvider.saveDirectly = saveDirectlySpy
+
+			// Mock pushToolWriteResult
+			mockCline.diffViewProvider.pushToolWriteResult = vi.fn().mockResolvedValue("Tool result message")
+
+			// User approves
+			mockAskApproval.mockResolvedValue(true)
+
+			// Track the order of calls
+			const callOrder: string[] = []
+			mockAskApproval.mockImplementation(async () => {
+				callOrder.push("askApproval")
+				return true
+			})
+			saveDirectlySpy.mockImplementation(async () => {
+				callOrder.push("saveDirectly")
+				return {
+					newProblemsMessage: "",
+					userEdits: undefined,
+					finalContent: testContent,
+				}
+			})
+
+			await executeWriteFileTool({}, { fileExists: false })
+
+			// Verify that askApproval was called BEFORE saveDirectly
+			expect(callOrder).toEqual(["askApproval", "saveDirectly"])
+
+			// Verify both were called
+			expect(mockAskApproval).toHaveBeenCalled()
+			expect(saveDirectlySpy).toHaveBeenCalledWith(testFilePath, testContent, false, true, 1000)
 		})
 	})
 })

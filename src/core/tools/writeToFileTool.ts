@@ -202,18 +202,8 @@ export async function writeToFileTool(
 					}
 				}
 
-				const completeMessage = JSON.stringify({
-					...sharedMessageProps,
-					content: newContent,
-				} satisfies ClineSayTool)
-
-				const didApprove = await askApproval("tool", completeMessage, undefined, isWriteProtected)
-
-				if (!didApprove) {
-					return
-				}
-
-				// Set up diffViewProvider properties needed for saveDirectly
+				// Set up diffViewProvider properties needed for saveDirectly BEFORE asking for approval
+				// This ensures we have the original content for comparison but don't write anything yet
 				cline.diffViewProvider.editType = fileExists ? "modify" : "create"
 				if (fileExists) {
 					const absolutePath = path.resolve(cline.cwd, relPath)
@@ -222,7 +212,21 @@ export async function writeToFileTool(
 					cline.diffViewProvider.originalContent = ""
 				}
 
-				// Save directly without showing diff view or opening the file
+				const completeMessage = JSON.stringify({
+					...sharedMessageProps,
+					content: newContent,
+				} satisfies ClineSayTool)
+
+				const didApprove = await askApproval("tool", completeMessage, undefined, isWriteProtected)
+
+				if (!didApprove) {
+					// Reset the diffViewProvider state since we're not proceeding
+					cline.diffViewProvider.editType = undefined
+					cline.diffViewProvider.originalContent = undefined
+					return
+				}
+
+				// Only save directly AFTER user approval
 				await cline.diffViewProvider.saveDirectly(relPath, newContent, false, diagnosticsEnabled, writeDelayMs)
 			} else {
 				// Original behavior with diff view
