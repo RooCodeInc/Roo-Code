@@ -121,6 +121,7 @@ const apiModelIdProviderModelSchema = baseProviderSettingsSchema.extend({
 
 const anthropicSchema = apiModelIdProviderModelSchema.extend({
 	apiKey: z.string().optional(),
+	anthropicConfigUseEnvVars: z.boolean().optional(),
 	anthropicBaseUrl: z.string().optional(),
 	anthropicUseAuthToken: z.boolean().optional(),
 	anthropicBeta1MContext: z.boolean().optional(), // Enable 'context-1m-2025-08-07' beta for 1M context window
@@ -134,10 +135,12 @@ const claudeCodeSchema = apiModelIdProviderModelSchema.extend({
 const glamaSchema = baseProviderSettingsSchema.extend({
 	glamaModelId: z.string().optional(),
 	glamaApiKey: z.string().optional(),
+	glamaConfigUseEnvVars: z.boolean().optional(),
 })
 
 const openRouterSchema = baseProviderSettingsSchema.extend({
 	openRouterApiKey: z.string().optional(),
+	openRouterConfigUseEnvVars: z.boolean().optional(),
 	openRouterModelId: z.string().optional(),
 	openRouterBaseUrl: z.string().optional(),
 	openRouterSpecificProvider: z.string().optional(),
@@ -174,6 +177,7 @@ const vertexSchema = apiModelIdProviderModelSchema.extend({
 const openAiSchema = baseProviderSettingsSchema.extend({
 	openAiBaseUrl: z.string().optional(),
 	openAiApiKey: z.string().optional(),
+	openAiConfigUseEnvVars: z.boolean().optional(),
 	openAiLegacyFormat: z.boolean().optional(),
 	openAiR1FormatEnabled: z.boolean().optional(),
 	openAiModelId: z.string().optional(),
@@ -211,6 +215,7 @@ const lmStudioSchema = baseProviderSettingsSchema.extend({
 
 const geminiSchema = apiModelIdProviderModelSchema.extend({
 	geminiApiKey: z.string().optional(),
+	geminiConfigUseEnvVars: z.boolean().optional(),
 	googleGeminiBaseUrl: z.string().optional(),
 	enableUrlContext: z.boolean().optional(),
 	enableGrounding: z.boolean().optional(),
@@ -223,17 +228,20 @@ const geminiCliSchema = apiModelIdProviderModelSchema.extend({
 
 const openAiNativeSchema = apiModelIdProviderModelSchema.extend({
 	openAiNativeApiKey: z.string().optional(),
+	openAiNativeConfigUseEnvVars: z.boolean().optional(),
 	openAiNativeBaseUrl: z.string().optional(),
 })
 
 const mistralSchema = apiModelIdProviderModelSchema.extend({
 	mistralApiKey: z.string().optional(),
+	mistralConfigUseEnvVars: z.boolean().optional(),
 	mistralCodestralUrl: z.string().optional(),
 })
 
 const deepSeekSchema = apiModelIdProviderModelSchema.extend({
 	deepSeekBaseUrl: z.string().optional(),
 	deepSeekApiKey: z.string().optional(),
+	deepSeekConfigUseEnvVars: z.boolean().optional(),
 })
 
 const doubaoSchema = apiModelIdProviderModelSchema.extend({
@@ -250,12 +258,14 @@ const moonshotSchema = apiModelIdProviderModelSchema.extend({
 
 const unboundSchema = baseProviderSettingsSchema.extend({
 	unboundApiKey: z.string().optional(),
+	unboundConfigUseEnvVars: z.boolean().optional(),
 	unboundModelId: z.string().optional(),
 })
 
 const requestySchema = baseProviderSettingsSchema.extend({
 	requestyBaseUrl: z.string().optional(),
 	requestyApiKey: z.string().optional(),
+	requestyConfigUseEnvVars: z.boolean().optional(),
 	requestyModelId: z.string().optional(),
 })
 
@@ -267,10 +277,12 @@ const fakeAiSchema = baseProviderSettingsSchema.extend({
 
 const xaiSchema = apiModelIdProviderModelSchema.extend({
 	xaiApiKey: z.string().optional(),
+	xaiConfigUseEnvVars: z.boolean().optional(),
 })
 
 const groqSchema = apiModelIdProviderModelSchema.extend({
 	groqApiKey: z.string().optional(),
+	groqConfigUseEnvVars: z.boolean().optional(),
 })
 
 const huggingFaceSchema = baseProviderSettingsSchema.extend({
@@ -281,11 +293,13 @@ const huggingFaceSchema = baseProviderSettingsSchema.extend({
 
 const chutesSchema = apiModelIdProviderModelSchema.extend({
 	chutesApiKey: z.string().optional(),
+	chutesConfigUseEnvVars: z.boolean().optional(),
 })
 
 const litellmSchema = baseProviderSettingsSchema.extend({
 	litellmBaseUrl: z.string().optional(),
 	litellmApiKey: z.string().optional(),
+	litellmConfigUseEnvVars: z.boolean().optional(),
 	litellmModelId: z.string().optional(),
 	litellmUsePromptCache: z.boolean().optional(),
 })
