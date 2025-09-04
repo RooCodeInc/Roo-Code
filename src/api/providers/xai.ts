@@ -112,24 +112,15 @@ export class XAIHandler extends BaseProvider implements SingleCompletionHandler 
 		const { id: modelId, reasoning } = this.getModel()
 
 		try {
-			let response
-			try {
-				response = await this.client.chat.completions.create({
-					model: modelId,
-					messages: [{ role: "user", content: prompt }],
-					...(reasoning && reasoning),
-				})
-			} catch (error) {
-				throw handleOpenAIError(error, "xAI")
-			}
+			const response = await this.client.chat.completions.create({
+				model: modelId,
+				messages: [{ role: "user", content: prompt }],
+				...(reasoning && reasoning),
+			})
 
 			return response.choices[0]?.message.content || ""
 		} catch (error) {
-			if (error instanceof Error) {
-				throw new Error(`xAI completion error: ${error.message}`)
-			}
-
-			throw error
+			throw handleOpenAIError(error, "xAI")
 		}
 	}
 }
