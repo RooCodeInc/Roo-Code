@@ -165,7 +165,12 @@ async function validateToolExists(
 			cline.recordToolError("use_mcp_tool")
 			await cline.say(
 				"error",
-				`Tool '${toolName}' on server '${serverName}' is disabled. Available enabled tools: ${enabledToolNames.length > 0 ? enabledToolNames.join(", ") : "No enabled tools available"}`,
+				t("mcp:errors.toolDisabled", {
+					toolName,
+					serverName,
+					availableTools:
+						enabledToolNames.length > 0 ? enabledToolNames.join(", ") : "No enabled tools available",
+				}),
 			)
 
 			pushToolResult(formatResponse.unknownMcpToolError(serverName, toolName, enabledToolNames))

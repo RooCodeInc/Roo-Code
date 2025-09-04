@@ -10,7 +10,8 @@
 		"refresh_after_enable": "Échec du rafraîchissement des connexions MCP après activation",
 		"disconnect_servers_partial": "Échec de la déconnexion de {{count}} serveur(s) MCP. Vérifiez la sortie pour plus de détails.",
 		"toolNotFound": "L'outil '{{toolName}}' n'existe pas sur le serveur '{{serverName}}'. Outils disponibles : {{availableTools}}",
-		"serverNotFound": "Le serveur MCP '{{serverName}}' n'est pas configuré. Serveurs disponibles : {{availableServers}}"
+		"serverNotFound": "Le serveur MCP '{{serverName}}' n'est pas configuré. Serveurs disponibles : {{availableServers}}",
+		"toolDisabled": "L'outil '{{toolName}}' sur le serveur '{{serverName}}' est désactivé. Outils activés disponibles : {{availableTools}}"
 	},
 	"info": {
 		"server_restarting": "Redémarrage du serveur MCP {{serverName}}...",

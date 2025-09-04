@@ -10,7 +10,8 @@
 		"refresh_after_enable": "Falha ao atualizar as conexões MCP após ativar",
 		"disconnect_servers_partial": "Falha ao desconectar {{count}} servidor(es) MCP. Verifique a saída para detalhes.",
 		"toolNotFound": "A ferramenta '{{toolName}}' não existe no servidor '{{serverName}}'. Ferramentas disponíveis: {{availableTools}}",
-		"serverNotFound": "O servidor MCP '{{serverName}}' não está configurado. Servidores disponíveis: {{availableServers}}"
+		"serverNotFound": "O servidor MCP '{{serverName}}' não está configurado. Servidores disponíveis: {{availableServers}}",
+		"toolDisabled": "A ferramenta '{{toolName}}' no servidor '{{serverName}}' está desabilitada. Ferramentas habilitadas disponíveis: {{availableTools}}"
 	},
 	"info": {
 		"server_restarting": "Reiniciando o servidor MCP {{serverName}}...",
