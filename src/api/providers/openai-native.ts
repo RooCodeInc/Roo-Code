@@ -59,7 +59,6 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			this.options.enableGpt5ReasoningSummary = true
 		}
 		const apiKey = this.options.openAiNativeApiKey ?? "not-provided"
-
 		this.client = new OpenAI({ baseURL: this.options.openAiNativeBaseUrl, apiKey })
 	}
 
