@@ -102,8 +102,17 @@ async function validateToolExists(
 		const server = servers.find((s) => s.name === serverName)
 
 		if (!server) {
-			// Server not found - this will be caught later in the flow
-			return { isValid: true }
+			// Fail fast when server is unknown
+			const availableServersArray = servers.map((s) => s.name)
+			const availableServers =
+				availableServersArray.length > 0 ? availableServersArray.join(", ") : "No servers available"
+
+			cline.consecutiveMistakeCount++
+			cline.recordToolError("use_mcp_tool")
+			await cline.say("error", t("mcp:errors.serverNotFound", { serverName, availableServers }))
+
+			pushToolResult(formatResponse.unknownMcpServerError(serverName, availableServersArray))
+			return { isValid: false, availableTools: [] }
 		}
 
 		// Check if the server has tools defined

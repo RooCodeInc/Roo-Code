@@ -14,6 +14,10 @@ vi.mock("../../prompts/responses", () => ({
 			const toolsList = availableTools.length > 0 ? availableTools.join(", ") : "No tools available"
 			return `Tool '${tool}' does not exist on server '${server}'. Available tools: ${toolsList}`
 		}),
+		unknownMcpServerError: vi.fn((server: string, availableServers: string[]) => {
+			const list = availableServers.length > 0 ? availableServers.join(", ") : "No servers available"
+			return `Server '${server}' is not configured. Available servers: ${list}`
+		}),
 	},
 }))
 
@@ -24,6 +28,9 @@ vi.mock("../../../i18n", () => ({
 		}
 		if (key === "mcp:errors.toolNotFound" && params) {
 			return `Tool '${params.toolName}' does not exist on server '${params.serverName}'. Available tools: ${params.availableTools}`
+		}
+		if (key === "mcp:errors.serverNotFound" && params) {
+			return `MCP server '${params.serverName}' is not configured. Available servers: ${params.availableServers}`
 		}
 		return key
 	}),
@@ -232,6 +239,10 @@ describe("useMcpToolTool", () => {
 				partial: false,
 			}
 
+			// Ensure validation does not fail due to unknown server by returning no provider once
+			// This makes validateToolExists return isValid: true and proceed to askApproval
+			mockProviderRef.deref.mockReturnValueOnce(undefined as any)
+
 			mockAskApproval.mockResolvedValue(false)
 
 			await useMcpToolTool(
@@ -259,6 +270,19 @@ describe("useMcpToolTool", () => {
 				},
 				partial: false,
 			}
+
+			// Ensure validation passes so askApproval is reached and throws
+			mockProviderRef.deref.mockReturnValueOnce({
+				getMcpHub: () => ({
+					getAllServers: vi
+						.fn()
+						.mockReturnValue([
+							{ name: "test_server", tools: [{ name: "test_tool", description: "desc" }] },
+						]),
+					callTool: vi.fn(),
+				}),
+				postMessageToWebview: vi.fn(),
+			})
 
 			const error = new Error("Unexpected error")
 			mockAskApproval.mockRejectedValue(error)
@@ -419,6 +443,94 @@ describe("useMcpToolTool", () => {
 			expect(mockTask.recordToolError).not.toHaveBeenCalled()
 			expect(mockTask.say).toHaveBeenCalledWith("mcp_server_request_started")
 			expect(mockTask.say).toHaveBeenCalledWith("mcp_server_response", "Tool executed successfully")
+		})
+
+		it("should reject unknown server names with available servers listed", async () => {
+			// Arrange
+			mockTask.consecutiveMistakeCount = 0
+
+			const mockServers = [{ name: "s1", tools: [] }]
+			const callToolMock = vi.fn()
+
+			mockProviderRef.deref.mockReturnValue({
+				getMcpHub: () => ({
+					getAllServers: vi.fn().mockReturnValue(mockServers),
+					callTool: callToolMock,
+				}),
+				postMessageToWebview: vi.fn(),
+			})
+
+			const block: ToolUse = {
+				type: "tool_use",
+				name: "use_mcp_tool",
+				params: {
+					server_name: "unknown",
+					tool_name: "any-tool",
+					arguments: "{}",
+				},
+				partial: false,
+			}
+
+			// Act
+			await useMcpToolTool(
+				mockTask as Task,
+				block,
+				mockAskApproval,
+				mockHandleError,
+				mockPushToolResult,
+				mockRemoveClosingTag,
+			)
+
+			// Assert
+			expect(mockTask.consecutiveMistakeCount).toBe(1)
+			expect(mockTask.recordToolError).toHaveBeenCalledWith("use_mcp_tool")
+			expect(mockTask.say).toHaveBeenCalledWith("error", expect.stringContaining("not configured"))
+			expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("s1"))
+			expect(callToolMock).not.toHaveBeenCalled()
+			expect(mockAskApproval).not.toHaveBeenCalled()
+		})
+
+		it("should reject unknown server names when no servers are available", async () => {
+			// Arrange
+			mockTask.consecutiveMistakeCount = 0
+
+			const callToolMock = vi.fn()
+			mockProviderRef.deref.mockReturnValue({
+				getMcpHub: () => ({
+					getAllServers: vi.fn().mockReturnValue([]),
+					callTool: callToolMock,
+				}),
+				postMessageToWebview: vi.fn(),
+			})
+
+			const block: ToolUse = {
+				type: "tool_use",
+				name: "use_mcp_tool",
+				params: {
+					server_name: "unknown",
+					tool_name: "any-tool",
+					arguments: "{}",
+				},
+				partial: false,
+			}
+
+			// Act
+			await useMcpToolTool(
+				mockTask as Task,
+				block,
+				mockAskApproval,
+				mockHandleError,
+				mockPushToolResult,
+				mockRemoveClosingTag,
+			)
+
+			// Assert
+			expect(mockTask.consecutiveMistakeCount).toBe(1)
+			expect(mockTask.recordToolError).toHaveBeenCalledWith("use_mcp_tool")
+			expect(mockTask.say).toHaveBeenCalledWith("error", expect.stringContaining("not configured"))
+			expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("No servers available"))
+			expect(callToolMock).not.toHaveBeenCalled()
+			expect(mockAskApproval).not.toHaveBeenCalled()
 		})
 	})
 })
