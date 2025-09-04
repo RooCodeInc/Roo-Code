@@ -353,6 +353,9 @@ export class ClineProvider
 		this.clineStack.push(task)
 		task.emit(RooCodeEventName.TaskFocused)
 
+		// Persist the current active task ID
+		await this.updateGlobalState("currentActiveTaskId", task.taskId)
+
 		// Perform special setup provider specific tasks.
 		await this.performPreparationTasks(task)
 
@@ -416,6 +419,15 @@ export class ClineProvider
 			// Make sure no reference kept, once promises end it will be
 			// garbage collected.
 			task = undefined
+		}
+
+		// Clear the current active task ID if no tasks remain
+		if (this.clineStack.length === 0) {
+			await this.updateGlobalState("currentActiveTaskId", undefined)
+		} else {
+			// Update to the new top task
+			const newCurrentTask = this.clineStack[this.clineStack.length - 1]
+			await this.updateGlobalState("currentActiveTaskId", newCurrentTask.taskId)
 		}
 	}
 
@@ -725,6 +737,22 @@ export class ClineProvider
 
 		// If the extension is starting a new session, clear previous task state.
 		await this.removeClineFromStack()
+
+		// Attempt to restore the last active task if one was persisted
+		const lastActiveTaskId = this.getGlobalState("currentActiveTaskId")
+		if (lastActiveTaskId && typeof lastActiveTaskId === "string") {
+			try {
+				const { historyItem } = await this.getTaskWithId(lastActiveTaskId)
+				if (historyItem) {
+					await this.createTaskWithHistoryItem(historyItem)
+					this.log(`Restored last active task: ${lastActiveTaskId}`)
+				}
+			} catch (error) {
+				// Task may have been deleted or corrupted, clear the saved ID
+				this.log(`Failed to restore last active task ${lastActiveTaskId}: ${error}`)
+				await this.updateGlobalState("currentActiveTaskId", undefined)
+			}
+		}
 	}
 
 	public async createTaskWithHistoryItem(historyItem: HistoryItem & { rootTask?: Task; parentTask?: Task }) {
