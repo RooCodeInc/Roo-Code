@@ -624,7 +624,7 @@ export const webviewMessageHandler = async (
 					if (routerName === "ollama" && Object.keys(result.value.models).length > 0) {
 						provider.postMessageToWebview({
 							type: "ollamaModels",
-							ollamaModels: Object.keys(result.value.models),
+							ollamaModels: result.value.models,
 						})
 					} else if (routerName === "lmstudio" && Object.keys(result.value.models).length > 0) {
 						provider.postMessageToWebview({
@@ -669,7 +669,7 @@ export const webviewMessageHandler = async (
 				if (Object.keys(ollamaModels).length > 0) {
 					provider.postMessageToWebview({
 						type: "ollamaModels",
-						ollamaModels: Object.keys(ollamaModels),
+						ollamaModels: ollamaModels,
 					})
 				}
 			} catch (error) {
