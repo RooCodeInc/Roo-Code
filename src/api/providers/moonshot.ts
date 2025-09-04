@@ -45,7 +45,7 @@ export class MoonshotHandler extends OpenAiHandler {
 			| OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming,
 		modelInfo: ModelInfo,
 	): void {
-		// Moonshot use max_tokens instead of max_completion_tokens
+		// Moonshot uses max_tokens instead of max_completion_tokens
 		requestOptions.max_tokens = this.options.modelMaxTokens || modelInfo.maxTokens
 	}
 }
