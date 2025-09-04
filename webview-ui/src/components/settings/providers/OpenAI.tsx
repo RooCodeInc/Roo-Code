@@ -76,7 +76,7 @@ export const OpenAI = ({ apiConfiguration, setApiConfigurationField, selectedMod
 			)}
 
 			{(() => {
-				const allowedTiers = (selectedModelInfo?.allowedServiceTiers || []).filter(
+				const allowedTiers = (selectedModelInfo?.tiers?.map((t) => t.name).filter(Boolean) || []).filter(
 					(t) => t === "flex" || t === "priority",
 				)
 				if (allowedTiers.length === 0) return null
