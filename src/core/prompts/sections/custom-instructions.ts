@@ -2,6 +2,7 @@ import fs from "fs/promises"
 import path from "path"
 import * as os from "os"
 import { Dirent } from "fs"
+import { createHash } from "crypto"
 
 import { isLanguage } from "@roo-code/types"
 
@@ -9,6 +10,42 @@ import type { SystemPromptSettings } from "../types"
 
 import { LANGUAGES } from "../../../shared/language"
 import { getRooDirectoriesForCwd, getGlobalRooDirectory } from "../../../services/roo-config"
+
+/**
+ * File tracking system to prevent duplicate inclusions
+ */
+interface FileTracker {
+	resolvedPaths: Set<string>
+	contentHashes: Set<string>
+}
+
+/**
+ * Create MD5 hash of file content
+ */
+function createContentHash(content: string): string {
+	return createHash("md5").update(content, "utf8").digest("hex")
+}
+
+/**
+ * Check if a file should be included based on resolved path and content hash
+ */
+function shouldIncludeFile(resolvedPath: string, content: string, tracker: FileTracker): boolean {
+	// Skip if we've already included this resolved path
+	if (tracker.resolvedPaths.has(resolvedPath)) {
+		return false
+	}
+
+	// Skip if we've already included content with this hash
+	const contentHash = createContentHash(content)
+	if (tracker.contentHashes.has(contentHash)) {
+		return false
+	}
+
+	// Add to tracking sets
+	tracker.resolvedPaths.add(resolvedPath)
+	tracker.contentHashes.add(contentHash)
+	return true
+}
 
 /**
  * Safely read a file and return its trimmed content
@@ -108,7 +145,10 @@ async function resolveSymLink(
 /**
  * Read all text files from a directory in alphabetical order
  */
-async function readTextFilesFromDirectory(dirPath: string): Promise<Array<{ filename: string; content: string }>> {
+async function readTextFilesFromDirectory(
+	dirPath: string,
+	tracker: FileTracker,
+): Promise<Array<{ filename: string; content: string }>> {
 	try {
 		const entries = await fs.readdir(dirPath, { withFileTypes: true, recursive: true })
 
@@ -136,6 +176,12 @@ async function readTextFilesFromDirectory(dirPath: string): Promise<Array<{ file
 							return null
 						}
 						const content = await safeReadFile(resolvedPath)
+
+						// Skip if file was already included or content is duplicate
+						if (!shouldIncludeFile(resolvedPath, content, tracker)) {
+							return null
+						}
+
 						// Use resolvedPath for display to maintain existing behavior
 						return { filename: resolvedPath, content, sortKey: originalPath }
 					}
@@ -182,7 +228,13 @@ function formatDirectoryContent(dirPath: string, files: Array<{ filename: string
  * Load rule files from global and project-local directories
  * Global rules are loaded first, then project-local rules which can override global ones
  */
-export async function loadRuleFiles(cwd: string): Promise<string> {
+export async function loadRuleFiles(cwd: string, tracker?: FileTracker): Promise<string> {
+	// Create a default tracker if none provided (for backward compatibility with tests)
+	const fileTracker = tracker || {
+		resolvedPaths: new Set<string>(),
+		contentHashes: new Set<string>(),
+	}
+
 	const rules: string[] = []
 	const rooDirectories = getRooDirectoriesForCwd(cwd)
 
@@ -190,7 +242,7 @@ export async function loadRuleFiles(cwd: string): Promise<string> {
 	for (const rooDir of rooDirectories) {
 		const rulesDir = path.join(rooDir, "rules")
 		if (await directoryExists(rulesDir)) {
-			const files = await readTextFilesFromDirectory(rulesDir)
+			const files = await readTextFilesFromDirectory(rulesDir, fileTracker)
 			if (files.length > 0) {
 				const content = formatDirectoryContent(rulesDir, files)
 				rules.push(content)
@@ -207,8 +259,9 @@ export async function loadRuleFiles(cwd: string): Promise<string> {
 	const ruleFiles = [".roorules", ".clinerules"]
 
 	for (const file of ruleFiles) {
-		const content = await safeReadFile(path.join(cwd, file))
-		if (content) {
+		const filePath = path.join(cwd, file)
+		const content = await safeReadFile(filePath)
+		if (content && shouldIncludeFile(filePath, content, fileTracker)) {
 			return `\n# Rules from ${file}:\n${content}\n`
 		}
 	}
@@ -220,7 +273,7 @@ export async function loadRuleFiles(cwd: string): Promise<string> {
  * Load AGENTS.md or AGENT.md file from the project root if it exists
  * Checks for both AGENTS.md (standard) and AGENT.md (alternative) for compatibility
  */
-async function loadAgentRulesFile(cwd: string): Promise<string> {
+async function loadAgentRulesFile(cwd: string, tracker: FileTracker): Promise<string> {
 	// Try both filenames - AGENTS.md (standard) first, then AGENT.md (alternative)
 	const filenames = ["AGENTS.md", "AGENT.md"]
 
@@ -251,7 +304,7 @@ async function loadAgentRulesFile(cwd: string): Promise<string> {
 
 			// Read the content from the resolved path
 			const content = await safeReadFile(resolvedPath)
-			if (content) {
+			if (content && shouldIncludeFile(resolvedPath, content, tracker)) {
 				return `# Agent Rules Standard (${filename}):\n${content}`
 			}
 		} catch (err) {
@@ -274,6 +327,12 @@ export async function addCustomInstructions(
 ): Promise<string> {
 	const sections = []
 
+	// Create file tracker to prevent duplicates
+	const fileTracker: FileTracker = {
+		resolvedPaths: new Set<string>(),
+		contentHashes: new Set<string>(),
+	}
+
 	// Load mode-specific rules if mode is provided
 	let modeRuleContent = ""
 	let usedRuleFile = ""
@@ -286,7 +345,7 @@ export async function addCustomInstructions(
 		for (const rooDir of rooDirectories) {
 			const modeRulesDir = path.join(rooDir, `rules-${mode}`)
 			if (await directoryExists(modeRulesDir)) {
-				const files = await readTextFilesFromDirectory(modeRulesDir)
+				const files = await readTextFilesFromDirectory(modeRulesDir, fileTracker)
 				if (files.length > 0) {
 					const content = formatDirectoryContent(modeRulesDir, files)
 					modeRules.push(content)
@@ -301,13 +360,17 @@ export async function addCustomInstructions(
 		} else {
 			// Fall back to existing behavior for legacy files
 			const rooModeRuleFile = `.roorules-${mode}`
-			modeRuleContent = await safeReadFile(path.join(cwd, rooModeRuleFile))
-			if (modeRuleContent) {
+			const rooModeRuleFilePath = path.join(cwd, rooModeRuleFile)
+			const rooModeContent = await safeReadFile(rooModeRuleFilePath)
+			if (rooModeContent && shouldIncludeFile(rooModeRuleFilePath, rooModeContent, fileTracker)) {
+				modeRuleContent = rooModeContent
 				usedRuleFile = rooModeRuleFile
 			} else {
 				const clineModeRuleFile = `.clinerules-${mode}`
-				modeRuleContent = await safeReadFile(path.join(cwd, clineModeRuleFile))
-				if (modeRuleContent) {
+				const clineModeRuleFilePath = path.join(cwd, clineModeRuleFile)
+				const clineModeContent = await safeReadFile(clineModeRuleFilePath)
+				if (clineModeContent && shouldIncludeFile(clineModeRuleFilePath, clineModeContent, fileTracker)) {
+					modeRuleContent = clineModeContent
 					usedRuleFile = clineModeRuleFile
 				}
 			}
@@ -350,14 +413,14 @@ export async function addCustomInstructions(
 
 	// Add AGENTS.md content if enabled (default: true)
 	if (options.settings?.useAgentRules !== false) {
-		const agentRulesContent = await loadAgentRulesFile(cwd)
+		const agentRulesContent = await loadAgentRulesFile(cwd, fileTracker)
 		if (agentRulesContent && agentRulesContent.trim()) {
 			rules.push(agentRulesContent.trim())
 		}
 	}
 
 	// Add generic rules
-	const genericRuleContent = await loadRuleFiles(cwd)
+	const genericRuleContent = await loadRuleFiles(cwd, fileTracker)
 	if (genericRuleContent && genericRuleContent.trim()) {
 		rules.push(genericRuleContent.trim())
 	}
