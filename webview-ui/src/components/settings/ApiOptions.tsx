@@ -63,6 +63,7 @@ import {
 
 import {
 	Anthropic,
+	AnthropicCompatible,
 	Bedrock,
 	Cerebras,
 	Chutes,
@@ -491,6 +492,13 @@ const ApiOptions = ({
 				<Anthropic apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
 			)}
 
+			{selectedProvider === "anthropic-compatible" && (
+				<AnthropicCompatible
+					apiConfiguration={apiConfiguration}
+					setApiConfigurationField={setApiConfigurationField}
+				/>
+			)}
+
 			{selectedProvider === "claude-code" && (
 				<ClaudeCode apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
 			)}
@@ -658,7 +666,7 @@ const ApiOptions = ({
 				<Featherless apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
 			)}
 
-			{selectedProviderModels.length > 0 && (
+			{selectedProviderModels.length > 0 && selectedProvider !== "anthropic-compatible" && (
 				<>
 					<div>
 						<label className="block font-medium mb-1">{t("settings:providers.model")}</label>

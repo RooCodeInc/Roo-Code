@@ -33,6 +33,7 @@ import {
 
 export const providerNames = [
 	"anthropic",
+	"anthropic-compatible",
 	"claude-code",
 	"glama",
 	"openrouter",
@@ -124,6 +125,14 @@ const anthropicSchema = apiModelIdProviderModelSchema.extend({
 	anthropicBaseUrl: z.string().optional(),
 	anthropicUseAuthToken: z.boolean().optional(),
 	anthropicBeta1MContext: z.boolean().optional(), // Enable 'context-1m-2025-08-07' beta for 1M context window
+})
+
+const anthropicCompatibleSchema = apiModelIdProviderModelSchema.extend({
+	apiKey: z.string().optional(),
+	anthropicBaseUrl: z.string().optional(),
+	anthropicUseAuthToken: z.boolean().optional(),
+	anthropicBeta1MContext: z.boolean().optional(), // Enable 'context-1m-2025-08-07' beta for 1M context window
+	anthropicCustomModelInfo: modelInfoSchema.nullish(),
 })
 
 const claudeCodeSchema = apiModelIdProviderModelSchema.extend({
@@ -335,6 +344,7 @@ const defaultSchema = z.object({
 
 export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProvider", [
 	anthropicSchema.merge(z.object({ apiProvider: z.literal("anthropic") })),
+	anthropicCompatibleSchema.merge(z.object({ apiProvider: z.literal("anthropic-compatible") })),
 	claudeCodeSchema.merge(z.object({ apiProvider: z.literal("claude-code") })),
 	glamaSchema.merge(z.object({ apiProvider: z.literal("glama") })),
 	openRouterSchema.merge(z.object({ apiProvider: z.literal("openrouter") })),
@@ -375,6 +385,7 @@ export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProv
 export const providerSettingsSchema = z.object({
 	apiProvider: providerNamesSchema.optional(),
 	...anthropicSchema.shape,
+	...anthropicCompatibleSchema.shape,
 	...claudeCodeSchema.shape,
 	...glamaSchema.shape,
 	...openRouterSchema.shape,
@@ -446,7 +457,7 @@ export const getModelId = (settings: ProviderSettings): string | undefined => {
 }
 
 // Providers that use Anthropic-style API protocol.
-export const ANTHROPIC_STYLE_PROVIDERS: ProviderName[] = ["anthropic", "claude-code", "bedrock"]
+export const ANTHROPIC_STYLE_PROVIDERS: ProviderName[] = ["anthropic", "anthropic-compatible", "claude-code", "bedrock"]
 
 export const getApiProtocol = (provider: ProviderName | undefined, modelId?: string): "anthropic" | "openai" => {
 	if (provider && ANTHROPIC_STYLE_PROVIDERS.includes(provider)) {
@@ -472,6 +483,11 @@ export const MODELS_BY_PROVIDER: Record<
 	anthropic: {
 		id: "anthropic",
 		label: "Anthropic",
+		models: Object.keys(anthropicModels),
+	},
+	"anthropic-compatible": {
+		id: "anthropic-compatible",
+		label: "Anthropic Compatible",
 		models: Object.keys(anthropicModels),
 	},
 	bedrock: {

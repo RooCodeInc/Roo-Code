@@ -335,6 +335,12 @@ function getSelectedModel({
 			const info = routerModels["vercel-ai-gateway"]?.[id]
 			return { id, info }
 		}
+		case "anthropic-compatible": {
+			const id = apiConfiguration.apiModelId ?? anthropicDefaultModelId
+			const info =
+				apiConfiguration?.anthropicCustomModelInfo ?? anthropicModels[id as keyof typeof anthropicModels]
+			return { id, info }
+		}
 		// case "anthropic":
 		// case "human-relay":
 		// case "fake-ai":

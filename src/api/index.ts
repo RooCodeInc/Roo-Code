@@ -7,6 +7,7 @@ import { ApiStream } from "./transform/stream"
 import {
 	GlamaHandler,
 	AnthropicHandler,
+	AnthropicCompatibleHandler,
 	AwsBedrockHandler,
 	CerebrasHandler,
 	OpenRouterHandler,
@@ -92,6 +93,8 @@ export function buildApiHandler(configuration: ProviderSettings): ApiHandler {
 	switch (apiProvider) {
 		case "anthropic":
 			return new AnthropicHandler(options)
+		case "anthropic-compatible":
+			return new AnthropicCompatibleHandler(options)
 		case "claude-code":
 			return new ClaudeCodeHandler(options)
 		case "glama":
