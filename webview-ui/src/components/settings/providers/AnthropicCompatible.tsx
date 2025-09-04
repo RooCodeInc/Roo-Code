@@ -55,7 +55,7 @@ export const AnthropicCompatible = ({ apiConfiguration, setApiConfigurationField
 				onInput={handleInputChange("apiModelId")}
 				placeholder="claude-3-5-sonnet-20241022"
 				className="w-full">
-				<label className="block font-medium mb-1">Model Name</label>
+				<label className="block font-medium mb-1">{t("settings:providers.modelName")}</label>
 			</VSCodeTextField>
 			<div className="text-sm text-vscode-descriptionForeground -mt-2">
 				Enter the model name (e.g., claude-3-5-sonnet-20241022)
