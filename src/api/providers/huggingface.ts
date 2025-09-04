@@ -8,7 +8,7 @@ import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from ".
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
 import { getHuggingFaceModels, getCachedHuggingFaceModels } from "./fetchers/huggingface"
-import { createOpenAIClientWithErrorHandling, handleOpenAIError } from "./utils/openai-error-handler"
+import { handleOpenAIError } from "./utils/openai-error-handler"
 
 export class HuggingFaceHandler extends BaseProvider implements SingleCompletionHandler {
 	private client: OpenAI
@@ -23,15 +23,11 @@ export class HuggingFaceHandler extends BaseProvider implements SingleCompletion
 			throw new Error("Hugging Face API key is required")
 		}
 
-		this.client = createOpenAIClientWithErrorHandling(
-			() =>
-				new OpenAI({
-					baseURL: "https://router.huggingface.co/v1",
-					apiKey: this.options.huggingFaceApiKey,
-					defaultHeaders: DEFAULT_HEADERS,
-				}),
-			"HuggingFace",
-		)
+		this.client = new OpenAI({
+			baseURL: "https://router.huggingface.co/v1",
+			apiKey: this.options.huggingFaceApiKey,
+			defaultHeaders: DEFAULT_HEADERS,
+		})
 
 		// Try to get cached models first
 		this.modelCache = getCachedHuggingFaceModels()

@@ -27,18 +27,3 @@ export function handleOpenAIError(error: unknown, providerName: string): Error {
 	// If it's not even an Error object, wrap it
 	return new Error(`${providerName} error: ${String(error)}`)
 }
-
-/**
- * Wraps an OpenAI client instantiation with error handling
- * @param createClient - Function that creates the OpenAI client
- * @param providerName - The name of the provider for error messages
- * @returns The created client
- * @throws User-friendly error if client creation fails
- */
-export function createOpenAIClientWithErrorHandling<T>(createClient: () => T, providerName: string): T {
-	try {
-		return createClient()
-	} catch (error) {
-		throw handleOpenAIError(error, providerName)
-	}
-}
