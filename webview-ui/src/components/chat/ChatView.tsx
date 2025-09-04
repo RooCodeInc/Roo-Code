@@ -41,6 +41,7 @@ import RooCloudCTA from "@src/components/welcome/RooCloudCTA"
 import { StandardTooltip } from "@src/components/ui"
 import { useAutoApprovalState } from "@src/hooks/useAutoApprovalState"
 import { useAutoApprovalToggles } from "@src/hooks/useAutoApprovalToggles"
+import { showSystemNotification } from "@src/utils/showSystemNotification"
 
 import TelemetryBanner from "../common/TelemetryBanner"
 import VersionIndicator from "../common/VersionIndicator"
@@ -56,7 +57,6 @@ import SystemPromptWarning from "./SystemPromptWarning"
 import ProfileViolationWarning from "./ProfileViolationWarning"
 import { CheckpointWarning } from "./CheckpointWarning"
 import { QueuedMessages } from "./QueuedMessages"
-
 export interface ChatViewProps {
 	isHidden: boolean
 	showAnnouncement: boolean
@@ -280,6 +280,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					switch (lastMessage.ask) {
 						case "api_req_failed":
 							playSound("progress_loop")
+							showSystemNotification(t("settings:notifications.system.apiReqFailed"))
 							setSendingDisabled(true)
 							setClineAsk("api_req_failed")
 							setEnableButtons(true)
@@ -288,6 +289,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							break
 						case "mistake_limit_reached":
 							playSound("progress_loop")
+							showSystemNotification(t("settings:notifications.system.mistakeLimitReached"))
 							setSendingDisabled(false)
 							setClineAsk("mistake_limit_reached")
 							setEnableButtons(true)
@@ -297,6 +299,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 						case "followup":
 							if (!isPartial) {
 								playSound("notification")
+								showSystemNotification(t("settings:notifications.system.followup"))
 							}
 							setSendingDisabled(isPartial)
 							setClineAsk("followup")
@@ -311,6 +314,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 						case "tool":
 							if (!isAutoApproved(lastMessage) && !isPartial) {
 								playSound("notification")
+								showSystemNotification(t("settings:notifications.system.toolRequest"))
 							}
 							setSendingDisabled(isPartial)
 							setClineAsk("tool")
@@ -347,6 +351,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 						case "browser_action_launch":
 							if (!isAutoApproved(lastMessage) && !isPartial) {
 								playSound("notification")
+								showSystemNotification(t("settings:notifications.system.browserAction"))
 							}
 							setSendingDisabled(isPartial)
 							setClineAsk("browser_action_launch")
@@ -357,6 +362,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 						case "command":
 							if (!isAutoApproved(lastMessage) && !isPartial) {
 								playSound("notification")
+								showSystemNotification(t("settings:notifications.system.command"))
 							}
 							setSendingDisabled(isPartial)
 							setClineAsk("command")
@@ -374,6 +380,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 						case "use_mcp_server":
 							if (!isAutoApproved(lastMessage) && !isPartial) {
 								playSound("notification")
+								showSystemNotification(t("settings:notifications.system.useMcpServer"))
 							}
 							setSendingDisabled(isPartial)
 							setClineAsk("use_mcp_server")
@@ -385,6 +392,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							// extension waiting for feedback. but we can just present a new task button
 							if (!isPartial) {
 								playSound("celebration")
+								showSystemNotification(t("settings:notifications.system.completionResult"))
 							}
 							setSendingDisabled(isPartial)
 							setClineAsk("completion_result")
