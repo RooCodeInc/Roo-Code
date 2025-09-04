@@ -32,6 +32,7 @@ import { handleOpenAIError } from "./utils/openai-error-handler"
 export class OpenAiHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
 	private client: OpenAI
+	private readonly providerName = "OpenAI"
 
 	constructor(options: ApiHandlerOptions) {
 		super()
@@ -182,7 +183,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 					isAzureAiInference ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {},
 				)
 			} catch (error) {
-				throw handleOpenAIError(error, "OpenAI")
+				throw handleOpenAIError(error, this.providerName)
 			}
 
 			const matcher = new XmlMatcher(
@@ -249,7 +250,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 					this._isAzureAiInference(modelUrl) ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {},
 				)
 			} catch (error) {
-				throw handleOpenAIError(error, "OpenAI")
+				throw handleOpenAIError(error, this.providerName)
 			}
 
 			yield {
@@ -299,13 +300,13 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 					isAzureAiInference ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {},
 				)
 			} catch (error) {
-				throw handleOpenAIError(error, "OpenAI")
+				throw handleOpenAIError(error, this.providerName)
 			}
 
 			return response.choices[0]?.message.content || ""
 		} catch (error) {
 			if (error instanceof Error) {
-				throw new Error(`OpenAI completion error: ${error.message}`)
+				throw new Error(`${this.providerName} completion error: ${error.message}`)
 			}
 
 			throw error
@@ -350,7 +351,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 					methodIsAzureAiInference ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {},
 				)
 			} catch (error) {
-				throw handleOpenAIError(error, "OpenAI")
+				throw handleOpenAIError(error, this.providerName)
 			}
 
 			yield* this.handleStreamResponse(stream)
@@ -380,7 +381,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 					methodIsAzureAiInference ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {},
 				)
 			} catch (error) {
-				throw handleOpenAIError(error, "OpenAI")
+				throw handleOpenAIError(error, this.providerName)
 			}
 
 			yield {
