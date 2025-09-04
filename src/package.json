@@ -18,9 +18,9 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/RooCodeInc/Roo-Code"
+		"url": "https://github.com/Newton-School/charles"
 	},
-	"homepage": "https://github.com/RooCodeInc/Roo-Code",
+	"homepage": "https://github.com/Newton-School/charles",
 	"categories": [
 		"AI",
 		"Chat",

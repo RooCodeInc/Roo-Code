@@ -1,19 +1,6 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-     xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="1.8"
-     stroke-linecap="round" stroke-linejoin="round" aria-labelledby="title desc" role="img">
-  <title id="title">Charles — AI Code Generator Logo</title>
-  <desc id="desc">A minimalist C-shaped arc with code brackets and a small spark, optimized for 24x24.</desc>
-
-  <!-- Stylized "C" -->
-  <path d="M13 4 A8 8 0 1 0 13 20" />
-
-  <!-- Code brackets -->
-  <path d="M9 9 L7 12 L9 15" />
-  <path d="M15 9 L17 12 L15 15" />
-
-  <!-- Spark (AI hint) -->
-  <g fill="currentColor" stroke="none">
-    <path d="M18 6 L19 7 L18 8 L17 7 Z" />
-  </g>
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M15.9375 6.9375C18.7334 6.9375 21 9.20406 21 12V16.5C21 19.2959 18.7334 21.5625 15.9375 21.5625H8.0625C5.26656 21.5625 3 19.2959 3 16.5V12C3 9.20406 5.26656 6.9375 8.0625 6.9375H12H15.9375ZM8.0625 9.1875C6.5092 9.1875 5.25 10.4467 5.25 12V14.25C5.25 15.8033 6.5092 17.0625 8.0625 17.0625H15.9375C17.4908 17.0625 18.75 15.8033 18.75 14.25V12C18.75 10.4467 17.4908 9.1875 15.9375 9.1875H8.0625Z" fill="#16191D"/>
+<path d="M10.875 13.125C10.875 14.057 10.1195 14.8125 9.1875 14.8125C8.25552 14.8125 7.5 14.057 7.5 13.125C7.5 12.193 8.25552 11.4375 9.1875 11.4375C10.1195 11.4375 10.875 12.193 10.875 13.125Z" fill="#16191D"/>
+<path d="M16.5 13.125C16.5 14.057 15.7445 14.8125 14.8125 14.8125C13.8805 14.8125 13.125 14.057 13.125 13.125C13.125 12.193 13.8805 11.4375 14.8125 11.4375C15.7445 11.4375 16.5 12.193 16.5 13.125Z" fill="#16191D"/>
+<path d="M12 2.4375C12.932 2.4375 13.6875 3.19302 13.6875 4.125C13.6875 4.85944 13.2175 5.48198 12.5625 5.71387V6.9375H11.4375V5.71387C10.7825 5.48198 10.3125 4.85944 10.3125 4.125C10.3125 3.19302 11.068 2.4375 12 2.4375Z" fill="#16191D"/>
 </svg>

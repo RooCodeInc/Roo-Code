@@ -99,33 +99,45 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	const contextProxy = await ContextProxy.getInstance(context)
 
-	// Load configuration from API endpoint if enabled
 	try {
-		const { ApiConfigManager } = await import("./services/api-config")
-		const apiConfigManager = ApiConfigManager.create(contextProxy)
+		outputChannel.appendLine("[Config] Applying hardcoded default configuration...")
 
-		outputChannel.appendLine("[ApiConfig] Loading configuration from API endpoint...")
-		const apiConfigResult = await apiConfigManager.loadAndApplyConfiguration()
-
-		if (apiConfigResult.success) {
-			outputChannel.appendLine(
-				`[ApiConfig] Successfully applied ${apiConfigResult.appliedSettings.length} settings from API`,
-			)
-			if (apiConfigResult.appliedSettings.length > 0) {
-				outputChannel.appendLine(`[ApiConfig] Applied settings: ${apiConfigResult.appliedSettings.join(", ")}`)
-			}
-		} else if (apiConfigResult.skipped) {
-			outputChannel.appendLine(`[ApiConfig] Configuration loading skipped: ${apiConfigResult.errors.join(", ")}`)
-		} else {
-			outputChannel.appendLine(`[ApiConfig] Configuration loading failed: ${apiConfigResult.errors.join(", ")}`)
+		// Hardcoded settings for proxy
+		const defaultSettings = {
+			apiProvider: "openai-native",
+			model: "gpt-4o-mini",
+			// systemPrompt: "You are Charles, an AI coding assistant.",
+			codeIndexing: {
+				embedderProvider: "openai",
+				qdrantUrl: "http://localhost:6333",
+				embeddingModel: "text-embedding-3-small",
+			},
 		}
 
-		if (apiConfigResult.errors.length > 0) {
-			outputChannel.appendLine(`[ApiConfig] Errors: ${apiConfigResult.errors.join(", ")}`)
-		}
+		// Apply provider settings
+		await contextProxy.setProviderSettings({
+			apiProvider: defaultSettings.apiProvider as any,
+			apiModelId: defaultSettings.model,
+		})
+
+		await contextProxy.setValues({
+			// customInstructions: defaultSettings.systemPrompt,
+			codebaseIndexConfig: {
+				codebaseIndexEnabled: true,
+				codebaseIndexEmbedderProvider: defaultSettings.codeIndexing.embedderProvider as any,
+				codebaseIndexQdrantUrl: defaultSettings.codeIndexing.qdrantUrl,
+				codebaseIndexEmbedderModelId: defaultSettings.codeIndexing.embeddingModel,
+			},
+		})
+
+		outputChannel.appendLine("[Config] Successfully applied hardcoded configuration")
+		outputChannel.appendLine(`[Config] Provider: ${defaultSettings.apiProvider}, Model: ${defaultSettings.model}`)
+		outputChannel.appendLine(
+			`[Config] Code indexing: ${defaultSettings.codeIndexing.embedderProvider} with ${defaultSettings.codeIndexing.embeddingModel}`,
+		)
 	} catch (error) {
 		outputChannel.appendLine(
-			`[ApiConfig] Error during API configuration loading: ${error instanceof Error ? error.message : String(error)}`,
+			`[Config] Error applying hardcoded configuration: ${error instanceof Error ? error.message : String(error)}`,
 		)
 	}
 
@@ -323,62 +335,6 @@ export async function activate(context: vscode.ExtensionContext) {
 			},
 		})
 	}
-
-	// try {
-	// 	outputChannel.appendLine("Fetching configuration from API...")
-	// 	const response = await fetch("http://localhost:6123/api")
-
-	// 	if (response.ok) {
-	// 		const data = await response.json()
-
-	// 		// Store in extension context
-	// 		await context.globalState.update("openaiApiKey", data.OPENAI_API_KEY)
-	// 		await context.globalState.update("openaiModels", data.OPENAI_MODELS)
-	// 		await context.globalState.update("qdrantUrl", data.QDRANT_URL)
-	// 		await context.globalState.update("systemPrompt", data.SYSTEM_PROMPT)
-
-	// 		console.log(context)
-
-	// 		// You could also set the provider configuration directly
-	// 		const currentApiConfigName = context.globalState.get("currentApiConfigName") || "default"
-	// 		const providerSettings = context.globalState.get(`apiConfig.${currentApiConfigName}`) || {}
-
-	// 		// Update the provider settings with the fetched values
-	// 		const updatedProviderSettings = {
-	// 			...providerSettings,
-	// 			apiProvider: "openai",
-	// 			openAiApiKey: data.OPENAI_API_KEY,
-	// 			openAiModels: data.OPENAI_MODELS,
-	// 			apiModelId: data.DEFAULT_MODEL || "gpt-4o-mini", // Use default model from API or fallback
-	// 		}
-
-	// 		await context.globalState.update(`apiConfig.${currentApiConfigName}`, updatedProviderSettings)
-
-	// 		// Update codebase indexing config
-	// 		const codebaseIndexConfig = context.globalState.get("codebaseIndexConfig") || {}
-	// 		const updatedCodebaseConfig = {
-	// 			...codebaseIndexConfig,
-	// 			codebaseIndexEnabled: true,
-	// 			codebaseIndexEmbedderProvider: "openai",
-	// 			codebaseIndexEmbedderModelId: data.EMBEDDING_MODEL || "text-embedding-3-large",
-	// 			codebaseIndexQdrantUrl: data.QDRANT_URL || "http://localhost:6333",
-	// 		}
-
-	// 		await context.globalState.update("codebaseIndexConfig", updatedCodebaseConfig)
-
-	// 		// Store API keys in secrets
-	// 		await context.secrets.store("codeIndexOpenAiKey", data.OPENAI_API_KEY)
-	// 		if (data.QDRANT_API_KEY) {
-	// 			await context.secrets.store("codeIndexQdrantApiKey", data.QDRANT_API_KEY)
-	// 		}
-
-	// 		outputChannel.appendLine("API configuration loaded successfully")
-	// 	} else {
-	// 		outputChannel.appendLine(`API request failed with status ${response.status}`)
-	// 	}
-	// } catch (error) {
-	// 	outputChannel.appendLine(`Failed to fetch configuration from API: ${error}`)
-	// }
 
 	return new API(outputChannel, provider, socketPath, enableLogging)
 }

@@ -1,19 +1,24 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-     xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="1.8"
-     stroke-linecap="round" stroke-linejoin="round" aria-labelledby="title desc" role="img">
-  <title id="title">Charles — AI Code Generator Logo</title>
-  <desc id="desc">A minimalist C-shaped arc with code brackets and a small spark, optimized for 24x24.</desc>
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 20010904//EN"
+ "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
+<svg version="1.0" xmlns="http://www.w3.org/2000/svg"
+ width="150.000000pt" height="150.000000pt" viewBox="0 0 150.000000 150.000000"
+ preserveAspectRatio="xMidYMid meet">
 
-  <!-- Stylized "C" -->
-  <path d="M13 4 A8 8 0 1 0 13 20" />
-
-  <!-- Code brackets -->
-  <path d="M9 9 L7 12 L9 15" />
-  <path d="M15 9 L17 12 L15 15" />
-
-  <!-- Spark (AI hint) -->
-  <g fill="currentColor" stroke="none">
-    <path d="M18 6 L19 7 L18 8 L17 7 Z" />
-  </g>
+<g transform="translate(0.000000,150.000000) scale(0.100000,-0.100000)"
+fill="#000000" stroke="none">
+<path d="M706 1335 c-42 -22 -55 -44 -56 -94 0 -37 5 -49 35 -77 25 -23 35
+-41 35 -62 l0 -29 -144 -5 c-138 -4 -146 -5 -210 -37 -75 -37 -127 -94 -157
+-171 -16 -43 -19 -77 -19 -250 0 -173 3 -207 19 -250 39 -102 114 -168 220
+-196 50 -12 114 -15 348 -12 286 3 288 3 343 29 74 34 120 76 156 141 l29 53
+3 213 c4 243 -3 278 -68 361 -28 35 -59 59 -106 82 -64 32 -72 33 -210 37
+l-144 5 0 29 c0 21 10 39 35 62 30 28 35 40 35 78 0 48 -23 82 -67 99 -33 12
+-43 11 -77 -6z m371 -427 c18 -10 45 -35 60 -55 28 -36 28 -39 28 -173 0 -134
+0 -137 -28 -173 -54 -72 -57 -72 -387 -72 -330 0 -333 0 -387 72 -26 34 -28
+44 -31 146 -5 138 1 165 41 211 54 62 76 66 392 63 245 -2 284 -4 312 -19z"/>
+<path d="M498 750 c-27 -28 -30 -36 -25 -77 5 -51 28 -79 72 -91 46 -13 93 4
+115 41 24 38 25 68 5 107 -19 37 -43 50 -95 50 -33 0 -48 -6 -72 -30z"/>
+<path d="M867 769 c-22 -13 -47 -61 -47 -91 0 -13 9 -37 20 -55 35 -58 121
+-61 169 -6 32 37 25 107 -14 140 -28 25 -95 31 -128 12z"/>
+</g>
 </svg>

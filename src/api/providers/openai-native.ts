@@ -56,8 +56,15 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		if (this.options.enableGpt5ReasoningSummary === undefined) {
 			this.options.enableGpt5ReasoningSummary = true
 		}
-		const apiKey = this.options.openAiNativeApiKey ?? "not-provided"
-		this.client = new OpenAI({ baseURL: this.options.openAiNativeBaseUrl, apiKey })
+		const apiKey = "proxy-handled"
+		const baseURL = "http://localhost:3500/v1"
+		this.client = new OpenAI({
+			baseURL,
+			apiKey,
+			defaultHeaders: {
+				"X-Client": "Charles-Extension-Chat",
+			},
+		})
 	}
 
 	private normalizeGpt5Usage(usage: any, model: OpenAiNativeModel): ApiStreamUsageChunk | undefined {
