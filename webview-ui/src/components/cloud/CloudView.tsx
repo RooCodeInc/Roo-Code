@@ -9,7 +9,7 @@ import { vscode } from "@src/utils/vscode"
 import { telemetryClient } from "@src/utils/TelemetryClient"
 import { ToggleSwitch } from "@/components/ui/toggle-switch"
 
-import { History, PiggyBank, SquareArrowOutUpRightIcon } from "lucide-react"
+import { History, PiggyBank, Share2 } from "lucide-react"
 
 // Define the production URL constant locally to avoid importing from cloud package in tests
 const PRODUCTION_ROO_CODE_API_URL = "https://app.roocode.com"
@@ -174,7 +174,7 @@ export const CloudView = ({ userInfo, isAuthenticated, cloudApiUrl, onDone }: Cl
 						</h2>
 						<ul className="text-vscode-descriptionForeground space-y-3 mx-auto px-8">
 							<li className="flex items-start text-left gap-4">
-								<SquareArrowOutUpRightIcon size="16" className="shrink-0" />
+								<Share2 size="16" className="shrink-0" />
 								{t("cloud:cloudBenefitSharing")}
 							</li>
 							<li className="flex items-start text-left gap-4">
