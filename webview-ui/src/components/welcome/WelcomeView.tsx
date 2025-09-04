@@ -113,9 +113,7 @@ const WelcomeView = () => {
 												{provider.description}
 											</div>
 											{provider.incentive && (
-												<div className="text-xs text-vscode-warningForeground mt-1">
-													{provider.incentive}
-												</div>
+												<div className="text-xs mt-1">{provider.incentive}</div>
 											)}
 										</div>
 									</div>
