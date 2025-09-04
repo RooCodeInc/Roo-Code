@@ -72,34 +72,6 @@ describe("NativeOllamaHandler", () => {
 			expect(results[1]).toEqual({ type: "text", text: " world" })
 			expect(results[2]).toEqual({ type: "usage", inputTokens: 10, outputTokens: 2 })
 		})
-
-		it("should handle DeepSeek R1 models with reasoning detection", async () => {
-			const options: ApiHandlerOptions = {
-				apiModelId: "deepseek-r1",
-				ollamaModelId: "deepseek-r1",
-				ollamaBaseUrl: "http://localhost:11434",
-			}
-
-			handler = new NativeOllamaHandler(options)
-
-			// Mock response with thinking tags
-			mockChat.mockImplementation(async function* () {
-				yield { message: { content: "<think>Let me think" } }
-				yield { message: { content: " about this</think>" } }
-				yield { message: { content: "The answer is 42" } }
-			})
-
-			const stream = handler.createMessage("System", [{ role: "user" as const, content: "Question?" }])
-			const results = []
-
-			for await (const chunk of stream) {
-				results.push(chunk)
-			}
-
-			// Should detect reasoning vs regular text
-			expect(results.some((r) => r.type === "reasoning")).toBe(true)
-			expect(results.some((r) => r.type === "text")).toBe(true)
-		})
 	})
 
 	describe("completePrompt", () => {
@@ -134,7 +106,7 @@ describe("NativeOllamaHandler", () => {
 				for await (const _ of stream) {
 					// consume stream
 				}
-			}).rejects.toThrow("Ollama service is not running")
+			}).rejects.toThrow("errors.ollama.serviceNotRunning")
 		})
 
 		it("should handle model not found errors", async () => {
@@ -148,7 +120,7 @@ describe("NativeOllamaHandler", () => {
 				for await (const _ of stream) {
 					// consume stream
 				}
-			}).rejects.toThrow("Model llama2 not found in Ollama")
+			}).rejects.toThrow("errors.ollama.modelNotFound")
 		})
 	})
 

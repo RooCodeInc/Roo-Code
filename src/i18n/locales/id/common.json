@@ -103,6 +103,17 @@
 		},
 		"roo": {
 			"authenticationRequired": "Penyedia Roo memerlukan autentikasi cloud. Silakan masuk ke Roo Code Cloud."
+		},
+		"ollama": {
+			"inputTooLong": "Pesan input terlalu panjang untuk model yang dipilih. Perkiraan token: {{estimatedTokenCount}}, Token maksimum: {{maxTokens}}. Untuk meningkatkan ukuran jendela konteks, silakan atur variabel lingkungan OLLAMA_NUM_CTX atau lihat dokumentasi Ollama.",
+			"serviceNotRunning": "Layanan Ollama tidak berjalan di {{baseUrl}}. Silakan jalankan Ollama terlebih dahulu.",
+			"modelNotFound": "Model {{modelId}} tidak ditemukan di Ollama. Silakan unduh model terlebih dahulu dengan: ollama pull {{modelId}}",
+			"modelNotFoundWithAvailable": "Model {{modelId}} tidak ditemukan. Model yang tersedia: {{availableModels}}",
+			"modelNotFoundNoModels": "Model {{modelId}} tidak ditemukan. Tidak ada model yang tersedia. Silakan unduh model terlebih dahulu dengan: ollama pull {{modelId}}",
+			"completionError": "Kesalahan penyelesaian Ollama: {{error}}",
+			"clientCreationError": "Kesalahan membuat klien Ollama: {{error}}",
+			"streamProcessingError": "Kesalahan pemrosesan stream Ollama: {{error}}",
+			"unknownError": "Kesalahan tidak dikenal"
 		}
 	},
 	"warnings": {

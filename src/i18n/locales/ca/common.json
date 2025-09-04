@@ -107,6 +107,17 @@
 		"roo": {
 			"authenticationRequired": "El proveïdor Roo requereix autenticació al núvol. Si us plau, inicieu sessió a Roo Code Cloud."
 		},
+		"ollama": {
+			"inputTooLong": "El missatge d'entrada és massa llarg per al model seleccionat. Tokens estimats: {{estimatedTokenCount}}, Tokens màxims: {{maxTokens}}. Per augmentar la mida de la finestra de context, estableix la variable d'entorn OLLAMA_NUM_CTX o consulta la documentació d'Ollama.",
+			"serviceNotRunning": "El servei Ollama no s'està executant a {{baseUrl}}. Inicia Ollama primer.",
+			"modelNotFound": "Model {{modelId}} no trobat a Ollama. Descarrega el model primer amb: ollama pull {{modelId}}",
+			"modelNotFoundWithAvailable": "Model {{modelId}} no trobat. Models disponibles: {{availableModels}}",
+			"modelNotFoundNoModels": "Model {{modelId}} no trobat. No hi ha models disponibles. Descarrega el model primer amb: ollama pull {{modelId}}",
+			"completionError": "Error de finalització d'Ollama: {{error}}",
+			"clientCreationError": "Error creant el client d'Ollama: {{error}}",
+			"streamProcessingError": "Error processant el flux d'Ollama: {{error}}",
+			"unknownError": "Error desconegut"
+		},
 		"mode_import_failed": "Ha fallat la importació del mode: {{error}}"
 	},
 	"warnings": {

@@ -103,6 +103,17 @@
 		},
 		"roo": {
 			"authenticationRequired": "Rooプロバイダーはクラウド認証が必要です。Roo Code Cloudにサインインしてください。"
+		},
+		"ollama": {
+			"inputTooLong": "入力メッセージが選択されたモデルには長すぎます。推定トークン数：{{estimatedTokenCount}}、最大トークン数：{{maxTokens}}。コンテキストウィンドウサイズを増やすには、OLLAMA_NUM_CTX環境変数を設定するか、Ollamaドキュメントを参照してください。",
+			"serviceNotRunning": "Ollamaサービスが{{baseUrl}}で実行されていません。まずOllamaを開始してください。",
+			"modelNotFound": "モデル{{modelId}}がOllamaで見つかりません。まずモデルをプルしてください：ollama pull {{modelId}}",
+			"modelNotFoundWithAvailable": "モデル{{modelId}}が見つかりません。利用可能なモデル：{{availableModels}}",
+			"modelNotFoundNoModels": "モデル{{modelId}}が見つかりません。利用可能なモデルがありません。まずモデルをプルしてください：ollama pull {{modelId}}",
+			"completionError": "Ollama完了エラー：{{error}}",
+			"clientCreationError": "Ollamaクライアント作成エラー：{{error}}",
+			"streamProcessingError": "Ollamaストリーム処理エラー：{{error}}",
+			"unknownError": "不明なエラー"
 		}
 	},
 	"warnings": {

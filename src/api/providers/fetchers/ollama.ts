@@ -38,17 +38,33 @@ type OllamaModelsResponse = z.infer<typeof OllamaModelsResponseSchema>
 type OllamaModelInfoResponse = z.infer<typeof OllamaModelInfoResponseSchema>
 
 export const parseOllamaModel = (rawModel: OllamaModelInfoResponse): ModelInfo => {
+	// Check for context window in model parameters first
+	const contextLengthFromModelParameters = rawModel.parameters
+		? parseInt(rawModel.parameters.match(/^num_ctx\s+(\d+)/m)?.[1] ?? "", 10) || undefined
+		: undefined
+
+	// Check for context window in model_info
 	const contextKey = Object.keys(rawModel.model_info).find((k) => k.includes("context_length"))
-	const contextWindow =
+	const contextLengthFromModelInfo =
 		contextKey && typeof rawModel.model_info[contextKey] === "number" ? rawModel.model_info[contextKey] : undefined
+
+	// Use environment variable as fallback
+	const contextLengthFromEnvironment = parseInt(process.env.OLLAMA_NUM_CTX || "4096", 10)
+
+	let contextWindow = contextLengthFromModelParameters ?? contextLengthFromModelInfo ?? contextLengthFromEnvironment
+
+	// Handle Ollama's quirk of returning 40960 for undefined context
+	if (contextWindow === 40960 && !contextLengthFromModelParameters) {
+		contextWindow = 4096 // For some unknown reason, Ollama returns an undefined context as "40960" rather than 4096, which is what it actually enforces.
+	}
 
 	const modelInfo: ModelInfo = Object.assign({}, ollamaDefaultModelInfo, {
 		description: `Family: ${rawModel.details.family}, Context: ${contextWindow}, Size: ${rawModel.details.parameter_size}`,
-		contextWindow: contextWindow || ollamaDefaultModelInfo.contextWindow,
+		contextWindow: contextWindow,
 		supportsPromptCache: true,
 		supportsImages: rawModel.capabilities?.includes("vision"),
 		supportsComputerUse: false,
-		maxTokens: contextWindow || ollamaDefaultModelInfo.contextWindow,
+		maxTokens: contextWindow,
 	})
 
 	return modelInfo

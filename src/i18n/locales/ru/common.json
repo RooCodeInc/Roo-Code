@@ -103,6 +103,17 @@
 		},
 		"roo": {
 			"authenticationRequired": "Провайдер Roo требует облачной аутентификации. Войдите в Roo Code Cloud."
+		},
+		"ollama": {
+			"inputTooLong": "Входное сообщение слишком длинное для выбранной модели. Предполагаемые токены: {{estimatedTokenCount}}, Максимальные токены: {{maxTokens}}. Чтобы увеличить размер окна контекста, установите переменную окружения OLLAMA_NUM_CTX или обратитесь к документации Ollama.",
+			"serviceNotRunning": "Сервис Ollama не запущен на {{baseUrl}}. Сначала запустите Ollama.",
+			"modelNotFound": "Модель {{modelId}} не найдена в Ollama. Сначала загрузите модель с помощью: ollama pull {{modelId}}",
+			"modelNotFoundWithAvailable": "Модель {{modelId}} не найдена. Доступные модели: {{availableModels}}",
+			"modelNotFoundNoModels": "Модель {{modelId}} не найдена. Нет доступных моделей. Сначала загрузите модель с помощью: ollama pull {{modelId}}",
+			"completionError": "Ошибка завершения Ollama: {{error}}",
+			"clientCreationError": "Ошибка создания клиента Ollama: {{error}}",
+			"streamProcessingError": "Ошибка обработки потока Ollama: {{error}}",
+			"unknownError": "Неизвестная ошибка"
 		}
 	},
 	"warnings": {

@@ -103,6 +103,17 @@
 		},
 		"roo": {
 			"authenticationRequired": "Roo sağlayıcısı bulut kimlik doğrulaması gerektirir. Lütfen Roo Code Cloud'a giriş yapın."
+		},
+		"ollama": {
+			"inputTooLong": "Giriş mesajı seçilen model için çok uzun. Tahmini token: {{estimatedTokenCount}}, Maksimum token: {{maxTokens}}. Bağlam penceresi boyutunu artırmak için OLLAMA_NUM_CTX ortam değişkenini ayarlayın veya Ollama belgelerine bakın.",
+			"serviceNotRunning": "Ollama servisi {{baseUrl}} adresinde çalışmıyor. Önce Ollama'yı başlatın.",
+			"modelNotFound": "Model {{modelId}} Ollama'da bulunamadı. Önce modeli indirin: ollama pull {{modelId}}",
+			"modelNotFoundWithAvailable": "Model {{modelId}} bulunamadı. Mevcut modeller: {{availableModels}}",
+			"modelNotFoundNoModels": "Model {{modelId}} bulunamadı. Mevcut model yok. Önce modeli indirin: ollama pull {{modelId}}",
+			"completionError": "Ollama tamamlama hatası: {{error}}",
+			"clientCreationError": "Ollama istemci oluşturma hatası: {{error}}",
+			"streamProcessingError": "Ollama akış işleme hatası: {{error}}",
+			"unknownError": "Bilinmeyen hata"
 		}
 	},
 	"warnings": {

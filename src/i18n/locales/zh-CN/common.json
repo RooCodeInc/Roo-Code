@@ -108,6 +108,17 @@
 		},
 		"roo": {
 			"authenticationRequired": "Roo 提供商需要云认证。请登录 Roo Code Cloud。"
+		},
+		"ollama": {
+			"inputTooLong": "输入消息对所选模型来说太长。预估 Token 数：{{estimatedTokenCount}}，最大 Token 数：{{maxTokens}}。要增加上下文窗口大小，请设置 OLLAMA_NUM_CTX 环境变量或查看 Ollama 文档。",
+			"serviceNotRunning": "Ollama 服务未在 {{baseUrl}} 运行。请先启动 Ollama。",
+			"modelNotFound": "在 Ollama 中未找到模型 {{modelId}}。请先拉取模型：ollama pull {{modelId}}",
+			"modelNotFoundWithAvailable": "未找到模型 {{modelId}}。可用模型：{{availableModels}}",
+			"modelNotFoundNoModels": "未找到模型 {{modelId}}。没有可用模型。请先拉取模型：ollama pull {{modelId}}",
+			"completionError": "Ollama 完成错误：{{error}}",
+			"clientCreationError": "创建 Ollama 客户端错误：{{error}}",
+			"streamProcessingError": "Ollama 流处理错误：{{error}}",
+			"unknownError": "未知错误"
 		}
 	},
 	"warnings": {

@@ -1,12 +1,20 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import { Message, Ollama, type Config as OllamaOptions } from "ollama"
-import { ModelInfo, openAiModelInfoSaneDefaults, DEEP_SEEK_DEFAULT_TEMPERATURE } from "@roo-code/types"
+import { ModelInfo, DEEP_SEEK_DEFAULT_TEMPERATURE } from "@roo-code/types"
 import { ApiStream } from "../transform/stream"
 import { BaseProvider } from "./base-provider"
 import type { ApiHandlerOptions } from "../../shared/api"
 import { getOllamaModels } from "./fetchers/ollama"
 import { XmlMatcher } from "../../utils/xml-matcher"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
+import { t } from "../../i18n"
+
+const TOKEN_ESTIMATION_FACTOR = 4 // Industry standard technique for estimating token counts without actually implementing a parser/tokenizer
+
+function estimateOllamaTokenCount(messages: Message[]): number {
+	const totalChars = messages.reduce((acc, msg) => acc + (msg.content?.length || 0), 0)
+	return Math.ceil(totalChars / TOKEN_ESTIMATION_FACTOR)
+}
 
 function convertToOllamaMessages(anthropicMessages: Anthropic.Messages.MessageParam[]): Message[] {
 	const ollamaMessages: Message[] = []
@@ -131,10 +139,20 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 	protected options: ApiHandlerOptions
 	private client: Ollama | undefined
 	protected models: Record<string, ModelInfo> = {}
+	private isInitialized = false
 
 	constructor(options: ApiHandlerOptions) {
 		super()
 		this.options = options
+		this.initialize()
+	}
+
+	private async initialize(): Promise<void> {
+		if (this.isInitialized) {
+			return
+		}
+		await this.fetchModel()
+		this.isInitialized = true
 	}
 
 	private ensureClient(): Ollama {
@@ -154,7 +172,7 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 
 				this.client = new Ollama(clientOptions)
 			} catch (error: any) {
-				throw new Error(`Error creating Ollama client: ${error.message}`)
+				throw new Error(t("common:errors.ollama.clientCreationError", { error: error.message }))
 			}
 		}
 		return this.client
@@ -165,14 +183,26 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
+		if (!this.isInitialized) {
+			await this.initialize()
+		}
+
 		const client = this.ensureClient()
-		const { id: modelId, info: modelInfo } = await this.fetchModel()
+		const { id: modelId, info: modelInfo } = this.getModel()
 		const useR1Format = modelId.toLowerCase().includes("deepseek-r1")
 
 		const ollamaMessages: Message[] = [
 			{ role: "system", content: systemPrompt },
 			...convertToOllamaMessages(messages),
 		]
+
+		// Check if the estimated token count exceeds the model's limit
+		const estimatedTokenCount = estimateOllamaTokenCount(ollamaMessages)
+		if (modelInfo.maxTokens && estimatedTokenCount > modelInfo.maxTokens) {
+			throw new Error(
+				t("common:errors.ollama.inputTooLong", { estimatedTokenCount, maxTokens: modelInfo.maxTokens }),
+			)
+		}
 
 		const matcher = new XmlMatcher(
 			"think",
@@ -190,7 +220,6 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 				messages: ollamaMessages,
 				stream: true,
 				options: {
-					num_ctx: modelInfo.contextWindow,
 					temperature: this.options.modelTemperature ?? (useR1Format ? DEEP_SEEK_DEFAULT_TEMPERATURE : 0),
 				},
 			})
@@ -233,7 +262,11 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 				}
 			} catch (streamError: any) {
 				console.error("Error processing Ollama stream:", streamError)
-				throw new Error(`Ollama stream processing error: ${streamError.message || "Unknown error"}`)
+				throw new Error(
+					t("common:errors.ollama.streamProcessingError", {
+						error: streamError.message || t("common:errors.ollama.unknownError"),
+					}),
+				)
 			}
 		} catch (error: any) {
 			// Enhance error reporting
@@ -242,12 +275,12 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 
 			if (error.code === "ECONNREFUSED") {
 				throw new Error(
-					`Ollama service is not running at ${this.options.ollamaBaseUrl || "http://localhost:11434"}. Please start Ollama first.`,
+					t("common:errors.ollama.serviceNotRunning", {
+						baseUrl: this.options.ollamaBaseUrl || "http://localhost:11434",
+					}),
 				)
 			} else if (statusCode === 404) {
-				throw new Error(
-					`Model ${this.getModel().id} not found in Ollama. Please pull the model first with: ollama pull ${this.getModel().id}`,
-				)
+				throw new Error(t("common:errors.ollama.modelNotFound", { modelId: this.getModel().id }))
 			}
 
 			console.error(`Ollama API error (${statusCode || "unknown"}): ${errorMessage}`)
@@ -257,21 +290,39 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 
 	async fetchModel() {
 		this.models = await getOllamaModels(this.options.ollamaBaseUrl)
-		return this.getModel()
+		return this.models
 	}
 
 	override getModel(): { id: string; info: ModelInfo } {
 		const modelId = this.options.ollamaModelId || ""
+
+		const modelInfo = this.models[modelId]
+		if (!modelInfo) {
+			const availableModels = Object.keys(this.models)
+			const errorMessage =
+				availableModels.length > 0
+					? t("common:errors.ollama.modelNotFoundWithAvailable", {
+							modelId,
+							availableModels: availableModels.join(", "),
+						})
+					: t("common:errors.ollama.modelNotFoundNoModels", { modelId })
+			throw new Error(errorMessage)
+		}
+
 		return {
 			id: modelId,
-			info: this.models[modelId] || openAiModelInfoSaneDefaults,
+			info: modelInfo,
 		}
 	}
 
 	async completePrompt(prompt: string): Promise<string> {
 		try {
+			if (!this.isInitialized) {
+				await this.initialize()
+			}
+
 			const client = this.ensureClient()
-			const { id: modelId } = await this.fetchModel()
+			const { id: modelId } = this.getModel()
 			const useR1Format = modelId.toLowerCase().includes("deepseek-r1")
 
 			const response = await client.chat({
@@ -286,7 +337,7 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 			return response.message?.content || ""
 		} catch (error) {
 			if (error instanceof Error) {
-				throw new Error(`Ollama completion error: ${error.message}`)
+				throw new Error(t("common:errors.ollama.completionError", { error: error.message }))
 			}
 			throw error
 		}

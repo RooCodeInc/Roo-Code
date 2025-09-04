@@ -103,6 +103,17 @@
 		},
 		"roo": {
 			"authenticationRequired": "Roo-Anbieter erfordert Cloud-Authentifizierung. Bitte melde dich bei Roo Code Cloud an."
+		},
+		"ollama": {
+			"inputTooLong": "Eingabenachricht ist zu lang für das ausgewählte Modell. Geschätzte Token: {{estimatedTokenCount}}, Max Token: {{maxTokens}}. Um die Kontextfenstergröße zu erhöhen, setze bitte die OLLAMA_NUM_CTX-Umgebungsvariable oder siehe Ollama-Dokumentation.",
+			"serviceNotRunning": "Ollama-Dienst läuft nicht unter {{baseUrl}}. Bitte starte Ollama zuerst.",
+			"modelNotFound": "Modell {{modelId}} nicht in Ollama gefunden. Bitte lade das Modell zuerst mit: ollama pull {{modelId}}",
+			"modelNotFoundWithAvailable": "Modell {{modelId}} nicht gefunden. Verfügbare Modelle: {{availableModels}}",
+			"modelNotFoundNoModels": "Modell {{modelId}} nicht gefunden. Keine Modelle verfügbar. Bitte lade das Modell zuerst mit: ollama pull {{modelId}}",
+			"completionError": "Ollama-Vervollständigungsfehler: {{error}}",
+			"clientCreationError": "Fehler beim Erstellen des Ollama-Clients: {{error}}",
+			"streamProcessingError": "Ollama-Stream-Verarbeitungsfehler: {{error}}",
+			"unknownError": "Unbekannter Fehler"
 		}
 	},
 	"warnings": {
