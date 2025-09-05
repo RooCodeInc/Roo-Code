@@ -120,7 +120,7 @@ export const CometAPI = ({
 			</div>
 			{!apiConfiguration?.cometApiKey && (
 				<VSCodeButtonLink href="https://api.cometapi.com/console/token" appearance="secondary">
-					{t("settings:providers.getCometApiKey")}
+					Get CometAPI Key
 				</VSCodeButtonLink>
 			)}
 
