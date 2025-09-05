@@ -7,6 +7,15 @@ import { parseMarkdown } from "./markdownParser"
 import { RooIgnoreController } from "../../core/ignore/RooIgnoreController"
 import { QueryCapture } from "web-tree-sitter"
 
+type OutputItem = {
+	startLine: number
+	endLine: number
+	type: string
+	startContent: string
+}
+
+const METHOD_CAPTURE = ["definition.method", "definition.method.start"]
+
 // Private constant
 const DEFAULT_MIN_COMPONENT_LINES_VALUE = 4
 
@@ -28,7 +37,7 @@ export function setMinComponentLines(value: number): void {
 }
 
 function passesMinLines(lineCount: number, capture: QueryCapture, language: string) {
-	if (["definition.method", "definition.method.start"].includes(capture.name)) {
+	if (METHOD_CAPTURE.includes(capture.name)) {
 		// In object-oriented programming languages, method signatures are only one line and should not be ignored.
 		return false
 	}
@@ -291,7 +300,7 @@ function processCaptures(captures: QueryCapture[], lines: string[], language: st
 		return null
 	}
 
-	let formattedOutput = ""
+	const outputArr: OutputItem[] = []
 
 	// Sort captures by their start position
 	captures.sort((a, b) => a.node.startPosition.row - b.node.startPosition.row)
@@ -341,13 +350,23 @@ function processCaptures(captures: QueryCapture[], lines: string[], language: st
 
 			// Add component name to output regardless of HTML filtering
 			if (!processedLines.has(lineKey) && componentName) {
-				formattedOutput += `${startLine + 1}--${endLine + 1} | ${lines[startLine]}\n`
+				outputArr.push({
+					startLine: startLine,
+					endLine: endLine,
+					type: name,
+					startContent: lines[startLine],
+				})
 				processedLines.add(lineKey)
 			}
 		}
 		// For other component definitions
 		else if (isNotHtmlElement(startLineContent)) {
-			formattedOutput += `${startLine + 1}--${endLine + 1} | ${lines[startLine]}\n`
+			outputArr.push({
+				startLine: startLine,
+				endLine: endLine,
+				type: name,
+				startContent: lines[startLine],
+			})
 			processedLines.add(lineKey)
 
 			// If this is part of a larger definition, include its non-HTML context
@@ -360,7 +379,12 @@ function processCaptures(captures: QueryCapture[], lines: string[], language: st
 					// Add the full range first
 					const rangeKey = `${node.parent.startPosition.row}-${contextEnd}`
 					if (!processedLines.has(rangeKey)) {
-						formattedOutput += `${node.parent.startPosition.row + 1}--${contextEnd + 1} | ${lines[node.parent.startPosition.row]}\n`
+						outputArr.push({
+							startLine: node.parent.startPosition.row,
+							endLine: contextEnd,
+							type: name,
+							startContent: lines[node.parent.startPosition.row],
+						})
 						processedLines.add(rangeKey)
 					}
 				}
@@ -368,8 +392,29 @@ function processCaptures(captures: QueryCapture[], lines: string[], language: st
 		}
 	})
 
-	if (formattedOutput.length > 0) {
-		return formattedOutput
+	// Deduplication and filtering
+	const dedupedArr: OutputItem[] = []
+	const seen = new Set<string>()
+	for (const item of outputArr) {
+		// Only skip if there is another item with the same startLine and startContent
+		if (item.startLine === item.endLine && METHOD_CAPTURE.includes(item.type)) {
+			const isDuplicate = outputArr.some(
+				(other) =>
+					other !== item && other.startLine === item.startLine && other.startContent === item.startContent,
+			)
+			if (isDuplicate) {
+				continue
+			}
+		}
+		const key = `${item.startLine}-${item.endLine}-${item.type}-${item.startContent}`
+		if (!seen.has(key)) {
+			dedupedArr.push(item)
+			seen.add(key)
+		}
+	}
+
+	if (dedupedArr.length > 0) {
+		return dedupedArr.map((item) => `${item.startLine + 1}--${item.endLine + 1} | ${item.startContent}`).join("\n")
 	}
 
 	return null
