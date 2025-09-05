@@ -106,6 +106,8 @@ export interface WebviewMessage {
 		| "openProjectMcpSettings"
 		| "restartMcpServer"
 		| "refreshAllMcpServers"
+		| "getRecommendedMcpConfigs"
+		| "applyRecommendedMcpConfigs"
 		| "toggleToolAlwaysAllow"
 		| "toggleToolEnabledForPrompt"
 		| "toggleMcpServer"
@@ -266,6 +268,8 @@ export interface WebviewMessage {
 	visibility?: ShareVisibility // For share visibility
 	hasContent?: boolean // For checkRulesDirectoryResult
 	checkOnly?: boolean // For deleteCustomMode check
+	recommendations?: any[] // For MCP recommendations
+	target?: "global" | "project" // For MCP recommendations target
 	codeIndexSettings?: {
 		// Global state settings
 		codebaseIndexEnabled: boolean
