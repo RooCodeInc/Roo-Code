@@ -174,150 +174,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 		// If Responses API is selected, use the Responses payload and endpoint
 		if (flavor === "responses") {
-			const nonStreaming = !(this.options.openAiStreamingEnabled ?? true)
-
-			// Build Responses payload (align with OpenAI Native Responses API formatting)
-			// Azure- and Responses-compatible multimodal handling:
-			// - Use array input ONLY when the latest user message contains images (initial turn)
-			// - When previous_response_id is present, send only the latest user turn:
-			//   • Text-only => single string "User: ...", no Developer preface
-			//   • With images => one-item array containing only the latest user content (no Developer preface)
-			const lastUserMessage = [...messages].reverse().find((m) => m.role === "user")
-			const lastUserHasImages =
-				!!lastUserMessage &&
-				Array.isArray(lastUserMessage.content) &&
-				lastUserMessage.content.some((b: unknown) => (b as { type?: string } | undefined)?.type === "image")
-
-			// Conversation continuity (parity with OpenAiNativeHandler.prepareGpt5Input)
-			const previousId = metadata?.suppressPreviousResponseId
-				? undefined
-				: (metadata?.previousResponseId ?? this.lastResponseId)
-
-			const minimalInputMode = Boolean(previousId)
-
-			let inputPayload: unknown
-			if (minimalInputMode && lastUserMessage) {
-				// Minimal-mode: only the latest user message (no Developer preface)
-				if (lastUserHasImages) {
-					// Single-item array with just the latest user content
-					inputPayload = this._toResponsesInput([lastUserMessage])
-				} else {
-					// Single message string "User: ..."
-					inputPayload = this._formatResponsesSingleMessage(lastUserMessage, true)
-				}
-			} else if (lastUserHasImages && lastUserMessage) {
-				// Initial turn with images: include Developer preface and minimal prior context to preserve continuity
-				const lastAssistantMessage = [...messages].reverse().find((m) => m.role === "assistant")
-
-				const messagesForArray = messages.filter((m) => {
-					if (m.role === "assistant") {
-						return lastAssistantMessage ? m === lastAssistantMessage : false
-					}
-					if (m.role === "user") {
-						const hasImage =
-							Array.isArray(m.content) &&
-							m.content.some((b: unknown) => (b as { type?: string } | undefined)?.type === "image")
-						return hasImage || m === lastUserMessage
-					}
-					return false
-				})
-
-				const arrayInput = this._toResponsesInput(messagesForArray)
-				const developerPreface = {
-					role: "user" as const,
-					content: [{ type: "input_text" as const, text: `Developer: ${systemPrompt}` }],
-				}
-				inputPayload = [developerPreface, ...arrayInput]
-			} else {
-				// Pure text history: full compact transcript (includes both user and assistant turns)
-				inputPayload = this._formatResponsesInput(systemPrompt, messages)
-			}
-			const usedArrayInput = Array.isArray(inputPayload)
-
-			const basePayload: Record<string, unknown> = {
-				model: modelId,
-				input: inputPayload,
-				...(previousId ? { previous_response_id: previousId } : {}),
-			}
-
-			// Reasoning effort (Responses expects: reasoning: { effort, summary? })
-			// Parity with native: support "minimal" and include summary: "auto" unless explicitly disabled
-			if (this.options.enableReasoningEffort && (this.options.reasoningEffort || reasoningEffort)) {
-				const effort = (this.options.reasoningEffort || reasoningEffort) as
-					| "minimal"
-					| "low"
-					| "medium"
-					| "high"
-					| undefined
-				if (effort) {
-					;(
-						basePayload as {
-							reasoning?: { effort: "minimal" | "low" | "medium" | "high"; summary?: "auto" }
-						}
-					).reasoning = {
-						effort,
-						...(this.options.enableGpt5ReasoningSummary !== false ? { summary: "auto" as const } : {}),
-					}
-				}
-			}
-
-			// Temperature (only include when explicitly set by the user)
-			if (this.options.modelTemperature !== undefined) {
-				basePayload.temperature = this.options.modelTemperature
-			} else if (deepseekReasoner) {
-				basePayload.temperature = DEEP_SEEK_DEFAULT_TEMPERATURE
-			}
-
-			// Verbosity: include only when explicitly specified in settings
-			if (this.options.verbosity) {
-				;(basePayload as { text?: { verbosity: "low" | "medium" | "high" } }).text = {
-					verbosity: this.options.verbosity as "low" | "medium" | "high",
-				}
-			}
-
-			// Always include max_output_tokens for Responses API to cap output length
-			const reservedMax = openAiParams.maxTokens
-			;(basePayload as Record<string, unknown>).max_output_tokens =
-				this.options.modelMaxTokens || reservedMax || modelInfo.maxTokens
-
-			// Non-streaming path
-			if (nonStreaming) {
-				const response = await this._responsesCreateWithRetries(basePayload, {
-					usedArrayInput,
-					lastUserMessage,
-					previousId,
-					systemPrompt,
-					messages,
-				})
-				yield* this._yieldResponsesResult(response, modelInfo)
-				return
-			}
-
-			// Streaming path (auto-fallback to non-streaming result if provider ignores stream flag)
-			const streamingPayload: Record<string, unknown> = { ...basePayload, stream: true }
-			const maybeStream = await this._responsesCreateWithRetries(streamingPayload, {
-				usedArrayInput,
-				lastUserMessage,
-				previousId,
-				systemPrompt,
-				messages,
-			})
-
-			const isAsyncIterable = (obj: unknown): obj is AsyncIterable<unknown> =>
-				typeof (obj as AsyncIterable<unknown>)[Symbol.asyncIterator] === "function"
-
-			if (isAsyncIterable(maybeStream)) {
-				for await (const chunk of handleResponsesStream(maybeStream, {
-					onResponseId: (id) => {
-						this.lastResponseId = id
-					},
-				})) {
-					yield chunk
-				}
-			} else {
-				// Some providers may ignore the stream flag and return a complete response
-				yield* this._yieldResponsesResult(maybeStream, modelInfo)
-			}
+			yield* this._handleResponsesFlavor(systemPrompt, messages, metadata, modelInfo, openAiParams)
 			return
 		}
 
@@ -868,6 +725,161 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 	}
 
 	// --- Responses helpers ---
+
+	private async *_handleResponsesFlavor(
+		systemPrompt: string,
+		messages: Anthropic.Messages.MessageParam[],
+		metadata: ApiHandlerCreateMessageMetadata | undefined,
+		modelInfo: ModelInfo,
+		openAiParams: any,
+	): ApiStream {
+		const modelId = this.options.openAiModelId ?? ""
+		const nonStreaming = !(this.options.openAiStreamingEnabled ?? true)
+
+		// Build Responses payload (align with OpenAI Native Responses API formatting)
+		// Azure- and Responses-compatible multimodal handling:
+		// - Use array input ONLY when the latest user message contains images (initial turn)
+		// - When previous_response_id is present, send only the latest user turn:
+		//   • Text-only => single string "User: ...", no Developer preface
+		//   • With images => one-item array containing only the latest user content (no Developer preface)
+		const lastUserMessage = [...messages].reverse().find((m) => m.role === "user")
+		const lastUserHasImages =
+			!!lastUserMessage &&
+			Array.isArray(lastUserMessage.content) &&
+			lastUserMessage.content.some((b: unknown) => (b as { type?: string } | undefined)?.type === "image")
+
+		// Conversation continuity (parity with OpenAiNativeHandler.prepareGpt5Input)
+		const previousId = metadata?.suppressPreviousResponseId
+			? undefined
+			: (metadata?.previousResponseId ?? this.lastResponseId)
+
+		const minimalInputMode = Boolean(previousId)
+
+		let inputPayload: unknown
+		if (minimalInputMode && lastUserMessage) {
+			// Minimal-mode: only the latest user message (no Developer preface)
+			if (lastUserHasImages) {
+				// Single-item array with just the latest user content
+				inputPayload = this._toResponsesInput([lastUserMessage])
+			} else {
+				// Single message string "User: ..."
+				inputPayload = this._formatResponsesSingleMessage(lastUserMessage, true)
+			}
+		} else if (lastUserHasImages && lastUserMessage) {
+			// Initial turn with images: include Developer preface and minimal prior context to preserve continuity
+			const lastAssistantMessage = [...messages].reverse().find((m) => m.role === "assistant")
+
+			const messagesForArray = messages.filter((m) => {
+				if (m.role === "assistant") {
+					return lastAssistantMessage ? m === lastAssistantMessage : false
+				}
+				if (m.role === "user") {
+					const hasImage =
+						Array.isArray(m.content) &&
+						m.content.some((b: unknown) => (b as { type?: string } | undefined)?.type === "image")
+					return hasImage || m === lastUserMessage
+				}
+				return false
+			})
+
+			const arrayInput = this._toResponsesInput(messagesForArray)
+			const developerPreface = {
+				role: "user" as const,
+				content: [{ type: "input_text" as const, text: `Developer: ${systemPrompt}` }],
+			}
+			inputPayload = [developerPreface, ...arrayInput]
+		} else {
+			// Pure text history: full compact transcript (includes both user and assistant turns)
+			inputPayload = this._formatResponsesInput(systemPrompt, messages)
+		}
+		const usedArrayInput = Array.isArray(inputPayload)
+
+		const basePayload: Record<string, unknown> = {
+			model: modelId,
+			input: inputPayload,
+			...(previousId ? { previous_response_id: previousId } : {}),
+		}
+
+		// Reasoning effort (Responses expects: reasoning: { effort, summary? })
+		// Parity with native: support "minimal" and include summary: "auto" unless explicitly disabled
+		if (this.options.enableReasoningEffort && (this.options.reasoningEffort || openAiParams?.reasoningEffort)) {
+			const effort = (this.options.reasoningEffort || openAiParams?.reasoningEffort) as
+				| "minimal"
+				| "low"
+				| "medium"
+				| "high"
+				| undefined
+			if (effort) {
+				;(
+					basePayload as {
+						reasoning?: { effort: "minimal" | "low" | "medium" | "high"; summary?: "auto" }
+					}
+				).reasoning = {
+					effort,
+					...(this.options.enableGpt5ReasoningSummary !== false ? { summary: "auto" as const } : {}),
+				}
+			}
+		}
+
+		// Temperature (only include when explicitly set by the user)
+		const deepseekReasoner = modelId.includes("deepseek-reasoner") || (this.options.openAiR1FormatEnabled ?? false)
+		if (this.options.modelTemperature !== undefined) {
+			basePayload.temperature = this.options.modelTemperature
+		} else if (deepseekReasoner) {
+			basePayload.temperature = DEEP_SEEK_DEFAULT_TEMPERATURE
+		}
+
+		// Verbosity: include only when explicitly specified in settings
+		if (this.options.verbosity) {
+			;(basePayload as { text?: { verbosity: "low" | "medium" | "high" } }).text = {
+				verbosity: this.options.verbosity as "low" | "medium" | "high",
+			}
+		}
+
+		// Always include max_output_tokens for Responses API to cap output length
+		const reservedMax = openAiParams?.maxTokens
+		;(basePayload as Record<string, unknown>).max_output_tokens =
+			this.options.modelMaxTokens || reservedMax || modelInfo.maxTokens
+
+		// Non-streaming path
+		if (nonStreaming) {
+			const response = await this._responsesCreateWithRetries(basePayload, {
+				usedArrayInput,
+				lastUserMessage,
+				previousId,
+				systemPrompt,
+				messages,
+			})
+			yield* this._yieldResponsesResult(response, modelInfo)
+			return
+		}
+
+		// Streaming path (auto-fallback to non-streaming result if provider ignores stream flag)
+		const streamingPayload: Record<string, unknown> = { ...basePayload, stream: true }
+		const maybeStream = await this._responsesCreateWithRetries(streamingPayload, {
+			usedArrayInput,
+			lastUserMessage,
+			previousId,
+			systemPrompt,
+			messages,
+		})
+
+		const isAsyncIterable = (obj: unknown): obj is AsyncIterable<unknown> =>
+			typeof (obj as AsyncIterable<unknown>)[Symbol.asyncIterator] === "function"
+
+		if (isAsyncIterable(maybeStream)) {
+			for await (const chunk of handleResponsesStream(maybeStream, {
+				onResponseId: (id) => {
+					this.lastResponseId = id
+				},
+			})) {
+				yield chunk
+			}
+		} else {
+			// Some providers may ignore the stream flag and return a complete response
+			yield* this._yieldResponsesResult(maybeStream, modelInfo)
+		}
+	}
 
 	/**
 	 * Determines which OpenAI-compatible API flavor to use based on the URL path.
