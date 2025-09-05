@@ -393,7 +393,7 @@ async function listFilteredDirectories(
 	const absolutePath = path.resolve(dirPath)
 	const directories: string[] = []
 	let dirCount = 0
-	const effectiveLimit = limit ?? Infinity
+	const effectiveLimit = limit ?? Number.MAX_SAFE_INTEGER
 
 	// For environment details generation, we don't want to treat the root as a "target"
 	// if we're doing a general recursive scan, as this would include hidden directories
