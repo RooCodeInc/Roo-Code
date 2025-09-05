@@ -281,7 +281,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	isStreaming = false
 	currentStreamingContentIndex = 0
 	currentStreamingDidCheckpoint = false
-	suppressNextCheckpointMessage = false
 	assistantMessageContent: AssistantMessageContent[] = []
 	presentAssistantMessageLocked = false
 	presentAssistantMessageHasPendingUpdates = false
@@ -895,8 +894,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// Use allowEmpty=true to ensure a checkpoint is recorded even if there are no file changes.
 		// Suppress the checkpoint_saved chat row for this particular checkpoint to keep the timeline clean.
 		if (askResponse === "messageResponse") {
-			this.suppressNextCheckpointMessage = true
-			void this.checkpointSave(true)
+			void this.checkpointSave(true, true)
 		}
 
 		// Mark the last follow-up question as answered
@@ -2765,8 +2763,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	// Checkpoints
 
-	public async checkpointSave(force: boolean = false) {
-		return checkpointSave(this, force)
+	public async checkpointSave(force: boolean = false, suppressMessage: boolean = false) {
+		return checkpointSave(this, force, suppressMessage)
 	}
 
 	public async checkpointRestore(options: CheckpointRestoreOptions) {
