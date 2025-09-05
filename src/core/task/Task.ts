@@ -1623,6 +1623,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.isPaused = false
 		this.childTaskId = undefined
 
+		const provider = this.providerRef.deref()
+		if (provider) {
+			await provider.handleModeSwitch(this.pausedModeSlug)
+		}
+
 		this.emit(RooCodeEventName.TaskUnpaused, this.taskId)
 
 		// Fake an answer from the subtask that it has completed running and
