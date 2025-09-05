@@ -25,7 +25,6 @@ import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { getApiRequestTimeout } from "./utils/timeout-config"
-import { ResponseCreateParamsNonStreaming } from "openai/resources/responses/responses"
 
 // TODO: Rename this to OpenAICompatibleHandler. Also, I think the
 // `OpenAINativeHandler` can subclass from this, since it's obviously
@@ -151,19 +150,14 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		// Gather model params (centralized: temperature, max tokens, reasoning, verbosity)
-		const modelParams = this.getModel()
-		const {
-			info: modelInfo,
-			reasoning,
-			reasoningEffort,
-			verbosity,
-		} = modelParams as unknown as {
-			id: string
-			info: ModelInfo
-			reasoning?: { reasoning_effort?: "low" | "medium" | "high" }
-			reasoningEffort?: "minimal" | "low" | "medium" | "high"
-			verbosity?: "low" | "medium" | "high"
-		}
+		const { info: modelInfo } = this.getModel()
+		const openAiParams = getModelParams({
+			format: "openai",
+			modelId: this.options.openAiModelId ?? "",
+			model: modelInfo,
+			settings: this.options,
+		})
+		const { reasoning, reasoningEffort, verbosity } = openAiParams
 
 		const modelUrl = this.options.openAiBaseUrl ?? ""
 		const modelId = this.options.openAiModelId ?? ""
@@ -280,7 +274,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			}
 
 			// Always include max_output_tokens for Responses API to cap output length
-			const reservedMax = (modelParams as any)?.maxTokens
+			const reservedMax = openAiParams.maxTokens
 			;(basePayload as Record<string, unknown>).max_output_tokens =
 				this.options.modelMaxTokens || reservedMax || modelInfo.maxTokens
 
@@ -293,7 +287,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 					systemPrompt,
 					messages,
 				})
-				yield* this._yieldResponsesResult(response as unknown, modelInfo)
+				yield* this._yieldResponsesResult(response, modelInfo)
 				return
 			}
 
@@ -320,7 +314,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				}
 			} else {
 				// Some providers may ignore the stream flag and return a complete response
-				yield* this._yieldResponsesResult(maybeStream as unknown, modelInfo)
+				yield* this._yieldResponsesResult(maybeStream, modelInfo)
 			}
 			return
 		}
@@ -521,7 +515,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 					} as Anthropic.Messages.MessageParam,
 					/*includeRole*/ true,
 				)
-				const payload: ResponseCreateParamsNonStreaming = {
+				const payload: Record<string, unknown> = {
 					model: model.id,
 					input: formattedInput,
 				}
@@ -552,7 +546,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 					payload.max_output_tokens = this.options.modelMaxTokens || modelInfo.maxTokens
 				}
 
-				const response = await this._responsesCreateWithRetries(payload as unknown as Record<string, unknown>, {
+				const response = await this._responsesCreateWithRetries(payload, {
 					usedArrayInput: false,
 					lastUserMessage: undefined,
 					previousId: undefined,
@@ -976,10 +970,20 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			messages: Anthropic.Messages.MessageParam[]
 		},
 	): Promise<unknown> {
-		const create = (body: Record<string, unknown>) =>
-			(
-				this.client as unknown as { responses: { create: (b: Record<string, unknown>) => Promise<unknown> } }
-			).responses.create(body)
+		const create = (body: Record<string, unknown>) => {
+			const hasResponsesCreate = (
+				obj: unknown,
+			): obj is { responses: { create: (b: Record<string, unknown>) => Promise<unknown> } } => {
+				if (obj == null || typeof obj !== "object") return false
+				const responses = (obj as Record<string, unknown>).responses
+				if (responses == null || typeof responses !== "object") return false
+				return typeof (responses as Record<string, unknown>).create === "function"
+			}
+			if (!hasResponsesCreate(this.client)) {
+				throw new Error("Responses API not available on client")
+			}
+			return this.client.responses.create(body)
+		}
 
 		try {
 			return await create(payload)

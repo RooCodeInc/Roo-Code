@@ -7,6 +7,20 @@ import OpenAI from "openai"
 import { Package } from "../../../shared/package"
 import axios from "axios"
 
+type ErrorWithStatus = Error & { status?: number }
+
+function getMockCallsOf(fn: unknown): any[] {
+	const isObj = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null
+	if (isObj(fn) || typeof fn === "function") {
+		const rec = fn as Record<string, unknown>
+		const mock = rec["mock"]
+		if (isObj(mock)) {
+			const calls = mock["calls"]
+			if (Array.isArray(calls)) return calls
+		}
+	}
+	return []
+}
 const mockCreate = vitest.fn()
 const mockResponsesCreate = vitest.fn()
 
@@ -424,9 +438,9 @@ describe("OpenAiHandler", () => {
 		})
 
 		it("should handle rate limiting", async () => {
-			const rateLimitError = new Error("Rate limit exceeded")
+			const rateLimitError: ErrorWithStatus = new Error("Rate limit exceeded")
 			rateLimitError.name = "Error"
-			;(rateLimitError as any).status = 429
+			rateLimitError.status = 429
 			mockCreate.mockRejectedValueOnce(rateLimitError)
 
 			const stream = handler.createMessage("system prompt", testMessages)
@@ -1198,9 +1212,9 @@ describe("OpenAI Compatible - Responses API", () => {
 
 	it("Verbosity (Responses): include when set; if server rejects, retry without it (warn once)", async () => {
 		// First call throws 400 for 'verbosity', second succeeds
-		mockResponsesCreate.mockImplementationOnce((_opts: any) => {
-			const err = new Error("Unsupported parameter: 'verbosity'")
-			;(err as any).status = 400
+		mockResponsesCreate.mockImplementationOnce((_opts: unknown) => {
+			const err: ErrorWithStatus = new Error("Unsupported parameter: 'verbosity'")
+			err.status = 400
 			throw err
 		})
 
@@ -1295,10 +1309,13 @@ describe("OpenAI Compatible - Responses API", () => {
 
 		// Ensure SDK constructor was called with normalized baseURL and 'preview' apiVersion (per requirement)
 		// Note: AzureOpenAI and OpenAI share same mock constructor; inspect last call
-		const ctorCalls = vi.mocked(OpenAI as unknown as any).mock.calls as any[]
-		const lastCtorArgs = ctorCalls[ctorCalls.length - 1]?.[0] || {}
-		expect(lastCtorArgs.baseURL).toBe("https://sample-name.openai.azure.com/openai/v1")
-		expect(lastCtorArgs.apiVersion).toBe("preview")
+		const ctorCalls = getMockCallsOf(OpenAI)
+		const lastCall = ctorCalls[ctorCalls.length - 1]
+		const lastArg0 = Array.isArray(lastCall) ? lastCall[0] : undefined
+		const lastCtorArgs =
+			typeof lastArg0 === "object" && lastArg0 !== null ? (lastArg0 as Record<string, unknown>) : {}
+		expect(lastCtorArgs["baseURL"]).toBe("https://sample-name.openai.azure.com/openai/v1")
+		expect(lastCtorArgs["apiVersion"]).toBe("preview")
 	})
 
 	it("streams Responses API when provider returns AsyncIterable", async () => {
@@ -1461,7 +1478,7 @@ describe("OpenAI Compatible - Responses API (multimodal)", () => {
 					{
 						type: "image" as const,
 						// Minimal Anthropic-style inline image (base64) block
-						source: { media_type: "image/png", data: "BASE64DATA" } as any,
+						source: { type: "base64" as const, media_type: "image/png", data: "BASE64DATA" },
 					},
 				],
 			},
@@ -1478,7 +1495,7 @@ describe("OpenAI Compatible - Responses API (multimodal)", () => {
 
 		// Input should be an array (structured input mode)
 		expect(Array.isArray(args.input)).toBe(true)
-		const arr = args.input as any[]
+		const arr = Array.isArray(args.input) ? args.input : []
 
 		// First element should be Developer preface as input_text
 		expect(arr[0]?.role).toBe("user")
@@ -1537,7 +1554,7 @@ describe("OpenAI Compatible - Responses API (multimodal)", () => {
 					{ type: "text" as const, text: "Look at this" },
 					{
 						type: "image" as const,
-						source: { media_type: "image/jpeg", data: "IMGDATA" } as any,
+						source: { type: "base64" as const, media_type: "image/jpeg", data: "IMGDATA" },
 					},
 				],
 			},
@@ -1648,7 +1665,7 @@ describe("OpenAI Compatible - Responses API conversation continuity", () => {
 		for await (const _ of handler.createMessage(
 			"sys",
 			[{ role: "user", content: [{ type: "text" as const, text: "Turn 2" }] }],
-			{ suppressPreviousResponseId: true } as any,
+			{ taskId: "test", suppressPreviousResponseId: true },
 		)) {
 		}
 
@@ -1668,9 +1685,9 @@ describe("OpenAI Compatible - Responses API parity improvements", () => {
 	it("retries without previous_response_id when server returns 400 'Previous response ... not found' (non-streaming)", async () => {
 		// First call throws 400 for previous_response_id, second succeeds
 		mockResponsesCreate
-			.mockImplementationOnce((_opts: any) => {
-				const err = new Error("Previous response rid-bad not found")
-				;(err as any).status = 400
+			.mockImplementationOnce((_opts: unknown) => {
+				const err: ErrorWithStatus = new Error("Previous response rid-bad not found")
+				err.status = 400
 				throw err
 			})
 			.mockImplementationOnce(async (_opts: any) => {
@@ -1688,7 +1705,7 @@ describe("OpenAI Compatible - Responses API parity improvements", () => {
 		for await (const ch of h.createMessage(
 			"sys",
 			[{ role: "user", content: [{ type: "text" as const, text: "Turn" }] }],
-			{ previousResponseId: "rid-bad" } as any,
+			{ taskId: "test", previousResponseId: "rid-bad" },
 		)) {
 			chunks.push(ch)
 		}
@@ -1709,9 +1726,9 @@ describe("OpenAI Compatible - Responses API parity improvements", () => {
 	it("retries without previous_response_id when server returns 400 (streaming)", async () => {
 		// First call throws, second returns a stream
 		mockResponsesCreate
-			.mockImplementationOnce((_opts: any) => {
-				const err = new Error("Previous response not found")
-				;(err as any).status = 400
+			.mockImplementationOnce((_opts: unknown) => {
+				const err: ErrorWithStatus = new Error("Previous response not found")
+				err.status = 400
 				throw err
 			})
 			.mockImplementationOnce(async (_opts: any) => {
@@ -1734,7 +1751,7 @@ describe("OpenAI Compatible - Responses API parity improvements", () => {
 		for await (const ch of h.createMessage(
 			"sys",
 			[{ role: "user", content: [{ type: "text" as const, text: "Hi" }] }],
-			{ previousResponseId: "bad-id" } as any,
+			{ taskId: "test", previousResponseId: "bad-id" },
 		)) {
 			out.push(ch)
 		}
@@ -1884,7 +1901,10 @@ describe("OpenAI Compatible - Responses API minimal input parity (new tests)", (
 		]
 
 		const chunks: any[] = []
-		for await (const ch of handler.createMessage("System Inst", msgs, { previousResponseId: "prev-1" } as any)) {
+		for await (const ch of handler.createMessage("System Inst", msgs, {
+			taskId: "test",
+			previousResponseId: "prev-1",
+		})) {
 			chunks.push(ch)
 		}
 
@@ -1914,12 +1934,15 @@ describe("OpenAI Compatible - Responses API minimal input parity (new tests)", (
 				role: "user",
 				content: [
 					{ type: "text" as const, text: "See" },
-					{ type: "image" as const, source: { media_type: "image/png", data: "IMGDATA" } as any },
+					{
+						type: "image" as const,
+						source: { type: "base64" as const, media_type: "image/png", data: "IMGDATA" },
+					},
 				],
 			},
 		]
 
-		const iter = handler.createMessage("Sys", msgs, { previousResponseId: "prev-2" } as any)
+		const iter = handler.createMessage("Sys", msgs, { taskId: "test", previousResponseId: "prev-2" })
 		for await (const _ of iter) {
 			// consume
 		}
@@ -1928,7 +1951,7 @@ describe("OpenAI Compatible - Responses API minimal input parity (new tests)", (
 		const args = mockResponsesCreate.mock.calls.pop()?.[0]
 		expect(Array.isArray(args.input)).toBe(true)
 
-		const arr = args.input as any[]
+		const arr = Array.isArray(args.input) ? args.input : []
 		expect(arr.length).toBe(1)
 		expect(arr[0]?.role).toBe("user")
 

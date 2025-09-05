@@ -18,7 +18,7 @@ export async function* handleResponsesStream(
 	for await (const event of stream) {
 		// Surface response.id to callers when available (for conversation continuity)
 		if (isObject(event)) {
-			const resp = (event as Record<string, unknown>).response as unknown
+			const resp = (event as Record<string, unknown>).response
 			if (isObject(resp)) {
 				const rid = (resp as Record<string, unknown>).id
 				if (typeof rid === "string") {
@@ -224,11 +224,11 @@ function isDoneEvent(event: unknown): event is DoneEvent {
 
 function getChoiceDeltaContent(event: unknown): string | undefined {
 	if (!isObject(event)) return undefined
-	const choices = (event as Record<string, unknown>).choices as unknown
+	const choices = (event as Record<string, unknown>).choices
 	if (!Array.isArray(choices) || choices.length === 0) return undefined
-	const first = choices[0] as unknown
+	const first = choices[0]
 	if (!isObject(first)) return undefined
-	const delta = (first as Record<string, unknown>).delta as unknown
+	const delta = (first as Record<string, unknown>).delta
 	if (!isObject(delta)) return undefined
 	const content = (delta as Record<string, unknown>).content
 	if (content == null) return undefined
@@ -237,11 +237,11 @@ function getChoiceDeltaContent(event: unknown): string | undefined {
 
 function extractUsage(event: unknown): ResponseUsage | undefined {
 	if (!isObject(event)) return undefined
-	const resp = (event as Record<string, unknown>).response as unknown
+	const resp = (event as Record<string, unknown>).response
 	if (isObject(resp) && isObject((resp as Record<string, unknown>).usage)) {
 		return (resp as Record<string, unknown>).usage as ResponseUsage
 	}
-	const usage = (event as Record<string, unknown>).usage as unknown
+	const usage = (event as Record<string, unknown>).usage
 	if (isObject(usage)) {
 		return usage as ResponseUsage
 	}
