@@ -27,7 +27,7 @@ export function setMinComponentLines(value: number): void {
 	currentMinComponentLines = value
 }
 
-function shouldSkipLineCountCheck(lineCount: number, capture: QueryCapture, language: string) {
+function passesMinLines(lineCount: number, capture: QueryCapture, language: string) {
 	if (["definition.method", "definition.method.start"].includes(capture.name)) {
 		// In object-oriented programming languages, method signatures are only one line and should not be ignored.
 		return false
@@ -318,7 +318,7 @@ function processCaptures(captures: QueryCapture[], lines: string[], language: st
 		const lineCount = endLine - startLine + 1
 
 		// Skip components that don't span enough lines
-		if (shouldSkipLineCountCheck(lineCount, capture, language)) {
+		if (passesMinLines(lineCount, capture, language)) {
 			return
 		}
 
