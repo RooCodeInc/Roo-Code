@@ -57,6 +57,11 @@ function validateModelsAndKeysProvided(apiConfiguration: ProviderSettings): stri
 				return i18next.t("settings:validation.apiKey")
 			}
 			break
+		case "cometapi":
+			if (!apiConfiguration.cometApiKey) {
+				return i18next.t("settings:validation.apiKey")
+			}
+			break
 		case "anthropic":
 			if (!apiConfiguration.apiKey) {
 				return i18next.t("settings:validation.apiKey")
@@ -202,6 +207,8 @@ function getModelIdForProvider(apiConfiguration: ProviderSettings, provider: str
 			return apiConfiguration.deepInfraModelId
 		case "litellm":
 			return apiConfiguration.litellmModelId
+		case "cometapi":
+			return apiConfiguration.cometApiModelId
 		case "openai":
 			return apiConfiguration.openAiModelId
 		case "ollama":
@@ -289,6 +296,9 @@ export function validateModelId(apiConfiguration: ProviderSettings, routerModels
 			break
 		case "litellm":
 			modelId = apiConfiguration.litellmModelId
+			break
+		case "cometapi":
+			modelId = apiConfiguration.cometApiModelId
 			break
 		case "io-intelligence":
 			modelId = apiConfiguration.ioIntelligenceModelId

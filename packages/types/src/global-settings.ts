@@ -182,6 +182,7 @@ export const SECRET_STATE_KEYS = [
 	"geminiApiKey",
 	"openAiNativeApiKey",
 	"cerebrasApiKey",
+	"cometApiKey",
 	"deepSeekApiKey",
 	"doubaoApiKey",
 	"moonshotApiKey",

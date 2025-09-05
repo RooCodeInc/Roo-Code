@@ -29,6 +29,7 @@ const routerNames = [
 	"io-intelligence",
 	"deepinfra",
 	"vercel-ai-gateway",
+	"cometapi",
 ] as const
 
 export type RouterName = (typeof routerNames)[number]
@@ -145,6 +146,7 @@ export const getModelMaxOutputTokens = ({
 // GetModelsOptions
 
 export type GetModelsOptions =
+	| { provider: "cometapi"; apiKey?: string; baseUrl?: string }
 	| { provider: "openrouter" }
 	| { provider: "glama" }
 	| { provider: "requesty"; apiKey?: string; baseUrl?: string }

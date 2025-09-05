@@ -40,6 +40,7 @@ describe("Model Validation Functions", () => {
 		ollama: {},
 		lmstudio: {},
 		deepinfra: {},
+		cometapi: {},
 		"io-intelligence": {},
 		"vercel-ai-gateway": {},
 	}

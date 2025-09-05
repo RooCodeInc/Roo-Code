@@ -37,6 +37,7 @@ import {
 	rooDefaultModelId,
 	vercelAiGatewayDefaultModelId,
 	deepInfraDefaultModelId,
+	cometApiDefaultModelId,
 } from "@roo-code/types"
 
 import { vscode } from "@src/utils/vscode"
@@ -68,6 +69,7 @@ import {
 	Cerebras,
 	Chutes,
 	ClaudeCode,
+	CometAPI,
 	DeepSeek,
 	Doubao,
 	Gemini,
@@ -230,6 +232,8 @@ const ApiOptions = ({
 				vscode.postMessage({ type: "requestRouterModels" })
 			} else if (selectedProvider === "deepinfra") {
 				vscode.postMessage({ type: "requestRouterModels" })
+			} else if (selectedProvider === "cometapi") {
+				vscode.postMessage({ type: "requestRouterModels" })
 			}
 		},
 		250,
@@ -244,6 +248,7 @@ const ApiOptions = ({
 			apiConfiguration?.litellmApiKey,
 			apiConfiguration?.deepInfraApiKey,
 			apiConfiguration?.deepInfraBaseUrl,
+			apiConfiguration?.cometApiKey,
 			customHeaders,
 		],
 	)
@@ -312,6 +317,7 @@ const ApiOptions = ({
 				>
 			> = {
 				deepinfra: { field: "deepInfraModelId", default: deepInfraDefaultModelId },
+				cometapi: { field: "cometApiModelId", default: cometApiDefaultModelId },
 				openrouter: { field: "openRouterModelId", default: openRouterDefaultModelId },
 				glama: { field: "glamaModelId", default: glamaDefaultModelId },
 				unbound: { field: "unboundModelId", default: unboundDefaultModelId },
@@ -496,6 +502,17 @@ const ApiOptions = ({
 
 			{selectedProvider === "deepinfra" && (
 				<DeepInfra
+					apiConfiguration={apiConfiguration}
+					setApiConfigurationField={setApiConfigurationField}
+					routerModels={routerModels}
+					refetchRouterModels={refetchRouterModels}
+					organizationAllowList={organizationAllowList}
+					modelValidationError={modelValidationError}
+				/>
+			)}
+
+			{selectedProvider === "cometapi" && (
+				<CometAPI
 					apiConfiguration={apiConfiguration}
 					setApiConfigurationField={setApiConfigurationField}
 					routerModels={routerModels}
