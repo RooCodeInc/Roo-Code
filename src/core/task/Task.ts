@@ -890,6 +890,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.askResponseText = text
 		this.askResponseImages = images
 
+		// Create a checkpoint whenever the user sends a message.
+		// Use allowEmpty=true to ensure a checkpoint is recorded even if there are no file changes.
+		if (askResponse === "messageResponse") {
+			void this.checkpointSave(true)
+		}
+
 		// Mark the last follow-up question as answered
 		if (askResponse === "messageResponse" || askResponse === "yesButtonClicked") {
 			// Find the last unanswered follow-up message using findLastIndex
