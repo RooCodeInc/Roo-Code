@@ -111,16 +111,11 @@ export async function getCometApiModels(
 		}
 
 		const url = `${baseUrl.replace(/\/$/, "")}/models`
-		console.log(`CometAPI: Fetching models from ${url}`)
-		console.log(`CometAPI: Using API key: ${apiKey?.substring(0, 8)}...`)
 
 		const response = await axios.get(url, {
 			headers,
 			timeout: 15000, // Increased timeout for better reliability
 		})
-
-		console.log(`CometAPI: Received response with status ${response.status}`)
-		console.log(`CometAPI: Response data keys:`, Object.keys(response.data || {}))
 
 		const parsed = cometApiModelsResponseSchema.safeParse(response.data)
 		const data = parsed.success ? (parsed.data as any).data : (response.data as any)?.data || []
@@ -147,15 +142,51 @@ export async function getCometApiModels(
 				// Intentionally not setting inputPrice/outputPrice as CometAPI doesn't provide this info
 			}
 		}
-
-		console.log(`CometAPI: Successfully fetched ${Object.keys(models).length} models:`, Object.keys(models))
 	} catch (error) {
 		if (axios.isAxiosError(error)) {
-			console.error(`CometAPI: API request failed: ${error.response?.status} ${error.response?.statusText}`)
-			console.error(`CometAPI: Response data:`, error.response?.data)
-			throw new Error(
-				`Failed to fetch CometAPI models: ${error.response?.status} ${error.response?.statusText}. Check API key and network connectivity.`,
-			)
+			const status = error.response?.status
+			const statusText = error.response?.statusText || ""
+			const code = (error as any).code as string | undefined
+
+			console.error(`CometAPI: API request failed`, {
+				status,
+				statusText,
+				code,
+				// Do not log headers or API keys
+				url: error.config?.url,
+				timeout: error.config?.timeout,
+			})
+			if (error.response) {
+				console.error(`CometAPI: Response data:`, error.response.data)
+			}
+
+			let message: string
+			if (typeof status === "number") {
+				if (status === 401 || status === 403) {
+					message = `CometAPI authentication failed (${status}). Please verify your API key and permissions.`
+				} else if (status === 429) {
+					message = `CometAPI rate limit exceeded (429). Please slow down or check your plan limits.`
+				} else if (status >= 500) {
+					message = `CometAPI server error (${status} ${statusText}). Please try again later.`
+				} else {
+					message = `CometAPI request failed (${status} ${statusText}).`
+				}
+			} else {
+				// No HTTP response received: network, DNS, timeout, etc.
+				if (code === "ECONNABORTED" || code === "ETIMEDOUT" || /timeout/i.test(error.message || "")) {
+					message = `CometAPI request timed out. Please check your network and base URL (${baseUrl}).`
+				} else if (code === "ENOTFOUND" || code === "EAI_AGAIN") {
+					message = `DNS lookup failed for ${baseUrl}. Please verify the domain and your DNS/network settings.`
+				} else if (code === "ECONNREFUSED") {
+					message = `Connection refused by ${baseUrl}. Is the service reachable from your network?`
+				} else if (error.request) {
+					message = `No response from CometAPI at ${baseUrl}. Please check your network connectivity.`
+				} else {
+					message = `Failed to initiate CometAPI request: ${error.message || "Unknown network error"}.`
+				}
+			}
+
+			throw new Error(message)
 		} else {
 			console.error(`CometAPI: Error fetching models:`, error)
 			throw new Error(
