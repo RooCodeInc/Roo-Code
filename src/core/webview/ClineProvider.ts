@@ -439,6 +439,9 @@ export class ClineProvider
 		// Resume the last cline instance in the stack (if it exists - this is
 		// the 'parent' calling task).
 		await this.getCurrentTask()?.completeSubtask(lastMessage)
+
+		// Explicitly trigger UI state update so that webview/pane transitions back to the parent thread.
+		await this.postStateToWebview()
 	}
 
 	/*
