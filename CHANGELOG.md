@@ -1,8 +1,53 @@
 # Roo Code Changelog
 
+## [3.26.7] - 2025-09-05
+
+![3.26.7 Release - OpenAI Service Tiers](/releases/3.26.7-release.png)
+
+- Feature: Add OpenAI Responses API service tiers (flex/priority) with UI selector and pricing (thanks @hannesrudolph!)
+- Feature: Add DeepInfra as a model provider in Roo Code (#7661 by @Thachnh, PR by @Thachnh)
+- Feature: Update kimi-k2-0905-preview and kimi-k2-turbo-preview models on the Moonshot provider (thanks @CellenLee!)
+- Feature: Add kimi-k2-0905-preview to Groq, Moonshot, and Fireworks (thanks @daniel-lxs and Cline!)
+- Fix: Prevent countdown timer from showing in history for answered follow-up questions (#7624 by @XuyiK, PR by @daniel-lxs)
+- Fix: Moonshot's maximum return token count limited to 1024 issue resolved (#6936 by @greyishsong, PR by @wangxiaolong100)
+- Fix: Add error transform to cryptic OpenAI SDK errors when API key is invalid (#7483 by @A0nameless0man, PR by @app/roomote)
+- Fix: Validate MCP tool exists before execution (#7631 by @R-omk, PR by @app/roomote)
+- Fix: Handle zsh glob qualifiers correctly (thanks @mrubens!)
+- Fix: Handle zsh process substitution correctly (thanks @mrubens!)
+- Fix: Minor zh-TW Traditional Chinese locale typo fix (thanks @PeterDaveHello!)
+
+## [3.26.6] - 2025-09-03
+
+![3.26.6 Release - Bug Fixes and Tool Improvements](/releases/3.26.6-release.png)
+
+- Add experimental run_slash_command tool to let the model initiate slash commands (thanks @app/roomote!)
+- Fix: use askApproval wrapper in insert_content and search_and_replace tools (#7648 by @hannesrudolph, PR by @app/roomote)
+- Add Kimi K2 Turbo model configuration to moonshotModels (thanks @wangxiaolong100!)
+- Fix: preserve scroll position when switching tabs in settings (thanks @DC-Dancao!)
+
+## [3.26.5] - 2025-09-03
+
+![3.26.5 Release - Enhanced AI Thinking Capabilities](/releases/3.26.5-release.png)
+
+- feat: Add support for Qwen3 235B A22B Thinking 2507 model in chutes (thanks @mohammad154!)
+- feat: Add auto-approve support for MCP access_resource tool (#7565 by @m-ibm, PR by @daniel-lxs)
+- feat: Add configurable embedding batch size for code indexing (#7356 by @BenLampson, PR by @app/roomote)
+- fix: Add cache reporting support for OpenAI-Native provider (thanks @hannesrudolph!)
+- feat: Move message queue to the extension host for better performance (thanks @cte!)
+
+## [3.26.4] - 2025-09-01
+
+![3.26.4 Release - Memory Optimization](/releases/3.26.4-release.png)
+
+- Optimize memory usage for image handling in webview (thanks @daniel-lxs!)
+- Fix: Special tokens should not break task processing (#7539 by @pwilkin, PR by @pwilkin)
+- Add Ollama API key support for Turbo mode (#7147 by @LivioGama, PR by @app/roomote)
+- Rename Account tab to Cloud tab for clarity (thanks @app/roomote!)
+- Add kangaroo-themed release image generation (thanks @mrubens!)
+
 ## [3.26.3] - 2025-08-29
 
-![3.26.3 Release - Kangaroo Photo Editor](releases/3.26.3-release.png)
+![3.26.3 Release - Kangaroo Photo Editor](/releases/3.26.3-release.png)
 
 - Add optional input image parameter to image generation tool (thanks @roomote!)
 - Refactor: Flatten image generation settings structure (thanks @daniel-lxs!)
@@ -10,7 +55,7 @@
 
 ## [3.26.2] - 2025-08-28
 
-![3.26.2 Release - Kangaroo Digital Artist](releases/3.26.2-release.png)
+![3.26.2 Release - Kangaroo Digital Artist](/releases/3.26.2-release.png)
 
 - feat: Add experimental image generation tool with OpenRouter integration (thanks @daniel-lxs!)
 - Fix: Resolve GPT-5 Responses API issues with condensing and image support (#7334 by @nlbuescher, PR by @daniel-lxs)
@@ -19,7 +64,7 @@
 
 ## [3.26.1] - 2025-08-27
 
-![3.26.1 Release - Kangaroo Network Engineer](releases/3.26.1-release.png)
+![3.26.1 Release - Kangaroo Network Engineer](/releases/3.26.1-release.png)
 
 - Add Vercel AI Gateway provider integration (thanks @joshualipman123!)
 - Add support for Vercel embeddings (thanks @mrubens!)
@@ -31,7 +76,7 @@
 
 ## [3.26.0] - 2025-08-26
 
-![3.26.0 Release - Kangaroo Speed Racer](releases/3.26.0-release.png)
+![3.26.0 Release - Kangaroo Speed Racer](/releases/3.26.0-release.png)
 
 - Sonic -> Grok Code Fast
 - feat: Add Qwen Code CLI API Support with OAuth Authentication (thanks @evinelias and Cline!)

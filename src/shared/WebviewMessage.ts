@@ -7,6 +7,7 @@ import {
 	type InstallMarketplaceItemOptions,
 	type MarketplaceItem,
 	type ShareVisibility,
+	type QueuedMessage,
 	marketplaceItemSchema,
 } from "@roo-code/types"
 
@@ -21,6 +22,8 @@ export type AudioType = "notification" | "celebration" | "progress_loop"
 export interface UpdateTodoListPayload {
 	todos: any[]
 }
+
+export type EditQueuedMessagePayload = Pick<QueuedMessage, "id" | "text" | "images">
 
 export interface WebviewMessage {
 	type:
@@ -215,6 +218,9 @@ export interface WebviewMessage {
 		| "imageGenerationSettings"
 		| "openRouterImageApiKey"
 		| "openRouterImageGenerationSelectedModel"
+		| "queueMessage"
+		| "removeQueuedMessage"
+		| "editQueuedMessage"
 	text?: string
 	editedMessageContent?: string
 	tab?: "settings" | "history" | "mcp" | "modes" | "chat" | "marketplace" | "cloud"
@@ -249,6 +255,7 @@ export interface WebviewMessage {
 	hasSystemPromptOverride?: boolean
 	terminalOperation?: "continue" | "abort"
 	messageTs?: number
+	restoreCheckpoint?: boolean
 	historyPreviewCollapsed?: boolean
 	filters?: { type?: string; search?: string; tags?: string[] }
 	settings?: any
@@ -330,3 +337,4 @@ export type WebViewMessagePayload =
 	| IndexClearedPayload
 	| InstallMarketplaceItemWithParametersPayload
 	| UpdateTodoListPayload
+	| EditQueuedMessagePayload
