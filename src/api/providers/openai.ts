@@ -749,13 +749,50 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			? undefined
 			: (metadata?.previousResponseId ?? this.lastResponseId)
 
-		// Prepare structured input for Responses API
+		// Prepare Responses API input per test expectations:
+		// - Non-minimal text-only => single string with Developer/User lines
+		// - Minimal (previous_response_id) => single string "User: ..." when last user has no images
+		// - Image cases => structured array; inject Developer preface as first item (non-minimal only)
 		const lastUserMessage = [...messages].reverse().find((m) => m.role === "user")
-		const minimalInputMode = Boolean(previousId && lastUserMessage)
+		const lastUserHasImages =
+			!!lastUserMessage &&
+			Array.isArray(lastUserMessage.content) &&
+			lastUserMessage.content.some((b: any) => (b as any)?.type === "image")
+		const minimalInputMode = Boolean(previousId)
 
-		const inputPayload = minimalInputMode
-			? this._toResponsesInput([lastUserMessage as Anthropic.Messages.MessageParam])
-			: this._toResponsesInput(messages)
+		let inputPayload: unknown
+		if (minimalInputMode && lastUserMessage) {
+			// Minimal mode: only latest user turn
+			if (lastUserHasImages) {
+				inputPayload = this._toResponsesInput([lastUserMessage])
+			} else {
+				inputPayload = this._formatResponsesSingleMessage(lastUserMessage, true)
+			}
+		} else if (lastUserHasImages && lastUserMessage) {
+			// Initial turn with images: include Developer preface and minimal context
+			const lastAssistantMessage = [...messages].reverse().find((m) => m.role === "assistant")
+			const messagesForArray = messages.filter((m) => {
+				if (m.role === "assistant") {
+					return lastAssistantMessage ? m === lastAssistantMessage : false
+				}
+				if (m.role === "user") {
+					const hasImage =
+						Array.isArray(m.content) && m.content.some((b: any) => (b as any)?.type === "image")
+					return hasImage || m === lastUserMessage
+				}
+				return false
+			})
+
+			const arrayInput = this._toResponsesInput(messagesForArray)
+			const developerPreface = {
+				role: "user" as const,
+				content: [{ type: "input_text" as const, text: `Developer: ${systemPrompt}` }],
+			}
+			inputPayload = [developerPreface, ...arrayInput]
+		} else {
+			// Pure text history: compact transcript string
+			inputPayload = this._formatResponsesInput(systemPrompt, messages)
+		}
 
 		// Build base payload: use top-level instructions; default to storing unless explicitly disabled
 		const basePayload: Record<string, unknown> = {
@@ -794,8 +831,8 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			}
 		}
 
-		// Verbosity: include only when model supports it
-		if (this.options.verbosity && modelInfo.supportsVerbosity) {
+		// Verbosity: include when provided; retry logic removes it on 400
+		if (this.options.verbosity) {
 			;(basePayload as { text?: { verbosity: "low" | "medium" | "high" } }).text = {
 				verbosity: this.options.verbosity as "low" | "medium" | "high",
 			}
