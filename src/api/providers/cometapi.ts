@@ -20,7 +20,7 @@ export class CometAPIHandler extends RouterProvider implements SingleCompletionH
 				...options,
 				// Add custom headers for CometAPI
 				openAiHeaders: {
-					"HTTP-Referer": "https://github.com/RooVetGit/Roo-Code",
+					"HTTP-Referer": "https://github.com/RooCodeInc/Roo-Code",
 					"X-Title": "Roo Code",
 					...(options.openAiHeaders || {}),
 				},
