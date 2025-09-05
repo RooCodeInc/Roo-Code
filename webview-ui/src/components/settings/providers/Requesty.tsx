@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { VSCodeCheckbox, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 
 import { type ProviderSettings, type OrganizationAllowList, requestyDefaultModelId } from "@roo-code/types"
@@ -25,6 +25,41 @@ type RequestyProps = {
 	uriScheme?: string
 }
 
+type AnimatedButtonProps = {
+	onClick: () => void
+}
+
+const AnimatedRefreshButton = ({ onClick: parentOnClick }: AnimatedButtonProps) => {
+	const { t } = useAppTranslation()
+
+	const [isAnimated, setIsAnimated] = useState(false)
+
+	const timeout = useRef<ReturnType<typeof setTimeout>>()
+
+	const onClick = () => {
+		clearTimeout(timeout.current)
+
+		setIsAnimated(true)
+		parentOnClick()
+
+		timeout.current = setTimeout(() => {
+			setIsAnimated(false)
+		}, 1_000)
+	}
+
+	return (
+		<Button
+			variant="outline"
+			className={`transition-all ${isAnimated ? "border-green-500" : ""}`}
+			onClick={onClick}>
+			<div className="flex items-center gap-2">
+				<span className="codicon codicon-refresh" />
+				{t("settings:providers.refreshModels.label")}
+			</div>
+		</Button>
+	)
+}
+
 export const Requesty = ({
 	apiConfiguration,
 	setApiConfigurationField,
@@ -35,8 +70,6 @@ export const Requesty = ({
 	uriScheme,
 }: RequestyProps) => {
 	const { t } = useAppTranslation()
-
-	const [didRefetch, setDidRefetch] = useState<boolean>()
 
 	const [requestyEndpointSelected, setRequestyEndpointSelected] = useState(!!apiConfiguration.requestyBaseUrl)
 
@@ -126,23 +159,12 @@ export const Requesty = ({
 					</div>
 				</VSCodeTextField>
 			)}
-			<Button
-				variant="outline"
+			<AnimatedRefreshButton
 				onClick={() => {
 					vscode.postMessage({ type: "flushRouterModels", text: "requesty" })
 					refetchRouterModels()
-					setDidRefetch(true)
-				}}>
-				<div className="flex items-center gap-2">
-					<span className="codicon codicon-refresh" />
-					{t("settings:providers.refreshModels.label")}
-				</div>
-			</Button>
-			{didRefetch && (
-				<div className="flex items-center text-vscode-errorForeground">
-					{t("settings:providers.refreshModels.hint")}
-				</div>
-			)}
+				}}
+			/>
 			<ModelPicker
 				apiConfiguration={apiConfiguration}
 				setApiConfigurationField={setApiConfigurationField}
