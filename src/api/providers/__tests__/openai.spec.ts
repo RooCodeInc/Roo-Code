@@ -1673,6 +1673,63 @@ describe("OpenAI Compatible - Responses API conversation continuity", () => {
 		const args = mockResponsesCreate.mock.calls[1][0]
 		expect(args).not.toHaveProperty("previous_response_id")
 	})
+	it("does not include previous_response_id when prior stream fails before id; defaults to store:true", async () => {
+		// First call: stream throws before emitting any response.id
+		mockResponsesCreate
+			.mockImplementationOnce(async (_opts: any) => {
+				return {
+					[Symbol.asyncIterator]: async function* () {
+						yield { type: "response.text.delta", delta: "Partial " }
+						throw new Error("stream interrupted")
+					},
+				}
+			})
+			// Second call: normal stream
+			.mockImplementationOnce(async (_opts: any) => {
+				return {
+					[Symbol.asyncIterator]: async function* () {
+						yield { type: "response.text.delta", delta: "OK" }
+						yield {
+							type: "response.completed",
+							response: { usage: { input_tokens: 1, output_tokens: 1 } },
+						}
+					},
+				}
+			})
+
+		const handler = new OpenAiHandler({
+			openAiApiKey: "k",
+			openAiModelId: "gpt-5-mini",
+			openAiBaseUrl: "https://api.openai.com/v1/responses",
+		})
+
+		// First call fails mid-stream, so no response.id is captured
+		const first = handler.createMessage("You are Roo.", [
+			{ role: "user", content: [{ type: "text" as const, text: "Hi" }] },
+		])
+
+		await expect(async () => {
+			for await (const _ of first) {
+				// drain until error
+			}
+		}).rejects.toThrow("stream interrupted")
+
+		// Second call should not include previous_response_id and should default to store:true
+		const chunks: any[] = []
+		for await (const ch of handler.createMessage("You are Roo.", [
+			{ role: "user", content: [{ type: "text" as const, text: "Hi" }] },
+		])) {
+			chunks.push(ch)
+		}
+
+		expect(mockResponsesCreate).toHaveBeenCalledTimes(2)
+		const secondArgs = mockResponsesCreate.mock.calls[1][0]
+		expect(secondArgs).not.toHaveProperty("previous_response_id")
+		expect(secondArgs).toHaveProperty("store", true)
+		expect(typeof secondArgs.input).toBe("string")
+		expect(secondArgs.input).toContain("Developer: You are Roo.")
+		expect(secondArgs.input).toContain("User: Hi")
+	})
 })
 
 // --- New: Responses API parity improvements tests ---
