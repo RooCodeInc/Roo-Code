@@ -98,7 +98,11 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 
 		let timeout = getApiRequestTimeout()
 		if (timeout === 0) {
-			timeout = Number.MAX_SAFE_INTEGER
+			// Use 2147483647 (2^31 - 1) as the maximum timeout value for setTimeout
+			// JavaScript's setTimeout has a maximum delay limit of 2147483647ms (32-bit signed integer max)
+			// Values larger than this may be clamped to 1ms or cause unexpected behavior
+			// 2147483647 is the safe maximum value that won't cause issues
+			timeout = 2147483647
 		}
 		this.client = new OpenAI({ baseURL, apiKey, defaultHeaders: DEFAULT_HEADERS, timeout })
 	}
