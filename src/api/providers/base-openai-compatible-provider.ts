@@ -9,6 +9,7 @@ import { convertToOpenAiMessages } from "../transform/openai-format"
 
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { DEFAULT_HEADERS } from "./constants"
+import { getApiRequestTimeout } from "./utils/timeout-config"
 import { BaseProvider } from "./base-provider"
 import { handleOpenAIError } from "./utils/openai-error-handler"
 
@@ -56,10 +57,17 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 			throw new Error("API key is required")
 		}
 
+		let timeout = getApiRequestTimeout()
+		// match behaviour with other SDK where 0 means no timeout instead of instantly timing out
+		if (timeout === 0) {
+			timeout = Number.MAX_SAFE_INTEGER
+		}
+
 		this.client = new OpenAI({
 			baseURL,
 			apiKey: this.options.apiKey,
 			defaultHeaders: DEFAULT_HEADERS,
+			timeout,
 		})
 	}
 

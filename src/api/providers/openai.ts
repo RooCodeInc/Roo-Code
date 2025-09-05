@@ -49,7 +49,12 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			...(this.options.openAiHeaders || {}),
 		}
 
-		const timeout = getApiRequestTimeout()
+		let timeout = getApiRequestTimeout()
+
+		// match behaviour with other SDK where 0 means no timeout instead of instantly timing out
+		if (timeout === 0) {
+			timeout = Number.MAX_SAFE_INTEGER
+		}
 
 		if (isAzureAiInference) {
 			// Azure AI Inference Service (e.g., for DeepSeek) uses a different path structure

@@ -14,6 +14,7 @@ import { AnthropicReasoningParams } from "../transform/reasoning"
 import { DEFAULT_HEADERS } from "./constants"
 import { getModels } from "./fetchers/modelCache"
 import { BaseProvider } from "./base-provider"
+import { getApiRequestTimeout } from "./utils/timeout-config"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { toRequestyServiceUrl } from "../../shared/utils/requesty"
 import { handleOpenAIError } from "./utils/openai-error-handler"
@@ -53,10 +54,16 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 
 		const apiKey = this.options.requestyApiKey ?? "not-provided"
 
+		let timeout = getApiRequestTimeout()
+		if (timeout === 0) {
+			timeout = Number.MAX_SAFE_INTEGER
+		}
+
 		this.client = new OpenAI({
 			baseURL: this.baseURL,
 			apiKey: apiKey,
 			defaultHeaders: DEFAULT_HEADERS,
+			timeout,
 		})
 	}
 

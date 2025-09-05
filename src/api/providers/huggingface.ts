@@ -6,6 +6,7 @@ import { ApiStream } from "../transform/stream"
 import { convertToOpenAiMessages } from "../transform/openai-format"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { DEFAULT_HEADERS } from "./constants"
+import { getApiRequestTimeout } from "./utils/timeout-config"
 import { BaseProvider } from "./base-provider"
 import { getHuggingFaceModels, getCachedHuggingFaceModels } from "./fetchers/huggingface"
 import { handleOpenAIError } from "./utils/openai-error-handler"
@@ -24,10 +25,16 @@ export class HuggingFaceHandler extends BaseProvider implements SingleCompletion
 			throw new Error("Hugging Face API key is required")
 		}
 
+		let timeout = getApiRequestTimeout()
+		if (timeout === 0) {
+			timeout = Number.MAX_SAFE_INTEGER
+		}
+
 		this.client = new OpenAI({
 			baseURL: "https://router.huggingface.co/v1",
 			apiKey: this.options.huggingFaceApiKey,
 			defaultHeaders: DEFAULT_HEADERS,
+			timeout,
 		})
 
 		// Try to get cached models first

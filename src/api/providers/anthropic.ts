@@ -18,6 +18,7 @@ import { getModelParams } from "../transform/model-params"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { calculateApiCostAnthropic } from "../../shared/cost"
+import { getApiRequestTimeout } from "./utils/timeout-config"
 
 export class AnthropicHandler extends BaseProvider implements SingleCompletionHandler {
 	private options: ApiHandlerOptions
@@ -30,9 +31,17 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 		const apiKeyFieldName =
 			this.options.anthropicBaseUrl && this.options.anthropicUseAuthToken ? "authToken" : "apiKey"
 
+		let timeout = getApiRequestTimeout()
+
+		// match behaviour with other SDK where 0 means no timeout instead of instantly timing out
+		if (timeout === 0) {
+			timeout = Number.MAX_SAFE_INTEGER
+		}
+
 		this.client = new Anthropic({
 			baseURL: this.options.anthropicBaseUrl || undefined,
 			[apiKeyFieldName]: this.options.apiKey,
+			timeout,
 		})
 	}
 

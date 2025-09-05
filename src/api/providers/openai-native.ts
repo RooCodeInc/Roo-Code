@@ -22,6 +22,7 @@ import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
 
 import { BaseProvider } from "./base-provider"
+import { getApiRequestTimeout } from "./utils/timeout-config"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 
 export type OpenAiNativeModel = ReturnType<OpenAiNativeHandler["getModel"]>
@@ -62,7 +63,13 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			this.options.enableGpt5ReasoningSummary = true
 		}
 		const apiKey = this.options.openAiNativeApiKey ?? "not-provided"
-		this.client = new OpenAI({ baseURL: this.options.openAiNativeBaseUrl, apiKey })
+		{
+			let timeout = getApiRequestTimeout()
+			if (timeout === 0) {
+				timeout = Number.MAX_SAFE_INTEGER
+			}
+			this.client = new OpenAI({ baseURL: this.options.openAiNativeBaseUrl, apiKey, timeout })
+		}
 	}
 
 	private normalizeUsage(usage: any, model: OpenAiNativeModel): ApiStreamUsageChunk | undefined {
@@ -451,119 +458,140 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		const url = `${baseUrl}/v1/responses`
 
 		try {
-			const response = await fetch(url, {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					Authorization: `Bearer ${apiKey}`,
-					Accept: "text/event-stream",
-				},
-				body: JSON.stringify(requestBody),
-			})
+			const controller = new AbortController()
+			let timeoutVal = getApiRequestTimeout()
+			let timer: NodeJS.Timeout | undefined
+			try {
+				if (timeoutVal !== 0) {
+					timer = setTimeout(() => controller.abort(), timeoutVal)
+				}
+				const response = await fetch(url, {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+						Authorization: `Bearer ${apiKey}`,
+						Accept: "text/event-stream",
+					},
+					body: JSON.stringify(requestBody),
+					signal: controller.signal,
+				})
 
-			if (!response.ok) {
-				const errorText = await response.text()
+				if (!response.ok) {
+					const errorText = await response.text()
 
-				let errorMessage = `GPT-5 API request failed (${response.status})`
-				let errorDetails = ""
+					let errorMessage = `GPT-5 API request failed (${response.status})`
+					let errorDetails = ""
 
-				// Try to parse error as JSON for better error messages
-				try {
-					const errorJson = JSON.parse(errorText)
-					if (errorJson.error?.message) {
-						errorDetails = errorJson.error.message
-					} else if (errorJson.message) {
-						errorDetails = errorJson.message
-					} else {
+					// Try to parse error as JSON for better error messages
+					try {
+						const errorJson = JSON.parse(errorText)
+						if (errorJson.error?.message) {
+							errorDetails = errorJson.error.message
+						} else if (errorJson.message) {
+							errorDetails = errorJson.message
+						} else {
+							errorDetails = errorText
+						}
+					} catch {
+						// If not JSON, use the raw text
 						errorDetails = errorText
 					}
-				} catch {
-					// If not JSON, use the raw text
-					errorDetails = errorText
-				}
 
-				// Check if this is a 400 error about previous_response_id not found
-				const isPreviousResponseError =
-					errorDetails.includes("Previous response") || errorDetails.includes("not found")
+					// Check if this is a 400 error about previous_response_id not found
+					const isPreviousResponseError =
+						errorDetails.includes("Previous response") || errorDetails.includes("not found")
 
-				if (response.status === 400 && requestBody.previous_response_id && isPreviousResponseError) {
-					// Log the error and retry without the previous_response_id
+					if (response.status === 400 && requestBody.previous_response_id && isPreviousResponseError) {
+						// Log the error and retry without the previous_response_id
 
-					// Remove the problematic previous_response_id and retry
-					const retryRequestBody = { ...requestBody }
-					delete retryRequestBody.previous_response_id
+						// Remove the problematic previous_response_id and retry
+						const retryRequestBody = { ...requestBody }
+						delete retryRequestBody.previous_response_id
 
-					// Clear the stored lastResponseId to prevent using it again
-					this.lastResponseId = undefined
-					// Resolve the promise once to unblock any waiting requests
-					this.resolveResponseId(undefined)
+						// Clear the stored lastResponseId to prevent using it again
+						this.lastResponseId = undefined
+						// Resolve the promise once to unblock any waiting requests
+						this.resolveResponseId(undefined)
 
-					// Retry the request without the previous_response_id
-					const retryResponse = await fetch(url, {
-						method: "POST",
-						headers: {
-							"Content-Type": "application/json",
-							Authorization: `Bearer ${apiKey}`,
-							Accept: "text/event-stream",
-						},
-						body: JSON.stringify(retryRequestBody),
-					})
+						// Retry the request without the previous_response_id
+						const retryController = new AbortController()
+						let retryTimer: NodeJS.Timeout | undefined
+						try {
+							if (timeoutVal !== 0) {
+								retryTimer = setTimeout(() => retryController.abort(), timeoutVal)
+							}
+							const retryResponse = await fetch(url, {
+								method: "POST",
+								headers: {
+									"Content-Type": "application/json",
+									Authorization: `Bearer ${apiKey}`,
+									Accept: "text/event-stream",
+								},
+								body: JSON.stringify(retryRequestBody),
+								signal: retryController.signal,
+							})
 
-					if (!retryResponse.ok) {
-						// If retry also fails, throw the original error
-						throw new Error(`Responses API retry failed (${retryResponse.status})`)
+							if (!retryResponse.ok) {
+								// If retry also fails, throw the original error
+								throw new Error(`Responses API retry failed (${retryResponse.status})`)
+							}
+
+							if (!retryResponse.body) {
+								throw new Error("Responses API error: No response body from retry request")
+							}
+
+							// Handle the successful retry response
+							yield* this.handleStreamResponse(retryResponse.body, model)
+							return
+						} finally {
+							if (retryTimer) clearTimeout(retryTimer)
+						}
 					}
 
-					if (!retryResponse.body) {
-						throw new Error("Responses API error: No response body from retry request")
+					// Provide user-friendly error messages based on status code
+					switch (response.status) {
+						case 400:
+							errorMessage = "Invalid request to Responses API. Please check your input parameters."
+							break
+						case 401:
+							errorMessage = "Authentication failed. Please check your OpenAI API key."
+							break
+						case 403:
+							errorMessage = "Access denied. Your API key may not have access to this endpoint."
+							break
+						case 404:
+							errorMessage =
+								"Responses API endpoint not found. The endpoint may not be available yet or requires a different configuration."
+							break
+						case 429:
+							errorMessage = "Rate limit exceeded. Please try again later."
+							break
+						case 500:
+						case 502:
+						case 503:
+							errorMessage = "OpenAI service error. Please try again later."
+							break
+						default:
+							errorMessage = `Responses API error (${response.status})`
 					}
 
-					// Handle the successful retry response
-					yield* this.handleStreamResponse(retryResponse.body, model)
-					return
+					// Append details if available
+					if (errorDetails) {
+						errorMessage += ` - ${errorDetails}`
+					}
+
+					throw new Error(errorMessage)
 				}
 
-				// Provide user-friendly error messages based on status code
-				switch (response.status) {
-					case 400:
-						errorMessage = "Invalid request to Responses API. Please check your input parameters."
-						break
-					case 401:
-						errorMessage = "Authentication failed. Please check your OpenAI API key."
-						break
-					case 403:
-						errorMessage = "Access denied. Your API key may not have access to this endpoint."
-						break
-					case 404:
-						errorMessage =
-							"Responses API endpoint not found. The endpoint may not be available yet or requires a different configuration."
-						break
-					case 429:
-						errorMessage = "Rate limit exceeded. Please try again later."
-						break
-					case 500:
-					case 502:
-					case 503:
-						errorMessage = "OpenAI service error. Please try again later."
-						break
-					default:
-						errorMessage = `Responses API error (${response.status})`
+				if (!response.body) {
+					throw new Error("Responses API error: No response body")
 				}
 
-				// Append details if available
-				if (errorDetails) {
-					errorMessage += ` - ${errorDetails}`
-				}
-
-				throw new Error(errorMessage)
+				// Handle streaming response
+				yield* this.handleStreamResponse(response.body, model)
+			} finally {
+				if (timer) clearTimeout(timer)
 			}
-
-			if (!response.body) {
-				throw new Error("Responses API error: No response body")
-			}
-
-			// Handle streaming response
-			yield* this.handleStreamResponse(response.body, model)
 		} catch (error) {
 			if (error instanceof Error) {
 				// Re-throw with the original error message if it's already formatted

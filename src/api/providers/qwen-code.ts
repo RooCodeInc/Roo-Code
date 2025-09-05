@@ -13,6 +13,7 @@ import { ApiStream } from "../transform/stream"
 
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler } from "../index"
+import { getApiRequestTimeout } from "./utils/timeout-config"
 
 const QWEN_OAUTH_BASE_URL = "https://chat.qwen.ai"
 const QWEN_OAUTH_TOKEN_ENDPOINT = `${QWEN_OAUTH_BASE_URL}/api/v1/oauth2/token`
@@ -64,9 +65,14 @@ export class QwenCodeHandler extends BaseProvider implements SingleCompletionHan
 		if (!this.client) {
 			// Create the client instance with dummy key initially
 			// The API key will be updated dynamically via ensureAuthenticated
+			let timeout = getApiRequestTimeout()
+			if (timeout === 0) {
+				timeout = Number.MAX_SAFE_INTEGER
+			}
 			this.client = new OpenAI({
 				apiKey: "dummy-key-will-be-replaced",
 				baseURL: "https://dashscope.aliyuncs.com/compatible-mode/v1",
+				timeout,
 			})
 		}
 		return this.client

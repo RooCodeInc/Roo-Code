@@ -11,6 +11,7 @@ import { getModelParams } from "../transform/model-params"
 
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
+import { getApiRequestTimeout } from "./utils/timeout-config"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { handleOpenAIError } from "./utils/openai-error-handler"
 
@@ -27,10 +28,16 @@ export class XAIHandler extends BaseProvider implements SingleCompletionHandler 
 
 		const apiKey = this.options.xaiApiKey ?? "not-provided"
 
+		let timeout = getApiRequestTimeout()
+		if (timeout === 0) {
+			timeout = Number.MAX_SAFE_INTEGER
+		}
+
 		this.client = new OpenAI({
 			baseURL: "https://api.x.ai/v1",
 			apiKey: apiKey,
 			defaultHeaders: DEFAULT_HEADERS,
+			timeout,
 		})
 	}
 
