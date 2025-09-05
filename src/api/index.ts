@@ -40,6 +40,7 @@ import {
 	FeatherlessHandler,
 	VercelAiGatewayHandler,
 	DeepInfraHandler,
+	CometAPIHandler,
 } from "./providers"
 import { NativeOllamaHandler } from "./providers/native-ollama"
 
@@ -141,6 +142,8 @@ export function buildApiHandler(configuration: ProviderSettings): ApiHandler {
 			return new GroqHandler(options)
 		case "deepinfra":
 			return new DeepInfraHandler(options)
+		case "cometapi":
+			return new CometAPIHandler(options)
 		case "huggingface":
 			return new HuggingFaceHandler(options)
 		case "chutes":

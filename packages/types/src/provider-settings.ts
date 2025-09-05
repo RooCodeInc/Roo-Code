@@ -8,6 +8,7 @@ import {
 	cerebrasModels,
 	chutesModels,
 	claudeCodeModels,
+	cometApiModels,
 	deepSeekModels,
 	doubaoModels,
 	featherlessModels,
@@ -34,6 +35,7 @@ import {
 export const providerNames = [
 	"anthropic",
 	"claude-code",
+	"cometapi",
 	"glama",
 	"openrouter",
 	"bedrock",
@@ -130,6 +132,12 @@ const anthropicSchema = apiModelIdProviderModelSchema.extend({
 const claudeCodeSchema = apiModelIdProviderModelSchema.extend({
 	claudeCodePath: z.string().optional(),
 	claudeCodeMaxOutputTokens: z.number().int().min(1).max(200000).optional(),
+})
+
+const cometApiSchema = baseProviderSettingsSchema.extend({
+	cometApiKey: z.string().optional(),
+	cometApiModelId: z.string().optional(),
+	cometApiBaseUrl: z.string().optional(),
 })
 
 const glamaSchema = baseProviderSettingsSchema.extend({
@@ -346,6 +354,7 @@ const defaultSchema = z.object({
 export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProvider", [
 	anthropicSchema.merge(z.object({ apiProvider: z.literal("anthropic") })),
 	claudeCodeSchema.merge(z.object({ apiProvider: z.literal("claude-code") })),
+	cometApiSchema.merge(z.object({ apiProvider: z.literal("cometapi") })),
 	glamaSchema.merge(z.object({ apiProvider: z.literal("glama") })),
 	openRouterSchema.merge(z.object({ apiProvider: z.literal("openrouter") })),
 	bedrockSchema.merge(z.object({ apiProvider: z.literal("bedrock") })),
@@ -387,6 +396,7 @@ export const providerSettingsSchema = z.object({
 	apiProvider: providerNamesSchema.optional(),
 	...anthropicSchema.shape,
 	...claudeCodeSchema.shape,
+	...cometApiSchema.shape,
 	...glamaSchema.shape,
 	...openRouterSchema.shape,
 	...bedrockSchema.shape,
@@ -503,6 +513,11 @@ export const MODELS_BY_PROVIDER: Record<
 		models: Object.keys(chutesModels),
 	},
 	"claude-code": { id: "claude-code", label: "Claude Code", models: Object.keys(claudeCodeModels) },
+	cometapi: {
+		id: "cometapi",
+		label: "CometAPI",
+		models: Object.keys(cometApiModels),
+	},
 	deepseek: {
 		id: "deepseek",
 		label: "DeepSeek",
@@ -577,6 +592,7 @@ export const MODELS_BY_PROVIDER: Record<
 }
 
 export const dynamicProviders = [
+	"cometapi",
 	"glama",
 	"huggingface",
 	"litellm",

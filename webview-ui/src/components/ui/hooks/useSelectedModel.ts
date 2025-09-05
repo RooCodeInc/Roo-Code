@@ -57,6 +57,8 @@ import {
 	vercelAiGatewayDefaultModelId,
 	BEDROCK_CLAUDE_SONNET_4_MODEL_ID,
 	deepInfraDefaultModelId,
+	cometApiDefaultModelId,
+	cometApiModels,
 } from "@roo-code/types"
 
 import type { ModelRecord, RouterModels } from "@roo/api"
@@ -272,6 +274,11 @@ function getSelectedModel({
 		case "deepinfra": {
 			const id = apiConfiguration.deepInfraModelId ?? deepInfraDefaultModelId
 			const info = routerModels.deepinfra?.[id]
+			return { id, info }
+		}
+		case "cometapi": {
+			const id = apiConfiguration.cometApiModelId ?? cometApiDefaultModelId
+			const info = routerModels.cometapi?.[id] ?? cometApiModels[id as keyof typeof cometApiModels]
 			return { id, info }
 		}
 		case "vscode-lm": {

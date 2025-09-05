@@ -37,6 +37,7 @@ type ModelIdKey = keyof Pick<
 	| "deepInfraModelId"
 	| "ioIntelligenceModelId"
 	| "vercelAiGatewayModelId"
+	| "cometApiModelId"
 >
 
 interface ModelPickerProps {

@@ -609,6 +609,19 @@ export const webviewMessageHandler = async (
 				})
 			}
 
+			// Add CometAPI if API key is provided
+			const cometApiKey = apiConfiguration.cometApiKey
+			if (cometApiKey) {
+				modelFetchPromises.push({
+					key: "cometapi",
+					options: {
+						provider: "cometapi",
+						apiKey: cometApiKey,
+						baseUrl: apiConfiguration.cometApiBaseUrl || "https://api.cometapi.com/v1",
+					},
+				})
+			}
+
 			const results = await Promise.allSettled(
 				modelFetchPromises.map(async ({ key, options }) => {
 					const models = await safeGetModels(options)
