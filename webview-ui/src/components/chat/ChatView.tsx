@@ -56,6 +56,7 @@ import SystemPromptWarning from "./SystemPromptWarning"
 import ProfileViolationWarning from "./ProfileViolationWarning"
 import { CheckpointWarning } from "./CheckpointWarning"
 import { QueuedMessages } from "./QueuedMessages"
+import { MessageNavigator } from "./MessageNavigator"
 
 export interface ChatViewProps {
 	isHidden: boolean
@@ -193,6 +194,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	const [showCheckpointWarning, setShowCheckpointWarning] = useState<boolean>(false)
 	const [isCondensing, setIsCondensing] = useState<boolean>(false)
 	const [showAnnouncementModal, setShowAnnouncementModal] = useState(false)
+	const [showMessageNavigator, setShowMessageNavigator] = useState(false)
 	const everVisibleMessagesTsRef = useRef<LRUCache<number, boolean>>(
 		new LRUCache({
 			max: 100,
@@ -1728,8 +1730,13 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					switchToNextMode()
 				}
 			}
+			// Check for Cmd/Ctrl + F to open message navigator
+			if ((event.metaKey || event.ctrlKey) && event.key === "f" && task) {
+				event.preventDefault()
+				setShowMessageNavigator(true)
+			}
 		},
-		[switchToNextMode, switchToPreviousMode],
+		[switchToNextMode, switchToPreviousMode, task],
 	)
 
 	useEffect(() => {
@@ -1758,6 +1765,40 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		setSendingDisabled(true)
 		vscode.postMessage({ type: "condenseTaskContextRequest", text: taskId })
 	}
+
+	// Handle navigation to a specific message
+	const handleNavigateToMessage = useCallback(
+		(messageIndex: number) => {
+			// Find the message in visibleMessages
+			const targetMessage = visibleMessages[messageIndex]
+			if (targetMessage && virtuosoRef.current) {
+				// Find the index in groupedMessages
+				const groupIndex = groupedMessages.findIndex((item) => {
+					if (Array.isArray(item)) {
+						return item.some((msg) => msg.ts === targetMessage.ts)
+					}
+					return item.ts === targetMessage.ts
+				})
+
+				if (groupIndex !== -1) {
+					// Scroll to the message
+					virtuosoRef.current.scrollToIndex({
+						index: groupIndex,
+						behavior: "smooth",
+						align: "center",
+					})
+
+					// Optionally expand the message if it's collapsible
+					if (!Array.isArray(groupedMessages[groupIndex])) {
+						const message = groupedMessages[groupIndex] as ClineMessage
+						setExpandedRows((prev) => ({ ...prev, [message.ts]: true }))
+					}
+				}
+			}
+			setShowMessageNavigator(false)
+		},
+		[visibleMessages, groupedMessages],
+	)
 
 	const areButtonsVisible = showScrollToBottom || primaryButtonText || secondaryButtonText || isStreaming
 
@@ -1790,6 +1831,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 						buttonsDisabled={sendingDisabled}
 						handleCondenseContext={handleCondenseContext}
 						todos={latestTodos}
+						onOpenNavigator={() => setShowMessageNavigator(true)}
 					/>
 
 					{hasSystemPromptOverride && (
@@ -2013,6 +2055,14 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			)}
 
 			<div id="roo-portal" />
+
+			{/* Message Navigator Overlay */}
+			<MessageNavigator
+				messages={visibleMessages}
+				onNavigateToMessage={handleNavigateToMessage}
+				isVisible={showMessageNavigator}
+				onClose={() => setShowMessageNavigator(false)}
+			/>
 		</div>
 	)
 }

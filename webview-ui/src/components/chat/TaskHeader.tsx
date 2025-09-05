@@ -1,6 +1,6 @@
 import { memo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { FoldVertical, ChevronUp, ChevronDown } from "lucide-react"
+import { FoldVertical, ChevronUp, ChevronDown, Search } from "lucide-react"
 import prettyBytes from "pretty-bytes"
 
 import type { ClineMessage } from "@roo-code/types"
@@ -31,6 +31,7 @@ export interface TaskHeaderProps {
 	buttonsDisabled: boolean
 	handleCondenseContext: (taskId: string) => void
 	todos?: any[]
+	onOpenNavigator?: () => void
 }
 
 const TaskHeader = ({
@@ -44,6 +45,7 @@ const TaskHeader = ({
 	buttonsDisabled,
 	handleCondenseContext,
 	todos,
+	onOpenNavigator,
 }: TaskHeaderProps) => {
 	const { t } = useTranslation()
 	const { apiConfiguration, currentTaskItem } = useExtensionState()
@@ -117,6 +119,19 @@ const TaskHeader = ({
 									{isTaskExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
 								</button>
 							</StandardTooltip>
+							{onOpenNavigator && (
+								<StandardTooltip
+									content={t("chat:navigator.openTooltip", "Search messages (Ctrl/Cmd+F)")}>
+									<button
+										onClick={(e) => {
+											e.stopPropagation()
+											onOpenNavigator()
+										}}
+										className="shrink-0 min-h-[20px] min-w-[20px] p-[2px] cursor-pointer opacity-85 hover:opacity-100 bg-transparent border-none rounded-md ml-1">
+										<Search size={16} />
+									</button>
+								</StandardTooltip>
+							)}
 						</div>
 					</div>
 				</div>

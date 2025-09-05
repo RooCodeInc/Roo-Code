@@ -388,5 +388,27 @@
 	"queuedMessages": {
 		"title": "Queued Messages:",
 		"clickToEdit": "Click to edit message"
+	},
+	"navigator": {
+		"title": "Message Navigator",
+		"openTooltip": "Search messages (Ctrl/Cmd+F)",
+		"searchPlaceholder": "Search messages...",
+		"filter": {
+			"all": "All Messages",
+			"user": "User Messages",
+			"assistant": "Assistant",
+			"fileEdit": "File Edits",
+			"command": "Commands",
+			"error": "Errors",
+			"apiRequest": "API Requests",
+			"toolUse": "Tool Uses"
+		},
+		"noResults": "No messages found matching your search",
+		"noMessages": "No messages to display",
+		"showing": "Showing {{count}} of {{total}} messages",
+		"shortcuts": "↑↓ Navigate • Enter Select • Esc Close",
+		"message": "Message",
+		"userMessage": "User message",
+		"messageNumber": "Message #{{number}}"
 	}
 }
