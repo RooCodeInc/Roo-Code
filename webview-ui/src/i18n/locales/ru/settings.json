@@ -47,6 +47,9 @@
 		"geminiProvider": "Gemini",
 		"geminiApiKeyLabel": "Ключ API:",
 		"geminiApiKeyPlaceholder": "Введите свой API-ключ Gemini",
+		"vercelAiGatewayProvider": "Vercel AI Gateway",
+		"vercelAiGatewayApiKeyLabel": "Ключ API",
+		"vercelAiGatewayApiKeyPlaceholder": "Введите свой API-ключ Vercel AI Gateway",
 		"mistralProvider": "Mistral",
 		"mistralApiKeyLabel": "Ключ API:",
 		"mistralApiKeyPlaceholder": "Введите свой API-ключ Mistral",
@@ -113,6 +116,7 @@
 			"modelDimensionRequired": "Требуется размерность модели",
 			"geminiApiKeyRequired": "Требуется ключ API Gemini",
 			"mistralApiKeyRequired": "Требуется API-ключ Mistral",
+			"vercelAiGatewayApiKeyRequired": "Требуется API-ключ Vercel AI Gateway",
 			"ollamaBaseUrlRequired": "Требуется базовый URL Ollama",
 			"baseUrlRequired": "Требуется базовый URL",
 			"modelDimensionMinValue": "Размерность модели должна быть больше 0"
@@ -233,6 +237,8 @@
 		"awsCustomArnDesc": "Убедитесь, что регион в ARN совпадает с выбранным выше регионом AWS.",
 		"openRouterApiKey": "OpenRouter API-ключ",
 		"getOpenRouterApiKey": "Получить OpenRouter API-ключ",
+		"vercelAiGatewayApiKey": "Ключ API Vercel AI Gateway",
+		"getVercelAiGatewayApiKey": "Получить ключ API Vercel AI Gateway",
 		"apiKeyStorageNotice": "API-ключи хранятся безопасно в Secret Storage VSCode",
 		"glamaApiKey": "Glama API-ключ",
 		"getGlamaApiKey": "Получить Glama API-ключ",
@@ -368,6 +374,8 @@
 		"ollama": {
 			"baseUrl": "Базовый URL (опционально)",
 			"modelId": "ID модели",
+			"apiKey": "API-ключ Ollama",
+			"apiKeyHelp": "Опциональный API-ключ для аутентифицированных экземпляров Ollama или облачных сервисов. Оставьте пустым для локальных установок.",
 			"description": "Ollama позволяет запускать модели локально на вашем компьютере. Для начала ознакомьтесь с кратким руководством.",
 			"warning": "Примечание: Roo Code использует сложные подсказки и лучше всего работает с моделями Claude. Менее мощные модели могут работать некорректно."
 		},
@@ -724,6 +732,21 @@
 		"NEW_TASK_REQUIRE_TODOS": {
 			"name": "Требовать список 'todos' для новых задач",
 			"description": "Если включено, инструмент new_task будет требовать предоставления параметра todos. Это гарантирует, что все новые задачи начинаются с четкого списка целей. Когда отключено (по умолчанию), параметр todos остается необязательным для обратной совместимости."
+		},
+		"IMAGE_GENERATION": {
+			"name": "Включить генерацию изображений ИИ",
+			"description": "Когда включено, Roo может генерировать изображения из текстовых запросов, используя модели генерации изображений OpenRouter. Требует настроенный API-ключ OpenRouter.",
+			"openRouterApiKeyLabel": "API-ключ OpenRouter",
+			"openRouterApiKeyPlaceholder": "Введите ваш API-ключ OpenRouter",
+			"getApiKeyText": "Получите ваш API-ключ от",
+			"modelSelectionLabel": "Модель генерации изображений",
+			"modelSelectionDescription": "Выберите модель для генерации изображений",
+			"warningMissingKey": "⚠️ API-ключ OpenRouter необходим для генерации изображений. Настройте его выше.",
+			"successConfigured": "✓ Генерация изображений настроена и готова к использованию"
+		},
+		"RUN_SLASH_COMMAND": {
+			"name": "Включить слэш-команды, инициированные моделью",
+			"description": "Когда включено, Roo может выполнять ваши слэш-команды для выполнения рабочих процессов."
 		}
 	},
 	"promptCaching": {
@@ -796,7 +819,8 @@
 		"modelAvailability": "ID модели ({{modelId}}), который вы указали, недоступен. Пожалуйста, выберите другую модель.",
 		"providerNotAllowed": "Провайдер '{{provider}}' не разрешен вашей организацией",
 		"modelNotAllowed": "Модель '{{model}}' не разрешена для провайдера '{{provider}}' вашей организацией",
-		"profileInvalid": "Этот профиль содержит провайдера или модель, которые не разрешены вашей организацией"
+		"profileInvalid": "Этот профиль содержит провайдера или модель, которые не разрешены вашей организацией",
+		"qwenCodeOauthPath": "Вы должны указать допустимый путь к учетным данным OAuth"
 	},
 	"placeholders": {
 		"apiKey": "Введите API-ключ...",
@@ -835,5 +859,19 @@
 	"includeMaxOutputTokensDescription": "Отправлять параметр максимальных выходных токенов в API-запросах. Некоторые провайдеры могут не поддерживать это.",
 	"limitMaxTokensDescription": "Ограничить максимальное количество токенов в ответе",
 	"maxOutputTokensLabel": "Максимальные выходные токены",
-	"maxTokensGenerateDescription": "Максимальные токены для генерации в ответе"
+	"maxTokensGenerateDescription": "Максимальные токены для генерации в ответе",
+	"serviceTier": {
+		"label": "Уровень обслуживания",
+		"tooltip": "Для более быстрой обработки запросов API попробуйте уровень обслуживания с приоритетной обработкой. Для более низких цен с более высокой задержкой попробуйте уровень гибкой обработки.",
+		"standard": "Стандартный",
+		"flex": "Гибкий",
+		"priority": "Приоритетный",
+		"pricingTableTitle": "Цены по уровням обслуживания (цена за 1 млн токенов)",
+		"columns": {
+			"tier": "Уровень",
+			"input": "Вход",
+			"output": "Выход",
+			"cacheReads": "Чтения из кэша"
+		}
+	}
 }

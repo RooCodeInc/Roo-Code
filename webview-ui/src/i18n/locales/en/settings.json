@@ -55,6 +55,9 @@
 		"mistralProvider": "Mistral",
 		"mistralApiKeyLabel": "API Key:",
 		"mistralApiKeyPlaceholder": "Enter your Mistral API key",
+		"vercelAiGatewayProvider": "Vercel AI Gateway",
+		"vercelAiGatewayApiKeyLabel": "API Key",
+		"vercelAiGatewayApiKeyPlaceholder": "Enter your Vercel AI Gateway API key",
 		"openaiCompatibleProvider": "OpenAI Compatible",
 		"openAiKeyLabel": "OpenAI API Key",
 		"openAiKeyPlaceholder": "Enter your OpenAI API key",
@@ -120,6 +123,7 @@
 			"modelDimensionRequired": "Model dimension is required",
 			"geminiApiKeyRequired": "Gemini API key is required",
 			"mistralApiKeyRequired": "Mistral API key is required",
+			"vercelAiGatewayApiKeyRequired": "Vercel AI Gateway API key is required",
 			"ollamaBaseUrlRequired": "Ollama base URL is required",
 			"baseUrlRequired": "Base URL is required",
 			"modelDimensionMinValue": "Model dimension must be greater than 0"
@@ -232,6 +236,8 @@
 		"awsCustomArnDesc": "Make sure the region in the ARN matches your selected AWS Region above.",
 		"openRouterApiKey": "OpenRouter API Key",
 		"getOpenRouterApiKey": "Get OpenRouter API Key",
+		"vercelAiGatewayApiKey": "Vercel AI Gateway API Key",
+		"getVercelAiGatewayApiKey": "Get Vercel AI Gateway API Key",
 		"apiKeyStorageNotice": "API keys are stored securely in VSCode's Secret Storage",
 		"glamaApiKey": "Glama API Key",
 		"getGlamaApiKey": "Get Glama API Key",
@@ -367,6 +373,8 @@
 		"ollama": {
 			"baseUrl": "Base URL (optional)",
 			"modelId": "Model ID",
+			"apiKey": "Ollama API Key",
+			"apiKeyHelp": "Optional API key for authenticated Ollama instances or cloud services. Leave empty for local installations.",
 			"description": "Ollama allows you to run models locally on your computer. For instructions on how to get started, see their quickstart guide.",
 			"warning": "Note: Roo Code uses complex prompts and works best with Claude models. Less capable models may not work as expected."
 		},
@@ -722,6 +730,21 @@
 		"NEW_TASK_REQUIRE_TODOS": {
 			"name": "Require 'todos' list for new tasks",
 			"description": "When enabled, the new_task tool will require a todos parameter to be provided. This ensures all new tasks start with a clear list of objectives. When disabled (default), the todos parameter remains optional for backward compatibility."
+		},
+		"IMAGE_GENERATION": {
+			"name": "Enable AI image generation",
+			"description": "When enabled, Roo can generate images from text prompts using OpenRouter's image generation models. Requires an OpenRouter API key to be configured.",
+			"openRouterApiKeyLabel": "OpenRouter API Key",
+			"openRouterApiKeyPlaceholder": "Enter your OpenRouter API key",
+			"getApiKeyText": "Get your API key from",
+			"modelSelectionLabel": "Image Generation Model",
+			"modelSelectionDescription": "Select the model to use for image generation",
+			"warningMissingKey": "⚠️ OpenRouter API key is required for image generation. Please configure it above.",
+			"successConfigured": "✓ Image generation is configured and ready to use"
+		},
+		"RUN_SLASH_COMMAND": {
+			"name": "Enable model-initiated slash commands",
+			"description": "When enabled, Roo can run your slash commands to execute workflows."
 		}
 	},
 	"promptCaching": {
@@ -794,7 +817,8 @@
 		"modelAvailability": "The model ID ({{modelId}}) you provided is not available. Please choose a different model.",
 		"providerNotAllowed": "Provider '{{provider}}' is not allowed by your organization",
 		"modelNotAllowed": "Model '{{model}}' is not allowed for provider '{{provider}}' by your organization",
-		"profileInvalid": "This profile contains a provider or model that is not allowed by your organization"
+		"profileInvalid": "This profile contains a provider or model that is not allowed by your organization",
+		"qwenCodeOauthPath": "You must provide a valid OAuth credentials path."
 	},
 	"placeholders": {
 		"apiKey": "Enter API Key...",
@@ -833,5 +857,19 @@
 	"includeMaxOutputTokensDescription": "Send max output tokens parameter in API requests. Some providers may not support this.",
 	"limitMaxTokensDescription": "Limit the maximum number of tokens in the response",
 	"maxOutputTokensLabel": "Max output tokens",
-	"maxTokensGenerateDescription": "Maximum tokens to generate in response"
+	"maxTokensGenerateDescription": "Maximum tokens to generate in response",
+	"serviceTier": {
+		"label": "Service tier",
+		"tooltip": "For faster processing of API requests, try the priority processing service tier. For lower prices with higher latency, try the flex processing tier.",
+		"standard": "Standard",
+		"flex": "Flex",
+		"priority": "Priority",
+		"pricingTableTitle": "Pricing by service tier (price per 1M tokens)",
+		"columns": {
+			"tier": "Tier",
+			"input": "Input",
+			"output": "Output",
+			"cacheReads": "Cache reads"
+		}
+	}
 }

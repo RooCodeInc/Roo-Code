@@ -1,8 +1,9 @@
 import { EventEmitter } from "events"
-import * as vscode from "vscode"
 import fs from "fs/promises"
 import * as path from "path"
 import * as os from "os"
+
+import * as vscode from "vscode"
 
 import {
 	type RooCodeAPI,
@@ -11,6 +12,7 @@ import {
 	type ProviderSettings,
 	type ProviderSettingsEntry,
 	type TaskEvent,
+	type CreateTaskOptions,
 	RooCodeEventName,
 	TaskCommandName,
 	isSecretStateKey,
@@ -128,46 +130,22 @@ export class API extends EventEmitter<RooCodeEvents> implements RooCodeAPI {
 			provider = this.sidebarProvider
 		}
 
-		if (configuration) {
-			await provider.setValues(configuration)
-
-			if (configuration.allowedCommands) {
-				await vscode.workspace
-					.getConfiguration(Package.name)
-					.update("allowedCommands", configuration.allowedCommands, vscode.ConfigurationTarget.Global)
-			}
-
-			if (configuration.deniedCommands) {
-				await vscode.workspace
-					.getConfiguration(Package.name)
-					.update("deniedCommands", configuration.deniedCommands, vscode.ConfigurationTarget.Global)
-			}
-
-			if (configuration.commandExecutionTimeout !== undefined) {
-				await vscode.workspace
-					.getConfiguration(Package.name)
-					.update(
-						"commandExecutionTimeout",
-						configuration.commandExecutionTimeout,
-						vscode.ConfigurationTarget.Global,
-					)
-			}
-		}
-
 		await provider.removeClineFromStack()
 		await provider.postStateToWebview()
 		await provider.postMessageToWebview({ type: "action", action: "chatButtonClicked" })
 		await provider.postMessageToWebview({ type: "invoke", invoke: "newChat", text, images })
 
-		const cline = await provider.createTask(text, images, undefined, {
+		const options: CreateTaskOptions = {
 			consecutiveMistakeLimit: Number.MAX_SAFE_INTEGER,
-		})
+		}
 
-		if (!cline) {
+		const task = await provider.createTask(text, images, undefined, options, configuration)
+
+		if (!task) {
 			throw new Error("Failed to create task due to policy restrictions")
 		}
 
-		return cline.taskId
+		return task.taskId
 	}
 
 	public async resumeTask(taskId: string): Promise<void> {
@@ -234,13 +212,10 @@ export class API extends EventEmitter<RooCodeEvents> implements RooCodeAPI {
 			})
 
 			task.on(RooCodeEventName.TaskCompleted, async (_, tokenUsage, toolUsage) => {
-				let isSubtask = false
+				this.emit(RooCodeEventName.TaskCompleted, task.taskId, tokenUsage, toolUsage, {
+					isSubtask: !!task.parentTaskId,
+				})
 
-				if (typeof task.rootTask !== "undefined") {
-					isSubtask = true
-				}
-
-				this.emit(RooCodeEventName.TaskCompleted, task.taskId, tokenUsage, toolUsage, { isSubtask: isSubtask })
 				this.taskMap.delete(task.taskId)
 
 				await this.fileLog(
@@ -253,11 +228,29 @@ export class API extends EventEmitter<RooCodeEvents> implements RooCodeAPI {
 				this.taskMap.delete(task.taskId)
 			})
 
-			// Optional:
-			// RooCodeEventName.TaskFocused
-			// RooCodeEventName.TaskUnfocused
-			// RooCodeEventName.TaskActive
-			// RooCodeEventName.TaskIdle
+			task.on(RooCodeEventName.TaskFocused, () => {
+				this.emit(RooCodeEventName.TaskFocused, task.taskId)
+			})
+
+			task.on(RooCodeEventName.TaskUnfocused, () => {
+				this.emit(RooCodeEventName.TaskUnfocused, task.taskId)
+			})
+
+			task.on(RooCodeEventName.TaskActive, () => {
+				this.emit(RooCodeEventName.TaskActive, task.taskId)
+			})
+
+			task.on(RooCodeEventName.TaskInteractive, () => {
+				this.emit(RooCodeEventName.TaskInteractive, task.taskId)
+			})
+
+			task.on(RooCodeEventName.TaskResumable, () => {
+				this.emit(RooCodeEventName.TaskResumable, task.taskId)
+			})
+
+			task.on(RooCodeEventName.TaskIdle, () => {
+				this.emit(RooCodeEventName.TaskIdle, task.taskId)
+			})
 
 			// Subtask Lifecycle
 

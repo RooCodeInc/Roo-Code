@@ -47,6 +47,9 @@
 		"geminiProvider": "Gemini",
 		"geminiApiKeyLabel": "API Key:",
 		"geminiApiKeyPlaceholder": "Masukkan kunci API Gemini Anda",
+		"vercelAiGatewayProvider": "Vercel AI Gateway",
+		"vercelAiGatewayApiKeyLabel": "API Key",
+		"vercelAiGatewayApiKeyPlaceholder": "Masukkan kunci API Vercel AI Gateway Anda",
 		"mistralProvider": "Mistral",
 		"mistralApiKeyLabel": "Kunci API:",
 		"mistralApiKeyPlaceholder": "Masukkan kunci API Mistral Anda",
@@ -113,6 +116,7 @@
 			"modelDimensionRequired": "Dimensi model diperlukan",
 			"geminiApiKeyRequired": "Kunci API Gemini diperlukan",
 			"mistralApiKeyRequired": "Kunci API Mistral diperlukan",
+			"vercelAiGatewayApiKeyRequired": "Kunci API Vercel AI Gateway diperlukan",
 			"ollamaBaseUrlRequired": "URL dasar Ollama diperlukan",
 			"baseUrlRequired": "URL dasar diperlukan",
 			"modelDimensionMinValue": "Dimensi model harus lebih besar dari 0"
@@ -237,6 +241,8 @@
 		"awsCustomArnDesc": "Pastikan region di ARN cocok dengan AWS Region yang kamu pilih di atas.",
 		"openRouterApiKey": "OpenRouter API Key",
 		"getOpenRouterApiKey": "Dapatkan OpenRouter API Key",
+		"vercelAiGatewayApiKey": "Vercel AI Gateway API Key",
+		"getVercelAiGatewayApiKey": "Dapatkan Vercel AI Gateway API Key",
 		"apiKeyStorageNotice": "API key disimpan dengan aman di Secret Storage VSCode",
 		"glamaApiKey": "Glama API Key",
 		"getGlamaApiKey": "Dapatkan Glama API Key",
@@ -372,6 +378,8 @@
 		"ollama": {
 			"baseUrl": "Base URL (opsional)",
 			"modelId": "Model ID",
+			"apiKey": "Ollama API Key",
+			"apiKeyHelp": "API key opsional untuk instance Ollama yang terautentikasi atau layanan cloud. Biarkan kosong untuk instalasi lokal.",
 			"description": "Ollama memungkinkan kamu menjalankan model secara lokal di komputer. Untuk instruksi cara memulai, lihat panduan quickstart mereka.",
 			"warning": "Catatan: Roo Code menggunakan prompt kompleks dan bekerja terbaik dengan model Claude. Model yang kurang mampu mungkin tidak bekerja seperti yang diharapkan."
 		},
@@ -753,6 +761,21 @@
 		"NEW_TASK_REQUIRE_TODOS": {
 			"name": "Membutuhkan daftar 'todos' untuk tugas baru",
 			"description": "Ketika diaktifkan, alat new_task akan membutuhkan parameter todos untuk disediakan. Ini memastikan semua tugas baru dimulai dengan daftar tujuan yang jelas. Ketika dinonaktifkan (default), parameter todos tetap opsional untuk kompatibilitas mundur."
+		},
+		"IMAGE_GENERATION": {
+			"name": "Aktifkan pembuatan gambar AI",
+			"description": "Ketika diaktifkan, Roo dapat menghasilkan gambar dari prompt teks menggunakan model pembuatan gambar OpenRouter. Memerlukan kunci API OpenRouter yang dikonfigurasi.",
+			"openRouterApiKeyLabel": "Kunci API OpenRouter",
+			"openRouterApiKeyPlaceholder": "Masukkan kunci API OpenRouter Anda",
+			"getApiKeyText": "Dapatkan kunci API Anda dari",
+			"modelSelectionLabel": "Model Pembuatan Gambar",
+			"modelSelectionDescription": "Pilih model untuk pembuatan gambar",
+			"warningMissingKey": "⚠️ Kunci API OpenRouter diperlukan untuk pembuatan gambar. Silakan konfigurasi di atas.",
+			"successConfigured": "✓ Pembuatan gambar dikonfigurasi dan siap digunakan"
+		},
+		"RUN_SLASH_COMMAND": {
+			"name": "Aktifkan perintah slash yang dimulai model",
+			"description": "Ketika diaktifkan, Roo dapat menjalankan perintah slash Anda untuk mengeksekusi alur kerja."
 		}
 	},
 	"promptCaching": {
@@ -825,7 +848,8 @@
 		"modelAvailability": "Model ID ({{modelId}}) yang kamu berikan tidak tersedia. Silakan pilih model yang berbeda.",
 		"providerNotAllowed": "Provider '{{provider}}' tidak diizinkan oleh organisasi kamu",
 		"modelNotAllowed": "Model '{{model}}' tidak diizinkan untuk provider '{{provider}}' oleh organisasi kamu",
-		"profileInvalid": "Profil ini berisi provider atau model yang tidak diizinkan oleh organisasi kamu"
+		"profileInvalid": "Profil ini berisi provider atau model yang tidak diizinkan oleh organisasi kamu",
+		"qwenCodeOauthPath": "Kamu harus memberikan jalur kredensial OAuth yang valid"
 	},
 	"placeholders": {
 		"apiKey": "Masukkan API Key...",
@@ -864,5 +888,19 @@
 	"includeMaxOutputTokensDescription": "Kirim parameter token output maksimum dalam permintaan API. Beberapa provider mungkin tidak mendukung ini.",
 	"limitMaxTokensDescription": "Batasi jumlah maksimum token dalam respons",
 	"maxOutputTokensLabel": "Token output maksimum",
-	"maxTokensGenerateDescription": "Token maksimum untuk dihasilkan dalam respons"
+	"maxTokensGenerateDescription": "Token maksimum untuk dihasilkan dalam respons",
+	"serviceTier": {
+		"label": "Tingkat layanan",
+		"tooltip": "Untuk pemrosesan permintaan API yang lebih cepat, coba tingkat layanan pemrosesan prioritas. Untuk harga lebih rendah dengan latensi lebih tinggi, coba tingkat pemrosesan fleksibel.",
+		"standard": "Standar",
+		"flex": "Fleksibel",
+		"priority": "Prioritas",
+		"pricingTableTitle": "Harga berdasarkan tingkat layanan (harga per 1 juta token)",
+		"columns": {
+			"tier": "Tingkat",
+			"input": "Input",
+			"output": "Output",
+			"cacheReads": "Pembacaan cache"
+		}
+	}
 }

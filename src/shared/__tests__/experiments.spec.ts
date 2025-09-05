@@ -29,6 +29,8 @@ describe("experiments", () => {
 				powerSteering: false,
 				multiFileApplyDiff: false,
 				preventFocusDisruption: false,
+				imageGeneration: false,
+				runSlashCommand: false,
 			}
 			expect(Experiments.isEnabled(experiments, EXPERIMENT_IDS.POWER_STEERING)).toBe(false)
 		})
@@ -38,6 +40,8 @@ describe("experiments", () => {
 				powerSteering: true,
 				multiFileApplyDiff: false,
 				preventFocusDisruption: false,
+				imageGeneration: false,
+				runSlashCommand: false,
 			}
 			expect(Experiments.isEnabled(experiments, EXPERIMENT_IDS.POWER_STEERING)).toBe(true)
 		})
@@ -47,6 +51,8 @@ describe("experiments", () => {
 				powerSteering: false,
 				multiFileApplyDiff: false,
 				preventFocusDisruption: false,
+				imageGeneration: false,
+				runSlashCommand: false,
 			}
 			expect(Experiments.isEnabled(experiments, EXPERIMENT_IDS.POWER_STEERING)).toBe(false)
 		})

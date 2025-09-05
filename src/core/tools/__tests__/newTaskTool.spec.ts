@@ -11,6 +11,16 @@ vi.mock("vscode", () => ({
 	},
 }))
 
+// Mock Package module
+vi.mock("../../../shared/package", () => ({
+	Package: {
+		name: "roo-cline",
+		publisher: "RooVeterinaryInc",
+		version: "1.0.0",
+		outputChannel: "Roo-Code",
+	},
+}))
+
 // Mock other modules first - these are hoisted to the top
 vi.mock("../../../shared/modes", () => ({
 	getModeBySlug: vi.fn(),
@@ -58,12 +68,13 @@ const mockAskApproval = vi.fn<AskApproval>()
 const mockHandleError = vi.fn<HandleError>()
 const mockPushToolResult = vi.fn()
 const mockRemoveClosingTag = vi.fn((_name: string, value: string | undefined) => value ?? "")
-const mockCreateTask = vi
-	.fn<(text?: string, images?: string[], parentTask?: any, options?: any) => Promise<MockClineInstance>>()
-	.mockResolvedValue({ taskId: "mock-subtask-id" })
 const mockEmit = vi.fn()
 const mockRecordToolError = vi.fn()
 const mockSayAndCreateMissingParamError = vi.fn()
+const mockStartSubtask = vi
+	.fn<(message: string, todoItems: any[], mode: string) => Promise<MockClineInstance>>()
+	.mockResolvedValue({ taskId: "mock-subtask-id" })
+const mockCheckpointSave = vi.fn()
 
 // Mock the Cline instance and its methods/properties
 const mockCline = {
@@ -74,11 +85,14 @@ const mockCline = {
 	consecutiveMistakeCount: 0,
 	isPaused: false,
 	pausedModeSlug: "ask",
+	taskId: "mock-parent-task-id",
+	enableCheckpoints: false,
+	checkpointSave: mockCheckpointSave,
+	startSubtask: mockStartSubtask,
 	providerRef: {
 		deref: vi.fn(() => ({
 			getState: vi.fn(() => ({ customModes: [], mode: "ask" })),
 			handleModeSwitch: vi.fn(),
-			createTask: mockCreateTask,
 		})),
 	},
 }
@@ -133,23 +147,17 @@ describe("newTaskTool", () => {
 		// Verify askApproval was called
 		expect(mockAskApproval).toHaveBeenCalled()
 
-		// Verify the message passed to createTask reflects the code's behavior in unit tests
-		expect(mockCreateTask).toHaveBeenCalledWith(
+		// Verify the message passed to startSubtask reflects the code's behavior in unit tests
+		expect(mockStartSubtask).toHaveBeenCalledWith(
 			"Review this: \\@file1.txt and also \\\\\\@file2.txt", // Unit Test Expectation: \\@ -> \@, \\\\@ -> \\\\@
-			undefined,
-			mockCline,
-			expect.objectContaining({
-				initialTodos: expect.arrayContaining([
-					expect.objectContaining({ content: "First task" }),
-					expect.objectContaining({ content: "Second task" }),
-				]),
-			}),
+			expect.arrayContaining([
+				expect.objectContaining({ content: "First task" }),
+				expect.objectContaining({ content: "Second task" }),
+			]),
+			"code",
 		)
 
 		// Verify side effects
-		expect(mockCline.emit).toHaveBeenCalledWith("taskSpawned", expect.any(String)) // Assuming initCline returns a mock task ID
-		expect(mockCline.isPaused).toBe(true)
-		expect(mockCline.emit).toHaveBeenCalledWith("taskPaused")
 		expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("Successfully created new task"))
 	})
 
@@ -174,13 +182,10 @@ describe("newTaskTool", () => {
 			mockRemoveClosingTag,
 		)
 
-		expect(mockCreateTask).toHaveBeenCalledWith(
+		expect(mockStartSubtask).toHaveBeenCalledWith(
 			"This is already unescaped: \\@file1.txt", // Expected: \@ remains \@
-			undefined,
-			mockCline,
-			expect.objectContaining({
-				initialTodos: expect.any(Array),
-			}),
+			expect.any(Array),
+			"code",
 		)
 	})
 
@@ -205,13 +210,10 @@ describe("newTaskTool", () => {
 			mockRemoveClosingTag,
 		)
 
-		expect(mockCreateTask).toHaveBeenCalledWith(
+		expect(mockStartSubtask).toHaveBeenCalledWith(
 			"A normal mention @file1.txt", // Expected: @ remains @
-			undefined,
-			mockCline,
-			expect.objectContaining({
-				initialTodos: expect.any(Array),
-			}),
+			expect.any(Array),
+			"code",
 		)
 	})
 
@@ -236,13 +238,10 @@ describe("newTaskTool", () => {
 			mockRemoveClosingTag,
 		)
 
-		expect(mockCreateTask).toHaveBeenCalledWith(
+		expect(mockStartSubtask).toHaveBeenCalledWith(
 			"Mix: @file0.txt, \\@file1.txt, \\@file2.txt, \\\\\\@file3.txt", // Unit Test Expectation: @->@, \@->\@, \\@->\@, \\\\@->\\\\@
-			undefined,
-			mockCline,
-			expect.objectContaining({
-				initialTodos: expect.any(Array),
-			}),
+			expect.any(Array),
+			"code",
 		)
 	})
 
@@ -273,14 +272,7 @@ describe("newTaskTool", () => {
 		expect(mockCline.recordToolError).not.toHaveBeenCalledWith("new_task")
 
 		// Should create task with empty todos array
-		expect(mockCreateTask).toHaveBeenCalledWith(
-			"Test message",
-			undefined,
-			mockCline,
-			expect.objectContaining({
-				initialTodos: [],
-			}),
-		)
+		expect(mockStartSubtask).toHaveBeenCalledWith("Test message", [], "code")
 
 		// Should complete successfully
 		expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("Successfully created new task"))
@@ -308,16 +300,13 @@ describe("newTaskTool", () => {
 		)
 
 		// Should parse and include todos when provided
-		expect(mockCreateTask).toHaveBeenCalledWith(
+		expect(mockStartSubtask).toHaveBeenCalledWith(
 			"Test message with todos",
-			undefined,
-			mockCline,
-			expect.objectContaining({
-				initialTodos: expect.arrayContaining([
-					expect.objectContaining({ content: "First task" }),
-					expect.objectContaining({ content: "Second task" }),
-				]),
-			}),
+			expect.arrayContaining([
+				expect.objectContaining({ content: "First task" }),
+				expect.objectContaining({ content: "Second task" }),
+			]),
+			"code",
 		)
 
 		expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("Successfully created new task"))
@@ -396,17 +385,14 @@ describe("newTaskTool", () => {
 			mockRemoveClosingTag,
 		)
 
-		expect(mockCreateTask).toHaveBeenCalledWith(
+		expect(mockStartSubtask).toHaveBeenCalledWith(
 			"Test message",
-			undefined,
-			mockCline,
-			expect.objectContaining({
-				initialTodos: expect.arrayContaining([
-					expect.objectContaining({ content: "Pending task", status: "pending" }),
-					expect.objectContaining({ content: "Completed task", status: "completed" }),
-					expect.objectContaining({ content: "In progress task", status: "in_progress" }),
-				]),
-			}),
+			expect.arrayContaining([
+				expect.objectContaining({ content: "Pending task", status: "pending" }),
+				expect.objectContaining({ content: "Completed task", status: "completed" }),
+				expect.objectContaining({ content: "In progress task", status: "in_progress" }),
+			]),
+			"code",
 		)
 	})
 
@@ -444,14 +430,7 @@ describe("newTaskTool", () => {
 			expect(mockCline.recordToolError).not.toHaveBeenCalledWith("new_task")
 
 			// Should create task with empty todos array
-			expect(mockCreateTask).toHaveBeenCalledWith(
-				"Test message",
-				undefined,
-				mockCline,
-				expect.objectContaining({
-					initialTodos: [],
-				}),
-			)
+			expect(mockStartSubtask).toHaveBeenCalledWith("Test message", [], "code")
 
 			// Should complete successfully
 			expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("Successfully created new task"))
@@ -490,7 +469,7 @@ describe("newTaskTool", () => {
 			expect(mockCline.recordToolError).toHaveBeenCalledWith("new_task")
 
 			// Should NOT create task
-			expect(mockCreateTask).not.toHaveBeenCalled()
+			expect(mockStartSubtask).not.toHaveBeenCalled()
 			expect(mockPushToolResult).not.toHaveBeenCalledWith(
 				expect.stringContaining("Successfully created new task"),
 			)
@@ -528,16 +507,13 @@ describe("newTaskTool", () => {
 			expect(mockCline.consecutiveMistakeCount).toBe(0)
 
 			// Should create task with parsed todos
-			expect(mockCreateTask).toHaveBeenCalledWith(
+			expect(mockStartSubtask).toHaveBeenCalledWith(
 				"Test message",
-				undefined,
-				mockCline,
-				expect.objectContaining({
-					initialTodos: expect.arrayContaining([
-						expect.objectContaining({ content: "First task" }),
-						expect.objectContaining({ content: "Second task" }),
-					]),
-				}),
+				expect.arrayContaining([
+					expect.objectContaining({ content: "First task" }),
+					expect.objectContaining({ content: "Second task" }),
+				]),
+				"code",
 			)
 
 			// Should complete successfully
@@ -576,20 +552,13 @@ describe("newTaskTool", () => {
 			expect(mockCline.consecutiveMistakeCount).toBe(0)
 
 			// Should create task with empty todos array
-			expect(mockCreateTask).toHaveBeenCalledWith(
-				"Test message",
-				undefined,
-				mockCline,
-				expect.objectContaining({
-					initialTodos: [],
-				}),
-			)
+			expect(mockStartSubtask).toHaveBeenCalledWith("Test message", [], "code")
 
 			// Should complete successfully
 			expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("Successfully created new task"))
 		})
 
-		it("should check VSCode setting with correct configuration key", async () => {
+		it("should check VSCode setting with Package.name configuration key", async () => {
 			const mockGet = vi.fn().mockReturnValue(false)
 			const mockGetConfiguration = vi.fn().mockReturnValue({
 				get: mockGet,
@@ -615,8 +584,44 @@ describe("newTaskTool", () => {
 				mockRemoveClosingTag,
 			)
 
-			// Verify that VSCode configuration was accessed correctly
+			// Verify that VSCode configuration was accessed with Package.name
 			expect(mockGetConfiguration).toHaveBeenCalledWith("roo-cline")
+			expect(mockGet).toHaveBeenCalledWith("newTaskRequireTodos", false)
+		})
+
+		it("should use current Package.name value (roo-code-nightly) when accessing VSCode configuration", async () => {
+			// Arrange: capture calls to VSCode configuration and ensure we can assert the namespace
+			const mockGet = vi.fn().mockReturnValue(false)
+			const mockGetConfiguration = vi.fn().mockReturnValue({
+				get: mockGet,
+			} as any)
+			vi.mocked(vscode.workspace.getConfiguration).mockImplementation(mockGetConfiguration)
+
+			// Mutate the mocked Package.name dynamically to simulate a different build variant
+			const pkg = await import("../../../shared/package")
+			;(pkg.Package as any).name = "roo-code-nightly"
+
+			const block: ToolUse = {
+				type: "tool_use",
+				name: "new_task",
+				params: {
+					mode: "code",
+					message: "Test message",
+				},
+				partial: false,
+			}
+
+			await newTaskTool(
+				mockCline as any,
+				block,
+				mockAskApproval,
+				mockHandleError,
+				mockPushToolResult,
+				mockRemoveClosingTag,
+			)
+
+			// Assert: configuration was read using the dynamic nightly namespace
+			expect(mockGetConfiguration).toHaveBeenCalledWith("roo-code-nightly")
 			expect(mockGet).toHaveBeenCalledWith("newTaskRequireTodos", false)
 		})
 	})

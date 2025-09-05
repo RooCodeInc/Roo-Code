@@ -25,6 +25,8 @@ import { getSwitchModeDescription } from "./switch-mode"
 import { getNewTaskDescription } from "./new-task"
 import { getCodebaseSearchDescription } from "./codebase-search"
 import { getUpdateTodoListDescription } from "./update-todo-list"
+import { getRunSlashCommandDescription } from "./run-slash-command"
+import { getGenerateImageDescription } from "./generate-image"
 import { CodeIndexManager } from "../../../services/code-index/manager"
 
 // Map of tool names to their description functions
@@ -56,6 +58,8 @@ const toolDescriptionMap: Record<string, (args: ToolArgs) => string | undefined>
 	apply_diff: (args) =>
 		args.diffStrategy ? args.diffStrategy.getToolDescription({ cwd: args.cwd, toolOptions: args.toolOptions }) : "",
 	update_todo_list: (args) => getUpdateTodoListDescription(args),
+	run_slash_command: () => getRunSlashCommandDescription(),
+	generate_image: (args) => getGenerateImageDescription(args),
 }
 
 export function getToolDescriptionsForMode(
@@ -129,6 +133,16 @@ export function getToolDescriptionsForMode(
 		tools.delete("update_todo_list")
 	}
 
+	// Conditionally exclude generate_image if experiment is not enabled
+	if (!experiments?.imageGeneration) {
+		tools.delete("generate_image")
+	}
+
+	// Conditionally exclude run_slash_command if experiment is not enabled
+	if (!experiments?.runSlashCommand) {
+		tools.delete("run_slash_command")
+	}
+
 	// Map tool descriptions for allowed tools
 	const descriptions = Array.from(tools).map((toolName) => {
 		const descriptionFn = toolDescriptionMap[toolName]
@@ -164,4 +178,6 @@ export {
 	getInsertContentDescription,
 	getSearchAndReplaceDescription,
 	getCodebaseSearchDescription,
+	getRunSlashCommandDescription,
+	getGenerateImageDescription,
 }
