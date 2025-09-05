@@ -5,7 +5,12 @@ import { OpenAICompatibleEmbedder } from "./embedders/openai-compatible"
 import { GeminiEmbedder } from "./embedders/gemini"
 import { MistralEmbedder } from "./embedders/mistral"
 import { VercelAiGatewayEmbedder } from "./embedders/vercel-ai-gateway"
-import { EmbedderProvider, getDefaultModelId, getModelDimension } from "../../shared/embeddingModels"
+import {
+	EmbedderProvider,
+	getDefaultModelId,
+	getModelDimension,
+	getModelMaxBatchSize,
+} from "../../shared/embeddingModels"
 import { QdrantVectorStore } from "./vector-store/qdrant-client"
 import { codeParser, DirectoryScanner, FileWatcher } from "./processors"
 import { ICodeParser, IEmbedder, IFileWatcher, IVectorStore } from "./interfaces"
@@ -59,10 +64,14 @@ export class CodeIndexServiceFactory {
 			if (!config.openAiCompatibleOptions?.baseUrl || !config.openAiCompatibleOptions?.apiKey) {
 				throw new Error(t("embeddings:serviceFactory.openAiCompatibleConfigMissing"))
 			}
+			// Get model-specific batch size limit if available
+			const maxBatchSize = config.modelId ? getModelMaxBatchSize("openai-compatible", config.modelId) : undefined
 			return new OpenAICompatibleEmbedder(
 				config.openAiCompatibleOptions.baseUrl,
 				config.openAiCompatibleOptions.apiKey,
 				config.modelId,
+				undefined, // maxItemTokens - use default
+				maxBatchSize,
 			)
 		} else if (provider === "gemini") {
 			if (!config.geminiOptions?.apiKey) {
@@ -168,6 +177,16 @@ export class CodeIndexServiceFactory {
 			// In test environment, vscode.workspace might not be available
 			batchSize = BATCH_SEGMENT_THRESHOLD
 		}
+
+		// Check if the embedder has a model-specific batch size limit
+		const config = this.configManager.getConfig()
+		if (config.embedderProvider === "openai-compatible" && config.modelId) {
+			const modelMaxBatchSize = getModelMaxBatchSize("openai-compatible", config.modelId)
+			if (modelMaxBatchSize && modelMaxBatchSize < batchSize) {
+				batchSize = modelMaxBatchSize
+			}
+		}
+
 		return new DirectoryScanner(embedder, vectorStore, parser, this.cacheManager, ignoreInstance, batchSize)
 	}
 
@@ -192,6 +211,16 @@ export class CodeIndexServiceFactory {
 			// In test environment, vscode.workspace might not be available
 			batchSize = BATCH_SEGMENT_THRESHOLD
 		}
+
+		// Check if the embedder has a model-specific batch size limit
+		const config = this.configManager.getConfig()
+		if (config.embedderProvider === "openai-compatible" && config.modelId) {
+			const modelMaxBatchSize = getModelMaxBatchSize("openai-compatible", config.modelId)
+			if (modelMaxBatchSize && modelMaxBatchSize < batchSize) {
+				batchSize = modelMaxBatchSize
+			}
+		}
+
 		return new FileWatcher(
 			this.workspacePath,
 			context,

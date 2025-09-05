@@ -6,7 +6,7 @@ import {
 	MAX_BATCH_RETRIES as MAX_RETRIES,
 	INITIAL_RETRY_DELAY_MS as INITIAL_DELAY_MS,
 } from "../constants"
-import { getDefaultModelId, getModelQueryPrefix } from "../../../shared/embeddingModels"
+import { getDefaultModelId, getModelQueryPrefix, getModelMaxBatchSize } from "../../../shared/embeddingModels"
 import { t } from "../../../i18n"
 import { withValidationErrorHandling, HttpError, formatEmbeddingError } from "../shared/validation-helpers"
 import { TelemetryEventName } from "@roo-code/types"
@@ -38,6 +38,7 @@ export class OpenAICompatibleEmbedder implements IEmbedder {
 	private readonly apiKey: string
 	private readonly isFullUrl: boolean
 	private readonly maxItemTokens: number
+	private readonly maxBatchSize: number | undefined
 
 	// Global rate limiting state shared across all instances
 	private static globalRateLimitState = {
@@ -55,8 +56,9 @@ export class OpenAICompatibleEmbedder implements IEmbedder {
 	 * @param apiKey The API key for authentication
 	 * @param modelId Optional model identifier (defaults to "text-embedding-3-small")
 	 * @param maxItemTokens Optional maximum tokens per item (defaults to MAX_ITEM_TOKENS)
+	 * @param maxBatchSize Optional maximum batch size (overrides model-specific limits)
 	 */
-	constructor(baseUrl: string, apiKey: string, modelId?: string, maxItemTokens?: number) {
+	constructor(baseUrl: string, apiKey: string, modelId?: string, maxItemTokens?: number, maxBatchSize?: number) {
 		if (!baseUrl) {
 			throw new Error(t("embeddings:validation.baseUrlRequired"))
 		}
@@ -74,6 +76,9 @@ export class OpenAICompatibleEmbedder implements IEmbedder {
 		// Cache the URL type check for performance
 		this.isFullUrl = this.isFullEndpointUrl(baseUrl)
 		this.maxItemTokens = maxItemTokens || MAX_ITEM_TOKENS
+		// Use provided maxBatchSize, or get from model profile, or undefined (no limit)
+		this.maxBatchSize =
+			maxBatchSize !== undefined ? maxBatchSize : getModelMaxBatchSize("openai-compatible", this.defaultModelId)
 	}
 
 	/**
@@ -135,7 +140,11 @@ export class OpenAICompatibleEmbedder implements IEmbedder {
 					continue
 				}
 
-				if (currentBatchTokens + itemTokens <= MAX_BATCH_TOKENS) {
+				// Check both token limit and batch size limit
+				const withinTokenLimit = currentBatchTokens + itemTokens <= MAX_BATCH_TOKENS
+				const withinBatchSizeLimit = this.maxBatchSize === undefined || currentBatch.length < this.maxBatchSize
+
+				if (withinTokenLimit && withinBatchSizeLimit) {
 					currentBatch.push(text)
 					currentBatchTokens += itemTokens
 					processedIndices.push(i)

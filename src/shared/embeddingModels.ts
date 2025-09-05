@@ -8,6 +8,7 @@ export interface EmbeddingModelProfile {
 	dimension: number
 	scoreThreshold?: number // Model-specific minimum score threshold for semantic search
 	queryPrefix?: string // Optional prefix required by the model for queries
+	maxBatchSize?: number // Maximum number of items that can be sent in a single batch
 	// Add other model-specific properties if needed, e.g., context window size
 }
 
@@ -45,6 +46,9 @@ export const EMBEDDING_MODEL_PROFILES: EmbeddingModelProfiles = {
 			scoreThreshold: 0.15,
 			queryPrefix: "Represent this query for searching relevant code: ",
 		},
+		// Aliyun Bailian models with batch size limits
+		"qwen3-embedding": { dimension: 1536, scoreThreshold: 0.4, maxBatchSize: 10 },
+		"text-embedding-v4": { dimension: 1536, scoreThreshold: 0.4, maxBatchSize: 10 },
 	},
 	gemini: {
 		"text-embedding-004": { dimension: 768 },
@@ -125,6 +129,22 @@ export function getModelQueryPrefix(provider: EmbedderProvider, modelId: string)
 
 	const modelProfile = providerProfiles[modelId]
 	return modelProfile?.queryPrefix
+}
+
+/**
+ * Retrieves the maximum batch size for a given provider and model ID.
+ * @param provider The embedder provider (e.g., "openai-compatible").
+ * @param modelId The specific model ID (e.g., "qwen3-embedding").
+ * @returns The maximum batch size or undefined if not specified.
+ */
+export function getModelMaxBatchSize(provider: EmbedderProvider, modelId: string): number | undefined {
+	const providerProfiles = EMBEDDING_MODEL_PROFILES[provider]
+	if (!providerProfiles) {
+		return undefined
+	}
+
+	const modelProfile = providerProfiles[modelId]
+	return modelProfile?.maxBatchSize
 }
 
 /**

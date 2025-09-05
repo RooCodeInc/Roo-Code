@@ -17,6 +17,7 @@ vitest.mock("../vector-store/qdrant-client")
 vitest.mock("../../../shared/embeddingModels", () => ({
 	getDefaultModelId: vitest.fn(),
 	getModelDimension: vitest.fn(),
+	getModelMaxBatchSize: vitest.fn(),
 }))
 
 // Mock TelemetryService
@@ -35,9 +36,10 @@ const MockedGeminiEmbedder = GeminiEmbedder as MockedClass<typeof GeminiEmbedder
 const MockedQdrantVectorStore = QdrantVectorStore as MockedClass<typeof QdrantVectorStore>
 
 // Import the mocked functions
-import { getDefaultModelId, getModelDimension } from "../../../shared/embeddingModels"
+import { getDefaultModelId, getModelDimension, getModelMaxBatchSize } from "../../../shared/embeddingModels"
 const mockGetDefaultModelId = getDefaultModelId as MockedFunction<typeof getDefaultModelId>
 const mockGetModelDimension = getModelDimension as MockedFunction<typeof getModelDimension>
+const mockGetModelMaxBatchSize = getModelMaxBatchSize as MockedFunction<typeof getModelMaxBatchSize>
 
 describe("CodeIndexServiceFactory", () => {
 	let factory: CodeIndexServiceFactory
@@ -52,6 +54,9 @@ describe("CodeIndexServiceFactory", () => {
 		}
 
 		mockCacheManager = {}
+
+		// Default mock for getModelMaxBatchSize
+		mockGetModelMaxBatchSize.mockReturnValue(undefined)
 
 		factory = new CodeIndexServiceFactory(mockConfigManager, "/test/workspace", mockCacheManager)
 	})
@@ -194,6 +199,8 @@ describe("CodeIndexServiceFactory", () => {
 				"https://api.example.com/v1",
 				"test-api-key",
 				testModelId,
+				undefined,
+				undefined,
 			)
 		})
 
@@ -216,6 +223,8 @@ describe("CodeIndexServiceFactory", () => {
 			expect(MockedOpenAICompatibleEmbedder).toHaveBeenCalledWith(
 				"https://api.example.com/v1",
 				"test-api-key",
+				undefined,
+				undefined,
 				undefined,
 			)
 		})
