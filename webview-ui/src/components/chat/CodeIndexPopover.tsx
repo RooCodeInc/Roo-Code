@@ -1131,7 +1131,19 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 										</>
 									)}
 
-									{/* Qdrant Settings */}
+									{/* Vector Database Provider (Qdrant only for now) */}
+									<div className="space-y-2">
+										<label className="text-sm font-medium">
+											{t("settings:codeIndex.vectorDbProviderLabel", {
+												defaultValue: "Vector Database Provider",
+											})}
+										</label>
+										<VSCodeDropdown className={cn("w-full")}>
+											<VSCodeOption value="qdrant">Qdrant</VSCodeOption>
+										</VSCodeDropdown>
+									</div>
+
+									{/* Vector Database Settings (Qdrant implementation) */}
 									<div className="space-y-2">
 										<label className="text-sm font-medium">
 											{t("settings:codeIndex.qdrantUrlLabel")}

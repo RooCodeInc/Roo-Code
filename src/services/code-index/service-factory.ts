@@ -6,7 +6,8 @@ import { GeminiEmbedder } from "./embedders/gemini"
 import { MistralEmbedder } from "./embedders/mistral"
 import { VercelAiGatewayEmbedder } from "./embedders/vercel-ai-gateway"
 import { EmbedderProvider, getDefaultModelId, getModelDimension } from "../../shared/embeddingModels"
-import { QdrantVectorStore } from "./vector-store/qdrant-client"
+import { VectorStoreFactory } from "../vector-store/factory"
+import { CodeIndexVectorStoreAdapter } from "./vector-store-adapter"
 import { codeParser, DirectoryScanner, FileWatcher } from "./processors"
 import { ICodeParser, IEmbedder, IFileWatcher, IVectorStore } from "./interfaces"
 import { CodeIndexConfigManager } from "./config-manager"
@@ -145,8 +146,13 @@ export class CodeIndexServiceFactory {
 			throw new Error(t("embeddings:serviceFactory.qdrantUrlMissing"))
 		}
 
-		// Assuming constructor is updated: new QdrantVectorStore(workspacePath, url, vectorSize, apiKey?)
-		return new QdrantVectorStore(this.workspacePath, config.qdrantUrl, vectorSize, config.qdrantApiKey)
+		const shared = VectorStoreFactory.create({
+			provider: "qdrant",
+			workspacePath: this.workspacePath,
+			dimension: vectorSize,
+			qdrant: { url: config.qdrantUrl, apiKey: config.qdrantApiKey },
+		})
+		return new CodeIndexVectorStoreAdapter(shared, vectorSize)
 	}
 
 	/**

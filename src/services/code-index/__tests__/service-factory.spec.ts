@@ -4,14 +4,19 @@ import { OpenAiEmbedder } from "../embedders/openai"
 import { CodeIndexOllamaEmbedder } from "../embedders/ollama"
 import { OpenAICompatibleEmbedder } from "../embedders/openai-compatible"
 import { GeminiEmbedder } from "../embedders/gemini"
-import { QdrantVectorStore } from "../vector-store/qdrant-client"
+import { CodeIndexVectorStoreAdapter } from "../vector-store-adapter"
 
 // Mock the embedders and vector store
 vitest.mock("../embedders/openai")
 vitest.mock("../embedders/ollama")
 vitest.mock("../embedders/openai-compatible")
 vitest.mock("../embedders/gemini")
-vitest.mock("../vector-store/qdrant-client")
+vitest.mock("../vector-store-adapter")
+const hoisted = vitest.hoisted(() => ({ createFactoryMock: vitest.fn() }))
+const createFactoryMock = hoisted.createFactoryMock
+vitest.mock("../vector-store/factory", () => ({
+	VectorStoreFactory: { create: hoisted.createFactoryMock },
+}))
 
 // Mock the embedding models module
 vitest.mock("../../../shared/embeddingModels", () => ({
@@ -32,7 +37,9 @@ const MockedOpenAiEmbedder = OpenAiEmbedder as MockedClass<typeof OpenAiEmbedder
 const MockedCodeIndexOllamaEmbedder = CodeIndexOllamaEmbedder as MockedClass<typeof CodeIndexOllamaEmbedder>
 const MockedOpenAICompatibleEmbedder = OpenAICompatibleEmbedder as MockedClass<typeof OpenAICompatibleEmbedder>
 const MockedGeminiEmbedder = GeminiEmbedder as MockedClass<typeof GeminiEmbedder>
-const MockedQdrantVectorStore = QdrantVectorStore as MockedClass<typeof QdrantVectorStore>
+const MockedCodeIndexVectorStoreAdapter = CodeIndexVectorStoreAdapter as unknown as MockedClass<
+	typeof CodeIndexVectorStoreAdapter
+>
 
 // Import the mocked functions
 import { getDefaultModelId, getModelDimension } from "../../../shared/embeddingModels"
@@ -46,6 +53,20 @@ describe("CodeIndexServiceFactory", () => {
 
 	beforeEach(() => {
 		vitest.clearAllMocks()
+		createFactoryMock.mockReset()
+		// Default shared adapter stub
+		createFactoryMock.mockReturnValue({
+			provider: () => "qdrant",
+			capabilities: () => ({ deleteByFilter: true }),
+			collectionName: () => "ws-abcdef0123456789",
+			ensureCollection: vitest.fn(),
+			upsert: vitest.fn(),
+			search: vitest.fn(),
+			clearAll: vitest.fn(),
+			deleteCollection: vitest.fn(),
+			collectionExists: vitest.fn(),
+			deleteByFilter: vitest.fn(),
+		})
 
 		mockConfigManager = {
 			getConfig: vitest.fn(),
@@ -362,12 +383,9 @@ describe("CodeIndexServiceFactory", () => {
 
 			// Assert
 			expect(mockGetModelDimension).toHaveBeenCalledWith("openai", testModelId)
-			expect(MockedQdrantVectorStore).toHaveBeenCalledWith(
-				"/test/workspace",
-				"http://localhost:6333",
-				3072,
-				"test-key",
-			)
+			expect(MockedCodeIndexVectorStoreAdapter).toHaveBeenCalled()
+			const args0 = (MockedCodeIndexVectorStoreAdapter as any).mock.calls[0]
+			expect(args0[1]).toBe(3072)
 		})
 
 		it("should use config.modelId for Ollama provider", () => {
@@ -387,12 +405,9 @@ describe("CodeIndexServiceFactory", () => {
 
 			// Assert
 			expect(mockGetModelDimension).toHaveBeenCalledWith("ollama", testModelId)
-			expect(MockedQdrantVectorStore).toHaveBeenCalledWith(
-				"/test/workspace",
-				"http://localhost:6333",
-				768,
-				"test-key",
-			)
+			expect(MockedCodeIndexVectorStoreAdapter).toHaveBeenCalled()
+			const adapterArgs = (MockedCodeIndexVectorStoreAdapter as any).mock.calls[0]
+			expect(adapterArgs[1]).toBe(768)
 		})
 
 		it("should use config.modelId for OpenAI Compatible provider", () => {
@@ -412,12 +427,9 @@ describe("CodeIndexServiceFactory", () => {
 
 			// Assert
 			expect(mockGetModelDimension).toHaveBeenCalledWith("openai-compatible", testModelId)
-			expect(MockedQdrantVectorStore).toHaveBeenCalledWith(
-				"/test/workspace",
-				"http://localhost:6333",
-				3072,
-				"test-key",
-			)
+			expect(MockedCodeIndexVectorStoreAdapter).toHaveBeenCalled()
+			const adapterArgs2 = (MockedCodeIndexVectorStoreAdapter as any).mock.calls[0]
+			expect(adapterArgs2[1]).toBe(3072)
 		})
 
 		it("should prioritize getModelDimension over manual modelDimension for OpenAI Compatible provider", () => {
@@ -444,12 +456,9 @@ describe("CodeIndexServiceFactory", () => {
 
 			// Assert
 			expect(mockGetModelDimension).toHaveBeenCalledWith("openai-compatible", testModelId)
-			expect(MockedQdrantVectorStore).toHaveBeenCalledWith(
-				"/test/workspace",
-				"http://localhost:6333",
-				modelDimension, // Should use model's built-in dimension, not manual
-				"test-key",
-			)
+			expect(MockedCodeIndexVectorStoreAdapter).toHaveBeenCalled()
+			const argsA = (MockedCodeIndexVectorStoreAdapter as any).mock.calls[0]
+			expect(argsA[1]).toBe(modelDimension)
 		})
 
 		it("should use manual modelDimension only when model has no built-in dimension", () => {
@@ -475,12 +484,9 @@ describe("CodeIndexServiceFactory", () => {
 
 			// Assert
 			expect(mockGetModelDimension).toHaveBeenCalledWith("openai-compatible", testModelId)
-			expect(MockedQdrantVectorStore).toHaveBeenCalledWith(
-				"/test/workspace",
-				"http://localhost:6333",
-				manualDimension, // Should use manual dimension as fallback
-				"test-key",
-			)
+			expect(MockedCodeIndexVectorStoreAdapter).toHaveBeenCalled()
+			const argsB = (MockedCodeIndexVectorStoreAdapter as any).mock.calls[0]
+			expect(argsB[1]).toBe(manualDimension)
 		})
 
 		it("should fall back to getModelDimension when manual modelDimension is not set for OpenAI Compatible", () => {
@@ -504,12 +510,9 @@ describe("CodeIndexServiceFactory", () => {
 
 			// Assert
 			expect(mockGetModelDimension).toHaveBeenCalledWith("openai-compatible", testModelId)
-			expect(MockedQdrantVectorStore).toHaveBeenCalledWith(
-				"/test/workspace",
-				"http://localhost:6333",
-				768,
-				"test-key",
-			)
+			expect(MockedCodeIndexVectorStoreAdapter).toHaveBeenCalled()
+			const argsC = (MockedCodeIndexVectorStoreAdapter as any).mock.calls[0]
+			expect(argsC[1]).toBe(768)
 		})
 
 		it("should throw error when manual modelDimension is invalid for OpenAI Compatible", () => {
@@ -573,12 +576,9 @@ describe("CodeIndexServiceFactory", () => {
 
 			// Assert
 			expect(mockGetModelDimension).toHaveBeenCalledWith("gemini", "gemini-embedding-001")
-			expect(MockedQdrantVectorStore).toHaveBeenCalledWith(
-				"/test/workspace",
-				"http://localhost:6333",
-				3072,
-				"test-key",
-			)
+			expect(MockedCodeIndexVectorStoreAdapter).toHaveBeenCalled()
+			const adapterArgs3 = (MockedCodeIndexVectorStoreAdapter as any).mock.calls[0]
+			expect(adapterArgs3[1]).toBe(3072)
 		})
 
 		it("should use default model dimension for Gemini when modelId not specified", () => {
@@ -598,12 +598,9 @@ describe("CodeIndexServiceFactory", () => {
 			// Assert
 			expect(mockGetDefaultModelId).toHaveBeenCalledWith("gemini")
 			expect(mockGetModelDimension).toHaveBeenCalledWith("gemini", "gemini-embedding-001")
-			expect(MockedQdrantVectorStore).toHaveBeenCalledWith(
-				"/test/workspace",
-				"http://localhost:6333",
-				3072,
-				"test-key",
-			)
+			expect(MockedCodeIndexVectorStoreAdapter).toHaveBeenCalled()
+			const argsD = (MockedCodeIndexVectorStoreAdapter as any).mock.calls[0]
+			expect(argsD[1]).toBe(3072)
 		})
 
 		it("should use default model when config.modelId is undefined", () => {
@@ -622,12 +619,9 @@ describe("CodeIndexServiceFactory", () => {
 
 			// Assert
 			expect(mockGetModelDimension).toHaveBeenCalledWith("openai", "default-model")
-			expect(MockedQdrantVectorStore).toHaveBeenCalledWith(
-				"/test/workspace",
-				"http://localhost:6333",
-				1536,
-				"test-key",
-			)
+			expect(MockedCodeIndexVectorStoreAdapter).toHaveBeenCalled()
+			const adapterArgs4 = (MockedCodeIndexVectorStoreAdapter as any).mock.calls[0]
+			expect(adapterArgs4[1]).toBe(1536)
 		})
 
 		it("should throw error when vector dimension cannot be determined", () => {
