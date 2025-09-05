@@ -289,10 +289,9 @@ function getShellFromEnv(): string | null {
 // -----------------------------------------------------
 
 /**
- * Internal validation function that checks if a shell path is in the allowlist.
- * This is the core validation logic that operates on normalized string paths.
+ * Validates if a shell path is in the allowlist to prevent arbitrary command execution
  */
-function isShellAllowedInternal(shellPath: string): boolean {
+function isShellAllowed(shellPath: string): boolean {
 	if (!shellPath) return false
 
 	const normalizedPath = path.normalize(shellPath)
@@ -313,62 +312,6 @@ function isShellAllowedInternal(shellPath: string): boolean {
 	}
 
 	return false
-}
-
-/**
- * Proxy function that validates shell paths, handling both string and array inputs.
- * This function serves as a robust interface for shell path validation that can
- * handle various input types from VSCode API and other sources.
- *
- * @param shellPath - The shell path to validate. Can be:
- *   - A string path to a shell executable
- *   - An array of string paths (VSCode may return this)
- *   - undefined or null
- * @returns true if the shell path is allowed, false otherwise
- *
- * @example
- * // String input
- * validateShellPath("/bin/bash") // returns true
- *
- * @example
- * // Array input (from VSCode API)
- * validateShellPath(["/usr/local/bin/bash", "/bin/bash"]) // returns true if first is allowed
- *
- * @example
- * // Empty or invalid input
- * validateShellPath([]) // returns false
- * validateShellPath(null) // returns false
- */
-export function validateShellPath(shellPath: string | string[] | undefined | null): boolean {
-	// Handle null/undefined
-	if (!shellPath) {
-		return false
-	}
-
-	// Handle array input - validate the first element
-	if (Array.isArray(shellPath)) {
-		if (shellPath.length === 0) {
-			return false
-		}
-		// Recursively validate the first element (in case of nested arrays)
-		return validateShellPath(shellPath[0])
-	}
-
-	// Handle string input
-	if (typeof shellPath === "string") {
-		return isShellAllowedInternal(shellPath)
-	}
-
-	// Unknown type - reject for safety
-	return false
-}
-
-/**
- * Legacy function for backward compatibility.
- * @deprecated Use validateShellPath instead
- */
-function isShellAllowed(shellPath: string | string[]): boolean {
-	return validateShellPath(shellPath)
 }
 
 /**
