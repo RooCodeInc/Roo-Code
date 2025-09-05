@@ -433,15 +433,24 @@ export class ClineProvider
 	// This is used when a subtask is finished and the parent task needs to be
 	// resumed.
 	async finishSubTask(lastMessage: string) {
-		// Remove the last cline instance from the stack (this is the finished
-		// subtask).
+		// Remove the last cline instance from the stack (this is the finished subtask).
 		await this.removeClineFromStack()
-		// Resume the last cline instance in the stack (if it exists - this is
-		// the 'parent' calling task).
-		await this.getCurrentTask()?.completeSubtask(lastMessage)
-
-		// Explicitly trigger UI state update so that webview/pane transitions back to the parent thread.
-		await this.postStateToWebview()
+		// Defensive: If there is a parent, try to resume and handle potential errors gracefully.
+		const parent = this.getCurrentTask()
+		try {
+			if (parent) {
+				await parent.completeSubtask(lastMessage)
+			} else {
+				this.log?.(
+					"ClineProvider.finishSubTask: No parent task found after popping stack; UI may be inconsistent.",
+				)
+			}
+		} catch (err) {
+			this.log?.(
+				`ClineProvider.finishSubTask: Error resuming parent task ${parent?.taskId ?? "unknown"}: ${err?.message || err}`,
+			)
+			// Optionally, trigger a fallback UI error or state refresh.
+		}
 	}
 
 	/*
