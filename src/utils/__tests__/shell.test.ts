@@ -361,4 +361,132 @@ describe("shell utilities", () => {
 			expect(result).toBe("C:\\Windows\\System32\\cmd.exe")
 		})
 	})
+
+	describe("validateShellPath", () => {
+		it("should validate string shell paths", async () => {
+			const { validateShellPath } = await import("../shell")
+
+			// Valid shells
+			expect(validateShellPath("/bin/bash")).toBe(true)
+			expect(validateShellPath("/bin/zsh")).toBe(true)
+			expect(validateShellPath("C:\\Windows\\System32\\cmd.exe")).toBe(true)
+			expect(validateShellPath("C:\\Program Files\\PowerShell\\7\\pwsh.exe")).toBe(true)
+
+			// Invalid shells
+			expect(validateShellPath("/usr/bin/malicious")).toBe(false)
+			expect(validateShellPath("C:\\malicious\\shell.exe")).toBe(false)
+		})
+
+		it("should validate array shell paths using first element", async () => {
+			const { validateShellPath } = await import("../shell")
+
+			// Valid array with allowed first element
+			expect(validateShellPath(["/bin/bash", "/bin/sh"])).toBe(true)
+			expect(validateShellPath(["C:\\Windows\\System32\\cmd.exe", "cmd"])).toBe(true)
+
+			// Invalid array with disallowed first element
+			expect(validateShellPath(["/usr/bin/malicious", "/bin/bash"])).toBe(false)
+			expect(validateShellPath(["C:\\malicious\\shell.exe", "C:\\Windows\\System32\\cmd.exe"])).toBe(false)
+		})
+
+		it("should handle empty arrays", async () => {
+			const { validateShellPath } = await import("../shell")
+
+			expect(validateShellPath([])).toBe(false)
+		})
+
+		it("should handle null and undefined", async () => {
+			const { validateShellPath } = await import("../shell")
+
+			expect(validateShellPath(null)).toBe(false)
+			expect(validateShellPath(undefined)).toBe(false)
+		})
+
+		it("should handle nested arrays (edge case)", async () => {
+			const { validateShellPath } = await import("../shell")
+
+			// Nested array - should recursively check first element
+			expect(validateShellPath([["/bin/bash"]] as any)).toBe(true)
+			expect(validateShellPath([["/usr/bin/malicious"]] as any)).toBe(false)
+			expect(validateShellPath([["C:\\Windows\\System32\\cmd.exe"]] as any)).toBe(true)
+		})
+
+		it("should handle empty strings", async () => {
+			const { validateShellPath } = await import("../shell")
+
+			expect(validateShellPath("")).toBe(false)
+			expect(validateShellPath([""])).toBe(false)
+		})
+
+		it("should handle case-insensitive comparison on Windows", async () => {
+			// Set platform to Windows
+			Object.defineProperty(process, "platform", {
+				value: "win32",
+				configurable: true,
+			})
+
+			const { validateShellPath } = await import("../shell")
+
+			// Different case variations should all be valid
+			expect(validateShellPath("c:\\windows\\system32\\cmd.exe")).toBe(true)
+			expect(validateShellPath("C:\\WINDOWS\\SYSTEM32\\CMD.EXE")).toBe(true)
+			expect(validateShellPath("C:\\Windows\\System32\\CMD.exe")).toBe(true)
+		})
+
+		it("should handle case-sensitive comparison on Unix", async () => {
+			// Set platform to Linux
+			Object.defineProperty(process, "platform", {
+				value: "linux",
+				configurable: true,
+			})
+
+			const { validateShellPath } = await import("../shell")
+
+			// Exact case match required
+			expect(validateShellPath("/bin/bash")).toBe(true)
+			expect(validateShellPath("/BIN/BASH")).toBe(false)
+			expect(validateShellPath("/Bin/Bash")).toBe(false)
+		})
+
+		it("should normalize paths before validation", async () => {
+			const { validateShellPath } = await import("../shell")
+
+			// Paths with extra slashes or dots should be normalized
+			expect(validateShellPath("/bin//bash")).toBe(true)
+			expect(validateShellPath("/bin/./bash")).toBe(true)
+
+			// Windows paths with backslashes
+			if (process.platform === "win32") {
+				expect(validateShellPath("C:/Windows/System32/cmd.exe")).toBe(true)
+			}
+		})
+
+		it("should handle arrays with mixed valid and invalid paths", async () => {
+			const { validateShellPath } = await import("../shell")
+
+			// Only the first element matters
+			expect(validateShellPath(["/bin/bash", "/usr/bin/malicious", "/bin/sh"])).toBe(true)
+			expect(validateShellPath(["/usr/bin/malicious", "/bin/bash", "/bin/sh"])).toBe(false)
+		})
+
+		it("should reject non-string, non-array types", async () => {
+			const { validateShellPath } = await import("../shell")
+
+			// Numbers, objects, etc. should be rejected
+			expect(validateShellPath(123 as any)).toBe(false)
+			expect(validateShellPath({ path: "/bin/bash" } as any)).toBe(false)
+			expect(validateShellPath(true as any)).toBe(false)
+		})
+
+		it("should handle arrays containing non-string elements", async () => {
+			const { validateShellPath } = await import("../shell")
+
+			// Array with null/undefined first element
+			expect(validateShellPath([null, "/bin/bash"] as any)).toBe(false)
+			expect(validateShellPath([undefined, "/bin/bash"] as any)).toBe(false)
+
+			// Array with number first element
+			expect(validateShellPath([123, "/bin/bash"] as any)).toBe(false)
+		})
+	})
 })
