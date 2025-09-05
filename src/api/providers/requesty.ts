@@ -54,14 +54,7 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 
 		const apiKey = this.options.requestyApiKey ?? "not-provided"
 
-		let timeout = getApiRequestTimeout()
-		if (timeout === 0) {
-			// Use 2147483647 (2^31) as the maximum timeout value for setTimeout
-			// JavaScript's setTimeout has a maximum delay limit of 2147483647ms (32-bit signed integer max)
-			// Values larger than this may be clamped to 1ms or cause unexpected behavior
-			// 2147483647 is safe as it's just above the limit but won't cause issues
-			timeout = 2147483647
-		}
+		const timeout = getApiRequestTimeout()
 
 		this.client = new OpenAI({
 			baseURL: this.baseURL,
