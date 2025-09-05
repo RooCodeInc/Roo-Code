@@ -133,7 +133,15 @@ async function checkGitInstallation(
 
 		service.on("checkpoint", ({ fromHash: from, toHash: to }) => {
 			try {
+				// Always update the current checkpoint hash in the webview
 				provider?.postMessageToWebview({ type: "currentCheckpointUpdated", text: to })
+
+				// Optionally suppress the chat row for the next checkpoint (used for the
+				// implicit checkpoint created on user message submission).
+				if (task.suppressNextCheckpointMessage) {
+					task.suppressNextCheckpointMessage = false
+					return
+				}
 
 				task.say("checkpoint_saved", to, undefined, undefined, { from, to }, undefined, {
 					isNonInteractive: true,

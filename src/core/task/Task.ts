@@ -281,6 +281,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	isStreaming = false
 	currentStreamingContentIndex = 0
 	currentStreamingDidCheckpoint = false
+	suppressNextCheckpointMessage = false
 	assistantMessageContent: AssistantMessageContent[] = []
 	presentAssistantMessageLocked = false
 	presentAssistantMessageHasPendingUpdates = false
@@ -892,7 +893,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		// Create a checkpoint whenever the user sends a message.
 		// Use allowEmpty=true to ensure a checkpoint is recorded even if there are no file changes.
+		// Suppress the checkpoint_saved chat row for this particular checkpoint to keep the timeline clean.
 		if (askResponse === "messageResponse") {
+			this.suppressNextCheckpointMessage = true
 			void this.checkpointSave(true)
 		}
 
