@@ -376,47 +376,55 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 			// Use Responses API when selected (non-streaming convenience method)
 			if (flavor === "responses") {
-				// Build a single-turn formatted string input (Developer/User style) for Responses API
-				const formattedInput = this._formatResponsesSingleMessage(
-					{
-						role: "user",
-						content: [{ type: "text", text: prompt }],
-					} as Anthropic.Messages.MessageParam,
-					/*includeRole*/ true,
-				)
+				// Build structured single-turn input
 				const payload: Record<string, unknown> = {
 					model: model.id,
-					input: formattedInput,
+					input: [
+						{
+							role: "user",
+							content: [{ type: "input_text", text: prompt }],
+						},
+					],
+					stream: false,
+					store: false,
 				}
 
-				// Reasoning effort (Responses)
+				// Reasoning effort (support "minimal"; include summary: "auto" unless disabled)
 				const effort = (this.options.reasoningEffort || model.reasoningEffort) as
 					| "minimal"
 					| "low"
 					| "medium"
 					| "high"
 					| undefined
-				if (this.options.enableReasoningEffort && effort && effort !== "minimal") {
-					payload.reasoning = { effort }
+				if (this.options.enableReasoningEffort && effort) {
+					;(
+						payload as { reasoning?: { effort: "minimal" | "low" | "medium" | "high"; summary?: "auto" } }
+					).reasoning = {
+						effort,
+						...(this.options.enableGpt5ReasoningSummary !== false ? { summary: "auto" as const } : {}),
+					}
 				}
 
-				// Temperature if set
-				if (this.options.modelTemperature !== undefined) {
-					payload.temperature = this.options.modelTemperature
+				// Temperature if supported and set
+				if (modelInfo.supportsTemperature !== false && this.options.modelTemperature !== undefined) {
+					;(payload as Record<string, unknown>).temperature = this.options.modelTemperature
 				}
 
-				// Verbosity via text.verbosity - include only when explicitly specified
-				if (this.options.verbosity) {
-					payload.text = { verbosity: this.options.verbosity as "low" | "medium" | "high" }
+				// Verbosity via text.verbosity - include only when supported
+				if (this.options.verbosity && modelInfo.supportsVerbosity) {
+					;(payload as { text?: { verbosity: "low" | "medium" | "high" } }).text = {
+						verbosity: this.options.verbosity as "low" | "medium" | "high",
+					}
 				}
 
 				// max_output_tokens
 				if (this.options.includeMaxTokens === true) {
-					payload.max_output_tokens = this.options.modelMaxTokens || modelInfo.maxTokens
+					;(payload as Record<string, unknown>).max_output_tokens =
+						this.options.modelMaxTokens || modelInfo.maxTokens
 				}
 
 				const response = await this._responsesCreateWithRetries(payload, {
-					usedArrayInput: false,
+					usedArrayInput: true,
 					lastUserMessage: undefined,
 					previousId: undefined,
 					systemPrompt: "",
@@ -736,47 +744,40 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		const modelId = this.options.openAiModelId ?? ""
 		const nonStreaming = !(this.options.openAiStreamingEnabled ?? true)
 
-		// Build Responses payload (align with OpenAI Native Responses API formatting)
-		// Azure- and Responses-compatible multimodal handling:
-		// - Use array input ONLY when the latest user message contains images (initial turn)
-		// - When previous_response_id is present, send only the latest user turn:
-		//   • Text-only => single string "User: ...", no Developer preface
-		//   • With images => one-item array containing only the latest user content (no Developer preface)
-		const lastUserMessage = [...messages].reverse().find((m) => m.role === "user")
-		const lastUserHasImages =
-			!!lastUserMessage &&
-			Array.isArray(lastUserMessage.content) &&
-			lastUserMessage.content.some((b: unknown) => (b as { type?: string } | undefined)?.type === "image")
-
-		// Conversation continuity (parity with OpenAiNativeHandler.prepareGpt5Input)
+		// Determine conversation continuity id (skip when explicitly suppressed)
 		const previousId = metadata?.suppressPreviousResponseId
 			? undefined
 			: (metadata?.previousResponseId ?? this.lastResponseId)
 
+		// Prepare Responses API input per test expectations:
+		// - Non-minimal text-only => single string with Developer/User lines
+		// - Minimal (previous_response_id) => single string "User: ..." when last user has no images
+		// - Image cases => structured array; inject Developer preface as first item (non-minimal only)
+		const lastUserMessage = [...messages].reverse().find((m) => m.role === "user")
+		const lastUserHasImages =
+			!!lastUserMessage &&
+			Array.isArray(lastUserMessage.content) &&
+			lastUserMessage.content.some((b: any) => (b as any)?.type === "image")
 		const minimalInputMode = Boolean(previousId)
 
 		let inputPayload: unknown
 		if (minimalInputMode && lastUserMessage) {
-			// Minimal-mode: only the latest user message (no Developer preface)
+			// Minimal mode: only latest user turn
 			if (lastUserHasImages) {
-				// Single-item array with just the latest user content
 				inputPayload = this._toResponsesInput([lastUserMessage])
 			} else {
-				// Single message string "User: ..."
 				inputPayload = this._formatResponsesSingleMessage(lastUserMessage, true)
 			}
 		} else if (lastUserHasImages && lastUserMessage) {
-			// Initial turn with images: include Developer preface and minimal prior context to preserve continuity
+			// Initial turn with images: include Developer preface and minimal context
 			const lastAssistantMessage = [...messages].reverse().find((m) => m.role === "assistant")
-
 			const messagesForArray = messages.filter((m) => {
 				if (m.role === "assistant") {
 					return lastAssistantMessage ? m === lastAssistantMessage : false
 				}
 				if (m.role === "user") {
 					const hasImage =
-						Array.isArray(m.content) &&
-						m.content.some((b: unknown) => (b as { type?: string } | undefined)?.type === "image")
+						Array.isArray(m.content) && m.content.some((b: any) => (b as any)?.type === "image")
 					return hasImage || m === lastUserMessage
 				}
 				return false
@@ -789,19 +790,20 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			}
 			inputPayload = [developerPreface, ...arrayInput]
 		} else {
-			// Pure text history: full compact transcript (includes both user and assistant turns)
+			// Pure text history: compact transcript string
 			inputPayload = this._formatResponsesInput(systemPrompt, messages)
 		}
-		const usedArrayInput = Array.isArray(inputPayload)
 
+		// Build base payload: use top-level instructions; default to storing unless explicitly disabled
 		const basePayload: Record<string, unknown> = {
 			model: modelId,
 			input: inputPayload,
 			...(previousId ? { previous_response_id: previousId } : {}),
+			instructions: systemPrompt,
+			store: metadata?.store !== false,
 		}
 
-		// Reasoning effort (Responses expects: reasoning: { effort, summary? })
-		// Parity with native: support "minimal" and include summary: "auto" unless explicitly disabled
+		// Reasoning effort (support "minimal"; include summary: "auto" unless disabled)
 		if (this.options.enableReasoningEffort && (this.options.reasoningEffort || openAiParams?.reasoningEffort)) {
 			const effort = (this.options.reasoningEffort || openAiParams?.reasoningEffort) as
 				| "minimal"
@@ -811,9 +813,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				| undefined
 			if (effort) {
 				;(
-					basePayload as {
-						reasoning?: { effort: "minimal" | "low" | "medium" | "high"; summary?: "auto" }
-					}
+					basePayload as { reasoning?: { effort: "minimal" | "low" | "medium" | "high"; summary?: "auto" } }
 				).reasoning = {
 					effort,
 					...(this.options.enableGpt5ReasoningSummary !== false ? { summary: "auto" as const } : {}),
@@ -821,15 +821,17 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			}
 		}
 
-		// Temperature (only include when explicitly set by the user)
+		// Temperature: include only if model supports it
 		const deepseekReasoner = modelId.includes("deepseek-reasoner") || (this.options.openAiR1FormatEnabled ?? false)
-		if (this.options.modelTemperature !== undefined) {
-			basePayload.temperature = this.options.modelTemperature
-		} else if (deepseekReasoner) {
-			basePayload.temperature = DEEP_SEEK_DEFAULT_TEMPERATURE
+		if (modelInfo.supportsTemperature !== false) {
+			if (this.options.modelTemperature !== undefined) {
+				;(basePayload as Record<string, unknown>).temperature = this.options.modelTemperature
+			} else if (deepseekReasoner) {
+				;(basePayload as Record<string, unknown>).temperature = DEEP_SEEK_DEFAULT_TEMPERATURE
+			}
 		}
 
-		// Verbosity: include only when explicitly specified in settings
+		// Verbosity: include when provided; retry logic removes it on 400
 		if (this.options.verbosity) {
 			;(basePayload as { text?: { verbosity: "low" | "medium" | "high" } }).text = {
 				verbosity: this.options.verbosity as "low" | "medium" | "high",
@@ -844,7 +846,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		// Non-streaming path
 		if (nonStreaming) {
 			const response = await this._responsesCreateWithRetries(basePayload, {
-				usedArrayInput,
+				usedArrayInput: Array.isArray(inputPayload),
 				lastUserMessage,
 				previousId,
 				systemPrompt,
@@ -857,7 +859,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		// Streaming path (auto-fallback to non-streaming result if provider ignores stream flag)
 		const streamingPayload: Record<string, unknown> = { ...basePayload, stream: true }
 		const maybeStream = await this._responsesCreateWithRetries(streamingPayload, {
-			usedArrayInput,
+			usedArrayInput: Array.isArray(inputPayload),
 			lastUserMessage,
 			previousId,
 			systemPrompt,
@@ -925,30 +927,53 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 	private _toResponsesInput(anthropicMessages: Anthropic.Messages.MessageParam[]): Array<{
 		role: "user" | "assistant"
-		content: Array<{ type: "input_text"; text: string } | { type: "input_image"; image_url: string }>
+		content: Array<
+			| { type: "input_text"; text: string }
+			| { type: "input_image"; image_url: string }
+			| { type: "output_text"; text: string }
+		>
 	}> {
 		const input: Array<{
 			role: "user" | "assistant"
-			content: Array<{ type: "input_text"; text: string } | { type: "input_image"; image_url: string }>
+			content: Array<
+				| { type: "input_text"; text: string }
+				| { type: "input_image"; image_url: string }
+				| { type: "output_text"; text: string }
+			>
 		}> = []
 
 		for (const msg of anthropicMessages) {
 			const role = msg.role === "assistant" ? "assistant" : "user"
-			const parts: Array<{ type: "input_text"; text: string } | { type: "input_image"; image_url: string }> = []
+			const parts: Array<
+				| { type: "input_text"; text: string }
+				| { type: "input_image"; image_url: string }
+				| { type: "output_text"; text: string }
+			> = []
 
 			if (typeof msg.content === "string") {
 				if (msg.content.length > 0) {
-					parts.push({ type: "input_text", text: msg.content })
+					if (role === "assistant") {
+						parts.push({ type: "output_text", text: msg.content })
+					} else {
+						parts.push({ type: "input_text", text: msg.content })
+					}
 				}
-			} else {
+			} else if (Array.isArray(msg.content)) {
 				for (const block of msg.content) {
 					if (block.type === "text") {
-						parts.push({ type: "input_text", text: block.text })
+						if (role === "assistant") {
+							parts.push({ type: "output_text", text: block.text })
+						} else {
+							parts.push({ type: "input_text", text: block.text })
+						}
 					} else if (block.type === "image") {
-						parts.push({
-							type: "input_image",
-							image_url: `data:${block.source.media_type};base64,${block.source.data}`,
-						})
+						// Images are treated as user input; ignore images on assistant turns
+						if (role === "user") {
+							parts.push({
+								type: "input_image",
+								image_url: `data:${block.source.media_type};base64,${block.source.data}`,
+							})
+						}
 					}
 					// tool_use/tool_result are omitted in this minimal mapping (can be added as needed)
 				}
