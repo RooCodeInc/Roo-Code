@@ -93,19 +93,50 @@ export class CodeIndexServiceFactory {
 	 */
 	public async validateEmbedder(embedder: IEmbedder): Promise<{ valid: boolean; error?: string }> {
 		try {
-			return await embedder.validateConfiguration()
+			const result = await embedder.validateConfiguration()
+
+			// If validation failed but no specific error was provided, add context
+			if (!result.valid && !result.error) {
+				const config = this.configManager.getConfig()
+				result.error =
+					t("embeddings:validation.configurationError") +
+					` (Provider: ${config.embedderProvider}, Model: ${config.modelId || "default"})`
+			}
+
+			return result
 		} catch (error) {
-			// Capture telemetry for the error
+			// Capture telemetry for the error with additional context
+			const config = this.configManager.getConfig()
 			TelemetryService.instance.captureEvent(TelemetryEventName.CODE_INDEX_ERROR, {
 				error: error instanceof Error ? error.message : String(error),
 				stack: error instanceof Error ? error.stack : undefined,
 				location: "validateEmbedder",
+				provider: config.embedderProvider,
+				model: config.modelId,
 			})
 
-			// If validation throws an exception, preserve the original error message
+			// Provide detailed error message with context
+			let errorMessage = error instanceof Error ? error.message : String(error)
+
+			// Add provider-specific guidance
+			if (config.embedderProvider === "gemini") {
+				if (errorMessage.includes("401") || errorMessage.includes("403") || errorMessage.includes("API key")) {
+					errorMessage +=
+						". Please ensure your Gemini API key is valid and correctly configured in the settings."
+				}
+			} else if (config.embedderProvider === "openai") {
+				if (errorMessage.includes("401") || errorMessage.includes("403")) {
+					errorMessage += ". Please check your OpenAI API key in the settings."
+				}
+			} else if (config.embedderProvider === "ollama") {
+				if (errorMessage.includes("connection") || errorMessage.includes("ECONNREFUSED")) {
+					errorMessage += ". Please ensure Ollama is running locally and accessible."
+				}
+			}
+
 			return {
 				valid: false,
-				error: error instanceof Error ? error.message : "embeddings:validation.configurationError",
+				error: errorMessage,
 			}
 		}
 	}

@@ -69,15 +69,39 @@ export class GeminiEmbedder implements IEmbedder {
 	async validateConfiguration(): Promise<{ valid: boolean; error?: string }> {
 		try {
 			// Delegate validation to the OpenAI-compatible embedder
-			// The error messages will be specific to Gemini since we're using Gemini's base URL
-			return await this.openAICompatibleEmbedder.validateConfiguration()
+			const result = await this.openAICompatibleEmbedder.validateConfiguration()
+
+			// If validation failed, enhance the error message with Gemini-specific guidance
+			if (!result.valid && result.error) {
+				// Check for common Gemini-specific issues
+				if (
+					result.error.includes("401") ||
+					result.error.includes("403") ||
+					result.error.includes("Authentication")
+				) {
+					result.error = `${result.error}. For Gemini, ensure you have a valid API key from Google AI Studio (makersuite.google.com/app/apikey) and that it's correctly configured.`
+				} else if (result.error.includes("404") || result.error.includes("model")) {
+					result.error = `${result.error}. Supported Gemini models: text-embedding-004 (dimension: 768), gemini-embedding-001 (dimension: 2048).`
+				} else if (result.error.includes("connection") || result.error.includes("host")) {
+					result.error = `${result.error}. Gemini API endpoint: ${GeminiEmbedder.GEMINI_BASE_URL}`
+				}
+			}
+
+			return result
 		} catch (error) {
 			TelemetryService.instance.captureEvent(TelemetryEventName.CODE_INDEX_ERROR, {
 				error: error instanceof Error ? error.message : String(error),
 				stack: error instanceof Error ? error.stack : undefined,
 				location: "GeminiEmbedder:validateConfiguration",
+				modelId: this.modelId,
 			})
-			throw error
+
+			// Provide a more informative error message
+			const errorMessage = error instanceof Error ? error.message : String(error)
+			return {
+				valid: false,
+				error: `Gemini embedder validation failed: ${errorMessage}. Please check your API key and model configuration (current model: ${this.modelId}).`,
+			}
 		}
 	}
 

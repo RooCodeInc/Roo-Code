@@ -162,12 +162,68 @@ describe("GeminiEmbedder", () => {
 			expect(result).toEqual({ valid: true })
 		})
 
-		it("should pass through validation errors from OpenAICompatibleEmbedder", async () => {
+		it("should enhance authentication error messages with Gemini-specific guidance", async () => {
 			// Arrange
 			embedder = new GeminiEmbedder("test-api-key")
 			mockValidateConfiguration.mockResolvedValue({
 				valid: false,
-				error: "embeddings:validation.authenticationFailed",
+				error: "Authentication failed (HTTP 401)",
+			})
+
+			// Act
+			const result = await embedder.validateConfiguration()
+
+			// Assert
+			expect(mockValidateConfiguration).toHaveBeenCalled()
+			expect(result.valid).toBe(false)
+			expect(result.error).toContain("Authentication failed (HTTP 401)")
+			expect(result.error).toContain("Google AI Studio")
+			expect(result.error).toContain("makersuite.google.com/app/apikey")
+		})
+
+		it("should enhance model error messages with supported models list", async () => {
+			// Arrange
+			embedder = new GeminiEmbedder("test-api-key", "invalid-model")
+			mockValidateConfiguration.mockResolvedValue({
+				valid: false,
+				error: "Model not found (HTTP 404)",
+			})
+
+			// Act
+			const result = await embedder.validateConfiguration()
+
+			// Assert
+			expect(result.valid).toBe(false)
+			expect(result.error).toContain("Model not found")
+			expect(result.error).toContain("text-embedding-004")
+			expect(result.error).toContain("gemini-embedding-001")
+			expect(result.error).toContain("dimension: 768")
+			expect(result.error).toContain("dimension: 2048")
+		})
+
+		it("should enhance connection error messages with API endpoint info", async () => {
+			// Arrange
+			embedder = new GeminiEmbedder("test-api-key")
+			mockValidateConfiguration.mockResolvedValue({
+				valid: false,
+				error: "connection refused",
+			})
+
+			// Act
+			const result = await embedder.validateConfiguration()
+
+			// Assert
+			expect(result.valid).toBe(false)
+			expect(result.error).toContain("connection refused")
+			expect(result.error).toContain("https://generativelanguage.googleapis.com/v1beta/openai/")
+		})
+
+		it("should pass through validation errors without enhancement for non-specific errors", async () => {
+			// Arrange
+			embedder = new GeminiEmbedder("test-api-key")
+			mockValidateConfiguration.mockResolvedValue({
+				valid: false,
+				error: "Some other error",
 			})
 
 			// Act
@@ -177,17 +233,38 @@ describe("GeminiEmbedder", () => {
 			expect(mockValidateConfiguration).toHaveBeenCalled()
 			expect(result).toEqual({
 				valid: false,
-				error: "embeddings:validation.authenticationFailed",
+				error: "Some other error",
 			})
 		})
 
-		it("should handle validation exceptions", async () => {
+		it("should handle validation exceptions with detailed error message", async () => {
 			// Arrange
-			embedder = new GeminiEmbedder("test-api-key")
-			mockValidateConfiguration.mockRejectedValue(new Error("Validation failed"))
+			embedder = new GeminiEmbedder("test-api-key", "test-model")
+			mockValidateConfiguration.mockRejectedValue(new Error("Network error"))
 
-			// Act & Assert
-			await expect(embedder.validateConfiguration()).rejects.toThrow("Validation failed")
+			// Act
+			const result = await embedder.validateConfiguration()
+
+			// Assert
+			expect(result.valid).toBe(false)
+			expect(result.error).toContain("Gemini embedder validation failed")
+			expect(result.error).toContain("Network error")
+			expect(result.error).toContain("test-model")
+		})
+
+		it("should handle non-Error exceptions gracefully", async () => {
+			// Arrange
+			embedder = new GeminiEmbedder("test-api-key", "test-model")
+			mockValidateConfiguration.mockRejectedValue("String error")
+
+			// Act
+			const result = await embedder.validateConfiguration()
+
+			// Assert
+			expect(result.valid).toBe(false)
+			expect(result.error).toContain("Gemini embedder validation failed")
+			expect(result.error).toContain("String error")
+			expect(result.error).toContain("test-model")
 		})
 	})
 })

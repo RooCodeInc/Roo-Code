@@ -167,34 +167,88 @@ export function handleValidationError(
 	// Check for status-based errors first
 	const statusError = getErrorMessageForStatus(statusCode, embedderType)
 	if (statusError) {
-		return { valid: false, error: statusError }
+		// Include additional context for authentication errors
+		if (statusCode === 401 || statusCode === 403) {
+			const details = embedderType === "gemini" ? t("embeddings:validation.geminiAuthDetails") : ""
+			return { valid: false, error: details ? `${statusError} ${details}` : statusError }
+		}
+		// Include status code in error for better debugging
+		return { valid: false, error: `${statusError} (HTTP ${statusCode})` }
 	}
 
-	// Check for connection errors
+	// Check for connection errors with more specific messages
 	if (errorMessage) {
-		if (
-			errorMessage.includes("ENOTFOUND") ||
-			errorMessage.includes("ECONNREFUSED") ||
-			errorMessage.includes("ETIMEDOUT") ||
-			errorMessage === "AbortError" ||
-			errorMessage.includes("HTTP 0:") ||
-			errorMessage === "No response"
-		) {
+		if (errorMessage.includes("ENOTFOUND")) {
+			const url = extractUrlFromError(errorMessage)
+			return {
+				valid: false,
+				error: t("embeddings:validation.hostNotFound", { url: url || "configured endpoint" }),
+			}
+		}
+
+		if (errorMessage.includes("ECONNREFUSED")) {
+			const url = extractUrlFromError(errorMessage)
+			return {
+				valid: false,
+				error: t("embeddings:validation.connectionRefused", { url: url || "configured endpoint" }),
+			}
+		}
+
+		if (errorMessage.includes("ETIMEDOUT")) {
+			return {
+				valid: false,
+				error: t("embeddings:validation.connectionTimeout"),
+			}
+		}
+
+		if (errorMessage === "AbortError" || errorMessage.includes("HTTP 0:") || errorMessage === "No response") {
 			return { valid: false, error: t("embeddings:validation.connectionFailed") }
 		}
 
 		if (errorMessage.includes("Failed to parse response JSON")) {
 			return { valid: false, error: t("embeddings:validation.invalidResponse") }
 		}
+
+		// Check for API key related errors
+		if (errorMessage.includes("API key") || errorMessage.includes("api key") || errorMessage.includes("api-key")) {
+			return { valid: false, error: t("embeddings:validation.invalidApiKey") }
+		}
+
+		// Check for model-related errors
+		if (
+			errorMessage.includes("model") &&
+			(errorMessage.includes("not found") || errorMessage.includes("does not exist"))
+		) {
+			return { valid: false, error: t("embeddings:validation.modelNotAvailable") }
+		}
 	}
 
 	// For generic errors, preserve the original error message if it's not a standard one
 	if (errorMessage && errorMessage !== "Unknown error") {
-		return { valid: false, error: errorMessage }
+		// Provide more context with the error
+		return {
+			valid: false,
+			error: `${t("embeddings:validation.configurationError")}: ${errorMessage}`,
+		}
 	}
 
-	// Fallback to generic error
-	return { valid: false, error: t("embeddings:validation.configurationError") }
+	// Fallback to generic error with embedder type for context
+	return {
+		valid: false,
+		error: `${t("embeddings:validation.configurationError")} (${embedderType})`,
+	}
+}
+
+/**
+ * Extracts URL from error message if present
+ */
+function extractUrlFromError(errorMessage: string): string | undefined {
+	// Try to extract URL from common error patterns
+	const urlMatch = errorMessage.match(/(?:https?:\/\/[^\s]+)|(?:getaddrinfo\s+\w+\s+([^\s]+))/i)
+	if (urlMatch) {
+		return urlMatch[1] || urlMatch[0]
+	}
+	return undefined
 }
 
 /**

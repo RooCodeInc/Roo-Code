@@ -39,7 +39,11 @@
 		"invalidModel": "Invalid model. Please check your model configuration.",
 		"invalidResponse": "Invalid response from embedder service. Please check your configuration.",
 		"apiKeyRequired": "API key is required for this embedder",
-		"baseUrlRequired": "Base URL is required for this embedder"
+		"baseUrlRequired": "Base URL is required for this embedder",
+		"hostNotFound": "Cannot resolve host: {{url}}. Please verify the URL is correct and accessible.",
+		"connectionRefused": "Connection refused to {{url}}. Please ensure the service is running and accessible.",
+		"connectionTimeout": "Connection timed out. Please check your network connection and try again.",
+		"geminiAuthDetails": "For Gemini, ensure you have a valid API key from Google AI Studio (makersuite.google.com/app/apikey)."
 	},
 	"serviceFactory": {
 		"openAiConfigMissing": "OpenAI configuration missing for embedder creation",
