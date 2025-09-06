@@ -175,6 +175,7 @@ export interface WebviewMessage {
 		| "maxDiagnosticMessages"
 		| "searchFiles"
 		| "toggleApiConfigPin"
+		| "setApiConfigCustomOrder"
 		| "setHistoryPreviewCollapsed"
 		| "hasOpenedModeSelector"
 		| "cloudButtonClicked"
