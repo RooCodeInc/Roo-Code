@@ -9,6 +9,7 @@ import {
 	AnthropicHandler,
 	AwsBedrockHandler,
 	CerebrasHandler,
+	CometAPIHandler,
 	OpenRouterHandler,
 	VertexHandler,
 	AnthropicVertexHandler,
@@ -95,6 +96,8 @@ export function buildApiHandler(configuration: ProviderSettings): ApiHandler {
 			return new AnthropicHandler(options)
 		case "claude-code":
 			return new ClaudeCodeHandler(options)
+		case "cometapi":
+			return new CometAPIHandler(options)
 		case "glama":
 			return new GlamaHandler(options)
 		case "openrouter":

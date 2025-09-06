@@ -29,6 +29,7 @@ const routerNames = [
 	"io-intelligence",
 	"deepinfra",
 	"vercel-ai-gateway",
+	"cometapi",
 ] as const
 
 export type RouterName = (typeof routerNames)[number]
@@ -155,3 +156,4 @@ export type GetModelsOptions =
 	| { provider: "deepinfra"; apiKey?: string; baseUrl?: string }
 	| { provider: "io-intelligence"; apiKey: string }
 	| { provider: "vercel-ai-gateway" }
+	| { provider: "cometapi"; apiKey?: string; baseUrl?: string }

@@ -1,0 +1,200 @@
+import type { ModelInfo } from "../model.js"
+
+// Default fallback values for CometAPI when model metadata is not yet loaded.
+export const cometApiDefaultModelId = "gpt-5-chat-latest"
+
+export const cometApiDefaultModelInfo: ModelInfo = {
+	maxTokens: 16384,
+	contextWindow: 128000,
+	supportsImages: true,
+	supportsPromptCache: false,
+	inputPrice: 2.5,
+	outputPrice: 10,
+	description: "GPT-5 Chat Latest model with 128K context window.",
+}
+
+// Fallback models for CometAPI when the API is unavailable
+export const COMETAPI_MODELS: Record<string, ModelInfo> = {
+	// GPT series
+	"gpt-5-chat-latest": {
+		maxTokens: 16384,
+		contextWindow: 128000,
+		supportsImages: true,
+		supportsPromptCache: false,
+		inputPrice: 2.5,
+		outputPrice: 10,
+		description: "GPT-5 Chat Latest - Most advanced GPT model",
+	},
+	"chatgpt-4o-latest": {
+		maxTokens: 16384,
+		contextWindow: 128000,
+		supportsImages: true,
+		supportsPromptCache: false,
+		inputPrice: 2.5,
+		outputPrice: 10,
+		description: "ChatGPT-4o Latest - Advanced multimodal model",
+	},
+	"gpt-5-mini": {
+		maxTokens: 16384,
+		contextWindow: 128000,
+		supportsImages: true,
+		supportsPromptCache: false,
+		inputPrice: 0.15,
+		outputPrice: 0.6,
+		description: "GPT-5 Mini - Efficient and cost-effective",
+	},
+	"gpt-5-nano": {
+		maxTokens: 8192,
+		contextWindow: 128000,
+		supportsImages: false,
+		supportsPromptCache: false,
+		inputPrice: 0.075,
+		outputPrice: 0.3,
+		description: "GPT-5 Nano - Ultra-efficient for simple tasks",
+	},
+	"gpt-4.1-mini": {
+		maxTokens: 16384,
+		contextWindow: 128000,
+		supportsImages: true,
+		supportsPromptCache: false,
+		inputPrice: 0.15,
+		outputPrice: 0.6,
+		description: "GPT-4.1 Mini - Balanced performance and cost",
+	},
+	"gpt-4o-mini": {
+		maxTokens: 16384,
+		contextWindow: 128000,
+		supportsImages: true,
+		supportsPromptCache: false,
+		inputPrice: 0.15,
+		outputPrice: 0.6,
+		description: "GPT-4o Mini - Efficient multimodal model",
+	},
+
+	// Claude series
+	"claude-opus-4-1-20250805": {
+		maxTokens: 8192,
+		contextWindow: 200000,
+		supportsImages: true,
+		supportsPromptCache: true,
+		inputPrice: 3,
+		outputPrice: 15,
+		description: "Claude Opus 4.1 - Most capable Claude model",
+	},
+	"claude-sonnet-4-20250514": {
+		maxTokens: 8192,
+		contextWindow: 200000,
+		supportsImages: true,
+		supportsPromptCache: true,
+		inputPrice: 1.5,
+		outputPrice: 7.5,
+		description: "Claude Sonnet 4 - Balanced Claude model",
+	},
+	"claude-3-7-sonnet-latest": {
+		maxTokens: 8192,
+		contextWindow: 200000,
+		supportsImages: true,
+		supportsPromptCache: true,
+		inputPrice: 3,
+		outputPrice: 15,
+		description: "Claude 3.7 Sonnet - Latest Sonnet version",
+	},
+	"claude-3-5-haiku-latest": {
+		maxTokens: 8192,
+		contextWindow: 200000,
+		supportsImages: true,
+		supportsPromptCache: true,
+		inputPrice: 0.25,
+		outputPrice: 1.25,
+		description: "Claude 3.5 Haiku - Fast and efficient",
+	},
+
+	// Gemini series
+	"gemini-2.5-pro": {
+		maxTokens: 8192,
+		contextWindow: 2097152,
+		supportsImages: true,
+		supportsPromptCache: false,
+		inputPrice: 1.25,
+		outputPrice: 5,
+		description: "Gemini 2.5 Pro - Google's most capable model",
+	},
+	"gemini-2.5-flash": {
+		maxTokens: 8192,
+		contextWindow: 1048576,
+		supportsImages: true,
+		supportsPromptCache: false,
+		inputPrice: 0.075,
+		outputPrice: 0.3,
+		description: "Gemini 2.5 Flash - Fast and efficient",
+	},
+	"gemini-2.0-flash": {
+		maxTokens: 8192,
+		contextWindow: 1048576,
+		supportsImages: true,
+		supportsPromptCache: false,
+		inputPrice: 0.075,
+		outputPrice: 0.3,
+		description: "Gemini 2.0 Flash - Previous generation flash model",
+	},
+
+	// DeepSeek series
+	"deepseek-v3.1": {
+		maxTokens: 8192,
+		contextWindow: 128000,
+		supportsImages: false,
+		supportsPromptCache: false,
+		inputPrice: 0.14,
+		outputPrice: 0.28,
+		description: "DeepSeek V3.1 - Advanced reasoning model",
+	},
+	"deepseek-r1-0528": {
+		maxTokens: 8192,
+		contextWindow: 128000,
+		supportsImages: false,
+		supportsPromptCache: false,
+		supportsReasoningEffort: true,
+		inputPrice: 0.55,
+		outputPrice: 2.19,
+		description: "DeepSeek R1 - Reasoning-focused model",
+	},
+	"deepseek-reasoner": {
+		maxTokens: 8192,
+		contextWindow: 128000,
+		supportsImages: false,
+		supportsPromptCache: false,
+		supportsReasoningEffort: true,
+		inputPrice: 0.55,
+		outputPrice: 2.19,
+		description: "DeepSeek Reasoner - Advanced reasoning capabilities",
+	},
+
+	// Other popular models
+	"grok-4-0709": {
+		maxTokens: 8192,
+		contextWindow: 128000,
+		supportsImages: true,
+		supportsPromptCache: false,
+		inputPrice: 5,
+		outputPrice: 15,
+		description: "Grok 4 - xAI's advanced model",
+	},
+	"qwen3-30b-a3b": {
+		maxTokens: 8192,
+		contextWindow: 32768,
+		supportsImages: false,
+		supportsPromptCache: false,
+		inputPrice: 0.5,
+		outputPrice: 1.5,
+		description: "Qwen3 30B - Alibaba's large language model",
+	},
+	"qwen3-coder-plus-2025-07-22": {
+		maxTokens: 8192,
+		contextWindow: 32768,
+		supportsImages: false,
+		supportsPromptCache: false,
+		inputPrice: 0.5,
+		outputPrice: 1.5,
+		description: "Qwen3 Coder Plus - Specialized for coding tasks",
+	},
+}

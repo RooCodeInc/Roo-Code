@@ -8,6 +8,7 @@ import { BaseProvider } from "./base-provider"
 import { getModels } from "./fetchers/modelCache"
 
 import { DEFAULT_HEADERS } from "./constants"
+import { getApiRequestTimeout } from "./utils/timeout-config"
 
 type RouterProviderOptions = {
 	name: RouterName
@@ -27,6 +28,8 @@ export abstract class RouterProvider extends BaseProvider {
 	protected readonly defaultModelId: string
 	protected readonly defaultModelInfo: ModelInfo
 	protected readonly client: OpenAI
+	protected readonly apiKey: string
+	protected readonly baseURL: string
 
 	constructor({
 		options,
@@ -44,6 +47,10 @@ export abstract class RouterProvider extends BaseProvider {
 		this.modelId = modelId
 		this.defaultModelId = defaultModelId
 		this.defaultModelInfo = defaultModelInfo
+		this.apiKey = apiKey
+		this.baseURL = baseURL
+
+		const timeout = getApiRequestTimeout()
 
 		this.client = new OpenAI({
 			baseURL,
@@ -52,11 +59,12 @@ export abstract class RouterProvider extends BaseProvider {
 				...DEFAULT_HEADERS,
 				...(options.openAiHeaders || {}),
 			},
+			timeout,
 		})
 	}
 
 	public async fetchModel() {
-		this.models = await getModels({ provider: this.name, apiKey: this.client.apiKey, baseUrl: this.client.baseURL })
+		this.models = await getModels({ provider: this.name, apiKey: this.apiKey, baseUrl: this.baseURL })
 		return this.getModel()
 	}
 
