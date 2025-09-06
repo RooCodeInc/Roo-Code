@@ -37,7 +37,9 @@ export class FileContextTracker {
 
 	// Gets the current working directory or returns undefined if it cannot be determined
 	private getCwd(): string | undefined {
-		const cwd = vscode.workspace.workspaceFolders?.map((folder) => folder.uri.fsPath).at(0)
+		// Ensure we handle empty arrays properly - check length before accessing
+		const workspaceFolders = vscode.workspace.workspaceFolders
+		const cwd = workspaceFolders && workspaceFolders.length > 0 ? workspaceFolders[0].uri.fsPath : undefined
 		if (!cwd) {
 			console.info("No workspace folder available - cannot determine current working directory")
 		}
