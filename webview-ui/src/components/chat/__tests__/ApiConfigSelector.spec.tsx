@@ -437,16 +437,15 @@ describe("ApiConfigSelector", () => {
 	})
 
 	test("reorders configs in custom mode via drag-and-drop and disables drag after Done", async () => {
-		const props = {
-			...defaultProps,
-			sortMode: "custom" as const,
-		}
-
-		render(<ApiConfigSelector {...props} />)
+		render(<ApiConfigSelector {...defaultProps} />)
 
 		// Open the dropdown (Popover content is always rendered by the mock, but keep action for parity)
 		const trigger = screen.getByTestId("dropdown-trigger")
 		fireEvent.click(trigger)
+
+		// First switch to custom mode
+		const customButton = screen.getByText("apiConfigSelector.custom")
+		fireEvent.click(customButton)
 
 		// Enter reorder mode by clicking the Reorder button
 		const reorderButton = screen.getByText("apiConfigSelector.reorder")
