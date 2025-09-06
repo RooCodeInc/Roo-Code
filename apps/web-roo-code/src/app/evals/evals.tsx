@@ -148,27 +148,19 @@ export function Evals({
 							</TableCell>
 							<TableCell className="border-r">{formatCurrency(run.taskMetrics.cost)}</TableCell>
 							<TableCell className="text-muted-foreground">
-								{run.languageScores?.go !== undefined ? `${formatScore(run.languageScores.go)}%` : "-"}
+								{formatScore(run.languageScores?.go ?? 0)}%
 							</TableCell>
 							<TableCell className="text-muted-foreground">
-								{run.languageScores?.java !== undefined
-									? `${formatScore(run.languageScores.java)}%`
-									: "-"}
+								{formatScore(run.languageScores?.java ?? 0)}%
 							</TableCell>
 							<TableCell className="text-muted-foreground">
-								{run.languageScores?.javascript !== undefined
-									? `${formatScore(run.languageScores.javascript)}%`
-									: "-"}
+								{formatScore(run.languageScores?.javascript ?? 0)}%
 							</TableCell>
 							<TableCell className="text-muted-foreground">
-								{run.languageScores?.python !== undefined
-									? `${formatScore(run.languageScores.python)}%`
-									: "-"}
+								{formatScore(run.languageScores?.python ?? 0)}%
 							</TableCell>
 							<TableCell className="text-muted-foreground">
-								{run.languageScores?.rust !== undefined
-									? `${formatScore(run.languageScores.rust)}%`
-									: "-"}
+								{formatScore(run.languageScores?.rust ?? 0)}%
 							</TableCell>
 							<TableCell className="font-bold">{run.score}%</TableCell>
 						</TableRow>
