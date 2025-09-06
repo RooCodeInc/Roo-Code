@@ -337,7 +337,7 @@ describe("ApiConfigSelector", () => {
 
 		// Find the settings button by its icon class within the popover content
 		const popoverContent = screen.getByTestId("popover-content")
-		const settingsButton = popoverContent.querySelector(".codicon-settings-gear") as HTMLElement
+		const settingsButton = popoverContent.querySelector('[aria-label="chat:edit"]') as HTMLElement
 		expect(settingsButton).toBeInTheDocument()
 		fireEvent.click(settingsButton)
 

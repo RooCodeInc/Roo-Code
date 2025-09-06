@@ -223,11 +223,21 @@ export const ApiConfigSelector = ({
 				<div
 					key={config.id}
 					data-config-item
+					role="option"
+					aria-selected={isCurrentConfig}
+					aria-label={`${config.name}${config.modelId ? ` - ${config.modelId}` : ""}`}
 					draggable={isReorderMode && sortMode === "custom"}
 					onDragStart={(e) => isReorderMode && handleDragStart(e, index)}
 					onDragOver={(e) => isReorderMode && handleDragOver(e, index)}
 					onDragEnd={handleDragEnd}
 					onClick={() => !isReorderMode && handleSelect(config.id)}
+					onKeyDown={(e) => {
+						if (!isReorderMode && (e.key === "Enter" || e.key === " ")) {
+							e.preventDefault()
+							handleSelect(config.id)
+						}
+					}}
+					tabIndex={!isReorderMode ? 0 : -1}
 					className={cn(
 						"px-3 py-1.5 text-sm flex items-center group relative",
 						!isReorderMode && "cursor-pointer hover:bg-vscode-list-hoverBackground",
@@ -270,6 +280,7 @@ export const ApiConfigSelector = ({
 									variant="ghost"
 									size="icon"
 									tabIndex={-1}
+									aria-label={isPinned ? t("apiConfigSelector.unpin") : t("apiConfigSelector.pin")}
 									onClick={(e) => {
 										e.stopPropagation()
 										togglePinnedApiConfig(config.id)
@@ -307,6 +318,9 @@ export const ApiConfigSelector = ({
 				<PopoverTrigger
 					disabled={disabled}
 					data-testid="dropdown-trigger"
+					aria-label={title}
+					aria-expanded={open}
+					aria-haspopup="listbox"
 					className={cn(
 						"min-w-0 inline-flex items-center relative whitespace-nowrap px-1.5 py-1 text-xs",
 						"bg-transparent border border-[rgba(255,255,255,0.08)] rounded-md text-vscode-foreground",
@@ -341,6 +355,15 @@ export const ApiConfigSelector = ({
 									<span
 										className="codicon codicon-close text-vscode-input-foreground opacity-50 hover:opacity-100 text-xs cursor-pointer"
 										onClick={() => setSearchValue("")}
+										aria-label="Clear search"
+										role="button"
+										tabIndex={0}
+										onKeyDown={(e) => {
+											if (e.key === "Enter" || e.key === " ") {
+												e.preventDefault()
+												setSearchValue("")
+											}
+										}}
 									/>
 								</div>
 							)}
@@ -353,33 +376,37 @@ export const ApiConfigSelector = ({
 						</div>
 					)}
 
-	{/* Config list - single scroll container with ref for drag-and-drop */}
-	{filteredConfigs.length === 0 && searchValue ? (
-		<div className="py-2 px-3 text-sm text-vscode-foreground/70">{t("common:ui.no_results")}</div>
-	) : (
-		<div ref={scrollContainerRef} className="max-h-[300px] overflow-y-auto">
-			{/* Pinned configs - sticky header */}
-			{pinnedConfigs.length > 0 && (
-				<div
-					className={cn(
-						"sticky top-0 z-10 bg-vscode-dropdown-background py-1",
-						unpinnedConfigs.length > 0 && "border-b border-vscode-dropdown-foreground/10",
-					)}
-					aria-label="Pinned configurations">
-					{pinnedConfigs.map((config, index) => renderConfigItem(config, true, index))}
-				</div>
-			)}
+					{/* Config list - single scroll container with a11y attributes and ref for drag-and-drop */}
+					{filteredConfigs.length === 0 && searchValue ? (
+						<div className="py-2 px-3 text-sm text-vscode-foreground/70">{t("common:ui.no_results")}</div>
+					) : (
+						<div
+							ref={scrollContainerRef}
+							className="max-h-[300px] overflow-y-auto"
+							role="listbox"
+							aria-label={t("prompts:apiConfiguration.select")}>
+							{/* Pinned configs - sticky header */}
+							{pinnedConfigs.length > 0 && (
+								<div
+									className={cn(
+										"sticky top-0 z-10 bg-vscode-dropdown-background py-1",
+										unpinnedConfigs.length > 0 && "border-b border-vscode-dropdown-foreground/10",
+									)}
+									aria-label="Pinned configurations">
+									{pinnedConfigs.map((config, index) => renderConfigItem(config, true, index))}
+								</div>
+							)}
 
-			{/* Unpinned configs */}
-			{unpinnedConfigs.length > 0 && (
-				<div className="py-1" aria-label="All configurations">
-					{unpinnedConfigs.map((config, index) =>
-						renderConfigItem(config, false, pinnedConfigs.length + index)
+							{/* Unpinned configs */}
+							{unpinnedConfigs.length > 0 && (
+								<div className="py-1" aria-label="All configurations">
+									{unpinnedConfigs.map((config, index) =>
+										renderConfigItem(config, false, pinnedConfigs.length + index)
+									)}
+								</div>
+							)}
+						</div>
 					)}
-				</div>
-			)}
-		</div>
-	)}
 
 					{/* Bottom bar with controls */}
 					<div className="flex flex-col border-t border-vscode-dropdown-border">
@@ -396,6 +423,8 @@ export const ApiConfigSelector = ({
 												key={mode}
 												variant="ghost"
 												size="sm"
+												aria-label={`${t("apiConfigSelector.sort")} ${mode === "alphabetical" ? t("apiConfigSelector.alphabetical") : t("apiConfigSelector.custom")}`}
+												aria-pressed={sortMode === mode}
 												onClick={() => handleSortModeChange(mode)}
 												className={cn(
 													"h-6 px-2 text-xs",
@@ -413,6 +442,7 @@ export const ApiConfigSelector = ({
 									<Button
 										variant="ghost"
 										size="sm"
+										aria-label={t("apiConfigSelector.reorder")}
 										onClick={handleReorderClick}
 										className="h-6 px-2 text-xs">
 										{t("apiConfigSelector.reorder")}
@@ -431,6 +461,7 @@ export const ApiConfigSelector = ({
 									<Button
 										variant="ghost"
 										size="sm"
+										aria-label={t("apiConfigSelector.cancel")}
 										onClick={handleReorderCancel}
 										className="h-6 px-2 text-xs">
 										{t("apiConfigSelector.cancel")}
@@ -438,6 +469,7 @@ export const ApiConfigSelector = ({
 									<Button
 										variant="ghost"
 										size="sm"
+										aria-label={t("apiConfigSelector.done")}
 										onClick={handleReorderDone}
 										className="h-6 px-2 text-xs bg-vscode-button-background text-vscode-button-foreground">
 										{t("apiConfigSelector.done")}
@@ -454,6 +486,7 @@ export const ApiConfigSelector = ({
 									title={t("apiConfigSelector.editConfigurations")}
 									onClick={handleEditClick}
 									tooltip={false}
+									aria-label="chat:edit"
 								/>
 							</div>
 
@@ -461,7 +494,11 @@ export const ApiConfigSelector = ({
 							<div className="flex items-center gap-1 pr-1">
 								{listApiConfigMeta.length > 6 && (
 									<StandardTooltip content={t("prompts:apiConfiguration.select")}>
-										<span className="codicon codicon-info text-xs text-vscode-descriptionForeground opacity-70 hover:opacity-100 cursor-help" />
+										<span
+											className="codicon codicon-info text-xs text-vscode-descriptionForeground opacity-70 hover:opacity-100 cursor-help"
+											aria-label={t("prompts:apiConfiguration.select")}
+											role="img"
+										/>
 									</StandardTooltip>
 								)}
 								<h4 className="m-0 font-medium text-sm text-vscode-descriptionForeground">
