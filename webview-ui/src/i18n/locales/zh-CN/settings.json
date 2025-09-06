@@ -127,7 +127,10 @@
 		"searchMinScoreResetTooltip": "恢复默认值 (0.4)",
 		"searchMaxResultsLabel": "最大搜索结果数",
 		"searchMaxResultsDescription": "查询代码库索引时返回的最大搜索结果数。较高的值提供更多上下文，但可能包含相关性较低的结果。",
-		"resetToDefault": "恢复默认值"
+		"resetToDefault": "恢复默认值",
+		"qdrantCollectionNameLabel": "Qdrant Collection Name",
+		"qdrantCollectionNamePlaceholder": "Enter custom collection name (optional)",
+		"qdrantCollectionNameDescription": "Custom name for the Qdrant collection. If not specified, a name will be auto-generated from the workspace path."
 	},
 	"autoApprove": {
 		"description": "允许 Roo 自动执行操作而无需批准。只有在您完全信任 AI 并了解相关安全风险的情况下才启用这些设置。",

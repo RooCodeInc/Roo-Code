@@ -24,7 +24,7 @@ export class QdrantVectorStore implements IVectorStore {
 	 * @param workspacePath Path to the workspace
 	 * @param url Optional URL to the Qdrant server
 	 */
-	constructor(workspacePath: string, url: string, vectorSize: number, apiKey?: string) {
+	constructor(workspacePath: string, url: string, vectorSize: number, apiKey?: string, collectionName?: string) {
 		// Parse the URL to determine the appropriate QdrantClient configuration
 		const parsedUrl = this.parseQdrantUrl(url)
 
@@ -77,10 +77,17 @@ export class QdrantVectorStore implements IVectorStore {
 			})
 		}
 
-		// Generate collection name from workspace path
-		const hash = createHash("sha256").update(workspacePath).digest("hex")
+		// Use provided collection name or generate from workspace path
+		if (collectionName && collectionName.trim()) {
+			// Sanitize the collection name to ensure it's valid for Qdrant
+			// Qdrant collection names must match: ^[a-zA-Z0-9_-]+$
+			this.collectionName = collectionName.trim().replace(/[^a-zA-Z0-9_-]/g, "-")
+		} else {
+			// Generate collection name from workspace path (default behavior)
+			const hash = createHash("sha256").update(workspacePath).digest("hex")
+			this.collectionName = `ws-${hash.substring(0, 16)}`
+		}
 		this.vectorSize = vectorSize
-		this.collectionName = `ws-${hash.substring(0, 16)}`
 	}
 
 	/**

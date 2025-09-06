@@ -21,6 +21,7 @@ export class CodeIndexConfigManager {
 	private mistralOptions?: { apiKey: string }
 	private vercelAiGatewayOptions?: { apiKey: string }
 	private qdrantUrl?: string = "http://localhost:6333"
+	private qdrantCollectionName?: string
 	private qdrantApiKey?: string
 	private searchMinScore?: number
 	private searchMaxResults?: number
@@ -46,6 +47,7 @@ export class CodeIndexConfigManager {
 		const codebaseIndexConfig = this.contextProxy?.getGlobalState("codebaseIndexConfig") ?? {
 			codebaseIndexEnabled: true,
 			codebaseIndexQdrantUrl: "http://localhost:6333",
+			codebaseIndexQdrantCollectionName: "",
 			codebaseIndexEmbedderProvider: "openai",
 			codebaseIndexEmbedderBaseUrl: "",
 			codebaseIndexEmbedderModelId: "",
@@ -56,6 +58,7 @@ export class CodeIndexConfigManager {
 		const {
 			codebaseIndexEnabled,
 			codebaseIndexQdrantUrl,
+			codebaseIndexQdrantCollectionName,
 			codebaseIndexEmbedderProvider,
 			codebaseIndexEmbedderBaseUrl,
 			codebaseIndexEmbedderModelId,
@@ -75,6 +78,7 @@ export class CodeIndexConfigManager {
 		// Update instance variables with configuration
 		this.codebaseIndexEnabled = codebaseIndexEnabled ?? true
 		this.qdrantUrl = codebaseIndexQdrantUrl
+		this.qdrantCollectionName = codebaseIndexQdrantCollectionName
 		this.qdrantApiKey = qdrantApiKey ?? ""
 		this.searchMinScore = codebaseIndexSearchMinScore
 		this.searchMaxResults = codebaseIndexSearchMaxResults
@@ -148,6 +152,7 @@ export class CodeIndexConfigManager {
 			mistralOptions?: { apiKey: string }
 			vercelAiGatewayOptions?: { apiKey: string }
 			qdrantUrl?: string
+			qdrantCollectionName?: string
 			qdrantApiKey?: string
 			searchMinScore?: number
 		}
@@ -168,6 +173,7 @@ export class CodeIndexConfigManager {
 			mistralApiKey: this.mistralOptions?.apiKey ?? "",
 			vercelAiGatewayApiKey: this.vercelAiGatewayOptions?.apiKey ?? "",
 			qdrantUrl: this.qdrantUrl ?? "",
+			qdrantCollectionName: this.qdrantCollectionName ?? "",
 			qdrantApiKey: this.qdrantApiKey ?? "",
 		}
 
@@ -193,6 +199,7 @@ export class CodeIndexConfigManager {
 				mistralOptions: this.mistralOptions,
 				vercelAiGatewayOptions: this.vercelAiGatewayOptions,
 				qdrantUrl: this.qdrantUrl,
+				qdrantCollectionName: this.qdrantCollectionName,
 				qdrantApiKey: this.qdrantApiKey,
 				searchMinScore: this.currentSearchMinScore,
 			},
@@ -270,6 +277,7 @@ export class CodeIndexConfigManager {
 		const prevMistralApiKey = prev?.mistralApiKey ?? ""
 		const prevVercelAiGatewayApiKey = prev?.vercelAiGatewayApiKey ?? ""
 		const prevQdrantUrl = prev?.qdrantUrl ?? ""
+		const prevQdrantCollectionName = prev?.qdrantCollectionName ?? ""
 		const prevQdrantApiKey = prev?.qdrantApiKey ?? ""
 
 		// 1. Transition from disabled/unconfigured to enabled/configured
@@ -308,6 +316,7 @@ export class CodeIndexConfigManager {
 		const currentMistralApiKey = this.mistralOptions?.apiKey ?? ""
 		const currentVercelAiGatewayApiKey = this.vercelAiGatewayOptions?.apiKey ?? ""
 		const currentQdrantUrl = this.qdrantUrl ?? ""
+		const currentQdrantCollectionName = this.qdrantCollectionName ?? ""
 		const currentQdrantApiKey = this.qdrantApiKey ?? ""
 
 		if (prevOpenAiKey !== currentOpenAiKey) {
@@ -342,7 +351,11 @@ export class CodeIndexConfigManager {
 			return true
 		}
 
-		if (prevQdrantUrl !== currentQdrantUrl || prevQdrantApiKey !== currentQdrantApiKey) {
+		if (
+			prevQdrantUrl !== currentQdrantUrl ||
+			prevQdrantCollectionName !== currentQdrantCollectionName ||
+			prevQdrantApiKey !== currentQdrantApiKey
+		) {
 			return true
 		}
 
@@ -396,6 +409,7 @@ export class CodeIndexConfigManager {
 			mistralOptions: this.mistralOptions,
 			vercelAiGatewayOptions: this.vercelAiGatewayOptions,
 			qdrantUrl: this.qdrantUrl,
+			qdrantCollectionName: this.qdrantCollectionName,
 			qdrantApiKey: this.qdrantApiKey,
 			searchMinScore: this.currentSearchMinScore,
 			searchMaxResults: this.currentSearchMaxResults,
@@ -426,9 +440,10 @@ export class CodeIndexConfigManager {
 	/**
 	 * Gets the current Qdrant configuration
 	 */
-	public get qdrantConfig(): { url?: string; apiKey?: string } {
+	public get qdrantConfig(): { url?: string; collectionName?: string; apiKey?: string } {
 		return {
 			url: this.qdrantUrl,
+			collectionName: this.qdrantCollectionName,
 			apiKey: this.qdrantApiKey,
 		}
 	}

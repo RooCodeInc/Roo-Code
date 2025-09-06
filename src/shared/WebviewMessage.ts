@@ -270,6 +270,7 @@ export interface WebviewMessage {
 		// Global state settings
 		codebaseIndexEnabled: boolean
 		codebaseIndexQdrantUrl: string
+		codebaseIndexQdrantCollectionName?: string
 		codebaseIndexEmbedderProvider:
 			| "openai"
 			| "ollama"

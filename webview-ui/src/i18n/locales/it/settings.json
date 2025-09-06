@@ -127,7 +127,10 @@
 		"searchMinScoreResetTooltip": "Ripristina al valore predefinito (0.4)",
 		"searchMaxResultsLabel": "Risultati di ricerca massimi",
 		"searchMaxResultsDescription": "Numero massimo di risultati di ricerca da restituire quando si interroga l'indice del codice. Valori più alti forniscono più contesto ma possono includere risultati meno pertinenti.",
-		"resetToDefault": "Ripristina al valore predefinito"
+		"resetToDefault": "Ripristina al valore predefinito",
+		"qdrantCollectionNameLabel": "Qdrant Collection Name",
+		"qdrantCollectionNamePlaceholder": "Enter custom collection name (optional)",
+		"qdrantCollectionNameDescription": "Custom name for the Qdrant collection. If not specified, a name will be auto-generated from the workspace path."
 	},
 	"autoApprove": {
 		"description": "Permetti a Roo di eseguire automaticamente operazioni senza richiedere approvazione. Abilita queste impostazioni solo se ti fidi completamente dell'IA e comprendi i rischi di sicurezza associati.",

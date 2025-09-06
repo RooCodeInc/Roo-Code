@@ -127,7 +127,10 @@
 		"searchMinScoreResetTooltip": "Сбросить к значению по умолчанию (0.4)",
 		"searchMaxResultsLabel": "Максимальное количество результатов поиска",
 		"searchMaxResultsDescription": "Максимальное количество результатов поиска, возвращаемых при запросе индекса кодовой базы. Более высокие значения предоставляют больше контекста, но могут включать менее релевантные результаты.",
-		"resetToDefault": "Сбросить к значению по умолчанию"
+		"resetToDefault": "Сбросить к значению по умолчанию",
+		"qdrantCollectionNameLabel": "Qdrant Collection Name",
+		"qdrantCollectionNamePlaceholder": "Enter custom collection name (optional)",
+		"qdrantCollectionNameDescription": "Custom name for the Qdrant collection. If not specified, a name will be auto-generated from the workspace path."
 	},
 	"autoApprove": {
 		"description": "Разрешить Roo автоматически выполнять операции без необходимости одобрения. Включайте эти параметры только если полностью доверяете ИИ и понимаете связанные с этим риски безопасности.",

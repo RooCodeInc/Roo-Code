@@ -145,8 +145,14 @@ export class CodeIndexServiceFactory {
 			throw new Error(t("embeddings:serviceFactory.qdrantUrlMissing"))
 		}
 
-		// Assuming constructor is updated: new QdrantVectorStore(workspacePath, url, vectorSize, apiKey?)
-		return new QdrantVectorStore(this.workspacePath, config.qdrantUrl, vectorSize, config.qdrantApiKey)
+		// Pass collection name if configured, otherwise let QdrantVectorStore generate it
+		return new QdrantVectorStore(
+			this.workspacePath,
+			config.qdrantUrl,
+			vectorSize,
+			config.qdrantApiKey,
+			config.qdrantCollectionName,
+		)
 	}
 
 	/**

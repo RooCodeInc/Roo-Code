@@ -58,6 +58,7 @@ interface LocalCodeIndexSettings {
 	// Global state settings
 	codebaseIndexEnabled: boolean
 	codebaseIndexQdrantUrl: string
+	codebaseIndexQdrantCollectionName?: string
 	codebaseIndexEmbedderProvider: EmbedderProvider
 	codebaseIndexEmbedderBaseUrl?: string
 	codebaseIndexEmbedderModelId: string
@@ -181,6 +182,7 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 	const getDefaultSettings = (): LocalCodeIndexSettings => ({
 		codebaseIndexEnabled: true,
 		codebaseIndexQdrantUrl: "",
+		codebaseIndexQdrantCollectionName: "",
 		codebaseIndexEmbedderProvider: "openai",
 		codebaseIndexEmbedderBaseUrl: "",
 		codebaseIndexEmbedderModelId: "",
@@ -213,6 +215,7 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 			const settings = {
 				codebaseIndexEnabled: codebaseIndexConfig.codebaseIndexEnabled ?? true,
 				codebaseIndexQdrantUrl: codebaseIndexConfig.codebaseIndexQdrantUrl || "",
+				codebaseIndexQdrantCollectionName: codebaseIndexConfig.codebaseIndexQdrantCollectionName || "",
 				codebaseIndexEmbedderProvider: codebaseIndexConfig.codebaseIndexEmbedderProvider || "openai",
 				codebaseIndexEmbedderBaseUrl: codebaseIndexConfig.codebaseIndexEmbedderBaseUrl || "",
 				codebaseIndexEmbedderModelId: codebaseIndexConfig.codebaseIndexEmbedderModelId || "",
@@ -1158,6 +1161,30 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 												{formErrors.codebaseIndexQdrantUrl}
 											</p>
 										)}
+									</div>
+
+									<div className="space-y-2">
+										<label className="text-sm font-medium">
+											{t("settings:codeIndex.qdrantCollectionNameLabel")}
+										</label>
+										<VSCodeTextField
+											value={currentSettings.codebaseIndexQdrantCollectionName || ""}
+											onInput={(e: any) =>
+												updateSetting("codebaseIndexQdrantCollectionName", e.target.value)
+											}
+											placeholder={t("settings:codeIndex.qdrantCollectionNamePlaceholder")}
+											className={cn("w-full", {
+												"border-red-500": formErrors.codebaseIndexQdrantCollectionName,
+											})}
+										/>
+										{formErrors.codebaseIndexQdrantCollectionName && (
+											<p className="text-xs text-vscode-errorForeground mt-1 mb-0">
+												{formErrors.codebaseIndexQdrantCollectionName}
+											</p>
+										)}
+										<p className="text-xs text-vscode-descriptionForeground mt-1">
+											{t("settings:codeIndex.qdrantCollectionNameDescription")}
+										</p>
 									</div>
 
 									<div className="space-y-2">

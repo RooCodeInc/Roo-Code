@@ -127,7 +127,10 @@
 		"searchMinScoreResetTooltip": "Varsayılan değere sıfırla (0.4)",
 		"searchMaxResultsLabel": "Maksimum Arama Sonuçları",
 		"searchMaxResultsDescription": "Kod tabanı dizinini sorgularken döndürülecek maksimum arama sonucu sayısı. Daha yüksek değerler daha fazla bağlam sağlar ancak daha az alakalı sonuçlar içerebilir.",
-		"resetToDefault": "Varsayılana sıfırla"
+		"resetToDefault": "Varsayılana sıfırla",
+		"qdrantCollectionNameLabel": "Qdrant Collection Name",
+		"qdrantCollectionNamePlaceholder": "Enter custom collection name (optional)",
+		"qdrantCollectionNameDescription": "Custom name for the Qdrant collection. If not specified, a name will be auto-generated from the workspace path."
 	},
 	"autoApprove": {
 		"description": "Roo'nun onay gerektirmeden otomatik olarak işlemler gerçekleştirmesine izin verin. Bu ayarları yalnızca yapay zekaya tamamen güveniyorsanız ve ilgili güvenlik risklerini anlıyorsanız etkinleştirin.",

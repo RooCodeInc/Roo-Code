@@ -127,7 +127,10 @@
 		"searchMinScoreResetTooltip": "Auf Standardwert zurücksetzen (0.4)",
 		"searchMaxResultsLabel": "Maximale Suchergebnisse",
 		"searchMaxResultsDescription": "Maximale Anzahl von Suchergebnissen, die bei der Abfrage des Codebase-Index zurückgegeben werden. Höhere Werte bieten mehr Kontext, können aber weniger relevante Ergebnisse enthalten.",
-		"resetToDefault": "Auf Standard zurücksetzen"
+		"resetToDefault": "Auf Standard zurücksetzen",
+		"qdrantCollectionNameLabel": "Qdrant Collection Name",
+		"qdrantCollectionNamePlaceholder": "Enter custom collection name (optional)",
+		"qdrantCollectionNameDescription": "Custom name for the Qdrant collection. If not specified, a name will be auto-generated from the workspace path."
 	},
 	"autoApprove": {
 		"description": "Erlaubt Roo, Operationen automatisch ohne Genehmigung durchzuführen. Aktiviere diese Einstellungen nur, wenn du der KI vollständig vertraust und die damit verbundenen Sicherheitsrisiken verstehst.",

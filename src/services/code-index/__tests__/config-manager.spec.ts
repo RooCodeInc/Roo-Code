@@ -104,8 +104,14 @@ describe("CodeIndexConfigManager", () => {
 				modelId: undefined,
 				openAiOptions: { openAiNativeApiKey: "" },
 				ollamaOptions: { ollamaBaseUrl: "" },
+				geminiOptions: undefined,
+				mistralOptions: undefined,
+				openAiCompatibleOptions: undefined,
+				vercelAiGatewayOptions: undefined,
+				modelDimension: undefined,
 				qdrantUrl: "http://localhost:6333",
 				qdrantApiKey: "",
+				qdrantCollectionName: "",
 				searchMinScore: 0.4,
 			})
 			expect(result.requiresRestart).toBe(false)

@@ -127,7 +127,10 @@
 		"searchMinScoreResetTooltip": "デフォルト値（0.4）にリセット",
 		"searchMaxResultsLabel": "最大検索結果数",
 		"searchMaxResultsDescription": "コードベースインデックスをクエリする際に返される検索結果の最大数。値を高くするとより多くのコンテキストが提供されますが、関連性の低い結果が含まれる可能性があります。",
-		"resetToDefault": "デフォルトにリセット"
+		"resetToDefault": "デフォルトにリセット",
+		"qdrantCollectionNameLabel": "Qdrant Collection Name",
+		"qdrantCollectionNamePlaceholder": "Enter custom collection name (optional)",
+		"qdrantCollectionNameDescription": "Custom name for the Qdrant collection. If not specified, a name will be auto-generated from the workspace path."
 	},
 	"autoApprove": {
 		"description": "Rooが承認なしで自動的に操作を実行できるようにします。AIを完全に信頼し、関連するセキュリティリスクを理解している場合にのみ、これらの設定を有効にしてください。",

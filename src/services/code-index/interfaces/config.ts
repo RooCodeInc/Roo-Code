@@ -16,6 +16,7 @@ export interface CodeIndexConfig {
 	mistralOptions?: { apiKey: string }
 	vercelAiGatewayOptions?: { apiKey: string }
 	qdrantUrl?: string
+	qdrantCollectionName?: string
 	qdrantApiKey?: string
 	searchMinScore?: number
 	searchMaxResults?: number
@@ -38,5 +39,6 @@ export type PreviousConfigSnapshot = {
 	mistralApiKey?: string
 	vercelAiGatewayApiKey?: string
 	qdrantUrl?: string
+	qdrantCollectionName?: string
 	qdrantApiKey?: string
 }
