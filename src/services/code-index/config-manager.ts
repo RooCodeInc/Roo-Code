@@ -93,7 +93,11 @@ export class CodeIndexConfigManager {
 			this.modelDimension = undefined
 		}
 
-		this.openAiOptions = { openAiNativeApiKey: openAiKey }
+		const openAiBaseUrl = this.contextProxy?.getValue("openAiNativeBaseUrl") ?? ""
+		this.openAiOptions = {
+			openAiNativeApiKey: openAiKey,
+			openAiNativeBaseUrl: openAiBaseUrl,
+		}
 
 		// Set embedder provider with support for openai-compatible
 		if (codebaseIndexEmbedderProvider === "ollama") {

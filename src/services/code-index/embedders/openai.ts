@@ -27,7 +27,7 @@ export class OpenAiEmbedder extends OpenAiNativeHandler implements IEmbedder {
 	 */
 	constructor(options: ApiHandlerOptions & { openAiEmbeddingModelId?: string }) {
 		super(options)
-		const baseURL = "http://localhost:3500/v1"
+		const baseURL = options.openAiNativeBaseUrl
 		this.embeddingsClient = new OpenAI({
 			apiKey: "proxy-handled",
 			baseURL,

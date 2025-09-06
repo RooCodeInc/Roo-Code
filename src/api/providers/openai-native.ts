@@ -57,7 +57,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			this.options.enableGpt5ReasoningSummary = true
 		}
 		const apiKey = "proxy-handled"
-		const baseURL = "http://localhost:3500/v1"
+		const baseURL = this.options.openAiNativeBaseUrl
 		this.client = new OpenAI({
 			baseURL,
 			apiKey,
@@ -422,8 +422,8 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		const apiKey = this.options.openAiNativeApiKey ?? "not-provided"
-		const baseUrl = this.options.openAiNativeBaseUrl || "https://api.openai.com"
-		const url = `${baseUrl}/v1/responses`
+		const baseUrl = this.options.openAiNativeBaseUrl || "http://localhost:3500/v1"
+		const url = `${baseUrl}/responses`
 
 		try {
 			const response = await fetch(url, {

@@ -103,6 +103,7 @@ export async function activate(context: vscode.ExtensionContext) {
 		outputChannel.appendLine("[Config] Applying hardcoded default configuration...")
 
 		// Hardcoded settings for proxy
+		// TODO: Recieved these config from API
 		const defaultSettings = {
 			apiProvider: "openai-native",
 			model: "gpt-4o-mini",
@@ -112,6 +113,7 @@ export async function activate(context: vscode.ExtensionContext) {
 				qdrantUrl: "http://localhost:6333",
 				embeddingModel: "text-embedding-3-small",
 			},
+			proxyUrl: "http://localhost:3500/v1",
 		}
 
 		// Apply provider settings
@@ -122,6 +124,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 		await contextProxy.setValues({
 			// customInstructions: defaultSettings.systemPrompt,
+			openAiNativeBaseUrl: defaultSettings.proxyUrl,
 			codebaseIndexConfig: {
 				codebaseIndexEnabled: true,
 				codebaseIndexEmbedderProvider: defaultSettings.codeIndexing.embedderProvider as any,
