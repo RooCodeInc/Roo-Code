@@ -26,56 +26,93 @@ function stripThinkingTokens(text: string): string {
 }
 
 /**
- * Flattens OpenAI message content to simple strings that Cerebras can handle.
- * Cerebras doesn't support complex content arrays like OpenAI does.
+ * Converts OpenAI messages to Cerebras-compatible format.
+ * Cerebras now supports multimodal inputs including images.
  */
-function flattenMessageContent(content: any): string {
-	if (typeof content === "string") {
-		return content
-	}
-
-	if (Array.isArray(content)) {
-		return content
-			.map((part) => {
-				if (typeof part === "string") {
-					return part
-				}
-				if (part.type === "text") {
-					return part.text || ""
-				}
-				if (part.type === "image_url") {
-					return "[Image]" // Placeholder for images since Cerebras doesn't support images
-				}
-				return ""
-			})
-			.filter(Boolean)
-			.join("\n")
-	}
-
-	// Fallback for any other content types
-	return String(content || "")
-}
-
-/**
- * Converts OpenAI messages to Cerebras-compatible format with simple string content.
- * Also strips thinking tokens from assistant messages to prevent model confusion.
- */
-function convertToCerebrasMessages(openaiMessages: any[]): Array<{ role: string; content: string }> {
+function convertToCerebrasMessages(openaiMessages: any[]): Array<{ role: string; content: any }> {
 	return openaiMessages
 		.map((msg) => {
-			let content = flattenMessageContent(msg.content)
-
-			// Strip thinking tokens from assistant messages to prevent confusion
-			if (msg.role === "assistant") {
-				content = stripThinkingTokens(content)
+			// For simple string content, keep as is
+			if (typeof msg.content === "string") {
+				let content = msg.content
+				// Strip thinking tokens from assistant messages to prevent confusion
+				if (msg.role === "assistant") {
+					content = stripThinkingTokens(content)
+				}
+				return {
+					role: msg.role,
+					content,
+				}
 			}
 
+			// For array content (including images), convert to Cerebras format
+			if (Array.isArray(msg.content)) {
+				const cerebrasContent = msg.content
+					.map((part: any) => {
+						if (typeof part === "string") {
+							return { type: "text", text: part }
+						}
+						if (part.type === "text") {
+							let text = part.text || ""
+							// Strip thinking tokens from assistant messages
+							if (msg.role === "assistant") {
+								text = stripThinkingTokens(text)
+							}
+							return { type: "text", text }
+						}
+						if (part.type === "image_url" && part.image_url?.url) {
+							// Cerebras expects images in a specific format
+							// Extract base64 data from data URL if present
+							const url = part.image_url.url
+							if (url.startsWith("data:")) {
+								// Parse data URL: data:image/png;base64,<base64-data>
+								const matches = url.match(/^data:([^;]+);base64,(.+)$/)
+								if (matches) {
+									return {
+										type: "image_url",
+										image_url: {
+											url: url, // Keep the full data URL
+										},
+									}
+								}
+							}
+							// For regular URLs, pass through as is
+							return {
+								type: "image_url",
+								image_url: {
+									url: url,
+								},
+							}
+						}
+						return null
+					})
+					.filter(Boolean)
+
+				// If we have valid content, return it
+				if (cerebrasContent.length > 0) {
+					return {
+						role: msg.role,
+						content: cerebrasContent,
+					}
+				}
+			}
+
+			// Fallback for any other content types
 			return {
 				role: msg.role,
-				content,
+				content: String(msg.content || ""),
 			}
 		})
-		.filter((msg) => msg.content.trim() !== "") // Remove empty messages
+		.filter((msg) => {
+			// Remove empty messages
+			if (typeof msg.content === "string") {
+				return msg.content.trim() !== ""
+			}
+			if (Array.isArray(msg.content)) {
+				return msg.content.length > 0
+			}
+			return false
+		})
 }
 
 export class CerebrasHandler extends BaseProvider implements SingleCompletionHandler {
@@ -256,7 +293,23 @@ export class CerebrasHandler extends BaseProvider implements SingleCompletionHan
 
 			// Provide token usage estimate if not available from API
 			if (inputTokens === 0 || outputTokens === 0) {
-				const inputText = systemPrompt + cerebrasMessages.map((m) => m.content).join("")
+				// Calculate input text, handling both string and array content
+				let inputText = systemPrompt
+				for (const msg of cerebrasMessages) {
+					if (typeof msg.content === "string") {
+						inputText += msg.content
+					} else if (Array.isArray(msg.content)) {
+						for (const part of msg.content) {
+							if (part.type === "text") {
+								inputText += part.text || ""
+							}
+							// Add token estimate for images (typically ~85 tokens per image)
+							if (part.type === "image_url") {
+								inputText += " ".repeat(85 * 4) // Approximate 85 tokens as characters
+							}
+						}
+					}
+				}
 				inputTokens = inputTokens || Math.ceil(inputText.length / 4) // Rough estimate: 4 chars per token
 				outputTokens = outputTokens || Math.ceil((max_tokens || 1000) / 10) // Rough estimate
 			}

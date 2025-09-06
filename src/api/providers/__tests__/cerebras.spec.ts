@@ -77,6 +77,133 @@ describe("CerebrasHandler", () => {
 		})
 	})
 
+	describe("createMessage with images", () => {
+		it("should handle messages with image content", async () => {
+			const mockFetch = vi.fn().mockResolvedValue({
+				ok: true,
+				body: {
+					getReader: () => ({
+						read: vi
+							.fn()
+							.mockResolvedValueOnce({
+								done: false,
+								value: new TextEncoder().encode(
+									'data: {"choices":[{"delta":{"content":"Image analysis:"}}]}\n',
+								),
+							})
+							.mockResolvedValueOnce({
+								done: false,
+								value: new TextEncoder().encode(
+									'data: {"choices":[{"delta":{"content":" I can see the image"}}]}\n',
+								),
+							})
+							.mockResolvedValueOnce({
+								done: false,
+								value: new TextEncoder().encode(
+									'data: {"usage":{"prompt_tokens":100,"completion_tokens":10}}\n',
+								),
+							})
+							.mockResolvedValueOnce({ done: true }),
+						releaseLock: vi.fn(),
+					}),
+				},
+			})
+			global.fetch = mockFetch
+
+			const messages = [
+				{
+					role: "user" as const,
+					content: [
+						{ type: "text" as const, text: "What's in this image?" },
+						{
+							type: "image" as const,
+							source: {
+								type: "base64" as const,
+								media_type: "image/png" as const,
+								data: "base64encodedimagedata",
+							},
+						},
+					],
+				},
+			]
+
+			const stream = handler.createMessage("System prompt", messages)
+			const chunks = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			// Verify the request was made with image content
+			expect(mockFetch).toHaveBeenCalledWith(
+				"https://api.cerebras.ai/v1/chat/completions",
+				expect.objectContaining({
+					body: expect.stringContaining("image_url"),
+				}),
+			)
+
+			// Verify we got the expected response chunks
+			expect(chunks).toContainEqual({ type: "text", text: "Image analysis:" })
+			expect(chunks).toContainEqual({ type: "text", text: " I can see the image" })
+			expect(chunks).toContainEqual({ type: "usage", inputTokens: 100, outputTokens: 10 })
+		})
+
+		it("should handle mixed text and image content", async () => {
+			const mockFetch = vi.fn().mockResolvedValue({
+				ok: true,
+				body: {
+					getReader: () => ({
+						read: vi
+							.fn()
+							.mockResolvedValueOnce({
+								done: false,
+								value: new TextEncoder().encode(
+									'data: {"choices":[{"delta":{"content":"Response"}}]}\n',
+								),
+							})
+							.mockResolvedValueOnce({ done: true }),
+						releaseLock: vi.fn(),
+					}),
+				},
+			})
+			global.fetch = mockFetch
+
+			const messages = [
+				{
+					role: "user" as const,
+					content: [
+						{ type: "text" as const, text: "Analyze this:" },
+						{
+							type: "image" as const,
+							source: {
+								type: "base64" as const,
+								media_type: "image/jpeg" as const,
+								data: "base64data",
+							},
+						},
+						{ type: "text" as const, text: "What do you see?" },
+					],
+				},
+			]
+
+			const stream = handler.createMessage("System", messages)
+			const chunks = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			// Verify the request body contains both text and image
+			const callArgs = mockFetch.mock.calls[0]
+			const requestBody = JSON.parse(callArgs[1].body)
+			expect(requestBody.messages[1].content).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({ type: "text", text: "Analyze this:" }),
+					expect.objectContaining({ type: "image_url" }),
+					expect.objectContaining({ type: "text", text: "What do you see?" }),
+				]),
+			)
+		})
+	})
+
 	describe("createMessage", () => {
 		it("should make correct API request", async () => {
 			// Mock successful API response
