@@ -152,6 +152,19 @@ export const globalSettingsSchema = z.object({
 	hasOpenedModeSelector: z.boolean().optional(),
 	lastModeExportPath: z.string().optional(),
 	lastModeImportPath: z.string().optional(),
+
+	// Repository context configuration
+	repositoryContext: z
+		.object({
+			enabled: z.boolean(),
+			maxFileSize: z.number(),
+			maxFiles: z.number(),
+			includeFileContent: z.boolean(),
+			excludePatterns: z.array(z.string()),
+			updateInterval: z.number(),
+			smartSelection: z.boolean(),
+		})
+		.optional(),
 })
 
 export type GlobalSettings = z.infer<typeof globalSettingsSchema>

@@ -20,6 +20,7 @@ import { formatResponse } from "../prompts/responses"
 
 import { Task } from "../task/Task"
 import { formatReminderSection } from "./reminder"
+import { RepositoryContextManager } from "../context/RepositoryContextManager"
 
 export async function getEnvironmentDetails(cline: Task, includeFileDetails: boolean = false) {
 	let details = ""
@@ -265,6 +266,15 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 
 				details += result
 			}
+		}
+	}
+
+	// Add repository context if available and enabled
+	const repositoryContextManager = cline.repositoryContextManager
+	if (repositoryContextManager) {
+		const repoContext = repositoryContextManager.formatForEnvironment()
+		if (repoContext) {
+			details += repoContext
 		}
 	}
 

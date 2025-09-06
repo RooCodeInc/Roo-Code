@@ -112,6 +112,7 @@ import { processUserContentMentions } from "../mentions/processUserContentMentio
 import { getMessagesSinceLastSummary, summarizeConversation } from "../condense"
 import { Gpt5Metadata, ClineMessageWithMetadata } from "./types"
 import { MessageQueueService } from "../message-queue/MessageQueueService"
+import { RepositoryContextManager, RepositoryContextConfig } from "../context/RepositoryContextManager"
 
 import { AutoApprovalHandler } from "./AutoApprovalHandler"
 
@@ -237,6 +238,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	fileContextTracker: FileContextTracker
 	urlContentFetcher: UrlContentFetcher
 	terminalProcess?: RooTerminalProcess
+	repositoryContextManager?: RepositoryContextManager
 
 	// Computer User
 	browserSession: BrowserSession
@@ -347,6 +349,26 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.rooIgnoreController.initialize().catch((error) => {
 			console.error("Failed to initialize RooIgnoreController:", error)
 		})
+
+		// Initialize repository context manager if enabled
+		provider
+			.getState()
+			?.then((state) => {
+				const repoContextConfig = state?.repositoryContext
+				if (repoContextConfig?.enabled) {
+					this.repositoryContextManager = new RepositoryContextManager(
+						this.cwd,
+						repoContextConfig,
+						this.rooIgnoreController,
+					)
+					this.repositoryContextManager.initialize().catch((error) => {
+						console.error("Failed to initialize RepositoryContextManager:", error)
+					})
+				}
+			})
+			.catch((error) => {
+				console.error("Failed to get provider state for RepositoryContextManager:", error)
+			})
 
 		this.apiConfiguration = apiConfiguration
 		this.api = buildApiHandler(apiConfiguration)
@@ -1575,6 +1597,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			this.fileContextTracker.dispose()
 		} catch (error) {
 			console.error("Error disposing file context tracker:", error)
+		}
+
+		try {
+			if (this.repositoryContextManager) {
+				this.repositoryContextManager.dispose()
+				this.repositoryContextManager = undefined
+			}
+		} catch (error) {
+			console.error("Error disposing repository context manager:", error)
 		}
 
 		try {

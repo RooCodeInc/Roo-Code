@@ -281,6 +281,7 @@ export type ExtensionState = Pick<
 	| "remoteControlEnabled"
 	| "openRouterImageGenerationSelectedModel"
 	| "includeTaskHistoryInEnhance"
+	| "repositoryContext"
 > & {
 	version: string
 	clineMessages: ClineMessage[]
