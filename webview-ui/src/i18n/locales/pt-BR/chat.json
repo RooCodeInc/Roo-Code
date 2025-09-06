@@ -107,7 +107,7 @@
 	"selectApiConfig": "Selecionar configuração da API",
 	"enhancePrompt": "Aprimorar prompt com contexto adicional",
 	"addImages": "Adicionar imagens à mensagem",
-	"sendMessage": "Enviar mensagem",
+	"sendMessage": "Send message",
 	"stopTts": "Parar conversão de texto em fala",
 	"typeMessage": "Digite uma mensagem...",
 	"typeTask": "Digite sua tarefa aqui...",
@@ -395,5 +395,7 @@
 	"slashCommand": {
 		"wantsToRun": "Roo quer executar um comando slash:",
 		"didRun": "Roo executou um comando slash:"
-	}
+	},
+	"scheduleForAfterTask": "Schedule for after task completion",
+	"scheduledTitle": "Scheduled for after task completion"
 }

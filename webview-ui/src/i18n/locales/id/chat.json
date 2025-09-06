@@ -130,7 +130,7 @@
 		"noResults": "Tidak ada hasil yang ditemukan"
 	},
 	"addImages": "Tambahkan gambar ke pesan",
-	"sendMessage": "Kirim pesan",
+	"sendMessage": "Send message",
 	"stopTts": "Hentikan text-to-speech",
 	"typeMessage": "Ketik pesan...",
 	"typeTask": "Bangun, cari, tanya sesuatu",
@@ -401,5 +401,7 @@
 	"slashCommand": {
 		"wantsToRun": "Roo ingin menjalankan perintah slash:",
 		"didRun": "Roo telah menjalankan perintah slash:"
-	}
+	},
+	"scheduleForAfterTask": "Schedule for after task completion",
+	"scheduledTitle": "Scheduled for after task completion"
 }

@@ -107,7 +107,7 @@
 	"selectApiConfig": "API yapılandırmasını seçin",
 	"enhancePrompt": "Ek bağlamla istemi geliştir",
 	"addImages": "Mesaja resim ekle",
-	"sendMessage": "Mesaj gönder",
+	"sendMessage": "Send message",
 	"stopTts": "Metin okumayı durdur",
 	"typeMessage": "Bir mesaj yazın...",
 	"typeTask": "Görevinizi buraya yazın...",
@@ -395,5 +395,7 @@
 	"slashCommand": {
 		"wantsToRun": "Roo bir slash komutu çalıştırmak istiyor:",
 		"didRun": "Roo bir slash komutu çalıştırdı:"
-	}
+	},
+	"scheduleForAfterTask": "Schedule for after task completion",
+	"scheduledTitle": "Scheduled for after task completion"
 }

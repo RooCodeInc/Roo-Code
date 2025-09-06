@@ -116,7 +116,7 @@
 		"noResults": "Geen resultaten gevonden"
 	},
 	"addImages": "Afbeeldingen toevoegen aan bericht",
-	"sendMessage": "Bericht verzenden",
+	"sendMessage": "Send message",
 	"stopTts": "Stop tekst-naar-spraak",
 	"typeMessage": "Typ een bericht...",
 	"typeTask": "Typ hier je taak...",
@@ -395,5 +395,7 @@
 	"slashCommand": {
 		"wantsToRun": "Roo wil een slash commando uitvoeren:",
 		"didRun": "Roo heeft een slash commando uitgevoerd:"
-	}
+	},
+	"scheduleForAfterTask": "Schedule for after task completion",
+	"scheduledTitle": "Scheduled for after task completion"
 }

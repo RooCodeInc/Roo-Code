@@ -107,7 +107,7 @@
 	"selectApiConfig": "Chọn cấu hình API",
 	"enhancePrompt": "Nâng cao yêu cầu với ngữ cảnh bổ sung",
 	"addImages": "Thêm hình ảnh vào tin nhắn",
-	"sendMessage": "Gửi tin nhắn",
+	"sendMessage": "Send message",
 	"stopTts": "Dừng chuyển văn bản thành giọng nói",
 	"typeMessage": "Nhập tin nhắn...",
 	"typeTask": "Nhập nhiệm vụ của bạn tại đây...",
@@ -395,5 +395,7 @@
 	"slashCommand": {
 		"wantsToRun": "Roo muốn chạy lệnh slash:",
 		"didRun": "Roo đã chạy lệnh slash:"
-	}
+	},
+	"scheduleForAfterTask": "Schedule for after task completion",
+	"scheduledTitle": "Scheduled for after task completion"
 }
