@@ -14,7 +14,7 @@ import { useAppTranslation } from "@/i18n/TranslationContext"
 import { useRooPortal } from "@/components/ui/hooks/useRooPortal"
 import { Popover, PopoverContent, PopoverTrigger, StandardTooltip } from "@/components/ui"
 
-import { IconButton } from "./IconButton"
+// import { IconButton } from "./IconButton"
 
 const SEARCH_THRESHOLD = 6
 
@@ -258,7 +258,7 @@ export const ModeSelector = ({
 					</div>
 
 					{/* Bottom bar with buttons on left and title on right */}
-					<div className="flex flex-row items-center justify-between px-2 py-2 border-t border-vscode-dropdown-border">
+					{/* <div className="flex flex-row items-center justify-between px-2 py-2 border-t border-vscode-dropdown-border">
 						<div className="flex flex-row gap-1">
 							<IconButton
 								iconClass="codicon-extensions"
@@ -283,10 +283,10 @@ export const ModeSelector = ({
 									setOpen(false)
 								}}
 							/>
-						</div>
+						</div> */}
 
-						{/* Info icon and title on the right - only show info icon when search bar is visible */}
-						<div className="flex items-center gap-1 pr-1">
+					{/* Info icon and title on the right - only show info icon when search bar is visible */}
+					{/* <div className="flex items-center gap-1 pr-1">
 							{showSearch && (
 								<StandardTooltip content={instructionText}>
 									<span className="codicon codicon-info text-xs text-vscode-descriptionForeground opacity-70 hover:opacity-100 cursor-help" />
@@ -295,8 +295,8 @@ export const ModeSelector = ({
 							<h4 className="m-0 font-medium text-sm text-vscode-descriptionForeground">
 								{t("chat:modeSelector.title")}
 							</h4>
-						</div>
-					</div>
+						</div> */}
+					{/* </div> */}
 				</div>
 			</PopoverContent>
 		</Popover>

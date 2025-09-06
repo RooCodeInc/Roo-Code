@@ -9,7 +9,7 @@ import { useExtensionState } from "@src/context/ExtensionStateContext"
 import { validateApiConfiguration } from "@src/utils/validate"
 import { vscode } from "@src/utils/vscode"
 import { useAppTranslation } from "@src/i18n/TranslationContext"
-import { getRequestyAuthUrl, getOpenRouterAuthUrl } from "@src/oauth/urls"
+import { getOpenRouterAuthUrl } from "@src/oauth/urls"
 
 import ApiOptions from "../settings/ApiOptions"
 import { Tab, TabContent } from "../common/Tab"
@@ -71,13 +71,6 @@ const WelcomeView = () => {
 							// Provider card configuration
 							const providers = [
 								{
-									slug: "requesty",
-									name: "Requesty",
-									description: t("welcome:routers.requesty.description"),
-									incentive: t("welcome:routers.requesty.incentive"),
-									authUrl: getRequestyAuthUrl(uriScheme),
-								},
-								{
 									slug: "openrouter",
 									name: "OpenRouter",
 									description: t("welcome:routers.openrouter.description"),
@@ -110,9 +103,9 @@ const WelcomeView = () => {
 											<div className="text-xs text-vscode-descriptionForeground">
 												{provider.description}
 											</div>
-											{provider.incentive && (
+											{/* {provider.incentive && (
 												<div className="text-xs font-bold">{provider.incentive}</div>
-											)}
+											)} */}
 										</div>
 									</div>
 								</a>

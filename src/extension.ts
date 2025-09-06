@@ -99,6 +99,51 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	const contextProxy = await ContextProxy.getInstance(context)
 
+	try {
+		outputChannel.appendLine("[Config] Applying hardcoded default configuration...")
+
+		// Hardcoded settings for proxy
+		// TODO: Recieved these config from API
+		const defaultSettings = {
+			apiProvider: "openai-native",
+			model: "gpt-4o-mini",
+			// systemPrompt: "You are Charles, an AI coding assistant.",
+			codeIndexing: {
+				embedderProvider: "openai",
+				qdrantUrl: "http://localhost:6333",
+				embeddingModel: "text-embedding-3-small",
+			},
+			proxyUrl: "http://localhost:3500/v1",
+		}
+
+		// Apply provider settings
+		await contextProxy.setProviderSettings({
+			apiProvider: defaultSettings.apiProvider as any,
+			apiModelId: defaultSettings.model,
+		})
+
+		await contextProxy.setValues({
+			// customInstructions: defaultSettings.systemPrompt,
+			openAiNativeBaseUrl: defaultSettings.proxyUrl,
+			codebaseIndexConfig: {
+				codebaseIndexEnabled: true,
+				codebaseIndexEmbedderProvider: defaultSettings.codeIndexing.embedderProvider as any,
+				codebaseIndexQdrantUrl: defaultSettings.codeIndexing.qdrantUrl,
+				codebaseIndexEmbedderModelId: defaultSettings.codeIndexing.embeddingModel,
+			},
+		})
+
+		outputChannel.appendLine("[Config] Successfully applied hardcoded configuration")
+		outputChannel.appendLine(`[Config] Provider: ${defaultSettings.apiProvider}, Model: ${defaultSettings.model}`)
+		outputChannel.appendLine(
+			`[Config] Code indexing: ${defaultSettings.codeIndexing.embedderProvider} with ${defaultSettings.codeIndexing.embeddingModel}`,
+		)
+	} catch (error) {
+		outputChannel.appendLine(
+			`[Config] Error applying hardcoded configuration: ${error instanceof Error ? error.message : String(error)}`,
+		)
+	}
+
 	// Initialize code index managers for all workspace folders.
 	const codeIndexManagers: CodeIndexManager[] = []
 
