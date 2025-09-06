@@ -26,8 +26,6 @@
 		"shareSuccessOrganization": "Link da organização copiado para a área de transferência",
 		"shareSuccessPublic": "Link público copiado para a área de transferência"
 	},
-	"unpin": "Desfixar",
-	"pin": "Fixar",
 	"tokenProgress": {
 		"availableSpace": "Espaço disponível: {{amount}} tokens",
 		"tokensUsed": "Tokens usados: {{used}} de {{total}}",
@@ -395,5 +393,18 @@
 	"slashCommand": {
 		"wantsToRun": "Roo quer executar um comando slash:",
 		"didRun": "Roo executou um comando slash:"
+	},
+	"apiConfigSelector": {
+		"unpin": "Desafixar",
+		"pin": "Fixar",
+		"sort": "Ordenar",
+		"alphabetical": "A–Z",
+		"custom": "Personalizado",
+		"reorder": "Reordenar…",
+		"dragToReorder": "Arraste para reordenar configurações",
+		"keyboardNavigation": "Use as setas direcionais para navegar, Alt/Option + setas para reordenar",
+		"cancel": "Cancelar",
+		"done": "Concluído",
+		"editConfigurations": "Editar configurações"
 	}
 }

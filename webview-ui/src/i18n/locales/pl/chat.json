@@ -26,8 +26,6 @@
 		"shareSuccessOrganization": "Link organizacji skopiowany do schowka",
 		"shareSuccessPublic": "Link publiczny skopiowany do schowka"
 	},
-	"unpin": "Odepnij",
-	"pin": "Przypnij",
 	"tokenProgress": {
 		"availableSpace": "Dostępne miejsce: {{amount}} tokenów",
 		"tokensUsed": "Wykorzystane tokeny: {{used}} z {{total}}",
@@ -395,5 +393,18 @@
 	"slashCommand": {
 		"wantsToRun": "Roo chce uruchomić komendę slash:",
 		"didRun": "Roo uruchomił komendę slash:"
+	},
+	"apiConfigSelector": {
+		"unpin": "Odepnij",
+		"pin": "Przypnij",
+		"sort": "Sortuj",
+		"alphabetical": "A–Z",
+		"custom": "Niestandardowe",
+		"reorder": "Zmień kolejność…",
+		"dragToReorder": "Przeciągnij, aby zmienić kolejność konfiguracji",
+		"keyboardNavigation": "Użyj klawiszy strzałek do nawigacji, Alt/Option + strzałki do zmiany kolejności",
+		"cancel": "Anuluj",
+		"done": "Gotowe",
+		"editConfigurations": "Edytuj konfiguracje"
 	}
 }
