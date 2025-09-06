@@ -2,7 +2,7 @@
 	"name": "charles",
 	"displayName": "%extension.displayName%",
 	"description": "%extension.description%",
-	"publisher": "Newton School",
+	"publisher": "Charles",
 	"version": "3.26.0",
 	"icon": "assets/icons/icon.png",
 	"galleryBanner": {
