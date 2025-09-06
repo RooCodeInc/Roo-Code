@@ -24,8 +24,9 @@ import { getModelEndpoints } from "./fetchers/modelEndpointCache"
 
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
-import type { SingleCompletionHandler } from "../index"
+import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { handleOpenAIError } from "./utils/openai-error-handler"
+import { getToolRegistry } from "../../core/prompts/tools/schemas/tool-registry"
 
 // Image generation types
 interface ImageGenerationResponse {
@@ -101,10 +102,13 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 	override async *createMessage(
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
+		metadata?: ApiHandlerCreateMessageMetadata,
 	): AsyncGenerator<ApiStreamChunk> {
 		const model = await this.fetchModel()
 
 		let { id: modelId, maxTokens, temperature, topP, reasoning } = model
+		const toolCallEnabled = metadata?.tools && metadata.tools.length > 0
+		const toolRegistry = getToolRegistry()
 
 		// OpenRouter sends reasoning tokens by default for Gemini 2.5 Pro
 		// Preview even if you don't request them. This is not the default for
@@ -162,6 +166,10 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 			...(transforms && { transforms }),
 			...(reasoning && { reasoning }),
 		}
+		if (toolCallEnabled) {
+			completionParams.tools = toolRegistry.generateFunctionCallSchemas(metadata.tools!, metadata.toolArgs!)
+			completionParams.tool_choice = "auto"
+		}
 
 		let stream
 		try {
@@ -188,6 +196,10 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 
 			if (delta?.content) {
 				yield { type: "text", text: delta.content }
+			}
+
+			if (delta?.tool_calls) {
+				yield { type: "tool_call", toolCalls: delta.tool_calls, toolCallType: "openai" }
 			}
 
 			if (chunk.usage) {
