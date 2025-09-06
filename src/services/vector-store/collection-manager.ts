@@ -1,10 +1,9 @@
 const readyCollections = new Map<string, boolean>()
+const inFlightEnsures = new Map<string, Promise<boolean>>()
 
 /**
  * Tracks ensure-once readiness per (collection, dimension) pair.
- *
- * Note: This utility does not dedupe in-flight ensure calls; callers should
- * avoid issuing concurrent ensures for the same key.
+ * Deduplicates concurrent ensure calls for the same key.
  */
 export class CollectionManager {
 	/**
@@ -28,6 +27,7 @@ export class CollectionManager {
 
 	/**
 	 * Calls the provided ensure function at most once per key.
+	 * Deduplicates concurrent calls for the same key.
 	 * @returns true if the underlying ensure created/recreated the collection, false if it was already compatible.
 	 */
 	static async ensureOnce(
@@ -35,9 +35,28 @@ export class CollectionManager {
 		name: string,
 		dimension: number,
 	): Promise<boolean> {
+		const key = this.key(name, dimension)
+
 		if (this.isReady(name, dimension)) return false
-		const created = await ensureFn(name, dimension)
-		this.markReady(name, dimension)
-		return created
+
+		// Check if already in-flight
+		if (inFlightEnsures.has(key)) {
+			return inFlightEnsures.get(key)!
+		}
+
+		// Start new ensure operation with cleanup
+		const promise = ensureFn(name, dimension)
+			.then((created) => {
+				this.markReady(name, dimension)
+				inFlightEnsures.delete(key)
+				return created
+			})
+			.catch((error) => {
+				inFlightEnsures.delete(key)
+				throw error
+			})
+
+		inFlightEnsures.set(key, promise)
+		return promise
 	}
 }

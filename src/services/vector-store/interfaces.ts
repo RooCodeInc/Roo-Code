@@ -33,7 +33,7 @@ export interface DatabaseCapabilities {
  * applicable.
  */
 export interface VectorDatabaseAdapter {
-	provider(): "qdrant"
+	provider(): string
 	capabilities(): DatabaseCapabilities
 	collectionName(): string
 
@@ -67,7 +67,7 @@ export interface VectorDatabaseAdapter {
  * Minimal configuration required to instantiate a provider adapter via the factory.
  */
 export interface VectorStoreConfig {
-	provider: "qdrant"
+	provider: string
 	workspacePath: string
 	dimension: number
 	/** Optional collection suffix to allow feature-specific isolation (e.g., "chatmemory"). */

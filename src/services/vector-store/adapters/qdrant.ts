@@ -3,6 +3,7 @@ import { createHash } from "crypto"
 import * as path from "path"
 import { VectorDatabaseAdapter, VectorRecord } from "../interfaces"
 import { QdrantFilterTranslator } from "../filters"
+import { DimensionMismatchError, CollectionInitError } from "../errors"
 import { t } from "../../../i18n"
 
 /**
@@ -154,8 +155,14 @@ export class QdrantAdapter implements VectorDatabaseAdapter {
 					existingVectorSize = (vectorsConfig as any).size ?? 0
 				}
 				if (existingVectorSize !== this.vectorSize) {
-					await this.recreateCollectionWithNewDimension(existingVectorSize)
-					created = true
+					try {
+						await this.recreateCollectionWithNewDimension(existingVectorSize)
+						created = true
+					} catch (error) {
+						throw new DimensionMismatchError(
+							`Failed to recreate collection '${this.name}' with new dimension ${this.vectorSize}. Previous dimension: ${existingVectorSize}. ${error instanceof Error ? error.message : String(error)}`,
+						)
+					}
 				}
 			}
 			await this.createPayloadIndexes()
@@ -163,8 +170,9 @@ export class QdrantAdapter implements VectorDatabaseAdapter {
 		} catch (error: any) {
 			const errorMessage = error?.message || String(error)
 			console.error(`[QdrantAdapter] Failed to ensure collection "${this.name}":`, errorMessage)
+			if (error instanceof DimensionMismatchError) throw error
 			if (error instanceof Error && (error as any).cause !== undefined) throw error
-			throw new Error(
+			throw new CollectionInitError(
 				t("embeddings:vectorStore.qdrantConnectionFailed", { qdrantUrl: this.urlResolved, errorMessage }),
 			)
 		}
@@ -172,12 +180,15 @@ export class QdrantAdapter implements VectorDatabaseAdapter {
 
 	/** Recreates a collection when the dimension changes. */
 	private async recreateCollectionWithNewDimension(existingVectorSize: number): Promise<void> {
+		console.log(
+			`[QdrantAdapter] Recreating collection '${this.name}': changing from ${existingVectorSize} to ${this.vectorSize} dimensions`,
+		)
 		try {
 			await this.client.deleteCollection(this.name)
 			await new Promise((r) => setTimeout(r, 100))
 			const verificationInfo = await this.getCollectionInfo()
 			if (verificationInfo !== null) {
-				throw new Error("Collection still exists after deletion attempt")
+				throw new CollectionInitError("Collection still exists after deletion attempt")
 			}
 			await this.client.createCollection(this.name, {
 				vectors: { size: this.vectorSize, distance: this.DISTANCE_METRIC, on_disk: true },
@@ -185,11 +196,7 @@ export class QdrantAdapter implements VectorDatabaseAdapter {
 			})
 		} catch (recreationError) {
 			const errorMessage = recreationError instanceof Error ? recreationError.message : String(recreationError)
-			const dimensionMismatchError: any = new Error(
-				t("embeddings:vectorStore.vectorDimensionMismatch", { errorMessage }),
-			)
-			dimensionMismatchError.cause = recreationError
-			throw dimensionMismatchError
+			throw new DimensionMismatchError(t("embeddings:vectorStore.vectorDimensionMismatch", { errorMessage }))
 		}
 	}
 
@@ -219,7 +226,7 @@ export class QdrantAdapter implements VectorDatabaseAdapter {
 			const processed = records.map((r) => {
 				const p = r.payload as any
 				if (p?.filePath) {
-					const segments = String(p.filePath).split(path.sep).filter(Boolean)
+					const segments = String(p.filePath).replace(/\\/g, "/").split("/").filter(Boolean)
 					const pathSegments = segments.reduce(
 						(acc: Record<string, string>, segment: string, index: number) => {
 							acc[index.toString()] = segment
