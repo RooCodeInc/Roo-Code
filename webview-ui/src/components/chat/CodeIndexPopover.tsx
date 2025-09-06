@@ -558,7 +558,9 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 					sideOffset={5}
 					collisionPadding={16}
 					avoidCollisions={true}
-					container={portalContainer}>
+					container={portalContainer}
+					onPointerDownOutside={(e) => e.preventDefault()}
+					style={{ pointerEvents: "auto" }}>
 					<div className="p-3 border-b border-vscode-dropdown-border cursor-default">
 						<div className="flex flex-row items-center gap-1 p-0 mt-0 mb-1 w-full">
 							<h4 className="m-0 pb-2 flex-1">{t("settings:codeIndex.title")}</h4>
