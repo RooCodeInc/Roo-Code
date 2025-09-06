@@ -129,15 +129,13 @@ export function Evals({
 						<TableRow key={run.id}>
 							<TableCell title={run.model?.description}>
 								<div className="font-sans">{run.label}</div>
-								<div className="text-xs opacity-50">
-									{formatTokens(run.modelInfo?.contextWindow ?? 0)}
-								</div>
+								<div className="text-xs opacity-50">{formatTokens(run.modelInfo?.contextWindow)}</div>
 							</TableCell>
 							<TableCell className="border-r">
 								<div className="flex flex-row gap-2">
-									<div>{formatCurrency(run.modelInfo?.inputPrice ?? 0)}</div>
+									<div>{formatCurrency(run.modelInfo?.inputPrice)}</div>
 									<div className="opacity-25">/</div>
-									<div>{formatCurrency(run.modelInfo?.outputPrice ?? 0)}</div>
+									<div>{formatCurrency(run.modelInfo?.outputPrice)}</div>
 								</div>
 							</TableCell>
 							<TableCell className="font-mono">{formatDuration(run.taskMetrics.duration)}</TableCell>
@@ -150,19 +148,27 @@ export function Evals({
 							</TableCell>
 							<TableCell className="border-r">{formatCurrency(run.taskMetrics.cost)}</TableCell>
 							<TableCell className="text-muted-foreground">
-								{formatScore(run.languageScores?.go ?? 0)}%
+								{run.languageScores?.go !== undefined ? `${formatScore(run.languageScores.go)}%` : "-"}
 							</TableCell>
 							<TableCell className="text-muted-foreground">
-								{formatScore(run.languageScores?.java ?? 0)}%
+								{run.languageScores?.java !== undefined
+									? `${formatScore(run.languageScores.java)}%`
+									: "-"}
 							</TableCell>
 							<TableCell className="text-muted-foreground">
-								{formatScore(run.languageScores?.javascript ?? 0)}%
+								{run.languageScores?.javascript !== undefined
+									? `${formatScore(run.languageScores.javascript)}%`
+									: "-"}
 							</TableCell>
 							<TableCell className="text-muted-foreground">
-								{formatScore(run.languageScores?.python ?? 0)}%
+								{run.languageScores?.python !== undefined
+									? `${formatScore(run.languageScores.python)}%`
+									: "-"}
 							</TableCell>
 							<TableCell className="text-muted-foreground">
-								{formatScore(run.languageScores?.rust ?? 0)}%
+								{run.languageScores?.rust !== undefined
+									? `${formatScore(run.languageScores.rust)}%`
+									: "-"}
 							</TableCell>
 							<TableCell className="font-bold">{run.score}%</TableCell>
 						</TableRow>
