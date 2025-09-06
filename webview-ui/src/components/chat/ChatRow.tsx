@@ -17,6 +17,7 @@ import { findMatchingResourceOrTemplate } from "@src/utils/mcp"
 import { vscode } from "@src/utils/vscode"
 import { removeLeadingNonAlphanumeric } from "@src/utils/removeLeadingNonAlphanumeric"
 import { getLanguageFromPath } from "@src/utils/getLanguageFromPath"
+import { formatTokenStats } from "@src/utils/formatTokens"
 import { Button } from "@src/components/ui"
 
 import { ToolUseBlock, ToolUseBlockHeader } from "../common/ToolUseBlock"
@@ -180,13 +181,20 @@ export const ChatRowContent = ({
 		vscode.postMessage({ type: "selectImages", context: "edit", messageTs: message.ts })
 	}, [message.ts])
 
-	const [cost, apiReqCancelReason, apiReqStreamingFailedMessage] = useMemo(() => {
+	const [cost, apiReqCancelReason, apiReqStreamingFailedMessage, tokensIn, tokensOut, cacheReads] = useMemo(() => {
 		if (message.text !== null && message.text !== undefined && message.say === "api_req_started") {
 			const info = safeJsonParse<ClineApiReqInfo>(message.text)
-			return [info?.cost, info?.cancelReason, info?.streamingFailedMessage]
+			return [
+				info?.cost,
+				info?.cancelReason,
+				info?.streamingFailedMessage,
+				info?.tokensIn,
+				info?.tokensOut,
+				info?.cacheReads,
+			]
 		}
 
-		return [undefined, undefined, undefined]
+		return [undefined, undefined, undefined, undefined, undefined, undefined]
 	}, [message.text, message.say])
 
 	// When resuming task, last wont be api_req_failed but a resume_task
@@ -1093,6 +1101,9 @@ export const ChatRowContent = ({
 						/>
 					)
 				case "api_req_started":
+					const tokenStats = formatTokenStats(tokensIn, tokensOut, cacheReads)
+					const hasTokenData = tokensIn !== undefined || tokensOut !== undefined
+
 					return (
 						<>
 							<div
@@ -1111,13 +1122,62 @@ export const ChatRowContent = ({
 									msUserSelect: "none",
 								}}
 								onClick={handleToggleExpand}>
-								<div style={{ display: "flex", alignItems: "center", gap: "10px", flexGrow: 1 }}>
+								<div
+									style={{
+										display: "flex",
+										alignItems: "center",
+										gap: "10px",
+										flexGrow: 1,
+										minWidth: 0,
+									}}>
 									{icon}
-									{title}
-									<VSCodeBadge
-										style={{ opacity: cost !== null && cost !== undefined && cost > 0 ? 1 : 0 }}>
-										${Number(cost || 0)?.toFixed(4)}
-									</VSCodeBadge>
+									<span
+										className="api-request-text"
+										style={{
+											display: "inline-block",
+											fontWeight: "bold",
+											color: "var(--vscode-foreground)",
+											whiteSpace: "nowrap",
+											overflow: "hidden",
+											textOverflow: "ellipsis",
+											flexShrink: 1,
+											minWidth: 0,
+										}}>
+										{title}
+									</span>
+									<div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
+										<VSCodeBadge
+											style={{
+												opacity: cost !== null && cost !== undefined && cost > 0 ? 1 : 0,
+												flexShrink: 0,
+											}}>
+											${Number(cost || 0)?.toFixed(4)}
+										</VSCodeBadge>
+										{hasTokenData && (
+											<div
+												className="flex items-center gap-1"
+												style={{
+													opacity: hasTokenData ? 1 : 0,
+													flexShrink: 0,
+													whiteSpace: "nowrap",
+												}}>
+												<span
+													style={{
+														fontSize: "12px",
+														color: "var(--vscode-descriptionForeground)",
+													}}>
+													↑ {tokenStats.input}
+												</span>
+												<span
+													style={{
+														fontSize: "12px",
+														color: "var(--vscode-descriptionForeground)",
+													}}>
+													↓ {tokenStats.output}
+												</span>
+											</div>
+										)}
+									</div>
 								</div>
 								<span className={`codicon codicon-chevron-${isExpanded ? "up" : "down"}`}></span>
 							</div>
