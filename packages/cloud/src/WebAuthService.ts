@@ -260,13 +260,30 @@ export class WebAuthService extends EventEmitter<AuthServiceEvents> implements A
 			// Generate a cryptographically random state parameter.
 			const state = crypto.randomBytes(16).toString("hex")
 			await this.context.globalState.update(AUTH_STATE_KEY, state)
+
+			// Resolve the deep link target for the CURRENT VS Code instance.
+			// In remote/web (e.g. GitHub Codespaces), asExternalUri produces an HTTPS URL
+			// that routes back to the running instance instead of launching a local VS Code.
 			const packageJSON = this.context.extension?.packageJSON
 			const publisher = packageJSON?.publisher ?? "RooVeterinaryInc"
 			const name = packageJSON?.name ?? "roo-cline"
+
+			const deepLink = vscode.Uri.parse(`${vscode.env.uriScheme}://${publisher}.${name}`)
+
+			let authRedirect = deepLink.toString()
+			try {
+				const external = await vscode.env.asExternalUri(deepLink)
+				authRedirect = external.toString()
+			} catch (e) {
+				// Fallback to the raw deep link if resolution fails (desktop will still work).
+				this.log(`[auth] asExternalUri failed, falling back to deep link: ${e}`)
+			}
+
 			const params = new URLSearchParams({
 				state,
-				auth_redirect: `${vscode.env.uriScheme}://${publisher}.${name}`,
+				auth_redirect: authRedirect,
 			})
+
 			const url = `${getRooCodeApiUrl()}/extension/sign-in?${params.toString()}`
 			await vscode.env.openExternal(vscode.Uri.parse(url))
 		} catch (error) {
