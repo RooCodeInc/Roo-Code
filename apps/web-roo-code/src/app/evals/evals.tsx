@@ -38,14 +38,20 @@ export function Evals({
 
 	const tableData = useMemo(
 		() =>
-			runs.map((run) => ({
-				...run,
-				label: run.description || run.model,
-				score: run.score,
-				cost: run.taskMetrics.cost,
-				model: openRouterModels?.[run.modelId ?? ""],
-				modelInfo: openRouterModels?.[run.modelId ?? ""]?.modelInfo,
-			})),
+			runs.map((run) => {
+				const openRouterModelInfo = openRouterModels?.[run.modelId ?? ""]?.modelInfo
+
+				return {
+					...run,
+					label: run.name || run.description || run.model,
+					score: run.score,
+					cost: run.taskMetrics.cost,
+					description: run.description ?? openRouterModelInfo?.description,
+					contextWindow: run.contextWindow ?? openRouterModelInfo?.contextWindow,
+					inputPrice: run.inputPrice ?? openRouterModelInfo?.inputPrice,
+					outputPrice: run.outputPrice ?? openRouterModelInfo?.outputPrice,
+				}
+			}),
 		[runs, openRouterModels],
 	)
 
@@ -127,17 +133,15 @@ export function Evals({
 				<TableBody className="font-mono">
 					{tableData.map((run) => (
 						<TableRow key={run.id}>
-							<TableCell title={run.model?.description}>
+							<TableCell title={run.description}>
 								<div className="font-sans">{run.label}</div>
-								<div className="text-xs opacity-50">
-									{formatTokens(run.modelInfo?.contextWindow ?? 0)}
-								</div>
+								<div className="text-xs opacity-50">{formatTokens(run.contextWindow ?? 0)}</div>
 							</TableCell>
 							<TableCell className="border-r">
 								<div className="flex flex-row gap-2">
-									<div>{formatCurrency(run.modelInfo?.inputPrice ?? 0)}</div>
+									<div>{formatCurrency(run.inputPrice ?? 0)}</div>
 									<div className="opacity-25">/</div>
-									<div>{formatCurrency(run.modelInfo?.outputPrice ?? 0)}</div>
+									<div>{formatCurrency(run.outputPrice ?? 0)}</div>
 								</div>
 							</TableCell>
 							<TableCell className="font-mono">{formatDuration(run.taskMetrics.duration)}</TableCell>
