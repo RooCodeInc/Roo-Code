@@ -1,8 +1,8 @@
 import { ToolArgs } from "./types"
 
 export function getSearchFilesDescription(args: ToolArgs): string {
-	return `## search_files
-Description: Request to perform a regex search across files in a specified directory, providing context-rich results. This tool searches for patterns or specific content across multiple files, displaying each match with encapsulating context.
+	return `<tool name="search_files">
+<description>Request to perform a regex search across files in a specified directory, providing context-rich results. This tool searches for patterns or specific content across multiple files, displaying each match with encapsulating context.</description>
 Parameters:
 - path: (required) The path of the directory to search in (relative to the current workspace directory ${args.cwd}). This directory will be recursively searched.
 - regex: (required) The regular expression pattern to search for. Uses Rust regex syntax.
@@ -19,5 +19,7 @@ Example: Requesting to search for all .ts files in the current directory
 <path>.</path>
 <regex>.*</regex>
 <file_pattern>*.ts</file_pattern>
-</search_files>`
+</search_files>
+
+</tool>`
 }
