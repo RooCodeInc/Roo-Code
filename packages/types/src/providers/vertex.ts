@@ -295,7 +295,7 @@ export const vertexModels = {
 		description: "Meta Llama 4 Maverick 17B Instruct model, 128K context.",
 	},
 	"qwen/qwen3-coder-480b-a35b-instruct-maas": {
-		maxTokens: 65_536,
+		maxTokens: 32_768,
 		contextWindow: 262_144,
 		supportsImages: false,
 		supportsPromptCache: false,
