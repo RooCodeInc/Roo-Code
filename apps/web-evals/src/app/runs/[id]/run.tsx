@@ -47,6 +47,15 @@ export function Run({ run }: { run: Run }) {
 				<div className="mb-2">
 					<div>
 						<div className="font-mono">{run.model}</div>
+						<div className="flex gap-4 text-sm text-muted-foreground">
+							{run.contextWindow && <span>Context: {(run.contextWindow / 1000).toFixed(0)}k tokens</span>}
+							{(run.pricePerMillionInputTokens || run.pricePerMillionOutputTokens) && (
+								<span>
+									Pricing: ${run.pricePerMillionInputTokens?.toFixed(2) || "?"} / $
+									{run.pricePerMillionOutputTokens?.toFixed(2) || "?"} per 1M tokens
+								</span>
+							)}
+						</div>
 						{run.description && <div className="text-sm text-muted-foreground">{run.description}</div>}
 					</div>
 					{!run.taskMetricsId && <RunStatus runStatus={runStatus} />}

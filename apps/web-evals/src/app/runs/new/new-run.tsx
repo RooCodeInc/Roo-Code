@@ -26,7 +26,7 @@ import {
 	TIMEOUT_DEFAULT,
 } from "@/lib/schemas"
 import { cn } from "@/lib/utils"
-import { useOpenRouterModels } from "@/hooks/use-open-router-models"
+import { useOpenRouterModels, getModelDetails, getPricingPerMillion } from "@/hooks/use-open-router-models"
 import {
 	Button,
 	FormControl,
@@ -95,6 +95,21 @@ export function NewRun() {
 			try {
 				if (mode === "openrouter") {
 					values.settings = { ...(values.settings || {}), openRouterModelId: model }
+
+					// Get model details and add to the run
+					const modelDetails = getModelDetails(models.data, model)
+					if (modelDetails) {
+						const pricing = getPricingPerMillion(modelDetails.pricing)
+						const extendedValues = {
+							...values,
+							contextWindow: modelDetails.context_length,
+							pricePerMillionInputTokens: pricing.input,
+							pricePerMillionOutputTokens: pricing.output,
+						}
+						const { id } = await createRun(extendedValues)
+						router.push(`/runs/${id}`)
+						return
+					}
 				}
 
 				const { id } = await createRun(values)
@@ -103,7 +118,7 @@ export function NewRun() {
 				toast.error(e instanceof Error ? e.message : "An unknown error occurred.")
 			}
 		},
-		[mode, model, router],
+		[mode, model, models.data, router],
 	)
 
 	const onFilterModels = useCallback(
@@ -112,13 +127,12 @@ export function NewRun() {
 				modelSearchValueRef.current = search
 				modelSearchResultsRef.current.clear()
 
-				for (const {
-					obj: { id },
-					score,
-				} of fuzzysort.go(search, models.data || [], {
+				const results = fuzzysort.go(search, models.data || [], {
 					key: "name",
-				})) {
-					modelSearchResultsRef.current.set(id, score)
+				})
+
+				for (const result of results) {
+					modelSearchResultsRef.current.set(result.obj.id, result.score)
 				}
 			}
 
@@ -210,16 +224,18 @@ export function NewRun() {
 													<CommandList>
 														<CommandEmpty>No model found.</CommandEmpty>
 														<CommandGroup>
-															{models.data?.map(({ id, name }) => (
+															{models.data?.map((modelItem) => (
 																<CommandItem
-																	key={id}
-																	value={id}
+																	key={modelItem.id}
+																	value={modelItem.id}
 																	onSelect={onSelectModel}>
-																	{name}
+																	{modelItem.name}
 																	<Check
 																		className={cn(
 																			"ml-auto text-accent group-data-[selected=true]:text-accent-foreground size-4",
-																			id === model ? "opacity-100" : "opacity-0",
+																			modelItem.id === model
+																				? "opacity-100"
+																				: "opacity-0",
 																		)}
 																	/>
 																</CommandItem>

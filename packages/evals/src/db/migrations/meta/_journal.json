@@ -15,6 +15,13 @@
 			"when": 1753198630651,
 			"tag": "0001_lowly_captain_flint",
 			"breakpoints": true
+		},
+		{
+			"idx": 2,
+			"version": "7",
+			"when": 1757188795695,
+			"tag": "0002_little_scarlet_witch",
+			"breakpoints": true
 		}
 	]
 }

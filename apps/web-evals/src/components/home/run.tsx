@@ -51,7 +51,16 @@ export function Run({ run, taskMetrics }: RunProps) {
 	return (
 		<>
 			<TableRow>
-				<TableCell>{run.model}</TableCell>
+				<TableCell>
+					<div>
+						<div>{run.model}</div>
+						{run.contextWindow && (
+							<div className="text-xs text-muted-foreground">
+								{(run.contextWindow / 1000).toFixed(0)}k context
+							</div>
+						)}
+					</div>
+				</TableCell>
 				<TableCell>{run.passed}</TableCell>
 				<TableCell>{run.failed}</TableCell>
 				<TableCell>
@@ -76,7 +85,19 @@ export function Run({ run, taskMetrics }: RunProps) {
 						</div>
 					)}
 				</TableCell>
-				<TableCell>{taskMetrics && formatCurrency(taskMetrics.cost)}</TableCell>
+				<TableCell>
+					{taskMetrics && (
+						<div>
+							<div>{formatCurrency(taskMetrics.cost)}</div>
+							{(run.pricePerMillionInputTokens || run.pricePerMillionOutputTokens) && (
+								<div className="text-xs text-muted-foreground">
+									${run.pricePerMillionInputTokens?.toFixed(2) || "?"}/$
+									{run.pricePerMillionOutputTokens?.toFixed(2) || "?"}/M
+								</div>
+							)}
+						</div>
+					)}
+				</TableCell>
 				<TableCell>{taskMetrics && formatDuration(taskMetrics.duration)}</TableCell>
 				<TableCell>
 					<DropdownMenu>
