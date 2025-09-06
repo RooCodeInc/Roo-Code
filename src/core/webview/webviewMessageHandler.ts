@@ -2251,6 +2251,35 @@ export const webviewMessageHandler = async (
 
 			break
 		}
+		case "rooCloudManualToken": {
+			if (message.token) {
+				try {
+					// Extract the actual token from the URL if a full URL is pasted
+					let token = message.token.trim()
+					const tokenMatch = token.match(/[?&]token=([^&]+)/)
+					if (tokenMatch) {
+						token = tokenMatch[1]
+					}
+
+					// Call the manual token authentication method
+					await CloudService.instance.handleManualToken(token)
+					await provider.postStateToWebview()
+					provider.postMessageToWebview({
+						type: "authenticatedUser",
+						userInfo: CloudService.instance.getUserInfo() || undefined,
+					})
+				} catch (error) {
+					provider.log(
+						`Manual token authentication failed: ${error instanceof Error ? error.message : String(error)}`,
+					)
+					vscode.window.showErrorMessage(
+						t("common:errors.manual_token_auth_failed") ||
+							"Manual token authentication failed. Please check the token and try again.",
+					)
+				}
+			}
+			break
+		}
 
 		case "saveCodeIndexSettingsAtomic": {
 			if (!message.codeIndexSettings) {

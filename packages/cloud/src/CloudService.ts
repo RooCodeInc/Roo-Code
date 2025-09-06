@@ -216,6 +216,20 @@ export class CloudService extends EventEmitter<CloudServiceEvents> implements Di
 		return this.authService!.handleCallback(code, state, organizationId)
 	}
 
+	public async handleManualToken(token: string): Promise<void> {
+		this.ensureInitialized()
+		if (!this.authService) {
+			throw new Error("Auth service not available")
+		}
+		// For WebAuthService, we need to add a method to handle manual tokens
+		// Type guard to check if the auth service is WebAuthService
+		if (this.authService instanceof WebAuthService) {
+			return this.authService.handleManualToken(token)
+		} else {
+			throw new Error("Manual token authentication not supported with current auth service")
+		}
+	}
+
 	// SettingsService
 
 	public getAllowList(): OrganizationAllowList {

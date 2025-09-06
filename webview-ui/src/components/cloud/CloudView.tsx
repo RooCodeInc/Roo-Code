@@ -1,5 +1,5 @@
-import { useEffect, useRef } from "react"
-import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
+import { useEffect, useRef, useState } from "react"
+import { VSCodeButton, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 
 import { type CloudUserInfo, TelemetryEventName } from "@roo-code/types"
 
@@ -9,7 +9,7 @@ import { vscode } from "@src/utils/vscode"
 import { telemetryClient } from "@src/utils/TelemetryClient"
 import { ToggleSwitch } from "@/components/ui/toggle-switch"
 
-import { History, PiggyBank, SquareArrowOutUpRightIcon } from "lucide-react"
+import { History, PiggyBank, SquareArrowOutUpRightIcon, Key } from "lucide-react"
 
 // Define the production URL constant locally to avoid importing from cloud package in tests
 const PRODUCTION_ROO_CODE_API_URL = "https://app.roocode.com"
@@ -25,6 +25,9 @@ export const CloudView = ({ userInfo, isAuthenticated, cloudApiUrl, onDone }: Cl
 	const { t } = useAppTranslation()
 	const { remoteControlEnabled, setRemoteControlEnabled } = useExtensionState()
 	const wasAuthenticatedRef = useRef(false)
+	const [showManualToken, setShowManualToken] = useState(false)
+	const [manualToken, setManualToken] = useState("")
+	const [tokenError, setTokenError] = useState("")
 
 	const rooLogoUri = (window as any).IMAGES_BASE_URI + "/roo-logo.svg"
 
@@ -73,6 +76,26 @@ export const CloudView = ({ userInfo, isAuthenticated, cloudApiUrl, onDone }: Cl
 		const newValue = !remoteControlEnabled
 		setRemoteControlEnabled(newValue)
 		vscode.postMessage({ type: "remoteControlEnabled", bool: newValue })
+	}
+
+	const handleManualTokenSubmit = () => {
+		if (!manualToken.trim()) {
+			setTokenError(t("cloud:manualTokenError") || "Please enter a valid token")
+			return
+		}
+		setTokenError("")
+		// Extract the token from the URL if a full URL is pasted
+		let token = manualToken.trim()
+		const tokenMatch = token.match(/[?&]token=([^&]+)/)
+		if (tokenMatch) {
+			token = tokenMatch[1]
+		}
+
+		// Send the manual token to the backend
+		vscode.postMessage({ type: "rooCloudManualToken", token })
+		// Clear the token field for security
+		setManualToken("")
+		setShowManualToken(false)
 	}
 
 	return (
@@ -192,6 +215,45 @@ export const CloudView = ({ userInfo, isAuthenticated, cloudApiUrl, onDone }: Cl
 						<VSCodeButton appearance="primary" onClick={handleConnectClick} className="w-1/2">
 							{t("cloud:connect")}
 						</VSCodeButton>
+
+						{/* Manual token input section */}
+						<div className="w-full mt-4">
+							<button
+								onClick={() => setShowManualToken(!showManualToken)}
+								className="text-vscode-textLink-foreground hover:text-vscode-textLink-activeForeground underline cursor-pointer bg-transparent border-none p-0 text-sm flex items-center gap-1">
+								<Key size="14" />
+								{t("cloud:manualTokenLink") || "Having trouble? Enter token manually"}
+							</button>
+
+							{showManualToken && (
+								<div className="mt-4 p-4 border border-vscode-widget-border rounded">
+									<p className="text-sm text-vscode-descriptionForeground mb-3">
+										{t("cloud:manualTokenDescription") ||
+											"If you're using Firebase Studio or another IDE that doesn't support automatic authentication, you can paste the token from the authentication page here."}
+									</p>
+									<div className="flex gap-2">
+										<VSCodeTextField
+											value={manualToken}
+											onInput={(e: any) => {
+												setManualToken(e.target.value)
+												setTokenError("")
+											}}
+											placeholder={t("cloud:manualTokenPlaceholder") || "Paste token or URL here"}
+											className="flex-1"
+										/>
+										<VSCodeButton
+											appearance="secondary"
+											onClick={handleManualTokenSubmit}
+											disabled={!manualToken.trim()}>
+											{t("cloud:submitToken") || "Submit"}
+										</VSCodeButton>
+									</div>
+									{tokenError && (
+										<p className="text-sm text-vscode-errorForeground mt-2">{tokenError}</p>
+									)}
+								</div>
+							)}
+						</div>
 					</div>
 				</>
 			)}

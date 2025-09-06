@@ -13,5 +13,10 @@
 	"visitCloudWebsite": "Visit Roo Code Cloud",
 	"remoteControl": "Roomote Control",
 	"remoteControlDescription": "Enable following and interacting with tasks in this workspace with Roo Code Cloud",
-	"cloudUrlPillLabel": "Roo Code Cloud URL"
+	"cloudUrlPillLabel": "Roo Code Cloud URL",
+	"manualTokenLink": "Having trouble? Enter token manually",
+	"manualTokenDescription": "If you're using Firebase Studio or another IDE that doesn't support automatic authentication, you can paste the token from the authentication page here.",
+	"manualTokenPlaceholder": "Paste token or URL here",
+	"manualTokenError": "Please enter a valid token",
+	"submitToken": "Submit"
 }

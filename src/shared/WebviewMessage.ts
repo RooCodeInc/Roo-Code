@@ -180,6 +180,7 @@ export interface WebviewMessage {
 		| "cloudButtonClicked"
 		| "rooCloudSignIn"
 		| "rooCloudSignOut"
+		| "rooCloudManualToken"
 		| "condenseTaskContextRequest"
 		| "requestIndexingStatus"
 		| "startIndexing"
@@ -222,6 +223,7 @@ export interface WebviewMessage {
 		| "removeQueuedMessage"
 		| "editQueuedMessage"
 	text?: string
+	token?: string
 	editedMessageContent?: string
 	tab?: "settings" | "history" | "mcp" | "modes" | "chat" | "marketplace" | "cloud"
 	disabled?: boolean

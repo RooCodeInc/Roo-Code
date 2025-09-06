@@ -331,6 +331,42 @@ export class WebAuthService extends EventEmitter<AuthServiceEvents> implements A
 	}
 
 	/**
+	 * Handle manual token input
+	 *
+	 * This method allows users to manually paste a token from the authentication page
+	 * when automatic redirect doesn't work (e.g., in Firebase Studio)
+	 *
+	 * @param token The authentication token from the URL
+	 */
+	public async handleManualToken(token: string): Promise<void> {
+		if (!token || !token.trim()) {
+			throw new Error("Invalid token provided")
+		}
+
+		try {
+			// The token is the ticket that we need to exchange for credentials
+			const credentials = await this.clerkSignIn(token.trim())
+
+			// For manual token, we don't have organization context from the URL
+			// Set it to null (personal account) by default
+			credentials.organizationId = null
+
+			await this.storeCredentials(credentials)
+
+			const vscode = await importVscode()
+
+			if (vscode) {
+				vscode.window.showInformationMessage("Successfully authenticated with Roo Code Cloud via manual token")
+			}
+
+			this.log("[auth] Successfully authenticated with Roo Code Cloud via manual token")
+		} catch (error) {
+			this.log(`[auth] Error handling manual token: ${error}`)
+			throw new Error(`Failed to authenticate with manual token: ${error}`)
+		}
+	}
+
+	/**
 	 * Log out
 	 *
 	 * This method removes all stored tokens and stops the refresh timer.
