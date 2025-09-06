@@ -116,7 +116,7 @@
 		"noResults": "Ничего не найдено"
 	},
 	"addImages": "Добавить изображения к сообщению",
-	"sendMessage": "Отправить сообщение",
+	"sendMessage": "Send message",
 	"stopTts": "Остановить синтез речи",
 	"typeMessage": "Введите сообщение...",
 	"typeTask": "Введите вашу задачу здесь...",
@@ -395,5 +395,7 @@
 	"slashCommand": {
 		"wantsToRun": "Roo хочет выполнить слеш-команду:",
 		"didRun": "Roo выполнил слеш-команду:"
-	}
+	},
+	"scheduleForAfterTask": "Schedule for after task completion",
+	"scheduledTitle": "Scheduled for after task completion"
 }

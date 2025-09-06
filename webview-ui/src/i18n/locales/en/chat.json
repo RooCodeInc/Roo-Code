@@ -128,6 +128,7 @@
 	"enhancePromptDescription": "The 'Enhance Prompt' button helps improve your prompt by providing additional context, clarification, or rephrasing. Try typing a prompt in here and clicking the button again to see how it works.",
 	"addImages": "Add images to message",
 	"sendMessage": "Send message",
+	"scheduleForAfterTask": "Schedule for after task completion",
 	"stopTts": "Stop text-to-speech",
 	"typeMessage": "Type a message...",
 	"typeTask": "Type your task here...",
@@ -387,6 +388,7 @@
 	},
 	"queuedMessages": {
 		"title": "Queued Messages:",
+		"scheduledTitle": "Scheduled for after task completion",
 		"clickToEdit": "Click to edit message"
 	}
 }

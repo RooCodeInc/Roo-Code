@@ -107,7 +107,7 @@
 	"selectApiConfig": "एपीआई कॉन्फ़िगरेशन का चयन करें",
 	"enhancePrompt": "अतिरिक्त संदर्भ के साथ प्रॉम्प्ट बढ़ाएँ",
 	"addImages": "संदेश में चित्र जोड़ें",
-	"sendMessage": "संदेश भेजें",
+	"sendMessage": "Send message",
 	"stopTts": "टेक्स्ट-टू-स्पीच बंद करें",
 	"typeMessage": "एक संदेश लिखें...",
 	"typeTask": "अपना कार्य यहां लिखें...",
@@ -395,5 +395,7 @@
 	"slashCommand": {
 		"wantsToRun": "Roo एक स्लैश कमांड चलाना चाहता है:",
 		"didRun": "Roo ने एक स्लैश कमांड चलाया:"
-	}
+	},
+	"scheduleForAfterTask": "Schedule for after task completion",
+	"scheduledTitle": "Scheduled for after task completion"
 }

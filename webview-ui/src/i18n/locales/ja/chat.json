@@ -107,7 +107,7 @@
 	"selectApiConfig": "API構成を選択",
 	"enhancePrompt": "追加コンテキストでプロンプトを強化",
 	"addImages": "メッセージに画像を追加",
-	"sendMessage": "メッセージを送信",
+	"sendMessage": "Send message",
 	"stopTts": "テキスト読み上げを停止",
 	"typeMessage": "メッセージを入力...",
 	"typeTask": "ここにタスクを入力...",
@@ -395,5 +395,7 @@
 	"slashCommand": {
 		"wantsToRun": "Rooはスラッシュコマンドを実行したい:",
 		"didRun": "Rooはスラッシュコマンドを実行しました:"
-	}
+	},
+	"scheduleForAfterTask": "Schedule for after task completion",
+	"scheduledTitle": "Scheduled for after task completion"
 }
