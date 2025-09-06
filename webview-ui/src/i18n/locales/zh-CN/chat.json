@@ -28,8 +28,6 @@
 		"openInCloud": "在 Roo Code Cloud 中打开任务",
 		"openInCloudIntro": "从任何地方继续监控或与 Roo 交互。扫描、点击或复制以打开。"
 	},
-	"unpin": "取消置顶",
-	"pin": "置顶",
 	"tokenProgress": {
 		"availableSpace": "可用: {{amount}}",
 		"tokensUsed": "已使用: {{used}} / {{total}}",
@@ -428,7 +426,25 @@
 		"clickToEdit": "点击编辑消息"
 	},
 	"slashCommand": {
-		"wantsToRun": "Roo 想要运行斜杠命令",
-		"didRun": "Roo 运行了斜杠命令"
+		"wantsToRun": "Roo 想要运行斜杠命令:",
+		"didRun": "Roo 运行了斜杠命令:"
+	},
+	"contextMenu": {
+		"noResults": "无结果",
+		"problems": "问题",
+		"terminal": "终端",
+		"url": "粘贴URL以获取内容"
+	},
+	"apiConfigSelector": {
+		"unpin": "取消置顶",
+		"pin": "置顶",
+		"sort": "排序",
+		"alphabetical": "A–Z",
+		"custom": "自定义",
+		"reorder": "重新排序…",
+		"dragToReorder": "拖拽以重新排序配置",
+		"cancel": "取消",
+		"done": "完成",
+		"editConfigurations": "编辑配置"
 	}
 }

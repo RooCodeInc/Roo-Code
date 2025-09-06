@@ -28,8 +28,6 @@
 		"openInCloud": "Roo Code Cloudでタスクを開く",
 		"openInCloudIntro": "どこからでもRooの監視や操作を続けられます。スキャン、クリック、またはコピーして開いてください。"
 	},
-	"unpin": "ピン留めを解除",
-	"pin": "ピン留め",
 	"tokenProgress": {
 		"availableSpace": "利用可能な空き容量: {{amount}} トークン",
 		"tokensUsed": "使用トークン: {{used}} / {{total}}",
@@ -427,7 +425,25 @@
 		"clickToEdit": "クリックしてメッセージを編集"
 	},
 	"slashCommand": {
-		"wantsToRun": "Rooはスラッシュコマンドを実行したい",
-		"didRun": "Rooはスラッシュコマンドを実行しました"
+		"wantsToRun": "Rooはスラッシュコマンドを実行したい:",
+		"didRun": "Rooはスラッシュコマンドを実行しました:"
+	},
+	"contextMenu": {
+		"noResults": "結果なし",
+		"problems": "問題",
+		"terminal": "ターミナル",
+		"url": "URLを貼り付けてコンテンツを取得"
+	},
+	"apiConfigSelector": {
+		"unpin": "ピン留めを解除",
+		"pin": "ピン留め",
+		"sort": "並べ替え",
+		"alphabetical": "A–Z",
+		"custom": "カスタム",
+		"reorder": "並べ替え…",
+		"dragToReorder": "ドラッグして構成を並べ替える",
+		"cancel": "キャンセル",
+		"done": "完了",
+		"editConfigurations": "構成を編集"
 	}
 }

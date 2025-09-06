@@ -28,8 +28,6 @@
 		"openInCloud": "Obrir tasca a Roo Code Cloud",
 		"openInCloudIntro": "Continua monitoritzant o interactuant amb Roo des de qualsevol lloc. Escaneja, fes clic o copia per obrir."
 	},
-	"unpin": "Desfixar",
-	"pin": "Fixar",
 	"tokenProgress": {
 		"availableSpace": "Espai disponible: {{amount}} tokens",
 		"tokensUsed": "Tokens utilitzats: {{used}} de {{total}}",
@@ -421,13 +419,25 @@
 		"clickToEdit": "Feu clic per editar el missatge"
 	},
 	"slashCommand": {
-		"wantsToRun": "Roo vol executar una comanda slash",
-		"didRun": "Roo ha executat una comanda slash"
+		"wantsToRun": "Roo vol executar una comanda slash:",
+		"didRun": "Roo ha executat una comanda slash:"
 	},
 	"contextMenu": {
 		"noResults": "Sense resultats",
 		"problems": "Problemes",
 		"terminal": "Terminal",
 		"url": "Enganxa la URL per obtenir-ne el contingut"
+	},
+	"apiConfigSelector": {
+		"unpin": "Desfixar",
+		"pin": "Fixar",
+		"sort": "Ordenar",
+		"alphabetical": "A–Z",
+		"custom": "Personalitzat",
+		"reorder": "Reordenar…",
+		"dragToReorder": "Arrossega per reordenar configuracions",
+		"cancel": "Cancel·lar",
+		"done": "Fet",
+		"editConfigurations": "Editar configuracions"
 	}
 }

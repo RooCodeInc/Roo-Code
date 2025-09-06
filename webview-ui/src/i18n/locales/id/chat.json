@@ -31,8 +31,6 @@
 	"history": {
 		"title": "Riwayat"
 	},
-	"unpin": "Lepas Pin",
-	"pin": "Pin",
 	"retry": {
 		"title": "Coba Lagi",
 		"tooltip": "Coba operasi lagi"
@@ -433,7 +431,25 @@
 		"clickToEdit": "Klik untuk mengedit pesan"
 	},
 	"slashCommand": {
-		"wantsToRun": "Roo ingin menjalankan perintah slash",
-		"didRun": "Roo telah menjalankan perintah slash"
+		"wantsToRun": "Roo ingin menjalankan perintah slash:",
+		"didRun": "Roo telah menjalankan perintah slash:"
+	},
+	"contextMenu": {
+		"noResults": "Tidak ada hasil",
+		"problems": "Masalah",
+		"terminal": "Terminal",
+		"url": "Tempel URL untuk mengambil konten"
+	},
+	"apiConfigSelector": {
+		"unpin": "Lepas Pin",
+		"pin": "Sematkan",
+		"sort": "Urutkan",
+		"alphabetical": "A–Z",
+		"custom": "Kustom",
+		"reorder": "Susun ulang…",
+		"dragToReorder": "Seret untuk menyusun ulang konfigurasi",
+		"cancel": "Batal",
+		"done": "Selesai",
+		"editConfigurations": "Edit konfigurasi"
 	}
 }

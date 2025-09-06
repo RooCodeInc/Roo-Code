@@ -28,8 +28,6 @@
 		"openInCloud": "Mở tác vụ trong Roo Code Cloud",
 		"openInCloudIntro": "Tiếp tục theo dõi hoặc tương tác với Roo từ bất cứ đâu. Quét, nhấp hoặc sao chép để mở."
 	},
-	"unpin": "Bỏ ghim khỏi đầu",
-	"pin": "Ghim lên đầu",
 	"tokenProgress": {
 		"availableSpace": "Không gian khả dụng: {{amount}} tokens",
 		"tokensUsed": "Tokens đã sử dụng: {{used}} trong {{total}}",
@@ -428,7 +426,25 @@
 		"clickToEdit": "Nhấp để chỉnh sửa tin nhắn"
 	},
 	"slashCommand": {
-		"wantsToRun": "Roo muốn chạy lệnh slash",
-		"didRun": "Roo đã chạy lệnh slash"
+		"wantsToRun": "Roo muốn chạy lệnh slash:",
+		"didRun": "Roo đã chạy lệnh slash:"
+	},
+	"contextMenu": {
+		"noResults": "Không có kết quả",
+		"problems": "Vấn đề",
+		"terminal": "Terminal",
+		"url": "Dán URL để lấy nội dung"
+	},
+	"apiConfigSelector": {
+		"unpin": "Bỏ ghim",
+		"pin": "Ghim",
+		"sort": "Sắp xếp",
+		"alphabetical": "A–Z",
+		"custom": "Tùy chỉnh",
+		"reorder": "Sắp xếp lại…",
+		"dragToReorder": "Kéo để sắp xếp lại cấu hình",
+		"cancel": "Hủy",
+		"done": "Xong",
+		"editConfigurations": "Chỉnh sửa cấu hình"
 	}
 }

@@ -28,8 +28,6 @@
 		"openInCloud": "Abrir tarea en Roo Code Cloud",
 		"openInCloudIntro": "Continúa monitoreando o interactuando con Roo desde cualquier lugar. Escanea, haz clic o copia para abrir."
 	},
-	"unpin": "Desfijar",
-	"pin": "Fijar",
 	"retry": {
 		"title": "Reintentar",
 		"tooltip": "Intenta la operación de nuevo"
@@ -427,7 +425,25 @@
 		"clickToEdit": "Haz clic para editar el mensaje"
 	},
 	"slashCommand": {
-		"wantsToRun": "Roo quiere ejecutar un comando slash",
-		"didRun": "Roo ejecutó un comando slash"
+		"wantsToRun": "Roo quiere ejecutar un comando slash:",
+		"didRun": "Roo ejecutó un comando slash:"
+	},
+	"contextMenu": {
+		"noResults": "No hay resultados",
+		"problems": "Problemas",
+		"terminal": "Terminal",
+		"url": "Pega la URL para obtener el contenido"
+	},
+	"apiConfigSelector": {
+		"unpin": "Desfijar",
+		"pin": "Fijar",
+		"sort": "Ordenar",
+		"alphabetical": "A–Z",
+		"custom": "Personalizado",
+		"reorder": "Reordenar…",
+		"dragToReorder": "Arrastra para reordenar configuraciones",
+		"cancel": "Cancelar",
+		"done": "Hecho",
+		"editConfigurations": "Editar configuraciones"
 	}
 }

@@ -28,8 +28,6 @@
 		"openInCloud": "Taak openen in Roo Code Cloud",
 		"openInCloudIntro": "Blijf Roo vanaf elke locatie monitoren of ermee interacteren. Scan, klik of kopieer om te openen."
 	},
-	"unpin": "Losmaken",
-	"pin": "Vastmaken",
 	"retry": {
 		"title": "Opnieuw proberen",
 		"tooltip": "Probeer de bewerking opnieuw"
@@ -427,7 +425,25 @@
 		"clickToEdit": "Klik om bericht te bewerken"
 	},
 	"slashCommand": {
-		"wantsToRun": "Roo wil een slash commando uitvoeren",
-		"didRun": "Roo heeft een slash commando uitgevoerd"
+		"wantsToRun": "Roo wil een slash commando uitvoeren:",
+		"didRun": "Roo heeft een slash commando uitgevoerd:"
+	},
+	"contextMenu": {
+		"noResults": "Geen resultaten",
+		"problems": "Problemen",
+		"terminal": "Terminal",
+		"url": "Plak URL om inhoud op te halen"
+	},
+	"apiConfigSelector": {
+		"unpin": "Losmaken",
+		"pin": "Vastmaken",
+		"sort": "Sorteren",
+		"alphabetical": "A–Z",
+		"custom": "Aangepast",
+		"reorder": "Herordenen…",
+		"dragToReorder": "Slepen om configuraties te herordenen",
+		"cancel": "Annuleren",
+		"done": "Klaar",
+		"editConfigurations": "Configuraties bewerken"
 	}
 }

@@ -28,8 +28,6 @@
 		"openInCloud": "Görevi Roo Code Cloud'da aç",
 		"openInCloudIntro": "Roo'yu her yerden izlemeye veya etkileşime devam et. Açmak için tara, tıkla veya kopyala."
 	},
-	"unpin": "Sabitlemeyi iptal et",
-	"pin": "Sabitle",
 	"tokenProgress": {
 		"availableSpace": "Kullanılabilir alan: {{amount}} token",
 		"tokensUsed": "Kullanılan tokenlar: {{used}} / {{total}}",
@@ -428,7 +426,25 @@
 		"clickToEdit": "Mesajı düzenlemek için tıkla"
 	},
 	"slashCommand": {
-		"wantsToRun": "Roo bir slash komutu çalıştırmak istiyor",
-		"didRun": "Roo bir slash komutu çalıştırdı"
+		"wantsToRun": "Roo bir slash komutu çalıştırmak istiyor:",
+		"didRun": "Roo bir slash komutu çalıştırdı:"
+	},
+	"contextMenu": {
+		"noResults": "Sonuç yok",
+		"problems": "Sorunlar",
+		"terminal": "Terminal",
+		"url": "İçeriği getirmek için URL'yi yapıştırın"
+	},
+	"apiConfigSelector": {
+		"unpin": "Sabitlemeyi kaldır",
+		"pin": "Sabitle",
+		"sort": "Sırala",
+		"alphabetical": "A–Z",
+		"custom": "Özel",
+		"reorder": "Yeniden sırala…",
+		"dragToReorder": "Yapılandırmaları yeniden sıralamak için sürükle",
+		"cancel": "İptal",
+		"done": "Bitti",
+		"editConfigurations": "Yapılandırmaları düzenle"
 	}
 }

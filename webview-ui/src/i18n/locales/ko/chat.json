@@ -28,8 +28,6 @@
 		"openInCloud": "Roo Code Cloud에서 작업 열기",
 		"openInCloudIntro": "어디서나 Roo를 계속 모니터링하거나 상호작용할 수 있습니다. 스캔, 클릭 또는 복사하여 열기."
 	},
-	"unpin": "고정 해제하기",
-	"pin": "고정하기",
 	"tokenProgress": {
 		"availableSpace": "사용 가능한 공간: {{amount}} 토큰",
 		"tokensUsed": "사용된 토큰: {{used}} / {{total}}",
@@ -427,7 +425,25 @@
 		"clickToEdit": "클릭하여 메시지 편집"
 	},
 	"slashCommand": {
-		"wantsToRun": "Roo가 슬래시 명령어를 실행하려고 합니다",
-		"didRun": "Roo가 슬래시 명령어를 실행했습니다"
+		"wantsToRun": "Roo가 슬래시 명령어를 실행하려고 합니다:",
+		"didRun": "Roo가 슬래시 명령어를 실행했습니다:"
+	},
+	"contextMenu": {
+		"noResults": "결과 없음",
+		"problems": "문제",
+		"terminal": "터미널",
+		"url": "콘텐츠를 가져올 URL 붙여넣기"
+	},
+	"apiConfigSelector": {
+		"unpin": "고정 해제",
+		"pin": "고정",
+		"sort": "정렬",
+		"alphabetical": "A–Z",
+		"custom": "사용자 정의",
+		"reorder": "재정렬…",
+		"dragToReorder": "구성을 재정렬하려면 드래그하세요",
+		"cancel": "취소",
+		"done": "완료",
+		"editConfigurations": "구성 편집"
 	}
 }

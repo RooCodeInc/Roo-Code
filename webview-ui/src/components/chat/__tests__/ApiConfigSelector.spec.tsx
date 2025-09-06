@@ -337,7 +337,7 @@ describe("ApiConfigSelector", () => {
 
 		// Find the settings button by its icon class within the popover content
 		const popoverContent = screen.getByTestId("popover-content")
-		const settingsButton = popoverContent.querySelector('[aria-label="chat:edit"]') as HTMLElement
+		const settingsButton = popoverContent.querySelector(".codicon-settings-gear") as HTMLElement
 		expect(settingsButton).toBeInTheDocument()
 		fireEvent.click(settingsButton)
 
@@ -434,6 +434,68 @@ describe("ApiConfigSelector", () => {
 
 		// Search value should be maintained
 		expect(searchInput.value).toBe("Config")
+	})
+
+	test("reorders configs in custom mode via drag-and-drop and disables drag after Done", async () => {
+		const props = {
+			...defaultProps,
+			sortMode: "custom" as const,
+		}
+
+		render(<ApiConfigSelector {...props} />)
+
+		// Open the dropdown (Popover content is always rendered by the mock, but keep action for parity)
+		const trigger = screen.getByTestId("dropdown-trigger")
+		fireEvent.click(trigger)
+
+		// Enter reorder mode by clicking the Reorder button
+		const reorderButton = screen.getByText("apiConfigSelector.reorder")
+		fireEvent.click(reorderButton)
+
+		const content = screen.getByTestId("popover-content")
+
+		// Collect list rows
+		const queryRows = () => Array.from(content.querySelectorAll("[data-config-item]"))
+		const getNames = (rows: Element[]) =>
+			rows.map((row) => row.querySelector(".flex-1 span.flex-shrink-0")?.textContent?.trim() || "")
+
+		// Initial order should be: pinned "Config 1" first, then "Config 2", "Config 3"
+		const rowsBefore = queryRows()
+		const startNames = getNames(rowsBefore)
+		expect(startNames).toEqual(["Config 1", "Config 2", "Config 3"])
+
+		// Move "Config 3" above "Config 2"
+		const fromIndex = startNames.indexOf("Config 3")
+		const toIndex = startNames.indexOf("Config 2")
+
+		// Create mock dataTransfer object for drag events
+		const mockDataTransfer = {
+			effectAllowed: "",
+			dropEffect: "",
+			setData: vi.fn(),
+		}
+
+		// Simulate drag and drop with proper dataTransfer mock
+		fireEvent.dragStart(rowsBefore[fromIndex] as HTMLElement, { dataTransfer: mockDataTransfer })
+		fireEvent.dragOver(rowsBefore[toIndex] as HTMLElement, { dataTransfer: mockDataTransfer })
+		fireEvent.dragEnd(rowsBefore[fromIndex] as HTMLElement, { dataTransfer: mockDataTransfer })
+
+		// Verify new order reflects the drag operation
+		await waitFor(() => {
+			const rowsAfter = queryRows()
+			const namesAfter = getNames(rowsAfter)
+			expect(namesAfter).toEqual(["Config 1", "Config 3", "Config 2"])
+		})
+
+		// Click Done to exit reorder mode and ensure items are no longer draggable
+		const doneButton = screen.getByText("apiConfigSelector.done")
+		fireEvent.click(doneButton)
+
+		const rowsFinal = queryRows()
+		rowsFinal.forEach((row) => {
+			// draggable attribute should not be true after exiting reorder mode
+			expect((row as HTMLElement).getAttribute("draggable")).not.toBe("true")
+		})
 	})
 
 	test("pinned configs remain fixed at top while unpinned configs scroll", () => {
