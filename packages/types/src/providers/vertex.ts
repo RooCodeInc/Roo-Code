@@ -294,6 +294,15 @@ export const vertexModels = {
 		outputPrice: 1.15,
 		description: "Meta Llama 4 Maverick 17B Instruct model, 128K context.",
 	},
+	"qwen/qwen3-coder-480b-a35b-instruct-maas": {
+		maxTokens: 65_536,
+		contextWindow: 262_144,
+		supportsImages: false,
+		supportsPromptCache: false,
+		inputPrice: 1,
+		outputPrice: 4,
+		description: "Qwen 3 Coder 480B Instruct",
+	},
 } as const satisfies Record<string, ModelInfo>
 
 export const VERTEX_REGIONS = [
@@ -306,6 +315,7 @@ export const VERTEX_REGIONS = [
 	{ value: "us-west2", label: "us-west2" },
 	{ value: "us-west3", label: "us-west3" },
 	{ value: "us-west4", label: "us-west4" },
+	{ value: "us-south1", label: "us-south1" },
 	{ value: "northamerica-northeast1", label: "northamerica-northeast1" },
 	{ value: "northamerica-northeast2", label: "northamerica-northeast2" },
 	{ value: "southamerica-east1", label: "southamerica-east1" },
