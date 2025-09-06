@@ -158,6 +158,20 @@ export function copyWasms(srcDir: string, distDir: string): void {
 	})
 
 	console.log(`[copyWasms] Copied ${wasmFiles.length} tree-sitter language wasms to ${distDir}`)
+
+	// Copy ABL and DF WASM files from npm packages
+	const ablWasmPath = path.join(nodeModulesDir, "@usagi-coffee", "tree-sitter-abl", "tree-sitter-abl.wasm")
+	const dfWasmPath = path.join(nodeModulesDir, "@usagi-coffee", "tree-sitter-df", "tree-sitter-df.wasm")
+
+	if (fs.existsSync(ablWasmPath)) {
+		fs.copyFileSync(ablWasmPath, path.join(distDir, "tree-sitter-abl.wasm"))
+		console.log(`[copyWasms] Copied tree-sitter-abl.wasm to ${distDir}`)
+	}
+
+	if (fs.existsSync(dfWasmPath)) {
+		fs.copyFileSync(dfWasmPath, path.join(distDir, "tree-sitter-df.wasm"))
+		console.log(`[copyWasms] Copied tree-sitter-df.wasm to ${distDir}`)
+	}
 }
 
 export function copyLocales(srcDir: string, distDir: string): void {

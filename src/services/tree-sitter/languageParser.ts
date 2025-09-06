@@ -28,6 +28,8 @@ import {
 	embeddedTemplateQuery,
 	elispQuery,
 	elixirQuery,
+	ablQuery,
+	dfQuery,
 } from "./queries"
 
 export interface LanguageParser {
@@ -39,6 +41,22 @@ export interface LanguageParser {
 
 async function loadLanguage(langName: string, sourceDirectory?: string) {
 	const baseDir = sourceDirectory || __dirname
+
+	// Special handling for ABL and DF - load from node_modules
+	if (langName === "abl" || langName === "df") {
+		try {
+			const { Language } = require("web-tree-sitter")
+			const packageName = `@usagi-coffee/tree-sitter-${langName}`
+			const wasmPath = require.resolve(`${packageName}/tree-sitter-${langName}.wasm`)
+			return await Language.load(wasmPath)
+		} catch (error) {
+			console.error(
+				`Error loading ${langName} language from npm package: ${error instanceof Error ? error.message : error}`,
+			)
+			throw error
+		}
+	}
+
 	const wasmPath = path.join(baseDir, `tree-sitter-${langName}.wasm`)
 
 	try {
@@ -217,6 +235,18 @@ export async function loadRequiredLanguageParsers(filesToParse: string[], source
 			case "exs":
 				language = await loadLanguage("elixir", sourceDirectory)
 				query = new Query(language, elixirQuery)
+				break
+			case "p":
+			case "i":
+			case "w":
+			case "cls":
+				parserKey = "abl" // Use same key for all ABL extensions
+				language = await loadLanguage("abl", sourceDirectory)
+				query = new Query(language, ablQuery)
+				break
+			case "df":
+				language = await loadLanguage("df", sourceDirectory)
+				query = new Query(language, dfQuery)
 				break
 			default:
 				throw new Error(`Unsupported language: ${ext}`)

@@ -440,6 +440,8 @@
 		"@roo-code/ipc": "workspace:^",
 		"@roo-code/telemetry": "workspace:^",
 		"@roo-code/types": "workspace:^",
+		"@usagi-coffee/tree-sitter-abl": "^0.0.46",
+		"@usagi-coffee/tree-sitter-df": "^0.0.4",
 		"@vscode/codicons": "^0.0.36",
 		"async-mutex": "^0.5.0",
 		"axios": "^1.7.4",
