@@ -26,8 +26,6 @@
 		"shareSuccessOrganization": "Enllaç d'organització copiat al porta-retalls",
 		"shareSuccessPublic": "Enllaç públic copiat al porta-retalls"
 	},
-	"unpin": "Desfixar",
-	"pin": "Fixar",
 	"tokenProgress": {
 		"availableSpace": "Espai disponible: {{amount}} tokens",
 		"tokensUsed": "Tokens utilitzats: {{used}} de {{total}}",
@@ -395,5 +393,17 @@
 	"slashCommand": {
 		"wantsToRun": "Roo vol executar una comanda slash:",
 		"didRun": "Roo ha executat una comanda slash:"
+	},
+	"apiConfigSelector": {
+		"unpin": "Desfixar",
+		"pin": "Fixar",
+		"sort": "Ordenar",
+		"alphabetical": "A–Z",
+		"custom": "Personalitzat",
+		"reorder": "Reordenar…",
+		"dragToReorder": "Arrossega per reordenar configuracions",
+		"cancel": "Cancel·lar",
+		"done": "Fet",
+		"editConfigurations": "Editar configuracions"
 	}
 }

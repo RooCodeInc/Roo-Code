@@ -26,8 +26,6 @@
 		"shareSuccessOrganization": "Liên kết tổ chức đã được sao chép vào clipboard",
 		"shareSuccessPublic": "Liên kết công khai đã được sao chép vào clipboard"
 	},
-	"unpin": "Bỏ ghim khỏi đầu",
-	"pin": "Ghim lên đầu",
 	"tokenProgress": {
 		"availableSpace": "Không gian khả dụng: {{amount}} tokens",
 		"tokensUsed": "Tokens đã sử dụng: {{used}} trong {{total}}",
@@ -395,5 +393,17 @@
 	"slashCommand": {
 		"wantsToRun": "Roo muốn chạy lệnh slash:",
 		"didRun": "Roo đã chạy lệnh slash:"
+	},
+	"apiConfigSelector": {
+		"unpin": "Bỏ ghim",
+		"pin": "Ghim",
+		"sort": "Sắp xếp",
+		"alphabetical": "A–Z",
+		"custom": "Tùy chỉnh",
+		"reorder": "Sắp xếp lại…",
+		"dragToReorder": "Kéo để sắp xếp lại cấu hình",
+		"cancel": "Hủy",
+		"done": "Xong",
+		"editConfigurations": "Chỉnh sửa cấu hình"
 	}
 }

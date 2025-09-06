@@ -26,8 +26,6 @@
 		"shareSuccessOrganization": "Enlace de organización copiado al portapapeles",
 		"shareSuccessPublic": "Enlace público copiado al portapapeles"
 	},
-	"unpin": "Desfijar",
-	"pin": "Fijar",
 	"retry": {
 		"title": "Reintentar",
 		"tooltip": "Intenta la operación de nuevo"
@@ -395,5 +393,17 @@
 	"slashCommand": {
 		"wantsToRun": "Roo quiere ejecutar un comando slash:",
 		"didRun": "Roo ejecutó un comando slash:"
+	},
+	"apiConfigSelector": {
+		"unpin": "Desfijar",
+		"pin": "Fijar",
+		"sort": "Ordenar",
+		"alphabetical": "A–Z",
+		"custom": "Personalizado",
+		"reorder": "Reordenar…",
+		"dragToReorder": "Arrastra para reordenar configuraciones",
+		"cancel": "Cancelar",
+		"done": "Hecho",
+		"editConfigurations": "Editar configuraciones"
 	}
 }
