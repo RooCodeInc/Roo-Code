@@ -436,6 +436,7 @@
 		"custom": "Personalitzat",
 		"reorder": "Reordenar…",
 		"dragToReorder": "Arrossega per reordenar configuracions",
+		"keyboardNavigation": "Utilitza les tecles de fletxa per navegar, Alt/Option + fletxes per reordenar",
 		"cancel": "Cancel·lar",
 		"done": "Fet",
 		"editConfigurations": "Editar configuracions"

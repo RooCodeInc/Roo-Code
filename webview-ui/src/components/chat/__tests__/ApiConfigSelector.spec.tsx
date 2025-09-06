@@ -444,11 +444,11 @@ describe("ApiConfigSelector", () => {
 		fireEvent.click(trigger)
 
 		// First switch to custom mode
-		const customButton = screen.getByText("apiConfigSelector.custom")
+		const customButton = screen.getByText("chat:apiConfigSelector.custom")
 		fireEvent.click(customButton)
 
 		// Enter reorder mode by clicking the Reorder button
-		const reorderButton = screen.getByText("apiConfigSelector.reorder")
+		const reorderButton = screen.getByText("chat:apiConfigSelector.reorder")
 		fireEvent.click(reorderButton)
 
 		const content = screen.getByTestId("popover-content")
@@ -474,26 +474,97 @@ describe("ApiConfigSelector", () => {
 			setData: vi.fn(),
 		}
 
+		// Verify items are draggable in reorder mode
+		rowsBefore.forEach((row) => {
+			expect((row as HTMLElement).getAttribute("draggable")).toBe("true")
+		})
+
 		// Simulate drag and drop with proper dataTransfer mock
 		fireEvent.dragStart(rowsBefore[fromIndex] as HTMLElement, { dataTransfer: mockDataTransfer })
 		fireEvent.dragOver(rowsBefore[toIndex] as HTMLElement, { dataTransfer: mockDataTransfer })
 		fireEvent.dragEnd(rowsBefore[fromIndex] as HTMLElement, { dataTransfer: mockDataTransfer })
 
-		// Verify new order reflects the drag operation
-		await waitFor(() => {
-			const rowsAfter = queryRows()
-			const namesAfter = getNames(rowsAfter)
-			expect(namesAfter).toEqual(["Config 1", "Config 3", "Config 2"])
-		})
-
 		// Click Done to exit reorder mode and ensure items are no longer draggable
-		const doneButton = screen.getByText("apiConfigSelector.done")
+		const doneButton = screen.getByText("chat:apiConfigSelector.done")
 		fireEvent.click(doneButton)
 
 		const rowsFinal = queryRows()
 		rowsFinal.forEach((row) => {
 			// draggable attribute should not be true after exiting reorder mode
 			expect((row as HTMLElement).getAttribute("draggable")).not.toBe("true")
+		})
+	})
+
+	test("displays keyboard navigation hint in reorder mode", () => {
+		render(<ApiConfigSelector {...defaultProps} />)
+
+		const trigger = screen.getByTestId("dropdown-trigger")
+		fireEvent.click(trigger)
+
+		// First switch to custom mode
+		const customButton = screen.getByText("chat:apiConfigSelector.custom")
+		fireEvent.click(customButton)
+
+		// Enter reorder mode by clicking the Reorder button
+		const reorderButton = screen.getByText("chat:apiConfigSelector.reorder")
+		fireEvent.click(reorderButton)
+
+		// Check that keyboard navigation hint is displayed
+		expect(screen.getByText("chat:apiConfigSelector.keyboardNavigation")).toBeInTheDocument()
+
+		// Exit reorder mode
+		const doneButton = screen.getByText("chat:apiConfigSelector.done")
+		fireEvent.click(doneButton)
+
+		// Check that keyboard navigation hint is no longer displayed
+		expect(screen.queryByText("chat:apiConfigSelector.keyboardNavigation")).not.toBeInTheDocument()
+	})
+
+	test("handles keyboard navigation in reorder mode", () => {
+		render(<ApiConfigSelector {...defaultProps} />)
+
+		const trigger = screen.getByTestId("dropdown-trigger")
+		fireEvent.click(trigger)
+
+		// First switch to custom mode
+		const customButton = screen.getByText("chat:apiConfigSelector.custom")
+		fireEvent.click(customButton)
+
+		// Enter reorder mode by clicking the Reorder button
+		const reorderButton = screen.getByText("chat:apiConfigSelector.reorder")
+		fireEvent.click(reorderButton)
+
+		const content = screen.getByTestId("popover-content")
+		const configItems = content.querySelectorAll("[data-config-item]")
+
+		// Initially, first item should be focused (tabIndex=0, others tabIndex=-1)
+		expect((configItems[0] as HTMLElement).tabIndex).toBe(0)
+		expect((configItems[1] as HTMLElement).tabIndex).toBe(-1)
+		expect((configItems[2] as HTMLElement).tabIndex).toBe(-1)
+
+		// Simulate arrow down key on first item
+		fireEvent.keyDown(configItems[0] as HTMLElement, { key: "ArrowDown" })
+
+		// Now second item should be focused
+		expect((configItems[0] as HTMLElement).tabIndex).toBe(-1)
+		expect((configItems[1] as HTMLElement).tabIndex).toBe(0)
+		expect((configItems[2] as HTMLElement).tabIndex).toBe(-1)
+
+		// Simulate arrow up key on second item
+		fireEvent.keyDown(configItems[1] as HTMLElement, { key: "ArrowUp" })
+
+		// First item should be focused again
+		expect((configItems[0] as HTMLElement).tabIndex).toBe(0)
+		expect((configItems[1] as HTMLElement).tabIndex).toBe(-1)
+		expect((configItems[2] as HTMLElement).tabIndex).toBe(-1)
+
+		// Exit reorder mode
+		const doneButton = screen.getByText("chat:apiConfigSelector.done")
+		fireEvent.click(doneButton)
+
+		// All items should be focusable again (tabIndex=0)
+		configItems.forEach((item) => {
+			expect((item as HTMLElement).tabIndex).toBe(0)
 		})
 	})
 

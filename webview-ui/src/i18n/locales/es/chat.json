@@ -442,6 +442,7 @@
 		"custom": "Personalizado",
 		"reorder": "Reordenar…",
 		"dragToReorder": "Arrastra para reordenar configuraciones",
+		"keyboardNavigation": "Usa las teclas de flecha para navegar, Alt/Opción + flechas para reordenar",
 		"cancel": "Cancelar",
 		"done": "Hecho",
 		"editConfigurations": "Editar configuraciones"

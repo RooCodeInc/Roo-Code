@@ -442,6 +442,7 @@
 		"custom": "カスタム",
 		"reorder": "並べ替え…",
 		"dragToReorder": "ドラッグして構成を並べ替える",
+		"keyboardNavigation": "矢印キーでナビゲート、Alt/Option + 矢印キーで並べ替え",
 		"cancel": "キャンセル",
 		"done": "完了",
 		"editConfigurations": "構成を編集"

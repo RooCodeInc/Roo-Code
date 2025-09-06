@@ -442,6 +442,7 @@
 		"custom": "Niestandardowe",
 		"reorder": "Zmień kolejność…",
 		"dragToReorder": "Przeciągnij, aby zmienić kolejność konfiguracji",
+		"keyboardNavigation": "Użyj klawiszy strzałek do nawigacji, Alt/Option + strzałki do zmiany kolejności",
 		"cancel": "Anuluj",
 		"done": "Gotowe",
 		"editConfigurations": "Edytuj konfiguracje"

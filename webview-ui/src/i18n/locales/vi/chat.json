@@ -443,6 +443,7 @@
 		"custom": "Tùy chỉnh",
 		"reorder": "Sắp xếp lại…",
 		"dragToReorder": "Kéo để sắp xếp lại cấu hình",
+		"keyboardNavigation": "Sử dụng phím mũi tên để điều hướng, Alt/Option + phím mũi tên để sắp xếp lại",
 		"cancel": "Hủy",
 		"done": "Xong",
 		"editConfigurations": "Chỉnh sửa cấu hình"

@@ -442,6 +442,7 @@
 		"custom": "Benutzerdefiniert",
 		"reorder": "Neu anordnen…",
 		"dragToReorder": "Ziehe, um Konfigurationen neu anzuordnen",
+		"keyboardNavigation": "Verwende die Pfeiltasten zur Navigation, Alt/Option + Pfeiltasten zum Neuordnen",
 		"cancel": "Abbrechen",
 		"done": "Fertig",
 		"editConfigurations": "Konfigurationen bearbeiten"

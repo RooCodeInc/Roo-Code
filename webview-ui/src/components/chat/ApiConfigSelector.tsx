@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useRef } from "react"
+import { useState, useMemo, useCallback, useRef, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { Fzf } from "fzf"
 import { GripVertical } from "lucide-react"
@@ -53,6 +53,9 @@ export const ApiConfigSelector = ({
 		draggedIndex: null,
 		dragOverIndex: null,
 	})
+	const [focusedIndex, setFocusedIndex] = useState<number | null>(null)
+	// Track the ID of the item that should maintain focus during reordering
+	const [focusedItemId, setFocusedItemId] = useState<string | null>(null)
 
 	// Internal state for sort mode and custom order when parent doesn't provide them
 	const [sortMode, setSortMode] = useState<SortMode>("alphabetical")
@@ -112,6 +115,45 @@ export const ApiConfigSelector = ({
 		return { pinnedConfigs: pinned, unpinnedConfigs: unpinned }
 	}, [filteredConfigs, pinnedApiConfigs])
 
+	// Effect to manage focus when in reorder mode
+	useEffect(() => {
+		if (isReorderMode && focusedIndex !== null) {
+			// Find the element at the focused index and focus it
+			const element = document.querySelector(`[data-config-item-index="${focusedIndex}"]`) as HTMLElement
+			if (element) {
+				element.focus()
+			}
+		}
+	}, [focusedIndex, isReorderMode])
+
+	// Effect to set initial focus when entering reorder mode
+	useEffect(() => {
+		if (isReorderMode && focusedIndex === null) {
+			const allConfigs = [...pinnedConfigs, ...unpinnedConfigs]
+			// Try to focus on the currently selected item, otherwise focus the first item
+			const selectedIndex = allConfigs.findIndex((config) => config.id === value)
+			const initialIndex = selectedIndex !== -1 ? selectedIndex : 0
+			setFocusedIndex(initialIndex)
+			if (allConfigs[initialIndex]) {
+				setFocusedItemId(allConfigs[initialIndex].id)
+			}
+		} else if (!isReorderMode) {
+			setFocusedIndex(null)
+			setFocusedItemId(null)
+		}
+	}, [isReorderMode, focusedIndex, pinnedConfigs, unpinnedConfigs, value])
+
+	// Update focus index when the focused item's position changes
+	useEffect(() => {
+		if (isReorderMode && focusedItemId) {
+			const allConfigs = [...pinnedConfigs, ...unpinnedConfigs]
+			const newIndex = allConfigs.findIndex((config) => config.id === focusedItemId)
+			if (newIndex !== -1 && newIndex !== focusedIndex) {
+				setFocusedIndex(newIndex)
+			}
+		}
+	}, [pinnedConfigs, unpinnedConfigs, focusedItemId, isReorderMode, focusedIndex])
+
 	const handleSelect = useCallback(
 		(configId: string) => {
 			onChange(configId)
@@ -140,16 +182,24 @@ export const ApiConfigSelector = ({
 			handleSortModeChange("custom")
 		}
 		setIsReorderMode(true)
+		// Reset focused item ID when entering reorder mode
+		setFocusedItemId(null)
 	}, [sortMode, handleSortModeChange])
 
 	const handleReorderDone = useCallback(() => {
+		// Find the index of the currently selected item to maintain focus
+		const allConfigs = [...pinnedConfigs, ...unpinnedConfigs]
+		const selectedIndex = allConfigs.findIndex((config) => config.id === value)
+
 		setIsReorderMode(false)
 		setDragState({
 			isDragging: false,
 			draggedIndex: null,
 			dragOverIndex: null,
 		})
-	}, [])
+		// Keep focus on the selected item if found, otherwise clear focus
+		setFocusedIndex(selectedIndex !== -1 ? selectedIndex : null)
+	}, [pinnedConfigs, unpinnedConfigs, value])
 
 	const handleReorderCancel = useCallback(() => {
 		setIsReorderMode(false)
@@ -158,6 +208,8 @@ export const ApiConfigSelector = ({
 			draggedIndex: null,
 			dragOverIndex: null,
 		})
+		setFocusedIndex(null)
+		setFocusedItemId(null)
 		// Reset to original order by not saving changes
 	}, [])
 
@@ -165,21 +217,21 @@ export const ApiConfigSelector = ({
 		(fromIndex: number, toIndex: number) => {
 			if (fromIndex === toIndex) return
 
-			const newOrder = [...filteredConfigs]
-			const [movedItem] = newOrder.splice(fromIndex, 1)
-			newOrder.splice(toIndex, 0, movedItem)
+			// We need to work with the current customOrder, not filteredConfigs
+			// because filteredConfigs might be sorted differently
+			const currentOrder = customOrder.length > 0 ? customOrder : filteredConfigs.map((c) => c.id)
 
-			const newCustomOrder = newOrder.map((config) => config.id)
-			// Always update internal state as fallback
-			setInternalCustomOrder(newCustomOrder)
+			const newOrder = [...currentOrder]
+			const [movedItemId] = newOrder.splice(fromIndex, 1)
+			newOrder.splice(toIndex, 0, movedItemId)
 
-			// Persist the custom order to storage
+			// Only update through VSCode message - this should update persistedCustomOrder
 			vscode.postMessage({
 				type: "setApiConfigCustomOrder",
-				values: { customOrder: newCustomOrder },
+				values: { customOrder: newOrder },
 			})
 		},
-		[filteredConfigs],
+		[customOrder, filteredConfigs],
 	)
 
 	const handleDragStart = useCallback((e: React.DragEvent, index: number) => {
@@ -201,11 +253,35 @@ export const ApiConfigSelector = ({
 		}))
 	}, [])
 
+	// Convert display index to filteredConfigs index considering pinned/unpinned separation
+	const getFilteredIndex = useCallback(
+		(displayIndex: number) => {
+			if (displayIndex < pinnedConfigs.length) {
+				// Item is in pinned section - find its index in filteredConfigs
+				const pinnedConfig = pinnedConfigs[displayIndex]
+				return filteredConfigs.findIndex((config) => config.id === pinnedConfig.id)
+			} else {
+				// Item is in unpinned section - find its index in filteredConfigs
+				const unpinnedIndex = displayIndex - pinnedConfigs.length
+				const unpinnedConfig = unpinnedConfigs[unpinnedIndex]
+				return filteredConfigs.findIndex((config) => config.id === unpinnedConfig.id)
+			}
+		},
+		[pinnedConfigs, unpinnedConfigs, filteredConfigs],
+	)
+
 	const handleDragEnd = useCallback(() => {
 		const { draggedIndex, dragOverIndex } = dragState
 
 		if (draggedIndex !== null && dragOverIndex !== null && draggedIndex !== dragOverIndex) {
-			moveItem(draggedIndex, dragOverIndex)
+			// Convert display indices to customOrder indices for moveItem
+			const draggedConfigId = filteredConfigs[getFilteredIndex(draggedIndex)].id
+			const dragOverConfigId = filteredConfigs[getFilteredIndex(dragOverIndex)].id
+
+			const draggedCustomOrderIndex = customOrder.indexOf(draggedConfigId)
+			const dragOverCustomOrderIndex = customOrder.indexOf(dragOverConfigId)
+
+			moveItem(draggedCustomOrderIndex, dragOverCustomOrderIndex)
 		}
 
 		setDragState({
@@ -213,18 +289,116 @@ export const ApiConfigSelector = ({
 			draggedIndex: null,
 			dragOverIndex: null,
 		})
-	}, [dragState, moveItem])
+	}, [dragState, moveItem, getFilteredIndex, customOrder, filteredConfigs])
+
+	const handleKeyDown = useCallback(
+		(e: React.KeyboardEvent, displayIndex: number) => {
+			if (!isReorderMode) return
+
+			const allConfigs = [...pinnedConfigs, ...unpinnedConfigs]
+			const currentConfig = allConfigs[displayIndex]
+			if (!currentConfig) return
+
+			const totalItems = allConfigs.length
+
+			if (e.altKey || e.metaKey) {
+				// Alt/Option + arrow keys for reordering
+				const configId = currentConfig.id
+
+				if (e.key === "ArrowUp") {
+					e.preventDefault()
+					// Optimistically update the UI first
+					const currentOrder = customOrder.length > 0 ? customOrder : filteredConfigs.map((c) => c.id)
+					const configOrderIndex = currentOrder.indexOf(configId)
+
+					if (configOrderIndex > 0) {
+						// Create new order by swapping with previous item
+						const newOrder = [...currentOrder]
+						;[newOrder[configOrderIndex - 1], newOrder[configOrderIndex]] = [
+							newOrder[configOrderIndex],
+							newOrder[configOrderIndex - 1],
+						]
+
+						// Update internal state immediately for responsive UI
+						setInternalCustomOrder(newOrder)
+
+						// Track the item being moved to maintain focus on it
+						setFocusedItemId(configId)
+
+						// Sync with backend
+						vscode.postMessage({
+							type: "setApiConfigCustomOrder",
+							values: { customOrder: newOrder },
+						})
+					}
+				} else if (e.key === "ArrowDown") {
+					e.preventDefault()
+					// Optimistically update the UI first
+					const currentOrder = customOrder.length > 0 ? customOrder : filteredConfigs.map((c) => c.id)
+					const configOrderIndex = currentOrder.indexOf(configId)
+
+					if (configOrderIndex < currentOrder.length - 1) {
+						// Create new order by swapping with next item
+						const newOrder = [...currentOrder]
+						;[newOrder[configOrderIndex], newOrder[configOrderIndex + 1]] = [
+							newOrder[configOrderIndex + 1],
+							newOrder[configOrderIndex],
+						]
+
+						// Update internal state immediately for responsive UI
+						setInternalCustomOrder(newOrder)
+
+						// Track the item being moved to maintain focus on it
+						setFocusedItemId(configId)
+
+						// Sync with backend
+						vscode.postMessage({
+							type: "setApiConfigCustomOrder",
+							values: { customOrder: newOrder },
+						})
+					}
+				}
+			} else {
+				// Plain arrow keys for navigation
+				if (e.key === "ArrowUp" && displayIndex > 0) {
+					e.preventDefault()
+					setFocusedIndex(displayIndex - 1)
+					setFocusedItemId(allConfigs[displayIndex - 1].id)
+				} else if (e.key === "ArrowDown" && displayIndex < totalItems - 1) {
+					e.preventDefault()
+					setFocusedIndex(displayIndex + 1)
+					setFocusedItemId(allConfigs[displayIndex + 1].id)
+				} else if (e.key === "Enter" || e.key === " ") {
+					e.preventDefault()
+					handleSelect(currentConfig.id)
+				} else if (e.key === "Tab") {
+					e.preventDefault()
+					// Handle tab navigation manually
+					if (e.shiftKey && displayIndex > 0) {
+						setFocusedIndex(displayIndex - 1)
+						setFocusedItemId(allConfigs[displayIndex - 1].id)
+					} else if (!e.shiftKey && displayIndex < totalItems - 1) {
+						setFocusedIndex(displayIndex + 1)
+						setFocusedItemId(allConfigs[displayIndex + 1].id)
+					}
+				}
+			}
+		},
+		[isReorderMode, filteredConfigs, pinnedConfigs, unpinnedConfigs, customOrder, handleSelect],
+	)
 
 	const renderConfigItem = useCallback(
 		(config: { id: string; name: string; modelId?: string }, isPinned: boolean, index: number) => {
 			const isCurrentConfig = config.id === value
 			const isDraggedOver = dragState.dragOverIndex === index
 			const isDragged = dragState.draggedIndex === index
+			const isFocused = focusedIndex === index
 
 			return (
 				<div
 					key={config.id}
 					data-config-item
+					data-config-item-index={index}
 					role="option"
 					aria-selected={isCurrentConfig}
 					aria-label={`${config.name}${config.modelId ? ` - ${config.modelId}` : ""}`}
@@ -234,12 +408,14 @@ export const ApiConfigSelector = ({
 					onDragEnd={handleDragEnd}
 					onClick={() => !isReorderMode && handleSelect(config.id)}
 					onKeyDown={(e) => {
-						if (!isReorderMode && (e.key === "Enter" || e.key === " ")) {
+						if (isReorderMode) {
+							handleKeyDown(e, index)
+						} else if (e.key === "Enter" || e.key === " ") {
 							e.preventDefault()
 							handleSelect(config.id)
 						}
 					}}
-					tabIndex={!isReorderMode ? 0 : -1}
+					tabIndex={isReorderMode ? (isFocused ? 0 : -1) : 0}
 					className={cn(
 						"px-3 py-1.5 text-sm flex items-center group relative",
 						!isReorderMode && "cursor-pointer hover:bg-vscode-list-hoverBackground",
@@ -248,6 +424,7 @@ export const ApiConfigSelector = ({
 						isReorderMode && "cursor-move",
 						isDragged && "opacity-50",
 						isDraggedOver && "border-t-2 border-vscode-focusBorder",
+						isFocused && "ring-1 ring-vscode-focusBorder",
 					)}>
 					{/* Drag handle - only visible in reorder mode */}
 					{isReorderMode && sortMode === "custom" && (
@@ -277,12 +454,16 @@ export const ApiConfigSelector = ({
 						)}
 						{!isReorderMode && (
 							<StandardTooltip
-								content={isPinned ? t("apiConfigSelector.unpin") : t("apiConfigSelector.pin")}>
+								content={
+									isPinned ? t("chat:apiConfigSelector.unpin") : t("chat:apiConfigSelector.pin")
+								}>
 								<Button
 									variant="ghost"
 									size="icon"
 									tabIndex={-1}
-									aria-label={isPinned ? t("apiConfigSelector.unpin") : t("apiConfigSelector.pin")}
+									aria-label={
+										isPinned ? t("chat:apiConfigSelector.unpin") : t("chat:apiConfigSelector.pin")
+									}
 									onClick={(e) => {
 										e.stopPropagation()
 										togglePinnedApiConfig(config.id)
@@ -311,6 +492,8 @@ export const ApiConfigSelector = ({
 			handleDragOver,
 			handleDragEnd,
 			t,
+			focusedIndex,
+			handleKeyDown,
 		],
 	)
 
@@ -417,7 +600,7 @@ export const ApiConfigSelector = ({
 							<div className="flex items-center justify-between px-2 py-1.5 border-b border-vscode-dropdown-border">
 								<div className="flex items-center gap-2">
 									<span className="text-xs text-vscode-descriptionForeground">
-										{t("apiConfigSelector.sort")}
+										{t("chat:apiConfigSelector.sort")}
 									</span>
 									<div className="flex items-center gap-1">
 										{(["alphabetical", "custom"] as const).map((mode) => (
@@ -425,7 +608,7 @@ export const ApiConfigSelector = ({
 												key={mode}
 												variant="ghost"
 												size="sm"
-												aria-label={`${t("apiConfigSelector.sort")} ${mode === "alphabetical" ? t("apiConfigSelector.alphabetical") : t("apiConfigSelector.custom")}`}
+												aria-label={`${t("chat:apiConfigSelector.sort")} ${mode === "alphabetical" ? t("chat:apiConfigSelector.alphabetical") : t("chat:apiConfigSelector.custom")}`}
 												aria-pressed={sortMode === mode}
 												onClick={() => handleSortModeChange(mode)}
 												className={cn(
@@ -434,8 +617,8 @@ export const ApiConfigSelector = ({
 														"bg-vscode-button-background text-vscode-button-foreground",
 												)}>
 												{mode === "alphabetical"
-													? t("apiConfigSelector.alphabetical")
-													: t("apiConfigSelector.custom")}
+													? t("chat:apiConfigSelector.alphabetical")
+													: t("chat:apiConfigSelector.custom")}
 											</Button>
 										))}
 									</div>
@@ -444,10 +627,10 @@ export const ApiConfigSelector = ({
 									<Button
 										variant="ghost"
 										size="sm"
-										aria-label={t("apiConfigSelector.reorder")}
+										aria-label={t("chat:apiConfigSelector.reorder")}
 										onClick={handleReorderClick}
 										className="h-6 px-2 text-xs">
-										{t("apiConfigSelector.reorder")}
+										{t("chat:apiConfigSelector.reorder")}
 									</Button>
 								)}
 							</div>
@@ -455,27 +638,34 @@ export const ApiConfigSelector = ({
 
 						{/* Reorder mode controls */}
 						{isReorderMode && (
-							<div className="flex items-center justify-between px-2 py-1.5 border-b border-vscode-dropdown-border bg-vscode-inputOption-activeBackground">
-								<span className="text-xs text-vscode-descriptionForeground">
-									{t("apiConfigSelector.dragToReorder")}
-								</span>
-								<div className="flex items-center gap-1">
-									<Button
-										variant="ghost"
-										size="sm"
-										aria-label={t("apiConfigSelector.cancel")}
-										onClick={handleReorderCancel}
-										className="h-6 px-2 text-xs">
-										{t("apiConfigSelector.cancel")}
-									</Button>
-									<Button
-										variant="ghost"
-										size="sm"
-										aria-label={t("apiConfigSelector.done")}
-										onClick={handleReorderDone}
-										className="h-6 px-2 text-xs bg-vscode-button-background text-vscode-button-foreground">
-										{t("apiConfigSelector.done")}
-									</Button>
+							<div className="flex flex-col border-b border-vscode-dropdown-border bg-vscode-inputOption-activeBackground">
+								<div className="flex items-center justify-between px-2 py-1.5">
+									<span className="text-xs text-vscode-descriptionForeground">
+										{t("chat:apiConfigSelector.dragToReorder")}
+									</span>
+									<div className="flex items-center gap-1">
+										<Button
+											variant="ghost"
+											size="sm"
+											aria-label={t("chat:apiConfigSelector.cancel")}
+											onClick={handleReorderCancel}
+											className="h-6 px-2 text-xs">
+											{t("chat:apiConfigSelector.cancel")}
+										</Button>
+										<Button
+											variant="ghost"
+											size="sm"
+											aria-label={t("chat:apiConfigSelector.done")}
+											onClick={handleReorderDone}
+											className="h-6 px-2 text-xs bg-vscode-button-background text-vscode-button-foreground">
+											{t("chat:apiConfigSelector.done")}
+										</Button>
+									</div>
+								</div>
+								<div className="px-2 pb-1.5">
+									<span className="text-xs text-vscode-descriptionForeground opacity-80">
+										{t("chat:apiConfigSelector.keyboardNavigation")}
+									</span>
 								</div>
 							</div>
 						)}
@@ -485,7 +675,7 @@ export const ApiConfigSelector = ({
 							<div className="flex flex-row gap-1">
 								<IconButton
 									iconClass="codicon-settings-gear"
-									title={t("apiConfigSelector.editConfigurations")}
+									title={t("chat:apiConfigSelector.editConfigurations")}
 									onClick={handleEditClick}
 									tooltip={false}
 									aria-label="chat:edit"
