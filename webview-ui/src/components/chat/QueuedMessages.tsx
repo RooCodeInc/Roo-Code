@@ -41,7 +41,10 @@ export const QueuedMessages = ({ queue, onRemove, onUpdate }: QueuedMessagesProp
 
 	return (
 		<div className="px-[15px] py-[10px] pr-[6px]" data-testid="queued-messages">
-			<div className="text-vscode-descriptionForeground text-md mb-2">{t("queuedMessages.title")}</div>
+			<div className="text-vscode-descriptionForeground text-md mb-2">
+				<span className="codicon codicon-clock mr-2" />
+				{t("queuedMessages.scheduledTitle")}
+			</div>
 			<div className="flex flex-col gap-2 max-h-[300px] overflow-y-auto pr-2">
 				{queue.map((message, index) => {
 					const editState = getEditState(message.id, message.text)

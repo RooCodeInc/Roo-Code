@@ -1,7 +1,7 @@
 import React, { forwardRef, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { useEvent } from "react-use"
 import DynamicTextArea from "react-textarea-autosize"
-import { VolumeX, Image, WandSparkles, SendHorizontal, MessageSquareX } from "lucide-react"
+import { VolumeX, Image, WandSparkles, SendHorizontal, MessageSquareX, Clock } from "lucide-react"
 
 import { mentionRegex, mentionRegexGlobal, commandRegexGlobal, unescapeSpaces } from "@roo/context-mentions"
 import { WebviewMessage } from "@roo/WebviewMessage"
@@ -21,7 +21,13 @@ import {
 } from "@src/utils/context-mentions"
 import { cn } from "@src/lib/utils"
 import { convertToMentionPath } from "@src/utils/path-mentions"
-import { StandardTooltip } from "@src/components/ui"
+import {
+	StandardTooltip,
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "@src/components/ui"
 
 import Thumbnails from "../common/Thumbnails"
 import { ModeSelector } from "./ModeSelector"
@@ -1102,7 +1108,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 								</StandardTooltip>
 							</div>
 
-							<div className="absolute bottom-1 right-1 z-30">
+							<div className="absolute bottom-1 right-1 z-30 flex items-center gap-1">
 								{isEditMode && (
 									<StandardTooltip content={t("chat:cancel.title")}>
 										<button
@@ -1124,25 +1130,66 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 										</button>
 									</StandardTooltip>
 								)}
-								<StandardTooltip content={t("chat:sendMessage")}>
-									<button
-										aria-label={t("chat:sendMessage")}
-										disabled={false}
-										onClick={onSend}
-										className={cn(
-											"relative inline-flex items-center justify-center",
-											"bg-transparent border-none p-1.5",
-											"rounded-md min-w-[28px] min-h-[28px]",
-											"opacity-60 hover:opacity-100 text-vscode-descriptionForeground hover:text-vscode-foreground",
-											"transition-all duration-150",
-											"hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.15)]",
-											"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
-											"active:bg-[rgba(255,255,255,0.1)]",
-											"cursor-pointer",
-										)}>
-										<SendHorizontal className="w-4 h-4" />
-									</button>
-								</StandardTooltip>
+								<DropdownMenu>
+									<DropdownMenuTrigger asChild>
+										<button
+											aria-label={t("chat:sendMessage")}
+											disabled={false}
+											onContextMenu={(e) => {
+												e.preventDefault()
+												// Trigger dropdown on right-click
+												const event = new MouseEvent("click", {
+													bubbles: true,
+													cancelable: true,
+													view: window,
+												})
+												e.currentTarget.dispatchEvent(event)
+											}}
+											onClick={(e) => {
+												// If it's a regular left click, just send the message
+												if (e.button === 0 && !e.ctrlKey && !e.metaKey) {
+													e.preventDefault()
+													e.stopPropagation()
+													onSend()
+												}
+											}}
+											className={cn(
+												"relative inline-flex items-center justify-center",
+												"bg-transparent border-none p-1.5",
+												"rounded-md min-w-[28px] min-h-[28px]",
+												"opacity-60 hover:opacity-100 text-vscode-descriptionForeground hover:text-vscode-foreground",
+												"transition-all duration-150",
+												"hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.15)]",
+												"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
+												"active:bg-[rgba(255,255,255,0.1)]",
+												"cursor-pointer",
+											)}>
+											<SendHorizontal className="w-4 h-4" />
+										</button>
+									</DropdownMenuTrigger>
+									<DropdownMenuContent align="end" className="w-56">
+										<DropdownMenuItem onClick={onSend}>
+											<SendHorizontal className="mr-2 h-4 w-4" />
+											<span>{t("chat:sendMessage")}</span>
+										</DropdownMenuItem>
+										<DropdownMenuItem
+											onClick={() => {
+												// Queue the message for after task completion
+												if (inputValue.trim() || selectedImages.length > 0) {
+													vscode.postMessage({
+														type: "queueMessage",
+														text: inputValue,
+														images: selectedImages,
+													})
+													setInputValue("")
+													setSelectedImages([])
+												}
+											}}>
+											<Clock className="mr-2 h-4 w-4" />
+											<span>{t("chat:scheduleForAfterTask")}</span>
+										</DropdownMenuItem>
+									</DropdownMenuContent>
+								</DropdownMenu>
 							</div>
 
 							{!inputValue && (
