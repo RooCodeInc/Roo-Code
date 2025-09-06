@@ -1122,33 +1122,49 @@ export const ChatRowContent = ({
 									msUserSelect: "none",
 								}}
 								onClick={handleToggleExpand}>
-								<div style={{ display: "flex", alignItems: "center", gap: "10px", flexGrow: 1 }}>
+								<div
+									style={{
+										display: "flex",
+										alignItems: "center",
+										gap: "10px",
+										flexGrow: 1,
+										minWidth: 0,
+									}}>
 									{icon}
 									{title}
-									<VSCodeBadge
-										style={{ opacity: cost !== null && cost !== undefined && cost > 0 ? 1 : 0 }}>
-										${Number(cost || 0)?.toFixed(4)}
-									</VSCodeBadge>
-									{hasTokenData && (
-										<div
-											className="flex items-center gap-1 flex-wrap"
-											style={{ opacity: hasTokenData ? 1 : 0 }}>
-											<span
+									<div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
+										<VSCodeBadge
+											style={{
+												opacity: cost !== null && cost !== undefined && cost > 0 ? 1 : 0,
+												flexShrink: 0,
+											}}>
+											${Number(cost || 0)?.toFixed(4)}
+										</VSCodeBadge>
+										{hasTokenData && (
+											<div
+												className="flex items-center gap-1"
 												style={{
-													fontSize: "12px",
-													color: "var(--vscode-descriptionForeground)",
+													opacity: hasTokenData ? 1 : 0,
+													flexShrink: 0,
+													whiteSpace: "nowrap",
 												}}>
-												↑ {tokenStats.input}
-											</span>
-											<span
-												style={{
-													fontSize: "12px",
-													color: "var(--vscode-descriptionForeground)",
-												}}>
-												↓ {tokenStats.output}
-											</span>
-										</div>
-									)}
+												<span
+													style={{
+														fontSize: "12px",
+														color: "var(--vscode-descriptionForeground)",
+													}}>
+													↑ {tokenStats.input}
+												</span>
+												<span
+													style={{
+														fontSize: "12px",
+														color: "var(--vscode-descriptionForeground)",
+													}}>
+													↓ {tokenStats.output}
+												</span>
+											</div>
+										)}
+									</div>
 								</div>
 								<span className={`codicon codicon-chevron-${isExpanded ? "up" : "down"}`}></span>
 							</div>
