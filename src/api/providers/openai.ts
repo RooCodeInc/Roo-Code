@@ -19,6 +19,7 @@ import { convertToR1Format } from "../transform/r1-format"
 import { convertToSimpleMessages } from "../transform/simple-format"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
+import { handleResponsesStream } from "../transform/responses-stream"
 
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
@@ -29,19 +30,71 @@ import { handleOpenAIError } from "./utils/openai-error-handler"
 // TODO: Rename this to OpenAICompatibleHandler. Also, I think the
 // `OpenAINativeHandler` can subclass from this, since it's obviously
 // compatible with the OpenAI API. We can also rename it to `OpenAIHandler`.
+/**
+ * URL auto-detection overview
+ *
+ * Decision tree (host and path based):
+ * 1) Azure AI Inference Service:
+ *    - Detected when host ends with ".services.ai.azure.com"
+ *    - Uses OpenAI Chat Completions API shape with a path override
+ *      (see OPENAI_AZURE_AI_INFERENCE_PATH) when making requests.
+ *
+ * 2) Azure OpenAI:
+ *    - Detected when host is "openai.azure.com" or ends with ".openai.azure.com"
+ *      or when options.openAiUseAzure is explicitly true.
+ *    - Within Azure OpenAI, the API "flavor" is chosen by URL path:
+ *      - Responses API:
+ *        * Path contains "/v1/responses" or ends with "/responses"
+ *        * Also auto-detected for portal-style URLs (e.g. "/openai/responses?api-version=2025-04-01-preview")
+ *          which itself is not valid in request, are normalized to "/openai/v1" with apiVersion "preview".
+ *      - Chat Completions API:
+ *        * Path contains "/chat/completions"
+ *      - Default:
+ *        * Falls back to Chat Completions if none of the above match.
+ *
+ * 3) Generic OpenAI-compatible endpoints:
+ *    - Anything else (OpenAI, OpenRouter, LM Studio, vLLM, etc.)
+ *    - Flavor is again selected by URL path as above:
+ *      - "/v1/responses" or ending with "/responses" => Responses API
+ *      - "/chat/completions" => Chat Completions
+ *      - otherwise defaults to Chat Completions for backward compatibility.
+ *
+ * Examples:
+ * - https://api.openai.com/v1                      -> Chat Completions (default)
+ * - https://api.openai.com/v1/responses            -> Responses API
+ * - https://api.openai.com/v1/chat/completions     -> Chat Completions
+ * - https://myres.openai.azure.com/openai/v1/responses?api-version=preview
+ *                                                   -> Azure OpenAI + Responses API
+ * - https://myres.openai.azure.com/openai/responses?api-version=2025-04-01-preview
+ *                                                   -> normalized to base /openai/v1 + apiVersion "preview" (Responses)
+ * - https://test.services.ai.azure.com             -> Azure AI Inference Service (Chat Completions with path override)
+ */
 export class OpenAiHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
 	private client: OpenAI
+	private lastResponseId: string | undefined
 	private readonly providerName = "OpenAI"
 
 	constructor(options: ApiHandlerOptions) {
 		super()
 		this.options = options
+		// Default to including reasoning.summary: "auto" for Responses API (parity with native provider)
+		if (this.options.enableGpt5ReasoningSummary === undefined) {
+			this.options.enableGpt5ReasoningSummary = true
+		}
 
-		const baseURL = this.options.openAiBaseUrl ?? "https://api.openai.com/v1"
+		// Normalize Azure Responses "web" URL shape if provided by users.
+		// Example input (Azure portal sometimes shows):
+		//   https://{resource}.openai.azure.com/openai/responses?api-version=2025-04-01-preview
+		// We normalize to Azure SDK-friendly base and version:
+		//   baseURL: https://{resource}.openai.azure.com/openai/v1
+		//   apiVersion: preview
+		const rawBaseURL = this.options.openAiBaseUrl ?? "https://api.openai.com/v1"
+		const azureNormalization = this._normalizeAzureResponsesBaseUrlAndVersion(rawBaseURL)
+		const baseURL = azureNormalization.baseURL
 		const apiKey = this.options.openAiApiKey ?? "not-provided"
-		const isAzureAiInference = this._isAzureAiInference(this.options.openAiBaseUrl)
-		const urlHost = this._getUrlHost(this.options.openAiBaseUrl)
+		const isAzureAiInference = this._isAzureAiInference(baseURL)
+		const urlHost = this._getUrlHost(baseURL)
 		const isAzureOpenAi = urlHost === "azure.com" || urlHost.endsWith(".azure.com") || options.openAiUseAzure
 
 		const headers = {
@@ -63,10 +116,23 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		} else if (isAzureOpenAi) {
 			// Azure API shape slightly differs from the core API shape:
 			// https://github.com/openai/openai-node?tab=readme-ov-file#microsoft-azure-openai
+
+			// Determine if we're using the Responses API flavor for Azure (auto-detect by URL only)
+			const flavor = this._resolveApiFlavor(this.options.openAiBaseUrl ?? "")
+			const isResponsesFlavor =
+				flavor === "responses" ||
+				this._isAzureOpenAiResponses(this.options.openAiBaseUrl) ||
+				this._isAzureOpenAiResponses(baseURL)
+
+			// Always use 'preview' for Azure Responses API calls (per user requirement)
+			const azureVersion = isResponsesFlavor
+				? "preview"
+				: this.options.azureApiVersion || azureOpenAiDefaultApiVersion
+
 			this.client = new AzureOpenAI({
 				baseURL,
 				apiKey,
-				apiVersion: this.options.azureApiVersion || azureOpenAiDefaultApiVersion,
+				apiVersion: azureVersion,
 				defaultHeaders: headers,
 				timeout,
 			})
@@ -85,7 +151,16 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
-		const { info: modelInfo, reasoning } = this.getModel()
+		// Gather model params (centralized: temperature, max tokens, reasoning, verbosity)
+		const { info: modelInfo } = this.getModel()
+		const openAiParams = getModelParams({
+			format: "openai",
+			modelId: this.options.openAiModelId ?? "",
+			model: modelInfo,
+			settings: this.options,
+		})
+		const { reasoning, reasoningEffort, verbosity } = openAiParams
+
 		const modelUrl = this.options.openAiBaseUrl ?? ""
 		const modelId = this.options.openAiModelId ?? ""
 		const enabledR1Format = this.options.openAiR1FormatEnabled ?? false
@@ -93,6 +168,15 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		const isAzureAiInference = this._isAzureAiInference(modelUrl)
 		const deepseekReasoner = modelId.includes("deepseek-reasoner") || enabledR1Format
 		const ark = modelUrl.includes(".volces.com")
+
+		// Decide API flavor (auto-detect by URL)
+		const flavor = this._resolveApiFlavor(modelUrl)
+
+		// If Responses API is selected, use the Responses payload and endpoint
+		if (flavor === "responses") {
+			yield* this._handleResponsesFlavor(systemPrompt, messages, metadata, modelInfo, openAiParams)
+			return
+		}
 
 		if (modelId.includes("o1") || modelId.includes("o3") || modelId.includes("o4")) {
 			yield* this.handleO3FamilyMessage(modelId, systemPrompt, messages)
@@ -239,6 +323,10 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 						? [systemMessage, ...convertToSimpleMessages(messages)]
 						: [systemMessage, ...convertToOpenAiMessages(messages)],
 			}
+			// Include reasoning_effort for Chat Completions when available
+			if (reasoning) {
+				Object.assign(requestOptions, reasoning)
+			}
 
 			// Add max_tokens if needed
 			this.addMaxTokensIfNeeded(requestOptions, modelInfo)
@@ -282,8 +370,76 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 	async completePrompt(prompt: string): Promise<string> {
 		try {
 			const isAzureAiInference = this._isAzureAiInference(this.options.openAiBaseUrl)
+			const flavor = this._resolveApiFlavor(this.options.openAiBaseUrl ?? "")
 			const model = this.getModel()
 			const modelInfo = model.info
+
+			// Use Responses API when selected (non-streaming convenience method)
+			if (flavor === "responses") {
+				// Build structured single-turn input
+				const payload: Record<string, unknown> = {
+					model: model.id,
+					input: [
+						{
+							role: "user",
+							content: [{ type: "input_text", text: prompt }],
+						},
+					],
+					stream: false,
+					store: false,
+				}
+
+				// Reasoning effort (support "minimal"; include summary: "auto" unless disabled)
+				const effort = (this.options.reasoningEffort || model.reasoningEffort) as
+					| "minimal"
+					| "low"
+					| "medium"
+					| "high"
+					| undefined
+				if (this.options.enableReasoningEffort && effort) {
+					;(
+						payload as { reasoning?: { effort: "minimal" | "low" | "medium" | "high"; summary?: "auto" } }
+					).reasoning = {
+						effort,
+						...(this.options.enableGpt5ReasoningSummary !== false ? { summary: "auto" as const } : {}),
+					}
+				}
+
+				// Temperature if supported and set
+				if (modelInfo.supportsTemperature !== false && this.options.modelTemperature !== undefined) {
+					;(payload as Record<string, unknown>).temperature = this.options.modelTemperature
+				}
+
+				// Verbosity via text.verbosity - include only when supported
+				if (this.options.verbosity && modelInfo.supportsVerbosity) {
+					;(payload as { text?: { verbosity: "low" | "medium" | "high" } }).text = {
+						verbosity: this.options.verbosity as "low" | "medium" | "high",
+					}
+				}
+
+				// max_output_tokens
+				if (this.options.includeMaxTokens === true) {
+					;(payload as Record<string, unknown>).max_output_tokens =
+						this.options.modelMaxTokens || modelInfo.maxTokens
+				}
+
+				const response = await this._responsesCreateWithRetries(payload, {
+					usedArrayInput: true,
+					lastUserMessage: undefined,
+					previousId: undefined,
+					systemPrompt: "",
+					messages: [],
+				})
+				try {
+					const respId = (response as { id?: unknown } | undefined)?.id
+					if (typeof respId === "string" && respId.length > 0) {
+						this.lastResponseId = respId
+					}
+				} catch {
+					// ignore
+				}
+				return this._extractResponsesText(response) ?? ""
+			}
 
 			const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {
 				model: model.id,
@@ -420,14 +576,141 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		}
 	}
 
+	/**
+	 * Detects Grok xAI endpoints.
+	 * - Returns true when the host contains "x.ai" (e.g., "api.x.ai").
+	 * - Used to omit stream_options for streaming requests because Grok may not support them.
+	 *
+	 * Examples:
+	 * - https://api.x.ai/v1 -> true
+	 * - https://api.openai.com/v1 -> false
+	 */
 	private _isGrokXAI(baseUrl?: string): boolean {
 		const urlHost = this._getUrlHost(baseUrl)
 		return urlHost.includes("x.ai")
 	}
 
+	/**
+	 * Detects Azure AI Inference Service endpoints (distinct from Azure OpenAI).
+	 * - Returns true when host ends with ".services.ai.azure.com".
+	 * - These endpoints require a special path override when calling the Chat Completions API.
+	 *
+	 * Examples:
+	 * - https://myenv.services.ai.azure.com -> true
+	 * - https://myres.openai.azure.com      -> false (this is Azure OpenAI, not AI Inference)
+	 */
 	private _isAzureAiInference(baseUrl?: string): boolean {
 		const urlHost = this._getUrlHost(baseUrl)
 		return urlHost.endsWith(".services.ai.azure.com")
+	}
+
+	/**
+	 * Detects Azure OpenAI "Responses API" URLs by host and path.
+	 * - Host must be "openai.azure.com" or end with ".openai.azure.com"
+	 * - Path may be one of:
+	 *   • "/openai/v1/responses" (preferred v1 path)
+	 *   • "/openai/responses"    (portal/legacy style)
+	 *   • any path ending with "/responses"
+	 * - Trailing slashes are trimmed before matching.
+	 *
+	 * This is used to favor the Responses API flavor on Azure OpenAI when the base URL already
+	 * points to a Responses path.
+	 *
+	 * Examples (true):
+	 * - https://myres.openai.azure.com/openai/v1/responses?api-version=preview
+	 * - https://myres.openai.azure.com/openai/responses?api-version=2025-04-01-preview
+	 * - https://openai.azure.com/openai/v1/responses
+	 *
+	 * Examples (false):
+	 * - https://myres.openai.azure.com/openai/v1/chat/completions
+	 * - https://api.openai.com/v1/responses         (not an Azure host)
+	 */
+	private _isAzureOpenAiResponses(baseUrl?: string): boolean {
+		try {
+			if (!baseUrl) return false
+			const u = new URL(baseUrl)
+			const host = u.host
+			const path = u.pathname.replace(/\/+$/, "")
+			if (!(host.endsWith(".openai.azure.com") || host === "openai.azure.com")) return false
+			return (
+				path.endsWith("/openai/v1/responses") ||
+				path.endsWith("/openai/responses") ||
+				path.endsWith("/responses")
+			)
+		} catch {
+			return false
+		}
+	}
+
+	/**
+	 * Normalizes Azure OpenAI "Responses" portal URLs to an SDK-friendly base and version.
+	 *
+	 * Why:
+	 * - The Azure portal often presents a non-v1 Responses endpoint such as:
+	 *   https://{res}.openai.azure.com/openai/responses?api-version=2025-04-01-preview
+	 *   which is not the ideal base for SDK clients. We convert it to:
+	 *   baseURL = https://{res}.openai.azure.com/openai/v1
+	 *   apiVersionOverride = "preview"
+	 *
+	 * What it does:
+	 * - If the input is an Azure OpenAI host and its path is exactly "/openai/responses"
+	 *   with api-version=2025-04-01-preview, we:
+	 *     • return { baseURL: "https://{host}/openai/v1", apiVersionOverride: "preview" }
+	 * - If the input is already "/openai/v1/responses", we similarly normalize the base to "/openai/v1"
+	 *   and set apiVersionOverride to "preview".
+	 * - Otherwise, returns the original URL unchanged.
+	 *
+	 * Scope:
+	 * - Only applies to Azure OpenAI hosts ("openai.azure.com" or "*.openai.azure.com").
+	 * - Non-Azure URLs or already SDK-friendly bases are returned as-is.
+	 *
+	 * Examples:
+	 * - In:  https://sample.openai.azure.com/openai/responses?api-version=2025-04-01-preview
+	 *   Out: baseURL=https://sample.openai.azure.com/openai/v1, apiVersionOverride="preview"
+	 *
+	 * - In:  https://sample.openai.azure.com/openai/v1/responses?api-version=preview
+	 *   Out: baseURL=https://sample.openai.azure.com/openai/v1, apiVersionOverride="preview"
+	 *
+	 * - In:  https://api.openai.com/v1/responses
+	 *   Out: baseURL unchanged (non-Azure)
+	 */
+	private _normalizeAzureResponsesBaseUrlAndVersion(inputBaseUrl: string): {
+		baseURL: string
+		apiVersionOverride?: string
+	} {
+		try {
+			const url = new URL(inputBaseUrl)
+			const isAzureHost = url.hostname.endsWith(".openai.azure.com") || url.hostname === "openai.azure.com"
+			const pathname = (url.pathname || "").replace(/\/+$/, "")
+
+			// 1) Azure portal "non-v1" shape:
+			//    https://{res}.openai.azure.com/openai/responses?api-version=2025-04-01-preview
+			const isPortalNonV1 =
+				isAzureHost &&
+				pathname === "/openai/responses" &&
+				url.searchParams.get("api-version") === "2025-04-01-preview"
+
+			if (isPortalNonV1) {
+				const normalized = `${url.protocol}//${url.host}/openai/v1`
+				const ver = "preview"
+				return { baseURL: normalized, apiVersionOverride: ver }
+			}
+
+			// 2) v1 responses path passed as base URL:
+			//    https://{res}.openai.azure.com/openai/v1/responses?api-version=preview
+			// Normalize base to '/openai/v1' and force apiVersion 'preview' for Azure Responses v1 preview.
+			const isV1ResponsesPath = isAzureHost && pathname === "/openai/v1/responses"
+			if (isV1ResponsesPath) {
+				const normalized = `${url.protocol}//${url.host}/openai/v1`
+				const ver = "preview"
+				return { baseURL: normalized, apiVersionOverride: ver }
+			}
+
+			// If it's already '/openai/v1' or any other valid path, keep as-is
+			return { baseURL: inputBaseUrl }
+		} catch {
+			return { baseURL: inputBaseUrl }
+		}
 	}
 
 	/**
@@ -447,6 +730,458 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			// Using max_completion_tokens as max_tokens is deprecated
 			requestOptions.max_completion_tokens = this.options.modelMaxTokens || modelInfo.maxTokens
 		}
+	}
+
+	// --- Responses helpers ---
+
+	private async *_handleResponsesFlavor(
+		systemPrompt: string,
+		messages: Anthropic.Messages.MessageParam[],
+		metadata: ApiHandlerCreateMessageMetadata | undefined,
+		modelInfo: ModelInfo,
+		openAiParams: any,
+	): ApiStream {
+		const modelId = this.options.openAiModelId ?? ""
+		const nonStreaming = !(this.options.openAiStreamingEnabled ?? true)
+
+		// Determine conversation continuity id (skip when explicitly suppressed)
+		const previousId = metadata?.suppressPreviousResponseId
+			? undefined
+			: (metadata?.previousResponseId ?? this.lastResponseId)
+
+		// Prepare Responses API input per test expectations:
+		// - Non-minimal text-only => single string with Developer/User lines
+		// - Minimal (previous_response_id) => single string "User: ..." when last user has no images
+		// - Image cases => structured array; inject Developer preface as first item (non-minimal only)
+		const lastUserMessage = [...messages].reverse().find((m) => m.role === "user")
+		const lastUserHasImages =
+			!!lastUserMessage &&
+			Array.isArray(lastUserMessage.content) &&
+			lastUserMessage.content.some((b: any) => (b as any)?.type === "image")
+		const minimalInputMode = Boolean(previousId)
+
+		let inputPayload: unknown
+		if (minimalInputMode && lastUserMessage) {
+			// Minimal mode: only latest user turn
+			if (lastUserHasImages) {
+				inputPayload = this._toResponsesInput([lastUserMessage])
+			} else {
+				inputPayload = this._formatResponsesSingleMessage(lastUserMessage, true)
+			}
+		} else if (lastUserHasImages && lastUserMessage) {
+			// Initial turn with images: include Developer preface and minimal context
+			const lastAssistantMessage = [...messages].reverse().find((m) => m.role === "assistant")
+			const messagesForArray = messages.filter((m) => {
+				if (m.role === "assistant") {
+					return lastAssistantMessage ? m === lastAssistantMessage : false
+				}
+				if (m.role === "user") {
+					const hasImage =
+						Array.isArray(m.content) && m.content.some((b: any) => (b as any)?.type === "image")
+					return hasImage || m === lastUserMessage
+				}
+				return false
+			})
+
+			const arrayInput = this._toResponsesInput(messagesForArray)
+			const developerPreface = {
+				role: "user" as const,
+				content: [{ type: "input_text" as const, text: `Developer: ${systemPrompt}` }],
+			}
+			inputPayload = [developerPreface, ...arrayInput]
+		} else {
+			// Pure text history: compact transcript string
+			inputPayload = this._formatResponsesInput(systemPrompt, messages)
+		}
+
+		// Build base payload: use top-level instructions; default to storing unless explicitly disabled
+		const basePayload: Record<string, unknown> = {
+			model: modelId,
+			input: inputPayload,
+			...(previousId ? { previous_response_id: previousId } : {}),
+			instructions: systemPrompt,
+			store: metadata?.store !== false,
+		}
+
+		// Reasoning effort (support "minimal"; include summary: "auto" unless disabled)
+		if (this.options.enableReasoningEffort && (this.options.reasoningEffort || openAiParams?.reasoningEffort)) {
+			const effort = (this.options.reasoningEffort || openAiParams?.reasoningEffort) as
+				| "minimal"
+				| "low"
+				| "medium"
+				| "high"
+				| undefined
+			if (effort) {
+				;(
+					basePayload as { reasoning?: { effort: "minimal" | "low" | "medium" | "high"; summary?: "auto" } }
+				).reasoning = {
+					effort,
+					...(this.options.enableGpt5ReasoningSummary !== false ? { summary: "auto" as const } : {}),
+				}
+			}
+		}
+
+		// Temperature: include only if model supports it
+		const deepseekReasoner = modelId.includes("deepseek-reasoner") || (this.options.openAiR1FormatEnabled ?? false)
+		if (modelInfo.supportsTemperature !== false) {
+			if (this.options.modelTemperature !== undefined) {
+				;(basePayload as Record<string, unknown>).temperature = this.options.modelTemperature
+			} else if (deepseekReasoner) {
+				;(basePayload as Record<string, unknown>).temperature = DEEP_SEEK_DEFAULT_TEMPERATURE
+			}
+		}
+
+		// Verbosity: include when provided; retry logic removes it on 400
+		if (this.options.verbosity) {
+			;(basePayload as { text?: { verbosity: "low" | "medium" | "high" } }).text = {
+				verbosity: this.options.verbosity as "low" | "medium" | "high",
+			}
+		}
+
+		// Always include max_output_tokens for Responses API to cap output length
+		const reservedMax = openAiParams?.maxTokens
+		;(basePayload as Record<string, unknown>).max_output_tokens =
+			this.options.modelMaxTokens || reservedMax || modelInfo.maxTokens
+
+		// Non-streaming path
+		if (nonStreaming) {
+			const response = await this._responsesCreateWithRetries(basePayload, {
+				usedArrayInput: Array.isArray(inputPayload),
+				lastUserMessage,
+				previousId,
+				systemPrompt,
+				messages,
+			})
+			yield* this._yieldResponsesResult(response, modelInfo)
+			return
+		}
+
+		// Streaming path (auto-fallback to non-streaming result if provider ignores stream flag)
+		const streamingPayload: Record<string, unknown> = { ...basePayload, stream: true }
+		const maybeStream = await this._responsesCreateWithRetries(streamingPayload, {
+			usedArrayInput: Array.isArray(inputPayload),
+			lastUserMessage,
+			previousId,
+			systemPrompt,
+			messages,
+		})
+
+		const isAsyncIterable = (obj: unknown): obj is AsyncIterable<unknown> =>
+			typeof (obj as AsyncIterable<unknown>)[Symbol.asyncIterator] === "function"
+
+		if (isAsyncIterable(maybeStream)) {
+			for await (const chunk of handleResponsesStream(maybeStream, {
+				onResponseId: (id) => {
+					this.lastResponseId = id
+				},
+			})) {
+				yield chunk
+			}
+		} else {
+			// Some providers may ignore the stream flag and return a complete response
+			yield* this._yieldResponsesResult(maybeStream, modelInfo)
+		}
+	}
+
+	/**
+	 * Determines which OpenAI-compatible API flavor to use based on the URL path.
+	 * - This is purely path-based and provider-agnostic (works for OpenAI, Azure OpenAI after normalization, etc.).
+	 *
+	 * Rules:
+	 * - If path contains "/v1/responses" OR ends with "/responses" => "responses"
+	 * - Else if path contains "/chat/completions"                  => "chat"
+	 * - Else default to "chat" for backward compatibility
+	 *
+	 * Notes:
+	 * - Trailing slashes are not required to match; we rely on substring checks.
+	 * - Azure "portal" style URLs are normalized beforehand where applicable.
+	 *
+	 * Examples:
+	 * - https://api.openai.com/v1/responses            -> "responses"
+	 * - https://api.openai.com/v1/chat/completions     -> "chat"
+	 * - https://myres.openai.azure.com/openai/v1       -> "chat" (default)
+	 * - https://myres.openai.azure.com/openai/v1/responses -> "responses"
+	 */
+	private _resolveApiFlavor(baseUrl: string): "responses" | "chat" {
+		// Auto-detect by URL path
+		const url = this._safeParseUrl(baseUrl)
+		const path = url?.pathname || ""
+		if (path.includes("/v1/responses") || path.endsWith("/responses")) {
+			return "responses"
+		}
+		if (path.includes("/chat/completions")) {
+			return "chat"
+		}
+		// Default to Chat Completions for backward compatibility
+		return "chat"
+	}
+
+	private _safeParseUrl(input?: string): URL | undefined {
+		try {
+			if (!input) return undefined
+			return new URL(input)
+		} catch {
+			return undefined
+		}
+	}
+
+	private _toResponsesInput(anthropicMessages: Anthropic.Messages.MessageParam[]): Array<{
+		role: "user" | "assistant"
+		content: Array<
+			| { type: "input_text"; text: string }
+			| { type: "input_image"; image_url: string }
+			| { type: "output_text"; text: string }
+		>
+	}> {
+		const input: Array<{
+			role: "user" | "assistant"
+			content: Array<
+				| { type: "input_text"; text: string }
+				| { type: "input_image"; image_url: string }
+				| { type: "output_text"; text: string }
+			>
+		}> = []
+
+		for (const msg of anthropicMessages) {
+			const role = msg.role === "assistant" ? "assistant" : "user"
+			const parts: Array<
+				| { type: "input_text"; text: string }
+				| { type: "input_image"; image_url: string }
+				| { type: "output_text"; text: string }
+			> = []
+
+			if (typeof msg.content === "string") {
+				if (msg.content.length > 0) {
+					if (role === "assistant") {
+						parts.push({ type: "output_text", text: msg.content })
+					} else {
+						parts.push({ type: "input_text", text: msg.content })
+					}
+				}
+			} else if (Array.isArray(msg.content)) {
+				for (const block of msg.content) {
+					if (block.type === "text") {
+						if (role === "assistant") {
+							parts.push({ type: "output_text", text: block.text })
+						} else {
+							parts.push({ type: "input_text", text: block.text })
+						}
+					} else if (block.type === "image") {
+						// Images are treated as user input; ignore images on assistant turns
+						if (role === "user") {
+							parts.push({
+								type: "input_image",
+								image_url: `data:${block.source.media_type};base64,${block.source.data}`,
+							})
+						}
+					}
+					// tool_use/tool_result are omitted in this minimal mapping (can be added as needed)
+				}
+			}
+
+			if (parts.length > 0) {
+				input.push({ role, content: parts })
+			}
+		}
+		return input
+	}
+
+	private _extractResponsesText(response: any): string | undefined {
+		// Prefer the simple output_text if present, otherwise attempt to parse output array
+		if (response?.output_text) return response.output_text
+		if (Array.isArray(response?.output)) {
+			// Find assistant message with output_text
+			for (const item of response.output) {
+				if (item?.type === "message" && Array.isArray(item.content)) {
+					const textPart = item.content.find(
+						(c: any) => c.type === "output_text" && typeof c.text === "string",
+					)
+					if (textPart?.text) return textPart.text
+				}
+			}
+		}
+		return undefined
+	}
+
+	private _isInputTextInvalidError(err: unknown): boolean {
+		if (err == null || typeof err !== "object") return false
+		const anyErr = err as {
+			status?: unknown
+			response?: { status?: unknown }
+			message?: unknown
+			error?: { message?: unknown }
+		}
+		const statusRaw = anyErr.status ?? anyErr.response?.status
+		const status = typeof statusRaw === "number" ? statusRaw : Number(statusRaw)
+		const msgRaw = (anyErr.message ?? anyErr.error?.message ?? "").toString().toLowerCase()
+		return status === 400 && msgRaw.includes("invalid value") && msgRaw.includes("input_text")
+	}
+
+	/**
+	 * Centralized Responses.create with one-shot retries for common provider errors:
+	 * - 400 "Previous response ... not found" -> drop previous_response_id and retry
+	 * - 400 unknown/unsupported "text.verbosity" -> remove text and retry
+	 * - 400 invalid value for input_text (Azure) -> rebuild single-message string input and retry
+	 * Returns either an AsyncIterable (streaming) or a full response object (non-streaming).
+	 */
+	private async _responsesCreateWithRetries(
+		payload: Record<string, unknown>,
+		opts: {
+			usedArrayInput: boolean
+			lastUserMessage?: Anthropic.Messages.MessageParam
+			previousId?: string
+			systemPrompt: string
+			messages: Anthropic.Messages.MessageParam[]
+		},
+	): Promise<unknown> {
+		const create = (body: Record<string, unknown>) => {
+			const hasResponsesCreate = (
+				obj: unknown,
+			): obj is { responses: { create: (b: Record<string, unknown>) => Promise<unknown> } } => {
+				if (obj == null || typeof obj !== "object") return false
+				const responses = (obj as Record<string, unknown>).responses
+				if (responses == null || typeof responses !== "object") return false
+				return typeof (responses as Record<string, unknown>).create === "function"
+			}
+			if (!hasResponsesCreate(this.client)) {
+				throw new Error("Responses API not available on client")
+			}
+			return this.client.responses.create(body)
+		}
+
+		try {
+			return await create(payload)
+		} catch (err: unknown) {
+			// Retry without previous_response_id if server rejects it
+			if (opts.previousId && this._isPreviousResponseNotFoundError(err)) {
+				const { previous_response_id: _omitPrev, ...withoutPrev } = payload as {
+					previous_response_id?: unknown
+					[key: string]: unknown
+				}
+				this.lastResponseId = undefined
+				return await create(withoutPrev)
+			}
+
+			// Graceful downgrade if verbosity is rejected by server
+			if ("text" in payload && this._isVerbosityUnsupportedError(err)) {
+				const { text: _omit, ...withoutVerbosity } = payload as { text?: unknown } & Record<string, unknown>
+				return await create(withoutVerbosity)
+			}
+
+			// Azure-specific fallback when array input is rejected
+			if (opts.usedArrayInput && this._isInputTextInvalidError(err)) {
+				const fallbackInput =
+					opts.previousId && opts.lastUserMessage
+						? this._formatResponsesSingleMessage(opts.lastUserMessage, true)
+						: this._formatResponsesInput(opts.systemPrompt, opts.messages)
+
+				const retryPayload: Record<string, unknown> = {
+					...payload,
+					input: fallbackInput,
+				}
+				return await create(retryPayload)
+			}
+
+			throw err
+		}
+	}
+	private async *_yieldResponsesResult(response: any, modelInfo: ModelInfo): ApiStream {
+		// Capture response id for continuity when present
+		try {
+			const respId = (response as { id?: unknown } | undefined)?.id
+			if (typeof respId === "string" && respId.length > 0) {
+				this.lastResponseId = respId
+			}
+		} catch {
+			// ignore
+		}
+
+		const text = this._extractResponsesText(response) ?? ""
+		if (text) {
+			yield { type: "text", text }
+		}
+		// Translate usage fields if present
+		const usage = response?.usage
+		if (usage) {
+			yield {
+				type: "usage",
+				inputTokens: usage.input_tokens || usage.prompt_tokens || 0,
+				outputTokens: usage.output_tokens || usage.completion_tokens || 0,
+				cacheWriteTokens: usage.cache_creation_input_tokens || undefined,
+				cacheReadTokens: usage.cache_read_input_tokens || undefined,
+			}
+		}
+	}
+
+	private _isVerbosityUnsupportedError(err: unknown): boolean {
+		if (err == null || typeof err !== "object") return false
+
+		// you had hasOwnProperty("message") twice — likely a typo
+		if (!("message" in err)) return false
+
+		const msg = String((err as { message?: unknown }).message ?? "").toLowerCase()
+
+		const rawStatus = "status" in err ? (err as { status?: unknown }).status : undefined
+		const status = typeof rawStatus === "number" ? rawStatus : Number(rawStatus)
+
+		return (
+			status === 400 &&
+			(msg.includes("verbosity") || msg.includes("unknown parameter") || msg.includes("unsupported"))
+		)
+	}
+
+	private _isPreviousResponseNotFoundError(err: unknown): boolean {
+		if (err == null || typeof err !== "object") return false
+		const anyErr = err as {
+			status?: unknown
+			response?: { status?: unknown }
+			message?: unknown
+			error?: { message?: unknown }
+		}
+		const statusRaw = anyErr.status ?? anyErr.response?.status
+		const status = typeof statusRaw === "number" ? statusRaw : Number(statusRaw)
+		const msg = (anyErr.message ?? anyErr.error?.message ?? "").toString().toLowerCase()
+		return status === 400 && (msg.includes("previous response") || msg.includes("not found"))
+	}
+
+	// ---- Responses input formatting (align with openai-native.ts) ----
+
+	private _formatResponsesInput(systemPrompt: string, messages: Anthropic.Messages.MessageParam[]): string {
+		// Developer role for system prompt
+		let formattedInput = `Developer: ${systemPrompt}\n\n`
+		for (const message of messages) {
+			const role = message.role === "user" ? "User" : "Assistant"
+			if (typeof message.content === "string") {
+				formattedInput += `${role}: ${message.content}\n\n`
+			} else if (Array.isArray(message.content)) {
+				const textContent = message.content
+					.filter((block) => block.type === "text")
+					.map((block) => block.text)
+					.join("\n")
+				if (textContent) {
+					formattedInput += `${role}: ${textContent}\n\n`
+				}
+			}
+		}
+		return formattedInput.trim()
+	}
+
+	private _formatResponsesSingleMessage(
+		message: Anthropic.Messages.MessageParam,
+		includeRole: boolean = true,
+	): string {
+		const role = includeRole ? (message.role === "user" ? "User" : "Assistant") + ": " : ""
+		if (typeof message.content === "string") {
+			return `${role}${message.content}`
+		}
+		if (Array.isArray(message.content)) {
+			const textContent = message.content
+				.filter((block) => block.type === "text")
+				.map((block) => block.text)
+				.join("\n")
+			return `${role}${textContent}`
+		}
+		return role
 	}
 }
 
