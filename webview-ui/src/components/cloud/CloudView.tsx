@@ -23,7 +23,13 @@ type CloudViewProps = {
 
 export const CloudView = ({ userInfo, isAuthenticated, cloudApiUrl, onDone }: CloudViewProps) => {
 	const { t } = useAppTranslation()
-	const { remoteControlEnabled, setRemoteControlEnabled, taskSyncEnabled, setTaskSyncEnabled } = useExtensionState()
+	const {
+		remoteControlEnabled,
+		setRemoteControlEnabled,
+		taskSyncEnabled,
+		setTaskSyncEnabled,
+		featureRoomoteControlEnabled,
+	} = useExtensionState()
 	const wasAuthenticatedRef = useRef(false)
 	const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 	const manualUrlInputRef = useRef<HTMLInputElement | null>(null)
@@ -146,11 +152,6 @@ export const CloudView = ({ userInfo, isAuthenticated, cloudApiUrl, onDone }: Cl
 		const newValue = !taskSyncEnabled
 		setTaskSyncEnabled(newValue)
 		vscode.postMessage({ type: "taskSyncEnabled", bool: newValue })
-		// If disabling task sync, also disable remote control
-		if (!newValue && remoteControlEnabled) {
-			setRemoteControlEnabled(false)
-			vscode.postMessage({ type: "remoteControlEnabled", bool: false })
-		}
 	}
 
 	return (
@@ -208,15 +209,21 @@ export const CloudView = ({ userInfo, isAuthenticated, cloudApiUrl, onDone }: Cl
 								size="medium"
 								aria-label={t("cloud:taskSync")}
 								data-testid="task-sync-toggle"
+								disabled={!!userInfo?.organizationId}
 							/>
 							<span className="font-medium text-vscode-foreground">{t("cloud:taskSync")}</span>
 						</div>
 						<div className="text-vscode-descriptionForeground text-sm mt-1 mb-4 ml-8">
 							{t("cloud:taskSyncDescription")}
 						</div>
+						{userInfo?.organizationId && (
+							<div className="text-vscode-descriptionForeground text-sm mt-1 mb-4 ml-8 italic">
+								{t("cloud:taskSyncManagedByOrganization")}
+							</div>
+						)}
 
-						{/* Remote Control Toggle - Only shown when extensionBridgeEnabled is true */}
-						{userInfo?.extensionBridgeEnabled && (
+						{/* Remote Control Toggle - Only shown when both extensionBridgeEnabled and featureRoomoteControlEnabled are true */}
+						{userInfo?.extensionBridgeEnabled && featureRoomoteControlEnabled && (
 							<>
 								<div className="flex items-center gap-3 mb-2">
 									<ToggleSwitch

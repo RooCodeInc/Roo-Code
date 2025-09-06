@@ -11,6 +11,7 @@ import {
 	type ClineMessage,
 	type TelemetrySetting,
 	TelemetryEventName,
+	UserSettingsConfig,
 } from "@roo-code/types"
 import { CloudService } from "@roo-code/cloud"
 import { TelemetryService } from "@roo-code/telemetry"
@@ -1188,27 +1189,21 @@ export const webviewMessageHandler = async (
 					`CloudService#updateUserSettings failed: ${error instanceof Error ? error.message : String(error)}`,
 				)
 			}
-
-			try {
-				await provider.remoteControlEnabled(message.bool ?? false)
-			} catch (error) {
-				provider.log(
-					`ClineProvider#remoteControlEnabled failed: ${error instanceof Error ? error.message : String(error)}`,
-				)
-			}
-
-			await provider.postStateToWebview()
 			break
 		case "taskSyncEnabled":
+			const enabled = message.bool ?? false
+			const updatedSettings: Partial<UserSettingsConfig> = {
+				taskSyncEnabled: enabled,
+			}
+			// If disabling task sync, also disable remote control
+			if (!enabled) {
+				updatedSettings.extensionBridgeEnabled = false
+			}
 			try {
-				await CloudService.instance.updateUserSettings({
-					taskSyncEnabled: message.bool ?? true,
-				})
+				await CloudService.instance.updateUserSettings(updatedSettings)
 			} catch (error) {
 				provider.log(`Failed to update cloud settings for task sync: ${error}`)
 			}
-			await updateGlobalState("taskSyncEnabled", message.bool ?? true)
-			await provider.postStateToWebview()
 			break
 		case "refreshAllMcpServers": {
 			const mcpHub = provider.getMcpHub()

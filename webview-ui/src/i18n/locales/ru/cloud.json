@@ -16,6 +16,7 @@
 	"remoteControl": "Roomote Control",
 	"remoteControlDescription": "Разрешить управление задачами из Roo Code Cloud",
 	"remoteControlRequiresTaskSync": "Для использования Roomote Control должна быть включена синхронизация задач",
+	"taskSyncManagedByOrganization": "Синхронизация задач управляется вашей организацией",
 	"usageMetricsAlwaysReported": "Информация об использовании модели всегда сообщается при входе в систему",
 	"authWaiting": "Ожидание завершения аутентификации...",
 	"havingTrouble": "Проблемы?",

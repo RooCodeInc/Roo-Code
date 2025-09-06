@@ -613,11 +613,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.emit(RooCodeEventName.Message, { action: "created", message })
 		await this.saveClineMessages()
 
-		// Check if we should capture the message
-		// Only capture if: not partial, cloud is enabled, and taskSyncEnabled is true
-		const state = await this.providerRef.deref()?.getState()
-		const taskSyncEnabled = state?.taskSyncEnabled ?? true // Default to true for backward compatibility
-		const shouldCaptureMessage = message.partial !== true && CloudService.isEnabled() && taskSyncEnabled
+		const shouldCaptureMessage = message.partial !== true && CloudService.isEnabled()
 
 		if (shouldCaptureMessage) {
 			CloudService.instance.captureEvent({
@@ -650,11 +646,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		await provider?.postMessageToWebview({ type: "messageUpdated", clineMessage: message })
 		this.emit(RooCodeEventName.Message, { action: "updated", message })
 
-		// Check if we should capture the message
-		// Only capture if: not partial, cloud is enabled, and taskSyncEnabled is true
-		const state = await this.providerRef.deref()?.getState()
-		const taskSyncEnabled = state?.taskSyncEnabled ?? true // Default to true for backward compatibility
-		const shouldCaptureMessage = message.partial !== true && CloudService.isEnabled() && taskSyncEnabled
+		const shouldCaptureMessage = message.partial !== true && CloudService.isEnabled()
 
 		if (shouldCaptureMessage) {
 			CloudService.instance.captureEvent({

@@ -16,6 +16,7 @@
 	"remoteControl": "Roomote Control",
 	"remoteControlDescription": "Permet de contrôler les tâches depuis Roo Code Cloud",
 	"remoteControlRequiresTaskSync": "La synchronisation des tâches doit être activée pour utiliser Roomote Control",
+	"taskSyncManagedByOrganization": "La synchronisation des tâches est gérée par votre organisation",
 	"usageMetricsAlwaysReported": "Les informations d'utilisation du modèle sont toujours signalées lors de la connexion",
 	"authWaiting": "En attente de la fin de l'authentification...",
 	"havingTrouble": "Des difficultés ?",
