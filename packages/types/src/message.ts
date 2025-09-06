@@ -205,6 +205,7 @@ export const clineMessageSchema = z.object({
 	ask: clineAskSchema.optional(),
 	say: clineSaySchema.optional(),
 	text: z.string().optional(),
+	title: z.string().optional(), // Custom title for error messages and other displays
 	images: z.array(z.string()).optional(),
 	partial: z.boolean().optional(),
 	reasoning: z.string().optional(),

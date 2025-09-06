@@ -14,5 +14,50 @@
 		"errors": {
 			"policy_restriction": "Kan geen nieuwe taak aanmaken vanwege beleidsbeperkingen."
 		}
+	},
+	"errors": {
+		"toolCallError": "Fout bij het aanroepen van gereedschap: {{toolName}}",
+		"toolExecutionError": "Fout bij het uitvoeren van gereedschap",
+		"missingParamForTool": "Roo heeft geprobeerd {{toolName}} te gebruiken zonder waarde voor de vereiste parameter '{{paramName}}'. Opnieuw proberen...",
+		"missingParamForToolWithPath": "Roo heeft geprobeerd {{toolName}} te gebruiken voor '{{relPath}}' zonder waarde voor de vereiste parameter '{{paramName}}'. Opnieuw proberen...",
+		"fileNotFound": "Bestand niet gevonden",
+		"parseError": "Parseerfout",
+		"commandTimeout": "Commando time-out",
+		"permissionDenied": "Toestemming geweigerd",
+		"networkError": "Netwerkfout",
+		"invalidInput": "Ongeldige invoer",
+		"operationFailed": "Bewerking mislukt",
+		"resourceNotFound": "Bron niet gevonden",
+		"configurationError": "Configuratiefout",
+		"authenticationFailed": "Authenticatie mislukt",
+		"invalidLineNumber": "Ongeldig regelnummer",
+		"fileAlreadyExists": "Bestand bestaat al",
+		"directoryNotFound": "Map niet gevonden",
+		"invalidPath": "Ongeldig pad",
+		"readError": "Leesfout",
+		"writeError": "Schrijffout",
+		"syntaxError": "Syntaxisfout",
+		"validationError": "Validatiefout",
+		"timeoutError": "Time-outfout",
+		"connectionError": "Verbindingsfout"
+	},
+	"executeCommand": {
+		"workingDirMissing": "Werkmap niet gevonden: '{{workingDir}}'",
+		"shellIntegrationGenericError": "Uitvoering van opdracht mislukt vanwege onverwachte fout bij shell-integratie."
+	},
+	"fetchInstructions": {
+		"errors": {
+			"invalidRequest": "Ongeldig instructieverzoek voor taak '{{task}}'."
+		}
+	},
+	"generic": {
+		"noChanges": "Geen wijzigingen nodig voor '{{path}}'.",
+		"changesRejected": "Wijzigingen zijn afgewezen door de gebruiker."
+	},
+	"attemptCompletion": {
+		"errors": {
+			"incompleteTodos": "Kan taak niet voltooien zolang er onvolledige todos zijn. Voltooi alle todos voordat u probeert te voltooien."
+		},
+		"userFeedbackLead": "De gebruiker heeft feedback gegeven over de resultaten. Overweeg hun input om de taak voort te zetten en probeer dan opnieuw te voltooien."
 	}
 }

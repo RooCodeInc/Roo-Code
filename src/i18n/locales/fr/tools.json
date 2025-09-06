@@ -14,5 +14,50 @@
 		"errors": {
 			"policy_restriction": "Impossible de créer une nouvelle tâche en raison de restrictions de politique."
 		}
+	},
+	"errors": {
+		"toolCallError": "Erreur d'appel d'outil : {{toolName}}",
+		"toolExecutionError": "Erreur d'exécution de l'outil",
+		"missingParamForTool": "Roo a essayé d'utiliser {{toolName}} sans valeur pour le paramètre obligatoire '{{paramName}}'. Nouvel essai...",
+		"missingParamForToolWithPath": "Roo a essayé d'utiliser {{toolName}} pour '{{relPath}}' sans valeur pour le paramètre obligatoire '{{paramName}}'. Nouvel essai...",
+		"fileNotFound": "Fichier non trouvé",
+		"parseError": "Erreur d'analyse",
+		"commandTimeout": "Délai d'attente de la commande dépassé",
+		"permissionDenied": "Autorisation refusée",
+		"networkError": "Erreur réseau",
+		"invalidInput": "Entrée invalide",
+		"operationFailed": "L'opération a échoué",
+		"resourceNotFound": "Ressource non trouvée",
+		"configurationError": "Erreur de configuration",
+		"authenticationFailed": "Échec de l'authentification",
+		"invalidLineNumber": "Numéro de ligne invalide",
+		"fileAlreadyExists": "Le fichier existe déjà",
+		"directoryNotFound": "Répertoire non trouvé",
+		"invalidPath": "Chemin invalide",
+		"readError": "Erreur de lecture",
+		"writeError": "Erreur d'écriture",
+		"syntaxError": "Erreur de syntaxe",
+		"validationError": "Erreur de validation",
+		"timeoutError": "Erreur de délai d'attente",
+		"connectionError": "Erreur de connexion"
+	},
+	"executeCommand": {
+		"workingDirMissing": "Répertoire de travail introuvable : '{{workingDir}}'",
+		"shellIntegrationGenericError": "L'exécution de la commande a échoué en raison d'une erreur inattendue d'intégration du shell."
+	},
+	"fetchInstructions": {
+		"errors": {
+			"invalidRequest": "Demande d'instructions non valide pour la tâche '{{task}}'."
+		}
+	},
+	"generic": {
+		"noChanges": "Aucune modification n'est nécessaire pour '{{path}}'.",
+		"changesRejected": "Les modifications ont été rejetées par l'utilisateur."
+	},
+	"attemptCompletion": {
+		"errors": {
+			"incompleteTodos": "Impossible de terminer la tâche tant qu'il y a des tâches incomplètes. Veuillez terminer toutes les tâches avant de tenter de la terminer."
+		},
+		"userFeedbackLead": "L'utilisateur a fourni des commentaires sur les résultats. Tenez compte de leurs commentaires pour poursuivre la tâche, puis tentez à nouveau de la terminer."
 	}
 }

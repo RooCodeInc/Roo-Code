@@ -41,7 +41,7 @@ export async function switchModeTool(
 
 			if (!targetMode) {
 				cline.recordToolError("switch_mode")
-				pushToolResult(formatResponse.toolError(`Invalid mode: ${mode_slug}`))
+				pushToolResult(formatResponse.toolError(`Invalid mode: ${mode_slug}`, "switch_mode"))
 				return
 			}
 

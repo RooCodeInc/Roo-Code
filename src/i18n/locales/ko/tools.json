@@ -14,5 +14,50 @@
 		"errors": {
 			"policy_restriction": "정책 제한으로 인해 새 작업을 생성하지 못했습니다."
 		}
+	},
+	"errors": {
+		"toolCallError": "도구 호출 오류: {{toolName}}",
+		"toolExecutionError": "도구 실행 오류",
+		"missingParamForTool": "Roo가 필수 매개변수 '{{paramName}}'에 대한 값 없이 {{toolName}}을(를) 사용하려고 했습니다. 다시 시도하는 중...",
+		"missingParamForToolWithPath": "Roo가 '{{relPath}}'에 대해 필수 매개변수 '{{paramName}}'에 대한 값 없이 {{toolName}}을(를) 사용하려고 했습니다. 다시 시도하는 중...",
+		"fileNotFound": "파일을 찾을 수 없음",
+		"parseError": "파싱 오류",
+		"commandTimeout": "명령 시간 초과",
+		"permissionDenied": "권한 거부됨",
+		"networkError": "네트워크 오류",
+		"invalidInput": "잘못된 입력",
+		"operationFailed": "작업 실패",
+		"resourceNotFound": "리소스를 찾을 수 없음",
+		"configurationError": "구성 오류",
+		"authenticationFailed": "인증 실패",
+		"invalidLineNumber": "잘못된 줄 번호",
+		"fileAlreadyExists": "파일이 이미 있습니다",
+		"directoryNotFound": "디렉토리를 찾을 수 없습니다",
+		"invalidPath": "잘못된 경로",
+		"readError": "읽기 오류",
+		"writeError": "쓰기 오류",
+		"syntaxError": "구문 오류",
+		"validationError": "유효성 검사 오류",
+		"timeoutError": "시간 초과 오류",
+		"connectionError": "연결 오류"
+	},
+	"executeCommand": {
+		"workingDirMissing": "작업 디렉터리를 찾을 수 없음: '{{workingDir}}'",
+		"shellIntegrationGenericError": "예상치 못한 셸 통합 오류로 인해 명령 실행에 실패했습니다."
+	},
+	"fetchInstructions": {
+		"errors": {
+			"invalidRequest": "'{{task}}' 작업에 대한 잘못된 지침 요청입니다."
+		}
+	},
+	"generic": {
+		"noChanges": "'{{path}}'에 필요한 변경 사항이 없습니다.",
+		"changesRejected": "사용자가 변경 사항을 거부했습니다."
+	},
+	"attemptCompletion": {
+		"errors": {
+			"incompleteTodos": "완료되지 않은 할 일이 있는 동안에는 작업을 완료할 수 없습니다. 완료를 시도하기 전에 모든 할 일을 완료하십시오."
+		},
+		"userFeedbackLead": "사용자가 결과에 대한 피드백을 제공했습니다. 작업을 계속하려면 사용자의 의견을 고려한 다음 다시 완료를 시도하십시오."
 	}
 }

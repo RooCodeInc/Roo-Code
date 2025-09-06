@@ -12,6 +12,7 @@ import { fileExistsAtPath } from "../../utils/fs"
 import { insertGroups } from "../diff/insert-groups"
 import { DEFAULT_WRITE_DELAY_MS } from "@roo-code/types"
 import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
+import { t } from "../../i18n"
 
 export async function insertContentTool(
 	cline: Task,
@@ -64,7 +65,7 @@ export async function insertContentTool(
 
 		if (!accessAllowed) {
 			await cline.say("rooignore_error", relPath)
-			pushToolResult(formatResponse.toolError(formatResponse.rooIgnoreError(relPath)))
+			pushToolResult(formatResponse.toolError(formatResponse.rooIgnoreError(relPath), "insert_content"))
 			return
 		}
 
@@ -76,7 +77,9 @@ export async function insertContentTool(
 		if (isNaN(lineNumber) || lineNumber < 0) {
 			cline.consecutiveMistakeCount++
 			cline.recordToolError("insert_content")
-			pushToolResult(formatResponse.toolError("Invalid line number. Must be a non-negative integer."))
+			pushToolResult(
+				formatResponse.toolError("Invalid line number. Must be a non-negative integer.", "insert_content"),
+			)
 			return
 		}
 
@@ -87,7 +90,9 @@ export async function insertContentTool(
 				cline.consecutiveMistakeCount++
 				cline.recordToolError("insert_content")
 				const formattedError = `Cannot insert content at line ${lineNumber} into a non-existent file. For new files, 'line' must be 0 (to append) or 1 (to insert at the beginning).`
-				await cline.say("error", formattedError)
+				await cline.say("error", formattedError, undefined, undefined, undefined, undefined, {
+					title: "Invalid Line Number",
+				})
 				pushToolResult(formattedError)
 				return
 			}
@@ -126,7 +131,7 @@ export async function insertContentTool(
 			// For existing files, generate diff and check for changes
 			diff = formatResponse.createPrettyPatch(relPath, fileContent, updatedContent)
 			if (!diff) {
-				pushToolResult(`No changes needed for '${relPath}'`)
+				pushToolResult(t("tools:generic.noChanges", { path: relPath }))
 				return
 			}
 			approvalContent = undefined
@@ -160,7 +165,7 @@ export async function insertContentTool(
 			if (!isPreventFocusDisruptionEnabled) {
 				await cline.diffViewProvider.revertChanges()
 			}
-			pushToolResult("Changes were rejected by the user.")
+			pushToolResult(t("tools:generic.changesRejected"))
 			await cline.diffViewProvider.reset()
 			return
 		}

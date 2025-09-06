@@ -242,7 +242,8 @@
 	},
 	"troubleMessage": "Roo ondervindt problemen...",
 	"powershell": {
-		"issues": "Het lijkt erop dat je problemen hebt met Windows PowerShell, zie deze"
+		"issues": "Het lijkt erop dat je problemen hebt met Windows PowerShell, zie deze",
+		"troubleshootingGuide": "probleemoplossingsgids"
 	},
 	"autoApprove": {
 		"title": "Automatisch goedkeuren:",
@@ -338,7 +339,8 @@
 		"wantsToSearchWithPath": "Roo wil de codebase doorzoeken op <code>{{query}}</code> in <code>{{path}}</code>:",
 		"didSearch_one": "1 resultaat gevonden",
 		"didSearch_other": "{{count}} resultaten gevonden",
-		"resultTooltip": "Gelijkenisscore: {{score}} (klik om bestand te openen)"
+		"resultTooltip": "Gelijkenisscore: {{score}} (klik om bestand te openen)",
+		"errorDisplayingResults": "Fout bij het weergeven van zoekresultaten."
 	},
 	"read-batch": {
 		"approve": {

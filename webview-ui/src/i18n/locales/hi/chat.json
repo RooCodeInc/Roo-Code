@@ -242,7 +242,8 @@
 	},
 	"taskCompleted": "कार्य पूरा हुआ",
 	"powershell": {
-		"issues": "ऐसा लगता है कि आपको Windows PowerShell के साथ समस्याएँ हो रही हैं, कृपया इसे देखें"
+		"issues": "ऐसा लगता है कि आपको Windows PowerShell के साथ समस्याएँ हो रही हैं, कृपया इसे देखें",
+		"troubleshootingGuide": "ट्रबलशूटिंग गाइड"
 	},
 	"autoApprove": {
 		"title": "स्वत:-स्वीकृति:",
@@ -338,7 +339,8 @@
 		"wantsToSearchWithPath": "Roo <code>{{path}}</code> में कोडबेस में <code>{{query}}</code> खोजना चाहता है:",
 		"didSearch_one": "1 परिणाम मिला",
 		"didSearch_other": "{{count}} परिणाम मिले",
-		"resultTooltip": "समानता स्कोर: {{score}} (फ़ाइल खोलने के लिए क्लिक करें)"
+		"resultTooltip": "समानता स्कोर: {{score}} (फ़ाइल खोलने के लिए क्लिक करें)",
+		"errorDisplayingResults": "खोज परिणाम दिखाने में त्रुटि।"
 	},
 	"read-batch": {
 		"approve": {

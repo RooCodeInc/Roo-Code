@@ -14,5 +14,50 @@
 		"errors": {
 			"policy_restriction": "Neue Aufgabe konnte aufgrund von Richtlinienbeschränkungen nicht erstellt werden."
 		}
+	},
+	"errors": {
+		"toolCallError": "Tool-Aufruffehler: {{toolName}}",
+		"toolExecutionError": "Tool-Ausführungsfehler",
+		"missingParamForTool": "Roo hat versucht, {{toolName}} ohne Wert für den erforderlichen Parameter '{{paramName}}' zu verwenden. Erneuter Versuch...",
+		"missingParamForToolWithPath": "Roo hat versucht, {{toolName}} für '{{relPath}}' ohne Wert für den erforderlichen Parameter '{{paramName}}' zu verwenden. Erneuter Versuch...",
+		"fileNotFound": "Datei nicht gefunden",
+		"parseError": "Parse-Fehler",
+		"commandTimeout": "Befehl Zeitüberschreitung",
+		"permissionDenied": "Zugriff verweigert",
+		"networkError": "Netzwerkfehler",
+		"invalidInput": "Ungültige Eingabe",
+		"operationFailed": "Vorgang fehlgeschlagen",
+		"resourceNotFound": "Ressource nicht gefunden",
+		"configurationError": "Konfigurationsfehler",
+		"authenticationFailed": "Authentifizierung fehlgeschlagen",
+		"invalidLineNumber": "Invalid Line Number",
+		"fileAlreadyExists": "File Already Exists",
+		"directoryNotFound": "Directory Not Found",
+		"invalidPath": "Invalid Path",
+		"readError": "Read Error",
+		"writeError": "Write Error",
+		"syntaxError": "Syntax Error",
+		"validationError": "Validation Error",
+		"timeoutError": "Timeout Error",
+		"connectionError": "Connection Error"
+	},
+	"executeCommand": {
+		"workingDirMissing": "Arbeitsverzeichnis nicht gefunden: '{{workingDir}}'",
+		"shellIntegrationGenericError": "Befehlsausführung aufgrund unerwarteten Shell-Integrationsfehlers fehlgeschlagen."
+	},
+	"fetchInstructions": {
+		"errors": {
+			"invalidRequest": "Ungültige Anforderungsanweisung für Aufgabe '{{task}}'."
+		}
+	},
+	"generic": {
+		"noChanges": "Keine Änderungen erforderlich für '{{path}}'.",
+		"changesRejected": "Änderungen wurden vom Nutzer abgelehnt."
+	},
+	"attemptCompletion": {
+		"errors": {
+			"incompleteTodos": "Aufgabe kann nicht abgeschlossen werden, solange To-Dos offen sind. Bitte zuerst abschließen."
+		},
+		"userFeedbackLead": "Der Nutzer hat Feedback zu den Ergebnissen gegeben. Berücksichtige es, fahre fort und versuche erneut abzuschließen."
 	}
 }

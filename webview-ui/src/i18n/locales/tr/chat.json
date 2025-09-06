@@ -242,7 +242,8 @@
 	},
 	"taskCompleted": "Görev Tamamlandı",
 	"powershell": {
-		"issues": "Windows PowerShell ile ilgili sorunlar yaşıyor gibi görünüyorsunuz, lütfen şu konuya bakın"
+		"issues": "Windows PowerShell ile ilgili sorunlar yaşıyor gibi görünüyorsunuz, lütfen şu konuya bakın",
+		"troubleshootingGuide": "sorun giderme kılavuzu"
 	},
 	"autoApprove": {
 		"title": "Otomatik-onay:",
@@ -338,7 +339,8 @@
 		"wantsToSearchWithPath": "Roo <code>{{path}}</code> içinde kod tabanında <code>{{query}}</code> aramak istiyor:",
 		"didSearch_one": "1 sonuç bulundu",
 		"didSearch_other": "{{count}} sonuç bulundu",
-		"resultTooltip": "Benzerlik puanı: {{score}} (dosyayı açmak için tıklayın)"
+		"resultTooltip": "Benzerlik puanı: {{score}} (dosyayı açmak için tıklayın)",
+		"errorDisplayingResults": "Arama sonuçları görüntülenirken hata oluştu."
 	},
 	"read-batch": {
 		"approve": {

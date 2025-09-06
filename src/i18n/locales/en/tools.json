@@ -14,5 +14,42 @@
 		"errors": {
 			"policy_restriction": "Failed to create new task due to policy restrictions."
 		}
+	},
+	"executeCommand": {
+		"workingDirMissing": "Working directory '{{workingDir}}' does not exist.",
+		"shellIntegrationGenericError": "Command execution failed due to an unexpected shell integration error."
+	},
+	"fetchInstructions": {
+		"errors": {
+			"invalidRequest": "Invalid request"
+		}
+	},
+	"generic": {
+		"noChanges": "No changes needed for '{{path}}'.",
+		"changesRejected": "Changes were rejected by the user."
+	},
+	"errors": {
+		"toolCallError": "Tool Call Error: {{toolName}}",
+		"toolExecutionError": "Tool Execution Error",
+		"fileNotFound": "File Not Found",
+		"parseError": "Parse error",
+		"commandTimeout": "Command timeout",
+		"permissionDenied": "Permission denied",
+		"networkError": "Network error",
+		"invalidInput": "Invalid input",
+		"operationFailed": "Operation failed",
+		"resourceNotFound": "Resource not found",
+		"configurationError": "Configuration error",
+		"authenticationFailed": "Authentication failed",
+		"invalidLineNumber": "Invalid Line Number",
+		"fileAlreadyExists": "File already exists",
+		"directoryNotFound": "Directory not found",
+		"invalidPath": "Invalid path",
+		"readError": "File Read Error",
+		"writeError": "Write error",
+		"syntaxError": "Syntax error",
+		"validationError": "Validation error",
+		"timeoutError": "Timeout error",
+		"connectionError": "Connection error"
 	}
 }

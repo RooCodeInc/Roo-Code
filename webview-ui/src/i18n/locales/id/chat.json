@@ -219,7 +219,8 @@
 		"wantsToSearchWithPath": "Roo ingin mencari codebase untuk <code>{{query}}</code> di <code>{{path}}</code>:",
 		"didSearch_one": "Ditemukan 1 hasil",
 		"didSearch_other": "Ditemukan {{count}} hasil",
-		"resultTooltip": "Skor kemiripan: {{score}} (klik untuk membuka file)"
+		"resultTooltip": "Skor kemiripan: {{score}} (klik untuk membuka file)",
+		"errorDisplayingResults": "Galat menampilkan hasil pencarian."
 	},
 	"commandOutput": "Output Perintah",
 	"commandExecution": {
@@ -269,7 +270,8 @@
 	},
 	"troubleMessage": "Roo mengalami masalah...",
 	"powershell": {
-		"issues": "Sepertinya kamu mengalami masalah Windows PowerShell, silakan lihat ini"
+		"issues": "Sepertinya kamu mengalami masalah Windows PowerShell, silakan lihat ini",
+		"troubleshootingGuide": "panduan pemecahan masalah"
 	},
 	"autoApprove": {
 		"title": "Auto-approve:",

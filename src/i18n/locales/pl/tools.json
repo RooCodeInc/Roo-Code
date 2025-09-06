@@ -14,5 +14,50 @@
 		"errors": {
 			"policy_restriction": "Nie udało się utworzyć nowego zadania z powodu ograniczeń polityki."
 		}
+	},
+	"errors": {
+		"toolCallError": "Błąd wywołania narzędzia: {{toolName}}",
+		"toolExecutionError": "Błąd wykonania narzędzia",
+		"missingParamForTool": "Roo próbował użyć {{toolName}} bez wartości dla wymaganego parametru '{{paramName}}'. Ponawianie...",
+		"missingParamForToolWithPath": "Roo próbował użyć {{toolName}} dla '{{relPath}}' bez wartości dla wymaganego parametru '{{paramName}}'. Ponawianie...",
+		"fileNotFound": "Nie znaleziono pliku",
+		"parseError": "Błąd parsowania",
+		"commandTimeout": "Przekroczono limit czasu polecenia",
+		"permissionDenied": "Odmowa dostępu",
+		"networkError": "Błąd sieci",
+		"invalidInput": "Nieprawidłowe dane wejściowe",
+		"operationFailed": "Operacja nie powiodła się",
+		"resourceNotFound": "Nie znaleziono zasobu",
+		"configurationError": "Błąd konfiguracji",
+		"authenticationFailed": "Uwierzytelnianie nie powiodło się",
+		"invalidLineNumber": "Nieprawidłowy numer wiersza",
+		"fileAlreadyExists": "Plik już istnieje",
+		"directoryNotFound": "Nie znaleziono katalogu",
+		"invalidPath": "Nieprawidłowa ścieżka",
+		"readError": "Błąd odczytu",
+		"writeError": "Błąd zapisu",
+		"syntaxError": "Błąd składni",
+		"validationError": "Błąd walidacji",
+		"timeoutError": "Błąd limitu czasu",
+		"connectionError": "Błąd połączenia"
+	},
+	"executeCommand": {
+		"workingDirMissing": "Nie znaleziono katalogu roboczego: '{{workingDir}}'",
+		"shellIntegrationGenericError": "Wykonanie polecenia nie powiodło się z powodu nieoczekiwanego błędu integracji powłoki."
+	},
+	"fetchInstructions": {
+		"errors": {
+			"invalidRequest": "Nieprawidłowe żądanie instrukcji dla zadania '{{task}}'."
+		}
+	},
+	"generic": {
+		"noChanges": "Brak koniecznych zmian dla '{{path}}'.",
+		"changesRejected": "Zmiany zostały odrzucone przez użytkownika."
+	},
+	"attemptCompletion": {
+		"errors": {
+			"incompleteTodos": "Nie można ukończyć zadania, gdy istnieją nieukończone zadania. Ukończ wszystkie zadania przed próbą ukończenia."
+		},
+		"userFeedbackLead": "Użytkownik wyraził opinię na temat wyników. Rozważ jego uwagi, aby kontynuować zadanie, a następnie spróbuj ponownie je ukończyć."
 	}
 }

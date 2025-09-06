@@ -14,5 +14,50 @@
 		"errors": {
 			"policy_restriction": "由于策略限制，无法创建新任务。"
 		}
+	},
+	"errors": {
+		"toolCallError": "工具调用错误: {{toolName}}",
+		"toolExecutionError": "工具执行错误",
+		"missingParamForTool": "Roo 尝试使用 {{toolName}} 时缺少必填参数 '{{paramName}}' 的值。正在重试...",
+		"missingParamForToolWithPath": "Roo 在处理 '{{relPath}}' 使用 {{toolName}} 时缺少必填参数 '{{paramName}}' 的值。正在重试...",
+		"fileNotFound": "文件未找到",
+		"parseError": "解析错误",
+		"commandTimeout": "命令超时",
+		"permissionDenied": "权限被拒绝",
+		"networkError": "网络错误",
+		"invalidInput": "无效输入",
+		"operationFailed": "操作失败",
+		"resourceNotFound": "资源未找到",
+		"configurationError": "配置错误",
+		"authenticationFailed": "认证失败",
+		"invalidLineNumber": "Invalid Line Number",
+		"fileAlreadyExists": "File Already Exists",
+		"directoryNotFound": "Directory Not Found",
+		"invalidPath": "Invalid Path",
+		"readError": "Read Error",
+		"writeError": "Write Error",
+		"syntaxError": "Syntax Error",
+		"validationError": "Validation Error",
+		"timeoutError": "Timeout Error",
+		"connectionError": "Connection Error"
+	},
+	"executeCommand": {
+		"workingDirMissing": "未找到工作目录: '{{workingDir}}'",
+		"shellIntegrationGenericError": "由于意外的终端 shell 集成错误，命令执行失败。"
+	},
+	"fetchInstructions": {
+		"errors": {
+			"invalidRequest": "针对任务 '{{task}}' 的指令请求无效。"
+		}
+	},
+	"generic": {
+		"noChanges": "无需更改 '{{path}}'。",
+		"changesRejected": "更改已被用户拒绝。"
+	},
+	"attemptCompletion": {
+		"errors": {
+			"incompleteTodos": "存在未完成的待办事项，无法完成任务。请完成后再尝试提交。"
+		},
+		"userFeedbackLead": "用户已对结果提供反馈。请根据反馈继续任务，然后再次尝试完成。"
 	}
 }

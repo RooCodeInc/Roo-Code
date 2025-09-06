@@ -242,7 +242,8 @@
 	},
 	"taskCompleted": "Aufgabe abgeschlossen",
 	"powershell": {
-		"issues": "Es scheint, dass du Probleme mit Windows PowerShell hast, bitte sieh dir dies an"
+		"issues": "Es scheint, dass du Probleme mit Windows PowerShell hast, bitte sieh dir dies an",
+		"troubleshootingGuide": "Troubleshooting-Guide"
 	},
 	"autoApprove": {
 		"title": "Automatische Genehmigung:",
@@ -338,7 +339,8 @@
 		"wantsToSearchWithPath": "Roo möchte den Codebase nach <code>{{query}}</code> in <code>{{path}}</code> durchsuchen:",
 		"didSearch_one": "1 Ergebnis gefunden",
 		"didSearch_other": "{{count}} Ergebnisse gefunden",
-		"resultTooltip": "Ähnlichkeitswert: {{score}} (klicken zum Öffnen der Datei)"
+		"resultTooltip": "Ähnlichkeitswert: {{score}} (klicken zum Öffnen der Datei)",
+		"errorDisplayingResults": "Fehler beim Anzeigen der Suchergebnisse."
 	},
 	"read-batch": {
 		"approve": {

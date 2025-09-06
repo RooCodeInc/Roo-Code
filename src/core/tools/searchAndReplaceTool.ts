@@ -13,6 +13,7 @@ import { fileExistsAtPath } from "../../utils/fs"
 import { RecordSource } from "../context-tracking/FileContextTrackerTypes"
 import { DEFAULT_WRITE_DELAY_MS } from "@roo-code/types"
 import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
+import { t } from "../../i18n"
 
 /**
  * Tool for performing search and replace operations on files
@@ -121,7 +122,7 @@ export async function searchAndReplaceTool(
 
 		if (!accessAllowed) {
 			await cline.say("rooignore_error", validRelPath)
-			pushToolResult(formatResponse.toolError(formatResponse.rooIgnoreError(validRelPath)))
+			pushToolResult(formatResponse.toolError(formatResponse.rooIgnoreError(validRelPath), "search_and_replace"))
 			return
 		}
 
@@ -137,7 +138,9 @@ export async function searchAndReplaceTool(
 			const formattedError = formatResponse.toolError(
 				`File does not exist at path: ${absolutePath}\nThe specified file could not be found. Please verify the file path and try again.`,
 			)
-			await cline.say("error", formattedError)
+			await cline.say("error", formattedError, undefined, undefined, undefined, undefined, {
+				title: t("tools:errors.fileNotFound"),
+			})
 			pushToolResult(formattedError)
 			return
 		}
@@ -156,7 +159,9 @@ export async function searchAndReplaceTool(
 				error instanceof Error ? error.message : String(error)
 			}\nPlease verify file permissions and try again.`
 			const formattedError = formatResponse.toolError(errorMessage)
-			await cline.say("error", formattedError)
+			await cline.say("error", formattedError, undefined, undefined, undefined, undefined, {
+				title: t("tools:errors.readError"),
+			})
 			pushToolResult(formattedError)
 			return
 		}
@@ -195,7 +200,7 @@ export async function searchAndReplaceTool(
 		// Generate and validate diff
 		const diff = formatResponse.createPrettyPatch(validRelPath, fileContent, newContent)
 		if (!diff) {
-			pushToolResult(`No changes needed for '${relPath}'`)
+			pushToolResult(t("tools:generic.noChanges", { path: relPath }))
 			await cline.diffViewProvider.reset()
 			return
 		}
@@ -230,7 +235,7 @@ export async function searchAndReplaceTool(
 			if (!isPreventFocusDisruptionEnabled) {
 				await cline.diffViewProvider.revertChanges()
 			}
-			pushToolResult("Changes were rejected by the user.")
+			pushToolResult(t("tools:generic.changesRejected"))
 			await cline.diffViewProvider.reset()
 			return
 		}

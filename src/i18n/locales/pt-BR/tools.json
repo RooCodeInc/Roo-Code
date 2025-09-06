@@ -14,5 +14,50 @@
 		"errors": {
 			"policy_restriction": "Falha ao criar nova tarefa devido a restrições de política."
 		}
+	},
+	"errors": {
+		"toolCallError": "Erro na chamada da ferramenta: {{toolName}}",
+		"toolExecutionError": "Erro na execução da ferramenta",
+		"missingParamForTool": "Roo tentou usar {{toolName}} sem valor para o parâmetro obrigatório '{{paramName}}'. Tentando novamente...",
+		"missingParamForToolWithPath": "Roo tentou usar {{toolName}} para '{{relPath}}' sem valor para o parâmetro obrigatório '{{paramName}}'. Tentando novamente...",
+		"fileNotFound": "Arquivo não encontrado",
+		"parseError": "Erro de análise",
+		"commandTimeout": "Tempo limite do comando",
+		"permissionDenied": "Permissão negada",
+		"networkError": "Erro de rede",
+		"invalidInput": "Entrada inválida",
+		"operationFailed": "A operação falhou",
+		"resourceNotFound": "Recurso não encontrado",
+		"configurationError": "Erro de configuração",
+		"authenticationFailed": "Falha na autenticação",
+		"invalidLineNumber": "Invalid Line Number",
+		"fileAlreadyExists": "File Already Exists",
+		"directoryNotFound": "Directory Not Found",
+		"invalidPath": "Invalid Path",
+		"readError": "Read Error",
+		"writeError": "Write Error",
+		"syntaxError": "Syntax Error",
+		"validationError": "Validation Error",
+		"timeoutError": "Timeout Error",
+		"connectionError": "Connection Error"
+	},
+	"executeCommand": {
+		"workingDirMissing": "Diretório de trabalho não encontrado: '{{workingDir}}'",
+		"shellIntegrationGenericError": "A execução do comando falhou devido a um erro inesperado de integração do shell."
+	},
+	"fetchInstructions": {
+		"errors": {
+			"invalidRequest": "Solicitação de instruções inválida para a tarefa '{{task}}'."
+		}
+	},
+	"generic": {
+		"noChanges": "Nenhuma alteração necessária para '{{path}}'.",
+		"changesRejected": "As alterações foram rejeitadas pelo usuário."
+	},
+	"attemptCompletion": {
+		"errors": {
+			"incompleteTodos": "Não é possível concluir a tarefa enquanto houver pendências. Conclua-as antes de tentar finalizar."
+		},
+		"userFeedbackLead": "O usuário forneceu feedback sobre os resultados. Considere-o para continuar a tarefa e tente finalizar novamente."
 	}
 }

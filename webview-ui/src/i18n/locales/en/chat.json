@@ -216,7 +216,8 @@
 		"wantsToSearchWithPath": "Roo wants to search the codebase for <code>{{query}}</code> in <code>{{path}}</code>:",
 		"didSearch_one": "Found 1 result",
 		"didSearch_other": "Found {{count}} results",
-		"resultTooltip": "Similarity score: {{score}} (click to open file)"
+		"resultTooltip": "Similarity score: {{score}} (click to open file)",
+		"errorDisplayingResults": "Error displaying search results."
 	},
 	"commandOutput": "Command Output",
 	"commandExecution": {
@@ -266,7 +267,8 @@
 	},
 	"troubleMessage": "Roo is having trouble...",
 	"powershell": {
-		"issues": "It seems like you're having Windows PowerShell issues, please see this"
+		"issues": "It seems like you're having Windows PowerShell issues, please see this",
+		"troubleshootingGuide": "troubleshooting guide"
 	},
 	"autoApprove": {
 		"title": "Auto-approve:",

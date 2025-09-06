@@ -62,11 +62,20 @@ async function validateParams(
 		} catch (error) {
 			cline.consecutiveMistakeCount++
 			cline.recordToolError("use_mcp_tool")
-			await cline.say("error", t("mcp:errors.invalidJsonArgument", { toolName: params.tool_name }))
+			await cline.say(
+				"error",
+				t("mcp:errors.invalidJsonArgument", { toolName: params.tool_name }),
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				{ title: t("tools:errors.invalidInput") },
+			)
 
 			pushToolResult(
 				formatResponse.toolError(
 					formatResponse.invalidMcpToolArgumentError(params.server_name, params.tool_name),
+					"use_mcp_tool",
 				),
 			)
 			return { isValid: false }

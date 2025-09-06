@@ -3,6 +3,7 @@ import { fetchInstructions } from "../prompts/instructions/instructions"
 import { ClineSayTool } from "../../shared/ExtensionMessage"
 import { formatResponse } from "../prompts/responses"
 import { ToolUse, AskApproval, HandleError, PushToolResult } from "../../shared/tools"
+import { t } from "../../i18n"
 
 export async function fetchInstructionsTool(
 	cline: Task,
@@ -49,7 +50,12 @@ export async function fetchInstructionsTool(
 			const content = await fetchInstructions(task, { mcpHub, diffStrategy, context })
 
 			if (!content) {
-				pushToolResult(formatResponse.toolError(`Invalid instructions request: ${task}`))
+				pushToolResult(
+					formatResponse.toolError(
+						t("tools:fetchInstructions.errors.invalidRequest", { defaultValue: "Invalid request" }),
+						"fetch_instructions",
+					),
+				)
 				return
 			}
 

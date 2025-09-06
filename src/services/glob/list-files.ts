@@ -47,13 +47,16 @@ export async function listFiles(dirPath: string, recursive: boolean, limit: numb
 	const rgPath = await getRipgrepPath()
 
 	if (!recursive) {
-		// For non-recursive, use the existing approach
+		// For non-recursive, include top-level files plus top-level symlinked files
 		const files = await listFilesWithRipgrep(rgPath, dirPath, false, limit)
+		const symlinkFiles = await listTopLevelSymlinkFiles(dirPath)
+		const mergedFiles = [...files, ...symlinkFiles]
+
 		const ignoreInstance = await createIgnoreInstance(dirPath)
-		// Calculate remaining limit for directories
-		const remainingLimit = Math.max(0, limit - files.length)
+		// Calculate remaining limit for directories after accounting for files
+		const remainingLimit = Math.max(0, limit - mergedFiles.length)
 		const directories = await listFilteredDirectories(dirPath, false, ignoreInstance, remainingLimit)
-		return formatAndCombineResults(files, directories, limit)
+		return formatAndCombineResults(mergedFiles, directories, limit)
 	}
 
 	// For recursive mode, use the original approach but ensure first-level directories are included
@@ -212,12 +215,43 @@ async function listFilesWithRipgrep(
 	const absolutePath = path.resolve(dirPath)
 	return relativePaths.map((relativePath) => path.resolve(absolutePath, relativePath))
 }
+/**
+ * List top-level symlinked files in a directory (non-recursive).
+ * We include the symlink path itself if it points to a file, or if it's a broken link.
+ */
+async function listTopLevelSymlinkFiles(dirPath: string): Promise<string[]> {
+	const absolutePath = path.resolve(dirPath)
+	try {
+		const entries = await fs.promises.readdir(absolutePath, { withFileTypes: true })
+		const results: string[] = []
+		for (const entry of entries) {
+			if (entry.isSymbolicLink()) {
+				const symlinkPath = path.join(absolutePath, entry.name)
+				try {
+					// stat follows the symlink
+					const targetStat = await fs.promises.stat(symlinkPath)
+					if (targetStat.isFile()) {
+						results.push(symlinkPath)
+					}
+				} catch {
+					// Broken symlink - still surface the symlink path so it is visible to the user
+					results.push(symlinkPath)
+				}
+			}
+		}
+		return results
+	} catch {
+		return []
+	}
+}
 
 /**
  * Build appropriate ripgrep arguments based on whether we're doing a recursive search
  */
 function buildRipgrepArgs(dirPath: string, recursive: boolean): string[] {
 	// Base arguments to list files
+	// Always include --follow to satisfy symlink traversal expectations in unit tests.
+	// We additionally surface top-level symlinked files in non-recursive mode via listTopLevelSymlinkFiles().
 	const args = ["--files", "--hidden", "--follow"]
 
 	if (recursive) {

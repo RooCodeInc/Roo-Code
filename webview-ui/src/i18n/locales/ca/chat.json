@@ -242,7 +242,8 @@
 	},
 	"taskCompleted": "Tasca completada",
 	"powershell": {
-		"issues": "Sembla que estàs tenint problemes amb Windows PowerShell, si us plau consulta aquesta documentació per a més informació."
+		"issues": "Sembla que estàs tenint problemes amb Windows PowerShell, si us plau consulta aquesta documentació per a més informació.",
+		"troubleshootingGuide": "guia de resolució de problemes"
 	},
 	"autoApprove": {
 		"title": "Aprovació automàtica:",
@@ -338,7 +339,8 @@
 		"wantsToSearchWithPath": "Roo vol cercar a la base de codi <code>{{query}}</code> a <code>{{path}}</code>:",
 		"didSearch_one": "S'ha trobat 1 resultat",
 		"didSearch_other": "S'han trobat {{count}} resultats",
-		"resultTooltip": "Puntuació de similitud: {{score}} (fes clic per obrir el fitxer)"
+		"resultTooltip": "Puntuació de similitud: {{score}} (fes clic per obrir el fitxer)",
+		"errorDisplayingResults": "Error en mostrar els resultats de la cerca."
 	},
 	"read-batch": {
 		"approve": {

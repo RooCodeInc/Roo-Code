@@ -14,5 +14,50 @@
 		"errors": {
 			"policy_restriction": "Не удалось создать новую задачу из-за ограничений политики."
 		}
+	},
+	"errors": {
+		"toolCallError": "Ошибка вызова инструмента: {{toolName}}",
+		"toolExecutionError": "Ошибка выполнения инструмента",
+		"missingParamForTool": "Roo попытался использовать {{toolName}} без значения для обязательного параметра '{{paramName}}'. Повтор...",
+		"missingParamForToolWithPath": "Roo попытался использовать {{toolName}} для '{{relPath}}' без значения для обязательного параметра '{{paramName}}'. Повтор...",
+		"fileNotFound": "Файл не найден",
+		"parseError": "Ошибка синтаксического анализа",
+		"commandTimeout": "Тайм-аут команды",
+		"permissionDenied": "В доступе отказано",
+		"networkError": "Сетевая ошибка",
+		"invalidInput": "Неверный ввод",
+		"operationFailed": "Операция не удалась",
+		"resourceNotFound": "Ресурс не найден",
+		"configurationError": "Ошибка конфигурации",
+		"authenticationFailed": "Сбой аутентификации",
+		"invalidLineNumber": "Invalid Line Number",
+		"fileAlreadyExists": "File Already Exists",
+		"directoryNotFound": "Directory Not Found",
+		"invalidPath": "Invalid Path",
+		"readError": "Read Error",
+		"writeError": "Write Error",
+		"syntaxError": "Syntax Error",
+		"validationError": "Validation Error",
+		"timeoutError": "Timeout Error",
+		"connectionError": "Connection Error"
+	},
+	"executeCommand": {
+		"workingDirMissing": "Рабочий каталог не найден: '{{workingDir}}'",
+		"shellIntegrationGenericError": "Выполнение команды не удалось из-за неожиданной ошибки интеграции оболочки."
+	},
+	"fetchInstructions": {
+		"errors": {
+			"invalidRequest": "Недопустимый запрос инструкций для задачи '{{task}}'."
+		}
+	},
+	"generic": {
+		"noChanges": "Изменения для '{{path}}' не требуются.",
+		"changesRejected": "Изменения были отклонены пользователем."
+	},
+	"attemptCompletion": {
+		"errors": {
+			"incompleteTodos": "Невозможно завершить задачу при наличии незавершённых пунктов. Сначала завершите их."
+		},
+		"userFeedbackLead": "Пользователь предоставил отзыв о результатах. Учитывайте его, чтобы продолжить, и попробуйте завершить снова."
 	}
 }

@@ -17,5 +17,50 @@
 		"errors": {
 			"policy_restriction": "Gagal membuat tugas baru karena pembatasan kebijakan."
 		}
+	},
+	"errors": {
+		"toolCallError": "Kesalahan Panggilan Alat: {{toolName}}",
+		"toolExecutionError": "Kesalahan Eksekusi Alat",
+		"missingParamForTool": "Roo mencoba menggunakan {{toolName}} tanpa nilai untuk parameter yang diperlukan '{{paramName}}'. Mencoba lagi...",
+		"missingParamForToolWithPath": "Roo mencoba menggunakan {{toolName}} untuk '{{relPath}}' tanpa nilai untuk parameter yang diperlukan '{{paramName}}'. Mencoba lagi...",
+		"fileNotFound": "File Tidak Ditemukan",
+		"parseError": "Kesalahan Parse",
+		"commandTimeout": "Waktu Tunggu Perintah Habis",
+		"permissionDenied": "Izin Ditolak",
+		"networkError": "Kesalahan Jaringan",
+		"invalidInput": "Input Tidak Valid",
+		"operationFailed": "Operasi Gagal",
+		"resourceNotFound": "Sumber Daya Tidak Ditemukan",
+		"configurationError": "Kesalahan Konfigurasi",
+		"authenticationFailed": "Autentikasi Gagal",
+		"invalidLineNumber": "Nomor baris tidak valid",
+		"fileAlreadyExists": "File sudah ada",
+		"directoryNotFound": "Direktori tidak ditemukan",
+		"invalidPath": "Path tidak valid",
+		"readError": "Kesalahan baca",
+		"writeError": "Kesalahan tulis",
+		"syntaxError": "Kesalahan sintaks",
+		"validationError": "Kesalahan validasi",
+		"timeoutError": "Kesalahan batas waktu",
+		"connectionError": "Kesalahan koneksi"
+	},
+	"executeCommand": {
+		"workingDirMissing": "Direktori kerja tidak ditemukan: '{{workingDir}}'",
+		"shellIntegrationGenericError": "Eksekusi perintah gagal karena kesalahan integrasi shell yang tidak terduga."
+	},
+	"fetchInstructions": {
+		"errors": {
+			"invalidRequest": "Permintaan instruksi tidak valid untuk tugas '{{task}}'."
+		}
+	},
+	"generic": {
+		"noChanges": "Tidak ada perubahan yang diperlukan untuk '{{path}}'.",
+		"changesRejected": "Perubahan ditolak oleh pengguna."
+	},
+	"attemptCompletion": {
+		"errors": {
+			"incompleteTodos": "Tidak dapat menyelesaikan tugas saat ada tugas yang belum selesai. Harap selesaikan semua tugas sebelum mencoba penyelesaian."
+		},
+		"userFeedbackLead": "Pengguna telah memberikan umpan balik tentang hasilnya. Pertimbangkan masukan mereka untuk melanjutkan tugas, lalu coba selesaikan lagi."
 	}
 }

@@ -2,7 +2,7 @@ import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from "
 import { useSize } from "react-use"
 import { useTranslation, Trans } from "react-i18next"
 import deepEqual from "fast-deep-equal"
-import { VSCodeBadge, VSCodeButton } from "@vscode/webview-ui-toolkit/react"
+import { VSCodeBadge } from "@vscode/webview-ui-toolkit/react"
 
 import type { ClineMessage, FollowUpData, SuggestionItem } from "@roo-code/types"
 import { Mode } from "@roo/modes"
@@ -11,7 +11,6 @@ import { ClineApiReqInfo, ClineAskUseMcpServer, ClineSayTool } from "@roo/Extens
 import { COMMAND_OUTPUT_STRING } from "@roo/combineCommandSequences"
 import { safeJsonParse } from "@roo/safeJsonParse"
 
-import { useCopyToClipboard } from "@src/utils/clipboard"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
 import { findMatchingResourceOrTemplate } from "@src/utils/mcp"
 import { vscode } from "@src/utils/vscode"
@@ -22,7 +21,6 @@ import { Button } from "@src/components/ui"
 import { ToolUseBlock, ToolUseBlockHeader } from "../common/ToolUseBlock"
 import UpdateTodoListToolBlock from "./UpdateTodoListToolBlock"
 import CodeAccordian from "../common/CodeAccordian"
-import CodeBlock from "../common/CodeBlock"
 import MarkdownBlock from "../common/MarkdownBlock"
 import { ReasoningBlock } from "./ReasoningBlock"
 import Thumbnails from "../common/Thumbnails"
@@ -47,6 +45,7 @@ import { McpExecution } from "./McpExecution"
 import { ChatTextArea } from "./ChatTextArea"
 import { MAX_IMAGES_PER_MESSAGE } from "./ChatView"
 import { useSelectedModel } from "../ui/hooks/useSelectedModel"
+import { CollapsibleErrorSection } from "./CollapsibleErrorSection"
 
 interface ChatRowProps {
 	message: ClineMessage
@@ -120,12 +119,11 @@ export const ChatRowContent = ({
 	const { info: model } = useSelectedModel(apiConfiguration)
 	const [reasoningCollapsed, setReasoningCollapsed] = useState(true)
 	const [isDiffErrorExpanded, setIsDiffErrorExpanded] = useState(false)
-	const [showCopySuccess, setShowCopySuccess] = useState(false)
 	const [isEditing, setIsEditing] = useState(false)
 	const [editedContent, setEditedContent] = useState("")
 	const [editMode, setEditMode] = useState<Mode>(mode || "code")
 	const [editImages, setEditImages] = useState<string[]>([])
-	const { copyWithFeedback } = useCopyToClipboard()
+	const [isErrorExpanded, setIsErrorExpanded] = useState(false) // Default collapsed like diff_error
 
 	// Handle message events for image selection during edit mode
 	useEffect(() => {
@@ -211,13 +209,6 @@ export const ChatRowContent = ({
 
 	const [icon, title] = useMemo(() => {
 		switch (type) {
-			case "error":
-				return [
-					<span
-						className="codicon codicon-error"
-						style={{ color: errorColor, marginBottom: "-1.5px" }}></span>,
-					<span style={{ color: errorColor, fontWeight: "bold" }}>{t("chat:error")}</span>,
-				]
 			case "mistake_limit_reached":
 				return [
 					<span
@@ -780,31 +771,12 @@ export const ChatRowContent = ({
 								/>
 							</span>
 						</div>
-						<div
-							style={{
-								marginTop: "4px",
-								backgroundColor: "var(--vscode-badge-background)",
-								border: "1px solid var(--vscode-badge-background)",
-								borderRadius: "4px 4px 0 0",
-								overflow: "hidden",
-								marginBottom: "2px",
-							}}>
-							<div
-								style={{
-									padding: "9px 10px 9px 14px",
-									backgroundColor: "var(--vscode-badge-background)",
-									borderBottom: "1px solid var(--vscode-editorGroup-border)",
-									fontWeight: "bold",
-									fontSize: "var(--vscode-font-size)",
-									color: "var(--vscode-badge-foreground)",
-									display: "flex",
-									alignItems: "center",
-									gap: "6px",
-								}}>
+						<div className="mt-1 bg-vscode-badge-background border border-vscode-badge-background rounded-t overflow-hidden mb-0.5">
+							<div className="py-[9px] px-[10px] pl-[14px] bg-vscode-badge-background border-b border-vscode-editorGroup-border font-bold text-[length:var(--vscode-font-size)] text-vscode-badge-foreground flex items-center gap-1.5">
 								<span className="codicon codicon-arrow-right"></span>
 								{t("chat:subtasks.newTaskContent")}
 							</div>
-							<div style={{ padding: "12px 16px", backgroundColor: "var(--vscode-editor-background)" }}>
+							<div className="p-3 px-4 bg-vscode-editor-background">
 								<MarkdownBlock markdown={tool.content} />
 							</div>
 						</div>
@@ -817,31 +789,12 @@ export const ChatRowContent = ({
 							{toolIcon("check-all")}
 							<span style={{ fontWeight: "bold" }}>{t("chat:subtasks.wantsToFinish")}</span>
 						</div>
-						<div
-							style={{
-								marginTop: "4px",
-								backgroundColor: "var(--vscode-editor-background)",
-								border: "1px solid var(--vscode-badge-background)",
-								borderRadius: "4px",
-								overflow: "hidden",
-								marginBottom: "8px",
-							}}>
-							<div
-								style={{
-									padding: "9px 10px 9px 14px",
-									backgroundColor: "var(--vscode-badge-background)",
-									borderBottom: "1px solid var(--vscode-editorGroup-border)",
-									fontWeight: "bold",
-									fontSize: "var(--vscode-font-size)",
-									color: "var(--vscode-badge-foreground)",
-									display: "flex",
-									alignItems: "center",
-									gap: "6px",
-								}}>
+						<div className="mt-1 bg-vscode-editor-background border border-vscode-badge-background rounded overflow-hidden mb-2">
+							<div className="py-[9px] px-[10px] pl-[14px] bg-vscode-badge-background border-b border-vscode-editorGroup-border font-bold text-[length:var(--vscode-font-size)] text-vscode-badge-foreground flex items-center gap-1.5">
 								<span className="codicon codicon-check"></span>
 								{t("chat:subtasks.completionContent")}
 							</div>
-							<div style={{ padding: "12px 16px", backgroundColor: "var(--vscode-editor-background)" }}>
+							<div className="p-3 px-4 bg-vscode-editor-background">
 								<MarkdownBlock markdown={t("chat:subtasks.completionInstructions")} />
 							</div>
 						</div>
@@ -959,125 +912,23 @@ export const ChatRowContent = ({
 			switch (message.say) {
 				case "diff_error":
 					return (
-						<div>
-							<div
-								style={{
-									marginTop: "0px",
-									overflow: "hidden",
-									marginBottom: "8px",
-								}}>
-								<div
-									style={{
-										borderBottom: isDiffErrorExpanded
-											? "1px solid var(--vscode-editorGroup-border)"
-											: "none",
-										fontWeight: "normal",
-										fontSize: "var(--vscode-font-size)",
-										color: "var(--vscode-editor-foreground)",
-										display: "flex",
-										alignItems: "center",
-										justifyContent: "space-between",
-										cursor: "pointer",
-									}}
-									onClick={() => setIsDiffErrorExpanded(!isDiffErrorExpanded)}>
-									<div
-										style={{
-											display: "flex",
-											alignItems: "center",
-											gap: "10px",
-											flexGrow: 1,
-										}}>
-										<span
-											className="codicon codicon-warning"
-											style={{
-												color: "var(--vscode-editorWarning-foreground)",
-												opacity: 0.8,
-												fontSize: 16,
-												marginBottom: "-1.5px",
-											}}></span>
-										<span style={{ fontWeight: "bold" }}>{t("chat:diffError.title")}</span>
-									</div>
-									<div style={{ display: "flex", alignItems: "center" }}>
-										<VSCodeButton
-											appearance="icon"
-											style={{
-												padding: "3px",
-												height: "24px",
-												marginRight: "4px",
-												color: "var(--vscode-editor-foreground)",
-												display: "flex",
-												alignItems: "center",
-												justifyContent: "center",
-												background: "transparent",
-											}}
-											onClick={(e) => {
-												e.stopPropagation()
-
-												// Call copyWithFeedback and handle the Promise
-												copyWithFeedback(message.text || "").then((success) => {
-													if (success) {
-														// Show checkmark
-														setShowCopySuccess(true)
-
-														// Reset after a brief delay
-														setTimeout(() => {
-															setShowCopySuccess(false)
-														}, 1000)
-													}
-												})
-											}}>
-											<span
-												className={`codicon codicon-${showCopySuccess ? "check" : "copy"}`}></span>
-										</VSCodeButton>
-										<span
-											className={`codicon codicon-chevron-${isDiffErrorExpanded ? "up" : "down"}`}></span>
-									</div>
-								</div>
-								{isDiffErrorExpanded && (
-									<div
-										style={{
-											padding: "8px",
-											backgroundColor: "var(--vscode-editor-background)",
-											borderTop: "none",
-										}}>
-										<CodeBlock source={message.text || ""} language="xml" />
-									</div>
-								)}
-							</div>
-						</div>
+						<CollapsibleErrorSection
+							title={t("chat:diffError.title")}
+							content={message.text}
+							language="xml"
+							isExpanded={isDiffErrorExpanded}
+							onToggleExpand={() => setIsDiffErrorExpanded(!isDiffErrorExpanded)}
+						/>
 					)
 				case "subtask_result":
 					return (
 						<div>
-							<div
-								style={{
-									marginTop: "0px",
-									backgroundColor: "var(--vscode-badge-background)",
-									border: "1px solid var(--vscode-badge-background)",
-									borderRadius: "0 0 4px 4px",
-									overflow: "hidden",
-									marginBottom: "8px",
-								}}>
-								<div
-									style={{
-										padding: "9px 10px 9px 14px",
-										backgroundColor: "var(--vscode-badge-background)",
-										borderBottom: "1px solid var(--vscode-editorGroup-border)",
-										fontWeight: "bold",
-										fontSize: "var(--vscode-font-size)",
-										color: "var(--vscode-badge-foreground)",
-										display: "flex",
-										alignItems: "center",
-										gap: "6px",
-									}}>
+							<div className="mt-0 bg-vscode-badge-background border border-vscode-badge-background rounded-b overflow-hidden mb-2">
+								<div className="py-[9px] px-[10px] pl-[14px] bg-vscode-badge-background border-b border-vscode-editorGroup-border font-bold text-[length:var(--vscode-font-size)] text-vscode-badge-foreground flex items-center gap-1.5">
 									<span className="codicon codicon-arrow-left"></span>
 									{t("chat:subtasks.resultContent")}
 								</div>
-								<div
-									style={{
-										padding: "12px 16px",
-										backgroundColor: "var(--vscode-editor-background)",
-									}}>
+								<div className="p-3 px-4 bg-vscode-editor-background">
 									<MarkdownBlock markdown={message.text} />
 								</div>
 							</div>
@@ -1134,7 +985,7 @@ export const ChatRowContent = ({
 												<a
 													href="https://github.com/cline/cline/wiki/TroubleShooting-%E2%80%90-%22PowerShell-is-not-recognized-as-an-internal-or-external-command%22"
 													style={{ color: "inherit", textDecoration: "underline" }}>
-													troubleshooting guide
+													{t("chat:powershell.troubleshootingGuide")}
 												</a>
 												.
 											</>
@@ -1243,16 +1094,16 @@ export const ChatRowContent = ({
 						</div>
 					)
 				case "error":
+					// Detect language based on content - check if it contains XML-like error tags
+					const errorLanguage = message.text?.includes("<error>") ? "xml" : "text"
 					return (
-						<>
-							{title && (
-								<div style={headerStyle}>
-									{icon}
-									{title}
-								</div>
-							)}
-							<p style={{ ...pStyle, color: "var(--vscode-errorForeground)" }}>{message.text}</p>
-						</>
+						<CollapsibleErrorSection
+							title={message.title || t("chat:error")}
+							content={message.text}
+							language={errorLanguage}
+							isExpanded={isErrorExpanded}
+							onToggleExpand={() => setIsErrorExpanded(!isErrorExpanded)}
+						/>
 					)
 				case "completion_result":
 					return (
@@ -1308,7 +1159,7 @@ export const ChatRowContent = ({
 
 					if (parsed && !parsed?.content) {
 						console.error("Invalid codebaseSearch content structure:", parsed.content)
-						return <div>Error displaying search results.</div>
+						return <div>{t("chat:codebaseSearch.errorDisplayingResults")}</div>
 					}
 
 					const { results = [] } = parsed?.content || {}

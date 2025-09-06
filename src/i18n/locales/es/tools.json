@@ -14,5 +14,50 @@
 		"errors": {
 			"policy_restriction": "No se pudo crear una nueva tarea debido a restricciones de política."
 		}
+	},
+	"errors": {
+		"toolCallError": "Error de llamada de herramienta: {{toolName}}",
+		"toolExecutionError": "Error de ejecución de la herramienta",
+		"missingParamForTool": "Roo intentó usar {{toolName}} sin valor para el parámetro requerido '{{paramName}}'. Reintentando...",
+		"missingParamForToolWithPath": "Roo intentó usar {{toolName}} para '{{relPath}}' sin valor para el parámetro requerido '{{paramName}}'. Reintentando...",
+		"fileNotFound": "Archivo no encontrado",
+		"parseError": "Error de análisis",
+		"commandTimeout": "Tiempo de espera del comando agotado",
+		"permissionDenied": "Permiso denegado",
+		"networkError": "Error de red",
+		"invalidInput": "Entrada no válida",
+		"operationFailed": "La operación falló",
+		"resourceNotFound": "Recurso no encontrado",
+		"configurationError": "Error de configuración",
+		"authenticationFailed": "Fallo de autenticación",
+		"invalidLineNumber": "Invalid Line Number",
+		"fileAlreadyExists": "File Already Exists",
+		"directoryNotFound": "Directory Not Found",
+		"invalidPath": "Invalid Path",
+		"readError": "Read Error",
+		"writeError": "Write Error",
+		"syntaxError": "Syntax Error",
+		"validationError": "Validation Error",
+		"timeoutError": "Timeout Error",
+		"connectionError": "Connection Error"
+	},
+	"executeCommand": {
+		"workingDirMissing": "Directorio de trabajo no encontrado: '{{workingDir}}'",
+		"shellIntegrationGenericError": "La ejecución del comando falló debido a un error inesperado de integración del shell."
+	},
+	"fetchInstructions": {
+		"errors": {
+			"invalidRequest": "Solicitud de instrucciones inválida para la tarea '{{task}}'."
+		}
+	},
+	"generic": {
+		"noChanges": "No se necesitan cambios para '{{path}}'.",
+		"changesRejected": "Los cambios fueron rechazados por el usuario."
+	},
+	"attemptCompletion": {
+		"errors": {
+			"incompleteTodos": "No se puede completar la tarea mientras hay pendientes. Por favor, termínalos antes de intentar finalizar."
+		},
+		"userFeedbackLead": "El usuario ha proporcionado comentarios sobre los resultados. Tenlos en cuenta para continuar la tarea y vuelve a intentar finalizar."
 	}
 }

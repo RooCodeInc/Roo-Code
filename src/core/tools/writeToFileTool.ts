@@ -55,7 +55,7 @@ export async function writeToFileTool(
 
 	if (!accessAllowed) {
 		await cline.say("rooignore_error", relPath)
-		pushToolResult(formatResponse.toolError(formatResponse.rooIgnoreError(relPath)))
+		pushToolResult(formatResponse.toolError(formatResponse.rooIgnoreError(relPath), "write_to_file"))
 		return
 	}
 
@@ -153,6 +153,7 @@ export async function writeToFileTool(
 				pushToolResult(
 					formatResponse.toolError(
 						formatResponse.lineCountTruncationError(actualLineCount, isNewFile, diffStrategyEnabled),
+						"write_to_file",
 					),
 				)
 				await cline.diffViewProvider.revertChanges()
@@ -181,6 +182,7 @@ export async function writeToFileTool(
 								`Content appears to be truncated (file has ${
 									newContent.split("\n").length
 								} lines but was predicted to have ${predictedLineCount} lines), and found comments indicating omitted code (e.g., '// rest of code unchanged', '/* previous code */'). Please provide the complete file content without any omissions if possible, or otherwise use the 'apply_diff' tool to apply the diff to the original file.`,
+								"write_to_file",
 							),
 						)
 						return
@@ -254,6 +256,7 @@ export async function writeToFileTool(
 								`Content appears to be truncated (file has ${
 									newContent.split("\n").length
 								} lines but was predicted to have ${predictedLineCount} lines), and found comments indicating omitted code (e.g., '// rest of code unchanged', '/* previous code */'). Please provide the complete file content without any omissions if possible, or otherwise use the 'apply_diff' tool to apply the diff to the original file.`,
+								"write_to_file",
 							),
 						)
 						return

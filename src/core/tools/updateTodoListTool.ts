@@ -176,7 +176,12 @@ export async function updateTodoListTool(
 		} catch {
 			cline.consecutiveMistakeCount++
 			cline.recordToolError("update_todo_list")
-			pushToolResult(formatResponse.toolError("The todos parameter is not valid markdown checklist or JSON"))
+			pushToolResult(
+				formatResponse.toolError(
+					"The todos parameter is not valid markdown checklist or JSON",
+					"update_todo_list",
+				),
+			)
 			return
 		}
 
@@ -184,7 +189,7 @@ export async function updateTodoListTool(
 		if (!valid && !block.partial) {
 			cline.consecutiveMistakeCount++
 			cline.recordToolError("update_todo_list")
-			pushToolResult(formatResponse.toolError(error || "todos parameter validation failed"))
+			pushToolResult(formatResponse.toolError(error || "todos parameter validation failed", "update_todo_list"))
 			return
 		}
 

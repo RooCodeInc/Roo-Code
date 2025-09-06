@@ -242,7 +242,8 @@
 	},
 	"taskCompleted": "Tarea completada",
 	"powershell": {
-		"issues": "Parece que estás teniendo problemas con Windows PowerShell, por favor consulta esta"
+		"issues": "Parece que estás teniendo problemas con Windows PowerShell, por favor consulta esta",
+		"troubleshootingGuide": "guía de solución de problemas"
 	},
 	"autoApprove": {
 		"title": "Auto-aprobar:",
@@ -338,7 +339,8 @@
 		"wantsToSearchWithPath": "Roo quiere buscar en la base de código <code>{{query}}</code> en <code>{{path}}</code>:",
 		"didSearch_one": "Se encontró 1 resultado",
 		"didSearch_other": "Se encontraron {{count}} resultados",
-		"resultTooltip": "Puntuación de similitud: {{score}} (haz clic para abrir el archivo)"
+		"resultTooltip": "Puntuación de similitud: {{score}} (haz clic para abrir el archivo)",
+		"errorDisplayingResults": "Error al mostrar los resultados de la búsqueda."
 	},
 	"read-batch": {
 		"approve": {

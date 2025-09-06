@@ -14,5 +14,50 @@
 		"errors": {
 			"policy_restriction": "Politika kısıtlamaları nedeniyle yeni görev oluşturulamadı."
 		}
+	},
+	"errors": {
+		"toolCallError": "Araç çağrı hatası: {{toolName}}",
+		"toolExecutionError": "Araç yürütme hatası",
+		"missingParamForTool": "Roo, {{toolName}} kullanırken gerekli '{{paramName}}' parametresi olmadan denedi. Tekrar deneniyor...",
+		"missingParamForToolWithPath": "Roo, '{{relPath}}' için {{toolName}} kullanırken gerekli '{{paramName}}' parametresi olmadan denedi. Tekrar deneniyor...",
+		"fileNotFound": "Dosya Bulunamadı",
+		"parseError": "Ayrıştırma Hatası",
+		"commandTimeout": "Komut Zaman Aşımı",
+		"permissionDenied": "İzin Reddedildi",
+		"networkError": "Ağ Hatası",
+		"invalidInput": "Geçersiz Giriş",
+		"operationFailed": "İşlem Başarısız Oldu",
+		"resourceNotFound": "Kaynak Bulunamadı",
+		"configurationError": "Yapılandırma Hatası",
+		"authenticationFailed": "Kimlik Doğrulama Başarısız",
+		"invalidLineNumber": "Invalid Line Number",
+		"fileAlreadyExists": "File Already Exists",
+		"directoryNotFound": "Directory Not Found",
+		"invalidPath": "Invalid Path",
+		"readError": "Read Error",
+		"writeError": "Write Error",
+		"syntaxError": "Syntax Error",
+		"validationError": "Validation Error",
+		"timeoutError": "Timeout Error",
+		"connectionError": "Connection Error"
+	},
+	"executeCommand": {
+		"workingDirMissing": "Çalışma dizini bulunamadı: '{{workingDir}}'",
+		"shellIntegrationGenericError": "Beklenmeyen shell entegrasyonu hatası nedeniyle komut yürütme başarısız oldu."
+	},
+	"fetchInstructions": {
+		"errors": {
+			"invalidRequest": "Görev '{{task}}' için geçersiz talimat isteği."
+		}
+	},
+	"generic": {
+		"noChanges": "'{{path}}' için değişiklik gerekmez.",
+		"changesRejected": "Değişiklikler kullanıcı tarafından reddedildi."
+	},
+	"attemptCompletion": {
+		"errors": {
+			"incompleteTodos": "Tamamlanmamış yapılacaklar varken görev tamamlanamaz. Lütfen önce bitirin."
+		},
+		"userFeedbackLead": "Kullanıcı sonuçlara ilişkin geri bildirim verdi. Bunu dikkate al, devam et ve tekrar tamamlamayı dene."
 	}
 }

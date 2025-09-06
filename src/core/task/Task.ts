@@ -1052,6 +1052,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		options: {
 			isNonInteractive?: boolean
 			metadata?: Record<string, unknown>
+			title?: string // Optional custom title for error messages
 		} = {},
 		contextCondense?: ContextCondense,
 	): Promise<undefined> {
@@ -1086,6 +1087,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						type: "say",
 						say: type,
 						text,
+						title: options.title, // Include custom title if provided
 						images,
 						partial,
 						contextCondense,
@@ -1133,6 +1135,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						type: "say",
 						say: type,
 						text,
+						title: options.title, // Include custom title if provided
 						images,
 						contextCondense,
 						metadata: options.metadata,
@@ -1156,6 +1159,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				type: "say",
 				say: type,
 				text,
+				title: options.title, // Include custom title if provided
 				images,
 				checkpoint,
 				contextCondense,
@@ -1164,13 +1168,24 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	}
 
 	async sayAndCreateMissingParamError(toolName: ToolName, paramName: string, relPath?: string) {
+		const message = relPath
+			? t("tools:errors.missingParamForToolWithPath", {
+					toolName,
+					relPath: relPath.toPosix(),
+					paramName,
+				})
+			: t("tools:errors.missingParamForTool", { toolName, paramName })
+
 		await this.say(
 			"error",
-			`Roo tried to use ${toolName}${
-				relPath ? ` for '${relPath.toPosix()}'` : ""
-			} without value for required parameter '${paramName}'. Retrying...`,
+			message,
+			undefined, // images
+			undefined, // partial
+			undefined, // checkpoint
+			undefined, // progressStatus
+			{ title: t("tools:errors.toolCallError", { toolName }) }, // Custom title for the error
 		)
-		return formatResponse.toolError(formatResponse.missingToolParameterError(paramName))
+		return formatResponse.toolError(formatResponse.missingToolParameterError(paramName), toolName)
 	}
 
 	// Lifecycle
@@ -2314,6 +2329,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					await this.say(
 						"error",
 						"Unexpected API Response: The language model did not provide any assistant messages. This may indicate an issue with the API or the model's output.",
+						undefined,
+						undefined,
+						undefined,
+						undefined,
+						{ title: "API Response Error" },
 					)
 
 					await this.addToApiConversationHistory({

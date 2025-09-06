@@ -14,5 +14,50 @@
 		"errors": {
 			"policy_restriction": "ポリシー制限により新しいタスクを作成できませんでした。"
 		}
+	},
+	"errors": {
+		"toolCallError": "ツール呼び出しエラー: {{toolName}}",
+		"toolExecutionError": "ツール実行エラー",
+		"missingParamForTool": "Roo が必須パラメータ '{{paramName}}' の値なしで {{toolName}} を使用しようとしました。再试行...",
+		"missingParamForToolWithPath": "Roo が '{{relPath}}' の {{toolName}} を必須パラメータ '{{paramName}}' の値なしで使用しようとしました。再试行...",
+		"fileNotFound": "ファイルが見つかりません",
+		"parseError": "解析エラー",
+		"commandTimeout": "コマンドタイムアウト",
+		"permissionDenied": "権限がありません",
+		"networkError": "ネットワークエラー",
+		"invalidInput": "無効な入力",
+		"operationFailed": "操作に失敗しました",
+		"resourceNotFound": "リソースが見つかりません",
+		"configurationError": "設定エラー",
+		"authenticationFailed": "認証に失敗しました",
+		"invalidLineNumber": "無効な行番号です",
+		"fileAlreadyExists": "ファイルは既に存在します",
+		"directoryNotFound": "ディレクトリが見つかりません",
+		"invalidPath": "無効なパスです",
+		"readError": "読み取りエラー",
+		"writeError": "書き込みエラー",
+		"syntaxError": "構文エラー",
+		"validationError": "検証エラー",
+		"timeoutError": "タイムアウトエラー",
+		"connectionError": "接続エラー"
+	},
+	"executeCommand": {
+		"workingDirMissing": "作業ディレクトリが見つかりません: '{{workingDir}}'",
+		"shellIntegrationGenericError": "予期しないシェル統合エラーのため、コマンドの実行に失敗しました。"
+	},
+	"fetchInstructions": {
+		"errors": {
+			"invalidRequest": "タスク '{{task}}' の指示要求が無効です。"
+		}
+	},
+	"generic": {
+		"noChanges": "'{{path}}' には変更は必要ありません。",
+		"changesRejected": "変更はユーザーによって拒否されました。"
+	},
+	"attemptCompletion": {
+		"errors": {
+			"incompleteTodos": "未完了の ToDo があるため、タスクを完了できません。完了を試みる前に、すべての ToDo を完了してください。"
+		},
+		"userFeedbackLead": "ユーザーが結果に関するフィードバックを提供しました。タスクを続行するには、ユーザーの入力を考慮し、再度完了を試みてください。"
 	}
 }

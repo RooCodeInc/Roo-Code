@@ -242,7 +242,8 @@
 	},
 	"taskCompleted": "작업 완료",
 	"powershell": {
-		"issues": "Windows PowerShell에 문제가 있는 것 같습니다. 다음을 참조하세요"
+		"issues": "Windows PowerShell에 문제가 있는 것 같습니다. 다음을 참조하세요",
+		"troubleshootingGuide": "문제 해결 가이드"
 	},
 	"autoApprove": {
 		"title": "자동 승인:",
@@ -338,7 +339,8 @@
 		"wantsToSearchWithPath": "Roo가 <code>{{path}}</code>에서 <code>{{query}}</code>을(를) 검색하고 싶어합니다:",
 		"didSearch_one": "1개의 결과를 찾았습니다",
 		"didSearch_other": "{{count}}개의 결과를 찾았습니다",
-		"resultTooltip": "유사도 점수: {{score}} (클릭하여 파일 열기)"
+		"resultTooltip": "유사도 점수: {{score}} (클릭하여 파일 열기)",
+		"errorDisplayingResults": "검색 결과 표시 중 오류가 발생했습니다."
 	},
 	"read-batch": {
 		"approve": {

@@ -242,7 +242,8 @@
 	},
 	"taskCompleted": "タスク完了",
 	"powershell": {
-		"issues": "Windows PowerShellに問題があるようです。こちらを参照してください"
+		"issues": "Windows PowerShellに問題があるようです。こちらを参照してください",
+		"troubleshootingGuide": "トラブルシューティングガイド"
 	},
 	"autoApprove": {
 		"title": "自動承認:",
@@ -338,7 +339,8 @@
 		"wantsToSearchWithPath": "Rooは <code>{{path}}</code> 内のコードベースで <code>{{query}}</code> を検索したい:",
 		"didSearch_one": "1件の結果が見つかりました",
 		"didSearch_other": "{{count}}件の結果が見つかりました",
-		"resultTooltip": "類似度スコア: {{score}} (クリックしてファイルを開く)"
+		"resultTooltip": "類似度スコア: {{score}} (クリックしてファイルを開く)",
+		"errorDisplayingResults": "検索結果の表示中にエラーが発生しました。"
 	},
 	"read-batch": {
 		"approve": {

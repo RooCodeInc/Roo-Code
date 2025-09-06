@@ -242,7 +242,8 @@
 	},
 	"taskCompleted": "Nhiệm vụ hoàn thành",
 	"powershell": {
-		"issues": "Có vẻ như bạn đang gặp vấn đề với Windows PowerShell, vui lòng xem"
+		"issues": "Có vẻ như bạn đang gặp vấn đề với Windows PowerShell, vui lòng xem",
+		"troubleshootingGuide": "hướng dẫn khắc phục sự cố"
 	},
 	"autoApprove": {
 		"title": "Tự động phê duyệt:",
@@ -338,7 +339,8 @@
 		"wantsToSearchWithPath": "Roo muốn tìm kiếm trong cơ sở mã cho <code>{{query}}</code> trong <code>{{path}}</code>:",
 		"didSearch_one": "Đã tìm thấy 1 kết quả",
 		"didSearch_other": "Đã tìm thấy {{count}} kết quả",
-		"resultTooltip": "Điểm tương tự: {{score}} (nhấp để mở tệp)"
+		"resultTooltip": "Điểm tương tự: {{score}} (nhấp để mở tệp)",
+		"errorDisplayingResults": "Lỗi khi hiển thị kết quả tìm kiếm."
 	},
 	"read-batch": {
 		"approve": {

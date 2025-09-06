@@ -14,5 +14,50 @@
 		"errors": {
 			"policy_restriction": "Không thể tạo nhiệm vụ mới do hạn chế chính sách."
 		}
+	},
+	"errors": {
+		"toolCallError": "Lỗi gọi công cụ: {{toolName}}",
+		"toolExecutionError": "Lỗi thực thi công cụ",
+		"missingParamForTool": "Roo đã cố dùng {{toolName}} mà không có giá trị cho tham số bắt buộc '{{paramName}}'. Đang thử lại...",
+		"missingParamForToolWithPath": "Roo đã cố dùng {{toolName}} cho '{{relPath}}' mà không có giá trị cho tham số bắt buộc '{{paramName}}'. Đang thử lại...",
+		"fileNotFound": "Không tìm thấy tệp",
+		"parseError": "Lỗi phân tích cú pháp",
+		"commandTimeout": "Hết thời gian chờ lệnh",
+		"permissionDenied": "Quyền bị từ chối",
+		"networkError": "Lỗi mạng",
+		"invalidInput": "Đầu vào không hợp lệ",
+		"operationFailed": "Thao tác thất bại",
+		"resourceNotFound": "Không tìm thấy tài nguyên",
+		"configurationError": "Lỗi cấu hình",
+		"authenticationFailed": "Xác thực không thành công",
+		"invalidLineNumber": "Invalid Line Number",
+		"fileAlreadyExists": "File Already Exists",
+		"directoryNotFound": "Directory Not Found",
+		"invalidPath": "Invalid Path",
+		"readError": "Read Error",
+		"writeError": "Write Error",
+		"syntaxError": "Syntax Error",
+		"validationError": "Validation Error",
+		"timeoutError": "Timeout Error",
+		"connectionError": "Connection Error"
+	},
+	"executeCommand": {
+		"workingDirMissing": "Không tìm thấy thư mục làm việc: '{{workingDir}}'",
+		"shellIntegrationGenericError": "Thực thi lệnh thất bại do lỗi tích hợp shell bất ngờ."
+	},
+	"fetchInstructions": {
+		"errors": {
+			"invalidRequest": "Yêu cầu hướng dẫn không hợp lệ cho nhiệm vụ '{{task}}'."
+		}
+	},
+	"generic": {
+		"noChanges": "Không cần thay đổi cho '{{path}}'.",
+		"changesRejected": "Thay đổi đã bị người dùng từ chối."
+	},
+	"attemptCompletion": {
+		"errors": {
+			"incompleteTodos": "Không thể hoàn thành nhiệm vụ khi vẫn còn mục cần làm. Vui lòng hoàn tất trước."
+		},
+		"userFeedbackLead": "Người dùng đã cung cấp phản hồi về kết quả. Hãy cân nhắc phản hồi để tiếp tục và thử hoàn thành lại."
 	}
 }

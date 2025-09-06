@@ -14,5 +14,50 @@
 		"errors": {
 			"policy_restriction": "Impossibile creare una nuova attività a causa di restrizioni di policy."
 		}
+	},
+	"errors": {
+		"toolCallError": "Errore di chiamata dello strumento: {{toolName}}",
+		"toolExecutionError": "Errore di esecuzione dello strumento",
+		"missingParamForTool": "Roo ha tentato di utilizzare {{toolName}} senza valore per il parametro obbligatorio '{{paramName}}'. Nuovo tentativo...",
+		"missingParamForToolWithPath": "Roo ha tentato di utilizzare {{toolName}} per '{{relPath}}' senza valore per il parametro obbligatorio '{{paramName}}'. Nuovo tentativo...",
+		"fileNotFound": "File non trovato",
+		"parseError": "Errore di parsing",
+		"commandTimeout": "Timeout del comando",
+		"permissionDenied": "Permesso negato",
+		"networkError": "Errore di rete",
+		"invalidInput": "Input non valido",
+		"operationFailed": "Operazione non riuscita",
+		"resourceNotFound": "Risorsa non trovata",
+		"configurationError": "Errore di configurazione",
+		"authenticationFailed": "Autenticazione non riuscita",
+		"invalidLineNumber": "Numero di riga non valido",
+		"fileAlreadyExists": "Il file esiste già",
+		"directoryNotFound": "Directory non trovata",
+		"invalidPath": "Percorso non valido",
+		"readError": "Errore di lettura",
+		"writeError": "Errore di scrittura",
+		"syntaxError": "Errore di sintassi",
+		"validationError": "Errore di convalida",
+		"timeoutError": "Errore di timeout",
+		"connectionError": "Errore di connessione"
+	},
+	"executeCommand": {
+		"workingDirMissing": "Directory di lavoro non trovata: '{{workingDir}}'",
+		"shellIntegrationGenericError": "L'esecuzione del comando non è riuscita a causa di un errore di integrazione della shell imprevisto."
+	},
+	"fetchInstructions": {
+		"errors": {
+			"invalidRequest": "Richiesta di istruzioni non valida per l'attività '{{task}}'."
+		}
+	},
+	"generic": {
+		"noChanges": "Nessuna modifica necessaria per '{{path}}'.",
+		"changesRejected": "Le modifiche sono state rifiutate dall'utente."
+	},
+	"attemptCompletion": {
+		"errors": {
+			"incompleteTodos": "Impossibile completare l'attività finché ci sono cose da fare incomplete. Finisci tutte le cose da fare prima di tentare il completamento."
+		},
+		"userFeedbackLead": "L'utente ha fornito un feedback sui risultati. Considera il loro input per continuare l'attività, quindi tenta di nuovo il completamento."
 	}
 }
