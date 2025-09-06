@@ -1699,6 +1699,12 @@ export const webviewMessageHandler = async (
 				await provider.postStateToWebview()
 			}
 			break
+		case "setApiConfigCustomOrder":
+			if (message.values && Array.isArray(message.values.customOrder)) {
+				await updateGlobalState("apiConfigCustomOrder", message.values.customOrder)
+				// No need to call postStateToWebview here as the UI already updated optimistically
+			}
+			break
 		case "enhancementApiConfigId":
 			await updateGlobalState("enhancementApiConfigId", message.text)
 			await provider.postStateToWebview()

@@ -181,6 +181,7 @@ export interface WebviewMessage {
 		| "includeCurrentCost"
 		| "searchFiles"
 		| "toggleApiConfigPin"
+		| "setApiConfigCustomOrder"
 		| "setHistoryPreviewCollapsed"
 		| "hasOpenedModeSelector"
 		| "cloudButtonClicked"

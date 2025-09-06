@@ -8,6 +8,7 @@ import { useRooPortal } from "@/components/ui/hooks/useRooPortal"
 import { Popover, PopoverContent, PopoverTrigger, StandardTooltip } from "@/components/ui"
 import { vscode } from "@/utils/vscode"
 import { Button } from "@/components/ui"
+import { useExtensionState } from "@/context/ExtensionStateContext"
 
 import { IconButton } from "./IconButton"
 
@@ -29,10 +30,6 @@ interface ApiConfigSelectorProps {
 	listApiConfigMeta: Array<{ id: string; name: string; modelId?: string }>
 	pinnedApiConfigs?: Record<string, boolean>
 	togglePinnedApiConfig: (id: string) => void
-	sortMode?: SortMode
-	customOrder?: string[]
-	onSortModeChange?: (mode: SortMode) => void
-	onCustomOrderChange?: (order: string[]) => void
 }
 
 export const ApiConfigSelector = ({
@@ -45,10 +42,9 @@ export const ApiConfigSelector = ({
 	listApiConfigMeta,
 	pinnedApiConfigs,
 	togglePinnedApiConfig,
-	sortMode: externalSortMode,
-	customOrder: externalCustomOrder = [],
 }: ApiConfigSelectorProps) => {
 	const { t } = useTranslation()
+	const { apiConfigCustomOrder: persistedCustomOrder } = useExtensionState()
 	const [open, setOpen] = useState(false)
 	const [searchValue, setSearchValue] = useState("")
 	const [isReorderMode, setIsReorderMode] = useState(false)
@@ -59,12 +55,12 @@ export const ApiConfigSelector = ({
 	})
 
 	// Internal state for sort mode and custom order when parent doesn't provide them
-	const [internalSortMode, setInternalSortMode] = useState<SortMode>("alphabetical")
+	const [sortMode, setSortMode] = useState<SortMode>("alphabetical")
 	const [internalCustomOrder, setInternalCustomOrder] = useState<string[]>([])
 
-	// Use external props if provided, otherwise use internal state
-	const sortMode = externalSortMode ?? internalSortMode
-	const customOrder = externalCustomOrder.length > 0 ? externalCustomOrder : internalCustomOrder
+	// Use persisted state then internal state as fallback
+	const customOrder =
+		persistedCustomOrder && persistedCustomOrder.length > 0 ? persistedCustomOrder : internalCustomOrder
 
 	const portalContainer = useRooPortal("roo-portal")
 	const scrollContainerRef = useRef<HTMLDivElement | null>(null)
@@ -78,13 +74,13 @@ export const ApiConfigSelector = ({
 				sorted.sort((a, b) => a.name.localeCompare(b.name))
 				break
 			case "custom":
-				if (customOrder.length > 0) {
+				if (customOrder && customOrder.length > 0) {
 					// Sort by custom order, with unordered items at the end
-					const orderMap = new Map(customOrder.map((id, index) => [id, index]))
+					const orderMap = new Map(customOrder.map((id: string, index: number) => [id, index]))
 					sorted.sort((a, b) => {
 						const aIndex = orderMap.get(a.id) ?? Number.MAX_SAFE_INTEGER
 						const bIndex = orderMap.get(b.id) ?? Number.MAX_SAFE_INTEGER
-						return aIndex - bIndex
+						return (aIndex as number) - (bIndex as number)
 					})
 				}
 				break
@@ -132,7 +128,7 @@ export const ApiConfigSelector = ({
 
 	const handleSortModeChange = useCallback((mode: SortMode) => {
 		// Always update internal state as fallback
-		setInternalSortMode(mode)
+		setSortMode(mode)
 
 		if (mode !== "custom") {
 			setIsReorderMode(false)
@@ -176,6 +172,12 @@ export const ApiConfigSelector = ({
 			const newCustomOrder = newOrder.map((config) => config.id)
 			// Always update internal state as fallback
 			setInternalCustomOrder(newCustomOrder)
+
+			// Persist the custom order to storage
+			vscode.postMessage({
+				type: "setApiConfigCustomOrder",
+				values: { customOrder: newCustomOrder },
+			})
 		},
 		[filteredConfigs],
 	)
