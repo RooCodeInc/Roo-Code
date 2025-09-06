@@ -3,6 +3,8 @@
 import { getModelId, rooCodeSettingsSchema } from "@roo-code/types"
 import { getRuns, getLanguageScores } from "@roo-code/evals"
 
+import { formatScore } from "@/lib"
+
 export async function getEvalRuns() {
 	const languageScores = await getLanguageScores()
 
@@ -16,7 +18,7 @@ export async function getEvalRuns() {
 			return {
 				...run,
 				label: run.description || run.model,
-				score: Math.round((run.passed / (run.passed + run.failed)) * 100),
+				score: formatScore(run.passed / (run.passed + run.failed)),
 				languageScores: languageScores[run.id],
 				taskMetrics: run.taskMetrics!,
 				modelId: getModelId(settings),
