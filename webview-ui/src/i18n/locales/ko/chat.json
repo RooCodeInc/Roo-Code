@@ -442,6 +442,7 @@
 		"custom": "사용자 정의",
 		"reorder": "재정렬…",
 		"dragToReorder": "구성을 재정렬하려면 드래그하세요",
+		"keyboardNavigation": "화살표 키로 탐색, Alt/Option + 화살표 키로 재정렬",
 		"cancel": "취소",
 		"done": "완료",
 		"editConfigurations": "구성 편집"

@@ -443,6 +443,7 @@
 		"custom": "Özel",
 		"reorder": "Yeniden sırala…",
 		"dragToReorder": "Yapılandırmaları yeniden sıralamak için sürükle",
+		"keyboardNavigation": "Gezinmek için ok tuşlarını, yeniden sıralamak için Alt/Option + ok tuşlarını kullanın",
 		"cancel": "İptal",
 		"done": "Bitti",
 		"editConfigurations": "Yapılandırmaları düzenle"
