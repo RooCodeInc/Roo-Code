@@ -96,32 +96,34 @@ describe("MultiSearchReplaceDiffStrategy", () => {
 			const diff = "=======\n" + "content\n" + ">>>>>>> REPLACE"
 			const result = strategy["validateMarkerSequencing"](diff)
 			expect(result.success).toBe(false)
-			expect(result.error).toContain("'=======' found in your diff content")
-			expect(result.error).toContain("Diff block is malformed")
+			expect(result.error).toContain("Diff structure is incorrect")
+			expect(result.error).toContain("Found: '======='")
+			expect(result.error).toContain("Expected: '<<<<<<< SEARCH")
 		})
 
 		it("detects missing separator", () => {
 			const diff = "<<<<<<< SEARCH\n" + "content\n" + ">>>>>>> REPLACE"
 			const result = strategy["validateMarkerSequencing"](diff)
 			expect(result.success).toBe(false)
-			expect(result.error).toContain("'>>>>>>> REPLACE' found in your diff content")
-			expect(result.error).toContain("Diff block is malformed")
+			expect(result.error).toContain("Diff structure is incorrect")
+			expect(result.error).toContain("Found: '>>>>>>> REPLACE'")
+			expect(result.error).toContain("Expected: '======='")
 		})
 
 		it("detects two separators", () => {
 			const diff = "<<<<<<< SEARCH\n" + "content\n" + "=======\n" + "=======\n" + ">>>>>>> REPLACE"
 			const result = strategy["validateMarkerSequencing"](diff)
 			expect(result.success).toBe(false)
-			expect(result.error).toContain("'=======' found in your diff content")
-			expect(result.error).toContain("When removing merge conflict markers")
+			expect(result.error).toContain("appears to be part of the content")
+			expect(result.error).toContain("MUST escape it")
 		})
 
 		it("detects replace before separator (merge conflict message)", () => {
 			const diff = "<<<<<<< SEARCH\n" + "content\n" + ">>>>>>>"
 			const result = strategy["validateMarkerSequencing"](diff)
 			expect(result.success).toBe(false)
-			expect(result.error).toContain("'>>>>>>>' found in your diff content")
-			expect(result.error).toContain("When removing merge conflict markers")
+			expect(result.error).toContain("appears to be part of the content")
+			expect(result.error).toContain("MUST escape it")
 		})
 
 		it("detects incomplete sequence", () => {

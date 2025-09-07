@@ -263,40 +263,58 @@ Each file requires its own path, start_line, and diff elements.
 		const reportMergeConflictError = (found: string, _expected: string) => ({
 			success: false,
 			error:
-				`ERROR: Special marker '${found}' found in your diff content at line ${state.line}:\n` +
+				`ERROR: The marker '${found}' at line ${state.line} appears to be part of the content you're trying to edit.\n` +
 				"\n" +
-				`When removing merge conflict markers like '${found}' from files, you MUST escape them\n` +
-				"in your SEARCH section by prepending a backslash (\\) at the beginning of the line:\n" +
+				`If '${found}' is part of the actual file content (not a diff marker), you MUST escape it by adding a backslash (\\) at the beginning of the line.\n` +
 				"\n" +
-				"CORRECT FORMAT:\n\n" +
+				"EXAMPLE - If your file contains '=======' as actual content:\n\n" +
 				"<<<<<<< SEARCH\n" +
-				"content before\n" +
-				`\\${found} <-- Note the backslash here in this example\n` +
-				"content after\n" +
+				"function example() {\n" +
+				`  // ${found}\n` +
+				`  \\${found}    <-- Add backslash to escape\n` +
+				"  return true;\n" +
+				"}\n" +
 				"=======\n" +
-				"replacement content\n" +
+				"function example() {\n" +
+				"  // Updated comment\n" +
+				"  return false;\n" +
+				"}\n" +
 				">>>>>>> REPLACE\n" +
 				"\n" +
-				"Without escaping, the system confuses your content with diff syntax markers.\n" +
-				"You may use multiple diff blocks in a single diff request, but ANY of ONLY the following separators that occur within SEARCH or REPLACE content must be escaped, as follows:\n" +
-				`\\${SEARCH}\n` +
-				`\\${SEP}\n` +
-				`\\${REPLACE}\n`,
+				"The following markers MUST be escaped when they appear as content (not as diff syntax):\n" +
+				`• \\<<<<<<< SEARCH (or any line starting with <<<<<<<)\n` +
+				`• \\======= (exactly seven equals signs)\n` +
+				`• \\>>>>>>> REPLACE (or any line starting with >>>>>>>)\n` +
+				`• \\------- (exactly seven dashes)\n` +
+				"\n" +
+				"TIP: Use read_file first to see the exact content, then escape any of these markers that appear in the actual file.",
 		})
 
 		const reportInvalidDiffError = (found: string, expected: string) => ({
 			success: false,
 			error:
-				`ERROR: Diff block is malformed: marker '${found}' found in your diff content at line ${state.line}. Expected: ${expected}\n` +
+				`ERROR: Diff structure is incorrect at line ${state.line}.\n` +
+				`Found: '${found}'\n` +
+				`Expected: '${expected}'\n` +
 				"\n" +
-				"CORRECT FORMAT:\n\n" +
+				"CORRECT DIFF STRUCTURE:\n" +
+				"```\n" +
 				"<<<<<<< SEARCH\n" +
-				":start_line: (required) The line number of original content where the search block starts.\n" +
-				"-------\n" +
-				"[exact content to find including whitespace]\n" +
+				":start_line:NUMBER    (optional but recommended)\n" +
+				"-------               (optional separator)\n" +
+				"[exact content to find]\n" +
 				"=======\n" +
 				"[new content to replace with]\n" +
-				">>>>>>> REPLACE\n",
+				">>>>>>> REPLACE\n" +
+				"```\n" +
+				"\n" +
+				"COMMON ISSUES:\n" +
+				`• If '${found}' is part of the file content (not a marker), escape it with a backslash: \\${found}\n` +
+				`• Ensure markers are on their own lines\n` +
+				`• Don't add extra '=' signs (must be exactly 7)\n` +
+				`• Check that you have matching SEARCH and REPLACE blocks\n` +
+				"\n" +
+				"TIP: If you're seeing this error repeatedly, the content you're trying to edit likely contains these special markers. Use read_file to check, then escape them.",
 		})
 
 		const reportLineMarkerInReplaceError = (marker: string) => ({
