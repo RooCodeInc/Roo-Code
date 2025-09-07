@@ -242,7 +242,36 @@ Each file requires its own path, start_line, and diff elements.
 			.replace(/^\\:start_line:/gm, ":start_line:")
 	}
 
-	private validateMarkerSequencing(diffContent: string): { success: boolean; error?: string } {
+	private validateMarkerSequencing(diffContent: string): { success: boolean; error?: string; debugInfo?: string } {
+		// First, check if this looks like a Grok model issue with malformed content
+		// Grok models sometimes generate extra markers or malformed diffs
+		const isLikelyGrokIssue = this.detectGrokMalformedDiff(diffContent)
+
+		if (isLikelyGrokIssue) {
+			// Log for debugging but try to be more helpful
+			const debugInfo = this.analyzeDiffStructure(diffContent)
+			return {
+				success: false,
+				error:
+					`ERROR: The diff content appears to be malformed. This often happens when AI models generate incorrect diff syntax.\n\n` +
+					`DEBUGGING INFO:\n${debugInfo}\n\n` +
+					`SUGGESTIONS:\n` +
+					`1. Try using the read_file tool first to see the exact file content\n` +
+					`2. Ensure your SEARCH block exactly matches the file content (including whitespace)\n` +
+					`3. Use simpler, smaller diff blocks for more reliable results\n` +
+					`4. If the file contains special characters or markers, they may need escaping\n\n` +
+					`CORRECT FORMAT:\n` +
+					`<<<<<<< SEARCH\n` +
+					`:start_line: (optional) The line number where search starts\n` +
+					`-------\n` +
+					`[exact content to find]\n` +
+					`=======\n` +
+					`[new content to replace with]\n` +
+					`>>>>>>> REPLACE`,
+				debugInfo: debugInfo,
+			}
+		}
+
 		enum State {
 			START,
 			AFTER_SEARCH,
@@ -291,7 +320,7 @@ Each file requires its own path, start_line, and diff elements.
 				"\n" +
 				"CORRECT FORMAT:\n\n" +
 				"<<<<<<< SEARCH\n" +
-				":start_line: (required) The line number of original content where the search block starts.\n" +
+				":start_line: (optional) The line number where search starts\n" +
 				"-------\n" +
 				"[exact content to find including whitespace]\n" +
 				"=======\n" +
@@ -385,6 +414,83 @@ Each file requires its own path, start_line, and diff elements.
 						state.current === State.AFTER_SEARCH ? "=======" : ">>>>>>> REPLACE"
 					}' was not found.`,
 				}
+	}
+
+	/**
+	 * Detects if the diff content appears to be malformed in a way typical of Grok models
+	 */
+	private detectGrokMalformedDiff(diffContent: string): boolean {
+		const lines = diffContent.split("\n")
+
+		// Check for common Grok model issues:
+		// 1. Multiple consecutive separators
+		// 2. Separators appearing before any SEARCH marker
+		// 3. Incomplete diff blocks
+		// 4. Markers in unexpected positions
+
+		let consecutiveSeparators = 0
+		let hasSearchMarker = false
+		let separatorBeforeSearch = false
+
+		for (let i = 0; i < lines.length; i++) {
+			const line = lines[i].trim()
+
+			if (line === "=======") {
+				if (!hasSearchMarker) {
+					separatorBeforeSearch = true
+				}
+				if (i > 0 && lines[i - 1].trim() === "=======") {
+					consecutiveSeparators++
+				}
+			}
+
+			if (line.startsWith("<<<<<<< SEARCH")) {
+				hasSearchMarker = true
+			}
+		}
+
+		// If we see patterns typical of Grok issues, flag it
+		return (
+			consecutiveSeparators > 0 ||
+			separatorBeforeSearch ||
+			lines.filter((l) => l.trim() === "=======").length >
+				lines.filter((l) => l.trim().startsWith("<<<<<<< SEARCH")).length * 2
+		)
+	}
+
+	/**
+	 * Analyzes the diff structure to provide debugging information
+	 */
+	private analyzeDiffStructure(diffContent: string): string {
+		const lines = diffContent.split("\n")
+		const searchMarkers = lines.filter((l) => l.trim().startsWith("<<<<<<< SEARCH")).length
+		const separators = lines.filter((l) => l.trim() === "=======").length
+		const replaceMarkers = lines.filter((l) => l.trim() === ">>>>>>> REPLACE").length
+
+		let debugInfo = `- Found ${searchMarkers} SEARCH markers\n`
+		debugInfo += `- Found ${separators} separator (=======) markers\n`
+		debugInfo += `- Found ${replaceMarkers} REPLACE markers\n`
+
+		// Check for balance
+		if (searchMarkers !== replaceMarkers) {
+			debugInfo += `- WARNING: Unbalanced markers (SEARCH: ${searchMarkers}, REPLACE: ${replaceMarkers})\n`
+		}
+		if (separators > searchMarkers) {
+			debugInfo += `- WARNING: More separators than SEARCH blocks (may indicate malformed content)\n`
+		}
+
+		// Find problematic lines
+		for (let i = 0; i < lines.length; i++) {
+			const line = lines[i]
+			if (line.trim() === "=======" && i > 0) {
+				const prevLine = lines[i - 1].trim()
+				if (prevLine === "=======") {
+					debugInfo += `- ERROR: Consecutive separators at lines ${i} and ${i + 1}\n`
+				}
+			}
+		}
+
+		return debugInfo
 	}
 
 	async applyDiff(

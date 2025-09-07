@@ -96,8 +96,9 @@ describe("MultiSearchReplaceDiffStrategy", () => {
 			const diff = "=======\n" + "content\n" + ">>>>>>> REPLACE"
 			const result = strategy["validateMarkerSequencing"](diff)
 			expect(result.success).toBe(false)
-			expect(result.error).toContain("'=======' found in your diff content")
-			expect(result.error).toContain("Diff block is malformed")
+			// This now triggers Grok detection instead of the regular error
+			expect(result.error).toContain("The diff content appears to be malformed")
+			expect(result.error).toContain("AI models generate incorrect diff syntax")
 		})
 
 		it("detects missing separator", () => {
@@ -112,8 +113,9 @@ describe("MultiSearchReplaceDiffStrategy", () => {
 			const diff = "<<<<<<< SEARCH\n" + "content\n" + "=======\n" + "=======\n" + ">>>>>>> REPLACE"
 			const result = strategy["validateMarkerSequencing"](diff)
 			expect(result.success).toBe(false)
-			expect(result.error).toContain("'=======' found in your diff content")
-			expect(result.error).toContain("When removing merge conflict markers")
+			// This now triggers Grok detection for consecutive separators
+			expect(result.error).toContain("The diff content appears to be malformed")
+			expect(result.error).toContain("AI models generate incorrect diff syntax")
 		})
 
 		it("detects replace before separator (merge conflict message)", () => {
