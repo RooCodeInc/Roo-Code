@@ -221,8 +221,8 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			metadata,
 		)
 
-		// Make the request
-		yield* this.executeRequest(requestBody, model, metadata)
+		// Make the request (pass systemPrompt and messages for potential retry)
+		yield* this.executeRequest(requestBody, model, metadata, systemPrompt, messages)
 	}
 
 	private buildRequestBody(
@@ -301,6 +301,8 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		requestBody: any,
 		model: OpenAiNativeModel,
 		metadata?: ApiHandlerCreateMessageMetadata,
+		systemPrompt?: string,
+		messages?: Anthropic.Messages.MessageParam[],
 	): ApiStream {
 		try {
 			// Use the official SDK
@@ -327,12 +329,18 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			if (is400Error && requestBody.previous_response_id && isPreviousResponseError) {
 				// Log the error and retry without the previous_response_id
 
-				// Remove the problematic previous_response_id and retry
-				const retryRequestBody = { ...requestBody }
-				delete retryRequestBody.previous_response_id
-
 				// Clear the stored lastResponseId to prevent using it again
 				this.lastResponseId = undefined
+
+				// Re-prepare the full conversation without previous_response_id
+				let retryRequestBody = { ...requestBody }
+				delete retryRequestBody.previous_response_id
+
+				// If we have the original messages, re-prepare the full conversation
+				if (systemPrompt && messages) {
+					const { formattedInput } = this.prepareStructuredInput(systemPrompt, messages, undefined)
+					retryRequestBody.input = formattedInput
+				}
 
 				try {
 					// Retry with the SDK
@@ -342,7 +350,13 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 
 					if (typeof (retryStream as any)[Symbol.asyncIterator] !== "function") {
 						// If SDK fails, fall back to SSE
-						yield* this.makeGpt5ResponsesAPIRequest(retryRequestBody, model, metadata)
+						yield* this.makeGpt5ResponsesAPIRequest(
+							retryRequestBody,
+							model,
+							metadata,
+							systemPrompt,
+							messages,
+						)
 						return
 					}
 
@@ -354,13 +368,13 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 					return
 				} catch (retryErr) {
 					// If retry also fails, fall back to SSE
-					yield* this.makeGpt5ResponsesAPIRequest(retryRequestBody, model, metadata)
+					yield* this.makeGpt5ResponsesAPIRequest(retryRequestBody, model, metadata, systemPrompt, messages)
 					return
 				}
 			}
 
 			// For other errors, fallback to manual SSE via fetch
-			yield* this.makeGpt5ResponsesAPIRequest(requestBody, model, metadata)
+			yield* this.makeGpt5ResponsesAPIRequest(requestBody, model, metadata, systemPrompt, messages)
 		}
 	}
 
@@ -449,6 +463,8 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		requestBody: any,
 		model: OpenAiNativeModel,
 		metadata?: ApiHandlerCreateMessageMetadata,
+		systemPrompt?: string,
+		messages?: Anthropic.Messages.MessageParam[],
 	): ApiStream {
 		const apiKey = this.options.openAiNativeApiKey ?? "not-provided"
 		const baseUrl = this.options.openAiNativeBaseUrl || "https://api.openai.com"
@@ -501,16 +517,22 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 					if (response.status === 400 && requestBody.previous_response_id && isPreviousResponseError) {
 						// Log the error and retry without the previous_response_id
 
-						// Remove the problematic previous_response_id and retry
-						const retryRequestBody = { ...requestBody }
-						delete retryRequestBody.previous_response_id
-
 						// Clear the stored lastResponseId to prevent using it again
 						this.lastResponseId = undefined
 						// Resolve the promise once to unblock any waiting requests
 						this.resolveResponseId(undefined)
 
-						// Retry the request without the previous_response_id
+						// Re-prepare the full conversation without previous_response_id
+						let retryRequestBody = { ...requestBody }
+						delete retryRequestBody.previous_response_id
+
+						// If we have the original messages, re-prepare the full conversation
+						if (systemPrompt && messages) {
+							const { formattedInput } = this.prepareStructuredInput(systemPrompt, messages, undefined)
+							retryRequestBody.input = formattedInput
+						}
+
+						// Retry the request with full conversation context
 						const retryController = new AbortController()
 						let retryTimer: NodeJS.Timeout | undefined
 						try {

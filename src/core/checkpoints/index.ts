@@ -131,13 +131,26 @@ async function checkGitInstallation(
 			task.checkpointServiceInitializing = false
 		})
 
-		service.on("checkpoint", ({ fromHash: from, toHash: to }) => {
+		service.on("checkpoint", ({ fromHash: from, toHash: to, suppressMessage }) => {
 			try {
-				provider?.postMessageToWebview({ type: "currentCheckpointUpdated", text: to })
+				// Always update the current checkpoint hash in the webview, including the suppress flag
+				provider?.postMessageToWebview({
+					type: "currentCheckpointUpdated",
+					text: to,
+					suppressMessage: !!suppressMessage,
+				})
 
-				task.say("checkpoint_saved", to, undefined, undefined, { from, to }, undefined, {
-					isNonInteractive: true,
-				}).catch((err) => {
+				// Always create the chat message but include the suppress flag in the payload
+				// so the chatview can choose not to render it while keeping it in history.
+				task.say(
+					"checkpoint_saved",
+					to,
+					undefined,
+					undefined,
+					{ from, to, suppressMessage: !!suppressMessage },
+					undefined,
+					{ isNonInteractive: true },
+				).catch((err) => {
 					log("[Task#getCheckpointService] caught unexpected error in say('checkpoint_saved')")
 					console.error(err)
 				})
@@ -164,7 +177,7 @@ async function checkGitInstallation(
 	}
 }
 
-export async function checkpointSave(task: Task, force = false) {
+export async function checkpointSave(task: Task, force = false, suppressMessage = false) {
 	const service = await getCheckpointService(task)
 
 	if (!service) {
@@ -174,19 +187,25 @@ export async function checkpointSave(task: Task, force = false) {
 	TelemetryService.instance.captureCheckpointCreated(task.taskId)
 
 	// Start the checkpoint process in the background.
-	return service.saveCheckpoint(`Task: ${task.taskId}, Time: ${Date.now()}`, { allowEmpty: force }).catch((err) => {
-		console.error("[Task#checkpointSave] caught unexpected error, disabling checkpoints", err)
-		task.enableCheckpoints = false
-	})
+	return service
+		.saveCheckpoint(`Task: ${task.taskId}, Time: ${Date.now()}`, { allowEmpty: force, suppressMessage })
+		.catch((err) => {
+			console.error("[Task#checkpointSave] caught unexpected error, disabling checkpoints", err)
+			task.enableCheckpoints = false
+		})
 }
 
 export type CheckpointRestoreOptions = {
 	ts: number
 	commitHash: string
 	mode: "preview" | "restore"
+	operation?: "delete" | "edit" // Optional to maintain backward compatibility
 }
 
-export async function checkpointRestore(task: Task, { ts, commitHash, mode }: CheckpointRestoreOptions) {
+export async function checkpointRestore(
+	task: Task,
+	{ ts, commitHash, mode, operation = "delete" }: CheckpointRestoreOptions,
+) {
 	const service = await getCheckpointService(task)
 
 	if (!service) {
@@ -215,7 +234,10 @@ export async function checkpointRestore(task: Task, { ts, commitHash, mode }: Ch
 				task.combineMessages(deletedMessages),
 			)
 
-			await task.overwriteClineMessages(task.clineMessages.slice(0, index + 1))
+			// For delete operations, exclude the checkpoint message itself
+			// For edit operations, include the checkpoint message (to be edited)
+			const endIndex = operation === "edit" ? index + 1 : index
+			await task.overwriteClineMessages(task.clineMessages.slice(0, endIndex))
 
 			// TODO: Verify that this is working as expected.
 			await task.say(
@@ -264,15 +286,16 @@ export async function checkpointDiff(task: Task, { ts, previousCommitHash, commi
 	TelemetryService.instance.captureCheckpointDiffed(task.taskId)
 
 	let prevHash = commitHash
-	let nextHash: string | undefined
+	let nextHash: string | undefined = undefined
 
-	const checkpoints = typeof service.getCheckpoints === "function" ? service.getCheckpoints() : []
-	const idx = checkpoints.indexOf(commitHash)
-
-	if (idx !== -1 && idx < checkpoints.length - 1) {
-		nextHash = checkpoints[idx + 1]
-	} else {
-		nextHash = undefined
+	if (mode !== "full") {
+		const checkpoints = task.clineMessages.filter(({ say }) => say === "checkpoint_saved").map(({ text }) => text!)
+		const idx = checkpoints.indexOf(commitHash)
+		if (idx !== -1 && idx < checkpoints.length - 1) {
+			nextHash = checkpoints[idx + 1]
+		} else {
+			nextHash = undefined
+		}
 	}
 
 	try {
@@ -285,7 +308,7 @@ export async function checkpointDiff(task: Task, { ts, previousCommitHash, commi
 
 		await vscode.commands.executeCommand(
 			"vscode.changes",
-			mode === "full" ? "Changes since task started" : "Changes since previous checkpoint",
+			mode === "full" ? "Changes since task started" : "Changes compare with next checkpoint",
 			changes.map((change) => [
 				vscode.Uri.file(change.paths.absolute),
 				vscode.Uri.parse(`${DIFF_VIEW_URI_SCHEME}:${change.paths.relative}`).with({
