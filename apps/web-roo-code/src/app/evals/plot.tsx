@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo } from "react"
-import { ScatterChart, Scatter, XAxis, YAxis, Label, Customized, Cross, LabelList } from "recharts"
+import { ScatterChart, Scatter, XAxis, YAxis, Customized, Cross, LabelList } from "recharts"
 
 import { formatCurrency } from "@/lib"
 import { ChartContainer, ChartTooltip, ChartConfig } from "@/components/ui"
@@ -173,7 +173,7 @@ export const Plot = ({ tableData }: PlotProps) => {
 
 	return (
 		<>
-			<div className="pb-4 font-medium">Cost Versus Score</div>
+			<div className="pt-4 pb-8 font-mono">Cost x Score</div>
 			<ChartContainer config={chartConfig} className="h-[500px] w-full">
 				<ScatterChart margin={{ top: 0, right: 0, bottom: 0, left: 20 }}>
 					<XAxis
@@ -184,9 +184,8 @@ export const Plot = ({ tableData }: PlotProps) => {
 							(dataMin: number) => Math.round((dataMin - 5) / 5) * 5,
 							(dataMax: number) => Math.round((dataMax + 5) / 5) * 5,
 						]}
-						tickFormatter={(value) => formatCurrency(value)}>
-						<Label value="Cost" position="bottom" offset={0} />
-					</XAxis>
+						tickFormatter={(value) => formatCurrency(value)}
+					/>
 					<YAxis
 						type="number"
 						dataKey="score"
@@ -195,9 +194,8 @@ export const Plot = ({ tableData }: PlotProps) => {
 							(dataMin: number) => Math.max(0, Math.round((dataMin - 5) / 5) * 5),
 							(dataMax: number) => Math.min(100, Math.round((dataMax + 5) / 5) * 5),
 						]}
-						tickFormatter={(value) => `${value}%`}>
-						<Label value="Score" angle={-90} position="left" dy={-15} />
-					</YAxis>
+						tickFormatter={(value) => `${value}%`}
+					/>
 					<ChartTooltip
 						content={({ active, payload }) => {
 							if (!active || !payload || !payload.length || !payload[0]) {
