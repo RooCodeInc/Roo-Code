@@ -954,7 +954,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 									"bottom-full",
 									"left-0",
 									"right-0",
-									"z-[1000]",
+									"z-[10001]",
 									"mb-2",
 									"filter",
 									"drop-shadow-md",

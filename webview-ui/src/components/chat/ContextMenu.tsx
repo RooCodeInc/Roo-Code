@@ -268,7 +268,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 					border: "1px solid var(--vscode-editorGroup-border)",
 					borderRadius: "3px",
 					boxShadow: "0 4px 10px rgba(0, 0, 0, 0.25)",
-					zIndex: 1000,
+					zIndex: 10001,
 					display: "flex",
 					flexDirection: "column",
 					maxHeight: "300px",
