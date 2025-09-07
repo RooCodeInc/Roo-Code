@@ -103,13 +103,13 @@ export function Evals({ runs }: { runs: EvalRun[] }) {
 						<TableRow key={run.id}>
 							<TableCell title={run.description ?? undefined}>
 								<div className="font-sans">{run.label}</div>
-								<div className="text-xs opacity-50">{formatTokens(run.contextWindow ?? 0)}</div>
+								<div className="text-xs opacity-50">{formatTokens(run.contextWindow)}</div>
 							</TableCell>
 							<TableCell className="border-r">
 								<div className="flex flex-row gap-2">
-									<div>{formatCurrency(run.inputPrice ?? 0)}</div>
+									<div>{formatCurrency(run.inputPrice)}</div>
 									<div className="opacity-25">/</div>
-									<div>{formatCurrency(run.outputPrice ?? 0)}</div>
+									<div>{formatCurrency(run.outputPrice)}</div>
 								</div>
 							</TableCell>
 							<TableCell className="font-mono">{formatDuration(run.taskMetrics.duration)}</TableCell>
