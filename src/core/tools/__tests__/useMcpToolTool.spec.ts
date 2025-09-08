@@ -1147,6 +1147,10 @@ describe("useMcpToolTool", () => {
 					callTool: vi.fn().mockResolvedValue(mockToolResult),
 				}),
 				postMessageToWebview: vi.fn(),
+				getState: vi.fn().mockResolvedValue({
+					mcpMaxImagesPerResponse: 20,
+					mcpMaxImageSizeMB: 10,
+				}),
 			})
 
 			const block: ToolUse = {
@@ -1174,7 +1178,7 @@ describe("useMcpToolTool", () => {
 			expect(mockTask.consecutiveMistakeCount).toBe(0)
 			expect(mockTask.recordToolError).not.toHaveBeenCalled()
 			expect(mockTask.say).toHaveBeenCalledWith("mcp_server_request_started")
-			expect(mockTask.say).toHaveBeenCalledWith("mcp_server_response", "Tool executed successfully")
+			expect(mockTask.say).toHaveBeenCalledWith("mcp_server_response", "Tool executed successfully", [])
 		})
 
 		it("should reject unknown server names with available servers listed", async () => {

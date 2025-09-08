@@ -269,7 +269,15 @@ async function processToolContent(toolResult: any, cline: Task): Promise<{ text:
 	const maxImageSizeMB = Math.max(0.1, Math.min(50, state?.mcpMaxImageSizeMB ?? 10))
 
 	// Separate content by type for efficient processing
-	const imageItems = toolResult.content.filter((item: any) => item.type === "image").slice(0, maxImagesPerResponse) // Limit images before processing
+	const allImageItems = toolResult.content.filter((item: any) => item.type === "image")
+	const imageItems = allImageItems.slice(0, maxImagesPerResponse) // Limit images before processing
+
+	// Check if we need to warn about exceeding the limit
+	if (allImageItems.length > maxImagesPerResponse) {
+		console.warn(
+			`MCP response contains more than ${maxImagesPerResponse} images. Additional images will be ignored to prevent performance issues.`,
+		)
+	}
 
 	// Process images in parallel
 	const validatedImages = await Promise.all(
@@ -286,12 +294,6 @@ async function processToolContent(toolResult: any, cline: Task): Promise<{ text:
 			textParts.push(JSON.stringify(rest, null, 2))
 		}
 	})
-
-	if (imageItems.length > maxImagesPerResponse) {
-		console.warn(
-			`MCP response contains more than ${maxImagesPerResponse} images. Additional images will be ignored to prevent performance issues.`,
-		)
-	}
 
 	return {
 		text: textParts.filter(Boolean).join("\n\n"),
