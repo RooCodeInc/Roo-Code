@@ -995,7 +995,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 											: "border border-transparent",
 									"pl-2",
 									"py-2",
-									isEditMode ? "pr-[72px]" : "pr-9",
+									isEditMode ? "pr-20" : "pr-9",
 									"z-10",
 									"forced-color-adjust-none",
 									"rounded",
@@ -1068,7 +1068,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 									"resize-none",
 									"overflow-x-hidden",
 									"overflow-y-auto",
-									isEditMode ? "pr-[72px]" : "pr-9",
+									isEditMode ? "pr-20" : "pr-9",
 									"flex-none flex-grow",
 									"z-[2]",
 									"scrollbar-none",
@@ -1146,7 +1146,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 								<div
 									className={cn(
 										"absolute left-2 z-30 flex items-center h-8 font-vscode-font-family text-vscode-editor-font-size leading-vscode-editor-line-height",
-										isEditMode ? "pr-[72px]" : "pr-9",
+										isEditMode ? "pr-20" : "pr-9",
 									)}
 									style={{
 										bottom: "0.75rem",
