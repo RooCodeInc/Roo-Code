@@ -1332,19 +1332,11 @@ describe("ClineProvider", () => {
 				text: "Edited message content",
 			})
 
-			// Verify correct messages were kept (only messages before the edited one)
-			expect(mockCline.overwriteClineMessages).toHaveBeenCalledWith([
-				mockMessages[0],
-				mockMessages[1],
-				mockMessages[2],
-			])
+			// Verify correct messages were kept - delete from the preceding user message to truly replace it
+			expect(mockCline.overwriteClineMessages).toHaveBeenCalledWith([])
 
-			// Verify correct API messages were kept (only messages before the edited one)
-			expect(mockCline.overwriteApiConversationHistory).toHaveBeenCalledWith([
-				mockApiHistory[0],
-				mockApiHistory[1],
-				mockApiHistory[2],
-			])
+			// Verify correct API messages were kept
+			expect(mockCline.overwriteApiConversationHistory).toHaveBeenCalledWith([])
 
 			// The new flow calls webviewMessageHandler recursively with askResponse
 			// We need to verify the recursive call happened by checking if the handler was called again
@@ -3046,9 +3038,9 @@ describe("ClineProvider - Comprehensive Edit/Delete Edge Cases", () => {
 				text: "Edited message with preserved images",
 			})
 
-			// Verify messages were edited correctly - messages up to the edited message should remain
-			expect(mockCline.overwriteClineMessages).toHaveBeenCalledWith([mockMessages[0], mockMessages[1]])
-			expect(mockCline.overwriteApiConversationHistory).toHaveBeenCalledWith([{ ts: 1000 }, { ts: 2000 }])
+			// Verify messages were edited correctly - the ORIGINAL user message and all subsequent messages are removed
+			expect(mockCline.overwriteClineMessages).toHaveBeenCalledWith([mockMessages[0]])
+			expect(mockCline.overwriteApiConversationHistory).toHaveBeenCalledWith([{ ts: 1000 }])
 		})
 
 		test("handles editing messages with file attachments", async () => {

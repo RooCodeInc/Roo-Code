@@ -1,15 +1,15 @@
 import { describe, it, expect, beforeEach, vi } from "vitest"
-import { webviewMessageHandler } from "../core/webview/webviewMessageHandler"
+import { webviewMessageHandler } from "../webviewMessageHandler"
 import * as vscode from "vscode"
-import { ClineProvider } from "../core/webview/ClineProvider"
+import { ClineProvider } from "../ClineProvider"
 
 // Mock the saveTaskMessages function
-vi.mock("../core/task-persistence", () => ({
+vi.mock("../../task-persistence", () => ({
 	saveTaskMessages: vi.fn(),
 }))
 
 // Mock the i18n module
-vi.mock("../i18n", () => ({
+vi.mock("../../../i18n", () => ({
 	t: vi.fn((key: string) => key),
 	changeLanguage: vi.fn(),
 }))
@@ -79,7 +79,7 @@ describe("webviewMessageHandler delete functionality", () => {
 	})
 
 	describe("handleDeleteMessageConfirm", () => {
-		it("should handle deletion when apiConversationHistoryIndex is -1 and use timestamp fallback", async () => {
+		it("should handle deletion when apiConversationHistoryIndex is -1 (message not in API history)", async () => {
 			// Setup test data with a user message and assistant response
 			const userMessageTs = 1000
 			const assistantMessageTs = 1001
@@ -110,12 +110,9 @@ describe("webviewMessageHandler delete functionality", () => {
 			// Verify that clineMessages was truncated at the correct index
 			expect(getCurrentTaskMock.overwriteClineMessages).toHaveBeenCalledWith([])
 
-			// Verify that apiConversationHistory was truncated using the timestamp fallback
-			// Since assistantMessageTs >= userMessageTs, it should be removed
-			// Check if the function was called at all
-			expect(getCurrentTaskMock.overwriteApiConversationHistory).toHaveBeenCalled()
-			// Then check what it was called with
-			expect(getCurrentTaskMock.overwriteApiConversationHistory).toHaveBeenCalledWith([])
+			// When message is not found in API history (index is -1),
+			// API history should not be modified
+			expect(getCurrentTaskMock.overwriteApiConversationHistory).not.toHaveBeenCalled()
 		})
 
 		it("should handle deletion when exact apiConversationHistoryIndex is found", async () => {
@@ -203,11 +200,11 @@ describe("webviewMessageHandler delete functionality", () => {
 				messageTs: userMessageTs,
 			})
 
-			// Verify that both arrays were properly truncated
+			// Verify that clineMessages was truncated
 			expect(getCurrentTaskMock.overwriteClineMessages).toHaveBeenCalledWith([])
 
-			// The timestamp fallback should remove everything >= userMessageTs
-			expect(getCurrentTaskMock.overwriteApiConversationHistory).toHaveBeenCalledWith([])
+			// API history should not be modified when message not found
+			expect(getCurrentTaskMock.overwriteApiConversationHistory).not.toHaveBeenCalled()
 		})
 
 		it("should preserve messages before the deleted one", async () => {
@@ -223,6 +220,7 @@ describe("webviewMessageHandler delete functionality", () => {
 			getCurrentTaskMock.apiConversationHistory = [
 				{ ts: 1000, role: "user", content: { type: "text", text: "First message" } },
 				{ ts: 1500, role: "assistant", content: { type: "text", text: "First response" } },
+				{ ts: messageTs, role: "user", content: { type: "text", text: "Delete this" } },
 				{ ts: 2500, role: "assistant", content: { type: "text", text: "Response to delete" } },
 			]
 
@@ -237,7 +235,7 @@ describe("webviewMessageHandler delete functionality", () => {
 				{ ts: 1500, say: "assistant", text: "First response" },
 			])
 
-			// API history should be truncated using timestamp fallback
+			// API history should be truncated at the exact index
 			expect(getCurrentTaskMock.overwriteApiConversationHistory).toHaveBeenCalledWith([
 				{ ts: 1000, role: "user", content: { type: "text", text: "First message" } },
 				{ ts: 1500, role: "assistant", content: { type: "text", text: "First response" } },

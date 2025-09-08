@@ -71,7 +71,7 @@ describe("webviewMessageHandler - Edit Message with Timestamp Fallback", () => {
 		} as unknown as ClineProvider
 	})
 
-	it("should use timestamp-based fallback when apiConversationHistoryIndex is -1", async () => {
+	it("should not modify API history when apiConversationHistoryIndex is -1", async () => {
 		// Setup: User message followed by attempt_completion
 		const userMessageTs = 1000
 		const assistantMessageTs = 2000
@@ -134,15 +134,11 @@ describe("webviewMessageHandler - Edit Message with Timestamp Fallback", () => {
 			[], // All messages before index 0 (empty array)
 		)
 
-		// Verify that API history was truncated using timestamp fallback
-		// The fallback should find the first message with ts >= userMessageTs (1000)
-		// which is the assistant message at ts=2000
-		expect(mockCurrentTask.overwriteApiConversationHistory).toHaveBeenCalledWith(
-			[], // All messages before the assistant message (empty array)
-		)
+		// API history should not be modified when message not found
+		expect(mockCurrentTask.overwriteApiConversationHistory).not.toHaveBeenCalled()
 	})
 
-	it("should preserve messages before the edited message when using timestamp fallback", async () => {
+	it("should preserve messages before the edited message when message not in API history", async () => {
 		const earlierMessageTs = 500
 		const userMessageTs = 1000
 		const assistantMessageTs = 2000
@@ -200,15 +196,8 @@ describe("webviewMessageHandler - Edit Message with Timestamp Fallback", () => {
 			},
 		])
 
-		// Verify API history was truncated to preserve earlier message
-		// Fallback should find first message with ts >= 1000, which is ts=2000
-		expect(mockCurrentTask.overwriteApiConversationHistory).toHaveBeenCalledWith([
-			{
-				ts: earlierMessageTs,
-				role: "user",
-				content: [{ type: "text", text: "Earlier message" }],
-			},
-		])
+		// API history should not be modified when message not found
+		expect(mockCurrentTask.overwriteApiConversationHistory).not.toHaveBeenCalled()
 	})
 
 	it("should not use fallback when exact apiConversationHistoryIndex is found", async () => {
@@ -292,8 +281,7 @@ describe("webviewMessageHandler - Edit Message with Timestamp Fallback", () => {
 		// UI messages truncated
 		expect(mockCurrentTask.overwriteClineMessages).toHaveBeenCalledWith([])
 
-		// API history should not be truncated when fallback finds no matching messages
-		// The effectiveApiIndex remains -1
+		// API history should not be modified when no matching messages found
 		expect(mockCurrentTask.overwriteApiConversationHistory).not.toHaveBeenCalled()
 	})
 
@@ -321,7 +309,7 @@ describe("webviewMessageHandler - Edit Message with Timestamp Fallback", () => {
 		// UI messages should be truncated
 		expect(mockCurrentTask.overwriteClineMessages).toHaveBeenCalledWith([])
 
-		// API history truncation should not be called with empty history
+		// API history should not be modified when message not found
 		expect(mockCurrentTask.overwriteApiConversationHistory).not.toHaveBeenCalled()
 	})
 
@@ -351,7 +339,7 @@ describe("webviewMessageHandler - Edit Message with Timestamp Fallback", () => {
 			} as ClineMessage,
 		]
 
-		// API history with attempt_completion tool use
+		// API history with attempt_completion tool use (user message missing)
 		mockCurrentTask.apiConversationHistory = [
 			{
 				ts: completionTs,
@@ -390,8 +378,7 @@ describe("webviewMessageHandler - Edit Message with Timestamp Fallback", () => {
 		// UI messages truncated at edited message
 		expect(mockCurrentTask.overwriteClineMessages).toHaveBeenCalledWith([])
 
-		// API history should be truncated to remove the completion and feedback
-		// Fallback finds first message with ts >= 1000, which is completionTs (2000)
-		expect(mockCurrentTask.overwriteApiConversationHistory).toHaveBeenCalledWith([])
+		// API history should not be modified when message not found
+		expect(mockCurrentTask.overwriteApiConversationHistory).not.toHaveBeenCalled()
 	})
 })

@@ -91,28 +91,13 @@ export const webviewMessageHandler = async (
 		currentCline: any,
 		messageIndex: number,
 		apiConversationHistoryIndex: number,
-		messageTs?: number,
 	) => {
 		// Delete this message and all that follow
 		await currentCline.overwriteClineMessages(currentCline.clineMessages.slice(0, messageIndex))
 
-		// If apiConversationHistoryIndex is -1, use timestamp-based fallback
-		let effectiveApiIndex = apiConversationHistoryIndex
-		if (apiConversationHistoryIndex === -1 && messageTs && currentCline.apiConversationHistory.length > 0) {
-			// Find the first API message with timestamp >= messageTs
-			// This ensures we remove any assistant responses that came after the deleted user message
-			const fallbackIndex = currentCline.apiConversationHistory.findIndex((msg: ApiMessage) => {
-				return msg.ts && msg.ts >= messageTs
-			})
-
-			if (fallbackIndex !== -1) {
-				effectiveApiIndex = fallbackIndex
-			}
-		}
-
-		if (effectiveApiIndex !== -1) {
+		if (apiConversationHistoryIndex !== -1) {
 			await currentCline.overwriteApiConversationHistory(
-				currentCline.apiConversationHistory.slice(0, effectiveApiIndex),
+				currentCline.apiConversationHistory.slice(0, apiConversationHistoryIndex),
 			)
 		}
 	}
@@ -204,12 +189,7 @@ export const webviewMessageHandler = async (
 				}
 
 				// Delete this message and all subsequent messages
-				await removeMessagesThisAndSubsequent(
-					currentCline,
-					messageIndex,
-					apiConversationHistoryIndex,
-					messageTs,
-				)
+				await removeMessagesThisAndSubsequent(currentCline, messageIndex, apiConversationHistoryIndex)
 
 				// Restore checkpoint associations for preserved messages
 				for (const [ts, checkpoint] of preservedCheckpoints) {
@@ -332,32 +312,41 @@ export const webviewMessageHandler = async (
 				}
 			}
 
-			// For non-checkpoint edits, preserve checkpoint associations for remaining messages
+			// For non-checkpoint edits, remove the ORIGINAL user message being edited and all subsequent messages
+			// Determine the correct starting index to delete from (prefer the last preceding user_feedback message)
+			let deleteFromMessageIndex = messageIndex
+			let deleteFromApiIndex = apiConversationHistoryIndex
+
+			// Find the nearest preceding user message to ensure we replace the original, not just the assistant reply
+			for (let i = messageIndex; i >= 0; i--) {
+				const m = currentCline.clineMessages[i]
+				if (m?.say === "user_feedback") {
+					deleteFromMessageIndex = i
+					// Align API history truncation to the same user message timestamp if present
+					const userTs = m.ts
+					if (typeof userTs === "number") {
+						const apiIdx = currentCline.apiConversationHistory.findIndex(
+							(am: ApiMessage) => am.ts === userTs,
+						)
+						if (apiIdx !== -1) {
+							deleteFromApiIndex = apiIdx
+						}
+					}
+					break
+				}
+			}
+
 			// Store checkpoints from messages that will be preserved
 			const preservedCheckpoints = new Map<number, any>()
-			for (let i = 0; i < messageIndex; i++) {
+			for (let i = 0; i < deleteFromMessageIndex; i++) {
 				const msg = currentCline.clineMessages[i]
 				if (msg?.checkpoint && msg.ts) {
 					preservedCheckpoints.set(msg.ts, msg.checkpoint)
 				}
 			}
 
-			// Edit this message and delete subsequent
-			// If apiConversationHistoryIndex is -1, use timestamp-based fallback
-			let effectiveApiIndex = apiConversationHistoryIndex
-			if (apiConversationHistoryIndex === -1 && currentCline.apiConversationHistory.length > 0) {
-				// Find the first API message with timestamp >= messageTs
-				// This ensures we remove any assistant responses that came after the edited user message
-				const fallbackIndex = currentCline.apiConversationHistory.findIndex((msg: ApiMessage) => {
-					return msg.ts && msg.ts >= messageTs
-				})
-
-				if (fallbackIndex !== -1) {
-					effectiveApiIndex = fallbackIndex
-				}
-			}
-
-			await removeMessagesThisAndSubsequent(currentCline, messageIndex, effectiveApiIndex)
+			// Delete the original (user) message and all subsequent messages
+			await removeMessagesThisAndSubsequent(currentCline, deleteFromMessageIndex, deleteFromApiIndex)
 
 			// Restore checkpoint associations for preserved messages
 			for (const [ts, checkpoint] of preservedCheckpoints) {
@@ -374,16 +363,12 @@ export const webviewMessageHandler = async (
 				globalStoragePath: provider.contextProxy.globalStorageUri.fsPath,
 			})
 
-			// Process the edited message as a regular user message
-			webviewMessageHandler(provider, {
-				type: "askResponse",
-				askResponse: "messageResponse",
-				text: editedContent,
-				images,
-			})
+			// Update the UI to reflect the deletion
+			await provider.postStateToWebview()
 
-			// Don't initialize with history item for edit operations
-			// The webviewMessageHandler will handle the conversation state
+			// Immediately send the edited message as a new user message
+			// This restarts the conversation from the edited point
+			await currentCline.handleWebviewAskResponse("messageResponse", editedContent, images)
 		} catch (error) {
 			console.error("Error in edit message:", error)
 			vscode.window.showErrorMessage(

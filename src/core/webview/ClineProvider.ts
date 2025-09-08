@@ -917,23 +917,9 @@ export class ClineProvider
 						// Remove the target message and all subsequent messages
 						await task.overwriteClineMessages(task.clineMessages.slice(0, messageIndex))
 
-						// Apply timestamp-based fallback if exact API index not found
-						let effectiveApiIndex = apiConversationHistoryIndex
-						if (apiConversationHistoryIndex === -1 && task.apiConversationHistory.length > 0) {
-							// Find the first API message with timestamp >= messageTs
-							// This ensures we remove any assistant responses that came after the edited user message
-							const fallbackIndex = task.apiConversationHistory.findIndex((msg: any) => {
-								return msg.ts && msg.ts >= pendingEdit.messageTs
-							})
-
-							if (fallbackIndex !== -1) {
-								effectiveApiIndex = fallbackIndex
-							}
-						}
-
-						if (effectiveApiIndex !== -1) {
+						if (apiConversationHistoryIndex !== -1) {
 							await task.overwriteApiConversationHistory(
-								task.apiConversationHistory.slice(0, effectiveApiIndex),
+								task.apiConversationHistory.slice(0, apiConversationHistoryIndex),
 							)
 						}
 
