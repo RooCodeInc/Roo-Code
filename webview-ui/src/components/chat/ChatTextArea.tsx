@@ -26,6 +26,7 @@ import { StandardTooltip } from "@src/components/ui"
 import Thumbnails from "../common/Thumbnails"
 import { ModeSelector } from "./ModeSelector"
 import { ApiConfigSelector } from "./ApiConfigSelector"
+import { AutoApproveDropdown } from "./AutoApproveDropdown"
 import { MAX_IMAGES_PER_MESSAGE } from "./ChatView"
 import ContextMenu from "./ContextMenu"
 import { IndexingStatusBadge } from "./IndexingStatusBadge"
@@ -1198,6 +1199,9 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 								pinnedApiConfigs={pinnedApiConfigs}
 								togglePinnedApiConfig={togglePinnedApiConfig}
 							/>
+						</div>
+						<div className="max-w-48">
+							<AutoApproveDropdown title={t("chat:autoApprove.title")} triggerClassName="w-full" />
 						</div>
 					</div>
 					<div className="flex items-center gap-0.5">
