@@ -207,81 +207,91 @@ function calculateImageSizeMB(base64Data: string): number {
 	return sizeInBytes / (1024 * 1024) // Convert to MB
 }
 
+async function validateAndProcessImage(item: any, maxImageSizeMB: number): Promise<string | null> {
+	if (!item.mimeType || item.data === undefined || item.data === null) {
+		console.warn("Invalid MCP ImageContent: missing data or mimeType")
+		return null
+	}
+
+	if (!SUPPORTED_IMAGE_TYPES.includes(item.mimeType)) {
+		console.warn(`Unsupported image MIME type: ${item.mimeType}`)
+		return null
+	}
+
+	try {
+		// Validate base64 data before constructing data URL
+		if (typeof item.data !== "string" || item.data.trim() === "") {
+			console.warn("Invalid MCP ImageContent: base64 data is not a valid string")
+			return null
+		}
+
+		// Quick size check before full validation to prevent memory spikes
+		const approximateSizeMB = (item.data.length * 0.75) / (1024 * 1024)
+		if (approximateSizeMB > maxImageSizeMB * 1.5) {
+			console.warn(
+				`MCP image likely exceeds size limit based on string length: ~${approximateSizeMB.toFixed(2)}MB`,
+			)
+			return null
+		}
+
+		// Basic validation for base64 format
+		if (!BASE64_REGEX.test(item.data.replace(/\s/g, ""))) {
+			console.warn("Invalid MCP ImageContent: base64 data contains invalid characters")
+			return null
+		}
+
+		// Check image size
+		const imageSizeMB = calculateImageSizeMB(item.data)
+		if (imageSizeMB > maxImageSizeMB) {
+			console.warn(
+				`MCP image exceeds size limit: ${imageSizeMB.toFixed(2)}MB > ${maxImageSizeMB}MB. Image will be ignored.`,
+			)
+			return null
+		}
+
+		return `data:${item.mimeType};base64,${item.data}`
+	} catch (error) {
+		console.warn("Failed to process MCP image content:", error)
+		return null
+	}
+}
+
 async function processToolContent(toolResult: any, cline: Task): Promise<{ text: string; images: string[] }> {
 	if (!toolResult?.content || toolResult.content.length === 0) {
 		return { text: "", images: [] }
 	}
 
 	const textParts: string[] = []
-	const images: string[] = []
 
 	// Get MCP settings from the extension's global state
 	const state = await cline.providerRef.deref()?.getState()
 	const maxImagesPerResponse = Math.max(1, Math.min(100, state?.mcpMaxImagesPerResponse ?? 20))
 	const maxImageSizeMB = Math.max(0.1, Math.min(50, state?.mcpMaxImageSizeMB ?? 10))
 
+	// Separate content by type for efficient processing
+	const imageItems = toolResult.content.filter((item: any) => item.type === "image").slice(0, maxImagesPerResponse) // Limit images before processing
+
+	// Process images in parallel
+	const validatedImages = await Promise.all(
+		imageItems.map((item: any) => validateAndProcessImage(item, maxImageSizeMB)),
+	)
+	const images = validatedImages.filter(Boolean) as string[]
+
+	// Process other content types
 	toolResult.content.forEach((item: any) => {
 		if (item.type === "text") {
 			textParts.push(item.text)
-		} else if (item.type === "image") {
-			// Check if we've exceeded the maximum number of images
-			if (images.length >= maxImagesPerResponse) {
-				console.warn(
-					`MCP response contains more than ${maxImagesPerResponse} images. Additional images will be ignored to prevent performance issues.`,
-				)
-				return // Skip processing additional images
-			}
-
-			if (item.mimeType && item.data !== undefined && item.data !== null) {
-				if (SUPPORTED_IMAGE_TYPES.includes(item.mimeType)) {
-					try {
-						// Validate base64 data before constructing data URL
-						if (typeof item.data !== "string" || item.data.trim() === "") {
-							console.warn("Invalid MCP ImageContent: base64 data is not a valid string")
-							return
-						}
-
-						// Quick size check before full validation to prevent memory spikes
-						const approximateSizeMB = (item.data.length * 0.75) / (1024 * 1024)
-						if (approximateSizeMB > maxImageSizeMB * 1.5) {
-							console.warn(
-								`MCP image likely exceeds size limit based on string length: ~${approximateSizeMB.toFixed(2)}MB`,
-							)
-							return
-						}
-
-						// Basic validation for base64 format
-						if (!BASE64_REGEX.test(item.data.replace(/\s/g, ""))) {
-							console.warn("Invalid MCP ImageContent: base64 data contains invalid characters")
-							return
-						}
-
-						// Check image size
-						const imageSizeMB = calculateImageSizeMB(item.data)
-						if (imageSizeMB > maxImageSizeMB) {
-							console.warn(
-								`MCP image exceeds size limit: ${imageSizeMB.toFixed(2)}MB > ${maxImageSizeMB}MB. Image will be ignored.`,
-							)
-							return
-						}
-
-						const dataUrl = `data:${item.mimeType};base64,${item.data}`
-						images.push(dataUrl)
-					} catch (error) {
-						console.warn("Failed to process MCP image content:", error)
-						// Continue processing other content instead of failing entirely
-					}
-				} else {
-					console.warn(`Unsupported image MIME type: ${item.mimeType}`)
-				}
-			} else {
-				console.warn("Invalid MCP ImageContent: missing data or mimeType")
-			}
 		} else if (item.type === "resource") {
 			const { blob: _, ...rest } = item.resource
 			textParts.push(JSON.stringify(rest, null, 2))
 		}
 	})
+
+	if (imageItems.length > maxImagesPerResponse) {
+		console.warn(
+			`MCP response contains more than ${maxImagesPerResponse} images. Additional images will be ignored to prevent performance issues.`,
+		)
+	}
 
 	return {
 		text: textParts.filter(Boolean).join("\n\n"),
