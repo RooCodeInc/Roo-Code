@@ -108,6 +108,7 @@ export async function activate(context: vscode.ExtensionContext) {
 			apiProvider: "openai-native",
 			model: "gpt-4o-mini",
 			// systemPrompt: "You are Charles, an AI coding assistant.",
+			openAiNativeApiKey: "dummy text to bypass validation of empty api key",
 			codeIndexing: {
 				embedderProvider: "openai",
 				qdrantUrl: "http://localhost:6333",
@@ -120,6 +121,7 @@ export async function activate(context: vscode.ExtensionContext) {
 		await contextProxy.setProviderSettings({
 			apiProvider: defaultSettings.apiProvider as any,
 			apiModelId: defaultSettings.model,
+			openAiNativeApiKey: defaultSettings.openAiNativeApiKey,
 		})
 
 		await contextProxy.setValues({
