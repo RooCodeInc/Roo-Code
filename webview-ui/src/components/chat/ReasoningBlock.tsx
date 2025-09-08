@@ -29,6 +29,7 @@ export const ReasoningBlock = ({ content, ts, isStreaming, isLast, metadata }: R
 	const startedAtRef = useRef<number>(persisted.startedAt ?? Date.now())
 	const [elapsed, setElapsed] = useState<number>(persisted.elapsedMs ?? 0)
 	const postedRef = useRef<boolean>(false)
+	const intervalRef = useRef<number | null>(null)
 
 	// Initialize startedAt on first mount if missing (persist to task) - guard with postedRef
 	useEffect(() => {
@@ -49,9 +50,29 @@ export const ReasoningBlock = ({ content, ts, isStreaming, isLast, metadata }: R
 
 		const tick = () => setElapsed(Date.now() - startedAtRef.current)
 		tick()
-		const id = setInterval(tick, 1000)
-		return () => clearInterval(id)
+		// ensure no duplicate intervals
+		if (intervalRef.current) {
+			clearInterval(intervalRef.current)
+			intervalRef.current = null
+		}
+		intervalRef.current = window.setInterval(tick, 1000)
+		return () => {
+			if (intervalRef.current) {
+				clearInterval(intervalRef.current)
+				intervalRef.current = null
+			}
+		}
 	}, [isLast, isStreaming])
+
+	// Cleanup on unmount (safety net)
+	useEffect(() => {
+		return () => {
+			if (intervalRef.current) {
+				clearInterval(intervalRef.current)
+				intervalRef.current = null
+			}
+		}
+	}, [])
 
 	// Persist final elapsed when streaming stops
 	const wasActiveRef = useRef<boolean>(false)
