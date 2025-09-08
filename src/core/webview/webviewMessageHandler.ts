@@ -93,25 +93,12 @@ export const webviewMessageHandler = async (
 		apiConversationHistoryIndex: number,
 		messageTs?: number,
 	) => {
-		console.log(
-			`[removeMessagesThisAndSubsequent] Starting with messageIndex: ${messageIndex}, apiIndex: ${apiConversationHistoryIndex}, messageTs: ${messageTs}`,
-		)
-		console.log(
-			`[removeMessagesThisAndSubsequent] Current clineMessages length: ${currentCline.clineMessages.length}`,
-		)
-		console.log(
-			`[removeMessagesThisAndSubsequent] Current apiConversationHistory length: ${currentCline.apiConversationHistory.length}`,
-		)
-
 		// Delete this message and all that follow
 		await currentCline.overwriteClineMessages(currentCline.clineMessages.slice(0, messageIndex))
-		console.log(`[removeMessagesThisAndSubsequent] Truncated clineMessages to ${messageIndex} messages`)
 
 		// If apiConversationHistoryIndex is -1, use timestamp-based fallback
 		let effectiveApiIndex = apiConversationHistoryIndex
 		if (apiConversationHistoryIndex === -1 && messageTs && currentCline.apiConversationHistory.length > 0) {
-			console.log(`[removeMessagesThisAndSubsequent] API index is -1, attempting timestamp-based fallback`)
-
 			// Find the first API message with timestamp >= messageTs
 			// This ensures we remove any assistant responses that came after the deleted user message
 			const fallbackIndex = currentCline.apiConversationHistory.findIndex((msg: ApiMessage) => {
@@ -120,23 +107,12 @@ export const webviewMessageHandler = async (
 
 			if (fallbackIndex !== -1) {
 				effectiveApiIndex = fallbackIndex
-				console.log(
-					`[removeMessagesThisAndSubsequent] Using timestamp-based fallback for API history truncation. Index: ${effectiveApiIndex}`,
-				)
-			} else {
-				console.log(`[removeMessagesThisAndSubsequent] No API messages found with timestamp >= ${messageTs}`)
 			}
 		}
 
 		if (effectiveApiIndex !== -1) {
-			console.log(`[removeMessagesThisAndSubsequent] Truncating API history at index ${effectiveApiIndex}`)
 			await currentCline.overwriteApiConversationHistory(
 				currentCline.apiConversationHistory.slice(0, effectiveApiIndex),
-			)
-			console.log(`[removeMessagesThisAndSubsequent] API history truncated to ${effectiveApiIndex} messages`)
-		} else {
-			console.log(
-				`[removeMessagesThisAndSubsequent] No API history truncation needed (effectiveApiIndex: ${effectiveApiIndex})`,
 			)
 		}
 	}
@@ -145,23 +121,16 @@ export const webviewMessageHandler = async (
 	 * Handles message deletion operations with user confirmation
 	 */
 	const handleDeleteOperation = async (messageTs: number): Promise<void> => {
-		console.log(`[handleDeleteOperation] Starting delete operation for messageTs: ${messageTs}`)
-
 		// Check if there's a checkpoint before this message
 		const currentCline = provider.getCurrentTask()
 		let hasCheckpoint = false
 
 		if (!currentCline) {
-			console.error("[handleDeleteOperation] No current task available")
 			await vscode.window.showErrorMessage("No active task to delete messages from")
 			return
 		}
 
-		console.log(`[handleDeleteOperation] Current task found, checking for message with ts: ${messageTs}`)
-		console.log(`[handleDeleteOperation] Total messages in clineMessages: ${currentCline.clineMessages.length}`)
-
 		const { messageIndex } = findMessageIndices(messageTs, currentCline)
-		console.log(`[handleDeleteOperation] Found message at index: ${messageIndex}`)
 
 		if (messageIndex !== -1) {
 			// Find the last checkpoint before this message
@@ -169,19 +138,9 @@ export const webviewMessageHandler = async (
 				(msg) => msg.say === "checkpoint_saved" && msg.ts > messageTs,
 			)
 			hasCheckpoint = checkpoints.length > 0
-			console.log(`[handleDeleteOperation] Has checkpoint after message: ${hasCheckpoint}`)
-		} else {
-			console.error(`[handleDeleteOperation] Message not found! Looking for ts: ${messageTs}`)
-			// Log first few message timestamps for debugging
-			const firstFewTimestamps = currentCline.clineMessages
-				.slice(0, 5)
-				.map((msg: ClineMessage) => msg.ts)
-				.filter(Boolean)
-			console.error(`[handleDeleteOperation] First few message timestamps: ${firstFewTimestamps.join(", ")}`)
 		}
 
 		// Send message to webview to show delete confirmation dialog
-		console.log(`[handleDeleteOperation] Sending showDeleteMessageDialog to webview`)
 		await provider.postMessageToWebview({
 			type: "showDeleteMessageDialog",
 			messageTs,
@@ -199,27 +158,10 @@ export const webviewMessageHandler = async (
 			return
 		}
 
-		console.log(`[handleDeleteMessageConfirm] Attempting to delete message with timestamp: ${messageTs}`)
-		console.log(`[handleDeleteMessageConfirm] Total clineMessages: ${currentCline.clineMessages.length}`)
-		console.log(
-			`[handleDeleteMessageConfirm] Total apiConversationHistory: ${currentCline.apiConversationHistory.length}`,
-		)
-
 		const { messageIndex, apiConversationHistoryIndex } = findMessageIndices(messageTs, currentCline)
 
-		console.log(
-			`[handleDeleteMessageConfirm] Found messageIndex: ${messageIndex}, apiConversationHistoryIndex: ${apiConversationHistoryIndex}`,
-		)
-
 		if (messageIndex === -1) {
-			// Log available message timestamps for debugging
-			const availableTimestamps = currentCline.clineMessages.map((msg: ClineMessage) => msg.ts).filter(Boolean)
-			console.error(
-				`[handleDeleteMessageConfirm] Available message timestamps: ${availableTimestamps.join(", ")}`,
-			)
-
 			const errorMessage = `Message with timestamp ${messageTs} not found`
-			console.error("[handleDeleteMessageConfirm]", errorMessage)
 			await vscode.window.showErrorMessage(errorMessage)
 			return
 		}
@@ -412,9 +354,6 @@ export const webviewMessageHandler = async (
 
 				if (fallbackIndex !== -1) {
 					effectiveApiIndex = fallbackIndex
-					console.log(
-						`[handleEditMessageConfirm] Using timestamp-based fallback for API history truncation. Index: ${effectiveApiIndex}`,
-					)
 				}
 			}
 
@@ -466,20 +405,10 @@ export const webviewMessageHandler = async (
 		editedContent?: string,
 		images?: string[],
 	): Promise<void> => {
-		console.log(`[handleMessageModificationsOperation] Starting ${operation} operation for messageTs: ${messageTs}`)
-
 		if (operation === "delete") {
-			console.log(`[handleMessageModificationsOperation] Calling handleDeleteOperation`)
 			await handleDeleteOperation(messageTs)
-			console.log(`[handleMessageModificationsOperation] handleDeleteOperation completed`)
 		} else if (operation === "edit" && editedContent) {
-			console.log(`[handleMessageModificationsOperation] Calling handleEditOperation`)
 			await handleEditOperation(messageTs, editedContent, images)
-			console.log(`[handleMessageModificationsOperation] handleEditOperation completed`)
-		} else {
-			console.error(
-				`[handleMessageModificationsOperation] Invalid operation or missing content: operation=${operation}, hasContent=${!!editedContent}`,
-			)
 		}
 	}
 
@@ -1560,27 +1489,17 @@ export const webviewMessageHandler = async (
 			}
 			break
 		case "deleteMessage": {
-			console.log(
-				`[deleteMessage case] Received delete message request with value: ${message.value}, type: ${typeof message.value}`,
-			)
-
 			if (!provider.getCurrentTask()) {
-				console.error("[deleteMessage case] No current task available")
 				await vscode.window.showErrorMessage("No active task to delete messages from")
 				break
 			}
 
 			if (typeof message.value !== "number" || !message.value) {
-				console.error(
-					`[deleteMessage case] Invalid message value: ${message.value} (type: ${typeof message.value})`,
-				)
 				await vscode.window.showErrorMessage("Invalid message timestamp for deletion")
 				break
 			}
 
-			console.log(`[deleteMessage case] Proceeding with delete operation for timestamp: ${message.value}`)
 			await handleMessageModificationsOperation(message.value, "delete")
-			console.log(`[deleteMessage case] Delete operation completed`)
 			break
 		}
 		case "submitEditedMessage": {
@@ -1968,29 +1887,17 @@ export const webviewMessageHandler = async (
 			}
 			break
 		case "deleteMessageConfirm":
-			console.log(
-				`[deleteMessageConfirm case] Received confirmation with messageTs: ${message.messageTs}, restoreCheckpoint: ${message.restoreCheckpoint}`,
-			)
-
 			if (!message.messageTs) {
-				console.error("[deleteMessageConfirm case] No messageTs provided in confirmation")
 				await vscode.window.showErrorMessage("Cannot delete message: missing timestamp")
 				break
 			}
 
 			if (typeof message.messageTs !== "number") {
-				console.error(
-					`[deleteMessageConfirm case] Invalid messageTs type: ${typeof message.messageTs}, value: ${message.messageTs}`,
-				)
 				await vscode.window.showErrorMessage("Cannot delete message: invalid timestamp")
 				break
 			}
 
-			console.log(
-				`[deleteMessageConfirm case] Calling handleDeleteMessageConfirm with messageTs: ${message.messageTs}`,
-			)
 			await handleDeleteMessageConfirm(message.messageTs, message.restoreCheckpoint)
-			console.log(`[deleteMessageConfirm case] handleDeleteMessageConfirm completed`)
 			break
 		case "editMessageConfirm":
 			if (message.messageTs && message.text) {

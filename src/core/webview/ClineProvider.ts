@@ -928,9 +928,6 @@ export class ClineProvider
 
 							if (fallbackIndex !== -1) {
 								effectiveApiIndex = fallbackIndex
-								this.log(
-									`[createTaskWithHistoryItem] Using timestamp-based fallback for API history truncation. Index: ${effectiveApiIndex}`,
-								)
 							}
 						}
 
