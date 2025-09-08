@@ -160,11 +160,22 @@ export async function executeCommand(
 	let workingDir: string
 
 	if (!customCwd) {
-		workingDir = task.cwd
+		// If we have a previously used terminal, use its current working directory
+		// This ensures that cd commands are properly tracked across execute_command calls
+		if (task.lastUsedTerminal && !task.lastUsedTerminal.isClosed()) {
+			workingDir = task.lastUsedTerminal.getCurrentWorkingDirectory()
+		} else {
+			workingDir = task.cwd
+		}
 	} else if (path.isAbsolute(customCwd)) {
 		workingDir = customCwd
 	} else {
-		workingDir = path.resolve(task.cwd, customCwd)
+		// Resolve relative paths against the last terminal's cwd or task cwd
+		const basePath =
+			task.lastUsedTerminal && !task.lastUsedTerminal.isClosed()
+				? task.lastUsedTerminal.getCurrentWorkingDirectory()
+				: task.cwd
+		workingDir = path.resolve(basePath, customCwd)
 	}
 
 	try {
@@ -239,6 +250,9 @@ export async function executeCommand(
 	}
 
 	const terminal = await TerminalRegistry.getOrCreateTerminal(workingDir, task.taskId, terminalProvider)
+
+	// Store the terminal reference in the task for future commands
+	task.lastUsedTerminal = terminal
 
 	if (terminal instanceof Terminal) {
 		terminal.terminal.show(true)

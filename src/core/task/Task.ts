@@ -67,7 +67,7 @@ import { RepoPerTaskCheckpointService } from "../../services/checkpoints"
 // integrations
 import { DiffViewProvider } from "../../integrations/editor/DiffViewProvider"
 import { findToolName, formatContentBlockToMarkdown } from "../../integrations/misc/export-markdown"
-import { RooTerminalProcess } from "../../integrations/terminal/types"
+import { RooTerminalProcess, RooTerminal } from "../../integrations/terminal/types"
 import { TerminalRegistry } from "../../integrations/terminal/TerminalRegistry"
 
 // utils
@@ -237,6 +237,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	fileContextTracker: FileContextTracker
 	urlContentFetcher: UrlContentFetcher
 	terminalProcess?: RooTerminalProcess
+	lastUsedTerminal?: RooTerminal
 
 	// Computer User
 	browserSession: BrowserSession
@@ -1545,6 +1546,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		try {
 			// Release any terminals associated with this task.
 			TerminalRegistry.releaseTerminalsForTask(this.taskId)
+			// Clear the lastUsedTerminal reference to prevent memory leaks
+			this.lastUsedTerminal = undefined
 		} catch (error) {
 			console.error("Error releasing terminals:", error)
 		}

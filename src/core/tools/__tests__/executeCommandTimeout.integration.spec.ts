@@ -47,6 +47,7 @@ describe("Command Execution Timeout Integration", () => {
 		mockTask = {
 			cwd: "/test/directory",
 			terminalProcess: undefined,
+			lastUsedTerminal: undefined, // Add this property introduced by the PR
 			providerRef: {
 				deref: vitest.fn().mockResolvedValue({
 					postMessageToWebview: vitest.fn(),
@@ -231,7 +232,9 @@ describe("Command Execution Timeout Integration", () => {
 			// Mock task with additional properties needed by executeCommandTool
 			mockTask = {
 				cwd: "/test/directory",
+				taskId: "test-task-id", // Add taskId which is used by TerminalRegistry
 				terminalProcess: undefined,
+				lastUsedTerminal: undefined, // Add this property introduced by the PR
 				providerRef: {
 					deref: vitest.fn().mockResolvedValue({
 						postMessageToWebview: vitest.fn(),
@@ -365,14 +368,13 @@ describe("Command Execution Timeout Integration", () => {
 			})
 			;(vscode.workspace.getConfiguration as any).mockReturnValue(mockGetConfiguration())
 
+			// Test exact prefix match - should not timeout
+			mockBlock.params.command = "git log --oneline"
+
+			// Create a process that completes successfully after 2 seconds
 			const longRunningProcess = new Promise((resolve) => {
 				setTimeout(resolve, 2000) // 2 seconds
 			})
-			const neverResolvingProcess = new Promise(() => {})
-			;(neverResolvingProcess as any).abort = vitest.fn()
-
-			// Test exact prefix match - should not timeout
-			mockBlock.params.command = "git log --oneline"
 			mockTerminal.runCommand.mockReturnValueOnce(longRunningProcess)
 
 			await executeCommandTool(
@@ -390,10 +392,19 @@ describe("Command Execution Timeout Integration", () => {
 
 			// Reset mocks for second test
 			mockPushToolResult.mockClear()
+			mockAskApproval.mockClear()
+
+			// Reset task's lastUsedTerminal to avoid interference from first test
+			mockTask.lastUsedTerminal = undefined
 
 			// Test partial prefix match (should not match) - should timeout
 			mockBlock.params.command = "git status" // "git" alone is not in allowlist, only "git log"
-			mockTerminal.runCommand.mockReturnValueOnce(neverResolvingProcess)
+
+			// Create a process that never resolves with abort method
+			const neverResolvingProcess = new Promise(() => {})
+			;(neverResolvingProcess as any).abort = vitest.fn()
+
+			mockTerminal.runCommand.mockReturnValue(neverResolvingProcess)
 
 			await executeCommandTool(
 				mockTask as Task,
