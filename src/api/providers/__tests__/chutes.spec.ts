@@ -409,8 +409,11 @@ describe("ChutesHandler", () => {
 						content: `${systemPrompt}\n${messages[0].content}`,
 					},
 				],
+				max_tokens: 32768,
+				temperature: 0.6,
+				stream: true,
+				stream_options: { include_usage: true },
 			}),
-			undefined,
 		)
 	})
 
