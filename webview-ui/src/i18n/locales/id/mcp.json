@@ -60,7 +60,8 @@
 	"execution": {
 		"running": "Berjalan",
 		"completed": "Selesai",
-		"error": "Error"
+		"error": "Error",
+		"imageCountTooltip": "{{count}} gambar dalam respons"
 	},
 	"imageSettings": {
 		"maxImagesLabel": "Gambar Maks per Respons",

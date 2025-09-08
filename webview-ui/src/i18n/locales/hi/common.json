@@ -95,5 +95,9 @@
 		"months_ago": "{{count}} महीने पहले",
 		"year_ago": "एक साल पहले",
 		"years_ago": "{{count}} साल पहले"
+	},
+	"thumbnails": {
+		"failedToLoad": "चित्र लोड नहीं हो सका",
+		"altText": "थंबनेल {{index}}"
 	}
 }

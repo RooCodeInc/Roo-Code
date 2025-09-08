@@ -60,7 +60,8 @@
 	"execution": {
 		"running": "Выполняется",
 		"completed": "Завершено",
-		"error": "Ошибка"
+		"error": "Ошибка",
+		"imageCountTooltip": "{{count}} изображение(й) в ответе"
 	},
 	"imageSettings": {
 		"maxImagesLabel": "Максимум изображений в ответе",

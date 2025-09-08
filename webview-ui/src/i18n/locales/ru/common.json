@@ -95,5 +95,9 @@
 		"months_ago": "{{count}} месяцев назад",
 		"year_ago": "год назад",
 		"years_ago": "{{count}} лет назад"
+	},
+	"thumbnails": {
+		"failedToLoad": "Не удалось загрузить изображение",
+		"altText": "Миниатюра {{index}}"
 	}
 }

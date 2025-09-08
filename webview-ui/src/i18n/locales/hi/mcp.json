@@ -60,7 +60,8 @@
 	"execution": {
 		"running": "चल रहा है",
 		"completed": "पूरा हुआ",
-		"error": "त्रुटि"
+		"error": "त्रुटि",
+		"imageCountTooltip": "प्रतिक्रिया में {{count}} चित्र"
 	},
 	"imageSettings": {
 		"maxImagesLabel": "अधिकतम छवियाँ",

@@ -95,5 +95,9 @@
 		"months_ago": "{{count}} maanden geleden",
 		"year_ago": "een jaar geleden",
 		"years_ago": "{{count}} jaar geleden"
+	},
+	"thumbnails": {
+		"failedToLoad": "Afbeelding laden mislukt",
+		"altText": "Thumbnail {{index}}"
 	}
 }

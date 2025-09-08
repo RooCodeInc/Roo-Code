@@ -60,7 +60,8 @@
 	"execution": {
 		"running": "実行中",
 		"completed": "完了",
-		"error": "エラー"
+		"error": "エラー",
+		"imageCountTooltip": "レスポンスに{{count}}個の画像"
 	},
 	"imageSettings": {
 		"maxImagesLabel": "応答あたりの最大画像数",

@@ -60,7 +60,8 @@
 	"execution": {
 		"running": "Çalışıyor",
 		"completed": "Tamamlandı",
-		"error": "Hata"
+		"error": "Hata",
+		"imageCountTooltip": "Yanıtta {{count}} resim"
 	},
 	"imageSettings": {
 		"maxImagesLabel": "Yanıt Başına Maksimum Görüntü",

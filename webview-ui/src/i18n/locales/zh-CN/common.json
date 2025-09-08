@@ -95,5 +95,9 @@
 		"months_ago": "{{count}}个月前",
 		"year_ago": "1年前",
 		"years_ago": "{{count}}年前"
+	},
+	"thumbnails": {
+		"failedToLoad": "加载图片失败",
+		"altText": "缩略图 {{index}}"
 	}
 }

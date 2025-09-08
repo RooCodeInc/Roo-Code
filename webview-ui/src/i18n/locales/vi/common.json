@@ -95,5 +95,9 @@
 		"months_ago": "{{count}} tháng trước",
 		"year_ago": "một năm trước",
 		"years_ago": "{{count}} năm trước"
+	},
+	"thumbnails": {
+		"failedToLoad": "Không thể tải hình ảnh",
+		"altText": "Hình thu nhỏ {{index}}"
 	}
 }

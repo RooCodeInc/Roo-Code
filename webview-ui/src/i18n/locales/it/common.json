@@ -95,5 +95,9 @@
 		"months_ago": "{{count}} mesi fa",
 		"year_ago": "un anno fa",
 		"years_ago": "{{count}} anni fa"
+	},
+	"thumbnails": {
+		"failedToLoad": "Impossibile caricare l'immagine",
+		"altText": "Anteprima {{index}}"
 	}
 }

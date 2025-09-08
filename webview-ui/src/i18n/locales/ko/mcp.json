@@ -60,7 +60,8 @@
 	"execution": {
 		"running": "실행 중",
 		"completed": "완료됨",
-		"error": "오류"
+		"error": "오류",
+		"imageCountTooltip": "응답에 {{count}}개의 이미지"
 	},
 	"imageSettings": {
 		"maxImagesLabel": "응답당 최대 이미지 수",

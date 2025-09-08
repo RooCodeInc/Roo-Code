@@ -60,7 +60,8 @@
 	"execution": {
 		"running": "Đang chạy",
 		"completed": "Hoàn thành",
-		"error": "Lỗi"
+		"error": "Lỗi",
+		"imageCountTooltip": "{{count}} hình ảnh trong phản hồi"
 	},
 	"imageSettings": {
 		"maxImagesLabel": "Số lượng hình ảnh tối đa mỗi phản hồi",

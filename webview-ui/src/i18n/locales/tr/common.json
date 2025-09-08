@@ -95,5 +95,9 @@
 		"months_ago": "{{count}} ay önce",
 		"year_ago": "bir yıl önce",
 		"years_ago": "{{count}} yıl önce"
+	},
+	"thumbnails": {
+		"failedToLoad": "Resim yüklenemedi",
+		"altText": "Küçük resim {{index}}"
 	}
 }

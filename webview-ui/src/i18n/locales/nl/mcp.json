@@ -61,7 +61,8 @@
 	"execution": {
 		"running": "Wordt uitgevoerd",
 		"completed": "Voltooid",
-		"error": "Fout"
+		"error": "Fout",
+		"imageCountTooltip": "{{count}} afbeelding(en) in reactie"
 	},
 	"imageSettings": {
 		"maxImagesLabel": "Max afbeeldingen per antwoord",

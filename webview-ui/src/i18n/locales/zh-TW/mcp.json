@@ -60,7 +60,8 @@
 	"execution": {
 		"running": "執行中",
 		"completed": "已完成",
-		"error": "錯誤"
+		"error": "錯誤",
+		"imageCountTooltip": "回應中有 {{count}} 張圖片"
 	},
 	"imageSettings": {
 		"maxImagesLabel": "每個回應的最大圖片數",
