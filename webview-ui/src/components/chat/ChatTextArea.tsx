@@ -1030,7 +1030,15 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 									updateHighlights()
 								}}
 								onFocus={() => setIsFocused(true)}
-								onKeyDown={handleKeyDown}
+								onKeyDown={(e) => {
+									// Handle ESC to cancel in edit mode
+									if (isEditMode && e.key === "Escape" && !e.nativeEvent?.isComposing) {
+										e.preventDefault()
+										onCancel?.()
+										return
+									}
+									handleKeyDown(e)
+								}}
 								onKeyUp={handleKeyUp}
 								onBlur={handleBlur}
 								onPaste={handlePaste}
@@ -1071,7 +1079,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 									"resize-none",
 									"overflow-x-hidden",
 									"overflow-y-auto",
-									"pr-9",
+									isEditMode ? "pr-[72px]" : "pr-9",
 									"flex-none flex-grow",
 									"z-[2]",
 									"scrollbar-none",
