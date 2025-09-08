@@ -2876,8 +2876,8 @@ export const webviewMessageHandler = async (
 				if (messageIndex === -1) {
 					break
 				}
-				const msg = currentCline.clineMessages[messageIndex] as any
-				const existingMeta = (msg.metadata as any) || {}
+				const msg = currentCline.clineMessages[messageIndex] as { metadata?: { reasoning?: { startedAt?: number; elapsedMs?: number } } }
+				const existingMeta = msg.metadata || {}
 				const existingReasoning = existingMeta.reasoning || {}
 				msg.metadata = {
 					...existingMeta,

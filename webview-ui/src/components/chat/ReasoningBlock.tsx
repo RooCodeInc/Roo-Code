@@ -4,37 +4,43 @@ import { useTranslation } from "react-i18next"
 import MarkdownBlock from "../common/MarkdownBlock"
 import { vscode } from "@src/utils/vscode"
 
+interface ReasoningMeta {
+	startedAt?: number
+	elapsedMs?: number
+}
+
 interface ReasoningBlockProps {
 	content: string
 	ts: number
 	isStreaming: boolean
 	isLast: boolean
-	metadata?: Record<string, any>
+	metadata?: { reasoning?: ReasoningMeta } | Record<string, any>
 }
 
 /**
  * Render reasoning with a heading and a persistent timer.
  * - Heading uses i18n key chat:reasoning.thinking
- * - Timer shown as "(⟲ 24s)" beside the heading and persists via message.metadata.reasoning { startedAt, elapsedMs }
+ * - Timer shown beside the heading and persists via message.metadata.reasoning { startedAt, elapsedMs }
  */
 export const ReasoningBlock = ({ content, ts, isStreaming, isLast, metadata }: ReasoningBlockProps) => {
 	const { t } = useTranslation()
 
-	const persisted = (metadata?.reasoning as { startedAt?: number; elapsedMs?: number } | undefined) || {}
+	const persisted: ReasoningMeta = (metadata?.reasoning as ReasoningMeta) || {}
 	const startedAtRef = useRef<number>(persisted.startedAt ?? Date.now())
 	const [elapsed, setElapsed] = useState<number>(persisted.elapsedMs ?? 0)
+	const postedRef = useRef<boolean>(false)
 
-	// Initialize startedAt on first mount if missing (persist to task)
+	// Initialize startedAt on first mount if missing (persist to task) - guard with postedRef
 	useEffect(() => {
-		if (!persisted.startedAt && isLast) {
+		if (!persisted.startedAt && isLast && !postedRef.current) {
+			postedRef.current = true
 			vscode.postMessage({
 				type: "updateMessageReasoningMeta",
 				messageTs: ts,
 				reasoningMeta: { startedAt: startedAtRef.current },
-			} as any)
+			})
 		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [ts])
+	}, [ts, isLast, persisted.startedAt])
 
 	// Tick while active (last row and streaming)
 	useEffect(() => {
@@ -58,7 +64,7 @@ export const ReasoningBlock = ({ content, ts, isStreaming, isLast, metadata }: R
 				type: "updateMessageReasoningMeta",
 				messageTs: ts,
 				reasoningMeta: { startedAt: startedAtRef.current, elapsedMs: finalMs },
-			} as any)
+			})
 		}
 		wasActiveRef.current = active
 	}, [isLast, isStreaming, ts])
@@ -73,13 +79,13 @@ export const ReasoningBlock = ({ content, ts, isStreaming, isLast, metadata }: R
 
 	return (
 		<div className="py-1">
-			<div className="flex items-center justify-between mb-[10px]">
+			<div className="flex items-center justify-between mb-2.5">
 				<div className="flex items-center gap-2">
-					<span className="codicon codicon-light-bulb" style={{ color: "var(--vscode-charts-yellow)" }} />
+					<span className="codicon codicon-light-bulb text-vscode-charts-yellow" />
 					<span className="font-bold text-vscode-foreground">{t("chat:reasoning.thinking")}</span>
 				</div>
 				<span className="text-vscode-foreground tabular-nums flex items-center gap-1">
-					<span className="codicon codicon-clock" style={{ fontSize: "inherit" }} />
+					<span className="codicon codicon-clock text-base" />
 					{secondsLabel}
 				</span>
 			</div>

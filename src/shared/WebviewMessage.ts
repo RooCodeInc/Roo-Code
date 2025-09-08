@@ -23,6 +23,11 @@ export interface UpdateTodoListPayload {
 	todos: any[]
 }
 
+export interface ReasoningMeta {
+	startedAt?: number
+	elapsedMs?: number
+}
+
 export type EditQueuedMessagePayload = Pick<QueuedMessage, "id" | "text" | "images">
 
 export interface WebviewMessage {
@@ -257,10 +262,7 @@ export interface WebviewMessage {
 	terminalOperation?: "continue" | "abort"
 	messageTs?: number
 	restoreCheckpoint?: boolean
-	reasoningMeta?: {
-		startedAt?: number
-		elapsedMs?: number
-	}
+	reasoningMeta?: ReasoningMeta
 	historyPreviewCollapsed?: boolean
 	filters?: { type?: string; search?: string; tags?: string[] }
 	settings?: any
