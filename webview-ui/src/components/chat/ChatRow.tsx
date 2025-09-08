@@ -18,7 +18,7 @@ import { vscode } from "@src/utils/vscode"
 import { removeLeadingNonAlphanumeric } from "@src/utils/removeLeadingNonAlphanumeric"
 import { getLanguageFromPath } from "@src/utils/getLanguageFromPath"
 import { formatTokenStats } from "@src/utils/formatTokens"
-import { Button } from "@src/components/ui"
+import { Button, StandardTooltip } from "@src/components/ui"
 
 import { ToolUseBlock, ToolUseBlockHeader } from "../common/ToolUseBlock"
 import UpdateTodoListToolBlock from "./UpdateTodoListToolBlock"
@@ -1146,36 +1146,39 @@ export const ChatRowContent = ({
 										{title}
 									</span>
 									<div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
-										<VSCodeBadge
-											style={{
-												opacity: cost !== null && cost !== undefined && cost > 0 ? 1 : 0,
-												flexShrink: 0,
-											}}>
-											${Number(cost || 0)?.toFixed(4)}
-										</VSCodeBadge>
-										{hasTokenData && (
-											<div
-												className="flex items-center gap-1"
+										{hasTokenData ? (
+											<StandardTooltip
+												content={
+													<div className="flex flex-col gap-1">
+														<div className="flex items-center gap-2">
+															<span>↑ Input:</span>
+															<span className="font-mono">{tokenStats.input}</span>
+														</div>
+														<div className="flex items-center gap-2">
+															<span>↓ Output:</span>
+															<span className="font-mono">{tokenStats.output}</span>
+														</div>
+													</div>
+												}
+												side="top">
+												<VSCodeBadge
+													style={{
+														opacity:
+															cost !== null && cost !== undefined && cost > 0 ? 1 : 0,
+														flexShrink: 0,
+														cursor: "default",
+													}}>
+													${Number(cost || 0)?.toFixed(4)}
+												</VSCodeBadge>
+											</StandardTooltip>
+										) : (
+											<VSCodeBadge
 												style={{
-													opacity: hasTokenData ? 1 : 0,
+													opacity: cost !== null && cost !== undefined && cost > 0 ? 1 : 0,
 													flexShrink: 0,
-													whiteSpace: "nowrap",
 												}}>
-												<span
-													style={{
-														fontSize: "12px",
-														color: "var(--vscode-descriptionForeground)",
-													}}>
-													↑ {tokenStats.input}
-												</span>
-												<span
-													style={{
-														fontSize: "12px",
-														color: "var(--vscode-descriptionForeground)",
-													}}>
-													↓ {tokenStats.output}
-												</span>
-											</div>
+												${Number(cost || 0)?.toFixed(4)}
+											</VSCodeBadge>
 										)}
 									</div>
 								</div>
