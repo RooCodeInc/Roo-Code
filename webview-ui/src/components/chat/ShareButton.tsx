@@ -7,6 +7,8 @@ import { type HistoryItem, type ShareVisibility, TelemetryEventName } from "@roo
 import { vscode } from "@/utils/vscode"
 import { telemetryClient } from "@/utils/TelemetryClient"
 import { useExtensionState } from "@/context/ExtensionStateContext"
+import { useCloudUpsell } from "@/hooks/useCloudUpsell"
+import { CloudUpsellDialog } from "@/components/cloud/CloudUpsellDialog"
 import {
 	Button,
 	Popover,
@@ -16,10 +18,6 @@ import {
 	CommandList,
 	CommandItem,
 	CommandGroup,
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
 	StandardTooltip,
 } from "@/components/ui"
 
@@ -31,10 +29,10 @@ interface ShareButtonProps {
 
 export const ShareButton = ({ item, disabled = false, showLabel = false }: ShareButtonProps) => {
 	const [shareDropdownOpen, setShareDropdownOpen] = useState(false)
-	const [connectModalOpen, setConnectModalOpen] = useState(false)
 	const [shareSuccess, setShareSuccess] = useState<{ visibility: ShareVisibility; url: string } | null>(null)
 	const { t } = useTranslation()
 	const { sharingEnabled, cloudIsAuthenticated, cloudUserInfo } = useExtensionState()
+	const { isOpen: connectModalOpen, openUpsell, closeUpsell, handleConnect } = useCloudUpsell()
 	const wasUnauthenticatedRef = useRef(false)
 	const initiatedAuthFromThisButtonRef = useRef(false)
 
@@ -47,13 +45,13 @@ export const ShareButton = ({ item, disabled = false, showLabel = false }: Share
 			if (initiatedAuthFromThisButtonRef.current) {
 				// User just authenticated from this share button, send telemetry, close modal, and open the popover
 				telemetryClient.capture(TelemetryEventName.ACCOUNT_CONNECT_SUCCESS)
-				setConnectModalOpen(false)
+				closeUpsell()
 				setShareDropdownOpen(true)
 				initiatedAuthFromThisButtonRef.current = false // Reset the flag
 			}
 			wasUnauthenticatedRef.current = false
 		}
-	}, [cloudIsAuthenticated, sharingEnabled])
+	}, [cloudIsAuthenticated, sharingEnabled, closeUpsell])
 
 	// Listen for share success messages from the extension
 	useEffect(() => {
@@ -95,14 +93,10 @@ export const ShareButton = ({ item, disabled = false, showLabel = false }: Share
 	}
 
 	const handleConnectToCloud = () => {
-		// Send telemetry for connect to cloud action
-		telemetryClient.capture(TelemetryEventName.SHARE_CONNECT_TO_CLOUD_CLICKED)
-
 		// Mark that authentication was initiated from this button
 		initiatedAuthFromThisButtonRef.current = true
-		vscode.postMessage({ type: "rooCloudSignIn" })
+		handleConnect()
 		setShareDropdownOpen(false)
-		setConnectModalOpen(false)
 	}
 
 	const handleShareButtonClick = () => {
@@ -111,7 +105,7 @@ export const ShareButton = ({ item, disabled = false, showLabel = false }: Share
 
 		if (!cloudIsAuthenticated) {
 			// Show modal for unauthenticated users
-			setConnectModalOpen(true)
+			openUpsell()
 		} else {
 			// Show popover for authenticated users
 			setShareDropdownOpen(true)
@@ -241,43 +235,7 @@ export const ShareButton = ({ item, disabled = false, showLabel = false }: Share
 			)}
 
 			{/* Connect to Cloud Modal */}
-			<Dialog open={connectModalOpen} onOpenChange={setConnectModalOpen}>
-				<DialogContent className="max-w-sm">
-					<DialogHeader className="text-center">
-						<DialogTitle className="text-lg font-medium text-vscode-foreground">
-							{t("cloud:cloudBenefitsTitle")}
-						</DialogTitle>
-					</DialogHeader>
-
-					<div className="flex flex-col space-y-6">
-						<div>
-							<p className="text-md text-vscode-descriptionForeground mb-4">
-								{t("cloud:cloudBenefitsSubtitle")}
-							</p>
-							<ul className="text-sm text-vscode-descriptionForeground space-y-2">
-								<li className="flex items-start">
-									<span className="mr-2 text-vscode-foreground">•</span>
-									{t("cloud:cloudBenefitSharing")}
-								</li>
-								<li className="flex items-start">
-									<span className="mr-2 text-vscode-foreground">•</span>
-									{t("cloud:cloudBenefitHistory")}
-								</li>
-								<li className="flex items-start">
-									<span className="mr-2 text-vscode-foreground">•</span>
-									{t("cloud:cloudBenefitMetrics")}
-								</li>
-							</ul>
-						</div>
-
-						<div className="flex flex-col gap-4">
-							<Button onClick={handleConnectToCloud} className="w-full">
-								{t("cloud:connect")}
-							</Button>
-						</div>
-					</div>
-				</DialogContent>
-			</Dialog>
+			<CloudUpsellDialog open={connectModalOpen} onOpenChange={closeUpsell} onConnect={handleConnectToCloud} />
 		</>
 	)
 }
