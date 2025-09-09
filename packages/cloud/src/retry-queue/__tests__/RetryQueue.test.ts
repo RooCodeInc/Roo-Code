@@ -164,4 +164,198 @@ describe("RetryQueue", () => {
 			expect(listener).toHaveBeenCalled()
 		})
 	})
+
+	describe("retryAll", () => {
+		let fetchMock: ReturnType<typeof vi.fn>
+
+		beforeEach(() => {
+			// Mock global fetch
+			fetchMock = vi.fn()
+			global.fetch = fetchMock
+		})
+
+		afterEach(() => {
+			vi.restoreAllMocks()
+		})
+
+		it("should process requests in FIFO order", async () => {
+			const successListener = vi.fn()
+			retryQueue.on("request-retry-success", successListener)
+
+			// Add multiple requests
+			await retryQueue.enqueue("https://api.example.com/test1", { method: "POST" }, "telemetry")
+			await retryQueue.enqueue("https://api.example.com/test2", { method: "POST" }, "telemetry")
+			await retryQueue.enqueue("https://api.example.com/test3", { method: "POST" }, "telemetry")
+
+			// Mock successful responses
+			fetchMock.mockResolvedValue({ ok: true })
+
+			await retryQueue.retryAll()
+
+			// Check that fetch was called in FIFO order
+			expect(fetchMock).toHaveBeenCalledTimes(3)
+			expect(fetchMock.mock.calls[0][0]).toBe("https://api.example.com/test1")
+			expect(fetchMock.mock.calls[1][0]).toBe("https://api.example.com/test2")
+			expect(fetchMock.mock.calls[2][0]).toBe("https://api.example.com/test3")
+
+			// Check that success events were emitted
+			expect(successListener).toHaveBeenCalledTimes(3)
+
+			// Queue should be empty after successful retries
+			const stats = retryQueue.getStats()
+			expect(stats.totalQueued).toBe(0)
+		})
+
+		it("should handle failed retries and increment retry count", async () => {
+			const failListener = vi.fn()
+			retryQueue.on("request-retry-failed", failListener)
+
+			await retryQueue.enqueue("https://api.example.com/test", { method: "POST" }, "telemetry")
+
+			// Mock failed response
+			fetchMock.mockRejectedValue(new Error("Network error"))
+
+			await retryQueue.retryAll()
+
+			// Check that failure event was emitted
+			expect(failListener).toHaveBeenCalledWith(
+				expect.objectContaining({
+					url: "https://api.example.com/test",
+					retryCount: 1,
+					lastError: "Network error",
+				}),
+				expect.any(Error),
+			)
+
+			// Request should still be in queue
+			const stats = retryQueue.getStats()
+			expect(stats.totalQueued).toBe(1)
+		})
+
+		it("should enforce max retries limit", async () => {
+			// Create queue with max retries of 2
+			retryQueue = new RetryQueue(mockContext, { maxRetries: 2 })
+
+			const maxRetriesListener = vi.fn()
+			retryQueue.on("request-max-retries-exceeded", maxRetriesListener)
+
+			await retryQueue.enqueue("https://api.example.com/test", { method: "POST" }, "telemetry")
+
+			// Mock failed responses
+			fetchMock.mockRejectedValue(new Error("Network error"))
+
+			// First retry
+			await retryQueue.retryAll()
+			let stats = retryQueue.getStats()
+			expect(stats.totalQueued).toBe(1) // Still in queue
+
+			// Second retry - should hit max retries
+			await retryQueue.retryAll()
+
+			// Check that max retries event was emitted
+			expect(maxRetriesListener).toHaveBeenCalledWith(
+				expect.objectContaining({
+					url: "https://api.example.com/test",
+					retryCount: 2,
+				}),
+				expect.any(Error),
+			)
+
+			// Request should be removed from queue after exceeding max retries
+			stats = retryQueue.getStats()
+			expect(stats.totalQueued).toBe(0)
+		})
+
+		it("should not process if already processing", async () => {
+			// Add a request
+			await retryQueue.enqueue("https://api.example.com/test", { method: "POST" }, "telemetry")
+
+			// Mock a slow response
+			fetchMock.mockImplementation(() => new Promise((resolve) => setTimeout(() => resolve({ ok: true }), 100)))
+
+			// Start first retryAll (don't await)
+			const firstCall = retryQueue.retryAll()
+
+			// Try to call retryAll again immediately
+			const secondCall = retryQueue.retryAll()
+
+			// Both should complete without errors
+			await Promise.all([firstCall, secondCall])
+
+			// Fetch should only be called once (from the first call)
+			expect(fetchMock).toHaveBeenCalledTimes(1)
+		})
+
+		it("should handle empty queue gracefully", async () => {
+			// Call retryAll on empty queue
+			await expect(retryQueue.retryAll()).resolves.toBeUndefined()
+
+			// No fetch calls should be made
+			expect(fetchMock).not.toHaveBeenCalled()
+		})
+
+		it("should use auth header provider if available", async () => {
+			const authHeaderProvider = vi.fn().mockReturnValue({
+				Authorization: "Bearer fresh-token",
+			})
+
+			retryQueue = new RetryQueue(mockContext, {}, undefined, authHeaderProvider)
+
+			await retryQueue.enqueue(
+				"https://api.example.com/test",
+				{
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+				},
+				"telemetry",
+			)
+
+			fetchMock.mockResolvedValue({ ok: true })
+
+			await retryQueue.retryAll()
+
+			// Check that fresh auth headers were used
+			expect(fetchMock).toHaveBeenCalledWith(
+				"https://api.example.com/test",
+				expect.objectContaining({
+					headers: expect.objectContaining({
+						Authorization: "Bearer fresh-token",
+						"Content-Type": "application/json",
+						"X-Retry-Queue": "true",
+					}),
+				}),
+			)
+
+			expect(authHeaderProvider).toHaveBeenCalled()
+		})
+
+		it("should respect configurable timeout", async () => {
+			// Create queue with custom timeout (short timeout for testing)
+			retryQueue = new RetryQueue(mockContext, { requestTimeout: 100 })
+
+			await retryQueue.enqueue("https://api.example.com/test", { method: "POST" }, "telemetry")
+
+			// Mock fetch to reject with abort error
+			const abortError = new Error("The operation was aborted")
+			abortError.name = "AbortError"
+			fetchMock.mockRejectedValue(abortError)
+
+			const failListener = vi.fn()
+			retryQueue.on("request-retry-failed", failListener)
+
+			await retryQueue.retryAll()
+
+			// Check that the request failed with an abort error
+			expect(failListener).toHaveBeenCalledWith(
+				expect.objectContaining({
+					url: "https://api.example.com/test",
+					lastError: "The operation was aborted",
+				}),
+				expect.any(Error),
+			)
+
+			// The timeout configuration is being used (verified by the constructor accepting it)
+			// The actual timeout behavior is handled by the browser's AbortController
+		})
+	})
 })

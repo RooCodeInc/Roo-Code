@@ -24,11 +24,13 @@ export interface RetryQueueConfig {
 	maxQueueSize: number // FIFO eviction when full
 	persistQueue: boolean
 	networkCheckInterval: number // milliseconds
+	requestTimeout: number // milliseconds for request timeout
 }
 
 export interface RetryQueueEvents {
 	"request-queued": [request: QueuedRequest]
 	"request-retry-success": [request: QueuedRequest]
 	"request-retry-failed": [request: QueuedRequest, error: Error]
+	"request-max-retries-exceeded": [request: QueuedRequest, error: Error]
 	"queue-cleared": []
 }

@@ -31,6 +31,7 @@ export class RetryQueue extends EventEmitter<RetryQueueEvents> {
 			maxQueueSize: 100,
 			persistQueue: true,
 			networkCheckInterval: 60000,
+			requestTimeout: 30000, // Make timeout configurable
 			...config,
 		}
 
@@ -107,42 +108,34 @@ export class RetryQueue extends EventEmitter<RetryQueueEvents> {
 
 		this.isProcessing = true
 
+		// Sort by timestamp to process in FIFO order (oldest first)
 		requests.sort((a, b) => a.timestamp - b.timestamp)
 
-		const lastRequest = requests[requests.length - 1]
-		if (!lastRequest) {
-			this.isProcessing = false
-			return
-		}
+		// Process all requests in FIFO order
+		for (const request of requests) {
+			try {
+				await this.retryRequest(request)
+				this.queue.delete(request.id)
+				this.emit("request-retry-success", request)
+			} catch (error) {
+				request.retryCount++
+				request.lastError = error instanceof Error ? error.message : String(error)
 
-		try {
-			await this.retryRequest(lastRequest)
-			this.queue.delete(lastRequest.id)
-			this.emit("request-retry-success", lastRequest)
-
-			const remainingRequests = Array.from(this.queue.values()).sort((a, b) => a.timestamp - b.timestamp)
-
-			for (const request of remainingRequests) {
-				try {
-					await this.retryRequest(request)
+				// Check if we've exceeded max retries
+				if (this.config.maxRetries > 0 && request.retryCount >= this.config.maxRetries) {
+					this.log(
+						`[RetryQueue] Max retries (${this.config.maxRetries}) reached for request: ${request.operation || request.url}`,
+					)
 					this.queue.delete(request.id)
-					this.emit("request-retry-success", request)
-				} catch (error) {
-					request.retryCount++
-					request.lastError = error instanceof Error ? error.message : String(error)
-
+					this.emit("request-max-retries-exceeded", request, error as Error)
+				} else {
 					this.queue.set(request.id, request)
 					this.emit("request-retry-failed", request, error as Error)
 				}
 
+				// Add a small delay between retry attempts
 				await this.delay(100)
 			}
-		} catch (error) {
-			lastRequest.retryCount++
-			lastRequest.lastError = error instanceof Error ? error.message : String(error)
-
-			this.queue.set(lastRequest.id, lastRequest)
-			this.emit("request-retry-failed", lastRequest, error as Error)
 		}
 
 		await this.persistQueue()
@@ -164,7 +157,7 @@ export class RetryQueue extends EventEmitter<RetryQueueEvents> {
 		}
 
 		const controller = new AbortController()
-		const timeoutId = setTimeout(() => controller.abort(), 30000)
+		const timeoutId = setTimeout(() => controller.abort(), this.config.requestTimeout)
 
 		try {
 			const response = await fetch(request.url, {
