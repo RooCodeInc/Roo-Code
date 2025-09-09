@@ -106,7 +106,12 @@
 		},
 		"api": {
 			"invalidKeyInvalidChars": "API key contains invalid characters."
-		}
+		},
+		"manual_url_empty": "Please enter a valid callback URL",
+		"manual_url_no_query": "Invalid callback URL: missing query parameters",
+		"manual_url_missing_params": "Invalid callback URL: missing required parameters (code and state)",
+		"manual_url_auth_failed": "Manual URL authentication failed",
+		"manual_url_auth_error": "Authentication failed"
 	},
 	"warnings": {
 		"no_terminal_content": "No terminal content selected",
@@ -182,11 +187,6 @@
 		"errors": {
 			"cloud_auth_required": "Your organization requires Roo Code Cloud authentication. Please sign in to continue.",
 			"organization_mismatch": "You must be authenticated with your organization's Roo Code Cloud account.",
-			"manual_url_empty": "Please enter a valid callback URL",
-			"manual_url_no_query": "Invalid callback URL: missing query parameters",
-			"manual_url_missing_params": "Invalid callback URL: missing required parameters (code and state)",
-			"manual_url_auth_failed": "Manual URL authentication failed",
-			"manual_url_auth_error": "Authentication failed",
 			"verification_failed": "Unable to verify organization authentication."
 		},
 		"info": {

@@ -111,7 +111,12 @@
 		},
 		"api": {
 			"invalidKeyInvalidChars": "API 密钥包含无效字符。"
-		}
+		},
+		"manual_url_empty": "请输入有效的回调 URL",
+		"manual_url_no_query": "无效的回调 URL：缺少查询参数",
+		"manual_url_missing_params": "无效的回调 URL：缺少必需参数（code 和 state）",
+		"manual_url_auth_failed": "手动 URL 身份验证失败",
+		"manual_url_auth_error": "身份验证失败"
 	},
 	"warnings": {
 		"no_terminal_content": "没有选择终端内容",

@@ -106,7 +106,12 @@
 		},
 		"api": {
 			"invalidKeyInvalidChars": "API 키에 유효하지 않은 문자가 포함되어 있습니다."
-		}
+		},
+		"manual_url_empty": "유효한 콜백 URL을 입력하세요",
+		"manual_url_no_query": "유효하지 않은 콜백 URL: 쿼리 매개변수 누락",
+		"manual_url_missing_params": "유효하지 않은 콜백 URL: 필요한 매개변수 누락 (code와 state)",
+		"manual_url_auth_failed": "수동 URL 인증 실패",
+		"manual_url_auth_error": "인증 실패"
 	},
 	"warnings": {
 		"no_terminal_content": "선택된 터미널 내용이 없습니다",

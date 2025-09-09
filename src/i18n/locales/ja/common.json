@@ -106,7 +106,12 @@
 		},
 		"api": {
 			"invalidKeyInvalidChars": "APIキーに無効な文字が含まれています。"
-		}
+		},
+		"manual_url_empty": "有効なコールバック URL を入力してください",
+		"manual_url_no_query": "無効なコールバック URL：クエリパラメータがありません",
+		"manual_url_missing_params": "無効なコールバック URL：必要なパラメータ（code と state）がありません",
+		"manual_url_auth_failed": "手動 URL 認証が失敗しました",
+		"manual_url_auth_error": "認証に失敗しました"
 	},
 	"warnings": {
 		"no_terminal_content": "選択されたターミナルコンテンツがありません",
