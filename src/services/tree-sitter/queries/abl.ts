@@ -4,16 +4,16 @@ Basic query for ABL (Progress 4GL) language
 Updated to match actual grammar node names from the tree-sitter-abl package
 */
 export default String.raw`
-; Procedure definitions
-(procedure_definition
+; Procedure statements
+(procedure_statement
   name: (identifier) @name.definition.procedure) @definition.procedure
 
-; Function definitions
-(function_definition
+; Function statements
+(function_statement
   name: (identifier) @name.definition.function) @definition.function
 
-; Class definitions
-(class_definition
+; Class statements
+(class_statement
   name: (identifier) @name.definition.class) @definition.class
 
 ; Method definitions
