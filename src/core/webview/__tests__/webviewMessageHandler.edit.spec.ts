@@ -134,8 +134,8 @@ describe("webviewMessageHandler - Edit Message with Timestamp Fallback", () => {
 			[], // All messages before index 0 (empty array)
 		)
 
-		// API history should not be modified when message not found
-		expect(mockCurrentTask.overwriteApiConversationHistory).not.toHaveBeenCalled()
+		// API history should be truncated from first message at/after edited timestamp (fallback)
+		expect(mockCurrentTask.overwriteApiConversationHistory).toHaveBeenCalledWith([])
 	})
 
 	it("should preserve messages before the edited message when message not in API history", async () => {
@@ -196,8 +196,14 @@ describe("webviewMessageHandler - Edit Message with Timestamp Fallback", () => {
 			},
 		])
 
-		// API history should not be modified when message not found
-		expect(mockCurrentTask.overwriteApiConversationHistory).not.toHaveBeenCalled()
+		// API history should be truncated from the first API message at/after the edited timestamp (fallback)
+		expect(mockCurrentTask.overwriteApiConversationHistory).toHaveBeenCalledWith([
+			{
+				ts: earlierMessageTs,
+				role: "user",
+				content: [{ type: "text", text: "Earlier message" }],
+			},
+		])
 	})
 
 	it("should not use fallback when exact apiConversationHistoryIndex is found", async () => {
@@ -281,7 +287,7 @@ describe("webviewMessageHandler - Edit Message with Timestamp Fallback", () => {
 		// UI messages truncated
 		expect(mockCurrentTask.overwriteClineMessages).toHaveBeenCalledWith([])
 
-		// API history should not be modified when no matching messages found
+		// API history should not be modified when no API messages meet the timestamp criteria
 		expect(mockCurrentTask.overwriteApiConversationHistory).not.toHaveBeenCalled()
 	})
 
@@ -378,7 +384,7 @@ describe("webviewMessageHandler - Edit Message with Timestamp Fallback", () => {
 		// UI messages truncated at edited message
 		expect(mockCurrentTask.overwriteClineMessages).toHaveBeenCalledWith([])
 
-		// API history should not be modified when message not found
-		expect(mockCurrentTask.overwriteApiConversationHistory).not.toHaveBeenCalled()
+		// API history should be truncated from first message at/after edited timestamp (fallback)
+		expect(mockCurrentTask.overwriteApiConversationHistory).toHaveBeenCalledWith([])
 	})
 })

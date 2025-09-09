@@ -85,6 +85,17 @@ export const webviewMessageHandler = async (
 	}
 
 	/**
+	 * Fallback: find first API history index at or after a timestamp.
+	 * Used when the exact user message isn't present in apiConversationHistory (e.g., after condense).
+	 */
+	const findFirstApiIndexAtOrAfter = (ts: number, currentCline: any) => {
+		if (typeof ts !== "number") return -1
+		return currentCline.apiConversationHistory.findIndex(
+			(msg: ApiMessage) => typeof msg?.ts === "number" && (msg.ts as number) >= ts,
+		)
+	}
+
+	/**
 	 * Removes the target message and all subsequent messages
 	 */
 	const removeMessagesThisAndSubsequent = async (
@@ -144,6 +155,12 @@ export const webviewMessageHandler = async (
 		}
 
 		const { messageIndex, apiConversationHistoryIndex } = findMessageIndices(messageTs, currentCline)
+		// Determine API truncation index with timestamp fallback if exact match not found
+		let apiIndexToUse = apiConversationHistoryIndex
+		const tsThreshold = currentCline.clineMessages[messageIndex]?.ts
+		if (apiIndexToUse === -1 && typeof tsThreshold === "number") {
+			apiIndexToUse = findFirstApiIndexAtOrAfter(tsThreshold, currentCline)
+		}
 
 		if (messageIndex === -1) {
 			const errorMessage = `Message with timestamp ${messageTs} not found`
@@ -189,7 +206,7 @@ export const webviewMessageHandler = async (
 				}
 
 				// Delete this message and all subsequent messages
-				await removeMessagesThisAndSubsequent(currentCline, messageIndex, apiConversationHistoryIndex)
+				await removeMessagesThisAndSubsequent(currentCline, messageIndex, apiIndexToUse)
 
 				// Restore checkpoint associations for preserved messages
 				for (const [ts, checkpoint] of preservedCheckpoints) {
@@ -336,6 +353,14 @@ export const webviewMessageHandler = async (
 				}
 			}
 
+			// Timestamp fallback for API history when exact user message isn't present
+			if (deleteFromApiIndex === -1) {
+				const tsThresholdForEdit = currentCline.clineMessages[deleteFromMessageIndex]?.ts
+				if (typeof tsThresholdForEdit === "number") {
+					deleteFromApiIndex = findFirstApiIndexAtOrAfter(tsThresholdForEdit, currentCline)
+				}
+			}
+
 			// Store checkpoints from messages that will be preserved
 			const preservedCheckpoints = new Map<number, any>()
 			for (let i = 0; i < deleteFromMessageIndex; i++) {
@@ -366,9 +391,7 @@ export const webviewMessageHandler = async (
 			// Update the UI to reflect the deletion
 			await provider.postStateToWebview()
 
-			// Immediately send the edited message as a new user message
-			// This restarts the conversation from the edited point
-			await currentCline.handleWebviewAskResponse("messageResponse", editedContent, images)
+			await currentCline.submitUserMessage(editedContent, images)
 		} catch (error) {
 			console.error("Error in edit message:", error)
 			vscode.window.showErrorMessage(
