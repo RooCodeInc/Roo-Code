@@ -845,9 +845,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			const message = this.messageQueueService.dequeueMessage()
 
 			if (message) {
-				setTimeout(async () => {
-					await this.submitUserMessage(message.text, message.images)
-				}, 0)
+				// Fulfill the ask directly to avoid re-queuing via the webview while sending is disabled
+				this.setMessageResponse(message.text, message.images)
 			}
 		}
 
