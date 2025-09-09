@@ -263,6 +263,24 @@ export async function searchAndReplaceTool(
 		// Record successful tool usage and cleanup
 		cline.recordToolUsage("search_and_replace")
 		await cline.diffViewProvider.reset()
+
+		// After completing file edits, process one queued user message if present
+		try {
+			if (!cline.messageQueueService.isEmpty()) {
+				const queued = cline.messageQueueService.dequeueMessage()
+				if (queued) {
+					setTimeout(() => {
+						cline
+							.submitUserMessage(queued.text, queued.images)
+							.catch((err) =>
+								console.error("[searchAndReplaceTool] Failed to submit queued message:", err),
+							)
+					}, 0)
+				}
+			}
+		} catch (e) {
+			console.error("[searchAndReplaceTool] Queue processing error:", e)
+		}
 	} catch (error) {
 		handleError("search and replace", error)
 		await cline.diffViewProvider.reset()
