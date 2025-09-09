@@ -38,7 +38,7 @@ export const ReasoningBlock = ({ content, isStreaming, isLast }: ReasoningBlockP
 
 	return (
 		<div className="py-1">
-			<div className="flex items-center justify-between mb-2.5">
+			<div className="flex items-center justify-between mb-2.5 pr-2">
 				<div className="flex items-center gap-2">
 					<Lightbulb className="w-4" />
 					<span className="font-bold text-vscode-foreground">{t("chat:reasoning.thinking")}</span>
