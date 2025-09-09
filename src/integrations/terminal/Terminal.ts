@@ -159,6 +159,14 @@ export class Terminal extends BaseTerminal {
 			VTE_VERSION: "0",
 		}
 
+		// On Windows, set the console output code page to UTF-8
+		// This helps with proper encoding of command outputs like ipconfig
+		if (process.platform === "win32") {
+			env.PYTHONIOENCODING = "utf-8"
+			// Note: We can't set CHCP directly here as it's a command, not an env var
+			// The actual chcp command will be handled in the terminal execution
+		}
+
 		// Set Oh My Zsh shell integration if enabled
 		if (Terminal.getTerminalZshOhMy()) {
 			env.ITERM_SHELL_INTEGRATION_INSTALLED = "Yes"

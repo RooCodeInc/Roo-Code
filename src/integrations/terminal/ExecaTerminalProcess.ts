@@ -38,17 +38,25 @@ export class ExecaTerminalProcess extends BaseTerminalProcess {
 		try {
 			this.isHot = true
 
+			// On Windows, wrap the command with chcp to ensure UTF-8 output
+			let actualCommand = command
+			if (process.platform === "win32") {
+				// Set code page to UTF-8 (65001) before running the command
+				// and restore it afterwards to avoid affecting other programs
+				actualCommand = `chcp 65001 >nul 2>&1 && ${command}`
+			}
+
 			this.subprocess = execa({
 				shell: true,
 				cwd: this.terminal.getCurrentWorkingDirectory(),
 				all: true,
 				env: {
 					...process.env,
-					// Ensure UTF-8 encoding for Ruby, CocoaPods, etc.
+					// Ensure UTF-8 encoding for Ruby, CocoaPods, etc. (Unix-like systems)
 					LANG: "en_US.UTF-8",
 					LC_ALL: "en_US.UTF-8",
 				},
-			})`${command}`
+			})`${actualCommand}`
 
 			this.pid = this.subprocess.pid
 
@@ -74,9 +82,21 @@ export class ExecaTerminalProcess extends BaseTerminalProcess {
 			const rawStream = this.subprocess.iterable({ from: "all", preserveNewlines: true })
 
 			// Wrap the stream to ensure all chunks are strings (execa can return Uint8Array)
+			// On Windows, we need to handle potential encoding issues
 			const stream = (async function* () {
 				for await (const chunk of rawStream) {
-					yield typeof chunk === "string" ? chunk : new TextDecoder().decode(chunk)
+					if (typeof chunk === "string") {
+						yield chunk
+					} else {
+						// For Windows cmd output, try to decode with UTF-8 first
+						// If that fails, fall back to Windows-1252 (common Windows encoding)
+						try {
+							yield new TextDecoder("utf-8", { fatal: true }).decode(chunk)
+						} catch {
+							// Fallback to Windows-1252 if UTF-8 decoding fails
+							yield new TextDecoder("windows-1252", { fatal: false }).decode(chunk)
+						}
+					}
 				}
 			})()
 

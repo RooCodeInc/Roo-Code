@@ -114,8 +114,16 @@ export class TerminalProcess extends BaseTerminalProcess {
 			(defaultWindowsShellProfile === null ||
 				(defaultWindowsShellProfile as string)?.toLowerCase().includes("powershell"))
 
+		const isCmd =
+			process.platform === "win32" &&
+			defaultWindowsShellProfile !== null &&
+			(defaultWindowsShellProfile as string)?.toLowerCase().includes("cmd")
+
 		if (isPowerShell) {
 			let commandToExecute = command
+
+			// Set UTF-8 encoding for PowerShell
+			commandToExecute = `[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; ${commandToExecute}`
 
 			// Only add the PowerShell counter workaround if enabled
 			if (Terminal.getPowershellCounter()) {
@@ -127,6 +135,10 @@ export class TerminalProcess extends BaseTerminalProcess {
 				commandToExecute += ` ; start-sleep -milliseconds ${Terminal.getCommandDelay()}`
 			}
 
+			terminal.shellIntegration.executeCommand(commandToExecute)
+		} else if (isCmd) {
+			// For Windows cmd, set code page to UTF-8 before executing the command
+			const commandToExecute = `chcp 65001 >nul 2>&1 && ${command}`
 			terminal.shellIntegration.executeCommand(commandToExecute)
 		} else {
 			terminal.shellIntegration.executeCommand(command)
