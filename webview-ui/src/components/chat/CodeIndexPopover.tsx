@@ -1187,10 +1187,10 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 						<div className="mt-4">
 							<button
 								onClick={() => setIsAdvancedSettingsOpen(!isAdvancedSettingsOpen)}
-								className="flex items-center text-xs text-vscode-foreground hover:text-vscode-textLink-foreground focus:outline-none"
+								className="flex items-center gap-2 text-xs text-vscode-foreground hover:text-vscode-textLink-foreground focus:outline-none"
 								aria-expanded={isAdvancedSettingsOpen}>
 								<span
-									className={`codicon codicon-${isAdvancedSettingsOpen ? "chevron-down" : "chevron-right"} mr-1`}></span>
+									className={`codicon codicon-${isAdvancedSettingsOpen ? "chevron-down" : "chevron-right"}`}></span>
 								<span className="text-base font-semibold">
 									{t("settings:codeIndex.advancedConfigLabel")}
 								</span>
