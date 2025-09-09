@@ -3187,7 +3187,7 @@ describe("ClineProvider - Comprehensive Edit/Delete Edge Cases", () => {
 			await messageHandler({ type: "editMessageConfirm", messageTs: 2000, text: "Edited message" })
 
 			// The error should be caught and shown
-			expect(vscode.window.showErrorMessage).toHaveBeenCalledWith("Error editing message: Connection lost")
+			expect(vscode.window.showErrorMessage).toHaveBeenCalledWith("errors.message.error_editing_message")
 		})
 	})
 
@@ -3310,7 +3310,7 @@ describe("ClineProvider - Comprehensive Edit/Delete Edge Cases", () => {
 				text: "Edited message",
 			})
 
-			expect(vscode.window.showErrorMessage).toHaveBeenCalledWith("Error editing message: Unauthorized")
+			expect(vscode.window.showErrorMessage).toHaveBeenCalledWith("errors.message.error_editing_message")
 		})
 
 		describe("Malformed Requests and Invalid Formats", () => {
@@ -3534,7 +3534,7 @@ describe("ClineProvider - Comprehensive Edit/Delete Edge Cases", () => {
 
 				// Verify cleanup was attempted before failure
 				expect(cleanupSpy).toHaveBeenCalled()
-				expect(vscode.window.showErrorMessage).toHaveBeenCalledWith("Error editing message: Operation failed")
+				expect(vscode.window.showErrorMessage).toHaveBeenCalledWith("errors.message.error_editing_message")
 			})
 
 			test("validates proper cleanup during failed delete operations", async () => {
@@ -3574,9 +3574,7 @@ describe("ClineProvider - Comprehensive Edit/Delete Edge Cases", () => {
 
 				// Verify cleanup was attempted before failure
 				expect(cleanupSpy).toHaveBeenCalled()
-				expect(vscode.window.showErrorMessage).toHaveBeenCalledWith(
-					"Error deleting message: Delete operation failed",
-				)
+				expect(vscode.window.showErrorMessage).toHaveBeenCalledWith("errors.message.error_deleting_message")
 			})
 		})
 
