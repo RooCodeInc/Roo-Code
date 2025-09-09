@@ -2865,35 +2865,6 @@ export const webviewMessageHandler = async (
 			}
 			break
 		}
-		case "updateMessageReasoningMeta": {
-			// Persist reasoning timer metadata on a specific message (by ts)
-			try {
-				const currentCline = provider.getCurrentTask()
-				if (!currentCline || !message.messageTs) {
-					break
-				}
-				const { messageIndex } = findMessageIndices(message.messageTs, currentCline)
-				if (messageIndex === -1) {
-					break
-				}
-				const msg = currentCline.clineMessages[messageIndex] as { metadata?: { reasoning?: { startedAt?: number; elapsedMs?: number } } }
-				const existingMeta = msg.metadata || {}
-				const existingReasoning = existingMeta.reasoning || {}
-				msg.metadata = {
-					...existingMeta,
-					reasoning: { ...existingReasoning, ...(message.reasoningMeta || {}) },
-				}
-
-				await saveTaskMessages({
-					messages: currentCline.clineMessages,
-					taskId: currentCline.taskId,
-					globalStoragePath: provider.contextProxy.globalStorageUri.fsPath,
-				})
-			} catch (error) {
-				console.error("[updateMessageReasoningMeta] Failed to persist reasoning metadata:", error)
-			}
-			break
-		}
 		case "showMdmAuthRequiredNotification": {
 			// Show notification that organization requires authentication
 			vscode.window.showWarningMessage(t("common:mdm.info.organization_requires_auth"))
