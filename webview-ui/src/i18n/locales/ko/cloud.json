@@ -17,5 +17,5 @@
 	"cloudUrlPillLabel": "Roo Code Cloud URL",
 	"authWaiting": "인증 완료를 기다리는 중...",
 	"havingTrouble": "문제가 있나요?",
-	"pasteCallbackUrl": "브라우저에서 콜백 URL을 복사하여 여기에 붙여넣으세요:"
+	"pasteCallbackUrl": "브라우저에서 리다이렉트 URL을 복사하여 여기에 붙여넣으세요:"
 }

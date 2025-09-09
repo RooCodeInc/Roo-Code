@@ -17,5 +17,5 @@
 	"cloudUrlPillLabel": "URL Roo Code Cloud",
 	"authWaiting": "Ожидание завершения аутентификации...",
 	"havingTrouble": "Проблемы?",
-	"pasteCallbackUrl": "Скопируй URL обратного вызова из браузера и вставь его сюда:"
+	"pasteCallbackUrl": "Скопируй URL перенаправления из браузера и вставь его сюда:"
 }
