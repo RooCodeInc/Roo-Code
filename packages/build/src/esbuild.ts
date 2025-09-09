@@ -166,11 +166,15 @@ export function copyWasms(srcDir: string, distDir: string): void {
 	if (fs.existsSync(ablWasmPath)) {
 		fs.copyFileSync(ablWasmPath, path.join(distDir, "tree-sitter-abl.wasm"))
 		console.log(`[copyWasms] Copied tree-sitter-abl.wasm to ${distDir}`)
+	} else {
+		console.warn(`[copyWasms] ABL WASM file not found at ${ablWasmPath}`)
 	}
 
 	if (fs.existsSync(dfWasmPath)) {
 		fs.copyFileSync(dfWasmPath, path.join(distDir, "tree-sitter-df.wasm"))
 		console.log(`[copyWasms] Copied tree-sitter-df.wasm to ${distDir}`)
+	} else {
+		console.warn(`[copyWasms] DF WASM file not found at ${dfWasmPath}`)
 	}
 }
 

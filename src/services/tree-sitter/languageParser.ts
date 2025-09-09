@@ -63,11 +63,10 @@ async function loadLanguage(langName: string, sourceDirectory?: string) {
 			console.log(`Successfully loaded ${langName} from npm package`)
 			return language
 		} catch (error) {
-			console.warn(
-				`Warning: ${langName} language parser has version incompatibility. ${error instanceof Error ? error.message : error}`,
-			)
-			// Don't throw here, we'll handle this gracefully
-			console.warn(`Skipping ${langName} parser due to version incompatibility`)
+			const errorMessage = error instanceof Error ? error.message : String(error)
+			console.error(`Error: Failed to load ${langName} parser from npm package. ${errorMessage}`)
+			// Return null to indicate parser is not available
+			// The calling code will handle this gracefully
 			return null
 		}
 	}
@@ -256,20 +255,34 @@ export async function loadRequiredLanguageParsers(filesToParse: string[], source
 			case "w":
 			case "cls":
 				parserKey = "abl" // Use same key for all ABL extensions
-				language = await loadLanguage("abl", sourceDirectory)
-				if (!language) {
-					console.warn(`Skipping ABL parser for .${ext} files due to compatibility issues`)
+				try {
+					language = await loadLanguage("abl", sourceDirectory)
+					if (!language) {
+						console.warn(`ABL parser not available for .${ext} files - skipping`)
+						continue // Skip this extension
+					}
+					query = new Query(language, ablQuery)
+				} catch (error) {
+					console.warn(
+						`Failed to load ABL parser for .${ext} files: ${error instanceof Error ? error.message : error}`,
+					)
 					continue // Skip this extension
 				}
-				query = new Query(language, ablQuery)
 				break
 			case "df":
-				language = await loadLanguage("df", sourceDirectory)
-				if (!language) {
-					console.warn(`Skipping DF parser for .${ext} files due to compatibility issues`)
+				try {
+					language = await loadLanguage("df", sourceDirectory)
+					if (!language) {
+						console.warn(`DF parser not available for .${ext} files - skipping`)
+						continue // Skip this extension
+					}
+					query = new Query(language, dfQuery)
+				} catch (error) {
+					console.warn(
+						`Failed to load DF parser for .${ext} files: ${error instanceof Error ? error.message : error}`,
+					)
 					continue // Skip this extension
 				}
-				query = new Query(language, dfQuery)
 				break
 			default:
 				throw new Error(`Unsupported language: ${ext}`)
