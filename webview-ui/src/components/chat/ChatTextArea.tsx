@@ -904,20 +904,8 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 		return (
 			<div
 				className={cn(
-					"relative",
-					"flex",
-					"flex-col",
-					"gap-1",
-					"bg-editor-background",
-					"px-1.5",
-					"pb-1",
-					"outline-none",
-					"border",
-					"border-none",
-					"w-[calc(100%-16px)]",
-					"ml-auto",
-					"mr-auto",
-					"box-border",
+					"relative flex flex-col gap-1 bg-editor-background outline-none border border-none box-border",
+					isEditMode ? "p-2 w-full" : "px-1.5 pb-1 w-[calc(100%-16px)] ml-auto mr-auto",
 				)}>
 				<div className="relative">
 					<div
@@ -1006,11 +994,12 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 										: isDraggingOver
 											? "border-2 border-dashed border-vscode-focusBorder"
 											: "border border-transparent",
-									"px-[8px]",
-									"py-1.5",
-									"pr-9",
+									"pl-2",
+									"py-2",
+									isEditMode ? "pr-20" : "pr-9",
 									"z-10",
 									"forced-color-adjust-none",
+									"rounded",
 								)}
 								style={{
 									color: "transparent",
@@ -1031,7 +1020,15 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 									updateHighlights()
 								}}
 								onFocus={() => setIsFocused(true)}
-								onKeyDown={handleKeyDown}
+								onKeyDown={(e) => {
+									// Handle ESC to cancel in edit mode
+									if (isEditMode && e.key === "Escape" && !e.nativeEvent?.isComposing) {
+										e.preventDefault()
+										onCancel?.()
+										return
+									}
+									handleKeyDown(e)
+								}}
 								onKeyUp={handleKeyUp}
 								onBlur={handleBlur}
 								onPaste={handlePaste}
@@ -1055,7 +1052,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 									"text-vscode-editor-font-size",
 									"leading-vscode-editor-line-height",
 									"cursor-text",
-									"py-1.5 px-2",
+									"py-2 pl-2",
 									isFocused
 										? "border border-vscode-focusBorder outline outline-vscode-focusBorder"
 										: isDraggingOver
@@ -1072,7 +1069,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 									"resize-none",
 									"overflow-x-hidden",
 									"overflow-y-auto",
-									"pr-9",
+									isEditMode ? "pr-20" : "pr-9",
 									"flex-none flex-grow",
 									"z-[2]",
 									"scrollbar-none",
@@ -1081,7 +1078,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 								onScroll={() => updateHighlights()}
 							/>
 
-							<div className="absolute top-1 right-1 z-30">
+							<div className="absolute top-2 right-2 z-30">
 								<StandardTooltip content={t("chat:enhancePrompt")}>
 									<button
 										aria-label={t("chat:enhancePrompt")}
@@ -1103,7 +1100,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 								</StandardTooltip>
 							</div>
 
-							<div className="absolute bottom-1 right-1 z-30">
+							<div className="absolute bottom-2 right-2 z-30">
 								{isEditMode && (
 									<StandardTooltip content={t("chat:cancel.title")}>
 										<button
@@ -1148,9 +1145,12 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 
 							{!inputValue && (
 								<div
-									className="absolute left-2 z-30 pr-9 flex items-center h-8 font-vscode-font-family text-vscode-editor-font-size leading-vscode-editor-line-height"
+									className={cn(
+										"absolute left-2 z-30 flex items-center h-8 font-vscode-font-family text-vscode-editor-font-size leading-vscode-editor-line-height",
+										isEditMode ? "pr-20" : "pr-9",
+									)}
 									style={{
-										bottom: "0.25rem",
+										bottom: "0.75rem",
 										color: "color-mix(in oklab, var(--vscode-input-foreground) 50%, transparent)",
 										userSelect: "none",
 										pointerEvents: "none",
