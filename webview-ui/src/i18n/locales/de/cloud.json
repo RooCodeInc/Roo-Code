@@ -17,5 +17,6 @@
 	"cloudUrlPillLabel": "Roo Code Cloud URL",
 	"authWaiting": "Warte auf Abschluss der Authentifizierung...",
 	"havingTrouble": "Probleme?",
-	"pasteCallbackUrl": "Kopiere die Redirect-URL aus deinem Browser und füge sie hier ein:"
+	"pasteCallbackUrl": "Kopiere die Redirect-URL aus deinem Browser und füge sie hier ein:",
+	"startOver": "Von vorne beginnen"
 }

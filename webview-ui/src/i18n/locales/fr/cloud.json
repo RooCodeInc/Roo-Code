@@ -17,5 +17,6 @@
 	"cloudUrlPillLabel": "URL de Roo Code Cloud",
 	"authWaiting": "En attente de la fin de l'authentification...",
 	"havingTrouble": "Des difficultés ?",
-	"pasteCallbackUrl": "Copie l'URL de redirect depuis ton navigateur et colle-la ici :"
+	"pasteCallbackUrl": "Copie l'URL de redirect depuis ton navigateur et colle-la ici :",
+	"startOver": "Recommencer"
 }

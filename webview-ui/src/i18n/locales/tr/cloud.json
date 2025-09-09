@@ -17,5 +17,6 @@
 	"cloudUrlPillLabel": "Roo Code Cloud URL'si",
 	"authWaiting": "Kimlik doğrulama tamamlanması bekleniyor...",
 	"havingTrouble": "Sorun yaşıyor musun?",
-	"pasteCallbackUrl": "Tarayıcından redirect URL'sini kopyala ve buraya yapıştır:"
+	"pasteCallbackUrl": "Tarayıcından redirect URL'sini kopyala ve buraya yapıştır:",
+	"startOver": "Baştan başla"
 }

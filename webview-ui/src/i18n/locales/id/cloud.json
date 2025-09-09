@@ -17,5 +17,6 @@
 	"cloudUrlPillLabel": "URL Roo Code Cloud",
 	"authWaiting": "Menunggu autentikasi selesai...",
 	"havingTrouble": "Ada masalah?",
-	"pasteCallbackUrl": "Salin URL redirect dari browser dan tempel di sini:"
+	"pasteCallbackUrl": "Salin URL redirect dari browser dan tempel di sini:",
+	"startOver": "Mulai dari awal"
 }

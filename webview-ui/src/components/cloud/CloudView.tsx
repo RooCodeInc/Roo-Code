@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react"
-import { VSCodeButton, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
+import { VSCodeButton, VSCodeProgressRing, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 
 import { type CloudUserInfo, TelemetryEventName } from "@roo-code/types"
 
@@ -26,6 +26,7 @@ export const CloudView = ({ userInfo, isAuthenticated, cloudApiUrl, onDone }: Cl
 	const { remoteControlEnabled, setRemoteControlEnabled } = useExtensionState()
 	const wasAuthenticatedRef = useRef(false)
 	const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+	const manualUrlInputRef = useRef<HTMLInputElement | null>(null)
 
 	// Manual URL entry state
 	const [authInProgress, setAuthInProgress] = useState(false)
@@ -53,6 +54,16 @@ export const CloudView = ({ userInfo, isAuthenticated, cloudApiUrl, onDone }: Cl
 			wasAuthenticatedRef.current = false
 		}
 	}, [isAuthenticated])
+
+	// Focus the manual URL input when it becomes visible
+	useEffect(() => {
+		if (showManualEntry && manualUrlInputRef.current) {
+			// Small delay to ensure the DOM is ready
+			setTimeout(() => {
+				manualUrlInputRef.current?.focus()
+			}, 50)
+		}
+	}, [showManualEntry])
 
 	// Cleanup timeout on unmount
 	useEffect(() => {
@@ -96,6 +107,12 @@ export const CloudView = ({ userInfo, isAuthenticated, cloudApiUrl, onDone }: Cl
 
 	const handleShowManualEntry = () => {
 		setShowManualEntry(true)
+	}
+
+	const handleReset = () => {
+		setAuthInProgress(false)
+		setShowManualEntry(false)
+		setManualUrl("")
 	}
 
 	const handleLogoutClick = () => {
@@ -239,39 +256,50 @@ export const CloudView = ({ userInfo, isAuthenticated, cloudApiUrl, onDone }: Cl
 					</div>
 
 					<div className="flex flex-col items-center gap-4">
-						<VSCodeButton appearance="primary" onClick={handleConnectClick} className="w-1/2">
-							{t("cloud:connect")}
-						</VSCodeButton>
+						{!authInProgress && (
+							<VSCodeButton appearance="primary" onClick={handleConnectClick} className="w-1/2">
+								{t("cloud:connect")}
+							</VSCodeButton>
+						)}
 
 						{/* Manual entry section */}
 						{authInProgress && !showManualEntry && (
 							// Timeout message with "Having trouble?" link
-							<div className="flex flex-col items-center gap-2">
-								<div className="text-sm text-vscode-descriptionForeground">
+							<div className="flex flex-col items-center gap-1">
+								<div className="flex items-center gap-2 text-sm text-vscode-descriptionForeground">
+									<VSCodeProgressRing className="size-3 text-vscode-foreground" />
 									{t("cloud:authWaiting")}
 								</div>
-								<button
-									onClick={handleShowManualEntry}
-									className="text-sm text-vscode-textLink-foreground hover:text-vscode-textLink-activeForeground underline cursor-pointer bg-transparent border-none p-0">
-									{t("cloud:havingTrouble")}
-								</button>
+								{!showManualEntry && (
+									<button
+										onClick={handleShowManualEntry}
+										className="text-sm text-vscode-textLink-foreground hover:text-vscode-textLink-activeForeground underline cursor-pointer bg-transparent border-none p-0">
+										{t("cloud:havingTrouble")}
+									</button>
+								)}
 							</div>
 						)}
 
 						{showManualEntry && (
 							// Manual URL entry form
-							<>
-								<div className="text-xs text-vscode-descriptionForeground">
+							<div className="space-y-2 text-center border-border/50 border-t px-2 pt-8 mt-3">
+								<p className="text-xs text-vscode-descriptionForeground">
 									{t("cloud:pasteCallbackUrl")}
-								</div>
+								</p>
 								<VSCodeTextField
+									ref={manualUrlInputRef as any}
 									value={manualUrl}
 									onChange={handleManualUrlChange}
 									onKeyDown={handleKeyDown}
 									placeholder="vscode://RooVeterinaryInc.roo-cline/auth/clerk/callback?state=..."
-									className="w-1/2"
+									className="w-full"
 								/>
-							</>
+								<button
+									onClick={handleReset}
+									className="text-sm text-vscode-textLink-foreground hover:text-vscode-textLink-activeForeground underline cursor-pointer bg-transparent border-none p-0">
+									{t("cloud:startOver")}
+								</button>
+							</div>
 						)}
 					</div>
 				</>
