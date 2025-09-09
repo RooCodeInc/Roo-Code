@@ -6,6 +6,8 @@ import { z } from "zod"
 
 export const historyItemSchema = z.object({
 	id: z.string(),
+	rootTaskId: z.string().optional(),
+	parentTaskId: z.string().optional(),
 	number: z.number(),
 	ts: z.number(),
 	task: z.string(),
@@ -16,6 +18,7 @@ export const historyItemSchema = z.object({
 	totalCost: z.number(),
 	size: z.number().optional(),
 	workspace: z.string().optional(),
+	mode: z.string().optional(),
 })
 
 export type HistoryItem = z.infer<typeof historyItemSchema>

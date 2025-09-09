@@ -1,6 +1,6 @@
 // npx vitest run src/__tests__/StaticSettingsService.test.ts
 
-import { StaticSettingsService } from "../StaticSettingsService"
+import { StaticSettingsService } from "../StaticSettingsService.js"
 
 describe("StaticSettingsService", () => {
 	const validSettings = {

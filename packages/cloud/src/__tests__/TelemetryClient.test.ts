@@ -4,7 +4,7 @@
 
 import { type TelemetryPropertiesProvider, TelemetryEventName } from "@roo-code/types"
 
-import { TelemetryClient } from "../TelemetryClient"
+import { CloudTelemetryClient as TelemetryClient } from "../TelemetryClient.js"
 
 const mockFetch = vi.fn()
 global.fetch = mockFetch as any
@@ -514,7 +514,7 @@ describe("TelemetryClient", () => {
 
 			// Verify FormData contents
 			const call = mockFetch.mock.calls[0]
-			const formData = call[1].body as FormData
+			const formData = call?.[1]?.body as FormData
 
 			expect(formData.get("taskId")).toBe("test-task-id")
 
@@ -569,7 +569,7 @@ describe("TelemetryClient", () => {
 
 			// Verify FormData contents - should still work with just taskId
 			const call = mockFetch.mock.calls[0]
-			const formData = call[1].body as FormData
+			const formData = call?.[1]?.body as FormData
 
 			expect(formData.get("taskId")).toBe("test-task-id")
 			expect(formData.get("properties")).toBe(
@@ -577,6 +577,7 @@ describe("TelemetryClient", () => {
 					taskId: "test-task-id",
 				}),
 			)
+
 			// The messages are stored as a File object under the "file" key
 			const fileField = formData.get("file") as File
 			expect(fileField).toBeInstanceOf(File)
@@ -615,7 +616,7 @@ describe("TelemetryClient", () => {
 
 			// Verify FormData contents - should work with just taskId
 			const call = mockFetch.mock.calls[0]
-			const formData = call[1].body as FormData
+			const formData = call?.[1]?.body as FormData
 
 			expect(formData.get("taskId")).toBe("test-task-id")
 			expect(formData.get("properties")).toBe(
@@ -623,6 +624,7 @@ describe("TelemetryClient", () => {
 					taskId: "test-task-id",
 				}),
 			)
+
 			// The messages are stored as a File object under the "file" key
 			const fileField = formData.get("file") as File
 			expect(fileField).toBeInstanceOf(File)
@@ -722,7 +724,7 @@ describe("TelemetryClient", () => {
 
 			// Verify FormData contents
 			const call = mockFetch.mock.calls[0]
-			const formData = call[1].body as FormData
+			const formData = call?.[1]?.body as FormData
 
 			// The messages are stored as a File object under the "file" key
 			const fileField = formData.get("file") as File

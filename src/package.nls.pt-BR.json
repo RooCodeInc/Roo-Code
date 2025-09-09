@@ -1,5 +1,5 @@
 {
-	"extension.displayName": "Roo Code (anteriormente Roo Cline)",
+	"extension.displayName": "Roo Code",
 	"extension.description": "Uma equipe completa de desenvolvimento de agentes de IA no seu editor.",
 	"command.newTask.title": "Nova Tarefa",
 	"command.explainCode.title": "Explicar Código",
@@ -23,6 +23,7 @@
 	"command.history.title": "Histórico",
 	"command.marketplace.title": "Marketplace",
 	"command.openInEditor.title": "Abrir no Editor",
+	"command.cloud.title": "Cloud",
 	"command.settings.title": "Configurações",
 	"command.documentation.title": "Documentação",
 	"configuration.title": "Roo Code",
@@ -37,5 +38,7 @@
 	"settings.enableCodeActions.description": "Habilitar correções rápidas do Roo Code.",
 	"settings.autoImportSettingsPath.description": "Caminho para um arquivo de configuração do RooCode para importar automaticamente na inicialização da extensão. Suporta caminhos absolutos e caminhos relativos ao diretório inicial (por exemplo, '~/Documents/roo-code-settings.json'). Deixe em branco para desativar a importação automática.",
 	"settings.maximumIndexedFilesForFileSearch.description": "Especifica o número máximo de arquivos a serem indexados ao criar um índice para a funcionalidade de pesquisa de arquivos na caixa de entrada. Um número maior fornece melhores resultados de pesquisa em projetos grandes, mas pode consumir mais memória.",
-	"settings.useAgentRules.description": "Habilita o carregamento de arquivos AGENTS.md para regras específicas do agente (consulte https://agent-rules.org/)"
+	"settings.useAgentRules.description": "Habilita o carregamento de arquivos AGENTS.md para regras específicas do agente (consulte https://agent-rules.org/)",
+	"settings.apiRequestTimeout.description": "Tempo máximo em segundos de espera pelas respostas da API (0 = sem tempo limite, 1-3600s, padrão: 600s). Valores mais altos são recomendados para provedores locais como LM Studio e Ollama que podem precisar de mais tempo de processamento.",
+	"settings.codeIndex.embeddingBatchSize.description": "O tamanho do lote para operações de embedding durante a indexação de código. Ajuste isso com base nos limites do seu provedor de API. O padrão é 60."
 }

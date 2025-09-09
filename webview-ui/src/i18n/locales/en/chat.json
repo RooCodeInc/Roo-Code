@@ -2,13 +2,16 @@
 	"greeting": "Welcome to Roo Code!",
 	"task": {
 		"title": "Task",
+		"expand": "Expand task",
+		"collapse": "Collapse task",
 		"seeMore": "See more",
 		"seeLess": "See less",
-		"tokens": "Tokens:",
-		"cache": "Cache:",
-		"apiCost": "API Cost:",
+		"tokens": "Tokens",
+		"cache": "Cache",
+		"apiCost": "API Cost",
+		"size": "Size",
 		"condenseContext": "Intelligently condense context",
-		"contextWindow": "Context Length:",
+		"contextWindow": "Context Length",
 		"closeAndStart": "Close task and start a new one",
 		"export": "Export task history",
 		"share": "Share task",
@@ -118,7 +121,9 @@
 		"title": "Modes",
 		"marketplace": "Mode Marketplace",
 		"settings": "Mode Settings",
-		"description": "Specialized personas that tailor Roo's behavior."
+		"description": "Specialized personas that tailor Roo's behavior.",
+		"searchPlaceholder": "Search modes...",
+		"noResults": "No results found"
 	},
 	"enhancePromptDescription": "The 'Enhance Prompt' button helps improve your prompt by providing additional context, clarification, or rephrasing. Try typing a prompt in here and clicking the button again to see how it works.",
 	"addImages": "Add images to message",
@@ -126,7 +131,7 @@
 	"stopTts": "Stop text-to-speech",
 	"typeMessage": "Type a message...",
 	"typeTask": "Type your task here...",
-	"addContext": "@ to add context, / to switch modes",
+	"addContext": "@ to add context, / for commands",
 	"dragFiles": "hold shift to drag in files",
 	"dragFilesImages": "hold shift to drag in files/images",
 	"errorReadingFile": "Error reading file:",
@@ -143,7 +148,6 @@
 		"streamingFailed": "API Streaming Failed"
 	},
 	"checkpoint": {
-		"initial": "Initial Checkpoint",
 		"regular": "Checkpoint",
 		"initializingWarning": "Still initializing checkpoint... If this takes too long, you can disable checkpoints in <settingsLink>settings</settingsLink> and restart your task.",
 		"menu": {
@@ -178,6 +182,10 @@
 		"wantsToEditOutsideWorkspace": "Roo wants to edit this file outside of the workspace:",
 		"wantsToEditProtected": "Roo wants to edit a protected configuration file:",
 		"wantsToApplyBatchChanges": "Roo wants to apply changes to multiple files:",
+		"wantsToGenerateImage": "Roo wants to generate an image:",
+		"wantsToGenerateImageOutsideWorkspace": "Roo wants to generate an image outside of the workspace:",
+		"wantsToGenerateImageProtected": "Roo wants to generate an image in a protected location:",
+		"didGenerateImage": "Roo generated an image:",
 		"wantsToCreate": "Roo wants to create a new file:",
 		"wantsToSearchReplace": "Roo wants to search and replace in this file:",
 		"didSearchReplace": "Roo performed search and replace on this file:",
@@ -211,6 +219,22 @@
 		"resultTooltip": "Similarity score: {{score}} (click to open file)"
 	},
 	"commandOutput": "Command Output",
+	"commandExecution": {
+		"running": "Running",
+		"pid": "PID: {{pid}}",
+		"exited": "Exited ({{exitCode}})",
+		"manageCommands": "Manage Command Permissions",
+		"commandManagementDescription": "Manage command permissions: Click ✓ to allow auto-execution, ✗ to deny execution. Patterns can be toggled on/off or removed from lists. <settingsLink>View all settings</settingsLink>",
+		"addToAllowed": "Add to allowed list",
+		"removeFromAllowed": "Remove from allowed list",
+		"addToDenied": "Add to denied list",
+		"removeFromDenied": "Remove from denied list",
+		"abortCommand": "Abort command execution",
+		"expandOutput": "Expand output",
+		"collapseOutput": "Collapse output",
+		"expandManagement": "Expand command management section",
+		"collapseManagement": "Collapse command management section"
+	},
 	"response": "Response",
 	"arguments": "Arguments",
 	"mcp": {
@@ -254,12 +278,12 @@
 	},
 	"announcement": {
 		"title": "🎉 Roo Code {{version}} Released",
-		"description": "Roo Code {{version}} brings powerful new features and significant improvements to enhance your development workflow.",
-		"whatsNew": "What's New",
-		"feature1": "<bold>Codebase Indexing Graduated from Experimental</bold>: Full codebase indexing is now stable and ready for production use with improved search and context understanding.",
-		"feature2": "<bold>New Todo List Feature</bold>: Keep your tasks on track with integrated todo management that helps you stay organized and focused on your development goals.",
-		"hideButton": "Hide announcement",
-		"detailsDiscussLinks": "Get more details and discuss in <discordLink>Discord</discordLink> and <redditLink>Reddit</redditLink> 🚀"
+		"stealthModel": {
+			"feature": "The Sonic stealth model is now <bold>Grok Code Fast</bold>! This high-performance reasoning model is available as <code>grok-code-fast-1</code> under the <bold>xAI (Grok)</bold> provider.",
+			"note": "As a thank you for all the helpful feedback on Sonic, xAI is extending free access to <code>grok-code-fast-1</code> for another week through the <bold>Roo Code Cloud</bold> provider.",
+			"connectButton": "Connect to Roo Code Cloud",
+			"selectModel": "Visit <settingsLink>Settings</settingsLink> to update your provider configuration."
+		}
 	},
 	"reasoning": {
 		"thinking": "Thinking",
@@ -313,6 +337,11 @@
 			"title": "Auto-Approved Request Limit Reached",
 			"description": "Roo has reached the auto-approved limit of {{count}} API request(s). Would you like to reset the count and proceed with the task?",
 			"button": "Reset and Continue"
+		},
+		"autoApprovedCostLimitReached": {
+			"title": "Auto-Approved Cost Limit Reached",
+			"description": "Roo has reached the auto-approved cost limit of ${{count}}. Would you like to reset the cost and proceed with the task?",
+			"button": "Reset and Continue"
 		}
 	},
 	"indexingStatus": {
@@ -326,8 +355,38 @@
 		"ariaLabel": "Version {{version}} - Click to view release notes"
 	},
 	"rooCloudCTA": {
-		"title": "Roo Code Cloud is coming soon!",
+		"title": "Roo Code Cloud is evolving!",
 		"description": "Run Roomote agents in the cloud, access your tasks from anywhere, collaborate with others, and more.",
-		"joinWaitlist": "Join the waitlist to get early access."
+		"joinWaitlist": "Sign up to get the latest updates."
+	},
+	"command": {
+		"triggerDescription": "Trigger the {{name}} command"
+	},
+	"slashCommands": {
+		"tooltip": "Manage slash commands",
+		"title": "Slash Commands",
+		"description": "Use built-in slash commands or create custom ones for quick access to frequently used prompts and workflows. <DocsLink>Docs</DocsLink>",
+		"builtInCommands": "Built-in Commands",
+		"globalCommands": "Global Commands",
+		"workspaceCommands": "Workspace Commands",
+		"globalCommand": "Global command",
+		"editCommand": "Edit command",
+		"deleteCommand": "Delete command",
+		"newGlobalCommandPlaceholder": "New global command...",
+		"newWorkspaceCommandPlaceholder": "New workspace command...",
+		"deleteDialog": {
+			"title": "Delete Command",
+			"description": "Are you sure you want to delete the command \"{{name}}\"? This action cannot be undone.",
+			"cancel": "Cancel",
+			"confirm": "Delete"
+		}
+	},
+	"slashCommand": {
+		"wantsToRun": "Roo wants to run a slash command:",
+		"didRun": "Roo ran a slash command:"
+	},
+	"queuedMessages": {
+		"title": "Queued Messages:",
+		"clickToEdit": "Click to edit message"
 	}
 }

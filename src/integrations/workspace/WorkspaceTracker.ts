@@ -24,7 +24,7 @@ class WorkspaceTracker {
 	private cachedRipgrepPath: string | null = null
 
 	get cwd() {
-		return getWorkspacePath()
+		return this.providerRef?.deref()?.cwd ?? getWorkspacePath()
 	}
 
 	constructor(provider: ClineProvider) {

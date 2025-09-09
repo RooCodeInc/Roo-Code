@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
+import { SquareArrowOutUpRightIcon } from "lucide-react"
 
-import type { HistoryItem, ShareVisibility } from "@roo-code/types"
-import { TelemetryEventName } from "@roo-code/types"
+import { type HistoryItem, type ShareVisibility, TelemetryEventName } from "@roo-code/types"
 
 import { vscode } from "@/utils/vscode"
 import { telemetryClient } from "@/utils/TelemetryClient"
@@ -26,9 +26,10 @@ import {
 interface ShareButtonProps {
 	item?: HistoryItem
 	disabled?: boolean
+	showLabel?: boolean
 }
 
-export const ShareButton = ({ item, disabled = false }: ShareButtonProps) => {
+export const ShareButton = ({ item, disabled = false, showLabel = false }: ShareButtonProps) => {
 	const [shareDropdownOpen, setShareDropdownOpen] = useState(false)
 	const [connectModalOpen, setConnectModalOpen] = useState(false)
 	const [shareSuccess, setShareSuccess] = useState<{ visibility: ShareVisibility; url: string } | null>(null)
@@ -155,14 +156,21 @@ export const ShareButton = ({ item, disabled = false }: ShareButtonProps) => {
 						<PopoverTrigger asChild>
 							<Button
 								variant="ghost"
-								size="icon"
+								size={showLabel ? "sm" : "icon"}
 								disabled={disabled || shareButtonState.disabled}
-								className="h-7 w-7 p-1.5 hover:bg-vscode-toolbar-hoverBackground"
-								onClick={handleShareButtonClick}>
-								<span className="codicon codicon-link"></span>
+								className={
+									showLabel
+										? "h-7 px-2 hover:bg-vscode-toolbar-hoverBackground"
+										: "h-7 w-7 p-1.5 hover:bg-vscode-toolbar-hoverBackground"
+								}
+								onClick={handleShareButtonClick}
+								data-testid="share-button">
+								<SquareArrowOutUpRightIcon />
+								{showLabel && <span className="ml-0">{t("chat:task.share")}</span>}
 							</Button>
 						</PopoverTrigger>
 					</StandardTooltip>
+
 					<PopoverContent className="w-56 p-0" align="start">
 						{shareSuccess ? (
 							<div className="p-3">
@@ -217,11 +225,17 @@ export const ShareButton = ({ item, disabled = false }: ShareButtonProps) => {
 				<StandardTooltip content={shareButtonState.title}>
 					<Button
 						variant="ghost"
-						size="icon"
+						size={showLabel ? "sm" : "icon"}
 						disabled={disabled || shareButtonState.disabled}
-						className="h-7 w-7 p-1.5 hover:bg-vscode-toolbar-hoverBackground"
-						onClick={handleShareButtonClick}>
-						<span className="codicon codicon-link"></span>
+						className={
+							showLabel
+								? "h-7 px-2 hover:bg-vscode-toolbar-hoverBackground"
+								: "h-7 w-7 p-1.5 hover:bg-vscode-toolbar-hoverBackground"
+						}
+						onClick={handleShareButtonClick}
+						data-testid="share-button">
+						<SquareArrowOutUpRightIcon />
+						{showLabel && <span className="ml-1">{t("chat:task.share")}</span>}
 					</Button>
 				</StandardTooltip>
 			)}
@@ -231,34 +245,34 @@ export const ShareButton = ({ item, disabled = false }: ShareButtonProps) => {
 				<DialogContent className="max-w-sm">
 					<DialogHeader className="text-center">
 						<DialogTitle className="text-lg font-medium text-vscode-foreground">
-							{t("account:cloudBenefitsTitle")}
+							{t("cloud:cloudBenefitsTitle")}
 						</DialogTitle>
 					</DialogHeader>
 
 					<div className="flex flex-col space-y-6">
 						<div>
 							<p className="text-md text-vscode-descriptionForeground mb-4">
-								{t("account:cloudBenefitsSubtitle")}
+								{t("cloud:cloudBenefitsSubtitle")}
 							</p>
 							<ul className="text-sm text-vscode-descriptionForeground space-y-2">
 								<li className="flex items-start">
 									<span className="mr-2 text-vscode-foreground">•</span>
-									{t("account:cloudBenefitSharing")}
+									{t("cloud:cloudBenefitSharing")}
 								</li>
 								<li className="flex items-start">
 									<span className="mr-2 text-vscode-foreground">•</span>
-									{t("account:cloudBenefitHistory")}
+									{t("cloud:cloudBenefitHistory")}
 								</li>
 								<li className="flex items-start">
 									<span className="mr-2 text-vscode-foreground">•</span>
-									{t("account:cloudBenefitMetrics")}
+									{t("cloud:cloudBenefitMetrics")}
 								</li>
 							</ul>
 						</div>
 
 						<div className="flex flex-col gap-4">
 							<Button onClick={handleConnectToCloud} className="w-full">
-								{t("account:connect")}
+								{t("cloud:connect")}
 							</Button>
 						</div>
 					</div>

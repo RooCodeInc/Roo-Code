@@ -1,5 +1,5 @@
 {
-	"extension.displayName": "Roo Code (wcześniej Roo Cline)",
+	"extension.displayName": "Roo Code",
 	"extension.description": "Pełny zespół programistów AI w twoim edytorze.",
 	"command.newTask.title": "Nowe Zadanie",
 	"command.explainCode.title": "Wyjaśnij Kod",
@@ -23,6 +23,7 @@
 	"command.history.title": "Historia",
 	"command.marketplace.title": "Marketplace",
 	"command.openInEditor.title": "Otwórz w Edytorze",
+	"command.cloud.title": "Cloud",
 	"command.settings.title": "Ustawienia",
 	"command.documentation.title": "Dokumentacja",
 	"configuration.title": "Roo Code",
@@ -37,5 +38,7 @@
 	"settings.enableCodeActions.description": "Włącz szybkie poprawki Roo Code.",
 	"settings.autoImportSettingsPath.description": "Ścieżka do pliku konfiguracyjnego RooCode, który ma być automatycznie importowany podczas uruchamiania rozszerzenia. Obsługuje ścieżki bezwzględne i ścieżki względne do katalogu domowego (np. '~/Documents/roo-code-settings.json'). Pozostaw puste, aby wyłączyć automatyczne importowanie.",
 	"settings.maximumIndexedFilesForFileSearch.description": "Określa maksymalną liczbę plików do indeksowania podczas tworzenia indeksu dla funkcji wyszukiwania plików w polu wprowadzania. Większa liczba zapewnia lepsze wyniki wyszukiwania w dużych projektach, ale może zużywać więcej pamięci.",
-	"settings.useAgentRules.description": "Włącz wczytywanie plików AGENTS.md dla reguł specyficznych dla agenta (zobacz https://agent-rules.org/)"
+	"settings.useAgentRules.description": "Włącz wczytywanie plików AGENTS.md dla reguł specyficznych dla agenta (zobacz https://agent-rules.org/)",
+	"settings.apiRequestTimeout.description": "Maksymalny czas w sekundach oczekiwania na odpowiedzi API (0 = brak limitu czasu, 1-3600s, domyślnie: 600s). Wyższe wartości są zalecane dla lokalnych dostawców, takich jak LM Studio i Ollama, którzy mogą potrzebować więcej czasu na przetwarzanie.",
+	"settings.codeIndex.embeddingBatchSize.description": "Rozmiar partii dla operacji osadzania podczas indeksowania kodu. Dostosuj to w oparciu o limity twojego dostawcy API. Domyślnie to 60."
 }

@@ -1,18 +1,15 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { appendImages } from "@src/utils/imageUtils"
-import { McpExecution } from "./McpExecution"
 import { useSize } from "react-use"
 import { useTranslation, Trans } from "react-i18next"
 import deepEqual from "fast-deep-equal"
 import { VSCodeBadge, VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 
-import type { ClineMessage } from "@roo-code/types"
+import type { ClineMessage, FollowUpData, SuggestionItem } from "@roo-code/types"
 import { Mode } from "@roo/modes"
 
 import { ClineApiReqInfo, ClineAskUseMcpServer, ClineSayTool } from "@roo/ExtensionMessage"
 import { COMMAND_OUTPUT_STRING } from "@roo/combineCommandSequences"
 import { safeJsonParse } from "@roo/safeJsonParse"
-import { FollowUpData, SuggestionItem } from "@roo-code/types"
 
 import { useCopyToClipboard } from "@src/utils/clipboard"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
@@ -22,9 +19,6 @@ import { removeLeadingNonAlphanumeric } from "@src/utils/removeLeadingNonAlphanu
 import { getLanguageFromPath } from "@src/utils/getLanguageFromPath"
 import { Button } from "@src/components/ui"
 
-import ChatTextArea from "./ChatTextArea"
-import { MAX_IMAGES_PER_MESSAGE } from "./ChatView"
-
 import { ToolUseBlock, ToolUseBlockHeader } from "../common/ToolUseBlock"
 import UpdateTodoListToolBlock from "./UpdateTodoListToolBlock"
 import CodeAccordian from "../common/CodeAccordian"
@@ -32,6 +26,8 @@ import CodeBlock from "../common/CodeBlock"
 import MarkdownBlock from "../common/MarkdownBlock"
 import { ReasoningBlock } from "./ReasoningBlock"
 import Thumbnails from "../common/Thumbnails"
+import ImageBlock from "../common/ImageBlock"
+
 import McpResourceRow from "../mcp/McpResourceRow"
 
 import { Mention } from "./Mention"
@@ -46,6 +42,11 @@ import { CommandExecutionError } from "./CommandExecutionError"
 import { AutoApprovedRequestLimitWarning } from "./AutoApprovedRequestLimitWarning"
 import { CondenseContextErrorRow, CondensingContextRow, ContextCondenseRow } from "./ContextCondenseRow"
 import CodebaseSearchResultsDisplay from "./CodebaseSearchResultsDisplay"
+import { appendImages } from "@src/utils/imageUtils"
+import { McpExecution } from "./McpExecution"
+import { ChatTextArea } from "./ChatTextArea"
+import { MAX_IMAGES_PER_MESSAGE } from "./ChatView"
+import { useSelectedModel } from "../ui/hooks/useSelectedModel"
 
 interface ChatRowProps {
 	message: ClineMessage
@@ -114,7 +115,9 @@ export const ChatRowContent = ({
 	editable,
 }: ChatRowContentProps) => {
 	const { t } = useTranslation()
-	const { mcpServers, alwaysAllowMcp, currentCheckpoint, mode } = useExtensionState()
+
+	const { mcpServers, alwaysAllowMcp, currentCheckpoint, mode, apiConfiguration } = useExtensionState()
+	const { info: model } = useSelectedModel(apiConfiguration)
 	const [reasoningCollapsed, setReasoningCollapsed] = useState(true)
 	const [isDiffErrorExpanded, setIsDiffErrorExpanded] = useState(false)
 	const [showCopySuccess, setShowCopySuccess] = useState(false)
@@ -137,7 +140,7 @@ export const ChatRowContent = ({
 		return () => window.removeEventListener("message", handleMessage)
 	}, [isEditing, message.ts])
 
-	// Memoized callback to prevent re-renders caused by inline arrow functions
+	// Memoized callback to prevent re-renders caused by inline arrow functions.
 	const handleToggleExpand = useCallback(() => {
 		onToggleExpand(message.ts)
 	}, [onToggleExpand, message.ts])
@@ -844,6 +847,108 @@ export const ChatRowContent = ({
 						</div>
 					</>
 				)
+			case "runSlashCommand": {
+				const slashCommandInfo = tool
+				return (
+					<>
+						<div style={headerStyle}>
+							{toolIcon("play")}
+							<span style={{ fontWeight: "bold" }}>
+								{message.type === "ask"
+									? t("chat:slashCommand.wantsToRun")
+									: t("chat:slashCommand.didRun")}
+							</span>
+						</div>
+						<div
+							style={{
+								marginTop: "4px",
+								backgroundColor: "var(--vscode-editor-background)",
+								border: "1px solid var(--vscode-editorGroup-border)",
+								borderRadius: "4px",
+								overflow: "hidden",
+								cursor: "pointer",
+							}}
+							onClick={handleToggleExpand}>
+							<ToolUseBlockHeader
+								style={{
+									display: "flex",
+									alignItems: "center",
+									justifyContent: "space-between",
+									padding: "10px 12px",
+								}}>
+								<div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+									<span style={{ fontWeight: "500", fontSize: "var(--vscode-font-size)" }}>
+										/{slashCommandInfo.command}
+									</span>
+									{slashCommandInfo.source && (
+										<VSCodeBadge style={{ fontSize: "calc(var(--vscode-font-size) - 2px)" }}>
+											{slashCommandInfo.source}
+										</VSCodeBadge>
+									)}
+								</div>
+								<span className={`codicon codicon-chevron-${isExpanded ? "up" : "down"}`}></span>
+							</ToolUseBlockHeader>
+							{isExpanded && (slashCommandInfo.args || slashCommandInfo.description) && (
+								<div
+									style={{
+										padding: "12px 16px",
+										borderTop: "1px solid var(--vscode-editorGroup-border)",
+										display: "flex",
+										flexDirection: "column",
+										gap: "8px",
+									}}>
+									{slashCommandInfo.args && (
+										<div>
+											<span style={{ fontWeight: "500" }}>Arguments: </span>
+											<span style={{ color: "var(--vscode-descriptionForeground)" }}>
+												{slashCommandInfo.args}
+											</span>
+										</div>
+									)}
+									{slashCommandInfo.description && (
+										<div style={{ color: "var(--vscode-descriptionForeground)" }}>
+											{slashCommandInfo.description}
+										</div>
+									)}
+								</div>
+							)}
+						</div>
+					</>
+				)
+			}
+			case "generateImage":
+				return (
+					<>
+						<div style={headerStyle}>
+							{tool.isProtected ? (
+								<span
+									className="codicon codicon-lock"
+									style={{ color: "var(--vscode-editorWarning-foreground)", marginBottom: "-1.5px" }}
+								/>
+							) : (
+								toolIcon("file-media")
+							)}
+							<span style={{ fontWeight: "bold" }}>
+								{message.type === "ask"
+									? tool.isProtected
+										? t("chat:fileOperations.wantsToGenerateImageProtected")
+										: tool.isOutsideWorkspace
+											? t("chat:fileOperations.wantsToGenerateImageOutsideWorkspace")
+											: t("chat:fileOperations.wantsToGenerateImage")
+									: t("chat:fileOperations.didGenerateImage")}
+							</span>
+						</div>
+						{message.type === "ask" && (
+							<CodeAccordian
+								path={tool.path}
+								code={tool.content}
+								language="text"
+								isExpanded={isExpanded}
+								onToggleExpand={handleToggleExpand}
+							/>
+						)}
+					</>
+				)
 			default:
 				return null
 		}
@@ -1056,6 +1161,13 @@ export const ChatRowContent = ({
 					return (
 						<div>
 							<Markdown markdown={message.text} partial={message.partial} />
+							{message.images && message.images.length > 0 && (
+								<div style={{ marginTop: "10px" }}>
+									{message.images.map((image, index) => (
+										<ImageBlock key={index} imageData={image} />
+									))}
+								</div>
+							)}
 						</div>
 					)
 				case "user_feedback":
@@ -1073,7 +1185,7 @@ export const ChatRowContent = ({
 										setSelectedImages={setEditImages}
 										onSend={handleSaveEdit}
 										onSelectImages={handleSelectImages}
-										shouldDisableImages={false}
+										shouldDisableImages={!model?.supportsImages}
 										mode={editMode}
 										setMode={setEditMode}
 										modeShortcutText=""
@@ -1090,7 +1202,7 @@ export const ChatRowContent = ({
 										<Button
 											variant="ghost"
 											size="icon"
-											className="shrink-0 hidden"
+											className="shrink-0"
 											disabled={isStreaming}
 											onClick={(e) => {
 												e.stopPropagation()
@@ -1204,6 +1316,91 @@ export const ChatRowContent = ({
 					return <CodebaseSearchResultsDisplay results={results} />
 				case "user_edit_todos":
 					return <UpdateTodoListToolBlock userEdited onChange={() => {}} />
+				case "tool" as any:
+					// Handle say tool messages
+					const sayTool = safeJsonParse<ClineSayTool>(message.text)
+					if (!sayTool) return null
+
+					switch (sayTool.tool) {
+						case "runSlashCommand": {
+							const slashCommandInfo = sayTool
+							return (
+								<>
+									<div style={headerStyle}>
+										<span
+											className="codicon codicon-terminal-cmd"
+											style={{
+												color: "var(--vscode-foreground)",
+												marginBottom: "-1.5px",
+											}}></span>
+										<span style={{ fontWeight: "bold" }}>{t("chat:slashCommand.didRun")}</span>
+									</div>
+									<ToolUseBlock>
+										<ToolUseBlockHeader
+											style={{
+												display: "flex",
+												flexDirection: "column",
+												alignItems: "flex-start",
+												gap: "4px",
+												padding: "10px 12px",
+											}}>
+											<div
+												style={{
+													display: "flex",
+													alignItems: "center",
+													gap: "8px",
+													width: "100%",
+												}}>
+												<span
+													style={{ fontWeight: "500", fontSize: "var(--vscode-font-size)" }}>
+													/{slashCommandInfo.command}
+												</span>
+												{slashCommandInfo.args && (
+													<span
+														style={{
+															color: "var(--vscode-descriptionForeground)",
+															fontSize: "var(--vscode-font-size)",
+														}}>
+														{slashCommandInfo.args}
+													</span>
+												)}
+											</div>
+											{slashCommandInfo.description && (
+												<div
+													style={{
+														color: "var(--vscode-descriptionForeground)",
+														fontSize: "calc(var(--vscode-font-size) - 1px)",
+													}}>
+													{slashCommandInfo.description}
+												</div>
+											)}
+											{slashCommandInfo.source && (
+												<div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+													<VSCodeBadge
+														style={{ fontSize: "calc(var(--vscode-font-size) - 2px)" }}>
+														{slashCommandInfo.source}
+													</VSCodeBadge>
+												</div>
+											)}
+										</ToolUseBlockHeader>
+									</ToolUseBlock>
+								</>
+							)
+						}
+						default:
+							return null
+					}
+				case "image":
+					// Parse the JSON to get imageUri and imagePath
+					const imageInfo = safeJsonParse<{ imageUri: string; imagePath: string }>(message.text || "{}")
+					if (!imageInfo) {
+						return null
+					}
+					return (
+						<div style={{ marginTop: "10px" }}>
+							<ImageBlock imageUri={imageInfo.imageUri} imagePath={imageInfo.imagePath} />
+						</div>
+					)
 				default:
 					return (
 						<>
