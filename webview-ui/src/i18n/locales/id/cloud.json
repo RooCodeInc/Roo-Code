@@ -11,7 +11,7 @@
 	"cloudBenefitHistory": "Akses riwayat tugas Anda",
 	"cloudBenefitMetrics": "Dapatkan tampilan holistik konsumsi token Anda",
 	"visitCloudWebsite": "Kunjungi Roo Code Cloud",
-"taskSync": "Sinkronisasi tugas",
+	"taskSync": "Sinkronisasi tugas",
 	"taskSyncDescription": "Sinkronkan tugas Anda untuk melihat dan berbagi di Roo Code Cloud",
 	"remoteControl": "Roomote Control",
 	"remoteControlDescription": "Izinkan mengontrol tugas dari Roo Code Cloud",
@@ -22,5 +22,5 @@
 	"havingTrouble": "Ada masalah?",
 	"pasteCallbackUrl": "Salin URL redirect dari browser dan tempel di sini:",
 	"startOver": "Mulai dari awal",
-"cloudUrlPillLabel": "URL Roo Code Cloud"
+	"cloudUrlPillLabel": "URL Roo Code Cloud"
 }

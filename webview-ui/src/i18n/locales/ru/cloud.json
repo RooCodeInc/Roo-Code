@@ -11,7 +11,7 @@
 	"cloudBenefitHistory": "Получите доступ к истории задач",
 	"cloudBenefitMetrics": "Получите целостное представление о потреблении токенов",
 	"visitCloudWebsite": "Посетить Roo Code Cloud",
-"taskSync": "Синхронизация задач",
+	"taskSync": "Синхронизация задач",
 	"taskSyncDescription": "Синхронизируйте свои задачи для просмотра и обмена в Roo Code Cloud",
 	"remoteControl": "Roomote Control",
 	"remoteControlDescription": "Разрешить управление задачами из Roo Code Cloud",
@@ -22,5 +22,5 @@
 	"havingTrouble": "Проблемы?",
 	"pasteCallbackUrl": "Скопируй URL перенаправления из браузера и вставь его сюда:",
 	"startOver": "Начать заново",
-"cloudUrlPillLabel": "URL Roo Code Cloud"
+	"cloudUrlPillLabel": "URL Roo Code Cloud"
 }

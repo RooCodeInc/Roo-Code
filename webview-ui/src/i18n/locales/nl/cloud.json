@@ -11,7 +11,7 @@
 	"cloudBenefitHistory": "Toegang tot je taakgeschiedenis",
 	"cloudBenefitMetrics": "Krijg een holistisch overzicht van je tokenverbruik",
 	"visitCloudWebsite": "Bezoek Roo Code Cloud",
-"taskSync": "Taaksynchronisatie",
+	"taskSync": "Taaksynchronisatie",
 	"taskSyncDescription": "Synchroniseer je taken om ze te bekijken en delen op Roo Code Cloud",
 	"remoteControl": "Roomote Control",
 	"remoteControlDescription": "Sta toe taken te besturen vanuit Roo Code Cloud",
@@ -22,5 +22,5 @@
 	"havingTrouble": "Problemen?",
 	"pasteCallbackUrl": "Kopieer de redirect-URL uit je browser en plak hem hier:",
 	"startOver": "Opnieuw beginnen",
-"cloudUrlPillLabel": "Roo Code Cloud URL"
+	"cloudUrlPillLabel": "Roo Code Cloud URL"
 }

@@ -11,7 +11,7 @@
 	"cloudBenefitHistory": "Uzyskaj dostęp do historii zadań",
 	"cloudBenefitMetrics": "Uzyskaj całościowy widok zużycia tokenów",
 	"visitCloudWebsite": "Odwiedź Roo Code Cloud",
-"taskSync": "Synchronizacja zadań",
+	"taskSync": "Synchronizacja zadań",
 	"taskSyncDescription": "Synchronizuj swoje zadania, aby przeglądać i udostępniać je w Roo Code Cloud",
 	"remoteControl": "Roomote Control",
 	"remoteControlDescription": "Pozwól kontrolować zadania z Roo Code Cloud",
@@ -22,5 +22,5 @@
 	"havingTrouble": "Masz problemy?",
 	"pasteCallbackUrl": "Skopiuj URL redirect z przeglądarki i wklej tutaj:",
 	"startOver": "Zacznij od nowa",
-"cloudUrlPillLabel": "URL Roo Code Cloud"
+	"cloudUrlPillLabel": "URL Roo Code Cloud"
 }

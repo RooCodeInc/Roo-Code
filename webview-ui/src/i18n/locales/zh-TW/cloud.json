@@ -11,7 +11,7 @@
 	"cloudBenefitHistory": "存取您的任務歷史",
 	"cloudBenefitMetrics": "獲得您的代幣消耗的整體視圖",
 	"visitCloudWebsite": "造訪 Roo Code Cloud",
-"taskSync": "任務同步",
+	"taskSync": "任務同步",
 	"taskSyncDescription": "同步您的任務以在 Roo Code Cloud 上檢視和分享",
 	"remoteControl": "Roomote Control",
 	"remoteControlDescription": "允許從 Roo Code Cloud 控制任務",
@@ -22,5 +22,5 @@
 	"havingTrouble": "遇到問題？",
 	"pasteCallbackUrl": "從瀏覽器複製重新導向 URL 並貼上到這裡：",
 	"startOver": "重新開始",
-"cloudUrlPillLabel": "Roo Code Cloud URL"
+	"cloudUrlPillLabel": "Roo Code Cloud URL"
 }

@@ -11,7 +11,7 @@
 	"cloudBenefitHistory": "Görev geçmişine eriş",
 	"cloudBenefitMetrics": "Token tüketiminizin bütünsel görünümünü elde edin",
 	"visitCloudWebsite": "Roo Code Cloud'u ziyaret et",
-"taskSync": "Görev senkronizasyonu",
+	"taskSync": "Görev senkronizasyonu",
 	"taskSyncDescription": "Görevlerinizi Roo Code Cloud'da görüntülemek ve paylaşmak için senkronize edin",
 	"remoteControl": "Roomote Control",
 	"remoteControlDescription": "Roo Code Cloud'dan görevleri kontrol etmeye izin ver",
@@ -22,5 +22,5 @@
 	"havingTrouble": "Sorun yaşıyor musun?",
 	"pasteCallbackUrl": "Tarayıcından redirect URL'sini kopyala ve buraya yapıştır:",
 	"startOver": "Baştan başla",
-"cloudUrlPillLabel": "Roo Code Cloud URL'si"
+	"cloudUrlPillLabel": "Roo Code Cloud URL'si"
 }

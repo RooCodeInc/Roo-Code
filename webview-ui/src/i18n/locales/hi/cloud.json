@@ -11,7 +11,7 @@
 	"cloudBenefitHistory": "अपने कार्य इतिहास तक पहुंचें",
 	"cloudBenefitMetrics": "अपने टोकन उपभोग का समग्र दृश्य प्राप्त करें",
 	"visitCloudWebsite": "Roo Code Cloud पर जाएं",
-"taskSync": "कार्य सिंक",
+	"taskSync": "कार्य सिंक",
 	"taskSyncDescription": "Roo Code Cloud पर देखने और साझा करने के लिए अपने कार्यों को सिंक करें",
 	"remoteControl": "Roomote Control",
 	"remoteControlDescription": "Roo Code Cloud से कार्यों को नियंत्रित करने की अनुमति दें",
@@ -22,5 +22,5 @@
 	"havingTrouble": "समस्या हो रही है?",
 	"pasteCallbackUrl": "अपने ब्राउज़र से redirect URL कॉपी करें और यहाँ पेस्ट करें:",
 	"startOver": "फिर से शुरू करें",
-"cloudUrlPillLabel": "Roo Code Cloud URL"
+	"cloudUrlPillLabel": "Roo Code Cloud URL"
 }

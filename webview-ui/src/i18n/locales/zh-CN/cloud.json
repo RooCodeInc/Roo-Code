@@ -11,7 +11,7 @@
 	"cloudBenefitHistory": "访问您的任务历史",
 	"cloudBenefitMetrics": "获取您的令牌消耗的整体视图",
 	"visitCloudWebsite": "访问 Roo Code Cloud",
-"taskSync": "任务同步",
+	"taskSync": "任务同步",
 	"taskSyncDescription": "同步您的任务以在 Roo Code Cloud 上查看和共享",
 	"remoteControl": "Roomote Control",
 	"remoteControlDescription": "允许从 Roo Code Cloud 控制任务",
@@ -22,5 +22,5 @@
 	"havingTrouble": "遇到问题？",
 	"pasteCallbackUrl": "从浏览器复制重定向 URL 并粘贴到这里：",
 	"startOver": "重新开始",
-"cloudUrlPillLabel": "Roo Code Cloud URL"
+	"cloudUrlPillLabel": "Roo Code Cloud URL"
 }
