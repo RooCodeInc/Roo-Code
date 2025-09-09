@@ -194,9 +194,9 @@ describe("RetryQueue", () => {
 
 			// Check that fetch was called in FIFO order
 			expect(fetchMock).toHaveBeenCalledTimes(3)
-			expect(fetchMock.mock.calls[0][0]).toBe("https://api.example.com/test1")
-			expect(fetchMock.mock.calls[1][0]).toBe("https://api.example.com/test2")
-			expect(fetchMock.mock.calls[2][0]).toBe("https://api.example.com/test3")
+			expect(fetchMock.mock.calls[0]?.[0]).toBe("https://api.example.com/test1")
+			expect(fetchMock.mock.calls[1]?.[0]).toBe("https://api.example.com/test2")
+			expect(fetchMock.mock.calls[2]?.[0]).toBe("https://api.example.com/test3")
 
 			// Check that success events were emitted
 			expect(successListener).toHaveBeenCalledTimes(3)
