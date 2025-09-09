@@ -41,26 +41,41 @@ export interface LanguageParser {
 
 async function loadLanguage(langName: string, sourceDirectory?: string) {
 	const baseDir = sourceDirectory || __dirname
+	const { Language } = require("web-tree-sitter")
 
-	// Special handling for ABL and DF - load from node_modules
+	// Special handling for ABL and DF - try multiple loading strategies
 	if (langName === "abl" || langName === "df") {
+		// Strategy 1: Try loading from dist directory first (if copied during build)
+		const distWasmPath = path.join(baseDir, `tree-sitter-${langName}.wasm`)
 		try {
-			const { Language } = require("web-tree-sitter")
+			const language = await Language.load(distWasmPath)
+			console.log(`Successfully loaded ${langName} from dist directory`)
+			return language
+		} catch (error) {
+			console.log(`Could not load ${langName} from dist: ${error instanceof Error ? error.message : error}`)
+		}
+
+		// Strategy 2: Try loading from npm package location
+		try {
 			const packageName = `@usagi-coffee/tree-sitter-${langName}`
 			const wasmPath = require.resolve(`${packageName}/tree-sitter-${langName}.wasm`)
-			return await Language.load(wasmPath)
+			const language = await Language.load(wasmPath)
+			console.log(`Successfully loaded ${langName} from npm package`)
+			return language
 		} catch (error) {
-			console.error(
-				`Error loading ${langName} language from npm package: ${error instanceof Error ? error.message : error}`,
+			console.warn(
+				`Warning: ${langName} language parser has version incompatibility. ${error instanceof Error ? error.message : error}`,
 			)
-			throw error
+			// Don't throw here, we'll handle this gracefully
+			console.warn(`Skipping ${langName} parser due to version incompatibility`)
+			return null
 		}
 	}
 
+	// Standard loading for other languages
 	const wasmPath = path.join(baseDir, `tree-sitter-${langName}.wasm`)
 
 	try {
-		const { Language } = require("web-tree-sitter")
 		return await Language.load(wasmPath)
 	} catch (error) {
 		console.error(`Error loading language: ${wasmPath}: ${error instanceof Error ? error.message : error}`)
@@ -242,10 +257,18 @@ export async function loadRequiredLanguageParsers(filesToParse: string[], source
 			case "cls":
 				parserKey = "abl" // Use same key for all ABL extensions
 				language = await loadLanguage("abl", sourceDirectory)
+				if (!language) {
+					console.warn(`Skipping ABL parser for .${ext} files due to compatibility issues`)
+					continue // Skip this extension
+				}
 				query = new Query(language, ablQuery)
 				break
 			case "df":
 				language = await loadLanguage("df", sourceDirectory)
+				if (!language) {
+					console.warn(`Skipping DF parser for .${ext} files due to compatibility issues`)
+					continue // Skip this extension
+				}
 				query = new Query(language, dfQuery)
 				break
 			default:

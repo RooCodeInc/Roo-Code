@@ -1,34 +1,35 @@
 /*
 OpenEdge DataFrames language structures
 Basic query for DF (DataFrames) language
-This is a minimal implementation that can be expanded with proper DF grammar knowledge
+Updated to match actual grammar node names from the tree-sitter-df package
 */
 export default String.raw`
-; Field definitions
-(field_definition
-  name: (identifier) @name.definition.field) @definition.field
+; ADD statements for various database objects
+(add_field_statement
+  (string) @name.definition.field) @definition.field
 
-; Index definitions
-(index_definition
-  name: (identifier) @name.definition.index) @definition.index
+(add_index_statement
+  (string) @name.definition.index) @definition.index
 
-; Table definitions
-(table_definition
-  name: (identifier) @name.definition.table) @definition.table
+(add_table_statement
+  (string) @name.definition.table) @definition.table
 
-; Sequence definitions
-(sequence_definition
-  name: (identifier) @name.definition.sequence) @definition.sequence
+(add_sequence_statement
+  (string) @name.definition.sequence) @definition.sequence
 
-; Trigger definitions
-(trigger_definition
-  name: (identifier) @name.definition.trigger) @definition.trigger
+(add_area_statement
+  (string) @name.definition.area) @definition.area
 
-; Area definitions
-(area_definition
-  name: (identifier) @name.definition.area) @definition.area
+; UPDATE statements
+(update_field_statement
+  (string) @name.definition.field) @definition.field
 
-; Database definitions
-(database_definition
-  name: (identifier) @name.definition.database) @definition.database
+(update_table_statement
+  (string) @name.definition.table) @definition.table
+
+; String literals for values
+(string) @string
+
+; Comments
+(comment) @comment
 `

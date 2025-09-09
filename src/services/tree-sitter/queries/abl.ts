@@ -1,38 +1,51 @@
 /*
 OpenEdge ABL language structures
 Basic query for ABL (Progress 4GL) language
-This is a minimal implementation that can be expanded with proper ABL grammar knowledge
+Updated to match actual grammar node names from the tree-sitter-abl package
 */
 export default String.raw`
 ; Procedure definitions
-(procedure_statement
+(procedure_definition
   name: (identifier) @name.definition.procedure) @definition.procedure
 
-; Function definitions  
-(function_statement
+; Function definitions
+(function_definition
   name: (identifier) @name.definition.function) @definition.function
 
 ; Class definitions
-(class_statement
+(class_definition
   name: (identifier) @name.definition.class) @definition.class
 
 ; Method definitions
-(method_statement
+(method_definition
   name: (identifier) @name.definition.method) @definition.method
 
 ; Variable definitions
-(define_variable_statement
+(variable_definition
   name: (identifier) @name.definition.variable) @definition.variable
 
 ; Property definitions
-(define_property_statement
+(property_definition
   name: (identifier) @name.definition.property) @definition.property
 
 ; Temp-table definitions
-(define_temp_table_statement
+(temp_table_definition
   name: (identifier) @name.definition.table) @definition.table
 
 ; Buffer definitions
-(define_buffer_statement
+(buffer_definition
   name: (identifier) @name.definition.buffer) @definition.buffer
+
+; Include statements
+(include_statement
+  (string) @name.include) @include
+
+; Comments
+(comment) @comment
+
+; String literals
+(string) @string
+
+; Identifiers
+(identifier) @identifier
 `
