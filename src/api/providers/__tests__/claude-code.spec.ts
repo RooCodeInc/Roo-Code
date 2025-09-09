@@ -562,4 +562,137 @@ describe("ClaudeCodeHandler", () => {
 
 		consoleSpy.mockRestore()
 	})
+
+	test("should silently ignore Claude Code built-in tools", async () => {
+		const systemPrompt = "You are a helpful assistant"
+		const messages = [{ role: "user" as const, content: "Hello" }]
+		const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+
+		// Mock async generator that yields Claude Code built-in tool_use content
+		const mockGenerator = async function* (): AsyncGenerator<ClaudeCodeMessage | string> {
+			yield {
+				type: "assistant" as const,
+				message: {
+					id: "msg_123",
+					type: "message",
+					role: "assistant",
+					model: "claude-3-5-sonnet-20241022",
+					content: [
+						{
+							type: "tool_use",
+							id: "tool_123",
+							name: "ExitPlanMode",
+							input: {},
+						},
+						{
+							type: "tool_use",
+							id: "tool_124",
+							name: "BashOutput",
+							input: { command: "ls" },
+						},
+						{
+							type: "tool_use",
+							id: "tool_125",
+							name: "KillBash",
+							input: { pid: 1234 },
+						},
+						{
+							type: "text",
+							text: "Here's the response",
+						},
+					],
+					stop_reason: null,
+					stop_sequence: null,
+					usage: {
+						input_tokens: 10,
+						output_tokens: 20,
+					},
+				} as any,
+				session_id: "session_123",
+			}
+		}
+
+		mockRunClaudeCode.mockReturnValue(mockGenerator())
+
+		const stream = handler.createMessage(systemPrompt, messages)
+		const results = []
+
+		for await (const chunk of stream) {
+			results.push(chunk)
+		}
+
+		// Should NOT log errors for Claude Code built-in tools
+		expect(consoleSpy).not.toHaveBeenCalled()
+
+		// Should only have the text content in results
+		expect(results).toHaveLength(1)
+		expect(results[0]).toEqual({
+			type: "text",
+			text: "Here's the response",
+		})
+
+		consoleSpy.mockRestore()
+	})
+
+	test("should log warning for non-Claude Code tools but not for built-in ones", async () => {
+		const systemPrompt = "You are a helpful assistant"
+		const messages = [{ role: "user" as const, content: "Hello" }]
+		const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+
+		// Mock async generator that yields mixed tool_use content
+		const mockGenerator = async function* (): AsyncGenerator<ClaudeCodeMessage | string> {
+			yield {
+				type: "assistant" as const,
+				message: {
+					id: "msg_123",
+					type: "message",
+					role: "assistant",
+					model: "claude-3-5-sonnet-20241022",
+					content: [
+						{
+							type: "tool_use",
+							id: "tool_123",
+							name: "ExitPlanMode", // Built-in tool - should be ignored silently
+							input: {},
+						},
+						{
+							type: "tool_use",
+							id: "tool_124",
+							name: "custom_tool", // Non-built-in tool - should log error
+							input: { data: "test" },
+						},
+						{
+							type: "tool_use",
+							id: "tool_125",
+							name: "BashOutput", // Built-in tool - should be ignored silently
+							input: { command: "pwd" },
+						},
+					],
+					stop_reason: null,
+					stop_sequence: null,
+					usage: {
+						input_tokens: 10,
+						output_tokens: 20,
+					},
+				} as any,
+				session_id: "session_123",
+			}
+		}
+
+		mockRunClaudeCode.mockReturnValue(mockGenerator())
+
+		const stream = handler.createMessage(systemPrompt, messages)
+		const results = []
+
+		for await (const chunk of stream) {
+			results.push(chunk)
+		}
+
+		// Should only log error for the non-built-in tool
+		expect(consoleSpy).toHaveBeenCalledTimes(1)
+		expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining("tool_use is not supported yet"))
+		expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining("custom_tool"))
+
+		consoleSpy.mockRestore()
+	})
 })
