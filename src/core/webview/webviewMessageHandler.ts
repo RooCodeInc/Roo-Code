@@ -122,7 +122,7 @@ export const webviewMessageHandler = async (
 		let hasCheckpoint = false
 
 		if (!currentCline) {
-			await vscode.window.showErrorMessage("No active task to delete messages from")
+			await vscode.window.showErrorMessage(t("common:errors.message.no_active_task_to_delete"))
 			return
 		}
 
@@ -163,8 +163,7 @@ export const webviewMessageHandler = async (
 		}
 
 		if (messageIndex === -1) {
-			const errorMessage = `Message with timestamp ${messageTs} not found`
-			await vscode.window.showErrorMessage(errorMessage)
+			await vscode.window.showErrorMessage(t("common:errors.message.message_not_found", { messageTs }))
 			return
 		}
 
@@ -229,7 +228,9 @@ export const webviewMessageHandler = async (
 		} catch (error) {
 			console.error("Error in delete message:", error)
 			vscode.window.showErrorMessage(
-				`Error deleting message: ${error instanceof Error ? error.message : String(error)}`,
+				t("common:errors.message.error_deleting_message", {
+					error: error instanceof Error ? error.message : String(error),
+				}),
 			)
 		}
 	}
@@ -286,7 +287,7 @@ export const webviewMessageHandler = async (
 		const { messageIndex, apiConversationHistoryIndex } = findMessageIndices(messageTs, currentCline)
 
 		if (messageIndex === -1) {
-			const errorMessage = `Message with timestamp ${messageTs} not found`
+			const errorMessage = t("common:errors.message.message_not_found", { messageTs })
 			console.error("[handleEditMessageConfirm]", errorMessage)
 			await vscode.window.showErrorMessage(errorMessage)
 			return
@@ -395,7 +396,9 @@ export const webviewMessageHandler = async (
 		} catch (error) {
 			console.error("Error in edit message:", error)
 			vscode.window.showErrorMessage(
-				`Error editing message: ${error instanceof Error ? error.message : String(error)}`,
+				t("common:errors.message.error_editing_message", {
+					error: error instanceof Error ? error.message : String(error),
+				}),
 			)
 		}
 	}
@@ -1498,12 +1501,12 @@ export const webviewMessageHandler = async (
 			break
 		case "deleteMessage": {
 			if (!provider.getCurrentTask()) {
-				await vscode.window.showErrorMessage("No active task to delete messages from")
+				await vscode.window.showErrorMessage(t("common:errors.message.no_active_task_to_delete"))
 				break
 			}
 
 			if (typeof message.value !== "number" || !message.value) {
-				await vscode.window.showErrorMessage("Invalid message timestamp for deletion")
+				await vscode.window.showErrorMessage(t("common:errors.message.invalid_timestamp_for_deletion"))
 				break
 			}
 
@@ -1896,12 +1899,12 @@ export const webviewMessageHandler = async (
 			break
 		case "deleteMessageConfirm":
 			if (!message.messageTs) {
-				await vscode.window.showErrorMessage("Cannot delete message: missing timestamp")
+				await vscode.window.showErrorMessage(t("common:errors.message.cannot_delete_missing_timestamp"))
 				break
 			}
 
 			if (typeof message.messageTs !== "number") {
-				await vscode.window.showErrorMessage("Cannot delete message: invalid timestamp")
+				await vscode.window.showErrorMessage(t("common:errors.message.cannot_delete_invalid_timestamp"))
 				break
 			}
 
