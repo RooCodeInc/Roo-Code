@@ -1565,6 +1565,48 @@ export const webviewMessageHandler = async (
 				await provider.postStateToWebview()
 			}
 			break
+		case "setApiConfigCustomOrder":
+			if (message.values && Array.isArray(message.values.customOrder)) {
+				await updateGlobalState("apiConfigCustomOrder", message.values.customOrder)
+				await provider.postStateToWebview()
+			}
+			break
+		case "moveApiConfigUp":
+			if (message.text) {
+				const currentOrder = getGlobalState("apiConfigCustomOrder") || []
+				const currentIndex = currentOrder.indexOf(message.text)
+
+				if (currentIndex > 0) {
+					// Swap with previous item
+					const newOrder = [...currentOrder]
+					;[newOrder[currentIndex - 1], newOrder[currentIndex]] = [
+						newOrder[currentIndex],
+						newOrder[currentIndex - 1],
+					]
+
+					await updateGlobalState("apiConfigCustomOrder", newOrder)
+					await provider.postStateToWebview()
+				}
+			}
+			break
+		case "moveApiConfigDown":
+			if (message.text) {
+				const currentOrder = getGlobalState("apiConfigCustomOrder") || []
+				const currentIndex = currentOrder.indexOf(message.text)
+
+				if (currentIndex < currentOrder.length - 1) {
+					// Swap with next item
+					const newOrder = [...currentOrder]
+					;[newOrder[currentIndex], newOrder[currentIndex + 1]] = [
+						newOrder[currentIndex + 1],
+						newOrder[currentIndex],
+					]
+
+					await updateGlobalState("apiConfigCustomOrder", newOrder)
+					await provider.postStateToWebview()
+				}
+			}
+			break
 		case "enhancementApiConfigId":
 			await updateGlobalState("enhancementApiConfigId", message.text)
 			await provider.postStateToWebview()

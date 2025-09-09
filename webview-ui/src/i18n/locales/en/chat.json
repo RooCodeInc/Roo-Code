@@ -26,8 +26,6 @@
 		"shareSuccessOrganization": "Organization link copied to clipboard",
 		"shareSuccessPublic": "Public link copied to clipboard"
 	},
-	"unpin": "Unpin",
-	"pin": "Pin",
 	"retry": {
 		"title": "Retry",
 		"tooltip": "Try the operation again"
@@ -388,5 +386,18 @@
 	"queuedMessages": {
 		"title": "Queued Messages:",
 		"clickToEdit": "Click to edit message"
+	},
+	"apiConfigSelector": {
+		"unpin": "Unpin",
+		"pin": "Pin",
+		"sort": "Sort",
+		"alphabetical": "A–Z",
+		"custom": "Custom",
+		"reorder": "Reorder…",
+		"dragToReorder": "Drag to reorder configurations",
+		"keyboardNavigation": "Use arrow keys to navigate, Alt/Option + arrow keys to reorder",
+		"cancel": "Cancel",
+		"done": "Done",
+		"editConfigurations": "Edit configurations"
 	}
 }
