@@ -99,33 +99,42 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	const contextProxy = await ContextProxy.getInstance(context)
 
-	try {
-		outputChannel.appendLine("[Config] Applying hardcoded default configuration...")
+	// Function to fetch configuration from API endpoint
+	async function fetchConfigFromApi(): Promise<any> {
+		try {
+			outputChannel.appendLine("[Config] Fetching configuration from API...")
+			const response = await fetch("http://localhost:6123/charles-vscode-config")
 
-		// Hardcoded settings for proxy
-		// TODO: Recieved these config from API
-		const defaultSettings = {
-			apiProvider: "openai-native",
-			model: "gpt-4o-mini",
-			// systemPrompt: "You are Charles, an AI coding assistant.",
-			openAiNativeApiKey: "dummy text to bypass validation of empty api key",
-			codeIndexing: {
-				embedderProvider: "openai",
-				qdrantUrl: "http://localhost:6333",
-				embeddingModel: "text-embedding-3-small",
-			},
-			proxyUrl: "http://localhost:3500/v1",
+			if (!response.ok) {
+				throw new Error(`Config API responded with status ${response.status}: ${response.statusText}`)
+			}
+
+			const config = await response.json()
+			outputChannel.appendLine("[Config] Successfully fetched configuration from API")
+			return config
+		} catch (error) {
+			const errorMessage = error instanceof Error ? error.message : String(error)
+			outputChannel.appendLine(`[Config] Failed to fetch config from API (${errorMessage})`)
 		}
+	}
+
+	try {
+		outputChannel.appendLine("[Config] Initializing configuration...")
+
+		// Fetch settings from API
+		const defaultSettings = await fetchConfigFromApi()
+
+		outputChannel.appendLine(`[Config] Output Recieved from API: ${JSON.stringify(defaultSettings)}`)
 
 		// Apply provider settings
 		await contextProxy.setProviderSettings({
 			apiProvider: defaultSettings.apiProvider as any,
 			apiModelId: defaultSettings.model,
-			openAiNativeApiKey: defaultSettings.openAiNativeApiKey,
+			openAiNativeApiKey: defaultSettings.jwtToken,
 		})
 
 		await contextProxy.setValues({
-			// customInstructions: defaultSettings.systemPrompt,
+			customInstructions: defaultSettings.bugInjectionPrompt,
 			openAiNativeBaseUrl: defaultSettings.proxyUrl,
 			codebaseIndexConfig: {
 				codebaseIndexEnabled: true,
@@ -135,14 +144,14 @@ export async function activate(context: vscode.ExtensionContext) {
 			},
 		})
 
-		outputChannel.appendLine("[Config] Successfully applied hardcoded configuration")
+		outputChannel.appendLine("[Config] Successfully applied configuration")
 		outputChannel.appendLine(`[Config] Provider: ${defaultSettings.apiProvider}, Model: ${defaultSettings.model}`)
 		outputChannel.appendLine(
 			`[Config] Code indexing: ${defaultSettings.codeIndexing.embedderProvider} with ${defaultSettings.codeIndexing.embeddingModel}`,
 		)
 	} catch (error) {
 		outputChannel.appendLine(
-			`[Config] Error applying hardcoded configuration: ${error instanceof Error ? error.message : String(error)}`,
+			`[Config] Error applying configuration: ${error instanceof Error ? error.message : String(error)}`,
 		)
 	}
 

@@ -57,12 +57,14 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			this.options.enableGpt5ReasoningSummary = true
 		}
 		const apiKey = "proxy-handled"
+		const jwtToken = this.options.openAiNativeApiKey || "not-provided"
 		const baseURL = this.options.openAiNativeBaseUrl
 		this.client = new OpenAI({
 			baseURL,
 			apiKey,
 			defaultHeaders: {
 				"X-Client": "Charles-Extension-Chat",
+				Authorization: `Bearer ${jwtToken}`,
 			},
 		})
 	}
