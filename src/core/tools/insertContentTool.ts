@@ -188,21 +188,8 @@ export async function insertContentTool(
 
 		await cline.diffViewProvider.reset()
 
-		// After completing file edits, process one queued user message if present
-		try {
-			if (!cline.messageQueueService.isEmpty()) {
-				const queued = cline.messageQueueService.dequeueMessage()
-				if (queued) {
-					setTimeout(() => {
-						cline
-							.submitUserMessage(queued.text, queued.images)
-							.catch((err) => console.error("[insertContentTool] Failed to submit queued message:", err))
-					}, 0)
-				}
-			}
-		} catch (e) {
-			console.error("[insertContentTool] Queue processing error:", e)
-		}
+		// Process any queued messages after file edit completes
+		cline.processQueuedMessages()
 	} catch (error) {
 		handleError("insert content", error)
 		await cline.diffViewProvider.reset()

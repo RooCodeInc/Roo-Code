@@ -2897,4 +2897,28 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	public get cwd() {
 		return this.workspacePath
 	}
+
+	/**
+	 * Process any queued messages by dequeuing and submitting them.
+	 * This ensures that queued user messages are sent when appropriate,
+	 * preventing them from getting stuck in the queue.
+	 *
+	 * @param context - Context string for logging (e.g., the calling tool name)
+	 */
+	public processQueuedMessages(): void {
+		try {
+			if (!this.messageQueueService.isEmpty()) {
+				const queued = this.messageQueueService.dequeueMessage()
+				if (queued) {
+					setTimeout(() => {
+						this.submitUserMessage(queued.text, queued.images).catch((err) =>
+							console.error(`[Task] Failed to submit queued message:`, err),
+						)
+					}, 0)
+				}
+			}
+		} catch (e) {
+			console.error(`[Task] Queue processing error:`, e)
+		}
+	}
 }

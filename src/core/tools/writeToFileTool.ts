@@ -308,23 +308,8 @@ export async function writeToFileTool(
 
 			await cline.diffViewProvider.reset()
 
-			// After completing file edits, process one queued user message if present
-			try {
-				if (!cline.messageQueueService.isEmpty()) {
-					const queued = cline.messageQueueService.dequeueMessage()
-					if (queued) {
-						setTimeout(() => {
-							cline
-								.submitUserMessage(queued.text, queued.images)
-								.catch((err) =>
-									console.error("[writeToFileTool] Failed to submit queued message:", err),
-								)
-						}, 0)
-					}
-				}
-			} catch (e) {
-				console.error("[writeToFileTool] Queue processing error:", e)
-			}
+			// Process any queued messages after file edit completes
+			cline.processQueuedMessages()
 
 			return
 		}
