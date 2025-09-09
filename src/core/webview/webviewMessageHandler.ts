@@ -2266,7 +2266,7 @@ export const webviewMessageHandler = async (
 					throw new Error(t("common:errors.manual_url_no_query"))
 				}
 
-				const query = new URLSearchParams(uri.query.replace(/\+/g, "%2B"))
+				const query = new URLSearchParams(uri.query)
 				const code = query.get("code")
 				const state = query.get("state")
 				const organizationId = query.get("organizationId")
