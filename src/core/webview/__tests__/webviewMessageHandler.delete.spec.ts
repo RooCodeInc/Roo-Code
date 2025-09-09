@@ -158,8 +158,8 @@ describe("webviewMessageHandler delete functionality", () => {
 				messageTs: 9999,
 			})
 
-			// Verify error message was shown
-			expect(vscode.window.showErrorMessage).toHaveBeenCalledWith("Message with timestamp 9999 not found")
+			// Verify error message was shown (expecting translation key since t() is mocked to return the key)
+			expect(vscode.window.showErrorMessage).toHaveBeenCalledWith("common:errors.message.message_not_found")
 
 			// Verify no truncation occurred
 			expect(getCurrentTaskMock.overwriteClineMessages).not.toHaveBeenCalled()
