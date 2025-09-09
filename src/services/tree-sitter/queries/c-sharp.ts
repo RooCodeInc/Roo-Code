@@ -7,9 +7,9 @@ export default `
 
 ; Namespace declarations (including file-scoped)
 (namespace_declaration
-  name: (identifier) @name) @definition.namespace
+  name: (qualified_name) @name) @definition.namespace
 (file_scoped_namespace_declaration
-  name: (identifier) @name) @definition.namespace
+  name: (qualified_name) @name) @definition.namespace
 
 ; Class declarations (including generic, static, abstract, partial, nested)
 (class_declaration
@@ -54,6 +54,12 @@ export default `
 ; Generic type parameters
 (type_parameter
   name: (identifier) @name) @definition.type_parameter
+
+; Field declarations
+(field_declaration
+  (variable_declaration
+    (variable_declarator
+      name: (identifier) @name))) @definition.field
 
 ; LINQ expressions
 (query_expression) @definition.linq_expression
