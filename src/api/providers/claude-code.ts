@@ -16,8 +16,6 @@ import { ApiHandlerOptions } from "../../shared/api"
 
 export class ClaudeCodeHandler extends BaseProvider implements ApiHandler {
 	private options: ApiHandlerOptions
-	// Claude Code built-in tools that should be filtered out
-	private static readonly CLAUDE_CODE_BUILTIN_TOOLS = new Set(["ExitPlanMode", "BashOutput", "KillBash"])
 
 	constructor(options: ApiHandlerOptions) {
 		super()
@@ -118,11 +116,7 @@ export class ClaudeCodeHandler extends BaseProvider implements ApiHandler {
 							}
 							break
 						case "tool_use":
-							// Filter out Claude Code built-in tools
-							if (!ClaudeCodeHandler.CLAUDE_CODE_BUILTIN_TOOLS.has(content.name)) {
-								console.error(`tool_use is not supported yet. Received: ${JSON.stringify(content)}`)
-							}
-							// Silently ignore Claude Code built-in tools
+							console.error(`tool_use is not supported yet. Received: ${JSON.stringify(content)}`)
 							break
 					}
 				}
