@@ -323,6 +323,8 @@ export const WatsonxAI = ({
 							<label className="block font-medium mb-1">Username</label>
 						</VSCodeTextField>
 					</div>
+				</>
+			)}
 
 					<div className="w-full mb-1">
 						<label className="block font-medium mb-1">Authentication Type</label>
