@@ -99,6 +99,10 @@ const config: Config = {
 					"0%, 100%": { opacity: "0.6" },
 					"50%": { opacity: "0.8" },
 				},
+				shimmer: {
+					"0%": { transform: "translateX(-100%)" },
+					"100%": { transform: "translateX(200%)" },
+				},
 			},
 			animation: {
 				"accordion-down": "accordion-down 0.2s ease-out",
