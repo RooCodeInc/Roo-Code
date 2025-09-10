@@ -74,7 +74,7 @@
 		"selectModelPlaceholder": "Sélectionner un modèle",
 		"ollamaUrlLabel": "URL Ollama :",
 		"ollamaBaseUrlLabel": "URL de base Ollama",
-		"qdrantUrlLabel": "URL de base de données vectorielle",
+		"qdrantUrlLabel": "URL de la base de données vectorielle",
 		"qdrantKeyLabel": "Clé Qdrant :",
 		"qdrantApiKeyLabel": "Clé API de la base de données vectorielle",
 		"qdrantApiKeyPlaceholder": "Entrez votre clé API Qdrant (optionnel)",
