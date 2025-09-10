@@ -1941,10 +1941,16 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						}
 
 						switch (chunk.type) {
-							case "reasoning":
+							case "reasoning": {
 								reasoningMessage += chunk.text
-								await this.say("reasoning", reasoningMessage, undefined, true)
+								// Add line breaks before **Title** patterns for better formatting
+								const formattedReasoning = reasoningMessage.replace(
+									/([^\n])\*\*([^*\n]+)\*\*/g,
+									"$1\n\n**$2**",
+								)
+								await this.say("reasoning", formattedReasoning, undefined, true)
 								break
+							}
 							case "usage":
 								inputTokens += chunk.inputTokens
 								outputTokens += chunk.outputTokens
@@ -2238,7 +2244,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				// Note: updateApiReqMsg() is now called from within drainStreamInBackgroundToFindAllUsage
 				// to ensure usage data is captured even when the stream is interrupted. The background task
 				// uses local variables to accumulate usage data before atomically updating the shared state.
-				await this.persistGpt5Metadata(reasoningMessage)
+				await this.persistGpt5Metadata()
 				await this.saveClineMessages()
 				await this.providerRef.deref()?.postStateToWebview()
 
@@ -2824,10 +2830,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	}
 
 	/**
-	 * Persist GPT-5 per-turn metadata (previous_response_id, instructions, reasoning_summary)
+	 * Persist GPT-5 per-turn metadata (previous_response_id, instructions)
 	 * onto the last complete assistant say("text") message.
+	 * Note: reasoning_summary is no longer persisted as reasoning is now sent as separate delta blocks.
 	 */
-	private async persistGpt5Metadata(reasoningMessage?: string): Promise<void> {
+	private async persistGpt5Metadata(): Promise<void> {
 		try {
 			const modelId = this.api.getModel().id
 			if (!modelId || !modelId.startsWith("gpt-5")) return
@@ -2848,7 +2855,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					...(msg.metadata.gpt5 ?? {}),
 					previous_response_id: lastResponseId,
 					instructions: this.lastUsedInstructions,
-					reasoning_summary: (reasoningMessage ?? "").trim() || undefined,
+					// reasoning_summary is no longer stored as reasoning is sent as separate blocks
 				}
 				msg.metadata.gpt5 = gpt5Metadata
 			}
