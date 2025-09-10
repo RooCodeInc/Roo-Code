@@ -142,7 +142,7 @@ const DismissibleUpsell = memo(
 					}
 				}}>
 				{icon && icon}
-				<div className="">{children}</div>
+				<div>{children}</div>
 				<button
 					className={buttonClasses}
 					onClick={(e) => {
