@@ -297,6 +297,11 @@ export async function checkpointDiff(task: Task, { ts, previousCommitHash, commi
 
 	const checkpoints = task.clineMessages.filter(({ say }) => say === "checkpoint_saved").map(({ text }) => text!)
 
+	if (["from-init", "full"].includes(mode) && checkpoints.length < 1) {
+		vscode.window.showInformationMessage("No first checkpoint to compare.")
+		return
+	}
+
 	const idx = checkpoints.indexOf(commitHash)
 	switch (mode) {
 		case "checkpoint":
