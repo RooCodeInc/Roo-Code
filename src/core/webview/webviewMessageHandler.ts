@@ -2998,5 +2998,33 @@ export const webviewMessageHandler = async (
 
 			break
 		}
+		case "dismissUpsell": {
+			if (message.upsellId) {
+				// Get current list of dismissed upsells
+				const dismissedUpsells = getGlobalState("dismissedUpsells") || []
+
+				// Add the new upsell ID if not already present
+				if (!dismissedUpsells.includes(message.upsellId)) {
+					const updatedList = [...dismissedUpsells, message.upsellId]
+					await updateGlobalState("dismissedUpsells", updatedList)
+				}
+
+				// Send updated list back to webview
+				await provider.postMessageToWebview({
+					type: "dismissedUpsells",
+					list: [...dismissedUpsells, message.upsellId],
+				})
+			}
+			break
+		}
+		case "getDismissedUpsells": {
+			// Send the current list of dismissed upsells to the webview
+			const dismissedUpsells = getGlobalState("dismissedUpsells") || []
+			await provider.postMessageToWebview({
+				type: "dismissedUpsells",
+				list: dismissedUpsells,
+			})
+			break
+		}
 	}
 }

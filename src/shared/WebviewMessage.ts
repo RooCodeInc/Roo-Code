@@ -222,6 +222,8 @@ export interface WebviewMessage {
 		| "queueMessage"
 		| "removeQueuedMessage"
 		| "editQueuedMessage"
+		| "dismissUpsell"
+		| "getDismissedUpsells"
 	text?: string
 	editedMessageContent?: string
 	tab?: "settings" | "history" | "mcp" | "modes" | "chat" | "marketplace" | "cloud"
@@ -267,6 +269,8 @@ export interface WebviewMessage {
 	visibility?: ShareVisibility // For share visibility
 	hasContent?: boolean // For checkRulesDirectoryResult
 	checkOnly?: boolean // For deleteCustomMode check
+	upsellId?: string // For dismissUpsell
+	list?: string[] // For dismissedUpsells response
 	codeIndexSettings?: {
 		// Global state settings
 		codebaseIndexEnabled: boolean
