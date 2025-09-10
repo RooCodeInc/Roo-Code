@@ -165,6 +165,7 @@ vi.mock("vscode", () => ({
 		onDidChangeTextDocument: vi.fn(() => ({ dispose: vi.fn() })),
 		onDidOpenTextDocument: vi.fn(() => ({ dispose: vi.fn() })),
 		onDidCloseTextDocument: vi.fn(() => ({ dispose: vi.fn() })),
+		onDidChangeWorkspaceFolders: vi.fn(() => ({ dispose: vi.fn() })),
 	},
 	env: {
 		uriScheme: "vscode",
