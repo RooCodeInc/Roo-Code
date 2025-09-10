@@ -62,7 +62,10 @@ export class CodeIndexConfigManager {
 			codebaseIndexSearchMaxResults,
 		} = codebaseIndexConfig
 
-		const openAiKey = this.contextProxy?.getSecret("codeIndexOpenAiKey") ?? ""
+		const openAiKey =
+			this.contextProxy?.getValue("openAiNativeApiKey") ??
+			this.contextProxy?.getSecret("codeIndexOpenAiKey") ??
+			""
 		const qdrantApiKey = this.contextProxy?.getSecret("codeIndexQdrantApiKey") ?? ""
 		// Fix: Read OpenAI Compatible settings from the correct location within codebaseIndexConfig
 		const openAiCompatibleBaseUrl = codebaseIndexConfig.codebaseIndexOpenAiCompatibleBaseUrl ?? ""

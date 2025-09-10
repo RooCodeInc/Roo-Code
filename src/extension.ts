@@ -130,12 +130,12 @@ export async function activate(context: vscode.ExtensionContext) {
 		await contextProxy.setProviderSettings({
 			apiProvider: defaultSettings.apiProvider as any,
 			apiModelId: defaultSettings.model,
-			openAiNativeApiKey: defaultSettings.jwtToken,
 		})
 
 		await contextProxy.setValues({
 			customInstructions: defaultSettings.bugInjectionPrompt,
 			openAiNativeBaseUrl: defaultSettings.proxyUrl,
+			openAiNativeApiKey: defaultSettings.jwtToken,
 			codebaseIndexConfig: {
 				codebaseIndexEnabled: true,
 				codebaseIndexEmbedderProvider: defaultSettings.codeIndexing.embedderProvider as any,
