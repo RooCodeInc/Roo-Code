@@ -56,7 +56,7 @@ export const CloudUpsellDialog = ({ open, onOpenChange, onConnect }: CloudUpsell
 					{renderCloudBenefitsContent(t)}
 
 					<div className="flex flex-col gap-4">
-						<Button onClick={onConnect} className="w-7/8">
+						<Button onClick={onConnect} className="w-full">
 							{t("cloud:connect")}
 						</Button>
 					</div>

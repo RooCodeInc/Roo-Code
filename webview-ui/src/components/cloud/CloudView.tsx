@@ -9,7 +9,7 @@ import { vscode } from "@src/utils/vscode"
 import { telemetryClient } from "@src/utils/TelemetryClient"
 import { ToggleSwitch } from "@/components/ui/toggle-switch"
 import { renderCloudBenefitsContent } from "./CloudUpsellDialog"
-
+import { TriangleAlert } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 // Define the production URL constant locally to avoid importing from cloud package in tests
@@ -217,12 +217,10 @@ export const CloudView = ({ userInfo, isAuthenticated, cloudApiUrl, onDone }: Cl
 			) : (
 				<>
 					<div className="flex flex-col items-start gap-4 px-8">
-						<div className={cn("mb-4", authInProgress && "opacity-50")}>
-							{renderCloudBenefitsContent(t)}
-						</div>
+						<div className={cn(authInProgress && "opacity-50")}>{renderCloudBenefitsContent(t)}</div>
 
 						{!authInProgress && (
-							<VSCodeButton appearance="primary" onClick={handleConnectClick} className="w-7/8">
+							<VSCodeButton appearance="primary" onClick={handleConnectClick} className="w-full">
 								{t("cloud:connect")}
 							</VSCodeButton>
 						)}
@@ -273,8 +271,9 @@ export const CloudView = ({ userInfo, isAuthenticated, cloudApiUrl, onDone }: Cl
 				</>
 			)}
 			{cloudApiUrl && cloudApiUrl !== PRODUCTION_ROO_CODE_API_URL && (
-				<div className="mt-6 flex justify-center">
-					<div className="inline-flex items-center px-3 py-1 gap-1 rounded-full bg-vscode-badge-background/50 text-vscode-badge-foreground text-xs">
+				<div className="ml-8 mt-6 flex justify-start">
+					<div className="inline-flex items-center gap-2 text-xs">
+						<TriangleAlert className="size-4 text-vscode-descriptionForeground" />
 						<span className="text-vscode-foreground/75">{t("cloud:cloudUrlPillLabel")}: </span>
 						<button
 							onClick={handleOpenCloudUrl}
