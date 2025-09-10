@@ -132,7 +132,7 @@ describe("DismissibleUpsell", () => {
 
 	it("remains visible if not in the dismissed list", async () => {
 		render(
-			<DismissibleUpsell id="test-upsell">
+			<DismissibleUpsell upsellId="test-upsell">
 				<div>Test content</div>
 			</DismissibleUpsell>,
 		)
@@ -164,7 +164,7 @@ describe("DismissibleUpsell", () => {
 
 	it("dismiss button has proper accessibility attributes", () => {
 		render(
-			<DismissibleUpsell id="test-upsell">
+			<DismissibleUpsell upsellId="test-upsell">
 				<div>Test content</div>
 			</DismissibleUpsell>,
 		)
