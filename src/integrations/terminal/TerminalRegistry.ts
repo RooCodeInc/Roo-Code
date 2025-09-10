@@ -95,9 +95,23 @@ export class TerminalRegistry {
 					}
 
 					if (!terminal.running) {
+						// Handle race condition: end event arrived before start event could mark terminal as running
+						if (process) {
+							console.warn(
+								"[TerminalRegistry] Shell execution end event received before terminal marked as running (race condition). Completing process anyway:",
+								{ terminalId: terminal?.id, command: process?.command, exitCode: e.exitCode },
+							)
+
+							// Complete the process even though running flag wasn't set
+							terminal.shellExecutionComplete(exitDetails)
+							terminal.busy = false
+							return
+						}
+
+						// No process exists - this is an actual error
 						console.error(
-							"[TerminalRegistry] Shell execution end event received, but process is not running for terminal:",
-							{ terminalId: terminal?.id, command: process?.command, exitCode: e.exitCode },
+							"[TerminalRegistry] Shell execution end event received, but process is not running and no process exists:",
+							{ terminalId: terminal?.id, exitCode: e.exitCode },
 						)
 
 						terminal.busy = false
