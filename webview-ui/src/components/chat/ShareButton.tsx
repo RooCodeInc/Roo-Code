@@ -30,6 +30,7 @@ interface ShareButtonProps {
 export const ShareButton = ({ item, disabled = false, showLabel = false }: ShareButtonProps) => {
 	const [shareDropdownOpen, setShareDropdownOpen] = useState(false)
 	const [shareSuccess, setShareSuccess] = useState<{ visibility: ShareVisibility; url: string } | null>(null)
+	const [wasConnectInitiatedFromShare, setWasConnectInitiatedFromShare] = useState(false)
 	const { t } = useTranslation()
 	const { cloudUserInfo } = useExtensionState()
 
@@ -45,9 +46,17 @@ export const ShareButton = ({ item, disabled = false, showLabel = false }: Share
 		onAuthSuccess: () => {
 			// Auto-open share dropdown after successful authentication
 			setShareDropdownOpen(true)
+			setWasConnectInitiatedFromShare(false)
 		},
-		autoOpenOnAuth: true,
 	})
+
+	// Auto-open popover when user becomes authenticated after clicking Connect from share button
+	useEffect(() => {
+		if (wasConnectInitiatedFromShare && cloudIsAuthenticated) {
+			setShareDropdownOpen(true)
+			setWasConnectInitiatedFromShare(false)
+		}
+	}, [wasConnectInitiatedFromShare, cloudIsAuthenticated])
 
 	// Listen for share success messages from the extension
 	useEffect(() => {
@@ -89,6 +98,7 @@ export const ShareButton = ({ item, disabled = false, showLabel = false }: Share
 	}
 
 	const handleConnectToCloud = () => {
+		setWasConnectInitiatedFromShare(true)
 		handleConnect()
 		setShareDropdownOpen(false)
 	}
