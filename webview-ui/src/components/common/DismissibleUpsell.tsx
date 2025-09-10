@@ -44,7 +44,7 @@ const DismissibleUpsell = memo(
 		dismissOnClick = false,
 	}: DismissibleUpsellProps) => {
 		const { t } = useAppTranslation()
-		const [isVisible, setIsVisible] = useState(true)
+		const [isVisible, setIsVisible] = useState(false)
 		const isMountedRef = useRef(true)
 
 		useEffect(() => {
@@ -63,8 +63,8 @@ const DismissibleUpsell = memo(
 				// Add null/undefined check for message
 				if (message && message.type === "dismissedUpsells" && Array.isArray(message.list)) {
 					// Check if this upsell has been dismissed
-					if (message.list.includes(upsellId)) {
-						setIsVisible(false)
+					if (!message.list.includes(upsellId)) {
+						setIsVisible(true)
 					}
 				}
 			}

@@ -33,14 +33,31 @@ describe("DismissibleUpsell", () => {
 		vi.clearAllTimers()
 	})
 
-	it("renders children content", () => {
+	// Helper function to make the component visible
+	const makeUpsellVisible = () => {
+		const messageEvent = new MessageEvent("message", {
+			data: {
+				type: "dismissedUpsells",
+				list: [], // Empty list means no upsells are dismissed
+			},
+		})
+		window.dispatchEvent(messageEvent)
+	}
+
+	it("renders children content", async () => {
 		render(
 			<DismissibleUpsell upsellId="test-upsell">
 				<div>Test content</div>
 			</DismissibleUpsell>,
 		)
 
-		expect(screen.getByText("Test content")).toBeInTheDocument()
+		// Component starts hidden, make it visible
+		makeUpsellVisible()
+
+		// Wait for component to become visible
+		await waitFor(() => {
+			expect(screen.getByText("Test content")).toBeInTheDocument()
+		})
 	})
 
 	it("requests dismissed upsells list on mount", () => {
@@ -62,6 +79,14 @@ describe("DismissibleUpsell", () => {
 				<div>Test content</div>
 			</DismissibleUpsell>,
 		)
+
+		// Make component visible first
+		makeUpsellVisible()
+
+		// Wait for component to be visible
+		await waitFor(() => {
+			expect(screen.getByText("Test content")).toBeInTheDocument()
+		})
 
 		// Find and click the dismiss button
 		const dismissButton = screen.getByRole("button", { name: /dismiss/i })
@@ -89,6 +114,9 @@ describe("DismissibleUpsell", () => {
 			</DismissibleUpsell>,
 		)
 
+		// Component starts hidden by default
+		expect(container.firstChild).toBeNull()
+
 		// Simulate receiving a message that this upsell is dismissed
 		const messageEvent = new MessageEvent("message", {
 			data: {
@@ -98,7 +126,7 @@ describe("DismissibleUpsell", () => {
 		})
 		window.dispatchEvent(messageEvent)
 
-		// Check that the component is no longer visible
+		// Check that the component remains hidden
 		await waitFor(() => {
 			expect(container.firstChild).toBeNull()
 		})
@@ -126,22 +154,38 @@ describe("DismissibleUpsell", () => {
 		})
 	})
 
-	it("applies the className prop to the container", () => {
+	it("applies the className prop to the container", async () => {
 		const { container } = render(
 			<DismissibleUpsell upsellId="test-upsell" className="custom-class">
 				<div>Test content</div>
 			</DismissibleUpsell>,
 		)
 
+		// Make component visible
+		makeUpsellVisible()
+
+		// Wait for component to be visible
+		await waitFor(() => {
+			expect(container.firstChild).not.toBeNull()
+		})
+
 		expect(container.firstChild).toHaveClass("custom-class")
 	})
 
-	it("dismiss button has proper accessibility attributes", () => {
+	it("dismiss button has proper accessibility attributes", async () => {
 		render(
 			<DismissibleUpsell upsellId="test-upsell">
 				<div>Test content</div>
 			</DismissibleUpsell>,
 		)
+
+		// Make component visible
+		makeUpsellVisible()
+
+		// Wait for component to be visible
+		await waitFor(() => {
+			expect(screen.getByText("Test content")).toBeInTheDocument()
+		})
 
 		const dismissButton = screen.getByRole("button", { name: /dismiss/i })
 		expect(dismissButton).toHaveAttribute("aria-label", "Dismiss")
@@ -156,6 +200,14 @@ describe("DismissibleUpsell", () => {
 				<div>Test content</div>
 			</DismissibleUpsell>,
 		)
+
+		// Make component visible
+		makeUpsellVisible()
+
+		// Wait for component to be visible
+		await waitFor(() => {
+			expect(screen.getByText("Test content")).toBeInTheDocument()
+		})
 
 		const dismissButton = screen.getByRole("button", { name: /dismiss/i })
 
@@ -202,12 +254,20 @@ describe("DismissibleUpsell", () => {
 		expect(true).toBe(true)
 	})
 
-	it("handles invalid/malformed messages gracefully", () => {
+	it("handles invalid/malformed messages gracefully", async () => {
 		render(
 			<DismissibleUpsell upsellId="test-upsell">
 				<div>Test content</div>
 			</DismissibleUpsell>,
 		)
+
+		// First make it visible
+		makeUpsellVisible()
+
+		// Wait for component to be visible
+		await waitFor(() => {
+			expect(screen.getByText("Test content")).toBeInTheDocument()
+		})
 
 		// Send various malformed messages
 		const malformedMessages = [
@@ -236,6 +296,14 @@ describe("DismissibleUpsell", () => {
 			</DismissibleUpsell>,
 		)
 
+		// Make component visible
+		makeUpsellVisible()
+
+		// Wait for component to be visible
+		await waitFor(() => {
+			expect(screen.getByText("Test content")).toBeInTheDocument()
+		})
+
 		const dismissButton = screen.getByRole("button", { name: /dismiss/i })
 		fireEvent.click(dismissButton)
 
@@ -255,12 +323,20 @@ describe("DismissibleUpsell", () => {
 		})
 	})
 
-	it("uses separate id and className props correctly", () => {
+	it("uses separate id and className props correctly", async () => {
 		const { container } = render(
 			<DismissibleUpsell upsellId="unique-id" className="styling-class">
 				<div>Test content</div>
 			</DismissibleUpsell>,
 		)
+
+		// Make component visible
+		makeUpsellVisible()
+
+		// Wait for component to be visible
+		await waitFor(() => {
+			expect(container.firstChild).not.toBeNull()
+		})
 
 		// className should be applied to the container
 		expect(container.firstChild).toHaveClass("styling-class")
@@ -275,13 +351,21 @@ describe("DismissibleUpsell", () => {
 		})
 	})
 
-	it("calls onClick when the container is clicked", () => {
+	it("calls onClick when the container is clicked", async () => {
 		const onClick = vi.fn()
 		render(
 			<DismissibleUpsell upsellId="test-upsell" onClick={onClick}>
 				<div>Test content</div>
 			</DismissibleUpsell>,
 		)
+
+		// Make component visible
+		makeUpsellVisible()
+
+		// Wait for component to be visible
+		await waitFor(() => {
+			expect(screen.getByText("Test content")).toBeInTheDocument()
+		})
 
 		// Click on the container (not the dismiss button)
 		const container = screen.getByText("Test content").parentElement as HTMLElement
@@ -290,7 +374,7 @@ describe("DismissibleUpsell", () => {
 		expect(onClick).toHaveBeenCalledTimes(1)
 	})
 
-	it("does not call onClick when dismiss button is clicked", () => {
+	it("does not call onClick when dismiss button is clicked", async () => {
 		const onClick = vi.fn()
 		const onDismiss = vi.fn()
 		render(
@@ -298,6 +382,14 @@ describe("DismissibleUpsell", () => {
 				<div>Test content</div>
 			</DismissibleUpsell>,
 		)
+
+		// Make component visible
+		makeUpsellVisible()
+
+		// Wait for component to be visible
+		await waitFor(() => {
+			expect(screen.getByText("Test content")).toBeInTheDocument()
+		})
 
 		// Click the dismiss button
 		const dismissButton = screen.getByRole("button", { name: /dismiss/i })
@@ -308,12 +400,20 @@ describe("DismissibleUpsell", () => {
 		expect(onDismiss).toHaveBeenCalledTimes(1)
 	})
 
-	it("adds cursor-pointer class when onClick is provided", () => {
+	it("adds cursor-pointer class when onClick is provided", async () => {
 		const { container, rerender } = render(
 			<DismissibleUpsell upsellId="test-upsell" onClick={() => {}}>
 				<div>Test content</div>
 			</DismissibleUpsell>,
 		)
+
+		// Make component visible
+		makeUpsellVisible()
+
+		// Wait for component to be visible
+		await waitFor(() => {
+			expect(container.firstChild).not.toBeNull()
+		})
 
 		// Should have cursor-pointer when onClick is provided
 		expect(container.firstChild).toHaveClass("cursor-pointer")
@@ -337,6 +437,14 @@ describe("DismissibleUpsell", () => {
 				<div>Test content</div>
 			</DismissibleUpsell>,
 		)
+
+		// Make component visible
+		makeUpsellVisible()
+
+		// Wait for component to be visible
+		await waitFor(() => {
+			expect(screen.getByText("Test content")).toBeInTheDocument()
+		})
 
 		// Click on the container
 		const containerDiv = screen.getByText("Test content").parentElement as HTMLElement
@@ -371,6 +479,14 @@ describe("DismissibleUpsell", () => {
 			</DismissibleUpsell>,
 		)
 
+		// Make component visible
+		makeUpsellVisible()
+
+		// Wait for component to be visible
+		await waitFor(() => {
+			expect(screen.getByText("Test content")).toBeInTheDocument()
+		})
+
 		const containerDiv = screen.getByText("Test content").parentElement as HTMLElement
 		fireEvent.click(containerDiv)
 
@@ -396,6 +512,14 @@ describe("DismissibleUpsell", () => {
 			</DismissibleUpsell>,
 		)
 
+		// Make component visible
+		makeUpsellVisible()
+
+		// Wait for component to be visible
+		await waitFor(() => {
+			expect(screen.getByText("Test content")).toBeInTheDocument()
+		})
+
 		const containerDiv = screen.getByText("Test content").parentElement as HTMLElement
 		fireEvent.click(containerDiv)
 
@@ -414,6 +538,14 @@ describe("DismissibleUpsell", () => {
 				<div>Test content</div>
 			</DismissibleUpsell>,
 		)
+
+		// Make component visible
+		makeUpsellVisible()
+
+		// Wait for component to be visible
+		await waitFor(() => {
+			expect(screen.getByText("Test content")).toBeInTheDocument()
+		})
 
 		const containerDiv = screen.getByText("Test content").parentElement as HTMLElement
 		fireEvent.click(containerDiv)
