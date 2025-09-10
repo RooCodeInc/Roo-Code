@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next"
 import { Dialog, DialogContent, DialogHeader, Button } from "@/components/ui"
 import RooHero from "../welcome/RooHero"
 import { CircleDollarSign, FileStack, Router, Share } from "lucide-react"
+import { DialogTitle } from "@radix-ui/react-dialog"
 
 interface CloudUpsellDialogProps {
 	open: boolean
@@ -36,7 +37,6 @@ export const renderCloudBenefitsContent = (t: any) => {
 						{t("cloud:cloudBenefitHistory")}
 					</li>
 				</ul>
-				<p>{t("cloud:cloudUpsellPostscript")}</p>
 			</div>
 		</div>
 	)
@@ -48,7 +48,9 @@ export const CloudUpsellDialog = ({ open, onOpenChange, onConnect }: CloudUpsell
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent className="max-w-sm">
-				<DialogHeader>{/* Intentionally empty */}</DialogHeader>
+				<DialogHeader>
+					<DialogTitle>{/* Intentionally empty */}</DialogTitle>
+				</DialogHeader>
 
 				<div className="text-left space-y-6">
 					{renderCloudBenefitsContent(t)}

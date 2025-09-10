@@ -100,6 +100,7 @@ export const ShareButton = ({ item, disabled = false, showLabel = false }: Share
 		if (!cloudIsAuthenticated) {
 			// Show modal for unauthenticated users
 			openUpsell()
+			telemetryClient.capture(TelemetryEventName.SHARE_CONNECT_TO_CLOUD_CLICKED)
 		} else {
 			// Show popover for authenticated users
 			setShareDropdownOpen(true)

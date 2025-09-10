@@ -95,18 +95,18 @@ const DismissibleUpsell = memo(
 
 		const variants = {
 			banner: {
-				container: "p-1 bg-vscode-button-background text-vscode-button-foreground",
-				button: "text-vscode-button-foreground hover:bg-white/10",
+				container: "p-2 bg-vscode-button-background text-vscode-button-foreground",
+				button: "text-vscode-button-foreground",
 			},
 			default: {
 				container: "bg-vscode-notifications-background text-vscode-notifications-foreground",
-				button: "text-vscode-notifications-foreground hover:bg-vscode-toolbar-hoverBackground",
+				button: "text-vscode-notifications-foreground",
 			},
 		}
 		// Build container classes based on variant and presence of click handler
 		const containerClasses = [
-			"relative flex items-start gap-1",
-			"text-sm ",
+			"relative flex items-start justify-between gap-1",
+			"text-sm",
 			variants[variant].container,
 			onClick && "cursor-pointer hover:opacity-90 transition-opacity duration-200",
 			className,
@@ -116,12 +116,12 @@ const DismissibleUpsell = memo(
 
 		// Build button classes based on variant
 		const buttonClasses = [
-			"p-[0.25em] flex items-center justify-center",
+			"flex items-center justify-center",
 			"rounded",
 			"bg-transparent",
 			"border-none",
 			"cursor-pointer",
-			"transition-colors duration-200",
+			"hover:opacity-50 transition-opacity duration-200",
 			variants[variant].button,
 			"focus:outline focus:outline-1 focus:outline-vscode-focusBorder focus:outline-offset-1",
 		].join(" ")
@@ -137,7 +137,7 @@ const DismissibleUpsell = memo(
 						handleDismiss()
 					}
 				}}>
-				<div className="">{children}</div>
+				<div>{children}</div>
 				<button
 					className={buttonClasses}
 					onClick={(e) => {

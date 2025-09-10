@@ -53,9 +53,6 @@ export const useCloudUpsell = (options: UseCloudUpsellOptions = {}) => {
 		initiatedAuthRef.current = true
 		setShouldOpenOnAuth(true)
 
-		// Send telemetry for connect to cloud action
-		telemetryClient.capture(TelemetryEventName.SHARE_CONNECT_TO_CLOUD_CLICKED)
-
 		// Send message to VS Code to initiate sign in
 		vscode.postMessage({ type: "rooCloudSignIn" })
 
