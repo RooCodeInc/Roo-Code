@@ -19,6 +19,7 @@
 	"pasteCallbackUrl": "Copy the redirect URL from your browser and paste it here:",
 	"startOver": "Start over",
 	"upsell": {
+		"autoApprovePowerUser": "Giving Roo some independence? Control it from anywhere with Roo Code Cloud. Click to learn more.",
 		"longRunningTask": "This might take a while. Continue from anywhere with Cloud."
 	}
 }
