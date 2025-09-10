@@ -18,5 +18,10 @@
 	"authWaiting": "Kimlik doğrulama tamamlanması bekleniyor...",
 	"havingTrouble": "Sorun yaşıyor musun?",
 	"pasteCallbackUrl": "Tarayıcından redirect URL'sini kopyala ve buraya yapıştır:",
-	"startOver": "Baştan başla"
+	"startOver": "Baştan başla",
+	"upsell": {
+		"autoApprovePowerUser": "Roo'ya biraz bağımsızlık mı veriyorsunuz? Roo Code Cloud ile onu her yerden kontrol edin. <learnMoreLink>Daha fazla bilgi edinin</learnMoreLink>.",
+		"longRunningTask": "Bu biraz zaman alabilir. Bulut ile her yerden devam edin.",
+		"taskList": "Roo Code Cloud burada: görevlerinizi her yerden takip edin ve kontrol edin. <learnMoreLink>Daha fazla bilgi edinin</learnMoreLink>."
+	}
 }

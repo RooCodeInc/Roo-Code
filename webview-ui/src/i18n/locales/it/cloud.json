@@ -18,5 +18,10 @@
 	"authWaiting": "In attesa del completamento dell'autenticazione...",
 	"havingTrouble": "Hai problemi?",
 	"pasteCallbackUrl": "Copia l'URL di redirect dal tuo browser e incollalo qui:",
-	"startOver": "Ricomincia"
+	"startOver": "Ricomincia",
+	"upsell": {
+		"autoApprovePowerUser": "Vuoi dare un po' di indipendenza a Roo? Controllalo da qualsiasi luogo con Roo Code Cloud. <learnMoreLink>Scopri di più</learnMoreLink>.",
+		"longRunningTask": "Potrebbe volerci un po' di tempo. Continua da qualsiasi lugar con il Cloud.",
+		"taskList": "Roo Code Cloud è qui: segui e controlla le tue attività da qualsiasi luogo. <learnMoreLink>Scopri di più</learnMoreLink>."
+	}
 }
