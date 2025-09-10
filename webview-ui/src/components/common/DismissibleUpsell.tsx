@@ -1,11 +1,14 @@
-import { memo, ReactNode, useEffect, useState } from "react"
+import { memo, ReactNode, useEffect, useState, useRef } from "react"
 import styled from "styled-components"
 
 import { vscode } from "@src/utils/vscode"
+import { useAppTranslation } from "@src/i18n/TranslationContext"
 
 interface DismissibleUpsellProps {
 	/** Required unique identifier for this upsell */
-	className: string
+	id: string
+	/** Optional CSS class name for styling */
+	className?: string
 	/** Content to display inside the upsell */
 	children: ReactNode
 	/** Visual variant of the upsell */
@@ -84,37 +87,50 @@ const DismissIcon = () => (
 	</svg>
 )
 
-const DismissibleUpsell = memo(({ className, children, variant = "banner", onDismiss }: DismissibleUpsellProps) => {
+const DismissibleUpsell = memo(({ id, className, children, variant = "banner", onDismiss }: DismissibleUpsellProps) => {
+	const { t } = useAppTranslation()
 	const [isVisible, setIsVisible] = useState(true)
+	const isMountedRef = useRef(true)
 
 	useEffect(() => {
+		// Track mounted state
+		isMountedRef.current = true
+
 		// Request the current list of dismissed upsells from the extension
 		vscode.postMessage({ type: "getDismissedUpsells" })
 
 		// Listen for the response
 		const handleMessage = (event: MessageEvent) => {
+			// Only update state if component is still mounted
+			if (!isMountedRef.current) return
+
 			const message = event.data
-			if (message.type === "dismissedUpsells" && Array.isArray(message.list)) {
+			// Add null/undefined check for message
+			if (message && message.type === "dismissedUpsells" && Array.isArray(message.list)) {
 				// Check if this upsell has been dismissed
-				if (message.list.includes(className)) {
+				if (message.list.includes(id)) {
 					setIsVisible(false)
 				}
 			}
 		}
 
 		window.addEventListener("message", handleMessage)
-		return () => window.removeEventListener("message", handleMessage)
-	}, [className])
+		return () => {
+			isMountedRef.current = false
+			window.removeEventListener("message", handleMessage)
+		}
+	}, [id])
 
-	const handleDismiss = () => {
-		// Hide the upsell immediately
-		setIsVisible(false)
-
-		// Notify the extension to persist the dismissal
+	const handleDismiss = async () => {
+		// First notify the extension to persist the dismissal
+		// This ensures the message is sent even if the component unmounts quickly
 		vscode.postMessage({
 			type: "dismissUpsell",
-			upsellId: className,
+			upsellId: id,
 		})
+
+		// Then hide the upsell
+		setIsVisible(false)
 
 		// Call the optional callback
 		onDismiss?.()
@@ -131,8 +147,8 @@ const DismissibleUpsell = memo(({ className, children, variant = "banner", onDis
 			<DismissButton
 				$variant={variant}
 				onClick={handleDismiss}
-				aria-label="Dismiss"
-				title="Dismiss and don't show again">
+				aria-label={t("common:dismiss")}
+				title={t("common:dismissAndDontShowAgain")}>
 				<DismissIcon />
 			</DismissButton>
 		</UpsellContainer>

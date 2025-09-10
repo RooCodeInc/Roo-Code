@@ -3000,20 +3000,26 @@ export const webviewMessageHandler = async (
 		}
 		case "dismissUpsell": {
 			if (message.upsellId) {
-				// Get current list of dismissed upsells
-				const dismissedUpsells = getGlobalState("dismissedUpsells") || []
+				try {
+					// Get current list of dismissed upsells
+					const dismissedUpsells = getGlobalState("dismissedUpsells") || []
 
-				// Add the new upsell ID if not already present
-				if (!dismissedUpsells.includes(message.upsellId)) {
-					const updatedList = [...dismissedUpsells, message.upsellId]
-					await updateGlobalState("dismissedUpsells", updatedList)
+					// Add the new upsell ID if not already present
+					let updatedList = dismissedUpsells
+					if (!dismissedUpsells.includes(message.upsellId)) {
+						updatedList = [...dismissedUpsells, message.upsellId]
+						await updateGlobalState("dismissedUpsells", updatedList)
+					}
+
+					// Send updated list back to webview (use the already computed updatedList)
+					await provider.postMessageToWebview({
+						type: "dismissedUpsells",
+						list: updatedList,
+					})
+				} catch (error) {
+					// Fail silently as per Bruno's comment - it's OK to fail silently in this case
+					provider.log(`Failed to dismiss upsell: ${error instanceof Error ? error.message : String(error)}`)
 				}
-
-				// Send updated list back to webview
-				await provider.postMessageToWebview({
-					type: "dismissedUpsells",
-					list: [...dismissedUpsells, message.upsellId],
-				})
 			}
 			break
 		}
