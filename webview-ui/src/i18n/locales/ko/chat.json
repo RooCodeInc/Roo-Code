@@ -148,6 +148,8 @@
 		"initializingWarning": "체크포인트 초기화 중... 시간이 너무 오래 걸리면 <settingsLink>설정</settingsLink>에서 체크포인트를 비활성화하고 작업을 다시 시작할 수 있습니다.",
 		"menu": {
 			"viewDiff": "차이점 보기",
+			"viewDiffFromInit": "첫 번째 체크포인트와의 차이점 보기",
+			"viewDiffWithCurrent": "현재 워크스페이스와의 차이점 보기",
 			"restore": "체크포인트 복원",
 			"restoreFiles": "파일 복원",
 			"restoreFilesDescription": "프로젝트 파일을 이 시점에 찍힌 스냅샷으로 복원합니다.",

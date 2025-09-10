@@ -41,6 +41,20 @@ export const CheckpointMenu = ({ ts, commitHash, checkpoint, open, onOpenChange 
 		})
 	}, [ts, previousCommitHash, commitHash])
 
+	const onDiffFromInit = useCallback(() => {
+		vscode.postMessage({
+			type: "checkpointDiff",
+			payload: { ts, commitHash, mode: "from-init" },
+		})
+	}, [ts, commitHash])
+
+	const onDiffWithCurrent = useCallback(() => {
+		vscode.postMessage({
+			type: "checkpointDiff",
+			payload: { ts, commitHash, mode: "to-current" },
+		})
+	}, [ts, commitHash])
+
 	const onPreview = useCallback(() => {
 		vscode.postMessage({ type: "checkpointRestore", payload: { ts, commitHash, mode: "preview" } })
 		setOpen(false)
@@ -66,6 +80,16 @@ export const CheckpointMenu = ({ ts, commitHash, checkpoint, open, onOpenChange 
 			<StandardTooltip content={t("chat:checkpoint.menu.viewDiff")}>
 				<Button variant="ghost" size="icon" onClick={onCheckpointDiff}>
 					<span className="codicon codicon-diff-single" />
+				</Button>
+			</StandardTooltip>
+			<StandardTooltip content={t("chat:checkpoint.menu.viewDiffFromInit")}>
+				<Button variant="ghost" size="icon" onClick={onDiffFromInit}>
+					<span className="codicon codicon-versions" />
+				</Button>
+			</StandardTooltip>
+			<StandardTooltip content={t("chat:checkpoint.menu.viewDiffWithCurrent")}>
+				<Button variant="ghost" size="icon" onClick={onDiffWithCurrent}>
+					<span className="codicon codicon-diff" />
 				</Button>
 			</StandardTooltip>
 			<Popover open={isOpen} onOpenChange={handleOpenChange}>

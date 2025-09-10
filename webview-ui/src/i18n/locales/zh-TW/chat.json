@@ -154,6 +154,8 @@
 		"initializingWarning": "正在初始化檢查點... 如果耗時過長，您可以在<settingsLink>設定</settingsLink>中停用檢查點並重新啟動工作。",
 		"menu": {
 			"viewDiff": "檢視差異",
+			"viewDiffFromInit": "與第一個檢查點比較差異",
+			"viewDiffWithCurrent": "與目前工作區比較差異",
 			"restore": "還原檢查點",
 			"restoreFiles": "還原檔案",
 			"restoreFilesDescription": "將您的專案檔案還原到此時的快照。",

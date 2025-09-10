@@ -154,6 +154,8 @@
 		"initializingWarning": "Still initializing checkpoint... If this takes too long, you can disable checkpoints in <settingsLink>settings</settingsLink> and restart your task.",
 		"menu": {
 			"viewDiff": "View Diff",
+			"viewDiffFromInit": "View Diff With First Checkpoint",
+			"viewDiffWithCurrent": "View Diff With Current Workspace",
 			"restore": "Restore Checkpoint",
 			"restoreFiles": "Restore Files",
 			"restoreFilesDescription": "Restores your project's files back to a snapshot taken at this point.",
