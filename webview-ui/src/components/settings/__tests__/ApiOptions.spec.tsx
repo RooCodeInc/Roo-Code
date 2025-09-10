@@ -563,4 +563,48 @@ describe("ApiOptions", () => {
 			expect(screen.queryByTestId("litellm-provider")).not.toBeInTheDocument()
 		})
 	})
+
+	describe("Removed model handling", () => {
+		it("renders without errors when a removed model is selected", () => {
+			// This test verifies that the component handles removed models gracefully
+			// by still rendering the UI without crashing
+			const mockSetApiConfigurationField = vi.fn()
+
+			renderApiOptions({
+				apiConfiguration: {
+					apiProvider: "anthropic",
+					apiModelId: "claude-2.1", // A model that might be removed
+				},
+				setApiConfigurationField: mockSetApiConfigurationField,
+			})
+
+			// Verify the component rendered successfully
+			expect(screen.getByTestId("provider-select")).toBeInTheDocument()
+
+			// The component should render even with a potentially removed model
+			// The actual model validation and fallback is handled by the API
+		})
+
+		it("allows provider switching even with a removed model", () => {
+			const mockSetApiConfigurationField = vi.fn()
+
+			renderApiOptions({
+				apiConfiguration: {
+					apiProvider: "anthropic",
+					apiModelId: "claude-2.1", // A model that might be removed
+				},
+				setApiConfigurationField: mockSetApiConfigurationField,
+			})
+
+			// Find and change the provider select
+			const providerSelect = screen.getByTestId("provider-select").querySelector("select")
+			expect(providerSelect).toBeInTheDocument()
+
+			// Switch to a different provider
+			fireEvent.change(providerSelect!, { target: { value: "openai" } })
+
+			// Verify that the provider change was registered
+			expect(mockSetApiConfigurationField).toHaveBeenCalledWith("apiProvider", "openai")
+		})
+	})
 })
