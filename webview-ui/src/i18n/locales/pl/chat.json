@@ -146,6 +146,8 @@
 		"initializingWarning": "Trwa inicjalizacja punktu kontrolnego... Jeśli to trwa zbyt długo, możesz wyłączyć punkty kontrolne w <settingsLink>ustawieniach</settingsLink> i uruchomić zadanie ponownie.",
 		"menu": {
 			"viewDiff": "Zobacz różnice",
+			"viewDiffFromInit": "Zobacz różnice z pierwszym punktem kontrolnym",
+			"viewDiffWithCurrent": "Zobacz różnice z bieżącym projektem",
 			"restore": "Przywróć punkt kontrolny",
 			"restoreFiles": "Przywróć pliki",
 			"restoreFilesDescription": "Przywraca pliki Twojego projektu do zrzutu wykonanego w tym punkcie.",

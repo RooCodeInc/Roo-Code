@@ -270,10 +270,10 @@ export async function checkpointRestore(
 }
 
 export type CheckpointDiffOptions = {
-	ts: number
+	ts?: number
 	previousCommitHash?: string
 	commitHash: string
-	mode: "full" | "checkpoint"
+	mode: "from-init" | "checkpoint" | "to-current" | "full"
 }
 
 export async function checkpointDiff(task: Task, { ts, previousCommitHash, commitHash, mode }: CheckpointDiffOptions) {
@@ -285,21 +285,43 @@ export async function checkpointDiff(task: Task, { ts, previousCommitHash, commi
 
 	TelemetryService.instance.captureCheckpointDiffed(task.taskId)
 
-	let prevHash = commitHash
-	let nextHash: string | undefined = undefined
+	let fromHash: string | undefined
+	let toHash: string | undefined
+	let title: string
 
-	if (mode !== "full") {
-		const checkpoints = task.clineMessages.filter(({ say }) => say === "checkpoint_saved").map(({ text }) => text!)
-		const idx = checkpoints.indexOf(commitHash)
-		if (idx !== -1 && idx < checkpoints.length - 1) {
-			nextHash = checkpoints[idx + 1]
-		} else {
-			nextHash = undefined
-		}
+	const checkpoints = task.clineMessages.filter(({ say }) => say === "checkpoint_saved").map(({ text }) => text!)
+
+	const idx = checkpoints.indexOf(commitHash)
+	switch (mode) {
+		case "checkpoint":
+			fromHash = commitHash
+			toHash = idx !== -1 && idx < checkpoints.length - 1 ? checkpoints[idx + 1] : undefined
+			title = "Changes compare with next checkpoint"
+			break
+		case "from-init":
+			fromHash = checkpoints[0]
+			toHash = commitHash
+			title = "Changes since first checkpoint"
+			break
+		case "to-current":
+			fromHash = commitHash
+			toHash = undefined
+			title = "Changes to current workspace"
+			break
+		case "full":
+			fromHash = checkpoints[0]
+			toHash = undefined
+			title = "Changes since first checkpoint"
+			break
+	}
+
+	if (!fromHash) {
+		vscode.window.showInformationMessage("No previous checkpoint to compare.")
+		return
 	}
 
 	try {
-		const changes = await service.getDiff({ from: prevHash, to: nextHash })
+		const changes = await service.getDiff({ from: fromHash, to: toHash })
 
 		if (!changes?.length) {
 			vscode.window.showInformationMessage("No changes found.")
@@ -308,7 +330,7 @@ export async function checkpointDiff(task: Task, { ts, previousCommitHash, commi
 
 		await vscode.commands.executeCommand(
 			"vscode.changes",
-			mode === "full" ? "Changes since task started" : "Changes compare with next checkpoint",
+			title,
 			changes.map((change) => [
 				vscode.Uri.file(change.paths.absolute),
 				vscode.Uri.parse(`${DIFF_VIEW_URI_SCHEME}:${change.paths.relative}`).with({

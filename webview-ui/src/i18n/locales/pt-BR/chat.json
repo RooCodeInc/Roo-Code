@@ -146,6 +146,8 @@
 		"initializingWarning": "Ainda inicializando ponto de verificação... Se isso demorar muito, você pode desativar os pontos de verificação nas <settingsLink>configurações</settingsLink> e reiniciar sua tarefa.",
 		"menu": {
 			"viewDiff": "Ver diferenças",
+			"viewDiffFromInit": "Ver diferenças com o primeiro ponto de verificação",
+			"viewDiffWithCurrent": "Ver diferenças com o espaço de trabalho atual",
 			"restore": "Restaurar ponto de verificação",
 			"restoreFiles": "Restaurar arquivos",
 			"restoreFilesDescription": "Restaura os arquivos do seu projeto para um snapshot feito neste ponto.",

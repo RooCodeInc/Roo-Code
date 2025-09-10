@@ -146,6 +146,8 @@
 		"initializingWarning": "Kontrol noktası hala başlatılıyor... Bu çok uzun sürerse, <settingsLink>ayarlar</settingsLink> bölümünden kontrol noktalarını devre dışı bırakabilir ve görevinizi yeniden başlatabilirsiniz.",
 		"menu": {
 			"viewDiff": "Farkları Görüntüle",
+			"viewDiffFromInit": "İlk Kontrol Noktası ile Farkları Görüntüle",
+			"viewDiffWithCurrent": "Mevcut Çalışma Alanı ile Farkları Görüntüle",
 			"restore": "Kontrol Noktasını Geri Yükle",
 			"restoreFiles": "Dosyaları Geri Yükle",
 			"restoreFilesDescription": "Projenizin dosyalarını bu noktada alınan bir anlık görüntüye geri yükler.",
