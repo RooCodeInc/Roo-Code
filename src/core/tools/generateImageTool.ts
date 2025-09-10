@@ -241,9 +241,7 @@ export async function generateImageTool(
 
 			// Get the webview URI for the image
 			const provider = cline.providerRef.deref()
-			// Use forward slashes for consistency across platforms in the imagePath
 			const fullImagePath = path.join(cline.cwd, finalPath)
-			const normalizedImagePath = fullImagePath.replace(/\\/g, "/")
 
 			// Convert to webview URI if provider is available
 			let imageUri = provider?.convertToWebviewUri?.(fullImagePath) ?? vscode.Uri.file(fullImagePath).toString()
@@ -252,8 +250,8 @@ export async function generateImageTool(
 			const cacheBuster = Date.now()
 			imageUri = imageUri.includes("?") ? `${imageUri}&t=${cacheBuster}` : `${imageUri}?t=${cacheBuster}`
 
-			// Send the image with the webview URI (use normalized path for consistency)
-			await cline.say("image", JSON.stringify({ imageUri, imagePath: normalizedImagePath }))
+			// Send the image with the webview URI
+			await cline.say("image", JSON.stringify({ imageUri, imagePath: fullImagePath }))
 			pushToolResult(formatResponse.toolResult(getReadablePath(cline.cwd, finalPath)))
 
 			return
