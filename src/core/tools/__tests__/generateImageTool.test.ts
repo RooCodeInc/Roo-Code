@@ -209,7 +209,12 @@ describe("generateImageTool", () => {
 			if (sayCall) {
 				const imageData = JSON.parse(sayCall[1])
 				expect(imageData.imageUri).toMatch(/\?t=\d+$/)
-				expect(imageData.imagePath).toBe("/test/workspace/test-image.png")
+				// Handle both Unix and Windows path separators
+				const expectedPath =
+					process.platform === "win32"
+						? "\\test\\workspace\\test-image.png"
+						: "/test/workspace/test-image.png"
+				expect(imageData.imagePath).toBe(expectedPath)
 			}
 		})
 	})
