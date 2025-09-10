@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { SquareArrowOutUpRightIcon } from "lucide-react"
 
@@ -31,27 +31,23 @@ export const ShareButton = ({ item, disabled = false, showLabel = false }: Share
 	const [shareDropdownOpen, setShareDropdownOpen] = useState(false)
 	const [shareSuccess, setShareSuccess] = useState<{ visibility: ShareVisibility; url: string } | null>(null)
 	const { t } = useTranslation()
-	const { sharingEnabled, cloudIsAuthenticated, cloudUserInfo } = useExtensionState()
-	const { isOpen: connectModalOpen, openUpsell, closeUpsell, handleConnect } = useCloudUpsell()
-	const wasUnauthenticatedRef = useRef(false)
-	const initiatedAuthFromThisButtonRef = useRef(false)
+	const { cloudUserInfo } = useExtensionState()
 
-	// Track authentication state changes to auto-open popover after login
-	useEffect(() => {
-		if (!cloudIsAuthenticated || !sharingEnabled) {
-			wasUnauthenticatedRef.current = true
-		} else if (wasUnauthenticatedRef.current && cloudIsAuthenticated && sharingEnabled) {
-			// Only open dropdown if auth was initiated from this button
-			if (initiatedAuthFromThisButtonRef.current) {
-				// User just authenticated from this share button, send telemetry, close modal, and open the popover
-				telemetryClient.capture(TelemetryEventName.ACCOUNT_CONNECT_SUCCESS)
-				closeUpsell()
-				setShareDropdownOpen(true)
-				initiatedAuthFromThisButtonRef.current = false // Reset the flag
-			}
-			wasUnauthenticatedRef.current = false
-		}
-	}, [cloudIsAuthenticated, sharingEnabled, closeUpsell])
+	// Use enhanced cloud upsell hook with auto-open on auth success
+	const {
+		isOpen: connectModalOpen,
+		openUpsell,
+		closeUpsell,
+		handleConnect,
+		isAuthenticated: cloudIsAuthenticated,
+		sharingEnabled,
+	} = useCloudUpsell({
+		onAuthSuccess: () => {
+			// Auto-open share dropdown after successful authentication
+			setShareDropdownOpen(true)
+		},
+		autoOpenOnAuth: true,
+	})
 
 	// Listen for share success messages from the extension
 	useEffect(() => {
@@ -93,8 +89,6 @@ export const ShareButton = ({ item, disabled = false, showLabel = false }: Share
 	}
 
 	const handleConnectToCloud = () => {
-		// Mark that authentication was initiated from this button
-		initiatedAuthFromThisButtonRef.current = true
 		handleConnect()
 		setShareDropdownOpen(false)
 	}
