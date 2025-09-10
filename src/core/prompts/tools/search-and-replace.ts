@@ -1,8 +1,8 @@
 import { ToolArgs } from "./types"
 
 export function getSearchAndReplaceDescription(args: ToolArgs): string {
-	return `## search_and_replace
-Description: Use this tool to find and replace specific text strings or patterns (using regex) within a file. It's suitable for targeted replacements across multiple locations within the file. Supports literal text and regex patterns, case sensitivity options, and optional line ranges. Shows a diff preview before applying changes.
+	return `<tool name="search_and_replace">
+<description>Use this tool to find and replace specific text strings or patterns (using regex) within a file. It's suitable for targeted replacements across multiple locations within the file. Supports literal text and regex patterns, case sensitivity options, and optional line ranges. Shows a diff preview before applying changes.</description>
 
 Required Parameters:
 - path: The path of the file to modify (relative to the current workspace directory ${args.cwd.toPosix()})
@@ -35,5 +35,7 @@ Examples:
 <replace>new$&</replace>
 <use_regex>true</use_regex>
 <ignore_case>true</ignore_case>
-</search_and_replace>`
+</search_and_replace>
+
+</tool>`
 }

@@ -1,8 +1,8 @@
 import { ToolArgs } from "./types"
 
 export function getCodebaseSearchDescription(args: ToolArgs): string {
-	return `## codebase_search
-Description: Find files most relevant to the search query using semantic search. Searches based on meaning rather than exact text matches. By default searches entire workspace. Reuse the user's exact wording unless there's a clear reason not to - their phrasing often helps semantic search. Queries MUST be in English (translate if needed).
+	return `<tool name="codebase_search">
+<description>Find files most relevant to the search query using semantic search. Searches based on meaning rather than exact text matches. By default searches entire workspace. Reuse the user's exact wording unless there's a clear reason not to - their phrasing often helps semantic search. Queries MUST be in English (translate if needed).</description>
 
 Parameters:
 - query: (required) The search query. Reuse the user's exact wording/question format unless there's a clear reason not to.
@@ -19,5 +19,6 @@ Example:
 <query>User login and password hashing</query>
 <path>src/auth</path>
 </codebase_search>
-`
+
+</tool>`
 }

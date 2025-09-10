@@ -49,7 +49,7 @@ export async function getMcpServersSection(
 					.join("\n\n")}`
 			: "(No MCP servers currently connected)"
 
-	const baseSection = `MCP SERVERS
+	const baseSection = `<section name="MCP SERVERS">
 
 The Model Context Protocol (MCP) enables communication between the system and MCP servers that provide additional tools and resources to extend your capabilities. MCP servers can be one of two types:
 
@@ -60,20 +60,27 @@ The Model Context Protocol (MCP) enables communication between the system and MC
 
 When a server is connected, you can use the server's tools via the \`use_mcp_tool\` tool, and access the server's resources via the \`access_mcp_resource\` tool.
 
-${connectedServers}`
+${connectedServers}
+
+</section>`
 
 	if (!enableMcpServerCreation) {
 		return baseSection
 	}
 
+	// Remove the closing </section> tag from baseSection and add the additional content
+	const baseSectionWithoutClosing = baseSection.replace("</section>", "")
+
 	return (
-		baseSection +
+		baseSectionWithoutClosing +
 		`
 ## Creating an MCP Server
 
 The user may ask you something along the lines of "add a tool" that does some function, in other words to create an MCP server that provides tools and resources that may connect to external APIs for example. If they do, you should obtain detailed instructions on this topic using the fetch_instructions tool, like this:
 <fetch_instructions>
 <task>create_mcp_server</task>
-</fetch_instructions>`
+</fetch_instructions>
+
+</section>`
 	)
 }
