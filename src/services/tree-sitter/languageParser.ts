@@ -28,6 +28,8 @@ import {
 	embeddedTemplateQuery,
 	elispQuery,
 	elixirQuery,
+	ablQuery,
+	dfQuery,
 } from "./queries"
 
 export interface LanguageParser {
@@ -39,10 +41,40 @@ export interface LanguageParser {
 
 async function loadLanguage(langName: string, sourceDirectory?: string) {
 	const baseDir = sourceDirectory || __dirname
+	const { Language } = require("web-tree-sitter")
+
+	// Special handling for ABL and DF - try multiple loading strategies
+	if (langName === "abl" || langName === "df") {
+		// Strategy 1: Try loading from dist directory first (if copied during build)
+		const distWasmPath = path.join(baseDir, `tree-sitter-${langName}.wasm`)
+		try {
+			const language = await Language.load(distWasmPath)
+			console.log(`Successfully loaded ${langName} from dist directory`)
+			return language
+		} catch (error) {
+			console.log(`Could not load ${langName} from dist: ${error instanceof Error ? error.message : error}`)
+		}
+
+		// Strategy 2: Try loading from npm package location
+		try {
+			const packageName = `@usagi-coffee/tree-sitter-${langName}`
+			const wasmPath = require.resolve(`${packageName}/tree-sitter-${langName}.wasm`)
+			const language = await Language.load(wasmPath)
+			console.log(`Successfully loaded ${langName} from npm package`)
+			return language
+		} catch (error) {
+			const errorMessage = error instanceof Error ? error.message : String(error)
+			console.error(`Error: Failed to load ${langName} parser from npm package. ${errorMessage}`)
+			// Return null to indicate parser is not available
+			// The calling code will handle this gracefully
+			return null
+		}
+	}
+
+	// Standard loading for other languages
 	const wasmPath = path.join(baseDir, `tree-sitter-${langName}.wasm`)
 
 	try {
-		const { Language } = require("web-tree-sitter")
 		return await Language.load(wasmPath)
 	} catch (error) {
 		console.error(`Error loading language: ${wasmPath}: ${error instanceof Error ? error.message : error}`)
@@ -217,6 +249,40 @@ export async function loadRequiredLanguageParsers(filesToParse: string[], source
 			case "exs":
 				language = await loadLanguage("elixir", sourceDirectory)
 				query = new Query(language, elixirQuery)
+				break
+			case "p":
+			case "i":
+			case "w":
+			case "cls":
+				parserKey = "abl" // Use same key for all ABL extensions
+				try {
+					language = await loadLanguage("abl", sourceDirectory)
+					if (!language) {
+						console.warn(`ABL parser not available for .${ext} files - skipping`)
+						continue // Skip this extension
+					}
+					query = new Query(language, ablQuery)
+				} catch (error) {
+					console.warn(
+						`Failed to load ABL parser for .${ext} files: ${error instanceof Error ? error.message : error}`,
+					)
+					continue // Skip this extension
+				}
+				break
+			case "df":
+				try {
+					language = await loadLanguage("df", sourceDirectory)
+					if (!language) {
+						console.warn(`DF parser not available for .${ext} files - skipping`)
+						continue // Skip this extension
+					}
+					query = new Query(language, dfQuery)
+				} catch (error) {
+					console.warn(
+						`Failed to load DF parser for .${ext} files: ${error instanceof Error ? error.message : error}`,
+					)
+					continue // Skip this extension
+				}
 				break
 			default:
 				throw new Error(`Unsupported language: ${ext}`)
