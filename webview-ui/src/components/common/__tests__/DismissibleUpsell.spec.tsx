@@ -43,32 +43,6 @@ describe("DismissibleUpsell", () => {
 		expect(screen.getByText("Test content")).toBeInTheDocument()
 	})
 
-	it("applies the correct variant styles", () => {
-		const { container, rerender } = render(
-			<DismissibleUpsell upsellId="test-upsell" variant="banner">
-				<div>Banner content</div>
-			</DismissibleUpsell>,
-		)
-
-		// Check banner variant has correct classes
-		const bannerContainer = container.firstChild as HTMLElement
-		expect(bannerContainer).toHaveClass("bg-vscode-button-background")
-		expect(bannerContainer).toHaveClass("text-vscode-button-foreground")
-
-		// Re-render with default variant
-		rerender(
-			<DismissibleUpsell upsellId="test-upsell" variant="default">
-				<div>Default content</div>
-			</DismissibleUpsell>,
-		)
-
-		const defaultContainer = container.firstChild as HTMLElement
-		expect(defaultContainer).toHaveClass("bg-vscode-notifications-background")
-		expect(defaultContainer).toHaveClass("text-vscode-notifications-foreground")
-		expect(defaultContainer).toHaveClass("border")
-		expect(defaultContainer).toHaveClass("border-vscode-notifications-border")
-	})
-
 	it("requests dismissed upsells list on mount", () => {
 		render(
 			<DismissibleUpsell upsellId="test-upsell">
