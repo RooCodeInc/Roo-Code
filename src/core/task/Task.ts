@@ -2250,7 +2250,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				// Note: updateApiReqMsg() is now called from within drainStreamInBackgroundToFindAllUsage
 				// to ensure usage data is captured even when the stream is interrupted. The background task
 				// uses local variables to accumulate usage data before atomically updating the shared state.
-				await this.persistGpt5Metadata()
+				await this.persistGpt5Metadata(reasoningMessage)
 				await this.saveClineMessages()
 				await this.providerRef.deref()?.postStateToWebview()
 
@@ -2836,11 +2836,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	}
 
 	/**
-	 * Persist GPT-5 per-turn metadata (previous_response_id, instructions)
+	 * Persist GPT-5 per-turn metadata (previous_response_id, instructions, reasoning_summary)
 	 * onto the last complete assistant say("text") message.
-	 * Note: reasoning_summary is no longer persisted as reasoning is now sent as separate delta blocks.
 	 */
-	private async persistGpt5Metadata(): Promise<void> {
+	private async persistGpt5Metadata(reasoningMessage?: string): Promise<void> {
 		try {
 			const modelId = this.api.getModel().id
 			if (!modelId || !modelId.startsWith("gpt-5")) return
@@ -2861,7 +2860,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					...(msg.metadata.gpt5 ?? {}),
 					previous_response_id: lastResponseId,
 					instructions: this.lastUsedInstructions,
-					// reasoning_summary is no longer stored as reasoning is sent as separate blocks
+					reasoning_summary: (reasoningMessage ?? "").trim() || undefined,
 				}
 				msg.metadata.gpt5 = gpt5Metadata
 			}
