@@ -5,6 +5,7 @@ import { visit } from "unist-util-visit"
 import rehypeKatex from "rehype-katex"
 import remarkMath from "remark-math"
 import remarkGfm from "remark-gfm"
+import remarkBreaks from "remark-breaks"
 
 import { vscode } from "@src/utils/vscode"
 
@@ -289,6 +290,7 @@ const MarkdownBlock = memo(({ markdown }: MarkdownBlockProps) => {
 				remarkPlugins={[
 					remarkGfm,
 					remarkMath,
+					remarkBreaks,
 					() => {
 						return (tree: any) => {
 							visit(tree, "code", (node: any) => {
