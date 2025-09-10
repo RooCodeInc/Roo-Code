@@ -8,10 +8,10 @@ vi.mock("react-i18next", () => ({
 		t: (key: string) => {
 			const translations: Record<string, string> = {
 				"cloud:cloudBenefitsTitle": "Connect to Roo Cloud",
-				"cloud:cloudBenefitsSubtitle": "Get more from your experience",
 				"cloud:cloudBenefitSharing": "Share tasks with your team",
 				"cloud:cloudBenefitHistory": "Access conversation history",
 				"cloud:cloudBenefitMetrics": "View usage metrics",
+				"cloud:cloudBenefitWalkaway": "Walk away with your code",
 				"cloud:connect": "Connect to Cloud",
 			}
 			return translations[key] || key
@@ -31,7 +31,6 @@ describe("CloudUpsellDialog", () => {
 		render(<CloudUpsellDialog open={true} onOpenChange={mockOnOpenChange} onConnect={mockOnConnect} />)
 
 		expect(screen.getByText("Connect to Roo Cloud")).toBeInTheDocument()
-		expect(screen.getByText("Get more from your experience")).toBeInTheDocument()
 		expect(screen.getByText("Share tasks with your team")).toBeInTheDocument()
 		expect(screen.getByText("Access conversation history")).toBeInTheDocument()
 		expect(screen.getByText("View usage metrics")).toBeInTheDocument()
@@ -53,10 +52,10 @@ describe("CloudUpsellDialog", () => {
 		expect(mockOnConnect).toHaveBeenCalledTimes(1)
 	})
 
-	it("renders all three benefits with bullet points", () => {
+	it("renders all three benefits as list items", () => {
 		render(<CloudUpsellDialog open={true} onOpenChange={mockOnOpenChange} onConnect={mockOnConnect} />)
 
-		const bullets = screen.getAllByText("•")
-		expect(bullets).toHaveLength(3)
+		const listItems = screen.getAllByRole("listitem")
+		expect(listItems).toHaveLength(4)
 	})
 })
