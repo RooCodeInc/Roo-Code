@@ -92,7 +92,7 @@ const TaskHeader = ({
 					onClick={() => openUpsell()}
 					dismissOnClick={false}
 					variant="banner">
-					{t("chat:cloud.upsell.longRunningTask")}
+					{t("cloud:upsell.longRunningTask")}
 				</DismissibleUpsell>
 			)}
 			<div

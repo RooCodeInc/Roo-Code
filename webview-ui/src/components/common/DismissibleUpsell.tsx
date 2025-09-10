@@ -98,8 +98,9 @@ const DismissibleUpsell = memo(
 
 		const variants = {
 			banner: {
-				container: "p-2 bg-vscode-button-background text-vscode-button-foreground",
-				button: "text-vscode-button-foreground",
+				container:
+					"p-2 bg-vscode-badge-background/80 text-vscode-badge-foreground border-vscode-dropdown-border border",
+				button: "text-vscode-badge-foreground",
 			},
 			default: {
 				container: "bg-vscode-notifications-background text-vscode-notifications-foreground",
@@ -141,7 +142,7 @@ const DismissibleUpsell = memo(
 					}
 				}}>
 				{icon && icon}
-				<div>{children}</div>
+				<div className="">{children}</div>
 				<button
 					className={buttonClasses}
 					onClick={(e) => {
