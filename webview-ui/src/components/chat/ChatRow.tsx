@@ -958,7 +958,7 @@ export const ChatRowContent = ({
 	const viewFullDiffBtn =
 		hasCheckpoint && isLast && !isStreaming ? (
 			<div style={{ marginTop: 16, display: "flex", justifyContent: "flex-start" }}>
-				<StandardTooltip content={t("chat:showChangesFromInit")}>
+				<StandardTooltip content={t("chat:checkpoint.menu.viewDiffFromInit")}>
 					<VSCodeButton
 						appearance="primary"
 						className="flex-1 mr-[6px]"
