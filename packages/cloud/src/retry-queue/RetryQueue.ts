@@ -31,7 +31,7 @@ export class RetryQueue extends EventEmitter<RetryQueueEvents> {
 			maxQueueSize: 100,
 			persistQueue: true,
 			networkCheckInterval: 60000,
-			requestTimeout: 30000, // Make timeout configurable
+			requestTimeout: 30000,
 			...config,
 		}
 
@@ -98,6 +98,7 @@ export class RetryQueue extends EventEmitter<RetryQueueEvents> {
 
 	public async retryAll(): Promise<void> {
 		if (this.isProcessing) {
+			this.log("[RetryQueue] Already processing, skipping retry cycle")
 			return
 		}
 
@@ -108,38 +109,76 @@ export class RetryQueue extends EventEmitter<RetryQueueEvents> {
 
 		this.isProcessing = true
 
-		// Sort by timestamp to process in FIFO order (oldest first)
-		requests.sort((a, b) => a.timestamp - b.timestamp)
+		try {
+			// Sort by timestamp to process in FIFO order (oldest first)
+			requests.sort((a, b) => a.timestamp - b.timestamp)
 
-		// Process all requests in FIFO order
-		for (const request of requests) {
-			try {
-				await this.retryRequest(request)
-				this.queue.delete(request.id)
-				this.emit("request-retry-success", request)
-			} catch (error) {
-				request.retryCount++
-				request.lastError = error instanceof Error ? error.message : String(error)
-
-				// Check if we've exceeded max retries
-				if (this.config.maxRetries > 0 && request.retryCount >= this.config.maxRetries) {
+			// Process all requests in FIFO order
+			for (const request of requests) {
+				// Skip if request should not be retried yet (rate limiting)
+				if (request.nextRetryAfter && Date.now() < request.nextRetryAfter) {
 					this.log(
-						`[RetryQueue] Max retries (${this.config.maxRetries}) reached for request: ${request.operation || request.url}`,
+						`[RetryQueue] Skipping rate-limited request until ${new Date(request.nextRetryAfter).toISOString()}`,
 					)
-					this.queue.delete(request.id)
-					this.emit("request-max-retries-exceeded", request, error as Error)
-				} else {
-					this.queue.set(request.id, request)
-					this.emit("request-retry-failed", request, error as Error)
+					continue
 				}
 
-				// Add a small delay between retry attempts
-				await this.delay(100)
-			}
-		}
+				try {
+					const response = await this.retryRequest(request)
 
-		await this.persistQueue()
-		this.isProcessing = false
+					// Check if we got a Retry-After header for rate limiting
+					if (response && response.status === 429) {
+						const retryAfter = response.headers.get("Retry-After")
+						if (retryAfter) {
+							// Parse Retry-After (could be seconds or a date)
+							let delayMs: number
+							const retryAfterSeconds = parseInt(retryAfter, 10)
+							if (!isNaN(retryAfterSeconds)) {
+								delayMs = retryAfterSeconds * 1000
+							} else {
+								// Try parsing as a date
+								const retryDate = new Date(retryAfter)
+								if (!isNaN(retryDate.getTime())) {
+									delayMs = retryDate.getTime() - Date.now()
+								} else {
+									delayMs = 60000 // Default to 1 minute if we can't parse
+								}
+							}
+							request.nextRetryAfter = Date.now() + delayMs
+							this.log(`[RetryQueue] Rate limited, will retry after ${delayMs}ms`)
+							this.queue.set(request.id, request)
+							continue
+						}
+					}
+
+					this.queue.delete(request.id)
+					this.emit("request-retry-success", request)
+				} catch (error) {
+					request.retryCount++
+					request.lastError = error instanceof Error ? error.message : String(error)
+
+					// Check if we've exceeded max retries
+					if (this.config.maxRetries > 0 && request.retryCount >= this.config.maxRetries) {
+						this.log(
+							`[RetryQueue] Max retries (${this.config.maxRetries}) reached for request: ${request.operation || request.url}`,
+						)
+						this.queue.delete(request.id)
+						this.emit("request-max-retries-exceeded", request, error as Error)
+					} else {
+						this.queue.set(request.id, request)
+						this.emit("request-retry-failed", request, error as Error)
+					}
+
+					// Add a small delay between retry attempts
+					await this.delay(100)
+				}
+			}
+
+			await this.persistQueue()
+		} finally {
+			// Always reset the processing flag, even if an error occurs
+			this.isProcessing = false
+		}
 	}
 
 	private async retryRequest(request: QueuedRequest): Promise<Response> {
@@ -171,8 +210,23 @@ export class RetryQueue extends EventEmitter<RetryQueueEvents> {
 
 			clearTimeout(timeoutId)
 
+			// Check for error status codes that should trigger retry
 			if (!response.ok) {
-				throw new Error(`Request failed with status ${response.status}`)
+				// Handle different status codes appropriately
+				if (response.status >= 500) {
+					// Server errors should be retried
+					throw new Error(`Server error: ${response.status} ${response.statusText}`)
+				} else if (response.status === 429) {
+					// Rate limiting - return response to let caller handle Retry-After
+					return response
+				} else if (response.status === 401 || response.status === 403) {
+					// Auth errors - retry with fresh auth headers from provider
+					throw new Error(`Auth error: ${response.status}`)
+				} else if (response.status >= 400 && response.status < 500) {
+					// Other client errors (400, 404, etc.) should not be retried
+					this.log(`[RetryQueue] Non-retryable status ${response.status}, removing from queue`)
+					return response
+				}
 			}
 
 			return response

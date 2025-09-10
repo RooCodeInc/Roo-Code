@@ -357,5 +357,150 @@ describe("RetryQueue", () => {
 			// The timeout configuration is being used (verified by the constructor accepting it)
 			// The actual timeout behavior is handled by the browser's AbortController
 		})
+
+		it("should retry on 500+ status codes", async () => {
+			const failListener = vi.fn()
+			const successListener = vi.fn()
+			retryQueue.on("request-retry-failed", failListener)
+			retryQueue.on("request-retry-success", successListener)
+
+			await retryQueue.enqueue("https://api.example.com/test", { method: "POST" }, "telemetry")
+
+			// First attempt: 500 error
+			fetchMock.mockResolvedValueOnce({ ok: false, status: 500, statusText: "Internal Server Error" })
+
+			await retryQueue.retryAll()
+
+			// Should fail and remain in queue
+			expect(failListener).toHaveBeenCalledWith(
+				expect.objectContaining({
+					url: "https://api.example.com/test",
+					retryCount: 1,
+					lastError: "Server error: 500 Internal Server Error",
+				}),
+				expect.any(Error),
+			)
+
+			let stats = retryQueue.getStats()
+			expect(stats.totalQueued).toBe(1)
+
+			// Second attempt: success
+			fetchMock.mockResolvedValueOnce({ ok: true, status: 200 })
+
+			await retryQueue.retryAll()
+
+			// Should succeed and be removed from queue
+			expect(successListener).toHaveBeenCalled()
+			stats = retryQueue.getStats()
+			expect(stats.totalQueued).toBe(0)
+		})
+
+		it("should handle 429 rate limiting with Retry-After header", async () => {
+			await retryQueue.enqueue("https://api.example.com/test", { method: "POST" }, "telemetry")
+
+			// Mock 429 response with Retry-After header (in seconds)
+			const retryAfterResponse = {
+				ok: false,
+				status: 429,
+				headers: {
+					get: vi.fn((header: string) => {
+						if (header === "Retry-After") return "2" // 2 seconds
+						return null
+					}),
+				},
+			}
+
+			fetchMock.mockResolvedValueOnce(retryAfterResponse)
+
+			await retryQueue.retryAll()
+
+			// Request should still be in queue with nextRetryAfter set
+			const stats = retryQueue.getStats()
+			expect(stats.totalQueued).toBe(1)
+
+			// Try to retry immediately - should be skipped due to rate limiting
+			fetchMock.mockClear()
+			await retryQueue.retryAll()
+
+			// Fetch should not be called because request is rate-limited
+			expect(fetchMock).not.toHaveBeenCalled()
+		})
+
+		it("should retry on 401/403 auth errors", async () => {
+			const failListener = vi.fn()
+			retryQueue.on("request-retry-failed", failListener)
+
+			await retryQueue.enqueue("https://api.example.com/test", { method: "POST" }, "telemetry")
+
+			// Mock 401 error
+			fetchMock.mockResolvedValueOnce({ ok: false, status: 401, statusText: "Unauthorized" })
+
+			await retryQueue.retryAll()
+
+			// Should fail and remain in queue for retry
+			expect(failListener).toHaveBeenCalledWith(
+				expect.objectContaining({
+					url: "https://api.example.com/test",
+					retryCount: 1,
+					lastError: "Auth error: 401",
+				}),
+				expect.any(Error),
+			)
+
+			const stats = retryQueue.getStats()
+			expect(stats.totalQueued).toBe(1)
+		})
+
+		it("should not retry on 400/404 client errors", async () => {
+			const successListener = vi.fn()
+			retryQueue.on("request-retry-success", successListener)
+
+			await retryQueue.enqueue("https://api.example.com/test", { method: "POST" }, "telemetry")
+
+			// Mock 404 error
+			fetchMock.mockResolvedValueOnce({ ok: false, status: 404, statusText: "Not Found" })
+
+			await retryQueue.retryAll()
+
+			// Should be removed from queue without retry
+			expect(successListener).toHaveBeenCalled()
+			const stats = retryQueue.getStats()
+			expect(stats.totalQueued).toBe(0)
+		})
+
+		it("should prevent concurrent processing", async () => {
+			// Add a single request
+			await retryQueue.enqueue("https://api.example.com/test1", { method: "POST" }, "telemetry")
+
+			// Mock slow response
+			let resolveFirst: () => void
+			const firstPromise = new Promise<{ ok: boolean }>((resolve) => {
+				resolveFirst = () => resolve({ ok: true })
+			})
+
+			fetchMock.mockReturnValueOnce(firstPromise)
+
+			// Start first retryAll (don't await)
+			const firstCall = retryQueue.retryAll()
+
+			// Try to call retryAll again immediately - should return immediately without processing
+			const secondCall = retryQueue.retryAll()
+
+			// Second call should return immediately
+			await secondCall
+
+			// Fetch should only be called once (from first call)
+			expect(fetchMock).toHaveBeenCalledTimes(1)
+
+			// Resolve the promise
+			resolveFirst!()
+
+			// Wait for first call to complete
+			await firstCall
+
+			// Queue should be empty
+			const stats = retryQueue.getStats()
+			expect(stats.totalQueued).toBe(0)
+		})
 	})
 })
