@@ -20,6 +20,7 @@
 	"startOver": "Start over",
 	"upsell": {
 		"autoApprovePowerUser": "Giving Roo some independence? Control it from anywhere with Roo Code Cloud. Click to learn more.",
-		"longRunningTask": "This might take a while. Continue from anywhere with Cloud."
+		"longRunningTask": "This might take a while. Continue from anywhere with Cloud.",
+		"taskList": "Roo Code Cloud is here: follow and control your tasks from anywhere. <learnMoreLink>Learn more</learnMoreLink>."
 	}
 }

@@ -189,7 +189,7 @@ const AutoApproveMenu = ({ style }: AutoApproveMenuProps) => {
 								onClick={() => openUpsell()}
 								dismissOnClick={false}
 								variant="banner">
-								{t("chat:cloud.upsell.autoApprovePowerUser")}
+								{t("cloud:upsell.autoApprovePowerUser")}
 							</DismissibleUpsell>
 						</>
 					)}

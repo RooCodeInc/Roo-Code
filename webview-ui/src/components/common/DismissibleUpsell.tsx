@@ -7,6 +7,8 @@ interface DismissibleUpsellProps {
 	upsellId: string
 	/** Optional CSS class name for styling */
 	className?: string
+	/** Optional Icon component */
+	icon?: ReactNode
 	/** Content to display inside the upsell */
 	children: ReactNode
 	/** Visual variant of the upsell */
@@ -34,6 +36,7 @@ const DismissibleUpsell = memo(
 	({
 		upsellId,
 		className,
+		icon,
 		children,
 		variant = "default",
 		onDismiss,
@@ -105,7 +108,7 @@ const DismissibleUpsell = memo(
 		}
 		// Build container classes based on variant and presence of click handler
 		const containerClasses = [
-			"relative flex items-start justify-between gap-1",
+			"relative flex items-start justify-between gap-2",
 			"text-sm",
 			variants[variant].container,
 			onClick && "cursor-pointer hover:opacity-90 transition-opacity duration-200",
@@ -137,6 +140,7 @@ const DismissibleUpsell = memo(
 						handleDismiss()
 					}
 				}}>
+				{icon && icon}
 				<div>{children}</div>
 				<button
 					className={buttonClasses}
