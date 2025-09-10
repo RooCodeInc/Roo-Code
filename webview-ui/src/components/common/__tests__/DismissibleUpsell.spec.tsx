@@ -35,7 +35,7 @@ describe("DismissibleUpsell", () => {
 
 	it("renders children content", () => {
 		render(
-			<DismissibleUpsell id="test-upsell">
+			<DismissibleUpsell upsellId="test-upsell">
 				<div>Test content</div>
 			</DismissibleUpsell>,
 		)
@@ -45,35 +45,33 @@ describe("DismissibleUpsell", () => {
 
 	it("applies the correct variant styles", () => {
 		const { container, rerender } = render(
-			<DismissibleUpsell id="test-upsell" variant="banner">
+			<DismissibleUpsell upsellId="test-upsell" variant="banner">
 				<div>Banner content</div>
 			</DismissibleUpsell>,
 		)
 
-		// Check banner variant has correct background color style
-		const bannerContainer = container.firstChild
-		expect(bannerContainer).toHaveStyle({
-			backgroundColor: "var(--vscode-button-background)",
-			color: "var(--vscode-button-foreground)",
-		})
+		// Check banner variant has correct classes
+		const bannerContainer = container.firstChild as HTMLElement
+		expect(bannerContainer).toHaveClass("bg-vscode-button-background")
+		expect(bannerContainer).toHaveClass("text-vscode-button-foreground")
 
 		// Re-render with default variant
 		rerender(
-			<DismissibleUpsell id="test-upsell" variant="default">
+			<DismissibleUpsell upsellId="test-upsell" variant="default">
 				<div>Default content</div>
 			</DismissibleUpsell>,
 		)
 
-		const defaultContainer = container.firstChild
-		expect(defaultContainer).toHaveStyle({
-			backgroundColor: "var(--vscode-notifications-background)",
-			color: "var(--vscode-notifications-foreground)",
-		})
+		const defaultContainer = container.firstChild as HTMLElement
+		expect(defaultContainer).toHaveClass("bg-vscode-notifications-background")
+		expect(defaultContainer).toHaveClass("text-vscode-notifications-foreground")
+		expect(defaultContainer).toHaveClass("border")
+		expect(defaultContainer).toHaveClass("border-vscode-notifications-border")
 	})
 
 	it("requests dismissed upsells list on mount", () => {
 		render(
-			<DismissibleUpsell id="test-upsell">
+			<DismissibleUpsell upsellId="test-upsell">
 				<div>Test content</div>
 			</DismissibleUpsell>,
 		)
@@ -86,7 +84,7 @@ describe("DismissibleUpsell", () => {
 	it("hides the upsell when dismiss button is clicked", async () => {
 		const onDismiss = vi.fn()
 		const { container } = render(
-			<DismissibleUpsell id="test-upsell" onDismiss={onDismiss}>
+			<DismissibleUpsell upsellId="test-upsell" onDismiss={onDismiss}>
 				<div>Test content</div>
 			</DismissibleUpsell>,
 		)
@@ -180,7 +178,7 @@ describe("DismissibleUpsell", () => {
 	it("handles multiple rapid dismissals of the same component", async () => {
 		const onDismiss = vi.fn()
 		render(
-			<DismissibleUpsell id="test-upsell" onDismiss={onDismiss}>
+			<DismissibleUpsell upsellId="test-upsell" onDismiss={onDismiss}>
 				<div>Test content</div>
 			</DismissibleUpsell>,
 		)
@@ -205,7 +203,7 @@ describe("DismissibleUpsell", () => {
 
 	it("does not update state after component unmounts", async () => {
 		const { unmount } = render(
-			<DismissibleUpsell id="test-upsell">
+			<DismissibleUpsell upsellId="test-upsell">
 				<div>Test content</div>
 			</DismissibleUpsell>,
 		)
@@ -232,7 +230,7 @@ describe("DismissibleUpsell", () => {
 
 	it("handles invalid/malformed messages gracefully", () => {
 		render(
-			<DismissibleUpsell id="test-upsell">
+			<DismissibleUpsell upsellId="test-upsell">
 				<div>Test content</div>
 			</DismissibleUpsell>,
 		)
@@ -259,7 +257,7 @@ describe("DismissibleUpsell", () => {
 
 	it("ensures message is sent before component unmounts on dismiss", async () => {
 		const { unmount } = render(
-			<DismissibleUpsell id="test-upsell">
+			<DismissibleUpsell upsellId="test-upsell">
 				<div>Test content</div>
 			</DismissibleUpsell>,
 		)
@@ -285,7 +283,7 @@ describe("DismissibleUpsell", () => {
 
 	it("uses separate id and className props correctly", () => {
 		const { container } = render(
-			<DismissibleUpsell id="unique-id" className="styling-class">
+			<DismissibleUpsell upsellId="unique-id" className="styling-class">
 				<div>Test content</div>
 			</DismissibleUpsell>,
 		)
@@ -301,5 +299,153 @@ describe("DismissibleUpsell", () => {
 			type: "dismissUpsell",
 			upsellId: "unique-id",
 		})
+	})
+
+	it("calls onClick when the container is clicked", () => {
+		const onClick = vi.fn()
+		render(
+			<DismissibleUpsell upsellId="test-upsell" onClick={onClick}>
+				<div>Test content</div>
+			</DismissibleUpsell>,
+		)
+
+		// Click on the container (not the dismiss button)
+		const container = screen.getByText("Test content").parentElement as HTMLElement
+		fireEvent.click(container)
+
+		expect(onClick).toHaveBeenCalledTimes(1)
+	})
+
+	it("does not call onClick when dismiss button is clicked", () => {
+		const onClick = vi.fn()
+		const onDismiss = vi.fn()
+		render(
+			<DismissibleUpsell upsellId="test-upsell" onClick={onClick} onDismiss={onDismiss}>
+				<div>Test content</div>
+			</DismissibleUpsell>,
+		)
+
+		// Click the dismiss button
+		const dismissButton = screen.getByRole("button", { name: /dismiss/i })
+		fireEvent.click(dismissButton)
+
+		// onClick should not be called, but onDismiss should
+		expect(onClick).not.toHaveBeenCalled()
+		expect(onDismiss).toHaveBeenCalledTimes(1)
+	})
+
+	it("adds cursor-pointer class when onClick is provided", () => {
+		const { container, rerender } = render(
+			<DismissibleUpsell upsellId="test-upsell" onClick={() => {}}>
+				<div>Test content</div>
+			</DismissibleUpsell>,
+		)
+
+		// Should have cursor-pointer when onClick is provided
+		expect(container.firstChild).toHaveClass("cursor-pointer")
+
+		// Re-render without onClick
+		rerender(
+			<DismissibleUpsell upsellId="test-upsell">
+				<div>Test content</div>
+			</DismissibleUpsell>,
+		)
+
+		// Should not have cursor-pointer when onClick is not provided
+		expect(container.firstChild).not.toHaveClass("cursor-pointer")
+	})
+
+	it("handles both onClick and onDismiss independently", async () => {
+		const onClick = vi.fn()
+		const onDismiss = vi.fn()
+		const { container } = render(
+			<DismissibleUpsell upsellId="test-upsell" onClick={onClick} onDismiss={onDismiss}>
+				<div>Test content</div>
+			</DismissibleUpsell>,
+		)
+
+		// Click on the container
+		const containerDiv = screen.getByText("Test content").parentElement as HTMLElement
+		fireEvent.click(containerDiv)
+		expect(onClick).toHaveBeenCalledTimes(1)
+		expect(onDismiss).not.toHaveBeenCalled()
+
+		// Reset mocks
+		onClick.mockClear()
+		onDismiss.mockClear()
+
+		// Click the dismiss button
+		const dismissButton = screen.getByRole("button", { name: /dismiss/i })
+		fireEvent.click(dismissButton)
+
+		// Only onDismiss should be called
+		expect(onClick).not.toHaveBeenCalled()
+		expect(onDismiss).toHaveBeenCalledTimes(1)
+
+		// Component should be hidden after dismiss
+		await waitFor(() => {
+			expect(container.firstChild).toBeNull()
+		})
+	})
+
+	it("dismisses when clicked if dismissOnClick is true", async () => {
+		const onClick = vi.fn()
+		const onDismiss = vi.fn()
+		const { container } = render(
+			<DismissibleUpsell upsellId="test-upsell" onClick={onClick} onDismiss={onDismiss} dismissOnClick={true}>
+				<div>Test content</div>
+			</DismissibleUpsell>,
+		)
+
+		const containerDiv = screen.getByText("Test content").parentElement as HTMLElement
+		fireEvent.click(containerDiv)
+
+		expect(onClick).toHaveBeenCalledTimes(1)
+		expect(onDismiss).toHaveBeenCalledTimes(1)
+
+		expect(mockPostMessage).toHaveBeenCalledWith({
+			type: "dismissUpsell",
+			upsellId: "test-upsell",
+		})
+
+		await waitFor(() => {
+			expect(container.firstChild).toBeNull()
+		})
+	})
+
+	it("does not dismiss when clicked if dismissOnClick is false", async () => {
+		const onClick = vi.fn()
+		const onDismiss = vi.fn()
+		render(
+			<DismissibleUpsell upsellId="test-upsell" onClick={onClick} onDismiss={onDismiss} dismissOnClick={false}>
+				<div>Test content</div>
+			</DismissibleUpsell>,
+		)
+
+		const containerDiv = screen.getByText("Test content").parentElement as HTMLElement
+		fireEvent.click(containerDiv)
+
+		expect(onClick).toHaveBeenCalledTimes(1)
+		expect(onDismiss).not.toHaveBeenCalled()
+
+		expect(mockPostMessage).not.toHaveBeenCalledWith(expect.objectContaining({ type: "dismissUpsell" }))
+		expect(screen.getByText("Test content")).toBeInTheDocument()
+	})
+
+	it("does not dismiss when clicked if dismissOnClick is not provided (defaults to false)", async () => {
+		const onClick = vi.fn()
+		const onDismiss = vi.fn()
+		render(
+			<DismissibleUpsell upsellId="test-upsell" onClick={onClick} onDismiss={onDismiss}>
+				<div>Test content</div>
+			</DismissibleUpsell>,
+		)
+
+		const containerDiv = screen.getByText("Test content").parentElement as HTMLElement
+		fireEvent.click(containerDiv)
+
+		expect(onClick).toHaveBeenCalledTimes(1)
+		expect(onDismiss).not.toHaveBeenCalled()
+		expect(screen.getByText("Test content")).toBeInTheDocument()
 	})
 })
