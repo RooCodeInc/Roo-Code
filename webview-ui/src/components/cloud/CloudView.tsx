@@ -28,7 +28,6 @@ export const CloudView = ({ userInfo, isAuthenticated, cloudApiUrl, onDone }: Cl
 	const wasAuthenticatedRef = useRef(false)
 	const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 	const manualUrlInputRef = useRef<HTMLInputElement | null>(null)
-
 	// Manual URL entry state
 	const [authInProgress, setAuthInProgress] = useState(false)
 	const [showManualEntry, setShowManualEntry] = useState(false)
