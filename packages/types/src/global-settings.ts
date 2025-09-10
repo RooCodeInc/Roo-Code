@@ -139,8 +139,6 @@ export const globalSettingsSchema = z.object({
 	mcpEnabled: z.boolean().optional(),
 	enableMcpServerCreation: z.boolean().optional(),
 
-	remoteControlEnabled: z.boolean().optional(),
-
 	mode: z.string().optional(),
 	modeApiConfigs: z.record(z.string(), z.string()).optional(),
 	customModes: z.array(modeConfigSchema).optional(),
@@ -316,8 +314,6 @@ export const EVALS_SETTINGS: RooCodeSettings = {
 	telemetrySetting: "enabled",
 
 	mcpEnabled: false,
-
-	remoteControlEnabled: false,
 
 	mode: "code", // "architect",
 

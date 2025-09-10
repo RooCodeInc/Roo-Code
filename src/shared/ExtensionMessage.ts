@@ -281,7 +281,6 @@ export type ExtensionState = Pick<
 	| "profileThresholds"
 	| "includeDiagnosticMessages"
 	| "maxDiagnosticMessages"
-	| "remoteControlEnabled"
 	| "openRouterImageGenerationSelectedModel"
 	| "includeTaskHistoryInEnhance"
 > & {
@@ -345,6 +344,9 @@ export type ExtensionState = Pick<
 	mcpServers?: McpServer[]
 	hasSystemPromptOverride?: boolean
 	mdmCompliant?: boolean
+	remoteControlEnabled: boolean
+	taskSyncEnabled: boolean
+	featureRoomoteControlEnabled: boolean
 }
 
 export interface ClineSayTool {
