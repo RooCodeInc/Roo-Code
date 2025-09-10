@@ -110,7 +110,7 @@ describe("DismissibleUpsell", () => {
 
 	it("hides the upsell if it's in the dismissed list", async () => {
 		const { container } = render(
-			<DismissibleUpsell id="test-upsell">
+			<DismissibleUpsell upsellId="test-upsell">
 				<div>Test content</div>
 			</DismissibleUpsell>,
 		)
@@ -154,7 +154,7 @@ describe("DismissibleUpsell", () => {
 
 	it("applies the className prop to the container", () => {
 		const { container } = render(
-			<DismissibleUpsell id="test-upsell" className="custom-class">
+			<DismissibleUpsell upsellId="test-upsell" className="custom-class">
 				<div>Test content</div>
 			</DismissibleUpsell>,
 		)

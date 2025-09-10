@@ -185,11 +185,16 @@ const AutoApproveMenu = ({ style }: AutoApproveMenuProps) => {
 					{enabledCount > 7 && (
 						<>
 							<DismissibleUpsell
-								upsellId="autoApprovePowerUser"
+								upsellId="autoApprovePowerUserA"
 								onClick={() => openUpsell()}
 								dismissOnClick={false}
 								variant="banner">
-								{t("cloud:upsell.autoApprovePowerUser")}
+								<Trans
+									i18nKey="cloud:upsell.autoApprovePowerUser"
+									components={{
+										learnMoreLink: <VSCodeLink href="#" />,
+									}}
+								/>
 							</DismissibleUpsell>
 						</>
 					)}
