@@ -269,6 +269,8 @@
 		"anthropic1MContextBetaDescription": "Claude Sonnet 4のコンテキストウィンドウを100万トークンに拡張します",
 		"awsBedrock1MContextBetaLabel": "1Mコンテキストウィンドウを有効にする（ベータ版）",
 		"awsBedrock1MContextBetaDescription": "Claude Sonnet 4のコンテキストウィンドウを100万トークンに拡張します",
+		"vertex1MContextLabel": "1Mコンテキストウィンドウを有効にする（プレビュー）",
+		"vertex1MContextDescription": "Claude Sonnet 4のコンテキストウィンドウを100万トークンに拡張します。これはプレビュー機能であり、すべてのユーザーが利用できるわけではありません。",
 		"cerebrasApiKey": "Cerebras APIキー",
 		"getCerebrasApiKey": "Cerebras APIキーを取得",
 		"chutesApiKey": "Chutes APIキー",

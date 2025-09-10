@@ -269,6 +269,8 @@
 		"anthropic1MContextBetaDescription": "Breidt het contextvenster uit tot 1 miljoen tokens voor Claude Sonnet 4",
 		"awsBedrock1MContextBetaLabel": "1M contextvenster inschakelen (bèta)",
 		"awsBedrock1MContextBetaDescription": "Breidt het contextvenster uit tot 1 miljoen tokens voor Claude Sonnet 4",
+		"vertex1MContextLabel": "1M contextvenster inschakelen (preview)",
+		"vertex1MContextDescription": "Breidt het contextvenster uit tot 1 miljoen tokens voor Claude Sonnet 4. Dit is een preview-functie en is mogelijk niet voor alle gebruikers beschikbaar.",
 		"cerebrasApiKey": "Cerebras API-sleutel",
 		"getCerebrasApiKey": "Cerebras API-sleutel verkrijgen",
 		"chutesApiKey": "Chutes API-sleutel",

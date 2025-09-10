@@ -1,3 +1,4 @@
+import fs from "fs"
 import { Anthropic } from "@anthropic-ai/sdk"
 import { AnthropicVertex } from "@anthropic-ai/vertex-sdk"
 import { GoogleAuth, JWTInput } from "google-auth-library"
@@ -8,6 +9,7 @@ import {
 	vertexDefaultModelId,
 	vertexModels,
 	ANTHROPIC_DEFAULT_MAX_TOKENS,
+	ANTHROPIC_VERTEX_1M_CONTEXT_MODEL_ID,
 } from "@roo-code/types"
 
 import { ApiHandlerOptions } from "../../shared/api"
@@ -35,12 +37,20 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 		const region = this.options.vertexRegion ?? "us-east5"
 
 		if (this.options.vertexJsonCredentials) {
+			let credentials = this.options.vertexJsonCredentials
+			try {
+				if (fs.existsSync(credentials)) {
+					credentials = fs.readFileSync(credentials, "utf-8")
+				}
+			} catch (error) {
+				console.error("Error reading Vertex credentials file:", error)
+			}
 			this.client = new AnthropicVertex({
 				projectId,
 				region,
 				googleAuth: new GoogleAuth({
 					scopes: ["https://www.googleapis.com/auth/cloud-platform"],
-					credentials: safeJsonParse<JWTInput>(this.options.vertexJsonCredentials, undefined),
+					credentials: safeJsonParse<JWTInput>(credentials, undefined),
 				}),
 			})
 		} else if (this.options.vertexKeyFile) {
@@ -165,8 +175,19 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 	getModel() {
 		const modelId = this.options.apiModelId
 		let id = modelId && modelId in vertexModels ? (modelId as VertexModelId) : vertexDefaultModelId
-		const info: ModelInfo = vertexModels[id]
+		const info: ModelInfo = { ...vertexModels[id] }
 		const params = getModelParams({ format: "anthropic", modelId: id, model: info, settings: this.options })
+
+		if (id === ANTHROPIC_VERTEX_1M_CONTEXT_MODEL_ID && this.options.vertex1MContext) {
+			info.contextWindow = 1_000_000
+			const tier = info.tiers?.[0]
+			if (tier) {
+				info.inputPrice = tier.inputPrice
+				info.outputPrice = tier.outputPrice
+				info.cacheWritesPrice = tier.cacheWritesPrice
+				info.cacheReadsPrice = tier.cacheReadsPrice
+			}
+		}
 
 		// The `:thinking` suffix indicates that the model is a "Hybrid"
 		// reasoning model and that reasoning is required to be enabled.

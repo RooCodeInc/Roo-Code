@@ -269,6 +269,8 @@
 		"anthropic1MContextBetaDescription": "Amplia la finestra de context a 1 milió de tokens per a Claude Sonnet 4",
 		"awsBedrock1MContextBetaLabel": "Activa la finestra de context d'1M (Beta)",
 		"awsBedrock1MContextBetaDescription": "Amplia la finestra de context a 1 milió de tokens per a Claude Sonnet 4",
+		"vertex1MContextLabel": "Activa la finestra de context d'1M (Vista prèvia)",
+		"vertex1MContextDescription": "Amplia la finestra de context a 1 milió de tokens per a Claude Sonnet 4. Aquesta és una funció de vista prèvia i pot no estar disponible per a tots els usuaris.",
 		"cerebrasApiKey": "Clau API de Cerebras",
 		"getCerebrasApiKey": "Obtenir clau API de Cerebras",
 		"chutesApiKey": "Clau API de Chutes",
