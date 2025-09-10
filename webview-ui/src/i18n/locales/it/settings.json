@@ -105,7 +105,7 @@
 		},
 		"close": "Chiudi",
 		"validation": {
-			"invalidQdrantUrl": "URL del database vettoriale non valida",
+			"invalidQdrantUrl": "URL del database vettoriale non valido",
 			"invalidOllamaUrl": "URL Ollama non valido",
 			"invalidBaseUrl": "URL di base non valido",
 			"qdrantUrlRequired": "È richiesto l'URL del database vettoriale",
