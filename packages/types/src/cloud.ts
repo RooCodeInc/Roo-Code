@@ -422,6 +422,7 @@ export enum ExtensionBridgeEventName {
 	InstanceRegistered = "instance_registered",
 	InstanceUnregistered = "instance_unregistered",
 	HeartbeatUpdated = "heartbeat_updated",
+	SettingsUpdated = "settings_updated",
 }
 
 export const extensionBridgeEventSchema = z.discriminatedUnion("type", [
@@ -530,6 +531,15 @@ export const extensionBridgeEventSchema = z.discriminatedUnion("type", [
 	z.object({
 		type: z.literal(ExtensionBridgeEventName.HeartbeatUpdated),
 		instance: extensionInstanceSchema,
+		timestamp: z.number(),
+	}),
+	z.object({
+		type: z.literal(ExtensionBridgeEventName.SettingsUpdated),
+		instance: extensionInstanceSchema,
+		versions: z.object({
+			organization: z.number(),
+			user: z.number(),
+		}),
 		timestamp: z.number(),
 	}),
 ])

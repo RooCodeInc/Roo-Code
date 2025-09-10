@@ -205,6 +205,18 @@ export class ExtensionChannel extends BaseChannel<
 		})
 	}
 
+	/**
+	 * Publish a settings update event to be broadcast to other instances
+	 */
+	public async publishSettingsUpdate(versions: { organization: number; user: number }): Promise<void> {
+		await this.publish(ExtensionSocketEvents.EVENT, {
+			type: ExtensionBridgeEventName.SettingsUpdated,
+			instance: await this.updateInstance(),
+			versions,
+			timestamp: Date.now(),
+		})
+	}
+
 	private cleanupListeners(): void {
 		this.eventListeners.forEach((listener, eventName) => {
 			// Cast is safe because we only store valid event names from eventMapping.

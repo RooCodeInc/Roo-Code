@@ -126,6 +126,9 @@ export class CloudService extends EventEmitter<CloudServiceEvents> implements Di
 				cloudSettingsService.on("settings-updated", this.settingsListener)
 				await cloudSettingsService.initialize()
 
+				// Set up bridge listener for settings updates from other instances
+				cloudSettingsService.setupBridgeListener()
+
 				this._settingsService = cloudSettingsService
 			}
 

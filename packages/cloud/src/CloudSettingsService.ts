@@ -21,6 +21,7 @@ import {
 
 import { getRooCodeApiUrl } from "./config.js"
 import { RefreshTimer } from "./RefreshTimer.js"
+import { BridgeOrchestrator } from "./bridge/index.js"
 
 const ORGANIZATION_SETTINGS_CACHE_KEY = "organization-settings"
 const USER_SETTINGS_CACHE_KEY = "user-settings"
@@ -102,6 +103,37 @@ export class CloudSettingsService extends EventEmitter<SettingsServiceEvents> im
 		if (this.authService.hasActiveSession()) {
 			this.timer.start()
 		}
+	}
+
+	/**
+	 * Set up listener for settings update events from other instances
+	 * This will be called by CloudService after initialization
+	 */
+	public setupBridgeListener(): void {
+		// This method will be called to set up listening for remote settings updates
+		// The actual implementation will be handled through the BridgeOrchestrator
+		// which will call handleRemoteSettingsUpdate when events are received
+	}
+
+	/**
+	 * Handle remote settings update events from other instances
+	 * This method should be called by the BridgeOrchestrator when a settings update event is received
+	 */
+	public handleRemoteSettingsUpdate(versions: { organization: number; user: number }): void {
+		// Check if we should refetch settings based on version numbers
+		if (this.shouldRefetchSettings(versions)) {
+			this.log("[cloud-settings] Received settings update event with newer versions, refetching...")
+			this.fetchSettings().catch((error) => {
+				this.log("[cloud-settings] Error refetching settings after update event:", error)
+			})
+		}
+	}
+
+	private shouldRefetchSettings(eventVersions: { organization: number; user: number }): boolean {
+		const currentOrgVersion = this.settings?.version ?? -1
+		const currentUserVersion = this.userSettings?.version ?? -1
+
+		return eventVersions.organization > currentOrgVersion || eventVersions.user > currentUserVersion
 	}
 
 	private async fetchSettings(): Promise<boolean> {
@@ -257,6 +289,9 @@ export class CloudSettingsService extends EventEmitter<SettingsServiceEvents> im
 				this.userSettings = result.data
 				await this.cacheSettings()
 				this.emit("settings-updated", {} as Record<string, never>)
+
+				// Broadcast settings update event to other instances
+				this.broadcastSettingsUpdate()
 			}
 
 			return true
@@ -264,6 +299,24 @@ export class CloudSettingsService extends EventEmitter<SettingsServiceEvents> im
 			this.log("[cloud-settings] Error updating user settings:", error)
 			return false
 		}
+	}
+
+	private broadcastSettingsUpdate(): void {
+		// Broadcast settings update event to other instances
+		const bridge = BridgeOrchestrator.getInstance()
+		if (!bridge) {
+			return
+		}
+
+		const versions = {
+			organization: this.settings?.version ?? 0,
+			user: this.userSettings?.version ?? 0,
+		}
+
+		// Use the public method to publish settings update
+		bridge.publishSettingsUpdate(versions).catch((error) => {
+			this.log("[cloud-settings] Error broadcasting settings update event:", error)
+		})
 	}
 
 	private async removeSettings(): Promise<void> {

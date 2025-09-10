@@ -6,12 +6,14 @@ import {
 	type TaskLike,
 	type CloudUserInfo,
 	type ExtensionBridgeCommand,
+	type ExtensionBridgeEvent,
 	type TaskBridgeCommand,
 	type StaticAppProperties,
 	type GitProperties,
 	ConnectionState,
 	ExtensionSocketEvents,
 	TaskSocketEvents,
+	ExtensionBridgeEventName,
 } from "@roo-code/types"
 
 import { SocketTransport } from "./SocketTransport.js"
@@ -215,6 +217,14 @@ export class BridgeOrchestrator {
 			this.extensionChannel?.handleCommand(message)
 		})
 
+		// Listen for settings update events from other instances
+		socket.on(ExtensionSocketEvents.RELAYED_EVENT, (event: ExtensionBridgeEvent) => {
+			if (event.type === ExtensionBridgeEventName.SettingsUpdated) {
+				console.log(`[BridgeOrchestrator] on(${ExtensionSocketEvents.RELAYED_EVENT}) -> SettingsUpdated`)
+				this.handleSettingsUpdateEvent(event)
+			}
+		})
+
 		socket.on(TaskSocketEvents.RELAYED_COMMAND, (message: TaskBridgeCommand) => {
 			console.log(
 				`[BridgeOrchestrator] on(${TaskSocketEvents.RELAYED_COMMAND}) -> ${message.type} for ${message.taskId}`,
@@ -330,5 +340,64 @@ export class BridgeOrchestrator {
 		// After a manual reconnect, we have a new socket instance
 		// so we need to set up listeners again.
 		this.setupSocketListeners()
+	}
+
+	/**
+	 * Publish a settings update event to be broadcast to other instances
+	 */
+	public async publishSettingsUpdate(versions: { organization: number; user: number }): Promise<void> {
+		if (this.extensionChannel) {
+			await this.extensionChannel.publishSettingsUpdate(versions)
+		}
+	}
+
+	private handleSettingsUpdateEvent(event: ExtensionBridgeEvent): void {
+		// Extract versions from the event
+		if (event.type !== ExtensionBridgeEventName.SettingsUpdated) {
+			return
+		}
+
+		type SettingsUpdateEvent = ExtensionBridgeEvent & {
+			versions: { organization: number; user: number }
+		}
+
+		const versions = (event as SettingsUpdateEvent).versions
+		if (!versions) {
+			return
+		}
+
+		// Notify CloudSettingsService about the update
+		// We use dynamic import to avoid circular dependency
+		try {
+			// eslint-disable-next-line @typescript-eslint/no-require-imports
+			const { CloudService } = require("../CloudService.js") as {
+				CloudService: {
+					hasInstance(): boolean
+					instance: {
+						settingsService: {
+							handleRemoteSettingsUpdate?: (versions: { organization: number; user: number }) => void
+						} | null
+					}
+				}
+			}
+
+			if (CloudService.hasInstance()) {
+				const cloudService = CloudService.instance
+				const settingsService = cloudService.settingsService
+				if (settingsService && "handleRemoteSettingsUpdate" in settingsService) {
+					const handleRemoteSettingsUpdate = settingsService.handleRemoteSettingsUpdate as (versions: {
+						organization: number
+						user: number
+					}) => void
+					handleRemoteSettingsUpdate(versions)
+				}
+			}
+		} catch (error) {
+			console.error(
+				`[BridgeOrchestrator] Error notifying CloudSettingsService of settings update: ${
+					error instanceof Error ? error.message : String(error)
+				}`,
+			)
+		}
 	}
 }
