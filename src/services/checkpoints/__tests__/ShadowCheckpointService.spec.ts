@@ -421,11 +421,13 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 					const searchPattern = args[4]
 
 					if (searchPattern.includes(".git/HEAD")) {
+						// Return the HEAD file path, not the .git directory
+						const headFilePath = path.join(path.relative(workspaceDir, nestedGitDir), "HEAD")
 						return Promise.resolve([
 							{
-								path: path.relative(workspaceDir, nestedGitDir),
-								type: "folder",
-								label: ".git",
+								path: headFilePath,
+								type: "file", // HEAD is a file, not a folder
+								label: "HEAD",
 							},
 						])
 					} else {
