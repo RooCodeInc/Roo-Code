@@ -436,8 +436,9 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 				const service = new klass(taskId, shadowDir, workspaceDir, () => {})
 
 				// Verify that initialization throws an error when nested git repos are detected
-				await expect(service.initShadowGit()).rejects.toThrow(
-					"Checkpoints are disabled because nested git repositories were detected in the workspace",
+				// The error message now includes the specific path of the nested repository
+				await expect(service.initShadowGit()).rejects.toThrowError(
+					/Checkpoints are disabled because a nested git repository was detected at:/,
 				)
 
 				// Clean up.
