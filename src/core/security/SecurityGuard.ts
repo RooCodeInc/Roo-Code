@@ -42,19 +42,12 @@ export class SecurityGuard {
 	private ruleIndex: Map<string, string> = new Map()
 
 	constructor(cwd: string, isEnabled: boolean = false, customConfigPath?: string) {
-		console.log(
-			`[SecurityGuard] Constructor called - cwd: "${cwd}", isEnabled: ${isEnabled}, customConfigPath: "${customConfigPath || "none"}"`,
-		)
-
 		this.cwd = cwd
 		this.isEnabled = isEnabled
 		this.customConfigPath = customConfigPath
 
 		if (this.isEnabled) {
-			console.log("[SecurityGuard] Security is enabled, calling loadConfiguration()")
 			this.loadConfiguration()
-		} else {
-			console.log("[SecurityGuard] Security is disabled, skipping loadConfiguration()")
 		}
 	}
 
@@ -69,11 +62,8 @@ export class SecurityGuard {
 
 			let customConfig = {}
 			if (this.customConfigPath) {
-				console.log(`[SecurityGuard] Processing custom config path: "${this.customConfigPath}"`)
-
 				// Skip disabled custom configs
 				if (this.customConfigPath.startsWith("DISABLED:")) {
-					console.log("[SecurityGuard] Custom config is disabled, skipping")
 					customConfig = {}
 				} else {
 					// Resolve custom config path to handle ~ and relative paths
@@ -81,23 +71,16 @@ export class SecurityGuard {
 
 					// Expand ~ to home directory
 					if (resolvedCustomPath.startsWith("~")) {
-						console.log(`[SecurityGuard] Expanding ~ in path: "${resolvedCustomPath}"`)
 						resolvedCustomPath = resolvedCustomPath.replace("~", os.homedir())
-						console.log(`[SecurityGuard] After ~ expansion: "${resolvedCustomPath}"`)
 					}
 
 					// Resolve relative paths to absolute paths
 					if (!path.isAbsolute(resolvedCustomPath)) {
-						console.log(`[SecurityGuard] Resolving relative path: "${resolvedCustomPath}"`)
 						resolvedCustomPath = path.resolve(resolvedCustomPath)
-						console.log(`[SecurityGuard] After path resolution: "${resolvedCustomPath}"`)
 					}
 
-					console.log(`[SecurityGuard] Final resolved custom config path: "${resolvedCustomPath}"`)
 					customConfig = this.loadConfigFile(resolvedCustomPath)
 				}
-			} else {
-				console.log("[SecurityGuard] No custom config path provided")
 			}
 
 			this.mergeConfigurations(globalConfig, projectConfig, customConfig)
@@ -140,23 +123,13 @@ export class SecurityGuard {
 	}
 	private loadConfigFile(configPath: string): SecurityConfiguration {
 		try {
-			console.log(`[SecurityGuard] Attempting to load config: ${configPath}`)
-
 			if (!fs.existsSync(configPath)) {
-				console.log(`[SecurityGuard] Config file does not exist: ${configPath}`)
 				// No auto-creation - user must explicitly create config files via UI buttons
 				return {}
 			}
 
-			console.log(`[SecurityGuard] Config file exists, reading: ${configPath}`)
 			const yamlContent = fs.readFileSync(configPath, "utf8")
-			console.log(`[SecurityGuard] Read ${yamlContent.length} characters from: ${configPath}`)
-
 			const config = yaml.parse(yamlContent) as SecurityConfiguration
-			console.log(
-				`[SecurityGuard] Successfully parsed config from: ${configPath}`,
-				JSON.stringify(config, null, 2),
-			)
 
 			return config
 		} catch (error) {
@@ -170,11 +143,6 @@ export class SecurityGuard {
 		project: SecurityConfiguration,
 		custom: SecurityConfiguration = {},
 	): void {
-		console.log("[SecurityGuard] Starting mergeConfigurations")
-		console.log("[SecurityGuard] Global config:", JSON.stringify(global, null, 2))
-		console.log("[SecurityGuard] Project config:", JSON.stringify(project, null, 2))
-		console.log("[SecurityGuard] Custom config:", JSON.stringify(custom, null, 2))
-
 		// Handle null/undefined configs by converting to empty objects
 		const safeGlobal = global || {}
 		const safeProject = project || {}
@@ -210,37 +178,16 @@ export class SecurityGuard {
 			...(safeCustom.ask?.commands || []),
 		]
 
-		console.log("[SecurityGuard] Merged block files:", allBlockFiles)
-		console.log("[SecurityGuard] Merged block commands:", allBlockCommands)
-		console.log("[SecurityGuard] Merged ask files:", allAskFiles)
-		console.log("[SecurityGuard] Merged ask commands:", allAskCommands)
-
 		this.confidentialFiles = [...new Set(allBlockFiles)]
 		this.confidentialCommands = [...new Set(allBlockCommands)]
 		this.confidentialEnvVars = [...new Set(allBlockEnvVars)]
 		this.sensitiveFiles = [...new Set(allAskFiles)]
 		this.sensitiveCommands = [...new Set(allAskCommands)]
 
-		console.log(
-			"[SecurityGuard] Before filtering - confidentialFiles:",
-			this.confidentialFiles.length,
-			"sensitiveFiles:",
-			this.sensitiveFiles.length,
-		)
-
 		this.sensitiveFiles = this.sensitiveFiles.filter((pattern) => !this.confidentialFiles.includes(pattern))
 		this.sensitiveCommands = this.sensitiveCommands.filter(
 			(pattern) => !this.confidentialCommands.includes(pattern),
 		)
-
-		console.log(
-			"[SecurityGuard] After filtering - confidentialFiles:",
-			this.confidentialFiles.length,
-			"sensitiveFiles:",
-			this.sensitiveFiles.length,
-		)
-		console.log("[SecurityGuard] Final confidentialFiles:", this.confidentialFiles)
-		console.log("[SecurityGuard] Final sensitiveFiles:", this.sensitiveFiles)
 	}
 	public static createDefaultGlobalConfig(): string {
 		const configPath = path.join(os.homedir(), ".roo", "security.yaml")
@@ -286,7 +233,7 @@ ask:
 			fs.writeFileSync(configPath, defaultGlobalConfig)
 			return configPath
 		} catch (error) {
-			// Config creation failed - continue silently
+			console.error(`[SecurityGuard] Failed to create default global config at ${configPath}:`, error)
 			return configPath
 		}
 	}
@@ -334,7 +281,7 @@ ask:
 			fs.writeFileSync(configPath, defaultProjectConfig)
 			return configPath
 		} catch (error) {
-			// Config creation failed - continue silently
+			console.error(`[SecurityGuard] Failed to create default project config at ${configPath}:`, error)
 			return configPath
 		}
 	}
@@ -984,8 +931,6 @@ ask:
 		this.confidentialEnvVars.forEach((pattern, index) => {
 			this.ruleIndex.set(pattern, `block.env_vars[${index}]`)
 		})
-
-		console.log(`[SecurityGuard] Built rule index with ${this.ruleIndex.size} patterns`)
 	}
 
 	/**
