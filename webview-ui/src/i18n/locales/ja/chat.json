@@ -276,13 +276,7 @@
 		"feature2": "<bold>Roo拡張機能をリモート制御（Pro）：</bold>チャットベースのブラウザインターフェースからタスクを開始、停止、操作。",
 		"learnMore": "制御を取る準備はできましたか？詳細は<learnMoreLink>こちら</learnMoreLink>。",
 		"visitCloudButton": "Roo Code Cloudを訪問",
-		"socialLinks": "<xLink>X</xLink>、<discordLink>Discord</discordLink>、または<redditLink>r/RooCode</redditLink>でフォローしてください",
-		"stealthModel": {
-			"feature": "Sonicステルスモデルが今、<bold>Grok Code Fast</bold>に！この高性能推論モデルが<bold>xAI (Grok)</bold>プロバイダーの下で<code>grok-code-fast-1</code>として利用できるようになりました。",
-			"note": "Sonicに関するすべての有用なフィードバックに感謝して、xAIは<bold>Roo Code Cloud</bold>プロバイダーを通じて<code>grok-code-fast-1</code>への無料アクセスをもう1週間延長しています。",
-			"connectButton": "Roo Code Cloudに接続",
-			"selectModel": "プロバイダー設定を更新するために<settingsLink>設定</settingsLink>にアクセスしてください。"
-		}
+		"socialLinks": "<xLink>X</xLink>、<discordLink>Discord</discordLink>、または<redditLink>r/RooCode</redditLink>でフォローしてください"
 	},
 	"browser": {
 		"rooWantsToUse": "Rooはブラウザを使用したい:",

@@ -276,13 +276,7 @@
 		"feature2": "<bold>Controlla l'estensione Roo da remoto (Pro):</bold> Avvia, ferma e interagisci con le attività da un'interfaccia browser basata su chat.",
 		"learnMore": "Pronto a prendere il controllo? Scopri di più <learnMoreLink>qui</learnMoreLink>.",
 		"visitCloudButton": "Visita Roo Code Cloud",
-		"socialLinks": "Unisciti a noi su <xLink>X</xLink>, <discordLink>Discord</discordLink>, o <redditLink>r/RooCode</redditLink>",
-		"stealthModel": {
-			"feature": "Il modello stealth Sonic ora è <bold>Grok Code Fast</bold>! Questo modello di ragionamento ad alte prestazioni è disponibile come <code>grok-code-fast-1</code> sotto il provider <bold>xAI (Grok)</bold>.",
-			"note": "Come ringraziamento per tutti i feedback utili su Sonic, xAI sta estendendo l'accesso gratuito a <code>grok-code-fast-1</code> per un'altra settimana tramite il provider <bold>Roo Code Cloud</bold>.",
-			"connectButton": "Connetti a Roo Code Cloud",
-			"selectModel": "Visita le <settingsLink>Impostazioni</settingsLink> per aggiornare la configurazione del provider."
-		}
+		"socialLinks": "Unisciti a noi su <xLink>X</xLink>, <discordLink>Discord</discordLink>, o <redditLink>r/RooCode</redditLink>"
 	},
 	"browser": {
 		"rooWantsToUse": "Roo vuole utilizzare il browser:",

@@ -261,13 +261,7 @@
 		"feature2": "<bold>Bestuur de Roo Extensie op afstand (Pro):</bold> Start, stop en interacteer met taken vanuit een chat-gebaseerde browserinterface.",
 		"learnMore": "Klaar om de controle te nemen? Leer meer <learnMoreLink>hier</learnMoreLink>.",
 		"visitCloudButton": "Bezoek Roo Code Cloud",
-		"socialLinks": "Sluit je bij ons aan op <xLink>X</xLink>, <discordLink>Discord</discordLink>, of <redditLink>r/RooCode</redditLink>",
-		"stealthModel": {
-			"feature": "Het Sonic stealth model is nu <bold>Grok Code Fast</bold>! Dit hoogperformante redeneermodel is beschikbaar als <code>grok-code-fast-1</code> onder de <bold>xAI (Grok)</bold> provider.",
-			"note": "Als dank voor alle nuttige feedback over Sonic, breidt xAI de gratis toegang tot <code>grok-code-fast-1</code> uit voor nog een week via de <bold>Roo Code Cloud</bold>-provider.",
-			"connectButton": "Verbinden met Roo Code Cloud",
-			"selectModel": "Ga naar <settingsLink>Instellingen</settingsLink> om je provider configuratie bij te werken."
-		}
+		"socialLinks": "Sluit je bij ons aan op <xLink>X</xLink>, <discordLink>Discord</discordLink>, of <redditLink>r/RooCode</redditLink>"
 	},
 	"reasoning": {
 		"thinking": "Denkt na",

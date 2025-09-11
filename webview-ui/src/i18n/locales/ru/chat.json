@@ -261,13 +261,7 @@
 		"feature2": "<bold>Управляйте расширением Roo удаленно (Pro):</bold> Запускайте, останавливайте и взаимодействуйте с задачами через браузерный интерфейс на основе чата.",
 		"learnMore": "Готовы взять контроль в свои руки? Узнайте больше <learnMoreLink>здесь</learnMoreLink>.",
 		"visitCloudButton": "Посетить Roo Code Cloud",
-		"socialLinks": "Присоединяйтесь к нам в <xLink>X</xLink>, <discordLink>Discord</discordLink>, или <redditLink>r/RooCode</redditLink>",
-		"stealthModel": {
-			"feature": "Скрытая модель Sonic теперь называется <bold>Grok Code Fast</bold>! Эта высокопроизводительная модель рассуждения доступна как <code>grok-code-fast-1</code> у провайдера <bold>xAI (Grok)</bold>.",
-			"note": "В благодарность за все полезные отзывы о Sonic, xAI продлевает бесплатный доступ к <code>grok-code-fast-1</code> ещё на одну неделю через провайдера <bold>Roo Code Cloud</bold>.",
-			"connectButton": "Подключиться к Roo Code Cloud",
-			"selectModel": "Перейдите в <settingsLink>Настройки</settingsLink> для обновления конфигурации провайдера."
-		}
+		"socialLinks": "Присоединяйтесь к нам в <xLink>X</xLink>, <discordLink>Discord</discordLink>, или <redditLink>r/RooCode</redditLink>"
 	},
 	"reasoning": {
 		"thinking": "Обдумывание",
