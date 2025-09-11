@@ -11,6 +11,7 @@ import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from ".
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
 import { handleOpenAIError } from "./utils/openai-error-handler"
+import { ToolRegistry } from "../../core/prompts/tools/schemas/tool-registry"
 
 type BaseOpenAiCompatibleProviderOptions<ModelName extends string> = ApiHandlerOptions & {
 	providerName: string
@@ -83,6 +84,11 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 			messages: [{ role: "system", content: systemPrompt }, ...convertToOpenAiMessages(messages)],
 			stream: true,
 			stream_options: { include_usage: true },
+		}
+
+		if (metadata?.tools && metadata.tools.length > 0) {
+			params.tools = ToolRegistry.getInstance().generateFunctionCallSchemas(metadata.tools, metadata.toolArgs)
+			params.tool_choice = "auto"
 		}
 
 		try {
