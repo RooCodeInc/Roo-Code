@@ -168,6 +168,37 @@ function getLinuxTerminalConfig() {
 	}
 }
 
+// Automation profile helpers
+function getWindowsAutomationProfile() {
+	try {
+		const config = vscode.workspace.getConfiguration("terminal.integrated")
+		const automationProfile = config.get<WindowsTerminalProfile>("automationProfile.windows")
+		return automationProfile
+	} catch {
+		return null
+	}
+}
+
+function getMacAutomationProfile() {
+	try {
+		const config = vscode.workspace.getConfiguration("terminal.integrated")
+		const automationProfile = config.get<MacTerminalProfile>("automationProfile.osx")
+		return automationProfile
+	} catch {
+		return null
+	}
+}
+
+function getLinuxAutomationProfile() {
+	try {
+		const config = vscode.workspace.getConfiguration("terminal.integrated")
+		const automationProfile = config.get<LinuxTerminalProfile>("automationProfile.linux")
+		return automationProfile
+	} catch {
+		return null
+	}
+}
+
 // -----------------------------------------------------
 // 2) Platform-Specific VS Code Shell Retrieval
 // -----------------------------------------------------
@@ -367,4 +398,33 @@ export function getShell(): string {
 	}
 
 	return shell
+}
+
+/**
+ * Gets the automation shell path for the current platform.
+ * This is used for automation tools and should respect the automationProfile settings.
+ * Falls back to the default shell if no automation profile is configured.
+ */
+export function getAutomationShell(): string | null {
+	let automationProfile: WindowsTerminalProfile | MacTerminalProfile | LinuxTerminalProfile | null = null
+
+	// Get the automation profile for the current platform
+	if (process.platform === "win32") {
+		automationProfile = getWindowsAutomationProfile()
+	} else if (process.platform === "darwin") {
+		automationProfile = getMacAutomationProfile()
+	} else if (process.platform === "linux") {
+		automationProfile = getLinuxAutomationProfile()
+	}
+
+	// If we have an automation profile with a path, use it
+	if (automationProfile?.path) {
+		const shellPath = normalizeShellPath(automationProfile.path)
+		if (shellPath && isShellAllowed(shellPath)) {
+			return shellPath
+		}
+	}
+
+	// Fall back to the default shell
+	return null
 }

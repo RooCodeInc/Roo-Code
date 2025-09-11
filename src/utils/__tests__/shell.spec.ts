@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import * as vscode from "vscode"
 import { userInfo } from "os"
-import { getShell } from "../shell"
+import { getShell, getAutomationShell } from "../shell"
 
 // Mock vscode module
 vi.mock("vscode", () => ({
@@ -483,6 +483,215 @@ describe("Shell Detection Tests", () => {
 
 			const result = getShell()
 			expect(result).toBe("/bin/bash") // Should fall back to safe default
+		})
+	})
+
+	// --------------------------------------------------------------------------
+	// Automation Shell Detection Tests
+	// --------------------------------------------------------------------------
+	describe("Automation Shell Detection", () => {
+		describe("Windows Automation Shell", () => {
+			beforeEach(() => {
+				Object.defineProperty(process, "platform", { value: "win32" })
+			})
+
+			it("uses automation profile path when configured", () => {
+				const mockConfig = {
+					get: vi.fn((key: string) => {
+						if (key === "automationProfile.windows") {
+							return { path: "C:\\Program Files\\PowerShell\\7\\pwsh.exe" }
+						}
+						return undefined
+					}),
+				}
+				vi.mocked(vscode.workspace.getConfiguration).mockReturnValue(mockConfig as any)
+
+				expect(getAutomationShell()).toBe("C:\\Program Files\\PowerShell\\7\\pwsh.exe")
+			})
+
+			it("handles array path in automation profile", () => {
+				const mockConfig = {
+					get: vi.fn((key: string) => {
+						if (key === "automationProfile.windows") {
+							return { path: ["C:\\Program Files\\Git\\bin\\bash.exe", "bash.exe"] }
+						}
+						return undefined
+					}),
+				}
+				vi.mocked(vscode.workspace.getConfiguration).mockReturnValue(mockConfig as any)
+
+				expect(getAutomationShell()).toBe("C:\\Program Files\\Git\\bin\\bash.exe")
+			})
+
+			it("returns null when no automation profile is configured", () => {
+				const mockConfig = {
+					get: vi.fn((key: string) => {
+						if (key === "automationProfile.windows") {
+							return null
+						}
+						return undefined
+					}),
+				}
+				vi.mocked(vscode.workspace.getConfiguration).mockReturnValue(mockConfig as any)
+
+				expect(getAutomationShell()).toBeNull()
+			})
+
+			it("returns null when automation profile has no path", () => {
+				const mockConfig = {
+					get: vi.fn((key: string) => {
+						if (key === "automationProfile.windows") {
+							return { source: "PowerShell" } // No path property
+						}
+						return undefined
+					}),
+				}
+				vi.mocked(vscode.workspace.getConfiguration).mockReturnValue(mockConfig as any)
+
+				expect(getAutomationShell()).toBeNull()
+			})
+
+			it("returns null when automation profile path is not in allowlist", () => {
+				const mockConfig = {
+					get: vi.fn((key: string) => {
+						if (key === "automationProfile.windows") {
+							return { path: "C:\\malicious\\shell.exe" }
+						}
+						return undefined
+					}),
+				}
+				vi.mocked(vscode.workspace.getConfiguration).mockReturnValue(mockConfig as any)
+
+				expect(getAutomationShell()).toBeNull()
+			})
+		})
+
+		describe("macOS Automation Shell", () => {
+			beforeEach(() => {
+				Object.defineProperty(process, "platform", { value: "darwin" })
+			})
+
+			it("uses automation profile path when configured", () => {
+				const mockConfig = {
+					get: vi.fn((key: string) => {
+						if (key === "automationProfile.osx") {
+							return { path: "/bin/bash" }
+						}
+						return undefined
+					}),
+				}
+				vi.mocked(vscode.workspace.getConfiguration).mockReturnValue(mockConfig as any)
+
+				expect(getAutomationShell()).toBe("/bin/bash")
+			})
+
+			it("handles array path in automation profile", () => {
+				const mockConfig = {
+					get: vi.fn((key: string) => {
+						if (key === "automationProfile.osx") {
+							return { path: ["/usr/local/bin/bash", "/bin/bash"] }
+						}
+						return undefined
+					}),
+				}
+				vi.mocked(vscode.workspace.getConfiguration).mockReturnValue(mockConfig as any)
+
+				expect(getAutomationShell()).toBe("/usr/local/bin/bash")
+			})
+
+			it("returns null when no automation profile is configured", () => {
+				const mockConfig = {
+					get: vi.fn(() => undefined),
+				}
+				vi.mocked(vscode.workspace.getConfiguration).mockReturnValue(mockConfig as any)
+
+				expect(getAutomationShell()).toBeNull()
+			})
+		})
+
+		describe("Linux Automation Shell", () => {
+			beforeEach(() => {
+				Object.defineProperty(process, "platform", { value: "linux" })
+			})
+
+			it("uses automation profile path when configured", () => {
+				const mockConfig = {
+					get: vi.fn((key: string) => {
+						if (key === "automationProfile.linux") {
+							return { path: "/bin/bash" }
+						}
+						return undefined
+					}),
+				}
+				vi.mocked(vscode.workspace.getConfiguration).mockReturnValue(mockConfig as any)
+
+				expect(getAutomationShell()).toBe("/bin/bash")
+			})
+
+			it("handles array path in automation profile", () => {
+				const mockConfig = {
+					get: vi.fn((key: string) => {
+						if (key === "automationProfile.linux") {
+							return { path: ["/usr/bin/zsh", "/bin/zsh"] }
+						}
+						return undefined
+					}),
+				}
+				vi.mocked(vscode.workspace.getConfiguration).mockReturnValue(mockConfig as any)
+
+				expect(getAutomationShell()).toBe("/usr/bin/zsh")
+			})
+
+			it("returns null when automation profile path is empty array", () => {
+				const mockConfig = {
+					get: vi.fn((key: string) => {
+						if (key === "automationProfile.linux") {
+							return { path: [] }
+						}
+						return undefined
+					}),
+				}
+				vi.mocked(vscode.workspace.getConfiguration).mockReturnValue(mockConfig as any)
+
+				expect(getAutomationShell()).toBeNull()
+			})
+
+			it("validates automation shell against allowlist", () => {
+				const mockConfig = {
+					get: vi.fn((key: string) => {
+						if (key === "automationProfile.linux") {
+							return { path: "/usr/bin/evil-shell" }
+						}
+						return undefined
+					}),
+				}
+				vi.mocked(vscode.workspace.getConfiguration).mockReturnValue(mockConfig as any)
+
+				expect(getAutomationShell()).toBeNull()
+			})
+		})
+
+		describe("Unknown Platform Automation Shell", () => {
+			it("returns null for unknown platforms", () => {
+				Object.defineProperty(process, "platform", { value: "sunos" })
+				const mockConfig = {
+					get: vi.fn(() => undefined),
+				}
+				vi.mocked(vscode.workspace.getConfiguration).mockReturnValue(mockConfig as any)
+
+				expect(getAutomationShell()).toBeNull()
+			})
+		})
+
+		describe("Error Handling in Automation Shell", () => {
+			it("handles configuration errors gracefully", () => {
+				Object.defineProperty(process, "platform", { value: "win32" })
+				vscode.workspace.getConfiguration = () => {
+					throw new Error("Configuration error")
+				}
+
+				expect(getAutomationShell()).toBeNull()
+			})
 		})
 	})
 })

@@ -3,11 +3,16 @@
 import * as vscode from "vscode"
 import { Terminal } from "../Terminal"
 import { TerminalRegistry } from "../TerminalRegistry"
+import * as shellUtils from "../../../utils/shell"
 
 const PAGER = process.platform === "win32" ? "" : "cat"
 
 vi.mock("execa", () => ({
 	execa: vi.fn(),
+}))
+
+vi.mock("../../../utils/shell", () => ({
+	getAutomationShell: vi.fn(() => null),
 }))
 
 describe("TerminalRegistry", () => {
@@ -116,6 +121,81 @@ describe("TerminalRegistry", () => {
 				})
 			} finally {
 				Terminal.setTerminalZshP10k(false)
+			}
+		})
+
+		it("uses automation profile shell when configured", () => {
+			// Mock getAutomationShell to return a specific shell path
+			const getAutomationShellMock = shellUtils.getAutomationShell as any
+			getAutomationShellMock.mockReturnValue("/bin/bash")
+
+			try {
+				TerminalRegistry.createTerminal("/test/path", "vscode")
+
+				expect(mockCreateTerminal).toHaveBeenCalledWith({
+					cwd: "/test/path",
+					name: "Roo Code",
+					iconPath: expect.any(Object),
+					env: {
+						PAGER,
+						VTE_VERSION: "0",
+						PROMPT_EOL_MARK: "",
+					},
+					shellPath: "/bin/bash",
+				})
+			} finally {
+				// Reset mock
+				getAutomationShellMock.mockReturnValue(null)
+			}
+		})
+
+		it("does not set shellPath when automation profile is not configured", () => {
+			// Mock getAutomationShell to return null (no automation profile)
+			const getAutomationShellMock = shellUtils.getAutomationShell as any
+			getAutomationShellMock.mockReturnValue(null)
+
+			TerminalRegistry.createTerminal("/test/path", "vscode")
+
+			expect(mockCreateTerminal).toHaveBeenCalledWith({
+				cwd: "/test/path",
+				name: "Roo Code",
+				iconPath: expect.any(Object),
+				env: {
+					PAGER,
+					VTE_VERSION: "0",
+					PROMPT_EOL_MARK: "",
+				},
+				shellPath: undefined,
+			})
+		})
+
+		it("uses Windows automation profile when configured", () => {
+			// Mock for Windows platform
+			const originalPlatform = process.platform
+			Object.defineProperty(process, "platform", { value: "win32", configurable: true })
+
+			// Mock getAutomationShell to return PowerShell 7 path
+			const getAutomationShellMock = shellUtils.getAutomationShell as any
+			getAutomationShellMock.mockReturnValue("C:\\Program Files\\PowerShell\\7\\pwsh.exe")
+
+			try {
+				TerminalRegistry.createTerminal("/test/path", "vscode")
+
+				expect(mockCreateTerminal).toHaveBeenCalledWith({
+					cwd: "/test/path",
+					name: "Roo Code",
+					iconPath: expect.any(Object),
+					env: {
+						PAGER: "",
+						VTE_VERSION: "0",
+						PROMPT_EOL_MARK: "",
+					},
+					shellPath: "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
+				})
+			} finally {
+				// Restore platform and mock
+				Object.defineProperty(process, "platform", { value: originalPlatform, configurable: true })
+				getAutomationShellMock.mockReturnValue(null)
 			}
 		})
 	})
