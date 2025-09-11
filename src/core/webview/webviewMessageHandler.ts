@@ -3038,5 +3038,25 @@ export const webviewMessageHandler = async (
 			})
 			break
 		}
+		case "forkTaskFromMessage": {
+			if (typeof message.messageTs !== "number") {
+				vscode.window.showErrorMessage(t("common:errors.invalid_message_timestamp"))
+				break
+			}
+
+			try {
+				await provider.forkTaskFromMessage(message.messageTs)
+			} catch (error) {
+				provider.log(
+					`Error forking task from message: ${error instanceof Error ? error.message : String(error)}`,
+				)
+				vscode.window.showErrorMessage(
+					t("common:errors.fork_task_failed", {
+						error: error instanceof Error ? error.message : String(error),
+					}),
+				)
+			}
+			break
+		}
 	}
 }

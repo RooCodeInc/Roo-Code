@@ -1215,6 +1215,21 @@ export const ChatRowContent = ({
 											disabled={isStreaming}
 											onClick={(e) => {
 												e.stopPropagation()
+												vscode.postMessage({
+													type: "forkTaskFromMessage",
+													messageTs: message.ts,
+												})
+											}}
+											title={t("chat:forkFromHere")}>
+											<span className="codicon codicon-git-branch" />
+										</Button>
+										<Button
+											variant="ghost"
+											size="icon"
+											className="shrink-0"
+											disabled={isStreaming}
+											onClick={(e) => {
+												e.stopPropagation()
 												handleEditClick()
 											}}>
 											<span className="codicon codicon-edit" />

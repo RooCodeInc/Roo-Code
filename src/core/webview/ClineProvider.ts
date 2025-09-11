@@ -1557,6 +1557,59 @@ export class ClineProvider
 		}
 	}
 
+	async forkTaskFromMessage(messageTs: number) {
+		const currentTask = this.getCurrentTask()
+		if (!currentTask) {
+			throw new Error("No active task to fork from")
+		}
+
+		// Find the message index
+		const messageIndex = currentTask.clineMessages.findIndex((msg) => msg.ts === messageTs)
+		if (messageIndex === -1) {
+			throw new Error("Message not found")
+		}
+
+		// Get messages up to and including the selected message
+		const messagesToCopy = currentTask.clineMessages.slice(0, messageIndex + 1)
+
+		// Create a new task with the copied conversation
+		const newTaskId = `${Date.now()}`
+		const historyItem: HistoryItem = {
+			id: newTaskId,
+			ts: Date.now(),
+			task: messagesToCopy[0]?.text || "Forked conversation",
+			mode: currentTask.taskMode || defaultModeSlug,
+			workspace: this.cwd,
+			number: (this.getGlobalState("taskHistory") ?? []).length + 1,
+			tokensIn: 0,
+			tokensOut: 0,
+			totalCost: 0,
+		}
+
+		// Save the new task to history
+		await this.updateTaskHistory(historyItem)
+
+		// Create the task directory and save messages
+		const { getTaskDirectoryPath } = await import("../../utils/storage")
+		const globalStoragePath = this.contextProxy.globalStorageUri.fsPath
+		const taskDirPath = await getTaskDirectoryPath(globalStoragePath, newTaskId)
+
+		// Ensure directory exists
+		await fs.mkdir(taskDirPath, { recursive: true })
+
+		// Save the messages to the new task
+		const uiMessagesFilePath = path.join(taskDirPath, GlobalFileNames.uiMessages)
+		await fs.writeFile(uiMessagesFilePath, JSON.stringify(messagesToCopy, null, 2))
+
+		// Create and show the new forked task
+		await this.createTaskWithHistoryItem(historyItem)
+
+		// Show success message
+		vscode.window.showInformationMessage(
+			"Task forked successfully. You can now continue the conversation from this point.",
+		)
+	}
+
 	async deleteTaskFromState(id: string) {
 		const taskHistory = this.getGlobalState("taskHistory") ?? []
 		const updatedTaskHistory = taskHistory.filter((task) => task.id !== id)
