@@ -169,31 +169,31 @@ function getLinuxTerminalConfig() {
 }
 
 // Automation profile helpers
-function getWindowsAutomationProfile() {
+function getWindowsAutomationProfile(): WindowsTerminalProfile | null {
 	try {
 		const config = vscode.workspace.getConfiguration("terminal.integrated")
 		const automationProfile = config.get<WindowsTerminalProfile>("automationProfile.windows")
-		return automationProfile
+		return automationProfile || null
 	} catch {
 		return null
 	}
 }
 
-function getMacAutomationProfile() {
+function getMacAutomationProfile(): MacTerminalProfile | null {
 	try {
 		const config = vscode.workspace.getConfiguration("terminal.integrated")
 		const automationProfile = config.get<MacTerminalProfile>("automationProfile.osx")
-		return automationProfile
+		return automationProfile || null
 	} catch {
 		return null
 	}
 }
 
-function getLinuxAutomationProfile() {
+function getLinuxAutomationProfile(): LinuxTerminalProfile | null {
 	try {
 		const config = vscode.workspace.getConfiguration("terminal.integrated")
 		const automationProfile = config.get<LinuxTerminalProfile>("automationProfile.linux")
-		return automationProfile
+		return automationProfile || null
 	} catch {
 		return null
 	}
