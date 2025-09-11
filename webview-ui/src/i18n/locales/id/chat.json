@@ -282,7 +282,7 @@
 		"triggerLabel_zero": "Tidak ada persetujuan otomatis",
 		"triggerLabel_one": "1 disetujui otomatis",
 		"triggerLabel_other": "{{count}} disetujui otomatis",
-		"triggerLabelAll": "Setujui Semua Secara Otomatis"
+		"triggerLabelAll": "YOLO"
 	},
 	"announcement": {
 		"title": "🎉 Roo Code {{version}} Dirilis",

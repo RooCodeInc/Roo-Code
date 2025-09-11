@@ -257,7 +257,7 @@
 		"triggerLabel_few": "{{count}} automatycznie zaakceptowane",
 		"triggerLabel_many": "{{count}} automatycznie zaakceptowanych",
 		"triggerLabel_other": "{{count}} automatycznie zaakceptowanych",
-		"triggerLabelAll": "Zatwierdź wszystko automatycznie"
+		"triggerLabelAll": "YOLO"
 	},
 	"reasoning": {
 		"thinking": "Myślenie",

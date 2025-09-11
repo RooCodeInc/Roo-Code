@@ -255,7 +255,7 @@
 		"triggerLabel_zero": "Không có tự động phê duyệt",
 		"triggerLabel_one": "1 được tự động phê duyệt",
 		"triggerLabel_other": "{{count}} được tự động phê duyệt",
-		"triggerLabelAll": "Tự động phê duyệt tất cả"
+		"triggerLabelAll": "YOLO"
 	},
 	"reasoning": {
 		"thinking": "Đang suy nghĩ",

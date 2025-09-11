@@ -255,7 +255,7 @@
 		"triggerLabel_zero": "Nessuna approvazione automatica",
 		"triggerLabel_one": "1 approvato automaticamente",
 		"triggerLabel_other": "{{count}} approvati automaticamente",
-		"triggerLabelAll": "Approva tutto automaticamente"
+		"triggerLabelAll": "YOLO"
 	},
 	"reasoning": {
 		"thinking": "Sto pensando",

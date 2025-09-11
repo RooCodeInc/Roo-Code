@@ -255,7 +255,7 @@
 		"triggerLabel_zero": "Geen automatische goedkeuring",
 		"triggerLabel_one": "1 automatisch goedgekeurd",
 		"triggerLabel_other": "{{count}} automatisch goedgekeurd",
-		"triggerLabelAll": "Alles automatisch goedkeuren"
+		"triggerLabelAll": "YOLO"
 	},
 	"announcement": {
 		"title": "🎉 Roo Code {{version}} uitgebracht",

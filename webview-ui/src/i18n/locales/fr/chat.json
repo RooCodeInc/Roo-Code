@@ -255,7 +255,7 @@
 		"triggerLabel_zero": "Pas d'approbation automatique",
 		"triggerLabel_one": "1 approuvé automatiquement",
 		"triggerLabel_other": "{{count}} approuvés automatiquement",
-		"triggerLabelAll": "Tout approuver automatiquement"
+		"triggerLabelAll": "YOLO"
 	},
 	"reasoning": {
 		"thinking": "Réflexion",
