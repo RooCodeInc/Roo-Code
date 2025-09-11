@@ -647,6 +647,10 @@
 		"MULTI_FILE_APPLY_DIFF": {
 			"name": "Aktifkan edit file bersamaan",
 			"description": "Ketika diaktifkan, Roo dapat mengedit beberapa file dalam satu permintaan. Ketika dinonaktifkan, Roo harus mengedit file satu per satu. Menonaktifkan ini dapat membantu saat bekerja dengan model yang kurang mampu atau ketika kamu ingin kontrol lebih terhadap modifikasi file."
+		},
+		"SECURITY_MIDDLEWARE": {
+			"name": "Middleware Keamanan RooCode",
+			"description": "Aktifkan middleware keamanan untuk melindungi file rahasia dan perintah dari akses AI. Fitur ini menyediakan perlindungan tingkat enterprise terhadap akses tidak sah ke data sensitif."
 		}
 	},
 	"promptCaching": {

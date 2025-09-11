@@ -618,6 +618,10 @@
 		"MULTI_FILE_APPLY_DIFF": {
 			"name": "Habilita edicions de fitxers concurrents",
 			"description": "Quan està activat, Roo pot editar múltiples fitxers en una sola petició. Quan està desactivat, Roo ha d'editar fitxers d'un en un. Desactivar això pot ajudar quan es treballa amb models menys capaços o quan vols més control sobre les modificacions de fitxers."
+		},
+		"SECURITY_MIDDLEWARE": {
+			"name": "Middleware de Seguretat RooCode",
+			"description": "Habilitar middleware de seguretat per protegir fitxers confidencials i comandes de l'accés d'IA. Aquesta característica proporciona protecció de nivell empresarial contra l'accés no autoritzat a dades sensibles."
 		}
 	},
 	"promptCaching": {

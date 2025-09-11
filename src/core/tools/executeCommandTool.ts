@@ -51,13 +51,46 @@ export async function executeCommandTool(
 				return
 			}
 
+			// Check security validation
+			const securityViolation = cline.securityGuard.validateCommand(command)
+			if (securityViolation?.blocked) {
+				// Confidential commands - complete block
+				await cline.say(
+					"error",
+					`🚫 **ACCESS DENIED**: Cannot execute confidential command.\n\n⚡ **Command**: \`${command}\`\n🛡️ **Security Pattern**: \`${securityViolation.pattern}\`\n- Matched Rule: ${securityViolation.matchedRule}`,
+				)
+				pushToolResult(formatResponse.toolError("Command blocked: Confidential command not allowed"))
+				return
+			} else if (securityViolation?.requiresApproval) {
+				// Commands accessing sensitive files - user approval required
+				// First, inform the user in the chat about the sensitive command
+				await cline.say(
+					"text",
+					`🛡️ **PERMISSION REQUIRED**: Sensitive command requires approval for AI execution.\n\n⚡ **Command**: \`${command}\`\n🛡️ **Security Pattern**: \`${securityViolation.pattern}\`\n- Matched Rule: ${securityViolation.matchedRule}`,
+				)
+
+				// Then ask for user permission using askApproval function
+				const didApprove = await askApproval("command", command, undefined, true)
+
+				if (!didApprove) {
+					// User denied access
+					await cline.say("error", "Command blocked: Access denied to sensitive command")
+					pushToolResult(formatResponse.toolError("Command blocked: Access denied to sensitive command"))
+					return
+				}
+			}
+
 			cline.consecutiveMistakeCount = 0
 
 			command = unescapeHtmlEntities(command) // Unescape HTML entities.
-			const didApprove = await askApproval("command", command)
 
-			if (!didApprove) {
-				return
+			// Only ask for normal approval if security didn't already handle it
+			if (!securityViolation?.requiresApproval) {
+				const didApprove = await askApproval("command", command)
+
+				if (!didApprove) {
+					return
+				}
 			}
 
 			const executionId = cline.lastMessageTs?.toString() ?? Date.now().toString()

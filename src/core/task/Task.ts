@@ -71,6 +71,7 @@ import { ToolRepetitionDetector } from "../tools/ToolRepetitionDetector"
 import { FileContextTracker } from "../context-tracking/FileContextTracker"
 import { RooIgnoreController } from "../ignore/RooIgnoreController"
 import { RooProtectedController } from "../protect/RooProtectedController"
+import { SecurityGuard } from "../security"
 import { type AssistantMessageContent, parseAssistantMessage, presentAssistantMessage } from "../assistant-message"
 import { truncateConversationIfNeeded } from "../sliding-window"
 import { ClineProvider } from "../webview/ClineProvider"
@@ -164,6 +165,7 @@ export class Task extends EventEmitter<ClineEvents> {
 	toolRepetitionDetector: ToolRepetitionDetector
 	rooIgnoreController?: RooIgnoreController
 	rooProtectedController?: RooProtectedController
+	securityGuard: SecurityGuard
 	fileContextTracker: FileContextTracker
 	urlContentFetcher: UrlContentFetcher
 	terminalProcess?: RooTerminalProcess
@@ -244,6 +246,9 @@ export class Task extends EventEmitter<ClineEvents> {
 
 		this.rooIgnoreController = new RooIgnoreController(this.cwd)
 		this.rooProtectedController = new RooProtectedController(this.cwd)
+
+		// Initialize SecurityGuard with disabled default (proper setup happens in checkAndSetupCustomConfigPath)
+		this.securityGuard = new SecurityGuard(this.cwd, false)
 		this.fileContextTracker = new FileContextTracker(provider, this.taskId)
 
 		this.rooIgnoreController.initialize().catch((error) => {
@@ -297,9 +302,22 @@ export class Task extends EventEmitter<ClineEvents> {
 
 		if (startTask) {
 			if (task || images) {
-				this.startTask(task, images)
+				this.startTask(task, images).catch((error) => {
+					// Handle promise rejection silently if task is aborted
+					if (!this.abort && !this.abandoned) {
+						console.error(`Unhandled error in startTask for task ${this.taskId}.${this.instanceId}:`, error)
+					}
+				})
 			} else if (historyItem) {
-				this.resumeTaskFromHistory()
+				this.resumeTaskFromHistory().catch((error) => {
+					// Handle promise rejection silently if task is aborted
+					if (!this.abort && !this.abandoned) {
+						console.error(
+							`Unhandled error in resumeTaskFromHistory for task ${this.taskId}.${this.instanceId}:`,
+							error,
+						)
+					}
+				})
 			} else {
 				throw new Error("Either historyItem or task/images must be provided")
 			}
@@ -734,6 +752,11 @@ export class Task extends EventEmitter<ClineEvents> {
 	// Start / Abort / Resume
 
 	private async startTask(task?: string, images?: string[]): Promise<void> {
+		// Check if task was aborted before we start
+		if (this.abort) {
+			throw new Error(`[RooCode#startTask] task ${this.taskId}.${this.instanceId} aborted`)
+		}
+
 		// `conversationHistory` (for API) and `clineMessages` (for webview)
 		// need to be in sync.
 		// If the extension process were killed, then on restart the
@@ -743,6 +766,21 @@ export class Task extends EventEmitter<ClineEvents> {
 		this.clineMessages = []
 		this.apiConversationHistory = []
 		await this.providerRef.deref()?.postStateToWebview()
+
+		// Check if task was aborted after async operation
+		if (this.abort) {
+			throw new Error(`[RooCode#startTask] task ${this.taskId}.${this.instanceId} aborted`)
+		}
+
+		// Check for custom config path setup after provider state is available
+		console.log("[Task] About to call checkAndSetupCustomConfigPath()")
+		await this.checkAndSetupCustomConfigPath()
+		console.log("[Task] Finished checkAndSetupCustomConfigPath()")
+
+		// Check if task was aborted after async operation
+		if (this.abort) {
+			throw new Error(`[RooCode#startTask] task ${this.taskId}.${this.instanceId} aborted`)
+		}
 
 		await this.say("text", task, images)
 		this.isInitialized = true
@@ -785,7 +823,17 @@ export class Task extends EventEmitter<ClineEvents> {
 	}
 
 	private async resumeTaskFromHistory() {
+		// Check if task was aborted before we start
+		if (this.abort) {
+			throw new Error(`[RooCode#resumeTaskFromHistory] task ${this.taskId}.${this.instanceId} aborted`)
+		}
+
 		const modifiedClineMessages = await this.getSavedClineMessages()
+
+		// Check if task was aborted after async operation
+		if (this.abort) {
+			throw new Error(`[RooCode#resumeTaskFromHistory] task ${this.taskId}.${this.instanceId} aborted`)
+		}
 
 		// Remove any resume messages that may have been added before
 		const lastRelevantMessageIndex = findLastIndex(
@@ -812,7 +860,18 @@ export class Task extends EventEmitter<ClineEvents> {
 		}
 
 		await this.overwriteClineMessages(modifiedClineMessages)
+
+		// Check if task was aborted after async operation
+		if (this.abort) {
+			throw new Error(`[RooCode#resumeTaskFromHistory] task ${this.taskId}.${this.instanceId} aborted`)
+		}
+
 		this.clineMessages = await this.getSavedClineMessages()
+
+		// Check if task was aborted after async operation
+		if (this.abort) {
+			throw new Error(`[RooCode#resumeTaskFromHistory] task ${this.taskId}.${this.instanceId} aborted`)
+		}
 
 		// Now present the cline messages to the user and ask if they want to
 		// resume (NOTE: we ran into a bug before where the
@@ -821,6 +880,11 @@ export class Task extends EventEmitter<ClineEvents> {
 		// This is important in case the user deletes messages without resuming
 		// the task first.
 		this.apiConversationHistory = await this.getSavedApiConversationHistory()
+
+		// Check if task was aborted after async operation
+		if (this.abort) {
+			throw new Error(`[RooCode#resumeTaskFromHistory] task ${this.taskId}.${this.instanceId} aborted`)
+		}
 
 		const lastClineMessage = this.clineMessages
 			.slice()
@@ -835,6 +899,14 @@ export class Task extends EventEmitter<ClineEvents> {
 		}
 
 		this.isInitialized = true
+
+		// Check for custom config path setup after provider state is available
+		await this.checkAndSetupCustomConfigPath()
+
+		// Check if task was aborted after async operation
+		if (this.abort) {
+			throw new Error(`[RooCode#resumeTaskFromHistory] task ${this.taskId}.${this.instanceId} aborted`)
+		}
 
 		const { response, text, images } = await this.ask(askType) // calls poststatetowebview
 		let responseText: string | undefined
@@ -1936,6 +2008,47 @@ export class Task extends EventEmitter<ClineEvents> {
 
 		if (error) {
 			this.emit("taskToolFailed", this.taskId, toolName, error)
+		}
+	}
+
+	// Custom Config Path Setup
+
+	private async checkAndSetupCustomConfigPath(): Promise<void> {
+		try {
+			console.log("[SecurityGuard] checkAndSetupCustomConfigPath() starting")
+
+			const provider = this.providerRef.deref()
+			if (!provider) {
+				console.log("[SecurityGuard] Provider not available for custom config path setup")
+				return
+			}
+
+			const state = await provider.getState()
+			const isSecurityEnabled =
+				experiments.isEnabled(state.experiments ?? {}, EXPERIMENT_IDS.SECURITY_MIDDLEWARE) ?? false
+
+			console.log(`[SecurityGuard] Security middleware enabled: ${isSecurityEnabled}`)
+
+			// Get the custom path from the extension state (set via UI)
+			const customPath = (state as any).securityCustomConfigPath
+
+			console.log(`[SecurityGuard] Retrieved custom config path from state: "${customPath}"`)
+			console.log(`[SecurityGuard] Custom path type: ${typeof customPath}`)
+			console.log(`[SecurityGuard] Custom path length: ${customPath ? customPath.length : "undefined"}`)
+
+			if (customPath && customPath.trim()) {
+				// We have a custom path from the UI, update SecurityGuard with it
+				console.log(`[SecurityGuard] Creating SecurityGuard with custom config: "${customPath.trim()}"`)
+				this.securityGuard = new SecurityGuard(this.cwd, isSecurityEnabled, customPath.trim())
+			} else {
+				// Just use the regular SecurityGuard without custom path
+				console.log("[SecurityGuard] Creating SecurityGuard without custom config")
+				this.securityGuard = new SecurityGuard(this.cwd, isSecurityEnabled)
+			}
+
+			console.log("[SecurityGuard] checkAndSetupCustomConfigPath() completed")
+		} catch (error) {
+			console.error("[SecurityGuard] Error in checkAndSetupCustomConfigPath:", error)
 		}
 	}
 

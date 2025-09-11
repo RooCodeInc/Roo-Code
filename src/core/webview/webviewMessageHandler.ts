@@ -209,6 +209,59 @@ export const webviewMessageHandler = async (
 	}
 
 	switch (message.type) {
+		case "createGlobalSecurityConfig":
+			try {
+				const { SecurityGuard } = await import("../security/SecurityGuard")
+				const globalConfigPath = await SecurityGuard.createDefaultGlobalConfig()
+
+				// Open the config file in VSCode editor
+				await openFile(globalConfigPath)
+
+				vscode.window.showInformationMessage(`Global security config created at: ${globalConfigPath}`)
+			} catch (error) {
+				const errorMessage = error instanceof Error ? error.message : String(error)
+				provider.log(`Failed to create global security config: ${errorMessage}`)
+				vscode.window.showErrorMessage(`Failed to create global security config: ${errorMessage}`)
+			}
+			break
+		case "createProjectSecurityConfig":
+			try {
+				const workspacePath = getWorkspacePath()
+				if (!workspacePath) {
+					vscode.window.showErrorMessage(
+						"No workspace open. Please open a project folder to create a project security config.",
+					)
+					break
+				}
+
+				const { SecurityGuard } = await import("../security/SecurityGuard")
+				const projectConfigPath = await SecurityGuard.createDefaultProjectConfig(workspacePath)
+
+				// Open the config file in VSCode editor
+				await openFile(projectConfigPath)
+
+				vscode.window.showInformationMessage(`Project security config created at: ${projectConfigPath}`)
+			} catch (error) {
+				const errorMessage = error instanceof Error ? error.message : String(error)
+				provider.log(`Failed to create project security config: ${errorMessage}`)
+				vscode.window.showErrorMessage(`Failed to create project security config: ${errorMessage}`)
+			}
+			break
+		case "getSecurityConfigStatus":
+			try {
+				const { SecurityGuard } = await import("../security/SecurityGuard")
+				const workspacePath = getWorkspacePath() || provider.cwd || process.cwd()
+				const tempSecurityGuard = new SecurityGuard(workspacePath, false)
+				const configStatus = tempSecurityGuard.getConfigStatus()
+				await provider.postMessageToWebview({
+					type: "securityConfigStatus",
+					configStatus,
+				})
+			} catch (error) {
+				const errorMessage = error instanceof Error ? error.message : String(error)
+				provider.log(`Failed to get security config status: ${errorMessage}`)
+			}
+			break
 		case "webviewDidLaunch":
 			// Load custom modes first
 			const customModes = await provider.customModesManager.getCustomModes()
@@ -338,6 +391,12 @@ export const webviewMessageHandler = async (
 			break
 		case "alwaysAllowUpdateTodoList":
 			await updateGlobalState("alwaysAllowUpdateTodoList", message.bool)
+			await provider.postStateToWebview()
+			break
+		case "securityCustomConfigPath":
+			console.log(`[WebviewMessageHandler] Received securityCustomConfigPath: "${message.text}"`)
+			await updateGlobalState("securityCustomConfigPath", message.text || "")
+			console.log(`[WebviewMessageHandler] Saved securityCustomConfigPath to global state`)
 			await provider.postStateToWebview()
 			break
 		case "askResponse":

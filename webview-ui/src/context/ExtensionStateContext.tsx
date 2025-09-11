@@ -134,6 +134,8 @@ export interface ExtensionStateContextType extends ExtensionState {
 	routerModels?: RouterModels
 	alwaysAllowUpdateTodoList?: boolean
 	setAlwaysAllowUpdateTodoList: (value: boolean) => void
+	securityCustomConfigPath?: string
+	setSecurityCustomConfigPath: (value: string) => void
 }
 
 export const ExtensionStateContext = createContext<ExtensionStateContextType | undefined>(undefined)
@@ -229,6 +231,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		},
 		codebaseIndexModels: { ollama: {}, openai: {} },
 		alwaysAllowUpdateTodoList: true,
+		securityCustomConfigPath: "",
 	})
 
 	const [didHydrateState, setDidHydrateState] = useState(false)
@@ -473,6 +476,11 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		alwaysAllowUpdateTodoList: state.alwaysAllowUpdateTodoList,
 		setAlwaysAllowUpdateTodoList: (value) => {
 			setState((prevState) => ({ ...prevState, alwaysAllowUpdateTodoList: value }))
+		},
+		securityCustomConfigPath: state.securityCustomConfigPath,
+		setSecurityCustomConfigPath: (value) => {
+			setState((prevState) => ({ ...prevState, securityCustomConfigPath: value }))
+			vscode.postMessage({ type: "securityCustomConfigPath", text: value })
 		},
 	}
 

@@ -618,6 +618,10 @@
 		"MULTI_FILE_APPLY_DIFF": {
 			"name": "Activer les éditions de fichiers concurrentes",
 			"description": "Lorsque cette option est activée, Roo peut éditer plusieurs fichiers en une seule requête. Lorsqu'elle est désactivée, Roo doit éditer les fichiers un par un. Désactiver cette option peut aider lorsque tu travailles avec des modèles moins capables ou lorsque tu veux plus de contrôle sur les modifications de fichiers."
+		},
+		"SECURITY_MIDDLEWARE": {
+			"name": "Middleware de Sécurité RooCode",
+			"description": "Activer le middleware de sécurité pour protéger les fichiers confidentiels et les commandes de l'accès IA. Cette fonctionnalité offre une protection de niveau entreprise contre l'accès non autorisé aux données sensibles."
 		}
 	},
 	"promptCaching": {

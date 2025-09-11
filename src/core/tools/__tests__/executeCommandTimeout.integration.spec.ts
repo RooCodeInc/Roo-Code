@@ -6,6 +6,7 @@ import * as fs from "fs/promises"
 import { executeCommand, executeCommandTool, ExecuteCommandOptions } from "../executeCommandTool"
 import { Task } from "../../task/Task"
 import { TerminalRegistry } from "../../../integrations/terminal/TerminalRegistry"
+import { SecurityGuard } from "../../security/SecurityGuard"
 
 // Mock dependencies
 vitest.mock("vscode", () => ({
@@ -248,6 +249,8 @@ describe("Command Execution Timeout Integration", () => {
 				rooIgnoreController: {
 					validateCommand: vitest.fn().mockReturnValue(null),
 				},
+
+				securityGuard: new SecurityGuard("/test/directory", false),
 				lastMessageTs: Date.now(),
 				ask: vitest.fn(),
 				didRejectTool: false,

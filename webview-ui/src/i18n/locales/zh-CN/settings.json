@@ -618,6 +618,10 @@
 		"MULTI_FILE_APPLY_DIFF": {
 			"name": "启用并发文件编辑",
 			"description": "启用后 Roo 可在单个请求中编辑多个文件。禁用后 Roo 必须逐个编辑文件。禁用此功能有助于使用能力较弱的模型或需要更精确控制文件修改时。"
+		},
+		"SECURITY_MIDDLEWARE": {
+			"name": "RooCode 安全中间件",
+			"description": "启用安全中间件以保护机密文件和命令免受AI访问。此功能提供企业级保护，防止对敏感数据的未授权访问。"
 		}
 	},
 	"promptCaching": {

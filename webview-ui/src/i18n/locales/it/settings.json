@@ -618,6 +618,10 @@
 		"MULTI_FILE_APPLY_DIFF": {
 			"name": "Abilita modifiche di file concorrenti",
 			"description": "Quando abilitato, Roo può modificare più file in una singola richiesta. Quando disabilitato, Roo deve modificare i file uno alla volta. Disabilitare questa opzione può aiutare quando lavori con modelli meno capaci o quando vuoi più controllo sulle modifiche dei file."
+		},
+		"SECURITY_MIDDLEWARE": {
+			"name": "Middleware di Sicurezza RooCode",
+			"description": "Abilita il middleware di sicurezza per proteggere file riservati e comandi dall'accesso dell'IA. Questa funzionalità fornisce protezione di livello aziendale contro l'accesso non autorizzato a dati sensibili."
 		}
 	},
 	"promptCaching": {

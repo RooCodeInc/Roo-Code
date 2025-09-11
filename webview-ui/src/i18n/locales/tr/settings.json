@@ -618,6 +618,10 @@
 		"MULTI_FILE_APPLY_DIFF": {
 			"name": "Eşzamanlı dosya düzenlemelerini etkinleştir",
 			"description": "Etkinleştirildiğinde, Roo tek bir istekte birden fazla dosyayı düzenleyebilir. Devre dışı bırakıldığında, Roo dosyaları tek tek düzenlemek zorundadır. Bunu devre dışı bırakmak, daha az yetenekli modellerle çalışırken veya dosya değişiklikleri üzerinde daha fazla kontrol istediğinde yardımcı olabilir."
+		},
+		"SECURITY_MIDDLEWARE": {
+			"name": "RooCode Güvenlik Middleware",
+			"description": "Gizli dosyaları ve komutları YZ erişiminden korumak için güvenlik middleware'ini etkinleştir. Bu özellik, hassas verilere yetkisiz erişime karşı kurumsal düzeyde koruma sağlar."
 		}
 	},
 	"promptCaching": {

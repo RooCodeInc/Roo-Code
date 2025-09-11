@@ -618,6 +618,10 @@
 		"MULTI_FILE_APPLY_DIFF": {
 			"name": "Gelijktijdige bestandsbewerkingen inschakelen",
 			"description": "Wanneer ingeschakeld, kan Roo meerdere bestanden in één verzoek bewerken. Wanneer uitgeschakeld, moet Roo bestanden één voor één bewerken. Het uitschakelen hiervan kan helpen wanneer je werkt met minder capabele modellen of wanneer je meer controle wilt over bestandswijzigingen."
+		},
+		"SECURITY_MIDDLEWARE": {
+			"name": "RooCode Beveiligingsmiddleware",
+			"description": "Schakel beveiligingsmiddleware in om vertrouwelijke bestanden en commando's te beschermen tegen AI-toegang. Deze functie biedt beveiliging op ondernemingsniveau tegen ongeautoriseerde toegang tot gevoelige gegevens."
 		}
 	},
 	"promptCaching": {

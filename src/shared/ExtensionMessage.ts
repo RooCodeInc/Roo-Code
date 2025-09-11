@@ -105,6 +105,7 @@ export interface ExtensionMessage {
 		| "shareTaskSuccess"
 		| "codeIndexSettingsSaved"
 		| "codeIndexSecretStatus"
+		| "securityConfigStatus"
 		| "showDeleteMessageDialog"
 		| "showEditMessageDialog"
 	text?: string
@@ -161,6 +162,14 @@ export interface ExtensionMessage {
 	settings?: any
 	messageTs?: number
 	context?: string
+	configStatus?: {
+		globalPath: string
+		globalExists: boolean
+		projectPath: string
+		projectExists: boolean
+		customPath?: string
+		customExists?: boolean
+	}
 }
 
 export type ExtensionState = Pick<
@@ -283,6 +292,7 @@ export type ExtensionState = Pick<
 	marketplaceInstalledMetadata?: { project: Record<string, any>; global: Record<string, any> }
 	profileThresholds: Record<string, number>
 	hasOpenedModeSelector: boolean
+	securityCustomConfigPath?: string
 }
 
 export interface ClineSayTool {

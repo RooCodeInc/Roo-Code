@@ -67,6 +67,24 @@ export async function insertContentTool(
 			return
 		}
 
+		// Check security validation
+		const securityCheck = cline.securityGuard?.validateFileAccess?.(relPath)
+		if (securityCheck?.blocked) {
+			// Confidential files - complete block
+			await cline.say("error", securityCheck.message)
+			pushToolResult(formatResponse.toolError("Access denied to confidential file"))
+			return
+		} else if (securityCheck?.requiresApproval) {
+			// Sensitive files - user approval required
+			const { response } = await cline.ask("command", securityCheck.message)
+			if (response !== "yesButtonClicked") {
+				await cline.say("error", "Access denied to sensitive file")
+				pushToolResult(formatResponse.toolError("Access denied to sensitive file"))
+				return
+			}
+			// User approved sensitive file access - continue with operation
+		}
+
 		// Check if file is write-protected
 		const isWriteProtected = cline.rooProtectedController?.isWriteProtected(relPath) || false
 

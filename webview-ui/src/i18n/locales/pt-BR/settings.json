@@ -618,6 +618,10 @@
 		"MULTI_FILE_APPLY_DIFF": {
 			"name": "Habilitar edições de arquivos concorrentes",
 			"description": "Quando habilitado, o Roo pode editar múltiplos arquivos em uma única solicitação. Quando desabilitado, o Roo deve editar arquivos um de cada vez. Desabilitar isso pode ajudar ao trabalhar com modelos menos capazes ou quando você quer mais controle sobre modificações de arquivos."
+		},
+		"SECURITY_MIDDLEWARE": {
+			"name": "Middleware de Segurança RooCode",
+			"description": "Ativar middleware de segurança para proteger arquivos confidenciais e comandos do acesso de IA. Este recurso fornece proteção de nível empresarial contra acesso não autorizado a dados sensíveis."
 		}
 	},
 	"promptCaching": {

@@ -618,6 +618,10 @@
 		"MULTI_FILE_APPLY_DIFF": {
 			"name": "啟用並行檔案編輯",
 			"description": "啟用後 Roo 可在單個請求中編輯多個檔案。停用後 Roo 必須逐個編輯檔案。停用此功能有助於使用能力較弱的模型或需要更精確控制檔案修改時。"
+		},
+		"SECURITY_MIDDLEWARE": {
+			"name": "RooCode 安全中介軟體",
+			"description": "啟用安全中介軟體以保護機密檔案和指令免受 AI 存取。此功能提供企業級防護，防止未經授權存取敏感資料。"
 		}
 	},
 	"promptCaching": {

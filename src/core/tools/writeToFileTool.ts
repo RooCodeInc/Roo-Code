@@ -57,6 +57,50 @@ export async function writeToFileTool(
 		return
 	}
 
+	// Check security validation
+	const securityCheck = cline.securityGuard?.validateFileAccess?.(relPath)
+	let securityApproved = false // Track if security approval was granted
+
+	if (securityCheck?.blocked) {
+		// Confidential files - IMMEDIATE BLOCK with no permission dialog
+		await cline.say(
+			"error",
+			`🚫 **ACCESS DENIED**: Cannot write to confidential file.\n\n📁 **File**: \`${relPath}\`\n🛡️ **Security Pattern**: \`${securityCheck.pattern}\`\n- Matched Rule: ${securityCheck.matchedRule}`,
+		)
+		pushToolResult(formatResponse.toolError("Access denied to confidential file"))
+		return
+	} else if (securityCheck?.requiresApproval) {
+		// First, inform the user in the chat about the sensitive file
+		await cline.say(
+			"text",
+			`🔒 **SECURITY NOTICE**: I need to write to a sensitive file that requires your permission.\n\n📁 **File**: \`${relPath}\`\n🛡️ **Security Pattern**: \`${securityCheck.pattern}\`\n⚠️ **Risk**: This file may contain sensitive information like environment variables, tokens, or credentials.\n\nI will now request your permission to write to this file. Please review the permission dialog carefully.`,
+		)
+
+		// Check if file exists to determine the correct tool type
+		const absolutePath = path.resolve(cline.cwd, relPath)
+		const fileExists = await fileExistsAtPath(absolutePath)
+
+		// Then ask for user permission using askApproval function
+		const permissionMessage = JSON.stringify({
+			tool: fileExists ? "editedExistingFile" : "newFileCreated",
+			path: getReadablePath(cline.cwd, relPath),
+			isOutsideWorkspace: isPathOutsideWorkspace(path.resolve(cline.cwd, relPath)),
+			content: `🔒 SECURITY PERMISSION REQUIRED 🔒\n\nThe AI is requesting permission to WRITE to a SENSITIVE file:\n\n📁 File: ${relPath}\n🛡️ Security Pattern: ${securityCheck.pattern}\n⚠️ Risk: This file may contain sensitive information like environment variables, tokens, or credentials.\n\n❓ Do you want to ALLOW the AI to write to this sensitive file?\n\n✅ Click AGREE to grant access\n❌ Click REJECT to deny access`,
+			reason: `🔒 Sensitive File Write Access Required (${securityCheck.pattern})`,
+		} satisfies ClineSayTool)
+
+		const didApprove = await askApproval("tool", permissionMessage, undefined, true)
+
+		if (!didApprove) {
+			// User denied access
+			await cline.say("error", "Access denied to sensitive file")
+			pushToolResult(formatResponse.toolError("Access denied to sensitive file"))
+			return
+		}
+		// User approved sensitive file access - set flag to skip normal approval
+		securityApproved = true
+	}
+
 	// Check if file is write-protected
 	const isWriteProtected = cline.rooProtectedController?.isWriteProtected(relPath) || false
 
@@ -94,7 +138,7 @@ export async function writeToFileTool(
 		path: getReadablePath(cline.cwd, removeClosingTag("path", relPath)),
 		content: newContent,
 		isOutsideWorkspace,
-		isProtected: isWriteProtected,
+		isProtected: isWriteProtected || !!securityCheck?.requiresApproval || !!securityCheck?.blocked,
 	}
 
 	try {
@@ -198,19 +242,22 @@ export async function writeToFileTool(
 				}
 			}
 
-			const completeMessage = JSON.stringify({
-				...sharedMessageProps,
-				content: fileExists ? undefined : newContent,
-				diff: fileExists
-					? formatResponse.createPrettyPatch(relPath, cline.diffViewProvider.originalContent, newContent)
-					: undefined,
-			} satisfies ClineSayTool)
+			// Skip normal approval if security approval was already granted
+			if (!securityApproved) {
+				const completeMessage = JSON.stringify({
+					...sharedMessageProps,
+					content: fileExists ? undefined : newContent,
+					diff: fileExists
+						? formatResponse.createPrettyPatch(relPath, cline.diffViewProvider.originalContent, newContent)
+						: undefined,
+				} satisfies ClineSayTool)
 
-			const didApprove = await askApproval("tool", completeMessage, undefined, isWriteProtected)
+				const didApprove = await askApproval("tool", completeMessage, undefined, isWriteProtected)
 
-			if (!didApprove) {
-				await cline.diffViewProvider.revertChanges()
-				return
+				if (!didApprove) {
+					await cline.diffViewProvider.revertChanges()
+					return
+				}
 			}
 
 			// Call saveChanges to update the DiffViewProvider properties

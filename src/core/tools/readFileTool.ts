@@ -246,8 +246,58 @@ export async function readFileTool(
 					continue
 				}
 
-				// Add to files that need approval
-				filesToApprove.push(fileResult)
+				// Check security validation
+				const securityCheck = cline.securityGuard?.validateFileAccess?.(relPath)
+				if (securityCheck?.blocked) {
+					// Confidential files - IMMEDIATE BLOCK with no permission dialog
+					await cline.say(
+						"error",
+						`🚫 **ACCESS DENIED**: Cannot access confidential file.\n\n📁 **File**: \`${relPath}\`\n🛡️ **Security Pattern**: \`${securityCheck.pattern}\`\n- Matched Rule: ${securityCheck.matchedRule}`,
+					)
+
+					updateFileResult(relPath, {
+						status: "blocked",
+						error: "Access denied to confidential file",
+						xmlContent: `<file><path>${relPath}</path><error>Access denied to confidential file</error></file>`,
+					})
+					continue
+				} else if (securityCheck?.requiresApproval) {
+					// First, inform the user in the chat about the sensitive file
+					await cline.say(
+						"text",
+						`🛡️ **PERMISSION REQUIRED**: Sensitive file requires approval for AI access.\n\n📁 **File**: \`${relPath}\`\n🛡️ **Security Pattern**: \`${securityCheck.pattern}\`\n- Matched Rule: ${securityCheck.matchedRule}`,
+					)
+
+					// Then ask for user permission using askApproval function
+					const permissionMessage = JSON.stringify({
+						tool: "readFile",
+						path: getReadablePath(cline.cwd, relPath),
+						isOutsideWorkspace: isPathOutsideWorkspace(path.resolve(cline.cwd, relPath)),
+						content: `� SECURITY PERMISSION REQUIRED 🔒\n\nThe AI is requesting access to a SENSITIVE file:\n\n📁 File: ${relPath}\n🛡️ Security Pattern: ${securityCheck.pattern}\n⚠️ Risk: This file may contain sensitive information like environment variables, tokens, or credentials.\n\n❓ Do you want to ALLOW the AI to read this sensitive file?\n\n✅ Click AGREE to grant access\n❌ Click REJECT to deny access`,
+						reason: `🔒 Sensitive File Access Required (${securityCheck.pattern})`,
+					} satisfies ClineSayTool)
+
+					const didApprove = await askApproval("tool", permissionMessage, undefined, true)
+
+					if (!didApprove) {
+						// User denied access
+						updateFileResult(relPath, {
+							status: "blocked",
+							error: "Access denied to sensitive file",
+							xmlContent: `<file><path>${relPath}</path><error>Access denied to sensitive file</error></file>`,
+						})
+						continue
+					}
+
+					// User approved - mark as approved and skip additional approval
+					updateFileResult(relPath, { status: "approved" })
+				} else {
+					// Handle files with no security restrictions (restructured for merge safety)
+					if (!securityCheck?.blocked && !securityCheck?.requiresApproval) {
+						// No security restrictions - add to files that need standard approval
+						filesToApprove.push(fileResult)
+					}
+				}
 			}
 		}
 
