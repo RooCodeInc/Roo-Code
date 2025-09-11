@@ -163,12 +163,12 @@ export class StreamingToolCallProcessor {
 		}
 		// the index of GPT-5 tool_call not start by 0
 		const toolCall = this.accumulatedToolCalls[index]
-		const isValidToolName =
-			toolCall?.function?.name && toolRegistry.isToolSupported(toolCall.function.name as ToolName)
+		const toolName = toolCall?.function?.name as ToolName
+		const isValidToolName = toolName && toolRegistry.isToolSupported(toolName)
 
 		const result: ToolCallParam = {
 			providerType: "openai",
-			toolName: isValidToolName ? toolCall.function.name : "",
+			toolName: isValidToolName ? toolName : "",
 			toolUserId: toolCall?.id || undefined,
 			chunkContent: xmlOutput,
 			originContent: this.accumulatedToolCalls,
