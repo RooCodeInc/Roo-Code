@@ -36,7 +36,7 @@ class MockApiHandler extends BaseProvider {
 		}
 	}
 
-	async countTokens(content: Array<Anthropic.Messages.ContentBlockParam>): Promise<number> {
+	override async countTokens(content: Array<Anthropic.Messages.ContentBlockParam>): Promise<number> {
 		// Simple token counting for testing
 		let tokens = 0
 		for (const block of content) {
@@ -176,7 +176,7 @@ describe("Condense", () => {
 		it("should handle empty summary from API gracefully", async () => {
 			// Mock handler that returns empty summary
 			class EmptyMockApiHandler extends MockApiHandler {
-				createMessage(): any {
+				override createMessage(): any {
 					const mockStream = {
 						async *[Symbol.asyncIterator]() {
 							yield { type: "text", text: "" }
