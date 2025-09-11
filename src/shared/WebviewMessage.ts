@@ -7,6 +7,7 @@ import {
 	type InstallMarketplaceItemOptions,
 	type MarketplaceItem,
 	type ShareVisibility,
+	type QueuedMessage,
 	marketplaceItemSchema,
 } from "@roo-code/types"
 
@@ -21,6 +22,8 @@ export type AudioType = "notification" | "celebration" | "progress_loop"
 export interface UpdateTodoListPayload {
 	todos: any[]
 }
+
+export type EditQueuedMessagePayload = Pick<QueuedMessage, "id" | "text" | "images">
 
 export interface WebviewMessage {
 	type:
@@ -131,6 +134,7 @@ export interface WebviewMessage {
 		| "mcpEnabled"
 		| "enableMcpServerCreation"
 		| "remoteControlEnabled"
+		| "taskSyncEnabled"
 		| "searchCommits"
 		| "alwaysApproveResubmit"
 		| "requestDelaySeconds"
@@ -177,6 +181,7 @@ export interface WebviewMessage {
 		| "cloudButtonClicked"
 		| "rooCloudSignIn"
 		| "rooCloudSignOut"
+		| "rooCloudManualUrl"
 		| "condenseTaskContextRequest"
 		| "requestIndexingStatus"
 		| "startIndexing"
@@ -215,6 +220,11 @@ export interface WebviewMessage {
 		| "imageGenerationSettings"
 		| "openRouterImageApiKey"
 		| "openRouterImageGenerationSelectedModel"
+		| "queueMessage"
+		| "removeQueuedMessage"
+		| "editQueuedMessage"
+		| "dismissUpsell"
+		| "getDismissedUpsells"
 	text?: string
 	editedMessageContent?: string
 	tab?: "settings" | "history" | "mcp" | "modes" | "chat" | "marketplace" | "cloud"
@@ -249,6 +259,7 @@ export interface WebviewMessage {
 	hasSystemPromptOverride?: boolean
 	terminalOperation?: "continue" | "abort"
 	messageTs?: number
+	restoreCheckpoint?: boolean
 	historyPreviewCollapsed?: boolean
 	filters?: { type?: string; search?: string; tags?: string[] }
 	settings?: any
@@ -259,6 +270,8 @@ export interface WebviewMessage {
 	visibility?: ShareVisibility // For share visibility
 	hasContent?: boolean // For checkRulesDirectoryResult
 	checkOnly?: boolean // For deleteCustomMode check
+	upsellId?: string // For dismissUpsell
+	list?: string[] // For dismissedUpsells response
 	codeIndexSettings?: {
 		// Global state settings
 		codebaseIndexEnabled: boolean
@@ -330,3 +343,4 @@ export type WebViewMessagePayload =
 	| IndexClearedPayload
 	| InstallMarketplaceItemWithParametersPayload
 	| UpdateTodoListPayload
+	| EditQueuedMessagePayload

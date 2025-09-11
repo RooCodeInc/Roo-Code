@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-import { modelInfoSchema, reasoningEffortWithMinimalSchema, verbosityLevelsSchema } from "./model.js"
+import { modelInfoSchema, reasoningEffortWithMinimalSchema, verbosityLevelsSchema, serviceTierSchema } from "./model.js"
 import { codebaseIndexProviderSchema } from "./codebase-index.js"
 import {
 	anthropicModels,
@@ -48,6 +48,7 @@ export const providerNames = [
 	"mistral",
 	"moonshot",
 	"deepseek",
+	"deepinfra",
 	"doubao",
 	"qwen-code",
 	"unbound",
@@ -224,6 +225,9 @@ const geminiCliSchema = apiModelIdProviderModelSchema.extend({
 const openAiNativeSchema = apiModelIdProviderModelSchema.extend({
 	openAiNativeApiKey: z.string().optional(),
 	openAiNativeBaseUrl: z.string().optional(),
+	// OpenAI Responses API service tier for openai-native provider only.
+	// UI should only expose this when the selected model supports flex/priority.
+	openAiNativeServiceTier: serviceTierSchema.optional(),
 })
 
 const mistralSchema = apiModelIdProviderModelSchema.extend({
@@ -234,6 +238,12 @@ const mistralSchema = apiModelIdProviderModelSchema.extend({
 const deepSeekSchema = apiModelIdProviderModelSchema.extend({
 	deepSeekBaseUrl: z.string().optional(),
 	deepSeekApiKey: z.string().optional(),
+})
+
+const deepInfraSchema = apiModelIdProviderModelSchema.extend({
+	deepInfraBaseUrl: z.string().optional(),
+	deepInfraApiKey: z.string().optional(),
+	deepInfraModelId: z.string().optional(),
 })
 
 const doubaoSchema = apiModelIdProviderModelSchema.extend({
@@ -349,6 +359,7 @@ export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProv
 	openAiNativeSchema.merge(z.object({ apiProvider: z.literal("openai-native") })),
 	mistralSchema.merge(z.object({ apiProvider: z.literal("mistral") })),
 	deepSeekSchema.merge(z.object({ apiProvider: z.literal("deepseek") })),
+	deepInfraSchema.merge(z.object({ apiProvider: z.literal("deepinfra") })),
 	doubaoSchema.merge(z.object({ apiProvider: z.literal("doubao") })),
 	moonshotSchema.merge(z.object({ apiProvider: z.literal("moonshot") })),
 	unboundSchema.merge(z.object({ apiProvider: z.literal("unbound") })),
@@ -389,6 +400,7 @@ export const providerSettingsSchema = z.object({
 	...openAiNativeSchema.shape,
 	...mistralSchema.shape,
 	...deepSeekSchema.shape,
+	...deepInfraSchema.shape,
 	...doubaoSchema.shape,
 	...moonshotSchema.shape,
 	...unboundSchema.shape,
@@ -438,6 +450,7 @@ export const MODEL_ID_KEYS: Partial<keyof ProviderSettings>[] = [
 	"huggingFaceModelId",
 	"ioIntelligenceModelId",
 	"vercelAiGatewayModelId",
+	"deepInfraModelId",
 ]
 
 export const getModelId = (settings: ProviderSettings): string | undefined => {
@@ -559,6 +572,7 @@ export const MODELS_BY_PROVIDER: Record<
 	openrouter: { id: "openrouter", label: "OpenRouter", models: [] },
 	requesty: { id: "requesty", label: "Requesty", models: [] },
 	unbound: { id: "unbound", label: "Unbound", models: [] },
+	deepinfra: { id: "deepinfra", label: "DeepInfra", models: [] },
 	"vercel-ai-gateway": { id: "vercel-ai-gateway", label: "Vercel AI Gateway", models: [] },
 }
 
@@ -569,6 +583,7 @@ export const dynamicProviders = [
 	"openrouter",
 	"requesty",
 	"unbound",
+	"deepinfra",
 	"vercel-ai-gateway",
 ] as const satisfies readonly ProviderName[]
 

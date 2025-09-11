@@ -743,6 +743,10 @@
 			"modelSelectionDescription": "Selecteer het model voor afbeeldingsgeneratie",
 			"warningMissingKey": "⚠️ OpenRouter API-sleutel is vereist voor afbeeldingsgeneratie. Configureer deze hierboven.",
 			"successConfigured": "✓ Afbeeldingsgeneratie is geconfigureerd en klaar voor gebruik"
+		},
+		"RUN_SLASH_COMMAND": {
+			"name": "Model-geïnitieerde slash-commando's inschakelen",
+			"description": "Wanneer ingeschakeld, kan Roo je slash-commando's uitvoeren om workflows uit te voeren."
 		}
 	},
 	"promptCaching": {
@@ -855,5 +859,19 @@
 	"includeMaxOutputTokensDescription": "Stuur maximale output tokens parameter in API-verzoeken. Sommige providers ondersteunen dit mogelijk niet.",
 	"limitMaxTokensDescription": "Beperk het maximale aantal tokens in het antwoord",
 	"maxOutputTokensLabel": "Maximale output tokens",
-	"maxTokensGenerateDescription": "Maximale tokens om te genereren in het antwoord"
+	"maxTokensGenerateDescription": "Maximale tokens om te genereren in het antwoord",
+	"serviceTier": {
+		"label": "Serviceniveau",
+		"tooltip": "Voor snellere verwerking van API-verzoeken, probeer het prioriteitsverwerkingsniveau. Voor lagere prijzen met hogere latentie, probeer het flexverwerkingsniveau.",
+		"standard": "Standaard",
+		"flex": "Flex",
+		"priority": "Prioriteit",
+		"pricingTableTitle": "Prijzen per serviceniveau (prijs per 1M tokens)",
+		"columns": {
+			"tier": "Niveau",
+			"input": "Invoer",
+			"output": "Uitvoer",
+			"cacheReads": "Cache leest"
+		}
+	}
 }
