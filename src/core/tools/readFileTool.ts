@@ -273,7 +273,7 @@ export async function readFileTool(
 						tool: "readFile",
 						path: getReadablePath(cline.cwd, relPath),
 						isOutsideWorkspace: isPathOutsideWorkspace(path.resolve(cline.cwd, relPath)),
-						content: `� SECURITY PERMISSION REQUIRED 🔒\n\nThe AI is requesting access to a SENSITIVE file:\n\n📁 File: ${relPath}\n🛡️ Security Pattern: ${securityCheck.pattern}\n⚠️ Risk: This file may contain sensitive information like environment variables, tokens, or credentials.\n\n❓ Do you want to ALLOW the AI to read this sensitive file?\n\n✅ Click AGREE to grant access\n❌ Click REJECT to deny access`,
+						content: `SECURITY PERMISSION REQUIRED 🔒\n\nThe AI is requesting access to a SENSITIVE file:\n\n📁 File: ${relPath}\n🛡️ Security Pattern: ${securityCheck.pattern}\n⚠️ Risk: This file may contain sensitive information like environment variables, tokens, or credentials.\n\n❓ Do you want to ALLOW the AI to read this sensitive file?\n\n✅ Click AGREE to grant access\n❌ Click REJECT to deny access`,
 						reason: `🔒 Sensitive File Access Required (${securityCheck.pattern})`,
 					} satisfies ClineSayTool)
 

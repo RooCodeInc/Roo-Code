@@ -83,11 +83,12 @@ export class SecurityGuard {
 				}
 			}
 
-			this.mergeConfigurations(globalConfig, projectConfig, customConfig)
-			this.buildRuleIndex()
-		} catch (error) {
-			this.loadLegacyConfiguration()
-		}
+		this.mergeConfigurations(globalConfig, projectConfig, customConfig)
+		this.buildRuleIndex()
+	} catch (error) {
+		console.error(`[SecurityGuard] Error loading security configuration:`, error)
+		this.loadLegacyConfiguration()
+	}
 	}
 
 	private getGlobalConfigPath(): string {
@@ -877,6 +878,7 @@ ask:
 			// Exact match
 			return normalizedFile === normalizedPattern
 		} catch (error) {
+			console.error(`[SecurityGuard] Error in pattern matching for '${filePath}' against '${pattern}':`, error)
 			return false
 		}
 	}
