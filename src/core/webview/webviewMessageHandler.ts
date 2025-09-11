@@ -11,6 +11,7 @@ import {
 	type ClineMessage,
 	type TelemetrySetting,
 	TelemetryEventName,
+	UserSettingsConfig,
 } from "@roo-code/types"
 import { CloudService } from "@roo-code/cloud"
 import { TelemetryService } from "@roo-code/telemetry"
@@ -1188,16 +1189,21 @@ export const webviewMessageHandler = async (
 					`CloudService#updateUserSettings failed: ${error instanceof Error ? error.message : String(error)}`,
 				)
 			}
-
-			try {
-				await provider.remoteControlEnabled(message.bool ?? false)
-			} catch (error) {
-				provider.log(
-					`ClineProvider#remoteControlEnabled failed: ${error instanceof Error ? error.message : String(error)}`,
-				)
+			break
+		case "taskSyncEnabled":
+			const enabled = message.bool ?? false
+			const updatedSettings: Partial<UserSettingsConfig> = {
+				taskSyncEnabled: enabled,
 			}
-
-			await provider.postStateToWebview()
+			// If disabling task sync, also disable remote control
+			if (!enabled) {
+				updatedSettings.extensionBridgeEnabled = false
+			}
+			try {
+				await CloudService.instance.updateUserSettings(updatedSettings)
+			} catch (error) {
+				provider.log(`Failed to update cloud settings for task sync: ${error}`)
+			}
 			break
 		case "refreshAllMcpServers": {
 			const mcpHub = provider.getMcpHub()
@@ -2996,6 +3002,40 @@ export const webviewMessageHandler = async (
 				provider.getCurrentTask()?.messageQueueService.updateMessage(id, text, images)
 			}
 
+			break
+		}
+		case "dismissUpsell": {
+			if (message.upsellId) {
+				try {
+					// Get current list of dismissed upsells
+					const dismissedUpsells = getGlobalState("dismissedUpsells") || []
+
+					// Add the new upsell ID if not already present
+					let updatedList = dismissedUpsells
+					if (!dismissedUpsells.includes(message.upsellId)) {
+						updatedList = [...dismissedUpsells, message.upsellId]
+						await updateGlobalState("dismissedUpsells", updatedList)
+					}
+
+					// Send updated list back to webview (use the already computed updatedList)
+					await provider.postMessageToWebview({
+						type: "dismissedUpsells",
+						list: updatedList,
+					})
+				} catch (error) {
+					// Fail silently as per Bruno's comment - it's OK to fail silently in this case
+					provider.log(`Failed to dismiss upsell: ${error instanceof Error ? error.message : String(error)}`)
+				}
+			}
+			break
+		}
+		case "getDismissedUpsells": {
+			// Send the current list of dismissed upsells to the webview
+			const dismissedUpsells = getGlobalState("dismissedUpsells") || []
+			await provider.postMessageToWebview({
+				type: "dismissedUpsells",
+				list: dismissedUpsells,
+			})
 			break
 		}
 	}
