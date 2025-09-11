@@ -1201,7 +1201,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 							/>
 						</div>
 						<div className="max-w-48">
-							<AutoApproveDropdown title={t("chat:autoApprove.title")} triggerClassName="w-full" />
+							<AutoApproveDropdown triggerClassName="w-full" />
 						</div>
 					</div>
 					<div className="flex items-center gap-0.5">

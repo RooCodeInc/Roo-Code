@@ -275,7 +275,11 @@
 		"description": "Run these actions without asking for permission. Only enable for actions you fully trust.",
 		"selectOptionsFirst": "Select at least one option below to enable auto-approval",
 		"toggleAriaLabel": "Toggle auto-approval",
-		"disabledAriaLabel": "Auto-approval disabled - select options first"
+		"disabledAriaLabel": "Auto-approval disabled - select options first",
+		"triggerLabel_zero": "No auto-approve",
+		"triggerLabel_one": "1 auto-approved",
+		"triggerLabel_other": "{{count}} auto-approved",
+		"triggerLabelAll": "YOLO"
 	},
 	"announcement": {
 		"title": "🎉 Roo Code {{version}} Released",

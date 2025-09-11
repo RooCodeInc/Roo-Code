@@ -1,5 +1,5 @@
 import React from "react"
-import { Stamp, ListChecks, LayoutList, Settings } from "lucide-react"
+import { ListChecks, LayoutList, Settings, CheckCheck } from "lucide-react"
 
 import { vscode } from "@/utils/vscode"
 import { cn } from "@/lib/utils"
@@ -9,15 +9,13 @@ import { useRooPortal } from "@/components/ui/hooks/useRooPortal"
 import { Popover, PopoverContent, PopoverTrigger, StandardTooltip } from "@/components/ui"
 import { AutoApproveSetting, autoApproveSettingsConfig } from "../settings/AutoApproveToggle"
 import { useAutoApprovalToggles } from "@/hooks/useAutoApprovalToggles"
-import { useAutoApprovalState } from "@/hooks/useAutoApprovalState"
 
 interface AutoApproveDropdownProps {
 	disabled?: boolean
-	title?: string
 	triggerClassName?: string
 }
 
-export const AutoApproveDropdown = ({ disabled = false, title, triggerClassName = "" }: AutoApproveDropdownProps) => {
+export const AutoApproveDropdown = ({ disabled = false, triggerClassName = "" }: AutoApproveDropdownProps) => {
 	const [open, setOpen] = React.useState(false)
 	const portalContainer = useRooPortal("roo-portal")
 	const { t } = useAppTranslation()
@@ -48,8 +46,6 @@ export const AutoApproveDropdown = ({ disabled = false, title, triggerClassName 
 		}),
 		[baseToggles, alwaysApproveResubmit],
 	)
-
-	const { hasEnabledOptions, effectiveAutoApprovalEnabled } = useAutoApprovalState(toggles, autoApprovalEnabled)
 
 	const onAutoApproveToggle = React.useCallback(
 		(key: AutoApproveSetting, value: boolean) => {
@@ -141,18 +137,14 @@ export const AutoApproveDropdown = ({ disabled = false, title, triggerClassName 
 		[],
 	)
 
-	// Create display text for enabled actions
-	const displayText = React.useMemo(() => {
-		if (!effectiveAutoApprovalEnabled || !hasEnabledOptions) {
-			return t("chat:autoApprove.none")
-		}
-		const enabledActionsList = Object.entries(toggles)
-			.filter(([_key, value]) => !!value)
-			.map(([key]) => t(autoApproveSettingsConfig[key as AutoApproveSetting].labelKey))
-			.join(", ")
+	// Calculate enabled and total counts as separate properties
+	const enabledCount = React.useMemo(() => {
+		return Object.values(toggles).filter((value) => !!value).length
+	}, [toggles])
 
-		return enabledActionsList || t("chat:autoApprove.none")
-	}, [effectiveAutoApprovalEnabled, hasEnabledOptions, toggles, t])
+	const totalCount = React.useMemo(() => {
+		return Object.keys(toggles).length
+	}, [toggles])
 
 	// Split settings into two columns
 	const settingsArray = Object.values(autoApproveSettingsConfig)
@@ -162,23 +154,25 @@ export const AutoApproveDropdown = ({ disabled = false, title, triggerClassName 
 
 	return (
 		<Popover open={open} onOpenChange={setOpen} data-testid="auto-approve-dropdown-root">
-			<StandardTooltip content={title || t("chat:autoApprove.title")}>
-				<PopoverTrigger
-					disabled={disabled}
-					data-testid="auto-approve-dropdown-trigger"
-					className={cn(
-						"inline-flex items-center gap-1.5 relative whitespace-nowrap px-1.5 py-1 text-xs",
-						"bg-transparent border border-[rgba(255,255,255,0.08)] rounded-md text-vscode-foreground",
-						"transition-all duration-150 focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder focus-visible:ring-inset",
-						disabled
-							? "opacity-50 cursor-not-allowed"
-							: "opacity-90 hover:opacity-100 hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.15)] cursor-pointer",
-						triggerClassName,
-					)}>
-					<Stamp className="pointer-events-none opacity-80 flex-shrink-0 size-3" />
-					<span className="truncate">{displayText}</span>
-				</PopoverTrigger>
-			</StandardTooltip>
+			<PopoverTrigger
+				disabled={disabled}
+				data-testid="auto-approve-dropdown-trigger"
+				className={cn(
+					"inline-flex items-center gap-1.5 relative whitespace-nowrap px-1.5 py-1 text-xs",
+					"bg-transparent border border-[rgba(255,255,255,0.08)] rounded-md text-vscode-foreground",
+					"transition-all duration-150 focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder focus-visible:ring-inset",
+					disabled
+						? "opacity-50 cursor-not-allowed"
+						: "opacity-90 hover:opacity-100 hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.15)] cursor-pointer",
+					triggerClassName,
+				)}>
+				<CheckCheck className="size-3" />
+				<span className="truncate">
+					{enabledCount === totalCount
+						? t("chat:autoApprove.triggerLabelAll")
+						: t("chat:autoApprove.triggerLabel", { count: enabledCount })}
+				</span>
+			</PopoverTrigger>
 			<PopoverContent
 				align="start"
 				sideOffset={4}
