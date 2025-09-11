@@ -9,7 +9,7 @@ export function generateSearchFilesSchema(args: ToolArgs): BaseToolSchema {
 			{
 				name: "path",
 				type: "string",
-				description: `Directory path to search in (relative to workspace directory ${args.cwd}). This directory will be recursively searched. When searching the entire workspace, the parameter value is '.'`,
+				description: `The path of the directory to search in (relative to the current workspace directory ${args.cwd}). This directory will be recursively searched.`,
 				required: true,
 			},
 			{
