@@ -116,6 +116,15 @@
 			"noResponseBody": "Cerebras API 错误：无响应主体",
 			"completionError": "Cerebras 完成错误：{{error}}"
 		},
+		"wandb": {
+			"authenticationFailed": "Weights & Biases API 身份验证失败。请检查你的 API 密钥是否有效且未过期。",
+			"accessForbidden": "Weights & Biases API 访问被禁止。你的 API 密钥可能无法访问请求的模型或功能。",
+			"rateLimitExceeded": "Weights & Biases API 速率限制已超出。请稍等后再发起另一个请求。",
+			"serverError": "Weights & Biases API 服务器错误 ({{status}})。请稍后重试。",
+			"genericError": "Weights & Biases API 错误 ({{status}})：{{message}}",
+			"noResponseBody": "Weights & Biases API 错误：无响应主体",
+			"completionError": "Weights & Biases 完成错误：{{error}}"
+		},
 		"roo": {
 			"authenticationRequired": "Roo 提供商需要云认证。请登录 Roo Code Cloud。"
 		},

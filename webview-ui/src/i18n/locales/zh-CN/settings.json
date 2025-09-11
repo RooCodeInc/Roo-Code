@@ -271,6 +271,8 @@
 		"awsBedrock1MContextBetaDescription": "为 Claude Sonnet 4 将上下文窗口扩展至 100 万个 token",
 		"cerebrasApiKey": "Cerebras API 密钥",
 		"getCerebrasApiKey": "获取 Cerebras API 密钥",
+		"wandbApiKey": "Weights & Biases API 密钥",
+		"getWandbApiKey": "获取 Weights & Biases API 密钥",
 		"chutesApiKey": "Chutes API 密钥",
 		"getChutesApiKey": "获取 Chutes API 密钥",
 		"fireworksApiKey": "Fireworks API 密钥",

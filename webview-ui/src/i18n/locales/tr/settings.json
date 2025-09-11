@@ -271,6 +271,8 @@
 		"awsBedrock1MContextBetaDescription": "Claude Sonnet 4 için bağlam penceresini 1 milyon token'a genişletir",
 		"cerebrasApiKey": "Cerebras API Anahtarı",
 		"getCerebrasApiKey": "Cerebras API Anahtarını Al",
+		"wandbApiKey": "Weights & Biases API Anahtarı",
+		"getWandbApiKey": "Weights & Biases API Anahtarını Al",
 		"chutesApiKey": "Chutes API Anahtarı",
 		"getChutesApiKey": "Chutes API Anahtarı Al",
 		"fireworksApiKey": "Fireworks API Anahtarı",

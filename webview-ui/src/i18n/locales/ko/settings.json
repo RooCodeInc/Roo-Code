@@ -271,6 +271,8 @@
 		"awsBedrock1MContextBetaDescription": "Claude Sonnet 4의 컨텍스트 창을 100만 토큰으로 확장",
 		"cerebrasApiKey": "Cerebras API 키",
 		"getCerebrasApiKey": "Cerebras API 키 가져오기",
+		"wandbApiKey": "Weights & Biases API 키",
+		"getWandbApiKey": "Weights & Biases API 키 가져오기",
 		"chutesApiKey": "Chutes API 키",
 		"getChutesApiKey": "Chutes API 키 받기",
 		"fireworksApiKey": "Fireworks API 키",

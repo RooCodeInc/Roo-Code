@@ -271,6 +271,8 @@
 		"awsBedrock1MContextBetaDescription": "Estende a janela de contexto para 1 milhão de tokens para o Claude Sonnet 4",
 		"cerebrasApiKey": "Chave de API Cerebras",
 		"getCerebrasApiKey": "Obter chave de API Cerebras",
+		"wandbApiKey": "Chave de API Weights & Biases",
+		"getWandbApiKey": "Obter chave de API Weights & Biases",
 		"chutesApiKey": "Chave de API Chutes",
 		"getChutesApiKey": "Obter chave de API Chutes",
 		"fireworksApiKey": "Chave de API Fireworks",

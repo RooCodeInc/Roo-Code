@@ -39,6 +39,7 @@ import {
 	RooHandler,
 	FeatherlessHandler,
 	VercelAiGatewayHandler,
+	WandbHandler,
 	DeepInfraHandler,
 } from "./providers"
 import { NativeOllamaHandler } from "./providers/native-ollama"
@@ -165,6 +166,8 @@ export function buildApiHandler(configuration: ProviderSettings): ApiHandler {
 			return new FeatherlessHandler(options)
 		case "vercel-ai-gateway":
 			return new VercelAiGatewayHandler(options)
+		case "wandb":
+			return new WandbHandler(options)
 		default:
 			apiProvider satisfies "gemini-cli" | undefined
 			return new AnthropicHandler(options)

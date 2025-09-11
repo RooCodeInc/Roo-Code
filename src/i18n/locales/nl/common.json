@@ -111,6 +111,15 @@
 			"noResponseBody": "Cerebras API-fout: Geen responslichaam",
 			"completionError": "Cerebras-voltooiingsfout: {{error}}"
 		},
+		"wandb": {
+			"authenticationFailed": "Weights & Biases API-authenticatie mislukt. Controleer of je API-sleutel geldig is en niet verlopen.",
+			"accessForbidden": "Weights & Biases API-toegang geweigerd. Je API-sleutel heeft mogelijk geen toegang tot het gevraagde model of de functie.",
+			"rateLimitExceeded": "Weights & Biases API-snelheidslimiet overschreden. Wacht voordat je een ander verzoek doet.",
+			"serverError": "Weights & Biases API-serverfout ({{status}}). Probeer het later opnieuw.",
+			"genericError": "Weights & Biases API-fout ({{status}}): {{message}}",
+			"noResponseBody": "Weights & Biases API-fout: Geen responslichaam",
+			"completionError": "Weights & Biases-voltooiingsfout: {{error}}"
+		},
 		"roo": {
 			"authenticationRequired": "Roo provider vereist cloud authenticatie. Log in bij Roo Code Cloud."
 		},

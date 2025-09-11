@@ -111,6 +111,15 @@
 			"noResponseBody": "Erreur de l'API Cerebras : Aucun corps de réponse",
 			"completionError": "Erreur d'achèvement de Cerebras : {{error}}"
 		},
+		"wandb": {
+			"authenticationFailed": "Échec de l'authentification de l'API Weights & Biases. Vérifiez que votre clé API est valide et n'a pas expiré.",
+			"accessForbidden": "Accès interdit à l'API Weights & Biases. Votre clé API peut ne pas avoir accès au modèle ou à la fonction demandée.",
+			"rateLimitExceeded": "Limite de débit de l'API Weights & Biases dépassée. Veuillez attendre avant de faire une autre demande.",
+			"serverError": "Erreur du serveur de l'API Weights & Biases ({{status}}). Veuillez réessayer plus tard.",
+			"genericError": "Erreur de l'API Weights & Biases ({{status}}) : {{message}}",
+			"noResponseBody": "Erreur de l'API Weights & Biases : Aucun corps de réponse",
+			"completionError": "Erreur d'achèvement de Weights & Biases : {{error}}"
+		},
 		"roo": {
 			"authenticationRequired": "Le fournisseur Roo nécessite une authentification cloud. Veuillez vous connecter à Roo Code Cloud."
 		},
