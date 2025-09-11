@@ -29,7 +29,7 @@ const registerCodeAction = (context: vscode.ExtensionContext, command: CodeActio
 				// Called from code action.
 				;[filePath, selectedText, startLine, endLine, diagnostics] = args
 			} else {
-				// Called directly from command palette.
+				// Called directly from command palette or keyboard shortcut.
 				const context = EditorUtils.getEditorContext()
 
 				if (!context) {
@@ -48,6 +48,23 @@ const registerCodeAction = (context: vscode.ExtensionContext, command: CodeActio
 			}
 
 			await ClineProvider.handleCodeAction(command, promptType, params)
+
+			// If this is the addToContext command, also focus the input field
+			if (command === "addToContext") {
+				// Focus the Roo Code sidebar/panel
+				const visibleProvider = ClineProvider.getVisibleInstance()
+				if (!visibleProvider) {
+					// If no visible provider, try to show the sidebar view
+					await vscode.commands.executeCommand("roo-cline.SidebarProvider.focus")
+				}
+				// Send focus input message after a short delay to ensure the view is ready
+				setTimeout(async () => {
+					const provider = ClineProvider.getVisibleInstance()
+					if (provider) {
+						await provider.postMessageToWebview({ type: "action", action: "focusInput" })
+					}
+				}, 100)
+			}
 		}),
 	)
 }
