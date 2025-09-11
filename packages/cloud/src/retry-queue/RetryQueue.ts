@@ -13,6 +13,10 @@ export class RetryQueue extends EventEmitter<RetryQueueEvents> {
 	private retryTimer?: NodeJS.Timeout
 	private readonly STORAGE_KEY = "roo.retryQueue"
 	private authHeaderProvider?: AuthHeaderProvider
+	private queuePausedUntil?: number // Timestamp when the queue can resume processing
+	private isPaused = false // Manual pause state (e.g., for auth state changes)
+	private currentUserId?: string // Track current user ID for conditional clearing
+	private hasHadUser = false // Track if we've ever had a user (to distinguish from first login)
 
 	constructor(
 		context: ExtensionContext,
@@ -93,12 +97,24 @@ export class RetryQueue extends EventEmitter<RetryQueueEvents> {
 		await this.persistQueue()
 
 		this.emit("request-queued", request)
-		this.log(`[RetryQueue] Queued request: ${operation || url}`)
+		this.log(`[RetryQueue] Queued request: ${url}`)
 	}
 
 	public async retryAll(): Promise<void> {
 		if (this.isProcessing) {
 			this.log("[RetryQueue] Already processing, skipping retry cycle")
+			return
+		}
+
+		// Check if the queue is manually paused (e.g., due to auth state)
+		if (this.isPaused) {
+			this.log("[RetryQueue] Queue is manually paused")
+			return
+		}
+
+		// Check if the entire queue is paused due to rate limiting
+		if (this.queuePausedUntil && Date.now() < this.queuePausedUntil) {
+			this.log(`[RetryQueue] Queue is paused until ${new Date(this.queuePausedUntil).toISOString()}`)
 			return
 		}
 
@@ -115,18 +131,10 @@ export class RetryQueue extends EventEmitter<RetryQueueEvents> {
 
 			// Process all requests in FIFO order
 			for (const request of requests) {
-				// Skip if request should not be retried yet (rate limiting)
-				if (request.nextRetryAfter && Date.now() < request.nextRetryAfter) {
-					this.log(
-						`[RetryQueue] Skipping rate-limited request until ${new Date(request.nextRetryAfter).toISOString()}`,
-					)
-					continue
-				}
-
 				try {
 					const response = await this.retryRequest(request)
 
-					// Check if we got a Retry-After header for rate limiting
+					// Check if we got a 429 rate limiting response
 					if (response && response.status === 429) {
 						const retryAfter = response.headers.get("Retry-After")
 						if (retryAfter) {
@@ -144,10 +152,13 @@ export class RetryQueue extends EventEmitter<RetryQueueEvents> {
 									delayMs = 60000 // Default to 1 minute if we can't parse
 								}
 							}
-							request.nextRetryAfter = Date.now() + delayMs
-							this.log(`[RetryQueue] Rate limited, will retry after ${delayMs}ms`)
+							// Pause the entire queue
+							this.queuePausedUntil = Date.now() + delayMs
+							this.log(`[RetryQueue] Rate limited, pausing entire queue for ${delayMs}ms`)
+							// Keep the request in the queue for later retry
 							this.queue.set(request.id, request)
-							continue
+							// Stop processing further requests since the queue is paused
+							break
 						}
 					}
 
@@ -160,7 +171,7 @@ export class RetryQueue extends EventEmitter<RetryQueueEvents> {
 					// Check if we've exceeded max retries
 					if (this.config.maxRetries > 0 && request.retryCount >= this.config.maxRetries) {
 						this.log(
-							`[RetryQueue] Max retries (${this.config.maxRetries}) reached for request: ${request.operation || request.url}`,
+							`[RetryQueue] Max retries (${this.config.maxRetries}) reached for request: ${request.url}`,
 						)
 						this.queue.delete(request.id)
 						this.emit("request-max-retries-exceeded", request, error as Error)
@@ -182,7 +193,7 @@ export class RetryQueue extends EventEmitter<RetryQueueEvents> {
 	}
 
 	private async retryRequest(request: QueuedRequest): Promise<Response> {
-		this.log(`[RetryQueue] Retrying request: ${request.operation || request.url}`)
+		this.log(`[RetryQueue] Retrying request: ${request.url}`)
 
 		let headers = { ...request.options.headers }
 		if (this.authHeaderProvider) {
@@ -214,17 +225,15 @@ export class RetryQueue extends EventEmitter<RetryQueueEvents> {
 			if (!response.ok) {
 				// Handle different status codes appropriately
 				if (response.status >= 500) {
-					// Server errors should be retried
+					// Server errors (5xx) should be retried
 					throw new Error(`Server error: ${response.status} ${response.statusText}`)
 				} else if (response.status === 429) {
 					// Rate limiting - return response to let caller handle Retry-After
 					return response
-				} else if (response.status === 401 || response.status === 403) {
-					// Auth errors - retry with fresh auth headers from provider
-					throw new Error(`Auth error: ${response.status}`)
 				} else if (response.status >= 400 && response.status < 500) {
-					// Other client errors (400, 404, etc.) should not be retried
-					this.log(`[RetryQueue] Non-retryable status ${response.status}, removing from queue`)
+					// Client errors (4xx including 401/403) should NOT be retried
+					// These errors indicate problems with the request itself that won't be fixed by retrying
+					this.log(`[RetryQueue] Non-retryable client error ${response.status}, removing from queue`)
 					return response
 				}
 			}
@@ -286,6 +295,71 @@ export class RetryQueue extends EventEmitter<RetryQueueEvents> {
 			this.log("[RetryQueue] Failed to persist after clear:", error)
 		})
 		this.emit("queue-cleared")
+	}
+
+	/**
+	 * Pause the retry queue. When paused, no retries will be processed.
+	 * This is useful when auth state is not active or during logout.
+	 */
+	public pause(): void {
+		this.isPaused = true
+		this.log("[RetryQueue] Queue paused")
+	}
+
+	/**
+	 * Resume the retry queue. Retries will be processed again on the next interval.
+	 */
+	public resume(): void {
+		this.isPaused = false
+		this.log("[RetryQueue] Queue resumed")
+	}
+
+	/**
+	 * Check if the queue is paused
+	 */
+	public isPausedState(): boolean {
+		return this.isPaused
+	}
+
+	/**
+	 * Set the current user ID for tracking user changes
+	 */
+	public setCurrentUserId(userId: string | undefined): void {
+		this.currentUserId = userId
+	}
+
+	/**
+	 * Get the current user ID
+	 */
+	public getCurrentUserId(): string | undefined {
+		return this.currentUserId
+	}
+
+	/**
+	 * Conditionally clear the queue based on user ID change.
+	 * If newUserId is different from currentUserId, clear the queue.
+	 * Returns true if queue was cleared, false otherwise.
+	 */
+	public clearIfUserChanged(newUserId: string | undefined): boolean {
+		// First time ever setting a user (initial login)
+		if (!this.hasHadUser && newUserId !== undefined) {
+			this.currentUserId = newUserId
+			this.hasHadUser = true
+			return false
+		}
+
+		// If user IDs are different (including logout case where newUserId is undefined)
+		if (this.currentUserId !== newUserId) {
+			this.log(`[RetryQueue] User changed from ${this.currentUserId} to ${newUserId}, clearing queue`)
+			this.clear()
+			this.currentUserId = newUserId
+			if (newUserId !== undefined) {
+				this.hasHadUser = true
+			}
+			return true
+		}
+
+		return false
 	}
 
 	public dispose(): void {

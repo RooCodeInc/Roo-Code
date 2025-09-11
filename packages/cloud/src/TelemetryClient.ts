@@ -126,21 +126,10 @@ export class CloudTelemetryClient extends BaseTelemetryClient {
 					`[TelemetryClient#fetch] ${options.method} ${path} -> ${response.status} ${response.statusText}`,
 				)
 
-				// Queue for retry on server errors (5xx), rate limiting (429), or auth errors (401/403)
-				if (
-					this.retryQueue &&
-					allowQueueing &&
-					(response.status >= 500 ||
-						response.status === 429 ||
-						response.status === 401 ||
-						response.status === 403)
-				) {
-					await this.retryQueue.enqueue(
-						url,
-						fetchOptions,
-						"telemetry",
-						`Telemetry: ${options.method} /api/${path}`,
-					)
+				// Queue for retry on server errors (5xx) or rate limiting (429)
+				// Do NOT retry on client errors (4xx) except 429 - they won't succeed
+				if (this.retryQueue && allowQueueing && (response.status >= 500 || response.status === 429)) {
+					await this.retryQueue.enqueue(url, fetchOptions, "telemetry")
 				}
 			}
 
@@ -148,19 +137,15 @@ export class CloudTelemetryClient extends BaseTelemetryClient {
 		} catch (error) {
 			console.error(`[TelemetryClient#fetch] Network error for ${options.method} ${path}: ${error}`)
 
-			// Queue for retry if we have a retry queue and it's a network error
+			// Queue for retry on network failures (typically TypeError with "fetch failed" message)
+			// These are transient network issues that may succeed on retry
 			if (
 				this.retryQueue &&
 				allowQueueing &&
 				error instanceof TypeError &&
 				error.message.includes("fetch failed")
 			) {
-				await this.retryQueue.enqueue(
-					url,
-					fetchOptions,
-					"telemetry",
-					`Telemetry: ${options.method} /api/${path}`,
-				)
+				await this.retryQueue.enqueue(url, fetchOptions, "telemetry")
 			}
 
 			throw error

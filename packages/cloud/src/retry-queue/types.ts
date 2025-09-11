@@ -7,7 +7,6 @@ export interface QueuedRequest {
 	type: "api-call" | "telemetry" | "settings" | "other"
 	operation?: string
 	lastError?: string
-	nextRetryAfter?: number // Timestamp for when to retry next (for rate limiting)
 }
 
 export interface QueueStats {

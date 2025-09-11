@@ -684,9 +684,6 @@ describe("TelemetryClient", () => {
 			)
 		})
 
-		// Debug logging has been removed in the new implementation
-		// This test is no longer applicable
-
 		it("should handle empty messages array", async () => {
 			const client = new TelemetryClient(mockAuthService, mockSettingsService)
 

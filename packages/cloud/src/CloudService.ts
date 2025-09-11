@@ -89,6 +89,8 @@ export class CloudService extends EventEmitter<CloudServiceEvents> implements Di
 		this.log = log || console.log
 
 		this.authStateListener = (data: AuthStateChangedPayload) => {
+			// Handle retry queue based on auth state changes
+			this.handleAuthStateChangeForRetryQueue(data)
 			this.emit("auth-state-changed", data)
 		}
 
@@ -149,7 +151,6 @@ export class CloudService extends EventEmitter<CloudServiceEvents> implements Di
 					if (sessionToken) {
 						return {
 							Authorization: `Bearer ${sessionToken}`,
-							"X-Organization-Id": this._authService?.getStoredOrganizationId() || "",
 						}
 					}
 					return undefined
@@ -388,5 +389,68 @@ export class CloudService extends EventEmitter<CloudServiceEvents> implements Di
 
 	static isEnabled(): boolean {
 		return !!this._instance?.isAuthenticated()
+	}
+
+	/**
+	 * Handle auth state changes for the retry queue
+	 * - Pause queue when not in 'active-session' state
+	 * - Clear queue when user logs out or logs in as different user
+	 * - Resume queue when returning to active-session with same user
+	 */
+	private handleAuthStateChangeForRetryQueue(data: AuthStateChangedPayload): void {
+		if (!this._retryQueue) {
+			return
+		}
+
+		const newState = data.state
+		const userInfo = this.getUserInfo()
+		const newUserId = userInfo?.id
+
+		this.log(`[CloudService] Auth state changed to: ${newState}, user: ${newUserId}`)
+
+		// Handle different auth states
+		switch (newState) {
+			case "active-session": {
+				// Check if user changed (different user logged in)
+				const wasCleared = this._retryQueue.clearIfUserChanged(newUserId)
+
+				if (!wasCleared) {
+					// Same user or first login, resume the queue
+					this._retryQueue.resume()
+					this.log("[CloudService] Resuming retry queue for active session")
+				} else {
+					// Different user, queue was cleared, but we can resume processing
+					this._retryQueue.resume()
+					this.log("[CloudService] Retry queue cleared for new user, resuming processing")
+				}
+				break
+			}
+
+			case "logged-out":
+				// User is logged out, clear the queue
+				this._retryQueue.clearIfUserChanged(undefined)
+				this._retryQueue.pause()
+				this.log("[CloudService] Pausing and clearing retry queue for logged-out state")
+				break
+
+			case "initializing":
+			case "attempting-session":
+				// Transitional states, pause the queue but don't clear
+				this._retryQueue.pause()
+				this.log(`[CloudService] Pausing retry queue during ${newState}`)
+				break
+
+			case "inactive-session":
+				// Session is inactive (possibly expired), pause but don't clear
+				// The queue might resume if the session becomes active again
+				this._retryQueue.pause()
+				this.log("[CloudService] Pausing retry queue for inactive session")
+				break
+
+			default:
+				// Unknown state, pause as a safety measure
+				this._retryQueue.pause()
+				this.log(`[CloudService] Pausing retry queue for unknown state: ${newState}`)
+		}
 	}
 }
