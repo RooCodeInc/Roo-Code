@@ -159,8 +159,7 @@ export const ModeSelector = ({
 				searchInputRef.current.focus()
 			}
 
-			// Scroll to selected item with a small delay to ensure DOM is ready
-			setTimeout(() => {
+			requestAnimationFrame(() => {
 				if (selectedItemRef.current && scrollContainerRef.current) {
 					const container = scrollContainerRef.current
 					const item = selectedItemRef.current
@@ -173,12 +172,16 @@ export const ModeSelector = ({
 					// Center the item in the container
 					const scrollPosition = itemTop - containerHeight / 2 + itemHeight / 2
 
+					// Ensure we don't scroll past boundaries
+					const maxScroll = container.scrollHeight - containerHeight
+					const finalScrollPosition = Math.min(Math.max(0, scrollPosition), maxScroll)
+
 					container.scrollTo({
-						top: Math.max(0, scrollPosition),
+						top: finalScrollPosition,
 						behavior: "instant",
 					})
 				}
-			}, 0)
+			})
 		}
 	}, [open])
 
