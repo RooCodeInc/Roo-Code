@@ -1419,6 +1419,23 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		}
 	}, [])
 
+	// Track if we're currently streaming a thinking/reasoning message
+	const isStreamingThinking = useMemo(() => {
+		const lastMessage = modifiedMessages.at(-1)
+		return lastMessage?.say === "reasoning" && lastMessage?.partial === true
+	}, [modifiedMessages])
+
+	// Enhanced scroll behavior for thinking sections
+	useEffect(() => {
+		// When streaming thinking content, check if user has manually scrolled
+		// If they haven't, continue auto-scrolling
+		// If they have (disableAutoScrollRef.current is true), respect their choice
+		if (isStreamingThinking && !disableAutoScrollRef.current) {
+			// Continue auto-scrolling for thinking content if user hasn't intervened
+			scrollToBottomSmooth()
+		}
+	}, [isStreamingThinking, scrollToBottomSmooth])
+
 	useEvent("wheel", handleWheel, window, { passive: true }) // passive improves scrolling performance
 
 	// Effect to handle showing the checkpoint warning after a delay
@@ -1903,6 +1920,9 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							atBottomStateChange={(isAtBottom: boolean) => {
 								setIsAtBottom(isAtBottom)
 								if (isAtBottom) {
+									// Re-enable autoscroll when user scrolls to bottom
+									// This is the key fix: users can scroll up to read thinking content,
+									// and autoscroll resumes when they scroll back down
 									disableAutoScrollRef.current = false
 								}
 								setShowScrollToBottom(disableAutoScrollRef.current && !isAtBottom)
