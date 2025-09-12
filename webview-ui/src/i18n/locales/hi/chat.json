@@ -181,7 +181,9 @@
 		"wantsToGenerateImage": "Roo एक छवि बनाना चाहता है:",
 		"wantsToGenerateImageOutsideWorkspace": "Roo कार्यक्षेत्र के बाहर एक छवि बनाना चाहता है:",
 		"wantsToGenerateImageProtected": "Roo एक संरक्षित स्थान पर छवि बनाना चाहता है:",
-		"didGenerateImage": "Roo ने एक छवि बनाई:"
+		"didGenerateImage": "Roo ने एक छवि बनाई:",
+		"editingLabel": "संपादन",
+		"readingLabel": "पढ़ें"
 	},
 	"directoryOperations": {
 		"wantsToViewTopLevel": "Roo इस निर्देशिका में शीर्ष स्तर की फ़ाइलें देखना चाहता है:",
@@ -390,7 +392,5 @@
 	"slashCommand": {
 		"wantsToRun": "Roo एक स्लैश कमांड चलाना चाहता है:",
 		"didRun": "Roo ने एक स्लैश कमांड चलाया:"
-	},
-	"editingLabel": "संपादन",
-	"readingLabel": "पढ़ें"
+	}
 }
