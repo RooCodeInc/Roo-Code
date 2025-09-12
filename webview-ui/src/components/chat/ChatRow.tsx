@@ -1270,7 +1270,7 @@ export const ChatRowContent = ({
 								{icon}
 								{title}
 							</div>
-							<div style={{ color: "var(--vscode-charts-green)", paddingTop: 10 }}>
+							<div className="border-l border-green-600/30 ml-2 pl-4 pb-1">
 								<Markdown markdown={message.text} />
 							</div>
 						</>
