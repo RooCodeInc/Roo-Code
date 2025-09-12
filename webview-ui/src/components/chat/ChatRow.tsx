@@ -287,7 +287,7 @@ export const ChatRowContent = ({
 							getIconSpan("error", errorColor)
 						)
 					) : cost !== null && cost !== undefined ? (
-						getIconSpan("check", successColor)
+						getIconSpan("check")
 					) : apiRequestFailedMessage ? (
 						getIconSpan("error", errorColor)
 					) : (
@@ -1114,10 +1114,11 @@ export const ChatRowContent = ({
 								<div style={{ display: "flex", alignItems: "center", gap: "10px", flexGrow: 1 }}>
 									{icon}
 									{title}
-									<VSCodeBadge
-										style={{ opacity: cost !== null && cost !== undefined && cost > 0 ? 1 : 0 }}>
-										${Number(cost || 0)?.toFixed(4)}
-									</VSCodeBadge>
+								</div>
+								<div
+									className="text-xs text-vscode-dropdown-foreground border-vscode-dropdown-border/50 border px-1.5 py-0.5 rounded-lg"
+									style={{ opacity: cost !== null && cost !== undefined && cost > 0 ? 1 : 0 }}>
+									${Number(cost || 0)?.toFixed(4)}
 								</div>
 								<span className={`codicon codicon-chevron-${isExpanded ? "up" : "down"}`}></span>
 							</div>
