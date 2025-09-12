@@ -486,24 +486,24 @@ input[cmdk-input]:focus {
 	transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
 	transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 	transition-duration: 150ms;
+}
 
-	/* Hide API Request text when container is too narrow */
-	@media (max-width: 400px) {
-		.api-request-text {
-			display: none !important;
-		}
+/* Hide API Request text when container is too narrow */
+@media (max-width: 400px) {
+	.api-request-text {
+		display: none !important;
+	}
+}
+
+/* Alternative: Use container query for more precise control */
+@supports (container-type: inline-size) {
+	.api-request-container {
+		container-type: inline-size;
 	}
 
-	/* Alternative: Use container query for more precise control */
-	@supports (container-type: inline-size) {
-		.api-request-container {
-			container-type: inline-size;
-		}
-
-		@container (max-width: 350px) {
-			.api-request-text {
-				display: none !important;
-			}
+	@container (max-width: 350px) {
+		.api-request-text {
+			display: none !important;
 		}
 	}
 }
