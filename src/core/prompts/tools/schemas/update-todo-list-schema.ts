@@ -11,14 +11,14 @@ Replace the entire TODO list with an updated checklist reflecting the current st
 - Use a single-level markdown checklist (no nesting or subtasks).
 - List todos in the intended execution order.
 - Status options:
-	[ ] Task description (pending)
-	[x] Task description (completed)
-	[-] Task description (in progress)
+	- [ ] Task description (pending)
+	- [x] Task description (completed)
+	- [-] Task description (in progress)
 
 **Status Rules:**
-[ ] = pending (not started)
-[x] = completed (fully finished, no unresolved issues)
-[-] = in_progress (currently being worked on)
+- [ ] = pending (not started)
+- [x] = completed (fully finished, no unresolved issues)
+- [-] = in_progress (currently being worked on)
 
 **Core Principles:**
 - Before updating, always confirm which todos have been completed since the last update.
@@ -29,13 +29,45 @@ Replace the entire TODO list with an updated checklist reflecting the current st
 - Only mark a task as completed when it is fully accomplished (no partials, no unresolved dependencies).
 - If a task is blocked, keep it as in_progress and add a new todo describing what needs to be resolved.
 - Remove tasks only if they are no longer relevant or if the user requests deletion.
+
+**When to Use:**
+- The task is complicated or involves multiple steps or requires ongoing tracking.
+- You need to update the status of several todos at once.
+- New actionable items are discovered during task execution.
+- The user requests a todo list or provides multiple tasks.
+- The task is complex and benefits from clear, stepwise progress tracking.
+
+**When NOT to Use:**
+- There is only a single, trivial task.
+- The task can be completed in one or two simple steps.
+- The request is purely conversational or informational.
+
+**Task Management Guidelines:**
+- Mark task as completed immediately after all work of the current task is done.
+- Start the next task by marking it as in_progress.
+- Add new todos as soon as they are identified.
+- Use clear, descriptive task names.
 `,
 		parameters: [
 			{
 				name: "todos",
 				type: "string",
-				description:
-					"The complete TODO list in Markdown checklist format. Use '[ ]' for pending, '[x]' for completed, and '[-]' for in-progress tasks.",
+				description: `The complete TODO list without prefix '-'.
+
+**Usage Example:**
+[x] Analyze requirements
+[x] Design architecture
+[-] Implement core logic
+[ ] Write tests
+[ ] Update documentation
+
+*After completing "Implement core logic" and starting "Write tests":*
+[x] Analyze requirements
+[x] Design architecture
+[x] Implement core logic
+[-] Write tests
+[ ] Update documentation
+[ ] Add performance benchmarks					`,
 				required: true,
 			},
 		],

@@ -15,7 +15,19 @@ export function generateAskFollowupQuestionSchema(args: ToolArgs): BaseToolSchem
 			{
 				name: "follow_up",
 				type: "string",
-				description: `A list of 2-4 suggested answers, each in its own <suggest> tag. Suggestions must be complete, actionable answers without placeholders. Optionally include mode attribute to switch modes (code/architect/etc.), such as '<suggest mode="mode-slug">suggestion text</suggest>'`,
+				description: `A list of 2-4 suggested answers, each in its own <suggest> tag. Suggestions must be complete, actionable answers without placeholders. Optionally include mode attribute to switch modes (code/architect/etc.)
+				
+Question1: Your question here
+Example1:
+<suggest>First suggestion</suggest>
+<suggest mode="code">Action with mode switch</suggest>
+
+Question2: What is the path to the frontend-config.json file?
+Example2:
+<suggest>./src/frontend-config.json</suggest>
+<suggest>./config/frontend-config.json</suggest>
+<suggest>./frontend-config.json</suggest>
+`,
 				required: true,
 			},
 		],
