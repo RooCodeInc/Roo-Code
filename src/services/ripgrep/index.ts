@@ -142,6 +142,7 @@ export async function regexSearchFiles(
 	regex: string,
 	filePattern?: string,
 	rooIgnoreController?: RooIgnoreController,
+	includeIgnored: boolean = false,
 ): Promise<string> {
 	const vscodeAppRoot = vscode.env.appRoot
 	const rgPath = await getBinPath(vscodeAppRoot)
@@ -150,7 +151,14 @@ export async function regexSearchFiles(
 		throw new Error("Could not find ripgrep binary")
 	}
 
-	const args = ["--json", "-e", regex, "--glob", filePattern || "*", "--context", "1", "--no-messages", directoryPath]
+	const args = ["--json", "-e", regex, "--glob", filePattern || "*", "--context", "1", "--no-messages"]
+
+	// By default, ripgrep respects .gitignore files. Add --no-ignore to include ignored files
+	if (includeIgnored) {
+		args.push("--no-ignore")
+	}
+
+	args.push(directoryPath)
 
 	let output: string
 	try {

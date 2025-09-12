@@ -67,6 +67,7 @@ export const toolParamNames = [
 	"todos",
 	"prompt",
 	"image",
+	"include_ignored",
 ] as const
 
 export type ToolParamName = (typeof toolParamNames)[number]
@@ -112,7 +113,7 @@ export interface CodebaseSearchToolUse extends ToolUse {
 
 export interface SearchFilesToolUse extends ToolUse {
 	name: "search_files"
-	params: Partial<Pick<Record<ToolParamName, string>, "path" | "regex" | "file_pattern">>
+	params: Partial<Pick<Record<ToolParamName, string>, "path" | "regex" | "file_pattern" | "include_ignored">>
 }
 
 export interface ListFilesToolUse extends ToolUse {

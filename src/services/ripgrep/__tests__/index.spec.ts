@@ -48,3 +48,9 @@ describe("Ripgrep line truncation", () => {
 		expect(truncated).toContain("[truncated...]")
 	})
 })
+
+// Note: Integration tests for gitignore handling would require actual file system setup
+// The implementation has been updated to:
+// 1. By default, ripgrep respects .gitignore files (no --no-ignore flag)
+// 2. When includeIgnored is true, it adds --no-ignore flag to include ignored files
+// This behavior is implemented in src/services/ripgrep/index.ts lines 154-159

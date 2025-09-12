@@ -18,6 +18,7 @@ export async function searchFilesTool(
 	const relDirPath: string | undefined = block.params.path
 	const regex: string | undefined = block.params.regex
 	const filePattern: string | undefined = block.params.file_pattern
+	const includeIgnored: string | undefined = block.params.include_ignored
 
 	const absolutePath = relDirPath ? path.resolve(cline.cwd, relDirPath) : cline.cwd
 	const isOutsideWorkspace = isPathOutsideWorkspace(absolutePath)
@@ -27,6 +28,7 @@ export async function searchFilesTool(
 		path: getReadablePath(cline.cwd, removeClosingTag("path", relDirPath)),
 		regex: removeClosingTag("regex", regex),
 		filePattern: removeClosingTag("file_pattern", filePattern),
+		includeIgnored: removeClosingTag("include_ignored", includeIgnored),
 		isOutsideWorkspace,
 	}
 
@@ -52,12 +54,16 @@ export async function searchFilesTool(
 
 			cline.consecutiveMistakeCount = 0
 
+			// Parse includeIgnored as boolean (default to false)
+			const shouldIncludeIgnored = includeIgnored === "true"
+
 			const results = await regexSearchFiles(
 				cline.cwd,
 				absolutePath,
 				regex,
 				filePattern,
 				cline.rooIgnoreController,
+				shouldIncludeIgnored,
 			)
 
 			const completeMessage = JSON.stringify({ ...sharedMessageProps, content: results } satisfies ClineSayTool)

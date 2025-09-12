@@ -374,6 +374,7 @@ export interface ClineSayTool {
 	content?: string
 	regex?: string
 	filePattern?: string
+	includeIgnored?: string
 	mode?: string
 	reason?: string
 	isOutsideWorkspace?: boolean
