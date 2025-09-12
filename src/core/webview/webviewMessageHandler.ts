@@ -33,7 +33,7 @@ import {
 	checkoutRestorePayloadSchema,
 } from "../../shared/WebviewMessage"
 import { checkExistKey } from "../../shared/checkExistApiConfig"
-import { experimentDefault } from "../../shared/experiments"
+import { experimentDefault, EXPERIMENT_IDS, experiments } from "../../shared/experiments"
 import { Terminal } from "../../integrations/terminal/Terminal"
 import { openFile } from "../../integrations/misc/open-file"
 import { openImage, saveImage } from "../../integrations/misc/image-handler"
@@ -1949,6 +1949,21 @@ export const webviewMessageHandler = async (
 			}
 
 			await updateGlobalState("experiments", updatedExperiments)
+
+			// Simple delegation to FCO handler for universal baseline management
+			try {
+				const currentTask = provider.getCurrentTask()
+				if (currentTask?.taskId) {
+					await provider
+						.getFCOMessageHandler()
+						?.handleExperimentToggle(
+							experiments.isEnabled(updatedExperiments, EXPERIMENT_IDS.FILES_CHANGED_OVERVIEW),
+							currentTask,
+						)
+				}
+			} catch (error) {
+				provider.log(`FCO: Error handling experiment toggle: ${error}`)
+			}
 
 			await provider.postStateToWebview()
 			break

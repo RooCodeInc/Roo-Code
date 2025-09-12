@@ -231,5 +231,13 @@
 		"preventCompletionWithOpenTodos": {
 			"description": "Zapobiegaj ukończeniu zadania gdy na liście zadań są nieukończone zadania"
 		}
+	},
+	"fileChanges": {
+		"openDiffFailed": "Nie udało się otworzyć różnic dla {{uri}}: {{error}}",
+		"noChangesForFile": "Nie znaleziono zmian dla {{uri}}",
+		"fileChangeNotFound": "Nie znaleziono zmiany pliku dla {{uri}}",
+		"missingDependencies": "Nie można wyświetlić różnic — brakuje wymaganych zależności",
+		"revertFailed": "Nie udało się przywrócić {{uri}}: {{error}}",
+		"rejectAllPartialFailure": "Niektórych plików nie udało się przywrócić. Pozostałe elementy nie zostały usunięte."
 	}
 }

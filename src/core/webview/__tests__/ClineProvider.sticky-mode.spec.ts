@@ -27,6 +27,8 @@ vi.mock("vscode", () => ({
 		showWarningMessage: vi.fn(),
 		showErrorMessage: vi.fn(),
 		onDidChangeActiveTextEditor: vi.fn(() => ({ dispose: vi.fn() })),
+		// Ensure editor decoration API exists for modules imported at load time
+		createTextEditorDecorationType: vi.fn().mockReturnValue({ dispose: vi.fn() }),
 	},
 	workspace: {
 		getConfiguration: vi.fn().mockReturnValue({

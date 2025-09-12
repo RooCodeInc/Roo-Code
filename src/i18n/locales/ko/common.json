@@ -231,5 +231,13 @@
 		"preventCompletionWithOpenTodos": {
 			"description": "할 일 목록에 미완료된 할 일이 있을 때 작업 완료를 방지"
 		}
+	},
+	"fileChanges": {
+		"openDiffFailed": "{{uri}}에 대한 비교 보기를 열 수 없습니다: {{error}}",
+		"noChangesForFile": "{{uri}}에 대한 변경 사항이 없습니다",
+		"fileChangeNotFound": "{{uri}}의 파일 변경을 찾을 수 없습니다",
+		"missingDependencies": "비교 보기를 표시할 수 없습니다 — 필요한 종속성이 없습니다",
+		"revertFailed": "{{uri}} 되돌리기에 실패했습니다: {{error}}",
+		"rejectAllPartialFailure": "일부 파일을 되돌리지 못했습니다. 나머지 항목은 제거되지 않았습니다."
 	}
 }

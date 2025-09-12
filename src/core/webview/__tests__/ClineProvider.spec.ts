@@ -152,6 +152,8 @@ vi.mock("vscode", () => ({
 		showWarningMessage: vi.fn(),
 		showErrorMessage: vi.fn(),
 		onDidChangeActiveTextEditor: vi.fn(() => ({ dispose: vi.fn() })),
+		// Ensure editor decoration API exists for modules imported at load time
+		createTextEditorDecorationType: vi.fn().mockReturnValue({ dispose: vi.fn() }),
 	},
 	workspace: {
 		getConfiguration: vi.fn().mockReturnValue({
@@ -186,6 +188,25 @@ vi.mock("../../../utils/tts", () => ({
 
 vi.mock("../../../api", () => ({
 	buildApiHandler: vi.fn(),
+}))
+
+// Mock FileChangeManager for isolation tests
+vi.mock("../../services/file-changes/FileChangeManager", () => ({
+	FileChangeManager: vi.fn().mockImplementation((base: string = "HEAD") => {
+		let files: any[] = []
+		return {
+			updateBaseline: vi.fn(async (b: string) => {
+				base = b
+			}),
+			getChanges: vi.fn(() => ({ baseCheckpoint: base, files })),
+			setFiles: vi.fn((f: any[]) => {
+				files = f
+			}),
+			applyPerFileBaselines: vi.fn(async (f: any[]) => f),
+			getLLMOnlyChanges: vi.fn(async () => ({ baseCheckpoint: base, files })),
+			clearFileStates: vi.fn(),
+		}
+	}),
 }))
 
 vi.mock("../../prompts/system", () => ({
@@ -2575,6 +2596,81 @@ describe("getTelemetryProperties", () => {
 	})
 })
 
+describe("FCO isolation between tasks", () => {
+	let provider: ClineProvider
+	let mockContext: vscode.ExtensionContext
+	let mockOutputChannel: vscode.OutputChannel
+
+	beforeEach(() => {
+		vi.clearAllMocks()
+		mockContext = {
+			extensionPath: "/test/path",
+			extensionUri: {} as vscode.Uri,
+			globalState: { get: vi.fn(), update: vi.fn(), keys: vi.fn().mockReturnValue([]) },
+			secrets: { get: vi.fn(), store: vi.fn(), delete: vi.fn() },
+			subscriptions: [],
+			extension: { packageJSON: { version: "1.0.0" } },
+			globalStorageUri: { fsPath: "/test/storage/path" },
+		} as unknown as vscode.ExtensionContext
+		mockOutputChannel = { appendLine: vi.fn(), clear: vi.fn(), dispose: vi.fn() } as unknown as vscode.OutputChannel
+		provider = new ClineProvider(mockContext, mockOutputChannel, "sidebar", new ContextProxy(mockContext))
+	})
+
+	it("creates distinct FileChangeManager per taskId and preserves isolation", async () => {
+		const taskA: any = { taskId: "task-A" }
+		const taskB: any = { taskId: "task-B" }
+
+		// Switch to Task A and ensure manager A
+		provider.getCurrentTask = () => taskA
+		const managerA = provider.ensureFileChangeManager()
+		expect(managerA).toBeDefined()
+
+		// Switch to Task B and ensure manager B
+		provider.getCurrentTask = () => taskB
+		const managerB = provider.ensureFileChangeManager()
+		expect(managerB).toBeDefined()
+		expect(managerB).not.toBe(managerA)
+
+		// Seed Task A state
+		provider.getCurrentTask = () => taskA
+		const mgrA2 = provider.ensureFileChangeManager()
+		expect(mgrA2).toBe(managerA)
+		mgrA2.setFiles([
+			{
+				uri: "a.txt",
+				type: "edit",
+				fromCheckpoint: "baseA",
+				toCheckpoint: "HEAD",
+				linesAdded: 1,
+				linesRemoved: 0,
+			},
+		])
+		expect(mgrA2.getChanges().files.map((f: any) => f.uri)).toContain("a.txt")
+
+		// Task B should not see Task A files
+		provider.getCurrentTask = () => taskB
+		const mgrB2 = provider.ensureFileChangeManager()
+		expect(mgrB2).toBe(managerB)
+		expect(mgrB2.getChanges().files.map((f: any) => f.uri)).not.toContain("a.txt")
+
+		// Seed Task B and ensure A remains unchanged
+		mgrB2.setFiles([
+			{
+				uri: "b.txt",
+				type: "edit",
+				fromCheckpoint: "baseB",
+				toCheckpoint: "HEAD",
+				linesAdded: 2,
+				linesRemoved: 0,
+			},
+		])
+		expect(mgrB2.getChanges().files.map((f: any) => f.uri)).toContain("b.txt")
+
+		provider.getCurrentTask = () => taskA
+		expect(managerA.getChanges().files.map((f: any) => f.uri)).toContain("a.txt")
+		expect(managerA.getChanges().files.map((f: any) => f.uri)).not.toContain("b.txt")
+	})
+})
 describe("ClineProvider - Router Models", () => {
 	let provider: ClineProvider
 	let mockContext: vscode.ExtensionContext

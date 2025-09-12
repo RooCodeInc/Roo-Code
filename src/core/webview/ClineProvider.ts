@@ -50,7 +50,7 @@ import { supportPrompt } from "../../shared/support-prompt"
 import { GlobalFileNames } from "../../shared/globalFileNames"
 import type { ExtensionMessage, ExtensionState, MarketplaceInstalledMetadata } from "../../shared/ExtensionMessage"
 import { Mode, defaultModeSlug, getModeBySlug } from "../../shared/modes"
-import { experimentDefault } from "../../shared/experiments"
+import { experimentDefault, EXPERIMENT_IDS } from "../../shared/experiments"
 import { formatLanguage } from "../../shared/language"
 import { WebviewMessage } from "../../shared/WebviewMessage"
 import { EMBEDDING_MODEL_PROFILES } from "../../shared/embeddingModels"
@@ -91,6 +91,8 @@ import { getSystemPromptFilePath } from "../prompts/sections/custom-system-promp
 import { webviewMessageHandler } from "./webviewMessageHandler"
 import { getNonce } from "./getNonce"
 import { getUri } from "./getUri"
+import { FCOMessageHandler } from "../../services/file-changes/FCOMessageHandler"
+import { FileChangeManager } from "../../services/file-changes/FileChangeManager"
 
 /**
  * https://github.com/microsoft/vscode-webview-ui-toolkit-samples/blob/main/default/weather-webview/src/providers/WeatherViewProvider.ts
@@ -134,6 +136,12 @@ export class ClineProvider
 	private taskCreationCallback: (task: Task) => void
 	private taskEventListeners: WeakMap<Task, Array<() => void>> = new WeakMap()
 	private currentWorkspacePath: string | undefined
+	// FileChangeManager instances scoped per taskId
+	private fileChangeManagers: Map<string, any> = new Map()
+	// Track the last committed checkpoint hash per task for FCO delta updates
+	private lastCheckpointByTaskId: Map<string, string> = new Map()
+	// FCO message handler for universal baseline management
+	private fcoMessageHandler: FCOMessageHandler
 
 	private recentTasksCache?: string[]
 	private pendingOperations: Map<string, PendingEditOperation> = new Map()
@@ -174,6 +182,9 @@ export class ClineProvider
 		this.customModesManager = new CustomModesManager(this.context, async () => {
 			await this.postStateToWebview()
 		})
+
+		// Initialize FCO message handler for universal baseline management
+		this.fcoMessageHandler = new FCOMessageHandler(this)
 
 		// Initialize MCP Hub through the singleton manager
 		McpServerManager.getInstance(this.context, this)
@@ -580,6 +591,9 @@ export class ClineProvider
 		this.customModesManager?.dispose()
 		this.log("Disposed all disposables")
 		ClineProvider.activeInstances.delete(this)
+
+		// Ensure FCO checkpoint listeners are cleaned up
+		this.fcoMessageHandler?.cleanup()
 
 		// Clean up any event listeners attached to this provider
 		this.removeAllListeners()
@@ -1119,8 +1133,14 @@ export class ClineProvider
 	 * @param webview A reference to the extension webview
 	 */
 	private setWebviewMessageListener(webview: vscode.Webview) {
-		const onReceiveMessage = async (message: WebviewMessage) =>
-			webviewMessageHandler(this, message, this.marketplaceManager)
+		const onReceiveMessage = async (message: WebviewMessage) => {
+			// Route Files Changed Overview messages first
+			if (this.fcoMessageHandler.shouldHandleMessage(message)) {
+				await this.fcoMessageHandler.handleMessage(message)
+				return
+			}
+			await webviewMessageHandler(this, message, this.marketplaceManager)
+		}
 
 		const messageDisposable = webview.onDidReceiveMessage(onReceiveMessage)
 		this.webviewDisposables.push(messageDisposable)
@@ -2179,6 +2199,38 @@ export class ClineProvider
 	// @deprecated - Use `ContextProxy#getValue` instead.
 	private getGlobalState<K extends keyof GlobalState>(key: K) {
 		return this.contextProxy.getValue(key)
+	}
+
+	// File Change Manager methods
+	public getFileChangeManager(): any {
+		const task = this.getCurrentTask()
+		if (!task) return undefined
+		return this.fileChangeManagers.get(task.taskId)
+	}
+
+	public ensureFileChangeManager(): any {
+		const task = this.getCurrentTask()
+		if (!task) return undefined
+		const existing = this.fileChangeManagers.get(task.taskId)
+		if (existing) return existing
+		// Default baseline to HEAD until checkpoints initialize and update it
+		const manager = new FileChangeManager("HEAD")
+		this.fileChangeManagers.set(task.taskId, manager)
+		return manager
+	}
+
+	// FCO Message Handler access
+	public getFCOMessageHandler(): FCOMessageHandler {
+		return this.fcoMessageHandler
+	}
+
+	// Track last checkpoint per task for delta-based FCO updates
+	public setLastCheckpointForTask(taskId: string, commitHash: string) {
+		this.lastCheckpointByTaskId.set(taskId, commitHash)
+	}
+
+	public getLastCheckpointForTask(taskId: string): string | undefined {
+		return this.lastCheckpointByTaskId.get(taskId)
 	}
 
 	public async setValue<K extends keyof RooCodeSettings>(key: K, value: RooCodeSettings[K]) {

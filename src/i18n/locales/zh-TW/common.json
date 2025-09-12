@@ -231,5 +231,13 @@
 		"preventCompletionWithOpenTodos": {
 			"description": "當待辦事項清單中有未完成的待辦事項時阻止工作完成"
 		}
+	},
+	"fileChanges": {
+		"openDiffFailed": "無法開啟 {{uri}} 的差異：{{error}}",
+		"noChangesForFile": "找不到 {{uri}} 的變更",
+		"fileChangeNotFound": "找不到 {{uri}} 的檔案變更",
+		"missingDependencies": "無法顯示差異 — 缺少必要的相依性",
+		"revertFailed": "還原 {{uri}} 失敗：{{error}}",
+		"rejectAllPartialFailure": "部分檔案無法還原。其餘項目未被移除。"
 	}
 }

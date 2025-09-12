@@ -231,5 +231,13 @@
 		"preventCompletionWithOpenTodos": {
 			"description": "Todo listesinde tamamlanmamış todolar olduğunda görev tamamlanmasını engelle"
 		}
+	},
+	"fileChanges": {
+		"openDiffFailed": "{{uri}} için diff açılamadı: {{error}}",
+		"noChangesForFile": "{{uri}} için değişiklik bulunamadı",
+		"fileChangeNotFound": "{{uri}} için dosya değişikliği bulunamadı",
+		"missingDependencies": "Diff görüntülenemiyor — gerekli bağımlılıklar eksik",
+		"revertFailed": "{{uri}} geri alınamadı: {{error}}",
+		"rejectAllPartialFailure": "Bazı dosyalar geri alınamadı. Kalan öğeler kaldırılmadı."
 	}
 }

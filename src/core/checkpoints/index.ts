@@ -15,6 +15,7 @@ import { getApiMetrics } from "../../shared/getApiMetrics"
 import { DIFF_VIEW_URI_SCHEME } from "../../integrations/editor/DiffViewProvider"
 
 import { CheckpointServiceOptions, RepoPerTaskCheckpointService } from "../../services/checkpoints"
+import { FileChangeManager } from "../../services/file-changes/FileChangeManager"
 
 export async function getCheckpointService(
 	task: Task,
@@ -154,6 +155,63 @@ async function checkGitInstallation(
 					log("[Task#getCheckpointService] caught unexpected error in say('checkpoint_saved')")
 					console.error(err)
 				})
+				// Minimal FCO hook: compute and send Files Changed Overview on checkpoint
+				;(async () => {
+					try {
+						const fileChangeManager =
+							provider?.getFileChangeManager?.() ?? provider?.ensureFileChangeManager?.()
+						if (!fileChangeManager) return
+
+						let baseline = fileChangeManager.getChanges().baseCheckpoint
+						if (!baseline || baseline === "HEAD") {
+							baseline = service.baseHash || baseline || "HEAD"
+						}
+
+						const diffs = await service.getDiff({ from: baseline, to })
+						const stats = await service.getDiffStats({ from: baseline, to })
+						if (!diffs || diffs.length === 0) {
+							provider?.postMessageToWebview({ type: "filesChanged", filesChanged: undefined })
+							return
+						}
+
+						const files = diffs.map((change: any) => {
+							const before = change.content?.before ?? ""
+							const after = change.content?.after ?? ""
+							const type = !before && after ? "create" : before && !after ? "delete" : "edit"
+							const s = stats[change.paths.relative]
+							const lines = s
+								? { linesAdded: s.insertions, linesRemoved: s.deletions }
+								: FileChangeManager.calculateLineDifferences(before, after)
+							return {
+								uri: change.paths.relative,
+								type,
+								fromCheckpoint: baseline,
+								toCheckpoint: to,
+								linesAdded: lines.linesAdded,
+								linesRemoved: lines.linesRemoved,
+							}
+						})
+
+						const updated = await fileChangeManager.applyPerFileBaselines(files, service, to)
+						fileChangeManager.setFiles(updated)
+
+						if (task.taskId && task.fileContextTracker) {
+							const filtered = await fileChangeManager.getLLMOnlyChanges(
+								task.taskId,
+								task.fileContextTracker,
+							)
+							provider?.postMessageToWebview({
+								type: "filesChanged",
+								filesChanged: filtered.files.length > 0 ? filtered : undefined,
+							})
+						}
+					} catch (e) {
+						// Keep checkpoints functioning even if FCO hook fails
+						provider?.log?.(
+							`[Task#getCheckpointService] FCO update failed: ${e instanceof Error ? e.message : String(e)}`,
+						)
+					}
+				})()
 			} catch (err) {
 				log("[Task#getCheckpointService] caught unexpected error in on('checkpoint'), disabling checkpoints")
 				console.error(err)
@@ -224,6 +282,26 @@ export async function checkpointRestore(
 		await service.restoreCheckpoint(commitHash)
 		TelemetryService.instance.captureCheckpointRestored(task.taskId)
 		await provider?.postMessageToWebview({ type: "currentCheckpointUpdated", text: commitHash })
+
+		// Reset FileChangeManager baseline and clear states after restore
+		try {
+			const fileChangeManager = provider?.getFileChangeManager?.()
+			if (fileChangeManager) {
+				await fileChangeManager.updateBaseline(commitHash)
+				fileChangeManager.clearFileStates?.()
+				if (task.taskId && task.fileContextTracker) {
+					const filtered = await fileChangeManager.getLLMOnlyChanges(task.taskId, task.fileContextTracker)
+					provider?.postMessageToWebview({
+						type: "filesChanged",
+						filesChanged: filtered.files.length > 0 ? filtered : undefined,
+					})
+				}
+			}
+		} catch (e) {
+			provider?.log?.(
+				`[checkpointRestore] FCO baseline reset failed: ${e instanceof Error ? e.message : String(e)}`,
+			)
+		}
 
 		if (mode === "restore") {
 			await task.overwriteApiConversationHistory(task.apiConversationHistory.filter((m) => !m.ts || m.ts < ts))

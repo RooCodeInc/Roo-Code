@@ -238,5 +238,13 @@
 		"preventCompletionWithOpenTodos": {
 			"description": "Ngăn chặn hoàn thành nhiệm vụ khi có các todo chưa hoàn thành trong danh sách todo"
 		}
+	},
+	"fileChanges": {
+		"openDiffFailed": "Không mở được diff cho {{uri}}: {{error}}",
+		"noChangesForFile": "Không tìm thấy thay đổi cho {{uri}}",
+		"fileChangeNotFound": "Không tìm thấy thay đổi tệp cho {{uri}}",
+		"missingDependencies": "Không thể hiển thị diff — thiếu các phụ thuộc cần thiết",
+		"revertFailed": "Khôi phục {{uri}} thất bại: {{error}}",
+		"rejectAllPartialFailure": "Một số tệp không khôi phục được. Các mục còn lại không bị xóa."
 	}
 }

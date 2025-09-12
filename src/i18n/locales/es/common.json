@@ -226,5 +226,13 @@
 		"preventCompletionWithOpenTodos": {
 			"description": "Prevenir la finalización de tareas cuando hay todos incompletos en la lista de todos"
 		}
+	},
+	"fileChanges": {
+		"openDiffFailed": "No se pudo abrir el diff para {{uri}}: {{error}}",
+		"noChangesForFile": "No se encontraron cambios para {{uri}}",
+		"fileChangeNotFound": "No se encontró el cambio de archivo para {{uri}}",
+		"missingDependencies": "No se puede mostrar el diff — faltan dependencias necesarias",
+		"revertFailed": "No se pudo revertir {{uri}}: {{error}}",
+		"rejectAllPartialFailure": "Algunos archivos no se pudieron revertir. Los elementos restantes no se eliminaron."
 	}
 }

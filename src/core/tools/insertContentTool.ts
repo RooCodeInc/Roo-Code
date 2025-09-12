@@ -152,7 +152,7 @@ export async function insertContentTool(
 			cline.diffViewProvider.scrollToFirstDiff()
 		}
 
-		// Ask for approval (same for both flows)
+		// Ask for approval (same for both flows) - using askApproval wrapper to handle parameter ordering correctly
 		const didApprove = await askApproval("tool", completeMessage, undefined, isWriteProtected)
 
 		if (!didApprove) {
@@ -174,9 +174,11 @@ export async function insertContentTool(
 			await cline.diffViewProvider.saveChanges(diagnosticsEnabled, writeDelayMs)
 		}
 
-		// Track file edit operation
-		if (relPath) {
-			await cline.fileContextTracker.trackFileContext(relPath, "roo_edited" as RecordSource)
+		// Track file edit operation for FCO
+		try {
+			await cline.fileContextTracker.trackFileContext(relPath, "roo_edited")
+		} catch (error) {
+			console.error("Failed to track file edit in context:", error)
 		}
 
 		cline.didEditFile = true

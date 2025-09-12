@@ -226,5 +226,13 @@
 		"preventCompletionWithOpenTodos": {
 			"description": "Aufgabenabschluss verhindern, wenn unvollständige Todos in der Todo-Liste vorhanden sind"
 		}
+	},
+	"fileChanges": {
+		"openDiffFailed": "Diff für {{uri}} konnte nicht geöffnet werden: {{error}}",
+		"noChangesForFile": "Keine Änderungen für {{uri}} gefunden",
+		"fileChangeNotFound": "Dateiänderung für {{uri}} nicht gefunden",
+		"missingDependencies": "Diff kann nicht angezeigt werden — erforderliche Abhängigkeiten fehlen",
+		"revertFailed": "Zurücksetzen von {{uri}} fehlgeschlagen: {{error}}",
+		"rejectAllPartialFailure": "Einige Dateien konnten nicht zurückgesetzt werden. Verbleibende Elemente wurden nicht entfernt."
 	}
 }

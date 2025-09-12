@@ -231,5 +231,13 @@
 		"preventCompletionWithOpenTodos": {
 			"description": "Todoリストに未完了のTodoがある場合、タスクの完了を防ぐ"
 		}
+	},
+	"fileChanges": {
+		"openDiffFailed": "{{uri}} の差分を開けませんでした: {{error}}",
+		"noChangesForFile": "{{uri}} に対する変更は見つかりませんでした",
+		"fileChangeNotFound": "{{uri}} のファイル変更が見つかりませんでした",
+		"missingDependencies": "差分を表示できません — 必要な依存関係が不足しています",
+		"revertFailed": "{{uri}} の復元に失敗しました: {{error}}",
+		"rejectAllPartialFailure": "一部のファイルを復元できませんでした。残りの項目は削除されませんでした。"
 	}
 }

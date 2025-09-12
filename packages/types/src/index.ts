@@ -23,3 +23,4 @@ export * from "./type-fu.js"
 export * from "./vscode.js"
 
 export * from "./providers/index.js"
+export * from "./file-changes.js"

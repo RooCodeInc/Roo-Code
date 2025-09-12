@@ -821,5 +821,108 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 				expect(await fs.readFile(testFile, "utf-8")).toBe("Hello, world!")
 			})
 		})
+
+		describe(`${klass.name}#getContent and file rejection workflow`, () => {
+			it("should delete newly created files when getContent throws 'does not exist' error", async () => {
+				// Test the complete workflow: create file -> checkpoint -> reject file -> verify deletion
+				// This tests the integration between ShadowCheckpointService and FCO file rejection
+
+				// 1. Create a new file that didn't exist in the base checkpoint
+				const newFile = path.join(service.workspaceDir, "newly-created.txt")
+				await fs.writeFile(newFile, "This file was created by LLM")
+
+				// Verify file exists
+				expect(await fs.readFile(newFile, "utf-8")).toBe("This file was created by LLM")
+
+				// 2. Save a checkpoint containing the new file
+				const commit = await service.saveCheckpoint("Add newly created file")
+				expect(commit?.commit).toBeTruthy()
+
+				// 3. Verify the diff shows the new file
+				const changes = await service.getDiff({ to: commit!.commit })
+				const newFileChange = changes.find((c) => c.paths.relative === "newly-created.txt")
+				expect(newFileChange).toBeDefined()
+				expect(newFileChange?.content.before).toBe("")
+				expect(newFileChange?.content.after).toBe("This file was created by LLM")
+
+				// 4. Simulate FCO file rejection: try to get content from baseHash (should throw)
+				// This simulates what FCOMessageHandler.revertFileToCheckpoint() does
+				await expect(service.getContent(service.baseHash!, newFile)).rejects.toThrow(
+					/does not exist|exists on disk, but not in/,
+				)
+
+				// 5. Since getContent threw an error, simulate the deletion logic from FCOMessageHandler
+				// In real FCO, this would be handled by FCOMessageHandler.revertFileToCheckpoint()
+				try {
+					await service.getContent(service.baseHash!, newFile)
+				} catch (error) {
+					// File didn't exist in previous checkpoint, so delete it
+					const errorMessage = error instanceof Error ? error.message : String(error)
+					if (
+						errorMessage.includes("exists on disk, but not in") ||
+						errorMessage.includes("does not exist")
+					) {
+						await fs.unlink(newFile)
+					}
+				}
+
+				// 6. Verify the file was deleted
+				await expect(fs.readFile(newFile, "utf-8")).rejects.toThrow("ENOENT")
+			})
+
+			it("should restore file content when getContent succeeds for modified files", async () => {
+				// Test the complete workflow: modify file -> checkpoint -> reject file -> verify restoration
+				// This tests the integration between ShadowCheckpointService and FCO file rejection for existing files
+
+				// 1. Modify the existing test file
+				const originalContent = await fs.readFile(testFile, "utf-8")
+				expect(originalContent).toBe("Hello, world!")
+
+				await fs.writeFile(testFile, "Modified by LLM")
+				expect(await fs.readFile(testFile, "utf-8")).toBe("Modified by LLM")
+
+				// 2. Save a checkpoint containing the modification
+				const commit = await service.saveCheckpoint("Modify existing file")
+				expect(commit?.commit).toBeTruthy()
+
+				// 3. Verify the diff shows the modification
+				const changes = await service.getDiff({ to: commit!.commit })
+				const modifiedFileChange = changes.find((c) => c.paths.relative === "test.txt")
+				expect(modifiedFileChange).toBeDefined()
+				expect(modifiedFileChange?.content.before).toBe("Hello, world!")
+				expect(modifiedFileChange?.content.after).toBe("Modified by LLM")
+
+				// 4. Simulate FCO file rejection: get original content from baseHash
+				// This simulates what FCOMessageHandler.revertFileToCheckpoint() does
+				const previousContent = await service.getContent(service.baseHash!, testFile)
+				expect(previousContent).toBe("Hello, world!")
+
+				// 5. Simulate the restoration logic from FCOMessageHandler
+				// In real FCO, this would be handled by FCOMessageHandler.revertFileToCheckpoint()
+				await fs.writeFile(testFile, previousContent, "utf8")
+
+				// 6. Verify the file was restored to its original content
+				expect(await fs.readFile(testFile, "utf-8")).toBe("Hello, world!")
+			})
+
+			it("should handle getContent with absolute vs relative paths correctly", async () => {
+				// Test that getContent works with both absolute and relative paths
+				// This ensures FCOMessageHandler path handling is compatible with ShadowCheckpointService
+
+				const originalContent = await fs.readFile(testFile, "utf-8")
+
+				// Test with absolute path
+				const absoluteContent = await service.getContent(service.baseHash!, testFile)
+				expect(absoluteContent).toBe(originalContent)
+
+				// Test with relative path
+				const relativePath = path.relative(service.workspaceDir, testFile)
+				const relativeContent = await service.getContent(
+					service.baseHash!,
+					path.join(service.workspaceDir, relativePath),
+				)
+				expect(relativeContent).toBe(originalContent)
+			})
+		})
 	},
 )

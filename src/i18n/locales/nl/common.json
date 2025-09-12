@@ -231,5 +231,13 @@
 		"preventCompletionWithOpenTodos": {
 			"description": "Voorkom taakafronding wanneer er onvolledige todos in de todolijst staan"
 		}
+	},
+	"fileChanges": {
+		"openDiffFailed": "Kon diff voor {{uri}} niet openen: {{error}}",
+		"noChangesForFile": "Geen wijzigingen gevonden voor {{uri}}",
+		"fileChangeNotFound": "Bestandswijziging voor {{uri}} niet gevonden",
+		"missingDependencies": "Diff kan niet worden weergegeven — vereiste afhankelijkheden ontbreken",
+		"revertFailed": "Terugdraaien van {{uri}} mislukt: {{error}}",
+		"rejectAllPartialFailure": "Sommige bestanden konden niet worden teruggedraaid. Overige items zijn niet verwijderd."
 	}
 }

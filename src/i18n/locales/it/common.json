@@ -231,5 +231,13 @@
 		"preventCompletionWithOpenTodos": {
 			"description": "Impedire il completamento delle attività quando ci sono todo incompleti nella lista dei todo"
 		}
+	},
+	"fileChanges": {
+		"openDiffFailed": "Impossibile aprire il diff per {{uri}}: {{error}}",
+		"noChangesForFile": "Nessuna modifica trovata per {{uri}}",
+		"fileChangeNotFound": "Modifica del file non trovata per {{uri}}",
+		"missingDependencies": "Impossibile visualizzare il diff — dipendenze richieste mancanti",
+		"revertFailed": "Impossibile ripristinare {{uri}}: {{error}}",
+		"rejectAllPartialFailure": "Alcuni file non sono stati ripristinati. Gli elementi rimanenti non sono stati rimossi."
 	}
 }

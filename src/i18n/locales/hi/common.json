@@ -231,5 +231,13 @@
 		"preventCompletionWithOpenTodos": {
 			"description": "जब टूडू सूची में अधूरे टूडू हों तो कार्य पूर्ण होने से रोकें"
 		}
+	},
+	"fileChanges": {
+		"openDiffFailed": "{{uri}} के लिए डिफ़ खोलने में विफल: {{error}}",
+		"noChangesForFile": "{{uri}} के लिए कोई परिवर्तन नहीं मिला",
+		"fileChangeNotFound": "{{uri}} के लिए फ़ाइल परिवर्तन नहीं मिला",
+		"missingDependencies": "डिफ़ नहीं दिखाया जा सकता — आवश्यक निर्भरताएँ अनुपलब्ध हैं",
+		"revertFailed": "{{uri}} को रिवर्ट करने में विफल: {{error}}",
+		"rejectAllPartialFailure": "कुछ फ़ाइलों को रिवर्ट नहीं किया जा सका। शेष आइटम नहीं हटाए गए।"
 	}
 }

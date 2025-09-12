@@ -40,6 +40,10 @@ export interface ExtensionStateContextType extends ExtensionState {
 	organizationSettingsVersion: number
 	cloudIsAuthenticated: boolean
 	sharingEnabled: boolean
+	currentFileChangeset?: import("@roo-code/types").FileChangeset
+	setCurrentFileChangeset: (changeset: import("@roo-code/types").FileChangeset | undefined) => void
+	filesChangedEnabled: boolean
+	setFilesChangedEnabled: (value: boolean) => void
 	maxConcurrentFileReads?: number
 	mdmCompliant?: boolean
 	hasOpenedModeSelector: boolean // New property to track if user has opened mode selector
@@ -275,6 +279,10 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 	const [marketplaceItems, setMarketplaceItems] = useState<any[]>([])
 	const [alwaysAllowFollowupQuestions, setAlwaysAllowFollowupQuestions] = useState(false) // Add state for follow-up questions auto-approve
 	const [followupAutoApproveTimeoutMs, setFollowupAutoApproveTimeoutMs] = useState<number | undefined>(undefined) // Will be set from global settings
+	const [currentFileChangeset, setCurrentFileChangeset] = useState<
+		import("@roo-code/types").FileChangeset | undefined
+	>(undefined)
+	const [filesChangedEnabled, setFilesChangedEnabled] = useState(true) // Default to enabled
 	const [marketplaceInstalledMetadata, setMarketplaceInstalledMetadata] = useState<MarketplaceInstalledMetadata>({
 		project: {},
 		global: {},
@@ -380,6 +388,14 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 					}
 					if (message.marketplaceInstalledMetadata !== undefined) {
 						setMarketplaceInstalledMetadata(message.marketplaceInstalledMetadata)
+					}
+					break
+				}
+				case "filesChanged": {
+					if (message.filesChanged) {
+						setCurrentFileChangeset(message.filesChanged)
+					} else {
+						setCurrentFileChangeset(undefined)
 					}
 					break
 				}
@@ -538,6 +554,10 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		},
 		includeTaskHistoryInEnhance,
 		setIncludeTaskHistoryInEnhance,
+		currentFileChangeset,
+		setCurrentFileChangeset,
+		filesChangedEnabled,
+		setFilesChangedEnabled,
 	}
 
 	return <ExtensionStateContext.Provider value={contextValue}>{children}</ExtensionStateContext.Provider>

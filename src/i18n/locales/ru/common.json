@@ -231,5 +231,13 @@
 		"preventCompletionWithOpenTodos": {
 			"description": "Предотвратить завершение задач при наличии незавершенных дел в списке дел"
 		}
+	},
+	"fileChanges": {
+		"openDiffFailed": "Не удалось открыть diff для {{uri}}: {{error}}",
+		"noChangesForFile": "Изменения для {{uri}} не найдены",
+		"fileChangeNotFound": "Изменение файла для {{uri}} не найдено",
+		"missingDependencies": "Не удаётся показать diff — отсутствуют необходимые зависимости",
+		"revertFailed": "Не удалось откатить {{uri}}: {{error}}",
+		"rejectAllPartialFailure": "Некоторые файлы не удалось откатить. Оставшиеся элементы не были удалены."
 	}
 }

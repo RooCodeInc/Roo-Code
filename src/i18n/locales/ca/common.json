@@ -231,5 +231,13 @@
 		"preventCompletionWithOpenTodos": {
 			"description": "Evitar la finalització de tasques quan hi ha todos incomplets a la llista de todos"
 		}
+	},
+	"fileChanges": {
+		"openDiffFailed": "No s'ha pogut obrir la comparació per a {{uri}}: {{error}}",
+		"noChangesForFile": "No s'han trobat canvis per a {{uri}}",
+		"fileChangeNotFound": "No s'ha trobat el canvi de fitxer per a {{uri}}",
+		"missingDependencies": "No es pot visualitzar la comparació — manquen dependències necessàries",
+		"revertFailed": "No s'ha pogut revertir {{uri}}: {{error}}",
+		"rejectAllPartialFailure": "Alguns fitxers no s'han pogut revertir. Els elements restants no s'han eliminat."
 	}
 }

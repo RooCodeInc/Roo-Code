@@ -215,5 +215,13 @@
 		"preventCompletionWithOpenTodos": {
 			"description": "Prevent task completion when there are incomplete todos in the todo list"
 		}
+	},
+	"fileChanges": {
+		"openDiffFailed": "Failed to open diff for {{uri}}: {{error}}",
+		"noChangesForFile": "No changes found for {{uri}}",
+		"fileChangeNotFound": "File change not found for {{uri}}",
+		"missingDependencies": "Unable to view diff — missing required dependencies",
+		"revertFailed": "Failed to revert {{uri}}: {{error}}",
+		"rejectAllPartialFailure": "Some files failed to revert. Remaining items were not removed."
 	}
 }

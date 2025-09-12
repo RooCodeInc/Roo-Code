@@ -51,6 +51,7 @@ describe("Checkpoint functionality", () => {
 			getDiff: vi.fn().mockResolvedValue([]),
 			on: vi.fn(),
 			initShadowGit: vi.fn().mockResolvedValue(undefined),
+			getCurrentCheckpoint: vi.fn().mockReturnValue("base-hash"),
 		}
 
 		// Create mock provider

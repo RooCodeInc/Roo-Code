@@ -231,5 +231,13 @@
 		"preventCompletionWithOpenTodos": {
 			"description": "Mencegah penyelesaian tugas ketika ada todo yang belum selesai dalam daftar todo"
 		}
+	},
+	"fileChanges": {
+		"openDiffFailed": "Gagal membuka diff untuk {{uri}}: {{error}}",
+		"noChangesForFile": "Tidak ada perubahan untuk {{uri}}",
+		"fileChangeNotFound": "Perubahan file untuk {{uri}} tidak ditemukan",
+		"missingDependencies": "Tidak dapat menampilkan diff — dependensi yang diperlukan tidak tersedia",
+		"revertFailed": "Gagal mengembalikan {{uri}}: {{error}}",
+		"rejectAllPartialFailure": "Beberapa file gagal dikembalikan. Item yang tersisa tidak dihapus."
 	}
 }
