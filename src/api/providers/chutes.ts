@@ -90,8 +90,8 @@ export class ChutesHandler extends BaseOpenAiCompatibleProvider<ChutesModelId> {
 			for (const processedChunk of matcher.final()) {
 				yield processedChunk
 			}
-		} else if (model.id.includes("Qwen") && model.id.includes("Thinking")) {
-			// Add reasoning support for Qwen Thinking models
+		} else if (model.id === "Qwen/Qwen3-Next-80B-A3B-Thinking") {
+			// Add reasoning support for the new Qwen3-Next-80B-A3B-Thinking model
 			const stream = await this.client.chat.completions.create({
 				...this.getCompletionParams(systemPrompt, messages),
 				messages: [{ role: "user", content: systemPrompt }, ...convertToOpenAiMessages(messages)],
@@ -136,18 +136,18 @@ export class ChutesHandler extends BaseOpenAiCompatibleProvider<ChutesModelId> {
 	override getModel() {
 		const model = super.getModel()
 		const isDeepSeekR1 = model.id.includes("DeepSeek-R1")
-		const isQwenThinking = model.id.includes("Qwen") && model.id.includes("Thinking")
-		const isQwenInstruct = model.id.includes("Qwen") && model.id.includes("Instruct")
+		const isQwenNextThinking = model.id === "Qwen/Qwen3-Next-80B-A3B-Thinking"
+		const isQwenNextInstruct = model.id === "Qwen/Qwen3-Next-80B-A3B-Instruct"
 
 		let temperature = this.defaultTemperature
 		let topP: number | undefined
 
 		if (isDeepSeekR1) {
 			temperature = DEEP_SEEK_DEFAULT_TEMPERATURE
-		} else if (isQwenThinking) {
+		} else if (isQwenNextThinking) {
 			temperature = 0.6
 			topP = 0.95
-		} else if (isQwenInstruct) {
+		} else if (isQwenNextInstruct) {
 			temperature = 0.7
 			topP = 0.8
 		}

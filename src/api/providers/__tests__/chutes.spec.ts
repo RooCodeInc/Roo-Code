@@ -202,7 +202,7 @@ describe("ChutesHandler", () => {
 				inputPrice: 0,
 				outputPrice: 0,
 				description: "Qwen3 235B A22B Instruct 2507 model with 262K context window.",
-				temperature: 0.5, // Default temperature for non-DeepSeek models
+				temperature: 0.5, // Default temperature for existing Qwen models
 			}),
 		)
 	})
@@ -270,7 +270,7 @@ describe("ChutesHandler", () => {
 				inputPrice: 0,
 				outputPrice: 0,
 				description: "Qwen3 Coder 480B A35B Instruct FP8 model, optimized for coding tasks.",
-				temperature: 0.5, // Default temperature for non-DeepSeek models
+				temperature: 0.5, // Default temperature for existing Qwen models
 			}),
 		)
 	})
