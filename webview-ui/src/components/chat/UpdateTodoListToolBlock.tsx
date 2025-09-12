@@ -38,9 +38,9 @@ const STATUS_OPTIONS = [
 	{
 		value: "completed",
 		label: "Completed",
-		color: "var(--vscode-charts-green)",
-		border: "var(--vscode-charts-green)",
-		bg: "var(--vscode-charts-green)",
+		color: "white",
+		border: "white",
+		bg: "white",
 	},
 ]
 
@@ -216,7 +216,7 @@ const UpdateTodoListToolBlock: React.FC<UpdateTodoListToolBlockProps> = ({
 												width: 8,
 												height: 8,
 												borderRadius: "50%",
-												background: "var(--vscode-charts-green)",
+												background: "white",
 												marginRight: 6,
 												marginTop: 7,
 												flexShrink: 0,
@@ -298,7 +298,7 @@ const UpdateTodoListToolBlock: React.FC<UpdateTodoListToolBlockProps> = ({
 													fontWeight: 500,
 													color:
 														todo.status === "completed"
-															? "var(--vscode-charts-green)"
+															? "white"
 															: todo.status === "in_progress"
 																? "var(--vscode-charts-yellow)"
 																: "var(--vscode-foreground)",

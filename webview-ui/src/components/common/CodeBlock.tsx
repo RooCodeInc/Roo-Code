@@ -42,8 +42,8 @@ interface CodeBlockProps {
 }
 
 const CodeBlockButton = styled.button`
-	background: transparent;
-	border: none;
+	background: rgba(60, 60, 60, 0.4);
+	border: 1px solid rgba(255, 255, 255, 0.1);
 	color: var(--vscode-foreground);
 	cursor: var(--copy-button-cursor, default);
 	padding: 4px;
@@ -51,16 +51,25 @@ const CodeBlockButton = styled.button`
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	opacity: 0.4;
-	border-radius: 3px;
+	opacity: 0.8;
+	border-radius: 6px;
 	pointer-events: var(--copy-button-events, none);
 	margin-left: 4px;
-	height: 24px;
-	width: 24px;
+	height: 28px;
+	width: 28px;
+	transition: all 0.2s ease-in-out;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 
 	&:hover {
-		background: var(--vscode-toolbar-hoverBackground);
+		background: rgba(80, 80, 80, 0.6);
 		opacity: 1;
+		transform: translateY(-1px);
+		box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+	}
+
+	&:active {
+		transform: translateY(0);
+		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 	}
 
 	/* Style for Lucide icons to ensure consistent sizing and positioning */
@@ -75,19 +84,26 @@ const CodeBlockButtonWrapper = styled.div`
 	right: var(--copy-button-right, 8px);
 	height: auto;
 	z-index: 40;
-	background: ${CODE_BLOCK_BG_COLOR}${WRAPPER_ALPHA};
+	background: rgba(30, 30, 30, 0.7);
+	backdrop-filter: blur(8px);
+	-webkit-backdrop-filter: blur(8px);
 	overflow: visible;
 	pointer-events: none;
 	opacity: var(--copy-button-opacity, 0);
-	padding: 4px 6px;
-	border-radius: 3px;
+	padding: 6px 8px;
+	border-radius: 8px;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
+	gap: 4px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	transition: all 0.2s ease-in-out;
 
 	&:hover {
-		background: var(--vscode-editor-background);
+		background: rgba(40, 40, 40, 0.85);
 		opacity: 1 !important;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 	}
 
 	${CodeBlockButton} {
@@ -101,17 +117,31 @@ const CodeBlockContainer = styled.div`
 	position: relative;
 	overflow: hidden;
 	background-color: ${CODE_BLOCK_BG_COLOR};
+	border-radius: 12px;
+	margin: 12px 0;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	transition: all 0.2s ease-in-out;
+
+	&:hover {
+		box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+		border: 1px solid rgba(255, 255, 255, 0.12);
+	}
 
 	${CodeBlockButtonWrapper} {
 		opacity: 0;
 		pointer-events: none;
-		transition: opacity 0.2s; /* Keep opacity transition for buttons */
+		transition:
+			opacity 0.2s,
+			transform 0.2s ease-in-out; /* Add transform transition */
+		transform: translateY(4px); /* Start slightly below */
 	}
 
 	&[data-partially-visible="true"]:hover ${CodeBlockButtonWrapper} {
 		opacity: 1;
 		pointer-events: all;
 		cursor: pointer;
+		transform: translateY(0); /* Animate to normal position */
 	}
 `
 
@@ -121,19 +151,22 @@ export const StyledPre = styled.div<{
 	windowshade?: "true" | "false"
 	collapsedHeight?: number
 }>`
-	background-color: ${CODE_BLOCK_BG_COLOR};
+	background-color: rgba(30, 30, 30, 0.7);
+	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
 	max-height: ${({ windowshade, collapsedHeight }) =>
 		windowshade === "true" ? `${collapsedHeight || WINDOW_SHADE_SETTINGS.collapsedHeight}px` : "none"};
 	overflow-y: auto;
-	padding: 10px;
-	border-radius: 5px;
+	padding: 12px;
+	border-radius: 10px;
+	transition: all 0.2s ease-in-out;
 	${({ preStyle }) => preStyle && { ...preStyle }}
 
 	pre {
-		background-color: ${CODE_BLOCK_BG_COLOR};
-		border-radius: 5px;
+		background-color: transparent;
+		border-radius: 8px;
 		margin: 0;
-		padding: 10px;
+		padding: 12px;
 		width: 100%;
 		box-sizing: border-box;
 	}
@@ -170,22 +203,31 @@ export const StyledPre = styled.div<{
 const LanguageSelect = styled.select`
 	font-size: 12px;
 	color: var(--vscode-foreground);
-	opacity: 0.4;
+	opacity: 0.8;
 	font-family: monospace;
 	appearance: none;
-	background: transparent;
-	border: none;
+	background: rgba(60, 60, 60, 0.4);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	border-radius: 6px;
 	cursor: pointer;
-	padding: 4px;
+	padding: 4px 8px;
 	margin: 0;
 	vertical-align: middle;
-	height: 24px;
+	height: 28px;
+	transition: all 0.2s ease-in-out;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+	&:hover {
+		background: rgba(80, 80, 80, 0.6);
+		opacity: 1;
+	}
 
 	& option {
-		background: var(--vscode-editor-background);
+		background: rgba(40, 40, 40, 0.95);
 		color: var(--vscode-foreground);
-		padding: 0;
-		margin: 0;
+		padding: 8px;
+		margin: 4px;
+		border-radius: 4px;
 	}
 
 	&::-webkit-scrollbar {

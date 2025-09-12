@@ -235,20 +235,20 @@ export function Footer() {
 											</button>
 
 											{privacyDropdownOpen && (
-												<div className="absolute z-50 mt-2 w-44 origin-top-left scale-95 rounded-md border border-border bg-background shadow-lg ring-1 ring-black ring-opacity-5 transition-all duration-100 ease-out data-[state=open]:scale-100 max-xs:right-0 max-xs:origin-top-right xs:left-0">
+												<div className="absolute z-50 mt-2 w-44 origin-top-left scale-95 rounded-2xl border border-border bg-background shadow-lg ring-1 ring-black ring-opacity-5 transition-all duration-100 ease-out data-[state=open]:scale-100 max-xs:right-0 max-xs:origin-top-right xs:left-0">
 													<div className="flex flex-col gap-1 p-2 text-sm text-muted-foreground">
 														<a
 															href={EXTERNAL_LINKS.PRIVACY_POLICY_EXTENSION}
 															target="_blank"
 															rel="noopener noreferrer"
 															onClick={() => setPrivacyDropdownOpen(false)}
-															className="rounded-md px-3 py-2 transition-colors hover:bg-accent/50 hover:text-foreground">
+															className="rounded-2xl px-3 py-2 transition-colors hover:bg-accent/50 hover:text-foreground">
 															Extension
 														</a>
 														<Link
 															href={INTERNAL_LINKS.PRIVACY_POLICY_WEBSITE}
 															onClick={() => setPrivacyDropdownOpen(false)}
-															className="rounded-md px-3 py-2 transition-colors hover:bg-accent/50 hover:text-foreground">
+															className="rounded-2xl px-3 py-2 transition-colors hover:bg-accent/50 hover:text-foreground">
 															Roo Code Cloud
 														</Link>
 													</div>

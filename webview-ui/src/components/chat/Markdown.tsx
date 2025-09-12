@@ -21,18 +21,34 @@ export const Markdown = memo(({ markdown, partial }: { markdown?: string; partia
 			onMouseEnter={() => setIsHovering(true)}
 			onMouseLeave={() => setIsHovering(false)}
 			style={{ position: "relative" }}>
-			<div style={{ wordBreak: "break-word", overflowWrap: "anywhere" }}>
+			<div
+				style={{
+					wordBreak: "break-word",
+					overflowWrap: "anywhere",
+					padding: "8px 12px",
+					borderRadius: "12px",
+					background: "rgba(255,255,255,0.04)",
+					backdropFilter: "blur(8px)",
+					WebkitBackdropFilter: "blur(8px)",
+					border: "1px solid rgba(255,255,255,0.06)",
+					boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+					transition: "all 0.2s ease-in-out",
+				}}>
 				<MarkdownBlock markdown={markdown} />
 			</div>
 			{markdown && !partial && isHovering && (
 				<div
 					style={{
 						position: "absolute",
-						bottom: "-4px",
-						right: "8px",
+						bottom: "4px",
+						right: "12px",
 						opacity: 0,
 						animation: "fadeIn 0.2s ease-in-out forwards",
-						borderRadius: "4px",
+						borderRadius: "8px",
+						background: "rgba(30,30,30,0.7)",
+						backdropFilter: "blur(4px)",
+						WebkitBackdropFilter: "blur(4px)",
+						padding: "2px",
 					}}>
 					<style>{`@keyframes fadeIn { from { opacity: 0; } to { opacity: 1.0; } }`}</style>
 					<StandardTooltip content="Copy as markdown">
@@ -40,19 +56,28 @@ export const Markdown = memo(({ markdown, partial }: { markdown?: string; partia
 							className="copy-button"
 							appearance="icon"
 							style={{
-								height: "24px",
+								height: "28px",
+								width: "28px",
 								border: "none",
-								background: "var(--vscode-editor-background)",
-								transition: "background 0.2s ease-in-out",
+								background: "rgba(60,60,60,0.5)",
+								borderRadius: "6px",
+								display: "flex",
+								alignItems: "center",
+								justifyContent: "center",
+								transition: "all 0.2s ease-in-out",
+								backdropFilter: "blur(4px)",
+								WebkitBackdropFilter: "blur(4px)",
 							}}
 							onClick={async () => {
 								const success = await copyWithFeedback(markdown)
 								if (success) {
 									const button = document.activeElement as HTMLElement
 									if (button) {
-										button.style.background = "var(--vscode-button-background)"
+										button.style.background = "var(--vscode-charts-green)"
+										button.style.transform = "scale(1.05)"
 										setTimeout(() => {
-											button.style.background = ""
+											button.style.background = "rgba(60,60,60,0.5)"
+											button.style.transform = "scale(1)"
 										}, 200)
 									}
 								}

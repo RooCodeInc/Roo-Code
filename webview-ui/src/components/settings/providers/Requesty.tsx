@@ -91,7 +91,7 @@ export const Requesty = ({
 					href={getApiKeyUrl()}
 					target="_blank"
 					rel="noopener noreferrer"
-					className="inline-flex items-center justify-center whitespace-nowrap text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 rounded-md px-3 w-full"
+					className="inline-flex items-center justify-center whitespace-nowrap text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 rounded-2xl px-3 w-full"
 					style={{
 						width: "100%",
 						textDecoration: "none",

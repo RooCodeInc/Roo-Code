@@ -50,6 +50,7 @@
 		"lru-cache": "^11.1.0",
 		"lucide-react": "^0.518.0",
 		"mermaid": "^11.4.1",
+		"path-browserify": "^1.0.1",
 		"posthog-js": "^1.227.2",
 		"pretty-bytes": "^7.0.0",
 		"react": "^18.3.1",
