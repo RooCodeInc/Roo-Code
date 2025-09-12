@@ -28,11 +28,13 @@ export class OpenAiEmbedder extends OpenAiNativeHandler implements IEmbedder {
 	constructor(options: ApiHandlerOptions & { openAiEmbeddingModelId?: string }) {
 		super(options)
 		const baseURL = options.openAiNativeBaseUrl
+		const jwtToken = options.openAiNativeApiKey || "not-provided"
 		this.embeddingsClient = new OpenAI({
 			apiKey: "proxy-handled",
 			baseURL,
 			defaultHeaders: {
 				"X-Client": "Charles-Extension-Embeddings",
+				Authorization: `Bearer ${jwtToken}`,
 			},
 		})
 		this.defaultModelId = options.openAiEmbeddingModelId || "text-embedding-3-small"
