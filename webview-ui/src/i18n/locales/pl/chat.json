@@ -24,7 +24,12 @@
 		"connectToCloudDescription": "Zaloguj się do Roo Code Cloud, aby udostępniać zadania",
 		"sharingDisabledByOrganization": "Udostępnianie wyłączone przez organizację",
 		"shareSuccessOrganization": "Link organizacji skopiowany do schowka",
-		"shareSuccessPublic": "Link publiczny skopiowany do schowka"
+		"shareSuccessPublic": "Link publiczny skopiowany do schowka",
+		"tokenStats": {
+			"inputLabel": "↑ Wejście:",
+			"outputLabel": "↓ Wyjście:",
+			"cacheLabel": "pamięć podręczna"
+		}
 	},
 	"unpin": "Odepnij",
 	"pin": "Przypnij",

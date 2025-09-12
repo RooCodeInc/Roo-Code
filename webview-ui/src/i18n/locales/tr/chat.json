@@ -24,7 +24,12 @@
 		"connectToCloudDescription": "Görevleri paylaşmak için Roo Code Cloud'a giriş yap",
 		"sharingDisabledByOrganization": "Paylaşım kuruluş tarafından devre dışı bırakıldı",
 		"shareSuccessOrganization": "Organizasyon bağlantısı panoya kopyalandı",
-		"shareSuccessPublic": "Genel bağlantı panoya kopyalandı"
+		"shareSuccessPublic": "Herkese açık bağlantı panoya kopyalandı",
+		"tokenStats": {
+			"inputLabel": "↑ Giriş:",
+			"outputLabel": "↓ Çıkış:",
+			"cacheLabel": "önbellek"
+		}
 	},
 	"unpin": "Sabitlemeyi iptal et",
 	"pin": "Sabitle",

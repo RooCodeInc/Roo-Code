@@ -24,7 +24,12 @@
 		"connectToCloudDescription": "登录 Roo Code Cloud 以分享任务",
 		"sharingDisabledByOrganization": "组织已禁用分享功能",
 		"shareSuccessOrganization": "组织链接已复制到剪贴板",
-		"shareSuccessPublic": "公开链接已复制到剪贴板"
+		"shareSuccessPublic": "公共链接已复制到剪贴板",
+		"tokenStats": {
+			"inputLabel": "↑ 输入:",
+			"outputLabel": "↓ 输出:",
+			"cacheLabel": "缓存"
+		}
 	},
 	"unpin": "取消置顶",
 	"pin": "置顶",

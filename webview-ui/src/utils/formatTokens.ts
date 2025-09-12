@@ -28,19 +28,21 @@ export function formatTokenCount(count: number | undefined): string {
  * @param tokensIn - Input tokens
  * @param tokensOut - Output tokens
  * @param cacheReads - Cache read tokens (optional)
+ * @param cacheLabel - Localized cache label
  * @returns Formatted string for display
  */
 export function formatTokenStats(
 	tokensIn?: number,
 	tokensOut?: number,
 	cacheReads?: number,
+	cacheLabel: string = "cache",
 ): { input: string; output: string } {
 	let inputDisplay = formatTokenCount(tokensIn)
 
 	// Add cache reads in parentheses if they exist
 	if (cacheReads && cacheReads > 0) {
 		const cacheDisplay = formatTokenCount(cacheReads)
-		inputDisplay = `${inputDisplay} (${cacheDisplay} cache)`
+		inputDisplay = `${inputDisplay} (${cacheDisplay} ${cacheLabel})`
 	}
 
 	const outputDisplay = formatTokenCount(tokensOut)

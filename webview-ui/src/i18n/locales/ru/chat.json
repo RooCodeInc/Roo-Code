@@ -24,7 +24,12 @@
 		"connectToCloudDescription": "Войди в Roo Code Cloud, чтобы делиться задачами",
 		"sharingDisabledByOrganization": "Обмен отключен организацией",
 		"shareSuccessOrganization": "Ссылка организации скопирована в буфер обмена",
-		"shareSuccessPublic": "Публичная ссылка скопирована в буфер обмена"
+		"shareSuccessPublic": "Публичная ссылка скопирована в буфер обмена",
+		"tokenStats": {
+			"inputLabel": "↑ Вход:",
+			"outputLabel": "↓ Выход:",
+			"cacheLabel": "кэш"
+		}
 	},
 	"unpin": "Открепить",
 	"pin": "Закрепить",

@@ -24,7 +24,12 @@
 		"connectToCloudDescription": "Masuk ke Roo Code Cloud untuk berbagi tugas",
 		"sharingDisabledByOrganization": "Berbagi dinonaktifkan oleh organisasi",
 		"shareSuccessOrganization": "Tautan organisasi disalin ke clipboard",
-		"shareSuccessPublic": "Tautan publik disalin ke clipboard"
+		"shareSuccessPublic": "Tautan publik disalin ke clipboard",
+		"tokenStats": {
+			"inputLabel": "↑ Masukan:",
+			"outputLabel": "↓ Keluaran:",
+			"cacheLabel": "cache"
+		}
 	},
 	"history": {
 		"title": "Riwayat"

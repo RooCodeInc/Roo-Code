@@ -24,7 +24,12 @@
 		"connectToCloudDescription": "कार्य साझा करने के लिए Roo Code Cloud में साइन इन करें",
 		"sharingDisabledByOrganization": "संगठन द्वारा साझाकरण अक्षम किया गया",
 		"shareSuccessOrganization": "संगठन लिंक क्लिपबोर्ड में कॉपी किया गया",
-		"shareSuccessPublic": "सार्वजनिक लिंक क्लिपबोर्ड में कॉपी किया गया"
+		"shareSuccessPublic": "सार्वजनिक लिंक क्लिपबोर्ड में कॉपी किया गया",
+		"tokenStats": {
+			"inputLabel": "↑ इनपुट:",
+			"outputLabel": "↓ आउटपुट:",
+			"cacheLabel": "कैश"
+		}
 	},
 	"unpin": "पिन करें",
 	"pin": "अवपिन करें",

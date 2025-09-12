@@ -24,7 +24,12 @@
 		"connectToCloudDescription": "Connecte-toi à Roo Code Cloud pour partager des tâches",
 		"sharingDisabledByOrganization": "Partage désactivé par l'organisation",
 		"shareSuccessOrganization": "Lien d'organisation copié dans le presse-papiers",
-		"shareSuccessPublic": "Lien public copié dans le presse-papiers"
+		"shareSuccessPublic": "Lien public copié dans le presse-papiers",
+		"tokenStats": {
+			"inputLabel": "↑ Entrée :",
+			"outputLabel": "↓ Sortie :",
+			"cacheLabel": "cache"
+		}
 	},
 	"unpin": "Désépingler",
 	"pin": "Épingler",

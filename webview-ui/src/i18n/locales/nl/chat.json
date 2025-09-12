@@ -24,7 +24,12 @@
 		"connectToCloudDescription": "Meld je aan bij Roo Code Cloud om taken te delen",
 		"sharingDisabledByOrganization": "Delen uitgeschakeld door organisatie",
 		"shareSuccessOrganization": "Organisatielink gekopieerd naar klembord",
-		"shareSuccessPublic": "Openbare link gekopieerd naar klembord"
+		"shareSuccessPublic": "Openbare link gekopieerd naar klembord",
+		"tokenStats": {
+			"inputLabel": "↑ Input:",
+			"outputLabel": "↓ Output:",
+			"cacheLabel": "cache"
+		}
 	},
 	"unpin": "Losmaken",
 	"pin": "Vastmaken",

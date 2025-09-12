@@ -24,7 +24,12 @@
 		"connectToCloudDescription": "Inicia sesión en Roo Code Cloud para compartir tareas",
 		"sharingDisabledByOrganization": "Compartir deshabilitado por la organización",
 		"shareSuccessOrganization": "Enlace de organización copiado al portapapeles",
-		"shareSuccessPublic": "Enlace público copiado al portapapeles"
+		"shareSuccessPublic": "Enlace público copiado al portapapeles",
+		"tokenStats": {
+			"inputLabel": "↑ Entrada:",
+			"outputLabel": "↓ Salida:",
+			"cacheLabel": "caché"
+		}
 	},
 	"unpin": "Desfijar",
 	"pin": "Fijar",

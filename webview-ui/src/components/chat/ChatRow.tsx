@@ -1101,7 +1101,12 @@ export const ChatRowContent = ({
 						/>
 					)
 				case "api_req_started":
-					const tokenStats = formatTokenStats(tokensIn, tokensOut, cacheReads)
+					const tokenStats = formatTokenStats(
+						tokensIn,
+						tokensOut,
+						cacheReads,
+						t("chat:task.tokenStats.cacheLabel"),
+					)
 					const hasTokenData = tokensIn !== undefined || tokensOut !== undefined
 
 					return (
@@ -1151,11 +1156,11 @@ export const ChatRowContent = ({
 												content={
 													<div className="flex flex-col gap-1">
 														<div className="flex items-center gap-2">
-															<span>↑ Input:</span>
+															<span>{t("chat:task.tokenStats.inputLabel")}</span>
 															<span className="font-mono">{tokenStats.input}</span>
 														</div>
 														<div className="flex items-center gap-2">
-															<span>↓ Output:</span>
+															<span>{t("chat:task.tokenStats.outputLabel")}</span>
 															<span className="font-mono">{tokenStats.output}</span>
 														</div>
 													</div>
