@@ -88,11 +88,27 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 				currentStateMessages.push(message)
 				const resultData = JSON.parse(message.text || "{}") as BrowserActionResult
 
+				// Validate screenshot data to ensure it's a proper data URL
+				let validatedScreenshot = resultData.screenshot
+				if (validatedScreenshot && typeof validatedScreenshot === "string") {
+					// Ensure the screenshot is a valid data URL
+					if (!validatedScreenshot.startsWith("data:image/")) {
+						// If it's just base64 without the data URL prefix, add it
+						if (validatedScreenshot.match(/^[A-Za-z0-9+/]+=*$/)) {
+							validatedScreenshot = `data:image/webp;base64,${validatedScreenshot}`
+						} else {
+							// Invalid screenshot data, set to undefined
+							console.warn("Invalid screenshot data detected, skipping screenshot")
+							validatedScreenshot = undefined
+						}
+					}
+				}
+
 				// Add page with current state and previous next actions
 				result.push({
 					currentState: {
 						url: resultData.currentUrl,
-						screenshot: resultData.screenshot,
+						screenshot: validatedScreenshot,
 						mousePosition: resultData.currentMousePosition,
 						consoleLogs: resultData.logs,
 						messages: [...currentStateMessages],
@@ -296,18 +312,9 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 						backgroundColor: "var(--vscode-input-background)",
 					}}>
 					{displayState.screenshot ? (
-						<img
-							src={displayState.screenshot}
+						<ScreenshotImage
+							screenshot={displayState.screenshot}
 							alt={t("chat:browser.screenshot")}
-							style={{
-								position: "absolute",
-								top: 0,
-								left: 0,
-								width: "100%",
-								height: "100%",
-								objectFit: "contain",
-								cursor: "pointer",
-							}}
 							onClick={() =>
 								vscode.postMessage({
 									type: "openImage",
@@ -575,5 +582,87 @@ const BrowserCursor: React.FC<{ style?: React.CSSProperties }> = ({ style }) => 
 		/>
 	)
 }
+
+// Separate component to handle screenshot rendering with error boundaries
+const ScreenshotImage: React.FC<{
+	screenshot: string
+	alt: string
+	onClick: () => void
+}> = React.memo(({ screenshot, alt, onClick }) => {
+	const [imageError, setImageError] = useState(false)
+	const [validatedSrc, setValidatedSrc] = useState<string>("")
+
+	useEffect(() => {
+		// Validate and sanitize the screenshot data
+		if (screenshot && typeof screenshot === "string") {
+			// Check if it's a valid data URL
+			if (screenshot.startsWith("data:image/")) {
+				// Extract the base64 part and validate it
+				const base64Match = screenshot.match(/^data:image\/[^;]+;base64,(.+)$/)
+				if (base64Match && base64Match[1]) {
+					try {
+						// Validate base64 by attempting to decode a small portion
+						// This will throw if the base64 is invalid
+						atob(base64Match[1].substring(0, 100))
+						// If successful, use the original screenshot
+						setValidatedSrc(screenshot)
+						setImageError(false)
+					} catch (_e) {
+						console.error("Invalid base64 in screenshot data")
+						setImageError(true)
+					}
+				} else {
+					setImageError(true)
+				}
+			} else {
+				setImageError(true)
+			}
+		} else {
+			setImageError(true)
+		}
+	}, [screenshot])
+
+	if (imageError || !validatedSrc) {
+		// Fallback UI when screenshot is invalid
+		return (
+			<div
+				style={{
+					position: "absolute",
+					top: 0,
+					left: 0,
+					width: "100%",
+					height: "100%",
+					display: "flex",
+					alignItems: "center",
+					justifyContent: "center",
+					backgroundColor: "var(--vscode-editor-background)",
+					color: "var(--vscode-descriptionForeground)",
+					fontSize: "12px",
+					textAlign: "center",
+					padding: "20px",
+				}}>
+				Screenshot unavailable
+			</div>
+		)
+	}
+
+	return (
+		<img
+			src={validatedSrc}
+			alt={alt}
+			style={{
+				position: "absolute",
+				top: 0,
+				left: 0,
+				width: "100%",
+				height: "100%",
+				objectFit: "contain",
+				cursor: "pointer",
+			}}
+			onClick={onClick}
+			onError={() => setImageError(true)}
+		/>
+	)
+})
 
 export default BrowserSessionRow
