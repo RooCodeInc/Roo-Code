@@ -943,6 +943,14 @@ export class ClineProvider
 		await this.view?.webview.postMessage(message)
 	}
 
+	/**
+	 * Checks if the webview is ready to receive messages
+	 * @returns true if the webview is available and visible
+	 */
+	public isWebviewReady(): boolean {
+		return !!(this.view?.webview && this.view.visible)
+	}
+
 	private async getHMRHtmlContent(webview: vscode.Webview): Promise<string> {
 		let localPort = "5173"
 
