@@ -23,6 +23,7 @@ import {
 	sambaNovaModels,
 	vertexModels,
 	vscodeLlmModels,
+	wandbModels,
 	xaiModels,
 	internationalZAiModels,
 } from "./providers/index.js"
@@ -68,6 +69,7 @@ export const providerNames = [
 	"io-intelligence",
 	"roo",
 	"vercel-ai-gateway",
+	"wandb",
 ] as const
 
 export const providerNamesSchema = z.enum(providerNames)
@@ -339,6 +341,10 @@ const vercelAiGatewaySchema = baseProviderSettingsSchema.extend({
 	vercelAiGatewayModelId: z.string().optional(),
 })
 
+const wandbSchema = apiModelIdProviderModelSchema.extend({
+	wandbApiKey: z.string().optional(),
+})
+
 const defaultSchema = z.object({
 	apiProvider: z.undefined(),
 })
@@ -380,6 +386,7 @@ export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProv
 	qwenCodeSchema.merge(z.object({ apiProvider: z.literal("qwen-code") })),
 	rooSchema.merge(z.object({ apiProvider: z.literal("roo") })),
 	vercelAiGatewaySchema.merge(z.object({ apiProvider: z.literal("vercel-ai-gateway") })),
+	wandbSchema.merge(z.object({ apiProvider: z.literal("wandb") })),
 	defaultSchema,
 ])
 
@@ -421,6 +428,7 @@ export const providerSettingsSchema = z.object({
 	...qwenCodeSchema.shape,
 	...rooSchema.shape,
 	...vercelAiGatewaySchema.shape,
+	...wandbSchema.shape,
 	...codebaseIndexProviderSchema.shape,
 })
 
@@ -562,6 +570,7 @@ export const MODELS_BY_PROVIDER: Record<
 		label: "VS Code LM API",
 		models: Object.keys(vscodeLlmModels),
 	},
+	wandb: { id: "wandb", label: "Weights & Biases", models: Object.keys(wandbModels) },
 	xai: { id: "xai", label: "xAI (Grok)", models: Object.keys(xaiModels) },
 	zai: { id: "zai", label: "Zai", models: Object.keys(internationalZAiModels) },
 
