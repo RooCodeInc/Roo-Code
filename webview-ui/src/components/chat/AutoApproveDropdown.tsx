@@ -177,7 +177,8 @@ export const AutoApproveDropdown = ({ disabled = false, triggerClassName = "" }:
 				align="start"
 				sideOffset={4}
 				container={portalContainer}
-				className="p-0 overflow-hidden min-w-96 max-w-9/10">
+				className="p-0 overflow-hidden min-w-96 max-w-9/10"
+				onOpenAutoFocus={(e) => e.preventDefault()}>
 				<div className="flex flex-col w-full">
 					{/* Header with description */}
 					<div className="p-3 border-b border-vscode-dropdown-border">
