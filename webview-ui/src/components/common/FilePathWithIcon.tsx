@@ -32,16 +32,7 @@ const FilePathWithIcon = memo(
 				)}
 				{label && (
 					<span
-						style={{
-							marginLeft: 6,
-							padding: "2px 8px",
-							borderRadius: 999,
-							background: "rgba(255,255,255,0.08)",
-							border: "1px solid rgba(255,255,255,0.12)",
-							fontSize: 11,
-							lineHeight: 1.2,
-							color: "var(--vscode-foreground)",
-						}}>
+						className="ml-1.5 px-2 py-[2px] rounded-full bg-[rgba(255,255,255,0.08)] border border-[rgba(255,255,255,0.12)] text-[11px] leading-[1.2] text-vscode-foreground">
 						{label}
 					</span>
 				)}

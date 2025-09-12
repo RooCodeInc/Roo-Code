@@ -8,8 +8,17 @@ interface FileIconProps {
 	style?: React.CSSProperties
 }
 
+function getMaterialIconsBaseUri(): string {
+	try {
+		const w = globalThis as unknown as { MATERIAL_ICONS_BASE_URI?: string }
+		return w?.MATERIAL_ICONS_BASE_URI ?? ""
+	} catch {
+		return ""
+	}
+}
+
 const FileIcon = memo(({ filePath, size = 14, className, style }: FileIconProps) => {
-	const baseUri = (window as any)?.MATERIAL_ICONS_BASE_URI || ""
+	const baseUri = getMaterialIconsBaseUri()
 	const iconName = getIconForFilePath(filePath || "")
 	const src = getIconUrlByName(iconName, baseUri)
 

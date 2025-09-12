@@ -41,18 +41,7 @@ export function TodoListDisplay({ todos }: { todos: any[] }) {
 	const getMostImportantTodoIcon = () => {
 		if (allCompleted) {
 			return (
-				<span
-					style={{
-						display: "flex",
-						alignItems: "center",
-						justifyContent: "center",
-						width: 20,
-						height: 20,
-						borderRadius: "50%",
-						background: "white",
-						marginRight: 10,
-						flexShrink: 0,
-					}}>
+				<span className="flex items-center justify-center w-5 h-5 rounded-full bg-white mr-2.5 shrink-0">
 					<span className="codicon codicon-check" style={{ color: "black", fontSize: 12 }} />
 				</span>
 			)
@@ -60,32 +49,13 @@ export function TodoListDisplay({ todos }: { todos: any[] }) {
 
 		if (!mostImportantTodo) {
 			return (
-				<span
-					className="codicon codicon-checklist"
-					style={{
-						color: "var(--vscode-foreground)",
-						marginRight: 10,
-						flexShrink: 0,
-						fontSize: 16,
-					}}
-				/>
+				<span className="codicon codicon-checklist text-[var(--vscode-foreground)] mr-2.5 shrink-0 text-[16px]" />
 			)
 		}
 
 		if (mostImportantTodo.status === "completed") {
 			return (
-				<span
-					style={{
-						display: "flex",
-						alignItems: "center",
-						justifyContent: "center",
-						width: 20,
-						height: 20,
-						borderRadius: "50%",
-						background: "white",
-						marginRight: 10,
-						flexShrink: 0,
-					}}>
+				<span className="flex items-center justify-center w-5 h-5 rounded-full bg-white mr-2.5 shrink-0">
 					<span className="codicon codicon-check" style={{ color: "#fff", fontSize: 14 }} />
 				</span>
 			)
@@ -93,64 +63,20 @@ export function TodoListDisplay({ todos }: { todos: any[] }) {
 
 		if (mostImportantTodo.status === "in_progress") {
 			return (
-				<span
-					style={{
-						display: "flex",
-						alignItems: "center",
-						justifyContent: "center",
-						width: 20,
-						height: 20,
-						borderRadius: "50%",
-						background: "white",
-						marginRight: 10,
-						flexShrink: 0,
-					}}>
-					{/* Icon for in-progress tasks */}
+				<span className="flex items-center justify-center w-5 h-5 rounded-full bg-white mr-2.5 shrink-0">
 					<span className="codicon codicon-loading animate-spin" style={{ color: "black", fontSize: 16 }} />
 				</span>
 			)
 		}
 
 		// Default not-started todo
-		return (
-			<span
-				style={{
-					display: "inline-block",
-					width: 20,
-					height: 20,
-					borderRadius: "50%",
-					border: "1px solid var(--vscode-descriptionForeground)",
-					background: "transparent",
-					marginRight: 10,
-					flexShrink: 0,
-				}}
-			/>
-		)
+		return <span className="inline-block w-5 h-5 rounded-full border border-[var(--vscode-descriptionForeground)] bg-transparent mr-2.5 shrink-0" />
 	}
 
 	return (
 		<div
-			className="border border-t-0 rounded-2xl mt-2 relative"
-			style={{
-				boxShadow: "0 1px 10px rgba(0,0,0,0.65)",
-				padding: "3px 8px",
-				background: "rgba(255,255,255,0.15)",
-
-				WebkitBackdropFilter: "blur(10px)",
-				borderColor: "rgba(255,255,255,0.1)",
-				borderWidth: "1px",
-			}}>
-			<div
-				style={{
-					display: "flex",
-					alignItems: "center",
-					gap: 2,
-					marginBottom: 0,
-					cursor: "pointer",
-					userSelect: "none",
-					padding: "4px 0px",
-				}}
-				onClick={() => setIsCollapsed((v) => !v)}>
+			className="border border-t-0 rounded-2xl mt-2 relative shadow-[0_1px_10px_rgba(0,0,0,0.65)] bg-[rgba(255,255,255,0.15)] [--tw-backdrop-blur:blur(10px)] border-[rgba(255,255,255,0.1)] px-2 py-1.5">
+			<div className="flex items-center gap-0 mb-0 cursor-pointer select-none py-1" onClick={() => setIsCollapsed((v) => !v)}>
 				{getMostImportantTodoIcon()}
 				<span
 					style={{
@@ -168,32 +94,9 @@ export function TodoListDisplay({ todos }: { todos: any[] }) {
 					}}>
 					{allCompleted ? "All tasks completed!" : mostImportantTodo?.content || "No pending tasks"}
 				</span>
-				<div
-					style={{
-						display: "flex",
-						alignItems: "center",
-						gap: 6,
-						flexShrink: 0,
-						backgroundColor: "rgba(255,255,255,0.08)",
-						backdropFilter: "blur(10px)",
-						WebkitBackdropFilter: "blur(10px)",
-						padding: "4px 9px",
-						borderRadius: "40px",
-						border: "1px solid rgba(255,255,255,0.1)",
-					}}>
-					<span
-						className="codicon codicon-checklist"
-						style={{
-							color: "var(--vscode-descriptionForeground)",
-							fontSize: 14,
-						}}
-					/>
-					<span
-						style={{
-							color: "var(--vscode-descriptionForeground)",
-							fontSize: 13,
-							fontWeight: 500,
-						}}>
+				<div className="flex items-center gap-1.5 shrink-0 bg-[rgba(255,255,255,0.08)] [--tw-backdrop-blur:blur(10px)] px-[9px] py-1 rounded-full border border-[rgba(255,255,255,0.1)]">
+					<span className="codicon codicon-checklist text-[var(--vscode-descriptionForeground)] text-[14px]" />
+					<span className="text-[var(--vscode-descriptionForeground)] text-[13px] font-medium">
 						{completedCount}/{totalCount}
 					</span>
 				</div>
@@ -202,212 +105,54 @@ export function TodoListDisplay({ todos }: { todos: any[] }) {
 			{!isCollapsed && (
 				<>
 					{/* Backdrop */}
-					<div
-						style={{
-							position: "fixed",
-							top: 0,
-							left: 0,
-							right: 0,
-							bottom: 0,
-							background: "rgba(0, 0, 0, 0.1)",
-							zIndex: 1000,
-						}}
-						onClick={() => setIsCollapsed(true)}
-					/>
+					<div className="fixed inset-0 bg-[rgba(0,0,0,0.1)] z-[1000]" onClick={() => setIsCollapsed(true)} />
 					{/* Floating panel */}
-					<div
-						style={{
-							position: "absolute",
-							top: "100%",
-							left: 0,
-							right: 0,
-							marginTop: 4,
-							background: "rgba(255,255,255,0.07)",
-							border: "1px solid rgba(255,255,255,0.1)",
-							borderRadius: 12,
-							boxShadow: "0 8px 20px rgba(0, 0, 0, 0.2)",
-							zIndex: 1001,
-							backdropFilter: "blur(10px)",
-							WebkitBackdropFilter: "blur(10px)",
-							maxHeight: "400px",
-							minHeight: "200px",
-							overflow: "hidden",
-						}}>
+					<div className="absolute top-full left-0 right-0 mt-1 bg-[rgba(255,255,255,0.07)] border border-[rgba(255,255,255,0.1)] rounded-[12px] shadow-[0_8px_20px_rgba(0,0,0,0.2)] z-[1001] [--tw-backdrop-blur:blur(10px)] max-h-[400px] min-h-[200px] overflow-hidden">
 						{/* Panel header */}
-						<div
-							style={{
-								display: "flex",
-								alignItems: "center",
-								justifyContent: "space-between",
-								padding: "12px 16px",
-								borderBottom: "1px solid var(--vscode-panel-border)",
-								background: "var(--vscode-editor-background)",
-							}}>
-							<div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-								<div
-									style={{
-										display: "flex",
-										alignItems: "center",
-										justifyContent: "center",
-										width: 24,
-										height: 24,
-										borderRadius: "6px",
-										backgroundColor: "rgba(255,255,255,0.08)",
-										border: "1px solid rgba(255,255,255,0.1)",
-										backdropFilter: "blur(10px)",
-										WebkitBackdropFilter: "blur(10px)",
-									}}>
-									<span
-										className="codicon codicon-checklist"
-										style={{ color: "var(--vscode-foreground)", fontSize: 16 }}
-									/>
+						<div className="flex items-center justify-between px-4 py-3 border-b border-[var(--vscode-panel-border)] bg-[var(--vscode-editor-background)]">
+							<div className="flex items-center gap-2.5">
+								<div className="flex items-center justify-center w-6 h-6 rounded-[6px] bg-[rgba(255,255,255,0.08)] border border-[rgba(255,255,255,0.1)] [--tw-backdrop-blur:blur(10px)]">
+									<span className="codicon codicon-checklist text-[var(--vscode-foreground)] text-[16px]" />
 								</div>
-								<span style={{ fontWeight: 600, fontSize: 15 }}>Todo List</span>
-								<div
-									style={{
-										display: "flex",
-										alignItems: "center",
-										backgroundColor: "rgba(255,255,255,0.08)",
-										padding: "2px 8px",
-										borderRadius: "10px",
-										border: "1px solid rgba(255,255,255,0.1)",
-										backdropFilter: "blur(10px)",
-										WebkitBackdropFilter: "blur(10px)",
-									}}>
-									<span
-										style={{
-											color: "var(--vscode-descriptionForeground)",
-											fontSize: 13,
-											fontWeight: 500,
-										}}>
+								<span className="font-semibold text-[15px]">Todo List</span>
+								<div className="flex items-center bg-[rgba(255,255,255,0.08)] px-2 py-[2px] rounded-[10px] border border-[rgba(255,255,255,0.1)] [--tw-backdrop-blur:blur(10px)]">
+									<span className="text-[var(--vscode-descriptionForeground)] text-[13px] font-medium">
 										{completedCount}/{totalCount}
 									</span>
 								</div>
 							</div>
-							<div
-								style={{
-									display: "flex",
-									alignItems: "center",
-									justifyContent: "center",
-									width: 24,
-									height: 24,
-									borderRadius: "4px",
-									cursor: "pointer",
-								}}
-								onClick={(e) => {
-									e.stopPropagation()
-									setIsCollapsed(true)
-								}}
-								onMouseEnter={(e) => {
-									e.currentTarget.style.background = "var(--vscode-toolbar-hoverBackground)"
-								}}
-								onMouseLeave={(e) => {
-									e.currentTarget.style.background = "transparent"
-								}}>
-								<span
-									className="codicon codicon-chevron-up"
-									style={{
-										fontSize: 14,
-									}}
-								/>
+							<div className="flex items-center justify-center w-6 h-6 rounded-[4px] cursor-pointer" onClick={(e) => {
+								e.stopPropagation()
+								setIsCollapsed(true)
+							}}
+								onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = "var(--vscode-toolbar-hoverBackground)" }}
+								onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = "transparent" }}>
+								<span className="codicon codicon-chevron-up text-[14px]" />
 							</div>
 						</div>
 						{/* Todo list */}
-						<ul
-							ref={ulRef}
-							style={{
-								margin: 0,
-								paddingLeft: 0,
-								listStyle: "none",
-								maxHeight: "330px",
-								overflowY: "auto",
-								padding: "3px 10px",
-							}}>
+						<ul ref={ulRef} className="m-0 pl-0 list-none max-h-[330px] overflow-y-auto px-2.5">
 							{todos.map((todo: any, idx: number) => {
 								let icon
 								if (todo.status === "completed") {
 									icon = (
-										<span
-											style={{
-												display: "flex",
-												alignItems: "center",
-												justifyContent: "center",
-												width: 16,
-												height: 16,
-												borderRadius: "50%",
-												background: "white",
-												marginRight: 9,
-												flexShrink: 0,
-											}}>
-											<span
-												className="codicon codicon-check"
-												style={{ color: "black", fontSize: 12 }}
-											/>
+										<span className="flex items-center justify-center w-4 h-4 rounded-full bg-white mr-2.5 shrink-0">
+											<span className="codicon codicon-check" style={{ color: "black", fontSize: 12 }} />
 										</span>
 									)
 								} else if (todo.status === "in_progress") {
 									icon = (
-										<span
-											style={{
-												display: "flex",
-												alignItems: "center",
-												justifyContent: "center",
-												width: 20,
-												height: 20,
-												borderRadius: "50%",
-												background: "var(--vscode-foreground)",
-												marginRight: 10,
-												flexShrink: 0,
-											}}>
-											<span
-												className="codicon codicon-loading animate-spin"
-												style={{ color: "black", fontSize: 16 }}
-											/>
+										<span className="flex items-center justify-center w-5 h-5 rounded-full bg-[var(--vscode-foreground)] mr-2.5 shrink-0">
+											<span className="codicon codicon-loading animate-spin" style={{ color: "black", fontSize: 16 }} />
 										</span>
 									)
 								} else {
-									icon = (
-										<span
-											style={{
-												display: "inline-block",
-												width: 20,
-												height: 20,
-												borderRadius: "50%",
-												border: "1px solid var(--vscode-descriptionForeground)",
-												background: "transparent",
-												marginRight: 10,
-												flexShrink: 0,
-											}}
-										/>
-									)
+									icon = <span className="inline-block w-5 h-5 rounded-full border border-[var(--vscode-descriptionForeground)] bg-transparent mr-2.5 shrink-0" />
 								}
 								return (
-									<li
-										key={todo.id || todo.content}
-										ref={(el) => (itemRefs.current[idx] = el)}
-										style={{
-											marginBottom: 12,
-											display: "flex",
-											alignItems: "flex-start",
-											minHeight: 24,
-											lineHeight: "1.5",
-											padding: "4px 0",
-										}}>
+									<li key={todo.id || todo.content} ref={(el) => (itemRefs.current[idx] = el)} className="mb-3 flex items-start min-h-6 leading-[1.5] py-1">
 										{icon}
-										<span
-											style={{
-												fontWeight: 500,
-												fontSize: "14px",
-												color:
-													todo.status === "completed"
-														? "white"
-														: todo.status === "in_progress"
-															? "var(--vscode-foreground)"
-															: "var(--vscode-foreground)",
-												wordBreak: "break-word",
-											}}>
-											{todo.content}
-										</span>
+										<span className="font-medium text-[14px] text-[var(--vscode-foreground)] break-words">{todo.content}</span>
 									</li>
 								)
 							})}
