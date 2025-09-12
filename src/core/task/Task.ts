@@ -1289,7 +1289,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			.find((m) => !(m.ask === "resume_task" || m.ask === "resume_completed_task")) // Could be multiple resume tasks.
 
 		let askType: ClineAsk
-		if (lastClineMessage?.ask === "completion_result") {
+
+		// Check for completion indicators in multiple ways
+		const isCompleted =
+			lastClineMessage?.ask === "completion_result" ||
+			lastClineMessage?.say === "completion_result" ||
+			this.clineMessages.some((m) => m.ask === "completion_result" || m.say === "completion_result")
+
+		if (isCompleted) {
 			askType = "resume_completed_task"
 		} else {
 			askType = "resume_task"
