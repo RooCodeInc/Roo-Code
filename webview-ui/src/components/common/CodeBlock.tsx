@@ -219,7 +219,7 @@ const CodeBlock = memo(
 		rawSource,
 		language,
 		preStyle,
-		initialWordWrap = true,
+		initialWordWrap = false,
 		initialWindowShade = true,
 		collapsedHeight,
 		onLanguageChange,
