@@ -47,6 +47,7 @@ import { McpExecution } from "./McpExecution"
 import { ChatTextArea } from "./ChatTextArea"
 import { MAX_IMAGES_PER_MESSAGE } from "./ChatView"
 import { useSelectedModel } from "../ui/hooks/useSelectedModel"
+import { Bot, CircleCheck, Eye, FileDiff, ListTree, PlugZap } from "lucide-react"
 
 interface ChatRowProps {
 	message: ClineMessage
@@ -287,7 +288,7 @@ export const ChatRowContent = ({
 							getIconSpan("error", errorColor)
 						)
 					) : cost !== null && cost !== undefined ? (
-						getIconSpan("check")
+						<CircleCheck className="w-4" />
 					) : apiRequestFailedMessage ? (
 						getIconSpan("error", errorColor)
 					) : (
@@ -304,7 +305,7 @@ export const ChatRowContent = ({
 							</span>
 						)
 					) : cost !== null && cost !== undefined ? (
-						<span style={{ color: normalColor, fontWeight: "bold" }}>{t("chat:apiRequest.title")}</span>
+						<span style={{ color: normalColor }}>{t("chat:apiRequest.title")}</span>
 					) : apiRequestFailedMessage ? (
 						<span style={{ color: errorColor, fontWeight: "bold" }}>{t("chat:apiRequest.failed")}</span>
 					) : (
@@ -366,7 +367,7 @@ export const ChatRowContent = ({
 					return (
 						<>
 							<div style={headerStyle}>
-								{toolIcon("diff")}
+								<FileDiff className="w-4" />
 								<span style={{ fontWeight: "bold" }}>
 									{t("chat:fileOperations.wantsToApplyBatchChanges")}
 								</span>
@@ -396,15 +397,17 @@ export const ChatRowContent = ({
 										: t("chat:fileOperations.wantsToEdit")}
 							</span>
 						</div>
-						<CodeAccordian
-							path={tool.path}
-							code={tool.content ?? tool.diff}
-							language="diff"
-							progressStatus={message.progressStatus}
-							isLoading={message.partial}
-							isExpanded={isExpanded}
-							onToggleExpand={handleToggleExpand}
-						/>
+						<div className="pl-6">
+							<CodeAccordian
+								path={tool.path}
+								code={tool.content ?? tool.diff}
+								language="diff"
+								progressStatus={message.progressStatus}
+								isLoading={message.partial}
+								isExpanded={isExpanded}
+								onToggleExpand={handleToggleExpand}
+							/>
+						</div>
 					</>
 				)
 			case "insertContent":
@@ -431,15 +434,17 @@ export const ChatRowContent = ({
 												})}
 							</span>
 						</div>
-						<CodeAccordian
-							path={tool.path}
-							code={tool.diff}
-							language="diff"
-							progressStatus={message.progressStatus}
-							isLoading={message.partial}
-							isExpanded={isExpanded}
-							onToggleExpand={handleToggleExpand}
-						/>
+						<div className="pl-6">
+							<CodeAccordian
+								path={tool.path}
+								code={tool.diff}
+								language="diff"
+								progressStatus={message.progressStatus}
+								isLoading={message.partial}
+								isExpanded={isExpanded}
+								onToggleExpand={handleToggleExpand}
+							/>
+						</div>
 					</>
 				)
 			case "searchAndReplace":
@@ -462,15 +467,17 @@ export const ChatRowContent = ({
 										: t("chat:fileOperations.didSearchReplace")}
 							</span>
 						</div>
-						<CodeAccordian
-							path={tool.path}
-							code={tool.diff}
-							language="diff"
-							progressStatus={message.progressStatus}
-							isLoading={message.partial}
-							isExpanded={isExpanded}
-							onToggleExpand={handleToggleExpand}
-						/>
+						<div className="pl-6">
+							<CodeAccordian
+								path={tool.path}
+								code={tool.diff}
+								language="diff"
+								progressStatus={message.progressStatus}
+								isLoading={message.partial}
+								isExpanded={isExpanded}
+								onToggleExpand={handleToggleExpand}
+							/>
+						</div>
 					</>
 				)
 			case "codebaseSearch": {
@@ -528,15 +535,17 @@ export const ChatRowContent = ({
 									: t("chat:fileOperations.wantsToCreate")}
 							</span>
 						</div>
-						<CodeAccordian
-							path={tool.path}
-							code={tool.content}
-							language={getLanguageFromPath(tool.path || "") || "log"}
-							isLoading={message.partial}
-							isExpanded={isExpanded}
-							onToggleExpand={handleToggleExpand}
-							onJumpToFile={() => vscode.postMessage({ type: "openFile", text: "./" + tool.path })}
-						/>
+						<div className="pl-6">
+							<CodeAccordian
+								path={tool.path}
+								code={tool.content}
+								language={getLanguageFromPath(tool.path || "") || "log"}
+								isLoading={message.partial}
+								isExpanded={isExpanded}
+								onToggleExpand={handleToggleExpand}
+								onJumpToFile={() => vscode.postMessage({ type: "openFile", text: "./" + tool.path })}
+							/>
+						</div>
 					</>
 				)
 			case "readFile":
@@ -547,7 +556,7 @@ export const ChatRowContent = ({
 					return (
 						<>
 							<div style={headerStyle}>
-								{toolIcon("files")}
+								<Eye className="w-4" />
 								<span style={{ fontWeight: "bold" }}>
 									{t("chat:fileOperations.wantsToReadMultiple")}
 								</span>
@@ -580,21 +589,23 @@ export const ChatRowContent = ({
 									: t("chat:fileOperations.didRead")}
 							</span>
 						</div>
-						<ToolUseBlock>
-							<ToolUseBlockHeader
-								onClick={() => vscode.postMessage({ type: "openFile", text: tool.content })}>
-								{tool.path?.startsWith(".") && <span>.</span>}
-								<span className="whitespace-nowrap overflow-hidden text-ellipsis text-left mr-2 rtl">
-									{removeLeadingNonAlphanumeric(tool.path ?? "") + "\u200E"}
-									{tool.reason}
-								</span>
-								<div style={{ flexGrow: 1 }}></div>
-								<span
-									className={`codicon codicon-link-external`}
-									style={{ fontSize: 13.5, margin: "1px 0" }}
-								/>
-							</ToolUseBlockHeader>
-						</ToolUseBlock>
+						<div className="pl-6">
+							<ToolUseBlock>
+								<ToolUseBlockHeader
+									onClick={() => vscode.postMessage({ type: "openFile", text: tool.content })}>
+									{tool.path?.startsWith(".") && <span>.</span>}
+									<span className="whitespace-nowrap overflow-hidden text-ellipsis text-left mr-2 rtl">
+										{removeLeadingNonAlphanumeric(tool.path ?? "") + "\u200E"}
+										{tool.reason}
+									</span>
+									<div style={{ flexGrow: 1 }}></div>
+									<span
+										className={`codicon codicon-link-external`}
+										style={{ fontSize: 13.5, margin: "1px 0" }}
+									/>
+								</ToolUseBlockHeader>
+							</ToolUseBlock>
+						</div>
 					</>
 				)
 			case "fetchInstructions":
@@ -604,20 +615,22 @@ export const ChatRowContent = ({
 							{toolIcon("file-code")}
 							<span style={{ fontWeight: "bold" }}>{t("chat:instructions.wantsToFetch")}</span>
 						</div>
-						<CodeAccordian
-							code={tool.content}
-							language="markdown"
-							isLoading={message.partial}
-							isExpanded={isExpanded}
-							onToggleExpand={handleToggleExpand}
-						/>
+						<div className="pl-6">
+							<CodeAccordian
+								code={tool.content}
+								language="markdown"
+								isLoading={message.partial}
+								isExpanded={isExpanded}
+								onToggleExpand={handleToggleExpand}
+							/>
+						</div>
 					</>
 				)
 			case "listFilesTopLevel":
 				return (
 					<>
 						<div style={headerStyle}>
-							{toolIcon("folder-opened")}
+							<ListTree className="w-4" />
 							<span style={{ fontWeight: "bold" }}>
 								{message.type === "ask"
 									? tool.isOutsideWorkspace
@@ -628,13 +641,15 @@ export const ChatRowContent = ({
 										: t("chat:directoryOperations.didViewTopLevel")}
 							</span>
 						</div>
-						<CodeAccordian
-							path={tool.path}
-							code={tool.content}
-							language="shell-session"
-							isExpanded={isExpanded}
-							onToggleExpand={handleToggleExpand}
-						/>
+						<div className="pl-6">
+							<CodeAccordian
+								path={tool.path}
+								code={tool.content}
+								language="shell-session"
+								isExpanded={isExpanded}
+								onToggleExpand={handleToggleExpand}
+							/>
+						</div>
 					</>
 				)
 			case "listFilesRecursive":
@@ -652,13 +667,15 @@ export const ChatRowContent = ({
 										: t("chat:directoryOperations.didViewRecursive")}
 							</span>
 						</div>
-						<CodeAccordian
-							path={tool.path}
-							code={tool.content}
-							language="shellsession"
-							isExpanded={isExpanded}
-							onToggleExpand={handleToggleExpand}
-						/>
+						<div className="pl-6">
+							<CodeAccordian
+								path={tool.path}
+								code={tool.content}
+								language="shellsession"
+								isExpanded={isExpanded}
+								onToggleExpand={handleToggleExpand}
+							/>
+						</div>
 					</>
 				)
 			case "listCodeDefinitionNames":
@@ -676,13 +693,15 @@ export const ChatRowContent = ({
 										: t("chat:directoryOperations.didViewDefinitions")}
 							</span>
 						</div>
-						<CodeAccordian
-							path={tool.path}
-							code={tool.content}
-							language="markdown"
-							isExpanded={isExpanded}
-							onToggleExpand={handleToggleExpand}
-						/>
+						<div className="pl-6">
+							<CodeAccordian
+								path={tool.path}
+								code={tool.content}
+								language="markdown"
+								isExpanded={isExpanded}
+								onToggleExpand={handleToggleExpand}
+							/>
+						</div>
 					</>
 				)
 			case "searchFiles":
@@ -714,13 +733,15 @@ export const ChatRowContent = ({
 								)}
 							</span>
 						</div>
-						<CodeAccordian
-							path={tool.path! + (tool.filePattern ? `/(${tool.filePattern})` : "")}
-							code={tool.content}
-							language="shellsession"
-							isExpanded={isExpanded}
-							onToggleExpand={handleToggleExpand}
-						/>
+						<div className="pl-6">
+							<CodeAccordian
+								path={tool.path! + (tool.filePattern ? `/(${tool.filePattern})` : "")}
+								code={tool.content}
+								language="shellsession"
+								isExpanded={isExpanded}
+								onToggleExpand={handleToggleExpand}
+							/>
+						</div>
 					</>
 				)
 			case "switchMode":
@@ -938,13 +959,15 @@ export const ChatRowContent = ({
 							</span>
 						</div>
 						{message.type === "ask" && (
-							<CodeAccordian
-								path={tool.path}
-								code={tool.content}
-								language="text"
-								isExpanded={isExpanded}
-								onToggleExpand={handleToggleExpand}
-							/>
+							<div className="pl-6">
+								<CodeAccordian
+									path={tool.path}
+									code={tool.content}
+									language="text"
+									isExpanded={isExpanded}
+									onToggleExpand={handleToggleExpand}
+								/>
+							</div>
 						)}
 					</>
 				)
@@ -1145,7 +1168,7 @@ export const ChatRowContent = ({
 							)}
 
 							{isExpanded && (
-								<div style={{ marginTop: "10px" }}>
+								<div className="ml-6" style={{ marginTop: "10px" }}>
 									<CodeAccordian
 										code={safeJsonParse<any>(message.text)?.request}
 										language="markdown"
@@ -1345,55 +1368,60 @@ export const ChatRowContent = ({
 											}}></span>
 										<span style={{ fontWeight: "bold" }}>{t("chat:slashCommand.didRun")}</span>
 									</div>
-									<ToolUseBlock>
-										<ToolUseBlockHeader
-											style={{
-												display: "flex",
-												flexDirection: "column",
-												alignItems: "flex-start",
-												gap: "4px",
-												padding: "10px 12px",
-											}}>
-											<div
+									<div className="pl-6">
+										<ToolUseBlock>
+											<ToolUseBlockHeader
 												style={{
 													display: "flex",
-													alignItems: "center",
-													gap: "8px",
-													width: "100%",
+													flexDirection: "column",
+													alignItems: "flex-start",
+													gap: "4px",
+													padding: "10px 12px",
 												}}>
-												<span
-													style={{ fontWeight: "500", fontSize: "var(--vscode-font-size)" }}>
-													/{slashCommandInfo.command}
-												</span>
-												{slashCommandInfo.args && (
-													<span
-														style={{
-															color: "var(--vscode-descriptionForeground)",
-															fontSize: "var(--vscode-font-size)",
-														}}>
-														{slashCommandInfo.args}
-													</span>
-												)}
-											</div>
-											{slashCommandInfo.description && (
 												<div
 													style={{
-														color: "var(--vscode-descriptionForeground)",
-														fontSize: "calc(var(--vscode-font-size) - 1px)",
+														display: "flex",
+														alignItems: "center",
+														gap: "8px",
+														width: "100%",
 													}}>
-													{slashCommandInfo.description}
+													<span
+														style={{
+															fontWeight: "500",
+															fontSize: "var(--vscode-font-size)",
+														}}>
+														/{slashCommandInfo.command}
+													</span>
+													{slashCommandInfo.args && (
+														<span
+															style={{
+																color: "var(--vscode-descriptionForeground)",
+																fontSize: "var(--vscode-font-size)",
+															}}>
+															{slashCommandInfo.args}
+														</span>
+													)}
 												</div>
-											)}
-											{slashCommandInfo.source && (
-												<div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-													<VSCodeBadge
-														style={{ fontSize: "calc(var(--vscode-font-size) - 2px)" }}>
-														{slashCommandInfo.source}
-													</VSCodeBadge>
-												</div>
-											)}
-										</ToolUseBlockHeader>
-									</ToolUseBlock>
+												{slashCommandInfo.description && (
+													<div
+														style={{
+															color: "var(--vscode-descriptionForeground)",
+															fontSize: "calc(var(--vscode-font-size) - 1px)",
+														}}>
+														{slashCommandInfo.description}
+													</div>
+												)}
+												{slashCommandInfo.source && (
+													<div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+														<VSCodeBadge
+															style={{ fontSize: "calc(var(--vscode-font-size) - 2px)" }}>
+															{slashCommandInfo.source}
+														</VSCodeBadge>
+													</div>
+												)}
+											</ToolUseBlockHeader>
+										</ToolUseBlock>
+									</div>
 								</>
 							)
 						}
