@@ -1170,9 +1170,10 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 											"border border-[rgba(255,255,255,0.12)]",
 											"transition-colors duration-150",
 											"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
+											"cursor-pointer",
 										)}>
 										<WandSparkles
-											className={cn("w-4 h-4", isEnhancingPrompt && "animate-bounce")}
+											className={cn("w-4 h-4", isEnhancingPrompt && "animate-spin")}
 										/>
 									</button>
 								</StandardTooltip>

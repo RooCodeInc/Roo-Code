@@ -192,7 +192,13 @@ export const ApiConfigSelector = ({
 							)}
 						</div>
 					) : (
-						<div></div>
+						<div className="px-2 py-2 border-b border-gray-400 text-xs text-vscode-descriptionForeground">
+							<div className="flex items-center gap-1">
+								<span className="codicon codicon-info text-xs" />
+								<span>{t("prompts:apiConfiguration.select")}</span>
+							</div>
+							<h4 className="m-0 mt-1 font-medium text-sm">{t("prompts:apiConfiguration.title")}</h4>
+						</div>
 					)}
 
 					{/* Bottom bar with buttons on left and title on right */}
@@ -208,7 +214,7 @@ export const ApiConfigSelector = ({
 
 						{/* Info icon and title on the right with matching spacing */}
 						<div className="flex items-center gap-1 pr-1">
-							{listApiConfigMeta.length > 6 && (
+							{listApiConfigMeta.length <= 6 && (
 								<StandardTooltip content={t("prompts:apiConfiguration.select")}>
 									<span className="codicon codicon-info text-xs text-gray-400 opacity-70 hover:opacity-100 cursor-help" />
 								</StandardTooltip>
