@@ -319,6 +319,106 @@ describe("ChutesHandler", () => {
 		)
 	})
 
+	it("should return Qwen/Qwen3-Next-80B-A3B-Instruct model with correct configuration", () => {
+		const testModelId: ChutesModelId = "Qwen/Qwen3-Next-80B-A3B-Instruct"
+		const handlerWithModel = new ChutesHandler({
+			apiModelId: testModelId,
+			chutesApiKey: "test-chutes-api-key",
+		})
+		const model = handlerWithModel.getModel()
+		expect(model.id).toBe(testModelId)
+		expect(model.info).toEqual(
+			expect.objectContaining({
+				maxTokens: 32768,
+				contextWindow: 262144,
+				supportsImages: false,
+				supportsPromptCache: false,
+				inputPrice: 0,
+				outputPrice: 0,
+				description: "Qwen3 Next 80B A3B Instruct model with 262K context window.",
+				temperature: 0.7, // Optimized temperature for Qwen Instruct models
+				topP: 0.8, // Optimized top-p for Qwen Instruct models
+			}),
+		)
+	})
+
+	it("should return Qwen/Qwen3-Next-80B-A3B-Thinking model with correct configuration", () => {
+		const testModelId: ChutesModelId = "Qwen/Qwen3-Next-80B-A3B-Thinking"
+		const handlerWithModel = new ChutesHandler({
+			apiModelId: testModelId,
+			chutesApiKey: "test-chutes-api-key",
+		})
+		const model = handlerWithModel.getModel()
+		expect(model.id).toBe(testModelId)
+		expect(model.info).toEqual(
+			expect.objectContaining({
+				maxTokens: 32768,
+				contextWindow: 262144,
+				supportsImages: false,
+				supportsPromptCache: false,
+				inputPrice: 0,
+				outputPrice: 0,
+				description: "Qwen3 Next 80B A3B Thinking model with 262K context window.",
+				temperature: 0.6, // Optimized temperature for Qwen Thinking models
+				topP: 0.95, // Optimized top-p for Qwen Thinking models
+			}),
+		)
+	})
+
+	it("should handle Qwen Thinking model reasoning format", async () => {
+		// Override the mock for this specific test
+		mockCreate.mockImplementationOnce(async () => ({
+			[Symbol.asyncIterator]: async function* () {
+				yield {
+					choices: [
+						{
+							delta: { content: "<think>Analyzing the problem..." },
+							index: 0,
+						},
+					],
+					usage: null,
+				}
+				yield {
+					choices: [
+						{
+							delta: { content: "</think>Solution: Use dynamic programming" },
+							index: 0,
+						},
+					],
+					usage: null,
+				}
+				yield {
+					choices: [
+						{
+							delta: {},
+							index: 0,
+						},
+					],
+					usage: { prompt_tokens: 15, completion_tokens: 8 },
+				}
+			},
+		}))
+
+		const systemPrompt = "You are a helpful assistant."
+		const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Solve this algorithm problem" }]
+		vi.spyOn(handler, "getModel").mockReturnValue({
+			id: "Qwen/Qwen3-Next-80B-A3B-Thinking",
+			info: { maxTokens: 1024, temperature: 0.6 },
+		} as any)
+
+		const stream = handler.createMessage(systemPrompt, messages)
+		const chunks = []
+		for await (const chunk of stream) {
+			chunks.push(chunk)
+		}
+
+		expect(chunks).toEqual([
+			{ type: "reasoning", text: "Analyzing the problem..." },
+			{ type: "text", text: "Solution: Use dynamic programming" },
+			{ type: "usage", inputTokens: 15, outputTokens: 8 },
+		])
+	})
+
 	it("completePrompt method should return text from Chutes API", async () => {
 		const expectedResponse = "This is a test response from Chutes"
 		mockCreate.mockResolvedValueOnce({ choices: [{ message: { content: expectedResponse } }] })
