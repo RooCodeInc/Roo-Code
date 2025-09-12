@@ -245,6 +245,7 @@
 		"issues": "Wygląda na to, że masz problemy z Windows PowerShell, proszę zapoznaj się z tym"
 	},
 	"autoApprove": {
+		"tooltip": "Zarządzaj ustawieniami automatycznego zatwierdzania",
 		"title": "Automatyczne zatwierdzanie",
 		"all": "Wszystkie",
 		"none": "Żadne",

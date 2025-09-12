@@ -245,6 +245,7 @@
 		"issues": "Sembla que estàs tenint problemes amb Windows PowerShell, si us plau consulta aquesta documentació per a més informació."
 	},
 	"autoApprove": {
+		"tooltip": "Gestiona la configuració d'aprovació automàtica",
 		"title": "Aprovació automàtica",
 		"all": "Totes",
 		"none": "Cap",

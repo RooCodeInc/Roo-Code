@@ -245,6 +245,7 @@
 		"issues": "Windows PowerShellに問題があるようです。こちらを参照してください"
 	},
 	"autoApprove": {
+		"tooltip": "自動承認設定を管理",
 		"title": "自動承認",
 		"all": "すべて",
 		"none": "なし",

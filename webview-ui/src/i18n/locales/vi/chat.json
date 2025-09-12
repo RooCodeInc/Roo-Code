@@ -245,6 +245,7 @@
 		"issues": "Có vẻ như bạn đang gặp vấn đề với Windows PowerShell, vui lòng xem"
 	},
 	"autoApprove": {
+		"tooltip": "Quản lý cài đặt tự động phê duyệt",
 		"title": "Tự động phê duyệt",
 		"all": "Tất cả",
 		"none": "Không có",

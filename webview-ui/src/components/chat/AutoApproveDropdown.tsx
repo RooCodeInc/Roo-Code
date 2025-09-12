@@ -154,25 +154,27 @@ export const AutoApproveDropdown = ({ disabled = false, triggerClassName = "" }:
 
 	return (
 		<Popover open={open} onOpenChange={setOpen} data-testid="auto-approve-dropdown-root">
-			<PopoverTrigger
-				disabled={disabled}
-				data-testid="auto-approve-dropdown-trigger"
-				className={cn(
-					"inline-flex items-center gap-1.5 relative whitespace-nowrap px-1.5 py-1 text-xs",
-					"bg-transparent border border-[rgba(255,255,255,0.08)] rounded-md text-vscode-foreground",
-					"transition-all duration-150 focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder focus-visible:ring-inset",
-					disabled
-						? "opacity-50 cursor-not-allowed"
-						: "opacity-90 hover:opacity-100 hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.15)] cursor-pointer",
-					triggerClassName,
-				)}>
-				<CheckCheck className="size-3" />
-				<span className="truncate">
-					{enabledCount === totalCount
-						? t("chat:autoApprove.triggerLabelAll")
-						: t("chat:autoApprove.triggerLabel", { count: enabledCount })}
-				</span>
-			</PopoverTrigger>
+			<StandardTooltip content={t("chat:autoApprove.tooltip")}>
+				<PopoverTrigger
+					disabled={disabled}
+					data-testid="auto-approve-dropdown-trigger"
+					className={cn(
+						"inline-flex items-center gap-1.5 relative whitespace-nowrap px-1.5 py-1 text-xs",
+						"bg-transparent border border-[rgba(255,255,255,0.08)] rounded-md text-vscode-foreground",
+						"transition-all duration-150 focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder focus-visible:ring-inset",
+						disabled
+							? "opacity-50 cursor-not-allowed"
+							: "opacity-90 hover:opacity-100 hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.15)] cursor-pointer",
+						triggerClassName,
+					)}>
+					<CheckCheck className="size-3" />
+					<span className="truncate">
+						{enabledCount === totalCount
+							? t("chat:autoApprove.triggerLabelAll")
+							: t("chat:autoApprove.triggerLabel", { count: enabledCount })}
+					</span>
+				</PopoverTrigger>
+			</StandardTooltip>
 			<PopoverContent
 				align="start"
 				sideOffset={4}
@@ -260,44 +262,40 @@ export const AutoApproveDropdown = ({ disabled = false, triggerClassName = "" }:
 					{/* Bottom bar with Select All/None buttons */}
 					<div className="flex flex-row items-center justify-between px-2 py-2 border-t border-vscode-dropdown-border">
 						<div className="flex flex-row gap-1">
-							<StandardTooltip content={t("chat:autoApprove.selectAll")}>
-								<button
-									aria-label={t("chat:autoApprove.selectAll")}
-									onClick={handleSelectAll}
-									className={cn(
-										"relative inline-flex items-center justify-center gap-1",
-										"bg-transparent border-none px-2 py-1",
-										"rounded-md text-base font-bold",
-										"text-vscode-foreground",
-										"transition-all duration-150",
-										"hover:opacity-100 hover:bg-[rgba(255,255,255,0.03)]",
-										"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
-										"active:bg-[rgba(255,255,255,0.1)]",
-										"cursor-pointer",
-									)}>
-									<ListChecks className="w-3.5 h-3.5" />
-									<span>{t("chat:autoApprove.all")}</span>
-								</button>
-							</StandardTooltip>
-							<StandardTooltip content={t("chat:autoApprove.selectNone")}>
-								<button
-									aria-label={t("chat:autoApprove.selectNone")}
-									onClick={handleSelectNone}
-									className={cn(
-										"relative inline-flex items-center justify-center gap-1",
-										"bg-transparent border-none px-2 py-1",
-										"rounded-md text-base font-bold",
-										"text-vscode-foreground",
-										"transition-all duration-150",
-										"hover:opacity-100 hover:bg-[rgba(255,255,255,0.03)]",
-										"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
-										"active:bg-[rgba(255,255,255,0.1)]",
-										"cursor-pointer",
-									)}>
-									<LayoutList className="w-3.5 h-3.5" />
-									<span>{t("chat:autoApprove.none")}</span>
-								</button>
-							</StandardTooltip>
+							<button
+								aria-label={t("chat:autoApprove.selectAll")}
+								onClick={handleSelectAll}
+								className={cn(
+									"relative inline-flex items-center justify-center gap-1",
+									"bg-transparent border-none px-2 py-1",
+									"rounded-md text-base font-bold",
+									"text-vscode-foreground",
+									"transition-all duration-150",
+									"hover:opacity-100 hover:bg-[rgba(255,255,255,0.03)]",
+									"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
+									"active:bg-[rgba(255,255,255,0.1)]",
+									"cursor-pointer",
+								)}>
+								<ListChecks className="w-3.5 h-3.5" />
+								<span>{t("chat:autoApprove.all")}</span>
+							</button>
+							<button
+								aria-label={t("chat:autoApprove.selectNone")}
+								onClick={handleSelectNone}
+								className={cn(
+									"relative inline-flex items-center justify-center gap-1",
+									"bg-transparent border-none px-2 py-1",
+									"rounded-md text-base font-bold",
+									"text-vscode-foreground",
+									"transition-all duration-150",
+									"hover:opacity-100 hover:bg-[rgba(255,255,255,0.03)]",
+									"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
+									"active:bg-[rgba(255,255,255,0.1)]",
+									"cursor-pointer",
+								)}>
+								<LayoutList className="w-3.5 h-3.5" />
+								<span>{t("chat:autoApprove.none")}</span>
+							</button>
 						</div>
 					</div>
 				</div>

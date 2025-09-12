@@ -245,6 +245,7 @@
 		"issues": "Es scheint, dass du Probleme mit Windows PowerShell hast, bitte sieh dir dies an"
 	},
 	"autoApprove": {
+		"tooltip": "Einstellungen für die automatische Genehmigung verwalten",
 		"title": "Automatische Genehmigung",
 		"all": "Alle",
 		"none": "Keine",

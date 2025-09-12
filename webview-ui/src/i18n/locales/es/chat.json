@@ -245,6 +245,7 @@
 		"issues": "Parece que estás teniendo problemas con Windows PowerShell, por favor consulta esta"
 	},
 	"autoApprove": {
+		"tooltip": "Gestionar la configuración de aprobación automática",
 		"title": "Aprobación automática",
 		"all": "Todo",
 		"none": "Ninguno",

@@ -272,6 +272,7 @@
 		"issues": "Sepertinya kamu mengalami masalah Windows PowerShell, silakan lihat ini"
 	},
 	"autoApprove": {
+		"tooltip": "Kelola pengaturan persetujuan otomatis",
 		"title": "Persetujuan otomatis",
 		"all": "Semua",
 		"none": "Tidak Ada",

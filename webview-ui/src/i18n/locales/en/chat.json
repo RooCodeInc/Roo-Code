@@ -269,6 +269,7 @@
 		"issues": "It seems like you're having Windows PowerShell issues, please see this"
 	},
 	"autoApprove": {
+		"tooltip": "Manage auto-approval settings",
 		"title": "Auto-approve",
 		"all": "All",
 		"none": "None",

@@ -269,6 +269,7 @@
 		"issues": "您似乎遇到了 Windows PowerShell 的問題，請參閱此說明文件"
 	},
 	"autoApprove": {
+		"tooltip": "管理自動批准設定",
 		"title": "自動批准",
 		"all": "全部",
 		"none": "無",
