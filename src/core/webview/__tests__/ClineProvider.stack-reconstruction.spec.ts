@@ -175,6 +175,15 @@ describe("Orchestrator Stack Reconstruction", () => {
 			// Mock getCurrentTask to return undefined (no current task)
 			vi.spyOn(provider, "getCurrentTask").mockReturnValue(undefined)
 
+			// Mock getSavedTaskMessages to return incomplete task messages (not completed)
+			;(provider as any).getSavedTaskMessages = vi.fn().mockImplementation(async (taskId: string) => {
+				// Return messages that indicate the tasks are not completed
+				return [
+					{ type: "ask", ask: "command", text: "Some command" },
+					{ type: "say", say: "command_output", text: "Command output" },
+				]
+			})
+
 			// Mock removeClineFromStack
 			vi.spyOn(provider, "removeClineFromStack").mockResolvedValue()
 
@@ -256,6 +265,15 @@ describe("Orchestrator Stack Reconstruction", () => {
 
 			// Mock getCurrentTask to return undefined
 			vi.spyOn(provider, "getCurrentTask").mockReturnValue(undefined)
+
+			// Mock getSavedTaskMessages to return incomplete task messages (not completed)
+			;(provider as any).getSavedTaskMessages = vi.fn().mockImplementation(async (taskId: string) => {
+				// Return messages that indicate the tasks are not completed
+				return [
+					{ type: "ask", ask: "command", text: "Some command" },
+					{ type: "say", say: "command_output", text: "Command output" },
+				]
+			})
 
 			// Mock removeClineFromStack
 			vi.spyOn(provider, "removeClineFromStack").mockResolvedValue()
@@ -499,6 +517,15 @@ describe("Orchestrator Stack Reconstruction", () => {
 
 			// Mock getCurrentTask to return undefined
 			vi.spyOn(provider, "getCurrentTask").mockReturnValue(undefined)
+
+			// Mock getSavedTaskMessages to return incomplete task messages (not completed)
+			;(provider as any).getSavedTaskMessages = vi.fn().mockImplementation(async (taskId: string) => {
+				// Return messages that indicate the tasks are not completed
+				return [
+					{ type: "ask", ask: "command", text: "Some command" },
+					{ type: "say", say: "command_output", text: "Command output" },
+				]
+			})
 
 			// Mock removeClineFromStack
 			vi.spyOn(provider, "removeClineFromStack").mockResolvedValue()
