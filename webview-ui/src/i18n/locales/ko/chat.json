@@ -181,7 +181,9 @@
 		"wantsToGenerateImage": "Roo가 이미지를 생성하고 싶어합니다:",
 		"wantsToGenerateImageOutsideWorkspace": "Roo가 워크스페이스 외부에서 이미지를 생성하고 싶어합니다:",
 		"wantsToGenerateImageProtected": "Roo가 보호된 위치에서 이미지를 생성하고 싶어합니다:",
-		"didGenerateImage": "Roo가 이미지를 생성했습니다:"
+		"didGenerateImage": "Roo가 이미지를 생성했습니다:",
+		"editingLabel": "편집",
+		"readingLabel": "읽기"
 	},
 	"directoryOperations": {
 		"wantsToViewTopLevel": "Roo가 이 디렉토리의 최상위 파일을 보고 싶어합니다:",

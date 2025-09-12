@@ -181,7 +181,9 @@
 		"wantsToGenerateImage": "Roo vol generar una imatge:",
 		"wantsToGenerateImageOutsideWorkspace": "Roo vol generar una imatge fora de l'espai de treball:",
 		"wantsToGenerateImageProtected": "Roo vol generar una imatge en una ubicació protegida:",
-		"didGenerateImage": "Roo ha generat una imatge:"
+		"didGenerateImage": "Imatge generada per Roo:",
+		"editingLabel": "Editar",
+		"readingLabel": "Llegir"
 	},
 	"directoryOperations": {
 		"wantsToViewTopLevel": "Roo vol veure els fitxers de nivell superior en aquest directori:",
