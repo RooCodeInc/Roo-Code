@@ -7,8 +7,15 @@ import {
 	Message,
 	SystemContentBlock,
 } from "@aws-sdk/client-bedrock-runtime"
+import { NodeHttpHandler } from "@smithy/node-http-handler"
 import { fromIni } from "@aws-sdk/credential-providers"
 import { Anthropic } from "@anthropic-ai/sdk"
+import * as vscode from "vscode"
+import * as fs from "fs"
+import { ProxyAgent } from "proxy-agent"
+import * as https from "https"
+import type { Agent } from "http"
+import type { Agent as HttpsAgent } from "https"
 
 import {
 	type ModelInfo,
@@ -169,6 +176,9 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 	private client: BedrockRuntimeClient
 	private arnInfo: any
 
+	// Static cache for CA certificates to avoid repeated file I/O
+	private static cachedCertificates: Map<string, Buffer> = new Map()
+
 	constructor(options: ProviderSettings) {
 		super()
 		this.options = options
@@ -225,15 +235,17 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 				this.options.awsBedrockEndpointEnabled && { endpoint: this.options.awsBedrockEndpoint }),
 		}
 
+		// Build a Node HTTP handler that respects VS Code proxy and strict SSL settings
+		const httpHandler = this.createNodeHttpHandler()
+		if (httpHandler) {
+			clientConfig.requestHandler = httpHandler
+		}
+
 		if (this.options.awsUseApiKey && this.options.awsApiKey) {
 			// Use API key/token-based authentication if enabled and API key is set
 			clientConfig.token = { token: this.options.awsApiKey }
 			clientConfig.authSchemePreference = ["httpBearerAuth"] // Otherwise there's no end of credential problems.
-			clientConfig.requestHandler = {
-				// This should be the default anyway, but without setting something
-				// this provider fails to work with LiteLLM passthrough.
-				requestTimeout: 0,
-			}
+			// If we created a NodeHttpHandler above, ensure request timeout behavior is set there.
 		} else if (this.options.awsUseProfile && this.options.awsProfile) {
 			// Use profile-based credentials if enabled and profile is set
 			clientConfig.credentials = fromIni({
@@ -250,6 +262,140 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 		}
 
 		this.client = new BedrockRuntimeClient(clientConfig)
+	}
+
+	/**
+	 * Create a NodeHttpHandler configured to work behind corporate proxies and with custom CAs.
+	 *
+	 * The proxy-agent library automatically detects proxy settings from environment variables.
+	 * We only check VS Code settings to determine if a proxy is configured, then let proxy-agent
+	 * handle the actual proxy URL detection and protocol negotiation.
+	 *
+	 * Configuration Sources (in order of precedence):
+	 *
+	 * VS Code Settings:
+	 * - `http.proxy`: Proxy server URL (used to determine if proxy is configured)
+	 * - `http.proxyStrictSSL`: Whether to validate SSL certificates (default: true)
+	 *
+	 * Environment Variables (automatically detected by proxy-agent):
+	 * - `HTTPS_PROXY` / `https_proxy`: HTTPS proxy server URL
+	 * - `HTTP_PROXY` / `http_proxy`: HTTP proxy server URL
+	 * - `ALL_PROXY` / `all_proxy`: Fallback proxy for all protocols
+	 * - `NO_PROXY` / `no_proxy`: Comma-separated list of hosts to bypass proxy
+	 * - `NODE_EXTRA_CA_CERTS`: Path to additional CA certificates file
+	 * - `AWS_CA_BUNDLE`: Path to AWS-specific CA bundle (takes precedence over NODE_EXTRA_CA_CERTS)
+	 *
+	 * @returns {NodeHttpHandler | undefined} Configured handler for proxy/CA support, or undefined if initialization fails
+	 * @private
+	 */
+	private createNodeHttpHandler(): NodeHttpHandler | undefined {
+		try {
+			const proxyConfig = this.getProxyConfiguration()
+			const tlsConfig = this.getTLSConfiguration()
+			const agents = this.createHTTPAgents(proxyConfig, tlsConfig)
+
+			return new NodeHttpHandler(agents)
+		} catch (err) {
+			logger.warn("Failed to initialize custom NodeHttpHandler; falling back to default", {
+				ctx: "bedrock",
+				error: err instanceof Error ? err.message : String(err),
+			})
+			return undefined
+		}
+	}
+
+	/**
+	 * Get proxy configuration from VS Code settings and environment variables.
+	 * Note: We only check if a proxy is configured; proxy-agent handles URL detection.
+	 */
+	private getProxyConfiguration(): { isProxyConfigured: boolean } {
+		const httpConfig = vscode.workspace.getConfiguration("http")
+		const vscodeProxy = (httpConfig.get<string>("proxy") || "").trim()
+
+		// Check if any proxy configuration exists (VS Code or environment variables)
+		const hasProxyConfig = !!(
+			vscodeProxy ||
+			process.env.HTTPS_PROXY ||
+			process.env.https_proxy ||
+			process.env.HTTP_PROXY ||
+			process.env.http_proxy ||
+			process.env.ALL_PROXY ||
+			process.env.all_proxy
+		)
+
+		return { isProxyConfigured: hasProxyConfig }
+	}
+
+	/**
+	 * Get TLS configuration including SSL validation and CA certificates.
+	 */
+	private getTLSConfiguration(): { strictSSL: boolean; ca?: Buffer } {
+		const httpConfig = vscode.workspace.getConfiguration("http")
+		const strictSSL = httpConfig.get<boolean>("proxyStrictSSL", true)
+
+		const caPath = (process.env.NODE_EXTRA_CA_CERTS || process.env.AWS_CA_BUNDLE || "").trim()
+		const ca = caPath ? this.loadCACertificate(caPath) : undefined
+
+		return { strictSSL, ca }
+	}
+
+	/**
+	 * Load CA certificate from file system with caching to avoid repeated I/O operations.
+	 */
+	private loadCACertificate(caPath: string): Buffer | undefined {
+		if (!caPath) return undefined
+
+		// Check cache first
+		if (AwsBedrockHandler.cachedCertificates.has(caPath)) {
+			return AwsBedrockHandler.cachedCertificates.get(caPath)
+		}
+
+		try {
+			const ca = fs.readFileSync(caPath)
+			AwsBedrockHandler.cachedCertificates.set(caPath, ca)
+			return ca
+		} catch (e) {
+			logger.warn("Failed to read custom CA bundle; continuing without it", {
+				ctx: "bedrock",
+				error: e instanceof Error ? e.message : String(e),
+				caPath,
+			})
+			return undefined
+		}
+	}
+
+	/**
+	 * Create HTTP/HTTPS agents with proxy and TLS configuration.
+	 * ProxyAgent automatically detects proxy URLs from environment variables.
+	 */
+	private createHTTPAgents(
+		proxyConfig: { isProxyConfigured: boolean },
+		tlsConfig: { strictSSL: boolean; ca?: Buffer },
+	): { httpAgent?: Agent; httpsAgent?: HttpsAgent } {
+		const agentOptions: https.AgentOptions = {
+			rejectUnauthorized: tlsConfig.strictSSL,
+			...(tlsConfig.ca ? { ca: tlsConfig.ca } : {}),
+		}
+
+		if (proxyConfig.isProxyConfigured) {
+			// ProxyAgent automatically detects proxy URLs from environment variables
+			// We pass TLS configuration through the httpsAgent option
+			const proxyAgent = new ProxyAgent({
+				httpsAgent: new https.Agent(agentOptions),
+				rejectUnauthorized: tlsConfig.strictSSL,
+				...(tlsConfig.ca ? { ca: tlsConfig.ca } : {}),
+			})
+
+			return {
+				httpAgent: proxyAgent,
+				httpsAgent: proxyAgent,
+			}
+		}
+
+		// Direct connection without proxy
+		return {
+			httpsAgent: new https.Agent(agentOptions),
+		}
 	}
 
 	// Helper to guess model info from custom modelId string if not in bedrockModels
