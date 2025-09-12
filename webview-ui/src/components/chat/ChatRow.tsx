@@ -47,7 +47,7 @@ import { McpExecution } from "./McpExecution"
 import { ChatTextArea } from "./ChatTextArea"
 import { MAX_IMAGES_PER_MESSAGE } from "./ChatView"
 import { useSelectedModel } from "../ui/hooks/useSelectedModel"
-import { CircleCheck, Eye, FileDiff, ListTree } from "lucide-react"
+import { ChevronRight, ChevronDown, Eye, FileDiff, ListTree } from "lucide-react"
 
 interface ChatRowProps {
 	message: ClineMessage
@@ -288,7 +288,11 @@ export const ChatRowContent = ({
 							getIconSpan("error", errorColor)
 						)
 					) : cost !== null && cost !== undefined ? (
-						<CircleCheck className="w-4" />
+						isExpanded ? (
+							<ChevronDown className="w-4" />
+						) : (
+							<ChevronRight className="w-4" />
+						)
 					) : apiRequestFailedMessage ? (
 						getIconSpan("error", errorColor)
 					) : (
@@ -323,7 +327,17 @@ export const ChatRowContent = ({
 			default:
 				return [null, null]
 		}
-	}, [type, isCommandExecuting, message, isMcpServerResponding, apiReqCancelReason, cost, apiRequestFailedMessage, t])
+	}, [
+		type,
+		isCommandExecuting,
+		message,
+		isMcpServerResponding,
+		apiReqCancelReason,
+		cost,
+		apiRequestFailedMessage,
+		t,
+		isExpanded,
+	])
 
 	const headerStyle: React.CSSProperties = {
 		display: "flex",
@@ -890,6 +904,7 @@ export const ChatRowContent = ({
 							}}
 							onClick={handleToggleExpand}>
 							<ToolUseBlockHeader
+								className="group"
 								style={{
 									display: "flex",
 									alignItems: "center",
@@ -906,7 +921,8 @@ export const ChatRowContent = ({
 										</VSCodeBadge>
 									)}
 								</div>
-								<span className={`codicon codicon-chevron-${isExpanded ? "up" : "down"}`}></span>
+								<span
+									className={`codicon codicon-chevron-${isExpanded ? "up" : "down"} opacity-0 group-hover:opacity-100 transition-opacity duration-200`}></span>
 							</ToolUseBlockHeader>
 							{isExpanded && (slashCommandInfo.args || slashCommandInfo.description) && (
 								<div
@@ -1116,9 +1132,19 @@ export const ChatRowContent = ({
 						/>
 					)
 				case "api_req_started":
+					// Determine if the API request is in progress
+					const isApiRequestInProgress =
+						apiReqCancelReason === null &&
+						apiReqCancelReason === undefined &&
+						(cost === null || cost === undefined) &&
+						!apiRequestFailedMessage
+
 					return (
 						<>
 							<div
+								className={`group text-sm transition-opacity ${
+									isApiRequestInProgress ? "opacity-100" : "opacity-40 hover:opacity-100"
+								}`}
 								style={{
 									...headerStyle,
 									marginBottom:
@@ -1143,7 +1169,6 @@ export const ChatRowContent = ({
 									style={{ opacity: cost !== null && cost !== undefined && cost > 0 ? 1 : 0 }}>
 									${Number(cost || 0)?.toFixed(4)}
 								</div>
-								<span className={`codicon codicon-chevron-${isExpanded ? "up" : "down"}`}></span>
 							</div>
 							{(((cost === null || cost === undefined) && apiRequestFailedMessage) ||
 								apiReqStreamingFailedMessage) && (
