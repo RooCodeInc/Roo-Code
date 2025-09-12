@@ -45,7 +45,17 @@ import { McpExecution } from "./McpExecution"
 import { ChatTextArea } from "./ChatTextArea"
 import { MAX_IMAGES_PER_MESSAGE } from "./ChatView"
 import { useSelectedModel } from "../ui/hooks/useSelectedModel"
-import { ChevronRight, ChevronDown, Eye, FileDiff, ListTree, User, Edit, Trash2 } from "lucide-react"
+import {
+	ChevronRight,
+	ChevronDown,
+	Eye,
+	FileDiff,
+	ListTree,
+	User,
+	Edit,
+	Trash2,
+	MessageCircleQuestionMark,
+} from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface ChatRowProps {
@@ -303,10 +313,7 @@ export const ChatRowContent = ({
 				]
 			case "followup":
 				return [
-					<span
-						className="codicon codicon-question"
-						style={{ color: normalColor, marginBottom: "-1.5px" }}
-					/>,
+					<MessageCircleQuestionMark className="w-4" />,
 					<span style={{ color: normalColor, fontWeight: "bold" }}>{t("chat:questions.hasQuestion")}</span>,
 				]
 			default:
@@ -1472,18 +1479,18 @@ export const ChatRowContent = ({
 									{title}
 								</div>
 							)}
-							<div style={{ paddingTop: 10, paddingBottom: 15 }}>
+							<div className="flex flex-col gap-2 ml-6">
 								<Markdown
 									markdown={message.partial === true ? message?.text : followUpData?.question}
 								/>
+								<FollowUpSuggest
+									suggestions={followUpData?.suggest}
+									onSuggestionClick={onSuggestionClick}
+									ts={message?.ts}
+									onCancelAutoApproval={onFollowUpUnmount}
+									isAnswered={isFollowUpAnswered}
+								/>
 							</div>
-							<FollowUpSuggest
-								suggestions={followUpData?.suggest}
-								onSuggestionClick={onSuggestionClick}
-								ts={message?.ts}
-								onCancelAutoApproval={onFollowUpUnmount}
-								isAnswered={isFollowUpAnswered}
-							/>
 						</>
 					)
 				case "auto_approval_max_req_reached": {
