@@ -47,7 +47,7 @@ import { McpExecution } from "./McpExecution"
 import { ChatTextArea } from "./ChatTextArea"
 import { MAX_IMAGES_PER_MESSAGE } from "./ChatView"
 import { useSelectedModel } from "../ui/hooks/useSelectedModel"
-import { Bot, CircleCheck, Eye, FileDiff, ListTree, PlugZap } from "lucide-react"
+import { CircleCheck, Eye, FileDiff, ListTree } from "lucide-react"
 
 interface ChatRowProps {
 	message: ClineMessage

@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import MarkdownBlock from "../common/MarkdownBlock"
-import { Bot, BrainCircuit, Clock, Lightbulb } from "lucide-react"
+import { Bot, Clock } from "lucide-react"
 
 interface ReasoningBlockProps {
 	content: string
