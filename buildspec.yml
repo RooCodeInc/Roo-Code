@@ -24,7 +24,7 @@ phases:
     commands:
       - echo Build completed on `date`
       - echo Uploading VSIX file to S3...
-      - COMMIT_HASH=$(git rev-parse --short HEAD)
+      - COMMIT_HASH=$(git rev-parse HEAD)
       - cd ../bin
       - VSIX_FILE=$(ls *.vsix)
       - NEW_NAME=$(echo $VSIX_FILE | sed "s/\.vsix$/-${COMMIT_HASH}.vsix/")
