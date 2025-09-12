@@ -26,6 +26,23 @@ vi.mock("vscode", () => ({
 	Uri: {
 		file: vi.fn((filePath) => ({ fsPath: filePath })),
 	},
+	workspace: {
+		workspaceFolders: undefined,
+		getConfiguration: vi.fn(() => ({
+			get: vi.fn((key) => {
+				if (key === "useWorkspaceProviderSettings") {
+					return false
+				}
+				return undefined
+			}),
+			update: vi.fn(),
+		})),
+	},
+	ConfigurationTarget: {
+		Global: 1,
+		Workspace: 2,
+		WorkspaceFolder: 3,
+	},
 }))
 
 vi.mock("fs/promises", () => ({

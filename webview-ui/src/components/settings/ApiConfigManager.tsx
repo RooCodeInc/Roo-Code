@@ -1,10 +1,12 @@
 import { memo, useEffect, useRef, useState } from "react"
 import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
-import { AlertTriangle } from "lucide-react"
+import { AlertTriangle, Globe, FolderOpen } from "lucide-react"
 
 import type { ProviderSettingsEntry, OrganizationAllowList } from "@roo-code/types"
 
 import { useAppTranslation } from "@/i18n/TranslationContext"
+import { useExtensionState } from "@/context/ExtensionStateContext"
+import { vscode } from "@/utils/vscode"
 import {
 	type SearchableSelectOption,
 	Button,
@@ -14,6 +16,7 @@ import {
 	DialogTitle,
 	StandardTooltip,
 	SearchableSelect,
+	ToggleSwitch,
 } from "@/components/ui"
 
 interface ApiConfigManagerProps {
@@ -36,6 +39,7 @@ const ApiConfigManager = ({
 	onUpsertConfig,
 }: ApiConfigManagerProps) => {
 	const { t } = useAppTranslation()
+	const { isUsingWorkspaceSettings } = useExtensionState()
 
 	const [isRenaming, setIsRenaming] = useState(false)
 	const [isCreating, setIsCreating] = useState(false)
@@ -292,6 +296,53 @@ const ApiConfigManager = ({
 							</>
 						)}
 					</div>
+
+					{/* Workspace vs Global Settings Toggle */}
+					<div className="flex items-center justify-between mt-3 p-2 rounded bg-vscode-editor-background border border-vscode-panel-border">
+						<div className="flex items-center gap-2">
+							{isUsingWorkspaceSettings ? (
+								<FolderOpen size={16} className="text-vscode-foreground" />
+							) : (
+								<Globe size={16} className="text-vscode-foreground" />
+							)}
+							<div className="flex flex-col">
+								<span className="text-sm font-medium">
+									{isUsingWorkspaceSettings
+										? t("settings:providers.workspaceSettings") || "Workspace Settings"
+										: t("settings:providers.globalSettings") || "Global Settings"}
+								</span>
+								<span className="text-xs text-vscode-descriptionForeground">
+									{isUsingWorkspaceSettings
+										? t("settings:providers.workspaceSettingsDesc") ||
+											"Settings apply only to this workspace"
+										: t("settings:providers.globalSettingsDesc") ||
+											"Settings apply to all workspaces"}
+								</span>
+							</div>
+						</div>
+						<StandardTooltip
+							content={
+								isUsingWorkspaceSettings
+									? t("settings:providers.switchToGlobal") || "Switch to global settings"
+									: t("settings:providers.switchToWorkspace") || "Switch to workspace settings"
+							}>
+							<ToggleSwitch
+								checked={isUsingWorkspaceSettings || false}
+								onChange={() => {
+									vscode.postMessage({
+										type: "toggleWorkspaceProviderSettings",
+										bool: !isUsingWorkspaceSettings,
+										values: { migrateSettings: false },
+									})
+								}}
+								aria-label={
+									isUsingWorkspaceSettings ? "Using workspace settings" : "Using global settings"
+								}
+								disabled={false}
+							/>
+						</StandardTooltip>
+					</div>
+
 					<div className="text-vscode-descriptionForeground text-sm mt-1">
 						{t("settings:providers.description")}
 					</div>

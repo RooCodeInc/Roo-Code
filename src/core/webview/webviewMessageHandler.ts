@@ -1809,6 +1809,58 @@ export const webviewMessageHandler = async (
 				}
 			}
 			break
+		case "toggleWorkspaceProviderSettings":
+			// Toggle between workspace and global provider settings
+			try {
+				const useWorkspace = message.bool ?? false
+				const migrateSettings = message.values?.migrateSettings ?? false
+
+				// Update the configuration setting
+				await vscode.workspace
+					.getConfiguration(Package.name)
+					.update("useWorkspaceProviderSettings", useWorkspace, vscode.ConfigurationTarget.Global)
+
+				// Update the provider settings manager (pass migrateSettings as second parameter)
+				await provider.providerSettingsManager.setUseWorkspaceSettings(useWorkspace)
+
+				// If migration is requested, handle it separately
+				if (migrateSettings && useWorkspace) {
+					// When switching to workspace, optionally copy global settings
+					const globalConfig = await provider.providerSettingsManager.getConfigFromGlobal(
+						getGlobalState("currentApiConfigName") || "default",
+					)
+					if (globalConfig) {
+						await provider.providerSettingsManager.saveConfig(
+							getGlobalState("currentApiConfigName") || "default",
+							globalConfig,
+						)
+					}
+				}
+
+				// Reload the current configuration
+				const currentConfigName = getGlobalState("currentApiConfigName")
+				if (currentConfigName) {
+					await provider.activateProviderProfile({ name: currentConfigName })
+				}
+
+				// Post updated state to webview (isUsingWorkspaceSettings is already part of ExtensionState)
+				await provider.postStateToWebview()
+
+				// Show confirmation message
+				const scope = useWorkspace ? "workspace" : "global"
+				vscode.window.showInformationMessage(
+					t(`common:info.provider_settings_switched_to_${scope}`) ||
+						`Provider settings switched to ${scope} scope`,
+				)
+			} catch (error) {
+				provider.log(
+					`Error toggling workspace provider settings: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`,
+				)
+				vscode.window.showErrorMessage(
+					t("common:errors.toggle_workspace_settings") || "Failed to toggle workspace provider settings",
+				)
+			}
+			break
 		case "upsertApiConfiguration":
 			if (message.text && message.apiConfiguration) {
 				await provider.upsertProviderProfile(message.text, message.apiConfiguration)

@@ -1795,6 +1795,9 @@ export class ClineProvider
 		const currentMode = mode ?? defaultModeSlug
 		const hasSystemPromptOverride = await this.hasFileBasedSystemPromptOverride(currentMode)
 
+		// Check if using workspace-specific provider settings
+		const isUsingWorkspaceSettings = this.providerSettingsManager.isUsingWorkspaceSettings()
+
 		return {
 			version: this.context.extension?.packageJSON?.version ?? "",
 			apiConfiguration,
@@ -1920,6 +1923,7 @@ export class ClineProvider
 			openRouterImageGenerationSelectedModel,
 			openRouterUseMiddleOutTransform,
 			featureRoomoteControlEnabled,
+			isUsingWorkspaceSettings,
 		}
 	}
 

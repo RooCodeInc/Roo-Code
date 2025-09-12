@@ -1,3 +1,4 @@
+import * as vscode from "vscode"
 import { ExtensionContext } from "vscode"
 import { z, ZodError } from "zod"
 import deepEqual from "fast-deep-equal"
@@ -14,6 +15,7 @@ import {
 import { TelemetryService } from "@roo-code/telemetry"
 
 import { Mode, modes } from "../../shared/modes"
+import { getWorkspacePath } from "../../utils/path"
 
 export interface SyncCloudProfilesResult {
 	hasChanges: boolean
@@ -41,6 +43,7 @@ export type ProviderProfiles = z.infer<typeof providerProfilesSchema>
 
 export class ProviderSettingsManager {
 	private static readonly SCOPE_PREFIX = "roo_cline_config_"
+	private static readonly WORKSPACE_PREFIX = "workspace_"
 	private readonly defaultConfigId = this.generateId()
 
 	private readonly defaultModeApiConfigs: Record<string, string> = Object.fromEntries(
@@ -61,12 +64,103 @@ export class ProviderSettingsManager {
 	}
 
 	private readonly context: ExtensionContext
+	private useWorkspaceSettings: boolean = false
 
 	constructor(context: ExtensionContext) {
 		this.context = context
 
+		// Check if workspace settings should be used
+		this.checkWorkspaceSettingsPreference()
+
 		// TODO: We really shouldn't have async methods in the constructor.
 		this.initialize().catch(console.error)
+	}
+
+	/**
+	 * Check if the user prefers workspace-specific settings
+	 */
+	private checkWorkspaceSettingsPreference(): void {
+		const config = vscode.workspace.getConfiguration("roo-cline")
+		this.useWorkspaceSettings = config.get<boolean>("useWorkspaceProviderSettings", false)
+	}
+
+	/**
+	 * Get the appropriate storage key based on workspace preference
+	 */
+	private getStorageKey(): string {
+		if (this.useWorkspaceSettings) {
+			const workspacePath = getWorkspacePath()
+			if (workspacePath) {
+				// Create a unique key based on workspace path
+				const workspaceId = Buffer.from(workspacePath)
+					.toString("base64")
+					.replace(/[^a-zA-Z0-9]/g, "")
+					.substring(0, 20)
+				return `${ProviderSettingsManager.SCOPE_PREFIX}${ProviderSettingsManager.WORKSPACE_PREFIX}${workspaceId}`
+			}
+		}
+		// Fall back to global settings
+		return `${ProviderSettingsManager.SCOPE_PREFIX}api_config`
+	}
+
+	/**
+	 * Set whether to use workspace-specific settings
+	 */
+	public async setUseWorkspaceSettings(useWorkspace: boolean): Promise<void> {
+		const wasUsingWorkspace = this.useWorkspaceSettings
+		this.useWorkspaceSettings = useWorkspace
+
+		// Update VSCode configuration
+		const config = vscode.workspace.getConfiguration("roo-cline")
+		await config.update("useWorkspaceProviderSettings", useWorkspace, vscode.ConfigurationTarget.Global)
+
+		// If switching from global to workspace or vice versa, optionally migrate settings
+		if (wasUsingWorkspace !== useWorkspace) {
+			await this.migrateSettingsBetweenScopes(wasUsingWorkspace, useWorkspace)
+		}
+	}
+
+	/**
+	 * Migrate settings between global and workspace scopes
+	 */
+	private async migrateSettingsBetweenScopes(fromWorkspace: boolean, toWorkspace: boolean): Promise<void> {
+		try {
+			// Get settings from the source scope
+			const sourceKey = fromWorkspace ? this.getStorageKey() : `${ProviderSettingsManager.SCOPE_PREFIX}api_config`
+			const targetKey = toWorkspace ? this.getStorageKey() : `${ProviderSettingsManager.SCOPE_PREFIX}api_config`
+
+			if (sourceKey === targetKey) {
+				return // No migration needed
+			}
+
+			const sourceContent = await this.context.secrets.get(sourceKey)
+			if (!sourceContent) {
+				return // No settings to migrate
+			}
+
+			// Check if target already has settings
+			const targetContent = await this.context.secrets.get(targetKey)
+			if (targetContent) {
+				// Target already has settings, don't overwrite
+				console.log(`Target scope already has settings, skipping migration`)
+				return
+			}
+
+			// Migrate the settings
+			await this.context.secrets.store(targetKey, sourceContent)
+			console.log(
+				`Successfully migrated provider settings from ${fromWorkspace ? "workspace" : "global"} to ${toWorkspace ? "workspace" : "global"} scope`,
+			)
+		} catch (error) {
+			console.error(`Failed to migrate settings between scopes: ${error}`)
+		}
+	}
+
+	/**
+	 * Check if current scope is workspace-specific
+	 */
+	public isUsingWorkspaceSettings(): boolean {
+		return this.useWorkspaceSettings && !!getWorkspacePath()
 	}
 
 	public generateId() {
@@ -373,6 +467,40 @@ export class ProviderSettingsManager {
 	}
 
 	/**
+	 * Get a configuration from global storage regardless of current workspace setting
+	 */
+	public async getConfigFromGlobal(name: string): Promise<ProviderSettingsWithId | null> {
+		try {
+			return await this.lock(async () => {
+				// Temporarily get the global storage key
+				const globalKey = `${ProviderSettingsManager.SCOPE_PREFIX}api_config`
+				const content = await this.context.secrets.get(globalKey)
+
+				if (!content) {
+					return null
+				}
+
+				const providerProfiles = providerProfilesSchema
+					.extend({
+						apiConfigs: z.record(z.string(), z.any()),
+					})
+					.parse(JSON.parse(content))
+
+				const config = providerProfiles.apiConfigs[name]
+				if (!config) {
+					return null
+				}
+
+				const result = providerSettingsWithIdSchema.safeParse(config)
+				return result.success ? result.data : null
+			})
+		} catch (error) {
+			console.error(`Failed to get global config for ${name}:`, error)
+			return null
+		}
+	}
+
+	/**
 	 * Activate a profile by name or ID.
 	 */
 	public async activateProfile(
@@ -493,12 +621,12 @@ export class ProviderSettingsManager {
 	 */
 	public async resetAllConfigs() {
 		return await this.lock(async () => {
-			await this.context.secrets.delete(this.secretsKey)
+			await this.context.secrets.delete(this.getStorageKey())
 		})
 	}
 
 	private get secretsKey() {
-		return `${ProviderSettingsManager.SCOPE_PREFIX}api_config`
+		return this.getStorageKey()
 	}
 
 	private async load(): Promise<ProviderProfiles> {

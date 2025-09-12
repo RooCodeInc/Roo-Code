@@ -37,6 +37,7 @@ export interface WebviewMessage {
 		| "loadApiConfigurationById"
 		| "renameApiConfiguration"
 		| "getListApiConfiguration"
+		| "toggleWorkspaceProviderSettings"
 		| "customInstructions"
 		| "allowedCommands"
 		| "deniedCommands"
