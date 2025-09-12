@@ -403,7 +403,12 @@ export class ClineProvider
 	// Removes and destroys the top Cline instance (the current finished task),
 	// activating the previous one (resuming the parent task).
 	async removeClineFromStack() {
+		// Log stack trace to understand where this is being called from
+		const stackTrace = new Error().stack?.split("\n").slice(1, 4).join("\n") || "unknown"
+		this.log(`[removeClineFromStack] Called from: ${stackTrace}`)
+
 		if (this.clineStack.length === 0) {
+			this.log(`[removeClineFromStack] Stack is already empty`)
 			return
 		}
 
@@ -411,6 +416,9 @@ export class ClineProvider
 		let task = this.clineStack.pop()
 
 		if (task) {
+			this.log(
+				`[removeClineFromStack] Removing task ${task.taskId}.${task.instanceId} from stack. Remaining stack size: ${this.clineStack.length}`,
+			)
 			task.emit(RooCodeEventName.TaskUnfocused)
 
 			try {
@@ -1479,16 +1487,61 @@ export class ClineProvider
 	}
 
 	async showTaskWithId(id: string) {
+		this.log(`[showTaskWithId] Loading task ${id}`)
+		this.log(`[showTaskWithId] Current task: ${this.getCurrentTask()?.taskId || "none"}`)
+		this.log(`[showTaskWithId] Current stack size: ${this.clineStack.length}`)
+
 		if (id !== this.getCurrentTask()?.taskId) {
 			// Non-current task.
 			const { historyItem } = await this.getTaskWithId(id)
+			this.log(
+				`[showTaskWithId] Loaded history item for ${id}, parentTaskId: ${historyItem.parentTaskId}, rootTaskId: ${historyItem.rootTaskId}`,
+			)
+
+			// Check if this is a completed subtask by examining its messages
+			let isCompletedSubtask = false
+			if (historyItem.parentTaskId || historyItem.rootTaskId) {
+				try {
+					const savedMessages = await this.getSavedTaskMessages(historyItem.id)
+					// A completed subtask typically has very few messages (just resume_task)
+					// and no active conversation. If it only has resume messages, it's likely completed.
+					const hasOnlyResumeMessages =
+						savedMessages.length <= 2 &&
+						savedMessages.every((m) => m.ask === "resume_task" || m.ask === "resume_completed_task")
+
+					// Also check if there's any completion indicator
+					const hasCompletionIndicator = savedMessages.some(
+						(m) => m.ask === "completion_result" || m.say === "completion_result",
+					)
+
+					isCompletedSubtask = hasOnlyResumeMessages || hasCompletionIndicator
+					this.log(
+						`[showTaskWithId] Subtask ${id} completion check: hasOnlyResumeMessages=${hasOnlyResumeMessages}, hasCompletionIndicator=${hasCompletionIndicator}, isCompleted=${isCompletedSubtask}`,
+					)
+				} catch (error) {
+					this.log(`[showTaskWithId] Could not check completion status for subtask ${id}: ${error}`)
+				}
+			}
+
 			// If this is a subtask, we need to reconstruct the entire task stack
 			if (historyItem.parentTaskId || historyItem.rootTaskId) {
-				await this.reconstructTaskStack(historyItem)
+				if (isCompletedSubtask) {
+					this.log(
+						`[showTaskWithId] Task ${id} is a completed subtask, showing as standalone to avoid parent task disruption`,
+					)
+					// Show completed subtasks as standalone tasks to avoid disrupting parent tasks
+					await this.createTaskWithHistoryItem(historyItem)
+				} else {
+					this.log(`[showTaskWithId] Task ${id} is an active subtask, reconstructing stack`)
+					await this.reconstructTaskStack(historyItem)
+				}
 			} else {
 				// For standalone tasks, use the normal flow
+				this.log(`[showTaskWithId] Task ${id} is standalone, using normal flow`)
 				await this.createTaskWithHistoryItem(historyItem)
 			}
+		} else {
+			this.log(`[showTaskWithId] Task ${id} is already current, no reconstruction needed`)
 		}
 
 		await this.postMessageToWebview({ type: "action", action: "chatButtonClicked" })
@@ -1563,48 +1616,98 @@ export class ClineProvider
 	 * This ensures that when the subtask finishes, control returns to the parent task.
 	 */
 	private async reconstructTaskStack(targetHistoryItem: HistoryItem): Promise<void> {
-		// Clear the current stack
-		await this.removeClineFromStack()
+		this.log(`[reconstructTaskStack] Starting reconstruction for target task ${targetHistoryItem.id}`)
 
-		// Build the task hierarchy from root to target
-		const taskHierarchy = await this.buildTaskHierarchy(targetHistoryItem)
+		// Store current stack info before clearing for recovery purposes
+		const currentStackInfo = this.clineStack.map((task) => ({
+			taskId: task.taskId,
+			instanceId: task.instanceId,
+			isPaused: task.isPaused,
+		}))
+		this.log(`[reconstructTaskStack] Current stack before clearing: ${JSON.stringify(currentStackInfo)}`)
 
-		this.log(`[reconstructTaskStack] Reconstructing stack with ${taskHierarchy.length} tasks`)
+		// Store current stack for recovery purposes
+		const originalStack = [...this.clineStack]
 
-		const createdTasks: Task[] = []
+		try {
+			// Build the task hierarchy from root to target BEFORE clearing the stack
+			// This prevents losing the current stack if hierarchy building fails
+			const taskHierarchy = await this.buildTaskHierarchy(targetHistoryItem)
+			this.log(`[reconstructTaskStack] Built hierarchy with ${taskHierarchy.length} tasks`)
 
-		// Create all tasks in the hierarchy with proper parent/root references
-		for (let i = 0; i < taskHierarchy.length; i++) {
-			const historyItem = taskHierarchy[i]
-			const isTargetTask = i === taskHierarchy.length - 1
+			// Now clear the current stack since we know we can rebuild it
+			await this.removeClineFromStack()
 
-			// Determine parent and root task references
-			const parentTask = i > 0 ? createdTasks[i - 1] : undefined
-			const rootTask = createdTasks[0] || undefined
+			const createdTasks: Task[] = []
 
-			// Create the task with proper parent/root references
-			const task = await this.createTaskFromHistoryItem(historyItem, isTargetTask, parentTask, rootTask)
+			// Create all tasks in the hierarchy with proper parent/root references
+			for (let i = 0; i < taskHierarchy.length; i++) {
+				const historyItem = taskHierarchy[i]
+				const isTargetTask = i === taskHierarchy.length - 1
 
-			// Pause parent tasks so only the target runs
-			if (!isTargetTask) {
-				task.isPaused = true
-				this.log(`[reconstructTaskStack] Added paused parent task ${task.taskId}`)
-			} else {
-				this.log(`[reconstructTaskStack] Added and started target task ${task.taskId}`)
+				this.log(
+					`[reconstructTaskStack] Processing task ${i + 1}/${taskHierarchy.length}: ${historyItem.id} (isTarget: ${isTargetTask})`,
+				)
+
+				// Determine parent and root task references
+				const parentTask = i > 0 ? createdTasks[i - 1] : undefined
+				const rootTask = createdTasks[0] || undefined
+
+				// Create the task with proper parent/root references
+				const task = await this.createTaskFromHistoryItem(historyItem, isTargetTask, parentTask, rootTask)
+
+				// Pause parent tasks so only the target runs
+				if (!isTargetTask) {
+					task.isPaused = true
+					this.log(`[reconstructTaskStack] Added paused parent task ${task.taskId}`)
+				} else {
+					this.log(`[reconstructTaskStack] Added target task ${task.taskId} (will respect completion status)`)
+				}
+
+				createdTasks.push(task)
+				await this.addClineToStack(task)
 			}
 
-			createdTasks.push(task)
-			await this.addClineToStack(task)
-		}
+			// Establish parent-child relationships after all tasks are created
+			for (let i = 0; i < createdTasks.length - 1; i++) {
+				const parentTask = createdTasks[i]
+				const childTask = createdTasks[i + 1]
 
-		// Establish parent-child relationships after all tasks are created
-		for (let i = 0; i < createdTasks.length - 1; i++) {
-			const parentTask = createdTasks[i]
-			const childTask = createdTasks[i + 1]
+				// Set the childTaskId on the parent to point to the child
+				parentTask.childTaskId = childTask.taskId
+				this.log(`[reconstructTaskStack] Linked parent ${parentTask.taskId} to child ${childTask.taskId}`)
+			}
 
-			// Set the childTaskId on the parent to point to the child
-			parentTask.childTaskId = childTask.taskId
-			this.log(`[reconstructTaskStack] Linked parent ${parentTask.taskId} to child ${childTask.taskId}`)
+			this.log(`[reconstructTaskStack] Successfully reconstructed stack with ${createdTasks.length} tasks`)
+		} catch (error) {
+			this.log(
+				`[reconstructTaskStack] ERROR during reconstruction: ${error instanceof Error ? error.message : String(error)}`,
+			)
+			this.log(`[reconstructTaskStack] Stack state after error: ${this.clineStack.length} tasks`)
+
+			// If reconstruction failed and we have no tasks in stack, this could be why parent tasks are getting deleted
+			if (this.clineStack.length === 0) {
+				this.log(
+					`[reconstructTaskStack] CRITICAL: Stack is empty after failed reconstruction - attempting recovery`,
+				)
+
+				// Attempt to restore the original stack to prevent parent task deletion
+				try {
+					for (const task of originalStack) {
+						if (!task.abort && !task.abandoned) {
+							this.clineStack.push(task)
+							this.log(`[reconstructTaskStack] Recovered task ${task.taskId} to stack`)
+						}
+					}
+					this.log(`[reconstructTaskStack] Recovery completed. Stack size: ${this.clineStack.length}`)
+				} catch (recoveryError) {
+					this.log(
+						`[reconstructTaskStack] Recovery failed: ${recoveryError instanceof Error ? recoveryError.message : String(recoveryError)}`,
+					)
+				}
+			}
+
+			throw error
 		}
 	}
 
@@ -1654,6 +1757,57 @@ export class ClineProvider
 		parentTask?: Task,
 		rootTask?: Task,
 	): Promise<Task> {
+		// Check if this task is already completed by examining its saved messages
+		let isTaskCompleted = false
+		try {
+			const savedMessages = await this.getSavedTaskMessages(historyItem.id)
+			this.log(`[createTaskFromHistoryItem] Task ${historyItem.id} has ${savedMessages.length} saved messages`)
+
+			// Log the last few messages to understand the task state
+			const lastFewMessages = savedMessages.slice(-5).map((m) => ({
+				type: m.type,
+				say: m.say,
+				ask: m.ask,
+				text: m.text?.substring(0, 100) + (m.text?.length > 100 ? "..." : ""),
+			}))
+			this.log(
+				`[createTaskFromHistoryItem] Last 5 messages for task ${historyItem.id}: ${JSON.stringify(lastFewMessages, null, 2)}`,
+			)
+
+			const lastRelevantMessage = savedMessages
+				.slice()
+				.reverse()
+				.find((m) => !(m.ask === "resume_task" || m.ask === "resume_completed_task"))
+
+			// Check multiple completion indicators
+			isTaskCompleted =
+				lastRelevantMessage?.ask === "completion_result" ||
+				lastRelevantMessage?.say === "completion_result" ||
+				savedMessages.some((m) => m.ask === "completion_result" || m.say === "completion_result")
+
+			this.log(
+				`[createTaskFromHistoryItem] Last relevant message: ${JSON.stringify({
+					type: lastRelevantMessage?.type,
+					say: lastRelevantMessage?.say,
+					ask: lastRelevantMessage?.ask,
+				})}`,
+			)
+
+			this.log(
+				`[createTaskFromHistoryItem] Task ${historyItem.id} completion status: ${isTaskCompleted ? "COMPLETED" : "NOT_COMPLETED"}`,
+			)
+
+			if (isTaskCompleted && shouldStart) {
+				this.log(
+					`[createTaskFromHistoryItem] WARNING: Attempting to start already completed task ${historyItem.id}`,
+				)
+			}
+		} catch (error) {
+			this.log(
+				`[createTaskFromHistoryItem] Could not check completion status for task ${historyItem.id}: ${error}`,
+			)
+		}
+
 		const {
 			apiConfiguration,
 			diffEnabled: enableDiff,
@@ -1663,6 +1817,13 @@ export class ClineProvider
 			cloudUserInfo,
 			remoteControlEnabled,
 		} = await this.getState()
+
+		// For completed tasks, don't start them - they should remain in finished state
+		const actualShouldStart = shouldStart && !isTaskCompleted
+
+		this.log(
+			`[createTaskFromHistoryItem] Creating task ${historyItem.id}, shouldStart: ${shouldStart}, isCompleted: ${isTaskCompleted}, actualShouldStart: ${actualShouldStart}`,
+		)
 
 		const task = new Task({
 			provider: this,
@@ -1679,10 +1840,23 @@ export class ClineProvider
 			workspacePath: historyItem.workspace,
 			onCreated: this.taskCreationCallback,
 			enableBridge: BridgeOrchestrator.isEnabled(cloudUserInfo, remoteControlEnabled),
-			startTask: shouldStart, // Only start the target task
+			startTask: actualShouldStart, // Only start if not completed
 		})
 
 		return task
+	}
+
+	/**
+	 * Helper method to get saved task messages for completion status checking
+	 */
+	private async getSavedTaskMessages(taskId: string): Promise<any[]> {
+		try {
+			const { readTaskMessages } = await import("../task-persistence")
+			return await readTaskMessages({ taskId, globalStoragePath: this.context.globalStorageUri.fsPath })
+		} catch (error) {
+			this.log(`[getSavedTaskMessages] Failed to read messages for task ${taskId}: ${error}`)
+			return []
+		}
 	}
 
 	async exportTaskWithId(id: string) {
