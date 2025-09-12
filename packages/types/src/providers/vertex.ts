@@ -5,6 +5,8 @@ export type VertexModelId = keyof typeof vertexModels
 
 export const vertexDefaultModelId: VertexModelId = "claude-sonnet-4@20250514"
 
+export const ANTHROPIC_VERTEX_1M_CONTEXT_MODEL_ID: VertexModelId = "claude-sonnet-4@20250514"
+
 export const vertexModels = {
 	"gemini-2.5-flash-preview-05-20:thinking": {
 		maxTokens: 65_535,
@@ -174,6 +176,15 @@ export const vertexModels = {
 		cacheWritesPrice: 3.75,
 		cacheReadsPrice: 0.3,
 		supportsReasoningBudget: true,
+		tiers: [
+			{
+				contextWindow: 1_000_000,
+				inputPrice: 3.0,
+				outputPrice: 15.0,
+				cacheWritesPrice: 3.75,
+				cacheReadsPrice: 0.3,
+			},
+		],
 	},
 	"claude-opus-4-1@20250805": {
 		maxTokens: 8192,

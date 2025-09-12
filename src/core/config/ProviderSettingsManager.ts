@@ -221,6 +221,10 @@ export class ProviderSettingsManager {
 				if (apiConfig.fuzzyMatchThreshold === undefined) {
 					apiConfig.fuzzyMatchThreshold = fuzzyMatchThreshold
 				}
+				// Ensure new vertex1MContext field is present for Vertex provider configs
+				if (apiConfig.apiProvider === "vertex" && apiConfig.vertex1MContext === undefined) {
+					apiConfig.vertex1MContext = false
+				}
 			}
 		} catch (error) {
 			console.error(`[MigrateDiffSettings] Failed to migrate diff settings:`, error)

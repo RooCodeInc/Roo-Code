@@ -269,6 +269,8 @@
 		"anthropic1MContextBetaDescription": "為 Claude Sonnet 4 將上下文視窗擴展至 100 萬個 token",
 		"awsBedrock1MContextBetaLabel": "啟用 1M 上下文視窗 (Beta)",
 		"awsBedrock1MContextBetaDescription": "為 Claude Sonnet 4 將上下文視窗擴展至 100 萬個 token",
+		"vertex1MContextLabel": "啟用 1M 上下文視窗 (預覽)",
+		"vertex1MContextDescription": "為 Claude Sonnet 4 將上下文視窗擴展至 100 萬個 token。此為預覽功能，可能不適用於所有使用者。",
 		"cerebrasApiKey": "Cerebras API 金鑰",
 		"getCerebrasApiKey": "取得 Cerebras API 金鑰",
 		"chutesApiKey": "Chutes API 金鑰",

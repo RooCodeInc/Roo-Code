@@ -269,6 +269,8 @@
 		"anthropic1MContextBetaDescription": "Расширяет контекстное окно до 1 миллиона токенов для Claude Sonnet 4",
 		"awsBedrock1MContextBetaLabel": "Включить контекстное окно 1M (бета)",
 		"awsBedrock1MContextBetaDescription": "Расширяет контекстное окно до 1 миллиона токенов для Claude Sonnet 4",
+		"vertex1MContextLabel": "Включить контекстное окно 1M (предварительная версия)",
+		"vertex1MContextDescription": "Расширяет контекстное окно до 1 миллиона токенов для Claude Sonnet 4. Это предварительная версия функции, которая может быть доступна не всем пользователям.",
 		"cerebrasApiKey": "Cerebras API-ключ",
 		"getCerebrasApiKey": "Получить Cerebras API-ключ",
 		"chutesApiKey": "Chutes API-ключ",

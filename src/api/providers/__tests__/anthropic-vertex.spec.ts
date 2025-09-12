@@ -578,6 +578,65 @@ describe("VertexHandler", () => {
 			}
 
 			const mockCreate = vitest.fn().mockResolvedValue(asyncIterator)
+
+			describe("vertex1MContext logic", () => {
+				it("should use 1M context window when vertex1MContext is enabled for Claude Sonnet 4", () => {
+					const handler = new AnthropicVertexHandler({
+						apiModelId: "claude-sonnet-4@20250514",
+						vertexProjectId: "test-project",
+						vertexRegion: "us-east5",
+						vertex1MContext: true,
+					})
+					const model = handler.getModel()
+					expect(model.info.contextWindow).toBe(1_000_000)
+				})
+
+				it("should use default context window for other models or when vertex1MContext is not set", () => {
+					const handlerDefault = new AnthropicVertexHandler({
+						apiModelId: "claude-3-opus@20240229",
+						vertexProjectId: "test-project",
+						vertexRegion: "us-east5",
+					})
+					const modelDefault = handlerDefault.getModel()
+					expect(modelDefault.info.contextWindow).toBe(200_000)
+
+					const handlerNo1M = new AnthropicVertexHandler({
+						apiModelId: "claude-sonnet-4@20250514",
+						vertexProjectId: "test-project",
+						vertexRegion: "us-east5",
+					})
+					const modelNo1M = handlerNo1M.getModel()
+					expect(modelNo1M.info.contextWindow).toBe(200_000)
+				})
+
+				it("accepts a prompt > 200k tokens when 1M context enabled and does not trigger reduction/compression", async () => {
+					const longPrompt = "hello ".repeat(250_000).trim() // ~250k "tokens"
+					const handler = new AnthropicVertexHandler({
+						apiModelId: "claude-sonnet-4@20250514",
+						vertexProjectId: "test-project",
+						vertexRegion: "us-east5",
+						vertex1MContext: true,
+					})
+					const { info: modelInfo } = handler.getModel()
+					expect(modelInfo.contextWindow).toBe(1_000_000)
+					const mockCreate = vitest.fn().mockResolvedValue({
+						content: [{ type: "text", text: "ok" }],
+					})
+					;(handler as any).client = { messages: { create: mockCreate } }
+					const result = await handler.completePrompt(longPrompt)
+					expect(result).toBe("ok")
+					expect(mockCreate).toHaveBeenCalledWith(
+						expect.objectContaining({
+							messages: [
+								{
+									role: "user",
+									content: [{ type: "text", text: longPrompt, cache_control: { type: "ephemeral" } }],
+								},
+							],
+						}),
+					)
+				})
+			})
 			;(handler["client"].messages as any).create = mockCreate
 
 			const stream = handler.createMessage(systemPrompt, mockMessages)

@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { Vertex } from "../Vertex"
 import type { ProviderSettings } from "@roo-code/types"
-import { VERTEX_REGIONS } from "@roo-code/types"
+import { ANTHROPIC_VERTEX_1M_CONTEXT_MODEL_ID, VERTEX_REGIONS } from "@roo-code/types"
 
 vi.mock("@vscode/webview-ui-toolkit/react", () => ({
 	VSCodeTextField: ({ children, value, onInput, type }: any) => (
@@ -280,6 +280,82 @@ describe("Vertex", () => {
 
 			// Both should have been called
 			expect(mockSetApiConfigurationField).toHaveBeenCalledTimes(2)
+		})
+	})
+
+	describe("1M Context Checkbox", () => {
+		it("should render 1M context checkbox unchecked by default for Claude Sonnet 4", () => {
+			const apiConfiguration = {
+				...defaultApiConfiguration,
+				apiModelId: ANTHROPIC_VERTEX_1M_CONTEXT_MODEL_ID,
+			}
+			render(
+				<Vertex apiConfiguration={apiConfiguration} setApiConfigurationField={mockSetApiConfigurationField} />,
+			)
+
+			const oneMContextCheckbox = screen.getByTestId("checkbox-1m-context")
+			const checkbox = oneMContextCheckbox.querySelector("input[type='checkbox']") as HTMLInputElement
+			expect(checkbox.checked).toBe(false)
+		})
+
+		it("should NOT render 1M context checkbox for other models", () => {
+			const apiConfiguration = { ...defaultApiConfiguration, apiModelId: "gemini-2.0-flash-001" }
+			render(
+				<Vertex apiConfiguration={apiConfiguration} setApiConfigurationField={mockSetApiConfigurationField} />,
+			)
+
+			const oneMContextCheckbox = screen.queryByTestId("checkbox-1m-context")
+			expect(oneMContextCheckbox).toBeNull()
+		})
+
+		it("should NOT render 1M context checkbox when fromWelcomeView is true", () => {
+			const apiConfiguration = {
+				...defaultApiConfiguration,
+				apiModelId: ANTHROPIC_VERTEX_1M_CONTEXT_MODEL_ID,
+			}
+			render(
+				<Vertex
+					apiConfiguration={apiConfiguration}
+					setApiConfigurationField={mockSetApiConfigurationField}
+					fromWelcomeView={true}
+				/>,
+			)
+
+			const oneMContextCheckbox = screen.queryByTestId("checkbox-1m-context")
+			expect(oneMContextCheckbox).toBeNull()
+		})
+
+		it("should render 1M context checkbox checked when vertex1MContext is true for Claude Sonnet 4", () => {
+			const apiConfiguration = {
+				...defaultApiConfiguration,
+				vertex1MContext: true,
+				apiModelId: ANTHROPIC_VERTEX_1M_CONTEXT_MODEL_ID,
+			}
+			render(
+				<Vertex apiConfiguration={apiConfiguration} setApiConfigurationField={mockSetApiConfigurationField} />,
+			)
+
+			const oneMContextCheckbox = screen.getByTestId("checkbox-1m-context")
+			const checkbox = oneMContextCheckbox.querySelector("input[type='checkbox']") as HTMLInputElement
+			expect(checkbox.checked).toBe(true)
+		})
+
+		it("should call setApiConfigurationField with correct parameters when 1M context checkbox is toggled", async () => {
+			const user = userEvent.setup()
+			const apiConfiguration = {
+				...defaultApiConfiguration,
+				apiModelId: ANTHROPIC_VERTEX_1M_CONTEXT_MODEL_ID,
+			}
+			render(
+				<Vertex apiConfiguration={apiConfiguration} setApiConfigurationField={mockSetApiConfigurationField} />,
+			)
+
+			const oneMContextCheckbox = screen.getByTestId("checkbox-1m-context")
+			const checkbox = oneMContextCheckbox.querySelector("input[type='checkbox']") as HTMLInputElement
+
+			await user.click(checkbox)
+
+			expect(mockSetApiConfigurationField).toHaveBeenCalledWith("vertex1MContext", true)
 		})
 	})
 })

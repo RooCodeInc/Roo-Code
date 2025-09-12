@@ -269,6 +269,8 @@
 		"anthropic1MContextBetaDescription": "Claude Sonnet 4 için bağlam penceresini 1 milyon token'a genişletir",
 		"awsBedrock1MContextBetaLabel": "1M bağlam penceresini etkinleştir (Beta)",
 		"awsBedrock1MContextBetaDescription": "Claude Sonnet 4 için bağlam penceresini 1 milyon token'a genişletir",
+		"vertex1MContextLabel": "1M bağlam penceresini etkinleştir (Önizleme)",
+		"vertex1MContextDescription": "Claude Sonnet 4 için bağlam penceresini 1 milyon jetona genişletir. Bu bir önizleme özelliğidir ve tüm kullanıcılar için mevcut olmayabilir.",
 		"cerebrasApiKey": "Cerebras API Anahtarı",
 		"getCerebrasApiKey": "Cerebras API Anahtarını Al",
 		"chutesApiKey": "Chutes API Anahtarı",

@@ -273,6 +273,8 @@
 		"anthropic1MContextBetaDescription": "Memperluas jendela konteks menjadi 1 juta token untuk Claude Sonnet 4",
 		"awsBedrock1MContextBetaLabel": "Aktifkan jendela konteks 1M (Beta)",
 		"awsBedrock1MContextBetaDescription": "Memperluas jendela konteks menjadi 1 juta token untuk Claude Sonnet 4",
+		"vertex1MContextLabel": "Aktifkan jendela konteks 1M (Pratinjau)",
+		"vertex1MContextDescription": "Memperluas jendela konteks menjadi 1 juta token untuk Claude Sonnet 4. Ini adalah fitur pratinjau dan mungkin tidak tersedia untuk semua pengguna.",
 		"cerebrasApiKey": "Cerebras API Key",
 		"getCerebrasApiKey": "Dapatkan Cerebras API Key",
 		"chutesApiKey": "Chutes API Key",

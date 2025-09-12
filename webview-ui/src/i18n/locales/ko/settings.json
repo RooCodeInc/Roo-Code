@@ -269,6 +269,8 @@
 		"anthropic1MContextBetaDescription": "Claude Sonnet 4의 컨텍스트 창을 100만 토큰으로 확장",
 		"awsBedrock1MContextBetaLabel": "1M 컨텍스트 창 활성화 (베타)",
 		"awsBedrock1MContextBetaDescription": "Claude Sonnet 4의 컨텍스트 창을 100만 토큰으로 확장",
+		"vertex1MContextLabel": "1M 컨텍스트 창 활성화 (미리보기)",
+		"vertex1MContextDescription": "Claude Sonnet 4의 컨텍스트 창을 100만 토큰으로 확장합니다. 이 기능은 미리보기 기능이며 모든 사용자에게 제공되지 않을 수 있습니다.",
 		"cerebrasApiKey": "Cerebras API 키",
 		"getCerebrasApiKey": "Cerebras API 키 가져오기",
 		"chutesApiKey": "Chutes API 키",
