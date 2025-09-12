@@ -105,11 +105,11 @@ export async function applyDiffTool(
 		return
 	}
 
-	if (argsXmlTag) {
+	if (argsXmlTag || block.toolUseId) {
 		// Parse file entries from XML (new way)
 		try {
 			let files = [] as any[]
-			if (!block.toolUseId) {
+			if (argsXmlTag) {
 				// IMPORTANT: We use parseXmlForDiff here instead of parseXml to prevent HTML entity decoding
 				// This ensures exact character matching when comparing parsed content against original file content
 				// Without this, special characters like & would be decoded to &amp; causing diff mismatches
@@ -117,7 +117,7 @@ export async function applyDiffTool(
 				files = Array.isArray(parsed.file) ? parsed.file : [parsed.file].filter(Boolean)
 			} else {
 				const input = block.toolUseParam?.input as any
-				const args = input.args
+				const args = input
 				files = Array.isArray(args?.file) ? args?.file : [args?.file].filter(Boolean)
 			}
 

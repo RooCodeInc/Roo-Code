@@ -158,61 +158,53 @@ When applying the diffs, be extra careful to remember to change any closing brac
 ALWAYS make as many changes in a single 'apply_diff' request as possible using multiple SEARCH/REPLACE blocks`,
 		parameters: [
 			{
-				name: "args",
-				type: "object",
-				description: "Container for the file modification arguments.",
+				name: "file",
+				type: "array",
+				description: `One or more file change objects.`,
 				required: true,
-				properties: {
-					file: {
-						name: "file",
-						type: "array",
-						description: `One or more file change objects.`,
-						required: true,
-						items: {
-							name: "fileItem",
-							type: "object",
-							description: "A file modification object containing the path and diff operations.",
+				items: {
+					name: "fileItem",
+					type: "object",
+					description: "A file modification object containing the path and diff operations.",
+					required: true,
+					properties: {
+						path: {
+							name: "path",
+							type: "string",
+							description: `The path of the file to modify (relative to the current workspace directory ${args.cwd})`,
 							required: true,
-							properties: {
-								path: {
-									name: "path",
-									type: "string",
-									description: `The path of the file to modify (relative to the current workspace directory ${args.cwd})`,
-									required: true,
-								},
-								diff: {
-									name: "diff",
-									type: "array",
-									description: "One or more diff elements containing.",
-									required: true,
-									items: {
-										name: "diffItem",
-										type: "object",
+						},
+						diff: {
+							name: "diff",
+							type: "array",
+							description: "One or more diff elements containing.",
+							required: true,
+							items: {
+								name: "diffItem",
+								type: "object",
+								description:
+									"A single search-and-replace operation. This object contains the search criteria and the replacement content.",
+								required: true,
+								properties: {
+									search: {
+										name: "search",
+										type: "string",
 										description:
-											"A single search-and-replace operation. This object contains the search criteria and the replacement content.",
+											"SEARCH BLOCK. MUST exactly match existing content including whitespace and indentation.",
 										required: true,
-										properties: {
-											search: {
-												name: "search",
-												type: "string",
-												description:
-													"SEARCH BLOCK. MUST exactly match existing content including whitespace and indentation.",
-												required: true,
-											},
-											replace: {
-												name: "replace",
-												type: "string",
-												description: "REPLACE BLOCK.",
-												required: true,
-											},
-											start_line: {
-												name: "start_line",
-												type: "number",
-												description:
-													"The line number of original content where the search block starts",
-												required: false,
-											},
-										},
+									},
+									replace: {
+										name: "replace",
+										type: "string",
+										description: "REPLACE BLOCK.",
+										required: true,
+									},
+									start_line: {
+										name: "start_line",
+										type: "number",
+										description:
+											"The line number of original content where the search block starts",
+										required: false,
 									},
 								},
 							},

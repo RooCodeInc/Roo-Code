@@ -29,44 +29,36 @@ ${
 ${isMultipleReadsEnabled ? `- When you need to read more than ${maxConcurrentReads} files, prioritize the most critical files first, then use subsequent read_file requests for additional files` : ""}`,
 		parameters: [
 			{
-				name: "args",
-				type: "object",
-				description: "Contains one or more file elements, where each file contains.",
+				name: "file",
+				type: "array",
+				description: `An array of file objects to read, with an optional line range. Reading multiple files (within the ${maxConcurrentReads}-file limit).`,
 				required: true,
-				properties: {
-					file: {
-						name: "file",
-						type: "array",
-						description: `An array of file objects to read, with an optional line range. Reading multiple files (within the ${maxConcurrentReads}-file limit).`,
-						required: true,
-						items: {
-							name: "fileItem",
-							type: "object",
-							description: "A file object",
+				items: {
+					name: "fileItem",
+					type: "object",
+					description: "A file object",
+					required: true,
+					properties: {
+						path: {
+							name: "path",
+							type: "string",
+							description: `File path (relative to workspace directory ${args.cwd}).`,
 							required: true,
-							properties: {
-								path: {
-									name: "path",
-									type: "string",
-									description: `File path (relative to workspace directory ${args.cwd}).`,
-									required: true,
-								},
-								...(partialReadsEnabled
-									? {
-											line_range: {
-												name: "line_range",
-												type: "array",
-												description: `One or more line range elements in format "start-end" (1-based, inclusive).`,
-												required: false,
-												items: {
-													name: "text",
-													type: "string",
-												},
-											},
-										}
-									: {}),
-							},
 						},
+						...(partialReadsEnabled
+							? {
+									line_range: {
+										name: "line_range",
+										type: "array",
+										description: `One or more line range elements in format "start-end" (1-based, inclusive).`,
+										required: false,
+										items: {
+											name: "text",
+											type: "string",
+										},
+									},
+								}
+							: {}),
 					},
 				},
 			},
