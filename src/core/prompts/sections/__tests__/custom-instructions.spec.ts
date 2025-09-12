@@ -1605,3 +1605,120 @@ describe("Rules directory reading", () => {
 		expect(result).toBe("\n# Rules from .roorules:\nfallback content\n")
 	})
 })
+
+describe("File deduplication", () => {
+	beforeEach(() => {
+		vi.clearAllMocks()
+	})
+
+	test("should skip files with duplicate content (same MD5 hash)", async () => {
+		// Mock directory structure with different files having identical content
+		const mockEntries = [
+			{
+				name: "file1.md",
+				isFile: () => true,
+				isSymbolicLink: () => false,
+				isDirectory: () => false,
+				parentPath: "/fake/path/.roo/rules",
+			},
+			{
+				name: "file2.md",
+				isFile: () => true,
+				isSymbolicLink: () => false,
+				isDirectory: () => false,
+				parentPath: "/fake/path/.roo/rules",
+			},
+			{
+				name: "file3.md",
+				isFile: () => true,
+				isSymbolicLink: () => false,
+				isDirectory: () => false,
+				parentPath: "/fake/path/.roo/rules",
+			},
+		]
+
+		// Mock fs operations
+		statMock.mockResolvedValueOnce({ isDirectory: () => true }) // .roo/rules exists
+		readdirMock.mockResolvedValueOnce(mockEntries)
+
+		// Mock file stats for each file
+		statMock.mockResolvedValueOnce({ isFile: () => true }) // file1.md
+		statMock.mockResolvedValueOnce({ isFile: () => true }) // file2.md
+		statMock.mockResolvedValueOnce({ isFile: () => true }) // file3.md
+
+		// Mock file content reading - file2 and file3 have identical content
+		readFileMock.mockResolvedValueOnce("unique content") // file1.md
+		readFileMock.mockResolvedValueOnce("duplicate content") // file2.md
+		readFileMock.mockResolvedValueOnce("duplicate content") // file3.md (should be skipped due to duplicate hash)
+
+		const result = await loadRuleFiles("/fake/path")
+
+		// Should include both unique contents, but duplicate content only once
+		expect(result).toContain("unique content")
+		expect(result).toContain("duplicate content")
+
+		// Count occurrences of "duplicate content" - should only appear once
+		const duplicateContentMatches = (result.match(/duplicate content/g) || []).length
+		expect(duplicateContentMatches).toBe(1)
+	})
+
+	test("should skip files with duplicate resolved paths via symlinks", async () => {
+		// Mock directory structure with symlinks pointing to the same file
+		const mockEntries = [
+			{
+				name: "original.md",
+				isFile: () => true,
+				isSymbolicLink: () => false,
+				isDirectory: () => false,
+				parentPath: "/fake/path/.roo/rules",
+			},
+			{
+				name: "symlink1.md",
+				isFile: () => false,
+				isSymbolicLink: () => true,
+				isDirectory: () => false,
+				parentPath: "/fake/path/.roo/rules",
+			},
+			{
+				name: "symlink2.md",
+				isFile: () => false,
+				isSymbolicLink: () => true,
+				isDirectory: () => false,
+				parentPath: "/fake/path/.roo/rules",
+			},
+		]
+
+		// Mock fs operations
+		statMock.mockResolvedValueOnce({ isDirectory: () => true }) // .roo/rules exists
+		readdirMock.mockResolvedValueOnce(mockEntries)
+
+		// Mock file stats
+		statMock.mockResolvedValueOnce({ isFile: () => true }) // original.md
+
+		// Mock symlink resolution - both symlinks point to original.md
+		readlinkMock.mockResolvedValueOnce("original.md") // symlink1 -> original.md
+		statMock.mockResolvedValueOnce({ isFile: () => true }) // symlink1 target
+
+		readlinkMock.mockResolvedValueOnce("original.md") // symlink2 -> original.md
+		statMock.mockResolvedValueOnce({ isFile: () => true }) // symlink2 target
+
+		// Mock file content reading
+		readFileMock.mockResolvedValueOnce("original content") // original.md
+		readFileMock.mockResolvedValueOnce("original content") // symlink1 target (should be skipped - same resolved path)
+		readFileMock.mockResolvedValueOnce("original content") // symlink2 target (should be skipped - same resolved path)
+
+		const result = await loadRuleFiles("/fake/path")
+
+		// Should only include original content once
+		expect(result).toContain("original content")
+
+		// Count occurrences of "original content" - should only appear once
+		const originalContentMatches = (result.match(/original content/g) || []).length
+		expect(originalContentMatches).toBe(1)
+	})
+
+	// Note: The deduplication functionality is tested by the two tests above.
+	// Additional integration testing would require more complex mock setup
+	// that may be brittle. The core functionality is verified by the
+	// content hash and resolved path deduplication tests.
+})
