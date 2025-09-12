@@ -37,7 +37,7 @@ export const ReasoningBlock = ({ content, isStreaming, isLast }: ReasoningBlockP
 	const secondsLabel = t("chat:reasoning.seconds", { count: seconds })
 
 	return (
-		<div className="border-l border-vscode-descriptionForeground/20 ml-2 pl-4 pb-1 text-vscode-descriptionForeground">
+		<div>
 			<div className="flex items-center justify-between mb-2.5 pr-2">
 				<div className="flex items-center gap-2">
 					<Bot className="w-4" />
@@ -51,7 +51,7 @@ export const ReasoningBlock = ({ content, isStreaming, isLast }: ReasoningBlockP
 				)}
 			</div>
 			{(content?.trim()?.length ?? 0) > 0 && (
-				<div>
+				<div className="border-l border-vscode-descriptionForeground/20 ml-2 pl-4 pb-1 text-vscode-descriptionForeground">
 					<MarkdownBlock markdown={content} />
 				</div>
 			)}
