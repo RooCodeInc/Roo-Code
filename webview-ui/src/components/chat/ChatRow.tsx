@@ -2,7 +2,7 @@ import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from "
 import { useSize } from "react-use"
 import { useTranslation, Trans } from "react-i18next"
 import deepEqual from "fast-deep-equal"
-import { VSCodeBadge, VSCodeButton } from "@vscode/webview-ui-toolkit/react"
+import { VSCodeBadge } from "@vscode/webview-ui-toolkit/react"
 
 import type { ClineMessage, FollowUpData, SuggestionItem } from "@roo-code/types"
 import { Mode } from "@roo/modes"
@@ -11,22 +11,20 @@ import { ClineApiReqInfo, ClineAskUseMcpServer, ClineSayTool } from "@roo/Extens
 import { COMMAND_OUTPUT_STRING } from "@roo/combineCommandSequences"
 import { safeJsonParse } from "@roo/safeJsonParse"
 
-import { useCopyToClipboard } from "@src/utils/clipboard"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
 import { findMatchingResourceOrTemplate } from "@src/utils/mcp"
 import { vscode } from "@src/utils/vscode"
 import { removeLeadingNonAlphanumeric } from "@src/utils/removeLeadingNonAlphanumeric"
 import { getLanguageFromPath } from "@src/utils/getLanguageFromPath"
-import { Button } from "@src/components/ui"
 
 import { ToolUseBlock, ToolUseBlockHeader } from "../common/ToolUseBlock"
 import UpdateTodoListToolBlock from "./UpdateTodoListToolBlock"
 import CodeAccordian from "../common/CodeAccordian"
-import CodeBlock from "../common/CodeBlock"
 import MarkdownBlock from "../common/MarkdownBlock"
 import { ReasoningBlock } from "./ReasoningBlock"
 import Thumbnails from "../common/Thumbnails"
 import ImageBlock from "../common/ImageBlock"
+import ErrorRow from "./ErrorRow"
 
 import McpResourceRow from "../mcp/McpResourceRow"
 
@@ -47,7 +45,8 @@ import { McpExecution } from "./McpExecution"
 import { ChatTextArea } from "./ChatTextArea"
 import { MAX_IMAGES_PER_MESSAGE } from "./ChatView"
 import { useSelectedModel } from "../ui/hooks/useSelectedModel"
-import { ChevronRight, ChevronDown, Eye, FileDiff, ListTree } from "lucide-react"
+import { ChevronRight, ChevronDown, Eye, FileDiff, ListTree, User, Edit, Trash2 } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 interface ChatRowProps {
 	message: ClineMessage
@@ -119,13 +118,10 @@ export const ChatRowContent = ({
 
 	const { mcpServers, alwaysAllowMcp, currentCheckpoint, mode, apiConfiguration } = useExtensionState()
 	const { info: model } = useSelectedModel(apiConfiguration)
-	const [isDiffErrorExpanded, setIsDiffErrorExpanded] = useState(false)
-	const [showCopySuccess, setShowCopySuccess] = useState(false)
 	const [isEditing, setIsEditing] = useState(false)
 	const [editedContent, setEditedContent] = useState("")
 	const [editMode, setEditMode] = useState<Mode>(mode || "code")
 	const [editImages, setEditImages] = useState<string[]>([])
-	const { copyWithFeedback } = useCopyToClipboard()
 
 	// Handle message events for image selection during edit mode
 	useEffect(() => {
@@ -212,19 +208,8 @@ export const ChatRowContent = ({
 	const [icon, title] = useMemo(() => {
 		switch (type) {
 			case "error":
-				return [
-					<span
-						className="codicon codicon-error"
-						style={{ color: errorColor, marginBottom: "-1.5px" }}></span>,
-					<span style={{ color: errorColor, fontWeight: "bold" }}>{t("chat:error")}</span>,
-				]
 			case "mistake_limit_reached":
-				return [
-					<span
-						className="codicon codicon-error"
-						style={{ color: errorColor, marginBottom: "-1.5px" }}></span>,
-					<span style={{ color: errorColor, fontWeight: "bold" }}>{t("chat:troubleMessage")}</span>,
-				]
+				return [null, null] // These will be handled by ErrorRow component
 			case "command":
 				return [
 					isCommandExecuting ? (
@@ -345,13 +330,6 @@ export const ChatRowContent = ({
 		gap: "10px",
 		marginBottom: "10px",
 		wordBreak: "break-word",
-	}
-
-	const pStyle: React.CSSProperties = {
-		margin: 0,
-		whiteSpace: "pre-wrap",
-		wordBreak: "break-word",
-		overflowWrap: "anywhere",
 	}
 
 	const tool = useMemo(
@@ -997,92 +975,12 @@ export const ChatRowContent = ({
 			switch (message.say) {
 				case "diff_error":
 					return (
-						<div>
-							<div
-								style={{
-									marginTop: "0px",
-									overflow: "hidden",
-									marginBottom: "8px",
-								}}>
-								<div
-									style={{
-										borderBottom: isDiffErrorExpanded
-											? "1px solid var(--vscode-editorGroup-border)"
-											: "none",
-										fontWeight: "normal",
-										fontSize: "var(--vscode-font-size)",
-										color: "var(--vscode-editor-foreground)",
-										display: "flex",
-										alignItems: "center",
-										justifyContent: "space-between",
-										cursor: "pointer",
-									}}
-									onClick={() => setIsDiffErrorExpanded(!isDiffErrorExpanded)}>
-									<div
-										style={{
-											display: "flex",
-											alignItems: "center",
-											gap: "10px",
-											flexGrow: 1,
-										}}>
-										<span
-											className="codicon codicon-warning"
-											style={{
-												color: "var(--vscode-editorWarning-foreground)",
-												opacity: 0.8,
-												fontSize: 16,
-												marginBottom: "-1.5px",
-											}}></span>
-										<span style={{ fontWeight: "bold" }}>{t("chat:diffError.title")}</span>
-									</div>
-									<div style={{ display: "flex", alignItems: "center" }}>
-										<VSCodeButton
-											appearance="icon"
-											style={{
-												padding: "3px",
-												height: "24px",
-												marginRight: "4px",
-												color: "var(--vscode-editor-foreground)",
-												display: "flex",
-												alignItems: "center",
-												justifyContent: "center",
-												background: "transparent",
-											}}
-											onClick={(e) => {
-												e.stopPropagation()
-
-												// Call copyWithFeedback and handle the Promise
-												copyWithFeedback(message.text || "").then((success) => {
-													if (success) {
-														// Show checkmark
-														setShowCopySuccess(true)
-
-														// Reset after a brief delay
-														setTimeout(() => {
-															setShowCopySuccess(false)
-														}, 1000)
-													}
-												})
-											}}>
-											<span
-												className={`codicon codicon-${showCopySuccess ? "check" : "copy"}`}></span>
-										</VSCodeButton>
-										<span
-											className={`codicon codicon-chevron-${isDiffErrorExpanded ? "up" : "down"}`}></span>
-									</div>
-								</div>
-								{isDiffErrorExpanded && (
-									<div
-										style={{
-											padding: "8px",
-											backgroundColor: "var(--vscode-editor-background)",
-											borderTop: "none",
-										}}>
-										<CodeBlock source={message.text || ""} language="xml" />
-									</div>
-								)}
-							</div>
-						</div>
+						<ErrorRow
+							type="diff_error"
+							message={message.text || ""}
+							expandable={true}
+							showCopyButton={true}
+						/>
 					)
 				case "subtask_result":
 					return (
@@ -1172,10 +1070,11 @@ export const ChatRowContent = ({
 							</div>
 							{(((cost === null || cost === undefined) && apiRequestFailedMessage) ||
 								apiReqStreamingFailedMessage) && (
-								<>
-									<p style={{ ...pStyle, color: "var(--vscode-errorForeground)" }}>
-										{apiRequestFailedMessage || apiReqStreamingFailedMessage}
-										{apiRequestFailedMessage?.toLowerCase().includes("powershell") && (
+								<ErrorRow
+									type="api_failure"
+									message={apiRequestFailedMessage || apiReqStreamingFailedMessage || ""}
+									additionalContent={
+										apiRequestFailedMessage?.toLowerCase().includes("powershell") ? (
 											<>
 												<br />
 												<br />
@@ -1187,9 +1086,9 @@ export const ChatRowContent = ({
 												</a>
 												.
 											</>
-										)}
-									</p>
-								</>
+										) : undefined
+									}
+								/>
 							)}
 
 							{isExpanded && (
@@ -1221,70 +1120,77 @@ export const ChatRowContent = ({
 					)
 				case "user_feedback":
 					return (
-						<div
-							className={`bg-vscode-editor-background border rounded-xs overflow-hidden whitespace-pre-wrap ${isEditing ? "p-0" : "p-1"}`}>
-							{isEditing ? (
-								<div className="flex flex-col gap-2">
-									<ChatTextArea
-										inputValue={editedContent}
-										setInputValue={setEditedContent}
-										sendingDisabled={false}
-										selectApiConfigDisabled={true}
-										placeholderText={t("chat:editMessage.placeholder")}
-										selectedImages={editImages}
-										setSelectedImages={setEditImages}
-										onSend={handleSaveEdit}
-										onSelectImages={handleSelectImages}
-										shouldDisableImages={!model?.supportsImages}
-										mode={editMode}
-										setMode={setEditMode}
-										modeShortcutText=""
-										isEditMode={true}
-										onCancel={handleCancelEdit}
-									/>
-								</div>
-							) : (
-								<div className="flex justify-between">
-									<div
-										className="flex-grow px-2 py-1 wrap-anywhere cursor-pointer hover:bg-vscode-list-hoverBackground rounded transition-colors"
-										onClick={(e) => {
-											e.stopPropagation()
-											if (!isStreaming) {
-												handleEditClick()
-											}
-										}}
-										title={t("chat:queuedMessages.clickToEdit")}>
-										<Mention text={message.text} withShadow />
+						<div className="group">
+							<div style={headerStyle}>
+								<User className="w-4" />
+								<span style={{ fontWeight: "bold" }}>{t("chat:feedback.youSaid")}</span>
+							</div>
+							<div
+								className={cn(
+									"ml-6 border rounded-sm overflow-hidden whitespace-pre-wrap",
+									isEditing
+										? "bg-vscode-editor-background text-vscode-editor-foreground"
+										: "cursor-text p-1 bg-vscode-editor-foreground text-vscode-editor-background",
+								)}>
+								{isEditing ? (
+									<div className="flex flex-col gap-2">
+										<ChatTextArea
+											inputValue={editedContent}
+											setInputValue={setEditedContent}
+											sendingDisabled={false}
+											selectApiConfigDisabled={true}
+											placeholderText={t("chat:editMessage.placeholder")}
+											selectedImages={editImages}
+											setSelectedImages={setEditImages}
+											onSend={handleSaveEdit}
+											onSelectImages={handleSelectImages}
+											shouldDisableImages={!model?.supportsImages}
+											mode={editMode}
+											setMode={setEditMode}
+											modeShortcutText=""
+											isEditMode={true}
+											onCancel={handleCancelEdit}
+										/>
 									</div>
-									<div className="flex">
-										<Button
-											variant="ghost"
-											size="icon"
-											className="shrink-0"
-											disabled={isStreaming}
+								) : (
+									<div className="flex justify-between">
+										<div
+											className="flex-grow px-2 py-1 wrap-anywhere rounded-lg transition-colors"
 											onClick={(e) => {
 												e.stopPropagation()
-												handleEditClick()
-											}}>
-											<span className="codicon codicon-edit" />
-										</Button>
-										<Button
-											variant="ghost"
-											size="icon"
-											className="shrink-0"
-											disabled={isStreaming}
-											onClick={(e) => {
-												e.stopPropagation()
-												vscode.postMessage({ type: "deleteMessage", value: message.ts })
-											}}>
-											<span className="codicon codicon-trash" />
-										</Button>
+												if (!isStreaming) {
+													handleEditClick()
+												}
+											}}
+											title={t("chat:queuedMessages.clickToEdit")}>
+											<Mention text={message.text} withShadow />
+										</div>
+										<div className="flex gap-2 pr-1">
+											<div
+												className="cursor-pointer shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+												style={{ visibility: isStreaming ? "hidden" : "visible" }}
+												onClick={(e) => {
+													e.stopPropagation()
+													handleEditClick()
+												}}>
+												<Edit className="w-4" />
+											</div>
+											<div
+												className="cursor-pointer shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+												style={{ visibility: isStreaming ? "hidden" : "visible" }}
+												onClick={(e) => {
+													e.stopPropagation()
+													vscode.postMessage({ type: "deleteMessage", value: message.ts })
+												}}>
+												<Trash2 className="w-4" />
+											</div>
+										</div>
 									</div>
-								</div>
-							)}
-							{!isEditing && message.images && message.images.length > 0 && (
-								<Thumbnails images={message.images} style={{ marginTop: "8px" }} />
-							)}
+								)}
+								{!isEditing && message.images && message.images.length > 0 && (
+									<Thumbnails images={message.images} style={{ marginTop: "8px" }} />
+								)}
+							</div>
 						</div>
 					)
 				case "user_feedback_diff":
@@ -1301,17 +1207,7 @@ export const ChatRowContent = ({
 						</div>
 					)
 				case "error":
-					return (
-						<>
-							{title && (
-								<div style={headerStyle}>
-									{icon}
-									{title}
-								</div>
-							)}
-							<p style={{ ...pStyle, color: "var(--vscode-errorForeground)" }}>{message.text}</p>
-						</>
-					)
+					return <ErrorRow type="error" message={message.text || ""} />
 				case "completion_result":
 					return (
 						<>
@@ -1482,15 +1378,7 @@ export const ChatRowContent = ({
 		case "ask":
 			switch (message.ask) {
 				case "mistake_limit_reached":
-					return (
-						<>
-							<div style={headerStyle}>
-								{icon}
-								{title}
-							</div>
-							<p style={{ ...pStyle, color: "var(--vscode-errorForeground)" }}>{message.text}</p>
-						</>
-					)
+					return <ErrorRow type="mistake_limit" message={message.text || ""} />
 				case "command":
 					return (
 						<CommandExecution
