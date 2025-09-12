@@ -133,6 +133,7 @@ const StyledMarkdown = styled.div`
 	div:has(> pre) {
 		position: relative;
 		contain: layout style;
+		padding: 0.5em 1em;
 	}
 
 	a {
@@ -143,6 +144,17 @@ const StyledMarkdown = styled.div`
 			color: var(--vscode-textLink-activeForeground);
 			text-decoration: underline;
 		}
+	}
+
+	h2 {
+		font-size: 1.35em;
+		font-weight: 500;
+		margin: 1.35em 0 0.5em;
+	}
+
+	h3 {
+		font-size: 1.2em;
+		font-weight: 500;
 	}
 
 	/* Table styles for remark-gfm */
