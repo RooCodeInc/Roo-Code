@@ -129,7 +129,7 @@ export async function readFileTool(
 		// Parse file entries from XML (new multi-file format)
 		try {
 			let files: any[] = []
-			if (argsXmlTag) {
+			if (argsXmlTag && !block.toolUseId) {
 				const parsed = parseXml(argsXmlTag) as any
 				files = Array.isArray(parsed.file) ? parsed.file : [parsed.file].filter(Boolean)
 			} else {
