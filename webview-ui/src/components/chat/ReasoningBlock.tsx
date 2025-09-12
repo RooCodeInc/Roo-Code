@@ -51,7 +51,7 @@ export const ReasoningBlock = ({ content, isStreaming, isLast }: ReasoningBlockP
 				)}
 			</div>
 			{(content?.trim()?.length ?? 0) > 0 && (
-				<div className="px-3 italic text-vscode-descriptionForeground">
+				<div className="border-l border-vscode-descriptionForeground/20 ml-2 pl-4 pb-1 text-vscode-descriptionForeground">
 					<MarkdownBlock markdown={content} />
 				</div>
 			)}
