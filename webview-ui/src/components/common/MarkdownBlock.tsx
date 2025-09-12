@@ -92,6 +92,10 @@ const StyledMarkdown = styled.div`
 		line-height: 1.35em;
 	}
 
+	li {
+		margin: 0.5em 0;
+	}
+
 	ol,
 	ul {
 		padding-left: 2em;
@@ -116,11 +120,7 @@ const StyledMarkdown = styled.div`
 
 	p {
 		white-space: pre-wrap;
-		margin: 1em 0;
-	}
-
-	p + ul {
-		margin-top: -0.75em;
+		margin: 1em 0 0.25em;
 	}
 
 	/* Prevent layout shifts during streaming */
@@ -137,13 +137,11 @@ const StyledMarkdown = styled.div`
 
 	a {
 		color: var(--vscode-textLink-foreground);
-		text-decoration-line: underline;
-		text-decoration-style: dotted;
+		text-decoration: none;
 		text-decoration-color: var(--vscode-textLink-foreground);
 		&:hover {
 			color: var(--vscode-textLink-activeForeground);
-			text-decoration-style: solid;
-			text-decoration-color: var(--vscode-textLink-activeForeground);
+			text-decoration: underline;
 		}
 	}
 
