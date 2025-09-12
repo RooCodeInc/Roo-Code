@@ -1,5 +1,5 @@
-import { useEffect, useRef } from "react"
-import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
+import { useEffect, useRef, useState } from "react"
+import { VSCodeButton, VSCodeProgressRing, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 
 import { type CloudUserInfo, TelemetryEventName } from "@roo-code/types"
 
@@ -8,8 +8,9 @@ import { useExtensionState } from "@src/context/ExtensionStateContext"
 import { vscode } from "@src/utils/vscode"
 import { telemetryClient } from "@src/utils/TelemetryClient"
 import { ToggleSwitch } from "@/components/ui/toggle-switch"
-
-import { History, PiggyBank, SquareArrowOutUpRightIcon } from "lucide-react"
+import { renderCloudBenefitsContent } from "./CloudUpsellDialog"
+import { TriangleAlert } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 // Define the production URL constant locally to avoid importing from cloud package in tests
 const PRODUCTION_ROO_CODE_API_URL = "https://app.roocode.com"
@@ -23,15 +24,32 @@ type CloudViewProps = {
 
 export const CloudView = ({ userInfo, isAuthenticated, cloudApiUrl, onDone }: CloudViewProps) => {
 	const { t } = useAppTranslation()
-	const { remoteControlEnabled, setRemoteControlEnabled } = useExtensionState()
+	const {
+		remoteControlEnabled,
+		setRemoteControlEnabled,
+		taskSyncEnabled,
+		setTaskSyncEnabled,
+		featureRoomoteControlEnabled,
+	} = useExtensionState()
 	const wasAuthenticatedRef = useRef(false)
-
-	const rooLogoUri = (window as any).IMAGES_BASE_URI + "/roo-logo.svg"
+	const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+	const manualUrlInputRef = useRef<HTMLInputElement | null>(null)
+	// Manual URL entry state
+	const [authInProgress, setAuthInProgress] = useState(false)
+	const [showManualEntry, setShowManualEntry] = useState(false)
+	const [manualUrl, setManualUrl] = useState("")
 
 	// Track authentication state changes to detect successful logout
 	useEffect(() => {
 		if (isAuthenticated) {
 			wasAuthenticatedRef.current = true
+			// Clear auth in progress state when authentication succeeds
+			setAuthInProgress(false)
+			setShowManualEntry(false)
+			if (timeoutRef.current) {
+				clearTimeout(timeoutRef.current)
+				timeoutRef.current = null
+			}
 		} else if (wasAuthenticatedRef.current && !isAuthenticated) {
 			// User just logged out successfully
 			// NOTE: Telemetry events use ACCOUNT_* naming for continuity with existing analytics
@@ -41,11 +59,64 @@ export const CloudView = ({ userInfo, isAuthenticated, cloudApiUrl, onDone }: Cl
 		}
 	}, [isAuthenticated])
 
+	// Focus the manual URL input when it becomes visible
+	useEffect(() => {
+		if (showManualEntry && manualUrlInputRef.current) {
+			// Small delay to ensure the DOM is ready
+			setTimeout(() => {
+				manualUrlInputRef.current?.focus()
+			}, 50)
+		}
+	}, [showManualEntry])
+
+	// Cleanup timeout on unmount
+	useEffect(() => {
+		return () => {
+			if (timeoutRef.current) {
+				clearTimeout(timeoutRef.current)
+			}
+		}
+	}, [])
+
 	const handleConnectClick = () => {
 		// Send telemetry for cloud connect action
 		// NOTE: Using ACCOUNT_* telemetry events for backward compatibility with analytics
 		telemetryClient.capture(TelemetryEventName.ACCOUNT_CONNECT_CLICKED)
 		vscode.postMessage({ type: "rooCloudSignIn" })
+
+		// Start auth in progress state - show "Having trouble?" immediately for debugging
+		setAuthInProgress(true)
+	}
+
+	const handleManualUrlChange = (e: any) => {
+		const url = e.target.value
+		setManualUrl(url)
+
+		// Auto-trigger authentication when a complete URL is pasted (with slight delay to ensure full paste is processed)
+		setTimeout(() => {
+			if (url.trim() && url.includes("://") && url.includes("/auth/clerk/callback")) {
+				vscode.postMessage({ type: "rooCloudManualUrl", text: url.trim() })
+			}
+		}, 100)
+	}
+
+	const handleKeyDown = (e: any) => {
+		if (e.key === "Enter") {
+			const url = manualUrl.trim()
+			if (url && url.includes("://") && url.includes("/auth/clerk/callback")) {
+				vscode.postMessage({ type: "rooCloudManualUrl", text: url })
+			}
+		}
+	}
+
+	const handleShowManualEntry = () => {
+		setShowManualEntry(true)
+	}
+
+	const handleReset = () => {
+		setAuthInProgress(false)
+		setShowManualEntry(false)
+		setManualUrl("")
 	}
 
 	const handleLogoutClick = () => {
@@ -75,10 +146,16 @@ export const CloudView = ({ userInfo, isAuthenticated, cloudApiUrl, onDone }: Cl
 		vscode.postMessage({ type: "remoteControlEnabled", bool: newValue })
 	}
 
+	const handleTaskSyncToggle = () => {
+		const newValue = !taskSyncEnabled
+		setTaskSyncEnabled(newValue)
+		vscode.postMessage({ type: "taskSyncEnabled", bool: newValue })
+	}
+
 	return (
 		<div className="flex flex-col h-full">
 			<div className="flex justify-between items-center mb-6">
-				<h1 className="text-xl font-medium text-vscode-foreground">{t("cloud:title")}</h1>
+				<h1 className="text-xl font-medium text-vscode-foreground">{isAuthenticated && t("cloud:title")}</h1>
 				<VSCodeButton appearance="secondary" onClick={onDone}>
 					{t("settings:common.done")}
 				</VSCodeButton>
@@ -121,24 +198,62 @@ export const CloudView = ({ userInfo, isAuthenticated, cloudApiUrl, onDone }: Cl
 						</div>
 					)}
 
-					{userInfo?.extensionBridgeEnabled && (
-						<div className="border-t border-vscode-widget-border pt-4 mt-4">
-							<div className="flex items-center gap-3 mb-2">
-								<ToggleSwitch
-									checked={remoteControlEnabled}
-									onChange={handleRemoteControlToggle}
-									size="medium"
-									aria-label={t("cloud:remoteControl")}
-									data-testid="remote-control-toggle"
-								/>
-								<span className="font-medium text-vscode-foreground">{t("cloud:remoteControl")}</span>
-							</div>
-							<div className="text-vscode-descriptionForeground text-sm mt-1 mb-4 ml-8">
-								{t("cloud:remoteControlDescription")}
-							</div>
-							<hr className="border-vscode-widget-border mb-4" />
+					{/* Task Sync Toggle - Always shown when authenticated */}
+					<div className="border-t border-vscode-widget-border pt-4 mt-4">
+						<div className="flex items-center gap-3 mb-2">
+							<ToggleSwitch
+								checked={taskSyncEnabled}
+								onChange={handleTaskSyncToggle}
+								size="medium"
+								aria-label={t("cloud:taskSync")}
+								data-testid="task-sync-toggle"
+								disabled={!!userInfo?.organizationId}
+							/>
+							<span className="font-medium text-vscode-foreground">{t("cloud:taskSync")}</span>
 						</div>
-					)}
+						<div className="text-vscode-descriptionForeground text-sm mt-1 mb-4 ml-8">
+							{t("cloud:taskSyncDescription")}
+						</div>
+						{userInfo?.organizationId && (
+							<div className="text-vscode-descriptionForeground text-sm mt-1 mb-4 ml-8 italic">
+								{t("cloud:taskSyncManagedByOrganization")}
+							</div>
+						)}
+
+						{/* Remote Control Toggle - Only shown when both extensionBridgeEnabled and featureRoomoteControlEnabled are true */}
+						{userInfo?.extensionBridgeEnabled && featureRoomoteControlEnabled && (
+							<>
+								<div className="flex items-center gap-3 mb-2">
+									<ToggleSwitch
+										checked={remoteControlEnabled}
+										onChange={handleRemoteControlToggle}
+										size="medium"
+										aria-label={t("cloud:remoteControl")}
+										data-testid="remote-control-toggle"
+										disabled={!taskSyncEnabled}
+									/>
+									<span className="font-medium text-vscode-foreground">
+										{t("cloud:remoteControl")}
+									</span>
+								</div>
+								<div className="text-vscode-descriptionForeground text-sm mt-1 mb-4 ml-8">
+									{t("cloud:remoteControlDescription")}
+									{!taskSyncEnabled && (
+										<div className="text-vscode-errorForeground mt-2">
+											{t("cloud:remoteControlRequiresTaskSync")}
+										</div>
+									)}
+								</div>
+							</>
+						)}
+
+						{/* Info text about usage metrics */}
+						<div className="text-vscode-descriptionForeground text-sm mt-4 mb-4 ml-8 italic">
+							{t("cloud:usageMetricsAlwaysReported")}
+						</div>
+
+						<hr className="border-vscode-widget-border mb-4" />
+					</div>
 
 					<div className="flex flex-col gap-2 mt-4">
 						<VSCodeButton appearance="secondary" onClick={handleVisitCloudWebsite} className="w-full">
@@ -151,53 +266,64 @@ export const CloudView = ({ userInfo, isAuthenticated, cloudApiUrl, onDone }: Cl
 				</>
 			) : (
 				<>
-					<div className="flex flex-col items-center mb-1 text-center">
-						<div className="w-16 h-16 mb-1 flex items-center justify-center">
-							<div
-								className="w-12 h-12 bg-vscode-foreground"
-								style={{
-									WebkitMaskImage: `url('${rooLogoUri}')`,
-									WebkitMaskRepeat: "no-repeat",
-									WebkitMaskSize: "contain",
-									maskImage: `url('${rooLogoUri}')`,
-									maskRepeat: "no-repeat",
-									maskSize: "contain",
-								}}>
-								<img src={rooLogoUri} alt="Roo logo" className="w-12 h-12 opacity-0" />
+					<div className="flex flex-col items-start gap-4 px-8">
+						<div className={cn(authInProgress && "opacity-50")}>{renderCloudBenefitsContent(t)}</div>
+
+						{!authInProgress && (
+							<VSCodeButton appearance="primary" onClick={handleConnectClick} className="w-full">
+								{t("cloud:connect")}
+							</VSCodeButton>
+						)}
+
+						{/* Manual entry section */}
+						{authInProgress && !showManualEntry && (
+							// Timeout message with "Having trouble?" link
+							<div className="flex flex-col items-start gap-1">
+								<div className="flex items-center gap-2 text-base text-vscode-descriptionForeground">
+									<VSCodeProgressRing className="size-3 text-vscode-foreground" />
+									{t("cloud:authWaiting")}
+								</div>
+								{!showManualEntry && (
+									<button
+										onClick={handleShowManualEntry}
+										className="text-base ml-5 text-vscode-textLink-foreground hover:text-vscode-textLink-activeForeground underline cursor-pointer bg-transparent border-none p-0">
+										{t("cloud:havingTrouble")}
+									</button>
+								)}
 							</div>
-						</div>
-					</div>
+						)}
 
-					<div className="flex flex-col mb-6 text-center">
-						<h2 className="text-xl font-bold text-vscode-foreground mb-2">
-							{t("cloud:cloudBenefitsTitle")}
-						</h2>
-						<ul className="text-vscode-descriptionForeground space-y-3 mx-auto px-8">
-							<li className="flex items-start text-left gap-4">
-								<SquareArrowOutUpRightIcon size="16" className="shrink-0" />
-								{t("cloud:cloudBenefitSharing")}
-							</li>
-							<li className="flex items-start text-left gap-4">
-								<History size="16" className="shrink-0" />
-								{t("cloud:cloudBenefitHistory")}
-							</li>
-							<li className="flex items-start text-left gap-4">
-								<PiggyBank size="16" className="shrink-0" />
-								{t("cloud:cloudBenefitMetrics")}
-							</li>
-						</ul>
-					</div>
-
-					<div className="flex flex-col items-center gap-4">
-						<VSCodeButton appearance="primary" onClick={handleConnectClick} className="w-1/2">
-							{t("cloud:connect")}
-						</VSCodeButton>
+						{showManualEntry && (
+							// Manual URL entry form
+							<div className="space-y-2 max-w-72">
+								<p className="text-base text-vscode-descriptionForeground">
+									{t("cloud:pasteCallbackUrl")}
+								</p>
+								<VSCodeTextField
+									ref={manualUrlInputRef as any}
+									value={manualUrl}
+									onChange={handleManualUrlChange}
+									onKeyDown={handleKeyDown}
+									placeholder="vscode://RooVeterinaryInc.roo-cline/auth/clerk/callback?state=..."
+									className="w-full"
+								/>
+								<p className="mt-1">
+									or{" "}
+									<button
+										onClick={handleReset}
+										className="text-base text-vscode-textLink-foreground hover:text-vscode-textLink-activeForeground underline cursor-pointer bg-transparent border-none p-0">
+										{t("cloud:startOver")}
+									</button>
+								</p>
+							</div>
+						)}
 					</div>
 				</>
 			)}
 			{cloudApiUrl && cloudApiUrl !== PRODUCTION_ROO_CODE_API_URL && (
-				<div className="mt-6 flex justify-center">
-					<div className="inline-flex items-center px-3 py-1 gap-1 rounded-full bg-vscode-badge-background/50 text-vscode-badge-foreground text-xs">
+				<div className="ml-8 mt-6 flex justify-start">
+					<div className="inline-flex items-center gap-2 text-xs">
+						<TriangleAlert className="size-4 text-vscode-descriptionForeground" />
 						<span className="text-vscode-foreground/75">{t("cloud:cloudUrlPillLabel")}: </span>
 						<button
 							onClick={handleOpenCloudUrl}
