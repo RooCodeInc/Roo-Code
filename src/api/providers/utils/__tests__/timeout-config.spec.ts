@@ -41,20 +41,20 @@ describe("getApiRequestTimeout", () => {
 		expect(timeout).toBe(1200000) // 1200 seconds in milliseconds
 	})
 
-	it("should handle zero timeout (no timeout)", () => {
+	it("should handle zero timeout (no timeout) by returning safe maximum", () => {
 		mockGetConfig.mockReturnValue(0)
 
 		const timeout = getApiRequestTimeout()
 
-		expect(timeout).toBe(0) // No timeout
+		expect(timeout).toBe(2147483647) // Safe maximum for setTimeout
 	})
 
-	it("should handle negative values by clamping to 0", () => {
+	it("should handle negative values by clamping to safe maximum", () => {
 		mockGetConfig.mockReturnValue(-100)
 
 		const timeout = getApiRequestTimeout()
 
-		expect(timeout).toBe(0) // Negative values should be clamped to 0
+		expect(timeout).toBe(2147483647) // Negative values should be clamped to 0, then converted to safe maximum
 	})
 
 	it("should handle null by using default", () => {

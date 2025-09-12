@@ -3,7 +3,7 @@ import * as vscode from "vscode"
 /**
  * Gets the API request timeout from VSCode configuration with validation.
  *
- * @returns The timeout in milliseconds. Returns 0 for no timeout.
+ * @returns The timeout in milliseconds. Returns 2147483647 for no timeout (when config is 0).
  */
 export function getApiRequestTimeout(): number {
 	// Get timeout with validation to ensure it's a valid non-negative number
@@ -17,5 +17,17 @@ export function getApiRequestTimeout(): number {
 	// Allow 0 (no timeout) but clamp negative values to 0
 	const timeoutSeconds = configTimeout < 0 ? 0 : configTimeout
 
-	return timeoutSeconds * 1000 // Convert to milliseconds
+	// Convert to milliseconds
+	const timeoutMs = timeoutSeconds * 1000
+
+	// Handle the special case where 0 means "no timeout"
+	// Use 2147483647 (2^31 - 1) as the maximum timeout value for setTimeout
+	// JavaScript's setTimeout has a maximum delay limit of 2147483647ms (32-bit signed integer max)
+	// Values larger than this may be clamped to 1ms or cause unexpected behavior
+	// 2147483647 is the safe maximum value that won't cause issues
+	if (timeoutMs === 0) {
+		return 2147483647
+	}
+
+	return timeoutMs
 }
