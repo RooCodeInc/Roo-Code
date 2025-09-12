@@ -845,8 +845,19 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			const message = this.messageQueueService.dequeueMessage()
 
 			if (message) {
-				// Fulfill the ask directly to avoid re-queuing via the webview while sending is disabled
-				this.setMessageResponse(message.text, message.images)
+				// Check if this is a tool approval ask that needs to be handled
+				if (
+					type === "tool" ||
+					type === "command" ||
+					type === "browser_action_launch" ||
+					type === "use_mcp_server"
+				) {
+					// For tool approvals, we need to approve first, then send the message if there's text/images
+					this.handleWebviewAskResponse("yesButtonClicked", message.text, message.images)
+				} else {
+					// For other ask types (like followup), fulfill the ask directly
+					this.setMessageResponse(message.text, message.images)
+				}
 			}
 		}
 
