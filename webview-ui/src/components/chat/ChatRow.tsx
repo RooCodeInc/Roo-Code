@@ -1109,6 +1109,46 @@ export const ChatRowContent = ({
 					)
 					const hasTokenData = tokensIn !== undefined || tokensOut !== undefined
 
+					const showPrice = cost !== null && cost !== undefined && cost > 0
+
+					const tooltipContent = (
+						<div className="flex flex-col gap-1">
+							<div className="flex items-center gap-2">
+								<span>{t("chat:task.tokenStats.inputLabel")}</span>
+								<span className="font-mono">{tokenStats.input}</span>
+							</div>
+							<div className="flex items-center gap-2">
+								<span>{t("chat:task.tokenStats.outputLabel")}</span>
+								<span className="font-mono">{tokenStats.output}</span>
+							</div>
+						</div>
+					)
+
+					const titleSpan = (
+						<span
+							className="api-request-text"
+							style={{
+								display: "inline-block",
+								fontWeight: "bold",
+								color: "var(--vscode-foreground)",
+								whiteSpace: "nowrap",
+								overflow: "hidden",
+								textOverflow: "ellipsis",
+								flexShrink: 1,
+								minWidth: 0,
+							}}>
+							{title}
+						</span>
+					)
+
+					const badgeStyle = {
+						opacity: showPrice ? 1 : 0,
+						flexShrink: 0,
+						...(hasTokenData ? { cursor: "default" } : {}),
+					}
+
+					const costBadge = <VSCodeBadge style={badgeStyle}>${Number(cost || 0)?.toFixed(4)}</VSCodeBadge>
+
 					return (
 						<>
 							<div
@@ -1136,54 +1176,24 @@ export const ChatRowContent = ({
 										minWidth: 0,
 									}}>
 									{icon}
-									<span
-										className="api-request-text"
-										style={{
-											display: "inline-block",
-											fontWeight: "bold",
-											color: "var(--vscode-foreground)",
-											whiteSpace: "nowrap",
-											overflow: "hidden",
-											textOverflow: "ellipsis",
-											flexShrink: 1,
-											minWidth: 0,
-										}}>
-										{title}
-									</span>
+									{hasTokenData && !showPrice ? (
+										<StandardTooltip content={tooltipContent} side="top">
+											{titleSpan}
+										</StandardTooltip>
+									) : (
+										titleSpan
+									)}
 									<div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
 										{hasTokenData ? (
-											<StandardTooltip
-												content={
-													<div className="flex flex-col gap-1">
-														<div className="flex items-center gap-2">
-															<span>{t("chat:task.tokenStats.inputLabel")}</span>
-															<span className="font-mono">{tokenStats.input}</span>
-														</div>
-														<div className="flex items-center gap-2">
-															<span>{t("chat:task.tokenStats.outputLabel")}</span>
-															<span className="font-mono">{tokenStats.output}</span>
-														</div>
-													</div>
-												}
-												side="top">
-												<VSCodeBadge
-													style={{
-														opacity:
-															cost !== null && cost !== undefined && cost > 0 ? 1 : 0,
-														flexShrink: 0,
-														cursor: "default",
-													}}>
-													${Number(cost || 0)?.toFixed(4)}
-												</VSCodeBadge>
-											</StandardTooltip>
+											showPrice ? (
+												<StandardTooltip content={tooltipContent} side="top">
+													{costBadge}
+												</StandardTooltip>
+											) : (
+												costBadge
+											)
 										) : (
-											<VSCodeBadge
-												style={{
-													opacity: cost !== null && cost !== undefined && cost > 0 ? 1 : 0,
-													flexShrink: 0,
-												}}>
-												${Number(cost || 0)?.toFixed(4)}
-											</VSCodeBadge>
+											costBadge
 										)}
 									</div>
 								</div>
