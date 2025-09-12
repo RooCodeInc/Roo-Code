@@ -15,6 +15,7 @@ import { Task } from "../../core/task/Task"
 import { DEFAULT_WRITE_DELAY_MS } from "@roo-code/types"
 
 import { DecorationController } from "./DecorationController"
+import { EditorUtils } from "./EditorUtils"
 
 export const DIFF_VIEW_URI_SCHEME = "cline-diff"
 export const DIFF_VIEW_LABEL_CHANGES = "Original ↔ Roo's Changes"
@@ -319,6 +320,9 @@ export class DiffViewProvider {
 
 			// Send the user feedback
 			await task.say("user_feedback_diff", JSON.stringify(say))
+
+			// Open and focus the file, scrolling to the first edited section
+			await EditorUtils.openAndScrollToEdits(cwd, this.relPath, this.userEdits)
 		}
 
 		// Build XML response

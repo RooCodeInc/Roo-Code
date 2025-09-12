@@ -207,4 +207,62 @@ export class EditorUtils {
 			return null
 		}
 	}
+
+	/**
+	 * Opens a file and scrolls to the first edited section when user edits are detected
+	 * @param cwd Current working directory
+	 * @param relPath Relative path to the file
+	 * @param userEdits The diff content showing user edits
+	 */
+	static async openAndScrollToEdits(cwd: string, relPath: string, userEdits: string): Promise<void> {
+		try {
+			const absolutePath = path.resolve(cwd, relPath)
+			const fileUri = vscode.Uri.file(absolutePath)
+
+			// Extract the first changed line number from the diff
+			const firstChangedLine = this.extractFirstChangedLineFromDiff(userEdits)
+
+			// Open the document
+			const document = await vscode.workspace.openTextDocument(fileUri)
+
+			// Show the document with selection at the first changed line
+			const selection =
+				firstChangedLine !== null
+					? new vscode.Selection(Math.max(firstChangedLine - 1, 0), 0, Math.max(firstChangedLine - 1, 0), 0)
+					: undefined
+
+			await vscode.window.showTextDocument(document, {
+				preview: false,
+				selection,
+				viewColumn: vscode.ViewColumn.Active,
+			})
+		} catch (error) {
+			// Log error but don't throw - this is a nice-to-have feature
+			console.warn(`Failed to open and scroll to edits for ${relPath}:`, error)
+		}
+	}
+
+	/**
+	 * Extracts the first line number where changes occur from a unified diff
+	 * @param diffContent The unified diff content
+	 * @returns The first line number where changes occur, or null if no changes found
+	 */
+	static extractFirstChangedLineFromDiff(diffContent: string): number | null {
+		if (!diffContent || diffContent.trim() === "") {
+			return null
+		}
+
+		const lines = diffContent.split("\n")
+
+		for (const line of lines) {
+			// Look for hunk headers like "@@ -1,4 +1,5 @@"
+			const hunkMatch = line.match(/^@@\s+-(\d+)(?:,\d+)?\s+\+(\d+)(?:,\d+)?\s+@@/)
+			if (hunkMatch) {
+				// Return the line number from the new file (the + side)
+				return parseInt(hunkMatch[2], 10)
+			}
+		}
+
+		return null
+	}
 }
