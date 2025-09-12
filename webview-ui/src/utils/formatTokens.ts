@@ -29,7 +29,7 @@ export function formatTokenCount(count: number | undefined): string {
  * @param tokensOut - Output tokens
  * @param cacheReads - Cache read tokens (optional)
  * @param cacheLabel - Localized cache label
- * @returns Formatted string for display
+ * @returns { { input: string; output: string } } An object with formatted input and output token strings.
  */
 export function formatTokenStats(
 	tokensIn?: number,
