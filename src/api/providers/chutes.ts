@@ -29,12 +29,12 @@ export class ChutesHandler extends BaseOpenAiCompatibleProvider<ChutesModelId> {
 	): OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming {
 		const {
 			id: model,
-			info: { maxTokens: max_tokens },
+			info: { maxTokens: max_tokens, topP },
 		} = this.getModel()
 
 		const temperature = this.options.modelTemperature ?? this.getModel().info.temperature
 
-		return {
+		const params: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming = {
 			model,
 			max_tokens,
 			temperature,
@@ -42,6 +42,12 @@ export class ChutesHandler extends BaseOpenAiCompatibleProvider<ChutesModelId> {
 			stream: true,
 			stream_options: { include_usage: true },
 		}
+
+		if (topP !== undefined) {
+			params.top_p = topP
+		}
+
+		return params
 	}
 
 	override async *createMessage(systemPrompt: string, messages: Anthropic.Messages.MessageParam[]): ApiStream {
@@ -84,6 +90,44 @@ export class ChutesHandler extends BaseOpenAiCompatibleProvider<ChutesModelId> {
 			for (const processedChunk of matcher.final()) {
 				yield processedChunk
 			}
+		} else if (model.id === "Qwen/Qwen3-Next-80B-A3B-Thinking") {
+			// Add reasoning support for the new Qwen3-Next-80B-A3B-Thinking model
+			const stream = await this.client.chat.completions.create({
+				...this.getCompletionParams(systemPrompt, messages),
+				messages: [{ role: "user", content: systemPrompt }, ...convertToOpenAiMessages(messages)],
+			})
+
+			const matcher = new XmlMatcher(
+				"think",
+				(chunk) =>
+					({
+						type: chunk.matched ? "reasoning" : "text",
+						text: chunk.data,
+					}) as const,
+			)
+
+			for await (const chunk of stream) {
+				const delta = chunk.choices[0]?.delta
+
+				if (delta?.content) {
+					for (const processedChunk of matcher.update(delta.content)) {
+						yield processedChunk
+					}
+				}
+
+				if (chunk.usage) {
+					yield {
+						type: "usage",
+						inputTokens: chunk.usage.prompt_tokens || 0,
+						outputTokens: chunk.usage.completion_tokens || 0,
+					}
+				}
+			}
+
+			// Process any remaining content
+			for (const processedChunk of matcher.final()) {
+				yield processedChunk
+			}
 		} else {
 			yield* super.createMessage(systemPrompt, messages)
 		}
@@ -92,11 +136,28 @@ export class ChutesHandler extends BaseOpenAiCompatibleProvider<ChutesModelId> {
 	override getModel() {
 		const model = super.getModel()
 		const isDeepSeekR1 = model.id.includes("DeepSeek-R1")
+		const isQwenNextThinking = model.id === "Qwen/Qwen3-Next-80B-A3B-Thinking"
+		const isQwenNextInstruct = model.id === "Qwen/Qwen3-Next-80B-A3B-Instruct"
+
+		let temperature = this.defaultTemperature
+		let topP: number | undefined
+
+		if (isDeepSeekR1) {
+			temperature = DEEP_SEEK_DEFAULT_TEMPERATURE
+		} else if (isQwenNextThinking) {
+			temperature = 0.6
+			topP = 0.95
+		} else if (isQwenNextInstruct) {
+			temperature = 0.7
+			topP = 0.8
+		}
+
 		return {
 			...model,
 			info: {
 				...model.info,
-				temperature: isDeepSeekR1 ? DEEP_SEEK_DEFAULT_TEMPERATURE : this.defaultTemperature,
+				temperature,
+				...(topP !== undefined && { topP }),
 			},
 		}
 	}
