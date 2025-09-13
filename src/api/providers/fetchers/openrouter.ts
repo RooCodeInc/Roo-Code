@@ -263,5 +263,13 @@ export const parseOpenRouterModel = ({
 		modelInfo.maxTokens = 32768
 	}
 
+	// Set deepseek-chat-v3.1:free model to correct context size
+	// OpenRouter reports 64k but the actual context is 163.8k tokens
+	if (id === "deepseek/deepseek-chat-v3.1:free") {
+		modelInfo.contextWindow = 163840 // 163.8k tokens
+		// Recalculate maxTokens based on the corrected context window
+		modelInfo.maxTokens = maxTokens || Math.ceil(163840 * 0.2)
+	}
+
 	return modelInfo
 }
