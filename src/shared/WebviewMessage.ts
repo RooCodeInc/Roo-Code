@@ -225,6 +225,7 @@ export interface WebviewMessage {
 		| "editQueuedMessage"
 		| "dismissUpsell"
 		| "getDismissedUpsells"
+		| "applyConfigToAllModes"
 	text?: string
 	editedMessageContent?: string
 	tab?: "settings" | "history" | "mcp" | "modes" | "chat" | "marketplace" | "cloud"
@@ -272,6 +273,7 @@ export interface WebviewMessage {
 	checkOnly?: boolean // For deleteCustomMode check
 	upsellId?: string // For dismissUpsell
 	list?: string[] // For dismissedUpsells response
+	configId?: string // For applyConfigToAllModes
 	codeIndexSettings?: {
 		// Global state settings
 		codebaseIndexEnabled: boolean

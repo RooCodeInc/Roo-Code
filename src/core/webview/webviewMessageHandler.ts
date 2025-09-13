@@ -3038,5 +3038,40 @@ export const webviewMessageHandler = async (
 			})
 			break
 		}
+		case "applyConfigToAllModes": {
+			if (message.configId) {
+				try {
+					// Get all available modes
+					const { modes } = await import("../../shared/modes")
+
+					// Apply the config to all modes
+					for (const mode of modes) {
+						await provider.providerSettingsManager.setModeConfig(mode.slug, message.configId)
+					}
+
+					// Also apply to custom modes
+					const customModes = await provider.customModesManager.getCustomModes()
+					for (const customMode of customModes) {
+						await provider.providerSettingsManager.setModeConfig(customMode.slug, message.configId)
+					}
+
+					// Update the global state with the new mode configs
+					const providerProfiles = await provider.providerSettingsManager.export()
+					await updateGlobalState("modeApiConfigs", providerProfiles.modeApiConfigs)
+
+					// Show success message
+					vscode.window.showInformationMessage(t("common:info.api_config_applied_to_all_modes"))
+
+					// Update the webview state
+					await provider.postStateToWebview()
+				} catch (error) {
+					provider.log(
+						`Error applying config to all modes: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`,
+					)
+					vscode.window.showErrorMessage(t("common:errors.apply_config_to_all_modes_failed"))
+				}
+			}
+			break
+		}
 	}
 }
