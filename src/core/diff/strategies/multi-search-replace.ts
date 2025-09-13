@@ -409,6 +409,10 @@ Only use a single line of '=======' between search and replacement content, beca
 			let { searchContent, replaceContent } = replacement
 			let startLine = replacement.startLine + (replacement.startLine === 0 ? 0 : delta)
 
+			// Store original content for comparison before any transformations
+			const originalSearchContent = searchContent
+			const originalReplaceContent = replaceContent
+
 			// First unescape any escaped markers in the content
 			searchContent = this.unescapeMarkers(searchContent)
 			replaceContent = this.unescapeMarkers(replaceContent)
@@ -428,7 +432,8 @@ Only use a single line of '=======' between search and replacement content, beca
 			}
 
 			// Validate that search and replace content are not identical
-			if (searchContent === replaceContent) {
+			// Compare the original content to preserve HTML entities distinction
+			if (originalSearchContent === originalReplaceContent) {
 				diffResults.push({
 					success: false,
 					error:

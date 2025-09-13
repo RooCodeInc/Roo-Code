@@ -492,6 +492,10 @@ Each file requires its own path, start_line, and diff elements.
 			let { searchContent, replaceContent } = replacement
 			let startLine = replacement.startLine + (replacement.startLine === 0 ? 0 : delta)
 
+			// Store original content for comparison before any transformations
+			const originalSearchContent = searchContent
+			const originalReplaceContent = replaceContent
+
 			// First unescape any escaped markers in the content
 			searchContent = this.unescapeMarkers(searchContent)
 			replaceContent = this.unescapeMarkers(replaceContent)
@@ -511,7 +515,8 @@ Each file requires its own path, start_line, and diff elements.
 			}
 
 			// Validate that search and replace content are not identical
-			if (searchContent === replaceContent) {
+			// Compare the original content to preserve HTML entities distinction
+			if (originalSearchContent === originalReplaceContent) {
 				diffResults.push({
 					success: false,
 					error:
