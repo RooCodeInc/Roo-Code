@@ -11,6 +11,7 @@ import { Button } from "@src/components/ui"
 import CodeBlock from "../common/CodeBlock"
 import McpToolRow from "../mcp/McpToolRow"
 import { Markdown } from "./Markdown"
+import ImageBlock from "../common/ImageBlock"
 
 interface McpExecutionProps {
 	executionId: string
@@ -48,6 +49,7 @@ export const McpExecution = ({
 	const [argumentsText, setArgumentsText] = useState(text || "")
 	const [serverName, setServerName] = useState(initialServerName)
 	const [toolName, setToolName] = useState(initialToolName)
+	const [images, setImages] = useState<string[]>([])
 
 	// Only need expanded state for response section (like command output)
 	const [isResponseExpanded, setIsResponseExpanded] = useState(false)
@@ -142,6 +144,11 @@ export const McpExecution = ({
 								setResponseText((prev) => prev + data.response)
 							} else if (data.status === "completed" && data.response) {
 								setResponseText(data.response)
+							}
+
+							// Handle images if present (only for output, completed, or error status)
+							if ("images" in data && data.images && data.images.length > 0) {
+								setImages(data.images)
 							}
 						}
 					}
@@ -280,6 +287,7 @@ export const McpExecution = ({
 					isJson={responseIsJson}
 					hasArguments={!!(isArguments || useMcpServer?.arguments || argumentsText)}
 					isPartial={status ? status.status !== "completed" : false}
+					images={images}
 				/>
 			</div>
 		</>
@@ -294,12 +302,14 @@ const ResponseContainerInternal = ({
 	isJson,
 	hasArguments,
 	isPartial = false,
+	images = [],
 }: {
 	isExpanded: boolean
 	response: string
 	isJson: boolean
 	hasArguments?: boolean
 	isPartial?: boolean
+	images?: string[]
 }) => {
 	// Only render content when expanded to prevent performance issues with large responses
 	if (!isExpanded || response.length === 0) {
@@ -322,6 +332,13 @@ const ResponseContainerInternal = ({
 				<CodeBlock source={response} language="json" />
 			) : (
 				<Markdown markdown={response} partial={isPartial} />
+			)}
+			{images.length > 0 && (
+				<div className="mt-2 space-y-2">
+					{images.map((image, index) => (
+						<ImageBlock key={index} imageData={image} />
+					))}
+				</div>
 			)}
 		</div>
 	)

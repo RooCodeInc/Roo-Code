@@ -7,7 +7,7 @@ import { ToolUse } from "../../../shared/tools"
 // Mock dependencies
 vi.mock("../../prompts/responses", () => ({
 	formatResponse: {
-		toolResult: vi.fn((result: string) => `Tool result: ${result}`),
+		toolResult: vi.fn((result: string, images?: string[]) => `Tool result: ${result}`),
 		toolError: vi.fn((error: string) => `Tool error: ${error}`),
 		invalidMcpToolArgumentError: vi.fn((server: string, tool: string) => `Invalid args for ${server}:${tool}`),
 		unknownMcpToolError: vi.fn((server: string, tool: string, availableTools: string[]) => {
@@ -209,6 +209,7 @@ describe("useMcpToolTool", () => {
 					callTool: vi.fn().mockResolvedValue(mockToolResult),
 				}),
 				postMessageToWebview: vi.fn(),
+				getValue: vi.fn().mockReturnValue(undefined), // Add getValue mock
 			})
 
 			await useMcpToolTool(
@@ -415,6 +416,7 @@ describe("useMcpToolTool", () => {
 					callTool: vi.fn().mockResolvedValue(mockToolResult),
 				}),
 				postMessageToWebview: vi.fn(),
+				getValue: vi.fn().mockReturnValue(undefined), // Add getValue mock
 			})
 
 			const block: ToolUse = {
