@@ -337,6 +337,36 @@ describe("OpenRouter API", () => {
 			expect(result.contextWindow).toBe(128000)
 		})
 
+		it("sets deepseek-chat-v3.1:free model to 163.8k context window", () => {
+			const mockModel = {
+				name: "DeepSeek Chat V3.1 Free",
+				description: "DeepSeek Chat V3.1 Free model",
+				context_length: 65536, // OpenRouter incorrectly reports 64k
+				max_completion_tokens: null,
+				pricing: {
+					prompt: "0",
+					completion: "0",
+					input_cache_write: undefined,
+					input_cache_read: undefined,
+				},
+			}
+
+			const result = parseOpenRouterModel({
+				id: "deepseek/deepseek-chat-v3.1:free",
+				model: mockModel,
+				inputModality: ["text"],
+				outputModality: ["text"],
+				maxTokens: null,
+				supportedParameters: ["temperature", "top_p", "max_tokens"],
+			})
+
+			// Should override the incorrect 64k context with 163.8k
+			expect(result.contextWindow).toBe(163840)
+			// maxTokens should be recalculated based on corrected context
+			expect(result.maxTokens).toBe(Math.ceil(163840 * 0.2))
+			expect(result.description).toBe("DeepSeek Chat V3.1 Free model")
+		})
+
 		it("filters out image generation models", () => {
 			const mockImageModel = {
 				name: "Image Model",
