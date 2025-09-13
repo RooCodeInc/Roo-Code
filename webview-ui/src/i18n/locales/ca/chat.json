@@ -390,5 +390,15 @@
 	"slashCommand": {
 		"wantsToRun": "Roo vol executar una comanda slash:",
 		"didRun": "Roo ha executat una comanda slash:"
+	},
+	"rateLimit": {
+		"title": "Rate limit triggered — please wait",
+		"pleaseWait": "Please wait while we handle the rate limit...",
+		"retryingIn": "Retrying in {{seconds}} seconds...",
+		"retryingNow": "Retrying now...",
+		"showDetails": "Show error details"
+	},
+	"rateLimitRetry": {
+		"title": "Rate limit triggered — retrying"
 	}
 }

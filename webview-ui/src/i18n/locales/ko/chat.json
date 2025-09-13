@@ -390,5 +390,15 @@
 	"slashCommand": {
 		"wantsToRun": "Roo가 슬래시 명령어를 실행하려고 합니다:",
 		"didRun": "Roo가 슬래시 명령어를 실행했습니다:"
+	},
+	"rateLimit": {
+		"title": "Rate limit triggered — please wait",
+		"pleaseWait": "Please wait while we handle the rate limit...",
+		"retryingIn": "Retrying in {{seconds}} seconds...",
+		"retryingNow": "Retrying now...",
+		"showDetails": "Show error details"
+	},
+	"rateLimitRetry": {
+		"title": "Rate limit triggered — retrying"
 	}
 }
