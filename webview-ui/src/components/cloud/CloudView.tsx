@@ -153,7 +153,7 @@ export const CloudView = ({ userInfo, isAuthenticated, cloudApiUrl, onDone }: Cl
 	}
 
 	return (
-		<div className="flex flex-col h-full">
+		<div className="flex flex-col h-full p-4">
 			<div className="flex justify-between items-center mb-6">
 				<h1 className="text-xl font-medium text-vscode-foreground">{isAuthenticated && t("cloud:title")}</h1>
 				<VSCodeButton appearance="secondary" onClick={onDone}>
