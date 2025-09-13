@@ -1608,5 +1608,76 @@ describe("importExport", () => {
 				"https://custom-api.example.com/v1",
 			)
 		})
+
+		it("should exclude undefined modelMaxTokens and modelMaxThinkingTokens from export", async () => {
+			// This test verifies that undefined max token fields are not included in the export
+			// to prevent them from appearing for models that don't support reasoning budgets
+
+			;(vscode.window.showSaveDialog as Mock).mockResolvedValue({
+				fsPath: "/mock/path/roo-code-settings.json",
+			})
+
+			const mockProviderProfiles = {
+				currentApiConfigName: "test-provider",
+				apiConfigs: {
+					"test-provider": {
+						apiProvider: "openai" as ProviderName,
+						id: "test-id",
+						// modelMaxTokens and modelMaxThinkingTokens are undefined
+						apiKey: "test-key",
+						openAiBaseUrl: "https://api.openai.com/v1",
+					},
+					"anthropic-provider": {
+						apiProvider: "anthropic" as ProviderName,
+						id: "anthropic-id",
+						apiKey: "anthropic-key",
+						modelMaxTokens: 4096, // This one has a value set
+						// modelMaxThinkingTokens is undefined
+					},
+					"reasoning-provider": {
+						apiProvider: "openrouter" as ProviderName,
+						id: "reasoning-id",
+						openRouterApiKey: "reasoning-key",
+						modelMaxTokens: 8192,
+						modelMaxThinkingTokens: 4096, // Both values set for reasoning model
+					},
+				},
+				modeApiConfigs: {},
+			}
+
+			const mockGlobalSettings = {
+				mode: "code",
+				autoApprovalEnabled: true,
+			}
+
+			mockProviderSettingsManager.export.mockResolvedValue(mockProviderProfiles)
+			mockContextProxy.export.mockResolvedValue(mockGlobalSettings)
+			;(fs.mkdir as Mock).mockResolvedValue(undefined)
+
+			await exportSettings({
+				providerSettingsManager: mockProviderSettingsManager,
+				contextProxy: mockContextProxy,
+			})
+
+			// Get the exported data
+			const exportedData = (safeWriteJson as Mock).mock.calls[0][1]
+
+			// Verify that undefined fields are not included in the export
+			const testProvider = exportedData.providerProfiles.apiConfigs["test-provider"]
+			expect(testProvider.apiKey).toBe("test-key")
+			expect(testProvider.openAiBaseUrl).toBe("https://api.openai.com/v1")
+			expect("modelMaxTokens" in testProvider).toBe(false) // Should not be present
+			expect("modelMaxThinkingTokens" in testProvider).toBe(false) // Should not be present
+
+			// Verify that defined modelMaxTokens is included but undefined modelMaxThinkingTokens is not
+			const anthropicProvider = exportedData.providerProfiles.apiConfigs["anthropic-provider"]
+			expect(anthropicProvider.modelMaxTokens).toBe(4096) // Should be present with value
+			expect("modelMaxThinkingTokens" in anthropicProvider).toBe(false) // Should not be present
+
+			// Verify that both fields are included when they have values
+			const reasoningProvider = exportedData.providerProfiles.apiConfigs["reasoning-provider"]
+			expect(reasoningProvider.modelMaxTokens).toBe(8192) // Should be present with value
+			expect(reasoningProvider.modelMaxThinkingTokens).toBe(4096) // Should be present with value
+		})
 	})
 })

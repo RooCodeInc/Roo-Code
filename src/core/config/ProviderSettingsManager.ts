@@ -471,7 +471,21 @@ export class ProviderSettingsManager {
 				const configs = profiles.apiConfigs
 				for (const name in configs) {
 					// Avoid leaking properties from other providers.
-					configs[name] = discriminatedProviderSettingsWithIdSchema.parse(configs[name])
+					let config = discriminatedProviderSettingsWithIdSchema.parse(configs[name])
+
+					// Remove max token fields if they are undefined
+					// These fields should only be included for models that support reasoning budgets
+					// and when the user has explicitly set values
+					// Use type assertion to access these optional fields
+					const configAny = config as any
+					if (configAny.modelMaxTokens === undefined) {
+						delete configAny.modelMaxTokens
+					}
+					if (configAny.modelMaxThinkingTokens === undefined) {
+						delete configAny.modelMaxThinkingTokens
+					}
+
+					configs[name] = config
 				}
 				return profiles
 			})
