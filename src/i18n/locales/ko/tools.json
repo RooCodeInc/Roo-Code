@@ -4,15 +4,135 @@
 		"definitionsOnly": " (정의만)",
 		"maxLines": " (최대 {{max}}행)",
 		"imageTooLarge": "이미지 파일이 너무 큽니다 ({{size}} MB). 최대 허용 크기는 {{max}} MB입니다.",
-		"imageWithSize": "이미지 파일 ({{size}} KB)"
+		"imageWithSize": "이미지 파일 ({{size}} KB)",
+		"errors": {
+			"parseError": "파일 구문 분석 오류",
+			"invalidLineRange": "잘못된 줄 범위",
+			"imageReadError": "이미지 읽기 오류",
+			"fileReadError": "파일 읽기 오류"
+		}
 	},
 	"toolRepetitionLimitReached": "Roo가 같은 동작({{toolName}})을 반복적으로 시도하면서 루프에 갇힌 것 같습니다. 이는 현재 전략에 문제가 있을 수 있음을 나타냅니다. 작업을 다시 표현하거나, 더 구체적인 지침을 제공하거나, 다른 접근 방식으로 안내해 보세요.",
 	"codebaseSearch": {
-		"approval": "코드베이스에서 '{{query}}' 검색 중..."
+		"approval": "코드베이스에서 '{{query}}' 검색 중...",
+		"errors": {
+			"searchError": "코드베이스 검색 오류"
+		}
 	},
 	"newTask": {
 		"errors": {
 			"policy_restriction": "정책 제한으로 인해 새 작업을 생성하지 못했습니다."
+		}
+	},
+	"applyDiff": {
+		"errors": {
+			"fileNotFound": "파일을 찾을 수 없음",
+			"fileDoesNotExist": "파일이 경로에 존재하지 않습니다: {{path}}",
+			"fileDoesNotExistDetails": "지정된 파일을 찾을 수 없습니다. 파일 경로를 확인하고 다시 시도해 주세요.",
+			"applyDiffError": "차이점 적용 오류"
+		}
+	},
+	"insertContent": {
+		"errors": {
+			"invalidLineNumber": "잘못된 줄 번호",
+			"cannotInsertIntoNonExistent": "존재하지 않는 파일의 {{lineNumber}}번째 줄에 내용을 삽입할 수 없습니다. 새 파일의 경우 'line'은 0(끝에 추가) 또는 1(시작 부분에 삽입)이어야 합니다.",
+			"insertContentError": "콘텐츠 삽입 오류"
+		}
+	},
+	"common": {
+		"errors": {
+			"missingParameter": "누락된 매개변수",
+			"missingParameterMessage": "Roo가 필수 매개변수 '{{paramName}}'의 값 없이 {{toolName}}{{relPath}}를 사용하려고 했습니다. 다시 시도 중..."
+		}
+	},
+	"writeToFile": {
+		"errors": {
+			"writeFileError": "파일 쓰기 오류"
+		}
+	},
+	"searchAndReplace": {
+		"errors": {
+			"searchAndReplaceError": "검색 및 바꾸기 오류"
+		}
+	},
+	"listFiles": {
+		"errors": {
+			"listFilesError": "파일 목록 오류"
+		}
+	},
+	"searchFiles": {
+		"errors": {
+			"searchFilesError": "파일 검색 오류"
+		}
+	},
+	"listCodeDefinitionNames": {
+		"errors": {
+			"parseError": "코드 정의 구문 분석 오류"
+		}
+	},
+	"fetchInstructions": {
+		"errors": {
+			"fetchError": "지침 가져오기 오류"
+		}
+	},
+	"updateTodoList": {
+		"errors": {
+			"updateError": "할 일 목록 업데이트 오류"
+		}
+	},
+	"executeCommand": {
+		"errors": {
+			"executeError": "명령 실행 오류"
+		}
+	},
+	"browserAction": {
+		"errors": {
+			"browserError": "브라우저 작업 오류"
+		}
+	},
+	"askFollowupQuestion": {
+		"errors": {
+			"askError": "질문 오류"
+		}
+	},
+	"attemptCompletion": {
+		"errors": {
+			"inspectError": "사이트 검사 오류"
+		}
+	},
+	"runSlashCommand": {
+		"errors": {
+			"runError": "슬래시 명령 실행 오류"
+		}
+	},
+	"generateImage": {
+		"errors": {
+			"generateError": "이미지 생성 오류"
+		}
+	},
+	"newTaskTool": {
+		"errors": {
+			"createError": "새 작업 생성 오류"
+		}
+	},
+	"switchMode": {
+		"errors": {
+			"switchError": "모드 전환 오류"
+		}
+	},
+	"accessMcpResource": {
+		"errors": {
+			"accessError": "MCP 리소스 액세스 오류"
+		}
+	},
+	"useMcpTool": {
+		"errors": {
+			"executeError": "MCP 도구 실행 오류"
+		}
+	},
+	"simpleReadFile": {
+		"errors": {
+			"readError": "파일 읽기 오류"
 		}
 	}
 }

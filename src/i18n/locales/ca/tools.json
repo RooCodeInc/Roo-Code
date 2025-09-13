@@ -4,15 +4,135 @@
 		"definitionsOnly": " (només definicions)",
 		"maxLines": " (màxim {{max}} línies)",
 		"imageTooLarge": "El fitxer d'imatge és massa gran ({{size}} MB). La mida màxima permesa és {{max}} MB.",
-		"imageWithSize": "Fitxer d'imatge ({{size}} KB)"
+		"imageWithSize": "Fitxer d'imatge ({{size}} KB)",
+		"errors": {
+			"parseError": "Error d'Anàlisi del Fitxer",
+			"invalidLineRange": "Rang de Línies Invàlid",
+			"imageReadError": "Error de Lectura d'Imatge",
+			"fileReadError": "Error de Lectura del Fitxer"
+		}
 	},
 	"toolRepetitionLimitReached": "Roo sembla estar atrapat en un bucle, intentant la mateixa acció ({{toolName}}) repetidament. Això podria indicar un problema amb la seva estratègia actual. Considera reformular la tasca, proporcionar instruccions més específiques o guiar-lo cap a un enfocament diferent.",
 	"codebaseSearch": {
-		"approval": "Cercant '{{query}}' a la base de codi..."
+		"approval": "Cercant '{{query}}' a la base de codi...",
+		"errors": {
+			"searchError": "Error de cerca de codi"
+		}
 	},
 	"newTask": {
 		"errors": {
 			"policy_restriction": "No s'ha pogut crear una nova tasca a causa de restriccions de política."
+		}
+	},
+	"applyDiff": {
+		"errors": {
+			"fileNotFound": "Fitxer no trobat",
+			"fileDoesNotExist": "El fitxer no existeix al camí: {{path}}",
+			"fileDoesNotExistDetails": "No s'ha pogut trobar el fitxer especificat. Si us plau, verifica el camí del fitxer i torna-ho a provar.",
+			"applyDiffError": "Error d'Aplicació de Diff"
+		}
+	},
+	"insertContent": {
+		"errors": {
+			"invalidLineNumber": "Número de línia invàlid",
+			"cannotInsertIntoNonExistent": "No es pot inserir contingut a la línia {{lineNumber}} d'un fitxer inexistent. Per a fitxers nous, 'line' ha de ser 0 (per afegir al final) o 1 (per inserir al principi).",
+			"insertContentError": "Error d'Inserció de Contingut"
+		}
+	},
+	"common": {
+		"errors": {
+			"missingParameter": "Paràmetre que falta",
+			"missingParameterMessage": "Roo ha intentat utilitzar {{toolName}}{{relPath}} sense valor per al paràmetre requerit '{{paramName}}'. Tornant a intentar..."
+		}
+	},
+	"writeToFile": {
+		"errors": {
+			"writeFileError": "Error d'Escriptura del Fitxer"
+		}
+	},
+	"searchAndReplace": {
+		"errors": {
+			"searchAndReplaceError": "Error de Cerca i Substitució"
+		}
+	},
+	"listFiles": {
+		"errors": {
+			"listFilesError": "Error en llistar fitxers"
+		}
+	},
+	"searchFiles": {
+		"errors": {
+			"searchFilesError": "Error en cercar fitxers"
+		}
+	},
+	"listCodeDefinitionNames": {
+		"errors": {
+			"parseError": "Error en analitzar definicions de codi"
+		}
+	},
+	"fetchInstructions": {
+		"errors": {
+			"fetchError": "Error en obtenir instruccions"
+		}
+	},
+	"updateTodoList": {
+		"errors": {
+			"updateError": "Error en actualitzar la llista de tasques"
+		}
+	},
+	"executeCommand": {
+		"errors": {
+			"executeError": "Error en executar l'ordre"
+		}
+	},
+	"browserAction": {
+		"errors": {
+			"browserError": "Error d'acció del navegador"
+		}
+	},
+	"askFollowupQuestion": {
+		"errors": {
+			"askError": "Error en fer la pregunta"
+		}
+	},
+	"attemptCompletion": {
+		"errors": {
+			"inspectError": "Error en inspeccionar el lloc"
+		}
+	},
+	"runSlashCommand": {
+		"errors": {
+			"runError": "Error en executar l'ordre slash"
+		}
+	},
+	"generateImage": {
+		"errors": {
+			"generateError": "Error en generar la imatge"
+		}
+	},
+	"newTaskTool": {
+		"errors": {
+			"createError": "Error en crear una nova tasca"
+		}
+	},
+	"switchMode": {
+		"errors": {
+			"switchError": "Error en canviar de mode"
+		}
+	},
+	"accessMcpResource": {
+		"errors": {
+			"accessError": "Error en accedir al recurs MCP"
+		}
+	},
+	"useMcpTool": {
+		"errors": {
+			"executeError": "Error en executar l'eina MCP"
+		}
+	},
+	"simpleReadFile": {
+		"errors": {
+			"readError": "Error en llegir el fitxer"
 		}
 	}
 }

@@ -73,7 +73,17 @@ export async function generateImageTool(
 		// Check if input image exists
 		const inputImageExists = await fileExistsAtPath(inputImageFullPath)
 		if (!inputImageExists) {
-			await cline.say("error", `Input image not found: ${getReadablePath(cline.cwd, inputImagePath)}`)
+			await cline.say(
+				"error",
+				`Input image not found: ${getReadablePath(cline.cwd, inputImagePath)}`,
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				{
+					metadata: { title: "Input Image Not Found" },
+				},
+			)
 			pushToolResult(
 				formatResponse.toolError(`Input image not found: ${getReadablePath(cline.cwd, inputImagePath)}`),
 			)
@@ -99,6 +109,13 @@ export async function generateImageTool(
 				await cline.say(
 					"error",
 					`Unsupported image format: ${imageExtension}. Supported formats: ${supportedFormats.join(", ")}`,
+					undefined,
+					undefined,
+					undefined,
+					undefined,
+					{
+						metadata: { title: "Unsupported Image Format" },
+					},
 				)
 				pushToolResult(
 					formatResponse.toolError(
@@ -115,6 +132,13 @@ export async function generateImageTool(
 			await cline.say(
 				"error",
 				`Failed to read input image: ${error instanceof Error ? error.message : "Unknown error"}`,
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				{
+					metadata: { title: "Failed to Read Input Image" },
+				},
 			)
 			pushToolResult(
 				formatResponse.toolError(
@@ -135,6 +159,13 @@ export async function generateImageTool(
 		await cline.say(
 			"error",
 			"OpenRouter API key is required for image generation. Please configure it in the Image Generation experimental settings.",
+			undefined,
+			undefined,
+			undefined,
+			undefined,
+			{
+				metadata: { title: "Missing API Key" },
+			},
 		)
 		pushToolResult(
 			formatResponse.toolError(
@@ -188,14 +219,26 @@ export async function generateImageTool(
 			)
 
 			if (!result.success) {
-				await cline.say("error", result.error || "Failed to generate image")
+				await cline.say(
+					"error",
+					result.error || "Failed to generate image",
+					undefined,
+					undefined,
+					undefined,
+					undefined,
+					{
+						metadata: { title: "Image Generation Failed" },
+					},
+				)
 				pushToolResult(formatResponse.toolError(result.error || "Failed to generate image"))
 				return
 			}
 
 			if (!result.imageData) {
 				const errorMessage = "No image data received"
-				await cline.say("error", errorMessage)
+				await cline.say("error", errorMessage, undefined, undefined, undefined, undefined, {
+					metadata: { title: "No Image Data" },
+				})
 				pushToolResult(formatResponse.toolError(errorMessage))
 				return
 			}
@@ -204,7 +247,9 @@ export async function generateImageTool(
 			const base64Match = result.imageData.match(/^data:image\/(png|jpeg|jpg);base64,(.+)$/)
 			if (!base64Match) {
 				const errorMessage = "Invalid image format received"
-				await cline.say("error", errorMessage)
+				await cline.say("error", errorMessage, undefined, undefined, undefined, undefined, {
+					metadata: { title: "Invalid Image Format" },
+				})
 				pushToolResult(formatResponse.toolError(errorMessage))
 				return
 			}

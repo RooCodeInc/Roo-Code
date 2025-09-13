@@ -4,15 +4,135 @@
 		"definitionsOnly": " (केवल परिभाषाएँ)",
 		"maxLines": " (अधिकतम {{max}} पंक्तियाँ)",
 		"imageTooLarge": "छवि फ़ाइल बहुत बड़ी है ({{size}} MB)। अधिकतम अनुमतित आकार {{max}} MB है।",
-		"imageWithSize": "छवि फ़ाइल ({{size}} KB)"
+		"imageWithSize": "छवि फ़ाइल ({{size}} KB)",
+		"errors": {
+			"parseError": "फ़ाइल पार्स त्रुटि",
+			"invalidLineRange": "अमान्य लाइन रेंज",
+			"imageReadError": "छवि पढ़ने में त्रुटि",
+			"fileReadError": "फ़ाइल पढ़ने में त्रुटि"
+		}
 	},
 	"toolRepetitionLimitReached": "Roo एक लूप में फंसा हुआ लगता है, बार-बार एक ही क्रिया ({{toolName}}) को दोहरा रहा है। यह उसकी वर्तमान रणनीति में किसी समस्या का संकेत हो सकता है। कार्य को पुनः परिभाषित करने, अधिक विशिष्ट निर्देश देने, या उसे एक अलग दृष्टिकोण की ओर मार्गदर्शित करने पर विचार करें।",
 	"codebaseSearch": {
-		"approval": "कोडबेस में '{{query}}' खोज रहा है..."
+		"approval": "कोडबेस में '{{query}}' खोज रहा है...",
+		"errors": {
+			"searchError": "कोडबेस खोज त्रुटि"
+		}
 	},
 	"newTask": {
 		"errors": {
 			"policy_restriction": "नीति प्रतिबंधों के कारण नया कार्य बनाने में विफल।"
+		}
+	},
+	"applyDiff": {
+		"errors": {
+			"fileNotFound": "फ़ाइल नहीं मिली",
+			"fileDoesNotExist": "फ़ाइल पथ पर मौजूद नहीं है: {{path}}",
+			"fileDoesNotExistDetails": "निर्दिष्ट फ़ाइल नहीं मिल सकी। कृपया फ़ाइल पथ सत्यापित करें और पुनः प्रयास करें।",
+			"applyDiffError": "डिफ लागू करने में त्रुटि"
+		}
+	},
+	"insertContent": {
+		"errors": {
+			"invalidLineNumber": "अमान्य लाइन नंबर",
+			"cannotInsertIntoNonExistent": "गैर-मौजूद फ़ाइल की लाइन {{lineNumber}} में सामग्री नहीं डाली जा सकती। नई फ़ाइलों के लिए, 'line' 0 (अंत में जोड़ने के लिए) या 1 (शुरुआत में डालने के लिए) होनी चाहिए।",
+			"insertContentError": "सामग्री डालने में त्रुटि"
+		}
+	},
+	"common": {
+		"errors": {
+			"missingParameter": "गुम पैरामीटर",
+			"missingParameterMessage": "Roo ने आवश्यक पैरामीटर '{{paramName}}' के लिए मान के बिना {{toolName}}{{relPath}} का उपयोग करने का प्रयास किया। पुनः प्रयास कर रहा है..."
+		}
+	},
+	"writeToFile": {
+		"errors": {
+			"writeFileError": "फ़ाइल लिखने में त्रुटि"
+		}
+	},
+	"searchAndReplace": {
+		"errors": {
+			"searchAndReplaceError": "खोज और बदलाव त्रुटि"
+		}
+	},
+	"listFiles": {
+		"errors": {
+			"listFilesError": "फ़ाइल सूची त्रुटि"
+		}
+	},
+	"searchFiles": {
+		"errors": {
+			"searchFilesError": "फ़ाइल खोज त्रुटि"
+		}
+	},
+	"listCodeDefinitionNames": {
+		"errors": {
+			"parseError": "कोड परिभाषा पार्स त्रुटि"
+		}
+	},
+	"fetchInstructions": {
+		"errors": {
+			"fetchError": "निर्देश प्राप्त करने में त्रुटि"
+		}
+	},
+	"updateTodoList": {
+		"errors": {
+			"updateError": "टूडू सूची अपडेट त्रुटि"
+		}
+	},
+	"executeCommand": {
+		"errors": {
+			"executeError": "कमांड निष्पादन त्रुटि"
+		}
+	},
+	"browserAction": {
+		"errors": {
+			"browserError": "ब्राउज़र क्रिया त्रुटि"
+		}
+	},
+	"askFollowupQuestion": {
+		"errors": {
+			"askError": "प्रश्न पूछने में त्रुटि"
+		}
+	},
+	"attemptCompletion": {
+		"errors": {
+			"inspectError": "साइट निरीक्षण त्रुटि"
+		}
+	},
+	"runSlashCommand": {
+		"errors": {
+			"runError": "स्लैश कमांड त्रुटि"
+		}
+	},
+	"generateImage": {
+		"errors": {
+			"generateError": "छवि जनरेट त्रुटि"
+		}
+	},
+	"newTaskTool": {
+		"errors": {
+			"createError": "नया कार्य बनाने में त्रुटि"
+		}
+	},
+	"switchMode": {
+		"errors": {
+			"switchError": "मोड स्विच त्रुटि"
+		}
+	},
+	"accessMcpResource": {
+		"errors": {
+			"accessError": "MCP संसाधन पहुंच त्रुटि"
+		}
+	},
+	"useMcpTool": {
+		"errors": {
+			"executeError": "MCP टूल निष्पादन त्रुटि"
+		}
+	},
+	"simpleReadFile": {
+		"errors": {
+			"readError": "फ़ाइल पढ़ने में त्रुटि"
 		}
 	}
 }

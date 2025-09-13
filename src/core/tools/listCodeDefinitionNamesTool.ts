@@ -8,6 +8,7 @@ import { getReadablePath } from "../../utils/path"
 import { isPathOutsideWorkspace } from "../../utils/pathUtils"
 import { parseSourceCodeForDefinitionsTopLevel, parseSourceCodeDefinitionsForFile } from "../../services/tree-sitter"
 import { RecordSource } from "../context-tracking/FileContextTrackerTypes"
+import { t } from "../../i18n"
 
 export async function listCodeDefinitionNamesTool(
 	cline: Task,
@@ -76,7 +77,11 @@ export async function listCodeDefinitionNamesTool(
 			return
 		}
 	} catch (error) {
-		await handleError("parsing source code definitions", error)
+		await handleError(
+			"parsing source code definitions",
+			error,
+			t("tools:listCodeDefinitionNames.errors.parseError"),
+		)
 		return
 	}
 }

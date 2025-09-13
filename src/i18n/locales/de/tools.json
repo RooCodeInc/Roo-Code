@@ -4,15 +4,135 @@
 		"definitionsOnly": " (nur Definitionen)",
 		"maxLines": " (maximal {{max}} Zeilen)",
 		"imageTooLarge": "Die Bilddatei ist zu groß ({{size}} MB). Die maximal erlaubte Größe beträgt {{max}} MB.",
-		"imageWithSize": "Bilddatei ({{size}} KB)"
+		"imageWithSize": "Bilddatei ({{size}} KB)",
+		"errors": {
+			"parseError": "Datei-Parse-Fehler",
+			"invalidLineRange": "Ungültiger Zeilenbereich",
+			"imageReadError": "Bildlesefehler",
+			"fileReadError": "Dateilesefehler"
+		}
 	},
 	"toolRepetitionLimitReached": "Roo scheint in einer Schleife festzustecken und versucht wiederholt dieselbe Aktion ({{toolName}}). Dies könnte auf ein Problem mit der aktuellen Strategie hindeuten. Überlege dir, die Aufgabe umzuformulieren, genauere Anweisungen zu geben oder Roo zu einem anderen Ansatz zu führen.",
 	"codebaseSearch": {
-		"approval": "Suche nach '{{query}}' im Codebase..."
+		"approval": "Suche nach '{{query}}' im Codebase...",
+		"errors": {
+			"searchError": "Codebase-Suchfehler"
+		}
 	},
 	"newTask": {
 		"errors": {
 			"policy_restriction": "Neue Aufgabe konnte aufgrund von Richtlinienbeschränkungen nicht erstellt werden."
+		}
+	},
+	"applyDiff": {
+		"errors": {
+			"fileNotFound": "Datei nicht gefunden",
+			"fileDoesNotExist": "Datei existiert nicht unter dem Pfad: {{path}}",
+			"fileDoesNotExistDetails": "Die angegebene Datei konnte nicht gefunden werden. Bitte überprüfe den Dateipfad und versuche es erneut.",
+			"applyDiffError": "Diff-Anwendungsfehler"
+		}
+	},
+	"insertContent": {
+		"errors": {
+			"invalidLineNumber": "Ungültige Zeilennummer",
+			"cannotInsertIntoNonExistent": "Inhalt kann nicht in Zeile {{lineNumber}} einer nicht existierenden Datei eingefügt werden. Für neue Dateien muss 'line' 0 (zum Anhängen) oder 1 (zum Einfügen am Anfang) sein.",
+			"insertContentError": "Inhaltseinfügefehler"
+		}
+	},
+	"common": {
+		"errors": {
+			"missingParameter": "Fehlender Parameter",
+			"missingParameterMessage": "Roo hat versucht, {{toolName}}{{relPath}} ohne Wert für den erforderlichen Parameter '{{paramName}}' zu verwenden. Versuche erneut..."
+		}
+	},
+	"writeToFile": {
+		"errors": {
+			"writeFileError": "Dateischreibfehler"
+		}
+	},
+	"searchAndReplace": {
+		"errors": {
+			"searchAndReplaceError": "Suchen und Ersetzen Fehler"
+		}
+	},
+	"listFiles": {
+		"errors": {
+			"listFilesError": "Dateilistenfehler"
+		}
+	},
+	"searchFiles": {
+		"errors": {
+			"searchFilesError": "Dateisuchfehler"
+		}
+	},
+	"listCodeDefinitionNames": {
+		"errors": {
+			"parseError": "Code-Definitionen-Analysefehler"
+		}
+	},
+	"fetchInstructions": {
+		"errors": {
+			"fetchError": "Anweisungsabruffehler"
+		}
+	},
+	"updateTodoList": {
+		"errors": {
+			"updateError": "Todo-Listen-Aktualisierungsfehler"
+		}
+	},
+	"executeCommand": {
+		"errors": {
+			"executeError": "Befehlsausführungsfehler"
+		}
+	},
+	"browserAction": {
+		"errors": {
+			"browserError": "Browser-Aktionsfehler"
+		}
+	},
+	"askFollowupQuestion": {
+		"errors": {
+			"askError": "Fragefehler"
+		}
+	},
+	"attemptCompletion": {
+		"errors": {
+			"inspectError": "Website-Inspektionsfehler"
+		}
+	},
+	"runSlashCommand": {
+		"errors": {
+			"runError": "Slash-Befehlsfehler"
+		}
+	},
+	"generateImage": {
+		"errors": {
+			"generateError": "Bilderzeugungsfehler"
+		}
+	},
+	"newTaskTool": {
+		"errors": {
+			"createError": "Neue Aufgabe Erstellungsfehler"
+		}
+	},
+	"switchMode": {
+		"errors": {
+			"switchError": "Moduswechselfehler"
+		}
+	},
+	"accessMcpResource": {
+		"errors": {
+			"accessError": "MCP-Ressourcenzugriffsfehler"
+		}
+	},
+	"useMcpTool": {
+		"errors": {
+			"executeError": "MCP-Tool-Ausführungsfehler"
+		}
+	},
+	"simpleReadFile": {
+		"errors": {
+			"readError": "Dateilesefehler"
 		}
 	}
 }

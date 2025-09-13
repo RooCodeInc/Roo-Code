@@ -180,6 +180,7 @@ export async function simpleReadFileTool(
 					await handleError(
 						`reading image file ${relPath}`,
 						error instanceof Error ? error : new Error(errorMsg),
+						t("tools:readFile.errors.imageReadError"),
 					)
 					return
 				}
@@ -268,7 +269,11 @@ export async function simpleReadFileTool(
 	} catch (error) {
 		const errorMsg = error instanceof Error ? error.message : String(error)
 		pushToolResult(`<file><path>${relPath}</path><error>Error reading file: ${errorMsg}</error></file>`)
-		await handleError(`reading file ${relPath}`, error instanceof Error ? error : new Error(errorMsg))
+		await handleError(
+			`reading file ${relPath}`,
+			error instanceof Error ? error : new Error(errorMsg),
+			t("tools:simpleReadFile.errors.readError"),
+		)
 	}
 }
 

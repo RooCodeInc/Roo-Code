@@ -13,6 +13,7 @@ import { fileExistsAtPath } from "../../utils/fs"
 import { RecordSource } from "../context-tracking/FileContextTrackerTypes"
 import { unescapeHtmlEntities } from "../../utils/text-normalization"
 import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
+import { t } from "../../i18n"
 
 export async function applyDiffToolLegacy(
 	cline: Task,
@@ -82,8 +83,10 @@ export async function applyDiffToolLegacy(
 			if (!fileExists) {
 				cline.consecutiveMistakeCount++
 				cline.recordToolError("apply_diff")
-				const formattedError = `File does not exist at path: ${absolutePath}\n\n<error_details>\nThe specified file could not be found. Please verify the file path and try again.\n</error_details>`
-				await cline.say("error", formattedError)
+				const formattedError = `${t("tools:applyDiff.errors.fileDoesNotExist", { path: absolutePath })}\n\n<error_details>\n${t("tools:applyDiff.errors.fileDoesNotExistDetails")}\n</error_details>`
+				await cline.say("error", formattedError, undefined, undefined, undefined, undefined, {
+					metadata: { title: t("tools:applyDiff.errors.fileNotFound") },
+				})
 				pushToolResult(formattedError)
 				return
 			}
@@ -252,7 +255,7 @@ export async function applyDiffToolLegacy(
 			return
 		}
 	} catch (error) {
-		await handleError("applying diff", error)
+		await handleError("applying diff", error, t("tools:applyDiff.errors.applyDiffError"))
 		await cline.diffViewProvider.reset()
 		cline.processQueuedMessages()
 		return

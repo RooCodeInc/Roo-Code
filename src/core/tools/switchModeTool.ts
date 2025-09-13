@@ -4,6 +4,7 @@ import { Task } from "../task/Task"
 import { ToolUse, AskApproval, HandleError, PushToolResult, RemoveClosingTag } from "../../shared/tools"
 import { formatResponse } from "../prompts/responses"
 import { defaultModeSlug, getModeBySlug } from "../../shared/modes"
+import { t } from "../../i18n"
 
 export async function switchModeTool(
 	cline: Task,
@@ -75,7 +76,7 @@ export async function switchModeTool(
 			return
 		}
 	} catch (error) {
-		await handleError("switching mode", error)
+		await handleError("switching mode", error, t("tools:switchMode.errors.switchError"))
 		return
 	}
 }

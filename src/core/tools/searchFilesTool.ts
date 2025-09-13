@@ -6,6 +6,7 @@ import { ClineSayTool } from "../../shared/ExtensionMessage"
 import { getReadablePath } from "../../utils/path"
 import { isPathOutsideWorkspace } from "../../utils/pathUtils"
 import { regexSearchFiles } from "../../services/ripgrep"
+import { t } from "../../i18n"
 
 export async function searchFilesTool(
 	cline: Task,
@@ -72,7 +73,7 @@ export async function searchFilesTool(
 			return
 		}
 	} catch (error) {
-		await handleError("searching files", error)
+		await handleError("searching files", error, t("tools:searchFiles.errors.searchFilesError"))
 		return
 	}
 }

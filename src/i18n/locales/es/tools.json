@@ -4,15 +4,135 @@
 		"definitionsOnly": " (solo definiciones)",
 		"maxLines": " (máximo {{max}} líneas)",
 		"imageTooLarge": "El archivo de imagen es demasiado grande ({{size}} MB). El tamaño máximo permitido es {{max}} MB.",
-		"imageWithSize": "Archivo de imagen ({{size}} KB)"
+		"imageWithSize": "Archivo de imagen ({{size}} KB)",
+		"errors": {
+			"parseError": "Error de Análisis de Archivo",
+			"invalidLineRange": "Rango de Líneas Inválido",
+			"imageReadError": "Error de Lectura de Imagen",
+			"fileReadError": "Error de Lectura de Archivo"
+		}
 	},
 	"toolRepetitionLimitReached": "Roo parece estar atrapado en un bucle, intentando la misma acción ({{toolName}}) repetidamente. Esto podría indicar un problema con su estrategia actual. Considera reformular la tarea, proporcionar instrucciones más específicas o guiarlo hacia un enfoque diferente.",
 	"codebaseSearch": {
-		"approval": "Buscando '{{query}}' en la base de código..."
+		"approval": "Buscando '{{query}}' en la base de código...",
+		"errors": {
+			"searchError": "Error de búsqueda de código"
+		}
 	},
 	"newTask": {
 		"errors": {
 			"policy_restriction": "No se pudo crear una nueva tarea debido a restricciones de política."
+		}
+	},
+	"applyDiff": {
+		"errors": {
+			"fileNotFound": "Archivo no encontrado",
+			"fileDoesNotExist": "El archivo no existe en la ruta: {{path}}",
+			"fileDoesNotExistDetails": "No se pudo encontrar el archivo especificado. Por favor, verifica la ruta del archivo e intenta de nuevo.",
+			"applyDiffError": "Error al Aplicar Diff"
+		}
+	},
+	"insertContent": {
+		"errors": {
+			"invalidLineNumber": "Número de línea inválido",
+			"cannotInsertIntoNonExistent": "No se puede insertar contenido en la línea {{lineNumber}} de un archivo inexistente. Para archivos nuevos, 'line' debe ser 0 (para añadir al final) o 1 (para insertar al principio).",
+			"insertContentError": "Error al Insertar Contenido"
+		}
+	},
+	"common": {
+		"errors": {
+			"missingParameter": "Parámetro faltante",
+			"missingParameterMessage": "Roo intentó usar {{toolName}}{{relPath}} sin valor para el parámetro requerido '{{paramName}}'. Reintentando..."
+		}
+	},
+	"writeToFile": {
+		"errors": {
+			"writeFileError": "Error de Escritura de Archivo"
+		}
+	},
+	"searchAndReplace": {
+		"errors": {
+			"searchAndReplaceError": "Error de Búsqueda y Reemplazo"
+		}
+	},
+	"listFiles": {
+		"errors": {
+			"listFilesError": "Error al listar archivos"
+		}
+	},
+	"searchFiles": {
+		"errors": {
+			"searchFilesError": "Error al buscar archivos"
+		}
+	},
+	"listCodeDefinitionNames": {
+		"errors": {
+			"parseError": "Error al analizar definiciones de código"
+		}
+	},
+	"fetchInstructions": {
+		"errors": {
+			"fetchError": "Error al obtener instrucciones"
+		}
+	},
+	"updateTodoList": {
+		"errors": {
+			"updateError": "Error al actualizar lista de tareas"
+		}
+	},
+	"executeCommand": {
+		"errors": {
+			"executeError": "Error al ejecutar comando"
+		}
+	},
+	"browserAction": {
+		"errors": {
+			"browserError": "Error de acción del navegador"
+		}
+	},
+	"askFollowupQuestion": {
+		"errors": {
+			"askError": "Error al hacer pregunta"
+		}
+	},
+	"attemptCompletion": {
+		"errors": {
+			"inspectError": "Error al inspeccionar sitio"
+		}
+	},
+	"runSlashCommand": {
+		"errors": {
+			"runError": "Error al ejecutar comando slash"
+		}
+	},
+	"generateImage": {
+		"errors": {
+			"generateError": "Error al generar imagen"
+		}
+	},
+	"newTaskTool": {
+		"errors": {
+			"createError": "Error al crear nueva tarea"
+		}
+	},
+	"switchMode": {
+		"errors": {
+			"switchError": "Error al cambiar modo"
+		}
+	},
+	"accessMcpResource": {
+		"errors": {
+			"accessError": "Error al acceder recurso MCP"
+		}
+	},
+	"useMcpTool": {
+		"errors": {
+			"executeError": "Error al ejecutar herramienta MCP"
+		}
+	},
+	"simpleReadFile": {
+		"errors": {
+			"readError": "Error al leer archivo"
 		}
 	}
 }

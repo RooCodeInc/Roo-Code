@@ -331,7 +331,17 @@ describe("generateImageTool", () => {
 				mockRemoveClosingTag,
 			)
 
-			expect(mockCline.say).toHaveBeenCalledWith("error", expect.stringContaining("Input image not found"))
+			expect(mockCline.say).toHaveBeenCalledWith(
+				"error",
+				expect.stringContaining("Input image not found"),
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				{
+					metadata: { title: "Input Image Not Found" },
+				},
+			)
 			expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("Input image not found"))
 		})
 
@@ -356,7 +366,17 @@ describe("generateImageTool", () => {
 				mockRemoveClosingTag,
 			)
 
-			expect(mockCline.say).toHaveBeenCalledWith("error", expect.stringContaining("Unsupported image format"))
+			expect(mockCline.say).toHaveBeenCalledWith(
+				"error",
+				expect.stringContaining("Unsupported image format"),
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				{
+					metadata: { title: "Unsupported Image Format" },
+				},
+			)
 			expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("Unsupported image format"))
 		})
 	})

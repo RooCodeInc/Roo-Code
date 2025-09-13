@@ -128,7 +128,7 @@ export async function executeCommandTool(
 			return
 		}
 	} catch (error) {
-		await handleError("executing command", error)
+		await handleError("executing command", error, t("tools:executeCommand.errors.executeError"))
 		return
 	}
 }
@@ -271,7 +271,17 @@ export async function executeCommand(
 			if (isTimedOut) {
 				const status: CommandExecutionStatus = { executionId, status: "timeout" }
 				provider?.postMessageToWebview({ type: "commandExecutionStatus", text: JSON.stringify(status) })
-				await task.say("error", t("common:errors:command_timeout", { seconds: commandExecutionTimeoutSeconds }))
+				await task.say(
+					"error",
+					t("common:errors:command_timeout", { seconds: commandExecutionTimeoutSeconds }),
+					undefined,
+					undefined,
+					undefined,
+					undefined,
+					{
+						metadata: { title: "Command Timeout" },
+					},
+				)
 				task.terminalProcess = undefined
 
 				return [

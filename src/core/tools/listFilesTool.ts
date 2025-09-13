@@ -7,6 +7,7 @@ import { listFiles } from "../../services/glob/list-files"
 import { getReadablePath } from "../../utils/path"
 import { isPathOutsideWorkspace } from "../../utils/pathUtils"
 import { ToolUse, AskApproval, HandleError, PushToolResult, RemoveClosingTag } from "../../shared/tools"
+import { t } from "../../i18n"
 
 /**
  * Implements the list_files tool.
@@ -82,6 +83,6 @@ export async function listFilesTool(
 			pushToolResult(result)
 		}
 	} catch (error) {
-		await handleError("listing files", error)
+		await handleError("listing files", error, t("tools:listFiles.errors.listFilesError"))
 	}
 }

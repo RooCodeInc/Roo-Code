@@ -155,7 +155,7 @@ export async function readFileTool(
 			}
 		} catch (error) {
 			const errorMessage = `Failed to parse read_file XML args: ${error instanceof Error ? error.message : String(error)}`
-			await handleError("parsing read_file args", new Error(errorMessage))
+			await handleError("parsing read_file args", new Error(errorMessage), t("tools:readFile.errors.parseError"))
 			pushToolResult(`<files><error>${errorMessage}</error></files>`)
 			return
 		}
@@ -226,7 +226,11 @@ export async function readFileTool(
 							error: errorMsg,
 							xmlContent: `<file><path>${relPath}</path><error>Error reading file: ${errorMsg}</error></file>`,
 						})
-						await handleError(`reading file ${relPath}`, new Error(errorMsg))
+						await handleError(
+							`reading file ${relPath}`,
+							new Error(errorMsg),
+							t("tools:readFile.errors.invalidLineRange"),
+						)
 						hasRangeError = true
 						break
 					}
@@ -237,7 +241,11 @@ export async function readFileTool(
 							error: errorMsg,
 							xmlContent: `<file><path>${relPath}</path><error>Error reading file: ${errorMsg}</error></file>`,
 						})
-						await handleError(`reading file ${relPath}`, new Error(errorMsg))
+						await handleError(
+							`reading file ${relPath}`,
+							new Error(errorMsg),
+							t("tools:readFile.errors.invalidLineRange"),
+						)
 						hasRangeError = true
 						break
 					}
@@ -508,6 +516,7 @@ export async function readFileTool(
 							await handleError(
 								`reading image file ${relPath}`,
 								error instanceof Error ? error : new Error(errorMsg),
+								t("tools:readFile.errors.imageReadError"),
 							)
 							continue
 						}
@@ -616,7 +625,11 @@ export async function readFileTool(
 					error: `Error reading file: ${errorMsg}`,
 					xmlContent: `<file><path>${relPath}</path><error>Error reading file: ${errorMsg}</error></file>`,
 				})
-				await handleError(`reading file ${relPath}`, error instanceof Error ? error : new Error(errorMsg))
+				await handleError(
+					`reading file ${relPath}`,
+					error instanceof Error ? error : new Error(errorMsg),
+					t("tools:readFile.errors.fileReadError"),
+				)
 			}
 		}
 
@@ -704,8 +717,11 @@ export async function readFileTool(
 				xmlContent: `<file><path>${relPath}</path><error>Error reading file: ${errorMsg}</error></file>`,
 			})
 		}
-
-		await handleError(`reading file ${relPath}`, error instanceof Error ? error : new Error(errorMsg))
+		await handleError(
+			`reading file ${relPath}`,
+			error instanceof Error ? error : new Error(errorMsg),
+			t("tools:readFile.errors.fileReadError"),
+		)
 
 		// Generate final XML result from all file results
 		const xmlResults = fileResults.filter((result) => result.xmlContent).map((result) => result.xmlContent)

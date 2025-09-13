@@ -151,7 +151,17 @@ describe("useMcpToolTool", () => {
 
 			expect(mockTask.consecutiveMistakeCount).toBe(1)
 			expect(mockTask.recordToolError).toHaveBeenCalledWith("use_mcp_tool")
-			expect(mockTask.say).toHaveBeenCalledWith("error", expect.stringContaining("invalid JSON argument"))
+			expect(mockTask.say).toHaveBeenCalledWith(
+				"error",
+				expect.stringContaining("invalid JSON argument"),
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				{
+					metadata: { title: "Invalid JSON Arguments" },
+				},
+			)
 			expect(mockPushToolResult).toHaveBeenCalledWith("Tool error: Invalid args for test_server:test_tool")
 		})
 	})
@@ -343,7 +353,17 @@ describe("useMcpToolTool", () => {
 
 			expect(mockTask.consecutiveMistakeCount).toBe(1)
 			expect(mockTask.recordToolError).toHaveBeenCalledWith("use_mcp_tool")
-			expect(mockTask.say).toHaveBeenCalledWith("error", expect.stringContaining("does not exist"))
+			expect(mockTask.say).toHaveBeenCalledWith(
+				"error",
+				expect.stringContaining("does not exist"),
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				{
+					metadata: { title: "MCP Tool Not Found" },
+				},
+			)
 			// Check that the error message contains available tools
 			expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("existing-tool-1"))
 			expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("existing-tool-2"))
@@ -390,7 +410,17 @@ describe("useMcpToolTool", () => {
 
 			expect(mockTask.consecutiveMistakeCount).toBe(1)
 			expect(mockTask.recordToolError).toHaveBeenCalledWith("use_mcp_tool")
-			expect(mockTask.say).toHaveBeenCalledWith("error", expect.stringContaining("does not exist"))
+			expect(mockTask.say).toHaveBeenCalledWith(
+				"error",
+				expect.stringContaining("does not exist"),
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				{
+					metadata: { title: "MCP Tool Not Found" },
+				},
+			)
 			expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("No tools available"))
 		})
 
@@ -484,7 +514,17 @@ describe("useMcpToolTool", () => {
 			// Assert
 			expect(mockTask.consecutiveMistakeCount).toBe(1)
 			expect(mockTask.recordToolError).toHaveBeenCalledWith("use_mcp_tool")
-			expect(mockTask.say).toHaveBeenCalledWith("error", expect.stringContaining("not configured"))
+			expect(mockTask.say).toHaveBeenCalledWith(
+				"error",
+				expect.stringContaining("not configured"),
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				{
+					metadata: { title: "MCP Server Not Found" },
+				},
+			)
 			expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("s1"))
 			expect(callToolMock).not.toHaveBeenCalled()
 			expect(mockAskApproval).not.toHaveBeenCalled()
@@ -527,7 +567,17 @@ describe("useMcpToolTool", () => {
 			// Assert
 			expect(mockTask.consecutiveMistakeCount).toBe(1)
 			expect(mockTask.recordToolError).toHaveBeenCalledWith("use_mcp_tool")
-			expect(mockTask.say).toHaveBeenCalledWith("error", expect.stringContaining("not configured"))
+			expect(mockTask.say).toHaveBeenCalledWith(
+				"error",
+				expect.stringContaining("not configured"),
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				{
+					metadata: { title: "MCP Server Not Found" },
+				},
+			)
 			expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("No servers available"))
 			expect(callToolMock).not.toHaveBeenCalled()
 			expect(mockAskApproval).not.toHaveBeenCalled()

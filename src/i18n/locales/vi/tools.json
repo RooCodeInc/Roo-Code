@@ -4,15 +4,135 @@
 		"definitionsOnly": " (chỉ định nghĩa)",
 		"maxLines": " (tối đa {{max}} dòng)",
 		"imageTooLarge": "Tệp hình ảnh quá lớn ({{size}} MB). Kích thước tối đa cho phép là {{max}} MB.",
-		"imageWithSize": "Tệp hình ảnh ({{size}} KB)"
+		"imageWithSize": "Tệp hình ảnh ({{size}} KB)",
+		"errors": {
+			"parseError": "Lỗi Phân Tích Tệp",
+			"invalidLineRange": "Phạm Vi Dòng Không Hợp Lệ",
+			"imageReadError": "Lỗi Đọc Hình Ảnh",
+			"fileReadError": "Lỗi Đọc Tệp"
+		}
 	},
 	"toolRepetitionLimitReached": "Roo dường như đang bị mắc kẹt trong một vòng lặp, liên tục cố gắng thực hiện cùng một hành động ({{toolName}}). Điều này có thể cho thấy vấn đề với chiến lược hiện tại. Hãy cân nhắc việc diễn đạt lại nhiệm vụ, cung cấp hướng dẫn cụ thể hơn, hoặc hướng Roo theo một cách tiếp cận khác.",
 	"codebaseSearch": {
-		"approval": "Đang tìm kiếm '{{query}}' trong cơ sở mã..."
+		"approval": "Đang tìm kiếm '{{query}}' trong cơ sở mã...",
+		"errors": {
+			"searchError": "Lỗi Tìm Kiếm Mã"
+		}
 	},
 	"newTask": {
 		"errors": {
 			"policy_restriction": "Không thể tạo nhiệm vụ mới do hạn chế chính sách."
+		}
+	},
+	"applyDiff": {
+		"errors": {
+			"fileNotFound": "Không tìm thấy tệp",
+			"fileDoesNotExist": "Tệp không tồn tại tại đường dẫn: {{path}}",
+			"fileDoesNotExistDetails": "Không thể tìm thấy tệp được chỉ định. Vui lòng xác minh đường dẫn tệp và thử lại.",
+			"applyDiffError": "Lỗi Áp Dụng Diff"
+		}
+	},
+	"insertContent": {
+		"errors": {
+			"invalidLineNumber": "Số dòng không hợp lệ",
+			"cannotInsertIntoNonExistent": "Không thể chèn nội dung vào dòng {{lineNumber}} của tệp không tồn tại. Đối với tệp mới, 'line' phải là 0 (để thêm vào cuối) hoặc 1 (để chèn vào đầu).",
+			"insertContentError": "Lỗi Chèn Nội Dung"
+		}
+	},
+	"common": {
+		"errors": {
+			"missingParameter": "Thiếu tham số",
+			"missingParameterMessage": "Roo đã cố gắng sử dụng {{toolName}}{{relPath}} mà không có giá trị cho tham số bắt buộc '{{paramName}}'. Đang thử lại..."
+		}
+	},
+	"writeToFile": {
+		"errors": {
+			"writeFileError": "Lỗi Ghi Tệp"
+		}
+	},
+	"searchAndReplace": {
+		"errors": {
+			"searchAndReplaceError": "Lỗi Tìm và Thay Thế"
+		}
+	},
+	"listFiles": {
+		"errors": {
+			"listFilesError": "Lỗi Danh Sách Tệp"
+		}
+	},
+	"searchFiles": {
+		"errors": {
+			"searchFilesError": "Lỗi Tìm Kiếm Tệp"
+		}
+	},
+	"listCodeDefinitionNames": {
+		"errors": {
+			"parseError": "Lỗi Phân Tích Định Nghĩa Mã"
+		}
+	},
+	"fetchInstructions": {
+		"errors": {
+			"fetchError": "Lỗi Lấy Hướng Dẫn"
+		}
+	},
+	"updateTodoList": {
+		"errors": {
+			"updateError": "Lỗi Cập Nhật Danh Sách Việc Cần Làm"
+		}
+	},
+	"executeCommand": {
+		"errors": {
+			"executeError": "Lỗi Thực Thi Lệnh"
+		}
+	},
+	"browserAction": {
+		"errors": {
+			"browserError": "Lỗi Hành Động Trình Duyệt"
+		}
+	},
+	"askFollowupQuestion": {
+		"errors": {
+			"askError": "Lỗi Đặt Câu Hỏi"
+		}
+	},
+	"attemptCompletion": {
+		"errors": {
+			"inspectError": "Lỗi Kiểm Tra Trang Web"
+		}
+	},
+	"runSlashCommand": {
+		"errors": {
+			"runError": "Lỗi Chạy Lệnh Slash"
+		}
+	},
+	"generateImage": {
+		"errors": {
+			"generateError": "Lỗi Tạo Hình Ảnh"
+		}
+	},
+	"newTaskTool": {
+		"errors": {
+			"createError": "Lỗi Tạo Tác Vụ Mới"
+		}
+	},
+	"switchMode": {
+		"errors": {
+			"switchError": "Lỗi Chuyển Chế Độ"
+		}
+	},
+	"accessMcpResource": {
+		"errors": {
+			"accessError": "Lỗi Truy Cập Tài Nguyên MCP"
+		}
+	},
+	"useMcpTool": {
+		"errors": {
+			"executeError": "Lỗi Thực Thi Công Cụ MCP"
+		}
+	},
+	"simpleReadFile": {
+		"errors": {
+			"readError": "Lỗi Đọc Tệp"
 		}
 	}
 }

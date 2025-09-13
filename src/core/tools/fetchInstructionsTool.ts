@@ -3,6 +3,7 @@ import { fetchInstructions } from "../prompts/instructions/instructions"
 import { ClineSayTool } from "../../shared/ExtensionMessage"
 import { formatResponse } from "../prompts/responses"
 import { ToolUse, AskApproval, HandleError, PushToolResult } from "../../shared/tools"
+import { t } from "../../i18n"
 
 export async function fetchInstructionsTool(
 	cline: Task,
@@ -58,6 +59,6 @@ export async function fetchInstructionsTool(
 			return
 		}
 	} catch (error) {
-		await handleError("fetch instructions", error)
+		await handleError("fetch instructions", error, t("tools:fetchInstructions.errors.fetchError"))
 	}
 }

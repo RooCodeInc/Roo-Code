@@ -16,6 +16,7 @@ import { detectCodeOmission } from "../../integrations/editor/detect-omission"
 import { unescapeHtmlEntities } from "../../utils/text-normalization"
 import { DEFAULT_WRITE_DELAY_MS } from "@roo-code/types"
 import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
+import { t } from "../../i18n"
 
 export async function writeToFileTool(
 	cline: Task,
@@ -314,7 +315,7 @@ export async function writeToFileTool(
 			return
 		}
 	} catch (error) {
-		await handleError("writing file", error)
+		await handleError("writing file", error, t("tools:writeToFile.errors.writeFileError"))
 		await cline.diffViewProvider.reset()
 		return
 	}

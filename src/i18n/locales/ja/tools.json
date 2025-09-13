@@ -4,15 +4,135 @@
 		"definitionsOnly": " (定義のみ)",
 		"maxLines": " (最大{{max}}行)",
 		"imageTooLarge": "画像ファイルが大きすぎます（{{size}} MB）。最大許可サイズは {{max}} MB です。",
-		"imageWithSize": "画像ファイル（{{size}} KB）"
+		"imageWithSize": "画像ファイル（{{size}} KB）",
+		"errors": {
+			"parseError": "ファイル解析エラー",
+			"invalidLineRange": "無効な行範囲",
+			"imageReadError": "画像読み取りエラー",
+			"fileReadError": "ファイル読み取りエラー"
+		}
 	},
 	"toolRepetitionLimitReached": "Rooが同じ操作（{{toolName}}）を繰り返し試みるループに陥っているようです。これは現在の方法に問題がある可能性を示しています。タスクの言い換え、より具体的な指示の提供、または別のアプローチへの誘導を検討してください。",
 	"codebaseSearch": {
-		"approval": "コードベースで '{{query}}' を検索中..."
+		"approval": "コードベースで '{{query}}' を検索中...",
+		"errors": {
+			"searchError": "コードベース検索エラー"
+		}
 	},
 	"newTask": {
 		"errors": {
 			"policy_restriction": "ポリシー制限により新しいタスクを作成できませんでした。"
+		}
+	},
+	"applyDiff": {
+		"errors": {
+			"fileNotFound": "ファイルが見つかりません",
+			"fileDoesNotExist": "ファイルがパスに存在しません: {{path}}",
+			"fileDoesNotExistDetails": "指定されたファイルが見つかりませんでした。ファイルパスを確認して、もう一度お試しください。",
+			"applyDiffError": "差分適用エラー"
+		}
+	},
+	"insertContent": {
+		"errors": {
+			"invalidLineNumber": "無効な行番号",
+			"cannotInsertIntoNonExistent": "存在しないファイルの{{lineNumber}}行目にコンテンツを挿入できません。新しいファイルの場合、'line'は0（末尾に追加）または1（先頭に挿入）である必要があります。",
+			"insertContentError": "コンテンツ挿入エラー"
+		}
+	},
+	"common": {
+		"errors": {
+			"missingParameter": "パラメータ不足",
+			"missingParameterMessage": "Rooは必須パラメータ'{{paramName}}'の値なしで{{toolName}}{{relPath}}を使用しようとしました。再試行中..."
+		}
+	},
+	"writeToFile": {
+		"errors": {
+			"writeFileError": "ファイル書き込みエラー"
+		}
+	},
+	"searchAndReplace": {
+		"errors": {
+			"searchAndReplaceError": "検索と置換エラー"
+		}
+	},
+	"listFiles": {
+		"errors": {
+			"listFilesError": "ファイル一覧エラー"
+		}
+	},
+	"searchFiles": {
+		"errors": {
+			"searchFilesError": "ファイル検索エラー"
+		}
+	},
+	"listCodeDefinitionNames": {
+		"errors": {
+			"parseError": "コード定義解析エラー"
+		}
+	},
+	"fetchInstructions": {
+		"errors": {
+			"fetchError": "指示取得エラー"
+		}
+	},
+	"updateTodoList": {
+		"errors": {
+			"updateError": "Todoリスト更新エラー"
+		}
+	},
+	"executeCommand": {
+		"errors": {
+			"executeError": "コマンド実行エラー"
+		}
+	},
+	"browserAction": {
+		"errors": {
+			"browserError": "ブラウザアクションエラー"
+		}
+	},
+	"askFollowupQuestion": {
+		"errors": {
+			"askError": "質問エラー"
+		}
+	},
+	"attemptCompletion": {
+		"errors": {
+			"inspectError": "サイト検査エラー"
+		}
+	},
+	"runSlashCommand": {
+		"errors": {
+			"runError": "スラッシュコマンド実行エラー"
+		}
+	},
+	"generateImage": {
+		"errors": {
+			"generateError": "画像生成エラー"
+		}
+	},
+	"newTaskTool": {
+		"errors": {
+			"createError": "新規タスク作成エラー"
+		}
+	},
+	"switchMode": {
+		"errors": {
+			"switchError": "モード切替エラー"
+		}
+	},
+	"accessMcpResource": {
+		"errors": {
+			"accessError": "MCPリソースアクセスエラー"
+		}
+	},
+	"useMcpTool": {
+		"errors": {
+			"executeError": "MCPツール実行エラー"
+		}
+	},
+	"simpleReadFile": {
+		"errors": {
+			"readError": "ファイル読み取りエラー"
 		}
 	}
 }

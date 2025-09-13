@@ -4,7 +4,13 @@
 		"definitionsOnly": " (definitions only)",
 		"maxLines": " (max {{max}} lines)",
 		"imageTooLarge": "Image file is too large ({{size}} MB). The maximum allowed size is {{max}} MB.",
-		"imageWithSize": "Image file ({{size}} KB)"
+		"imageWithSize": "Image file ({{size}} KB)",
+		"errors": {
+			"parseError": "Read File Parse Error",
+			"invalidLineRange": "Invalid Line Range",
+			"imageReadError": "Image Read Error",
+			"fileReadError": "File Read Error"
+		}
 	},
 	"toolRepetitionLimitReached": "Roo appears to be stuck in a loop, attempting the same action ({{toolName}}) repeatedly. This might indicate a problem with its current strategy. Consider rephrasing the task, providing more specific instructions, or guiding it towards a different approach.",
 	"codebaseSearch": {
@@ -13,6 +19,122 @@
 	"newTask": {
 		"errors": {
 			"policy_restriction": "Failed to create new task due to policy restrictions."
+		}
+	},
+	"applyDiff": {
+		"errors": {
+			"fileNotFound": "File Not Found",
+			"fileDoesNotExist": "File does not exist at path: {{path}}",
+			"fileDoesNotExistDetails": "The specified file could not be found. Please verify the file path and try again.",
+			"applyDiffError": "Apply Diff Error"
+		}
+	},
+	"insertContent": {
+		"errors": {
+			"invalidLineNumber": "Invalid Line Number",
+			"cannotInsertIntoNonExistent": "Cannot insert content at line {{lineNumber}} into a non-existent file. For new files, 'line' must be 0 (to append) or 1 (to insert at the beginning).",
+			"insertContentError": "Insert Content Error"
+		}
+	},
+	"writeToFile": {
+		"errors": {
+			"writeFileError": "Write File Error"
+		}
+	},
+	"searchAndReplace": {
+		"errors": {
+			"searchAndReplaceError": "Search and Replace Error"
+		}
+	},
+	"listFiles": {
+		"errors": {
+			"listFilesError": "List Files Error"
+		}
+	},
+	"searchFiles": {
+		"errors": {
+			"searchFilesError": "Search Files Error"
+		}
+	},
+	"listCodeDefinitionNames": {
+		"errors": {
+			"parseError": "Parse Code Definitions Error"
+		}
+	},
+	"fetchInstructions": {
+		"errors": {
+			"fetchError": "Fetch Instructions Error"
+		}
+	},
+	"updateTodoList": {
+		"errors": {
+			"updateError": "Update Todo List Error"
+		}
+	},
+	"executeCommand": {
+		"errors": {
+			"executeError": "Execute Command Error"
+		}
+	},
+	"browserAction": {
+		"errors": {
+			"browserError": "Browser Action Error"
+		}
+	},
+	"askFollowupQuestion": {
+		"errors": {
+			"askError": "Ask Question Error"
+		}
+	},
+	"attemptCompletion": {
+		"errors": {
+			"inspectError": "Inspect Site Error"
+		}
+	},
+	"runSlashCommand": {
+		"errors": {
+			"runError": "Run Slash Command Error"
+		}
+	},
+	"generateImage": {
+		"errors": {
+			"generateError": "Generate Image Error"
+		}
+	},
+	"newTaskTool": {
+		"errors": {
+			"createError": "Create New Task Error"
+		}
+	},
+	"codebaseSearch": {
+		"errors": {
+			"searchError": "Codebase Search Error"
+		}
+	},
+	"switchMode": {
+		"errors": {
+			"switchError": "Switch Mode Error"
+		}
+	},
+	"accessMcpResource": {
+		"errors": {
+			"accessError": "Access MCP Resource Error"
+		}
+	},
+	"useMcpTool": {
+		"errors": {
+			"executeError": "Execute MCP Tool Error"
+		}
+	},
+	"simpleReadFile": {
+		"errors": {
+			"readError": "Read File Error"
+		}
+	},
+	"common": {
+		"errors": {
+			"missingParameter": "Missing Parameter Error",
+			"missingParameterMessage": "Roo tried to use {{toolName}}{{relPath}} without value for required parameter '{{paramName}}'. Retrying..."
 		}
 	}
 }

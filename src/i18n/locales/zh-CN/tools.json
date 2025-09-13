@@ -4,15 +4,135 @@
 		"definitionsOnly": " (仅定义)",
 		"maxLines": " (最多 {{max}} 行)",
 		"imageTooLarge": "图片文件过大 ({{size}} MB)。允许的最大大小为 {{max}} MB。",
-		"imageWithSize": "图片文件 ({{size}} KB)"
+		"imageWithSize": "图片文件 ({{size}} KB)",
+		"errors": {
+			"parseError": "文件解析错误",
+			"invalidLineRange": "无效的行范围",
+			"imageReadError": "图像读取错误",
+			"fileReadError": "文件读取错误"
+		}
 	},
 	"toolRepetitionLimitReached": "Roo 似乎陷入循环，反复尝试同一操作 ({{toolName}})。这可能表明当前策略存在问题。请考虑重新描述任务、提供更具体的指示或引导其尝试不同的方法。",
 	"codebaseSearch": {
-		"approval": "正在搜索代码库中的 '{{query}}'..."
+		"approval": "正在搜索代码库中的 '{{query}}'...",
+		"errors": {
+			"searchError": "代码库搜索错误"
+		}
 	},
 	"newTask": {
 		"errors": {
 			"policy_restriction": "由于策略限制，无法创建新任务。"
+		}
+	},
+	"applyDiff": {
+		"errors": {
+			"fileNotFound": "文件未找到",
+			"fileDoesNotExist": "文件不存在于路径：{{path}}",
+			"fileDoesNotExistDetails": "找不到指定的文件。请验证文件路径并重试。",
+			"applyDiffError": "应用差异错误"
+		}
+	},
+	"insertContent": {
+		"errors": {
+			"invalidLineNumber": "无效的行号",
+			"cannotInsertIntoNonExistent": "无法在不存在的文件的第 {{lineNumber}} 行插入内容。对于新文件，'line' 必须为 0（追加到末尾）或 1（插入到开头）。",
+			"insertContentError": "插入内容错误"
+		}
+	},
+	"common": {
+		"errors": {
+			"missingParameter": "缺少参数",
+			"missingParameterMessage": "Roo 尝试使用 {{toolName}}{{relPath}} 但缺少必需参数 '{{paramName}}' 的值。正在重试..."
+		}
+	},
+	"writeToFile": {
+		"errors": {
+			"writeFileError": "文件写入错误"
+		}
+	},
+	"searchAndReplace": {
+		"errors": {
+			"searchAndReplaceError": "搜索和替换错误"
+		}
+	},
+	"listFiles": {
+		"errors": {
+			"listFilesError": "文件列表错误"
+		}
+	},
+	"searchFiles": {
+		"errors": {
+			"searchFilesError": "文件搜索错误"
+		}
+	},
+	"listCodeDefinitionNames": {
+		"errors": {
+			"parseError": "代码定义解析错误"
+		}
+	},
+	"fetchInstructions": {
+		"errors": {
+			"fetchError": "获取指令错误"
+		}
+	},
+	"updateTodoList": {
+		"errors": {
+			"updateError": "更新待办事项列表错误"
+		}
+	},
+	"executeCommand": {
+		"errors": {
+			"executeError": "执行命令错误"
+		}
+	},
+	"browserAction": {
+		"errors": {
+			"browserError": "浏览器操作错误"
+		}
+	},
+	"askFollowupQuestion": {
+		"errors": {
+			"askError": "提问错误"
+		}
+	},
+	"attemptCompletion": {
+		"errors": {
+			"inspectError": "检查站点错误"
+		}
+	},
+	"runSlashCommand": {
+		"errors": {
+			"runError": "运行斜杠命令错误"
+		}
+	},
+	"generateImage": {
+		"errors": {
+			"generateError": "生成图像错误"
+		}
+	},
+	"newTaskTool": {
+		"errors": {
+			"createError": "创建新任务错误"
+		}
+	},
+	"switchMode": {
+		"errors": {
+			"switchError": "切换模式错误"
+		}
+	},
+	"accessMcpResource": {
+		"errors": {
+			"accessError": "访问MCP资源错误"
+		}
+	},
+	"useMcpTool": {
+		"errors": {
+			"executeError": "执行MCP工具错误"
+		}
+	},
+	"simpleReadFile": {
+		"errors": {
+			"readError": "读取文件错误"
 		}
 	}
 }

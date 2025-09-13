@@ -3,6 +3,7 @@ import fs from "fs/promises"
 
 import { TelemetryService } from "@roo-code/telemetry"
 import { DEFAULT_WRITE_DELAY_MS } from "@roo-code/types"
+import { t } from "../../i18n"
 
 import { ClineSayTool } from "../../shared/ExtensionMessage"
 import { getReadablePath } from "../../utils/path"
@@ -681,7 +682,7 @@ ${errorDetails ? `\nTechnical details:\n${errorDetails}\n` : ""}
 		cline.processQueuedMessages()
 		return
 	} catch (error) {
-		await handleError("applying diff", error)
+		await handleError("applying diff", error, t("tools:applyDiff.errors.applyDiffError"))
 		await cline.diffViewProvider.reset()
 		cline.processQueuedMessages()
 		return

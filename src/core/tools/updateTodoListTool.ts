@@ -6,6 +6,7 @@ import cloneDeep from "clone-deep"
 import crypto from "crypto"
 import { TodoItem, TodoStatus, todoStatusSchema } from "@roo-code/types"
 import { getLatestTodo } from "../../shared/todo"
+import { t } from "../../i18n"
 
 let approvedTodoList: TodoItem[] | undefined = undefined
 
@@ -231,6 +232,6 @@ export async function updateTodoListTool(
 			pushToolResult(formatResponse.toolResult("Todo list updated successfully."))
 		}
 	} catch (error) {
-		await handleError("update todo list", error)
+		await handleError("update todo list", error, t("tools:updateTodoList.errors.updateError"))
 	}
 }

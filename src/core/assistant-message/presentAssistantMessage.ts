@@ -317,12 +317,15 @@ export async function presentAssistantMessage(cline: Task) {
 				return await askApproval("tool", toolMessage)
 			}
 
-			const handleError = async (action: string, error: Error) => {
+			const handleError = async (action: string, error: Error, title?: string) => {
 				const errorString = `Error ${action}: ${JSON.stringify(serializeError(error))}`
 
 				await cline.say(
 					"error",
 					`Error ${action}:\n${error.message ?? JSON.stringify(serializeError(error), null, 2)}`,
+					undefined,
+					undefined,
+					title ? { title } : undefined,
 				)
 
 				pushToolResult(formatResponse.toolError(errorString))

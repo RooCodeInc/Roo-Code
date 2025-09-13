@@ -4,15 +4,135 @@
 		"definitionsOnly": " (僅定義)",
 		"maxLines": " (最多 {{max}} 行)",
 		"imageTooLarge": "圖片檔案過大 ({{size}} MB)。允許的最大大小為 {{max}} MB。",
-		"imageWithSize": "圖片檔案 ({{size}} KB)"
+		"imageWithSize": "圖片檔案 ({{size}} KB)",
+		"errors": {
+			"parseError": "檔案解析錯誤",
+			"invalidLineRange": "無效的行範圍",
+			"imageReadError": "圖像讀取錯誤",
+			"fileReadError": "檔案讀取錯誤"
+		}
 	},
 	"toolRepetitionLimitReached": "Roo 似乎陷入循環，反覆嘗試同一操作 ({{toolName}})。這可能表明目前策略存在問題。請考慮重新描述工作、提供更具體的指示或引導其嘗試不同的方法。",
 	"codebaseSearch": {
-		"approval": "正在搜尋程式碼庫中的「{{query}}」..."
+		"approval": "正在搜尋程式碼庫中的「{{query}}」...",
+		"errors": {
+			"searchError": "程式碼庫搜尋錯誤"
+		}
 	},
 	"newTask": {
 		"errors": {
 			"policy_restriction": "由於政策限制，無法建立新工作。"
+		}
+	},
+	"applyDiff": {
+		"errors": {
+			"fileNotFound": "找不到檔案",
+			"fileDoesNotExist": "檔案不存在於路徑：{{path}}",
+			"fileDoesNotExistDetails": "找不到指定的檔案。請驗證檔案路徑並重試。",
+			"applyDiffError": "應用差異錯誤"
+		}
+	},
+	"insertContent": {
+		"errors": {
+			"invalidLineNumber": "無效的行號",
+			"cannotInsertIntoNonExistent": "無法在不存在的檔案的第 {{lineNumber}} 行插入內容。對於新檔案，'line' 必須為 0（附加到結尾）或 1（插入到開頭）。",
+			"insertContentError": "插入內容錯誤"
+		}
+	},
+	"common": {
+		"errors": {
+			"missingParameter": "缺少參數",
+			"missingParameterMessage": "Roo 嘗試使用 {{toolName}}{{relPath}} 但缺少必要參數 '{{paramName}}' 的值。正在重試..."
+		}
+	},
+	"writeToFile": {
+		"errors": {
+			"writeFileError": "檔案寫入錯誤"
+		}
+	},
+	"searchAndReplace": {
+		"errors": {
+			"searchAndReplaceError": "搜尋和替換錯誤"
+		}
+	},
+	"listFiles": {
+		"errors": {
+			"listFilesError": "檔案列表錯誤"
+		}
+	},
+	"searchFiles": {
+		"errors": {
+			"searchFilesError": "檔案搜尋錯誤"
+		}
+	},
+	"listCodeDefinitionNames": {
+		"errors": {
+			"parseError": "程式碼定義解析錯誤"
+		}
+	},
+	"fetchInstructions": {
+		"errors": {
+			"fetchError": "取得指令錯誤"
+		}
+	},
+	"updateTodoList": {
+		"errors": {
+			"updateError": "更新待辦事項清單錯誤"
+		}
+	},
+	"executeCommand": {
+		"errors": {
+			"executeError": "執行命令錯誤"
+		}
+	},
+	"browserAction": {
+		"errors": {
+			"browserError": "瀏覽器操作錯誤"
+		}
+	},
+	"askFollowupQuestion": {
+		"errors": {
+			"askError": "提問錯誤"
+		}
+	},
+	"attemptCompletion": {
+		"errors": {
+			"inspectError": "檢查網站錯誤"
+		}
+	},
+	"runSlashCommand": {
+		"errors": {
+			"runError": "執行斜線命令錯誤"
+		}
+	},
+	"generateImage": {
+		"errors": {
+			"generateError": "生成圖片錯誤"
+		}
+	},
+	"newTaskTool": {
+		"errors": {
+			"createError": "建立新任務錯誤"
+		}
+	},
+	"switchMode": {
+		"errors": {
+			"switchError": "切換模式錯誤"
+		}
+	},
+	"accessMcpResource": {
+		"errors": {
+			"accessError": "存取MCP資源錯誤"
+		}
+	},
+	"useMcpTool": {
+		"errors": {
+			"executeError": "執行MCP工具錯誤"
+		}
+	},
+	"simpleReadFile": {
+		"errors": {
+			"readError": "讀取檔案錯誤"
 		}
 	}
 }

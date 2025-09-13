@@ -46,6 +46,22 @@ vi.mock("../../ignore/RooIgnoreController", () => ({
 	},
 }))
 
+vi.mock("../../../i18n", () => ({
+	t: vi.fn((key: string, params?: any) => {
+		// Return the key without the namespace prefix for testing
+		const keyWithoutNamespace = key.replace(/^[^:]+:/, "")
+		if (params) {
+			// Simple parameter replacement for testing
+			let result = keyWithoutNamespace
+			Object.entries(params).forEach(([key, value]) => {
+				result = result.replace(`{{${key}}}`, String(value))
+			})
+			return result
+		}
+		return keyWithoutNamespace
+	}),
+}))
+
 describe("insertContentTool", () => {
 	const testFilePath = "test/file.txt"
 	// Use a consistent mock absolute path for testing
@@ -226,7 +242,19 @@ describe("insertContentTool", () => {
 			expect(mockedFsReadFile).not.toHaveBeenCalled()
 			expect(mockCline.consecutiveMistakeCount).toBe(1)
 			expect(mockCline.recordToolError).toHaveBeenCalledWith("insert_content")
-			expect(mockCline.say).toHaveBeenCalledWith("error", expect.stringContaining("non-existent file"))
+			expect(mockCline.say).toHaveBeenCalledWith(
+				"error",
+				"insertContent.errors.cannotInsertIntoNonExistent",
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				expect.objectContaining({
+					metadata: expect.objectContaining({
+						title: "insertContent.errors.invalidLineNumber",
+					}),
+				}),
+			)
 			expect(mockCline.diffViewProvider.update).not.toHaveBeenCalled()
 			expect(mockCline.diffViewProvider.pushToolWriteResult).not.toHaveBeenCalled()
 		})

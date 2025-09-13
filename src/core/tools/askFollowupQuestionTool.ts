@@ -2,6 +2,7 @@ import { Task } from "../task/Task"
 import { ToolUse, AskApproval, HandleError, PushToolResult, RemoveClosingTag } from "../../shared/tools"
 import { formatResponse } from "../prompts/responses"
 import { parseXml } from "../../utils/xml"
+import { t } from "../../i18n"
 
 export async function askFollowupQuestionTool(
 	cline: Task,
@@ -48,7 +49,17 @@ export async function askFollowupQuestionTool(
 				} catch (error) {
 					cline.consecutiveMistakeCount++
 					cline.recordToolError("ask_followup_question")
-					await cline.say("error", `Failed to parse operations: ${error.message}`)
+					await cline.say(
+						"error",
+						`Failed to parse operations: ${error.message}`,
+						undefined,
+						undefined,
+						undefined,
+						undefined,
+						{
+							metadata: { title: "XML Parse Error" },
+						},
+					)
 					pushToolResult(formatResponse.toolError("Invalid operations xml format"))
 					return
 				}
@@ -83,7 +94,7 @@ export async function askFollowupQuestionTool(
 			return
 		}
 	} catch (error) {
-		await handleError("asking question", error)
+		await handleError("asking question", error, t("tools:askFollowupQuestion.errors.askError"))
 		return
 	}
 }

@@ -4,15 +4,135 @@
 		"definitionsOnly": " (apenas definições)",
 		"maxLines": " (máx. {{max}} linhas)",
 		"imageTooLarge": "Arquivo de imagem é muito grande ({{size}} MB). O tamanho máximo permitido é {{max}} MB.",
-		"imageWithSize": "Arquivo de imagem ({{size}} KB)"
+		"imageWithSize": "Arquivo de imagem ({{size}} KB)",
+		"errors": {
+			"parseError": "Erro de Análise do Arquivo",
+			"invalidLineRange": "Intervalo de Linhas Inválido",
+			"imageReadError": "Erro de Leitura de Imagem",
+			"fileReadError": "Erro de Leitura do Arquivo"
+		}
 	},
 	"toolRepetitionLimitReached": "Roo parece estar preso em um loop, tentando a mesma ação ({{toolName}}) repetidamente. Isso pode indicar um problema com sua estratégia atual. Considere reformular a tarefa, fornecer instruções mais específicas ou guiá-lo para uma abordagem diferente.",
 	"codebaseSearch": {
-		"approval": "Pesquisando '{{query}}' na base de código..."
+		"approval": "Pesquisando '{{query}}' na base de código...",
+		"errors": {
+			"searchError": "Erro de Pesquisa de Código"
+		}
 	},
 	"newTask": {
 		"errors": {
 			"policy_restriction": "Falha ao criar nova tarefa devido a restrições de política."
+		}
+	},
+	"applyDiff": {
+		"errors": {
+			"fileNotFound": "Arquivo não encontrado",
+			"fileDoesNotExist": "O arquivo não existe no caminho: {{path}}",
+			"fileDoesNotExistDetails": "O arquivo especificado não pôde ser encontrado. Por favor, verifique o caminho do arquivo e tente novamente.",
+			"applyDiffError": "Erro ao Aplicar Diff"
+		}
+	},
+	"insertContent": {
+		"errors": {
+			"invalidLineNumber": "Número de linha inválido",
+			"cannotInsertIntoNonExistent": "Não é possível inserir conteúdo na linha {{lineNumber}} em um arquivo inexistente. Para novos arquivos, 'line' deve ser 0 (para adicionar ao final) ou 1 (para inserir no início).",
+			"insertContentError": "Erro ao Inserir Conteúdo"
+		}
+	},
+	"common": {
+		"errors": {
+			"missingParameter": "Parâmetro ausente",
+			"missingParameterMessage": "Roo tentou usar {{toolName}}{{relPath}} sem valor para o parâmetro obrigatório '{{paramName}}'. Tentando novamente..."
+		}
+	},
+	"writeToFile": {
+		"errors": {
+			"writeFileError": "Erro de Escrita do Arquivo"
+		}
+	},
+	"searchAndReplace": {
+		"errors": {
+			"searchAndReplaceError": "Erro de Busca e Substituição"
+		}
+	},
+	"listFiles": {
+		"errors": {
+			"listFilesError": "Erro ao Listar Arquivos"
+		}
+	},
+	"searchFiles": {
+		"errors": {
+			"searchFilesError": "Erro ao Pesquisar Arquivos"
+		}
+	},
+	"listCodeDefinitionNames": {
+		"errors": {
+			"parseError": "Erro ao Analisar Definições de Código"
+		}
+	},
+	"fetchInstructions": {
+		"errors": {
+			"fetchError": "Erro ao Buscar Instruções"
+		}
+	},
+	"updateTodoList": {
+		"errors": {
+			"updateError": "Erro ao Atualizar Lista de Tarefas"
+		}
+	},
+	"executeCommand": {
+		"errors": {
+			"executeError": "Erro ao Executar Comando"
+		}
+	},
+	"browserAction": {
+		"errors": {
+			"browserError": "Erro de Ação do Navegador"
+		}
+	},
+	"askFollowupQuestion": {
+		"errors": {
+			"askError": "Erro ao Fazer Pergunta"
+		}
+	},
+	"attemptCompletion": {
+		"errors": {
+			"inspectError": "Erro ao Inspecionar Site"
+		}
+	},
+	"runSlashCommand": {
+		"errors": {
+			"runError": "Erro ao Executar Comando Slash"
+		}
+	},
+	"generateImage": {
+		"errors": {
+			"generateError": "Erro ao Gerar Imagem"
+		}
+	},
+	"newTaskTool": {
+		"errors": {
+			"createError": "Erro ao Criar Nova Tarefa"
+		}
+	},
+	"switchMode": {
+		"errors": {
+			"switchError": "Erro ao Alternar Modo"
+		}
+	},
+	"accessMcpResource": {
+		"errors": {
+			"accessError": "Erro ao Acessar Recurso MCP"
+		}
+	},
+	"useMcpTool": {
+		"errors": {
+			"executeError": "Erro ao Executar Ferramenta MCP"
+		}
+	},
+	"simpleReadFile": {
+		"errors": {
+			"readError": "Erro ao Ler Arquivo"
 		}
 	}
 }

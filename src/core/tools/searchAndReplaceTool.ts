@@ -13,6 +13,7 @@ import { fileExistsAtPath } from "../../utils/fs"
 import { RecordSource } from "../context-tracking/FileContextTrackerTypes"
 import { DEFAULT_WRITE_DELAY_MS } from "@roo-code/types"
 import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
+import { t } from "../../i18n"
 
 /**
  * Tool for performing search and replace operations on files
@@ -137,7 +138,9 @@ export async function searchAndReplaceTool(
 			const formattedError = formatResponse.toolError(
 				`File does not exist at path: ${absolutePath}\nThe specified file could not be found. Please verify the file path and try again.`,
 			)
-			await cline.say("error", formattedError)
+			await cline.say("error", formattedError, undefined, undefined, undefined, undefined, {
+				metadata: { title: "File Not Found" },
+			})
 			pushToolResult(formattedError)
 			return
 		}
@@ -156,7 +159,9 @@ export async function searchAndReplaceTool(
 				error instanceof Error ? error.message : String(error)
 			}\nPlease verify file permissions and try again.`
 			const formattedError = formatResponse.toolError(errorMessage)
-			await cline.say("error", formattedError)
+			await cline.say("error", formattedError, undefined, undefined, undefined, undefined, {
+				metadata: { title: "File Read Error" },
+			})
 			pushToolResult(formattedError)
 			return
 		}
@@ -267,7 +272,7 @@ export async function searchAndReplaceTool(
 		// Process any queued messages after file edit completes
 		cline.processQueuedMessages()
 	} catch (error) {
-		handleError("search and replace", error)
+		handleError("search and replace", error, t("tools:searchAndReplace.errors.searchAndReplaceError"))
 		await cline.diffViewProvider.reset()
 	}
 }

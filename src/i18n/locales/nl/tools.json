@@ -4,15 +4,135 @@
 		"definitionsOnly": " (alleen definities)",
 		"maxLines": " (max {{max}} regels)",
 		"imageTooLarge": "Afbeeldingsbestand is te groot ({{size}} MB). De maximaal toegestane grootte is {{max}} MB.",
-		"imageWithSize": "Afbeeldingsbestand ({{size}} KB)"
+		"imageWithSize": "Afbeeldingsbestand ({{size}} KB)",
+		"errors": {
+			"parseError": "Bestand Parse Fout",
+			"invalidLineRange": "Ongeldig Regelbereik",
+			"imageReadError": "Afbeelding Leesfout",
+			"fileReadError": "Bestand Leesfout"
+		}
 	},
 	"toolRepetitionLimitReached": "Roo lijkt vast te zitten in een lus, waarbij hij herhaaldelijk dezelfde actie ({{toolName}}) probeert. Dit kan duiden op een probleem met de huidige strategie. Overweeg de taak te herformuleren, specifiekere instructies te geven of Roo naar een andere aanpak te leiden.",
 	"codebaseSearch": {
-		"approval": "Zoeken naar '{{query}}' in codebase..."
+		"approval": "Zoeken naar '{{query}}' in codebase...",
+		"errors": {
+			"searchError": "Codebase zoekfout"
+		}
 	},
 	"newTask": {
 		"errors": {
 			"policy_restriction": "Kan geen nieuwe taak aanmaken vanwege beleidsbeperkingen."
+		}
+	},
+	"applyDiff": {
+		"errors": {
+			"fileNotFound": "Bestand niet gevonden",
+			"fileDoesNotExist": "Bestand bestaat niet op pad: {{path}}",
+			"fileDoesNotExistDetails": "Het opgegeven bestand kon niet worden gevonden. Controleer het bestandspad en probeer het opnieuw.",
+			"applyDiffError": "Diff Toepassingsfout"
+		}
+	},
+	"insertContent": {
+		"errors": {
+			"invalidLineNumber": "Ongeldig regelnummer",
+			"cannotInsertIntoNonExistent": "Kan geen inhoud invoegen op regel {{lineNumber}} in een niet-bestaand bestand. Voor nieuwe bestanden moet 'line' 0 zijn (om toe te voegen aan het einde) of 1 (om in te voegen aan het begin).",
+			"insertContentError": "Inhoud Invoegfout"
+		}
+	},
+	"common": {
+		"errors": {
+			"missingParameter": "Ontbrekende parameter",
+			"missingParameterMessage": "Roo probeerde {{toolName}}{{relPath}} te gebruiken zonder waarde voor de vereiste parameter '{{paramName}}'. Opnieuw proberen..."
+		}
+	},
+	"writeToFile": {
+		"errors": {
+			"writeFileError": "Bestand Schrijffout"
+		}
+	},
+	"searchAndReplace": {
+		"errors": {
+			"searchAndReplaceError": "Zoek en Vervang Fout"
+		}
+	},
+	"listFiles": {
+		"errors": {
+			"listFilesError": "Bestandslijstfout"
+		}
+	},
+	"searchFiles": {
+		"errors": {
+			"searchFilesError": "Bestandszoekfout"
+		}
+	},
+	"listCodeDefinitionNames": {
+		"errors": {
+			"parseError": "Code-definitie parseerfout"
+		}
+	},
+	"fetchInstructions": {
+		"errors": {
+			"fetchError": "Instructies ophalfout"
+		}
+	},
+	"updateTodoList": {
+		"errors": {
+			"updateError": "Todo-lijst updatefout"
+		}
+	},
+	"executeCommand": {
+		"errors": {
+			"executeError": "Opdracht uitvoerfout"
+		}
+	},
+	"browserAction": {
+		"errors": {
+			"browserError": "Browser-actiefout"
+		}
+	},
+	"askFollowupQuestion": {
+		"errors": {
+			"askError": "Vraagfout"
+		}
+	},
+	"attemptCompletion": {
+		"errors": {
+			"inspectError": "Site-inspectiefout"
+		}
+	},
+	"runSlashCommand": {
+		"errors": {
+			"runError": "Slash-opdracht uitvoerfout"
+		}
+	},
+	"generateImage": {
+		"errors": {
+			"generateError": "Afbeelding generatiefout"
+		}
+	},
+	"newTaskTool": {
+		"errors": {
+			"createError": "Nieuwe taak aanmaakfout"
+		}
+	},
+	"switchMode": {
+		"errors": {
+			"switchError": "Modus wisselfout"
+		}
+	},
+	"accessMcpResource": {
+		"errors": {
+			"accessError": "MCP-bron toegangsfout"
+		}
+	},
+	"useMcpTool": {
+		"errors": {
+			"executeError": "MCP-tool uitvoerfout"
+		}
+	},
+	"simpleReadFile": {
+		"errors": {
+			"readError": "Bestand leesfout"
 		}
 	}
 }

@@ -4,18 +4,136 @@
 		"definitionsOnly": " (hanya definisi)",
 		"maxLines": " (maks {{max}} baris)",
 		"imageTooLarge": "File gambar terlalu besar ({{size}} MB). Ukuran maksimum yang diizinkan adalah {{max}} MB.",
-		"imageWithSize": "File gambar ({{size}} KB)"
+		"imageWithSize": "File gambar ({{size}} KB)",
+		"errors": {
+			"parseError": "Kesalahan Parse File",
+			"invalidLineRange": "Rentang Baris Tidak Valid",
+			"imageReadError": "Kesalahan Membaca Gambar",
+			"fileReadError": "Kesalahan Membaca File"
+		}
 	},
 	"toolRepetitionLimitReached": "Roo tampaknya terjebak dalam loop, mencoba aksi yang sama ({{toolName}}) berulang kali. Ini mungkin menunjukkan masalah dengan strategi saat ini. Pertimbangkan untuk mengubah frasa tugas, memberikan instruksi yang lebih spesifik, atau mengarahkannya ke pendekatan yang berbeda.",
 	"codebaseSearch": {
-		"approval": "Mencari '{{query}}' di codebase..."
+		"approval": "Mencari '{{query}}' di codebase...",
+		"errors": {
+			"searchError": "Kesalahan Pencarian Kode"
+		}
 	},
 	"searchFiles": {
-		"workspaceBoundaryError": "Tidak dapat mencari di luar workspace. Path '{{path}}' berada di luar workspace saat ini."
+		"workspaceBoundaryError": "Tidak dapat mencari di luar workspace. Path '{{path}}' berada di luar workspace saat ini.",
+		"errors": {
+			"searchFilesError": "Kesalahan Pencarian File"
+		}
 	},
 	"newTask": {
 		"errors": {
 			"policy_restriction": "Gagal membuat tugas baru karena pembatasan kebijakan."
+		}
+	},
+	"applyDiff": {
+		"errors": {
+			"fileNotFound": "File Tidak Ditemukan",
+			"fileDoesNotExist": "File tidak ada di path: {{path}}",
+			"fileDoesNotExistDetails": "File yang ditentukan tidak dapat ditemukan. Silakan verifikasi path file dan coba lagi.",
+			"applyDiffError": "Kesalahan Menerapkan Diff"
+		}
+	},
+	"insertContent": {
+		"errors": {
+			"invalidLineNumber": "Nomor Baris Tidak Valid",
+			"cannotInsertIntoNonExistent": "Tidak dapat menyisipkan konten di baris {{lineNumber}} ke file yang tidak ada. Untuk file baru, 'line' harus 0 (untuk menambahkan di akhir) atau 1 (untuk menyisipkan di awal).",
+			"insertContentError": "Kesalahan Menyisipkan Konten"
+		}
+	},
+	"common": {
+		"errors": {
+			"missingParameter": "Parameter Hilang",
+			"missingParameterMessage": "Roo mencoba menggunakan {{toolName}}{{relPath}} tanpa nilai untuk parameter yang diperlukan '{{paramName}}'. Mencoba lagi..."
+		}
+	},
+	"writeToFile": {
+		"errors": {
+			"writeFileError": "Kesalahan Menulis File"
+		}
+	},
+	"searchAndReplace": {
+		"errors": {
+			"searchAndReplaceError": "Kesalahan Cari dan Ganti"
+		}
+	},
+	"listFiles": {
+		"errors": {
+			"listFilesError": "Kesalahan Daftar File"
+		}
+	},
+	"listCodeDefinitionNames": {
+		"errors": {
+			"parseError": "Kesalahan Parse Definisi Kode"
+		}
+	},
+	"fetchInstructions": {
+		"errors": {
+			"fetchError": "Kesalahan Mengambil Instruksi"
+		}
+	},
+	"updateTodoList": {
+		"errors": {
+			"updateError": "Kesalahan Pembaruan Daftar Todo"
+		}
+	},
+	"executeCommand": {
+		"errors": {
+			"executeError": "Kesalahan Eksekusi Perintah"
+		}
+	},
+	"browserAction": {
+		"errors": {
+			"browserError": "Kesalahan Aksi Browser"
+		}
+	},
+	"askFollowupQuestion": {
+		"errors": {
+			"askError": "Kesalahan Mengajukan Pertanyaan"
+		}
+	},
+	"attemptCompletion": {
+		"errors": {
+			"inspectError": "Kesalahan Inspeksi Situs"
+		}
+	},
+	"runSlashCommand": {
+		"errors": {
+			"runError": "Kesalahan Menjalankan Perintah Slash"
+		}
+	},
+	"generateImage": {
+		"errors": {
+			"generateError": "Kesalahan Menghasilkan Gambar"
+		}
+	},
+	"newTaskTool": {
+		"errors": {
+			"createError": "Kesalahan Membuat Tugas Baru"
+		}
+	},
+	"switchMode": {
+		"errors": {
+			"switchError": "Kesalahan Beralih Mode"
+		}
+	},
+	"accessMcpResource": {
+		"errors": {
+			"accessError": "Kesalahan Akses Sumber Daya MCP"
+		}
+	},
+	"useMcpTool": {
+		"errors": {
+			"executeError": "Kesalahan Eksekusi Alat MCP"
+		}
+	},
+	"simpleReadFile": {
+		"errors": {
+			"readError": "Kesalahan Membaca File"
 		}
 	}
 }

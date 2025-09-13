@@ -224,6 +224,7 @@ export const clineMessageSchema = z.object({
 					reasoning_summary: z.string().optional(),
 				})
 				.optional(),
+			title: z.string().optional(), // Custom title for error messages
 		})
 		.optional(),
 })

@@ -62,7 +62,17 @@ async function validateParams(
 		} catch (error) {
 			cline.consecutiveMistakeCount++
 			cline.recordToolError("use_mcp_tool")
-			await cline.say("error", t("mcp:errors.invalidJsonArgument", { toolName: params.tool_name }))
+			await cline.say(
+				"error",
+				t("mcp:errors.invalidJsonArgument", { toolName: params.tool_name }),
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				{
+					metadata: { title: "Invalid JSON Arguments" },
+				},
+			)
 
 			pushToolResult(
 				formatResponse.toolError(
@@ -109,7 +119,17 @@ async function validateToolExists(
 
 			cline.consecutiveMistakeCount++
 			cline.recordToolError("use_mcp_tool")
-			await cline.say("error", t("mcp:errors.serverNotFound", { serverName, availableServers }))
+			await cline.say(
+				"error",
+				t("mcp:errors.serverNotFound", { serverName, availableServers }),
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				{
+					metadata: { title: "MCP Server Not Found" },
+				},
+			)
 
 			pushToolResult(formatResponse.unknownMcpServerError(serverName, availableServersArray))
 			return { isValid: false, availableTools: [] }
@@ -127,6 +147,13 @@ async function validateToolExists(
 					serverName,
 					availableTools: "No tools available",
 				}),
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				{
+					metadata: { title: "MCP Tool Not Found" },
+				},
 			)
 
 			pushToolResult(formatResponse.unknownMcpToolError(serverName, toolName, []))
@@ -149,6 +176,13 @@ async function validateToolExists(
 					serverName,
 					availableTools: availableToolNames.join(", "),
 				}),
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				{
+					metadata: { title: "MCP Tool Not Found" },
+				},
 			)
 
 			pushToolResult(formatResponse.unknownMcpToolError(serverName, toolName, availableToolNames))
@@ -171,6 +205,13 @@ async function validateToolExists(
 					availableTools:
 						enabledToolNames.length > 0 ? enabledToolNames.join(", ") : "No enabled tools available",
 				}),
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				{
+					metadata: { title: "MCP Tool Disabled" },
+				},
 			)
 
 			pushToolResult(formatResponse.unknownMcpToolError(serverName, toolName, enabledToolNames))

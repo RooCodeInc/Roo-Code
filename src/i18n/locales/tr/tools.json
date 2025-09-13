@@ -4,15 +4,135 @@
 		"definitionsOnly": " (sadece tanımlar)",
 		"maxLines": " (maks. {{max}} satır)",
 		"imageTooLarge": "Görüntü dosyası çok büyük ({{size}} MB). İzin verilen maksimum boyut {{max}} MB.",
-		"imageWithSize": "Görüntü dosyası ({{size}} KB)"
+		"imageWithSize": "Görüntü dosyası ({{size}} KB)",
+		"errors": {
+			"parseError": "Dosya Ayrıştırma Hatası",
+			"invalidLineRange": "Geçersiz Satır Aralığı",
+			"imageReadError": "Görüntü Okuma Hatası",
+			"fileReadError": "Dosya Okuma Hatası"
+		}
 	},
 	"toolRepetitionLimitReached": "Roo bir döngüye takılmış gibi görünüyor, aynı eylemi ({{toolName}}) tekrar tekrar deniyor. Bu, mevcut stratejisinde bir sorun olduğunu gösterebilir. Görevi yeniden ifade etmeyi, daha spesifik talimatlar vermeyi veya onu farklı bir yaklaşıma yönlendirmeyi düşünün.",
 	"codebaseSearch": {
-		"approval": "Kod tabanında '{{query}}' aranıyor..."
+		"approval": "Kod tabanında '{{query}}' aranıyor...",
+		"errors": {
+			"searchError": "Kod Tabanı Arama Hatası"
+		}
 	},
 	"newTask": {
 		"errors": {
 			"policy_restriction": "Politika kısıtlamaları nedeniyle yeni görev oluşturulamadı."
+		}
+	},
+	"applyDiff": {
+		"errors": {
+			"fileNotFound": "Dosya Bulunamadı",
+			"fileDoesNotExist": "Dosya şu yolda mevcut değil: {{path}}",
+			"fileDoesNotExistDetails": "Belirtilen dosya bulunamadı. Lütfen dosya yolunu doğrulayın ve tekrar deneyin.",
+			"applyDiffError": "Fark Uygulama Hatası"
+		}
+	},
+	"insertContent": {
+		"errors": {
+			"invalidLineNumber": "Geçersiz Satır Numarası",
+			"cannotInsertIntoNonExistent": "Var olmayan bir dosyanın {{lineNumber}}. satırına içerik eklenemez. Yeni dosyalar için 'line' 0 (sona eklemek için) veya 1 (başa eklemek için) olmalıdır.",
+			"insertContentError": "İçerik Ekleme Hatası"
+		}
+	},
+	"common": {
+		"errors": {
+			"missingParameter": "Eksik Parametre",
+			"missingParameterMessage": "Roo, gerekli '{{paramName}}' parametresi için değer olmadan {{toolName}}{{relPath}} kullanmaya çalıştı. Yeniden deneniyor..."
+		}
+	},
+	"writeToFile": {
+		"errors": {
+			"writeFileError": "Dosya Yazma Hatası"
+		}
+	},
+	"searchAndReplace": {
+		"errors": {
+			"searchAndReplaceError": "Ara ve Değiştir Hatası"
+		}
+	},
+	"listFiles": {
+		"errors": {
+			"listFilesError": "Dosya Listeleme Hatası"
+		}
+	},
+	"searchFiles": {
+		"errors": {
+			"searchFilesError": "Dosya Arama Hatası"
+		}
+	},
+	"listCodeDefinitionNames": {
+		"errors": {
+			"parseError": "Kod Tanımları Ayrıştırma Hatası"
+		}
+	},
+	"fetchInstructions": {
+		"errors": {
+			"fetchError": "Talimat Getirme Hatası"
+		}
+	},
+	"updateTodoList": {
+		"errors": {
+			"updateError": "Yapılacaklar Listesi Güncelleme Hatası"
+		}
+	},
+	"executeCommand": {
+		"errors": {
+			"executeError": "Komut Yürütme Hatası"
+		}
+	},
+	"browserAction": {
+		"errors": {
+			"browserError": "Tarayıcı Eylem Hatası"
+		}
+	},
+	"askFollowupQuestion": {
+		"errors": {
+			"askError": "Soru Sorma Hatası"
+		}
+	},
+	"attemptCompletion": {
+		"errors": {
+			"inspectError": "Site İnceleme Hatası"
+		}
+	},
+	"runSlashCommand": {
+		"errors": {
+			"runError": "Slash Komutu Çalıştırma Hatası"
+		}
+	},
+	"generateImage": {
+		"errors": {
+			"generateError": "Görüntü Oluşturma Hatası"
+		}
+	},
+	"newTaskTool": {
+		"errors": {
+			"createError": "Yeni Görev Oluşturma Hatası"
+		}
+	},
+	"switchMode": {
+		"errors": {
+			"switchError": "Mod Değiştirme Hatası"
+		}
+	},
+	"accessMcpResource": {
+		"errors": {
+			"accessError": "MCP Kaynağı Erişim Hatası"
+		}
+	},
+	"useMcpTool": {
+		"errors": {
+			"executeError": "MCP Aracı Yürütme Hatası"
+		}
+	},
+	"simpleReadFile": {
+		"errors": {
+			"readError": "Dosya Okuma Hatası"
 		}
 	}
 }

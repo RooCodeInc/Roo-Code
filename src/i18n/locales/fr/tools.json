@@ -4,15 +4,135 @@
 		"definitionsOnly": " (définitions uniquement)",
 		"maxLines": " (max {{max}} lignes)",
 		"imageTooLarge": "Le fichier image est trop volumineux ({{size}} MB). La taille maximale autorisée est {{max}} MB.",
-		"imageWithSize": "Fichier image ({{size}} Ko)"
+		"imageWithSize": "Fichier image ({{size}} Ko)",
+		"errors": {
+			"parseError": "Erreur d'Analyse du Fichier",
+			"invalidLineRange": "Plage de Lignes Invalide",
+			"imageReadError": "Erreur de Lecture d'Image",
+			"fileReadError": "Erreur de Lecture du Fichier"
+		}
 	},
 	"toolRepetitionLimitReached": "Roo semble être bloqué dans une boucle, tentant la même action ({{toolName}}) de façon répétée. Cela pourrait indiquer un problème avec sa stratégie actuelle. Envisage de reformuler la tâche, de fournir des instructions plus spécifiques ou de le guider vers une approche différente.",
 	"codebaseSearch": {
-		"approval": "Recherche de '{{query}}' dans la base de code..."
+		"approval": "Recherche de '{{query}}' dans la base de code...",
+		"errors": {
+			"searchError": "Erreur de recherche de code"
+		}
 	},
 	"newTask": {
 		"errors": {
 			"policy_restriction": "Impossible de créer une nouvelle tâche en raison de restrictions de politique."
+		}
+	},
+	"applyDiff": {
+		"errors": {
+			"fileNotFound": "Fichier introuvable",
+			"fileDoesNotExist": "Le fichier n'existe pas au chemin : {{path}}",
+			"fileDoesNotExistDetails": "Le fichier spécifié n'a pas pu être trouvé. Veuillez vérifier le chemin du fichier et réessayer.",
+			"applyDiffError": "Erreur d'Application de Diff"
+		}
+	},
+	"insertContent": {
+		"errors": {
+			"invalidLineNumber": "Numéro de ligne invalide",
+			"cannotInsertIntoNonExistent": "Impossible d'insérer du contenu à la ligne {{lineNumber}} dans un fichier inexistant. Pour les nouveaux fichiers, 'line' doit être 0 (pour ajouter à la fin) ou 1 (pour insérer au début).",
+			"insertContentError": "Erreur d'Insertion de Contenu"
+		}
+	},
+	"common": {
+		"errors": {
+			"missingParameter": "Paramètre manquant",
+			"missingParameterMessage": "Roo a essayé d'utiliser {{toolName}}{{relPath}} sans valeur pour le paramètre requis '{{paramName}}'. Nouvelle tentative..."
+		}
+	},
+	"writeToFile": {
+		"errors": {
+			"writeFileError": "Erreur d'Écriture du Fichier"
+		}
+	},
+	"searchAndReplace": {
+		"errors": {
+			"searchAndReplaceError": "Erreur de Recherche et Remplacement"
+		}
+	},
+	"listFiles": {
+		"errors": {
+			"listFilesError": "Erreur de liste de fichiers"
+		}
+	},
+	"searchFiles": {
+		"errors": {
+			"searchFilesError": "Erreur de recherche de fichiers"
+		}
+	},
+	"listCodeDefinitionNames": {
+		"errors": {
+			"parseError": "Erreur d'analyse des définitions de code"
+		}
+	},
+	"fetchInstructions": {
+		"errors": {
+			"fetchError": "Erreur de récupération des instructions"
+		}
+	},
+	"updateTodoList": {
+		"errors": {
+			"updateError": "Erreur de mise à jour de la liste de tâches"
+		}
+	},
+	"executeCommand": {
+		"errors": {
+			"executeError": "Erreur d'exécution de commande"
+		}
+	},
+	"browserAction": {
+		"errors": {
+			"browserError": "Erreur d'action du navigateur"
+		}
+	},
+	"askFollowupQuestion": {
+		"errors": {
+			"askError": "Erreur de question"
+		}
+	},
+	"attemptCompletion": {
+		"errors": {
+			"inspectError": "Erreur d'inspection du site"
+		}
+	},
+	"runSlashCommand": {
+		"errors": {
+			"runError": "Erreur d'exécution de commande slash"
+		}
+	},
+	"generateImage": {
+		"errors": {
+			"generateError": "Erreur de génération d'image"
+		}
+	},
+	"newTaskTool": {
+		"errors": {
+			"createError": "Erreur de création de nouvelle tâche"
+		}
+	},
+	"switchMode": {
+		"errors": {
+			"switchError": "Erreur de changement de mode"
+		}
+	},
+	"accessMcpResource": {
+		"errors": {
+			"accessError": "Erreur d'accès à la ressource MCP"
+		}
+	},
+	"useMcpTool": {
+		"errors": {
+			"executeError": "Erreur d'exécution de l'outil MCP"
+		}
+	},
+	"simpleReadFile": {
+		"errors": {
+			"readError": "Erreur de lecture de fichier"
 		}
 	}
 }

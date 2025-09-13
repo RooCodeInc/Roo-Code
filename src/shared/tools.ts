@@ -11,7 +11,7 @@ export type AskApproval = (
 	forceApproval?: boolean,
 ) => Promise<boolean>
 
-export type HandleError = (action: string, error: Error) => Promise<void>
+export type HandleError = (action: string, error: Error, title?: string) => Promise<void>
 
 export type PushToolResult = (content: ToolResponse) => void
 

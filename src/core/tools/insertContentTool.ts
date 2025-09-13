@@ -12,6 +12,7 @@ import { fileExistsAtPath } from "../../utils/fs"
 import { insertGroups } from "../diff/insert-groups"
 import { DEFAULT_WRITE_DELAY_MS } from "@roo-code/types"
 import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
+import { t } from "../../i18n"
 
 export async function insertContentTool(
 	cline: Task,
@@ -86,8 +87,10 @@ export async function insertContentTool(
 			if (lineNumber > 1) {
 				cline.consecutiveMistakeCount++
 				cline.recordToolError("insert_content")
-				const formattedError = `Cannot insert content at line ${lineNumber} into a non-existent file. For new files, 'line' must be 0 (to append) or 1 (to insert at the beginning).`
-				await cline.say("error", formattedError)
+				const formattedError = t("tools:insertContent.errors.cannotInsertIntoNonExistent", { lineNumber })
+				await cline.say("error", formattedError, undefined, undefined, undefined, undefined, {
+					metadata: { title: t("tools:insertContent.errors.invalidLineNumber") },
+				})
 				pushToolResult(formattedError)
 				return
 			}
@@ -191,7 +194,7 @@ export async function insertContentTool(
 		// Process any queued messages after file edit completes
 		cline.processQueuedMessages()
 	} catch (error) {
-		handleError("insert content", error)
+		handleError("insert content", error, t("tools:insertContent.errors.insertContentError"))
 		await cline.diffViewProvider.reset()
 	}
 }
