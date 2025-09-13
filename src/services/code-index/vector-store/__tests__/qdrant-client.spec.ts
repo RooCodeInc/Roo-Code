@@ -1,5 +1,6 @@
 import { QdrantClient } from "@qdrant/js-client-rest"
 import { createHash } from "crypto"
+import * as fs from "fs"
 
 import { QdrantVectorStore } from "../qdrant-client"
 import { getWorkspacePath } from "../../../../utils/path"
@@ -8,6 +9,7 @@ import { DEFAULT_MAX_SEARCH_RESULTS, DEFAULT_SEARCH_MIN_SCORE } from "../../cons
 // Mocks
 vitest.mock("@qdrant/js-client-rest")
 vitest.mock("crypto")
+vitest.mock("fs")
 vitest.mock("../../../../utils/path")
 vitest.mock("../../../../i18n", () => ({
 	t: (key: string, params?: any) => {
@@ -68,6 +70,10 @@ describe("QdrantVectorStore", () => {
 		// Mock getWorkspacePath
 		;(getWorkspacePath as any).mockReturnValue(mockWorkspacePath)
 
+		// Mock fs functions - default to no git repo and no config file
+		;(fs.existsSync as any).mockReturnValue(false)
+		;(fs.readFileSync as any).mockReturnValue("")
+
 		vectorStore = new QdrantVectorStore(mockWorkspacePath, mockQdrantUrl, mockVectorSize, mockApiKey)
 	})
 
@@ -82,12 +88,100 @@ describe("QdrantVectorStore", () => {
 				"User-Agent": "Roo-Code",
 			},
 		})
+		// When no git repo or custom config, should fall back to workspace-based hash
 		expect(createHash).toHaveBeenCalledWith("sha256")
 		expect(mockCreateHashInstance.update).toHaveBeenCalledWith(mockWorkspacePath)
 		expect(mockCreateHashInstance.digest).toHaveBeenCalledWith("hex")
 		// Access private member for testing constructor logic (not ideal, but necessary here)
 		expect((vectorStore as any).collectionName).toBe(expectedCollectionName)
 		expect((vectorStore as any).vectorSize).toBe(mockVectorSize)
+	})
+
+	it("should use custom collection name from .roo/codebase-index.json if available", () => {
+		// Mock the config file to exist and contain a custom collection name
+		;(fs.existsSync as any).mockImplementation((path: string) => {
+			return path.includes(".roo/codebase-index.json")
+		})
+		;(fs.readFileSync as any).mockReturnValue(
+			JSON.stringify({
+				collectionName: "my-custom-collection",
+			}),
+		)
+
+		const customVectorStore = new QdrantVectorStore(mockWorkspacePath, mockQdrantUrl, mockVectorSize, mockApiKey)
+
+		// Should use the sanitized custom collection name
+		expect((customVectorStore as any).collectionName).toBe("my-custom-collection")
+	})
+
+	it("should use git repository URL for deterministic naming when available", () => {
+		// Mock git config to exist
+		;(fs.existsSync as any).mockImplementation((path: string) => {
+			return path.includes(".git")
+		})
+		;(fs.readFileSync as any).mockImplementation((path: string) => {
+			if (path.includes(".git/config")) {
+				return `[remote "origin"]
+	url = git@github.com:user/repo.git`
+			}
+			return ""
+		})
+
+		// Mock createHash for the git URL
+		const gitUrlHash = "gitrepo1234567890abcdef"
+		mockCreateHashInstance.digest.mockReturnValueOnce(gitUrlHash)
+
+		const gitVectorStore = new QdrantVectorStore(mockWorkspacePath, mockQdrantUrl, mockVectorSize, mockApiKey)
+
+		// Should use repo- prefix with git URL hash
+		expect((gitVectorStore as any).collectionName).toBe(`repo-${gitUrlHash.substring(0, 16)}`)
+
+		// Verify it hashed the normalized git URL
+		expect(mockCreateHashInstance.update).toHaveBeenCalledWith("https://github.com/user/repo")
+	})
+
+	it("should normalize different git URL formats consistently", () => {
+		const testCases = [
+			{ input: "git@github.com:user/repo.git", expected: "https://github.com/user/repo" },
+			{ input: "https://github.com/user/repo.git", expected: "https://github.com/user/repo" },
+			{ input: "ssh://git@github.com/user/repo.git", expected: "https://github.com/user/repo" },
+			{ input: "https://user@github.com/user/repo.git", expected: "https://github.com/user/repo" },
+		]
+
+		testCases.forEach(({ input, expected }) => {
+			vitest.clearAllMocks()
+			;(fs.existsSync as any).mockImplementation((path: string) => path.includes(".git"))
+			;(fs.readFileSync as any).mockImplementation((path: string) => {
+				if (path.includes(".git/config")) {
+					return `[remote "origin"]\n\turl = ${input}`
+				}
+				return ""
+			})
+
+			const gitUrlHash = "normalized1234567890abcdef"
+			mockCreateHashInstance.digest.mockReturnValueOnce(gitUrlHash)
+
+			const store = new QdrantVectorStore(mockWorkspacePath, mockQdrantUrl, mockVectorSize, mockApiKey)
+
+			// Verify it hashed the normalized URL
+			expect(mockCreateHashInstance.update).toHaveBeenCalledWith(expected)
+		})
+	})
+
+	it("should sanitize custom collection names to be Qdrant-compatible", () => {
+		;(fs.existsSync as any).mockImplementation((path: string) => {
+			return path.includes(".roo/codebase-index.json")
+		})
+		;(fs.readFileSync as any).mockReturnValue(
+			JSON.stringify({
+				collectionName: "My Custom Collection!@#$%",
+			}),
+		)
+
+		const customVectorStore = new QdrantVectorStore(mockWorkspacePath, mockQdrantUrl, mockVectorSize, mockApiKey)
+
+		// Should sanitize the collection name
+		expect((customVectorStore as any).collectionName).toBe("my-custom-collection")
 	})
 	it("should handle constructor with default URL when none provided", () => {
 		const vectorStoreWithDefaults = new QdrantVectorStore(mockWorkspacePath, undefined as any, mockVectorSize)
