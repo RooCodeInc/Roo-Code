@@ -2438,7 +2438,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	private async handleContextWindowExceededError(): Promise<void> {
 		const state = await this.providerRef.deref()?.getState()
-		const { profileThresholds = {} } = state ?? {}
+		const { profileThresholds = {}, autoCondenseContext = true, autoCondenseContextPercent = 100 } = state ?? {}
 
 		const { contextTokens } = this.getTokenUsage()
 		const modelInfo = this.api.getModel().info
@@ -2458,18 +2458,18 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		console.warn(
 			`[Task#${this.taskId}] Context window exceeded for model ${this.api.getModel().id}. ` +
 				`Current tokens: ${contextTokens}, Context window: ${contextWindow}. ` +
-				`Forcing truncation to ${FORCED_CONTEXT_REDUCTION_PERCENT}% of current context.`,
+				`Auto-condense: ${autoCondenseContext}, Threshold: ${autoCondenseContextPercent}%.`,
 		)
 
-		// Force aggressive truncation by keeping only 75% of the conversation history
+		// Respect user's settings for condensation
 		const truncateResult = await truncateConversationIfNeeded({
 			messages: this.apiConversationHistory,
 			totalTokens: contextTokens || 0,
 			maxTokens,
 			contextWindow,
 			apiHandler: this.api,
-			autoCondenseContext: true,
-			autoCondenseContextPercent: FORCED_CONTEXT_REDUCTION_PERCENT,
+			autoCondenseContext,
+			autoCondenseContextPercent,
 			systemPrompt: await this.getSystemPrompt(),
 			taskId: this.taskId,
 			profileThresholds,
