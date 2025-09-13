@@ -25,6 +25,11 @@
 		"sharingDisabledByOrganization": "Freigabe von der Organisation deaktiviert",
 		"shareSuccessOrganization": "Organisationslink in die Zwischenablage kopiert",
 		"shareSuccessPublic": "Öffentlicher Link in die Zwischenablage kopiert",
+		"tokenStats": {
+			"inputLabel": "↑ Eingabe:",
+			"outputLabel": "↓ Ausgabe:",
+			"cacheLabel": "Cache"
+		},
 		"openInCloud": "Aufgabe in Roo Code Cloud öffnen",
 		"openInCloudIntro": "Überwache oder interagiere mit Roo von überall aus. Scanne, klicke oder kopiere zum Öffnen."
 	},

@@ -25,6 +25,11 @@
 		"sharingDisabledByOrganization": "Udostępnianie wyłączone przez organizację",
 		"shareSuccessOrganization": "Link organizacji skopiowany do schowka",
 		"shareSuccessPublic": "Link publiczny skopiowany do schowka",
+		"tokenStats": {
+			"inputLabel": "↑ Wejście:",
+			"outputLabel": "↓ Wyjście:",
+			"cacheLabel": "pamięć podręczna"
+		},
 		"openInCloud": "Otwórz zadanie w Roo Code Cloud",
 		"openInCloudIntro": "Kontynuuj monitorowanie lub interakcję z Roo z dowolnego miejsca. Zeskanuj, kliknij lub skopiuj, aby otworzyć."
 	},

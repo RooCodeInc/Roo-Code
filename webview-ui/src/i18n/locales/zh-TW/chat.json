@@ -25,6 +25,11 @@
 		"sharingDisabledByOrganization": "組織已停用分享功能",
 		"shareSuccessOrganization": "組織連結已複製到剪貼簿",
 		"shareSuccessPublic": "公開連結已複製到剪貼簿",
+		"tokenStats": {
+			"inputLabel": "↑ 輸入:",
+			"outputLabel": "↓ 輸出:",
+			"cacheLabel": "快取"
+		},
 		"openInCloud": "在 Roo Code Cloud 中開啟工作",
 		"openInCloudIntro": "從任何地方繼續監控或與 Roo 互動。掃描、點擊或複製以開啟。"
 	},
