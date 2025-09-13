@@ -97,7 +97,11 @@ describe("CodeIndexManager - handleSettingsChange regression", () => {
 
 		mockContext = {
 			subscriptions: [],
-			workspaceState: {} as any,
+			workspaceState: {
+				get: vi.fn().mockReturnValue(undefined),
+				update: vi.fn().mockResolvedValue(undefined),
+				keys: vi.fn().mockReturnValue([]),
+			} as any,
 			globalState: {} as any,
 			extensionUri: {} as any,
 			extensionPath: testExtensionPath,

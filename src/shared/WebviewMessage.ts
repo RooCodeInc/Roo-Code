@@ -290,6 +290,9 @@ export interface WebviewMessage {
 		codebaseIndexSearchMaxResults?: number
 		codebaseIndexSearchMinScore?: number
 
+		// Workspace-specific settings
+		workspaceIndexEnabled?: boolean
+
 		// Secret settings
 		codeIndexOpenAiKey?: string
 		codeIndexQdrantApiKey?: string

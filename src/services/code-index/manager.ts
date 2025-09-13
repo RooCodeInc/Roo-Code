@@ -101,6 +101,10 @@ export class CodeIndexManager {
 		return this._configManager?.isFeatureConfigured ?? false
 	}
 
+	public get configManager(): CodeIndexConfigManager | undefined {
+		return this._configManager
+	}
+
 	public get isInitialized(): boolean {
 		try {
 			this.assertInitialized()
@@ -118,7 +122,7 @@ export class CodeIndexManager {
 	public async initialize(contextProxy: ContextProxy): Promise<{ requiresRestart: boolean }> {
 		// 1. ConfigManager Initialization and Configuration Loading
 		if (!this._configManager) {
-			this._configManager = new CodeIndexConfigManager(contextProxy)
+			this._configManager = new CodeIndexConfigManager(contextProxy, this.workspacePath, this.context)
 		}
 		// Load configuration once to get current state and restart requirements
 		const { requiresRestart } = await this._configManager.loadConfiguration()
