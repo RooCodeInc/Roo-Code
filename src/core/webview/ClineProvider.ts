@@ -752,11 +752,16 @@ export class ClineProvider
 		// Initialize code index status subscription for the current workspace.
 		this.updateCodeIndexStatusSubscription()
 
-		// Listen for active editor changes to update code index status for the
-		// current workspace.
-		const activeEditorSubscription = vscode.window.onDidChangeActiveTextEditor(() => {
+		// Listen for active editor changes to update code index status and workspace path
+		const activeEditorSubscription = vscode.window.onDidChangeActiveTextEditor(async () => {
 			// Update subscription when workspace might have changed.
 			this.updateCodeIndexStatusSubscription()
+
+			// Check if workspace path has changed
+			const newWorkspacePath = getWorkspacePath()
+			if (newWorkspacePath !== this.currentWorkspacePath) {
+				await this.refreshWorkspace()
+			}
 		})
 		this.webviewDisposables.push(activeEditorSubscription)
 
@@ -765,8 +770,10 @@ export class ClineProvider
 		if ("onDidChangeViewState" in webviewView) {
 			// WebviewView and WebviewPanel have all the same properties except
 			// for this visibility listener panel.
-			const viewStateDisposable = webviewView.onDidChangeViewState(() => {
+			const viewStateDisposable = webviewView.onDidChangeViewState(async () => {
 				if (this.view?.visible) {
+					// Update workspace path when view becomes visible (e.g., when moved to new window)
+					await this.refreshWorkspace()
 					this.postMessageToWebview({ type: "action", action: "didBecomeVisible" })
 				}
 			})
@@ -774,8 +781,10 @@ export class ClineProvider
 			this.webviewDisposables.push(viewStateDisposable)
 		} else if ("onDidChangeVisibility" in webviewView) {
 			// sidebar
-			const visibilityDisposable = webviewView.onDidChangeVisibility(() => {
+			const visibilityDisposable = webviewView.onDidChangeVisibility(async () => {
 				if (this.view?.visible) {
+					// Update workspace path when view becomes visible (e.g., when moved to new window)
+					await this.refreshWorkspace()
 					this.postMessageToWebview({ type: "action", action: "didBecomeVisible" })
 				}
 			})
@@ -809,6 +818,12 @@ export class ClineProvider
 			}
 		})
 		this.webviewDisposables.push(configDisposable)
+
+		// Listen for workspace folder changes
+		const workspaceFoldersDisposable = vscode.workspace.onDidChangeWorkspaceFolders(async () => {
+			await this.refreshWorkspace()
+		})
+		this.webviewDisposables.push(workspaceFoldersDisposable)
 
 		// If the extension is starting a new session, clear previous task state.
 		await this.removeClineFromStack()
