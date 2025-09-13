@@ -2,7 +2,7 @@
 
 ## [3.28.0] - 2025-09-10
 
-![3.29.0 - Refactor UI components for improved styling and functionality](/releases/3.28.0-release.png)
+![3.28.0 - Refactor UI components for improved styling and functionality](/releases/3.28.0-release.png)
 
 - Updated mode names and descriptions in `mode.ts` for clarity.
 - Enhanced `ApiConfigSelector` with new styles and improved layout.
