@@ -22,10 +22,13 @@ vi.mock("vscode", () => ({
 		showSaveDialog: vi.fn(),
 		showErrorMessage: vi.fn(),
 		showInformationMessage: vi.fn(),
+		showQuickPick: vi.fn(),
+		showInputBox: vi.fn(),
 	},
 	Uri: {
 		file: vi.fn((filePath) => ({ fsPath: filePath })),
 	},
+	env: {},
 }))
 
 vi.mock("fs/promises", () => ({
@@ -34,6 +37,7 @@ vi.mock("fs/promises", () => ({
 		mkdir: vi.fn(),
 		writeFile: vi.fn(),
 		access: vi.fn(),
+		unlink: vi.fn(),
 		constants: {
 			F_OK: 0,
 			R_OK: 4,
@@ -43,6 +47,7 @@ vi.mock("fs/promises", () => ({
 	mkdir: vi.fn(),
 	writeFile: vi.fn(),
 	access: vi.fn(),
+	unlink: vi.fn(),
 	constants: {
 		F_OK: 0,
 		R_OK: 4,
@@ -52,8 +57,10 @@ vi.mock("fs/promises", () => ({
 vi.mock("os", () => ({
 	default: {
 		homedir: vi.fn(() => "/mock/home"),
+		tmpdir: vi.fn(() => "/tmp"),
 	},
 	homedir: vi.fn(() => "/mock/home"),
+	tmpdir: vi.fn(() => "/tmp"),
 }))
 
 vi.mock("../../../utils/safeWriteJson")
@@ -435,6 +442,261 @@ describe("importExport", () => {
 			expect(showErrorMessageSpy).toHaveBeenCalledWith(expect.stringContaining("errors.settings_import_failed"))
 
 			showErrorMessageSpy.mockRestore()
+		})
+
+		describe("remote SSH environment", () => {
+			beforeEach(() => {
+				// Mock remote environment
+				;(vscode.env as any).remoteName = "ssh-remote"
+			})
+
+			afterEach(() => {
+				// Reset to local environment
+				delete (vscode.env as any).remoteName
+			})
+
+			it("should show quick pick for local vs remote file selection in remote environment", async () => {
+				;(vscode.window.showQuickPick as Mock).mockResolvedValue(undefined)
+
+				const result = await importSettings({
+					providerSettingsManager: mockProviderSettingsManager,
+					contextProxy: mockContextProxy,
+					customModesManager: mockCustomModesManager,
+				})
+
+				expect(vscode.window.showQuickPick).toHaveBeenCalledWith(
+					expect.arrayContaining([
+						expect.objectContaining({ value: "local" }),
+						expect.objectContaining({ value: "remote" }),
+					]),
+					expect.objectContaining({
+						placeHolder: "Choose where to import settings from",
+						title: "Import Settings",
+					}),
+				)
+
+				expect(result).toEqual({ success: false, error: "User cancelled import" })
+			})
+
+			it("should handle paste option for local file in remote environment", async () => {
+				;(vscode.window.showQuickPick as Mock)
+					.mockResolvedValueOnce({ value: "local" })
+					.mockResolvedValueOnce({ value: "paste" })
+
+				const mockSettings = {
+					providerProfiles: {
+						currentApiConfigName: "test",
+						apiConfigs: {
+							test: { apiProvider: "openai" as ProviderName, apiKey: "test-key", id: "test-id" },
+						},
+					},
+					globalSettings: { mode: "code" },
+				}
+
+				;(vscode.window.showInputBox as Mock).mockResolvedValue(JSON.stringify(mockSettings))
+				;(fs.writeFile as Mock).mockResolvedValue(undefined)
+				;(fs.unlink as Mock).mockResolvedValue(undefined)
+				;(fs.readFile as Mock).mockResolvedValue(JSON.stringify(mockSettings))
+
+				mockProviderSettingsManager.export.mockResolvedValue({
+					currentApiConfigName: "default",
+					apiConfigs: {},
+				})
+				mockProviderSettingsManager.listConfig.mockResolvedValue([])
+
+				const result = await importSettings({
+					providerSettingsManager: mockProviderSettingsManager,
+					contextProxy: mockContextProxy,
+					customModesManager: mockCustomModesManager,
+				})
+
+				expect(vscode.window.showInputBox).toHaveBeenCalledWith(
+					expect.objectContaining({
+						prompt: "Paste your settings JSON content here",
+						ignoreFocusOut: true,
+					}),
+				)
+
+				expect(fs.writeFile).toHaveBeenCalledWith(
+					expect.stringContaining("roo-settings-import-"),
+					JSON.stringify(mockSettings),
+					"utf-8",
+				)
+
+				expect(result.success).toBe(true)
+			})
+
+			it("should validate JSON when pasting content", async () => {
+				;(vscode.window.showQuickPick as Mock)
+					.mockResolvedValueOnce({ value: "local" })
+					.mockResolvedValueOnce({ value: "paste" })
+				;(vscode.window.showInputBox as Mock).mockImplementation(async (options) => {
+					// Test the validation function
+					const validateResult = options.validateInput('{"invalid": json}')
+					expect(validateResult).toBe("Invalid JSON format")
+
+					const validResult = options.validateInput('{"valid": "json"}')
+					expect(validResult).toBeUndefined()
+
+					const emptyResult = options.validateInput("")
+					expect(emptyResult).toBe("Please paste the settings content")
+
+					return undefined // User cancels
+				})
+
+				const result = await importSettings({
+					providerSettingsManager: mockProviderSettingsManager,
+					contextProxy: mockContextProxy,
+					customModesManager: mockCustomModesManager,
+				})
+
+				expect(result).toEqual({ success: false, error: "User cancelled import" })
+			})
+
+			it("should show info message when local file path is entered in remote environment", async () => {
+				;(vscode.window.showQuickPick as Mock)
+					.mockResolvedValueOnce({ value: "local" })
+					.mockResolvedValueOnce({ value: "path" })
+				;(vscode.window.showInputBox as Mock).mockResolvedValue("~/Documents/settings.json")
+
+				const result = await importSettings({
+					providerSettingsManager: mockProviderSettingsManager,
+					contextProxy: mockContextProxy,
+					customModesManager: mockCustomModesManager,
+				})
+
+				expect(vscode.window.showInformationMessage).toHaveBeenCalledWith(
+					expect.stringContaining("To import from a local file in a remote SSH session"),
+					"OK",
+				)
+
+				expect(result).toEqual({
+					success: false,
+					error: "Cannot directly access local files from remote environment",
+				})
+			})
+
+			it("should use standard dialog for remote file selection in remote environment", async () => {
+				;(vscode.window.showQuickPick as Mock).mockResolvedValueOnce({
+					label: "$(remote) Import from remote file",
+					value: "remote",
+				})
+				;(vscode.window.showOpenDialog as Mock).mockResolvedValue([{ fsPath: "/remote/path/settings.json" }])
+
+				const mockSettings = {
+					providerProfiles: {
+						currentApiConfigName: "test",
+						apiConfigs: { test: { apiProvider: "openai" as ProviderName, id: "test-id" } },
+					},
+				}
+
+				;(fs.readFile as Mock).mockResolvedValue(JSON.stringify(mockSettings))
+				mockProviderSettingsManager.export.mockResolvedValue({
+					currentApiConfigName: "default",
+					apiConfigs: {},
+				})
+				mockProviderSettingsManager.listConfig.mockResolvedValue([])
+
+				const result = await importSettings({
+					providerSettingsManager: mockProviderSettingsManager,
+					contextProxy: mockContextProxy,
+					customModesManager: mockCustomModesManager,
+				})
+
+				expect(vscode.window.showOpenDialog).toHaveBeenCalledWith({
+					filters: { JSON: ["json"] },
+					canSelectMany: false,
+				})
+
+				expect(result.success).toBe(true)
+			})
+
+			it("should clean up temp file even if import fails", async () => {
+				;(vscode.window.showQuickPick as Mock)
+					.mockResolvedValueOnce({ value: "local" })
+					.mockResolvedValueOnce({ value: "paste" })
+
+				const invalidSettings = '{"invalid": "no provider profiles"}'
+				;(vscode.window.showInputBox as Mock).mockResolvedValue(invalidSettings)
+				;(fs.writeFile as Mock).mockResolvedValue(undefined)
+				;(fs.unlink as Mock).mockResolvedValue(undefined)
+				;(fs.readFile as Mock).mockResolvedValue(invalidSettings)
+
+				const result = await importSettings({
+					providerSettingsManager: mockProviderSettingsManager,
+					contextProxy: mockContextProxy,
+					customModesManager: mockCustomModesManager,
+				})
+
+				expect(result.success).toBe(false)
+				expect(fs.unlink).toHaveBeenCalledWith(expect.stringContaining("roo-settings-import-"))
+			})
+
+			it("should handle file write errors when pasting content", async () => {
+				;(vscode.window.showQuickPick as Mock)
+					.mockResolvedValueOnce({ value: "local" })
+					.mockResolvedValueOnce({ value: "paste" })
+
+				const mockSettings = {
+					providerProfiles: {
+						currentApiConfigName: "test",
+						apiConfigs: { test: { apiProvider: "openai" as ProviderName, id: "test-id" } },
+					},
+				}
+
+				;(vscode.window.showInputBox as Mock).mockResolvedValue(JSON.stringify(mockSettings))
+				;(fs.writeFile as Mock).mockRejectedValue(new Error("Disk full"))
+
+				const result = await importSettings({
+					providerSettingsManager: mockProviderSettingsManager,
+					contextProxy: mockContextProxy,
+					customModesManager: mockCustomModesManager,
+				})
+
+				expect(result).toEqual({ success: false, error: "Failed to process settings: Error: Disk full" })
+			})
+		})
+
+		describe("local environment", () => {
+			beforeEach(() => {
+				// Ensure we're in local environment
+				delete (vscode.env as any).remoteName
+			})
+
+			it("should use standard dialog in local environment", async () => {
+				;(vscode.window.showOpenDialog as Mock).mockResolvedValue([{ fsPath: "/local/path/settings.json" }])
+
+				const mockSettings = {
+					providerProfiles: {
+						currentApiConfigName: "test",
+						apiConfigs: { test: { apiProvider: "openai" as ProviderName, id: "test-id" } },
+					},
+				}
+
+				;(fs.readFile as Mock).mockResolvedValue(JSON.stringify(mockSettings))
+				mockProviderSettingsManager.export.mockResolvedValue({
+					currentApiConfigName: "default",
+					apiConfigs: {},
+				})
+				mockProviderSettingsManager.listConfig.mockResolvedValue([])
+
+				const result = await importSettings({
+					providerSettingsManager: mockProviderSettingsManager,
+					contextProxy: mockContextProxy,
+					customModesManager: mockCustomModesManager,
+				})
+
+				// Should NOT show quick pick in local environment
+				expect(vscode.window.showQuickPick).not.toHaveBeenCalled()
+
+				// Should use standard dialog
+				expect(vscode.window.showOpenDialog).toHaveBeenCalledWith({
+					filters: { JSON: ["json"] },
+					canSelectMany: false,
+				})
+
+				expect(result.success).toBe(true)
+			})
 		})
 	})
 

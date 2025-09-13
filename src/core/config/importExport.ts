@@ -14,6 +14,15 @@ import { ContextProxy } from "./ContextProxy"
 import { CustomModesManager } from "./CustomModesManager"
 import { t } from "../../i18n"
 
+/**
+ * Check if the extension is running in a remote environment
+ */
+function isRemoteEnvironment(): boolean {
+	// Check if we're in a remote environment by looking at the extension context
+	// In remote environments, vscode.env.remoteName will be set
+	return typeof (vscode.env as any).remoteName !== "undefined" && (vscode.env as any).remoteName !== null
+}
+
 export type ImportOptions = {
 	providerSettingsManager: ProviderSettingsManager
 	contextProxy: ContextProxy
@@ -109,20 +118,157 @@ export async function importSettingsFromPath(
  * @returns Promise resolving to import result
  */
 export const importSettings = async ({ providerSettingsManager, contextProxy, customModesManager }: ImportOptions) => {
-	const uris = await vscode.window.showOpenDialog({
-		filters: { JSON: ["json"] },
-		canSelectMany: false,
-	})
+	// Check if we're in a remote environment
+	if (isRemoteEnvironment()) {
+		// In remote environments, we need to handle file selection differently
+		// to ensure the user can select files from their local machine
 
-	if (!uris) {
-		return { success: false, error: "User cancelled file selection" }
+		// Show a quick pick to let user choose between local file or remote file
+		const choice = await vscode.window.showQuickPick(
+			[
+				{
+					label: "$(file) Import from local file",
+					description: "Select a file from your local machine",
+					value: "local",
+				},
+				{
+					label: "$(remote) Import from remote file",
+					description: "Select a file from the remote server",
+					value: "remote",
+				},
+			],
+			{
+				placeHolder: "Choose where to import settings from",
+				title: "Import Settings",
+			},
+		)
+
+		if (!choice) {
+			return { success: false, error: "User cancelled import" }
+		}
+
+		if (choice.value === "local") {
+			// For local file selection in remote environment, we need to:
+			// 1. Ask user to paste the content or provide a path
+			const inputChoice = await vscode.window.showQuickPick(
+				[
+					{
+						label: "$(paste) Paste settings content",
+						description: "Paste the JSON content directly",
+						value: "paste",
+					},
+					{
+						label: "$(file-text) Enter local file path",
+						description: "Provide the path to a local file",
+						value: "path",
+					},
+				],
+				{
+					placeHolder: "How would you like to provide the settings?",
+					title: "Import Local Settings",
+				},
+			)
+
+			if (!inputChoice) {
+				return { success: false, error: "User cancelled import" }
+			}
+
+			if (inputChoice.value === "paste") {
+				// Ask user to paste the JSON content
+				const jsonContent = await vscode.window.showInputBox({
+					prompt: "Paste your settings JSON content here",
+					placeHolder: '{"providerProfiles": {...}, "globalSettings": {...}}',
+					ignoreFocusOut: true,
+					validateInput: (value) => {
+						if (!value) return "Please paste the settings content"
+						try {
+							JSON.parse(value)
+							return undefined
+						} catch {
+							return "Invalid JSON format"
+						}
+					},
+				})
+
+				if (!jsonContent) {
+					return { success: false, error: "User cancelled import" }
+				}
+
+				// Create a temporary file with the content
+				const tempDir = os.tmpdir()
+				const tempFile = path.join(tempDir, `roo-settings-import-${Date.now()}.json`)
+
+				try {
+					await fs.writeFile(tempFile, jsonContent, "utf-8")
+					const result = await importSettingsFromPath(tempFile, {
+						providerSettingsManager,
+						contextProxy,
+						customModesManager,
+					})
+					// Clean up temp file
+					await fs.unlink(tempFile).catch(() => {}) // Ignore errors
+					return result
+				} catch (error) {
+					return { success: false, error: `Failed to process settings: ${error}` }
+				}
+			} else {
+				// Ask user to enter the local file path
+				const localPath = await vscode.window.showInputBox({
+					prompt: "Enter the path to your local settings file",
+					placeHolder: "~/Documents/roo-code-settings.json",
+					ignoreFocusOut: true,
+				})
+
+				if (!localPath) {
+					return { success: false, error: "User cancelled import" }
+				}
+
+				// Note: We can't directly access the local file from remote environment
+				// So we'll show instructions to the user
+				await vscode.window.showInformationMessage(
+					"To import from a local file in a remote SSH session, please use one of these methods:\n" +
+						"1. Copy the file to the remote server first using scp/sftp\n" +
+						"2. Use the 'Paste settings content' option instead\n" +
+						"3. Open the file locally and copy its content to paste",
+					"OK",
+				)
+
+				return { success: false, error: "Cannot directly access local files from remote environment" }
+			}
+		} else {
+			// Remote file selection - use the standard dialog
+			const uris = await vscode.window.showOpenDialog({
+				filters: { JSON: ["json"] },
+				canSelectMany: false,
+			})
+
+			if (!uris) {
+				return { success: false, error: "User cancelled file selection" }
+			}
+
+			return importSettingsFromPath(uris[0].fsPath, {
+				providerSettingsManager,
+				contextProxy,
+				customModesManager,
+			})
+		}
+	} else {
+		// Standard local environment - use the normal file dialog
+		const uris = await vscode.window.showOpenDialog({
+			filters: { JSON: ["json"] },
+			canSelectMany: false,
+		})
+
+		if (!uris) {
+			return { success: false, error: "User cancelled file selection" }
+		}
+
+		return importSettingsFromPath(uris[0].fsPath, {
+			providerSettingsManager,
+			contextProxy,
+			customModesManager,
+		})
 	}
-
-	return importSettingsFromPath(uris[0].fsPath, {
-		providerSettingsManager,
-		contextProxy,
-		customModesManager,
-	})
 }
 
 /**
