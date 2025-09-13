@@ -2,7 +2,7 @@ import { memo, useMemo } from "react"
 import { VSCodeProgressRing } from "@vscode/webview-ui-toolkit/react"
 import { type ToolProgressStatus } from "@roo-code/types"
 import { getLanguageFromPath } from "@src/utils/getLanguageFromPath"
-import { removeLeadingNonAlphanumeric } from "@src/utils/removeLeadingNonAlphanumeric"
+import FilePathWithIcon from "./FilePathWithIcon"
 
 import { ToolUseBlock, ToolUseBlockHeader } from "./ToolUseBlock"
 import CodeBlock from "./CodeBlock"
@@ -54,12 +54,7 @@ const CodeAccordian = ({
 							</span>
 						</div>
 					) : (
-						<>
-							{path?.startsWith(".") && <span>.</span>}
-							<span className="whitespace-nowrap overflow-hidden text-ellipsis text-left mr-2 rtl">
-								{removeLeadingNonAlphanumeric(path ?? "") + "\u200E"}
-							</span>
-						</>
+						<FilePathWithIcon filePath={path || ""} className="mr-2" />
 					)}
 					<div className="flex-grow-1" />
 					{progressStatus && progressStatus.text && (

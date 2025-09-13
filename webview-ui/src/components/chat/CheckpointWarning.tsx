@@ -3,7 +3,7 @@ import { VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 
 export const CheckpointWarning = () => {
 	return (
-		<div className="flex items-center p-3 my-3 bg-vscode-inputValidation-warningBackground border border-vscode-inputValidation-warningBorder rounded">
+		<div className="flex items-center px-3 py-1 my-3 bg-vscode-inputValidation-warningBackground border border-vscode-inputValidation-warningBorder rounded-2xl">
 			<span className="codicon codicon-loading codicon-modifier-spin mr-2" />
 			<span className="text-vscode-foreground">
 				<Trans

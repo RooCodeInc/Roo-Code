@@ -185,7 +185,7 @@ export const CommandExecution = ({ executionId, text, icon, title }: CommandExec
 				</div>
 			</div>
 
-			<div className="w-full bg-vscode-editor-background border border-vscode-border rounded-xs">
+			<div className="w-full bg-vscode-editor-background border border-vscode-border rounded-xl">
 				<div className="p-2">
 					<CodeBlock source={command} language="shell" />
 					<OutputContainer isExpanded={isExpanded} output={output} />

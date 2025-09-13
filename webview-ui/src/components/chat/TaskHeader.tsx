@@ -91,7 +91,7 @@ const TaskHeader = ({
 			<button
 				disabled={buttonsDisabled}
 				onClick={() => currentTaskItem && handleCondenseContext(currentTaskItem.id)}
-				className="shrink-0 min-h-[20px] min-w-[20px] p-[2px] cursor-pointer disabled:cursor-not-allowed opacity-85 hover:opacity-100 bg-transparent border-none rounded-md">
+				className="shrink-0 min-h-[20px] min-w-[20px] p-[2px] cursor-pointer disabled:cursor-not-allowed opacity-85 hover:opacity-100 bg-transparent border-none rounded-2xl">
 				<FoldVertical size={16} />
 			</button>
 		</StandardTooltip>
@@ -100,7 +100,7 @@ const TaskHeader = ({
 	const hasTodos = todos && Array.isArray(todos) && todos.length > 0
 
 	return (
-		<div className="pt-2 pb-0 px-3">
+		<div className="pt-1 pb-0 px-2">
 			{showLongRunningTaskMessage && !isTaskComplete && (
 				<DismissibleUpsell
 					upsellId="longRunningTask"
@@ -111,11 +111,15 @@ const TaskHeader = ({
 				</DismissibleUpsell>
 			)}
 			<div
+				// if expand flex-col
 				className={cn(
-					"px-2.5 pt-2.5 pb-2 flex flex-col gap-1.5 relative z-1 cursor-pointer",
-					"bg-vscode-input-background hover:bg-vscode-input-background/90",
-					"text-vscode-foreground/80 hover:text-vscode-foreground",
-					hasTodos ? "rounded-t-xs border-b-0" : "rounded-xs",
+					isTaskExpanded ? "flex-col" : "flex-row",
+					"px-3 py-1 flex  gap-1.5 relative z-1 cursor-pointer",
+					"bg-[rgba(255,255,255,0.04)] hover:bg-[rgba(255,255,255,0.08)]",
+					"text-[rgba(255,255,255,0.75)] hover:text-[rgba(255,255,255,1)]",
+					"border border-[rgba(255,255,255,0.08)]",
+					"shadow-[0_2px_8px_rgba(0,0,0,0.15)]",
+					hasTodos ? "rounded-t-md border-b-0" : "rounded-2xl",
 				)}
 				onClick={(e) => {
 					// Don't expand if clicking on buttons or interactive elements
@@ -139,76 +143,91 @@ const TaskHeader = ({
 
 					setIsTaskExpanded(!isTaskExpanded)
 				}}>
-				<div className="flex justify-between items-center gap-0">
-					<div className="flex items-center select-none grow min-w-0">
-						<div className="whitespace-nowrap overflow-hidden text-ellipsis grow min-w-0">
-							{isTaskExpanded && <span className="font-bold">{t("chat:task.title")}</span>}
+				<div className="flex  items-center gap-0  mx-auto w-full">
+					<div className="flex max-w-[64%] items-center select-none grow min-w-0">
+						<div className="whitespace-nowrap overflow-hidden text-ellipsis grow min-w-0 ">
+							{isTaskExpanded && (
+								<span className="font-semibold text-gray-300">{t("chat:task.title")}</span>
+							)}
 							{!isTaskExpanded && (
 								<div>
-									<span className="font-bold mr-1">{t("chat:task.title")}</span>
-									<Mention text={task.text} />
+									<span className="font-medium mr-1 text-gray-200">{t("chat:task.title")}</span>
+									<span className="text-gray-200 text-sm bg-[rgba(255,255,255,0.08)] rounded-full px-2 py-1">
+										<Mention text={task.text} />
+									</span>
 								</div>
 							)}
 						</div>
-						<div className="flex items-center shrink-0 ml-2" onClick={(e) => e.stopPropagation()}>
+						<div
+							className="flex items-center shrink-0 bg-[rgba(255,255,255,0.08)] rounded-full px-2 py-0 mr-2"
+							onClick={(e) => e.stopPropagation()}>
 							<StandardTooltip content={isTaskExpanded ? t("chat:task.collapse") : t("chat:task.expand")}>
 								<button
 									onClick={() => setIsTaskExpanded(!isTaskExpanded)}
-									className="shrink-0 min-h-[20px] min-w-[20px] p-[2px] cursor-pointer opacity-85 hover:opacity-100 bg-transparent border-none rounded-md">
+									className="shrink-0 min-h-[22px] min-w-[22px] p-[2px] cursor-pointer opacity-85 hover:opacity-100 bg-transparent border-none rounded-2xl">
 									{isTaskExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
 								</button>
 							</StandardTooltip>
 						</div>
 					</div>
-				</div>
-				{!isTaskExpanded && contextWindow > 0 && (
-					<div className="flex items-center gap-2 text-sm" onClick={(e) => e.stopPropagation()}>
-						<StandardTooltip
-							content={
-								<div className="space-y-1">
-									<div>
-										{t("chat:tokenProgress.tokensUsed", {
-											used: formatLargeNumber(contextTokens || 0),
-											total: formatLargeNumber(contextWindow),
-										})}
-									</div>
-									{(() => {
-										const maxTokens = model
-											? getModelMaxOutputTokens({ modelId, model, settings: apiConfiguration })
-											: 0
-										const reservedForOutput = maxTokens || 0
-										const availableSpace = contextWindow - (contextTokens || 0) - reservedForOutput
+					{!isTaskExpanded && contextWindow > 0 && (
+						<div className="flex items-center gap-2 text-xs ml-auto" onClick={(e) => e.stopPropagation()}>
+							<StandardTooltip
+								content={
+									<div className="space-y-1">
+										<div>
+											{t("chat:tokenProgress.tokensUsed", {
+												used: formatLargeNumber(contextTokens || 0),
+												total: formatLargeNumber(contextWindow),
+											})}
+										</div>
+										{(() => {
+											const maxTokens = model
+												? getModelMaxOutputTokens({
+														modelId,
+														model,
+														settings: apiConfiguration,
+													})
+												: 0
+											const reservedForOutput = maxTokens || 0
+											const availableSpace =
+												contextWindow - (contextTokens || 0) - reservedForOutput
 
-										return (
-											<>
-												{reservedForOutput > 0 && (
-													<div>
-														{t("chat:tokenProgress.reservedForResponse", {
-															amount: formatLargeNumber(reservedForOutput),
-														})}
-													</div>
-												)}
-												{availableSpace > 0 && (
-													<div>
-														{t("chat:tokenProgress.availableSpace", {
-															amount: formatLargeNumber(availableSpace),
-														})}
-													</div>
-												)}
-											</>
-										)
-									})()}
-								</div>
-							}
-							side="top"
-							sideOffset={8}>
-							<span className="mr-1">
-								{formatLargeNumber(contextTokens || 0)} / {formatLargeNumber(contextWindow)}
-							</span>
-						</StandardTooltip>
-						{!!totalCost && <span>${totalCost.toFixed(2)}</span>}
-					</div>
-				)}
+											return (
+												<>
+													{reservedForOutput > 0 && (
+														<div>
+															{t("chat:tokenProgress.reservedForResponse", {
+																amount: formatLargeNumber(reservedForOutput),
+															})}
+														</div>
+													)}
+													{availableSpace > 0 && (
+														<div>
+															{t("chat:tokenProgress.availableSpace", {
+																amount: formatLargeNumber(availableSpace),
+															})}
+														</div>
+													)}
+												</>
+											)
+										})()}
+									</div>
+								}
+								side="top"
+								sideOffset={8}>
+								<span className="mr-1 px-2 py-[2px] rounded-full bg-[rgba(255,255,255,0.08)] border border-[rgba(255,255,255,0.12)]">
+									{formatLargeNumber(contextTokens || 0)} / {formatLargeNumber(contextWindow)}
+								</span>
+							</StandardTooltip>
+							{!!totalCost && (
+								<span className="px-2 py-[2px] rounded-full bg-[rgba(255,255,255,0.08)] border border-[rgba(255,255,255,0.12)]">
+									${totalCost.toFixed(2)}
+								</span>
+							)}
+						</div>
+					)}
+				</div>
 				{/* Expanded state: Show task text and images */}
 				{isTaskExpanded && (
 					<>
@@ -228,13 +247,13 @@ const TaskHeader = ({
 						</div>
 						{task.images && task.images.length > 0 && <Thumbnails images={task.images} />}
 
-						<div className="border-t border-b border-vscode-panel-border/50 py-4 mt-2 mb-1">
+						<div className="border-t border-b border-[rgba(255,255,255,0.08)] py-3 mt-2 mb-1">
 							<table className="w-full">
 								<tbody>
 									{contextWindow > 0 && (
 										<tr>
 											<th
-												className="font-bold text-left align-top w-1 whitespace-nowrap pl-1 pr-3 h-[24px]"
+												className="font-semibold text-left align-top w-1 whitespace-nowrap pl-1 pr-3 h-[24px] text-gray-300"
 												data-testid="context-window-label">
 												{t("chat:task.contextWindow")}
 											</th>
@@ -260,7 +279,7 @@ const TaskHeader = ({
 									)}
 
 									<tr>
-										<th className="font-bold text-left align-top w-1 whitespace-nowrap pl-1 pr-3 h-[24px]">
+										<th className="font-semibold text-left align-top w-1 whitespace-nowrap pl-1 pr-3 h-[24px] text-gray-300">
 											{t("chat:task.tokens")}
 										</th>
 										<td className="align-top">
@@ -278,7 +297,7 @@ const TaskHeader = ({
 									{((typeof cacheReads === "number" && cacheReads > 0) ||
 										(typeof cacheWrites === "number" && cacheWrites > 0)) && (
 										<tr>
-											<th className="font-bold text-left align-top w-1 whitespace-nowrap pl-1 pr-3 h-[24px]">
+											<th className="font-semibold text-left align-top w-1 whitespace-nowrap pl-1 pr-3 h-[24px] text-gray-300">
 												{t("chat:task.cache")}
 											</th>
 											<td className="align-top">
@@ -296,7 +315,7 @@ const TaskHeader = ({
 
 									{!!totalCost && (
 										<tr>
-											<th className="font-bold text-left align-top w-1 whitespace-nowrap pl-1 pr-3 h-[24px]">
+											<th className="font-semibold text-left align-top w-1 whitespace-nowrap pl-1 pr-3 h-[24px] text-gray-300">
 												{t("chat:task.apiCost")}
 											</th>
 											<td className="align-top">
@@ -308,7 +327,7 @@ const TaskHeader = ({
 									{/* Size display */}
 									{!!currentTaskItem?.size && currentTaskItem.size > 0 && (
 										<tr>
-											<th className="font-bold text-left align-top w-1 whitespace-nowrap pl-1 pr-2  h-[20px]">
+											<th className="font-semibold text-left align-top w-1 whitespace-nowrap pl-1 pr-2  h-[20px] text-gray-300">
 												{t("chat:task.size")}
 											</th>
 											<td className="align-top">{prettyBytes(currentTaskItem.size)}</td>

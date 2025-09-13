@@ -187,13 +187,15 @@
 		"wantsToGenerateImage": "Roo 想要產生圖片：",
 		"wantsToGenerateImageOutsideWorkspace": "Roo 想要在工作區外產生圖片：",
 		"wantsToGenerateImageProtected": "Roo 想要在受保護位置產生圖片：",
-		"didGenerateImage": "Roo 已產生圖片：",
-		"wantsToCreate": "Roo 想要建立新檔案：",
-		"wantsToSearchReplace": "Roo 想要在此檔案中搜尋和取代：",
-		"didSearchReplace": "Roo 已在此檔案執行搜尋和取代：",
-		"wantsToInsert": "Roo 想要在此檔案中插入內容：",
-		"wantsToInsertWithLineNumber": "Roo 想要在此檔案第 {{lineNumber}} 行插入內容：",
-		"wantsToInsertAtEnd": "Roo 想要在此檔案尾端新增內容："
+		"didGenerateImage": "Roo 已產生圖片:",
+		"editingLabel": "編輯",
+		"readingLabel": "讀取",
+		"wantsToCreate": "建立檔案",
+		"wantsToSearchReplace": "搜尋與取代",
+		"didSearchReplace": "搜尋與取代",
+		"wantsToInsert": "插入",
+		"wantsToInsertWithLineNumber": "插入",
+		"wantsToInsertAtEnd": "插入"
 	},
 	"directoryOperations": {
 		"wantsToViewTopLevel": "Roo 想要檢視此目錄中最上層的檔案：",

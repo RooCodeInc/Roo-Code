@@ -54,7 +54,7 @@ export function CodeExample() {
 
 	return (
 		<div className="relative z-10 w-full max-w-[90vw] rounded-lg border border-border bg-background/50 p-2 shadow-2xl backdrop-blur-sm sm:max-w-[500px]">
-			<div className="rounded-md bg-muted p-1.5 dark:bg-gray-900 sm:p-2">
+			<div className="rounded-2xl bg-muted p-1.5 dark:bg-gray-900 sm:p-2">
 				<div className="flex items-center justify-between border-b border-border px-2 py-1.5 sm:px-3 sm:py-2">
 					<div className="flex items-center space-x-1.5">
 						<div className="h-2.5 w-2.5 rounded-full bg-red-500 sm:h-3 sm:w-3" />

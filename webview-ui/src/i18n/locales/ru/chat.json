@@ -176,7 +176,9 @@
 		"wantsToGenerateImage": "Roo хочет сгенерировать изображение:",
 		"wantsToGenerateImageOutsideWorkspace": "Roo хочет сгенерировать изображение вне рабочего пространства:",
 		"wantsToGenerateImageProtected": "Roo хочет сгенерировать изображение в защищённом месте:",
-		"didGenerateImage": "Roo сгенерировал изображение:"
+		"didGenerateImage": "Roo сгенерировал изображение:",
+		"editingLabel": "Редактировать",
+		"readingLabel": "Читать"
 	},
 	"directoryOperations": {
 		"wantsToViewTopLevel": "Roo хочет просмотреть файлы верхнего уровня в этой директории:",

@@ -190,7 +190,7 @@ export function ContactForm({ formType, buttonText, buttonClassName }: ContactFo
 								id="name"
 								name="name"
 								type="text"
-								className={`w-full rounded-md border ${
+								className={`w-full rounded-2xl border ${
 									formErrors.name ? "border-red-500" : "border-input"
 								} bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring`}
 								placeholder="Your name"
@@ -206,7 +206,7 @@ export function ContactForm({ formType, buttonText, buttonClassName }: ContactFo
 								id="company"
 								name="company"
 								type="text"
-								className={`w-full rounded-md border ${
+								className={`w-full rounded-2xl border ${
 									formErrors.company ? "border-red-500" : "border-input"
 								} bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring`}
 								placeholder="Your company"
@@ -222,7 +222,7 @@ export function ContactForm({ formType, buttonText, buttonClassName }: ContactFo
 								id="email"
 								name="email"
 								type="email"
-								className={`w-full rounded-md border ${
+								className={`w-full rounded-2xl border ${
 									formErrors.email ? "border-red-500" : "border-input"
 								} bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring`}
 								placeholder="your.email@example.com"
@@ -238,7 +238,7 @@ export function ContactForm({ formType, buttonText, buttonClassName }: ContactFo
 								id="website"
 								name="website"
 								type="url"
-								className={`w-full rounded-md border ${
+								className={`w-full rounded-2xl border ${
 									formErrors.website ? "border-red-500" : "border-input"
 								} bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring`}
 								placeholder="https://example.com"
@@ -253,7 +253,7 @@ export function ContactForm({ formType, buttonText, buttonClassName }: ContactFo
 							<select
 								id="engineerCount"
 								name="engineerCount"
-								className={`w-full rounded-md border ${
+								className={`w-full rounded-2xl border ${
 									formErrors.engineerCount ? "border-red-500" : "border-input"
 								} bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring`}
 								defaultValue="1-10">
@@ -270,7 +270,7 @@ export function ContactForm({ formType, buttonText, buttonClassName }: ContactFo
 						</div>
 
 						{submitStatus === "error" && (
-							<div className="rounded-md bg-red-50 p-3 text-sm text-red-500 dark:bg-red-900/20">
+							<div className="rounded-2xl bg-red-50 p-3 text-sm text-red-500 dark:bg-red-900/20">
 								There was an error submitting your request. Please try again later.
 							</div>
 						)}

@@ -92,7 +92,7 @@ export function NavBar({ stars, downloads }: NavBarProps) {
 					<Link
 						href={EXTERNAL_LINKS.MARKETPLACE}
 						target="_blank"
-						className="hidden items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-all duration-200 hover:bg-primary/80 hover:shadow-lg hover:scale-105 md:flex">
+						className="hidden items-center gap-1.5 rounded-2xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-all duration-200 hover:bg-primary/80 hover:shadow-lg hover:scale-105 md:flex">
 						<VscVscode className="-mr-[2px] mt-[1px] h-4 w-4" />
 						<span>
 							Install <span className="font-black max-lg:text-xs">&middot;</span>
@@ -178,18 +178,18 @@ export function NavBar({ stars, downloads }: NavBarProps) {
 						<Link
 							href={EXTERNAL_LINKS.GITHUB}
 							target="_blank"
-							className="inline-flex items-center gap-2 rounded-md p-2 text-sm font-medium text-foreground/80 transition-colors hover:bg-accent hover:text-foreground"
+							className="inline-flex items-center gap-2 rounded-2xl p-2 text-sm font-medium text-foreground/80 transition-colors hover:bg-accent hover:text-foreground"
 							onClick={() => setIsMenuOpen(false)}>
 							<RxGithubLogo className="h-5 w-5" />
 							{stars !== null && <span>{stars}</span>}
 						</Link>
-						<div className="flex items-center rounded-md p-2 transition-colors hover:bg-accent">
+						<div className="flex items-center rounded-2xl p-2 transition-colors hover:bg-accent">
 							<ThemeToggle />
 						</div>
 						<Link
 							href={EXTERNAL_LINKS.MARKETPLACE}
 							target="_blank"
-							className="inline-flex items-center gap-2 rounded-md p-2 text-sm font-medium text-foreground/80 transition-colors hover:bg-accent hover:text-foreground"
+							className="inline-flex items-center gap-2 rounded-2xl p-2 text-sm font-medium text-foreground/80 transition-colors hover:bg-accent hover:text-foreground"
 							onClick={() => setIsMenuOpen(false)}>
 							<VscVscode className="h-5 w-5" />
 							{downloads !== null && <span>{downloads}</span>}

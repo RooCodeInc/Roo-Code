@@ -15,7 +15,6 @@ import { useCopyToClipboard } from "@src/utils/clipboard"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
 import { findMatchingResourceOrTemplate } from "@src/utils/mcp"
 import { vscode } from "@src/utils/vscode"
-import { removeLeadingNonAlphanumeric } from "@src/utils/removeLeadingNonAlphanumeric"
 import { getLanguageFromPath } from "@src/utils/getLanguageFromPath"
 import { Button } from "@src/components/ui"
 
@@ -47,6 +46,7 @@ import { McpExecution } from "./McpExecution"
 import { ChatTextArea } from "./ChatTextArea"
 import { MAX_IMAGES_PER_MESSAGE } from "./ChatView"
 import { useSelectedModel } from "../ui/hooks/useSelectedModel"
+import FilePathWithIcon from "../common/FilePathWithIcon"
 
 interface ChatRowProps {
 	message: ClineMessage
@@ -74,7 +74,12 @@ const ChatRow = memo(
 		const prevHeightRef = useRef(0)
 
 		const [chatrow, { height }] = useSize(
-			<div className="px-[15px] py-[10px] pr-[6px]">
+			<div
+				className="px-[15px] py-[10px] pr-[6px] transition-all duration-300"
+				style={{
+					borderRadius: "12px",
+					margin: "0 0 8px 0",
+				}}>
 				<ChatRowContent {...props} />
 			</div>,
 		)
@@ -256,10 +261,8 @@ export const ChatRowContent = ({
 				]
 			case "completion_result":
 				return [
-					<span
-						className="codicon codicon-check"
-						style={{ color: successColor, marginBottom: "-1.5px" }}></span>,
-					<span style={{ color: successColor, fontWeight: "bold" }}>{t("chat:taskCompleted")}</span>,
+					<span className="codicon codicon-check" style={{ color: "white" }}></span>,
+					<span style={{ color: "white", fontWeight: "bold" }}>{t("chat:taskCompleted")}</span>,
 				]
 			case "api_req_retry_delayed":
 				return []
@@ -388,13 +391,10 @@ export const ChatRowContent = ({
 							) : (
 								toolIcon(tool.tool === "appliedDiff" ? "diff" : "edit")
 							)}
-							<span style={{ fontWeight: "bold" }}>
-								{tool.isProtected
-									? t("chat:fileOperations.wantsToEditProtected")
-									: tool.isOutsideWorkspace
-										? t("chat:fileOperations.wantsToEditOutsideWorkspace")
-										: t("chat:fileOperations.wantsToEdit")}
-							</span>
+							<FilePathWithIcon
+								filePath={tool.path || ""}
+								label={t("chat:fileOperations.editingLabel")}
+							/>
 						</div>
 						<CodeAccordian
 							path={tool.path}
@@ -419,17 +419,10 @@ export const ChatRowContent = ({
 							) : (
 								toolIcon("insert")
 							)}
-							<span style={{ fontWeight: "bold" }}>
-								{tool.isProtected
-									? t("chat:fileOperations.wantsToEditProtected")
-									: tool.isOutsideWorkspace
-										? t("chat:fileOperations.wantsToEditOutsideWorkspace")
-										: tool.lineNumber === 0
-											? t("chat:fileOperations.wantsToInsertAtEnd")
-											: t("chat:fileOperations.wantsToInsertWithLineNumber", {
-													lineNumber: tool.lineNumber,
-												})}
-							</span>
+							<FilePathWithIcon
+								filePath={tool.path || ""}
+								label={t("chat:fileOperations.editingLabel")}
+							/>
 						</div>
 						<CodeAccordian
 							path={tool.path}
@@ -454,13 +447,10 @@ export const ChatRowContent = ({
 							) : (
 								toolIcon("replace")
 							)}
-							<span style={{ fontWeight: "bold" }}>
-								{tool.isProtected && message.type === "ask"
-									? t("chat:fileOperations.wantsToEditProtected")
-									: message.type === "ask"
-										? t("chat:fileOperations.wantsToSearchReplace")
-										: t("chat:fileOperations.didSearchReplace")}
-							</span>
+							<FilePathWithIcon
+								filePath={tool.path || ""}
+								label={t("chat:fileOperations.editingLabel")}
+							/>
 						</div>
 						<CodeAccordian
 							path={tool.path}
@@ -513,7 +503,7 @@ export const ChatRowContent = ({
 			case "newFileCreated":
 				return (
 					<>
-						<div style={headerStyle}>
+						{/* <div style={headerStyle}>
 							{tool.isProtected ? (
 								<span
 									className="codicon codicon-lock"
@@ -527,7 +517,7 @@ export const ChatRowContent = ({
 									? t("chat:fileOperations.wantsToEditProtected")
 									: t("chat:fileOperations.wantsToCreate")}
 							</span>
-						</div>
+						</div> */}
 						<CodeAccordian
 							path={tool.path}
 							code={tool.content}
@@ -568,24 +558,20 @@ export const ChatRowContent = ({
 					<>
 						<div style={headerStyle}>
 							{toolIcon("file-code")}
-							<span style={{ fontWeight: "bold" }}>
-								{message.type === "ask"
-									? tool.isOutsideWorkspace
-										? t("chat:fileOperations.wantsToReadOutsideWorkspace")
-										: tool.additionalFileCount && tool.additionalFileCount > 0
-											? t("chat:fileOperations.wantsToReadAndXMore", {
-													count: tool.additionalFileCount,
-												})
-											: t("chat:fileOperations.wantsToRead")
-									: t("chat:fileOperations.didRead")}
-							</span>
+							<FilePathWithIcon
+								filePath={tool.path || ""}
+								label={t("chat:fileOperations.readingLabel")}
+							/>
 						</div>
 						<ToolUseBlock>
 							<ToolUseBlockHeader
 								onClick={() => vscode.postMessage({ type: "openFile", text: tool.content })}>
-								{tool.path?.startsWith(".") && <span>.</span>}
+								<FilePathWithIcon
+									filePath={tool.path || ""}
+									className="mr-2"
+									label={t("chat:fileOperations.readingLabel")}
+								/>
 								<span className="whitespace-nowrap overflow-hidden text-ellipsis text-left mr-2 rtl">
-									{removeLeadingNonAlphanumeric(tool.path ?? "") + "\u200E"}
 									{tool.reason}
 								</span>
 								<div style={{ flexGrow: 1 }}></div>
@@ -1093,34 +1079,67 @@ export const ChatRowContent = ({
 						/>
 					)
 				case "api_req_started":
+					// Hide the title if the request is processed (has cost or is completed)
+					const isRequestProcessed = cost !== null && cost !== undefined && cost > 0
+
 					return (
-						<>
-							<div
-								style={{
-									...headerStyle,
-									marginBottom:
-										((cost === null || cost === undefined) && apiRequestFailedMessage) ||
-										apiReqStreamingFailedMessage
-											? 10
-											: 0,
-									justifyContent: "space-between",
-									cursor: "pointer",
-									userSelect: "none",
-									WebkitUserSelect: "none",
-									MozUserSelect: "none",
-									msUserSelect: "none",
-								}}
-								onClick={handleToggleExpand}>
-								<div style={{ display: "flex", alignItems: "center", gap: "10px", flexGrow: 1 }}>
-									{icon}
-									{title}
-									<VSCodeBadge
-										style={{ opacity: cost !== null && cost !== undefined && cost > 0 ? 1 : 0 }}>
-										${Number(cost || 0)?.toFixed(4)}
-									</VSCodeBadge>
+						<div style={{ position: "relative" }}>
+							{/* if the api request is processed, the apiRequest.title will be hidden */}
+							{!isRequestProcessed && (
+								<div
+									style={{
+										...headerStyle,
+										marginBottom:
+											((cost === null || cost === undefined) && apiRequestFailedMessage) ||
+											apiReqStreamingFailedMessage
+												? 10
+												: 0,
+										justifyContent: "space-between",
+										cursor: "pointer",
+										userSelect: "none",
+										WebkitUserSelect: "none",
+										MozUserSelect: "none",
+										msUserSelect: "none",
+									}}
+									onClick={handleToggleExpand}>
+									<div style={{ display: "flex", alignItems: "center", gap: "10px", flexGrow: 1 }}>
+										{icon}
+										{title}
+
+										<VSCodeBadge
+											style={{
+												opacity: cost !== null && cost !== undefined && cost > 0 ? 1 : 0,
+											}}>
+											${Number(cost || 0)?.toFixed(4)}
+										</VSCodeBadge>
+									</div>
+									<span className={`codicon codicon-chevron-${isExpanded ? "up" : "down"}`}></span>
 								</div>
-								<span className={`codicon codicon-chevron-${isExpanded ? "up" : "down"}`}></span>
-							</div>
+							)}
+							{/* Show cost badge absolutely positioned in top-right when request is processed */}
+							{isRequestProcessed && (
+								<span
+									style={{
+										position: "absolute",
+										bottom: "0px",
+										right: "0px",
+										zIndex: 10,
+										opacity: 1,
+										background: "rgba(30,30,30,0.9)",
+										backdropFilter: "blur(8px)",
+										WebkitBackdropFilter: "blur(8px)",
+										border: "1px solid rgba(255,255,255,0.15)",
+										borderRadius: "12px",
+										padding: "4px 8px",
+										fontSize: "12px",
+										fontWeight: "500",
+										color: "white",
+										boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+									}}>
+									${Number(cost || 0)?.toFixed(4)}
+								</span>
+							)}
+
 							{(((cost === null || cost === undefined) && apiRequestFailedMessage) ||
 								apiReqStreamingFailedMessage) && (
 								<>
@@ -1153,7 +1172,7 @@ export const ChatRowContent = ({
 									/>
 								</div>
 							)}
-						</>
+						</div>
 					)
 				case "api_req_finished":
 					return null // we should never see this message type
@@ -1173,7 +1192,16 @@ export const ChatRowContent = ({
 				case "user_feedback":
 					return (
 						<div
-							className={`bg-vscode-editor-background border rounded-xs overflow-hidden whitespace-pre-wrap ${isEditing ? "p-0" : "p-1"}`}>
+							className={`overflow-hidden whitespace-pre-wrap ${isEditing ? "p-0" : "p-0"}`}
+							style={{
+								background: "rgba(255,255,255,0.04)",
+								backdropFilter: "blur(10px)",
+								WebkitBackdropFilter: "blur(10px)",
+								borderRadius: "12px",
+								border: "1px solid rgba(255,255,255,0.08)",
+								boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+								transition: "all 0.2s ease-in-out",
+							}}>
 							{isEditing ? (
 								<div className="flex flex-col gap-2">
 									<ChatTextArea
@@ -1195,9 +1223,9 @@ export const ChatRowContent = ({
 									/>
 								</div>
 							) : (
-								<div className="flex justify-between">
+								<div className="flex justify-between bg-[rgba(255,255,255,0.08)] items-center p-3">
 									<div
-										className="flex-grow px-2 py-1 wrap-anywhere cursor-pointer hover:bg-vscode-list-hoverBackground rounded transition-colors"
+										className="flex-grow wrap-anywhere cursor-pointer rounded-l-xl transition-all"
 										onClick={(e) => {
 											e.stopPropagation()
 											if (!isStreaming) {
@@ -1207,11 +1235,11 @@ export const ChatRowContent = ({
 										title={t("chat:queuedMessages.clickToEdit")}>
 										<Mention text={message.text} withShadow />
 									</div>
-									<div className="flex">
+									<div className="flex bg-[rgba(30,30,30,0.4)] px-1 rounded-r-xl">
 										<Button
 											variant="ghost"
 											size="icon"
-											className="shrink-0"
+											className="shrink-0 hover:bg-[rgba(255,255,255,0.08)] transition-all rounded-lg"
 											disabled={isStreaming}
 											onClick={(e) => {
 												e.stopPropagation()
@@ -1222,7 +1250,7 @@ export const ChatRowContent = ({
 										<Button
 											variant="ghost"
 											size="icon"
-											className="shrink-0"
+											className="shrink-0 hover:bg-[rgba(255,255,255,0.08)] transition-all rounded-lg"
 											disabled={isStreaming}
 											onClick={(e) => {
 												e.stopPropagation()
@@ -1471,7 +1499,7 @@ export const ChatRowContent = ({
 								{icon}
 								{title}
 							</div>
-							<div className="w-full bg-vscode-editor-background border border-vscode-border rounded-xs p-2 mt-2">
+							<div className="w-full bg-vscode-editor-background border border-vscode-border rounded-xl p-2 mt-2">
 								{useMcpServer.type === "access_mcp_resource" && (
 									<McpResourceRow
 										item={{

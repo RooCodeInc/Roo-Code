@@ -119,7 +119,7 @@ export const AutoApproveToggle = ({ onToggle, ...props }: AutoApproveToggleProps
 						aria-pressed={!!props[key]}
 						data-testid={testId}
 						className={cn(
-							"h-7 px-2 rounded-md flex items-center gap-1.5 text-xs whitespace-nowrap",
+							"h-7 px-2 rounded-2xl flex items-center gap-1.5 text-xs whitespace-nowrap",
 							!props[key] && "opacity-50",
 						)}>
 						<span className={`codicon codicon-${icon} text-sm`} />

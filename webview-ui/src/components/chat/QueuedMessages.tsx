@@ -40,16 +40,18 @@ export const QueuedMessages = ({ queue, onRemove, onUpdate }: QueuedMessagesProp
 	}
 
 	return (
-		<div className="px-[15px] py-[10px] pr-[6px]" data-testid="queued-messages">
+		<div
+			className="mx-[15px] px-4 border-t  border-[rgba(255,255,255,0.3)] bg-[rgba(255,255,255,0.05)] rounded-t-2xl py-[10px] pr-[6px]"
+			data-testid="queued-messages">
 			<div className="text-vscode-descriptionForeground text-md mb-2">{t("queuedMessages.title")}</div>
-			<div className="flex flex-col gap-2 max-h-[300px] overflow-y-auto pr-2">
+			<div className="flex flex-col gap-0.5 max-h-[250px] overflow-y-auto pr-2">
 				{queue.map((message, index) => {
 					const editState = getEditState(message.id, message.text)
 
 					return (
 						<div
 							key={message.id}
-							className="bg-vscode-editor-background border rounded-xs p-1 overflow-hidden whitespace-pre-wrap flex-shrink-0">
+							className=" bg-[rgba(255,255,255,0.03)] rounded-2xl p-1 overflow-hidden whitespace-pre-wrap flex-shrink-0">
 							<div className="flex justify-between">
 								<div className="flex-grow px-2 py-1 wrap-anywhere">
 									{editState.isEditing ? (

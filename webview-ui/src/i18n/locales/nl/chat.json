@@ -176,7 +176,9 @@
 		"wantsToGenerateImage": "Roo wil een afbeelding genereren:",
 		"wantsToGenerateImageOutsideWorkspace": "Roo wil een afbeelding genereren buiten de werkruimte:",
 		"wantsToGenerateImageProtected": "Roo wil een afbeelding genereren op een beschermde locatie:",
-		"didGenerateImage": "Roo heeft een afbeelding gegenereerd:"
+		"didGenerateImage": "Roo heeft een afbeelding gegenereerd:",
+		"editingLabel": "Bewerken",
+		"readingLabel": "Lezen"
 	},
 	"directoryOperations": {
 		"wantsToViewTopLevel": "Roo wil de bovenliggende bestanden in deze map bekijken:",

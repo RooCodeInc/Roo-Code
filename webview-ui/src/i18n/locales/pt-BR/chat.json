@@ -181,7 +181,9 @@
 		"wantsToGenerateImage": "Roo quer gerar uma imagem:",
 		"wantsToGenerateImageOutsideWorkspace": "Roo quer gerar uma imagem fora do espaço de trabalho:",
 		"wantsToGenerateImageProtected": "Roo quer gerar uma imagem em um local protegido:",
-		"didGenerateImage": "Roo gerou uma imagem:"
+		"didGenerateImage": "Roo gerou uma imagem:",
+		"editingLabel": "Editar",
+		"readingLabel": "Ler"
 	},
 	"directoryOperations": {
 		"wantsToViewTopLevel": "Roo quer visualizar os arquivos de nível superior neste diretório:",

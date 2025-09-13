@@ -181,7 +181,9 @@
 		"wantsToGenerateImage": "Roo bir görsel oluşturmak istiyor:",
 		"wantsToGenerateImageOutsideWorkspace": "Roo çalışma alanının dışında bir görsel oluşturmak istiyor:",
 		"wantsToGenerateImageProtected": "Roo korumalı bir konumda görsel oluşturmak istiyor:",
-		"didGenerateImage": "Roo bir görsel oluşturdu:"
+		"didGenerateImage": "Roo bir görsel oluşturdu:",
+		"editingLabel": "Düzenle",
+		"readingLabel": "Oku"
 	},
 	"directoryOperations": {
 		"wantsToViewTopLevel": "Roo bu dizindeki üst düzey dosyaları görüntülemek istiyor:",

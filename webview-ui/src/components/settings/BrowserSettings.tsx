@@ -206,7 +206,7 @@ export const BrowserSettings = ({
 								</div>
 								{testResult && (
 									<div
-										className={`p-2 rounded-xs text-sm ${
+										className={`p-2 rounded-xl text-sm ${
 											testResult.success
 												? "bg-green-800/20 text-green-400"
 												: "bg-red-800/20 text-red-400"

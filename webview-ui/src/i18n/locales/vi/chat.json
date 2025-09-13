@@ -181,7 +181,9 @@
 		"wantsToGenerateImage": "Roo muốn tạo một hình ảnh:",
 		"wantsToGenerateImageOutsideWorkspace": "Roo muốn tạo hình ảnh bên ngoài không gian làm việc:",
 		"wantsToGenerateImageProtected": "Roo muốn tạo hình ảnh ở vị trí được bảo vệ:",
-		"didGenerateImage": "Roo đã tạo một hình ảnh:"
+		"didGenerateImage": "Roo đã tạo một hình ảnh:",
+		"editingLabel": "Chỉnh sửa",
+		"readingLabel": "Đọc"
 	},
 	"directoryOperations": {
 		"wantsToViewTopLevel": "Roo muốn xem các tệp cấp cao nhất trong thư mục này:",

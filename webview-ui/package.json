@@ -67,6 +67,7 @@
 		"remark-gfm": "^4.0.1",
 		"remark-math": "^6.0.0",
 		"remove-markdown": "^0.6.0",
+		"postcss": "^8.4.49",
 		"shell-quote": "^1.8.2",
 		"shiki": "^3.2.1",
 		"source-map": "^0.7.4",

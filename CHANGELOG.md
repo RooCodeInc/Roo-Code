@@ -1,18 +1,19 @@
 # Roo Code Changelog
 
-## [3.28.1] - 2025-09-11
-
-![3.28.1 Release - Kangaroo riding rocket to the clouds](/releases/3.28.1-release.png)
-
-- Announce Roo Code Cloud!
-- Add cloud task button for opening tasks in Roo Code Cloud (thanks @app/roomote!)
-- Make Posthog telemetry the default (thanks @mrubens!)
-- Show notification when the checkpoint initialization fails (thanks @app/roomote!)
-- Bust cache in generated image preview (thanks @mrubens!)
-- Fix: Center active mode in selector dropdown on open (#7882 by @hannesrudolph, PR by @app/roomote)
-- Fix: Preserve first message during conversation condensing (thanks @daniel-lxs!)
-
 ## [3.28.0] - 2025-09-10
+
+![3.28.0 - Refactor UI components for improved styling and functionality](/releases/3.28.0-release.png)
+
+- Updated mode names and descriptions in `mode.ts` for clarity.
+- Enhanced `ApiConfigSelector` with new styles and improved layout.
+- Refined `AutoApproveMenu` for better user experience and visual consistency.
+- Modified `ChatTextArea` to streamline controls and improve accessibility.
+- Introduced `ModeIcon` component for better icon representation in `ModeSelector`.
+- Improved popover styling for a more modern look.
+
+- These changes aim to enhance the overall user interface and experience across the application.
+
+
 
 ![3.28.0 Release - Continue tasks in Roo Code Cloud](/releases/3.28.0-release.png)
 

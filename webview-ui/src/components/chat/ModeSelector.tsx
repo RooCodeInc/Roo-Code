@@ -18,6 +18,29 @@ import { IconButton } from "./IconButton"
 
 const SEARCH_THRESHOLD = 6
 
+// Map mode slugs to codicon names
+const getCodiconForMode = (slug: string): string => {
+	switch (slug) {
+		case "architect":
+			return "codicon-organization"
+		case "code":
+			return "codicon-code"
+		case "ask":
+			return "codicon-question"
+		case "debug":
+			return "codicon-bug"
+		case "orchestrator":
+			return "codicon-circuit-board"
+		default:
+			return "codicon-symbol-namespace"
+	}
+}
+
+const ModeIcon = ({ slug, className = "" }: { slug: string; className?: string }) => {
+	const iconClass = getCodiconForMode(slug)
+	return <span className={cn("codicon", iconClass, "text-vscode-foreground/85", className)} />
+}
+
 interface ModeSelectorProps {
 	value: Mode
 	onChange: (value: Mode) => void
@@ -199,34 +222,40 @@ export const ModeSelector = ({
 					data-testid="mode-selector-trigger"
 					className={cn(
 						"inline-flex items-center gap-1.5 relative whitespace-nowrap px-1.5 py-1 text-xs",
-						"bg-transparent border border-[rgba(255,255,255,0.08)] rounded-md text-vscode-foreground",
-						"transition-all duration-150 focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder focus-visible:ring-inset",
+						"bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.15)] rounded-full text-vscode-foreground",
+						"transition-all duration-150 focus:outline-none focus-visible:ring-1 focus-visible:ring-gray-400 focus-visible:ring-inset",
 						disabled
 							? "opacity-50 cursor-not-allowed"
-							: "opacity-90 hover:opacity-100 hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.15)] cursor-pointer",
+							: "opacity-90 hover:opacity-100 hover:bg-[rgba(0,0,0,0.03)] hover:border-[rgba(255,255,255,0.15)] cursor-pointer",
 						triggerClassName,
 						!disabled && !hasOpenedModeSelector
 							? "bg-primary opacity-90 hover:bg-primary-hover text-vscode-button-foreground"
 							: null,
 					)}>
+					{selectedMode && <ModeIcon slug={selectedMode.slug} className="w-3.5 h-3.5 opacity-90" />}
+					<span className="truncate">{selectedMode?.name || ""}</span>
 					<ChevronUp
 						className={cn(
 							"pointer-events-none opacity-80 flex-shrink-0 size-3 transition-transform duration-200",
 							open && "rotate-180",
 						)}
 					/>
-					<span className="truncate">{selectedMode?.name || ""}</span>
 				</PopoverTrigger>
 			</StandardTooltip>
 			<PopoverContent
 				align="start"
 				sideOffset={4}
 				container={portalContainer}
-				className="p-0 overflow-hidden min-w-80 max-w-9/10">
+				className=" flex justify-center items-center overflow-hidden  max-w-[300px] rounded-2xl bg-[rgba(0,0,0,0.4)] border border-[rgba(255,255,255,0.08)] shadow-lg">
 				<div className="flex flex-col w-full">
+					{/* Header */}
+					<div className=" pb-2 text-center pt-2 text-md font-extrabold text-gray-300">
+						{t("chat:modeSelector.title")}
+					</div>
+
 					{/* Show search bar only when there are more than SEARCH_THRESHOLD items, otherwise show info blurb */}
 					{showSearch ? (
-						<div className="relative p-2 border-b border-vscode-dropdown-border">
+						<div className="relative p-2 border-b border-gray-400">
 							<input
 								aria-label="Search modes"
 								ref={searchInputRef}
@@ -245,11 +274,7 @@ export const ModeSelector = ({
 								</div>
 							)}
 						</div>
-					) : (
-						<div className="p-3 border-b border-vscode-dropdown-border">
-							<p className="m-0 text-xs text-vscode-descriptionForeground">{instructionText}</p>
-						</div>
-					)}
+					) : null}
 
 					{/* Mode List */}
 					<div ref={scrollContainerRef} className="max-h-[300px] overflow-y-auto">
@@ -267,13 +292,14 @@ export const ModeSelector = ({
 											ref={isSelected ? selectedItemRef : null}
 											onClick={() => handleSelect(mode.slug)}
 											className={cn(
-												"px-3 py-1.5 text-sm cursor-pointer flex items-center",
+												"px-3 py-1.5 text-sm cursor-pointer flex items-center gap-2",
 												"hover:bg-vscode-list-hoverBackground",
 												isSelected
 													? "bg-vscode-list-activeSelectionBackground text-vscode-list-activeSelectionForeground"
 													: "",
 											)}
 											data-testid="mode-selector-item">
+											<ModeIcon slug={mode.slug} className="w-4 h-4 opacity-90" />
 											<div className="flex-1 min-w-0">
 												<div className="font-bold truncate">{mode.name}</div>
 												{mode.description && (
@@ -290,8 +316,8 @@ export const ModeSelector = ({
 						)}
 					</div>
 
-					{/* Bottom bar with buttons on left and title on right */}
-					<div className="flex flex-row items-center justify-between px-2 py-2 border-t border-vscode-dropdown-border">
+					{/* Bottom bar */}
+					<div className="flex flex-row items-center justify-center px-2 py-2 border-t border-vscode-dropdown-border bg-transparent">
 						<div className="flex flex-row gap-1">
 							<IconButton
 								iconClass="codicon-extensions"
@@ -318,16 +344,12 @@ export const ModeSelector = ({
 							/>
 						</div>
 
-						{/* Info icon and title on the right - only show info icon when search bar is visible */}
 						<div className="flex items-center gap-1 pr-1">
 							{showSearch && (
 								<StandardTooltip content={instructionText}>
 									<span className="codicon codicon-info text-xs text-vscode-descriptionForeground opacity-70 hover:opacity-100 cursor-help" />
 								</StandardTooltip>
 							)}
-							<h4 className="m-0 font-medium text-sm text-vscode-descriptionForeground">
-								{t("chat:modeSelector.title")}
-							</h4>
 						</div>
 					</div>
 				</div>
