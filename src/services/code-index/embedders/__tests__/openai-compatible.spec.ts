@@ -114,6 +114,157 @@ describe("OpenAICompatibleEmbedder", () => {
 				"embeddings:validation.baseUrlRequired",
 			)
 		})
+
+		it("should warn when API key contains non-ASCII characters", () => {
+			const apiKeyWithUnicode = "test-key-•-with-unicode"
+			const warnSpy = vitest.spyOn(console, "warn")
+
+			embedder = new OpenAICompatibleEmbedder(testBaseUrl, apiKeyWithUnicode, testModelId)
+
+			expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("API key contains non-ASCII characters"))
+			expect(embedder).toBeDefined()
+		})
+
+		it("should not warn when API key contains only ASCII characters", () => {
+			const warnSpy = vitest.spyOn(console, "warn")
+
+			embedder = new OpenAICompatibleEmbedder(testBaseUrl, testApiKey, testModelId)
+
+			expect(warnSpy).not.toHaveBeenCalledWith(expect.stringContaining("API key contains non-ASCII characters"))
+		})
+	})
+
+	describe("API key sanitization", () => {
+		it("should sanitize non-ASCII characters in API key for direct HTTP requests", async () => {
+			const apiKeyWithUnicode = "test-key-•-with-unicode-§"
+			const sanitizedKey = "test-key-?-with-unicode-?"
+			const fullUrl = "https://api.example.com/v1/embeddings"
+
+			embedder = new OpenAICompatibleEmbedder(fullUrl, apiKeyWithUnicode, testModelId)
+
+			const mockFetch = vitest.fn().mockResolvedValue({
+				ok: true,
+				status: 200,
+				json: async () => ({
+					data: [{ embedding: [0.1, 0.2, 0.3] }],
+					usage: { prompt_tokens: 10, total_tokens: 15 },
+				}),
+				text: async () => "",
+			})
+			global.fetch = mockFetch
+
+			await embedder.createEmbeddings(["test text"])
+
+			expect(mockFetch).toHaveBeenCalledWith(
+				fullUrl,
+				expect.objectContaining({
+					headers: expect.objectContaining({
+						"api-key": sanitizedKey,
+						Authorization: `Bearer ${sanitizedKey}`,
+					}),
+				}),
+			)
+		})
+
+		it("should handle API keys with emoji and special Unicode characters", async () => {
+			const apiKeyWithEmoji = "key-😀-test-™-api"
+			// Emoji (😀) is multi-byte and gets replaced with ?? (one for each byte)
+			const sanitizedKey = "key-??-test-?-api"
+			const fullUrl = "https://api.example.com/v1/embeddings"
+
+			embedder = new OpenAICompatibleEmbedder(fullUrl, apiKeyWithEmoji, testModelId)
+
+			const mockFetch = vitest.fn().mockResolvedValue({
+				ok: true,
+				status: 200,
+				json: async () => ({
+					data: [{ embedding: [0.1, 0.2, 0.3] }],
+					usage: { prompt_tokens: 10, total_tokens: 15 },
+				}),
+				text: async () => "",
+			})
+			global.fetch = mockFetch
+
+			await embedder.createEmbeddings(["test"])
+
+			expect(mockFetch).toHaveBeenCalledWith(
+				fullUrl,
+				expect.objectContaining({
+					headers: expect.objectContaining({
+						"api-key": sanitizedKey,
+						Authorization: `Bearer ${sanitizedKey}`,
+					}),
+				}),
+			)
+		})
+
+		it("should preserve ASCII characters when sanitizing", async () => {
+			const apiKeyMixed = "abc123-•-XYZ789-§-!@#$%^&*()"
+			const sanitizedKey = "abc123-?-XYZ789-?-!@#$%^&*()"
+			const fullUrl = "https://api.example.com/v1/embeddings"
+
+			embedder = new OpenAICompatibleEmbedder(fullUrl, apiKeyMixed, testModelId)
+
+			const mockFetch = vitest.fn().mockResolvedValue({
+				ok: true,
+				status: 200,
+				json: async () => ({
+					data: [{ embedding: [0.1, 0.2, 0.3] }],
+					usage: { prompt_tokens: 10, total_tokens: 15 },
+				}),
+				text: async () => "",
+			})
+			global.fetch = mockFetch
+
+			await embedder.createEmbeddings(["test"])
+
+			expect(mockFetch).toHaveBeenCalledWith(
+				fullUrl,
+				expect.objectContaining({
+					headers: expect.objectContaining({
+						"api-key": sanitizedKey,
+						Authorization: `Bearer ${sanitizedKey}`,
+					}),
+				}),
+			)
+		})
+
+		it("should handle empty API key gracefully", () => {
+			expect(() => new OpenAICompatibleEmbedder(testBaseUrl, "", testModelId)).toThrow(
+				"embeddings:validation.apiKeyRequired",
+			)
+		})
+
+		it("should handle API key that is entirely non-ASCII", async () => {
+			const apiKeyAllUnicode = "•§™€£¥"
+			const sanitizedKey = "??????"
+			const fullUrl = "https://api.example.com/v1/embeddings"
+
+			embedder = new OpenAICompatibleEmbedder(fullUrl, apiKeyAllUnicode, testModelId)
+
+			const mockFetch = vitest.fn().mockResolvedValue({
+				ok: true,
+				status: 200,
+				json: async () => ({
+					data: [{ embedding: [0.1, 0.2, 0.3] }],
+					usage: { prompt_tokens: 10, total_tokens: 15 },
+				}),
+				text: async () => "",
+			})
+			global.fetch = mockFetch
+
+			await embedder.createEmbeddings(["test"])
+
+			expect(mockFetch).toHaveBeenCalledWith(
+				fullUrl,
+				expect.objectContaining({
+					headers: expect.objectContaining({
+						"api-key": sanitizedKey,
+						Authorization: `Bearer ${sanitizedKey}`,
+					}),
+				}),
+			)
+		})
 	})
 
 	describe("embedderInfo", () => {

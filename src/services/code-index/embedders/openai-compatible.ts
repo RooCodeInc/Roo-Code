@@ -50,6 +50,32 @@ export class OpenAICompatibleEmbedder implements IEmbedder {
 	}
 
 	/**
+	 * Sanitizes a string to ensure it only contains ASCII characters suitable for HTTP headers.
+	 * Non-ASCII characters are replaced with '?' to maintain the string structure.
+	 * @param value The string to sanitize
+	 * @returns The sanitized string containing only ASCII characters
+	 */
+	private static sanitizeForHeader(value: string): string {
+		// Replace any non-ASCII characters (code > 127) with '?'
+		// Using charCodeAt to avoid ESLint no-control-regex warning
+		return value
+			.split("")
+			.map((char) => (char.charCodeAt(0) > 127 ? "?" : char))
+			.join("")
+	}
+
+	/**
+	 * Validates if a string contains only ASCII characters.
+	 * @param value The string to validate
+	 * @returns true if the string contains only ASCII characters, false otherwise
+	 */
+	private static isAsciiOnly(value: string): boolean {
+		// Check if all characters have code points <= 127
+		// Using every() to avoid ESLint no-control-regex warning
+		return value.split("").every((char) => char.charCodeAt(0) <= 127)
+	}
+
+	/**
 	 * Creates a new OpenAI Compatible embedder
 	 * @param baseUrl The base URL for the OpenAI-compatible API endpoint
 	 * @param apiKey The API key for authentication
@@ -62,6 +88,14 @@ export class OpenAICompatibleEmbedder implements IEmbedder {
 		}
 		if (!apiKey) {
 			throw new Error(t("embeddings:validation.apiKeyRequired"))
+		}
+
+		// Warn if API key contains non-ASCII characters
+		if (!OpenAICompatibleEmbedder.isAsciiOnly(apiKey)) {
+			console.warn(
+				"API key contains non-ASCII characters. These will be replaced with '?' for HTTP header compatibility. " +
+					"Please ensure your API key contains only ASCII characters for proper authentication.",
+			)
 		}
 
 		this.baseUrl = baseUrl
@@ -195,14 +229,17 @@ export class OpenAICompatibleEmbedder implements IEmbedder {
 		batchTexts: string[],
 		model: string,
 	): Promise<OpenAIEmbeddingResponse> {
+		// Sanitize the API key to ensure it only contains ASCII characters
+		const sanitizedApiKey = OpenAICompatibleEmbedder.sanitizeForHeader(this.apiKey)
+
 		const response = await fetch(url, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
 				// Azure OpenAI uses 'api-key' header, while OpenAI uses 'Authorization'
 				// We'll try 'api-key' first for Azure compatibility
-				"api-key": this.apiKey,
-				Authorization: `Bearer ${this.apiKey}`,
+				"api-key": sanitizedApiKey,
+				Authorization: `Bearer ${sanitizedApiKey}`,
 			},
 			body: JSON.stringify({
 				input: batchTexts,
