@@ -302,6 +302,16 @@
 				}
 			]
 		},
+		"keybindings": [
+			{
+				"command": "roo-cline.addToContext",
+				"key": "cmd+'",
+				"mac": "cmd+'",
+				"win": "ctrl+'",
+				"linux": "ctrl+'",
+				"when": "editorTextFocus && editorHasSelection"
+			}
+		],
 		"submenus": [
 			{
 				"id": "roo-cline.contextMenu",
