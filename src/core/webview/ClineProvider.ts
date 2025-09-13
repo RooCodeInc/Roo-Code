@@ -817,6 +817,13 @@ export class ClineProvider
 	public async createTaskWithHistoryItem(historyItem: HistoryItem & { rootTask?: Task; parentTask?: Task }) {
 		await this.removeClineFromStack()
 
+		// Clear any pending edit operations for this task to prevent them from
+		// being processed when the task is recreated (fixes issue #7949)
+		const operationId = `task-${historyItem.id}`
+		if (this.clearPendingEditOperation(operationId)) {
+			this.log(`[createTaskWithHistoryItem] Cleared stale pending edit operation for task ${historyItem.id}`)
+		}
+
 		// If the history item has a saved mode, restore it and its associated API configuration.
 		if (historyItem.mode) {
 			// Validate that the mode still exists
@@ -894,16 +901,26 @@ export class ClineProvider
 		)
 
 		// Check if there's a pending edit after checkpoint restoration
-		const operationId = `task-${task.taskId}`
-		const pendingEdit = this.getPendingEditOperation(operationId)
-		if (pendingEdit) {
-			this.clearPendingEditOperation(operationId) // Clear the pending edit
+		// Only process if this is actually a checkpoint restoration (not a new task creation)
+		const checkOperationId = `task-${task.taskId}`
+		const pendingEdit = this.getPendingEditOperation(checkOperationId)
+		if (pendingEdit && historyItem.ts) {
+			// Only process pending edits for tasks that are being resumed, not cleared
+			this.clearPendingEditOperation(checkOperationId) // Clear the pending edit
 
 			this.log(`[createTaskWithHistoryItem] Processing pending edit after checkpoint restoration`)
 
 			// Process the pending edit after a short delay to ensure the task is fully initialized
 			setTimeout(async () => {
 				try {
+					// Verify the task is still active and not abandoned
+					if (task.abandoned || this.getCurrentTask()?.taskId !== task.taskId) {
+						this.log(
+							`[createTaskWithHistoryItem] Task ${task.taskId} is no longer active, skipping pending edit`,
+						)
+						return
+					}
+
 					// Find the message index in the restored state
 					const { messageIndex, apiConversationHistoryIndex } = (() => {
 						const messageIndex = task.clineMessages.findIndex((msg) => msg.ts === pendingEdit.messageTs)
@@ -2554,6 +2571,14 @@ export class ClineProvider
 		if (this.clineStack.length > 0) {
 			const task = this.clineStack[this.clineStack.length - 1]
 			console.log(`[clearTask] clearing task ${task.taskId}.${task.instanceId}`)
+
+			// Clear any pending edit operations for this task to prevent them from
+			// being processed when a new task is created (fixes issue #7949)
+			const operationId = `task-${task.taskId}`
+			if (this.clearPendingEditOperation(operationId)) {
+				this.log(`[clearTask] Cleared pending edit operation for task ${task.taskId}`)
+			}
+
 			await this.removeClineFromStack()
 		}
 	}
