@@ -742,7 +742,13 @@
 			"modelSelectionLabel": "Görüntü Üretim Modeli",
 			"modelSelectionDescription": "Görüntü üretimi için kullanılacak modeli seçin",
 			"warningMissingKey": "⚠️ Görüntü üretimi için OpenRouter API anahtarı gereklidir. Lütfen yukarıda yapılandırın.",
-			"successConfigured": "✓ Görüntü üretimi yapılandırılmış ve kullanıma hazır"
+			"successConfigured": "✓ Görüntü üretimi yapılandırılmış ve kullanıma hazır",
+			"providerLabel": "Görüntü üretim sağlayıcısı",
+			"providerDescription": "Görüntü üretimi için sağlayıcıyı seçin",
+			"geminiApiKeyLabel": "Gemini API Anahtarı",
+			"geminiApiKeyPlaceholder": "Gemini API anahtarınızı girin",
+			"geminiGetApiKeyText": "API anahtarınızı alın",
+			"warningMissingGeminiKey": "⚠️ Görüntü üretimi için Gemini API anahtarı gereklidir. Lütfen yukarıda yapılandırın."
 		},
 		"RUN_SLASH_COMMAND": {
 			"name": "Model tarafından başlatılan slash komutlarını etkinleştir",

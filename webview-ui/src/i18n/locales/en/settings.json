@@ -740,7 +740,13 @@
 			"modelSelectionLabel": "Image Generation Model",
 			"modelSelectionDescription": "Select the model to use for image generation",
 			"warningMissingKey": "⚠️ OpenRouter API key is required for image generation. Please configure it above.",
-			"successConfigured": "✓ Image generation is configured and ready to use"
+			"successConfigured": "✓ Image generation is configured and ready to use",
+			"providerLabel": "Image Generation Provider",
+			"providerDescription": "Choose the provider for image generation",
+			"geminiApiKeyLabel": "Gemini API Key",
+			"geminiApiKeyPlaceholder": "Enter your Gemini API key",
+			"geminiGetApiKeyText": "Get your API key from",
+			"warningMissingGeminiKey": "⚠️ Gemini API key is required for image generation. Please configure it above."
 		},
 		"RUN_SLASH_COMMAND": {
 			"name": "Enable model-initiated slash commands",

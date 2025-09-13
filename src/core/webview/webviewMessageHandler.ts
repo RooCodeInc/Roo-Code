@@ -1574,6 +1574,21 @@ export const webviewMessageHandler = async (
 			await provider.contextProxy.setValue("openRouterImageGenerationSelectedModel", message.text)
 			await provider.postStateToWebview()
 			break
+		case "imageGenerationProvider":
+			await provider.contextProxy.setValue(
+				"imageGenerationProvider",
+				message.text as "openrouter" | "gemini" | undefined,
+			)
+			await provider.postStateToWebview()
+			break
+		case "geminiImageApiKey":
+			await provider.contextProxy.setValue("geminiImageApiKey", message.text)
+			await provider.postStateToWebview()
+			break
+		case "geminiImageGenerationSelectedModel":
+			await provider.contextProxy.setValue("geminiImageGenerationSelectedModel", message.text)
+			await provider.postStateToWebview()
+			break
 		case "showRooIgnoredFiles":
 			await updateGlobalState("showRooIgnoredFiles", message.bool ?? false)
 			await provider.postStateToWebview()

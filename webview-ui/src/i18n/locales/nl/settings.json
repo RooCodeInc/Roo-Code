@@ -742,7 +742,13 @@
 			"modelSelectionLabel": "Afbeeldingsgeneratiemodel",
 			"modelSelectionDescription": "Selecteer het model voor afbeeldingsgeneratie",
 			"warningMissingKey": "⚠️ OpenRouter API-sleutel is vereist voor afbeeldingsgeneratie. Configureer deze hierboven.",
-			"successConfigured": "✓ Afbeeldingsgeneratie is geconfigureerd en klaar voor gebruik"
+			"successConfigured": "✓ Afbeeldingsgeneratie is geconfigureerd en klaar voor gebruik",
+			"providerLabel": "Afbeeldingsgeneratie provider",
+			"providerDescription": "Kies de provider voor afbeeldingsgeneratie",
+			"geminiApiKeyLabel": "Gemini API-sleutel",
+			"geminiApiKeyPlaceholder": "Voer je Gemini API-sleutel in",
+			"geminiGetApiKeyText": "Haal je API-sleutel op van",
+			"warningMissingGeminiKey": "⚠️ Gemini API-sleutel is vereist voor afbeeldingsgeneratie. Configureer deze hierboven."
 		},
 		"RUN_SLASH_COMMAND": {
 			"name": "Model-geïnitieerde slash-commando's inschakelen",

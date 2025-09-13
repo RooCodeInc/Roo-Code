@@ -741,7 +741,13 @@
 			"modelSelectionLabel": "Model de generació d'imatges",
 			"modelSelectionDescription": "Selecciona el model per a la generació d'imatges",
 			"warningMissingKey": "⚠️ La clau API d'OpenRouter és necessària per a la generació d'imatges. Si us plau, configura-la a dalt.",
-			"successConfigured": "✓ La generació d'imatges està configurada i llesta per utilitzar"
+			"successConfigured": "✓ La generació d'imatges està configurada i llesta per utilitzar",
+			"providerLabel": "Proveïdor de generació d'imatges",
+			"providerDescription": "Tria el proveïdor per a la generació d'imatges",
+			"geminiApiKeyLabel": "Clau API de Gemini",
+			"geminiApiKeyPlaceholder": "Introdueix la teva clau API de Gemini",
+			"geminiGetApiKeyText": "Obté la teva clau API de",
+			"warningMissingGeminiKey": "⚠️ La clau API de Gemini és necessària per a la generació d'imatges. Si us plau, configura-la a dalt."
 		},
 		"RUN_SLASH_COMMAND": {
 			"name": "Habilitar comandes de barra diagonal iniciades pel model",

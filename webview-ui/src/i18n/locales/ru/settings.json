@@ -742,7 +742,13 @@
 			"modelSelectionLabel": "Модель генерации изображений",
 			"modelSelectionDescription": "Выберите модель для генерации изображений",
 			"warningMissingKey": "⚠️ API-ключ OpenRouter необходим для генерации изображений. Настройте его выше.",
-			"successConfigured": "✓ Генерация изображений настроена и готова к использованию"
+			"successConfigured": "✓ Генерация изображений настроена и готова к использованию",
+			"providerLabel": "Провайдер генерации изображений",
+			"providerDescription": "Выберите провайдера для генерации изображений",
+			"geminiApiKeyLabel": "API-ключ Gemini",
+			"geminiApiKeyPlaceholder": "Введите ваш API-ключ Gemini",
+			"geminiGetApiKeyText": "Получите ваш API-ключ от",
+			"warningMissingGeminiKey": "⚠️ API-ключ Gemini необходим для генерации изображений. Настройте его выше."
 		},
 		"RUN_SLASH_COMMAND": {
 			"name": "Включить слэш-команды, инициированные моделью",

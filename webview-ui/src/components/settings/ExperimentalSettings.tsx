@@ -21,8 +21,13 @@ type ExperimentalSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	setApiConfigurationField?: any
 	openRouterImageApiKey?: string
 	openRouterImageGenerationSelectedModel?: string
+	imageGenerationProvider?: string
+	geminiImageApiKey?: string
+	geminiImageGenerationSelectedModel?: string
 	setOpenRouterImageApiKey?: (apiKey: string) => void
 	setImageGenerationSelectedModel?: (model: string) => void
+	setImageGenerationProvider?: (provider: "gemini" | "openrouter" | undefined) => void
+	setGeminiImageApiKey?: (apiKey: string) => void
 }
 
 export const ExperimentalSettings = ({
@@ -32,8 +37,13 @@ export const ExperimentalSettings = ({
 	setApiConfigurationField,
 	openRouterImageApiKey,
 	openRouterImageGenerationSelectedModel,
+	imageGenerationProvider,
+	geminiImageApiKey,
+	geminiImageGenerationSelectedModel,
 	setOpenRouterImageApiKey,
 	setImageGenerationSelectedModel,
+	setImageGenerationProvider,
+	setGeminiImageApiKey,
 	className,
 	...props
 }: ExperimentalSettingsProps) => {
@@ -78,8 +88,13 @@ export const ExperimentalSettings = ({
 									}
 									openRouterImageApiKey={openRouterImageApiKey}
 									openRouterImageGenerationSelectedModel={openRouterImageGenerationSelectedModel}
+									imageGenerationProvider={imageGenerationProvider as any}
+									geminiApiKey={geminiImageApiKey}
+									geminiImageGenerationSelectedModel={geminiImageGenerationSelectedModel}
 									setOpenRouterImageApiKey={setOpenRouterImageApiKey}
 									setImageGenerationSelectedModel={setImageGenerationSelectedModel}
+									setImageGenerationProvider={setImageGenerationProvider}
+									setGeminiApiKey={setGeminiImageApiKey}
 								/>
 							)
 						}

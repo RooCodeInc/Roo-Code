@@ -742,7 +742,13 @@
 			"modelSelectionLabel": "Model generowania obrazów",
 			"modelSelectionDescription": "Wybierz model do generowania obrazów",
 			"warningMissingKey": "⚠️ Klucz API OpenRouter jest wymagany do generowania obrazów. Skonfiguruj go powyżej.",
-			"successConfigured": "✓ Generowanie obrazów jest skonfigurowane i gotowe do użycia"
+			"successConfigured": "✓ Generowanie obrazów jest skonfigurowane i gotowe do użycia",
+			"providerLabel": "Dostawca generowania obrazów",
+			"providerDescription": "Wybierz dostawcę do generowania obrazów",
+			"geminiApiKeyLabel": "Klucz API Gemini",
+			"geminiApiKeyPlaceholder": "Wprowadź swój klucz API Gemini",
+			"geminiGetApiKeyText": "Uzyskaj swój klucz API od",
+			"warningMissingGeminiKey": "⚠️ Klucz API Gemini jest wymagany do generowania obrazów. Skonfiguruj go powyżej."
 		},
 		"RUN_SLASH_COMMAND": {
 			"name": "Włącz polecenia slash inicjowane przez model",

@@ -742,7 +742,13 @@
 			"modelSelectionLabel": "छवि निर्माण मॉडल",
 			"modelSelectionDescription": "छवि निर्माण के लिए उपयोग करने वाला मॉडल चुनें",
 			"warningMissingKey": "⚠️ छवि निर्माण के लिए OpenRouter API कुंजी आवश्यक है। कृपया इसे ऊपर कॉन्फ़िगर करें।",
-			"successConfigured": "✓ छवि निर्माण कॉन्फ़िगर है और उपयोग के लिए तैयार है"
+			"successConfigured": "✓ छवि निर्माण कॉन्फ़िगर है और उपयोग के लिए तैयार है",
+			"providerLabel": "छवि निर्माण प्रदाता",
+			"providerDescription": "छवि निर्माण के लिए प्रदाता चुनें",
+			"geminiApiKeyLabel": "Gemini API कुंजी",
+			"geminiApiKeyPlaceholder": "अपनी Gemini API कुंजी दर्ज करें",
+			"geminiGetApiKeyText": "अपनी API कुंजी प्राप्त करें",
+			"warningMissingGeminiKey": "⚠️ छवि निर्माण के लिए Gemini API कुंजी आवश्यक है। कृपया इसे ऊपर कॉन्फ़िगर करें।"
 		},
 		"RUN_SLASH_COMMAND": {
 			"name": "मॉडल द्वारा शुरू किए गए स्लैश कमांड सक्षम करें",

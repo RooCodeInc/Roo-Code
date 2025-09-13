@@ -771,7 +771,13 @@
 			"modelSelectionLabel": "Model Pembuatan Gambar",
 			"modelSelectionDescription": "Pilih model untuk pembuatan gambar",
 			"warningMissingKey": "⚠️ Kunci API OpenRouter diperlukan untuk pembuatan gambar. Silakan konfigurasi di atas.",
-			"successConfigured": "✓ Pembuatan gambar dikonfigurasi dan siap digunakan"
+			"successConfigured": "✓ Pembuatan gambar dikonfigurasi dan siap digunakan",
+			"providerLabel": "Penyedia pembuatan gambar",
+			"providerDescription": "Pilih penyedia untuk pembuatan gambar",
+			"geminiApiKeyLabel": "Kunci API Gemini",
+			"geminiApiKeyPlaceholder": "Masukkan kunci API Gemini Anda",
+			"geminiGetApiKeyText": "Dapatkan kunci API Anda dari",
+			"warningMissingGeminiKey": "⚠️ Kunci API Gemini diperlukan untuk pembuatan gambar. Silakan konfigurasi di atas."
 		},
 		"RUN_SLASH_COMMAND": {
 			"name": "Aktifkan perintah slash yang dimulai model",

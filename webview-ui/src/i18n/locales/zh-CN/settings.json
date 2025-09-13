@@ -742,7 +742,13 @@
 			"modelSelectionLabel": "图像生成模型",
 			"modelSelectionDescription": "选择用于图像生成的模型",
 			"warningMissingKey": "⚠️ 图像生成需要 OpenRouter API 密钥。请在上方配置。",
-			"successConfigured": "✓ 图像生成已配置完成，可以使用"
+			"successConfigured": "✓ 图像生成已配置完成，可以使用",
+			"providerLabel": "图像生成提供商",
+			"providerDescription": "选择图像生成的提供商",
+			"geminiApiKeyLabel": "Gemini API 密钥",
+			"geminiApiKeyPlaceholder": "输入您的 Gemini API 密钥",
+			"geminiGetApiKeyText": "获取您的 API 密钥",
+			"warningMissingGeminiKey": "⚠️ 图像生成需要 Gemini API 密钥。请在上方配置。"
 		},
 		"RUN_SLASH_COMMAND": {
 			"name": "启用模型发起的斜杠命令",

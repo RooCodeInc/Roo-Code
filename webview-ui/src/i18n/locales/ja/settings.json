@@ -742,7 +742,13 @@
 			"modelSelectionLabel": "画像生成モデル",
 			"modelSelectionDescription": "画像生成に使用するモデルを選択",
 			"warningMissingKey": "⚠️ 画像生成にはOpenRouter APIキーが必要です。上記で設定してください。",
-			"successConfigured": "✓ 画像生成が設定され、使用準備完了です"
+			"successConfigured": "✓ 画像生成が設定され、使用準備完了です",
+			"providerLabel": "画像生成プロバイダー",
+			"providerDescription": "画像生成のプロバイダーを選択",
+			"geminiApiKeyLabel": "Gemini APIキー",
+			"geminiApiKeyPlaceholder": "Gemini APIキーを入力してください",
+			"geminiGetApiKeyText": "APIキーを取得する場所",
+			"warningMissingGeminiKey": "⚠️ 画像生成にはGemini APIキーが必要です。上記で設定してください。"
 		},
 		"RUN_SLASH_COMMAND": {
 			"name": "モデル開始スラッシュコマンドを有効にする",

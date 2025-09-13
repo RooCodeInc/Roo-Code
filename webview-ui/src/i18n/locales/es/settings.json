@@ -741,7 +741,13 @@
 			"modelSelectionLabel": "Modelo de generación de imágenes",
 			"modelSelectionDescription": "Selecciona el modelo para la generación de imágenes",
 			"warningMissingKey": "⚠️ La clave API de OpenRouter es requerida para la generación de imágenes. Por favor, configúrala arriba.",
-			"successConfigured": "✓ La generación de imágenes está configurada y lista para usar"
+			"successConfigured": "✓ La generación de imágenes está configurada y lista para usar",
+			"providerLabel": "Proveedor de generación de imágenes",
+			"providerDescription": "Elige el proveedor para la generación de imágenes",
+			"geminiApiKeyLabel": "Clave API de Gemini",
+			"geminiApiKeyPlaceholder": "Introduce tu clave API de Gemini",
+			"geminiGetApiKeyText": "Obtén tu clave API de",
+			"warningMissingGeminiKey": "⚠️ La clave API de Gemini es requerida para la generación de imágenes. Por favor, configúrala arriba."
 		},
 		"RUN_SLASH_COMMAND": {
 			"name": "Habilitar comandos slash iniciados por el modelo",

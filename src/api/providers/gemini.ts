@@ -5,10 +5,17 @@ import {
 	type GenerateContentParameters,
 	type GenerateContentConfig,
 	type GroundingMetadata,
+	type Content,
 } from "@google/genai"
 import type { JWTInput } from "google-auth-library"
 
-import { type ModelInfo, type GeminiModelId, geminiDefaultModelId, geminiModels } from "@roo-code/types"
+import {
+	type ModelInfo,
+	type GeminiModelId,
+	geminiDefaultModelId,
+	geminiModels,
+	type ImageGenerationResult,
+} from "@roo-code/types"
 
 import type { ApiHandlerOptions } from "../../shared/api"
 import { safeJsonParse } from "../../shared/safeJsonParse"
@@ -327,5 +334,140 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 		// console.log(`[GeminiHandler] calculateCost -> ${totalCost}`, trace)
 
 		return totalCost
+	}
+
+	/**
+	 * Generate an image using Gemini's image generation API
+	 * @param prompt The text prompt for image generation
+	 * @param model The model to use for generation
+	 * @param apiKey The Gemini API key (if not using vertex)
+	 * @param inputImage Optional base64 encoded input image data URL for editing
+	 * @returns The generated image data and format, or an error
+	 */
+	async generateImage(
+		prompt: string,
+		model: string,
+		apiKey?: string,
+		inputImage?: string,
+	): Promise<ImageGenerationResult> {
+		try {
+			// Create a temporary client with the provided API key if needed
+			let client: GoogleGenAI
+			if (apiKey && !this.options.vertexProjectId) {
+				// Use provided API key for standard Gemini
+				client = new GoogleGenAI({ apiKey })
+			} else {
+				// Use existing client (either vertex or standard with already configured key)
+				client = this.client
+			}
+
+			// Prepare the content for generation
+			const contents: Content[] = []
+
+			if (inputImage) {
+				// For image editing mode, include both text and image
+				const base64Match = inputImage.match(/^data:image\/(png|jpeg|jpg);base64,(.+)$/)
+				if (!base64Match) {
+					return {
+						success: false,
+						error: "Invalid input image format. Expected base64 data URL.",
+					}
+				}
+
+				const mimeType = base64Match[1] === "jpg" ? "image/jpeg" : `image/${base64Match[1]}`
+				const base64Data = base64Match[2]
+
+				contents.push({
+					role: "user",
+					parts: [
+						{ text: prompt },
+						{
+							inlineData: {
+								mimeType,
+								data: base64Data,
+							},
+						},
+					],
+				})
+			} else {
+				// For text-to-image mode
+				contents.push({
+					role: "user",
+					parts: [{ text: prompt }],
+				})
+			}
+
+			const config: GenerateContentConfig = {
+				httpOptions: this.options.googleGeminiBaseUrl
+					? { baseUrl: this.options.googleGeminiBaseUrl }
+					: undefined,
+				temperature: 1.0, // Higher temperature for more creative image generation
+			}
+
+			const params: GenerateContentParameters = {
+				model,
+				contents,
+				config,
+			}
+
+			const result = await client.models.generateContent(params)
+
+			// Extract the generated image from the response
+			if (!result.candidates || result.candidates.length === 0) {
+				return {
+					success: false,
+					error: "No candidates returned in the response",
+				}
+			}
+
+			const candidate = result.candidates[0]
+			if (!candidate.content || !candidate.content.parts) {
+				return {
+					success: false,
+					error: "No content parts in the response",
+				}
+			}
+
+			// Find the image part in the response
+			let imageData: string | undefined
+			let imageFormat = "png" // Default format
+
+			for (const part of candidate.content.parts) {
+				if (part.inlineData) {
+					const mimeType = part.inlineData.mimeType
+					const data = part.inlineData.data
+
+					if (mimeType?.startsWith("image/")) {
+						// Extract format from mime type
+						imageFormat = mimeType.replace("image/", "").replace("jpeg", "jpg")
+
+						// Convert to data URL format
+						imageData = `data:${mimeType};base64,${data}`
+						break
+					}
+				}
+			}
+
+			if (!imageData) {
+				return {
+					success: false,
+					error: "No image data found in the response",
+				}
+			}
+
+			return {
+				success: true,
+				imageData,
+				imageFormat,
+			}
+		} catch (error) {
+			const errorMessage = error instanceof Error ? error.message : "Unknown error occurred"
+			console.error("Gemini image generation error:", errorMessage)
+
+			return {
+				success: false,
+				error: `Failed to generate image: ${errorMessage}`,
+			}
+		}
 	}
 }

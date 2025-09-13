@@ -741,7 +741,13 @@
 			"modelSelectionLabel": "Bildgenerierungsmodell",
 			"modelSelectionDescription": "Wähle das Modell für die Bildgenerierung aus",
 			"warningMissingKey": "⚠️ OpenRouter API-Schlüssel ist für Bildgenerierung erforderlich. Bitte konfiguriere ihn oben.",
-			"successConfigured": "✓ Bildgenerierung ist konfiguriert und einsatzbereit"
+			"successConfigured": "✓ Bildgenerierung ist konfiguriert und einsatzbereit",
+			"providerLabel": "Bildgenerierungs-Anbieter",
+			"providerDescription": "Wähle den Anbieter für die Bildgenerierung",
+			"geminiApiKeyLabel": "Gemini API-Schlüssel",
+			"geminiApiKeyPlaceholder": "Gib deinen Gemini API-Schlüssel ein",
+			"geminiGetApiKeyText": "Hol dir deinen API-Schlüssel von",
+			"warningMissingGeminiKey": "⚠️ Gemini API-Schlüssel ist für Bildgenerierung erforderlich. Bitte konfiguriere ihn oben."
 		},
 		"RUN_SLASH_COMMAND": {
 			"name": "Modellinitierte Slash-Befehle aktivieren",
