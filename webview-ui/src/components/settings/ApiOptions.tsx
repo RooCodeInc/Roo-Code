@@ -595,7 +595,11 @@ const ApiOptions = ({
 			)}
 
 			{selectedProvider === "huggingface" && (
-				<HuggingFace apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
+				<HuggingFace
+					apiConfiguration={apiConfiguration}
+					setApiConfigurationField={setApiConfigurationField}
+					uriScheme={uriScheme}
+				/>
 			)}
 
 			{selectedProvider === "cerebras" && (

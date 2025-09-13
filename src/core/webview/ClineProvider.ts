@@ -55,6 +55,8 @@ import { formatLanguage } from "../../shared/language"
 import { WebviewMessage } from "../../shared/WebviewMessage"
 import { EMBEDDING_MODEL_PROFILES } from "../../shared/embeddingModels"
 import { ProfileValidator } from "../../shared/ProfileValidator"
+import { HUGGING_FACE_OAUTH_CLIENT_ID } from "../../shared/oauth-constants"
+import { huggingFaceDefaultModelId } from "@roo-code/types"
 
 import { Terminal } from "../../integrations/terminal/Terminal"
 import { downloadTask } from "../../integrations/misc/export-markdown"
@@ -1422,6 +1424,68 @@ export class ClineProvider
 		}
 
 		await this.upsertProviderProfile(currentApiConfigName, newConfiguration)
+	}
+
+	// HuggingFace
+
+	async handleHuggingFaceCallback(code: string, returnedState?: string) {
+		let { apiConfiguration, currentApiConfigName = "default" } = await this.getState()
+
+		try {
+			// Retrieve stored PKCE verifier and state from extension state
+			const pkceSecret = await this.context.secrets.get("huggingFacePkce")
+			const pkceData = pkceSecret ? JSON.parse(pkceSecret) : undefined
+
+			if (!pkceData || !pkceData.verifier || !pkceData.state) {
+				throw new Error("PKCE verifier or state not found in extension state.")
+			}
+
+			// Optional state validation (if state was provided in the callback)
+			if (returnedState && pkceData.state && returnedState !== pkceData.state) {
+				// Clear stored data before throwing to avoid reuse
+				await this.context.secrets.delete("huggingFacePkce")
+				throw new Error("OAuth state mismatch.")
+			}
+
+			const verifier: string = pkceData.verifier
+
+			// Clear PKCE data to prevent reuse
+			await this.context.secrets.delete("huggingFacePkce")
+
+			const redirectUri = `${vscode.env.uriScheme}://${Package.publisher}.${Package.name}/huggingface`
+
+			const params = new URLSearchParams()
+			params.append("grant_type", "authorization_code")
+			params.append("code", code)
+			params.append("client_id", HUGGING_FACE_OAUTH_CLIENT_ID)
+			params.append("code_verifier", verifier)
+			params.append("redirect_uri", redirectUri)
+
+			const response = await axios.post("https://huggingface.co/oauth/token", params, {
+				headers: { "Content-Type": "application/x-www-form-urlencoded" },
+			})
+
+			const accessToken: string | undefined = response.data?.access_token
+
+			if (!accessToken) {
+				throw new Error("Invalid response from Hugging Face token endpoint")
+			}
+
+			const newConfiguration: ProviderSettings = {
+				...apiConfiguration,
+				apiProvider: "huggingface",
+				huggingFaceApiKey: accessToken,
+				huggingFaceModelId: apiConfiguration?.huggingFaceModelId || huggingFaceDefaultModelId,
+				huggingFaceInferenceProvider: apiConfiguration?.huggingFaceInferenceProvider || "auto",
+			}
+
+			await this.upsertProviderProfile(currentApiConfigName, newConfiguration)
+		} catch (error) {
+			this.log(
+				`Error exchanging code for Hugging Face access token: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`,
+			)
+			throw error
+		}
 	}
 
 	// Requesty

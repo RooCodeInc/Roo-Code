@@ -10,6 +10,9 @@
 		},
 		"openrouter": {
 			"description": "Un'interfaccia unificata per LLMs"
+		},
+		"huggingface": {
+			"description": "Un router per i migliori modelli open source"
 		}
 	},
 	"chooseProvider": "Per fare la sua magia, Roo ha bisogno di una chiave API.",

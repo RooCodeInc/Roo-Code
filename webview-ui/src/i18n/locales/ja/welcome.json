@@ -10,6 +10,9 @@
 		},
 		"openrouter": {
 			"description": "LLMsのための統一インターフェース"
+		},
+		"huggingface": {
+			"description": "最高のオープンモデルのためのルーター"
 		}
 	},
 	"chooseProvider": "Rooが機能するには、APIキーが必要です。",

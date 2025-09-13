@@ -57,6 +57,7 @@ import {
 	vercelAiGatewayDefaultModelId,
 	BEDROCK_CLAUDE_SONNET_4_MODEL_ID,
 	deepInfraDefaultModelId,
+	huggingFaceDefaultModelId,
 } from "@roo-code/types"
 
 import type { ModelRecord, RouterModels } from "@roo/api"
@@ -174,7 +175,7 @@ function getSelectedModel({
 			return { id, info }
 		}
 		case "huggingface": {
-			const id = apiConfiguration.huggingFaceModelId ?? "meta-llama/Llama-3.3-70B-Instruct"
+			const id = apiConfiguration.huggingFaceModelId ?? huggingFaceDefaultModelId
 			const info = {
 				maxTokens: 8192,
 				contextWindow: 131072,

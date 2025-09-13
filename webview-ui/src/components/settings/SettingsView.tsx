@@ -212,6 +212,49 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		}
 	}, [settingsImportedAt, extensionState])
 
+	// Sync OAuth-driven key updates from extension without requiring a profile name change
+	// This should only happen when the extension updates the key (e.g., after OAuth callback)
+	// not when the user is manually editing it
+	const [hasHuggingFaceSynced, setHasHuggingFaceSynced] = useState(false)
+
+	useEffect(() => {
+		const extApi = extensionState.apiConfiguration ?? {}
+		const cachedApi = cachedState.apiConfiguration ?? {}
+
+		// Only sync if:
+		// 1. Extension has a key
+		// 2. It's different from what we started with
+		// 3. We haven't synced this key yet
+		if (
+			extApi.huggingFaceApiKey &&
+			extApi.huggingFaceApiKey !== cachedApi.huggingFaceApiKey &&
+			!hasHuggingFaceSynced
+		) {
+			setCachedState((prev) => ({
+				...prev,
+				apiConfiguration: {
+					...prev.apiConfiguration,
+					// Keep provider in sync if extension switched it during callback
+					apiProvider: extApi.apiProvider ?? prev.apiConfiguration?.apiProvider,
+					huggingFaceApiKey: extApi.huggingFaceApiKey,
+					// Preserve/merge model fields from extension if present
+					huggingFaceModelId: extApi.huggingFaceModelId ?? prev.apiConfiguration?.huggingFaceModelId,
+					huggingFaceInferenceProvider:
+						extApi.huggingFaceInferenceProvider ?? prev.apiConfiguration?.huggingFaceInferenceProvider,
+				},
+			}))
+			// Mark that we've synced this key
+			setHasHuggingFaceSynced(true)
+			// Receiving fresh state from the extension should not mark the form dirty
+			setChangeDetected(false)
+		}
+	}, [extensionState.apiConfiguration, cachedState.apiConfiguration, hasHuggingFaceSynced])
+
+	// Reset the sync flag when the profile changes
+	useEffect(() => {
+		setHasHuggingFaceSynced(false)
+	}, [currentApiConfigName])
+
 	const setCachedStateField: SetCachedStateField<keyof ExtensionStateContextType> = useCallback((field, value) => {
 		setCachedState((prevState) => {
 			if (prevState[field] === value) {

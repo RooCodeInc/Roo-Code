@@ -10,6 +10,9 @@
 		},
 		"openrouter": {
 			"description": "Ujednolicony interfejs dla LLMs"
+		},
+		"huggingface": {
+			"description": "Router dla najlepszych otwartych modeli"
 		}
 	},
 	"chooseProvider": "Aby działać, Roo potrzebuje klucza API.",

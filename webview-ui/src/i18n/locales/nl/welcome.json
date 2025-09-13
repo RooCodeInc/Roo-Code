@@ -10,6 +10,9 @@
 		},
 		"openrouter": {
 			"description": "Een uniforme interface voor LLM's"
+		},
+		"huggingface": {
+			"description": "Een router voor de beste open modellen"
 		}
 	},
 	"chooseProvider": "Om zijn magie te doen, heeft Roo een API-sleutel nodig.",

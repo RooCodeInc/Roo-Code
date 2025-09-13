@@ -28,6 +28,14 @@ export const handleUri = async (uri: vscode.Uri) => {
 			}
 			break
 		}
+		case "/huggingface": {
+			const code = query.get("code")
+			const state = query.get("state")
+			if (code) {
+				await visibleProvider.handleHuggingFaceCallback(code, state || undefined)
+			}
+			break
+		}
 		case "/requesty": {
 			const code = query.get("code")
 			if (code) {
