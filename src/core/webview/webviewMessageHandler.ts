@@ -60,6 +60,9 @@ const ALLOWED_VSCODE_SETTINGS = new Set(["terminal.integrated.inheritEnv"])
 import { MarketplaceManager, MarketplaceItemType } from "../../services/marketplace"
 import { setPendingTodoList } from "../tools/updateTodoListTool"
 
+// Cache for condense-related settings to prevent unnecessary re-evaluation
+const condenseSettingsCache = new Map<string, any>()
+
 export const webviewMessageHandler = async (
 	provider: ClineProvider,
 	message: WebviewMessage,
@@ -69,6 +72,21 @@ export const webviewMessageHandler = async (
 	const getGlobalState = <K extends keyof GlobalState>(key: K) => provider.contextProxy.getValue(key)
 	const updateGlobalState = async <K extends keyof GlobalState>(key: K, value: GlobalState[K]) =>
 		await provider.contextProxy.setValue(key, value)
+
+	// Helper function to check if a condense-related setting has actually changed
+	const hasCondenseSettingChanged = (key: string, value: any): boolean => {
+		const cachedValue = condenseSettingsCache.get(key)
+		if (cachedValue === undefined) {
+			// First time setting this value
+			condenseSettingsCache.set(key, value)
+			return true
+		}
+		const changed = JSON.stringify(cachedValue) !== JSON.stringify(value)
+		if (changed) {
+			condenseSettingsCache.set(key, value)
+		}
+		return changed
+	}
 
 	const getCurrentCwd = () => {
 		return provider.getCurrentTask()?.cwd || provider.cwd
@@ -581,12 +599,18 @@ export const webviewMessageHandler = async (
 			provider.getCurrentTask()?.handleWebviewAskResponse(message.askResponse!, message.text, message.images)
 			break
 		case "autoCondenseContext":
-			await updateGlobalState("autoCondenseContext", message.bool)
-			await provider.postStateToWebview()
+			// Only update if the value has actually changed to prevent unnecessary context re-evaluation
+			if (hasCondenseSettingChanged("autoCondenseContext", message.bool)) {
+				await updateGlobalState("autoCondenseContext", message.bool)
+				await provider.postStateToWebview()
+			}
 			break
 		case "autoCondenseContextPercent":
-			await updateGlobalState("autoCondenseContextPercent", message.value)
-			await provider.postStateToWebview()
+			// Only update if the value has actually changed to prevent unnecessary context re-evaluation
+			if (hasCondenseSettingChanged("autoCondenseContextPercent", message.value)) {
+				await updateGlobalState("autoCondenseContextPercent", message.value)
+				await provider.postStateToWebview()
+			}
 			break
 		case "terminalOperation":
 			if (message.terminalOperation) {
@@ -1650,8 +1674,11 @@ export const webviewMessageHandler = async (
 			await provider.postStateToWebview()
 			break
 		case "profileThresholds":
-			await updateGlobalState("profileThresholds", message.values)
-			await provider.postStateToWebview()
+			// Only update if the value has actually changed to prevent unnecessary context re-evaluation
+			if (hasCondenseSettingChanged("profileThresholds", message.values)) {
+				await updateGlobalState("profileThresholds", message.values)
+				await provider.postStateToWebview()
+			}
 			break
 		case "autoApprovalEnabled":
 			await updateGlobalState("autoApprovalEnabled", message.bool ?? false)

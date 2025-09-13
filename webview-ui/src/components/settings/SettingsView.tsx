@@ -212,16 +212,39 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		}
 	}, [settingsImportedAt, extensionState])
 
-	const setCachedStateField: SetCachedStateField<keyof ExtensionStateContextType> = useCallback((field, value) => {
-		setCachedState((prevState) => {
-			if (prevState[field] === value) {
-				return prevState
-			}
+	const setCachedStateField: SetCachedStateField<keyof ExtensionStateContextType> = useCallback(
+		(field, value) => {
+			setCachedState((prevState) => {
+				if (prevState[field] === value) {
+					return prevState
+				}
 
-			setChangeDetected(true)
-			return { ...prevState, [field]: value }
-		})
-	}, [])
+				const newState = { ...prevState, [field]: value }
+
+				// Check if any field in the new state differs from the original extension state
+				// This properly handles toggling back to original values
+				let hasAnyChanges = false
+				for (const key in newState) {
+					if (key === "apiConfiguration") continue // Handle separately
+					const cachedValue = newState[key as keyof ExtensionStateContextType]
+					const originalValue = extensionState[key as keyof ExtensionStateContextType]
+					if (hasChanged(cachedValue, originalValue)) {
+						hasAnyChanges = true
+						break
+					}
+				}
+
+				// Also check apiConfiguration if it exists
+				if (!hasAnyChanges && newState.apiConfiguration && extensionState.apiConfiguration) {
+					hasAnyChanges = hasChanged(newState.apiConfiguration, extensionState.apiConfiguration)
+				}
+
+				setChangeDetected(hasAnyChanges)
+				return newState
+			})
+		},
+		[extensionState],
+	)
 
 	const setApiConfigurationField = useCallback(
 		<K extends keyof ProviderSettings>(field: K, value: ProviderSettings[K], isUserAction: boolean = true) => {
@@ -236,139 +259,444 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 				// This prevents the dirty state when the component initializes and auto-syncs values
 				const isInitialSync = !isUserAction && previousValue === undefined && value !== undefined
 
-				if (!isInitialSync) {
-					setChangeDetected(true)
+				const newState = {
+					...prevState,
+					apiConfiguration: { ...prevState.apiConfiguration, [field]: value },
 				}
-				return { ...prevState, apiConfiguration: { ...prevState.apiConfiguration, [field]: value } }
+
+				if (!isInitialSync) {
+					// Check if any field in the new state differs from the original extension state
+					let hasAnyChanges = false
+
+					// Check non-apiConfiguration fields
+					for (const key in newState) {
+						if (key === "apiConfiguration") continue
+						const cachedValue = newState[key as keyof ExtensionStateContextType]
+						const originalValue = extensionState[key as keyof ExtensionStateContextType]
+						if (hasChanged(cachedValue, originalValue)) {
+							hasAnyChanges = true
+							break
+						}
+					}
+
+					// Check apiConfiguration
+					if (!hasAnyChanges && newState.apiConfiguration && extensionState.apiConfiguration) {
+						hasAnyChanges = hasChanged(newState.apiConfiguration, extensionState.apiConfiguration)
+					}
+
+					setChangeDetected(hasAnyChanges)
+				}
+
+				return newState
 			})
 		},
-		[],
+		[extensionState],
 	)
 
-	const setExperimentEnabled: SetExperimentEnabled = useCallback((id: ExperimentId, enabled: boolean) => {
-		setCachedState((prevState) => {
-			if (prevState.experiments?.[id] === enabled) {
-				return prevState
-			}
+	const setExperimentEnabled: SetExperimentEnabled = useCallback(
+		(id: ExperimentId, enabled: boolean) => {
+			setCachedState((prevState) => {
+				if (prevState.experiments?.[id] === enabled) {
+					return prevState
+				}
 
-			setChangeDetected(true)
-			return { ...prevState, experiments: { ...prevState.experiments, [id]: enabled } }
-		})
-	}, [])
+				const newState = { ...prevState, experiments: { ...prevState.experiments, [id]: enabled } }
 
-	const setTelemetrySetting = useCallback((setting: TelemetrySetting) => {
-		setCachedState((prevState) => {
-			if (prevState.telemetrySetting === setting) {
-				return prevState
-			}
+				// Check if experiments differ from original
+				const hasExperimentChanges = hasChanged(newState.experiments, extensionState.experiments)
 
-			setChangeDetected(true)
-			return { ...prevState, telemetrySetting: setting }
-		})
-	}, [])
+				// Check other fields for changes
+				let hasOtherChanges = false
+				for (const key in newState) {
+					if (key === "experiments" || key === "apiConfiguration") continue
+					const cachedValue = newState[key as keyof ExtensionStateContextType]
+					const originalValue = extensionState[key as keyof ExtensionStateContextType]
+					if (hasChanged(cachedValue, originalValue)) {
+						hasOtherChanges = true
+						break
+					}
+				}
 
-	const setOpenRouterImageApiKey = useCallback((apiKey: string) => {
-		setCachedState((prevState) => {
-			setChangeDetected(true)
-			return { ...prevState, openRouterImageApiKey: apiKey }
-		})
-	}, [])
+				// Check apiConfiguration
+				if (!hasOtherChanges && newState.apiConfiguration && extensionState.apiConfiguration) {
+					hasOtherChanges = hasChanged(newState.apiConfiguration, extensionState.apiConfiguration)
+				}
 
-	const setImageGenerationSelectedModel = useCallback((model: string) => {
-		setCachedState((prevState) => {
-			setChangeDetected(true)
-			return { ...prevState, openRouterImageGenerationSelectedModel: model }
-		})
-	}, [])
+				setChangeDetected(hasExperimentChanges || hasOtherChanges)
+				return newState
+			})
+		},
+		[extensionState],
+	)
 
-	const setCustomSupportPromptsField = useCallback((prompts: Record<string, string | undefined>) => {
-		setCachedState((prevState) => {
-			if (JSON.stringify(prevState.customSupportPrompts) === JSON.stringify(prompts)) {
-				return prevState
-			}
+	const setTelemetrySetting = useCallback(
+		(setting: TelemetrySetting) => {
+			setCachedState((prevState) => {
+				if (prevState.telemetrySetting === setting) {
+					return prevState
+				}
 
-			setChangeDetected(true)
-			return { ...prevState, customSupportPrompts: prompts }
-		})
-	}, [])
+				const newState = { ...prevState, telemetrySetting: setting }
+
+				// Check if telemetry setting differs from original
+				const hasTelemetryChange = newState.telemetrySetting !== extensionState.telemetrySetting
+
+				// Check other fields for changes
+				let hasOtherChanges = false
+				for (const key in newState) {
+					if (key === "telemetrySetting" || key === "apiConfiguration") continue
+					const cachedValue = newState[key as keyof ExtensionStateContextType]
+					const originalValue = extensionState[key as keyof ExtensionStateContextType]
+					if (hasChanged(cachedValue, originalValue)) {
+						hasOtherChanges = true
+						break
+					}
+				}
+
+				// Check apiConfiguration
+				if (!hasOtherChanges && newState.apiConfiguration && extensionState.apiConfiguration) {
+					hasOtherChanges = hasChanged(newState.apiConfiguration, extensionState.apiConfiguration)
+				}
+
+				setChangeDetected(hasTelemetryChange || hasOtherChanges)
+				return newState
+			})
+		},
+		[extensionState],
+	)
+
+	const setOpenRouterImageApiKey = useCallback(
+		(apiKey: string) => {
+			setCachedState((prevState) => {
+				if (prevState.openRouterImageApiKey === apiKey) {
+					return prevState
+				}
+
+				const newState = { ...prevState, openRouterImageApiKey: apiKey }
+
+				// Check if any field differs from original
+				let hasAnyChanges = false
+				for (const key in newState) {
+					if (key === "apiConfiguration") continue
+					const cachedValue = newState[key as keyof ExtensionStateContextType]
+					const originalValue = extensionState[key as keyof ExtensionStateContextType]
+					if (hasChanged(cachedValue, originalValue)) {
+						hasAnyChanges = true
+						break
+					}
+				}
+
+				// Check apiConfiguration
+				if (!hasAnyChanges && newState.apiConfiguration && extensionState.apiConfiguration) {
+					hasAnyChanges = hasChanged(newState.apiConfiguration, extensionState.apiConfiguration)
+				}
+
+				setChangeDetected(hasAnyChanges)
+				return newState
+			})
+		},
+		[extensionState],
+	)
+
+	const setImageGenerationSelectedModel = useCallback(
+		(model: string) => {
+			setCachedState((prevState) => {
+				if (prevState.openRouterImageGenerationSelectedModel === model) {
+					return prevState
+				}
+
+				const newState = { ...prevState, openRouterImageGenerationSelectedModel: model }
+
+				// Check if any field differs from original
+				let hasAnyChanges = false
+				for (const key in newState) {
+					if (key === "apiConfiguration") continue
+					const cachedValue = newState[key as keyof ExtensionStateContextType]
+					const originalValue = extensionState[key as keyof ExtensionStateContextType]
+					if (hasChanged(cachedValue, originalValue)) {
+						hasAnyChanges = true
+						break
+					}
+				}
+
+				// Check apiConfiguration
+				if (!hasAnyChanges && newState.apiConfiguration && extensionState.apiConfiguration) {
+					hasAnyChanges = hasChanged(newState.apiConfiguration, extensionState.apiConfiguration)
+				}
+
+				setChangeDetected(hasAnyChanges)
+				return newState
+			})
+		},
+		[extensionState],
+	)
+
+	const setCustomSupportPromptsField = useCallback(
+		(prompts: Record<string, string | undefined>) => {
+			setCachedState((prevState) => {
+				if (JSON.stringify(prevState.customSupportPrompts) === JSON.stringify(prompts)) {
+					return prevState
+				}
+
+				const newState = { ...prevState, customSupportPrompts: prompts }
+
+				// Check if any field differs from original
+				let hasAnyChanges = false
+				for (const key in newState) {
+					if (key === "apiConfiguration") continue
+					const cachedValue = newState[key as keyof ExtensionStateContextType]
+					const originalValue = extensionState[key as keyof ExtensionStateContextType]
+					if (hasChanged(cachedValue, originalValue)) {
+						hasAnyChanges = true
+						break
+					}
+				}
+
+				// Check apiConfiguration
+				if (!hasAnyChanges && newState.apiConfiguration && extensionState.apiConfiguration) {
+					hasAnyChanges = hasChanged(newState.apiConfiguration, extensionState.apiConfiguration)
+				}
+
+				setChangeDetected(hasAnyChanges)
+				return newState
+			})
+		},
+		[extensionState],
+	)
 
 	const isSettingValid = !errorMessage
 
+	// Helper function to check if a value has changed
+	const hasChanged = (cachedValue: any, originalValue: any): boolean => {
+		// Handle objects and arrays with deep comparison
+		if (typeof cachedValue === "object" && cachedValue !== null) {
+			return JSON.stringify(cachedValue) !== JSON.stringify(originalValue)
+		}
+		return cachedValue !== originalValue
+	}
+
 	const handleSubmit = () => {
 		if (isSettingValid) {
-			vscode.postMessage({ type: "language", text: language })
-			vscode.postMessage({ type: "alwaysAllowReadOnly", bool: alwaysAllowReadOnly })
-			vscode.postMessage({
-				type: "alwaysAllowReadOnlyOutsideWorkspace",
-				bool: alwaysAllowReadOnlyOutsideWorkspace,
-			})
-			vscode.postMessage({ type: "alwaysAllowWrite", bool: alwaysAllowWrite })
-			vscode.postMessage({ type: "alwaysAllowWriteOutsideWorkspace", bool: alwaysAllowWriteOutsideWorkspace })
-			vscode.postMessage({ type: "alwaysAllowWriteProtected", bool: alwaysAllowWriteProtected })
-			vscode.postMessage({ type: "alwaysAllowExecute", bool: alwaysAllowExecute })
-			vscode.postMessage({ type: "alwaysAllowBrowser", bool: alwaysAllowBrowser })
-			vscode.postMessage({ type: "alwaysAllowMcp", bool: alwaysAllowMcp })
-			vscode.postMessage({ type: "allowedCommands", commands: allowedCommands ?? [] })
-			vscode.postMessage({ type: "deniedCommands", commands: deniedCommands ?? [] })
-			vscode.postMessage({ type: "allowedMaxRequests", value: allowedMaxRequests ?? undefined })
-			vscode.postMessage({ type: "allowedMaxCost", value: allowedMaxCost ?? undefined })
-			vscode.postMessage({ type: "autoCondenseContext", bool: autoCondenseContext })
-			vscode.postMessage({ type: "autoCondenseContextPercent", value: autoCondenseContextPercent })
-			vscode.postMessage({ type: "browserToolEnabled", bool: browserToolEnabled })
-			vscode.postMessage({ type: "soundEnabled", bool: soundEnabled })
-			vscode.postMessage({ type: "ttsEnabled", bool: ttsEnabled })
-			vscode.postMessage({ type: "ttsSpeed", value: ttsSpeed })
-			vscode.postMessage({ type: "soundVolume", value: soundVolume })
-			vscode.postMessage({ type: "diffEnabled", bool: diffEnabled })
-			vscode.postMessage({ type: "enableCheckpoints", bool: enableCheckpoints })
-			vscode.postMessage({ type: "browserViewportSize", text: browserViewportSize })
-			vscode.postMessage({ type: "remoteBrowserHost", text: remoteBrowserHost })
-			vscode.postMessage({ type: "remoteBrowserEnabled", bool: remoteBrowserEnabled })
-			vscode.postMessage({ type: "fuzzyMatchThreshold", value: fuzzyMatchThreshold ?? 1.0 })
-			vscode.postMessage({ type: "writeDelayMs", value: writeDelayMs })
-			vscode.postMessage({ type: "screenshotQuality", value: screenshotQuality ?? 75 })
-			vscode.postMessage({ type: "terminalOutputLineLimit", value: terminalOutputLineLimit ?? 500 })
-			vscode.postMessage({ type: "terminalOutputCharacterLimit", value: terminalOutputCharacterLimit ?? 50000 })
-			vscode.postMessage({ type: "terminalShellIntegrationTimeout", value: terminalShellIntegrationTimeout })
-			vscode.postMessage({ type: "terminalShellIntegrationDisabled", bool: terminalShellIntegrationDisabled })
-			vscode.postMessage({ type: "terminalCommandDelay", value: terminalCommandDelay })
-			vscode.postMessage({ type: "terminalPowershellCounter", bool: terminalPowershellCounter })
-			vscode.postMessage({ type: "terminalZshClearEolMark", bool: terminalZshClearEolMark })
-			vscode.postMessage({ type: "terminalZshOhMy", bool: terminalZshOhMy })
-			vscode.postMessage({ type: "terminalZshP10k", bool: terminalZshP10k })
-			vscode.postMessage({ type: "terminalZdotdir", bool: terminalZdotdir })
-			vscode.postMessage({ type: "terminalCompressProgressBar", bool: terminalCompressProgressBar })
-			vscode.postMessage({ type: "mcpEnabled", bool: mcpEnabled })
-			vscode.postMessage({ type: "alwaysApproveResubmit", bool: alwaysApproveResubmit })
-			vscode.postMessage({ type: "requestDelaySeconds", value: requestDelaySeconds })
-			vscode.postMessage({ type: "maxOpenTabsContext", value: maxOpenTabsContext })
-			vscode.postMessage({ type: "maxWorkspaceFiles", value: maxWorkspaceFiles ?? 200 })
-			vscode.postMessage({ type: "showRooIgnoredFiles", bool: showRooIgnoredFiles })
-			vscode.postMessage({ type: "maxReadFileLine", value: maxReadFileLine ?? -1 })
-			vscode.postMessage({ type: "maxImageFileSize", value: maxImageFileSize ?? 5 })
-			vscode.postMessage({ type: "maxTotalImageSize", value: maxTotalImageSize ?? 20 })
-			vscode.postMessage({ type: "maxConcurrentFileReads", value: cachedState.maxConcurrentFileReads ?? 5 })
-			vscode.postMessage({ type: "includeDiagnosticMessages", bool: includeDiagnosticMessages })
-			vscode.postMessage({ type: "maxDiagnosticMessages", value: maxDiagnosticMessages ?? 50 })
-			vscode.postMessage({ type: "currentApiConfigName", text: currentApiConfigName })
-			vscode.postMessage({ type: "updateExperimental", values: experiments })
-			vscode.postMessage({ type: "alwaysAllowModeSwitch", bool: alwaysAllowModeSwitch })
-			vscode.postMessage({ type: "alwaysAllowSubtasks", bool: alwaysAllowSubtasks })
-			vscode.postMessage({ type: "alwaysAllowFollowupQuestions", bool: alwaysAllowFollowupQuestions })
-			vscode.postMessage({ type: "alwaysAllowUpdateTodoList", bool: alwaysAllowUpdateTodoList })
-			vscode.postMessage({ type: "followupAutoApproveTimeoutMs", value: followupAutoApproveTimeoutMs })
-			vscode.postMessage({ type: "condensingApiConfigId", text: condensingApiConfigId || "" })
-			vscode.postMessage({ type: "updateCondensingPrompt", text: customCondensingPrompt || "" })
-			vscode.postMessage({ type: "updateSupportPrompt", values: customSupportPrompts || {} })
-			vscode.postMessage({ type: "includeTaskHistoryInEnhance", bool: includeTaskHistoryInEnhance ?? true })
-			vscode.postMessage({ type: "upsertApiConfiguration", text: currentApiConfigName, apiConfiguration })
-			vscode.postMessage({ type: "telemetrySetting", text: telemetrySetting })
-			vscode.postMessage({ type: "profileThresholds", values: profileThresholds })
-			vscode.postMessage({ type: "openRouterImageApiKey", text: openRouterImageApiKey })
-			vscode.postMessage({
-				type: "openRouterImageGenerationSelectedModel",
-				text: openRouterImageGenerationSelectedModel,
-			})
+			// Only send messages for settings that have actually changed
+			if (hasChanged(language, extensionState.language)) {
+				vscode.postMessage({ type: "language", text: language })
+			}
+			if (hasChanged(alwaysAllowReadOnly, extensionState.alwaysAllowReadOnly)) {
+				vscode.postMessage({ type: "alwaysAllowReadOnly", bool: alwaysAllowReadOnly })
+			}
+			if (hasChanged(alwaysAllowReadOnlyOutsideWorkspace, extensionState.alwaysAllowReadOnlyOutsideWorkspace)) {
+				vscode.postMessage({
+					type: "alwaysAllowReadOnlyOutsideWorkspace",
+					bool: alwaysAllowReadOnlyOutsideWorkspace,
+				})
+			}
+			if (hasChanged(alwaysAllowWrite, extensionState.alwaysAllowWrite)) {
+				vscode.postMessage({ type: "alwaysAllowWrite", bool: alwaysAllowWrite })
+			}
+			if (hasChanged(alwaysAllowWriteOutsideWorkspace, extensionState.alwaysAllowWriteOutsideWorkspace)) {
+				vscode.postMessage({ type: "alwaysAllowWriteOutsideWorkspace", bool: alwaysAllowWriteOutsideWorkspace })
+			}
+			if (hasChanged(alwaysAllowWriteProtected, extensionState.alwaysAllowWriteProtected)) {
+				vscode.postMessage({ type: "alwaysAllowWriteProtected", bool: alwaysAllowWriteProtected })
+			}
+			if (hasChanged(alwaysAllowExecute, extensionState.alwaysAllowExecute)) {
+				vscode.postMessage({ type: "alwaysAllowExecute", bool: alwaysAllowExecute })
+			}
+			if (hasChanged(alwaysAllowBrowser, extensionState.alwaysAllowBrowser)) {
+				vscode.postMessage({ type: "alwaysAllowBrowser", bool: alwaysAllowBrowser })
+			}
+			if (hasChanged(alwaysAllowMcp, extensionState.alwaysAllowMcp)) {
+				vscode.postMessage({ type: "alwaysAllowMcp", bool: alwaysAllowMcp })
+			}
+			if (hasChanged(allowedCommands, extensionState.allowedCommands)) {
+				vscode.postMessage({ type: "allowedCommands", commands: allowedCommands ?? [] })
+			}
+			if (hasChanged(deniedCommands, extensionState.deniedCommands)) {
+				vscode.postMessage({ type: "deniedCommands", commands: deniedCommands ?? [] })
+			}
+			if (hasChanged(allowedMaxRequests, extensionState.allowedMaxRequests)) {
+				vscode.postMessage({ type: "allowedMaxRequests", value: allowedMaxRequests ?? undefined })
+			}
+			if (hasChanged(allowedMaxCost, extensionState.allowedMaxCost)) {
+				vscode.postMessage({ type: "allowedMaxCost", value: allowedMaxCost ?? undefined })
+			}
+
+			// CRITICAL: Only send condense-related settings if they actually changed
+			// This prevents unnecessary context condensing triggers during active tasks
+			if (hasChanged(autoCondenseContext, extensionState.autoCondenseContext)) {
+				vscode.postMessage({ type: "autoCondenseContext", bool: autoCondenseContext })
+			}
+			if (hasChanged(autoCondenseContextPercent, extensionState.autoCondenseContextPercent)) {
+				vscode.postMessage({ type: "autoCondenseContextPercent", value: autoCondenseContextPercent })
+			}
+			if (hasChanged(profileThresholds, extensionState.profileThresholds)) {
+				vscode.postMessage({ type: "profileThresholds", values: profileThresholds })
+			}
+
+			if (hasChanged(browserToolEnabled, extensionState.browserToolEnabled)) {
+				vscode.postMessage({ type: "browserToolEnabled", bool: browserToolEnabled })
+			}
+			if (hasChanged(soundEnabled, extensionState.soundEnabled)) {
+				vscode.postMessage({ type: "soundEnabled", bool: soundEnabled })
+			}
+			if (hasChanged(ttsEnabled, extensionState.ttsEnabled)) {
+				vscode.postMessage({ type: "ttsEnabled", bool: ttsEnabled })
+			}
+			if (hasChanged(ttsSpeed, extensionState.ttsSpeed)) {
+				vscode.postMessage({ type: "ttsSpeed", value: ttsSpeed })
+			}
+			if (hasChanged(soundVolume, extensionState.soundVolume)) {
+				vscode.postMessage({ type: "soundVolume", value: soundVolume })
+			}
+			if (hasChanged(diffEnabled, extensionState.diffEnabled)) {
+				vscode.postMessage({ type: "diffEnabled", bool: diffEnabled })
+			}
+			if (hasChanged(enableCheckpoints, extensionState.enableCheckpoints)) {
+				vscode.postMessage({ type: "enableCheckpoints", bool: enableCheckpoints })
+			}
+			if (hasChanged(browserViewportSize, extensionState.browserViewportSize)) {
+				vscode.postMessage({ type: "browserViewportSize", text: browserViewportSize })
+			}
+			if (hasChanged(remoteBrowserHost, extensionState.remoteBrowserHost)) {
+				vscode.postMessage({ type: "remoteBrowserHost", text: remoteBrowserHost })
+			}
+			if (hasChanged(remoteBrowserEnabled, extensionState.remoteBrowserEnabled)) {
+				vscode.postMessage({ type: "remoteBrowserEnabled", bool: remoteBrowserEnabled })
+			}
+			if (hasChanged(fuzzyMatchThreshold, extensionState.fuzzyMatchThreshold)) {
+				vscode.postMessage({ type: "fuzzyMatchThreshold", value: fuzzyMatchThreshold ?? 1.0 })
+			}
+			if (hasChanged(writeDelayMs, extensionState.writeDelayMs)) {
+				vscode.postMessage({ type: "writeDelayMs", value: writeDelayMs })
+			}
+			if (hasChanged(screenshotQuality, extensionState.screenshotQuality)) {
+				vscode.postMessage({ type: "screenshotQuality", value: screenshotQuality ?? 75 })
+			}
+			if (hasChanged(terminalOutputLineLimit, extensionState.terminalOutputLineLimit)) {
+				vscode.postMessage({ type: "terminalOutputLineLimit", value: terminalOutputLineLimit ?? 500 })
+			}
+			if (hasChanged(terminalOutputCharacterLimit, extensionState.terminalOutputCharacterLimit)) {
+				vscode.postMessage({
+					type: "terminalOutputCharacterLimit",
+					value: terminalOutputCharacterLimit ?? 50000,
+				})
+			}
+			if (hasChanged(terminalShellIntegrationTimeout, extensionState.terminalShellIntegrationTimeout)) {
+				vscode.postMessage({ type: "terminalShellIntegrationTimeout", value: terminalShellIntegrationTimeout })
+			}
+			if (hasChanged(terminalShellIntegrationDisabled, extensionState.terminalShellIntegrationDisabled)) {
+				vscode.postMessage({ type: "terminalShellIntegrationDisabled", bool: terminalShellIntegrationDisabled })
+			}
+			if (hasChanged(terminalCommandDelay, extensionState.terminalCommandDelay)) {
+				vscode.postMessage({ type: "terminalCommandDelay", value: terminalCommandDelay })
+			}
+			if (hasChanged(terminalPowershellCounter, extensionState.terminalPowershellCounter)) {
+				vscode.postMessage({ type: "terminalPowershellCounter", bool: terminalPowershellCounter })
+			}
+			if (hasChanged(terminalZshClearEolMark, extensionState.terminalZshClearEolMark)) {
+				vscode.postMessage({ type: "terminalZshClearEolMark", bool: terminalZshClearEolMark })
+			}
+			if (hasChanged(terminalZshOhMy, extensionState.terminalZshOhMy)) {
+				vscode.postMessage({ type: "terminalZshOhMy", bool: terminalZshOhMy })
+			}
+			if (hasChanged(terminalZshP10k, extensionState.terminalZshP10k)) {
+				vscode.postMessage({ type: "terminalZshP10k", bool: terminalZshP10k })
+			}
+			if (hasChanged(terminalZdotdir, extensionState.terminalZdotdir)) {
+				vscode.postMessage({ type: "terminalZdotdir", bool: terminalZdotdir })
+			}
+			if (hasChanged(terminalCompressProgressBar, extensionState.terminalCompressProgressBar)) {
+				vscode.postMessage({ type: "terminalCompressProgressBar", bool: terminalCompressProgressBar })
+			}
+			if (hasChanged(mcpEnabled, extensionState.mcpEnabled)) {
+				vscode.postMessage({ type: "mcpEnabled", bool: mcpEnabled })
+			}
+			if (hasChanged(alwaysApproveResubmit, extensionState.alwaysApproveResubmit)) {
+				vscode.postMessage({ type: "alwaysApproveResubmit", bool: alwaysApproveResubmit })
+			}
+			if (hasChanged(requestDelaySeconds, extensionState.requestDelaySeconds)) {
+				vscode.postMessage({ type: "requestDelaySeconds", value: requestDelaySeconds })
+			}
+			if (hasChanged(maxOpenTabsContext, extensionState.maxOpenTabsContext)) {
+				vscode.postMessage({ type: "maxOpenTabsContext", value: maxOpenTabsContext })
+			}
+			if (hasChanged(maxWorkspaceFiles, extensionState.maxWorkspaceFiles)) {
+				vscode.postMessage({ type: "maxWorkspaceFiles", value: maxWorkspaceFiles ?? 200 })
+			}
+			if (hasChanged(showRooIgnoredFiles, extensionState.showRooIgnoredFiles)) {
+				vscode.postMessage({ type: "showRooIgnoredFiles", bool: showRooIgnoredFiles })
+			}
+			if (hasChanged(maxReadFileLine, extensionState.maxReadFileLine)) {
+				vscode.postMessage({ type: "maxReadFileLine", value: maxReadFileLine ?? -1 })
+			}
+			if (hasChanged(maxImageFileSize, extensionState.maxImageFileSize)) {
+				vscode.postMessage({ type: "maxImageFileSize", value: maxImageFileSize ?? 5 })
+			}
+			if (hasChanged(maxTotalImageSize, extensionState.maxTotalImageSize)) {
+				vscode.postMessage({ type: "maxTotalImageSize", value: maxTotalImageSize ?? 20 })
+			}
+			if (hasChanged(maxConcurrentFileReads, extensionState.maxConcurrentFileReads)) {
+				vscode.postMessage({ type: "maxConcurrentFileReads", value: cachedState.maxConcurrentFileReads ?? 5 })
+			}
+			if (hasChanged(includeDiagnosticMessages, extensionState.includeDiagnosticMessages)) {
+				vscode.postMessage({ type: "includeDiagnosticMessages", bool: includeDiagnosticMessages })
+			}
+			if (hasChanged(maxDiagnosticMessages, extensionState.maxDiagnosticMessages)) {
+				vscode.postMessage({ type: "maxDiagnosticMessages", value: maxDiagnosticMessages ?? 50 })
+			}
+			if (hasChanged(currentApiConfigName, extensionState.currentApiConfigName)) {
+				vscode.postMessage({ type: "currentApiConfigName", text: currentApiConfigName })
+			}
+			if (hasChanged(experiments, extensionState.experiments)) {
+				vscode.postMessage({ type: "updateExperimental", values: experiments })
+			}
+			if (hasChanged(alwaysAllowModeSwitch, extensionState.alwaysAllowModeSwitch)) {
+				vscode.postMessage({ type: "alwaysAllowModeSwitch", bool: alwaysAllowModeSwitch })
+			}
+			if (hasChanged(alwaysAllowSubtasks, extensionState.alwaysAllowSubtasks)) {
+				vscode.postMessage({ type: "alwaysAllowSubtasks", bool: alwaysAllowSubtasks })
+			}
+			if (hasChanged(alwaysAllowFollowupQuestions, extensionState.alwaysAllowFollowupQuestions)) {
+				vscode.postMessage({ type: "alwaysAllowFollowupQuestions", bool: alwaysAllowFollowupQuestions })
+			}
+			if (hasChanged(alwaysAllowUpdateTodoList, extensionState.alwaysAllowUpdateTodoList)) {
+				vscode.postMessage({ type: "alwaysAllowUpdateTodoList", bool: alwaysAllowUpdateTodoList })
+			}
+			if (hasChanged(followupAutoApproveTimeoutMs, extensionState.followupAutoApproveTimeoutMs)) {
+				vscode.postMessage({ type: "followupAutoApproveTimeoutMs", value: followupAutoApproveTimeoutMs })
+			}
+			if (hasChanged(condensingApiConfigId, extensionState.condensingApiConfigId)) {
+				vscode.postMessage({ type: "condensingApiConfigId", text: condensingApiConfigId || "" })
+			}
+			if (hasChanged(customCondensingPrompt, extensionState.customCondensingPrompt)) {
+				vscode.postMessage({ type: "updateCondensingPrompt", text: customCondensingPrompt || "" })
+			}
+			if (hasChanged(customSupportPrompts, extensionState.customSupportPrompts)) {
+				vscode.postMessage({ type: "updateSupportPrompt", values: customSupportPrompts || {} })
+			}
+			if (hasChanged(includeTaskHistoryInEnhance, extensionState.includeTaskHistoryInEnhance)) {
+				vscode.postMessage({ type: "includeTaskHistoryInEnhance", bool: includeTaskHistoryInEnhance ?? true })
+			}
+			if (hasChanged(apiConfiguration, extensionState.apiConfiguration)) {
+				vscode.postMessage({ type: "upsertApiConfiguration", text: currentApiConfigName, apiConfiguration })
+			}
+			if (hasChanged(telemetrySetting, extensionState.telemetrySetting)) {
+				vscode.postMessage({ type: "telemetrySetting", text: telemetrySetting })
+			}
+			if (hasChanged(openRouterImageApiKey, extensionState.openRouterImageApiKey)) {
+				vscode.postMessage({ type: "openRouterImageApiKey", text: openRouterImageApiKey })
+			}
+			if (
+				hasChanged(
+					openRouterImageGenerationSelectedModel,
+					extensionState.openRouterImageGenerationSelectedModel,
+				)
+			) {
+				vscode.postMessage({
+					type: "openRouterImageGenerationSelectedModel",
+					text: openRouterImageGenerationSelectedModel,
+				})
+			}
 			setChangeDetected(false)
 		}
 	}

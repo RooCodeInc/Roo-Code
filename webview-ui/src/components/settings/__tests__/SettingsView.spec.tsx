@@ -18,17 +18,18 @@ vi.mock("../ApiConfigManager", () => ({
 }))
 
 vi.mock("@vscode/webview-ui-toolkit/react", () => ({
-	VSCodeButton: ({ children, onClick, appearance, "data-testid": dataTestId }: any) =>
+	VSCodeButton: ({ children, onClick, appearance, disabled, "data-testid": dataTestId }: any) =>
 		appearance === "icon" ? (
 			<button
 				onClick={onClick}
 				className="codicon codicon-close"
 				aria-label="Remove command"
-				data-testid={dataTestId}>
+				data-testid={dataTestId}
+				disabled={disabled}>
 				<span className="codicon codicon-close" />
 			</button>
 		) : (
-			<button onClick={onClick} data-appearance={appearance} data-testid={dataTestId}>
+			<button onClick={onClick} data-appearance={appearance} data-testid={dataTestId} disabled={disabled}>
 				{children}
 			</button>
 		),
@@ -135,8 +136,13 @@ vi.mock("@/components/ui", () => ({
 			data-testid={dataTestId}
 		/>
 	),
-	Button: ({ children, onClick, variant, className, "data-testid": dataTestId }: any) => (
-		<button onClick={onClick} data-variant={variant} className={className} data-testid={dataTestId}>
+	Button: ({ children, onClick, variant, className, disabled, "data-testid": dataTestId }: any) => (
+		<button
+			onClick={onClick}
+			data-variant={variant}
+			className={className}
+			data-testid={dataTestId}
+			disabled={disabled}>
 			{children}
 		</button>
 	),
@@ -635,5 +641,168 @@ describe("SettingsView - Duplicate Commands", () => {
 				commands: ["npm test"],
 			}),
 		)
+	})
+})
+
+describe("SettingsView - Dirty State Management", () => {
+	beforeEach(() => {
+		vi.clearAllMocks()
+	})
+
+	it("disables Save button when toggling settings back to original values", () => {
+		// Render once and get the activateTab helper
+		const { activateTab } = renderSettingsView()
+
+		// Activate the notifications tab
+		activateTab("notifications")
+
+		// Initially, Save button should be disabled (no changes)
+		const saveButton = screen.getByTestId("save-button")
+		expect(saveButton).toHaveAttribute("disabled")
+
+		// Enable sound (make a change)
+		const soundCheckbox = screen.getByTestId("sound-enabled-checkbox")
+		fireEvent.click(soundCheckbox)
+
+		// Save button should now be enabled
+		expect(saveButton).not.toHaveAttribute("disabled")
+
+		// Toggle sound back off (revert to original)
+		fireEvent.click(soundCheckbox)
+
+		// Save button should be disabled again (no net changes)
+		expect(saveButton).toHaveAttribute("disabled")
+	})
+
+	it("keeps Save button enabled when there are actual changes from original state", () => {
+		// Render once and get the activateTab helper
+		const { activateTab } = renderSettingsView()
+
+		// Activate the notifications tab
+		activateTab("notifications")
+
+		const saveButton = screen.getByTestId("save-button")
+		const soundCheckbox = screen.getByTestId("sound-enabled-checkbox")
+		const ttsCheckbox = screen.getByTestId("tts-enabled-checkbox")
+
+		// Make multiple changes
+		fireEvent.click(soundCheckbox) // Enable sound
+		fireEvent.click(ttsCheckbox) // Enable TTS
+
+		// Save button should be enabled
+		expect(saveButton).not.toHaveAttribute("disabled")
+
+		// Toggle one back but keep the other changed
+		fireEvent.click(soundCheckbox) // Disable sound (back to original)
+
+		// Save button should still be enabled (TTS is still changed)
+		expect(saveButton).not.toHaveAttribute("disabled")
+
+		// Toggle the other back too
+		fireEvent.click(ttsCheckbox) // Disable TTS (back to original)
+
+		// Now Save button should be disabled (everything back to original)
+		expect(saveButton).toHaveAttribute("disabled")
+	})
+
+	it("correctly tracks dirty state for context management settings", () => {
+		// Render once and get the activateTab helper
+		const { activateTab } = renderSettingsView()
+
+		// Activate the context tab
+		activateTab("context")
+
+		const saveButton = screen.getByTestId("save-button")
+
+		// Initially disabled
+		expect(saveButton).toHaveAttribute("disabled")
+
+		// Enable auto-condense
+		const autoCondenseCheckbox = screen.getByTestId("auto-condense-checkbox")
+		fireEvent.click(autoCondenseCheckbox)
+
+		// Save button should be enabled
+		expect(saveButton).not.toHaveAttribute("disabled")
+
+		// Toggle back
+		fireEvent.click(autoCondenseCheckbox)
+
+		// Save button should be disabled again
+		expect(saveButton).toHaveAttribute("disabled")
+	})
+
+	it("does not send settings to backend when Save is clicked with no changes", () => {
+		// Clear any previous mock calls
+		vi.clearAllMocks()
+
+		// Render once and get the activateTab helper
+		const { activateTab } = renderSettingsView()
+
+		// Activate the notifications tab
+		activateTab("notifications")
+
+		// Toggle a setting on and off
+		const soundCheckbox = screen.getByTestId("sound-enabled-checkbox")
+		fireEvent.click(soundCheckbox) // Enable
+		fireEvent.click(soundCheckbox) // Disable (back to original)
+
+		// Save button should be disabled
+		const saveButton = screen.getByTestId("save-button")
+		expect(saveButton).toBeDisabled()
+
+		// Try to click Save (should be disabled and not trigger any action)
+		fireEvent.click(saveButton)
+
+		// Check that no settings-related messages were sent
+		// (There may be initial setup messages like requestRouterModels)
+		const settingsMessages = (vscode.postMessage as any).mock.calls.filter((call: any) => {
+			const type = call[0]?.type
+			return (
+				type === "soundEnabled" ||
+				type === "ttsEnabled" ||
+				type === "autoCondenseContext" ||
+				type === "autoCondenseContextPercent"
+			)
+		})
+		expect(settingsMessages).toHaveLength(0)
+	})
+
+	it("correctly handles complex state changes across multiple settings", () => {
+		// Render once and get the activateTab helper
+		const { activateTab } = renderSettingsView()
+
+		// Start with autoApprove tab
+		activateTab("autoApprove")
+
+		const saveButton = screen.getByTestId("save-button")
+
+		// Enable always allow execute
+		const executeCheckbox = screen.getByTestId("always-allow-execute-toggle")
+		fireEvent.click(executeCheckbox)
+
+		// Save button should be enabled
+		expect(saveButton).not.toHaveAttribute("disabled")
+
+		// Add a command
+		const input = screen.getByTestId("command-input")
+		fireEvent.change(input, { target: { value: "npm test" } })
+		const addButton = screen.getByTestId("add-command-button")
+		fireEvent.click(addButton)
+
+		// Still enabled (more changes)
+		expect(saveButton).not.toHaveAttribute("disabled")
+
+		// Remove the command
+		const removeButton = screen.getByTestId("remove-command-0")
+		fireEvent.click(removeButton)
+
+		// Still enabled (execute checkbox is still changed)
+		expect(saveButton).not.toHaveAttribute("disabled")
+
+		// Toggle execute checkbox back
+		fireEvent.click(executeCheckbox)
+
+		// Now should be disabled (everything back to original)
+		expect(saveButton).toHaveAttribute("disabled")
 	})
 })
