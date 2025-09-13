@@ -61,6 +61,7 @@ interface ChatRowProps {
 	onFollowUpUnmount?: () => void
 	isFollowUpAnswered?: boolean
 	editable?: boolean
+	onBeginEdit?: (message: ClineMessage) => void
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
@@ -113,6 +114,7 @@ export const ChatRowContent = ({
 	onBatchFileResponse,
 	isFollowUpAnswered,
 	editable,
+	onBeginEdit,
 }: ChatRowContentProps) => {
 	const { t } = useTranslation()
 
@@ -146,13 +148,15 @@ export const ChatRowContent = ({
 
 	// Handle edit button click
 	const handleEditClick = useCallback(() => {
+		if (onBeginEdit) {
+			onBeginEdit(message)
+			return
+		}
 		setIsEditing(true)
 		setEditedContent(message.text || "")
 		setEditImages(message.images || [])
 		setEditMode(mode || "code")
-		// Edit mode is now handled entirely in the frontend
-		// No need to notify the backend
-	}, [message.text, message.images, mode])
+	}, [onBeginEdit, message, mode])
 
 	// Handle cancel edit
 	const handleCancelEdit = useCallback(() => {
