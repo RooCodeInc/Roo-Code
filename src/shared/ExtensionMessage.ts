@@ -309,6 +309,8 @@ export type ExtensionState = Pick<
 
 	mcpEnabled: boolean
 	enableMcpServerCreation: boolean
+	mcpMaxImagesPerResponse: number
+	mcpMaxImageSizeMB: number
 
 	mode: Mode
 	customModes: ModeConfig[]

@@ -60,6 +60,14 @@
 	"execution": {
 		"running": "Çalışıyor",
 		"completed": "Tamamlandı",
-		"error": "Hata"
+		"error": "Hata",
+		"imageCountTooltip": "Yanıtta {{count}} resim"
+	},
+	"imageSettings": {
+		"maxImagesLabel": "Yanıt Başına Maksimum Görüntü",
+		"maxSizeLabel": "Maksimum Görüntü Boyutu (MB)",
+		"maxImagesDescription": "Tek bir yanıtta gönderilebilecek maksimum görüntü sayısı.",
+		"maxSizeDescription": "Her görüntünün megabayt cinsinden maksimum boyutu.",
+		"validationError": "Lütfen 1 ile 100 arasında bir sayı girin."
 	}
 }
