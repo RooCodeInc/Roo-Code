@@ -14,7 +14,14 @@
 	},
 	"apiConfiguration": {
 		"title": "API Configuration",
-		"select": "Select which API configuration to use for this mode"
+		"select": "Select which API configuration to use for this mode",
+		"applyToAllModes": "Apply to all modes",
+		"confirmApplyToAllModes": {
+			"title": "Apply Configuration to All Modes",
+			"description": "This will apply the currently selected API configuration to all modes (built-in and custom). Are you sure you want to continue?",
+			"confirm": "Apply to All",
+			"cancel": "Cancel"
+		}
 	},
 	"tools": {
 		"title": "Available Tools",

@@ -43,6 +43,7 @@
 		"delete_api_config": "Failed to delete api configuration",
 		"list_api_config": "Failed to get list api configuration",
 		"update_server_timeout": "Failed to update server timeout",
+		"apply_config_to_all_modes_failed": "Failed to apply configuration to all modes",
 		"hmr_not_running": "Local development server is not running, HMR will not work. Please run 'npm run dev' before launching the extension to enable HMR.",
 		"retrieve_current_mode": "Error: failed to retrieve current mode from state.",
 		"failed_delete_repo": "Failed to delete associated shadow repository or branch: {{error}}",
@@ -142,7 +143,8 @@
 		"image_copied_to_clipboard": "Image data URI copied to clipboard",
 		"image_saved": "Image saved to {{path}}",
 		"mode_exported": "Mode '{{mode}}' exported successfully",
-		"mode_imported": "Mode imported successfully"
+		"mode_imported": "Mode imported successfully",
+		"api_config_applied_to_all_modes": "API configuration applied to all modes successfully"
 	},
 	"answers": {
 		"yes": "Yes",

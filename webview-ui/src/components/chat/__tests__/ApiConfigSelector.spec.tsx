@@ -54,6 +54,14 @@ vi.mock("@/components/ui", () => ({
 			{children}
 		</button>
 	),
+	AlertDialog: ({ children, open }: any) => (open ? <div data-testid="alert-dialog">{children}</div> : null),
+	AlertDialogContent: ({ children }: any) => <div data-testid="alert-dialog-content">{children}</div>,
+	AlertDialogHeader: ({ children }: any) => <div>{children}</div>,
+	AlertDialogTitle: ({ children }: any) => <h2>{children}</h2>,
+	AlertDialogDescription: ({ children }: any) => <p>{children}</p>,
+	AlertDialogFooter: ({ children }: any) => <div>{children}</div>,
+	AlertDialogCancel: ({ children, onClick }: any) => <button onClick={onClick}>{children}</button>,
+	AlertDialogAction: ({ children, onClick }: any) => <button onClick={onClick}>{children}</button>,
 }))
 
 describe("ApiConfigSelector", () => {
@@ -443,5 +451,70 @@ describe("ApiConfigSelector", () => {
 
 		// Search value should be maintained
 		expect(searchInput.value).toBe("Config")
+	})
+
+	test("shows Apply to All Modes button and handles click with confirmation", async () => {
+		render(<ApiConfigSelector {...defaultProps} />)
+
+		const trigger = screen.getByTestId("dropdown-trigger")
+		fireEvent.click(trigger)
+
+		// Find the Apply to All Modes button by its aria-label
+		const popoverContent = screen.getByTestId("popover-content")
+		const applyToAllButton = popoverContent.querySelector('[aria-label="prompts:apiConfiguration.applyToAllModes"]')
+		expect(applyToAllButton).toBeInTheDocument()
+
+		// Click the button
+		if (applyToAllButton) {
+			fireEvent.click(applyToAllButton)
+		}
+
+		// Check that confirmation dialog appears
+		await waitFor(() => {
+			expect(screen.getByText("prompts:apiConfiguration.confirmApplyToAllModes.title")).toBeInTheDocument()
+			expect(screen.getByText("prompts:apiConfiguration.confirmApplyToAllModes.description")).toBeInTheDocument()
+		})
+
+		// Find and click the confirm button
+		const confirmButton = screen.getByText("prompts:apiConfiguration.confirmApplyToAllModes.confirm")
+		fireEvent.click(confirmButton)
+
+		// Verify the message was posted
+		await waitFor(() => {
+			expect(vi.mocked(vscode.postMessage)).toHaveBeenCalledWith({
+				type: "applyConfigToAllModes",
+				configId: "config1",
+			})
+		})
+	})
+
+	test("cancels Apply to All Modes when cancel is clicked in confirmation dialog", async () => {
+		render(<ApiConfigSelector {...defaultProps} />)
+
+		const trigger = screen.getByTestId("dropdown-trigger")
+		fireEvent.click(trigger)
+
+		// Find and click the Apply to All Modes button by its aria-label
+		const popoverContent = screen.getByTestId("popover-content")
+		const applyToAllButton = popoverContent.querySelector('[aria-label="prompts:apiConfiguration.applyToAllModes"]')
+
+		if (applyToAllButton) {
+			fireEvent.click(applyToAllButton)
+		}
+
+		// Wait for confirmation dialog
+		await waitFor(() => {
+			expect(screen.getByText("prompts:apiConfiguration.confirmApplyToAllModes.title")).toBeInTheDocument()
+		})
+
+		// Find and click the cancel button
+		const cancelButton = screen.getByText("prompts:apiConfiguration.confirmApplyToAllModes.cancel")
+		fireEvent.click(cancelButton)
+
+		// Verify the message was NOT posted
+		expect(vi.mocked(vscode.postMessage)).not.toHaveBeenCalledWith({
+			type: "applyConfigToAllModes",
+			configId: "config1",
+		})
 	})
 })
