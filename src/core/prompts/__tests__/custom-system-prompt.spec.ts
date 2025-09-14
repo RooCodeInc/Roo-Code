@@ -50,6 +50,7 @@ vi.mock("../../../services/code-index/manager", () => ({
 
 vi.mock("os", () => ({
 	type: vi.fn().mockReturnValue("Windows_NT"),
+	homedir: vi.fn().mockReturnValue("/home/test"),
 }))
 
 // Import path module to add toPosix to String prototype
