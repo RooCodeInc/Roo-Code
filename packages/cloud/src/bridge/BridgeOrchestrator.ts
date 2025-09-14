@@ -59,7 +59,12 @@ export class BridgeOrchestrator {
 		return BridgeOrchestrator.instance
 	}
 
-	public static isEnabled(user: CloudUserInfo, remoteControlEnabled: boolean): boolean {
+	public static isEnabled(user: CloudUserInfo | null, remoteControlEnabled: boolean): boolean {
+		// Always disabled if signed out.
+		if (!user) {
+			return false
+		}
+
 		// Disabled by the user's organization?
 		if (!user.extensionBridgeEnabled) {
 			return false
