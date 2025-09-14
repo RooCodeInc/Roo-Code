@@ -50,6 +50,7 @@ import Announcement from "./Announcement"
 import BrowserSessionRow from "./BrowserSessionRow"
 import ChatRow from "./ChatRow"
 import { ChatTextArea } from "./ChatTextArea"
+import { Mention } from "./Mention"
 import TaskHeader from "./TaskHeader"
 import AutoApproveMenu from "./AutoApproveMenu"
 import SystemPromptWarning from "./SystemPromptWarning"
@@ -59,6 +60,7 @@ import { QueuedMessages } from "./QueuedMessages"
 import DismissibleUpsell from "../common/DismissibleUpsell"
 import { useCloudUpsell } from "@src/hooks/useCloudUpsell"
 import { Cloud } from "lucide-react"
+import { DraftPersistenceProvider, useDraftPersistence } from "./hooks/useDraftPersistence"
 
 export interface ChatViewProps {
 	isHidden: boolean
@@ -74,11 +76,12 @@ export const MAX_IMAGES_PER_MESSAGE = 20 // This is the Anthropic limit.
 
 const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0
 
-const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewProps> = (
+const ChatViewInner: React.ForwardRefRenderFunction<ChatViewRef, ChatViewProps> = (
 	{ isHidden, showAnnouncement, hideAnnouncement },
 	ref,
 ) => {
 	const isMountedRef = useRef(true)
+	const { saveCurrentDraft, restoreDraft } = useDraftPersistence()
 
 	const [audioBaseUri] = useState(() => {
 		const w = window as any
@@ -177,6 +180,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	const textAreaRef = useRef<HTMLTextAreaElement>(null)
 	const [sendingDisabled, setSendingDisabled] = useState(false)
 	const [selectedImages, setSelectedImages] = useState<string[]>([])
+	const [editingOverlay, setEditingOverlay] = useState<{ ts: number; text: string; images: string[] } | null>(null)
 
 	// we need to hold on to the ask because useEffect > lastMessage will always let us know when an ask comes in and handle it, but by the time handleMessage is called, the last message might not be the ask anymore (it could be a say that followed)
 	const [clineAsk, setClineAsk] = useState<ClineAsk | undefined>(undefined)
@@ -773,7 +777,13 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 
 	const { info: model } = useSelectedModel(apiConfiguration)
 
-	const selectImages = useCallback(() => vscode.postMessage({ type: "selectImages" }), [])
+	const selectImages = useCallback(() => {
+		if (editingOverlay) {
+			vscode.postMessage({ type: "selectImages", context: "edit", messageTs: editingOverlay.ts })
+		} else {
+			vscode.postMessage({ type: "selectImages" })
+		}
+	}, [editingOverlay])
 
 	const shouldDisableImages = !model?.supportsImages || selectedImages.length >= MAX_IMAGES_PER_MESSAGE
 
@@ -795,9 +805,15 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					}
 					break
 				case "selectedImages":
-					// Only handle selectedImages if it's not for editing context
-					// When context is "edit", ChatRow will handle the images
-					if (message.context !== "edit") {
+					// Handle images for both normal and edit contexts
+					if (message.context === "edit") {
+						// Only accept if this is for the active editing overlay message
+						if (editingOverlay && message.messageTs === editingOverlay.ts) {
+							setSelectedImages((prevImages: string[]) =>
+								appendImages(prevImages, message.images, MAX_IMAGES_PER_MESSAGE),
+							)
+						}
+					} else {
 						setSelectedImages((prevImages: string[]) =>
 							appendImages(prevImages, message.images, MAX_IMAGES_PER_MESSAGE),
 						)
@@ -841,6 +857,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			sendingDisabled,
 			enableButtons,
 			currentTaskItem,
+			editingOverlay,
 			handleChatReset,
 			handleSendMessage,
 			handleSetChatBoxMessage,
@@ -850,6 +867,57 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	)
 
 	useEvent("message", handleMessage)
+
+	// Begin editing from a row
+	const handleBeginEdit = useCallback(
+		(message: ClineMessage) => {
+			// Save the current draft before starting edit
+			saveCurrentDraft(inputValue)
+
+			setEditingOverlay({
+				ts: message.ts,
+				text: message.text || "",
+				images: message.images || [],
+			})
+			setInputValue(message.text || "")
+			setSelectedImages(message.images || [])
+			// Focus input when beginning edit
+			setTimeout(() => textAreaRef.current?.focus(), 0)
+		},
+		[inputValue, saveCurrentDraft],
+	)
+
+	const handleCancelEditOverlay = useCallback(() => {
+		setEditingOverlay(null)
+		// Restore the draft when canceling edit
+		const restoredDraft = restoreDraft()
+		if (restoredDraft !== null) {
+			setInputValue(restoredDraft)
+		} else {
+			setInputValue("")
+		}
+		setSelectedImages([])
+		setTimeout(() => textAreaRef.current?.focus(), 0)
+	}, [restoreDraft])
+
+	const handleSubmitEdited = useCallback(() => {
+		if (!editingOverlay) return
+		vscode.postMessage({
+			type: "submitEditedMessage",
+			value: editingOverlay.ts,
+			editedMessageContent: inputValue,
+			images: selectedImages,
+		})
+		setEditingOverlay(null)
+		// Restore the draft after saving edit
+		const restoredDraft = restoreDraft()
+		if (restoredDraft !== null) {
+			setInputValue(restoredDraft)
+		} else {
+			setInputValue("")
+		}
+		setSelectedImages([])
+	}, [editingOverlay, inputValue, selectedImages, restoreDraft])
 
 	// NOTE: the VSCode window needs to be focused for this to work.
 	useMount(() => textAreaRef.current?.focus())
@@ -1560,6 +1628,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							return tool.tool === "updateTodoList" && enableButtons && !!primaryButtonText
 						})()
 					}
+					onBeginEdit={handleBeginEdit}
 				/>
 			)
 		},
@@ -1577,6 +1646,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			alwaysAllowUpdateTodoList,
 			enableButtons,
 			primaryButtonText,
+			handleBeginEdit,
 		],
 	)
 
@@ -1727,6 +1797,13 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	// Add keyboard event handler
 	const handleKeyDown = useCallback(
 		(event: KeyboardEvent) => {
+			// Handle Escape key to exit editing mode
+			if (event.key === "Escape" && editingOverlay) {
+				event.preventDefault()
+				handleCancelEditOverlay()
+				return
+			}
+
 			// Check for Command/Ctrl + Period (with or without Shift)
 			// Using event.key to respect keyboard layouts (e.g., Dvorak)
 			if ((event.metaKey || event.ctrlKey) && event.key === ".") {
@@ -1741,7 +1818,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				}
 			}
 		},
-		[switchToNextMode, switchToPreviousMode],
+		[switchToNextMode, switchToPreviousMode, editingOverlay, handleCancelEditOverlay],
 	)
 
 	useEffect(() => {
@@ -1892,7 +1969,10 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 
 			{task && (
 				<>
-					<div className="grow flex" ref={scrollContainerRef}>
+					<div
+						className={`grow flex ${editingOverlay ? "blur-[1px] opacity-70 cursor-pointer" : ""}`}
+						ref={scrollContainerRef}
+						onClick={editingOverlay ? handleCancelEditOverlay : undefined}>
 						<Virtuoso
 							ref={virtuosoRef}
 							key={task.ts}
@@ -1911,136 +1991,170 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							initialTopMostItemIndex={groupedMessages.length - 1}
 						/>
 					</div>
-					<div className={`flex-initial min-h-0 ${!areButtonsVisible ? "mb-1" : ""}`}>
-						<AutoApproveMenu />
-					</div>
-					{areButtonsVisible && (
-						<div
-							className={`flex h-9 items-center mb-1 px-[15px] ${
-								showScrollToBottom
-									? "opacity-100"
-									: enableButtons || (isStreaming && !didClickCancel)
-										? "opacity-100"
-										: "opacity-50"
-							}`}>
-							{showScrollToBottom ? (
-								<StandardTooltip content={t("chat:scrollToBottom")}>
-									<VSCodeButton
-										appearance="secondary"
-										className="flex-[2]"
-										onClick={() => {
-											scrollToBottomSmooth()
-											disableAutoScrollRef.current = false
-										}}>
-										<span className="codicon codicon-chevron-down"></span>
-									</VSCodeButton>
-								</StandardTooltip>
-							) : (
-								<>
-									{primaryButtonText && !isStreaming && (
-										<StandardTooltip
-											content={
-												primaryButtonText === t("chat:retry.title")
-													? t("chat:retry.tooltip")
-													: primaryButtonText === t("chat:save.title")
-														? t("chat:save.tooltip")
-														: primaryButtonText === t("chat:approve.title")
-															? t("chat:approve.tooltip")
-															: primaryButtonText === t("chat:runCommand.title")
-																? t("chat:runCommand.tooltip")
-																: primaryButtonText === t("chat:startNewTask.title")
-																	? t("chat:startNewTask.tooltip")
-																	: primaryButtonText === t("chat:resumeTask.title")
-																		? t("chat:resumeTask.tooltip")
-																		: primaryButtonText ===
-																			  t("chat:proceedAnyways.title")
-																			? t("chat:proceedAnyways.tooltip")
-																			: primaryButtonText ===
-																				  t("chat:proceedWhileRunning.title")
-																				? t("chat:proceedWhileRunning.tooltip")
-																				: undefined
-											}>
-											<VSCodeButton
-												appearance="primary"
-												disabled={!enableButtons}
-												className={secondaryButtonText ? "flex-1 mr-[6px]" : "flex-[2] mr-0"}
-												onClick={() => handlePrimaryButtonClick(inputValue, selectedImages)}>
-												{primaryButtonText}
-											</VSCodeButton>
-										</StandardTooltip>
-									)}
-									{(secondaryButtonText || isStreaming) && (
-										<StandardTooltip
-											content={
-												isStreaming
-													? t("chat:cancel.tooltip")
-													: secondaryButtonText === t("chat:startNewTask.title")
-														? t("chat:startNewTask.tooltip")
-														: secondaryButtonText === t("chat:reject.title")
-															? t("chat:reject.tooltip")
-															: secondaryButtonText === t("chat:terminate.title")
-																? t("chat:terminate.tooltip")
-																: undefined
-											}>
-											<VSCodeButton
-												appearance="secondary"
-												disabled={!enableButtons && !(isStreaming && !didClickCancel)}
-												className={isStreaming ? "flex-[2] ml-0" : "flex-1 ml-[6px]"}
-												onClick={() => handleSecondaryButtonClick(inputValue, selectedImages)}>
-												{isStreaming ? t("chat:cancel.title") : secondaryButtonText}
-											</VSCodeButton>
-										</StandardTooltip>
-									)}
-								</>
-							)}
+
+					<div>
+						{editingOverlay && (
+							<div className="px-[15px] mb-1">
+								<div className="bg-vscode-editor-background border border-vscode-border rounded-xs p-2">
+									<div className="text-xs text-vscode-descriptionForeground mb-1">
+										Editing message
+									</div>
+									<div className="px-1 py-0.5">
+										<Mention text={editingOverlay.text} withShadow />
+									</div>
+								</div>
+							</div>
+						)}
+						<div className={`flex-initial min-h-0 ${!areButtonsVisible ? "mb-1" : ""}`}>
+							<AutoApproveMenu />
 						</div>
-					)}
+						{areButtonsVisible && (
+							<div
+								className={`flex h-9 items-center mb-1 px-[15px] ${
+									showScrollToBottom
+										? "opacity-100"
+										: enableButtons || (isStreaming && !didClickCancel)
+											? "opacity-100"
+											: "opacity-50"
+								}`}>
+								{showScrollToBottom ? (
+									<StandardTooltip content={t("chat:scrollToBottom")}>
+										<VSCodeButton
+											appearance="secondary"
+											className="flex-[2]"
+											onClick={() => {
+												scrollToBottomSmooth()
+												disableAutoScrollRef.current = false
+											}}>
+											<span className="codicon codicon-chevron-down"></span>
+										</VSCodeButton>
+									</StandardTooltip>
+								) : (
+									<>
+										{primaryButtonText && !isStreaming && (
+											<StandardTooltip
+												content={
+													primaryButtonText === t("chat:retry.title")
+														? t("chat:retry.tooltip")
+														: primaryButtonText === t("chat:save.title")
+															? t("chat:save.tooltip")
+															: primaryButtonText === t("chat:approve.title")
+																? t("chat:approve.tooltip")
+																: primaryButtonText === t("chat:runCommand.title")
+																	? t("chat:runCommand.tooltip")
+																	: primaryButtonText === t("chat:startNewTask.title")
+																		? t("chat:startNewTask.tooltip")
+																		: primaryButtonText ===
+																			  t("chat:resumeTask.title")
+																			? t("chat:resumeTask.tooltip")
+																			: primaryButtonText ===
+																				  t("chat:proceedAnyways.title")
+																				? t("chat:proceedAnyways.tooltip")
+																				: primaryButtonText ===
+																					  t(
+																							"chat:proceedWhileRunning.title",
+																					  )
+																					? t(
+																							"chat:proceedWhileRunning.tooltip",
+																						)
+																					: undefined
+												}>
+												<VSCodeButton
+													appearance="primary"
+													disabled={!enableButtons}
+													className={
+														secondaryButtonText ? "flex-1 mr-[6px]" : "flex-[2] mr-0"
+													}
+													onClick={() =>
+														handlePrimaryButtonClick(inputValue, selectedImages)
+													}>
+													{primaryButtonText}
+												</VSCodeButton>
+											</StandardTooltip>
+										)}
+										{(secondaryButtonText || isStreaming) && (
+											<StandardTooltip
+												content={
+													isStreaming
+														? t("chat:cancel.tooltip")
+														: secondaryButtonText === t("chat:startNewTask.title")
+															? t("chat:startNewTask.tooltip")
+															: secondaryButtonText === t("chat:reject.title")
+																? t("chat:reject.tooltip")
+																: secondaryButtonText === t("chat:terminate.title")
+																	? t("chat:terminate.tooltip")
+																	: undefined
+												}>
+												<VSCodeButton
+													appearance="secondary"
+													disabled={!enableButtons && !(isStreaming && !didClickCancel)}
+													className={isStreaming ? "flex-[2] ml-0" : "flex-1 ml-[6px]"}
+													onClick={() =>
+														handleSecondaryButtonClick(inputValue, selectedImages)
+													}>
+													{isStreaming ? t("chat:cancel.title") : secondaryButtonText}
+												</VSCodeButton>
+											</StandardTooltip>
+										)}
+									</>
+								)}
+							</div>
+						)}
+					</div>
 				</>
 			)}
 
-			<QueuedMessages
-				queue={messageQueue}
-				onRemove={(index) => {
-					if (messageQueue[index]) {
-						vscode.postMessage({ type: "removeQueuedMessage", text: messageQueue[index].id })
-					}
-				}}
-				onUpdate={(index, newText) => {
-					if (messageQueue[index]) {
-						vscode.postMessage({
-							type: "editQueuedMessage",
-							payload: { id: messageQueue[index].id, text: newText, images: messageQueue[index].images },
-						})
-					}
-				}}
-			/>
-			<ChatTextArea
-				ref={textAreaRef}
-				inputValue={inputValue}
-				setInputValue={setInputValue}
-				sendingDisabled={sendingDisabled || isProfileDisabled}
-				selectApiConfigDisabled={sendingDisabled && clineAsk !== "api_req_failed"}
-				placeholderText={placeholderText}
-				selectedImages={selectedImages}
-				setSelectedImages={setSelectedImages}
-				onSend={() => handleSendMessage(inputValue, selectedImages)}
-				onSelectImages={selectImages}
-				shouldDisableImages={shouldDisableImages}
-				onHeightChange={() => {
-					if (isAtBottom) {
-						scrollToBottomAuto()
-					}
-				}}
-				mode={mode}
-				setMode={setMode}
-				modeShortcutText={modeShortcutText}
-			/>
+			<div>
+				<QueuedMessages
+					queue={messageQueue}
+					onRemove={(index) => {
+						if (messageQueue[index]) {
+							vscode.postMessage({ type: "removeQueuedMessage", text: messageQueue[index].id })
+						}
+					}}
+					onUpdate={(index, newText) => {
+						if (messageQueue[index]) {
+							vscode.postMessage({
+								type: "editQueuedMessage",
+								payload: {
+									id: messageQueue[index].id,
+									text: newText,
+									images: messageQueue[index].images,
+								},
+							})
+						}
+					}}
+				/>
+				<ChatTextArea
+					ref={textAreaRef}
+					inputValue={inputValue}
+					setInputValue={setInputValue}
+					sendingDisabled={sendingDisabled || isProfileDisabled}
+					selectApiConfigDisabled={sendingDisabled && clineAsk !== "api_req_failed"}
+					placeholderText={placeholderText}
+					selectedImages={selectedImages}
+					setSelectedImages={setSelectedImages}
+					onSend={editingOverlay ? handleSubmitEdited : () => handleSendMessage(inputValue, selectedImages)}
+					onSelectImages={selectImages}
+					shouldDisableImages={shouldDisableImages}
+					onHeightChange={() => {
+						if (isAtBottom) {
+							scrollToBottomAuto()
+						}
+					}}
+					mode={mode}
+					setMode={setMode}
+					modeShortcutText={modeShortcutText}
+					isEditMode={!!editingOverlay}
+					onCancel={handleCancelEditOverlay}
+				/>
 
-			{isProfileDisabled && (
-				<div className="px-3">
-					<ProfileViolationWarning />
-				</div>
-			)}
+				{isProfileDisabled && (
+					<div className="px-3">
+						<ProfileViolationWarning />
+					</div>
+				)}
+			</div>
 
 			<div id="roo-portal" />
 			<CloudUpsellDialog open={isUpsellOpen} onOpenChange={closeUpsell} onConnect={handleConnect} />
@@ -2048,6 +2162,14 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	)
 }
 
-const ChatView = forwardRef(ChatViewComponent)
+const ChatViewWithRef = forwardRef(ChatViewInner)
+
+const ChatView = forwardRef<ChatViewRef, ChatViewProps>((props, ref) => {
+	return (
+		<DraftPersistenceProvider>
+			<ChatViewWithRef {...props} ref={ref} />
+		</DraftPersistenceProvider>
+	)
+})
 
 export default ChatView
