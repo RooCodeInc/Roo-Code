@@ -49,6 +49,10 @@ vi.mock("../../../services/code-index/manager", () => ({
 }))
 
 vi.mock("os", () => ({
+	default: {
+		type: vi.fn().mockReturnValue("Windows_NT"),
+		homedir: vi.fn().mockReturnValue("/home/test"),
+	},
 	type: vi.fn().mockReturnValue("Windows_NT"),
 	homedir: vi.fn().mockReturnValue("/home/test"),
 }))
