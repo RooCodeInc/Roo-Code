@@ -27,6 +27,7 @@ type GeminiHandlerOptions = ApiHandlerOptions & {
 
 export class GeminiHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
+	private isVertex: boolean
 
 	private client: GoogleGenAI
 
@@ -34,6 +35,7 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 		super()
 
 		this.options = options
+		this.isVertex = isVertex ?? false
 
 		const project = this.options.vertexProjectId ?? "not-provided"
 		const location = this.options.vertexRegion ?? "not-provided"
@@ -70,7 +72,8 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 		const contents = messages.map(convertAnthropicMessageToGemini)
 
 		const tools: GenerateContentConfig["tools"] = []
-		if (this.options.enableUrlContext) {
+		// urlContext is only supported in regular Gemini, not Vertex AI
+		if (this.options.enableUrlContext && !this.isVertex) {
 			tools.push({ urlContext: {} })
 		}
 
@@ -214,7 +217,8 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 			const { id: model } = this.getModel()
 
 			const tools: GenerateContentConfig["tools"] = []
-			if (this.options.enableUrlContext) {
+			// urlContext is only supported in regular Gemini, not Vertex AI
+			if (this.options.enableUrlContext && !this.isVertex) {
 				tools.push({ urlContext: {} })
 			}
 			if (this.options.enableGrounding) {
