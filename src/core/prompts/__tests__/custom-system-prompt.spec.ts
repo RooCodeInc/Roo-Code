@@ -39,6 +39,19 @@ vi.mock("../../../utils/fs", () => ({
 	createDirectoriesForFile: vi.fn().mockResolvedValue([]),
 }))
 
+vi.mock("../../../services/code-index/manager", () => ({
+	CodeIndexManager: {
+		getInstance: vi.fn().mockReturnValue({
+			isEnabled: false,
+			hasIndex: false,
+		}),
+	},
+}))
+
+vi.mock("os", () => ({
+	type: vi.fn().mockReturnValue("Windows_NT"),
+}))
+
 // Import path module to add toPosix to String prototype
 import "../../../utils/path"
 import { SYSTEM_PROMPT } from "../system"
