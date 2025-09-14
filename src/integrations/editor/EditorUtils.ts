@@ -219,10 +219,11 @@ export class EditorUtils {
 			const absolutePath = path.resolve(cwd, relPath)
 			const fileUri = vscode.Uri.file(absolutePath)
 
-			// Extract the first changed line number from the diff
 			const firstChangedLine = this.extractFirstChangedLineFromDiff(userEdits)
-
-			// Open the document
+			if (!firstChangedLine) {
+				console.warn(`No changes found in user edits for ${relPath}`)
+				return
+			}
 			const document = await vscode.workspace.openTextDocument(fileUri)
 
 			// Show the document with selection at the first changed line
@@ -237,7 +238,6 @@ export class EditorUtils {
 				viewColumn: vscode.ViewColumn.Active,
 			})
 		} catch (error) {
-			// Log error but don't throw - this is a nice-to-have feature
 			console.warn(`Failed to open and scroll to edits for ${relPath}:`, error)
 		}
 	}
