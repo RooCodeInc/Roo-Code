@@ -2,11 +2,12 @@
 
 import type { Mock } from "vitest"
 
+// Import path module to add toPosix to String prototype
+import "../../../utils/path"
 import { formatResponse } from "../responses"
 import { RooIgnoreController, LOCK_TEXT_SYMBOL } from "../../ignore/RooIgnoreController"
 import { fileExistsAtPath } from "../../../utils/fs"
 import * as fs from "fs/promises"
-import { toPosix } from "./utils"
 
 // Mock dependencies
 vi.mock("../../../utils/fs")
@@ -86,7 +87,7 @@ describe("RooIgnore Response Formatting", () => {
 				return (
 					!filePath.includes("node_modules") &&
 					!filePath.includes(".git") &&
-					!toPosix(filePath).includes("secrets/")
+					!filePath.toString().toPosix().includes("secrets/")
 				)
 			})
 
@@ -130,7 +131,7 @@ describe("RooIgnore Response Formatting", () => {
 				return (
 					!filePath.includes("node_modules") &&
 					!filePath.includes(".git") &&
-					!toPosix(filePath).includes("secrets/")
+					!filePath.toString().toPosix().includes("secrets/")
 				)
 			})
 

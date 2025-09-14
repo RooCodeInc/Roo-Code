@@ -39,11 +39,12 @@ vi.mock("../../../utils/fs", () => ({
 	createDirectoriesForFile: vi.fn().mockResolvedValue([]),
 }))
 
+// Import path module to add toPosix to String prototype
+import "../../../utils/path"
 import { SYSTEM_PROMPT } from "../system"
 import { defaultModeSlug, modes } from "../../../shared/modes"
 import * as vscode from "vscode"
 import * as fs from "fs/promises"
-import { toPosix } from "./utils"
 
 // Get the mocked fs module
 const mockedFs = vi.mocked(fs)
@@ -121,7 +122,10 @@ describe("File-Based Custom System Prompt", () => {
 		const fileCustomSystemPrompt = "Custom system prompt from file"
 		// When called with utf-8 encoding, return a string
 		mockedFs.readFile.mockImplementation((filePath, options) => {
-			if (toPosix(filePath).includes(`.roo/system-prompt-${defaultModeSlug}`) && options === "utf-8") {
+			if (
+				filePath.toString().toPosix().includes(`.roo/system-prompt-${defaultModeSlug}`) &&
+				options === "utf-8"
+			) {
 				return Promise.resolve(fileCustomSystemPrompt)
 			}
 			return Promise.reject({ code: "ENOENT" })
@@ -159,7 +163,10 @@ describe("File-Based Custom System Prompt", () => {
 		// Mock the readFile to return content from a file
 		const fileCustomSystemPrompt = "Custom system prompt from file"
 		mockedFs.readFile.mockImplementation((filePath, options) => {
-			if (toPosix(filePath).includes(`.roo/system-prompt-${defaultModeSlug}`) && options === "utf-8") {
+			if (
+				filePath.toString().toPosix().includes(`.roo/system-prompt-${defaultModeSlug}`) &&
+				options === "utf-8"
+			) {
 				return Promise.resolve(fileCustomSystemPrompt)
 			}
 			return Promise.reject({ code: "ENOENT" })
