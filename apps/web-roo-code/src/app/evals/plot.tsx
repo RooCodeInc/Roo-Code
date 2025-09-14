@@ -15,7 +15,7 @@ type PlotProps = {
 type LabelPosition = "top" | "bottom" | "left" | "right"
 
 export const Plot = ({ tableData }: PlotProps) => {
-	const chartData = useMemo(() => tableData.filter(({ cost }) => cost < 50), [tableData])
+	const chartData = useMemo(() => tableData.filter(({ cost }) => cost < 60), [tableData])
 
 	const chartConfig = useMemo(
 		() => chartData.reduce((acc, run) => ({ ...acc, [run.label]: run }), {} as ChartConfig),
@@ -235,7 +235,7 @@ export const Plot = ({ tableData }: PlotProps) => {
 				</ScatterChart>
 			</ChartContainer>
 			<div className="py-4 text-xs opacity-50">
-				(Note: Models with a cost of $50 or more are excluded from the scatter plot.)
+				(Note: Models with a cost of $60 or more are excluded from the scatter plot.)
 			</div>
 		</>
 	)
