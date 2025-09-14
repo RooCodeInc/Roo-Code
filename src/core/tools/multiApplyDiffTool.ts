@@ -150,7 +150,38 @@ export async function applyDiffTool(
 			}
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error)
-			const detailedError = `Failed to parse apply_diff XML. This usually means:
+
+			// Check if this is the specific "StopNode is not closed" error
+			const isStopNodeError = errorMessage.includes("StopNode is not closed")
+
+			let detailedError: string
+			if (isStopNodeError) {
+				detailedError = `Failed to parse apply_diff XML: The XML appears to be incomplete or truncated.
+
+This error typically occurs when:
+1. The XML content was cut off or truncated during generation
+2. The <diff> or <content> tags are not properly closed
+3. The AI response was interrupted before completing the XML structure
+
+To fix this issue:
+1. Try your request again - the AI may generate complete XML on retry
+2. If using a smaller context model, consider breaking the changes into smaller parts
+3. Ensure your API timeout settings allow enough time for complete responses
+
+Expected XML structure:
+<args>
+  <file>
+    <path>relative/path/to/file.ext</path>
+    <diff>
+      <content>Your diff content here</content>
+      <start_line>optional line number</start_line>
+    </diff>
+  </file>
+</args>
+
+Technical details: ${errorMessage}`
+			} else {
+				detailedError = `Failed to parse apply_diff XML. This usually means:
 1. The XML structure is malformed or incomplete
 2. Missing required <file>, <path>, or <diff> tags
 3. Invalid characters or encoding in the XML
@@ -167,10 +198,23 @@ Expected structure:
 </args>
 
 Original error: ${errorMessage}`
+			}
+
 			cline.consecutiveMistakeCount++
 			cline.recordToolError("apply_diff")
 			TelemetryService.instance.captureDiffApplicationError(cline.taskId, cline.consecutiveMistakeCount)
-			await cline.say("diff_error", `Failed to parse apply_diff XML: ${errorMessage}`)
+
+			// For StopNode errors, provide a more user-friendly message
+			if (isStopNodeError) {
+				await cline.say(
+					"diff_error",
+					"The apply_diff XML appears to be incomplete. This often happens when the response is truncated. " +
+						"Please try again, and consider breaking large changes into smaller parts if the issue persists.",
+				)
+			} else {
+				await cline.say("diff_error", `Failed to parse apply_diff XML: ${errorMessage}`)
+			}
+
 			pushToolResult(detailedError)
 			cline.processQueuedMessages()
 			return
