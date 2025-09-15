@@ -1084,6 +1084,34 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 							/>
 
 							<div className="absolute top-2 right-2 z-30">
+								<StandardTooltip content={t("chat:addImages")}>
+									<button
+										aria-label={t("chat:addImages")}
+										disabled={shouldDisableImages}
+										onClick={!shouldDisableImages ? onSelectImages : undefined}
+										className={cn(
+											"relative inline-flex items-center justify-center",
+											"bg-transparent border-none p-1.5",
+											"rounded-md min-w-[28px] min-h-[28px]",
+											"text-vscode-descriptionForeground hover:text-vscode-foreground",
+											"transition-all duration-1000",
+											"cursor-pointer",
+											!shouldDisableImages
+												? "opacity-50 hover:opacity-100 delay-750 pointer-events-auto"
+												: "opacity-0 pointer-events-none duration-200 delay-0",
+											!shouldDisableImages &&
+												"hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.15)]",
+											"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
+											!shouldDisableImages && "active:bg-[rgba(255,255,255,0.1)]",
+											shouldDisableImages &&
+												"opacity-40 cursor-not-allowed grayscale-[30%] hover:bg-transparent hover:border-[rgba(255,255,255,0.08)] active:bg-transparent",
+										)}>
+										<Image className="w-4 h-4" />
+									</button>
+								</StandardTooltip>
+							</div>
+
+							<div className="absolute bottom-2 right-2 z-30 flex flex-col items-end gap-1">
 								<StandardTooltip content={t("chat:enhancePrompt")}>
 									<button
 										aria-label={t("chat:enhancePrompt")}
@@ -1107,53 +1135,52 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 										<WandSparkles className={cn("w-4 h-4", isEnhancingPrompt && "animate-spin")} />
 									</button>
 								</StandardTooltip>
-							</div>
-
-							<div className="absolute bottom-2 right-2 z-30 flex items-center gap-1">
-								{isEditMode && (
-									<StandardTooltip content={t("chat:cancel.title")}>
+								<div className="flex items-center gap-1">
+									{isEditMode && (
+										<StandardTooltip content={t("chat:cancel.title")}>
+											<button
+												aria-label={t("chat:cancel.title")}
+												disabled={false}
+												onClick={onCancel}
+												className={cn(
+													"relative inline-flex items-center justify-center",
+													"bg-transparent border-none p-1.5",
+													"rounded-md min-w-[28px] min-h-[28px]",
+													"opacity-60 hover:opacity-100 text-vscode-descriptionForeground hover:text-vscode-foreground",
+													"transition-all duration-150",
+													"hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.15)]",
+													"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
+													"active:bg-[rgba(255,255,255,0.1)]",
+													"cursor-pointer",
+												)}>
+												<MessageSquareX className="w-4 h-4" />
+											</button>
+										</StandardTooltip>
+									)}
+									<StandardTooltip content={t("chat:sendMessage")}>
 										<button
-											aria-label={t("chat:cancel.title")}
+											aria-label={t("chat:sendMessage")}
 											disabled={false}
-											onClick={onCancel}
+											onClick={onSend}
 											className={cn(
 												"relative inline-flex items-center justify-center",
 												"bg-transparent border-none p-1.5",
 												"rounded-md min-w-[28px] min-h-[28px]",
-												"opacity-60 hover:opacity-100 text-vscode-descriptionForeground hover:text-vscode-foreground",
-												"transition-all duration-150",
-												"hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.15)]",
+												"text-vscode-descriptionForeground hover:text-vscode-foreground",
+												"transition-all duration-200",
+												hasInputContent
+													? "opacity-100 hover:opacity-100 pointer-events-auto"
+													: "opacity-0 pointer-events-none",
+												hasInputContent &&
+													"hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.15)]",
 												"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
-												"active:bg-[rgba(255,255,255,0.1)]",
-												"cursor-pointer",
+												hasInputContent && "active:bg-[rgba(255,255,255,0.1)]",
+												hasInputContent && "cursor-pointer",
 											)}>
-											<MessageSquareX className="w-4 h-4" />
+											<SendHorizontal className="w-4 h-4" />
 										</button>
 									</StandardTooltip>
-								)}
-								<StandardTooltip content={t("chat:sendMessage")}>
-									<button
-										aria-label={t("chat:sendMessage")}
-										disabled={false}
-										onClick={onSend}
-										className={cn(
-											"relative inline-flex items-center justify-center",
-											"bg-transparent border-none p-1.5",
-											"rounded-md min-w-[28px] min-h-[28px]",
-											"text-vscode-descriptionForeground hover:text-vscode-foreground",
-											"transition-all duration-200",
-											hasInputContent
-												? "opacity-100 hover:opacity-100 pointer-events-auto"
-												: "opacity-0 pointer-events-none",
-											hasInputContent &&
-												"hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.15)]",
-											"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
-											hasInputContent && "active:bg-[rgba(255,255,255,0.1)]",
-											hasInputContent && "cursor-pointer",
-										)}>
-										<SendHorizontal className="w-4 h-4" />
-									</button>
-								</StandardTooltip>
+								</div>
 							</div>
 
 							{!inputValue && (
@@ -1234,28 +1261,6 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 						)}
 						{!isEditMode ? <SlashCommandsPopover /> : null}
 						{!isEditMode ? <IndexingStatusBadge /> : null}
-						<StandardTooltip content={t("chat:addImages")}>
-							<button
-								aria-label={t("chat:addImages")}
-								disabled={shouldDisableImages}
-								onClick={!shouldDisableImages ? onSelectImages : undefined}
-								className={cn(
-									"relative inline-flex items-center justify-center",
-									"bg-transparent border-none p-1.5",
-									"rounded-md min-w-[28px] min-h-[28px]",
-									"text-vscode-foreground opacity-85",
-									"transition-all duration-150",
-									"hover:opacity-100 hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.15)]",
-									"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
-									"active:bg-[rgba(255,255,255,0.1)]",
-									!shouldDisableImages && "cursor-pointer",
-									shouldDisableImages &&
-										"opacity-40 cursor-not-allowed grayscale-[30%] hover:bg-transparent hover:border-[rgba(255,255,255,0.08)] active:bg-transparent",
-									"mr-1",
-								)}>
-								<Image className="w-4 h-4" />
-							</button>
-						</StandardTooltip>
 					</div>
 				</div>
 			</div>
