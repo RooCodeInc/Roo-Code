@@ -104,6 +104,10 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 				: systemPrompt,
 			messages: supportsPromptCache ? addCacheBreakpoints(messages) : messages,
 			stream: true,
+			// Enable 1M context window if flag is set and model matches
+			...(id === ANTHROPIC_VERTEX_1M_CONTEXT_MODEL_ID && this.options.vertex1MContext
+				? { additionalModelRequestFields: { anthropic_beta: ["context-1m-2025-08-07"] } }
+				: {}),
 		}
 
 		const stream = await this.client.messages.create(params)
@@ -220,6 +224,9 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 					},
 				],
 				stream: false,
+				...(id === ANTHROPIC_VERTEX_1M_CONTEXT_MODEL_ID && this.options.vertex1MContext
+					? { additionalModelRequestFields: { anthropic_beta: ["context-1m-2025-08-07"] } }
+					: {}),
 			}
 
 			const response = await this.client.messages.create(params)
