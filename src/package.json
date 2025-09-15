@@ -407,6 +407,11 @@
 					"minimum": 1,
 					"maximum": 200,
 					"description": "%settings.codeIndex.embeddingBatchSize.description%"
+				},
+				"roo-cline.useWorkspaceProviderSettings": {
+					"type": "boolean",
+					"default": false,
+					"description": "%settings.useWorkspaceProviderSettings.description%"
 				}
 			}
 		}
