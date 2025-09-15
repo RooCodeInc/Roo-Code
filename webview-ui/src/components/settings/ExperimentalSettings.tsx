@@ -1,6 +1,6 @@
 import { HTMLAttributes, useState, useEffect } from "react"
 import { FlaskConical } from "lucide-react"
-import { VSCodeTextField, VSCodeButton } from "@vscode/webview-ui-toolkit/react"
+import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 
 import type { Experiments } from "@roo-code/types"
 
@@ -82,15 +82,6 @@ export const ExperimentalSettings = ({
 
 	const { enabled: configEnabled, path: actualConfigPath } = parseConfigValue(securityCustomConfigPath || "")
 	const [enableCustomConfig, setEnableCustomConfig] = useState(configEnabled)
-
-	// Transform full paths to use ~ notation
-	const transformPath = (fullPath: string): string => {
-		const homeDir = process.env.HOME || "/Users/" + process.env.USER
-		if (fullPath.startsWith(homeDir)) {
-			return fullPath.replace(homeDir, "~")
-		}
-		return fullPath
-	}
 
 	// Update toggle when custom config path changes
 	useEffect(() => {

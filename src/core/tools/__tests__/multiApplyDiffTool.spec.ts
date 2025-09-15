@@ -42,6 +42,7 @@ describe("multiApplyDiffTool", () => {
 			getState: vi.fn().mockResolvedValue({
 				experiments: {
 					[EXPERIMENT_IDS.MULTI_FILE_APPLY_DIFF]: true,
+					[EXPERIMENT_IDS.PREVENT_FOCUS_DISRUPTION]: false,
 				},
 				diagnosticsEnabled: true,
 				writeDelayMs: 0,
@@ -86,6 +87,9 @@ describe("multiApplyDiffTool", () => {
 			},
 			rooProtectedController: {
 				isWriteProtected: vi.fn().mockReturnValue(false),
+			},
+			securityGuard: {
+				validateFileAccess: vi.fn().mockReturnValue(null), // null means no security issues
 			},
 			fileContextTracker: {
 				trackFileContext: vi.fn().mockResolvedValue(undefined),
