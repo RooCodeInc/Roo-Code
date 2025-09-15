@@ -13,6 +13,8 @@ import {
 } from "@src/utils/context-mentions"
 import { removeLeadingNonAlphanumeric } from "@src/utils/removeLeadingNonAlphanumeric"
 import { vscode } from "@src/utils/vscode"
+import { buildDocLink } from "@/utils/docLinks"
+import { Trans } from "react-i18next"
 
 interface ContextMenuProps {
 	onSelect: (type: ContextMenuOptionType, value?: string) => void
@@ -79,8 +81,6 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 							fontWeight: "bold",
 							fontSize: "0.85em",
 							opacity: 0.8,
-							textTransform: "uppercase",
-							letterSpacing: "0.5px",
 						}}>
 						{option.label}
 					</span>
@@ -290,34 +290,35 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 				}}>
 				{/* Settings button for slash commands */}
 				{searchQuery.startsWith("/") && (
-					<div
-						style={{
-							padding: "8px 12px",
-							borderBottom: "1px solid var(--vscode-editorGroup-border)",
-							display: "flex",
-							alignItems: "center",
-							justifyContent: "space-between",
-							backgroundColor: "var(--vscode-dropdown-background)",
-						}}>
-						<span style={{ fontSize: "0.85em", opacity: 0.8 }}>Slash Commands</span>
+					<div className="p-2 flex items-start gap-4 justify-between">
+						<div className="text-sm">
+							<p className="font-bold text-base text-vscode-foreground mt-1 mb-0.5">Slash Commands</p>
+							<p className="text-xs mt-0.5 -mb-1">
+								<Trans
+									i18nKey="settings:slashCommands.description"
+									components={{
+										DocsLink: (
+											<a
+												href={buildDocLink(
+													"features/slash-commands",
+													"slash_commands_settings",
+												)}
+												target="_blank"
+												rel="noopener noreferrer"
+												className="text-vscode-textLink-foreground hover:underline">
+												Docs
+											</a>
+										),
+									}}
+								/>
+							</p>
+						</div>
 						<button
+							className="mt-1 cursor-pointer"
 							onClick={handleSettingsClick}
 							onMouseDown={(e) => {
 								e.stopPropagation()
 								e.preventDefault()
-							}}
-							style={{
-								background: "transparent",
-								border: "none",
-								cursor: "pointer",
-								padding: "4px",
-								display: "flex",
-								alignItems: "center",
-								justifyContent: "center",
-								borderRadius: "3px",
-								color: "var(--vscode-foreground)",
-								opacity: 0.7,
-								transition: "opacity 0.2s, background-color 0.2s",
 							}}
 							onMouseEnter={(e) => {
 								e.currentTarget.style.opacity = "1"
@@ -339,7 +340,9 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 							onClick={() => isOptionSelectable(option) && onSelect(option.type, option.value)}
 							style={{
 								padding:
-									option.type === ContextMenuOptionType.SectionHeader ? "8px 6px 4px 6px" : "4px 6px",
+									option.type === ContextMenuOptionType.SectionHeader
+										? "16px 8px 4px 8px"
+										: "4px 8px",
 								cursor: isOptionSelectable(option) ? "pointer" : "default",
 								color: "var(--vscode-dropdown-foreground)",
 								display: "flex",
