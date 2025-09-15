@@ -305,10 +305,10 @@
 		"keybindings": [
 			{
 				"command": "roo-cline.addToContext",
-				"key": "cmd+'",
-				"mac": "cmd+'",
-				"win": "ctrl+'",
-				"linux": "ctrl+'",
+				"key": "cmd+y",
+				"mac": "cmd+y",
+				"win": "cmd+y",
+				"linux": "cmd+y",
 				"when": "editorTextFocus && editorHasSelection"
 			}
 		],
