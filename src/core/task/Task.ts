@@ -372,13 +372,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		if (historyItem) {
 			this._taskMode = historyItem.mode || defaultModeSlug
 			this.taskModeReady = Promise.resolve()
-			provider.log(`[Task#${this.taskId}] Initialized from history with mode: ${this._taskMode}`)
 			TelemetryService.instance.captureTaskRestarted(this.taskId)
 		} else {
 			// For new tasks, don't set the mode yet - wait for async initialization.
 			this._taskMode = undefined
 			this.taskModeReady = this.initializeTaskMode(provider)
-			provider.log(`[Task#${this.taskId}] New task - will initialize mode asynchronously`)
 			TelemetryService.instance.captureTaskCreated(this.taskId)
 		}
 
@@ -457,14 +455,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		try {
 			const state = await provider.getState()
 			this._taskMode = state?.mode || defaultModeSlug
-			provider.log(`[Task#${this.taskId}] Initialized mode from provider state: ${this._taskMode}`)
 		} catch (error) {
 			// If there's an error getting state, use the default mode
 			this._taskMode = defaultModeSlug
 			// Use the provider's log method for better error visibility
 			const errorMessage = `Failed to initialize task mode: ${error instanceof Error ? error.message : String(error)}`
 			provider.log(errorMessage)
-			provider.log(`[Task#${this.taskId}] Fell back to default mode: ${this._taskMode}`)
 		}
 	}
 
