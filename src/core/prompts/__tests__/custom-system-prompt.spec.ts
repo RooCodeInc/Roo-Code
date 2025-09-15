@@ -131,7 +131,7 @@ describe("File-Based Custom System Prompt", () => {
 		expect(prompt).toContain("CAPABILITIES")
 		expect(prompt).toContain("MODES")
 		expect(prompt).toContain("Test role definition")
-	})
+	}, 50000) // 50 second timeout for Windows CI
 
 	it("should use file-based custom system prompt when available", async () => {
 		// Mock the readFile to return content from a file
