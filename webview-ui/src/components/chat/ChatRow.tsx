@@ -57,6 +57,7 @@ import {
 	MessageCircleQuestionMark,
 	SquareArrowOutUpRight,
 	FileCode2,
+	PocketKnife,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -750,7 +751,7 @@ export const ChatRowContent = ({
 				return (
 					<>
 						<div style={headerStyle}>
-							{toolIcon("symbol-enum")}
+							<PocketKnife className="w-4" />
 							<span style={{ fontWeight: "bold" }}>
 								{message.type === "ask" ? (
 									<>
