@@ -108,6 +108,10 @@ async function checkGitInstallation(
 			cline.enableCheckpoints = false
 			cline.checkpointServiceInitializing = false
 
+			// Note: We are currently disabling checkpoints as git is not present in
+			// edison container -- we'll think about it in the future if necessary
+			/*
+
 			// Show user-friendly notification
 			const selection = await vscode.window.showWarningMessage(
 				t("common:errors.git_not_installed"),
@@ -117,6 +121,7 @@ async function checkGitInstallation(
 			if (selection === t("common:buttons.learn_more")) {
 				await vscode.env.openExternal(vscode.Uri.parse("https://git-scm.com/downloads"))
 			}
+			*/
 
 			return
 		}
