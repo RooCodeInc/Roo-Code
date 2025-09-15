@@ -392,5 +392,11 @@
 	"queuedMessages": {
 		"title": "Queued Messages:",
 		"clickToEdit": "Click to edit message"
+	},
+	"contextMenu": {
+		"noResults": "No results",
+		"problems": "Problems",
+		"terminal": "Terminal",
+		"url": "Paste URL to fetch contents"
 	}
 }

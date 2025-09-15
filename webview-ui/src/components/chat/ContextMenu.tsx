@@ -15,6 +15,7 @@ import { removeLeadingNonAlphanumeric } from "@src/utils/removeLeadingNonAlphanu
 import { vscode } from "@src/utils/vscode"
 import { buildDocLink } from "@/utils/docLinks"
 import { Trans } from "react-i18next"
+import { t } from "i18next"
 
 interface ContextMenuProps {
 	onSelect: (type: ContextMenuOptionType, value?: string) => void
@@ -138,13 +139,13 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 					</div>
 				)
 			case ContextMenuOptionType.Problems:
-				return <span>Problems</span>
+				return <span>{t("chat:contextMenu.problems")}</span>
 			case ContextMenuOptionType.Terminal:
-				return <span>Terminal</span>
+				return <span>{t("chat:contextMenu.terminal")}</span>
 			case ContextMenuOptionType.URL:
-				return <span>Paste URL to fetch contents</span>
+				return <span>{t("chat:contextMenu.url")}</span>
 			case ContextMenuOptionType.NoResults:
-				return <span>No results found</span>
+				return <span>{t("chat:contextMenu.noResults")}</span>
 			case ContextMenuOptionType.Git:
 				if (option.value) {
 					return (
@@ -307,7 +308,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 													target="_blank"
 													rel="noopener noreferrer"
 													className="text-vscode-textLink-foreground hover:underline">
-													Docs
+													{t("common:docsLink.label")}
 												</a>
 											),
 										}}
@@ -330,7 +331,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 								e.currentTarget.style.opacity = "0.7"
 								e.currentTarget.style.backgroundColor = "transparent"
 							}}
-							title="Manage slash commands in settings">
+							title={t("chat:slashCommands.manageCommands")}>
 							<Settings size={16} />
 						</button>
 					</div>
@@ -429,7 +430,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 							color: "var(--vscode-foreground)",
 							opacity: 0.7,
 						}}>
-						<span>No results found</span>
+						<span>{t("chat:contextMenu.noResults")}</span>
 					</div>
 				)}
 			</div>
