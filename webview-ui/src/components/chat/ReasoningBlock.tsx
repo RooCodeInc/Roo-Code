@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react"
+import React, { memo, useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import MarkdownBlock from "../common/MarkdownBlock"
@@ -12,29 +12,57 @@ interface ReasoningBlockProps {
 	metadata?: any
 }
 
+interface ElapsedTimeProps {
+	isActive: boolean
+	startTime: number
+}
+
+/**
+ * Memoized timer component that only re-renders itself
+ * This prevents the entire ReasoningBlock from re-rendering every second
+ */
+const ElapsedTime = memo(({ isActive, startTime }: ElapsedTimeProps) => {
+	const { t } = useTranslation()
+	const [elapsed, setElapsed] = useState<number>(0)
+
+	useEffect(() => {
+		if (isActive) {
+			const tick = () => setElapsed(Date.now() - startTime)
+			tick() // Initial tick
+			const id = setInterval(tick, 1000)
+			return () => clearInterval(id)
+		} else {
+			setElapsed(0)
+		}
+	}, [isActive, startTime])
+
+	if (elapsed === 0) return null
+
+	const seconds = Math.floor(elapsed / 1000)
+	const secondsLabel = t("chat:reasoning.seconds", { count: seconds })
+
+	return (
+		<span className="text-vscode-foreground tabular-nums flex items-center gap-1">
+			<Clock className="w-4" />
+			{secondsLabel}
+		</span>
+	)
+})
+
+ElapsedTime.displayName = "ElapsedTime"
+
 /**
  * Render reasoning with a heading and a simple timer.
  * - Heading uses i18n key chat:reasoning.thinking
  * - Timer runs while reasoning is active (no persistence)
+ * - Timer is isolated in a memoized component to prevent full re-renders
  */
 export const ReasoningBlock = ({ content, isStreaming, isLast }: ReasoningBlockProps) => {
 	const { t } = useTranslation()
-
 	const startTimeRef = useRef<number>(Date.now())
-	const [elapsed, setElapsed] = useState<number>(0)
 
-	// Simple timer that runs while streaming
-	useEffect(() => {
-		if (isLast && isStreaming) {
-			const tick = () => setElapsed(Date.now() - startTimeRef.current)
-			tick()
-			const id = setInterval(tick, 1000)
-			return () => clearInterval(id)
-		}
-	}, [isLast, isStreaming])
-
-	const seconds = Math.floor(elapsed / 1000)
-	const secondsLabel = t("chat:reasoning.seconds", { count: seconds })
+	// Only render markdown when there's actual content
+	const hasContent = (content?.trim()?.length ?? 0) > 0
 
 	return (
 		<div className="py-1">
@@ -43,14 +71,9 @@ export const ReasoningBlock = ({ content, isStreaming, isLast }: ReasoningBlockP
 					<Lightbulb className="w-4" />
 					<span className="font-bold text-vscode-foreground">{t("chat:reasoning.thinking")}</span>
 				</div>
-				{elapsed > 0 && (
-					<span className="text-vscode-foreground tabular-nums flex items-center gap-1">
-						<Clock className="w-4" />
-						{secondsLabel}
-					</span>
-				)}
+				<ElapsedTime isActive={isLast && isStreaming} startTime={startTimeRef.current} />
 			</div>
-			{(content?.trim()?.length ?? 0) > 0 && (
+			{hasContent && (
 				<div className="px-3 italic text-vscode-descriptionForeground">
 					<MarkdownBlock markdown={content} />
 				</div>
