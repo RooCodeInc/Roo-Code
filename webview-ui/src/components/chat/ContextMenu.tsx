@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react"
 import { getIconForFilePath, getIconUrlByName, getIconForDirectoryPath } from "vscode-material-icons"
+import { Settings } from "lucide-react"
 
 import type { ModeConfig } from "@roo-code/types"
 import type { Command } from "@roo/ExtensionMessage"
@@ -11,6 +12,7 @@ import {
 	SearchResult,
 } from "@src/utils/context-mentions"
 import { removeLeadingNonAlphanumeric } from "@src/utils/removeLeadingNonAlphanumeric"
+import { vscode } from "@src/utils/vscode"
 
 interface ContextMenuProps {
 	onSelect: (type: ContextMenuOptionType, value?: string) => void
@@ -251,6 +253,15 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 		)
 	}
 
+	const handleSettingsClick = () => {
+		// Switch to settings tab and navigate to slash commands section
+		vscode.postMessage({
+			type: "switchTab",
+			tab: "settings",
+			values: { section: "slashCommands" },
+		})
+	}
+
 	return (
 		<div
 			style={{
@@ -275,6 +286,46 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 					overflowY: "auto",
 					overflowX: "hidden",
 				}}>
+				{/* Settings button for slash commands */}
+				{searchQuery.startsWith("/") && (
+					<div
+						style={{
+							padding: "8px 12px",
+							borderBottom: "1px solid var(--vscode-editorGroup-border)",
+							display: "flex",
+							alignItems: "center",
+							justifyContent: "space-between",
+							backgroundColor: "var(--vscode-dropdown-background)",
+						}}>
+						<span style={{ fontSize: "0.85em", opacity: 0.8 }}>Slash Commands</span>
+						<button
+							onClick={handleSettingsClick}
+							style={{
+								background: "transparent",
+								border: "none",
+								cursor: "pointer",
+								padding: "4px",
+								display: "flex",
+								alignItems: "center",
+								justifyContent: "center",
+								borderRadius: "3px",
+								color: "var(--vscode-foreground)",
+								opacity: 0.7,
+								transition: "opacity 0.2s, background-color 0.2s",
+							}}
+							onMouseEnter={(e) => {
+								e.currentTarget.style.opacity = "1"
+								e.currentTarget.style.backgroundColor = "var(--vscode-list-hoverBackground)"
+							}}
+							onMouseLeave={(e) => {
+								e.currentTarget.style.opacity = "0.7"
+								e.currentTarget.style.backgroundColor = "transparent"
+							}}
+							title="Manage slash commands in settings">
+							<Settings size={16} />
+						</button>
+					</div>
+				)}
 				{filteredOptions && filteredOptions.length > 0 ? (
 					filteredOptions.map((option, index) => (
 						<div

@@ -23,6 +23,7 @@ import {
 	Info,
 	MessageSquare,
 	LucideIcon,
+	SquareSlash,
 } from "lucide-react"
 
 import type { ProviderSettings, ExperimentId, TelemetrySetting } from "@roo-code/types"
@@ -64,6 +65,7 @@ import { LanguageSettings } from "./LanguageSettings"
 import { About } from "./About"
 import { Section } from "./Section"
 import PromptsSettings from "./PromptsSettings"
+import { SlashCommandsSettings } from "./SlashCommandsSettings"
 
 export const settingsTabsContainer = "flex flex-1 overflow-hidden [&.narrow_.tab-label]:hidden"
 export const settingsTabList =
@@ -84,6 +86,7 @@ const sectionNames = [
 	"notifications",
 	"contextManagement",
 	"terminal",
+	"slashCommands",
 	"prompts",
 	"experimental",
 	"language",
@@ -453,6 +456,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 			{ id: "notifications", icon: Bell },
 			{ id: "contextManagement", icon: Database },
 			{ id: "terminal", icon: SquareTerminal },
+			{ id: "slashCommands", icon: SquareSlash },
 			{ id: "prompts", icon: MessageSquare },
 			{ id: "experimental", icon: FlaskConical },
 			{ id: "language", icon: Globe },
@@ -737,6 +741,9 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 							setCachedStateField={setCachedStateField}
 						/>
 					)}
+
+					{/* Slash Commands Section */}
+					{activeTab === "slashCommands" && <SlashCommandsSettings />}
 
 					{/* Prompts Section */}
 					{activeTab === "prompts" && (
