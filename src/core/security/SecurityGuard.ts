@@ -787,6 +787,7 @@ ask:
 	 */
 	private patternToRegex(pattern: string): RegExp {
 		const escaped = pattern
+			.replace(/\\/g, "\\\\") // Escape backslashes FIRST
 			.replace(/\./g, "\\.") // Escape dots
 			.replace(/\*/g, ".*") // Convert * to .*
 
@@ -868,6 +869,7 @@ ask:
 			if (normalizedPattern.includes("*")) {
 				// Convert glob pattern to regex
 				const regexPattern = normalizedPattern
+					.replace(/\\/g, "\\\\") // Escape backslashes FIRST
 					.replace(/\./g, "\\.") // Escape dots
 					.replace(/\*/g, ".*") // Convert * to .*
 
