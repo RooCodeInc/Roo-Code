@@ -50,6 +50,7 @@ export const PROVIDERS = [
 	{ value: "openrouter", label: "OpenRouter" },
 	{ value: "deepinfra", label: "DeepInfra" },
 	{ value: "anthropic", label: "Anthropic" },
+	{ value: "anthropic-compatible", label: "Anthropic Compatible" },
 	{ value: "claude-code", label: "Claude Code" },
 	{ value: "cerebras", label: "Cerebras" },
 	{ value: "gemini", label: "Google Gemini" },
