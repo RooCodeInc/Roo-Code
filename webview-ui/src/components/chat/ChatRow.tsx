@@ -55,6 +55,8 @@ import {
 	Edit,
 	Trash2,
 	MessageCircleQuestionMark,
+	SquareArrowOutUpRight,
+	FileCode2,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -575,7 +577,7 @@ export const ChatRowContent = ({
 				return (
 					<>
 						<div style={headerStyle}>
-							{toolIcon("file-code")}
+							<FileCode2 className="w-4" />
 							<span style={{ fontWeight: "bold" }}>
 								{message.type === "ask"
 									? tool.isOutsideWorkspace
@@ -591,6 +593,7 @@ export const ChatRowContent = ({
 						<div className="pl-6">
 							<ToolUseBlock>
 								<ToolUseBlockHeader
+									className="group"
 									onClick={() => vscode.postMessage({ type: "openFile", text: tool.content })}>
 									{tool.path?.startsWith(".") && <span>.</span>}
 									<span className="whitespace-nowrap overflow-hidden text-ellipsis text-left mr-2 rtl">
@@ -598,8 +601,8 @@ export const ChatRowContent = ({
 										{tool.reason}
 									</span>
 									<div style={{ flexGrow: 1 }}></div>
-									<span
-										className={`codicon codicon-link-external`}
+									<SquareArrowOutUpRight
+										className="w-4 codicon codicon-link-external opacity-0 group-hover:opacity-100 transition-opacity"
 										style={{ fontSize: 13.5, margin: "1px 0" }}
 									/>
 								</ToolUseBlockHeader>
