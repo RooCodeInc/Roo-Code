@@ -372,11 +372,13 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		if (historyItem) {
 			this._taskMode = historyItem.mode || defaultModeSlug
 			this.taskModeReady = Promise.resolve()
+			provider.log(`[Task#${this.taskId}] Initialized from history with mode: ${this._taskMode}`)
 			TelemetryService.instance.captureTaskRestarted(this.taskId)
 		} else {
 			// For new tasks, don't set the mode yet - wait for async initialization.
 			this._taskMode = undefined
 			this.taskModeReady = this.initializeTaskMode(provider)
+			provider.log(`[Task#${this.taskId}] New task - will initialize mode asynchronously`)
 			TelemetryService.instance.captureTaskCreated(this.taskId)
 		}
 
@@ -455,12 +457,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		try {
 			const state = await provider.getState()
 			this._taskMode = state?.mode || defaultModeSlug
+			provider.log(`[Task#${this.taskId}] Initialized mode from provider state: ${this._taskMode}`)
 		} catch (error) {
 			// If there's an error getting state, use the default mode
 			this._taskMode = defaultModeSlug
 			// Use the provider's log method for better error visibility
 			const errorMessage = `Failed to initialize task mode: ${error instanceof Error ? error.message : String(error)}`
 			provider.log(errorMessage)
+			provider.log(`[Task#${this.taskId}] Fell back to default mode: ${this._taskMode}`)
 		}
 	}
 
@@ -1607,6 +1611,13 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		const newTask = await provider.createTask(message, undefined, this, { initialTodos })
 
 		if (newTask) {
+			// Store the current task's mode before pausing
+			const currentTaskMode = await this.getTaskMode()
+			this.pausedModeSlug = currentTaskMode
+			provider.log(
+				`[startSubtask] Storing parent task mode '${currentTaskMode}' in pausedModeSlug before pausing`,
+			)
+
 			this.isPaused = true // Pause parent.
 			this.childTaskId = newTask.taskId
 
@@ -1756,6 +1767,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 				if (currentMode !== this.pausedModeSlug) {
 					// The mode has changed, we need to switch back to the paused mode.
+					provider.log(
+						`[subtasks] task ${this.taskId}.${this.instanceId} switching back to paused mode '${this.pausedModeSlug}' from current mode '${currentMode}'`,
+					)
 					await provider.handleModeSwitch(this.pausedModeSlug)
 
 					// Delay to allow mode change to take effect before next tool is executed.
@@ -1764,6 +1778,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					provider.log(
 						`[subtasks] task ${this.taskId}.${this.instanceId} has switched back to '${this.pausedModeSlug}' from '${currentMode}'`,
 					)
+				} else {
+					provider.log(`[subtasks] task ${this.taskId}.${this.instanceId} mode unchanged: '${currentMode}'`)
 				}
 			}
 

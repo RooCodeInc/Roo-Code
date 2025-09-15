@@ -1553,7 +1553,34 @@ export class ClineProvider
 			this.log(`[continueParentTask] Found parent task ${parentTask.taskId}, isPaused: ${parentTask.isPaused}`)
 			this.log(`[continueParentTask] Parent task isInitialized: ${parentTask.isInitialized}`)
 
+			// Log mode information for debugging
+			const currentProviderMode = (await this.getState()).mode
+			const parentTaskMode =
+				typeof parentTask.getTaskMode === "function"
+					? await parentTask.getTaskMode()
+					: (parentTask as any)._taskMode || parentTask.pausedModeSlug || "unknown"
+			this.log(`[continueParentTask] Current provider mode: ${currentProviderMode}`)
+			this.log(`[continueParentTask] Parent task mode: ${parentTaskMode}`)
+			this.log(`[continueParentTask] Parent task pausedModeSlug: ${parentTask.pausedModeSlug}`)
+
 			try {
+				// Switch provider mode to match parent task's mode if they differ
+				if (currentProviderMode !== parentTaskMode && parentTaskMode !== "unknown") {
+					this.log(
+						`[continueParentTask] Provider mode (${currentProviderMode}) differs from parent task mode (${parentTaskMode})`,
+					)
+					this.log(`[continueParentTask] Switching provider mode to match parent task: ${parentTaskMode}`)
+
+					try {
+						await this.handleModeSwitch(parentTaskMode as any)
+						this.log(`[continueParentTask] Successfully switched provider mode to: ${parentTaskMode}`)
+					} catch (error) {
+						this.log(
+							`[continueParentTask] Failed to switch provider mode: ${error instanceof Error ? error.message : String(error)}`,
+						)
+					}
+				}
+
 				// If the parent task is not initialized, we need to initialize it properly
 				if (!parentTask.isInitialized) {
 					this.log(`[continueParentTask] Initializing parent task from history`)
@@ -1679,6 +1706,35 @@ export class ClineProvider
 			}
 
 			this.log(`[reconstructTaskStack] Successfully reconstructed stack with ${createdTasks.length} tasks`)
+
+			// Log final mode state after reconstruction
+			const finalProviderMode = (await this.getState()).mode
+			const targetTask = createdTasks[createdTasks.length - 1]
+			// Safety check for getTaskMode method (may not exist in tests)
+			const targetTaskMode =
+				typeof targetTask.getTaskMode === "function"
+					? await targetTask.getTaskMode()
+					: (targetTask as any)._taskMode || "unknown"
+			this.log(`[reconstructTaskStack] Final provider mode after reconstruction: ${finalProviderMode}`)
+			this.log(`[reconstructTaskStack] Target task final mode: ${targetTaskMode}`)
+
+			// Check if provider mode matches target task mode
+			if (finalProviderMode !== targetTaskMode) {
+				this.log(
+					`[reconstructTaskStack] WARNING: Provider mode (${finalProviderMode}) does not match target task mode (${targetTaskMode})`,
+				)
+				this.log(`[reconstructTaskStack] Switching provider mode to match target task mode: ${targetTaskMode}`)
+
+				// Switch provider mode to match the target task's mode
+				try {
+					await this.handleModeSwitch(targetTaskMode as any)
+					this.log(`[reconstructTaskStack] Successfully switched provider mode to: ${targetTaskMode}`)
+				} catch (error) {
+					this.log(
+						`[reconstructTaskStack] Failed to switch provider mode: ${error instanceof Error ? error.message : String(error)}`,
+					)
+				}
+			}
 		} catch (error) {
 			this.log(
 				`[reconstructTaskStack] ERROR during reconstruction: ${error instanceof Error ? error.message : String(error)}`,
