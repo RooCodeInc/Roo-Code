@@ -47,6 +47,7 @@ import { McpExecution } from "./McpExecution"
 import { ChatTextArea } from "./ChatTextArea"
 import { MAX_IMAGES_PER_MESSAGE } from "./ChatView"
 import { useSelectedModel } from "../ui/hooks/useSelectedModel"
+import { RateLimitCountdown } from "./RateLimitCountdown"
 
 interface ChatRowProps {
 	message: ClineMessage
@@ -262,7 +263,8 @@ export const ChatRowContent = ({
 					<span style={{ color: successColor, fontWeight: "bold" }}>{t("chat:taskCompleted")}</span>,
 				]
 			case "api_req_retry_delayed":
-				return []
+				// Don't return empty array, this will be handled in the switch statement
+				return [null, null]
 			case "api_req_started":
 				const getIconSpan = (iconName: string, color: string) => (
 					<div
@@ -1274,6 +1276,14 @@ export const ChatRowContent = ({
 								<Markdown markdown={message.text} />
 							</div>
 						</>
+					)
+				case "api_req_retry_delayed":
+					// Display the rate limit countdown component
+					return (
+						<RateLimitCountdown
+							message={message.text || ""}
+							isRetrying={message.text?.includes("Retry attempt")}
+						/>
 					)
 				case "shell_integration_warning":
 					return <CommandExecutionError />
