@@ -125,7 +125,7 @@
 		"searchPlaceholder": "Modi suchen...",
 		"noResults": "Keine Ergebnisse gefunden"
 	},
-	"errorReadingFile": "Fehler beim Lesen der Datei:",
+	"errorReadingFile": "Fehler beim Lesen der Datei",
 	"noValidImages": "Keine gültigen Bilder wurden verarbeitet",
 	"separator": "Trennlinie",
 	"edit": "Bearbeiten...",
@@ -163,43 +163,43 @@
 		"wantsToFetch": "Roo möchte detaillierte Anweisungen abrufen, um bei der aktuellen Aufgabe zu helfen"
 	},
 	"fileOperations": {
-		"wantsToRead": "Roo möchte diese Datei lesen:",
-		"wantsToReadAndXMore": "Roo möchte diese Datei und {{count}} weitere lesen:",
-		"wantsToReadOutsideWorkspace": "Roo möchte diese Datei außerhalb des Arbeitsbereichs lesen:",
-		"didRead": "Roo hat diese Datei gelesen:",
-		"wantsToEdit": "Roo möchte diese Datei bearbeiten:",
-		"wantsToEditOutsideWorkspace": "Roo möchte diese Datei außerhalb des Arbeitsbereichs bearbeiten:",
-		"wantsToEditProtected": "Roo möchte eine geschützte Konfigurationsdatei bearbeiten:",
-		"wantsToCreate": "Roo möchte eine neue Datei erstellen:",
-		"wantsToSearchReplace": "Roo möchte in dieser Datei suchen und ersetzen:",
-		"didSearchReplace": "Roo hat Suchen und Ersetzen in dieser Datei durchgeführt:",
-		"wantsToInsert": "Roo möchte Inhalte in diese Datei einfügen:",
-		"wantsToInsertWithLineNumber": "Roo möchte Inhalte in diese Datei in Zeile {{lineNumber}} einfügen:",
-		"wantsToInsertAtEnd": "Roo möchte Inhalte am Ende dieser Datei anhängen:",
-		"wantsToReadMultiple": "Roo möchte mehrere Dateien lesen:",
-		"wantsToApplyBatchChanges": "Roo möchte Änderungen an mehreren Dateien vornehmen:",
-		"wantsToGenerateImage": "Roo möchte ein Bild generieren:",
-		"wantsToGenerateImageOutsideWorkspace": "Roo möchte ein Bild außerhalb des Arbeitsbereichs generieren:",
-		"wantsToGenerateImageProtected": "Roo möchte ein Bild an einem geschützten Ort generieren:",
-		"didGenerateImage": "Roo hat ein Bild generiert:"
+		"wantsToRead": "Roo möchte diese Datei lesen",
+		"wantsToReadAndXMore": "Roo möchte diese Datei und {{count}} weitere lesen",
+		"wantsToReadOutsideWorkspace": "Roo möchte diese Datei außerhalb des Arbeitsbereichs lesen",
+		"didRead": "Roo hat diese Datei gelesen",
+		"wantsToEdit": "Roo möchte diese Datei bearbeiten",
+		"wantsToEditOutsideWorkspace": "Roo möchte diese Datei außerhalb des Arbeitsbereichs bearbeiten",
+		"wantsToEditProtected": "Roo möchte eine geschützte Konfigurationsdatei bearbeiten",
+		"wantsToCreate": "Roo möchte eine neue Datei erstellen",
+		"wantsToSearchReplace": "Roo möchte in dieser Datei suchen und ersetzen",
+		"didSearchReplace": "Roo hat Suchen und Ersetzen in dieser Datei durchgeführt",
+		"wantsToInsert": "Roo möchte Inhalte in diese Datei einfügen",
+		"wantsToInsertWithLineNumber": "Roo möchte Inhalte in diese Datei in Zeile {{lineNumber}} einfügen",
+		"wantsToInsertAtEnd": "Roo möchte Inhalte am Ende dieser Datei anhängen",
+		"wantsToReadMultiple": "Roo möchte mehrere Dateien lesen",
+		"wantsToApplyBatchChanges": "Roo möchte Änderungen an mehreren Dateien vornehmen",
+		"wantsToGenerateImage": "Roo möchte ein Bild generieren",
+		"wantsToGenerateImageOutsideWorkspace": "Roo möchte ein Bild außerhalb des Arbeitsbereichs generieren",
+		"wantsToGenerateImageProtected": "Roo möchte ein Bild an einem geschützten Ort generieren",
+		"didGenerateImage": "Roo hat ein Bild generiert"
 	},
 	"directoryOperations": {
-		"wantsToViewTopLevel": "Roo möchte die Dateien auf oberster Ebene in diesem Verzeichnis anzeigen:",
-		"didViewTopLevel": "Roo hat die Dateien auf oberster Ebene in diesem Verzeichnis angezeigt:",
-		"wantsToViewRecursive": "Roo möchte rekursiv alle Dateien in diesem Verzeichnis anzeigen:",
-		"didViewRecursive": "Roo hat rekursiv alle Dateien in diesem Verzeichnis angezeigt:",
-		"wantsToViewDefinitions": "Roo möchte Quellcode-Definitionsnamen in diesem Verzeichnis anzeigen:",
-		"didViewDefinitions": "Roo hat Quellcode-Definitionsnamen in diesem Verzeichnis angezeigt:",
-		"wantsToSearch": "Roo möchte dieses Verzeichnis nach <code>{{regex}}</code> durchsuchen:",
-		"didSearch": "Roo hat dieses Verzeichnis nach <code>{{regex}}</code> durchsucht:",
-		"wantsToSearchOutsideWorkspace": "Roo möchte dieses Verzeichnis (außerhalb des Arbeitsbereichs) nach <code>{{regex}}</code> durchsuchen:",
-		"didSearchOutsideWorkspace": "Roo hat dieses Verzeichnis (außerhalb des Arbeitsbereichs) nach <code>{{regex}}</code> durchsucht:",
-		"wantsToViewTopLevelOutsideWorkspace": "Roo möchte die Dateien auf oberster Ebene in diesem Verzeichnis (außerhalb des Arbeitsbereichs) anzeigen:",
-		"didViewTopLevelOutsideWorkspace": "Roo hat die Dateien auf oberster Ebene in diesem Verzeichnis (außerhalb des Arbeitsbereichs) angezeigt:",
-		"wantsToViewRecursiveOutsideWorkspace": "Roo möchte rekursiv alle Dateien in diesem Verzeichnis (außerhalb des Arbeitsbereichs) anzeigen:",
-		"didViewRecursiveOutsideWorkspace": "Roo hat rekursiv alle Dateien in diesem Verzeichnis (außerhalb des Arbeitsbereichs) angezeigt:",
-		"wantsToViewDefinitionsOutsideWorkspace": "Roo möchte Quellcode-Definitionsnamen in diesem Verzeichnis (außerhalb des Arbeitsbereichs) anzeigen:",
-		"didViewDefinitionsOutsideWorkspace": "Roo hat Quellcode-Definitionsnamen in diesem Verzeichnis (außerhalb des Arbeitsbereichs) angezeigt:"
+		"wantsToViewTopLevel": "Roo möchte die Dateien auf oberster Ebene in diesem Verzeichnis anzeigen",
+		"didViewTopLevel": "Roo hat die Dateien auf oberster Ebene in diesem Verzeichnis angezeigt",
+		"wantsToViewRecursive": "Roo möchte rekursiv alle Dateien in diesem Verzeichnis anzeigen",
+		"didViewRecursive": "Roo hat rekursiv alle Dateien in diesem Verzeichnis angezeigt",
+		"wantsToViewDefinitions": "Roo möchte Quellcode-Definitionsnamen in diesem Verzeichnis anzeigen",
+		"didViewDefinitions": "Roo hat Quellcode-Definitionsnamen in diesem Verzeichnis angezeigt",
+		"wantsToSearch": "Roo möchte dieses Verzeichnis nach <code>{{regex}}</code> durchsuchen",
+		"didSearch": "Roo hat dieses Verzeichnis nach <code>{{regex}}</code> durchsucht",
+		"wantsToSearchOutsideWorkspace": "Roo möchte dieses Verzeichnis (außerhalb des Arbeitsbereichs) nach <code>{{regex}}</code> durchsuchen",
+		"didSearchOutsideWorkspace": "Roo hat dieses Verzeichnis (außerhalb des Arbeitsbereichs) nach <code>{{regex}}</code> durchsucht",
+		"wantsToViewTopLevelOutsideWorkspace": "Roo möchte die Dateien auf oberster Ebene in diesem Verzeichnis (außerhalb des Arbeitsbereichs) anzeigen",
+		"didViewTopLevelOutsideWorkspace": "Roo hat die Dateien auf oberster Ebene in diesem Verzeichnis (außerhalb des Arbeitsbereichs) angezeigt",
+		"wantsToViewRecursiveOutsideWorkspace": "Roo möchte rekursiv alle Dateien in diesem Verzeichnis (außerhalb des Arbeitsbereichs) anzeigen",
+		"didViewRecursiveOutsideWorkspace": "Roo hat rekursiv alle Dateien in diesem Verzeichnis (außerhalb des Arbeitsbereichs) angezeigt",
+		"wantsToViewDefinitionsOutsideWorkspace": "Roo möchte Quellcode-Definitionsnamen in diesem Verzeichnis (außerhalb des Arbeitsbereichs) anzeigen",
+		"didViewDefinitionsOutsideWorkspace": "Roo hat Quellcode-Definitionsnamen in diesem Verzeichnis (außerhalb des Arbeitsbereichs) angezeigt"
 	},
 	"commandOutput": "Befehlsausgabe",
 	"commandExecution": {
@@ -221,8 +221,8 @@
 	"response": "Antwort",
 	"arguments": "Argumente",
 	"mcp": {
-		"wantsToUseTool": "Roo möchte ein Tool auf dem {{serverName}} MCP-Server verwenden:",
-		"wantsToAccessResource": "Roo möchte auf eine Ressource auf dem {{serverName}} MCP-Server zugreifen:"
+		"wantsToUseTool": "Roo möchte ein Tool auf dem {{serverName}} MCP-Server verwenden",
+		"wantsToAccessResource": "Roo möchte auf eine Ressource auf dem {{serverName}} MCP-Server zugreifen"
 	},
 	"modes": {
 		"wantsToSwitch": "Roo möchte zum <code>{{mode}}</code>-Modus wechseln",
@@ -231,7 +231,7 @@
 		"didSwitchWithReason": "Roo hat zum <code>{{mode}}</code>-Modus gewechselt, weil: {{reason}}"
 	},
 	"subtasks": {
-		"wantsToCreate": "Roo möchte eine neue Teilaufgabe im <code>{{mode}}</code>-Modus erstellen:",
+		"wantsToCreate": "Roo möchte eine neue Teilaufgabe im <code>{{mode}}</code>-Modus erstellen",
 		"wantsToFinish": "Roo möchte diese Teilaufgabe abschließen",
 		"newTaskContent": "Teilaufgabenanweisungen",
 		"completionContent": "Teilaufgabe abgeschlossen",
@@ -240,7 +240,7 @@
 		"completionInstructions": "Teilaufgabe abgeschlossen! Du kannst die Ergebnisse überprüfen und Korrekturen oder nächste Schritte vorschlagen. Wenn alles gut aussieht, bestätige, um das Ergebnis an die übergeordnete Aufgabe zurückzugeben."
 	},
 	"questions": {
-		"hasQuestion": "Roo hat eine Frage:"
+		"hasQuestion": "Roo hat eine Frage"
 	},
 	"taskCompleted": "Aufgabe abgeschlossen",
 	"powershell": {
@@ -285,7 +285,7 @@
 		"socialLinks": "Folge uns auf <xLink>X</xLink>, <discordLink>Discord</discordLink> oder <redditLink>r/RooCode</redditLink>"
 	},
 	"browser": {
-		"rooWantsToUse": "Roo möchte den Browser verwenden:",
+		"rooWantsToUse": "Roo möchte den Browser verwenden",
 		"consoleLogs": "Konsolenprotokolle",
 		"noNewLogs": "(Keine neuen Protokolle)",
 		"screenshot": "Browser-Screenshot",
@@ -335,8 +335,8 @@
 		}
 	},
 	"codebaseSearch": {
-		"wantsToSearch": "Roo möchte den Codebase nach <code>{{query}}</code> durchsuchen:",
-		"wantsToSearchWithPath": "Roo möchte den Codebase nach <code>{{query}}</code> in <code>{{path}}</code> durchsuchen:",
+		"wantsToSearch": "Roo möchte den Codebase nach <code>{{query}}</code> durchsuchen",
+		"wantsToSearchWithPath": "Roo möchte den Codebase nach <code>{{query}}</code> in <code>{{path}}</code> durchsuchen",
 		"didSearch_one": "1 Ergebnis gefunden",
 		"didSearch_other": "{{count}} Ergebnisse gefunden",
 		"resultTooltip": "Ähnlichkeitswert: {{score}} (klicken zum Öffnen der Datei)"
@@ -390,11 +390,11 @@
 		}
 	},
 	"queuedMessages": {
-		"title": "Warteschlange Nachrichten:",
+		"title": "Warteschlange Nachrichten",
 		"clickToEdit": "Klicken zum Bearbeiten der Nachricht"
 	},
 	"slashCommand": {
-		"wantsToRun": "Roo möchte einen Slash-Befehl ausführen:",
-		"didRun": "Roo hat einen Slash-Befehl ausgeführt:"
+		"wantsToRun": "Roo möchte einen Slash-Befehl ausführen",
+		"didRun": "Roo hat einen Slash-Befehl ausgeführt"
 	}
 }
