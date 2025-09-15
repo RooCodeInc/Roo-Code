@@ -1,0 +1,36 @@
+{
+	"name": "Roo Code Development",
+	"image": "mcr.microsoft.com/devcontainers/typescript-node:1-20-bullseye",
+
+	// Features to add to the dev container
+	"features": {
+		"ghcr.io/devcontainers/features/github-cli:1": {}
+	},
+
+	// Install Chromium and its dependencies automatically
+	"postCreateCommand": "sudo apt-get update && sudo apt --fix-broken install -y && sudo apt-get install -y chromium-browser chromium-codecs-ffmpeg chromium-codecs-ffmpeg-extra libatk-bridge2.0-0 libatk1.0-0 libatspi2.0-0 libcups2 libdbus-1-3 libdrm2 libgbm1 libgtk-3-0 libnspr4 libnss3 libx11-xcb1 libxcomposite1 libxdamage1 libxfixes3 libxkbcommon0 libxrandr2 xdg-utils && npm install",
+
+	// Configure VS Code settings
+	"customizations": {
+		"vscode": {
+			"extensions": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode", "ms-vscode.vscode-typescript-next"],
+			"settings": {
+				"terminal.integrated.defaultProfile.linux": "bash",
+				"typescript.tsdk": "node_modules/typescript/lib"
+			}
+		}
+	},
+
+	// Forward ports for development servers
+	"forwardPorts": [3000, 5173, 8080],
+
+	// Environment variables
+	"remoteEnv": {
+		"PUPPETEER_SKIP_CHROMIUM_DOWNLOAD": "true",
+		"PUPPETEER_EXECUTABLE_PATH": "/usr/bin/chromium-browser",
+		"CODESPACES": "true"
+	},
+
+	// Run as non-root user
+	"remoteUser": "node"
+}

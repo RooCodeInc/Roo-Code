@@ -9,6 +9,7 @@ import delay from "delay"
 import { fileExistsAtPath } from "../../utils/fs"
 import { BrowserActionResult } from "../../shared/ExtensionMessage"
 import { discoverChromeHostUrl, tryChromeHostUrl } from "./browserDiscovery"
+import { isCodespacesEnvironment, fixCodespaceDependencies, isMissingDependencyError } from "./codespaceUtils"
 
 // Timeout constants
 const BROWSER_NAVIGATION_TIMEOUT = 15_000 // 15 seconds
@@ -42,13 +43,35 @@ export class BrowserSession {
 			await fs.mkdir(puppeteerDir, { recursive: true })
 		}
 
-		// if chromium doesn't exist, this will download it to path.join(puppeteerDir, ".chromium-browser-snapshots")
-		// if it does exist it will return the path to existing chromium
-		const stats: PCRStats = await PCR({
-			downloadPath: puppeteerDir,
-		})
+		try {
+			// if chromium doesn't exist, this will download it to path.join(puppeteerDir, ".chromium-browser-snapshots")
+			// if it does exist it will return the path to existing chromium
+			const stats: PCRStats = await PCR({
+				downloadPath: puppeteerDir,
+			})
 
-		return stats
+			return stats
+		} catch (error) {
+			// Check if this is a missing dependency error in Codespaces
+			if (isCodespacesEnvironment() && isMissingDependencyError(error)) {
+				console.log("Detected missing browser dependencies in Codespaces, attempting to fix...")
+
+				// Try to fix the dependencies
+				const fixed = await fixCodespaceDependencies()
+
+				if (fixed) {
+					// Retry PCR after fixing dependencies
+					console.log("Dependencies fixed, retrying browser initialization...")
+					const stats: PCRStats = await PCR({
+						downloadPath: puppeteerDir,
+					})
+					return stats
+				}
+			}
+
+			// If we couldn't fix it or it's not a Codespaces issue, throw the original error
+			throw error
+		}
 	}
 
 	/**
@@ -65,16 +88,60 @@ export class BrowserSession {
 	 */
 	private async launchLocalBrowser(): Promise<void> {
 		console.log("Launching local browser")
-		const stats = await this.ensureChromiumExists()
-		this.browser = await stats.puppeteer.launch({
-			args: [
+
+		try {
+			const stats = await this.ensureChromiumExists()
+
+			const args = [
 				"--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
-			],
-			executablePath: stats.executablePath,
-			defaultViewport: this.getViewport(),
-			// headless: false,
-		})
-		this.isUsingRemoteBrowser = false
+			]
+
+			// Add additional args for Linux/Codespaces environments
+			if (process.platform === "linux" || isCodespacesEnvironment()) {
+				args.push("--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage")
+			}
+
+			this.browser = await stats.puppeteer.launch({
+				args,
+				executablePath: stats.executablePath,
+				defaultViewport: this.getViewport(),
+				// headless: false,
+			})
+			this.isUsingRemoteBrowser = false
+		} catch (error) {
+			// Check if this is a missing dependency error in Codespaces
+			if (isCodespacesEnvironment() && isMissingDependencyError(error)) {
+				console.log("Browser launch failed due to missing dependencies, attempting to fix...")
+
+				// Try to fix the dependencies
+				const fixed = await fixCodespaceDependencies()
+
+				if (fixed) {
+					// Retry launching after fixing dependencies
+					console.log("Dependencies fixed, retrying browser launch...")
+					const stats = await this.ensureChromiumExists()
+
+					const args = [
+						"--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
+						"--no-sandbox",
+						"--disable-setuid-sandbox",
+						"--disable-dev-shm-usage",
+					]
+
+					this.browser = await stats.puppeteer.launch({
+						args,
+						executablePath: stats.executablePath,
+						defaultViewport: this.getViewport(),
+						// headless: false,
+					})
+					this.isUsingRemoteBrowser = false
+					return
+				}
+			}
+
+			// If we couldn't fix it or it's not a Codespaces issue, throw the original error
+			throw error
+		}
 	}
 
 	/**
