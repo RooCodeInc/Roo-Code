@@ -50,7 +50,7 @@
 		"title": "모드별 사용자 지정 지침 (선택 사항)",
 		"resetToDefault": "기본값으로 재설정",
 		"description": "{{modeName}} 모드에 대한 특정 행동 지침을 추가하세요.",
-		"loadFromFile": "{{mode}} 모드에 대한 사용자 지정 지침은 작업 공간의 <span>.roo/rules-{{slug}}/</span> 폴더에서도 로드할 수 있습니다(.roorules-{{slug}}와 .clinerules-{{slug}}는 더 이상 사용되지 않으며 곧 작동을 중단합니다)."
+		"loadFromFile": "{{mode}} 모드에 특정한 사용자 지정 지침은 작업 공간의 <span>.roo/rules-{{slug}}/</span> 폴더 또는 전역 <0>.roo/rules-{{slug}}/</0>에서도 로드할 수 있습니다 (.roorules-{{slug}} 및 .clinerules-{{slug}}는 더 이상 사용되지 않으며 곧 작동을 중지합니다)."
 	},
 	"exportMode": {
 		"title": "모드 내보내기",
@@ -77,7 +77,7 @@
 	"globalCustomInstructions": {
 		"title": "모든 모드에 대한 사용자 지정 지침",
 		"description": "이 지침은 모든 모드에 적용됩니다. 아래의 모드별 지침으로 향상될 수 있는 기본 동작 세트를 제공합니다. <0>더 알아보기</0>",
-		"loadFromFile": "지침은 작업 공간의 <span>.roo/rules/</span> 폴더에서도 로드할 수 있습니다(.roorules와 .clinerules는 더 이상 사용되지 않으며 곧 작동을 중단합니다)."
+		"loadFromFile": "지침은 작업 공간의 <span>.roo/rules/</span> 폴더 또는 전역 <0>.roo/rules/</0>에서도 로드할 수 있습니다 (.roorules 및 .clinerules는 더 이상 사용되지 않으며 곧 작동을 중지합니다)."
 	},
 	"systemPrompt": {
 		"preview": "시스템 프롬프트 미리보기",
@@ -94,7 +94,9 @@
 			"useCurrentConfig": "현재 선택된 API 구성 사용",
 			"testPromptPlaceholder": "향상을 테스트할 프롬프트 입력",
 			"previewButton": "프롬프트 향상 미리보기",
-			"testEnhancement": "향상 테스트"
+			"testEnhancement": "향상 테스트",
+			"includeTaskHistory": "작업 기록을 컨텍스트로 포함",
+			"includeTaskHistoryDescription": "활성화하면 현재 대화의 마지막 10개 메시지가 프롬프트 향상 시 컨텍스트로 포함되어 더 관련성 높고 컨텍스트를 인식하는 제안을 생성하는 데 도움이 됩니다."
 		},
 		"condense": {
 			"apiConfiguration": "컨텍스트 압축을 위한 API 구성",

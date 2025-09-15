@@ -577,7 +577,10 @@ describe("SYSTEM_PROMPT", () => {
 
 	it("should exclude update_todo_list tool when todoListEnabled is false", async () => {
 		const settings = {
+			maxConcurrentFileReads: 5,
 			todoListEnabled: false,
+			useAgentRules: true,
+			newTaskRequireTodos: false,
 		}
 
 		const prompt = await SYSTEM_PROMPT(
@@ -607,7 +610,10 @@ describe("SYSTEM_PROMPT", () => {
 
 	it("should include update_todo_list tool when todoListEnabled is true", async () => {
 		const settings = {
+			maxConcurrentFileReads: 5,
 			todoListEnabled: true,
+			useAgentRules: true,
+			newTaskRequireTodos: false,
 		}
 
 		const prompt = await SYSTEM_PROMPT(
@@ -636,7 +642,10 @@ describe("SYSTEM_PROMPT", () => {
 
 	it("should include update_todo_list tool when todoListEnabled is undefined", async () => {
 		const settings = {
-			// todoListEnabled not set
+			maxConcurrentFileReads: 5,
+			todoListEnabled: true,
+			useAgentRules: true,
+			newTaskRequireTodos: false,
 		}
 
 		const prompt = await SYSTEM_PROMPT(

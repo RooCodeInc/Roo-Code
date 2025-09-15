@@ -1,6 +1,7 @@
 import * as vscode from "vscode"
 import * as path from "path"
 import * as fs from "fs/promises"
+import * as os from "os"
 
 import * as yaml from "yaml"
 import stripBom from "strip-bom"
@@ -404,9 +405,13 @@ export class CustomModesManager {
 			// Validate the mode configuration before saving
 			const validationResult = modeConfigSchema.safeParse(config)
 			if (!validationResult.success) {
-				const errors = validationResult.error.errors.map((e) => e.message).join(", ")
-				logger.error(`Invalid mode configuration for ${slug}`, { errors: validationResult.error.errors })
-				throw new Error(`Invalid mode configuration: ${errors}`)
+				const errorMessages = validationResult.error.errors
+					.map((err) => `${err.path.join(".")}: ${err.message}`)
+					.join(", ")
+				const errorMessage = `Invalid mode configuration: ${errorMessages}`
+				logger.error("Mode validation failed", { slug, errors: validationResult.error.errors })
+				vscode.window.showErrorMessage(t("common:customModes.errors.updateFailed", { error: errorMessage }))
+				return
 			}
 
 			const isProjectMode = config.source === "project"
@@ -501,7 +506,7 @@ export class CustomModesManager {
 		await this.onUpdate()
 	}
 
-	public async deleteCustomMode(slug: string): Promise<void> {
+	public async deleteCustomMode(slug: string, fromMarketplace = false): Promise<void> {
 		try {
 			const settingsPath = await this.getCustomModesFilePath()
 			const roomodesPath = await this.getWorkspaceRoomodes()
@@ -517,6 +522,9 @@ export class CustomModesManager {
 				throw new Error(t("common:customModes.errors.modeNotFound"))
 			}
 
+			// Determine which mode to use for rules folder path calculation
+			const modeToDelete = projectMode || globalMode
+
 			await this.queueWrite(async () => {
 				// Delete from project first if it exists there
 				if (projectMode && roomodesPath) {
@@ -528,6 +536,11 @@ export class CustomModesManager {
 					await this.updateModesInFile(settingsPath, (modes) => modes.filter((m) => m.slug !== slug))
 				}
 
+				// Delete associated rules folder
+				if (modeToDelete) {
+					await this.deleteRulesFolder(slug, modeToDelete, fromMarketplace)
+				}
+
 				// Clear cache when modes are deleted
 				this.clearCache()
 				await this.refreshMergedState()
@@ -535,6 +548,54 @@ export class CustomModesManager {
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error)
 			vscode.window.showErrorMessage(t("common:customModes.errors.deleteFailed", { error: errorMessage }))
+		}
+	}
+
+	/**
+	 * Deletes the rules folder for a specific mode
+	 * @param slug - The mode slug
+	 * @param mode - The mode configuration to determine the scope
+	 */
+	private async deleteRulesFolder(slug: string, mode: ModeConfig, fromMarketplace = false): Promise<void> {
+		try {
+			// Determine the scope based on source (project or global)
+			const scope = mode.source || "global"
+
+			// Determine the rules folder path
+			let rulesFolderPath: string
+			if (scope === "project") {
+				const workspacePath = getWorkspacePath()
+				if (workspacePath) {
+					rulesFolderPath = path.join(workspacePath, ".roo", `rules-${slug}`)
+				} else {
+					return // No workspace, can't delete project rules
+				}
+			} else {
+				// Global scope - use OS home directory
+				const homeDir = os.homedir()
+				rulesFolderPath = path.join(homeDir, ".roo", `rules-${slug}`)
+			}
+
+			// Check if the rules folder exists and delete it
+			const rulesFolderExists = await fileExistsAtPath(rulesFolderPath)
+			if (rulesFolderExists) {
+				try {
+					await fs.rm(rulesFolderPath, { recursive: true, force: true })
+					logger.info(`Deleted rules folder for mode ${slug}: ${rulesFolderPath}`)
+				} catch (error) {
+					logger.error(`Failed to delete rules folder for mode ${slug}: ${error}`)
+					// Notify the user about the failure
+					const messageKey = fromMarketplace
+						? "common:marketplace.mode.rulesCleanupFailed"
+						: "common:customModes.errors.rulesCleanupFailed"
+					vscode.window.showWarningMessage(t(messageKey, { rulesFolderPath }))
+					// Continue even if folder deletion fails
+				}
+			}
+		} catch (error) {
+			logger.error(`Error deleting rules folder for mode ${slug}`, {
+				error: error instanceof Error ? error.message : String(error),
+			})
 		}
 	}
 
@@ -725,11 +786,12 @@ export class CustomModesManager {
 							const filePath = path.join(modeRulesDir, entry.name)
 							const content = await fs.readFile(filePath, "utf-8")
 							if (content.trim()) {
-								// Calculate relative path based on mode source
-								const relativePath = isGlobalMode
-									? path.relative(baseDir, filePath)
-									: path.relative(path.join(baseDir, ".roo"), filePath)
-								rulesFiles.push({ relativePath, content: content.trim() })
+								// Calculate relative path from within the rules directory
+								// This excludes the rules-{slug} folder from the path
+								const relativePath = path.relative(modeRulesDir, filePath)
+								// Normalize path to use forward slashes for cross-platform compatibility
+								const normalizedRelativePath = relativePath.replace(/\\/g, "/")
+								rulesFiles.push({ relativePath: normalizedRelativePath, content: content.trim() })
 							}
 						}
 					}
@@ -824,11 +886,21 @@ export class CustomModesManager {
 					continue // Skip this file but continue with others
 				}
 
-				const targetPath = path.join(baseDir, normalizedRelativePath)
-				const normalizedTargetPath = path.normalize(targetPath)
-				const expectedBasePath = path.normalize(baseDir)
+				// Check if path starts with a rules-* folder (old export format)
+				let cleanedRelativePath = normalizedRelativePath
+				const rulesMatch = normalizedRelativePath.match(/^rules-[^\/\\]+[\/\\]/)
+				if (rulesMatch) {
+					// Strip the entire rules-* folder reference for backwards compatibility
+					cleanedRelativePath = normalizedRelativePath.substring(rulesMatch[0].length)
+					logger.info(`Detected old export format, stripping ${rulesMatch[0]} from path`)
+				}
 
-				// Ensure the resolved path stays within the base directory
+				// Use the rules folder path instead of base directory
+				const targetPath = path.join(rulesFolderPath, cleanedRelativePath)
+				const normalizedTargetPath = path.normalize(targetPath)
+				const expectedBasePath = path.normalize(rulesFolderPath)
+
+				// Ensure the resolved path stays within the rules folder
 				if (!normalizedTargetPath.startsWith(expectedBasePath)) {
 					logger.error(`Path traversal attempt detected: ${ruleFile.relativePath}`)
 					continue // Skip this file but continue with others

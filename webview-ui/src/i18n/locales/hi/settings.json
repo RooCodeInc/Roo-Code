@@ -47,6 +47,9 @@
 		"geminiProvider": "Gemini",
 		"geminiApiKeyLabel": "API कुंजी:",
 		"geminiApiKeyPlaceholder": "अपना जेमिनी एपीआई कुंजी दर्ज करें",
+		"vercelAiGatewayProvider": "Vercel AI Gateway",
+		"vercelAiGatewayApiKeyLabel": "API कुंजी",
+		"vercelAiGatewayApiKeyPlaceholder": "अपनी Vercel AI Gateway API कुंजी दर्ज करें",
 		"mistralProvider": "Mistral",
 		"mistralApiKeyLabel": "API कुंजी:",
 		"mistralApiKeyPlaceholder": "अपनी मिस्ट्रल एपीआई कुंजी दर्ज करें",
@@ -113,6 +116,7 @@
 			"modelDimensionRequired": "मॉडल आयाम आवश्यक है",
 			"geminiApiKeyRequired": "Gemini API कुंजी आवश्यक है",
 			"mistralApiKeyRequired": "मिस्ट्रल एपीआई कुंजी आवश्यक है",
+			"vercelAiGatewayApiKeyRequired": "Vercel AI Gateway API कुंजी आवश्यक है",
 			"ollamaBaseUrlRequired": "Ollama आधार URL आवश्यक है",
 			"baseUrlRequired": "आधार URL आवश्यक है",
 			"modelDimensionMinValue": "मॉडल आयाम 0 से बड़ा होना चाहिए"
@@ -127,6 +131,7 @@
 	},
 	"autoApprove": {
 		"description": "Roo को अनुमोदन की आवश्यकता के बिना स्वचालित रूप से ऑपरेशन करने की अनुमति दें। इन सेटिंग्स को केवल तभी सक्षम करें जब आप AI पर पूरी तरह से भरोसा करते हों और संबंधित सुरक्षा जोखिमों को समझते हों।",
+		"enabled": "स्वत:-अनुमोदन सक्षम",
 		"toggleAriaLabel": "स्वतः-अनुमोदन टॉगल करें",
 		"disabledAriaLabel": "स्वतः-अनुमोदन अक्षम - पहले विकल्प चुनें",
 		"readOnly": {
@@ -197,7 +202,14 @@
 			"description": "कार्य जारी रखने के लिए अनुमति मांगने से पहले स्वचालित रूप से इतने API अनुरोध करें।",
 			"unlimited": "असीमित"
 		},
-		"selectOptionsFirst": "स्वतः-अनुमोदन सक्षम करने के लिए नीचे से कम से कम एक विकल्प चुनें"
+		"selectOptionsFirst": "स्वतः-अनुमोदन सक्षम करने के लिए नीचे से कम से कम एक विकल्प चुनें",
+		"apiCostLimit": {
+			"unlimited": "असीमित",
+			"title": "अधिकतम लागत"
+		},
+		"maxLimits": {
+			"description": "स्वचालित रूप से जारी रखने के लिए अनुमोदन माँगने से पहले इन सीमाओं तक अनुरोध करें।"
+		}
 	},
 	"providers": {
 		"providerDocumentation": "{{provider}} दस्तावेज़ीकरण",
@@ -221,10 +233,12 @@
 		"noProviderMatchFound": "कोई प्रदाता नहीं मिला",
 		"noMatchFound": "कोई मिलान प्रोफ़ाइल नहीं मिला",
 		"vscodeLmDescription": "VS कोड भाषा मॉडल API आपको अन्य VS कोड एक्सटेंशन (जैसे GitHub Copilot) द्वारा प्रदान किए गए मॉडल चलाने की अनुमति देता है। शुरू करने का सबसे आसान तरीका VS कोड मार्केटप्लेस से Copilot और Copilot चैट एक्सटेंशन इंस्टॉल करना है।",
-		"awsCustomArnUse": "आप जिस मॉडल का उपयोग करना चाहते हैं, उसके लिए एक वैध AWS बेडरॉक ARN दर्ज करें। प्रारूप उदाहरण:",
+		"awsCustomArnUse": "आप जिस मॉडल का उपयोग करना चाहते हैं, उसके लिए एक वैध Amazon बेडरॉक ARN दर्ज करें। प्रारूप उदाहरण:",
 		"awsCustomArnDesc": "सुनिश्चित करें कि ARN में क्षेत्र ऊपर चयनित AWS क्षेत्र से मेल खाता है।",
 		"openRouterApiKey": "OpenRouter API कुंजी",
 		"getOpenRouterApiKey": "OpenRouter API कुंजी प्राप्त करें",
+		"vercelAiGatewayApiKey": "Vercel AI Gateway API कुंजी",
+		"getVercelAiGatewayApiKey": "Vercel AI Gateway API कुंजी प्राप्त करें",
 		"apiKeyStorageNotice": "API कुंजियाँ VSCode के सुरक्षित स्टोरेज में सुरक्षित रूप से संग्रहीत हैं",
 		"glamaApiKey": "Glama API कुंजी",
 		"getGlamaApiKey": "Glama API कुंजी प्राप्त करें",
@@ -245,20 +259,56 @@
 			"error": "मॉडल सूची अपडेट करने में विफल। कृपया पुनः प्रयास करें।"
 		},
 		"getRequestyApiKey": "Requesty API कुंजी प्राप्त करें",
+		"getRequestyBaseUrl": "बेस URL",
+		"requestyUseCustomBaseUrl": "कस्टम बेस URL का उपयोग करें",
 		"openRouterTransformsText": "संदर्भ आकार के लिए प्रॉम्प्ट और संदेश श्रृंखलाओं को संपीड़ित करें (<a>OpenRouter ट्रांसफॉर्म</a>)",
 		"anthropicApiKey": "Anthropic API कुंजी",
 		"getAnthropicApiKey": "Anthropic API कुंजी प्राप्त करें",
 		"anthropicUseAuthToken": "X-Api-Key के बजाय Anthropic API कुंजी को Authorization हेडर के रूप में पास करें",
+		"anthropic1MContextBetaLabel": "1M संदर्भ विंडो सक्षम करें (बीटा)",
+		"anthropic1MContextBetaDescription": "Claude Sonnet 4 के लिए संदर्भ विंडो को 1 मिलियन टोकन तक बढ़ाता है",
+		"awsBedrock1MContextBetaLabel": "1M संदर्भ विंडो सक्षम करें (बीटा)",
+		"awsBedrock1MContextBetaDescription": "Claude Sonnet 4 के लिए संदर्भ विंडो को 1 मिलियन टोकन तक बढ़ाता है",
+		"cerebrasApiKey": "Cerebras API कुंजी",
+		"getCerebrasApiKey": "Cerebras API कुंजी प्राप्त करें",
 		"chutesApiKey": "Chutes API कुंजी",
 		"getChutesApiKey": "Chutes API कुंजी प्राप्त करें",
+		"fireworksApiKey": "Fireworks API कुंजी",
+		"getFireworksApiKey": "Fireworks API कुंजी प्राप्त करें",
+		"featherlessApiKey": "Featherless API कुंजी",
+		"getFeatherlessApiKey": "Featherless API कुंजी प्राप्त करें",
+		"ioIntelligenceApiKey": "IO Intelligence API कुंजी",
+		"ioIntelligenceApiKeyPlaceholder": "अपना आईओ इंटेलिजेंस एपीआई कुंजी दर्ज करें",
+		"getIoIntelligenceApiKey": "IO Intelligence API कुंजी प्राप्त करें",
 		"deepSeekApiKey": "DeepSeek API कुंजी",
 		"getDeepSeekApiKey": "DeepSeek API कुंजी प्राप्त करें",
+		"doubaoApiKey": "डौबाओ API कुंजी",
+		"getDoubaoApiKey": "डौबाओ API कुंजी प्राप्त करें",
 		"moonshotApiKey": "Moonshot API कुंजी",
 		"getMoonshotApiKey": "Moonshot API कुंजी प्राप्त करें",
 		"moonshotBaseUrl": "Moonshot प्रवेश बिंदु",
+		"zaiApiKey": "Z AI API कुंजी",
+		"getZaiApiKey": "Z AI API कुंजी प्राप्त करें",
+		"zaiEntrypoint": "Z AI प्रवेश बिंदु",
+		"zaiEntrypointDescription": "कृपया अपने स्थान के आधार पर उपयुक्त API प्रवेश बिंदु का चयन करें। यदि आप चीन में हैं, तो open.bigmodel.cn चुनें। अन्यथा, api.z.ai चुनें।",
 		"geminiApiKey": "Gemini API कुंजी",
 		"getGroqApiKey": "Groq API कुंजी प्राप्त करें",
 		"groqApiKey": "Groq API कुंजी",
+		"getSambaNovaApiKey": "SambaNova API कुंजी प्राप्त करें",
+		"sambaNovaApiKey": "SambaNova API कुंजी",
+		"getHuggingFaceApiKey": "Hugging Face API कुंजी प्राप्त करें",
+		"huggingFaceApiKey": "Hugging Face API कुंजी",
+		"huggingFaceModelId": "मॉडल ID",
+		"huggingFaceLoading": "लोड हो रहा है...",
+		"huggingFaceModelsCount": "({{count}} मॉडल)",
+		"huggingFaceSelectModel": "एक मॉडल चुनें...",
+		"huggingFaceSearchModels": "मॉडल खोजें...",
+		"huggingFaceNoModelsFound": "कोई मॉडल नहीं मिला",
+		"huggingFaceProvider": "प्रदाता",
+		"huggingFaceProviderAuto": "स्वचालित",
+		"huggingFaceSelectProvider": "एक प्रदाता चुनें...",
+		"huggingFaceSearchProviders": "प्रदाता खोजें...",
+		"huggingFaceNoProvidersFound": "कोई प्रदाता नहीं मिला",
 		"getGeminiApiKey": "Gemini API कुंजी प्राप्त करें",
 		"openAiApiKey": "OpenAI API कुंजी",
 		"apiKey": "API कुंजी",
@@ -274,6 +324,7 @@
 		"litellmBaseUrl": "LiteLLM आधार URL",
 		"awsCredentials": "AWS क्रेडेंशियल्स",
 		"awsProfile": "AWS प्रोफाइल",
+		"awsApiKey": "Amazon बेडरॉक API कुंजी",
 		"awsProfileName": "AWS प्रोफाइल नाम",
 		"awsAccessKey": "AWS एक्सेस कुंजी",
 		"awsSecretKey": "AWS सीक्रेट कुंजी",
@@ -290,6 +341,16 @@
 		"cacheUsageNote": "नोट: यदि आप कैश उपयोग नहीं देखते हैं, तो एक अलग मॉडल चुनने का प्रयास करें और फिर अपने वांछित मॉडल को पुनः चुनें।",
 		"vscodeLmModel": "भाषा मॉडल",
 		"vscodeLmWarning": "नोट: यह एक बहुत ही प्रायोगिक एकीकरण है और प्रदाता समर्थन भिन्न होगा। यदि आपको किसी मॉडल के समर्थित न होने की त्रुटि मिलती है, तो यह प्रदाता की ओर से एक समस्या है।",
+		"geminiParameters": {
+			"urlContext": {
+				"title": "URL संदर्भ सक्षम करें",
+				"description": "जब प्रतिक्रिया उत्पन्न होती है, अतिरिक्त संदर्भ के लिए Gemini को URL तक पहुंचने और संसाधित करने की अनुमति देता है। वेब सामग्री विश्लेषण वाली कार्यों के लिए उपयोगी।"
+			},
+			"groundingSearch": {
+				"title": "Google खोज के साथ ग्राउंडिंग सक्षम करें",
+				"description": "Gemini को वास्तविक समय के डेटा पर आधारित उत्तर प्रदान करने के लिए Google पर जानकारी खोजने और उत्तरों को ग्राउंड करने की अनुमति देता है। अद्यतित जानकारी की आवश्यकता वाली क्वेरीज़ के लिए उपयोगी।"
+			}
+		},
 		"googleCloudSetup": {
 			"title": "Google Cloud Vertex AI का उपयोग करने के लिए, आपको आवश्यकता है:",
 			"step1": "1. Google Cloud खाता बनाएं, Vertex AI API सक्षम करें और वांछित Claude मॉडल सक्षम करें।",
@@ -313,6 +374,8 @@
 		"ollama": {
 			"baseUrl": "बेस URL (वैकल्पिक)",
 			"modelId": "मॉडल ID",
+			"apiKey": "Ollama API Key",
+			"apiKeyHelp": "प्रमाणित Ollama इंस्टेंसेस या क्लाउड सेवाओं के लिए वैकल्पिक API key। स्थानीय इंस्टॉलेशन के लिए खाली छोड़ें।",
 			"description": "Ollama आपको अपने कंप्यूटर पर स्थानीय रूप से मॉडल चलाने की अनुमति देता है। आरंभ करने के निर्देशों के लिए, उनकी क्विकस्टार्ट गाइड देखें।",
 			"warning": "नोट: Roo Code जटिल प्रॉम्प्ट्स का उपयोग करता है और Claude मॉडल के साथ सबसे अच्छा काम करता है। कम क्षमता वाले मॉडल अपेक्षित रूप से काम नहीं कर सकते हैं।"
 		},
@@ -323,6 +386,10 @@
 		"humanRelay": {
 			"description": "कोई API कुंजी आवश्यक नहीं है, लेकिन उपयोगकर्ता को वेब चैट AI में जानकारी कॉपी और पेस्ट करने में मदद करनी होगी।",
 			"instructions": "उपयोग के दौरान, एक डायलॉग बॉक्स पॉप अप होगा और वर्तमान संदेश स्वचालित रूप से क्लिपबोर्ड पर कॉपी हो जाएगा। आपको इन्हें AI के वेब संस्करणों (जैसे ChatGPT या Claude) में पेस्ट करना होगा, फिर AI की प्रतिक्रिया को डायलॉग बॉक्स में वापस कॉपी करें और पुष्टि बटन पर क्लिक करें।"
+		},
+		"roo": {
+			"authenticatedMessage": "आपके Roo Code Cloud खाते के माध्यम से सुरक्षित रूप से प्रमाणित।",
+			"connectButton": "Roo Code Cloud से कनेक्ट करें"
 		},
 		"openRouter": {
 			"providerRouting": {
@@ -385,9 +452,17 @@
 		},
 		"reasoningEffort": {
 			"label": "मॉडल तर्क प्रयास",
+			"minimal": "न्यूनतम (सबसे तेज़)",
 			"high": "उच्च",
 			"medium": "मध्यम",
 			"low": "निम्न"
+		},
+		"verbosity": {
+			"label": "आउटपुट वर्बोसिटी",
+			"high": "उच्च",
+			"medium": "मध्यम",
+			"low": "कम",
+			"description": "मॉडल की प्रतिक्रियाएं कितनी विस्तृत हैं, इसे नियंत्रित करता है। कम वर्बोसिटी संक्षिप्त उत्तर देती है, जबकि उच्च वर्बोसिटी विस्तृत स्पष्टीकरण प्रदान करती है।"
 		},
 		"setReasoningLevel": "तर्क प्रयास सक्षम करें",
 		"claudeCode": {
@@ -488,6 +563,23 @@
 			"label": "एक साथ फ़ाइल पढ़ने की सीमा",
 			"description": "'read_file' टूल द्वारा एक साथ प्रोसेस की जा सकने वाली अधिकतम फ़ाइलों की संख्या। उच्च मान कई छोटी फ़ाइलों को पढ़ने की गति बढ़ा सकते हैं लेकिन मेमोरी उपयोग बढ़ा देते हैं।"
 		},
+		"diagnostics": {
+			"includeMessages": {
+				"label": "स्वचालित रूप से संदर्भ में डायग्नोस्टिक शामिल करें",
+				"description": "जब सक्षम होता है, तो संपादित फ़ाइलों से डायग्नोस्टिक संदेश (त्रुटियां) स्वचालित रूप से संदर्भ में शामिल किए जाएंगे। आप हमेशा @problems का उपयोग करके सभी कार्यक्षेत्र डायग्नोस्टिक को मैन्युअल रूप से शामिल कर सकते हैं।"
+			},
+			"maxMessages": {
+				"label": "अधिकतम डायग्नोस्टिक संदेश",
+				"description": "प्रति फ़ाइल शामिल किए जाने वाले डायग्नोस्टिक संदेशों की अधिकतम संख्या। यह सीमा स्वचालित समावेशन (जब चेकबॉक्स सक्षम है) और मैन्युअल @problems उल्लेख दोनों पर लागू होती है। उच्च मान अधिक संदर्भ प्रदान करते हैं लेकिन टोकन उपयोग बढ़ाते हैं।",
+				"resetTooltip": "डिफ़ॉल्ट मान पर रीसेट करें (50)",
+				"unlimited": "असीमित डायग्नोस्टिक संदेश",
+				"unlimitedLabel": "असीमित"
+			},
+			"delayAfterWrite": {
+				"label": "संभावित समस्याओं का पता लगाने के लिए डायग्नोस्टिक्स को अनुमति देने के लिए लिखने के बाद देरी",
+				"description": "फ़ाइल लिखने के बाद आगे बढ़ने से पहले प्रतीक्षा करने का समय, डायग्नोस्टिक टूल को परिवर्तनों को संसाधित करने और समस्याओं का पता लगाने की अनुमति देता है।"
+			}
+		},
 		"condensingThreshold": {
 			"label": "संघनन ट्रिगर सीमा",
 			"selectProfile": "प्रोफ़ाइल के लिए सीमा कॉन्फ़िगर करें",
@@ -496,6 +588,16 @@
 			"profileDescription": "केवल इस प्रोफ़ाइल के लिए कस्टम सीमा (वैश्विक डिफ़ॉल्ट को ओवरराइड करता है)",
 			"inheritDescription": "यह प्रोफ़ाइल वैश्विक डिफ़ॉल्ट सीमा को इनहेरिट करता है ({{threshold}}%)",
 			"usesGlobal": "(वैश्विक {{threshold}}% का उपयोग करता है)"
+		},
+		"maxImageFileSize": {
+			"label": "अधिकतम छवि फ़ाइल आकार",
+			"mb": "MB",
+			"description": "छवि फ़ाइलों के लिए अधिकतम आकार (MB में) जो read file tool द्वारा प्रसंस्कृत किया जा सकता है।"
+		},
+		"maxTotalImageSize": {
+			"label": "अधिकतम कुल छवि आकार",
+			"mb": "MB",
+			"description": "एकल read_file ऑपरेशन में संसाधित सभी छवियों के लिए अधिकतम संचयी आकार सीमा (MB में)। कई छवियों को पढ़ते समय, प्रत्येक छवि का आकार कुल में जोड़ा जाता है। यदि किसी अन्य छवि को शामिल करने से यह सीमा पार हो जाएगी, तो उसे छोड़ दिया जाएगा।"
 		}
 	},
 	"terminal": {
@@ -622,6 +724,33 @@
 		"SECURITY_MIDDLEWARE": {
 			"name": "RooCode सुरक्षा मिडलवेयर",
 			"description": "गोपनीय फाइलों और कमांड को AI पहुंच से सुरक्षित करने के लिए सुरक्षा मिडलवेयर सक्षम करें। यह सुविधा संवेदनशील डेटा तक अनधिकृत पहुंच के विरुद्ध एंटरप्राइज़-ग्रेड सुरक्षा प्रदान करती है।"
+		},
+		"PREVENT_FOCUS_DISRUPTION": {
+			"name": "बैकग्राउंड संपादन",
+			"description": "सक्षम होने पर एडिटर फोकस व्यवधान को रोकता है। फ़ाइल संपादन diff व्यू खोले बिना या फोकस चुराए बिना बैकग्राउंड में होता है। आप Roo के बदलाव करते समय बिना किसी बाधा के काम जारी रख सकते हैं। फ़ाइलें डायग्नोस्टिक्स कैप्चर करने के लिए बिना फोकस के खुल सकती हैं या पूरी तरह बंद रह सकती हैं।"
+		},
+		"ASSISTANT_MESSAGE_PARSER": {
+			"name": "नए मैसेज पार्सर का उपयोग करें",
+			"description": "प्रायोगिक स्ट्रीमिंग मैसेज पार्सर सक्षम करें, जो लंबे उत्तरों के लिए संदेशों को अधिक कुशलता से प्रोसेस करके प्रदर्शन को बेहतर बनाता है।"
+		},
+		"NEW_TASK_REQUIRE_TODOS": {
+			"name": "नए कार्यों के लिए 'todos' सूची की आवश्यकता है",
+			"description": "जब सक्षम किया जाता है, तो new_task टूल को todos पैरामीटर प्रदान करने की आवश्यकता होगी। यह सुनिश्चित करता है कि सभी नए कार्य स्पष्ट उद्देश्यों की सूची के साथ शुरू हों। जब अक्षम किया जाता है (डिफ़ॉल्ट), तो todos पैरामीटर पिछड़े संगतता के लिए वैकल्पिक रहता है।"
+		},
+		"IMAGE_GENERATION": {
+			"name": "AI छवि निर्माण सक्षम करें",
+			"description": "जब सक्षम किया जाता है, तो Roo OpenRouter के छवि निर्माण मॉडल का उपयोग करके टेक्स्ट प्रॉम्प्ट से छवियां उत्पन्न कर सकता है। एक कॉन्फ़िगर किए गए OpenRouter API कुंजी की आवश्यकता होती है।",
+			"openRouterApiKeyLabel": "OpenRouter API कुंजी",
+			"openRouterApiKeyPlaceholder": "अपनी OpenRouter API कुंजी दर्ज करें",
+			"getApiKeyText": "अपनी API कुंजी प्राप्त करें",
+			"modelSelectionLabel": "छवि निर्माण मॉडल",
+			"modelSelectionDescription": "छवि निर्माण के लिए उपयोग करने वाला मॉडल चुनें",
+			"warningMissingKey": "⚠️ छवि निर्माण के लिए OpenRouter API कुंजी आवश्यक है। कृपया इसे ऊपर कॉन्फ़िगर करें।",
+			"successConfigured": "✓ छवि निर्माण कॉन्फ़िगर है और उपयोग के लिए तैयार है"
+		},
+		"RUN_SLASH_COMMAND": {
+			"name": "मॉडल द्वारा शुरू किए गए स्लैश कमांड सक्षम करें",
+			"description": "जब सक्षम होता है, Roo वर्कफ़्लो चलाने के लिए आपके स्लैश कमांड चला सकता है।"
 		}
 	},
 	"promptCaching": {
@@ -640,6 +769,7 @@
 		"noComputerUse": "कंप्यूटर उपयोग का समर्थन नहीं करता है",
 		"supportsPromptCache": "प्रॉम्प्ट कैशिंग का समर्थन करता है",
 		"noPromptCache": "प्रॉम्प्ट कैशिंग का समर्थन नहीं करता है",
+		"contextWindow": "संदर्भ विंडो:",
 		"maxOutput": "अधिकतम आउटपुट",
 		"inputPrice": "इनपुट मूल्य",
 		"outputPrice": "आउटपुट मूल्य",
@@ -667,7 +797,7 @@
 		"feedback": "यदि आपके कोई प्रश्न या प्रतिक्रिया है, तो <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> पर एक मुद्दा खोलने या <redditLink>reddit.com/r/RooCode</redditLink> या <discordLink>discord.gg/roocode</discordLink> में शामिल होने में संकोच न करें",
 		"telemetry": {
 			"label": "गुमनाम त्रुटि और उपयोग रिपोर्टिंग की अनुमति दें",
-			"description": "गुमनाम उपयोग डेटा और त्रुटि रिपोर्ट भेजकर Roo Code को बेहतर बनाने में मदद करें। कोड, प्रॉम्प्ट, या व्यक्तिगत जानकारी कभी भी नहीं भेजी जाती है। अधिक विवरण के लिए हमारी गोपनीयता नीति देखें।"
+			"description": "गुमनाम उपयोग डेटा और त्रुटि रिपोर्ट भेजकर Roo Code को बेहतर बनाने में मदद करें। यह टेलीमेट्री कोड, प्रॉम्प्ट या व्यक्तिगत जानकारी एकत्र नहीं करती। अधिक विवरण के लिए हमारी <privacyLink>गोपनीयता नीति</privacyLink> देखें। आप इसे कभी भी बंद कर सकते हैं।"
 		},
 		"settings": {
 			"import": "इम्पोर्ट",
@@ -693,7 +823,8 @@
 		"modelAvailability": "आपके द्वारा प्रदान की गई मॉडल ID ({{modelId}}) उपलब्ध नहीं है। कृपया कोई अन्य मॉडल चुनें।",
 		"providerNotAllowed": "प्रदाता '{{provider}}' आपके संगठन द्वारा अनुमत नहीं है",
 		"modelNotAllowed": "मॉडल '{{model}}' प्रदाता '{{provider}}' के लिए आपके संगठन द्वारा अनुमत नहीं है",
-		"profileInvalid": "इस प्रोफ़ाइल में एक प्रदाता या मॉडल शामिल है जो आपके संगठन द्वारा अनुमत नहीं है"
+		"profileInvalid": "इस प्रोफ़ाइल में एक प्रदाता या मॉडल शामिल है जो आपके संगठन द्वारा अनुमत नहीं है",
+		"qwenCodeOauthPath": "आपको एक वैध OAuth क्रेडेंशियल पथ प्रदान करना होगा"
 	},
 	"placeholders": {
 		"apiKey": "API कुंजी दर्ज करें...",
@@ -729,5 +860,22 @@
 		"useCustomArn": "कस्टम ARN का उपयोग करें..."
 	},
 	"includeMaxOutputTokens": "अधिकतम आउटपुट टोकन शामिल करें",
-	"includeMaxOutputTokensDescription": "API अनुरोधों में अधिकतम आउटपुट टोकन पैरामीटर भेजें। कुछ प्रदाता इसका समर्थन नहीं कर सकते हैं।"
+	"includeMaxOutputTokensDescription": "API अनुरोधों में अधिकतम आउटपुट टोकन पैरामीटर भेजें। कुछ प्रदाता इसका समर्थन नहीं कर सकते हैं।",
+	"limitMaxTokensDescription": "प्रतिक्रिया में टोकन की अधिकतम संख्या सीमित करें",
+	"maxOutputTokensLabel": "अधिकतम आउटपुट टोकन",
+	"maxTokensGenerateDescription": "प्रतिक्रिया में उत्पन्न करने के लिए अधिकतम टोकन",
+	"serviceTier": {
+		"label": "सेवा स्तर",
+		"tooltip": "API अनुरोधों के तेज़ प्रसंस्करण के लिए, प्राथमिकता प्रसंस्करण सेवा स्तर का प्रयास करें। उच्च विलंबता के साथ कम कीमतों के लिए, फ्लेक्स प्रसंस्करण स्तर का प्रयास करें।",
+		"standard": "मानक",
+		"flex": "फ्लेक्स",
+		"priority": "प्राथमिकता",
+		"pricingTableTitle": "सेवा स्तर के अनुसार मूल्य निर्धारण (प्रति 1M टोकन मूल्य)",
+		"columns": {
+			"tier": "स्तर",
+			"input": "इनपुट",
+			"output": "आउटपुट",
+			"cacheReads": "कैश रीड"
+		}
+	}
 }

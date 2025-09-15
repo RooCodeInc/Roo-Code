@@ -6,9 +6,11 @@ import EventEmitter from "events"
 
 import simpleGit, { SimpleGit } from "simple-git"
 import pWaitFor from "p-wait-for"
+import * as vscode from "vscode"
 
 import { fileExistsAtPath } from "../../utils/fs"
 import { executeRipgrep } from "../../services/search/file-search"
+import { t } from "../../i18n"
 
 import { CheckpointDiff, CheckpointResult, CheckpointEventMap } from "./types"
 import { getExcludePatterns } from "./excludes"
@@ -36,6 +38,10 @@ export abstract class ShadowCheckpointService extends EventEmitter {
 
 	public get isInitialized() {
 		return !!this.git
+	}
+
+	public getCheckpoints(): string[] {
+		return this._checkpoints.slice()
 	}
 
 	constructor(taskId: string, checkpointsDir: string, workspaceDir: string, log: (message: string) => void) {
@@ -67,6 +73,9 @@ export abstract class ShadowCheckpointService extends EventEmitter {
 		const hasNestedGitRepos = await this.hasNestedGitRepositories()
 
 		if (hasNestedGitRepos) {
+			// Show user-friendly notification
+			vscode.window.showWarningMessage(t("common:errors.nested_git_repos_warning"), "OK")
+
 			throw new Error(
 				"Checkpoints are disabled because nested git repositories were detected in the workspace. " +
 					"Please remove or relocate nested git repositories to use the checkpoints feature.",
@@ -196,7 +205,7 @@ export abstract class ShadowCheckpointService extends EventEmitter {
 
 	public async saveCheckpoint(
 		message: string,
-		options?: { allowEmpty?: boolean },
+		options?: { allowEmpty?: boolean; suppressMessage?: boolean },
 	): Promise<CheckpointResult | undefined> {
 		try {
 			this.log(
@@ -211,14 +220,19 @@ export abstract class ShadowCheckpointService extends EventEmitter {
 			await this.stageAll(this.git)
 			const commitArgs = options?.allowEmpty ? { "--allow-empty": null } : undefined
 			const result = await this.git.commit(message, commitArgs)
-			const isFirst = this._checkpoints.length === 0
 			const fromHash = this._checkpoints[this._checkpoints.length - 1] ?? this.baseHash!
 			const toHash = result.commit || fromHash
 			this._checkpoints.push(toHash)
 			const duration = Date.now() - startTime
 
-			if (isFirst || result.commit) {
-				this.emit("checkpoint", { type: "checkpoint", isFirst, fromHash, toHash, duration })
+			if (result.commit) {
+				this.emit("checkpoint", {
+					type: "checkpoint",
+					fromHash,
+					toHash,
+					duration,
+					suppressMessage: options?.suppressMessage ?? false,
+				})
 			}
 
 			if (result.commit) {

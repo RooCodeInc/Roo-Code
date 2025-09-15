@@ -2,12 +2,15 @@
 	"greeting": "Benvingut a Roo Code",
 	"task": {
 		"title": "Tasca",
+		"expand": "Expandir tasca",
+		"collapse": "Replegar tasca",
 		"seeMore": "Veure més",
 		"seeLess": "Veure menys",
-		"tokens": "Tokens:",
-		"cache": "Caché:",
-		"apiCost": "Cost d'API:",
-		"contextWindow": "Finestra de context:",
+		"tokens": "Tokens",
+		"cache": "Caché",
+		"apiCost": "Cost d'API",
+		"size": "Mida",
+		"contextWindow": "Finestra de context",
 		"closeAndStart": "Tancar tasca i iniciar-ne una de nova",
 		"export": "Exportar historial de tasques",
 		"delete": "Eliminar tasca (Shift + Clic per ometre confirmació)",
@@ -21,7 +24,9 @@
 		"connectToCloudDescription": "Inicia sessió a Roo Code Cloud per compartir tasques",
 		"sharingDisabledByOrganization": "Compartició deshabilitada per l'organització",
 		"shareSuccessOrganization": "Enllaç d'organització copiat al porta-retalls",
-		"shareSuccessPublic": "Enllaç públic copiat al porta-retalls"
+		"shareSuccessPublic": "Enllaç públic copiat al porta-retalls",
+		"openInCloud": "Obrir tasca a Roo Code Cloud",
+		"openInCloudIntro": "Continua monitoritzant o interactuant amb Roo des de qualsevol lloc. Escaneja, fes clic o copia per obrir."
 	},
 	"unpin": "Desfixar",
 	"pin": "Fixar",
@@ -108,7 +113,7 @@
 	"stopTts": "Atura la síntesi de veu",
 	"typeMessage": "Escriu un missatge...",
 	"typeTask": "Escriu la teva tasca aquí...",
-	"addContext": "@ per afegir context, / per canviar de mode",
+	"addContext": "@ per afegir context, / per a comandes",
 	"dragFiles": "manté premut shift per arrossegar fitxers",
 	"dragFilesImages": "manté premut shift per arrossegar fitxers/imatges",
 	"enhancePromptDescription": "El botó 'Millora la sol·licitud' ajuda a millorar la teva sol·licitud proporcionant context addicional, aclariments o reformulacions. Prova d'escriure una sol·licitud aquí i fes clic al botó de nou per veure com funciona.",
@@ -116,7 +121,9 @@
 		"title": "Modes",
 		"marketplace": "Marketplace de Modes",
 		"settings": "Configuració de Modes",
-		"description": "Personalitats especialitzades que adapten el comportament de Roo."
+		"description": "Personalitats especialitzades que adapten el comportament de Roo.",
+		"searchPlaceholder": "Cerca modes...",
+		"noResults": "No s'han trobat resultats"
 	},
 	"errorReadingFile": "Error en llegir el fitxer:",
 	"noValidImages": "No s'ha processat cap imatge vàlida",
@@ -137,7 +144,6 @@
 		"streamingFailed": "Transmissió API ha fallat"
 	},
 	"checkpoint": {
-		"initial": "Punt de control inicial",
 		"regular": "Punt de control",
 		"initializingWarning": "Encara s'està inicialitzant el punt de control... Si això triga massa, pots desactivar els punts de control a la <settingsLink>configuració</settingsLink> i reiniciar la teva tasca.",
 		"menu": {
@@ -171,7 +177,11 @@
 		"wantsToInsertAtEnd": "Roo vol afegir contingut al final d'aquest fitxer:",
 		"wantsToReadAndXMore": "En Roo vol llegir aquest fitxer i {{count}} més:",
 		"wantsToReadMultiple": "Roo vol llegir diversos fitxers:",
-		"wantsToApplyBatchChanges": "Roo vol aplicar canvis a múltiples fitxers:"
+		"wantsToApplyBatchChanges": "Roo vol aplicar canvis a múltiples fitxers:",
+		"wantsToGenerateImage": "Roo vol generar una imatge:",
+		"wantsToGenerateImageOutsideWorkspace": "Roo vol generar una imatge fora de l'espai de treball:",
+		"wantsToGenerateImageProtected": "Roo vol generar una imatge en una ubicació protegida:",
+		"didGenerateImage": "Roo ha generat una imatge:"
 	},
 	"directoryOperations": {
 		"wantsToViewTopLevel": "Roo vol veure els fitxers de nivell superior en aquest directori:",
@@ -192,6 +202,22 @@
 		"didViewDefinitionsOutsideWorkspace": "Roo ha vist noms de definicions de codi font utilitzats en aquest directori (fora de l'espai de treball):"
 	},
 	"commandOutput": "Sortida de l'ordre",
+	"commandExecution": {
+		"running": "Executant",
+		"pid": "PID: {{pid}}",
+		"exited": "Finalitzat ({{exitCode}})",
+		"manageCommands": "Gestiona els permisos de les ordres",
+		"commandManagementDescription": "Gestiona els permisos de les ordres: Fes clic a ✓ per permetre l'execució automàtica, ✗ per denegar l'execució. Els patrons es poden activar/desactivar o eliminar de les llistes. <settingsLink>Mostra tots els paràmetres</settingsLink>",
+		"addToAllowed": "Afegeix a la llista de permesos",
+		"removeFromAllowed": "Elimina de la llista de permesos",
+		"addToDenied": "Afegeix a la llista de denegats",
+		"removeFromDenied": "Elimina de la llista de denegats",
+		"abortCommand": "Interromp l'execució de l'ordre",
+		"expandOutput": "Amplia la sortida",
+		"collapseOutput": "Redueix la sortida",
+		"expandManagement": "Amplia la secció de gestió d'ordres",
+		"collapseManagement": "Redueix la secció de gestió d'ordres"
+	},
 	"response": "Resposta",
 	"arguments": "Arguments",
 	"mcp": {
@@ -245,13 +271,12 @@
 	},
 	"announcement": {
 		"title": "🎉 Roo Code {{version}} Llançat",
-		"description": "Roo Code {{version}} porta noves funcions potents i millores significatives per millorar el vostre flux de treball de desenvolupament.",
-		"whatsNew": "Novetats",
-		"feature1": "<bold>Indexació de Base de Codi Graduada d'Experimental</bold>: La indexació completa de la base de codi ara és estable i està llesta per a ús en producció amb cerca millorada i comprensió del context.",
-		"feature2": "<bold>Nova Funcionalitat de Llista de Tasques Pendents</bold>: Mantingueu les vostres tasques en el bon camí amb gestió integrada de tasques pendents que us ajuda a mantenir-vos organitzats i centrats en els vostres objectius de desenvolupament.",
-		"feature3": "<bold>Transicions Millorades d'Arquitecte a Codi</bold>: Transferències fluides de la planificació en mode Arquitecte a la implementació en mode Codi.",
-		"hideButton": "Amaga l'anunci",
-		"detailsDiscussLinks": "Obtén més detalls i uneix-te a les discussions a <discordLink>Discord</discordLink> i <redditLink>Reddit</redditLink> 🚀"
+		"description": "Presentem <bold>Roo Code Cloud:</bold> Portant el poder de Roo més enllà de l'IDE",
+		"feature1": "<bold>Segueix el progrés de les tasques des de qualsevol lloc (Gratuït):</bold> Obté actualitzacions en temps real de tasques de llarga durada sense quedar-te atrapat a la teva IDE",
+		"feature2": "<bold>Controla l'Extensió Roo remotament (Pro):</bold> Inicia, atura i interactua amb tasques des d'una interfície de navegador basada en xat.",
+		"learnMore": "Llest per prendre el control? Aprèn més <learnMoreLink>aquí</learnMoreLink>.",
+		"visitCloudButton": "Visita Roo Code Cloud",
+		"socialLinks": "Uneix-te a nosaltres a <xLink>X</xLink>, <discordLink>Discord</discordLink>, o <redditLink>r/RooCode</redditLink>"
 	},
 	"browser": {
 		"rooWantsToUse": "Roo vol utilitzar el navegador:",
@@ -296,6 +321,11 @@
 			"title": "S'ha arribat al límit de sol·licituds aprovades automàticament",
 			"description": "Roo ha arribat al límit aprovat automàticament de {{count}} sol·licitud(s) d'API. Vols reiniciar el comptador i continuar amb la tasca?",
 			"button": "Reiniciar i continuar"
+		},
+		"autoApprovedCostLimitReached": {
+			"title": "S'ha arribat al límit de cost d'aprovació automàtica",
+			"button": "Restableix i continua",
+			"description": "Roo ha arribat al límit de cost aprovat automàticament de ${{count}}. Vols restablir el cost i continuar amb la tasca?"
 		}
 	},
 	"codebaseSearch": {
@@ -323,7 +353,42 @@
 	"versionIndicator": {
 		"ariaLabel": "Versió {{version}} - Feu clic per veure les notes de llançament"
 	},
+	"rooCloudCTA": {
+		"title": "Roo Code Cloud està evolucionant!",
+		"description": "Executa agents remots al núvol, accedeix a les teves tasques des de qualsevol lloc, col·labora amb altres i molt més.",
+		"joinWaitlist": "Registra't per rebre les últimes actualitzacions."
+	},
 	"editMessage": {
 		"placeholder": "Edita el teu missatge..."
+	},
+	"command": {
+		"triggerDescription": "Activa la comanda {{name}}"
+	},
+	"slashCommands": {
+		"tooltip": "Gestionar ordres de barra",
+		"title": "Ordres de Barra",
+		"description": "Utilitza ordres de barra integrades o crea personalitzades per accedir ràpidament a indicacions i fluxos de treball utilitzats amb freqüència. <DocsLink>Documentació</DocsLink>",
+		"builtInCommands": "Ordres Integrades",
+		"globalCommands": "Ordres Globals",
+		"workspaceCommands": "Ordres de l'Espai de Treball",
+		"globalCommand": "Ordre global",
+		"editCommand": "Editar ordre",
+		"deleteCommand": "Eliminar ordre",
+		"newGlobalCommandPlaceholder": "Nova ordre global...",
+		"newWorkspaceCommandPlaceholder": "Nova ordre de l'espai de treball...",
+		"deleteDialog": {
+			"title": "Eliminar Ordre",
+			"description": "Estàs segur que vols eliminar l'ordre \"{{name}}\"? Aquesta acció no es pot desfer.",
+			"cancel": "Cancel·lar",
+			"confirm": "Eliminar"
+		}
+	},
+	"queuedMessages": {
+		"title": "Missatges en cua:",
+		"clickToEdit": "Feu clic per editar el missatge"
+	},
+	"slashCommand": {
+		"wantsToRun": "Roo vol executar una comanda slash:",
+		"didRun": "Roo ha executat una comanda slash:"
 	}
 }

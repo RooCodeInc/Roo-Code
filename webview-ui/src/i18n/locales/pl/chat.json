@@ -2,12 +2,15 @@
 	"greeting": "Witamy w Roo Code",
 	"task": {
 		"title": "Zadanie",
+		"expand": "Rozwiń zadanie",
+		"collapse": "Zwiń zadanie",
 		"seeMore": "Zobacz więcej",
 		"seeLess": "Zobacz mniej",
-		"tokens": "Tokeny:",
-		"cache": "Pamięć podręczna:",
-		"apiCost": "Koszt API:",
-		"contextWindow": "Okno kontekstu:",
+		"tokens": "Tokeny",
+		"cache": "Pamięć podręczna",
+		"apiCost": "Koszt API",
+		"size": "Rozmiar",
+		"contextWindow": "Okno kontekstu",
 		"closeAndStart": "Zamknij zadanie i rozpocznij nowe",
 		"export": "Eksportuj historię zadań",
 		"delete": "Usuń zadanie (Shift + Kliknięcie, aby pominąć potwierdzenie)",
@@ -21,7 +24,9 @@
 		"connectToCloudDescription": "Zaloguj się do Roo Code Cloud, aby udostępniać zadania",
 		"sharingDisabledByOrganization": "Udostępnianie wyłączone przez organizację",
 		"shareSuccessOrganization": "Link organizacji skopiowany do schowka",
-		"shareSuccessPublic": "Link publiczny skopiowany do schowka"
+		"shareSuccessPublic": "Link publiczny skopiowany do schowka",
+		"openInCloud": "Otwórz zadanie w Roo Code Cloud",
+		"openInCloudIntro": "Kontynuuj monitorowanie lub interakcję z Roo z dowolnego miejsca. Zeskanuj, kliknij lub skopiuj, aby otworzyć."
 	},
 	"unpin": "Odepnij",
 	"pin": "Przypnij",
@@ -108,7 +113,7 @@
 	"stopTts": "Zatrzymaj syntezę mowy",
 	"typeMessage": "Wpisz wiadomość...",
 	"typeTask": "Wpisz swoje zadanie tutaj...",
-	"addContext": "@ aby dodać kontekst, / aby zmienić tryb",
+	"addContext": "@ aby dodać kontekst, / dla poleceń",
 	"dragFiles": "przytrzymaj shift, aby przeciągnąć pliki",
 	"dragFilesImages": "przytrzymaj shift, aby przeciągnąć pliki/obrazy",
 	"enhancePromptDescription": "Przycisk 'Ulepsz podpowiedź' pomaga ulepszyć Twoją prośbę, dostarczając dodatkowy kontekst, wyjaśnienia lub przeformułowania. Spróbuj wpisać prośbę tutaj i kliknij przycisk ponownie, aby zobaczyć, jak to działa.",
@@ -116,7 +121,9 @@
 		"title": "Tryby",
 		"marketplace": "Marketplace Trybów",
 		"settings": "Ustawienia Trybów",
-		"description": "Wyspecjalizowane persony, które dostosowują zachowanie Roo."
+		"description": "Wyspecjalizowane persony, które dostosowują zachowanie Roo.",
+		"searchPlaceholder": "Szukaj trybów...",
+		"noResults": "Nie znaleziono wyników"
 	},
 	"errorReadingFile": "Błąd odczytu pliku:",
 	"noValidImages": "Nie przetworzono żadnych prawidłowych obrazów",
@@ -137,7 +144,6 @@
 		"streamingFailed": "Strumieniowanie API nie powiodło się"
 	},
 	"checkpoint": {
-		"initial": "Początkowy punkt kontrolny",
 		"regular": "Punkt kontrolny",
 		"initializingWarning": "Trwa inicjalizacja punktu kontrolnego... Jeśli to trwa zbyt długo, możesz wyłączyć punkty kontrolne w <settingsLink>ustawieniach</settingsLink> i uruchomić zadanie ponownie.",
 		"menu": {
@@ -171,7 +177,11 @@
 		"wantsToInsertAtEnd": "Roo chce dodać zawartość na końcu tego pliku:",
 		"wantsToReadAndXMore": "Roo chce przeczytać ten plik i {{count}} więcej:",
 		"wantsToReadMultiple": "Roo chce odczytać wiele plików:",
-		"wantsToApplyBatchChanges": "Roo chce zastosować zmiany do wielu plików:"
+		"wantsToApplyBatchChanges": "Roo chce zastosować zmiany do wielu plików:",
+		"wantsToGenerateImage": "Roo chce wygenerować obraz:",
+		"wantsToGenerateImageOutsideWorkspace": "Roo chce wygenerować obraz poza obszarem roboczym:",
+		"wantsToGenerateImageProtected": "Roo chce wygenerować obraz w chronionym miejscu:",
+		"didGenerateImage": "Roo wygenerował obraz:"
 	},
 	"directoryOperations": {
 		"wantsToViewTopLevel": "Roo chce zobaczyć pliki najwyższego poziomu w tym katalogu:",
@@ -192,6 +202,22 @@
 		"didViewDefinitionsOutsideWorkspace": "Roo zobaczył nazwy definicji kodu źródłowego używane w tym katalogu (poza obszarem roboczym):"
 	},
 	"commandOutput": "Wyjście polecenia",
+	"commandExecution": {
+		"running": "Wykonywanie",
+		"pid": "PID: {{pid}}",
+		"exited": "Zakończono ({{exitCode}})",
+		"manageCommands": "Zarządzaj uprawnieniami poleceń",
+		"commandManagementDescription": "Zarządzaj uprawnieniami poleceń: Kliknij ✓, aby zezwolić na automatyczne wykonanie, ✗, aby odmówić wykonania. Wzorce można włączać/wyłączać lub usuwać z listy. <settingsLink>Zobacz wszystkie ustawienia</settingsLink>",
+		"addToAllowed": "Dodaj do listy dozwolonych",
+		"removeFromAllowed": "Usuń z listy dozwolonych",
+		"addToDenied": "Dodaj do listy odrzuconych",
+		"removeFromDenied": "Usuń z listy odrzuconych",
+		"abortCommand": "Przerwij wykonywanie polecenia",
+		"expandOutput": "Rozwiń wyjście",
+		"collapseOutput": "Zwiń wyjście",
+		"expandManagement": "Rozwiń sekcję zarządzania poleceniami",
+		"collapseManagement": "Zwiń sekcję zarządzania poleceniami"
+	},
 	"response": "Odpowiedź",
 	"arguments": "Argumenty",
 	"mcp": {
@@ -245,13 +271,12 @@
 	},
 	"announcement": {
 		"title": "🎉 Roo Code {{version}} wydany",
-		"description": "Roo Code {{version}} wprowadza potężne nowe funkcje i znaczące ulepszenia, aby ulepszyć Twój przepływ pracy programistycznej.",
-		"whatsNew": "Co nowego",
-		"feature1": "<bold>Indeksowanie bazy kodu ukończone z fazy eksperymentalnej</bold>: Pełne indeksowanie bazy kodu jest teraz stabilne i gotowe do użytku produkcyjnego z ulepszonymi funkcjami wyszukiwania i rozumienia kontekstu.",
-		"feature2": "<bold>Nowa funkcja listy zadań</bold>: Utrzymuj swoje zadania na właściwym torze dzięki zintegrowanemu zarządzaniu zadaniami, które pomaga ci pozostać zorganizowanym i skupionym na celach rozwojowych.",
-		"feature3": "<bold>Ulepszone przejścia z Architekta do Kodu</bold>: Płynne transfery z planowania w trybie Architekta do implementacji w trybie Kodu.",
-		"hideButton": "Ukryj ogłoszenie",
-		"detailsDiscussLinks": "Uzyskaj więcej szczegółów i dołącz do dyskusji na <discordLink>Discord</discordLink> i <redditLink>Reddit</redditLink> 🚀"
+		"description": "Przedstawiamy <bold>Roo Code Cloud:</bold> Przenosimy moc Roo poza IDE",
+		"feature1": "<bold>Śledź postęp zadań z dowolnego miejsca (Bezpłatnie):</bold> Otrzymuj aktualizacje w czasie rzeczywistym długotrwałych zadań bez utknięcia w IDE",
+		"feature2": "<bold>Kontroluj rozszerzenie Roo zdalnie (Pro):</bold> Uruchamiaj, zatrzymuj i wchodź w interakcje z zadaniami z interfejsu przeglądarki opartego na czacie.",
+		"learnMore": "Gotowy przejąć kontrolę? Dowiedz się więcej <learnMoreLink>tutaj</learnMoreLink>.",
+		"visitCloudButton": "Odwiedź Roo Code Cloud",
+		"socialLinks": "Dołącz do nas na <xLink>X</xLink>, <discordLink>Discord</discordLink>, lub <redditLink>r/RooCode</redditLink>"
 	},
 	"browser": {
 		"rooWantsToUse": "Roo chce użyć przeglądarki:",
@@ -296,6 +321,11 @@
 			"title": "Osiągnięto limit automatycznie zatwierdzonych żądań",
 			"description": "Roo osiągnął automatycznie zatwierdzony limit {{count}} żądania/żądań API. Czy chcesz zresetować licznik i kontynuować zadanie?",
 			"button": "Zresetuj i kontynuuj"
+		},
+		"autoApprovedCostLimitReached": {
+			"button": "Zresetuj i Kontynuuj",
+			"title": "Osiągnięto limit kosztów z automatycznym zatwierdzaniem",
+			"description": "Roo osiągnął automatycznie zatwierdzony limit kosztów wynoszący ${{count}}. Czy chcesz zresetować koszt i kontynuować zadanie?"
 		}
 	},
 	"codebaseSearch": {
@@ -323,7 +353,42 @@
 	"versionIndicator": {
 		"ariaLabel": "Wersja {{version}} - Kliknij, aby wyświetlić informacje o wydaniu"
 	},
+	"rooCloudCTA": {
+		"title": "Roo Code Cloud się rozwija!",
+		"description": "Uruchamiaj zdalne agenty w chmurze, uzyskuj dostęp do swoich zadań z dowolnego miejsca, współpracuj z innymi i wiele więcej.",
+		"joinWaitlist": "Zarejestruj się, aby otrzymywać najnowsze aktualizacje."
+	},
 	"editMessage": {
 		"placeholder": "Edytuj swoją wiadomość..."
+	},
+	"command": {
+		"triggerDescription": "Uruchom polecenie {{name}}"
+	},
+	"slashCommands": {
+		"tooltip": "Zarządzaj poleceniami slash",
+		"title": "Polecenia Slash",
+		"description": "Używaj wbudowanych poleceń slash lub twórz niestandardowe dla szybkiego dostępu do często używanych promptów i przepływów pracy. <DocsLink>Dokumentacja</DocsLink>",
+		"builtInCommands": "Polecenia Wbudowane",
+		"globalCommands": "Polecenia Globalne",
+		"workspaceCommands": "Polecenia Obszaru Roboczego",
+		"globalCommand": "Polecenie globalne",
+		"editCommand": "Edytuj polecenie",
+		"deleteCommand": "Usuń polecenie",
+		"newGlobalCommandPlaceholder": "Nowe polecenie globalne...",
+		"newWorkspaceCommandPlaceholder": "Nowe polecenie obszaru roboczego...",
+		"deleteDialog": {
+			"title": "Usuń Polecenie",
+			"description": "Czy na pewno chcesz usunąć polecenie \"{{name}}\"? Tej akcji nie można cofnąć.",
+			"cancel": "Anuluj",
+			"confirm": "Usuń"
+		}
+	},
+	"queuedMessages": {
+		"title": "Wiadomości w kolejce:",
+		"clickToEdit": "Kliknij, aby edytować wiadomość"
+	},
+	"slashCommand": {
+		"wantsToRun": "Roo chce uruchomić komendę slash:",
+		"didRun": "Roo uruchomił komendę slash:"
 	}
 }

@@ -13,6 +13,12 @@
 			"placeholderMcp": "Szukaj MCPs...",
 			"placeholderMode": "Szukaj trybów..."
 		},
+		"installed": {
+			"label": "Filtruj według statusu",
+			"all": "Wszystkie elementy",
+			"installed": "Zainstalowane",
+			"notInstalled": "Niezainstalowane"
+		},
 		"type": {
 			"label": "Filtruj według typu:",
 			"all": "Wszystkie typy",
@@ -34,6 +40,10 @@
 			"clickToFilter": "Kliknij tagi, aby filtrować elementy"
 		},
 		"none": "Brak"
+	},
+	"sections": {
+		"organizationMcps": "MCPs {{organization}}",
+		"marketplace": "Rynek"
 	},
 	"type-group": {
 		"modes": "Tryby",
@@ -71,7 +81,9 @@
 			"removeProjectTooltip": "Usuń z bieżącego projektu",
 			"removeGlobalTooltip": "Usuń z konfiguracji globalnej",
 			"actionsMenuLabel": "Więcej akcji"
-		}
+		},
+		"removeFailed": "Nie udało się usunąć elementu: {{error}}",
+		"unknownError": "Wystąpił nieznany błąd"
 	},
 	"install": {
 		"title": "Zainstaluj {{name}}",
@@ -124,6 +136,19 @@
 			"emojiName": "Znaki emoji mogą powodować problemy z wyświetlaniem",
 			"maxSources": "Maksymalnie {{max}} źródeł dozwolonych"
 		}
+	},
+	"removeConfirm": {
+		"mode": {
+			"title": "Usuń tryb",
+			"message": "Czy na pewno chcesz usunąć tryb „{{modeName}}”?",
+			"rulesWarning": "Spowoduje to również usunięcie wszelkich powiązanych plików reguł dla tego trybu."
+		},
+		"mcp": {
+			"title": "Usuń serwer MCP",
+			"message": "Czy na pewno chcesz usunąć serwer MCP „{{mcpName}}”?"
+		},
+		"cancel": "Anuluj",
+		"confirm": "Usuń"
 	},
 	"footer": {
 		"issueText": "Znalazłeś problem z elementem marketplace lub masz sugestie dotyczące nowych elementów? <0>Otwórz issue na GitHub</0>, aby nam o tym powiedzieć!"

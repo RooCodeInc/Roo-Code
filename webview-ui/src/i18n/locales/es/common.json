@@ -1,4 +1,12 @@
 {
+	"errorBoundary": {
+		"title": "Algo salió mal",
+		"reportText": "Ayúdanos a mejorar informando de este error en",
+		"githubText": "nuestra página de Issues de GitHub",
+		"copyInstructions": "Copia y pega el siguiente mensaje de error para incluirlo como parte de tu informe:",
+		"errorStack": "Pila de errores:",
+		"componentStack": "Pila de componentes:"
+	},
 	"answers": {
 		"yes": "Sí",
 		"no": "No",
@@ -12,7 +20,8 @@
 		"billion_suffix": "b"
 	},
 	"ui": {
-		"search_placeholder": "Buscar..."
+		"search_placeholder": "Buscar...",
+		"no_results": "No se encontraron resultados"
 	},
 	"mermaid": {
 		"loading": "Generando diagrama mermaid...",
@@ -39,6 +48,12 @@
 			"copyError": "Error copiando la imagen"
 		}
 	},
+	"image": {
+		"tabs": {
+			"view": "Imagen"
+		},
+		"noData": "Sin datos de imagen"
+	},
 	"file": {
 		"errors": {
 			"invalidDataUri": "Formato de URI de datos inválido",
@@ -57,6 +72,28 @@
 		"deleteWarning": "Eliminar este mensaje eliminará todos los mensajes posteriores en la conversación. ¿Deseas continuar?",
 		"editMessage": "Editar mensaje",
 		"editWarning": "Editar este mensaje eliminará todos los mensajes posteriores en la conversación. ¿Deseas continuar?",
-		"proceed": "Continuar"
+		"editQuestionWithCheckpoint": "Editar este mensaje eliminará todos los mensajes posteriores en la conversación. ¿También deseas deshacer todos los cambios hasta este punto de control?",
+		"deleteQuestionWithCheckpoint": "Eliminar este mensaje eliminará todos los mensajes posteriores en la conversación. ¿También deseas deshacer todos los cambios hasta este punto de control?",
+		"editOnly": "No, solo editar el mensaje",
+		"deleteOnly": "No, solo eliminar el mensaje",
+		"restoreToCheckpoint": "Sí, restaurar el punto de control",
+		"proceed": "Continuar",
+		"dontShowAgain": "No mostrar esto de nuevo"
+	},
+	"time_ago": {
+		"just_now": "ahora mismo",
+		"seconds_ago": "hace {{count}} segundos",
+		"minute_ago": "hace un minuto",
+		"minutes_ago": "hace {{count}} minutos",
+		"hour_ago": "hace una hora",
+		"hours_ago": "hace {{count}} horas",
+		"day_ago": "hace un día",
+		"days_ago": "hace {{count}} días",
+		"week_ago": "hace una semana",
+		"weeks_ago": "hace {{count}} semanas",
+		"month_ago": "hace un mes",
+		"months_ago": "hace {{count}} meses",
+		"year_ago": "hace un año",
+		"years_ago": "hace {{count}} años"
 	}
 }

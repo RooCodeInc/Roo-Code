@@ -1,4 +1,12 @@
 {
+	"errorBoundary": {
+		"title": "出现了错误",
+		"reportText": "请通过在以下位置报告此错误来帮助我们改进",
+		"githubText": "我们的 GitHub Issues 页面",
+		"copyInstructions": "复制并粘贴以下错误信息，将其作为提交内容的一部分：",
+		"errorStack": "错误堆栈：",
+		"componentStack": "组件堆栈："
+	},
 	"answers": {
 		"yes": "是",
 		"no": "否",
@@ -12,7 +20,8 @@
 		"billion_suffix": "b"
 	},
 	"ui": {
-		"search_placeholder": "搜索..."
+		"search_placeholder": "搜索...",
+		"no_results": "未找到结果"
 	},
 	"mermaid": {
 		"loading": "生成 Mermaid 图表中...",
@@ -39,6 +48,12 @@
 			"copyError": "复制图片时出错"
 		}
 	},
+	"image": {
+		"tabs": {
+			"view": "图像"
+		},
+		"noData": "无图片数据"
+	},
 	"file": {
 		"errors": {
 			"invalidDataUri": "无效的数据 URI 格式",
@@ -57,6 +72,28 @@
 		"deleteWarning": "删除此消息将删除对话中的所有后续消息。是否继续？",
 		"editMessage": "编辑消息",
 		"editWarning": "编辑此消息将删除对话中的所有后续消息。是否继续？",
-		"proceed": "继续"
+		"editQuestionWithCheckpoint": "编辑此消息将删除对话中的所有后续消息。是否同时将所有变更撤销到此存档点？",
+		"deleteQuestionWithCheckpoint": "删除此消息将删除对话中的所有后续消息。是否同时将所有变更撤销到此存档点？",
+		"editOnly": "否，仅编辑消息",
+		"deleteOnly": "否，仅删除消息",
+		"restoreToCheckpoint": "是，恢复存档点",
+		"proceed": "继续",
+		"dontShowAgain": "不再显示"
+	},
+	"time_ago": {
+		"just_now": "刚刚",
+		"seconds_ago": "{{count}}秒前",
+		"minute_ago": "1分钟前",
+		"minutes_ago": "{{count}}分钟前",
+		"hour_ago": "1小时前",
+		"hours_ago": "{{count}}小时前",
+		"day_ago": "1天前",
+		"days_ago": "{{count}}天前",
+		"week_ago": "1周前",
+		"weeks_ago": "{{count}}周前",
+		"month_ago": "1个月前",
+		"months_ago": "{{count}}个月前",
+		"year_ago": "1年前",
+		"years_ago": "{{count}}年前"
 	}
 }

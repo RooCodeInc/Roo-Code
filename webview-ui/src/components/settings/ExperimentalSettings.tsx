@@ -15,12 +15,19 @@ import { SetExperimentEnabled, SetCachedStateField } from "./types"
 import { SectionHeader } from "./SectionHeader"
 import { Section } from "./Section"
 import { ExperimentalFeature } from "./ExperimentalFeature"
+import { ImageGenerationSettings } from "./ImageGenerationSettings"
 
 type ExperimentalSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	experiments: Experiments
 	setExperimentEnabled: SetExperimentEnabled
 	securityCustomConfigPath?: string
 	setCachedStateField?: SetCachedStateField<any>
+	apiConfiguration?: any
+	setApiConfigurationField?: any
+	openRouterImageApiKey?: string
+	openRouterImageGenerationSelectedModel?: string
+	setOpenRouterImageApiKey?: (apiKey: string) => void
+	setImageGenerationSelectedModel?: (model: string) => void
 }
 
 export const ExperimentalSettings = ({
@@ -28,6 +35,12 @@ export const ExperimentalSettings = ({
 	setExperimentEnabled,
 	securityCustomConfigPath: propSecurityCustomConfigPath,
 	setCachedStateField,
+	apiConfiguration,
+	setApiConfigurationField,
+	openRouterImageApiKey,
+	openRouterImageGenerationSelectedModel,
+	setOpenRouterImageApiKey,
+	setImageGenerationSelectedModel,
 	className,
 	...props
 }: ExperimentalSettingsProps) => {
@@ -253,6 +266,26 @@ export const ExperimentalSettings = ({
 							)
 						}
 
+						// Special handling for IMAGE_GENERATION - show additional options when enabled
+						if (
+							config[0] === "IMAGE_GENERATION" &&
+							setOpenRouterImageApiKey &&
+							setImageGenerationSelectedModel
+						) {
+							return (
+								<ImageGenerationSettings
+									key={config[0]}
+									enabled={experiments[EXPERIMENT_IDS.IMAGE_GENERATION] ?? false}
+									onChange={(enabled) =>
+										setExperimentEnabled(EXPERIMENT_IDS.IMAGE_GENERATION, enabled)
+									}
+									openRouterImageApiKey={openRouterImageApiKey}
+									openRouterImageGenerationSelectedModel={openRouterImageGenerationSelectedModel}
+									setOpenRouterImageApiKey={setOpenRouterImageApiKey}
+									setImageGenerationSelectedModel={setImageGenerationSelectedModel}
+								/>
+							)
+						}
 						return (
 							<ExperimentalFeature
 								key={config[0]}

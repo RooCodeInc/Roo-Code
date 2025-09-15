@@ -6,18 +6,19 @@ import {
 	type CustomModePrompts,
 	type ModeConfig,
 	type ExperimentId,
+	type TodoItem,
+	type TelemetrySetting,
 	type OrganizationAllowList,
 	ORGANIZATION_ALLOW_ALL,
 } from "@roo-code/types"
 
-import { ExtensionMessage, ExtensionState, MarketplaceInstalledMetadata } from "@roo/ExtensionMessage"
+import { ExtensionMessage, ExtensionState, MarketplaceInstalledMetadata, Command } from "@roo/ExtensionMessage"
 import { findLastIndex } from "@roo/array"
 import { McpServer } from "@roo/mcp"
 import { checkExistKey } from "@roo/checkExistApiConfig"
 import { Mode, defaultModeSlug, defaultPrompts } from "@roo/modes"
 import { CustomSupportPrompts } from "@roo/support-prompt"
 import { experimentDefault } from "@roo/experiments"
-import { TelemetrySetting } from "@roo/TelemetrySetting"
 import { RouterModels } from "@roo/api"
 
 import { vscode } from "@src/utils/vscode"
@@ -31,9 +32,12 @@ export interface ExtensionStateContextType extends ExtensionState {
 	mcpServers: McpServer[]
 	hasSystemPromptOverride?: boolean
 	currentCheckpoint?: string
+	currentTaskTodos?: TodoItem[] // Initial todos for the current task
 	filePaths: string[]
 	openedTabs: Array<{ label: string; isActive: boolean; path?: string }>
+	commands: Command[]
 	organizationAllowList: OrganizationAllowList
+	organizationSettingsVersion: number
 	cloudIsAuthenticated: boolean
 	sharingEnabled: boolean
 	maxConcurrentFileReads?: number
@@ -69,6 +73,7 @@ export interface ExtensionStateContextType extends ExtensionState {
 	setAllowedCommands: (value: string[]) => void
 	setDeniedCommands: (value: string[]) => void
 	setAllowedMaxRequests: (value: number | undefined) => void
+	setAllowedMaxCost: (value: number | undefined) => void
 	setSoundEnabled: (value: boolean) => void
 	setSoundVolume: (value: number) => void
 	terminalShellIntegrationTimeout?: number
@@ -94,6 +99,12 @@ export interface ExtensionStateContextType extends ExtensionState {
 	setMcpEnabled: (value: boolean) => void
 	enableMcpServerCreation: boolean
 	setEnableMcpServerCreation: (value: boolean) => void
+	remoteControlEnabled: boolean
+	setRemoteControlEnabled: (value: boolean) => void
+	taskSyncEnabled: boolean
+	setTaskSyncEnabled: (value: boolean) => void
+	featureRoomoteControlEnabled: boolean
+	setFeatureRoomoteControlEnabled: (value: boolean) => void
 	alwaysApproveResubmit?: boolean
 	setAlwaysApproveResubmit: (value: boolean) => void
 	requestDelaySeconds: number
@@ -120,6 +131,10 @@ export interface ExtensionStateContextType extends ExtensionState {
 	setAwsUsePromptCache: (value: boolean) => void
 	maxReadFileLine: number
 	setMaxReadFileLine: (value: number) => void
+	maxImageFileSize: number
+	setMaxImageFileSize: (value: number) => void
+	maxTotalImageSize: number
+	setMaxTotalImageSize: (value: number) => void
 	machineId?: string
 	pinnedApiConfigs?: Record<string, boolean>
 	setPinnedApiConfigs: (value: Record<string, boolean>) => void
@@ -136,6 +151,12 @@ export interface ExtensionStateContextType extends ExtensionState {
 	setAlwaysAllowUpdateTodoList: (value: boolean) => void
 	securityCustomConfigPath?: string
 	setSecurityCustomConfigPath: (value: string) => void
+	includeDiagnosticMessages?: boolean
+	setIncludeDiagnosticMessages: (value: boolean) => void
+	maxDiagnosticMessages?: number
+	setMaxDiagnosticMessages: (value: number) => void
+	includeTaskHistoryInEnhance?: boolean
+	setIncludeTaskHistoryInEnhance: (value: boolean) => void
 }
 
 export const ExtensionStateContext = createContext<ExtensionStateContextType | undefined>(undefined)
@@ -161,7 +182,8 @@ export const mergeExtensionState = (prevState: ExtensionState, newState: Extensi
 }
 
 export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-	const [state, setState] = useState<ExtensionState & { organizationAllowList?: OrganizationAllowList }>({
+	const [state, setState] = useState<ExtensionState>({
+		apiConfiguration: {},
 		version: "",
 		clineMessages: [],
 		taskHistory: [],
@@ -184,6 +206,9 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		terminalShellIntegrationTimeout: 4000,
 		mcpEnabled: true,
 		enableMcpServerCreation: false,
+		remoteControlEnabled: false,
+		taskSyncEnabled: false,
+		featureRoomoteControlEnabled: false,
 		alwaysApproveResubmit: false,
 		requestDelaySeconds: 5,
 		currentApiConfigName: "default",
@@ -206,6 +231,8 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		showRooIgnoredFiles: true, // Default to showing .rooignore'd files with lock symbol (current behavior).
 		renderContext: "sidebar",
 		maxReadFileLine: -1, // Default max read file line limit
+		maxImageFileSize: 5, // Default max image file size in MB
+		maxTotalImageSize: 20, // Default max total image size in MB
 		pinnedApiConfigs: {}, // Empty object for pinned API configs
 		terminalZshOhMy: false, // Default Oh My Zsh integration setting
 		maxConcurrentFileReads: 5, // Default concurrent file reads
@@ -217,6 +244,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		cloudIsAuthenticated: false,
 		sharingEnabled: false,
 		organizationAllowList: ORGANIZATION_ALLOW_ALL,
+		organizationSettingsVersion: -1,
 		autoCondenseContext: true,
 		autoCondenseContextPercent: 100,
 		profileThresholds: {},
@@ -232,6 +260,10 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		codebaseIndexModels: { ollama: {}, openai: {} },
 		alwaysAllowUpdateTodoList: true,
 		securityCustomConfigPath: "",
+		includeDiagnosticMessages: true,
+		maxDiagnosticMessages: 50,
+		openRouterImageApiKey: "",
+		openRouterImageGenerationSelectedModel: "",
 	})
 
 	const [didHydrateState, setDidHydrateState] = useState(false)
@@ -239,6 +271,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 	const [theme, setTheme] = useState<any>(undefined)
 	const [filePaths, setFilePaths] = useState<string[]>([])
 	const [openedTabs, setOpenedTabs] = useState<Array<{ label: string; isActive: boolean; path?: string }>>([])
+	const [commands, setCommands] = useState<Command[]>([])
 	const [mcpServers, setMcpServers] = useState<McpServer[]>([])
 	const [currentCheckpoint, setCurrentCheckpoint] = useState<string>()
 	const [extensionRouterModels, setExtensionRouterModels] = useState<RouterModels | undefined>(undefined)
@@ -249,6 +282,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		project: {},
 		global: {},
 	})
+	const [includeTaskHistoryInEnhance, setIncludeTaskHistoryInEnhance] = useState(true)
 
 	const setListApiConfigMeta = useCallback(
 		(value: ProviderSettingsEntry[]) => setState((prevState) => ({ ...prevState, listApiConfigMeta: value })),
@@ -282,6 +316,10 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 					if ((newState as any).followupAutoApproveTimeoutMs !== undefined) {
 						setFollowupAutoApproveTimeoutMs((newState as any).followupAutoApproveTimeoutMs)
 					}
+					// Update includeTaskHistoryInEnhance if present in state message
+					if ((newState as any).includeTaskHistoryInEnhance !== undefined) {
+						setIncludeTaskHistoryInEnhance((newState as any).includeTaskHistoryInEnhance)
+					}
 					// Handle marketplace data if present in state message
 					if (newState.marketplaceItems !== undefined) {
 						setMarketplaceItems(newState.marketplaceItems)
@@ -303,6 +341,10 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 
 					setFilePaths(paths)
 					setOpenedTabs(tabs)
+					break
+				}
+				case "commands": {
+					setCommands(message.commands ?? [])
 					break
 				}
 				case "messageUpdated": {
@@ -369,6 +411,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		currentCheckpoint,
 		filePaths,
 		openedTabs,
+		commands,
 		soundVolume: state.soundVolume,
 		ttsSpeed: state.ttsSpeed,
 		fuzzyMatchThreshold: state.fuzzyMatchThreshold,
@@ -376,11 +419,15 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		screenshotQuality: state.screenshotQuality,
 		routerModels: extensionRouterModels,
 		cloudIsAuthenticated: state.cloudIsAuthenticated ?? false,
+		organizationSettingsVersion: state.organizationSettingsVersion ?? -1,
 		marketplaceItems,
 		marketplaceInstalledMetadata,
 		profileThresholds: state.profileThresholds ?? {},
 		alwaysAllowFollowupQuestions,
 		followupAutoApproveTimeoutMs,
+		remoteControlEnabled: state.remoteControlEnabled ?? false,
+		taskSyncEnabled: state.taskSyncEnabled,
+		featureRoomoteControlEnabled: state.featureRoomoteControlEnabled ?? false,
 		setExperimentEnabled: (id, enabled) =>
 			setState((prevState) => ({ ...prevState, experiments: { ...prevState.experiments, [id]: enabled } })),
 		setApiConfiguration,
@@ -403,6 +450,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		setAllowedCommands: (value) => setState((prevState) => ({ ...prevState, allowedCommands: value })),
 		setDeniedCommands: (value) => setState((prevState) => ({ ...prevState, deniedCommands: value })),
 		setAllowedMaxRequests: (value) => setState((prevState) => ({ ...prevState, allowedMaxRequests: value })),
+		setAllowedMaxCost: (value) => setState((prevState) => ({ ...prevState, allowedMaxCost: value })),
 		setSoundEnabled: (value) => setState((prevState) => ({ ...prevState, soundEnabled: value })),
 		setSoundVolume: (value) => setState((prevState) => ({ ...prevState, soundVolume: value })),
 		setTtsEnabled: (value) => setState((prevState) => ({ ...prevState, ttsEnabled: value })),
@@ -426,6 +474,10 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		setMcpEnabled: (value) => setState((prevState) => ({ ...prevState, mcpEnabled: value })),
 		setEnableMcpServerCreation: (value) =>
 			setState((prevState) => ({ ...prevState, enableMcpServerCreation: value })),
+		setRemoteControlEnabled: (value) => setState((prevState) => ({ ...prevState, remoteControlEnabled: value })),
+		setTaskSyncEnabled: (value) => setState((prevState) => ({ ...prevState, taskSyncEnabled: value }) as any),
+		setFeatureRoomoteControlEnabled: (value) =>
+			setState((prevState) => ({ ...prevState, featureRoomoteControlEnabled: value })),
 		setAlwaysApproveResubmit: (value) => setState((prevState) => ({ ...prevState, alwaysApproveResubmit: value })),
 		setRequestDelaySeconds: (value) => setState((prevState) => ({ ...prevState, requestDelaySeconds: value })),
 		setCurrentApiConfigName: (value) => setState((prevState) => ({ ...prevState, currentApiConfigName: value })),
@@ -445,6 +497,8 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		setRemoteBrowserEnabled: (value) => setState((prevState) => ({ ...prevState, remoteBrowserEnabled: value })),
 		setAwsUsePromptCache: (value) => setState((prevState) => ({ ...prevState, awsUsePromptCache: value })),
 		setMaxReadFileLine: (value) => setState((prevState) => ({ ...prevState, maxReadFileLine: value })),
+		setMaxImageFileSize: (value) => setState((prevState) => ({ ...prevState, maxImageFileSize: value })),
+		setMaxTotalImageSize: (value) => setState((prevState) => ({ ...prevState, maxTotalImageSize: value })),
 		setPinnedApiConfigs: (value) => setState((prevState) => ({ ...prevState, pinnedApiConfigs: value })),
 		setTerminalCompressProgressBar: (value) =>
 			setState((prevState) => ({ ...prevState, terminalCompressProgressBar: value })),
@@ -482,6 +536,16 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 			setState((prevState) => ({ ...prevState, securityCustomConfigPath: value }))
 			vscode.postMessage({ type: "securityCustomConfigPath", text: value })
 		},
+		includeDiagnosticMessages: state.includeDiagnosticMessages,
+		setIncludeDiagnosticMessages: (value) => {
+			setState((prevState) => ({ ...prevState, includeDiagnosticMessages: value }))
+		},
+		maxDiagnosticMessages: state.maxDiagnosticMessages,
+		setMaxDiagnosticMessages: (value) => {
+			setState((prevState) => ({ ...prevState, maxDiagnosticMessages: value }))
+		},
+		includeTaskHistoryInEnhance,
+		setIncludeTaskHistoryInEnhance,
 	}
 
 	return <ExtensionStateContext.Provider value={contextValue}>{children}</ExtensionStateContext.Provider>

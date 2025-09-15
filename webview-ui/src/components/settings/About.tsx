@@ -2,11 +2,11 @@ import { HTMLAttributes } from "react"
 import { useAppTranslation } from "@/i18n/TranslationContext"
 import { Trans } from "react-i18next"
 import { Info, Download, Upload, TriangleAlert } from "lucide-react"
-
 import { VSCodeCheckbox, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 
+import type { TelemetrySetting } from "@roo-code/types"
+
 import { Package } from "@roo/package"
-import { TelemetrySetting } from "@roo/TelemetrySetting"
 
 import { vscode } from "@/utils/vscode"
 import { cn } from "@/lib/utils"
@@ -40,7 +40,7 @@ export const About = ({ telemetrySetting, setTelemetrySetting, className, ...pro
 			<Section>
 				<div>
 					<VSCodeCheckbox
-						checked={telemetrySetting === "enabled"}
+						checked={telemetrySetting !== "disabled"}
 						onChange={(e: any) => {
 							const checked = e.target.checked === true
 							setTelemetrySetting(checked ? "enabled" : "disabled")

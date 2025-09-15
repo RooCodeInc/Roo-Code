@@ -25,6 +25,8 @@ body:
         - AWS Bedrock
         - Chutes AI
         - DeepSeek
+        - Featherless AI
+        - Fireworks AI
         - Glama
         - Google Gemini
         - Google Vertex AI
@@ -38,6 +40,7 @@ body:
         - OpenAI Compatible
         - OpenRouter
         - Requesty
+        - SambaNova
         - Unbound
         - VS Code Language Model API
         - xAI (Grok)

@@ -21,7 +21,7 @@ import { t } from "../../i18n"
 class ShellIntegrationError extends Error {}
 
 export async function executeCommandTool(
-	cline: Task,
+	task: Task,
 	block: ToolUse,
 	askApproval: AskApproval,
 	handleError: HandleError,
@@ -33,29 +33,29 @@ export async function executeCommandTool(
 
 	try {
 		if (block.partial) {
-			await cline.ask("command", removeClosingTag("command", command), block.partial).catch(() => {})
+			await task.ask("command", removeClosingTag("command", command), block.partial).catch(() => {})
 			return
 		} else {
 			if (!command) {
-				cline.consecutiveMistakeCount++
-				cline.recordToolError("execute_command")
-				pushToolResult(await cline.sayAndCreateMissingParamError("execute_command", "command"))
+				task.consecutiveMistakeCount++
+				task.recordToolError("execute_command")
+				pushToolResult(await task.sayAndCreateMissingParamError("execute_command", "command"))
 				return
 			}
 
-			const ignoredFileAttemptedToAccess = cline.rooIgnoreController?.validateCommand(command)
+			const ignoredFileAttemptedToAccess = task.rooIgnoreController?.validateCommand(command)
 
 			if (ignoredFileAttemptedToAccess) {
-				await cline.say("rooignore_error", ignoredFileAttemptedToAccess)
+				await task.say("rooignore_error", ignoredFileAttemptedToAccess)
 				pushToolResult(formatResponse.toolError(formatResponse.rooIgnoreError(ignoredFileAttemptedToAccess)))
 				return
 			}
 
 			// Check security validation
-			const securityViolation = cline.securityGuard.validateCommand(command)
+			const securityViolation = task.securityGuard?.validateCommand(command)
 			if (securityViolation?.blocked) {
 				// Confidential commands - complete block
-				await cline.say(
+				await task.say(
 					"error",
 					`🚫 **ACCESS DENIED**: Cannot execute confidential command.\n\n⚡ **Command**: \`${command}\`\n🛡️ **Security Pattern**: \`${securityViolation.pattern}\`\n- Matched Rule: ${securityViolation.matchedRule}`,
 				)
@@ -64,7 +64,7 @@ export async function executeCommandTool(
 			} else if (securityViolation?.requiresApproval) {
 				// Commands accessing sensitive files - user approval required
 				// First, inform the user in the chat about the sensitive command
-				await cline.say(
+				await task.say(
 					"text",
 					`🛡️ **PERMISSION REQUIRED**: Sensitive command requires approval for AI execution.\n\n⚡ **Command**: \`${command}\`\n🛡️ **Security Pattern**: \`${securityViolation.pattern}\`\n- Matched Rule: ${securityViolation.matchedRule}`,
 				)
@@ -74,13 +74,13 @@ export async function executeCommandTool(
 
 				if (!didApprove) {
 					// User denied access
-					await cline.say("error", "Command blocked: Access denied to sensitive command")
+					await task.say("error", "Command blocked: Access denied to sensitive command")
 					pushToolResult(formatResponse.toolError("Command blocked: Access denied to sensitive command"))
 					return
 				}
 			}
 
-			cline.consecutiveMistakeCount = 0
+			task.consecutiveMistakeCount = 0
 
 			command = unescapeHtmlEntities(command) // Unescape HTML entities.
 
@@ -93,14 +93,15 @@ export async function executeCommandTool(
 				}
 			}
 
-			const executionId = cline.lastMessageTs?.toString() ?? Date.now().toString()
-			const clineProvider = await cline.providerRef.deref()
-			const clineProviderState = await clineProvider?.getState()
+			const executionId = task.lastMessageTs?.toString() ?? Date.now().toString()
+			const provider = await task.providerRef.deref()
+			const providerState = await provider?.getState()
+
 			const {
 				terminalOutputLineLimit = 500,
 				terminalOutputCharacterLimit = DEFAULT_TERMINAL_OUTPUT_CHARACTER_LIMIT,
 				terminalShellIntegrationDisabled = false,
-			} = clineProviderState ?? {}
+			} = providerState ?? {}
 
 			// Get command execution timeout from VSCode configuration (in seconds)
 			const commandExecutionTimeoutSeconds = vscode.workspace
@@ -129,26 +130,26 @@ export async function executeCommandTool(
 			}
 
 			try {
-				const [rejected, result] = await executeCommand(cline, options)
+				const [rejected, result] = await executeCommand(task, options)
 
 				if (rejected) {
-					cline.didRejectTool = true
+					task.didRejectTool = true
 				}
 
 				pushToolResult(result)
 			} catch (error: unknown) {
 				const status: CommandExecutionStatus = { executionId, status: "fallback" }
-				clineProvider?.postMessageToWebview({ type: "commandExecutionStatus", text: JSON.stringify(status) })
-				await cline.say("shell_integration_warning")
+				provider?.postMessageToWebview({ type: "commandExecutionStatus", text: JSON.stringify(status) })
+				await task.say("shell_integration_warning")
 
 				if (error instanceof ShellIntegrationError) {
-					const [rejected, result] = await executeCommand(cline, {
+					const [rejected, result] = await executeCommand(task, {
 						...options,
 						terminalShellIntegrationDisabled: true,
 					})
 
 					if (rejected) {
-						cline.didRejectTool = true
+						task.didRejectTool = true
 					}
 
 					pushToolResult(result)
@@ -176,7 +177,7 @@ export type ExecuteCommandOptions = {
 }
 
 export async function executeCommand(
-	cline: Task,
+	task: Task,
 	{
 		executionId,
 		command,
@@ -187,16 +188,16 @@ export async function executeCommand(
 		commandExecutionTimeout = 0,
 	}: ExecuteCommandOptions,
 ): Promise<[boolean, ToolResponse]> {
-	// Convert milliseconds back to seconds for display purposes
+	// Convert milliseconds back to seconds for display purposes.
 	const commandExecutionTimeoutSeconds = commandExecutionTimeout / 1000
 	let workingDir: string
 
 	if (!customCwd) {
-		workingDir = cline.cwd
+		workingDir = task.cwd
 	} else if (path.isAbsolute(customCwd)) {
 		workingDir = customCwd
 	} else {
-		workingDir = path.resolve(cline.cwd, customCwd)
+		workingDir = path.resolve(task.cwd, customCwd)
 	}
 
 	try {
@@ -213,7 +214,7 @@ export async function executeCommand(
 	let shellIntegrationError: string | undefined
 
 	const terminalProvider = terminalShellIntegrationDisabled ? "execa" : "vscode"
-	const clineProvider = await cline.providerRef.deref()
+	const provider = await task.providerRef.deref()
 
 	let accumulatedOutput = ""
 	const callbacks: RooTerminalCallbacks = {
@@ -225,14 +226,14 @@ export async function executeCommand(
 				terminalOutputCharacterLimit,
 			)
 			const status: CommandExecutionStatus = { executionId, status: "output", output: compressedOutput }
-			clineProvider?.postMessageToWebview({ type: "commandExecutionStatus", text: JSON.stringify(status) })
+			provider?.postMessageToWebview({ type: "commandExecutionStatus", text: JSON.stringify(status) })
 
 			if (runInBackground) {
 				return
 			}
 
 			try {
-				const { response, text, images } = await cline.ask("command_output", "")
+				const { response, text, images } = await task.ask("command_output", "")
 				runInBackground = true
 
 				if (response === "messageResponse") {
@@ -247,29 +248,30 @@ export async function executeCommand(
 				terminalOutputLineLimit,
 				terminalOutputCharacterLimit,
 			)
-			cline.say("command_output", result)
+
+			task.say("command_output", result)
 			completed = true
 		},
 		onShellExecutionStarted: (pid: number | undefined) => {
 			console.log(`[executeCommand] onShellExecutionStarted: ${pid}`)
 			const status: CommandExecutionStatus = { executionId, status: "started", pid, command }
-			clineProvider?.postMessageToWebview({ type: "commandExecutionStatus", text: JSON.stringify(status) })
+			provider?.postMessageToWebview({ type: "commandExecutionStatus", text: JSON.stringify(status) })
 		},
 		onShellExecutionComplete: (details: ExitCodeDetails) => {
 			const status: CommandExecutionStatus = { executionId, status: "exited", exitCode: details.exitCode }
-			clineProvider?.postMessageToWebview({ type: "commandExecutionStatus", text: JSON.stringify(status) })
+			provider?.postMessageToWebview({ type: "commandExecutionStatus", text: JSON.stringify(status) })
 			exitDetails = details
 		},
 	}
 
 	if (terminalProvider === "vscode") {
 		callbacks.onNoShellIntegration = async (error: string) => {
-			TelemetryService.instance.captureShellIntegrationError(cline.taskId)
+			TelemetryService.instance.captureShellIntegrationError(task.taskId)
 			shellIntegrationError = error
 		}
 	}
 
-	const terminal = await TerminalRegistry.getOrCreateTerminal(workingDir, !!customCwd, cline.taskId, terminalProvider)
+	const terminal = await TerminalRegistry.getOrCreateTerminal(workingDir, task.taskId, terminalProvider)
 
 	if (terminal instanceof Terminal) {
 		terminal.terminal.show(true)
@@ -281,9 +283,9 @@ export async function executeCommand(
 	}
 
 	const process = terminal.runCommand(command, callbacks)
-	cline.terminalProcess = process
+	task.terminalProcess = process
 
-	// Implement command execution timeout (skip if timeout is 0)
+	// Implement command execution timeout (skip if timeout is 0).
 	if (commandExecutionTimeout > 0) {
 		let timeoutId: NodeJS.Timeout | undefined
 		let isTimedOut = false
@@ -291,10 +293,7 @@ export async function executeCommand(
 		const timeoutPromise = new Promise<void>((_, reject) => {
 			timeoutId = setTimeout(() => {
 				isTimedOut = true
-				// Try to abort the process
-				if (cline.terminalProcess) {
-					cline.terminalProcess.abort()
-				}
+				task.terminalProcess?.abort()
 				reject(new Error(`Command execution timed out after ${commandExecutionTimeout}ms`))
 			}, commandExecutionTimeout)
 		})
@@ -303,17 +302,10 @@ export async function executeCommand(
 			await Promise.race([process, timeoutPromise])
 		} catch (error) {
 			if (isTimedOut) {
-				// Handle timeout case
 				const status: CommandExecutionStatus = { executionId, status: "timeout" }
-				clineProvider?.postMessageToWebview({ type: "commandExecutionStatus", text: JSON.stringify(status) })
-
-				// Add visual feedback for timeout
-				await cline.say(
-					"error",
-					t("common:errors:command_timeout", { seconds: commandExecutionTimeoutSeconds }),
-				)
-
-				cline.terminalProcess = undefined
+				provider?.postMessageToWebview({ type: "commandExecutionStatus", text: JSON.stringify(status) })
+				await task.say("error", t("common:errors:command_timeout", { seconds: commandExecutionTimeoutSeconds }))
+				task.terminalProcess = undefined
 
 				return [
 					false,
@@ -325,14 +317,15 @@ export async function executeCommand(
 			if (timeoutId) {
 				clearTimeout(timeoutId)
 			}
-			cline.terminalProcess = undefined
+
+			task.terminalProcess = undefined
 		}
 	} else {
-		// No timeout - just wait for the process to complete
+		// No timeout - just wait for the process to complete.
 		try {
 			await process
 		} finally {
-			cline.terminalProcess = undefined
+			task.terminalProcess = undefined
 		}
 	}
 
@@ -349,7 +342,7 @@ export async function executeCommand(
 
 	if (message) {
 		const { text, images } = message
-		await cline.say("user_feedback", text, images)
+		await task.say("user_feedback", text, images)
 
 		return [
 			true,

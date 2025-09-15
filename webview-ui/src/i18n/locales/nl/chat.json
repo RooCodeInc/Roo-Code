@@ -2,12 +2,15 @@
 	"greeting": "Welkom bij Roo Code",
 	"task": {
 		"title": "Taak",
+		"expand": "Taak uitvouwen",
+		"collapse": "Taak samenvouwen",
 		"seeMore": "Meer weergeven",
 		"seeLess": "Minder weergeven",
-		"tokens": "Tokens:",
-		"cache": "Cache:",
-		"apiCost": "API-kosten:",
-		"contextWindow": "Contextlengte:",
+		"tokens": "Tokens",
+		"cache": "Cache",
+		"apiCost": "API-kosten",
+		"size": "Grootte",
+		"contextWindow": "Contextlengte",
 		"closeAndStart": "Taak sluiten en een nieuwe starten",
 		"export": "Taakgeschiedenis exporteren",
 		"delete": "Taak verwijderen (Shift + Klik om bevestiging over te slaan)",
@@ -21,7 +24,9 @@
 		"connectToCloudDescription": "Meld je aan bij Roo Code Cloud om taken te delen",
 		"sharingDisabledByOrganization": "Delen uitgeschakeld door organisatie",
 		"shareSuccessOrganization": "Organisatielink gekopieerd naar klembord",
-		"shareSuccessPublic": "Openbare link gekopieerd naar klembord"
+		"shareSuccessPublic": "Openbare link gekopieerd naar klembord",
+		"openInCloud": "Taak openen in Roo Code Cloud",
+		"openInCloudIntro": "Blijf Roo vanaf elke locatie monitoren of ermee interacteren. Scan, klik of kopieer om te openen."
 	},
 	"unpin": "Losmaken",
 	"pin": "Vastmaken",
@@ -108,14 +113,16 @@
 		"title": "Modi",
 		"marketplace": "Modus Marktplaats",
 		"settings": "Modus Instellingen",
-		"description": "Gespecialiseerde persona's die het gedrag van Roo aanpassen."
+		"description": "Gespecialiseerde persona's die het gedrag van Roo aanpassen.",
+		"searchPlaceholder": "Zoek modi...",
+		"noResults": "Geen resultaten gevonden"
 	},
 	"addImages": "Afbeeldingen toevoegen aan bericht",
 	"sendMessage": "Bericht verzenden",
 	"stopTts": "Stop tekst-naar-spraak",
 	"typeMessage": "Typ een bericht...",
 	"typeTask": "Typ hier je taak...",
-	"addContext": "@ om context toe te voegen, / om van modus te wisselen",
+	"addContext": "@ om context toe te voegen, / voor commando's",
 	"dragFiles": "houd shift ingedrukt om bestanden te slepen",
 	"dragFilesImages": "houd shift ingedrukt om bestanden/afbeeldingen te slepen",
 	"errorReadingFile": "Fout bij het lezen van bestand:",
@@ -132,7 +139,6 @@
 		"streamingFailed": "API-streaming mislukt"
 	},
 	"checkpoint": {
-		"initial": "Initiële checkpoint",
 		"regular": "Checkpoint",
 		"initializingWarning": "Checkpoint wordt nog steeds geïnitialiseerd... Als dit te lang duurt, kun je checkpoints uitschakelen in de <settingsLink>instellingen</settingsLink> en je taak opnieuw starten.",
 		"menu": {
@@ -166,7 +172,11 @@
 		"wantsToInsertAtEnd": "Roo wil inhoud toevoegen aan het einde van dit bestand:",
 		"wantsToReadAndXMore": "Roo wil dit bestand en nog {{count}} andere lezen:",
 		"wantsToReadMultiple": "Roo wil meerdere bestanden lezen:",
-		"wantsToApplyBatchChanges": "Roo wil wijzigingen toepassen op meerdere bestanden:"
+		"wantsToApplyBatchChanges": "Roo wil wijzigingen toepassen op meerdere bestanden:",
+		"wantsToGenerateImage": "Roo wil een afbeelding genereren:",
+		"wantsToGenerateImageOutsideWorkspace": "Roo wil een afbeelding genereren buiten de werkruimte:",
+		"wantsToGenerateImageProtected": "Roo wil een afbeelding genereren op een beschermde locatie:",
+		"didGenerateImage": "Roo heeft een afbeelding gegenereerd:"
 	},
 	"directoryOperations": {
 		"wantsToViewTopLevel": "Roo wil de bovenliggende bestanden in deze map bekijken:",
@@ -187,6 +197,22 @@
 		"didViewDefinitionsOutsideWorkspace": "Roo heeft broncode-definitienamen bekeken die in deze map (buiten werkruimte) worden gebruikt:"
 	},
 	"commandOutput": "Commando-uitvoer",
+	"commandExecution": {
+		"running": "Lopend",
+		"pid": "PID: {{pid}}",
+		"exited": "Afgesloten ({{exitCode}})",
+		"manageCommands": "Beheer Commando Toestemmingen",
+		"commandManagementDescription": "Beheer commando toestemmingen: Klik op ✓ om automatische uitvoering toe te staan, ✗ om uitvoering te weigeren. Patronen kunnen worden in- of uitgeschakeld of uit lijsten worden verwijderd. <settingsLink>Bekijk alle instellingen</settingsLink>",
+		"addToAllowed": "Toevoegen aan toegestane lijst",
+		"removeFromAllowed": "Verwijderen van toegestane lijst",
+		"addToDenied": "Toevoegen aan geweigerde lijst",
+		"removeFromDenied": "Verwijderen van geweigerde lijst",
+		"abortCommand": "Commando-uitvoering afbreken",
+		"expandOutput": "Uitvoer uitvouwen",
+		"collapseOutput": "Uitvoer samenvouwen",
+		"expandManagement": "Beheersectie voor commando's uitvouwen",
+		"collapseManagement": "Beheersectie voor commando's samenvouwen"
+	},
 	"response": "Antwoord",
 	"arguments": "Argumenten",
 	"mcp": {
@@ -230,13 +256,12 @@
 	},
 	"announcement": {
 		"title": "🎉 Roo Code {{version}} uitgebracht",
-		"description": "Roo Code {{version}} brengt krachtige nieuwe functies en significante verbeteringen om je ontwikkelingsworkflow te verbeteren.",
-		"whatsNew": "Wat is er nieuw",
-		"feature1": "<bold>Codebase Indexering Afgestudeerd van Experimenteel</bold>: Volledige codebase indexering is nu stabiel en klaar voor productiegebruik met verbeterde zoekfunctionaliteit en contextbegrip.",
-		"feature2": "<bold>Nieuwe Todo Lijst Functie</bold>: Houd je taken op koers met geïntegreerd todo-beheer dat je helpt georganiseerd en gefocust te blijven op je ontwikkelingsdoelen.",
-		"feature3": "<bold>Verbeterde Architect naar Code Overgangen</bold>: Soepele overdrachten van planning in Architect modus naar implementatie in Code modus.",
-		"hideButton": "Aankondiging verbergen",
-		"detailsDiscussLinks": "Krijg meer details en doe mee aan discussies op <discordLink>Discord</discordLink> en <redditLink>Reddit</redditLink> 🚀"
+		"description": "Introductie van <bold>Roo Code Cloud:</bold> De kracht van Roo brengen voorbij de IDE",
+		"feature1": "<bold>Volg taakvoortgang overal (Gratis):</bold> Krijg realtime updates van langlopende taken zonder vast te zitten in je IDE",
+		"feature2": "<bold>Bestuur de Roo Extensie op afstand (Pro):</bold> Start, stop en interacteer met taken vanuit een chat-gebaseerde browserinterface.",
+		"learnMore": "Klaar om de controle te nemen? Leer meer <learnMoreLink>hier</learnMoreLink>.",
+		"visitCloudButton": "Bezoek Roo Code Cloud",
+		"socialLinks": "Sluit je bij ons aan op <xLink>X</xLink>, <discordLink>Discord</discordLink>, of <redditLink>r/RooCode</redditLink>"
 	},
 	"reasoning": {
 		"thinking": "Denkt na",
@@ -296,6 +321,11 @@
 			"title": "Limiet voor automatisch goedgekeurde verzoeken bereikt",
 			"description": "Roo heeft de automatisch goedgekeurde limiet van {{count}} API-verzoek(en) bereikt. Wil je de teller resetten en doorgaan met de taak?",
 			"button": "Resetten en doorgaan"
+		},
+		"autoApprovedCostLimitReached": {
+			"title": "Limiet voor automatisch goedgekeurde kosten bereikt",
+			"button": "Resetten en doorgaan",
+			"description": "Roo heeft de automatisch goedgekeurde kostenlimiet van ${{count}} bereikt. Wilt u de kosten resetten en doorgaan met de taak?"
 		}
 	},
 	"codebaseSearch": {
@@ -323,7 +353,42 @@
 	"versionIndicator": {
 		"ariaLabel": "Versie {{version}} - Klik om release notes te bekijken"
 	},
+	"rooCloudCTA": {
+		"title": "Roo Code Cloud evolueert!",
+		"description": "Voer externe agenten uit in de cloud, krijg overal toegang tot je taken, werk samen met anderen en nog veel meer.",
+		"joinWaitlist": "Meld je aan om de laatste updates te ontvangen."
+	},
 	"editMessage": {
 		"placeholder": "Bewerk je bericht..."
+	},
+	"command": {
+		"triggerDescription": "Activeer de {{name}} opdracht"
+	},
+	"slashCommands": {
+		"tooltip": "Slash-opdrachten beheren",
+		"title": "Slash-opdrachten",
+		"description": "Gebruik ingebouwde slash-opdrachten of maak aangepaste voor snelle toegang tot veelgebruikte prompts en workflows. <DocsLink>Documentatie</DocsLink>",
+		"builtInCommands": "Ingebouwde Opdrachten",
+		"globalCommands": "Globale Opdrachten",
+		"workspaceCommands": "Werkruimte Opdrachten",
+		"globalCommand": "Globale opdracht",
+		"editCommand": "Opdracht bewerken",
+		"deleteCommand": "Opdracht verwijderen",
+		"newGlobalCommandPlaceholder": "Nieuwe globale opdracht...",
+		"newWorkspaceCommandPlaceholder": "Nieuwe werkruimte opdracht...",
+		"deleteDialog": {
+			"title": "Opdracht Verwijderen",
+			"description": "Weet je zeker dat je de opdracht \"{{name}}\" wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
+			"cancel": "Annuleren",
+			"confirm": "Verwijderen"
+		}
+	},
+	"queuedMessages": {
+		"title": "Berichten in wachtrij:",
+		"clickToEdit": "Klik om bericht te bewerken"
+	},
+	"slashCommand": {
+		"wantsToRun": "Roo wil een slash commando uitvoeren:",
+		"didRun": "Roo heeft een slash commando uitgevoerd:"
 	}
 }

@@ -52,6 +52,9 @@
 		"geminiProvider": "Gemini",
 		"geminiApiKeyLabel": "API-Schlüssel:",
 		"geminiApiKeyPlaceholder": "Geben Sie Ihren Gemini-API-Schlüssel ein",
+		"vercelAiGatewayProvider": "Vercel AI Gateway",
+		"vercelAiGatewayApiKeyLabel": "API-Schlüssel",
+		"vercelAiGatewayApiKeyPlaceholder": "Gib deinen Vercel AI Gateway API-Schlüssel ein",
 		"mistralProvider": "Mistral",
 		"mistralApiKeyLabel": "API-Schlüssel:",
 		"mistralApiKeyPlaceholder": "Gib deinen Mistral-API-Schlüssel ein",
@@ -113,6 +116,7 @@
 			"modelDimensionRequired": "Modellabmessung ist erforderlich",
 			"geminiApiKeyRequired": "Gemini-API-Schlüssel ist erforderlich",
 			"mistralApiKeyRequired": "Mistral-API-Schlüssel ist erforderlich",
+			"vercelAiGatewayApiKeyRequired": "Vercel AI Gateway API-Schlüssel ist erforderlich",
 			"ollamaBaseUrlRequired": "Ollama-Basis-URL ist erforderlich",
 			"baseUrlRequired": "Basis-URL ist erforderlich",
 			"modelDimensionMinValue": "Modellabmessung muss größer als 0 sein"
@@ -127,6 +131,7 @@
 	},
 	"autoApprove": {
 		"description": "Erlaubt Roo, Operationen automatisch ohne Genehmigung durchzuführen. Aktiviere diese Einstellungen nur, wenn du der KI vollständig vertraust und die damit verbundenen Sicherheitsrisiken verstehst.",
+		"enabled": "Auto-Genehmigung aktiviert",
 		"toggleAriaLabel": "Automatische Genehmigung umschalten",
 		"disabledAriaLabel": "Automatische Genehmigung deaktiviert - zuerst Optionen auswählen",
 		"readOnly": {
@@ -197,7 +202,14 @@
 			"description": "Automatisch so viele API-Anfragen stellen, bevor du um die Erlaubnis gebeten wirst, mit der Aufgabe fortzufahren.",
 			"unlimited": "Unbegrenzt"
 		},
-		"selectOptionsFirst": "Wähle mindestens eine Option unten aus, um die automatische Genehmigung zu aktivieren"
+		"selectOptionsFirst": "Wähle mindestens eine Option unten aus, um die automatische Genehmigung zu aktivieren",
+		"apiCostLimit": {
+			"title": "Maximale Kosten",
+			"unlimited": "Unbegrenzt"
+		},
+		"maxLimits": {
+			"description": "Anfragen bis zu diesen Grenzwerten automatisch stellen, bevor um Genehmigung zur Fortsetzung gebeten wird."
+		}
 	},
 	"providers": {
 		"providerDocumentation": "{{provider}}-Dokumentation",
@@ -225,6 +237,10 @@
 		"awsCustomArnDesc": "Stellen Sie sicher, dass die Region in der ARN mit Ihrer oben ausgewählten AWS-Region übereinstimmt.",
 		"openRouterApiKey": "OpenRouter API-Schlüssel",
 		"getOpenRouterApiKey": "OpenRouter API-Schlüssel erhalten",
+		"vercelAiGatewayApiKey": "Vercel AI Gateway API-Schlüssel",
+		"getVercelAiGatewayApiKey": "Vercel AI Gateway API-Schlüssel erhalten",
+		"doubaoApiKey": "Doubao API-Schlüssel",
+		"getDoubaoApiKey": "Doubao API-Schlüssel erhalten",
 		"apiKeyStorageNotice": "API-Schlüssel werden sicher im VSCode Secret Storage gespeichert",
 		"glamaApiKey": "Glama API-Schlüssel",
 		"getGlamaApiKey": "Glama API-Schlüssel erhalten",
@@ -245,20 +261,54 @@
 			"error": "Fehler beim Aktualisieren der Modellliste. Bitte versuche es erneut."
 		},
 		"getRequestyApiKey": "Requesty API-Schlüssel erhalten",
+		"getRequestyBaseUrl": "Basis-URL",
+		"requestyUseCustomBaseUrl": "Benutzerdefinierte Basis-URL verwenden",
 		"openRouterTransformsText": "Prompts und Nachrichtenketten auf Kontextgröße komprimieren (<a>OpenRouter Transformationen</a>)",
 		"anthropicApiKey": "Anthropic API-Schlüssel",
 		"getAnthropicApiKey": "Anthropic API-Schlüssel erhalten",
 		"anthropicUseAuthToken": "Anthropic API-Schlüssel als Authorization-Header anstelle von X-Api-Key übergeben",
+		"anthropic1MContextBetaLabel": "1M Kontextfenster aktivieren (Beta)",
+		"anthropic1MContextBetaDescription": "Erweitert das Kontextfenster für Claude Sonnet 4 auf 1 Million Token",
+		"awsBedrock1MContextBetaLabel": "1M Kontextfenster aktivieren (Beta)",
+		"awsBedrock1MContextBetaDescription": "Erweitert das Kontextfenster für Claude Sonnet 4 auf 1 Million Token",
+		"cerebrasApiKey": "Cerebras API-Schlüssel",
+		"getCerebrasApiKey": "Cerebras API-Schlüssel erhalten",
 		"chutesApiKey": "Chutes API-Schlüssel",
 		"getChutesApiKey": "Chutes API-Schlüssel erhalten",
+		"fireworksApiKey": "Fireworks API-Schlüssel",
+		"getFireworksApiKey": "Fireworks API-Schlüssel erhalten",
+		"featherlessApiKey": "Featherless API-Schlüssel",
+		"getFeatherlessApiKey": "Featherless API-Schlüssel erhalten",
+		"ioIntelligenceApiKey": "IO Intelligence API-Schlüssel",
+		"ioIntelligenceApiKeyPlaceholder": "Gib deinen IO Intelligence API-Schlüssel ein",
+		"getIoIntelligenceApiKey": "IO Intelligence API-Schlüssel erhalten",
 		"deepSeekApiKey": "DeepSeek API-Schlüssel",
 		"getDeepSeekApiKey": "DeepSeek API-Schlüssel erhalten",
 		"moonshotApiKey": "Moonshot API-Schlüssel",
 		"getMoonshotApiKey": "Moonshot API-Schlüssel erhalten",
 		"moonshotBaseUrl": "Moonshot-Einstiegspunkt",
+		"zaiApiKey": "Z AI API-Schlüssel",
+		"getZaiApiKey": "Z AI API-Schlüssel erhalten",
+		"zaiEntrypoint": "Z AI Einstiegspunkt",
+		"zaiEntrypointDescription": "Bitte wählen Sie den entsprechenden API-Einstiegspunkt basierend auf Ihrem Standort. Wenn Sie sich in China befinden, wählen Sie open.bigmodel.cn. Andernfalls wählen Sie api.z.ai.",
 		"geminiApiKey": "Gemini API-Schlüssel",
 		"getGroqApiKey": "Groq API-Schlüssel erhalten",
 		"groqApiKey": "Groq API-Schlüssel",
+		"getSambaNovaApiKey": "SambaNova API-Schlüssel erhalten",
+		"sambaNovaApiKey": "SambaNova API-Schlüssel",
+		"getHuggingFaceApiKey": "Hugging Face API-Schlüssel erhalten",
+		"huggingFaceApiKey": "Hugging Face API-Schlüssel",
+		"huggingFaceModelId": "Modell-ID",
+		"huggingFaceLoading": "Lädt...",
+		"huggingFaceModelsCount": "({{count}} Modelle)",
+		"huggingFaceSelectModel": "Modell auswählen...",
+		"huggingFaceSearchModels": "Modelle durchsuchen...",
+		"huggingFaceNoModelsFound": "Keine Modelle gefunden",
+		"huggingFaceProvider": "Anbieter",
+		"huggingFaceProviderAuto": "Automatisch",
+		"huggingFaceSelectProvider": "Anbieter auswählen...",
+		"huggingFaceSearchProviders": "Anbieter durchsuchen...",
+		"huggingFaceNoProvidersFound": "Keine Anbieter gefunden",
 		"getGeminiApiKey": "Gemini API-Schlüssel erhalten",
 		"openAiApiKey": "OpenAI API-Schlüssel",
 		"apiKey": "API-Schlüssel",
@@ -274,6 +324,7 @@
 		"litellmBaseUrl": "LiteLLM Basis-URL",
 		"awsCredentials": "AWS Anmeldedaten",
 		"awsProfile": "AWS Profil",
+		"awsApiKey": "Amazon Bedrock API-Schlüssel",
 		"awsProfileName": "AWS Profilname",
 		"awsAccessKey": "AWS Zugangsschlüssel",
 		"awsSecretKey": "AWS Geheimschlüssel",
@@ -290,6 +341,16 @@
 		"cacheUsageNote": "Hinweis: Wenn Sie keine Cache-Nutzung sehen, versuchen Sie ein anderes Modell auszuwählen und dann Ihr gewünschtes Modell erneut auszuwählen.",
 		"vscodeLmModel": "Sprachmodell",
 		"vscodeLmWarning": "Hinweis: Dies ist eine sehr experimentelle Integration und die Anbieterunterstützung variiert. Wenn Sie einen Fehler über ein nicht unterstütztes Modell erhalten, liegt das Problem auf Anbieterseite.",
+		"geminiParameters": {
+			"urlContext": {
+				"title": "URL-Kontext aktivieren",
+				"description": "Ermöglicht Gemini, verlinkte Seiten zu lesen, um deren Inhalt zu extrahieren, zu vergleichen und in fundierte Antworten zu synthetisieren."
+			},
+			"groundingSearch": {
+				"title": "Grounding mit Google Suche aktivieren",
+				"description": "Verbindet Gemini mit Echtzeit-Webdaten für genaue, aktuelle Antworten mit überprüfbaren Zitaten."
+			}
+		},
 		"googleCloudSetup": {
 			"title": "Um Google Cloud Vertex AI zu verwenden, müssen Sie:",
 			"step1": "1. Ein Google Cloud-Konto erstellen, die Vertex AI API aktivieren & die gewünschten Claude-Modelle aktivieren.",
@@ -313,6 +374,8 @@
 		"ollama": {
 			"baseUrl": "Basis-URL (optional)",
 			"modelId": "Modell-ID",
+			"apiKey": "Ollama API-Schlüssel",
+			"apiKeyHelp": "Optionaler API-Schlüssel für authentifizierte Ollama-Instanzen oder Cloud-Services. Leer lassen für lokale Installationen.",
 			"description": "Ollama ermöglicht es dir, Modelle lokal auf deinem Computer auszuführen. Eine Anleitung zum Einstieg findest du im Schnellstart-Guide.",
 			"warning": "Hinweis: Roo Code verwendet komplexe Prompts und funktioniert am besten mit Claude-Modellen. Weniger leistungsfähige Modelle funktionieren möglicherweise nicht wie erwartet."
 		},
@@ -323,6 +386,10 @@
 		"humanRelay": {
 			"description": "Es ist kein API-Schlüssel erforderlich, aber der Benutzer muss beim Kopieren und Einfügen der Informationen in den Web-Chat-KI helfen.",
 			"instructions": "Während der Verwendung wird ein Dialogfeld angezeigt und die aktuelle Nachricht wird automatisch in die Zwischenablage kopiert. Du musst diese in Web-Versionen von KI (wie ChatGPT oder Claude) einfügen, dann die Antwort der KI zurück in das Dialogfeld kopieren und auf die Bestätigungsschaltfläche klicken."
+		},
+		"roo": {
+			"authenticatedMessage": "Sicher authentifiziert über dein Roo Code Cloud-Konto.",
+			"connectButton": "Mit Roo Code Cloud verbinden"
 		},
 		"openRouter": {
 			"providerRouting": {
@@ -385,9 +452,17 @@
 		},
 		"reasoningEffort": {
 			"label": "Modell-Denkaufwand",
+			"minimal": "Minimal (schnellste)",
 			"high": "Hoch",
 			"medium": "Mittel",
 			"low": "Niedrig"
+		},
+		"verbosity": {
+			"label": "Ausgabe-Ausführlichkeit",
+			"high": "Hoch",
+			"medium": "Mittel",
+			"low": "Niedrig",
+			"description": "Steuert, wie detailliert die Antworten des Modells sind. Niedrige Ausführlichkeit erzeugt knappe Antworten, während hohe Ausführlichkeit gründliche Erklärungen liefert."
 		},
 		"setReasoningLevel": "Denkaufwand aktivieren",
 		"claudeCode": {
@@ -488,6 +563,22 @@
 			"lines": "Zeilen",
 			"always_full_read": "Immer die gesamte Datei lesen"
 		},
+		"diagnostics": {
+			"includeMessages": {
+				"label": "Diagnosen automatisch in den Kontext aufnehmen",
+				"description": "Wenn aktiviert, werden Diagnosenachrichten (Fehler) aus bearbeiteten Dateien automatisch in den Kontext aufgenommen. Sie können jederzeit alle Workspace-Diagnosen manuell mit @problems einbeziehen."
+			},
+			"maxMessages": {
+				"label": "Maximale Anzahl von Diagnosenachrichten",
+				"description": "Maximale Anzahl von Diagnosenachrichten, die pro Datei eingeschlossen werden. Dieses Limit gilt sowohl für die automatische Einbeziehung (wenn das Kontrollkästchen aktiviert ist) als auch für manuelle @problems-Erwähnungen. Höhere Werte bieten mehr Kontext, erhöhen aber den Token-Verbrauch.",
+				"resetTooltip": "Auf Standardwert zurücksetzen (50)",
+				"unlimitedLabel": "Unbegrenzt"
+			},
+			"delayAfterWrite": {
+				"label": "Verzögerung nach Schreibvorgängen, damit Diagnosen potenzielle Probleme erkennen können",
+				"description": "Wartezeit nach Dateischreibvorgängen vor dem Fortfahren, damit Diagnosetools Änderungen verarbeiten und Probleme erkennen können."
+			}
+		},
 		"condensingThreshold": {
 			"label": "Schwellenwert für Kontextkomprimierung",
 			"selectProfile": "Profil für Schwellenwert konfigurieren",
@@ -496,6 +587,16 @@
 			"profileDescription": "Benutzerdefinierter Schwellenwert nur für dieses Profil (überschreibt globalen Standard)",
 			"inheritDescription": "Dieses Profil erbt den globalen Standard-Schwellenwert ({{threshold}}%)",
 			"usesGlobal": "(verwendet global {{threshold}}%)"
+		},
+		"maxImageFileSize": {
+			"label": "Maximale Bilddateigröße",
+			"mb": "MB",
+			"description": "Maximale Größe (in MB) für Bilddateien, die vom read file Tool verarbeitet werden können."
+		},
+		"maxTotalImageSize": {
+			"label": "Maximale Gesamtbildgröße",
+			"mb": "MB",
+			"description": "Maximales kumulatives Größenlimit (in MB) für alle Bilder, die in einer einzelnen read_file-Operation verarbeitet werden. Beim Lesen mehrerer Bilder wird die Größe jedes Bildes zur Gesamtsumme addiert. Wenn das Einbeziehen eines weiteren Bildes dieses Limit überschreiten würde, wird es übersprungen."
 		}
 	},
 	"terminal": {
@@ -622,6 +723,33 @@
 		"SECURITY_MIDDLEWARE": {
 			"name": "RooCode Sicherheits-Middleware",
 			"description": "Sicherheits-Middleware aktivieren, um vertrauliche Dateien und Befehle vor KI-Zugriff zu schützen. Diese Funktion bietet Schutz auf Unternehmensebene gegen unbefugten Zugriff auf sensible Daten."
+		},
+		"PREVENT_FOCUS_DISRUPTION": {
+			"name": "Hintergrundbearbeitung",
+			"description": "Verhindert Editor-Fokus-Störungen wenn aktiviert. Dateibearbeitungen erfolgen im Hintergrund ohne Öffnung von Diff-Ansichten oder Fokus-Diebstahl. Du kannst ungestört weiterarbeiten, während Roo Änderungen vornimmt. Dateien können ohne Fokus geöffnet werden, um Diagnosen zu erfassen oder vollständig geschlossen bleiben."
+		},
+		"ASSISTANT_MESSAGE_PARSER": {
+			"name": "Neuen Nachrichtenparser verwenden",
+			"description": "Aktiviere den experimentellen Streaming-Nachrichtenparser, der lange Antworten durch effizientere Verarbeitung spürbar schneller macht."
+		},
+		"NEW_TASK_REQUIRE_TODOS": {
+			"name": "'todos'-Liste für neue Aufgaben anfordern",
+			"description": "Wenn aktiviert, erfordert das new_task-Tool die Angabe eines todos-Parameters. Dies stellt sicher, dass alle neuen Aufgaben mit einer klaren Zielliste beginnen. Wenn deaktiviert (Standard), bleibt der todos-Parameter aus Gründen der Abwärtskompatibilität optional."
+		},
+		"IMAGE_GENERATION": {
+			"name": "KI-Bildgenerierung aktivieren",
+			"description": "Wenn aktiviert, kann Roo Bilder aus Textprompts mit OpenRouters Bildgenerierungsmodellen erstellen. Erfordert einen konfigurierten OpenRouter API-Schlüssel.",
+			"openRouterApiKeyLabel": "OpenRouter API-Schlüssel",
+			"openRouterApiKeyPlaceholder": "Gib deinen OpenRouter API-Schlüssel ein",
+			"getApiKeyText": "Hol dir deinen API-Schlüssel von",
+			"modelSelectionLabel": "Bildgenerierungsmodell",
+			"modelSelectionDescription": "Wähle das Modell für die Bildgenerierung aus",
+			"warningMissingKey": "⚠️ OpenRouter API-Schlüssel ist für Bildgenerierung erforderlich. Bitte konfiguriere ihn oben.",
+			"successConfigured": "✓ Bildgenerierung ist konfiguriert und einsatzbereit"
+		},
+		"RUN_SLASH_COMMAND": {
+			"name": "Modellinitierte Slash-Befehle aktivieren",
+			"description": "Wenn aktiviert, kann Roo deine Slash-Befehle ausführen, um Workflows zu starten."
 		}
 	},
 	"promptCaching": {
@@ -640,6 +768,7 @@
 		"noComputerUse": "Unterstützt keine Computernutzung",
 		"supportsPromptCache": "Unterstützt Prompt-Cache",
 		"noPromptCache": "Unterstützt keinen Prompt-Cache",
+		"contextWindow": "Kontextfenster:",
 		"maxOutput": "Maximale Ausgabe",
 		"inputPrice": "Eingabepreis",
 		"outputPrice": "Ausgabepreis",
@@ -667,7 +796,7 @@
 		"feedback": "Wenn du Fragen oder Feedback hast, kannst du gerne ein Issue auf <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> eröffnen oder <redditLink>reddit.com/r/RooCode</redditLink> oder <discordLink>discord.gg/roocode</discordLink> beitreten",
 		"telemetry": {
 			"label": "Anonyme Fehler- und Nutzungsberichte zulassen",
-			"description": "Hilf mit, Roo Code zu verbessern, indem du anonyme Nutzungsdaten und Fehlerberichte sendest. Es werden niemals Code, Prompts oder persönliche Informationen gesendet (es sei denn, du verbindest dich mit Roo Code Cloud). Weitere Einzelheiten findest du in unserer <privacyLink>Datenschutzrichtlinie</privacyLink>."
+			"description": "Hilf mit, Roo Code zu verbessern, indem du anonyme Nutzungsdaten und Fehlerberichte sendest. Diese Telemetrie sammelt keine Code-, Prompt- oder persönliche Informationen. Weitere Einzelheiten findest du in unserer <privacyLink>Datenschutzrichtlinie</privacyLink>."
 		},
 		"settings": {
 			"import": "Importieren",
@@ -693,7 +822,8 @@
 		"modelAvailability": "Die von dir angegebene Modell-ID ({{modelId}}) ist nicht verfügbar. Bitte wähle ein anderes Modell.",
 		"providerNotAllowed": "Anbieter '{{provider}}' ist von deiner Organisation nicht erlaubt",
 		"modelNotAllowed": "Modell '{{model}}' ist für Anbieter '{{provider}}' von deiner Organisation nicht erlaubt",
-		"profileInvalid": "Dieses Profil enthält einen Anbieter oder ein Modell, das von deiner Organisation nicht erlaubt ist"
+		"profileInvalid": "Dieses Profil enthält einen Anbieter oder ein Modell, das von deiner Organisation nicht erlaubt ist",
+		"qwenCodeOauthPath": "Du musst einen gültigen OAuth-Anmeldedaten-Pfad angeben"
 	},
 	"placeholders": {
 		"apiKey": "API-Schlüssel eingeben...",
@@ -729,5 +859,22 @@
 		"useCustomArn": "Benutzerdefinierte ARN verwenden..."
 	},
 	"includeMaxOutputTokens": "Maximale Ausgabe-Tokens einbeziehen",
-	"includeMaxOutputTokensDescription": "Senden Sie den Parameter für maximale Ausgabe-Tokens in API-Anfragen. Einige Anbieter unterstützen dies möglicherweise nicht."
+	"includeMaxOutputTokensDescription": "Senden Sie den Parameter für maximale Ausgabe-Tokens in API-Anfragen. Einige Anbieter unterstützen dies möglicherweise nicht.",
+	"limitMaxTokensDescription": "Begrenze die maximale Anzahl von Tokens in der Antwort",
+	"maxOutputTokensLabel": "Maximale Ausgabe-Tokens",
+	"maxTokensGenerateDescription": "Maximale Tokens, die in der Antwort generiert werden",
+	"serviceTier": {
+		"label": "Service-Stufe",
+		"tooltip": "Für eine schnellere Verarbeitung von API-Anfragen, probiere die Prioritäts-Verarbeitungsstufe. Für niedrigere Preise bei höherer Latenz, probiere die Flex-Verarbeitungsstufe.",
+		"standard": "Standard",
+		"flex": "Flex",
+		"priority": "Priorität",
+		"pricingTableTitle": "Preise nach Service-Stufe (Preis pro 1 Mio. Token)",
+		"columns": {
+			"tier": "Stufe",
+			"input": "Eingabe",
+			"output": "Ausgabe",
+			"cacheReads": "Cache-Lesevorgänge"
+		}
+	}
 }

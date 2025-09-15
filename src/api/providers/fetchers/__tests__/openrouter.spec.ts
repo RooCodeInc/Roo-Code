@@ -11,7 +11,7 @@ import {
 	OPEN_ROUTER_REQUIRED_REASONING_BUDGET_MODELS,
 } from "@roo-code/types"
 
-import { getOpenRouterModelEndpoints, getOpenRouterModels } from "../openrouter"
+import { getOpenRouterModelEndpoints, getOpenRouterModels, parseOpenRouterModel } from "../openrouter"
 
 nockBack.fixtures = path.join(__dirname, "fixtures")
 nockBack.setMode("lockdown")
@@ -24,6 +24,7 @@ describe("OpenRouter API", () => {
 			const models = await getOpenRouterModels()
 
 			const openRouterSupportedCaching = Object.entries(models)
+				.filter(([id, _]) => id.startsWith("anthropic/claude") || id.startsWith("google/gemini")) // only these support cache_control breakpoints (https://openrouter.ai/docs/features/prompt-caching)
 				.filter(([_, model]) => model.supportsPromptCache)
 				.map(([id, _]) => id)
 
@@ -32,6 +33,7 @@ describe("OpenRouter API", () => {
 				"google/gemini-2.5-pro-preview", // Excluded due to lag issue (#4487)
 				"google/gemini-2.5-flash", // OpenRouter doesn't report this as supporting prompt caching
 				"google/gemini-2.5-flash-lite-preview-06-17", // OpenRouter doesn't report this as supporting prompt caching
+				"anthropic/claude-opus-4.1", // Not yet available in OpenRouter API
 			])
 
 			const ourCachingModels = Array.from(OPEN_ROUTER_PROMPT_CACHING_MODELS).filter(
@@ -48,12 +50,20 @@ describe("OpenRouter API", () => {
 
 			expect(ourCachingModels.sort()).toEqual(expectedCachingModels)
 
+			const excludedComputerUseModels = new Set([
+				"anthropic/claude-opus-4.1", // Not yet available in OpenRouter API
+			])
+
+			const expectedComputerUseModels = Array.from(OPEN_ROUTER_COMPUTER_USE_MODELS)
+				.filter((id) => !excludedComputerUseModels.has(id))
+				.sort()
+
 			expect(
 				Object.entries(models)
 					.filter(([_, model]) => model.supportsComputerUse)
 					.map(([id, _]) => id)
 					.sort(),
-			).toEqual(Array.from(OPEN_ROUTER_COMPUTER_USE_MODELS).sort())
+			).toEqual(expectedComputerUseModels)
 
 			expect(
 				Object.entries(models)
@@ -67,6 +77,7 @@ describe("OpenRouter API", () => {
 				"anthropic/claude-3.7-sonnet:beta",
 				"anthropic/claude-3.7-sonnet:thinking",
 				"anthropic/claude-opus-4",
+				// "anthropic/claude-opus-4.1", // Not yet available in OpenRouter API
 				"anthropic/claude-sonnet-4",
 				"arliai/qwq-32b-arliai-rpr-v1:free",
 				"cognitivecomputations/dolphin3.0-r1-mistral-24b:free",
@@ -122,6 +133,7 @@ describe("OpenRouter API", () => {
 				"google/gemini-2.5-flash",
 				"google/gemini-2.5-flash-lite-preview-06-17",
 				"google/gemini-2.5-pro",
+				"anthropic/claude-opus-4.1", // Not yet available in OpenRouter API
 			])
 
 			const expectedReasoningBudgetModels = Array.from(OPEN_ROUTER_REASONING_BUDGET_MODELS)
@@ -218,7 +230,7 @@ describe("OpenRouter API", () => {
 			const endpoints = await getOpenRouterModelEndpoints("google/gemini-2.5-pro-preview")
 
 			expect(endpoints).toEqual({
-				Google: {
+				"google-vertex": {
 					maxTokens: 65535,
 					contextWindow: 1048576,
 					supportsImages: true,
@@ -232,7 +244,7 @@ describe("OpenRouter API", () => {
 					supportsReasoningEffort: undefined,
 					supportedParameters: undefined,
 				},
-				"Google AI Studio": {
+				"google-ai-studio": {
 					maxTokens: 65536,
 					contextWindow: 1048576,
 					supportsImages: true,
@@ -249,6 +261,126 @@ describe("OpenRouter API", () => {
 			})
 
 			nockDone()
+		})
+	})
+
+	describe("parseOpenRouterModel", () => {
+		it("sets horizon-alpha model to 32k max tokens", () => {
+			const mockModel = {
+				name: "Horizon Alpha",
+				description: "Test model",
+				context_length: 128000,
+				max_completion_tokens: 128000,
+				pricing: {
+					prompt: "0.000003",
+					completion: "0.000015",
+				},
+			}
+
+			const result = parseOpenRouterModel({
+				id: "openrouter/horizon-alpha",
+				model: mockModel,
+				inputModality: ["text"],
+				outputModality: ["text"],
+				maxTokens: 128000,
+			})
+
+			expect(result.maxTokens).toBe(32768)
+			expect(result.contextWindow).toBe(128000)
+		})
+
+		it("sets horizon-beta model to 32k max tokens", () => {
+			const mockModel = {
+				name: "Horizon Beta",
+				description: "Test model",
+				context_length: 128000,
+				max_completion_tokens: 128000,
+				pricing: {
+					prompt: "0.000003",
+					completion: "0.000015",
+				},
+			}
+
+			const result = parseOpenRouterModel({
+				id: "openrouter/horizon-beta",
+				model: mockModel,
+				inputModality: ["text"],
+				outputModality: ["text"],
+				maxTokens: 128000,
+			})
+
+			expect(result.maxTokens).toBe(32768)
+			expect(result.contextWindow).toBe(128000)
+		})
+
+		it("does not override max tokens for other models", () => {
+			const mockModel = {
+				name: "Other Model",
+				description: "Test model",
+				context_length: 128000,
+				max_completion_tokens: 64000,
+				pricing: {
+					prompt: "0.000003",
+					completion: "0.000015",
+				},
+			}
+
+			const result = parseOpenRouterModel({
+				id: "openrouter/other-model",
+				model: mockModel,
+				inputModality: ["text"],
+				outputModality: ["text"],
+				maxTokens: 64000,
+			})
+
+			expect(result.maxTokens).toBe(64000)
+			expect(result.contextWindow).toBe(128000)
+		})
+
+		it("filters out image generation models", () => {
+			const mockImageModel = {
+				name: "Image Model",
+				description: "Test image generation model",
+				context_length: 128000,
+				max_completion_tokens: 64000,
+				pricing: {
+					prompt: "0.000003",
+					completion: "0.000015",
+				},
+			}
+
+			const mockTextModel = {
+				name: "Text Model",
+				description: "Test text generation model",
+				context_length: 128000,
+				max_completion_tokens: 64000,
+				pricing: {
+					prompt: "0.000003",
+					completion: "0.000015",
+				},
+			}
+
+			// Model with image output should be filtered out - we only test parseOpenRouterModel
+			// since the filtering happens in getOpenRouterModels/getOpenRouterModelEndpoints
+			const textResult = parseOpenRouterModel({
+				id: "test/text-model",
+				model: mockTextModel,
+				inputModality: ["text"],
+				outputModality: ["text"],
+				maxTokens: 64000,
+			})
+
+			const imageResult = parseOpenRouterModel({
+				id: "test/image-model",
+				model: mockImageModel,
+				inputModality: ["text"],
+				outputModality: ["image"],
+				maxTokens: 64000,
+			})
+
+			// Both should parse successfully (filtering happens at a higher level)
+			expect(textResult.maxTokens).toBe(64000)
+			expect(imageResult.maxTokens).toBe(64000)
 		})
 	})
 })

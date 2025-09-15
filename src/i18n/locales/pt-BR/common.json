@@ -32,6 +32,8 @@
 		"could_not_open_file_generic": "Não foi possível abrir o arquivo!",
 		"checkpoint_timeout": "Tempo esgotado ao tentar restaurar o ponto de verificação.",
 		"checkpoint_failed": "Falha ao restaurar o ponto de verificação.",
+		"git_not_installed": "O Git é necessário para o recurso de checkpoints. Por favor, instale o Git para habilitar os checkpoints.",
+		"nested_git_repos_warning": "Os checkpoints estão desabilitados porque repositórios git aninhados foram detectados no espaço de trabalho. Para usar checkpoints, por favor remova ou realoque os repositórios git aninhados.",
 		"no_workspace": "Por favor, abra primeiro uma pasta de projeto",
 		"update_support_prompt": "Falha ao atualizar o prompt de suporte",
 		"reset_support_prompt": "Falha ao redefinir o prompt de suporte",
@@ -64,6 +66,7 @@
 		"no_internet": "Sem conexão com a internet. Verifique sua conexão de rede e tente novamente.",
 		"url_forbidden": "O acesso a este site está proibido. O site pode bloquear acesso automatizado ou exigir autenticação.",
 		"url_page_not_found": "A página não foi encontrada. Verifique se a URL está correta.",
+		"url_request_aborted": "A solicitação para buscar a URL foi cancelada. Isso pode acontecer se o site bloqueia acesso automatizado, requer autenticação ou se há um problema de rede. Tente novamente ou verifique se a URL é acessível em um navegador normal.",
 		"url_fetch_failed": "Falha ao buscar conteúdo da URL: {{error}}",
 		"url_fetch_error_with_url": "Erro ao buscar conteúdo para {{url}}: {{error}}",
 		"command_timeout": "A execução do comando excedeu o tempo limite após {{seconds}} segundos",
@@ -74,13 +77,55 @@
 		"share_task_not_found": "Tarefa não encontrada ou acesso negado.",
 		"mode_import_failed": "Falha ao importar o modo: {{error}}",
 		"delete_rules_folder_failed": "Falha ao excluir pasta de regras: {{rulesFolderPath}}. Erro: {{error}}",
+		"command_not_found": "Comando '{{name}}' não encontrado",
+		"open_command_file": "Falha ao abrir arquivo de comando",
+		"delete_command": "Falha ao excluir comando",
+		"no_workspace_for_project_command": "Nenhuma pasta de workspace encontrada para comando de projeto",
+		"command_already_exists": "Comando \"{{commandName}}\" já existe",
+		"create_command_failed": "Falha ao criar comando",
+		"command_template_content": "---\ndescription: \"Breve descrição do que este comando faz\"\n---\n\nEste é um novo comando slash. Edite este arquivo para personalizar o comportamento do comando.",
 		"claudeCode": {
 			"processExited": "O processo Claude Code saiu com código {{exitCode}}.",
 			"errorOutput": "Saída de erro: {{output}}",
 			"processExitedWithError": "O processo Claude Code saiu com código {{exitCode}}. Saída de erro: {{output}}",
 			"stoppedWithReason": "Claude Code parou pela razão: {{reason}}",
-			"apiKeyModelPlanMismatch": "Chaves de API e planos de assinatura permitem modelos diferentes. Certifique-se de que o modelo selecionado esteja incluído no seu plano."
-		}
+			"apiKeyModelPlanMismatch": "API keys and subscription plans allow different models. Make sure the selected model is included in your plan.",
+			"notFound": "Claude Code executable '{{claudePath}}' not found.\n\nPlease install Claude Code CLI:\n1. Visit {{installationUrl}} to download Claude Code\n2. Follow the installation instructions for your operating system\n3. Ensure the 'claude' command is available in your PATH\n4. Alternatively, configure a custom path in Roo settings under 'Claude Code Path'\n\nOriginal error: {{originalError}}"
+		},
+		"message": {
+			"no_active_task_to_delete": "Nenhuma tarefa ativa para excluir mensagens",
+			"invalid_timestamp_for_deletion": "Timestamp da mensagem inválido para exclusão",
+			"cannot_delete_missing_timestamp": "Não é possível excluir mensagem: timestamp ausente",
+			"cannot_delete_invalid_timestamp": "Não é possível excluir mensagem: timestamp inválido",
+			"message_not_found": "Mensagem com timestamp {{messageTs}} não encontrada",
+			"error_deleting_message": "Erro ao excluir mensagem: {{error}}",
+			"error_editing_message": "Erro ao editar mensagem: {{error}}"
+		},
+		"gemini": {
+			"generate_stream": "Erro de fluxo de contexto de geração do Gemini: {{error}}",
+			"generate_complete_prompt": "Erro de conclusão do Gemini: {{error}}",
+			"sources": "Fontes:"
+		},
+		"cerebras": {
+			"authenticationFailed": "Falha na autenticação da API Cerebras. Verifique se sua chave de API é válida e não expirou.",
+			"accessForbidden": "Acesso à API Cerebras negado. Sua chave de API pode não ter acesso ao modelo ou recurso solicitado.",
+			"rateLimitExceeded": "Limite de taxa da API Cerebras excedido. Aguarde antes de fazer outra solicitação.",
+			"serverError": "Erro do servidor da API Cerebras ({{status}}). Tente novamente mais tarde.",
+			"genericError": "Erro da API Cerebras ({{status}}): {{message}}",
+			"noResponseBody": "Erro da API Cerebras: Sem corpo de resposta",
+			"completionError": "Erro de conclusão do Cerebras: {{error}}"
+		},
+		"roo": {
+			"authenticationRequired": "O provedor Roo requer autenticação na nuvem. Faça login no Roo Code Cloud."
+		},
+		"api": {
+			"invalidKeyInvalidChars": "A chave API contém caracteres inválidos."
+		},
+		"manual_url_empty": "Por favor, insira uma URL de callback válida",
+		"manual_url_no_query": "URL de callback inválida: parâmetros de consulta ausentes",
+		"manual_url_missing_params": "URL de callback inválida: parâmetros obrigatórios ausentes (code e state)",
+		"manual_url_auth_failed": "Autenticação manual por URL falhou",
+		"manual_url_auth_error": "Falha na autenticação"
 	},
 	"warnings": {
 		"no_terminal_content": "Nenhum conteúdo do terminal selecionado",
@@ -111,7 +156,8 @@
 	},
 	"buttons": {
 		"save": "Salvar",
-		"edit": "Editar"
+		"edit": "Editar",
+		"learn_more": "Saiba Mais"
 	},
 	"tasks": {
 		"canceled": "Erro na tarefa: Foi interrompida e cancelada pelo usuário.",
@@ -145,18 +191,32 @@
 			"deleteFailed": "Falha ao excluir modo personalizado: {{error}}",
 			"resetFailed": "Falha ao redefinir modos personalizados: {{error}}",
 			"modeNotFound": "Erro de escrita: Modo não encontrado",
-			"noWorkspaceForProject": "Nenhuma pasta de workspace encontrada para modo específico do projeto"
+			"noWorkspaceForProject": "Nenhuma pasta de workspace encontrada para modo específico do projeto",
+			"rulesCleanupFailed": "O modo foi excluído com sucesso, mas falhou ao excluir a pasta de regras em {{rulesFolderPath}}. Você pode precisar excluí-la manualmente."
 		},
 		"scope": {
 			"project": "projeto",
 			"global": "global"
 		}
 	},
+	"marketplace": {
+		"mode": {
+			"rulesCleanupFailed": "O modo foi removido com sucesso, mas falhou ao excluir a pasta de regras em {{rulesFolderPath}}. Você pode precisar excluí-la manualmente."
+		}
+	},
 	"mdm": {
 		"errors": {
 			"cloud_auth_required": "Sua organização requer autenticação do Roo Code Cloud. Faça login para continuar.",
 			"organization_mismatch": "Você deve estar autenticado com a conta Roo Code Cloud da sua organização.",
+			"manual_url_empty": "Por favor, insira uma URL de callback válida",
+			"manual_url_no_query": "URL de callback inválida: parâmetros de consulta ausentes",
+			"manual_url_missing_params": "URL de callback inválida: parâmetros obrigatórios ausentes (code e state)",
+			"manual_url_auth_failed": "Autenticação manual por URL falhou",
+			"manual_url_auth_error": "Falha na autenticação",
 			"verification_failed": "Não foi possível verificar a autenticação da organização."
+		},
+		"info": {
+			"organization_requires_auth": "Sua organização requer autenticação."
 		}
 	},
 	"prompts": {

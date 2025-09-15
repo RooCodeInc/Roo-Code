@@ -1,3 +1,4 @@
+import * as vscode from "vscode"
 import { WebviewMessage } from "../../shared/WebviewMessage"
 import { defaultModeSlug, getModeBySlug, getGroupName } from "../../shared/modes"
 import { buildApiHandler } from "../../api"
@@ -41,7 +42,7 @@ export const generateSystemPrompt = async (provider: ClineProvider, message: Web
 	const mode = message.mode ?? defaultModeSlug
 	const customModes = await provider.customModesManager.getCustomModes()
 
-	const rooIgnoreInstructions = provider.getCurrentCline()?.rooIgnoreController?.getInstructions()
+	const rooIgnoreInstructions = provider.getCurrentTask()?.rooIgnoreController?.getInstructions()
 
 	// Determine if browser tools can be used based on model support, mode, and user settings
 	let modelSupportsComputerUse = false
@@ -81,7 +82,12 @@ export const generateSystemPrompt = async (provider: ClineProvider, message: Web
 		rooIgnoreInstructions,
 		maxReadFileLine !== -1,
 		{
-			maxConcurrentFileReads,
+			maxConcurrentFileReads: maxConcurrentFileReads ?? 5,
+			todoListEnabled: apiConfiguration?.todoListEnabled ?? true,
+			useAgentRules: vscode.workspace.getConfiguration("roo-cline").get<boolean>("useAgentRules") ?? true,
+			newTaskRequireTodos: vscode.workspace
+				.getConfiguration("roo-cline")
+				.get<boolean>("newTaskRequireTodos", false),
 		},
 	)
 

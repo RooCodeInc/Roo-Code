@@ -74,16 +74,16 @@ export const registerCommands = (options: RegisterCommandOptions) => {
 
 const getCommandsMap = ({ context, outputChannel, provider }: RegisterCommandOptions): Record<CommandId, any> => ({
 	activationCompleted: () => {},
-	accountButtonClicked: () => {
+	cloudButtonClicked: () => {
 		const visibleProvider = getVisibleProviderOrLog(outputChannel)
 
 		if (!visibleProvider) {
 			return
 		}
 
-		TelemetryService.instance.captureTitleButtonClicked("account")
+		TelemetryService.instance.captureTitleButtonClicked("cloud")
 
-		visibleProvider.postMessageToWebview({ type: "action", action: "accountButtonClicked" })
+		visibleProvider.postMessageToWebview({ type: "action", action: "cloudButtonClicked" })
 	},
 	plusButtonClicked: async () => {
 		const visibleProvider = getVisibleProviderOrLog(outputChannel)
@@ -95,8 +95,11 @@ const getCommandsMap = ({ context, outputChannel, provider }: RegisterCommandOpt
 		TelemetryService.instance.captureTitleButtonClicked("plus")
 
 		await visibleProvider.removeClineFromStack()
-		await visibleProvider.postStateToWebview()
+		await visibleProvider.refreshWorkspace()
 		await visibleProvider.postMessageToWebview({ type: "action", action: "chatButtonClicked" })
+		// Send focusInput action immediately after chatButtonClicked
+		// This ensures the focus happens after the view has switched
+		await visibleProvider.postMessageToWebview({ type: "action", action: "focusInput" })
 	},
 	mcpButtonClicked: () => {
 		const visibleProvider = getVisibleProviderOrLog(outputChannel)
@@ -237,7 +240,7 @@ export const openClineInNewTab = async ({ context, outputChannel }: Omit<Registe
 		mdmService = undefined
 	}
 
-	const tabProvider = new ClineProvider(context, outputChannel, "editor", contextProxy, codeIndexManager, mdmService)
+	const tabProvider = new ClineProvider(context, outputChannel, "editor", contextProxy, mdmService)
 	const lastCol = Math.max(...vscode.window.visibleTextEditors.map((editor) => editor.viewColumn || 0))
 
 	// Check if there are any visible text editors, otherwise open a new group

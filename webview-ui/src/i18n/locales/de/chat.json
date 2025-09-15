@@ -2,12 +2,15 @@
 	"greeting": "Willkommen bei Roo Code",
 	"task": {
 		"title": "Aufgabe",
+		"expand": "Aufgabe erweitern",
+		"collapse": "Aufgabe einklappen",
 		"seeMore": "Mehr anzeigen",
 		"seeLess": "Weniger anzeigen",
-		"tokens": "Tokens:",
-		"cache": "Cache:",
-		"apiCost": "API-Kosten:",
-		"contextWindow": "Kontextfenster:",
+		"tokens": "Tokens",
+		"cache": "Cache",
+		"apiCost": "API-Kosten",
+		"size": "Größe",
+		"contextWindow": "Kontextfenster",
 		"closeAndStart": "Aufgabe schließen und neue starten",
 		"export": "Aufgabenverlauf exportieren",
 		"delete": "Aufgabe löschen (Shift + Klick zum Überspringen der Bestätigung)",
@@ -21,7 +24,9 @@
 		"connectToCloudDescription": "Melde dich bei Roo Code Cloud an, um Aufgaben zu teilen",
 		"sharingDisabledByOrganization": "Freigabe von der Organisation deaktiviert",
 		"shareSuccessOrganization": "Organisationslink in die Zwischenablage kopiert",
-		"shareSuccessPublic": "Öffentlicher Link in die Zwischenablage kopiert"
+		"shareSuccessPublic": "Öffentlicher Link in die Zwischenablage kopiert",
+		"openInCloud": "Aufgabe in Roo Code Cloud öffnen",
+		"openInCloudIntro": "Überwache oder interagiere mit Roo von überall aus. Scanne, klicke oder kopiere zum Öffnen."
 	},
 	"unpin": "Lösen von oben",
 	"pin": "Anheften",
@@ -108,7 +113,7 @@
 	"stopTts": "Text-in-Sprache beenden",
 	"typeMessage": "Nachricht eingeben...",
 	"typeTask": "Gib deine Aufgabe hier ein...",
-	"addContext": "@ für Kontext, / zum Moduswechsel",
+	"addContext": "@ für Kontext, / für Befehle",
 	"dragFiles": "Shift halten, um Dateien einzufügen",
 	"dragFilesImages": "Shift halten, um Dateien/Bilder einzufügen",
 	"enhancePromptDescription": "Die Schaltfläche 'Prompt verbessern' hilft, deine Anfrage durch zusätzlichen Kontext, Klarstellungen oder Umformulierungen zu verbessern. Versuche, hier eine Anfrage einzugeben und klicke erneut auf die Schaltfläche, um zu sehen, wie es funktioniert.",
@@ -116,7 +121,9 @@
 		"title": "Modi",
 		"marketplace": "Modus-Marketplace",
 		"settings": "Modus-Einstellungen",
-		"description": "Spezialisierte Personas, die Roos Verhalten anpassen."
+		"description": "Spezialisierte Personas, die Roos Verhalten anpassen.",
+		"searchPlaceholder": "Modi suchen...",
+		"noResults": "Keine Ergebnisse gefunden"
 	},
 	"errorReadingFile": "Fehler beim Lesen der Datei:",
 	"noValidImages": "Keine gültigen Bilder wurden verarbeitet",
@@ -137,7 +144,6 @@
 		"streamingFailed": "API-Streaming fehlgeschlagen"
 	},
 	"checkpoint": {
-		"initial": "Initialer Checkpoint",
 		"regular": "Checkpoint",
 		"initializingWarning": "Checkpoint wird noch initialisiert... Falls dies zu lange dauert, kannst du Checkpoints in den <settingsLink>Einstellungen</settingsLink> deaktivieren und deine Aufgabe neu starten.",
 		"menu": {
@@ -171,7 +177,11 @@
 		"wantsToInsertWithLineNumber": "Roo möchte Inhalte in diese Datei in Zeile {{lineNumber}} einfügen:",
 		"wantsToInsertAtEnd": "Roo möchte Inhalte am Ende dieser Datei anhängen:",
 		"wantsToReadMultiple": "Roo möchte mehrere Dateien lesen:",
-		"wantsToApplyBatchChanges": "Roo möchte Änderungen an mehreren Dateien vornehmen:"
+		"wantsToApplyBatchChanges": "Roo möchte Änderungen an mehreren Dateien vornehmen:",
+		"wantsToGenerateImage": "Roo möchte ein Bild generieren:",
+		"wantsToGenerateImageOutsideWorkspace": "Roo möchte ein Bild außerhalb des Arbeitsbereichs generieren:",
+		"wantsToGenerateImageProtected": "Roo möchte ein Bild an einem geschützten Ort generieren:",
+		"didGenerateImage": "Roo hat ein Bild generiert:"
 	},
 	"directoryOperations": {
 		"wantsToViewTopLevel": "Roo möchte die Dateien auf oberster Ebene in diesem Verzeichnis anzeigen:",
@@ -192,6 +202,22 @@
 		"didViewDefinitionsOutsideWorkspace": "Roo hat Quellcode-Definitionsnamen in diesem Verzeichnis (außerhalb des Arbeitsbereichs) angezeigt:"
 	},
 	"commandOutput": "Befehlsausgabe",
+	"commandExecution": {
+		"running": "Wird ausgeführt",
+		"pid": "PID: {{pid}}",
+		"exited": "Beendet ({{exitCode}})",
+		"manageCommands": "Befehlsberechtigungen verwalten",
+		"commandManagementDescription": "Befehlsberechtigungen verwalten: Klicke auf ✓, um die automatische Ausführung zu erlauben, ✗, um die Ausführung zu verweigern. Muster können ein-/ausgeschaltet oder aus Listen entfernt werden. <settingsLink>Alle Einstellungen anzeigen</settingsLink>",
+		"addToAllowed": "Zur Liste der erlaubten Befehle hinzufügen",
+		"removeFromAllowed": "Von der Liste der erlaubten Befehle entfernen",
+		"addToDenied": "Zur Liste der verweigerten Befehle hinzufügen",
+		"removeFromDenied": "Von der Liste der verweigerten Befehle entfernen",
+		"abortCommand": "Befehlsausführung abbrechen",
+		"expandOutput": "Ausgabe erweitern",
+		"collapseOutput": "Ausgabe einklappen",
+		"expandManagement": "Befehlsverwaltungsbereich erweitern",
+		"collapseManagement": "Befehlsverwaltungsbereich einklappen"
+	},
 	"response": "Antwort",
 	"arguments": "Argumente",
 	"mcp": {
@@ -245,13 +271,12 @@
 	},
 	"announcement": {
 		"title": "🎉 Roo Code {{version}} veröffentlicht",
-		"description": "Roo Code {{version}} bringt mächtige neue Funktionen und bedeutende Verbesserungen, um deinen Entwicklungsworkflow zu verbessern.",
-		"whatsNew": "Was ist neu",
-		"feature1": "<bold>Codebase-Indizierung aus experimentellem Status graduiert</bold>: Die vollständige Codebase-Indizierung ist jetzt stabil und bereit für den Produktionseinsatz mit verbesserter Suche und Kontextverständnis.",
-		"feature2": "<bold>Neue Todo-Listen-Funktion</bold>: Behalte deine Aufgaben im Blick mit integriertem Todo-Management, das dir hilft, organisiert und fokussiert auf deine Entwicklungsziele zu bleiben.",
-		"feature3": "<bold>Verbesserte Architect-zu-Code-Übergänge</bold>: Nahtlose Übergaben von der Planung im Architect-Modus zur Implementierung im Code-Modus.",
-		"hideButton": "Ankündigung ausblenden",
-		"detailsDiscussLinks": "Erhalte mehr Details und diskutiere auf <discordLink>Discord</discordLink> und <redditLink>Reddit</redditLink> 🚀"
+		"description": "Wir stellen vor: <bold>Roo Code Cloud:</bold> Die Macht von Roo über die IDE hinaus bringen",
+		"feature1": "<bold>Aufgabenfortschritt von überall verfolgen (Kostenlos):</bold> Erhalte Echtzeit-Updates zu lang laufenden Aufgaben, ohne in deiner IDE festzustecken",
+		"feature2": "<bold>Die Roo-Erweiterung fernsteuern (Pro):</bold> Starte, stoppe und interagiere mit Aufgaben über eine chat-basierte Browser-Oberfläche.",
+		"learnMore": "Bereit, die Kontrolle zu übernehmen? Erfahre mehr <learnMoreLink>hier</learnMoreLink>.",
+		"visitCloudButton": "Roo Code Cloud besuchen",
+		"socialLinks": "Folge uns auf <xLink>X</xLink>, <discordLink>Discord</discordLink> oder <redditLink>r/RooCode</redditLink>"
 	},
 	"browser": {
 		"rooWantsToUse": "Roo möchte den Browser verwenden:",
@@ -296,6 +321,11 @@
 			"title": "Limit für automatisch genehmigte Anfragen erreicht",
 			"description": "Roo hat das automatisch genehmigte Limit von {{count}} API-Anfrage(n) erreicht. Möchtest du den Zähler zurücksetzen und mit der Aufgabe fortfahren?",
 			"button": "Zurücksetzen und fortfahren"
+		},
+		"autoApprovedCostLimitReached": {
+			"description": "Roo hat das automatisch genehmigte Kostenlimit von ${{count}} erreicht. Möchten Sie die Kosten zurücksetzen und mit der Aufgabe fortfahren?",
+			"title": "Kostengrenze für automatische Genehmigung erreicht",
+			"button": "Zurücksetzen und Fortfahren"
 		}
 	},
 	"codebaseSearch": {
@@ -323,7 +353,42 @@
 	"versionIndicator": {
 		"ariaLabel": "Version {{version}} - Klicken Sie, um die Versionshinweise anzuzeigen"
 	},
+	"rooCloudCTA": {
+		"title": "Roo Code Cloud entwickelt sich weiter!",
+		"description": "Führe Remote-Agenten in der Cloud aus, greife von überall auf deine Aufgaben zu, arbeite mit anderen zusammen und vieles mehr.",
+		"joinWaitlist": "Melde dich an, um die neuesten Updates zu erhalten."
+	},
+	"command": {
+		"triggerDescription": "Starte den {{name}} Befehl"
+	},
 	"editMessage": {
 		"placeholder": "Bearbeite deine Nachricht..."
+	},
+	"slashCommands": {
+		"tooltip": "Slash-Befehle verwalten",
+		"title": "Slash-Befehle",
+		"description": "Verwende eingebaute Slash-Befehle oder erstelle benutzerdefinierte für schnellen Zugriff auf häufig verwendete Prompts und Workflows. <DocsLink>Dokumentation</DocsLink>",
+		"builtInCommands": "Eingebaute Befehle",
+		"globalCommands": "Globale Befehle",
+		"workspaceCommands": "Arbeitsbereich-Befehle",
+		"globalCommand": "Globaler Befehl",
+		"editCommand": "Befehl bearbeiten",
+		"deleteCommand": "Befehl löschen",
+		"newGlobalCommandPlaceholder": "Neuer globaler Befehl...",
+		"newWorkspaceCommandPlaceholder": "Neuer Arbeitsbereich-Befehl...",
+		"deleteDialog": {
+			"title": "Befehl löschen",
+			"description": "Bist du sicher, dass du den Befehl \"{{name}}\" löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden.",
+			"cancel": "Abbrechen",
+			"confirm": "Löschen"
+		}
+	},
+	"queuedMessages": {
+		"title": "Warteschlange Nachrichten:",
+		"clickToEdit": "Klicken zum Bearbeiten der Nachricht"
+	},
+	"slashCommand": {
+		"wantsToRun": "Roo möchte einen Slash-Befehl ausführen:",
+		"didRun": "Roo hat einen Slash-Befehl ausgeführt:"
 	}
 }

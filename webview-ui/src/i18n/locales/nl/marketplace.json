@@ -13,6 +13,12 @@
 			"placeholderMcp": "MCP's zoeken...",
 			"placeholderMode": "Modi zoeken..."
 		},
+		"installed": {
+			"label": "Filteren op status",
+			"all": "Alle items",
+			"installed": "Geïnstalleerd",
+			"notInstalled": "Niet geïnstalleerd"
+		},
 		"type": {
 			"label": "Filteren op type:",
 			"all": "Alle types",
@@ -34,6 +40,10 @@
 			"clickToFilter": "Klik op tags om items te filteren"
 		},
 		"none": "Geen"
+	},
+	"sections": {
+		"organizationMcps": "MCP's van {{organization}}",
+		"marketplace": "Marktplaats"
 	},
 	"type-group": {
 		"modes": "Modi",
@@ -71,7 +81,9 @@
 			"removeProjectTooltip": "Verwijderen uit huidig project",
 			"removeGlobalTooltip": "Verwijderen uit globale configuratie",
 			"actionsMenuLabel": "Meer acties"
-		}
+		},
+		"removeFailed": "Item verwijderen mislukt: {{error}}",
+		"unknownError": "Onbekende fout opgetreden"
 	},
 	"install": {
 		"title": "{{name}} installeren",
@@ -124,6 +136,19 @@
 			"emojiName": "Emoji-tekens kunnen weergaveproblemen veroorzaken",
 			"maxSources": "Maximaal {{max}} bronnen toegestaan"
 		}
+	},
+	"removeConfirm": {
+		"mode": {
+			"title": "Modus verwijderen",
+			"message": "Weet je zeker dat je de modus \"{{modeName}}\" wilt verwijderen?",
+			"rulesWarning": "Dit verwijdert ook alle bijbehorende regelbestanden voor deze modus."
+		},
+		"mcp": {
+			"title": "MCP-server verwijderen",
+			"message": "Weet je zeker dat je de MCP-server \"{{mcpName}}\" wilt verwijderen?"
+		},
+		"cancel": "Annuleren",
+		"confirm": "Verwijderen"
 	},
 	"footer": {
 		"issueText": "Heb je een probleem gevonden met een marketplace-item of heb je suggesties voor nieuwe items? <0>Open een GitHub issue</0> om het ons te laten weten!"

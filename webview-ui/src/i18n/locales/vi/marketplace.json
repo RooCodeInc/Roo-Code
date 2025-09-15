@@ -13,6 +13,12 @@
 			"placeholderMcp": "Tìm kiếm MCP...",
 			"placeholderMode": "Tìm kiếm Chế độ..."
 		},
+		"installed": {
+			"label": "Lọc theo trạng thái",
+			"all": "Tất cả các mục",
+			"installed": "Đã cài đặt",
+			"notInstalled": "Chưa cài đặt"
+		},
 		"type": {
 			"label": "Lọc theo loại:",
 			"all": "Tất cả loại",
@@ -34,6 +40,10 @@
 			"clickToFilter": "Nhấp vào thẻ để lọc mục"
 		},
 		"none": "Không có"
+	},
+	"sections": {
+		"organizationMcps": "MCP của {{organization}}",
+		"marketplace": "Marketplace"
 	},
 	"type-group": {
 		"modes": "Chế độ",
@@ -71,7 +81,9 @@
 			"removeProjectTooltip": "Xóa khỏi dự án hiện tại",
 			"removeGlobalTooltip": "Xóa khỏi cấu hình toàn cục",
 			"actionsMenuLabel": "Thêm hành động"
-		}
+		},
+		"removeFailed": "Không thể xóa mục: {{error}}",
+		"unknownError": "Đã xảy ra lỗi không xác định"
 	},
 	"install": {
 		"title": "Cài đặt {{name}}",
@@ -124,6 +136,19 @@
 			"emojiName": "Ký tự emoji có thể gây ra vấn đề hiển thị",
 			"maxSources": "Tối đa {{max}} nguồn được phép"
 		}
+	},
+	"removeConfirm": {
+		"mode": {
+			"title": "Xóa chế độ",
+			"message": "Bạn có chắc chắn muốn xóa chế độ \"{{modeName}}\" không?",
+			"rulesWarning": "Thao tác này cũng sẽ xóa mọi tệp quy tắc được liên kết cho chế độ này."
+		},
+		"mcp": {
+			"title": "Xóa máy chủ MCP",
+			"message": "Bạn có chắc chắn muốn xóa máy chủ MCP \"{{mcpName}}\" không?"
+		},
+		"cancel": "Hủy",
+		"confirm": "Xóa"
 	},
 	"footer": {
 		"issueText": "Bạn tìm thấy vấn đề với mục marketplace hoặc có đề xuất cho mục mới? <0>Mở issue GitHub</0> để cho chúng tôi biết!"

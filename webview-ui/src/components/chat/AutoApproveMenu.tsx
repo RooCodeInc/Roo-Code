@@ -1,6 +1,6 @@
-import { useCallback, useMemo, useState } from "react"
+import { memo, useCallback, useMemo, useState } from "react"
 import { Trans } from "react-i18next"
-import { VSCodeCheckbox, VSCodeLink, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
+import { VSCodeCheckbox, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 
 import { vscode } from "@src/utils/vscode"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
@@ -9,6 +9,9 @@ import { AutoApproveToggle, AutoApproveSetting, autoApproveSettingsConfig } from
 import { StandardTooltip } from "@src/components/ui"
 import { useAutoApprovalState } from "@src/hooks/useAutoApprovalState"
 import { useAutoApprovalToggles } from "@src/hooks/useAutoApprovalToggles"
+import DismissibleUpsell from "@src/components/common/DismissibleUpsell"
+import { useCloudUpsell } from "@src/hooks/useCloudUpsell"
+import { CloudUpsellDialog } from "@src/components/cloud/CloudUpsellDialog"
 
 interface AutoApproveMenuProps {
 	style?: React.CSSProperties
@@ -21,7 +24,6 @@ const AutoApproveMenu = ({ style }: AutoApproveMenuProps) => {
 		autoApprovalEnabled,
 		setAutoApprovalEnabled,
 		alwaysApproveResubmit,
-		allowedMaxRequests,
 		setAlwaysAllowReadOnly,
 		setAlwaysAllowWrite,
 		setAlwaysAllowExecute,
@@ -32,12 +34,16 @@ const AutoApproveMenu = ({ style }: AutoApproveMenuProps) => {
 		setAlwaysApproveResubmit,
 		setAlwaysAllowFollowupQuestions,
 		setAlwaysAllowUpdateTodoList,
-		setAllowedMaxRequests,
 	} = useExtensionState()
 
 	const { t } = useAppTranslation()
 
+	const { isOpen, openUpsell, closeUpsell, handleConnect } = useCloudUpsell({
+		autoOpenOnAuth: false,
+	})
+
 	const baseToggles = useAutoApprovalToggles()
+	const enabledCount = useMemo(() => Object.values(baseToggles).filter(Boolean).length, [baseToggles])
 
 	// AutoApproveMenu needs alwaysApproveResubmit in addition to the base toggles
 	const toggles = useMemo(
@@ -129,11 +135,6 @@ const AutoApproveMenu = ({ style }: AutoApproveMenuProps) => {
 		setIsExpanded((prev) => !prev)
 	}, [])
 
-	// Disable main checkbox while menu is open or no options selected
-	const isCheckboxDisabled = useMemo(() => {
-		return !hasEnabledOptions || isExpanded
-	}, [hasEnabledOptions, isExpanded])
-
 	const enabledActionsList = Object.entries(toggles)
 		.filter(([_key, value]) => !!value)
 		.map(([key]) => t(autoApproveSettingsConfig[key as AutoApproveSetting].labelKey))
@@ -164,12 +165,48 @@ const AutoApproveMenu = ({ style }: AutoApproveMenuProps) => {
 				overflowY: "auto",
 				...style,
 			}}>
+			{isExpanded && (
+				<div className="flex flex-col gap-2 py-4">
+					<div
+						style={{
+							color: "var(--vscode-descriptionForeground)",
+							fontSize: "12px",
+						}}>
+						<Trans
+							i18nKey="chat:autoApprove.description"
+							components={{
+								settingsLink: <VSCodeLink href="#" onClick={handleOpenSettings} />,
+							}}
+						/>
+					</div>
+
+					<AutoApproveToggle {...toggles} onToggle={onAutoApproveToggle} />
+
+					{enabledCount > 7 && (
+						<>
+							<DismissibleUpsell
+								upsellId="autoApprovePowerUserA"
+								onClick={() => openUpsell()}
+								dismissOnClick={false}
+								variant="banner">
+								<Trans
+									i18nKey="cloud:upsell.autoApprovePowerUser"
+									components={{
+										learnMoreLink: <VSCodeLink href="#" />,
+									}}
+								/>
+							</DismissibleUpsell>
+						</>
+					)}
+				</div>
+			)}
+
 			<div
 				style={{
 					display: "flex",
 					alignItems: "center",
 					gap: "8px",
-					padding: isExpanded ? "8px 0" : "2px 0 0 0",
+					padding: "2px 0 0 0",
 					cursor: "pointer",
 				}}
 				onClick={toggleExpanded}>
@@ -178,7 +215,7 @@ const AutoApproveMenu = ({ style }: AutoApproveMenuProps) => {
 						content={!hasEnabledOptions ? t("chat:autoApprove.selectOptionsFirst") : undefined}>
 						<VSCodeCheckbox
 							checked={effectiveAutoApprovalEnabled}
-							disabled={isCheckboxDisabled}
+							disabled={!hasEnabledOptions}
 							aria-label={
 								hasEnabledOptions
 									? t("chat:autoApprove.toggleAriaLabel")
@@ -222,72 +259,15 @@ const AutoApproveMenu = ({ style }: AutoApproveMenuProps) => {
 						{displayText}
 					</span>
 					<span
-						className={`codicon codicon-chevron-${isExpanded ? "down" : "right"}`}
-						style={{
-							flexShrink: 0,
-							marginLeft: isExpanded ? "2px" : "-2px",
-						}}
+						className={`codicon codicon-chevron-right flex-shrink-0 transition-transform duration-200 ease-in-out ${
+							isExpanded ? "-rotate-90 ml-[2px]" : "rotate-0 -ml-[2px]"
+						}`}
 					/>
 				</div>
 			</div>
-
-			{isExpanded && (
-				<div className="flex flex-col gap-2">
-					<div
-						style={{
-							color: "var(--vscode-descriptionForeground)",
-							fontSize: "12px",
-						}}>
-						<Trans
-							i18nKey="chat:autoApprove.description"
-							components={{
-								settingsLink: <VSCodeLink href="#" onClick={handleOpenSettings} />,
-							}}
-						/>
-					</div>
-
-					<AutoApproveToggle {...toggles} onToggle={onAutoApproveToggle} />
-
-					{/* Auto-approve API request count limit input row inspired by Cline */}
-					<div
-						style={{
-							display: "flex",
-							alignItems: "center",
-							gap: "8px",
-							marginTop: "10px",
-							marginBottom: "8px",
-							color: "var(--vscode-descriptionForeground)",
-						}}>
-						<span style={{ flexShrink: 1, minWidth: 0 }}>
-							<Trans i18nKey="settings:autoApprove.apiRequestLimit.title" />:
-						</span>
-						<VSCodeTextField
-							placeholder={t("settings:autoApprove.apiRequestLimit.unlimited")}
-							value={(allowedMaxRequests ?? Infinity) === Infinity ? "" : allowedMaxRequests?.toString()}
-							onInput={(e) => {
-								const input = e.target as HTMLInputElement
-								// Remove any non-numeric characters
-								input.value = input.value.replace(/[^0-9]/g, "")
-								const value = parseInt(input.value)
-								const parsedValue = !isNaN(value) && value > 0 ? value : undefined
-								setAllowedMaxRequests(parsedValue)
-								vscode.postMessage({ type: "allowedMaxRequests", value: parsedValue })
-							}}
-							style={{ flex: 1 }}
-						/>
-					</div>
-					<div
-						style={{
-							color: "var(--vscode-descriptionForeground)",
-							fontSize: "12px",
-							marginBottom: "10px",
-						}}>
-						<Trans i18nKey="settings:autoApprove.apiRequestLimit.description" />
-					</div>
-				</div>
-			)}
+			<CloudUpsellDialog open={isOpen} onOpenChange={closeUpsell} onConnect={handleConnect} />
 		</div>
 	)
 }
 
-export default AutoApproveMenu
+export default memo(AutoApproveMenu)

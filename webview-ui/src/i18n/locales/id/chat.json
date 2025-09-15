@@ -2,13 +2,16 @@
 	"greeting": "Selamat datang di Roo Code",
 	"task": {
 		"title": "Tugas",
+		"expand": "Perluas tugas",
+		"collapse": "Ciutkan tugas",
 		"seeMore": "Lihat lebih banyak",
 		"seeLess": "Lihat lebih sedikit",
-		"tokens": "Token:",
-		"cache": "Cache:",
-		"apiCost": "Biaya API:",
+		"tokens": "Token",
+		"cache": "Cache",
+		"apiCost": "Biaya API",
+		"size": "Ukuran",
 		"condenseContext": "Kondensasi konteks secara cerdas",
-		"contextWindow": "Panjang Konteks:",
+		"contextWindow": "Panjang Konteks",
 		"closeAndStart": "Tutup tugas dan mulai yang baru",
 		"export": "Ekspor riwayat tugas",
 		"share": "Bagikan tugas",
@@ -21,7 +24,9 @@
 		"connectToCloudDescription": "Masuk ke Roo Code Cloud untuk berbagi tugas",
 		"sharingDisabledByOrganization": "Berbagi dinonaktifkan oleh organisasi",
 		"shareSuccessOrganization": "Tautan organisasi disalin ke clipboard",
-		"shareSuccessPublic": "Tautan publik disalin ke clipboard"
+		"shareSuccessPublic": "Tautan publik disalin ke clipboard",
+		"openInCloud": "Buka tugas di Roo Code Cloud",
+		"openInCloudIntro": "Terus pantau atau berinteraksi dengan Roo dari mana saja. Pindai, klik atau salin untuk membuka."
 	},
 	"history": {
 		"title": "Riwayat"
@@ -122,14 +127,16 @@
 		"title": "Mode",
 		"marketplace": "Marketplace Mode",
 		"settings": "Pengaturan Mode",
-		"description": "Persona khusus yang menyesuaikan perilaku Roo."
+		"description": "Persona khusus yang menyesuaikan perilaku Roo.",
+		"searchPlaceholder": "Cari mode...",
+		"noResults": "Tidak ada hasil yang ditemukan"
 	},
 	"addImages": "Tambahkan gambar ke pesan",
 	"sendMessage": "Kirim pesan",
 	"stopTts": "Hentikan text-to-speech",
 	"typeMessage": "Ketik pesan...",
 	"typeTask": "Bangun, cari, tanya sesuatu",
-	"addContext": "@ untuk menambah konteks, / untuk ganti mode",
+	"addContext": "@ untuk menambah konteks, / untuk perintah",
 	"dragFiles": "tahan shift untuk drag file",
 	"dragFilesImages": "tahan shift untuk drag file/gambar",
 	"errorReadingFile": "Error membaca file:",
@@ -146,7 +153,6 @@
 		"streamingFailed": "Streaming API Gagal"
 	},
 	"checkpoint": {
-		"initial": "Checkpoint Awal",
 		"regular": "Checkpoint",
 		"initializingWarning": "Masih menginisialisasi checkpoint... Jika ini terlalu lama, kamu bisa menonaktifkan checkpoint di <settingsLink>pengaturan</settingsLink> dan restart tugas.",
 		"menu": {
@@ -181,6 +187,10 @@
 		"wantsToEditOutsideWorkspace": "Roo ingin mengedit file ini di luar workspace:",
 		"wantsToEditProtected": "Roo ingin mengedit file konfigurasi yang dilindungi:",
 		"wantsToApplyBatchChanges": "Roo ingin menerapkan perubahan ke beberapa file:",
+		"wantsToGenerateImage": "Roo ingin menghasilkan gambar:",
+		"wantsToGenerateImageOutsideWorkspace": "Roo ingin menghasilkan gambar di luar workspace:",
+		"wantsToGenerateImageProtected": "Roo ingin menghasilkan gambar di lokasi yang dilindungi:",
+		"didGenerateImage": "Roo telah menghasilkan gambar:",
 		"wantsToCreate": "Roo ingin membuat file baru:",
 		"wantsToSearchReplace": "Roo ingin mencari dan mengganti di file ini:",
 		"didSearchReplace": "Roo melakukan pencarian dan penggantian pada file ini:",
@@ -214,6 +224,22 @@
 		"resultTooltip": "Skor kemiripan: {{score}} (klik untuk membuka file)"
 	},
 	"commandOutput": "Output Perintah",
+	"commandExecution": {
+		"running": "Menjalankan",
+		"pid": "PID: {{pid}}",
+		"exited": "Keluar ({{exitCode}})",
+		"manageCommands": "Kelola Izin Perintah",
+		"commandManagementDescription": "Kelola izin perintah: Klik ✓ untuk mengizinkan eksekusi otomatis, ✗ untuk menolak eksekusi. Pola dapat diaktifkan/dinonaktifkan atau dihapus dari daftar. <settingsLink>Lihat semua pengaturan</settingsLink>",
+		"addToAllowed": "Tambahkan ke daftar yang diizinkan",
+		"removeFromAllowed": "Hapus dari daftar yang diizinkan",
+		"addToDenied": "Tambahkan ke daftar yang ditolak",
+		"removeFromDenied": "Hapus dari daftar yang ditolak",
+		"abortCommand": "Batalkan eksekusi perintah",
+		"expandOutput": "Perluas output",
+		"collapseOutput": "Ciutkan output",
+		"expandManagement": "Perluas bagian manajemen perintah",
+		"collapseManagement": "Ciutkan bagian manajemen perintah"
+	},
 	"response": "Respons",
 	"arguments": "Argumen",
 	"mcp": {
@@ -257,13 +283,12 @@
 	},
 	"announcement": {
 		"title": "🎉 Roo Code {{version}} Dirilis",
-		"description": "Roo Code {{version}} menghadirkan fitur-fitur baru yang kuat dan peningkatan signifikan untuk meningkatkan alur kerja pengembangan Anda.",
-		"whatsNew": "Yang Baru",
-		"feature1": "<bold>Pengindeksan Codebase Lulus dari Eksperimental</bold>: Pengindeksan codebase lengkap kini stabil dan siap untuk penggunaan produksi dengan pencarian yang ditingkatkan dan pemahaman konteks.",
-		"feature2": "<bold>Fitur Daftar Todo Baru</bold>: Jaga tugas Anda tetap pada jalur dengan manajemen todo terintegrasi yang membantu Anda tetap terorganisir dan fokus pada tujuan pengembangan.",
-		"feature3": "<bold>Transisi Arsitektur ke Kode yang Ditingkatkan</bold>: Transfer yang mulus dari perencanaan di mode Arsitektur ke implementasi di mode Kode.",
-		"hideButton": "Sembunyikan pengumuman",
-		"detailsDiscussLinks": "Dapatkan detail lebih lanjut dan bergabung dalam diskusi di <discordLink>Discord</discordLink> dan <redditLink>Reddit</redditLink> 🚀"
+		"description": "Memperkenalkan <bold>Roo Code Cloud:</bold> Membawa kekuatan Roo melampaui IDE",
+		"feature1": "<bold>Lacak kemajuan tugas dari mana saja (Gratis):</bold> Dapatkan pembaruan real-time tentang tugas yang berjalan lama tanpa terjebak di IDE Anda",
+		"feature2": "<bold>Kontrol Ekstensi Roo dari jarak jauh (Pro):</bold> Mulai, hentikan, dan berinteraksi dengan tugas dari antarmuka browser berbasis chat.",
+		"learnMore": "Siap mengambil kontrol? Pelajari lebih lanjut <learnMoreLink>di sini</learnMoreLink>.",
+		"visitCloudButton": "Kunjungi Roo Code Cloud",
+		"socialLinks": "Bergabunglah dengan kami di <xLink>X</xLink>, <discordLink>Discord</discordLink>, atau <redditLink>r/RooCode</redditLink>"
 	},
 	"reasoning": {
 		"thinking": "Berpikir",
@@ -317,6 +342,11 @@
 			"title": "Batas Permintaan yang Disetujui Otomatis Tercapai",
 			"description": "Roo telah mencapai batas {{count}} permintaan API yang disetujui otomatis. Apakah kamu ingin mengatur ulang hitungan dan melanjutkan tugas?",
 			"button": "Atur Ulang dan Lanjutkan"
+		},
+		"autoApprovedCostLimitReached": {
+			"description": "Roo telah mencapai batas biaya yang disetujui secara otomatis sebesar ${{count}}. Apakah Anda ingin mengatur ulang biaya dan melanjutkan tugas ini?",
+			"button": "Reset dan Lanjutkan",
+			"title": "Batas Biaya Otomatis-Disetujui Tercapai"
 		}
 	},
 	"indexingStatus": {
@@ -329,7 +359,42 @@
 	"versionIndicator": {
 		"ariaLabel": "Versi {{version}} - Klik untuk melihat catatan rilis"
 	},
+	"rooCloudCTA": {
+		"title": "Roo Code Cloud sedang berkembang!",
+		"description": "Jalankan agen jarak jauh di cloud, akses tugas Anda dari mana saja, berkolaborasi dengan orang lain, dan banyak lagi.",
+		"joinWaitlist": "Daftar untuk mendapatkan pembaruan terbaru."
+	},
 	"editMessage": {
 		"placeholder": "Edit pesan Anda..."
+	},
+	"command": {
+		"triggerDescription": "Jalankan perintah {{name}}"
+	},
+	"slashCommands": {
+		"tooltip": "Kelola perintah slash",
+		"title": "Perintah Slash",
+		"description": "Gunakan perintah slash bawaan atau buat kustom untuk akses cepat ke prompt dan alur kerja yang sering digunakan. <DocsLink>Dokumentasi</DocsLink>",
+		"builtInCommands": "Perintah Bawaan",
+		"globalCommands": "Perintah Global",
+		"workspaceCommands": "Perintah Workspace",
+		"globalCommand": "Perintah global",
+		"editCommand": "Edit perintah",
+		"deleteCommand": "Hapus perintah",
+		"newGlobalCommandPlaceholder": "Perintah global baru...",
+		"newWorkspaceCommandPlaceholder": "Perintah workspace baru...",
+		"deleteDialog": {
+			"title": "Hapus Perintah",
+			"description": "Apakah Anda yakin ingin menghapus perintah \"{{name}}\"? Tindakan ini tidak dapat dibatalkan.",
+			"cancel": "Batal",
+			"confirm": "Hapus"
+		}
+	},
+	"queuedMessages": {
+		"title": "Pesan Antrian:",
+		"clickToEdit": "Klik untuk mengedit pesan"
+	},
+	"slashCommand": {
+		"wantsToRun": "Roo ingin menjalankan perintah slash:",
+		"didRun": "Roo telah menjalankan perintah slash:"
 	}
 }

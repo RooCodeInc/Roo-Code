@@ -47,6 +47,9 @@
 		"geminiProvider": "Gemini",
 		"geminiApiKeyLabel": "Chiave API:",
 		"geminiApiKeyPlaceholder": "Inserisci la tua chiave API Gemini",
+		"vercelAiGatewayProvider": "Vercel AI Gateway",
+		"vercelAiGatewayApiKeyLabel": "Chiave API",
+		"vercelAiGatewayApiKeyPlaceholder": "Inserisci la tua chiave API Vercel AI Gateway",
 		"mistralProvider": "Mistral",
 		"mistralApiKeyLabel": "Chiave API:",
 		"mistralApiKeyPlaceholder": "Inserisci la tua chiave API Mistral",
@@ -113,6 +116,7 @@
 			"modelDimensionRequired": "È richiesta la dimensione del modello",
 			"geminiApiKeyRequired": "È richiesta la chiave API Gemini",
 			"mistralApiKeyRequired": "La chiave API di Mistral è richiesta",
+			"vercelAiGatewayApiKeyRequired": "È richiesta la chiave API Vercel AI Gateway",
 			"ollamaBaseUrlRequired": "È richiesto l'URL di base di Ollama",
 			"baseUrlRequired": "È richiesto l'URL di base",
 			"modelDimensionMinValue": "La dimensione del modello deve essere maggiore di 0"
@@ -127,6 +131,7 @@
 	},
 	"autoApprove": {
 		"description": "Permetti a Roo di eseguire automaticamente operazioni senza richiedere approvazione. Abilita queste impostazioni solo se ti fidi completamente dell'IA e comprendi i rischi di sicurezza associati.",
+		"enabled": "Auto-approvazione abilitata",
 		"toggleAriaLabel": "Attiva/disattiva approvazione automatica",
 		"disabledAriaLabel": "Approvazione automatica disabilitata - seleziona prima le opzioni",
 		"readOnly": {
@@ -197,7 +202,14 @@
 			"description": "Esegui automaticamente questo numero di richieste API prima di chiedere l'approvazione per continuare con l'attività.",
 			"unlimited": "Illimitato"
 		},
-		"selectOptionsFirst": "Seleziona almeno un'opzione qui sotto per abilitare l'approvazione automatica"
+		"selectOptionsFirst": "Seleziona almeno un'opzione qui sotto per abilitare l'approvazione automatica",
+		"apiCostLimit": {
+			"unlimited": "Illimitato",
+			"title": "Costo massimo"
+		},
+		"maxLimits": {
+			"description": "Esegui automaticamente richieste fino a questi limiti prima di chiedere l'approvazione per continuare."
+		}
 	},
 	"providers": {
 		"providerDocumentation": "Documentazione {{provider}}",
@@ -225,6 +237,8 @@
 		"awsCustomArnDesc": "Assicurati che la regione nell'ARN corrisponda alla regione AWS selezionata sopra.",
 		"openRouterApiKey": "Chiave API OpenRouter",
 		"getOpenRouterApiKey": "Ottieni chiave API OpenRouter",
+		"vercelAiGatewayApiKey": "Chiave API Vercel AI Gateway",
+		"getVercelAiGatewayApiKey": "Ottieni chiave API Vercel AI Gateway",
 		"apiKeyStorageNotice": "Le chiavi API sono memorizzate in modo sicuro nell'Archivio Segreto di VSCode",
 		"glamaApiKey": "Chiave API Glama",
 		"getGlamaApiKey": "Ottieni chiave API Glama",
@@ -245,20 +259,56 @@
 			"error": "Impossibile aggiornare l'elenco dei modelli. Riprova."
 		},
 		"getRequestyApiKey": "Ottieni chiave API Requesty",
+		"getRequestyBaseUrl": "URL base",
+		"requestyUseCustomBaseUrl": "Utilizza URL di base personalizzato",
 		"openRouterTransformsText": "Comprimi prompt e catene di messaggi alla dimensione del contesto (<a>Trasformazioni OpenRouter</a>)",
 		"anthropicApiKey": "Chiave API Anthropic",
 		"getAnthropicApiKey": "Ottieni chiave API Anthropic",
 		"anthropicUseAuthToken": "Passa la chiave API Anthropic come header di autorizzazione invece di X-Api-Key",
+		"anthropic1MContextBetaLabel": "Abilita finestra di contesto da 1M (Beta)",
+		"anthropic1MContextBetaDescription": "Estende la finestra di contesto a 1 milione di token per Claude Sonnet 4",
+		"awsBedrock1MContextBetaLabel": "Abilita finestra di contesto da 1M (Beta)",
+		"awsBedrock1MContextBetaDescription": "Estende la finestra di contesto a 1 milione di token per Claude Sonnet 4",
+		"cerebrasApiKey": "Chiave API Cerebras",
+		"getCerebrasApiKey": "Ottieni chiave API Cerebras",
 		"chutesApiKey": "Chiave API Chutes",
 		"getChutesApiKey": "Ottieni chiave API Chutes",
+		"fireworksApiKey": "Chiave API Fireworks",
+		"getFireworksApiKey": "Ottieni chiave API Fireworks",
+		"featherlessApiKey": "Chiave API Featherless",
+		"getFeatherlessApiKey": "Ottieni chiave API Featherless",
+		"ioIntelligenceApiKey": "Chiave API IO Intelligence",
+		"ioIntelligenceApiKeyPlaceholder": "Inserisci la tua chiave API IO Intelligence",
+		"getIoIntelligenceApiKey": "Ottieni chiave API IO Intelligence",
 		"deepSeekApiKey": "Chiave API DeepSeek",
 		"getDeepSeekApiKey": "Ottieni chiave API DeepSeek",
+		"doubaoApiKey": "Chiave API Doubao",
+		"getDoubaoApiKey": "Ottieni chiave API Doubao",
 		"moonshotApiKey": "Chiave API Moonshot",
 		"getMoonshotApiKey": "Ottieni chiave API Moonshot",
 		"moonshotBaseUrl": "Punto di ingresso Moonshot",
+		"zaiApiKey": "Chiave API Z AI",
+		"getZaiApiKey": "Ottieni chiave API Z AI",
+		"zaiEntrypoint": "Punto di ingresso Z AI",
+		"zaiEntrypointDescription": "Si prega di selezionare il punto di ingresso API appropriato in base alla propria posizione. Se ti trovi in Cina, scegli open.bigmodel.cn. Altrimenti, scegli api.z.ai.",
 		"geminiApiKey": "Chiave API Gemini",
 		"getGroqApiKey": "Ottieni chiave API Groq",
 		"groqApiKey": "Chiave API Groq",
+		"getSambaNovaApiKey": "Ottieni chiave API SambaNova",
+		"sambaNovaApiKey": "Chiave API SambaNova",
+		"getHuggingFaceApiKey": "Ottieni chiave API Hugging Face",
+		"huggingFaceApiKey": "Chiave API Hugging Face",
+		"huggingFaceModelId": "ID modello",
+		"huggingFaceLoading": "Caricamento...",
+		"huggingFaceModelsCount": "({{count}} modelli)",
+		"huggingFaceSelectModel": "Seleziona un modello...",
+		"huggingFaceSearchModels": "Cerca modelli...",
+		"huggingFaceNoModelsFound": "Nessun modello trovato",
+		"huggingFaceProvider": "Provider",
+		"huggingFaceProviderAuto": "Automatico",
+		"huggingFaceSelectProvider": "Seleziona un provider...",
+		"huggingFaceSearchProviders": "Cerca provider...",
+		"huggingFaceNoProvidersFound": "Nessun provider trovato",
 		"getGeminiApiKey": "Ottieni chiave API Gemini",
 		"openAiApiKey": "Chiave API OpenAI",
 		"apiKey": "Chiave API",
@@ -274,6 +324,7 @@
 		"litellmBaseUrl": "URL base LiteLLM",
 		"awsCredentials": "Credenziali AWS",
 		"awsProfile": "Profilo AWS",
+		"awsApiKey": "Chiave API Amazon Bedrock",
 		"awsProfileName": "Nome profilo AWS",
 		"awsAccessKey": "Chiave di accesso AWS",
 		"awsSecretKey": "Chiave segreta AWS",
@@ -290,6 +341,16 @@
 		"cacheUsageNote": "Nota: Se non vedi l'utilizzo della cache, prova a selezionare un modello diverso e poi seleziona nuovamente il modello desiderato.",
 		"vscodeLmModel": "Modello linguistico",
 		"vscodeLmWarning": "Nota: Questa è un'integrazione molto sperimentale e il supporto del fornitore varierà. Se ricevi un errore relativo a un modello non supportato, si tratta di un problema del fornitore.",
+		"geminiParameters": {
+			"urlContext": {
+				"title": "Abilita contesto URL",
+				"description": "Consente a Gemini di accedere e processare URL per contesto aggiuntivo durante la generazione delle risposte. Utile per attività che richiedono analisi di contenuti web."
+			},
+			"groundingSearch": {
+				"title": "Abilita grounding con ricerca Google",
+				"description": "Consente a Gemini di cercare informazioni aggiornate su Google e basare le risposte su dati in tempo reale. Utile per query che richiedono informazioni aggiornate."
+			}
+		},
 		"googleCloudSetup": {
 			"title": "Per utilizzare Google Cloud Vertex AI, è necessario:",
 			"step1": "1. Creare un account Google Cloud, abilitare l'API Vertex AI e abilitare i modelli Claude desiderati.",
@@ -313,6 +374,8 @@
 		"ollama": {
 			"baseUrl": "URL base (opzionale)",
 			"modelId": "ID modello",
+			"apiKey": "Chiave API Ollama",
+			"apiKeyHelp": "Chiave API opzionale per istanze Ollama autenticate o servizi cloud. Lascia vuoto per installazioni locali.",
 			"description": "Ollama ti permette di eseguire modelli localmente sul tuo computer. Per iniziare, consulta la guida rapida.",
 			"warning": "Nota: Roo Code utilizza prompt complessi e funziona meglio con i modelli Claude. I modelli con capacità inferiori potrebbero non funzionare come previsto."
 		},
@@ -323,6 +386,10 @@
 		"humanRelay": {
 			"description": "Non è richiesta alcuna chiave API, ma l'utente dovrà aiutare a copiare e incollare le informazioni nella chat web AI.",
 			"instructions": "Durante l'uso, apparirà una finestra di dialogo e il messaggio corrente verrà automaticamente copiato negli appunti. Dovrai incollarlo nelle versioni web dell'AI (come ChatGPT o Claude), quindi copiare la risposta dell'AI nella finestra di dialogo e fare clic sul pulsante di conferma."
+		},
+		"roo": {
+			"authenticatedMessage": "Autenticato in modo sicuro tramite il tuo account Roo Code Cloud.",
+			"connectButton": "Connetti a Roo Code Cloud"
 		},
 		"openRouter": {
 			"providerRouting": {
@@ -385,9 +452,17 @@
 		},
 		"reasoningEffort": {
 			"label": "Sforzo di ragionamento del modello",
+			"minimal": "Minimo (più veloce)",
 			"high": "Alto",
 			"medium": "Medio",
 			"low": "Basso"
+		},
+		"verbosity": {
+			"label": "Verbosity dell'output",
+			"high": "Alta",
+			"medium": "Media",
+			"low": "Bassa",
+			"description": "Controlla il livello di dettaglio delle risposte del modello. Una verbosity bassa produce risposte concise, mentre una verbosity alta fornisce spiegazioni approfondite."
 		},
 		"setReasoningLevel": "Abilita sforzo di ragionamento",
 		"claudeCode": {
@@ -488,6 +563,23 @@
 			"label": "Limite letture simultanee",
 			"description": "Numero massimo di file che lo strumento 'read_file' può elaborare contemporaneamente. Valori più alti possono velocizzare la lettura di più file piccoli ma aumentano l'utilizzo della memoria."
 		},
+		"diagnostics": {
+			"includeMessages": {
+				"label": "Includi automaticamente la diagnostica nel contesto",
+				"description": "Quando abilitato, i messaggi diagnostici (errori) dai file modificati verranno automaticamente inclusi nel contesto. Puoi sempre includere manualmente tutta la diagnostica del workspace usando @problems."
+			},
+			"maxMessages": {
+				"label": "Numero massimo di messaggi diagnostici",
+				"description": "Numero massimo di messaggi diagnostici da includere per file. Questo limite si applica sia all'inclusione automatica (quando la casella è abilitata) che alle menzioni manuali di @problems. Valori più alti forniscono più contesto ma aumentano l'utilizzo dei token.",
+				"resetTooltip": "Ripristina al valore predefinito (50)",
+				"unlimited": "Messaggi diagnostici illimitati",
+				"unlimitedLabel": "Illimitato"
+			},
+			"delayAfterWrite": {
+				"label": "Ritardo dopo le scritture per consentire alla diagnostica di rilevare potenziali problemi",
+				"description": "Tempo di attesa dopo la scrittura dei file prima di procedere, consentendo agli strumenti di diagnostica di elaborare le modifiche e rilevare i problemi."
+			}
+		},
 		"condensingThreshold": {
 			"label": "Soglia di attivazione condensazione",
 			"selectProfile": "Configura soglia per profilo",
@@ -496,6 +588,16 @@
 			"profileDescription": "Soglia personalizzata solo per questo profilo (sovrascrive il predefinito globale)",
 			"inheritDescription": "Questo profilo eredita la soglia predefinita globale ({{threshold}}%)",
 			"usesGlobal": "(usa globale {{threshold}}%)"
+		},
+		"maxImageFileSize": {
+			"label": "Dimensione massima file immagine",
+			"mb": "MB",
+			"description": "Dimensione massima (in MB) per i file immagine che possono essere elaborati dallo strumento di lettura file."
+		},
+		"maxTotalImageSize": {
+			"label": "Dimensione totale massima immagini",
+			"mb": "MB",
+			"description": "Limite di dimensione cumulativa massima (in MB) per tutte le immagini elaborate in una singola operazione read_file. Durante la lettura di più immagini, la dimensione di ogni immagine viene aggiunta al totale. Se l'inclusione di un'altra immagine supererebbe questo limite, verrà saltata."
 		}
 	},
 	"terminal": {
@@ -622,6 +724,33 @@
 		"SECURITY_MIDDLEWARE": {
 			"name": "Middleware di Sicurezza RooCode",
 			"description": "Abilita il middleware di sicurezza per proteggere file riservati e comandi dall'accesso dell'IA. Questa funzionalità fornisce protezione di livello aziendale contro l'accesso non autorizzato a dati sensibili."
+		},
+		"PREVENT_FOCUS_DISRUPTION": {
+			"name": "Modifica in background",
+			"description": "Previene l'interruzione del focus dell'editor quando abilitato. Le modifiche ai file avvengono in background senza aprire viste di differenze o rubare il focus. Puoi continuare a lavorare senza interruzioni mentre Roo effettua modifiche. I file possono essere aperti senza focus per catturare diagnostiche o rimanere completamente chiusi."
+		},
+		"ASSISTANT_MESSAGE_PARSER": {
+			"name": "Usa il nuovo parser dei messaggi",
+			"description": "Abilita il parser di messaggi in streaming sperimentale che migliora nettamente le risposte lunghe elaborando i messaggi in modo più efficiente."
+		},
+		"NEW_TASK_REQUIRE_TODOS": {
+			"name": "Richiedi elenco 'todos' per nuove attività",
+			"description": "Quando abilitato, lo strumento new_task richiederà la fornitura di un parametro todos. Ciò garantisce che tutte le nuove attività inizino con un elenco chiaro di obiettivi. Quando disabilitato (impostazione predefinita), il parametro todos rimane facoltativo per la compatibilità con le versioni precedenti."
+		},
+		"IMAGE_GENERATION": {
+			"name": "Abilita generazione immagini AI",
+			"description": "Quando abilitato, Roo può generare immagini da prompt di testo utilizzando i modelli di generazione immagini di OpenRouter. Richiede una chiave API OpenRouter configurata.",
+			"openRouterApiKeyLabel": "Chiave API OpenRouter",
+			"openRouterApiKeyPlaceholder": "Inserisci la tua chiave API OpenRouter",
+			"getApiKeyText": "Ottieni la tua chiave API da",
+			"modelSelectionLabel": "Modello di generazione immagini",
+			"modelSelectionDescription": "Seleziona il modello per la generazione di immagini",
+			"warningMissingKey": "⚠️ La chiave API OpenRouter è richiesta per la generazione di immagini. Configurala sopra.",
+			"successConfigured": "✓ La generazione di immagini è configurata e pronta per l'uso"
+		},
+		"RUN_SLASH_COMMAND": {
+			"name": "Abilita comandi slash avviati dal modello",
+			"description": "Quando abilitato, Roo può eseguire i tuoi comandi slash per eseguire flussi di lavoro."
 		}
 	},
 	"promptCaching": {
@@ -640,6 +769,7 @@
 		"noComputerUse": "Non supporta uso del computer",
 		"supportsPromptCache": "Supporta cache dei prompt",
 		"noPromptCache": "Non supporta cache dei prompt",
+		"contextWindow": "Finestra di contesto:",
 		"maxOutput": "Output massimo",
 		"inputPrice": "Prezzo input",
 		"outputPrice": "Prezzo output",
@@ -667,7 +797,7 @@
 		"feedback": "Se hai domande o feedback, sentiti libero di aprire un issue su <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> o unirti a <redditLink>reddit.com/r/RooCode</redditLink> o <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {
 			"label": "Consenti segnalazioni anonime di errori e utilizzo",
-			"description": "Aiuta a migliorare Roo Code inviando dati di utilizzo anonimi e segnalazioni di errori. Non vengono mai inviati codice, prompt o informazioni personali. Consulta la nostra politica sulla privacy per maggiori dettagli."
+			"description": "Aiuta a migliorare Roo Code inviando dati di utilizzo anonimi e segnalazioni di errori. Questa telemetria non raccoglie codice, prompt o informazioni personali. Consulta la nostra <privacyLink>informativa sulla privacy</privacyLink> per maggiori dettagli."
 		},
 		"settings": {
 			"import": "Importa",
@@ -693,7 +823,8 @@
 		"modelAvailability": "L'ID modello ({{modelId}}) fornito non è disponibile. Seleziona un modello diverso.",
 		"providerNotAllowed": "Il fornitore '{{provider}}' non è consentito dalla tua organizzazione",
 		"modelNotAllowed": "Il modello '{{model}}' non è consentito per il fornitore '{{provider}}' dalla tua organizzazione.",
-		"profileInvalid": "Questo profilo contiene un fornitore o un modello non consentito dalla tua organizzazione."
+		"profileInvalid": "Questo profilo contiene un fornitore o un modello non consentito dalla tua organizzazione.",
+		"qwenCodeOauthPath": "Devi fornire un percorso valido per le credenziali OAuth"
 	},
 	"placeholders": {
 		"apiKey": "Inserisci chiave API...",
@@ -729,5 +860,22 @@
 		"useCustomArn": "Usa ARN personalizzato..."
 	},
 	"includeMaxOutputTokens": "Includi token di output massimi",
-	"includeMaxOutputTokensDescription": "Invia il parametro dei token di output massimi nelle richieste API. Alcuni provider potrebbero non supportarlo."
+	"includeMaxOutputTokensDescription": "Invia il parametro dei token di output massimi nelle richieste API. Alcuni provider potrebbero non supportarlo.",
+	"limitMaxTokensDescription": "Limita il numero massimo di token nella risposta",
+	"maxOutputTokensLabel": "Token di output massimi",
+	"maxTokensGenerateDescription": "Token massimi da generare nella risposta",
+	"serviceTier": {
+		"label": "Livello di servizio",
+		"tooltip": "Per un'elaborazione più rapida delle richieste API, prova il livello di servizio di elaborazione prioritaria. Per prezzi più bassi con una latenza maggiore, prova il livello di elaborazione flessibile.",
+		"standard": "Standard",
+		"flex": "Flessibile",
+		"priority": "Priorità",
+		"pricingTableTitle": "Prezzi per livello di servizio (prezzo per 1 milione di token)",
+		"columns": {
+			"tier": "Livello",
+			"input": "Input",
+			"output": "Output",
+			"cacheReads": "Letture cache"
+		}
+	}
 }

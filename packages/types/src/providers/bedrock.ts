@@ -82,6 +82,21 @@ export const bedrockModels = {
 		maxCachePoints: 4,
 		cachableFields: ["system", "messages", "tools"],
 	},
+	"anthropic.claude-opus-4-1-20250805-v1:0": {
+		maxTokens: 8192,
+		contextWindow: 200_000,
+		supportsImages: true,
+		supportsComputerUse: true,
+		supportsPromptCache: true,
+		supportsReasoningBudget: true,
+		inputPrice: 15.0,
+		outputPrice: 75.0,
+		cacheWritesPrice: 18.75,
+		cacheReadsPrice: 1.5,
+		minTokensPerCachePoint: 1024,
+		maxCachePoints: 4,
+		cachableFields: ["system", "messages", "tools"],
+	},
 	"anthropic.claude-opus-4-20250514-v1:0": {
 		maxTokens: 8192,
 		contextWindow: 200_000,
@@ -205,6 +220,26 @@ export const bedrockModels = {
 		supportsPromptCache: false,
 		inputPrice: 1.35,
 		outputPrice: 5.4,
+	},
+	"openai.gpt-oss-20b-1:0": {
+		maxTokens: 8192,
+		contextWindow: 128_000,
+		supportsImages: false,
+		supportsComputerUse: false,
+		supportsPromptCache: false,
+		inputPrice: 0.5,
+		outputPrice: 1.5,
+		description: "GPT-OSS 20B - Optimized for low latency and local/specialized use cases",
+	},
+	"openai.gpt-oss-120b-1:0": {
+		maxTokens: 8192,
+		contextWindow: 128_000,
+		supportsImages: false,
+		supportsComputerUse: false,
+		supportsPromptCache: false,
+		inputPrice: 2.0,
+		outputPrice: 6.0,
+		description: "GPT-OSS 120B - Production-ready, general-purpose, high-reasoning model",
 	},
 	"meta.llama3-3-70b-instruct-v1:0": {
 		maxTokens: 8192,
@@ -360,7 +395,7 @@ export const BEDROCK_MAX_TOKENS = 4096
 
 export const BEDROCK_DEFAULT_CONTEXT = 128_000
 
-// AWS Bedrock Inference Profile mapping based on official documentation
+// Amazon Bedrock Inference Profile mapping based on official documentation
 // https://docs.aws.amazon.com/bedrock/latest/userguide/inference-profiles-support.html
 // This mapping is pre-ordered by pattern length (descending) to ensure more specific patterns match first
 export const AWS_INFERENCE_PROFILE_MAPPING: Array<[string, string]> = [
@@ -378,7 +413,7 @@ export const AWS_INFERENCE_PROFILE_MAPPING: Array<[string, string]> = [
 	["sa-", "sa."],
 ]
 
-// AWS Bedrock supported regions for the regions dropdown
+// Amazon Bedrock supported regions for the regions dropdown
 // Based on official AWS documentation
 export const BEDROCK_REGIONS = [
 	{ value: "us-east-1", label: "us-east-1" },
@@ -406,3 +441,5 @@ export const BEDROCK_REGIONS = [
 	{ value: "us-gov-east-1", label: "us-gov-east-1" },
 	{ value: "us-gov-west-1", label: "us-gov-west-1" },
 ].sort((a, b) => a.value.localeCompare(b.value))
+
+export const BEDROCK_CLAUDE_SONNET_4_MODEL_ID = "anthropic.claude-sonnet-4-20250514-v1:0"

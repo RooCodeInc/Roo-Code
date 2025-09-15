@@ -2,12 +2,15 @@
 	"greeting": "Chào mừng đến với Roo Code",
 	"task": {
 		"title": "Nhiệm vụ",
+		"expand": "Mở rộng nhiệm vụ",
+		"collapse": "Thu gọn nhiệm vụ",
 		"seeMore": "Xem thêm",
 		"seeLess": "Thu gọn",
-		"tokens": "Tokens:",
-		"cache": "Bộ nhớ đệm:",
-		"apiCost": "Chi phí API:",
-		"contextWindow": "Chiều dài bối cảnh:",
+		"tokens": "Tokens",
+		"cache": "Bộ nhớ đệm",
+		"apiCost": "Chi phí API",
+		"size": "Kích thước",
+		"contextWindow": "Chiều dài bối cảnh",
 		"closeAndStart": "Đóng nhiệm vụ và bắt đầu nhiệm vụ mới",
 		"export": "Xuất lịch sử nhiệm vụ",
 		"delete": "Xóa nhiệm vụ (Shift + Click để bỏ qua xác nhận)",
@@ -21,7 +24,9 @@
 		"connectToCloudDescription": "Đăng nhập vào Roo Code Cloud để chia sẻ tác vụ",
 		"sharingDisabledByOrganization": "Chia sẻ bị tổ chức vô hiệu hóa",
 		"shareSuccessOrganization": "Liên kết tổ chức đã được sao chép vào clipboard",
-		"shareSuccessPublic": "Liên kết công khai đã được sao chép vào clipboard"
+		"shareSuccessPublic": "Liên kết công khai đã được sao chép vào clipboard",
+		"openInCloud": "Mở tác vụ trong Roo Code Cloud",
+		"openInCloudIntro": "Tiếp tục theo dõi hoặc tương tác với Roo từ bất cứ đâu. Quét, nhấp hoặc sao chép để mở."
 	},
 	"unpin": "Bỏ ghim khỏi đầu",
 	"pin": "Ghim lên đầu",
@@ -108,7 +113,7 @@
 	"stopTts": "Dừng chuyển văn bản thành giọng nói",
 	"typeMessage": "Nhập tin nhắn...",
 	"typeTask": "Nhập nhiệm vụ của bạn tại đây...",
-	"addContext": "@ để thêm ngữ cảnh, / để chuyển chế độ",
+	"addContext": "@ để thêm ngữ cảnh, / cho lệnh",
 	"dragFiles": "giữ shift để kéo tệp",
 	"dragFilesImages": "giữ shift để kéo tệp/hình ảnh",
 	"enhancePromptDescription": "Nút 'Nâng cao yêu cầu' giúp cải thiện yêu cầu của bạn bằng cách cung cấp ngữ cảnh bổ sung, làm rõ hoặc diễn đạt lại. Hãy thử nhập yêu cầu tại đây và nhấp vào nút một lần nữa để xem cách thức hoạt động.",
@@ -116,7 +121,9 @@
 		"title": "Chế độ",
 		"marketplace": "Chợ Chế độ",
 		"settings": "Cài đặt Chế độ",
-		"description": "Các nhân cách chuyên biệt điều chỉnh hành vi của Roo."
+		"description": "Các nhân cách chuyên biệt điều chỉnh hành vi của Roo.",
+		"searchPlaceholder": "Tìm kiếm chế độ...",
+		"noResults": "Không tìm thấy kết quả nào"
 	},
 	"errorReadingFile": "Lỗi khi đọc tệp:",
 	"noValidImages": "Không có hình ảnh hợp lệ nào được xử lý",
@@ -137,7 +144,6 @@
 		"streamingFailed": "Streaming API thất bại"
 	},
 	"checkpoint": {
-		"initial": "Điểm kiểm tra ban đầu",
 		"regular": "Điểm kiểm tra",
 		"initializingWarning": "Đang khởi tạo điểm kiểm tra... Nếu quá trình này mất quá nhiều thời gian, bạn có thể vô hiệu hóa điểm kiểm tra trong <settingsLink>cài đặt</settingsLink> và khởi động lại tác vụ của bạn.",
 		"menu": {
@@ -171,7 +177,11 @@
 		"wantsToInsertAtEnd": "Roo muốn thêm nội dung vào cuối tệp này:",
 		"wantsToReadAndXMore": "Roo muốn đọc tệp này và {{count}} tệp khác:",
 		"wantsToReadMultiple": "Roo muốn đọc nhiều tệp:",
-		"wantsToApplyBatchChanges": "Roo muốn áp dụng thay đổi cho nhiều tệp:"
+		"wantsToApplyBatchChanges": "Roo muốn áp dụng thay đổi cho nhiều tệp:",
+		"wantsToGenerateImage": "Roo muốn tạo một hình ảnh:",
+		"wantsToGenerateImageOutsideWorkspace": "Roo muốn tạo hình ảnh bên ngoài không gian làm việc:",
+		"wantsToGenerateImageProtected": "Roo muốn tạo hình ảnh ở vị trí được bảo vệ:",
+		"didGenerateImage": "Roo đã tạo một hình ảnh:"
 	},
 	"directoryOperations": {
 		"wantsToViewTopLevel": "Roo muốn xem các tệp cấp cao nhất trong thư mục này:",
@@ -192,6 +202,22 @@
 		"didViewDefinitionsOutsideWorkspace": "Roo đã xem tên định nghĩa mã nguồn được sử dụng trong thư mục này (ngoài không gian làm việc):"
 	},
 	"commandOutput": "Kết quả lệnh",
+	"commandExecution": {
+		"running": "Đang chạy",
+		"pid": "PID: {{pid}}",
+		"exited": "Đã thoát ({{exitCode}})",
+		"manageCommands": "Quản lý quyền lệnh",
+		"commandManagementDescription": "Quản lý quyền lệnh: Nhấp vào ✓ để cho phép tự động thực thi, ✗ để từ chối thực thi. Các mẫu có thể được bật/tắt hoặc xóa khỏi danh sách. <settingsLink>Xem tất cả cài đặt</settingsLink>",
+		"addToAllowed": "Thêm vào danh sách cho phép",
+		"removeFromAllowed": "Xóa khỏi danh sách cho phép",
+		"addToDenied": "Thêm vào danh sách từ chối",
+		"removeFromDenied": "Xóa khỏi danh sách từ chối",
+		"abortCommand": "Hủy bỏ thực thi lệnh",
+		"expandOutput": "Mở rộng kết quả",
+		"collapseOutput": "Thu gọn kết quả",
+		"expandManagement": "Mở rộng phần quản lý lệnh",
+		"collapseManagement": "Thu gọn phần quản lý lệnh"
+	},
 	"response": "Phản hồi",
 	"arguments": "Tham số",
 	"mcp": {
@@ -245,13 +271,12 @@
 	},
 	"announcement": {
 		"title": "🎉 Roo Code {{version}} Đã phát hành",
-		"description": "Roo Code {{version}} mang đến các tính năng mạnh mẽ mới và cải tiến đáng kể để nâng cao quy trình phát triển của bạn.",
-		"whatsNew": "Có gì mới",
-		"feature1": "<bold>Lập chỉ mục Codebase Tốt nghiệp từ Thử nghiệm</bold>: Lập chỉ mục codebase đầy đủ hiện đã ổn định và sẵn sàng cho sử dụng sản xuất với tìm kiếm cải tiến và hiểu biết ngữ cảnh.",
-		"feature2": "<bold>Tính năng Danh sách Todo Mới</bold>: Giữ nhiệm vụ của bạn đúng hướng với quản lý todo tích hợp giúp bạn duy trì tổ chức và tập trung vào mục tiêu phát triển.",
-		"feature3": "<bold>Cải thiện Chuyển đổi từ Architect sang Code</bold>: Chuyển đổi mượt mà từ lập kế hoạch trong chế độ Architect sang triển khai trong chế độ Code.",
-		"hideButton": "Ẩn thông báo",
-		"detailsDiscussLinks": "Nhận thêm chi tiết và thảo luận tại <discordLink>Discord</discordLink> và <redditLink>Reddit</redditLink> 🚀"
+		"description": "Giới thiệu <bold>Roo Code Cloud:</bold> Mang sức mạnh của Roo vượt ra ngoài IDE",
+		"feature1": "<bold>Theo dõi tiến trình tác vụ từ bất kỳ đâu (Miễn phí):</bold> Nhận cập nhật thời gian thực về các tác vụ chạy dài mà không bị mắc kẹt trong IDE của bạn",
+		"feature2": "<bold>Điều khiển Tiện ích Roo từ xa (Pro):</bold> Bắt đầu, dừng và tương tác với các tác vụ từ giao diện trình duyệt dựa trên chat.",
+		"learnMore": "Sẵn sàng nắm quyền kiểm soát? Tìm hiểu thêm <learnMoreLink>tại đây</learnMoreLink>.",
+		"visitCloudButton": "Truy cập Roo Code Cloud",
+		"socialLinks": "Tham gia với chúng tôi trên <xLink>X</xLink>, <discordLink>Discord</discordLink>, hoặc <redditLink>r/RooCode</redditLink>"
 	},
 	"browser": {
 		"rooWantsToUse": "Roo muốn sử dụng trình duyệt:",
@@ -296,6 +321,11 @@
 			"title": "Đã Đạt Giới Hạn Yêu Cầu Tự Động Phê Duyệt",
 			"description": "Roo đã đạt đến giới hạn tự động phê duyệt là {{count}} yêu cầu API. Bạn có muốn đặt lại bộ đếm và tiếp tục nhiệm vụ không?",
 			"button": "Đặt lại và Tiếp tục"
+		},
+		"autoApprovedCostLimitReached": {
+			"button": "Đặt lại và Tiếp tục",
+			"title": "Đã Đạt Giới Hạn Chi Phí Tự Động Phê Duyệt",
+			"description": "Roo đã đạt đến giới hạn chi phí tự động phê duyệt là ${{count}}. Bạn có muốn đặt lại chi phí và tiếp tục với nhiệm vụ không?"
 		}
 	},
 	"codebaseSearch": {
@@ -323,7 +353,42 @@
 	"versionIndicator": {
 		"ariaLabel": "Phiên bản {{version}} - Nhấp để xem ghi chú phát hành"
 	},
+	"rooCloudCTA": {
+		"title": "Roo Code Cloud đang phát triển!",
+		"description": "Chạy các agent từ xa trên cloud, truy cập các tác vụ của bạn từ mọi nơi, cộng tác với người khác và nhiều hơn nữa.",
+		"joinWaitlist": "Đăng ký để nhận các cập nhật mới nhất."
+	},
 	"editMessage": {
 		"placeholder": "Chỉnh sửa tin nhắn của bạn..."
+	},
+	"command": {
+		"triggerDescription": "Kích hoạt lệnh {{name}}"
+	},
+	"slashCommands": {
+		"tooltip": "Quản lý lệnh gạch chéo",
+		"title": "Lệnh Gạch Chéo",
+		"description": "Sử dụng lệnh gạch chéo tích hợp sẵn hoặc tạo tùy chỉnh để truy cập nhanh vào các lời nhắc và quy trình làm việc thường dùng. <DocsLink>Tài liệu</DocsLink>",
+		"builtInCommands": "Lệnh Tích Hợp",
+		"globalCommands": "Lệnh Toàn Cục",
+		"workspaceCommands": "Lệnh Không Gian Làm Việc",
+		"globalCommand": "Lệnh toàn cục",
+		"editCommand": "Chỉnh sửa lệnh",
+		"deleteCommand": "Xóa lệnh",
+		"newGlobalCommandPlaceholder": "Lệnh toàn cục mới...",
+		"newWorkspaceCommandPlaceholder": "Lệnh không gian làm việc mới...",
+		"deleteDialog": {
+			"title": "Xóa Lệnh",
+			"description": "Bạn có chắc chắn muốn xóa lệnh \"{{name}}\" không? Hành động này không thể hoàn tác.",
+			"cancel": "Hủy",
+			"confirm": "Xóa"
+		}
+	},
+	"queuedMessages": {
+		"title": "Tin nhắn trong hàng đợi:",
+		"clickToEdit": "Nhấp để chỉnh sửa tin nhắn"
+	},
+	"slashCommand": {
+		"wantsToRun": "Roo muốn chạy lệnh slash:",
+		"didRun": "Roo đã chạy lệnh slash:"
 	}
 }

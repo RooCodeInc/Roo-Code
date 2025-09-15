@@ -50,6 +50,9 @@
 		"mistralProvider": "Mistral",
 		"mistralApiKeyLabel": "Khóa API:",
 		"mistralApiKeyPlaceholder": "Nhập khóa API Mistral của bạn",
+		"vercelAiGatewayProvider": "Vercel AI Gateway",
+		"vercelAiGatewayApiKeyLabel": "Khóa API",
+		"vercelAiGatewayApiKeyPlaceholder": "Nhập khóa API Vercel AI Gateway của bạn",
 		"openaiCompatibleProvider": "Tương thích OpenAI",
 		"openAiKeyLabel": "Khóa API OpenAI",
 		"openAiKeyPlaceholder": "Nhập khóa API OpenAI của bạn",
@@ -113,6 +116,7 @@
 			"modelDimensionRequired": "Yêu cầu kích thước mô hình",
 			"geminiApiKeyRequired": "Yêu cầu khóa API Gemini",
 			"mistralApiKeyRequired": "Cần có khóa API của Mistral",
+			"vercelAiGatewayApiKeyRequired": "Cần có khóa API Vercel AI Gateway",
 			"ollamaBaseUrlRequired": "Yêu cầu URL cơ sở Ollama",
 			"baseUrlRequired": "Yêu cầu URL cơ sở",
 			"modelDimensionMinValue": "Kích thước mô hình phải lớn hơn 0"
@@ -127,6 +131,7 @@
 	},
 	"autoApprove": {
 		"description": "Cho phép Roo tự động thực hiện các hoạt động mà không cần phê duyệt. Chỉ bật những cài đặt này nếu bạn hoàn toàn tin tưởng AI và hiểu rõ các rủi ro bảo mật liên quan.",
+		"enabled": "Phê duyệt tự động đã bật",
 		"toggleAriaLabel": "Chuyển đổi tự động phê duyệt",
 		"disabledAriaLabel": "Tự động phê duyệt bị vô hiệu hóa - hãy chọn các tùy chọn trước",
 		"readOnly": {
@@ -197,7 +202,14 @@
 			"description": "Tự động thực hiện số lượng API request này trước khi yêu cầu phê duyệt để tiếp tục với nhiệm vụ.",
 			"unlimited": "Không giới hạn"
 		},
-		"selectOptionsFirst": "Chọn ít nhất một tùy chọn bên dưới để bật tự động phê duyệt"
+		"selectOptionsFirst": "Chọn ít nhất một tùy chọn bên dưới để bật tự động phê duyệt",
+		"apiCostLimit": {
+			"title": "Chi phí tối đa",
+			"unlimited": "Không giới hạn"
+		},
+		"maxLimits": {
+			"description": "Tự động thực hiện các yêu cầu lên đến các giới hạn này trước khi xin phê duyệt để tiếp tục."
+		}
 	},
 	"providers": {
 		"providerDocumentation": "Tài liệu {{provider}}",
@@ -225,6 +237,8 @@
 		"awsCustomArnDesc": "Đảm bảo rằng vùng trong ARN khớp với vùng AWS đã chọn ở trên.",
 		"openRouterApiKey": "Khóa API OpenRouter",
 		"getOpenRouterApiKey": "Lấy khóa API OpenRouter",
+		"vercelAiGatewayApiKey": "Khóa API Vercel AI Gateway",
+		"getVercelAiGatewayApiKey": "Lấy khóa API Vercel AI Gateway",
 		"apiKeyStorageNotice": "Khóa API được lưu trữ an toàn trong Bộ lưu trữ bí mật của VSCode",
 		"glamaApiKey": "Khóa API Glama",
 		"getGlamaApiKey": "Lấy khóa API Glama",
@@ -245,20 +259,56 @@
 			"error": "Không thể làm mới danh sách mô hình. Vui lòng thử lại."
 		},
 		"getRequestyApiKey": "Lấy khóa API Requesty",
+		"getRequestyBaseUrl": "URL cơ sở",
+		"requestyUseCustomBaseUrl": "Sử dụng URL cơ sở tùy chỉnh",
 		"openRouterTransformsText": "Nén lời nhắc và chuỗi tin nhắn theo kích thước ngữ cảnh (<a>OpenRouter Transforms</a>)",
 		"anthropicApiKey": "Khóa API Anthropic",
 		"getAnthropicApiKey": "Lấy khóa API Anthropic",
 		"anthropicUseAuthToken": "Truyền khóa API Anthropic dưới dạng tiêu đề Authorization thay vì X-Api-Key",
+		"anthropic1MContextBetaLabel": "Bật cửa sổ ngữ cảnh 1M (Beta)",
+		"anthropic1MContextBetaDescription": "Mở rộng cửa sổ ngữ cảnh lên 1 triệu token cho Claude Sonnet 4",
+		"awsBedrock1MContextBetaLabel": "Bật cửa sổ ngữ cảnh 1M (Beta)",
+		"awsBedrock1MContextBetaDescription": "Mở rộng cửa sổ ngữ cảnh lên 1 triệu token cho Claude Sonnet 4",
+		"cerebrasApiKey": "Khóa API Cerebras",
+		"getCerebrasApiKey": "Lấy khóa API Cerebras",
 		"chutesApiKey": "Khóa API Chutes",
 		"getChutesApiKey": "Lấy khóa API Chutes",
+		"fireworksApiKey": "Khóa API Fireworks",
+		"getFireworksApiKey": "Lấy khóa API Fireworks",
+		"featherlessApiKey": "Khóa API Featherless",
+		"getFeatherlessApiKey": "Lấy khóa API Featherless",
+		"ioIntelligenceApiKey": "Khóa API IO Intelligence",
+		"ioIntelligenceApiKeyPlaceholder": "Nhập khóa API IO Intelligence của bạn",
+		"getIoIntelligenceApiKey": "Lấy khóa API IO Intelligence",
 		"deepSeekApiKey": "Khóa API DeepSeek",
 		"getDeepSeekApiKey": "Lấy khóa API DeepSeek",
+		"doubaoApiKey": "Khóa API Doubao",
+		"getDoubaoApiKey": "Lấy khóa API Doubao",
 		"moonshotApiKey": "Khóa API Moonshot",
 		"getMoonshotApiKey": "Lấy khóa API Moonshot",
 		"moonshotBaseUrl": "Điểm vào Moonshot",
+		"zaiApiKey": "Khóa API Z AI",
+		"getZaiApiKey": "Lấy khóa API Z AI",
+		"zaiEntrypoint": "Điểm vào Z AI",
+		"zaiEntrypointDescription": "Vui lòng chọn điểm vào API phù hợp dựa trên vị trí của bạn. Nếu bạn ở Trung Quốc, hãy chọn open.bigmodel.cn. Ngược lại, hãy chọn api.z.ai.",
 		"geminiApiKey": "Khóa API Gemini",
 		"getGroqApiKey": "Lấy khóa API Groq",
 		"groqApiKey": "Khóa API Groq",
+		"getSambaNovaApiKey": "Lấy khóa API SambaNova",
+		"sambaNovaApiKey": "Khóa API SambaNova",
+		"getHuggingFaceApiKey": "Lấy Khóa API Hugging Face",
+		"huggingFaceApiKey": "Khóa API Hugging Face",
+		"huggingFaceModelId": "ID Mô hình",
+		"huggingFaceLoading": "Đang tải...",
+		"huggingFaceModelsCount": "({{count}} mô hình)",
+		"huggingFaceSelectModel": "Chọn một mô hình...",
+		"huggingFaceSearchModels": "Tìm kiếm mô hình...",
+		"huggingFaceNoModelsFound": "Không tìm thấy mô hình",
+		"huggingFaceProvider": "Nhà cung cấp",
+		"huggingFaceProviderAuto": "Tự động",
+		"huggingFaceSelectProvider": "Chọn một nhà cung cấp...",
+		"huggingFaceSearchProviders": "Tìm kiếm nhà cung cấp...",
+		"huggingFaceNoProvidersFound": "Không tìm thấy nhà cung cấp",
 		"getGeminiApiKey": "Lấy khóa API Gemini",
 		"openAiApiKey": "Khóa API OpenAI",
 		"apiKey": "Khóa API",
@@ -274,6 +324,7 @@
 		"litellmBaseUrl": "URL cơ sở LiteLLM",
 		"awsCredentials": "Thông tin xác thực AWS",
 		"awsProfile": "Hồ sơ AWS",
+		"awsApiKey": "Khóa API Amazon Bedrock",
 		"awsProfileName": "Tên hồ sơ AWS",
 		"awsAccessKey": "Khóa truy cập AWS",
 		"awsSecretKey": "Khóa bí mật AWS",
@@ -290,6 +341,16 @@
 		"cacheUsageNote": "Lưu ý: Nếu bạn không thấy việc sử dụng bộ nhớ đệm, hãy thử chọn một mô hình khác và sau đó chọn lại mô hình mong muốn của bạn.",
 		"vscodeLmModel": "Mô hình ngôn ngữ",
 		"vscodeLmWarning": "Lưu ý: Đây là tích hợp thử nghiệm và hỗ trợ nhà cung cấp có thể khác nhau. Nếu bạn nhận được lỗi về mô hình không được hỗ trợ, đó là vấn đề từ phía nhà cung cấp.",
+		"geminiParameters": {
+			"urlContext": {
+				"title": "Bật ngữ cảnh URL",
+				"description": "Cho phép Gemini truy cập và xử lý URL để có thêm ngữ cảnh khi tạo phản hồi. Hữu ích cho các tác vụ yêu cầu phân tích nội dung web."
+			},
+			"groundingSearch": {
+				"title": "Bật grounding với tìm kiếm Google",
+				"description": "Cho phép Gemini tìm kiếm trên Google để lấy thông tin mới nhất và căn cứ phản hồi dựa trên dữ liệu thời gian thực. Hữu ích cho các truy vấn yêu cầu thông tin cập nhật."
+			}
+		},
 		"googleCloudSetup": {
 			"title": "Để sử dụng Google Cloud Vertex AI, bạn cần:",
 			"step1": "1. Tạo tài khoản Google Cloud, kích hoạt Vertex AI API và kích hoạt các mô hình Claude mong muốn.",
@@ -313,6 +374,8 @@
 		"ollama": {
 			"baseUrl": "URL cơ sở (tùy chọn)",
 			"modelId": "ID mô hình",
+			"apiKey": "Khóa API Ollama",
+			"apiKeyHelp": "Khóa API tùy chọn cho các phiên bản Ollama đã xác thực hoặc dịch vụ đám mây. Để trống cho cài đặt cục bộ.",
 			"description": "Ollama cho phép bạn chạy các mô hình cục bộ trên máy tính của bạn. Để biết hướng dẫn về cách bắt đầu, xem hướng dẫn nhanh của họ.",
 			"warning": "Lưu ý: Roo Code sử dụng các lời nhắc phức tạp và hoạt động tốt nhất với các mô hình Claude. Các mô hình kém mạnh hơn có thể không hoạt động như mong đợi."
 		},
@@ -323,6 +386,10 @@
 		"humanRelay": {
 			"description": "Không cần khóa API, nhưng người dùng cần giúp sao chép và dán thông tin vào AI trò chuyện web.",
 			"instructions": "Trong quá trình sử dụng, một hộp thoại sẽ xuất hiện và tin nhắn hiện tại sẽ được tự động sao chép vào clipboard. Bạn cần dán chúng vào các phiên bản web của AI (như ChatGPT hoặc Claude), sau đó sao chép phản hồi của AI trở lại hộp thoại và nhấp vào nút xác nhận."
+		},
+		"roo": {
+			"authenticatedMessage": "Đã xác thực an toàn thông qua tài khoản Roo Code Cloud của bạn.",
+			"connectButton": "Kết nối với Roo Code Cloud"
 		},
 		"openRouter": {
 			"providerRouting": {
@@ -385,9 +452,17 @@
 		},
 		"reasoningEffort": {
 			"label": "Nỗ lực suy luận của mô hình",
+			"minimal": "Tối thiểu (nhanh nhất)",
 			"high": "Cao",
 			"medium": "Trung bình",
 			"low": "Thấp"
+		},
+		"verbosity": {
+			"label": "Mức độ chi tiết đầu ra",
+			"high": "Cao",
+			"medium": "Trung bình",
+			"low": "Thấp",
+			"description": "Kiểm soát mức độ chi tiết của các câu trả lời của mô hình. Mức độ chi tiết thấp tạo ra các câu trả lời ngắn gọn, trong khi mức độ chi tiết cao cung cấp giải thích kỹ lưỡng."
 		},
 		"setReasoningLevel": "Kích hoạt nỗ lực suy luận",
 		"claudeCode": {
@@ -488,6 +563,23 @@
 			"label": "Giới hạn đọc file đồng thời",
 			"description": "Số lượng file tối đa mà công cụ 'read_file' có thể xử lý cùng lúc. Giá trị cao hơn có thể tăng tốc độ đọc nhiều file nhỏ nhưng sẽ tăng mức sử dụng bộ nhớ."
 		},
+		"diagnostics": {
+			"includeMessages": {
+				"label": "Tự động bao gồm chẩn đoán trong ngữ cảnh",
+				"description": "Khi được bật, thông báo chẩn đoán (lỗi) từ các tệp đã chỉnh sửa sẽ tự động được bao gồm trong ngữ cảnh. Bạn luôn có thể bao gồm thủ công tất cả chẩn đoán của workspace bằng cách sử dụng @problems."
+			},
+			"maxMessages": {
+				"label": "Thông báo chẩn đoán tối đa",
+				"description": "Số lượng thông báo chẩn đoán tối đa được bao gồm cho mỗi tệp. Giới hạn này áp dụng cho cả việc bao gồm tự động (khi hộp kiểm được bật) và đề cập thủ công @problems. Giá trị cao hơn cung cấp nhiều ngữ cảnh hơn nhưng tăng mức sử dụng token.",
+				"resetTooltip": "Đặt lại về giá trị mặc định (50)",
+				"unlimited": "Thông báo chẩn đoán không giới hạn",
+				"unlimitedLabel": "Không giới hạn"
+			},
+			"delayAfterWrite": {
+				"label": "Trì hoãn sau khi ghi để cho phép chẩn đoán phát hiện các sự cố tiềm ẩn",
+				"description": "Thời gian chờ sau khi ghi tệp trước khi tiếp tục, cho phép các công cụ chẩn đoán xử lý các thay đổi và phát hiện sự cố."
+			}
+		},
 		"condensingThreshold": {
 			"label": "Ngưỡng kích hoạt nén",
 			"selectProfile": "Cấu hình ngưỡng cho hồ sơ",
@@ -496,6 +588,16 @@
 			"profileDescription": "Ngưỡng tùy chỉnh chỉ cho hồ sơ này (ghi đè mặc định toàn cục)",
 			"inheritDescription": "Hồ sơ này kế thừa ngưỡng mặc định toàn cục ({{threshold}}%)",
 			"usesGlobal": "(sử dụng toàn cục {{threshold}}%)"
+		},
+		"maxImageFileSize": {
+			"label": "Kích thước tối đa của tệp hình ảnh",
+			"mb": "MB",
+			"description": "Kích thước tối đa (tính bằng MB) cho các tệp hình ảnh có thể được xử lý bởi công cụ đọc tệp."
+		},
+		"maxTotalImageSize": {
+			"label": "Kích thước tổng tối đa của hình ảnh",
+			"mb": "MB",
+			"description": "Giới hạn kích thước tích lũy tối đa (tính bằng MB) cho tất cả hình ảnh được xử lý trong một thao tác read_file duy nhất. Khi đọc nhiều hình ảnh, kích thước của mỗi hình ảnh được cộng vào tổng. Nếu việc thêm một hình ảnh khác sẽ vượt quá giới hạn này, nó sẽ bị bỏ qua."
 		}
 	},
 	"terminal": {
@@ -622,6 +724,33 @@
 		"SECURITY_MIDDLEWARE": {
 			"name": "Phần mềm trung gian Bảo mật RooCode",
 			"description": "Kích hoạt phần mềm trung gian bảo mật để bảo vệ các tệp bí mật và lệnh khỏi việc truy cập của AI. Tính năng này cung cấp bảo vệ cấp doanh nghiệp chống lại việc truy cập trái phép vào dữ liệu nhạy cảm."
+		},
+		"PREVENT_FOCUS_DISRUPTION": {
+			"name": "Chỉnh sửa nền",
+			"description": "Khi được bật, ngăn chặn gián đoạn tiêu điểm trình soạn thảo. Việc chỉnh sửa tệp diễn ra ở nền mà không mở chế độ xem diff hoặc chiếm tiêu điểm. Bạn có thể tiếp tục làm việc không bị gián đoạn trong khi Roo thực hiện thay đổi. Các tệp có thể được mở mà không có tiêu điểm để thu thập chẩn đoán hoặc giữ hoàn toàn đóng."
+		},
+		"ASSISTANT_MESSAGE_PARSER": {
+			"name": "Dùng bộ phân tích tin nhắn mới",
+			"description": "Bật bộ phân tích tin nhắn streaming thử nghiệm. Tính năng này tăng tốc phản hồi dài bằng cách xử lý tin nhắn hiệu quả hơn."
+		},
+		"NEW_TASK_REQUIRE_TODOS": {
+			"name": "Yêu cầu danh sách 'todos' cho các nhiệm vụ mới",
+			"description": "Khi được bật, công cụ new_task sẽ yêu cầu cung cấp tham số todos. Điều này đảm bảo tất cả các nhiệm vụ mới bắt đầu với một danh sách mục tiêu rõ ràng. Khi bị tắt (mặc định), tham số todos vẫn là tùy chọn để tương thích ngược."
+		},
+		"IMAGE_GENERATION": {
+			"name": "Bật tạo hình ảnh AI",
+			"description": "Khi được bật, Roo có thể tạo hình ảnh từ lời nhắc văn bản bằng các mô hình tạo hình ảnh của OpenRouter. Yêu cầu khóa API OpenRouter được cấu hình.",
+			"openRouterApiKeyLabel": "Khóa API OpenRouter",
+			"openRouterApiKeyPlaceholder": "Nhập khóa API OpenRouter của bạn",
+			"getApiKeyText": "Lấy khóa API của bạn từ",
+			"modelSelectionLabel": "Mô hình tạo hình ảnh",
+			"modelSelectionDescription": "Chọn mô hình để sử dụng cho việc tạo hình ảnh",
+			"warningMissingKey": "⚠️ Khóa API OpenRouter là bắt buộc để tạo hình ảnh. Vui lòng cấu hình ở trên.",
+			"successConfigured": "✓ Tạo hình ảnh đã được cấu hình và sẵn sàng sử dụng"
+		},
+		"RUN_SLASH_COMMAND": {
+			"name": "Bật lệnh slash do mô hình khởi tạo",
+			"description": "Khi được bật, Roo có thể chạy các lệnh slash của bạn để thực hiện các quy trình làm việc."
 		}
 	},
 	"promptCaching": {
@@ -640,6 +769,7 @@
 		"noComputerUse": "Không hỗ trợ sử dụng máy tính",
 		"supportsPromptCache": "Hỗ trợ bộ nhớ đệm lời nhắc",
 		"noPromptCache": "Không hỗ trợ bộ nhớ đệm lời nhắc",
+		"contextWindow": "Cửa sổ ngữ cảnh:",
 		"maxOutput": "Đầu ra tối đa",
 		"inputPrice": "Giá đầu vào",
 		"outputPrice": "Giá đầu ra",
@@ -667,7 +797,7 @@
 		"feedback": "Nếu bạn có bất kỳ câu hỏi hoặc phản hồi nào, vui lòng mở một vấn đề tại <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> hoặc tham gia <redditLink>reddit.com/r/RooCode</redditLink> hoặc <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {
 			"label": "Cho phép báo cáo lỗi và sử dụng ẩn danh",
-			"description": "Giúp cải thiện Roo Code bằng cách gửi dữ liệu sử dụng ẩn danh và báo cáo lỗi. Không bao giờ gửi mã, lời nhắc hoặc thông tin cá nhân. Xem chính sách bảo mật của chúng tôi để biết thêm chi tiết."
+			"description": "Giúp cải thiện Roo Code bằng cách gửi dữ liệu sử dụng ẩn danh và báo cáo lỗi. Telemetry này không thu thập mã, prompt hoặc thông tin cá nhân. Xem <privacyLink>chính sách bảo mật</privacyLink> của chúng tôi để biết thêm chi tiết. Bạn có thể tắt tính năng này bất cứ lúc nào."
 		},
 		"settings": {
 			"import": "Nhập",
@@ -693,7 +823,8 @@
 		"modelAvailability": "ID mô hình ({{modelId}}) bạn đã cung cấp không khả dụng. Vui lòng chọn một mô hình khác.",
 		"providerNotAllowed": "Nhà cung cấp '{{provider}}' không được phép bởi tổ chức của bạn",
 		"modelNotAllowed": "Mô hình '{{model}}' không được phép cho nhà cung cấp '{{provider}}' bởi tổ chức của bạn",
-		"profileInvalid": "Hồ sơ này chứa một nhà cung cấp hoặc mô hình không được phép bởi tổ chức của bạn"
+		"profileInvalid": "Hồ sơ này chứa một nhà cung cấp hoặc mô hình không được phép bởi tổ chức của bạn",
+		"qwenCodeOauthPath": "Bạn phải cung cấp đường dẫn thông tin xác thực OAuth hợp lệ"
 	},
 	"placeholders": {
 		"apiKey": "Nhập khóa API...",
@@ -729,5 +860,22 @@
 		"useCustomArn": "Sử dụng ARN tùy chỉnh..."
 	},
 	"includeMaxOutputTokens": "Bao gồm token đầu ra tối đa",
-	"includeMaxOutputTokensDescription": "Gửi tham số token đầu ra tối đa trong các yêu cầu API. Một số nhà cung cấp có thể không hỗ trợ điều này."
+	"includeMaxOutputTokensDescription": "Gửi tham số token đầu ra tối đa trong các yêu cầu API. Một số nhà cung cấp có thể không hỗ trợ điều này.",
+	"limitMaxTokensDescription": "Giới hạn số lượng token tối đa trong phản hồi",
+	"maxOutputTokensLabel": "Token đầu ra tối đa",
+	"maxTokensGenerateDescription": "Token tối đa để tạo trong phản hồi",
+	"serviceTier": {
+		"label": "Cấp độ dịch vụ",
+		"tooltip": "Để xử lý các yêu cầu API nhanh hơn, hãy thử cấp độ dịch vụ xử lý ưu tiên. Để có giá thấp hơn với độ trễ cao hơn, hãy thử cấp độ xử lý linh hoạt.",
+		"standard": "Tiêu chuẩn",
+		"flex": "Linh hoạt",
+		"priority": "Ưu tiên",
+		"pricingTableTitle": "Giá theo cấp độ dịch vụ (giá mỗi 1 triệu token)",
+		"columns": {
+			"tier": "Cấp độ",
+			"input": "Đầu vào",
+			"output": "Đầu ra",
+			"cacheReads": "Lượt đọc bộ nhớ đệm"
+		}
+	}
 }

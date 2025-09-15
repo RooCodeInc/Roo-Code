@@ -5,6 +5,8 @@ import { Dirent } from "fs"
 
 import { isLanguage } from "@roo-code/types"
 
+import type { SystemPromptSettings } from "../types"
+
 import { LANGUAGES } from "../../../shared/language"
 import { getRooDirectoriesForCwd, getGlobalRooDirectory } from "../../../services/roo-config"
 
@@ -214,12 +216,61 @@ export async function loadRuleFiles(cwd: string): Promise<string> {
 	return ""
 }
 
+/**
+ * Load AGENTS.md or AGENT.md file from the project root if it exists
+ * Checks for both AGENTS.md (standard) and AGENT.md (alternative) for compatibility
+ */
+async function loadAgentRulesFile(cwd: string): Promise<string> {
+	// Try both filenames - AGENTS.md (standard) first, then AGENT.md (alternative)
+	const filenames = ["AGENTS.md", "AGENT.md"]
+
+	for (const filename of filenames) {
+		try {
+			const agentPath = path.join(cwd, filename)
+			let resolvedPath = agentPath
+
+			// Check if file exists and handle symlinks
+			try {
+				const stats = await fs.lstat(agentPath)
+				if (stats.isSymbolicLink()) {
+					// Create a temporary fileInfo array to use with resolveSymLink
+					const fileInfo: Array<{ originalPath: string; resolvedPath: string }> = []
+
+					// Use the existing resolveSymLink function to handle symlink resolution
+					await resolveSymLink(agentPath, fileInfo, 0)
+
+					// Extract the resolved path from fileInfo
+					if (fileInfo.length > 0) {
+						resolvedPath = fileInfo[0].resolvedPath
+					}
+				}
+			} catch (err) {
+				// If lstat fails (file doesn't exist), try next filename
+				continue
+			}
+
+			// Read the content from the resolved path
+			const content = await safeReadFile(resolvedPath)
+			if (content) {
+				return `# Agent Rules Standard (${filename}):\n${content}`
+			}
+		} catch (err) {
+			// Silently ignore errors - agent rules files are optional
+		}
+	}
+	return ""
+}
+
 export async function addCustomInstructions(
 	modeCustomInstructions: string,
 	globalCustomInstructions: string,
 	cwd: string,
 	mode: string,
-	options: { language?: string; rooIgnoreInstructions?: string; settings?: Record<string, any> } = {},
+	options: {
+		language?: string
+		rooIgnoreInstructions?: string
+		settings?: SystemPromptSettings
+	} = {},
 ): Promise<string> {
 	const sections = []
 
@@ -295,6 +346,14 @@ export async function addCustomInstructions(
 
 	if (options.rooIgnoreInstructions) {
 		rules.push(options.rooIgnoreInstructions)
+	}
+
+	// Add AGENTS.md content if enabled (default: true)
+	if (options.settings?.useAgentRules !== false) {
+		const agentRulesContent = await loadAgentRulesFile(cwd)
+		if (agentRulesContent && agentRulesContent.trim()) {
+			rules.push(agentRulesContent.trim())
+		}
 	}
 
 	// Add generic rules
