@@ -792,7 +792,7 @@
 		"feedback": "Wenn du Fragen oder Feedback hast, kannst du gerne ein Issue auf <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> eröffnen oder <redditLink>reddit.com/r/RooCode</redditLink> oder <discordLink>discord.gg/roocode</discordLink> beitreten",
 		"telemetry": {
 			"label": "Anonyme Fehler- und Nutzungsberichte zulassen",
-			"description": "Hilf mit, Roo Code zu verbessern, indem du anonyme Nutzungsdaten und Fehlerberichte sendest. Es werden niemals Code, Prompts oder persönliche Informationen gesendet (es sei denn, du verbindest dich mit Roo Code Cloud). Weitere Einzelheiten findest du in unserer <privacyLink>Datenschutzrichtlinie</privacyLink>."
+			"description": "Hilf mit, Roo Code zu verbessern, indem du anonyme Nutzungsdaten und Fehlerberichte sendest. Diese Telemetrie sammelt keine Code-, Prompt- oder persönliche Informationen. Weitere Einzelheiten findest du in unserer <privacyLink>Datenschutzrichtlinie</privacyLink>."
 		},
 		"settings": {
 			"import": "Importieren",
@@ -858,5 +858,19 @@
 	"includeMaxOutputTokensDescription": "Senden Sie den Parameter für maximale Ausgabe-Tokens in API-Anfragen. Einige Anbieter unterstützen dies möglicherweise nicht.",
 	"limitMaxTokensDescription": "Begrenze die maximale Anzahl von Tokens in der Antwort",
 	"maxOutputTokensLabel": "Maximale Ausgabe-Tokens",
-	"maxTokensGenerateDescription": "Maximale Tokens, die in der Antwort generiert werden"
+	"maxTokensGenerateDescription": "Maximale Tokens, die in der Antwort generiert werden",
+	"serviceTier": {
+		"label": "Service-Stufe",
+		"tooltip": "Für eine schnellere Verarbeitung von API-Anfragen, probiere die Prioritäts-Verarbeitungsstufe. Für niedrigere Preise bei höherer Latenz, probiere die Flex-Verarbeitungsstufe.",
+		"standard": "Standard",
+		"flex": "Flex",
+		"priority": "Priorität",
+		"pricingTableTitle": "Preise nach Service-Stufe (Preis pro 1 Mio. Token)",
+		"columns": {
+			"tier": "Stufe",
+			"input": "Eingabe",
+			"output": "Ausgabe",
+			"cacheReads": "Cache-Lesevorgänge"
+		}
+	}
 }

@@ -793,7 +793,7 @@
 		"feedback": "Heb je vragen of feedback? Open gerust een issue op <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> of sluit je aan bij <redditLink>reddit.com/r/RooCode</redditLink> of <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {
 			"label": "Anonieme fout- en gebruiksrapportage toestaan",
-			"description": "Help Roo Code te verbeteren door anonieme gebruiksgegevens en foutmeldingen te verzenden. Er worden nooit code, prompts of persoonlijke gegevens verzonden. Zie ons privacybeleid voor meer informatie."
+			"description": "Help Roo Code te verbeteren door anonieme gebruiksgegevens en foutmeldingen te versturen. Deze telemetrie verzamelt geen code, prompts of persoonlijke informatie. Zie ons <privacyLink>privacybeleid</privacyLink> voor meer details."
 		},
 		"settings": {
 			"import": "Importeren",
@@ -859,5 +859,19 @@
 	"includeMaxOutputTokensDescription": "Stuur maximale output tokens parameter in API-verzoeken. Sommige providers ondersteunen dit mogelijk niet.",
 	"limitMaxTokensDescription": "Beperk het maximale aantal tokens in het antwoord",
 	"maxOutputTokensLabel": "Maximale output tokens",
-	"maxTokensGenerateDescription": "Maximale tokens om te genereren in het antwoord"
+	"maxTokensGenerateDescription": "Maximale tokens om te genereren in het antwoord",
+	"serviceTier": {
+		"label": "Serviceniveau",
+		"tooltip": "Voor snellere verwerking van API-verzoeken, probeer het prioriteitsverwerkingsniveau. Voor lagere prijzen met hogere latentie, probeer het flexverwerkingsniveau.",
+		"standard": "Standaard",
+		"flex": "Flex",
+		"priority": "Prioriteit",
+		"pricingTableTitle": "Prijzen per serviceniveau (prijs per 1M tokens)",
+		"columns": {
+			"tier": "Niveau",
+			"input": "Invoer",
+			"output": "Uitvoer",
+			"cacheReads": "Cache leest"
+		}
+	}
 }

@@ -793,7 +793,7 @@
 		"feedback": "質問やフィードバックがある場合は、<githubLink>github.com/RooCodeInc/Roo-Code</githubLink>で問題を開くか、<redditLink>reddit.com/r/RooCode</redditLink>や<discordLink>discord.gg/roocode</discordLink>に参加してください",
 		"telemetry": {
 			"label": "匿名のエラーと使用状況レポートを許可",
-			"description": "匿名の使用データとエラーレポートを送信してRoo Codeの改善にご協力ください。コード、プロンプト、個人情報が送信されることはありません。詳細については、プライバシーポリシーをご覧ください。"
+			"description": "匿名の使用データとエラーレポートを送信してRoo Codeの改善にご協力ください。このテレメトリはコード、プロンプト、個人情報を収集しません。詳細については<privacyLink>プライバシーポリシー</privacyLink>をご覧ください。"
 		},
 		"settings": {
 			"import": "インポート",
@@ -859,5 +859,19 @@
 	"includeMaxOutputTokensDescription": "APIリクエストで最大出力トークンパラメータを送信します。一部のプロバイダーはこれをサポートしていない場合があります。",
 	"limitMaxTokensDescription": "レスポンスの最大トークン数を制限する",
 	"maxOutputTokensLabel": "最大出力トークン",
-	"maxTokensGenerateDescription": "レスポンスで生成する最大トークン数"
+	"maxTokensGenerateDescription": "レスポンスで生成する最大トークン数",
+	"serviceTier": {
+		"label": "サービスティア",
+		"tooltip": "APIリクエストをより速く処理するには、優先処理サービスティアをお試しください。低価格でレイテンシが高い場合は、フレックス処理ティアをお試しください。",
+		"standard": "標準",
+		"flex": "フレックス",
+		"priority": "優先",
+		"pricingTableTitle": "サービスティア別料金（100万トークンあたりの価格）",
+		"columns": {
+			"tier": "ティア",
+			"input": "入力",
+			"output": "出力",
+			"cacheReads": "キャッシュ読み取り"
+		}
+	}
 }

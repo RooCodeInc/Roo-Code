@@ -793,7 +793,7 @@
 		"feedback": "Nếu bạn có bất kỳ câu hỏi hoặc phản hồi nào, vui lòng mở một vấn đề tại <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> hoặc tham gia <redditLink>reddit.com/r/RooCode</redditLink> hoặc <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {
 			"label": "Cho phép báo cáo lỗi và sử dụng ẩn danh",
-			"description": "Giúp cải thiện Roo Code bằng cách gửi dữ liệu sử dụng ẩn danh và báo cáo lỗi. Không bao giờ gửi mã, lời nhắc hoặc thông tin cá nhân. Xem chính sách bảo mật của chúng tôi để biết thêm chi tiết."
+			"description": "Giúp cải thiện Roo Code bằng cách gửi dữ liệu sử dụng ẩn danh và báo cáo lỗi. Telemetry này không thu thập mã, prompt hoặc thông tin cá nhân. Xem <privacyLink>chính sách bảo mật</privacyLink> của chúng tôi để biết thêm chi tiết. Bạn có thể tắt tính năng này bất cứ lúc nào."
 		},
 		"settings": {
 			"import": "Nhập",
@@ -859,5 +859,19 @@
 	"includeMaxOutputTokensDescription": "Gửi tham số token đầu ra tối đa trong các yêu cầu API. Một số nhà cung cấp có thể không hỗ trợ điều này.",
 	"limitMaxTokensDescription": "Giới hạn số lượng token tối đa trong phản hồi",
 	"maxOutputTokensLabel": "Token đầu ra tối đa",
-	"maxTokensGenerateDescription": "Token tối đa để tạo trong phản hồi"
+	"maxTokensGenerateDescription": "Token tối đa để tạo trong phản hồi",
+	"serviceTier": {
+		"label": "Cấp độ dịch vụ",
+		"tooltip": "Để xử lý các yêu cầu API nhanh hơn, hãy thử cấp độ dịch vụ xử lý ưu tiên. Để có giá thấp hơn với độ trễ cao hơn, hãy thử cấp độ xử lý linh hoạt.",
+		"standard": "Tiêu chuẩn",
+		"flex": "Linh hoạt",
+		"priority": "Ưu tiên",
+		"pricingTableTitle": "Giá theo cấp độ dịch vụ (giá mỗi 1 triệu token)",
+		"columns": {
+			"tier": "Cấp độ",
+			"input": "Đầu vào",
+			"output": "Đầu ra",
+			"cacheReads": "Lượt đọc bộ nhớ đệm"
+		}
+	}
 }

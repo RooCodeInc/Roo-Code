@@ -1,7 +1,7 @@
 import React, { forwardRef, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { useEvent } from "react-use"
 import DynamicTextArea from "react-textarea-autosize"
-import { VolumeX, Image, WandSparkles, SendHorizontal } from "lucide-react"
+import { VolumeX, Image, WandSparkles, SendHorizontal, MessageSquareX } from "lucide-react"
 
 import { mentionRegex, mentionRegexGlobal, commandRegexGlobal, unescapeSpaces } from "@roo/context-mentions"
 import { WebviewMessage } from "@roo/WebviewMessage"
@@ -26,6 +26,7 @@ import { StandardTooltip } from "@src/components/ui"
 import Thumbnails from "../common/Thumbnails"
 import { ModeSelector } from "./ModeSelector"
 import { ApiConfigSelector } from "./ApiConfigSelector"
+import { AutoApproveDropdown } from "./AutoApproveDropdown"
 import { MAX_IMAGES_PER_MESSAGE } from "./ChatView"
 import ContextMenu from "./ContextMenu"
 import { IndexingStatusBadge } from "./IndexingStatusBadge"
@@ -47,6 +48,9 @@ interface ChatTextAreaProps {
 	mode: Mode
 	setMode: (value: Mode) => void
 	modeShortcutText: string
+	// Edit mode props
+	isEditMode?: boolean
+	onCancel?: () => void
 }
 
 export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
@@ -65,6 +69,8 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			mode,
 			setMode,
 			modeShortcutText,
+			isEditMode = false,
+			onCancel,
 		},
 		ref,
 	) => {
@@ -881,6 +887,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 
 		const placeholderBottomText = `\n(${t("chat:addContext")}${shouldDisableImages ? `, ${t("chat:dragFiles")}` : `, ${t("chat:dragFilesImages")}`})`
 
+		// Common mode selector handler
 		const handleModeChange = useCallback(
 			(value: Mode) => {
 				setMode(value)
@@ -889,6 +896,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			[setMode],
 		)
 
+		// Helper function to handle API config change
 		const handleApiConfigChange = useCallback((value: string) => {
 			vscode.postMessage({ type: "loadApiConfigurationById", text: value })
 		}, [])
@@ -896,20 +904,8 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 		return (
 			<div
 				className={cn(
-					"relative",
-					"flex",
-					"flex-col",
-					"gap-1",
-					"bg-editor-background",
-					"px-1.5",
-					"pb-1",
-					"outline-none",
-					"border",
-					"border-none",
-					"w-[calc(100%-16px)]",
-					"ml-auto",
-					"mr-auto",
-					"box-border",
+					"relative flex flex-col gap-1 bg-editor-background outline-none border border-none box-border",
+					isEditMode ? "p-2 w-full" : "px-1.5 pb-1 w-[calc(100%-16px)] ml-auto mr-auto",
 				)}>
 				<div className="relative">
 					<div
@@ -998,11 +994,12 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 										: isDraggingOver
 											? "border-2 border-dashed border-vscode-focusBorder"
 											: "border border-transparent",
-									"px-[8px]",
-									"py-1.5",
-									"pr-9",
+									"pl-2",
+									"py-2",
+									isEditMode ? "pr-20" : "pr-9",
 									"z-10",
 									"forced-color-adjust-none",
+									"rounded",
 								)}
 								style={{
 									color: "transparent",
@@ -1023,7 +1020,15 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 									updateHighlights()
 								}}
 								onFocus={() => setIsFocused(true)}
-								onKeyDown={handleKeyDown}
+								onKeyDown={(e) => {
+									// Handle ESC to cancel in edit mode
+									if (isEditMode && e.key === "Escape" && !e.nativeEvent?.isComposing) {
+										e.preventDefault()
+										onCancel?.()
+										return
+									}
+									handleKeyDown(e)
+								}}
 								onKeyUp={handleKeyUp}
 								onBlur={handleBlur}
 								onPaste={handlePaste}
@@ -1047,7 +1052,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 									"text-vscode-editor-font-size",
 									"leading-vscode-editor-line-height",
 									"cursor-text",
-									"py-1.5 px-2",
+									"py-2 pl-2",
 									isFocused
 										? "border border-vscode-focusBorder outline outline-vscode-focusBorder"
 										: isDraggingOver
@@ -1064,7 +1069,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 									"resize-none",
 									"overflow-x-hidden",
 									"overflow-y-auto",
-									"pr-9",
+									isEditMode ? "pr-20" : "pr-9",
 									"flex-none flex-grow",
 									"z-[2]",
 									"scrollbar-none",
@@ -1073,7 +1078,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 								onScroll={() => updateHighlights()}
 							/>
 
-							<div className="absolute top-1 right-1 z-30">
+							<div className="absolute top-2 right-2 z-30">
 								<StandardTooltip content={t("chat:enhancePrompt")}>
 									<button
 										aria-label={t("chat:enhancePrompt")}
@@ -1095,7 +1100,28 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 								</StandardTooltip>
 							</div>
 
-							<div className="absolute bottom-1 right-1 z-30">
+							<div className="absolute bottom-2 right-2 z-30 flex items-center gap-1">
+								{isEditMode && (
+									<StandardTooltip content={t("chat:cancel.title")}>
+										<button
+											aria-label={t("chat:cancel.title")}
+											disabled={false}
+											onClick={onCancel}
+											className={cn(
+												"relative inline-flex items-center justify-center",
+												"bg-transparent border-none p-1.5",
+												"rounded-md min-w-[28px] min-h-[28px]",
+												"opacity-60 hover:opacity-100 text-vscode-descriptionForeground hover:text-vscode-foreground",
+												"transition-all duration-150",
+												"hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.15)]",
+												"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
+												"active:bg-[rgba(255,255,255,0.1)]",
+												"cursor-pointer",
+											)}>
+											<MessageSquareX className="w-4 h-4" />
+										</button>
+									</StandardTooltip>
+								)}
 								<StandardTooltip content={t("chat:sendMessage")}>
 									<button
 										aria-label={t("chat:sendMessage")}
@@ -1119,9 +1145,12 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 
 							{!inputValue && (
 								<div
-									className="absolute left-2 z-30 pr-9 flex items-center h-8 font-vscode-font-family text-vscode-editor-font-size leading-vscode-editor-line-height"
+									className={cn(
+										"absolute left-2 z-30 flex items-center h-8 font-vscode-font-family text-vscode-editor-font-size leading-vscode-editor-line-height",
+										isEditMode ? "pr-20" : "pr-9",
+									)}
 									style={{
-										bottom: "0.25rem",
+										bottom: "0.75rem",
 										color: "color-mix(in oklab, var(--vscode-input-foreground) 50%, transparent)",
 										userSelect: "none",
 										pointerEvents: "none",
@@ -1145,34 +1174,31 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					/>
 				)}
 
-				<div className="flex justify-between items-center">
-					<div className="flex items-center gap-1">
-						<div className="max-w-32">
-							<ModeSelector
-								value={mode}
-								title={t("chat:selectMode")}
-								onChange={handleModeChange}
-								triggerClassName="w-full"
-								modeShortcutText={modeShortcutText}
-								customModes={customModes}
-								customModePrompts={customModePrompts}
-							/>
-						</div>
-						<div className="max-w-32">
-							<ApiConfigSelector
-								value={currentConfigId}
-								displayName={displayName}
-								disabled={selectApiConfigDisabled}
-								title={t("chat:selectApiConfig")}
-								onChange={handleApiConfigChange}
-								triggerClassName="w-full text-ellipsis overflow-hidden"
-								listApiConfigMeta={listApiConfigMeta || []}
-								pinnedApiConfigs={pinnedApiConfigs}
-								togglePinnedApiConfig={togglePinnedApiConfig}
-							/>
-						</div>
+				<div className="flex items-center gap-2">
+					<div className="flex items-center gap-2 min-w-0 overflow-clip flex-1">
+						<ModeSelector
+							value={mode}
+							title={t("chat:selectMode")}
+							onChange={handleModeChange}
+							triggerClassName="text-ellipsis overflow-hidden flex-shrink-0"
+							modeShortcutText={modeShortcutText}
+							customModes={customModes}
+							customModePrompts={customModePrompts}
+						/>
+						<ApiConfigSelector
+							value={currentConfigId}
+							displayName={displayName}
+							disabled={selectApiConfigDisabled}
+							title={t("chat:selectApiConfig")}
+							onChange={handleApiConfigChange}
+							triggerClassName="min-w-[28px] text-ellipsis overflow-hidden flex-shrink"
+							listApiConfigMeta={listApiConfigMeta || []}
+							pinnedApiConfigs={pinnedApiConfigs}
+							togglePinnedApiConfig={togglePinnedApiConfig}
+						/>
+						<AutoApproveDropdown triggerClassName="min-w-[28px] text-ellipsis overflow-hidden flex-shrink" />
 					</div>
-					<div className="flex items-center gap-0.5">
+					<div className="flex flex-shrink-0 items-center gap-0.5">
 						{isTtsPlaying && (
 							<StandardTooltip content={t("chat:stopTts")}>
 								<button
@@ -1193,8 +1219,8 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 								</button>
 							</StandardTooltip>
 						)}
-						<SlashCommandsPopover />
-						<IndexingStatusBadge />
+						{!isEditMode ? <SlashCommandsPopover /> : null}
+						{!isEditMode ? <IndexingStatusBadge /> : null}
 						<StandardTooltip content={t("chat:addImages")}>
 							<button
 								aria-label={t("chat:addImages")}

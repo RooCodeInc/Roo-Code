@@ -24,7 +24,9 @@
 		"connectToCloudDescription": "Görevleri paylaşmak için Roo Code Cloud'a giriş yap",
 		"sharingDisabledByOrganization": "Paylaşım kuruluş tarafından devre dışı bırakıldı",
 		"shareSuccessOrganization": "Organizasyon bağlantısı panoya kopyalandı",
-		"shareSuccessPublic": "Genel bağlantı panoya kopyalandı"
+		"shareSuccessPublic": "Genel bağlantı panoya kopyalandı",
+		"openInCloud": "Görevi Roo Code Cloud'da aç",
+		"openInCloudIntro": "Roo'yu her yerden izlemeye veya etkileşime devam et. Açmak için tara, tıkla veya kopyala."
 	},
 	"tokenProgress": {
 		"availableSpace": "Kullanılabilir alan: {{amount}} token",
@@ -243,12 +245,18 @@
 		"issues": "Windows PowerShell ile ilgili sorunlar yaşıyor gibi görünüyorsunuz, lütfen şu konuya bakın"
 	},
 	"autoApprove": {
-		"title": "Otomatik-onay:",
+		"tooltip": "Otomatik onay ayarlarını yönet",
+		"title": "Otomatik onayla",
+		"all": "Tümü",
 		"none": "Hiçbiri",
-		"description": "Otomatik onay, Roo Code'un izin istemeden işlemler gerçekleştirmesine olanak tanır. Yalnızca tamamen güvendiğiniz eylemler için etkinleştirin. Daha detaylı yapılandırma <settingsLink>Ayarlar</settingsLink>'da mevcuttur.",
-		"selectOptionsFirst": "Otomatik onayı etkinleştirmek için aşağıdan en az bir seçenek belirleyin",
-		"toggleAriaLabel": "Otomatik onayı değiştir",
-		"disabledAriaLabel": "Otomatik onay devre dışı - önce seçenekleri belirleyin"
+		"description": "İzin istemeden bu eylemleri gerçekleştirin. Bunu yalnızca tamamen güvendiğiniz eylemler için etkinleştirin.",
+		"selectOptionsFirst": "Otomatik onayı etkinleştirmek için aşağıdan en az bir seçenek seçin",
+		"toggleAriaLabel": "Otomatik onayı aç/kapat",
+		"disabledAriaLabel": "Otomatik onay devre dışı - önce seçenekleri seçin",
+		"triggerLabel_zero": "Otomatik onay yok",
+		"triggerLabel_one": "1 otomatik onaylandı",
+		"triggerLabel_other": "{{count}} otomatik onaylandı",
+		"triggerLabelAll": "YOLO"
 	},
 	"reasoning": {
 		"thinking": "Düşünüyor",
@@ -267,19 +275,12 @@
 	},
 	"announcement": {
 		"title": "🎉 Roo Code {{version}} Yayınlandı",
-		"stealthModel": {
-			"feature": "Sonic gizli model artık <bold>Grok Code Fast</bold>! Bu yüksek performanslı akıl yürütme modeli <bold>xAI (Grok)</bold> sağlayıcısı altında <code>grok-code-fast-1</code> olarak mevcut.",
-			"note": "Sonic hakkındaki tüm yararlı geri bildirimler için teşekkür olarak, xAI <code>grok-code-fast-1</code>'e ücretsiz erişimi <bold>Roo Code Cloud</bold> sağlayıcısı üzerinden bir hafta daha uzatıyor.",
-			"connectButton": "Roo Code Cloud'a bağlan",
-			"selectModel": "Sağlayıcı yapılandırmanızı güncellemek için <settingsLink>Ayarlar</settingsLink>'ı ziyaret edin."
-		},
-		"description": "Roo Code {{version}}, geliştirme iş akışınızı geliştirmek için güçlü yeni özellikler ve önemli iyileştirmeler getiriyor.",
-		"whatsNew": "Yenilikler",
-		"feature1": "<bold>Mesaj Kuyruğu</bold>: Roo çalışırken birden fazla mesajı kuyruğa alın, iş akışınızı kesintisiz olarak planlamaya devam etmenizi sağlar.",
-		"feature2": "<bold>Özel Slash Komutları</bold>: Sık kullanılan promptlara ve iş akışlarına hızlı erişim için kişiselleştirilmiş slash komutları oluşturun, tam UI yönetimi ile.",
-		"feature3": "<bold>Gelişmiş Gemini Araçları</bold>: Yeni URL bağlamı ve Google Arama temellendirilmesi yetenekleri, Gemini modellerine gerçek zamanlı web bilgileri ve gelişmiş araştırma yetenekleri sağlar.",
-		"hideButton": "Duyuruyu gizle",
-		"detailsDiscussLinks": "<discordLink>Discord</discordLink> ve <redditLink>Reddit</redditLink>'te daha fazla ayrıntı alın ve tartışmalara katılın 🚀"
+		"description": "<bold>Roo Code Cloud</bold> Tanıtımı: Roo'nun gücünü IDE'nin ötesine taşıyoruz",
+		"feature1": "<bold>Görev ilerlemesini her yerden takip edin (Ücretsiz):</bold> IDE'nizde sıkışıp kalmadan uzun süren görevlerin gerçek zamanlı güncellemelerini alın",
+		"feature2": "<bold>Roo Uzantısını uzaktan kontrol edin (Pro):</bold> Sohbet tabanlı tarayıcı arayüzünden görevleri başlatın, durdurun ve etkileşime geçin.",
+		"learnMore": "Kontrolü ele almaya hazır mısınız? Daha fazlasını <learnMoreLink>buradan</learnMoreLink> öğrenin.",
+		"visitCloudButton": "Roo Code Cloud'u Ziyaret Et",
+		"socialLinks": "Bize <xLink>X</xLink>, <discordLink>Discord</discordLink>, veya <redditLink>r/RooCode</redditLink>'da katılın"
 	},
 	"browser": {
 		"rooWantsToUse": "Roo tarayıcıyı kullanmak istiyor:",

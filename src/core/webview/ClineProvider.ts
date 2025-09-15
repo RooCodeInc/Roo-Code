@@ -97,6 +97,20 @@ import { getUri } from "./getUri"
  * https://github.com/KumarVariable/vscode-extension-sidebar-html/blob/master/src/customSidebarViewProvider.ts
  */
 
+export type ClineProviderEvents = {
+	clineCreated: [cline: Task]
+}
+
+interface PendingEditOperation {
+	messageTs: number
+	editedContent: string
+	images?: string[]
+	messageIndex: number
+	apiConversationHistoryIndex: number
+	timeoutId: NodeJS.Timeout
+	createdAt: number
+}
+
 export class ClineProvider
 	extends EventEmitter<TaskProviderEvents>
 	implements vscode.WebviewViewProvider, TelemetryPropertiesProvider, TaskProviderLike
@@ -112,19 +126,22 @@ export class ClineProvider
 	private view?: vscode.WebviewView | vscode.WebviewPanel
 	private clineStack: Task[] = []
 	private codeIndexStatusSubscription?: vscode.Disposable
-	private currentWorkspaceManager?: CodeIndexManager
+	private codeIndexManager?: CodeIndexManager
 	private _workspaceTracker?: WorkspaceTracker // workSpaceTracker read-only for access outside this class
 	protected mcpHub?: McpHub // Change from private to protected
 	private marketplaceManager: MarketplaceManager
 	private mdmService?: MdmService
 	private taskCreationCallback: (task: Task) => void
 	private taskEventListeners: WeakMap<Task, Array<() => void>> = new WeakMap()
+	private currentWorkspacePath: string | undefined
 
 	private recentTasksCache?: string[]
+	private pendingOperations: Map<string, PendingEditOperation> = new Map()
+	private static readonly PENDING_OPERATION_TIMEOUT_MS = 30000 // 30 seconds
 
 	public isViewLaunched = false
 	public settingsImportedAt?: number
-	public readonly latestAnnouncementId = "aug-25-2025-grok-code-fast" // Update for Grok Code Fast announcement
+	public readonly latestAnnouncementId = "sep-2025-roo-code-cloud" // Roo Code Cloud announcement
 	public readonly providerSettingsManager: ProviderSettingsManager
 	public readonly customModesManager: CustomModesManager
 
@@ -136,6 +153,7 @@ export class ClineProvider
 		mdmService?: MdmService,
 	) {
 		super()
+		this.currentWorkspacePath = getWorkspacePath()
 
 		ClineProvider.activeInstances.add(this)
 
@@ -440,6 +458,71 @@ export class ClineProvider
 		// the 'parent' calling task).
 		await this.getCurrentTask()?.completeSubtask(lastMessage)
 	}
+	// Pending Edit Operations Management
+
+	/**
+	 * Sets a pending edit operation with automatic timeout cleanup
+	 */
+	public setPendingEditOperation(
+		operationId: string,
+		editData: {
+			messageTs: number
+			editedContent: string
+			images?: string[]
+			messageIndex: number
+			apiConversationHistoryIndex: number
+		},
+	): void {
+		// Clear any existing operation with the same ID
+		this.clearPendingEditOperation(operationId)
+
+		// Create timeout for automatic cleanup
+		const timeoutId = setTimeout(() => {
+			this.clearPendingEditOperation(operationId)
+			this.log(`[setPendingEditOperation] Automatically cleared stale pending operation: ${operationId}`)
+		}, ClineProvider.PENDING_OPERATION_TIMEOUT_MS)
+
+		// Store the operation
+		this.pendingOperations.set(operationId, {
+			...editData,
+			timeoutId,
+			createdAt: Date.now(),
+		})
+
+		this.log(`[setPendingEditOperation] Set pending operation: ${operationId}`)
+	}
+
+	/**
+	 * Gets a pending edit operation by ID
+	 */
+	private getPendingEditOperation(operationId: string): PendingEditOperation | undefined {
+		return this.pendingOperations.get(operationId)
+	}
+
+	/**
+	 * Clears a specific pending edit operation
+	 */
+	private clearPendingEditOperation(operationId: string): boolean {
+		const operation = this.pendingOperations.get(operationId)
+		if (operation) {
+			clearTimeout(operation.timeoutId)
+			this.pendingOperations.delete(operationId)
+			this.log(`[clearPendingEditOperation] Cleared pending operation: ${operationId}`)
+			return true
+		}
+		return false
+	}
+
+	/**
+	 * Clears all pending edit operations
+	 */
+	private clearAllPendingEditOperations(): void {
+		for (const [operationId, operation] of this.pendingOperations) {
+			clearTimeout(operation.timeoutId)
+		}
+		this.pendingOperations.clear()
+		this.log(`[clearAllPendingEditOperations] Cleared all pending operations`)
+	}
 
 	/*
 	VSCode extensions use the disposable pattern to clean up resources when the sidebar/editor tab is closed by the user or system. This applies to event listening, commands, interacting with the UI, etc.
@@ -464,6 +547,10 @@ export class ClineProvider
 		}
 
 		this.log("Cleared all tasks")
+
+		// Clear all pending edit operations to prevent memory leaks
+		this.clearAllPendingEditOperations()
+		this.log("Cleared pending operations")
 
 		if (this.view && "dispose" in this.view) {
 			this.view.dispose()
@@ -707,7 +794,7 @@ export class ClineProvider
 					this.log("Clearing webview resources for sidebar view")
 					this.clearWebviewResources()
 					// Reset current workspace manager reference when view is disposed
-					this.currentWorkspaceManager = undefined
+					this.codeIndexManager = undefined
 				}
 			},
 			null,
@@ -780,7 +867,7 @@ export class ClineProvider
 			fuzzyMatchThreshold,
 			experiments,
 			cloudUserInfo,
-			remoteControlEnabled,
+			taskSyncEnabled,
 		} = await this.getState()
 
 		const task = new Task({
@@ -795,8 +882,9 @@ export class ClineProvider
 			rootTask: historyItem.rootTask,
 			parentTask: historyItem.parentTask,
 			taskNumber: historyItem.number,
+			workspacePath: historyItem.workspace,
 			onCreated: this.taskCreationCallback,
-			enableBridge: BridgeOrchestrator.isEnabled(cloudUserInfo, remoteControlEnabled),
+			enableBridge: BridgeOrchestrator.isEnabled(cloudUserInfo, taskSyncEnabled),
 		})
 
 		await this.addClineToStack(task)
@@ -804,6 +892,49 @@ export class ClineProvider
 		this.log(
 			`[createTaskWithHistoryItem] ${task.parentTask ? "child" : "parent"} task ${task.taskId}.${task.instanceId} instantiated`,
 		)
+
+		// Check if there's a pending edit after checkpoint restoration
+		const operationId = `task-${task.taskId}`
+		const pendingEdit = this.getPendingEditOperation(operationId)
+		if (pendingEdit) {
+			this.clearPendingEditOperation(operationId) // Clear the pending edit
+
+			this.log(`[createTaskWithHistoryItem] Processing pending edit after checkpoint restoration`)
+
+			// Process the pending edit after a short delay to ensure the task is fully initialized
+			setTimeout(async () => {
+				try {
+					// Find the message index in the restored state
+					const { messageIndex, apiConversationHistoryIndex } = (() => {
+						const messageIndex = task.clineMessages.findIndex((msg) => msg.ts === pendingEdit.messageTs)
+						const apiConversationHistoryIndex = task.apiConversationHistory.findIndex(
+							(msg) => msg.ts === pendingEdit.messageTs,
+						)
+						return { messageIndex, apiConversationHistoryIndex }
+					})()
+
+					if (messageIndex !== -1) {
+						// Remove the target message and all subsequent messages
+						await task.overwriteClineMessages(task.clineMessages.slice(0, messageIndex))
+
+						if (apiConversationHistoryIndex !== -1) {
+							await task.overwriteApiConversationHistory(
+								task.apiConversationHistory.slice(0, apiConversationHistoryIndex),
+							)
+						}
+
+						// Process the edited message
+						await task.handleWebviewAskResponse(
+							"messageResponse",
+							pendingEdit.editedContent,
+							pendingEdit.images,
+						)
+					}
+				} catch (error) {
+					this.log(`[createTaskWithHistoryItem] Error processing pending edit: ${error}`)
+				}
+			}, 100) // Small delay to ensure task is fully ready
+		}
 
 		return task
 	}
@@ -1434,6 +1565,11 @@ export class ClineProvider
 		await this.postStateToWebview()
 	}
 
+	async refreshWorkspace() {
+		this.currentWorkspacePath = getWorkspacePath()
+		await this.postStateToWebview()
+	}
+
 	async postStateToWebview() {
 		const state = await this.getStateToPostToWebview()
 		this.postMessageToWebview({ type: "state", state })
@@ -1641,11 +1777,13 @@ export class ClineProvider
 			includeDiagnosticMessages,
 			maxDiagnosticMessages,
 			includeTaskHistoryInEnhance,
+			taskSyncEnabled,
 			remoteControlEnabled,
 			openRouterImageApiKey,
 			openRouterImageGenerationSelectedModel,
 			openRouterUseMiddleOutTransform,
 			apiConfigCustomOrder,
+			featureRoomoteControlEnabled,
 		} = await this.getState()
 
 		const telemetryKey = process.env.POSTHOG_API_KEY
@@ -1778,10 +1916,12 @@ export class ClineProvider
 			includeDiagnosticMessages: includeDiagnosticMessages ?? true,
 			maxDiagnosticMessages: maxDiagnosticMessages ?? 50,
 			includeTaskHistoryInEnhance: includeTaskHistoryInEnhance ?? true,
+			taskSyncEnabled,
 			remoteControlEnabled,
 			openRouterImageApiKey,
 			openRouterImageGenerationSelectedModel,
 			openRouterUseMiddleOutTransform,
+			featureRoomoteControlEnabled,
 		}
 	}
 
@@ -1866,6 +2006,16 @@ export class ClineProvider
 		} catch (error) {
 			console.error(
 				`[getState] failed to get organization settings version: ${error instanceof Error ? error.message : String(error)}`,
+			)
+		}
+
+		let taskSyncEnabled: boolean = false
+
+		try {
+			taskSyncEnabled = CloudService.instance.isTaskSyncEnabled()
+		} catch (error) {
+			console.error(
+				`[getState] failed to get task sync enabled state: ${error instanceof Error ? error.message : String(error)}`,
 			)
 		}
 
@@ -1977,6 +2127,7 @@ export class ClineProvider
 			includeDiagnosticMessages: stateValues.includeDiagnosticMessages ?? true,
 			maxDiagnosticMessages: stateValues.maxDiagnosticMessages ?? 50,
 			includeTaskHistoryInEnhance: stateValues.includeTaskHistoryInEnhance ?? true,
+			taskSyncEnabled,
 			remoteControlEnabled: (() => {
 				try {
 					const cloudSettings = CloudService.instance.getUserSettings()
@@ -1990,6 +2141,18 @@ export class ClineProvider
 			})(),
 			openRouterImageApiKey: stateValues.openRouterImageApiKey,
 			openRouterImageGenerationSelectedModel: stateValues.openRouterImageGenerationSelectedModel,
+			featureRoomoteControlEnabled: (() => {
+				try {
+					const userSettings = CloudService.instance.getUserSettings()
+					const hasOrganization = cloudUserInfo?.organizationId != null
+					return hasOrganization || (userSettings?.features?.roomoteControlEnabled ?? false)
+				} catch (error) {
+					console.error(
+						`[getState] failed to get featureRoomoteControlEnabled: ${error instanceof Error ? error.message : String(error)}`,
+					)
+					return false
+				}
+			})(),
 		}
 	}
 
@@ -2102,7 +2265,19 @@ export class ClineProvider
 	}
 
 	public async remoteControlEnabled(enabled: boolean) {
+		if (!enabled) {
+			await BridgeOrchestrator.disconnect()
+			return
+		}
+
 		const userInfo = CloudService.instance.getUserInfo()
+
+		if (!userInfo) {
+			this.log("[ClineProvider#remoteControlEnabled] Failed to get user info, disconnecting")
+			await BridgeOrchestrator.disconnect()
+			return
+		}
+
 		const config = await CloudService.instance.cloudAPI?.bridgeConfig().catch(() => undefined)
 
 		if (!config) {
@@ -2162,7 +2337,7 @@ export class ClineProvider
 		const currentManager = this.getCurrentWorkspaceCodeIndexManager()
 
 		// If the manager hasn't changed, no need to update subscription
-		if (currentManager === this.currentWorkspaceManager) {
+		if (currentManager === this.codeIndexManager) {
 			return
 		}
 
@@ -2173,7 +2348,7 @@ export class ClineProvider
 		}
 
 		// Update the current workspace manager reference
-		this.currentWorkspaceManager = currentManager
+		this.codeIndexManager = currentManager
 
 		// Subscribe to the new manager's progress updates if it exists
 		if (currentManager) {
@@ -2534,7 +2709,7 @@ export class ClineProvider
 	}
 
 	public get cwd() {
-		return getWorkspacePath()
+		return this.currentWorkspacePath || getWorkspacePath()
 	}
 
 	/**

@@ -793,7 +793,7 @@
 		"feedback": "Se tiver alguma dúvida ou feedback, sinta-se à vontade para abrir um problema em <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> ou juntar-se a <redditLink>reddit.com/r/RooCode</redditLink> ou <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {
 			"label": "Permitir relatórios anônimos de erros e uso",
-			"description": "Ajude a melhorar o Roo Code enviando dados de uso anônimos e relatórios de erros. Nunca são enviados código, prompts ou informações pessoais. Consulte nossa política de privacidade para mais detalhes."
+			"description": "Ajude a melhorar o Roo Code enviando dados de uso anônimos e relatórios de erros. Esta telemetria não coleta código, prompts ou informações pessoais. Consulte nossa <privacyLink>política de privacidade</privacyLink> para mais detalhes."
 		},
 		"settings": {
 			"import": "Importar",
@@ -859,5 +859,19 @@
 	"includeMaxOutputTokensDescription": "Enviar parâmetro de tokens máximos de saída nas solicitações de API. Alguns provedores podem não suportar isso.",
 	"limitMaxTokensDescription": "Limitar o número máximo de tokens na resposta",
 	"maxOutputTokensLabel": "Tokens máximos de saída",
-	"maxTokensGenerateDescription": "Tokens máximos para gerar na resposta"
+	"maxTokensGenerateDescription": "Tokens máximos para gerar na resposta",
+	"serviceTier": {
+		"label": "Nível de serviço",
+		"tooltip": "Para um processamento mais rápido das solicitações de API, experimente o nível de serviço de processamento prioritário. Para preços mais baixos com maior latência, experimente o nível de processamento flexível.",
+		"standard": "Padrão",
+		"flex": "Flexível",
+		"priority": "Prioritário",
+		"pricingTableTitle": "Preços por nível de serviço (preço por 1 milhão de tokens)",
+		"columns": {
+			"tier": "Nível",
+			"input": "Entrada",
+			"output": "Saída",
+			"cacheReads": "Leituras de cache"
+		}
+	}
 }

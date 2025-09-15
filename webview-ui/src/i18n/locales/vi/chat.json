@@ -24,7 +24,9 @@
 		"connectToCloudDescription": "Đăng nhập vào Roo Code Cloud để chia sẻ tác vụ",
 		"sharingDisabledByOrganization": "Chia sẻ bị tổ chức vô hiệu hóa",
 		"shareSuccessOrganization": "Liên kết tổ chức đã được sao chép vào clipboard",
-		"shareSuccessPublic": "Liên kết công khai đã được sao chép vào clipboard"
+		"shareSuccessPublic": "Liên kết công khai đã được sao chép vào clipboard",
+		"openInCloud": "Mở tác vụ trong Roo Code Cloud",
+		"openInCloudIntro": "Tiếp tục theo dõi hoặc tương tác với Roo từ bất cứ đâu. Quét, nhấp hoặc sao chép để mở."
 	},
 	"tokenProgress": {
 		"availableSpace": "Không gian khả dụng: {{amount}} tokens",
@@ -243,12 +245,18 @@
 		"issues": "Có vẻ như bạn đang gặp vấn đề với Windows PowerShell, vui lòng xem"
 	},
 	"autoApprove": {
-		"title": "Tự động phê duyệt:",
-		"none": "Không",
-		"description": "Tự động phê duyệt cho phép Roo Code thực hiện hành động mà không cần xin phép. Chỉ bật cho các hành động bạn hoàn toàn tin tưởng. Cấu hình chi tiết hơn có sẵn trong <settingsLink>Cài đặt</settingsLink>.",
-		"selectOptionsFirst": "Chọn ít nhất một tùy chọn bên dưới để bật tự động phê duyệt",
-		"toggleAriaLabel": "Chuyển đổi tự động phê duyệt",
-		"disabledAriaLabel": "Tự động phê duyệt bị vô hiệu hóa - hãy chọn các tùy chọn trước"
+		"tooltip": "Quản lý cài đặt tự động phê duyệt",
+		"title": "Tự động phê duyệt",
+		"all": "Tất cả",
+		"none": "Không có",
+		"description": "Thực hiện các hành động này mà không cần xin phép. Chỉ bật tính năng này cho các hành động bạn hoàn toàn tin tưởng.",
+		"selectOptionsFirst": "Chọn ít nhất một tùy chọn bên dưới để bật tính năng tự động phê duyệt",
+		"toggleAriaLabel": "Bật/tắt tự động phê duyệt",
+		"disabledAriaLabel": "Tự động phê duyệt đã tắt - trước tiên hãy chọn các tùy chọn",
+		"triggerLabel_zero": "Không có tự động phê duyệt",
+		"triggerLabel_one": "1 được tự động phê duyệt",
+		"triggerLabel_other": "{{count}} được tự động phê duyệt",
+		"triggerLabelAll": "YOLO"
 	},
 	"reasoning": {
 		"thinking": "Đang suy nghĩ",
@@ -267,19 +275,12 @@
 	},
 	"announcement": {
 		"title": "🎉 Roo Code {{version}} Đã phát hành",
-		"stealthModel": {
-			"feature": "Mô hình stealth Sonic giờ là <bold>Grok Code Fast</bold>! Mô hình lý luận hiệu năng cao này có sẵn dưới dạng <code>grok-code-fast-1</code> trong nhà cung cấp <bold>xAI (Grok)</bold>.",
-			"note": "Để cảm ơn tất cả các phản hồi hữu ích về Sonic, xAI đang mở rộng quyền truy cập miễn phí vào <code>grok-code-fast-1</code> thêm một tuần nữa thông qua nhà cung cấp <bold>Roo Code Cloud</bold>.",
-			"connectButton": "Kết nối với Roo Code Cloud",
-			"selectModel": "Truy cập <settingsLink>Cài đặt</settingsLink> để cập nhật cấu hình nhà cung cấp của bạn."
-		},
-		"description": "Roo Code {{version}} mang đến các tính năng mạnh mẽ mới và cải tiến đáng kể để nâng cao quy trình phát triển của bạn.",
-		"whatsNew": "Có gì mới",
-		"feature1": "<bold>Hàng đợi Tin nhắn</bold>: Xếp hàng nhiều tin nhắn trong khi Roo đang làm việc, cho phép bạn tiếp tục lập kế hoạch quy trình làm việc mà không bị gián đoạn.",
-		"feature2": "<bold>Lệnh Slash Tùy chỉnh</bold>: Tạo các lệnh slash được cá nhân hóa để truy cập nhanh vào các prompt và quy trình làm việc thường dùng, với quản lý UI đầy đủ.",
-		"feature3": "<bold>Công cụ Gemini Nâng cao</bold>: Khả năng ngữ cảnh URL mới và nền tảng tìm kiếm Google cung cấp cho các mô hình Gemini thông tin web thời gian thực và khả năng nghiên cứu nâng cao.",
-		"hideButton": "Ẩn thông báo",
-		"detailsDiscussLinks": "Nhận thêm chi tiết và thảo luận tại <discordLink>Discord</discordLink> và <redditLink>Reddit</redditLink> 🚀"
+		"description": "Giới thiệu <bold>Roo Code Cloud:</bold> Mang sức mạnh của Roo vượt ra ngoài IDE",
+		"feature1": "<bold>Theo dõi tiến trình tác vụ từ bất kỳ đâu (Miễn phí):</bold> Nhận cập nhật thời gian thực về các tác vụ chạy dài mà không bị mắc kẹt trong IDE của bạn",
+		"feature2": "<bold>Điều khiển Tiện ích Roo từ xa (Pro):</bold> Bắt đầu, dừng và tương tác với các tác vụ từ giao diện trình duyệt dựa trên chat.",
+		"learnMore": "Sẵn sàng nắm quyền kiểm soát? Tìm hiểu thêm <learnMoreLink>tại đây</learnMoreLink>.",
+		"visitCloudButton": "Truy cập Roo Code Cloud",
+		"socialLinks": "Tham gia với chúng tôi trên <xLink>X</xLink>, <discordLink>Discord</discordLink>, hoặc <redditLink>r/RooCode</redditLink>"
 	},
 	"browser": {
 		"rooWantsToUse": "Roo muốn sử dụng trình duyệt:",

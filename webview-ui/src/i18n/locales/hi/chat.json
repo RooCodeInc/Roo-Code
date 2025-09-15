@@ -24,7 +24,9 @@
 		"connectToCloudDescription": "कार्य साझा करने के लिए Roo Code Cloud में साइन इन करें",
 		"sharingDisabledByOrganization": "संगठन द्वारा साझाकरण अक्षम किया गया",
 		"shareSuccessOrganization": "संगठन लिंक क्लिपबोर्ड में कॉपी किया गया",
-		"shareSuccessPublic": "सार्वजनिक लिंक क्लिपबोर्ड में कॉपी किया गया"
+		"shareSuccessPublic": "सार्वजनिक लिंक क्लिपबोर्ड में कॉपी किया गया",
+		"openInCloud": "Roo Code Cloud में कार्य खोलें",
+		"openInCloudIntro": "कहीं से भी Roo की निगरानी या इंटरैक्ट करना जारी रखें। खोलने के लिए स्कैन करें, क्लिक करें या कॉपी करें।"
 	},
 	"tokenProgress": {
 		"availableSpace": "उपलब्ध स्थान: {{amount}} tokens",
@@ -243,12 +245,18 @@
 		"issues": "ऐसा लगता है कि आपको Windows PowerShell के साथ समस्याएँ हो रही हैं, कृपया इसे देखें"
 	},
 	"autoApprove": {
-		"title": "स्वत:-स्वीकृति:",
+		"tooltip": "स्वतः-अनुमोदन सेटिंग्स प्रबंधित करें",
+		"title": "स्वतः-अनुमोदन",
+		"all": "सभी",
 		"none": "कोई नहीं",
-		"description": "स्वत:-स्वीकृति Roo Code को अनुमति मांगे बिना क्रियाएँ करने की अनुमति देती है। केवल उन क्रियाओं के लिए सक्षम करें जिन पर आप पूरी तरह से विश्वास करते हैं। अधिक विस्तृत कॉन्फ़िगरेशन <settingsLink>सेटिंग्स</settingsLink> में उपलब्ध है।",
-		"selectOptionsFirst": "स्वतः-अनुमोदन सक्षम करने के लिए नीचे दिए گئے विकल्पों में से कम से कम एक का चयन करें",
+		"description": "अनुमति मांगे बिना इन क्रियाओं को चलाएं। इसे केवल उन क्रियाओं के लिए सक्षम करें जिन पर आप पूरी तरह भरोसा करते हैं।",
+		"selectOptionsFirst": "स्वतः-अनुमोदन सक्षम करने के लिए नीचे दिए गए कम से कम एक विकल्प का चयन करें",
 		"toggleAriaLabel": "स्वतः-अनुमोदन टॉगल करें",
-		"disabledAriaLabel": "स्वतः-अनुमोदन अक्षम - पहले विकल्प चुनें"
+		"disabledAriaLabel": "स्वतः-अनुमोदन अक्षम - पहले विकल्प चुनें",
+		"triggerLabel_zero": "कोई स्वतः-अनुमोदन नहीं",
+		"triggerLabel_one": "1 स्वतः-अनुमोदित",
+		"triggerLabel_other": "{{count}} स्वतः-अनुमोदित",
+		"triggerLabelAll": "योलो"
 	},
 	"reasoning": {
 		"thinking": "विचार कर रहा है",
@@ -267,19 +275,12 @@
 	},
 	"announcement": {
 		"title": "🎉 Roo Code {{version}} रिलीज़ हुआ",
-		"stealthModel": {
-			"feature": "Sonic स्टेल्थ मॉडल अब <bold>Grok Code Fast</bold> है! यह उच्च-प्रदर्शन रीज़निंग मॉडल <bold>xAI (Grok)</bold> प्रोवाइडर के तहत <code>grok-code-fast-1</code> के रूप में उपलब्ध है।",
-			"note": "Sonic के बारे में सभी सहायक फीडबैक के लिए धन्यवाद के रूप में, xAI <bold>Roo Code Cloud</bold> प्रदाता के माध्यम से एक और सप्ताह के लिए <code>grok-code-fast-1</code> तक मुफ्त पहुंच बढ़ा रहा है।",
-			"connectButton": "Roo Code Cloud से कनेक्ट करें",
-			"selectModel": "अपने प्रोवाइडर कॉन्फ़िगरेशन को अपडेट करने के लिए <settingsLink>सेटिंग्स</settingsLink> देखें।"
-		},
-		"description": "Roo Code {{version}} आपके विकास वर्कफ़्लो को बेहतर बनाने के लिए शक्तिशाली नई सुविधाएं और महत्वपूर्ण सुधार लेकर आया है।",
-		"whatsNew": "नया क्या है",
-		"feature1": "<bold>संदेश कतार</bold>: Roo के काम करते समय कई संदेशों को कतार में रखें, जिससे आप बिना रुकावट के अपने वर्कफ़्लो की योजना बना सकते हैं।",
-		"feature2": "<bold>कस्टम स्लैश कमांड</bold>: अक्सर उपयोग किए जाने वाले प्रॉम्प्ट और वर्कफ़्लो तक त्वरित पहुंच के लिए व्यक्तिगत स्लैश कमांड बनाएं, पूर्ण UI प्रबंधन के साथ।",
-		"feature3": "<bold>उन्नत Gemini उपकरण</bold>: नए URL संदर्भ और Google खोज आधार क्षमताएं Gemini मॉडल को वास्तविक समय वेब जानकारी और बेहतर अनुसंधान क्षमताएं प्रदान करती हैं।",
-		"hideButton": "घोषणा छुपाएं",
-		"detailsDiscussLinks": "<discordLink>Discord</discordLink> और <redditLink>Reddit</redditLink> पर अधिक विवरण प्राप्त करें और चर्चाओं में शामिल हों 🚀"
+		"description": "<bold>Roo Code Cloud</bold> का परिचय: Roo की शक्ति को IDE से आगे ले जाना",
+		"feature1": "<bold>कहीं से भी कार्य प्रगति ट्रैक करें (निःशुल्क):</bold> लंबे समय तक चलने वाले कार्यों के लिए रीयल-टाइम अपडेट प्राप्त करें बिना अपने IDE में फंसे",
+		"feature2": "<bold>Roo एक्सटेंशन को दूर से नियंत्रित करें (Pro):</bold> चैट-आधारित ब्राउज़र इंटरफ़ेस से कार्य शुरू करें, रोकें और बातचीत करें।",
+		"learnMore": "नियंत्रण लेने के लिए तैयार हैं? <learnMoreLink>यहां</learnMoreLink> और जानें।",
+		"visitCloudButton": "Roo Code Cloud पर जाएं",
+		"socialLinks": "<xLink>X</xLink>, <discordLink>Discord</discordLink>, या <redditLink>r/RooCode</redditLink> पर हमसे जुड़ें"
 	},
 	"browser": {
 		"rooWantsToUse": "Roo ब्राउज़र का उपयोग करना चाहता है:",

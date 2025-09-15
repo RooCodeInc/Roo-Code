@@ -41,7 +41,7 @@ import { CloudService, BridgeOrchestrator } from "@roo-code/cloud"
 
 // api
 import { ApiHandler, ApiHandlerCreateMessageMetadata, buildApiHandler } from "../../api"
-import { ApiStream } from "../../api/transform/stream"
+import { ApiStream, GroundingSource } from "../../api/transform/stream"
 import { maybeRemoveImageBlocks } from "../../api/transform/image-cleaning"
 
 // shared
@@ -138,6 +138,7 @@ export interface TaskOptions extends CreateTaskOptions {
 	taskNumber?: number
 	onCreated?: (task: Task) => void
 	initialTodos?: TodoItem[]
+	workspacePath?: string
 }
 
 export class Task extends EventEmitter<TaskEvents> implements TaskLike {
@@ -313,6 +314,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		taskNumber = -1,
 		onCreated,
 		initialTodos,
+		workspacePath,
 	}: TaskOptions) {
 		super()
 
@@ -333,7 +335,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// Normal use-case is usually retry similar history task with new workspace.
 		this.workspacePath = parentTask
 			? parentTask.workspacePath
-			: getWorkspacePath(path.join(os.homedir(), "Desktop"))
+			: (workspacePath ?? getWorkspacePath(path.join(os.homedir(), "Desktop")))
 
 		this.instanceId = crypto.randomUUID().slice(0, 8)
 		this.taskNumber = -1
@@ -843,9 +845,19 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			const message = this.messageQueueService.dequeueMessage()
 
 			if (message) {
-				setTimeout(async () => {
-					await this.submitUserMessage(message.text, message.images)
-				}, 0)
+				// Check if this is a tool approval ask that needs to be handled
+				if (
+					type === "tool" ||
+					type === "command" ||
+					type === "browser_action_launch" ||
+					type === "use_mcp_server"
+				) {
+					// For tool approvals, we need to approve first, then send the message if there's text/images
+					this.handleWebviewAskResponse("yesButtonClicked", message.text, message.images)
+				} else {
+					// For other ask types (like followup), fulfill the ask directly
+					this.setMessageResponse(message.text, message.images)
+				}
 			}
 		}
 
@@ -887,6 +899,31 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.askResponse = askResponse
 		this.askResponseText = text
 		this.askResponseImages = images
+
+		// Create a checkpoint whenever the user sends a message.
+		// Use allowEmpty=true to ensure a checkpoint is recorded even if there are no file changes.
+		// Suppress the checkpoint_saved chat row for this particular checkpoint to keep the timeline clean.
+		if (askResponse === "messageResponse") {
+			void this.checkpointSave(false, true)
+		}
+
+		// Mark the last follow-up question as answered
+		if (askResponse === "messageResponse" || askResponse === "yesButtonClicked") {
+			// Find the last unanswered follow-up message using findLastIndex
+			const lastFollowUpIndex = findLastIndex(
+				this.clineMessages,
+				(msg) => msg.type === "ask" && msg.ask === "followup" && !msg.isAnswered,
+			)
+
+			if (lastFollowUpIndex !== -1) {
+				// Mark this follow-up as answered
+				this.clineMessages[lastFollowUpIndex].isAnswered = true
+				// Save the updated messages
+				this.saveClineMessages().catch((error) => {
+					console.error("Failed to save answered follow-up state:", error)
+				})
+			}
+		}
 	}
 
 	public approveAsk({ text, images }: { text?: string; images?: string[] } = {}) {
@@ -1877,7 +1914,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					this.didFinishAbortingStream = true
 				}
 
-				// Reset streaming state.
+				// Reset streaming state for each new API request
 				this.currentStreamingContentIndex = 0
 				this.currentStreamingDidCheckpoint = false
 				this.assistantMessageContent = []
@@ -1898,6 +1935,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				const stream = this.attemptApiRequest()
 				let assistantMessage = ""
 				let reasoningMessage = ""
+				let pendingGroundingSources: GroundingSource[] = []
 				this.isStreaming = true
 
 				try {
@@ -1923,6 +1961,13 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 								cacheWriteTokens += chunk.cacheWriteTokens ?? 0
 								cacheReadTokens += chunk.cacheReadTokens ?? 0
 								totalCost = chunk.totalCost
+								break
+							case "grounding":
+								// Handle grounding sources separately from regular content
+								// to prevent state persistence issues - store them separately
+								if (chunk.sources && chunk.sources.length > 0) {
+									pendingGroundingSources.push(...chunk.sources)
+								}
 								break
 							case "text": {
 								assistantMessage += chunk.text
@@ -2217,6 +2262,16 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				let didEndLoop = false
 
 				if (assistantMessage.length > 0) {
+					// Display grounding sources to the user if they exist
+					if (pendingGroundingSources.length > 0) {
+						const citationLinks = pendingGroundingSources.map((source, i) => `[${i + 1}](${source.url})`)
+						const sourcesText = `${t("common:gemini.sources")} ${citationLinks.join(", ")}`
+
+						await this.say("text", sourcesText, undefined, false, undefined, undefined, {
+							isNonInteractive: true,
+						})
+					}
+
 					await this.addToApiConversationHistory({
 						role: "assistant",
 						content: [{ type: "text", text: assistantMessage }],
@@ -2736,8 +2791,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	// Checkpoints
 
-	public async checkpointSave(force: boolean = false) {
-		return checkpointSave(this, force)
+	public async checkpointSave(force: boolean = false, suppressMessage: boolean = false) {
+		return checkpointSave(this, force, suppressMessage)
 	}
 
 	public async checkpointRestore(options: CheckpointRestoreOptions) {
@@ -2852,5 +2907,29 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	public get cwd() {
 		return this.workspacePath
+	}
+
+	/**
+	 * Process any queued messages by dequeuing and submitting them.
+	 * This ensures that queued user messages are sent when appropriate,
+	 * preventing them from getting stuck in the queue.
+	 *
+	 * @param context - Context string for logging (e.g., the calling tool name)
+	 */
+	public processQueuedMessages(): void {
+		try {
+			if (!this.messageQueueService.isEmpty()) {
+				const queued = this.messageQueueService.dequeueMessage()
+				if (queued) {
+					setTimeout(() => {
+						this.submitUserMessage(queued.text, queued.images).catch((err) =>
+							console.error(`[Task] Failed to submit queued message:`, err),
+						)
+					}, 0)
+				}
+			}
+		} catch (e) {
+			console.error(`[Task] Queue processing error:`, e)
+		}
 	}
 }

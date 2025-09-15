@@ -24,6 +24,7 @@ import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { getApiRequestTimeout } from "./utils/timeout-config"
+import { handleOpenAIError } from "./utils/openai-error-handler"
 
 // TODO: Rename this to OpenAICompatibleHandler. Also, I think the
 // `OpenAINativeHandler` can subclass from this, since it's obviously
@@ -31,6 +32,7 @@ import { getApiRequestTimeout } from "./utils/timeout-config"
 export class OpenAiHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
 	private client: OpenAI
+	private readonly providerName = "OpenAI"
 
 	constructor(options: ApiHandlerOptions) {
 		super()
@@ -157,27 +159,25 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 			const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming = {
 				model: modelId,
+				temperature: this.options.modelTemperature ?? (deepseekReasoner ? DEEP_SEEK_DEFAULT_TEMPERATURE : 0),
 				messages: convertedMessages,
 				stream: true as const,
 				...(isGrokXAI ? {} : { stream_options: { include_usage: true } }),
 				...(reasoning && reasoning),
 			}
 
-			// Only include temperature if explicitly set
-			if (this.options.modelTemperature !== undefined) {
-				requestOptions.temperature = this.options.modelTemperature
-			} else if (deepseekReasoner) {
-				// DeepSeek Reasoner has a specific default temperature
-				requestOptions.temperature = DEEP_SEEK_DEFAULT_TEMPERATURE
-			}
-
 			// Add max_tokens if needed
 			this.addMaxTokensIfNeeded(requestOptions, modelInfo)
 
-			const stream = await this.client.chat.completions.create(
-				requestOptions,
-				isAzureAiInference ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {},
-			)
+			let stream
+			try {
+				stream = await this.client.chat.completions.create(
+					requestOptions,
+					isAzureAiInference ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {},
+				)
+			} catch (error) {
+				throw handleOpenAIError(error, this.providerName)
+			}
 
 			const matcher = new XmlMatcher(
 				"think",
@@ -236,10 +236,15 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			// Add max_tokens if needed
 			this.addMaxTokensIfNeeded(requestOptions, modelInfo)
 
-			const response = await this.client.chat.completions.create(
-				requestOptions,
-				this._isAzureAiInference(modelUrl) ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {},
-			)
+			let response
+			try {
+				response = await this.client.chat.completions.create(
+					requestOptions,
+					this._isAzureAiInference(modelUrl) ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {},
+				)
+			} catch (error) {
+				throw handleOpenAIError(error, this.providerName)
+			}
 
 			yield {
 				type: "text",
@@ -281,15 +286,20 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			// Add max_tokens if needed
 			this.addMaxTokensIfNeeded(requestOptions, modelInfo)
 
-			const response = await this.client.chat.completions.create(
-				requestOptions,
-				isAzureAiInference ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {},
-			)
+			let response
+			try {
+				response = await this.client.chat.completions.create(
+					requestOptions,
+					isAzureAiInference ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {},
+				)
+			} catch (error) {
+				throw handleOpenAIError(error, this.providerName)
+			}
 
 			return response.choices[0]?.message.content || ""
 		} catch (error) {
 			if (error instanceof Error) {
-				throw new Error(`OpenAI completion error: ${error.message}`)
+				throw new Error(`${this.providerName} completion error: ${error.message}`)
 			}
 
 			throw error
@@ -327,10 +337,15 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			// This allows O3 models to limit response length when includeMaxTokens is enabled
 			this.addMaxTokensIfNeeded(requestOptions, modelInfo)
 
-			const stream = await this.client.chat.completions.create(
-				requestOptions,
-				methodIsAzureAiInference ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {},
-			)
+			let stream
+			try {
+				stream = await this.client.chat.completions.create(
+					requestOptions,
+					methodIsAzureAiInference ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {},
+				)
+			} catch (error) {
+				throw handleOpenAIError(error, this.providerName)
+			}
 
 			yield* this.handleStreamResponse(stream)
 		} else {
@@ -352,10 +367,15 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			// This allows O3 models to limit response length when includeMaxTokens is enabled
 			this.addMaxTokensIfNeeded(requestOptions, modelInfo)
 
-			const response = await this.client.chat.completions.create(
-				requestOptions,
-				methodIsAzureAiInference ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {},
-			)
+			let response
+			try {
+				response = await this.client.chat.completions.create(
+					requestOptions,
+					methodIsAzureAiInference ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {},
+				)
+			} catch (error) {
+				throw handleOpenAIError(error, this.providerName)
+			}
 
 			yield {
 				type: "text",
@@ -408,7 +428,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 	 * Note: max_tokens is deprecated in favor of max_completion_tokens as per OpenAI documentation
 	 * O3 family models handle max_tokens separately in handleO3FamilyMessage
 	 */
-	private addMaxTokensIfNeeded(
+	protected addMaxTokensIfNeeded(
 		requestOptions:
 			| OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming
 			| OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming,
