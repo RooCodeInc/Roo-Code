@@ -8,6 +8,11 @@ import { getOllamaModels } from "./fetchers/ollama"
 import { XmlMatcher } from "../../utils/xml-matcher"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 
+interface OllamaChatOptions {
+	temperature: number
+	num_ctx?: number
+}
+
 function convertToOllamaMessages(anthropicMessages: Anthropic.Messages.MessageParam[]): Message[] {
 	const ollamaMessages: Message[] = []
 
@@ -185,7 +190,7 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 
 		try {
 			// Build options object conditionally
-			const chatOptions: any = {
+			const chatOptions: OllamaChatOptions = {
 				temperature: this.options.modelTemperature ?? (useR1Format ? DEEP_SEEK_DEFAULT_TEMPERATURE : 0),
 			}
 
@@ -282,7 +287,7 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 			const useR1Format = modelId.toLowerCase().includes("deepseek-r1")
 
 			// Build options object conditionally
-			const chatOptions: any = {
+			const chatOptions: OllamaChatOptions = {
 				temperature: this.options.modelTemperature ?? (useR1Format ? DEEP_SEEK_DEFAULT_TEMPERATURE : 0),
 			}
 
