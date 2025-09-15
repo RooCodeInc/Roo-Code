@@ -26,6 +26,7 @@ import { StandardTooltip } from "@src/components/ui"
 import Thumbnails from "../common/Thumbnails"
 import { ModeSelector } from "./ModeSelector"
 import { ApiConfigSelector } from "./ApiConfigSelector"
+import { AutoApproveDropdown } from "./AutoApproveDropdown"
 import { MAX_IMAGES_PER_MESSAGE } from "./ChatView"
 import ContextMenu from "./ContextMenu"
 import { IndexingStatusBadge } from "./IndexingStatusBadge"
@@ -1099,7 +1100,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 								</StandardTooltip>
 							</div>
 
-							<div className="absolute bottom-2 right-2 z-30">
+							<div className="absolute bottom-2 right-2 z-30 flex items-center gap-1">
 								{isEditMode && (
 									<StandardTooltip content={t("chat:cancel.title")}>
 										<button
@@ -1173,34 +1174,31 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					/>
 				)}
 
-				<div className="flex justify-between items-center">
-					<div className="flex items-center gap-1">
-						<div className="max-w-32">
-							<ModeSelector
-								value={mode}
-								title={t("chat:selectMode")}
-								onChange={handleModeChange}
-								triggerClassName="w-full"
-								modeShortcutText={modeShortcutText}
-								customModes={customModes}
-								customModePrompts={customModePrompts}
-							/>
-						</div>
-						<div className="max-w-32">
-							<ApiConfigSelector
-								value={currentConfigId}
-								displayName={displayName}
-								disabled={selectApiConfigDisabled}
-								title={t("chat:selectApiConfig")}
-								onChange={handleApiConfigChange}
-								triggerClassName="w-full text-ellipsis overflow-hidden"
-								listApiConfigMeta={listApiConfigMeta || []}
-								pinnedApiConfigs={pinnedApiConfigs}
-								togglePinnedApiConfig={togglePinnedApiConfig}
-							/>
-						</div>
+				<div className="flex items-center gap-2">
+					<div className="flex items-center gap-2 min-w-0 overflow-clip flex-1">
+						<ModeSelector
+							value={mode}
+							title={t("chat:selectMode")}
+							onChange={handleModeChange}
+							triggerClassName="text-ellipsis overflow-hidden flex-shrink-0"
+							modeShortcutText={modeShortcutText}
+							customModes={customModes}
+							customModePrompts={customModePrompts}
+						/>
+						<ApiConfigSelector
+							value={currentConfigId}
+							displayName={displayName}
+							disabled={selectApiConfigDisabled}
+							title={t("chat:selectApiConfig")}
+							onChange={handleApiConfigChange}
+							triggerClassName="min-w-[28px] text-ellipsis overflow-hidden flex-shrink"
+							listApiConfigMeta={listApiConfigMeta || []}
+							pinnedApiConfigs={pinnedApiConfigs}
+							togglePinnedApiConfig={togglePinnedApiConfig}
+						/>
+						<AutoApproveDropdown triggerClassName="min-w-[28px] text-ellipsis overflow-hidden flex-shrink" />
 					</div>
-					<div className="flex items-center gap-0.5">
+					<div className="flex flex-shrink-0 items-center gap-0.5">
 						{isTtsPlaying && (
 							<StandardTooltip content={t("chat:stopTts")}>
 								<button
