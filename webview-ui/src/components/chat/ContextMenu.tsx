@@ -253,7 +253,9 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 		)
 	}
 
-	const handleSettingsClick = () => {
+	const handleSettingsClick = (e: React.MouseEvent) => {
+		// Prevent any default behavior
+		e.preventDefault()
 		// Switch to settings tab and navigate to slash commands section
 		vscode.postMessage({
 			type: "switchTab",
@@ -300,6 +302,10 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 						<span style={{ fontSize: "0.85em", opacity: 0.8 }}>Slash Commands</span>
 						<button
 							onClick={handleSettingsClick}
+							onMouseDown={(e) => {
+								e.stopPropagation()
+								e.preventDefault()
+							}}
 							style={{
 								background: "transparent",
 								border: "none",
