@@ -81,12 +81,12 @@ export interface SettingsViewRef {
 const sectionNames = [
 	"providers",
 	"autoApprove",
+	"slashCommands",
 	"browser",
 	"checkpoints",
 	"notifications",
 	"contextManagement",
 	"terminal",
-	"slashCommands",
 	"prompts",
 	"experimental",
 	"language",
@@ -451,12 +451,12 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		() => [
 			{ id: "providers", icon: Webhook },
 			{ id: "autoApprove", icon: CheckCheck },
+			{ id: "slashCommands", icon: SquareSlash },
 			{ id: "browser", icon: SquareMousePointer },
 			{ id: "checkpoints", icon: GitBranch },
 			{ id: "notifications", icon: Bell },
 			{ id: "contextManagement", icon: Database },
 			{ id: "terminal", icon: SquareTerminal },
-			{ id: "slashCommands", icon: SquareSlash },
 			{ id: "prompts", icon: MessageSquare },
 			{ id: "experimental", icon: FlaskConical },
 			{ id: "language", icon: Globe },
@@ -672,6 +672,9 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 						/>
 					)}
 
+					{/* Slash Commands Section */}
+					{activeTab === "slashCommands" && <SlashCommandsSettings />}
+
 					{/* Browser Section */}
 					{activeTab === "browser" && (
 						<BrowserSettings
@@ -741,9 +744,6 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 							setCachedStateField={setCachedStateField}
 						/>
 					)}
-
-					{/* Slash Commands Section */}
-					{activeTab === "slashCommands" && <SlashCommandsSettings />}
 
 					{/* Prompts Section */}
 					{activeTab === "prompts" && (
