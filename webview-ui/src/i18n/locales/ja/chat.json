@@ -385,7 +385,7 @@
 		"newWorkspaceCommandPlaceholder": "新しいワークスペースコマンド...",
 		"deleteDialog": {
 			"title": "コマンドを削除",
-			"description": "\"{{name}}\" コमाンドを削除してもよろしいですか？この操作は元に戻せません。",
+			"description": "\"{{name}}\" コマンドを削除してもよろしいですか？この操作は元に戻せません。",
 			"cancel": "キャンセル",
 			"confirm": "削除"
 		}
