@@ -46,7 +46,6 @@
 		"hast-util-to-jsx-runtime": "^2.3.6",
 		"i18next": "^25.0.0",
 		"i18next-http-backend": "^3.0.2",
-		"iovalkey": "^0.3.3",
 		"katex": "^0.16.11",
 		"knuth-shuffle-seeded": "^1.0.6",
 		"lru-cache": "^11.1.0",

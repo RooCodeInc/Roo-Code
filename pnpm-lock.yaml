@@ -695,6 +695,9 @@ importers:
       ignore:
         specifier: ^7.0.3
         version: 7.0.4
+      iovalkey:
+        specifier: ^0.3.3
+        version: 0.3.3
       isbinaryfile:
         specifier: ^5.0.2
         version: 5.0.4
@@ -1017,9 +1020,6 @@ importers:
       i18next-http-backend:
         specifier: ^3.0.2
         version: 3.0.2
-      iovalkey:
-        specifier: ^0.3.3
-        version: 0.3.3
       katex:
         specifier: ^0.16.11
         version: 0.16.22
