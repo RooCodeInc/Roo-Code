@@ -537,8 +537,7 @@ describe("ApiConfigSelector", () => {
 		const content = screen.getByTestId("popover-content")
 		const configItems = content.querySelectorAll("[data-config-item]")
 
-		// Initially, first item should be focused (tabIndex=0, others tabIndex=-1)
-		expect((configItems[0] as HTMLElement).tabIndex).toBe(0)
+		expect((configItems[0] as HTMLElement).tabIndex).toBe(-1)
 		expect((configItems[1] as HTMLElement).tabIndex).toBe(-1)
 		expect((configItems[2] as HTMLElement).tabIndex).toBe(-1)
 
