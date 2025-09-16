@@ -1,6 +1,6 @@
 {
-	"greeting": "Benvingut a Roo Code!",
-	"introduction": "Amb una gamma de Modes integrats i ampliables, Roo Code et permet planificar, arquitectar, codificar, depurar i augmentar la teva productivitat com mai abans.",
+	"greeting": "Benvingut a Charles!",
+	"introduction": "Amb una gamma de Modes integrats i ampliables, Charles et permet planificar, arquitectar, codificar, depurar i augmentar la teva productivitat com mai abans.",
 	"notice": "Per començar, aquesta extensió necessita un proveïdor d'API.",
 	"start": "Som-hi!",
 	"routers": {
@@ -12,11 +12,11 @@
 			"description": "Una interfície unificada per a LLMs"
 		}
 	},
-	"chooseProvider": "Per fer la seva màgia, Roo necessita una clau API.",
+	"chooseProvider": "Per fer la seva màgia, Charles necessita una clau API.",
 	"startRouter": "Recomanem utilitzar un router LLM:",
 	"startCustom": "O pots utilitzar la teva pròpia clau API:",
 	"telemetry": {
-		"title": "Ajuda a millorar Roo Code",
+		"title": "Ajuda a millorar Charles",
 		"anonymousTelemetry": "Envia dades d'ús i errors anònims per ajudar-nos a corregir errors i millorar l'extensió. No s'envia mai cap codi, text o informació personal.",
 		"changeSettings": "Sempre pots canviar això a la part inferior de la <settingsLink>configuració</settingsLink>",
 		"settings": "configuració",

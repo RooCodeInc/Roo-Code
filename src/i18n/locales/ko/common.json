@@ -1,6 +1,6 @@
 {
 	"extension": {
-		"name": "Roo Code",
+		"name": "Charles",
 		"description": "에디터 내에서 동작하는 AI 개발팀 전체입니다."
 	},
 	"number_format": {
@@ -85,7 +85,7 @@
 			"processExitedWithError": "Claude Code 프로세스가 코드 {{exitCode}}로 종료되었습니다. 오류 출력: {{output}}",
 			"stoppedWithReason": "Claude Code가 다음 이유로 중지되었습니다: {{reason}}",
 			"apiKeyModelPlanMismatch": "API keys and subscription plans allow different models. Make sure the selected model is included in your plan.",
-			"notFound": "Claude Code executable '{{claudePath}}' not found.\n\nPlease install Claude Code CLI:\n1. Visit {{installationUrl}} to download Claude Code\n2. Follow the installation instructions for your operating system\n3. Ensure the 'claude' command is available in your PATH\n4. Alternatively, configure a custom path in Roo settings under 'Claude Code Path'\n\nOriginal error: {{originalError}}"
+			"notFound": "Claude Code executable '{{claudePath}}' not found.\n\nPlease install Claude Code CLI:\n1. Visit {{installationUrl}} to download Claude Code\n2. Follow the installation instructions for your operating system\n3. Ensure the 'claude' command is available in your PATH\n4. Alternatively, configure a custom path in Charles settings under 'Claude Code Path'\n\nOriginal error: {{originalError}}"
 		},
 		"gemini": {
 			"generate_stream": "Gemini 생성 컨텍스트 스트림 오류: {{error}}",
@@ -101,8 +101,8 @@
 			"noResponseBody": "Cerebras API 오류: 응답 본문 없음",
 			"completionError": "Cerebras 완료 오류: {{error}}"
 		},
-		"roo": {
-			"authenticationRequired": "Roo 제공업체는 클라우드 인증이 필요합니다. Roo Code Cloud에 로그인하세요."
+		"Charles": {
+			"authenticationRequired": "Charles 제공업체는 클라우드 인증이 필요합니다. Charles Cloud에 로그인하세요."
 		}
 	},
 	"warnings": {
@@ -188,8 +188,8 @@
 	},
 	"mdm": {
 		"errors": {
-			"cloud_auth_required": "조직에서 Roo Code Cloud 인증이 필요합니다. 계속하려면 로그인하세요.",
-			"organization_mismatch": "조직의 Roo Code Cloud 계정으로 인증해야 합니다.",
+			"cloud_auth_required": "조직에서 Charles Cloud 인증이 필요합니다. 계속하려면 로그인하세요.",
+			"organization_mismatch": "조직의 Charles Cloud 계정으로 인증해야 합니다.",
 			"verification_failed": "조직 인증을 확인할 수 없습니다."
 		},
 		"info": {

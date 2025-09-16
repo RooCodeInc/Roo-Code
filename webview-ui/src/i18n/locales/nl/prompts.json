@@ -9,7 +9,7 @@
 		"editModesConfig": "Modusconfiguratie bewerken",
 		"editGlobalModes": "Globale modi bewerken",
 		"editProjectModes": "Projectmodi bewerken (.roomodes)",
-		"createModeHelpText": "Modi zijn gespecialiseerde persona's die het gedrag van Roo aanpassen. <0>Meer informatie over het gebruik van modi</0> of <1>het aanpassen van modi.</1>",
+		"createModeHelpText": "Modi zijn gespecialiseerde persona's die het gedrag van Charles aanpassen. <0>Meer informatie over het gebruik van modi</0> of <1>het aanpassen van modi.</1>",
 		"selectMode": "Modus zoeken"
 	},
 	"apiConfiguration": {
@@ -34,7 +34,7 @@
 	"roleDefinition": {
 		"title": "Roldefinitie",
 		"resetToDefault": "Terugzetten naar standaard",
-		"description": "Definieer Roo's expertise en persoonlijkheid voor deze modus. Deze beschrijving bepaalt hoe Roo zich presenteert en taken benadert."
+		"description": "Definieer Charles's expertise en persoonlijkheid voor deze modus. Deze beschrijving bepaalt hoe Charles zich presenteert en taken benadert."
 	},
 	"description": {
 		"title": "Korte beschrijving (voor mensen)",
@@ -50,7 +50,7 @@
 		"title": "Modusspecifieke instructies (optioneel)",
 		"resetToDefault": "Terugzetten naar standaard",
 		"description": "Voeg gedragsrichtlijnen toe die specifiek zijn voor de modus {{modeName}}.",
-		"loadFromFile": "Aangepaste instructies specifiek voor de {{mode}} modus kunnen ook worden geladen vanuit de map <span>.roo/rules-{{slug}}/</span> in je werkruimte of vanuit de globale <0>.roo/rules-{{slug}}/</0> (.roorules-{{slug}} en .clinerules-{{slug}} zijn verouderd en zullen binnenkort niet meer werken)."
+		"loadFromFile": "Aangepaste instructies specifiek voor de {{mode}} modus kunnen ook worden geladen vanuit de map <span>.Charles/rules-{{slug}}/</span> in je werkruimte of vanuit de globale <0>.Charles/rules-{{slug}}/</0> (.roorules-{{slug}} en .clinerules-{{slug}} zijn verouderd en zullen binnenkort niet meer werken)."
 	},
 	"exportMode": {
 		"title": "Modus exporteren",
@@ -68,7 +68,7 @@
 		},
 		"project": {
 			"label": "Projectniveau",
-			"description": "Alleen beschikbaar in deze werkruimte. Als de geëxporteerde modus regelbestanden bevatte, worden deze opnieuw gemaakt in de map .roo/rules-{slug}/."
+			"description": "Alleen beschikbaar in deze werkruimte. Als de geëxporteerde modus regelbestanden bevatte, worden deze opnieuw gemaakt in de map .Charles/rules-{slug}/."
 		}
 	},
 	"advanced": {
@@ -77,7 +77,7 @@
 	"globalCustomInstructions": {
 		"title": "Aangepaste instructies voor alle modi",
 		"description": "Deze instructies gelden voor alle modi. Ze bieden een basisset aan gedragingen die kunnen worden uitgebreid met modusspecifieke instructies hieronder. <0>Meer informatie</0>",
-		"loadFromFile": "Instructies kunnen ook worden geladen vanuit de map <span>.roo/rules/</span> in je werkruimte of vanuit de globale <0>.roo/rules/</0> (.roorules en .clinerules zijn verouderd en zullen binnenkort niet meer werken)."
+		"loadFromFile": "Instructies kunnen ook worden geladen vanuit de map <span>.Charles/rules/</span> in je werkruimte of vanuit de globale <0>.Charles/rules/</0> (.roorules en .clinerules zijn verouderd en zullen binnenkort niet meer werken)."
 	},
 	"systemPrompt": {
 		"preview": "Systeemprompt bekijken",
@@ -106,7 +106,7 @@
 		"types": {
 			"ENHANCE": {
 				"label": "Prompt verbeteren",
-				"description": "Gebruik promptverbetering om op maat gemaakte suggesties of verbeteringen voor je invoer te krijgen. Zo begrijpt Roo je intentie en krijg je de best mogelijke antwoorden. Beschikbaar via het ✨-icoon in de chat."
+				"description": "Gebruik promptverbetering om op maat gemaakte suggesties of verbeteringen voor je invoer te krijgen. Zo begrijpt Charles je intentie en krijg je de best mogelijke antwoorden. Beschikbaar via het ✨-icoon in de chat."
 			},
 			"CONDENSE": {
 				"label": "Contextcondensatie",
@@ -148,7 +148,7 @@
 	},
 	"advancedSystemPrompt": {
 		"title": "Geavanceerd: Systeemprompt overschrijven",
-		"description": "<2>⚠️ Waarschuwing:</2> Deze geavanceerde functie omzeilt beveiligingen. <1>LEES DIT VOOR GEBRUIK!</1>Overschrijf de standaard systeemprompt door een bestand aan te maken op <span>.roo/system-prompt-{{slug}}</span>."
+		"description": "<2>⚠️ Waarschuwing:</2> Deze geavanceerde functie omzeilt beveiligingen. <1>LEES DIT VOOR GEBRUIK!</1>Overschrijf de standaard systeemprompt door een bestand aan te maken op <span>.Charles/system-prompt-{{slug}}</span>."
 	},
 	"createModeDialog": {
 		"title": "Nieuwe modus aanmaken",
@@ -175,7 +175,7 @@
 		},
 		"roleDefinition": {
 			"label": "Roldefinitie",
-			"description": "Definieer Roo's expertise en persoonlijkheid voor deze modus."
+			"description": "Definieer Charles's expertise en persoonlijkheid voor deze modus."
 		},
 		"whenToUse": {
 			"label": "Wanneer te gebruiken (optioneel)",

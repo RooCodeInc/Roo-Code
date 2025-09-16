@@ -1,5 +1,5 @@
 {
-	"greeting": "Welkom bij Roo Code",
+	"greeting": "Welkom bij Charles",
 	"task": {
 		"title": "Taak",
 		"expand": "Taak uitvouwen",
@@ -21,7 +21,7 @@
 		"sharePublicly": "Openbaar delen",
 		"sharePubliclyDescription": "Iedereen met de link kan toegang krijgen",
 		"connectToCloud": "Verbind met Cloud",
-		"connectToCloudDescription": "Meld je aan bij Roo Code Cloud om taken te delen",
+		"connectToCloudDescription": "Meld je aan bij Charles Cloud om taken te delen",
 		"sharingDisabledByOrganization": "Delen uitgeschakeld door organisatie",
 		"shareSuccessOrganization": "Organisatielink gekopieerd naar klembord",
 		"shareSuccessPublic": "Openbare link gekopieerd naar klembord"
@@ -111,7 +111,7 @@
 		"title": "Modi",
 		"marketplace": "Modus Marktplaats",
 		"settings": "Modus Instellingen",
-		"description": "Gespecialiseerde persona's die het gedrag van Roo aanpassen.",
+		"description": "Gespecialiseerde persona's die het gedrag van Charles aanpassen.",
 		"searchPlaceholder": "Zoek modi...",
 		"noResults": "Geen resultaten gevonden"
 	},
@@ -153,42 +153,42 @@
 		"current": "Huidig"
 	},
 	"instructions": {
-		"wantsToFetch": "Roo wil gedetailleerde instructies ophalen om te helpen met de huidige taak"
+		"wantsToFetch": "Charles wil gedetailleerde instructies ophalen om te helpen met de huidige taak"
 	},
 	"fileOperations": {
-		"wantsToRead": "Roo wil dit bestand lezen:",
-		"wantsToReadOutsideWorkspace": "Roo wil dit bestand buiten de werkruimte lezen:",
-		"didRead": "Roo heeft dit bestand gelezen:",
-		"wantsToEdit": "Roo wil dit bestand bewerken:",
-		"wantsToEditOutsideWorkspace": "Roo wil dit bestand buiten de werkruimte bewerken:",
-		"wantsToEditProtected": "Roo wil een beveiligd configuratiebestand bewerken:",
-		"wantsToCreate": "Roo wil een nieuw bestand aanmaken:",
-		"wantsToSearchReplace": "Roo wil zoeken en vervangen in dit bestand:",
-		"didSearchReplace": "Roo heeft zoeken en vervangen uitgevoerd op dit bestand:",
-		"wantsToInsert": "Roo wil inhoud invoegen in dit bestand:",
-		"wantsToInsertWithLineNumber": "Roo wil inhoud invoegen in dit bestand op regel {{lineNumber}}:",
-		"wantsToInsertAtEnd": "Roo wil inhoud toevoegen aan het einde van dit bestand:",
-		"wantsToReadAndXMore": "Roo wil dit bestand en nog {{count}} andere lezen:",
-		"wantsToReadMultiple": "Roo wil meerdere bestanden lezen:",
-		"wantsToApplyBatchChanges": "Roo wil wijzigingen toepassen op meerdere bestanden:"
+		"wantsToRead": "Charles wil dit bestand lezen:",
+		"wantsToReadOutsideWorkspace": "Charles wil dit bestand buiten de werkruimte lezen:",
+		"didRead": "Charles heeft dit bestand gelezen:",
+		"wantsToEdit": "Charles wil dit bestand bewerken:",
+		"wantsToEditOutsideWorkspace": "Charles wil dit bestand buiten de werkruimte bewerken:",
+		"wantsToEditProtected": "Charles wil een beveiligd configuratiebestand bewerken:",
+		"wantsToCreate": "Charles wil een nieuw bestand aanmaken:",
+		"wantsToSearchReplace": "Charles wil zoeken en vervangen in dit bestand:",
+		"didSearchReplace": "Charles heeft zoeken en vervangen uitgevoerd op dit bestand:",
+		"wantsToInsert": "Charles wil inhoud invoegen in dit bestand:",
+		"wantsToInsertWithLineNumber": "Charles wil inhoud invoegen in dit bestand op regel {{lineNumber}}:",
+		"wantsToInsertAtEnd": "Charles wil inhoud toevoegen aan het einde van dit bestand:",
+		"wantsToReadAndXMore": "Charles wil dit bestand en nog {{count}} andere lezen:",
+		"wantsToReadMultiple": "Charles wil meerdere bestanden lezen:",
+		"wantsToApplyBatchChanges": "Charles wil wijzigingen toepassen op meerdere bestanden:"
 	},
 	"directoryOperations": {
-		"wantsToViewTopLevel": "Roo wil de bovenliggende bestanden in deze map bekijken:",
-		"didViewTopLevel": "Roo heeft de bovenliggende bestanden in deze map bekeken:",
-		"wantsToViewRecursive": "Roo wil alle bestanden in deze map recursief bekijken:",
-		"didViewRecursive": "Roo heeft alle bestanden in deze map recursief bekeken:",
-		"wantsToViewDefinitions": "Roo wil broncode-definitienamen bekijken die in deze map worden gebruikt:",
-		"didViewDefinitions": "Roo heeft broncode-definitienamen bekeken die in deze map worden gebruikt:",
-		"wantsToSearch": "Roo wil deze map doorzoeken op <code>{{regex}}</code>:",
-		"didSearch": "Roo heeft deze map doorzocht op <code>{{regex}}</code>:",
-		"wantsToSearchOutsideWorkspace": "Roo wil deze map (buiten werkruimte) doorzoeken op <code>{{regex}}</code>:",
-		"didSearchOutsideWorkspace": "Roo heeft deze map (buiten werkruimte) doorzocht op <code>{{regex}}</code>:",
-		"wantsToViewTopLevelOutsideWorkspace": "Roo wil de bovenliggende bestanden in deze map (buiten werkruimte) bekijken:",
-		"didViewTopLevelOutsideWorkspace": "Roo heeft de bovenliggende bestanden in deze map (buiten werkruimte) bekeken:",
-		"wantsToViewRecursiveOutsideWorkspace": "Roo wil alle bestanden in deze map (buiten werkruimte) recursief bekijken:",
-		"didViewRecursiveOutsideWorkspace": "Roo heeft alle bestanden in deze map (buiten werkruimte) recursief bekeken:",
-		"wantsToViewDefinitionsOutsideWorkspace": "Roo wil broncode-definitienamen bekijken die in deze map (buiten werkruimte) worden gebruikt:",
-		"didViewDefinitionsOutsideWorkspace": "Roo heeft broncode-definitienamen bekeken die in deze map (buiten werkruimte) worden gebruikt:"
+		"wantsToViewTopLevel": "Charles wil de bovenliggende bestanden in deze map bekijken:",
+		"didViewTopLevel": "Charles heeft de bovenliggende bestanden in deze map bekeken:",
+		"wantsToViewRecursive": "Charles wil alle bestanden in deze map recursief bekijken:",
+		"didViewRecursive": "Charles heeft alle bestanden in deze map recursief bekeken:",
+		"wantsToViewDefinitions": "Charles wil broncode-definitienamen bekijken die in deze map worden gebruikt:",
+		"didViewDefinitions": "Charles heeft broncode-definitienamen bekeken die in deze map worden gebruikt:",
+		"wantsToSearch": "Charles wil deze map doorzoeken op <code>{{regex}}</code>:",
+		"didSearch": "Charles heeft deze map doorzocht op <code>{{regex}}</code>:",
+		"wantsToSearchOutsideWorkspace": "Charles wil deze map (buiten werkruimte) doorzoeken op <code>{{regex}}</code>:",
+		"didSearchOutsideWorkspace": "Charles heeft deze map (buiten werkruimte) doorzocht op <code>{{regex}}</code>:",
+		"wantsToViewTopLevelOutsideWorkspace": "Charles wil de bovenliggende bestanden in deze map (buiten werkruimte) bekijken:",
+		"didViewTopLevelOutsideWorkspace": "Charles heeft de bovenliggende bestanden in deze map (buiten werkruimte) bekeken:",
+		"wantsToViewRecursiveOutsideWorkspace": "Charles wil alle bestanden in deze map (buiten werkruimte) recursief bekijken:",
+		"didViewRecursiveOutsideWorkspace": "Charles heeft alle bestanden in deze map (buiten werkruimte) recursief bekeken:",
+		"wantsToViewDefinitionsOutsideWorkspace": "Charles wil broncode-definitienamen bekijken die in deze map (buiten werkruimte) worden gebruikt:",
+		"didViewDefinitionsOutsideWorkspace": "Charles heeft broncode-definitienamen bekeken die in deze map (buiten werkruimte) worden gebruikt:"
 	},
 	"commandOutput": "Commando-uitvoer",
 	"commandExecution": {
@@ -210,18 +210,18 @@
 	"response": "Antwoord",
 	"arguments": "Argumenten",
 	"mcp": {
-		"wantsToUseTool": "Roo wil een tool gebruiken op de {{serverName}} MCP-server:",
-		"wantsToAccessResource": "Roo wil een bron benaderen op de {{serverName}} MCP-server:"
+		"wantsToUseTool": "Charles wil een tool gebruiken op de {{serverName}} MCP-server:",
+		"wantsToAccessResource": "Charles wil een bron benaderen op de {{serverName}} MCP-server:"
 	},
 	"modes": {
-		"wantsToSwitch": "Roo wil overschakelen naar {{mode}} modus",
-		"wantsToSwitchWithReason": "Roo wil overschakelen naar {{mode}} modus omdat: {{reason}}",
-		"didSwitch": "Roo is overgeschakeld naar {{mode}} modus",
-		"didSwitchWithReason": "Roo is overgeschakeld naar {{mode}} modus omdat: {{reason}}"
+		"wantsToSwitch": "Charles wil overschakelen naar {{mode}} modus",
+		"wantsToSwitchWithReason": "Charles wil overschakelen naar {{mode}} modus omdat: {{reason}}",
+		"didSwitch": "Charles is overgeschakeld naar {{mode}} modus",
+		"didSwitchWithReason": "Charles is overgeschakeld naar {{mode}} modus omdat: {{reason}}"
 	},
 	"subtasks": {
-		"wantsToCreate": "Roo wil een nieuwe subtaak aanmaken in {{mode}} modus:",
-		"wantsToFinish": "Roo wil deze subtaak voltooien",
+		"wantsToCreate": "Charles wil een nieuwe subtaak aanmaken in {{mode}} modus:",
+		"wantsToFinish": "Charles wil deze subtaak voltooien",
 		"newTaskContent": "Subtaak-instructies",
 		"completionContent": "Subtaak voltooid",
 		"resultContent": "Subtaakresultaten",
@@ -229,36 +229,36 @@
 		"completionInstructions": "Subtaak voltooid! Je kunt de resultaten bekijken en eventuele correcties of volgende stappen voorstellen. Als alles goed is, bevestig dan om het resultaat terug te sturen naar de hoofdtaak."
 	},
 	"questions": {
-		"hasQuestion": "Roo heeft een vraag:"
+		"hasQuestion": "Charles heeft een vraag:"
 	},
 	"taskCompleted": "Taak voltooid",
 	"error": "Fout",
 	"diffError": {
 		"title": "Bewerking mislukt"
 	},
-	"troubleMessage": "Roo ondervindt problemen...",
+	"troubleMessage": "Charles ondervindt problemen...",
 	"powershell": {
 		"issues": "Het lijkt erop dat je problemen hebt met Windows PowerShell, zie deze"
 	},
 	"autoApprove": {
 		"title": "Automatisch goedkeuren:",
 		"none": "Geen",
-		"description": "Met automatisch goedkeuren kan Roo Code acties uitvoeren zonder om toestemming te vragen. Schakel dit alleen in voor acties die je volledig vertrouwt. Meer gedetailleerde configuratie beschikbaar in de <settingsLink>Instellingen</settingsLink>.",
+		"description": "Met automatisch goedkeuren kan Charles acties uitvoeren zonder om toestemming te vragen. Schakel dit alleen in voor acties die je volledig vertrouwt. Meer gedetailleerde configuratie beschikbaar in de <settingsLink>Instellingen</settingsLink>.",
 		"selectOptionsFirst": "Selecteer hieronder minstens één optie om automatische goedkeuring in te schakelen",
 		"toggleAriaLabel": "Automatisch goedkeuren in-/uitschakelen",
 		"disabledAriaLabel": "Automatisch goedkeuren uitgeschakeld - selecteer eerst opties"
 	},
 	"announcement": {
-		"title": "🎉 Roo Code {{version}} uitgebracht",
+		"title": "🎉 Charles {{version}} uitgebracht",
 		"stealthModel": {
 			"feature": "Het Sonic stealth model is nu <bold>Grok Code Fast</bold>! Dit hoogperformante redeneermodel is beschikbaar als <code>grok-code-fast-1</code> onder de <bold>xAI (Grok)</bold> provider.",
-			"note": "Als dank voor alle nuttige feedback over Sonic, breidt xAI de gratis toegang tot <code>grok-code-fast-1</code> uit voor nog een week via de <bold>Roo Code Cloud</bold>-provider.",
-			"connectButton": "Verbinden met Roo Code Cloud",
+			"note": "Als dank voor alle nuttige feedback over Sonic, breidt xAI de gratis toegang tot <code>grok-code-fast-1</code> uit voor nog een week via de <bold>Charles Cloud</bold>-provider.",
+			"connectButton": "Verbinden met Charles Cloud",
 			"selectModel": "Ga naar <settingsLink>Instellingen</settingsLink> om je provider configuratie bij te werken."
 		},
-		"description": "Roo Code {{version}} brengt krachtige nieuwe functies en significante verbeteringen om je ontwikkelingsworkflow te verbeteren.",
+		"description": "Charles {{version}} brengt krachtige nieuwe functies en significante verbeteringen om je ontwikkelingsworkflow te verbeteren.",
 		"whatsNew": "Wat is er nieuw",
-		"feature1": "<bold>Berichtenwachtrij</bold>: Zet meerdere berichten in de wachtrij terwijl Roo werkt, zodat je je workflow kunt blijven plannen zonder onderbreking.",
+		"feature1": "<bold>Berichtenwachtrij</bold>: Zet meerdere berichten in de wachtrij terwijl Charles werkt, zodat je je workflow kunt blijven plannen zonder onderbreking.",
 		"feature2": "<bold>Aangepaste Slash Commando's</bold>: Maak gepersonaliseerde slash commando's voor snelle toegang tot veelgebruikte prompts en workflows, met volledige UI-beheer.",
 		"feature3": "<bold>Verbeterde Gemini Tools</bold>: Nieuwe URL-context en Google Search grounding mogelijkheden bieden Gemini modellen realtime webinformatie en verbeterde onderzoeksmogelijkheden.",
 		"hideButton": "Aankondiging verbergen",
@@ -280,7 +280,7 @@
 		"countdownDisplay": "{{count}}s"
 	},
 	"browser": {
-		"rooWantsToUse": "Roo wil de browser gebruiken:",
+		"rooWantsToUse": "Charles wil de browser gebruiken:",
 		"consoleLogs": "Console-logboeken",
 		"noNewLogs": "(Geen nieuwe logboeken)",
 		"screenshot": "Browserschermopname",
@@ -314,24 +314,24 @@
 	"profileViolationWarning": "Het huidige profiel is niet compatibel met de instellingen van uw organisatie",
 	"shellIntegration": {
 		"title": "Waarschuwing commando-uitvoering",
-		"description": "Je commando wordt uitgevoerd zonder VSCode-terminal shell-integratie. Om deze waarschuwing te onderdrukken kun je shell-integratie uitschakelen in het gedeelte <strong>Terminal</strong> van de <settingsLink>Roo Code-instellingen</settingsLink> of de VSCode-terminalintegratie oplossen via de onderstaande link.",
+		"description": "Je commando wordt uitgevoerd zonder VSCode-terminal shell-integratie. Om deze waarschuwing te onderdrukken kun je shell-integratie uitschakelen in het gedeelte <strong>Terminal</strong> van de <settingsLink>Charles-instellingen</settingsLink> of de VSCode-terminalintegratie oplossen via de onderstaande link.",
 		"troubleshooting": "Klik hier voor shell-integratie documentatie."
 	},
 	"ask": {
 		"autoApprovedRequestLimitReached": {
 			"title": "Limiet voor automatisch goedgekeurde verzoeken bereikt",
-			"description": "Roo heeft de automatisch goedgekeurde limiet van {{count}} API-verzoek(en) bereikt. Wil je de teller resetten en doorgaan met de taak?",
+			"description": "Charles heeft de automatisch goedgekeurde limiet van {{count}} API-verzoek(en) bereikt. Wil je de teller resetten en doorgaan met de taak?",
 			"button": "Resetten en doorgaan"
 		},
 		"autoApprovedCostLimitReached": {
 			"title": "Limiet voor automatisch goedgekeurde kosten bereikt",
 			"button": "Resetten en doorgaan",
-			"description": "Roo heeft de automatisch goedgekeurde kostenlimiet van ${{count}} bereikt. Wilt u de kosten resetten en doorgaan met de taak?"
+			"description": "Charles heeft de automatisch goedgekeurde kostenlimiet van ${{count}} bereikt. Wilt u de kosten resetten en doorgaan met de taak?"
 		}
 	},
 	"codebaseSearch": {
-		"wantsToSearch": "Roo wil de codebase doorzoeken op <code>{{query}}</code>:",
-		"wantsToSearchWithPath": "Roo wil de codebase doorzoeken op <code>{{query}}</code> in <code>{{path}}</code>:",
+		"wantsToSearch": "Charles wil de codebase doorzoeken op <code>{{query}}</code>:",
+		"wantsToSearchWithPath": "Charles wil de codebase doorzoeken op <code>{{query}}</code> in <code>{{path}}</code>:",
 		"didSearch_one": "1 resultaat gevonden",
 		"didSearch_other": "{{count}} resultaten gevonden",
 		"resultTooltip": "Gelijkenisscore: {{score}} (klik om bestand te openen)"
@@ -355,7 +355,7 @@
 		"ariaLabel": "Versie {{version}} - Klik om release notes te bekijken"
 	},
 	"rooCloudCTA": {
-		"title": "Roo Code Cloud evolueert!",
+		"title": "Charles Cloud evolueert!",
 		"description": "Voer externe agenten uit in de cloud, krijg overal toegang tot je taken, werk samen met anderen en nog veel meer.",
 		"joinWaitlist": "Meld je aan om de laatste updates te ontvangen."
 	},

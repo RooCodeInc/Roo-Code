@@ -11,9 +11,9 @@
 </sub>
 </div>
 
-# Roo Code'a Katkıda Bulunma
+# Charles'a Katkıda Bulunma
 
-Roo Code, topluluk odaklı bir projedir ve her katkıyı çok önemsiyoruz. İşbirliğini kolaylaştırmak için [Issue-First](#issue-first-yaklaşımı) yaklaşımıyla çalışıyoruz; bu, tüm [Pull Request'lerin (PR'lar)](#pull-request-gönderme) önce bir GitHub Issue'ya bağlanması gerektiği anlamına gelir. Lütfen bu rehberi dikkatlice incele.
+Charles, topluluk odaklı bir projedir ve her katkıyı çok önemsiyoruz. İşbirliğini kolaylaştırmak için [Issue-First](#issue-first-yaklaşımı) yaklaşımıyla çalışıyoruz; bu, tüm [Pull Request'lerin (PR'lar)](#pull-request-gönderme) önce bir GitHub Issue'ya bağlanması gerektiği anlamına gelir. Lütfen bu rehberi dikkatlice incele.
 
 ## İçindekiler
 
@@ -52,10 +52,10 @@ Yol haritamız projenin yönünü belirler. Katkılarını bu temel hedeflerle u
 
 PR'larında bu alanlarla olan bağlantıyı belirt.
 
-### 3. Roo Code Topluluğuna Katıl
+### 3. Charles Topluluğuna Katıl
 
 - **Ana yöntem:** [Discord](https://discord.gg/roocode)'umuza katıl ve **Hannes Rudolph (`hrudolph`)**'a DM gönder.
-- **Alternatif:** Deneyimli katkı sağlayanlar [GitHub Projects](https://github.com/orgs/RooCodeInc/projects/1) üzerinden doğrudan katılabilir.
+- **Alternatif:** Deneyimli katkı sağlayanlar [GitHub Projects](https://github.com/Newton-School/charles) üzerinden doğrudan katılabilir.
 
 ## Katkı Bulma & Planlama
 
@@ -80,7 +80,7 @@ Tüm katkılar bir GitHub Issue ile başlamalıdır.
 ### Ne Üzerinde Çalışacağına Karar Verme
 
 - [GitHub Projesi](https://github.com/orgs/RooCodeInc/projects/1)'nde atanmamış "Good First Issues" bak.
-- Dokümantasyon için [Roo Code Docs](https://github.com/RooCodeInc/Roo-Code-Docs)'u ziyaret et.
+- Dokümantasyon için [Charles Docs](https://github.com/Newton-School/charles)'u ziyaret et.
 
 ### Hata veya Sorun Bildirme
 
@@ -135,4 +135,4 @@ npm run install:all
 
 ## Yasal
 
-Pull request göndererek, katkılarının Roo Code'un lisanslamasıyla tutarlı olarak Apache 2.0 Lisansı altında lisanslanacağını kabul etmiş olursun.
+Pull request göndererek, katkılarının Charles'un lisanslamasıyla tutarlı olarak Apache 2.0 Lisansı altında lisanslanacağını kabul etmiş olursun.

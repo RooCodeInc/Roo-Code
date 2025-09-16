@@ -12,7 +12,7 @@
 </div>
 <br>
 <div align="center">
-  <h1>Roo Code</h1>
+  <h1>Charles</h1>
   <p align="center">
   <img src="https://media.githubusercontent.com/media/RooCodeInc/Roo-Code/main/src/assets/docs/demo.gif" width="100%" />
   </p>
@@ -34,7 +34,7 @@
 
 </div>
 
-**Roo Code** adalah **agen coding otonom** bertenaga AI yang hidup di editor kamu. Ia dapat:
+**Charles** adalah **agen coding otonom** bertenaga AI yang hidup di editor kamu. Ia dapat:
 
 - Berkomunikasi dalam bahasa alami
 - Membaca dan menulis file langsung di workspace kamu
@@ -43,15 +43,15 @@
 - Terintegrasi dengan API/model yang kompatibel dengan OpenAI atau custom
 - Menyesuaikan "kepribadian" dan kemampuannya melalui **Mode Kustom**
 
-Baik kamu mencari partner coding yang fleksibel, arsitek sistem, atau peran khusus seperti QA engineer atau product manager, Roo Code dapat membantu kamu membangun software dengan lebih efisien.
+Baik kamu mencari partner coding yang fleksibel, arsitek sistem, atau peran khusus seperti QA engineer atau product manager, Charles dapat membantu kamu membangun software dengan lebih efisien.
 
 Lihat [CHANGELOG](../../CHANGELOG.md) untuk update dan perbaikan detail.
 
 ---
 
-## 🎉 Roo Code 3.25 Dirilis
+## 🎉 Charles 3.25 Dirilis
 
-Roo Code 3.25 menghadirkan fitur-fitur baru yang powerful dan peningkatan signifikan untuk meningkatkan workflow development kamu!
+Charles 3.25 menghadirkan fitur-fitur baru yang powerful dan peningkatan signifikan untuk meningkatkan workflow development kamu!
 
 - **Antrian pesan** - Antrikan beberapa pesan saat Roo bekerja, memungkinkan kamu terus merencanakan alur kerja tanpa gangguan.
 - **Perintah slash kustom** - Buat perintah slash yang dipersonalisasi untuk akses cepat ke prompt dan alur kerja yang sering digunakan dengan manajemen UI lengkap.
@@ -59,7 +59,7 @@ Roo Code 3.25 menghadirkan fitur-fitur baru yang powerful dan peningkatan signif
 
 ---
 
-## Apa yang Bisa Dilakukan Roo Code?
+## Apa yang Bisa Dilakukan Charles?
 
 - 🚀 **Generate Code** dari deskripsi bahasa alami
 - 🔧 **Refactor & Debug** kode yang ada
@@ -70,7 +70,7 @@ Roo Code 3.25 menghadirkan fitur-fitur baru yang powerful dan peningkatan signif
 
 ## Mulai Cepat
 
-1. [Install Roo Code](https://docs.roocode.com/getting-started/installing)
+1. [Install Charles](https://docs.roocode.com/getting-started/installing)
 2. [Hubungkan AI Provider Kamu](https://docs.roocode.com/getting-started/connecting-api-provider)
 3. [Coba Tugas Pertama Kamu](https://docs.roocode.com/getting-started/your-first-task)
 
@@ -78,7 +78,7 @@ Roo Code 3.25 menghadirkan fitur-fitur baru yang powerful dan peningkatan signif
 
 ### Multiple Mode
 
-Roo Code beradaptasi dengan kebutuhan kamu dengan [mode](https://docs.roocode.com/basic-usage/using-modes) khusus:
+Charles beradaptasi dengan kebutuhan kamu dengan [mode](https://docs.roocode.com/basic-usage/using-modes) khusus:
 
 - **Code Mode:** Untuk tugas coding umum
 - **Architect Mode:** Untuk perencanaan dan kepemimpinan teknis
@@ -88,18 +88,18 @@ Roo Code beradaptasi dengan kebutuhan kamu dengan [mode](https://docs.roocode.co
 
 ### Tools Pintar
 
-Roo Code dilengkapi dengan [tools](https://docs.roocode.com/basic-usage/how-tools-work) powerful yang dapat:
+Charles dilengkapi dengan [tools](https://docs.roocode.com/basic-usage/how-tools-work) powerful yang dapat:
 
 - Membaca dan menulis file di proyek kamu
 - Menjalankan perintah di terminal VS Code kamu
 - Mengontrol web browser
 - Menggunakan tools eksternal via [MCP (Model Context Protocol)](https://docs.roocode.com/advanced-usage/mcp)
 
-MCP memperluas kemampuan Roo Code dengan memungkinkan kamu menambahkan tools kustom tak terbatas. Integrasikan dengan API eksternal, hubungkan ke database, atau buat tools development khusus - MCP menyediakan framework untuk memperluas fungsionalitas Roo Code sesuai kebutuhan spesifik kamu.
+MCP memperluas kemampuan Charles dengan memungkinkan kamu menambahkan tools kustom tak terbatas. Integrasikan dengan API eksternal, hubungkan ke database, atau buat tools development khusus - MCP menyediakan framework untuk memperluas fungsionalitas Charles sesuai kebutuhan spesifik kamu.
 
 ### Kustomisasi
 
-Buat Roo Code bekerja sesuai cara kamu dengan:
+Buat Charles bekerja sesuai cara kamu dengan:
 
 - [Custom Instructions](https://docs.roocode.com/advanced-usage/custom-instructions) untuk perilaku yang dipersonalisasi
 - [Mode Kustom](https://docs.roocode.com/advanced-usage/custom-modes) untuk tugas khusus
@@ -138,7 +138,7 @@ pnpm install
 
 3. **Jalankan extension**:
 
-Tekan `F5` (atau **Run** → **Start Debugging**) di VSCode untuk membuka window baru dengan Roo Code berjalan.
+Tekan `F5` (atau **Run** → **Start Debugging**) di VSCode untuk membuka window baru dengan Charles berjalan.
 
 Perubahan pada webview akan muncul langsung. Perubahan pada core extension akan memerlukan restart extension host.
 
@@ -160,7 +160,7 @@ Kami menggunakan [changesets](https://github.com/changesets/changesets) untuk ve
 
 ## Disclaimer
 
-**Harap dicatat** bahwa Roo Code, Inc **tidak** membuat representasi atau jaminan apapun mengenai kode, model, atau tools lain yang disediakan atau tersedia dalam hubungannya dengan Roo Code, tools pihak ketiga terkait, atau output yang dihasilkan. Kamu menanggung **semua risiko** yang terkait dengan penggunaan tools atau output tersebut; tools tersebut disediakan atas dasar **"SEBAGAIMANA ADANYA"** dan **"SEBAGAIMANA TERSEDIA"**. Risiko tersebut dapat mencakup, tanpa terbatas pada, pelanggaran kekayaan intelektual, kerentanan atau serangan siber, bias, ketidakakuratan, kesalahan, cacat, virus, downtime, kehilangan properti atau kerusakan, dan/atau cedera pribadi. Kamu bertanggung jawab penuh atas penggunaan tools atau output tersebut (termasuk, tanpa terbatas pada, legalitas, kesesuaian, dan hasilnya).
+**Harap dicatat** bahwa Charles, Inc **tidak** membuat representasi atau jaminan apapun mengenai kode, model, atau tools lain yang disediakan atau tersedia dalam hubungannya dengan Charles, tools pihak ketiga terkait, atau output yang dihasilkan. Kamu menanggung **semua risiko** yang terkait dengan penggunaan tools atau output tersebut; tools tersebut disediakan atas dasar **"SEBAGAIMANA ADANYA"** dan **"SEBAGAIMANA TERSEDIA"**. Risiko tersebut dapat mencakup, tanpa terbatas pada, pelanggaran kekayaan intelektual, kerentanan atau serangan siber, bias, ketidakakuratan, kesalahan, cacat, virus, downtime, kehilangan properti atau kerusakan, dan/atau cedera pribadi. Kamu bertanggung jawab penuh atas penggunaan tools atau output tersebut (termasuk, tanpa terbatas pada, legalitas, kesesuaian, dan hasilnya).
 
 ---
 
@@ -172,7 +172,7 @@ Kami menyukai kontribusi komunitas! Mulai dengan membaca [CONTRIBUTING.md](CONTR
 
 ## Kontributor
 
-Terima kasih kepada semua kontributor kami yang telah membantu membuat Roo Code lebih baik!
+Terima kasih kepada semua kontributor kami yang telah membantu membuat Charles lebih baik!
 
 <!-- START CONTRIBUTORS SECTION - AUTO-GENERATED, DO NOT EDIT MANUALLY -->
 
@@ -222,8 +222,8 @@ Terima kasih kepada semua kontributor kami yang telah membantu membuat Roo Code 
 
 ## License
 
-[Apache 2.0 © 2025 Roo Code, Inc.](./LICENSE)
+[Apache 2.0 © 2025 Charles, Inc.](./LICENSE)
 
 ---
 
-**Nikmati Roo Code!** Baik kamu menggunakannya dengan ketat atau membiarkannya berjalan otonom, kami tidak sabar melihat apa yang kamu bangun. Jika kamu memiliki pertanyaan atau ide fitur, kunjungi [komunitas Reddit](https://www.reddit.com/r/RooCode/) atau [Discord](https://discord.gg/roocode) kami. Selamat coding!
+**Nikmati Charles!** Baik kamu menggunakannya dengan ketat atau membiarkannya berjalan otonom, kami tidak sabar melihat apa yang kamu bangun. Jika kamu memiliki pertanyaan atau ide fitur, kunjungi [komunitas Reddit](https://www.reddit.com/r/RooCode/) atau [Discord](https://discord.gg/roocode) kami. Selamat coding!

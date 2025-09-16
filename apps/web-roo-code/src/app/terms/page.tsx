@@ -3,7 +3,7 @@ import { SEO } from "@/lib/seo"
 
 const TITLE = "Terms of Service"
 const DESCRIPTION =
-	"Terms of Service for Roo Code Cloud. Learn about our service terms, commercial conditions, and legal framework."
+	"Terms of Service for Charles Cloud. Learn about our service terms, commercial conditions, and legal framework."
 const PATH = "/terms"
 const OG_IMAGE = SEO.ogImage
 
@@ -44,20 +44,20 @@ export default function Terms() {
 			<div className="container mx-auto px-4 py-12 sm:px-6 lg:px-8">
 				<div className="prose prose-lg mx-auto max-w-4xl dark:prose-invert">
 					<h1 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
-						Roo Code Cloud Terms of Service
+						Charles Cloud Terms of Service
 					</h1>
 					<p className="text-muted-foreground">
 						<em>(Version 1.0 – Effective June 19, 2025)</em>
 					</p>
 
 					<p className="lead">
-						These Terms of Service (&quot;<strong>TOS</strong>&quot;) govern access to and use of the Roo
-						Code Cloud service (the &quot;<strong>Service</strong>&quot;). They apply to:
+						These Terms of Service (&quot;<strong>TOS</strong>&quot;) govern access to and use of the
+						Charles Code Cloud service (the &quot;<strong>Service</strong>&quot;). They apply to:
 					</p>
 					<ul className="lead">
 						<li>
 							<strong>(a)</strong> every <strong>Sales Order Form</strong> or similar document mutually
-							executed by Roo Code and the customer that references these TOS; <strong>and</strong>
+							executed by Charles and the customer that references these TOS; <strong>and</strong>
 						</li>
 						<li>
 							<strong>(b)</strong> any{" "}
@@ -74,7 +74,7 @@ export default function Terms() {
 					</p>
 
 					<p>
-						If Roo Code and Customer later execute a Master Subscription Agreement (&quot;
+						If Charles and Customer later execute a Master Subscription Agreement (&quot;
 						<strong>MSA</strong>&quot;), the MSA governs; otherwise, these TOS and the applicable Order Form
 						together form the entire agreement (the &quot;<strong>Agreement</strong>&quot;).
 					</p>
@@ -189,14 +189,14 @@ export default function Terms() {
 								<tr className="bg-muted/25">
 									<td className="border border-border px-4 py-2 font-medium">Security Standard</td>
 									<td className="border border-border px-4 py-2">
-										Roo Code maintains commercially reasonable administrative, physical, and
+										Charles maintains commercially reasonable administrative, physical, and
 										technical safeguards
 									</td>
 								</tr>
 								<tr>
 									<td className="border border-border px-4 py-2 font-medium">Machine-Learning Use</td>
 									<td className="border border-border px-4 py-2">
-										Roo Code <strong>does not</strong> use Customer Content to train, fine-tune, or
+										Charles <strong>does not</strong> use Customer Content to train, fine-tune, or
 										improve any ML or AI models
 									</td>
 								</tr>
@@ -213,7 +213,7 @@ export default function Terms() {
 										Publicity / Logo Rights
 									</td>
 									<td className="border border-border px-4 py-2">
-										Roo Code may identify Customer (name & logo) in marketing materials unless
+										Charles may identify Customer (name & logo) in marketing materials unless
 										Customer opts out in writing
 									</td>
 								</tr>
@@ -247,7 +247,7 @@ export default function Terms() {
 						<li>
 							<strong>Sections 7 (Trials / Betas) and any SLA references.</strong>
 							<br />
-							Deleted – Roo Code offers no trials, pilots, betas, or SLA credits under these TOS.
+							Deleted – Charles offers no trials, pilots, betas, or SLA credits under these TOS.
 						</li>
 						<li>
 							<strong>Section 12.12 (Publicity).</strong>
@@ -278,14 +278,14 @@ export default function Terms() {
 
 					<h2 className="mt-12 text-2xl font-bold">6. Privacy & Data</h2>
 					<p>
-						Roo Code&apos;s Privacy Notice (
+						Charles&apos;s Privacy Notice (
 						<a
 							href="https://roocode.com/privacy"
 							rel="noopener noreferrer"
 							className="text-primary hover:underline">
 							https://roocode.com/privacy
 						</a>
-						) explains how Roo Code collects and handles personal information. If Customer requires a DPA,
+						) explains how Charles collects and handles personal information. If Customer requires a DPA,
 						email{" "}
 						<a href="mailto:support@roocode.com" className="text-primary hover:underline">
 							support@roocode.com
@@ -311,7 +311,7 @@ export default function Terms() {
 						<li>
 							<strong>Assignment.</strong>
 							<br />
-							Customer may not assign the Agreement without Roo Code&apos;s prior written consent, except
+							Customer may not assign the Agreement without Charles&apos;s prior written consent, except
 							to a successor in a merger or sale of substantially all assets.
 						</li>
 						<li>
@@ -328,7 +328,7 @@ export default function Terms() {
 						<li>
 							<strong>Amendments.</strong>
 							<br />
-							Roo Code may update these TOS by posting a revised version at the same URL and emailing or
+							Charles may update these TOS by posting a revised version at the same URL and emailing or
 							in-app notifying Customer at least 30 days before changes take effect. Continued use after
 							the effective date constitutes acceptance.
 						</li>
@@ -336,7 +336,7 @@ export default function Terms() {
 
 					<h2 className="mt-12 text-2xl font-bold">10. Contact</h2>
 					<p>
-						<strong>Roo Code, Inc.</strong>
+						<strong>Charles, Inc.</strong>
 						<br />
 						98 Graceland Dr, San Rafael, CA 94901 USA
 						<br />

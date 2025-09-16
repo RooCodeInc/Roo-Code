@@ -3,9 +3,9 @@
 		"invalid_settings_format": "Ungültiges MCP-Einstellungen-JSON-Format. Bitte stelle sicher, dass deine Einstellungen dem korrekten JSON-Format entsprechen.",
 		"invalid_settings_syntax": "Ungültiges MCP-Einstellungen-JSON-Format. Bitte überprüfe deine Einstellungsdatei auf Syntaxfehler.",
 		"invalid_settings_validation": "Ungültiges MCP-Einstellungen-Format: {{errorMessages}}",
-		"create_json": "Fehler beim Erstellen oder Öffnen von .roo/mcp.json: {{error}}",
+		"create_json": "Fehler beim Erstellen oder Öffnen von .Charles/mcp.json: {{error}}",
 		"failed_update_project": "Fehler beim Aktualisieren der Projekt-MCP-Server",
-		"invalidJsonArgument": "Roo hat versucht, {{toolName}} mit einem ungültigen JSON-Argument zu verwenden. Wiederhole...",
+		"invalidJsonArgument": "Charles hat versucht, {{toolName}} mit einem ungültigen JSON-Argument zu verwenden. Wiederhole...",
 		"refresh_after_disable": "Fehler beim Aktualisieren der MCP-Verbindungen nach dem Deaktivieren",
 		"refresh_after_enable": "Fehler beim Aktualisieren der MCP-Verbindungen nach dem Aktivieren",
 		"disconnect_servers_partial": "Fehler beim Trennen von {{count}} MCP-Server(n). Überprüfe die Ausgabe für Details."

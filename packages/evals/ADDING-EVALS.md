@@ -1,6 +1,6 @@
 # Adding Additional Evals Exercises
 
-This guide explains how to add new coding exercises to the Roo Code evals system. The evals system is a distributed evaluation platform that runs AI coding tasks in isolated VS Code environments to test AI coding capabilities across multiple programming languages.
+This guide explains how to add new coding exercises to the Charles evals system. The evals system is a distributed evaluation platform that runs AI coding tasks in isolated VS Code environments to test AI coding capabilities across multiple programming languages.
 
 ## Table of Contents
 
@@ -32,7 +32,7 @@ The key principle is that the tests define the contract - if all tests pass, the
 
 The evals system consists of several key components:
 
-- **Exercises Repository**: [`Roo-Code-Evals`](https://github.com/RooCodeInc/Roo-Code-Evals) - Contains all exercise definitions
+- **Exercises Repository**: [`Charles-Code-Evals`](https://github.com/Newton-School/charles) - Contains all exercise definitions
 - **Web Interface**: [`apps/web-evals`](../apps/web-evals) - Management interface for creating and monitoring evaluation runs
 - **Evals Package**: [`packages/evals`](../packages/evals) - Contains both controller logic for orchestrating evaluation runs and runner container code for executing individual tasks
 - **Docker Configuration**: Container definitions for the `controller` and `runner` as well as a Docker Compose file that provisions Postgres and Redis instances required for eval runs.
@@ -49,7 +49,7 @@ The system currently supports these programming languages:
 
 ## Adding Exercises to Existing Languages
 
-TL;DR - Here's a pull request that adds a new JavaScript eval: https://github.com/RooCodeInc/Roo-Code-Evals/pull/3
+TL;DR - Here's a pull request that adds a new JavaScript eval: https://github.com/Newton-School/charles/pull/3
 
 ### Step 1: Understand the Exercise Structure
 
@@ -70,7 +70,7 @@ Each exercise follows a standardized directory structure:
 1. **Clone the evals repository**:
 
     ```bash
-    git clone https://github.com/RooCodeInc/Roo-Code-Evals.git evals
+    git clone https://github.com/Newton-School/charles.git evals
     cd evals
     ```
 
@@ -217,7 +217,7 @@ go 1.18
 [project]
 name = "python-exercises"
 version = "0.1.0"
-description = "Python exercises for Roo Code evals"
+description = "Python exercises for Charles evals"
 requires-python = ">=3.9"
 dependencies = [
     "pytest>=8.3.5",
@@ -246,7 +246,7 @@ The tests should **fail** with the stub implementation and **pass** when properl
 
 ## Adding Support for New Programming Languages
 
-Adding a new programming language requires changes to both the evals repository and the main Roo Code repository.
+Adding a new programming language requires changes to both the evals repository and the main Charles repository.
 
 ### Step 1: Update Language Configuration
 

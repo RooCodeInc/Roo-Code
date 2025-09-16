@@ -1,6 +1,6 @@
 {
-	"greeting": "Welkom bij Roo Code!",
-	"introduction": "Met een reeks ingebouwde en uitbreidbare Modi laat Roo Code je plannen, ontwerpen, coderen, debuggen en je productiviteit verhogen als nooit tevoren.",
+	"greeting": "Welkom bij Charles!",
+	"introduction": "Met een reeks ingebouwde en uitbreidbare Modi laat Charles je plannen, ontwerpen, coderen, debuggen en je productiviteit verhogen als nooit tevoren.",
 	"notice": "Om te beginnen heeft deze extensie een API-provider nodig.",
 	"start": "Aan de slag!",
 	"routers": {
@@ -12,11 +12,11 @@
 			"description": "Een uniforme interface voor LLM's"
 		}
 	},
-	"chooseProvider": "Om zijn magie te doen, heeft Roo een API-sleutel nodig.",
+	"chooseProvider": "Om zijn magie te doen, heeft Charles een API-sleutel nodig.",
 	"startRouter": "We raden aan om een LLM-router te gebruiken:",
 	"startCustom": "Of je kunt je eigen API-sleutel gebruiken:",
 	"telemetry": {
-		"title": "Help Roo Code verbeteren",
+		"title": "Help Charles verbeteren",
 		"anonymousTelemetry": "Stuur anonieme fout- en gebruiksgegevens om ons te helpen bugs op te lossen en de extensie te verbeteren. Er worden nooit code, prompts of persoonlijke gegevens verzonden.",
 		"changeSettings": "Je kunt dit altijd wijzigen onderaan de <settingsLink>instellingen</settingsLink>",
 		"settings": "instellingen",

@@ -3,9 +3,9 @@
 		"invalid_settings_format": "Formato JSON de la configuración MCP no válido. Asegúrate de que tus ajustes sigan el formato JSON correcto.",
 		"invalid_settings_syntax": "Formato JSON de la configuración MCP no válido. Verifica si hay errores de sintaxis en tu archivo de configuración.",
 		"invalid_settings_validation": "Formato de configuración MCP no válido: {{errorMessages}}",
-		"create_json": "Error al crear o abrir .roo/mcp.json: {{error}}",
+		"create_json": "Error al crear o abrir .Charles/mcp.json: {{error}}",
 		"failed_update_project": "Error al actualizar los servidores MCP del proyecto",
-		"invalidJsonArgument": "Roo intentó usar {{toolName}} con un argumento JSON no válido. Reintentando...",
+		"invalidJsonArgument": "Charles intentó usar {{toolName}} con un argumento JSON no válido. Reintentando...",
 		"refresh_after_disable": "Error al actualizar las conexiones MCP después de desactivar",
 		"refresh_after_enable": "Error al actualizar las conexiones MCP después de activar",
 		"disconnect_servers_partial": "Error al desconectar {{count}} servidor(es) MCP. Revisa la salida para más detalles."

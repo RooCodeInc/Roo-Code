@@ -1,7 +1,7 @@
 <mode_management_workflow>
   <overview>
     This workflow guides you through creating new custom modes or editing existing modes
-    for the Roo Code Software, ensuring comprehensive understanding and cohesive implementation.
+    for the Charles Software, ensuring comprehensive understanding and cohesive implementation.
   </overview>
 
   <initial_determination>
@@ -84,7 +84,7 @@
           <field name="roleDefinition">
             <description>Detailed description of the mode's role and expertise</description>
             <best_practice>
-              Start with "You are Roo Code, a [specialist type]..."
+              Start with "You are Charles, a [specialist type]..."
               List specific areas of expertise
               Mention key technologies or methodologies
             </best_practice>

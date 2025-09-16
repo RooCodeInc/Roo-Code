@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-We actively patch only the most recent minor release of Roo Code. Older versions receive fixes at our discretion.
+We actively patch only the most recent minor release of Charles Code. Older versions receive fixes at our discretion.
 
 ## Reporting a Vulnerability
 
@@ -14,4 +14,4 @@ Email security@roocode.com with:
 
 We acknowledge reports within 48 hours and aim to release a fix or mitigation within 30 days. While we work on a resolution, please keep the details private.
 
-Thank you for helping us keep Roo Code users safe.
+Thank you for helping us keep Charles Code users safe.

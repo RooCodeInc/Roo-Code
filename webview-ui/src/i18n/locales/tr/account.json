@@ -3,15 +3,15 @@
 	"profilePicture": "Profil resmi",
 	"logOut": "Çıkış yap",
 	"testApiAuthentication": "API Kimlik Doğrulamayı Test Et",
-	"signIn": "Roo Code Cloud'a bağlan",
+	"signIn": "Charles Cloud'a bağlan",
 	"connect": "Bağlan",
-	"cloudBenefitsTitle": "Roo Code Cloud'a bağlan",
+	"cloudBenefitsTitle": "Charles Cloud'a bağlan",
 	"cloudBenefitsSubtitle": "Aşağıdakileri etkinleştirmek için promptlarını ve telemetriyi senkronize et:",
 	"cloudBenefitHistory": "Çevrimiçi görev geçmişi",
 	"cloudBenefitSharing": "Paylaşım ve işbirliği özellikleri",
 	"cloudBenefitMetrics": "Görev, token ve maliyet tabanlı kullanım metrikleri",
 	"cloudBenefitWalkaway": "Roomote Control ile görevleri her yerden takip et ve kontrol et",
 	"remoteControl": "Roomote Control",
-	"remoteControlDescription": "Bu çalışma alanındaki görevleri Roo Code Cloud ile takip etme ve etkileşim kurma imkanı sağlar",
-	"visitCloudWebsite": "Roo Code Cloud'u ziyaret et"
+	"remoteControlDescription": "Bu çalışma alanındaki görevleri Charles Cloud ile takip etme ve etkileşim kurma imkanı sağlar",
+	"visitCloudWebsite": "Charles Cloud'u ziyaret et"
 }

@@ -2,16 +2,16 @@
 	"title": "Serveurs MCP",
 	"done": "Terminé",
 	"marketplace": "Marché MCP",
-	"description": "Le <0>Model Context Protocol</0> permet la communication avec des serveurs MCP exécutés localement qui fournissent des outils et des ressources supplémentaires pour étendre les capacités de Roo. Vous pouvez utiliser <1>des serveurs créés par la communauté</1> ou demander à Roo de créer de nouveaux outils spécifiques à votre flux de travail (par exemple, \"ajouter un outil qui récupère la dernière documentation npm\").",
+	"description": "Le <0>Model Context Protocol</0> permet la communication avec des serveurs MCP exécutés localement qui fournissent des outils et des ressources supplémentaires pour étendre les capacités de Charles. Vous pouvez utiliser <1>des serveurs créés par la communauté</1> ou demander à Charles de créer de nouveaux outils spécifiques à votre flux de travail (par exemple, \"ajouter un outil qui récupère la dernière documentation npm\").",
 	"instructions": "Instructions",
 	"enableToggle": {
 		"title": "Activer les serveurs MCP",
-		"description": "Active cette option pour que Roo puisse utiliser des outils provenant de serveurs MCP connectés. Cela donne plus de capacités à Roo. Si tu ne comptes pas utiliser ces outils supplémentaires, désactive-la pour réduire les coûts de tokens API."
+		"description": "Active cette option pour que Charles puisse utiliser des outils provenant de serveurs MCP connectés. Cela donne plus de capacités à Charles. Si tu ne comptes pas utiliser ces outils supplémentaires, désactive-la pour réduire les coûts de tokens API."
 	},
 	"enableServerCreation": {
 		"title": "Activer la création de serveurs MCP",
-		"description": "Active cette option pour que Roo t'aide à créer de <1>nouveaux</1> serveurs MCP personnalisés. <0>En savoir plus sur la création de serveurs</0>",
-		"hint": "Astuce : Pour réduire les coûts de tokens API, désactive cette option quand tu ne demandes pas à Roo de créer un nouveau serveur MCP."
+		"description": "Active cette option pour que Charles t'aide à créer de <1>nouveaux</1> serveurs MCP personnalisés. <0>En savoir plus sur la création de serveurs</0>",
+		"hint": "Astuce : Pour réduire les coûts de tokens API, désactive cette option quand tu ne demandes pas à Charles de créer un nouveau serveur MCP."
 	},
 	"editGlobalMCP": "Modifier le MCP global",
 	"editProjectMCP": "Modifier le MCP du projet",

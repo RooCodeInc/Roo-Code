@@ -6,7 +6,7 @@
 		"imageTooLarge": "Afbeeldingsbestand is te groot ({{size}} MB). De maximaal toegestane grootte is {{max}} MB.",
 		"imageWithSize": "Afbeeldingsbestand ({{size}} KB)"
 	},
-	"toolRepetitionLimitReached": "Roo lijkt vast te zitten in een lus, waarbij hij herhaaldelijk dezelfde actie ({{toolName}}) probeert. Dit kan duiden op een probleem met de huidige strategie. Overweeg de taak te herformuleren, specifiekere instructies te geven of Roo naar een andere aanpak te leiden.",
+	"toolRepetitionLimitReached": "Charles lijkt vast te zitten in een lus, waarbij hij herhaaldelijk dezelfde actie ({{toolName}}) probeert. Dit kan duiden op een probleem met de huidige strategie. Overweeg de taak te herformuleren, specifiekere instructies te geven of Charles naar een andere aanpak te leiden.",
 	"codebaseSearch": {
 		"approval": "Zoeken naar '{{query}}' in codebase..."
 	},

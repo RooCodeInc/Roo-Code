@@ -47,17 +47,17 @@ export function InstallSection({ downloads }: InstallSectionProps) {
 						<div className="relative text-center">
 							{/* Updated h2 to match other sections */}
 							<h2 className="bg-gradient-to-b from-foreground to-foreground/70 bg-clip-text text-4xl font-bold tracking-tight text-transparent sm:text-5xl">
-								Install Roo Code — Open & Flexible
+								Install Charles — Open & Flexible
 							</h2>
 							<p className="mt-6 text-lg text-muted-foreground">
-								Roo Code is open-source, model-agnostic, and developer-focused. Install from the VS Code
+								Charles is open-source, model-agnostic, and developer-focused. Install from the VS Code
 								Marketplace or the CLI in minutes, then bring your own AI model.
 							</p>
 
 							<div className="mt-12 flex flex-col items-center justify-center gap-6">
 								{/* Enhanced VSCode Marketplace button */}
 								<Link
-									href="https://marketplace.visualstudio.com/items?itemName=RooVeterinaryInc.roo-cline"
+									href="https://marketplace.visualstudio.com/items?itemName=NewtonSchool.charles"
 									target="_blank"
 									className="group relative inline-flex w-full items-center justify-center gap-3 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 px-6 py-4 text-lg font-medium text-white shadow-lg transition-all duration-300 hover:from-blue-700 hover:to-cyan-700 hover:shadow-xl hover:shadow-blue-500/25 dark:from-blue-500 dark:to-cyan-500 dark:hover:from-blue-600 dark:hover:to-cyan-600 sm:w-auto sm:px-8 sm:text-xl">
 									<div className="absolute -inset-px rounded-xl bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-400 opacity-0 blur transition-opacity duration-500 group-hover:opacity-70" />
@@ -85,7 +85,7 @@ export function InstallSection({ downloads }: InstallSectionProps) {
 										<div className="overflow-x-auto bg-background/50 dark:bg-background/30">
 											<pre className="p-4">
 												<code className="whitespace-pre-wrap break-all text-sm font-mono text-foreground sm:break-normal sm:text-base">
-													code --install-extension RooVeterinaryInc.roo-cline
+													code --install-extension NewtonSchool.Charles
 												</code>
 											</pre>
 										</div>

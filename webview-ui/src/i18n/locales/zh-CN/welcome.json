@@ -1,6 +1,6 @@
 {
-	"greeting": "欢迎使用 Roo Code！",
-	"introduction": "通过一系列内置和可扩展的模式，Roo Code 让你能够以前所未有的方式进行规划、架构设计、编码、调试并提升工作效率。",
+	"greeting": "欢迎使用 Charles！",
+	"introduction": "通过一系列内置和可扩展的模式，Charles 让你能够以前所未有的方式进行规划、架构设计、编码、调试并提升工作效率。",
 	"notice": "请先配置大语言模型API提供商",
 	"start": "开始吧！",
 	"routers": {
@@ -12,11 +12,11 @@
 			"description": "统一了大语言模型的接口"
 		}
 	},
-	"chooseProvider": "Roo 需要一个 API 密钥才能发挥魔力。",
+	"chooseProvider": "Charles 需要一个 API 密钥才能发挥魔力。",
 	"startRouter": "我们推荐使用 LLM 路由器：",
 	"startCustom": "或者你可以使用自己的 API 密钥：",
 	"telemetry": {
-		"title": "帮助改进 Roo Code",
+		"title": "帮助改进 Charles",
 		"anonymousTelemetry": "发送匿名的错误和使用数据，以帮助我们修复错误并改进扩展程序。不会涉及代码、提示词或个人隐私信息。",
 		"changeSettings": "可以随时在<settingsLink>设置</settingsLink>页面底部更改此设置",
 		"settings": "设置",

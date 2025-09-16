@@ -1,10 +1,10 @@
 {
 	"input": {
-		"task_prompt": "Què vols que faci Roo?",
+		"task_prompt": "Què vols que faci Charles?",
 		"task_placeholder": "Escriu la teva tasca aquí"
 	},
 	"extension": {
-		"name": "Roo Code",
+		"name": "Charles",
 		"description": "Tot un equip de desenvolupadors d'IA al teu editor."
 	},
 	"number_format": {
@@ -88,7 +88,7 @@
 			"processExitedWithError": "El procés Claude Code ha sortit amb codi {{exitCode}}. Sortida d'error: {{output}}",
 			"stoppedWithReason": "Claude Code s'ha aturat per la raó: {{reason}}",
 			"apiKeyModelPlanMismatch": "Les claus API i els plans de subscripció permeten models diferents. Assegura't que el model seleccionat estigui inclòs al teu pla.",
-			"notFound": "No s'ha trobat l'executable Claude Code '{{claudePath}}'.\n\nInstal·la Claude Code CLI:\n1. Visita {{installationUrl}} per descarregar Claude Code\n2. Segueix les instruccions d'instal·lació per al teu sistema operatiu\n3. Assegura't que la comanda 'claude' estigui disponible al teu PATH\n4. Alternativament, configura una ruta personalitzada a la configuració de Roo sota 'Ruta de Claude Code'\n\nError original: {{originalError}}"
+			"notFound": "No s'ha trobat l'executable Claude Code '{{claudePath}}'.\n\nInstal·la Claude Code CLI:\n1. Visita {{installationUrl}} per descarregar Claude Code\n2. Segueix les instruccions d'instal·lació per al teu sistema operatiu\n3. Assegura't que la comanda 'claude' estigui disponible al teu PATH\n4. Alternativament, configura una ruta personalitzada a la configuració de Charles sota 'Ruta de Claude Code'\n\nError original: {{originalError}}"
 		},
 		"gemini": {
 			"generate_stream": "Error del flux de context de generació de Gemini: {{error}}",
@@ -104,8 +104,8 @@
 			"noResponseBody": "Error de l'API de Cerebras: No hi ha cos de resposta",
 			"completionError": "Error de finalització de Cerebras: {{error}}"
 		},
-		"roo": {
-			"authenticationRequired": "El proveïdor Roo requereix autenticació al núvol. Si us plau, inicieu sessió a Roo Code Cloud."
+		"Charles": {
+			"authenticationRequired": "El proveïdor Charles requereix autenticació al núvol. Si us plau, inicieu sessió a Charles Cloud."
 		},
 		"mode_import_failed": "Ha fallat la importació del mode: {{error}}"
 	},
@@ -188,8 +188,8 @@
 	},
 	"mdm": {
 		"errors": {
-			"cloud_auth_required": "La teva organització requereix autenticació de Roo Code Cloud. Si us plau, inicia sessió per continuar.",
-			"organization_mismatch": "Has d'estar autenticat amb el compte de Roo Code Cloud de la teva organització.",
+			"cloud_auth_required": "La teva organització requereix autenticació de Charles Cloud. Si us plau, inicia sessió per continuar.",
+			"organization_mismatch": "Has d'estar autenticat amb el compte de Charles Cloud de la teva organització.",
 			"verification_failed": "No s'ha pogut verificar l'autenticació de l'organització."
 		},
 		"info": {
