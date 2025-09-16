@@ -343,7 +343,30 @@ export class CodeIndexManager {
 		// Validate embedder configuration before proceeding
 		const validationResult = await this._serviceFactory.validateEmbedder(embedder)
 		if (!validationResult.valid) {
-			const errorMessage = validationResult.error || "Embedder configuration validation failed"
+			// Construct a detailed error message with context
+			const provider = this._configManager!.currentEmbedderProvider
+			const modelId = this._configManager!.currentModelId
+			let errorMessage =
+				validationResult.error ||
+				t("embeddings:serviceFactory.embeddingValidationFailed", {
+					provider,
+					error: "Unknown validation error",
+				})
+
+			// Add details if available
+			if ((validationResult as any).details) {
+				errorMessage += `. ${(validationResult as any).details}`
+			}
+
+			// Add helpful context based on the error
+			if (errorMessage.includes("401") || errorMessage.toLowerCase().includes("authentication")) {
+				errorMessage += `. Please check your API key in Settings > Code Index.`
+			} else if (errorMessage.includes("404") || errorMessage.toLowerCase().includes("not found")) {
+				errorMessage += `. Please verify the endpoint URL and model '${modelId}' are correct.`
+			} else if (errorMessage.includes("connection") || errorMessage.includes("ECONNREFUSED")) {
+				errorMessage += `. Please ensure the service is running and accessible.`
+			}
+
 			this._stateManager.setSystemState("Error", errorMessage)
 			throw new Error(errorMessage)
 		}
