@@ -83,7 +83,7 @@ describe("File-Based Custom System Prompt", () => {
 		mockedFs.readFile.mockRejectedValue({ code: "ENOENT" })
 	})
 
-	// Skipped on Windows due to timeout issues - see issue #XXX for investigation
+	// Skipped on Windows due to timeout/flake issues
 	it.skipIf(process.platform === "win32")(
 		"should use default generation when no file-based system prompt is found",
 		async () => {
