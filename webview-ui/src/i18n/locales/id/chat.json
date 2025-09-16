@@ -285,7 +285,8 @@
 		"triggerLabel_zero": "Tidak ada persetujuan otomatis",
 		"triggerLabel_one": "1 disetujui otomatis",
 		"triggerLabel_other": "{{count}} disetujui otomatis",
-		"triggerLabelAll": "YOLO"
+		"triggerLabelAll": "YOLO",
+		"triggerLabelOff": "Persetujuan otomatis nonaktif"
 	},
 	"announcement": {
 		"title": "🎉 Roo Code {{version}} Dirilis",
@@ -380,6 +381,7 @@
 		"tooltip": "Kelola perintah slash",
 		"title": "Perintah Slash",
 		"description": "Gunakan perintah slash bawaan atau buat kustom untuk akses cepat ke prompt dan alur kerja yang sering digunakan. <DocsLink>Dokumentasi</DocsLink>",
+		"manageCommands": "Kelola perintah slash di pengaturan",
 		"builtInCommands": "Perintah Bawaan",
 		"globalCommands": "Perintah Global",
 		"workspaceCommands": "Perintah Workspace",
@@ -394,6 +396,12 @@
 			"cancel": "Batal",
 			"confirm": "Hapus"
 		}
+	},
+	"contextMenu": {
+		"noResults": "Tidak ada hasil",
+		"problems": "Masalah",
+		"terminal": "Terminal",
+		"url": "Tempel URL untuk mengambil konten"
 	},
 	"queuedMessages": {
 		"title": "Pesan Antrian:",

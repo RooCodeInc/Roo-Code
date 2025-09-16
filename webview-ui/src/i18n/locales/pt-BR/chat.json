@@ -258,7 +258,8 @@
 		"triggerLabel_zero": "Nenhuma aprovação automática",
 		"triggerLabel_one": "1 aprovado automaticamente",
 		"triggerLabel_other": "{{count}} aprovados automaticamente",
-		"triggerLabelAll": "YOLO"
+		"triggerLabelAll": "YOLO",
+		"triggerLabelOff": "Aprovação automática desativada"
 	},
 	"reasoning": {
 		"thinking": "Pensando",
@@ -374,6 +375,7 @@
 		"tooltip": "Gerenciar comandos de barra",
 		"title": "Comandos de Barra",
 		"description": "Use comandos de barra integrados ou crie personalizados para acesso rápido a prompts e fluxos de trabalho usados com frequência. <DocsLink>Documentação</DocsLink>",
+		"manageCommands": "Gerenciar comandos de barra nas configurações",
 		"builtInCommands": "Comandos Integrados",
 		"globalCommands": "Comandos Globais",
 		"workspaceCommands": "Comandos do Espaço de Trabalho",
@@ -388,6 +390,12 @@
 			"cancel": "Cancelar",
 			"confirm": "Excluir"
 		}
+	},
+	"contextMenu": {
+		"noResults": "Nenhum resultado",
+		"problems": "Problemas",
+		"terminal": "Terminal",
+		"url": "Cole o URL para buscar o conteúdo"
 	},
 	"queuedMessages": {
 		"title": "Mensagens na fila:",

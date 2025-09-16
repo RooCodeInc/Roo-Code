@@ -3,7 +3,7 @@
 	"displayName": "%extension.displayName%",
 	"description": "%extension.description%",
 	"publisher": "RooVeterinaryInc",
-	"version": "3.28.2",
+	"version": "3.28.3",
 	"icon": "assets/icons/icon.png",
 	"galleryBanner": {
 		"color": "#617A91",
@@ -73,7 +73,7 @@
 			{
 				"command": "roo-cline.plusButtonClicked",
 				"title": "%command.newTask.title%",
-				"icon": "$(add)"
+				"icon": "$(edit)"
 			},
 			{
 				"command": "roo-cline.promptsButtonClicked",
@@ -302,6 +302,16 @@
 				}
 			]
 		},
+		"keybindings": [
+			{
+				"command": "roo-cline.addToContext",
+				"key": "cmd+y",
+				"mac": "cmd+y",
+				"win": "ctrl+y",
+				"linux": "ctrl+y",
+				"when": "editorTextFocus && editorHasSelection"
+			}
+		],
 		"submenus": [
 			{
 				"id": "roo-cline.contextMenu",
@@ -443,7 +453,7 @@
 		"@roo-code/types": "workspace:^",
 		"@vscode/codicons": "^0.0.36",
 		"async-mutex": "^0.5.0",
-		"axios": "^1.7.4",
+		"axios": "^1.12.0",
 		"cheerio": "^1.0.0",
 		"chokidar": "^4.0.1",
 		"clone-deep": "^4.0.1",
