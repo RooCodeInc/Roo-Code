@@ -104,6 +104,14 @@
 		"roo": {
 			"authenticationRequired": "Dostawca Roo wymaga uwierzytelnienia w chmurze. Zaloguj się do Roo Code Cloud."
 		},
+		"api": {
+			"invalidKeyInvalidChars": "Klucz API zawiera nieprawidłowe znaki."
+		},
+		"manual_url_empty": "Wprowadź prawidłowy URL callback",
+		"manual_url_no_query": "Nieprawidłowy URL callback: brak parametrów zapytania",
+		"manual_url_missing_params": "Nieprawidłowy URL callback: brak wymaganych parametrów (code i state)",
+		"manual_url_auth_failed": "Ręczne uwierzytelnienie URL nie powiodło się",
+		"manual_url_auth_error": "Uwierzytelnienie nie powiodło się",
 		"ollama": {
 			"inputTooLong": "Wiadomość wejściowa jest za długa dla wybranego modelu. Szacowane tokeny: {{estimatedTokenCount}}, Maksymalne tokeny: {{maxTokens}}. Aby zwiększyć rozmiar okna kontekstu, ustaw zmienną środowiskową OLLAMA_NUM_CTX lub zobacz dokumentację Ollama.",
 			"serviceNotRunning": "Usługa Ollama nie działa na {{baseUrl}}. Najpierw uruchom Ollama.",

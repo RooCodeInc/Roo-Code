@@ -104,6 +104,14 @@
 		"roo": {
 			"authenticationRequired": "Провайдер Roo требует облачной аутентификации. Войдите в Roo Code Cloud."
 		},
+		"api": {
+			"invalidKeyInvalidChars": "API-ключ содержит недопустимые символы."
+		},
+		"manual_url_empty": "Введите действительный URL обратного вызова",
+		"manual_url_no_query": "Недействительный URL обратного вызова: отсутствуют параметры запроса",
+		"manual_url_missing_params": "Недействительный URL обратного вызова: отсутствуют обязательные параметры (code и state)",
+		"manual_url_auth_failed": "Ручная аутентификация URL не удалась",
+		"manual_url_auth_error": "Аутентификация не удалась",
 		"ollama": {
 			"inputTooLong": "Входное сообщение слишком длинное для выбранной модели. Предполагаемые токены: {{estimatedTokenCount}}, Максимальные токены: {{maxTokens}}. Чтобы увеличить размер окна контекста, установите переменную окружения OLLAMA_NUM_CTX или обратитесь к документации Ollama.",
 			"serviceNotRunning": "Сервис Ollama не запущен на {{baseUrl}}. Сначала запустите Ollama.",

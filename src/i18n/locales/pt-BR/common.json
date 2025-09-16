@@ -108,6 +108,14 @@
 		"roo": {
 			"authenticationRequired": "O provedor Roo requer autenticação na nuvem. Faça login no Roo Code Cloud."
 		},
+		"api": {
+			"invalidKeyInvalidChars": "A chave da API contém caracteres inválidos."
+		},
+		"manual_url_empty": "Digite uma URL de callback válida",
+		"manual_url_no_query": "URL de callback inválida: parâmetros de consulta ausentes",
+		"manual_url_missing_params": "URL de callback inválida: parâmetros obrigatórios ausentes (code e state)",
+		"manual_url_auth_failed": "Autenticação manual por URL falhou",
+		"manual_url_auth_error": "Autenticação falhou",
 		"ollama": {
 			"inputTooLong": "Mensagem de entrada muito longa para o modelo selecionado. Tokens estimados: {{estimatedTokenCount}}, Tokens máximos: {{maxTokens}}. Para aumentar o tamanho da janela de contexto, defina a variável de ambiente OLLAMA_NUM_CTX ou consulte a documentação do Ollama.",
 			"serviceNotRunning": "O serviço Ollama não está executando em {{baseUrl}}. Inicie o Ollama primeiro.",

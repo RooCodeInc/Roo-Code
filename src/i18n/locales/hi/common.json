@@ -104,6 +104,14 @@
 		"roo": {
 			"authenticationRequired": "Roo प्रदाता को क्लाउड प्रमाणीकरण की आवश्यकता है। कृपया Roo Code Cloud में साइन इन करें।"
 		},
+		"api": {
+			"invalidKeyInvalidChars": "API कुंजी में अमान्य वर्ण हैं।"
+		},
+		"manual_url_empty": "कृपया एक मान्य कॉलबैक URL दर्ज करें",
+		"manual_url_no_query": "अमान्य कॉलबैक URL: क्वेरी पैरामीटर गुम हैं",
+		"manual_url_missing_params": "अमान्य कॉलबैक URL: आवश्यक पैरामीटर गुम हैं (code और state)",
+		"manual_url_auth_failed": "मैन्युअल URL प्रमाणीकरण विफल",
+		"manual_url_auth_error": "प्रमाणीकरण विफल",
 		"ollama": {
 			"inputTooLong": "चयनित मॉडल के लिए इनपुट संदेश बहुत लंबा है। अनुमानित टोकन: {{estimatedTokenCount}}, अधिकतम टोकन: {{maxTokens}}। संदर्भ विंडो का आकार बढ़ाने के लिए, कृपया OLLAMA_NUM_CTX पर्यावरण चर सेट करें या Ollama दस्तावेज़ देखें।",
 			"serviceNotRunning": "Ollama सेवा {{baseUrl}} पर नहीं चल रही है। कृपया पहले Ollama शुरू करें।",

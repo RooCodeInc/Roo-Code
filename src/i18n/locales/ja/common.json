@@ -104,6 +104,14 @@
 		"roo": {
 			"authenticationRequired": "Rooプロバイダーはクラウド認証が必要です。Roo Code Cloudにサインインしてください。"
 		},
+		"api": {
+			"invalidKeyInvalidChars": "APIキーに無効な文字が含まれています。"
+		},
+		"manual_url_empty": "有効なコールバックURLを入力してください",
+		"manual_url_no_query": "無効なコールバックURL：クエリパラメータが不足しています",
+		"manual_url_missing_params": "無効なコールバックURL：必要なパラメータが不足しています（codeとstate）",
+		"manual_url_auth_failed": "手動URL認証が失敗しました",
+		"manual_url_auth_error": "認証が失敗しました",
 		"ollama": {
 			"inputTooLong": "入力メッセージが選択されたモデルには長すぎます。推定トークン数：{{estimatedTokenCount}}、最大トークン数：{{maxTokens}}。コンテキストウィンドウサイズを増やすには、OLLAMA_NUM_CTX環境変数を設定するか、Ollamaドキュメントを参照してください。",
 			"serviceNotRunning": "Ollamaサービスが{{baseUrl}}で実行されていません。まずOllamaを開始してください。",
