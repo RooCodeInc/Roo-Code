@@ -307,8 +307,8 @@
 				"command": "roo-cline.addToContext",
 				"key": "cmd+y",
 				"mac": "cmd+y",
-				"win": "cmd+y",
-				"linux": "cmd+y",
+				"win": "ctrl+y",
+				"linux": "ctrl+y",
 				"when": "editorTextFocus && editorHasSelection"
 			}
 		],
