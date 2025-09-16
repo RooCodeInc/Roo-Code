@@ -2,17 +2,9 @@
 
 import React from "react"
 import ReactCookieConsent from "react-cookie-consent"
-import { useTheme } from "next-themes"
+import { Cookie } from "lucide-react"
 
 export interface CookieConsentProps {
-	/**
-	 * The text to display in the cookie consent banner
-	 */
-	text?: string
-	/**
-	 * The text for the accept button
-	 */
-	buttonText?: string
 	/**
 	 * Callback when cookies are accepted
 	 */
@@ -45,90 +37,85 @@ export interface CookieConsentProps {
 
 /**
  * GDPR-compliant cookie consent banner component
- * Uses Tailwind classes for styling and next-themes for dark mode detection
+ * Uses Tailwind classes for styling
  */
 export function CookieConsent({
-	text = "Like pretty much everyone else, we use cookies. We assume you're OK with it, but you can opt out if you want.",
-	buttonText = "Accept",
 	onAccept,
 	onDecline,
-	enableDeclineButton = true,
-	declineButtonText = "Decline",
 	className = "",
 	cookieName = "roo-code-cookie-consent",
 	debug = false,
 }: CookieConsentProps) {
-	const { theme } = useTheme()
-	const isDarkMode = theme === "dark"
-
-	// Tailwind classes for the container
 	const containerClasses = `
-		fixed bottom-0 left-0 right-0 z-[999]
-		${isDarkMode ? "bg-black/95" : "bg-white/95"}
+		fixed bottom-2 left-2 right-2 z-[999]
+		bg-black/95 dark:bg-white/95
+		text-white dark:text-black
+		border-t-neutral-800 dark:border-t-gray-200
 		backdrop-blur-xl
-		${isDarkMode ? "border-t-neutral-800" : "border-t-gray-200"}
 		border-t
+		font-semibold
+		rounded-t-lg
 		px-4 py-4 md:px-8 md:py-4
 		flex flex-wrap items-center justify-between gap-4
 		text-sm font-sans
 		${className}
 	`.trim()
 
-	// Tailwind classes for the accept button
+	const buttonWrapperClasses = `
+		flex
+		flex-row-reverse
+		items-center
+		gap-2
+	`.trim()
+
 	const acceptButtonClasses = `
-		${isDarkMode ? "bg-white text-black" : "bg-black text-white"}
-		hover:opacity-90
+		bg-white text-black border-neutral-800	
+		dark:bg-black dark:text-white dark:border-gray-200
+		hover:opacity-50
 		transition-opacity
 		rounded-md
-		px-4 py-2
-		text-sm font-medium
+		px-4 py-2 mr-2
+		text-sm font-bold
 		cursor-pointer
 		focus:outline-none focus:ring-2 focus:ring-offset-2
-		${isDarkMode ? "focus:ring-white" : "focus:ring-black"}
 	`.trim()
 
-	// Tailwind classes for the decline button
 	const declineButtonClasses = `
-		bg-transparent
-		${isDarkMode ? "text-white border-neutral-800" : "text-black border-gray-200"}
-		border
-		hover:opacity-90
+		dark:bg-white dark:text-black dark:border-gray-200
+		bg-black text-white border-neutral-800
+		hover:opacity-50
+		border border-border
 		transition-opacity
 		rounded-md
 		px-4 py-2
-		text-sm font-medium
+		text-sm font-bold
 		cursor-pointer
 		focus:outline-none focus:ring-2 focus:ring-offset-2
-		${isDarkMode ? "focus:ring-white" : "focus:ring-black"}
-	`.trim()
-
-	// Tailwind classes for the content
-	const contentClasses = `
-		flex-1
-		${isDarkMode ? "text-neutral-200" : "text-gray-700"}
-		mr-4
 	`.trim()
 
 	return (
 		<div role="banner" aria-label="Cookie consent banner" aria-live="polite">
 			<ReactCookieConsent
 				location="bottom"
-				buttonText={buttonText}
-				declineButtonText={declineButtonText}
+				buttonText="Accept"
+				declineButtonText="Decline"
 				cookieName={cookieName}
 				expires={365}
-				enableDeclineButton={enableDeclineButton}
+				enableDeclineButton={true}
 				onAccept={onAccept}
 				onDecline={onDecline}
 				debug={debug}
 				containerClasses={containerClasses}
 				buttonClasses={acceptButtonClasses}
+				buttonWrapperClasses={buttonWrapperClasses}
 				declineButtonClasses={declineButtonClasses}
-				contentClasses={contentClasses}
 				disableStyles={true}
-				ariaAcceptLabel={`Accept ${buttonText}`}
-				ariaDeclineLabel={`Decline ${declineButtonText}`}>
-				{text}
+				ariaAcceptLabel={`Accept`}
+				ariaDeclineLabel={`Decline`}>
+				<div className="flex items-center gap-2">
+					<Cookie className="size-5 hidden md:block" />
+					<span>Like most of the internet, we use cookies. Are you OK with that?</span>
+				</div>
 			</ReactCookieConsent>
 		</div>
 	)
