@@ -1,0 +1,49 @@
+{
+	"version": 3,
+	"pages404": true,
+	"caseSensitive": false,
+	"basePath": "",
+	"redirects": [
+		{
+			"source": "/:path+/",
+			"destination": "/:path+",
+			"internal": true,
+			"statusCode": 308,
+			"regex": "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))/$"
+		}
+	],
+	"headers": [],
+	"dynamicRoutes": [],
+	"staticRoutes": [
+		{
+			"page": "/",
+			"regex": "^/(?:/)?$",
+			"routeKeys": {},
+			"namedRegex": "^/(?:/)?$"
+		},
+		{
+			"page": "/_not-found",
+			"regex": "^/_not\\-found(?:/)?$",
+			"routeKeys": {},
+			"namedRegex": "^/_not\\-found(?:/)?$"
+		}
+	],
+	"dataRoutes": [],
+	"rsc": {
+		"header": "RSC",
+		"varyHeader": "RSC, Next-Router-State-Tree, Next-Router-Prefetch, Next-Router-Segment-Prefetch",
+		"prefetchHeader": "Next-Router-Prefetch",
+		"didPostponeHeader": "x-nextjs-postponed",
+		"contentTypeHeader": "text/x-component",
+		"suffix": ".rsc",
+		"prefetchSuffix": ".prefetch.rsc",
+		"prefetchSegmentHeader": "Next-Router-Segment-Prefetch",
+		"prefetchSegmentSuffix": ".segment.rsc",
+		"prefetchSegmentDirSuffix": ".segments"
+	},
+	"rewriteHeaders": {
+		"pathHeader": "x-nextjs-rewritten-path",
+		"queryHeader": "x-nextjs-rewritten-query"
+	},
+	"rewrites": []
+}

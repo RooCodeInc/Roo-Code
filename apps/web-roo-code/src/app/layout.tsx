@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import Script from "next/script"
 import { SEO } from "@/lib/seo"
+import { CookieConsent } from "@roo-code/cookie-consent"
 
 import { Providers } from "@/components/providers"
 
@@ -109,6 +110,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 				</div>
 				<Providers>
 					<Shell>{children}</Shell>
+					<CookieConsent />
 				</Providers>
 			</body>
 		</html>
