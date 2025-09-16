@@ -55,10 +55,6 @@ export const ApiConfigSelector = ({
 	})
 	const [focusedIndex, setFocusedIndex] = useState<number | null>(null)
 
-	useEffect(() => {
-		console.log({ focusedIndex })
-	}, [focusedIndex])
-
 	// Internal state for sort mode and custom order when parent doesn't provide them
 	const [sortMode, setSortMode] = useState<SortMode>("alphabetical")
 	const [internalCustomOrder, setInternalCustomOrder] = useState<string[]>([])
@@ -295,10 +291,6 @@ export const ApiConfigSelector = ({
 						// Update internal state immediately for responsive UI
 						setInternalCustomOrder(newOrder)
 
-						// Track the item being moved to maintain focus on it
-						setFocusedIndex(displayIndex - 1)
-						console.log({ displayIndex })
-
 						// Sync with backend
 						vscode.postMessage({
 							type: "setApiConfigCustomOrder",
@@ -321,10 +313,6 @@ export const ApiConfigSelector = ({
 
 						// Update internal state immediately for responsive UI
 						setInternalCustomOrder(newOrder)
-
-						// Track the item being moved to maintain focus on it
-						setFocusedIndex(displayIndex + 1)
-						console.log({ displayIndex })
 
 						// Sync with backend
 						vscode.postMessage({
