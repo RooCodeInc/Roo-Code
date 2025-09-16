@@ -197,7 +197,7 @@ export const AutoApproveDropdown = ({ disabled = false, triggerClassName = "" }:
 				align="start"
 				sideOffset={4}
 				container={portalContainer}
-				className="p-0 overflow-hidden min-w-90 max-w-9/10"
+				className="p-0 overflow-hidden w-[min(440px,calc(100vw-2rem))]"
 				onOpenAutoFocus={(e) => e.preventDefault()}>
 				<div className="flex flex-col w-full">
 					{/* Header with description */}
@@ -215,7 +215,7 @@ export const AutoApproveDropdown = ({ disabled = false, triggerClassName = "" }:
 							{t("chat:autoApprove.description")}
 						</p>
 					</div>
-					<div className="grid grid-cols-2 gap-x-2 gap-y-2 p-3">
+					<div className="grid grid-cols-1 min-[340px]:grid-cols-2 gap-x-2 gap-y-2 p-3">
 						{settingsArray.map(({ key, labelKey, descriptionKey, icon }) => {
 							const isEnabled = toggles[key]
 							return (
@@ -224,6 +224,7 @@ export const AutoApproveDropdown = ({ disabled = false, triggerClassName = "" }:
 										onClick={() => onAutoApproveToggle(key, !isEnabled)}
 										className={cn(
 											"flex items-center gap-2 px-2 py-2 rounded text-sm text-left",
+											"",
 											"transition-all duration-150",
 											"opacity-100 hover:opacity-70",
 											"cursor-pointer",
