@@ -5,6 +5,7 @@ import { TelemetryService } from "@roo-code/telemetry"
 import { DEFAULT_WRITE_DELAY_MS } from "@roo-code/types"
 
 import { ClineSayTool } from "../../shared/ExtensionMessage"
+import { ClineAskResponse } from "../../shared/WebviewMessage"
 import { getReadablePath } from "../../utils/path"
 import { Task } from "../task/Task"
 import { ToolUse, RemoveClosingTag, AskApproval, HandleError, PushToolResult } from "../../shared/tools"
@@ -101,7 +102,13 @@ export async function applyDiffTool(
 			path: getReadablePath(cline.cwd, filePath),
 		}
 		const partialMessage = JSON.stringify(sharedMessageProps)
-		await cline.ask("tool", partialMessage, block.partial).catch(() => {})
+		// Handle partial message updates gracefully
+		try {
+			await cline.ask("tool", partialMessage, block.partial)
+		} catch (error) {
+			// Log the error for debugging but don't disrupt the flow
+			console.debug(`Partial message update handled: ${error instanceof Error ? error.message : String(error)}`)
+		}
 		return
 	}
 
@@ -306,7 +313,23 @@ Original error: ${errorMessage}`
 				isProtected: hasProtectedFiles,
 			} satisfies ClineSayTool)
 
-			const { response, text, images } = await cline.ask("tool", completeMessage, hasProtectedFiles)
+			let response: ClineAskResponse
+			let text: string | undefined
+			let images: string[] | undefined
+
+			try {
+				const askResult = await cline.ask("tool", completeMessage, hasProtectedFiles)
+				response = askResult.response
+				text = askResult.text
+				images = askResult.images
+			} catch (error) {
+				// If ask fails, provide clear feedback to the model
+				const errorMessage = `Failed to get approval for batch diff operations: ${error instanceof Error ? error.message : String(error)}`
+				await cline.say("error", errorMessage)
+				pushToolResult(errorMessage)
+				cline.processQueuedMessages()
+				return
+			}
 
 			// Process batch response
 			if (response === "yesButtonClicked") {
