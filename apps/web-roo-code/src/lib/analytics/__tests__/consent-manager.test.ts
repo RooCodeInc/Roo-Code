@@ -1,50 +1,45 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
 import { hasConsent, dispatchConsentEvent, onConsentChange, CONSENT_EVENT } from "../consent-manager"
 
 describe("Consent Manager", () => {
-	// Store the original document.cookie
-	let originalCookie: PropertyDescriptor | undefined
+	let cookieSpy: vi.SpyInstance
 
 	beforeEach(() => {
-		// Clear cookies before each test
-		originalCookie = Object.getOwnPropertyDescriptor(Document.prototype, "cookie")
-		Object.defineProperty(document, "cookie", {
-			writable: true,
-			value: "",
-		})
-		// Clear any event listeners
+		// Mock document.cookie to control its value in tests
+		cookieSpy = vi.spyOn(document, "cookie", "get")
+
+		// Clear mock history before each test
 		vi.clearAllMocks()
 	})
 
 	afterEach(() => {
-		// Restore original cookie property
-		if (originalCookie) {
-			Object.defineProperty(Document.prototype, "cookie", originalCookie)
-		}
+		// Restore the original document.cookie property
+		vi.restoreAllMocks()
 	})
 
 	describe("hasConsent", () => {
 		it("should return false when no consent cookie exists", () => {
-			document.cookie = ""
+			cookieSpy.mockReturnValue("")
 			expect(hasConsent()).toBe(false)
 		})
 
 		it('should return false when consent cookie is not "true"', () => {
-			document.cookie = "roo-code-cookie-consent=false"
+			cookieSpy.mockReturnValue("roo-code-cookie-consent=false")
 			expect(hasConsent()).toBe(false)
 		})
 
 		it('should return true when consent cookie is "true"', () => {
-			document.cookie = "roo-code-cookie-consent=true"
+			cookieSpy.mockReturnValue("roo-code-cookie-consent=true")
 			expect(hasConsent()).toBe(true)
 		})
 
 		it("should handle multiple cookies correctly", () => {
-			document.cookie = "other-cookie=value; roo-code-cookie-consent=true; another-cookie=value2"
+			cookieSpy.mockReturnValue("other-cookie=value; roo-code-cookie-consent=true; another-cookie=value2")
 			expect(hasConsent()).toBe(true)
 		})
 
 		it("should handle cookies with spaces correctly", () => {
-			document.cookie = "other-cookie=value;  roo-code-cookie-consent=true  ; another-cookie=value2"
+			cookieSpy.mockReturnValue("other-cookie=value;  roo-code-cookie-consent=true  ; another-cookie=value2")
 			expect(hasConsent()).toBe(true)
 		})
 	})
