@@ -29,6 +29,7 @@
 		"checkpoint_timeout": "チェックポイントの復元を試みる際にタイムアウトしました。",
 		"checkpoint_failed": "チェックポイントの復元に失敗しました。",
 		"git_not_installed": "チェックポイント機能にはGitが必要です。チェックポイントを有効にするにはGitをインストールしてください。",
+		"nested_git_repos_warning": "{{path}} でネストされたgitリポジトリが検出されたため、チェックポイントが無効になっています。チェックポイントを使用するには、このネストされたgitリポジトリを削除または移動してください。",
 		"no_workspace": "まずプロジェクトフォルダを開いてください",
 		"update_support_prompt": "サポートメッセージの更新に失敗しました",
 		"reset_support_prompt": "サポートメッセージのリセットに失敗しました",
@@ -86,6 +87,15 @@
 			"stoppedWithReason": "Claude Code が理由により停止しました：{{reason}}",
 			"apiKeyModelPlanMismatch": "API keys and subscription plans allow different models. Make sure the selected model is included in your plan.",
 			"notFound": "Claude Code executable '{{claudePath}}' not found.\n\nPlease install Claude Code CLI:\n1. Visit {{installationUrl}} to download Claude Code\n2. Follow the installation instructions for your operating system\n3. Ensure the 'claude' command is available in your PATH\n4. Alternatively, configure a custom path in Roo settings under 'Claude Code Path'\n\nOriginal error: {{originalError}}"
+		},
+		"message": {
+			"no_active_task_to_delete": "メッセージを削除するアクティブなタスクがありません",
+			"invalid_timestamp_for_deletion": "削除用の無効なメッセージタイムスタンプ",
+			"cannot_delete_missing_timestamp": "メッセージを削除できません：タイムスタンプが不足しています",
+			"cannot_delete_invalid_timestamp": "メッセージを削除できません：無効なタイムスタンプ",
+			"message_not_found": "タイムスタンプ {{messageTs}} のメッセージが見つかりません",
+			"error_deleting_message": "メッセージの削除エラー：{{error}}",
+			"error_editing_message": "メッセージの編集エラー：{{error}}"
 		},
 		"gemini": {
 			"generate_stream": "Gemini 生成コンテキスト ストリーム エラー: {{error}}",
@@ -227,5 +237,9 @@
 		"preventCompletionWithOpenTodos": {
 			"description": "Todoリストに未完了のTodoがある場合、タスクの完了を防ぐ"
 		}
+	},
+	"docsLink": {
+		"label": "Docs",
+		"url": "https://docs.roocode.com"
 	}
 }

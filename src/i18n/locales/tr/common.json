@@ -29,6 +29,7 @@
 		"checkpoint_timeout": "Kontrol noktasını geri yüklemeye çalışırken zaman aşımına uğradı.",
 		"checkpoint_failed": "Kontrol noktası geri yüklenemedi.",
 		"git_not_installed": "Kontrol noktaları özelliği için Git gereklidir. Kontrol noktalarını etkinleştirmek için lütfen Git'i yükleyin.",
+		"nested_git_repos_warning": "Kontrol noktaları devre dışı bırakıldı çünkü {{path}} konumunda iç içe geçmiş bir git deposu tespit edildi. Kontrol noktalarını kullanmak için lütfen bu iç içe geçmiş git deposunu kaldırın veya taşıyın.",
 		"no_workspace": "Lütfen önce bir proje klasörü açın",
 		"update_support_prompt": "Destek istemi güncellenemedi",
 		"reset_support_prompt": "Destek istemi sıfırlanamadı",
@@ -87,6 +88,15 @@
 			"apiKeyModelPlanMismatch": "API keys and subscription plans allow different models. Make sure the selected model is included in your plan.",
 			"notFound": "Claude Code executable '{{claudePath}}' not found.\n\nPlease install Claude Code CLI:\n1. Visit {{installationUrl}} to download Claude Code\n2. Follow the installation instructions for your operating system\n3. Ensure the 'claude' command is available in your PATH\n4. Alternatively, configure a custom path in Roo settings under 'Claude Code Path'\n\nOriginal error: {{originalError}}"
 		},
+		"message": {
+			"no_active_task_to_delete": "Mesajları silmek için aktif görev yok",
+			"invalid_timestamp_for_deletion": "Silme için geçersiz mesaj zaman damgası",
+			"cannot_delete_missing_timestamp": "Mesaj silinemiyor: zaman damgası eksik",
+			"cannot_delete_invalid_timestamp": "Mesaj silinemiyor: geçersiz zaman damgası",
+			"message_not_found": "{{messageTs}} zaman damgalı mesaj bulunamadı",
+			"error_deleting_message": "Mesaj silme hatası: {{error}}",
+			"error_editing_message": "Mesaj düzenleme hatası: {{error}}"
+		},
 		"gemini": {
 			"generate_stream": "Gemini oluşturma bağlam akışı hatası: {{error}}",
 			"generate_complete_prompt": "Gemini tamamlama hatası: {{error}}",
@@ -104,6 +114,14 @@
 		"roo": {
 			"authenticationRequired": "Roo sağlayıcısı bulut kimlik doğrulaması gerektirir. Lütfen Roo Code Cloud'a giriş yapın."
 		},
+		"api": {
+			"invalidKeyInvalidChars": "API anahtarı geçersiz karakterler içeriyor."
+		},
+		"manual_url_empty": "Lütfen geçerli bir geri çağırma URL'si girin",
+		"manual_url_no_query": "Geçersiz geri çağırma URL'si: sorgu parametreleri eksik",
+		"manual_url_missing_params": "Geçersiz geri çağırma URL'si: gerekli parametreler eksik (code ve state)",
+		"manual_url_auth_failed": "Manuel URL kimlik doğrulaması başarısız",
+		"manual_url_auth_error": "Kimlik doğrulaması başarısız",
 		"ollama": {
 			"inputTooLong": "Giriş mesajı seçilen model için çok uzun. Tahmini token: {{estimatedTokenCount}}, Maksimum token: {{maxTokens}}. Bağlam penceresi boyutunu artırmak için OLLAMA_NUM_CTX ortam değişkenini ayarlayın veya Ollama belgelerine bakın.",
 			"serviceNotRunning": "Ollama servisi {{baseUrl}} adresinde çalışmıyor. Önce Ollama'yı başlatın.",

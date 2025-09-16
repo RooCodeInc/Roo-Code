@@ -29,6 +29,7 @@
 		"checkpoint_timeout": "체크포인트 복원을 시도하는 중 시간 초과되었습니다.",
 		"checkpoint_failed": "체크포인트 복원에 실패했습니다.",
 		"git_not_installed": "체크포인트 기능을 사용하려면 Git이 필요합니다. 체크포인트를 활성화하려면 Git을 설치하세요.",
+		"nested_git_repos_warning": "{{path}}에서 중첩된 git 저장소가 감지되어 체크포인트가 비활성화되었습니다. 체크포인트를 사용하려면 이 중첩된 git 저장소를 제거하거나 이동하세요.",
 		"no_workspace": "먼저 프로젝트 폴더를 열어주세요",
 		"update_support_prompt": "지원 프롬프트 업데이트에 실패했습니다",
 		"reset_support_prompt": "지원 프롬프트 재설정에 실패했습니다",
@@ -87,6 +88,15 @@
 			"apiKeyModelPlanMismatch": "API keys and subscription plans allow different models. Make sure the selected model is included in your plan.",
 			"notFound": "Claude Code executable '{{claudePath}}' not found.\n\nPlease install Claude Code CLI:\n1. Visit {{installationUrl}} to download Claude Code\n2. Follow the installation instructions for your operating system\n3. Ensure the 'claude' command is available in your PATH\n4. Alternatively, configure a custom path in Roo settings under 'Claude Code Path'\n\nOriginal error: {{originalError}}"
 		},
+		"message": {
+			"no_active_task_to_delete": "메시지를 삭제할 활성 작업이 없습니다",
+			"invalid_timestamp_for_deletion": "삭제를 위한 유효하지 않은 메시지 타임스탬프",
+			"cannot_delete_missing_timestamp": "메시지를 삭제할 수 없습니다: 타임스탬프 누락",
+			"cannot_delete_invalid_timestamp": "메시지를 삭제할 수 없습니다: 유효하지 않은 타임스탬프",
+			"message_not_found": "타임스탬프 {{messageTs}}인 메시지를 찾을 수 없습니다",
+			"error_deleting_message": "메시지 삭제 오류: {{error}}",
+			"error_editing_message": "메시지 편집 오류: {{error}}"
+		},
 		"gemini": {
 			"generate_stream": "Gemini 생성 컨텍스트 스트림 오류: {{error}}",
 			"generate_complete_prompt": "Gemini 완료 오류: {{error}}",
@@ -104,6 +114,14 @@
 		"roo": {
 			"authenticationRequired": "Roo 제공업체는 클라우드 인증이 필요합니다. Roo Code Cloud에 로그인하세요."
 		},
+		"api": {
+			"invalidKeyInvalidChars": "API 키에 유효하지 않은 문자가 포함되어 있습니다."
+		},
+		"manual_url_empty": "유효한 콜백 URL을 입력하세요",
+		"manual_url_no_query": "유효하지 않은 콜백 URL: 쿼리 매개변수가 누락됨",
+		"manual_url_missing_params": "유효하지 않은 콜백 URL: 필수 매개변수가 누락됨 (code 및 state)",
+		"manual_url_auth_failed": "수동 URL 인증 실패",
+		"manual_url_auth_error": "인증 실패",
 		"ollama": {
 			"inputTooLong": "입력 메시지가 선택된 모델에 비해 너무 깁니다. 예상 토큰: {{estimatedTokenCount}}, 최대 토큰: {{maxTokens}}. 컨텍스트 윈도우 크기를 늘리려면 OLLAMA_NUM_CTX 환경 변수를 설정하거나 Ollama 문서를 참조하세요.",
 			"serviceNotRunning": "Ollama 서비스가 {{baseUrl}}에서 실행되지 않습니다. 먼저 Ollama를 시작하세요.",
@@ -219,5 +237,9 @@
 		"preventCompletionWithOpenTodos": {
 			"description": "할 일 목록에 미완료된 할 일이 있을 때 작업 완료를 방지"
 		}
+	},
+	"docsLink": {
+		"label": "Docs",
+		"url": "https://docs.roocode.com"
 	}
 }

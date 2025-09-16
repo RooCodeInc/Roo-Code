@@ -29,6 +29,7 @@
 		"checkpoint_timeout": "Timeout durante il tentativo di ripristinare il checkpoint.",
 		"checkpoint_failed": "Impossibile ripristinare il checkpoint.",
 		"git_not_installed": "Git è richiesto per la funzione di checkpoint. Per favore, installa Git per abilitare i checkpoint.",
+		"nested_git_repos_warning": "I checkpoint sono disabilitati perché è stato rilevato un repository git annidato in: {{path}}. Per utilizzare i checkpoint, rimuovi o sposta questo repository git annidato.",
 		"no_workspace": "Per favore, apri prima una cartella di progetto",
 		"update_support_prompt": "Errore durante l'aggiornamento del messaggio di supporto",
 		"reset_support_prompt": "Errore durante il ripristino del messaggio di supporto",
@@ -86,6 +87,15 @@
 			"stoppedWithReason": "Claude Code si è fermato per il motivo: {{reason}}",
 			"apiKeyModelPlanMismatch": "API keys and subscription plans allow different models. Make sure the selected model is included in your plan.",
 			"notFound": "Claude Code executable '{{claudePath}}' not found.\n\nPlease install Claude Code CLI:\n1. Visit {{installationUrl}} to download Claude Code\n2. Follow the installation instructions for your operating system\n3. Ensure the 'claude' command is available in your PATH\n4. Alternatively, configure a custom path in Roo settings under 'Claude Code Path'\n\nOriginal error: {{originalError}}"
+		},
+		"message": {
+			"no_active_task_to_delete": "Nessuna attività attiva da cui eliminare messaggi",
+			"invalid_timestamp_for_deletion": "Timestamp del messaggio non valido per l'eliminazione",
+			"cannot_delete_missing_timestamp": "Impossibile eliminare il messaggio: timestamp mancante",
+			"cannot_delete_invalid_timestamp": "Impossibile eliminare il messaggio: timestamp non valido",
+			"message_not_found": "Messaggio con timestamp {{messageTs}} non trovato",
+			"error_deleting_message": "Errore nell'eliminazione del messaggio: {{error}}",
+			"error_editing_message": "Errore nella modifica del messaggio: {{error}}"
 		},
 		"gemini": {
 			"generate_stream": "Errore del flusso di contesto di generazione Gemini: {{error}}",
@@ -227,5 +237,9 @@
 		"preventCompletionWithOpenTodos": {
 			"description": "Impedire il completamento delle attività quando ci sono todo incompleti nella lista dei todo"
 		}
+	},
+	"docsLink": {
+		"label": "Docs",
+		"url": "https://docs.roocode.com"
 	}
 }

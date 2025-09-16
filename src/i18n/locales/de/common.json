@@ -29,6 +29,7 @@
 		"checkpoint_timeout": "Zeitüberschreitung beim Versuch, den Checkpoint wiederherzustellen.",
 		"checkpoint_failed": "Fehler beim Wiederherstellen des Checkpoints.",
 		"git_not_installed": "Git ist für die Checkpoint-Funktion erforderlich. Bitte installiere Git, um Checkpoints zu aktivieren.",
+		"nested_git_repos_warning": "Checkpoints sind deaktiviert, da ein verschachteltes Git-Repository bei {{path}} erkannt wurde. Um Checkpoints zu verwenden, entferne oder verschiebe bitte dieses verschachtelte Git-Repository.",
 		"no_workspace": "Bitte öffne zuerst einen Projektordner",
 		"update_support_prompt": "Fehler beim Aktualisieren der Support-Nachricht",
 		"reset_support_prompt": "Fehler beim Zurücksetzen der Support-Nachricht",
@@ -86,6 +87,15 @@
 			"stoppedWithReason": "Claude Code wurde mit Grund gestoppt: {{reason}}",
 			"apiKeyModelPlanMismatch": "API-Schlüssel und Abonnement-Pläne erlauben verschiedene Modelle. Stelle sicher, dass das ausgewählte Modell in deinem Plan enthalten ist.",
 			"notFound": "Claude Code ausführbare Datei '{{claudePath}}' nicht gefunden.\n\nBitte installiere Claude Code CLI:\n1. Besuche {{installationUrl}} um Claude Code herunterzuladen\n2. Folge den Installationsanweisungen für dein Betriebssystem\n3. Stelle sicher, dass der 'claude' Befehl in deinem PATH verfügbar ist\n4. Alternativ konfiguriere einen benutzerdefinierten Pfad in den Roo-Einstellungen unter 'Claude Code Pfad'\n\nUrsprünglicher Fehler: {{originalError}}"
+		},
+		"message": {
+			"no_active_task_to_delete": "Keine aktive Aufgabe zum Löschen von Nachrichten",
+			"invalid_timestamp_for_deletion": "Ungültiger Nachrichtenzeitstempel für Löschung",
+			"cannot_delete_missing_timestamp": "Nachricht kann nicht gelöscht werden: Zeitstempel fehlt",
+			"cannot_delete_invalid_timestamp": "Nachricht kann nicht gelöscht werden: ungültiger Zeitstempel",
+			"message_not_found": "Nachricht mit Zeitstempel {{messageTs}} nicht gefunden",
+			"error_deleting_message": "Fehler beim Löschen der Nachricht: {{error}}",
+			"error_editing_message": "Fehler beim Bearbeiten der Nachricht: {{error}}"
 		},
 		"gemini": {
 			"generate_stream": "Fehler beim Generieren des Kontext-Streams von Gemini: {{error}}",
@@ -227,5 +237,9 @@
 		"preventCompletionWithOpenTodos": {
 			"description": "Aufgabenabschluss verhindern, wenn unvollständige Todos in der Todo-Liste vorhanden sind"
 		}
+	},
+	"docsLink": {
+		"label": "Docs",
+		"url": "https://docs.roocode.com"
 	}
 }

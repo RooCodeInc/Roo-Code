@@ -93,6 +93,15 @@
 			"apiKeyModelPlanMismatch": "API keys and subscription plans allow different models. Make sure the selected model is included in your plan.",
 			"notFound": "Claude Code executable '{{claudePath}}' not found.\n\nPlease install Claude Code CLI:\n1. Visit {{installationUrl}} to download Claude Code\n2. Follow the installation instructions for your operating system\n3. Ensure the 'claude' command is available in your PATH\n4. Alternatively, configure a custom path in Roo settings under 'Claude Code Path'\n\nOriginal error: {{originalError}}"
 		},
+		"message": {
+			"no_active_task_to_delete": "没有活跃任务可删除消息",
+			"invalid_timestamp_for_deletion": "删除的消息时间戳无效",
+			"cannot_delete_missing_timestamp": "无法删除消息：缺少时间戳",
+			"cannot_delete_invalid_timestamp": "无法删除消息：无效的时间戳",
+			"message_not_found": "找不到时间戳为 {{messageTs}} 的消息",
+			"error_deleting_message": "删除消息时出错：{{error}}",
+			"error_editing_message": "编辑消息时出错：{{error}}"
+		},
 		"gemini": {
 			"generate_stream": "Gemini 生成上下文流错误：{{error}}",
 			"generate_complete_prompt": "Gemini 完成错误：{{error}}",
@@ -110,6 +119,14 @@
 		"roo": {
 			"authenticationRequired": "Roo 提供商需要云认证。请登录 Roo Code Cloud。"
 		},
+		"api": {
+			"invalidKeyInvalidChars": "API 密钥包含无效字符。"
+		},
+		"manual_url_empty": "请输入有效的回调 URL",
+		"manual_url_no_query": "无效的回调 URL：缺少查询参数",
+		"manual_url_missing_params": "无效的回调 URL：缺少必需参数（code 和 state）",
+		"manual_url_auth_failed": "手动 URL 认证失败",
+		"manual_url_auth_error": "认证失败",
 		"ollama": {
 			"inputTooLong": "输入消息对所选模型来说太长。预估 Token 数：{{estimatedTokenCount}}，最大 Token 数：{{maxTokens}}。要增加上下文窗口大小，请设置 OLLAMA_NUM_CTX 环境变量或查看 Ollama 文档。",
 			"serviceNotRunning": "Ollama 服务未在 {{baseUrl}} 运行。请先启动 Ollama。",

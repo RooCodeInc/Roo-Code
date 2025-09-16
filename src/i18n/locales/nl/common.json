@@ -29,6 +29,7 @@
 		"checkpoint_timeout": "Time-out bij het herstellen van checkpoint.",
 		"checkpoint_failed": "Herstellen van checkpoint mislukt.",
 		"git_not_installed": "Git is vereist voor de checkpoint-functie. Installeer Git om checkpoints in te schakelen.",
+		"nested_git_repos_warning": "Checkpoints zijn uitgeschakeld omdat een geneste git-repository werd gedetecteerd op: {{path}}. Om checkpoints te gebruiken, verwijder of verplaats deze geneste git-repository.",
 		"no_workspace": "Open eerst een projectmap",
 		"update_support_prompt": "Bijwerken van ondersteuningsprompt mislukt",
 		"reset_support_prompt": "Resetten van ondersteuningsprompt mislukt",
@@ -87,6 +88,15 @@
 			"apiKeyModelPlanMismatch": "API keys and subscription plans allow different models. Make sure the selected model is included in your plan.",
 			"notFound": "Claude Code executable '{{claudePath}}' not found.\n\nPlease install Claude Code CLI:\n1. Visit {{installationUrl}} to download Claude Code\n2. Follow the installation instructions for your operating system\n3. Ensure the 'claude' command is available in your PATH\n4. Alternatively, configure a custom path in Roo settings under 'Claude Code Path'\n\nOriginal error: {{originalError}}"
 		},
+		"message": {
+			"no_active_task_to_delete": "Geen actieve taak om berichten van te verwijderen",
+			"invalid_timestamp_for_deletion": "Ongeldige berichttijdstempel voor verwijdering",
+			"cannot_delete_missing_timestamp": "Kan bericht niet verwijderen: tijdstempel ontbreekt",
+			"cannot_delete_invalid_timestamp": "Kan bericht niet verwijderen: ongeldige tijdstempel",
+			"message_not_found": "Bericht met tijdstempel {{messageTs}} niet gevonden",
+			"error_deleting_message": "Fout bij verwijderen van bericht: {{error}}",
+			"error_editing_message": "Fout bij bewerken van bericht: {{error}}"
+		},
 		"gemini": {
 			"generate_stream": "Fout bij het genereren van contextstream door Gemini: {{error}}",
 			"generate_complete_prompt": "Fout bij het voltooien door Gemini: {{error}}",
@@ -104,6 +114,14 @@
 		"roo": {
 			"authenticationRequired": "Roo provider vereist cloud authenticatie. Log in bij Roo Code Cloud."
 		},
+		"api": {
+			"invalidKeyInvalidChars": "API-sleutel bevat ongeldige tekens."
+		},
+		"manual_url_empty": "Voer een geldige callback-URL in",
+		"manual_url_no_query": "Ongeldige callback-URL: query-parameters ontbreken",
+		"manual_url_missing_params": "Ongeldige callback-URL: vereiste parameters ontbreken (code en state)",
+		"manual_url_auth_failed": "Handmatige URL-authenticatie mislukt",
+		"manual_url_auth_error": "Authenticatie mislukt",
 		"ollama": {
 			"inputTooLong": "Invoerbericht is te lang voor het geselecteerde model. Geschatte tokens: {{estimatedTokenCount}}, Max tokens: {{maxTokens}}. Om de contextvenstergrootte te vergroten, stel de OLLAMA_NUM_CTX omgevingsvariabele in of zie Ollama documentatie.",
 			"serviceNotRunning": "Ollama service draait niet op {{baseUrl}}. Start eerst Ollama.",
@@ -219,5 +237,9 @@
 		"preventCompletionWithOpenTodos": {
 			"description": "Voorkom taakafronding wanneer er onvolledige todos in de todolijst staan"
 		}
+	},
+	"docsLink": {
+		"label": "Docs",
+		"url": "https://docs.roocode.com"
 	}
 }
