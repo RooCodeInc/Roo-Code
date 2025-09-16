@@ -31,26 +31,5 @@ export const INTERNAL_LINKS = {
 	PRIVACY_POLICY_WEBSITE: "/privacy",
 }
 
-import { getDomain } from "tldts"
-
 // Cookie consent settings
 export const CONSENT_COOKIE_NAME = "roo-code-cookie-consent"
-
-/**
- * Get the appropriate domain for cookie consent
- * Uses tldts to extract the domain from the current hostname
- * Falls back to environment variable or roocode.com
- * Never returns null/undefined - always returns a valid domain string
- */
-export function getConsentCookieDomain(): string {
-	if (typeof window === "undefined") {
-		// Server-side fallback
-		return process.env.CONSENT_COOKIE_DOMAIN || "roocode.com"
-	}
-
-	// Extract the domain using tldts - this can return null for invalid hostnames
-	const domain = getDomain(window.location.hostname)
-
-	// Always return a valid string, never null/undefined
-	return domain || process.env.CONSENT_COOKIE_DOMAIN || "roocode.com"
-}

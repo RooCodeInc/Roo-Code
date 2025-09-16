@@ -1,39 +1,24 @@
 /**
- * Consent Manager - Handles cookie consent state for analytics
- * Works with react-cookie-consent library
+ * Simple consent event system
+ * Dispatches events when cookie consent changes
  */
 
+import { getCookieConsentValue } from "react-cookie-consent"
 import { CONSENT_COOKIE_NAME } from "../constants"
 
-/**
- * Event name for consent changes
- */
 export const CONSENT_EVENT = "cookieConsentChanged"
 
 /**
  * Check if user has given consent for analytics cookies
+ * Uses react-cookie-consent's built-in function
  */
 export function hasConsent(): boolean {
-	// Only check on client side
-	if (typeof window === "undefined") {
-		return false
-	}
-
-	// Check if the consent cookie exists and has value "true"
-	const cookies = document.cookie.split(";")
-	for (const cookie of cookies) {
-		const [name, value] = cookie.trim().split("=")
-		if (name === CONSENT_COOKIE_NAME && value === "true") {
-			return true
-		}
-	}
-
-	return false
+	if (typeof window === "undefined") return false
+	return getCookieConsentValue(CONSENT_COOKIE_NAME) === "true"
 }
 
 /**
  * Dispatch a consent change event
- * This is used to notify providers when consent status changes
  */
 export function dispatchConsentEvent(consented: boolean): void {
 	if (typeof window !== "undefined") {
