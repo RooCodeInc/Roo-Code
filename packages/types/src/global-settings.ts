@@ -138,6 +138,8 @@ export const globalSettingsSchema = z.object({
 
 	mcpEnabled: z.boolean().optional(),
 	enableMcpServerCreation: z.boolean().optional(),
+	mcpMaxImagesPerResponse: z.number().min(0).max(20).optional(),
+	mcpMaxImageSizeMB: z.number().min(0.1).max(10).optional(),
 
 	mode: z.string().optional(),
 	modeApiConfigs: z.record(z.string(), z.string()).optional(),
@@ -314,6 +316,8 @@ export const EVALS_SETTINGS: RooCodeSettings = {
 	telemetrySetting: "enabled",
 
 	mcpEnabled: false,
+	mcpMaxImagesPerResponse: 5,
+	mcpMaxImageSizeMB: 2,
 
 	mode: "code", // "architect",
 

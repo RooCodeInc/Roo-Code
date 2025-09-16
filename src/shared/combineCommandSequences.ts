@@ -38,11 +38,17 @@ export function combineCommandSequences(messages: ClineMessage[]): ClineMessage[
 		if (msg.type === "ask" && msg.ask === "use_mcp_server") {
 			// Look ahead for MCP responses
 			let responses: string[] = []
+			let allImages: string[] = []
 			let j = i + 1
 
 			while (j < messages.length) {
 				if (messages[j].say === "mcp_server_response") {
 					responses.push(messages[j].text || "")
+					// Collect images from the response if present
+					const msgImages = messages[j].images
+					if (msgImages && msgImages.length > 0) {
+						allImages.push(...msgImages)
+					}
 					processedIndices.add(j)
 					j++
 				} else if (messages[j].type === "ask" && messages[j].ask === "use_mcp_server") {
@@ -63,7 +69,13 @@ export function combineCommandSequences(messages: ClineMessage[]): ClineMessage[
 				// Stringify the updated JSON object
 				const combinedText = JSON.stringify(jsonObj)
 
-				combinedMessages.set(msg.ts, { ...msg, text: combinedText })
+				// Create the combined message with images if present
+				const combinedMessage: ClineMessage = { ...msg, text: combinedText }
+				if (allImages.length > 0) {
+					combinedMessage.images = allImages
+				}
+
+				combinedMessages.set(msg.ts, combinedMessage)
 			} else {
 				// If there's no response, just keep the original message
 				combinedMessages.set(msg.ts, { ...msg })

@@ -4,6 +4,15 @@ import { formatResponse } from "../prompts/responses"
 import { ClineAskUseMcpServer } from "../../shared/ExtensionMessage"
 import { McpExecutionStatus } from "@roo-code/types"
 import { t } from "../../i18n"
+import {
+	SUPPORTED_IMAGE_TYPES,
+	DEFAULT_MCP_IMAGE_LIMITS,
+	isSupportedImageType,
+	isValidBase64Image,
+	calculateBase64Size,
+	bytesToMB,
+	extractMimeType,
+} from "./mcpImageConstants"
 
 interface McpToolParams {
 	server_name?: string
@@ -195,24 +204,87 @@ async function sendExecutionStatus(cline: Task, status: McpExecutionStatus): Pro
 	})
 }
 
-function processToolContent(toolResult: any): string {
-	if (!toolResult?.content || toolResult.content.length === 0) {
-		return ""
+interface ProcessedContent {
+	text: string
+	images: string[]
+	errors: string[]
+}
+
+function processToolContent(
+	toolResult: any,
+	maxImages: number = DEFAULT_MCP_IMAGE_LIMITS.maxImagesPerResponse,
+	maxSizeMB: number = DEFAULT_MCP_IMAGE_LIMITS.maxImageSizeMB,
+): ProcessedContent {
+	const result: ProcessedContent = {
+		text: "",
+		images: [],
+		errors: [],
 	}
 
-	return toolResult.content
-		.map((item: any) => {
-			if (item.type === "text") {
-				return item.text
+	if (!toolResult?.content || toolResult.content.length === 0) {
+		return result
+	}
+
+	const textParts: string[] = []
+
+	for (const item of toolResult.content) {
+		if (item.type === "text") {
+			textParts.push(item.text)
+		} else if (item.type === "image") {
+			// Handle image content
+			const imageData = item.data || item.base64
+			const mimeType = item.mimeType || extractMimeType(imageData)
+
+			if (!imageData) {
+				result.errors.push("Image data is missing")
+				continue
 			}
-			if (item.type === "resource") {
-				const { blob: _, ...rest } = item.resource
-				return JSON.stringify(rest, null, 2)
+
+			// Check if we've reached the image limit
+			if (result.images.length >= maxImages) {
+				result.errors.push(`Maximum number of images (${maxImages}) exceeded`)
+				continue
 			}
-			return ""
-		})
-		.filter(Boolean)
-		.join("\n\n")
+
+			// Validate MIME type
+			if (mimeType && !isSupportedImageType(mimeType)) {
+				result.errors.push(
+					`Unsupported image type: ${mimeType}. Supported types: ${SUPPORTED_IMAGE_TYPES.join(", ")}`,
+				)
+				continue
+			}
+
+			// Validate base64 data
+			if (!isValidBase64Image(imageData)) {
+				result.errors.push("Invalid or corrupted base64 image data")
+				continue
+			}
+
+			// Check image size
+			const sizeBytes = calculateBase64Size(imageData)
+			const sizeMB = bytesToMB(sizeBytes)
+
+			if (sizeMB > maxSizeMB) {
+				result.errors.push(`Image size (${sizeMB.toFixed(2)}MB) exceeds maximum allowed size (${maxSizeMB}MB)`)
+				continue
+			}
+
+			// Add data URL prefix if not present
+			let fullImageData = imageData
+			if (!imageData.startsWith("data:")) {
+				const type = mimeType || "image/png"
+				fullImageData = `data:${type};base64,${imageData}`
+			}
+
+			result.images.push(fullImageData)
+		} else if (item.type === "resource") {
+			const { blob: _, ...rest } = item.resource
+			textParts.push(JSON.stringify(rest, null, 2))
+		}
+	}
+
+	result.text = textParts.filter(Boolean).join("\n\n")
+	return result
 }
 
 async function executeToolAndProcessResult(
@@ -233,21 +305,48 @@ async function executeToolAndProcessResult(
 		toolName,
 	})
 
-	const toolResult = await cline.providerRef.deref()?.getMcpHub()?.callTool(serverName, toolName, parsedArguments)
+	// Get configuration for image limits
+	const provider = cline.providerRef.deref()
+	const maxImages = provider?.getValue("mcpMaxImagesPerResponse") ?? DEFAULT_MCP_IMAGE_LIMITS.maxImagesPerResponse
+	const maxSizeMB = provider?.getValue("mcpMaxImageSizeMB") ?? DEFAULT_MCP_IMAGE_LIMITS.maxImageSizeMB
+
+	const toolResult = await provider?.getMcpHub()?.callTool(serverName, toolName, parsedArguments)
 
 	let toolResultPretty = "(No response)"
+	let images: string[] = []
 
 	if (toolResult) {
-		const outputText = processToolContent(toolResult)
+		const processedContent = processToolContent(toolResult, maxImages, maxSizeMB)
 
-		if (outputText) {
-			await sendExecutionStatus(cline, {
-				executionId,
-				status: "output",
-				response: outputText,
-			})
+		// Log any errors encountered during processing
+		if (processedContent.errors.length > 0) {
+			console.warn("MCP image processing warnings:", processedContent.errors)
+			// Include errors in the response for transparency
+			const errorText = processedContent.errors.map((e) => `⚠️ ${e}`).join("\n")
+			processedContent.text = processedContent.text ? `${processedContent.text}\n\n${errorText}` : errorText
+		}
 
-			toolResultPretty = (toolResult.isError ? "Error:\n" : "") + outputText
+		if (processedContent.text || processedContent.images.length > 0) {
+			// Send text output first
+			if (processedContent.text) {
+				await sendExecutionStatus(cline, {
+					executionId,
+					status: "output",
+					response: processedContent.text,
+				})
+			}
+
+			// Prepare the complete response
+			toolResultPretty = (toolResult.isError ? "Error:\n" : "") + processedContent.text
+
+			// Store images for later use
+			images = processedContent.images
+
+			// Include image count in response if images are present
+			if (images.length > 0) {
+				const imageInfo = `\n\n📷 ${images.length} image${images.length > 1 ? "s" : ""} included in response`
+				toolResultPretty += imageInfo
+			}
 		}
 
 		// Send completion status
@@ -256,6 +355,7 @@ async function executeToolAndProcessResult(
 			status: toolResult.isError ? "error" : "completed",
 			response: toolResultPretty,
 			error: toolResult.isError ? "Error executing MCP tool" : undefined,
+			images: images.length > 0 ? images : undefined,
 		})
 	} else {
 		// Send error status if no result
@@ -266,8 +366,14 @@ async function executeToolAndProcessResult(
 		})
 	}
 
-	await cline.say("mcp_server_response", toolResultPretty)
-	pushToolResult(formatResponse.toolResult(toolResultPretty))
+	// Include images in the response message
+	if (images.length > 0) {
+		await cline.say("mcp_server_response", toolResultPretty, images)
+	} else {
+		await cline.say("mcp_server_response", toolResultPretty)
+	}
+
+	pushToolResult(formatResponse.toolResult(toolResultPretty, images))
 }
 
 export async function useMcpToolTool(

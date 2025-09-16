@@ -25,16 +25,20 @@ export const mcpExecutionStatusSchema = z.discriminatedUnion("status", [
 		executionId: z.string(),
 		status: z.literal("output"),
 		response: z.string(),
+		images: z.array(z.string()).optional(),
 	}),
 	z.object({
 		executionId: z.string(),
 		status: z.literal("completed"),
 		response: z.string().optional(),
+		images: z.array(z.string()).optional(),
 	}),
 	z.object({
 		executionId: z.string(),
 		status: z.literal("error"),
 		error: z.string().optional(),
+		response: z.string().optional(),
+		images: z.array(z.string()).optional(),
 	}),
 ])
 
