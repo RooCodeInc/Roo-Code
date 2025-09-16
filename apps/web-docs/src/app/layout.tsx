@@ -1,7 +1,7 @@
 import React from "react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
-import { CookieConsent } from "@roo-code/cookie-consent"
+import { CookieConsent } from "@/components/CookieConsent"
 
 import "./globals.css"
 

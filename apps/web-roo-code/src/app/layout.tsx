@@ -3,7 +3,7 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import Script from "next/script"
 import { SEO } from "@/lib/seo"
-import { CookieConsent } from "@roo-code/cookie-consent"
+import { CookieConsent } from "@/components/CookieConsent"
 
 import { Providers } from "@/components/providers"
 
