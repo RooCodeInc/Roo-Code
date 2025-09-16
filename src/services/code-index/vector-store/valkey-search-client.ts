@@ -52,11 +52,7 @@ export class ValkeySearchVectorStore implements IVectorStore {
 				username: this.valkeyUsername,
 				host: this.valkeyHostname,
 				port: this.valkeyPort,
-				tls: this.useSsl
-					? {
-							rejectUnauthorized: false,
-						}
-					: undefined,
+				tls: this.useSsl ? {} : undefined,
 			})
 			this.client.on("error", (error: Error) => {
 				console.error("[ValkeySearch] Connection error:", error.message)
