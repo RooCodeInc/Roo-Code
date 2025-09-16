@@ -20,6 +20,9 @@ interface ApiConfigSelectorProps {
 	listApiConfigMeta: Array<{ id: string; name: string; modelId?: string }>
 	pinnedApiConfigs?: Record<string, boolean>
 	togglePinnedApiConfig: (id: string) => void
+	isWorkspaceScoped?: boolean
+	onScopeChange?: (scope: "global" | "workspace") => void
+	hasWorkspace?: boolean
 }
 
 export const ApiConfigSelector = ({
@@ -32,6 +35,9 @@ export const ApiConfigSelector = ({
 	listApiConfigMeta,
 	pinnedApiConfigs,
 	togglePinnedApiConfig,
+	isWorkspaceScoped = false,
+	onScopeChange,
+	hasWorkspace = false,
 }: ApiConfigSelectorProps) => {
 	const { t } = useAppTranslation()
 	const [open, setOpen] = useState(false)
@@ -84,6 +90,13 @@ export const ApiConfigSelector = ({
 		vscode.postMessage({ type: "switchTab", tab: "settings" })
 		setOpen(false)
 	}, [])
+
+	const handleScopeToggle = useCallback(() => {
+		if (onScopeChange) {
+			const newScope = isWorkspaceScoped ? "global" : "workspace"
+			onScopeChange(newScope)
+		}
+	}, [isWorkspaceScoped, onScopeChange])
 
 	const renderConfigItem = useCallback(
 		(config: { id: string; name: string; modelId?: string }, isPinned: boolean) => {
@@ -157,6 +170,7 @@ export const ApiConfigSelector = ({
 						triggerClassName,
 					)}>
 					<span className="truncate">{displayName}</span>
+					{hasWorkspace && isWorkspaceScoped && <span className="ml-1 text-[10px] opacity-60">[W]</span>}
 				</PopoverTrigger>
 			</StandardTooltip>
 			<PopoverContent
@@ -165,6 +179,37 @@ export const ApiConfigSelector = ({
 				container={portalContainer}
 				className="p-0 overflow-hidden w-[300px]">
 				<div className="flex flex-col w-full">
+					{/* Scope selector for workspace-enabled projects */}
+					{hasWorkspace && onScopeChange && (
+						<div className="p-2 border-b border-vscode-dropdown-border">
+							<div className="flex items-center justify-between">
+								<span className="text-xs text-vscode-descriptionForeground">
+									{t("prompts:apiConfiguration.scope")}
+								</span>
+								<button
+									onClick={handleScopeToggle}
+									className={cn(
+										"px-2 py-0.5 text-xs rounded",
+										"border border-vscode-dropdown-border",
+										"hover:bg-vscode-list-hoverBackground",
+										"transition-colors duration-150",
+									)}>
+									{isWorkspaceScoped ? (
+										<>
+											<span className="codicon codicon-folder text-xs mr-1" />
+											{t("prompts:apiConfiguration.workspace")}
+										</>
+									) : (
+										<>
+											<span className="codicon codicon-globe text-xs mr-1" />
+											{t("prompts:apiConfiguration.global")}
+										</>
+									)}
+								</button>
+							</div>
+						</div>
+					)}
+
 					{/* Search input or info blurb */}
 					{listApiConfigMeta.length > 6 ? (
 						<div className="relative p-2 border-b border-vscode-dropdown-border">

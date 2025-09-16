@@ -1,10 +1,17 @@
 // npx vitest src/core/config/__tests__/ProviderSettingsManager.spec.ts
 
-import { ExtensionContext } from "vscode"
+import { ExtensionContext, workspace } from "vscode"
 
 import type { ProviderSettings } from "@roo-code/types"
 
 import { ProviderSettingsManager, ProviderProfiles, SyncCloudProfilesResult } from "../ProviderSettingsManager"
+
+// Mock VSCode workspace
+vi.mock("vscode", () => ({
+	workspace: {
+		workspaceFolders: undefined,
+	},
+}))
 
 // Mock VSCode ExtensionContext
 const mockSecrets = {
@@ -18,9 +25,15 @@ const mockGlobalState = {
 	update: vi.fn(),
 }
 
+const mockWorkspaceState = {
+	get: vi.fn(),
+	update: vi.fn(),
+}
+
 const mockContext = {
 	secrets: mockSecrets,
 	globalState: mockGlobalState,
+	workspaceState: mockWorkspaceState,
 } as unknown as ExtensionContext
 
 describe("ProviderSettingsManager", () => {
@@ -1119,6 +1132,326 @@ describe("ProviderSettingsManager", () => {
 			expect(result.hasChanges).toBe(true)
 			expect(result.activeProfileChanged).toBe(false)
 			expect(result.activeProfileId).toBe("local-id")
+		})
+	})
+
+	describe("Workspace-scoped functionality", () => {
+		beforeEach(() => {
+			// Reset workspace state mocks
+			mockWorkspaceState.get.mockReturnValue(undefined)
+			mockWorkspaceState.update.mockResolvedValue(undefined)
+		})
+
+		describe("activateProfile with workspace scope", () => {
+			it("should store profile activation in workspace when scope is workspace", async () => {
+				// Mock workspace folders to simulate being in a workspace
+				;(workspace as any).workspaceFolders = [{ uri: { fsPath: "/test/workspace" } }]
+
+				const existingConfig: ProviderProfiles = {
+					currentApiConfigName: "default",
+					apiConfigs: {
+						default: { id: "default-id" },
+						test: {
+							apiProvider: "anthropic",
+							apiKey: "test-key",
+							id: "test-id",
+						},
+					},
+					modeApiConfigs: {},
+				}
+
+				mockSecrets.get.mockResolvedValue(JSON.stringify(existingConfig))
+
+				const { name } = await providerSettingsManager.activateProfile({ name: "test" }, "workspace")
+
+				expect(name).toBe("test")
+
+				// Should update workspace state, not global state
+				expect(mockWorkspaceState.update).toHaveBeenCalledWith("roo_workspace_overrides", {
+					currentApiConfigName: "test",
+				})
+
+				// Should NOT update global currentApiConfigName
+				const globalStoreCalls = mockSecrets.store.mock.calls
+				if (globalStoreCalls.length > 0) {
+					const lastGlobalConfig = JSON.parse(globalStoreCalls[globalStoreCalls.length - 1][1])
+					expect(lastGlobalConfig.currentApiConfigName).toBe("default")
+				}
+			})
+
+			it("should fall back to global when not in a workspace", async () => {
+				// No workspace folders
+				;(workspace as any).workspaceFolders = undefined
+
+				const existingConfig: ProviderProfiles = {
+					currentApiConfigName: "default",
+					apiConfigs: {
+						default: { id: "default-id" },
+						test: { apiProvider: "anthropic", id: "test-id" },
+					},
+					modeApiConfigs: {},
+				}
+
+				mockSecrets.get.mockResolvedValue(JSON.stringify(existingConfig))
+
+				await providerSettingsManager.activateProfile({ name: "test" }, "workspace")
+
+				// Should update global state since no workspace
+				const storedConfig = JSON.parse(mockSecrets.store.mock.calls[0][1])
+				expect(storedConfig.currentApiConfigName).toBe("test")
+
+				// Should NOT update workspace state
+				expect(mockWorkspaceState.update).not.toHaveBeenCalled()
+			})
+		})
+
+		describe("getActiveProfileName with workspace overrides", () => {
+			it("should return workspace override when it exists", async () => {
+				;(workspace as any).workspaceFolders = [{ uri: { fsPath: "/test/workspace" } }]
+
+				const globalConfig: ProviderProfiles = {
+					currentApiConfigName: "default",
+					apiConfigs: {
+						default: { id: "default-id" },
+						workspace: { id: "workspace-id" },
+					},
+					modeApiConfigs: {},
+				}
+
+				mockSecrets.get.mockResolvedValue(JSON.stringify(globalConfig))
+				mockWorkspaceState.get.mockReturnValue({
+					currentApiConfigName: "workspace",
+				})
+
+				const activeProfile = await providerSettingsManager.getActiveProfileName()
+				expect(activeProfile).toBe("workspace")
+			})
+
+			it("should fall back to global when workspace override profile doesn't exist", async () => {
+				;(workspace as any).workspaceFolders = [{ uri: { fsPath: "/test/workspace" } }]
+
+				const globalConfig: ProviderProfiles = {
+					currentApiConfigName: "default",
+					apiConfigs: {
+						default: { id: "default-id" },
+					},
+					modeApiConfigs: {},
+				}
+
+				mockSecrets.get.mockResolvedValue(JSON.stringify(globalConfig))
+				mockWorkspaceState.get.mockReturnValue({
+					currentApiConfigName: "non-existent",
+				})
+
+				const activeProfile = await providerSettingsManager.getActiveProfileName()
+				expect(activeProfile).toBe("default")
+			})
+
+			it("should return global profile when not in workspace", async () => {
+				;(workspace as any).workspaceFolders = undefined
+
+				const globalConfig: ProviderProfiles = {
+					currentApiConfigName: "default",
+					apiConfigs: {
+						default: { id: "default-id" },
+					},
+					modeApiConfigs: {},
+				}
+
+				mockSecrets.get.mockResolvedValue(JSON.stringify(globalConfig))
+
+				const activeProfile = await providerSettingsManager.getActiveProfileName()
+				expect(activeProfile).toBe("default")
+			})
+		})
+
+		describe("setModeConfig with workspace scope", () => {
+			it("should store mode config in workspace when scope is workspace", async () => {
+				;(workspace as any).workspaceFolders = [{ uri: { fsPath: "/test/workspace" } }]
+
+				const globalConfig: ProviderProfiles = {
+					currentApiConfigName: "default",
+					apiConfigs: {
+						default: { id: "default-id" },
+						test: { id: "test-id" },
+					},
+					modeApiConfigs: {
+						code: "default-id",
+					},
+				}
+
+				mockSecrets.get.mockResolvedValue(JSON.stringify(globalConfig))
+
+				await providerSettingsManager.setModeConfig("code", "test-id", "workspace")
+
+				// Should update workspace state
+				expect(mockWorkspaceState.update).toHaveBeenCalledWith("roo_workspace_overrides", {
+					modeApiConfigs: { code: "test-id" },
+				})
+
+				// Global config should remain unchanged
+				const globalStoreCalls = mockSecrets.store.mock.calls
+				if (globalStoreCalls.length > 0) {
+					const lastGlobalConfig = JSON.parse(globalStoreCalls[globalStoreCalls.length - 1][1])
+					expect(lastGlobalConfig.modeApiConfigs.code).toBe("default-id")
+				}
+			})
+
+			it("should update existing workspace mode configs", async () => {
+				;(workspace as any).workspaceFolders = [{ uri: { fsPath: "/test/workspace" } }]
+
+				mockWorkspaceState.get.mockReturnValue({
+					modeApiConfigs: {
+						architect: "architect-id",
+					},
+				})
+
+				const globalConfig: ProviderProfiles = {
+					currentApiConfigName: "default",
+					apiConfigs: {},
+					modeApiConfigs: {},
+				}
+
+				mockSecrets.get.mockResolvedValue(JSON.stringify(globalConfig))
+
+				await providerSettingsManager.setModeConfig("code", "test-id", "workspace")
+
+				// Should merge with existing workspace configs
+				expect(mockWorkspaceState.update).toHaveBeenCalledWith("roo_workspace_overrides", {
+					modeApiConfigs: {
+						architect: "architect-id",
+						code: "test-id",
+					},
+				})
+			})
+		})
+
+		describe("getModeConfigId with workspace overrides", () => {
+			it("should return workspace mode config when it exists", async () => {
+				;(workspace as any).workspaceFolders = [{ uri: { fsPath: "/test/workspace" } }]
+
+				const globalConfig: ProviderProfiles = {
+					currentApiConfigName: "default",
+					apiConfigs: {
+						global: { id: "global-id" },
+						workspace: { id: "workspace-id" },
+					},
+					modeApiConfigs: {
+						code: "global-id",
+					},
+				}
+
+				mockSecrets.get.mockResolvedValue(JSON.stringify(globalConfig))
+				mockWorkspaceState.get.mockReturnValue({
+					modeApiConfigs: {
+						code: "workspace-id",
+					},
+				})
+
+				const configId = await providerSettingsManager.getModeConfigId("code")
+				expect(configId).toBe("workspace-id")
+			})
+
+			it("should fall back to global when workspace config doesn't exist", async () => {
+				;(workspace as any).workspaceFolders = [{ uri: { fsPath: "/test/workspace" } }]
+
+				const globalConfig: ProviderProfiles = {
+					currentApiConfigName: "default",
+					apiConfigs: {
+						global: { id: "global-id" },
+					},
+					modeApiConfigs: {
+						code: "global-id",
+					},
+				}
+
+				mockSecrets.get.mockResolvedValue(JSON.stringify(globalConfig))
+				mockWorkspaceState.get.mockReturnValue({
+					modeApiConfigs: {
+						code: "non-existent-id",
+					},
+				})
+
+				const configId = await providerSettingsManager.getModeConfigId("code")
+				expect(configId).toBe("global-id")
+			})
+
+			it("should return global config when not in workspace", async () => {
+				;(workspace as any).workspaceFolders = undefined
+
+				const globalConfig: ProviderProfiles = {
+					currentApiConfigName: "default",
+					apiConfigs: {
+						global: { id: "global-id" },
+					},
+					modeApiConfigs: {
+						code: "global-id",
+					},
+				}
+
+				mockSecrets.get.mockResolvedValue(JSON.stringify(globalConfig))
+
+				const configId = await providerSettingsManager.getModeConfigId("code")
+				expect(configId).toBe("global-id")
+			})
+		})
+
+		describe("clearWorkspaceOverrides", () => {
+			it("should clear workspace overrides when in workspace", async () => {
+				;(workspace as any).workspaceFolders = [{ uri: { fsPath: "/test/workspace" } }]
+
+				await providerSettingsManager.clearWorkspaceOverrides()
+
+				expect(mockWorkspaceState.update).toHaveBeenCalledWith("roo_workspace_overrides", undefined)
+			})
+
+			it("should do nothing when not in workspace", async () => {
+				;(workspace as any).workspaceFolders = undefined
+
+				await providerSettingsManager.clearWorkspaceOverrides()
+
+				expect(mockWorkspaceState.update).not.toHaveBeenCalled()
+			})
+		})
+
+		describe("getConfigScope", () => {
+			it("should return workspace when workspace overrides exist", async () => {
+				;(workspace as any).workspaceFolders = [{ uri: { fsPath: "/test/workspace" } }]
+
+				mockWorkspaceState.get.mockReturnValue({
+					currentApiConfigName: "workspace-profile",
+				})
+
+				const scope = await providerSettingsManager.getConfigScope()
+				expect(scope).toBe("workspace")
+			})
+
+			it("should return workspace when mode configs exist in workspace", async () => {
+				;(workspace as any).workspaceFolders = [{ uri: { fsPath: "/test/workspace" } }]
+
+				mockWorkspaceState.get.mockReturnValue({
+					modeApiConfigs: { code: "test-id" },
+				})
+
+				const scope = await providerSettingsManager.getConfigScope()
+				expect(scope).toBe("workspace")
+			})
+
+			it("should return global when no workspace overrides", async () => {
+				;(workspace as any).workspaceFolders = [{ uri: { fsPath: "/test/workspace" } }]
+
+				mockWorkspaceState.get.mockReturnValue(undefined)
+
+				const scope = await providerSettingsManager.getConfigScope()
+				expect(scope).toBe("global")
+			})
+
+			it("should return global when not in workspace", async () => {
+				;(workspace as any).workspaceFolders = undefined
+
+				const scope = await providerSettingsManager.getConfigScope()
+				expect(scope).toBe("global")
+			})
 		})
 	})
 })

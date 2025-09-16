@@ -87,6 +87,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			taskHistory,
 			clineMessages,
 			commands,
+			currentConfigScope,
 		} = useExtensionState()
 
 		// Find the ID and display text for the currently selected API configuration.
@@ -901,9 +902,38 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 		)
 
 		// Helper function to handle API config change
-		const handleApiConfigChange = useCallback((value: string) => {
-			vscode.postMessage({ type: "loadApiConfigurationById", text: value })
+		const handleApiConfigChange = useCallback((value: string, scope?: "global" | "workspace") => {
+			vscode.postMessage({ type: "loadApiConfigurationById", text: value, scope })
+			// Update local state to reflect the scope
+			if (scope) {
+				setIsWorkspaceScoped(scope === "workspace")
+			}
 		}, [])
+
+		// Handle scope change for API configuration
+		const handleApiConfigScopeChange = useCallback(
+			(scope: "global" | "workspace") => {
+				// When user changes scope, re-apply the current config with the new scope
+				if (currentConfigId) {
+					handleApiConfigChange(currentConfigId, scope)
+				}
+				setIsWorkspaceScoped(scope === "workspace")
+			},
+			[currentConfigId, handleApiConfigChange],
+		)
+
+		// Check if we're in a workspace context
+		const hasWorkspace = useMemo(() => {
+			return !!(cwd && cwd.length > 0)
+		}, [cwd])
+
+		// Track if current config is workspace-scoped (from extension state)
+		const [isWorkspaceScoped, setIsWorkspaceScoped] = useState(currentConfigScope === "workspace")
+
+		// Update local state when extension state changes
+		useEffect(() => {
+			setIsWorkspaceScoped(currentConfigScope === "workspace")
+		}, [currentConfigScope])
 
 		return (
 			<div
@@ -1202,11 +1232,17 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 							displayName={displayName}
 							disabled={selectApiConfigDisabled}
 							title={t("chat:selectApiConfig")}
-							onChange={handleApiConfigChange}
+							onChange={(value) => {
+								// When selecting a new config, use the currently selected scope
+								handleApiConfigChange(value, isWorkspaceScoped ? "workspace" : "global")
+							}}
 							triggerClassName="min-w-[28px] text-ellipsis overflow-hidden flex-shrink"
 							listApiConfigMeta={listApiConfigMeta || []}
 							pinnedApiConfigs={pinnedApiConfigs}
 							togglePinnedApiConfig={togglePinnedApiConfig}
+							isWorkspaceScoped={isWorkspaceScoped}
+							onScopeChange={handleApiConfigScopeChange}
+							hasWorkspace={hasWorkspace}
 						/>
 						<AutoApproveDropdown triggerClassName="min-w-[28px] text-ellipsis overflow-hidden flex-shrink" />
 					</div>

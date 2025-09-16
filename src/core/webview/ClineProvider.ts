@@ -1288,8 +1288,8 @@ export class ClineProvider
 		await this.postStateToWebview()
 	}
 
-	async activateProviderProfile(args: { name: string } | { id: string }) {
-		const { name, id, ...providerSettings } = await this.providerSettingsManager.activateProfile(args)
+	async activateProviderProfile(args: { name: string } | { id: string }, scope: "global" | "workspace" = "global") {
+		const { name, id, ...providerSettings } = await this.providerSettingsManager.activateProfile(args, scope)
 
 		// See `upsertProviderProfile` for a description of what this is doing.
 		await Promise.all([
@@ -1301,7 +1301,7 @@ export class ClineProvider
 		const { mode } = await this.getState()
 
 		if (id) {
-			await this.providerSettingsManager.setModeConfig(mode, id)
+			await this.providerSettingsManager.setModeConfig(mode, id, scope)
 		}
 
 		// Change the provider for the current task.
@@ -1795,9 +1795,13 @@ export class ClineProvider
 		const currentMode = mode ?? defaultModeSlug
 		const hasSystemPromptOverride = await this.hasFileBasedSystemPromptOverride(currentMode)
 
+		// Get the current configuration scope
+		const currentConfigScope = await this.providerSettingsManager.getConfigScope()
+
 		return {
 			version: this.context.extension?.packageJSON?.version ?? "",
 			apiConfiguration,
+			currentConfigScope,
 			customInstructions,
 			alwaysAllowReadOnly: alwaysAllowReadOnly ?? false,
 			alwaysAllowReadOnlyOutsideWorkspace: alwaysAllowReadOnlyOutsideWorkspace ?? false,
