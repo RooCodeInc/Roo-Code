@@ -47,7 +47,7 @@ export function CookieConsent({
 	cookieName = CONSENT_COOKIE_NAME,
 	debug = false,
 }: CookieConsentProps) {
-	const [hostname, setHostname] = useState<string>("localhost")
+	const [hostname, setHostname] = useState<string>(CONSENT_COOKIE_DOMAIN)
 
 	useEffect(() => {
 		setHostname(window.location.hostname)
