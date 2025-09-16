@@ -36,7 +36,7 @@
 	"settings.vsCodeLmModelSelector.family.description": "Die Familie des Sprachmodells (z.B. gpt-4)",
 	"settings.customStoragePath.description": "Benutzerdefinierter Speicherpfad. Leer lassen, um den Standardspeicherort zu verwenden. Unterstützt absolute Pfade (z.B. 'D:\\RooCodeStorage')",
 	"settings.enableCodeActions.description": "Charles Schnelle Problembehebung aktivieren.",
-	"settings.autoImportSettingsPath.description": "Pfad zu einer RooCode-Konfigurationsdatei, die beim Start der Erweiterung automatisch importiert wird. Unterstützt absolute Pfade und Pfade relativ zum Home-Verzeichnis (z.B. '~/Documents/roo-code-settings.json'). Leer lassen, um den automatischen Import zu deaktivieren.",
+	"settings.autoImportSettingsPath.description": "Pfad zu einer RooCode-Konfigurationsdatei, die beim Start der Erweiterung automatisch importiert wird. Unterstützt absolute Pfade und Pfade relativ zum Home-Verzeichnis (z.B. '~/Documents/Charles-code-settings.json'). Leer lassen, um den automatischen Import zu deaktivieren.",
 	"settings.useAgentRules.description": "Aktiviert das Laden von AGENTS.md-Dateien für agentenspezifische Regeln (siehe https://agent-rules.org/)",
 	"settings.apiRequestTimeout.description": "Maximale Wartezeit in Sekunden auf API-Antworten (0 = kein Timeout, 1-3600s, Standard: 600s). Höhere Werte werden für lokale Anbieter wie LM Studio und Ollama empfohlen, die möglicherweise mehr Verarbeitungszeit benötigen."
 }

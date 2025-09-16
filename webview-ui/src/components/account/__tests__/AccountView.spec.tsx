@@ -9,17 +9,17 @@ vi.mock("@src/i18n/TranslationContext", () => ({
 			const translations: Record<string, string> = {
 				"account:title": "Account",
 				"settings:common.done": "Done",
-				"account:signIn": "Connect to Roo Code Cloud",
-				"account:cloudBenefitsTitle": "Connect to Roo Code Cloud",
+				"account:signIn": "Connect to Charles Cloud",
+				"account:cloudBenefitsTitle": "Connect to Charles Cloud",
 				"account:cloudBenefitSharing": "Share tasks with others",
 				"account:cloudBenefitHistory": "Access your task history",
 				"account:cloudBenefitMetrics": "Get a holistic view of your token consumption",
 				"account:logOut": "Log out",
 				"account:connect": "Connect Now",
-				"account:visitCloudWebsite": "Visit Roo Code Cloud",
+				"account:visitCloudWebsite": "Visit Charles Cloud",
 				"account:remoteControl": "Roomote Control",
 				"account:remoteControlDescription":
-					"Enable following and interacting with tasks in this workspace with Roo Code Cloud",
+					"Enable following and interacting with tasks in this workspace with Charles Cloud",
 				"account:profilePicture": "Profile picture",
 			}
 			return translations[key] || key
@@ -67,7 +67,7 @@ describe("AccountView", () => {
 		)
 
 		// Check that the benefits section is displayed
-		expect(screen.getByRole("heading", { name: "Connect to Roo Code Cloud" })).toBeInTheDocument()
+		expect(screen.getByRole("heading", { name: "Connect to Charles Cloud" })).toBeInTheDocument()
 		expect(screen.getByText("Share tasks with others")).toBeInTheDocument()
 		expect(screen.getByText("Access your task history")).toBeInTheDocument()
 		expect(screen.getByText("Get a holistic view of your token consumption")).toBeInTheDocument()
@@ -124,7 +124,7 @@ describe("AccountView", () => {
 		expect(screen.getByTestId("remote-control-toggle")).toBeInTheDocument()
 		expect(screen.getByText("Roomote Control")).toBeInTheDocument()
 		expect(
-			screen.getByText("Enable following and interacting with tasks in this workspace with Roo Code Cloud"),
+			screen.getByText("Enable following and interacting with tasks in this workspace with Charles Cloud"),
 		).toBeInTheDocument()
 	})
 

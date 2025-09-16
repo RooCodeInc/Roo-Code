@@ -34,7 +34,7 @@
 		"about": "Sobre"
 	},
 	"prompts": {
-		"description": "Configure prompts de suporte usados para ações rápidas como melhorar prompts, explicar código e corrigir problemas. Esses prompts ajudam o Roo a fornecer melhor assistência para tarefas comuns de desenvolvimento."
+		"description": "Configure prompts de suporte usados para ações rápidas como melhorar prompts, explicar código e corrigir problemas. Esses prompts ajudam o Charles a fornecer melhor assistência para tarefas comuns de desenvolvimento."
 	},
 	"codeIndex": {
 		"title": "Indexação de Código",
@@ -126,16 +126,16 @@
 		"resetToDefault": "Redefinir para o padrão"
 	},
 	"autoApprove": {
-		"description": "Permitir que o Roo realize operações automaticamente sem exigir aprovação. Ative essas configurações apenas se confiar totalmente na IA e compreender os riscos de segurança associados.",
+		"description": "Permitir que o Charles realize operações automaticamente sem exigir aprovação. Ative essas configurações apenas se confiar totalmente na IA e compreender os riscos de segurança associados.",
 		"enabled": "Aprovação automática habilitada",
 		"toggleAriaLabel": "Alternar aprovação automática",
 		"disabledAriaLabel": "Aprovação automática desativada - selecione as opções primeiro",
 		"readOnly": {
 			"label": "Leitura",
-			"description": "Quando ativado, o Roo visualizará automaticamente o conteúdo do diretório e lerá arquivos sem que você precise clicar no botão Aprovar.",
+			"description": "Quando ativado, o Charles visualizará automaticamente o conteúdo do diretório e lerá arquivos sem que você precise clicar no botão Aprovar.",
 			"outsideWorkspace": {
 				"label": "Incluir arquivos fora do espaço de trabalho",
-				"description": "Permitir que o Roo leia arquivos fora do espaço de trabalho atual sem exigir aprovação."
+				"description": "Permitir que o Charles leia arquivos fora do espaço de trabalho atual sem exigir aprovação."
 			}
 		},
 		"write": {
@@ -144,11 +144,11 @@
 			"delayLabel": "Atraso após escritas para permitir que diagnósticos detectem problemas potenciais",
 			"outsideWorkspace": {
 				"label": "Incluir arquivos fora do espaço de trabalho",
-				"description": "Permitir que o Roo crie e edite arquivos fora do espaço de trabalho atual sem exigir aprovação."
+				"description": "Permitir que o Charles crie e edite arquivos fora do espaço de trabalho atual sem exigir aprovação."
 			},
 			"protected": {
 				"label": "Incluir arquivos protegidos",
-				"description": "Permitir que o Roo crie e edite arquivos protegidos (como .rooignore e arquivos de configuração .roo/) sem exigir aprovação."
+				"description": "Permitir que o Charles crie e edite arquivos protegidos (como .rooignore e arquivos de configuração .Charles/) sem exigir aprovação."
 			}
 		},
 		"browser": {
@@ -365,13 +365,13 @@
 			"draftModelDesc": "O modelo de rascunho deve ser da mesma família de modelos para que a decodificação especulativa funcione corretamente.",
 			"selectDraftModel": "Selecionar Modelo de Rascunho",
 			"noModelsFound": "Nenhum modelo de rascunho encontrado. Certifique-se de que o LM Studio esteja em execução com o Modo Servidor ativado.",
-			"description": "O LM Studio permite que você execute modelos localmente em seu computador. Para instruções sobre como começar, veja o <a>guia de início rápido</a> deles. Você também precisará iniciar o recurso de <b>servidor local</b> do LM Studio para usá-lo com esta extensão. <span>Nota:</span> O Roo Code usa prompts complexos e funciona melhor com modelos Claude. Modelos menos capazes podem não funcionar como esperado."
+			"description": "O LM Studio permite que você execute modelos localmente em seu computador. Para instruções sobre como começar, veja o <a>guia de início rápido</a> deles. Você também precisará iniciar o recurso de <b>servidor local</b> do LM Studio para usá-lo com esta extensão. <span>Nota:</span> O Charles usa prompts complexos e funciona melhor com modelos Claude. Modelos menos capazes podem não funcionar como esperado."
 		},
 		"ollama": {
 			"baseUrl": "URL Base (opcional)",
 			"modelId": "ID do Modelo",
 			"description": "O Ollama permite que você execute modelos localmente em seu computador. Para instruções sobre como começar, veja o guia de início rápido deles.",
-			"warning": "Nota: O Roo Code usa prompts complexos e funciona melhor com modelos Claude. Modelos menos capazes podem não funcionar como esperado."
+			"warning": "Nota: O Charles usa prompts complexos e funciona melhor com modelos Claude. Modelos menos capazes podem não funcionar como esperado."
 		},
 		"unboundApiKey": "Chave de API Unbound",
 		"getUnboundApiKey": "Obter chave de API Unbound",
@@ -381,9 +381,9 @@
 			"description": "Não é necessária chave de API, mas o usuário precisa ajudar a copiar e colar as informações para a IA do chat web.",
 			"instructions": "Durante o uso, uma caixa de diálogo será exibida e a mensagem atual será copiada para a área de transferência automaticamente. Você precisa colar isso nas versões web de IA (como ChatGPT ou Claude), depois copiar a resposta da IA de volta para a caixa de diálogo e clicar no botão confirmar."
 		},
-		"roo": {
-			"authenticatedMessage": "Autenticado com segurança através da sua conta Roo Code Cloud.",
-			"connectButton": "Conectar ao Roo Code Cloud"
+		"Charles": {
+			"authenticatedMessage": "Autenticado com segurança através da sua conta Charles Cloud.",
+			"connectButton": "Conectar ao Charles Cloud"
 		},
 		"openRouter": {
 			"providerRouting": {
@@ -393,7 +393,7 @@
 			}
 		},
 		"customModel": {
-			"capabilities": "Configure as capacidades e preços para seu modelo personalizado compatível com OpenAI. Tenha cuidado ao especificar as capacidades do modelo, pois elas podem afetar como o Roo Code funciona.",
+			"capabilities": "Configure as capacidades e preços para seu modelo personalizado compatível com OpenAI. Tenha cuidado ao especificar as capacidades do modelo, pois elas podem afetar como o Charles funciona.",
 			"maxTokens": {
 				"label": "Máximo de Tokens de Saída",
 				"description": "Número máximo de tokens que o modelo pode gerar em uma resposta. (Especifique -1 para permitir que o servidor defina o máximo de tokens.)"
@@ -440,7 +440,7 @@
 		},
 		"consecutiveMistakeLimit": {
 			"label": "Limite de Erros e Repetições",
-			"description": "Número de erros consecutivos ou ações repetidas antes de exibir o diálogo 'Roo está com problemas'",
+			"description": "Número de erros consecutivos ou ações repetidas antes de exibir o diálogo 'Charles está com problemas'",
 			"unlimitedDescription": "Tentativas ilimitadas ativadas (prosseguimento automático). O diálogo nunca aparecerá.",
 			"warning": "⚠️ Definir como 0 permite tentativas ilimitadas, o que pode consumir um uso significativo da API"
 		},
@@ -470,7 +470,7 @@
 	"browser": {
 		"enable": {
 			"label": "Ativar ferramenta de navegador",
-			"description": "Quando ativado, o Roo pode usar um navegador para interagir com sites ao usar modelos que suportam o uso do computador. <0>Saiba mais</0>"
+			"description": "Quando ativado, o Charles pode usar um navegador para interagir com sites ao usar modelos que suportam o uso do computador. <0>Saiba mais</0>"
 		},
 		"viewport": {
 			"label": "Tamanho da viewport",
@@ -498,18 +498,18 @@
 	"checkpoints": {
 		"enable": {
 			"label": "Ativar pontos de verificação automáticos",
-			"description": "Quando ativado, o Roo criará automaticamente pontos de verificação durante a execução de tarefas, facilitando a revisão de alterações ou o retorno a estados anteriores. <0>Saiba mais</0>"
+			"description": "Quando ativado, o Charles criará automaticamente pontos de verificação durante a execução de tarefas, facilitando a revisão de alterações ou o retorno a estados anteriores. <0>Saiba mais</0>"
 		}
 	},
 	"notifications": {
 		"sound": {
 			"label": "Ativar efeitos sonoros",
-			"description": "Quando ativado, o Roo reproduzirá efeitos sonoros para notificações e eventos.",
+			"description": "Quando ativado, o Charles reproduzirá efeitos sonoros para notificações e eventos.",
 			"volumeLabel": "Volume"
 		},
 		"tts": {
 			"label": "Ativar texto para fala",
-			"description": "Quando ativado, o Roo lerá em voz alta suas respostas usando texto para fala.",
+			"description": "Quando ativado, o Charles lerá em voz alta suas respostas usando texto para fala.",
 			"speedLabel": "Velocidade"
 		}
 	},
@@ -517,7 +517,7 @@
 		"description": "Controle quais informações são incluídas na janela de contexto da IA, afetando o uso de token e a qualidade da resposta",
 		"autoCondenseContextPercent": {
 			"label": "Limite para acionar a condensação inteligente de contexto",
-			"description": "Quando a janela de contexto atingir este limite, o Roo a condensará automaticamente."
+			"description": "Quando a janela de contexto atingir este limite, o Charles a condensará automaticamente."
 		},
 		"condensingApiConfiguration": {
 			"label": "Configuração de API para Condensação de Contexto",
@@ -533,7 +533,7 @@
 		},
 		"autoCondenseContext": {
 			"name": "Acionar automaticamente a condensação inteligente de contexto",
-			"description": "Quando habilitado, o Roo condensará automaticamente o contexto quando o limite for atingido. Quando desabilitado, você ainda pode acionar manualmente a condensação de contexto."
+			"description": "Quando habilitado, o Charles condensará automaticamente o contexto quando o limite for atingido. Quando desabilitado, você ainda pode acionar manualmente a condensação de contexto."
 		},
 		"openTabs": {
 			"label": "Limite de contexto de abas abertas",
@@ -549,7 +549,7 @@
 		},
 		"maxReadFile": {
 			"label": "Limite de auto-truncamento de leitura de arquivo",
-			"description": "O Roo lê este número de linhas quando o modelo omite valores de início/fim. Se este número for menor que o total do arquivo, o Roo gera um índice de números de linha das definições de código. Casos especiais: -1 instrui o Roo a ler o arquivo inteiro (sem indexação), e 0 instrui a não ler linhas e fornecer apenas índices de linha para contexto mínimo. Valores mais baixos minimizam o uso inicial de contexto, permitindo leituras posteriores precisas de intervalos de linhas. Requisições com início/fim explícitos não são limitadas por esta configuração.",
+			"description": "O Charles lê este número de linhas quando o modelo omite valores de início/fim. Se este número for menor que o total do arquivo, o Charles gera um índice de números de linha das definições de código. Casos especiais: -1 instrui o Charles a ler o arquivo inteiro (sem indexação), e 0 instrui a não ler linhas e fornecer apenas índices de linha para contexto mínimo. Valores mais baixos minimizam o uso inicial de contexto, permitindo leituras posteriores precisas de intervalos de linhas. Requisições com início/fim explícitos não são limitadas por esta configuração.",
 			"lines": "linhas",
 			"always_full_read": "Sempre ler o arquivo inteiro"
 		},
@@ -658,7 +658,7 @@
 	"advanced": {
 		"diff": {
 			"label": "Ativar edição através de diffs",
-			"description": "Quando ativado, o Roo poderá editar arquivos mais rapidamente e rejeitará automaticamente escritas completas de arquivos truncados. Funciona melhor com o modelo mais recente Claude 3.7 Sonnet.",
+			"description": "Quando ativado, o Charles poderá editar arquivos mais rapidamente e rejeitará automaticamente escritas completas de arquivos truncados. Funciona melhor com o modelo mais recente Claude 3.7 Sonnet.",
 			"strategy": {
 				"label": "Estratégia de diff",
 				"options": {
@@ -679,7 +679,7 @@
 		},
 		"todoList": {
 			"label": "Habilitar ferramenta de lista de tarefas",
-			"description": "Quando habilitado, o Roo pode criar e gerenciar listas de tarefas para acompanhar o progresso das tarefas. Isso ajuda a organizar tarefas complexas em etapas gerenciáveis."
+			"description": "Quando habilitado, o Charles pode criar e gerenciar listas de tarefas para acompanhar o progresso das tarefas. Isso ajuda a organizar tarefas complexas em etapas gerenciáveis."
 		}
 	},
 	"experimental": {
@@ -689,23 +689,23 @@
 		},
 		"SEARCH_AND_REPLACE": {
 			"name": "Usar ferramenta de busca e substituição experimental",
-			"description": "Ativar a ferramenta de busca e substituição experimental, permitindo que o Roo substitua várias instâncias de um termo de busca em uma única solicitação."
+			"description": "Ativar a ferramenta de busca e substituição experimental, permitindo que o Charles substitua várias instâncias de um termo de busca em uma única solicitação."
 		},
 		"INSERT_BLOCK": {
 			"name": "Usar ferramenta de inserção de conteúdo experimental",
-			"description": "Ativar a ferramenta de inserção de conteúdo experimental, permitindo que o Roo insira conteúdo em números de linha específicos sem precisar criar um diff."
+			"description": "Ativar a ferramenta de inserção de conteúdo experimental, permitindo que o Charles insira conteúdo em números de linha específicos sem precisar criar um diff."
 		},
 		"POWER_STEERING": {
 			"name": "Usar modo \"direção assistida\" experimental",
-			"description": "Quando ativado, o Roo lembrará o modelo sobre os detalhes da sua definição de modo atual com mais frequência. Isso levará a uma adesão mais forte às definições de função e instruções personalizadas, mas usará mais tokens por mensagem."
+			"description": "Quando ativado, o Charles lembrará o modelo sobre os detalhes da sua definição de modo atual com mais frequência. Isso levará a uma adesão mais forte às definições de função e instruções personalizadas, mas usará mais tokens por mensagem."
 		},
 		"MULTI_SEARCH_AND_REPLACE": {
 			"name": "Usar ferramenta diff de múltiplos blocos experimental",
-			"description": "Quando ativado, o Roo usará a ferramenta diff de múltiplos blocos. Isso tentará atualizar vários blocos de código no arquivo em uma única solicitação."
+			"description": "Quando ativado, o Charles usará a ferramenta diff de múltiplos blocos. Isso tentará atualizar vários blocos de código no arquivo em uma única solicitação."
 		},
 		"CONCURRENT_FILE_READS": {
 			"name": "Habilitar leitura simultânea de arquivos",
-			"description": "Quando habilitado, o Roo pode ler vários arquivos em uma única solicitação. Quando desabilitado, o Roo deve ler arquivos um de cada vez. Desabilitar pode ajudar ao trabalhar com modelos menos capazes ou quando você deseja mais controle sobre o acesso aos arquivos."
+			"description": "Quando habilitado, o Charles pode ler vários arquivos em uma única solicitação. Quando desabilitado, o Charles deve ler arquivos um de cada vez. Desabilitar pode ajudar ao trabalhar com modelos menos capazes ou quando você deseja mais controle sobre o acesso aos arquivos."
 		},
 		"MARKETPLACE": {
 			"name": "Ativar Marketplace",
@@ -713,11 +713,11 @@
 		},
 		"MULTI_FILE_APPLY_DIFF": {
 			"name": "Habilitar edições de arquivos concorrentes",
-			"description": "Quando habilitado, o Roo pode editar múltiplos arquivos em uma única solicitação. Quando desabilitado, o Roo deve editar arquivos um de cada vez. Desabilitar isso pode ajudar ao trabalhar com modelos menos capazes ou quando você quer mais controle sobre modificações de arquivos."
+			"description": "Quando habilitado, o Charles pode editar múltiplos arquivos em uma única solicitação. Quando desabilitado, o Charles deve editar arquivos um de cada vez. Desabilitar isso pode ajudar ao trabalhar com modelos menos capazes ou quando você quer mais controle sobre modificações de arquivos."
 		},
 		"PREVENT_FOCUS_DISRUPTION": {
 			"name": "Edição em segundo plano",
-			"description": "Previne a interrupção do foco do editor quando habilitado. As edições de arquivos acontecem em segundo plano sem abrir visualizações de diferenças ou roubar o foco. Você pode continuar trabalhando sem interrupções enquanto o Roo faz alterações. Os arquivos podem ser abertos sem foco para capturar diagnósticos ou permanecer completamente fechados."
+			"description": "Previne a interrupção do foco do editor quando habilitado. As edições de arquivos acontecem em segundo plano sem abrir visualizações de diferenças ou roubar o foco. Você pode continuar trabalhando sem interrupções enquanto o Charles faz alterações. Os arquivos podem ser abertos sem foco para capturar diagnósticos ou permanecer completamente fechados."
 		},
 		"ASSISTANT_MESSAGE_PARSER": {
 			"name": "Usar o novo parser de mensagens",
@@ -730,7 +730,7 @@
 	},
 	"promptCaching": {
 		"label": "Desativar cache de prompts",
-		"description": "Quando marcado, o Roo não usará o cache de prompts para este modelo."
+		"description": "Quando marcado, o Charles não usará o cache de prompts para este modelo."
 	},
 	"temperature": {
 		"useCustom": "Usar temperatura personalizada",
@@ -762,17 +762,17 @@
 		}
 	},
 	"modelPicker": {
-		"automaticFetch": "A extensão busca automaticamente a lista mais recente de modelos disponíveis em <serviceLink>{{serviceName}}</serviceLink>. Se você não tem certeza sobre qual modelo escolher, o Roo Code funciona melhor com <defaultModelLink>{{defaultModelId}}</defaultModelLink>. Você também pode pesquisar por \"free\" para encontrar opções gratuitas atualmente disponíveis.",
+		"automaticFetch": "A extensão busca automaticamente a lista mais recente de modelos disponíveis em <serviceLink>{{serviceName}}</serviceLink>. Se você não tem certeza sobre qual modelo escolher, o Charles funciona melhor com <defaultModelLink>{{defaultModelId}}</defaultModelLink>. Você também pode pesquisar por \"free\" para encontrar opções gratuitas atualmente disponíveis.",
 		"label": "Modelo",
 		"searchPlaceholder": "Pesquisar",
 		"noMatchFound": "Nenhuma correspondência encontrada",
 		"useCustomModel": "Usar personalizado: {{modelId}}"
 	},
 	"footer": {
-		"feedback": "Se tiver alguma dúvida ou feedback, sinta-se à vontade para abrir um problema em <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> ou juntar-se a <redditLink>reddit.com/r/RooCode</redditLink> ou <discordLink>discord.gg/roocode</discordLink>",
+		"feedback": "Se tiver alguma dúvida ou feedback, sinta-se à vontade para abrir um problema em <githubLink>github.com/Newton-School/charles</githubLink> ou juntar-se a <redditLink>reddit.com/r/RooCode</redditLink> ou <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {
 			"label": "Permitir relatórios anônimos de erros e uso",
-			"description": "Ajude a melhorar o Roo Code enviando dados de uso anônimos e relatórios de erros. Nunca são enviados código, prompts ou informações pessoais. Consulte nossa política de privacidade para mais detalhes."
+			"description": "Ajude a melhorar o Charles enviando dados de uso anônimos e relatórios de erros. Nunca são enviados código, prompts ou informações pessoais. Consulte nossa política de privacidade para mais detalhes."
 		},
 		"settings": {
 			"import": "Importar",

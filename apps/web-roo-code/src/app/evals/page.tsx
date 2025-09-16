@@ -15,7 +15,7 @@ const IMAGE = {
 	url: "https://i.imgur.com/ijP7aZm.png",
 	width: 1954,
 	height: 1088,
-	alt: "Roo Code Evals – LLM coding benchmarks",
+	alt: "Charles Evals – LLM coding benchmarks",
 }
 
 export const metadata: Metadata = {

@@ -65,7 +65,7 @@ export default async function Enterprise() {
 						<div className="flex flex-col justify-center space-y-6 sm:space-y-8">
 							<div>
 								<h1 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl lg:text-6xl">
-									<span className="block">Roo Code Cloud for</span>
+									<span className="block">Charles Cloud for</span>
 									<AnimatedText className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
 										Enterprise
 									</AnimatedText>
@@ -94,7 +94,7 @@ export default async function Enterprise() {
 									size="lg"
 									className="w-full sm:w-auto bg-white/20 dark:bg-white/10 backdrop-blur-sm border border-black/40 dark:border-white/30 hover:border-blue-400 hover:bg-white/30 dark:hover:bg-white/20 hover:shadow-[0_0_20px_rgba(59,130,246,0.5)] transition-all duration-300">
 									<a href="#benefits" className="flex w-full items-center justify-center">
-										Why Roo Code
+										Why Charles
 									</a>
 								</Button>
 							</div>
@@ -106,16 +106,16 @@ export default async function Enterprise() {
 							<div className="relative z-10 rounded-lg border border-border bg-card p-6 shadow-lg">
 								<div className="mb-4 flex items-center space-x-2">
 									<Code className="h-6 w-6 text-blue-400" />
-									<h3 className="text-lg font-semibold">Roo Code Cloud Control-Plane</h3>
+									<h3 className="text-lg font-semibold">Charles Cloud Control-Plane</h3>
 								</div>
 								<p className="mb-4 text-sm text-muted-foreground">
-									A unified control system for managing Roo Code across your organization, with the
+									A unified control system for managing Charles across your organization, with the
 									flexibility to extend governance to your broader AI toolkit.
 								</p>
 								<div className="space-y-2">
 									<div className="flex items-center space-x-2">
 										<CheckCircle className="h-4 w-4 text-green-400" />
-										<span className="text-sm">Centralized Roo Code management</span>
+										<span className="text-sm">Centralized Charles management</span>
 									</div>
 									<div className="flex items-center space-x-2">
 										<CheckCircle className="h-4 w-4 text-green-400" />
@@ -144,8 +144,8 @@ export default async function Enterprise() {
 							Take Control of Your AI Development
 						</h2>
 						<p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
-							Roo Code Cloud provides enterprise-grade control and visibility for Roo Code deployments,
-							with an extensible architecture for your evolving AI strategy.
+							Charles Cloud provides enterprise-grade control and visibility for Charles deployments, with
+							an extensible architecture for your evolving AI strategy.
 						</p>
 					</div>
 
@@ -159,7 +159,7 @@ export default async function Enterprise() {
 							</div>
 							<h3 className="mb-2 text-xl font-bold">Centralized AI Management Hub</h3>
 							<p className="text-muted-foreground">
-								Manage Roo Code deployments enterprise-wide, with an extensible platform ready for your
+								Manage Charles deployments enterprise-wide, with an extensible platform ready for your
 								broader AI ecosystem.
 							</p>
 							<ul className="mt-4 space-y-2">
@@ -169,7 +169,7 @@ export default async function Enterprise() {
 								</li>
 								<li className="flex items-start">
 									<CheckCircle className="mr-2 mt-0.5 h-5 w-5 shrink-0 text-green-500" />
-									<span>Multi-model support for Roo</span>
+									<span>Multi-model support for Charles</span>
 								</li>
 								<li className="flex items-start">
 									<CheckCircle className="mr-2 mt-0.5 h-5 w-5 shrink-0 text-green-500" />
@@ -187,7 +187,7 @@ export default async function Enterprise() {
 							</div>
 							<h3 className="mb-2 text-xl font-bold">Real-Time Usage Visibility</h3>
 							<p className="text-muted-foreground">
-								Track Roo Code usage across teams with detailed analytics and cost attribution.
+								Track Charles usage across teams with detailed analytics and cost attribution.
 							</p>
 							<ul className="mt-4 space-y-2">
 								<li className="flex items-start">
@@ -214,7 +214,7 @@ export default async function Enterprise() {
 							</div>
 							<h3 className="mb-2 text-xl font-bold">Enterprise-Grade Governance</h3>
 							<p className="text-muted-foreground">
-								Implement security policies for Roo Code that align with your enterprise AI governance
+								Implement security policies for Charles that align with your enterprise AI governance
 								framework.
 							</p>
 							<ul className="mt-4 space-y-2">
@@ -242,7 +242,7 @@ export default async function Enterprise() {
 							</div>
 							<h3 className="mb-2 text-xl font-bold">5-Minute Control-Plane Setup</h3>
 							<p className="text-muted-foreground">
-								Deploy your Roo Code control-plane instantly with our SaaS solution. No infrastructure
+								Deploy your Charles control-plane instantly with our SaaS solution. No infrastructure
 								required.
 							</p>
 							<ul className="mt-4 space-y-2">
@@ -270,7 +270,7 @@ export default async function Enterprise() {
 							</div>
 							<h3 className="mb-2 text-xl font-bold">Manage AI Development Costs</h3>
 							<p className="text-muted-foreground">
-								Track and control Roo Code costs with detailed analytics and budget controls.
+								Track and control Charles costs with detailed analytics and budget controls.
 							</p>
 							<ul className="mt-4 space-y-2">
 								<li className="flex items-start">
@@ -297,7 +297,7 @@ export default async function Enterprise() {
 							</div>
 							<h3 className="mb-2 text-xl font-bold">Zero Friction for Developers</h3>
 							<p className="text-muted-foreground">
-								Developers get seamless Roo Code access while you maintain governance and visibility.
+								Developers get seamless Charles access while you maintain governance and visibility.
 							</p>
 							<ul className="mt-4 space-y-2">
 								<li className="flex items-start">
@@ -324,7 +324,7 @@ export default async function Enterprise() {
 					<div className="mb-12 text-center">
 						<h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Why You Need a Control-Plane</h2>
 						<p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
-							See how Roo Code Cloud brings enterprise control to AI-powered development.
+							See how Charles Cloud brings enterprise control to AI-powered development.
 						</p>
 					</div>
 
@@ -345,7 +345,7 @@ export default async function Enterprise() {
 											d="M6 18L18 6M6 6l12 12"
 										/>
 									</svg>
-									<span>Roo Code tokens managed individually by developers</span>
+									<span>Charles tokens managed individually by developers</span>
 								</li>
 								<li className="flex items-start">
 									<svg
@@ -411,11 +411,11 @@ export default async function Enterprise() {
 						</div>
 
 						<div className="rounded-lg border border-border bg-card p-8 shadow-sm">
-							<h3 className="mb-4 text-2xl font-bold text-blue-400">Roo Code Cloud Control-Plane</h3>
+							<h3 className="mb-4 text-2xl font-bold text-blue-400">Charles Cloud Control-Plane</h3>
 							<ul className="space-y-3">
 								<li className="flex items-start">
 									<CheckCircle className="mr-2 mt-0.5 h-5 w-5 text-green-500" />
-									<span>Centralized Roo Code management dashboard</span>
+									<span>Centralized Charles management dashboard</span>
 								</li>
 								<li className="flex items-start">
 									<CheckCircle className="mr-2 mt-0.5 h-5 w-5 text-green-500" />
@@ -521,14 +521,14 @@ export default async function Enterprise() {
 									Ready to Transform Your Development Process?
 								</h2>
 								<p className="mb-8 text-lg text-muted-foreground">
-									Join our early access program and be among the first to experience the power of Roo
-									Code Cloud for Enterprise.
+									Join our early access program and be among the first to experience the power of
+									Charles Code Cloud for Enterprise.
 								</p>
 								<div className="grid gap-4 sm:grid-cols-2 sm:gap-6">
 									<div className="rounded-lg border border-border bg-card/80 backdrop-blur-sm p-6 text-center shadow-lg hover:shadow-xl transition-all duration-300 dark:border-white/20 dark:bg-gray-800/80 dark:hover:border-white/40 dark:hover:bg-gray-700/90 dark:hover:shadow-[0_20px_50px_rgba(255,255,255,0.2)] dark:hover:scale-[1.02]">
 										<h3 className="mb-2 text-xl font-bold">Become an Early Access Partner</h3>
 										<p className="mb-4 text-muted-foreground">
-											Collaborate in shaping Roo Code&apos;s enterprise solution.
+											Collaborate in shaping Charles&apos;s enterprise solution.
 										</p>
 										<ContactForm
 											formType="early-access"
@@ -539,7 +539,7 @@ export default async function Enterprise() {
 									<div className="rounded-lg border border-border bg-card/80 backdrop-blur-sm p-6 text-center shadow-lg hover:shadow-xl transition-all duration-300 dark:border-white/20 dark:bg-gray-800/80 dark:hover:border-white/40 dark:hover:bg-gray-700/90 dark:hover:shadow-[0_20px_50px_rgba(255,255,255,0.2)] dark:hover:scale-[1.02]">
 										<h3 className="mb-2 text-xl font-bold">Request a Demo</h3>
 										<p className="mb-4 text-muted-foreground">
-											See Roo Code&apos;s enterprise capabilities in action.
+											See Charles&apos;s enterprise capabilities in action.
 										</p>
 										<ContactForm
 											formType="demo"

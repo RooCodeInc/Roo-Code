@@ -12,7 +12,7 @@
 </div>
 <br>
 <div align="center">
-  <h2>Roo Code 커뮤니티에 참여하세요</h2>
+  <h2>Charles 커뮤니티에 참여하세요</h2>
   <p>개발자들과 연결하고, 아이디어를 기여하고, 최신 AI 기반 코딩 도구를 계속 확인하세요.</p>
   
   <a href="https://discord.gg/roocode" target="_blank"><img src="https://img.shields.io/badge/Discord%20참여-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord 참여"></a>
@@ -23,7 +23,7 @@
 <br>
 
 <div align="center">
-<h1>Roo Code</h1>
+<h1>Charles</h1>
 <p align="center">
 <img src="https://media.githubusercontent.com/media/RooCodeInc/Roo-Code/main/src/assets/docs/demo.gif" width="100%" />
 </p>
@@ -35,7 +35,7 @@
 
 </div>
 
-**Roo Code**는 에디터 내에서 작동하는 AI 기반 **자율 코딩 에이전트**입니다. 다음과 같은 기능을 제공합니다:
+**Charles**는 에디터 내에서 작동하는 AI 기반 **자율 코딩 에이전트**입니다. 다음과 같은 기능을 제공합니다:
 
 - 자연어로 의사소통
 - 워크스페이스에서 직접 파일 읽기 및 쓰기
@@ -50,9 +50,9 @@
 
 ---
 
-## 🎉 Roo Code 3.25 출시
+## 🎉 Charles 3.25 출시
 
-Roo Code 3.25가 개발 워크플로우를 향상시키는 강력한 새 기능과 중요한 개선사항을 제공합니다!
+Charles 3.25가 개발 워크플로우를 향상시키는 강력한 새 기능과 중요한 개선사항을 제공합니다!
 
 - **<bold>브라우저 세션 관리</bold>** - 여러 브라우저 세션을 동시에 관리하여 다양한 작업과 테스트 환경을 분리할 수 있습니다.
 - **<bold>프롬프트 캐싱</bold>** - 자주 사용되는 프롬프트를 캐시하여 응답 시간을 크게 단축하고 API 사용량을 줄입니다.
@@ -71,7 +71,7 @@ Roo Code 3.25가 개발 워크플로우를 향상시키는 강력한 새 기능�
 
 ## 빠른 시작
 
-1. [Roo Code 설치](https://docs.roocode.com/getting-started/installing)
+1. [Charles 설치](https://docs.roocode.com/getting-started/installing)
 2. [AI 제공자 연결](https://docs.roocode.com/getting-started/connecting-api-provider)
 3. [첫 번째 작업 시도](https://docs.roocode.com/getting-started/your-first-task)
 
@@ -166,7 +166,7 @@ code --install-extension bin/roo-cline-<version>.vsix
 
 ## 면책 조항
 
-**참고하세요** Roo Code, Inc는 Roo Code와 관련하여 제공되거나 사용 가능한 모든 코드, 모델 또는 기타 도구, 관련 타사 도구 또는 결과 출력물에 대해 **어떠한** 진술이나 보증도 하지 **않습니다**. 이러한 도구나 출력물 사용과 관련된 **모든 위험**을 감수합니다; 이러한 도구는 **"있는 그대로"** 및 **"사용 가능한 대로"** 제공됩니다. 이러한 위험에는 지적 재산권 침해, 사이버 취약성 또는 공격, 편향, 부정확성, 오류, 결함, 바이러스, 다운타임, 재산 손실 또는 손상 및/또는 개인 상해가 포함될 수 있습니다(단, 이에 국한되지 않음). 귀하는 이러한 도구나 출력물 사용에 대해 전적으로 책임을 집니다(합법성, 적절성 및 결과를 포함하되 이에 국한되지 않음).
+**참고하세요** Charles, Inc는 Roo Code와 관련하여 제공되거나 사용 가능한 모든 코드, 모델 또는 기타 도구, 관련 타사 도구 또는 결과 출력물에 대해 **어떠한** 진술이나 보증도 하지 **않습니다**. 이러한 도구나 출력물 사용과 관련된 **모든 위험**을 감수합니다; 이러한 도구는 **"있는 그대로"** 및 **"사용 가능한 대로"** 제공됩니다. 이러한 위험에는 지적 재산권 침해, 사이버 취약성 또는 공격, 편향, 부정확성, 오류, 결함, 바이러스, 다운타임, 재산 손실 또는 손상 및/또는 개인 상해가 포함될 수 있습니다(단, 이에 국한되지 않음). 귀하는 이러한 도구나 출력물 사용에 대해 전적으로 책임을 집니다(합법성, 적절성 및 결과를 포함하되 이에 국한되지 않음).
 
 ---
 
@@ -228,7 +228,7 @@ Roo Code를 더 좋게 만드는 데 도움을 준 모든 기여자에게 감사
 
 ## 라이선스
 
-[Apache 2.0 © 2025 Roo Code, Inc.](../LICENSE)
+[Apache 2.0 © 2025 Charles, Inc.](../LICENSE)
 
 ---
 

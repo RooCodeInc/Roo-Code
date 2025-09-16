@@ -34,7 +34,7 @@
 	"roleDefinition": {
 		"title": "Rollendefinition",
 		"resetToDefault": "Auf Standardwerte zurücksetzen",
-		"description": "Definiere Roos Expertise und Persönlichkeit für diesen Modus. Diese Beschreibung prägt, wie Roo sich präsentiert und an Aufgaben herangeht."
+		"description": "Definiere Roos Expertise und Persönlichkeit für diesen Modus. Diese Beschreibung prägt, wie Charles sich präsentiert und an Aufgaben herangeht."
 	},
 	"description": {
 		"title": "Kurzbeschreibung (für Menschen)",
@@ -50,7 +50,7 @@
 		"title": "Modusspezifische benutzerdefinierte Anweisungen (optional)",
 		"resetToDefault": "Auf Standardwerte zurücksetzen",
 		"description": "Fügen Sie verhaltensspezifische Richtlinien für den Modus {{modeName}} hinzu.",
-		"loadFromFile": "Benutzerdefinierte Anweisungen für den Modus {{mode}} können auch aus dem Ordner <span>.roo/rules-{{slug}}/</span> in deinem Arbeitsbereich oder aus dem globalen <0>.roo/rules-{{slug}}/</0> geladen werden (.roorules-{{slug}} und .clinerules-{{slug}} sind veraltet und werden bald nicht mehr funktionieren)."
+		"loadFromFile": "Benutzerdefinierte Anweisungen für den Modus {{mode}} können auch aus dem Ordner <span>.Charles/rules-{{slug}}/</span> in deinem Arbeitsbereich oder aus dem globalen <0>.Charles/rules-{{slug}}/</0> geladen werden (.roorules-{{slug}} und .clinerules-{{slug}} sind veraltet und werden bald nicht mehr funktionieren)."
 	},
 	"exportMode": {
 		"title": "Modus exportieren",
@@ -64,11 +64,11 @@
 		"importing": "Importiere...",
 		"global": {
 			"label": "Globale Ebene",
-			"description": "Verfügbar in allen Projekten. Wenn der exportierte Modus Regeldateien enthielt, werden diese im globalen Ordner .roo/rules-{slug}/ neu erstellt."
+			"description": "Verfügbar in allen Projekten. Wenn der exportierte Modus Regeldateien enthielt, werden diese im globalen Ordner .Charles/rules-{slug}/ neu erstellt."
 		},
 		"project": {
 			"label": "Projektebene",
-			"description": "Nur in diesem Arbeitsbereich verfügbar. Wenn der exportierte Modus Regeldateien enthielt, werden diese im Ordner .roo/rules-{slug}/ neu erstellt."
+			"description": "Nur in diesem Arbeitsbereich verfügbar. Wenn der exportierte Modus Regeldateien enthielt, werden diese im Ordner .Charles/rules-{slug}/ neu erstellt."
 		}
 	},
 	"advanced": {
@@ -77,7 +77,7 @@
 	"globalCustomInstructions": {
 		"title": "Benutzerdefinierte Anweisungen für alle Modi",
 		"description": "Diese Anweisungen gelten für alle Modi. Sie bieten einen grundlegenden Satz von Verhaltensweisen, die durch modusspezifische Anweisungen unten erweitert werden können. <0>Mehr erfahren</0>",
-		"loadFromFile": "Anweisungen können auch aus dem Ordner <span>.roo/rules/</span> in deinem Arbeitsbereich oder aus dem globalen <0>.roo/rules/</0> geladen werden (.roorules und .clinerules sind veraltet und werden bald nicht mehr funktionieren)."
+		"loadFromFile": "Anweisungen können auch aus dem Ordner <span>.Charles/rules/</span> in deinem Arbeitsbereich oder aus dem globalen <0>.Charles/rules/</0> geladen werden (.roorules und .clinerules sind veraltet und werden bald nicht mehr funktionieren)."
 	},
 	"systemPrompt": {
 		"preview": "System-Prompt Vorschau",
@@ -106,7 +106,7 @@
 		"types": {
 			"ENHANCE": {
 				"label": "Prompt verbessern",
-				"description": "Verwenden Sie die Prompt-Verbesserung, um maßgeschneiderte Vorschläge oder Verbesserungen für Ihre Eingaben zu erhalten. Dies stellt sicher, dass Roo Ihre Absicht versteht und die bestmöglichen Antworten liefert. Verfügbar über das ✨-Symbol im Chat."
+				"description": "Verwenden Sie die Prompt-Verbesserung, um maßgeschneiderte Vorschläge oder Verbesserungen für Ihre Eingaben zu erhalten. Dies stellt sicher, dass Charles Ihre Absicht versteht und die bestmöglichen Antworten liefert. Verfügbar über das ✨-Symbol im Chat."
 			},
 			"CONDENSE": {
 				"label": "Kontextverdichtung",
@@ -148,7 +148,7 @@
 	},
 	"advancedSystemPrompt": {
 		"title": "Erweitert: System-Prompt überschreiben",
-		"description": "<2>⚠️ Warnung:</2> Diese erweiterte Funktion umgeht Sicherheitsvorkehrungen. <1>LESEN SIE DIES VOR DER VERWENDUNG!</1>Überschreiben Sie den Standard-System-Prompt, indem Sie eine Datei unter <span>.roo/system-prompt-{{slug}}</span> erstellen."
+		"description": "<2>⚠️ Warnung:</2> Diese erweiterte Funktion umgeht Sicherheitsvorkehrungen. <1>LESEN SIE DIES VOR DER VERWENDUNG!</1>Überschreiben Sie den Standard-System-Prompt, indem Sie eine Datei unter <span>.Charles/system-prompt-{{slug}}</span> erstellen."
 	},
 	"createModeDialog": {
 		"title": "Neuen Modus erstellen",

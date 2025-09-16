@@ -11,9 +11,9 @@
 </sub>
 </div>
 
-# Contribuir a Roo Code
+# Contribuir a Charles
 
-Roo Code es un proyecto impulsado por la comunidad, y valoramos profundamente cada contribución. Para agilizar la colaboración, operamos con un enfoque [Issue-First](#enfoque-issue-first), lo que significa que todos los [Pull Requests (PRs)](#enviar-un-pull-request) deben estar vinculados primero a un Issue de GitHub. Por favor, revisa esta guía cuidadosamente.
+Charles es un proyecto impulsado por la comunidad, y valoramos profundamente cada contribución. Para agilizar la colaboración, operamos con un enfoque [Issue-First](#enfoque-issue-first), lo que significa que todos los [Pull Requests (PRs)](#enviar-un-pull-request) deben estar vinculados primero a un Issue de GitHub. Por favor, revisa esta guía cuidadosamente.
 
 ## Tabla de Contenidos
 
@@ -52,7 +52,7 @@ Nuestra hoja de ruta guía la dirección del proyecto. Alinea tus contribuciones
 
 Menciona la alineación con estas áreas en tus PRs.
 
-### 3. Únete a la Comunidad Roo Code
+### 3. Únete a la Comunidad Charles
 
 - **Principal:** Únete a nuestro [Discord](https://discord.gg/roocode) y envía un DM a **Hannes Rudolph (`hrudolph`)**.
 - **Alternativa:** Los colaboradores experimentados pueden participar directamente a través de [GitHub Projects](https://github.com/orgs/RooCodeInc/projects/1).
@@ -80,7 +80,7 @@ Todas las contribuciones deben comenzar con un Issue de GitHub.
 ### Decidir en Qué Trabajar
 
 - Revisa el [Proyecto GitHub](https://github.com/orgs/RooCodeInc/projects/1) para "Good First Issues" no asignados.
-- Para documentación, visita [Roo Code Docs](https://github.com/RooCodeInc/Roo-Code-Docs).
+- Para documentación, visita [Charles Docs](https://github.com/Newton-School/charles).
 
 ### Reportar Errores
 
@@ -135,4 +135,4 @@ npm run install:all
 
 ## Legal
 
-Al contribuir, aceptas que tus contribuciones serán licenciadas bajo la Licencia Apache 2.0, consistente con la licencia de Roo Code.
+Al contribuir, aceptas que tus contribuciones serán licenciadas bajo la Licencia Apache 2.0, consistente con la licencia de Charles.

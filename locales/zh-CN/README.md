@@ -12,7 +12,7 @@
 </div>
 <br>
 <div align="center">
-  <h2>加入 Roo Code 社区</h2>
+  <h2>加入 Charles 社区</h2>
   <p>与开发者联系，贡献想法，紧跟最新的 AI 驱动编码工具。</p>
   
   <a href="https://discord.gg/roocode" target="_blank"><img src="https://img.shields.io/badge/%E5%8A%A0%E5%85%A5%20Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="加入 Discord"></a>
@@ -23,7 +23,7 @@
 <br>
 
 <div align="center">
-<h1>Roo Code</h1>
+<h1>Charles</h1>
 <p align="center">
 <img src="https://media.githubusercontent.com/media/RooCodeInc/Roo-Code/main/src/assets/docs/demo.gif" width="100%" />
 </p>
@@ -35,7 +35,7 @@
 
 </div>
 
-**Roo Code** 是一个 AI 驱动的**自主编码代理**，它存在于您的编辑器中。它可以：
+**Charles** 是一个 AI 驱动的**自主编码代理**，它存在于您的编辑器中。它可以：
 
 - 用自然语言沟通
 - 直接在您的工作区读写文件
@@ -44,15 +44,15 @@
 - 与任何 OpenAI 兼容或自定义的 API/模型集成
 - 通过**自定义模式**调整其"个性"和能力
 
-无论您是寻找灵活的编码伙伴、系统架构师，还是像 QA 工程师或产品经理这样的专业角色，Roo Code 都可以帮助您更高效地构建软件。
+无论您是寻找灵活的编码伙伴、系统架构师，还是像 QA 工程师或产品经理这样的专业角色，Charles 都可以帮助您更高效地构建软件。
 
 查看 [CHANGELOG](../../CHANGELOG.md) 获取详细更新和修复信息。
 
 ---
 
-## 🎉 Roo Code 3.25 已发布
+## 🎉 Charles 3.25 已发布
 
-Roo Code 3.25 带来强大的新功能和重大改进，提升您的开发工作流程。
+Charles 3.25 带来强大的新功能和重大改进，提升您的开发工作流程。
 
 - **Hugging Face 提供者** - 通过新的 Hugging Face 提供者直接访问大量优秀的开源模型，具有无缝集成和模型选择功能。
 - **内联命令控制** - 新的自动批准和拒绝控制功能为命令执行提供精确控制，具有可自定义的权限设置。
@@ -60,7 +60,7 @@ Roo Code 3.25 带来强大的新功能和重大改进，提升您的开发工作
 
 ---
 
-## Roo Code 能做什么？
+## Charles 能做什么？
 
 - 🚀 从自然语言描述**生成代码**
 - 🔧 **重构和调试**现有代码
@@ -71,7 +71,7 @@ Roo Code 3.25 带来强大的新功能和重大改进，提升您的开发工作
 
 ## 快速入门
 
-1. [安装 Roo Code](https://docs.roocode.com/getting-started/installing)
+1. [安装 Charles](https://docs.roocode.com/getting-started/installing)
 2. [连接您的 AI 提供者](https://docs.roocode.com/getting-started/connecting-api-provider)
 3. [尝试您的第一个任务](https://docs.roocode.com/getting-started/your-first-task)
 
@@ -79,7 +79,7 @@ Roo Code 3.25 带来强大的新功能和重大改进，提升您的开发工作
 
 ### 多种模式
 
-Roo Code 通过专业化的[模式](https://docs.roocode.com/basic-usage/using-modes)适应您的需求：
+Charles 通过专业化的[模式](https://docs.roocode.com/basic-usage/using-modes)适应您的需求：
 
 - **代码模式：** 用于通用编码任务
 - **架构师模式：** 用于规划和技术领导
@@ -89,18 +89,18 @@ Roo Code 通过专业化的[模式](https://docs.roocode.com/basic-usage/using-m
 
 ### 智能工具
 
-Roo Code 配备了强大的[工具](https://docs.roocode.com/basic-usage/how-tools-work)，可以：
+Charles 配备了强大的[工具](https://docs.roocode.com/basic-usage/how-tools-work)，可以：
 
 - 读写项目中的文件
 - 在 VS Code 终端中执行命令
 - 控制网络浏览器
 - 通过 [MCP（模型上下文协议）](https://docs.roocode.com/advanced-usage/mcp)使用外部工具
 
-MCP 通过允许您添加无限自定义工具来扩展 Roo Code 的能力。与外部 API 集成、连接数据库或创建专业开发工具 - MCP 提供了扩展 Roo Code 功能以满足您特定需求的框架。
+MCP 通过允许您添加无限自定义工具来扩展 Charles 的能力。与外部 API 集成、连接数据库或创建专业开发工具 - MCP 提供了扩展 Charles 功能以满足您特定需求的框架。
 
 ### 自定义
 
-使 Roo Code 按照您的方式工作：
+使 Charles 按照您的方式工作：
 
 - [自定义指令](https://docs.roocode.com/advanced-usage/custom-instructions)实现个性化行为
 - [自定义模式](https://docs.roocode.com/advanced-usage/custom-modes)用于专业任务
@@ -144,7 +144,7 @@ npm run dev
 ```
 
 4. **调试**：
-   在 VSCode 中按 `F5`（或**运行** → **开始调试**）打开一个加载了 Roo Code 的新会话。
+   在 VSCode 中按 `F5`（或**运行** → **开始调试**）打开一个加载了 Charles 的新会话。
 
 网页视图的更改将立即显示。核心扩展的更改将需要重启扩展主机。
 
@@ -166,7 +166,7 @@ code --install-extension bin/roo-cline-<version>.vsix
 
 ## 免责声明
 
-**请注意**，Roo Code, Inc **不**对与 Roo Code 相关提供或可用的任何代码、模型或其他工具，任何相关的第三方工具，或任何结果作出任何陈述或保证。您承担使用任何此类工具或输出的**所有风险**；此类工具按**"原样"**和**"可用性"**提供。此类风险可能包括但不限于知识产权侵权、网络漏洞或攻击、偏见、不准确、错误、缺陷、病毒、停机时间、财产损失或损坏和/或人身伤害。您对任何此类工具或输出的使用（包括但不限于其合法性、适当性和结果）负全部责任。
+**请注意**，Charles, Inc **不**对与 Charles 相关提供或可用的任何代码、模型或其他工具，任何相关的第三方工具，或任何结果作出任何陈述或保证。您承担使用任何此类工具或输出的**所有风险**；此类工具按**"原样"**和**"可用性"**提供。此类风险可能包括但不限于知识产权侵权、网络漏洞或攻击、偏见、不准确、错误、缺陷、病毒、停机时间、财产损失或损坏和/或人身伤害。您对任何此类工具或输出的使用（包括但不限于其合法性、适当性和结果）负全部责任。
 
 ---
 
@@ -178,7 +178,7 @@ code --install-extension bin/roo-cline-<version>.vsix
 
 ## 贡献者
 
-感谢所有帮助改进 Roo Code 的贡献者！
+感谢所有帮助改进 Charles 的贡献者！
 
 <!-- START CONTRIBUTORS SECTION - AUTO-GENERATED, DO NOT EDIT MANUALLY -->
 
@@ -228,8 +228,8 @@ code --install-extension bin/roo-cline-<version>.vsix
 
 ## 许可证
 
-[Apache 2.0 © 2025 Roo Code, Inc.](../LICENSE)
+[Apache 2.0 © 2025 Charles, Inc.](../LICENSE)
 
 ---
 
-**享受 Roo Code！** 无论您是让它保持短绳还是让它自主漫游，我们都迫不及待地想看看您会构建什么。如果您有问题或功能想法，请访问我们的 [Reddit 社区](https://www.reddit.com/r/RooCode/)或 [Discord](https://discord.gg/roocode)。编码愉快！
+**享受 Charles！** 无论您是让它保持短绳还是让它自主漫游，我们都迫不及待地想看看您会构建什么。如果您有问题或功能想法，请访问我们的 [Reddit 社区](https://www.reddit.com/r/RooCode/)或 [Discord](https://discord.gg/roocode)。编码愉快！

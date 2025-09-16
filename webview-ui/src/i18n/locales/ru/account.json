@@ -3,15 +3,15 @@
 	"profilePicture": "Фото профиля",
 	"logOut": "Выход",
 	"testApiAuthentication": "Проверить аутентификацию API",
-	"signIn": "Подключиться к Roo Code Cloud",
+	"signIn": "Подключиться к Charles Cloud",
 	"connect": "Подключиться",
-	"cloudBenefitsTitle": "Подключиться к Roo Code Cloud",
+	"cloudBenefitsTitle": "Подключиться к Charles Cloud",
 	"cloudBenefitsSubtitle": "Синхронизируй свои промпты и телеметрию, чтобы включить:",
 	"cloudBenefitHistory": "Онлайн-история задач",
 	"cloudBenefitSharing": "Функции обмена и совместной работы",
 	"cloudBenefitMetrics": "Метрики использования на основе задач, токенов и затрат",
 	"cloudBenefitWalkaway": "Отслеживайте и управляйте задачами откуда угодно с Roomote Control",
 	"remoteControl": "Roomote Control",
-	"remoteControlDescription": "Позволяет отслеживать и взаимодействовать с задачами в этом рабочем пространстве с Roo Code Cloud",
-	"visitCloudWebsite": "Посетить Roo Code Cloud"
+	"remoteControlDescription": "Позволяет отслеживать и взаимодействовать с задачами в этом рабочем пространстве с Charles Cloud",
+	"visitCloudWebsite": "Посетить Charles Cloud"
 }

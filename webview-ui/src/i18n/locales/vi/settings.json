@@ -34,7 +34,7 @@
 		"about": "Giới thiệu"
 	},
 	"prompts": {
-		"description": "Cấu hình các lời nhắc hỗ trợ được sử dụng cho các hành động nhanh như cải thiện lời nhắc, giải thích mã và khắc phục sự cố. Những lời nhắc này giúp Roo cung cấp hỗ trợ tốt hơn cho các tác vụ phát triển phổ biến."
+		"description": "Cấu hình các lời nhắc hỗ trợ được sử dụng cho các hành động nhanh như cải thiện lời nhắc, giải thích mã và khắc phục sự cố. Những lời nhắc này giúp Charles cung cấp hỗ trợ tốt hơn cho các tác vụ phát triển phổ biến."
 	},
 	"codeIndex": {
 		"title": "Lập chỉ mục mã nguồn",
@@ -126,16 +126,16 @@
 		"resetToDefault": "Đặt lại về mặc định"
 	},
 	"autoApprove": {
-		"description": "Cho phép Roo tự động thực hiện các hoạt động mà không cần phê duyệt. Chỉ bật những cài đặt này nếu bạn hoàn toàn tin tưởng AI và hiểu rõ các rủi ro bảo mật liên quan.",
+		"description": "Cho phép Charles tự động thực hiện các hoạt động mà không cần phê duyệt. Chỉ bật những cài đặt này nếu bạn hoàn toàn tin tưởng AI và hiểu rõ các rủi ro bảo mật liên quan.",
 		"enabled": "Phê duyệt tự động đã bật",
 		"toggleAriaLabel": "Chuyển đổi tự động phê duyệt",
 		"disabledAriaLabel": "Tự động phê duyệt bị vô hiệu hóa - hãy chọn các tùy chọn trước",
 		"readOnly": {
 			"label": "Đọc",
-			"description": "Khi được bật, Roo sẽ tự động xem nội dung thư mục và đọc tệp mà không yêu cầu bạn nhấp vào nút Phê duyệt.",
+			"description": "Khi được bật, Charles sẽ tự động xem nội dung thư mục và đọc tệp mà không yêu cầu bạn nhấp vào nút Phê duyệt.",
 			"outsideWorkspace": {
 				"label": "Bao gồm các tệp ngoài không gian làm việc",
-				"description": "Cho phép Roo đọc các tệp bên ngoài không gian làm việc hiện tại mà không yêu cầu phê duyệt."
+				"description": "Cho phép Charles đọc các tệp bên ngoài không gian làm việc hiện tại mà không yêu cầu phê duyệt."
 			}
 		},
 		"write": {
@@ -144,11 +144,11 @@
 			"delayLabel": "Trì hoãn sau khi ghi để cho phép chẩn đoán phát hiện các vấn đề tiềm ẩn",
 			"outsideWorkspace": {
 				"label": "Bao gồm các tệp ngoài không gian làm việc",
-				"description": "Cho phép Roo tạo và chỉnh sửa các tệp bên ngoài không gian làm việc hiện tại mà không yêu cầu phê duyệt."
+				"description": "Cho phép Charles tạo và chỉnh sửa các tệp bên ngoài không gian làm việc hiện tại mà không yêu cầu phê duyệt."
 			},
 			"protected": {
 				"label": "Bao gồm các tệp được bảo vệ",
-				"description": "Cho phép Roo tạo và chỉnh sửa các tệp được bảo vệ (như .rooignore và các tệp cấu hình .roo/) mà không yêu cầu phê duyệt."
+				"description": "Cho phép Charles tạo và chỉnh sửa các tệp được bảo vệ (như .rooignore và các tệp cấu hình .Charles/) mà không yêu cầu phê duyệt."
 			}
 		},
 		"browser": {
@@ -365,13 +365,13 @@
 			"draftModelDesc": "Mô hình nháp phải từ cùng một họ mô hình để giải mã suy đoán hoạt động chính xác.",
 			"selectDraftModel": "Chọn mô hình nháp",
 			"noModelsFound": "Không tìm thấy mô hình nháp nào. Vui lòng đảm bảo LM Studio đang chạy với chế độ máy chủ được bật.",
-			"description": "LM Studio cho phép bạn chạy các mô hình cục bộ trên máy tính của bạn. Để biết hướng dẫn về cách bắt đầu, xem <a>hướng dẫn nhanh</a> của họ. Bạn cũng sẽ cần khởi động tính năng <b>máy chủ cục bộ</b> của LM Studio để sử dụng nó với tiện ích mở rộng này. <span>Lưu ý:</span> Roo Code sử dụng các lời nhắc phức tạp và hoạt động tốt nhất với các mô hình Claude. Các mô hình kém mạnh hơn có thể không hoạt động như mong đợi."
+			"description": "LM Studio cho phép bạn chạy các mô hình cục bộ trên máy tính của bạn. Để biết hướng dẫn về cách bắt đầu, xem <a>hướng dẫn nhanh</a> của họ. Bạn cũng sẽ cần khởi động tính năng <b>máy chủ cục bộ</b> của LM Studio để sử dụng nó với tiện ích mở rộng này. <span>Lưu ý:</span> Charles sử dụng các lời nhắc phức tạp và hoạt động tốt nhất với các mô hình Claude. Các mô hình kém mạnh hơn có thể không hoạt động như mong đợi."
 		},
 		"ollama": {
 			"baseUrl": "URL cơ sở (tùy chọn)",
 			"modelId": "ID mô hình",
 			"description": "Ollama cho phép bạn chạy các mô hình cục bộ trên máy tính của bạn. Để biết hướng dẫn về cách bắt đầu, xem hướng dẫn nhanh của họ.",
-			"warning": "Lưu ý: Roo Code sử dụng các lời nhắc phức tạp và hoạt động tốt nhất với các mô hình Claude. Các mô hình kém mạnh hơn có thể không hoạt động như mong đợi."
+			"warning": "Lưu ý: Charles sử dụng các lời nhắc phức tạp và hoạt động tốt nhất với các mô hình Claude. Các mô hình kém mạnh hơn có thể không hoạt động như mong đợi."
 		},
 		"unboundApiKey": "Khóa API Unbound",
 		"getUnboundApiKey": "Lấy khóa API Unbound",
@@ -381,9 +381,9 @@
 			"description": "Không cần khóa API, nhưng người dùng cần giúp sao chép và dán thông tin vào AI trò chuyện web.",
 			"instructions": "Trong quá trình sử dụng, một hộp thoại sẽ xuất hiện và tin nhắn hiện tại sẽ được tự động sao chép vào clipboard. Bạn cần dán chúng vào các phiên bản web của AI (như ChatGPT hoặc Claude), sau đó sao chép phản hồi của AI trở lại hộp thoại và nhấp vào nút xác nhận."
 		},
-		"roo": {
-			"authenticatedMessage": "Đã xác thực an toàn thông qua tài khoản Roo Code Cloud của bạn.",
-			"connectButton": "Kết nối với Roo Code Cloud"
+		"Charles": {
+			"authenticatedMessage": "Đã xác thực an toàn thông qua tài khoản Charles Cloud của bạn.",
+			"connectButton": "Kết nối với Charles Cloud"
 		},
 		"openRouter": {
 			"providerRouting": {
@@ -393,7 +393,7 @@
 			}
 		},
 		"customModel": {
-			"capabilities": "Cấu hình các khả năng và giá cả cho mô hình tương thích OpenAI tùy chỉnh của bạn. Hãy cẩn thận khi chỉ định khả năng của mô hình, vì chúng có thể ảnh hưởng đến cách Roo Code hoạt động.",
+			"capabilities": "Cấu hình các khả năng và giá cả cho mô hình tương thích OpenAI tùy chỉnh của bạn. Hãy cẩn thận khi chỉ định khả năng của mô hình, vì chúng có thể ảnh hưởng đến cách Charles hoạt động.",
 			"maxTokens": {
 				"label": "Số token đầu ra tối đa",
 				"description": "Số lượng token tối đa mà mô hình có thể tạo ra trong một phản hồi. (Chỉ định -1 để cho phép máy chủ đặt số token tối đa.)"
@@ -440,7 +440,7 @@
 		},
 		"consecutiveMistakeLimit": {
 			"label": "Giới hạn lỗi và lặp lại",
-			"description": "Số lỗi liên tiếp hoặc hành động lặp lại trước khi hiển thị hộp thoại 'Roo đang gặp sự cố'",
+			"description": "Số lỗi liên tiếp hoặc hành động lặp lại trước khi hiển thị hộp thoại 'Charles đang gặp sự cố'",
 			"unlimitedDescription": "Đã bật thử lại không giới hạn (tự động tiếp tục). Hộp thoại sẽ không bao giờ xuất hiện.",
 			"warning": "⚠️ Đặt thành 0 cho phép thử lại không giới hạn, điều này có thể tiêu tốn mức sử dụng API đáng kể"
 		},
@@ -470,7 +470,7 @@
 	"browser": {
 		"enable": {
 			"label": "Bật công cụ trình duyệt",
-			"description": "Khi được bật, Roo có thể sử dụng trình duyệt để tương tác với các trang web khi sử dụng các mô hình hỗ trợ sử dụng máy tính. <0>Tìm hiểu thêm</0>"
+			"description": "Khi được bật, Charles có thể sử dụng trình duyệt để tương tác với các trang web khi sử dụng các mô hình hỗ trợ sử dụng máy tính. <0>Tìm hiểu thêm</0>"
 		},
 		"viewport": {
 			"label": "Kích thước khung nhìn",
@@ -498,18 +498,18 @@
 	"checkpoints": {
 		"enable": {
 			"label": "Bật điểm kiểm tra tự động",
-			"description": "Khi được bật, Roo sẽ tự động tạo các điểm kiểm tra trong quá trình thực hiện nhiệm vụ, giúp dễ dàng xem lại các thay đổi hoặc quay lại trạng thái trước đó. <0>Tìm hiểu thêm</0>"
+			"description": "Khi được bật, Charles sẽ tự động tạo các điểm kiểm tra trong quá trình thực hiện nhiệm vụ, giúp dễ dàng xem lại các thay đổi hoặc quay lại trạng thái trước đó. <0>Tìm hiểu thêm</0>"
 		}
 	},
 	"notifications": {
 		"sound": {
 			"label": "Bật hiệu ứng âm thanh",
-			"description": "Khi được bật, Roo sẽ phát hiệu ứng âm thanh cho thông báo và sự kiện.",
+			"description": "Khi được bật, Charles sẽ phát hiệu ứng âm thanh cho thông báo và sự kiện.",
 			"volumeLabel": "Âm lượng"
 		},
 		"tts": {
 			"label": "Bật chuyển văn bản thành giọng nói",
-			"description": "Khi được bật, Roo sẽ đọc to các phản hồi của nó bằng chức năng chuyển văn bản thành giọng nói.",
+			"description": "Khi được bật, Charles sẽ đọc to các phản hồi của nó bằng chức năng chuyển văn bản thành giọng nói.",
 			"speedLabel": "Tốc độ"
 		}
 	},
@@ -517,7 +517,7 @@
 		"description": "Kiểm soát thông tin nào được đưa vào cửa sổ ngữ cảnh của AI, ảnh hưởng đến việc sử dụng token và chất lượng phản hồi",
 		"autoCondenseContextPercent": {
 			"label": "Ngưỡng kích hoạt nén ngữ cảnh thông minh",
-			"description": "Khi cửa sổ ngữ cảnh đạt đến ngưỡng này, Roo sẽ tự động nén nó."
+			"description": "Khi cửa sổ ngữ cảnh đạt đến ngưỡng này, Charles sẽ tự động nén nó."
 		},
 		"condensingApiConfiguration": {
 			"label": "Cấu hình API cho Tóm tắt Ngữ cảnh",
@@ -533,7 +533,7 @@
 		},
 		"autoCondenseContext": {
 			"name": "Tự động kích hoạt nén ngữ cảnh thông minh",
-			"description": "Khi được bật, Roo sẽ tự động nén ngữ cảnh khi đạt đến ngưỡng. Khi bị tắt, bạn vẫn có thể kích hoạt nén ngữ cảnh thủ công."
+			"description": "Khi được bật, Charles sẽ tự động nén ngữ cảnh khi đạt đến ngưỡng. Khi bị tắt, bạn vẫn có thể kích hoạt nén ngữ cảnh thủ công."
 		},
 		"openTabs": {
 			"label": "Giới hạn ngữ cảnh tab đang mở",
@@ -549,7 +549,7 @@
 		},
 		"maxReadFile": {
 			"label": "Ngưỡng tự động cắt ngắn khi đọc tệp",
-			"description": "Roo đọc số dòng này khi mô hình không chỉ định giá trị bắt đầu/kết thúc. Nếu số này nhỏ hơn tổng số dòng của tệp, Roo sẽ tạo một chỉ mục số dòng của các định nghĩa mã. Trường hợp đặc biệt: -1 chỉ thị Roo đọc toàn bộ tệp (không tạo chỉ mục), và 0 chỉ thị không đọc dòng nào và chỉ cung cấp chỉ mục dòng cho ngữ cảnh tối thiểu. Giá trị thấp hơn giảm thiểu việc sử dụng ngữ cảnh ban đầu, cho phép đọc chính xác các phạm vi dòng sau này. Các yêu cầu có chỉ định bắt đầu/kết thúc rõ ràng không bị giới hạn bởi cài đặt này.",
+			"description": "Charles đọc số dòng này khi mô hình không chỉ định giá trị bắt đầu/kết thúc. Nếu số này nhỏ hơn tổng số dòng của tệp, Charles sẽ tạo một chỉ mục số dòng của các định nghĩa mã. Trường hợp đặc biệt: -1 chỉ thị Charles đọc toàn bộ tệp (không tạo chỉ mục), và 0 chỉ thị không đọc dòng nào và chỉ cung cấp chỉ mục dòng cho ngữ cảnh tối thiểu. Giá trị thấp hơn giảm thiểu việc sử dụng ngữ cảnh ban đầu, cho phép đọc chính xác các phạm vi dòng sau này. Các yêu cầu có chỉ định bắt đầu/kết thúc rõ ràng không bị giới hạn bởi cài đặt này.",
 			"lines": "dòng",
 			"always_full_read": "Luôn đọc toàn bộ tệp"
 		},
@@ -658,7 +658,7 @@
 	"advanced": {
 		"diff": {
 			"label": "Bật chỉnh sửa qua diff",
-			"description": "Khi được bật, Roo sẽ có thể chỉnh sửa tệp nhanh hơn và sẽ tự động từ chối ghi toàn bộ tệp bị cắt ngắn. Hoạt động tốt nhất với mô hình Claude 3.7 Sonnet mới nhất.",
+			"description": "Khi được bật, Charles sẽ có thể chỉnh sửa tệp nhanh hơn và sẽ tự động từ chối ghi toàn bộ tệp bị cắt ngắn. Hoạt động tốt nhất với mô hình Claude 3.7 Sonnet mới nhất.",
 			"strategy": {
 				"label": "Chiến lược diff",
 				"options": {
@@ -679,7 +679,7 @@
 		},
 		"todoList": {
 			"label": "Bật công cụ danh sách việc cần làm",
-			"description": "Khi được bật, Roo có thể tạo và quản lý danh sách việc cần làm để theo dõi tiến độ công việc. Điều này giúp tổ chức các tác vụ phức tạp thành các bước có thể quản lý được."
+			"description": "Khi được bật, Charles có thể tạo và quản lý danh sách việc cần làm để theo dõi tiến độ công việc. Điều này giúp tổ chức các tác vụ phức tạp thành các bước có thể quản lý được."
 		}
 	},
 	"experimental": {
@@ -689,23 +689,23 @@
 		},
 		"SEARCH_AND_REPLACE": {
 			"name": "Sử dụng công cụ tìm kiếm và thay thế thử nghiệm",
-			"description": "Bật công cụ tìm kiếm và thay thế thử nghiệm, cho phép Roo thay thế nhiều phiên bản của một thuật ngữ tìm kiếm trong một yêu cầu."
+			"description": "Bật công cụ tìm kiếm và thay thế thử nghiệm, cho phép Charles thay thế nhiều phiên bản của một thuật ngữ tìm kiếm trong một yêu cầu."
 		},
 		"INSERT_BLOCK": {
 			"name": "Sử dụng công cụ chèn nội dung thử nghiệm",
-			"description": "Bật công cụ chèn nội dung thử nghiệm, cho phép Roo chèn nội dung tại số dòng cụ thể mà không cần tạo diff."
+			"description": "Bật công cụ chèn nội dung thử nghiệm, cho phép Charles chèn nội dung tại số dòng cụ thể mà không cần tạo diff."
 		},
 		"POWER_STEERING": {
 			"name": "Sử dụng chế độ \"power steering\" thử nghiệm",
-			"description": "Khi được bật, Roo sẽ nhắc nhở mô hình về chi tiết định nghĩa chế độ hiện tại thường xuyên hơn. Điều này sẽ dẫn đến việc tuân thủ chặt chẽ hơn các định nghĩa vai trò và hướng dẫn tùy chỉnh, nhưng sẽ sử dụng nhiều token hơn cho mỗi tin nhắn."
+			"description": "Khi được bật, Charles sẽ nhắc nhở mô hình về chi tiết định nghĩa chế độ hiện tại thường xuyên hơn. Điều này sẽ dẫn đến việc tuân thủ chặt chẽ hơn các định nghĩa vai trò và hướng dẫn tùy chỉnh, nhưng sẽ sử dụng nhiều token hơn cho mỗi tin nhắn."
 		},
 		"MULTI_SEARCH_AND_REPLACE": {
 			"name": "Sử dụng công cụ diff đa khối thử nghiệm",
-			"description": "Khi được bật, Roo sẽ sử dụng công cụ diff đa khối. Điều này sẽ cố gắng cập nhật nhiều khối mã trong tệp trong một yêu cầu."
+			"description": "Khi được bật, Charles sẽ sử dụng công cụ diff đa khối. Điều này sẽ cố gắng cập nhật nhiều khối mã trong tệp trong một yêu cầu."
 		},
 		"CONCURRENT_FILE_READS": {
 			"name": "Bật đọc tệp đồng thời",
-			"description": "Khi bật, Roo có thể đọc nhiều tệp trong một yêu cầu duy nhất. Khi tắt, Roo phải đọc từng tệp một. Việc tắt có thể hữu ích khi làm việc với các mô hình ít khả năng hơn hoặc khi bạn muốn kiểm soát nhiều hơn quyền truy cập tệp."
+			"description": "Khi bật, Charles có thể đọc nhiều tệp trong một yêu cầu duy nhất. Khi tắt, Charles phải đọc từng tệp một. Việc tắt có thể hữu ích khi làm việc với các mô hình ít khả năng hơn hoặc khi bạn muốn kiểm soát nhiều hơn quyền truy cập tệp."
 		},
 		"MARKETPLACE": {
 			"name": "Bật Marketplace",
@@ -713,11 +713,11 @@
 		},
 		"MULTI_FILE_APPLY_DIFF": {
 			"name": "Bật chỉnh sửa tệp đồng thời",
-			"description": "Khi được bật, Roo có thể chỉnh sửa nhiều tệp trong một yêu cầu duy nhất. Khi bị tắt, Roo phải chỉnh sửa từng tệp một. Tắt tính năng này có thể hữu ích khi làm việc với các mô hình kém khả năng hơn hoặc khi bạn muốn kiểm soát nhiều hơn đối với các thay đổi tệp."
+			"description": "Khi được bật, Charles có thể chỉnh sửa nhiều tệp trong một yêu cầu duy nhất. Khi bị tắt, Charles phải chỉnh sửa từng tệp một. Tắt tính năng này có thể hữu ích khi làm việc với các mô hình kém khả năng hơn hoặc khi bạn muốn kiểm soát nhiều hơn đối với các thay đổi tệp."
 		},
 		"PREVENT_FOCUS_DISRUPTION": {
 			"name": "Chỉnh sửa nền",
-			"description": "Khi được bật, ngăn chặn gián đoạn tiêu điểm trình soạn thảo. Việc chỉnh sửa tệp diễn ra ở nền mà không mở chế độ xem diff hoặc chiếm tiêu điểm. Bạn có thể tiếp tục làm việc không bị gián đoạn trong khi Roo thực hiện thay đổi. Các tệp có thể được mở mà không có tiêu điểm để thu thập chẩn đoán hoặc giữ hoàn toàn đóng."
+			"description": "Khi được bật, ngăn chặn gián đoạn tiêu điểm trình soạn thảo. Việc chỉnh sửa tệp diễn ra ở nền mà không mở chế độ xem diff hoặc chiếm tiêu điểm. Bạn có thể tiếp tục làm việc không bị gián đoạn trong khi Charles thực hiện thay đổi. Các tệp có thể được mở mà không có tiêu điểm để thu thập chẩn đoán hoặc giữ hoàn toàn đóng."
 		},
 		"ASSISTANT_MESSAGE_PARSER": {
 			"name": "Dùng bộ phân tích tin nhắn mới",
@@ -730,7 +730,7 @@
 	},
 	"promptCaching": {
 		"label": "Tắt bộ nhớ đệm prompt",
-		"description": "Khi được chọn, Roo sẽ không sử dụng bộ nhớ đệm prompt cho mô hình này."
+		"description": "Khi được chọn, Charles sẽ không sử dụng bộ nhớ đệm prompt cho mô hình này."
 	},
 	"temperature": {
 		"useCustom": "Sử dụng nhiệt độ tùy chỉnh",
@@ -762,17 +762,17 @@
 		}
 	},
 	"modelPicker": {
-		"automaticFetch": "Tiện ích mở rộng tự động lấy danh sách mới nhất các mô hình có sẵn trên <serviceLink>{{serviceName}}</serviceLink>. Nếu bạn không chắc chắn nên chọn mô hình nào, Roo Code hoạt động tốt nhất với <defaultModelLink>{{defaultModelId}}</defaultModelLink>. Bạn cũng có thể thử tìm kiếm \"free\" cho các tùy chọn miễn phí hiện có.",
+		"automaticFetch": "Tiện ích mở rộng tự động lấy danh sách mới nhất các mô hình có sẵn trên <serviceLink>{{serviceName}}</serviceLink>. Nếu bạn không chắc chắn nên chọn mô hình nào, Charles hoạt động tốt nhất với <defaultModelLink>{{defaultModelId}}</defaultModelLink>. Bạn cũng có thể thử tìm kiếm \"free\" cho các tùy chọn miễn phí hiện có.",
 		"label": "Mô hình",
 		"searchPlaceholder": "Tìm kiếm",
 		"noMatchFound": "Không tìm thấy kết quả",
 		"useCustomModel": "Sử dụng tùy chỉnh: {{modelId}}"
 	},
 	"footer": {
-		"feedback": "Nếu bạn có bất kỳ câu hỏi hoặc phản hồi nào, vui lòng mở một vấn đề tại <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> hoặc tham gia <redditLink>reddit.com/r/RooCode</redditLink> hoặc <discordLink>discord.gg/roocode</discordLink>",
+		"feedback": "Nếu bạn có bất kỳ câu hỏi hoặc phản hồi nào, vui lòng mở một vấn đề tại <githubLink>github.com/Newton-School/charles</githubLink> hoặc tham gia <redditLink>reddit.com/r/RooCode</redditLink> hoặc <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {
 			"label": "Cho phép báo cáo lỗi và sử dụng ẩn danh",
-			"description": "Giúp cải thiện Roo Code bằng cách gửi dữ liệu sử dụng ẩn danh và báo cáo lỗi. Không bao giờ gửi mã, lời nhắc hoặc thông tin cá nhân. Xem chính sách bảo mật của chúng tôi để biết thêm chi tiết."
+			"description": "Giúp cải thiện Charles bằng cách gửi dữ liệu sử dụng ẩn danh và báo cáo lỗi. Không bao giờ gửi mã, lời nhắc hoặc thông tin cá nhân. Xem chính sách bảo mật của chúng tôi để biết thêm chi tiết."
 		},
 		"settings": {
 			"import": "Nhập",

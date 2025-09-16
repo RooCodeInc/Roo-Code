@@ -1,5 +1,5 @@
 {
-	"greeting": "Roo Code へようこそ",
+	"greeting": "Charles へようこそ",
 	"task": {
 		"title": "タスク",
 		"expand": "タスクを展開",
@@ -173,7 +173,7 @@
 		"wantsToInsert": "Rooはこのファイルにコンテンツを挿入したい:",
 		"wantsToInsertWithLineNumber": "Rooはこのファイルの{{lineNumber}}行目にコンテンツを挿入したい:",
 		"wantsToInsertAtEnd": "Rooはこのファイルの末尾にコンテンツを追加したい:",
-		"wantsToReadAndXMore": "Roo はこのファイルと他に {{count}} 個のファイルを読み込もうとしています:",
+		"wantsToReadAndXMore": "Charles はこのファイルと他に {{count}} 個のファイルを読み込もうとしています:",
 		"wantsToReadMultiple": "Rooは複数のファイルを読み取ろうとしています：",
 		"wantsToApplyBatchChanges": "Rooは複数のファイルに変更を適用したい:"
 	},
@@ -264,14 +264,14 @@
 		"countdownDisplay": "{{count}}秒"
 	},
 	"announcement": {
-		"title": "🎉 Roo Code {{version}} リリース",
+		"title": "🎉 Charles {{version}} リリース",
 		"stealthModel": {
 			"feature": "Sonicステルスモデルが今、<bold>Grok Code Fast</bold>に！この高性能推論モデルが<bold>xAI (Grok)</bold>プロバイダーの下で<code>grok-code-fast-1</code>として利用できるようになりました。",
-			"note": "Sonicに関するすべての有用なフィードバックに感謝して、xAIは<bold>Roo Code Cloud</bold>プロバイダーを通じて<code>grok-code-fast-1</code>への無料アクセスをもう1週間延長しています。",
-			"connectButton": "Roo Code Cloudに接続",
+			"note": "Sonicに関するすべての有用なフィードバックに感謝して、xAIは<bold>Charles Cloud</bold>プロバイダーを通じて<code>grok-code-fast-1</code>への無料アクセスをもう1週間延長しています。",
+			"connectButton": "Charles Cloudに接続",
 			"selectModel": "プロバイダー設定を更新するために<settingsLink>設定</settingsLink>にアクセスしてください。"
 		},
-		"description": "Roo Code {{version}}は、開発ワークフローを向上させる強力な新機能と重要な改善をもたらします。",
+		"description": "Charles {{version}}は、開発ワークフローを向上させる強力な新機能と重要な改善をもたらします。",
 		"whatsNew": "新機能",
 		"feature1": "<bold>メッセージキュー</bold>: Rooが作業中に複数のメッセージをキューに入れ、ワークフローの計画を中断することなく続行できます。",
 		"feature2": "<bold>カスタムスラッシュコマンド</bold>: よく使用するプロンプトやワークフローへの迅速なアクセスのために、パーソナライズされたスラッシュコマンドを作成し、完全なUI管理を提供します。",
@@ -314,7 +314,7 @@
 	"profileViolationWarning": "現在のプロファイルは組織の設定と互換性がありません",
 	"shellIntegration": {
 		"title": "コマンド実行警告",
-		"description": "コマンドはVSCodeターミナルシェル統合なしで実行されています。この警告を非表示にするには、<settingsLink>Roo Code設定</settingsLink>の<strong>Terminal</strong>セクションでシェル統合を無効にするか、以下のリンクを使用してVSCodeターミナル統合のトラブルシューティングを行ってください。",
+		"description": "コマンドはVSCodeターミナルシェル統合なしで実行されています。この警告を非表示にするには、<settingsLink>Charles Code設定</settingsLink>の<strong>Terminal</strong>セクションでシェル統合を無効にするか、以下のリンクを使用してVSCodeターミナル統合のトラブルシューティングを行ってください。",
 		"troubleshooting": "シェル統合のドキュメントはこちらをクリック"
 	},
 	"ask": {
@@ -355,7 +355,7 @@
 		"ariaLabel": "バージョン {{version}} - クリックしてリリースノートを表示"
 	},
 	"rooCloudCTA": {
-		"title": "Roo Code Cloud が進化中！",
+		"title": "Charles Cloud が進化中！",
 		"description": "クラウドでリモートエージェントを実行し、どこからでもタスクにアクセスし、他の人と協力し、その他多くの機能を利用できます。",
 		"joinWaitlist": "最新のアップデートを受け取るためにサインアップしてください。"
 	},

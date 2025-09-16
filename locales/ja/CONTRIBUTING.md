@@ -11,9 +11,9 @@
 </sub>
 </div>
 
-# Roo Code への貢献
+# Charles への貢献
 
-Roo Code はコミュニティ主導のプロジェクトであり、すべての貢献を大切にしています。協力をスムーズにするため、[Issue-First](#issue-first-アプローチ)方式を採用しています。これはすべての[Pull Request (PR)](#pull-request-の提出)がまずGitHub Issueに紐付けられる必要があることを意味します。このガイドをよく読んでください。
+Charles はコミュニティ主導のプロジェクトであり、すべての貢献を大切にしています。協力をスムーズにするため、[Issue-First](#issue-first-アプローチ)方式を採用しています。これはすべての[Pull Request (PR)](#pull-request-の提出)がまずGitHub Issueに紐付けられる必要があることを意味します。このガイドをよく読んでください。
 
 ## 目次
 
@@ -52,7 +52,7 @@ Roo Code はコミュニティ主導のプロジェクトであり、すべて�
 
 PRでこれらの領域との関連性に言及してください。
 
-### 3. Roo Code コミュニティに参加する
+### 3. Charles コミュニティに参加する
 
 - **主な方法：** [Discord](https://discord.gg/roocode)に参加し、**Hannes Rudolph (`hrudolph`)**にDMを送る。
 - **代替手段：** 経験豊富なコントリビューターは[GitHub Projects](https://github.com/orgs/RooCodeInc/projects/1)を通じて直接参加できます。
@@ -80,7 +80,7 @@ PRでこれらの領域との関連性に言及してください。
 ### 何に取り組むか決める
 
 - 未割り当ての「Good First Issues」を[GitHub Project](https://github.com/orgs/RooCodeInc/projects/1)でチェック。
-- ドキュメント関連は[Roo Code Docs](https://github.com/RooCodeInc/Roo-Code-Docs)を参照。
+- ドキュメント関連は[Charles Docs](https://github.com/Newton-School/charles)を参照。
 
 ### バグの報告
 

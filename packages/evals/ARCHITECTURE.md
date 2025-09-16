@@ -127,7 +127,7 @@ The controller distributes tasks across runner containers using an in-memory que
 
 Individual runners execute evaluation tasks:
 
-- **Environment Setup**: Launches VS Code with Roo extension in isolated container
+- **Environment Setup**: Launches VS Code with Charles extension in isolated container
 - **Prompt Delivery**: Sends evaluation prompt to AI agent via IPC
 - **Code Generation**: AI agent writes code using available tools and context
 - **Real-time Events**: Publishes progress updates, token usage, and completion status
@@ -160,7 +160,7 @@ Both controller and runner containers use the same base image but serve differen
 #### Runner Container Features
 
 - **Multi-language Support**: Pre-installed runtimes for Go, Java, JavaScript, Python, and Rust
-- **Development Tools**: VS Code with language-specific extensions and Roo Code extension
+- **Development Tools**: VS Code with language-specific extensions and Charles extension
 - **Containerization**: Docker-in-Docker capability for nested container execution
 - **Exercise Repository**: Git clone of evaluation exercises with test suites
 

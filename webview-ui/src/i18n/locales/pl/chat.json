@@ -1,5 +1,5 @@
 {
-	"greeting": "Witamy w Roo Code",
+	"greeting": "Witamy w Charles",
 	"task": {
 		"title": "Zadanie",
 		"expand": "Rozwiń zadanie",
@@ -21,7 +21,7 @@
 		"sharePublicly": "Udostępnij publicznie",
 		"sharePubliclyDescription": "Każdy z linkiem może uzyskać dostęp",
 		"connectToCloud": "Połącz z chmurą",
-		"connectToCloudDescription": "Zaloguj się do Roo Code Cloud, aby udostępniać zadania",
+		"connectToCloudDescription": "Zaloguj się do Charles Cloud, aby udostępniać zadania",
 		"sharingDisabledByOrganization": "Udostępnianie wyłączone przez organizację",
 		"shareSuccessOrganization": "Link organizacji skopiowany do schowka",
 		"shareSuccessPublic": "Link publiczny skopiowany do schowka"
@@ -84,7 +84,7 @@
 	},
 	"scrollToBottom": "Przewiń do dołu czatu",
 	"about": "Generuj, refaktoryzuj i debuguj kod z pomocą sztucznej inteligencji. Sprawdź naszą <DocsLink>dokumentację</DocsLink>, aby dowiedzieć się więcej.",
-	"onboarding": "<strong>Twoja lista zadań w tym obszarze roboczym jest pusta.</strong> Zacznij od wpisania zadania poniżej. Nie wiesz, jak zacząć? Przeczytaj więcej o tym, co Roo może dla Ciebie zrobić w <DocsLink>dokumentacji</DocsLink>.",
+	"onboarding": "<strong>Twoja lista zadań w tym obszarze roboczym jest pusta.</strong> Zacznij od wpisania zadania poniżej. Nie wiesz, jak zacząć? Przeczytaj więcej o tym, co Charles może dla Ciebie zrobić w <DocsLink>dokumentacji</DocsLink>.",
 	"rooTips": {
 		"boomerangTasks": {
 			"title": "Orkiestracja Zadań",
@@ -119,7 +119,7 @@
 		"title": "Tryby",
 		"marketplace": "Marketplace Trybów",
 		"settings": "Ustawienia Trybów",
-		"description": "Wyspecjalizowane persony, które dostosowują zachowanie Roo.",
+		"description": "Wyspecjalizowane persony, które dostosowują zachowanie Charles.",
 		"searchPlaceholder": "Szukaj trybów...",
 		"noResults": "Nie znaleziono wyników"
 	},
@@ -133,7 +133,7 @@
 	"diffError": {
 		"title": "Edycja nieudana"
 	},
-	"troubleMessage": "Roo ma problemy...",
+	"troubleMessage": "Charles ma problemy...",
 	"apiRequest": {
 		"title": "Zapytanie API",
 		"failed": "Zapytanie API nie powiodło się",
@@ -158,42 +158,42 @@
 		"current": "Bieżący"
 	},
 	"instructions": {
-		"wantsToFetch": "Roo chce pobrać szczegółowe instrukcje, aby pomóc w bieżącym zadaniu"
+		"wantsToFetch": "Charles chce pobrać szczegółowe instrukcje, aby pomóc w bieżącym zadaniu"
 	},
 	"fileOperations": {
-		"wantsToRead": "Roo chce przeczytać ten plik:",
-		"wantsToReadOutsideWorkspace": "Roo chce przeczytać ten plik poza obszarem roboczym:",
-		"didRead": "Roo przeczytał ten plik:",
-		"wantsToEdit": "Roo chce edytować ten plik:",
-		"wantsToEditOutsideWorkspace": "Roo chce edytować ten plik poza obszarem roboczym:",
-		"wantsToEditProtected": "Roo chce edytować chroniony plik konfiguracyjny:",
-		"wantsToCreate": "Roo chce utworzyć nowy plik:",
-		"wantsToSearchReplace": "Roo chce wykonać wyszukiwanie i zamianę w tym pliku:",
-		"didSearchReplace": "Roo wykonał wyszukiwanie i zamianę w tym pliku:",
-		"wantsToInsert": "Roo chce wstawić zawartość do tego pliku:",
-		"wantsToInsertWithLineNumber": "Roo chce wstawić zawartość do tego pliku w linii {{lineNumber}}:",
-		"wantsToInsertAtEnd": "Roo chce dodać zawartość na końcu tego pliku:",
-		"wantsToReadAndXMore": "Roo chce przeczytać ten plik i {{count}} więcej:",
-		"wantsToReadMultiple": "Roo chce odczytać wiele plików:",
-		"wantsToApplyBatchChanges": "Roo chce zastosować zmiany do wielu plików:"
+		"wantsToRead": "Charles chce przeczytać ten plik:",
+		"wantsToReadOutsideWorkspace": "Charles chce przeczytać ten plik poza obszarem roboczym:",
+		"didRead": "Charles przeczytał ten plik:",
+		"wantsToEdit": "Charles chce edytować ten plik:",
+		"wantsToEditOutsideWorkspace": "Charles chce edytować ten plik poza obszarem roboczym:",
+		"wantsToEditProtected": "Charles chce edytować chroniony plik konfiguracyjny:",
+		"wantsToCreate": "Charles chce utworzyć nowy plik:",
+		"wantsToSearchReplace": "Charles chce wykonać wyszukiwanie i zamianę w tym pliku:",
+		"didSearchReplace": "Charles wykonał wyszukiwanie i zamianę w tym pliku:",
+		"wantsToInsert": "Charles chce wstawić zawartość do tego pliku:",
+		"wantsToInsertWithLineNumber": "Charles chce wstawić zawartość do tego pliku w linii {{lineNumber}}:",
+		"wantsToInsertAtEnd": "Charles chce dodać zawartość na końcu tego pliku:",
+		"wantsToReadAndXMore": "Charles chce przeczytać ten plik i {{count}} więcej:",
+		"wantsToReadMultiple": "Charles chce odczytać wiele plików:",
+		"wantsToApplyBatchChanges": "Charles chce zastosować zmiany do wielu plików:"
 	},
 	"directoryOperations": {
-		"wantsToViewTopLevel": "Roo chce zobaczyć pliki najwyższego poziomu w tym katalogu:",
-		"didViewTopLevel": "Roo zobaczył pliki najwyższego poziomu w tym katalogu:",
-		"wantsToViewRecursive": "Roo chce rekurencyjnie zobaczyć wszystkie pliki w tym katalogu:",
-		"didViewRecursive": "Roo rekurencyjnie zobaczył wszystkie pliki w tym katalogu:",
-		"wantsToViewDefinitions": "Roo chce zobaczyć nazwy definicji kodu źródłowego używane w tym katalogu:",
-		"didViewDefinitions": "Roo zobaczył nazwy definicji kodu źródłowego używane w tym katalogu:",
-		"wantsToSearch": "Roo chce przeszukać ten katalog w poszukiwaniu <code>{{regex}}</code>:",
-		"didSearch": "Roo przeszukał ten katalog w poszukiwaniu <code>{{regex}}</code>:",
-		"wantsToSearchOutsideWorkspace": "Roo chce przeszukać ten katalog (poza obszarem roboczym) w poszukiwaniu <code>{{regex}}</code>:",
-		"didSearchOutsideWorkspace": "Roo przeszukał ten katalog (poza obszarem roboczym) w poszukiwaniu <code>{{regex}}</code>:",
-		"wantsToViewTopLevelOutsideWorkspace": "Roo chce zobaczyć pliki najwyższego poziomu w tym katalogu (poza obszarem roboczym):",
-		"didViewTopLevelOutsideWorkspace": "Roo zobaczył pliki najwyższego poziomu w tym katalogu (poza obszarem roboczym):",
-		"wantsToViewRecursiveOutsideWorkspace": "Roo chce rekurencyjnie zobaczyć wszystkie pliki w tym katalogu (poza obszarem roboczym):",
-		"didViewRecursiveOutsideWorkspace": "Roo rekurencyjnie zobaczył wszystkie pliki w tym katalogu (poza obszarem roboczym):",
-		"wantsToViewDefinitionsOutsideWorkspace": "Roo chce zobaczyć nazwy definicji kodu źródłowego używane w tym katalogu (poza obszarem roboczym):",
-		"didViewDefinitionsOutsideWorkspace": "Roo zobaczył nazwy definicji kodu źródłowego używane w tym katalogu (poza obszarem roboczym):"
+		"wantsToViewTopLevel": "Charles chce zobaczyć pliki najwyższego poziomu w tym katalogu:",
+		"didViewTopLevel": "Charles zobaczył pliki najwyższego poziomu w tym katalogu:",
+		"wantsToViewRecursive": "Charles chce rekurencyjnie zobaczyć wszystkie pliki w tym katalogu:",
+		"didViewRecursive": "Charles rekurencyjnie zobaczył wszystkie pliki w tym katalogu:",
+		"wantsToViewDefinitions": "Charles chce zobaczyć nazwy definicji kodu źródłowego używane w tym katalogu:",
+		"didViewDefinitions": "Charles zobaczył nazwy definicji kodu źródłowego używane w tym katalogu:",
+		"wantsToSearch": "Charles chce przeszukać ten katalog w poszukiwaniu <code>{{regex}}</code>:",
+		"didSearch": "Charles przeszukał ten katalog w poszukiwaniu <code>{{regex}}</code>:",
+		"wantsToSearchOutsideWorkspace": "Charles chce przeszukać ten katalog (poza obszarem roboczym) w poszukiwaniu <code>{{regex}}</code>:",
+		"didSearchOutsideWorkspace": "Charles przeszukał ten katalog (poza obszarem roboczym) w poszukiwaniu <code>{{regex}}</code>:",
+		"wantsToViewTopLevelOutsideWorkspace": "Charles chce zobaczyć pliki najwyższego poziomu w tym katalogu (poza obszarem roboczym):",
+		"didViewTopLevelOutsideWorkspace": "Charles zobaczył pliki najwyższego poziomu w tym katalogu (poza obszarem roboczym):",
+		"wantsToViewRecursiveOutsideWorkspace": "Charles chce rekurencyjnie zobaczyć wszystkie pliki w tym katalogu (poza obszarem roboczym):",
+		"didViewRecursiveOutsideWorkspace": "Charles rekurencyjnie zobaczył wszystkie pliki w tym katalogu (poza obszarem roboczym):",
+		"wantsToViewDefinitionsOutsideWorkspace": "Charles chce zobaczyć nazwy definicji kodu źródłowego używane w tym katalogu (poza obszarem roboczym):",
+		"didViewDefinitionsOutsideWorkspace": "Charles zobaczył nazwy definicji kodu źródłowego używane w tym katalogu (poza obszarem roboczym):"
 	},
 	"commandOutput": "Wyjście polecenia",
 	"commandExecution": {
@@ -215,18 +215,18 @@
 	"response": "Odpowiedź",
 	"arguments": "Argumenty",
 	"mcp": {
-		"wantsToUseTool": "Roo chce użyć narzędzia na serwerze MCP {{serverName}}:",
-		"wantsToAccessResource": "Roo chce uzyskać dostęp do zasobu na serwerze MCP {{serverName}}:"
+		"wantsToUseTool": "Charles chce użyć narzędzia na serwerze MCP {{serverName}}:",
+		"wantsToAccessResource": "Charles chce uzyskać dostęp do zasobu na serwerze MCP {{serverName}}:"
 	},
 	"modes": {
-		"wantsToSwitch": "Roo chce przełączyć się na tryb <code>{{mode}}</code>",
-		"wantsToSwitchWithReason": "Roo chce przełączyć się na tryb <code>{{mode}}</code> ponieważ: {{reason}}",
-		"didSwitch": "Roo przełączył się na tryb <code>{{mode}}</code>",
-		"didSwitchWithReason": "Roo przełączył się na tryb <code>{{mode}}</code> ponieważ: {{reason}}"
+		"wantsToSwitch": "Charles chce przełączyć się na tryb <code>{{mode}}</code>",
+		"wantsToSwitchWithReason": "Charles chce przełączyć się na tryb <code>{{mode}}</code> ponieważ: {{reason}}",
+		"didSwitch": "Charles przełączył się na tryb <code>{{mode}}</code>",
+		"didSwitchWithReason": "Charles przełączył się na tryb <code>{{mode}}</code> ponieważ: {{reason}}"
 	},
 	"subtasks": {
-		"wantsToCreate": "Roo chce utworzyć nowe podzadanie w trybie <code>{{mode}}</code>:",
-		"wantsToFinish": "Roo chce zakończyć to podzadanie",
+		"wantsToCreate": "Charles chce utworzyć nowe podzadanie w trybie <code>{{mode}}</code>:",
+		"wantsToFinish": "Charles chce zakończyć to podzadanie",
 		"newTaskContent": "Instrukcje podzadania",
 		"completionContent": "Podzadanie zakończone",
 		"resultContent": "Wyniki podzadania",
@@ -234,7 +234,7 @@
 		"completionInstructions": "Podzadanie zakończone! Możesz przejrzeć wyniki i zasugerować poprawki lub następne kroki. Jeśli wszystko wygląda dobrze, potwierdź, aby zwrócić wynik do zadania nadrzędnego."
 	},
 	"questions": {
-		"hasQuestion": "Roo ma pytanie:"
+		"hasQuestion": "Charles ma pytanie:"
 	},
 	"taskCompleted": "Zadanie zakończone",
 	"powershell": {
@@ -243,7 +243,7 @@
 	"autoApprove": {
 		"title": "Automatyczne zatwierdzanie:",
 		"none": "Brak",
-		"description": "Automatyczne zatwierdzanie pozwala Roo Code wykonywać działania bez pytania o pozwolenie. Włącz tylko dla działań, którym w pełni ufasz. Bardziej szczegółowa konfiguracja dostępna w <settingsLink>Ustawieniach</settingsLink>.",
+		"description": "Automatyczne zatwierdzanie pozwala Charles wykonywać działania bez pytania o pozwolenie. Włącz tylko dla działań, którym w pełni ufasz. Bardziej szczegółowa konfiguracja dostępna w <settingsLink>Ustawieniach</settingsLink>.",
 		"selectOptionsFirst": "Wybierz co najmniej jedną opcję poniżej, aby włączyć automatyczne zatwierdzanie",
 		"toggleAriaLabel": "Przełącz automatyczne zatwierdzanie",
 		"disabledAriaLabel": "Automatyczne zatwierdzanie wyłączone - najpierw wybierz opcje"
@@ -264,23 +264,23 @@
 		"countdownDisplay": "{{count}}s"
 	},
 	"announcement": {
-		"title": "🎉 Roo Code {{version}} wydany",
+		"title": "🎉 Charles {{version}} wydany",
 		"stealthModel": {
 			"feature": "Model stealth Sonic to teraz <bold>Grok Code Fast</bold>! Ten wysokowydajny model rozumowania jest dostępny jako <code>grok-code-fast-1</code> u dostawcy <bold>xAI (Grok)</bold>.",
-			"note": "W podzięce za wszystkie pomocne opinie o Sonic, xAI rozszerza bezpłatny dostęp do <code>grok-code-fast-1</code> na kolejny tydzień za pośrednictwem dostawcy <bold>Roo Code Cloud</bold>.",
-			"connectButton": "Połącz z Roo Code Cloud",
+			"note": "W podzięce za wszystkie pomocne opinie o Sonic, xAI rozszerza bezpłatny dostęp do <code>grok-code-fast-1</code> na kolejny tydzień za pośrednictwem dostawcy <bold>Charles Cloud</bold>.",
+			"connectButton": "Połącz z Charles Cloud",
 			"selectModel": "Odwiedź <settingsLink>Ustawienia</settingsLink>, aby zaktualizować konfigurację dostawcy."
 		},
-		"description": "Roo Code {{version}} wprowadza potężne nowe funkcje i znaczące ulepszenia, aby ulepszyć Twój przepływ pracy programistycznej.",
+		"description": "Charles {{version}} wprowadza potężne nowe funkcje i znaczące ulepszenia, aby ulepszyć Twój przepływ pracy programistycznej.",
 		"whatsNew": "Co nowego",
-		"feature1": "<bold>Kolejka Wiadomości</bold>: Umieszczaj wiele wiadomości w kolejce podczas pracy Roo, pozwalając na kontynuowanie planowania przepływu pracy bez przerw.",
+		"feature1": "<bold>Kolejka Wiadomości</bold>: Umieszczaj wiele wiadomości w kolejce podczas pracy Charles, pozwalając na kontynuowanie planowania przepływu pracy bez przerw.",
 		"feature2": "<bold>Niestandardowe Polecenia Slash</bold>: Twórz spersonalizowane polecenia slash dla szybkiego dostępu do często używanych promptów i przepływów pracy, z pełnym zarządzaniem interfejsu użytkownika.",
 		"feature3": "<bold>Ulepszone Narzędzia Gemini</bold>: Nowe możliwości kontekstu URL i ugruntowania wyszukiwania Google zapewniają modelom Gemini informacje internetowe w czasie rzeczywistym i ulepszone możliwości badawcze.",
 		"hideButton": "Ukryj ogłoszenie",
 		"detailsDiscussLinks": "Uzyskaj więcej szczegółów i dołącz do dyskusji na <discordLink>Discord</discordLink> i <redditLink>Reddit</redditLink> 🚀"
 	},
 	"browser": {
-		"rooWantsToUse": "Roo chce użyć przeglądarki:",
+		"rooWantsToUse": "Charles chce użyć przeglądarki:",
 		"consoleLogs": "Logi konsoli",
 		"noNewLogs": "(Brak nowych logów)",
 		"screenshot": "Zrzut ekranu przeglądarki",
@@ -314,24 +314,24 @@
 	"profileViolationWarning": "Bieżący profil nie jest kompatybilny z ustawieniami Twojej organizacji",
 	"shellIntegration": {
 		"title": "Ostrzeżenie wykonania polecenia",
-		"description": "Twoje polecenie jest wykonywane bez integracji powłoki terminala VSCode. Aby ukryć to ostrzeżenie, możesz wyłączyć integrację powłoki w sekcji <strong>Terminal</strong> w <settingsLink>ustawieniach Roo Code</settingsLink> lub rozwiązać problemy z integracją terminala VSCode korzystając z poniższego linku.",
+		"description": "Twoje polecenie jest wykonywane bez integracji powłoki terminala VSCode. Aby ukryć to ostrzeżenie, możesz wyłączyć integrację powłoki w sekcji <strong>Terminal</strong> w <settingsLink>ustawieniach Charles</settingsLink> lub rozwiązać problemy z integracją terminala VSCode korzystając z poniższego linku.",
 		"troubleshooting": "Kliknij tutaj, aby zobaczyć dokumentację integracji powłoki."
 	},
 	"ask": {
 		"autoApprovedRequestLimitReached": {
 			"title": "Osiągnięto limit automatycznie zatwierdzonych żądań",
-			"description": "Roo osiągnął automatycznie zatwierdzony limit {{count}} żądania/żądań API. Czy chcesz zresetować licznik i kontynuować zadanie?",
+			"description": "Charles osiągnął automatycznie zatwierdzony limit {{count}} żądania/żądań API. Czy chcesz zresetować licznik i kontynuować zadanie?",
 			"button": "Zresetuj i kontynuuj"
 		},
 		"autoApprovedCostLimitReached": {
 			"button": "Zresetuj i Kontynuuj",
 			"title": "Osiągnięto limit kosztów z automatycznym zatwierdzaniem",
-			"description": "Roo osiągnął automatycznie zatwierdzony limit kosztów wynoszący ${{count}}. Czy chcesz zresetować koszt i kontynuować zadanie?"
+			"description": "Charles osiągnął automatycznie zatwierdzony limit kosztów wynoszący ${{count}}. Czy chcesz zresetować koszt i kontynuować zadanie?"
 		}
 	},
 	"codebaseSearch": {
-		"wantsToSearch": "Roo chce przeszukać bazę kodu w poszukiwaniu <code>{{query}}</code>:",
-		"wantsToSearchWithPath": "Roo chce przeszukać bazę kodu w poszukiwaniu <code>{{query}}</code> w <code>{{path}}</code>:",
+		"wantsToSearch": "Charles chce przeszukać bazę kodu w poszukiwaniu <code>{{query}}</code>:",
+		"wantsToSearchWithPath": "Charles chce przeszukać bazę kodu w poszukiwaniu <code>{{query}}</code> w <code>{{path}}</code>:",
 		"didSearch_one": "Znaleziono 1 wynik",
 		"didSearch_other": "Znaleziono {{count}} wyników",
 		"resultTooltip": "Wynik podobieństwa: {{score}} (kliknij, aby otworzyć plik)"
@@ -355,7 +355,7 @@
 		"ariaLabel": "Wersja {{version}} - Kliknij, aby wyświetlić informacje o wydaniu"
 	},
 	"rooCloudCTA": {
-		"title": "Roo Code Cloud się rozwija!",
+		"title": "Charles Cloud się rozwija!",
 		"description": "Uruchamiaj zdalne agenty w chmurze, uzyskuj dostęp do swoich zadań z dowolnego miejsca, współpracuj z innymi i wiele więcej.",
 		"joinWaitlist": "Zarejestruj się, aby otrzymywać najnowsze aktualizacje."
 	},

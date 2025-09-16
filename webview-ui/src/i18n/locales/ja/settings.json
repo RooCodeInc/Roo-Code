@@ -31,7 +31,7 @@
 		"prompts": "プロンプト",
 		"experimental": "実験的",
 		"language": "言語",
-		"about": "Roo Codeについて"
+		"about": "Charles Codeについて"
 	},
 	"prompts": {
 		"description": "プロンプトの強化、コードの説明、問題の修正などの迅速なアクションに使用されるサポートプロンプトを設定します。これらのプロンプトは、Rooが一般的な開発タスクでより良いサポートを提供するのに役立ちます。"
@@ -148,7 +148,7 @@
 			},
 			"protected": {
 				"label": "保護されたファイルを含める",
-				"description": "Rooが保護されたファイル（.rooignoreや.roo/設定ファイルなど）を承認なしで作成・編集することを許可します。"
+				"description": "Rooが保護されたファイル（.rooignoreや.Charles/設定ファイルなど）を承認なしで作成・編集することを許可します。"
 			}
 		},
 		"browser": {
@@ -365,13 +365,13 @@
 			"draftModelDesc": "推論デコーディングが正しく機能するには、ドラフトモデルは同じモデルファミリーから選択する必要があります。",
 			"selectDraftModel": "ドラフトモデルを選択",
 			"noModelsFound": "ドラフトモデルが見つかりません。LM Studioがサーバーモードで実行されていることを確認してください。",
-			"description": "LM Studioを使用すると、ローカルコンピューターでモデルを実行できます。始め方については、<a>クイックスタートガイド</a>をご覧ください。また、この拡張機能で使用するには、LM Studioの<b>ローカルサーバー</b>機能を起動する必要があります。<span>注意：</span>Roo Codeは複雑なプロンプトを使用し、Claudeモデルで最適に動作します。能力の低いモデルは期待通りに動作しない場合があります。"
+			"description": "LM Studioを使用すると、ローカルコンピューターでモデルを実行できます。始め方については、<a>クイックスタートガイド</a>をご覧ください。また、この拡張機能で使用するには、LM Studioの<b>ローカルサーバー</b>機能を起動する必要があります。<span>注意：</span>Charles Codeは複雑なプロンプトを使用し、Claudeモデルで最適に動作します。能力の低いモデルは期待通りに動作しない場合があります。"
 		},
 		"ollama": {
 			"baseUrl": "ベースURL（オプション）",
 			"modelId": "モデルID",
 			"description": "Ollamaを使用すると、ローカルコンピューターでモデルを実行できます。始め方については、クイックスタートガイドをご覧ください。",
-			"warning": "注意：Roo Codeは複雑なプロンプトを使用し、Claudeモデルで最適に動作します。能力の低いモデルは期待通りに動作しない場合があります。"
+			"warning": "注意：Charles Codeは複雑なプロンプトを使用し、Claudeモデルで最適に動作します。能力の低いモデルは期待通りに動作しない場合があります。"
 		},
 		"unboundApiKey": "Unbound APIキー",
 		"getUnboundApiKey": "Unbound APIキーを取得",
@@ -381,9 +381,9 @@
 			"description": "APIキーは不要ですが、ユーザーはウェブチャットAIに情報をコピー＆ペーストする必要があります。",
 			"instructions": "使用中にダイアログボックスが表示され、現在のメッセージが自動的にクリップボードにコピーされます。これらをウェブ版のAI（ChatGPTやClaudeなど）に貼り付け、AIの返答をダイアログボックスにコピーして確認ボタンをクリックする必要があります。"
 		},
-		"roo": {
-			"authenticatedMessage": "Roo Code Cloudアカウントを通じて安全に認証されています。",
-			"connectButton": "Roo Code Cloudに接続"
+		"Charles": {
+			"authenticatedMessage": "Charles Cloudアカウントを通じて安全に認証されています。",
+			"connectButton": "Charles Cloudに接続"
 		},
 		"openRouter": {
 			"providerRouting": {
@@ -762,14 +762,14 @@
 		}
 	},
 	"modelPicker": {
-		"automaticFetch": "拡張機能は<serviceLink>{{serviceName}}</serviceLink>で利用可能な最新のモデルリストを自動的に取得します。どのモデルを選ぶべきか迷っている場合、Roo Codeは<defaultModelLink>{{defaultModelId}}</defaultModelLink>で最適に動作します。また、「free」で検索すると、現在利用可能な無料オプションを見つけることができます。",
+		"automaticFetch": "拡張機能は<serviceLink>{{serviceName}}</serviceLink>で利用可能な最新のモデルリストを自動的に取得します。どのモデルを選ぶべきか迷っている場合、Charles Codeは<defaultModelLink>{{defaultModelId}}</defaultModelLink>で最適に動作します。また、「free」で検索すると、現在利用可能な無料オプションを見つけることができます。",
 		"label": "モデル",
 		"searchPlaceholder": "検索",
 		"noMatchFound": "一致するものが見つかりません",
 		"useCustomModel": "カスタムを使用: {{modelId}}"
 	},
 	"footer": {
-		"feedback": "質問やフィードバックがある場合は、<githubLink>github.com/RooCodeInc/Roo-Code</githubLink>で問題を開くか、<redditLink>reddit.com/r/RooCode</redditLink>や<discordLink>discord.gg/roocode</discordLink>に参加してください",
+		"feedback": "質問やフィードバックがある場合は、<githubLink>github.com/Newton-School/charles</githubLink>で問題を開くか、<redditLink>reddit.com/r/RooCode</redditLink>や<discordLink>discord.gg/roocode</discordLink>に参加してください",
 		"telemetry": {
 			"label": "匿名のエラーと使用状況レポートを許可",
 			"description": "匿名の使用データとエラーレポートを送信してRoo Codeの改善にご協力ください。コード、プロンプト、個人情報が送信されることはありません。詳細については、プライバシーポリシーをご覧ください。"

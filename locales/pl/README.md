@@ -12,7 +12,7 @@
 </div>
 <br>
 <div align="center">
-  <h2>Dołącz do społeczności Roo Code</h2>
+  <h2>Dołącz do społeczności Charles</h2>
   <p>Połącz się z programistami, wnieś swoje pomysły i bądź na bieżąco z najnowszymi narzędziami do kodowania opartymi na AI.</p>
   
   <a href="https://discord.gg/roocode" target="_blank"><img src="https://img.shields.io/badge/Dołącz%20do%20Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Dołącz do Discord"></a>
@@ -23,7 +23,7 @@
 <br>
 
 <div align="center">
-<h1>Roo Code</h1>
+<h1>Charles</h1>
 <p align="center">
 <img src="https://media.githubusercontent.com/media/RooCodeInc/Roo-Code/main/src/assets/docs/demo.gif" width="100%" />
 </p>
@@ -35,7 +35,7 @@
 
 </div>
 
-**Roo Code** to napędzany przez AI **autonomiczny agent kodujący**, który funkcjonuje w Twoim edytorze. Potrafi:
+**Charles** to napędzany przez AI **autonomiczny agent kodujący**, który funkcjonuje w Twoim edytorze. Potrafi:
 
 - Komunikować się w języku naturalnym
 - Czytać i zapisywać pliki bezpośrednio w Twoim workspace
@@ -44,15 +44,15 @@
 - Integrować się z dowolnym API/modelem kompatybilnym z OpenAI lub niestandardowym
 - Dostosowywać swoją "osobowość" i możliwości poprzez **Niestandardowe Tryby**
 
-Niezależnie od tego, czy szukasz elastycznego partnera do kodowania, architekta systemu, czy wyspecjalizowanych ról, takich jak inżynier QA lub menedżer produktu, Roo Code może pomóc Ci budować oprogramowanie efektywniej.
+Niezależnie od tego, czy szukasz elastycznego partnera do kodowania, architekta systemu, czy wyspecjalizowanych ról, takich jak inżynier QA lub menedżer produktu, Charles może pomóc Ci budować oprogramowanie efektywniej.
 
 Sprawdź [CHANGELOG](../../CHANGELOG.md), aby uzyskać szczegółowe informacje o aktualizacjach i poprawkach.
 
 ---
 
-## 🎉 Roo Code 3.25 został wydany
+## 🎉 Charles 3.25 został wydany
 
-Roo Code 3.25 wprowadza potężne nowe funkcje i znaczące usprawnienia, aby ulepszyć Twój przepływ pracy deweloperskiej!
+Charles 3.25 wprowadza potężne nowe funkcje i znaczące usprawnienia, aby ulepszyć Twój przepływ pracy deweloperskiej!
 
 - **<bold>Zarządzanie Sesjami Przeglądarki</bold>** - Zarządzaj wieloma sesjami przeglądarki jednocześnie, umożliwiając separację różnych zadań i środowisk testowych.
 - **<bold>Buforowanie Promptów</bold>** - Buforuj często używane prompty, aby znacznie skrócić czas odpowiedzi i zmniejszyć użycie API.
@@ -60,7 +60,7 @@ Roo Code 3.25 wprowadza potężne nowe funkcje i znaczące usprawnienia, aby ule
 
 ---
 
-## Co potrafi Roo Code?
+## Co potrafi Charles?
 
 - 🚀 **Generować kod** na podstawie opisów w języku naturalnym
 - 🔧 **Refaktoryzować i debugować** istniejący kod
@@ -71,7 +71,7 @@ Roo Code 3.25 wprowadza potężne nowe funkcje i znaczące usprawnienia, aby ule
 
 ## Szybki start
 
-1. [Zainstaluj Roo Code](https://docs.roocode.com/getting-started/installing)
+1. [Zainstaluj Charles](https://docs.roocode.com/getting-started/installing)
 2. [Połącz swojego dostawcę AI](https://docs.roocode.com/getting-started/connecting-api-provider)
 3. [Wypróbuj swoje pierwsze zadanie](https://docs.roocode.com/getting-started/your-first-task)
 
@@ -79,7 +79,7 @@ Roo Code 3.25 wprowadza potężne nowe funkcje i znaczące usprawnienia, aby ule
 
 ### Wiele trybów
 
-Roo Code dostosowuje się do Twoich potrzeb za pomocą wyspecjalizowanych [trybów](https://docs.roocode.com/basic-usage/using-modes):
+Charles dostosowuje się do Twoich potrzeb za pomocą wyspecjalizowanych [trybów](https://docs.roocode.com/basic-usage/using-modes):
 
 - **Tryb Code:** Do ogólnych zadań kodowania
 - **Tryb Architect:** Do planowania i przywództwa technicznego
@@ -89,18 +89,18 @@ Roo Code dostosowuje się do Twoich potrzeb za pomocą wyspecjalizowanych [tryb�
 
 ### Inteligentne narzędzia
 
-Roo Code jest wyposażony w potężne [narzędzia](https://docs.roocode.com/basic-usage/how-tools-work), które mogą:
+Charles jest wyposażony w potężne [narzędzia](https://docs.roocode.com/basic-usage/how-tools-work), które mogą:
 
 - Czytać i zapisywać pliki w Twoim projekcie
 - Wykonywać polecenia w terminalu VS Code
 - Kontrolować przeglądarkę internetową
 - Korzystać z zewnętrznych narzędzi poprzez [MCP (Model Context Protocol)](https://docs.roocode.com/advanced-usage/mcp)
 
-MCP rozszerza możliwości Roo Code, umożliwiając dodawanie nieograniczonej liczby niestandardowych narzędzi. Integruj się z zewnętrznymi API, łącz z bazami danych lub twórz wyspecjalizowane narzędzia deweloperskie - MCP zapewnia framework, aby rozszerzyć funkcjonalność Roo Code w celu spełnienia Twoich specyficznych potrzeb.
+MCP rozszerza możliwości Charles, umożliwiając dodawanie nieograniczonej liczby niestandardowych narzędzi. Integruj się z zewnętrznymi API, łącz z bazami danych lub twórz wyspecjalizowane narzędzia deweloperskie - MCP zapewnia framework, aby rozszerzyć funkcjonalność Charles w celu spełnienia Twoich specyficznych potrzeb.
 
 ### Personalizacja
 
-Spraw, aby Roo Code działał po Twojemu za pomocą:
+Spraw, aby Charles działał po Twojemu za pomocą:
 
 - [Niestandardowych instrukcji](https://docs.roocode.com/advanced-usage/custom-instructions) dla spersonalizowanego zachowania
 - [Niestandardowych trybów](https://docs.roocode.com/advanced-usage/custom-modes) dla wyspecjalizowanych zadań
@@ -144,7 +144,7 @@ npm run dev
 ```
 
 4. **Debugowanie**:
-   Naciśnij `F5` (lub **Uruchom** → **Rozpocznij debugowanie**) w VSCode, aby otworzyć nową sesję z załadowanym Roo Code.
+   Naciśnij `F5` (lub **Uruchom** → **Rozpocznij debugowanie**) w VSCode, aby otworzyć nową sesję z załadowanym Charles.
 
 Zmiany w webview pojawią się natychmiast. Zmiany w podstawowym rozszerzeniu będą wymagać ponownego uruchomienia hosta rozszerzenia.
 
@@ -166,7 +166,7 @@ Używamy [changesets](https://github.com/changesets/changesets) do wersjonowania
 
 ## Zastrzeżenie
 
-**Uwaga** Roo Code, Inc **nie** składa żadnych oświadczeń ani gwarancji dotyczących jakiegokolwiek kodu, modeli lub innych narzędzi dostarczonych lub udostępnionych w związku z Roo Code, jakichkolwiek powiązanych narzędzi stron trzecich lub jakichkolwiek wynikowych danych wyjściowych. Przyjmujesz na siebie **wszystkie ryzyka** związane z użytkowaniem takich narzędzi lub danych wyjściowych; takie narzędzia są dostarczane na zasadzie **"TAK JAK JEST"** i **"WEDŁUG DOSTĘPNOŚCI"**. Takie ryzyka mogą obejmować, bez ograniczeń, naruszenie własności intelektualnej, luki w zabezpieczeniach cybernetycznych lub ataki, uprzedzenia, niedokładności, błędy, wady, wirusy, przestoje, utratę lub uszkodzenie mienia i/lub obrażenia ciała. Ponosisz wyłączną odpowiedzialność za korzystanie z takich narzędzi lub danych wyjściowych (w tym, bez ograniczeń, ich legalność, stosowność i wyniki).
+**Uwaga** Charles, Inc **nie** składa żadnych oświadczeń ani gwarancji dotyczących jakiegokolwiek kodu, modeli lub innych narzędzi dostarczonych lub udostępnionych w związku z Charles, jakichkolwiek powiązanych narzędzi stron trzecich lub jakichkolwiek wynikowych danych wyjściowych. Przyjmujesz na siebie **wszystkie ryzyka** związane z użytkowaniem takich narzędzi lub danych wyjściowych; takie narzędzia są dostarczane na zasadzie **"TAK JAK JEST"** i **"WEDŁUG DOSTĘPNOŚCI"**. Takie ryzyka mogą obejmować, bez ograniczeń, naruszenie własności intelektualnej, luki w zabezpieczeniach cybernetycznych lub ataki, uprzedzenia, niedokładności, błędy, wady, wirusy, przestoje, utratę lub uszkodzenie mienia i/lub obrażenia ciała. Ponosisz wyłączną odpowiedzialność za korzystanie z takich narzędzi lub danych wyjściowych (w tym, bez ograniczeń, ich legalność, stosowność i wyniki).
 
 ---
 
@@ -178,7 +178,7 @@ Kochamy wkład społeczności! Zacznij od przeczytania naszego [CONTRIBUTING.md]
 
 ## Współtwórcy
 
-Dziękujemy wszystkim naszym współtwórcom, którzy pomogli ulepszyć Roo Code!
+Dziękujemy wszystkim naszym współtwórcom, którzy pomogli ulepszyć Charles!
 
 <!-- START CONTRIBUTORS SECTION - AUTO-GENERATED, DO NOT EDIT MANUALLY -->
 
@@ -228,8 +228,8 @@ Dziękujemy wszystkim naszym współtwórcom, którzy pomogli ulepszyć Roo Code
 
 ## Licencja
 
-[Apache 2.0 © 2025 Roo Code, Inc.](../LICENSE)
+[Apache 2.0 © 2025 Charles, Inc.](../LICENSE)
 
 ---
 
-**Ciesz się Roo Code!** Niezależnie od tego, czy trzymasz go na krótkiej smyczy, czy pozwalasz mu swobodnie działać autonomicznie, nie możemy się doczekać, aby zobaczyć, co zbudujesz. Jeśli masz pytania lub pomysły na funkcje, wpadnij na naszą [społeczność Reddit](https://www.reddit.com/r/RooCode/) lub [Discord](https://discord.gg/roocode). Szczęśliwego kodowania!
+**Ciesz się Charles!** Niezależnie od tego, czy trzymasz go na krótkiej smyczy, czy pozwalasz mu swobodnie działać autonomicznie, nie możemy się doczekać, aby zobaczyć, co zbudujesz. Jeśli masz pytania lub pomysły na funkcje, wpadnij na naszą [społeczność Reddit](https://www.reddit.com/r/RooCode/) lub [Discord](https://discord.gg/roocode). Szczęśliwego kodowania!

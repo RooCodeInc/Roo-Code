@@ -1,6 +1,6 @@
 {
 	"extension": {
-		"name": "Roo Code",
+		"name": "Charles",
 		"description": "A whole dev team of AI agents in your editor."
 	},
 	"number_format": {
@@ -85,7 +85,7 @@
 			"processExitedWithError": "Claude Code process exited with code {{exitCode}}. Error output: {{output}}",
 			"stoppedWithReason": "Claude Code stopped with reason: {{reason}}",
 			"apiKeyModelPlanMismatch": "API keys and subscription plans allow different models. Make sure the selected model is included in your plan.",
-			"notFound": "Claude Code executable '{{claudePath}}' not found.\n\nPlease install Claude Code CLI:\n1. Visit {{installationUrl}} to download Claude Code\n2. Follow the installation instructions for your operating system\n3. Ensure the 'claude' command is available in your PATH\n4. Alternatively, configure a custom path in Roo settings under 'Claude Code Path'\n\nOriginal error: {{originalError}}"
+			"notFound": "Claude Code executable '{{claudePath}}' not found.\n\nPlease install Claude Code CLI:\n1. Visit {{installationUrl}} to download Claude Code\n2. Follow the installation instructions for your operating system\n3. Ensure the 'claude' command is available in your PATH\n4. Alternatively, configure a custom path in Charles settings under 'Claude Code Path'\n\nOriginal error: {{originalError}}"
 		},
 		"gemini": {
 			"generate_stream": "Gemini generate context stream error: {{error}}",
@@ -101,8 +101,8 @@
 			"noResponseBody": "Cerebras API Error: No response body",
 			"completionError": "Cerebras completion error: {{error}}"
 		},
-		"roo": {
-			"authenticationRequired": "Roo provider requires cloud authentication. Please sign in to Roo Code Cloud."
+		"Charles": {
+			"authenticationRequired": "Charles provider requires cloud authentication. Please sign in to Charles Cloud."
 		}
 	},
 	"warnings": {
@@ -150,7 +150,7 @@
 		"enter_valid_path": "Please enter a valid path"
 	},
 	"input": {
-		"task_prompt": "What should Roo do?",
+		"task_prompt": "What should Charles do?",
 		"task_placeholder": "Type your task here"
 	},
 	"customModes": {
@@ -177,8 +177,8 @@
 	},
 	"mdm": {
 		"errors": {
-			"cloud_auth_required": "Your organization requires Roo Code Cloud authentication. Please sign in to continue.",
-			"organization_mismatch": "You must be authenticated with your organization's Roo Code Cloud account.",
+			"cloud_auth_required": "Your organization requires Charles Cloud authentication. Please sign in to continue.",
+			"organization_mismatch": "You must be authenticated with your organization's Charles Cloud account.",
 			"verification_failed": "Unable to verify organization authentication."
 		},
 		"info": {

@@ -3,9 +3,9 @@
 		"invalid_settings_format": "MCP 設定 JSON 格式無效。請確保您的設定遵循正確的 JSON 格式。",
 		"invalid_settings_syntax": "MCP 設定 JSON 格式無效。請檢查您的設定檔案是否有語法錯誤。",
 		"invalid_settings_validation": "MCP 設定格式無效：{{errorMessages}}",
-		"create_json": "建立或開啟 .roo/mcp.json 失敗：{{error}}",
+		"create_json": "建立或開啟 .Charles/mcp.json 失敗：{{error}}",
 		"failed_update_project": "更新專案 MCP 伺服器失敗",
-		"invalidJsonArgument": "Roo 嘗試使用無效的 JSON 參數呼叫 {{toolName}}。正在重試...",
+		"invalidJsonArgument": "Charles 嘗試使用無效的 JSON 參數呼叫 {{toolName}}。正在重試...",
 		"refresh_after_disable": "停用後重新整理 MCP 連線失敗",
 		"refresh_after_enable": "啟用後重新整理 MCP 連線失敗",
 		"disconnect_servers_partial": "斷開 {{count}} 個 MCP 伺服器失敗。請查看輸出了解詳情。"

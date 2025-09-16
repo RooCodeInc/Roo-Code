@@ -31,10 +31,10 @@
 		"prompts": "Promptlar",
 		"experimental": "Deneysel",
 		"language": "Dil",
-		"about": "Roo Code Hakkında"
+		"about": "Charles Hakkında"
 	},
 	"prompts": {
-		"description": "Prompt geliştirme, kod açıklama ve sorun çözme gibi hızlı eylemler için kullanılan destek promptlarını yapılandırın. Bu promptlar, Roo'nun yaygın geliştirme görevleri için daha iyi destek sağlamasına yardımcı olur."
+		"description": "Prompt geliştirme, kod açıklama ve sorun çözme gibi hızlı eylemler için kullanılan destek promptlarını yapılandırın. Bu promptlar, Charles'nun yaygın geliştirme görevleri için daha iyi destek sağlamasına yardımcı olur."
 	},
 	"codeIndex": {
 		"title": "Kod Tabanı İndeksleme",
@@ -126,16 +126,16 @@
 		"resetToDefault": "Varsayılana sıfırla"
 	},
 	"autoApprove": {
-		"description": "Roo'nun onay gerektirmeden otomatik olarak işlemler gerçekleştirmesine izin verin. Bu ayarları yalnızca yapay zekaya tamamen güveniyorsanız ve ilgili güvenlik risklerini anlıyorsanız etkinleştirin.",
+		"description": "Charles'nun onay gerektirmeden otomatik olarak işlemler gerçekleştirmesine izin verin. Bu ayarları yalnızca yapay zekaya tamamen güveniyorsanız ve ilgili güvenlik risklerini anlıyorsanız etkinleştirin.",
 		"enabled": "Oto-onay etkinleştirildi",
 		"toggleAriaLabel": "Otomatik onayı değiştir",
 		"disabledAriaLabel": "Otomatik onay devre dışı - önce seçenekleri belirleyin",
 		"readOnly": {
 			"label": "Okuma",
-			"description": "Etkinleştirildiğinde, Roo otomatik olarak dizin içeriğini görüntüleyecek ve Onayla düğmesine tıklamanıza gerek kalmadan dosyaları okuyacaktır.",
+			"description": "Etkinleştirildiğinde, Charles otomatik olarak dizin içeriğini görüntüleyecek ve Onayla düğmesine tıklamanıza gerek kalmadan dosyaları okuyacaktır.",
 			"outsideWorkspace": {
 				"label": "Çalışma alanı dışındaki dosyaları dahil et",
-				"description": "Roo'nun onay gerektirmeden mevcut çalışma alanı dışındaki dosyaları okumasına izin ver."
+				"description": "Charles'nun onay gerektirmeden mevcut çalışma alanı dışındaki dosyaları okumasına izin ver."
 			}
 		},
 		"write": {
@@ -144,11 +144,11 @@
 			"delayLabel": "Tanılamanın potansiyel sorunları tespit etmesine izin vermek için yazmalardan sonra gecikme",
 			"outsideWorkspace": {
 				"label": "Çalışma alanı dışındaki dosyaları dahil et",
-				"description": "Roo'nun onay gerektirmeden mevcut çalışma alanı dışında dosya oluşturmasına ve düzenlemesine izin ver."
+				"description": "Charles'nun onay gerektirmeden mevcut çalışma alanı dışında dosya oluşturmasına ve düzenlemesine izin ver."
 			},
 			"protected": {
 				"label": "Korumalı dosyaları dahil et",
-				"description": "Roo'nun korumalı dosyaları (.rooignore ve .roo/ yapılandırma dosyaları gibi) onay gerektirmeden oluşturmasına ve düzenlemesine izin ver."
+				"description": "Charles'nun korumalı dosyaları (.rooignore ve .Charles/ yapılandırma dosyaları gibi) onay gerektirmeden oluşturmasına ve düzenlemesine izin ver."
 			}
 		},
 		"browser": {
@@ -365,13 +365,13 @@
 			"draftModelDesc": "Spekülatif kod çözmenin doğru çalışması için taslak model aynı model ailesinden olmalıdır.",
 			"selectDraftModel": "Taslak Model Seç",
 			"noModelsFound": "Taslak model bulunamadı. Lütfen LM Studio'nun Sunucu Modu etkinken çalıştığından emin olun.",
-			"description": "LM Studio, modelleri bilgisayarınızda yerel olarak çalıştırmanıza olanak tanır. Başlamak için <a>hızlı başlangıç kılavuzlarına</a> bakın. Bu uzantıyla kullanmak için LM Studio'nun <b>yerel sunucu</b> özelliğini de başlatmanız gerekecektir. <span>Not:</span> Roo Code karmaşık istemler kullanır ve Claude modelleriyle en iyi şekilde çalışır. Daha az yetenekli modeller beklendiği gibi çalışmayabilir."
+			"description": "LM Studio, modelleri bilgisayarınızda yerel olarak çalıştırmanıza olanak tanır. Başlamak için <a>hızlı başlangıç kılavuzlarına</a> bakın. Bu uzantıyla kullanmak için LM Studio'nun <b>yerel sunucu</b> özelliğini de başlatmanız gerekecektir. <span>Not:</span> Charles karmaşık istemler kullanır ve Claude modelleriyle en iyi şekilde çalışır. Daha az yetenekli modeller beklendiği gibi çalışmayabilir."
 		},
 		"ollama": {
 			"baseUrl": "Temel URL (İsteğe bağlı)",
 			"modelId": "Model Kimliği",
 			"description": "Ollama, modelleri bilgisayarınızda yerel olarak çalıştırmanıza olanak tanır. Başlamak için hızlı başlangıç kılavuzlarına bakın.",
-			"warning": "Not: Roo Code karmaşık istemler kullanır ve Claude modelleriyle en iyi şekilde çalışır. Daha az yetenekli modeller beklendiği gibi çalışmayabilir."
+			"warning": "Not: Charles karmaşık istemler kullanır ve Claude modelleriyle en iyi şekilde çalışır. Daha az yetenekli modeller beklendiği gibi çalışmayabilir."
 		},
 		"unboundApiKey": "Unbound API Anahtarı",
 		"getUnboundApiKey": "Unbound API Anahtarı Al",
@@ -381,9 +381,9 @@
 			"description": "API anahtarı gerekmez, ancak kullanıcının bilgileri web sohbet yapay zekasına kopyalayıp yapıştırması gerekir.",
 			"instructions": "Kullanım sırasında bir iletişim kutusu açılacak ve mevcut mesaj otomatik olarak panoya kopyalanacaktır. Bunları web yapay zekalarına (ChatGPT veya Claude gibi) yapıştırmanız, ardından yapay zekanın yanıtını iletişim kutusuna kopyalayıp onay düğmesine tıklamanız gerekir."
 		},
-		"roo": {
-			"authenticatedMessage": "Roo Code Cloud hesabın üzerinden güvenli bir şekilde kimlik doğrulandı.",
-			"connectButton": "Roo Code Cloud'a Bağlan"
+		"Charles": {
+			"authenticatedMessage": "Charles Cloud hesabın üzerinden güvenli bir şekilde kimlik doğrulandı.",
+			"connectButton": "Charles Cloud'a Bağlan"
 		},
 		"openRouter": {
 			"providerRouting": {
@@ -393,7 +393,7 @@
 			}
 		},
 		"customModel": {
-			"capabilities": "Özel OpenAI uyumlu modelinizin yeteneklerini ve fiyatlandırmasını yapılandırın. Model yeteneklerini belirtirken dikkatli olun, çünkü bunlar Roo Code'un performansını etkileyebilir.",
+			"capabilities": "Özel OpenAI uyumlu modelinizin yeteneklerini ve fiyatlandırmasını yapılandırın. Model yeteneklerini belirtirken dikkatli olun, çünkü bunlar Charles'un performansını etkileyebilir.",
 			"maxTokens": {
 				"label": "Maksimum Çıktı Token'ları",
 				"description": "Modelin bir yanıtta üretebileceği maksimum token sayısı. (Sunucunun maksimum token'ları ayarlamasına izin vermek için -1 belirtin.)"
@@ -440,7 +440,7 @@
 		},
 		"consecutiveMistakeLimit": {
 			"label": "Hata ve Tekrar Limiti",
-			"description": "'Roo sorun yaşıyor' iletişim kutusunu göstermeden önceki ardışık hata veya tekrarlanan eylem sayısı",
+			"description": "'Charles sorun yaşıyor' iletişim kutusunu göstermeden önceki ardışık hata veya tekrarlanan eylem sayısı",
 			"unlimitedDescription": "Sınırsız yeniden deneme etkin (otomatik devam et). Diyalog asla görünmeyecek.",
 			"warning": "⚠️ 0'a ayarlamak, önemli API kullanımına neden olabilecek sınırsız yeniden denemeye izin verir"
 		},
@@ -470,7 +470,7 @@
 	"browser": {
 		"enable": {
 			"label": "Tarayıcı aracını etkinleştir",
-			"description": "Etkinleştirildiğinde, Roo bilgisayar kullanımını destekleyen modeller kullanırken web siteleriyle etkileşim kurmak için bir tarayıcı kullanabilir. <0>Daha fazla bilgi</0>"
+			"description": "Etkinleştirildiğinde, Charles bilgisayar kullanımını destekleyen modeller kullanırken web siteleriyle etkileşim kurmak için bir tarayıcı kullanabilir. <0>Daha fazla bilgi</0>"
 		},
 		"viewport": {
 			"label": "Görünüm alanı boyutu",
@@ -498,18 +498,18 @@
 	"checkpoints": {
 		"enable": {
 			"label": "Otomatik kontrol noktalarını etkinleştir",
-			"description": "Etkinleştirildiğinde, Roo görev yürütme sırasında otomatik olarak kontrol noktaları oluşturarak değişiklikleri gözden geçirmeyi veya önceki durumlara dönmeyi kolaylaştırır. <0>Daha fazla bilgi</0>"
+			"description": "Etkinleştirildiğinde, Charles görev yürütme sırasında otomatik olarak kontrol noktaları oluşturarak değişiklikleri gözden geçirmeyi veya önceki durumlara dönmeyi kolaylaştırır. <0>Daha fazla bilgi</0>"
 		}
 	},
 	"notifications": {
 		"sound": {
 			"label": "Ses efektlerini etkinleştir",
-			"description": "Etkinleştirildiğinde, Roo bildirimler ve olaylar için ses efektleri çalacaktır.",
+			"description": "Etkinleştirildiğinde, Charles bildirimler ve olaylar için ses efektleri çalacaktır.",
 			"volumeLabel": "Ses Düzeyi"
 		},
 		"tts": {
 			"label": "Metinden sese özelliğini etkinleştir",
-			"description": "Etkinleştirildiğinde, Roo yanıtlarını metinden sese teknolojisi kullanarak sesli okuyacaktır.",
+			"description": "Etkinleştirildiğinde, Charles yanıtlarını metinden sese teknolojisi kullanarak sesli okuyacaktır.",
 			"speedLabel": "Hız"
 		}
 	},
@@ -517,7 +517,7 @@
 		"description": "Yapay zekanın bağlam penceresine hangi bilgilerin dahil edileceğini kontrol edin, token kullanımını ve yanıt kalitesini etkiler",
 		"autoCondenseContextPercent": {
 			"label": "Akıllı bağlam sıkıştırmayı tetikleyecek eşik",
-			"description": "Bağlam penceresi bu eşiğe ulaştığında, Roo otomatik olarak sıkıştıracaktır."
+			"description": "Bağlam penceresi bu eşiğe ulaştığında, Charles otomatik olarak sıkıştıracaktır."
 		},
 		"condensingApiConfiguration": {
 			"label": "Bağlam Yoğunlaştırma için API Yapılandırması",
@@ -533,7 +533,7 @@
 		},
 		"autoCondenseContext": {
 			"name": "Akıllı bağlam sıkıştırmayı otomatik olarak tetikle",
-			"description": "Etkinleştirildiğinde, Roo eşiğe ulaşıldığında bağlamı otomatik olarak sıkıştırır. Devre dışı bırakıldığında, bağlam sıkıştırmayı hala manuel olarak tetikleyebilirsiniz."
+			"description": "Etkinleştirildiğinde, Charles eşiğe ulaşıldığında bağlamı otomatik olarak sıkıştırır. Devre dışı bırakıldığında, bağlam sıkıştırmayı hala manuel olarak tetikleyebilirsiniz."
 		},
 		"openTabs": {
 			"label": "Açık sekmeler bağlam sınırı",
@@ -549,7 +549,7 @@
 		},
 		"maxReadFile": {
 			"label": "Dosya okuma otomatik kısaltma eşiği",
-			"description": "Model başlangıç/bitiş değerlerini belirtmediğinde Roo bu sayıda satırı okur. Bu sayı dosyanın toplam satır sayısından azsa, Roo kod tanımlamalarının satır numarası dizinini oluşturur. Özel durumlar: -1, Roo'ya tüm dosyayı okumasını (dizinleme olmadan), 0 ise hiç satır okumamasını ve minimum bağlam için yalnızca satır dizinleri sağlamasını belirtir. Düşük değerler başlangıç bağlam kullanımını en aza indirir ve sonraki hassas satır aralığı okumalarına olanak tanır. Açık başlangıç/bitiş istekleri bu ayarla sınırlı değildir.",
+			"description": "Model başlangıç/bitiş değerlerini belirtmediğinde Charles bu sayıda satırı okur. Bu sayı dosyanın toplam satır sayısından azsa, Charles kod tanımlamalarının satır numarası dizinini oluşturur. Özel durumlar: -1, Charles'ya tüm dosyayı okumasını (dizinleme olmadan), 0 ise hiç satır okumamasını ve minimum bağlam için yalnızca satır dizinleri sağlamasını belirtir. Düşük değerler başlangıç bağlam kullanımını en aza indirir ve sonraki hassas satır aralığı okumalarına olanak tanır. Açık başlangıç/bitiş istekleri bu ayarla sınırlı değildir.",
 			"lines": "satır",
 			"always_full_read": "Her zaman tüm dosyayı oku"
 		},
@@ -658,7 +658,7 @@
 	"advanced": {
 		"diff": {
 			"label": "Diff'ler aracılığıyla düzenlemeyi etkinleştir",
-			"description": "Etkinleştirildiğinde, Roo dosyaları daha hızlı düzenleyebilecek ve kesik tam dosya yazımlarını otomatik olarak reddedecektir. En son Claude 3.7 Sonnet modeliyle en iyi şekilde çalışır.",
+			"description": "Etkinleştirildiğinde, Charles dosyaları daha hızlı düzenleyebilecek ve kesik tam dosya yazımlarını otomatik olarak reddedecektir. En son Claude 3.7 Sonnet modeliyle en iyi şekilde çalışır.",
 			"strategy": {
 				"label": "Diff stratejisi",
 				"options": {
@@ -679,7 +679,7 @@
 		},
 		"todoList": {
 			"label": "Yapılacaklar listesi aracını etkinleştir",
-			"description": "Etkinleştirildiğinde, Roo görev ilerlemesini takip etmek için yapılacaklar listeleri oluşturabilir ve yönetebilir. Bu, karmaşık görevleri yönetilebilir adımlara organize etmeye yardımcı olur."
+			"description": "Etkinleştirildiğinde, Charles görev ilerlemesini takip etmek için yapılacaklar listeleri oluşturabilir ve yönetebilir. Bu, karmaşık görevleri yönetilebilir adımlara organize etmeye yardımcı olur."
 		}
 	},
 	"experimental": {
@@ -689,23 +689,23 @@
 		},
 		"SEARCH_AND_REPLACE": {
 			"name": "Deneysel arama ve değiştirme aracını kullan",
-			"description": "Deneysel arama ve değiştirme aracını etkinleştir, Roo'nun tek bir istekte bir arama teriminin birden fazla örneğini değiştirmesine olanak tanır."
+			"description": "Deneysel arama ve değiştirme aracını etkinleştir, Charles'nun tek bir istekte bir arama teriminin birden fazla örneğini değiştirmesine olanak tanır."
 		},
 		"INSERT_BLOCK": {
 			"name": "Deneysel içerik ekleme aracını kullan",
-			"description": "Deneysel içerik ekleme aracını etkinleştir, Roo'nun bir diff oluşturma gereği duymadan belirli satır numaralarına içerik eklemesine olanak tanır."
+			"description": "Deneysel içerik ekleme aracını etkinleştir, Charles'nun bir diff oluşturma gereği duymadan belirli satır numaralarına içerik eklemesine olanak tanır."
 		},
 		"POWER_STEERING": {
 			"name": "Deneysel \"güç direksiyon\" modunu kullan",
-			"description": "Etkinleştirildiğinde, Roo modele geçerli mod tanımının ayrıntılarını daha sık hatırlatacaktır. Bu, rol tanımlarına ve özel talimatlara daha güçlü uyum sağlayacak, ancak mesaj başına daha fazla token kullanacaktır."
+			"description": "Etkinleştirildiğinde, Charles modele geçerli mod tanımının ayrıntılarını daha sık hatırlatacaktır. Bu, rol tanımlarına ve özel talimatlara daha güçlü uyum sağlayacak, ancak mesaj başına daha fazla token kullanacaktır."
 		},
 		"MULTI_SEARCH_AND_REPLACE": {
 			"name": "Deneysel çoklu blok diff aracını kullan",
-			"description": "Etkinleştirildiğinde, Roo çoklu blok diff aracını kullanacaktır. Bu, tek bir istekte dosyadaki birden fazla kod bloğunu güncellemeye çalışacaktır."
+			"description": "Etkinleştirildiğinde, Charles çoklu blok diff aracını kullanacaktır. Bu, tek bir istekte dosyadaki birden fazla kod bloğunu güncellemeye çalışacaktır."
 		},
 		"CONCURRENT_FILE_READS": {
 			"name": "Eşzamanlı dosya okumayı etkinleştir",
-			"description": "Etkinleştirildiğinde, Roo tek bir istekte birden fazla dosya okuyabilir. Devre dışı bırakıldığında, Roo dosyaları birer birer okumalıdır. Daha az yetenekli modellerle çalışırken veya dosya erişimi üzerinde daha fazla kontrol istediğinizde devre dışı bırakmak yardımcı olabilir."
+			"description": "Etkinleştirildiğinde, Charles tek bir istekte birden fazla dosya okuyabilir. Devre dışı bırakıldığında, Charles dosyaları birer birer okumalıdır. Daha az yetenekli modellerle çalışırken veya dosya erişimi üzerinde daha fazla kontrol istediğinizde devre dışı bırakmak yardımcı olabilir."
 		},
 		"MARKETPLACE": {
 			"name": "Marketplace'i Etkinleştir",
@@ -713,11 +713,11 @@
 		},
 		"MULTI_FILE_APPLY_DIFF": {
 			"name": "Eşzamanlı dosya düzenlemelerini etkinleştir",
-			"description": "Etkinleştirildiğinde, Roo tek bir istekte birden fazla dosyayı düzenleyebilir. Devre dışı bırakıldığında, Roo dosyaları tek tek düzenlemek zorundadır. Bunu devre dışı bırakmak, daha az yetenekli modellerle çalışırken veya dosya değişiklikleri üzerinde daha fazla kontrol istediğinde yardımcı olabilir."
+			"description": "Etkinleştirildiğinde, Charles tek bir istekte birden fazla dosyayı düzenleyebilir. Devre dışı bırakıldığında, Charles dosyaları tek tek düzenlemek zorundadır. Bunu devre dışı bırakmak, daha az yetenekli modellerle çalışırken veya dosya değişiklikleri üzerinde daha fazla kontrol istediğinde yardımcı olabilir."
 		},
 		"PREVENT_FOCUS_DISRUPTION": {
 			"name": "Arka plan düzenleme",
-			"description": "Etkinleştirildiğinde editör odak kesintisini önler. Dosya düzenlemeleri diff görünümlerini açmadan veya odağı çalmadan arka planda gerçekleşir. Roo değişiklikler yaparken kesintisiz çalışmaya devam edebilirsiniz. Dosyalar tanılamayı yakalamak için odaksız açılabilir veya tamamen kapalı kalabilir."
+			"description": "Etkinleştirildiğinde editör odak kesintisini önler. Dosya düzenlemeleri diff görünümlerini açmadan veya odağı çalmadan arka planda gerçekleşir. Charles değişiklikler yaparken kesintisiz çalışmaya devam edebilirsiniz. Dosyalar tanılamayı yakalamak için odaksız açılabilir veya tamamen kapalı kalabilir."
 		},
 		"ASSISTANT_MESSAGE_PARSER": {
 			"name": "Yeni mesaj ayrıştırıcıyı kullan",
@@ -730,7 +730,7 @@
 	},
 	"promptCaching": {
 		"label": "Prompt önbelleğini devre dışı bırak",
-		"description": "İşaretlendiğinde, Roo bu model için prompt önbelleğini kullanmayacaktır."
+		"description": "İşaretlendiğinde, Charles bu model için prompt önbelleğini kullanmayacaktır."
 	},
 	"temperature": {
 		"useCustom": "Özel sıcaklık kullan",
@@ -762,17 +762,17 @@
 		}
 	},
 	"modelPicker": {
-		"automaticFetch": "Uzantı <serviceLink>{{serviceName}}</serviceLink> üzerinde bulunan mevcut modellerin en güncel listesini otomatik olarak alır. Hangi modeli seçeceğinizden emin değilseniz, Roo Code <defaultModelLink>{{defaultModelId}}</defaultModelLink> ile en iyi şekilde çalışır. Şu anda mevcut olan ücretsiz seçenekleri bulmak için \"free\" araması da yapabilirsiniz.",
+		"automaticFetch": "Uzantı <serviceLink>{{serviceName}}</serviceLink> üzerinde bulunan mevcut modellerin en güncel listesini otomatik olarak alır. Hangi modeli seçeceğinizden emin değilseniz, Charles <defaultModelLink>{{defaultModelId}}</defaultModelLink> ile en iyi şekilde çalışır. Şu anda mevcut olan ücretsiz seçenekleri bulmak için \"free\" araması da yapabilirsiniz.",
 		"label": "Model",
 		"searchPlaceholder": "Ara",
 		"noMatchFound": "Eşleşme bulunamadı",
 		"useCustomModel": "Özel kullan: {{modelId}}"
 	},
 	"footer": {
-		"feedback": "Herhangi bir sorunuz veya geri bildiriminiz varsa, <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> adresinde bir konu açmaktan veya <redditLink>reddit.com/r/RooCode</redditLink> ya da <discordLink>discord.gg/roocode</discordLink>'a katılmaktan çekinmeyin",
+		"feedback": "Herhangi bir sorunuz veya geri bildiriminiz varsa, <githubLink>github.com/Newton-School/charles</githubLink> adresinde bir konu açmaktan veya <redditLink>reddit.com/r/RooCode</redditLink> ya da <discordLink>discord.gg/roocode</discordLink>'a katılmaktan çekinmeyin",
 		"telemetry": {
 			"label": "Anonim hata ve kullanım raporlamaya izin ver",
-			"description": "Anonim kullanım verileri ve hata raporları göndererek Roo Code'u geliştirmeye yardımcı olun. Hiçbir kod, istem veya kişisel bilgi asla gönderilmez. Daha fazla ayrıntı için gizlilik politikamıza bakın."
+			"description": "Anonim kullanım verileri ve hata raporları göndererek Charles'u geliştirmeye yardımcı olun. Hiçbir kod, istem veya kişisel bilgi asla gönderilmez. Daha fazla ayrıntı için gizlilik politikamıza bakın."
 		},
 		"settings": {
 			"import": "İçe Aktar",

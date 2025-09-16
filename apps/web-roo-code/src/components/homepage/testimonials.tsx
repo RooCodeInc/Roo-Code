@@ -20,28 +20,28 @@ export const testimonials: Testimonial[] = [
 		name: "Luca",
 		role: "Reviewer",
 		company: "VS Code Marketplace",
-		quote: "Roo Code is an absolute game-changer! 🚀 It makes coding faster, easier, and more intuitive with its smart AI-powered suggestions, real-time debugging, and automation features. The seamless integration with VS Code is a huge plus, and the constant updates ensure it keeps getting better",
+		quote: "Charles is an absolute game-changer! 🚀 It makes coding faster, easier, and more intuitive with its smart AI-powered suggestions, real-time debugging, and automation features. The seamless integration with VS Code is a huge plus, and the constant updates ensure it keeps getting better",
 	},
 	{
 		id: 2,
 		name: "Taro Woollett-Chiba",
 		role: "AI Product Lead",
 		company: "Vendidit",
-		quote: "Easily the best AI code editor. Roo Code has the best features and capabilities, along with the best development team. I swear, they're the fastest to support new models and implement useful functionality whenever users mention it... simply amazing.",
+		quote: "Easily the best AI code editor. Charles has the best features and capabilities, along with the best development team. I swear, they're the fastest to support new models and implement useful functionality whenever users mention it... simply amazing.",
 	},
 	{
 		id: 3,
 		name: "Can Nuri",
 		role: "Reviewer",
 		company: "VS Code Marketplace",
-		quote: "Roo Code is one of the most inspiring projects I have seen for a long time. It shapes the way I think and deal with software development.",
+		quote: "Charles is one of the most inspiring projects I have seen for a long time. It shapes the way I think and deal with software development.",
 	},
 	{
 		id: 4,
 		name: "Michael",
 		role: "Reviewer",
 		company: "VS Code Marketplace",
-		quote: "I switched from Windsurf to Roo Code in January and honestly, it's been a huge upgrade. Windsurf kept making mistakes and being dumb when I ask it for things. Roo just gets it. Projects that used to take a full day now wrap up before lunch. ",
+		quote: "I switched from Windsurf to Charles in January and honestly, it's been a huge upgrade. Windsurf kept making mistakes and being dumb when I ask it for things. Charles just gets it. Projects that used to take a full day now wrap up before lunch. ",
 	},
 ]
 

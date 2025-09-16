@@ -3,14 +3,14 @@
 	"profilePicture": "Profile picture",
 	"logOut": "Log out",
 	"testApiAuthentication": "Test API Authentication",
-	"signIn": "Connect to Roo Code Cloud",
+	"signIn": "Connect to Charles Cloud",
 	"connect": "Connect Now",
-	"cloudBenefitsTitle": "Connect to Roo Code Cloud",
+	"cloudBenefitsTitle": "Connect to Charles Cloud",
 	"cloudBenefitWalkaway": "Follow and control tasks from anywhere with Roomote Control",
 	"cloudBenefitSharing": "Share tasks with others",
 	"cloudBenefitHistory": "Access your task history",
 	"cloudBenefitMetrics": "Get a holistic view of your token consumption",
-	"visitCloudWebsite": "Visit Roo Code Cloud",
+	"visitCloudWebsite": "Visit Charles Cloud",
 	"remoteControl": "Roomote Control",
-	"remoteControlDescription": "Enable following and interacting with tasks in this workspace with Roo Code Cloud"
+	"remoteControlDescription": "Enable following and interacting with tasks in this workspace with Charles Cloud"
 }

@@ -11,9 +11,9 @@
 </sub>
 </div>
 
-# Beitrag zu Roo Code
+# Beitrag zu Charles
 
-Roo Code ist ein Community-getriebenes Projekt, und wir schätzen jeden Beitrag sehr. Für eine reibungslose Zusammenarbeit arbeiten wir nach dem [Issue-First-Ansatz](#issue-first-ansatz), was bedeutet, dass alle [Pull Requests (PRs)](#einen-pull-request-einreichen) zuerst mit einem GitHub Issue verknüpft werden müssen. Bitte lies diesen Leitfaden sorgfältig durch.
+Charles ist ein Community-getriebenes Projekt, und wir schätzen jeden Beitrag sehr. Für eine reibungslose Zusammenarbeit arbeiten wir nach dem [Issue-First-Ansatz](#issue-first-ansatz), was bedeutet, dass alle [Pull Requests (PRs)](#einen-pull-request-einreichen) zuerst mit einem GitHub Issue verknüpft werden müssen. Bitte lies diesen Leitfaden sorgfältig durch.
 
 ## Inhaltsverzeichnis
 
@@ -52,7 +52,7 @@ Unsere Roadmap gibt die Richtung des Projekts vor. Richte deine Beiträge an die
 
 Erwähne die Ausrichtung an diesen Bereichen in deinen PRs.
 
-### 3. Werde Teil der Roo Code Community
+### 3. Werde Teil der Charles Community
 
 - **Hauptweg:** Tritt unserem [Discord](https://discord.gg/roocode) bei und schreibe eine DM an **Hannes Rudolph (`hrudolph`)**.
 - **Alternative:** Erfahrene Mitwirkende können sich direkt über [GitHub Projects](https://github.com/orgs/RooCodeInc/projects/1) beteiligen.
@@ -80,7 +80,7 @@ Alle Beiträge müssen mit einem GitHub Issue beginnen.
 ### Was soll ich machen?
 
 - Schau im [GitHub Project](https://github.com/orgs/RooCodeInc/projects/1) nach nicht zugewiesenen "Good First Issues".
-- Für Dokumentation besuche das [Roo Code Docs](https://github.com/RooCodeInc/Roo-Code-Docs) Repository.
+- Für Dokumentation besuche das [Charles Docs](https://github.com/Newton-School/charles) Repository.
 
 ### Bugs melden
 
@@ -135,4 +135,4 @@ npm run install:all
 
 ## Rechtliches
 
-Mit deinem Beitrag erklärst du dich damit einverstanden, dass deine Beiträge unter der Apache 2.0 Lizenz lizenziert werden, konsistent mit der Lizenzierung von Roo Code.
+Mit deinem Beitrag erklärst du dich damit einverstanden, dass deine Beiträge unter der Apache 2.0 Lizenz lizenziert werden, konsistent mit der Lizenzierung von Charles.

@@ -9,7 +9,7 @@
 		"editModesConfig": "Edit konfigurasi mode",
 		"editGlobalModes": "Edit Mode Global",
 		"editProjectModes": "Edit Mode Proyek (.roomodes)",
-		"createModeHelpText": "Mode adalah persona khusus yang menyesuaikan perilaku Roo Code. <0>Pelajari tentang Menggunakan Mode</0> atau <1>Menyesuaikan Mode.</1>",
+		"createModeHelpText": "Mode adalah persona khusus yang menyesuaikan perilaku Charles. <0>Pelajari tentang Menggunakan Mode</0> atau <1>Menyesuaikan Mode.</1>",
 		"selectMode": "Cari mode"
 	},
 	"apiConfiguration": {
@@ -34,7 +34,7 @@
 	"roleDefinition": {
 		"title": "Definisi Peran",
 		"resetToDefault": "Reset ke default",
-		"description": "Tentukan keahlian dan kepribadian Roo untuk mode ini. Deskripsi ini membentuk bagaimana Roo mempresentasikan dirinya dan mendekati tugas."
+		"description": "Tentukan keahlian dan kepribadian Charles untuk mode ini. Deskripsi ini membentuk bagaimana Charles mempresentasikan dirinya dan mendekati tugas."
 	},
 	"description": {
 		"title": "Deskripsi singkat (untuk manusia)",
@@ -50,7 +50,7 @@
 		"title": "Instruksi Kustom Khusus Mode (opsional)",
 		"resetToDefault": "Reset ke default",
 		"description": "Tambahkan panduan perilaku khusus untuk mode {{modeName}}.",
-		"loadFromFile": "Instruksi khusus untuk mode {{mode}} juga dapat dimuat dari folder <span>.roo/rules-{{slug}}/</span> di ruang kerja Anda atau dari global <0>.roo/rules-{{slug}}/</0> (.roorules-{{slug}} dan .clinerules-{{slug}} sudah usang dan akan segera berhenti berfungsi)."
+		"loadFromFile": "Instruksi khusus untuk mode {{mode}} juga dapat dimuat dari folder <span>.Charles/rules-{{slug}}/</span> di ruang kerja Anda atau dari global <0>.Charles/rules-{{slug}}/</0> (.roorules-{{slug}} dan .clinerules-{{slug}} sudah usang dan akan segera berhenti berfungsi)."
 	},
 	"exportMode": {
 		"title": "Ekspor Mode",
@@ -68,7 +68,7 @@
 		},
 		"project": {
 			"label": "Tingkat Proyek",
-			"description": "Hanya tersedia di ruang kerja ini. Jika mode yang diekspor berisi file aturan, file tersebut akan dibuat ulang di folder .roo/rules-{slug}/."
+			"description": "Hanya tersedia di ruang kerja ini. Jika mode yang diekspor berisi file aturan, file tersebut akan dibuat ulang di folder .Charles/rules-{slug}/."
 		}
 	},
 	"advanced": {
@@ -77,7 +77,7 @@
 	"globalCustomInstructions": {
 		"title": "Instruksi Kustom untuk Semua Mode",
 		"description": "Instruksi ini berlaku untuk semua mode. Mereka menyediakan set dasar perilaku yang dapat ditingkatkan oleh instruksi khusus mode di bawah. <0>Pelajari lebih lanjut</0>",
-		"loadFromFile": "Instruksi juga dapat dimuat dari folder <span>.roo/rules/</span> di ruang kerja Anda atau dari global <0>.roo/rules/</0> (.roorules dan .clinerules sudah usang dan akan segera berhenti berfungsi)."
+		"loadFromFile": "Instruksi juga dapat dimuat dari folder <span>.Charles/rules/</span> di ruang kerja Anda atau dari global <0>.Charles/rules/</0> (.roorules dan .clinerules sudah usang dan akan segera berhenti berfungsi)."
 	},
 	"systemPrompt": {
 		"preview": "Pratinjau System Prompt",
@@ -106,7 +106,7 @@
 		"types": {
 			"ENHANCE": {
 				"label": "Tingkatkan Prompt",
-				"description": "Gunakan peningkatan prompt untuk mendapatkan saran atau perbaikan yang disesuaikan untuk input Anda. Ini memastikan Roo memahami maksud Anda dan memberikan respons terbaik. Tersedia melalui ikon ✨ di chat."
+				"description": "Gunakan peningkatan prompt untuk mendapatkan saran atau perbaikan yang disesuaikan untuk input Anda. Ini memastikan Charles memahami maksud Anda dan memberikan respons terbaik. Tersedia melalui ikon ✨ di chat."
 			},
 			"CONDENSE": {
 				"label": "Peringkasan Konteks",
@@ -148,7 +148,7 @@
 	},
 	"advancedSystemPrompt": {
 		"title": "Lanjutan: Override System Prompt",
-		"description": "<2>⚠️ Peringatan:</2> Fitur lanjutan ini melewati pengamanan. <1>BACA INI SEBELUM MENGGUNAKAN!</1>Override system prompt default dengan membuat file di <span>.roo/system-prompt-{{slug}}</span>."
+		"description": "<2>⚠️ Peringatan:</2> Fitur lanjutan ini melewati pengamanan. <1>BACA INI SEBELUM MENGGUNAKAN!</1>Override system prompt default dengan membuat file di <span>.Charles/system-prompt-{{slug}}</span>."
 	},
 	"createModeDialog": {
 		"title": "Buat Mode Baru",
@@ -175,7 +175,7 @@
 		},
 		"roleDefinition": {
 			"label": "Definisi Peran",
-			"description": "Tentukan keahlian dan kepribadian Roo untuk mode ini."
+			"description": "Tentukan keahlian dan kepribadian Charles untuk mode ini."
 		},
 		"whenToUse": {
 			"label": "Kapan Menggunakan (opsional)",

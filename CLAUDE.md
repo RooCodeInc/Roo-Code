@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository Overview
 
-This is **Roo Code** (formerly Cline), an AI-powered autonomous coding agent for VS Code. It's a monorepo managed with pnpm and Turbo, containing both the core extension and webview UI components.
+This is **Charles** (formerly Cline), an AI-powered autonomous coding agent for VS Code. It's a monorepo managed with pnpm and Turbo, containing both the core extension and webview UI components.
 
 ## Development Commands
 

@@ -189,7 +189,7 @@ export function WhatsNewButton() {
 									}}>
 									<div className="flex items-center justify-between gap-4">
 										<h2 className="text-xl font-bold sm:text-2xl">
-											What&apos;s New in Roo Code {version}
+											What&apos;s New in Charles {version}
 										</h2>
 										<button
 											onClick={() => setIsOpen(false)}

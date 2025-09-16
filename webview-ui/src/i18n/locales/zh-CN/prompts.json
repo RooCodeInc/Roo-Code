@@ -50,7 +50,7 @@
 		"title": "模式专属规则（可选）",
 		"resetToDefault": "重置为默认值",
 		"description": "{{modeName}}模式的专属规则",
-		"loadFromFile": "{{mode}}模式的特定自定义指令也可以从工作区中的<span>.roo/rules-{{slug}}/</span>文件夹或全局<0>.roo/rules-{{slug}}/</0>加载（.roorules-{{slug}}和.clinerules-{{slug}}已弃用，即将停止工作）。"
+		"loadFromFile": "{{mode}}模式的特定自定义指令也可以从工作区中的<span>.Charles/rules-{{slug}}/</span>文件夹或全局<0>.Charles/rules-{{slug}}/</0>加载（.roorules-{{slug}}和.clinerules-{{slug}}已弃用，即将停止工作）。"
 	},
 	"exportMode": {
 		"title": "导出模式",
@@ -64,17 +64,17 @@
 		"importing": "导入中...",
 		"global": {
 			"label": "全局",
-			"description": "适用于所有项目。如果导出的模式包含规则文件，则将在全局 .roo/rules-{slug}/ 文件夹中重新创建这些文件。"
+			"description": "适用于所有项目。如果导出的模式包含规则文件，则将在全局 .Charles/rules-{slug}/ 文件夹中重新创建这些文件。"
 		},
 		"project": {
 			"label": "项目级",
-			"description": "仅在此工作区可用。如果导出的模式包含规则文件，则将在 .roo/rules-{slug}/ 文件夹中重新创建这些文件。"
+			"description": "仅在此工作区可用。如果导出的模式包含规则文件，则将在 .Charles/rules-{slug}/ 文件夹中重新创建这些文件。"
 		}
 	},
 	"globalCustomInstructions": {
 		"title": "所有模式的自定义指令",
 		"description": "这些指令适用于所有模式。它们提供了一套基础行为，可以通过下面的模式特定指令进行增强。<0>了解更多</0>",
-		"loadFromFile": "指令也可以从工作区中的<span>.roo/rules/</span>文件夹或全局<0>.roo/rules/</0>加载（.roorules和.clinerules已弃用，即将停止工作）。"
+		"loadFromFile": "指令也可以从工作区中的<span>.Charles/rules/</span>文件夹或全局<0>.Charles/rules/</0>加载（.roorules和.clinerules已弃用，即将停止工作）。"
 	},
 	"systemPrompt": {
 		"preview": "预览系统提示词",
@@ -145,7 +145,7 @@
 	},
 	"advancedSystemPrompt": {
 		"title": "高级：覆盖系统提示词",
-		"description": "<2>⚠️ 警告：</2> 此高级功能会绕过安全措施。<1>使用前请阅读！</1>通过在您的工作区中创建文件 <span>.roo/system-prompt-{{slug}}</span> 来覆盖默认系统提示。"
+		"description": "<2>⚠️ 警告：</2> 此高级功能会绕过安全措施。<1>使用前请阅读！</1>通过在您的工作区中创建文件 <span>.Charles/system-prompt-{{slug}}</span> 来覆盖默认系统提示。"
 	},
 	"createModeDialog": {
 		"title": "创建新模式",

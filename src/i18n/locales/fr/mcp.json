@@ -3,9 +3,9 @@
 		"invalid_settings_format": "Format JSON des paramètres MCP invalide. Veuillez vous assurer que vos paramètres suivent le format JSON correct.",
 		"invalid_settings_syntax": "Format JSON des paramètres MCP invalide. Veuillez vérifier le syntaxe de votre fichier de paramètres.",
 		"invalid_settings_validation": "Format de paramètres MCP invalide : {{errorMessages}}",
-		"create_json": "Échec de la création ou de l'ouverture de .roo/mcp.json : {{error}}",
+		"create_json": "Échec de la création ou de l'ouverture de .Charles/mcp.json : {{error}}",
 		"failed_update_project": "Échec de la mise à jour des serveurs MCP du projet",
-		"invalidJsonArgument": "Roo a essayé d'utiliser {{toolName}} avec un argument JSON invalide. Nouvelle tentative...",
+		"invalidJsonArgument": "Charles a essayé d'utiliser {{toolName}} avec un argument JSON invalide. Nouvelle tentative...",
 		"refresh_after_disable": "Échec du rafraîchissement des connexions MCP après désactivation",
 		"refresh_after_enable": "Échec du rafraîchissement des connexions MCP après activation",
 		"disconnect_servers_partial": "Échec de la déconnexion de {{count}} serveur(s) MCP. Vérifiez la sortie pour plus de détails."

@@ -2,16 +2,16 @@
 	"title": "Servidors MCP",
 	"done": "Fet",
 	"marketplace": "Mercat de MCP",
-	"description": "El <0>Model Context Protocol</0> permet la comunicació amb servidors MCP que s'executen localment i proporcionen eines i recursos addicionals per ampliar les capacitats de Roo. Pots utilitzar <1>servidors creats per la comunitat</1> o demanar a Roo que creï noves eines específiques per al teu flux de treball (per exemple, \"afegir una eina que obtingui la documentació més recent de npm\").",
+	"description": "El <0>Model Context Protocol</0> permet la comunicació amb servidors MCP que s'executen localment i proporcionen eines i recursos addicionals per ampliar les capacitats de Charles. Pots utilitzar <1>servidors creats per la comunitat</1> o demanar a Charles que creï noves eines específiques per al teu flux de treball (per exemple, \"afegir una eina que obtingui la documentació més recent de npm\").",
 	"instructions": "Instruccions",
 	"enableToggle": {
 		"title": "Activa els servidors MCP",
-		"description": "Activa-ho perquè Roo pugui utilitzar eines dels servidors MCP connectats. Això dóna més capacitats a Roo. Si no vols utilitzar aquestes eines addicionals, desactiva-ho per ajudar a reduir el cost dels tokens API."
+		"description": "Activa-ho perquè Charles pugui utilitzar eines dels servidors MCP connectats. Això dóna més capacitats a Charles. Si no vols utilitzar aquestes eines addicionals, desactiva-ho per ajudar a reduir el cost dels tokens API."
 	},
 	"enableServerCreation": {
 		"title": "Activa la creació de servidors MCP",
-		"description": "Activa-ho perquè Roo t'ajudi a crear <1>nous</1> servidors MCP personalitzats. <0>Més informació sobre la creació de servidors</0>",
-		"hint": "Consell: Per reduir el cost dels tokens API, desactiva aquesta opció quan no demanis a Roo que creï un nou servidor MCP."
+		"description": "Activa-ho perquè Charles t'ajudi a crear <1>nous</1> servidors MCP personalitzats. <0>Més informació sobre la creació de servidors</0>",
+		"hint": "Consell: Per reduir el cost dels tokens API, desactiva aquesta opció quan no demanis a Charles que creï un nou servidor MCP."
 	},
 	"editGlobalMCP": "Edita MCP global",
 	"editProjectMCP": "Edita MCP del projecte",

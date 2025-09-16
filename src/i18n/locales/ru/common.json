@@ -1,6 +1,6 @@
 {
 	"extension": {
-		"name": "Roo Code",
+		"name": "Charles",
 		"description": "Целая команда ИИ-разработчиков в вашем редакторе."
 	},
 	"number_format": {
@@ -85,7 +85,7 @@
 			"processExitedWithError": "Процесс Claude Code завершился с кодом {{exitCode}}. Вывод ошибки: {{output}}",
 			"stoppedWithReason": "Claude Code остановился по причине: {{reason}}",
 			"apiKeyModelPlanMismatch": "API keys and subscription plans allow different models. Make sure the selected model is included in your plan.",
-			"notFound": "Claude Code executable '{{claudePath}}' not found.\n\nPlease install Claude Code CLI:\n1. Visit {{installationUrl}} to download Claude Code\n2. Follow the installation instructions for your operating system\n3. Ensure the 'claude' command is available in your PATH\n4. Alternatively, configure a custom path in Roo settings under 'Claude Code Path'\n\nOriginal error: {{originalError}}"
+			"notFound": "Claude Code executable '{{claudePath}}' not found.\n\nPlease install Claude Code CLI:\n1. Visit {{installationUrl}} to download Claude Code\n2. Follow the installation instructions for your operating system\n3. Ensure the 'claude' command is available in your PATH\n4. Alternatively, configure a custom path in Charles settings under 'Claude Code Path'\n\nOriginal error: {{originalError}}"
 		},
 		"gemini": {
 			"generate_stream": "Ошибка потока контекста генерации Gemini: {{error}}",
@@ -101,8 +101,8 @@
 			"noResponseBody": "Ошибка Cerebras API: Нет тела ответа",
 			"completionError": "Ошибка завершения Cerebras: {{error}}"
 		},
-		"roo": {
-			"authenticationRequired": "Провайдер Roo требует облачной аутентификации. Войдите в Roo Code Cloud."
+		"Charles": {
+			"authenticationRequired": "Провайдер Charles требует облачной аутентификации. Войдите в Charles Cloud."
 		}
 	},
 	"warnings": {
@@ -150,7 +150,7 @@
 		"enter_valid_path": "Пожалуйста, введите корректный путь"
 	},
 	"input": {
-		"task_prompt": "Что должен сделать Roo?",
+		"task_prompt": "Что должен сделать Charles?",
 		"task_placeholder": "Введите вашу задачу здесь"
 	},
 	"settings": {
@@ -188,8 +188,8 @@
 	},
 	"mdm": {
 		"errors": {
-			"cloud_auth_required": "Ваша организация требует аутентификации Roo Code Cloud. Войдите в систему, чтобы продолжить.",
-			"organization_mismatch": "Вы должны быть аутентифицированы с учетной записью Roo Code Cloud вашей организации.",
+			"cloud_auth_required": "Ваша организация требует аутентификации Charles Cloud. Войдите в систему, чтобы продолжить.",
+			"organization_mismatch": "Вы должны быть аутентифицированы с учетной записью Charles Cloud вашей организации.",
 			"verification_failed": "Не удается проверить аутентификацию организации."
 		},
 		"info": {

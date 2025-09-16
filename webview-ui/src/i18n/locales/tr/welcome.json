@@ -1,6 +1,6 @@
 {
-	"greeting": "Roo Code'a Hoş Geldin!",
-	"introduction": "Yerleşik ve genişletilebilir Modlar yelpazesiyle Roo Code, daha önce hiç olmadığı gibi planlama, mimari tasarım, kodlama, hata ayıklama ve üretkenliğini artırmanı sağlar.",
+	"greeting": "Charles'a Hoş Geldin!",
+	"introduction": "Yerleşik ve genişletilebilir Modlar yelpazesiyle Charles, daha önce hiç olmadığı gibi planlama, mimari tasarım, kodlama, hata ayıklama ve üretkenliğini artırmanı sağlar.",
 	"notice": "Başlamak için bu eklentinin bir API sağlayıcısına ihtiyacı var.",
 	"start": "Hadi başlayalım!",
 	"routers": {
@@ -12,11 +12,11 @@
 			"description": "LLM'ler için birleşik bir arayüz"
 		}
 	},
-	"chooseProvider": "Sihirini yapabilmesi için Roo'nun bir API anahtarına ihtiyacı var.",
+	"chooseProvider": "Sihirini yapabilmesi için Charles'nun bir API anahtarına ihtiyacı var.",
 	"startRouter": "Bir LLM yönlendiricisi kullanmanı öneririz:",
 	"startCustom": "Veya kendi API anahtarını kullanabilirsin:",
 	"telemetry": {
-		"title": "Roo Code'u Geliştirmeye Yardım Et",
+		"title": "Charles'u Geliştirmeye Yardım Et",
 		"anonymousTelemetry": "Hataları düzeltmemize ve eklentiyi geliştirmemize yardımcı olmak için anonim hata ve kullanım verileri gönder. Hiçbir zaman kod, metin veya kişisel bilgi gönderilmez.",
 		"changeSettings": "Bunu her zaman <settingsLink>ayarlar</settingsLink>ın altından değiştirebilirsin",
 		"settings": "ayarlar",

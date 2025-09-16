@@ -71,7 +71,7 @@ export const window = {
 	}),
 	createTerminal: () => ({
 		exitStatus: undefined,
-		name: "Roo Code",
+		name: "Charles",
 		processId: Promise.resolve(123),
 		creationOptions: {},
 		state: { isInteractedWith: true },

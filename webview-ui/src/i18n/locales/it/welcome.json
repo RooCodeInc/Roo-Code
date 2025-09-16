@@ -1,6 +1,6 @@
 {
-	"greeting": "Benvenuto in Roo Code!",
-	"introduction": "Con una gamma di Modalità integrate ed estensibili, Roo Code ti permette di pianificare, architettare, codificare, debuggare e aumentare la tua produttività come mai prima d'ora.",
+	"greeting": "Benvenuto in Charles!",
+	"introduction": "Con una gamma di Modalità integrate ed estensibili, Charles ti permette di pianificare, architettare, codificare, debuggare e aumentare la tua produttività come mai prima d'ora.",
 	"notice": "Per iniziare, questa estensione necessita di un fornitore di API.",
 	"start": "Andiamo!",
 	"routers": {
@@ -12,11 +12,11 @@
 			"description": "Un'interfaccia unificata per LLMs"
 		}
 	},
-	"chooseProvider": "Per fare la sua magia, Roo ha bisogno di una chiave API.",
+	"chooseProvider": "Per fare la sua magia, Charles ha bisogno di una chiave API.",
 	"startRouter": "Consigliamo di utilizzare un router LLM:",
 	"startCustom": "Oppure puoi utilizzare la tua chiave API:",
 	"telemetry": {
-		"title": "Aiuta a migliorare Roo Code",
+		"title": "Aiuta a migliorare Charles",
 		"anonymousTelemetry": "Invia dati di utilizzo ed errori anonimi per aiutarci a correggere bug e migliorare l'estensione. Non viene mai inviato codice, testo o informazioni personali.",
 		"changeSettings": "Puoi sempre cambiare questo in fondo alle <settingsLink>impostazioni</settingsLink>",
 		"settings": "impostazioni",
