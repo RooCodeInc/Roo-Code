@@ -443,6 +443,8 @@
 			},
 			"resetDefaults": "Reset to Defaults"
 		},
+		"unverifiedOrganization": "Unverified Organization",
+		"unverifiedOrganizationDescription": "Check this box if you encounter organization verification errors with models like GPT-5. This will disable streaming and reasoning summaries but allow the models to work.",
 		"rateLimitSeconds": {
 			"label": "Rate limit",
 			"description": "Minimum time between API requests."

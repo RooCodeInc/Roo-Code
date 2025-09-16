@@ -125,6 +125,143 @@ describe("OpenAiNativeHandler", () => {
 				}
 			}).rejects.toThrow("OpenAI service error")
 		})
+
+		it("should handle non-streaming responses via SDK when stream=false", async () => {
+			// Reconfigure handler to force non-stream (buildRequestBody sets stream = !openAiNativeUnverifiedOrg)
+			handler = new OpenAiNativeHandler({
+				...mockOptions,
+				openAiNativeUnverifiedOrg: true, // => stream: false
+			})
+
+			// Mock SDK non-streaming JSON response
+			mockResponsesCreate.mockResolvedValueOnce({
+				id: "resp_nonstream_1",
+				output: [
+					{
+						type: "message",
+						content: [{ type: "output_text", text: "Non-streamed reply" }],
+					},
+				],
+				usage: {
+					input_tokens: 12,
+					output_tokens: 7,
+					cache_read_input_tokens: 0,
+					cache_creation_input_tokens: 0,
+				},
+			})
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			// Verify yielded content and usage from non-streaming path
+			expect(chunks.length).toBeGreaterThan(0)
+			expect(chunks[0]).toEqual({ type: "text", text: "Non-streamed reply" })
+			const usage = chunks.find((c) => c.type === "usage")
+			expect(usage).toBeTruthy()
+			expect(usage.inputTokens).toBe(12)
+			expect(usage.outputTokens).toBe(7)
+
+			// Ensure SDK was called with stream=false and structured input
+			expect(mockResponsesCreate).toHaveBeenCalledTimes(1)
+			const body = mockResponsesCreate.mock.calls[0][0]
+			expect(body.stream).toBe(false)
+			expect(body.instructions).toBe(systemPrompt)
+			expect(body.input).toEqual([{ role: "user", content: [{ type: "input_text", text: "Hello!" }] }])
+		})
+
+		it("should retry non-streaming when previous_response_id is invalid (400) and then succeed", async () => {
+			// Reconfigure handler to force non-stream (stream=false)
+			handler = new OpenAiNativeHandler({
+				...mockOptions,
+				openAiNativeUnverifiedOrg: true,
+			})
+
+			// First SDK call fails with 400 indicating previous_response_id not found
+			const err: any = new Error("Previous response not found")
+			err.status = 400
+			err.response = { status: 400 }
+			mockResponsesCreate.mockRejectedValueOnce(err).mockResolvedValueOnce({
+				id: "resp_after_retry",
+				output: [
+					{
+						type: "message",
+						content: [{ type: "output_text", text: "Reply after retry" }],
+					},
+				],
+				usage: {
+					input_tokens: 9,
+					output_tokens: 3,
+					cache_read_input_tokens: 0,
+					cache_creation_input_tokens: 0,
+				},
+			})
+
+			const stream = handler.createMessage(systemPrompt, messages, {
+				taskId: "t-1",
+				previousResponseId: "resp_invalid",
+			})
+
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			// Two SDK calls (retry path)
+			expect(mockResponsesCreate).toHaveBeenCalledTimes(2)
+
+			// First call: includes previous_response_id and only latest user message
+			const firstBody = mockResponsesCreate.mock.calls[0][0]
+			expect(firstBody.stream).toBe(false)
+			expect(firstBody.previous_response_id).toBe("resp_invalid")
+			expect(firstBody.input).toEqual([{ role: "user", content: [{ type: "input_text", text: "Hello!" }] }])
+
+			// Second call (retry): no previous_response_id, includes full conversation (still single latest message in this test)
+			const secondBody = mockResponsesCreate.mock.calls[1][0]
+			expect(secondBody.stream).toBe(false)
+			expect(secondBody.previous_response_id).toBeUndefined()
+			expect(secondBody.instructions).toBe(systemPrompt)
+			// With only one message in this suite, the "full conversation" equals the single user message
+			expect(secondBody.input).toEqual([{ role: "user", content: [{ type: "input_text", text: "Hello!" }] }])
+
+			// Verify yielded chunks from retry
+			expect(chunks[0]).toEqual({ type: "text", text: "Reply after retry" })
+			const usage = chunks.find((c) => c.type === "usage")
+			expect(usage.inputTokens).toBe(9)
+			expect(usage.outputTokens).toBe(3)
+		})
+
+		it("should NOT fallback to SSE when unverified org is true and non-stream SDK error occurs", async () => {
+			// Force non-stream path via unverified org toggle
+			handler = new OpenAiNativeHandler({
+				...mockOptions,
+				openAiNativeUnverifiedOrg: true, // => stream: false
+			})
+
+			// Make SDK throw a non-previous_response error (e.g., 500)
+			const err: any = new Error("Some server error")
+			err.status = 500
+			err.response = { status: 500 }
+			mockResponsesCreate.mockRejectedValueOnce(err)
+
+			// Prepare a fetch mock to detect any unintended SSE fallback usage
+			const mockFetch = vitest.fn()
+			;(global as any).fetch = mockFetch as any
+
+			const stream = handler.createMessage(systemPrompt, messages)
+
+			// Expect iteration to reject and no SSE fallback to be attempted
+			await expect(async () => {
+				for await (const _ of stream) {
+					// consume
+				}
+			}).rejects.toThrow("Some server error")
+
+			// Ensure SSE fallback was NOT invoked
+			expect(mockFetch).not.toHaveBeenCalled()
+		})
 	})
 
 	describe("completePrompt", () => {
@@ -1732,5 +1869,89 @@ describe("GPT-5 streaming event coverage (additional)", () => {
 				expect(bodyStr).not.toContain('"verbosity"')
 			})
 		})
+	})
+})
+
+describe("Unverified org gating behavior", () => {
+	beforeEach(() => {
+		// Ensure call counts don't accumulate from previous test suites
+		mockResponsesCreate.mockClear()
+		// Ensure no SSE fallback interference
+		if ((global as any).fetch) {
+			delete (global as any).fetch
+		}
+	})
+
+	afterEach(() => {
+		// Clean up any accidental fetch mocks
+		if ((global as any).fetch) {
+			delete (global as any).fetch
+		}
+	})
+
+	it("omits reasoning.summary in createMessage request when unverified org is true (GPT-5)", async () => {
+		// Arrange
+		const handler = new OpenAiNativeHandler({
+			apiModelId: "gpt-5-2025-08-07",
+			openAiNativeApiKey: "test-api-key",
+			openAiNativeUnverifiedOrg: true, // => stream=false, and summary must be omitted
+		})
+
+		// SDK returns a minimal valid non-stream response
+		mockResponsesCreate.mockResolvedValueOnce({
+			id: "resp_nonstream_2",
+			output: [],
+			usage: { input_tokens: 1, output_tokens: 1 },
+		})
+
+		// Act
+		const systemPrompt = "You are a helpful assistant."
+		const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Hello!" }]
+		const stream = handler.createMessage(systemPrompt, messages)
+		for await (const _ of stream) {
+			// drain
+		}
+
+		// Assert
+		expect(mockResponsesCreate).toHaveBeenCalledTimes(1)
+		const body = mockResponsesCreate.mock.calls[0][0]
+		expect(body.model).toBe("gpt-5-2025-08-07")
+		expect(body.stream).toBe(false)
+		// GPT-5 includes reasoning effort; summary must be omitted for unverified orgs
+		expect(body.reasoning?.effort).toBeDefined()
+		expect(body.reasoning?.summary).toBeUndefined()
+	})
+
+	it("omits reasoning.summary in completePrompt request when unverified org is true (GPT-5)", async () => {
+		// Arrange
+		const handler = new OpenAiNativeHandler({
+			apiModelId: "gpt-5-2025-08-07",
+			openAiNativeApiKey: "test-api-key",
+			openAiNativeUnverifiedOrg: true, // => summary must be omitted in completePrompt too
+		})
+
+		// SDK returns a non-stream completion
+		mockResponsesCreate.mockResolvedValueOnce({
+			output: [
+				{
+					type: "message",
+					content: [{ type: "output_text", text: "Completion" }],
+				},
+			],
+		})
+
+		// Act
+		const result = await handler.completePrompt("Prompt text")
+
+		// Assert
+		expect(result).toBe("Completion")
+		expect(mockResponsesCreate).toHaveBeenCalledTimes(1)
+		const body = mockResponsesCreate.mock.calls[0][0]
+		expect(body.model).toBe("gpt-5-2025-08-07")
+		expect(body.stream).toBe(false)
+		expect(body.store).toBe(false)
+		// Reasoning present, but summary must be omitted
+		expect(body.reasoning?.effort).toBeDefined()
+		expect(body.reasoning?.summary).toBeUndefined()
 	})
 })

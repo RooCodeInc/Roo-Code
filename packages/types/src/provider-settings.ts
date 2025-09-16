@@ -296,6 +296,7 @@ const openAiNativeSchema = apiModelIdProviderModelSchema.extend({
 	// OpenAI Responses API service tier for openai-native provider only.
 	// UI should only expose this when the selected model supports flex/priority.
 	openAiNativeServiceTier: serviceTierSchema.optional(),
+	openAiNativeUnverifiedOrg: z.boolean().optional(),
 })
 
 const mistralSchema = apiModelIdProviderModelSchema.extend({
