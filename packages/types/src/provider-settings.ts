@@ -170,6 +170,7 @@ const vertexSchema = apiModelIdProviderModelSchema.extend({
 	vertexRegion: z.string().optional(),
 	enableUrlContext: z.boolean().optional(),
 	enableGrounding: z.boolean().optional(),
+	vertex1MContext: z.boolean().optional(), // Enable 1M context for Claude Sonnet 4 on Vertex AI
 })
 
 const openAiSchema = baseProviderSettingsSchema.extend({

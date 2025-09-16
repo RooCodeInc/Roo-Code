@@ -214,8 +214,16 @@ function getSelectedModel({
 		}
 		case "vertex": {
 			const id = apiConfiguration.apiModelId ?? vertexDefaultModelId
-			const info = vertexModels[id as keyof typeof vertexModels]
-			return { id, info }
+			const baseInfo = vertexModels[id as keyof typeof vertexModels]
+			// Apply 1M context for Claude Sonnet 4 when enabled
+			if (id === "claude-sonnet-4@20250514" && apiConfiguration.vertex1MContext && baseInfo) {
+				const info: ModelInfo = {
+					...baseInfo,
+					contextWindow: 1_000_000,
+				}
+				return { id, info }
+			}
+			return { id, info: baseInfo }
 		}
 		case "gemini": {
 			const id = apiConfiguration.apiModelId ?? geminiDefaultModelId

@@ -2,7 +2,7 @@ import { useCallback } from "react"
 import { Checkbox } from "vscrui"
 import { VSCodeLink, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 
-import { type ProviderSettings, VERTEX_REGIONS } from "@roo-code/types"
+import { ANTHROPIC_VERTEX_1M_CONTEXT_MODEL_ID, type ProviderSettings, VERTEX_REGIONS } from "@roo-code/types"
 
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@src/components/ui"
@@ -94,29 +94,54 @@ export const Vertex = ({ apiConfiguration, setApiConfigurationField, fromWelcome
 				</Select>
 			</div>
 
-			{!fromWelcomeView && apiConfiguration.apiModelId?.startsWith("gemini") && (
-				<div className="mt-6">
-					<Checkbox
-						data-testid="checkbox-url-context"
-						checked={!!apiConfiguration.enableUrlContext}
-						onChange={(checked: boolean) => setApiConfigurationField("enableUrlContext", checked)}>
-						{t("settings:providers.geminiParameters.urlContext.title")}
-					</Checkbox>
-					<div className="text-sm text-vscode-descriptionForeground mb-3 mt-1.5">
-						{t("settings:providers.geminiParameters.urlContext.description")}
-					</div>
+			{!fromWelcomeView &&
+				(apiConfiguration.apiModelId?.startsWith("gemini") ||
+					apiConfiguration.apiModelId === ANTHROPIC_VERTEX_1M_CONTEXT_MODEL_ID) && (
+					<div className="mt-6">
+						{apiConfiguration.apiModelId?.startsWith("gemini") && (
+							<>
+								<Checkbox
+									data-testid="checkbox-url-context"
+									checked={!!apiConfiguration.enableUrlContext}
+									onChange={(checked: boolean) =>
+										setApiConfigurationField("enableUrlContext", checked)
+									}>
+									{t("settings:providers.geminiParameters.urlContext.title")}
+								</Checkbox>
+								<div className="text-sm text-vscode-descriptionForeground mb-3 mt-1.5">
+									{t("settings:providers.geminiParameters.urlContext.description")}
+								</div>
 
-					<Checkbox
-						data-testid="checkbox-grounding-search"
-						checked={!!apiConfiguration.enableGrounding}
-						onChange={(checked: boolean) => setApiConfigurationField("enableGrounding", checked)}>
-						{t("settings:providers.geminiParameters.groundingSearch.title")}
-					</Checkbox>
-					<div className="text-sm text-vscode-descriptionForeground mb-3 mt-1.5">
-						{t("settings:providers.geminiParameters.groundingSearch.description")}
+								<Checkbox
+									data-testid="checkbox-grounding-search"
+									checked={!!apiConfiguration.enableGrounding}
+									onChange={(checked: boolean) =>
+										setApiConfigurationField("enableGrounding", checked)
+									}>
+									{t("settings:providers.geminiParameters.groundingSearch.title")}
+								</Checkbox>
+								<div className="text-sm text-vscode-descriptionForeground mb-3 mt-1.5">
+									{t("settings:providers.geminiParameters.groundingSearch.description")}
+								</div>
+							</>
+						)}
+						{apiConfiguration.apiModelId === ANTHROPIC_VERTEX_1M_CONTEXT_MODEL_ID && (
+							<>
+								<Checkbox
+									data-testid="checkbox-1m-context"
+									checked={!!apiConfiguration.vertex1MContext}
+									onChange={(checked: boolean) =>
+										setApiConfigurationField("vertex1MContext", checked)
+									}>
+									{t("settings:providers.vertex1MContextLabel")}
+								</Checkbox>
+								<div className="text-sm text-vscode-descriptionForeground mt-1 ml-6">
+									{t("settings:providers.vertex1MContextDescription")}
+								</div>
+							</>
+						)}
 					</div>
-				</div>
-			)}
+				)}
 		</>
 	)
 }
