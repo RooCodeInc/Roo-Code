@@ -30,6 +30,3 @@ export const EXTERNAL_LINKS = {
 export const INTERNAL_LINKS = {
 	PRIVACY_POLICY_WEBSITE: "/privacy",
 }
-
-// Cookie consent settings
-export const CONSENT_COOKIE_NAME = "roo-code-cookie-consent"
