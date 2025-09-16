@@ -887,6 +887,7 @@ export const webviewMessageHandler = async (
 				const ollamaModels = await getModels({
 					provider: "ollama",
 					baseUrl: ollamaApiConfig.ollamaBaseUrl,
+					apiKey: ollamaApiConfig.ollamaApiKey,
 				})
 
 				if (Object.keys(ollamaModels).length > 0) {
@@ -2775,7 +2776,12 @@ export const webviewMessageHandler = async (
 					TelemetryService.instance.captureTabShown(message.tab)
 				}
 
-				await provider.postMessageToWebview({ type: "action", action: "switchTab", tab: message.tab })
+				await provider.postMessageToWebview({
+					type: "action",
+					action: "switchTab",
+					tab: message.tab,
+					values: message.values,
+				})
 			}
 			break
 		}
