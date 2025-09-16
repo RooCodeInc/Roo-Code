@@ -163,6 +163,28 @@ describe("ChutesHandler", () => {
 		expect(model.info).toEqual(expect.objectContaining(chutesModels[testModelId]))
 	})
 
+	it("should return DeepSeek V3.1 model with correct configuration", () => {
+		const testModelId: ChutesModelId = "deepseek-ai/DeepSeek-V3.1"
+		const handlerWithModel = new ChutesHandler({
+			apiModelId: testModelId,
+			chutesApiKey: "test-chutes-api-key",
+		})
+		const model = handlerWithModel.getModel()
+		expect(model.id).toBe(testModelId)
+		expect(model.info).toEqual(
+			expect.objectContaining({
+				maxTokens: 32768,
+				contextWindow: 163840,
+				supportsImages: false,
+				supportsPromptCache: false,
+				inputPrice: 0,
+				outputPrice: 0,
+				description: "DeepSeek V3.1 model.",
+				temperature: 0.5, // Non-R1 DeepSeek models use default temperature
+			}),
+		)
+	})
+
 	it("should return Qwen3-235B-A22B-Instruct-2507 model with correct configuration", () => {
 		const testModelId: ChutesModelId = "Qwen/Qwen3-235B-A22B-Instruct-2507"
 		const handlerWithModel = new ChutesHandler({
@@ -275,6 +297,28 @@ describe("ChutesHandler", () => {
 		)
 	})
 
+	it("should return moonshotai/Kimi-K2-Instruct-0905 model with correct configuration", () => {
+		const testModelId: ChutesModelId = "moonshotai/Kimi-K2-Instruct-0905"
+		const handlerWithModel = new ChutesHandler({
+			apiModelId: testModelId,
+			chutesApiKey: "test-chutes-api-key",
+		})
+		const model = handlerWithModel.getModel()
+		expect(model.id).toBe(testModelId)
+		expect(model.info).toEqual(
+			expect.objectContaining({
+				maxTokens: 32768,
+				contextWindow: 262144,
+				supportsImages: false,
+				supportsPromptCache: false,
+				inputPrice: 0.1999,
+				outputPrice: 0.8001,
+				description: "Moonshot AI Kimi K2 Instruct 0905 model with 256k context window.",
+				temperature: 0.5, // Default temperature for non-DeepSeek models
+			}),
+		)
+	})
+
 	it("completePrompt method should return text from Chutes API", async () => {
 		const expectedResponse = "This is a test response from Chutes"
 		mockCreate.mockResolvedValueOnce({ choices: [{ message: { content: expectedResponse } }] })
@@ -365,6 +409,10 @@ describe("ChutesHandler", () => {
 						content: `${systemPrompt}\n${messages[0].content}`,
 					},
 				],
+				max_tokens: 32768,
+				temperature: 0.6,
+				stream: true,
+				stream_options: { include_usage: true },
 			}),
 		)
 	})
@@ -399,6 +447,7 @@ describe("ChutesHandler", () => {
 				stream: true,
 				stream_options: { include_usage: true },
 			}),
+			undefined,
 		)
 	})
 

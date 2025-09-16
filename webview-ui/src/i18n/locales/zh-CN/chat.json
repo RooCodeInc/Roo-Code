@@ -24,7 +24,9 @@
 		"connectToCloudDescription": "登录 Roo Code Cloud 以分享任务",
 		"sharingDisabledByOrganization": "组织已禁用分享功能",
 		"shareSuccessOrganization": "组织链接已复制到剪贴板",
-		"shareSuccessPublic": "公开链接已复制到剪贴板"
+		"shareSuccessPublic": "公开链接已复制到剪贴板",
+		"openInCloud": "在 Roo Code Cloud 中打开任务",
+		"openInCloudIntro": "从任何地方继续监控或与 Roo 交互。扫描、点击或复制以打开。"
 	},
 	"unpin": "取消置顶",
 	"pin": "置顶",
@@ -175,7 +177,11 @@
 		"wantsToInsertAtEnd": "需要在文件末尾添加内容:",
 		"wantsToReadAndXMore": "Roo 想读取此文件以及另外 {{count}} 个文件：",
 		"wantsToReadMultiple": "Roo 想要读取多个文件：",
-		"wantsToApplyBatchChanges": "Roo 想要对多个文件应用更改："
+		"wantsToApplyBatchChanges": "Roo 想要对多个文件应用更改：",
+		"wantsToGenerateImage": "需要生成图片:",
+		"wantsToGenerateImageOutsideWorkspace": "需要在工作区外生成图片:",
+		"wantsToGenerateImageProtected": "需要在受保护位置生成图片:",
+		"didGenerateImage": "已生成图片:"
 	},
 	"directoryOperations": {
 		"wantsToViewTopLevel": "需要查看目录文件列表:",
@@ -241,12 +247,19 @@
 		"issues": "看起来您遇到了Windows PowerShell问题，请参阅此"
 	},
 	"autoApprove": {
-		"title": "自动批准:",
+		"tooltip": "管理自动批准设置",
+		"title": "自动批准",
+		"all": "全部",
 		"none": "无",
-		"description": "允许直接执行操作无需确认，请谨慎启用。前往<settingsLink>设置</settingsLink>调整",
-		"selectOptionsFirst": "选择至少一个下面的选项以启用自动批准",
+		"description": "无需请求权限即可执行这些操作。仅对您完全信任的操作启用此功能。",
+		"selectOptionsFirst": "请至少选择以下一个选项以启用自动批准",
 		"toggleAriaLabel": "切换自动批准",
-		"disabledAriaLabel": "自动批准已禁用 - 请先选择选项"
+		"disabledAriaLabel": "自动批准已禁用 - 请先选择选项",
+		"triggerLabel_zero": "无自动批准",
+		"triggerLabel_one": "1 个自动批准",
+		"triggerLabel_other": "{{count}} 个自动批准",
+		"triggerLabelAll": "人生只有一次",
+		"triggerLabelOff": "自动批准已关闭"
 	},
 	"reasoning": {
 		"thinking": "思考中",
@@ -265,13 +278,12 @@
 	},
 	"announcement": {
 		"title": "🎉 Roo Code {{version}} 已发布",
-		"description": "Roo Code {{version}} 带来强大的新功能和重大改进，提升您的开发工作流程。",
-		"whatsNew": "新特性",
-		"feature1": "<bold>消息队列</bold>: 在 Roo 工作时将多个消息排队，让你可以不间断地继续规划工作流程。",
-		"feature2": "<bold>自定义斜杠命令</bold>: 创建个性化斜杠命令，快速访问常用提示词和工作流程，具备完整的 UI 管理功能。",
-		"feature3": "<bold>增强的 Gemini 工具</bold>: 新的 URL 上下文和 Google 搜索基础功能为 Gemini 模型提供实时网络信息和增强的研究能力。",
-		"hideButton": "隐藏公告",
-		"detailsDiscussLinks": "在 <discordLink>Discord</discordLink> 和 <redditLink>Reddit</redditLink> 获取更多详情并参与讨论 🚀"
+		"description": "介绍 <bold>Roo Code Cloud：</bold>将 Roo 的强大功能扩展到 IDE 之外",
+		"feature1": "<bold>随时随地跟踪任务进度（免费）：</bold>获取长时间运行任务的实时更新，无需困在 IDE 中",
+		"feature2": "<bold>远程控制 Roo 扩展（Pro）：</bold>通过基于聊天的浏览器界面启动、停止和与任务交互。",
+		"learnMore": "准备掌控一切？在<learnMoreLink>这里</learnMoreLink>了解更多。",
+		"visitCloudButton": "访问 Roo Code Cloud",
+		"socialLinks": "在 <xLink>X</xLink>、<discordLink>Discord</discordLink> 或 <redditLink>r/RooCode</redditLink> 上关注我们"
 	},
 	"browser": {
 		"rooWantsToUse": "Roo想使用浏览器:",
@@ -349,9 +361,9 @@
 		"ariaLabel": "版本 {{version}} - 点击查看发布说明"
 	},
 	"rooCloudCTA": {
-		"title": "Roo Code Cloud 即将推出！",
+		"title": "Roo Code Cloud 正在进化！",
 		"description": "在云端运行远程代理，随时随地访问任务，与他人协作等更多功能。",
-		"joinWaitlist": "加入等待列表获取早期访问权限。"
+		"joinWaitlist": "注册获取最新更新。"
 	},
 	"command": {
 		"triggerDescription": "触发 {{name}} 命令"
@@ -362,7 +374,9 @@
 	"slashCommands": {
 		"tooltip": "管理斜杠命令",
 		"title": "斜杠命令",
-		"description": "创建自定义斜杠命令，快速访问常用提示词和工作流程。<DocsLink>文档</DocsLink>",
+		"description": "使用内置斜杠命令或创建自定义命令，快速访问常用提示词和工作流程。<DocsLink>文档</DocsLink>",
+		"manageCommands": "在设置中管理斜杠命令",
+		"builtInCommands": "内置命令",
 		"globalCommands": "全局命令",
 		"workspaceCommands": "工作区命令",
 		"globalCommand": "全局命令",
@@ -377,8 +391,18 @@
 			"confirm": "删除"
 		}
 	},
+	"contextMenu": {
+		"noResults": "无结果",
+		"problems": "问题",
+		"terminal": "终端",
+		"url": "粘贴URL以获取内容"
+	},
 	"queuedMessages": {
 		"title": "队列消息:",
 		"clickToEdit": "点击编辑消息"
+	},
+	"slashCommand": {
+		"wantsToRun": "Roo 想要运行斜杠命令:",
+		"didRun": "Roo 运行了斜杠命令:"
 	}
 }

@@ -1,15 +1,17 @@
-import delay from "delay"
+import * as vscode from "vscode"
 
-import { RooCodeEventName } from "@roo-code/types"
+import { TodoItem } from "@roo-code/types"
 
 import { ToolUse, AskApproval, HandleError, PushToolResult, RemoveClosingTag } from "../../shared/tools"
 import { Task } from "../task/Task"
 import { defaultModeSlug, getModeBySlug } from "../../shared/modes"
 import { formatResponse } from "../prompts/responses"
 import { t } from "../../i18n"
+import { parseMarkdownChecklist } from "./updateTodoListTool"
+import { Package } from "../../shared/package"
 
 export async function newTaskTool(
-	cline: Task,
+	task: Task,
 	block: ToolUse,
 	askApproval: AskApproval,
 	handleError: HandleError,
@@ -18,6 +20,7 @@ export async function newTaskTool(
 ) {
 	const mode: string | undefined = block.params.mode
 	const message: string | undefined = block.params.message
+	const todos: string | undefined = block.params.todos
 
 	try {
 		if (block.partial) {
@@ -25,32 +28,73 @@ export async function newTaskTool(
 				tool: "newTask",
 				mode: removeClosingTag("mode", mode),
 				content: removeClosingTag("message", message),
+				todos: removeClosingTag("todos", todos),
 			})
 
-			await cline.ask("tool", partialMessage, block.partial).catch(() => {})
+			await task.ask("tool", partialMessage, block.partial).catch(() => {})
 			return
 		} else {
+			// Validate required parameters.
 			if (!mode) {
-				cline.consecutiveMistakeCount++
-				cline.recordToolError("new_task")
-				pushToolResult(await cline.sayAndCreateMissingParamError("new_task", "mode"))
+				task.consecutiveMistakeCount++
+				task.recordToolError("new_task")
+				pushToolResult(await task.sayAndCreateMissingParamError("new_task", "mode"))
 				return
 			}
 
 			if (!message) {
-				cline.consecutiveMistakeCount++
-				cline.recordToolError("new_task")
-				pushToolResult(await cline.sayAndCreateMissingParamError("new_task", "message"))
+				task.consecutiveMistakeCount++
+				task.recordToolError("new_task")
+				pushToolResult(await task.sayAndCreateMissingParamError("new_task", "message"))
 				return
 			}
 
-			cline.consecutiveMistakeCount = 0
+			// Get the VSCode setting for requiring todos.
+			const provider = task.providerRef.deref()
+
+			if (!provider) {
+				pushToolResult(formatResponse.toolError("Provider reference lost"))
+				return
+			}
+
+			const state = await provider.getState()
+
+			// Use Package.name (dynamic at build time) as the VSCode configuration namespace.
+			// Supports multiple extension variants (e.g., stable/nightly) without hardcoded strings.
+			const requireTodos = vscode.workspace
+				.getConfiguration(Package.name)
+				.get<boolean>("newTaskRequireTodos", false)
+
+			// Check if todos are required based on VSCode setting.
+			// Note: `undefined` means not provided, empty string is valid.
+			if (requireTodos && todos === undefined) {
+				task.consecutiveMistakeCount++
+				task.recordToolError("new_task")
+				pushToolResult(await task.sayAndCreateMissingParamError("new_task", "todos"))
+				return
+			}
+
+			// Parse todos if provided, otherwise use empty array
+			let todoItems: TodoItem[] = []
+			if (todos) {
+				try {
+					todoItems = parseMarkdownChecklist(todos)
+				} catch (error) {
+					task.consecutiveMistakeCount++
+					task.recordToolError("new_task")
+					pushToolResult(formatResponse.toolError("Invalid todos format: must be a markdown checklist"))
+					return
+				}
+			}
+
+			task.consecutiveMistakeCount = 0
+
 			// Un-escape one level of backslashes before '@' for hierarchical subtasks
 			// Un-escape one level: \\@ -> \@ (removes one backslash for hierarchical subtasks)
 			const unescapedMessage = message.replace(/\\\\@/g, "\\@")
 
 			// Verify the mode exists
-			const targetMode = getModeBySlug(mode, (await cline.providerRef.deref()?.getState())?.customModes)
+			const targetMode = getModeBySlug(mode, state?.customModes)
 
 			if (!targetMode) {
 				pushToolResult(formatResponse.toolError(`Invalid mode: ${mode}`))
@@ -61,6 +105,7 @@ export async function newTaskTool(
 				tool: "newTask",
 				mode: targetMode.name,
 				content: message,
+				todos: todoItems,
 			})
 
 			const didApprove = await askApproval("tool", toolMessage)
@@ -69,41 +114,25 @@ export async function newTaskTool(
 				return
 			}
 
-			const provider = cline.providerRef.deref()
+			// Provider is guaranteed to be defined here due to earlier check.
 
-			if (!provider) {
-				return
-			}
-
-			if (cline.enableCheckpoints) {
-				cline.checkpointSave(true)
+			if (task.enableCheckpoints) {
+				task.checkpointSave(true)
 			}
 
 			// Preserve the current mode so we can resume with it later.
-			cline.pausedModeSlug = (await provider.getState()).mode ?? defaultModeSlug
+			task.pausedModeSlug = (await provider.getState()).mode ?? defaultModeSlug
 
-			// Create new task instance first (this preserves parent's current mode in its history)
-			const newCline = await provider.createTask(unescapedMessage, undefined, cline)
+			const newTask = await task.startSubtask(unescapedMessage, todoItems, mode)
 
-			if (!newCline) {
+			if (!newTask) {
 				pushToolResult(t("tools:newTask.errors.policy_restriction"))
 				return
 			}
 
-			// Now switch the newly created task to the desired mode
-			await provider.handleModeSwitch(mode)
-
-			// Delay to allow mode change to take effect
-			await delay(500)
-
-			cline.emit(RooCodeEventName.TaskSpawned, newCline.taskId)
-
-			pushToolResult(`Successfully created new task in ${targetMode.name} mode with message: ${unescapedMessage}`)
-
-			// Set the isPaused flag to true so the parent
-			// task can wait for the sub-task to finish.
-			cline.isPaused = true
-			cline.emit(RooCodeEventName.TaskPaused)
+			pushToolResult(
+				`Successfully created new task in ${targetMode.name} mode with message: ${unescapedMessage} and ${todoItems.length} todo items`,
+			)
 
 			return
 		}

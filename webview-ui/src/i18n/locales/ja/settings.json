@@ -28,10 +28,14 @@
 		"notifications": "通知",
 		"contextManagement": "コンテキスト",
 		"terminal": "ターミナル",
+		"slashCommands": "スラッシュコマンド",
 		"prompts": "プロンプト",
 		"experimental": "実験的",
 		"language": "言語",
 		"about": "Roo Codeについて"
+	},
+	"slashCommands": {
+		"description": "スラッシュコマンドを管理して、カスタムワークフローやアクションを素早く実行します。<DocsLink>詳細はこちら</DocsLink>"
 	},
 	"prompts": {
 		"description": "プロンプトの強化、コードの説明、問題の修正などの迅速なアクションに使用されるサポートプロンプトを設定します。これらのプロンプトは、Rooが一般的な開発タスクでより良いサポートを提供するのに役立ちます。"
@@ -47,6 +51,9 @@
 		"geminiProvider": "Gemini",
 		"geminiApiKeyLabel": "APIキー：",
 		"geminiApiKeyPlaceholder": "Gemini APIキーを入力してください",
+		"vercelAiGatewayProvider": "Vercel AI Gateway",
+		"vercelAiGatewayApiKeyLabel": "APIキー",
+		"vercelAiGatewayApiKeyPlaceholder": "Vercel AI GatewayのAPIキーを入力してください",
 		"mistralProvider": "Mistral",
 		"mistralApiKeyLabel": "APIキー:",
 		"mistralApiKeyPlaceholder": "Mistral APIキーを入力してください",
@@ -124,6 +131,7 @@
 			"modelDimensionRequired": "モデルの次元が必要です",
 			"geminiApiKeyRequired": "Gemini APIキーが必要です",
 			"mistralApiKeyRequired": "Mistral APIキーが必要です",
+			"vercelAiGatewayApiKeyRequired": "Vercel AI Gateway APIキーが必要です",
 			"ollamaBaseUrlRequired": "OllamaのベースURLが必要です",
 			"baseUrlRequired": "ベースURLが必要です",
 			"modelDimensionMinValue": "モデルの次元は0より大きくなければなりません"
@@ -244,6 +252,8 @@
 		"awsCustomArnDesc": "ARN内のリージョンが上で選択したAWSリージョンと一致していることを確認してください。",
 		"openRouterApiKey": "OpenRouter APIキー",
 		"getOpenRouterApiKey": "OpenRouter APIキーを取得",
+		"vercelAiGatewayApiKey": "Vercel AI Gateway APIキー",
+		"getVercelAiGatewayApiKey": "Vercel AI Gateway APIキーを取得",
 		"apiKeyStorageNotice": "APIキーはVSCodeのシークレットストレージに安全に保存されます",
 		"glamaApiKey": "Glama APIキー",
 		"getGlamaApiKey": "Glama APIキーを取得",
@@ -280,6 +290,8 @@
 		"getChutesApiKey": "Chutes APIキーを取得",
 		"fireworksApiKey": "Fireworks APIキー",
 		"getFireworksApiKey": "Fireworks APIキーを取得",
+		"featherlessApiKey": "Featherless APIキー",
+		"getFeatherlessApiKey": "Featherless APIキーを取得",
 		"ioIntelligenceApiKey": "IO Intelligence APIキー",
 		"ioIntelligenceApiKeyPlaceholder": "IO Intelligence APIキーを入力してください",
 		"getIoIntelligenceApiKey": "IO Intelligence APIキーを取得",
@@ -377,6 +389,8 @@
 		"ollama": {
 			"baseUrl": "ベースURL（オプション）",
 			"modelId": "モデルID",
+			"apiKey": "Ollama APIキー",
+			"apiKeyHelp": "認証されたOllamaインスタンスやクラウドサービス用のオプションAPIキー。ローカルインストールの場合は空のままにしてください。",
 			"description": "Ollamaを使用すると、ローカルコンピューターでモデルを実行できます。始め方については、クイックスタートガイドをご覧ください。",
 			"warning": "注意：Roo Codeは複雑なプロンプトを使用し、Claudeモデルで最適に動作します。能力の低いモデルは期待通りに動作しない場合があります。"
 		},
@@ -387,6 +401,10 @@
 		"humanRelay": {
 			"description": "APIキーは不要ですが、ユーザーはウェブチャットAIに情報をコピー＆ペーストする必要があります。",
 			"instructions": "使用中にダイアログボックスが表示され、現在のメッセージが自動的にクリップボードにコピーされます。これらをウェブ版のAI（ChatGPTやClaudeなど）に貼り付け、AIの返答をダイアログボックスにコピーして確認ボタンをクリックする必要があります。"
+		},
+		"roo": {
+			"authenticatedMessage": "Roo Code Cloudアカウントを通じて安全に認証されています。",
+			"connectButton": "Roo Code Cloudに接続"
 		},
 		"openRouter": {
 			"providerRouting": {
@@ -725,6 +743,25 @@
 		"ASSISTANT_MESSAGE_PARSER": {
 			"name": "新しいメッセージパーサーを使う",
 			"description": "実験的なストリーミングメッセージパーサーを有効にします。長い回答をより効率的に処理し、遅延を減らします。"
+		},
+		"NEW_TASK_REQUIRE_TODOS": {
+			"name": "新しいタスクには'todos'リストを必須にする",
+			"description": "有効にすると、new_taskツールはtodosパラメータの提供が必須になります。これにより、すべての新しいタスクが明確な目的のリストで開始されることが保証されます。無効（デフォルト）の場合、下位互換性のためにtodosパラメータはオプションのままです。"
+		},
+		"IMAGE_GENERATION": {
+			"name": "AI画像生成を有効にする",
+			"description": "有効にすると、RooはOpenRouterの画像生成モデルを使用してテキストプロンプトから画像を生成できます。OpenRouter APIキーの設定が必要です。",
+			"openRouterApiKeyLabel": "OpenRouter APIキー",
+			"openRouterApiKeyPlaceholder": "OpenRouter APIキーを入力してください",
+			"getApiKeyText": "APIキーを取得する場所",
+			"modelSelectionLabel": "画像生成モデル",
+			"modelSelectionDescription": "画像生成に使用するモデルを選択",
+			"warningMissingKey": "⚠️ 画像生成にはOpenRouter APIキーが必要です。上記で設定してください。",
+			"successConfigured": "✓ 画像生成が設定され、使用準備完了です"
+		},
+		"RUN_SLASH_COMMAND": {
+			"name": "モデル開始スラッシュコマンドを有効にする",
+			"description": "有効にすると、Rooがワークフローを実行するためにあなたのスラッシュコマンドを実行できます。"
 		}
 	},
 	"promptCaching": {
@@ -771,7 +808,7 @@
 		"feedback": "質問やフィードバックがある場合は、<githubLink>github.com/RooCodeInc/Roo-Code</githubLink>で問題を開くか、<redditLink>reddit.com/r/RooCode</redditLink>や<discordLink>discord.gg/roocode</discordLink>に参加してください",
 		"telemetry": {
 			"label": "匿名のエラーと使用状況レポートを許可",
-			"description": "匿名の使用データとエラーレポートを送信してRoo Codeの改善にご協力ください。コード、プロンプト、個人情報が送信されることはありません。詳細については、プライバシーポリシーをご覧ください。"
+			"description": "匿名の使用データとエラーレポートを送信してRoo Codeの改善にご協力ください。このテレメトリはコード、プロンプト、個人情報を収集しません。詳細については<privacyLink>プライバシーポリシー</privacyLink>をご覧ください。"
 		},
 		"settings": {
 			"import": "インポート",
@@ -797,7 +834,8 @@
 		"modelAvailability": "指定されたモデルID（{{modelId}}）は利用できません。別のモデルを選択してください。",
 		"providerNotAllowed": "プロバイダー「{{provider}}」は組織によって許可されていません",
 		"modelNotAllowed": "モデル「{{model}}」はプロバイダー「{{provider}}」に対して組織によって許可されていません",
-		"profileInvalid": "このプロファイルには、組織によって許可されていないプロバイダーまたはモデルが含まれています"
+		"profileInvalid": "このプロファイルには、組織によって許可されていないプロバイダーまたはモデルが含まれています",
+		"qwenCodeOauthPath": "有効なOAuth認証情報のパスを提供する必要があります"
 	},
 	"placeholders": {
 		"apiKey": "API キーを入力...",
@@ -836,5 +874,19 @@
 	"includeMaxOutputTokensDescription": "APIリクエストで最大出力トークンパラメータを送信します。一部のプロバイダーはこれをサポートしていない場合があります。",
 	"limitMaxTokensDescription": "レスポンスの最大トークン数を制限する",
 	"maxOutputTokensLabel": "最大出力トークン",
-	"maxTokensGenerateDescription": "レスポンスで生成する最大トークン数"
+	"maxTokensGenerateDescription": "レスポンスで生成する最大トークン数",
+	"serviceTier": {
+		"label": "サービスティア",
+		"tooltip": "APIリクエストをより速く処理するには、優先処理サービスティアをお試しください。低価格でレイテンシが高い場合は、フレックス処理ティアをお試しください。",
+		"standard": "標準",
+		"flex": "フレックス",
+		"priority": "優先",
+		"pricingTableTitle": "サービスティア別料金（100万トークンあたりの価格）",
+		"columns": {
+			"tier": "ティア",
+			"input": "入力",
+			"output": "出力",
+			"cacheReads": "キャッシュ読み取り"
+		}
+	}
 }

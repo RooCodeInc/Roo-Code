@@ -24,7 +24,9 @@
 		"connectToCloudDescription": "Sign in to Roo Code Cloud to share tasks",
 		"sharingDisabledByOrganization": "Sharing disabled by organization",
 		"shareSuccessOrganization": "Organization link copied to clipboard",
-		"shareSuccessPublic": "Public link copied to clipboard"
+		"shareSuccessPublic": "Public link copied to clipboard",
+		"openInCloud": "Open task in Roo Code Cloud",
+		"openInCloudIntro": "Keep monitoring or interacting with Roo from anywhere. Scan, click or copy to open."
 	},
 	"unpin": "Unpin",
 	"pin": "Pin",
@@ -182,6 +184,10 @@
 		"wantsToEditOutsideWorkspace": "Roo wants to edit this file outside of the workspace:",
 		"wantsToEditProtected": "Roo wants to edit a protected configuration file:",
 		"wantsToApplyBatchChanges": "Roo wants to apply changes to multiple files:",
+		"wantsToGenerateImage": "Roo wants to generate an image:",
+		"wantsToGenerateImageOutsideWorkspace": "Roo wants to generate an image outside of the workspace:",
+		"wantsToGenerateImageProtected": "Roo wants to generate an image in a protected location:",
+		"didGenerateImage": "Roo generated an image:",
 		"wantsToCreate": "Roo wants to create a new file:",
 		"wantsToSearchReplace": "Roo wants to search and replace in this file:",
 		"didSearchReplace": "Roo performed search and replace on this file:",
@@ -265,22 +271,28 @@
 		"issues": "It seems like you're having Windows PowerShell issues, please see this"
 	},
 	"autoApprove": {
-		"title": "Auto-approve:",
+		"tooltip": "Manage auto-approval settings",
+		"title": "Auto-approve",
+		"all": "All",
 		"none": "None",
-		"description": "Auto-approve allows Roo Code to perform actions without asking for permission. Only enable for actions you fully trust. More detailed configuration available in <settingsLink>Settings</settingsLink>.",
+		"description": "Run these actions without asking for permission. Only enable for actions you fully trust.",
 		"selectOptionsFirst": "Select at least one option below to enable auto-approval",
 		"toggleAriaLabel": "Toggle auto-approval",
-		"disabledAriaLabel": "Auto-approval disabled - select options first"
+		"disabledAriaLabel": "Auto-approval disabled - select options first",
+		"triggerLabelOff": "Auto-approve off",
+		"triggerLabel_zero": "0 auto-approve",
+		"triggerLabel_one": "1 auto-approved",
+		"triggerLabel_other": "{{count}} auto-approved",
+		"triggerLabelAll": "YOLO"
 	},
 	"announcement": {
 		"title": "🎉 Roo Code {{version}} Released",
-		"description": "Roo Code {{version}} brings powerful new features and significant improvements to enhance your development workflow.",
-		"whatsNew": "What's New",
-		"feature1": "<bold>Message Queueing</bold>: Queue multiple messages while Roo is working, allowing you to continue planning your workflow without interruption.",
-		"feature2": "<bold>Custom Slash Commands</bold>: Create personalized slash commands for quick access to frequently used prompts and workflows, with full UI management.",
-		"feature3": "<bold>Enhanced Gemini Tools</bold>: New URL context and Google Search grounding capabilities provide Gemini models with real-time web information and enhanced research abilities.",
-		"hideButton": "Hide announcement",
-		"detailsDiscussLinks": "Get more details and discuss in <discordLink>Discord</discordLink> and <redditLink>Reddit</redditLink> 🚀"
+		"description": "Introducing <bold>Roo Code Cloud:</bold> Bringing the power of Roo beyond the IDE",
+		"feature1": "<bold>Track task progress from anywhere (Free):</bold> Get real-time updates on long-running tasks without being stuck in your IDE",
+		"feature2": "<bold>Control the Roo Extension remotely (Pro):</bold> Start, stop, and interact with tasks from a chat-based browser interface.",
+		"learnMore": "Ready to take control? Learn more <learnMoreLink>here</learnMoreLink>.",
+		"visitCloudButton": "Visit Roo Code Cloud",
+		"socialLinks": "Join us on <xLink>X</xLink>, <discordLink>Discord</discordLink>, or <redditLink>r/RooCode</redditLink>"
 	},
 	"reasoning": {
 		"thinking": "Thinking",
@@ -351,18 +363,15 @@
 	"versionIndicator": {
 		"ariaLabel": "Version {{version}} - Click to view release notes"
 	},
-	"rooCloudCTA": {
-		"title": "Roo Code Cloud is coming soon!",
-		"description": "Run Roomote agents in the cloud, access your tasks from anywhere, collaborate with others, and more.",
-		"joinWaitlist": "Join the waitlist to get early access."
-	},
 	"command": {
 		"triggerDescription": "Trigger the {{name}} command"
 	},
 	"slashCommands": {
 		"tooltip": "Manage slash commands",
 		"title": "Slash Commands",
-		"description": "Create custom slash commands for quick access to frequently used prompts and workflows. <DocsLink>Docs</DocsLink>",
+		"description": "Use built-in slash commands or create custom ones for quick access to frequently used prompts and workflows. <DocsLink>Docs</DocsLink>",
+		"manageCommands": "Manage slash commands in settings",
+		"builtInCommands": "Built-in Commands",
 		"globalCommands": "Global Commands",
 		"workspaceCommands": "Workspace Commands",
 		"globalCommand": "Global command",
@@ -377,8 +386,18 @@
 			"confirm": "Delete"
 		}
 	},
+	"slashCommand": {
+		"wantsToRun": "Roo wants to run a slash command:",
+		"didRun": "Roo ran a slash command:"
+	},
 	"queuedMessages": {
 		"title": "Queued Messages:",
 		"clickToEdit": "Click to edit message"
+	},
+	"contextMenu": {
+		"noResults": "No results",
+		"problems": "Problems",
+		"terminal": "Terminal",
+		"url": "Paste URL to fetch contents"
 	}
 }

@@ -27,6 +27,8 @@ const routerNames = [
 	"ollama",
 	"lmstudio",
 	"io-intelligence",
+	"deepinfra",
+	"vercel-ai-gateway",
 ] as const
 
 export type RouterName = (typeof routerNames)[number]
@@ -63,7 +65,17 @@ export const shouldUseReasoningEffort = ({
 }: {
 	model: ModelInfo
 	settings?: ProviderSettings
-}): boolean => (!!model.supportsReasoningEffort && !!settings?.reasoningEffort) || !!model.reasoningEffort
+}): boolean => {
+	// If enableReasoningEffort is explicitly set to false, reasoning should be disabled
+	if (settings?.enableReasoningEffort === false) {
+		return false
+	}
+
+	// Otherwise, use reasoning if:
+	// 1. Model supports reasoning effort AND settings provide reasoning effort, OR
+	// 2. Model itself has a reasoningEffort property
+	return (!!model.supportsReasoningEffort && !!settings?.reasoningEffort) || !!model.reasoningEffort
+}
 
 export const DEFAULT_HYBRID_REASONING_MODEL_MAX_TOKENS = 16_384
 export const DEFAULT_HYBRID_REASONING_MODEL_THINKING_TOKENS = 8_192
@@ -135,9 +147,11 @@ export const getModelMaxOutputTokens = ({
 export type GetModelsOptions =
 	| { provider: "openrouter" }
 	| { provider: "glama" }
-	| { provider: "requesty"; apiKey?: string }
+	| { provider: "requesty"; apiKey?: string; baseUrl?: string }
 	| { provider: "unbound"; apiKey?: string }
 	| { provider: "litellm"; apiKey: string; baseUrl: string }
-	| { provider: "ollama"; baseUrl?: string }
+	| { provider: "ollama"; baseUrl?: string; apiKey?: string }
 	| { provider: "lmstudio"; baseUrl?: string }
+	| { provider: "deepinfra"; apiKey?: string; baseUrl?: string }
 	| { provider: "io-intelligence"; apiKey: string }
+	| { provider: "vercel-ai-gateway" }

@@ -223,9 +223,7 @@ export async function searchAndReplaceTool(
 			cline.diffViewProvider.scrollToFirstDiff()
 		}
 
-		const didApprove = await cline
-			.ask("tool", completeMessage, isWriteProtected)
-			.then((response) => response.response === "yesButtonClicked")
+		const didApprove = await askApproval("tool", completeMessage, undefined, isWriteProtected)
 
 		if (!didApprove) {
 			// Revert changes if diff view was shown
@@ -265,6 +263,9 @@ export async function searchAndReplaceTool(
 		// Record successful tool usage and cleanup
 		cline.recordToolUsage("search_and_replace")
 		await cline.diffViewProvider.reset()
+
+		// Process any queued messages after file edit completes
+		cline.processQueuedMessages()
 	} catch (error) {
 		handleError("search and replace", error)
 		await cline.diffViewProvider.reset()

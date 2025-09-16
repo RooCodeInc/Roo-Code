@@ -136,6 +136,48 @@ describe("webviewMessageHandler - requestLmStudioModels", () => {
 	})
 })
 
+describe("webviewMessageHandler - requestOllamaModels", () => {
+	beforeEach(() => {
+		vi.clearAllMocks()
+		mockClineProvider.getState = vi.fn().mockResolvedValue({
+			apiConfiguration: {
+				ollamaModelId: "model-1",
+				ollamaBaseUrl: "http://localhost:1234",
+			},
+		})
+	})
+
+	it("successfully fetches models from Ollama", async () => {
+		const mockModels: ModelRecord = {
+			"model-1": {
+				maxTokens: 4096,
+				contextWindow: 8192,
+				supportsPromptCache: false,
+				description: "Test model 1",
+			},
+			"model-2": {
+				maxTokens: 8192,
+				contextWindow: 16384,
+				supportsPromptCache: false,
+				description: "Test model 2",
+			},
+		}
+
+		mockGetModels.mockResolvedValue(mockModels)
+
+		await webviewMessageHandler(mockClineProvider, {
+			type: "requestOllamaModels",
+		})
+
+		expect(mockGetModels).toHaveBeenCalledWith({ provider: "ollama", baseUrl: "http://localhost:1234" })
+
+		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
+			type: "ollamaModels",
+			ollamaModels: mockModels,
+		})
+	})
+})
+
 describe("webviewMessageHandler - requestRouterModels", () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
@@ -174,10 +216,12 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 		})
 
 		// Verify getModels was called for each provider
+		expect(mockGetModels).toHaveBeenCalledWith({ provider: "deepinfra" })
 		expect(mockGetModels).toHaveBeenCalledWith({ provider: "openrouter" })
 		expect(mockGetModels).toHaveBeenCalledWith({ provider: "requesty", apiKey: "requesty-key" })
 		expect(mockGetModels).toHaveBeenCalledWith({ provider: "glama" })
 		expect(mockGetModels).toHaveBeenCalledWith({ provider: "unbound", apiKey: "unbound-key" })
+		expect(mockGetModels).toHaveBeenCalledWith({ provider: "vercel-ai-gateway" })
 		expect(mockGetModels).toHaveBeenCalledWith({
 			provider: "litellm",
 			apiKey: "litellm-key",
@@ -188,6 +232,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
 			type: "routerModels",
 			routerModels: {
+				deepinfra: mockModels,
 				openrouter: mockModels,
 				requesty: mockModels,
 				glama: mockModels,
@@ -195,6 +240,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 				litellm: mockModels,
 				ollama: {},
 				lmstudio: {},
+				"vercel-ai-gateway": mockModels,
 			},
 		})
 	})
@@ -275,6 +321,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
 			type: "routerModels",
 			routerModels: {
+				deepinfra: mockModels,
 				openrouter: mockModels,
 				requesty: mockModels,
 				glama: mockModels,
@@ -282,6 +329,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 				litellm: {},
 				ollama: {},
 				lmstudio: {},
+				"vercel-ai-gateway": mockModels,
 			},
 		})
 	})
@@ -302,6 +350,8 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 			.mockRejectedValueOnce(new Error("Requesty API error")) // requesty
 			.mockResolvedValueOnce(mockModels) // glama
 			.mockRejectedValueOnce(new Error("Unbound API error")) // unbound
+			.mockResolvedValueOnce(mockModels) // vercel-ai-gateway
+			.mockResolvedValueOnce(mockModels) // deepinfra
 			.mockRejectedValueOnce(new Error("LiteLLM connection failed")) // litellm
 
 		await webviewMessageHandler(mockClineProvider, {
@@ -312,6 +362,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
 			type: "routerModels",
 			routerModels: {
+				deepinfra: mockModels,
 				openrouter: mockModels,
 				requesty: {},
 				glama: mockModels,
@@ -319,6 +370,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 				litellm: {},
 				ollama: {},
 				lmstudio: {},
+				"vercel-ai-gateway": mockModels,
 			},
 		})
 
@@ -352,6 +404,8 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 			.mockRejectedValueOnce(new Error("Requesty API error")) // requesty
 			.mockRejectedValueOnce(new Error("Glama API error")) // glama
 			.mockRejectedValueOnce(new Error("Unbound API error")) // unbound
+			.mockRejectedValueOnce(new Error("Vercel AI Gateway error")) // vercel-ai-gateway
+			.mockRejectedValueOnce(new Error("DeepInfra API error")) // deepinfra
 			.mockRejectedValueOnce(new Error("LiteLLM connection failed")) // litellm
 
 		await webviewMessageHandler(mockClineProvider, {
@@ -385,6 +439,13 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 			success: false,
 			error: "Unbound API error",
 			values: { provider: "unbound" },
+		})
+
+		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
+			type: "singleRouterModelFetchResponse",
+			success: false,
+			error: "DeepInfra API error",
+			values: { provider: "deepinfra" },
 		})
 
 		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
@@ -544,7 +605,10 @@ describe("webviewMessageHandler - message dialog preferences", () => {
 
 	describe("deleteMessage", () => {
 		it("should always show dialog for delete confirmation", async () => {
-			vi.mocked(mockClineProvider.getCurrentTask).mockReturnValue({} as any)
+			vi.mocked(mockClineProvider.getCurrentTask).mockReturnValue({
+				clineMessages: [],
+				apiConversationHistory: [],
+			} as any) // Mock current cline with proper structure
 
 			await webviewMessageHandler(mockClineProvider, {
 				type: "deleteMessage",
@@ -554,13 +618,17 @@ describe("webviewMessageHandler - message dialog preferences", () => {
 			expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
 				type: "showDeleteMessageDialog",
 				messageTs: 123456789,
+				hasCheckpoint: false,
 			})
 		})
 	})
 
 	describe("submitEditedMessage", () => {
 		it("should always show dialog for edit confirmation", async () => {
-			vi.mocked(mockClineProvider.getCurrentTask).mockReturnValue({} as any)
+			vi.mocked(mockClineProvider.getCurrentTask).mockReturnValue({
+				clineMessages: [],
+				apiConversationHistory: [],
+			} as any) // Mock current cline with proper structure
 
 			await webviewMessageHandler(mockClineProvider, {
 				type: "submitEditedMessage",
@@ -572,6 +640,8 @@ describe("webviewMessageHandler - message dialog preferences", () => {
 				type: "showEditMessageDialog",
 				messageTs: 123456789,
 				text: "edited content",
+				hasCheckpoint: false,
+				images: undefined,
 			})
 		})
 	})

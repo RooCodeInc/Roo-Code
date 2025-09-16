@@ -28,10 +28,14 @@
 		"notifications": "Notifiche",
 		"contextManagement": "Contesto",
 		"terminal": "Terminal",
+		"slashCommands": "Comandi Slash",
 		"prompts": "Prompt",
 		"experimental": "Sperimentale",
 		"language": "Lingua",
 		"about": "Informazioni su Roo Code"
+	},
+	"slashCommands": {
+		"description": "Gestisci i tuoi comandi slash per eseguire rapidamente flussi di lavoro e azioni personalizzate. <DocsLink>Scopri di più</DocsLink>"
 	},
 	"prompts": {
 		"description": "Configura i prompt di supporto utilizzati per azioni rapide come il miglioramento dei prompt, la spiegazione del codice e la risoluzione dei problemi. Questi prompt aiutano Roo a fornire una migliore assistenza per le attività di sviluppo comuni."
@@ -47,6 +51,9 @@
 		"geminiProvider": "Gemini",
 		"geminiApiKeyLabel": "Chiave API:",
 		"geminiApiKeyPlaceholder": "Inserisci la tua chiave API Gemini",
+		"vercelAiGatewayProvider": "Vercel AI Gateway",
+		"vercelAiGatewayApiKeyLabel": "Chiave API",
+		"vercelAiGatewayApiKeyPlaceholder": "Inserisci la tua chiave API Vercel AI Gateway",
 		"mistralProvider": "Mistral",
 		"mistralApiKeyLabel": "Chiave API:",
 		"mistralApiKeyPlaceholder": "Inserisci la tua chiave API Mistral",
@@ -124,6 +131,7 @@
 			"modelDimensionRequired": "È richiesta la dimensione del modello",
 			"geminiApiKeyRequired": "È richiesta la chiave API Gemini",
 			"mistralApiKeyRequired": "La chiave API di Mistral è richiesta",
+			"vercelAiGatewayApiKeyRequired": "È richiesta la chiave API Vercel AI Gateway",
 			"ollamaBaseUrlRequired": "È richiesto l'URL di base di Ollama",
 			"baseUrlRequired": "È richiesto l'URL di base",
 			"modelDimensionMinValue": "La dimensione del modello deve essere maggiore di 0"
@@ -244,6 +252,8 @@
 		"awsCustomArnDesc": "Assicurati che la regione nell'ARN corrisponda alla regione AWS selezionata sopra.",
 		"openRouterApiKey": "Chiave API OpenRouter",
 		"getOpenRouterApiKey": "Ottieni chiave API OpenRouter",
+		"vercelAiGatewayApiKey": "Chiave API Vercel AI Gateway",
+		"getVercelAiGatewayApiKey": "Ottieni chiave API Vercel AI Gateway",
 		"apiKeyStorageNotice": "Le chiavi API sono memorizzate in modo sicuro nell'Archivio Segreto di VSCode",
 		"glamaApiKey": "Chiave API Glama",
 		"getGlamaApiKey": "Ottieni chiave API Glama",
@@ -280,6 +290,8 @@
 		"getChutesApiKey": "Ottieni chiave API Chutes",
 		"fireworksApiKey": "Chiave API Fireworks",
 		"getFireworksApiKey": "Ottieni chiave API Fireworks",
+		"featherlessApiKey": "Chiave API Featherless",
+		"getFeatherlessApiKey": "Ottieni chiave API Featherless",
 		"ioIntelligenceApiKey": "Chiave API IO Intelligence",
 		"ioIntelligenceApiKeyPlaceholder": "Inserisci la tua chiave API IO Intelligence",
 		"getIoIntelligenceApiKey": "Ottieni chiave API IO Intelligence",
@@ -377,6 +389,8 @@
 		"ollama": {
 			"baseUrl": "URL base (opzionale)",
 			"modelId": "ID modello",
+			"apiKey": "Chiave API Ollama",
+			"apiKeyHelp": "Chiave API opzionale per istanze Ollama autenticate o servizi cloud. Lascia vuoto per installazioni locali.",
 			"description": "Ollama ti permette di eseguire modelli localmente sul tuo computer. Per iniziare, consulta la guida rapida.",
 			"warning": "Nota: Roo Code utilizza prompt complessi e funziona meglio con i modelli Claude. I modelli con capacità inferiori potrebbero non funzionare come previsto."
 		},
@@ -387,6 +401,10 @@
 		"humanRelay": {
 			"description": "Non è richiesta alcuna chiave API, ma l'utente dovrà aiutare a copiare e incollare le informazioni nella chat web AI.",
 			"instructions": "Durante l'uso, apparirà una finestra di dialogo e il messaggio corrente verrà automaticamente copiato negli appunti. Dovrai incollarlo nelle versioni web dell'AI (come ChatGPT o Claude), quindi copiare la risposta dell'AI nella finestra di dialogo e fare clic sul pulsante di conferma."
+		},
+		"roo": {
+			"authenticatedMessage": "Autenticato in modo sicuro tramite il tuo account Roo Code Cloud.",
+			"connectButton": "Connetti a Roo Code Cloud"
 		},
 		"openRouter": {
 			"providerRouting": {
@@ -725,6 +743,25 @@
 		"ASSISTANT_MESSAGE_PARSER": {
 			"name": "Usa il nuovo parser dei messaggi",
 			"description": "Abilita il parser di messaggi in streaming sperimentale che migliora nettamente le risposte lunghe elaborando i messaggi in modo più efficiente."
+		},
+		"NEW_TASK_REQUIRE_TODOS": {
+			"name": "Richiedi elenco 'todos' per nuove attività",
+			"description": "Quando abilitato, lo strumento new_task richiederà la fornitura di un parametro todos. Ciò garantisce che tutte le nuove attività inizino con un elenco chiaro di obiettivi. Quando disabilitato (impostazione predefinita), il parametro todos rimane facoltativo per la compatibilità con le versioni precedenti."
+		},
+		"IMAGE_GENERATION": {
+			"name": "Abilita generazione immagini AI",
+			"description": "Quando abilitato, Roo può generare immagini da prompt di testo utilizzando i modelli di generazione immagini di OpenRouter. Richiede una chiave API OpenRouter configurata.",
+			"openRouterApiKeyLabel": "Chiave API OpenRouter",
+			"openRouterApiKeyPlaceholder": "Inserisci la tua chiave API OpenRouter",
+			"getApiKeyText": "Ottieni la tua chiave API da",
+			"modelSelectionLabel": "Modello di generazione immagini",
+			"modelSelectionDescription": "Seleziona il modello per la generazione di immagini",
+			"warningMissingKey": "⚠️ La chiave API OpenRouter è richiesta per la generazione di immagini. Configurala sopra.",
+			"successConfigured": "✓ La generazione di immagini è configurata e pronta per l'uso"
+		},
+		"RUN_SLASH_COMMAND": {
+			"name": "Abilita comandi slash avviati dal modello",
+			"description": "Quando abilitato, Roo può eseguire i tuoi comandi slash per eseguire flussi di lavoro."
 		}
 	},
 	"promptCaching": {
@@ -771,7 +808,7 @@
 		"feedback": "Se hai domande o feedback, sentiti libero di aprire un issue su <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> o unirti a <redditLink>reddit.com/r/RooCode</redditLink> o <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {
 			"label": "Consenti segnalazioni anonime di errori e utilizzo",
-			"description": "Aiuta a migliorare Roo Code inviando dati di utilizzo anonimi e segnalazioni di errori. Non vengono mai inviati codice, prompt o informazioni personali. Consulta la nostra politica sulla privacy per maggiori dettagli."
+			"description": "Aiuta a migliorare Roo Code inviando dati di utilizzo anonimi e segnalazioni di errori. Questa telemetria non raccoglie codice, prompt o informazioni personali. Consulta la nostra <privacyLink>informativa sulla privacy</privacyLink> per maggiori dettagli."
 		},
 		"settings": {
 			"import": "Importa",
@@ -797,7 +834,8 @@
 		"modelAvailability": "L'ID modello ({{modelId}}) fornito non è disponibile. Seleziona un modello diverso.",
 		"providerNotAllowed": "Il fornitore '{{provider}}' non è consentito dalla tua organizzazione",
 		"modelNotAllowed": "Il modello '{{model}}' non è consentito per il fornitore '{{provider}}' dalla tua organizzazione.",
-		"profileInvalid": "Questo profilo contiene un fornitore o un modello non consentito dalla tua organizzazione."
+		"profileInvalid": "Questo profilo contiene un fornitore o un modello non consentito dalla tua organizzazione.",
+		"qwenCodeOauthPath": "Devi fornire un percorso valido per le credenziali OAuth"
 	},
 	"placeholders": {
 		"apiKey": "Inserisci chiave API...",
@@ -836,5 +874,19 @@
 	"includeMaxOutputTokensDescription": "Invia il parametro dei token di output massimi nelle richieste API. Alcuni provider potrebbero non supportarlo.",
 	"limitMaxTokensDescription": "Limita il numero massimo di token nella risposta",
 	"maxOutputTokensLabel": "Token di output massimi",
-	"maxTokensGenerateDescription": "Token massimi da generare nella risposta"
+	"maxTokensGenerateDescription": "Token massimi da generare nella risposta",
+	"serviceTier": {
+		"label": "Livello di servizio",
+		"tooltip": "Per un'elaborazione più rapida delle richieste API, prova il livello di servizio di elaborazione prioritaria. Per prezzi più bassi con una latenza maggiore, prova il livello di elaborazione flessibile.",
+		"standard": "Standard",
+		"flex": "Flessibile",
+		"priority": "Priorità",
+		"pricingTableTitle": "Prezzi per livello di servizio (prezzo per 1 milione di token)",
+		"columns": {
+			"tier": "Livello",
+			"input": "Input",
+			"output": "Output",
+			"cacheReads": "Letture cache"
+		}
+	}
 }

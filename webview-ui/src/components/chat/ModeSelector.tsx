@@ -1,26 +1,28 @@
 import React from "react"
-import { ChevronUp, Check, X } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { useRooPortal } from "@/components/ui/hooks/useRooPortal"
-import { Popover, PopoverContent, PopoverTrigger, StandardTooltip } from "@/components/ui"
-import { IconButton } from "./IconButton"
+import { Fzf } from "fzf"
+import { Check, X } from "lucide-react"
+
+import { type ModeConfig, type CustomModePrompts, TelemetryEventName } from "@roo-code/types"
+
+import { type Mode, getAllModes } from "@roo/modes"
+
 import { vscode } from "@/utils/vscode"
+import { telemetryClient } from "@/utils/TelemetryClient"
+import { cn } from "@/lib/utils"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { useAppTranslation } from "@/i18n/TranslationContext"
-import { Mode, getAllModes } from "@roo/modes"
-import { ModeConfig, CustomModePrompts } from "@roo-code/types"
-import { telemetryClient } from "@/utils/TelemetryClient"
-import { TelemetryEventName } from "@roo-code/types"
-import { Fzf } from "fzf"
+import { useRooPortal } from "@/components/ui/hooks/useRooPortal"
+import { Popover, PopoverContent, PopoverTrigger, StandardTooltip } from "@/components/ui"
 
-// Minimum number of modes required to show search functionality
+import { IconButton } from "./IconButton"
+
 const SEARCH_THRESHOLD = 6
 
 interface ModeSelectorProps {
 	value: Mode
 	onChange: (value: Mode) => void
 	disabled?: boolean
-	title?: string
+	title: string
 	triggerClassName?: string
 	modeShortcutText: string
 	customModes?: ModeConfig[]
@@ -32,7 +34,7 @@ export const ModeSelector = ({
 	value,
 	onChange,
 	disabled = false,
-	title = "",
+	title,
 	triggerClassName = "",
 	modeShortcutText,
 	customModes,
@@ -42,34 +44,38 @@ export const ModeSelector = ({
 	const [open, setOpen] = React.useState(false)
 	const [searchValue, setSearchValue] = React.useState("")
 	const searchInputRef = React.useRef<HTMLInputElement>(null)
+	const selectedItemRef = React.useRef<HTMLDivElement>(null)
+	const scrollContainerRef = React.useRef<HTMLDivElement>(null)
 	const portalContainer = useRooPortal("roo-portal")
 	const { hasOpenedModeSelector, setHasOpenedModeSelector } = useExtensionState()
 	const { t } = useAppTranslation()
 
 	const trackModeSelectorOpened = React.useCallback(() => {
-		// Track telemetry every time the mode selector is opened
+		// Track telemetry every time the mode selector is opened.
 		telemetryClient.capture(TelemetryEventName.MODE_SELECTOR_OPENED)
 
-		// Track first-time usage for UI purposes
+		// Track first-time usage for UI purposes.
 		if (!hasOpenedModeSelector) {
 			setHasOpenedModeSelector(true)
 			vscode.postMessage({ type: "hasOpenedModeSelector", bool: true })
 		}
 	}, [hasOpenedModeSelector, setHasOpenedModeSelector])
 
-	// Get all modes including custom modes and merge custom prompt descriptions
+	// Get all modes including custom modes and merge custom prompt descriptions.
 	const modes = React.useMemo(() => {
 		const allModes = getAllModes(customModes)
+
 		return allModes.map((mode) => ({
 			...mode,
 			description: customModePrompts?.[mode.slug]?.description ?? mode.description,
 		}))
 	}, [customModes, customModePrompts])
 
-	// Find the selected mode
+	// Find the selected mode.
 	const selectedMode = React.useMemo(() => modes.find((mode) => mode.slug === value), [modes, value])
 
-	// Memoize searchable items for fuzzy search with separate name and description search
+	// Memoize searchable items for fuzzy search with separate name and
+	// description search.
 	const nameSearchItems = React.useMemo(() => {
 		return modes.map((mode) => ({
 			original: mode,
@@ -84,31 +90,29 @@ export const ModeSelector = ({
 		}))
 	}, [modes])
 
-	// Create memoized Fzf instances for name and description searches
-	const nameFzfInstance = React.useMemo(() => {
-		return new Fzf(nameSearchItems, {
-			selector: (item) => item.searchStr,
-		})
-	}, [nameSearchItems])
+	// Create memoized Fzf instances for name and description searches.
+	const nameFzfInstance = React.useMemo(
+		() => new Fzf(nameSearchItems, { selector: (item) => item.searchStr }),
+		[nameSearchItems],
+	)
 
-	const descriptionFzfInstance = React.useMemo(() => {
-		return new Fzf(descriptionSearchItems, {
-			selector: (item) => item.searchStr,
-		})
-	}, [descriptionSearchItems])
+	const descriptionFzfInstance = React.useMemo(
+		() => new Fzf(descriptionSearchItems, { selector: (item) => item.searchStr }),
+		[descriptionSearchItems],
+	)
 
-	// Filter modes based on search value using fuzzy search with priority
+	// Filter modes based on search value using fuzzy search with priority.
 	const filteredModes = React.useMemo(() => {
 		if (!searchValue) return modes
 
-		// First search in names/slugs
+		// First search in names/slugs.
 		const nameMatches = nameFzfInstance.find(searchValue)
 		const nameMatchedModes = new Set(nameMatches.map((result) => result.item.original.slug))
 
-		// Then search in descriptions
+		// Then search in descriptions.
 		const descriptionMatches = descriptionFzfInstance.find(searchValue)
 
-		// Combine results: name matches first, then description matches
+		// Combine results: name matches first, then description matches.
 		const combinedResults = [
 			...nameMatches.map((result) => result.item.original),
 			...descriptionMatches
@@ -128,7 +132,7 @@ export const ModeSelector = ({
 		(modeSlug: string) => {
 			onChange(modeSlug as Mode)
 			setOpen(false)
-			// Clear search after selection
+			// Clear search after selection.
 			setSearchValue("")
 		},
 		[onChange],
@@ -138,7 +142,8 @@ export const ModeSelector = ({
 		(isOpen: boolean) => {
 			if (isOpen) trackModeSelectorOpened()
 			setOpen(isOpen)
-			// Clear search when closing
+
+			// Clear search when closing.
 			if (!isOpen) {
 				setSearchValue("")
 			}
@@ -146,44 +151,67 @@ export const ModeSelector = ({
 		[trackModeSelectorOpened],
 	)
 
-	// Auto-focus search input when popover opens
+	// Auto-focus search input and scroll to selected item when popover opens.
 	React.useEffect(() => {
-		if (open && searchInputRef.current) {
-			searchInputRef.current.focus()
+		if (open) {
+			// Focus search input
+			if (searchInputRef.current) {
+				searchInputRef.current.focus()
+			}
+
+			requestAnimationFrame(() => {
+				if (selectedItemRef.current && scrollContainerRef.current) {
+					const container = scrollContainerRef.current
+					const item = selectedItemRef.current
+
+					// Calculate positions
+					const containerHeight = container.clientHeight
+					const itemTop = item.offsetTop
+					const itemHeight = item.offsetHeight
+
+					// Center the item in the container
+					const scrollPosition = itemTop - containerHeight / 2 + itemHeight / 2
+
+					// Ensure we don't scroll past boundaries
+					const maxScroll = container.scrollHeight - containerHeight
+					const finalScrollPosition = Math.min(Math.max(0, scrollPosition), maxScroll)
+
+					container.scrollTo({
+						top: finalScrollPosition,
+						behavior: "instant",
+					})
+				}
+			})
 		}
 	}, [open])
 
-	// Determine if search should be shown
+	// Determine if search should be shown.
 	const showSearch = !disableSearch && modes.length > SEARCH_THRESHOLD
 
-	// Combine instruction text for tooltip
+	// Combine instruction text for tooltip.
 	const instructionText = `${t("chat:modeSelector.description")} ${modeShortcutText}`
-
-	const trigger = (
-		<PopoverTrigger
-			disabled={disabled}
-			data-testid="mode-selector-trigger"
-			className={cn(
-				"inline-flex items-center gap-1.5 relative whitespace-nowrap px-1.5 py-1 text-xs",
-				"bg-transparent border border-[rgba(255,255,255,0.08)] rounded-md text-vscode-foreground",
-				"transition-all duration-150 focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder focus-visible:ring-inset",
-				disabled
-					? "opacity-50 cursor-not-allowed"
-					: "opacity-90 hover:opacity-100 hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.15)] cursor-pointer",
-				triggerClassName,
-				!disabled && !hasOpenedModeSelector
-					? "bg-primary opacity-90 hover:bg-primary-hover text-vscode-button-foreground"
-					: null,
-			)}>
-			<ChevronUp className="pointer-events-none opacity-80 flex-shrink-0 size-3" />
-			<span className="truncate">{selectedMode?.name || ""}</span>
-		</PopoverTrigger>
-	)
 
 	return (
 		<Popover open={open} onOpenChange={onOpenChange} data-testid="mode-selector-root">
-			{title ? <StandardTooltip content={title}>{trigger}</StandardTooltip> : trigger}
-
+			<StandardTooltip content={title}>
+				<PopoverTrigger
+					disabled={disabled}
+					data-testid="mode-selector-trigger"
+					className={cn(
+						"inline-flex items-center relative whitespace-nowrap px-1.5 py-1 text-xs",
+						"bg-transparent border border-[rgba(255,255,255,0.08)] rounded-md text-vscode-foreground",
+						"transition-all duration-150 focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder focus-visible:ring-inset",
+						disabled
+							? "opacity-50 cursor-not-allowed"
+							: "opacity-90 hover:opacity-100 hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.15)] cursor-pointer",
+						triggerClassName,
+						!disabled && !hasOpenedModeSelector
+							? "bg-primary opacity-90 hover:bg-primary-hover text-vscode-button-foreground"
+							: null,
+					)}>
+					<span className="truncate">{selectedMode?.name || ""}</span>
+				</PopoverTrigger>
+			</StandardTooltip>
 			<PopoverContent
 				align="start"
 				sideOffset={4}
@@ -218,36 +246,40 @@ export const ModeSelector = ({
 					)}
 
 					{/* Mode List */}
-					<div className="max-h-[300px] overflow-y-auto">
+					<div ref={scrollContainerRef} className="max-h-[300px] overflow-y-auto">
 						{filteredModes.length === 0 && searchValue ? (
 							<div className="py-2 px-3 text-sm text-vscode-foreground/70">
 								{t("chat:modeSelector.noResults")}
 							</div>
 						) : (
 							<div className="py-1">
-								{filteredModes.map((mode) => (
-									<div
-										key={mode.slug}
-										onClick={() => handleSelect(mode.slug)}
-										className={cn(
-											"px-3 py-1.5 text-sm cursor-pointer flex items-center",
-											"hover:bg-vscode-list-hoverBackground",
-											mode.slug === value
-												? "bg-vscode-list-activeSelectionBackground text-vscode-list-activeSelectionForeground"
-												: "",
-										)}
-										data-testid="mode-selector-item">
-										<div className="flex-1 min-w-0">
-											<div className="font-bold truncate">{mode.name}</div>
-											{mode.description && (
-												<div className="text-xs text-vscode-descriptionForeground truncate">
-													{mode.description}
-												</div>
+								{filteredModes.map((mode) => {
+									const isSelected = mode.slug === value
+									return (
+										<div
+											key={mode.slug}
+											ref={isSelected ? selectedItemRef : null}
+											onClick={() => handleSelect(mode.slug)}
+											className={cn(
+												"px-3 py-1.5 text-sm cursor-pointer flex items-center",
+												"hover:bg-vscode-list-hoverBackground",
+												isSelected
+													? "bg-vscode-list-activeSelectionBackground text-vscode-list-activeSelectionForeground"
+													: "",
 											)}
+											data-testid="mode-selector-item">
+											<div className="flex-1 min-w-0">
+												<div className="font-bold truncate">{mode.name}</div>
+												{mode.description && (
+													<div className="text-xs text-vscode-descriptionForeground truncate">
+														{mode.description}
+													</div>
+												)}
+											</div>
+											{isSelected && <Check className="ml-auto size-4 p-0.5" />}
 										</div>
-										{mode.slug === value && <Check className="ml-auto size-4 p-0.5" />}
-									</div>
-								))}
+									)
+								})}
 							</div>
 						)}
 					</div>
@@ -274,10 +306,7 @@ export const ModeSelector = ({
 								iconClass="codicon-settings-gear"
 								title={t("chat:modeSelector.settings")}
 								onClick={() => {
-									vscode.postMessage({
-										type: "switchTab",
-										tab: "modes",
-									})
+									vscode.postMessage({ type: "switchTab", tab: "modes" })
 									setOpen(false)
 								}}
 							/>
@@ -300,5 +329,3 @@ export const ModeSelector = ({
 		</Popover>
 	)
 }
-
-export default ModeSelector

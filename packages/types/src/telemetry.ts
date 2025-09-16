@@ -78,6 +78,7 @@ export const staticAppPropertiesSchema = z.object({
 	vscodeVersion: z.string(),
 	platform: z.string(),
 	editorName: z.string(),
+	hostname: z.string().optional(),
 })
 
 export type StaticAppProperties = z.infer<typeof staticAppPropertiesSchema>
@@ -241,7 +242,7 @@ export interface TelemetryClient {
 
 	setProvider(provider: TelemetryPropertiesProvider): void
 	capture(options: TelemetryEvent): Promise<void>
-	updateTelemetryState(didUserOptIn: boolean): void
+	updateTelemetryState(isOptedIn: boolean): void
 	isTelemetryEnabled(): boolean
 	shutdown(): Promise<void>
 }

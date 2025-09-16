@@ -24,7 +24,9 @@
 		"connectToCloudDescription": "Entre no Roo Code Cloud para compartilhar tarefas",
 		"sharingDisabledByOrganization": "Compartilhamento desabilitado pela organização",
 		"shareSuccessOrganization": "Link da organização copiado para a área de transferência",
-		"shareSuccessPublic": "Link público copiado para a área de transferência"
+		"shareSuccessPublic": "Link público copiado para a área de transferência",
+		"openInCloud": "Abrir tarefa no Roo Code Cloud",
+		"openInCloudIntro": "Continue monitorando ou interagindo com Roo de qualquer lugar. Escaneie, clique ou copie para abrir."
 	},
 	"unpin": "Desfixar",
 	"pin": "Fixar",
@@ -175,7 +177,11 @@
 		"wantsToInsertAtEnd": "Roo quer adicionar conteúdo ao final deste arquivo:",
 		"wantsToReadAndXMore": "Roo quer ler este arquivo e mais {{count}}:",
 		"wantsToReadMultiple": "Roo deseja ler múltiplos arquivos:",
-		"wantsToApplyBatchChanges": "Roo quer aplicar alterações a múltiplos arquivos:"
+		"wantsToApplyBatchChanges": "Roo quer aplicar alterações a múltiplos arquivos:",
+		"wantsToGenerateImage": "Roo quer gerar uma imagem:",
+		"wantsToGenerateImageOutsideWorkspace": "Roo quer gerar uma imagem fora do espaço de trabalho:",
+		"wantsToGenerateImageProtected": "Roo quer gerar uma imagem em um local protegido:",
+		"didGenerateImage": "Roo gerou uma imagem:"
 	},
 	"directoryOperations": {
 		"wantsToViewTopLevel": "Roo quer visualizar os arquivos de nível superior neste diretório:",
@@ -241,12 +247,19 @@
 		"issues": "Parece que você está tendo problemas com o Windows PowerShell, por favor veja este"
 	},
 	"autoApprove": {
-		"title": "Aprovação automática:",
-		"none": "Nenhuma",
-		"description": "A aprovação automática permite que o Roo Code execute ações sem pedir permissão. Ative apenas para ações nas quais você confia totalmente. Configuração mais detalhada disponível nas <settingsLink>Configurações</settingsLink>.",
+		"tooltip": "Gerenciar configurações de aprovação automática",
+		"title": "Aprovação automática",
+		"all": "Todos",
+		"none": "Nenhum",
+		"description": "Execute estas ações sem pedir permissão. Ative isso apenas para ações em que você confia totalmente.",
 		"selectOptionsFirst": "Selecione pelo menos uma opção abaixo para ativar a aprovação automática",
 		"toggleAriaLabel": "Alternar aprovação automática",
-		"disabledAriaLabel": "Aprovação automática desativada - selecione as opções primeiro"
+		"disabledAriaLabel": "Aprovação automática desativada - selecione as opções primeiro",
+		"triggerLabel_zero": "Nenhuma aprovação automática",
+		"triggerLabel_one": "1 aprovado automaticamente",
+		"triggerLabel_other": "{{count}} aprovados automaticamente",
+		"triggerLabelAll": "YOLO",
+		"triggerLabelOff": "Aprovação automática desativada"
 	},
 	"reasoning": {
 		"thinking": "Pensando",
@@ -265,13 +278,12 @@
 	},
 	"announcement": {
 		"title": "🎉 Roo Code {{version}} Lançado",
-		"description": "Roo Code {{version}} traz novos recursos poderosos e melhorias significativas para aprimorar seu fluxo de trabalho de desenvolvimento.",
-		"whatsNew": "O que há de novo",
-		"feature1": "<bold>Fila de Mensagens</bold>: Coloque várias mensagens na fila enquanto o Roo está trabalhando, permitindo que você continue planejando seu fluxo de trabalho sem interrupção.",
-		"feature2": "<bold>Comandos de Barra Personalizados</bold>: Crie comandos de barra personalizados para acesso rápido a prompts e fluxos de trabalho usados frequentemente, com gerenciamento completo da interface do usuário.",
-		"feature3": "<bold>Ferramentas Gemini Aprimoradas</bold>: Novas capacidades de contexto de URL e fundamentação de pesquisa do Google fornecem aos modelos Gemini informações web em tempo real e capacidades de pesquisa aprimoradas.",
-		"hideButton": "Ocultar anúncio",
-		"detailsDiscussLinks": "Obtenha mais detalhes e participe da discussão no <discordLink>Discord</discordLink> e <redditLink>Reddit</redditLink> 🚀"
+		"description": "Apresentando <bold>Roo Code Cloud:</bold> Levando o poder do Roo além da IDE",
+		"feature1": "<bold>Acompanhe o progresso das tarefas de qualquer lugar (Grátis):</bold> Receba atualizações em tempo real de tarefas de longa duração sem ficar preso na sua IDE",
+		"feature2": "<bold>Controle a Extensão Roo remotamente (Pro):</bold> Inicie, pare e interaja com tarefas de uma interface de navegador baseada em chat.",
+		"learnMore": "Pronto para assumir o controle? Saiba mais <learnMoreLink>aqui</learnMoreLink>.",
+		"visitCloudButton": "Visite Roo Code Cloud",
+		"socialLinks": "Junte-se a nós no <xLink>X</xLink>, <discordLink>Discord</discordLink>, ou <redditLink>r/RooCode</redditLink>"
 	},
 	"browser": {
 		"rooWantsToUse": "Roo quer usar o navegador:",
@@ -349,9 +361,9 @@
 		"ariaLabel": "Versão {{version}} - Clique para ver as notas de lançamento"
 	},
 	"rooCloudCTA": {
-		"title": "Roo Code Cloud chegará em breve!",
+		"title": "Roo Code Cloud está evoluindo!",
 		"description": "Execute agentes remotos na nuvem, acesse suas tarefas de qualquer lugar, colabore com outros e muito mais.",
-		"joinWaitlist": "Junte-se à lista de espera para obter acesso antecipado."
+		"joinWaitlist": "Cadastre-se para receber as últimas atualizações."
 	},
 	"editMessage": {
 		"placeholder": "Edite sua mensagem..."
@@ -362,7 +374,9 @@
 	"slashCommands": {
 		"tooltip": "Gerenciar comandos de barra",
 		"title": "Comandos de Barra",
-		"description": "Crie comandos de barra personalizados para acesso rápido a prompts e fluxos de trabalho usados com frequência. <DocsLink>Documentação</DocsLink>",
+		"description": "Use comandos de barra integrados ou crie personalizados para acesso rápido a prompts e fluxos de trabalho usados com frequência. <DocsLink>Documentação</DocsLink>",
+		"manageCommands": "Gerenciar comandos de barra nas configurações",
+		"builtInCommands": "Comandos Integrados",
 		"globalCommands": "Comandos Globais",
 		"workspaceCommands": "Comandos do Espaço de Trabalho",
 		"globalCommand": "Comando global",
@@ -377,8 +391,18 @@
 			"confirm": "Excluir"
 		}
 	},
+	"contextMenu": {
+		"noResults": "Nenhum resultado",
+		"problems": "Problemas",
+		"terminal": "Terminal",
+		"url": "Cole o URL para buscar o conteúdo"
+	},
 	"queuedMessages": {
 		"title": "Mensagens na fila:",
 		"clickToEdit": "Clique para editar a mensagem"
+	},
+	"slashCommand": {
+		"wantsToRun": "Roo quer executar um comando slash:",
+		"didRun": "Roo executou um comando slash:"
 	}
 }

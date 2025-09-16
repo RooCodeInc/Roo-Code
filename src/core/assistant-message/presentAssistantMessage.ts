@@ -10,6 +10,8 @@ import type { ToolParamName, ToolResponse } from "../../shared/tools"
 import { fetchInstructionsTool } from "../tools/fetchInstructionsTool"
 import { listFilesTool } from "../tools/listFilesTool"
 import { getReadFileToolDescription, readFileTool } from "../tools/readFileTool"
+import { getSimpleReadFileToolDescription, simpleReadFileTool } from "../tools/simpleReadFileTool"
+import { shouldUseSingleFileRead } from "@roo-code/types"
 import { writeToFileTool } from "../tools/writeToFileTool"
 import { applyDiffTool } from "../tools/multiApplyDiffTool"
 import { insertContentTool } from "../tools/insertContentTool"
@@ -26,6 +28,8 @@ import { attemptCompletionTool } from "../tools/attemptCompletionTool"
 import { newTaskTool } from "../tools/newTaskTool"
 
 import { updateTodoListTool } from "../tools/updateTodoListTool"
+import { runSlashCommandTool } from "../tools/runSlashCommandTool"
+import { generateImageTool } from "../tools/generateImageTool"
 
 import { formatResponse } from "../prompts/responses"
 import { validateToolUse } from "../tools/validateToolUse"
@@ -155,7 +159,13 @@ export async function presentAssistantMessage(cline: Task) {
 					case "execute_command":
 						return `[${block.name} for '${block.params.command}']`
 					case "read_file":
-						return getReadFileToolDescription(block.name, block.params)
+						// Check if this model should use the simplified description
+						const modelId = cline.api.getModel().id
+						if (shouldUseSingleFileRead(modelId)) {
+							return getSimpleReadFileToolDescription(block.name, block.params)
+						} else {
+							return getReadFileToolDescription(block.name, block.params)
+						}
 					case "fetch_instructions":
 						return `[${block.name} for '${block.params.task}']`
 					case "write_to_file":
@@ -213,6 +223,10 @@ export async function presentAssistantMessage(cline: Task) {
 						const modeName = getModeBySlug(mode, customModes)?.name ?? mode
 						return `[${block.name} in ${modeName} mode: '${message}']`
 					}
+					case "run_slash_command":
+						return `[${block.name} for '${block.params.command}'${block.params.args ? ` with args: ${block.params.args}` : ""}]`
+					case "generate_image":
+						return `[${block.name} for '${block.params.path}']`
 				}
 			}
 
@@ -454,8 +468,20 @@ export async function presentAssistantMessage(cline: Task) {
 					await searchAndReplaceTool(cline, block, askApproval, handleError, pushToolResult, removeClosingTag)
 					break
 				case "read_file":
-					await readFileTool(cline, block, askApproval, handleError, pushToolResult, removeClosingTag)
-
+					// Check if this model should use the simplified single-file read tool
+					const modelId = cline.api.getModel().id
+					if (shouldUseSingleFileRead(modelId)) {
+						await simpleReadFileTool(
+							cline,
+							block,
+							askApproval,
+							handleError,
+							pushToolResult,
+							removeClosingTag,
+						)
+					} else {
+						await readFileTool(cline, block, askApproval, handleError, pushToolResult, removeClosingTag)
+					}
 					break
 				case "fetch_instructions":
 					await fetchInstructionsTool(cline, block, askApproval, handleError, pushToolResult)
@@ -525,6 +551,12 @@ export async function presentAssistantMessage(cline: Task) {
 						toolDescription,
 						askFinishSubTaskApproval,
 					)
+					break
+				case "run_slash_command":
+					await runSlashCommandTool(cline, block, askApproval, handleError, pushToolResult, removeClosingTag)
+					break
+				case "generate_image":
+					await generateImageTool(cline, block, askApproval, handleError, pushToolResult, removeClosingTag)
 					break
 			}
 

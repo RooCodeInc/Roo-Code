@@ -1,8 +1,7 @@
 import i18next from "i18next"
 
-import type { ProviderSettings } from "@roo-code/types"
+import type { ProviderSettings, OrganizationAllowList } from "@roo-code/types"
 
-import type { OrganizationAllowList } from "@roo/cloud"
 import { isRouterName, RouterModels } from "@roo/api"
 
 export function validateApiConfiguration(
@@ -45,6 +44,11 @@ function validateModelsAndKeysProvided(apiConfiguration: ProviderSettings): stri
 			break
 		case "requesty":
 			if (!apiConfiguration.requestyApiKey) {
+				return i18next.t("settings:validation.apiKey")
+			}
+			break
+		case "deepinfra":
+			if (!apiConfiguration.deepInfraApiKey) {
 				return i18next.t("settings:validation.apiKey")
 			}
 			break
@@ -126,6 +130,21 @@ function validateModelsAndKeysProvided(apiConfiguration: ProviderSettings): stri
 				return i18next.t("settings:validation.apiKey")
 			}
 			break
+		case "featherless":
+			if (!apiConfiguration.featherlessApiKey) {
+				return i18next.t("settings:validation.apiKey")
+			}
+			break
+		case "qwen-code":
+			if (!apiConfiguration.qwenCodeOauthPath) {
+				return i18next.t("settings:validation.qwenCodeOauthPath")
+			}
+			break
+		case "vercel-ai-gateway":
+			if (!apiConfiguration.vercelAiGatewayApiKey) {
+				return i18next.t("settings:validation.apiKey")
+			}
+			break
 	}
 
 	return undefined
@@ -179,6 +198,8 @@ function getModelIdForProvider(apiConfiguration: ProviderSettings, provider: str
 			return apiConfiguration.unboundModelId
 		case "requesty":
 			return apiConfiguration.requestyModelId
+		case "deepinfra":
+			return apiConfiguration.deepInfraModelId
 		case "litellm":
 			return apiConfiguration.litellmModelId
 		case "openai":
@@ -194,6 +215,8 @@ function getModelIdForProvider(apiConfiguration: ProviderSettings, provider: str
 			return apiConfiguration.huggingFaceModelId
 		case "io-intelligence":
 			return apiConfiguration.ioIntelligenceModelId
+		case "vercel-ai-gateway":
+			return apiConfiguration.vercelAiGatewayModelId
 		default:
 			return apiConfiguration.apiModelId
 	}
@@ -255,6 +278,9 @@ export function validateModelId(apiConfiguration: ProviderSettings, routerModels
 		case "requesty":
 			modelId = apiConfiguration.requestyModelId
 			break
+		case "deepinfra":
+			modelId = apiConfiguration.deepInfraModelId
+			break
 		case "ollama":
 			modelId = apiConfiguration.ollamaModelId
 			break
@@ -266,6 +292,9 @@ export function validateModelId(apiConfiguration: ProviderSettings, routerModels
 			break
 		case "io-intelligence":
 			modelId = apiConfiguration.ioIntelligenceModelId
+			break
+		case "vercel-ai-gateway":
+			modelId = apiConfiguration.vercelAiGatewayModelId
 			break
 	}
 

@@ -46,9 +46,17 @@ import {
 	mainlandZAiModels,
 	fireworksModels,
 	fireworksDefaultModelId,
+	featherlessModels,
+	featherlessDefaultModelId,
 	ioIntelligenceDefaultModelId,
 	ioIntelligenceModels,
+	rooDefaultModelId,
+	rooModels,
+	qwenCodeDefaultModelId,
+	qwenCodeModels,
+	vercelAiGatewayDefaultModelId,
 	BEDROCK_CLAUDE_SONNET_4_MODEL_ID,
+	deepInfraDefaultModelId,
 } from "@roo-code/types"
 
 import type { ModelRecord, RouterModels } from "@roo/api"
@@ -56,19 +64,23 @@ import type { ModelRecord, RouterModels } from "@roo/api"
 import { useRouterModels } from "./useRouterModels"
 import { useOpenRouterModelProviders } from "./useOpenRouterModelProviders"
 import { useLmStudioModels } from "./useLmStudioModels"
+import { useOllamaModels } from "./useOllamaModels"
 
 export const useSelectedModel = (apiConfiguration?: ProviderSettings) => {
 	const provider = apiConfiguration?.apiProvider || "anthropic"
 	const openRouterModelId = provider === "openrouter" ? apiConfiguration?.openRouterModelId : undefined
 	const lmStudioModelId = provider === "lmstudio" ? apiConfiguration?.lmStudioModelId : undefined
+	const ollamaModelId = provider === "ollama" ? apiConfiguration?.ollamaModelId : undefined
 
 	const routerModels = useRouterModels()
 	const openRouterModelProviders = useOpenRouterModelProviders(openRouterModelId)
 	const lmStudioModels = useLmStudioModels(lmStudioModelId)
+	const ollamaModels = useOllamaModels(ollamaModelId)
 
 	const { id, info } =
 		apiConfiguration &&
 		(typeof lmStudioModelId === "undefined" || typeof lmStudioModels.data !== "undefined") &&
+		(typeof ollamaModelId === "undefined" || typeof ollamaModels.data !== "undefined") &&
 		typeof routerModels.data !== "undefined" &&
 		typeof openRouterModelProviders.data !== "undefined"
 			? getSelectedModel({
@@ -77,6 +89,7 @@ export const useSelectedModel = (apiConfiguration?: ProviderSettings) => {
 					routerModels: routerModels.data,
 					openRouterModelProviders: openRouterModelProviders.data,
 					lmStudioModels: lmStudioModels.data,
+					ollamaModels: ollamaModels.data,
 				})
 			: { id: anthropicDefaultModelId, info: undefined }
 
@@ -101,12 +114,14 @@ function getSelectedModel({
 	routerModels,
 	openRouterModelProviders,
 	lmStudioModels,
+	ollamaModels,
 }: {
 	provider: ProviderName
 	apiConfiguration: ProviderSettings
 	routerModels: RouterModels
 	openRouterModelProviders: Record<string, ModelInfo>
 	lmStudioModels: ModelRecord | undefined
+	ollamaModels: ModelRecord | undefined
 }): { id: string; info: ModelInfo | undefined } {
 	// the `undefined` case are used to show the invalid selection to prevent
 	// users from seeing the default model if their selection is invalid
@@ -247,7 +262,7 @@ function getSelectedModel({
 		}
 		case "ollama": {
 			const id = apiConfiguration.ollamaModelId ?? ""
-			const info = routerModels.ollama && routerModels.ollama[id]
+			const info = ollamaModels && ollamaModels[apiConfiguration.ollamaModelId!]
 			return {
 				id,
 				info: info || undefined,
@@ -260,6 +275,11 @@ function getSelectedModel({
 				id,
 				info: info || undefined,
 			}
+		}
+		case "deepinfra": {
+			const id = apiConfiguration.deepInfraModelId ?? deepInfraDefaultModelId
+			const info = routerModels.deepinfra?.[id]
+			return { id, info }
 		}
 		case "vscode-lm": {
 			const id = apiConfiguration?.vsCodeLmModelSelector
@@ -290,17 +310,49 @@ function getSelectedModel({
 			const info = fireworksModels[id as keyof typeof fireworksModels]
 			return { id, info }
 		}
+		case "featherless": {
+			const id = apiConfiguration.apiModelId ?? featherlessDefaultModelId
+			const info = featherlessModels[id as keyof typeof featherlessModels]
+			return { id, info }
+		}
 		case "io-intelligence": {
 			const id = apiConfiguration.ioIntelligenceModelId ?? ioIntelligenceDefaultModelId
 			const info =
 				routerModels["io-intelligence"]?.[id] ?? ioIntelligenceModels[id as keyof typeof ioIntelligenceModels]
 			return { id, info }
 		}
+		case "roo": {
+			const requestedId = apiConfiguration.apiModelId
+
+			// Check if the requested model exists in rooModels
+			if (requestedId && rooModels[requestedId as keyof typeof rooModels]) {
+				return {
+					id: requestedId,
+					info: rooModels[requestedId as keyof typeof rooModels],
+				}
+			}
+
+			// Fallback to default model if requested model doesn't exist or is not specified
+			return {
+				id: rooDefaultModelId,
+				info: rooModels[rooDefaultModelId as keyof typeof rooModels],
+			}
+		}
+		case "qwen-code": {
+			const id = apiConfiguration.apiModelId ?? qwenCodeDefaultModelId
+			const info = qwenCodeModels[id as keyof typeof qwenCodeModels]
+			return { id, info }
+		}
+		case "vercel-ai-gateway": {
+			const id = apiConfiguration.vercelAiGatewayModelId ?? vercelAiGatewayDefaultModelId
+			const info = routerModels["vercel-ai-gateway"]?.[id]
+			return { id, info }
+		}
 		// case "anthropic":
 		// case "human-relay":
 		// case "fake-ai":
 		default: {
-			provider satisfies "anthropic" | "gemini-cli" | "human-relay" | "fake-ai"
+			provider satisfies "anthropic" | "gemini-cli" | "qwen-code" | "human-relay" | "fake-ai"
 			const id = apiConfiguration.apiModelId ?? anthropicDefaultModelId
 			const baseInfo = anthropicModels[id as keyof typeof anthropicModels]
 

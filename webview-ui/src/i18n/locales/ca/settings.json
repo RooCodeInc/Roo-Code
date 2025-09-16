@@ -28,10 +28,14 @@
 		"notifications": "Notificacions",
 		"contextManagement": "Context",
 		"terminal": "Terminal",
+		"slashCommands": "Comandes de barra",
 		"prompts": "Indicacions",
 		"experimental": "Experimental",
 		"language": "Idioma",
 		"about": "Sobre Roo Code"
+	},
+	"slashCommands": {
+		"description": "Gestiona les teves comandes de barra per executar ràpidament fluxos de treball i accions personalitzades. <DocsLink>Aprèn-ne més</DocsLink>"
 	},
 	"prompts": {
 		"description": "Configura les indicacions de suport utilitzades per a accions ràpides com millorar indicacions, explicar codi i solucionar problemes. Aquestes indicacions ajuden Roo a proporcionar millor assistència per a tasques comunes de desenvolupament."
@@ -51,6 +55,9 @@
 		"valkeyHostName": "URL Valkey",
 		"mistralApiKeyLabel": "Clau de l'API:",
 		"mistralApiKeyPlaceholder": "Introduïu la vostra clau de l'API de Mistral",
+		"vercelAiGatewayProvider": "Vercel AI Gateway",
+		"vercelAiGatewayApiKeyLabel": "Clau API",
+		"vercelAiGatewayApiKeyPlaceholder": "Introduïu la vostra clau API de Vercel AI Gateway",
 		"openaiCompatibleProvider": "Compatible amb OpenAI",
 		"openAiKeyLabel": "Clau API OpenAI",
 		"openAiKeyPlaceholder": "Introduïu la vostra clau API OpenAI",
@@ -124,6 +131,7 @@
 			"modelDimensionRequired": "Cal una dimensió de model",
 			"geminiApiKeyRequired": "Cal una clau d'API de Gemini",
 			"mistralApiKeyRequired": "La clau de l'API de Mistral és requerida",
+			"vercelAiGatewayApiKeyRequired": "Es requereix la clau API de Vercel AI Gateway",
 			"ollamaBaseUrlRequired": "Cal una URL base d'Ollama",
 			"baseUrlRequired": "Cal una URL base",
 			"modelDimensionMinValue": "La dimensió del model ha de ser superior a 0"
@@ -244,6 +252,8 @@
 		"awsCustomArnDesc": "Assegureu-vos que la regió a l'ARN coincideix amb la regió d'AWS seleccionada anteriorment.",
 		"openRouterApiKey": "Clau API d'OpenRouter",
 		"getOpenRouterApiKey": "Obtenir clau API d'OpenRouter",
+		"vercelAiGatewayApiKey": "Clau API de Vercel AI Gateway",
+		"getVercelAiGatewayApiKey": "Obtenir clau API de Vercel AI Gateway",
 		"apiKeyStorageNotice": "Les claus API s'emmagatzemen de forma segura a l'Emmagatzematge Secret de VSCode",
 		"glamaApiKey": "Clau API de Glama",
 		"getGlamaApiKey": "Obtenir clau API de Glama",
@@ -280,6 +290,8 @@
 		"getChutesApiKey": "Obtenir clau API de Chutes",
 		"fireworksApiKey": "Clau API de Fireworks",
 		"getFireworksApiKey": "Obtenir clau API de Fireworks",
+		"featherlessApiKey": "Clau API de Featherless",
+		"getFeatherlessApiKey": "Obtenir clau API de Featherless",
 		"ioIntelligenceApiKey": "Clau API d'IO Intelligence",
 		"ioIntelligenceApiKeyPlaceholder": "Introdueix la teva clau d'API de IO Intelligence",
 		"getIoIntelligenceApiKey": "Obtenir clau API d'IO Intelligence",
@@ -377,6 +389,8 @@
 		"ollama": {
 			"baseUrl": "URL base (opcional)",
 			"modelId": "ID del model",
+			"apiKey": "Clau API d'Ollama",
+			"apiKeyHelp": "Clau API opcional per a instàncies d'Ollama autenticades o serveis al núvol. Deixa-ho buit per a instal·lacions locals.",
 			"description": "Ollama permet executar models localment al vostre ordinador. Per a instruccions sobre com començar, consulteu la Guia d'inici ràpid.",
 			"warning": "Nota: Roo Code utilitza prompts complexos i funciona millor amb models Claude. Els models menys capaços poden no funcionar com s'espera."
 		},
@@ -387,6 +401,10 @@
 		"humanRelay": {
 			"description": "No es requereix clau API, però l'usuari necessita ajuda per copiar i enganxar informació al xat d'IA web.",
 			"instructions": "Durant l'ús, apareixerà un diàleg i el missatge actual es copiarà automàticament al porta-retalls. Necessiteu enganxar-lo a les versions web d'IA (com ChatGPT o Claude), després copiar la resposta de l'IA de nou al diàleg i fer clic al botó de confirmació."
+		},
+		"roo": {
+			"authenticatedMessage": "Autenticat de forma segura a través del teu compte de Roo Code Cloud.",
+			"connectButton": "Connecta amb Roo Code Cloud"
 		},
 		"openRouter": {
 			"providerRouting": {
@@ -724,6 +742,25 @@
 		"ASSISTANT_MESSAGE_PARSER": {
 			"name": "Utilitza el nou analitzador de missatges",
 			"description": "Activa l'analitzador de missatges en streaming experimental que millora el rendiment en respostes llargues processant els missatges de manera més eficient."
+		},
+		"NEW_TASK_REQUIRE_TODOS": {
+			"name": "Requerir la llista 'todos' per a noves tasques",
+			"description": "Quan estigui activat, l'eina new_task requerirà que es proporcioni un paràmetre 'todos'. Això garanteix que totes les noves tasques comencin amb una llista clara d'objectius. Quan estigui desactivat (per defecte), el paràmetre 'todos' continua sent opcional per a la compatibilitat amb versions anteriors."
+		},
+		"IMAGE_GENERATION": {
+			"name": "Habilitar generació d'imatges amb IA",
+			"description": "Quan estigui habilitat, Roo pot generar imatges a partir de prompts de text utilitzant els models de generació d'imatges d'OpenRouter. Requereix que es configuri una clau d'API d'OpenRouter.",
+			"openRouterApiKeyLabel": "Clau API d'OpenRouter",
+			"openRouterApiKeyPlaceholder": "Introdueix la teva clau API d'OpenRouter",
+			"getApiKeyText": "Obté la teva clau API de",
+			"modelSelectionLabel": "Model de generació d'imatges",
+			"modelSelectionDescription": "Selecciona el model per a la generació d'imatges",
+			"warningMissingKey": "⚠️ La clau API d'OpenRouter és necessària per a la generació d'imatges. Si us plau, configura-la a dalt.",
+			"successConfigured": "✓ La generació d'imatges està configurada i llesta per utilitzar"
+		},
+		"RUN_SLASH_COMMAND": {
+			"name": "Habilitar comandes de barra diagonal iniciades pel model",
+			"description": "Quan està habilitat, Roo pot executar les vostres comandes de barra diagonal per executar fluxos de treball."
 		}
 	},
 	"promptCaching": {
@@ -770,7 +807,7 @@
 		"feedback": "Si teniu qualsevol pregunta o comentari, no dubteu a obrir un issue a <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> o unir-vos a <redditLink>reddit.com/r/RooCode</redditLink> o <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {
 			"label": "Permetre informes anònims d'errors i ús",
-			"description": "Ajudeu a millorar Roo Code enviant dades d'ús anònimes i informes d'errors. Mai s'envia codi, prompts o informació personal. Vegeu la nostra política de privacitat per a més detalls."
+			"description": "Ajuda a millorar Roo Code enviant dades d'ús anònimes i informes d'error. Aquesta telemetria no recull codi, prompts o informació personal. Consulta la nostra <privacyLink>política de privacitat</privacyLink> per a més detalls. Pots desactivar-ho en qualsevol moment."
 		},
 		"settings": {
 			"import": "Importar",
@@ -796,7 +833,8 @@
 		"modelAvailability": "L'ID de model ({{modelId}}) que heu proporcionat no està disponible. Si us plau, trieu un altre model.",
 		"providerNotAllowed": "El proveïdor '{{provider}}' no està permès per la vostra organització",
 		"modelNotAllowed": "El model '{{model}}' no està permès per al proveïdor '{{provider}}' per la vostra organització",
-		"profileInvalid": "Aquest perfil conté un proveïdor o model que no està permès per la vostra organització"
+		"profileInvalid": "Aquest perfil conté un proveïdor o model que no està permès per la vostra organització",
+		"qwenCodeOauthPath": "Has de proporcionar una ruta vàlida de credencials OAuth"
 	},
 	"placeholders": {
 		"apiKey": "Introduïu la clau API...",
@@ -835,5 +873,19 @@
 	"includeMaxOutputTokensDescription": "Enviar el paràmetre de tokens màxims de sortida a les sol·licituds API. Alguns proveïdors poden no admetre això.",
 	"limitMaxTokensDescription": "Limitar el nombre màxim de tokens en la resposta",
 	"maxOutputTokensLabel": "Tokens màxims de sortida",
-	"maxTokensGenerateDescription": "Tokens màxims a generar en la resposta"
+	"maxTokensGenerateDescription": "Tokens màxims a generar en la resposta",
+	"serviceTier": {
+		"label": "Nivell de servei",
+		"tooltip": "Per a un processament més ràpid de les sol·licituds de l'API, proveu el nivell de servei de processament prioritari. Per a preus més baixos amb una latència més alta, proveu el nivell de processament flexible.",
+		"standard": "Estàndard",
+		"flex": "Flex",
+		"priority": "Prioritat",
+		"pricingTableTitle": "Preus per nivell de servei (preu per 1M de fitxes)",
+		"columns": {
+			"tier": "Nivell",
+			"input": "Entrada",
+			"output": "Sortida",
+			"cacheReads": "Lectures de memòria cau"
+		}
+	}
 }

@@ -24,7 +24,9 @@
 		"connectToCloudDescription": "Connecte-toi à Roo Code Cloud pour partager des tâches",
 		"sharingDisabledByOrganization": "Partage désactivé par l'organisation",
 		"shareSuccessOrganization": "Lien d'organisation copié dans le presse-papiers",
-		"shareSuccessPublic": "Lien public copié dans le presse-papiers"
+		"shareSuccessPublic": "Lien public copié dans le presse-papiers",
+		"openInCloud": "Ouvrir la tâche dans Roo Code Cloud",
+		"openInCloudIntro": "Continue à surveiller ou interagir avec Roo depuis n'importe où. Scanne, clique ou copie pour ouvrir."
 	},
 	"unpin": "Désépingler",
 	"pin": "Épingler",
@@ -172,7 +174,11 @@
 		"wantsToInsertAtEnd": "Roo veut ajouter du contenu à la fin de ce fichier :",
 		"wantsToReadAndXMore": "Roo veut lire ce fichier et {{count}} de plus :",
 		"wantsToReadMultiple": "Roo souhaite lire plusieurs fichiers :",
-		"wantsToApplyBatchChanges": "Roo veut appliquer des modifications à plusieurs fichiers :"
+		"wantsToApplyBatchChanges": "Roo veut appliquer des modifications à plusieurs fichiers :",
+		"wantsToGenerateImage": "Roo veut générer une image :",
+		"wantsToGenerateImageOutsideWorkspace": "Roo veut générer une image en dehors de l'espace de travail :",
+		"wantsToGenerateImageProtected": "Roo veut générer une image dans un emplacement protégé :",
+		"didGenerateImage": "Roo a généré une image :"
 	},
 	"instructions": {
 		"wantsToFetch": "Roo veut récupérer des instructions détaillées pour aider à la tâche actuelle"
@@ -241,12 +247,19 @@
 		"issues": "Il semble que vous rencontriez des problèmes avec Windows PowerShell, veuillez consulter ce"
 	},
 	"autoApprove": {
-		"title": "Auto-approbation :",
-		"none": "Aucune",
-		"description": "L'auto-approbation permet à Roo Code d'effectuer des actions sans demander d'autorisation. Activez-la uniquement pour les actions auxquelles vous faites entièrement confiance. Configuration plus détaillée disponible dans les <settingsLink>Paramètres</settingsLink>.",
-		"selectOptionsFirst": "Sélectionnez au moins une option ci-dessous pour activer l'auto-approbation",
+		"tooltip": "Gérer les paramètres d'approbation automatique",
+		"title": "Approbation automatique",
+		"all": "Tout",
+		"none": "Aucun",
+		"description": "Exécutez ces actions sans demander la permission. N'activez cette option que pour les actions en lesquelles vous avez entièrement confiance.",
+		"selectOptionsFirst": "Sélectionnez au moins une option ci-dessous pour activer l'approbation automatique",
 		"toggleAriaLabel": "Activer/désactiver l'approbation automatique",
-		"disabledAriaLabel": "Approbation automatique désactivée - sélectionnez d'abord les options"
+		"disabledAriaLabel": "Approbation automatique désactivée - sélectionnez d'abord les options",
+		"triggerLabel_zero": "Pas d'approbation automatique",
+		"triggerLabel_one": "1 approuvé automatiquement",
+		"triggerLabel_other": "{{count}} approuvés automatiquement",
+		"triggerLabelAll": "YOLO",
+		"triggerLabelOff": "Approbation automatique désactivée"
 	},
 	"reasoning": {
 		"thinking": "Réflexion",
@@ -265,13 +278,12 @@
 	},
 	"announcement": {
 		"title": "🎉 Roo Code {{version}} est sortie",
-		"description": "Roo Code {{version}} apporte de puissantes nouvelles fonctionnalités et des améliorations significatives pour améliorer ton flux de travail de développement.",
-		"whatsNew": "Quoi de neuf",
-		"feature1": "<bold>File d'Attente de Messages</bold> : Mettez en file d'attente plusieurs messages pendant que Roo travaille, vous permettant de continuer à planifier votre flux de travail sans interruption.",
-		"feature2": "<bold>Commandes Slash Personnalisées</bold> : Créez des commandes slash personnalisées pour un accès rapide aux prompts et flux de travail fréquemment utilisés, avec une gestion complète de l'interface utilisateur.",
-		"feature3": "<bold>Outils Gemini Améliorés</bold> : De nouvelles capacités de contexte d'URL et de fondation de recherche Google fournissent aux modèles Gemini des informations web en temps réel et des capacités de recherche améliorées.",
-		"hideButton": "Masquer l'annonce",
-		"detailsDiscussLinks": "Obtenez plus de détails et participez aux discussions sur <discordLink>Discord</discordLink> et <redditLink>Reddit</redditLink> 🚀"
+		"description": "Présentation de <bold>Roo Code Cloud :</bold> Apporter la puissance de Roo au-delà de l'IDE",
+		"feature1": "<bold>Suivre le progrès des tâches depuis n'importe où (Gratuit) :</bold> Obtenir des mises à jour en temps réel sur les tâches de longue durée sans être bloqué dans ton IDE",
+		"feature2": "<bold>Contrôler l'extension Roo à distance (Pro) :</bold> Démarre, arrête et interagis avec les tâches depuis une interface de navigateur basée sur le chat.",
+		"learnMore": "Prêt à prendre le contrôle ? En savoir plus <learnMoreLink>ici</learnMoreLink>.",
+		"visitCloudButton": "Visiter Roo Code Cloud",
+		"socialLinks": "Rejoins-nous sur <xLink>X</xLink>, <discordLink>Discord</discordLink>, ou <redditLink>r/RooCode</redditLink>"
 	},
 	"browser": {
 		"rooWantsToUse": "Roo veut utiliser le navigateur :",
@@ -349,9 +361,9 @@
 		"ariaLabel": "Version {{version}} - Cliquez pour voir les notes de version"
 	},
 	"rooCloudCTA": {
-		"title": "Roo Code Cloud arrive bientôt !",
+		"title": "Roo Code Cloud évolue !",
 		"description": "Exécutez des agents distants dans le cloud, accédez à vos tâches de n'importe où, collaborez avec d'autres et bien plus encore.",
-		"joinWaitlist": "Rejoignez la liste d'attente pour obtenir un accès anticipé."
+		"joinWaitlist": "Inscrivez-vous pour recevoir les dernières mises à jour."
 	},
 	"editMessage": {
 		"placeholder": "Modifiez votre message..."
@@ -362,7 +374,9 @@
 	"slashCommands": {
 		"tooltip": "Gérer les commandes slash",
 		"title": "Commandes Slash",
-		"description": "Créez des commandes slash personnalisées pour accéder rapidement aux prompts et flux de travail fréquemment utilisés. <DocsLink>Documentation</DocsLink>",
+		"description": "Utilisez les commandes slash intégrées ou créez des personnalisées pour accéder rapidement aux prompts et flux de travail fréquemment utilisés. <DocsLink>Documentation</DocsLink>",
+		"manageCommands": "Gérer les commandes slash dans les paramètres",
+		"builtInCommands": "Commandes Intégrées",
 		"globalCommands": "Commandes Globales",
 		"workspaceCommands": "Commandes de l'Espace de Travail",
 		"globalCommand": "Commande globale",
@@ -377,8 +391,18 @@
 			"confirm": "Supprimer"
 		}
 	},
+	"contextMenu": {
+		"noResults": "Aucun résultat",
+		"problems": "Problèmes",
+		"terminal": "Terminal",
+		"url": "Coller l'URL pour récupérer le contenu"
+	},
 	"queuedMessages": {
 		"title": "Messages en file d'attente :",
 		"clickToEdit": "Cliquez pour modifier le message"
+	},
+	"slashCommand": {
+		"wantsToRun": "Roo veut exécuter une commande slash:",
+		"didRun": "Roo a exécuté une commande slash:"
 	}
 }

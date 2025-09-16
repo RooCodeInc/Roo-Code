@@ -1,7 +1,6 @@
 // npx vitest run src/shared/__tests__/ProfileValidator.spec.ts
 
-import { type ProviderSettings } from "@roo-code/types"
-import { type OrganizationAllowList } from "@roo-code/cloud"
+import type { ProviderSettings, OrganizationAllowList } from "@roo-code/types"
 
 import { ProfileValidator } from "../ProfileValidator"
 
@@ -195,6 +194,7 @@ describe("ProfileValidator", () => {
 			"chutes",
 			"sambanova",
 			"fireworks",
+			"featherless",
 		]
 
 		apiModelProviders.forEach((provider) => {

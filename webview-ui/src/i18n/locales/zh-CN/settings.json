@@ -28,10 +28,14 @@
 		"notifications": "通知",
 		"contextManagement": "上下文",
 		"terminal": "终端",
+		"slashCommands": "斜杠命令",
 		"prompts": "提示词",
 		"experimental": "实验性",
 		"language": "语言",
 		"about": "关于 Roo Code"
+	},
+	"slashCommands": {
+		"description": "管理您的斜杠命令，以快速执行自定义工作流和操作。 <DocsLink>了解更多</DocsLink>"
 	},
 	"prompts": {
 		"description": "配置用于快速操作的支持提示词，如增强提示词、解释代码和修复问题。这些提示词帮助 Roo 为常见开发任务提供更好的支持。"
@@ -52,6 +56,9 @@
 		"geminiProvider": "Gemini",
 		"geminiApiKeyLabel": "API 密钥：",
 		"geminiApiKeyPlaceholder": "输入您的Gemini API密钥",
+		"vercelAiGatewayProvider": "Vercel AI Gateway",
+		"vercelAiGatewayApiKeyLabel": "API 密钥",
+		"vercelAiGatewayApiKeyPlaceholder": "输入您的 Vercel AI Gateway API 密钥",
 		"mistralProvider": "Mistral",
 		"mistralApiKeyLabel": "API 密钥:",
 		"mistralApiKeyPlaceholder": "输入您的 Mistral API 密钥",
@@ -124,6 +131,7 @@
 			"modelDimensionRequired": "需要模型维度",
 			"geminiApiKeyRequired": "需要 Gemini API 密钥",
 			"mistralApiKeyRequired": "需要 Mistral API 密钥",
+			"vercelAiGatewayApiKeyRequired": "需要 Vercel AI Gateway API 密钥",
 			"ollamaBaseUrlRequired": "需要 Ollama 基础 URL",
 			"baseUrlRequired": "需要基础 URL",
 			"modelDimensionMinValue": "模型维度必须大于 0"
@@ -244,6 +252,8 @@
 		"awsCustomArnDesc": "请确保ARN中的区域与上方选择的AWS区域一致。",
 		"openRouterApiKey": "OpenRouter API 密钥",
 		"getOpenRouterApiKey": "获取 OpenRouter API 密钥",
+		"vercelAiGatewayApiKey": "Vercel AI Gateway API 密钥",
+		"getVercelAiGatewayApiKey": "获取 Vercel AI Gateway API 密钥",
 		"apiKeyStorageNotice": "API 密钥安全存储在 VSCode 的密钥存储中",
 		"glamaApiKey": "Glama API 密钥",
 		"getGlamaApiKey": "获取 Glama API 密钥",
@@ -280,6 +290,8 @@
 		"getChutesApiKey": "获取 Chutes API 密钥",
 		"fireworksApiKey": "Fireworks API 密钥",
 		"getFireworksApiKey": "获取 Fireworks API 密钥",
+		"featherlessApiKey": "Featherless API 密钥",
+		"getFeatherlessApiKey": "获取 Featherless API 密钥",
 		"ioIntelligenceApiKey": "IO Intelligence API 密钥",
 		"ioIntelligenceApiKeyPlaceholder": "输入您的 IO Intelligence API 密钥",
 		"getIoIntelligenceApiKey": "获取 IO Intelligence API 密钥",
@@ -377,6 +389,8 @@
 		"ollama": {
 			"baseUrl": "基础 URL（可选）",
 			"modelId": "模型 ID",
+			"apiKey": "Ollama API 密钥",
+			"apiKeyHelp": "用于已认证 Ollama 实例或云服务的可选 API 密钥。本地安装请留空。",
 			"description": "Ollama 允许您在本地计算机上运行模型。有关如何开始使用的说明，请参阅其快速入门指南。",
 			"warning": "注意：Roo Code 使用复杂的提示，与 Claude 模型配合最佳。功能较弱的模型可能无法按预期工作。"
 		},
@@ -387,6 +401,10 @@
 		"humanRelay": {
 			"description": "不需要 API 密钥，但用户需要帮助将信息复制并粘贴到网页聊天 AI。",
 			"instructions": "使用期间，将弹出对话框并自动将当前消息复制到剪贴板。您需要将这些内容粘贴到 AI 的网页版本（如 ChatGPT 或 Claude），然后将 AI 的回复复制回对话框并点击确认按钮。"
+		},
+		"roo": {
+			"authenticatedMessage": "已通过 Roo Code Cloud 账户安全认证。",
+			"connectButton": "连接到 Roo Code Cloud"
 		},
 		"openRouter": {
 			"providerRouting": {
@@ -725,6 +743,25 @@
 		"ASSISTANT_MESSAGE_PARSER": {
 			"name": "使用新的消息解析器",
 			"description": "启用实验性的流式消息解析器。通过更高效地处理消息，可显著提升长回复的性能。"
+		},
+		"NEW_TASK_REQUIRE_TODOS": {
+			"name": "要求新任务提供 'todos' 列表",
+			"description": "启用后，new_task 工具将需要提供 todos 参数。这可以确保所有新任务都以明确的目标列表开始。禁用时（默认），todos 参数保持可选，以实现向后兼容。"
+		},
+		"IMAGE_GENERATION": {
+			"name": "启用 AI 图像生成",
+			"description": "启用后，Roo 可以使用 OpenRouter 的图像生成模型从文本提示生成图像。需要配置 OpenRouter API 密钥。",
+			"openRouterApiKeyLabel": "OpenRouter API 密钥",
+			"openRouterApiKeyPlaceholder": "输入您的 OpenRouter API 密钥",
+			"getApiKeyText": "获取您的 API 密钥",
+			"modelSelectionLabel": "图像生成模型",
+			"modelSelectionDescription": "选择用于图像生成的模型",
+			"warningMissingKey": "⚠️ 图像生成需要 OpenRouter API 密钥。请在上方配置。",
+			"successConfigured": "✓ 图像生成已配置完成，可以使用"
+		},
+		"RUN_SLASH_COMMAND": {
+			"name": "启用模型发起的斜杠命令",
+			"description": "启用后 Roo 可运行斜杠命令执行工作流程。"
 		}
 	},
 	"promptCaching": {
@@ -771,7 +808,7 @@
 		"feedback": "如果您有任何问题或反馈，请随时在 <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> 上提出问题或加入 <redditLink>reddit.com/r/RooCode</redditLink> 或 <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {
 			"label": "允许匿名数据收集",
-			"description": "匿名收集错误报告和使用数据（不含代码/提示/个人信息），详情见隐私政策"
+			"description": "通过发送匿名使用数据和错误报告来帮助改进 Roo Code。此遥测不会收集代码、提示 或个人信息。详细信息请参阅我们的<privacyLink>隐私政策</privacyLink>。您可以随时关闭此功能。"
 		},
 		"settings": {
 			"import": "导入",
@@ -797,7 +834,8 @@
 		"modelAvailability": "模型ID {{modelId}} 不可用，请重新选择",
 		"providerNotAllowed": "提供商 '{{provider}}' 不允许用于您的组织",
 		"modelNotAllowed": "模型 '{{model}}' 不允许用于提供商 '{{provider}}'，您的组织不允许",
-		"profileInvalid": "此配置文件包含您的组织不允许的提供商或模型"
+		"profileInvalid": "此配置文件包含您的组织不允许的提供商或模型",
+		"qwenCodeOauthPath": "您必须提供有效的 OAuth 凭证路径"
 	},
 	"placeholders": {
 		"apiKey": "请输入 API 密钥...",
@@ -836,5 +874,19 @@
 	"includeMaxOutputTokensDescription": "在 API 请求中发送最大输出 Token 参数。某些提供商可能不支持此功能。",
 	"limitMaxTokensDescription": "限制响应中的最大 Token 数量",
 	"maxOutputTokensLabel": "最大输出 Token 数",
-	"maxTokensGenerateDescription": "响应中生成的最大 Token 数"
+	"maxTokensGenerateDescription": "响应中生成的最大 Token 数",
+	"serviceTier": {
+		"label": "服务等级",
+		"tooltip": "为加快API请求处理速度，请尝试优先处理服务等级。为获得更低价格但延迟较高，请尝试灵活处理等级。",
+		"standard": "标准",
+		"flex": "灵活",
+		"priority": "优先",
+		"pricingTableTitle": "按服务等级定价 (每百万Token价格)",
+		"columns": {
+			"tier": "等级",
+			"input": "输入",
+			"output": "输出",
+			"cacheReads": "缓存读取"
+		}
+	}
 }

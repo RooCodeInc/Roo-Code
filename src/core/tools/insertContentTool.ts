@@ -153,9 +153,7 @@ export async function insertContentTool(
 		}
 
 		// Ask for approval (same for both flows)
-		const didApprove = await cline
-			.ask("tool", completeMessage, isWriteProtected)
-			.then((response) => response.response === "yesButtonClicked")
+		const didApprove = await askApproval("tool", completeMessage, undefined, isWriteProtected)
 
 		if (!didApprove) {
 			// Revert changes if diff view was shown
@@ -189,6 +187,9 @@ export async function insertContentTool(
 		pushToolResult(message)
 
 		await cline.diffViewProvider.reset()
+
+		// Process any queued messages after file edit completes
+		cline.processQueuedMessages()
 	} catch (error) {
 		handleError("insert content", error)
 		await cline.diffViewProvider.reset()
