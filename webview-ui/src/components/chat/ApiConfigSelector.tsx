@@ -44,7 +44,7 @@ export const ApiConfigSelector = ({
 	togglePinnedApiConfig,
 }: ApiConfigSelectorProps) => {
 	const { t } = useTranslation()
-	const { apiConfigCustomOrder: persistedCustomOrder } = useExtensionState()
+	const { apiConfigCustomOrder: customOrder = [] } = useExtensionState()
 	const [open, setOpen] = useState(false)
 	const [searchValue, setSearchValue] = useState("")
 	const [isReorderMode, setIsReorderMode] = useState(false)
@@ -57,13 +57,7 @@ export const ApiConfigSelector = ({
 	// Track the ID of the item that should maintain focus during reordering
 	const [focusedItemId, setFocusedItemId] = useState<string | null>(null)
 
-	// Internal state for sort mode and custom order when parent doesn't provide them
 	const [sortMode, setSortMode] = useState<SortMode>("alphabetical")
-	const [internalCustomOrder, setInternalCustomOrder] = useState<string[]>([])
-
-	// Use persisted state then internal state as fallback
-	const customOrder =
-		persistedCustomOrder && persistedCustomOrder.length > 0 ? persistedCustomOrder : internalCustomOrder
 
 	const portalContainer = useRooPortal("roo-portal")
 	const scrollContainerRef = useRef<HTMLDivElement | null>(null)
@@ -318,13 +312,10 @@ export const ApiConfigSelector = ({
 							newOrder[configOrderIndex],
 							newOrder[configOrderIndex - 1],
 						]
-
-						// Update internal state immediately for responsive UI
-						setInternalCustomOrder(newOrder)
-
+	
 						// Track the item being moved to maintain focus on it
 						setFocusedItemId(configId)
-
+	
 						// Sync with backend
 						vscode.postMessage({
 							type: "setApiConfigCustomOrder",
@@ -344,13 +335,10 @@ export const ApiConfigSelector = ({
 							newOrder[configOrderIndex + 1],
 							newOrder[configOrderIndex],
 						]
-
-						// Update internal state immediately for responsive UI
-						setInternalCustomOrder(newOrder)
-
+	
 						// Track the item being moved to maintain focus on it
 						setFocusedItemId(configId)
-
+	
 						// Sync with backend
 						vscode.postMessage({
 							type: "setApiConfigCustomOrder",
