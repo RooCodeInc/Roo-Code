@@ -153,9 +153,19 @@ export const AutoApproveDropdown = ({ disabled = false, triggerClassName = "" }:
 
 	const { effectiveAutoApprovalEnabled } = useAutoApprovalState(toggles, autoApprovalEnabled)
 
+	const tooltipText =
+		!effectiveAutoApprovalEnabled || enabledCount === 0
+			? t("chat:autoApprove.tooltipManage")
+			: t("chat:autoApprove.tooltipStatus", {
+					toggles: settingsArray
+						.filter((setting) => toggles[setting.key])
+						.map((setting) => t(setting.labelKey))
+						.join(", "),
+				})
+
 	return (
 		<Popover open={open} onOpenChange={setOpen} data-testid="auto-approve-dropdown-root">
-			<StandardTooltip content={t("chat:autoApprove.tooltip")}>
+			<StandardTooltip content={tooltipText}>
 				<PopoverTrigger
 					disabled={disabled}
 					data-testid="auto-approve-dropdown-trigger"
