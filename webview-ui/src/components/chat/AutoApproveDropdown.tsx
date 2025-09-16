@@ -148,9 +148,6 @@ export const AutoApproveDropdown = ({ disabled = false, triggerClassName = "" }:
 
 	// Split settings into two columns
 	const settingsArray = Object.values(autoApproveSettingsConfig)
-	const halfLength = Math.ceil(settingsArray.length / 2)
-	const firstColumn = settingsArray.slice(0, halfLength)
-	const secondColumn = settingsArray.slice(halfLength)
 
 	return (
 		<Popover open={open} onOpenChange={setOpen} data-testid="auto-approve-dropdown-root">
@@ -179,7 +176,7 @@ export const AutoApproveDropdown = ({ disabled = false, triggerClassName = "" }:
 				align="start"
 				sideOffset={4}
 				container={portalContainer}
-				className="p-0 overflow-hidden min-w-96 max-w-9/10"
+				className="p-0 overflow-hidden min-w-90 max-w-9/10"
 				onOpenAutoFocus={(e) => e.preventDefault()}>
 				<div className="flex flex-col w-full">
 					{/* Header with description */}
@@ -197,66 +194,29 @@ export const AutoApproveDropdown = ({ disabled = false, triggerClassName = "" }:
 							{t("chat:autoApprove.description")}
 						</p>
 					</div>
-
-					{/* Two-column layout for approval options */}
-					<div className="p-3">
-						<div className="grid grid-cols-2 gap-x-4 gap-y-2">
-							{/* First Column */}
-							<div className="space-y-2">
-								{firstColumn.map(({ key, labelKey, descriptionKey, icon }) => {
-									const isEnabled = toggles[key]
-									return (
-										<StandardTooltip key={key} content={t(descriptionKey)}>
-											<button
-												onClick={() => onAutoApproveToggle(key, !isEnabled)}
-												className={cn(
-													"w-full flex items-center gap-2 px-2 py-1.5 rounded text-xs text-left",
-													"transition-all duration-150",
-													"hover:bg-vscode-list-hoverBackground",
-													isEnabled
-														? "bg-vscode-button-background text-vscode-button-foreground"
-														: "bg-transparent text-vscode-foreground opacity-70 hover:opacity-100",
-												)}
-												data-testid={`auto-approve-${key}`}>
-												<span className={`codicon codicon-${icon} text-sm flex-shrink-0`} />
-												<span className="flex-1 truncate">{t(labelKey)}</span>
-												{isEnabled && (
-													<span className="codicon codicon-check text-xs flex-shrink-0" />
-												)}
-											</button>
-										</StandardTooltip>
-									)
-								})}
-							</div>
-
-							{/* Second Column */}
-							<div className="space-y-2">
-								{secondColumn.map(({ key, labelKey, descriptionKey, icon }) => {
-									const isEnabled = toggles[key]
-									return (
-										<StandardTooltip key={key} content={t(descriptionKey)}>
-											<button
-												onClick={() => onAutoApproveToggle(key, !isEnabled)}
-												className={cn(
-													"w-full flex items-center gap-2 px-2 py-1.5 rounded text-xs text-left",
-													"transition-all duration-150",
-													"hover:bg-vscode-list-hoverBackground",
-													isEnabled
-														? "bg-vscode-button-background text-vscode-button-foreground"
-														: "bg-transparent text-vscode-foreground opacity-70 hover:opacity-100",
-												)}
-												data-testid={`auto-approve-${key}`}>
-												<span className={`codicon codicon-${icon} text-sm flex-shrink-0`} />
-												<span className="flex-1 truncate">{t(labelKey)}</span>
-												{isEnabled && (
-													<span className="codicon codicon-check text-xs flex-shrink-0" />
-												)}
-											</button>
-										</StandardTooltip>
-									)
-								})}
-							</div>
-						</div>
+					<div className="grid grid-cols-2 gap-x-2 gap-y-2 p-3">
+						{settingsArray.map(({ key, labelKey, descriptionKey, icon }) => {
+							const isEnabled = toggles[key]
+							return (
+								<StandardTooltip key={key} content={t(descriptionKey)}>
+									<button
+										onClick={() => onAutoApproveToggle(key, !isEnabled)}
+										className={cn(
+											"flex items-center gap-2 px-2 py-2 rounded text-sm text-left",
+											"transition-all duration-150",
+											"opacity-100 hover:opacity-70",
+											"cursor-pointer",
+											isEnabled
+												? "bg-vscode-button-background text-vscode-button-foreground"
+												: "bg-vscode-button-background/15 text-vscode-foreground hover:bg-vscode-list-hoverBackground",
+										)}
+										data-testid={`auto-approve-${key}`}>
+										<span className={`codicon codicon-${icon} text-sm flex-shrink-0`} />
+										<span className="flex-1 truncate">{t(labelKey)}</span>
+									</button>
+								</StandardTooltip>
+							)
+						})}
 					</div>
 
 					{/* Bottom bar with Select All/None buttons */}
