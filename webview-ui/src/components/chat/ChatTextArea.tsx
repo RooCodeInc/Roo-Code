@@ -1067,7 +1067,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 										: "bg-vscode-input-background",
 									"transition-background-color duration-150 ease-in-out",
 									"will-change-background-color",
-									"min-h-[90px]",
+									"min-h-[94px]",
 									"box-border",
 									"rounded",
 									"resize-none",
@@ -1082,7 +1082,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 								onScroll={() => updateHighlights()}
 							/>
 
-							<div className="absolute top-2 right-2 z-30">
+							<div className="absolute bottom-2 right-1 z-30 flex flex-col items-center gap-0">
 								<StandardTooltip content={t("chat:addImages")}>
 									<button
 										aria-label={t("chat:addImages")}
@@ -1108,9 +1108,6 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 										<Image className="w-4 h-4" />
 									</button>
 								</StandardTooltip>
-							</div>
-
-							<div className="absolute bottom-2 right-2 z-30 flex flex-col items-end gap-1">
 								<StandardTooltip content={t("chat:enhancePrompt")}>
 									<button
 										aria-label={t("chat:enhancePrompt")}
@@ -1134,52 +1131,50 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 										<WandSparkles className={cn("w-4 h-4", isEnhancingPrompt && "animate-spin")} />
 									</button>
 								</StandardTooltip>
-								<div className="flex items-center gap-1">
-									{isEditMode && (
-										<StandardTooltip content={t("chat:cancel.title")}>
-											<button
-												aria-label={t("chat:cancel.title")}
-												disabled={false}
-												onClick={onCancel}
-												className={cn(
-													"relative inline-flex items-center justify-center",
-													"bg-transparent border-none p-1.5",
-													"rounded-md min-w-[28px] min-h-[28px]",
-													"opacity-60 hover:opacity-100 text-vscode-descriptionForeground hover:text-vscode-foreground",
-													"transition-all duration-150",
-													"hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.15)]",
-													"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
-													"active:bg-[rgba(255,255,255,0.1)]",
-													"cursor-pointer",
-												)}>
-												<MessageSquareX className="w-4 h-4" />
-											</button>
-										</StandardTooltip>
-									)}
-									<StandardTooltip content={t("chat:sendMessage")}>
+								{isEditMode && (
+									<StandardTooltip content={t("chat:cancel.title")}>
 										<button
-											aria-label={t("chat:sendMessage")}
+											aria-label={t("chat:cancel.title")}
 											disabled={false}
-											onClick={onSend}
+											onClick={onCancel}
 											className={cn(
 												"relative inline-flex items-center justify-center",
 												"bg-transparent border-none p-1.5",
 												"rounded-md min-w-[28px] min-h-[28px]",
-												"text-vscode-descriptionForeground hover:text-vscode-foreground",
-												"transition-all duration-200",
-												hasInputContent
-													? "opacity-100 hover:opacity-100 pointer-events-auto"
-													: "opacity-0 pointer-events-none",
-												hasInputContent &&
-													"hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.15)]",
+												"opacity-60 hover:opacity-100 text-vscode-descriptionForeground hover:text-vscode-foreground",
+												"transition-all duration-150",
+												"hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.15)]",
 												"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
-												hasInputContent && "active:bg-[rgba(255,255,255,0.1)]",
-												hasInputContent && "cursor-pointer",
+												"active:bg-[rgba(255,255,255,0.1)]",
+												"cursor-pointer",
 											)}>
-											<SendHorizontal className="w-4 h-4" />
+											<MessageSquareX className="w-4 h-4" />
 										</button>
 									</StandardTooltip>
-								</div>
+								)}
+								<StandardTooltip content={t("chat:sendMessage")}>
+									<button
+										aria-label={t("chat:sendMessage")}
+										disabled={false}
+										onClick={onSend}
+										className={cn(
+											"relative inline-flex items-center justify-center",
+											"bg-transparent border-none p-1.5",
+											"rounded-md min-w-[28px] min-h-[28px]",
+											"text-vscode-descriptionForeground hover:text-vscode-foreground",
+											"transition-all duration-200",
+											hasInputContent
+												? "opacity-100 hover:opacity-100 pointer-events-auto"
+												: "opacity-0 pointer-events-none",
+											hasInputContent &&
+												"hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.15)]",
+											"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
+											hasInputContent && "active:bg-[rgba(255,255,255,0.1)]",
+											hasInputContent && "cursor-pointer",
+										)}>
+										<SendHorizontal className="w-4 h-4" />
+									</button>
+								</StandardTooltip>
 							</div>
 
 							{!inputValue && (
@@ -1237,7 +1232,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 						/>
 						<AutoApproveDropdown triggerClassName="min-w-[28px] text-ellipsis overflow-hidden flex-shrink" />
 					</div>
-					<div className="flex flex-shrink-0 items-center gap-0.5">
+					<div className="flex flex-shrink-0 items-center gap-0.5 pr-2">
 						{isTtsPlaying && (
 							<StandardTooltip content={t("chat:stopTts")}>
 								<button
