@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react"
 import ReactCookieConsent from "react-cookie-consent"
 import { Cookie } from "lucide-react"
-import { CONSENT_COOKIE_NAME, CONSENT_COOKIE_DOMAIN } from "@/lib/constants"
+import { CONSENT_COOKIE_NAME, getConsentCookieDomain } from "@/lib/constants"
 
 export interface CookieConsentProps {
 	/**
@@ -47,14 +47,21 @@ export function CookieConsent({
 	cookieName = CONSENT_COOKIE_NAME,
 	debug = false,
 }: CookieConsentProps) {
-	const [hostname, setHostname] = useState<string>(CONSENT_COOKIE_DOMAIN)
+	const [cookieDomain, setCookieDomain] = useState<string | null>(null)
 
 	useEffect(() => {
-		setHostname(window.location.hostname)
+		// Get the appropriate domain using tldts
+		const domain = getConsentCookieDomain()
+		setCookieDomain(domain)
 	}, [])
 
+	// Don't render until we have a valid domain
+	if (!cookieDomain) {
+		return null
+	}
+
 	const extraCookieOptions = {
-		domain: process.env.NODE_ENV === "production" ? hostname : CONSENT_COOKIE_DOMAIN,
+		domain: cookieDomain,
 	}
 
 	const containerClasses = `
