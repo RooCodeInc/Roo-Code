@@ -44,7 +44,7 @@ export const ApiConfigSelector = ({
 	togglePinnedApiConfig,
 }: ApiConfigSelectorProps) => {
 	const { t } = useTranslation()
-	const { apiConfigCustomOrder: persistedCustomOrder } = useExtensionState()
+	const { apiConfigCustomOrder: customOrder = [] } = useExtensionState()
 	const [open, setOpen] = useState(false)
 	const [searchValue, setSearchValue] = useState("")
 	const [isReorderMode, setIsReorderMode] = useState(false)
@@ -54,14 +54,7 @@ export const ApiConfigSelector = ({
 		dragOverIndex: null,
 	})
 	const [focusedIndex, setFocusedIndex] = useState<number | null>(null)
-
-	// Internal state for sort mode and custom order when parent doesn't provide them
 	const [sortMode, setSortMode] = useState<SortMode>("alphabetical")
-	const [internalCustomOrder, setInternalCustomOrder] = useState<string[]>([])
-
-	// Use persisted state then internal state as fallback
-	const customOrder =
-		persistedCustomOrder && persistedCustomOrder.length > 0 ? persistedCustomOrder : internalCustomOrder
 
 	const portalContainer = useRooPortal("roo-portal")
 	const scrollContainerRef = useRef<HTMLDivElement | null>(null)
@@ -288,9 +281,6 @@ export const ApiConfigSelector = ({
 							newOrder[configOrderIndex - 1],
 						]
 
-						// Update internal state immediately for responsive UI
-						setInternalCustomOrder(newOrder)
-
 						// Sync with backend
 						vscode.postMessage({
 							type: "setApiConfigCustomOrder",
@@ -310,9 +300,6 @@ export const ApiConfigSelector = ({
 							newOrder[configOrderIndex + 1],
 							newOrder[configOrderIndex],
 						]
-
-						// Update internal state immediately for responsive UI
-						setInternalCustomOrder(newOrder)
 
 						// Sync with backend
 						vscode.postMessage({
