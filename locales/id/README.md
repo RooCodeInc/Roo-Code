@@ -1,128 +1,93 @@
-<div align="center">
-<sub>
+<p align="center">
+  <a href="https://marketplace.visualstudio.com/items?itemName=RooVeterinaryInc.roo-cline"><img src="https://img.shields.io/visual-studio-marketplace/v/RooVeterinaryInc.roo-cline.svg?label=VS%20Code&color=%23007ACC&style=flat&logo=visualstudiocode&logoColor=white" alt="VS Code"></a>
+  <a href="https://x.com/roo_code"><img src="https://img.shields.io/badge/roo_code-000000?style=flat&logo=x&logoColor=white" alt="X"></a>
+  <a href="https://youtube.com/@roocodeyt?feature=shared"><img src="https://img.shields.io/badge/YouTube-FF0000?style=flat&logo=youtube&logoColor=white" alt="YouTube"></a>
+  <a href="https://discord.gg/roocode"><img src="https://img.shields.io/badge/Join%20Discord-5865F2?style=flat&logo=discord&logoColor=white" alt="Join Discord"></a>
+  <a href="https://www.reddit.com/r/RooCode/"><img src="https://img.shields.io/badge/Join%20r%2FRooCode-FF4500?style=flat&logo=reddit&logoColor=white" alt="Join r/RooCode"></a>
+</p>
+<p align="center">
+  <em>Dapatkan bantuan cepat → <a href="https://discord.gg/roocode">Gabung Discord</a> • Lebih suka asinkron? → <a href="https://www.reddit.com/r/RooCode/">Gabung r/RooCode</a></em>
+</p>
 
-[English](../../README.md) • [Català](../ca/README.md) • [Deutsch](../de/README.md) • [Español](../es/README.md) • [Français](../fr/README.md) • [हिन्दी](../hi/README.md) • <b>Bahasa Indonesia</b> • [Italiano](../it/README.md) • [日本語](../ja/README.md)
+# Roo Code
 
-</sub>
-<sub>
+> Roo Code adalah agen AI VS Code sumber terbuka. Meskipun secara teknis kami adalah fork dari Cline, mari kita perjelas: jalan kami telah menyimpang secara radikal. Kami sedang membangun sesuatu yang pada dasarnya berbeda.
 
-[한국어](../ko/README.md) • [Nederlands](../nl/README.md) • [Polski](../pl/README.md) • [Português (BR)](../pt-BR/README.md) • [Русский](../ru/README.md) • [Türkçe](../tr/README.md) • [Tiếng Việt](../vi/README.md) • [简体中文](../zh-CN/README.md) • [繁體中文](../zh-TW/README.md)
+<details>
+  <summary>🌐 Bahasa yang tersedia</summary>
 
-</sub>
-</div>
-<br>
-<div align="center">
-  <h1>Roo Code</h1>
-  <p align="center">
-  <img src="https://media.githubusercontent.com/media/RooCodeInc/Roo-Code/main/src/assets/docs/demo.gif" width="100%" />
-  </p>
-  <p>Terhubung dengan developer, berkontribusi ide, dan tetap terdepan dengan tools coding bertenaga AI terbaru.</p>
-  
-  <a href="https://discord.gg/roocode" target="_blank"><img src="https://img.shields.io/badge/Join%20Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Join Discord"></a>
-  <a href="https://www.reddit.com/r/RooCode/" target="_blank"><img src="https://img.shields.io/badge/Join%20Reddit-FF4500?style=for-the-badge&logo=reddit&logoColor=white" alt="Join Reddit"></a>
-  
-</div>
-<br>
-<br>
-
-<div align="center">
-
-<a href="https://marketplace.visualstudio.com/items?itemName=RooVeterinaryInc.roo-cline" target="_blank"><img src="https://img.shields.io/badge/Download%20on%20VS%20Marketplace-blue?style=for-the-badge&logo=visualstudiocode&logoColor=white" alt="Download on VS Marketplace"></a>
-<a href="https://github.com/RooCodeInc/Roo-Code/discussions/categories/feature-requests?discussions_q=is%3Aopen+category%3A%22Feature+Requests%22+sort%3Atop" target="_blank"><img src="https://img.shields.io/badge/Feature%20Requests-yellow?style=for-the-badge" alt="Feature Requests"></a>
-<a href="https://marketplace.visualstudio.com/items?itemName=RooVeterinaryInc.roo-cline&ssr=false#review-details" target="_blank"><img src="https://img.shields.io/badge/Rate%20%26%20Review-green?style=for-the-badge" alt="Rate & Review"></a>
-<a href="https://docs.roocode.com" target="_blank"><img src="https://img.shields.io/badge/Documentation-6B46C1?style=for-the-badge&logo=readthedocs&logoColor=white" alt="Documentation"></a>
-
-</div>
-
-**Roo Code** adalah **agen coding otonom** bertenaga AI yang hidup di editor kamu. Ia dapat:
-
-- Berkomunikasi dalam bahasa alami
-- Membaca dan menulis file langsung di workspace kamu
-- Menjalankan perintah terminal
-- Mengotomatisasi aksi browser
-- Terintegrasi dengan API/model yang kompatibel dengan OpenAI atau custom
-- Menyesuaikan "kepribadian" dan kemampuannya melalui **Mode Kustom**
-
-Baik kamu mencari partner coding yang fleksibel, arsitek sistem, atau peran khusus seperti QA engineer atau product manager, Roo Code dapat membantu kamu membangun software dengan lebih efisien.
-
-Lihat [CHANGELOG](../../CHANGELOG.md) untuk update dan perbaikan detail.
+- [English](../../README.md)
+- [Català](../ca/README.md)
+- [Deutsch](../de/README.md)
+- [Español](../es/README.md)
+- [Français](../fr/README.md)
+- [हिंदी](../hi/README.md)
+- [Bahasa Indonesia](../id/README.md)
+- [Italiano](../it/README.md)
+- [日本語](../ja/README.md)
+- [한국어](../ko/README.md)
+- [Nederlands](../nl/README.md)
+- [Polski](../pl/README.md)
+- [Português (BR)](../pt-BR/README.md)
+- [Русский](../ru/README.md)
+- [Türkçe](../tr/README.md)
+- [Tiếng Việt](../vi/README.md)
+- [简体中文](../zh-CN/README.md)
+- [繁體中文](../zh-TW/README.md)
+- ...
+  </details>
 
 ---
 
-## 🎉 Roo Code 3.25 Dirilis
+## Apa yang Bisa Roo Code Lakukan Untuk ANDA?
 
-Roo Code 3.25 menghadirkan fitur-fitur baru yang powerful dan peningkatan signifikan untuk meningkatkan workflow development kamu!
+- Menghasilkan Kode dari deskripsi bahasa alami
+- Beradaptasi dengan Mode: Kode, Arsitek, Tanya, Debug, dan Mode Kustom
+- Refactor & Debug kode yang ada
+- Menulis & Memperbarui dokumentasi
+- Menjawab Pertanyaan tentang basis kode Anda
+- Mengotomatiskan tugas-tugas yang berulang
+- Memanfaatkan Server MCP
 
-- **Antrian pesan** - Antrikan beberapa pesan saat Roo bekerja, memungkinkan kamu terus merencanakan alur kerja tanpa gangguan.
-- **Perintah slash kustom** - Buat perintah slash yang dipersonalisasi untuk akses cepat ke prompt dan alur kerja yang sering digunakan dengan manajemen UI lengkap.
-- **Alat Gemini lanjutan** - Fitur konteks URL dan dasar pencarian Google baru memberikan model Gemini informasi web real-time dan kemampuan penelitian lanjutan.
+## Mode
 
----
+Roo Code beradaptasi dengan cara Anda bekerja, bukan sebaliknya:
 
-## Apa yang Bisa Dilakukan Roo Code?
+- Mode Kode: pengkodean sehari-hari, pengeditan, dan operasi file
+- Mode Arsitek: merencanakan sistem, spesifikasi, dan migrasi
+- Mode Tanya: jawaban cepat, penjelasan, dan dokumen
+- Mode Debug: melacak masalah, menambahkan log, mengisolasi akar penyebab
+- Mode Kustom: buat mode khusus untuk tim atau alur kerja Anda
+- Agen Cloud: arah perjalanan kami—agen yang dihosting dan persisten yang dapat menjalankan tugas panjang dan mengatur pekerjaan di seluruh layanan
 
-- 🚀 **Generate Code** dari deskripsi bahasa alami
-- 🔧 **Refactor & Debug** kode yang ada
-- 📝 **Tulis & Update** dokumentasi
-- 🤔 **Jawab Pertanyaan** tentang codebase kamu
-- 🔄 **Otomatisasi** tugas berulang
-- 🏗️ **Buat** file dan proyek baru
+Pelajari lebih lanjut: [Menggunakan Mode](https://docs.roocode.com/basic-usage/using-modes) • [Mode Kustom](https://docs.roocode.com/advanced-usage/custom-modes)
 
-## Mulai Cepat
+## Video Tutorial & Fitur
 
-1. [Install Roo Code](https://docs.roocode.com/getting-started/installing)
-2. [Hubungkan AI Provider Kamu](https://docs.roocode.com/getting-started/connecting-api-provider)
-3. [Coba Tugas Pertama Kamu](https://docs.roocode.com/getting-started/your-first-task)
+<div align="center">
 
-## Fitur Utama
+|                                                                                                                                                                           |                                                                                                                                                                             |                                                                                                                                                                               |
+| :-----------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
+| <a href="https://www.youtube.com/watch?v=Mcq3r1EPZ-4"><img src="https://img.youtube.com/vi/Mcq3r1EPZ-4/maxresdefault.jpg" width="100%"></a><br><b>Menginstal Roo Code</b> | <a href="https://www.youtube.com/watch?v=eEJErgZBqLE"><img src="https://img.youtube.com/vi/eEJErgZBqLE/maxresdefault.jpg" width="100%"></a><br><b>Mengonfigurasi Profil</b> | <a href="https://www.youtube.com/watch?v=r1bpod1VWhg"><img src="https://img.youtube.com/vi/r1bpod1VWhg/maxresdefault.jpg" width="100%"></a><br><b>Pengindeksan Basis Kode</b> |
+|     <a href="https://www.youtube.com/watch?v=qgqceCuhlRA"><img src="https://img.youtube.com/vi/qgqceCuhlRA/maxresdefault.jpg" width="100%"></a><br><b>Mode Kustom</b>     |    <a href="https://www.youtube.com/watch?v=Ho30nyY332E"><img src="https://img.youtube.com/vi/Ho30nyY332E/maxresdefault.jpg" width="100%"></a><br><b>Pos Pemeriksaan</b>    |      <a href="https://www.youtube.com/watch?v=6h5vB9PpoPk"><img src="https://img.youtube.com/vi/6h5vB9PpoPk/maxresdefault.jpg" width="100%"></a><br><b>Daftar Tugas</b>       |
 
-### Multiple Mode
+</div>
+<p align="center">
+<a href="https://docs.roocode.com/tutorial-videos">Video tutorial dan fitur cepat lainnya...</a>
+</p>
 
-Roo Code beradaptasi dengan kebutuhan kamu dengan [mode](https://docs.roocode.com/basic-usage/using-modes) khusus:
+## Sumber daya
 
-- **Code Mode:** Untuk tugas coding umum
-- **Architect Mode:** Untuk perencanaan dan kepemimpinan teknis
-- **Ask Mode:** Untuk menjawab pertanyaan dan memberikan informasi
-- **Debug Mode:** Untuk diagnosis masalah sistematis
-- **[Mode Kustom](https://docs.roocode.com/advanced-usage/custom-modes):** Buat persona khusus tak terbatas untuk audit keamanan, optimasi performa, dokumentasi, atau tugas lainnya
-
-### Tools Pintar
-
-Roo Code dilengkapi dengan [tools](https://docs.roocode.com/basic-usage/how-tools-work) powerful yang dapat:
-
-- Membaca dan menulis file di proyek kamu
-- Menjalankan perintah di terminal VS Code kamu
-- Mengontrol web browser
-- Menggunakan tools eksternal via [MCP (Model Context Protocol)](https://docs.roocode.com/advanced-usage/mcp)
-
-MCP memperluas kemampuan Roo Code dengan memungkinkan kamu menambahkan tools kustom tak terbatas. Integrasikan dengan API eksternal, hubungkan ke database, atau buat tools development khusus - MCP menyediakan framework untuk memperluas fungsionalitas Roo Code sesuai kebutuhan spesifik kamu.
-
-### Kustomisasi
-
-Buat Roo Code bekerja sesuai cara kamu dengan:
-
-- [Custom Instructions](https://docs.roocode.com/advanced-usage/custom-instructions) untuk perilaku yang dipersonalisasi
-- [Mode Kustom](https://docs.roocode.com/advanced-usage/custom-modes) untuk tugas khusus
-- [Model Lokal](https://docs.roocode.com/advanced-usage/local-models) untuk penggunaan offline
-- [Auto-Approval Settings](https://docs.roocode.com/advanced-usage/auto-approving-actions) untuk workflow yang lebih cepat
-
-## Sumber Daya
-
-### Dokumentasi
-
-- [Panduan Penggunaan Dasar](https://docs.roocode.com/basic-usage/the-chat-interface)
-- [Fitur Lanjutan](https://docs.roocode.com/advanced-usage/auto-approving-actions)
-- [Frequently Asked Questions](https://docs.roocode.com/faq)
-
-### Komunitas
-
-- **Discord:** [Bergabung dengan server Discord kami](https://discord.gg/roocode) untuk bantuan real-time dan diskusi
-- **Reddit:** [Kunjungi subreddit kami](https://www.reddit.com/r/RooCode) untuk berbagi pengalaman dan tips
-- **GitHub:** Laporkan [issues](https://github.com/RooCodeInc/Roo-Code/issues) atau request [fitur](https://github.com/RooCodeInc/Roo-Code/discussions/categories/feature-requests?discussions_q=is%3Aopen+category%3A%22Feature+Requests%22+sort%3Atop)
+- **[Dokumentasi](https://docs.roocode.com):** Panduan resmi untuk menginstal, mengonfigurasi, dan menguasai Roo Code.
+- **[Saluran YouTube](https://youtube.com/@roocodeyt?feature=shared):** Tonton tutorial dan lihat fitur-fitur dalam aksi.
+- **[Server Discord](https://discord.gg/roocode):** Bergabunglah dengan komunitas untuk bantuan dan diskusi real-time.
+- **[Komunitas Reddit](https://www.reddit.com/r/RooCode):** Bagikan pengalaman Anda dan lihat apa yang sedang dibangun orang lain.
+- **[Masalah GitHub](https://github.com/RooCodeInc/Roo-Code/issues):** Laporkan bug dan lacak pengembangan.
+- **[Permintaan Fitur](https://github.com/RooCodeInc/Roo-Code/discussions/categories/feature-requests?discussions_q=is%3Aopen+category%3A%22Feature+Requests%22+sort%3Atop):** Punya ide? Bagikan dengan para pengembang.
 
 ---
 
-## Setup Lokal & Development
+## Pengaturan & Pengembangan Lokal
 
 1. **Clone** repo:
 
@@ -130,43 +95,75 @@ Buat Roo Code bekerja sesuai cara kamu dengan:
 git clone https://github.com/RooCodeInc/Roo-Code.git
 ```
 
-2. **Install dependencies**:
+2. **Instal dependensi**:
 
 ```sh
 pnpm install
 ```
 
-3. **Jalankan extension**:
+3. **Jalankan ekstensi**:
 
-Tekan `F5` (atau **Run** → **Start Debugging**) di VSCode untuk membuka window baru dengan Roo Code berjalan.
+Ada beberapa cara untuk menjalankan ekstensi Roo Code:
 
-Perubahan pada webview akan muncul langsung. Perubahan pada core extension akan memerlukan restart extension host.
+### Mode Pengembangan (F5)
 
-Alternatifnya kamu bisa build .vsix dan install langsung di VSCode:
+Untuk pengembangan aktif, gunakan debugging bawaan VSCode:
+
+Tekan `F5` (atau buka **Run** → **Start Debugging**) di VSCode. Ini akan membuka jendela VSCode baru dengan ekstensi Roo Code berjalan.
+
+- Perubahan pada webview akan segera muncul.
+- Perubahan pada ekstensi inti juga akan di-hot reload secara otomatis.
+
+### Instalasi VSIX Otomatis
+
+Untuk membangun dan menginstal ekstensi sebagai paket VSIX langsung ke VSCode:
 
 ```sh
-pnpm vsix
+pnpm install:vsix [-y] [--editor=<command>]
 ```
 
-File `.vsix` akan muncul di direktori `bin/` yang bisa diinstall dengan:
+Perintah ini akan:
 
-```sh
-code --install-extension bin/roo-cline-<version>.vsix
-```
+- Menanyakan perintah editor mana yang akan digunakan (code/cursor/code-insiders) - defaultnya adalah 'code'
+- Mencopot pemasangan versi ekstensi yang ada.
+- Membangun paket VSIX terbaru.
+- Menginstal VSIX yang baru dibangun.
+- Meminta Anda untuk me-restart VS Code agar perubahan dapat diterapkan.
 
-Kami menggunakan [changesets](https://github.com/changesets/changesets) untuk versioning dan publishing. Cek `CHANGELOG.md` kami untuk release notes.
+Pilihan:
+
+- `-y`: Lewati semua prompt konfirmasi dan gunakan default
+- `--editor=<command>`: Tentukan perintah editor (misalnya, `--editor=cursor` atau `--editor=code-insiders`)
+
+### Instalasi VSIX Manual
+
+Jika Anda lebih suka menginstal paket VSIX secara manual:
+
+1.  Pertama, bangun paket VSIX:
+    ```sh
+    pnpm vsix
+    ```
+2.  File `.vsix` akan dibuat di direktori `bin/` (misalnya, `bin/roo-cline-<version>.vsix`).
+3.  Instal secara manual menggunakan VSCode CLI:
+    ```sh
+    code --install-extension bin/roo-cline-<version>.vsix
+    ```
 
 ---
 
-## Disclaimer
+Kami menggunakan [changesets](https://github.com/changesets/changesets) untuk pembuatan versi dan publikasi. Periksa `CHANGELOG.md` kami untuk catatan rilis.
 
-**Harap dicatat** bahwa Roo Code, Inc **tidak** membuat representasi atau jaminan apapun mengenai kode, model, atau tools lain yang disediakan atau tersedia dalam hubungannya dengan Roo Code, tools pihak ketiga terkait, atau output yang dihasilkan. Kamu menanggung **semua risiko** yang terkait dengan penggunaan tools atau output tersebut; tools tersebut disediakan atas dasar **"SEBAGAIMANA ADANYA"** dan **"SEBAGAIMANA TERSEDIA"**. Risiko tersebut dapat mencakup, tanpa terbatas pada, pelanggaran kekayaan intelektual, kerentanan atau serangan siber, bias, ketidakakuratan, kesalahan, cacat, virus, downtime, kehilangan properti atau kerusakan, dan/atau cedera pribadi. Kamu bertanggung jawab penuh atas penggunaan tools atau output tersebut (termasuk, tanpa terbatas pada, legalitas, kesesuaian, dan hasilnya).
+---
+
+## Penafian
+
+**Harap dicatat** bahwa Roo Code, Inc. **tidak** membuat pernyataan atau jaminan apapun mengenai kode, model, atau alat lain yang disediakan atau tersedia sehubungan dengan Roo Code, alat pihak ketiga terkait, atau output yang dihasilkan. Anda menanggung **semua risiko** yang terkait dengan penggunaan alat atau output tersebut; alat tersebut disediakan atas dasar **"SEBAGAIMANA ADANYA"** dan **"SEBAGAIMANA TERSEDIA"**. Risiko tersebut dapat mencakup, namun tidak terbatas pada, pelanggaran kekayaan intelektual, kerentanan atau serangan siber, bias, ketidakakuratan, kesalahan, cacat, virus, waktu henti, kehilangan atau kerusakan properti, dan/atau cedera pribadi. Anda sepenuhnya bertanggung jawab atas penggunaan Anda atas alat atau output tersebut (termasuk, namun tidak terbatas pada, legalitas, kesesuaian, dan hasilnya).
 
 ---
 
 ## Berkontribusi
 
-Kami menyukai kontribusi komunitas! Mulai dengan membaca [CONTRIBUTING.md](CONTRIBUTING.md) kami.
+Kami menyukai kontribusi komunitas! Mulailah dengan membaca [CONTRIBUTING.md](CONTRIBUTING.md) kami.
 
 ---
 
@@ -220,10 +217,10 @@ Terima kasih kepada semua kontributor kami yang telah membantu membuat Roo Code 
 
 <!-- END CONTRIBUTORS SECTION -->
 
-## License
+## Lisensi
 
 [Apache 2.0 © 2025 Roo Code, Inc.](./LICENSE)
 
 ---
 
-**Nikmati Roo Code!** Baik kamu menggunakannya dengan ketat atau membiarkannya berjalan otonom, kami tidak sabar melihat apa yang kamu bangun. Jika kamu memiliki pertanyaan atau ide fitur, kunjungi [komunitas Reddit](https://www.reddit.com/r/RooCode/) atau [Discord](https://discord.gg/roocode) kami. Selamat coding!
+**Selamat menikmati Roo Code!** Baik Anda mengendalikannya dengan ketat atau membiarkannya berkeliaran secara otonom, kami tidak sabar untuk melihat apa yang Anda bangun. Jika Anda memiliki pertanyaan atau ide fitur, kunjungi [komunitas Reddit](https://www.reddit.com/r/RooCode/) atau [Discord](https://discord.gg/roocode) kami. Selamat membuat kode!

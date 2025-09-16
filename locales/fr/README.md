@@ -1,125 +1,89 @@
-<div align="center">
-<sub>
-
-[English](../../README.md) • [Català](../ca/README.md) • [Deutsch](../de/README.md) • [Español](../es/README.md) • <b>Français</b> • [हिन्दी](../hi/README.md) • [Bahasa Indonesia](../id/README.md) • [Italiano](../it/README.md) • [日本語](../ja/README.md)
-
-</sub>
-<sub>
-
-[한국어](../ko/README.md) • [Nederlands](../nl/README.md) • [Polski](../pl/README.md) • [Português (BR)](../pt-BR/README.md) • [Русский](../ru/README.md) • [Türkçe](../tr/README.md) • [Tiếng Việt](../vi/README.md) • [简体中文](../zh-CN/README.md) • [繁體中文](../zh-TW/README.md)
-
-</sub>
-</div>
-<br>
-<div align="center">
-  <h2>Rejoignez la communauté Roo Code</h2>
-  <p>Connectez-vous avec des développeurs, contribuez avec vos idées et restez à jour avec les derniers outils de programmation propulsés par l'IA.</p>
-  
-  <a href="https://discord.gg/roocode" target="_blank"><img src="https://img.shields.io/badge/Rejoindre%20Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Rejoindre Discord"></a>
-  <a href="https://www.reddit.com/r/RooCode/" target="_blank"><img src="https://img.shields.io/badge/Rejoindre%20Reddit-FF4500?style=for-the-badge&logo=reddit&logoColor=white" alt="Rejoindre Reddit"></a>
-  
-</div>
-<br>
-<br>
-
-<div align="center">
-<h1>Roo Code</h1>
 <p align="center">
-<img src="https://media.githubusercontent.com/media/RooCodeInc/Roo-Code/main/src/assets/docs/demo.gif" width="100%" />
+  <a href="https://marketplace.visualstudio.com/items?itemName=RooVeterinaryInc.roo-cline"><img src="https://img.shields.io/visual-studio-marketplace/v/RooVeterinaryInc.roo-cline.svg?label=VS%20Code&color=%23007ACC&style=flat&logo=visualstudiocode&logoColor=white" alt="VS Code"></a>
+  <a href="https://x.com/roo_code"><img src="https://img.shields.io/badge/roo_code-000000?style=flat&logo=x&logoColor=white" alt="X"></a>
+  <a href="https://youtube.com/@roocodeyt?feature=shared"><img src="https://img.shields.io/badge/YouTube-FF0000?style=flat&logo=youtube&logoColor=white" alt="YouTube"></a>
+  <a href="https://discord.gg/roocode"><img src="https://img.shields.io/badge/Join%20Discord-5865F2?style=flat&logo=discord&logoColor=white" alt="Join Discord"></a>
+  <a href="https://www.reddit.com/r/RooCode/"><img src="https://img.shields.io/badge/Join%20r%2FRooCode-FF4500?style=flat&logo=reddit&logoColor=white" alt="Join r/RooCode"></a>
+</p>
+<p align="center">
+  <em>Obtenez de l'aide rapidement → <a href="https://discord.gg/roocode">Rejoignez Discord</a> • Vous préférez l'asynchrone ? → <a href="https://www.reddit.com/r/RooCode/">Rejoignez r/RooCode</a></em>
 </p>
 
-<a href="https://marketplace.visualstudio.com/items?itemName=RooVeterinaryInc.roo-cline" target="_blank"><img src="https://img.shields.io/badge/T%C3%A9l%C3%A9charger%20sur%20VS%20Marketplace-blue?style=for-the-badge&logo=visualstudiocode&logoColor=white" alt="Télécharger sur VS Marketplace"></a>
-<a href="https://github.com/RooCodeInc/Roo-Code/discussions/categories/feature-requests?discussions_q=is%3Aopen+category%3A%22Feature+Requests%22+sort%3Atop" target="_blank"><img src="https://img.shields.io/badge/Demandes%20de%20fonctionnalit%C3%A9s-yellow?style=for-the-badge" alt="Demandes de fonctionnalités"></a>
-<a href="https://marketplace.visualstudio.com/items?itemName=RooVeterinaryInc.roo-cline&ssr=false#review-details" target="_blank"><img src="https://img.shields.io/badge/%C3%89valuer%20%26%20Commenter-green?style=for-the-badge" alt="Évaluer & Commenter"></a>
-<a href="https://docs.roocode.com" target="_blank"><img src="https://img.shields.io/badge/Documentation-6B46C1?style=for-the-badge&logo=readthedocs&logoColor=white" alt="Documentation"></a>
+# Roo Code
+
+> Roo Code est un agent IA open-source pour VS Code. Bien que nous soyons techniquement un fork de Cline, soyons clairs : notre chemin a radicalement divergé. Nous construisons quelque chose de fondamentalement différent.
+
+<details>
+  <summary>🌐 Langues disponibles</summary>
+
+- [English](../../README.md)
+- [Català](../ca/README.md)
+- [Deutsch](../de/README.md)
+- [Español](../es/README.md)
+- [Français](../fr/README.md)
+- [हिंदी](../hi/README.md)
+- [Bahasa Indonesia](../id/README.md)
+- [Italiano](../it/README.md)
+- [日本語](../ja/README.md)
+- [한국어](../ko/README.md)
+- [Nederlands](../nl/README.md)
+- [Polski](../pl/README.md)
+- [Português (BR)](../pt-BR/README.md)
+- [Русский](../ru/README.md)
+- [Türkçe](../tr/README.md)
+- [Tiếng Việt](../vi/README.md)
+- [简体中文](../zh-CN/README.md)
+- [繁體中文](../zh-TW/README.md)
+- ...
+  </details>
+
+---
+
+## Que peut faire Roo Code pour VOUS ?
+
+- Générer du code à partir de descriptions en langage naturel
+- S'adapter avec les Modes : Code, Architecte, Demande, Débogage et Modes Personnalisés
+- Refactoriser & déboguer du code existant
+- Rédiger & mettre à jour la documentation
+- Répondre aux questions sur votre base de code
+- Automatiser les tâches répétitives
+- Utiliser les serveurs MCP
+
+## Modes
+
+Roo Code s'adapte à votre façon de travailler, pas l'inverse :
+
+- Mode Code : codage quotidien, modifications et opérations sur les fichiers
+- Mode Architecte : planifier les systèmes, les spécifications et les migrations
+- Mode Demande : réponses rapides, explications et documents
+- Mode Débogage : tracer les problèmes, ajouter des journaux, isoler les causes profondes
+- Modes Personnalisés : créez des modes spécialisés pour votre équipe ou votre flux de travail
+- Agents Cloud : notre direction future—des agents hébergés et persistants qui peuvent exécuter des tâches longues et orchestrer le travail entre les services
+
+En savoir plus : [Utilisation des Modes](https://docs.roocode.com/basic-usage/using-modes) • [Modes Personnalisés](https://docs.roocode.com/advanced-usage/custom-modes)
+
+## Tutoriels & Vidéos de fonctionnalités
+
+<div align="center">
+
+|                                                                                                                                                                           |                                                                                                                                                                              |                                                                                                                                                                                     |
+| :-----------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
+| <a href="https://www.youtube.com/watch?v=Mcq3r1EPZ-4"><img src="https://img.youtube.com/vi/Mcq3r1EPZ-4/maxresdefault.jpg" width="100%"></a><br><b>Installer Roo Code</b>  | <a href="https://www.youtube.com/watch?v=eEJErgZBqLE"><img src="https://img.youtube.com/vi/eEJErgZBqLE/maxresdefault.jpg" width="100%"></a><br><b>Configurer les profils</b> | <a href="https://www.youtube.com/watch?v=r1bpod1VWhg"><img src="https://img.youtube.com/vi/r1bpod1VWhg/maxresdefault.jpg" width="100%"></a><br><b>Indexation de la base de code</b> |
+| <a href="https://www.youtube.com/watch?v=qgqceCuhlRA"><img src="https://img.youtube.com/vi/qgqceCuhlRA/maxresdefault.jpg" width="100%"></a><br><b>Modes personnalisés</b> |      <a href="https://www.youtube.com/watch?v=Ho30nyY332E"><img src="https://img.youtube.com/vi/Ho30nyY332E/maxresdefault.jpg" width="100%"></a><br><b>Checkpoints</b>       |       <a href="https://www.youtube.com/watch?v=6h5vB9PpoPk"><img src="https://img.youtube.com/vi/6h5vB9PpoPk/maxresdefault.jpg" width="100%"></a><br><b>Listes de tâches</b>        |
 
 </div>
-
-**Roo Code** est un **agent de programmation autonome** propulsé par l'IA, au cœur de votre éditeur. Il peut :
-
-- Communiquer en langage naturel
-- Lire et écrire des fichiers directement dans votre espace de travail
-- Exécuter des commandes terminal
-- Automatiser des actions de navigateur
-- S'intégrer avec n'importe quelle modèle/API compatible OpenAI
-- Adapter sa "personnalité" et ses capacités grâce aux **Modes Personnalisés**
-
-Que vous recherchiez un partenaire de codage flexible, un architecte système, ou des rôles spécialisés comme un ingénieur QA ou un chef de produit, Roo Code peut vous aider à développer des logiciels plus efficacement.
-
-Consultez le [CHANGELOG](../../CHANGELOG.md) pour des mises à jour détaillées et des corrections.
-
----
-
-## 🎉 Roo Code 3.25 est sorti
-
-Roo Code 3.25 apporte de puissantes nouvelles fonctionnalités et des améliorations significatives pour améliorer ton flux de travail de développement !
-
-- **File d'attente de messages** - Mets plusieurs messages en file d'attente pendant que Roo travaille, te permettant de continuer à planifier ton flux de travail sans interruption.
-- **Commandes slash personnalisées** - Crée des commandes slash personnalisées pour un accès rapide aux prompts et flux de travail fréquemment utilisés avec une gestion complète de l'interface utilisateur.
-- **Outils Gemini avancés** - De nouvelles fonctionnalités de contexte d'URL et de fondements de recherche Google fournissent aux modèles Gemini des informations web en temps réel et des capacités de recherche avancées.
-
----
-
-## Que peut faire Roo Code ?
-
-- 🚀 **Générer du code** à partir de descriptions en langage naturel
-- 🔧 **Refactoriser et déboguer** du code
-- 📝 **Écrire et mettre à jour** de la documentation
-- 🤔 **Répondre aux questions** sur votre base de code
-- 🔄 **Automatiser** des tâches répétitives
-- 🏗️ **Créer** de nouveaux fichiers et projets
-
-## Démarrage rapide
-
-1. [Installer Roo Code](https://docs.roocode.com/getting-started/installing)
-2. [Connecter votre fournisseur d'IA](https://docs.roocode.com/getting-started/connecting-api-provider)
-3. [Essayer votre première tâche](https://docs.roocode.com/getting-started/your-first-task)
-
-## Fonctionnalités clés
-
-### Modes multiples
-
-Roo Code s'adapte à vos besoins avec des [modes](https://docs.roocode.com/basic-usage/using-modes) spécialisés :
-
-- **Mode Code :** Pour les tâches de programmation générales
-- **Mode Architecte :** Pour la planification et le leadership technique
-- **Mode Question :** Pour répondre aux questions et fournir des informations
-- **Mode Débogage :** Pour le diagnostic systématique de problèmes
-- **[Modes personnalisés](https://docs.roocode.com/advanced-usage/custom-modes) :** Créez un nombre illimité de personnalités spécialisées pour l'audit de sécurité, l'optimisation des performances, la documentation ou toute autre tâche
-
-### Outils intelligents
-
-Roo Code est livré avec des [outils](https://docs.roocode.com/basic-usage/how-tools-work) puissants qui peuvent :
-
-- Lire et écrire des fichiers dans votre projet
-- Exécuter des commandes dans votre terminal VS Code
-- Contrôler un navigateur web
-- Utiliser des outils externes via [MCP (Model Context Protocol)](https://docs.roocode.com/advanced-usage/mcp)
-
-MCP étend les capacités de Roo Code en vous permettant d'ajouter un nombre illimité d'outils personnalisés. Intégrez des API externes, connectez-vous à des bases de données ou créez des outils de développement spécialisés - MCP fournit le cadre pour étendre la fonctionnalité de Roo Code afin de répondre à vos besoins spécifiques.
-
-### Personnalisation
-
-Faites fonctionner Roo Code à votre manière avec :
-
-- [Instructions personnalisées](https://docs.roocode.com/advanced-usage/custom-instructions) pour un comportement personnalisé
-- [Modes personnalisés](https://docs.roocode.com/advanced-usage/custom-modes) pour des tâches spécialisées
-- [Modèles locaux](https://docs.roocode.com/advanced-usage/local-models) pour une utilisation hors ligne
-- [Paramètres d'approbation automatique](https://docs.roocode.com/advanced-usage/auto-approving-actions) pour des workflows plus rapides
+<p align="center">
+<a href="https://docs.roocode.com/tutorial-videos">Plus de tutoriels rapides et de vidéos de fonctionnalités...</a>
+</p>
 
 ## Ressources
 
-### Documentation
-
-- [Guide d'utilisation](https://docs.roocode.com/basic-usage/the-chat-interface)
-- [Fonctionnalités avancées](https://docs.roocode.com/advanced-usage/auto-approving-actions)
-- [Foire aux questions](https://docs.roocode.com/faq)
-
-### Communauté
-
-- **Discord :** [Rejoignez notre serveur Discord](https://discord.gg/roocode) pour une aide en temps réel et des discussions
-- **Reddit :** [Visitez notre subreddit](https://www.reddit.com/r/RooCode) pour partager des expériences et des astuces
-- **GitHub :** Signalez des [problèmes](https://github.com/RooCodeInc/Roo-Code/issues) ou demandez de nouvelles [fonctionnalités](https://github.com/RooCodeInc/Roo-Code/discussions/categories/feature-requests?discussions_q=is%3Aopen+category%3A%22Feature+Requests%22+sort%3Atop)
+- **[Documentation](https://docs.roocode.com):** Le guide officiel pour installer, configurer et maîtriser Roo Code.
+- **[Chaîne YouTube](https://youtube.com/@roocodeyt?feature=shared):** Regardez des tutoriels et découvrez les fonctionnalités en action.
+- **[Serveur Discord](https://discord.gg/roocode):** Rejoignez la communauté pour obtenir de l'aide en temps réel et discuter.
+- **[Communauté Reddit](https://www.reddit.com/r/RooCode):** Partagez vos expériences et découvrez ce que les autres construisent.
+- **[Problèmes GitHub](https://github.com/RooCodeInc/Roo-Code/issues):** Signalez des bugs et suivez le développement.
+- **[Demandes de fonctionnalités](https://github.com/RooCodeInc/Roo-Code/discussions/categories/feature-requests?discussions_q=is%3Aopen+category%3A%22Feature+Requests%22+sort%3Atop):** Vous avez une idée ? Partagez-la avec les développeurs.
 
 ---
 
@@ -134,39 +98,66 @@ git clone https://github.com/RooCodeInc/Roo-Code.git
 2. **Installez les dépendances** :
 
 ```sh
-npm run install:all
+pnpm install
 ```
 
-3. **Démarrez la vue web (application Vite/React avec HMR)** :
+3. **Exécutez l'extension** :
+
+Il existe plusieurs façons d'exécuter l'extension Roo Code :
+
+### Mode développement (F5)
+
+Pour un développement actif, utilisez le débogage intégré de VSCode :
+
+Appuyez sur `F5` (ou allez dans **Exécuter** → **Démarrer le débogage**) dans VSCode. Cela ouvrira une nouvelle fenêtre VSCode avec l'extension Roo Code en cours d'exécution.
+
+- Les modifications apportées à la vue Web apparaîtront immédiatement.
+- Les modifications apportées à l'extension principale se rechargeront également à chaud automatiquement.
+
+### Installation automatisée de VSIX
+
+Pour compiler et installer l'extension en tant que package VSIX directement dans VSCode :
 
 ```sh
-npm run dev
+pnpm install:vsix [-y] [--editor=<command>]
 ```
 
-4. **Débogage** :
-   Appuyez sur `F5` (ou **Exécuter** → **Démarrer le débogage**) dans VSCode pour ouvrir une nouvelle session avec Roo Code chargé.
+Cette commande va :
 
-Les modifications apportées à la vue web apparaîtront immédiatement. Les modifications apportées à l'extension principale nécessiteront un redémarrage de l'hôte d'extension.
+- Demander quelle commande d'éditeur utiliser (code/cursor/code-insiders) - par défaut, 'code'
+- Désinstaller toute version existante de l'extension.
+- Compiler le dernier package VSIX.
+- Installer le VSIX nouvellement compilé.
+- Vous inviter à redémarrer VS Code pour que les modifications prennent effet.
 
-Vous pouvez également créer un fichier .vsix et l'installer directement dans VSCode :
+Options :
 
-```sh
-npm run build
-```
+- `-y` : Ignorer toutes les invites de confirmation et utiliser les valeurs par défaut
+- `--editor=<command>` : Spécifier la commande de l'éditeur (par exemple, `--editor=cursor` ou `--editor=code-insiders`)
 
-Un fichier `.vsix` apparaîtra dans le répertoire `bin/` qui peut être installé avec :
+### Installation manuelle de VSIX
 
-```sh
-code --install-extension bin/roo-cline-<version>.vsix
-```
+Si vous préférez installer le package VSIX manuellement :
 
-Nous utilisons [changesets](https://github.com/changesets/changesets) pour le versionnement et la publication. Consultez notre `CHANGELOG.md` pour les notes de version.
+1.  D'abord, compilez le package VSIX :
+    ```sh
+    pnpm vsix
+    ```
+2.  Un fichier `.vsix` sera généré dans le répertoire `bin/` (par exemple, `bin/roo-cline-<version>.vsix`).
+3.  Installez-le manuellement à l'aide de la CLI de VSCode :
+    ```sh
+    code --install-extension bin/roo-cline-<version>.vsix
+    ```
+
+---
+
+Nous utilisons [changesets](https://github.com/changesets/changesets) pour la gestion des versions et la publication. Consultez notre `CHANGELOG.md` pour les notes de version.
 
 ---
 
 ## Avertissement
 
-**Veuillez noter** que Roo Code, Inc **ne fait** aucune représentation ou garantie concernant tout code, modèle ou autre outil fourni ou mis à disposition en relation avec Roo Code, tout outil tiers associé, ou tout résultat. Vous assumez **tous les risques** associés à l'utilisation de tels outils ou résultats ; ces outils sont fournis **"TELS QUELS"** et **"SELON DISPONIBILITÉ"**. Ces risques peuvent inclure, sans s'y limiter, la violation de propriété intellectuelle, les vulnérabilités ou attaques cyber, les biais, les inexactitudes, les erreurs, les défauts, les virus, les temps d'arrêt, la perte ou les dommages matériels, et/ou les blessures corporelles. Vous êtes seul responsable de votre utilisation de ces outils ou résultats (y compris, mais sans s'y limiter, leur légalité, pertinence et résultats).
+**Veuillez noter** que Roo Code, Inc. ne fait **aucune** déclaration ou garantie concernant tout code, modèle ou autre outil fourni ou mis à disposition en rapport avec Roo Code, tout outil tiers associé ou toute sortie en résultant. Vous assumez **tous les risques** associés à l'utilisation de ces outils ou sorties ; ces outils sont fournis **"EN L'ÉTAT"** et **"SELON LA DISPONIBILITÉ"**. Ces risques могут inclure, sans s'y limiter, la violation de la propriété intellectuelle, les vulnérabilités ou attaques cybernétiques, les biais, les inexactitudes, les erreurs, les défauts, les virus, les temps d'arrêt, la perte ou l'endommagement de biens et/ou les blessures corporelles. Vous êtes seul responsable de votre utilisation de ces outils ou sorties (y compris, sans s'y limiter, leur légalité, leur pertinence et leurs résultats).
 
 ---
 
@@ -228,8 +219,8 @@ Merci à tous nos contributeurs qui ont aidé à améliorer Roo Code !
 
 ## Licence
 
-[Apache 2.0 © 2025 Roo Code, Inc.](../LICENSE)
+[Apache 2.0 © 2025 Roo Code, Inc.](./LICENSE)
 
 ---
 
-**Profitez de Roo Code !** Que vous le gardiez en laisse courte ou que vous le laissiez se déplacer de manière autonome, nous avons hâte de voir ce que vous allez construire. Si vous avez des questions ou des idées de fonctionnalités, passez par notre [communauté Reddit](https://www.reddit.com/r/RooCode/) ou [Discord](https://discord.gg/roocode). Bon codage !
+**Profitez de Roo Code !** Que vous le teniez en laisse courte ou que vous le laissiez errer de manière autonome, nous sommes impatients de voir ce que vous allez construire. Si vous avez des questions ou des idées de fonctionnalités, n'hésitez pas à passer sur notre [communauté Reddit](https://www.reddit.com/r/RooCode/) ou sur [Discord](https://discord.gg/roocode). Bon codage !

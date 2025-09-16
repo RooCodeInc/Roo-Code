@@ -1,184 +1,175 @@
-<div align="center">
-<sub>
-
-[English](../../README.md) • [Català](../ca/README.md) • [Deutsch](../de/README.md) • [Español](../es/README.md) • [Français](../fr/README.md) • [हिन्दी](../hi/README.md) • [Bahasa Indonesia](../id/README.md) • [Italiano](../it/README.md) • <b>日本語</b>
-
-</sub>
-<sub>
-
-[한국어](../ko/README.md) • [Nederlands](../nl/README.md) • [Polski](../pl/README.md) • [Português (BR)](../pt-BR/README.md) • [Русский](../ru/README.md) • [Türkçe](../tr/README.md) • [Tiếng Việt](../vi/README.md) • [简体中文](../zh-CN/README.md) • [繁體中文](../zh-TW/README.md)
-
-</sub>
-</div>
-<br>
-<div align="center">
-  <h2>Roo Codeコミュニティに参加しよう</h2>
-  <p>開発者とつながり、アイデアを提供し、最新のAIパワードコーディングツールで先を行きましょう。</p>
-  
-  <a href="https://discord.gg/roocode" target="_blank"><img src="https://img.shields.io/badge/Discord%E3%81%AB%E5%8F%82%E5%8A%A0-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discordに参加"></a>
-  <a href="https://www.reddit.com/r/RooCode/" target="_blank"><img src="https://img.shields.io/badge/Reddit%E3%81%AB%E5%8F%82%E5%8A%A0-FF4500?style=for-the-badge&logo=reddit&logoColor=white" alt="Redditに参加"></a>
-  
-</div>
-<br>
-<br>
-
-<div align="center">
-<h1>Roo Code</h1>
 <p align="center">
-<img src="https://media.githubusercontent.com/media/RooCodeInc/Roo-Code/main/src/assets/docs/demo.gif" width="100%" />
+  <a href="https://marketplace.visualstudio.com/items?itemName=RooVeterinaryInc.roo-cline"><img src="https://img.shields.io/visual-studio-marketplace/v/RooVeterinaryInc.roo-cline.svg?label=VS%20Code&color=%23007ACC&style=flat&logo=visualstudiocode&logoColor=white" alt="VS Code"></a>
+  <a href="https://x.com/roo_code"><img src="https://img.shields.io/badge/roo_code-000000?style=flat&logo=x&logoColor=white" alt="X"></a>
+  <a href="https://youtube.com/@roocodeyt?feature=shared"><img src="https://img.shields.io/badge/YouTube-FF0000?style=flat&logo=youtube&logoColor=white" alt="YouTube"></a>
+  <a href="https://discord.gg/roocode"><img src="https://img.shields.io/badge/Join%20Discord-5865F2?style=flat&logo=discord&logoColor=white" alt="Join Discord"></a>
+  <a href="https://www.reddit.com/r/RooCode/"><img src="https://img.shields.io/badge/Join%20r%2FRooCode-FF4500?style=flat&logo=reddit&logoColor=white" alt="Join r/RooCode"></a>
+</p>
+<p align="center">
+  <em>すぐに助けを得る → <a href="https://discord.gg/roocode">Discordに参加</a> • 非同期を好む？ → <a href="https://www.reddit.com/r/RooCode/">r/RooCodeに参加</a></em>
 </p>
 
-<a href="https://marketplace.visualstudio.com/items?itemName=RooVeterinaryInc.roo-cline" target="_blank"><img src="https://img.shields.io/badge/VS%20Marketplace%E3%81%A7%E3%83%80%E3%82%A6%E3%83%B3%E3%83%AD%E3%83%BC%E3%83%89-blue?style=for-the-badge&logo=visualstudiocode&logoColor=white" alt="VS Marketplaceでダウンロード"></a>
-<a href="https://github.com/RooCodeInc/Roo-Code/discussions/categories/feature-requests?discussions_q=is%3Aopen+category%3A%22Feature+Requests%22+sort%3Atop" target="_blank"><img src="https://img.shields.io/badge/%E6%A9%9F%E8%83%BD%E3%83%AA%E3%82%AF%E3%82%A8%E3%82%B9%E3%83%88-yellow?style=for-the-badge" alt="機能リクエスト"></a>
-<a href="https://marketplace.visualstudio.com/items?itemName=RooVeterinaryInc.roo-cline&ssr=false#review-details" target="_blank"><img src="https://img.shields.io/badge/%E8%A9%95%E4%BE%A1%E3%81%A8%E3%83%AC%E3%83%93%E3%83%A5%E3%83%BC-green?style=for-the-badge" alt="評価とレビュー"></a>
-<a href="https://docs.roocode.com" target="_blank"><img src="https://img.shields.io/badge/%E3%83%89%E3%82%AD%E3%83%A5%E3%83%A1%E3%83%B3%E3%83%86%E3%83%BC%E3%82%B7%E3%83%A7%E3%83%B3-6B46C1?style=for-the-badge&logo=readthedocs&logoColor=white" alt="ドキュメンテーション"></a>
+# Roo Code
+
+> Roo CodeはオープンソースのVS Code AIエージェントです。私たちは技術的にはClineのフォークですが、明確にしておきたいのは、私たちの道は根本的に分岐したということです。私たちは根本的に異なるものを構築しています。
+
+<details>
+  <summary>🌐 利用可能な言語</summary>
+
+- [English](../../README.md)
+- [Català](../ca/README.md)
+- [Deutsch](../de/README.md)
+- [Español](../es/README.md)
+- [Français](../fr/README.md)
+- [हिंदी](../hi/README.md)
+- [Bahasa Indonesia](../id/README.md)
+- [Italiano](../it/README.md)
+- [日本語](../ja/README.md)
+- [한국어](../ko/README.md)
+- [Nederlands](../nl/README.md)
+- [Polski](../pl/README.md)
+- [Português (BR)](../pt-BR/README.md)
+- [Русский](../ru/README.md)
+- [Türkçe](../tr/README.md)
+- [Tiếng Việt](../vi/README.md)
+- [简体中文](../zh-CN/README.md)
+- [繁體中文](../zh-TW/README.md)
+- ...
+  </details>
+
+---
+
+## Roo Codeがあなたのためにできること
+
+- 自然言語の記述からコードを生成
+- モードで適応：コード、アーキテクト、質問、デバッグ、カスタムモード
+- 既存のコードのリファクタリングとデバッグ
+- ドキュメントの作成と更新
+- コードベースに関する質問への回答
+- 反復的なタスクの自動化
+- MCPサーバーの活用
+
+## モード
+
+Roo Codeは、あなたの働き方に合わせるように適応します。
+
+- コードモード：日常的なコーディング、編集、ファイル操作
+- アーキテクトモード：システム、仕様、移行の計画
+- 質問モード：迅速な回答、説明、ドキュメント
+- デバッグモード：問題の追跡、ログの追加、根本原因の特定
+- カスタムモード：チームやワークフローに特化したモードの構築
+- クラウドエージェント：私たちの進むべき方向—ホストされた永続的なエージェントで、長時間のタスクを実行し、サービス間の作業を調整できます
+
+詳細はこちら：[モードの使用](https://docs.roocode.com/basic-usage/using-modes) • [カスタムモード](https://docs.roocode.com/advanced-usage/custom-modes)
+
+## チュートリアルと機能のビデオ
+
+<div align="center">
+
+|                                                                                                                                                                              |                                                                                                                                                                          |                                                                                                                                                                                      |
+| :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
+| <a href="https://www.youtube.com/watch?v=Mcq3r1EPZ-4"><img src="https://img.youtube.com/vi/Mcq3r1EPZ-4/maxresdefault.jpg" width="100%"></a><br><b>Roo Codeのインストール</b> | <a href="https://www.youtube.com/watch?v=eEJErgZBqLE"><img src="https://img.youtube.com/vi/eEJErgZBqLE/maxresdefault.jpg" width="100%"></a><br><b>プロファイルの設定</b> | <a href="https://www.youtube.com/watch?v=r1bpod1VWhg"><img src="https://img.youtube.com/vi/r1bpod1VWhg/maxresdefault.jpg" width="100%"></a><br><b>コードベースのインデックス作成</b> |
+|     <a href="https://www.youtube.com/watch?v=qgqceCuhlRA"><img src="https://img.youtube.com/vi/qgqceCuhlRA/maxresdefault.jpg" width="100%"></a><br><b>カスタムモード</b>     |  <a href="https://www.youtube.com/watch?v=Ho30nyY332E"><img src="https://img.youtube.com/vi/Ho30nyY332E/maxresdefault.jpg" width="100%"></a><br><b>チェックポイント</b>  |           <a href="https://www.youtube.com/watch?v=6h5vB9PpoPk"><img src="https://img.youtube.com/vi/6h5vB9PpoPk/maxresdefault.jpg" width="100%"></a><br><b>ToDoリスト</b>           |
 
 </div>
-
-**Roo Code**はエディター内に存在するAIパワードの**自律型コーディングエージェント**です。以下のことができます：
-
-- 自然言語でコミュニケーション
-- ワークスペース内のファイルを直接読み書き
-- ターミナルコマンドを実行
-- ブラウザアクションを自動化
-- OpenAI互換または独自のAPI/モデルと統合
-- **カスタムモード**を通じて「パーソナリティ」と機能を調整
-
-柔軟なコーディングパートナー、システムアーキテクト、QAエンジニアやプロダクトマネージャーなどの専門的な役割を求めているかどうかにかかわらず、Roo Codeはより効率的にソフトウェアを構築するのを手助けします。
-
-詳細な更新と修正については[CHANGELOG](../../CHANGELOG.md)をご覧ください。
-
----
-
-## 🎉 Roo Code 3.25 リリース
-
-Roo Code 3.25は、開発ワークフローを向上させる強力な新機能と重要な改善をもたらします！
-
-- **<bold>ブラウザセッション管理</bold>** - 複数のブラウザセッションを同時に管理し、異なるタスクやテスト環境を分離できます。
-- **<bold>プロンプトキャッシング</bold>** - 頻繁に使用されるプロンプトをキャッシュして、応答時間を大幅に短縮し、API使用量を削減します。
-- **<bold>コンピューター使用機能</bold>** - AIがデスクトップアプリケーションと直接対話し、スクリーンショットを撮影し、クリックやタイピングを実行できます。
-
----
-
-## Roo Codeでできること
-
-- 🚀 自然言語の説明から**コードを生成**
-- 🔧 既存のコードを**リファクタリング＆デバッグ**
-- 📝 ドキュメントを**作成＆更新**
-- 🤔 コードベースについて**質問に回答**
-- 🔄 繰り返しタスクを**自動化**
-- 🏗️ 新しいファイルとプロジェクトを**作成**
-
-## クイックスタート
-
-1. [Roo Codeをインストール](https://docs.roocode.com/getting-started/installing)
-2. [AIプロバイダーを接続](https://docs.roocode.com/getting-started/connecting-api-provider)
-3. [最初のタスクを試す](https://docs.roocode.com/getting-started/your-first-task)
-
-## 主な機能
-
-### 複数のモード
-
-Roo Codeは専門化された[モード](https://docs.roocode.com/basic-usage/using-modes)であなたのニーズに適応します：
-
-- **コードモード：** 汎用的なコーディングタスク向け
-- **アーキテクトモード：** 計画と技術的リーダーシップ向け
-- **質問モード：** 質問への回答と情報提供向け
-- **デバッグモード：** 体系的な問題診断向け
-- **[カスタムモード](https://docs.roocode.com/advanced-usage/custom-modes)：** セキュリティ監査、パフォーマンス最適化、ドキュメント作成、またはその他のタスクのための無制限の専門ペルソナを作成
-
-### スマートツール
-
-Roo Codeには強力な[ツール](https://docs.roocode.com/basic-usage/how-tools-work)が付属しています：
-
-- プロジェクト内のファイルの読み書き
-- VS Codeターミナルでコマンドを実行
-- Webブラウザを制御
-- [MCP（モデルコンテキストプロトコル）](https://docs.roocode.com/advanced-usage/mcp)を介して外部ツールを使用
-
-MCPは無制限のカスタムツールを追加できるようにしてRoo Codeの機能を拡張します。外部APIとの統合、データベースへの接続、または特殊な開発ツールの作成 - MCPはRoo Codeの機能を拡張してあなたの特定のニーズを満たすためのフレームワークを提供します。
-
-### カスタマイズ
-
-Roo Codeをあなた好みに動作させる方法：
-
-- パーソナライズされた動作のための[カスタム指示](https://docs.roocode.com/advanced-usage/custom-instructions)
-- 専門タスク用の[カスタムモード](https://docs.roocode.com/advanced-usage/custom-modes)
-- オフライン使用のための[ローカルモデル](https://docs.roocode.com/advanced-usage/local-models)
-- より高速なワークフローのための[自動承認設定](https://docs.roocode.com/advanced-usage/auto-approving-actions)
+<p align="center">
+<a href="https://docs.roocode.com/tutorial-videos">その他のクイックチュートリアルと機能のビデオ...</a>
+</p>
 
 ## リソース
 
-### ドキュメンテーション
-
-- [基本的な使用ガイド](https://docs.roocode.com/basic-usage/the-chat-interface)
-- [高度な機能](https://docs.roocode.com/advanced-usage/auto-approving-actions)
-- [よくある質問](https://docs.roocode.com/faq)
-
-### コミュニティ
-
-- **Discord：** リアルタイムのヘルプとディスカッションについては[Discord サーバーに参加](https://discord.gg/roocode)
-- **Reddit：** 経験とヒントを共有するには[サブレディット](https://www.reddit.com/r/RooCode)にアクセス
-- **GitHub：** [問題](https://github.com/RooCodeInc/Roo-Code/issues)を報告したり[機能](https://github.com/RooCodeInc/Roo-Code/discussions/categories/feature-requests?discussions_q=is%3Aopen+category%3A%22Feature+Requests%22+sort%3Atop)をリクエスト
+- **[ドキュメント](https://docs.roocode.com):** Roo Codeのインストール、設定、習熟のための公式ガイド。
+- **[YouTubeチャンネル](https://youtube.com/@roocodeyt?feature=shared):** チュートリアルを見て、実際の機能を確認できます。
+- **[Discordサーバー](https://discord.gg/roocode):** コミュニティに参加して、リアルタイムのヘルプやディスカッションに参加できます。
+- **[Redditコミュニティ](https://www.reddit.com/r/RooCode):** あなたの経験を共有し、他の人が何を構築しているかを見ることができます。
+- **[GitHub Issues](https://github.com/RooCodeInc/Roo-Code/issues):** バグを報告し、開発を追跡します。
+- **[機能リクエスト](https://github.com/RooCodeInc/Roo-Code/discussions/categories/feature-requests?discussions_q=is%3Aopen+category%3A%22Feature+Requests%22+sort%3Atop):** アイデアがありますか？開発者と共有してください。
 
 ---
 
 ## ローカルセットアップと開発
 
-1. レポジトリを**クローン**：
+1. **リポジトリをクローンする**:
 
 ```sh
 git clone https://github.com/RooCodeInc/Roo-Code.git
 ```
 
-2. **依存関係をインストール**：
+2. **依存関係をインストールする**:
 
 ```sh
-npm run install:all
+pnpm install
 ```
 
-3. **ウェブビュー（Vite/ReactアプリとHMR）を起動**：
+3. **拡張機能を実行する**:
+
+Roo Code拡張機能を実行するにはいくつかの方法があります：
+
+### 開発モード (F5)
+
+アクティブな開発には、VSCodeの内蔵デバッグ機能を使用します：
+
+VSCodeで`F5`キーを押すか、**実行** → **デバッグの開始**に移動します。これにより、Roo Code拡張機能が実行されている新しいVSCodeウィンドウが開きます。
+
+- ウェブビューへの変更はすぐに表示されます。
+- コア拡張機能への変更も自動的にホットリロードされます。
+
+### 自動VSIXインストール
+
+拡張機能をVSIXパッケージとしてビルドし、VSCodeに直接インストールするには：
 
 ```sh
-npm run dev
+pnpm install:vsix [-y] [--editor=<command>]
 ```
 
-4. **デバッグ**：
-   VSCodeで`F5`（または**実行**→**デバッグの開始**）を押すと、Roo Codeがロードされた新しいセッションが開きます。
+このコマンドは次のことを行います：
 
-ウェブビューへの変更はすぐに表示されます。コア拡張機能への変更には拡張機能ホストの再起動が必要です。
+- どのエディタコマンドを使用するかを尋ねます（code/cursor/code-insiders） - デフォルトは「code」です
+- 拡張機能の既存のバージョンをアンインストールします。
+- 最新のVSIXパッケージをビルドします。
+- 新しくビルドされたVSIXをインストールします。
+- 変更を有効にするためにVS Codeを再起動するように求めます。
 
-あるいは、.vsixファイルをビルドしてVSCodeに直接インストールすることもできます：
+オプション：
 
-```sh
-npm run build
-```
+- `-y`: すべての確認プロンプトをスキップし、デフォルト値を使用します
+- `--editor=<command>`: エディタコマンドを指定します（例：`--editor=cursor`または`--editor=code-insiders`）
 
-`bin/`ディレクトリに`.vsix`ファイルが作成され、次のコマンドでインストールできます：
+### 手動VSIXインストール
 
-```sh
-code --install-extension bin/roo-cline-<version>.vsix
-```
+VSIXパッケージを手動でインストールしたい場合：
 
-バージョン管理と公開には[changesets](https://github.com/changesets/changesets)を使用しています。リリースノートについては`CHANGELOG.md`をご確認ください。
+1.  まず、VSIXパッケージをビルドします：
+    ```sh
+    pnpm vsix
+    ```
+2.  `.vsix`ファイルが`bin/`ディレクトリに生成されます（例：`bin/roo-cline-<version>.vsix`）。
+3.  VSCode CLIを使用して手動でインストールします：
+    ```sh
+    code --install-extension bin/roo-cline-<version>.vsix
+    ```
+
+---
+
+バージョニングと公開には[changesets](https://github.com/changesets/changesets)を使用しています。リリースノートについては`CHANGELOG.md`をご覧ください。
 
 ---
 
 ## 免責事項
 
-**ご注意ください**：Roo Code, Incは、Roo Codeに関連して提供または利用可能になるコード、モデル、またはその他のツール、関連するサードパーティツール、または結果的な出力に関して、**いかなる表明や保証も行いません**。そのようなツールや出力の使用に関連するすべてのリスクはお客様が負うものとします。そのようなツールは**「現状のまま」**および**「利用可能な状態」**で提供されます。そのようなリスクには、知的財産権の侵害、サイバー脆弱性や攻撃、バイアス、不正確さ、エラー、欠陥、ウイルス、ダウンタイム、財産の損失または損害、および/または人身傷害が含まれますが、これらに限定されません。お客様は、そのようなツールまたは出力の使用について（適法性、適切性、および結果を含むがこれらに限定されない）単独で責任を負います。
+**ご注意ください**：Roo Code, Inc.は、Roo Code、関連するサードパーティのツール、またはそれらから生じる出力に関連して提供または利用可能にされたコード、モデル、またはその他のツールに関して、いかなる表明も保証も行いません。お客様は、そのようなツール或いは出力の使用に関連する**すべてのリスク**を負うものとします。そのようなツールは**「現状のまま」**および**「利用可能な限り」**のベースで提供されます。そのようなリスクには、知的財産権の侵害、サイバー脆弱性または攻撃、バイアス、不正確さ、エラー、欠陥、ウイルス、ダウンタイム、財産の損失または損害、および/または人身傷害が含まれますが、これらに限定されません。お客様は、そのようなツールまたは出力の使用（合法性、適切性、およびその結果を含むがこれらに限定されない）について単独で責任を負います。
 
 ---
 
 ## 貢献
 
-私たちはコミュニティの貢献を歓迎します！[CONTRIBUTING.md](CONTRIBUTING.md)を読んで始めましょう。
+私たちはコミュニティからの貢献を歓迎します！[CONTRIBUTING.md](CONTRIBUTING.md)を読んで始めましょう。
 
 ---
 
 ## 貢献者
 
-Roo Codeの改善に貢献してくれたすべての貢献者に感謝します！
+Roo Codeをより良くするために協力してくれたすべての貢献者に感謝します！
 
 <!-- START CONTRIBUTORS SECTION - AUTO-GENERATED, DO NOT EDIT MANUALLY -->
 
@@ -228,8 +219,8 @@ Roo Codeの改善に貢献してくれたすべての貢献者に感謝します
 
 ## ライセンス
 
-[Apache 2.0 © 2025 Roo Code, Inc.](../LICENSE)
+[Apache 2.0 © 2025 Roo Code, Inc.](./LICENSE)
 
 ---
 
-**Roo Codeをお楽しみください！** 短いリードで保持するか、自律的に動き回らせるかにかかわらず、あなたが何を構築するのか楽しみにしています。質問や機能のアイデアがある場合は、[Redditコミュニティ](https://www.reddit.com/r/RooCode/)や[Discord](https://discord.gg/roocode)にお立ち寄りください。ハッピーコーディング！
+**Roo Codeをお楽しみください！** 手綱を短く持って使うか、自律的に歩き回らせるかにかかわらず、あなたが何を構築するか楽しみにしています。質問や機能のアイデアがあれば、私たちの[Redditコミュニティ](https://www.reddit.com/r/RooCode/)または[Discord](https://discord.gg/roocode)にお立ち寄りください。ハッピーコーディング！

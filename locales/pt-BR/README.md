@@ -1,125 +1,89 @@
-<div align="center">
-<sub>
-
-[English](../../README.md) • [Català](../ca/README.md) • [Deutsch](../de/README.md) • [Español](../es/README.md) • [Français](../fr/README.md) • [हिन्दी](../hi/README.md) • [Bahasa Indonesia](../id/README.md) • [Italiano](../it/README.md) • [日本語](../ja/README.md)
-
-</sub>
-<sub>
-
-[한국어](../ko/README.md) • [Nederlands](../nl/README.md) • [Polski](../pl/README.md) • <b>Português (BR)</b> • [Русский](../ru/README.md) • [Türkçe](../tr/README.md) • [Tiếng Việt](../vi/README.md) • [简体中文](../zh-CN/README.md) • [繁體中文](../zh-TW/README.md)
-
-</sub>
-</div>
-<br>
-<div align="center">
-  <h2>Junte-se à Comunidade Roo Code</h2>
-  <p>Conecte-se com desenvolvedores, contribua com ideias e mantenha-se atualizado com as ferramentas de codificação mais recentes com IA.</p>
-  
-  <a href="https://discord.gg/roocode" target="_blank"><img src="https://img.shields.io/badge/Entrar%20no%20Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Entrar no Discord"></a>
-  <a href="https://www.reddit.com/r/RooCode/" target="_blank"><img src="https://img.shields.io/badge/Entrar%20no%20Reddit-FF4500?style=for-the-badge&logo=reddit&logoColor=white" alt="Entrar no Reddit"></a>
-  
-</div>
-<br>
-<br>
-
-<div align="center">
-<h1>Roo Code</h1>
 <p align="center">
-<img src="https://media.githubusercontent.com/media/RooCodeInc/Roo-Code/main/src/assets/docs/demo.gif" width="100%" />
+  <a href="https://marketplace.visualstudio.com/items?itemName=RooVeterinaryInc.roo-cline"><img src="https://img.shields.io/visual-studio-marketplace/v/RooVeterinaryInc.roo-cline.svg?label=VS%20Code&color=%23007ACC&style=flat&logo=visualstudiocode&logoColor=white" alt="VS Code"></a>
+  <a href="https://x.com/roo_code"><img src="https://img.shields.io/badge/roo_code-000000?style=flat&logo=x&logoColor=white" alt="X"></a>
+  <a href="https://youtube.com/@roocodeyt?feature=shared"><img src="https://img.shields.io/badge/YouTube-FF0000?style=flat&logo=youtube&logoColor=white" alt="YouTube"></a>
+  <a href="https://discord.gg/roocode"><img src="https://img.shields.io/badge/Join%20Discord-5865F2?style=flat&logo=discord&logoColor=white" alt="Join Discord"></a>
+  <a href="https://www.reddit.com/r/RooCode/"><img src="https://img.shields.io/badge/Join%20r%2FRooCode-FF4500?style=flat&logo=reddit&logoColor=white" alt="Join r/RooCode"></a>
+</p>
+<p align="center">
+  <em>Obtenha ajuda rápida → <a href="https://discord.gg/roocode">Junte-se ao Discord</a> • Prefere assíncrono? → <a href="https://www.reddit.com/r/RooCode/">Junte-se ao r/RooCode</a></em>
 </p>
 
-<a href="https://marketplace.visualstudio.com/items?itemName=RooVeterinaryInc.roo-cline" target="_blank"><img src="https://img.shields.io/badge/Baixar%20no%20VS%20Marketplace-blue?style=for-the-badge&logo=visualstudiocode&logoColor=white" alt="Baixar no VS Marketplace"></a>
-<a href="https://github.com/RooCodeInc/Roo-Code/discussions/categories/feature-requests?discussions_q=is%3Aopen+category%3A%22Feature+Requests%22+sort%3Atop" target="_blank"><img src="https://img.shields.io/badge/Solicitar%20Recursos-yellow?style=for-the-badge" alt="Solicitar Recursos"></a>
-<a href="https://marketplace.visualstudio.com/items?itemName=RooVeterinaryInc.roo-cline&ssr=false#review-details" target="_blank"><img src="https://img.shields.io/badge/Avaliar%20%26%20Comentar-green?style=for-the-badge" alt="Avaliar & Comentar"></a>
-<a href="https://docs.roocode.com" target="_blank"><img src="https://img.shields.io/badge/Documentação-6B46C1?style=for-the-badge&logo=readthedocs&logoColor=white" alt="Documentação"></a>
+# Roo Code
+
+> Roo Code é um agente de IA de código aberto para o VS Code. Embora sejamos tecnicamente um fork do Cline, sejamos claros: nosso caminho divergiu radicalmente. Estamos construindo algo fundamentalmente diferente.
+
+<details>
+  <summary>🌐 Idiomas disponíveis</summary>
+
+- [English](../../README.md)
+- [Català](../ca/README.md)
+- [Deutsch](../de/README.md)
+- [Español](../es/README.md)
+- [Français](../fr/README.md)
+- [हिंदी](../hi/README.md)
+- [Bahasa Indonesia](../id/README.md)
+- [Italiano](../it/README.md)
+- [日本語](../ja/README.md)
+- [한국어](../ko/README.md)
+- [Nederlands](../nl/README.md)
+- [Polski](../pl/README.md)
+- [Português (BR)](../pt-BR/README.md)
+- [Русский](../ru/README.md)
+- [Türkçe](../tr/README.md)
+- [Tiếng Việt](../vi/README.md)
+- [简体中文](../zh-CN/README.md)
+- [繁體中文](../zh-TW/README.md)
+- ...
+  </details>
+
+---
+
+## O que o Roo Code pode fazer por VOCÊ?
+
+- Gerar código a partir de descrições em linguagem natural
+- Adapte-se com os Modos: Código, Arquiteto, Pergunta, Depuração e Modos Personalizados
+- Refatorar e depurar código existente
+- Escrever e atualizar documentação
+- Responder a perguntas sobre sua base de código
+- Automatizar tarefas repetitivas
+- Utilizar servidores MCP
+
+## Modos
+
+O Roo Code se adapta à sua maneira de trabalhar, e não o contrário:
+
+- Modo Código: codificação diária, edições e operações de arquivo
+- Modo Arquiteto: planeje sistemas, especificações e migrações
+- Modo Pergunta: respostas rápidas, explicações e documentos
+- Modo Depuração: rastreie problemas, adicione logs, isole as causas raiz
+- Modos Personalizados: crie modos especializados para sua equipe ou fluxo de trabalho
+- Agentes na Nuvem: nossa direção de viagem—agentes hospedados e persistentes que podem executar tarefas longas e orquestrar o trabalho entre serviços
+
+Saiba mais: [Usando Modos](https://docs.roocode.com/basic-usage/using-modes) • [Modos Personalizados](https://docs.roocode.com/advanced-usage/custom-modes)
+
+## Vídeos de tutorial e recursos
+
+<div align="center">
+
+|                                                                                                                                                                             |                                                                                                                                                                           |                                                                                                                                                                                   |
+| :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
+| <a href="https://www.youtube.com/watch?v=Mcq3r1EPZ-4"><img src="https://img.youtube.com/vi/Mcq3r1EPZ-4/maxresdefault.jpg" width="100%"></a><br><b>Instalando o Roo Code</b> | <a href="https://www.youtube.com/watch?v=eEJErgZBqLE"><img src="https://img.youtube.com/vi/eEJErgZBqLE/maxresdefault.jpg" width="100%"></a><br><b>Configurando perfis</b> | <a href="https://www.youtube.com/watch?v=r1bpod1VWhg"><img src="https://img.youtube.com/vi/r1bpod1VWhg/maxresdefault.jpg" width="100%"></a><br><b>Indexação da base de código</b> |
+| <a href="https://www.youtube.com/watch?v=qgqceCuhlRA"><img src="https://img.youtube.com/vi/qgqceCuhlRA/maxresdefault.jpg" width="100%"></a><br><b>Modos personalizados</b>  |     <a href="https://www.youtube.com/watch?v=Ho30nyY332E"><img src="https://img.youtube.com/vi/Ho30nyY332E/maxresdefault.jpg" width="100%"></a><br><b>Checkpoints</b>     |      <a href="https://www.youtube.com/watch?v=6h5vB9PpoPk"><img src="https://img.youtube.com/vi/6h5vB9PpoPk/maxresdefault.jpg" width="100%"></a><br><b>Listas de tarefas</b>      |
 
 </div>
-
-**Roo Code** é um **agente de codificação autônomo** movido a IA que reside no seu editor. Ele pode:
-
-- Comunicar-se em linguagem natural
-- Ler e escrever arquivos diretamente no seu espaço de trabalho
-- Executar comandos do terminal
-- Automatizar ações do navegador
-- Integrar com qualquer API/modelo compatível com OpenAI ou personalizado
-- Adaptar sua "personalidade" e capacidades através de **Modos Personalizados**
-
-Seja você esteja buscando um parceiro de codificação flexível, um arquiteto de sistema ou funções especializadas como engenheiro de QA ou gerente de produto, o Roo Code pode ajudá-lo a construir software com mais eficiência.
-
-Confira o [CHANGELOG](../../CHANGELOG.md) para atualizações e correções detalhadas.
-
----
-
-## 🎉 Roo Code 3.25 foi lançado
-
-O Roo Code 3.25 traz novos recursos poderosos e melhorias significativas para aprimorar seu fluxo de trabalho de desenvolvimento!
-
-- **<bold>Gerenciamento de Sessões do Navegador</bold>** - Gerencie múltiplas sessões de navegador simultaneamente, permitindo a separação de diferentes tarefas e ambientes de teste.
-- **<bold>Cache de Prompts</bold>** - Faça cache de prompts frequentemente usados para reduzir significativamente os tempos de resposta e diminuir o uso da API.
-- **<bold>Funcionalidade de Uso do Computador</bold>** - A IA pode interagir diretamente com aplicações desktop, tirar screenshots e executar ações de clique e digitação.
-
----
-
-## O que o Roo Code pode fazer?
-
-- 🚀 **Gerar código** a partir de descrições em linguagem natural
-- 🔧 **Refatorar e depurar** código existente
-- 📝 **Escrever e atualizar** documentação
-- 🤔 **Responder perguntas** sobre sua base de código
-- 🔄 **Automatizar** tarefas repetitivas
-- 🏗️ **Criar** novos arquivos e projetos
-
-## Início Rápido
-
-1. [Instale o Roo Code](https://docs.roocode.com/getting-started/installing)
-2. [Conecte seu provedor de IA](https://docs.roocode.com/getting-started/connecting-api-provider)
-3. [Experimente sua primeira tarefa](https://docs.roocode.com/getting-started/your-first-task)
-
-## Principais Recursos
-
-### Múltiplos Modos
-
-O Roo Code se adapta às suas necessidades com [modos](https://docs.roocode.com/basic-usage/using-modes) especializados:
-
-- **Modo Code:** Para tarefas gerais de codificação
-- **Modo Architect:** Para planejamento e liderança técnica
-- **Modo Ask:** Para responder perguntas e fornecer informações
-- **Modo Debug:** Para diagnóstico sistemático de problemas
-- **[Modos Personalizados](https://docs.roocode.com/advanced-usage/custom-modes):** Crie personas especializadas ilimitadas para auditoria de segurança, otimização de desempenho, documentação ou qualquer outra tarefa
-
-### Ferramentas Inteligentes
-
-O Roo Code vem com poderosas [ferramentas](https://docs.roocode.com/basic-usage/how-tools-work) que podem:
-
-- Ler e escrever arquivos em seu projeto
-- Executar comandos no seu terminal VS Code
-- Controlar um navegador web
-- Usar ferramentas externas via [MCP (Model Context Protocol)](https://docs.roocode.com/advanced-usage/mcp)
-
-O MCP amplia as capacidades do Roo Code permitindo que você adicione ferramentas personalizadas ilimitadas. Integre com APIs externas, conecte-se a bancos de dados ou crie ferramentas de desenvolvimento especializadas - o MCP fornece o framework para expandir a funcionalidade do Roo Code para atender às suas necessidades específicas.
-
-### Personalização
-
-Faça o Roo Code funcionar do seu jeito com:
-
-- [Instruções Personalizadas](https://docs.roocode.com/advanced-usage/custom-instructions) para comportamento personalizado
-- [Modos Personalizados](https://docs.roocode.com/advanced-usage/custom-modes) para tarefas especializadas
-- [Modelos Locais](https://docs.roocode.com/advanced-usage/local-models) para uso offline
-- [Configurações de Auto-Aprovação](https://docs.roocode.com/advanced-usage/auto-approving-actions) para fluxos de trabalho mais rápidos
+<p align="center">
+<a href="https://docs.roocode.com/tutorial-videos">Mais vídeos rápidos de tutorial e recursos...</a>
+</p>
 
 ## Recursos
 
-### Documentação
-
-- [Guia de Uso Básico](https://docs.roocode.com/basic-usage/the-chat-interface)
-- [Recursos Avançados](https://docs.roocode.com/advanced-usage/auto-approving-actions)
-- [Perguntas Frequentes](https://docs.roocode.com/faq)
-
-### Comunidade
-
-- **Discord:** [Participe do nosso servidor Discord](https://discord.gg/roocode) para ajuda em tempo real e discussões
-- **Reddit:** [Visite nosso subreddit](https://www.reddit.com/r/RooCode) para compartilhar experiências e dicas
-- **GitHub:** [Reportar problemas](https://github.com/RooCodeInc/Roo-Code/issues) ou [solicitar recursos](https://github.com/RooCodeInc/Roo-Code/discussions/categories/feature-requests?discussions_q=is%3Aopen+category%3A%22Feature+Requests%22+sort%3Atop)
+- **[Documentação](https://docs.roocode.com):** O guia oficial para instalar, configurar e dominar o Roo Code.
+- **[Canal do YouTube](https://youtube.com/@roocodeyt?feature=shared):** Assista a tutoriais e veja os recursos em ação.
+- **[Servidor do Discord](https://discord.gg/roocode):** Junte-se à comunidade para ajuda e discussão em tempo real.
+- **[Comunidade do Reddit](https://www.reddit.com/r/RooCode):** Compartilhe suas experiências e veja o que os outros estão construindo.
+- **[Issues do GitHub](https://github.com/RooCodeInc/Roo-Code/issues):** Relate bugs e acompanhe o desenvolvimento.
+- **[Solicitações de recursos](https://github.com/RooCodeInc/Roo-Code/discussions/categories/feature-requests?discussions_q=is%3Aopen+category%3A%22Feature+Requests%22+sort%3Atop):** Tem uma ideia? Compartilhe com os desenvolvedores.
 
 ---
 
@@ -134,39 +98,66 @@ git clone https://github.com/RooCodeInc/Roo-Code.git
 2. **Instale as dependências**:
 
 ```sh
-npm run install:all
+pnpm install
 ```
 
-3. **Inicie o webview (aplicativo Vite/React com HMR)**:
+3. **Execute a extensão**:
+
+Existem várias maneiras de executar a extensão Roo Code:
+
+### Modo de Desenvolvimento (F5)
+
+Para desenvolvimento ativo, use a depuração incorporada do VSCode:
+
+Pressione `F5` (ou vá para **Executar** → **Iniciar Depuração**) no VSCode. Isso abrirá uma nova janela do VSCode com a extensão Roo Code em execução.
+
+- As alterações na visualização da web aparecerão imediatamente.
+- As alterações na extensão principal também serão recarregadas automaticamente.
+
+### Instalação automatizada de VSIX
+
+Para construir e instalar a extensão como um pacote VSIX diretamente no VSCode:
 
 ```sh
-npm run dev
+pnpm install:vsix [-y] [--editor=<command>]
 ```
 
-4. **Depuração**:
-   Pressione `F5` (ou **Executar** → **Iniciar Depuração**) no VSCode para abrir uma nova sessão com o Roo Code carregado.
+Este comando irá:
 
-Alterações no webview aparecerão imediatamente. Alterações na extensão principal exigirão a reinicialização do host da extensão.
+- Perguntar qual comando do editor usar (code/cursor/code-insiders) - o padrão é 'code'
+- Desinstalar qualquer versão existente da extensão.
+- Construir o pacote VSIX mais recente.
+- Instalar o VSIX recém-construído.
+- Solicitar que você reinicie o VS Code para que as alterações entrem em vigor.
 
-Alternativamente, você pode construir um .vsix e instalá-lo diretamente no VSCode:
+Opções:
 
-```sh
-npm run build
-```
+- `-y`: Pular todos os prompts de confirmação e usar os padrões
+- `--editor=<command>`: Especifique o comando do editor (por exemplo, `--editor=cursor` ou `--editor=code-insiders`)
 
-Um arquivo `.vsix` aparecerá no diretório `bin/` que pode ser instalado com:
+### Instalação Manual de VSIX
 
-```sh
-code --install-extension bin/roo-cline-<version>.vsix
-```
+Se preferir instalar o pacote VSIX manualmente:
+
+1.  Primeiro, construa o pacote VSIX:
+    ```sh
+    pnpm vsix
+    ```
+2.  Um arquivo `.vsix` será gerado no diretório `bin/` (por exemplo, `bin/roo-cline-<version>.vsix`).
+3.  Instale-o manualmente usando a CLI do VSCode:
+    ```sh
+    code --install-extension bin/roo-cline-<version>.vsix
+    ```
+
+---
 
 Usamos [changesets](https://github.com/changesets/changesets) para versionamento e publicação. Verifique nosso `CHANGELOG.md` para notas de lançamento.
 
 ---
 
-## Aviso Legal
+## Isenção de responsabilidade
 
-**Por favor, note** que a Roo Code, Inc **não** faz nenhuma representação ou garantia em relação a qualquer código, modelos ou outras ferramentas fornecidas ou disponibilizadas em conexão com o Roo Code, quaisquer ferramentas de terceiros associadas, ou quaisquer saídas resultantes. Você assume **todos os riscos** associados ao uso de tais ferramentas ou saídas; tais ferramentas são fornecidas em uma base **"COMO ESTÁ"** e **"COMO DISPONÍVEL"**. Tais riscos podem incluir, sem limitação, violação de propriedade intelectual, vulnerabilidades cibernéticas ou ataques, viés, imprecisões, erros, defeitos, vírus, tempo de inatividade, perda ou dano de propriedade e/ou lesões pessoais. Você é o único responsável pelo seu uso de tais ferramentas ou saídas (incluindo, sem limitação, a legalidade, adequação e resultados das mesmas).
+**Observe** que a Roo Code, Inc. **não** faz representações ou garantias em relação a qualquer código, modelos ou outras ferramentas fornecidas ou disponibilizadas em conexão com o Roo Code, quaisquer ferramentas de terceiros associadas ou quaisquer saídas resultantes. Você assume **todos os riscos** associados ao uso de tais ferramentas ou saídas; tais ferramentas são fornecidas **"COMO ESTÃO"** e **"CONFORME DISPONÍVEIS"**. Tais riscos podem incluir, sem limitação, violação de propriedade intelectual, vulnerabilidades ou ataques cibernéticos, viés, imprecisões, erros, defeitos, vírus, tempo de inatividade, perda ou dano de propriedade e/ou lesões pessoais. Você é o único responsável pelo uso de tais ferramentas ou saídas (incluindo, sem limitação, a legalidade, adequação e resultados das mesmas).
 
 ---
 
@@ -190,7 +181,7 @@ Obrigado a todos os nossos contribuidores que ajudaram a tornar o Roo Code melho
 |                <a href="https://github.com/xyOz-dev"><img src="https://avatars.githubusercontent.com/u/195602624?v=4" width="100" height="100" alt="xyOz-dev"/><br /><sub><b>xyOz-dev</b></sub></a>                |                 <a href="https://github.com/punkpeye"><img src="https://avatars.githubusercontent.com/u/108313943?v=4" width="100" height="100" alt="punkpeye"/><br /><sub><b>punkpeye</b></sub></a>                  |       <a href="https://github.com/SannidhyaSah"><img src="https://avatars.githubusercontent.com/u/186946675?v=4" width="100" height="100" alt="SannidhyaSah"/><br /><sub><b>SannidhyaSah</b></sub></a>       |       <a href="https://github.com/zhangtony239"><img src="https://avatars.githubusercontent.com/u/157202938?v=4" width="100" height="100" alt="zhangtony239"/><br /><sub><b>zhangtony239</b></sub></a>       |                  <a href="https://github.com/feifei325"><img src="https://avatars.githubusercontent.com/u/46489071?v=4" width="100" height="100" alt="feifei325"/><br /><sub><b>feifei325</b></sub></a>                  |                <a href="https://github.com/cannuri"><img src="https://avatars.githubusercontent.com/u/91494156?v=4" width="100" height="100" alt="cannuri"/><br /><sub><b>cannuri</b></sub></a>                 |
 |           <a href="https://github.com/monotykamary"><img src="https://avatars.githubusercontent.com/u/1130103?v=4" width="100" height="100" alt="monotykamary"/><br /><sub><b>monotykamary</b></sub></a>           | <a href="https://github.com/Smartsheet-JB-Brown"><img src="https://avatars.githubusercontent.com/u/171734120?v=4" width="100" height="100" alt="Smartsheet-JB-Brown"/><br /><sub><b>Smartsheet-JB-Brown</b></sub></a> |           <a href="https://github.com/sachasayan"><img src="https://avatars.githubusercontent.com/u/1666034?v=4" width="100" height="100" alt="sachasayan"/><br /><sub><b>sachasayan</b></sub></a>           |              <a href="https://github.com/dtrugman"><img src="https://avatars.githubusercontent.com/u/2451669?v=4" width="100" height="100" alt="dtrugman"/><br /><sub><b>dtrugman</b></sub></a>              |            <a href="https://github.com/liwilliam2021"><img src="https://avatars.githubusercontent.com/u/40069349?v=4" width="100" height="100" alt="liwilliam2021"/><br /><sub><b>liwilliam2021</b></sub></a>            |               <a href="https://github.com/hassoncs"><img src="https://avatars.githubusercontent.com/u/5104925?v=4" width="100" height="100" alt="hassoncs"/><br /><sub><b>hassoncs</b></sub></a>                |
 |           <a href="https://github.com/shariqriazz"><img src="https://avatars.githubusercontent.com/u/196900129?v=4" width="100" height="100" alt="shariqriazz"/><br /><sub><b>shariqriazz</b></sub></a>            |      <a href="https://github.com/vigneshsubbiah16"><img src="https://avatars.githubusercontent.com/u/51325334?v=4" width="100" height="100" alt="vigneshsubbiah16"/><br /><sub><b>vigneshsubbiah16</b></sub></a>      |     <a href="https://github.com/pugazhendhi-m"><img src="https://avatars.githubusercontent.com/u/132246623?v=4" width="100" height="100" alt="pugazhendhi-m"/><br /><sub><b>pugazhendhi-m</b></sub></a>      |           <a href="https://github.com/lloydchang"><img src="https://avatars.githubusercontent.com/u/1329685?v=4" width="100" height="100" alt="lloydchang"/><br /><sub><b>lloydchang</b></sub></a>           |                     <a href="https://github.com/NaccOll"><img src="https://avatars.githubusercontent.com/u/26819913?v=4" width="100" height="100" alt="NaccOll"/><br /><sub><b>NaccOll</b></sub></a>                     |                 <a href="https://github.com/Szpadel"><img src="https://avatars.githubusercontent.com/u/1857251?v=4" width="100" height="100" alt="Szpadel"/><br /><sub><b>Szpadel</b></sub></a>                 |
-|        <a href="https://github.com/PeterDaveHello"><img src="https://avatars.githubusercontent.com/u/3691490?v=4" width="100" height="100" alt="PeterDaveHello"/><br /><sub><b>PeterDaveHello</b></sub></a>        |      <a href="https://github.com/diarmidmackenzie"><img src="https://avatars.githubusercontent.com/u/16045703?v=4" width="100" height="100" alt="diarmidmackenzie"/><br /><sub><b>diarmidmackenzie</b></sub></a>      |         <a href="https://github.com/olweraltuve"><img src="https://avatars.githubusercontent.com/u/39308405?v=4" width="100" height="100" alt="olweraltuve"/><br /><sub><b>olweraltuve</b></sub></a>         |               <a href="https://github.com/psv2522"><img src="https://avatars.githubusercontent.com/u/87223770?v=4" width="100" height="100" alt="psv2522"/><br /><sub><b>psv2522</b></sub></a>               |                   <a href="https://github.com/Premshay"><img src="https://avatars.githubusercontent.com/u/28099628?v=4" width="100" height="100" alt="Premshay"/><br /><sub><b>Premshay</b></sub></a>                    |                  <a href="https://github.com/kiwina"><img src="https://avatars.githubusercontent.com/u/1071364?v=4" width="100" height="100" alt="kiwina"/><br /><sub><b>kiwina</b></sub></a>                   |
+|        <a href="https://github.com/PeterDaveHello"><img src="https://avatars.githubusercontent.com/u/3691490?v=4" width="100" height="100" alt="PeterDaveHello"/><br /><sub><b>PeterDaveHello</b></sub></a>        |      <a href="https://github.com/diarmidmackenzie"><img src="https://avatars.githubusercontent.com/u/16045703?v=4" width="100" height="100" alt="diarmidmackenzie"/><br /><sub><b>diarmidmackenzie</b></sub></a>      |                  <a href="https://www.youtube.com/watch?v=qgqceCuhlRA"><img src="https://img.youtube.com/vi/qgqceCuhlRA/maxresdefault.jpg" width="100%"></a><br><b>Modos personalizados</b>                  |               <a href="https://github.com/psv2522"><img src="https://avatars.githubusercontent.com/u/87223770?v=4" width="100" height="100" alt="psv2522"/><br /><sub><b>psv2522</b></sub></a>               |                   <a href="https://github.com/Premshay"><img src="https://avatars.githubusercontent.com/u/28099628?v=4" width="100" height="100" alt="Premshay"/><br /><sub><b>Premshay</b></sub></a>                    |                  <a href="https://github.com/kiwina"><img src="https://avatars.githubusercontent.com/u/1071364?v=4" width="100" height="100" alt="kiwina"/><br /><sub><b>kiwina</b></sub></a>                   |
 |              <a href="https://github.com/lupuletic"><img src="https://avatars.githubusercontent.com/u/105351510?v=4" width="100" height="100" alt="lupuletic"/><br /><sub><b>lupuletic</b></sub></a>               |                  <a href="https://github.com/ChuKhaLi"><img src="https://avatars.githubusercontent.com/u/15166543?v=4" width="100" height="100" alt="ChuKhaLi"/><br /><sub><b>ChuKhaLi</b></sub></a>                  |                 <a href="https://github.com/aheizi"><img src="https://avatars.githubusercontent.com/u/8243770?v=4" width="100" height="100" alt="aheizi"/><br /><sub><b>aheizi</b></sub></a>                 |        <a href="https://github.com/afshawnlotfi"><img src="https://avatars.githubusercontent.com/u/6283745?v=4" width="100" height="100" alt="afshawnlotfi"/><br /><sub><b>afshawnlotfi</b></sub></a>        |                 <a href="https://github.com/RaySinner"><img src="https://avatars.githubusercontent.com/u/118297374?v=4" width="100" height="100" alt="RaySinner"/><br /><sub><b>RaySinner</b></sub></a>                  |        <a href="https://github.com/noritaka1166"><img src="https://avatars.githubusercontent.com/u/189505037?v=4" width="100" height="100" alt="noritaka1166"/><br /><sub><b>noritaka1166</b></sub></a>         |
 |      <a href="https://github.com/nbihan-mediware"><img src="https://avatars.githubusercontent.com/u/42357253?v=4" width="100" height="100" alt="nbihan-mediware"/><br /><sub><b>nbihan-mediware</b></sub></a>      |             <a href="https://github.com/brunobergher"><img src="https://avatars.githubusercontent.com/u/328388?v=4" width="100" height="100" alt="brunobergher"/><br /><sub><b>brunobergher</b></sub></a>             |              <a href="https://github.com/emshvac"><img src="https://avatars.githubusercontent.com/u/121588911?v=4" width="100" height="100" alt="emshvac"/><br /><sub><b>emshvac</b></sub></a>               |            <a href="https://github.com/kyle-apex"><img src="https://avatars.githubusercontent.com/u/20145331?v=4" width="100" height="100" alt="kyle-apex"/><br /><sub><b>kyle-apex</b></sub></a>            |                       <a href="https://github.com/pdecat"><img src="https://avatars.githubusercontent.com/u/318490?v=4" width="100" height="100" alt="pdecat"/><br /><sub><b>pdecat</b></sub></a>                        |                  <a href="https://github.com/Ruakij"><img src="https://avatars.githubusercontent.com/u/54639830?v=4" width="100" height="100" alt="Ruakij"/><br /><sub><b>Ruakij</b></sub></a>                  |
 |          <a href="https://github.com/StevenTCramer"><img src="https://avatars.githubusercontent.com/u/357219?v=4" width="100" height="100" alt="StevenTCramer"/><br /><sub><b>StevenTCramer</b></sub></a>          |                    <a href="https://github.com/dleffel"><img src="https://avatars.githubusercontent.com/u/7119958?v=4" width="100" height="100" alt="dleffel"/><br /><sub><b>dleffel</b></sub></a>                    |            <a href="https://github.com/Lunchb0ne"><img src="https://avatars.githubusercontent.com/u/22198661?v=4" width="100" height="100" alt="Lunchb0ne"/><br /><sub><b>Lunchb0ne</b></sub></a>            |           <a href="https://github.com/SmartManoj"><img src="https://avatars.githubusercontent.com/u/7231077?v=4" width="100" height="100" alt="SmartManoj"/><br /><sub><b>SmartManoj</b></sub></a>           |                   <a href="https://github.com/vagadiya"><img src="https://avatars.githubusercontent.com/u/32499123?v=4" width="100" height="100" alt="vagadiya"/><br /><sub><b>vagadiya</b></sub></a>                    |        <a href="https://github.com/slytechnical"><img src="https://avatars.githubusercontent.com/u/139649758?v=4" width="100" height="100" alt="slytechnical"/><br /><sub><b>slytechnical</b></sub></a>         |
@@ -228,8 +219,8 @@ Obrigado a todos os nossos contribuidores que ajudaram a tornar o Roo Code melho
 
 ## Licença
 
-[Apache 2.0 © 2025 Roo Code, Inc.](../LICENSE)
+[Apache 2.0 © 2025 Roo Code, Inc.](./LICENSE)
 
 ---
 
-**Aproveite o Roo Code!** Seja você o mantenha em uma coleira curta ou deixe-o vagar autonomamente, mal podemos esperar para ver o que você construirá. Se você tiver dúvidas ou ideias de recursos, passe por nossa [comunidade Reddit](https://www.reddit.com/r/RooCode/) ou [Discord](https://discord.gg/roocode). Feliz codificação!
+**Aproveite o Roo Code!** Quer você o mantenha na coleira curta ou o deixe perambular autonomamente, mal podemos esperar para ver o que você vai construir. Se tiver dúvidas ou ideias de recursos, passe na nossa [comunidade do Reddit](https://www.reddit.com/r/RooCode/) ou no [Discord](https://discord.gg/roocode). Feliz codificação!

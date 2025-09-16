@@ -5,6 +5,9 @@
   <a href="https://discord.gg/roocode"><img src="https://img.shields.io/badge/Join%20Discord-5865F2?style=flat&logo=discord&logoColor=white" alt="Join Discord"></a>
   <a href="https://www.reddit.com/r/RooCode/"><img src="https://img.shields.io/badge/Join%20r%2FRooCode-FF4500?style=flat&logo=reddit&logoColor=white" alt="Join r/RooCode"></a>
 </p>
+<p align="center">
+  <em>Get help fast → <a href="https://discord.gg/roocode">Join Discord</a> • Prefer async? → <a href="https://www.reddit.com/r/RooCode/">Join r/RooCode</a></em>
+</p>
 
 # Roo Code
 
@@ -32,20 +35,21 @@
 - [简体中文](locales/zh-CN/README.md)
 - [繁體中文](locales/zh-TW/README.md)
 - ...
-      </details>
+  </details>
 
 ---
 
 ## What Can Roo Code Do For YOU?
 
 - Generate Code from natural language descriptions
+- Adapt with Modes: Code, Architect, Ask, Debug, and Custom Modes
 - Refactor & Debug existing code
 - Write & Update documentation
 - Answer Questions about your codebase
 - Automate repetitive tasks
 - Utilize MCP Servers
 
-## Modes and Roles
+## Modes
 
 Roo Code adapts to how you work, not the other way around:
 
@@ -53,7 +57,7 @@ Roo Code adapts to how you work, not the other way around:
 - Architect Mode: plan systems, specs, and migrations
 - Ask Mode: fast answers, explanations, and docs
 - Debug Mode: trace issues, add logs, isolate root causes
-- Custom Modes: build specialized roles for your team or workflow
+- Custom Modes: build specialized modes for your team or workflow
 - Cloud Agents: our direction of travel—hosted, persistent agents that can run long tasks and orchestrate work across services
 
 Learn more: [Using Modes](https://docs.roocode.com/basic-usage/using-modes) • [Custom Modes](https://docs.roocode.com/advanced-usage/custom-modes)
