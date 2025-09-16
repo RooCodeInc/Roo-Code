@@ -31,8 +31,6 @@
 	"history": {
 		"title": "Riwayat"
 	},
-	"unpin": "Lepas Pin",
-	"pin": "Pin",
 	"retry": {
 		"title": "Coba Lagi",
 		"tooltip": "Coba operasi lagi"
@@ -410,5 +408,18 @@
 	"slashCommand": {
 		"wantsToRun": "Roo ingin menjalankan perintah slash:",
 		"didRun": "Roo telah menjalankan perintah slash:"
+	},
+	"apiConfigSelector": {
+		"unpin": "Lepas Pin",
+		"pin": "Sematkan",
+		"sort": "Urutkan",
+		"alphabetical": "A–Z",
+		"custom": "Kustom",
+		"reorder": "Susun ulang…",
+		"dragToReorder": "Seret untuk menyusun ulang konfigurasi",
+		"keyboardNavigation": "Gunakan tombol panah untuk navigasi, Alt/Option + tombol panah untuk menyusun ulang",
+		"cancel": "Batal",
+		"done": "Selesai",
+		"editConfigurations": "Edit konfigurasi"
 	}
 }

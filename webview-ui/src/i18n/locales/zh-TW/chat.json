@@ -28,8 +28,6 @@
 		"openInCloud": "在 Roo Code Cloud 中開啟工作",
 		"openInCloudIntro": "從任何地方繼續監控或與 Roo 互動。掃描、點擊或複製以開啟。"
 	},
-	"unpin": "取消釘選",
-	"pin": "釘選",
 	"retry": {
 		"title": "重試",
 		"tooltip": "再次嘗試操作"
@@ -404,5 +402,18 @@
 	"slashCommand": {
 		"wantsToRun": "Roo 想要執行斜線指令:",
 		"didRun": "Roo 執行了斜線指令:"
+	},
+	"apiConfigSelector": {
+		"unpin": "取消釘選",
+		"pin": "釘選",
+		"sort": "排序",
+		"alphabetical": "A–Z",
+		"custom": "自訂",
+		"reorder": "重新排序…",
+		"dragToReorder": "拖曳以重新排序設定",
+		"keyboardNavigation": "使用方向鍵導航，Alt/Option + 方向鍵重新排序",
+		"cancel": "取消",
+		"done": "完成",
+		"editConfigurations": "編輯設定"
 	}
 }

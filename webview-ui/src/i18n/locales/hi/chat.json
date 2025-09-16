@@ -28,8 +28,6 @@
 		"openInCloud": "Roo Code Cloud में कार्य खोलें",
 		"openInCloudIntro": "कहीं से भी Roo की निगरानी या इंटरैक्ट करना जारी रखें। खोलने के लिए स्कैन करें, क्लिक करें या कॉपी करें।"
 	},
-	"unpin": "पिन करें",
-	"pin": "अवपिन करें",
 	"tokenProgress": {
 		"availableSpace": "उपलब्ध स्थान: {{amount}} tokens",
 		"tokensUsed": "प्रयुक्त tokens: {{used}} / {{total}}",
@@ -404,5 +402,18 @@
 	"slashCommand": {
 		"wantsToRun": "Roo एक स्लैश कमांड चलाना चाहता है:",
 		"didRun": "Roo ने एक स्लैश कमांड चलाया:"
+	},
+	"apiConfigSelector": {
+		"unpin": "अनपिन करें",
+		"pin": "पिन करें",
+		"sort": "क्रमबद्ध करें",
+		"alphabetical": "A–Z",
+		"custom": "कस्टम",
+		"reorder": "पुनः व्यवस्थित करें…",
+		"dragToReorder": "कॉन्फ़िगरेशन को पुनः व्यवस्थित करने के लिए खींचें",
+		"keyboardNavigation": "नेविगेट करने के लिए तीर कुंजियों का उपयोग करें, पुनः व्यवस्थित करने के लिए Alt/Option + तीर कुंजियाँ",
+		"cancel": "रद्द करें",
+		"done": "हो गया",
+		"editConfigurations": "कॉन्फ़िगरेशन संपादित करें"
 	}
 }
