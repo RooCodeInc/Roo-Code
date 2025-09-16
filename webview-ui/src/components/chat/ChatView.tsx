@@ -101,7 +101,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		alwaysAllowReadOnlyOutsideWorkspace,
 		alwaysAllowWrite,
 		alwaysAllowWriteOutsideWorkspace,
-		alwaysAllowWriteProtected,
+		alwaysAllowWriteProtected: _alwaysAllowWriteProtected,
 		alwaysAllowExecute,
 		alwaysAllowMcp,
 		allowedCommands,
@@ -1132,7 +1132,8 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			}
 
 			if (message.ask === "command") {
-				return alwaysAllowExecute && isAllowedCommand(message)
+				const isProtected = message.isProtected
+				return alwaysAllowExecute && isAllowedCommand(message) && !isProtected
 			}
 
 			// For read/write operations, check if it's outside workspace and if
@@ -1176,15 +1177,15 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				const isProtected = message.isProtected
 
 				if (isReadOnlyToolAction(message)) {
-					return alwaysAllowReadOnly && (!isOutsideWorkspace || alwaysAllowReadOnlyOutsideWorkspace)
+					return (
+						alwaysAllowReadOnly &&
+						(!isOutsideWorkspace || alwaysAllowReadOnlyOutsideWorkspace) &&
+						!isProtected
+					)
 				}
 
 				if (isWriteToolAction(message)) {
-					return (
-						alwaysAllowWrite &&
-						(!isOutsideWorkspace || alwaysAllowWriteOutsideWorkspace) &&
-						(!isProtected || alwaysAllowWriteProtected)
-					)
+					return alwaysAllowWrite && (!isOutsideWorkspace || alwaysAllowWriteOutsideWorkspace) && !isProtected
 				}
 			}
 
@@ -1199,7 +1200,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			isReadOnlyToolAction,
 			alwaysAllowWrite,
 			alwaysAllowWriteOutsideWorkspace,
-			alwaysAllowWriteProtected,
 			isWriteToolAction,
 			alwaysAllowExecute,
 			isAllowedCommand,

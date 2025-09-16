@@ -23,11 +23,21 @@ describe("experiments", () => {
 		})
 	})
 
+	describe("SECURITY_MIDDLEWARE", () => {
+		it("is configured correctly", () => {
+			expect(EXPERIMENT_IDS.SECURITY_MIDDLEWARE).toBe("securityMiddleware")
+			expect(experimentConfigsMap.SECURITY_MIDDLEWARE).toMatchObject({
+				enabled: false,
+			})
+		})
+	})
+
 	describe("isEnabled", () => {
 		it("returns false when POWER_STEERING experiment is not enabled", () => {
 			const experiments: Record<ExperimentId, boolean> = {
 				powerSteering: false,
 				multiFileApplyDiff: false,
+				securityMiddleware: false,
 				preventFocusDisruption: false,
 				imageGeneration: false,
 				runSlashCommand: false,
@@ -39,6 +49,7 @@ describe("experiments", () => {
 			const experiments: Record<ExperimentId, boolean> = {
 				powerSteering: true,
 				multiFileApplyDiff: false,
+				securityMiddleware: false,
 				preventFocusDisruption: false,
 				imageGeneration: false,
 				runSlashCommand: false,
@@ -50,6 +61,7 @@ describe("experiments", () => {
 			const experiments: Record<ExperimentId, boolean> = {
 				powerSteering: false,
 				multiFileApplyDiff: false,
+				securityMiddleware: false,
 				preventFocusDisruption: false,
 				imageGeneration: false,
 				runSlashCommand: false,

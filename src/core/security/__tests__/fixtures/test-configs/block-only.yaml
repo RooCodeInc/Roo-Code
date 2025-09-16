@@ -1,0 +1,39 @@
+# Test configuration with only block rules
+override_global_config: true
+
+block:
+  files:
+  - confidential/**/*
+  - '*secret*'
+  - '*password*'
+  - '*key*'
+  - '*credential*'
+  - '*cert*'
+  - '*salary*'
+  - '*salaries*'
+  - '*wage*'
+  - '*wages*'
+  - '*payroll*'
+  - '*financial*'
+  - '*finance*'
+  - '*.bak'
+  - '*.backup'
+  - '*.old'
+  env_vars:
+  - '*_KEY'
+  - '*_TOKEN'
+  - '*_SECRET'
+  - '*_PASSWORD'
+  - '*_PASSPHRASE'
+  - '*_CREDENTIALS'
+  - '*_CERT'
+  - '*DATABASE_URL'
+  - '*DB_URI'
+  commands:
+  - env
+  - printenv
+
+ask:
+  files: []
+  env_vars: []
+  commands: []

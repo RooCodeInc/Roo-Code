@@ -1,0 +1,27 @@
+# Test configuration with only ask rules
+override_global_config: true
+
+block:
+  files: []
+  env_vars: []
+  commands: []
+
+ask:
+  files:
+  - .env*
+  - env*
+  - '*token*'
+  - id_rsa
+  - id_ed25519
+  - '*.pem'
+  - '*.p12'
+  - '*.pfx'
+  env_vars:
+  - '*_API_KEY'
+  - '*_AUTH_TOKEN'
+  commands:
+  - cat
+  - head
+  - tail
+  - less
+  - more

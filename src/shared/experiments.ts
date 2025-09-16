@@ -3,6 +3,7 @@ import type { AssertEqual, Equals, Keys, Values, ExperimentId, Experiments } fro
 export const EXPERIMENT_IDS = {
 	MULTI_FILE_APPLY_DIFF: "multiFileApplyDiff",
 	POWER_STEERING: "powerSteering",
+	SECURITY_MIDDLEWARE: "securityMiddleware",
 	PREVENT_FOCUS_DISRUPTION: "preventFocusDisruption",
 	IMAGE_GENERATION: "imageGeneration",
 	RUN_SLASH_COMMAND: "runSlashCommand",
@@ -19,6 +20,7 @@ interface ExperimentConfig {
 export const experimentConfigsMap: Record<ExperimentKey, ExperimentConfig> = {
 	MULTI_FILE_APPLY_DIFF: { enabled: false },
 	POWER_STEERING: { enabled: false },
+	SECURITY_MIDDLEWARE: { enabled: false },
 	PREVENT_FOCUS_DISRUPTION: { enabled: false },
 	IMAGE_GENERATION: { enabled: false },
 	RUN_SLASH_COMMAND: { enabled: false },

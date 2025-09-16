@@ -1,0 +1,38 @@
+# Test configuration for edge cases and error handling
+override_global_config: true
+
+block:
+  files:
+  # Complex patterns for testing
+  - '**/*.secret'
+  - 'config/**/private/*'
+  - '*[Pp]assword*'
+  - '*.{key,pem,p12}'
+  # Special characters
+  - '*$ecret*'
+  - '*@private*'
+  - '*#confidential*'
+  # Case sensitivity tests
+  - '*SECRET*'
+  - '*Secret*'
+  - '*sEcReT*'
+  env_vars:
+  - 'API_*_KEY'
+  - '*_SECRET_*'
+  commands:
+  - 'env*'
+  - '*printenv*'
+
+ask:
+  files:
+  # Empty patterns (should be ignored)
+  - ''
+  # Whitespace patterns
+  - '  .env  '
+  # Unicode patterns
+  - '*tøken*'
+  env_vars: []
+  commands:
+  # Duplicate commands (should be handled)
+  - cat
+  - cat

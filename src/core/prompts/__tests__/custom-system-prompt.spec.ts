@@ -39,6 +39,23 @@ vi.mock("../../../utils/fs", () => ({
 	createDirectoriesForFile: vi.fn().mockResolvedValue([]),
 }))
 
+vi.mock("../../../services/code-index/manager", () => ({
+	CodeIndexManager: {
+		getInstance: vi.fn().mockReturnValue({
+			isFeatureEnabled: false,
+			isFeatureConfigured: false,
+			isInitialized: false,
+			getCurrentStatus: vi.fn().mockReturnValue({
+				systemStatus: "Standby",
+				message: "",
+			}),
+			searchIndex: vi.fn().mockResolvedValue([]),
+			dispose: vi.fn(),
+		}),
+		disposeAll: vi.fn(),
+	},
+}))
+
 import { SYSTEM_PROMPT } from "../system"
 import { defaultModeSlug, modes } from "../../../shared/modes"
 import * as vscode from "vscode"
@@ -62,7 +79,7 @@ const mockContext = {
 	globalState: {
 		get: () => undefined,
 		update: () => Promise.resolve(),
-		setKeysForSync: () => {},
+		setKeysForSync: () => { },
 	},
 	extensionUri: { fsPath: "mock/extension/path" },
 	globalStorageUri: { fsPath: "mock/settings/path" },
@@ -114,7 +131,7 @@ describe("File-Based Custom System Prompt", () => {
 		expect(prompt).toContain("CAPABILITIES")
 		expect(prompt).toContain("MODES")
 		expect(prompt).toContain("Test role definition")
-	})
+	}, 50000) // 50 second timeout for Windows CI
 
 	it("should use file-based custom system prompt when available", async () => {
 		// Mock the readFile to return content from a file

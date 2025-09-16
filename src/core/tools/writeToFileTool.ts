@@ -59,6 +59,50 @@ export async function writeToFileTool(
 		return
 	}
 
+	// Check security validation
+	const securityCheck = cline.securityGuard?.validateFileAccess?.(relPath)
+	let securityApproved = false // Track if security approval was granted
+
+	if (securityCheck?.blocked) {
+		// Confidential files - IMMEDIATE BLOCK with no permission dialog
+		await cline.say(
+			"error",
+			`🚫 **ACCESS DENIED**: Cannot write to confidential file.\n\n📁 **File**: \`${relPath}\`\n🛡️ **Security Pattern**: \`${securityCheck.pattern}\`\n- Matched Rule: ${securityCheck.matchedRule}`,
+		)
+		pushToolResult(formatResponse.toolError("Access denied to confidential file"))
+		return
+	} else if (securityCheck?.requiresApproval) {
+		// First, inform the user in the chat about the sensitive file
+		await cline.say(
+			"text",
+			`🔒 **SECURITY NOTICE**: I need to write to a sensitive file that requires your permission.\n\n📁 **File**: \`${relPath}\`\n🛡️ **Security Pattern**: \`${securityCheck.pattern}\`\n⚠️ **Risk**: This file may contain sensitive information like environment variables, tokens, or credentials.\n\nI will now request your permission to write to this file. Please review the permission dialog carefully.`,
+		)
+
+		// Check if file exists to determine the correct tool type
+		const absolutePath = path.resolve(cline.cwd, relPath)
+		const fileExists = await fileExistsAtPath(absolutePath)
+
+		// Then ask for user permission using askApproval function
+		const permissionMessage = JSON.stringify({
+			tool: fileExists ? "editedExistingFile" : "newFileCreated",
+			path: getReadablePath(cline.cwd, relPath),
+			isOutsideWorkspace: isPathOutsideWorkspace(path.resolve(cline.cwd, relPath)),
+			content: `🔒 SECURITY PERMISSION REQUIRED 🔒\n\nThe AI is requesting permission to WRITE to a SENSITIVE file:\n\n📁 File: ${relPath}\n🛡️ Security Pattern: ${securityCheck.pattern}\n⚠️ Risk: This file may contain sensitive information like environment variables, tokens, or credentials.\n\n❓ Do you want to ALLOW the AI to write to this sensitive file?\n\n✅ Click AGREE to grant access\n❌ Click REJECT to deny access`,
+			reason: `🔒 Sensitive File Write Access Required (${securityCheck.pattern})`,
+		} satisfies ClineSayTool)
+
+		const didApprove = await askApproval("tool", permissionMessage, undefined, true)
+
+		if (!didApprove) {
+			// User denied access
+			await cline.say("error", "Access denied to sensitive file")
+			pushToolResult(formatResponse.toolError("Access denied to sensitive file"))
+			return
+		}
+		// User approved sensitive file access - set flag to skip normal approval
+		securityApproved = true
+	}
+
 	// Check if file is write-protected
 	const isWriteProtected = cline.rooProtectedController?.isWriteProtected(relPath) || false
 
@@ -96,7 +140,7 @@ export async function writeToFileTool(
 		path: getReadablePath(cline.cwd, removeClosingTag("path", relPath)),
 		content: newContent,
 		isOutsideWorkspace,
-		isProtected: isWriteProtected,
+		isProtected: isWriteProtected || !!securityCheck?.requiresApproval || !!securityCheck?.blocked,
 	}
 
 	try {
@@ -161,6 +205,74 @@ export async function writeToFileTool(
 
 			cline.consecutiveMistakeCount = 0
 
+			// if isEditingFile false, that means we have the full contents of the file already.
+			// it's important to note how cline function works, you can't make the assumption that the block.partial conditional will always be called since it may immediately get complete, non-partial data. So cline part of the logic will always be called.
+			// in other words, you must always repeat the block.partial logic here
+			if (!cline.diffViewProvider.isEditing) {
+				// show gui message before showing edit animation
+				const partialMessage = JSON.stringify(sharedMessageProps)
+				await cline.ask("tool", partialMessage, true).catch(() => {}) // sending true for partial even though it's not a partial, cline shows the edit row before the content is streamed into the editor
+				await cline.diffViewProvider.open(relPath)
+			}
+
+			await cline.diffViewProvider.update(
+				everyLineHasLineNumbers(newContent) ? stripLineNumbers(newContent) : newContent,
+				true,
+			)
+
+			await delay(300) // wait for diff view to update
+			cline.diffViewProvider.scrollToFirstDiff()
+
+			// Check for code omissions before proceeding
+			if (detectCodeOmission(cline.diffViewProvider.originalContent || "", newContent, predictedLineCount)) {
+				if (cline.diffStrategy) {
+					await cline.diffViewProvider.revertChanges()
+
+					pushToolResult(
+						formatResponse.toolError(
+							`Content appears to be truncated (file has ${
+								newContent.split("\n").length
+							} lines but was predicted to have ${predictedLineCount} lines), and found comments indicating omitted code (e.g., '// rest of code unchanged', '/* previous code */'). Please provide the complete file content without any omissions if possible, or otherwise use the 'apply_diff' tool to apply the diff to the original file.`,
+						),
+					)
+					return
+				} else {
+					vscode.window
+						.showWarningMessage(
+							"Potential code truncation detected. cline happens when the AI reaches its max output limit.",
+							"Follow cline guide to fix the issue",
+						)
+						.then((selection) => {
+							if (selection === "Follow cline guide to fix the issue") {
+								vscode.env.openExternal(
+									vscode.Uri.parse(
+										"https://github.com/cline/cline/wiki/Troubleshooting-%E2%80%90-Cline-Deleting-Code-with-%22Rest-of-Code-Here%22-Comments",
+									),
+								)
+							}
+						})
+				}
+			}
+
+			// Skip normal approval if security approval was already granted
+			if (!securityApproved) {
+				const completeMessage = JSON.stringify({
+					...sharedMessageProps,
+					content: fileExists ? undefined : newContent,
+					diff: fileExists
+						? formatResponse.createPrettyPatch(relPath, cline.diffViewProvider.originalContent, newContent)
+						: undefined,
+				} satisfies ClineSayTool)
+
+				const didApprove = await askApproval("tool", completeMessage, undefined, isWriteProtected)
+
+				if (!didApprove) {
+					await cline.diffViewProvider.revertChanges()
+					return
+				}
+			}
+
+			// Call saveChanges to update the DiffViewProvider properties
 			// Check if preventFocusDisruption experiment is enabled
 			const provider = cline.providerRef.deref()
 			const state = await provider?.getState()

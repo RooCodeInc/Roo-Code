@@ -119,6 +119,7 @@ export interface ExtensionMessage {
 		| "shareTaskSuccess"
 		| "codeIndexSettingsSaved"
 		| "codeIndexSecretStatus"
+		| "securityConfigStatus"
 		| "showDeleteMessageDialog"
 		| "showEditMessageDialog"
 		| "commands"
@@ -198,6 +199,14 @@ export interface ExtensionMessage {
 	messageTs?: number
 	hasCheckpoint?: boolean
 	context?: string
+	configStatus?: {
+		globalPath: string
+		globalExists: boolean
+		projectPath: string
+		projectExists: boolean
+		customPath?: string
+		customExists?: boolean
+	}
 	commands?: Command[]
 	queuedMessages?: QueuedMessage[]
 	list?: string[] // For dismissedUpsells
@@ -336,6 +345,7 @@ export type ExtensionState = Pick<
 	marketplaceInstalledMetadata?: { project: Record<string, any>; global: Record<string, any> }
 	profileThresholds: Record<string, number>
 	hasOpenedModeSelector: boolean
+	securityCustomConfigPath?: string
 	openRouterImageApiKey?: string
 	openRouterUseMiddleOutTransform?: boolean
 	messageQueue?: QueuedMessage[]

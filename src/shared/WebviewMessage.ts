@@ -29,6 +29,10 @@ export interface WebviewMessage {
 	type:
 		| "updateTodoList"
 		| "deleteMultipleTasksWithIds"
+		| "createGlobalSecurityConfig"
+		| "createProjectSecurityConfig"
+		| "getSecurityConfigStatus"
+		| "securityConfigStatus"
 		| "currentApiConfigName"
 		| "saveApiConfiguration"
 		| "upsertApiConfiguration"
@@ -48,6 +52,7 @@ export interface WebviewMessage {
 		| "alwaysAllowExecute"
 		| "alwaysAllowFollowupQuestions"
 		| "alwaysAllowUpdateTodoList"
+		| "securityCustomConfigPath"
 		| "followupAutoApproveTimeoutMs"
 		| "webviewDidLaunch"
 		| "newTask"

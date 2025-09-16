@@ -874,10 +874,11 @@ describe("Cline", () => {
 
 			describe("processUserContentMentions", () => {
 				it("should process mentions in task and feedback tags", async () => {
-					const [cline, task] = Task.create({
+					const cline = new Task({
 						provider: mockProvider,
 						apiConfiguration: mockApiConfig,
 						task: "test task",
+						startTask: false,
 					})
 
 					const userContent = [
@@ -944,8 +945,8 @@ describe("Cline", () => {
 						"Regular tool result with 'path' (see below for file content)",
 					)
 
-					await cline.abortTask(true)
-					await task.catch(() => {})
+					// Clean up without starting the task
+					cline.dispose()
 				})
 			})
 		})
