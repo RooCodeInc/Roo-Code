@@ -3,10 +3,7 @@
  * Works with react-cookie-consent library
  */
 
-/**
- * Cookie name used by react-cookie-consent
- */
-const CONSENT_COOKIE_NAME = "roo-code-cookie-consent"
+import { CONSENT_COOKIE_NAME } from "../constants"
 
 /**
  * Event name for consent changes

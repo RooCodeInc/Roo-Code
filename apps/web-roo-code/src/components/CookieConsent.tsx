@@ -1,8 +1,9 @@
 "use client"
 
-import React from "react"
+import React, { useState, useEffect } from "react"
 import ReactCookieConsent from "react-cookie-consent"
 import { Cookie } from "lucide-react"
+import { CONSENT_COOKIE_NAME, CONSENT_COOKIE_DOMAIN } from "@/lib/constants"
 
 export interface CookieConsentProps {
 	/**
@@ -43,9 +44,19 @@ export function CookieConsent({
 	onAccept,
 	onDecline,
 	className = "",
-	cookieName = "roo-code-cookie-consent",
+	cookieName = CONSENT_COOKIE_NAME,
 	debug = false,
 }: CookieConsentProps) {
+	const [hostname, setHostname] = useState<string>("localhost")
+
+	useEffect(() => {
+		setHostname(window.location.hostname)
+	}, [])
+
+	const extraCookieOptions = {
+		domain: process.env.NODE_ENV === "production" ? hostname : CONSENT_COOKIE_DOMAIN,
+	}
+
 	const containerClasses = `
 		fixed bottom-2 left-2 right-2 z-[999]
 		bg-black/95 dark:bg-white/95
@@ -109,6 +120,7 @@ export function CookieConsent({
 				buttonClasses={acceptButtonClasses}
 				buttonWrapperClasses={buttonWrapperClasses}
 				declineButtonClasses={declineButtonClasses}
+				extraCookieOptions={extraCookieOptions}
 				disableStyles={true}
 				ariaAcceptLabel={`Accept`}
 				ariaDeclineLabel={`Decline`}>
