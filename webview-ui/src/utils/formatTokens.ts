@@ -1,3 +1,5 @@
+import { formatLargeNumber } from "./format"
+
 /**
  * Format token count for display
  * @param count - The token count to format
@@ -7,20 +9,7 @@ export function formatTokenCount(count: number | undefined): string {
 	if (count === undefined || count === 0) {
 		return "0"
 	}
-
-	if (count < 1000) {
-		return count.toString()
-	}
-
-	// Format as k (thousands) with one decimal place
-	const thousands = count / 1000
-	if (thousands < 10) {
-		// For values less than 10k, show one decimal place
-		return `${thousands.toFixed(1)}k`
-	} else {
-		// For values 10k and above, show no decimal places
-		return `${Math.round(thousands)}k`
-	}
+	return formatLargeNumber(count)
 }
 
 /**
@@ -39,7 +28,6 @@ export function formatTokenStats(
 ): { input: string; output: string } {
 	let inputDisplay = formatTokenCount(tokensIn)
 
-	// Add cache reads in parentheses if they exist
 	if (cacheReads && cacheReads > 0) {
 		const cacheDisplay = formatTokenCount(cacheReads)
 		inputDisplay = `${inputDisplay} (${cacheDisplay} ${cacheLabel})`
