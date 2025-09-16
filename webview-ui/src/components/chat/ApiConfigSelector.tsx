@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { Fzf } from "fzf"
-import { ChevronUp, GripVertical } from "lucide-react"
+import { GripVertical } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { useRooPortal } from "@/components/ui/hooks/useRooPortal"
@@ -54,8 +54,10 @@ export const ApiConfigSelector = ({
 		dragOverIndex: null,
 	})
 	const [focusedIndex, setFocusedIndex] = useState<number | null>(null)
-	// Track the ID of the item that should maintain focus during reordering
-	const [focusedItemId, setFocusedItemId] = useState<string | null>(null)
+
+	useEffect(() => {
+		console.log({ focusedIndex })
+	}, [focusedIndex])
 
 	// Internal state for sort mode and custom order when parent doesn't provide them
 	const [sortMode, setSortMode] = useState<SortMode>("alphabetical")
@@ -126,34 +128,6 @@ export const ApiConfigSelector = ({
 		}
 	}, [focusedIndex, isReorderMode])
 
-	// Effect to set initial focus when entering reorder mode
-	useEffect(() => {
-		if (isReorderMode && focusedIndex === null) {
-			const allConfigs = [...pinnedConfigs, ...unpinnedConfigs]
-			// Try to focus on the currently selected item, otherwise focus the first item
-			const selectedIndex = allConfigs.findIndex((config) => config.id === value)
-			const initialIndex = selectedIndex !== -1 ? selectedIndex : 0
-			setFocusedIndex(initialIndex)
-			if (allConfigs[initialIndex]) {
-				setFocusedItemId(allConfigs[initialIndex].id)
-			}
-		} else if (!isReorderMode) {
-			setFocusedIndex(null)
-			setFocusedItemId(null)
-		}
-	}, [isReorderMode, focusedIndex, pinnedConfigs, unpinnedConfigs, value])
-
-	// Update focus index when the focused item's position changes
-	useEffect(() => {
-		if (isReorderMode && focusedItemId) {
-			const allConfigs = [...pinnedConfigs, ...unpinnedConfigs]
-			const newIndex = allConfigs.findIndex((config) => config.id === focusedItemId)
-			if (newIndex !== -1 && newIndex !== focusedIndex) {
-				setFocusedIndex(newIndex)
-			}
-		}
-	}, [pinnedConfigs, unpinnedConfigs, focusedItemId, isReorderMode, focusedIndex])
-
 	const handleSelect = useCallback(
 		(configId: string) => {
 			onChange(configId)
@@ -182,8 +156,8 @@ export const ApiConfigSelector = ({
 			handleSortModeChange("custom")
 		}
 		setIsReorderMode(true)
-		// Reset focused item ID when entering reorder mode
-		setFocusedItemId(null)
+		// Reset focus when entering reorder mode
+		setFocusedIndex(null)
 	}, [sortMode, handleSortModeChange])
 
 	const handleReorderDone = useCallback(() => {
@@ -209,7 +183,6 @@ export const ApiConfigSelector = ({
 			dragOverIndex: null,
 		})
 		setFocusedIndex(null)
-		setFocusedItemId(null)
 		// Reset to original order by not saving changes
 	}, [])
 
@@ -323,7 +296,8 @@ export const ApiConfigSelector = ({
 						setInternalCustomOrder(newOrder)
 
 						// Track the item being moved to maintain focus on it
-						setFocusedItemId(configId)
+						setFocusedIndex(displayIndex - 1)
+						console.log({ displayIndex })
 
 						// Sync with backend
 						vscode.postMessage({
@@ -349,7 +323,8 @@ export const ApiConfigSelector = ({
 						setInternalCustomOrder(newOrder)
 
 						// Track the item being moved to maintain focus on it
-						setFocusedItemId(configId)
+						setFocusedIndex(displayIndex + 1)
+						console.log({ displayIndex })
 
 						// Sync with backend
 						vscode.postMessage({
@@ -363,11 +338,9 @@ export const ApiConfigSelector = ({
 				if (e.key === "ArrowUp" && displayIndex > 0) {
 					e.preventDefault()
 					setFocusedIndex(displayIndex - 1)
-					setFocusedItemId(allConfigs[displayIndex - 1].id)
 				} else if (e.key === "ArrowDown" && displayIndex < totalItems - 1) {
 					e.preventDefault()
 					setFocusedIndex(displayIndex + 1)
-					setFocusedItemId(allConfigs[displayIndex + 1].id)
 				} else if (e.key === "Enter" || e.key === " ") {
 					e.preventDefault()
 					handleSelect(currentConfig.id)
@@ -376,10 +349,8 @@ export const ApiConfigSelector = ({
 					// Handle tab navigation manually
 					if (e.shiftKey && displayIndex > 0) {
 						setFocusedIndex(displayIndex - 1)
-						setFocusedItemId(allConfigs[displayIndex - 1].id)
 					} else if (!e.shiftKey && displayIndex < totalItems - 1) {
 						setFocusedIndex(displayIndex + 1)
-						setFocusedItemId(allConfigs[displayIndex + 1].id)
 					}
 				}
 			}
