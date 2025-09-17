@@ -1,5 +1,6 @@
 // npx vitest src/core/config/__tests__/importExport.spec.ts
 
+import { describe, it, expect, vi, beforeEach } from "vitest"
 import fs from "fs/promises"
 import * as path from "path"
 
@@ -8,7 +9,13 @@ import * as vscode from "vscode"
 import type { ProviderName } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 
-import { importSettings, importSettingsFromFile, importSettingsWithFeedback, exportSettings } from "../importExport"
+import {
+	importSettings,
+	importSettingsFromFile,
+	importSettingsFromContent,
+	importSettingsWithFeedback,
+	exportSettings,
+} from "../importExport"
 import { ProviderSettingsManager } from "../ProviderSettingsManager"
 import { ContextProxy } from "../ContextProxy"
 import { CustomModesManager } from "../CustomModesManager"
@@ -263,7 +270,9 @@ describe("importExport", () => {
 			})
 
 			expect(result.success).toBe(false)
-			expect(result.error).toMatch(/^Expected property name or '}' in JSON at position 2/)
+			if (!result.success) {
+				expect(result.error).toMatch(/^Expected property name or '}' in JSON at position 2/)
+			}
 			expect(fs.readFile).toHaveBeenCalledWith("/mock/path/settings.json", "utf-8")
 			expect(mockProviderSettingsManager.import).not.toHaveBeenCalled()
 			expect(mockContextProxy.setValues).not.toHaveBeenCalled()
@@ -426,12 +435,184 @@ describe("importExport", () => {
 					customModesManager: mockCustomModesManager,
 					provider: mockProvider,
 				},
-				filePath,
+				{ filePath },
 			)
 
 			expect(vscode.window.showOpenDialog).not.toHaveBeenCalled()
 			expect(fs.access).toHaveBeenCalledWith(filePath, fs.constants.F_OK | fs.constants.R_OK)
 			expect(fs.readFile).not.toHaveBeenCalled()
+			expect(showErrorMessageSpy).toHaveBeenCalledWith(expect.stringContaining("errors.settings_import_failed"))
+
+			showErrorMessageSpy.mockRestore()
+		})
+
+		it("should import settings successfully from provided fileContents", async () => {
+			const mockFileContent = JSON.stringify({
+				providerProfiles: {
+					currentApiConfigName: "test",
+					apiConfigs: { test: { apiProvider: "openai" as ProviderName, apiKey: "test-key", id: "test-id" } },
+				},
+				globalSettings: { mode: "code", autoApprovalEnabled: true },
+			})
+
+			const previousProviderProfiles = {
+				currentApiConfigName: "default",
+				apiConfigs: { default: { apiProvider: "anthropic" as ProviderName, id: "default-id" } },
+			}
+
+			mockProviderSettingsManager.export.mockResolvedValue(previousProviderProfiles)
+			mockProviderSettingsManager.listConfig.mockResolvedValue([
+				{ name: "test", id: "test-id", apiProvider: "openai" as ProviderName },
+				{ name: "default", id: "default-id", apiProvider: "anthropic" as ProviderName },
+			])
+			mockContextProxy.export.mockResolvedValue({ mode: "code" })
+
+			const result = await importSettingsFromContent(mockFileContent, {
+				providerSettingsManager: mockProviderSettingsManager,
+				contextProxy: mockContextProxy,
+				customModesManager: mockCustomModesManager,
+			})
+
+			expect(result.success).toBe(true)
+			expect(mockProviderSettingsManager.export).toHaveBeenCalled()
+			expect(mockProviderSettingsManager.import).toHaveBeenCalledWith({
+				currentApiConfigName: "test",
+				apiConfigs: {
+					default: { apiProvider: "anthropic" as ProviderName, id: "default-id" },
+					test: { apiProvider: "openai" as ProviderName, apiKey: "test-key", id: "test-id" },
+				},
+				modeApiConfigs: {},
+			})
+			expect(mockContextProxy.setValues).toHaveBeenCalledWith({ mode: "code", autoApprovalEnabled: true })
+			expect(mockContextProxy.setValue).toHaveBeenCalledWith("currentApiConfigName", "test")
+			expect(mockContextProxy.setValue).toHaveBeenCalledWith("listApiConfigMeta", [
+				{ name: "test", id: "test-id", apiProvider: "openai" as ProviderName },
+				{ name: "default", id: "default-id", apiProvider: "anthropic" as ProviderName },
+			])
+		})
+
+		it("should return success: false when fileContents is not valid JSON", async () => {
+			const mockInvalidJson = "{ this is not valid JSON }"
+
+			const result = await importSettingsFromContent(mockInvalidJson, {
+				providerSettingsManager: mockProviderSettingsManager,
+				contextProxy: mockContextProxy,
+				customModesManager: mockCustomModesManager,
+			})
+
+			expect(result.success).toBe(false)
+			if (!result.success) {
+				expect(result.error).toMatch(/^Expected property name or '}' in JSON at position 2/)
+			}
+			expect(mockProviderSettingsManager.import).not.toHaveBeenCalled()
+			expect(mockContextProxy.setValues).not.toHaveBeenCalled()
+		})
+
+		it("should return success: false when fileContents is missing required fields", async () => {
+			// Invalid content (missing required fields)
+			const mockInvalidContent = JSON.stringify({
+				providerProfiles: { apiConfigs: {} },
+				globalSettings: {},
+			})
+
+			const result = await importSettingsFromContent(mockInvalidContent, {
+				providerSettingsManager: mockProviderSettingsManager,
+				contextProxy: mockContextProxy,
+				customModesManager: mockCustomModesManager,
+			})
+
+			expect(result.success).toBe(false)
+			if (!result.success) {
+				expect(result.error).toBe("[providerProfiles.currentApiConfigName]: Required")
+			}
+			expect(mockProviderSettingsManager.import).not.toHaveBeenCalled()
+			expect(mockContextProxy.setValues).not.toHaveBeenCalled()
+		})
+
+		it("should import settings successfully using importSettingsWithFeedback with fileContents", async () => {
+			const mockFileContent = JSON.stringify({
+				providerProfiles: {
+					currentApiConfigName: "test",
+					apiConfigs: { test: { apiProvider: "openai" as ProviderName, apiKey: "test-key", id: "test-id" } },
+				},
+				globalSettings: { mode: "code", autoApprovalEnabled: true },
+			})
+
+			const previousProviderProfiles = {
+				currentApiConfigName: "default",
+				apiConfigs: { default: { apiProvider: "anthropic" as ProviderName, id: "default-id" } },
+			}
+
+			mockProviderSettingsManager.export.mockResolvedValue(previousProviderProfiles)
+			mockProviderSettingsManager.listConfig.mockResolvedValue([
+				{ name: "test", id: "test-id", apiProvider: "openai" as ProviderName },
+				{ name: "default", id: "default-id", apiProvider: "anthropic" as ProviderName },
+			])
+			mockContextProxy.export.mockResolvedValue({ mode: "code" })
+
+			const mockProvider = {
+				settingsImportedAt: 0,
+				postStateToWebview: vi.fn().mockResolvedValue(undefined),
+			}
+
+			const showInformationMessageSpy = vi
+				.spyOn(vscode.window, "showInformationMessage")
+				.mockResolvedValue(undefined)
+
+			await importSettingsWithFeedback(
+				{
+					providerSettingsManager: mockProviderSettingsManager,
+					contextProxy: mockContextProxy,
+					customModesManager: mockCustomModesManager,
+					provider: mockProvider,
+				},
+				{ fileContents: mockFileContent },
+			)
+
+			expect(vscode.window.showOpenDialog).not.toHaveBeenCalled()
+			expect(fs.readFile).not.toHaveBeenCalled()
+			expect(mockProviderSettingsManager.import).toHaveBeenCalledWith({
+				currentApiConfigName: "test",
+				apiConfigs: {
+					default: { apiProvider: "anthropic" as ProviderName, id: "default-id" },
+					test: { apiProvider: "openai" as ProviderName, apiKey: "test-key", id: "test-id" },
+				},
+				modeApiConfigs: {},
+			})
+			expect(mockContextProxy.setValues).toHaveBeenCalledWith({ mode: "code", autoApprovalEnabled: true })
+			expect(mockProvider.settingsImportedAt).toBeGreaterThan(0)
+			expect(mockProvider.postStateToWebview).toHaveBeenCalled()
+			expect(showInformationMessageSpy).toHaveBeenCalledWith(expect.stringContaining("info.settings_imported"))
+
+			showInformationMessageSpy.mockRestore()
+		})
+
+		it("should show error message when importSettingsWithFeedback fails with invalid fileContents", async () => {
+			const mockInvalidJson = "{ this is not valid JSON }"
+
+			const mockProvider = {
+				settingsImportedAt: 0,
+				postStateToWebview: vi.fn().mockResolvedValue(undefined),
+			}
+
+			const showErrorMessageSpy = vi.spyOn(vscode.window, "showErrorMessage").mockResolvedValue(undefined)
+
+			await importSettingsWithFeedback(
+				{
+					providerSettingsManager: mockProviderSettingsManager,
+					contextProxy: mockContextProxy,
+					customModesManager: mockCustomModesManager,
+					provider: mockProvider,
+				},
+				{ fileContents: mockInvalidJson },
+			)
+
+			expect(vscode.window.showOpenDialog).not.toHaveBeenCalled()
+			expect(fs.readFile).not.toHaveBeenCalled()
+			expect(mockProviderSettingsManager.import).not.toHaveBeenCalled()
+			expect(mockContextProxy.setValues).not.toHaveBeenCalled()
+			expect(mockProvider.settingsImportedAt).toBe(0)
+			expect(mockProvider.postStateToWebview).not.toHaveBeenCalled()
 			expect(showErrorMessageSpy).toHaveBeenCalledWith(expect.stringContaining("errors.settings_import_failed"))
 
 			showErrorMessageSpy.mockRestore()

@@ -730,13 +730,74 @@ export const webviewMessageHandler = async (
 			provider.exportTaskWithId(message.text!)
 			break
 		case "importSettings": {
-			await importSettingsWithFeedback({
-				providerSettingsManager: provider.providerSettingsManager,
-				contextProxy: provider.contextProxy,
-				customModesManager: provider.customModesManager,
-				provider: provider,
-			})
+			// In remote workspaces, offer two options:
+			// 1) Pick a JSON file from the remote/workspace filesystem (VS Code Open Dialog)
+			// 2) Pick a JSON file from the local machine via the webview (browser file picker)
+			const isRemote = !!vscode.env.remoteName
+			if (!isRemote) {
+				await importSettingsWithFeedback({
+					providerSettingsManager: provider.providerSettingsManager,
+					contextProxy: provider.contextProxy,
+					customModesManager: provider.customModesManager,
+					provider: provider,
+				})
+			} else {
+				const selection = await vscode.window.showQuickPick(
+					[
+						{
+							label: t("common:settingsFooter.importFromRemoteFile"),
+							description: t("common:settingsFooter.importFromRemoteFileDescription"),
+							id: "remote",
+						},
+						{
+							label: t("common:settingsFooter.importFromLocalFile"),
+							description: t("common:settingsFooter.importFromLocalFileDescription"),
+							id: "local",
+						},
+					],
+					{ placeHolder: t("common:settingsFooter.chooseImportSource") },
+				)
+				if (!selection) break
 
+				if (selection.id === "remote") {
+					await importSettingsWithFeedback({
+						providerSettingsManager: provider.providerSettingsManager,
+						contextProxy: provider.contextProxy,
+						customModesManager: provider.customModesManager,
+						provider: provider,
+					})
+				} else {
+					// Ask the webview to trigger a local file picker
+					await provider.postMessageToWebview({ type: "requestLocalSettingsFile" })
+				}
+			}
+			break
+		}
+		case "importSettingsFromLocal": {
+			const content = message.text || ""
+			if (!content) {
+				vscode.window.showErrorMessage(t("common:errors.message.no_local_settings_content"))
+				break
+			}
+
+			try {
+				await importSettingsWithFeedback(
+					{
+						providerSettingsManager: provider.providerSettingsManager,
+						contextProxy: provider.contextProxy,
+						customModesManager: provider.customModesManager,
+						provider: provider,
+					},
+					{ fileContents: content },
+				)
+			} catch (error) {
+				console.error("Error importing settings from local file:", error)
+				vscode.window.showErrorMessage(
+					t("common:errors.settings_import_failed", {
+						error: error instanceof Error ? error.message : String(error),
+					}),
+				)
+			}
 			break
 		}
 		case "exportSettings":

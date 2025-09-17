@@ -187,6 +187,35 @@ const App = () => {
 			if (message.type === "acceptInput") {
 				chatViewRef.current?.acceptInput()
 			}
+
+			if (message.type === "requestLocalSettingsFile") {
+				const input = document.createElement("input")
+				input.type = "file"
+				input.accept = ".json,application/json"
+				input.onchange = () => {
+					const file = input.files?.[0]
+					if (!file) return
+					const reader = new FileReader()
+
+					reader.onload = () => {
+						const text = typeof reader.result === "string" ? reader.result : ""
+						if (text) {
+							vscode.postMessage({ type: "importSettingsFromLocal", text })
+						}
+					}
+
+					reader.onerror = () => {
+						console.error("Failed to read settings file:", reader.error)
+						vscode.postMessage({
+							type: "importSettingsFromLocal",
+							text: "",
+						})
+					}
+
+					reader.readAsText(file)
+				}
+				input.click()
+			}
 		},
 		[switchTab],
 	)

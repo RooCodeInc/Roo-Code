@@ -95,7 +95,8 @@
 			"cannot_delete_invalid_timestamp": "Cannot delete message: invalid timestamp",
 			"message_not_found": "Message with timestamp {{messageTs}} not found",
 			"error_deleting_message": "Error deleting message: {{error}}",
-			"error_editing_message": "Error editing message: {{error}}"
+			"error_editing_message": "Error editing message: {{error}}",
+			"no_local_settings_content": "No local settings file content received"
 		},
 		"gemini": {
 			"generate_stream": "Gemini generate context stream error: {{error}}",
@@ -143,6 +144,13 @@
 		"image_saved": "Image saved to {{path}}",
 		"mode_exported": "Mode '{{mode}}' exported successfully",
 		"mode_imported": "Mode imported successfully"
+	},
+	"settingsFooter": {
+		"importFromRemoteFile": "Import from remote file (JSON)",
+		"importFromRemoteFileDescription": "Pick from remote/workspace filesystem",
+		"importFromLocalFile": "Import from local file (JSON)",
+		"importFromLocalFileDescription": "Pick on this machine via webview",
+		"chooseImportSource": "Choose import source"
 	},
 	"answers": {
 		"yes": "Yes",
