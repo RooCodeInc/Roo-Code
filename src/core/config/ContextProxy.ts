@@ -158,6 +158,34 @@ export class ContextProxy {
 	}
 
 	/**
+	 * Workspace-specific storage access
+	 */
+	public get workspaceState() {
+		return this.originalContext.workspaceState
+	}
+
+	/**
+	 * Get a value from workspace state
+	 */
+	public getWorkspaceValue<T>(key: string): T | undefined {
+		return this.originalContext.workspaceState.get<T>(key)
+	}
+
+	/**
+	 * Set a value in workspace state
+	 */
+	public async setWorkspaceValue<T>(key: string, value: T): Promise<void> {
+		await this.originalContext.workspaceState.update(key, value)
+	}
+
+	/**
+	 * Clear a value from workspace state
+	 */
+	public async clearWorkspaceValue(key: string): Promise<void> {
+		await this.originalContext.workspaceState.update(key, undefined)
+	}
+
+	/**
 	 * ExtensionContext.globalState
 	 * https://code.visualstudio.com/api/references/vscode-api#ExtensionContext.globalState
 	 */

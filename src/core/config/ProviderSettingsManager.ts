@@ -1,4 +1,4 @@
-import { ExtensionContext } from "vscode"
+import { ExtensionContext, workspace } from "vscode"
 import { z, ZodError } from "zod"
 import deepEqual from "fast-deep-equal"
 
@@ -14,6 +14,8 @@ import {
 import { TelemetryService } from "@roo-code/telemetry"
 
 import { Mode, modes } from "../../shared/modes"
+
+export type ConfigScope = "global" | "workspace"
 
 export interface SyncCloudProfilesResult {
 	hasChanges: boolean
@@ -39,8 +41,17 @@ export const providerProfilesSchema = z.object({
 
 export type ProviderProfiles = z.infer<typeof providerProfilesSchema>
 
+// Schema for workspace-specific overrides
+export const workspaceOverridesSchema = z.object({
+	currentApiConfigName: z.string().optional(),
+	modeApiConfigs: z.record(z.string(), z.string()).optional(),
+})
+
+export type WorkspaceOverrides = z.infer<typeof workspaceOverridesSchema>
+
 export class ProviderSettingsManager {
 	private static readonly SCOPE_PREFIX = "roo_cline_config_"
+	private static readonly WORKSPACE_KEY = "roo_workspace_overrides"
 	private readonly defaultConfigId = this.generateId()
 
 	private readonly defaultModeApiConfigs: Record<string, string> = Object.fromEntries(
@@ -61,6 +72,7 @@ export class ProviderSettingsManager {
 	}
 
 	private readonly context: ExtensionContext
+	private workspaceOverrides: WorkspaceOverrides | null = null
 
 	constructor(context: ExtensionContext) {
 		this.context = context
@@ -374,21 +386,59 @@ export class ProviderSettingsManager {
 
 	/**
 	 * Activate a profile by name or ID.
+	 * @param params Profile identifier
+	 * @param scope Whether to apply globally or to workspace only
 	 */
 	public async activateProfile(
 		params: { name: string } | { id: string },
+		scope: ConfigScope = "global",
 	): Promise<ProviderSettingsWithId & { name: string }> {
 		const { name, ...providerSettings } = await this.getProfile(params)
 
 		try {
 			return await this.lock(async () => {
-				const providerProfiles = await this.load()
-				providerProfiles.currentApiConfigName = name
-				await this.store(providerProfiles)
+				if (scope === "workspace" && workspace.workspaceFolders?.length) {
+					// Store workspace-specific override
+					const overrides = await this.getWorkspaceOverrides()
+					overrides.currentApiConfigName = name
+					await this.storeWorkspaceOverrides(overrides)
+				} else {
+					// Store globally
+					const providerProfiles = await this.load()
+					providerProfiles.currentApiConfigName = name
+					await this.store(providerProfiles)
+				}
 				return { name, ...providerSettings }
 			})
 		} catch (error) {
 			throw new Error(`Failed to activate profile: ${error instanceof Error ? error.message : error}`)
+		}
+	}
+
+	/**
+	 * Get the currently active profile name, considering workspace overrides
+	 */
+	public async getActiveProfileName(): Promise<string> {
+		try {
+			return await this.lock(async () => {
+				// Check for workspace override first
+				if (workspace.workspaceFolders?.length) {
+					const overrides = await this.getWorkspaceOverrides()
+					if (overrides.currentApiConfigName) {
+						// Verify the profile still exists
+						const providerProfiles = await this.load()
+						if (providerProfiles.apiConfigs[overrides.currentApiConfigName]) {
+							return overrides.currentApiConfigName
+						}
+					}
+				}
+
+				// Fall back to global setting
+				const providerProfiles = await this.load()
+				return providerProfiles.currentApiConfigName
+			})
+		} catch (error) {
+			throw new Error(`Failed to get active profile: ${error}`)
 		}
 	}
 
@@ -432,18 +482,32 @@ export class ProviderSettingsManager {
 
 	/**
 	 * Set the API config for a specific mode.
+	 * @param mode The mode to set config for
+	 * @param configId The config ID to use
+	 * @param scope Whether to apply globally or to workspace only
 	 */
-	public async setModeConfig(mode: Mode, configId: string) {
+	public async setModeConfig(mode: Mode, configId: string, scope: ConfigScope = "global") {
 		try {
 			return await this.lock(async () => {
-				const providerProfiles = await this.load()
-				// Ensure the per-mode config map exists
-				if (!providerProfiles.modeApiConfigs) {
-					providerProfiles.modeApiConfigs = {}
+				if (scope === "workspace" && workspace.workspaceFolders?.length) {
+					// Store workspace-specific override
+					const overrides = await this.getWorkspaceOverrides()
+					if (!overrides.modeApiConfigs) {
+						overrides.modeApiConfigs = {}
+					}
+					overrides.modeApiConfigs[mode] = configId
+					await this.storeWorkspaceOverrides(overrides)
+				} else {
+					// Store globally
+					const providerProfiles = await this.load()
+					// Ensure the per-mode config map exists
+					if (!providerProfiles.modeApiConfigs) {
+						providerProfiles.modeApiConfigs = {}
+					}
+					// Assign the chosen config ID to this mode
+					providerProfiles.modeApiConfigs[mode] = configId
+					await this.store(providerProfiles)
 				}
-				// Assign the chosen config ID to this mode
-				providerProfiles.modeApiConfigs[mode] = configId
-				await this.store(providerProfiles)
 			})
 		} catch (error) {
 			throw new Error(`Failed to set mode config: ${error}`)
@@ -451,11 +515,28 @@ export class ProviderSettingsManager {
 	}
 
 	/**
-	 * Get the API config ID for a specific mode.
+	 * Get the API config ID for a specific mode, considering workspace overrides.
 	 */
 	public async getModeConfigId(mode: Mode) {
 		try {
 			return await this.lock(async () => {
+				// Check for workspace override first
+				if (workspace.workspaceFolders?.length) {
+					const overrides = await this.getWorkspaceOverrides()
+					if (overrides.modeApiConfigs?.[mode]) {
+						// Verify the config still exists
+						const providerProfiles = await this.load()
+						const configId = overrides.modeApiConfigs[mode]
+						const configExists = Object.values(providerProfiles.apiConfigs).some(
+							(config) => config.id === configId,
+						)
+						if (configExists) {
+							return configId
+						}
+					}
+				}
+
+				// Fall back to global setting
 				const { modeApiConfigs } = await this.load()
 				return modeApiConfigs?.[mode]
 			})
@@ -752,5 +833,64 @@ export class ProviderSettingsManager {
 		} catch (error) {
 			throw new Error(`Failed to sync cloud profiles: ${error}`)
 		}
+	}
+
+	/**
+	 * Get workspace-specific overrides
+	 */
+	private async getWorkspaceOverrides(): Promise<WorkspaceOverrides> {
+		if (!workspace.workspaceFolders?.length) {
+			return {}
+		}
+
+		// Try to load from workspace state
+		const stored = this.context.workspaceState.get<WorkspaceOverrides>(ProviderSettingsManager.WORKSPACE_KEY)
+
+		if (stored) {
+			try {
+				return workspaceOverridesSchema.parse(stored)
+			} catch (error) {
+				// Invalid data, return empty
+				return {}
+			}
+		}
+
+		return {}
+	}
+
+	/**
+	 * Store workspace-specific overrides
+	 */
+	private async storeWorkspaceOverrides(overrides: WorkspaceOverrides): Promise<void> {
+		if (!workspace.workspaceFolders?.length) {
+			return
+		}
+
+		await this.context.workspaceState.update(ProviderSettingsManager.WORKSPACE_KEY, overrides)
+	}
+
+	/**
+	 * Clear workspace-specific overrides
+	 */
+	public async clearWorkspaceOverrides(): Promise<void> {
+		if (!workspace.workspaceFolders?.length) {
+			return
+		}
+
+		await this.context.workspaceState.update(ProviderSettingsManager.WORKSPACE_KEY, undefined)
+	}
+
+	/**
+	 * Get the current configuration scope preference
+	 */
+	public async getConfigScope(): Promise<ConfigScope> {
+		// Check if we have workspace overrides
+		if (workspace.workspaceFolders?.length) {
+			const overrides = await this.getWorkspaceOverrides()
+			if (overrides.currentApiConfigName || overrides.modeApiConfigs) {
+				return "workspace"
+			}
+		}
+		return "global"
 	}
 }
