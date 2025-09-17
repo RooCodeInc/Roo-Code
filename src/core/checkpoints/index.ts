@@ -1,5 +1,7 @@
 import pWaitFor from "p-wait-for"
 import * as vscode from "vscode"
+import * as fs from "fs"
+import * as path from "path"
 
 import { TelemetryService } from "@roo-code/telemetry"
 
@@ -15,6 +17,48 @@ import { getApiMetrics } from "../../shared/getApiMetrics"
 import { DIFF_VIEW_URI_SCHEME } from "../../integrations/editor/DiffViewProvider"
 
 import { CheckpointServiceOptions, RepoPerTaskCheckpointService } from "../../services/checkpoints"
+
+/**
+ * Validates if a directory exists and is writable
+ * @param dirPath - Directory path to validate
+ * @param log - Logging function
+ * @returns true if directory is valid and writable, false otherwise
+ */
+async function validateCheckpointDirectory(dirPath: string, log: (message: string) => void): Promise<boolean> {
+	try {
+		// Check if directory exists
+		const stats = await fs.promises.stat(dirPath)
+		if (!stats.isDirectory()) {
+			log(`[Task#validateCheckpointDirectory] ${dirPath} is not a directory`)
+			return false
+		}
+
+		// Test write permissions by creating a temporary file
+		const testFile = path.join(
+			dirPath,
+			`.charles-checkpoint-test-${Date.now()}-${Math.random().toString(36).substring(7)}`,
+		)
+		try {
+			await fs.promises.writeFile(testFile, "test")
+			await fs.promises.unlink(testFile)
+			log(`[Task#validateCheckpointDirectory] ${dirPath} is writable`)
+			return true
+		} catch (writeError) {
+			log(`[Task#validateCheckpointDirectory] ${dirPath} is not writable: ${writeError.message}`)
+			return false
+		}
+	} catch (error) {
+		// Directory doesn't exist, try to create it
+		try {
+			await fs.promises.mkdir(dirPath, { recursive: true })
+			log(`[Task#validateCheckpointDirectory] Created directory ${dirPath}`)
+			return true
+		} catch (createError) {
+			log(`[Task#validateCheckpointDirectory] Failed to create directory ${dirPath}: ${createError.message}`)
+			return false
+		}
+	}
+}
 
 export async function getCheckpointService(
 	cline: Task,
@@ -50,6 +94,8 @@ export async function getCheckpointService(
 			return undefined
 		}
 
+		// Get checkpoint directory from configuration with fallback to local storage
+		const configuredCheckpointDir = provider?.contextProxy?.getValue("checkpointDirectory")
 		const globalStorageDir = provider?.context.globalStorageUri.fsPath
 
 		if (!globalStorageDir) {
@@ -58,10 +104,33 @@ export async function getCheckpointService(
 			return undefined
 		}
 
+		let shadowDir = globalStorageDir // Default fallback
+
+		// Try to use configured checkpoint directory if available
+		if (configuredCheckpointDir) {
+			log(
+				`[Task#getCheckpointService] Attempting to use configured checkpoint directory: ${configuredCheckpointDir}`,
+			)
+			const isValid = await validateCheckpointDirectory(configuredCheckpointDir, log)
+
+			if (isValid) {
+				shadowDir = configuredCheckpointDir
+				log(`[Task#getCheckpointService] Using configured checkpoint directory: ${configuredCheckpointDir}`)
+			} else {
+				log(
+					`[Task#getCheckpointService] Configured checkpoint directory invalid, falling back to local storage: ${globalStorageDir}`,
+				)
+			}
+		} else {
+			log(
+				`[Task#getCheckpointService] No checkpoint directory configured, using local storage: ${globalStorageDir}`,
+			)
+		}
+
 		const options: CheckpointServiceOptions = {
 			taskId: cline.taskId,
 			workspaceDir,
-			shadowDir: globalStorageDir,
+			shadowDir,
 			log,
 		}
 		if (cline.checkpointServiceInitializing) {
