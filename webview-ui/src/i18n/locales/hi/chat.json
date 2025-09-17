@@ -258,7 +258,8 @@
 		"triggerLabel_zero": "कोई स्वतः-अनुमोदन नहीं",
 		"triggerLabel_one": "1 स्वतः-अनुमोदित",
 		"triggerLabel_other": "{{count}} स्वतः-अनुमोदित",
-		"triggerLabelAll": "योलो"
+		"triggerLabelAll": "योलो",
+		"triggerLabelOff": "स्वतः-अनुमोदन बंद"
 	},
 	"reasoning": {
 		"thinking": "विचार कर रहा है",
@@ -374,6 +375,7 @@
 		"tooltip": "स्लैश कमांड प्रबंधित करें",
 		"title": "स्लैश कमांड",
 		"description": "बिल्ट-इन स्लैश कमांड का उपयोग करें या बार-बार उपयोग किए जाने वाले प्रॉम्प्ट और वर्कफ़्लो तक त्वरित पहुंच के लिए कस्टम स्लैश कमांड बनाएं। <DocsLink>दस्तावेज़</DocsLink>",
+		"manageCommands": "सेटिंग्स में स्लैश कमांड प्रबंधित करें",
 		"builtInCommands": "बिल्ट-इन कमांड",
 		"globalCommands": "वैश्विक कमांड",
 		"workspaceCommands": "कार्यक्षेत्र कमांड",
@@ -388,6 +390,12 @@
 			"cancel": "रद्द करें",
 			"confirm": "हटाएं"
 		}
+	},
+	"contextMenu": {
+		"noResults": "कोई परिणाम नहीं",
+		"problems": "समस्याएँ",
+		"terminal": "टर्मिनल",
+		"url": "सामग्री लाने के लिए URL पेस्ट करें"
 	},
 	"queuedMessages": {
 		"title": "कतार में संदेश",

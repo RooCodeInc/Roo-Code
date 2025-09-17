@@ -282,7 +282,8 @@
 		"selectOptionsFirst": "Select at least one option below to enable auto-approval",
 		"toggleAriaLabel": "Toggle auto-approval",
 		"disabledAriaLabel": "Auto-approval disabled - select options first",
-		"triggerLabel_zero": "No auto-approve",
+		"triggerLabelOff": "Auto-approve off",
+		"triggerLabel_zero": "0 auto-approve",
 		"triggerLabel_one": "1 auto-approved",
 		"triggerLabel_other": "{{count}} auto-approved",
 		"triggerLabelAll": "YOLO"
@@ -372,6 +373,7 @@
 		"tooltip": "Manage slash commands",
 		"title": "Slash Commands",
 		"description": "Use built-in slash commands or create custom ones for quick access to frequently used prompts and workflows. <DocsLink>Docs</DocsLink>",
+		"manageCommands": "Manage slash commands in settings",
 		"builtInCommands": "Built-in Commands",
 		"globalCommands": "Global Commands",
 		"workspaceCommands": "Workspace Commands",
@@ -394,5 +396,11 @@
 	"queuedMessages": {
 		"title": "Queued Messages",
 		"clickToEdit": "Click to edit message"
+	},
+	"contextMenu": {
+		"noResults": "No results",
+		"problems": "Problems",
+		"terminal": "Terminal",
+		"url": "Paste URL to fetch contents"
 	}
 }
