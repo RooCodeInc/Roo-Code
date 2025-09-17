@@ -111,6 +111,15 @@
 			"noResponseBody": "Cerebras API-Fehler: Kein Antworttext vorhanden",
 			"completionError": "Cerebras-Vervollständigungsfehler: {{error}}"
 		},
+		"wandb": {
+			"authenticationFailed": "Weights & Biases API-Authentifizierung fehlgeschlagen. Bitte überprüfe, ob dein API-Schlüssel gültig und nicht abgelaufen ist.",
+			"accessForbidden": "Weights & Biases API-Zugriff verweigert. Dein API-Schlüssel hat möglicherweise keinen Zugriff auf das angeforderte Modell oder die Funktion.",
+			"rateLimitExceeded": "Weights & Biases API-Ratenlimit überschritten. Bitte warte, bevor du eine weitere Anfrage stellst.",
+			"serverError": "Weights & Biases API-Serverfehler ({{status}}). Bitte versuche es später erneut.",
+			"genericError": "Weights & Biases API-Fehler ({{status}}): {{message}}",
+			"noResponseBody": "Weights & Biases API-Fehler: Kein Antworttext vorhanden",
+			"completionError": "Weights & Biases-Vervollständigungsfehler: {{error}}"
+		},
 		"roo": {
 			"authenticationRequired": "Roo-Anbieter erfordert Cloud-Authentifizierung. Bitte melde dich bei Roo Code Cloud an."
 		},

@@ -111,6 +111,15 @@
 			"noResponseBody": "Cerebras APIエラー: レスポンスボディなし",
 			"completionError": "Cerebras完了エラー: {{error}}"
 		},
+		"wandb": {
+			"authenticationFailed": "Weights & Biases API認証が失敗しました。APIキーが有効で期限切れではないことを確認してください。",
+			"accessForbidden": "Weights & Biases APIアクセスが禁止されています。あなたのAPIキーは要求されたモデルや機能にアクセスできない可能性があります。",
+			"rateLimitExceeded": "Weights & Biases APIレート制限を超過しました。別のリクエストを行う前にお待ちください。",
+			"serverError": "Weights & Biases APIサーバーエラー ({{status}})。しばらくしてからもう一度お試しください。",
+			"genericError": "Weights & Biases APIエラー ({{status}}): {{message}}",
+			"noResponseBody": "Weights & Biases APIエラー: レスポンスボディなし",
+			"completionError": "Weights & Biases完了エラー: {{error}}"
+		},
 		"roo": {
 			"authenticationRequired": "Rooプロバイダーはクラウド認証が必要です。Roo Code Cloudにサインインしてください。"
 		},

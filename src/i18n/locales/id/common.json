@@ -111,6 +111,15 @@
 			"noResponseBody": "Kesalahan API Cerebras: Tidak ada isi respons",
 			"completionError": "Kesalahan penyelesaian Cerebras: {{error}}"
 		},
+		"wandb": {
+			"authenticationFailed": "Autentikasi API Weights & Biases gagal. Silakan periksa apakah kunci API Anda valid dan belum kedaluwarsa.",
+			"accessForbidden": "Akses API Weights & Biases ditolak. Kunci API Anda mungkin tidak memiliki akses ke model atau fitur yang diminta.",
+			"rateLimitExceeded": "Batas kecepatan API Weights & Biases terlampaui. Silakan tunggu sebelum membuat permintaan lain.",
+			"serverError": "Kesalahan server API Weights & Biases ({{status}}). Silakan coba lagi nanti.",
+			"genericError": "Kesalahan API Weights & Biases ({{status}}): {{message}}",
+			"noResponseBody": "Kesalahan API Weights & Biases: Tidak ada isi respons",
+			"completionError": "Kesalahan penyelesaian Weights & Biases: {{error}}"
+		},
 		"roo": {
 			"authenticationRequired": "Penyedia Roo memerlukan autentikasi cloud. Silakan masuk ke Roo Code Cloud."
 		},

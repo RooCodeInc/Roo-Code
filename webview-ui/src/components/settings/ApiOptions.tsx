@@ -36,6 +36,7 @@ import {
 	ioIntelligenceDefaultModelId,
 	rooDefaultModelId,
 	vercelAiGatewayDefaultModelId,
+	wandbDefaultModelId,
 	deepInfraDefaultModelId,
 } from "@roo-code/types"
 
@@ -94,6 +95,7 @@ import {
 	Fireworks,
 	Featherless,
 	VercelAiGateway,
+	Wandb,
 	DeepInfra,
 } from "./providers"
 
@@ -345,6 +347,7 @@ const ApiOptions = ({
 				"io-intelligence": { field: "ioIntelligenceModelId", default: ioIntelligenceDefaultModelId },
 				roo: { field: "apiModelId", default: rooDefaultModelId },
 				"vercel-ai-gateway": { field: "vercelAiGatewayModelId", default: vercelAiGatewayDefaultModelId },
+				wandb: { field: "apiModelId", default: wandbDefaultModelId },
 				openai: { field: "openAiModelId" },
 				ollama: { field: "ollamaModelId" },
 				lmstudio: { field: "lmStudioModelId" },
@@ -678,6 +681,10 @@ const ApiOptions = ({
 
 			{selectedProvider === "featherless" && (
 				<Featherless apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
+			)}
+
+			{selectedProvider === "wandb" && (
+				<Wandb apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
 			)}
 
 			{selectedProviderModels.length > 0 && (
