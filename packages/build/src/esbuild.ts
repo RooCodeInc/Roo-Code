@@ -2,7 +2,7 @@ import * as fs from "fs"
 import * as path from "path"
 import { execSync } from "child_process"
 
-import { ViewsContainer, Views, Menus, Configuration, contributesSchema } from "./types.js"
+import { ViewsContainer, Views, Menus, Configuration, Keybindings, contributesSchema } from "./types.js"
 
 function copyDir(srcDir: string, dstDir: string, count: number): number {
 	const entries = fs.readdirSync(srcDir, { withFileTypes: true })
@@ -216,7 +216,8 @@ export function generatePackageJson({
 	overrideJson: Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any
 	substitution: [string, string]
 }) {
-	const { viewsContainers, views, commands, menus, submenus, configuration } = contributesSchema.parse(contributes)
+	const { viewsContainers, views, commands, menus, submenus, keybindings, configuration } =
+		contributesSchema.parse(contributes)
 	const [from, to] = substitution
 
 	return {
@@ -228,6 +229,7 @@ export function generatePackageJson({
 			commands: transformArray(commands, from, to, "command"),
 			menus: transformArrayRecord<Menus>(menus, from, to, ["command", "submenu", "when"]),
 			submenus: transformArray(submenus, from, to, "id"),
+			keybindings: keybindings ? transformArray<Keybindings>(keybindings, from, to, "command") : undefined,
 			configuration: {
 				title: configuration.title,
 				properties: transformRecord<Configuration["properties"]>(configuration.properties, from, to),
