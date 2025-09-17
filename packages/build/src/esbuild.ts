@@ -220,7 +220,8 @@ export function generatePackageJson({
 		contributesSchema.parse(contributes)
 	const [from, to] = substitution
 
-	return {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const result: Record<string, any> = {
 		...packageJson,
 		...overrideJson,
 		contributes: {
@@ -229,13 +230,19 @@ export function generatePackageJson({
 			commands: transformArray(commands, from, to, "command"),
 			menus: transformArrayRecord<Menus>(menus, from, to, ["command", "submenu", "when"]),
 			submenus: transformArray(submenus, from, to, "id"),
-			keybindings: keybindings ? transformArray<Keybindings>(keybindings, from, to, "command") : undefined,
 			configuration: {
 				title: configuration.title,
 				properties: transformRecord<Configuration["properties"]>(configuration.properties, from, to),
 			},
 		},
 	}
+
+	// Only add keybindings if they exist
+	if (keybindings) {
+		result.contributes.keybindings = transformArray<Keybindings>(keybindings, from, to, "command")
+	}
+
+	return result
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
