@@ -57,7 +57,7 @@ jobs:
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "chore: refresh contrib.rocks image cache across all READMEs [skip ci]"
+          commit-message: "docs: update contributors list [skip ci]"
           committer: "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
           branch: refresh-contrib-cache
           delete-branch: true
