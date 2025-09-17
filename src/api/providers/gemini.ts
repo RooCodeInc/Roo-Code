@@ -21,6 +21,44 @@ import { getModelParams } from "../transform/model-params"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { BaseProvider } from "./base-provider"
 
+// Error detail types for Gemini API errors
+export interface GeminiRetryInfo {
+	"@type": "type.googleapis.com/google.rpc.RetryInfo"
+	retryDelay?: string // e.g., "59s"
+}
+
+export interface GeminiQuotaFailure {
+	"@type": "type.googleapis.com/google.rpc.QuotaFailure"
+	violations?: Array<{
+		subject?: string
+		description?: string
+	}>
+}
+
+export interface GeminiErrorDetails {
+	status?: number
+	error?: {
+		status?: string // e.g., "RESOURCE_EXHAUSTED"
+		message?: string
+		details?: Array<GeminiRetryInfo | GeminiQuotaFailure | any>
+	}
+	errorDetails?: Array<GeminiRetryInfo | GeminiQuotaFailure | any>
+}
+
+export class GeminiError extends Error {
+	status?: number
+	errorStatus?: string
+	errorDetails?: Array<GeminiRetryInfo | GeminiQuotaFailure | any>
+
+	constructor(message: string, details?: GeminiErrorDetails) {
+		super(message)
+		this.name = "GeminiError"
+		this.status = details?.status
+		this.errorStatus = details?.error?.status
+		this.errorDetails = details?.error?.details || details?.errorDetails
+	}
+}
+
 type GeminiHandlerOptions = ApiHandlerOptions & {
 	isVertex?: boolean
 }
@@ -154,8 +192,20 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 				}
 			}
 		} catch (error) {
-			if (error instanceof Error) {
-				throw new Error(t("common:errors.gemini.generate_stream", { error: error.message }))
+			// Parse and enhance error information for better handling upstream
+			if (error && typeof error === "object" && "status" in error) {
+				const errorObj = error as any
+				const geminiError = new GeminiError(
+					errorObj.message || t("common:errors.gemini.generate_stream", { error: "Unknown error" }),
+					{
+						status: errorObj.status,
+						error: errorObj.error,
+						errorDetails: errorObj.errorDetails || errorObj.error?.details,
+					},
+				)
+				throw geminiError
+			} else if (error instanceof Error) {
+				throw new GeminiError(t("common:errors.gemini.generate_stream", { error: error.message }))
 			}
 
 			throw error
@@ -246,8 +296,20 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 
 			return text
 		} catch (error) {
-			if (error instanceof Error) {
-				throw new Error(t("common:errors.gemini.generate_complete_prompt", { error: error.message }))
+			// Parse and enhance error information for better handling upstream
+			if (error && typeof error === "object" && "status" in error) {
+				const errorObj = error as any
+				const geminiError = new GeminiError(
+					errorObj.message || t("common:errors.gemini.generate_complete_prompt", { error: "Unknown error" }),
+					{
+						status: errorObj.status,
+						error: errorObj.error,
+						errorDetails: errorObj.errorDetails || errorObj.error?.details,
+					},
+				)
+				throw geminiError
+			} else if (error instanceof Error) {
+				throw new GeminiError(t("common:errors.gemini.generate_complete_prompt", { error: error.message }))
 			}
 
 			throw error

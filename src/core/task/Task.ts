@@ -2719,15 +2719,43 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					MAX_EXPONENTIAL_BACKOFF_SECONDS,
 				)
 
-				// If the error is a 429, and the error details contain a retry delay, use that delay instead of exponential backoff
+				// If the error is a 429, check for Gemini-specific error details
 				if (error.status === 429) {
+					// Check for RetryInfo to get provider-suggested delay
 					const geminiRetryDetails = error.errorDetails?.find(
 						(detail: any) => detail["@type"] === "type.googleapis.com/google.rpc.RetryInfo",
 					)
-					if (geminiRetryDetails) {
-						const match = geminiRetryDetails?.retryDelay?.match(/^(\d+)s$/)
+
+					// Check for QuotaFailure to determine if it's quota exhaustion
+					const quotaFailure = error.errorDetails?.find(
+						(detail: any) => detail["@type"] === "type.googleapis.com/google.rpc.QuotaFailure",
+					)
+
+					if (geminiRetryDetails?.retryDelay) {
+						// Parse the delay from format like "59s"
+						const match = geminiRetryDetails.retryDelay.match(/^(\d+)s$/)
 						if (match) {
-							exponentialDelay = Number(match[1]) + 1
+							// Add a small buffer (1-2 seconds) as recommended
+							exponentialDelay = Number(match[1]) + 2
+						}
+					}
+
+					// If we have quota failure but no retry info, it might be quota exhaustion
+					if (quotaFailure && !geminiRetryDetails?.retryDelay) {
+						// Check if the error message indicates daily/monthly quota exhaustion
+						const isQuotaExhausted =
+							error.message?.toLowerCase().includes("quota") &&
+							(error.message?.toLowerCase().includes("daily") ||
+								error.message?.toLowerCase().includes("monthly") ||
+								error.message?.toLowerCase().includes("exceeded"))
+
+						if (isQuotaExhausted) {
+							// Don't retry for quota exhaustion - show clear message and fail
+							await this.say(
+								"error",
+								`Gemini API quota exhausted. ${quotaFailure.violations?.[0]?.description || "Your daily or monthly quota has been exceeded."}\n\nPlease check your quota limits at: https://ai.google.dev/gemini-api/docs/rate-limits`,
+							)
+							throw new Error("Gemini API quota exhausted - cannot retry")
 						}
 					}
 				}
@@ -2735,11 +2763,26 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				// Wait for the greater of the exponential delay or the rate limit delay
 				const finalDelay = Math.max(exponentialDelay, rateLimitDelay)
 
-				// Show countdown timer with exponential backoff
+				// Determine the reason for the delay to show appropriate message
+				let delayReason = ""
+				if (error.status === 429) {
+					const hasRetryInfo = error.errorDetails?.find(
+						(detail: any) => detail["@type"] === "type.googleapis.com/google.rpc.RetryInfo",
+					)
+					if (hasRetryInfo) {
+						delayReason = "Rate limit reached. Waiting for the provider-recommended delay"
+					} else {
+						delayReason = "Rate limit reached. Using exponential backoff"
+					}
+				} else {
+					delayReason = errorMsg
+				}
+
+				// Show countdown timer with clear messaging
 				for (let i = finalDelay; i > 0; i--) {
 					await this.say(
 						"api_req_retry_delayed",
-						`${errorMsg}\n\nRetry attempt ${retryAttempt + 1}\nRetrying in ${i} seconds...`,
+						`${delayReason}\n\nRetry attempt ${retryAttempt + 1}\nRetrying in ${i} seconds...`,
 						undefined,
 						true,
 					)
@@ -2748,7 +2791,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 				await this.say(
 					"api_req_retry_delayed",
-					`${errorMsg}\n\nRetry attempt ${retryAttempt + 1}\nRetrying now...`,
+					`${delayReason}\n\nRetry attempt ${retryAttempt + 1}\nRetrying now...`,
 					undefined,
 					false,
 				)
@@ -2759,6 +2802,25 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 				return
 			} else {
+				// For non-auto-retry cases, check if it's a Gemini quota exhaustion
+				if (error.status === 429) {
+					const quotaFailure = error.errorDetails?.find(
+						(detail: any) => detail["@type"] === "type.googleapis.com/google.rpc.QuotaFailure",
+					)
+					const retryInfo = error.errorDetails?.find(
+						(detail: any) => detail["@type"] === "type.googleapis.com/google.rpc.RetryInfo",
+					)
+
+					// If quota failure without retry info, likely quota exhaustion
+					if (quotaFailure && !retryInfo) {
+						await this.say(
+							"error",
+							`Gemini API quota exhausted. ${quotaFailure.violations?.[0]?.description || "Your daily or monthly quota has been exceeded."}\n\nPlease check your quota limits at: https://ai.google.dev/gemini-api/docs/rate-limits`,
+						)
+						throw new Error("Gemini API quota exhausted - cannot retry")
+					}
+				}
+
 				const { response } = await this.ask(
 					"api_req_failed",
 					error.message ?? JSON.stringify(serializeError(error), null, 2),
