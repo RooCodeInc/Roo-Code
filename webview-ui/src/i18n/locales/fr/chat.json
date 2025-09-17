@@ -258,7 +258,7 @@
 		"disabledAriaLabel": "Approbation automatique désactivée - sélectionnez d'abord les options",
 		"triggerLabelOff": "Approbation automatique désactivée",
 		"triggerLabel_zero": "0 approuvé automatiquement",
-		"triggerLabel_one": "1 approuvé automatically",
+		"triggerLabel_one": "1 approuvé automatiquement",
 		"triggerLabel_other": "{{count}} approuvés automatiquement",
 		"triggerLabelAll": "YOLO"
 	},
