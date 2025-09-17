@@ -2817,7 +2817,10 @@ export const webviewMessageHandler = async (
 			try {
 				if (message.text) {
 					const { getCommand } = await import("../../services/command/commands")
-					const command = await getCommand(getCurrentCwd(), message.text)
+					const { executeMcpPrompt, parsePromptArguments } = await import(
+						"../../services/command/mcp-prompts"
+					)
+					const command = await getCommand(getCurrentCwd(), message.text, provider.mcpHub)
 
 					if (command && command.filePath) {
 						openFile(command.filePath)
@@ -2954,7 +2957,7 @@ export const webviewMessageHandler = async (
 
 				// Refresh commands list
 				const { getCommands } = await import("../../services/command/commands")
-				const commands = await getCommands(getCurrentCwd() || "")
+				const commands = await getCommands(getCurrentCwd() || "", provider.mcpHub)
 				const commandList = commands.map((command) => ({
 					name: command.name,
 					source: command.source,

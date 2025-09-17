@@ -3,6 +3,7 @@ import { ToolUse, AskApproval, HandleError, PushToolResult, RemoveClosingTag } f
 import { formatResponse } from "../prompts/responses"
 import { getCommand, getCommandNames } from "../../services/command/commands"
 import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
+import { McpServerManager } from "../../services/mcp/McpServerManager"
 
 export async function runSlashCommandTool(
 	task: Task,
@@ -49,12 +50,20 @@ export async function runSlashCommandTool(
 
 			task.consecutiveMistakeCount = 0
 
-			// Get the command from the commands service
-			const command = await getCommand(task.cwd, commandName)
+			// Get the command from the commands service (pass McpHub for MCP prompt support)
+			let mcpHub = undefined
+			if (provider) {
+				try {
+					mcpHub = await McpServerManager.getInstance(provider.context, provider)
+				} catch (error) {
+					console.error("Failed to get MCP hub:", error)
+				}
+			}
+			const command = await getCommand(task.cwd, commandName, mcpHub)
 
 			if (!command) {
 				// Get available commands for error message
-				const availableCommands = await getCommandNames(task.cwd)
+				const availableCommands = await getCommandNames(task.cwd, mcpHub)
 				task.recordToolError("run_slash_command")
 				pushToolResult(
 					formatResponse.toolError(
@@ -62,6 +71,41 @@ export async function runSlashCommandTool(
 					),
 				)
 				return
+			}
+
+			// Handle MCP prompt commands differently
+			let commandContent = command.content
+
+			if (command.source === "mcp" && command.name.startsWith("mcp.") && mcpHub) {
+				const parts = command.name.split(".")
+				if (parts.length >= 3) {
+					const serverName = parts[1]
+					const promptName = parts.slice(2).join(".")
+
+					try {
+						const { executeMcpPrompt, parsePromptArguments } = await import(
+							"../../services/command/mcp-prompts"
+						)
+
+						// Parse arguments if provided
+						let promptArgs: Record<string, unknown> = {}
+						if (args) {
+							const servers = mcpHub.getAllServers()
+							const server = servers.find((s) => s.name === serverName)
+							const prompt = server?.prompts?.find((p) => p.name === promptName)
+
+							if (prompt) {
+								promptArgs = parsePromptArguments(prompt, args)
+							}
+						}
+
+						// Execute the MCP prompt to get the actual content
+						commandContent = await executeMcpPrompt(mcpHub, serverName, promptName, promptArgs)
+					} catch (error) {
+						console.error(`Failed to execute MCP prompt ${command.name}:`, error)
+						commandContent = `Error executing MCP prompt: ${error instanceof Error ? error.message : String(error)}`
+					}
+				}
 			}
 
 			const toolMessage = JSON.stringify({
@@ -94,7 +138,7 @@ export async function runSlashCommandTool(
 			}
 
 			result += `\nSource: ${command.source}`
-			result += `\n\n--- Command Content ---\n\n${command.content}`
+			result += `\n\n--- Command Content ---\n\n${commandContent}`
 
 			// Return the command content as the tool result
 			pushToolResult(result)

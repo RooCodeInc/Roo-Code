@@ -3,21 +3,23 @@ import * as path from "path"
 import matter from "gray-matter"
 import { getGlobalRooDirectory, getProjectRooDirectoryForCwd } from "../roo-config"
 import { getBuiltInCommands, getBuiltInCommand } from "./built-in-commands"
+import { getMcpPromptsAsCommands, getMcpPromptCommand } from "./mcp-prompts"
+import { McpHub } from "../mcp/McpHub"
 
 export interface Command {
 	name: string
 	content: string
-	source: "global" | "project" | "built-in"
+	source: "global" | "project" | "built-in" | "mcp"
 	filePath: string
 	description?: string
 	argumentHint?: string
 }
 
 /**
- * Get all available commands from built-in, global, and project directories
- * Priority order: project > global > built-in (later sources override earlier ones)
+ * Get all available commands from built-in, global, project directories, and MCP servers
+ * Priority order: MCP prompts > project > global > built-in (later sources override earlier ones)
  */
-export async function getCommands(cwd: string): Promise<Command[]> {
+export async function getCommands(cwd: string, mcpHub?: McpHub): Promise<Command[]> {
 	const commands = new Map<string, Command>()
 
 	// Add built-in commands first (lowest priority)
@@ -30,23 +32,37 @@ export async function getCommands(cwd: string): Promise<Command[]> {
 	const globalDir = path.join(getGlobalRooDirectory(), "commands")
 	await scanCommandDirectory(globalDir, "global", commands)
 
-	// Scan project commands (highest priority - override both global and built-in)
+	// Scan project commands (override both global and built-in)
 	const projectDir = path.join(getProjectRooDirectoryForCwd(cwd), "commands")
 	await scanCommandDirectory(projectDir, "project", commands)
+
+	// Add MCP prompts as commands (highest priority - override all others)
+	const mcpCommands = await getMcpPromptsAsCommands(mcpHub)
+	for (const command of mcpCommands) {
+		commands.set(command.name, { ...command, source: "mcp" })
+	}
 
 	return Array.from(commands.values())
 }
 
 /**
  * Get a specific command by name (optimized to avoid scanning all commands)
- * Priority order: project > global > built-in
+ * Priority order: MCP prompts > project > global > built-in
  */
-export async function getCommand(cwd: string, name: string): Promise<Command | undefined> {
+export async function getCommand(cwd: string, name: string, mcpHub?: McpHub): Promise<Command | undefined> {
+	// Check if it's an MCP prompt command first (highest priority)
+	if (name.startsWith("mcp.") && mcpHub) {
+		const mcpCommand = await getMcpPromptCommand(mcpHub, name)
+		if (mcpCommand) {
+			return { ...mcpCommand, source: "mcp" }
+		}
+	}
+
 	// Try to find the command directly without scanning all commands
 	const projectDir = path.join(getProjectRooDirectoryForCwd(cwd), "commands")
 	const globalDir = path.join(getGlobalRooDirectory(), "commands")
 
-	// Check project directory first (highest priority)
+	// Check project directory first
 	const projectCommand = await tryLoadCommand(projectDir, name, "project")
 	if (projectCommand) {
 		return projectCommand
@@ -128,8 +144,8 @@ async function tryLoadCommand(
 /**
  * Get command names for autocomplete
  */
-export async function getCommandNames(cwd: string): Promise<string[]> {
-	const commands = await getCommands(cwd)
+export async function getCommandNames(cwd: string, mcpHub?: McpHub): Promise<string[]> {
+	const commands = await getCommands(cwd, mcpHub)
 	return commands.map((cmd) => cmd.name)
 }
 

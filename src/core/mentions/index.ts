@@ -92,7 +92,8 @@ export async function parseMentions(
 	const commandExistenceChecks = await Promise.all(
 		Array.from(uniqueCommandNames).map(async (commandName) => {
 			try {
-				const command = await getCommand(cwd, commandName)
+				// TODO: Pass McpHub instance when available for MCP prompt support
+				const command = await getCommand(cwd, commandName, undefined)
 				return { commandName, command }
 			} catch (error) {
 				// If there's an error checking command existence, treat it as non-existent

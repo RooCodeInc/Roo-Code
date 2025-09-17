@@ -40,7 +40,7 @@ npm run build
 			mockFs.stat = vi.fn().mockResolvedValue({ isDirectory: () => true })
 			mockFs.readFile = vi.fn().mockResolvedValue(commandContent)
 
-			const result = await getCommand("/test/cwd", "setup")
+			const result = await getCommand("/test/cwd", "setup", undefined)
 
 			expect(result).toEqual({
 				name: "setup",
@@ -64,7 +64,7 @@ npm run build
 			mockFs.stat = vi.fn().mockResolvedValue({ isDirectory: () => true })
 			mockFs.readFile = vi.fn().mockResolvedValue(commandContent)
 
-			const result = await getCommand("/test/cwd", "setup")
+			const result = await getCommand("/test/cwd", "setup", undefined)
 
 			expect(result).toEqual({
 				name: "setup",
@@ -89,7 +89,7 @@ Command content here.`
 			mockFs.stat = vi.fn().mockResolvedValue({ isDirectory: () => true })
 			mockFs.readFile = vi.fn().mockResolvedValue(commandContent)
 
-			const result = await getCommand("/test/cwd", "setup")
+			const result = await getCommand("/test/cwd", "setup", undefined)
 
 			expect(result?.description).toBeUndefined()
 		})
@@ -107,7 +107,7 @@ Command content here.`
 			mockFs.stat = vi.fn().mockResolvedValue({ isDirectory: () => true })
 			mockFs.readFile = vi.fn().mockResolvedValue(commandContent)
 
-			const result = await getCommand("/test/cwd", "setup")
+			const result = await getCommand("/test/cwd", "setup", undefined)
 
 			expect(result).toEqual({
 				name: "setup",
@@ -142,7 +142,7 @@ Global setup instructions.`
 				.mockResolvedValueOnce(projectCommandContent) // First call for project
 				.mockResolvedValueOnce(globalCommandContent) // Second call for global (shouldn't be used)
 
-			const result = await getCommand("/test/cwd", "setup")
+			const result = await getCommand("/test/cwd", "setup", undefined)
 
 			expect(result).toEqual({
 				name: "setup",
@@ -169,7 +169,7 @@ Global setup instructions.`
 				.mockRejectedValueOnce(new Error("File not found")) // Project command doesn't exist
 				.mockResolvedValueOnce(globalCommandContent) // Global command exists
 
-			const result = await getCommand("/test/cwd", "setup")
+			const result = await getCommand("/test/cwd", "setup", undefined)
 
 			expect(result).toEqual({
 				name: "setup",
@@ -196,7 +196,7 @@ Create a new release.`
 			mockFs.stat = vi.fn().mockResolvedValue({ isDirectory: () => true })
 			mockFs.readFile = vi.fn().mockResolvedValue(commandContent)
 
-			const result = await getCommand("/test/cwd", "release")
+			const result = await getCommand("/test/cwd", "release", undefined)
 
 			expect(result).toEqual({
 				name: "release",
@@ -222,7 +222,7 @@ Deploy the application.`
 			mockFs.stat = vi.fn().mockResolvedValue({ isDirectory: () => true })
 			mockFs.readFile = vi.fn().mockResolvedValue(commandContent)
 
-			const result = await getCommand("/test/cwd", "deploy")
+			const result = await getCommand("/test/cwd", "deploy", undefined)
 
 			expect(result).toEqual({
 				name: "deploy",
@@ -247,7 +247,7 @@ Test content.`
 			mockFs.stat = vi.fn().mockResolvedValue({ isDirectory: () => true })
 			mockFs.readFile = vi.fn().mockResolvedValue(commandContent)
 
-			const result = await getCommand("/test/cwd", "test")
+			const result = await getCommand("/test/cwd", "test", undefined)
 
 			expect(result?.argumentHint).toBeUndefined()
 		})
@@ -265,7 +265,7 @@ Test content.`
 			mockFs.stat = vi.fn().mockResolvedValue({ isDirectory: () => true })
 			mockFs.readFile = vi.fn().mockResolvedValue(commandContent)
 
-			const result = await getCommand("/test/cwd", "test")
+			const result = await getCommand("/test/cwd", "test", undefined)
 
 			expect(result?.argumentHint).toBeUndefined()
 		})
@@ -283,7 +283,7 @@ Test content.`
 			mockFs.stat = vi.fn().mockResolvedValue({ isDirectory: () => true })
 			mockFs.readFile = vi.fn().mockResolvedValue(commandContent)
 
-			const result = await getCommand("/test/cwd", "test")
+			const result = await getCommand("/test/cwd", "test", undefined)
 
 			expect(result?.argumentHint).toBeUndefined()
 		})
@@ -324,7 +324,7 @@ Build instructions without frontmatter.`
 				.mockResolvedValueOnce(deployContent)
 				.mockResolvedValueOnce(buildContent)
 
-			const result = await getCommands("/test/cwd")
+			const result = await getCommands("/test/cwd", undefined)
 
 			expect(result).toHaveLength(3)
 			expect(result).toEqual(
@@ -374,7 +374,7 @@ Deploy the app.`
 			])
 			mockFs.readFile = vi.fn().mockResolvedValueOnce(releaseContent).mockResolvedValueOnce(deployContent)
 
-			const result = await getCommands("/test/cwd")
+			const result = await getCommands("/test/cwd", undefined)
 
 			expect(result).toHaveLength(2)
 			expect(result).toEqual(

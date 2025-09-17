@@ -6,7 +6,7 @@ describe("Command Integration Tests", () => {
 	const testWorkspaceDir = path.join(__dirname, "../../")
 
 	it("should discover command files in .roo/commands/", async () => {
-		const commands = await getCommands(testWorkspaceDir)
+		const commands = await getCommands(testWorkspaceDir, undefined)
 
 		// Should be able to discover commands (may be empty in test environment)
 		expect(Array.isArray(commands)).toBe(true)
@@ -22,7 +22,7 @@ describe("Command Integration Tests", () => {
 	})
 
 	it("should return command names correctly", async () => {
-		const commandNames = await getCommandNames(testWorkspaceDir)
+		const commandNames = await getCommandNames(testWorkspaceDir, undefined)
 
 		// Should return an array (may be empty in test environment)
 		expect(Array.isArray(commandNames)).toBe(true)
@@ -35,11 +35,11 @@ describe("Command Integration Tests", () => {
 	})
 
 	it("should load command content if commands exist", async () => {
-		const commands = await getCommands(testWorkspaceDir)
+		const commands = await getCommands(testWorkspaceDir, undefined)
 
 		if (commands.length > 0) {
 			const firstCommand = commands[0]
-			const loadedCommand = await getCommand(testWorkspaceDir, firstCommand.name)
+			const loadedCommand = await getCommand(testWorkspaceDir, firstCommand.name, undefined)
 
 			expect(loadedCommand).toBeDefined()
 			expect(loadedCommand?.name).toBe(firstCommand.name)
@@ -50,7 +50,7 @@ describe("Command Integration Tests", () => {
 	})
 
 	it("should handle non-existent commands gracefully", async () => {
-		const nonExistentCommand = await getCommand(testWorkspaceDir, "non-existent-command")
+		const nonExistentCommand = await getCommand(testWorkspaceDir, "non-existent-command", undefined)
 		expect(nonExistentCommand).toBeUndefined()
 	})
 })

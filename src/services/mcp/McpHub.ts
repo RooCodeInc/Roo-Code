@@ -9,6 +9,8 @@ import {
 	ListResourceTemplatesResultSchema,
 	ListToolsResultSchema,
 	ReadResourceResultSchema,
+	ListPromptsResultSchema,
+	GetPromptResultSchema,
 } from "@modelcontextprotocol/sdk/types.js"
 import chokidar, { FSWatcher } from "chokidar"
 import delay from "delay"
@@ -28,6 +30,8 @@ import {
 	McpServer,
 	McpTool,
 	McpToolCallResponse,
+	McpPrompt,
+	McpGetPromptResponse,
 } from "../../shared/mcp"
 import { fileExistsAtPath } from "../../utils/fs"
 import { arePathsEqual, getWorkspacePath } from "../../utils/path"
@@ -835,10 +839,11 @@ export class McpHub {
 			connection.server.error = ""
 			connection.server.instructions = client.getInstructions()
 
-			// Initial fetch of tools and resources
+			// Initial fetch of tools, resources, and prompts
 			connection.server.tools = await this.fetchToolsList(name, source)
 			connection.server.resources = await this.fetchResourcesList(name, source)
 			connection.server.resourceTemplates = await this.fetchResourceTemplatesList(name, source)
+			connection.server.prompts = await this.fetchPromptsList(name, source)
 		} catch (error) {
 			// Update status with error
 			const connection = this.findConnection(name, source)
@@ -991,6 +996,49 @@ export class McpHub {
 			// console.error(`Failed to fetch resource templates for ${serverName}:`, error)
 			return []
 		}
+	}
+
+	private async fetchPromptsList(serverName: string, source?: "global" | "project"): Promise<McpPrompt[]> {
+		try {
+			const connection = this.findConnection(serverName, source)
+			if (!connection || connection.type !== "connected") {
+				return []
+			}
+			const response = await connection.client.request({ method: "prompts/list" }, ListPromptsResultSchema)
+			return response?.prompts || []
+		} catch (error) {
+			// Prompts might not be supported by all servers, so we silently handle errors
+			// console.error(`Failed to fetch prompts for ${serverName}:`, error)
+			return []
+		}
+	}
+
+	async getPrompt(
+		serverName: string,
+		promptName: string,
+		args?: Record<string, unknown>,
+		source?: "global" | "project",
+	): Promise<McpGetPromptResponse> {
+		const connection = this.findConnection(serverName, source)
+		if (!connection || connection.type !== "connected") {
+			throw new Error(
+				`No connection found for server: ${serverName}${source ? ` with source ${source}` : ""}. Please make sure to use MCP servers available under 'Connected MCP Servers'.`,
+			)
+		}
+		if (connection.server.disabled) {
+			throw new Error(`Server "${serverName}" is disabled and cannot be used`)
+		}
+
+		return await connection.client.request(
+			{
+				method: "prompts/get",
+				params: {
+					name: promptName,
+					arguments: args,
+				},
+			},
+			GetPromptResultSchema,
+		)
 	}
 
 	async deleteConnection(name: string, source?: "global" | "project"): Promise<void> {
@@ -1384,6 +1432,7 @@ export class McpHub {
 							serverName,
 							serverSource,
 						)
+						connection.server.prompts = await this.fetchPromptsList(serverName, serverSource)
 					}
 				} catch (error) {
 					console.error(`Failed to refresh capabilities for ${serverName}:`, error)

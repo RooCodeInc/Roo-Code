@@ -53,7 +53,7 @@ describe("Command Mentions", () => {
 			const input = "/setup Please help me set up the project"
 			const result = await callParseMentions(input)
 
-			expect(mockGetCommand).toHaveBeenCalledWith("/test/cwd", "setup")
+			expect(mockGetCommand).toHaveBeenCalledWith("/test/cwd", "setup", undefined)
 			expect(result).toContain('<command name="setup">')
 			expect(result).toContain(commandContent)
 			expect(result).toContain("</command>")
@@ -94,8 +94,8 @@ describe("Command Mentions", () => {
 			const input = "/setup the project\nThen /deploy later"
 			const result = await callParseMentions(input)
 
-			expect(mockGetCommand).toHaveBeenCalledWith("/test/cwd", "setup")
-			expect(mockGetCommand).toHaveBeenCalledWith("/test/cwd", "deploy")
+			expect(mockGetCommand).toHaveBeenCalledWith("/test/cwd", "setup", undefined)
+			expect(mockGetCommand).toHaveBeenCalledWith("/test/cwd", "deploy", undefined)
 			expect(mockGetCommand).toHaveBeenCalledTimes(2) // Each unique command called once (optimized)
 			expect(result).toContain('<command name="setup">')
 			expect(result).toContain("# Setup Environment")
@@ -110,7 +110,7 @@ describe("Command Mentions", () => {
 			const input = "/nonexistent command"
 			const result = await callParseMentions(input)
 
-			expect(mockGetCommand).toHaveBeenCalledWith("/test/cwd", "nonexistent")
+			expect(mockGetCommand).toHaveBeenCalledWith("/test/cwd", "nonexistent", undefined)
 			// The command should remain unchanged in the text
 			expect(result).toBe("/nonexistent command")
 			// Should not contain any command tags
@@ -159,7 +159,7 @@ describe("Command Mentions", () => {
 			const input = "/setup-dev for the project"
 			const result = await callParseMentions(input)
 
-			expect(mockGetCommand).toHaveBeenCalledWith("/test/cwd", "setup-dev")
+			expect(mockGetCommand).toHaveBeenCalledWith("/test/cwd", "setup-dev", undefined)
 			expect(result).toContain('<command name="setup-dev">')
 			expect(result).toContain("# Dev setup")
 		})
