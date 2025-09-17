@@ -247,7 +247,7 @@
 		"issues": "Het lijkt erop dat je problemen hebt met Windows PowerShell, zie deze"
 	},
 	"autoApprove": {
-		"tooltipManage": "Beheer instellingen for automatische goedkeuring",
+		"tooltipManage": "Beheer instellingen voor automatische goedkeuring",
 		"tooltipStatus": "Automatische goedkeuring ingeschakeld voor: {{toggles}}",
 		"title": "Automatisch goedkeuren",
 		"all": "Alles",
