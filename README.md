@@ -35,7 +35,7 @@
 - [简体中文](locales/zh-CN/README.md)
 - [繁體中文](locales/zh-TW/README.md)
 - ...
-    </details>
+      </details>
 
 ---
 
@@ -58,9 +58,9 @@ Roo Code adapts to how you work:
 - Ask Mode: fast answers, explanations, and docs
 - Debug Mode: trace issues, add logs, isolate root causes
 - Custom Modes: build specialized modes for your team or workflow
-- Roomote Control: hosted, persistent agents that can run long tasks and orchestrate work across services
+- Roomote Control: Roomote Control lets you remotely control tasks running in your local VS Code instance.
 
-Learn more: [Using Modes](https://docs.roocode.com/basic-usage/using-modes) • [Custom Modes](https://docs.roocode.com/advanced-usage/custom-modes)
+Learn more: [Using Modes](https://docs.roocode.com/basic-usage/using-modes) • [Custom Modes](https://docs.roocode.com/advanced-usage/custom-modes) • [Custom Modes](https://docs.roocode.com/roo-code-cloud/roomote-control)
 
 ## Tutorial & Feature Videos
 
