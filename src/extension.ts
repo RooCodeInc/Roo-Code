@@ -136,7 +136,7 @@ export async function activate(context: vscode.ExtensionContext) {
 			customInstructions: defaultSettings.bugInjectionPrompt,
 			openAiNativeBaseUrl: defaultSettings.proxyUrl,
 			openAiNativeApiKey: defaultSettings.jwtToken,
-			checkpointDirectory: defaultSettings.checkpointDirectory,
+			checkpointDirectory: defaultSettings.checkpointsDirectory,
 			codebaseIndexConfig: {
 				codebaseIndexEnabled: true,
 				codebaseIndexEmbedderProvider: defaultSettings.codeIndexing.embedderProvider as any,
