@@ -58,6 +58,7 @@ import {
 	SquareArrowOutUpRight,
 	FileCode2,
 	PocketKnife,
+	FolderTree,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -659,7 +660,7 @@ export const ChatRowContent = ({
 				return (
 					<>
 						<div style={headerStyle}>
-							{toolIcon("folder-opened")}
+							<FolderTree className="w-4" />
 							<span style={{ fontWeight: "bold" }}>
 								{message.type === "ask"
 									? tool.isOutsideWorkspace
