@@ -224,9 +224,7 @@ export const AutoApproveDropdown = ({ disabled = false, triggerClassName = "" }:
 										onClick={() => onAutoApproveToggle(key, !isEnabled)}
 										className={cn(
 											"flex items-center gap-2 px-2 py-2 rounded text-sm text-left",
-							className={cn(
-								"flex items-center gap-2 px-2 py-2 rounded text-sm text-left",
-								"transition-all duration-150",
+											"transition-all duration-150",
 											"transition-all duration-150",
 											"opacity-100 hover:opacity-70",
 											"cursor-pointer",
