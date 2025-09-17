@@ -25,6 +25,7 @@ import {
 	vscodeLlmModels,
 	xaiModels,
 	internationalZAiModels,
+	watsonxModels,
 } from "./providers/index.js"
 
 /**
@@ -68,6 +69,7 @@ export const providerNames = [
 	"io-intelligence",
 	"roo",
 	"vercel-ai-gateway",
+	"watsonx",
 ] as const
 
 export const providerNamesSchema = z.enum(providerNames)
@@ -343,6 +345,13 @@ const vercelAiGatewaySchema = baseProviderSettingsSchema.extend({
 	vercelAiGatewayModelId: z.string().optional(),
 })
 
+const watsonxSchema = apiModelIdProviderModelSchema.extend({
+	watsonxApiKey: z.string().optional(),
+	watsonxProjectId: z.string().optional(),
+	watsonxBaseUrl: z.string().optional(),
+	watsonxRegion: z.string().optional(),
+})
+
 const defaultSchema = z.object({
 	apiProvider: z.undefined(),
 })
@@ -384,6 +393,7 @@ export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProv
 	qwenCodeSchema.merge(z.object({ apiProvider: z.literal("qwen-code") })),
 	rooSchema.merge(z.object({ apiProvider: z.literal("roo") })),
 	vercelAiGatewaySchema.merge(z.object({ apiProvider: z.literal("vercel-ai-gateway") })),
+	watsonxSchema.merge(z.object({ apiProvider: z.literal("watsonx") })),
 	defaultSchema,
 ])
 
@@ -425,6 +435,7 @@ export const providerSettingsSchema = z.object({
 	...qwenCodeSchema.shape,
 	...rooSchema.shape,
 	...vercelAiGatewaySchema.shape,
+	...watsonxSchema.shape,
 	...codebaseIndexProviderSchema.shape,
 })
 
@@ -578,6 +589,7 @@ export const MODELS_BY_PROVIDER: Record<
 	unbound: { id: "unbound", label: "Unbound", models: [] },
 	deepinfra: { id: "deepinfra", label: "DeepInfra", models: [] },
 	"vercel-ai-gateway": { id: "vercel-ai-gateway", label: "Vercel AI Gateway", models: [] },
+	watsonx: { id: "watsonx", label: "IBM watsonx", models: Object.keys(watsonxModels) },
 }
 
 export const dynamicProviders = [
@@ -589,6 +601,7 @@ export const dynamicProviders = [
 	"unbound",
 	"deepinfra",
 	"vercel-ai-gateway",
+	"watsonx",
 ] as const satisfies readonly ProviderName[]
 
 export type DynamicProvider = (typeof dynamicProviders)[number]
