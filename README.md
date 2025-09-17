@@ -11,7 +11,7 @@
 
 # Roo Code
 
-> Roo Code is an open-source VS Code AI agent. While we are technically a fork of Cline, let's be clear: our path has radically diverged. We're building something fundamentally different.
+> Your AI-Powered Dev Team, Right in Your Editor
 
 <details>
   <summary>🌐 Available languages</summary>
@@ -35,13 +35,13 @@
 - [简体中文](locales/zh-CN/README.md)
 - [繁體中文](locales/zh-TW/README.md)
 - ...
-  </details>
+    </details>
 
 ---
 
 ## What Can Roo Code Do For YOU?
 
-- Generate Code from natural language descriptions
+- Generate Code from natural language descriptions and specs
 - Adapt with Modes: Code, Architect, Ask, Debug, and Custom Modes
 - Refactor & Debug existing code
 - Write & Update documentation
@@ -51,14 +51,14 @@
 
 ## Modes
 
-Roo Code adapts to how you work, not the other way around:
+Roo Code adapts to how you work:
 
 - Code Mode: everyday coding, edits, and file ops
 - Architect Mode: plan systems, specs, and migrations
 - Ask Mode: fast answers, explanations, and docs
 - Debug Mode: trace issues, add logs, isolate root causes
 - Custom Modes: build specialized modes for your team or workflow
-- Cloud Agents: our direction of travel—hosted, persistent agents that can run long tasks and orchestrate work across services
+- Roomote Control: hosted, persistent agents that can run long tasks and orchestrate work across services
 
 Learn more: [Using Modes](https://docs.roocode.com/basic-usage/using-modes) • [Custom Modes](https://docs.roocode.com/advanced-usage/custom-modes)
 
