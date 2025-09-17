@@ -198,4 +198,25 @@ describe("Task dispose method", () => {
 		// Verify total listener count is 0
 		expect(task.eventNames().length).toBe(0)
 	})
+
+	test("should clear lastUsedTerminal reference to prevent memory leaks", () => {
+		// Mock a terminal object
+		const mockTerminal = {
+			id: "test-terminal-id",
+			name: "Test Terminal",
+			dispose: vi.fn(),
+		}
+
+		// Set lastUsedTerminal on the task
+		;(task as any).lastUsedTerminal = mockTerminal
+
+		// Verify it's set
+		expect((task as any).lastUsedTerminal).toBe(mockTerminal)
+
+		// Call dispose
+		task.dispose()
+
+		// Verify lastUsedTerminal is cleared
+		expect((task as any).lastUsedTerminal).toBeUndefined()
+	})
 })
