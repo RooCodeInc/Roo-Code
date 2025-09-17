@@ -51,9 +51,9 @@ export abstract class ShadowCheckpointService extends EventEmitter {
 		const downloadsPath = path.join(homedir, "Downloads")
 		const protectedPaths = [homedir, desktopPath, documentsPath, downloadsPath]
 
-		if (protectedPaths.includes(workspaceDir)) {
-			throw new Error(`Cannot use checkpoints in ${workspaceDir}`)
-		}
+		// if (protectedPaths.includes(workspaceDir)) {
+		// 	throw new Error(`Cannot use checkpoints in ${workspaceDir}`)
+		// }
 
 		this.taskId = taskId
 		this.checkpointsDir = checkpointsDir
