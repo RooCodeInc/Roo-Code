@@ -151,6 +151,9 @@ export const globalSettingsSchema = z.object({
 	hasOpenedModeSelector: z.boolean().optional(),
 	lastModeExportPath: z.string().optional(),
 	lastModeImportPath: z.string().optional(),
+
+	// Interface settings
+	interfaceTextSize: z.enum(["small", "medium", "large"]).optional(),
 })
 
 export type GlobalSettings = z.infer<typeof globalSettingsSchema>

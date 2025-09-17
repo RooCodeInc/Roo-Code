@@ -78,6 +78,7 @@ const App = () => {
 		cloudApiUrl,
 		renderContext,
 		mdmCompliant,
+		interfaceTextSize,
 	} = useExtensionState()
 
 	// Create a persistent state manager
@@ -245,7 +246,7 @@ const App = () => {
 
 	// Do not conditionally load ChatView, it's expensive and there's state we
 	// don't want to lose (user input, disableInput, askResponse promise, etc.)
-	return showWelcome ? (
+	const content = showWelcome ? (
 		<WelcomeView />
 	) : (
 		<>
@@ -345,6 +346,9 @@ const App = () => {
 			)}
 		</>
 	)
+
+	// Wrap content with interface text size class
+	return <div className={`interface-text-${interfaceTextSize || "medium"}`}>{content}</div>
 }
 
 const queryClient = new QueryClient()
