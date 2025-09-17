@@ -146,10 +146,10 @@
 		"mode_imported": "Mode imported successfully"
 	},
 	"settingsFooter": {
-		"importFromRemoteFile": "Import from remote file (JSON)",
-		"importFromRemoteFileDescription": "Pick from remote/workspace filesystem",
-		"importFromLocalFile": "Import from local file (JSON)",
-		"importFromLocalFileDescription": "Pick on this machine via webview",
+		"importFromRemoteFile": "Import from remote file system",
+		"importFromRemoteFileDescription": "Browse and select from the remote/workspace filesystem",
+		"importFromLocalFile": "Import from your local machine",
+		"importFromLocalFileDescription": "Browse and select from your local computer via browser",
 		"chooseImportSource": "Choose import source"
 	},
 	"answers": {
