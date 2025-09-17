@@ -12,7 +12,7 @@
 	},
 	"dependencies": {
 		"@roo-code/types": "workspace:^",
-		"ioredis": "^5.6.1",
+		"ioredis": "^5.7.0",
 		"jwt-decode": "^4.0.0",
 		"p-wait-for": "^5.0.2",
 		"socket.io-client": "^4.8.1",
@@ -21,9 +21,9 @@
 	"devDependencies": {
 		"@roo-code/config-eslint": "workspace:^",
 		"@roo-code/config-typescript": "workspace:^",
-		"@types/node": "^24.1.0",
-		"@types/vscode": "^1.102.0",
-		"globals": "^16.3.0",
+		"@types/node": "22.18.0",
+		"@types/vscode": "^1.104.0",
+		"globals": "^16.4.0",
 		"vitest": "^3.2.4"
 	}
 }
