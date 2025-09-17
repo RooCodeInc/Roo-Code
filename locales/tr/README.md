@@ -11,7 +11,7 @@
 
 # Roo Code
 
-> Roo Code, açık kaynaklı bir VS Code yapay zeka ajanıdır. Teknik olarak Cline'ın bir çatalı olsak da, açık olalım: yolumuz kökten ayrıldı. Temelde farklı bir şey inşa ediyoruz.
+> AI destekli dev ekibin, doğrudan editörünün içinde
 
 <details>
   <summary>🌐 Mevcut diller</summary>
@@ -35,7 +35,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-  </details>
+    </details>
 
 ---
 
@@ -58,9 +58,9 @@ Roo Code, sizin çalışma şeklinize uyum sağlar, tam tersi değil:
 - Sor Modu: hızlı cevaplar, açıklamalar ve belgeler
 - Hata Ayıklama Modu: sorunları izleyin, günlükler ekleyin, kök nedenleri izole edin
 - Özel Modlar: ekibiniz veya iş akışınız için özel modlar oluşturun
-- Bulut Ajanları: seyahat yönümüz—uzun görevleri çalıştırabilen ve hizmetler arasında işleri düzenleyebilen barındırılan, kalıcı ajanlar
+- Roomote Control: Roomote Control, yerel VS Code örneğinde çalışan işleri uzaktan kontrol etmeni sağlar.
 
-Daha fazlasını öğrenin: [Modları Kullanma](https://docs.roocode.com/basic-usage/using-modes) • [Özel Modlar](https://docs.roocode.com/advanced-usage/custom-modes)
+Daha fazla: [Modları kullanma](https://docs.roocode.com/basic-usage/using-modes) • [Özel modlar](https://docs.roocode.com/advanced-usage/custom-modes) • [Roomote Control](https://docs.roocode.com/roo-code-cloud/roomote-control)
 
 ## Eğitim ve Özellik Videoları
 
@@ -173,7 +173,14 @@ Roo Code'u daha iyi hale getirmemize yardımcı olan tüm katkıda bulunanlarım
 
 <!-- START CONTRIBUTORS SECTION - AUTO-GENERATED, DO NOT EDIT MANUALLY -->
 
-| <a href="https://github.com/mrubens"><img src="https://avatars.githubusercontent.com/u/2600?v=4" width="100" height="100" alt="mrubens"/><br /><sub><b>mrubens</b></sub></a>  | <a href="https://github.com/saoudrizwan"><img src="https://avatars.githubusercontent.com/u/7799382?v=4" width="100" height="100" alt="saoudrizwan"/><br /><sub><b>saoudrizwan</b></sub></a> |             <a href="https://github.com/cte"><img src="https://avatars.githubusercontent.com/u/16332?v=4" width="100" height="100" alt="cte"/><br /><sub><b>cte</b></sub></a>              | <a href="https://github.com/daniel-lxs"><img src="https://avatars.githubusercontent.com/u/57051444?v=4" width="100" height="100" alt="daniel-lxs"/><br /><sub><b>daniel-lxs</b></sub></a> |       <a href="https://github.com/samhvw8"><img src="https://avatars.githubusercontent.com/u/12538214?v=4" width="100" height="100" alt="samhvw8"/><br /><sub><b>samhvw8</b></sub></a>       | <a href="https://github.com/hannesrudolph"><img src="https://avatars.githubusercontent.com/u/49103247?v=4" width="100" height="100" alt="hannesrudolph"/><br /><sub><b>hannesrudolph</b></sub></a> |
-| :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
-| <a href="https://github.com/KJ7LNW"><img src="https://avatars.githubusercontent.com/u/93454819?v=4" width="100" height="100" alt="KJ7LNW"/><br /><sub><b>KJ7LNW</b></sub></a> |      <a href="https://github.com/a8trejo"><img src="https://avatars.githubusercontent.com/u/62401433?v=4" width="100" height="100" alt="a8trejo"/><br /><sub><b>a8trejo</b></sub></a>       | <a href="https://github.com/ColemanRoo"><img src="https://avatars.githubusercontent.com/u/117104599?v=4" width="100" height="100" alt="ColemanRoo"/><br /><sub><b>ColemanRoo</b></sub></a> |    <a href="https://github.com/MuriloFP"><img src="https://avatars.githubusercontent.com/u/50873657?v=4" width="100" height="100" alt="MuriloFP"/><br /><sub><b>MuriloFP</b></sub></a>    | <a href="https://github.com/canrobins13"><img src="https://avatars.githubusercontent.com/u/20544372?v=4" width="100" height="100" alt="canrobins13"/><br /><sub><b>canrobins13</b></sub></a> |         <a href="https://github.com/stea9499"><img src="https://avatars.githubusercontent.com/u/4163795?v=4" width="100" height="100" alt="stea9499"/><br /><sub><b>stea9499</b></sub></a>         |
-|         <a href="https://github.com/jr"><img src="https://avatars.githubusercontent.com/u/5629?v=4" width="100" height="100" alt="jr"/><br /><sub><b>jr</b></sub></a>         |           <a href="https://github.com/joemanley201"><img src="https://avatars.githubusercontent.com/u/8299960?v=4" width="100" height="100" alt="joemanley201"/><br /><sub><b&gt            |
+[![Contributors](https://contrib.rocks/image?repo=RooCodeInc/roo-code&max=120&columns=12&cacheBust=0000000000)](https://github.com/RooCodeInc/roo-code/graphs/contributors)
+
+<!-- END CONTRIBUTORS SECTION -->
+
+## Lisans
+
+[Apache 2.0 © 2025 Roo Code, Inc.](../../LICENSE)
+
+---
+
+**Roo Code'un keyfini çıkar!** Onu kısa tasmalı tut ya da otonom dolaşsın; ne inşa edeceğini görmek için sabırsızlanıyoruz. Soruların veya özellik fikirlerin varsa [Reddit topluluğumuza](https://www.reddit.com/r/RooCode/) ya da [Discord](https://discord.gg/roocode)'a uğra. İyi kodlamalar!
