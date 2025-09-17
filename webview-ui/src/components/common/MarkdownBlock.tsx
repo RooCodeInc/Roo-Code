@@ -17,7 +17,7 @@ interface MarkdownBlockProps {
 
 const StyledMarkdown = styled.div`
 	* {
-		font-weight: 300;
+		font-weight: 400;
 	}
 
 	strong {
