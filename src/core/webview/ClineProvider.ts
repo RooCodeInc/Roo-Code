@@ -451,12 +451,32 @@ export class ClineProvider
 	// This is used when a subtask is finished and the parent task needs to be
 	// resumed.
 	async finishSubTask(lastMessage: string) {
+		// Store the parent task ID before removing the child
+		const parentTaskId = this.getCurrentTask()?.parentTaskId
+
 		// Remove the last cline instance from the stack (this is the finished
 		// subtask).
 		await this.removeClineFromStack()
-		// Resume the last cline instance in the stack (if it exists - this is
-		// the 'parent' calling task).
-		await this.getCurrentTask()?.completeSubtask(lastMessage)
+
+		// Try to get the parent task from the stack
+		let parentTask = this.getCurrentTask()
+
+		// If parent is not on the stack but we have a parentTaskId, rehydrate it
+		if (!parentTask && parentTaskId) {
+			try {
+				const { historyItem } = await this.getTaskWithId(parentTaskId)
+				// Create the parent task from history
+				parentTask = await this.createTaskWithHistoryItem(historyItem)
+				this.log(`[finishSubTask] Rehydrated parent task ${parentTaskId} from history`)
+			} catch (error) {
+				this.log(`[finishSubTask] Failed to rehydrate parent task ${parentTaskId}: ${error}`)
+				// If we can't rehydrate the parent, at least log the error
+				// The UI will remain in a state where the user can start a new task
+			}
+		}
+
+		// Resume the parent task (if it exists)
+		await parentTask?.completeSubtask(lastMessage)
 	}
 	// Pending Edit Operations Management
 
