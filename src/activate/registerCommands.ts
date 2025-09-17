@@ -228,12 +228,12 @@ const getCommandsMap = ({ context, outputChannel, provider }: RegisterCommandOpt
 			return
 		}
 
-		// Get current state
-		const currentState = visibleProvider.getGlobalState("autoApprovalEnabled") ?? false
+		// Get current state using context proxy
+		const currentState = visibleProvider.contextProxy.getValue("autoApprovalEnabled") ?? false
 
 		// Toggle the state
 		const newState = !currentState
-		await visibleProvider.setGlobalState("autoApprovalEnabled", newState)
+		await visibleProvider.contextProxy.setValue("autoApprovalEnabled", newState)
 
 		// Update the webview
 		await visibleProvider.postStateToWebview()
