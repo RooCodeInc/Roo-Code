@@ -14,14 +14,32 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Bump cacheBust in README
+      - name: Bump cacheBust in all README files
         run: |
           set -euo pipefail
-          TS=$(date +%s)
-          if grep -q 'cacheBust=' README.md; then
-            sed -i "s/cacheBust=[0-9]\+/cacheBust=${TS}/g" README.md
-          else
-            echo "cacheBust parameter not found in README.md" >&2
+          TS="$(date +%s)"
+          # Target only the root README.md and localized READMEs under locales/*/README.md
+          mapfile -t FILES < <(git ls-files README.md 'locales/*/README.md' || true)
+
+          if [ "${#FILES[@]}" -eq 0 ]; then
+            echo "No target README files found." >&2
+            exit 1
+          fi
+
+          UPDATED=0
+          for f in "${FILES[@]}"; do
+            if grep -q 'cacheBust=' "$f"; then
+              # Use portable sed in GNU environment of ubuntu-latest
+              sed -i -E "s/cacheBust=[0-9]+/cacheBust=${TS}/g" "$f"
+              echo "Updated cacheBust in $f"
+              UPDATED=1
+            else
+              echo "Warning: cacheBust parameter not found in $f" >&2
+            fi
+          done
+
+          if [ "$UPDATED" -eq 0 ]; then
+            echo "No files were updated. Ensure READMEs embed contrib.rocks with cacheBust param." >&2
             exit 1
           fi
 
@@ -39,11 +57,11 @@ jobs:
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "chore: refresh contrib.rocks image cache [skip ci]"
+          commit-message: "chore: refresh contrib.rocks image cache across all READMEs [skip ci]"
           committer: "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
           branch: refresh-contrib-cache
           delete-branch: true
-          title: "Refresh contrib.rocks image cache"
+          title: "Refresh contrib.rocks image cache (all READMEs)"
           body: |
-            Automated refresh of the contrib.rocks image cache by bumping the cacheBust parameter in README.md.
+            Automated refresh of the contrib.rocks image cache by bumping the cacheBust parameter in README.md and locales/*/README.md.
           base: main
