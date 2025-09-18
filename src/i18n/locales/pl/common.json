@@ -144,6 +144,13 @@
 		"mode_exported": "Tryb '{{mode}}' pomyślnie wyeksportowany",
 		"mode_imported": "Tryb pomyślnie zaimportowany"
 	},
+	"settingsFooter": {
+		"importFromRemoteFile": "Importuj z zdalnego systemu plików",
+		"importFromRemoteFileDescription": "Przeglądaj i wybieraj z zdalnego/systemu plików workspace",
+		"importFromLocalFile": "Importuj ze swojego lokalnego komputera",
+		"importFromLocalFileDescription": "Przeglądaj i wybieraj ze swojego lokalnego komputera przez przeglądarkę",
+		"chooseImportSource": "Wybierz źródło importu"
+	},
 	"answers": {
 		"yes": "Tak",
 		"no": "Nie",

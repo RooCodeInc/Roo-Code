@@ -150,6 +150,13 @@
 		"remove": "Xóa",
 		"keep": "Giữ"
 	},
+	"settingsFooter": {
+		"importFromRemoteFile": "Nhập từ hệ thống tệp từ xa",
+		"importFromRemoteFileDescription": "Duyệt và chọn từ hệ thống tệp từ xa/workspace",
+		"importFromLocalFile": "Nhập từ máy cục bộ của bạn",
+		"importFromLocalFileDescription": "Duyệt và chọn từ máy tính cục bộ của bạn qua trình duyệt",
+		"chooseImportSource": "Chọn nguồn nhập"
+	},
 	"buttons": {
 		"save": "Lưu",
 		"edit": "Chỉnh sửa",

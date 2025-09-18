@@ -144,6 +144,13 @@
 		"mode_exported": "モード「{{mode}}」が正常にエクスポートされました",
 		"mode_imported": "モードが正常にインポートされました"
 	},
+	"settingsFooter": {
+		"importFromRemoteFile": "リモートファイルシステムからインポート",
+		"importFromRemoteFileDescription": "リモート/ワークスペースのファイルシステムを参照して選択します",
+		"importFromLocalFile": "ローカルマシンからインポート",
+		"importFromLocalFileDescription": "ブラウザを介してローカルコンピュータから参照して選択します",
+		"chooseImportSource": "インポート元を選択"
+	},
 	"answers": {
 		"yes": "はい",
 		"no": "いいえ",

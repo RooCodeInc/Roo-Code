@@ -95,8 +95,7 @@
 			"cannot_delete_invalid_timestamp": "Cannot delete message: invalid timestamp",
 			"message_not_found": "Message with timestamp {{messageTs}} not found",
 			"error_deleting_message": "Error deleting message: {{error}}",
-			"error_editing_message": "Error editing message: {{error}}",
-			"no_local_settings_content": "No local settings file content received"
+			"error_editing_message": "Error editing message: {{error}}"
 		},
 		"gemini": {
 			"generate_stream": "Gemini generate context stream error: {{error}}",

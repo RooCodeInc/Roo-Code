@@ -148,6 +148,13 @@
 		"mode_exported": "Modo '{{mode}}' exportado com sucesso",
 		"mode_imported": "Modo importado com sucesso"
 	},
+	"settingsFooter": {
+		"importFromRemoteFile": "Importar do sistema de arquivos remoto",
+		"importFromRemoteFileDescription": "Navegue e selecione do sistema de arquivos remoto/workspace",
+		"importFromLocalFile": "Importar do seu computador local",
+		"importFromLocalFileDescription": "Navegue e selecione do seu computador local através do navegador",
+		"chooseImportSource": "Escolha a fonte de importação"
+	},
 	"answers": {
 		"yes": "Sim",
 		"no": "Não",

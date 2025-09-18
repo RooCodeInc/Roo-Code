@@ -144,6 +144,13 @@
 		"mode_exported": "模式 '{{mode}}' 已成功匯出",
 		"mode_imported": "模式已成功匯入"
 	},
+	"settingsFooter": {
+		"importFromRemoteFile": "從遠端檔案系統匯入",
+		"importFromRemoteFileDescription": "瀏覽並從遠端/工作區檔案系統中選擇",
+		"importFromLocalFile": "從本機匯入",
+		"importFromLocalFileDescription": "透過瀏覽器從您的本機電腦瀏覽並選擇",
+		"chooseImportSource": "選擇匯入來源"
+	},
 	"answers": {
 		"yes": "是",
 		"no": "否",

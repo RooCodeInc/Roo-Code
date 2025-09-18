@@ -149,6 +149,13 @@
 		"mode_exported": "模式 '{{mode}}' 已成功导出",
 		"mode_imported": "模式已成功导入"
 	},
+	"settingsFooter": {
+		"importFromRemoteFile": "从远程文件系统导入",
+		"importFromRemoteFileDescription": "浏览并从远程/工作区文件系统中选择",
+		"importFromLocalFile": "从本地计算机导入",
+		"importFromLocalFileDescription": "通过浏览器浏览并从本地计算机中选择",
+		"chooseImportSource": "选择导入来源"
+	},
 	"answers": {
 		"yes": "是",
 		"no": "否",

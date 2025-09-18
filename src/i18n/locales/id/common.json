@@ -144,6 +144,13 @@
 		"mode_exported": "Mode '{{mode}}' berhasil diekspor",
 		"mode_imported": "Mode berhasil diimpor"
 	},
+	"settingsFooter": {
+		"importFromRemoteFile": "Impor dari sistem berkas jarak jauh",
+		"importFromRemoteFileDescription": "Jelajahi dan pilih dari sistem berkas jarak jauh/ruang kerja",
+		"importFromLocalFile": "Impor dari mesin lokal Anda",
+		"importFromLocalFileDescription": "Jelajahi dan pilih dari komputer lokal Anda melalui peramban",
+		"chooseImportSource": "Pilih sumber impor"
+	},
 	"answers": {
 		"yes": "Ya",
 		"no": "Tidak",

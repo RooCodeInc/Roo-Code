@@ -144,6 +144,13 @@
 		"mode_exported": "मोड '{{mode}}' सफलतापूर्वक निर्यात किया गया",
 		"mode_imported": "मोड सफलतापूर्वक आयात किया गया"
 	},
+	"settingsFooter": {
+		"importFromRemoteFile": "दूरस्थ फ़ाइल सिस्टम से आयात करें",
+		"importFromRemoteFileDescription": "दूरस्थ/वर्कस्पेस फ़ाइल सिस्टम से ब्राउज़ करें और चयन करें",
+		"importFromLocalFile": "अपने लोकल मशीन से आयात करें",
+		"importFromLocalFileDescription": "ब्राउज़र के माध्यम से अपने लोकल कंप्यूटर से ब्राउज़ करें और चयन करें",
+		"chooseImportSource": "आयात स्रोत चुनें"
+	},
 	"answers": {
 		"yes": "हां",
 		"no": "नहीं",

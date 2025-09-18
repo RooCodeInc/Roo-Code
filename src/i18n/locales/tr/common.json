@@ -144,6 +144,13 @@
 		"mode_exported": "'{{mode}}' modu başarıyla dışa aktarıldı",
 		"mode_imported": "Mod başarıyla içe aktarıldı"
 	},
+	"settingsFooter": {
+		"importFromRemoteFile": "Uzak dosya sisteminden içe aktar",
+		"importFromRemoteFileDescription": "Uzak/çalışma alanı dosya sisteminde gezinin ve seçin",
+		"importFromLocalFile": "Yerel makinenizden içe aktar",
+		"importFromLocalFileDescription": "Tarayıcı aracılığıyla yerel bilgisayarınızdan gezinin ve seçin",
+		"chooseImportSource": "İçe aktarma kaynağını seçin"
+	},
 	"answers": {
 		"yes": "Evet",
 		"no": "Hayır",

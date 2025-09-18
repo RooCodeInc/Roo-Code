@@ -144,6 +144,13 @@
 		"mode_exported": "Режим '{{mode}}' успешно экспортирован",
 		"mode_imported": "Режим успешно импортирован"
 	},
+	"settingsFooter": {
+		"importFromRemoteFile": "Импорт из удаленной файловой системы",
+		"importFromRemoteFileDescription": "Просматривать и выбирать из удаленной/рабочей файловой системы",
+		"importFromLocalFile": "Импорт с вашего локального компьютера",
+		"importFromLocalFileDescription": "Просматривать и выбирать с вашего локального компьютера через браузер",
+		"chooseImportSource": "Выберите источник импорта"
+	},
 	"answers": {
 		"yes": "Да",
 		"no": "Нет",

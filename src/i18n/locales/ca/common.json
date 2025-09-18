@@ -148,6 +148,13 @@
 		"mode_exported": "Mode '{{mode}}' exportat correctament",
 		"mode_imported": "Mode importat correctament"
 	},
+	"settingsFooter": {
+		"importFromRemoteFile": "Importa des del sistema de fitxers remot",
+		"importFromRemoteFileDescription": "Navega i selecciona des del sistema de fitxers remot/workspace",
+		"importFromLocalFile": "Importa des del teu ordinador local",
+		"importFromLocalFileDescription": "Navega i selecciona des del teu ordinador local mitjançant el navegador",
+		"chooseImportSource": "Tria la font d'importació"
+	},
 	"answers": {
 		"yes": "Sí",
 		"no": "No",

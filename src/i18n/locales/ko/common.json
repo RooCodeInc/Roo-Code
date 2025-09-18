@@ -144,6 +144,13 @@
 		"mode_exported": "'{{mode}}' 모드가 성공적으로 내보내졌습니다",
 		"mode_imported": "모드를 성공적으로 가져왔습니다"
 	},
+	"settingsFooter": {
+		"importFromRemoteFile": "원격 파일 시스템에서 가져오기",
+		"importFromRemoteFileDescription": "원격/작업공간 파일 시스템에서 찾아서 선택합니다",
+		"importFromLocalFile": "로컬 컴퓨터에서 가져오기",
+		"importFromLocalFileDescription": "브라우저를 통해 로컬 컴퓨터에서 찾아서 선택합니다",
+		"chooseImportSource": "가져오기 소스 선택"
+	},
 	"answers": {
 		"yes": "예",
 		"no": "아니오",

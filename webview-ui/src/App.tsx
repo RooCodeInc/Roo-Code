@@ -7,6 +7,7 @@ import TranslationProvider from "./i18n/TranslationContext"
 import { MarketplaceViewStateManager } from "./components/marketplace/MarketplaceViewStateManager"
 
 import { vscode } from "./utils/vscode"
+import { pickFileAsText } from "./utils/filePicker"
 import { telemetryClient } from "./utils/TelemetryClient"
 import { TelemetryEventName } from "@roo-code/types"
 import { initializeSourceMaps, exposeSourceMapsForDebugging } from "./utils/sourceMapInitializer"
@@ -189,32 +190,14 @@ const App = () => {
 			}
 
 			if (message.type === "requestLocalSettingsFile") {
-				const input = document.createElement("input")
-				input.type = "file"
-				input.accept = ".json,application/json"
-				input.onchange = () => {
-					const file = input.files?.[0]
-					if (!file) return
-					const reader = new FileReader()
-
-					reader.onload = () => {
-						const text = typeof reader.result === "string" ? reader.result : ""
-						if (text) {
-							vscode.postMessage({ type: "importSettingsFromLocal", text })
-						}
+				const importLocalSettings = async () => {
+					const text = await pickFileAsText({ accept: ".json,application/json" })
+					if (text) {
+						vscode.postMessage({ type: "importSettingsFromLocal", text })
 					}
-
-					reader.onerror = () => {
-						console.error("Failed to read settings file:", reader.error)
-						vscode.postMessage({
-							type: "importSettingsFromLocal",
-							text: "",
-						})
-					}
-
-					reader.readAsText(file)
 				}
-				input.click()
+
+				importLocalSettings()
 			}
 		},
 		[switchTab],

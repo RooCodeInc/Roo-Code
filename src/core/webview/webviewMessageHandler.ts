@@ -776,28 +776,20 @@ export const webviewMessageHandler = async (
 		case "importSettingsFromLocal": {
 			const content = message.text || ""
 			if (!content) {
-				vscode.window.showErrorMessage(t("common:errors.message.no_local_settings_content"))
+				vscode.window.showErrorMessage(t("common:errors.settings_import_failed"))
 				break
 			}
 
-			try {
-				await importSettingsWithFeedback(
-					{
-						providerSettingsManager: provider.providerSettingsManager,
-						contextProxy: provider.contextProxy,
-						customModesManager: provider.customModesManager,
-						provider: provider,
-					},
-					{ fileContents: content },
-				)
-			} catch (error) {
-				console.error("Error importing settings from local file:", error)
-				vscode.window.showErrorMessage(
-					t("common:errors.settings_import_failed", {
-						error: error instanceof Error ? error.message : String(error),
-					}),
-				)
-			}
+			await importSettingsWithFeedback(
+				{
+					providerSettingsManager: provider.providerSettingsManager,
+					contextProxy: provider.contextProxy,
+					customModesManager: provider.customModesManager,
+					provider: provider,
+				},
+				{ fileContents: content },
+			)
+
 			break
 		}
 		case "exportSettings":

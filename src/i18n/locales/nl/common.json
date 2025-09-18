@@ -144,6 +144,13 @@
 		"mode_exported": "Modus '{{mode}}' succesvol geëxporteerd",
 		"mode_imported": "Modus succesvol geïmporteerd"
 	},
+	"settingsFooter": {
+		"importFromRemoteFile": "Importeren vanaf het externe bestandssysteem",
+		"importFromRemoteFileDescription": "Bladeren en selecteren vanaf het externe/workspace bestandssysteem",
+		"importFromLocalFile": "Importeren vanaf uw lokale machine",
+		"importFromLocalFileDescription": "Bladeren en selecteren vanaf uw lokale computer via de browser",
+		"chooseImportSource": "Kies importbron"
+	},
 	"answers": {
 		"yes": "Ja",
 		"no": "Nee",
