@@ -10,6 +10,9 @@
 		},
 		"openrouter": {
 			"description": "Giao diện thống nhất cho các LLM"
+		},
+		"huggingface": {
+			"description": "Bộ định tuyến cho các mô hình mở tốt nhất"
 		}
 	},
 	"chooseProvider": "Để thực hiện phép màu của mình, Roo cần một khóa API.",

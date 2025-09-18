@@ -2,6 +2,9 @@
  * HuggingFace provider constants
  */
 
+export type HuggingFaceModelId = string
+export const huggingFaceDefaultModelId = "moonshotai/Kimi-K2-Instruct-0905"
+
 // Default values for HuggingFace models
 export const HUGGINGFACE_DEFAULT_MAX_TOKENS = 2048
 export const HUGGINGFACE_MAX_TOKENS_FALLBACK = 8192

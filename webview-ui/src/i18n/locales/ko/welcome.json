@@ -10,6 +10,9 @@
 		},
 		"openrouter": {
 			"description": "LLM을 위한 통합 인터페이스"
+		},
+		"huggingface": {
+			"description": "최고의 오픈 모델을 위한 라우터"
 		}
 	},
 	"chooseProvider": "Roo가 작동하려면 API 키가 필요합니다.",

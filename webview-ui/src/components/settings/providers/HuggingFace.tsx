@@ -1,16 +1,17 @@
 import { useCallback, useState, useEffect, useMemo } from "react"
 import { useEvent } from "react-use"
-import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
+import { VSCodeTextField, VSCodeButton } from "@vscode/webview-ui-toolkit/react"
+import pkceChallenge from "pkce-challenge"
 
 import type { ProviderSettings } from "@roo-code/types"
 
 import { ExtensionMessage } from "@roo/ExtensionMessage"
 import { vscode } from "@src/utils/vscode"
 import { useAppTranslation } from "@src/i18n/TranslationContext"
-import { VSCodeButtonLink } from "@src/components/common/VSCodeButtonLink"
 import { SearchableSelect, type SearchableSelectOption } from "@src/components/ui"
 import { cn } from "@src/lib/utils"
 import { formatPrice } from "@/utils/formatPrice"
+import { getHuggingFaceAuthUrl } from "@src/oauth/urls"
 
 import { inputEventTransform } from "../transforms"
 
@@ -39,9 +40,10 @@ type HuggingFaceProps = {
 		value: ProviderSettings[keyof ProviderSettings],
 		isUserAction?: boolean,
 	) => void
+	uriScheme?: string
 }
 
-export const HuggingFace = ({ apiConfiguration, setApiConfigurationField }: HuggingFaceProps) => {
+export const HuggingFace = ({ apiConfiguration, setApiConfigurationField, uriScheme }: HuggingFaceProps) => {
 	const { t } = useAppTranslation()
 	const [models, setModels] = useState<HuggingFaceModel[]>([])
 	const [loading, setLoading] = useState(false)
@@ -108,6 +110,28 @@ export const HuggingFace = ({ apiConfiguration, setApiConfigurationField }: Hugg
 		apiConfiguration?.huggingFaceInferenceProvider,
 		setApiConfigurationField,
 	])
+
+	// Start OAuth with PKCE
+	const handleStartOauth = useCallback(async () => {
+		try {
+			// Generate PKCE challenge using the library
+			const pkce = await pkceChallenge()
+			const state = crypto.randomUUID() // Use built-in UUID for state
+
+			// Store verifier/state in extension (secrets)
+			vscode.postMessage({
+				type: "storeHuggingFacePkce",
+				values: { verifier: pkce.code_verifier, state },
+			})
+
+			const authUrl = getHuggingFaceAuthUrl(uriScheme, pkce.code_challenge, state)
+
+			// Open externally via extension
+			vscode.postMessage({ type: "openExternal", url: authUrl })
+		} catch (e) {
+			console.error("Failed to start Hugging Face OAuth:", e)
+		}
+	}, [uriScheme])
 
 	const handleModelSelect = (modelId: string) => {
 		setApiConfigurationField("huggingFaceModelId", modelId)
@@ -180,9 +204,9 @@ export const HuggingFace = ({ apiConfiguration, setApiConfigurationField }: Hugg
 			</div>
 
 			{!apiConfiguration?.huggingFaceApiKey && (
-				<VSCodeButtonLink href="https://huggingface.co/settings/tokens" appearance="secondary">
+				<VSCodeButton appearance="primary" onClick={handleStartOauth} style={{ width: "100%" }}>
 					{t("settings:providers.getHuggingFaceApiKey")}
-				</VSCodeButtonLink>
+				</VSCodeButton>
 			)}
 
 			<div className="flex flex-col gap-2">

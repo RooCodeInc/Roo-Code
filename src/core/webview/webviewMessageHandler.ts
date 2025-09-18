@@ -971,6 +971,19 @@ export const webviewMessageHandler = async (
 				vscode.env.openExternal(vscode.Uri.parse(message.url))
 			}
 			break
+		case "storeHuggingFacePkce": {
+			// Store PKCE verifier/state as a secret to avoid typing constraints on ContextProxy keys
+			const verifier = message.values?.verifier
+			const state = message.values?.state
+			if (typeof verifier === "string" && typeof state === "string" && verifier.length > 0 && state.length > 0) {
+				try {
+					await provider.context.secrets.store("huggingFacePkce", JSON.stringify({ verifier, state }))
+				} catch (error) {
+					console.error("Failed to store Hugging Face PKCE data:", error)
+				}
+			}
+			break
+		}
 		case "checkpointDiff":
 			const result = checkoutDiffPayloadSchema.safeParse(message.payload)
 

@@ -10,6 +10,9 @@
 		},
 		"openrouter": {
 			"description": "统一了大语言模型的接口"
+		},
+		"huggingface": {
+			"description": "开源模型路由器"
 		}
 	},
 	"chooseProvider": "Roo 需要一个 API 密钥才能发挥魔力。",

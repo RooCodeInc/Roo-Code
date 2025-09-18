@@ -9,6 +9,7 @@ import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
 import { getHuggingFaceModels, getCachedHuggingFaceModels } from "./fetchers/huggingface"
 import { handleOpenAIError } from "./utils/openai-error-handler"
+import { huggingFaceDefaultModelId } from "@roo-code/types"
 
 export class HuggingFaceHandler extends BaseProvider implements SingleCompletionHandler {
 	private client: OpenAI
@@ -50,7 +51,7 @@ export class HuggingFaceHandler extends BaseProvider implements SingleCompletion
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
-		const modelId = this.options.huggingFaceModelId || "meta-llama/Llama-3.3-70B-Instruct"
+		const modelId = this.options.huggingFaceModelId || huggingFaceDefaultModelId
 		const temperature = this.options.modelTemperature ?? 0.7
 
 		const params: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming = {
@@ -94,7 +95,7 @@ export class HuggingFaceHandler extends BaseProvider implements SingleCompletion
 	}
 
 	async completePrompt(prompt: string): Promise<string> {
-		const modelId = this.options.huggingFaceModelId || "meta-llama/Llama-3.3-70B-Instruct"
+		const modelId = this.options.huggingFaceModelId || huggingFaceDefaultModelId
 
 		try {
 			const response = await this.client.chat.completions.create({
@@ -109,7 +110,7 @@ export class HuggingFaceHandler extends BaseProvider implements SingleCompletion
 	}
 
 	override getModel() {
-		const modelId = this.options.huggingFaceModelId || "meta-llama/Llama-3.3-70B-Instruct"
+		const modelId = this.options.huggingFaceModelId || huggingFaceDefaultModelId
 
 		// Try to get model info from cache
 		const modelInfo = this.modelCache?.[modelId]

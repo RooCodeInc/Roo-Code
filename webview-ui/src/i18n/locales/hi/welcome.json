@@ -10,6 +10,9 @@
 		},
 		"openrouter": {
 			"description": "LLMs के लिए एक एकीकृत इंटरफेस"
+		},
+		"huggingface": {
+			"description": "सर्वश्रेष्ठ ओपन मॉडल्स के लिए एक राउटर"
 		}
 	},
 	"chooseProvider": "अपना जादू दिखाने के लिए, Roo को एक API कुंजी की आवश्यकता है।",

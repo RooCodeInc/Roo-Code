@@ -10,6 +10,9 @@
 		},
 		"openrouter": {
 			"description": "LLM'ler için birleşik bir arayüz"
+		},
+		"huggingface": {
+			"description": "En iyi açık modeller için bir yönlendirici"
 		}
 	},
 	"chooseProvider": "Sihirini yapabilmesi için Roo'nun bir API anahtarına ihtiyacı var.",

@@ -10,6 +10,9 @@
 		},
 		"openrouter": {
 			"description": "Унифицированный интерфейс для LLM"
+		},
+		"huggingface": {
+			"description": "Маршрутизатор для лучших открытых моделей"
 		}
 	},
 	"chooseProvider": "Для своей магии Roo нуждается в API-ключе.",
