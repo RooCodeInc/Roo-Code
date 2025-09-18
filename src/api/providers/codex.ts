@@ -23,8 +23,6 @@ import { getModelParams } from "../transform/model-params"
 import { ApiStream, type ApiStreamChunk } from "../transform/stream"
 import { OpenAiNativeHandler } from "./openai-native"
 
-// Keep last 12 messages for context - balances between providing sufficient
-// conversation history and avoiding token limit issues
 const HISTORY_CONTEXT_WINDOW = 12
 const HISTORY_REPLAY_LABEL = "Conversation so far:\n"
 
@@ -51,11 +49,7 @@ export class CodexHandler extends OpenAiNativeHandler {
 
 		process.once("exit", () => {
 			void this.disposeAllSessions()
-process.once("exit", () => {
-    this.disposeAllSessions().catch(error => 
-        console.error("Failed to dispose Codex sessions on exit:", error)
-    )
-})
+		})
 	}
 
 	private static hydrateOpenAiAuth(options: ApiHandlerOptions): ApiHandlerOptions {
