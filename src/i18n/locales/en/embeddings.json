@@ -48,7 +48,6 @@
 		"geminiConfigMissing": "Gemini configuration missing for embedder creation",
 		"mistralConfigMissing": "Mistral configuration missing for embedder creation",
 		"vercelAiGatewayConfigMissing": "Vercel AI Gateway configuration missing for embedder creation",
-		"watsonxConfigMissing": "IBM watsonx configuration missing for embedder creation",
 		"invalidEmbedderType": "Invalid embedder type configured: {{embedderProvider}}",
 		"vectorDimensionNotDeterminedOpenAiCompatible": "Could not determine vector dimension for model '{{modelId}}' with provider '{{provider}}'. Please ensure the 'Embedding Dimension' is correctly set in the OpenAI-Compatible provider settings.",
 		"vectorDimensionNotDetermined": "Could not determine vector dimension for model '{{modelId}}' with provider '{{provider}}'. Check model profiles or configuration.",
