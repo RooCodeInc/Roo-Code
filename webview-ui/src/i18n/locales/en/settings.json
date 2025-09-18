@@ -372,6 +372,8 @@
 			"draftModelDesc": "Draft model must be from the same model family for speculative decoding to work correctly.",
 			"selectDraftModel": "Select Draft Model",
 			"noModelsFound": "No draft models found. Please ensure LM Studio is running with Server Mode enabled.",
+			"showDebugThoughts": "Show Debug Thoughts",
+			"showDebugThoughtsDesc": "Display debug reasoning output from models that support it. Note: this is different from standard <think> tags which are always processed.",
 			"description": "LM Studio allows you to run models locally on your computer. For instructions on how to get started, see their <a>quickstart guide</a>. You will also need to start LM Studio's <b>local server</b> feature to use it with this extension. <span>Note:</span> Roo Code uses complex prompts and works best with Claude models. Less capable models may not work as expected."
 		},
 		"ollama": {

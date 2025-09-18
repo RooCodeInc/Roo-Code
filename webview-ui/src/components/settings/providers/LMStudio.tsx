@@ -207,6 +207,16 @@ export const LMStudio = ({ apiConfiguration, setApiConfigurationField }: LMStudi
 					)}
 				</>
 			)}
+			<Checkbox
+				checked={apiConfiguration?.lmStudioShowDebugThoughts === true}
+				onChange={(checked) => {
+					setApiConfigurationField("lmStudioShowDebugThoughts", checked)
+				}}>
+				{t("settings:providers.lmStudio.showDebugThoughts")}
+			</Checkbox>
+			<div className="text-sm text-vscode-descriptionForeground mb-2">
+				{t("settings:providers.lmStudio.showDebugThoughtsDesc")}
+			</div>
 			<div className="text-sm text-vscode-descriptionForeground">
 				<Trans
 					i18nKey="settings:providers.lmStudio.description"

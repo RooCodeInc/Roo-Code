@@ -118,6 +118,17 @@ export class LmStudioHandler extends BaseProvider implements SingleCompletionHan
 						yield processedChunk
 					}
 				}
+
+				if ("reasoning" in delta && delta.reasoning && typeof delta.reasoning === "string") {
+					const reasoning = delta.reasoning
+					assistantText += reasoning
+					if (this.options.lmStudioShowDebugThoughts === true) {
+						yield {
+							type: "reasoning",
+							text: reasoning,
+						}
+					}
+				}
 			}
 
 			for (const processedChunk of matcher.final()) {
