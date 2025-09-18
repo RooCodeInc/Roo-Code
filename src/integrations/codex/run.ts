@@ -293,7 +293,18 @@ export class CodexCliSession {
 		}
 	}
 
-	static async create(options: CodexCliSessionOptions): Promise<CodexCliSession> {
+/**
+ * Creates a new Codex CLI session for interactive communication
+ * @param options - Configuration options for the CLI session
+ * @param options.cliPath - Optional custom path to the Codex CLI binary
+ * @param options.args - Optional CLI arguments to pass
+ * @param options.debugEnabled - Enable debug logging
+ * @param options.debugLogPath - Custom path for debug logs
+ * @param options.allowNetworkAccess - Allow network access in the session
+ * @returns Promise resolving to an initialized CodexCliSession
+ * @throws Error if Codex CLI is not found or fails to initialize
+ */
+static async create(options: CodexCliSessionOptions): Promise<CodexCliSession> {
 		const resolvedCliPath = await resolveCodexCliPath(options.cliPath)
 		if (!resolvedCliPath) {
 			throw new Error("Codex CLI not found. Please install @openai/codex or specify codexCliPath in settings.")
