@@ -238,7 +238,7 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 	const [browserSessionRow, { height: rowHeight }] = useSize(
 		<div style={{ padding: "10px 6px 10px 15px", marginBottom: -10 }}>
 			<div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
-				{isBrowsing ? <ProgressIndicator /> : <Pointer className="w-4" />}
+				{isBrowsing ? <ProgressIndicator /> : <Pointer className="w-4" aria-label="Browser action indicator" />}
 				<span style={{ fontWeight: "bold" }}>
 					<>{t("chat:browser.rooWantsToUse")}</>
 				</span>
@@ -347,7 +347,7 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 					}}>
 					<SquareTerminal className="w-3" />
 					<span className="grow text-xs">{t("chat:browser.consoleLogs")}</span>
-					<span className={`codicon codicon-chevron-${consoleLogsExpanded ? "right" : "down"}`}></span>
+					<span className={`codicon codicon-chevron-${consoleLogsExpanded ? "down" : "right"}`}></span>
 				</div>
 				{consoleLogsExpanded && (
 					<CodeBlock source={displayState.consoleLogs || t("chat:browser.noNewLogs")} language="shell" />

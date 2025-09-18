@@ -136,6 +136,4 @@ export const ErrorRow = memo(
 	},
 )
 
-ErrorRow.displayName = "ErrorRow"
-
 export default ErrorRow
