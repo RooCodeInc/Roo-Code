@@ -23,6 +23,8 @@ import { getModelParams } from "../transform/model-params"
 import { ApiStream, type ApiStreamChunk } from "../transform/stream"
 import { OpenAiNativeHandler } from "./openai-native"
 
+// Keep last 12 messages for context - balances between providing sufficient
+// conversation history and avoiding token limit issues
 const HISTORY_CONTEXT_WINDOW = 12
 const HISTORY_REPLAY_LABEL = "Conversation so far:\n"
 
