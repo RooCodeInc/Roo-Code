@@ -721,7 +721,7 @@ export const ChatRowContent = ({
 												? "chat:directoryOperations.wantsToSearchOutsideWorkspace"
 												: "chat:directoryOperations.wantsToSearch"
 										}
-										components={{ code: <code>{tool.regex}</code> }}
+										components={{ code: <code className="font-medium">{tool.regex}</code> }}
 										values={{ regex: tool.regex }}
 									/>
 								) : (
@@ -731,7 +731,7 @@ export const ChatRowContent = ({
 												? "chat:directoryOperations.didSearchOutsideWorkspace"
 												: "chat:directoryOperations.didSearch"
 										}
-										components={{ code: <code>{tool.regex}</code> }}
+										components={{ code: <code className="font-medium">{tool.regex}</code> }}
 										values={{ regex: tool.regex }}
 									/>
 								)}
@@ -759,13 +759,13 @@ export const ChatRowContent = ({
 										{tool.reason ? (
 											<Trans
 												i18nKey="chat:modes.wantsToSwitchWithReason"
-												components={{ code: <code>{tool.mode}</code> }}
+												components={{ code: <code className="font-medium">{tool.mode}</code> }}
 												values={{ mode: tool.mode, reason: tool.reason }}
 											/>
 										) : (
 											<Trans
 												i18nKey="chat:modes.wantsToSwitch"
-												components={{ code: <code>{tool.mode}</code> }}
+												components={{ code: <code className="font-medium">{tool.mode}</code> }}
 												values={{ mode: tool.mode }}
 											/>
 										)}
@@ -775,13 +775,13 @@ export const ChatRowContent = ({
 										{tool.reason ? (
 											<Trans
 												i18nKey="chat:modes.didSwitchWithReason"
-												components={{ code: <code>{tool.mode}</code> }}
+												components={{ code: <code className="font-medium">{tool.mode}</code> }}
 												values={{ mode: tool.mode, reason: tool.reason }}
 											/>
 										) : (
 											<Trans
 												i18nKey="chat:modes.didSwitch"
-												components={{ code: <code>{tool.mode}</code> }}
+												components={{ code: <code className="font-medium">{tool.mode}</code> }}
 												values={{ mode: tool.mode }}
 											/>
 										)}
@@ -1139,7 +1139,7 @@ export const ChatRowContent = ({
 									"ml-6 border rounded-sm overflow-hidden whitespace-pre-wrap",
 									isEditing
 										? "bg-vscode-editor-background text-vscode-editor-foreground"
-										: "cursor-text p-1 bg-vscode-editor-foreground text-vscode-editor-background",
+										: "cursor-text p-1 bg-vscode-editor-foreground/70 text-vscode-editor-background",
 								)}>
 								{isEditing ? (
 									<div className="flex flex-col gap-2">
