@@ -1,0 +1,86 @@
+{
+	"task": {
+		"title": "Task",
+		"collapse": "Collapse task",
+		"expand": "Expand task",
+		"contextWindow": "Context Window",
+		"tokens": "Tokens",
+		"cache": "Cache",
+		"apiCost": "API Cost",
+		"aggregatedCost": "Total Cost",
+		"aggregatedCostDescription": "Total cost including all subtasks",
+		"withSubtasks": "with subtasks",
+		"parent": "Parent",
+		"total": "Total",
+		"size": "Size",
+		"unnamed": "Unnamed task",
+		"condenseContext": "Condense context"
+	},
+	"tokenProgress": {
+		"tokensUsed": "{{used}} / {{total}} tokens used",
+		"reservedForResponse": "{{amount}} tokens reserved for response",
+		"availableSpace": "{{amount}} tokens available"
+	},
+	"forNextMode": "for next mode",
+	"forPreviousMode": "for previous mode",
+	"typeMessage": "Type a message...",
+	"typeTask": "Type a task...",
+	"scrollToBottom": "Scroll to bottom",
+	"retry": {
+		"title": "Retry",
+		"tooltip": "Retry the failed request"
+	},
+	"save": {
+		"title": "Save",
+		"tooltip": "Save the changes"
+	},
+	"approve": {
+		"title": "Approve",
+		"tooltip": "Approve the action"
+	},
+	"runCommand": {
+		"title": "Run Command",
+		"tooltip": "Execute the command"
+	},
+	"startNewTask": {
+		"title": "Start New Task",
+		"tooltip": "Begin a new task"
+	},
+	"resumeTask": {
+		"title": "Resume Task",
+		"tooltip": "Continue the paused task"
+	},
+	"proceedAnyways": {
+		"title": "Proceed Anyways",
+		"tooltip": "Continue despite the warning"
+	},
+	"proceedWhileRunning": {
+		"title": "Proceed While Running",
+		"tooltip": "Continue while the command is running"
+	},
+	"cancel": {
+		"title": "Cancel",
+		"tooltip": "Cancel the current operation"
+	},
+	"reject": {
+		"title": "Reject",
+		"tooltip": "Reject the proposed action"
+	},
+	"terminate": {
+		"title": "Terminate",
+		"tooltip": "Stop the task completely"
+	},
+	"killCommand": {
+		"title": "Kill Command",
+		"tooltip": "Terminate the running command"
+	},
+	"completeSubtaskAndReturn": "Complete & Return",
+	"read-batch": {
+		"approve": {
+			"title": "Read Files"
+		},
+		"deny": {
+			"title": "Deny"
+		}
+	}
+}

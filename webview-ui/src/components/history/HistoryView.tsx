@@ -1,4 +1,4 @@
-import React, { memo, useState } from "react"
+import React, { memo, useState, useMemo } from "react"
 import { DeleteTaskDialog } from "./DeleteTaskDialog"
 import { BatchDeleteTaskDialog } from "./BatchDeleteTaskDialog"
 import { Virtuoso } from "react-virtuoso"
@@ -20,6 +20,8 @@ import { useAppTranslation } from "@/i18n/TranslationContext"
 import { Tab, TabContent, TabHeader } from "../common/Tab"
 import { useTaskSearch } from "./useTaskSearch"
 import TaskItem from "./TaskItem"
+import { HierarchicalTaskItem } from "./HierarchicalTaskItem"
+import { buildTaskTree, filterTaskTree, TaskTreeNode } from "@src/utils/taskHierarchy"
 
 type HistoryViewProps = {
 	onDone: () => void
@@ -44,6 +46,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 	const [isSelectionMode, setIsSelectionMode] = useState(false)
 	const [selectedTaskIds, setSelectedTaskIds] = useState<string[]>([])
 	const [showBatchDeleteDialog, setShowBatchDeleteDialog] = useState<boolean>(false)
+	const [showHierarchy, setShowHierarchy] = useState(true)
 
 	// Toggle selection mode
 	const toggleSelectionMode = () => {
@@ -77,6 +80,53 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 			setShowBatchDeleteDialog(true)
 		}
 	}
+
+	// Build hierarchical tree structure
+	const taskTree = useMemo(() => {
+		if (!showHierarchy) {
+			// Return flat list wrapped as nodes for consistent interface
+			return tasks.map(
+				(task) =>
+					({
+						task,
+						children: [],
+						aggregatedCost: task.totalCost || 0,
+						descendantCount: 0,
+					}) as TaskTreeNode,
+			)
+		}
+
+		// Build actual tree
+		const tree = buildTaskTree(tasks)
+
+		// Apply search filter if needed
+		if (searchQuery) {
+			return filterTaskTree(tree, searchQuery)
+		}
+
+		return tree
+	}, [tasks, showHierarchy, searchQuery])
+
+	// Flatten tree for virtuoso when needed
+	const flattenedItems = useMemo(() => {
+		if (!showHierarchy) {
+			return taskTree
+		}
+
+		const flattened: (TaskTreeNode | { node: TaskTreeNode; depth: number })[] = []
+
+		function flatten(nodes: TaskTreeNode[], depth = 0) {
+			nodes.forEach((node) => {
+				flattened.push({ node, depth })
+				if (node.children.length > 0) {
+					flatten(node.children, depth + 1)
+				}
+			})
+		}
+
+		flatten(taskTree)
+		return flattened
+	}, [taskTree, showHierarchy])
 
 	return (
 		<Tab>
@@ -194,6 +244,17 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 								</SelectItem>
 							</SelectContent>
 						</Select>
+						<StandardTooltip content={t("history:toggleHierarchy")}>
+							<Button
+								variant="secondary"
+								size="sm"
+								onClick={() => setShowHierarchy(!showHierarchy)}
+								className="px-2">
+								<span
+									className={`codicon ${showHierarchy ? "codicon-list-tree" : "codicon-list-flat"}`}
+								/>
+							</Button>
+						</StandardTooltip>
 					</div>
 
 					{/* Select all control in selection mode */}
@@ -225,7 +286,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 			<TabContent className="px-2 py-0">
 				<Virtuoso
 					className="flex-1 overflow-y-scroll"
-					data={tasks}
+					data={flattenedItems as any}
 					data-testid="virtuoso-container"
 					initialTopMostItemIndex={0}
 					components={{
@@ -233,19 +294,45 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 							<div {...props} ref={ref} data-testid="virtuoso-item-list" />
 						)),
 					}}
-					itemContent={(_index, item) => (
-						<TaskItem
-							key={item.id}
-							item={item}
-							variant="full"
-							showWorkspace={showAllWorkspaces}
-							isSelectionMode={isSelectionMode}
-							isSelected={selectedTaskIds.includes(item.id)}
-							onToggleSelection={toggleTaskSelection}
-							onDelete={setDeleteTaskId}
-							className="m-2"
-						/>
-					)}
+					itemContent={(_index, item: any) => {
+						if (showHierarchy && "node" in item && "depth" in item) {
+							// Hierarchical view
+							const { node, depth } = item as { node: TaskTreeNode; depth: number }
+							// Only render root nodes (depth 0) as HierarchicalTaskItem handles children
+							if (depth === 0) {
+								return (
+									<HierarchicalTaskItem
+										key={node.task.id}
+										node={node}
+										variant="full"
+										showWorkspace={showAllWorkspaces}
+										isSelectionMode={isSelectionMode}
+										isSelected={selectedTaskIds.includes(node.task.id)}
+										onToggleSelection={toggleTaskSelection}
+										onDelete={setDeleteTaskId}
+										searchQuery={searchQuery}
+									/>
+								)
+							}
+							return null
+						} else {
+							// Flat view
+							const node = item as TaskTreeNode
+							return (
+								<TaskItem
+									key={node.task.id}
+									item={node.task}
+									variant="full"
+									showWorkspace={showAllWorkspaces}
+									isSelectionMode={isSelectionMode}
+									isSelected={selectedTaskIds.includes(node.task.id)}
+									onToggleSelection={toggleTaskSelection}
+									onDelete={setDeleteTaskId}
+									className="m-2"
+								/>
+							)
+						}
+					}}
 				/>
 			</TabContent>
 

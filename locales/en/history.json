@@ -1,0 +1,39 @@
+{
+	"history": "History",
+	"done": "Done",
+	"searchPlaceholder": "Search tasks...",
+	"workspace": {
+		"prefix": "Workspace:",
+		"current": "Current",
+		"all": "All"
+	},
+	"sort": {
+		"prefix": "Sort by",
+		"newest": "Newest",
+		"oldest": "Oldest",
+		"mostExpensive": "Most Expensive",
+		"mostTokens": "Most Tokens",
+		"mostRelevant": "Most Relevant"
+	},
+	"newest": "Newest",
+	"oldest": "Oldest",
+	"mostExpensive": "Most Expensive",
+	"mostTokens": "Most Tokens",
+	"mostRelevant": "Most Relevant",
+	"recentTasks": "Recent Tasks",
+	"selectionMode": "Select",
+	"exitSelection": "Done",
+	"enterSelectionMode": "Enter selection mode to select multiple tasks",
+	"exitSelectionMode": "Exit selection mode",
+	"selectAll": "Select All",
+	"deselectAll": "Deselect All",
+	"selectedItems": "{{selected}} of {{total}} selected",
+	"clearSelection": "Clear",
+	"deleteSelected": "Delete Selected",
+	"toggleHierarchy": "Toggle hierarchy view",
+	"collapse": "Collapse",
+	"expand": "Expand",
+	"aggregatedCost": "Aggregated Cost",
+	"aggregatedCostDescription": "Total: ${{total}} (includes {{count}} subtasks)",
+	"hasSubtasks": "Has {{count}} subtask(s)"
+}

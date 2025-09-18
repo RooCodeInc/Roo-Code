@@ -16,6 +16,7 @@ import { cn } from "@src/lib/utils"
 import { StandardTooltip } from "@src/components/ui"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
 import { useSelectedModel } from "@/components/ui/hooks/useSelectedModel"
+import { isTopLevelOrchestrator } from "@src/utils/taskHierarchy"
 
 import Thumbnails from "../common/Thumbnails"
 
@@ -23,6 +24,7 @@ import { TaskActions } from "./TaskActions"
 import { ContextWindowProgress } from "./ContextWindowProgress"
 import { Mention } from "./Mention"
 import { TodoListDisplay } from "./TodoListDisplay"
+import { AggregatedCostDisplay } from "./AggregatedCostDisplay"
 
 export interface TaskHeaderProps {
 	task: ClineMessage
@@ -50,7 +52,7 @@ const TaskHeader = ({
 	todos,
 }: TaskHeaderProps) => {
 	const { t } = useTranslation()
-	const { apiConfiguration, currentTaskItem, clineMessages } = useExtensionState()
+	const { apiConfiguration, currentTaskItem, clineMessages, mode } = useExtensionState()
 	const { id: modelId, info: model } = useSelectedModel(apiConfiguration)
 	const [isTaskExpanded, setIsTaskExpanded] = useState(false)
 	const [showLongRunningTaskMessage, setShowLongRunningTaskMessage] = useState(false)
@@ -301,6 +303,18 @@ const TaskHeader = ({
 											</th>
 											<td className="align-top">
 												<span>${totalCost?.toFixed(2)}</span>
+											</td>
+										</tr>
+									)}
+
+									{/* Aggregated cost for orchestrator tasks */}
+									{currentTaskItem && isTopLevelOrchestrator(currentTaskItem, mode) && (
+										<tr>
+											<th className="font-bold text-left align-top w-1 whitespace-nowrap pl-1 pr-3 h-[24px]">
+												{t("chat:task.aggregatedCost")}
+											</th>
+											<td className="align-top">
+												<AggregatedCostDisplay currentTask={currentTaskItem} />
 											</td>
 										</tr>
 									)}
