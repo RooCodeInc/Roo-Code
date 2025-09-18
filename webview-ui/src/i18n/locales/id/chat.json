@@ -242,6 +242,9 @@
 	},
 	"response": "Respons",
 	"arguments": "Argumen",
+	"feedback": {
+		"youSaid": "Anda bilang"
+	},
 	"mcp": {
 		"wantsToUseTool": "Roo ingin menggunakan tool di server MCP {{serverName}}",
 		"wantsToAccessResource": "Roo ingin mengakses resource di server MCP {{serverName}}"

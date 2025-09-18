@@ -220,6 +220,9 @@
 	},
 	"response": "Risposta",
 	"arguments": "Argomenti",
+	"feedback": {
+		"youSaid": "Hai detto"
+	},
 	"mcp": {
 		"wantsToUseTool": "Roo vuole utilizzare uno strumento sul server MCP {{serverName}}",
 		"wantsToAccessResource": "Roo vuole accedere a una risorsa sul server MCP {{serverName}}"

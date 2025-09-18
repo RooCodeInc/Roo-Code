@@ -220,6 +220,9 @@
 	},
 	"response": "Phản hồi",
 	"arguments": "Tham số",
+	"feedback": {
+		"youSaid": "Bạn đã nói"
+	},
 	"mcp": {
 		"wantsToUseTool": "Roo muốn sử dụng một công cụ trên máy chủ MCP {{serverName}}",
 		"wantsToAccessResource": "Roo muốn truy cập một tài nguyên trên máy chủ MCP {{serverName}}"

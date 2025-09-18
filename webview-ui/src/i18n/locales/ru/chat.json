@@ -215,6 +215,9 @@
 	},
 	"response": "Ответ",
 	"arguments": "Аргументы",
+	"feedback": {
+		"youSaid": "Вы сказали"
+	},
 	"mcp": {
 		"wantsToUseTool": "Roo хочет использовать инструмент на сервере MCP {{serverName}}",
 		"wantsToAccessResource": "Roo хочет получить доступ к ресурсу на сервере MCP {{serverName}}"

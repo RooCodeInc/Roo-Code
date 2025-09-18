@@ -220,6 +220,9 @@
 	},
 	"response": "प्रतिक्रिया",
 	"arguments": "आर्ग्युमेंट्स",
+	"feedback": {
+		"youSaid": "आपने कहा"
+	},
 	"mcp": {
 		"wantsToUseTool": "Roo {{serverName}} MCP सर्वर पर एक टूल का उपयोग करना चाहता है",
 		"wantsToAccessResource": "Roo {{serverName}} MCP सर्वर पर एक संसाधन का उपयोग करना चाहता है"

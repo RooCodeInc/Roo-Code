@@ -220,6 +220,9 @@
 	},
 	"response": "응답",
 	"arguments": "인수",
+	"feedback": {
+		"youSaid": "당신은 말했다"
+	},
 	"mcp": {
 		"wantsToUseTool": "Roo가 {{serverName}} MCP 서버에서 도구를 사용하고 싶어합니다",
 		"wantsToAccessResource": "Roo가 {{serverName}} MCP 서버에서 리소스에 접근하고 싶어합니다"

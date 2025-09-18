@@ -215,6 +215,9 @@
 	},
 	"response": "Antwoord",
 	"arguments": "Argumenten",
+	"feedback": {
+		"youSaid": "Jij zei"
+	},
 	"mcp": {
 		"wantsToUseTool": "Roo wil een tool gebruiken op de {{serverName}} MCP-server",
 		"wantsToAccessResource": "Roo wil een bron benaderen op de {{serverName}} MCP-server"

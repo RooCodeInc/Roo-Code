@@ -220,6 +220,9 @@
 	},
 	"response": "Yanıt",
 	"arguments": "Argümanlar",
+	"feedback": {
+		"youSaid": "Dediniz ki"
+	},
 	"mcp": {
 		"wantsToUseTool": "Roo {{serverName}} MCP sunucusunda bir araç kullanmak istiyor",
 		"wantsToAccessResource": "Roo {{serverName}} MCP sunucusundaki bir kaynağa erişmek istiyor"

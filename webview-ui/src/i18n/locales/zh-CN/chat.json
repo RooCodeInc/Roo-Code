@@ -220,6 +220,9 @@
 	},
 	"response": "响应",
 	"arguments": "参数",
+	"feedback": {
+		"youSaid": "你说"
+	},
 	"mcp": {
 		"wantsToUseTool": "Roo想在{{serverName}} MCP上使用工具",
 		"wantsToAccessResource": "Roo想访问{{serverName}} MCP服务上的资源"

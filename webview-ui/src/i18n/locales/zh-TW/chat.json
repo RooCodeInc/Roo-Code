@@ -239,6 +239,9 @@
 	},
 	"response": "回應",
 	"arguments": "參數",
+	"feedback": {
+		"youSaid": "您說"
+	},
 	"mcp": {
 		"wantsToUseTool": "Roo 想要在 {{serverName}} MCP 伺服器上使用工具",
 		"wantsToAccessResource": "Roo 想要存取 {{serverName}} MCP 伺服器上的資源"
