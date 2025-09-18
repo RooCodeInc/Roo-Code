@@ -310,9 +310,9 @@ export const ChatRowContent = ({
 					) : cost !== null && cost !== undefined ? (
 						<span style={{ color: normalColor }}>{t("chat:apiRequest.title")}</span>
 					) : apiRequestFailedMessage ? (
-						<span style={{ color: errorColor, fontWeight: "bold" }}>{t("chat:apiRequest.failed")}</span>
+						<span style={{ color: errorColor }}>{t("chat:apiRequest.failed")}</span>
 					) : (
-						<span style={{ color: normalColor, fontWeight: "bold" }}>{t("chat:apiRequest.streaming")}</span>
+						<span style={{ color: normalColor }}>{t("chat:apiRequest.streaming")}</span>
 					),
 				]
 			case "followup":
@@ -1044,10 +1044,7 @@ export const ChatRowContent = ({
 				case "api_req_started":
 					// Determine if the API request is in progress
 					const isApiRequestInProgress =
-						apiReqCancelReason === null &&
-						apiReqCancelReason === undefined &&
-						(cost === null || cost === undefined) &&
-						!apiRequestFailedMessage
+						apiReqCancelReason === undefined && apiRequestFailedMessage === undefined
 
 					return (
 						<>
