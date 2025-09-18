@@ -9,6 +9,6 @@
  * @param modelId The model ID to check
  * @returns true if the model should use single file reads
  */
-export function shouldUseSingleFileRead(modelId: string): boolean {
+export function shouldUseSingleFileRead(_modelId: string): boolean {
 	return false
 }
