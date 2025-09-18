@@ -348,8 +348,12 @@ export class OpenAICompatibleEmbedder implements IEmbedder {
 				// Log the error for debugging
 				console.error(`OpenAI Compatible embedder error (attempt ${attempts + 1}/${MAX_RETRIES}):`, error)
 
-				// Format and throw the error
-				throw formatEmbeddingError(error, MAX_RETRIES)
+				// Format and throw the error with context
+				throw formatEmbeddingError(error, MAX_RETRIES, {
+					provider: "OpenAI Compatible",
+					endpoint: this.baseUrl,
+					modelId: model,
+				})
 			}
 		}
 
@@ -360,46 +364,61 @@ export class OpenAICompatibleEmbedder implements IEmbedder {
 	 * Validates the OpenAI-compatible embedder configuration by testing endpoint connectivity and API key
 	 * @returns Promise resolving to validation result with success status and optional error message
 	 */
-	async validateConfiguration(): Promise<{ valid: boolean; error?: string }> {
-		return withValidationErrorHandling(async () => {
-			try {
-				// Test with a minimal embedding request
-				const testTexts = ["test"]
-				const modelToUse = this.defaultModelId
+	async validateConfiguration(): Promise<{ valid: boolean; error?: string; details?: string }> {
+		return withValidationErrorHandling(
+			async () => {
+				try {
+					// Test with a minimal embedding request
+					const testTexts = ["test"]
+					const modelToUse = this.defaultModelId
 
-				let response: OpenAIEmbeddingResponse
+					let response: OpenAIEmbeddingResponse
 
-				if (this.isFullUrl) {
-					// Test direct HTTP request for full endpoint URLs
-					response = await this.makeDirectEmbeddingRequest(this.baseUrl, testTexts, modelToUse)
-				} else {
-					// Test using OpenAI SDK for base URLs
-					response = (await this.embeddingsClient.embeddings.create({
-						input: testTexts,
-						model: modelToUse,
-						encoding_format: "base64",
-					})) as OpenAIEmbeddingResponse
-				}
-
-				// Check if we got a valid response
-				if (!response?.data || response.data.length === 0) {
-					return {
-						valid: false,
-						error: "embeddings:validation.invalidResponse",
+					if (this.isFullUrl) {
+						// Test direct HTTP request for full endpoint URLs
+						response = await this.makeDirectEmbeddingRequest(this.baseUrl, testTexts, modelToUse)
+					} else {
+						// Test using OpenAI SDK for base URLs
+						response = (await this.embeddingsClient.embeddings.create({
+							input: testTexts,
+							model: modelToUse,
+							encoding_format: "base64",
+						})) as OpenAIEmbeddingResponse
 					}
-				}
 
-				return { valid: true }
-			} catch (error) {
-				// Capture telemetry for validation errors
-				TelemetryService.instance.captureEvent(TelemetryEventName.CODE_INDEX_ERROR, {
-					error: error instanceof Error ? error.message : String(error),
-					stack: error instanceof Error ? error.stack : undefined,
-					location: "OpenAICompatibleEmbedder:validateConfiguration",
-				})
-				throw error
-			}
-		}, "openai-compatible")
+					// Check if we got a valid response
+					if (!response?.data || response.data.length === 0) {
+						return {
+							valid: false,
+							error: t("embeddings:validation.invalidResponseFormat", {
+								provider: "OpenAI Compatible",
+							}),
+							details: t("embeddings:validation.checkEndpointCompatibility"),
+						}
+					}
+
+					return { valid: true }
+				} catch (error) {
+					// Capture telemetry for validation errors
+					TelemetryService.instance.captureEvent(TelemetryEventName.CODE_INDEX_ERROR, {
+						error: error instanceof Error ? error.message : String(error),
+						stack: error instanceof Error ? error.stack : undefined,
+						location: "OpenAICompatibleEmbedder:validateConfiguration",
+						endpoint: this.baseUrl,
+						model: this.defaultModelId,
+					})
+					throw error
+				}
+			},
+			"openai-compatible",
+			undefined,
+			{
+				provider: "OpenAI Compatible",
+				endpoint: this.baseUrl,
+				modelId: this.defaultModelId,
+				apiKeySource: "OpenAI Compatible API Key setting",
+			},
+		)
 	}
 
 	/**

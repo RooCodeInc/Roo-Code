@@ -795,7 +795,11 @@ describe("CodeIndexServiceFactory", () => {
 				},
 			}
 			mockConfigManager.getConfig.mockReturnValue(testConfig as any)
+
+			// Mock embedder with embedderInfo
+			mockEmbedderInstance.embedderInfo = { name: "openai" }
 			MockedOpenAiEmbedder.mockImplementation(() => mockEmbedderInstance)
+
 			const networkError = new Error("Network error")
 			mockEmbedderInstance.validateConfiguration.mockRejectedValue(networkError)
 
@@ -804,10 +808,12 @@ describe("CodeIndexServiceFactory", () => {
 			const result = await factory.validateEmbedder(embedder)
 
 			// Assert
-			expect(result).toEqual({
+			expect(result).toMatchObject({
 				valid: false,
-				error: "Network error",
+				// The error is wrapped in a translation key that includes the original error
+				error: expect.stringContaining("embeddingValidationFailed"),
 			})
+			// The result may also have a 'details' property, but we don't need to assert on it
 			expect(mockEmbedderInstance.validateConfiguration).toHaveBeenCalled()
 		})
 

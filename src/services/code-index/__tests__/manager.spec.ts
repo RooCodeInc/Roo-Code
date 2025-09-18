@@ -373,7 +373,7 @@ describe("CodeIndexManager - handleSettingsChange regression", () => {
 			expect(mockServiceFactoryInstance.validateEmbedder).toHaveBeenCalledWith(createdEmbedder)
 			expect(mockStateManager.setSystemState).toHaveBeenCalledWith(
 				"Error",
-				"embeddings:validation.authenticationFailed",
+				expect.stringContaining("embeddings:validation.authenticationFailed"),
 			)
 		})
 

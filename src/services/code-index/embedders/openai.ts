@@ -178,8 +178,11 @@ export class OpenAiEmbedder extends OpenAiNativeHandler implements IEmbedder {
 				// Log the error for debugging
 				console.error(`OpenAI embedder error (attempt ${attempts + 1}/${MAX_RETRIES}):`, error)
 
-				// Format and throw the error
-				throw formatEmbeddingError(error, MAX_RETRIES)
+				// Format and throw the error with context
+				throw formatEmbeddingError(error, MAX_RETRIES, {
+					provider: "OpenAI",
+					modelId: model,
+				})
 			}
 		}
 
@@ -190,34 +193,45 @@ export class OpenAiEmbedder extends OpenAiNativeHandler implements IEmbedder {
 	 * Validates the OpenAI embedder configuration by attempting a minimal embedding request
 	 * @returns Promise resolving to validation result with success status and optional error message
 	 */
-	async validateConfiguration(): Promise<{ valid: boolean; error?: string }> {
-		return withValidationErrorHandling(async () => {
-			try {
-				// Test with a minimal embedding request
-				const response = await this.embeddingsClient.embeddings.create({
-					input: ["test"],
-					model: this.defaultModelId,
-				})
+	async validateConfiguration(): Promise<{ valid: boolean; error?: string; details?: string }> {
+		return withValidationErrorHandling(
+			async () => {
+				try {
+					// Test with a minimal embedding request
+					const response = await this.embeddingsClient.embeddings.create({
+						input: ["test"],
+						model: this.defaultModelId,
+					})
 
-				// Check if we got a valid response
-				if (!response.data || response.data.length === 0) {
-					return {
-						valid: false,
-						error: t("embeddings:openai.invalidResponseFormat"),
+					// Check if we got a valid response
+					if (!response.data || response.data.length === 0) {
+						return {
+							valid: false,
+							error: t("embeddings:openai.invalidResponseFormat"),
+							details: t("embeddings:validation.checkEndpointCompatibility"),
+						}
 					}
-				}
 
-				return { valid: true }
-			} catch (error) {
-				// Capture telemetry for validation errors
-				TelemetryService.instance.captureEvent(TelemetryEventName.CODE_INDEX_ERROR, {
-					error: error instanceof Error ? error.message : String(error),
-					stack: error instanceof Error ? error.stack : undefined,
-					location: "OpenAiEmbedder:validateConfiguration",
-				})
-				throw error
-			}
-		}, "openai")
+					return { valid: true }
+				} catch (error) {
+					// Capture telemetry for validation errors
+					TelemetryService.instance.captureEvent(TelemetryEventName.CODE_INDEX_ERROR, {
+						error: error instanceof Error ? error.message : String(error),
+						stack: error instanceof Error ? error.stack : undefined,
+						location: "OpenAiEmbedder:validateConfiguration",
+						model: this.defaultModelId,
+					})
+					throw error
+				}
+			},
+			"openai",
+			undefined,
+			{
+				provider: "OpenAI",
+				modelId: this.defaultModelId,
+				apiKeySource: "OpenAI API Key setting",
+			},
+		)
 	}
 
 	get embedderInfo(): EmbedderInfo {

@@ -91,21 +91,41 @@ export class CodeIndexServiceFactory {
 	 * @param embedder The embedder instance to validate
 	 * @returns Promise resolving to validation result
 	 */
-	public async validateEmbedder(embedder: IEmbedder): Promise<{ valid: boolean; error?: string }> {
+	public async validateEmbedder(embedder: IEmbedder): Promise<{ valid: boolean; error?: string; details?: string }> {
 		try {
-			return await embedder.validateConfiguration()
+			const result = await embedder.validateConfiguration()
+			// Pass through any details from the embedder validation
+			return result
 		} catch (error) {
 			// Capture telemetry for the error
 			TelemetryService.instance.captureEvent(TelemetryEventName.CODE_INDEX_ERROR, {
 				error: error instanceof Error ? error.message : String(error),
 				stack: error instanceof Error ? error.stack : undefined,
 				location: "validateEmbedder",
+				provider: embedder.embedderInfo?.name,
 			})
 
-			// If validation throws an exception, preserve the original error message
+			// Provide context-aware error message
+			const provider = embedder.embedderInfo?.name || "unknown"
+			const errorMessage = error instanceof Error ? error.message : String(error)
+
+			// Check for specific error patterns and provide helpful context
+			let details: string | undefined
+			if (errorMessage.includes("ECONNREFUSED")) {
+				details = t("embeddings:validation.checkServiceRunning")
+			} else if (errorMessage.includes("ENOTFOUND")) {
+				details = t("embeddings:validation.checkNetworkAndVPN")
+			} else if (errorMessage.includes("401") || errorMessage.toLowerCase().includes("unauthorized")) {
+				details = t("embeddings:validation.checkApiKeyInSettings")
+			}
+
 			return {
 				valid: false,
-				error: error instanceof Error ? error.message : "embeddings:validation.configurationError",
+				error: t("embeddings:serviceFactory.embeddingValidationFailed", {
+					provider,
+					error: errorMessage,
+				}),
+				details,
 			}
 		}
 	}

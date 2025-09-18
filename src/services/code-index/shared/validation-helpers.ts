@@ -64,22 +64,68 @@ export interface ValidationError {
 }
 
 /**
- * Maps HTTP status codes to appropriate error messages
+ * Maps HTTP status codes to appropriate error messages with detailed context
  */
-export function getErrorMessageForStatus(status: number | undefined, embedderType: string): string | undefined {
+export function getErrorMessageForStatus(
+	status: number | undefined,
+	embedderType: string,
+	context?: {
+		provider?: string
+		endpoint?: string
+		modelId?: string
+	},
+): string | undefined {
 	switch (status) {
+		case 400:
+			return t("embeddings:validation.badRequest", {
+				provider: context?.provider || embedderType,
+				endpoint: context?.endpoint ? sanitizeErrorMessage(context.endpoint) : undefined,
+			})
 		case 401:
+			return t("embeddings:validation.authenticationFailed", {
+				provider: context?.provider || embedderType,
+			})
 		case 403:
-			return t("embeddings:validation.authenticationFailed")
+			return t("embeddings:validation.forbidden", {
+				provider: context?.provider || embedderType,
+			})
 		case 404:
-			return embedderType === "openai"
-				? t("embeddings:validation.modelNotAvailable")
-				: t("embeddings:validation.invalidEndpoint")
+			if (embedderType === "openai") {
+				return t("embeddings:validation.modelNotAvailable", {
+					modelId: context?.modelId,
+				})
+			}
+			return t("embeddings:validation.invalidEndpoint", {
+				endpoint: context?.endpoint ? sanitizeErrorMessage(context.endpoint) : undefined,
+			})
 		case 429:
-			return t("embeddings:validation.serviceUnavailable")
+			return t("embeddings:validation.rateLimitExceeded", {
+				provider: context?.provider || embedderType,
+			})
+		case 500:
+		case 502:
+		case 503:
+		case 504:
+			return t("embeddings:validation.serverError", {
+				provider: context?.provider || embedderType,
+				status,
+			})
+		case 501:
+			return t("embeddings:validation.notImplemented", {
+				endpoint: context?.endpoint ? sanitizeErrorMessage(context.endpoint) : undefined,
+			})
 		default:
-			if (status && status >= 400 && status < 600) {
-				return t("embeddings:validation.configurationError")
+			if (status && status >= 400 && status < 500) {
+				return t("embeddings:validation.clientError", {
+					status,
+					provider: context?.provider || embedderType,
+				})
+			}
+			if (status && status >= 500 && status < 600) {
+				return t("embeddings:validation.serverError", {
+					status,
+					provider: context?.provider || embedderType,
+				})
 			}
 			return undefined
 	}
@@ -142,7 +188,7 @@ export function extractErrorMessage(error: any): string {
 
 /**
  * Standard validation error handler for embedder configuration validation
- * Returns a consistent error response based on the error type
+ * Returns a consistent error response based on the error type with detailed context
  */
 export function handleValidationError(
 	error: any,
@@ -150,7 +196,13 @@ export function handleValidationError(
 	customHandlers?: {
 		beforeStandardHandling?: (error: any) => { valid: boolean; error: string } | undefined
 	},
-): { valid: boolean; error: string } {
+	context?: {
+		provider?: string
+		endpoint?: string
+		modelId?: string
+		apiKeySource?: string
+	},
+): { valid: boolean; error: string; details?: string } {
 	// Serialize the error to ensure we have access to all properties
 	const serializedError = serializeError(error)
 
@@ -164,37 +216,122 @@ export function handleValidationError(
 	const statusCode = extractStatusCode(serializedError)
 	const errorMessage = extractErrorMessage(serializedError)
 
-	// Check for status-based errors first
-	const statusError = getErrorMessageForStatus(statusCode, embedderType)
+	// Check for status-based errors first with enhanced context
+	const statusError = getErrorMessageForStatus(statusCode, embedderType, context)
 	if (statusError) {
-		return { valid: false, error: statusError }
+		return {
+			valid: false,
+			error: statusError,
+			details: errorMessage ? sanitizeErrorMessage(errorMessage) : undefined,
+		}
 	}
 
-	// Check for connection errors
+	// Check for connection errors with more specific messages
 	if (errorMessage) {
-		if (
-			errorMessage.includes("ENOTFOUND") ||
-			errorMessage.includes("ECONNREFUSED") ||
-			errorMessage.includes("ETIMEDOUT") ||
-			errorMessage === "AbortError" ||
-			errorMessage.includes("HTTP 0:") ||
-			errorMessage === "No response"
-		) {
-			return { valid: false, error: t("embeddings:validation.connectionFailed") }
+		if (errorMessage.includes("ENOTFOUND")) {
+			return {
+				valid: false,
+				error: t("embeddings:validation.hostNotFound", {
+					endpoint: context?.endpoint ? sanitizeErrorMessage(context.endpoint) : undefined,
+				}),
+				details: t("embeddings:validation.checkNetworkAndVPN"),
+			}
+		}
+
+		if (errorMessage.includes("ECONNREFUSED")) {
+			return {
+				valid: false,
+				error: t("embeddings:validation.connectionRefused", {
+					endpoint: context?.endpoint ? sanitizeErrorMessage(context.endpoint) : undefined,
+				}),
+				details: t("embeddings:validation.checkServiceRunning"),
+			}
+		}
+
+		if (errorMessage.includes("ETIMEDOUT")) {
+			return {
+				valid: false,
+				error: t("embeddings:validation.connectionTimeout", {
+					endpoint: context?.endpoint ? sanitizeErrorMessage(context.endpoint) : undefined,
+				}),
+				details: t("embeddings:validation.checkFirewallProxy"),
+			}
+		}
+
+		if (errorMessage === "AbortError" || errorMessage.includes("HTTP 0:") || errorMessage === "No response") {
+			return {
+				valid: false,
+				error: t("embeddings:validation.noResponse", {
+					provider: context?.provider || embedderType,
+				}),
+				details: t("embeddings:validation.checkNetworkStability"),
+			}
 		}
 
 		if (errorMessage.includes("Failed to parse response JSON")) {
-			return { valid: false, error: t("embeddings:validation.invalidResponse") }
+			return {
+				valid: false,
+				error: t("embeddings:validation.invalidResponseFormat", {
+					provider: context?.provider || embedderType,
+				}),
+				details: t("embeddings:validation.checkEndpointCompatibility"),
+			}
+		}
+
+		// Check for API key related errors
+		if (errorMessage.includes("API key") || errorMessage.includes("api key") || errorMessage.includes("apiKey")) {
+			return {
+				valid: false,
+				error: t("embeddings:validation.apiKeyIssue", {
+					provider: context?.provider || embedderType,
+					source: context?.apiKeySource,
+				}),
+				details: sanitizeErrorMessage(errorMessage),
+			}
+		}
+
+		// Check for model-related errors
+		if (errorMessage.includes("model") || errorMessage.includes("Model")) {
+			return {
+				valid: false,
+				error: t("embeddings:validation.modelIssue", {
+					modelId: context?.modelId,
+					provider: context?.provider || embedderType,
+				}),
+				details: sanitizeErrorMessage(errorMessage),
+			}
+		}
+
+		// Check for dimension mismatch errors
+		if (errorMessage.includes("dimension") || errorMessage.includes("vector")) {
+			return {
+				valid: false,
+				error: t("embeddings:validation.dimensionMismatch", {
+					modelId: context?.modelId,
+				}),
+				details: t("embeddings:validation.clearIndexAndRestart"),
+			}
 		}
 	}
 
 	// For generic errors, preserve the original error message if it's not a standard one
 	if (errorMessage && errorMessage !== "Unknown error") {
-		return { valid: false, error: errorMessage }
+		return {
+			valid: false,
+			error: t("embeddings:validation.unexpectedError", {
+				provider: context?.provider || embedderType,
+			}),
+			details: sanitizeErrorMessage(errorMessage),
+		}
 	}
 
-	// Fallback to generic error
-	return { valid: false, error: t("embeddings:validation.configurationError") }
+	// Fallback to generic error with provider context
+	return {
+		valid: false,
+		error: t("embeddings:validation.configurationError", {
+			provider: context?.provider || embedderType,
+		}),
+	}
 }
 
 /**
@@ -204,26 +341,60 @@ export async function withValidationErrorHandling<T extends { valid: boolean; er
 	validationFn: () => Promise<T>,
 	embedderType: string,
 	customHandlers?: Parameters<typeof handleValidationError>[2],
-): Promise<{ valid: boolean; error?: string }> {
+	context?: Parameters<typeof handleValidationError>[3],
+): Promise<{ valid: boolean; error?: string; details?: string }> {
 	try {
 		return await validationFn()
 	} catch (error) {
-		return handleValidationError(error, embedderType, customHandlers)
+		return handleValidationError(error, embedderType, customHandlers, context)
 	}
 }
 
 /**
  * Formats an embedding error message based on the error type and context
  */
-export function formatEmbeddingError(error: any, maxRetries: number): Error {
+export function formatEmbeddingError(
+	error: any,
+	maxRetries: number,
+	context?: {
+		provider?: string
+		endpoint?: string
+		modelId?: string
+	},
+): Error {
 	const errorMessage = extractErrorMessage(error)
 	const statusCode = extractStatusCode(error)
 
 	if (statusCode === 401) {
-		return new Error(t("embeddings:authenticationFailed"))
+		return new Error(
+			t("embeddings:authenticationFailed", {
+				provider: context?.provider,
+			}),
+		)
+	} else if (statusCode === 429) {
+		return new Error(
+			t("embeddings:rateLimitExhausted", {
+				attempts: maxRetries,
+				provider: context?.provider,
+			}),
+		)
 	} else if (statusCode) {
-		return new Error(t("embeddings:failedWithStatus", { attempts: maxRetries, statusCode, errorMessage }))
+		const sanitizedMessage = sanitizeErrorMessage(errorMessage)
+		return new Error(
+			t("embeddings:failedWithStatus", {
+				attempts: maxRetries,
+				statusCode,
+				errorMessage: sanitizedMessage,
+				provider: context?.provider,
+			}),
+		)
 	} else {
-		return new Error(t("embeddings:failedWithError", { attempts: maxRetries, errorMessage }))
+		const sanitizedMessage = sanitizeErrorMessage(errorMessage)
+		return new Error(
+			t("embeddings:failedWithError", {
+				attempts: maxRetries,
+				errorMessage: sanitizedMessage,
+			}),
+		)
 	}
 }
