@@ -37,6 +37,7 @@ import {
 	rooDefaultModelId,
 	vercelAiGatewayDefaultModelId,
 	deepInfraDefaultModelId,
+	codexDefaultModelId,
 } from "@roo-code/types"
 
 import { vscode } from "@src/utils/vscode"
@@ -83,6 +84,7 @@ import {
 	OpenAI,
 	OpenAICompatible,
 	OpenRouter,
+	Codex,
 	QwenCode,
 	Requesty,
 	SambaNova,
@@ -230,6 +232,8 @@ const ApiOptions = ({
 				vscode.postMessage({ type: "requestRouterModels" })
 			} else if (selectedProvider === "deepinfra") {
 				vscode.postMessage({ type: "requestRouterModels" })
+			} else if (selectedProvider === "codex") {
+				vscode.postMessage({ type: "requestCodexModels" })
 			}
 		},
 		250,
@@ -311,6 +315,7 @@ const ApiOptions = ({
 					}
 				>
 			> = {
+				codex: { field: "apiModelId", default: codexDefaultModelId },
 				deepinfra: { field: "deepInfraModelId", default: deepInfraDefaultModelId },
 				openrouter: { field: "openRouterModelId", default: openRouterDefaultModelId },
 				glama: { field: "glamaModelId", default: glamaDefaultModelId },
@@ -558,6 +563,14 @@ const ApiOptions = ({
 				/>
 			)}
 
+			{selectedProvider === "codex" && (
+				<Codex
+					apiConfiguration={apiConfiguration}
+					setApiConfigurationField={setApiConfigurationField}
+					modelValidationError={modelValidationError}
+				/>
+			)}
+
 			{selectedProvider === "lmstudio" && (
 				<LMStudio apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
 			)}
@@ -680,7 +693,7 @@ const ApiOptions = ({
 				<Featherless apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
 			)}
 
-			{selectedProviderModels.length > 0 && (
+			{selectedProvider !== "codex" && selectedProviderModels.length > 0 && (
 				<>
 					<div>
 						<label className="block font-medium mb-1">{t("settings:providers.model")}</label>
@@ -733,12 +746,14 @@ const ApiOptions = ({
 				</>
 			)}
 
-			<ThinkingBudget
-				key={`${selectedProvider}-${selectedModelId}`}
-				apiConfiguration={apiConfiguration}
-				setApiConfigurationField={setApiConfigurationField}
-				modelInfo={selectedModelInfo}
-			/>
+			{selectedProvider !== "codex" && (
+				<ThinkingBudget
+					key={`${selectedProvider}-${selectedModelId}`}
+					apiConfiguration={apiConfiguration}
+					setApiConfigurationField={setApiConfigurationField}
+					modelInfo={selectedModelInfo}
+				/>
+			)}
 
 			{/* Gate Verbosity UI by capability flag */}
 			{selectedModelInfo?.supportsVerbosity && (

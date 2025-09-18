@@ -53,6 +53,10 @@ import { getModels, flushModels } from "../../api/providers/fetchers/modelCache"
 import { GetModelsOptions } from "../../shared/api"
 import { generateSystemPrompt } from "./generateSystemPrompt"
 import { getCommand } from "../../utils/commands"
+import { existsSync } from "fs"
+import { execFile } from "child_process"
+import { checkCodexLoginStatus, resolveCodexCliPath } from "../../integrations/codex/run"
+import { fallbackCodexCliModels, type CodexCliModelInfo, normalizeCodexModelId, getCodexPreset } from "@roo-code/types"
 
 const ALLOWED_VSCODE_SETTINGS = new Set(["terminal.integrated.inheritEnv"])
 
@@ -887,11 +891,177 @@ export const webviewMessageHandler = async (
 			}
 
 			break
+
+		case "codexCheckCliLogin": {
+			try {
+				const { apiConfiguration } = await provider.getState()
+				const configuredCliPath = (apiConfiguration as any)?.codexCliPath as string | undefined
+
+				const envKey = process.env.CODEX_API_KEY || process.env.OPENAI_API_KEY || process.env.OPENAI_API_TOKEN
+				if (envKey && envKey.trim()) {
+					provider.postMessageToWebview({
+						type: "codexCliLoginStatus",
+						payload: { status: "ok", source: "environment", cliPath: configuredCliPath, auth: true },
+					})
+					break
+				}
+
+				const status = await checkCodexLoginStatus(configuredCliPath)
+				provider.postMessageToWebview({
+					type: "codexCliLoginStatus",
+					payload: {
+						status: status.status,
+						source: status.status === "ok" ? "cli" : "cli",
+						cliPath: status.cliPath,
+						auth: status.auth,
+						path: status.message,
+						error: status.status === "not_found" ? status.message : undefined,
+					},
+				})
+			} catch (error) {
+				provider.postMessageToWebview({
+					type: "codexCliLoginStatus",
+					payload: {
+						status: "not_found",
+						error: error instanceof Error ? error.message : String(error),
+						auth: false,
+					},
+				})
+			}
+			break
+		}
+
+		case "codexRunCliLogin": {
+			try {
+				const { apiConfiguration } = await provider.getState()
+				const configuredCliPath = (apiConfiguration as any)?.codexCliPath as string | undefined
+				const terminal = vscode.window.createTerminal({ name: "Codex CLI" })
+				terminal.show()
+
+				const sendLoginCommand = (command: string) => {
+					terminal.sendText(command, true)
+				}
+
+				if (configuredCliPath && existsSync(configuredCliPath)) {
+					const quoted = JSON.stringify(configuredCliPath)
+					sendLoginCommand(`${quoted} login`)
+					break
+				}
+
+				const isWin = process.platform === "win32"
+				const cmd = isWin ? "where" : "which"
+				execFile(cmd, ["codex"], (err) => {
+					if (err) {
+						sendLoginCommand("openai login")
+						return
+					}
+					sendLoginCommand("codex login")
+				})
+			} catch (error) {
+				console.error("Failed to start codex login:", error)
+			}
+			break
+		}
 		case "requestVsCodeLmModels":
 			const vsCodeLmModels = await getVsCodeLmModels()
 			// TODO: Cache like we do for OpenRouter, etc?
 			provider.postMessageToWebview({ type: "vsCodeLmModels", vsCodeLmModels })
 			break
+		case "requestCodexModels": {
+			try {
+				const { apiConfiguration } = await provider.getState()
+				const configuredCliPath = (apiConfiguration as any)?.codexCliPath as string | undefined
+
+				const cliPath = await resolveCodexCliPath(configuredCliPath)
+				const modelsMap = new Map<string, CodexCliModelInfo>()
+				const fallbackById = new Map<string, CodexCliModelInfo>(
+					fallbackCodexCliModels.map((fallback) => [normalizeCodexModelId(fallback.id), fallback]),
+				)
+				for (const fallback of fallbackCodexCliModels) {
+					const normalizedId = normalizeCodexModelId(fallback.id)
+					modelsMap.set(normalizedId, { ...fallback, id: normalizedId })
+				}
+
+				if (cliPath) {
+					const run = (args: string[]) =>
+						new Promise<string>((resolve) => {
+							execFile(cliPath, args, { timeout: 8000 }, (err, stdout) => {
+								if (err || !stdout) return resolve("")
+								resolve(stdout.toString())
+							})
+						})
+
+					const upsert = (model: CodexCliModelInfo) => {
+						if (!model.id || model.id === "codex-mini-latest") return
+						const normalizedId = normalizeCodexModelId(model.id)
+						const fallback = fallbackById.get(normalizedId)
+						const existing = modelsMap.get(normalizedId) || fallback
+						const preset = getCodexPreset(normalizedId)
+						modelsMap.set(normalizedId, {
+							id: normalizedId,
+							label: model.label || existing?.label || preset?.label || normalizedId,
+							description: model.description || existing?.description || preset?.description,
+							model: model.model || existing?.model || preset?.cliModel,
+							effort: (model.effort as any) || existing?.effort || preset?.effort,
+						})
+					}
+
+					const candidates: string[][] = [["models", "list", "--json"], ["models", "list"], ["models"]]
+
+					for (const args of candidates) {
+						const raw = (await run(args)).trim()
+						if (!raw) continue
+
+						let parsed = false
+						try {
+							const json = JSON.parse(raw)
+							const list = Array.isArray(json) ? json : Array.isArray(json?.data) ? json.data : null
+							if (Array.isArray(list)) {
+								for (const item of list) {
+									if (typeof item === "string") {
+										upsert({ id: item })
+										continue
+									}
+									const id = item?.id || item?.slug || item?.name || item?.model
+									if (!id) continue
+									upsert({
+										id: String(id),
+										label: item?.label || item?.display_name || item?.name || String(id),
+										description: item?.description,
+										model: item?.model || (typeof item?.slug === "string" ? item.slug : undefined),
+										effort: item?.effort,
+									})
+								}
+								parsed = true
+							}
+						} catch {}
+
+						if (!parsed) {
+							const lines = raw.split(/\r?\n/)
+							for (const line of lines) {
+								const trimmed = line.trim()
+								if (!trimmed || /^(model|id|name)[:]?$/i.test(trimmed)) continue
+								const [first, ...rest] = trimmed.split(/\s+/)
+								if (!first) continue
+								upsert({ id: first, description: rest.join(" ") || undefined })
+							}
+						}
+
+						if (Array.from(modelsMap.values()).length > fallbackCodexCliModels.length) {
+							break
+						}
+					}
+				}
+
+				const models = Array.from(modelsMap.values())
+				models.sort((a, b) => a.id.localeCompare(b.id))
+				provider.postMessageToWebview({ type: "codexModels", models })
+			} catch (error) {
+				console.debug("Failed to detect Codex models:", error)
+				provider.postMessageToWebview({ type: "codexModels", models: fallbackCodexCliModels })
+			}
+			break
+		}
 		case "requestHuggingFaceModels":
 			try {
 				const { getHuggingFaceModelsWithMetadata } = await import("../../api/providers/fetchers/huggingface")

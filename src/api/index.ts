@@ -10,6 +10,7 @@ import {
 	AwsBedrockHandler,
 	CerebrasHandler,
 	OpenRouterHandler,
+	CodexHandler,
 	VertexHandler,
 	AnthropicVertexHandler,
 	OpenAiHandler,
@@ -121,6 +122,8 @@ export function buildApiHandler(configuration: ProviderSettings): ApiHandler {
 			return new DoubaoHandler(options)
 		case "qwen-code":
 			return new QwenCodeHandler(options)
+		case "codex":
+			return new CodexHandler(options)
 		case "moonshot":
 			return new MoonshotHandler(options)
 		case "vscode-lm":

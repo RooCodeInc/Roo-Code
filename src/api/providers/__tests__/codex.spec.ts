@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
+import type { MockInstance } from "vitest"
 import type { Anthropic } from "@anthropic-ai/sdk"
 
 import type { ApiStreamChunk } from "../../transform/stream"
@@ -53,11 +54,17 @@ function asyncGeneratorFromChunks(chunks: ApiStreamChunk[]): AsyncGenerator<ApiS
 
 describe("CodexHandler", () => {
 	let handler: CodexHandler
-	let fallbackSpy: ReturnType<typeof vi.spyOn>
+	let fallbackSpy: MockInstance<typeof OpenAiNativeHandler.prototype.createMessage>
 
 	beforeEach(() => {
 		createSessionMock.mockReset()
-		fallbackSpy = vi.spyOn(OpenAiNativeHandler.prototype, "createMessage").mockImplementation(async function* () {
+		fallbackSpy = vi.spyOn(OpenAiNativeHandler.prototype, "createMessage")
+		fallbackSpy.mockImplementation(async function* (
+			this: OpenAiNativeHandler,
+			_systemPrompt: string,
+			_messages: Anthropic.Messages.MessageParam[],
+			_metadata?: ApiHandlerCreateMessageMetadata,
+		) {
 			yield { type: "text", text: "[fallback]" }
 		})
 		handler = new CodexHandler(defaultOptions)
