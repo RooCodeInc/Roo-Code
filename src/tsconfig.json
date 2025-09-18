@@ -5,7 +5,7 @@
 		"experimentalDecorators": true,
 		"forceConsistentCasingInFileNames": true,
 		"isolatedModules": true,
-		"lib": ["es2022", "esnext.disposable", "DOM"],
+		"lib": ["ESNext", "esnext.disposable", "DOM"],
 		"module": "esnext",
 		"moduleResolution": "Bundler",
 		"noFallthroughCasesInSwitch": true,
@@ -16,7 +16,7 @@
 		"skipLibCheck": true,
 		"sourceMap": true,
 		"strict": true,
-		"target": "ES2022",
+		"target": "esnext",
 		"useDefineForClassFields": true,
 		"useUnknownInCatchVariables": false
 	},
