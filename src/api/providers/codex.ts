@@ -49,7 +49,11 @@ export class CodexHandler extends OpenAiNativeHandler {
 
 		process.once("exit", () => {
 			void this.disposeAllSessions()
-		})
+process.once("exit", () => {
+    this.disposeAllSessions().catch(error => 
+        console.error("Failed to dispose Codex sessions on exit:", error)
+    )
+})
 	}
 
 	private static hydrateOpenAiAuth(options: ApiHandlerOptions): ApiHandlerOptions {
