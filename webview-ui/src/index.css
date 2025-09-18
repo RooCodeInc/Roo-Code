@@ -379,13 +379,6 @@ vscode-dropdown::part(listbox) {
 
 /* Context mentions */
 
-.mention-context-textarea-highlight {
-	background-color: color-mix(in srgb, var(--vscode-badge-foreground) 30%, transparent);
-	border-radius: 3px;
-	box-shadow: 0 0 0 0.5px color-mix(in srgb, var(--vscode-badge-foreground) 30%, transparent);
-	color: transparent;
-}
-
 .mention-context-highlight {
 	background-color: color-mix(in srgb, var(--vscode-badge-foreground) 30%, transparent);
 	border-radius: 3px;
