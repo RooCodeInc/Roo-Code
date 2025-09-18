@@ -320,7 +320,13 @@ export class CodexCliSession {
 		if (!this.debugEnabled) return
 		const timestamped = `[${new Date().toISOString()}] ${line}`
 		if (this.logFileStream) {
-			this.logFileStream.write(`${timestamped}${os.EOL}`)
+if (this.logFileStream) {
+    try {
+        this.logFileStream.write(`${timestamped}${os.EOL}`)
+    } catch (error) {
+        console.warn("Failed to write to Codex debug log stream:", error)
+    }
+}
 		} else {
 			try {
 				fs.appendFileSync(this.debugLogPath, `${timestamped}${os.EOL}`)
