@@ -135,7 +135,13 @@ export class WatsonxEmbedder implements IEmbedder {
 					let lastError
 					for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
 						try {
-							await delay(1000)
+							if (attempt > 0) {
+								const delayMs = INITIAL_DELAY_MS * Math.pow(2, attempt - 1)
+								await delay(delayMs)
+								console.warn(
+									`IBM watsonx API call failed, retrying in ${delayMs}ms (attempt ${attempt + 1}/${MAX_RETRIES})`,
+								)
+							}
 							const response = await this.watsonxClient.embedText({
 								modelId: modelToUse,
 								inputs: [text],
@@ -176,13 +182,6 @@ export class WatsonxEmbedder implements IEmbedder {
 							}
 						} catch (error) {
 							lastError = error
-
-							if (attempt < MAX_RETRIES - 1) {
-								const delayMs = INITIAL_DELAY_MS * Math.pow(2, attempt)
-								console.warn(
-									`IBM watsonx API call failed, retrying in ${delayMs}ms (attempt ${attempt + 1}/${MAX_RETRIES})`,
-								)
-							}
 						}
 					}
 
