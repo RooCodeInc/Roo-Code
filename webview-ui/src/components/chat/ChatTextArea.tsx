@@ -266,27 +266,6 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			[isModifierPressed],
 		)
 
-		// Handle keyboard events on mentions for accessibility
-		const handleMentionKeyDown = useCallback(
-			(e: KeyboardEvent) => {
-				if (!isModifierPressed) return
-
-				const target = e.target as HTMLElement
-				if (target.tagName === "MARK" && target.classList.contains("mention-context-textarea-highlight")) {
-					if (e.key === "Enter" || e.key === " ") {
-						e.preventDefault()
-						const mentionText = target.textContent
-						if (mentionText) {
-							// Remove @ symbol if present and send to VSCode
-							const cleanText = mentionText.startsWith("@") ? mentionText.slice(1) : mentionText
-							vscode.postMessage({ type: "openMention", text: cleanText })
-						}
-					}
-				}
-			},
-			[isModifierPressed],
-		)
-
 		// Fetch git commits when Git is selected or when typing a hash.
 		useEffect(() => {
 			if (selectedType === ContextMenuOptionType.Git || /^[a-f0-9]+$/i.test(searchQuery)) {
@@ -785,19 +764,15 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 
 			// Determine the class to use based on modifier key state
 			const mentionClass = `mention-context-textarea-highlight${isModifierPressed ? " clickable" : ""}`
-			const tabIndex = isModifierPressed ? 0 : -1
-			const ariaLabel = isModifierPressed
-				? `${isMac ? "Cmd" : "Ctrl"} + Click or Enter to open`
+			const tooltipText = isModifierPressed
+				? `${isMac ? "Cmd" : "Ctrl"} + Click to open`
 				: `Hold ${isMac ? "Cmd" : "Ctrl"} + Click to open`
 
 			// Process the text to highlight mentions and valid commands
 			let processedText = text
 				.replace(/\n$/, "\n\n")
 				.replace(/[<>&]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" })[c] || c)
-				.replace(
-					mentionRegexGlobal,
-					`<mark class="${mentionClass}" tabindex="${tabIndex}" role="button" aria-label="${ariaLabel}" title="${ariaLabel}">$&</mark>`,
-				)
+				.replace(mentionRegexGlobal, `<mark class="${mentionClass}" title="${tooltipText}">$&</mark>`)
 
 			// Custom replacement for commands - only highlight valid ones
 			processedText = processedText.replace(commandRegexGlobal, (match, commandName) => {
@@ -809,10 +784,10 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 
 					if (startsWithSpace) {
 						// Keep the space but only highlight the command part
-						return ` <mark class="${mentionClass}" tabindex="${tabIndex}" role="button" aria-label="${ariaLabel}" title="${ariaLabel}">${commandPart}</mark>`
+						return ` <mark class="${mentionClass}" title="${tooltipText}">${commandPart}</mark>`
 					} else {
 						// Highlight the entire command (starts at beginning of line)
-						return `<mark class="${mentionClass}" tabindex="${tabIndex}" role="button" aria-label="${ariaLabel}" title="${ariaLabel}">${commandPart}</mark>`
+						return `<mark class="${mentionClass}" title="${tooltipText}">${commandPart}</mark>`
 					}
 				}
 				return match // Return unhighlighted if command is not valid
@@ -828,18 +803,16 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			updateHighlights()
 		}, [inputValue, updateHighlights])
 
-		// Add click and keyboard event listeners to highlight layer for mention interactions
+		// Add click event listener to highlight layer for mention clicks
 		useEffect(() => {
 			const highlightLayer = highlightLayerRef.current
 			if (highlightLayer) {
 				highlightLayer.addEventListener("click", handleMentionClick)
-				highlightLayer.addEventListener("keydown", handleMentionKeyDown)
 				return () => {
 					highlightLayer.removeEventListener("click", handleMentionClick)
-					highlightLayer.removeEventListener("keydown", handleMentionKeyDown)
 				}
 			}
-		}, [handleMentionClick, handleMentionKeyDown])
+		}, [handleMentionClick])
 
 		const updateCursorPosition = useCallback(() => {
 			if (textAreaRef.current) {
