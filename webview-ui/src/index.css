@@ -389,12 +389,70 @@ vscode-dropdown::part(listbox) {
 .mention-context-highlight {
 	background-color: color-mix(in srgb, var(--vscode-badge-foreground) 30%, transparent);
 	border-radius: 3px;
+	transition: all 0.2s ease-in-out;
+}
+
+.mention-context-highlight:hover {
+	background-color: color-mix(in srgb, var(--vscode-badge-foreground) 45%, transparent);
+	transform: translateY(-1px);
+	box-shadow: 0 2px 4px color-mix(in srgb, var(--vscode-badge-foreground) 20%, transparent);
+}
+
+.mention-context-highlight.clickable {
+	cursor: pointer;
+}
+
+.mention-context-highlight.clickable:hover {
+	background-color: color-mix(in srgb, var(--vscode-textLink-foreground) 40%, transparent);
+	border: 1px solid color-mix(in srgb, var(--vscode-textLink-foreground) 60%, transparent);
 }
 
 .mention-context-highlight-with-shadow {
 	background-color: color-mix(in srgb, var(--vscode-badge-foreground) 30%, transparent);
 	border-radius: 3px;
 	box-shadow: 0 0 0 0.5px color-mix(in srgb, var(--vscode-badge-foreground) 30%, transparent);
+	transition: all 0.2s ease-in-out;
+}
+
+.mention-context-highlight-with-shadow:hover {
+	background-color: color-mix(in srgb, var(--vscode-badge-foreground) 45%, transparent);
+	transform: translateY(-1px);
+	box-shadow: 0 2px 4px color-mix(in srgb, var(--vscode-badge-foreground) 20%, transparent);
+}
+
+.mention-context-highlight-with-shadow.clickable {
+	cursor: pointer;
+}
+
+.mention-context-highlight-with-shadow.clickable:hover {
+	background-color: color-mix(in srgb, var(--vscode-textLink-foreground) 40%, transparent);
+	border: 1px solid color-mix(in srgb, var(--vscode-textLink-foreground) 60%, transparent);
+	box-shadow: 0 2px 6px color-mix(in srgb, var(--vscode-textLink-foreground) 30%, transparent);
+}
+
+.mention-context-textarea-highlight {
+	background-color: color-mix(in srgb, var(--vscode-badge-foreground) 30%, transparent);
+	border-radius: 3px;
+	transition: all 0.2s ease-in-out;
+	cursor: default;
+	pointer-events: none;
+}
+
+.mention-context-textarea-highlight:hover {
+	background-color: color-mix(in srgb, var(--vscode-badge-foreground) 45%, transparent);
+	transform: translateY(-1px);
+	box-shadow: 0 2px 4px color-mix(in srgb, var(--vscode-badge-foreground) 20%, transparent);
+}
+
+.mention-context-textarea-highlight.clickable {
+	cursor: pointer;
+	pointer-events: auto;
+}
+
+.mention-context-textarea-highlight.clickable:hover {
+	background-color: color-mix(in srgb, var(--vscode-textLink-foreground) 40%, transparent);
+	border: 1px solid color-mix(in srgb, var(--vscode-textLink-foreground) 60%, transparent);
+	box-shadow: 0 2px 4px color-mix(in srgb, var(--vscode-textLink-foreground) 30%, transparent);
 }
 
 /**
