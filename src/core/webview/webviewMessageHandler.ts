@@ -600,7 +600,9 @@ export const webviewMessageHandler = async (
 			// Check if the current task actually has a parent task.
 			const currentTask = provider.getCurrentTask()
 
-			if (currentTask && currentTask.parentTask) {
+			if (currentTask && (currentTask.parentTask || currentTask.parentTaskId)) {
+				// If we have a parent task reference or ID, finish the subtask
+				// finishSubTask now handles rehydration if parent isn't on stack
 				await provider.finishSubTask(t("common:tasks.canceled"))
 			} else {
 				// Regular task - just clear it
