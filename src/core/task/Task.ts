@@ -1673,6 +1673,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// Kicks off the checkpoints initialization process in the background.
 		getCheckpointService(this)
 
+		// Create an initial checkpoint at the very beginning of task execution
+		// This allows users to completely reset to the initial state before any changes
+		// Use allowEmpty=true to ensure checkpoint is created even with no file changes
+		// Use suppressMessage=true to avoid cluttering the UI with this automatic checkpoint
+		if (this.enableCheckpoints) {
+			await this.checkpointSave(true, true)
+		}
+
 		let nextUserContent = userContent
 		let includeFileDetails = true
 
