@@ -7,7 +7,7 @@ import type { ApiHandlerCreateMessageMetadata } from "../../index"
 import type { ApiHandlerOptions } from "../../../shared/api"
 import { OpenAiNativeHandler } from "../openai-native"
 
-const createSessionMock = vi.hoisted(() => vi.fn())
+import { CodexHandler } from "../codex"
 
 vi.mock("openai", () => {
 	return {
