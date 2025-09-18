@@ -1044,7 +1044,7 @@ export const ChatRowContent = ({
 				case "api_req_started":
 					// Determine if the API request is in progress
 					const isApiRequestInProgress =
-						apiReqCancelReason === undefined && apiRequestFailedMessage === undefined
+						apiReqCancelReason === undefined && apiRequestFailedMessage === undefined && cost === undefined
 
 					return (
 						<>
