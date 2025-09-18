@@ -41,7 +41,13 @@ export const CheckpointSaved = ({ checkpoint, ...props }: CheckpointSavedProps) 
 				<span className="font-semibold">{t("chat:checkpoint.regular")}</span>
 				{isCurrent && <span className="text-muted">({t("chat:checkpoint.current")})</span>}
 			</div>
-			<span className="block w-full h-0 mt-[2px] text-xs border-1 border-t border-blue-400/50"></span>
+			<span
+				className="block w-full h-[2px] mt-[2px] text-xs"
+				style={{
+					backgroundImage:
+						"linear-gradient(90deg, rgba(0, 188, 255, .65), rgba(0, 188, 255, .65) 80%, rgba(0, 188, 255, 0) 99%)",
+				}}></span>
+
 			<div className="hidden group-hover:block h-4 -mt-2">
 				<CheckpointMenu {...props} checkpoint={metadata} />
 			</div>
