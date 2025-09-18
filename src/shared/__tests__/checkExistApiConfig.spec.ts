@@ -30,6 +30,13 @@ describe("checkExistKey", () => {
 		expect(checkExistKey(config)).toBe(true)
 	})
 
+	it("should return true for codex provider without additional keys", () => {
+		const config: ProviderSettings = {
+			apiProvider: "codex",
+		}
+		expect(checkExistKey(config)).toBe(true)
+	})
+
 	it("should return true when only non-key fields are undefined", () => {
 		const config: ProviderSettings = {
 			apiKey: "test-key",
