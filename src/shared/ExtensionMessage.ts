@@ -44,6 +44,7 @@ export interface IndexingStatus {
 	totalItems: number
 	currentItemUnit?: string
 	workspacePath?: string
+	workspaceIndexEnabled?: boolean
 }
 
 export interface IndexingStatusUpdateMessage {

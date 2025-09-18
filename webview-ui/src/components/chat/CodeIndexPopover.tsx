@@ -57,6 +57,7 @@ interface CodeIndexPopoverProps {
 interface LocalCodeIndexSettings {
 	// Global state settings
 	codebaseIndexEnabled: boolean
+	workspaceIndexEnabled?: boolean // Workspace-specific setting
 	codebaseIndexQdrantUrl: string
 	codebaseIndexEmbedderProvider: EmbedderProvider
 	codebaseIndexEmbedderBaseUrl?: string
@@ -212,6 +213,7 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 		if (codebaseIndexConfig) {
 			const settings = {
 				codebaseIndexEnabled: codebaseIndexConfig.codebaseIndexEnabled ?? true,
+				workspaceIndexEnabled: codebaseIndexConfig.workspaceIndexEnabled,
 				codebaseIndexQdrantUrl: codebaseIndexConfig.codebaseIndexQdrantUrl || "",
 				codebaseIndexEmbedderProvider: codebaseIndexConfig.codebaseIndexEmbedderProvider || "openai",
 				codebaseIndexEmbedderBaseUrl: codebaseIndexConfig.codebaseIndexEmbedderBaseUrl || "",
@@ -511,6 +513,11 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 		// Always include codebaseIndexEnabled to ensure it's persisted
 		settingsToSave.codebaseIndexEnabled = currentSettings.codebaseIndexEnabled
 
+		// Include workspace-specific setting if it's been set
+		if (currentSettings.workspaceIndexEnabled !== undefined) {
+			settingsToSave.workspaceIndexEnabled = currentSettings.workspaceIndexEnabled
+		}
+
 		// Save settings to backend
 		vscode.postMessage({
 			type: "saveCodeIndexSettingsAtomic",
@@ -588,20 +595,57 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 							</div>
 						</div>
 
+						{/* Workspace-level Toggle */}
+						{currentSettings.codebaseIndexEnabled && cwd && (
+							<div className="mb-4 ml-6">
+								<div className="flex items-center gap-2">
+									<VSCodeCheckbox
+										checked={currentSettings.workspaceIndexEnabled !== false}
+										onChange={(e: any) => updateSetting("workspaceIndexEnabled", e.target.checked)}>
+										<span className="font-medium">
+											{t("settings:codeIndex.workspaceEnableLabel")}
+										</span>
+									</VSCodeCheckbox>
+									<StandardTooltip content={t("settings:codeIndex.workspaceEnableDescription")}>
+										<span className="codicon codicon-info text-xs text-vscode-descriptionForeground cursor-help" />
+									</StandardTooltip>
+								</div>
+								{currentSettings.workspaceIndexEnabled === undefined && (
+									<p className="text-xs text-vscode-descriptionForeground mt-1 ml-6">
+										{t("settings:codeIndex.inheritingGlobalSetting")}
+									</p>
+								)}
+							</div>
+						)}
+
 						{/* Status Section */}
 						<div className="space-y-2">
 							<h4 className="text-sm font-medium">{t("settings:codeIndex.statusTitle")}</h4>
 							<div className="text-sm text-vscode-descriptionForeground">
 								<span
 									className={cn("inline-block w-3 h-3 rounded-full mr-2", {
-										"bg-gray-400": indexingStatus.systemStatus === "Standby",
-										"bg-yellow-500 animate-pulse": indexingStatus.systemStatus === "Indexing",
-										"bg-green-500": indexingStatus.systemStatus === "Indexed",
-										"bg-red-500": indexingStatus.systemStatus === "Error",
+										"bg-gray-400":
+											indexingStatus.systemStatus === "Standby" ||
+											currentSettings.workspaceIndexEnabled === false,
+										"bg-yellow-500 animate-pulse":
+											indexingStatus.systemStatus === "Indexing" &&
+											currentSettings.workspaceIndexEnabled !== false,
+										"bg-green-500":
+											indexingStatus.systemStatus === "Indexed" &&
+											currentSettings.workspaceIndexEnabled !== false,
+										"bg-red-500":
+											indexingStatus.systemStatus === "Error" &&
+											currentSettings.workspaceIndexEnabled !== false,
 									})}
 								/>
-								{t(`settings:codeIndex.indexingStatuses.${indexingStatus.systemStatus.toLowerCase()}`)}
-								{indexingStatus.message ? ` - ${indexingStatus.message}` : ""}
+								{currentSettings.workspaceIndexEnabled === false
+									? t("settings:codeIndex.workspaceIndexingDisabled")
+									: t(
+											`settings:codeIndex.indexingStatuses.${indexingStatus.systemStatus.toLowerCase()}`,
+										)}
+								{indexingStatus.message && currentSettings.workspaceIndexEnabled !== false
+									? ` - ${indexingStatus.message}`
+									: ""}
 							</div>
 
 							{indexingStatus.systemStatus === "Indexing" && (
@@ -1295,6 +1339,7 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 						<div className="flex items-center justify-between gap-2 pt-6">
 							<div className="flex gap-2">
 								{currentSettings.codebaseIndexEnabled &&
+									currentSettings.workspaceIndexEnabled !== false &&
 									(indexingStatus.systemStatus === "Error" ||
 										indexingStatus.systemStatus === "Standby") && (
 										<VSCodeButton
@@ -1305,6 +1350,7 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 									)}
 
 								{currentSettings.codebaseIndexEnabled &&
+									currentSettings.workspaceIndexEnabled !== false &&
 									(indexingStatus.systemStatus === "Indexed" ||
 										indexingStatus.systemStatus === "Error") && (
 										<AlertDialog>

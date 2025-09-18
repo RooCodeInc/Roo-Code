@@ -18,6 +18,7 @@ import { TelemetryService } from "@roo-code/telemetry"
 
 import { type ApiMessage } from "../task-persistence/apiMessages"
 import { saveTaskMessages } from "../task-persistence"
+import { type IndexingStatus } from "../../shared/ExtensionMessage"
 
 import { ClineProvider } from "./ClineProvider"
 import { handleCheckpointRestoreOperation } from "./checkpointRestoreHandler"
@@ -2384,6 +2385,19 @@ export const webviewMessageHandler = async (
 					codebaseIndexSearchMinScore: settings.codebaseIndexSearchMinScore,
 				}
 
+				// Handle workspace-specific indexing setting
+				if (settings.workspaceIndexEnabled !== undefined) {
+					const currentCodeIndexManager = provider.getCurrentWorkspaceCodeIndexManager()
+					if (currentCodeIndexManager && provider.cwd) {
+						await currentCodeIndexManager.configManager?.setWorkspaceIndexEnabled(
+							provider.cwd,
+							settings.workspaceIndexEnabled,
+						)
+						// Also store in global config for UI state
+						globalStateConfig.workspaceIndexEnabled = settings.workspaceIndexEnabled
+					}
+				}
+
 				// Save global state first
 				await updateGlobalState("codebaseIndexConfig", globalStateConfig)
 
@@ -2520,13 +2534,13 @@ export const webviewMessageHandler = async (
 						processedItems: 0,
 						totalItems: 0,
 						currentItemUnit: "items",
-						workerspacePath: undefined,
+						workspacePath: undefined,
 					},
 				})
 				return
 			}
 
-			const status = manager
+			const baseStatus = manager
 				? manager.getCurrentStatus()
 				: {
 						systemStatus: "Standby",
@@ -2536,6 +2550,15 @@ export const webviewMessageHandler = async (
 						currentItemUnit: "items",
 						workspacePath: undefined,
 					}
+
+			// Create a new status object with workspace-specific indexing enabled state
+			let status: IndexingStatus = { ...baseStatus }
+			if (manager && provider.cwd) {
+				const workspaceEnabled = manager.configManager?.getWorkspaceIndexEnabled(provider.cwd)
+				if (workspaceEnabled !== undefined) {
+					status.workspaceIndexEnabled = workspaceEnabled
+				}
+			}
 
 			provider.postMessageToWebview({
 				type: "indexingStatusUpdate",

@@ -1,3 +1,4 @@
+import * as vscode from "vscode"
 import { ApiHandlerOptions } from "../../shared/api"
 import { ContextProxy } from "../../core/config/ContextProxy"
 import { EmbedderProvider } from "./interfaces/manager"
@@ -11,6 +12,7 @@ import { getDefaultModelId, getModelDimension, getModelScoreThreshold } from "..
  */
 export class CodeIndexConfigManager {
 	private codebaseIndexEnabled: boolean = true
+	private workspaceIndexEnabled: Map<string, boolean> = new Map()
 	private embedderProvider: EmbedderProvider = "openai"
 	private modelId?: string
 	private modelDimension?: number
@@ -25,9 +27,15 @@ export class CodeIndexConfigManager {
 	private searchMinScore?: number
 	private searchMaxResults?: number
 
-	constructor(private readonly contextProxy: ContextProxy) {
+	constructor(
+		private readonly contextProxy: ContextProxy,
+		private readonly workspacePath?: string,
+		private readonly context?: vscode.ExtensionContext,
+	) {
 		// Initialize with current configuration to avoid false restart triggers
 		this._loadAndSetConfiguration()
+		// Load workspace-specific settings if available
+		this.loadWorkspaceSettings()
 	}
 
 	/**
@@ -404,8 +412,21 @@ export class CodeIndexConfigManager {
 
 	/**
 	 * Gets whether the code indexing feature is enabled
+	 * Takes into account both global and workspace-level settings
 	 */
 	public get isFeatureEnabled(): boolean {
+		// First check global setting
+		if (!this.codebaseIndexEnabled) {
+			return false
+		}
+
+		// Then check workspace-specific setting if workspace path is available
+		if (this.workspacePath) {
+			const workspaceEnabled = this.getWorkspaceIndexEnabled(this.workspacePath)
+			// If workspace setting exists, use it; otherwise inherit global setting
+			return workspaceEnabled !== undefined ? workspaceEnabled : this.codebaseIndexEnabled
+		}
+
 		return this.codebaseIndexEnabled
 	}
 
@@ -479,5 +500,58 @@ export class CodeIndexConfigManager {
 	 */
 	public get currentSearchMaxResults(): number {
 		return this.searchMaxResults ?? DEFAULT_MAX_SEARCH_RESULTS
+	}
+
+	/**
+	 * Gets the workspace-specific indexing enabled state
+	 * @param workspacePath The workspace path to check
+	 * @returns The workspace-specific setting, or undefined if not set
+	 */
+	public getWorkspaceIndexEnabled(workspacePath: string): boolean | undefined {
+		if (!this.context) {
+			// If no context, check in-memory cache
+			return this.workspaceIndexEnabled.get(workspacePath)
+		}
+		// Use a hash of the workspace path as the key to avoid issues with special characters
+		const key = `codebaseIndexEnabled_${Buffer.from(workspacePath).toString("base64")}`
+		const value = this.context.workspaceState.get<boolean>(key)
+		return value
+	}
+
+	/**
+	 * Sets the workspace-specific indexing enabled state
+	 * @param workspacePath The workspace path to set
+	 * @param enabled Whether indexing should be enabled for this workspace
+	 */
+	public async setWorkspaceIndexEnabled(workspacePath: string, enabled: boolean): Promise<void> {
+		this.workspaceIndexEnabled.set(workspacePath, enabled)
+		if (this.context) {
+			// Use a hash of the workspace path as the key to avoid issues with special characters
+			const key = `codebaseIndexEnabled_${Buffer.from(workspacePath).toString("base64")}`
+			await this.context.workspaceState.update(key, enabled)
+		}
+	}
+
+	/**
+	 * Loads workspace-specific settings
+	 */
+	public loadWorkspaceSettings(): void {
+		if (this.workspacePath) {
+			const workspaceEnabled = this.getWorkspaceIndexEnabled(this.workspacePath)
+			if (workspaceEnabled !== undefined) {
+				this.workspaceIndexEnabled.set(this.workspacePath, workspaceEnabled)
+			}
+		}
+	}
+
+	/**
+	 * Gets whether the workspace has a specific indexing setting
+	 * (as opposed to inheriting the global setting)
+	 */
+	public hasWorkspaceSpecificSetting(): boolean {
+		if (!this.workspacePath) {
+			return false
+		}
+		return this.getWorkspaceIndexEnabled(this.workspacePath) !== undefined
 	}
 }
