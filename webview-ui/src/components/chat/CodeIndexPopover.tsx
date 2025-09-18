@@ -411,8 +411,9 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 						prev.codebaseIndexVercelAiGatewayApiKey === SECRET_PLACEHOLDER
 					) {
 						updated.codebaseIndexVercelAiGatewayApiKey = secretStatus.hasVercelAiGatewayApiKey
+							? SECRET_PLACEHOLDER
+							: ""
 					}
-
 					if (!prev.codebaseIndexWatsonxApiKey || prev.codebaseIndexWatsonxApiKey === SECRET_PLACEHOLDER) {
 						updated.codebaseIndexWatsonxApiKey = secretStatus.hasWatsonxApiKey ? SECRET_PLACEHOLDER : ""
 					}

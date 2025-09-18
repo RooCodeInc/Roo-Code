@@ -2582,7 +2582,6 @@ export const webviewMessageHandler = async (
 						settings.codebaseIndexWatsonxProjectId,
 					)
 				}
-
 				// Send success response first - settings are saved regardless of validation
 				await provider.postMessageToWebview({
 					type: "codeIndexSettingsSaved",
