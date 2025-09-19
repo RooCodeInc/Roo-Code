@@ -46,7 +46,7 @@ export default function Privacy() {
 					<h1 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
 						Roo Code Cloud Privacy Policy
 					</h1>
-					<p className="text-muted-foreground">Last Updated: August 20, 2025</p>
+					<p className="text-muted-foreground">Last Updated: September 19, 2025</p>
 
 					<p className="lead">
 						This Privacy Policy explains how Roo Code, Inc. (&quot;Roo Code,&quot; &quot;we,&quot;
