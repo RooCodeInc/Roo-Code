@@ -100,7 +100,7 @@ export const sambaNovaModels = {
 	},
 	"gpt-oss-120b": {
 		maxTokens: 8192,
-		contextWindow: 8192,
+		contextWindow: 131072,
 		supportsImages: false,
 		supportsPromptCache: false,
 		inputPrice: 0.22,
