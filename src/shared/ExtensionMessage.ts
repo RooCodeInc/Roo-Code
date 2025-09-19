@@ -283,6 +283,10 @@ export type ExtensionState = Pick<
 	| "maxDiagnosticMessages"
 	| "openRouterImageGenerationSelectedModel"
 	| "includeTaskHistoryInEnhance"
+	| "taskHistoryAutoCleanupEnabled"
+	| "taskHistoryMaxCount"
+	| "taskHistoryMaxDiskSpaceMB"
+	| "taskHistoryMaxAgeDays"
 > & {
 	version: string
 	clineMessages: ClineMessage[]

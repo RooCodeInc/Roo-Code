@@ -68,6 +68,10 @@ import { ShadowCheckpointService } from "../../services/checkpoints/ShadowCheckp
 import { CodeIndexManager } from "../../services/code-index/manager"
 import type { IndexProgressUpdate } from "../../services/code-index/interfaces/manager"
 import { MdmService } from "../../services/mdm/MdmService"
+import {
+	TaskHistoryCleanupService,
+	type TaskHistoryCleanupConfig,
+} from "../../services/task-cleanup/TaskHistoryCleanupService"
 
 import { fileExistsAtPath } from "../../utils/fs"
 import { setTtsEnabled, setTtsSpeed } from "../../utils/tts"
@@ -138,6 +142,7 @@ export class ClineProvider
 	private recentTasksCache?: string[]
 	private pendingOperations: Map<string, PendingEditOperation> = new Map()
 	private static readonly PENDING_OPERATION_TIMEOUT_MS = 30000 // 30 seconds
+	private taskHistoryCleanupService?: TaskHistoryCleanupService
 
 	public isViewLaunched = false
 	public settingsImportedAt?: number
@@ -253,6 +258,12 @@ export class ClineProvider
 		} else {
 			this.log("CloudService not ready, deferring cloud profile sync")
 		}
+
+		// Initialize task history cleanup service
+		this.taskHistoryCleanupService = new TaskHistoryCleanupService(
+			this.context.globalStorageUri.fsPath,
+			this.log.bind(this),
+		)
 	}
 
 	/**
@@ -1783,6 +1794,10 @@ export class ClineProvider
 			openRouterImageGenerationSelectedModel,
 			openRouterUseMiddleOutTransform,
 			featureRoomoteControlEnabled,
+			taskHistoryAutoCleanupEnabled,
+			taskHistoryMaxCount,
+			taskHistoryMaxDiskSpaceMB,
+			taskHistoryMaxAgeDays,
 		} = await this.getState()
 
 		const telemetryKey = process.env.POSTHOG_API_KEY
@@ -1920,6 +1935,10 @@ export class ClineProvider
 			openRouterImageGenerationSelectedModel,
 			openRouterUseMiddleOutTransform,
 			featureRoomoteControlEnabled,
+			taskHistoryAutoCleanupEnabled: taskHistoryAutoCleanupEnabled ?? false,
+			taskHistoryMaxCount: taskHistoryMaxCount ?? 100,
+			taskHistoryMaxDiskSpaceMB: taskHistoryMaxDiskSpaceMB ?? 1000,
+			taskHistoryMaxAgeDays: taskHistoryMaxAgeDays ?? 7,
 		}
 	}
 
@@ -2166,7 +2185,73 @@ export class ClineProvider
 		await this.updateGlobalState("taskHistory", history)
 		this.recentTasksCache = undefined
 
+		// Trigger auto-cleanup after updating task history
+		void this.triggerAutoCleanup()
+
 		return history
+	}
+
+	/**
+	 * Triggers automatic cleanup of task history if configured
+	 */
+	private async triggerAutoCleanup(): Promise<void> {
+		if (!this.taskHistoryCleanupService) {
+			return
+		}
+
+		try {
+			const {
+				taskHistoryAutoCleanupEnabled,
+				taskHistoryMaxCount,
+				taskHistoryMaxDiskSpaceMB,
+				taskHistoryMaxAgeDays,
+				taskHistory,
+			} = await this.getState()
+
+			const config: TaskHistoryCleanupConfig = {
+				enabled: taskHistoryAutoCleanupEnabled ?? false,
+				maxCount: taskHistoryMaxCount,
+				maxDiskSpaceMB: taskHistoryMaxDiskSpaceMB,
+				maxAgeDays: taskHistoryMaxAgeDays,
+			}
+
+			// Check if cleanup should be triggered
+			if (this.taskHistoryCleanupService.shouldTriggerCleanup(taskHistory ?? [], config)) {
+				// Run cleanup in the background during idle time
+				setTimeout(async () => {
+					try {
+						const result = await this.taskHistoryCleanupService!.performCleanup(
+							taskHistory ?? [],
+							config,
+							async (updatedHistory) => {
+								await this.updateGlobalState("taskHistory", updatedHistory)
+								this.recentTasksCache = undefined
+								await this.postStateToWebview()
+							},
+							this.deleteTaskWithId.bind(this),
+						)
+
+						if (result.deletedCount > 0) {
+							this.log(
+								`[ClineProvider] Auto-cleanup completed: deleted ${result.deletedCount} tasks, freed ${result.freedSpaceMB.toFixed(2)}MB`,
+							)
+						}
+
+						if (result.errors.length > 0) {
+							this.log(`[ClineProvider] Auto-cleanup errors: ${result.errors.join(", ")}`)
+						}
+					} catch (error) {
+						this.log(
+							`[ClineProvider] Auto-cleanup failed: ${error instanceof Error ? error.message : String(error)}`,
+						)
+					}
+				}, 5000) // Run after 5 seconds to avoid blocking current operations
+			}
+		} catch (error) {
+			this.log(
+				`[ClineProvider] Failed to trigger auto-cleanup: ${error instanceof Error ? error.message : String(error)}`,
+			)
+		}
 	}
 
 	// ContextProxy
