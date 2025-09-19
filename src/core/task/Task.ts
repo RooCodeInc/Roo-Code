@@ -572,7 +572,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	// API Messages
 
-	private async getSavedApiConversationHistory(): Promise<ApiMessage[]> {
+	public async getSavedApiConversationHistory(): Promise<ApiMessage[]> {
 		return readApiMessages({ taskId: this.taskId, globalStoragePath: this.globalStoragePath })
 	}
 
@@ -602,7 +602,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	// Cline Messages
 
-	private async getSavedClineMessages(): Promise<ClineMessage[]> {
+	public async getSavedClineMessages(): Promise<ClineMessage[]> {
 		return readTaskMessages({ taskId: this.taskId, globalStoragePath: this.globalStoragePath })
 	}
 
@@ -1299,7 +1299,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			.find((m) => !(m.ask === "resume_task" || m.ask === "resume_completed_task")) // Could be multiple resume tasks.
 
 		let askType: ClineAsk
-		if (lastClineMessage?.ask === "completion_result") {
+
+		// Check for completion indicators in multiple ways
+		const isCompleted =
+			lastClineMessage?.ask === "completion_result" ||
+			lastClineMessage?.say === "completion_result" ||
+			this.clineMessages.some((m) => m.ask === "completion_result" || m.say === "completion_result")
+
+		if (isCompleted) {
 			askType = "resume_completed_task"
 		} else {
 			askType = "resume_task"
@@ -1610,6 +1617,13 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		const newTask = await provider.createTask(message, undefined, this, { initialTodos })
 
 		if (newTask) {
+			// Store the current task's mode before pausing
+			const currentTaskMode = await this.getTaskMode()
+			this.pausedModeSlug = currentTaskMode
+			provider.log(
+				`[startSubtask] Storing parent task mode '${currentTaskMode}' in pausedModeSlug before pausing`,
+			)
+
 			this.isPaused = true // Pause parent.
 			this.childTaskId = newTask.taskId
 
@@ -1759,6 +1773,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 				if (currentMode !== this.pausedModeSlug) {
 					// The mode has changed, we need to switch back to the paused mode.
+					provider.log(
+						`[subtasks] task ${this.taskId}.${this.instanceId} switching back to paused mode '${this.pausedModeSlug}' from current mode '${currentMode}'`,
+					)
 					await provider.handleModeSwitch(this.pausedModeSlug)
 
 					// Delay to allow mode change to take effect before next tool is executed.
@@ -1767,6 +1784,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					provider.log(
 						`[subtasks] task ${this.taskId}.${this.instanceId} has switched back to '${this.pausedModeSlug}' from '${currentMode}'`,
 					)
+				} else {
+					provider.log(`[subtasks] task ${this.taskId}.${this.instanceId} mode unchanged: '${currentMode}'`)
 				}
 			}
 
