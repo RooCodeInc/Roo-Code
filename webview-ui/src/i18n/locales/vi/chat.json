@@ -61,7 +61,7 @@
 		"tooltip": "Phê duyệt hành động này"
 	},
 	"runCommand": {
-		"title": "Chạy lệnh",
+		"title": "Lệnh",
 		"tooltip": "Thực thi lệnh này"
 	},
 	"proceedWhileRunning": {
@@ -204,8 +204,9 @@
 	"commandOutput": "Kết quả lệnh",
 	"commandExecution": {
 		"running": "Đang chạy",
+		"abort": "Hủy bỏ",
 		"pid": "PID: {{pid}}",
-		"exited": "Đã thoát ({{exitCode}})",
+		"exitStatus": "Đã thoát với trạng thái {{exitCode}}",
 		"manageCommands": "Quản lý quyền lệnh",
 		"commandManagementDescription": "Quản lý quyền lệnh: Nhấp vào ✓ để cho phép tự động thực thi, ✗ để từ chối thực thi. Các mẫu có thể được bật/tắt hoặc xóa khỏi danh sách. <settingsLink>Xem tất cả cài đặt</settingsLink>",
 		"addToAllowed": "Thêm vào danh sách cho phép",

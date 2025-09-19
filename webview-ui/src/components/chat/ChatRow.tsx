@@ -59,6 +59,7 @@ import {
 	FileCode2,
 	PocketKnife,
 	FolderTree,
+	TerminalSquare,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -229,11 +230,9 @@ export const ChatRowContent = ({
 					isCommandExecuting ? (
 						<ProgressIndicator />
 					) : (
-						<span
-							className="codicon codicon-terminal"
-							style={{ color: normalColor, marginBottom: "-1.5px" }}></span>
+						<TerminalSquare className="size-4" aria-label="Terminal icon" />
 					),
-					<span style={{ color: normalColor, fontWeight: "bold" }}>{t("chat:runCommand.title")}:</span>,
+					<span style={{ color: normalColor, fontWeight: "bold" }}>{t("chat:runCommand.title")}</span>,
 				]
 			case "use_mcp_server":
 				const mcpServerUse = safeJsonParse<ClineAskUseMcpServer>(message.text)

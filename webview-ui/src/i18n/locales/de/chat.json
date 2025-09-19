@@ -61,7 +61,7 @@
 		"tooltip": "Diese Aktion genehmigen"
 	},
 	"runCommand": {
-		"title": "Befehl ausführen",
+		"title": "Befehl",
 		"tooltip": "Diesen Befehl ausführen"
 	},
 	"proceedWhileRunning": {
@@ -204,19 +204,19 @@
 	"commandOutput": "Befehlsausgabe",
 	"commandExecution": {
 		"running": "Wird ausgeführt",
+		"abort": "Abbrechen",
 		"pid": "PID: {{pid}}",
-		"exited": "Beendet ({{exitCode}})",
-		"manageCommands": "Befehlsberechtigungen verwalten",
-		"commandManagementDescription": "Befehlsberechtigungen verwalten: Klicke auf ✓, um die automatische Ausführung zu erlauben, ✗, um die Ausführung zu verweigern. Muster können ein-/ausgeschaltet oder aus Listen entfernt werden. <settingsLink>Alle Einstellungen anzeigen</settingsLink>",
-		"addToAllowed": "Zur Liste der erlaubten Befehle hinzufügen",
-		"removeFromAllowed": "Von der Liste der erlaubten Befehle entfernen",
-		"addToDenied": "Zur Liste der verweigerten Befehle hinzufügen",
-		"removeFromDenied": "Von der Liste der verweigerten Befehle entfernen",
+		"exitStatus": "Beendet mit Status {{exitCode}}",
+		"manageCommands": "Automatisch genehmigte Befehle",
+		"addToAllowed": "Zur erlaubten Liste hinzufügen",
+		"removeFromAllowed": "Von der erlaubten Liste entfernen",
+		"addToDenied": "Zur verweigerten Liste hinzufügen",
+		"removeFromDenied": "Von der verweigerten Liste entfernen",
 		"abortCommand": "Befehlsausführung abbrechen",
 		"expandOutput": "Ausgabe erweitern",
-		"collapseOutput": "Ausgabe einklappen",
+		"collapseOutput": "Ausgabe reduzieren",
 		"expandManagement": "Befehlsverwaltungsbereich erweitern",
-		"collapseManagement": "Befehlsverwaltungsbereich einklappen"
+		"collapseManagement": "Befehlsverwaltungsbereich reduzieren"
 	},
 	"response": "Antwort",
 	"arguments": "Argumente",

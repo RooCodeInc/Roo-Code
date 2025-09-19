@@ -61,7 +61,7 @@
 		"tooltip": "Deze actie goedkeuren"
 	},
 	"runCommand": {
-		"title": "Commando uitvoeren",
+		"title": "Commando",
 		"tooltip": "Voer dit commando uit"
 	},
 	"proceedWhileRunning": {
@@ -199,10 +199,10 @@
 	"commandOutput": "Commando-uitvoer",
 	"commandExecution": {
 		"running": "Lopend",
+		"abort": "Afbreken",
 		"pid": "PID: {{pid}}",
-		"exited": "Afgesloten ({{exitCode}})",
-		"manageCommands": "Beheer Commando Toestemmingen",
-		"commandManagementDescription": "Beheer commando toestemmingen: Klik op ✓ om automatische uitvoering toe te staan, ✗ om uitvoering te weigeren. Patronen kunnen worden in- of uitgeschakeld of uit lijsten worden verwijderd. <settingsLink>Bekijk alle instellingen</settingsLink>",
+		"exitStatus": "Afgesloten met status {{exitCode}}",
+		"manageCommands": "Automatisch goedgekeurde commando's",
 		"addToAllowed": "Toevoegen aan toegestane lijst",
 		"removeFromAllowed": "Verwijderen van toegestane lijst",
 		"addToDenied": "Toevoegen aan geweigerde lijst",

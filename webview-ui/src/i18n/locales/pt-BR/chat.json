@@ -61,7 +61,7 @@
 		"tooltip": "Aprovar esta ação"
 	},
 	"runCommand": {
-		"title": "Executar comando",
+		"title": "Comando",
 		"tooltip": "Executar este comando"
 	},
 	"proceedWhileRunning": {
@@ -204,10 +204,10 @@
 	"commandOutput": "Saída do comando",
 	"commandExecution": {
 		"running": "Executando",
+		"abort": "Interromper",
 		"pid": "PID: {{pid}}",
-		"exited": "Encerrado ({{exitCode}})",
-		"manageCommands": "Gerenciar Permissões de Comando",
-		"commandManagementDescription": "Gerencie as permissões de comando: Clique em ✓ para permitir a execução automática, ✗ para negar a execução. Os padrões podem ser ativados/desativados ou removidos das listas. <settingsLink>Ver todas as configurações</settingsLink>",
+		"exitStatus": "Saiu com o status {{exitCode}}",
+		"manageCommands": "Comandos aprovados automaticamente",
 		"addToAllowed": "Adicionar à lista de permitidos",
 		"removeFromAllowed": "Remover da lista de permitidos",
 		"addToDenied": "Adicionar à lista de negados",

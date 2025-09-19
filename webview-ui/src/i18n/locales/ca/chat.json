@@ -61,7 +61,7 @@
 		"tooltip": "Aprova aquesta acció"
 	},
 	"runCommand": {
-		"title": "Executar ordre",
+		"title": "Ordre",
 		"tooltip": "Executa aquesta ordre"
 	},
 	"proceedWhileRunning": {
@@ -201,22 +201,22 @@
 		"wantsToViewDefinitionsOutsideWorkspace": "Roo vol veure noms de definicions de codi font utilitzats en aquest directori (fora de l'espai de treball)",
 		"didViewDefinitionsOutsideWorkspace": "Roo ha vist noms de definicions de codi font utilitzats en aquest directori (fora de l'espai de treball)"
 	},
-	"commandOutput": "Sortida de l'ordre",
+	"commandOutput": "Sortida de la comanda",
 	"commandExecution": {
-		"running": "Executant",
+		"running": "Corrent",
+		"abort": "Avortar",
 		"pid": "PID: {{pid}}",
-		"exited": "Finalitzat ({{exitCode}})",
-		"manageCommands": "Gestiona els permisos de les ordres",
-		"commandManagementDescription": "Gestiona els permisos de les ordres: Fes clic a ✓ per permetre l'execució automàtica, ✗ per denegar l'execució. Els patrons es poden activar/desactivar o eliminar de les llistes. <settingsLink>Mostra tots els paràmetres</settingsLink>",
-		"addToAllowed": "Afegeix a la llista de permesos",
-		"removeFromAllowed": "Elimina de la llista de permesos",
-		"addToDenied": "Afegeix a la llista de denegats",
-		"removeFromDenied": "Elimina de la llista de denegats",
-		"abortCommand": "Interromp l'execució de l'ordre",
+		"exitStatus": "S'ha sortit amb l'estat {{exitCode}}",
+		"manageCommands": "Comandes aprovades automàticament",
+		"addToAllowed": "Afegeix a la llista permesa",
+		"removeFromAllowed": "Elimina de la llista permesa",
+		"addToDenied": "Afegeix a la llista denegada",
+		"removeFromDenied": "Elimina de la llista denegada",
+		"abortCommand": "Interrompre l'execució de l'ordre",
 		"expandOutput": "Amplia la sortida",
 		"collapseOutput": "Redueix la sortida",
-		"expandManagement": "Amplia la secció de gestió d'ordres",
-		"collapseManagement": "Redueix la secció de gestió d'ordres"
+		"expandManagement": "Amplia la secció de gestió de comandaments",
+		"collapseManagement": "Redueix la secció de gestió de comandaments"
 	},
 	"response": "Resposta",
 	"arguments": "Arguments",

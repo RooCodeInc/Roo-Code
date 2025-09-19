@@ -61,7 +61,7 @@
 		"tooltip": "Zatwierdź tę akcję"
 	},
 	"runCommand": {
-		"title": "Uruchom polecenie",
+		"title": "Polecenie",
 		"tooltip": "Wykonaj to polecenie"
 	},
 	"proceedWhileRunning": {
@@ -204,10 +204,10 @@
 	"commandOutput": "Wyjście polecenia",
 	"commandExecution": {
 		"running": "Wykonywanie",
+		"abort": "Przerwij",
 		"pid": "PID: {{pid}}",
-		"exited": "Zakończono ({{exitCode}})",
-		"manageCommands": "Zarządzaj uprawnieniami poleceń",
-		"commandManagementDescription": "Zarządzaj uprawnieniami poleceń: Kliknij ✓, aby zezwolić na automatyczne wykonanie, ✗, aby odmówić wykonania. Wzorce można włączać/wyłączać lub usuwać z listy. <settingsLink>Zobacz wszystkie ustawienia</settingsLink>",
+		"exitStatus": "Zakończono ze statusem {{exitCode}}",
+		"manageCommands": "Polecenia zatwierdzone automatycznie",
 		"addToAllowed": "Dodaj do listy dozwolonych",
 		"removeFromAllowed": "Usuń z listy dozwolonych",
 		"addToDenied": "Dodaj do listy odrzuconych",

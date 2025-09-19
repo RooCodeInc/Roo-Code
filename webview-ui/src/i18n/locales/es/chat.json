@@ -61,7 +61,7 @@
 		"tooltip": "Aprobar esta acción"
 	},
 	"runCommand": {
-		"title": "Ejecutar comando",
+		"title": "Comando",
 		"tooltip": "Ejecutar este comando"
 	},
 	"proceedWhileRunning": {
@@ -203,20 +203,20 @@
 	},
 	"commandOutput": "Salida del comando",
 	"commandExecution": {
-		"running": "Ejecutando",
+		"running": "Corriendo",
+		"abort": "Abortar",
 		"pid": "PID: {{pid}}",
-		"exited": "Finalizado ({{exitCode}})",
-		"manageCommands": "Gestionar permisos de comandos",
-		"commandManagementDescription": "Gestionar permisos de comandos: Haz clic en ✓ para permitir la ejecución automática, ✗ para denegar la ejecución. Los patrones se pueden activar/desactivar o eliminar de las listas. <settingsLink>Ver todos los ajustes</settingsLink>",
-		"addToAllowed": "Añadir a la lista de permitidos",
+		"exitStatus": "Salió con el estado {{exitCode}}",
+		"manageCommands": "Comandos aprobados automáticamente",
+		"addToAllowed": "Agregar a la lista de permitidos",
 		"removeFromAllowed": "Eliminar de la lista de permitidos",
-		"addToDenied": "Añadir a la lista de denegados",
+		"addToDenied": "Agregar a la lista de denegados",
 		"removeFromDenied": "Eliminar de la lista de denegados",
-		"abortCommand": "Abortar ejecución del comando",
+		"abortCommand": "Abortar la ejecución del comando",
 		"expandOutput": "Expandir salida",
-		"collapseOutput": "Contraer salida",
-		"expandManagement": "Expandir sección de gestión de comandos",
-		"collapseManagement": "Contraer sección de gestión de comandos"
+		"collapseOutput": "Colapsar salida",
+		"expandManagement": "Expandir la sección de administración de comandos",
+		"collapseManagement": "Colapsar la sección de administración de comandos"
 	},
 	"response": "Respuesta",
 	"arguments": "Argumentos",

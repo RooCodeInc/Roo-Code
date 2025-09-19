@@ -61,7 +61,7 @@
 		"tooltip": "Approva questa azione"
 	},
 	"runCommand": {
-		"title": "Esegui comando",
+		"title": "Comando",
 		"tooltip": "Esegui questo comando"
 	},
 	"proceedWhileRunning": {
@@ -201,22 +201,22 @@
 		"wantsToViewDefinitionsOutsideWorkspace": "Roo vuole visualizzare i nomi delle definizioni di codice sorgente utilizzate in questa directory (fuori dall'area di lavoro)",
 		"didViewDefinitionsOutsideWorkspace": "Roo ha visualizzato i nomi delle definizioni di codice sorgente utilizzate in questa directory (fuori dall'area di lavoro)"
 	},
-	"commandOutput": "Output del comando",
+	"commandOutput": "Output del Comando",
 	"commandExecution": {
 		"running": "In esecuzione",
+		"abort": "Interrompi",
 		"pid": "PID: {{pid}}",
-		"exited": "Terminato ({{exitCode}})",
-		"manageCommands": "Gestisci autorizzazioni comandi",
-		"commandManagementDescription": "Gestisci le autorizzazioni dei comandi: fai clic su ✓ per consentire l'esecuzione automatica, ✗ per negare l'esecuzione. I pattern possono essere attivati/disattivati o rimossi dagli elenchi. <settingsLink>Visualizza tutte le impostazioni</settingsLink>",
-		"addToAllowed": "Aggiungi all'elenco consentiti",
-		"removeFromAllowed": "Rimuovi dall'elenco consentiti",
-		"addToDenied": "Aggiungi all'elenco negati",
-		"removeFromDenied": "Rimuovi dall'elenco negati",
-		"abortCommand": "Interrompi esecuzione comando",
+		"exitStatus": "Uscito con stato {{exitCode}}",
+		"manageCommands": "Comandi approvati automaticamente",
+		"addToAllowed": "Aggiungi alla lista dei permessi",
+		"removeFromAllowed": "Rimuovi dalla lista dei permessi",
+		"addToDenied": "Aggiungi alla lista dei negati",
+		"removeFromDenied": "Rimuovi dalla lista dei negati",
+		"abortCommand": "Interrompi esecuzione del comando",
 		"expandOutput": "Espandi output",
 		"collapseOutput": "Comprimi output",
-		"expandManagement": "Espandi la sezione di gestione dei comandi",
-		"collapseManagement": "Comprimi la sezione di gestione dei comandi"
+		"expandManagement": "Espandi sezione gestione comandi",
+		"collapseManagement": "Comprimi sezione gestione comandi"
 	},
 	"response": "Risposta",
 	"arguments": "Argomenti",

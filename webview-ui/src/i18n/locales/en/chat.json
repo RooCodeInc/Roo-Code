@@ -69,7 +69,7 @@
 		}
 	},
 	"runCommand": {
-		"title": "Run Command",
+		"title": "Command",
 		"tooltip": "Execute this command"
 	},
 	"proceedWhileRunning": {
@@ -223,10 +223,10 @@
 	"commandOutput": "Command Output",
 	"commandExecution": {
 		"running": "Running",
+		"abort": "Abort",
 		"pid": "PID: {{pid}}",
-		"exited": "Exited ({{exitCode}})",
-		"manageCommands": "Manage Command Permissions",
-		"commandManagementDescription": "Manage command permissions: Click ✓ to allow auto-execution, ✗ to deny execution. Patterns can be toggled on/off or removed from lists. <settingsLink>View all settings</settingsLink>",
+		"exitStatus": "Exited with status {{exitCode}}",
+		"manageCommands": "Auto-approved commands",
 		"addToAllowed": "Add to allowed list",
 		"removeFromAllowed": "Remove from allowed list",
 		"addToDenied": "Add to denied list",

@@ -61,7 +61,7 @@
 		"tooltip": "Bu eylemi onayla"
 	},
 	"runCommand": {
-		"title": "Komutu Çalıştır",
+		"title": "Komut",
 		"tooltip": "Bu komutu çalıştır"
 	},
 	"proceedWhileRunning": {
@@ -204,8 +204,9 @@
 	"commandOutput": "Komut Çıktısı",
 	"commandExecution": {
 		"running": "Çalışıyor",
+		"abort": "İptal Et",
 		"pid": "PID: {{pid}}",
-		"exited": "Çıkıldı ({{exitCode}})",
+		"exitStatus": "{{exitCode}} durumuyla çıkıldı",
 		"manageCommands": "Komut İzinlerini Yönet",
 		"commandManagementDescription": "Komut izinlerini yönetin: Otomatik yürütmeye izin vermek için ✓'e, yürütmeyi reddetmek için ✗'e tıklayın. Desenler açılıp kapatılabilir veya listelerden kaldırılabilir. <settingsLink>Tüm ayarları görüntüle</settingsLink>",
 		"addToAllowed": "İzin verilenler listesine ekle",

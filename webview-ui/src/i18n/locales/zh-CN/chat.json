@@ -61,7 +61,7 @@
 		"tooltip": "批准此操作"
 	},
 	"runCommand": {
-		"title": "运行命令",
+		"title": "命令",
 		"tooltip": "执行此命令"
 	},
 	"proceedWhileRunning": {
@@ -204,8 +204,9 @@
 	"commandOutput": "命令输出",
 	"commandExecution": {
 		"running": "正在运行",
+		"abort": "中止",
 		"pid": "PID: {{pid}}",
-		"exited": "已退出 ({{exitCode}})",
+		"exitStatus": "已退出，状态码 {{exitCode}}",
 		"manageCommands": "管理命令权限",
 		"commandManagementDescription": "管理命令权限：点击 ✓ 允许自动执行，点击 ✗ 拒绝执行。可以打开/关闭模式或从列表中删除。<settingsLink>查看所有设置</settingsLink>",
 		"addToAllowed": "添加到允许列表",

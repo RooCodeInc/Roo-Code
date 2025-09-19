@@ -75,8 +75,8 @@
 		}
 	},
 	"runCommand": {
-		"title": "Jalankan Perintah",
-		"tooltip": "Eksekusi perintah ini"
+		"title": "Perintah",
+		"tooltip": "Jalankan perintah ini"
 	},
 	"proceedWhileRunning": {
 		"title": "Lanjutkan Saat Berjalan",
@@ -223,20 +223,20 @@
 		"didSearch_other": "Ditemukan {{count}} hasil",
 		"resultTooltip": "Skor kemiripan: {{score}} (klik untuk membuka file)"
 	},
-	"commandOutput": "Output Perintah",
+	"commandOutput": "Keluaran Perintah",
 	"commandExecution": {
-		"running": "Menjalankan",
+		"running": "Sedang berjalan",
+		"abort": "Batalkan",
 		"pid": "PID: {{pid}}",
-		"exited": "Keluar ({{exitCode}})",
-		"manageCommands": "Kelola Izin Perintah",
-		"commandManagementDescription": "Kelola izin perintah: Klik ✓ untuk mengizinkan eksekusi otomatis, ✗ untuk menolak eksekusi. Pola dapat diaktifkan/dinonaktifkan atau dihapus dari daftar. <settingsLink>Lihat semua pengaturan</settingsLink>",
+		"exitStatus": "Keluar dengan status {{exitCode}}",
+		"manageCommands": "Perintah yang disetujui secara otomatis",
 		"addToAllowed": "Tambahkan ke daftar yang diizinkan",
 		"removeFromAllowed": "Hapus dari daftar yang diizinkan",
 		"addToDenied": "Tambahkan ke daftar yang ditolak",
 		"removeFromDenied": "Hapus dari daftar yang ditolak",
 		"abortCommand": "Batalkan eksekusi perintah",
-		"expandOutput": "Perluas output",
-		"collapseOutput": "Ciutkan output",
+		"expandOutput": "Perluas keluaran",
+		"collapseOutput": "Ciutkan keluaran",
 		"expandManagement": "Perluas bagian manajemen perintah",
 		"collapseManagement": "Ciutkan bagian manajemen perintah"
 	},
