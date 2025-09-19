@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import MarkdownBlock from "../common/MarkdownBlock"
-import { Bot } from "lucide-react"
+import { Lightbulb } from "lucide-react"
 
 interface ReasoningBlockProps {
 	content: string
@@ -40,7 +40,7 @@ export const ReasoningBlock = ({ content, isStreaming, isLast }: ReasoningBlockP
 		<div>
 			<div className="flex items-center justify-between mb-2.5 pr-2">
 				<div className="flex items-center gap-2">
-					<Bot className="w-4" />
+					<Lightbulb className="w-4" />
 					<span className="font-bold text-vscode-foreground">{t("chat:reasoning.thinking")}</span>
 				</div>
 				{elapsed > 0 && (
