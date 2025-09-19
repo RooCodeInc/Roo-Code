@@ -7,9 +7,10 @@ import { GlobalFileNames } from "../../shared/globalFileNames"
 import { ensureSettingsDirectoryExists } from "../../utils/globalContext"
 import type { CustomModesManager } from "../../core/config/CustomModesManager"
 
-export interface InstallOptions extends InstallMarketplaceItemOptions {
+export interface InstallOptions {
 	target: "project" | "global"
 	selectedIndex?: number // Which installation method to use (for array content)
+	parameters?: Record<string, any>
 }
 
 export class SimpleInstaller {
@@ -47,8 +48,14 @@ export class SimpleInstaller {
 		// If CustomModesManager is available, use importModeWithRules
 		if (this.customModesManager) {
 			// Transform marketplace content to import format (wrap in customModes array)
+			const parsedMode = yaml.parse(item.content)
+			// Annotate marketplace origin to disambiguate from user-created modes
+			if (parsedMode && typeof parsedMode === "object") {
+				;(parsedMode as any).installedFromMarketplace = true
+				;(parsedMode as any).marketplaceItemId = item.id
+			}
 			const importData = {
-				customModes: [yaml.parse(item.content)],
+				customModes: [parsedMode],
 			}
 			const importYaml = yaml.stringify(importData)
 
@@ -72,7 +79,7 @@ export class SimpleInstaller {
 				// Find the line containing the slug of the added mode
 				if (modeData?.slug) {
 					const slugLineIndex = lines.findIndex(
-						(l) => l.includes(`slug: ${modeData.slug}`) || l.includes(`slug: "${modeData.slug}"`),
+						(l: string) => l.includes(`slug: ${modeData.slug}`) || l.includes(`slug: "${modeData.slug}"`),
 					)
 					if (slugLineIndex >= 0) {
 						line = slugLineIndex + 1 // Convert to 1-based line number
@@ -88,6 +95,11 @@ export class SimpleInstaller {
 		// Fallback to original implementation if CustomModesManager is not available
 		const filePath = await this.getModeFilePath(target)
 		const modeData = yaml.parse(item.content)
+		// Annotate marketplace origin fields for fallback path as well
+		if (modeData && typeof modeData === "object") {
+			;(modeData as any).installedFromMarketplace = true
+			;(modeData as any).marketplaceItemId = item.id
+		}
 
 		// Read existing file or create new structure
 		let existingData: any = { customModes: [] }
@@ -143,7 +155,7 @@ export class SimpleInstaller {
 			const addedMode = existingData.customModes[addedModeIndex]
 			if (addedMode?.slug) {
 				const slugLineIndex = lines.findIndex(
-					(l) => l.includes(`slug: ${addedMode.slug}`) || l.includes(`slug: "${addedMode.slug}"`),
+					(l: string) => l.includes(`slug: ${addedMode.slug}`) || l.includes(`slug: "${addedMode.slug}"`),
 				)
 				if (slugLineIndex >= 0) {
 					line = slugLineIndex + 1 // Convert to 1-based line number
@@ -319,13 +331,27 @@ export class SimpleInstaller {
 			throw new Error("Mode missing slug identifier")
 		}
 
-		// Get the current modes to determine the source
+		// Get the current modes and locate the exact marketplace-installed mode for the selected target
 		const modes = await this.customModesManager.getCustomModes()
-		const mode = modes.find((m) => m.slug === modeSlug)
+		const candidate = modes.find(
+			(m: any) =>
+				m.slug === modeSlug &&
+				m.installedFromMarketplace === true &&
+				m.marketplaceItemId === item.id &&
+				m.source === target,
+		)
 
-		// Use CustomModesManager to delete the mode configuration
-		// This also handles rules folder deletion
-		await this.customModesManager.deleteCustomMode(modeSlug, true)
+		if (!candidate) {
+			throw new Error("This mode was not installed from the marketplace for the selected target")
+		}
+
+		// Delete only from the selected source to avoid unintended removals
+		if (typeof (this.customModesManager as any).deleteCustomModeForSource === "function") {
+			await (this.customModesManager as any).deleteCustomModeForSource(modeSlug, target, true)
+		} else {
+			// Fallback to legacy deletion if helper is not available
+			await this.customModesManager.deleteCustomMode(modeSlug, true)
+		}
 	}
 
 	private async removeMcp(item: MarketplaceItem, target: "project" | "global"): Promise<void> {

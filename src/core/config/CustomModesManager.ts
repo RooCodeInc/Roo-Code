@@ -550,6 +550,58 @@ export class CustomModesManager {
 			vscode.window.showErrorMessage(t("common:customModes.errors.deleteFailed", { error: errorMessage }))
 		}
 	}
+	/**
+	 * Deletes a custom mode only from the specified source (project or global)
+	 * without affecting the other scope. Also handles rules folder cleanup.
+	 * @param slug - The mode slug
+	 * @param source - "project" or "global"
+	 * @param fromMarketplace - Whether this deletion was initiated by marketplace flows
+	 */
+	public async deleteCustomModeForSource(
+		slug: string,
+		source: "project" | "global",
+		fromMarketplace = false,
+	): Promise<void> {
+		try {
+			const settingsPath = await this.getCustomModesFilePath()
+			const roomodesPath = await this.getWorkspaceRoomodes()
+
+			let targetPath: string | undefined
+			let modeToDelete: ModeConfig | undefined
+
+			if (source === "project") {
+				if (!roomodesPath) {
+					throw new Error(t("common:customModes.errors.noWorkspaceForProject"))
+				}
+				targetPath = roomodesPath
+				const roomodesModes = await this.loadModesFromFile(roomodesPath)
+				modeToDelete = roomodesModes.find((m) => m.slug === slug)
+			} else {
+				targetPath = settingsPath
+				const settingsModes = await this.loadModesFromFile(settingsPath)
+				modeToDelete = settingsModes.find((m) => m.slug === slug)
+			}
+
+			if (!modeToDelete) {
+				throw new Error(t("common:customModes.errors.modeNotFound"))
+			}
+
+			await this.queueWrite(async () => {
+				// Delete only from the selected source file
+				await this.updateModesInFile(targetPath!, (modes) => modes.filter((m) => m.slug !== slug))
+
+				// Delete associated rules folder using the located mode (preserves correct scope)
+				await this.deleteRulesFolder(slug, modeToDelete!, fromMarketplace)
+
+				// Refresh state and clear caches
+				this.clearCache()
+				await this.refreshMergedState()
+			})
+		} catch (error) {
+			const errorMessage = error instanceof Error ? error.message : String(error)
+			vscode.window.showErrorMessage(t("common:customModes.errors.deleteFailed", { error: errorMessage }))
+		}
+	}
 
 	/**
 	 * Deletes the rules folder for a specific mode

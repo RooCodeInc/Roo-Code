@@ -70,6 +70,9 @@ export const modeConfigSchema = z.object({
 	customInstructions: z.string().optional(),
 	groups: groupEntryArraySchema,
 	source: z.enum(["global", "project"]).optional(),
+	// Marketplace origin metadata (optional)
+	installedFromMarketplace: z.boolean().optional(),
+	marketplaceItemId: z.string().optional(),
 })
 
 export type ModeConfig = z.infer<typeof modeConfigSchema>

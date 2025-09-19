@@ -258,8 +258,11 @@ export class MarketplaceManager {
 				const data = yaml.parse(content)
 				if (data?.customModes && Array.isArray(data.customModes)) {
 					for (const mode of data.customModes) {
-						if (mode.slug) {
-							metadata[mode.slug] = {
+						// Only consider marketplace-installed modes and key by marketplaceItemId
+						const fromMarketplace = (mode as any)?.installedFromMarketplace === true
+						const marketplaceItemId = (mode as any)?.marketplaceItemId
+						if (fromMarketplace && typeof marketplaceItemId === "string" && marketplaceItemId.length > 0) {
+							metadata[marketplaceItemId] = {
 								type: "mode",
 							}
 						}
@@ -303,8 +306,11 @@ export class MarketplaceManager {
 				const data = yaml.parse(content)
 				if (data?.customModes && Array.isArray(data.customModes)) {
 					for (const mode of data.customModes) {
-						if (mode.slug) {
-							metadata[mode.slug] = {
+						// Only consider marketplace-installed modes and key by marketplaceItemId
+						const fromMarketplace = (mode as any)?.installedFromMarketplace === true
+						const marketplaceItemId = (mode as any)?.marketplaceItemId
+						if (fromMarketplace && typeof marketplaceItemId === "string" && marketplaceItemId.length > 0) {
+							metadata[marketplaceItemId] = {
 								type: "mode",
 							}
 						}
