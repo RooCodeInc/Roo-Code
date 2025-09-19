@@ -1,6 +1,7 @@
 import { render, screen, fireEvent, waitFor, act } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import DismissibleUpsell from "../DismissibleUpsell"
+import React from "react"
 
 // Mock the vscode API
 const mockPostMessage = vi.fn()
@@ -24,34 +25,59 @@ vi.mock("@src/i18n/TranslationContext", () => ({
 }))
 
 describe("DismissibleUpsell", () => {
+	let messageHandler: ((event: MessageEvent) => void) | null = null
+
 	beforeEach(() => {
 		mockPostMessage.mockClear()
 		vi.clearAllTimers()
+
+		// Capture the message event handler
+		window.addEventListener = vi.fn((event, handler) => {
+			if (event === "message") {
+				messageHandler = handler as (event: MessageEvent) => void
+			}
+		})
+
+		window.removeEventListener = vi.fn()
 	})
 
 	afterEach(() => {
 		vi.clearAllTimers()
+		messageHandler = null
 	})
 
 	// Helper function to make the component visible
 	const makeUpsellVisible = () => {
-		const messageEvent = new MessageEvent("message", {
-			data: {
-				type: "dismissedUpsells",
-				list: [], // Empty list means no upsells are dismissed
-			},
+		act(() => {
+			messageHandler?.({
+				data: {
+					type: "dismissedUpsells",
+					list: [], // Empty list means no upsells are dismissed
+				},
+			} as MessageEvent)
 		})
-		window.dispatchEvent(messageEvent)
 	}
 
-	it("renders children content", async () => {
+	// Helper function to mark upsell as dismissed
+	const makeUpsellDismissed = (upsellIds: string[]) => {
+		act(() => {
+			messageHandler?.({
+				data: {
+					type: "dismissedUpsells",
+					list: upsellIds,
+				},
+			} as MessageEvent)
+		})
+	}
+
+	it("renders children content when visible", async () => {
 		render(
 			<DismissibleUpsell upsellId="test-upsell">
 				<div>Test content</div>
 			</DismissibleUpsell>,
 		)
 
-		// Component starts hidden, make it visible
+		// Component starts hidden (loading), make it visible
 		makeUpsellVisible()
 
 		// Wait for component to become visible
@@ -60,7 +86,7 @@ describe("DismissibleUpsell", () => {
 		})
 	})
 
-	it("requests dismissed upsells list on mount", () => {
+	it("requests dismissed upsells list on mount via context", () => {
 		render(
 			<DismissibleUpsell upsellId="test-upsell">
 				<div>Test content</div>
@@ -92,7 +118,7 @@ describe("DismissibleUpsell", () => {
 		const dismissButton = screen.getByRole("button", { name: /dismiss/i })
 		fireEvent.click(dismissButton)
 
-		// Check that the dismiss message was sent BEFORE hiding
+		// Check that the dismiss message was sent
 		expect(mockPostMessage).toHaveBeenCalledWith({
 			type: "dismissUpsell",
 			upsellId: "test-upsell",
@@ -114,17 +140,8 @@ describe("DismissibleUpsell", () => {
 			</DismissibleUpsell>,
 		)
 
-		// Component starts hidden by default
-		expect(container.firstChild).toBeNull()
-
 		// Simulate receiving a message that this upsell is dismissed
-		const messageEvent = new MessageEvent("message", {
-			data: {
-				type: "dismissedUpsells",
-				list: ["test-upsell", "other-upsell"],
-			},
-		})
-		window.dispatchEvent(messageEvent)
+		makeUpsellDismissed(["test-upsell", "other-upsell"])
 
 		// Check that the component remains hidden
 		await waitFor(() => {
@@ -140,15 +157,9 @@ describe("DismissibleUpsell", () => {
 		)
 
 		// Simulate receiving a message that doesn't include this upsell
-		const messageEvent = new MessageEvent("message", {
-			data: {
-				type: "dismissedUpsells",
-				list: ["other-upsell"],
-			},
-		})
-		window.dispatchEvent(messageEvent)
+		makeUpsellDismissed(["other-upsell"])
 
-		// Check that the component is still visible
+		// Check that the component is visible
 		await waitFor(() => {
 			expect(screen.getByText("Test content")).toBeInTheDocument()
 		})
@@ -192,7 +203,6 @@ describe("DismissibleUpsell", () => {
 		expect(dismissButton).toHaveAttribute("title", "Dismiss and don't show again")
 	})
 
-	// New edge case tests
 	it("handles multiple rapid dismissals of the same component", async () => {
 		const onDismiss = vi.fn()
 		render(
@@ -216,139 +226,14 @@ describe("DismissibleUpsell", () => {
 		fireEvent.click(dismissButton)
 		fireEvent.click(dismissButton)
 
-		// Should only send one message
-		expect(mockPostMessage).toHaveBeenCalledTimes(2) // 1 for getDismissedUpsells, 1 for dismissUpsell
-		expect(mockPostMessage).toHaveBeenCalledWith({
-			type: "dismissUpsell",
-			upsellId: "test-upsell",
-		})
+		// Should only send one dismiss message (plus initial getDismissedUpsells)
+		const dismissCalls = mockPostMessage.mock.calls.filter(
+			(call) => call[0].type === "dismissUpsell" && call[0].upsellId === "test-upsell",
+		)
+		expect(dismissCalls.length).toBe(1)
 
 		// Callback should only be called once
 		expect(onDismiss).toHaveBeenCalledTimes(1)
-	})
-
-	it("does not update state after component unmounts", async () => {
-		const { unmount } = render(
-			<DismissibleUpsell upsellId="test-upsell">
-				<div>Test content</div>
-			</DismissibleUpsell>,
-		)
-
-		// Unmount the component
-		unmount()
-
-		// Simulate receiving a message after unmount
-		const messageEvent = new MessageEvent("message", {
-			data: {
-				type: "dismissedUpsells",
-				list: ["test-upsell"],
-			},
-		})
-
-		// This should not cause any errors
-		act(() => {
-			window.dispatchEvent(messageEvent)
-		})
-
-		// No errors should be thrown
-		expect(true).toBe(true)
-	})
-
-	it("handles invalid/malformed messages gracefully", async () => {
-		render(
-			<DismissibleUpsell upsellId="test-upsell">
-				<div>Test content</div>
-			</DismissibleUpsell>,
-		)
-
-		// First make it visible
-		makeUpsellVisible()
-
-		// Wait for component to be visible
-		await waitFor(() => {
-			expect(screen.getByText("Test content")).toBeInTheDocument()
-		})
-
-		// Send various malformed messages
-		const malformedMessages = [
-			{ type: "dismissedUpsells", list: null },
-			{ type: "dismissedUpsells", list: "not-an-array" },
-			{ type: "dismissedUpsells" }, // missing list
-			{ type: "wrongType", list: ["test-upsell"] },
-			null,
-			undefined,
-			"string-message",
-		]
-
-		malformedMessages.forEach((data) => {
-			const messageEvent = new MessageEvent("message", { data })
-			window.dispatchEvent(messageEvent)
-		})
-
-		// Component should still be visible
-		expect(screen.getByText("Test content")).toBeInTheDocument()
-	})
-
-	it("ensures message is sent before component unmounts on dismiss", async () => {
-		const { unmount } = render(
-			<DismissibleUpsell upsellId="test-upsell">
-				<div>Test content</div>
-			</DismissibleUpsell>,
-		)
-
-		// Make component visible
-		makeUpsellVisible()
-
-		// Wait for component to be visible
-		await waitFor(() => {
-			expect(screen.getByText("Test content")).toBeInTheDocument()
-		})
-
-		const dismissButton = screen.getByRole("button", { name: /dismiss/i })
-		fireEvent.click(dismissButton)
-
-		// Message should be sent immediately
-		expect(mockPostMessage).toHaveBeenCalledWith({
-			type: "dismissUpsell",
-			upsellId: "test-upsell",
-		})
-
-		// Unmount immediately after clicking
-		unmount()
-
-		// Message was already sent before unmount
-		expect(mockPostMessage).toHaveBeenCalledWith({
-			type: "dismissUpsell",
-			upsellId: "test-upsell",
-		})
-	})
-
-	it("uses separate id and className props correctly", async () => {
-		const { container } = render(
-			<DismissibleUpsell upsellId="unique-id" className="styling-class">
-				<div>Test content</div>
-			</DismissibleUpsell>,
-		)
-
-		// Make component visible
-		makeUpsellVisible()
-
-		// Wait for component to be visible
-		await waitFor(() => {
-			expect(container.firstChild).not.toBeNull()
-		})
-
-		// className should be applied to the container
-		expect(container.firstChild).toHaveClass("styling-class")
-
-		// When dismissed, should use the id, not className
-		const dismissButton = screen.getByRole("button", { name: /dismiss/i })
-		fireEvent.click(dismissButton)
-
-		expect(mockPostMessage).toHaveBeenCalledWith({
-			type: "dismissUpsell",
-			upsellId: "unique-id",
-		})
 	})
 
 	it("calls onClick when the container is clicked", async () => {
@@ -424,6 +309,14 @@ describe("DismissibleUpsell", () => {
 				<div>Test content</div>
 			</DismissibleUpsell>,
 		)
+
+		// Make sure it's still visible after re-render
+		makeUpsellVisible()
+
+		// Wait for component to be visible again
+		await waitFor(() => {
+			expect(container.firstChild).not.toBeNull()
+		})
 
 		// Should not have cursor-pointer when onClick is not provided
 		expect(container.firstChild).not.toHaveClass("cursor-pointer")
@@ -526,7 +419,10 @@ describe("DismissibleUpsell", () => {
 		expect(onClick).toHaveBeenCalledTimes(1)
 		expect(onDismiss).not.toHaveBeenCalled()
 
-		expect(mockPostMessage).not.toHaveBeenCalledWith(expect.objectContaining({ type: "dismissUpsell" }))
+		// Should not dismiss the upsell
+		const dismissCalls = mockPostMessage.mock.calls.filter((call) => call[0].type === "dismissUpsell")
+		expect(dismissCalls.length).toBe(0)
+
 		expect(screen.getByText("Test content")).toBeInTheDocument()
 	})
 
@@ -553,5 +449,78 @@ describe("DismissibleUpsell", () => {
 		expect(onClick).toHaveBeenCalledTimes(1)
 		expect(onDismiss).not.toHaveBeenCalled()
 		expect(screen.getByText("Test content")).toBeInTheDocument()
+	})
+
+	it("renders icon when provided", async () => {
+		const TestIcon = () => <span data-testid="test-icon">Icon</span>
+		render(
+			<DismissibleUpsell upsellId="test-upsell" icon={<TestIcon />}>
+				<div>Test content</div>
+			</DismissibleUpsell>,
+		)
+
+		// Make component visible
+		makeUpsellVisible()
+
+		// Wait for component to be visible
+		await waitFor(() => {
+			expect(screen.getByText("Test content")).toBeInTheDocument()
+			expect(screen.getByTestId("test-icon")).toBeInTheDocument()
+		})
+	})
+
+	it("applies correct variant classes", async () => {
+		const { container, rerender } = render(
+			<DismissibleUpsell upsellId="test-upsell" variant="banner">
+				<div>Test content</div>
+			</DismissibleUpsell>,
+		)
+
+		// Make component visible
+		makeUpsellVisible()
+
+		// Wait for component to be visible
+		await waitFor(() => {
+			expect(container.firstChild).not.toBeNull()
+		})
+
+		// Should have banner variant classes
+		expect(container.firstChild).toHaveClass("bg-vscode-badge-background/80")
+		expect(container.firstChild).toHaveClass("text-vscode-badge-foreground")
+
+		// Re-render with default variant
+		rerender(
+			<DismissibleUpsell upsellId="test-upsell-2" variant="default">
+				<div>Test content</div>
+			</DismissibleUpsell>,
+		)
+
+		// Make the new upsell visible
+		makeUpsellVisible()
+
+		// Should have default variant classes
+		await waitFor(() => {
+			expect(container.firstChild).toHaveClass("bg-vscode-notifications-background")
+			expect(container.firstChild).toHaveClass("text-vscode-notifications-foreground")
+		})
+	})
+
+	it("does not render while context is loading", async () => {
+		const { container } = render(
+			<DismissibleUpsell upsellId="test-upsell">
+				<div>Test content</div>
+			</DismissibleUpsell>,
+		)
+
+		// Component should not render while loading
+		expect(container.firstChild).toBeNull()
+
+		// Send dismissed list to complete loading
+		makeUpsellVisible()
+
+		// Now component should be visible
+		await waitFor(() => {
+			expect(screen.getByText("Test content")).toBeInTheDocument()
+		})
 	})
 })

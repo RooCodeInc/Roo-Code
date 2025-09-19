@@ -2,7 +2,6 @@ import { memo, useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useCloudUpsell } from "@src/hooks/useCloudUpsell"
 import { CloudUpsellDialog } from "@src/components/cloud/CloudUpsellDialog"
-import DismissibleUpsell from "@src/components/common/DismissibleUpsell"
 import { FoldVertical, ChevronUp, ChevronDown } from "lucide-react"
 import prettyBytes from "pretty-bytes"
 
@@ -23,6 +22,9 @@ import { TaskActions } from "./TaskActions"
 import { ContextWindowProgress } from "./ContextWindowProgress"
 import { Mention } from "./Mention"
 import { TodoListDisplay } from "./TodoListDisplay"
+
+import DismissibleUpsell from "@src/components/common/DismissibleUpsell"
+import { UPSELL_IDS } from "@/constants/upsellIds"
 
 export interface TaskHeaderProps {
 	task: ClineMessage
@@ -103,7 +105,7 @@ const TaskHeader = ({
 		<div className="pt-2 pb-0 px-3">
 			{showLongRunningTaskMessage && !isTaskComplete && (
 				<DismissibleUpsell
-					upsellId="longRunningTask"
+					upsellId={UPSELL_IDS.LONG_RUNNING_TASK}
 					onClick={() => openUpsell()}
 					dismissOnClick={false}
 					variant="banner">

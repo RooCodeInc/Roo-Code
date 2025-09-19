@@ -40,7 +40,6 @@ import RooTips from "@src/components/welcome/RooTips"
 import { StandardTooltip } from "@src/components/ui"
 import { useAutoApprovalState } from "@src/hooks/useAutoApprovalState"
 import { useAutoApprovalToggles } from "@src/hooks/useAutoApprovalToggles"
-import { CloudUpsellDialog } from "@src/components/cloud/CloudUpsellDialog"
 
 import TelemetryBanner from "../common/TelemetryBanner"
 import VersionIndicator from "../common/VersionIndicator"
@@ -55,9 +54,12 @@ import SystemPromptWarning from "./SystemPromptWarning"
 import ProfileViolationWarning from "./ProfileViolationWarning"
 import { CheckpointWarning } from "./CheckpointWarning"
 import { QueuedMessages } from "./QueuedMessages"
+import { Cloud } from "lucide-react"
+
+import { CloudUpsellDialog } from "@src/components/cloud/CloudUpsellDialog"
 import DismissibleUpsell from "../common/DismissibleUpsell"
 import { useCloudUpsell } from "@src/hooks/useCloudUpsell"
-import { Cloud } from "lucide-react"
+import { useUpsellVisibility, UPSELL_IDS } from "@src/hooks/useUpsellVisibility"
 
 export interface ChatViewProps {
 	isHidden: boolean
@@ -1772,6 +1774,8 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 
 	const areButtonsVisible = showScrollToBottom || primaryButtonText || secondaryButtonText || isStreaming
 
+	const isCloudUpsellVisible = useUpsellVisibility(UPSELL_IDS.TASK_LIST)
+
 	return (
 		<div
 			data-testid="chat-view"
@@ -1842,12 +1846,12 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 						<RooHero />
 
 						<div className="mb-2.5">
-							{cloudIsAuthenticated || taskHistory.length < 4 ? (
+							{cloudIsAuthenticated || (tasks.length === 0 && !isCloudUpsellVisible) ? (
 								<RooTips />
 							) : (
 								<>
 									<DismissibleUpsell
-										upsellId="taskList"
+										upsellId={UPSELL_IDS.TASK_LIST}
 										icon={<Cloud className="size-4 mt-0.5 shrink-0" />}
 										onClick={() => openUpsell()}
 										dismissOnClick={false}
