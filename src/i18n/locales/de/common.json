@@ -225,7 +225,14 @@
 	"commands": {
 		"preventCompletionWithOpenTodos": {
 			"description": "Aufgabenabschluss verhindern, wenn unvollständige Todos in der Todo-Liste vorhanden sind"
+		},
+		"toggleAutoApprove": {
+			"notification": "Auto-Genehmigung {{status}}"
 		}
+	},
+	"status": {
+		"enabled": "aktiviert",
+		"disabled": "deaktiviert"
 	},
 	"docsLink": {
 		"label": "Docs",

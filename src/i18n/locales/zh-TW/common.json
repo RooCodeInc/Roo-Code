@@ -230,7 +230,14 @@
 	"commands": {
 		"preventCompletionWithOpenTodos": {
 			"description": "當待辦事項清單中有未完成的待辦事項時阻止工作完成"
+		},
+		"toggleAutoApprove": {
+			"notification": "自動核准已{{status}}"
 		}
+	},
+	"status": {
+		"enabled": "啟用",
+		"disabled": "停用"
 	},
 	"docsLink": {
 		"label": "Docs",

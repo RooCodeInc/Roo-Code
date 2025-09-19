@@ -225,7 +225,14 @@
 	"commands": {
 		"preventCompletionWithOpenTodos": {
 			"description": "Prevenir la finalización de tareas cuando hay todos incompletos en la lista de todos"
+		},
+		"toggleAutoApprove": {
+			"notification": "Auto-Aprobación {{status}}"
 		}
+	},
+	"status": {
+		"enabled": "habilitada",
+		"disabled": "deshabilitada"
 	},
 	"docsLink": {
 		"label": "Docs",

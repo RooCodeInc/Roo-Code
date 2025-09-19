@@ -230,7 +230,14 @@
 	"commands": {
 		"preventCompletionWithOpenTodos": {
 			"description": "Mencegah penyelesaian tugas ketika ada todo yang belum selesai dalam daftar todo"
+		},
+		"toggleAutoApprove": {
+			"notification": "Persetujuan Otomatis {{status}}"
 		}
+	},
+	"status": {
+		"enabled": "diaktifkan",
+		"disabled": "dinonaktifkan"
 	},
 	"docsLink": {
 		"label": "Docs",

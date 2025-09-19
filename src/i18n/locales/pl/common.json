@@ -230,7 +230,14 @@
 	"commands": {
 		"preventCompletionWithOpenTodos": {
 			"description": "Zapobiegaj ukończeniu zadania gdy na liście zadań są nieukończone zadania"
+		},
+		"toggleAutoApprove": {
+			"notification": "Auto-Zatwierdzanie {{status}}"
 		}
+	},
+	"status": {
+		"enabled": "włączone",
+		"disabled": "wyłączone"
 	},
 	"docsLink": {
 		"label": "Docs",

@@ -214,7 +214,14 @@
 	"commands": {
 		"preventCompletionWithOpenTodos": {
 			"description": "Prevent task completion when there are incomplete todos in the todo list"
+		},
+		"toggleAutoApprove": {
+			"notification": "Auto-Approve {{status}}"
 		}
+	},
+	"status": {
+		"enabled": "enabled",
+		"disabled": "disabled"
 	},
 	"docsLink": {
 		"label": "Docs",

@@ -239,8 +239,10 @@ const getCommandsMap = ({ context, outputChannel, provider }: RegisterCommandOpt
 		await visibleProvider.postStateToWebview()
 
 		// Show notification to user
-		const statusText = newState ? "enabled" : "disabled"
-		vscode.window.showInformationMessage(`Auto-Approve ${statusText}`)
+		const statusText = newState ? t("common:status.enabled") : t("common:status.disabled")
+		vscode.window.showInformationMessage(
+			t("common:commands.toggleAutoApprove.notification", { status: statusText }),
+		)
 	},
 })
 

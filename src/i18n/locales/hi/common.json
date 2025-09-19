@@ -230,7 +230,14 @@
 	"commands": {
 		"preventCompletionWithOpenTodos": {
 			"description": "जब टूडू सूची में अधूरे टूडू हों तो कार्य पूर्ण होने से रोकें"
+		},
+		"toggleAutoApprove": {
+			"notification": "स्वचालित अनुमोदन {{status}}"
 		}
+	},
+	"status": {
+		"enabled": "सक्षम",
+		"disabled": "अक्षम"
 	},
 	"docsLink": {
 		"label": "Docs",

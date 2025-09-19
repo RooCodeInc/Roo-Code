@@ -230,7 +230,14 @@
 	"commands": {
 		"preventCompletionWithOpenTodos": {
 			"description": "할 일 목록에 미완료된 할 일이 있을 때 작업 완료를 방지"
+		},
+		"toggleAutoApprove": {
+			"notification": "자동 승인 {{status}}"
 		}
+	},
+	"status": {
+		"enabled": "활성화됨",
+		"disabled": "비활성화됨"
 	},
 	"docsLink": {
 		"label": "Docs",

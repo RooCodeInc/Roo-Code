@@ -230,7 +230,14 @@
 	"commands": {
 		"preventCompletionWithOpenTodos": {
 			"description": "Voorkom taakafronding wanneer er onvolledige todos in de todolijst staan"
+		},
+		"toggleAutoApprove": {
+			"notification": "Auto-Goedkeuring {{status}}"
 		}
+	},
+	"status": {
+		"enabled": "ingeschakeld",
+		"disabled": "uitgeschakeld"
 	},
 	"docsLink": {
 		"label": "Docs",

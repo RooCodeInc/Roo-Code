@@ -230,7 +230,14 @@
 	"commands": {
 		"preventCompletionWithOpenTodos": {
 			"description": "Todo listesinde tamamlanmamış todolar olduğunda görev tamamlanmasını engelle"
+		},
+		"toggleAutoApprove": {
+			"notification": "Otomatik Onay {{status}}"
 		}
+	},
+	"status": {
+		"enabled": "etkin",
+		"disabled": "devre dışı"
 	},
 	"docsLink": {
 		"label": "Docs",
