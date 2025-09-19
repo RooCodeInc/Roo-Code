@@ -17,6 +17,12 @@ export interface CodeIndexConfig {
 	vercelAiGatewayOptions?: { apiKey: string }
 	qdrantUrl?: string
 	qdrantApiKey?: string
+	valkeyHostname?: string
+	valkeyPort?: number
+	valkeyUsername?: string
+	valkeyPassword?: string
+	valkeyUseSsl?: boolean
+	searchProvider?: string
 	searchMinScore?: number
 	searchMaxResults?: number
 }
@@ -39,4 +45,10 @@ export type PreviousConfigSnapshot = {
 	vercelAiGatewayApiKey?: string
 	qdrantUrl?: string
 	qdrantApiKey?: string
+	valkeyHostname?: string
+	valkeyPort?: number
+	valkeyUsername?: string
+	valkeyPassword?: string
+	valkeyUseSsl?: boolean
+	searchProvider?: string
 }
