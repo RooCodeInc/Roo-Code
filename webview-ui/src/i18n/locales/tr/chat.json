@@ -26,7 +26,12 @@
 		"shareSuccessOrganization": "Organizasyon bağlantısı panoya kopyalandı",
 		"shareSuccessPublic": "Genel bağlantı panoya kopyalandı",
 		"openInCloud": "Görevi Roo Code Cloud'da aç",
-		"openInCloudIntro": "Roo'yu her yerden izlemeye veya etkileşime devam et. Açmak için tara, tıkla veya kopyala."
+		"openInCloudIntro": "Roo'yu her yerden izlemeye veya etkileşime devam et. Açmak için tara, tıkla veya kopyala.",
+		"tokenStats": {
+			"inputLabel": "↑ Giriş:",
+			"outputLabel": "↓ Çıkış:",
+			"cacheLabel": "önbellek"
+		}
 	},
 	"unpin": "Sabitlemeyi iptal et",
 	"pin": "Sabitle",

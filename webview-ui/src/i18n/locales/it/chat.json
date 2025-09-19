@@ -25,6 +25,11 @@
 		"sharingDisabledByOrganization": "Condivisione disabilitata dall'organizzazione",
 		"shareSuccessOrganization": "Link organizzazione copiato negli appunti",
 		"shareSuccessPublic": "Link pubblico copiato negli appunti",
+		"tokenStats": {
+			"inputLabel": "↑ Input:",
+			"outputLabel": "↓ Output:",
+			"cacheLabel": "cache"
+		},
 		"openInCloud": "Apri attività in Roo Code Cloud",
 		"openInCloudIntro": "Continua a monitorare o interagire con Roo da qualsiasi luogo. Scansiona, clicca o copia per aprire."
 	},
