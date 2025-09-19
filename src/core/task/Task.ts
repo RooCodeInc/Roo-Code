@@ -88,6 +88,7 @@ import { type AssistantMessageContent, presentAssistantMessage } from "../assist
 import { AssistantMessageParser } from "../assistant-message/AssistantMessageParser"
 import { truncateConversationIfNeeded } from "../sliding-window"
 import { ClineProvider } from "../webview/ClineProvider"
+import { RESPONSE_INTERRUPTED_BY_API_ERROR, RESPONSE_INTERRUPTED_BY_USER } from "../../shared/messages"
 import { MultiSearchReplaceDiffStrategy } from "../diff/strategies/multi-search-replace"
 import { MultiFileSearchReplaceDiffStrategy } from "../diff/strategies/multi-file-search-replace"
 import {
@@ -1908,8 +1909,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 									assistantMessage +
 									`\n\n[${
 										cancelReason === "streaming_failed"
-											? "Response interrupted by API Error"
-											: "Response interrupted by user"
+											? RESPONSE_INTERRUPTED_BY_API_ERROR
+											: RESPONSE_INTERRUPTED_BY_USER
 									}]`,
 							},
 						],

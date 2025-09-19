@@ -94,6 +94,11 @@ import { readApiMessages, saveApiMessages, saveTaskMessages } from "../task-pers
 import { getNonce } from "./getNonce"
 import { getUri } from "./getUri"
 
+import {
+	addCancelReasonToLastApiReqStarted,
+	appendAssistantInterruptionIfNeeded,
+} from "../task-persistence/cancelBookkeeping"
+import { RESPONSE_INTERRUPTED_BY_USER } from "../../shared/messages"
 /**
  * https://github.com/microsoft/vscode-webview-ui-toolkit-samples/blob/main/default/weather-webview/src/providers/WeatherViewProvider.ts
  * https://github.com/KumarVariable/vscode-extension-sidebar-html/blob/master/src/customSidebarViewProvider.ts
@@ -204,7 +209,7 @@ export class ClineProvider
 				try {
 					// Only rehydrate on genuine streaming failures.
 					// User-initiated cancels are handled by cancelTask().
-					if ((instance as any).abortReason === "streaming_failed") {
+					if (instance.abortReason === "streaming_failed") {
 						// Defensive safeguard: if another path already replaced this instance, skip
 						const current = this.getCurrentTask()
 						if (current && current.instanceId !== instance.instanceId) {
@@ -2555,9 +2560,7 @@ export class ClineProvider
 
 		console.log(`[cancelTask] cancelling task ${task.taskId}.${task.instanceId}`)
 
-		const { historyItem, uiMessagesFilePath, apiConversationHistoryFilePath } = await this.getTaskWithId(
-			task.taskId,
-		)
+		const { historyItem, uiMessagesFilePath } = await this.getTaskWithId(task.taskId)
 
 		// Preserve parent and root task information for history item.
 		const rootTask = task.rootTask
@@ -2572,10 +2575,8 @@ export class ClineProvider
 		// Begin abort (non-blocking)
 		task.abortTask()
 
-		// Immediately mark the current instance as abandoned to prevent any residual activity
-		if (this.getCurrentTask()) {
-			this.getCurrentTask()!.abandoned = true
-		}
+		// Immediately mark the original instance as abandoned to prevent any residual activity
+		task.abandoned = true
 
 		await pWaitFor(
 			() =>
@@ -2604,60 +2605,32 @@ export class ClineProvider
 
 		// Provider-side cancel bookkeeping to mirror abortStream effects for user_cancelled
 		try {
-			// Update ui_messages: add cancelReason to last api_req_started
-			const messagesJson = await fs.readFile(uiMessagesFilePath, "utf8").catch(() => undefined)
-			if (messagesJson) {
-				const uiMsgs = JSON.parse(messagesJson) as ClineMessage[]
-				if (Array.isArray(uiMsgs)) {
-					const revIdx = uiMsgs
-						.slice()
-						.reverse()
-						.findIndex((m) => m?.type === "say" && (m as any)?.say === "api_req_started")
-					if (revIdx !== -1) {
-						const idx = uiMsgs.length - 1 - revIdx
-						try {
-							const existing = uiMsgs[idx]?.text ? JSON.parse(uiMsgs[idx].text as string) : {}
-							uiMsgs[idx].text = JSON.stringify({ ...existing, cancelReason: "user_cancelled" })
-							await saveTaskMessages({
-								messages: uiMsgs as any,
-								taskId: task.taskId,
-								globalStoragePath: this.contextProxy.globalStorageUri.fsPath,
-							})
-						} catch {
-							// non-fatal
-						}
-					}
-				}
-			}
+			// Persist cancelReason to last api_req_started in UI messages
+			await addCancelReasonToLastApiReqStarted({
+				taskId: task.taskId,
+				globalStoragePath: this.contextProxy.globalStorageUri.fsPath,
+				reason: "user_cancelled",
+			})
 
-			// Update api_conversation_history: append assistant interruption if last isn't assistant
-			try {
-				const apiMsgs = await readApiMessages({
-					taskId: task.taskId,
-					globalStoragePath: this.contextProxy.globalStorageUri.fsPath,
-				})
-				const last = apiMsgs.at(-1)
-				if (!last || last.role !== "assistant") {
-					apiMsgs.push({
-						role: "assistant",
-						content: [{ type: "text", text: "[Response interrupted by user]" }],
-						ts: Date.now(),
-					} as any)
-					await saveApiMessages({
-						messages: apiMsgs as any,
-						taskId: task.taskId,
-						globalStoragePath: this.contextProxy.globalStorageUri.fsPath,
-					})
-				}
-			} catch (e) {
-				this.log(
-					`[cancelTask] Failed to update API history for user_cancelled: ${
-						e instanceof Error ? e.message : String(e)
-					}`,
-				)
-			}
+			// Append assistant interruption marker to API conversation history if needed
+			await appendAssistantInterruptionIfNeeded({
+				taskId: task.taskId,
+				globalStoragePath: this.contextProxy.globalStorageUri.fsPath,
+				text: `[${RESPONSE_INTERRUPTED_BY_USER}]`,
+			})
 		} catch (e) {
 			this.log(`[cancelTask] Cancel bookkeeping failed: ${e instanceof Error ? e.message : String(e)}`)
+		}
+
+		// Final race check before rehydrate to avoid duplicate rehydration
+		{
+			const currentAfterBookkeeping = this.getCurrentTask()
+			if (currentAfterBookkeeping && currentAfterBookkeeping.instanceId !== originalInstanceId) {
+				this.log(
+					`[cancelTask] Skipping rehydrate after bookkeeping: current instance ${currentAfterBookkeeping.instanceId} != original ${originalInstanceId}`,
+				)
+				return
+			}
 		}
 
 		// Clears task again, so we need to abortTask manually above.
