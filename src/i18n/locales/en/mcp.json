@@ -11,7 +11,8 @@
 		"disconnect_servers_partial": "Failed to disconnect {{count}} MCP server(s). Check the output for details.",
 		"toolNotFound": "Tool '{{toolName}}' does not exist on server '{{serverName}}'. Available tools: {{availableTools}}",
 		"serverNotFound": "MCP server '{{serverName}}' is not configured. Available servers: {{availableServers}}",
-		"toolDisabled": "Tool '{{toolName}}' on server '{{serverName}}' is disabled. Available enabled tools: {{availableTools}}"
+		"toolDisabled": "Tool '{{toolName}}' on server '{{serverName}}' is disabled. Available enabled tools: {{availableTools}}",
+		"vscode_servers_readonly": "VSCode MCP servers are managed by VS Code and cannot be modified from Roo. Please edit them in VS Code settings."
 	},
 	"info": {
 		"server_restarting": "Restarting {{serverName}} MCP server...",

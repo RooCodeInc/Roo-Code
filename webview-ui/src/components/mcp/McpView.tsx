@@ -299,23 +299,42 @@ const ServerRow = ({ server, alwaysAllowMcp }: { server: McpServer; alwaysAllowM
 								padding: "1px 6px",
 								fontSize: "11px",
 								borderRadius: "4px",
-								background: "var(--vscode-badge-background)",
-								color: "var(--vscode-badge-foreground)",
+								background:
+									server.source === "vscode"
+										? "var(--vscode-statusBarItem-prominentBackground)"
+										: "var(--vscode-badge-background)",
+								color:
+									server.source === "vscode"
+										? "var(--vscode-statusBarItem-prominentForeground)"
+										: "var(--vscode-badge-foreground)",
 							}}>
-							{server.source}
+							{server.source === "vscode" ? "VSCode" : server.source}
+						</span>
+					)}
+					{server.readOnly && (
+						<span
+							style={{
+								marginLeft: "4px",
+								fontSize: "11px",
+								color: "var(--vscode-descriptionForeground)",
+							}}
+							title="This server is managed by VS Code and cannot be edited">
+							<span className="codicon codicon-lock" />
 						</span>
 					)}
 				</span>
 				<div
 					style={{ display: "flex", alignItems: "center", marginRight: "8px" }}
 					onClick={(e) => e.stopPropagation()}>
-					<Button
-						variant="ghost"
-						size="icon"
-						onClick={() => setShowDeleteConfirm(true)}
-						style={{ marginRight: "8px" }}>
-						<span className="codicon codicon-trash" style={{ fontSize: "14px" }}></span>
-					</Button>
+					{!server.readOnly && (
+						<Button
+							variant="ghost"
+							size="icon"
+							onClick={() => setShowDeleteConfirm(true)}
+							style={{ marginRight: "8px" }}>
+							<span className="codicon codicon-trash" style={{ fontSize: "14px" }}></span>
+						</Button>
+					)}
 					<Button
 						variant="ghost"
 						size="icon"
@@ -463,45 +482,47 @@ const ServerRow = ({ server, alwaysAllowMcp }: { server: McpServer; alwaysAllowM
 								</VSCodePanelView>
 							</VSCodePanels>
 
-							{/* Network Timeout */}
-							<div style={{ padding: "10px 7px" }}>
-								<div
-									style={{
-										display: "flex",
-										alignItems: "center",
-										gap: "10px",
-										marginBottom: "8px",
-									}}>
-									<span>{t("mcp:networkTimeout.label")}</span>
-									<select
-										value={timeoutValue}
-										onChange={handleTimeoutChange}
+							{/* Network Timeout - Only show for non-readonly servers */}
+							{!server.readOnly && (
+								<div style={{ padding: "10px 7px" }}>
+									<div
 										style={{
-											flex: 1,
-											padding: "4px",
-											background: "var(--vscode-dropdown-background)",
-											color: "var(--vscode-dropdown-foreground)",
-											border: "1px solid var(--vscode-dropdown-border)",
-											borderRadius: "2px",
-											outline: "none",
-											cursor: "pointer",
+											display: "flex",
+											alignItems: "center",
+											gap: "10px",
+											marginBottom: "8px",
 										}}>
-										{timeoutOptions.map((option) => (
-											<option key={option.value} value={option.value}>
-												{option.label}
-											</option>
-										))}
-									</select>
+										<span>{t("mcp:networkTimeout.label")}</span>
+										<select
+											value={timeoutValue}
+											onChange={handleTimeoutChange}
+											style={{
+												flex: 1,
+												padding: "4px",
+												background: "var(--vscode-dropdown-background)",
+												color: "var(--vscode-dropdown-foreground)",
+												border: "1px solid var(--vscode-dropdown-border)",
+												borderRadius: "2px",
+												outline: "none",
+												cursor: "pointer",
+											}}>
+											{timeoutOptions.map((option) => (
+												<option key={option.value} value={option.value}>
+													{option.label}
+												</option>
+											))}
+										</select>
+									</div>
+									<span
+										style={{
+											fontSize: "12px",
+											color: "var(--vscode-descriptionForeground)",
+											display: "block",
+										}}>
+										{t("mcp:networkTimeout.description")}
+									</span>
 								</div>
-								<span
-									style={{
-										fontSize: "12px",
-										color: "var(--vscode-descriptionForeground)",
-										display: "block",
-									}}>
-									{t("mcp:networkTimeout.description")}
-								</span>
-							</div>
+							)}
 						</div>
 					)
 				: // Only show error UI for non-disabled servers

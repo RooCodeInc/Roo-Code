@@ -844,7 +844,7 @@ export class CustomModesManager {
 	private async importRulesFiles(
 		importMode: ExportedModeConfig,
 		rulesFiles: RuleFile[],
-		source: "global" | "project",
+		source: "global" | "project" | "vscode",
 	): Promise<void> {
 		// Determine base directory and rules folder path based on source
 		let baseDir: string
@@ -853,6 +853,10 @@ export class CustomModesManager {
 		if (source === "global") {
 			baseDir = getGlobalRooDirectory()
 			rulesFolderPath = path.join(baseDir, `rules-${importMode.slug}`)
+		} else if (source === "vscode") {
+			// VSCode-sourced modes shouldn't have rules files imported
+			// They are read-only and managed by VS Code
+			return
 		} else {
 			const workspacePath = getWorkspacePath()
 			baseDir = path.join(workspacePath, ".roo")
@@ -919,12 +923,12 @@ export class CustomModesManager {
 	/**
 	 * Imports modes from YAML content, including their associated rules files
 	 * @param yamlContent - The YAML content containing mode configurations
-	 * @param source - Target level for import: "global" (all projects) or "project" (current workspace only)
+	 * @param source - Target level for import: "global" (all projects), "project" (current workspace only), or "vscode" (VS Code managed)
 	 * @returns Success status with optional error message
 	 */
 	public async importModeWithRules(
 		yamlContent: string,
-		source: "global" | "project" = "project",
+		source: "global" | "project" | "vscode" = "project",
 	): Promise<ImportResult> {
 		try {
 			// Parse the YAML content with proper type validation
@@ -953,6 +957,14 @@ export class CustomModesManager {
 				}
 			}
 
+			// VSCode source is not allowed for imports
+			if (source === "vscode") {
+				return {
+					success: false,
+					error: "Cannot import modes with VSCode source. VSCode-sourced modes are managed by VS Code configuration.",
+				}
+			}
+
 			// Process each mode in the import
 			for (const importMode of importData.customModes) {
 				const { rulesFiles, ...modeConfig } = importMode
@@ -977,9 +989,10 @@ export class CustomModesManager {
 				}
 
 				// Import the mode configuration with the specified source
+				// Note: "vscode" source is already rejected above, so this will only be "global" or "project"
 				await this.updateCustomMode(importMode.slug, {
 					...modeConfig,
-					source: source, // Use the provided source parameter
+					source: source as "global" | "project", // Safe cast since "vscode" is rejected above
 				})
 
 				// Import rules files (this also handles cleanup of existing rules folders)

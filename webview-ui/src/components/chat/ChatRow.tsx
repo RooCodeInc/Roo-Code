@@ -1497,7 +1497,7 @@ export const ChatRowContent = ({
 										serverName={useMcpServer.serverName}
 										toolName={useMcpServer.toolName}
 										isArguments={true}
-										server={server}
+										server={server as any}
 										useMcpServer={useMcpServer}
 										alwaysAllowMcp={alwaysAllowMcp}
 									/>

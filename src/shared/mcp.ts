@@ -15,9 +15,10 @@ export type McpServer = {
 	resourceTemplates?: McpResourceTemplate[]
 	disabled?: boolean
 	timeout?: number
-	source?: "global" | "project"
+	source?: "global" | "project" | "vscode"
 	projectPath?: string
 	instructions?: string
+	readOnly?: boolean // For VSCode-sourced servers that can't be edited
 }
 
 export type McpTool = {

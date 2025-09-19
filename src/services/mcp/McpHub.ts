@@ -15,6 +15,7 @@ import delay from "delay"
 import deepEqual from "fast-deep-equal"
 import * as fs from "fs/promises"
 import * as path from "path"
+import * as os from "os"
 import * as vscode from "vscode"
 import { z } from "zod"
 import { t } from "../../i18n"
@@ -146,19 +147,23 @@ export class McpHub {
 	private settingsWatcher?: vscode.FileSystemWatcher
 	private fileWatchers: Map<string, FSWatcher[]> = new Map()
 	private projectMcpWatcher?: vscode.FileSystemWatcher
+	private vscodeMcpWatcher?: vscode.FileSystemWatcher
 	private isDisposed: boolean = false
 	connections: McpConnection[] = []
 	isConnecting: boolean = false
 	private refCount: number = 0 // Reference counter for active clients
 	private configChangeDebounceTimers: Map<string, NodeJS.Timeout> = new Map()
+	private vscodeMcpServers: Map<string, any> = new Map() // Cache for VSCode MCP servers
 
 	constructor(provider: ClineProvider) {
 		this.providerRef = new WeakRef(provider)
 		this.watchMcpSettingsFile()
 		this.watchProjectMcpFile().catch(console.error)
+		this.watchVSCodeMcpSettings().catch(console.error)
 		this.setupWorkspaceFoldersWatcher()
 		this.initializeGlobalMcpServers()
 		this.initializeProjectMcpServers()
+		this.initializeVSCodeMcpServers().catch(console.error)
 	}
 	/**
 	 * Registers a client (e.g., ClineProvider) using this hub.
@@ -270,6 +275,7 @@ export class McpHub {
 			vscode.workspace.onDidChangeWorkspaceFolders(async () => {
 				await this.updateProjectMcpServers()
 				await this.watchProjectMcpFile()
+				await this.updateVSCodeMcpServers()
 			}),
 		)
 	}
@@ -277,7 +283,7 @@ export class McpHub {
 	/**
 	 * Debounced wrapper for handling config file changes
 	 */
-	private debounceConfigChange(filePath: string, source: "global" | "project"): void {
+	private debounceConfigChange(filePath: string, source: "global" | "project" | "vscode"): void {
 		const key = `${source}-${filePath}`
 
 		// Clear existing timer if any
@@ -295,7 +301,7 @@ export class McpHub {
 		this.configChangeDebounceTimers.set(key, timer)
 	}
 
-	private async handleConfigFileChange(filePath: string, source: "global" | "project"): Promise<void> {
+	private async handleConfigFileChange(filePath: string, source: "global" | "project" | "vscode"): Promise<void> {
 		try {
 			const content = await fs.readFile(filePath, "utf-8")
 			let config: any
@@ -502,10 +508,14 @@ export class McpHub {
 		this.disposables.push(vscode.Disposable.from(changeDisposable, createDisposable, this.settingsWatcher))
 	}
 
-	private async initializeMcpServers(source: "global" | "project"): Promise<void> {
+	private async initializeMcpServers(source: "global" | "project" | "vscode"): Promise<void> {
 		try {
 			const configPath =
-				source === "global" ? await this.getMcpSettingsFilePath() : await this.getProjectMcpPath()
+				source === "global"
+					? await this.getMcpSettingsFilePath()
+					: source === "project"
+						? await this.getProjectMcpPath()
+						: null // VSCode settings are handled differently
 
 			if (!configPath) {
 				return
@@ -568,6 +578,91 @@ export class McpHub {
 		await this.initializeMcpServers("project")
 	}
 
+	// Get VSCode MCP configuration path
+	private async getVSCodeMcpPath(): Promise<string | null> {
+		try {
+			// VS Code stores MCP settings in user settings
+			const config = vscode.workspace.getConfiguration("mcpServers")
+			if (config) {
+				return "vscode-settings" // Virtual path indicator
+			}
+			return null
+		} catch {
+			return null
+		}
+	}
+
+	// Initialize VSCode MCP servers
+	private async initializeVSCodeMcpServers(): Promise<void> {
+		try {
+			// Read VS Code's MCP configuration
+			const config = vscode.workspace.getConfiguration("mcpServers")
+			const servers = config
+				? Object.entries(config).reduce(
+						(acc, [key, value]) => {
+							// Filter out VS Code's internal properties
+							if (typeof value === "object" && !key.startsWith("_")) {
+								acc[key] = value
+							}
+							return acc
+						},
+						{} as Record<string, any>,
+					)
+				: {}
+
+			// Also check for GitHub Copilot Agent servers
+			const copilotConfig = vscode.workspace.getConfiguration("github.copilot.agent.mcpServers")
+			const copilotServers = copilotConfig
+				? Object.entries(copilotConfig).reduce(
+						(acc, [key, value]) => {
+							if (typeof value === "object" && !key.startsWith("_")) {
+								acc[`copilot-${key}`] = value // Prefix to avoid conflicts
+							}
+							return acc
+						},
+						{} as Record<string, any>,
+					)
+				: {}
+
+			// Merge both sources
+			const allVSCodeServers = { ...servers, ...copilotServers }
+
+			// Cache the servers for later use
+			this.vscodeMcpServers.clear()
+			for (const [name, config] of Object.entries(allVSCodeServers)) {
+				this.vscodeMcpServers.set(name, config)
+			}
+
+			// Update connections with VSCode servers
+			await this.updateServerConnections(allVSCodeServers, "vscode", false)
+		} catch (error) {
+			console.error("Failed to initialize VSCode MCP servers:", error)
+		}
+	}
+
+	// Update VSCode MCP servers
+	private async updateVSCodeMcpServers(): Promise<void> {
+		await this.initializeVSCodeMcpServers()
+	}
+
+	// Watch VSCode MCP settings for changes
+	private async watchVSCodeMcpSettings(): Promise<void> {
+		// Skip if test environment is detected
+		if (process.env.NODE_ENV === "test") {
+			return
+		}
+
+		// Watch for VS Code configuration changes
+		const disposable = vscode.workspace.onDidChangeConfiguration(async (e) => {
+			if (e.affectsConfiguration("mcpServers") || e.affectsConfiguration("github.copilot.agent.mcpServers")) {
+				// Debounce the update
+				this.debounceConfigChange("vscode-settings", "vscode")
+			}
+		})
+
+		this.disposables.push(disposable)
+	}
+
 	/**
 	 * Creates a placeholder connection for disabled servers or when MCP is globally disabled
 	 * @param name The server name
@@ -579,7 +674,7 @@ export class McpHub {
 	private createPlaceholderConnection(
 		name: string,
 		config: z.infer<typeof ServerConfigSchema>,
-		source: "global" | "project",
+		source: "global" | "project" | "vscode",
 		reason: DisableReason,
 	): DisconnectedMcpConnection {
 		return {
@@ -614,7 +709,7 @@ export class McpHub {
 	private async connectToServer(
 		name: string,
 		config: z.infer<typeof ServerConfigSchema>,
-		source: "global" | "project" = "global",
+		source: "global" | "project" | "vscode" = "global",
 	): Promise<void> {
 		// Remove existing connection if it exists with the same source
 		await this.deleteConnection(name, source)
@@ -628,8 +723,8 @@ export class McpHub {
 			return
 		}
 
-		// Skip connecting to disabled servers
-		if (config.disabled) {
+		// Skip connecting to disabled servers (VSCode servers can't be disabled individually)
+		if (config.disabled && source !== "vscode") {
 			// Still create a connection object to track the server, but don't actually connect
 			const connection = this.createPlaceholderConnection(name, config, source, DisableReason.SERVER_DISABLED)
 			this.connections.push(connection)
@@ -819,9 +914,10 @@ export class McpHub {
 					name,
 					config: JSON.stringify(configInjected),
 					status: "connecting",
-					disabled: configInjected.disabled,
+					disabled: source === "vscode" ? false : configInjected.disabled, // VSCode servers can't be disabled
 					source,
 					projectPath: source === "project" ? vscode.workspace.workspaceFolders?.[0]?.uri.fsPath : undefined,
+					readOnly: source === "vscode", // Mark VSCode servers as read-only
 					errorHistory: [],
 				},
 				client,
@@ -883,26 +979,32 @@ export class McpHub {
 	 * @param source Optional source to filter by (global or project)
 	 * @returns The matching connection or undefined if not found
 	 */
-	private findConnection(serverName: string, source?: "global" | "project"): McpConnection | undefined {
+	private findConnection(serverName: string, source?: "global" | "project" | "vscode"): McpConnection | undefined {
 		// If source is specified, only find servers with that source
 		if (source !== undefined) {
 			return this.connections.find((conn) => conn.server.name === serverName && conn.server.source === source)
 		}
 
-		// If no source is specified, first look for project servers, then global servers
-		// This ensures that when servers have the same name, project servers are prioritized
+		// If no source is specified, check in precedence order: project > vscode > global
+		// This ensures proper precedence when servers have the same name
 		const projectConn = this.connections.find(
 			(conn) => conn.server.name === serverName && conn.server.source === "project",
 		)
 		if (projectConn) return projectConn
 
-		// If no project server is found, look for global servers
+		// Check for VSCode servers
+		const vscodeConn = this.connections.find(
+			(conn) => conn.server.name === serverName && conn.server.source === "vscode",
+		)
+		if (vscodeConn) return vscodeConn
+
+		// If no project or VSCode server is found, look for global servers
 		return this.connections.find(
 			(conn) => conn.server.name === serverName && (conn.server.source === "global" || !conn.server.source),
 		)
 	}
 
-	private async fetchToolsList(serverName: string, source?: "global" | "project"): Promise<McpTool[]> {
+	private async fetchToolsList(serverName: string, source?: "global" | "project" | "vscode"): Promise<McpTool[]> {
 		try {
 			// Use the helper method to find the connection
 			const connection = this.findConnection(serverName, source)
@@ -959,7 +1061,10 @@ export class McpHub {
 		}
 	}
 
-	private async fetchResourcesList(serverName: string, source?: "global" | "project"): Promise<McpResource[]> {
+	private async fetchResourcesList(
+		serverName: string,
+		source?: "global" | "project" | "vscode",
+	): Promise<McpResource[]> {
 		try {
 			const connection = this.findConnection(serverName, source)
 			if (!connection || connection.type !== "connected") {
@@ -975,7 +1080,7 @@ export class McpHub {
 
 	private async fetchResourceTemplatesList(
 		serverName: string,
-		source?: "global" | "project",
+		source?: "global" | "project" | "vscode",
 	): Promise<McpResourceTemplate[]> {
 		try {
 			const connection = this.findConnection(serverName, source)
@@ -993,7 +1098,7 @@ export class McpHub {
 		}
 	}
 
-	async deleteConnection(name: string, source?: "global" | "project"): Promise<void> {
+	async deleteConnection(name: string, source?: "global" | "project" | "vscode"): Promise<void> {
 		// Clean up file watchers for this server
 		this.removeFileWatchersForServer(name)
 
@@ -1023,7 +1128,7 @@ export class McpHub {
 
 	async updateServerConnections(
 		newServers: Record<string, any>,
-		source: "global" | "project" = "global",
+		source: "global" | "project" | "vscode" = "global",
 		manageConnectingState: boolean = true,
 	): Promise<void> {
 		if (manageConnectingState) {
@@ -1093,7 +1198,7 @@ export class McpHub {
 	private setupFileWatcher(
 		name: string,
 		config: z.infer<typeof ServerConfigSchema>,
-		source: "global" | "project" = "global",
+		source: "global" | "project" | "vscode" = "global",
 	) {
 		// Initialize an empty array for this server if it doesn't exist
 		if (!this.fileWatchers.has(name)) {
@@ -1166,7 +1271,7 @@ export class McpHub {
 		}
 	}
 
-	async restartConnection(serverName: string, source?: "global" | "project"): Promise<void> {
+	async restartConnection(serverName: string, source?: "global" | "project" | "vscode"): Promise<void> {
 		this.isConnecting = true
 
 		// Check if MCP is globally enabled
@@ -1267,6 +1372,7 @@ export class McpHub {
 			// This ensures proper initialization including fetching tools, resources, etc.
 			await this.initializeMcpServers("global")
 			await this.initializeMcpServers("project")
+			await this.initializeVSCodeMcpServers()
 
 			await delay(100)
 
@@ -1298,25 +1404,44 @@ export class McpHub {
 			}
 		}
 
-		// Sort connections: first project servers in their defined order, then global servers in their defined order
-		// This ensures that when servers have the same name, project servers are prioritized
+		// Sort connections: project > vscode > global, maintaining order within each group
 		const sortedConnections = [...this.connections].sort((a, b) => {
-			const aIsGlobal = a.server.source === "global" || !a.server.source
-			const bIsGlobal = b.server.source === "global" || !b.server.source
+			// Define source priority (lower number = higher priority)
+			const sourcePriority = (source: string | undefined) => {
+				switch (source) {
+					case "project":
+						return 0
+					case "vscode":
+						return 1
+					case "global":
+					case undefined:
+						return 2
+					default:
+						return 3
+				}
+			}
 
-			// If both are global or both are project, sort by their respective order
-			if (aIsGlobal && bIsGlobal) {
+			const aPriority = sourcePriority(a.server.source)
+			const bPriority = sourcePriority(b.server.source)
+
+			// If different sources, sort by priority
+			if (aPriority !== bPriority) {
+				return aPriority - bPriority
+			}
+
+			// If same source, maintain their defined order
+			if (a.server.source === "global" || !a.server.source) {
 				const indexA = globalServerOrder.indexOf(a.server.name)
 				const indexB = globalServerOrder.indexOf(b.server.name)
 				return indexA - indexB
-			} else if (!aIsGlobal && !bIsGlobal) {
+			} else if (a.server.source === "project") {
 				const indexA = projectServerOrder.indexOf(a.server.name)
 				const indexB = projectServerOrder.indexOf(b.server.name)
 				return indexA - indexB
 			}
 
-			// Project servers come before global servers (reversed from original)
-			return aIsGlobal ? 1 : -1
+			// For VSCode servers, maintain discovery order
+			return 0
 		})
 
 		// Send sorted servers to webview
@@ -1345,8 +1470,39 @@ export class McpHub {
 	public async toggleServerDisabled(
 		serverName: string,
 		disabled: boolean,
-		source?: "global" | "project",
+		source?: "global" | "project" | "vscode",
 	): Promise<void> {
+		// VSCode servers can only be enabled/disabled globally in VS Code settings
+		if (source === "vscode") {
+			const connection = this.findConnection(serverName, source)
+			if (connection) {
+				// Update the local state to reflect the change
+				connection.server.disabled = disabled
+
+				// Store the preference locally (won't affect VS Code's actual config)
+				// This allows users to temporarily disable VSCode servers within Roo
+				if (disabled) {
+					// Disconnect the server
+					await this.deleteConnection(serverName, source)
+					// Re-add as disabled placeholder
+					const config = JSON.parse(connection.server.config)
+					const placeholderConn = this.createPlaceholderConnection(
+						serverName,
+						config,
+						source,
+						DisableReason.SERVER_DISABLED,
+					)
+					this.connections.push(placeholderConn)
+				} else {
+					// Reconnect the server
+					const config = JSON.parse(connection.server.config)
+					await this.connectToServer(serverName, config, source)
+				}
+
+				await this.notifyWebviewOfServerChanges()
+			}
+			return
+		}
 		try {
 			// Find the connection to determine if it's a global or project server
 			const connection = this.findConnection(serverName, source)
@@ -1406,8 +1562,12 @@ export class McpHub {
 	private async updateServerConfig(
 		serverName: string,
 		configUpdate: Record<string, any>,
-		source: "global" | "project" = "global",
+		source: "global" | "project" | "vscode" = "global",
 	): Promise<void> {
+		// VSCode servers are read-only
+		if (source === "vscode") {
+			throw new Error("VSCode MCP servers are read-only and cannot be modified")
+		}
 		// Determine which config file to update
 		let configPath: string
 		if (source === "project") {
@@ -1469,8 +1629,13 @@ export class McpHub {
 	public async updateServerTimeout(
 		serverName: string,
 		timeout: number,
-		source?: "global" | "project",
+		source?: "global" | "project" | "vscode",
 	): Promise<void> {
+		// VSCode servers are read-only
+		if (source === "vscode") {
+			vscode.window.showWarningMessage(t("mcp:errors.vscode_servers_readonly"))
+			return
+		}
 		try {
 			// Find the connection to determine if it's a global or project server
 			const connection = this.findConnection(serverName, source)
@@ -1488,7 +1653,12 @@ export class McpHub {
 		}
 	}
 
-	public async deleteServer(serverName: string, source?: "global" | "project"): Promise<void> {
+	public async deleteServer(serverName: string, source?: "global" | "project" | "vscode"): Promise<void> {
+		// VSCode servers are read-only and cannot be deleted
+		if (source === "vscode") {
+			vscode.window.showWarningMessage(t("mcp:errors.vscode_servers_readonly"))
+			return
+		}
 		try {
 			// Find the connection to determine if it's a global or project server
 			const connection = this.findConnection(serverName, source)
@@ -1556,7 +1726,11 @@ export class McpHub {
 		}
 	}
 
-	async readResource(serverName: string, uri: string, source?: "global" | "project"): Promise<McpResourceResponse> {
+	async readResource(
+		serverName: string,
+		uri: string,
+		source?: "global" | "project" | "vscode",
+	): Promise<McpResourceResponse> {
 		const connection = this.findConnection(serverName, source)
 		if (!connection || connection.type !== "connected") {
 			throw new Error(`No connection found for server: ${serverName}${source ? ` with source ${source}` : ""}`)
@@ -1579,7 +1753,7 @@ export class McpHub {
 		serverName: string,
 		toolName: string,
 		toolArguments?: Record<string, unknown>,
-		source?: "global" | "project",
+		source?: "global" | "project" | "vscode",
 	): Promise<McpToolCallResponse> {
 		const connection = this.findConnection(serverName, source)
 		if (!connection || connection.type !== "connected") {
@@ -1627,11 +1801,16 @@ export class McpHub {
 	 */
 	private async updateServerToolList(
 		serverName: string,
-		source: "global" | "project",
+		source: "global" | "project" | "vscode",
 		toolName: string,
 		listName: "alwaysAllow" | "disabledTools",
 		addTool: boolean,
 	): Promise<void> {
+		// VSCode servers are read-only
+		if (source === "vscode") {
+			vscode.window.showWarningMessage(t("mcp:errors.vscode_servers_readonly"))
+			return
+		}
 		// Find the connection with matching name and source
 		const connection = this.findConnection(serverName, source)
 
@@ -1696,10 +1875,15 @@ export class McpHub {
 
 	async toggleToolAlwaysAllow(
 		serverName: string,
-		source: "global" | "project",
+		source: "global" | "project" | "vscode",
 		toolName: string,
 		shouldAllow: boolean,
 	): Promise<void> {
+		// VSCode servers are read-only
+		if (source === "vscode") {
+			vscode.window.showWarningMessage(t("mcp:errors.vscode_servers_readonly"))
+			return
+		}
 		try {
 			await this.updateServerToolList(serverName, source, toolName, "alwaysAllow", shouldAllow)
 		} catch (error) {
@@ -1713,10 +1897,15 @@ export class McpHub {
 
 	async toggleToolEnabledForPrompt(
 		serverName: string,
-		source: "global" | "project",
+		source: "global" | "project" | "vscode",
 		toolName: string,
 		isEnabled: boolean,
 	): Promise<void> {
+		// VSCode servers are read-only
+		if (source === "vscode") {
+			vscode.window.showWarningMessage(t("mcp:errors.vscode_servers_readonly"))
+			return
+		}
 		try {
 			// When isEnabled is true, we want to remove the tool from the disabledTools list.
 			// When isEnabled is false, we want to add the tool to the disabledTools list.
@@ -1812,6 +2001,10 @@ export class McpHub {
 		if (this.projectMcpWatcher) {
 			this.projectMcpWatcher.dispose()
 			this.projectMcpWatcher = undefined
+		}
+		if (this.vscodeMcpWatcher) {
+			this.vscodeMcpWatcher.dispose()
+			this.vscodeMcpWatcher = undefined
 		}
 		this.disposables.forEach((d) => d.dispose())
 	}

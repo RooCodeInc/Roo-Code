@@ -24,7 +24,7 @@ interface McpExecutionProps {
 			description?: string
 			alwaysAllow?: boolean
 		}>
-		source?: "global" | "project"
+		source?: "global" | "project" | "vscode"
 	}
 	useMcpServer?: ClineAskUseMcpServer
 	alwaysAllowMcp?: boolean

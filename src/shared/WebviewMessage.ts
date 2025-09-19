@@ -253,7 +253,7 @@ export interface WebviewMessage {
 	modeConfig?: ModeConfig
 	timeout?: number
 	payload?: WebViewMessagePayload
-	source?: "global" | "project"
+	source?: "global" | "project" | "vscode"
 	requestId?: string
 	ids?: string[]
 	hasSystemPromptOverride?: boolean
