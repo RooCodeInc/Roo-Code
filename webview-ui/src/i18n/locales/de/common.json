@@ -95,5 +95,9 @@
 		"months_ago": "vor {{count}} Monaten",
 		"year_ago": "vor einem Jahr",
 		"years_ago": "vor {{count}} Jahren"
+	},
+	"thumbnails": {
+		"failedToLoad": "Bild konnte nicht geladen werden",
+		"altText": "Vorschaubild {{index}}"
 	}
 }
