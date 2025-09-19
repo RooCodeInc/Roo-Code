@@ -689,6 +689,9 @@
 					"standard": "Die Standard-Diff-Strategie wendet Änderungen jeweils auf einen einzelnen Codeblock an.",
 					"unified": "Die einheitliche Diff-Strategie wendet mehrere Ansätze zur Anwendung von Diffs an und wählt den besten Ansatz.",
 					"multiBlock": "Die Mehrblock-Diff-Strategie ermöglicht das Aktualisieren mehrerer Codeblöcke in einer Datei in einer Anfrage."
+				},
+				"watsonx": {
+					"description": "When enabled, Roo will be able to edit files more quickly and will automatically reject truncated full-file writes."
 				}
 			},
 			"matchPrecision": {

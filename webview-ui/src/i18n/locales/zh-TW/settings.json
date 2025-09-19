@@ -690,6 +690,9 @@
 					"standard": "標準策略一次只修改一個程式碼區塊。",
 					"unified": "統一差異策略會嘗試多種比對方式，並選擇最佳方案。",
 					"multiBlock": "多區塊策略可在單一請求中更新檔案內的多個程式碼區塊。"
+				},
+				"watsonx": {
+					"description": "When enabled, Roo will be able to edit files more quickly and will automatically reject truncated full-file writes."
 				}
 			},
 			"matchPrecision": {

@@ -689,6 +689,9 @@
 					"standard": "La estrategia de diff estándar aplica cambios a un solo bloque de código a la vez.",
 					"unified": "La estrategia de diff unificado toma múltiples enfoques para aplicar diffs y elige el mejor enfoque.",
 					"multiBlock": "La estrategia de diff multi-bloque permite actualizar múltiples bloques de código en un archivo en una sola solicitud."
+				},
+				"watsonx": {
+					"description": "When enabled, Roo will be able to edit files more quickly and will automatically reject truncated full-file writes."
 				}
 			},
 			"matchPrecision": {

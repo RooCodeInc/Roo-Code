@@ -690,6 +690,9 @@
 					"standard": "Chiến lược diff tiêu chuẩn áp dụng thay đổi cho một khối mã tại một thời điểm.",
 					"unified": "Chiến lược diff thống nhất thực hiện nhiều cách tiếp cận để áp dụng diff và chọn cách tiếp cận tốt nhất.",
 					"multiBlock": "Chiến lược diff đa khối cho phép cập nhật nhiều khối mã trong một tệp trong một yêu cầu."
+				},
+				"watsonx": {
+					"description": "When enabled, Roo will be able to edit files more quickly and will automatically reject truncated full-file writes."
 				}
 			},
 			"matchPrecision": {

@@ -690,6 +690,9 @@
 					"standard": "標準diff戦略は一度に1つのコードブロックに変更を適用します。",
 					"unified": "統合diff戦略はdiffを適用するための複数のアプローチを取り、最良のアプローチを選択します。",
 					"multiBlock": "マルチブロックdiff戦略は、1つのリクエストでファイル内の複数のコードブロックを更新できます。"
+				},
+				"watsonx": {
+					"description": "When enabled, Roo will be able to edit files more quickly and will automatically reject truncated full-file writes."
 				}
 			},
 			"matchPrecision": {

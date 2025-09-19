@@ -690,6 +690,9 @@
 					"standard": "标准 diff 策略一次对一个代码块应用更改。",
 					"unified": "统一 diff 策略采用多种方法应用差异并选择最佳方法。",
 					"multiBlock": "多块 diff 策略允许在一个请求中更新文件中的多个代码块。"
+				},
+				"watsonx": {
+					"description": "When enabled, Roo will be able to edit files more quickly and will automatically reject truncated full-file writes."
 				}
 			},
 			"matchPrecision": {

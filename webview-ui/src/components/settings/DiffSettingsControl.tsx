@@ -6,12 +6,14 @@ import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
 interface DiffSettingsControlProps {
 	diffEnabled?: boolean
 	fuzzyMatchThreshold?: number
+	provider: string | undefined
 	onChange: (field: "diffEnabled" | "fuzzyMatchThreshold", value: any) => void
 }
 
 export const DiffSettingsControl: React.FC<DiffSettingsControlProps> = ({
 	diffEnabled = true,
 	fuzzyMatchThreshold = 1.0,
+	provider,
 	onChange,
 }) => {
 	const { t } = useAppTranslation()
@@ -37,7 +39,9 @@ export const DiffSettingsControl: React.FC<DiffSettingsControlProps> = ({
 					<span className="font-medium">{t("settings:advanced.diff.label")}</span>
 				</VSCodeCheckbox>
 				<div className="text-vscode-descriptionForeground text-sm">
-					{t("settings:advanced.diff.description")}
+					{provider === "watsonx"
+						? t("settings:advanced.diff.watsonx.description")
+						: t("settings:advanced.diff.description")}
 				</div>
 			</div>
 

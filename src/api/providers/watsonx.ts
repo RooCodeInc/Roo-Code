@@ -9,6 +9,7 @@ import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from ".
 import { WatsonXAI } from "@ibm-cloud/watsonx-ai"
 import { convertToWatsonxAiMessages } from "../transform/watsonxai-format"
 import OpenAI from "openai"
+import { calculateApiCostOpenAI } from "../../shared/cost"
 
 export class WatsonxAIHandler extends BaseProvider implements SingleCompletionHandler {
 	private options: ApiHandlerOptions
@@ -153,6 +154,20 @@ export class WatsonxAIHandler extends BaseProvider implements SingleCompletionHa
 			yield {
 				type: "text",
 				text: responseText,
+			}
+			let usageInfo: any = null
+			usageInfo = response.result.usage || {}
+			const outputTokens = usageInfo.completion_tokens
+
+			const inputTokens = usageInfo?.prompt_tokens || 0
+			const modelInfo = this.getModel().info
+			const totalCost = calculateApiCostOpenAI(modelInfo, inputTokens, outputTokens)
+
+			yield {
+				type: "usage",
+				inputTokens: inputTokens,
+				outputTokens,
+				totalCost: totalCost,
 			}
 		} catch (error) {
 			// Extract error message and type from the error object

@@ -60,15 +60,21 @@ export async function getWatsonxModels(
 		let knownModels: Record<string, ModelInfo> = {}
 
 		try {
-			const response = await service.listFoundationModelSpecs({ filters: "!function_embedding" })
+			const response = await service.listFoundationModelSpecs({ filters: "function_text_chat" })
 			if (response && response.result) {
 				const result = response.result as any
 				const modelsList = result.resources
 				if (Array.isArray(modelsList) && modelsList.length > 0) {
 					for (const model of modelsList) {
 						const modelId = model.id || model.name || model.model_id
-						const contextWindow = model.model_limits.max_sequence_length || 131072
-						const maxTokens = model.model_limits.max_output_tokens || Math.floor(contextWindow / 2)
+						let contextWindow = 131072
+						if (model.model_limits && model.model_limits.max_sequence_length) {
+							contextWindow = model.model_limits.max_sequence_length
+						}
+						let maxTokens = Math.floor(contextWindow / 2)
+						if (model.model_limits && model.model_limits.max_output_tokens) {
+							maxTokens = model.model_limits.max_output_tokens
+						}
 
 						let description = ""
 						if (model.long_description) {

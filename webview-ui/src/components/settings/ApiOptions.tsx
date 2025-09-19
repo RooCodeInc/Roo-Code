@@ -778,6 +778,7 @@ const ApiOptions = ({
 						<DiffSettingsControl
 							diffEnabled={apiConfiguration.diffEnabled}
 							fuzzyMatchThreshold={apiConfiguration.fuzzyMatchThreshold}
+							provider={apiConfiguration.apiProvider}
 							onChange={(field, value) => setApiConfigurationField(field, value)}
 						/>
 						{selectedModelInfo?.supportsTemperature !== false && (

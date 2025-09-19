@@ -192,7 +192,7 @@ describe("WatsonxAIHandler", () => {
 				chunks.push(chunk)
 			}
 
-			expect(chunks.length).toBe(1)
+			expect(chunks.length).toBe(2)
 			expect(chunks[0]).toEqual({
 				type: "text",
 				text: testContent,

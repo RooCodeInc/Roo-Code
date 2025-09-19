@@ -690,6 +690,9 @@
 					"standard": "Стандартная стратегия применяет изменения к одному блоку кода за раз.",
 					"unified": "Унифицированная стратегия использует несколько подходов к применению диффов и выбирает лучший.",
 					"multiBlock": "Мультиблочная стратегия позволяет обновлять несколько блоков кода в файле за один запрос."
+				},
+				"watsonx": {
+					"description": "When enabled, Roo will be able to edit files more quickly and will automatically reject truncated full-file writes."
 				}
 			},
 			"matchPrecision": {

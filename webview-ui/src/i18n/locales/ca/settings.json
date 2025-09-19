@@ -126,7 +126,7 @@
 			"geminiApiKeyRequired": "Cal una clau d'API de Gemini",
 			"mistralApiKeyRequired": "La clau de l'API de Mistral és requerida",
 			"vercelAiGatewayApiKeyRequired": "Es requereix la clau API de Vercel AI Gateway",
-			"ollamaBaseUrlRequired": "Cal una URL base d'Ollama",
+			"ollamaBaseUrlRequired": "Cal un`a` URL base d'Ollama",
 			"baseUrlRequired": "Cal una URL base",
 			"modelDimensionMinValue": "La dimensió del model ha de ser superior a 0",
 			"watsonxApiKeyRequired": "IBM watsonx API key is required"
@@ -689,6 +689,9 @@
 					"standard": "L'estratègia de diff estàndard aplica canvis a un sol bloc de codi alhora.",
 					"unified": "L'estratègia de diff unificat pren múltiples enfocaments per aplicar diffs i tria el millor enfocament.",
 					"multiBlock": "L'estratègia de diff multi-bloc permet actualitzar múltiples blocs de codi en un fitxer en una sola sol·licitud."
+				},
+				"watsonx": {
+					"description": "When enabled, Roo will be able to edit files more quickly and will automatically reject truncated full-file writes."
 				}
 			},
 			"matchPrecision": {

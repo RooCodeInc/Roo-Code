@@ -690,6 +690,9 @@
 					"standard": "मानक diff रणनीति एक समय में एक कोड ब्लॉक पर परिवर्तन लागू करती है।",
 					"unified": "एकीकृत diff रणनीति diffs लागू करने के लिए कई दृष्टिकोण लेती है और सर्वोत्तम दृष्टिकोण चुनती है।",
 					"multiBlock": "मल्टी-ब्लॉक diff रणनीति एक अनुरोध में एक फाइल में कई कोड ब्लॉक अपडेट करने की अनुमति देती है।"
+				},
+				"watsonx": {
+					"description": "When enabled, Roo will be able to edit files more quickly and will automatically reject truncated full-file writes."
 				}
 			},
 			"matchPrecision": {
