@@ -283,7 +283,7 @@ describe("SimpleInstaller", () => {
 			// Mock that the mode doesn't exist in the list
 			vi.mocked(mockCustomModesManager.getCustomModes).mockResolvedValueOnce([])
 
-			await expect(installer.removeItem(mockModeItem, { target: "project" })).rejects.toThrow(/Mode not found/)
+			await expect(installer.removeItem(mockModeItem, { target: "project" })).rejects.toThrow(/(Mode not found|customModes\.errors\.modeNotFound)/)
 
 			expect((mockCustomModesManager as any).deleteCustomModeForSource).not.toHaveBeenCalled()
 		})
