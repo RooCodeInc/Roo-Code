@@ -32,8 +32,12 @@ export async function addCancelReasonToLastApiReqStarted(args: {
 
 		try {
 			const existing = uiMsgs[idx]?.text ? JSON.parse(uiMsgs[idx].text as string) : {}
-			uiMsgs[idx].text = JSON.stringify({ ...existing, cancelReason: reason })
-			await saveTaskMessages({ messages: uiMsgs as any, taskId, globalStoragePath })
+			// Only set cancelReason if it doesn't already exist
+			if (!existing.cancelReason) {
+				uiMsgs[idx].text = JSON.stringify({ ...existing, cancelReason: reason })
+				await saveTaskMessages({ messages: uiMsgs as any, taskId, globalStoragePath })
+			}
+			// If cancelReason already exists, preserve the original reason
 		} catch {
 			// Non-fatal parse or write failure
 			return
