@@ -351,7 +351,7 @@ export class SimpleInstaller {
 			await (this.customModesManager as any).deleteCustomModeForSource(modeSlug, target, true)
 		} else {
 			// Scoped deletion not supported in this version
-			throw new Error(t("marketplace:errors.scopedDeletionNotSupported"))
+			throw new Error("Scoped deletion is not supported in this version")
 		}
 	}
 
