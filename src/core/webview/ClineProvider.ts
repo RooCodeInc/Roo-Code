@@ -2593,17 +2593,17 @@ export class ClineProvider
 		const current = this.getCurrentTask()
 		if (current && current.instanceId !== originalInstanceId) {
 			this.log(
-				`[cancelTask] Skipping cancel bookkeeping and rehydrate: current instance ${current.instanceId} != original ${originalInstanceId}`,
+				`[cancelTask] Skipping rehydrate: current instance ${current.instanceId} != original ${originalInstanceId}`,
 			)
 			return
 		}
 
 		// Final race check before rehydrate to avoid duplicate rehydration
 		{
-			const currentAfterBookkeeping = this.getCurrentTask()
-			if (currentAfterBookkeeping && currentAfterBookkeeping.instanceId !== originalInstanceId) {
+			const currentAfterCheck = this.getCurrentTask()
+			if (currentAfterCheck && currentAfterCheck.instanceId !== originalInstanceId) {
 				this.log(
-					`[cancelTask] Skipping rehydrate after bookkeeping: current instance ${currentAfterBookkeeping.instanceId} != original ${originalInstanceId}`,
+					`[cancelTask] Skipping rehydrate after final check: current instance ${currentAfterCheck.instanceId} != original ${originalInstanceId}`,
 				)
 				return
 			}
