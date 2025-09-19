@@ -17,7 +17,7 @@ export const rooModels = {
 	},
 	"roo/code-supernova": {
 		maxTokens: 16_384,
-		contextWindow: 262_144,
+		contextWindow: 200_000,
 		supportsImages: true,
 		supportsPromptCache: true,
 		inputPrice: 0,
