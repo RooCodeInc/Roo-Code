@@ -260,10 +260,13 @@ export class ClineProvider
 		}
 
 		// Initialize task history cleanup service
-		this.taskHistoryCleanupService = new TaskHistoryCleanupService(
-			this.context.globalStorageUri.fsPath,
-			this.log.bind(this),
-		)
+		// Only initialize if globalStorageUri is available (not in test environment)
+		if (this.context.globalStorageUri) {
+			this.taskHistoryCleanupService = new TaskHistoryCleanupService(
+				this.context.globalStorageUri.fsPath,
+				this.log.bind(this),
+			)
+		}
 	}
 
 	/**
@@ -2195,6 +2198,7 @@ export class ClineProvider
 	 * Triggers automatic cleanup of task history if configured
 	 */
 	private async triggerAutoCleanup(): Promise<void> {
+		// Skip if cleanup service is not initialized (e.g., in test environment)
 		if (!this.taskHistoryCleanupService) {
 			return
 		}
