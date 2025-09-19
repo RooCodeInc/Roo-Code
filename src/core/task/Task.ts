@@ -1006,6 +1006,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		const { contextTokens: prevContextTokens } = this.getTokenUsage()
 
+		// Check if power steering is enabled
+		const powerSteeringEnabled = experiments.isEnabled(state?.experiments ?? {}, EXPERIMENT_IDS.POWER_STEERING)
+
 		const {
 			messages,
 			summary,
@@ -1021,6 +1024,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			false, // manual trigger
 			customCondensingPrompt, // User's custom prompt
 			condensingApiHandler, // Specific handler for condensing
+			powerSteeringEnabled, // Pass power steering state
 		)
 		if (error) {
 			this.say(
@@ -2461,6 +2465,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				`Forcing truncation to ${FORCED_CONTEXT_REDUCTION_PERCENT}% of current context.`,
 		)
 
+		// Check if power steering is enabled
+		const powerSteeringEnabled = experiments.isEnabled(state?.experiments ?? {}, EXPERIMENT_IDS.POWER_STEERING)
+
 		// Force aggressive truncation by keeping only 75% of the conversation history
 		const truncateResult = await truncateConversationIfNeeded({
 			messages: this.apiConversationHistory,
@@ -2474,6 +2481,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			taskId: this.taskId,
 			profileThresholds,
 			currentProfileId,
+			powerSteeringEnabled,
 		})
 
 		if (truncateResult.messages !== this.apiConversationHistory) {
@@ -2577,6 +2585,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			// Get the current profile ID using the helper method
 			const currentProfileId = this.getCurrentProfileId(state)
 
+			// Check if power steering is enabled
+			const powerSteeringEnabled = experiments.isEnabled(state?.experiments ?? {}, EXPERIMENT_IDS.POWER_STEERING)
+
 			const truncateResult = await truncateConversationIfNeeded({
 				messages: this.apiConversationHistory,
 				totalTokens: contextTokens,
@@ -2591,6 +2602,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				condensingApiHandler,
 				profileThresholds,
 				currentProfileId,
+				powerSteeringEnabled,
 			})
 			if (truncateResult.messages !== this.apiConversationHistory) {
 				await this.overwriteApiConversationHistory(truncateResult.messages)

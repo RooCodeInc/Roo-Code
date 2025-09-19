@@ -80,6 +80,7 @@ export type SummarizeResponse = {
  * @param {boolean} isAutomaticTrigger - Whether the summarization is triggered automatically
  * @param {string} customCondensingPrompt - Optional custom prompt to use for condensing
  * @param {ApiHandler} condensingApiHandler - Optional specific API handler to use for condensing
+ * @param {boolean} powerSteeringEnabled - Whether power steering is enabled (controls initial prompt preservation)
  * @returns {SummarizeResponse} - The result of the summarization operation (see above)
  */
 export async function summarizeConversation(
@@ -91,6 +92,7 @@ export async function summarizeConversation(
 	isAutomaticTrigger?: boolean,
 	customCondensingPrompt?: string,
 	condensingApiHandler?: ApiHandler,
+	powerSteeringEnabled?: boolean,
 ): Promise<SummarizeResponse> {
 	TelemetryService.instance.captureContextCondensed(
 		taskId,
@@ -101,10 +103,14 @@ export async function summarizeConversation(
 
 	const response: SummarizeResponse = { messages, cost: 0, summary: "" }
 
-	// Always preserve the first message (which may contain slash command content)
-	const firstMessage = messages[0]
-	// Get messages to summarize, excluding the first message and last N messages
-	const messagesToSummarize = getMessagesSinceLastSummary(messages.slice(1, -N_MESSAGES_TO_KEEP))
+	// Conditionally preserve the first message based on power steering setting
+	// When power steering is enabled, preserve the initial prompt to maintain task context
+	// When disabled, don't preserve it to prevent task restarts after condensing
+	const firstMessage = powerSteeringEnabled ? messages[0] : undefined
+	const messagesToKeepFrom = powerSteeringEnabled ? 1 : 0
+
+	// Get messages to summarize, excluding the conditionally preserved first message and last N messages
+	const messagesToSummarize = getMessagesSinceLastSummary(messages.slice(messagesToKeepFrom, -N_MESSAGES_TO_KEEP))
 
 	if (messagesToSummarize.length <= 1) {
 		const error =
@@ -188,8 +194,10 @@ export async function summarizeConversation(
 		isSummary: true,
 	}
 
-	// Reconstruct messages: [first message, summary, last N messages]
-	const newMessages = [firstMessage, summaryMessage, ...keepMessages]
+	// Reconstruct messages: [first message (if power steering enabled), summary, last N messages]
+	const newMessages = firstMessage
+		? [firstMessage, summaryMessage, ...keepMessages]
+		: [summaryMessage, ...keepMessages]
 
 	// Count the tokens in the context for the next API request
 	// We only estimate the tokens in summaryMesage if outputTokens is 0, otherwise we use outputTokens

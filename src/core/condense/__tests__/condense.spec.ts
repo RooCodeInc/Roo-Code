@@ -72,7 +72,17 @@ describe("Condense", () => {
 				{ role: "user", content: "Ninth message" },
 			]
 
-			const result = await summarizeConversation(messages, mockApiHandler, "System prompt", taskId, 5000, false)
+			const result = await summarizeConversation(
+				messages,
+				mockApiHandler,
+				"System prompt",
+				taskId,
+				5000,
+				false,
+				undefined,
+				undefined,
+				true,
+			) // powerSteeringEnabled = true to preserve first message
 
 			// Verify the first message is preserved
 			expect(result.messages[0]).toEqual(messages[0])
@@ -106,7 +116,17 @@ describe("Condense", () => {
 				{ role: "user", content: "Thanks!" },
 			]
 
-			const result = await summarizeConversation(messages, mockApiHandler, "System prompt", taskId, 5000, false)
+			const result = await summarizeConversation(
+				messages,
+				mockApiHandler,
+				"System prompt",
+				taskId,
+				5000,
+				false,
+				undefined,
+				undefined,
+				true,
+			) // powerSteeringEnabled = true to preserve first message
 
 			// The first message with slash command should be intact
 			expect(result.messages[0].content).toBe(slashCommandContent)
@@ -131,7 +151,17 @@ describe("Condense", () => {
 				{ role: "user", content: "Perfect!" },
 			]
 
-			const result = await summarizeConversation(messages, mockApiHandler, "System prompt", taskId, 5000, false)
+			const result = await summarizeConversation(
+				messages,
+				mockApiHandler,
+				"System prompt",
+				taskId,
+				5000,
+				false,
+				undefined,
+				undefined,
+				true,
+			) // powerSteeringEnabled = true to preserve first message
 
 			// The first message with complex content should be preserved
 			expect(result.messages[0].content).toEqual(complexContent)
@@ -146,7 +176,17 @@ describe("Condense", () => {
 				{ role: "assistant", content: "Fourth message" },
 			]
 
-			const result = await summarizeConversation(messages, mockApiHandler, "System prompt", taskId, 5000, false)
+			const result = await summarizeConversation(
+				messages,
+				mockApiHandler,
+				"System prompt",
+				taskId,
+				5000,
+				false,
+				undefined,
+				undefined,
+				false,
+			)
 
 			// Should return an error since we have only 4 messages (first + 3 to keep)
 			expect(result.error).toBeDefined()
@@ -165,7 +205,17 @@ describe("Condense", () => {
 				{ role: "user", content: "Final message" },
 			]
 
-			const result = await summarizeConversation(messages, mockApiHandler, "System prompt", taskId, 5000, false)
+			const result = await summarizeConversation(
+				messages,
+				mockApiHandler,
+				"System prompt",
+				taskId,
+				5000,
+				false,
+				undefined,
+				undefined,
+				false,
+			)
 
 			// Should return an error due to recent summary in last N messages
 			expect(result.error).toBeDefined()
@@ -198,7 +248,17 @@ describe("Condense", () => {
 				{ role: "user", content: "Seventh" },
 			]
 
-			const result = await summarizeConversation(messages, emptyHandler, "System prompt", taskId, 5000, false)
+			const result = await summarizeConversation(
+				messages,
+				emptyHandler,
+				"System prompt",
+				taskId,
+				5000,
+				false,
+				undefined,
+				undefined,
+				false,
+			)
 
 			expect(result.error).toBeDefined()
 			expect(result.messages).toEqual(messages)

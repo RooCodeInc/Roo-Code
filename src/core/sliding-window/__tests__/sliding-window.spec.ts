@@ -594,6 +594,7 @@ describe("Sliding Window", () => {
 				true,
 				undefined, // customCondensingPrompt
 				undefined, // condensingApiHandler
+				undefined, // powerSteeringEnabled
 			)
 
 			// Verify the result contains the summary information
@@ -765,6 +766,7 @@ describe("Sliding Window", () => {
 				true,
 				undefined, // customCondensingPrompt
 				undefined, // condensingApiHandler
+				undefined, // powerSteeringEnabled
 			)
 
 			// Verify the result contains the summary information

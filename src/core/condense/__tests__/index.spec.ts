@@ -129,6 +129,10 @@ describe("summarizeConversation", () => {
 			defaultSystemPrompt,
 			taskId,
 			DEFAULT_PREV_CONTEXT_TOKENS,
+			false,
+			undefined,
+			undefined,
+			false, // powerSteeringEnabled
 		)
 		expect(result.messages).toEqual(messages)
 		expect(result.cost).toBe(0)
@@ -155,6 +159,10 @@ describe("summarizeConversation", () => {
 			defaultSystemPrompt,
 			taskId,
 			DEFAULT_PREV_CONTEXT_TOKENS,
+			false,
+			undefined,
+			undefined,
+			false, // powerSteeringEnabled
 		)
 		expect(result.messages).toEqual(messages)
 		expect(result.cost).toBe(0)
@@ -181,6 +189,10 @@ describe("summarizeConversation", () => {
 			defaultSystemPrompt,
 			taskId,
 			DEFAULT_PREV_CONTEXT_TOKENS,
+			false,
+			undefined,
+			undefined,
+			false, // powerSteeringEnabled
 		)
 
 		// Check that the API was called correctly
@@ -188,14 +200,11 @@ describe("summarizeConversation", () => {
 		expect(maybeRemoveImageBlocks).toHaveBeenCalled()
 
 		// Verify the structure of the result
-		// The result should be: first message + summary + last N messages
-		expect(result.messages.length).toBe(1 + 1 + N_MESSAGES_TO_KEEP) // First + summary + last N
-
-		// Check that the first message is preserved
-		expect(result.messages[0]).toEqual(messages[0])
+		// When powerSteeringEnabled is false, the result should be: summary + last N messages
+		expect(result.messages.length).toBe(1 + N_MESSAGES_TO_KEEP) // summary + last N
 
 		// Check that the summary message was inserted correctly
-		const summaryMessage = result.messages[1]
+		const summaryMessage = result.messages[0]
 		expect(summaryMessage.role).toBe("assistant")
 		expect(summaryMessage.content).toBe("This is a summary")
 		expect(summaryMessage.isSummary).toBe(true)
@@ -244,6 +253,10 @@ describe("summarizeConversation", () => {
 			defaultSystemPrompt,
 			taskId,
 			DEFAULT_PREV_CONTEXT_TOKENS,
+			false,
+			undefined,
+			undefined,
+			false, // powerSteeringEnabled
 		)
 
 		// Should return original messages when summary is empty
@@ -265,7 +278,17 @@ describe("summarizeConversation", () => {
 			{ role: "user", content: "Tell me more", ts: 7 },
 		]
 
-		await summarizeConversation(messages, mockApiHandler, defaultSystemPrompt, taskId, DEFAULT_PREV_CONTEXT_TOKENS)
+		await summarizeConversation(
+			messages,
+			mockApiHandler,
+			defaultSystemPrompt,
+			taskId,
+			DEFAULT_PREV_CONTEXT_TOKENS,
+			false,
+			undefined,
+			undefined,
+			false,
+		)
 
 		// Verify the final request message
 		const expectedFinalMessage = {
@@ -312,6 +335,10 @@ describe("summarizeConversation", () => {
 			systemPrompt,
 			taskId,
 			DEFAULT_PREV_CONTEXT_TOKENS,
+			false,
+			undefined,
+			undefined,
+			false, // powerSteeringEnabled
 		)
 
 		// Verify that countTokens was called with the correct messages including system prompt
@@ -355,6 +382,10 @@ describe("summarizeConversation", () => {
 			defaultSystemPrompt,
 			taskId,
 			prevContextTokens,
+			false,
+			undefined,
+			undefined,
+			false, // powerSteeringEnabled
 		)
 
 		// Should return original messages when context would grow
@@ -395,11 +426,15 @@ describe("summarizeConversation", () => {
 			defaultSystemPrompt,
 			taskId,
 			prevContextTokens,
+			false,
+			undefined,
+			undefined,
+			false, // powerSteeringEnabled
 		)
 
 		// Should successfully summarize
-		// Result should be: first message + summary + last N messages
-		expect(result.messages.length).toBe(1 + 1 + N_MESSAGES_TO_KEEP) // First + summary + last N
+		// When powerSteeringEnabled is false, the result should be: summary + last N messages
+		expect(result.messages.length).toBe(1 + N_MESSAGES_TO_KEEP) // summary + last N
 		expect(result.cost).toBe(0.03)
 		expect(result.summary).toBe("Concise summary")
 		expect(result.error).toBeUndefined()
@@ -416,6 +451,10 @@ describe("summarizeConversation", () => {
 			defaultSystemPrompt,
 			taskId,
 			DEFAULT_PREV_CONTEXT_TOKENS,
+			false,
+			undefined,
+			undefined,
+			false, // powerSteeringEnabled
 		)
 
 		// Should return original messages when not enough to summarize
@@ -444,6 +483,10 @@ describe("summarizeConversation", () => {
 			defaultSystemPrompt,
 			taskId,
 			DEFAULT_PREV_CONTEXT_TOKENS,
+			false,
+			undefined,
+			undefined,
+			false, // powerSteeringEnabled
 		)
 
 		// Should return original messages when recent summary exists
@@ -493,6 +536,7 @@ describe("summarizeConversation", () => {
 			false,
 			undefined,
 			invalidCondensingHandler,
+			false, // powerSteeringEnabled
 		)
 
 		// Should return original messages when both handlers are invalid
@@ -601,6 +645,8 @@ describe("summarizeConversation with custom settings", () => {
 			DEFAULT_PREV_CONTEXT_TOKENS,
 			false,
 			customPrompt,
+			undefined,
+			false, // powerSteeringEnabled
 		)
 
 		// Verify the custom prompt was used
@@ -622,6 +668,8 @@ describe("summarizeConversation with custom settings", () => {
 			DEFAULT_PREV_CONTEXT_TOKENS,
 			false,
 			"  ", // Empty custom prompt
+			undefined,
+			false, // powerSteeringEnabled
 		)
 
 		// Verify the default prompt was used
@@ -639,6 +687,8 @@ describe("summarizeConversation with custom settings", () => {
 			DEFAULT_PREV_CONTEXT_TOKENS,
 			false,
 			undefined, // No custom prompt
+			undefined,
+			false, // powerSteeringEnabled
 		)
 
 		// Verify the default prompt was used again
@@ -660,6 +710,7 @@ describe("summarizeConversation with custom settings", () => {
 			false,
 			undefined,
 			mockCondensingApiHandler,
+			false, // powerSteeringEnabled
 		)
 
 		// Verify the condensing handler was used
@@ -680,6 +731,7 @@ describe("summarizeConversation with custom settings", () => {
 			false,
 			undefined,
 			undefined,
+			false, // powerSteeringEnabled
 		)
 
 		// Verify the main handler was used
@@ -711,6 +763,7 @@ describe("summarizeConversation with custom settings", () => {
 			false,
 			undefined,
 			invalidHandler,
+			false, // powerSteeringEnabled
 		)
 
 		// Verify the main handler was used as fallback
@@ -737,6 +790,8 @@ describe("summarizeConversation with custom settings", () => {
 			DEFAULT_PREV_CONTEXT_TOKENS,
 			false,
 			"Custom prompt",
+			undefined,
+			false, // powerSteeringEnabled
 		)
 
 		// Verify telemetry was called with custom prompt flag
@@ -761,6 +816,7 @@ describe("summarizeConversation with custom settings", () => {
 			false,
 			undefined,
 			mockCondensingApiHandler,
+			false, // powerSteeringEnabled
 		)
 
 		// Verify telemetry was called with custom API handler flag
@@ -785,6 +841,7 @@ describe("summarizeConversation with custom settings", () => {
 			true, // isAutomaticTrigger
 			"Custom prompt",
 			mockCondensingApiHandler,
+			false, // powerSteeringEnabled
 		)
 
 		// Verify telemetry was called with both flags
