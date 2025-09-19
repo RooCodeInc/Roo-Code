@@ -203,7 +203,6 @@
 	},
 	"commandOutput": "कमांड आउटपुट",
 	"commandExecution": {
-		"running": "चल रहा है",
 		"abort": "रद्द करें",
 		"running": "चल रहा है",
 		"pid": "पीआईडी: {{pid}}",

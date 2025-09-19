@@ -225,7 +225,6 @@
 	},
 	"commandOutput": "Keluaran Perintah",
 	"commandExecution": {
-		"running": "Sedang berjalan",
 		"abort": "Batalkan",
 		"running": "Menjalankan",
 		"pid": "PID: {{pid}}",

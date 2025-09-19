@@ -203,7 +203,6 @@
 	},
 	"commandOutput": "Salida del comando",
 	"commandExecution": {
-		"running": "Corriendo",
 		"abort": "Abortar",
 		"running": "Ejecutando",
 		"pid": "PID: {{pid}}",
