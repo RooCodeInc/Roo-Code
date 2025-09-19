@@ -98,7 +98,6 @@ import {
 	addCancelReasonToLastApiReqStarted,
 	appendAssistantInterruptionIfNeeded,
 } from "../task-persistence/cancelBookkeeping"
-import { RESPONSE_INTERRUPTED_BY_USER } from "../../shared/messages"
 /**
  * https://github.com/microsoft/vscode-webview-ui-toolkit-samples/blob/main/default/weather-webview/src/providers/WeatherViewProvider.ts
  * https://github.com/KumarVariable/vscode-extension-sidebar-html/blob/master/src/customSidebarViewProvider.ts
@@ -2616,7 +2615,7 @@ export class ClineProvider
 			await appendAssistantInterruptionIfNeeded({
 				taskId: task.taskId,
 				globalStoragePath: this.contextProxy.globalStorageUri.fsPath,
-				text: `[${RESPONSE_INTERRUPTED_BY_USER}]`,
+				text: `[${t("common:interruption.responseInterruptedByUser")}]`,
 			})
 		} catch (e) {
 			this.log(`[cancelTask] Cancel bookkeeping failed: ${e instanceof Error ? e.message : String(e)}`)
