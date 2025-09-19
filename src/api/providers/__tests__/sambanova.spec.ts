@@ -55,6 +55,19 @@ describe("SambaNovaHandler", () => {
 		expect(model.info).toEqual(sambaNovaModels[testModelId])
 	})
 
+	it("should return GPT-OSS-120B model when specified", () => {
+		const testModelId: SambaNovaModelId = "GPT-OSS-120B"
+		const handlerWithModel = new SambaNovaHandler({
+			apiModelId: testModelId,
+			sambaNovaApiKey: "test-sambanova-api-key",
+		})
+		const model = handlerWithModel.getModel()
+		expect(model.id).toBe(testModelId)
+		expect(model.info).toEqual(sambaNovaModels[testModelId])
+		expect(model.info.contextWindow).toBe(65536)
+		expect(model.info.description).toContain("GPT-OSS 120B")
+	})
+
 	it("completePrompt method should return text from SambaNova API", async () => {
 		const expectedResponse = "This is a test response from SambaNova"
 		mockCreate.mockResolvedValueOnce({ choices: [{ message: { content: expectedResponse } }] })

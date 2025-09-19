@@ -10,6 +10,7 @@ export type SambaNovaModelId =
 	| "Llama-4-Maverick-17B-128E-Instruct"
 	| "Llama-3.3-Swallow-70B-Instruct-v0.4"
 	| "Qwen3-32B"
+	| "GPT-OSS-120B"
 
 export const sambaNovaDefaultModelId: SambaNovaModelId = "Meta-Llama-3.3-70B-Instruct"
 
@@ -86,5 +87,14 @@ export const sambaNovaModels = {
 		inputPrice: 0.4,
 		outputPrice: 0.8,
 		description: "Alibaba Qwen 3 32B model with 8K context window.",
+	},
+	"GPT-OSS-120B": {
+		maxTokens: 8192,
+		contextWindow: 65536,
+		supportsImages: false,
+		supportsPromptCache: false,
+		inputPrice: 0.6,
+		outputPrice: 1.2,
+		description: "OpenAI GPT-OSS 120B model with 64K context window.",
 	},
 } as const satisfies Record<string, ModelInfo>
