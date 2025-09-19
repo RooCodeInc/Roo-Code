@@ -23,6 +23,6 @@ export const rooModels = {
 		inputPrice: 0,
 		outputPrice: 0,
 		description:
-			"A versatile agentic coding stealth model that supports image inputs. 200k context window. (Note: the free prompts and completions are logged by the model provider and used to improve the model.)",
+			"A versatile agentic coding stealth model that supports image inputs, accessible for free through Roo Code Cloud for a limited time. (Note: the free prompts and completions are logged by the model provider and used to improve the model.)",
 	},
 } as const satisfies Record<string, ModelInfo>
