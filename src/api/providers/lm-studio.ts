@@ -119,14 +119,18 @@ export class LmStudioHandler extends BaseProvider implements SingleCompletionHan
 					}
 				}
 
-				if ("reasoning" in delta && delta.reasoning && typeof delta.reasoning === "string") {
+				// This is a hack to show the debug reasoning in the UI.
+				if (
+					this.options.lmStudioShowDebugThoughts === true &&
+					"reasoning" in delta &&
+					delta.reasoning &&
+					typeof delta.reasoning === "string"
+				) {
 					const reasoning = delta.reasoning
 					assistantText += reasoning
-					if (this.options.lmStudioShowDebugThoughts === true) {
-						yield {
-							type: "reasoning",
-							text: reasoning,
-						}
+					yield {
+						type: "reasoning",
+						text: reasoning,
 					}
 				}
 			}
