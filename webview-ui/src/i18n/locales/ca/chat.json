@@ -205,6 +205,7 @@
 	"commandExecution": {
 		"running": "Corrent",
 		"abort": "Avortar",
+		"running": "En execució",
 		"pid": "PID: {{pid}}",
 		"exitStatus": "S'ha sortit amb l'estat {{exitCode}}",
 		"manageCommands": "Comandes aprovades automàticament",
