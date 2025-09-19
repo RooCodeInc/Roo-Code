@@ -4,7 +4,8 @@ import * as path from "path"
 import * as vscode from "vscode"
 import * as yaml from "yaml"
 
-import type { OrganizationSettings, MarketplaceItem, MarketplaceItemType, McpMarketplaceItem } from "@roo-code/types"
+import type { OrganizationSettings, MarketplaceItem, MarketplaceItemType, McpMarketplaceItem, ModeConfig } from "@roo-code/types"
+import { customModesSettingsSchema } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 import { CloudService } from "@roo-code/cloud"
 
@@ -241,6 +242,38 @@ export class MarketplaceManager {
 		return metadata
 	}
 
+	// Helper: identify marketplace-installed modes
+	private isMarketplaceInstalledMode(
+		mode: ModeConfig,
+	): mode is ModeConfig & { installedFromMarketplace: true; marketplaceItemId: string } {
+		return (
+			mode.installedFromMarketplace === true &&
+			typeof mode.marketplaceItemId === "string" &&
+			mode.marketplaceItemId.length > 0
+		)
+	}
+
+	// Helper: parse YAML and collect installed mode metadata with proper typing
+	private collectInstalledModesFromYaml(
+		content: string,
+		out: Record<string, { type: string }>,
+	): void {
+		try {
+			const parsed = yaml.parse(content)
+			const result = customModesSettingsSchema.safeParse(parsed)
+			if (!result.success) {
+				return
+			}
+			for (const mode of result.data.customModes) {
+				if (this.isMarketplaceInstalledMode(mode)) {
+					out[mode.marketplaceItemId!] = { type: "mode" }
+				}
+			}
+		} catch {
+			// Ignore parse errors here; caller handles file existence/errors
+		}
+	}
+
 	/**
 	 * Check for project-level installed items
 	 */
@@ -255,19 +288,7 @@ export class MarketplaceManager {
 			const projectModesPath = path.join(workspaceFolder.uri.fsPath, ".roomodes")
 			try {
 				const content = await fs.readFile(projectModesPath, "utf-8")
-				const data = yaml.parse(content)
-				if (data?.customModes && Array.isArray(data.customModes)) {
-					for (const mode of data.customModes) {
-						// Only consider marketplace-installed modes and key by marketplaceItemId
-						const fromMarketplace = (mode as any)?.installedFromMarketplace === true
-						const marketplaceItemId = (mode as any)?.marketplaceItemId
-						if (fromMarketplace && typeof marketplaceItemId === "string" && marketplaceItemId.length > 0) {
-							metadata[marketplaceItemId] = {
-								type: "mode",
-							}
-						}
-					}
-				}
+				this.collectInstalledModesFromYaml(content, metadata)
 			} catch (error) {
 				// File doesn't exist or can't be read, skip
 			}
@@ -303,19 +324,7 @@ export class MarketplaceManager {
 			const globalModesPath = path.join(globalSettingsPath, GlobalFileNames.customModes)
 			try {
 				const content = await fs.readFile(globalModesPath, "utf-8")
-				const data = yaml.parse(content)
-				if (data?.customModes && Array.isArray(data.customModes)) {
-					for (const mode of data.customModes) {
-						// Only consider marketplace-installed modes and key by marketplaceItemId
-						const fromMarketplace = (mode as any)?.installedFromMarketplace === true
-						const marketplaceItemId = (mode as any)?.marketplaceItemId
-						if (fromMarketplace && typeof marketplaceItemId === "string" && marketplaceItemId.length > 0) {
-							metadata[marketplaceItemId] = {
-								type: "mode",
-							}
-						}
-					}
-				}
+				this.collectInstalledModesFromYaml(content, metadata)
 			} catch (error) {
 				// File doesn't exist or can't be read, skip
 			}

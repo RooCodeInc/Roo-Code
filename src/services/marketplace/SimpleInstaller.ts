@@ -2,10 +2,11 @@ import * as vscode from "vscode"
 import * as path from "path"
 import * as fs from "fs/promises"
 import * as yaml from "yaml"
-import type { MarketplaceItem, MarketplaceItemType, InstallMarketplaceItemOptions, McpParameter } from "@roo-code/types"
+import type { MarketplaceItem, MarketplaceItemType, InstallMarketplaceItemOptions, McpParameter, ModeConfig } from "@roo-code/types"
 import { GlobalFileNames } from "../../shared/globalFileNames"
 import { ensureSettingsDirectoryExists } from "../../utils/globalContext"
 import type { CustomModesManager } from "../../core/config/CustomModesManager"
+import { t } from "../../i18n"
 
 export interface InstallOptions {
 	target: "project" | "global"
@@ -28,7 +29,7 @@ export class SimpleInstaller {
 			case "mcp":
 				return await this.installMcp(item, target, options)
 			default:
-				throw new Error(`Unsupported item type: ${(item as any).type}`)
+				throw new Error("Unsupported item type")
 		}
 	}
 
@@ -51,8 +52,8 @@ export class SimpleInstaller {
 			const parsedMode = yaml.parse(item.content)
 			// Annotate marketplace origin to disambiguate from user-created modes
 			if (parsedMode && typeof parsedMode === "object") {
-				;(parsedMode as any).installedFromMarketplace = true
-				;(parsedMode as any).marketplaceItemId = item.id
+				;(parsedMode as ModeConfig).installedFromMarketplace = true
+				;(parsedMode as ModeConfig).marketplaceItemId = item.id
 			}
 			const importData = {
 				customModes: [parsedMode],
@@ -97,8 +98,8 @@ export class SimpleInstaller {
 		const modeData = yaml.parse(item.content)
 		// Annotate marketplace origin fields for fallback path as well
 		if (modeData && typeof modeData === "object") {
-			;(modeData as any).installedFromMarketplace = true
-			;(modeData as any).marketplaceItemId = item.id
+			;(modeData as ModeConfig).installedFromMarketplace = true
+			;(modeData as ModeConfig).marketplaceItemId = item.id
 		}
 
 		// Read existing file or create new structure
@@ -301,7 +302,7 @@ export class SimpleInstaller {
 				await this.removeMcp(item, target)
 				break
 			default:
-				throw new Error(`Unsupported item type: ${(item as any).type}`)
+				throw new Error("Unsupported item type")
 		}
 	}
 
@@ -334,7 +335,7 @@ export class SimpleInstaller {
 		// Get the current modes and locate the exact marketplace-installed mode for the selected target
 		const modes = await this.customModesManager.getCustomModes()
 		const candidate = modes.find(
-			(m: any) =>
+			(m: ModeConfig) =>
 				m.slug === modeSlug &&
 				m.installedFromMarketplace === true &&
 				m.marketplaceItemId === item.id &&
@@ -342,15 +343,15 @@ export class SimpleInstaller {
 		)
 
 		if (!candidate) {
-			throw new Error("This mode was not installed from the marketplace for the selected target")
+			throw new Error(t("common:customModes.errors.modeNotFound"))
 		}
 
 		// Delete only from the selected source to avoid unintended removals
 		if (typeof (this.customModesManager as any).deleteCustomModeForSource === "function") {
 			await (this.customModesManager as any).deleteCustomModeForSource(modeSlug, target, true)
 		} else {
-			// Fallback to legacy deletion if helper is not available
-			await this.customModesManager.deleteCustomMode(modeSlug, true)
+			// Scoped deletion not supported in this version
+			throw new Error(t("marketplace:errors.scopedDeletionNotSupported"))
 		}
 	}
 

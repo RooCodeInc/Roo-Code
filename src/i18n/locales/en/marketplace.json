@@ -65,5 +65,8 @@
 		"removing": "Removing item: \"{{itemName}}\"",
 		"removeSuccess": "\"{{itemName}}\" removed successfully",
 		"removeError": "Failed to remove \"{{itemName}}\": {{errorMessage}}"
+	},
+	"errors": {
+		"scopedDeletionNotSupported": "Scoped deletion is not supported in this version. Please update Roo Code to the latest version and try again."
 	}
 }

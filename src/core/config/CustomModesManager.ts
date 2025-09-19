@@ -563,35 +563,35 @@ export class CustomModesManager {
 		fromMarketplace = false,
 	): Promise<void> {
 		try {
-			const settingsPath = await this.getCustomModesFilePath()
-			const roomodesPath = await this.getWorkspaceRoomodes()
-
-			let targetPath: string | undefined
-			let modeToDelete: ModeConfig | undefined
-
-			if (source === "project") {
-				if (!roomodesPath) {
-					throw new Error(t("common:customModes.errors.noWorkspaceForProject"))
-				}
-				targetPath = roomodesPath
-				const roomodesModes = await this.loadModesFromFile(roomodesPath)
-				modeToDelete = roomodesModes.find((m) => m.slug === slug)
-			} else {
-				targetPath = settingsPath
-				const settingsModes = await this.loadModesFromFile(settingsPath)
-				modeToDelete = settingsModes.find((m) => m.slug === slug)
-			}
-
-			if (!modeToDelete) {
-				throw new Error(t("common:customModes.errors.modeNotFound"))
-			}
-
 			await this.queueWrite(async () => {
+				const settingsPath = await this.getCustomModesFilePath()
+				const roomodesPath = await this.getWorkspaceRoomodes()
+
+				let targetPath: string
+				let modeToDelete: ModeConfig | undefined
+
+				if (source === "project") {
+					if (!roomodesPath) {
+						throw new Error(t("common:customModes.errors.noWorkspaceForProject"))
+					}
+					targetPath = roomodesPath
+					const roomodesModes = await this.loadModesFromFile(roomodesPath)
+					modeToDelete = roomodesModes.find((m) => m.slug === slug)
+				} else {
+					targetPath = settingsPath
+					const settingsModes = await this.loadModesFromFile(settingsPath)
+					modeToDelete = settingsModes.find((m) => m.slug === slug)
+				}
+
+				if (!modeToDelete) {
+					throw new Error(t("common:customModes.errors.modeNotFound"))
+				}
+
 				// Delete only from the selected source file
-				await this.updateModesInFile(targetPath!, (modes) => modes.filter((m) => m.slug !== slug))
+				await this.updateModesInFile(targetPath, (modes) => modes.filter((m) => m.slug !== slug))
 
 				// Delete associated rules folder using the located mode (preserves correct scope)
-				await this.deleteRulesFolder(slug, modeToDelete!, fromMarketplace)
+				await this.deleteRulesFolder(slug, modeToDelete, fromMarketplace)
 
 				// Refresh state and clear caches
 				this.clearCache()
