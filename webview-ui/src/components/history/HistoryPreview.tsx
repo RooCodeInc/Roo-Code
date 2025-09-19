@@ -7,18 +7,22 @@ import { useTaskSearch } from "./useTaskSearch"
 import TaskItem from "./TaskItem"
 
 const HistoryPreview = () => {
-	const { tasks } = useTaskSearch()
+	const { tasks, recentTasks } = useTaskSearch()
 	const { t } = useAppTranslation()
 
 	const handleViewAllHistory = () => {
 		vscode.postMessage({ type: "switchTab", tab: "history" })
 	}
 
+	const previewSource = tasks.length > 0 ? tasks : recentTasks
+	const previewTasks = previewSource.slice(0, 3)
+	const hasAnyTasks = recentTasks.length > 0
+
 	return (
 		<div className="flex flex-col gap-3">
-			{tasks.length !== 0 && (
+			{hasAnyTasks && (
 				<>
-					{tasks.slice(0, 3).map((item) => (
+					{previewTasks.map((item) => (
 						<TaskItem key={item.id} item={item} variant="compact" />
 					))}
 					<button

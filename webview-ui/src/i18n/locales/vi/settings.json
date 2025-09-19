@@ -393,7 +393,8 @@
 		},
 		"roo": {
 			"authenticatedMessage": "Đã xác thực an toàn thông qua tài khoản Roo Code Cloud của bạn.",
-			"connectButton": "Kết nối với Roo Code Cloud"
+			"connectButton": "Kết nối với Roo Code Cloud",
+			"startFreeTrialButton": "Start Free Pro Trial"
 		},
 		"openRouter": {
 			"providerRouting": {

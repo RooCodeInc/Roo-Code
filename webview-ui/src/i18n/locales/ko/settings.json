@@ -393,7 +393,8 @@
 		},
 		"roo": {
 			"authenticatedMessage": "Roo Code Cloud 계정을 통해 안전하게 인증되었습니다.",
-			"connectButton": "Roo Code Cloud에 연결"
+			"connectButton": "Roo Code Cloud에 연결",
+			"startFreeTrialButton": "Start Free Pro Trial"
 		},
 		"openRouter": {
 			"providerRouting": {

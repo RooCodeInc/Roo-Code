@@ -136,6 +136,10 @@ export const CloudView = ({ userInfo, isAuthenticated, cloudApiUrl, onDone }: Cl
 		vscode.postMessage({ type: "openExternal", url: cloudUrl })
 	}
 
+	const handleStartFreeTrial = () => {
+		vscode.postMessage({ type: "openExternal", url: "https://app.roocode.com/billing" })
+	}
+
 	const handleOpenCloudUrl = () => {
 		if (cloudApiUrl) {
 			vscode.postMessage({ type: "openExternal", url: cloudApiUrl })
@@ -272,9 +276,20 @@ export const CloudView = ({ userInfo, isAuthenticated, cloudApiUrl, onDone }: Cl
 							<div className={cn(authInProgress && "opacity-50")}>{renderCloudBenefitsContent(t)}</div>
 
 							{!authInProgress && (
-								<VSCodeButton appearance="primary" onClick={handleConnectClick} className="w-full">
-									{t("cloud:connect")}
-								</VSCodeButton>
+								<>
+									<VSCodeButton
+										appearance="primary"
+										onClick={handleStartFreeTrial}
+										className="w-full">
+										{t("cloud:startFreeTrial")}
+									</VSCodeButton>
+									<VSCodeButton
+										appearance="secondary"
+										onClick={handleConnectClick}
+										className="w-full">
+										{t("cloud:connect")}
+									</VSCodeButton>
+								</>
 							)}
 
 							{/* Manual entry section */}

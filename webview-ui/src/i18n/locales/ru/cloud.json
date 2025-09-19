@@ -4,9 +4,9 @@
 	"logOut": "Выход",
 	"testApiAuthentication": "Проверить аутентификацию API",
 	"signIn": "Подключиться к Roo Code Cloud",
-	"connect": "Подключиться сейчас",
+	"connect": "Connect to Roo Code Cloud",
 	"cloudBenefitsTitle": "Подключиться к Roo Code Cloud",
-	"cloudBenefitWalkaway": "Отслеживайте и управляйте задачами откуда угодно с Roomote Control",
+	"cloudBenefitWalkaway": "Follow and control tasks from anywhere, including your phone (Pro only)",
 	"cloudBenefitSharing": "Делитесь задачами с другими",
 	"cloudBenefitHistory": "Получите доступ к истории задач",
 	"cloudBenefitMetrics": "Получите целостное представление о потреблении токенов",
@@ -26,6 +26,6 @@
 	"upsell": {
 		"autoApprovePowerUser": "Предоставить Roo немного независимости? Управляйте им из любого места с помощью Roo Code Cloud. <learnMoreLink>Узнать больше</learnMoreLink>.",
 		"longRunningTask": "Это может занять некоторое время. Продолжайте из любого места с помощью Облака.",
-		"taskList": "Roo Code Cloud уже здесь: отслеживайте и управляйте своими задачами из любого места. <learnMoreLink>Узнать больше</learnMoreLink>."
+		"taskList": "💫 CODE SUPERNOVA 🌌<lineBreak/>Astronomical context • Long-running tasks • Mobile management via Roo Code Pro<lineBreak/>Try both free today by selecting <providersLink>provider Roo Code Cloud</providersLink>"
 	}
 }

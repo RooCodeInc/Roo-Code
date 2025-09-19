@@ -665,6 +665,14 @@ const ApiOptions = ({
 						<div className="flex flex-col gap-2">
 							<VSCodeButton
 								appearance="primary"
+								onClick={() =>
+									vscode.postMessage({ type: "openExternal", url: "https://app.roocode.com/billing" })
+								}
+								className="w-fit">
+								{t("settings:providers.roo.startFreeTrialButton")}
+							</VSCodeButton>
+							<VSCodeButton
+								appearance="secondary"
 								onClick={() => vscode.postMessage({ type: "rooCloudSignIn" })}
 								className="w-fit">
 								{t("settings:providers.roo.connectButton")}

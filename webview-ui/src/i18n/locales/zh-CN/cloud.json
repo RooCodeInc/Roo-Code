@@ -4,9 +4,9 @@
 	"logOut": "退出登录",
 	"testApiAuthentication": "测试 API 认证",
 	"signIn": "连接到 Roo Code Cloud",
-	"connect": "立即连接",
+	"connect": "Connect to Roo Code Cloud",
 	"cloudBenefitsTitle": "连接到 Roo Code Cloud",
-	"cloudBenefitWalkaway": "使用 Roomote Control 随时随地跟踪和控制任务",
+	"cloudBenefitWalkaway": "Follow and control tasks from anywhere, including your phone (Pro only)",
 	"cloudBenefitSharing": "与他人共享任务",
 	"cloudBenefitHistory": "访问您的任务历史",
 	"cloudBenefitMetrics": "获取您的令牌消耗的整体视图",
@@ -26,6 +26,6 @@
 	"upsell": {
 		"autoApprovePowerUser": "给 Roo 一些独立性？使用 Roo Code Cloud 从任何地方控制它。 <learnMoreLink>了解更多</learnMoreLink>。",
 		"longRunningTask": "这可能需要一段时间。使用 Cloud 从任何地方继续。",
-		"taskList": "Roo Code Cloud 在这里：从任何地方关注和控制您的任务。 <learnMoreLink>了解更多</learnMoreLink>。"
+		"taskList": "💫 CODE SUPERNOVA 🌌<lineBreak/>Astronomical context • Long-running tasks • Mobile management via Roo Code Pro<lineBreak/>Try both free today by selecting <providersLink>provider Roo Code Cloud</providersLink>"
 	}
 }

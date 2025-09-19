@@ -3035,5 +3035,10 @@ export const webviewMessageHandler = async (
 			})
 			break
 		}
+		case "openSettings": {
+			// Execute the settings command to open the settings panel
+			await vscode.commands.executeCommand(getCommand("settingsButtonClicked"))
+			break
+		}
 	}
 }

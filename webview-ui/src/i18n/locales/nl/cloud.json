@@ -4,9 +4,9 @@
 	"logOut": "Uitloggen",
 	"testApiAuthentication": "API-authenticatie testen",
 	"signIn": "Verbind met Roo Code Cloud",
-	"connect": "Nu verbinden",
+	"connect": "Connect to Roo Code Cloud",
 	"cloudBenefitsTitle": "Verbind met Roo Code Cloud",
-	"cloudBenefitWalkaway": "Volg en beheer taken van overal met Roomote Control",
+	"cloudBenefitWalkaway": "Follow and control tasks from anywhere, including your phone (Pro only)",
 	"cloudBenefitSharing": "Deel taken met anderen",
 	"cloudBenefitHistory": "Toegang tot je taakgeschiedenis",
 	"cloudBenefitMetrics": "Krijg een holistisch overzicht van je tokenverbruik",
@@ -26,6 +26,6 @@
 	"upsell": {
 		"autoApprovePowerUser": "Roo wat onafhankelijkheid geven? Bedien het overal met Roo Code Cloud. <learnMoreLink>Meer informatie</learnMoreLink>.",
 		"longRunningTask": "Dit kan even duren. Ga overal verder met de Cloud.",
-		"taskList": "Roo Code Cloud is hier: volg en beheer je taken overal. <learnMoreLink>Meer informatie</learnMoreLink>."
+		"taskList": "💫 CODE SUPERNOVA 🌌<lineBreak/>Astronomical context • Long-running tasks • Mobile management via Roo Code Pro<lineBreak/>Try both free today by selecting <providersLink>provider Roo Code Cloud</providersLink>"
 	}
 }

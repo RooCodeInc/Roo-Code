@@ -4,9 +4,9 @@
 	"logOut": "로그아웃",
 	"testApiAuthentication": "API 인증 테스트",
 	"signIn": "Roo Code Cloud에 연결",
-	"connect": "지금 연결",
+	"connect": "Connect to Roo Code Cloud",
 	"cloudBenefitsTitle": "Roo Code Cloud에 연결",
-	"cloudBenefitWalkaway": "Roomote Control로 어디서나 작업을 팔로우하고 제어하세요",
+	"cloudBenefitWalkaway": "Follow and control tasks from anywhere, including your phone (Pro only)",
 	"cloudBenefitSharing": "다른 사람과 작업 공유",
 	"cloudBenefitHistory": "작업 기록에 액세스",
 	"cloudBenefitMetrics": "토큰 소비에 대한 전체적인 보기 얻기",
@@ -26,6 +26,6 @@
 	"upsell": {
 		"autoApprovePowerUser": "Roo에게 약간의 독립성을 부여하시겠습니까? Roo Code Cloud로 어디서든 제어하세요. <learnMoreLink>더 알아보기</learnMoreLink>.",
 		"longRunningTask": "시간이 좀 걸릴 수 있습니다. Cloud로 어디서든 계속하세요.",
-		"taskList": "Roo Code Cloud가 여기 있습니다: 어디서든 작업을 추적하고 제어하세요. <learnMoreLink>더 알아보기</learnMoreLink>."
+		"taskList": "💫 CODE SUPERNOVA 🌌<lineBreak/>Astronomical context • Long-running tasks • Mobile management via Roo Code Pro<lineBreak/>Try both free today by selecting <providersLink>provider Roo Code Cloud</providersLink>"
 	}
 }

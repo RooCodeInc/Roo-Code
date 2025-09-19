@@ -393,7 +393,8 @@
 		},
 		"roo": {
 			"authenticatedMessage": "आपके Roo Code Cloud खाते के माध्यम से सुरक्षित रूप से प्रमाणित।",
-			"connectButton": "Roo Code Cloud से कनेक्ट करें"
+			"connectButton": "Roo Code Cloud से कनेक्ट करें",
+			"startFreeTrialButton": "Start Free Pro Trial"
 		},
 		"openRouter": {
 			"providerRouting": {

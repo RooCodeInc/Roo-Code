@@ -87,6 +87,7 @@ describe("HistoryPreview", () => {
 	it("renders nothing when no tasks are available", () => {
 		mockUseTaskSearch.mockReturnValue({
 			tasks: [],
+			recentTasks: [],
 			searchQuery: "",
 			setSearchQuery: vi.fn(),
 			sortOption: "newest",
@@ -107,6 +108,7 @@ describe("HistoryPreview", () => {
 	it("renders up to 3 tasks when tasks are available", () => {
 		mockUseTaskSearch.mockReturnValue({
 			tasks: mockTasks,
+			recentTasks: mockTasks,
 			searchQuery: "",
 			setSearchQuery: vi.fn(),
 			sortOption: "newest",
@@ -132,6 +134,7 @@ describe("HistoryPreview", () => {
 		const threeTasks = mockTasks.slice(0, 3)
 		mockUseTaskSearch.mockReturnValue({
 			tasks: threeTasks,
+			recentTasks: threeTasks,
 			searchQuery: "",
 			setSearchQuery: vi.fn(),
 			sortOption: "newest",
@@ -156,6 +159,7 @@ describe("HistoryPreview", () => {
 		const oneTask = mockTasks.slice(0, 1)
 		mockUseTaskSearch.mockReturnValue({
 			tasks: oneTask,
+			recentTasks: oneTask,
 			searchQuery: "",
 			setSearchQuery: vi.fn(),
 			sortOption: "newest",
@@ -175,6 +179,7 @@ describe("HistoryPreview", () => {
 	it("passes correct props to TaskItem components", () => {
 		mockUseTaskSearch.mockReturnValue({
 			tasks: mockTasks.slice(0, 3),
+			recentTasks: mockTasks.slice(0, 3),
 			searchQuery: "",
 			setSearchQuery: vi.fn(),
 			sortOption: "newest",
@@ -227,5 +232,26 @@ describe("HistoryPreview", () => {
 		const { container } = render(<HistoryPreview />)
 
 		expect(container.firstChild).toHaveClass("flex", "flex-col", "gap-3")
+	})
+
+	it("falls back to recent tasks when filtered tasks are empty", () => {
+		mockUseTaskSearch.mockReturnValue({
+			tasks: [],
+			recentTasks: mockTasks,
+			searchQuery: "",
+			setSearchQuery: vi.fn(),
+			sortOption: "newest",
+			setSortOption: vi.fn(),
+			lastNonRelevantSort: null,
+			setLastNonRelevantSort: vi.fn(),
+			showAllWorkspaces: false,
+			setShowAllWorkspaces: vi.fn(),
+		})
+
+		render(<HistoryPreview />)
+
+		expect(screen.getByTestId("task-item-task-1")).toBeInTheDocument()
+		expect(screen.getByTestId("task-item-task-2")).toBeInTheDocument()
+		expect(screen.getByTestId("task-item-task-3")).toBeInTheDocument()
 	})
 })

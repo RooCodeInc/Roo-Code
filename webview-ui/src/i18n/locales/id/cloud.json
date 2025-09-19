@@ -4,9 +4,9 @@
 	"logOut": "Keluar",
 	"testApiAuthentication": "Uji Autentikasi API",
 	"signIn": "Hubungkan ke Roo Code Cloud",
-	"connect": "Hubungkan Sekarang",
+	"connect": "Connect to Roo Code Cloud",
 	"cloudBenefitsTitle": "Hubungkan ke Roo Code Cloud",
-	"cloudBenefitWalkaway": "Ikuti dan kontrol tugas dari mana saja dengan Roomote Control",
+	"cloudBenefitWalkaway": "Follow and control tasks from anywhere, including your phone (Pro only)",
 	"cloudBenefitSharing": "Bagikan tugas dengan orang lain",
 	"cloudBenefitHistory": "Akses riwayat tugas Anda",
 	"cloudBenefitMetrics": "Dapatkan tampilan holistik konsumsi token Anda",
@@ -26,6 +26,6 @@
 	"upsell": {
 		"autoApprovePowerUser": "Memberi Roo sedikit kebebasan? Kendalikan dari mana saja dengan Roo Code Cloud. <learnMoreLink>Pelajari lebih lanjut</learnMoreLink>.",
 		"longRunningTask": "Ini mungkin akan memakan waktu cukup lama. Lanjutkan dari mana saja dengan Cloud.",
-		"taskList": "Roo Code Cloud ada di sini: ikuti dan kendalikan tugas Anda dari mana saja. <learnMoreLink>Pelajari lebih lanjut</learnMoreLink>."
+		"taskList": "💫 CODE SUPERNOVA 🌌<lineBreak/>Astronomical context • Long-running tasks • Mobile management via Roo Code Pro<lineBreak/>Try both free today by selecting <providersLink>provider Roo Code Cloud</providersLink>"
 	}
 }

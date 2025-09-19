@@ -57,7 +57,6 @@ import { CheckpointWarning } from "./CheckpointWarning"
 import { QueuedMessages } from "./QueuedMessages"
 import DismissibleUpsell from "../common/DismissibleUpsell"
 import { useCloudUpsell } from "@src/hooks/useCloudUpsell"
-import { Cloud } from "lucide-react"
 
 export interface ChatViewProps {
 	isHidden: boolean
@@ -131,7 +130,8 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		messagesRef.current = messages
 	}, [messages])
 
-	const { tasks } = useTaskSearch()
+	const { tasks, recentTasks } = useTaskSearch()
+	const hasTaskHistory = recentTasks.length > 0
 
 	// Initialize expanded state based on the persisted setting (default to expanded if undefined)
 	const [isExpanded, setIsExpanded] = useState(
@@ -212,7 +212,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 
 	const {
 		isOpen: isUpsellOpen,
-		openUpsell,
+		openUpsell: _openUpsell,
 		closeUpsell,
 		handleConnect,
 	} = useCloudUpsell({
@@ -1819,10 +1819,10 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			) : (
 				<div className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-4 relative">
 					{/* Moved Task Bar Header Here */}
-					{tasks.length !== 0 && (
+					{hasTaskHistory && (
 						<div className="flex text-vscode-descriptionForeground w-full mx-auto px-5 pt-3">
 							<div className="flex items-center gap-1 cursor-pointer" onClick={toggleExpanded}>
-								{tasks.length < 10 && (
+								{recentTasks.length < 10 && (
 									<span className={`font-medium text-xs `}>{t("history:recentTasks")}</span>
 								)}
 								<span
@@ -1847,23 +1847,29 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							) : (
 								<>
 									<DismissibleUpsell
-										upsellId="taskList"
-										icon={<Cloud className="size-4 mt-0.5 shrink-0" />}
-										onClick={() => openUpsell()}
+										upsellId="taskListSupernova"
 										dismissOnClick={false}
 										className="bg-vscode-editor-background p-4 !text-base">
-										<Trans
-											i18nKey="cloud:upsell.taskList"
-											components={{
-												learnMoreLink: <VSCodeLink href="#" />,
-											}}
-										/>
+										<div className="w-full text-center leading-relaxed">
+											<Trans
+												i18nKey="cloud:upsell.taskList"
+												components={{
+													lineBreak: <br />,
+													providersLink: (
+														<VSCodeLink
+															href="#"
+															onClick={() => vscode.postMessage({ type: "openSettings" })}
+														/>
+													),
+												}}
+											/>
+										</div>
 									</DismissibleUpsell>
 								</>
 							)}
 						</div>
 						{/* Show the task history preview if expanded and tasks exist */}
-						{taskHistory.length > 0 && isExpanded && <HistoryPreview />}
+						{hasTaskHistory && isExpanded && <HistoryPreview />}
 					</div>
 				</div>
 			)}

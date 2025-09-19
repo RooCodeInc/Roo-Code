@@ -393,7 +393,8 @@
 		},
 		"roo": {
 			"authenticatedMessage": "已透過 Roo Code Cloud 帳戶安全認證。",
-			"connectButton": "連接到 Roo Code Cloud"
+			"connectButton": "連接到 Roo Code Cloud",
+			"startFreeTrialButton": "Start Free Pro Trial"
 		},
 		"openRouter": {
 			"providerRouting": {
