@@ -94,10 +94,6 @@ import { readApiMessages, saveApiMessages, saveTaskMessages } from "../task-pers
 import { getNonce } from "./getNonce"
 import { getUri } from "./getUri"
 
-import {
-	addCancelReasonToLastApiReqStarted,
-	appendAssistantInterruptionIfNeeded,
-} from "../task-persistence/cancelBookkeeping"
 /**
  * https://github.com/microsoft/vscode-webview-ui-toolkit-samples/blob/main/default/weather-webview/src/providers/WeatherViewProvider.ts
  * https://github.com/KumarVariable/vscode-extension-sidebar-html/blob/master/src/customSidebarViewProvider.ts
@@ -2600,25 +2596,6 @@ export class ClineProvider
 				`[cancelTask] Skipping cancel bookkeeping and rehydrate: current instance ${current.instanceId} != original ${originalInstanceId}`,
 			)
 			return
-		}
-
-		// Provider-side cancel bookkeeping to mirror abortStream effects for user_cancelled
-		try {
-			// Persist cancelReason to last api_req_started in UI messages
-			await addCancelReasonToLastApiReqStarted({
-				taskId: task.taskId,
-				globalStoragePath: this.contextProxy.globalStorageUri.fsPath,
-				reason: "user_cancelled",
-			})
-
-			// Append assistant interruption marker to API conversation history if needed
-			await appendAssistantInterruptionIfNeeded({
-				taskId: task.taskId,
-				globalStoragePath: this.contextProxy.globalStorageUri.fsPath,
-				text: `[${t("common:interruption.responseInterruptedByUser")}]`,
-			})
-		} catch (e) {
-			this.log(`[cancelTask] Cancel bookkeeping failed: ${e instanceof Error ? e.message : String(e)}`)
 		}
 
 		// Final race check before rehydrate to avoid duplicate rehydration
