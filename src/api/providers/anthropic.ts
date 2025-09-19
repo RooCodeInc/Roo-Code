@@ -45,13 +45,18 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 		const cacheControl: CacheControlEphemeral = { type: "ephemeral" }
 		let { id: modelId, betas = [], maxTokens, temperature, reasoning: thinking } = this.getModel()
 
-		// Add 1M context beta flag if enabled for Claude Sonnet 4
-		if (modelId === "claude-sonnet-4-20250514" && this.options.anthropicBeta1MContext) {
+		// Add 1M context beta flag if enabled for Claude Sonnet 4 and 4.5
+		if (
+			(modelId === "claude-sonnet-4-20250514" || modelId === "claude-sonnet-4-5-20250514") &&
+			this.options.anthropicBeta1MContext
+		) {
 			betas.push("context-1m-2025-08-07")
 		}
 
 		switch (modelId) {
+			case "claude-sonnet-4-5-20250514":
 			case "claude-sonnet-4-20250514":
+			case "claude-opus-4-5-20250514":
 			case "claude-opus-4-1-20250805":
 			case "claude-opus-4-20250514":
 			case "claude-3-7-sonnet-20250219":
@@ -110,7 +115,9 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 
 						// Then check for models that support prompt caching
 						switch (modelId) {
+							case "claude-sonnet-4-5-20250514":
 							case "claude-sonnet-4-20250514":
+							case "claude-opus-4-5-20250514":
 							case "claude-opus-4-1-20250805":
 							case "claude-opus-4-20250514":
 							case "claude-3-7-sonnet-20250219":
@@ -243,8 +250,11 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 		let id = modelId && modelId in anthropicModels ? (modelId as AnthropicModelId) : anthropicDefaultModelId
 		let info: ModelInfo = anthropicModels[id]
 
-		// If 1M context beta is enabled for Claude Sonnet 4, update the model info
-		if (id === "claude-sonnet-4-20250514" && this.options.anthropicBeta1MContext) {
+		// If 1M context beta is enabled for Claude Sonnet 4 or 4.5, update the model info
+		if (
+			(id === "claude-sonnet-4-20250514" || id === "claude-sonnet-4-5-20250514") &&
+			this.options.anthropicBeta1MContext
+		) {
 			// Use the tier pricing for 1M context
 			const tier = info.tiers?.[0]
 			if (tier) {
