@@ -1,5 +1,6 @@
-import React, { memo, useEffect, useRef, useState } from "react"
+import React, { memo, useEffect, useRef, useState, useMemo } from "react"
 import { useTranslation } from "react-i18next"
+import debounce from "debounce"
 
 import MarkdownBlock from "../common/MarkdownBlock"
 import { Clock, Lightbulb } from "lucide-react"
@@ -56,13 +57,45 @@ ElapsedTime.displayName = "ElapsedTime"
  * - Heading uses i18n key chat:reasoning.thinking
  * - Timer runs while reasoning is active (no persistence)
  * - Timer is isolated in a memoized component to prevent full re-renders
+ * - Content updates are debounced to prevent excessive re-renders during streaming
  */
 export const ReasoningBlock = ({ content, isStreaming, isLast }: ReasoningBlockProps) => {
 	const { t } = useTranslation()
 	const startTimeRef = useRef<number>(Date.now())
+	const [debouncedContent, setDebouncedContent] = useState<string>(content || "")
+
+	// Create a debounced function to update content
+	// This limits content updates to a maximum of ~10 per second (100ms debounce)
+	const updateDebouncedContent = useMemo(
+		() =>
+			debounce((newContent: string) => {
+				setDebouncedContent(newContent)
+			}, 100),
+		[],
+	)
+
+	// Update debounced content when content changes
+	useEffect(() => {
+		if (isStreaming) {
+			// During streaming, use debounced updates
+			updateDebouncedContent(content || "")
+		} else {
+			// When not streaming, update immediately for final content
+			setDebouncedContent(content || "")
+			// Cancel any pending debounced updates
+			updateDebouncedContent.clear()
+		}
+	}, [content, isStreaming, updateDebouncedContent])
+
+	// Cleanup debounce on unmount
+	useEffect(() => {
+		return () => {
+			updateDebouncedContent.clear()
+		}
+	}, [updateDebouncedContent])
 
 	// Only render markdown when there's actual content
-	const hasContent = (content?.trim()?.length ?? 0) > 0
+	const hasContent = (debouncedContent?.trim()?.length ?? 0) > 0
 
 	return (
 		<div className="py-1">
@@ -75,7 +108,7 @@ export const ReasoningBlock = ({ content, isStreaming, isLast }: ReasoningBlockP
 			</div>
 			{hasContent && (
 				<div className="px-3 italic text-vscode-descriptionForeground">
-					<MarkdownBlock markdown={content} />
+					<MarkdownBlock markdown={debouncedContent} />
 				</div>
 			)}
 		</div>
