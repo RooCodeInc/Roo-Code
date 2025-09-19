@@ -286,9 +286,9 @@ export default function Privacy() {
 						</li>
 						<li>
 							<strong>Marketing communications:</strong> You can unsubscribe from marketing and
-							promotional emails by clicking the unsubscribe link in those emails or by updating your
-							email preferences in your account settings. Transactional or service‑related emails (such as
-							password resets, billing notices, or security alerts) will continue even if you opt out.
+							promotional emails by clicking the unsubscribe link in those emails. Transactional or
+							service‑related emails (such as password resets, billing notices, or security alerts) will
+							continue even if you opt out.
 						</li>
 					</ul>
 
