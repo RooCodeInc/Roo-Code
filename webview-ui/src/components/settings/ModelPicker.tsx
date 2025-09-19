@@ -126,13 +126,14 @@ export const ModelPicker = ({
 	}, [])
 
 	useEffect(() => {
-		if (!selectedModelId && !isInitialized.current) {
-			const initialValue = modelIds.includes(selectedModelId) ? selectedModelId : defaultModelId
+		// Only initialize if the field has never been set (undefined), not when it's an empty string
+		if (apiConfiguration[modelIdKey] === undefined && !isInitialized.current) {
+			const initialValue = defaultModelId
 			setApiConfigurationField(modelIdKey, initialValue, false) // false = automatic initialization
 		}
 
 		isInitialized.current = true
-	}, [modelIds, setApiConfigurationField, modelIdKey, selectedModelId, defaultModelId])
+	}, [modelIds, setApiConfigurationField, modelIdKey, apiConfiguration, defaultModelId])
 
 	// Cleanup timeouts on unmount to prevent test flakiness
 	useEffect(() => {
