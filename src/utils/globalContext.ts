@@ -1,13 +1,13 @@
-import { mkdir } from "fs/promises"
-import { join } from "path"
 import { ExtensionContext } from "vscode"
+import { getSettingsDirectoryPath } from "./storage"
 
 export async function getGlobalFsPath(context: ExtensionContext): Promise<string> {
 	return context.globalStorageUri.fsPath
 }
 
 export async function ensureSettingsDirectoryExists(context: ExtensionContext): Promise<string> {
-	const settingsDir = join(context.globalStorageUri.fsPath, "settings")
-	await mkdir(settingsDir, { recursive: true })
+	// Use getSettingsDirectoryPath to honor custom storage path setting
+	const settingsDir = await getSettingsDirectoryPath(context.globalStorageUri.fsPath)
+	// getSettingsDirectoryPath already creates the directory, so no need to call mkdir
 	return settingsDir
 }
