@@ -19,11 +19,6 @@ vi.mock("qrcode", () => ({
 // Mock react-i18next
 vi.mock("react-i18next")
 
-// Mock the cloud config
-vi.mock("@roo-code/cloud/src/config", () => ({
-	getRooCodeApiUrl: vi.fn(() => "https://app.roocode.com"),
-}))
-
 // Mock the extension state context
 vi.mock("@/context/ExtensionStateContext", () => ({
 	ExtensionStateContextProvider: ({ children }: { children: React.ReactNode }) => children,

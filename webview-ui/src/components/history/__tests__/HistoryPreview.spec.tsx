@@ -219,6 +219,7 @@ describe("HistoryPreview", () => {
 	it("renders with correct container classes", () => {
 		mockUseTaskSearch.mockReturnValue({
 			tasks: mockTasks.slice(0, 1),
+			recentTasks: mockTasks.slice(0, 1),
 			searchQuery: "",
 			setSearchQuery: vi.fn(),
 			sortOption: "newest",

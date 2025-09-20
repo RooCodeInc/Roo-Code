@@ -26,6 +26,7 @@
 	"upsell": {
 		"autoApprovePowerUser": "Roo에게 약간의 독립성을 부여하시겠습니까? Roo Code Cloud로 어디서든 제어하세요. <learnMoreLink>더 알아보기</learnMoreLink>.",
 		"longRunningTask": "시간이 좀 걸릴 수 있습니다. Cloud로 어디서든 계속하세요.",
-		"taskList": "💫 CODE SUPERNOVA 🌌<lineBreak/>Astronomical context • Long-running tasks • Mobile management via Roo Code Pro<lineBreak/>Try both free today by selecting <providersLink>provider Roo Code Cloud</providersLink>"
-	}
+		"taskList": "💫 STEALTH MODEL CODE SUPERNOVA 🌌<lineBreak/>Free tokens for intergalactic length tasks.<lineBreak/>Hop between devices with Roo Code Pro.<lineBreak/>Try both free by selecting <providersLink>provider Roo Code Cloud</providersLink>"
+	},
+	"startFreeTrial": "Start a Free Trial of Roo Code Pro"
 }

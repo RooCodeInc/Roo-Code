@@ -26,6 +26,7 @@
 	"upsell": {
 		"autoApprovePowerUser": "रू को थोड़ी स्वतंत्रता दे रहे हैं? रू कोड क्लाउड के साथ इसे कहीं से भी नियंत्रित करें। <learnMoreLink>और जानें</learnMoreLink>।",
 		"longRunningTask": "इसमें थोड़ा समय लग सकता है। क्लाउड के साथ कहीं से भी जारी रखें।",
-		"taskList": "💫 CODE SUPERNOVA 🌌<lineBreak/>Astronomical context • Long-running tasks • Mobile management via Roo Code Pro<lineBreak/>Try both free today by selecting <providersLink>provider Roo Code Cloud</providersLink>"
-	}
+		"taskList": "💫 STEALTH MODEL CODE SUPERNOVA 🌌<lineBreak/>Free tokens for intergalactic length tasks.<lineBreak/>Hop between devices with Roo Code Pro.<lineBreak/>Try both free by selecting <providersLink>provider Roo Code Cloud</providersLink>"
+	},
+	"startFreeTrial": "Start a Free Trial of Roo Code Pro"
 }

@@ -1850,7 +1850,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 										upsellId="taskListSupernova"
 										dismissOnClick={false}
 										className="bg-vscode-editor-background p-4 !text-base">
-										<div className="w-full text-center leading-relaxed">
+										<div className="w-full leading-relaxed">
 											<Trans
 												i18nKey="cloud:upsell.taskList"
 												components={{

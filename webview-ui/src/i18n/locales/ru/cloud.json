@@ -26,6 +26,7 @@
 	"upsell": {
 		"autoApprovePowerUser": "Предоставить Roo немного независимости? Управляйте им из любого места с помощью Roo Code Cloud. <learnMoreLink>Узнать больше</learnMoreLink>.",
 		"longRunningTask": "Это может занять некоторое время. Продолжайте из любого места с помощью Облака.",
-		"taskList": "💫 CODE SUPERNOVA 🌌<lineBreak/>Astronomical context • Long-running tasks • Mobile management via Roo Code Pro<lineBreak/>Try both free today by selecting <providersLink>provider Roo Code Cloud</providersLink>"
-	}
+		"taskList": "💫 STEALTH MODEL CODE SUPERNOVA 🌌<lineBreak/>Free tokens for intergalactic length tasks.<lineBreak/>Hop between devices with Roo Code Pro.<lineBreak/>Try both free by selecting <providersLink>provider Roo Code Cloud</providersLink>"
+	},
+	"startFreeTrial": "Start a Free Trial of Roo Code Pro"
 }
