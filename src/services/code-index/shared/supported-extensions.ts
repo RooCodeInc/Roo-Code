@@ -22,6 +22,11 @@ export const fallbackExtensions = [
 	".vb", // Visual Basic .NET - no dedicated WASM parser
 	".scala", // Scala - uses fallback chunking instead of Lua query workaround
 	".swift", // Swift - uses fallback chunking due to parser instability
+	".p", // OpenEdge ABL - no WASM parser available
+	".i", // OpenEdge ABL include file - no WASM parser available
+	".w", // OpenEdge ABL window file - no WASM parser available
+	".cls", // OpenEdge ABL class file - no WASM parser available
+	".df", // OpenEdge Data Definition - no WASM parser available
 ]
 
 /**
