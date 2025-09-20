@@ -207,7 +207,15 @@ export class DiffViewProvider {
 			await updatedDocument.save()
 		}
 
-		await vscode.window.showTextDocument(vscode.Uri.file(absolutePath), { preview: false, preserveFocus: true })
+		// Check if the file is already the active editor to avoid viewport jump
+		const activeEditor = vscode.window.activeTextEditor
+		const isAlreadyActive = activeEditor && arePathsEqual(activeEditor.document.uri.fsPath, absolutePath)
+
+		if (!isAlreadyActive) {
+			// Only show the document if it's not already the active editor
+			await vscode.window.showTextDocument(vscode.Uri.file(absolutePath), { preview: false, preserveFocus: true })
+		}
+
 		await this.closeAllDiffViews()
 
 		// Getting diagnostics before and after the file edit is a better approach than
@@ -405,10 +413,17 @@ export class DiffViewProvider {
 			await updatedDocument.save()
 
 			if (this.documentWasOpen) {
-				await vscode.window.showTextDocument(vscode.Uri.file(absolutePath), {
-					preview: false,
-					preserveFocus: true,
-				})
+				// Check if the file is already the active editor to avoid viewport jump
+				const activeEditor = vscode.window.activeTextEditor
+				const isAlreadyActive = activeEditor && arePathsEqual(activeEditor.document.uri.fsPath, absolutePath)
+
+				if (!isAlreadyActive) {
+					// Only show the document if it's not already the active editor
+					await vscode.window.showTextDocument(vscode.Uri.file(absolutePath), {
+						preview: false,
+						preserveFocus: true,
+					})
+				}
 			}
 
 			await this.closeAllDiffViews()
@@ -661,11 +676,17 @@ export class DiffViewProvider {
 		// Open the document to ensure diagnostics are loaded
 		// When openFile is false (PREVENT_FOCUS_DISRUPTION enabled), we only open in memory
 		if (openFile) {
-			// Show the document in the editor
-			await vscode.window.showTextDocument(vscode.Uri.file(absolutePath), {
-				preview: false,
-				preserveFocus: true,
-			})
+			// Check if the file is already the active editor to avoid viewport jump
+			const activeEditor = vscode.window.activeTextEditor
+			const isAlreadyActive = activeEditor && arePathsEqual(activeEditor.document.uri.fsPath, absolutePath)
+
+			if (!isAlreadyActive) {
+				// Only show the document if it's not already the active editor
+				await vscode.window.showTextDocument(vscode.Uri.file(absolutePath), {
+					preview: false,
+					preserveFocus: true,
+				})
+			}
 		} else {
 			// Just open the document in memory to trigger diagnostics without showing it
 			const doc = await vscode.workspace.openTextDocument(vscode.Uri.file(absolutePath))
