@@ -136,6 +136,8 @@ export const globalSettingsSchema = z.object({
 
 	telemetrySetting: telemetrySettingsSchema.optional(),
 
+	enhancedLoggingEnabled: z.boolean().optional(),
+
 	mcpEnabled: z.boolean().optional(),
 	enableMcpServerCreation: z.boolean().optional(),
 

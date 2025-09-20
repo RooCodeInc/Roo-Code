@@ -801,6 +801,13 @@
 			"import": "Import",
 			"export": "Export",
 			"reset": "Reset"
+		},
+		"enhancedLogging": {
+			"label": "Enhanced logging",
+			"description": "When enabled, writes detailed failure logs to the VS Code Output panel for troubleshooting. Logs remain local and are not uploaded.",
+			"bannerTitle": "Enhanced Logging Enabled",
+			"bannerMessage": "Detailed failure logs are being written to the VS Code Output panel. This may include sensitive information.",
+			"bannerSettings": "Disable in settings"
 		}
 	},
 	"thinkingBudget": {

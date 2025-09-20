@@ -2286,6 +2286,12 @@ export const webviewMessageHandler = async (
 			await provider.postStateToWebview()
 			break
 		}
+		case "enhancedLoggingEnabled": {
+			const enabled = message.bool ?? false
+			await updateGlobalState("enhancedLoggingEnabled", enabled)
+			await provider.postStateToWebview()
+			break
+		}
 		case "cloudButtonClicked": {
 			// Navigate to the cloud tab.
 			provider.postMessageToWebview({ type: "action", action: "cloudButtonClicked" })

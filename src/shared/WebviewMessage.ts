@@ -86,6 +86,7 @@ export interface WebviewMessage {
 		| "allowedMaxCost"
 		| "alwaysAllowSubtasks"
 		| "alwaysAllowUpdateTodoList"
+		| "enhancedLoggingEnabled"
 		| "autoCondenseContext"
 		| "autoCondenseContextPercent"
 		| "condensingApiConfigId"

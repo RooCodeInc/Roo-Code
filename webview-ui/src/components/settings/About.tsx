@@ -11,6 +11,7 @@ import { Package } from "@roo/package"
 import { vscode } from "@/utils/vscode"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui"
+import { useExtensionState } from "@/context/ExtensionStateContext"
 
 import { SectionHeader } from "./SectionHeader"
 import { Section } from "./Section"
@@ -22,6 +23,7 @@ type AboutProps = HTMLAttributes<HTMLDivElement> & {
 
 export const About = ({ telemetrySetting, setTelemetrySetting, className, ...props }: AboutProps) => {
 	const { t } = useAppTranslation()
+	const { enhancedLoggingEnabled, setEnhancedLoggingEnabled } = useExtensionState()
 
 	return (
 		<div className={cn("flex flex-col gap-2", className)} {...props}>
@@ -54,6 +56,21 @@ export const About = ({ telemetrySetting, setTelemetrySetting, className, ...pro
 								privacyLink: <VSCodeLink href="https://roocode.com/privacy" />,
 							}}
 						/>
+					</p>
+				</div>
+
+				<div>
+					<VSCodeCheckbox
+						checked={enhancedLoggingEnabled || false}
+						onChange={(e: any) => {
+							const checked = e.target.checked === true
+							setEnhancedLoggingEnabled(checked)
+							vscode.postMessage({ type: "enhancedLoggingEnabled", bool: checked })
+						}}>
+						{t("settings:footer.enhancedLogging.label")}
+					</VSCodeCheckbox>
+					<p className="text-vscode-descriptionForeground text-sm mt-0">
+						{t("settings:footer.enhancedLogging.description")}
 					</p>
 				</div>
 

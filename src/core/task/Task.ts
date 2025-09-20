@@ -73,6 +73,7 @@ import { TerminalRegistry } from "../../integrations/terminal/TerminalRegistry"
 // utils
 import { calculateApiCostAnthropic } from "../../shared/cost"
 import { getWorkspacePath } from "../../utils/path"
+import { logEnhancedError } from "../../utils/enhancedLogging"
 
 // prompts
 import { formatResponse } from "../prompts/responses"
@@ -2175,6 +2176,19 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// Cline instance to finish aborting (error is thrown here when
 					// any function in the for loop throws due to this.abort).
 					if (!this.abandoned) {
+						// Log enhanced error details if enabled
+						const provider = this.providerRef.deref()
+						if (provider && !this.abort) {
+							logEnhancedError(provider.context, error, {
+								operation: "API Stream Processing",
+								provider: this.apiConfiguration.apiProvider,
+								model: this.api.getModel().id,
+								taskId: this.taskId,
+								streamPosition: "during streaming",
+								assistantMessageLength: assistantMessage.length,
+							})
+						}
+
 						// If the stream failed, there's various states the task
 						// could be in (i.e. could have streamed some tools the user
 						// may have executed), so we just resort to replicating a
@@ -2679,6 +2693,20 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		} catch (error) {
 			this.isWaitingForFirstChunk = false
 			const isContextWindowExceededError = checkContextWindowExceededError(error)
+
+			// Log enhanced error details if enabled
+			const provider = this.providerRef.deref()
+			if (provider) {
+				logEnhancedError(provider.context, error, {
+					operation: "API Request (First Chunk)",
+					provider: this.apiConfiguration.apiProvider,
+					model: this.api.getModel().id,
+					taskId: this.taskId,
+					retryAttempt,
+					isContextWindowError: isContextWindowExceededError,
+					contextTokens: this.getTokenUsage().contextTokens,
+				})
+			}
 
 			// If it's a context window error and we haven't exceeded max retries for this error type
 			if (isContextWindowExceededError && retryAttempt < MAX_CONTEXT_WINDOW_RETRIES) {
