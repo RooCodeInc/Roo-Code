@@ -745,14 +745,14 @@ export const webviewMessageHandler = async (
 				const selection = await vscode.window.showQuickPick(
 					[
 						{
-							label: t("common:settingsFooter.importFromRemoteFile"),
-							description: t("common:settingsFooter.importFromRemoteFileDescription"),
-							id: "remote",
-						},
-						{
 							label: t("common:settingsFooter.importFromLocalFile"),
 							description: t("common:settingsFooter.importFromLocalFileDescription"),
 							id: "local",
+						},
+						{
+							label: t("common:settingsFooter.importFromRemoteFile"),
+							description: t("common:settingsFooter.importFromRemoteFileDescription"),
+							id: "remote",
 						},
 					],
 					{ placeHolder: t("common:settingsFooter.chooseImportSource") },
@@ -776,7 +776,7 @@ export const webviewMessageHandler = async (
 		case "importSettingsFromLocal": {
 			const content = message.text || ""
 			if (!content) {
-				vscode.window.showErrorMessage(t("common:errors.settings_import_failed"))
+				vscode.window.showErrorMessage(t("common:errors.settings_import_no_content"))
 				break
 			}
 

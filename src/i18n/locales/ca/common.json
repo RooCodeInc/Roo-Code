@@ -54,6 +54,7 @@
 		"custom_storage_path_unusable": "La ruta d'emmagatzematge personalitzada \"{{path}}\" no és utilitzable, s'utilitzarà la ruta predeterminada",
 		"cannot_access_path": "No es pot accedir a la ruta {{path}}: {{error}}",
 		"settings_import_failed": "Ha fallat la importació de la configuració: {{error}}.",
+		"settings_import_no_content": "No s'ha rebut cap contingut per importar la configuració.",
 		"mistake_limit_guidance": "Això pot indicar un error en el procés de pensament del model o la incapacitat d'utilitzar una eina correctament, que es pot mitigar amb orientació de l'usuari (p. ex. \"Prova de dividir la tasca en passos més petits\").",
 		"violated_organization_allowlist": "Ha fallat l'execució de la tasca: el perfil actual no és compatible amb la configuració de la teva organització",
 		"condense_failed": "Ha fallat la condensació del context",
