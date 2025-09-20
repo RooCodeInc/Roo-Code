@@ -1,0 +1,28 @@
+/* Styles for clickable mentions in the chat textarea */
+.mention-highlight-clickable .mention-context-textarea-highlight {
+	cursor: pointer;
+	position: relative;
+}
+
+.mention-highlight-clickable .mention-context-textarea-highlight:hover {
+	text-decoration: underline;
+	text-decoration-color: var(--vscode-textLink-foreground);
+	text-underline-offset: 2px;
+}
+
+/* Visual feedback for clickable state */
+.mention-highlight-clickable .mention-context-textarea-highlight::after {
+	content: "";
+	position: absolute;
+	inset: -2px;
+	border-radius: 3px;
+	pointer-events: none;
+	opacity: 0;
+	transition: opacity 0.15s ease;
+	background: var(--vscode-textLink-foreground);
+	mix-blend-mode: multiply;
+}
+
+.mention-highlight-clickable .mention-context-textarea-highlight:hover::after {
+	opacity: 0.1;
+}

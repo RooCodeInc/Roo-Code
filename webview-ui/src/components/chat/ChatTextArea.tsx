@@ -31,6 +31,7 @@ import { MAX_IMAGES_PER_MESSAGE } from "./ChatView"
 import ContextMenu from "./ContextMenu"
 import { IndexingStatusBadge } from "./IndexingStatusBadge"
 import { usePromptHistory } from "./hooks/usePromptHistory"
+import "../../styles/chat-textarea.css"
 
 interface ChatTextAreaProps {
 	inputValue: string
@@ -205,6 +206,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 		const [isMouseDownOnMenu, setIsMouseDownOnMenu] = useState(false)
 		const highlightLayerRef = useRef<HTMLDivElement>(null)
 		const [selectedMenuIndex, setSelectedMenuIndex] = useState(-1)
+		const [isCtrlOrCmdPressed, setIsCtrlOrCmdPressed] = useState(false)
 		const [selectedType, setSelectedType] = useState<ContextMenuOptionType | null>(null)
 		const [justDeletedSpaceAfterMention, setJustDeletedSpaceAfterMention] = useState(false)
 		const [intendedCursorPosition, setIntendedCursorPosition] = useState<number | null>(null)
@@ -712,6 +714,59 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			setIsMouseDownOnMenu(true)
 		}, [])
 
+		// Track ctrl/cmd key state
+		useEffect(() => {
+			const handleKeyDown = (e: KeyboardEvent) => {
+				if (e.ctrlKey || e.metaKey) {
+					setIsCtrlOrCmdPressed(true)
+				}
+			}
+
+			const handleKeyUp = (e: KeyboardEvent) => {
+				if (!e.ctrlKey && !e.metaKey) {
+					setIsCtrlOrCmdPressed(false)
+				}
+			}
+
+			window.addEventListener("keydown", handleKeyDown)
+			window.addEventListener("keyup", handleKeyUp)
+
+			return () => {
+				window.removeEventListener("keydown", handleKeyDown)
+				window.removeEventListener("keyup", handleKeyUp)
+			}
+		}, [])
+
+		// Handle clicks on mentions in the highlight layer
+		const handleHighlightClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+			// Only handle clicks with ctrl/cmd key pressed
+			if (!e.ctrlKey && !e.metaKey) {
+				return
+			}
+
+			// Get the clicked element
+			const target = e.target as HTMLElement
+
+			// Check if we clicked on a mention highlight
+			if (target.classList.contains("mention-context-textarea-highlight")) {
+				const mentionText = target.textContent
+				if (mentionText) {
+					// Extract the mention text (remove @ prefix if present)
+					const cleanMention = mentionText.startsWith("@") ? mentionText.slice(1) : mentionText
+
+					// Send message to open the mention
+					vscode.postMessage({
+						type: "openMention",
+						text: cleanMention,
+					})
+
+					// Prevent default behavior
+					e.preventDefault()
+					e.stopPropagation()
+				}
+			}
+		}, [])
+
 		const updateHighlights = useCallback(() => {
 			if (!textAreaRef.current || !highlightLayerRef.current) return
 
@@ -982,6 +1037,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 							<div
 								ref={highlightLayerRef}
 								data-testid="highlight-layer"
+								onClick={handleHighlightClick}
 								className={cn(
 									"absolute",
 									"inset-0",
@@ -1004,6 +1060,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 									"z-10",
 									"forced-color-adjust-none",
 									"rounded",
+									isCtrlOrCmdPressed && "mention-highlight-clickable",
 								)}
 								style={{
 									color: "transparent",
