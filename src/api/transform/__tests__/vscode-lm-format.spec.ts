@@ -170,7 +170,9 @@ describe("convertToVsCodeLmMessages", () => {
 
 		expect(result).toHaveLength(1)
 		const imagePlaceholder = result[0].content[1] as MockLanguageModelTextPart
-		expect(imagePlaceholder.value).toContain("[Image (base64): image/png not supported by VSCode LM API]")
+		expect(imagePlaceholder.value).toContain(
+			"[Image placeholder: base64 (image/png) - VS Code LM API image support pending]",
+		)
 	})
 })
 

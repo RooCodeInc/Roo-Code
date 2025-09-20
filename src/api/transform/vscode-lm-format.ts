@@ -85,8 +85,12 @@ export function convertToVsCodeLmMessages(
 					// Convert non-tool messages to TextParts after tool messages
 					...nonToolMessages.map((part) => {
 						if (part.type === "image") {
+							// TODO: When VS Code LM API adds LanguageModelImagePart support, convert images properly
+							// For now, we provide a placeholder text description
+							const imageType = part.source?.type || "unknown"
+							const mediaType = part.source?.media_type || "unknown"
 							return new vscode.LanguageModelTextPart(
-								`[Image (${part.source?.type || "Unknown source-type"}): ${part.source?.media_type || "unknown media-type"} not supported by VSCode LM API]`,
+								`[Image placeholder: ${imageType} (${mediaType}) - VS Code LM API image support pending]`,
 							)
 						}
 						return new vscode.LanguageModelTextPart(part.text)
@@ -129,7 +133,10 @@ export function convertToVsCodeLmMessages(
 					// Convert non-tool messages to TextParts after tool messages
 					...nonToolMessages.map((part) => {
 						if (part.type === "image") {
-							return new vscode.LanguageModelTextPart("[Image generation not supported by VSCode LM API]")
+							// Assistant-generated images are not yet supported
+							return new vscode.LanguageModelTextPart(
+								"[Image generation not yet supported by VS Code LM API]",
+							)
 						}
 						return new vscode.LanguageModelTextPart(part.text)
 					}),
