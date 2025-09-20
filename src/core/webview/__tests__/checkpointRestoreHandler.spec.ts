@@ -30,6 +30,8 @@ describe("checkpointRestoreHandler", () => {
 				mockCline.abort = true
 			}),
 			checkpointRestore: vi.fn(),
+			handleWebviewAskResponse: vi.fn(),
+			lastMessageTs: undefined,
 			clineMessages: [
 				{ ts: 1, type: "user", say: "user", text: "First message" },
 				{ ts: 2, type: "assistant", say: "assistant", text: "Response" },
@@ -237,6 +239,76 @@ describe("checkpointRestoreHandler", () => {
 			expect(vscode.window.showErrorMessage).toHaveBeenCalledWith(
 				"Error during checkpoint restore: Checkpoint restore failed",
 			)
+		})
+
+		it("should handle pending ask operations before checkpoint restore", async () => {
+			// Simulate a pending ask operation
+			mockCline.lastMessageTs = Date.now()
+
+			await handleCheckpointRestoreOperation({
+				provider: mockProvider,
+				currentCline: mockCline,
+				messageTs: 3,
+				messageIndex: 2,
+				checkpoint: { hash: "abc123" },
+				operation: "delete",
+			})
+
+			// Verify handleWebviewAskResponse was called to resolve pending ask
+			expect(mockCline.handleWebviewAskResponse).toHaveBeenCalledWith("messageResponse", "", undefined)
+
+			// Verify checkpoint restore was still called
+			expect(mockCline.checkpointRestore).toHaveBeenCalled()
+		})
+
+		it("should handle pending ask operations for edit operations", async () => {
+			// Simulate a pending ask operation
+			mockCline.lastMessageTs = Date.now()
+
+			const editData = {
+				editedContent: "Edited content",
+				images: [],
+				apiConversationHistoryIndex: 2,
+			}
+
+			await handleCheckpointRestoreOperation({
+				provider: mockProvider,
+				currentCline: mockCline,
+				messageTs: 3,
+				messageIndex: 2,
+				checkpoint: { hash: "abc123" },
+				operation: "edit",
+				editData,
+			})
+
+			// Verify handleWebviewAskResponse was called to resolve pending ask
+			expect(mockCline.handleWebviewAskResponse).toHaveBeenCalledWith("messageResponse", "", undefined)
+
+			// Verify checkpoint restore was still called
+			expect(mockCline.checkpointRestore).toHaveBeenCalled()
+
+			// Verify pending edit operation was set
+			expect(mockProvider.setPendingEditOperation).toHaveBeenCalled()
+		})
+
+		it("should not call handleWebviewAskResponse if no pending ask", async () => {
+			// No pending ask operation (lastMessageTs is undefined)
+			mockCline.lastMessageTs = undefined
+
+			await handleCheckpointRestoreOperation({
+				provider: mockProvider,
+				currentCline: mockCline,
+				messageTs: 3,
+				messageIndex: 2,
+				checkpoint: { hash: "abc123" },
+				operation: "delete",
+			})
+
+			// Verify handleWebviewAskResponse was NOT called
+			expect(mockCline.handleWebviewAskResponse).not.toHaveBeenCalled()
+
+			// Verify checkpoint restore was still called
+			expect(mockCline.checkpointRestore).toHaveBeenCalled()
 		})
 	})
 })
