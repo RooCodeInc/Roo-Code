@@ -126,6 +126,102 @@ export class OpenAiEmbedder extends OpenAiNativeHandler implements IEmbedder {
 	}
 
 	/**
+	 * Parses the Retry-After header to determine wait time
+	 * @param retryAfter The Retry-After header value
+	 * @returns The number of milliseconds to wait, or undefined if not parseable
+	 */
+	private parseRetryAfter(retryAfter: string | null): number | undefined {
+		if (!retryAfter) return undefined
+
+		// Check if it's a delay in seconds (numeric value)
+		const seconds = parseInt(retryAfter, 10)
+		if (!isNaN(seconds)) {
+			return seconds * 1000
+		}
+
+		// Check if it's an HTTP-date
+		const retryDate = new Date(retryAfter)
+		if (!isNaN(retryDate.getTime())) {
+			const now = Date.now()
+			const delay = retryDate.getTime() - now
+			return delay > 0 ? delay : 0
+		}
+
+		return undefined
+	}
+
+	/**
+	 * Extracts rate limit information from OpenAI SDK error
+	 * @param error The error from OpenAI SDK
+	 * @returns The number of milliseconds to wait, or undefined
+	 */
+	private extractRateLimitDelay(error: any): number | undefined {
+		// OpenAI SDK may include headers in the error object
+		if (error?.headers) {
+			// Try Retry-After header first
+			const retryAfter = error.headers["retry-after"] || error.headers["Retry-After"]
+			if (retryAfter) {
+				const delay = this.parseRetryAfter(retryAfter)
+				if (delay !== undefined) return delay
+			}
+
+			// Try X-RateLimit-Reset-After (seconds)
+			const resetAfter = error.headers["x-ratelimit-reset-after"] || error.headers["X-RateLimit-Reset-After"]
+			if (resetAfter) {
+				const seconds = parseInt(resetAfter, 10)
+				if (!isNaN(seconds)) {
+					return seconds * 1000
+				}
+			}
+
+			// Try X-RateLimit-Reset (Unix timestamp)
+			const resetTimestamp = error.headers["x-ratelimit-reset"] || error.headers["X-RateLimit-Reset"]
+			if (resetTimestamp) {
+				const timestamp = parseInt(resetTimestamp, 10)
+				if (!isNaN(timestamp)) {
+					const resetTime = timestamp * 1000 // Convert to milliseconds
+					const now = Date.now()
+					const delay = resetTime - now
+					if (delay > 0) return delay
+				}
+			}
+		}
+
+		// Check if the error response includes retry information
+		if (error?.response?.headers) {
+			const headers = error.response.headers
+
+			// Try the same header checks on response.headers
+			const retryAfter = headers.get?.("retry-after") || headers["retry-after"]
+			if (retryAfter) {
+				const delay = this.parseRetryAfter(retryAfter)
+				if (delay !== undefined) return delay
+			}
+
+			const resetAfter = headers.get?.("x-ratelimit-reset-after") || headers["x-ratelimit-reset-after"]
+			if (resetAfter) {
+				const seconds = parseInt(resetAfter, 10)
+				if (!isNaN(seconds)) {
+					return seconds * 1000
+				}
+			}
+
+			const resetTimestamp = headers.get?.("x-ratelimit-reset") || headers["x-ratelimit-reset"]
+			if (resetTimestamp) {
+				const timestamp = parseInt(resetTimestamp, 10)
+				if (!isNaN(timestamp)) {
+					const resetTime = timestamp * 1000
+					const now = Date.now()
+					const delay = resetTime - now
+					if (delay > 0) return delay
+				}
+			}
+		}
+
+		return undefined
+	}
+
+	/**
 	 * Helper method to handle batch embedding with retries and exponential backoff
 	 * @param batchTexts Array of texts to embed in this batch
 	 * @param model Model identifier to use
@@ -155,14 +251,32 @@ export class OpenAiEmbedder extends OpenAiNativeHandler implements IEmbedder {
 				// Check if it's a rate limit error
 				const httpError = error as HttpError
 				if (httpError?.status === 429 && hasMoreAttempts) {
-					const delayMs = INITIAL_DELAY_MS * Math.pow(2, attempts)
-					console.warn(
-						t("embeddings:rateLimitRetry", {
-							delayMs,
-							attempt: attempts + 1,
-							maxRetries: MAX_RETRIES,
-						}),
-					)
+					// Try to extract provider-specified delay
+					const providerDelay = this.extractRateLimitDelay(error)
+
+					let delayMs: number
+					if (providerDelay !== undefined) {
+						// Use provider-specified delay with a small buffer
+						delayMs = Math.min(providerDelay + 1000, 300000) // Cap at 5 minutes
+						console.warn(
+							t("embeddings:rateLimitRetry", {
+								delayMs,
+								attempt: attempts + 1,
+								maxRetries: MAX_RETRIES,
+							}) + " (using provider-specified delay)",
+						)
+					} else {
+						// Fallback to exponential backoff
+						delayMs = INITIAL_DELAY_MS * Math.pow(2, attempts)
+						console.warn(
+							t("embeddings:rateLimitRetry", {
+								delayMs,
+								attempt: attempts + 1,
+								maxRetries: MAX_RETRIES,
+							}) + " (using exponential backoff)",
+						)
+					}
+
 					await new Promise((resolve) => setTimeout(resolve, delayMs))
 					continue
 				}

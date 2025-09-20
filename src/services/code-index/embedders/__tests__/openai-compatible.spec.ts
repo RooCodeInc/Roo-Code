@@ -448,6 +448,265 @@ describe("OpenAICompatibleEmbedder", () => {
 				})
 			})
 
+			it("should honor Retry-After header when present", async () => {
+				const testTexts = ["Hello world"]
+				const testEmbedding = new Float32Array([0.25, 0.5, 0.75])
+				const base64String = Buffer.from(testEmbedding.buffer).toString("base64")
+
+				// Create error with Retry-After header info
+				const rateLimitError: any = {
+					status: 429,
+					message: "Rate limit exceeded",
+					headers: {
+						"retry-after": "3", // 3 seconds
+					},
+					rateLimitInfo: { retryAfterMs: 3000 },
+				}
+
+				mockEmbeddingsCreate.mockRejectedValueOnce(rateLimitError).mockResolvedValueOnce({
+					data: [{ embedding: base64String }],
+					usage: { prompt_tokens: 10, total_tokens: 15 },
+				})
+
+				const resultPromise = embedder.createEmbeddings(testTexts)
+
+				// First attempt fails immediately
+				await vitest.advanceTimersByTimeAsync(100)
+
+				// Should wait for provider-specified 3 seconds (plus 1s buffer = 4s)
+				await vitest.advanceTimersByTimeAsync(4000)
+
+				const result = await resultPromise
+
+				expect(mockEmbeddingsCreate).toHaveBeenCalledTimes(2)
+				expect(console.warn).toHaveBeenCalledWith(expect.stringContaining("(using provider-specified delay)"))
+				expect(result).toEqual({
+					embeddings: [[0.25, 0.5, 0.75]],
+					usage: { promptTokens: 10, totalTokens: 15 },
+				})
+			})
+
+			it("should parse Retry-After header as HTTP-date", async () => {
+				const testTexts = ["Hello world"]
+				const fullUrl = "https://api.example.com/v1/embeddings"
+				const embedder = new OpenAICompatibleEmbedder(fullUrl, testApiKey, testModelId)
+
+				// Future date 5 seconds from now
+				const futureDate = new Date(Date.now() + 5000)
+				const httpDate = futureDate.toUTCString()
+
+				const mockFetch = global.fetch as MockedFunction<typeof fetch>
+				mockFetch
+					.mockResolvedValueOnce({
+						ok: false,
+						status: 429,
+						headers: {
+							get: (name: string) => (name === "retry-after" ? httpDate : null),
+						},
+						text: async () => "Rate limited",
+					} as any)
+					.mockResolvedValueOnce({
+						ok: true,
+						status: 200,
+						json: async () => ({
+							data: [{ embedding: [0.1, 0.2, 0.3] }],
+							usage: { prompt_tokens: 10, total_tokens: 15 },
+						}),
+					} as any)
+
+				const resultPromise = embedder.createEmbeddings(testTexts)
+
+				// First attempt fails
+				await vitest.advanceTimersByTimeAsync(100)
+
+				// Should wait approximately 5 seconds (plus buffer)
+				await vitest.advanceTimersByTimeAsync(6000)
+
+				const result = await resultPromise
+
+				expect(mockFetch).toHaveBeenCalledTimes(2)
+				expect(result.embeddings).toEqual([[0.1, 0.2, 0.3]])
+			})
+
+			it("should handle X-RateLimit-Reset-After header", async () => {
+				const testTexts = ["Hello world"]
+				const fullUrl = "https://api.example.com/v1/embeddings"
+				const embedder = new OpenAICompatibleEmbedder(fullUrl, testApiKey, testModelId)
+
+				const mockFetch = global.fetch as MockedFunction<typeof fetch>
+				mockFetch
+					.mockResolvedValueOnce({
+						ok: false,
+						status: 429,
+						headers: {
+							get: (name: string) => (name === "x-ratelimit-reset-after" ? "2" : null),
+						},
+						text: async () => "Rate limited",
+					} as any)
+					.mockResolvedValueOnce({
+						ok: true,
+						status: 200,
+						json: async () => ({
+							data: [{ embedding: [0.1, 0.2, 0.3] }],
+							usage: { prompt_tokens: 10, total_tokens: 15 },
+						}),
+					} as any)
+
+				const resultPromise = embedder.createEmbeddings(testTexts)
+
+				// First attempt fails
+				await vitest.advanceTimersByTimeAsync(100)
+
+				// Should wait 2 seconds (plus buffer)
+				await vitest.advanceTimersByTimeAsync(3000)
+
+				const result = await resultPromise
+
+				expect(mockFetch).toHaveBeenCalledTimes(2)
+				expect(result.embeddings).toEqual([[0.1, 0.2, 0.3]])
+			})
+
+			it("should handle X-RateLimit-Reset header with Unix timestamp", async () => {
+				const testTexts = ["Hello world"]
+				const fullUrl = "https://api.example.com/v1/embeddings"
+				const embedder = new OpenAICompatibleEmbedder(fullUrl, testApiKey, testModelId)
+
+				// Unix timestamp 4 seconds in the future
+				const resetTimestamp = Math.floor((Date.now() + 4000) / 1000)
+
+				const mockFetch = global.fetch as MockedFunction<typeof fetch>
+				mockFetch
+					.mockResolvedValueOnce({
+						ok: false,
+						status: 429,
+						headers: {
+							get: (name: string) => (name === "x-ratelimit-reset" ? resetTimestamp.toString() : null),
+						},
+						text: async () => "Rate limited",
+					} as any)
+					.mockResolvedValueOnce({
+						ok: true,
+						status: 200,
+						json: async () => ({
+							data: [{ embedding: [0.1, 0.2, 0.3] }],
+							usage: { prompt_tokens: 10, total_tokens: 15 },
+						}),
+					} as any)
+
+				const resultPromise = embedder.createEmbeddings(testTexts)
+
+				// First attempt fails
+				await vitest.advanceTimersByTimeAsync(100)
+
+				// Should wait approximately 4 seconds (plus buffer)
+				await vitest.advanceTimersByTimeAsync(5000)
+
+				const result = await resultPromise
+
+				expect(mockFetch).toHaveBeenCalledTimes(2)
+				expect(result.embeddings).toEqual([[0.1, 0.2, 0.3]])
+			})
+
+			it("should handle Gemini-style structured retry info in error body", async () => {
+				const testTexts = ["Hello world"]
+				const fullUrl = "https://generativelanguage.googleapis.com/v1beta/openai/embeddings"
+				const embedder = new OpenAICompatibleEmbedder(fullUrl, testApiKey, testModelId)
+
+				const errorBody = {
+					error: {
+						code: 429,
+						message: "Resource exhausted",
+						details: [
+							{
+								metadata: {
+									retry_delay: "10s",
+								},
+							},
+						],
+					},
+				}
+
+				const mockFetch = global.fetch as MockedFunction<typeof fetch>
+				mockFetch
+					.mockResolvedValueOnce({
+						ok: false,
+						status: 429,
+						headers: {
+							get: () => null,
+						},
+						text: async () => JSON.stringify(errorBody),
+					} as any)
+					.mockResolvedValueOnce({
+						ok: true,
+						status: 200,
+						json: async () => ({
+							data: [{ embedding: [0.1, 0.2, 0.3] }],
+							usage: { prompt_tokens: 10, total_tokens: 15 },
+						}),
+					} as any)
+
+				const resultPromise = embedder.createEmbeddings(testTexts)
+
+				// First attempt fails
+				await vitest.advanceTimersByTimeAsync(100)
+
+				// Should wait 10 seconds (plus buffer)
+				await vitest.advanceTimersByTimeAsync(11000)
+
+				const result = await resultPromise
+
+				expect(mockFetch).toHaveBeenCalledTimes(2)
+				expect(result.embeddings).toEqual([[0.1, 0.2, 0.3]])
+			})
+
+			it("should parse duration strings correctly", async () => {
+				const embedder = new OpenAICompatibleEmbedder(testBaseUrl, testApiKey, testModelId)
+
+				// Access private method for testing
+				const parseDurationString = (embedder as any).parseDurationString.bind(embedder)
+
+				expect(parseDurationString("10s")).toBe(10000)
+				expect(parseDurationString("2m")).toBe(120000)
+				expect(parseDurationString("1h")).toBe(3600000)
+				expect(parseDurationString("invalid")).toBeUndefined()
+				expect(parseDurationString(null)).toBeUndefined()
+				expect(parseDurationString("")).toBeUndefined()
+			})
+
+			it("should fall back to exponential backoff when no Retry-After is provided", async () => {
+				const testTexts = ["Hello world"]
+				const rateLimitError = {
+					status: 429,
+					message: "Rate limit exceeded",
+					// No headers or rateLimitInfo
+				}
+
+				const testEmbedding = new Float32Array([0.25, 0.5, 0.75])
+				const base64String = Buffer.from(testEmbedding.buffer).toString("base64")
+
+				mockEmbeddingsCreate.mockRejectedValueOnce(rateLimitError).mockResolvedValueOnce({
+					data: [{ embedding: base64String }],
+					usage: { prompt_tokens: 10, total_tokens: 15 },
+				})
+
+				const resultPromise = embedder.createEmbeddings(testTexts)
+
+				// First attempt fails
+				await vitest.advanceTimersByTimeAsync(100)
+
+				// Should use exponential backoff (5s for first retry)
+				await vitest.advanceTimersByTimeAsync(5000)
+
+				const result = await resultPromise
+
+				expect(mockEmbeddingsCreate).toHaveBeenCalledTimes(2)
+				expect(console.warn).toHaveBeenCalledWith(expect.stringContaining("(using exponential backoff)"))
+				expect(result).toEqual({
+					embeddings: [[0.25, 0.5, 0.75]],
+					usage: { promptTokens: 10, totalTokens: 15 },
+				})
+			})
+
 			it("should not retry on non-rate-limit errors", async () => {
 				const testTexts = ["Hello world"]
 				const authError = new Error("Unauthorized")

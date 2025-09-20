@@ -27,6 +27,11 @@ interface OpenAIEmbeddingResponse {
 	}
 }
 
+interface RateLimitInfo {
+	retryAfterMs?: number
+	retryAfterDate?: Date
+}
+
 /**
  * OpenAI Compatible implementation of the embedder interface with batching and rate limiting.
  * This embedder allows using any OpenAI-compatible API endpoint by specifying a custom baseURL.
@@ -192,6 +197,134 @@ export class OpenAICompatibleEmbedder implements IEmbedder {
 	}
 
 	/**
+	 * Parses the Retry-After header to determine wait time
+	 * @param retryAfter The Retry-After header value
+	 * @returns The number of milliseconds to wait, or undefined if not parseable
+	 */
+	private parseRetryAfter(retryAfter: string | null): number | undefined {
+		if (!retryAfter) return undefined
+
+		// Check if it's a delay in seconds (numeric value)
+		const seconds = parseInt(retryAfter, 10)
+		if (!isNaN(seconds)) {
+			return seconds * 1000
+		}
+
+		// Check if it's an HTTP-date
+		const retryDate = new Date(retryAfter)
+		if (!isNaN(retryDate.getTime())) {
+			const now = Date.now()
+			const delay = retryDate.getTime() - now
+			return delay > 0 ? delay : 0
+		}
+
+		return undefined
+	}
+
+	/**
+	 * Extracts rate limit information from response headers and body
+	 * @param response The fetch Response object
+	 * @param errorBody Optional error response body for providers that include retry info there
+	 * @returns Rate limit information if available
+	 */
+	private extractRateLimitInfo(response: Response | null, errorBody?: any): RateLimitInfo {
+		const info: RateLimitInfo = {}
+
+		if (!response) return info
+
+		// Helper function to safely get header value
+		const getHeader = (name: string): string | null => {
+			if (response.headers) {
+				// Check if it's a proper Headers object with get method
+				if (typeof response.headers.get === "function") {
+					return response.headers.get(name)
+				}
+				// Check if it's a plain object
+				if (typeof response.headers === "object") {
+					return (response.headers as any)[name] || null
+				}
+			}
+			return null
+		}
+
+		// Standard Retry-After header (used by most providers)
+		const retryAfter = getHeader("retry-after")
+		if (retryAfter) {
+			const delayMs = this.parseRetryAfter(retryAfter)
+			if (delayMs !== undefined) {
+				info.retryAfterMs = delayMs
+			}
+		}
+
+		// X-RateLimit-Reset-After header (used by some providers like Anthropic)
+		const resetAfter = getHeader("x-ratelimit-reset-after")
+		if (resetAfter) {
+			const seconds = parseInt(resetAfter, 10)
+			if (!isNaN(seconds)) {
+				info.retryAfterMs = seconds * 1000
+			}
+		}
+
+		// X-RateLimit-Reset header (Unix timestamp)
+		const resetTimestamp = getHeader("x-ratelimit-reset")
+		if (resetTimestamp) {
+			const timestamp = parseInt(resetTimestamp, 10)
+			if (!isNaN(timestamp)) {
+				const resetTime = timestamp * 1000 // Convert to milliseconds
+				const now = Date.now()
+				const delay = resetTime - now
+				if (delay > 0) {
+					info.retryAfterMs = delay
+				}
+			}
+		}
+
+		// Check for Gemini-specific retry information in error body
+		if (errorBody && typeof errorBody === "object") {
+			// Gemini may include retry information in the error response
+			if (errorBody.error?.details) {
+				for (const detail of errorBody.error.details) {
+					if (detail.metadata?.retry_delay) {
+						// Parse duration string like "10s" or "1m"
+						const delay = this.parseDurationString(detail.metadata.retry_delay)
+						if (delay) {
+							info.retryAfterMs = delay
+						}
+					}
+				}
+			}
+		}
+
+		return info
+	}
+
+	/**
+	 * Parses duration strings like "10s", "1m", "1h" to milliseconds
+	 * @param duration Duration string
+	 * @returns Duration in milliseconds or undefined
+	 */
+	private parseDurationString(duration: string): number | undefined {
+		if (!duration || typeof duration !== "string") return undefined
+
+		const match = duration.match(/^(\d+)([smh])$/)
+		if (!match) return undefined
+
+		const value = parseInt(match[1], 10)
+		const unit = match[2]
+
+		switch (unit) {
+			case "s":
+				return value * 1000
+			case "m":
+				return value * 60 * 1000
+			case "h":
+				return value * 60 * 60 * 1000
+			default:
+				return undefined
+		}
+	}
+
+	/**
 	 * Makes a direct HTTP request to the embeddings endpoint
 	 * Used when the user provides a full endpoint URL (e.g., Azure OpenAI with query parameters)
 	 * @param url The full endpoint URL
@@ -223,9 +356,16 @@ export class OpenAICompatibleEmbedder implements IEmbedder {
 		if (!response || !response.ok) {
 			const status = response?.status || 0
 			let errorText = "No response"
+			let errorBody: any
 			try {
 				if (response && typeof response.text === "function") {
 					errorText = await response.text()
+					// Try to parse as JSON for structured error info
+					try {
+						errorBody = JSON.parse(errorText)
+					} catch {
+						// Not JSON, keep as text
+					}
 				} else if (response) {
 					errorText = `Error ${status}`
 				}
@@ -233,8 +373,14 @@ export class OpenAICompatibleEmbedder implements IEmbedder {
 				// Ignore text parsing errors
 				errorText = `Error ${status}`
 			}
-			const error = new Error(`HTTP ${status}: ${errorText}`) as HttpError
+			const error = new Error(`HTTP ${status}: ${errorText}`) as HttpError & { rateLimitInfo?: RateLimitInfo }
 			error.status = status || response?.status || 0
+
+			// Extract rate limit info if this is a 429 error
+			if (status === 429) {
+				error.rateLimitInfo = this.extractRateLimitInfo(response, errorBody)
+			}
+
 			throw error
 		}
 
@@ -266,20 +412,38 @@ export class OpenAICompatibleEmbedder implements IEmbedder {
 
 			try {
 				let response: OpenAIEmbeddingResponse
+				let rateLimitInfo: RateLimitInfo | undefined
 
 				if (isFullUrl) {
 					// Use direct HTTP request for full endpoint URLs
 					response = await this.makeDirectEmbeddingRequest(this.baseUrl, batchTexts, model)
 				} else {
 					// Use OpenAI SDK for base URLs
-					response = (await this.embeddingsClient.embeddings.create({
-						input: batchTexts,
-						model: model,
-						// OpenAI package (as of v4.78.1) has a parsing issue that truncates embedding dimensions to 256
-						// when processing numeric arrays, which breaks compatibility with models using larger dimensions.
-						// By requesting base64 encoding, we bypass the package's parser and handle decoding ourselves.
-						encoding_format: "base64",
-					})) as OpenAIEmbeddingResponse
+					try {
+						response = (await this.embeddingsClient.embeddings.create({
+							input: batchTexts,
+							model: model,
+							// OpenAI package (as of v4.78.1) has a parsing issue that truncates embedding dimensions to 256
+							// when processing numeric arrays, which breaks compatibility with models using larger dimensions.
+							// By requesting base64 encoding, we bypass the package's parser and handle decoding ourselves.
+							encoding_format: "base64",
+						})) as OpenAIEmbeddingResponse
+					} catch (sdkError: any) {
+						// Extract rate limit info from SDK errors
+						if (sdkError?.status === 429) {
+							// The OpenAI SDK may include headers in the error
+							if (sdkError.headers) {
+								const mockResponse = {
+									headers: new Map(Object.entries(sdkError.headers)),
+								} as any
+								rateLimitInfo = this.extractRateLimitInfo(mockResponse, sdkError.error)
+							}
+							// Re-throw with rate limit info attached
+							const error = sdkError as HttpError & { rateLimitInfo?: RateLimitInfo }
+							error.rateLimitInfo = rateLimitInfo
+						}
+						throw sdkError
+					}
 				}
 
 				// Convert base64 embeddings to float32 arrays
@@ -310,7 +474,7 @@ export class OpenAICompatibleEmbedder implements IEmbedder {
 						totalTokens: response.usage?.total_tokens || 0,
 					},
 				}
-			} catch (error) {
+			} catch (error: any) {
 				// Capture telemetry before error is reformatted
 				TelemetryService.instance.captureEvent(TelemetryEventName.CODE_INDEX_ERROR, {
 					error: error instanceof Error ? error.message : String(error),
@@ -322,24 +486,39 @@ export class OpenAICompatibleEmbedder implements IEmbedder {
 				const hasMoreAttempts = attempts < MAX_RETRIES - 1
 
 				// Check if it's a rate limit error
-				const httpError = error as HttpError
+				const httpError = error as HttpError & { rateLimitInfo?: RateLimitInfo }
 				if (httpError?.status === 429) {
-					// Update global rate limit state
+					// Update global rate limit state with provider-specific retry info
 					await this.updateGlobalRateLimitState(httpError)
 
 					if (hasMoreAttempts) {
-						// Calculate delay based on global rate limit state
-						const baseDelay = INITIAL_DELAY_MS * Math.pow(2, attempts)
-						const globalDelay = await this.getGlobalRateLimitDelay()
-						const delayMs = Math.max(baseDelay, globalDelay)
+						// Calculate delay based on provider guidance or fallback
+						let delayMs: number
 
-						console.warn(
-							t("embeddings:rateLimitRetry", {
-								delayMs,
-								attempt: attempts + 1,
-								maxRetries: MAX_RETRIES,
-							}),
-						)
+						if (httpError.rateLimitInfo?.retryAfterMs) {
+							// Use provider-specified delay
+							delayMs = httpError.rateLimitInfo.retryAfterMs
+							console.warn(
+								t("embeddings:rateLimitRetry", {
+									delayMs,
+									attempt: attempts + 1,
+									maxRetries: MAX_RETRIES,
+								}) + " (using provider-specified delay)",
+							)
+						} else {
+							// Fallback to exponential backoff
+							const baseDelay = INITIAL_DELAY_MS * Math.pow(2, attempts)
+							const globalDelay = await this.getGlobalRateLimitDelay()
+							delayMs = Math.max(baseDelay, globalDelay)
+							console.warn(
+								t("embeddings:rateLimitRetry", {
+									delayMs,
+									attempt: attempts + 1,
+									maxRetries: MAX_RETRIES,
+								}) + " (using exponential backoff)",
+							)
+						}
+
 						await new Promise((resolve) => setTimeout(resolve, delayMs))
 						continue
 					}
@@ -445,7 +624,7 @@ export class OpenAICompatibleEmbedder implements IEmbedder {
 	/**
 	 * Updates global rate limit state when a 429 error occurs
 	 */
-	private async updateGlobalRateLimitState(error: HttpError): Promise<void> {
+	private async updateGlobalRateLimitState(error: HttpError & { rateLimitInfo?: RateLimitInfo }): Promise<void> {
 		const release = await OpenAICompatibleEmbedder.globalRateLimitState.mutex.acquire()
 		try {
 			const state = OpenAICompatibleEmbedder.globalRateLimitState
@@ -461,14 +640,23 @@ export class OpenAICompatibleEmbedder implements IEmbedder {
 
 			state.lastRateLimitError = now
 
-			// Calculate exponential backoff based on consecutive errors
-			const baseDelay = 5000 // 5 seconds base
-			const maxDelay = 300000 // 5 minutes max
-			const exponentialDelay = Math.min(baseDelay * Math.pow(2, state.consecutiveRateLimitErrors - 1), maxDelay)
+			let delay: number
+
+			// Prefer provider-specified delay if available
+			if (error.rateLimitInfo?.retryAfterMs) {
+				delay = error.rateLimitInfo.retryAfterMs
+				// Add a small buffer to avoid hitting the limit immediately
+				delay = Math.min(delay + 1000, 300000) // Cap at 5 minutes
+			} else {
+				// Fallback to exponential backoff
+				const baseDelay = 5000 // 5 seconds base
+				const maxDelay = 300000 // 5 minutes max
+				delay = Math.min(baseDelay * Math.pow(2, state.consecutiveRateLimitErrors - 1), maxDelay)
+			}
 
 			// Set global rate limit
 			state.isRateLimited = true
-			state.rateLimitResetTime = now + exponentialDelay
+			state.rateLimitResetTime = now + delay
 
 			// Silent rate limit activation - no logging to prevent flooding
 		} finally {
