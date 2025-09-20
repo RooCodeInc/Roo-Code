@@ -3,8 +3,8 @@ import { ToolArgs } from "./types"
 /**
  * Prompt when todos are NOT required (default)
  */
-const PROMPT_WITHOUT_TODOS = `## new_task
-Description: This will let you create a new task instance in the chosen mode using your provided message.
+const PROMPT_WITHOUT_TODOS = `<tool name="new_task">
+<description>This will let you create a new task instance in the chosen mode using your provided message.</description>
 
 Parameters:
 - mode: (required) The slug of the mode to start the new task in (e.g., "code", "debug", "architect").
@@ -21,13 +21,14 @@ Example:
 <mode>code</mode>
 <message>Implement a new feature for the application</message>
 </new_task>
-`
+
+</tool>`
 
 /**
  * Prompt when todos ARE required
  */
-const PROMPT_WITH_TODOS = `## new_task
-Description: This will let you create a new task instance in the chosen mode using your provided message and initial todo list.
+const PROMPT_WITH_TODOS = `<tool name="new_task">
+<description>This will let you create a new task instance in the chosen mode using your provided message and initial todo list.</description>
 
 Parameters:
 - mode: (required) The slug of the mode to start the new task in (e.g., "code", "debug", "architect").
@@ -57,7 +58,7 @@ Example:
 </todos>
 </new_task>
 
-`
+</tool>`
 
 export function getNewTaskDescription(args: ToolArgs): string {
 	const todosRequired = args.settings?.newTaskRequireTodos === true

@@ -23,11 +23,13 @@ export function getFetchInstructionsDescription(enableMcpServerCreation?: boolea
 <task>create_mode</task>
 </fetch_instructions>`
 
-	return `## fetch_instructions
-Description: Request to fetch instructions to perform a task
+	return `<tool name="fetch_instructions">
+<description>Request to fetch instructions to perform a task</description>
 Parameters:
 - task: (required) The task to get instructions for.  This can take the following values:
 ${tasks}
 
-${example}`
+${example}
+
+</tool>`
 }

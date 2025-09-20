@@ -5,8 +5,8 @@ import { ToolArgs } from "./types"
  * Uses the simpler format: <read_file><path>file/path.ext</path></read_file>
  */
 export function getSimpleReadFileDescription(args: ToolArgs): string {
-	return `## read_file
-Description: Request to read the contents of a file. The tool outputs line-numbered content (e.g. "1 | const x = 1") for easy reference when discussing code.
+	return `<tool name="read_file">
+<description>Request to read the contents of a file. The tool outputs line-numbered content (e.g. "1 | const x = 1") for easy reference when discussing code.</description>
 
 Parameters:
 - path: (required) File path (relative to workspace directory ${args.cwd})
@@ -31,5 +31,7 @@ Examples:
 3. Reading a markdown file:
 <read_file>
 <path>README.md</path>
-</read_file>`
+</read_file>
+
+</tool>`
 }
