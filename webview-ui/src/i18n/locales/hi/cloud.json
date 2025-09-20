@@ -4,9 +4,9 @@
 	"logOut": "लॉग आउट",
 	"testApiAuthentication": "API प्रमाणीकरण का परीक्षण करें",
 	"signIn": "Roo Code Cloud से कनेक्ट करें",
-	"connect": "अभी कनेक्ट करें",
+	"connect": "Connect to Roo Code Cloud",
 	"cloudBenefitsTitle": "Roo Code Cloud से कनेक्ट करें",
-	"cloudBenefitWalkaway": "Roomote Control के साथ कहीं से भी कार्यों को फॉलो और नियंत्रित करें",
+	"cloudBenefitWalkaway": "Follow and control tasks from anywhere, including your phone (Pro only)",
 	"cloudBenefitSharing": "दूसरों के साथ कार्य साझा करें",
 	"cloudBenefitHistory": "अपने कार्य इतिहास तक पहुंचें",
 	"cloudBenefitMetrics": "अपने टोकन उपभोग का समग्र दृश्य प्राप्त करें",
@@ -26,6 +26,7 @@
 	"upsell": {
 		"autoApprovePowerUser": "रू को थोड़ी स्वतंत्रता दे रहे हैं? रू कोड क्लाउड के साथ इसे कहीं से भी नियंत्रित करें। <learnMoreLink>और जानें</learnMoreLink>।",
 		"longRunningTask": "इसमें थोड़ा समय लग सकता है। क्लाउड के साथ कहीं से भी जारी रखें।",
-		"taskList": "रू कोड क्लाउड यहाँ है: कहीं से भी अपने कार्यों का पालन और नियंत्रण करें। <learnMoreLink>और जानें</learnMoreLink>।"
-	}
+		"taskList": "💫 STEALTH MODEL CODE SUPERNOVA 🌌<lineBreak/>Free tokens for intergalactic length tasks.<lineBreak/>Hop between devices with Roo Code Pro.<lineBreak/>Try both free by selecting <providersLink>provider Roo Code Cloud</providersLink>"
+	},
+	"startFreeTrial": "Start a Free Trial of Roo Code Pro"
 }

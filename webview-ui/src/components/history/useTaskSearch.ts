@@ -31,6 +31,11 @@ export const useTaskSearch = () => {
 		return tasks
 	}, [taskHistory, showAllWorkspaces, cwd])
 
+	const recentTasks = useMemo(
+		() => [...presentableTasks].sort((a, b) => (b.ts || 0) - (a.ts || 0)),
+		[presentableTasks],
+	)
+
 	const fzf = useMemo(() => {
 		return new Fzf(presentableTasks, {
 			selector: (item) => item.task,
@@ -80,6 +85,7 @@ export const useTaskSearch = () => {
 
 	return {
 		tasks,
+		recentTasks,
 		searchQuery,
 		setSearchQuery,
 		sortOption,

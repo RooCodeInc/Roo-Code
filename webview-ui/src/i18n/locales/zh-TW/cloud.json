@@ -4,9 +4,9 @@
 	"logOut": "登出",
 	"testApiAuthentication": "測試 API 認證",
 	"signIn": "連線至 Roo Code Cloud",
-	"connect": "立即連線",
+	"connect": "Connect to Roo Code Cloud",
 	"cloudBenefitsTitle": "連線至 Roo Code Cloud",
-	"cloudBenefitWalkaway": "使用 Roomote Control 隨時隨地追蹤和控制任務",
+	"cloudBenefitWalkaway": "Follow and control tasks from anywhere, including your phone (Pro only)",
 	"cloudBenefitSharing": "與他人分享任務",
 	"cloudBenefitHistory": "存取您的任務歷史",
 	"cloudBenefitMetrics": "獲得您的代幣消耗的整體視圖",
@@ -26,6 +26,7 @@
 	"upsell": {
 		"autoApprovePowerUser": "給 Roo 一點獨立性？使用 Roo Code Cloud 隨時隨地控制它。<learnMoreLink>了解更多</learnMoreLink>。",
 		"longRunningTask": "這可能需要一些時間。使用雲端隨時隨地繼續。",
-		"taskList": "Roo Code Cloud 在此：隨時隨地追蹤和控制您的任務。<learnMoreLink>了解更多</learnMoreLink>。"
-	}
+		"taskList": "💫 STEALTH MODEL CODE SUPERNOVA 🌌<lineBreak/>Free tokens for intergalactic length tasks.<lineBreak/>Hop between devices with Roo Code Pro.<lineBreak/>Try both free by selecting <providersLink>provider Roo Code Cloud</providersLink>"
+	},
+	"startFreeTrial": "Start a Free Trial of Roo Code Pro"
 }

@@ -393,7 +393,8 @@
 		},
 		"roo": {
 			"authenticatedMessage": "Безопасно аутентифицирован через твой аккаунт Roo Code Cloud.",
-			"connectButton": "Подключиться к Roo Code Cloud"
+			"connectButton": "Подключиться к Roo Code Cloud",
+			"startFreeTrialButton": "Start Free Pro Trial"
 		},
 		"openRouter": {
 			"providerRouting": {

@@ -4,9 +4,9 @@
 	"logOut": "Çıkış yap",
 	"testApiAuthentication": "API Kimlik Doğrulamayı Test Et",
 	"signIn": "Roo Code Cloud'a bağlan",
-	"connect": "Şimdi Bağlan",
+	"connect": "Connect to Roo Code Cloud",
 	"cloudBenefitsTitle": "Roo Code Cloud'a bağlan",
-	"cloudBenefitWalkaway": "Roomote Control ile görevleri her yerden takip et ve kontrol et",
+	"cloudBenefitWalkaway": "Follow and control tasks from anywhere, including your phone (Pro only)",
 	"cloudBenefitSharing": "Görevleri başkalarıyla paylaş",
 	"cloudBenefitHistory": "Görev geçmişine eriş",
 	"cloudBenefitMetrics": "Token tüketiminizin bütünsel görünümünü elde edin",
@@ -26,6 +26,7 @@
 	"upsell": {
 		"autoApprovePowerUser": "Roo'ya biraz bağımsızlık mı veriyorsunuz? Roo Code Cloud ile onu her yerden kontrol edin. <learnMoreLink>Daha fazla bilgi edinin</learnMoreLink>.",
 		"longRunningTask": "Bu biraz zaman alabilir. Bulut ile her yerden devam edin.",
-		"taskList": "Roo Code Cloud burada: görevlerinizi her yerden takip edin ve kontrol edin. <learnMoreLink>Daha fazla bilgi edinin</learnMoreLink>."
-	}
+		"taskList": "💫 STEALTH MODEL CODE SUPERNOVA 🌌<lineBreak/>Free tokens for intergalactic length tasks.<lineBreak/>Hop between devices with Roo Code Pro.<lineBreak/>Try both free by selecting <providersLink>provider Roo Code Cloud</providersLink>"
+	},
+	"startFreeTrial": "Start a Free Trial of Roo Code Pro"
 }

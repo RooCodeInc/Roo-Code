@@ -393,7 +393,8 @@
 		},
 		"roo": {
 			"authenticatedMessage": "Autenticato in modo sicuro tramite il tuo account Roo Code Cloud.",
-			"connectButton": "Connetti a Roo Code Cloud"
+			"connectButton": "Connetti a Roo Code Cloud",
+			"startFreeTrialButton": "Start Free Pro Trial"
 		},
 		"openRouter": {
 			"providerRouting": {

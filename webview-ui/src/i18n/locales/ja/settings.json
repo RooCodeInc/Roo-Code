@@ -393,7 +393,8 @@
 		},
 		"roo": {
 			"authenticatedMessage": "Roo Code Cloudアカウントを通じて安全に認証されています。",
-			"connectButton": "Roo Code Cloudに接続"
+			"connectButton": "Roo Code Cloudに接続",
+			"startFreeTrialButton": "Start Free Pro Trial"
 		},
 		"openRouter": {
 			"providerRouting": {

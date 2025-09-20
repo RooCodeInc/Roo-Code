@@ -4,9 +4,9 @@
 	"logOut": "ログアウト",
 	"testApiAuthentication": "API認証をテスト",
 	"signIn": "Roo Code Cloud に接続",
-	"connect": "今すぐ接続",
+	"connect": "Connect to Roo Code Cloud",
 	"cloudBenefitsTitle": "Roo Code Cloudに接続",
-	"cloudBenefitWalkaway": "Roomote Controlでどこからでもタスクをフォローし制御",
+	"cloudBenefitWalkaway": "Follow and control tasks from anywhere, including your phone (Pro only)",
 	"cloudBenefitSharing": "他の人とタスクを共有",
 	"cloudBenefitHistory": "タスク履歴にアクセス",
 	"cloudBenefitMetrics": "トークン消費の全体像を把握",
@@ -26,6 +26,7 @@
 	"upsell": {
 		"autoApprovePowerUser": "Rooに少し独立性を与えませんか？Roo Code Cloudでどこからでもコントロールできます。<learnMoreLink>詳細</learnMoreLink>。",
 		"longRunningTask": "これには時間がかかるかもしれません。Cloudを使えばどこからでも続けられます。",
-		"taskList": "Roo Code Cloudが登場しました：どこからでもタスクを追跡し、コントロールできます。<learnMoreLink>詳細</learnMoreLink>。"
-	}
+		"taskList": "💫 STEALTH MODEL CODE SUPERNOVA 🌌<lineBreak/>Free tokens for intergalactic length tasks.<lineBreak/>Hop between devices with Roo Code Pro.<lineBreak/>Try both free by selecting <providersLink>provider Roo Code Cloud</providersLink>"
+	},
+	"startFreeTrial": "Start a Free Trial of Roo Code Pro"
 }

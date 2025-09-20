@@ -393,7 +393,8 @@
 		},
 		"roo": {
 			"authenticatedMessage": "Roo Code Cloud hesabın üzerinden güvenli bir şekilde kimlik doğrulandı.",
-			"connectButton": "Roo Code Cloud'a Bağlan"
+			"connectButton": "Roo Code Cloud'a Bağlan",
+			"startFreeTrialButton": "Start Free Pro Trial"
 		},
 		"openRouter": {
 			"providerRouting": {

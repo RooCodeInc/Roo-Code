@@ -397,7 +397,8 @@
 		},
 		"roo": {
 			"authenticatedMessage": "Terautentikasi dengan aman melalui akun Roo Code Cloud Anda.",
-			"connectButton": "Hubungkan ke Roo Code Cloud"
+			"connectButton": "Hubungkan ke Roo Code Cloud",
+			"startFreeTrialButton": "Start Free Pro Trial"
 		},
 		"openRouter": {
 			"providerRouting": {

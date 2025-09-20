@@ -3035,5 +3035,10 @@ export const webviewMessageHandler = async (
 			})
 			break
 		}
+		case "openSettings": {
+			// Jump the user to the Providers settings panel when they click the CODE SUPERNOVA upsell link
+			await vscode.commands.executeCommand(getCommand("settingsButtonClicked"))
+			break
+		}
 	}
 }
