@@ -16,10 +16,18 @@ import { DIFF_VIEW_URI_SCHEME } from "../../integrations/editor/DiffViewProvider
 
 import { CheckpointServiceOptions, RepoPerTaskCheckpointService } from "../../services/checkpoints"
 
-export async function getCheckpointService(
-	task: Task,
-	{ interval = 250, timeout = 15_000 }: { interval?: number; timeout?: number } = {},
-) {
+const WARNING_THRESHOLD_MS = 5000
+const waitWarn = t("common:errors.wait_checkpoint_long_time")
+const failWarn = t("common:errors.init_checkpoint_fail_long_time")
+
+function sendCheckpointInitWarn(task: Task, checkpointWarning: string) {
+	task.providerRef.deref()?.postMessageToWebview({
+		type: "checkpointInitWarning",
+		checkpointWarning,
+	})
+}
+
+export async function getCheckpointService(task: Task, { interval = 250 }: { interval?: number } = {}) {
 	if (!task.enableCheckpoints) {
 		return undefined
 	}
@@ -29,6 +37,9 @@ export async function getCheckpointService(
 	}
 
 	const provider = task.providerRef.deref()
+
+	// Get checkpoint timeout from task settings (converted to milliseconds)
+	const checkpointTimeoutMs = task.checkpointTimeout * 1000
 
 	const log = (message: string) => {
 		console.log(message)
@@ -67,16 +78,32 @@ export async function getCheckpointService(
 		}
 
 		if (task.checkpointServiceInitializing) {
+			const checkpointInitStartTime = Date.now()
+			let warningShown = false
+
 			await pWaitFor(
 				() => {
-					console.log("[Task#getCheckpointService] waiting for service to initialize")
+					const elapsed = Date.now() - checkpointInitStartTime
+
+					// Show warning if we're past the threshold and haven't shown it yet
+					if (!warningShown && elapsed >= WARNING_THRESHOLD_MS) {
+						warningShown = true
+						sendCheckpointInitWarn(task, waitWarn)
+					}
+
+					console.log(
+						`[Task#getCheckpointService] waiting for service to initialize (${Math.round(elapsed / 1000)}s)`,
+					)
 					return !!task.checkpointService && !!task?.checkpointService?.isInitialized
 				},
-				{ interval, timeout },
+				{ interval, timeout: checkpointTimeoutMs },
 			)
 			if (!task?.checkpointService) {
+				sendCheckpointInitWarn(task, failWarn)
 				task.enableCheckpoints = false
 				return undefined
+			} else {
+				sendCheckpointInitWarn(task, "")
 			}
 			return task.checkpointService
 		}
@@ -89,8 +116,14 @@ export async function getCheckpointService(
 		task.checkpointServiceInitializing = true
 		await checkGitInstallation(task, service, log, provider)
 		task.checkpointService = service
+		if (task.enableCheckpoints) {
+			sendCheckpointInitWarn(task, "")
+		}
 		return service
 	} catch (err) {
+		if (err.name === "TimeoutError" && task.enableCheckpoints) {
+			sendCheckpointInitWarn(task, failWarn)
+		}
 		log(`[Task#getCheckpointService] ${err.message}`)
 		task.enableCheckpoints = false
 		task.checkpointServiceInitializing = false

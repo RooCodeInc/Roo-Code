@@ -32,6 +32,8 @@
 		"could_not_open_file": "无法打开文件：{{errorMessage}}",
 		"could_not_open_file_generic": "无法打开文件！",
 		"checkpoint_timeout": "尝试恢复检查点时超时。",
+		"wait_checkpoint_long_time": "存档点初始化耗时超出预期，可能是仓库较大或 Git 操作较慢。",
+		"init_checkpoint_fail_long_time": "存档点初始化长时间后失败，已为本任务禁用存档点。你可以完全禁用存档点或在设置中增加超时时间。",
 		"checkpoint_failed": "恢复检查点失败。",
 		"git_not_installed": "存档点功能需要 Git。请安装 Git 以启用存档点。",
 		"nested_git_repos_warning": "存档点已禁用，因为在 {{path}} 检测到嵌套的 git 仓库。要使用存档点，请移除或重新定位此嵌套的 git 仓库。",

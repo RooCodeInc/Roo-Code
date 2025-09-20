@@ -214,12 +214,14 @@ describe("mergeExtensionState", () => {
 			remoteControlEnabled: false,
 			taskSyncEnabled: false,
 			featureRoomoteControlEnabled: false,
+			checkpointTimeout: 15, // Add the checkpoint timeout property
 		}
 
 		const prevState: ExtensionState = {
 			...baseState,
 			apiConfiguration: { modelMaxTokens: 1234, modelMaxThinkingTokens: 123 },
 			experiments: {} as Record<ExperimentId, boolean>,
+			checkpointTimeout: 10,
 		}
 
 		const newState: ExtensionState = {
@@ -236,6 +238,7 @@ describe("mergeExtensionState", () => {
 				imageGeneration: false,
 				runSlashCommand: false,
 			} as Record<ExperimentId, boolean>,
+			checkpointTimeout: 20,
 		}
 
 		const result = mergeExtensionState(prevState, newState)

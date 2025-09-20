@@ -66,6 +66,7 @@ describe("MarketplaceView", () => {
 			setFollowupAutoApproveTimeoutMs: vi.fn(),
 			profileThresholds: {},
 			setProfileThresholds: vi.fn(),
+			checkpointTimeout: 15,
 			// ... other required context properties
 		}
 	})
@@ -86,6 +87,7 @@ describe("MarketplaceView", () => {
 		mockExtensionState = {
 			...mockExtensionState,
 			organizationSettingsVersion: 2,
+			checkpointTimeout: 15,
 		}
 
 		// Re-render with updated context

@@ -27,6 +27,8 @@
 		"could_not_open_file": "파일을 열 수 없습니다: {{errorMessage}}",
 		"could_not_open_file_generic": "파일을 열 수 없습니다!",
 		"checkpoint_timeout": "체크포인트 복원을 시도하는 중 시간 초과되었습니다.",
+		"wait_checkpoint_long_time": "체크포인트 초기화가 예상보다 오래 걸리고 있어. 이는 저장소가 크거나 Git 작업이 느릴 수 있어.",
+		"init_checkpoint_fail_long_time": "체크포인트 초기화가 오랜 시간 후 실패했어. 이 작업에 대해 체크포인트가 비활성화됐어. 체크포인트를 완전히 끄거나 설정에서 타임아웃을 늘릴 수 있어.",
 		"checkpoint_failed": "체크포인트 복원에 실패했습니다.",
 		"git_not_installed": "체크포인트 기능을 사용하려면 Git이 필요합니다. 체크포인트를 활성화하려면 Git을 설치하세요.",
 		"nested_git_repos_warning": "{{path}}에서 중첩된 git 저장소가 감지되어 체크포인트가 비활성화되었습니다. 체크포인트를 사용하려면 이 중첩된 git 저장소를 제거하거나 이동해주세요.",

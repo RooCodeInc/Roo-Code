@@ -1250,6 +1250,11 @@ export const webviewMessageHandler = async (
 			await updateGlobalState("enableCheckpoints", enableCheckpoints)
 			await provider.postStateToWebview()
 			break
+		case "checkpointTimeout":
+			const checkpointTimeout = message.value ?? 15
+			await updateGlobalState("checkpointTimeout", checkpointTimeout)
+			await provider.postStateToWebview()
+			break
 		case "browserViewportSize":
 			const browserViewportSize = message.text ?? "900x600"
 			await updateGlobalState("browserViewportSize", browserViewportSize)

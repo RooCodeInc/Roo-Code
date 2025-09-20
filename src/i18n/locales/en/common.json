@@ -30,6 +30,8 @@
 		"checkpoint_failed": "Failed to restore checkpoint.",
 		"git_not_installed": "Git is required for the checkpoints feature. Please install Git to enable checkpoints.",
 		"nested_git_repos_warning": "Checkpoints are disabled because a nested git repository was detected at: {{path}}. To use checkpoints, please remove or relocate this nested git repository.",
+		"wait_checkpoint_long_time": "Checkpoint initialization is taking longer than expected. This may indicate a large repository or slow Git operations.",
+		"init_checkpoint_fail_long_time": "Checkpoint initialization failed after taking long time. Checkpoints have been disabled for this task. You can disable checkpoints entirely or increase the timeout in settings.",
 		"no_workspace": "Please open a project folder first",
 		"update_support_prompt": "Failed to update support prompt",
 		"reset_support_prompt": "Failed to reset support prompt",

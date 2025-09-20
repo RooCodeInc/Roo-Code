@@ -27,6 +27,8 @@
 		"could_not_open_file": "Kon bestand niet openen: {{errorMessage}}",
 		"could_not_open_file_generic": "Kon bestand niet openen!",
 		"checkpoint_timeout": "Time-out bij het herstellen van checkpoint.",
+		"wait_checkpoint_long_time": "De initialisatie van de checkpoint duurt langer dan verwacht. Dit kan wijzen op een grote repository of trage Git-bewerkingen.",
+		"init_checkpoint_fail_long_time": "De initialisatie van de checkpoint is na lange tijd mislukt. Checkpoints zijn uitgeschakeld voor deze taak. Je kunt checkpoints volledig uitschakelen of de timeout verhogen in de instellingen.",
 		"checkpoint_failed": "Herstellen van checkpoint mislukt.",
 		"git_not_installed": "Git is vereist voor de checkpoint-functie. Installeer Git om checkpoints in te schakelen.",
 		"nested_git_repos_warning": "Checkpoints zijn uitgeschakeld omdat een geneste git-repository is gedetecteerd op: {{path}}. Om checkpoints te gebruiken, verwijder of verplaats deze geneste git-repository.",

@@ -31,6 +31,8 @@
 		"could_not_open_file": "Não foi possível abrir o arquivo: {{errorMessage}}",
 		"could_not_open_file_generic": "Não foi possível abrir o arquivo!",
 		"checkpoint_timeout": "Tempo esgotado ao tentar restaurar o ponto de verificação.",
+		"wait_checkpoint_long_time": "A inicialização do checkpoint está demorando mais do que o esperado. Isso pode indicar um repositório grande ou operações Git lentas.",
+		"init_checkpoint_fail_long_time": "A inicialização do checkpoint falhou após muito tempo. Os checkpoints foram desativados para esta tarefa. Você pode desativar completamente os checkpoints ou aumentar o tempo limite nas configurações.",
 		"checkpoint_failed": "Falha ao restaurar o ponto de verificação.",
 		"git_not_installed": "O Git é necessário para o recurso de checkpoints. Por favor, instale o Git para habilitar os checkpoints.",
 		"nested_git_repos_warning": "Os checkpoints estão desabilitados porque um repositório git aninhado foi detectado em: {{path}}. Para usar checkpoints, por favor remova ou realoque este repositório git aninhado.",

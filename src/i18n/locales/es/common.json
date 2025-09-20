@@ -27,6 +27,8 @@
 		"could_not_open_file": "No se pudo abrir el archivo: {{errorMessage}}",
 		"could_not_open_file_generic": "¡No se pudo abrir el archivo!",
 		"checkpoint_timeout": "Se agotó el tiempo al intentar restaurar el punto de control.",
+		"wait_checkpoint_long_time": "La inicialización del punto de control está tardando más de lo esperado. Esto puede indicar un repositorio grande o operaciones de Git lentas.",
+		"init_checkpoint_fail_long_time": "La inicialización del punto de control falló después de mucho tiempo. Los puntos de control se han desactivado para esta tarea. Puedes desactivar los puntos de control completamente o aumentar el tiempo de espera en la configuración.",
 		"checkpoint_failed": "Error al restaurar el punto de control.",
 		"git_not_installed": "Git es necesario para la función de puntos de control. Por favor, instala Git para activar los puntos de control.",
 		"nested_git_repos_warning": "Los puntos de control están deshabilitados porque se detectó un repositorio git anidado en: {{path}}. Para usar puntos de control, por favor elimina o reubica este repositorio git anidado.",

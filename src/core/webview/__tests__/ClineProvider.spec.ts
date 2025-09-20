@@ -557,6 +557,7 @@ describe("ClineProvider", () => {
 			remoteControlEnabled: false,
 			taskSyncEnabled: false,
 			featureRoomoteControlEnabled: false,
+			checkpointTimeout: 15,
 		}
 
 		const message: ExtensionMessage = {

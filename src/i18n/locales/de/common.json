@@ -27,6 +27,8 @@
 		"could_not_open_file": "Datei konnte nicht geöffnet werden: {{errorMessage}}",
 		"could_not_open_file_generic": "Datei konnte nicht geöffnet werden!",
 		"checkpoint_timeout": "Zeitüberschreitung beim Versuch, den Checkpoint wiederherzustellen.",
+		"wait_checkpoint_long_time": "Die Initialisierung des Checkpoints dauert länger als erwartet. Das kann auf ein großes Repository oder langsame Git-Vorgänge hindeuten.",
+		"init_checkpoint_fail_long_time": "Die Initialisierung des Checkpoints ist nach langer Wartezeit fehlgeschlagen. Checkpoints wurden für diese Aufgabe deaktiviert. Du kannst Checkpoints komplett deaktivieren oder das Timeout in den Einstellungen erhöhen.",
 		"checkpoint_failed": "Fehler beim Wiederherstellen des Checkpoints.",
 		"git_not_installed": "Git ist für die Checkpoint-Funktion erforderlich. Bitte installiere Git, um Checkpoints zu aktivieren.",
 		"nested_git_repos_warning": "Checkpoints sind deaktiviert, da ein verschachteltes Git-Repository erkannt wurde unter: {{path}}. Um Checkpoints zu verwenden, entferne oder verschiebe bitte dieses verschachtelte Git-Repository.",

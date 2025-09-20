@@ -27,6 +27,8 @@
 		"could_not_open_file": "Dosya açılamadı: {{errorMessage}}",
 		"could_not_open_file_generic": "Dosya açılamadı!",
 		"checkpoint_timeout": "Kontrol noktasını geri yüklemeye çalışırken zaman aşımına uğradı.",
+		"wait_checkpoint_long_time": "Kontrol noktası başlatılması beklenenden uzun sürüyor. Bu, büyük bir depo veya yavaş Git işlemleri anlamına gelebilir.",
+		"init_checkpoint_fail_long_time": "Kontrol noktası başlatılması uzun süre sonra başarısız oldu. Bu görev için kontrol noktaları devre dışı bırakıldı. Kontrol noktalarını tamamen devre dışı bırakabilir veya ayarlardan zaman aşımını artırabilirsin.",
 		"checkpoint_failed": "Kontrol noktası geri yüklenemedi.",
 		"git_not_installed": "Kontrol noktaları özelliği için Git gereklidir. Kontrol noktalarını etkinleştirmek için lütfen Git'i yükleyin.",
 		"nested_git_repos_warning": "{{path}} konumunda iç içe git deposu tespit edildiği için kontrol noktaları devre dışı bırakıldı. Kontrol noktalarını kullanmak için lütfen bu iç içe git deposunu kaldırın veya taşıyın.",

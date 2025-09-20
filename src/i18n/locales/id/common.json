@@ -27,6 +27,8 @@
 		"could_not_open_file": "Tidak dapat membuka file: {{errorMessage}}",
 		"could_not_open_file_generic": "Tidak dapat membuka file!",
 		"checkpoint_timeout": "Timeout saat mencoba memulihkan checkpoint.",
+		"wait_checkpoint_long_time": "Inisialisasi checkpoint memakan waktu lebih lama dari yang diharapkan. Ini mungkin menandakan repositori besar atau operasi Git yang lambat.",
+		"init_checkpoint_fail_long_time": "Inisialisasi checkpoint gagal setelah waktu lama. Checkpoint telah dinonaktifkan untuk tugas ini. Kamu bisa menonaktifkan checkpoint sepenuhnya atau menambah batas waktu di pengaturan.",
 		"checkpoint_failed": "Gagal memulihkan checkpoint.",
 		"git_not_installed": "Git diperlukan untuk fitur checkpoint. Silakan instal Git untuk mengaktifkan checkpoint.",
 		"nested_git_repos_warning": "Checkpoint dinonaktifkan karena repositori git bersarang terdeteksi di: {{path}}. Untuk menggunakan checkpoint, silakan hapus atau pindahkan repositori git bersarang ini.",

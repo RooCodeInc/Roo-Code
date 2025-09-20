@@ -27,6 +27,8 @@
 		"could_not_open_file": "Impossibile aprire il file: {{errorMessage}}",
 		"could_not_open_file_generic": "Impossibile aprire il file!",
 		"checkpoint_timeout": "Timeout durante il tentativo di ripristinare il checkpoint.",
+		"wait_checkpoint_long_time": "L'inizializzazione del checkpoint sta richiedendo più tempo del previsto. Questo può indicare un repository grande o operazioni Git lente.",
+		"init_checkpoint_fail_long_time": "L'inizializzazione del checkpoint è fallita dopo molto tempo. I checkpoint sono stati disabilitati per questa attività. Puoi disabilitare completamente i checkpoint o aumentare il timeout nelle impostazioni.",
 		"checkpoint_failed": "Impossibile ripristinare il checkpoint.",
 		"git_not_installed": "Git è richiesto per la funzione di checkpoint. Per favore, installa Git per abilitare i checkpoint.",
 		"nested_git_repos_warning": "I checkpoint sono disabilitati perché è stato rilevato un repository git annidato in: {{path}}. Per utilizzare i checkpoint, rimuovi o sposta questo repository git annidato.",

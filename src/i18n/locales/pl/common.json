@@ -27,6 +27,8 @@
 		"could_not_open_file": "Nie można otworzyć pliku: {{errorMessage}}",
 		"could_not_open_file_generic": "Nie można otworzyć pliku!",
 		"checkpoint_timeout": "Upłynął limit czasu podczas próby przywrócenia punktu kontrolnego.",
+		"wait_checkpoint_long_time": "Inicjalizacja punktu kontrolnego trwa dłużej niż oczekiwano. Może to oznaczać dużą zawartość repozytorium lub wolne operacje Git.",
+		"init_checkpoint_fail_long_time": "Inicjalizacja punktu kontrolnego nie powiodła się po długim czasie. Punkty kontrolne zostały wyłączone dla tego zadania. Możesz całkowicie wyłączyć punkty kontrolne lub zwiększyć limit czasu w ustawieniach.",
 		"checkpoint_failed": "Nie udało się przywrócić punktu kontrolnego.",
 		"git_not_installed": "Funkcja punktów kontrolnych wymaga oprogramowania Git. Zainstaluj Git, aby włączyć punkty kontrolne.",
 		"nested_git_repos_warning": "Punkty kontrolne są wyłączone, ponieważ wykryto zagnieżdżone repozytorium git w: {{path}}. Aby używać punktów kontrolnych, usuń lub przenieś to zagnieżdżone repozytorium git.",

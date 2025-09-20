@@ -27,6 +27,8 @@
 		"could_not_open_file": "Impossible d'ouvrir le fichier : {{errorMessage}}",
 		"could_not_open_file_generic": "Impossible d'ouvrir le fichier !",
 		"checkpoint_timeout": "Expiration du délai lors de la tentative de rétablissement du checkpoint.",
+		"wait_checkpoint_long_time": "L'initialisation du checkpoint prend plus de temps que prévu. Cela peut indiquer un dépôt volumineux ou des opérations Git lentes.",
+		"init_checkpoint_fail_long_time": "L'initialisation du checkpoint a échoué après un long délai. Les checkpoints ont été désactivés pour cette tâche. Tu peux désactiver complètement les checkpoints ou augmenter le délai dans les paramètres.",
 		"checkpoint_failed": "Échec du rétablissement du checkpoint.",
 		"git_not_installed": "Git est requis pour la fonctionnalité des points de contrôle. Veuillez installer Git pour activer les points de contrôle.",
 		"nested_git_repos_warning": "Les points de contrôle sont désactivés car un dépôt git imbriqué a été détecté à : {{path}}. Pour utiliser les points de contrôle, veuillez supprimer ou déplacer ce dépôt git imbriqué.",

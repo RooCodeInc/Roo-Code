@@ -4,6 +4,7 @@ import { VSCodeCheckbox, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 import { GitBranch } from "lucide-react"
 import { Trans } from "react-i18next"
 import { buildDocLink } from "@src/utils/docLinks"
+import { Slider } from "@/components/ui"
 
 import { SetCachedStateField } from "./types"
 import { SectionHeader } from "./SectionHeader"
@@ -11,10 +12,16 @@ import { Section } from "./Section"
 
 type CheckpointSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	enableCheckpoints?: boolean
-	setCachedStateField: SetCachedStateField<"enableCheckpoints">
+	checkpointTimeout?: number
+	setCachedStateField: SetCachedStateField<"enableCheckpoints" | "checkpointTimeout">
 }
 
-export const CheckpointSettings = ({ enableCheckpoints, setCachedStateField, ...props }: CheckpointSettingsProps) => {
+export const CheckpointSettings = ({
+	enableCheckpoints,
+	checkpointTimeout,
+	setCachedStateField,
+	...props
+}: CheckpointSettingsProps) => {
 	const { t } = useAppTranslation()
 	return (
 		<div {...props}>
@@ -44,6 +51,33 @@ export const CheckpointSettings = ({ enableCheckpoints, setCachedStateField, ...
 						</Trans>
 					</div>
 				</div>
+
+				{enableCheckpoints && (
+					<div className="mt-4">
+						<label className="block text-sm font-medium mb-2">
+							{t("settings:checkpoints.timeout.label")}
+						</label>
+						<div className="flex items-center gap-2">
+							<Slider
+								min={10}
+								max={60}
+								step={1}
+								defaultValue={[checkpointTimeout ?? 15]}
+								onValueChange={([value]) => {
+									if (value >= 10 && value <= 60) {
+										setCachedStateField("checkpointTimeout", value)
+									}
+								}}
+								className="flex-1"
+								data-testid="checkpoint-timeout-slider"
+							/>
+							<span className="w-12 text-center">{checkpointTimeout ?? 15}</span>
+						</div>
+						<div className="text-vscode-descriptionForeground text-sm mt-1">
+							{t("settings:checkpoints.timeout.description")}
+						</div>
+					</div>
+				)}
 			</Section>
 		</div>
 	)
