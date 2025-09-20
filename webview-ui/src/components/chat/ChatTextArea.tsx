@@ -945,10 +945,10 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 								className={cn(
 									"absolute",
 									"bottom-full",
-									isEditMode ? "left-6" : "left-0",
+									"left-0",
 									"right-0",
 									"z-[1000]",
-									isEditMode ? "-mb-3" : "mb-2",
+									"mb-2",
 									"filter",
 									"drop-shadow-md",
 								)}>
