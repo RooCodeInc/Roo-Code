@@ -8,6 +8,7 @@ import {
 	cerebrasModels,
 	chutesModels,
 	claudeCodeModels,
+	codexModels,
 	deepSeekModels,
 	doubaoModels,
 	featherlessModels,
@@ -122,6 +123,7 @@ export const providerNames = [
 	"cerebras",
 	"chutes",
 	"claude-code",
+	"codex",
 	"doubao",
 	"deepseek",
 	"featherless",
@@ -252,6 +254,15 @@ const openAiSchema = baseProviderSettingsSchema.extend({
 	openAiStreamingEnabled: z.boolean().optional(),
 	openAiHostHeader: z.string().optional(), // Keep temporarily for backward compatibility during migration.
 	openAiHeaders: z.record(z.string(), z.string()).optional(),
+})
+
+// Codex shares OpenAI settings and adds optional CLI config & binary paths for seamless auth
+const codexSchema = openAiSchema.extend({
+	apiModelId: z.string().optional(),
+	codexCliConfigPath: z.string().optional(),
+	codexCliPath: z.string().optional(),
+	codexDebugEnabled: z.boolean().optional(),
+	codexDebugLogPath: z.string().optional(),
 })
 
 const ollamaSchema = baseProviderSettingsSchema.extend({
@@ -418,6 +429,7 @@ const defaultSchema = z.object({
 export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProvider", [
 	anthropicSchema.merge(z.object({ apiProvider: z.literal("anthropic") })),
 	claudeCodeSchema.merge(z.object({ apiProvider: z.literal("claude-code") })),
+	codexSchema.merge(z.object({ apiProvider: z.literal("codex") })),
 	glamaSchema.merge(z.object({ apiProvider: z.literal("glama") })),
 	openRouterSchema.merge(z.object({ apiProvider: z.literal("openrouter") })),
 	bedrockSchema.merge(z.object({ apiProvider: z.literal("bedrock") })),
@@ -459,6 +471,7 @@ export const providerSettingsSchema = z.object({
 	apiProvider: providerNamesSchema.optional(),
 	...anthropicSchema.shape,
 	...claudeCodeSchema.shape,
+	...codexSchema.shape,
 	...glamaSchema.shape,
 	...openRouterSchema.shape,
 	...bedrockSchema.shape,
@@ -548,6 +561,7 @@ export const isTypicalProvider = (key: unknown): key is TypicalProvider =>
 export const modelIdKeysByProvider: Record<TypicalProvider, ModelIdKey> = {
 	anthropic: "apiModelId",
 	"claude-code": "apiModelId",
+	codex: "apiModelId",
 	glama: "glamaModelId",
 	openrouter: "openRouterModelId",
 	bedrock: "apiModelId",
@@ -633,6 +647,7 @@ export const MODELS_BY_PROVIDER: Record<
 		models: Object.keys(chutesModels),
 	},
 	"claude-code": { id: "claude-code", label: "Claude Code", models: Object.keys(claudeCodeModels) },
+	codex: { id: "codex", label: "Codex", models: Object.keys(codexModels) },
 	deepseek: {
 		id: "deepseek",
 		label: "DeepSeek",

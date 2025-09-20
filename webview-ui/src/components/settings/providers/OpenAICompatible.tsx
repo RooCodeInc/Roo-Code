@@ -28,6 +28,10 @@ type OpenAICompatibleProps = {
 	setApiConfigurationField: (field: keyof ProviderSettings, value: ProviderSettings[keyof ProviderSettings]) => void
 	organizationAllowList: OrganizationAllowList
 	modelValidationError?: string
+	/** Override the modelIdKey used by the internal ModelPicker (defaults to 'openAiModelId') */
+	modelIdKeyOverride?: keyof ProviderSettings
+	/** Override the service name label in the ModelPicker */
+	serviceNameOverride?: string
 }
 
 export const OpenAICompatible = ({
@@ -35,6 +39,8 @@ export const OpenAICompatible = ({
 	setApiConfigurationField,
 	organizationAllowList,
 	modelValidationError,
+	modelIdKeyOverride,
+	serviceNameOverride,
 }: OpenAICompatibleProps) => {
 	const { t } = useAppTranslation()
 
@@ -114,6 +120,13 @@ export const OpenAICompatible = ({
 				setOpenAiModels(Object.fromEntries(updatedModels.map((item) => [item, openAiModelInfoSaneDefaults])))
 				break
 			}
+			case "codexModels": {
+				const updatedModels = (message.models ?? [])
+					.map((item: any) => (typeof item === "string" ? item : item?.id))
+					.filter((id: any): id is string => typeof id === "string" && !!id)
+				setOpenAiModels(Object.fromEntries(updatedModels.map((item) => [item, openAiModelInfoSaneDefaults])))
+				break
+			}
 		}
 	}, [])
 
@@ -142,8 +155,8 @@ export const OpenAICompatible = ({
 				setApiConfigurationField={setApiConfigurationField}
 				defaultModelId="gpt-4o"
 				models={openAiModels}
-				modelIdKey="openAiModelId"
-				serviceName="OpenAI"
+				modelIdKey={(modelIdKeyOverride as any) || "openAiModelId"}
+				serviceName={serviceNameOverride || "OpenAI"}
 				serviceUrl="https://platform.openai.com"
 				organizationAllowList={organizationAllowList}
 				errorMessage={modelValidationError}

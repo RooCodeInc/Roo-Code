@@ -54,6 +54,8 @@ import {
 	rooModels,
 	qwenCodeDefaultModelId,
 	qwenCodeModels,
+	codexDefaultModelId,
+	codexModels,
 	vercelAiGatewayDefaultModelId,
 	BEDROCK_CLAUDE_SONNET_4_MODEL_ID,
 	deepInfraDefaultModelId,
@@ -341,6 +343,11 @@ function getSelectedModel({
 		case "qwen-code": {
 			const id = apiConfiguration.apiModelId ?? qwenCodeDefaultModelId
 			const info = qwenCodeModels[id as keyof typeof qwenCodeModels]
+			return { id, info }
+		}
+		case "codex": {
+			const id = apiConfiguration.apiModelId ?? codexDefaultModelId
+			const info = codexModels[id as keyof typeof codexModels]
 			return { id, info }
 		}
 		case "vercel-ai-gateway": {
