@@ -790,6 +790,15 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 						let newValue = inputValue.slice(0, cursorPosition)
 						let totalLength = 0
 
+						// Check if we need to add a space before the first mention
+						const textBefore = inputValue.slice(0, cursorPosition)
+						const needsSpaceBefore =
+							textBefore.length > 0 && !textBefore.endsWith(" ") && !textBefore.endsWith("\n")
+						if (needsSpaceBefore) {
+							newValue += " "
+							totalLength += 1
+						}
+
 						// Using a standard for loop instead of forEach for potential performance gains.
 						for (let i = 0; i < lines.length; i++) {
 							const line = lines[i]
