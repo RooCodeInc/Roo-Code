@@ -154,15 +154,9 @@ function runProcess({
 	maxOutputTokens,
 }: ClaudeCodeOptions & { maxOutputTokens?: number }) {
 	const claudePath = path || "claude"
-	const isWindows = os.platform() === "win32"
 
-	// Build args based on platform
-	const args = ["-p"]
-
-	// Pass system prompt as flag on non-Windows, via stdin on Windows (avoids cmd length limits)
-	if (!isWindows) {
-		args.push("--system-prompt", systemPrompt)
-	}
+	// Build args - always pass system prompt as flag to avoid mixing with Claude Code's default
+	const args = ["-p", "--system-prompt", systemPrompt]
 
 	args.push(
 		"--verbose",
@@ -196,17 +190,9 @@ function runProcess({
 		timeout: CLAUDE_CODE_TIMEOUT,
 	})
 
-	// Prepare stdin data: Windows gets both system prompt & messages (avoids 8191 char limit),
-	// other platforms get messages only (avoids Linux E2BIG error from ~128KiB execve limit)
-	let stdinData: string
-	if (isWindows) {
-		stdinData = JSON.stringify({
-			systemPrompt,
-			messages,
-		})
-	} else {
-		stdinData = JSON.stringify(messages)
-	}
+	// Prepare stdin data: only send messages to avoid E2BIG errors
+	// System prompt is now always passed via --system-prompt flag
+	const stdinData = JSON.stringify(messages)
 
 	// Use setImmediate to ensure process is spawned before writing (prevents stdin race conditions)
 	setImmediate(() => {

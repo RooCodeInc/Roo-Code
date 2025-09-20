@@ -139,7 +139,7 @@ describe("runClaudeCode", () => {
 		expect(typeof result[Symbol.asyncIterator]).toBe("function")
 	})
 
-	test("should handle platform-specific stdin behavior", async () => {
+	test("should always pass system prompt via flag and messages via stdin", async () => {
 		const { runClaudeCode } = await import("../run")
 		const messages = [{ role: "user" as const, content: "Hello world!" }]
 		const systemPrompt = "You are a helpful assistant"
@@ -158,12 +158,13 @@ describe("runClaudeCode", () => {
 			results.push(chunk)
 		}
 
-		// On Windows, should NOT have --system-prompt in args
+		// On Windows, should now ALWAYS have --system-prompt in args
 		const [, args] = mockExeca.mock.calls[0]
-		expect(args).not.toContain("--system-prompt")
+		expect(args).toContain("--system-prompt")
+		expect(args).toContain(systemPrompt)
 
-		// Should pass both system prompt and messages via stdin
-		const expectedStdinData = JSON.stringify({ systemPrompt, messages })
+		// Should only pass messages via stdin (no longer includes system prompt)
+		const expectedStdinData = JSON.stringify(messages)
 		expect(mockStdin.write).toHaveBeenCalledWith(expectedStdinData, "utf8", expect.any(Function))
 
 		// Reset mocks for non-Windows test
@@ -179,12 +180,12 @@ describe("runClaudeCode", () => {
 			results2.push(chunk)
 		}
 
-		// On non-Windows, should have --system-prompt in args
+		// On non-Windows, should also have --system-prompt in args
 		const [, args2] = mockExeca.mock.calls[0]
 		expect(args2).toContain("--system-prompt")
 		expect(args2).toContain(systemPrompt)
 
-		// Should only pass messages via stdin
+		// Should only pass messages via stdin (consistent across platforms)
 		expect(mockStdin.write).toHaveBeenCalledWith(JSON.stringify(messages), "utf8", expect.any(Function))
 	})
 
