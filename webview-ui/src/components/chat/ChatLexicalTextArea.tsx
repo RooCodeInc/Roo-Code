@@ -20,11 +20,16 @@ import { AutoApproveDropdown } from "./AutoApproveDropdown"
 import { StandardTooltip } from "../ui"
 import { IndexingStatusBadge } from "./IndexingStatusBadge"
 import { VolumeX } from "lucide-react"
+import { getIconForFilePath, getIconUrlByName } from "vscode-material-icons"
 
 import { MentionNode } from "./lexical/MentionNode"
 import { LexicalMentionPlugin } from "./lexical/LexicalMentionPlugin"
+import { LexicalSelectAllPlugin } from "./lexical/LexicalSelectAllPlugin"
 import ContextMenu from "./ContextMenu"
 import { ContextMenuOptionType, getContextMenuOptions, SearchResult } from "@/utils/context-mentions"
+import Thumbnails from "../common/Thumbnails"
+import { MAX_IMAGES_PER_MESSAGE } from "./ChatView"
+import { removeLeadingNonAlphanumeric } from "@/utils/removeLeadingNonAlphanumeric"
 
 type ChatTextAreaProps = {
 	inputValue: string
@@ -57,11 +62,11 @@ export const ChatLexicalTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaP
 			setInputValue,
 			selectApiConfigDisabled,
 			placeholderText,
-			// selectedImages,
-			// setSelectedImages,
+			selectedImages,
+			setSelectedImages,
 			// onSend,
 			// onSelectImages,
-			// shouldDisableImages,
+			shouldDisableImages,
 			// onHeightChange,
 			mode,
 			setMode,
@@ -88,7 +93,6 @@ export const ChatLexicalTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaP
 		} = useExtensionState()
 
 		const [isFocused, setIsFocused] = useState(false)
-		const [isDraggingOver, _setIsDraggingOver] = useState(false)
 		const [showContextMenu, setShowContextMenu] = useState(false)
 		const [searchQuery, setSearchQuery] = useState("")
 		const [selectedMenuIndex, setSelectedMenuIndex] = useState(-1)
@@ -121,13 +125,186 @@ export const ChatLexicalTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaP
 			vscode.postMessage({ type: "loadApiConfigurationById", text: value })
 		}, [])
 
-		const [isTtsPlaying, _setIsTtsPlaying] = useState(false)
+		const [isTtsPlaying, setIsTtsPlaying] = useState(false)
+		const [isDraggingOver, setIsDraggingOver] = useState(false)
+		const [materialIconsBaseUri, setMaterialIconsBaseUri] = useState("")
+
+		// Get the icons base uri on mount
+		useEffect(() => {
+			const w = window as any
+			setMaterialIconsBaseUri(w.MATERIAL_ICONS_BASE_URI)
+		}, [])
+
+		// Extract mentions from input value for context display - only after finishing mention
+		const [validMentions, setValidMentions] = useState<string[]>([])
+
+		// Update mentions only when they are complete (not live)
+		useEffect(() => {
+			const mentionRegex = /@([^@\s]+)(?=\s|$)/g // Only match completed mentions (followed by space or end)
+			const mentions = []
+			let match
+			while ((match = mentionRegex.exec(inputValue)) !== null) {
+				mentions.push(match[1])
+			}
+
+			// Only update if mentions actually changed
+			if (JSON.stringify(mentions) !== JSON.stringify(validMentions)) {
+				setValidMentions(mentions)
+			}
+		}, [inputValue, validMentions])
+
+		// Smart filename disambiguation - like VSCode tabs
+		const getDisplayName = useCallback((mention: string, allMentions: string[]) => {
+			// Remove leading non-alphanumeric and trailing slash
+			const path = removeLeadingNonAlphanumeric(mention).replace(/\/$/, "")
+			const pathList = path.split("/")
+			const filename = pathList.at(-1) || mention
+
+			// Check if there are other mentions with the same filename
+			const sameFilenames = allMentions.filter((m) => {
+				const otherPath = removeLeadingNonAlphanumeric(m).replace(/\/$/, "")
+				const otherFilename = otherPath.split("/").at(-1) || m
+				return otherFilename === filename && m !== mention
+			})
+
+			if (sameFilenames.length === 0) {
+				return filename // No conflicts, just show filename
+			}
+
+			// There are conflicts, need to show directory to disambiguate
+			if (pathList.length > 1) {
+				// Show filename with first directory
+				return `${pathList[pathList.length - 2]}/${filename}`
+			}
+
+			return filename
+		}, [])
+
+		// Get material icon for mention
+		const getMaterialIconForMention = useCallback(
+			(mention: string) => {
+				const name = mention.split("/").filter(Boolean).at(-1) ?? ""
+				const iconName = getIconForFilePath(name)
+				return getIconUrlByName(iconName, materialIconsBaseUri)
+			},
+			[materialIconsBaseUri],
+		)
+
+		// Check if we should show the context bar
+		const shouldShowContextBar = validMentions.length > 0 || selectedImages.length > 0
+
+		// Handle image pasting
+		const handlePaste = useCallback(
+			async (e: React.ClipboardEvent) => {
+				const items = e.clipboardData.items
+				const acceptedTypes = ["png", "jpeg", "webp"]
+
+				const imageItems = Array.from(items).filter((item) => {
+					const [type, subtype] = item.type.split("/")
+					return type === "image" && acceptedTypes.includes(subtype)
+				})
+
+				if (!shouldDisableImages && imageItems.length > 0) {
+					e.preventDefault()
+
+					const imagePromises = imageItems.map((item) => {
+						return new Promise<string | null>((resolve) => {
+							const blob = item.getAsFile()
+
+							if (!blob) {
+								resolve(null)
+								return
+							}
+
+							const reader = new FileReader()
+
+							reader.onloadend = () => {
+								if (reader.error) {
+									console.error(t("chat:errorReadingFile"), reader.error)
+									resolve(null)
+								} else {
+									const result = reader.result
+									resolve(typeof result === "string" ? result : null)
+								}
+							}
+
+							reader.readAsDataURL(blob)
+						})
+					})
+
+					const imageDataArray = await Promise.all(imagePromises)
+					const dataUrls = imageDataArray.filter((dataUrl): dataUrl is string => dataUrl !== null)
+
+					if (dataUrls.length > 0) {
+						setSelectedImages((prevImages) => [...prevImages, ...dataUrls].slice(0, MAX_IMAGES_PER_MESSAGE))
+					} else {
+						console.warn(t("chat:noValidImages"))
+					}
+				}
+			},
+			[shouldDisableImages, setSelectedImages, t],
+		)
+
+		// Handle drag and drop
+		const handleDrop = useCallback(
+			async (e: React.DragEvent<HTMLDivElement>) => {
+				e.preventDefault()
+				setIsDraggingOver(false)
+
+				const files = Array.from(e.dataTransfer.files)
+
+				if (files.length > 0) {
+					const acceptedTypes = ["png", "jpeg", "webp"]
+
+					const imageFiles = files.filter((file) => {
+						const [type, subtype] = file.type.split("/")
+						return type === "image" && acceptedTypes.includes(subtype)
+					})
+
+					if (!shouldDisableImages && imageFiles.length > 0) {
+						const imagePromises = imageFiles.map((file) => {
+							return new Promise<string | null>((resolve) => {
+								const reader = new FileReader()
+
+								reader.onloadend = () => {
+									if (reader.error) {
+										console.error(t("chat:errorReadingFile"), reader.error)
+										resolve(null)
+									} else {
+										const result = reader.result
+										resolve(typeof result === "string" ? result : null)
+									}
+								}
+
+								reader.readAsDataURL(file)
+							})
+						})
+
+						const imageDataArray = await Promise.all(imagePromises)
+						const dataUrls = imageDataArray.filter((dataUrl): dataUrl is string => dataUrl !== null)
+
+						if (dataUrls.length > 0) {
+							setSelectedImages((prevImages) =>
+								[...prevImages, ...dataUrls].slice(0, MAX_IMAGES_PER_MESSAGE),
+							)
+						} else {
+							console.warn(t("chat:noValidImages"))
+						}
+					}
+				}
+			},
+			[shouldDisableImages, setSelectedImages, t],
+		)
 
 		useEffect(() => {
 			const messageHandler = (event: MessageEvent) => {
 				const message = event.data
 
-				if (message.type === "commitSearchResults") {
+				if (message.type === "ttsStart") {
+					setIsTtsPlaying(true)
+				} else if (message.type === "ttsStop") {
+					setIsTtsPlaying(false)
+				} else if (message.type === "commitSearchResults") {
 					const commits = message.commits.map((commit: any) => ({
 						type: ContextMenuOptionType.Git,
 						value: commit.hash,
@@ -401,7 +578,75 @@ export const ChatLexicalTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaP
 					"space-y-1 bg-editor-background outline-none border border-none box-border",
 					isEditMode ? "p-2 w-full" : "relative px-1.5 pb-1 w-[calc(100%-16px)] ml-auto mr-auto",
 				)}>
-				<div className="relative">
+				{/* Context Bar */}
+				{shouldShowContextBar && (
+					<div className="mb-2">
+						<div className="flex items-center gap-1 p-2 bg-vscode-input-background border border-vscode-focusBorder rounded overflow-x-auto">
+							{/* Context mentions */}
+							{validMentions.map((mention, index) => {
+								const displayName = getDisplayName(mention, validMentions)
+								const iconUrl = getMaterialIconForMention(mention)
+								return (
+									<div
+										key={index}
+										className="flex items-center gap-1 px-2 py-1 bg-vscode-editor-background text-vscode-editor-foreground rounded text-xs whitespace-nowrap flex-shrink-0">
+										<img
+											src={iconUrl}
+											alt="File"
+											style={{
+												width: "12px",
+												height: "12px",
+												flexShrink: 0,
+											}}
+										/>
+										<span>{displayName}</span>
+									</div>
+								)
+							})}
+
+							{/* Images */}
+							{selectedImages.length > 0 && (
+								<Thumbnails
+									images={selectedImages}
+									setImages={setSelectedImages}
+									style={{
+										marginBottom: 0,
+										display: "flex",
+										gap: 4,
+									}}
+								/>
+							)}
+						</div>
+					</div>
+				)}
+
+				<div
+					className="relative"
+					onDrop={handleDrop}
+					onDragOver={(e) => {
+						// Only allowed to drop images/files on shift key pressed.
+						if (!e.shiftKey) {
+							setIsDraggingOver(false)
+							return
+						}
+
+						e.preventDefault()
+						setIsDraggingOver(true)
+						e.dataTransfer.dropEffect = "copy"
+					}}
+					onDragLeave={(e) => {
+						e.preventDefault()
+						const rect = e.currentTarget.getBoundingClientRect()
+
+						if (
+							e.clientX <= rect.left ||
+							e.clientX >= rect.right ||
+							e.clientY <= rect.top ||
+							e.clientY >= rect.bottom
+						) {
+							setIsDraggingOver(false)
+						}
+					}}>
 					<LexicalComposer initialConfig={initialConfig}>
 						<PlainTextPlugin
 							contentEditable={
@@ -442,6 +687,7 @@ export const ChatLexicalTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaP
 									)}
 									onFocus={() => setIsFocused(true)}
 									onBlur={() => setIsFocused(false)}
+									onPaste={handlePaste}
 								/>
 							}
 							ErrorBoundary={LexicalErrorBoundary}
@@ -453,6 +699,7 @@ export const ChatLexicalTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaP
 							onMentionTrigger={handleMentionTrigger}
 							onMentionHide={handleMentionHide}
 						/>
+						<LexicalSelectAllPlugin />
 					</LexicalComposer>
 
 					{showContextMenu && (
