@@ -49,7 +49,6 @@ import HistoryPreview from "../history/HistoryPreview"
 import Announcement from "./Announcement"
 import BrowserSessionRow from "./BrowserSessionRow"
 import ChatRow from "./ChatRow"
-import { ChatTextArea } from "./ChatTextArea"
 import TaskHeader from "./TaskHeader"
 import SystemPromptWarning from "./SystemPromptWarning"
 import ProfileViolationWarning from "./ProfileViolationWarning"
@@ -58,6 +57,7 @@ import { QueuedMessages } from "./QueuedMessages"
 import DismissibleUpsell from "../common/DismissibleUpsell"
 import { useCloudUpsell } from "@src/hooks/useCloudUpsell"
 import { Cloud } from "lucide-react"
+import { ChatLexicalTextArea } from "./ChatLexicalTextArea"
 
 export interface ChatViewProps {
 	isHidden: boolean
@@ -1989,7 +1989,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					}
 				}}
 			/>
-			<ChatTextArea
+			<ChatLexicalTextArea
 				ref={textAreaRef}
 				inputValue={inputValue}
 				setInputValue={setInputValue}
