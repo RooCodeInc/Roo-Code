@@ -7,7 +7,7 @@ import { EventEmitter } from "events"
 
 import { simpleGit, SimpleGit } from "simple-git"
 
-import { fileExistsAtPath } from "../../../utils/fs"
+import * as fsUtils from "../../../utils/fs"
 import * as fileSearch from "../../../services/search/file-search"
 
 import { RepoPerTaskCheckpointService } from "../RepoPerTaskCheckpointService"
@@ -415,7 +415,7 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 				const nestedGitDir = path.join(nestedRepoPath, ".git")
 				const headFile = path.join(nestedGitDir, "HEAD")
 				await fs.writeFile(headFile, "HEAD")
-				expect(await fileExistsAtPath(nestedGitDir)).toBe(true)
+				expect(await fsUtils.fileExistsAtPath(nestedGitDir)).toBe(true)
 
 				vitest.spyOn(fileSearch, "executeRipgrep").mockImplementation(({ args }) => {
 					const searchPattern = args[4]
@@ -479,6 +479,78 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 				expect(service.isInitialized).toBe(true)
 
 				// Clean up.
+				vitest.restoreAllMocks()
+				await fs.rm(shadowDir, { recursive: true, force: true })
+				await fs.rm(workspaceDir, { recursive: true, force: true })
+			})
+
+			it("allows git repositories in non-git workspace (issue #8164)", async () => {
+				// This test addresses the specific issue where a workspace that is NOT a git repository
+				// contains cloned git repositories as subdirectories. This should be allowed.
+
+				const shadowDir = path.join(tmpDir, `${prefix}-non-git-workspace-${Date.now()}`)
+				const workspaceDir = path.join(tmpDir, `workspace-non-git-${Date.now()}`)
+
+				// Create a workspace directory WITHOUT initializing it as a git repo
+				await fs.mkdir(workspaceDir, { recursive: true })
+
+				// Create a cloned repository inside the workspace (simulating the user's scenario)
+				const clonedRepoPath = path.join(workspaceDir, "cloned-repository")
+				await fs.mkdir(clonedRepoPath, { recursive: true })
+				const clonedGit = simpleGit(clonedRepoPath)
+				await clonedGit.init()
+				await clonedGit.addConfig("user.name", "Roo Code")
+				await clonedGit.addConfig("user.email", "support@roocode.com")
+
+				// Add a file to the cloned repo
+				const clonedFile = path.join(clonedRepoPath, "cloned-file.txt")
+				await fs.writeFile(clonedFile, "Content in cloned repo")
+				await clonedGit.add(".")
+				await clonedGit.commit("Initial commit in cloned repo")
+
+				// Create a regular file in the workspace root
+				const workspaceFile = path.join(workspaceDir, "workspace-file.txt")
+				await fs.writeFile(workspaceFile, "Content in workspace")
+
+				// Mock executeRipgrep to return the cloned repo's .git/HEAD
+				vitest.spyOn(fileSearch, "executeRipgrep").mockImplementation(({ args }) => {
+					const searchPattern = args[4]
+
+					if (searchPattern.includes(".git/HEAD")) {
+						// Return the HEAD file path for the cloned repository
+						const headFilePath = path.join(path.relative(workspaceDir, clonedRepoPath), ".git", "HEAD")
+						return Promise.resolve([
+							{
+								path: headFilePath,
+								type: "file",
+								label: "HEAD",
+							},
+						])
+					} else {
+						return Promise.resolve([])
+					}
+				})
+
+				// Mock fileExistsAtPath to return false for workspace/.git (workspace is not a git repo)
+				vitest.spyOn(fsUtils, "fileExistsAtPath").mockImplementation((filePath: string) => {
+					if (filePath === path.join(workspaceDir, ".git")) {
+						return Promise.resolve(false) // Workspace is NOT a git repo
+					}
+					// For other paths, use the real implementation
+					return fs
+						.access(filePath)
+						.then(() => true)
+						.catch(() => false)
+				})
+
+				const service = new klass(taskId, shadowDir, workspaceDir, () => {})
+
+				// This should NOT throw an error because the workspace is not a git repository,
+				// so the cloned repository is not considered "nested"
+				await expect(service.initShadowGit()).resolves.not.toThrow()
+				expect(service.isInitialized).toBe(true)
+
+				// Clean up
 				vitest.restoreAllMocks()
 				await fs.rm(shadowDir, { recursive: true, force: true })
 				await fs.rm(workspaceDir, { recursive: true, force: true })

@@ -162,6 +162,20 @@ export abstract class ShadowCheckpointService extends EventEmitter {
 
 	private async getNestedGitRepository(): Promise<string | null> {
 		try {
+			// First check if the workspace root itself is a Git repository
+			const workspaceIsGitRepo = await fileExistsAtPath(path.join(this.workspaceDir, ".git"))
+
+			// If the workspace root is not a Git repository, then any Git repositories
+			// in subdirectories are not "nested" - they're just regular repositories
+			// that happen to be in the workspace. This is a valid use case.
+			if (!workspaceIsGitRepo) {
+				this.log(
+					`[${this.constructor.name}#getNestedGitRepository] workspace is not a git repository, allowing child repositories`,
+				)
+				return null
+			}
+
+			// The workspace IS a Git repository, so now we need to check for nested repos
 			// Find all .git/HEAD files that are not at the root level.
 			const args = ["--files", "--hidden", "--follow", "-g", "**/.git/HEAD", this.workspaceDir]
 
