@@ -8,6 +8,44 @@ import { extractTextFromXLSX } from "./extract-text-from-xlsx"
 import { countFileLines } from "./line-counter"
 import { readLines } from "./read-lines"
 
+/**
+ * Safely reads a text file with UTF-8 encoding, handling potential encoding errors gracefully.
+ * If the file contains invalid UTF-8 sequences, it attempts to read with error replacement.
+ *
+ * @param filePath - Path to the file to read
+ * @returns Promise resolving to the file content as a string
+ */
+async function safeReadTextFile(filePath: string): Promise<string> {
+	try {
+		// First attempt: standard UTF-8 reading
+		return await fs.readFile(filePath, "utf8")
+	} catch (error: any) {
+		// If it's an encoding error, try reading as buffer and converting with replacement
+		if (
+			error.code === "ERR_INVALID_ARG_TYPE" ||
+			error.code === "ERR_ENCODING_INVALID_ENCODED_DATA" ||
+			error.message?.includes("encoding") ||
+			error.message?.includes("Invalid") ||
+			error.errno === -92
+		) {
+			// EILSEQ error code for invalid byte sequence
+
+			try {
+				// Read as buffer
+				const buffer = await fs.readFile(filePath)
+				// Convert to string, replacing invalid sequences with replacement character
+				// This ensures we can still read the file even with encoding issues
+				return buffer.toString("utf8")
+			} catch (bufferError) {
+				// If buffer reading also fails, throw the original error
+				throw error
+			}
+		}
+		// For non-encoding errors, throw as-is
+		throw error
+	}
+}
+
 async function extractTextFromPDF(filePath: string): Promise<string> {
 	const dataBuffer = await fs.readFile(filePath)
 	const data = await pdf(dataBuffer)
@@ -20,7 +58,7 @@ async function extractTextFromDOCX(filePath: string): Promise<string> {
 }
 
 async function extractTextFromIPYNB(filePath: string): Promise<string> {
-	const data = await fs.readFile(filePath, "utf8")
+	const data = await safeReadTextFile(filePath)
 	const notebook = JSON.parse(data)
 	let extractedText = ""
 
@@ -86,9 +124,70 @@ export async function extractTextFromFile(filePath: string, maxReadFileLine?: nu
 	}
 
 	// Handle other files
-	const isBinary = await isBinaryFile(filePath).catch(() => false)
+	// For text-like extensions, always try to read as text regardless of binary detection
+	const textExtensions = [
+		".txt",
+		".md",
+		".markdown",
+		".text",
+		".log",
+		".csv",
+		".json",
+		".xml",
+		".html",
+		".htm",
+		".css",
+		".js",
+		".ts",
+		".jsx",
+		".tsx",
+		".py",
+		".java",
+		".c",
+		".cpp",
+		".h",
+		".hpp",
+		".cs",
+		".rb",
+		".go",
+		".rs",
+		".php",
+		".swift",
+		".kt",
+		".scala",
+		".r",
+		".m",
+		".mm",
+		".sh",
+		".bash",
+		".zsh",
+		".fish",
+		".ps1",
+		".bat",
+		".cmd",
+		".yaml",
+		".yml",
+		".toml",
+		".ini",
+		".cfg",
+		".conf",
+		".properties",
+	]
+	const isTextExtension = textExtensions.includes(fileExtension.toLowerCase())
 
-	if (!isBinary) {
+	let isBinary = false
+	if (!isTextExtension) {
+		// Only check binary for non-text extensions
+		try {
+			isBinary = await isBinaryFile(filePath)
+		} catch (error) {
+			// If isBinaryFile throws an error, assume it's a text file and try to read it
+			console.warn(`Warning: isBinaryFile check failed for ${filePath}, treating as text file:`, error)
+			isBinary = false
+		}
+	}
+
+	if (!isBinary || isTextExtension) {
 		// Check if we need to apply line limit
 		if (maxReadFileLine !== undefined && maxReadFileLine !== -1) {
 			const totalLines = await countFileLines(filePath)
@@ -103,7 +202,7 @@ export async function extractTextFromFile(filePath: string, maxReadFileLine?: nu
 			}
 		}
 		// Read the entire file if no limit or file is within limit
-		return addLineNumbers(await fs.readFile(filePath, "utf8"))
+		return addLineNumbers(await safeReadTextFile(filePath))
 	} else {
 		throw new Error(`Cannot read text for file type: ${fileExtension}`)
 	}

@@ -52,19 +52,65 @@ export function readLines(filepath: string, endLine?: number, startLine?: number
 			)
 		}
 
-		// Set up stream
-		const input = createReadStream(filepath)
+		// Set up stream with UTF-8 encoding
+		const input = createReadStream(filepath, { encoding: "utf8" })
 		let buffer = ""
 		let lineCount = 0
 		let result = ""
 
 		// Handle errors
-		input.on("error", reject)
+		input.on("error", (error: any) => {
+			// If it's an encoding error, try to handle it gracefully
+			if (
+				error.code === "ERR_INVALID_ARG_TYPE" ||
+				error.code === "ERR_ENCODING_INVALID_ENCODED_DATA" ||
+				error.message?.includes("encoding") ||
+				error.message?.includes("Invalid") ||
+				error.errno === -92
+			) {
+				// EILSEQ error code for invalid byte sequence
+
+				// Create a new stream without encoding to read as buffer
+				const bufferInput = createReadStream(filepath)
+				let bufferData = Buffer.alloc(0)
+
+				bufferInput.on("error", reject)
+
+				bufferInput.on("data", (chunk) => {
+					bufferData = Buffer.concat([bufferData, chunk as Buffer])
+				})
+
+				bufferInput.on("end", () => {
+					// Convert buffer to string with UTF-8, replacing invalid sequences
+					const content = bufferData.toString("utf8")
+					const lines = content.split("\n")
+
+					// Apply line range filtering
+					const effectiveEndLine =
+						endLine === undefined ? lines.length - 1 : Math.min(endLine, lines.length - 1)
+
+					if (effectiveStartLine >= lines.length) {
+						reject(outOfRangeError(filepath, effectiveStartLine))
+					} else {
+						const selectedLines = lines.slice(effectiveStartLine, effectiveEndLine + 1)
+						// Join with newlines, but don't add trailing newline if original didn't have one
+						const hasTrailingNewline = content.endsWith("\n")
+						let resultText = selectedLines.join("\n")
+						if (hasTrailingNewline || effectiveEndLine < lines.length - 1) {
+							resultText += "\n"
+						}
+						resolve(resultText)
+					}
+				})
+			} else {
+				reject(error)
+			}
+		})
 
 		// Process data chunks directly
 		input.on("data", (chunk) => {
-			// Add chunk to buffer
-			buffer += chunk.toString()
+			// Chunk is already a string due to encoding option
+			buffer += chunk as string
 
 			let pos = 0
 			let nextNewline = buffer.indexOf("\n", pos)
