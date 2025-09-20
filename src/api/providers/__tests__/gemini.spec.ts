@@ -90,6 +90,133 @@ describe("GeminiHandler", () => {
 			)
 		})
 
+		it("should unescape HTML entities in text messages", async () => {
+			// Setup the mock implementation to return text with HTML entities
+			;(handler["client"].models.generateContentStream as any).mockResolvedValue({
+				[Symbol.asyncIterator]: async function* () {
+					yield { text: "array&#91;0&#93;" }
+					yield { text: " and &lt;div&gt;" }
+					yield { text: " with &amp; symbol" }
+					yield { usageMetadata: { promptTokenCount: 10, candidatesTokenCount: 5 } }
+				},
+			})
+
+			const stream = handler.createMessage(systemPrompt, mockMessages)
+			const chunks = []
+
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			// Should have unescaped HTML entities
+			expect(chunks[0]).toEqual({ type: "text", text: "array[0]" })
+			expect(chunks[1]).toEqual({ type: "text", text: " and <div>" })
+			expect(chunks[2]).toEqual({ type: "text", text: " with & symbol" })
+		})
+
+		it("should unescape square bracket entities in Python code", async () => {
+			// Test the exact scenario from the issue
+			;(handler["client"].models.generateContentStream as any).mockResolvedValue({
+				[Symbol.asyncIterator]: async function* () {
+					yield {
+						candidates: [
+							{
+								content: {
+									parts: [
+										{
+											text: 'print(f"The first character is: {populated_variable&#91;0&#93;}")',
+										},
+									],
+								},
+							},
+						],
+					}
+					yield { usageMetadata: { promptTokenCount: 10, candidatesTokenCount: 5 } }
+				},
+			})
+
+			const stream = handler.createMessage(systemPrompt, mockMessages)
+			const chunks = []
+
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			// Should have properly unescaped square brackets
+			expect(chunks[0]).toEqual({
+				type: "text",
+				text: 'print(f"The first character is: {populated_variable[0]}")',
+			})
+		})
+
+		it("should unescape named square bracket entities", async () => {
+			// Test named entities for square brackets
+			;(handler["client"].models.generateContentStream as any).mockResolvedValue({
+				[Symbol.asyncIterator]: async function* () {
+					yield {
+						candidates: [
+							{
+								content: {
+									parts: [
+										{
+											text: "matrix&lsqb;i&rsqb;&lsqb;j&rsqb;",
+										},
+									],
+								},
+							},
+						],
+					}
+					yield { usageMetadata: { promptTokenCount: 10, candidatesTokenCount: 5 } }
+				},
+			})
+
+			const stream = handler.createMessage(systemPrompt, mockMessages)
+			const chunks = []
+
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			// Should have properly unescaped named entities
+			expect(chunks[0]).toEqual({ type: "text", text: "matrix[i][j]" })
+		})
+
+		it("should unescape HTML entities in thinking/reasoning parts", async () => {
+			// Test that entities are unescaped in thinking parts too
+			;(handler["client"].models.generateContentStream as any).mockResolvedValue({
+				[Symbol.asyncIterator]: async function* () {
+					yield {
+						candidates: [
+							{
+								content: {
+									parts: [
+										{
+											thought: true,
+											text: "Need to access array&#91;0&#93; element",
+										},
+									],
+								},
+							},
+						],
+					}
+					yield { usageMetadata: { promptTokenCount: 10, candidatesTokenCount: 5 } }
+				},
+			})
+
+			const stream = handler.createMessage(systemPrompt, mockMessages)
+			const chunks = []
+
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			// Should have properly unescaped in reasoning text
+			expect(chunks[0]).toEqual({
+				type: "reasoning",
+				text: "Need to access array[0] element",
+			})
+		})
+
 		it("should handle API errors", async () => {
 			const mockError = new Error("Gemini API error")
 			;(handler["client"].models.generateContentStream as any).mockRejectedValue(mockError)
@@ -142,6 +269,26 @@ describe("GeminiHandler", () => {
 
 			const result = await handler.completePrompt("Test prompt")
 			expect(result).toBe("")
+		})
+
+		it("should unescape HTML entities in completePrompt response", async () => {
+			// Mock the response with HTML entities
+			;(handler["client"].models.generateContent as any).mockResolvedValue({
+				text: "array&#91;0&#93; and &lt;div&gt;",
+			})
+
+			const result = await handler.completePrompt("Test prompt")
+			expect(result).toBe("array[0] and <div>")
+		})
+
+		it("should handle square brackets in completePrompt for Python code", async () => {
+			// Test the exact scenario from the issue
+			;(handler["client"].models.generateContent as any).mockResolvedValue({
+				text: 'print(f"The first character is: {populated_variable&#91;0&#93;}")',
+			})
+
+			const result = await handler.completePrompt("Update Python script")
+			expect(result).toBe('print(f"The first character is: {populated_variable[0]}")')
 		})
 	})
 

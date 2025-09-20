@@ -17,6 +17,7 @@ import { convertAnthropicContentToGemini, convertAnthropicMessageToGemini } from
 import { t } from "i18next"
 import type { ApiStream, GroundingSource } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
+import { unescapeHtmlEntities } from "../../utils/text-normalization"
 
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { BaseProvider } from "./base-provider"
@@ -109,12 +110,12 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 							if (part.thought) {
 								// This is a thinking/reasoning part
 								if (part.text) {
-									yield { type: "reasoning", text: part.text }
+									yield { type: "reasoning", text: unescapeHtmlEntities(part.text) }
 								}
 							} else {
 								// This is regular content
 								if (part.text) {
-									yield { type: "text", text: part.text }
+									yield { type: "text", text: unescapeHtmlEntities(part.text) }
 								}
 							}
 						}
@@ -123,7 +124,7 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 
 				// Fallback to the original text property if no candidates structure
 				else if (chunk.text) {
-					yield { type: "text", text: chunk.text }
+					yield { type: "text", text: unescapeHtmlEntities(chunk.text) }
 				}
 
 				if (chunk.usageMetadata) {
@@ -234,7 +235,7 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 				config: promptConfig,
 			})
 
-			let text = result.text ?? ""
+			let text = unescapeHtmlEntities(result.text ?? "")
 
 			const candidate = result.candidates?.[0]
 			if (candidate?.groundingMetadata) {
