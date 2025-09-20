@@ -45,7 +45,7 @@ export function getPromptComponent(
 async function generatePrompt(
 	context: vscode.ExtensionContext,
 	cwd: string,
-	supportsComputerUse: boolean,
+	supportsImages: boolean,
 	mode: Mode,
 	mcpHub?: McpHub,
 	diffStrategy?: DiffStrategy,
@@ -97,7 +97,7 @@ ${getSharedToolUseSection()}
 ${getToolDescriptionsForMode(
 	mode,
 	cwd,
-	supportsComputerUse,
+	supportsImages,
 	codeIndexManager,
 	effectiveDiffStrategy,
 	browserViewportSize,
@@ -114,11 +114,11 @@ ${getToolUseGuidelinesSection(codeIndexManager)}
 
 ${mcpServersSection}
 
-${getCapabilitiesSection(cwd, supportsComputerUse, shouldIncludeMcp ? mcpHub : undefined, effectiveDiffStrategy, codeIndexManager)}
+${getCapabilitiesSection(cwd, supportsImages, shouldIncludeMcp ? mcpHub : undefined, effectiveDiffStrategy, codeIndexManager)}
 
 ${modesSection}
 
-${getRulesSection(cwd, supportsComputerUse, effectiveDiffStrategy, codeIndexManager)}
+${getRulesSection(cwd, supportsImages, effectiveDiffStrategy, codeIndexManager)}
 
 ${getSystemInfoSection(cwd)}
 
@@ -136,7 +136,7 @@ ${await addCustomInstructions(baseInstructions, globalCustomInstructions || "", 
 export const SYSTEM_PROMPT = async (
 	context: vscode.ExtensionContext,
 	cwd: string,
-	supportsComputerUse: boolean,
+	supportsImages: boolean,
 	mcpHub?: McpHub,
 	diffStrategy?: DiffStrategy,
 	browserViewportSize?: string,
@@ -208,7 +208,7 @@ ${customInstructions}`
 	return generatePrompt(
 		context,
 		cwd,
-		supportsComputerUse,
+		supportsImages,
 		currentMode.slug,
 		mcpHub,
 		effectiveDiffStrategy,
