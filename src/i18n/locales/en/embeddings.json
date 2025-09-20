@@ -52,7 +52,8 @@
 		"vectorDimensionNotDeterminedOpenAiCompatible": "Could not determine vector dimension for model '{{modelId}}' with provider '{{provider}}'. Please ensure the 'Embedding Dimension' is correctly set in the OpenAI-Compatible provider settings.",
 		"vectorDimensionNotDetermined": "Could not determine vector dimension for model '{{modelId}}' with provider '{{provider}}'. Check model profiles or configuration.",
 		"qdrantUrlMissing": "Qdrant URL missing for vector store creation",
-		"codeIndexingNotConfigured": "Cannot create services: Code indexing is not properly configured"
+		"codeIndexingNotConfigured": "Cannot create services: Code indexing is not properly configured",
+		"watsonxConfigMissing": "IBM watsonx configuration missing for embedder creation"
 	},
 	"orchestrator": {
 		"indexingFailedNoBlocks": "Indexing failed: No code blocks were successfully indexed. This usually indicates an embedder configuration issue.",

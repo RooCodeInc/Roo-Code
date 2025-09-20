@@ -54,6 +54,11 @@
 		"vercelAiGatewayProvider": "Vercel AI Gateway",
 		"vercelAiGatewayApiKeyLabel": "Ключ API",
 		"vercelAiGatewayApiKeyPlaceholder": "Введите свой API-ключ Vercel AI Gateway",
+		"watsonxProvider": "IBM watsonx",
+		"watsonxApiKeyLabel": "API Key",
+		"watsonxApiKeyPlaceholder": "Enter your IBM watsonx API key",
+		"watsonxProjectIdLabel": "Project ID",
+		"watsonxProjectIdPlaceholder": "Enter your IBM watsonx project ID",
 		"mistralProvider": "Mistral",
 		"mistralApiKeyLabel": "Ключ API:",
 		"mistralApiKeyPlaceholder": "Введите свой API-ключ Mistral",
@@ -123,7 +128,8 @@
 			"vercelAiGatewayApiKeyRequired": "Требуется API-ключ Vercel AI Gateway",
 			"ollamaBaseUrlRequired": "Требуется базовый URL Ollama",
 			"baseUrlRequired": "Требуется базовый URL",
-			"modelDimensionMinValue": "Размерность модели должна быть больше 0"
+			"modelDimensionMinValue": "Размерность модели должна быть больше 0",
+			"watsonxApiKeyRequired": "IBM watsonx API key is required"
 		},
 		"advancedConfigLabel": "Расширенная конфигурация",
 		"searchMinScoreLabel": "Порог оценки поиска",
@@ -244,6 +250,7 @@
 		"vercelAiGatewayApiKey": "Ключ API Vercel AI Gateway",
 		"getVercelAiGatewayApiKey": "Получить ключ API Vercel AI Gateway",
 		"apiKeyStorageNotice": "API-ключи хранятся безопасно в Secret Storage VSCode",
+		"passwordStorageNotice": "Passwords are stored securely in VS Code's Secret Storage",
 		"glamaApiKey": "Glama API-ключ",
 		"getGlamaApiKey": "Получить Glama API-ключ",
 		"useCustomBaseUrl": "Использовать пользовательский базовый URL",
@@ -475,6 +482,9 @@
 			"placeholder": "По умолчанию: claude",
 			"maxTokensLabel": "Макс. выходных токенов",
 			"maxTokensDescription": "Максимальное количество выходных токенов для ответов Claude Code. По умолчанию 8000."
+		},
+		"watsonx": {
+			"description": "The extension automatically fetches the latest list of models available on <serviceLink>{{serviceName}}</serviceLink>."
 		}
 	},
 	"browser": {
@@ -680,6 +690,9 @@
 					"standard": "Стандартная стратегия применяет изменения к одному блоку кода за раз.",
 					"unified": "Унифицированная стратегия использует несколько подходов к применению диффов и выбирает лучший.",
 					"multiBlock": "Мультиблочная стратегия позволяет обновлять несколько блоков кода в файле за один запрос."
+				},
+				"watsonx": {
+					"description": "When enabled, Roo will be able to edit files more quickly and will automatically reject truncated full-file writes."
 				}
 			},
 			"matchPrecision": {
@@ -824,7 +837,16 @@
 		"providerNotAllowed": "Провайдер '{{provider}}' не разрешен вашей организацией",
 		"modelNotAllowed": "Модель '{{model}}' не разрешена для провайдера '{{provider}}' вашей организацией",
 		"profileInvalid": "Этот профиль содержит провайдера или модель, которые не разрешены вашей организацией",
-		"qwenCodeOauthPath": "Вы должны указать допустимый путь к учетным данным OAuth"
+		"qwenCodeOauthPath": "Вы должны указать допустимый путь к учетным данным OAuth",
+		"watsonx": {
+			"apiKey": "You must provide a valid API key.",
+			"projectId": "You must provide a valid project ID.",
+			"username": "You must provide a valid username.",
+			"baseUrl": "You must provide IBM Cloud Pak for Data URL.",
+			"invalidUrl": "You must provide a valid IBM Cloud Pak for Data URL.",
+			"region": "You must select a region.",
+			"password": "You must provide a valid password."
+		}
 	},
 	"placeholders": {
 		"apiKey": "Введите API-ключ...",

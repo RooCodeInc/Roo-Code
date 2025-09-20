@@ -57,6 +57,11 @@
 		"vercelAiGatewayProvider": "Vercel AI Gateway",
 		"vercelAiGatewayApiKeyLabel": "API Anahtarı",
 		"vercelAiGatewayApiKeyPlaceholder": "Vercel AI Gateway API anahtarınızı girin",
+		"watsonxProvider": "IBM watsonx",
+		"watsonxApiKeyLabel": "API Key",
+		"watsonxApiKeyPlaceholder": "Enter your IBM watsonx API key",
+		"watsonxProjectIdLabel": "Project ID",
+		"watsonxProjectIdPlaceholder": "Enter your IBM watsonx project ID",
 		"openaiCompatibleProvider": "OpenAI Uyumlu",
 		"openAiKeyLabel": "OpenAI API Anahtarı",
 		"openAiKeyPlaceholder": "OpenAI API anahtarınızı girin",
@@ -123,7 +128,8 @@
 			"vercelAiGatewayApiKeyRequired": "Vercel AI Gateway API anahtarı gereklidir",
 			"ollamaBaseUrlRequired": "Ollama temel URL'si gereklidir",
 			"baseUrlRequired": "Temel URL'si gereklidir",
-			"modelDimensionMinValue": "Model boyutu 0'dan büyük olmalıdır"
+			"modelDimensionMinValue": "Model boyutu 0'dan büyük olmalıdır",
+			"watsonxApiKeyRequired": "IBM watsonx API anahtarı gereklidir"
 		},
 		"advancedConfigLabel": "Gelişmiş Yapılandırma",
 		"searchMinScoreLabel": "Arama Skoru Eşiği",
@@ -244,6 +250,7 @@
 		"vercelAiGatewayApiKey": "Vercel AI Gateway API Anahtarı",
 		"getVercelAiGatewayApiKey": "Vercel AI Gateway API Anahtarı Al",
 		"apiKeyStorageNotice": "API anahtarları VSCode'un Gizli Depolamasında güvenli bir şekilde saklanır",
+		"passwordStorageNotice": "Passwords are stored securely in VS Code's Secret Storage",
 		"glamaApiKey": "Glama API Anahtarı",
 		"getGlamaApiKey": "Glama API Anahtarı Al",
 		"useCustomBaseUrl": "Özel temel URL kullan",
@@ -475,6 +482,9 @@
 			"placeholder": "Varsayılan: claude",
 			"maxTokensLabel": "Maksimum Çıktı Token sayısı",
 			"maxTokensDescription": "Claude Code yanıtları için maksimum çıktı token sayısı. Varsayılan 8000'dir."
+		},
+		"watsonx": {
+			"description": "The extension automatically fetches the latest list of models available on <serviceLink>{{serviceName}}</serviceLink>."
 		}
 	},
 	"browser": {
@@ -680,6 +690,9 @@
 					"standard": "Standart diff stratejisi, bir seferde tek bir kod bloğuna değişiklikler uygular.",
 					"unified": "Birleştirilmiş diff stratejisi, diff'leri uygulamak için birden çok yaklaşım benimser ve en iyi yaklaşımı seçer.",
 					"multiBlock": "Çoklu blok diff stratejisi, tek bir istekte bir dosyadaki birden çok kod bloğunu güncellemenize olanak tanır."
+				},
+				"watsonx": {
+					"description": "When enabled, Roo will be able to edit files more quickly and will automatically reject truncated full-file writes."
 				}
 			},
 			"matchPrecision": {
@@ -824,7 +837,16 @@
 		"providerNotAllowed": "Sağlayıcı '{{provider}}' kuruluşunuz tarafından izin verilmiyor",
 		"modelNotAllowed": "Model '{{model}}' sağlayıcı '{{provider}}' için kuruluşunuz tarafından izin verilmiyor",
 		"profileInvalid": "Bu profil, kuruluşunuz tarafından izin verilmeyen bir sağlayıcı veya model içeriyor",
-		"qwenCodeOauthPath": "Geçerli bir OAuth kimlik bilgileri yolu sağlamalısın"
+		"qwenCodeOauthPath": "Geçerli bir OAuth kimlik bilgileri yolu sağlamalısın",
+		"watsonx": {
+			"apiKey": "You must provide a valid API key.",
+			"projectId": "You must provide a valid project ID.",
+			"username": "You must provide a valid username.",
+			"baseUrl": "You must provide IBM Cloud Pak for Data URL.",
+			"invalidUrl": "You must provide a valid IBM Cloud Pak for Data URL.",
+			"region": "You must select a region.",
+			"password": "You must provide a valid password."
+		}
 	},
 	"placeholders": {
 		"apiKey": "API anahtarını girin...",

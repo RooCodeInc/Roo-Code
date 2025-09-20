@@ -57,6 +57,11 @@
 		"vercelAiGatewayProvider": "Vercel AI Gateway",
 		"vercelAiGatewayApiKeyLabel": "Clau API",
 		"vercelAiGatewayApiKeyPlaceholder": "Introduïu la vostra clau API de Vercel AI Gateway",
+		"watsonxProvider": "IBM watsonx",
+		"watsonxApiKeyLabel": "API Key",
+		"watsonxApiKeyPlaceholder": "Introduïu la vostra clau API d'IBM watsonx",
+		"watsonxProjectIdLabel": "Project ID",
+		"watsonxProjectIdPlaceholder": "Enter your IBM watsonx project ID",
 		"openaiCompatibleProvider": "Compatible amb OpenAI",
 		"openAiKeyLabel": "Clau API OpenAI",
 		"openAiKeyPlaceholder": "Introduïu la vostra clau API OpenAI",
@@ -121,9 +126,10 @@
 			"geminiApiKeyRequired": "Cal una clau d'API de Gemini",
 			"mistralApiKeyRequired": "La clau de l'API de Mistral és requerida",
 			"vercelAiGatewayApiKeyRequired": "Es requereix la clau API de Vercel AI Gateway",
-			"ollamaBaseUrlRequired": "Cal una URL base d'Ollama",
+			"ollamaBaseUrlRequired": "Cal un`a` URL base d'Ollama",
 			"baseUrlRequired": "Cal una URL base",
-			"modelDimensionMinValue": "La dimensió del model ha de ser superior a 0"
+			"modelDimensionMinValue": "La dimensió del model ha de ser superior a 0",
+			"watsonxApiKeyRequired": "IBM watsonx API key is required"
 		},
 		"advancedConfigLabel": "Configuració avançada",
 		"searchMinScoreLabel": "Llindar de puntuació de cerca",
@@ -244,6 +250,7 @@
 		"vercelAiGatewayApiKey": "Clau API de Vercel AI Gateway",
 		"getVercelAiGatewayApiKey": "Obtenir clau API de Vercel AI Gateway",
 		"apiKeyStorageNotice": "Les claus API s'emmagatzemen de forma segura a l'Emmagatzematge Secret de VSCode",
+		"passwordStorageNotice": "Passwords are stored securely in VS Code's Secret Storage",
 		"glamaApiKey": "Clau API de Glama",
 		"getGlamaApiKey": "Obtenir clau API de Glama",
 		"useCustomBaseUrl": "Utilitzar URL base personalitzada",
@@ -475,6 +482,9 @@
 			"placeholder": "Per defecte: claude",
 			"maxTokensLabel": "Tokens màxims de sortida",
 			"maxTokensDescription": "Nombre màxim de tokens de sortida per a les respostes de Claude Code. El valor per defecte és 8000."
+		},
+		"watsonx": {
+			"description": "The extension automatically fetches the latest list of models available on <serviceLink>{{serviceName}}</serviceLink>."
 		}
 	},
 	"browser": {
@@ -679,6 +689,9 @@
 					"standard": "L'estratègia de diff estàndard aplica canvis a un sol bloc de codi alhora.",
 					"unified": "L'estratègia de diff unificat pren múltiples enfocaments per aplicar diffs i tria el millor enfocament.",
 					"multiBlock": "L'estratègia de diff multi-bloc permet actualitzar múltiples blocs de codi en un fitxer en una sola sol·licitud."
+				},
+				"watsonx": {
+					"description": "When enabled, Roo will be able to edit files more quickly and will automatically reject truncated full-file writes."
 				}
 			},
 			"matchPrecision": {
@@ -823,7 +836,16 @@
 		"providerNotAllowed": "El proveïdor '{{provider}}' no està permès per la vostra organització",
 		"modelNotAllowed": "El model '{{model}}' no està permès per al proveïdor '{{provider}}' per la vostra organització",
 		"profileInvalid": "Aquest perfil conté un proveïdor o model que no està permès per la vostra organització",
-		"qwenCodeOauthPath": "Has de proporcionar una ruta vàlida de credencials OAuth"
+		"qwenCodeOauthPath": "Has de proporcionar una ruta vàlida de credencials OAuth",
+		"watsonx": {
+			"apiKey": "You must provide a valid API key.",
+			"projectId": "You must provide a valid project ID.",
+			"username": "You must provide a valid username.",
+			"baseUrl": "You must provide IBM Cloud Pak for Data URL.",
+			"invalidUrl": "You must provide a valid IBM Cloud Pak for Data URL.",
+			"region": "You must select a region.",
+			"password": "You must provide a valid password."
+		}
 	},
 	"placeholders": {
 		"apiKey": "Introduïu la clau API...",

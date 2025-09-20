@@ -54,6 +54,11 @@
 		"vercelAiGatewayProvider": "Vercel AI Gateway",
 		"vercelAiGatewayApiKeyLabel": "Chiave API",
 		"vercelAiGatewayApiKeyPlaceholder": "Inserisci la tua chiave API Vercel AI Gateway",
+		"watsonxProvider": "IBM watsonx",
+		"watsonxApiKeyLabel": "API Key",
+		"watsonxApiKeyPlaceholder": "Enter your IBM watsonx API key",
+		"watsonxProjectIdLabel": "Project ID",
+		"watsonxProjectIdPlaceholder": "Enter your IBM watsonx project ID",
 		"mistralProvider": "Mistral",
 		"mistralApiKeyLabel": "Chiave API:",
 		"mistralApiKeyPlaceholder": "Inserisci la tua chiave API Mistral",
@@ -123,7 +128,8 @@
 			"vercelAiGatewayApiKeyRequired": "È richiesta la chiave API Vercel AI Gateway",
 			"ollamaBaseUrlRequired": "È richiesto l'URL di base di Ollama",
 			"baseUrlRequired": "È richiesto l'URL di base",
-			"modelDimensionMinValue": "La dimensione del modello deve essere maggiore di 0"
+			"modelDimensionMinValue": "La dimensione del modello deve essere maggiore di 0",
+			"watsonxApiKeyRequired": "IBM watsonx API key is required"
 		},
 		"advancedConfigLabel": "Configurazione avanzata",
 		"searchMinScoreLabel": "Soglia punteggio di ricerca",
@@ -244,6 +250,7 @@
 		"vercelAiGatewayApiKey": "Chiave API Vercel AI Gateway",
 		"getVercelAiGatewayApiKey": "Ottieni chiave API Vercel AI Gateway",
 		"apiKeyStorageNotice": "Le chiavi API sono memorizzate in modo sicuro nell'Archivio Segreto di VSCode",
+		"passwordStorageNotice": "Passwords are stored securely in VS Code's Secret Storage",
 		"glamaApiKey": "Chiave API Glama",
 		"getGlamaApiKey": "Ottieni chiave API Glama",
 		"useCustomBaseUrl": "Usa URL base personalizzato",
@@ -475,6 +482,9 @@
 			"placeholder": "Predefinito: claude",
 			"maxTokensLabel": "Token di output massimi",
 			"maxTokensDescription": "Numero massimo di token di output per le risposte di Claude Code. Il valore predefinito è 8000."
+		},
+		"watsonx": {
+			"description": "The extension automatically fetches the latest list of models available on <serviceLink>{{serviceName}}</serviceLink>."
 		}
 	},
 	"browser": {
@@ -680,6 +690,9 @@
 					"standard": "La strategia diff standard applica modifiche a un singolo blocco di codice alla volta.",
 					"unified": "La strategia diff unificato adotta diversi approcci per applicare i diff e sceglie il migliore.",
 					"multiBlock": "La strategia diff multi-blocco consente di aggiornare più blocchi di codice in un file in una singola richiesta."
+				},
+				"watsonx": {
+					"description": "When enabled, Roo will be able to edit files more quickly and will automatically reject truncated full-file writes."
 				}
 			},
 			"matchPrecision": {
@@ -824,7 +837,16 @@
 		"providerNotAllowed": "Il fornitore '{{provider}}' non è consentito dalla tua organizzazione",
 		"modelNotAllowed": "Il modello '{{model}}' non è consentito per il fornitore '{{provider}}' dalla tua organizzazione.",
 		"profileInvalid": "Questo profilo contiene un fornitore o un modello non consentito dalla tua organizzazione.",
-		"qwenCodeOauthPath": "Devi fornire un percorso valido per le credenziali OAuth"
+		"qwenCodeOauthPath": "Devi fornire un percorso valido per le credenziali OAuth",
+		"watsonx": {
+			"apiKey": "You must provide a valid API key.",
+			"projectId": "You must provide a valid project ID.",
+			"username": "You must provide a valid username.",
+			"baseUrl": "You must provide IBM Cloud Pak for Data URL.",
+			"invalidUrl": "You must provide a valid IBM Cloud Pak for Data URL.",
+			"region": "You must select a region.",
+			"password": "You must provide a valid password."
+		}
 	},
 	"placeholders": {
 		"apiKey": "Inserisci chiave API...",

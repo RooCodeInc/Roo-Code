@@ -59,6 +59,11 @@
 		"vercelAiGatewayProvider": "Vercel AI Gateway",
 		"vercelAiGatewayApiKeyLabel": "API-Schlüssel",
 		"vercelAiGatewayApiKeyPlaceholder": "Gib deinen Vercel AI Gateway API-Schlüssel ein",
+		"watsonxProvider": "IBM watsonx",
+		"watsonxApiKeyLabel": "API-Schlüssel",
+		"watsonxApiKeyPlaceholder": "Enter your IBM watsonx API key",
+		"watsonxProjectIdLabel": "Project ID",
+		"watsonxProjectIdPlaceholder": "Enter your IBM watsonx project ID",
 		"mistralProvider": "Mistral",
 		"mistralApiKeyLabel": "API-Schlüssel:",
 		"mistralApiKeyPlaceholder": "Gib deinen Mistral-API-Schlüssel ein",
@@ -123,7 +128,8 @@
 			"vercelAiGatewayApiKeyRequired": "Vercel AI Gateway API-Schlüssel ist erforderlich",
 			"ollamaBaseUrlRequired": "Ollama-Basis-URL ist erforderlich",
 			"baseUrlRequired": "Basis-URL ist erforderlich",
-			"modelDimensionMinValue": "Modellabmessung muss größer als 0 sein"
+			"modelDimensionMinValue": "Modellabmessung muss größer als 0 sein",
+			"watsonxApiKeyRequired": "IBM watsonx API-Schlüssel ist erforderlich"
 		},
 		"advancedConfigLabel": "Erweiterte Konfiguration",
 		"searchMinScoreLabel": "Suchergebnis-Schwellenwert",
@@ -246,6 +252,7 @@
 		"doubaoApiKey": "Doubao API-Schlüssel",
 		"getDoubaoApiKey": "Doubao API-Schlüssel erhalten",
 		"apiKeyStorageNotice": "API-Schlüssel werden sicher im VSCode Secret Storage gespeichert",
+		"passwordStorageNotice": "Passwords are stored securely in VS Code's Secret Storage",
 		"glamaApiKey": "Glama API-Schlüssel",
 		"getGlamaApiKey": "Glama API-Schlüssel erhalten",
 		"useCustomBaseUrl": "Benutzerdefinierte Basis-URL verwenden",
@@ -475,6 +482,9 @@
 			"placeholder": "Standard: claude",
 			"maxTokensLabel": "Maximale Ausgabe-Tokens",
 			"maxTokensDescription": "Maximale Anzahl an Ausgabe-Tokens für Claude Code-Antworten. Standard ist 8000."
+		},
+		"watsonx": {
+			"description": "The extension automatically fetches the latest list of models available on <serviceLink>{{serviceName}}</serviceLink>."
 		}
 	},
 	"browser": {
@@ -679,6 +689,9 @@
 					"standard": "Die Standard-Diff-Strategie wendet Änderungen jeweils auf einen einzelnen Codeblock an.",
 					"unified": "Die einheitliche Diff-Strategie wendet mehrere Ansätze zur Anwendung von Diffs an und wählt den besten Ansatz.",
 					"multiBlock": "Die Mehrblock-Diff-Strategie ermöglicht das Aktualisieren mehrerer Codeblöcke in einer Datei in einer Anfrage."
+				},
+				"watsonx": {
+					"description": "When enabled, Roo will be able to edit files more quickly and will automatically reject truncated full-file writes."
 				}
 			},
 			"matchPrecision": {
@@ -823,7 +836,16 @@
 		"providerNotAllowed": "Anbieter '{{provider}}' ist von deiner Organisation nicht erlaubt",
 		"modelNotAllowed": "Modell '{{model}}' ist für Anbieter '{{provider}}' von deiner Organisation nicht erlaubt",
 		"profileInvalid": "Dieses Profil enthält einen Anbieter oder ein Modell, das von deiner Organisation nicht erlaubt ist",
-		"qwenCodeOauthPath": "Du musst einen gültigen OAuth-Anmeldedaten-Pfad angeben"
+		"qwenCodeOauthPath": "Du musst einen gültigen OAuth-Anmeldedaten-Pfad angeben",
+		"watsonx": {
+			"apiKey": "You must provide a valid API key.",
+			"projectId": "You must provide a valid project ID.",
+			"username": "You must provide a valid username.",
+			"baseUrl": "You must provide IBM Cloud Pak for Data URL.",
+			"invalidUrl": "You must provide a valid IBM Cloud Pak for Data URL.",
+			"region": "You must select a region.",
+			"password": "You must provide a valid password."
+		}
 	},
 	"placeholders": {
 		"apiKey": "API-Schlüssel eingeben...",

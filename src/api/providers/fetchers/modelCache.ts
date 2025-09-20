@@ -9,7 +9,7 @@ import { safeWriteJson } from "../../../utils/safeWriteJson"
 
 import { ContextProxy } from "../../../core/config/ContextProxy"
 import { getCacheDirectoryPath } from "../../../utils/storage"
-import type { RouterName, ModelRecord } from "../../../shared/api"
+import type { ModelRecord, RouterName } from "../../../shared/api"
 import { fileExistsAtPath } from "../../../utils/fs"
 
 import { getOpenRouterModels } from "./openrouter"
@@ -23,6 +23,7 @@ import { getOllamaModels } from "./ollama"
 import { getLMStudioModels } from "./lmstudio"
 import { getIOIntelligenceModels } from "./io-intelligence"
 import { getDeepInfraModels } from "./deepinfra"
+import { getWatsonxModels } from "./watsonx"
 import { getHuggingFaceModels } from "./huggingface"
 
 const memoryCache = new NodeCache({ stdTTL: 5 * 60, checkperiod: 5 * 60 })
@@ -95,6 +96,9 @@ export const getModels = async (options: GetModelsOptions): Promise<ModelRecord>
 				break
 			case "vercel-ai-gateway":
 				models = await getVercelAiGatewayModels()
+				break
+			case "watsonx":
+				models = await getWatsonxModels(options.apiKey)
 				break
 			case "huggingface":
 				models = await getHuggingFaceModels()

@@ -37,6 +37,7 @@ type ModelIdKey = keyof Pick<
 	| "deepInfraModelId"
 	| "ioIntelligenceModelId"
 	| "vercelAiGatewayModelId"
+	| "watsonxModelId"
 >
 
 interface ModelPickerProps {
@@ -234,16 +235,20 @@ export const ModelPicker = ({
 					setIsDescriptionExpanded={setIsDescriptionExpanded}
 				/>
 			)}
-			<div className="text-sm text-vscode-descriptionForeground">
-				<Trans
-					i18nKey="settings:modelPicker.automaticFetch"
-					components={{
-						serviceLink: <VSCodeLink href={serviceUrl} className="text-sm" />,
-						defaultModelLink: <VSCodeLink onClick={() => onSelect(defaultModelId)} className="text-sm" />,
-					}}
-					values={{ serviceName, defaultModelId }}
-				/>
-			</div>
+			{defaultModelId && serviceUrl && (
+				<div className="text-sm text-vscode-descriptionForeground">
+					<Trans
+						i18nKey="settings:modelPicker.automaticFetch"
+						components={{
+							serviceLink: <VSCodeLink href={serviceUrl} className="text-sm" />,
+							defaultModelLink: (
+								<VSCodeLink onClick={() => onSelect(defaultModelId)} className="text-sm" />
+							),
+						}}
+						values={{ serviceName, defaultModelId }}
+					/>
+				</div>
+			)}
 		</>
 	)
 }

@@ -92,6 +92,8 @@ export class ProfileValidator {
 				return profile.ioIntelligenceModelId
 			case "deepinfra":
 				return profile.deepInfraModelId
+			case "watsonx":
+				return profile.watsonxModelId
 			case "human-relay":
 			case "fake-ai":
 			default:

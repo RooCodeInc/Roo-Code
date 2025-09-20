@@ -37,6 +37,7 @@ import {
 	rooDefaultModelId,
 	vercelAiGatewayDefaultModelId,
 	deepInfraDefaultModelId,
+	watsonxAiDefaultModelId,
 } from "@roo-code/types"
 
 import { vscode } from "@src/utils/vscode"
@@ -89,6 +90,7 @@ import {
 	Unbound,
 	Vertex,
 	VSCodeLM,
+	WatsonxAI,
 	XAI,
 	ZAi,
 	Fireworks,
@@ -228,6 +230,8 @@ const ApiOptions = ({
 				vscode.postMessage({ type: "requestVsCodeLmModels" })
 			} else if (selectedProvider === "litellm" || selectedProvider === "deepinfra") {
 				vscode.postMessage({ type: "requestRouterModels" })
+			} else if (selectedProvider === "watsonx") {
+				vscode.postMessage({ type: "requestWatsonxModels" })
 			}
 		},
 		250,
@@ -242,6 +246,9 @@ const ApiOptions = ({
 			apiConfiguration?.litellmApiKey,
 			apiConfiguration?.deepInfraApiKey,
 			apiConfiguration?.deepInfraBaseUrl,
+			apiConfiguration.watsonxApiKey,
+			apiConfiguration.watsonxProjectId,
+			apiConfiguration.watsonxBaseUrl,
 			customHeaders,
 		],
 	)
@@ -346,6 +353,7 @@ const ApiOptions = ({
 				openai: { field: "openAiModelId" },
 				ollama: { field: "ollamaModelId" },
 				lmstudio: { field: "lmStudioModelId" },
+				watsonx: { field: "watsonxModelId", default: watsonxAiDefaultModelId },
 			}
 
 			const config = PROVIDER_MODEL_CONFIG[value]
@@ -640,6 +648,15 @@ const ApiOptions = ({
 				/>
 			)}
 
+			{selectedProvider === "watsonx" && (
+				<WatsonxAI
+					apiConfiguration={apiConfiguration}
+					setApiConfigurationField={setApiConfigurationField}
+					organizationAllowList={organizationAllowList}
+					modelValidationError={modelValidationError}
+				/>
+			)}
+
 			{selectedProvider === "human-relay" && (
 				<>
 					<div className="text-sm text-vscode-descriptionForeground">
@@ -678,7 +695,7 @@ const ApiOptions = ({
 				<Featherless apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
 			)}
 
-			{selectedProviderModels.length > 0 && (
+			{selectedProviderModels.length > 0 && selectedProvider !== "watsonx" && (
 				<>
 					<div>
 						<label className="block font-medium mb-1">{t("settings:providers.model")}</label>
@@ -761,6 +778,7 @@ const ApiOptions = ({
 						<DiffSettingsControl
 							diffEnabled={apiConfiguration.diffEnabled}
 							fuzzyMatchThreshold={apiConfiguration.fuzzyMatchThreshold}
+							provider={apiConfiguration.apiProvider}
 							onChange={(field, value) => setApiConfigurationField(field, value)}
 						/>
 						{selectedModelInfo?.supportsTemperature !== false && (

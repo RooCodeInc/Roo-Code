@@ -70,6 +70,8 @@ export interface WebviewMessage {
 		| "requestOllamaModels"
 		| "requestLmStudioModels"
 		| "requestVsCodeLmModels"
+		| "requestWatsonxModels"
+		| "requestEmbeddedWatsonxModels"
 		| "requestHuggingFaceModels"
 		| "openImage"
 		| "saveImage"
@@ -283,6 +285,7 @@ export interface WebviewMessage {
 			| "gemini"
 			| "mistral"
 			| "vercel-ai-gateway"
+			| "watsonx"
 		codebaseIndexEmbedderBaseUrl?: string
 		codebaseIndexEmbedderModelId: string
 		codebaseIndexEmbedderModelDimension?: number // Generic dimension for all providers
@@ -297,6 +300,8 @@ export interface WebviewMessage {
 		codebaseIndexGeminiApiKey?: string
 		codebaseIndexMistralApiKey?: string
 		codebaseIndexVercelAiGatewayApiKey?: string
+		codebaseIndexWatsonxApiKey?: string
+		codebaseIndexWatsonxProjectId?: string
 	}
 }
 

@@ -52,7 +52,8 @@
 		"vectorDimensionNotDeterminedOpenAiCompatible": "No se pudo determinar la dimensión del vector para el modelo '{{modelId}}' con el proveedor '{{provider}}'. Asegúrate de que la 'Dimensión de incrustación' esté configurada correctamente en los ajustes del proveedor compatible con OpenAI.",
 		"vectorDimensionNotDetermined": "No se pudo determinar la dimensión del vector para el modelo '{{modelId}}' con el proveedor '{{provider}}'. Verifica los perfiles del modelo o la configuración.",
 		"qdrantUrlMissing": "Falta la URL de Qdrant para crear el almacén de vectores",
-		"codeIndexingNotConfigured": "No se pueden crear servicios: La indexación de código no está configurada correctamente"
+		"codeIndexingNotConfigured": "No se pueden crear servicios: La indexación de código no está configurada correctamente",
+		"watsonxConfigMissing": "IBM watsonx configuration missing for embedder creation"
 	},
 	"orchestrator": {
 		"indexingFailedNoBlocks": "Indexación fallida: No se indexaron exitosamente bloques de código. Esto usualmente indica un problema de configuración del incrustador.",

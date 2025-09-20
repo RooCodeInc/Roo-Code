@@ -59,6 +59,7 @@ const ALLOWED_VSCODE_SETTINGS = new Set(["terminal.integrated.inheritEnv"])
 
 import { MarketplaceManager, MarketplaceItemType } from "../../services/marketplace"
 import { setPendingTodoList } from "../tools/updateTodoListTool"
+import { getEmbeddedWatsonxModels, getWatsonxModels } from "../../api/providers/fetchers/watsonx"
 
 export const webviewMessageHandler = async (
 	provider: ClineProvider,
@@ -768,6 +769,7 @@ export const webviewMessageHandler = async (
 				glama: {},
 				ollama: {},
 				lmstudio: {},
+				watsonx: {},
 			}
 
 			const safeGetModels = async (options: GetModelsOptions): Promise<ModelRecord> => {
@@ -934,6 +936,122 @@ export const webviewMessageHandler = async (
 			const vsCodeLmModels = await getVsCodeLmModels()
 			// TODO: Cache like we do for OpenRouter, etc?
 			provider.postMessageToWebview({ type: "vsCodeLmModels", vsCodeLmModels })
+			break
+		case "requestWatsonxModels":
+			if (message?.values) {
+				try {
+					const {
+						apiKey,
+						projectId,
+						platform = "ibmCloud",
+						baseUrl,
+						username,
+						authType = "apiKey",
+						password,
+						region,
+					} = message.values
+
+					if (!apiKey && !(username && (authType === "password" ? password : apiKey))) {
+						console.error("Missing authentication credentials for IBM watsonx models")
+						provider.postMessageToWebview({
+							type: "watsonxModels",
+							watsonxModels: {},
+						})
+						return
+					}
+
+					let effectiveBaseUrl = baseUrl
+					if (platform === "ibmCloud" && region && !baseUrl) {
+						const regionToUrl: Record<string, string> = {
+							"us-south": "https://us-south.ml.cloud.ibm.com",
+							"eu-de": "https://eu-de.ml.cloud.ibm.com",
+							"eu-gb": "https://eu-gb.ml.cloud.ibm.com",
+							"jp-tok": "https://jp-tok.ml.cloud.ibm.com",
+							"au-syd": "https://au-syd.ml.cloud.ibm.com",
+							"ca-tor": "https://ca-tor.ml.cloud.ibm.com",
+							"ap-south-1": "https://ap-south-1.aws.wxai.ibm.com",
+						}
+						effectiveBaseUrl = regionToUrl[region] || "https://us-south.ml.cloud.ibm.com"
+					}
+
+					const watsonxModels = await getWatsonxModels(
+						apiKey,
+						effectiveBaseUrl,
+						platform,
+						username,
+						authType === "password" ? password : undefined,
+					)
+
+					provider.postMessageToWebview({
+						type: "watsonxModels",
+						watsonxModels: watsonxModels,
+					})
+				} catch (error) {
+					console.error("Failed to fetch IBM watsonx models:", error)
+					provider.postMessageToWebview({
+						type: "watsonxModels",
+						watsonxModels: {},
+					})
+				}
+			}
+			break
+		case "requestEmbeddedWatsonxModels":
+			if (message?.values) {
+				try {
+					const {
+						apiKey,
+						projectId,
+						platform = "ibmCloud",
+						baseUrl,
+						username,
+						authType = "apiKey",
+						password,
+						region,
+					} = message.values
+
+					if (!apiKey && !(username && (authType === "password" ? password : apiKey))) {
+						console.error("Missing authentication credentials for IBM watsonx embedded models")
+						provider.postMessageToWebview({
+							type: "embeddedWatsonxModels",
+							embeddedWatsonxModels: {},
+						})
+						return
+					}
+
+					let effectiveBaseUrl = baseUrl
+					if (platform === "ibmCloud" && region && !baseUrl) {
+						const regionToUrl: Record<string, string> = {
+							"us-south": "https://us-south.ml.cloud.ibm.com",
+							"eu-de": "https://eu-de.ml.cloud.ibm.com",
+							"eu-gb": "https://eu-gb.ml.cloud.ibm.com",
+							"jp-tok": "https://jp-tok.ml.cloud.ibm.com",
+							"au-syd": "https://au-syd.ml.cloud.ibm.com",
+							"ca-tor": "https://ca-tor.ml.cloud.ibm.com",
+							"ap-south-1": "https://ap-south-1.aws.wxai.ibm.com",
+						}
+						effectiveBaseUrl = regionToUrl[region] || "https://us-south.ml.cloud.ibm.com"
+					}
+
+					const watsonxModels = await getEmbeddedWatsonxModels(
+						apiKey,
+						effectiveBaseUrl,
+						platform as "ibmCloud" | "cloudPak",
+						username,
+						authType === "password" ? password : undefined,
+					)
+
+					provider.postMessageToWebview({
+						type: "embeddedWatsonxModels",
+						embeddedWatsonxModels: watsonxModels,
+					})
+				} catch (error) {
+					console.error("Failed to fetch IBM watsonx embedded models:", error)
+					provider.postMessageToWebview({
+						type: "embeddedWatsonxModels",
+						embeddedWatsonxModels: {},
+					})
+				}
+			}
 			break
 		case "requestHuggingFaceModels":
 			// TODO: Why isn't this handled by `requestRouterModels` above?
@@ -2412,13 +2530,24 @@ export const webviewMessageHandler = async (
 						settings.codebaseIndexMistralApiKey,
 					)
 				}
+				if (settings.codebaseIndexWatsonxApiKey !== undefined) {
+					await provider.contextProxy.storeSecret(
+						"codebaseIndexWatsonxApiKey",
+						settings.codebaseIndexWatsonxApiKey,
+					)
+				}
+				if (settings.codebaseIndexWatsonxProjectId !== undefined) {
+					await provider.contextProxy.storeSecret(
+						"codebaseIndexWatsonxProjectId",
+						settings.codebaseIndexWatsonxProjectId,
+					)
+				}
 				if (settings.codebaseIndexVercelAiGatewayApiKey !== undefined) {
 					await provider.contextProxy.storeSecret(
 						"codebaseIndexVercelAiGatewayApiKey",
 						settings.codebaseIndexVercelAiGatewayApiKey,
 					)
 				}
-
 				// Send success response first - settings are saved regardless of validation
 				await provider.postMessageToWebview({
 					type: "codeIndexSettingsSaved",
@@ -2555,6 +2684,7 @@ export const webviewMessageHandler = async (
 			const hasVercelAiGatewayApiKey = !!(await provider.context.secrets.get(
 				"codebaseIndexVercelAiGatewayApiKey",
 			))
+			const hasWatsonxApiKey = !!(await provider.context.secrets.get("codebaseIndexWatsonxApiKey"))
 
 			provider.postMessageToWebview({
 				type: "codeIndexSecretStatus",
@@ -2565,6 +2695,7 @@ export const webviewMessageHandler = async (
 					hasGeminiApiKey,
 					hasMistralApiKey,
 					hasVercelAiGatewayApiKey,
+					hasWatsonxApiKey,
 				},
 			})
 			break

@@ -57,6 +57,8 @@ import {
 	vercelAiGatewayDefaultModelId,
 	BEDROCK_CLAUDE_SONNET_4_MODEL_ID,
 	deepInfraDefaultModelId,
+	watsonxAiModels,
+	watsonxAiDefaultModelId,
 } from "@roo-code/types"
 
 import type { ModelRecord, RouterModels } from "@roo/api"
@@ -73,6 +75,7 @@ export const useSelectedModel = (apiConfiguration?: ProviderSettings) => {
 	const ollamaModelId = provider === "ollama" ? apiConfiguration?.ollamaModelId : undefined
 
 	const routerModels = useRouterModels()
+
 	const openRouterModelProviders = useOpenRouterModelProviders(openRouterModelId)
 	const lmStudioModels = useLmStudioModels(lmStudioModelId)
 	const ollamaModels = useOllamaModels(ollamaModelId)
@@ -347,6 +350,14 @@ function getSelectedModel({
 			const id = apiConfiguration.vercelAiGatewayModelId ?? vercelAiGatewayDefaultModelId
 			const info = routerModels["vercel-ai-gateway"]?.[id]
 			return { id, info }
+		}
+		case "watsonx": {
+			const id = apiConfiguration.watsonxModelId ?? watsonxAiDefaultModelId
+			const info = watsonxAiModels[id as keyof typeof watsonxAiModels]
+			return {
+				id,
+				info: info,
+			}
 		}
 		// case "anthropic":
 		// case "human-relay":

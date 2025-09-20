@@ -21,6 +21,7 @@ import {
 	fireworksModels,
 	rooModels,
 	featherlessModels,
+	watsonxAiModels,
 } from "@roo-code/types"
 
 export const MODELS_BY_PROVIDER: Partial<Record<ProviderName, Record<string, ModelInfo>>> = {
@@ -44,6 +45,7 @@ export const MODELS_BY_PROVIDER: Partial<Record<ProviderName, Record<string, Mod
 	fireworks: fireworksModels,
 	roo: rooModels,
 	featherless: featherlessModels,
+	watsonx: watsonxAiModels,
 }
 
 export const PROVIDERS = [
@@ -81,4 +83,5 @@ export const PROVIDERS = [
 	{ value: "io-intelligence", label: "IO Intelligence" },
 	{ value: "roo", label: "Roo Code Cloud" },
 	{ value: "vercel-ai-gateway", label: "Vercel AI Gateway" },
+	{ value: "watsonx", label: "IBM watsonx" },
 ].sort((a, b) => a.label.localeCompare(b.label))
