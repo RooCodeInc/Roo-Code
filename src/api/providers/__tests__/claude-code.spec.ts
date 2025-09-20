@@ -515,6 +515,142 @@ describe("ClaudeCodeHandler", () => {
 		await expect(iterator.next()).rejects.toThrow()
 	})
 
+	test("should suppress verbose 5-hour usage limit errors", async () => {
+		const systemPrompt = "You are a helpful assistant"
+		const messages = [{ role: "user" as const, content: "Hello" }]
+
+		// Mock async generator that yields a 5-hour usage limit error
+		const mockGenerator = async function* (): AsyncGenerator<ClaudeCodeMessage | string> {
+			yield {
+				type: "assistant" as const,
+				message: {
+					id: "msg_123",
+					type: "message",
+					role: "assistant",
+					model: "claude-3-5-sonnet-20241022",
+					content: [
+						{
+							type: "text",
+							text: 'API Error: 429 {"error":{"message":"Usage limit reached. Please wait 5 hours before trying again."}}',
+						},
+					],
+					stop_reason: "stop_sequence",
+					stop_sequence: null,
+					usage: {
+						input_tokens: 10,
+						output_tokens: 20,
+					},
+				} as any,
+				session_id: "session_123",
+			}
+		}
+
+		mockRunClaudeCode.mockReturnValue(mockGenerator())
+
+		const stream = handler.createMessage(systemPrompt, messages)
+		const results = []
+
+		// Should not throw an error - the error should be suppressed
+		for await (const chunk of stream) {
+			results.push(chunk)
+		}
+
+		// Should have no results since the error was suppressed
+		expect(results).toHaveLength(0)
+	})
+
+	test("should suppress various 5-hour limit error messages", async () => {
+		const systemPrompt = "You are a helpful assistant"
+		const messages = [{ role: "user" as const, content: "Hello" }]
+
+		const errorMessages = [
+			'API Error: 429 {"error":{"message":"5-hour usage limit exceeded"}}',
+			'API Error: 429 {"error":{"message":"Five hour rate limit reached"}}',
+			'API Error: 429 {"error":{"message":"Rate limit: Please wait before making another request"}}',
+			'API Error: 429 {"error":{"message":"Usage limit has been reached for this period"}}',
+		]
+
+		for (const errorMessage of errorMessages) {
+			// Mock async generator that yields the error
+			const mockGenerator = async function* (): AsyncGenerator<ClaudeCodeMessage | string> {
+				yield {
+					type: "assistant" as const,
+					message: {
+						id: "msg_123",
+						type: "message",
+						role: "assistant",
+						model: "claude-3-5-sonnet-20241022",
+						content: [
+							{
+								type: "text",
+								text: errorMessage,
+							},
+						],
+						stop_reason: "stop_sequence",
+						stop_sequence: null,
+						usage: {
+							input_tokens: 10,
+							output_tokens: 20,
+						},
+					} as any,
+					session_id: "session_123",
+				}
+			}
+
+			mockRunClaudeCode.mockReturnValue(mockGenerator())
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			const results = []
+
+			// Should not throw an error - the error should be suppressed
+			for await (const chunk of stream) {
+				results.push(chunk)
+			}
+
+			// Should have no results since the error was suppressed
+			expect(results).toHaveLength(0)
+		}
+	})
+
+	test("should not suppress non-429 API errors", async () => {
+		const systemPrompt = "You are a helpful assistant"
+		const messages = [{ role: "user" as const, content: "Hello" }]
+
+		// Mock async generator that yields a non-429 error
+		const mockGenerator = async function* (): AsyncGenerator<ClaudeCodeMessage | string> {
+			yield {
+				type: "assistant" as const,
+				message: {
+					id: "msg_123",
+					type: "message",
+					role: "assistant",
+					model: "claude-3-5-sonnet-20241022",
+					content: [
+						{
+							type: "text",
+							text: 'API Error: 500 {"error":{"message":"Internal server error"}}',
+						},
+					],
+					stop_reason: "stop_sequence",
+					stop_sequence: null,
+					usage: {
+						input_tokens: 10,
+						output_tokens: 20,
+					},
+				} as any,
+				session_id: "session_123",
+			}
+		}
+
+		mockRunClaudeCode.mockReturnValue(mockGenerator())
+
+		const stream = handler.createMessage(systemPrompt, messages)
+		const iterator = stream[Symbol.asyncIterator]()
+
+		// Should throw an error for non-429 errors
+		await expect(iterator.next()).rejects.toThrow('{"error":{"message":"Internal server error"}}')
+	})
+
 	test("should log warning for unsupported tool_use content", async () => {
 		const systemPrompt = "You are a helpful assistant"
 		const messages = [{ role: "user" as const, content: "Hello" }]

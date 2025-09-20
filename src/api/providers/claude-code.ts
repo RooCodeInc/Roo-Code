@@ -85,6 +85,20 @@ export class ClaudeCodeHandler extends BaseProvider implements ApiHandler {
 							throw new Error(content.text)
 						}
 
+						// Check if this is a 5-hour usage limit error (429 status)
+						// These errors should be handled gracefully without showing verbose details
+						if (
+							content.text.includes("429") &&
+							(error.error?.message?.toLowerCase().includes("usage limit") ||
+								error.error?.message?.toLowerCase().includes("rate limit") ||
+								error.error?.message?.toLowerCase().includes("5-hour") ||
+								error.error?.message?.toLowerCase().includes("five hour"))
+						) {
+							// Don't throw the verbose error - let the UI handle it with a concise message
+							// The UI already shows a grey notice for this case
+							return
+						}
+
 						if (error.error.message.includes("Invalid model name")) {
 							throw new Error(
 								content.text + `\n\n${t("common:errors.claudeCode.apiKeyModelPlanMismatch")}`,
