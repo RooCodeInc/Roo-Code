@@ -195,92 +195,128 @@ export class QwenCodeHandler extends BaseProvider implements SingleCompletionHan
 				client.apiKey = this.credentials.access_token
 				client.baseURL = this.getBaseUrl(this.credentials)
 				return await apiCall()
+			} else if (error.status === 400) {
+				// Bad request error - provide more context
+				const errorMessage = error?.message || error?.error?.message || "Bad request"
+				const detailedMessage = `Qwen API Error (400): ${errorMessage}. This may be due to invalid input format, unsupported file type, or request size limits.`
+				console.error(detailedMessage)
+				throw new Error(detailedMessage)
+			} else if (error.status === 403) {
+				// Forbidden error
+				const errorMessage = error?.message || error?.error?.message || "Forbidden"
+				throw new Error(`Qwen API Error (403): ${errorMessage}. Please check your API permissions.`)
+			} else if (error.status === 429) {
+				// Rate limit error
+				const errorMessage = error?.message || error?.error?.message || "Rate limit exceeded"
+				throw new Error(`Qwen API Error (429): ${errorMessage}. Please wait before making more requests.`)
+			} else if (error.status >= 500) {
+				// Server error
+				const errorMessage = error?.message || error?.error?.message || "Server error"
+				throw new Error(
+					`Qwen API Error (${error.status}): ${errorMessage}. The Qwen service may be temporarily unavailable.`,
+				)
 			} else {
+				// Other errors - preserve original error but add context
+				if (error.status) {
+					const errorMessage = error?.message || error?.error?.message || "Unknown error"
+					throw new Error(`Qwen API Error (${error.status}): ${errorMessage}`)
+				}
 				throw error
 			}
 		}
 	}
 
 	override async *createMessage(systemPrompt: string, messages: Anthropic.Messages.MessageParam[]): ApiStream {
-		await this.ensureAuthenticated()
-		const client = this.ensureClient()
-		const model = this.getModel()
+		try {
+			await this.ensureAuthenticated()
+			const client = this.ensureClient()
+			const model = this.getModel()
 
-		const systemMessage: OpenAI.Chat.ChatCompletionSystemMessageParam = {
-			role: "system",
-			content: systemPrompt,
-		}
+			const systemMessage: OpenAI.Chat.ChatCompletionSystemMessageParam = {
+				role: "system",
+				content: systemPrompt,
+			}
 
-		const convertedMessages = [systemMessage, ...convertToOpenAiMessages(messages)]
+			const convertedMessages = [systemMessage, ...convertToOpenAiMessages(messages)]
 
-		const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming = {
-			model: model.id,
-			temperature: 0,
-			messages: convertedMessages,
-			stream: true,
-			stream_options: { include_usage: true },
-			max_completion_tokens: model.info.maxTokens,
-		}
+			const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming = {
+				model: model.id,
+				temperature: 0,
+				messages: convertedMessages,
+				stream: true,
+				stream_options: { include_usage: true },
+				max_completion_tokens: model.info.maxTokens,
+			}
 
-		const stream = await this.callApiWithRetry(() => client.chat.completions.create(requestOptions))
+			const stream = await this.callApiWithRetry(() => client.chat.completions.create(requestOptions))
 
-		let fullContent = ""
+			let fullContent = ""
 
-		for await (const apiChunk of stream) {
-			const delta = apiChunk.choices[0]?.delta ?? {}
+			for await (const apiChunk of stream) {
+				const delta = apiChunk.choices[0]?.delta ?? {}
 
-			if (delta.content) {
-				let newText = delta.content
-				if (newText.startsWith(fullContent)) {
-					newText = newText.substring(fullContent.length)
-				}
-				fullContent = delta.content
+				if (delta.content) {
+					let newText = delta.content
+					if (newText.startsWith(fullContent)) {
+						newText = newText.substring(fullContent.length)
+					}
+					fullContent = delta.content
 
-				if (newText) {
-					// Check for thinking blocks
-					if (newText.includes("<think>") || newText.includes("</think>")) {
-						// Simple parsing for thinking blocks
-						const parts = newText.split(/<\/?think>/g)
-						for (let i = 0; i < parts.length; i++) {
-							if (parts[i]) {
-								if (i % 2 === 0) {
-									// Outside thinking block
-									yield {
-										type: "text",
-										text: parts[i],
-									}
-								} else {
-									// Inside thinking block
-									yield {
-										type: "reasoning",
-										text: parts[i],
+					if (newText) {
+						// Check for thinking blocks
+						if (newText.includes("<think>") || newText.includes("</think>")) {
+							// Simple parsing for thinking blocks
+							const parts = newText.split(/<\/?think>/g)
+							for (let i = 0; i < parts.length; i++) {
+								if (parts[i]) {
+									if (i % 2 === 0) {
+										// Outside thinking block
+										yield {
+											type: "text",
+											text: parts[i],
+										}
+									} else {
+										// Inside thinking block
+										yield {
+											type: "reasoning",
+											text: parts[i],
+										}
 									}
 								}
 							}
-						}
-					} else {
-						yield {
-							type: "text",
-							text: newText,
+						} else {
+							yield {
+								type: "text",
+								text: newText,
+							}
 						}
 					}
 				}
-			}
 
-			if ("reasoning_content" in delta && delta.reasoning_content) {
-				yield {
-					type: "reasoning",
-					text: (delta.reasoning_content as string | undefined) || "",
+				if ("reasoning_content" in delta && delta.reasoning_content) {
+					yield {
+						type: "reasoning",
+						text: (delta.reasoning_content as string | undefined) || "",
+					}
+				}
+
+				if (apiChunk.usage) {
+					yield {
+						type: "usage",
+						inputTokens: apiChunk.usage.prompt_tokens || 0,
+						outputTokens: apiChunk.usage.completion_tokens || 0,
+					}
 				}
 			}
+		} catch (error: any) {
+			// Log the error for debugging
+			console.error("Error in QwenCodeHandler.createMessage:", error)
 
-			if (apiChunk.usage) {
-				yield {
-					type: "usage",
-					inputTokens: apiChunk.usage.prompt_tokens || 0,
-					outputTokens: apiChunk.usage.completion_tokens || 0,
-				}
+			// Re-throw with a more user-friendly message if it's not already formatted
+			if (error.message && !error.message.startsWith("Qwen API Error")) {
+				throw new Error(`Failed to process request with Qwen model: ${error.message}`)
 			}
+			throw error
 		}
 	}
 
@@ -291,18 +327,29 @@ export class QwenCodeHandler extends BaseProvider implements SingleCompletionHan
 	}
 
 	async completePrompt(prompt: string): Promise<string> {
-		await this.ensureAuthenticated()
-		const client = this.ensureClient()
-		const model = this.getModel()
+		try {
+			await this.ensureAuthenticated()
+			const client = this.ensureClient()
+			const model = this.getModel()
 
-		const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {
-			model: model.id,
-			messages: [{ role: "user", content: prompt }],
-			max_completion_tokens: model.info.maxTokens,
+			const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {
+				model: model.id,
+				messages: [{ role: "user", content: prompt }],
+				max_completion_tokens: model.info.maxTokens,
+			}
+
+			const response = await this.callApiWithRetry(() => client.chat.completions.create(requestOptions))
+
+			return response.choices[0]?.message.content || ""
+		} catch (error: any) {
+			// Log the error for debugging
+			console.error("Error in QwenCodeHandler.completePrompt:", error)
+
+			// Re-throw with a more user-friendly message if it's not already formatted
+			if (error.message && !error.message.startsWith("Qwen API Error")) {
+				throw new Error(`Failed to complete prompt with Qwen model: ${error.message}`)
+			}
+			throw error
 		}
-
-		const response = await this.callApiWithRetry(() => client.chat.completions.create(requestOptions))
-
-		return response.choices[0]?.message.content || ""
 	}
 }
