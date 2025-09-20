@@ -258,9 +258,11 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 		try {
 			const { id: model } = this.getModel()
 
+			// Wrap the parts in a proper Content structure with user role
+			// The SDK expects Content[] format: [{ role: "user", parts: Part[] }]
 			const response = await this.client.models.countTokens({
 				model,
-				contents: convertAnthropicContentToGemini(content),
+				contents: [{ role: "user", parts: convertAnthropicContentToGemini(content) }],
 			})
 
 			if (response.totalTokens === undefined) {

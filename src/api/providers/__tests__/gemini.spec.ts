@@ -6,6 +6,7 @@ import { type ModelInfo, geminiDefaultModelId } from "@roo-code/types"
 
 import { t } from "i18next"
 import { GeminiHandler } from "../gemini"
+import { BaseProvider } from "../base-provider"
 
 const GEMINI_20_FLASH_THINKING_NAME = "gemini-2.0-flash-thinking-exp-1219"
 
@@ -246,6 +247,140 @@ describe("GeminiHandler", () => {
 			const incompleteInfo: ModelInfo = { ...mockInfo, outputPrice: undefined }
 			const cost = handler.calculateCost({ info: incompleteInfo, inputTokens: 1000, outputTokens: 1000 })
 			expect(cost).toBeUndefined()
+		})
+	})
+
+	describe("countTokens", () => {
+		it("should count tokens successfully with correct Content[] format", async () => {
+			// Mock the countTokens response
+			const mockCountTokens = vitest.fn().mockResolvedValue({
+				totalTokens: 42,
+			})
+
+			handler["client"].models.countTokens = mockCountTokens
+
+			const content: Anthropic.Messages.ContentBlockParam[] = [{ type: "text", text: "Hello world" }]
+
+			const result = await handler.countTokens(content)
+			expect(result).toBe(42)
+
+			// Verify the call was made with correct Content[] format
+			expect(mockCountTokens).toHaveBeenCalledWith({
+				model: GEMINI_20_FLASH_THINKING_NAME,
+				contents: [
+					{
+						role: "user",
+						parts: [{ text: "Hello world" }],
+					},
+				],
+			})
+		})
+
+		it("should handle multimodal content correctly", async () => {
+			const mockCountTokens = vitest.fn().mockResolvedValue({
+				totalTokens: 100,
+			})
+
+			handler["client"].models.countTokens = mockCountTokens
+
+			const content: Anthropic.Messages.ContentBlockParam[] = [
+				{ type: "text", text: "Describe this image:" },
+				{
+					type: "image",
+					source: {
+						type: "base64",
+						media_type: "image/jpeg",
+						data: "base64data",
+					},
+				},
+			]
+
+			const result = await handler.countTokens(content)
+			expect(result).toBe(100)
+
+			// Verify the Content[] structure with mixed content
+			expect(mockCountTokens).toHaveBeenCalledWith({
+				model: GEMINI_20_FLASH_THINKING_NAME,
+				contents: [
+					{
+						role: "user",
+						parts: [
+							{ text: "Describe this image:" },
+							{ inlineData: { data: "base64data", mimeType: "image/jpeg" } },
+						],
+					},
+				],
+			})
+		})
+
+		it("should fall back to base provider when SDK returns undefined", async () => {
+			// Mock countTokens to return undefined totalTokens
+			const mockCountTokens = vitest.fn().mockResolvedValue({
+				totalTokens: undefined,
+			})
+
+			handler["client"].models.countTokens = mockCountTokens
+
+			// Spy on the parent class method
+			const superCountTokensSpy = vitest.spyOn(BaseProvider.prototype, "countTokens")
+
+			const content: Anthropic.Messages.ContentBlockParam[] = [{ type: "text", text: "Test content" }]
+
+			await handler.countTokens(content)
+
+			// Verify fallback was called
+			expect(superCountTokensSpy).toHaveBeenCalledWith(content)
+		})
+
+		it("should fall back to base provider when SDK throws error", async () => {
+			// Mock countTokens to throw an error
+			const mockCountTokens = vitest.fn().mockRejectedValue(new Error("API error"))
+
+			handler["client"].models.countTokens = mockCountTokens
+
+			// Spy on console.warn
+			const consoleWarnSpy = vitest.spyOn(console, "warn").mockImplementation(() => {})
+
+			// Spy on the parent class method
+			const superCountTokensSpy = vitest.spyOn(BaseProvider.prototype, "countTokens")
+
+			const content: Anthropic.Messages.ContentBlockParam[] = [{ type: "text", text: "Test content" }]
+
+			await handler.countTokens(content)
+
+			// Verify warning was logged
+			expect(consoleWarnSpy).toHaveBeenCalledWith(
+				"Gemini token counting failed, using fallback",
+				expect.any(Error),
+			)
+
+			// Verify fallback was called
+			expect(superCountTokensSpy).toHaveBeenCalledWith(content)
+
+			// Clean up
+			consoleWarnSpy.mockRestore()
+		})
+
+		it("should handle empty content array", async () => {
+			const mockCountTokens = vitest.fn().mockResolvedValue({
+				totalTokens: 0,
+			})
+
+			handler["client"].models.countTokens = mockCountTokens
+
+			const result = await handler.countTokens([])
+			expect(result).toBe(0)
+
+			// Verify the call with empty parts
+			expect(mockCountTokens).toHaveBeenCalledWith({
+				model: GEMINI_20_FLASH_THINKING_NAME,
+				contents: [
+					{
+						role: "user",
+						parts: [],
+					},
+				],
+			})
 		})
 	})
 })
