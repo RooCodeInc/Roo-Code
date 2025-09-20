@@ -295,6 +295,18 @@
 		"getZaiApiKey": "获取 Z AI API 密钥",
 		"zaiEntrypoint": "Z AI 服务站点",
 		"zaiEntrypointDescription": "请根据您的位置选择适当的 API 服务站点。如果您在中国，请选择 open.bigmodel.cn。否则，请选择 api.z.ai。",
+		"zaiEntrypointOptions": {
+			"international": "国际",
+			"china": "中国"
+		},
+		"zaiModels": {
+			"glm-4.5": {
+				"description": "GLM-4.5 是智谱最新的旗舰模型。在推理、编程与智能体方面具备领先能力，达到了开源模型的先进水平，支持最长 128k 上下文。"
+			},
+			"glm-4.5-air": {
+				"description": "GLM-4.5-Air 是 GLM-4.5 的轻量版，在性能与成本之间取得良好平衡，并可灵活切换到混合思维模式。"
+			}
+		},
 		"geminiApiKey": "Gemini API 密钥",
 		"getGroqApiKey": "获取 Groq API 密钥",
 		"groqApiKey": "Groq API 密钥",

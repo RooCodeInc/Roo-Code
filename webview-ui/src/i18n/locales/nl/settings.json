@@ -295,6 +295,18 @@
 		"getZaiApiKey": "Z AI API-sleutel ophalen",
 		"zaiEntrypoint": "Z AI-ingangspunt",
 		"zaiEntrypointDescription": "Selecteer het juiste API-ingangspunt op basis van uw locatie. Als u zich in China bevindt, kies dan open.bigmodel.cn. Anders kiest u api.z.ai.",
+		"zaiEntrypointOptions": {
+			"international": "Internationaal",
+			"china": "China"
+		},
+		"zaiModels": {
+			"glm-4.5": {
+				"description": "GLM-4.5 is Zhipu's nieuwste vlaggenschipmodel. Zijn uitgebreide mogelijkheden in redenering, codering en agent bereiken het state-of-the-art (SOTA) niveau onder open-source modellen, met een contextlengte tot 128k."
+			},
+			"glm-4.5-air": {
+				"description": "GLM-4.5-Air is de lichtgewicht versie van GLM-4.5. Het balanceert prestaties en kosteneffectiviteit, en kan flexibel overschakelen naar hybride denkmodellen."
+			}
+		},
 		"geminiApiKey": "Gemini API-sleutel",
 		"getGroqApiKey": "Groq API-sleutel ophalen",
 		"groqApiKey": "Groq API-sleutel",

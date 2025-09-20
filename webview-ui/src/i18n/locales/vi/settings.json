@@ -295,6 +295,18 @@
 		"getZaiApiKey": "Lấy khóa API Z AI",
 		"zaiEntrypoint": "Điểm vào Z AI",
 		"zaiEntrypointDescription": "Vui lòng chọn điểm vào API phù hợp dựa trên vị trí của bạn. Nếu bạn ở Trung Quốc, hãy chọn open.bigmodel.cn. Ngược lại, hãy chọn api.z.ai.",
+		"zaiEntrypointOptions": {
+			"international": "Quốc tế",
+			"china": "Trung Quốc"
+		},
+		"zaiModels": {
+			"glm-4.5": {
+				"description": "GLM-4.5 là mô hình hàng đầu mới nhất của Zhipu. Khả năng toàn diện trong lý luận, mã hóa và tác nhân đạt đến mức tiên tiến (SOTA) trong số các mô hình mã nguồn mở, với độ dài ngữ cảnh lên đến 128k."
+			},
+			"glm-4.5-air": {
+				"description": "GLM-4.5-Air là phiên bản nhẹ của GLM-4.5. Nó cân bằng hiệu suất và hiệu quả chi phí, và có thể linh hoạt chuyển đổi sang các mô hình tư duy lai."
+			}
+		},
 		"geminiApiKey": "Khóa API Gemini",
 		"getGroqApiKey": "Lấy khóa API Groq",
 		"groqApiKey": "Khóa API Groq",

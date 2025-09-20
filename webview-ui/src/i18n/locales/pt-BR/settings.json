@@ -295,6 +295,18 @@
 		"getZaiApiKey": "Obter chave de API Z AI",
 		"zaiEntrypoint": "Ponto de entrada Z AI",
 		"zaiEntrypointDescription": "Selecione o ponto de entrada da API apropriado com base na sua localização. Se você estiver na China, escolha open.bigmodel.cn. Caso contrário, escolha api.z.ai.",
+		"zaiEntrypointOptions": {
+			"international": "Internacional",
+			"china": "China"
+		},
+		"zaiModels": {
+			"glm-4.5": {
+				"description": "GLM-4.5 é o mais recente modelo flagship da Zhipu. Suas capacidades abrangentes em raciocínio, codificação e agente atingem o nível estado da arte (SOTA) entre modelos de código aberto, com comprimento de contexto de até 128k."
+			},
+			"glm-4.5-air": {
+				"description": "GLM-4.5-Air é a versão leve do GLM-4.5. Equilibra desempenho e custo-benefício, e pode alternar flexivelmente para modelos de pensamento híbrido."
+			}
+		},
 		"geminiApiKey": "Chave de API Gemini",
 		"getGroqApiKey": "Obter chave de API Groq",
 		"groqApiKey": "Chave de API Groq",

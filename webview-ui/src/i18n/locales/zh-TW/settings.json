@@ -295,6 +295,18 @@
 		"getZaiApiKey": "取得 Z AI API 金鑰",
 		"zaiEntrypoint": "Z AI 服務端點",
 		"zaiEntrypointDescription": "請根據您的位置選擇適當的 API 服務端點。如果您在中國，請選擇 open.bigmodel.cn。否則，請選擇 api.z.ai。",
+		"zaiEntrypointOptions": {
+			"international": "國際",
+			"china": "中國"
+		},
+		"zaiModels": {
+			"glm-4.5": {
+				"description": "GLM-4.5 是智譜最新的旗艦模型，在推理、程式設計與智能體方面具備頂尖能力，達到開源模型的先進水準，支援最長 128k 上下文。"
+			},
+			"glm-4.5-air": {
+				"description": "GLM-4.5‑Air 是 GLM-4.5 的輕量版，在效能與成本之間取得平衡，並可彈性切換至混合思維模式。"
+			}
+		},
 		"geminiApiKey": "Gemini API 金鑰",
 		"getGroqApiKey": "取得 Groq API 金鑰",
 		"groqApiKey": "Groq API 金鑰",

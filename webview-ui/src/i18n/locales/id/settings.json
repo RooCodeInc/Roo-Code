@@ -299,6 +299,18 @@
 		"getZaiApiKey": "Dapatkan Kunci API Z AI",
 		"zaiEntrypoint": "Titik Masuk Z AI",
 		"zaiEntrypointDescription": "Silakan pilih titik masuk API yang sesuai berdasarkan lokasi Anda. Jika Anda berada di China, pilih open.bigmodel.cn. Jika tidak, pilih api.z.ai.",
+		"zaiEntrypointOptions": {
+			"international": "Internasional",
+			"china": "China"
+		},
+		"zaiModels": {
+			"glm-4.5": {
+				"description": "GLM-4.5 adalah model unggulan terbaru Zhipu. Kemampuan komprehensifnya dalam penalaran, coding, dan agen mencapai tingkat state-of-the-art (SOTA) di antara model open source, dengan panjang konteks hingga 128k."
+			},
+			"glm-4.5-air": {
+				"description": "GLM-4.5-Air adalah versi ringan dari GLM-4.5. Ini menyeimbangkan kinerja dan efektivitas biaya, dan dapat beralih secara fleksibel ke model pemikiran hibrida."
+			}
+		},
 		"geminiApiKey": "Gemini API Key",
 		"getGroqApiKey": "Dapatkan Groq API Key",
 		"groqApiKey": "Groq API Key",

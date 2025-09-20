@@ -295,6 +295,18 @@
 		"getZaiApiKey": "Z AI API Anahtarı Al",
 		"zaiEntrypoint": "Z AI Giriş Noktası",
 		"zaiEntrypointDescription": "Konumunuza göre uygun API giriş noktasını seçin. Çin'de iseniz open.bigmodel.cn'yi seçin. Aksi takdirde api.z.ai'yi seçin.",
+		"zaiEntrypointOptions": {
+			"international": "Uluslararası",
+			"china": "Çin"
+		},
+		"zaiModels": {
+			"glm-4.5": {
+				"description": "GLM-4.5, Zhipu'nun en yeni amiral gemisi modelidir. Akıl yürütme, kodlama ve ajan konularındaki kapsamlı yetenekleri, açık kaynak modeller arasında en son teknoloji (SOTA) seviyesine ulaşır ve 128k'ya kadar bağlam uzunluğuna sahiptir."
+			},
+			"glm-4.5-air": {
+				"description": "GLM-4.5-Air, GLM-4.5'in hafif versiyonudur. Performans ve maliyet etkinliğini dengeler ve hibrit düşünce modellerine esnek bir şekilde geçiş yapabilir."
+			}
+		},
 		"geminiApiKey": "Gemini API Anahtarı",
 		"getGroqApiKey": "Groq API Anahtarı Al",
 		"groqApiKey": "Groq API Anahtarı",

@@ -295,6 +295,18 @@
 		"getZaiApiKey": "Z AI API कुंजी प्राप्त करें",
 		"zaiEntrypoint": "Z AI प्रवेश बिंदु",
 		"zaiEntrypointDescription": "कृपया अपने स्थान के आधार पर उपयुक्त API प्रवेश बिंदु का चयन करें। यदि आप चीन में हैं, तो open.bigmodel.cn चुनें। अन्यथा, api.z.ai चुनें।",
+		"zaiEntrypointOptions": {
+			"international": "अंतर्राष्ट्रीय",
+			"china": "चीन"
+		},
+		"zaiModels": {
+			"glm-4.5": {
+				"description": "GLM-4.5 Zhipu का नवीनतम फ्लैगशिप मॉडल है। रीज़निंग, कोडिंग और एजेंट में इसकी व्यापक क्षमताएं ओपन-सोर्स मॉडल्स के बीच अत्याधुनिक (SOTA) स्तर तक पहुंचती हैं, जिसमें 128k तक का संदर्भ लंबाई है।"
+			},
+			"glm-4.5-air": {
+				"description": "GLM-4.5-Air, GLM-4.5 का हल्का संस्करण है। यह प्रदर्शन और लागत-प्रभावशीलता को संतुलित करता है, और हाइब्रिड थिंकिंग मॉडल्स में लचीले रूप से स्विच कर सकता है।"
+			}
+		},
 		"geminiApiKey": "Gemini API कुंजी",
 		"getGroqApiKey": "Groq API कुंजी प्राप्त करें",
 		"groqApiKey": "Groq API कुंजी",

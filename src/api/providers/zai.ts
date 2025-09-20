@@ -15,14 +15,14 @@ import { BaseOpenAiCompatibleProvider } from "./base-openai-compatible-provider"
 
 export class ZAiHandler extends BaseOpenAiCompatibleProvider<InternationalZAiModelId | MainlandZAiModelId> {
 	constructor(options: ApiHandlerOptions) {
-		const isChina = zaiApiLineConfigs[options.zaiApiLine ?? "international_coding"].isChina
+		const isChina = zaiApiLineConfigs[options.zaiApiLine ?? "international"].isChina
 		const models = isChina ? mainlandZAiModels : internationalZAiModels
 		const defaultModelId = isChina ? mainlandZAiDefaultModelId : internationalZAiDefaultModelId
 
 		super({
 			...options,
 			providerName: "Z AI",
-			baseURL: zaiApiLineConfigs[options.zaiApiLine ?? "international_coding"].baseUrl,
+			baseURL: zaiApiLineConfigs[options.zaiApiLine ?? "international"].baseUrl,
 			apiKey: options.zaiApiKey ?? "not-provided",
 			defaultProviderModelId: defaultModelId,
 			providerModels: models,

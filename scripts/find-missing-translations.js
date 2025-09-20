@@ -92,14 +92,44 @@ function findKeys(obj, parentKey = "") {
 
 // Get value at a dotted path in an object
 function getValueAtPath(obj, path) {
-	const parts = path.split(".")
+	// Handle the case where keys might contain dots (like "glm-4.5")
+	// We need to be smarter about splitting the path
 	let current = obj
+	let remainingPath = path
 
-	for (const part of parts) {
-		if (current === undefined || current === null) {
-			return undefined
+	while (remainingPath && current && typeof current === "object") {
+		let found = false
+
+		// Try to find the longest matching key first
+		for (const key of Object.keys(current)) {
+			if (remainingPath === key) {
+				// Exact match - we're done
+				return current[key]
+			} else if (remainingPath.startsWith(key + ".")) {
+				// Key matches the start of remaining path
+				current = current[key]
+				remainingPath = remainingPath.slice(key.length + 1)
+				found = true
+				break
+			}
 		}
-		current = current[part]
+
+		if (!found) {
+			// No matching key found, try the old method as fallback
+			const dotIndex = remainingPath.indexOf(".")
+			if (dotIndex === -1) {
+				// No more dots, this should be the final key
+				return current[remainingPath]
+			} else {
+				const nextKey = remainingPath.slice(0, dotIndex)
+				if (current[nextKey] !== undefined) {
+					current = current[nextKey]
+					remainingPath = remainingPath.slice(dotIndex + 1)
+				} else {
+					return undefined
+				}
+			}
+		}
 	}
 
 	return current

@@ -295,6 +295,18 @@
 		"getZaiApiKey": "Z AI APIキーを取得",
 		"zaiEntrypoint": "Z AI エントリーポイント",
 		"zaiEntrypointDescription": "お住まいの地域に応じて適切な API エントリーポイントを選択してください。中国にお住まいの場合は open.bigmodel.cn を選択してください。それ以外の場合は api.z.ai を選択してください。",
+		"zaiEntrypointOptions": {
+			"international": "国際",
+			"china": "中国"
+		},
+		"zaiModels": {
+			"glm-4.5": {
+				"description": "GLM-4.5は智譜の最新フラッグシップモデルです。推論、コーディング、エージェントにおける包括的な能力は、オープンソースモデルの中で最先端（SOTA）レベルに達し、最大128kのコンテキスト長を持ちます。"
+			},
+			"glm-4.5-air": {
+				"description": "GLM-4.5-AirはGLM-4.5の軽量版です。パフォーマンスとコスト効率のバランスを取り、ハイブリッド思考モデルに柔軟に切り替えることができます。"
+			}
+		},
 		"geminiApiKey": "Gemini APIキー",
 		"getGroqApiKey": "Groq APIキーを取得",
 		"groqApiKey": "Groq APIキー",
