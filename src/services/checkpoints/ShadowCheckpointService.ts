@@ -44,6 +44,11 @@ export abstract class ShadowCheckpointService extends EventEmitter {
 		return this._checkpoints.slice()
 	}
 
+	// Provide current checkpoint for consumers (e.g., FilesChanged enable flow)
+	public getCurrentCheckpoint(): string | undefined {
+		return this._checkpoints.length > 0 ? this._checkpoints[this._checkpoints.length - 1] : this.baseHash
+	}
+
 	constructor(taskId: string, checkpointsDir: string, workspaceDir: string, log: (message: string) => void) {
 		super()
 
@@ -336,6 +341,73 @@ export abstract class ShadowCheckpointService extends EventEmitter {
 		}
 
 		return result
+	}
+
+	public async getDiffStats({
+		from,
+		to,
+	}: {
+		from?: string
+		to?: string
+	}): Promise<Record<string, { insertions: number; deletions: number }>> {
+		if (!this.git) {
+			throw new Error("Shadow git repo not initialized")
+		}
+
+		if (!from) {
+			from = (await this.git.raw(["rev-list", "--max-parents=0", "HEAD"])).trim()
+		}
+
+		const summary = to ? await this.git.diffSummary([`${from}..${to}`]) : await this.git.diffSummary([from])
+
+		const map: Record<string, { insertions: number; deletions: number }> = {}
+		for (const f of summary.files) {
+			const anyFile = f as any
+			const name: string = anyFile.file ?? anyFile.path ?? ""
+			const insertions: number = typeof anyFile.insertions === "number" ? anyFile.insertions : 0
+			const deletions: number = typeof anyFile.deletions === "number" ? anyFile.deletions : 0
+			if (name) {
+				map[name] = { insertions, deletions }
+			}
+		}
+
+		return map
+	}
+
+	/** Restore a single file from a specific checkpoint using git */
+	public async restoreFileFromCheckpoint(commitHash: string, relativePath: string): Promise<void> {
+		if (!this.git) {
+			throw new Error("Shadow git repo not initialized")
+		}
+
+		// Normalize path for git usage
+		const rel = relativePath.replace(/\\/g, "/")
+		try {
+			await this.git.raw(["checkout", commitHash, "--", rel])
+		} catch (error) {
+			const message = error instanceof Error ? error.message : String(error)
+			// If the file did not exist at this commit, delete it from workspace
+			if (/did not match any file|unknown path/i.test(message)) {
+				const abs = path.join(this.workspaceDir, relativePath)
+				try {
+					await fs.unlink(abs)
+				} catch (e: any) {
+					if (e?.code !== "ENOENT") throw e
+				}
+			} else {
+				throw error
+			}
+		}
+	}
+
+	// Minimal helper used by Files Changed Overview to fetch file content
+	public async getContent(commitHash: string, filePath: string): Promise<string> {
+		if (!this.git) {
+			throw new Error("Shadow git repo not initialized")
+		}
+
+		const relPath = path.relative(this.workspaceDir, filePath)
+		return this.git.show([`${commitHash}:${relPath}`])
 	}
 
 	/**

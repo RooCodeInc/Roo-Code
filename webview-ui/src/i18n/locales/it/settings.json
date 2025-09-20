@@ -751,6 +751,10 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "Abilita comandi slash avviati dal modello",
 			"description": "Quando abilitato, Roo può eseguire i tuoi comandi slash per eseguire flussi di lavoro."
+		},
+		"FILES_CHANGED_OVERVIEW": {
+			"name": "Abilita la panoramica dei file modificati",
+			"description": "Se abilitato, visualizza un pannello che mostra i file modificati tra i checkpoint.\nCiò consente di visualizzare le differenze e accettare/rifiutare le singole modifiche."
 		}
 	},
 	"promptCaching": {

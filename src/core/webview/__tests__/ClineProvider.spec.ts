@@ -152,6 +152,7 @@ vi.mock("vscode", () => ({
 		showWarningMessage: vi.fn(),
 		showErrorMessage: vi.fn(),
 		onDidChangeActiveTextEditor: vi.fn(() => ({ dispose: vi.fn() })),
+		createTextEditorDecorationType: vi.fn(() => ({ dispose: vi.fn() })),
 	},
 	workspace: {
 		getConfiguration: vi.fn().mockReturnValue({
@@ -186,6 +187,10 @@ vi.mock("../../../utils/tts", () => ({
 
 vi.mock("../../../api", () => ({
 	buildApiHandler: vi.fn(),
+}))
+
+vi.mock("../../checkpoints", () => ({
+	getCheckpointService: vi.fn(async () => ({})),
 }))
 
 vi.mock("../../prompts/system", () => ({

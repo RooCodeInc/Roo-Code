@@ -751,6 +751,10 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "Model-geïnitieerde slash-commando's inschakelen",
 			"description": "Wanneer ingeschakeld, kan Roo je slash-commando's uitvoeren om workflows uit te voeren."
+		},
+		"FILES_CHANGED_OVERVIEW": {
+			"name": "Overzicht van gewijzigde bestanden inschakelen",
+			"description": "Indien ingeschakeld, wordt een paneel weergegeven met bestanden die zijn gewijzigd tussen controlepunten.\nHiermee kunt u verschillen bekijken en afzonderlijke wijzigingen accepteren/weigeren."
 		}
 	},
 	"promptCaching": {

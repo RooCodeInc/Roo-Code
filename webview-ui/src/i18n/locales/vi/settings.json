@@ -751,6 +751,10 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "Bật lệnh slash do mô hình khởi tạo",
 			"description": "Khi được bật, Roo có thể chạy các lệnh slash của bạn để thực hiện các quy trình làm việc."
+		},
+		"FILES_CHANGED_OVERVIEW": {
+			"name": "Bật Tổng quan về Tệp đã Thay đổi",
+			"description": "Khi được bật, hiển thị một bảng điều khiển hiển thị các tệp đã được sửa đổi giữa các điểm kiểm tra.\nĐiều này cho phép bạn xem các khác biệt và chấp nhận/từ chối các thay đổi riêng lẻ."
 		}
 	},
 	"promptCaching": {

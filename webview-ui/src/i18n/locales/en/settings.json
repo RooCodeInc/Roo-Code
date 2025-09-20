@@ -749,6 +749,10 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "Enable model-initiated slash commands",
 			"description": "When enabled, Roo can run your slash commands to execute workflows."
+		},
+		"FILES_CHANGED_OVERVIEW": {
+			"name": "Enable Files Changed Overview",
+			"description": "When enabled, displays a panel showing files that have been modified between checkpoints. This allows you to view diffs and accept/reject individual changes."
 		}
 	},
 	"promptCaching": {

@@ -50,6 +50,14 @@ export interface WebviewMessage {
 		| "alwaysAllowUpdateTodoList"
 		| "followupAutoApproveTimeoutMs"
 		| "webviewDidLaunch"
+		| "webviewReady"
+		| "filesChangedRequest"
+		| "filesChangedBaselineUpdate"
+		| "viewDiff"
+		| "acceptFileChange"
+		| "rejectFileChange"
+		| "acceptAllFileChanges"
+		| "rejectAllFileChanges"
 		| "newTask"
 		| "askResponse"
 		| "terminalOperation"
@@ -231,6 +239,8 @@ export interface WebviewMessage {
 	disabled?: boolean
 	context?: string
 	dataUri?: string
+	uri?: string
+	uris?: string[]
 	askResponse?: ClineAskResponse
 	apiConfiguration?: ProviderSettings
 	images?: string[]
@@ -268,10 +278,11 @@ export interface WebviewMessage {
 	mpInstallOptions?: InstallMarketplaceItemOptions
 	config?: Record<string, any> // Add config to the payload
 	visibility?: ShareVisibility // For share visibility
+	upsellId?: string // For dismissUpsell
 	hasContent?: boolean // For checkRulesDirectoryResult
 	checkOnly?: boolean // For deleteCustomMode check
-	upsellId?: string // For dismissUpsell
-	list?: string[] // For dismissedUpsells response
+	fileChanges?: any[] // For filesChanged message
+	baseline?: string // For filesChangedBaselineUpdate
 	codeIndexSettings?: {
 		// Global state settings
 		codebaseIndexEnabled: boolean

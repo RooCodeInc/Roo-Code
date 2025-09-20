@@ -112,6 +112,7 @@ import { processUserContentMentions } from "../mentions/processUserContentMentio
 import { getMessagesSinceLastSummary, summarizeConversation } from "../condense"
 import { Gpt5Metadata, ClineMessageWithMetadata } from "./types"
 import { MessageQueueService } from "../message-queue/MessageQueueService"
+import { TaskFilesChangedState } from "../../services/files-changed/TaskFilesChangedState"
 
 import { AutoApprovalHandler } from "./AutoApprovalHandler"
 
@@ -276,6 +277,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	// Message Queue Service
 	public readonly messageQueueService: MessageQueueService
 	private messageQueueStateChangedHandler: (() => void) | undefined
+
+	// Files Changed Overview state
+	private filesChangedState?: TaskFilesChangedState
 
 	// Streaming
 	isWaitingForFirstChunk = false
@@ -1596,6 +1600,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			this.fileContextTracker.dispose()
 		} catch (error) {
 			console.error("Error disposing file context tracker:", error)
+		}
+
+		try {
+			this.disposeFilesChangedState()
+		} catch (error) {
+			console.error("Error disposing Files Changed state:", error)
 		}
 
 		try {
@@ -2923,5 +2933,23 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		} catch (e) {
 			console.error(`[Task] Queue processing error:`, e)
 		}
+	}
+
+	// Files Changed Overview helpers
+
+	public ensureFilesChangedState(): TaskFilesChangedState {
+		if (!this.filesChangedState) {
+			this.filesChangedState = new TaskFilesChangedState()
+		}
+		return this.filesChangedState
+	}
+
+	public getFilesChangedState(): TaskFilesChangedState | undefined {
+		return this.filesChangedState
+	}
+
+	public disposeFilesChangedState(): void {
+		this.filesChangedState?.dispose()
+		this.filesChangedState = undefined
 	}
 }

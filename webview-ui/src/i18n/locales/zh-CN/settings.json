@@ -751,6 +751,10 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "启用模型发起的斜杠命令",
 			"description": "启用后 Roo 可运行斜杠命令执行工作流程。"
+		},
+		"FILES_CHANGED_OVERVIEW": {
+			"name": "启用文件更改概览",
+			"description": "启用后，显示一个面板，显示检查点之间已修改的文件。\n这使您可以查看差异并接受/拒绝单个更改。"
 		}
 	},
 	"promptCaching": {

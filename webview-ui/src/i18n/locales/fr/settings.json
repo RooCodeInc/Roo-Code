@@ -750,6 +750,10 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "Activer les commandes slash initiées par le modèle",
 			"description": "Lorsque activé, Roo peut exécuter tes commandes slash pour lancer des workflows."
+		},
+		"FILES_CHANGED_OVERVIEW": {
+			"name": "Activer l'aperçu des fichiers modifiés",
+			"description": "Lorsqu'il est activé, affiche un panneau montrant les fichiers qui ont été modifiés entre les points de contrôle.\nCela vous permet de visualiser les différences et d'accepter/rejeter les modifications individuelles."
 		}
 	},
 	"promptCaching": {

@@ -27,6 +27,7 @@ vi.mock("vscode", () => ({
 		showWarningMessage: vi.fn(),
 		showErrorMessage: vi.fn(),
 		onDidChangeActiveTextEditor: vi.fn(() => ({ dispose: vi.fn() })),
+		createTextEditorDecorationType: vi.fn(() => ({ dispose: vi.fn() })),
 	},
 	workspace: {
 		getConfiguration: vi.fn().mockReturnValue({
@@ -146,6 +147,10 @@ vi.mock("../../../shared/modes", () => ({
 vi.mock("../../prompts/system", () => ({
 	SYSTEM_PROMPT: vi.fn().mockResolvedValue("mocked system prompt"),
 	codeMode: "code",
+}))
+
+vi.mock("../../checkpoints", () => ({
+	getCheckpointService: vi.fn(async () => ({})),
 }))
 
 vi.mock("../../../api/providers/fetchers/modelCache", () => ({

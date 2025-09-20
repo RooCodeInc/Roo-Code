@@ -751,6 +751,10 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "啟用模型啟動的斜線命令",
 			"description": "啟用時，Roo 可以執行您的斜線命令來執行工作流程。"
+		},
+		"FILES_CHANGED_OVERVIEW": {
+			"name": "啟用已變更檔案總覽",
+			"description": "啟用後，會顯示一個面板，其中顯示檢查點之間已修改的檔案。\n這可讓您檢視差異並接受/拒絕個別變更。"
 		}
 	},
 	"promptCaching": {

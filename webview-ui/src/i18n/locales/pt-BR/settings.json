@@ -751,6 +751,10 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "Ativar comandos slash iniciados pelo modelo",
 			"description": "Quando ativado, Roo pode executar seus comandos slash para executar fluxos de trabalho."
+		},
+		"FILES_CHANGED_OVERVIEW": {
+			"name": "Ativar Visão Geral de Arquivos Alterados",
+			"description": "Quando ativado, exibe um painel mostrando os arquivos que foram modificados entre os pontos de verificação.\nIsso permite que você visualize as diferenças e aceite/rejeite alterações individuais."
 		}
 	},
 	"promptCaching": {

@@ -50,7 +50,7 @@ import { supportPrompt } from "../../shared/support-prompt"
 import { GlobalFileNames } from "../../shared/globalFileNames"
 import type { ExtensionMessage, ExtensionState, MarketplaceInstalledMetadata } from "../../shared/ExtensionMessage"
 import { Mode, defaultModeSlug, getModeBySlug } from "../../shared/modes"
-import { experimentDefault } from "../../shared/experiments"
+import { experimentDefault, EXPERIMENT_IDS } from "../../shared/experiments"
 import { formatLanguage } from "../../shared/language"
 import { WebviewMessage } from "../../shared/WebviewMessage"
 import { EMBEDDING_MODEL_PROFILES } from "../../shared/embeddingModels"
@@ -93,6 +93,7 @@ import type { ClineMessage } from "@roo-code/types"
 import { readApiMessages, saveApiMessages, saveTaskMessages } from "../task-persistence"
 import { getNonce } from "./getNonce"
 import { getUri } from "./getUri"
+import { FilesChangedMessageHandler } from "../../services/files-changed/FilesChangedMessageHandler"
 
 /**
  * https://github.com/microsoft/vscode-webview-ui-toolkit-samples/blob/main/default/weather-webview/src/providers/WeatherViewProvider.ts
@@ -136,6 +137,9 @@ export class ClineProvider
 	private taskCreationCallback: (task: Task) => void
 	private taskEventListeners: WeakMap<Task, Array<() => void>> = new WeakMap()
 	private currentWorkspacePath: string | undefined
+	private lastCheckpointByTaskId: Map<string, string> = new Map()
+	// Files Changed handler
+	private filesChangedHandler: FilesChangedMessageHandler
 
 	private recentTasksCache?: string[]
 	private pendingOperations: Map<string, PendingEditOperation> = new Map()
@@ -176,6 +180,9 @@ export class ClineProvider
 		this.customModesManager = new CustomModesManager(this.context, async () => {
 			await this.postStateToWebview()
 		})
+
+		// Initialize Files Changed handler
+		this.filesChangedHandler = new FilesChangedMessageHandler(this)
 
 		// Initialize MCP Hub through the singleton manager
 		McpServerManager.getInstance(this.context, this)
@@ -481,12 +488,16 @@ export class ClineProvider
 	// This is used when a subtask is finished and the parent task needs to be
 	// resumed.
 	async finishSubTask(lastMessage: string) {
-		// Remove the last cline instance from the stack (this is the finished
-		// subtask).
+		const childTask = this.getCurrentTask()
+		const parentFromStack = this.clineStack.length > 1 ? this.clineStack[this.clineStack.length - 2] : undefined
+		await this.filesChangedHandler.handleChildTaskCompletion(childTask, parentFromStack)
+
+		const previousTask = this.getCurrentTask()
 		await this.removeClineFromStack()
-		// Resume the last cline instance in the stack (if it exists - this is
-		// the 'parent' calling task).
-		await this.getCurrentTask()?.completeSubtask(lastMessage)
+		const parentTask = this.getCurrentTask()
+
+		await parentTask?.completeSubtask(lastMessage)
+		await this.filesChangedHandler.applyExperimentsToTask(parentTask)
 	}
 	// Pending Edit Operations Management
 
@@ -588,6 +599,7 @@ export class ClineProvider
 		}
 
 		this.clearWebviewResources()
+		this.filesChangedHandler?.dispose(this.getCurrentTask())
 
 		// Clean up cloud service event listener
 		if (CloudService.hasInstance()) {
@@ -845,6 +857,8 @@ export class ClineProvider
 	}
 
 	public async createTaskWithHistoryItem(historyItem: HistoryItem & { rootTask?: Task; parentTask?: Task }) {
+		// Capture current task before removal for potential FCO state transfer
+		const previousTask = this.getCurrentTask()
 		await this.removeClineFromStack()
 
 		// If the history item has a saved mode, restore it and its associated API configuration.
@@ -919,9 +933,16 @@ export class ClineProvider
 
 		await this.addClineToStack(task)
 
+		if (previousTask && previousTask.taskId === task.taskId) {
+			this.filesChangedHandler.transferStateBetweenTasks(previousTask, task)
+		}
+
 		this.log(
 			`[createTaskWithHistoryItem] ${task.parentTask ? "child" : "parent"} task ${task.taskId}.${task.instanceId} instantiated`,
 		)
+
+		// Initialize Files Changed state for this task if setting is enabled
+		await this.filesChangedHandler.applyExperimentsToTask(task)
 
 		// Check if there's a pending edit after checkpoint restoration
 		const operationId = `task-${task.taskId}`
@@ -1149,8 +1170,14 @@ export class ClineProvider
 	 * @param webview A reference to the extension webview
 	 */
 	private setWebviewMessageListener(webview: vscode.Webview) {
-		const onReceiveMessage = async (message: WebviewMessage) =>
-			webviewMessageHandler(this, message, this.marketplaceManager)
+		const onReceiveMessage = async (message: WebviewMessage) => {
+			// Route Files Changed Overview messages first
+			if (this.filesChangedHandler.shouldHandleMessage(message)) {
+				await this.filesChangedHandler.handleMessage(message)
+				return
+			}
+			await webviewMessageHandler(this, message, this.marketplaceManager)
+		}
 
 		const messageDisposable = webview.onDidReceiveMessage(onReceiveMessage)
 		this.webviewDisposables.push(messageDisposable)
@@ -2211,6 +2238,23 @@ export class ClineProvider
 		return this.contextProxy.getValue(key)
 	}
 
+	// FilesChanged Message Handler access
+	public getFilesChangedHandler(): FilesChangedMessageHandler {
+		return this.filesChangedHandler
+	}
+
+	// Track last checkpoint per task for delta-based FilesChanged updates
+	public setLastCheckpointForTask(taskId: string, commitHash: string) {
+		this.lastCheckpointByTaskId.set(taskId, commitHash)
+	}
+
+	/**
+	 * Check if a message should be handled by Files Changed service
+	 */
+	public getLastCheckpointForTask(taskId: string): string | undefined {
+		return this.lastCheckpointByTaskId.get(taskId)
+	}
+
 	public async setValue<K extends keyof RooCodeSettings>(key: K, value: RooCodeSettings[K]) {
 		await this.contextProxy.setValue(key, value)
 	}
@@ -2543,6 +2587,9 @@ export class ClineProvider
 			`[createTask] ${task.parentTask ? "child" : "parent"} task ${task.taskId}.${task.instanceId} instantiated`,
 		)
 
+		// Initialize Files Changed state for this task if setting is enabled
+		await this.filesChangedHandler.applyExperimentsToTask(task)
+
 		return task
 	}
 
@@ -2566,6 +2613,9 @@ export class ClineProvider
 
 		// Capture the current instance to detect if rehydrate already occurred elsewhere
 		const originalInstanceId = task.instanceId
+
+		// Capture FCO state before task disposal (task.abortTask() will dispose it)
+		const fcoState = task.getFilesChangedState()
 
 		// Begin abort (non-blocking)
 		task.abortTask()
@@ -2611,6 +2661,20 @@ export class ClineProvider
 
 		// Clears task again, so we need to abortTask manually above.
 		await this.createTaskWithHistoryItem({ ...historyItem, rootTask, parentTask })
+
+		// Restore FCO state to the new task if we captured it
+		if (fcoState) {
+			const newTask = this.getCurrentTask()
+			if (newTask && newTask.taskId === task.taskId) {
+				const newTaskState = newTask.ensureFilesChangedState()
+				newTaskState.cloneFrom(fcoState)
+				// Ensure the restored task is not waiting (prevents clearFilesChangedDisplay)
+				newTaskState.setWaiting(false)
+				console.log(`[cancelTask] restored FCO state to recreated task ${newTask.taskId}.${newTask.instanceId}`)
+				// Re-trigger FCO display since applyExperimentsToTask may have cleared it
+				await this.filesChangedHandler.applyExperimentsToTask(newTask)
+			}
+		}
 	}
 
 	// Clear the current task without treating it as a subtask.

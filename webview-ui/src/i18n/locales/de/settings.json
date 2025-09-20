@@ -750,6 +750,10 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "Modellinitierte Slash-Befehle aktivieren",
 			"description": "Wenn aktiviert, kann Roo deine Slash-Befehle ausführen, um Workflows zu starten."
+		},
+		"FILES_CHANGED_OVERVIEW": {
+			"name": "Übersicht über geänderte Dateien aktivieren",
+			"description": "Wenn aktiviert, wird ein Panel angezeigt, das die zwischen den Prüfpunkten geänderten Dateien anzeigt. Dies ermöglicht es dir, Diffs anzuzeigen und einzelne Änderungen zu akzeptieren/abzulehnen."
 		}
 	},
 	"promptCaching": {

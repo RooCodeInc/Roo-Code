@@ -750,6 +750,10 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "Habilitar comandos slash iniciados por el modelo",
 			"description": "Cuando está habilitado, Roo puede ejecutar tus comandos slash para ejecutar flujos de trabajo."
+		},
+		"FILES_CHANGED_OVERVIEW": {
+			"name": "Habilitar la vista general de archivos modificados",
+			"description": "Cuando está habilitado, muestra un panel que indica los archivos que se han modificado entre los puntos de control.\nEsto le permite ver las diferencias y aceptar/rechazar cambios individuales."
 		}
 	},
 	"promptCaching": {

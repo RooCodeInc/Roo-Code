@@ -8,6 +8,7 @@ import fs from "fs/promises"
 import { ContextProxy } from "../config/ContextProxy"
 import type { FileMetadataEntry, RecordSource, TaskMetadata } from "./FileContextTrackerTypes"
 import { ClineProvider } from "../webview/ClineProvider"
+import { EventEmitter } from "events"
 
 // This class is responsible for tracking file operations that may result in stale context.
 // If a user modifies a file outside of Roo, the context may become stale and need to be updated.
@@ -20,7 +21,7 @@ import { ClineProvider } from "../webview/ClineProvider"
 // This class is responsible for tracking file operations.
 // If the full contents of a file are passed to Roo via a tool, mention, or edit, the file is marked as active.
 // If a file is modified outside of Roo, we detect and track this change to prevent stale context.
-export class FileContextTracker {
+export class FileContextTracker extends EventEmitter {
 	readonly taskId: string
 	private providerRef: WeakRef<ClineProvider>
 
@@ -31,6 +32,7 @@ export class FileContextTracker {
 	private checkpointPossibleFiles = new Set<string>()
 
 	constructor(provider: ClineProvider, taskId: string) {
+		super()
 		this.providerRef = new WeakRef(provider)
 		this.taskId = taskId
 	}
@@ -183,6 +185,8 @@ export class FileContextTracker {
 					newEntry.roo_edit_date = now
 					this.checkpointPossibleFiles.add(filePath)
 					this.markFileAsEditedByRoo(filePath)
+					// Emit event for Files Changed Overview
+					this.emit("roo_edited", filePath)
 					break
 
 				// read_tool/file_mentioned: Roo has read the file via a tool or file mention

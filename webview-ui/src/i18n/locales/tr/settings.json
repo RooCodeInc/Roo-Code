@@ -751,6 +751,10 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "Model tarafından başlatılan slash komutlarını etkinleştir",
 			"description": "Etkinleştirildiğinde, Roo iş akışlarını yürütmek için slash komutlarınızı çalıştırabilir."
+		},
+		"FILES_CHANGED_OVERVIEW": {
+			"name": "Değiştirilen Dosyalara Genel Bakışı Etkinleştir",
+			"description": "Etkinleştirildiğinde, kontrol noktaları arasında değiştirilmiş dosyaları gösteren bir panel görüntüler.\nBu, farklılıkları görüntülemenizi ve bireysel değişiklikleri kabul etmenizi/reddetmenizi sağlar."
 		}
 	},
 	"promptCaching": {

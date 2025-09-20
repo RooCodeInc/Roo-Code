@@ -780,6 +780,10 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "Aktifkan perintah slash yang dimulai model",
 			"description": "Ketika diaktifkan, Roo dapat menjalankan perintah slash Anda untuk mengeksekusi alur kerja."
+		},
+		"FILES_CHANGED_OVERVIEW": {
+			"name": "Aktifkan Ikhtisar File yang Diubah",
+			"description": "Saat diaktifkan, menampilkan panel yang menunjukkan file yang telah dimodifikasi di antara pos-pos pemeriksaan.\nIni memungkinkan Anda untuk melihat perbedaan dan menerima/menolak perubahan individual."
 		}
 	},
 	"promptCaching": {

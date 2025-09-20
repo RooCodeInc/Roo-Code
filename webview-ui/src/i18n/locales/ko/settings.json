@@ -751,6 +751,10 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "모델 시작 슬래시 명령 활성화",
 			"description": "활성화되면 Roo가 워크플로를 실행하기 위해 슬래시 명령을 실행할 수 있습니다."
+		},
+		"FILES_CHANGED_OVERVIEW": {
+			"name": "변경된 파일 개요 활성화",
+			"description": "활성화하면 체크포인트 간에 수정된 파일을 보여주는 패널이 표시됩니다.\n이를 통해 차이점을 보고 개별 변경 사항을 수락/거부할 수 있습니다."
 		}
 	},
 	"promptCaching": {

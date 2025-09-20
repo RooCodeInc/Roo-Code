@@ -751,6 +751,10 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "Włącz polecenia slash inicjowane przez model",
 			"description": "Gdy włączone, Roo może uruchamiać twoje polecenia slash w celu wykonywania przepływów pracy."
+		},
+		"FILES_CHANGED_OVERVIEW": {
+			"name": "Włącz przegląd zmienionych plików",
+			"description": "Po włączeniu wyświetla panel pokazujący pliki, które zostały zmodyfikowane między punktami kontrolnymi.\nUmożliwia to przeglądanie różnic i akceptowanie/odrzucanie poszczególnych zmian."
 		}
 	},
 	"promptCaching": {

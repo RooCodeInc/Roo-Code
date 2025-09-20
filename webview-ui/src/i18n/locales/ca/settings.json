@@ -750,6 +750,10 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "Habilitar comandes de barra diagonal iniciades pel model",
 			"description": "Quan està habilitat, Roo pot executar les vostres comandes de barra diagonal per executar fluxos de treball."
+		},
+		"FILES_CHANGED_OVERVIEW": {
+			"name": "Activa la visió general dels fitxers canviats",
+			"description": "Quan està activat, mostra un panell amb els fitxers que s'han modificat entre punts de control. Això us permet veure les diferències i acceptar/rebutjar canvis individuals."
 		}
 	},
 	"promptCaching": {
