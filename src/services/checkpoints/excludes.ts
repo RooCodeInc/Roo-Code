@@ -198,6 +198,31 @@ const getLfsPatterns = async (workspacePath: string) => {
 	return []
 }
 
+/**
+ * Get patterns from .rooignore file if it exists
+ * @param workspacePath - The workspace directory path
+ * @returns Array of patterns from .rooignore
+ */
+const getRooIgnorePatterns = async (workspacePath: string): Promise<string[]> => {
+	try {
+		const rooIgnorePath = join(workspacePath, ".rooignore")
+
+		if (await fileExistsAtPath(rooIgnorePath)) {
+			const content = await fs.readFile(rooIgnorePath, "utf8")
+			// Parse .rooignore content and filter out empty lines and comments
+			return content
+				.split("\n")
+				.map((line) => line.trim())
+				.filter((line) => line && !line.startsWith("#"))
+		}
+	} catch (error) {
+		// If we can't read .rooignore, continue without it
+		console.error("Error reading .rooignore for checkpoint excludes:", error)
+	}
+
+	return []
+}
+
 export const getExcludePatterns = async (workspacePath: string) => [
 	".git/",
 	...getBuildArtifactPatterns(),
@@ -209,4 +234,5 @@ export const getExcludePatterns = async (workspacePath: string) => [
 	...getGeospatialPatterns(),
 	...getLogFilePatterns(),
 	...(await getLfsPatterns(workspacePath)),
+	...(await getRooIgnorePatterns(workspacePath)),
 ]

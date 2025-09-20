@@ -1,4 +1,5 @@
 import { CommitResult } from "simple-git"
+import { CheckpointConfig } from "./config"
 
 export type CheckpointResult = Partial<CommitResult> & Pick<CommitResult, "commit">
 
@@ -19,6 +20,7 @@ export interface CheckpointServiceOptions {
 	shadowDir: string // globalStorageUri.fsPath
 
 	log?: (message: string) => void
+	config?: CheckpointConfig
 }
 
 export interface CheckpointEventMap {

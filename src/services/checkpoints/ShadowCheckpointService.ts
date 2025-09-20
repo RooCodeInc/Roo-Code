@@ -14,6 +14,8 @@ import { t } from "../../i18n"
 
 import { CheckpointDiff, CheckpointResult, CheckpointEventMap } from "./types"
 import { getExcludePatterns } from "./excludes"
+import { CheckpointCleanupService } from "./CheckpointCleanupService"
+import { CheckpointConfig } from "./config"
 
 export abstract class ShadowCheckpointService extends EventEmitter {
 	public readonly taskId: string
@@ -27,6 +29,8 @@ export abstract class ShadowCheckpointService extends EventEmitter {
 	protected git?: SimpleGit
 	protected readonly log: (message: string) => void
 	protected shadowGitConfigWorktree?: string
+	protected cleanupService?: CheckpointCleanupService
+	protected config?: CheckpointConfig
 
 	public get baseHash() {
 		return this._baseHash
@@ -44,7 +48,13 @@ export abstract class ShadowCheckpointService extends EventEmitter {
 		return this._checkpoints.slice()
 	}
 
-	constructor(taskId: string, checkpointsDir: string, workspaceDir: string, log: (message: string) => void) {
+	constructor(
+		taskId: string,
+		checkpointsDir: string,
+		workspaceDir: string,
+		log: (message: string) => void,
+		config?: CheckpointConfig,
+	) {
 		super()
 
 		const homedir = os.homedir()
@@ -63,6 +73,12 @@ export abstract class ShadowCheckpointService extends EventEmitter {
 
 		this.dotGitDir = path.join(this.checkpointsDir, ".git")
 		this.log = log
+		this.config = config
+
+		// Initialize cleanup service if config is provided
+		if (config) {
+			this.cleanupService = new CheckpointCleanupService(config, log)
+		}
 	}
 
 	public async initShadowGit(onInit?: () => Promise<void>) {
@@ -244,7 +260,22 @@ export abstract class ShadowCheckpointService extends EventEmitter {
 			const result = await this.git.commit(message, commitArgs)
 			const fromHash = this._checkpoints[this._checkpoints.length - 1] ?? this.baseHash!
 			const toHash = result.commit || fromHash
-			this._checkpoints.push(toHash)
+			if (result.commit) {
+				this._checkpoints.push(toHash)
+
+				// Check if we need to enforce checkpoint limits
+				if (
+					this.config?.maxCheckpointsPerTask &&
+					this._checkpoints.length > this.config.maxCheckpointsPerTask
+				) {
+					// Remove oldest checkpoints
+					const toRemove = this._checkpoints.length - this.config.maxCheckpointsPerTask
+					this._checkpoints = this._checkpoints.slice(toRemove)
+					this.log(
+						`[${this.constructor.name}#saveCheckpoint] Removed ${toRemove} old checkpoints due to limit`,
+					)
+				}
+			}
 			const duration = Date.now() - startTime
 
 			if (result.commit) {
@@ -445,6 +476,27 @@ export abstract class ShadowCheckpointService extends EventEmitter {
 		} else {
 			await git.branch(["-D", branchName])
 			return true
+		}
+	}
+
+	/**
+	 * Manually trigger checkpoint cleanup
+	 */
+	public async performCleanup(globalStorageDir: string) {
+		if (!this.cleanupService) {
+			this.cleanupService = new CheckpointCleanupService(this.config, this.log)
+		}
+
+		return this.cleanupService.performCleanup(globalStorageDir)
+	}
+
+	/**
+	 * Dispose of the service and cleanup resources
+	 */
+	public dispose(): void {
+		if (this.cleanupService) {
+			this.cleanupService.dispose()
+			this.cleanupService = undefined
 		}
 	}
 }
