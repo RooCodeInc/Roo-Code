@@ -118,7 +118,7 @@ export class CodeIndexManager {
 	public async initialize(contextProxy: ContextProxy): Promise<{ requiresRestart: boolean }> {
 		// 1. ConfigManager Initialization and Configuration Loading
 		if (!this._configManager) {
-			this._configManager = new CodeIndexConfigManager(contextProxy)
+			this._configManager = new CodeIndexConfigManager(contextProxy, this.workspacePath)
 		}
 		// Load configuration once to get current state and restart requirements
 		const { requiresRestart } = await this._configManager.loadConfiguration()
@@ -418,5 +418,41 @@ export class CodeIndexManager {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Sets the enabled state for the current workspace
+	 */
+	public async setWorkspaceEnabled(enabled: boolean): Promise<void> {
+		if (!this._configManager || !this.workspacePath) {
+			return
+		}
+
+		await this._configManager.setWorkspaceEnabled(this.workspacePath, enabled)
+
+		// Reload configuration to apply changes
+		await this.handleSettingsChange()
+	}
+
+	/**
+	 * Gets the enabled state for the current workspace
+	 */
+	public getWorkspaceEnabled(): boolean | undefined {
+		if (!this._configManager || !this.workspacePath) {
+			return undefined
+		}
+
+		return this._configManager.getWorkspaceEnabled(this.workspacePath)
+	}
+
+	/**
+	 * Gets the global enabled state (without workspace override)
+	 */
+	public getGlobalEnabled(): boolean {
+		if (!this._configManager) {
+			return true
+		}
+
+		return this._configManager.getGlobalEnabled()
 	}
 }

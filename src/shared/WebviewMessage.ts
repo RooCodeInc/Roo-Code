@@ -186,6 +186,7 @@ export interface WebviewMessage {
 		| "requestIndexingStatus"
 		| "startIndexing"
 		| "clearIndexData"
+		| "setWorkspaceCodebaseIndexEnabled"
 		| "indexingStatusUpdate"
 		| "indexCleared"
 		| "focusPanelRequest"
@@ -272,6 +273,8 @@ export interface WebviewMessage {
 	checkOnly?: boolean // For deleteCustomMode check
 	upsellId?: string // For dismissUpsell
 	list?: string[] // For dismissedUpsells response
+	workspacePath?: string // For setWorkspaceCodebaseIndexEnabled
+	enabled?: boolean // For setWorkspaceCodebaseIndexEnabled
 	codeIndexSettings?: {
 		// Global state settings
 		codebaseIndexEnabled: boolean

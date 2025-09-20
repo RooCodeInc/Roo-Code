@@ -25,7 +25,15 @@ export class CodeIndexConfigManager {
 	private searchMinScore?: number
 	private searchMaxResults?: number
 
-	constructor(private readonly contextProxy: ContextProxy) {
+	// Per-workspace settings
+	private workspaceSettings: Record<string, { enabled: boolean }> = {}
+	private currentWorkspacePath: string | undefined
+
+	constructor(
+		private readonly contextProxy: ContextProxy,
+		workspacePath?: string,
+	) {
+		this.currentWorkspacePath = workspacePath
 		// Initialize with current configuration to avoid false restart triggers
 		this._loadAndSetConfiguration()
 	}
@@ -61,6 +69,7 @@ export class CodeIndexConfigManager {
 			codebaseIndexEmbedderModelId,
 			codebaseIndexSearchMinScore,
 			codebaseIndexSearchMaxResults,
+			codebaseIndexWorkspaceSettings,
 		} = codebaseIndexConfig
 
 		const openAiKey = this.contextProxy?.getSecret("codeIndexOpenAiKey") ?? ""
@@ -72,8 +81,20 @@ export class CodeIndexConfigManager {
 		const mistralApiKey = this.contextProxy?.getSecret("codebaseIndexMistralApiKey") ?? ""
 		const vercelAiGatewayApiKey = this.contextProxy?.getSecret("codebaseIndexVercelAiGatewayApiKey") ?? ""
 
+		// Load workspace settings
+		this.workspaceSettings = codebaseIndexWorkspaceSettings ?? {}
+
+		// Determine effective enabled state based on workspace override
+		const globalEnabled = codebaseIndexEnabled ?? true
+		let effectiveEnabled = globalEnabled
+
+		if (this.currentWorkspacePath && this.workspaceSettings[this.currentWorkspacePath]) {
+			// Workspace setting takes precedence over global setting
+			effectiveEnabled = this.workspaceSettings[this.currentWorkspacePath].enabled
+		}
+
 		// Update instance variables with configuration
-		this.codebaseIndexEnabled = codebaseIndexEnabled ?? true
+		this.codebaseIndexEnabled = effectiveEnabled
 		this.qdrantUrl = codebaseIndexQdrantUrl
 		this.qdrantApiKey = qdrantApiKey ?? ""
 		this.searchMinScore = codebaseIndexSearchMinScore
@@ -407,6 +428,47 @@ export class CodeIndexConfigManager {
 	 */
 	public get isFeatureEnabled(): boolean {
 		return this.codebaseIndexEnabled
+	}
+
+	/**
+	 * Updates the enabled state for a specific workspace
+	 */
+	public async setWorkspaceEnabled(workspacePath: string, enabled: boolean): Promise<void> {
+		if (!this.contextProxy) {
+			return
+		}
+
+		// Get current config
+		const currentConfig = this.contextProxy.getGlobalState("codebaseIndexConfig") ?? {}
+
+		// Update workspace settings
+		const workspaceSettings = currentConfig.codebaseIndexWorkspaceSettings ?? {}
+		workspaceSettings[workspacePath] = { enabled }
+
+		// Save updated config
+		await this.contextProxy.updateGlobalState("codebaseIndexConfig", {
+			...currentConfig,
+			codebaseIndexWorkspaceSettings: workspaceSettings,
+		})
+
+		// Reload configuration to apply changes
+		await this.loadConfiguration()
+	}
+
+	/**
+	 * Gets the enabled state for a specific workspace
+	 */
+	public getWorkspaceEnabled(workspacePath: string): boolean | undefined {
+		const config = this.contextProxy?.getGlobalState("codebaseIndexConfig") ?? {}
+		return config.codebaseIndexWorkspaceSettings?.[workspacePath]?.enabled
+	}
+
+	/**
+	 * Gets the global enabled state (without workspace override)
+	 */
+	public getGlobalEnabled(): boolean {
+		const config = this.contextProxy?.getGlobalState("codebaseIndexConfig") ?? {}
+		return config.codebaseIndexEnabled ?? true
 	}
 
 	/**

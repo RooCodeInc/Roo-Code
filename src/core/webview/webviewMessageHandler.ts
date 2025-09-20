@@ -25,6 +25,7 @@ import { changeLanguage, t } from "../../i18n"
 import { Package } from "../../shared/package"
 import { type RouterName, type ModelRecord, toRouterName } from "../../shared/api"
 import { MessageEnhancer } from "./messageEnhancer"
+import { CodeIndexManager } from "../../services/code-index/manager"
 
 import {
 	type WebviewMessage,
@@ -2567,6 +2568,29 @@ export const webviewMessageHandler = async (
 					hasVercelAiGatewayApiKey,
 				},
 			})
+			break
+		}
+		case "setWorkspaceCodebaseIndexEnabled": {
+			const { workspacePath, enabled } = message
+			try {
+				const manager = CodeIndexManager.getInstance(provider.context, workspacePath)
+				if (manager && enabled !== undefined) {
+					await manager.setWorkspaceEnabled(enabled)
+
+					// Send updated status back to webview
+					const status = manager.getCurrentStatus()
+					provider.postMessageToWebview({
+						type: "indexingStatusUpdate",
+						values: {
+							...status,
+							workspaceEnabled: manager.getWorkspaceEnabled(),
+							globalEnabled: manager.getGlobalEnabled(),
+						},
+					})
+				}
+			} catch (error) {
+				console.error("Failed to set workspace codebase index enabled state:", error)
+			}
 			break
 		}
 		case "startIndexing": {
