@@ -151,6 +151,12 @@ export const globalSettingsSchema = z.object({
 	hasOpenedModeSelector: z.boolean().optional(),
 	lastModeExportPath: z.string().optional(),
 	lastModeImportPath: z.string().optional(),
+
+	// Task history auto-cleanup settings
+	taskHistoryAutoCleanupEnabled: z.boolean().optional(),
+	taskHistoryMaxCount: z.number().min(0).optional(),
+	taskHistoryMaxDiskSpaceMB: z.number().min(0).optional(),
+	taskHistoryMaxAgeDays: z.number().min(0).optional(),
 })
 
 export type GlobalSettings = z.infer<typeof globalSettingsSchema>
