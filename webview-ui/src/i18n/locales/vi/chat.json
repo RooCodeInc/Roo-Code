@@ -205,7 +205,6 @@
 	"commandExecution": {
 		"running": "Đang chạy",
 		"abort": "Hủy bỏ",
-		"running": "Đang chạy",
 		"pid": "PID: {{pid}}",
 		"exitStatus": "Đã thoát với trạng thái {{exitCode}}",
 		"manageCommands": "Quản lý quyền lệnh",
@@ -412,17 +411,5 @@
 	"slashCommand": {
 		"wantsToRun": "Roo muốn chạy lệnh slash",
 		"didRun": "Roo đã chạy lệnh slash"
-	},
-	"ask": {
-		"autoApprovedRequestLimitReached": {
-			"title": "Đã Đạt Giới Hạn Yêu Cầu Tự Động Phê Duyệt",
-			"description": "Roo đã đạt đến giới hạn tự động phê duyệt là {{count}} yêu cầu API. Bạn có muốn đặt lại bộ đếm và tiếp tục nhiệm vụ không?",
-			"button": "Đặt lại và Tiếp tục"
-		},
-		"autoApprovedCostLimitReached": {
-			"title": "Đã Đạt Giới Hạn Chi Phí Tự Động Phê Duyệt",
-			"description": "Roo đã đạt đến giới hạn chi phí tự động phê duyệt là ${{count}}. Bạn có muốn đặt lại chi phí và tiếp tục với nhiệm vụ không?",
-			"button": "Đặt lại và Tiếp tục"
-		}
 	}
 }

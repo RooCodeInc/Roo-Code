@@ -200,7 +200,6 @@
 	"commandExecution": {
 		"running": "Lopend",
 		"abort": "Afbreken",
-		"running": "Lopend",
 		"pid": "PID: {{pid}}",
 		"exitStatus": "Afgesloten met status {{exitCode}}",
 		"manageCommands": "Automatisch goedgekeurde commando's",
@@ -411,17 +410,5 @@
 	"slashCommand": {
 		"wantsToRun": "Roo wil een slash commando uitvoeren",
 		"didRun": "Roo heeft een slash commando uitgevoerd"
-	},
-	"ask": {
-		"autoApprovedRequestLimitReached": {
-			"title": "Limiet voor automatisch goedgekeurde verzoeken bereikt",
-			"description": "Roo heeft de limiet van {{count}} automatisch goedgekeurde API-verzoek(en) bereikt. Wil je de teller resetten en doorgaan met de taak?",
-			"button": "Reset en ga door"
-		},
-		"autoApprovedCostLimitReached": {
-			"title": "Automatisch goedgekeurde kostenlimiet bereikt",
-			"description": "Roo heeft de automatisch goedgekeurde kostenlimiet van ${{count}} bereikt. Wil je de kosten resetten en doorgaan met de taak?",
-			"button": "Reset en ga door"
-		}
 	}
 }

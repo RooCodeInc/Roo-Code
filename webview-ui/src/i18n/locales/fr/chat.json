@@ -410,17 +410,5 @@
 	"slashCommand": {
 		"wantsToRun": "Roo veut exécuter une commande slash",
 		"didRun": "Roo a exécuté une commande slash"
-	},
-	"ask": {
-		"autoApprovedRequestLimitReached": {
-			"title": "Limite de requêtes auto-approuvées atteinte",
-			"description": "Roo a atteint la limite de {{count}} requête(s) API auto-approuvée(s). Souhaitez-vous réinitialiser le compteur et poursuivre la tâche ?",
-			"button": "Réinitialiser et continuer"
-		},
-		"autoApprovedCostLimitReached": {
-			"title": "Limite de coût auto-approuvé atteinte",
-			"description": "Roo a atteint la limite de coût auto-approuvé de ${{count}}. Souhaitez-vous réinitialiser le coût et poursuivre la tâche ?",
-			"button": "Réinitialiser et continuer"
-		}
 	}
 }

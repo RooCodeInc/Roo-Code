@@ -410,17 +410,5 @@
 		"problems": "Problemes",
 		"terminal": "Terminal",
 		"url": "Enganxa la URL per obtenir-ne el contingut"
-	},
-	"ask": {
-		"autoApprovedRequestLimitReached": {
-			"title": "S'ha assolit el límit de sol·licituds aprovades automàticament",
-			"description": "Roo ha assolit el límit d'aprovació automàtica de {{count}} sol·licitud(s) d'API. Vols restablir el comptador i continuar amb la tasca?",
-			"button": "Restableix i Continua"
-		},
-		"autoApprovedCostLimitReached": {
-			"title": "S'ha assolit el límit de cost aprovat automàticament",
-			"description": "Roo ha assolit el límit de cost d'aprovació automàtica de ${{count}}. Vols restablir el cost i continuar amb la tasca?",
-			"button": "Restableix i Continua"
-		}
 	}
 }

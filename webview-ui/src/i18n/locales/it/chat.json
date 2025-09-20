@@ -410,17 +410,5 @@
 	"slashCommand": {
 		"wantsToRun": "Roo vuole eseguire un comando slash",
 		"didRun": "Roo ha eseguito un comando slash"
-	},
-	"ask": {
-		"autoApprovedRequestLimitReached": {
-			"title": "Limite Richieste Approvate Automaticamente Raggiunto",
-			"description": "Roo ha raggiunto il limite di {{count}} richiesta/e API approvata/e automaticamente. Vuoi reimpostare il contatore e procedere con l'attività?",
-			"button": "Reimposta e Continua"
-		},
-		"autoApprovedCostLimitReached": {
-			"title": "Limite di Costo Approvato Automaticamente Raggiunto",
-			"description": "Roo ha raggiunto il limite di costo approvato automaticamente di ${{count}}. Vuoi reimpostare il costo e procedere con l'attività?",
-			"button": "Reimposta e Continua"
-		}
 	}
 }

@@ -205,7 +205,6 @@
 	"commandExecution": {
 		"running": "Çalışıyor",
 		"abort": "İptal Et",
-		"running": "Çalışıyor",
 		"pid": "PID: {{pid}}",
 		"exitStatus": "{{exitCode}} durumuyla çıkıldı",
 		"manageCommands": "Komut İzinlerini Yönet",
@@ -412,17 +411,5 @@
 	"slashCommand": {
 		"wantsToRun": "Roo bir slash komutu çalıştırmak istiyor",
 		"didRun": "Roo bir slash komutu çalıştırdı"
-	},
-	"ask": {
-		"autoApprovedRequestLimitReached": {
-			"title": "Otomatik Onaylanan İstek Limiti Aşıldı",
-			"description": "Roo, {{count}} API isteği/istekleri için otomatik onaylanan limite ulaştı. Sayacı sıfırlamak ve göreve devam etmek istiyor musunuz?",
-			"button": "Sıfırla ve Devam Et"
-		},
-		"autoApprovedCostLimitReached": {
-			"title": "Otomatik Onaylanan Maliyet Sınırına Ulaşıldı",
-			"description": "Roo otomatik olarak onaylanmış ${{count}} maliyet sınırına ulaştı. Maliyeti sıfırlamak ve göreve devam etmek ister misiniz?",
-			"button": "Sıfırla ve Devam Et"
-		}
 	}
 }

@@ -224,7 +224,6 @@
 	"commandExecution": {
 		"running": "正在執行",
 		"abort": "中止",
-		"running": "執行中",
 		"pid": "PID: {{pid}}",
 		"exitStatus": "已結束，狀態碼 {{exitCode}}",
 		"manageCommands": "管理命令權限",
@@ -412,17 +411,5 @@
 	"slashCommand": {
 		"wantsToRun": "Roo 想要執行斜線指令",
 		"didRun": "Roo 執行了斜線指令"
-	},
-	"ask": {
-		"autoApprovedRequestLimitReached": {
-			"title": "已達自動核准請求上限",
-			"description": "Roo 已達到 {{count}} 次 API 請求的自動核准上限。您想重設計數並繼續工作嗎？",
-			"button": "重設並繼續"
-		},
-		"autoApprovedCostLimitReached": {
-			"title": "已達自動核准費用上限",
-			"description": "Roo 已達到 ${{count}} 的自動核准費用上限。您想重設費用並繼續工作嗎？",
-			"button": "重設並繼續"
-		}
 	}
 }

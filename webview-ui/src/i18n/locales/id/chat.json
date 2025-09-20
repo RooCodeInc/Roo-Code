@@ -416,17 +416,5 @@
 	"slashCommand": {
 		"wantsToRun": "Roo ingin menjalankan perintah slash",
 		"didRun": "Roo telah menjalankan perintah slash"
-	},
-	"ask": {
-		"autoApprovedRequestLimitReached": {
-			"title": "Batas Permintaan yang Disetujui Otomatis Tercapai",
-			"description": "Roo telah mencapai batas {{count}} permintaan API yang disetujui otomatis. Apakah Anda ingin mengatur ulang hitungan dan melanjutkan tugas?",
-			"button": "Setel Ulang dan Lanjutkan"
-		},
-		"autoApprovedCostLimitReached": {
-			"title": "Batas Biaya yang Disetujui Otomatis Tercapai",
-			"description": "Roo telah mencapai batas biaya yang disetujui otomatis sebesar ${{count}}. Apakah Anda ingin mengatur ulang biaya dan melanjutkan tugas?",
-			"button": "Setel Ulang dan Lanjutkan"
-		}
 	}
 }
