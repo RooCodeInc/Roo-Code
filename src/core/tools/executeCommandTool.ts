@@ -51,7 +51,7 @@ export async function executeCommandTool(
 				return
 			}
 
-			task.consecutiveMistakeCount = 0
+			task.resetConsecutiveMistakeCounts()
 
 			command = unescapeHtmlEntities(command) // Unescape HTML entities.
 			const didApprove = await askApproval("command", command)

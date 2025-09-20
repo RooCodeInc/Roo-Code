@@ -262,6 +262,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	// Tool Use
 	consecutiveMistakeCount: number = 0
 	consecutiveMistakeLimit: number
+	consecutiveMistakeGuidanceCount: number = 0 // Track how many times we've asked for guidance
+	maxConsecutiveMistakeGuidance: number = 3 // Maximum times to ask for guidance before aborting
 	consecutiveMistakeCountForApplyDiff: Map<string, number> = new Map()
 	toolUsage: ToolUsage = {}
 
@@ -1736,10 +1738,35 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			}
 
 			if (this.consecutiveMistakeLimit > 0 && this.consecutiveMistakeCount >= this.consecutiveMistakeLimit) {
-				const { response, text, images } = await this.ask(
-					"mistake_limit_reached",
-					t("common:errors.mistake_limit_guidance"),
-				)
+				// Check if we've asked for guidance too many times
+				if (this.consecutiveMistakeGuidanceCount >= this.maxConsecutiveMistakeGuidance) {
+					// We've asked for guidance too many times, abort to prevent token burning
+					await this.say(
+						"error",
+						`I've been unable to proceed despite multiple attempts and guidance. The task appears to be stuck in a loop. To prevent excessive token usage, I'm stopping here. Please review the conversation and consider:\n\n1. Providing more specific instructions\n2. Breaking down the task into smaller steps\n3. Checking if there are any environmental issues preventing progress`,
+					)
+
+					// Track token burning event in telemetry
+					// Use captureConsecutiveMistakeError with additional logging for now
+					TelemetryService.instance.captureConsecutiveMistakeError(this.taskId)
+					console.error(
+						`[Task#${this.taskId}] Token burning detected - Guidance count: ${this.consecutiveMistakeGuidanceCount}, Mistake count: ${this.consecutiveMistakeCount}`,
+					)
+
+					// Return true to end the task loop
+					return true
+				}
+
+				// Increment guidance count before asking
+				this.consecutiveMistakeGuidanceCount++
+
+				// Add exponential backoff message if we've asked before
+				let guidanceMessage = t("common:errors.mistake_limit_guidance")
+				if (this.consecutiveMistakeGuidanceCount > 1) {
+					guidanceMessage = `${guidanceMessage}\n\n(Attempt ${this.consecutiveMistakeGuidanceCount}/${this.maxConsecutiveMistakeGuidance} - I'm having difficulty making progress)`
+				}
+
+				const { response, text, images } = await this.ask("mistake_limit_reached", guidanceMessage)
 
 				if (response === "messageResponse") {
 					currentUserContent.push(
@@ -1751,10 +1778,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 					await this.say("user_feedback", text, images)
 
-					// Track consecutive mistake errors in telemetry.
+					// Track consecutive mistake errors in telemetry
 					TelemetryService.instance.captureConsecutiveMistakeError(this.taskId)
 				}
 
+				// Reset mistake count but keep guidance count
 				this.consecutiveMistakeCount = 0
 			}
 
@@ -2296,6 +2324,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					if (!didToolUse) {
 						this.userMessageContent.push({ type: "text", text: formatResponse.noToolsUsed() })
 						this.consecutiveMistakeCount++
+
+						// Log when we're incrementing mistake count for debugging
+						console.log(
+							`[Task#${this.taskId}] Consecutive mistake count: ${this.consecutiveMistakeCount}/${this.consecutiveMistakeLimit}, Guidance count: ${this.consecutiveMistakeGuidanceCount}/${this.maxConsecutiveMistakeGuidance}`,
+						)
 					}
 
 					if (this.userMessageContent.length > 0) {
@@ -2923,5 +2956,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		} catch (e) {
 			console.error(`[Task] Queue processing error:`, e)
 		}
+	}
+
+	/**
+	 * Reset consecutive mistake tracking counters.
+	 * This should be called when a tool executes successfully to indicate
+	 * that Roo is making progress and not stuck in a loop.
+	 */
+	public resetConsecutiveMistakeCounts(): void {
+		this.consecutiveMistakeCount = 0
+		this.consecutiveMistakeGuidanceCount = 0
 	}
 }

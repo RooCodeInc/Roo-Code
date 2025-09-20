@@ -159,7 +159,7 @@ export async function writeToFileTool(
 				return
 			}
 
-			cline.consecutiveMistakeCount = 0
+			cline.resetConsecutiveMistakeCounts()
 
 			// Check if preventFocusDisruption experiment is enabled
 			const provider = cline.providerRef.deref()
