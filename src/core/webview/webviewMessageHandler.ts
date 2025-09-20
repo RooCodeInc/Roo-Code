@@ -1558,6 +1558,10 @@ export const webviewMessageHandler = async (
 			await updateGlobalState("language", message.text as Language)
 			await provider.postStateToWebview()
 			break
+		case "interfaceTextSize":
+			await updateGlobalState("interfaceTextSize", message.text as "small" | "medium" | "large" | undefined)
+			await provider.postStateToWebview()
+			break
 		case "openRouterImageApiKey":
 			await provider.contextProxy.setValue("openRouterImageApiKey", message.text)
 			await provider.postStateToWebview()

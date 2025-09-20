@@ -24,6 +24,7 @@ import {
 	MessageSquare,
 	LucideIcon,
 	SquareSlash,
+	Type,
 } from "lucide-react"
 
 import type { ProviderSettings, ExperimentId, TelemetrySetting } from "@roo-code/types"
@@ -66,6 +67,7 @@ import { About } from "./About"
 import { Section } from "./Section"
 import PromptsSettings from "./PromptsSettings"
 import { SlashCommandsSettings } from "./SlashCommandsSettings"
+import { InterfaceSettings } from "./InterfaceSettings"
 
 export const settingsTabsContainer = "flex flex-1 overflow-hidden [&.narrow_.tab-label]:hidden"
 export const settingsTabList =
@@ -89,6 +91,7 @@ const sectionNames = [
 	"terminal",
 	"prompts",
 	"experimental",
+	"interface",
 	"language",
 	"about",
 ] as const
@@ -191,6 +194,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		includeTaskHistoryInEnhance,
 		openRouterImageApiKey,
 		openRouterImageGenerationSelectedModel,
+		interfaceTextSize,
 	} = cachedState
 
 	const apiConfiguration = useMemo(() => cachedState.apiConfiguration ?? {}, [cachedState.apiConfiguration])
@@ -372,6 +376,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 				type: "openRouterImageGenerationSelectedModel",
 				text: openRouterImageGenerationSelectedModel,
 			})
+			vscode.postMessage({ type: "interfaceTextSize", text: interfaceTextSize })
 			setChangeDetected(false)
 		}
 	}
@@ -459,6 +464,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 			{ id: "terminal", icon: SquareTerminal },
 			{ id: "prompts", icon: MessageSquare },
 			{ id: "experimental", icon: FlaskConical },
+			{ id: "interface", icon: Type },
 			{ id: "language", icon: Globe },
 			{ id: "about", icon: Info },
 		],
@@ -770,6 +776,14 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 							}
 							setOpenRouterImageApiKey={setOpenRouterImageApiKey}
 							setImageGenerationSelectedModel={setImageGenerationSelectedModel}
+						/>
+					)}
+
+					{/* Interface Section */}
+					{activeTab === "interface" && (
+						<InterfaceSettings
+							interfaceTextSize={interfaceTextSize}
+							setCachedStateField={setCachedStateField}
 						/>
 					)}
 

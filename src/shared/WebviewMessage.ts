@@ -168,6 +168,7 @@ export interface WebviewMessage {
 		| "browserConnectionResult"
 		| "remoteBrowserEnabled"
 		| "language"
+		| "interfaceTextSize"
 		| "maxReadFileLine"
 		| "maxImageFileSize"
 		| "maxTotalImageSize"

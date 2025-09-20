@@ -25,6 +25,7 @@
 @theme {
 	--font-display: var(--vscode-font-family);
 
+	/* Default text sizes (medium) */
 	--text-xs: calc(var(--vscode-font-size) * 0.85);
 	--text-sm: calc(var(--vscode-font-size) * 0.9);
 	--text-base: var(--vscode-font-size);
@@ -489,4 +490,23 @@ input[cmdk-input]:focus {
 	transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
 	transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 	transition-duration: 150ms;
+}
+
+/* Interface text size classes */
+.interface-text-small {
+	--text-xs: calc(var(--vscode-font-size) * 0.75);
+	--text-sm: calc(var(--vscode-font-size) * 0.8);
+	--text-base: calc(var(--vscode-font-size) * 0.85);
+	--text-lg: calc(var(--vscode-font-size) * 0.95);
+}
+
+.interface-text-medium {
+	/* Default sizes - already defined above */
+}
+
+.interface-text-large {
+	--text-xs: calc(var(--vscode-font-size) * 0.95);
+	--text-sm: calc(var(--vscode-font-size) * 1);
+	--text-base: calc(var(--vscode-font-size) * 1.15);
+	--text-lg: calc(var(--vscode-font-size) * 1.25);
 }

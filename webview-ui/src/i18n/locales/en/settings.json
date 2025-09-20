@@ -31,6 +31,7 @@
 		"slashCommands": "Slash Commands",
 		"prompts": "Prompts",
 		"experimental": "Experimental",
+		"interface": "Interface",
 		"language": "Language",
 		"about": "About Roo Code"
 	},
@@ -874,6 +875,16 @@
 			"input": "Input",
 			"output": "Output",
 			"cacheReads": "Cache reads"
+		}
+	},
+	"interface": {
+		"title": "Interface",
+		"textSize": {
+			"label": "Text Size",
+			"description": "Adjust the text size for Roo Code's interface. This only affects Roo Code's UI and does not change VS Code's zoom level or editor font size.",
+			"small": "Small",
+			"medium": "Medium (Default)",
+			"large": "Large"
 		}
 	}
 }
