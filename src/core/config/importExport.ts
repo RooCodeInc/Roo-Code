@@ -31,75 +31,93 @@ type ImportWithProviderOptions = ImportOptions & {
 	}
 }
 
+export type ImportSource = { filePath: string } | { fileContents: string }
+
 /**
  * Imports configuration from a specific file path
  * Shares base functionality for import settings for both the manual
  * and automatic settings importing
  */
-export async function importSettingsFromPath(
-	filePath: string,
+const importSettingsSchema = z.object({
+	providerProfiles: providerProfilesSchema,
+	globalSettings: globalSettingsSchema.optional(),
+})
+
+type ImportSettingsPayload = z.infer<typeof importSettingsSchema>
+
+const toImportError = (e: unknown) => {
+	let error = "Unknown error"
+
+	if (e instanceof ZodError) {
+		error = e.issues.map((issue) => `[${issue.path.join(".")}]: ${issue.message}`).join("\n")
+		TelemetryService.instance.captureSchemaValidationError({ schemaName: "ImportExport", error: e })
+	} else if (e instanceof Error) {
+		error = e.message
+	}
+
+	return { success: false as const, error }
+}
+
+const applyImportedSettings = async (
+	{ providerProfiles: newProviderProfiles, globalSettings = {} }: ImportSettingsPayload,
 	{ providerSettingsManager, contextProxy, customModesManager }: ImportOptions,
-) {
-	const schema = z.object({
-		providerProfiles: providerProfilesSchema,
-		globalSettings: globalSettingsSchema.optional(),
-	})
+) => {
+	const previousProviderProfiles = await providerSettingsManager.export()
 
+	const providerProfiles = {
+		currentApiConfigName: newProviderProfiles.currentApiConfigName,
+		apiConfigs: {
+			...previousProviderProfiles.apiConfigs,
+			...newProviderProfiles.apiConfigs,
+		},
+		modeApiConfigs: {
+			...previousProviderProfiles.modeApiConfigs,
+			...newProviderProfiles.modeApiConfigs,
+		},
+	}
+
+	await Promise.all(
+		(globalSettings.customModes ?? []).map((mode) => customModesManager.updateCustomMode(mode.slug, mode)),
+	)
+
+	// OpenAI Compatible settings are now correctly stored in codebaseIndexConfig
+	// They will be imported automatically with the config - no special handling needed
+
+	await providerSettingsManager.import(providerProfiles)
+	await contextProxy.setValues(globalSettings)
+
+	// Set the current provider.
+	const currentProviderName = providerProfiles.currentApiConfigName
+	const currentProvider = providerProfiles.apiConfigs[currentProviderName]
+	contextProxy.setValue("currentApiConfigName", currentProviderName)
+
+	// TODO: It seems like we don't need to have the provider settings in
+	// the proxy; we can just use providerSettingsManager as the source of
+	// truth.
+	if (currentProvider) {
+		contextProxy.setProviderSettings(currentProvider)
+	}
+
+	contextProxy.setValue("listApiConfigMeta", await providerSettingsManager.listConfig())
+
+	return { providerProfiles, globalSettings, success: true as const }
+}
+
+export async function importSettingsFromContent(jsonContent: string, options: ImportOptions) {
 	try {
-		const previousProviderProfiles = await providerSettingsManager.export()
-
-		const { providerProfiles: newProviderProfiles, globalSettings = {} } = schema.parse(
-			JSON.parse(await fs.readFile(filePath, "utf-8")),
-		)
-
-		const providerProfiles = {
-			currentApiConfigName: newProviderProfiles.currentApiConfigName,
-			apiConfigs: {
-				...previousProviderProfiles.apiConfigs,
-				...newProviderProfiles.apiConfigs,
-			},
-			modeApiConfigs: {
-				...previousProviderProfiles.modeApiConfigs,
-				...newProviderProfiles.modeApiConfigs,
-			},
-		}
-
-		await Promise.all(
-			(globalSettings.customModes ?? []).map((mode) => customModesManager.updateCustomMode(mode.slug, mode)),
-		)
-
-		// OpenAI Compatible settings are now correctly stored in codebaseIndexConfig
-		// They will be imported automatically with the config - no special handling needed
-
-		await providerSettingsManager.import(providerProfiles)
-		await contextProxy.setValues(globalSettings)
-
-		// Set the current provider.
-		const currentProviderName = providerProfiles.currentApiConfigName
-		const currentProvider = providerProfiles.apiConfigs[currentProviderName]
-		contextProxy.setValue("currentApiConfigName", currentProviderName)
-
-		// TODO: It seems like we don't need to have the provider settings in
-		// the proxy; we can just use providerSettingsManager as the source of
-		// truth.
-		if (currentProvider) {
-			contextProxy.setProviderSettings(currentProvider)
-		}
-
-		contextProxy.setValue("listApiConfigMeta", await providerSettingsManager.listConfig())
-
-		return { providerProfiles, globalSettings, success: true }
+		const payload = importSettingsSchema.parse(JSON.parse(jsonContent))
+		return await applyImportedSettings(payload, options)
 	} catch (e) {
-		let error = "Unknown error"
+		return toImportError(e)
+	}
+}
 
-		if (e instanceof ZodError) {
-			error = e.issues.map((issue) => `[${issue.path.join(".")}]: ${issue.message}`).join("\n")
-			TelemetryService.instance.captureSchemaValidationError({ schemaName: "ImportExport", error: e })
-		} else if (e instanceof Error) {
-			error = e.message
-		}
-
-		return { success: false, error }
+export async function importSettingsFromPath(filePath: string, options: ImportOptions) {
+	try {
+		const fileContents = await fs.readFile(filePath, "utf-8")
+		return await importSettingsFromContent(fileContents, options)
+	} catch (e) {
+		return toImportError(e)
 	}
 }
 
@@ -184,20 +202,18 @@ export const exportSettings = async ({ providerSettingsManager, contextProxy }: 
  */
 export const importSettingsWithFeedback = async (
 	{ providerSettingsManager, contextProxy, customModesManager, provider }: ImportWithProviderOptions,
-	filePath?: string,
+	source?: ImportSource,
 ) => {
 	let result
+	const baseImportOptions = { providerSettingsManager, contextProxy, customModesManager }
 
-	if (filePath) {
-		// Validate file path and check if file exists
+	if (source && "fileContents" in source) {
+		result = await importSettingsFromContent(source.fileContents, baseImportOptions)
+	} else if (source && "filePath" in source) {
+		const { filePath } = source
 		try {
-			// Check if file exists and is readable
 			await fs.access(filePath, fs.constants.F_OK | fs.constants.R_OK)
-			result = await importSettingsFromPath(filePath, {
-				providerSettingsManager,
-				contextProxy,
-				customModesManager,
-			})
+			result = await importSettingsFromPath(filePath, baseImportOptions)
 		} catch (error) {
 			result = {
 				success: false,
@@ -205,7 +221,7 @@ export const importSettingsWithFeedback = async (
 			}
 		}
 	} else {
-		result = await importSettings({ providerSettingsManager, contextProxy, customModesManager })
+		result = await importSettings(baseImportOptions)
 	}
 
 	if (result.success) {

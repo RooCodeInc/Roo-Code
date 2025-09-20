@@ -190,7 +190,7 @@ const getCommandsMap = ({ context, outputChannel, provider }: RegisterCommandOpt
 				customModesManager: visibleProvider.customModesManager,
 				provider: visibleProvider,
 			},
-			filePath,
+			filePath ? { filePath } : undefined,
 		)
 	},
 	focusInput: async () => {
