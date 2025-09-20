@@ -373,6 +373,8 @@
 			"draftModelDesc": "草稿模型必须来自相同的模型系列，推测性解码才能正常工作。",
 			"selectDraftModel": "选择草稿模型",
 			"noModelsFound": "未找到草稿模型。请确保 LM Studio 已启用服务器模式运行。",
+			"showDebugThoughts": "显示调试思考",
+			"showDebugThoughtsDesc": "显示支持此功能的模型的调试推理输出。注意：这与始终被处理的标准<think>标签不同。",
 			"description": "LM Studio 允许您在本地计算机上运行模型。要了解如何开始，请参阅他们的 <a>快速入门指南</a>。您还需要启动 LM Studio 的 <b>本地服务器</b> 功能，以便与此扩展一起使用。<span>注意：</span>Roo Code 使用复杂的提示，并且在 Claude 模型上效果最佳。功能较弱的模型可能无法正常工作。"
 		},
 		"ollama": {
