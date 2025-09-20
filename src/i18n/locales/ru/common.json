@@ -234,7 +234,14 @@
 	"commands": {
 		"preventCompletionWithOpenTodos": {
 			"description": "Предотвратить завершение задач при наличии незавершенных дел в списке дел"
+		},
+		"toggleAutoApprove": {
+			"notification": "Авто-Одобрение {{status}}"
 		}
+	},
+	"status": {
+		"enabled": "включено",
+		"disabled": "отключено"
 	},
 	"docsLink": {
 		"label": "Docs",

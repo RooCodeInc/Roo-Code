@@ -221,6 +221,29 @@ const getCommandsMap = ({ context, outputChannel, provider }: RegisterCommandOpt
 
 		visibleProvider.postMessageToWebview({ type: "acceptInput" })
 	},
+	toggleAutoApprove: async () => {
+		const visibleProvider = getVisibleProviderOrLog(outputChannel)
+
+		if (!visibleProvider) {
+			return
+		}
+
+		// Get current state using context proxy
+		const currentState = visibleProvider.contextProxy.getValue("autoApprovalEnabled") ?? false
+
+		// Toggle the state
+		const newState = !currentState
+		await visibleProvider.contextProxy.setValue("autoApprovalEnabled", newState)
+
+		// Update the webview
+		await visibleProvider.postStateToWebview()
+
+		// Show notification to user
+		const statusText = newState ? t("common:status.enabled") : t("common:status.disabled")
+		vscode.window.showInformationMessage(
+			t("common:commands.toggleAutoApprove.notification", { status: statusText }),
+		)
+	},
 })
 
 export const openClineInNewTab = async ({ context, outputChannel }: Omit<RegisterCommandOptions, "provider">) => {

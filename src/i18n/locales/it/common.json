@@ -234,7 +234,14 @@
 	"commands": {
 		"preventCompletionWithOpenTodos": {
 			"description": "Impedire il completamento delle attività quando ci sono todo incompleti nella lista dei todo"
+		},
+		"toggleAutoApprove": {
+			"notification": "Auto-Approvazione {{status}}"
 		}
+	},
+	"status": {
+		"enabled": "abilitata",
+		"disabled": "disabilitata"
 	},
 	"docsLink": {
 		"label": "Docs",
