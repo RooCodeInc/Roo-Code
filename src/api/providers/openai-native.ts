@@ -221,11 +221,11 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		yield* this.executeRequest(requestBody, model, metadata, systemPrompt, messages)
 	}
 
-	private isStreamingAllowed(): boolean {
+	private canOrganizationUseStreaming(): boolean {
 		return !this.options.openAiNativeUnverifiedOrg
 	}
 
-	private isReasoningSummaryAllowed(): boolean {
+	private canOrganizationUseGpt5ReasoningSummary(): boolean {
 		return !!(this.options.enableGpt5ReasoningSummary && !this.options.openAiNativeUnverifiedOrg)
 	}
 
@@ -260,8 +260,8 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		const allowedTierNames = new Set(model.info.tiers?.map((t) => t.name).filter(Boolean) || [])
 
 		// Centralized gating for unverified organizations
-		const stream = this.isStreamingAllowed()
-		const enableGpt5ReasoningSummary = this.isReasoningSummaryAllowed()
+		const stream = this.canOrganizationUseStreaming()
+		const enableGpt5ReasoningSummary = this.canOrganizationUseGpt5ReasoningSummary()
 
 		const body: Gpt5RequestBody = {
 			model: model.id,
@@ -1427,7 +1427,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			if (reasoningEffort) {
 				requestBody.reasoning = {
 					effort: reasoningEffort,
-					...(this.isReasoningSummaryAllowed() ? { summary: "auto" as const } : {}),
+					...(this.canOrganizationUseGpt5ReasoningSummary() ? { summary: "auto" as const } : {}),
 				}
 			}
 

@@ -1954,4 +1954,51 @@ describe("Unverified org gating behavior", () => {
 		expect(body.reasoning?.effort).toBeDefined()
 		expect(body.reasoning?.summary).toBeUndefined()
 	})
+
+	it("include reasoning.summary in createMessage request when unverified org is false", async () => {
+		// Arrange
+		const handler = new OpenAiNativeHandler({
+			apiModelId: "gpt-5-2025-08-07",
+			openAiNativeApiKey: "test-api-key",
+			openAiNativeUnverifiedOrg: false, // => stream=true, and summary should be included
+		})
+
+		// Mock SDK to return a proper async iterable for streaming
+		const createMockStream = (chunks: any[]) => {
+			return {
+				async *[Symbol.asyncIterator]() {
+					for (const chunk of chunks) {
+						yield chunk
+					}
+				},
+			}
+		}
+
+		mockResponsesCreate.mockResolvedValueOnce(
+			createMockStream([
+				{ type: "response.text.delta", delta: "Test" },
+				{
+					type: "response.done",
+					response: { id: "resp_stream_1", usage: { prompt_tokens: 10, completion_tokens: 1 } },
+				},
+			]),
+		)
+
+		// Act
+		const systemPrompt = "You are a helpful assistant."
+		const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Hello!" }]
+		const stream = handler.createMessage(systemPrompt, messages)
+		for await (const _ of stream) {
+			// drain
+		}
+
+		// Assert
+		expect(mockResponsesCreate).toHaveBeenCalledTimes(1)
+		const body = mockResponsesCreate.mock.calls[0][0]
+		expect(body.model).toBe("gpt-5-2025-08-07")
+		expect(body.stream).toBe(true)
+		// GPT-5 includes reasoning effort and summary should be "auto" when unverified org is false
+		expect(body.reasoning?.effort).toBeDefined()
+		expect(body.reasoning?.summary).toBe("auto")
+	})
 })
