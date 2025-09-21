@@ -444,6 +444,8 @@
 			},
 			"resetDefaults": "Restablecer valores predeterminados"
 		},
+		"unverifiedOrganization": "Organización No Verificada",
+		"unverifiedOrganizationDescription": "Marca esta casilla si encuentras errores de verificación de organización con modelos como GPT-5. Esto deshabilitará la transmisión y los resúmenes de razonamiento, pero permitirá que funcionen los modelos.",
 		"rateLimitSeconds": {
 			"label": "Límite de tasa",
 			"description": "Tiempo mínimo entre solicitudes de API."

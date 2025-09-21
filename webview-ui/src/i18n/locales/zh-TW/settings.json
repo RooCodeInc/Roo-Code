@@ -444,6 +444,8 @@
 			},
 			"resetDefaults": "重設為預設值"
 		},
+		"unverifiedOrganization": "未驗證組織",
+		"unverifiedOrganizationDescription": "如果你在使用 GPT-5 等模型時遇到組織驗證錯誤，請勾選此選項。這將停用串流傳輸和推理摘要，但允許模型正常運作。",
 		"rateLimitSeconds": {
 			"label": "速率限制",
 			"description": "API 請求間的最短時間"

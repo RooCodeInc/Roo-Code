@@ -448,6 +448,8 @@
 			"label": "속도 제한",
 			"description": "API 요청 간 최소 시간."
 		},
+		"unverifiedOrganization": "未認証の組織",
+		"unverifiedOrganizationDescription": "GPT-5などのモデルで組織認証エラーが発生した場合は、このボックスをチェックしてください。ストリーミングと推論要約は無効になりますが、モデルを動作させることができます。",
 		"consecutiveMistakeLimit": {
 			"label": "오류 및 반복 제한",
 			"description": "'Roo에 문제가 발생했습니다' 대화 상자를 표시하기 전의 연속 오류 또는 반복 작업 수",

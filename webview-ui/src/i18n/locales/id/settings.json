@@ -448,6 +448,8 @@
 			},
 			"resetDefaults": "Reset ke Default"
 		},
+		"unverifiedOrganization": "Organisasi Tidak Terverifikasi",
+		"unverifiedOrganizationDescription": "Centang kotak ini jika Anda mengalami kesalahan verifikasi organisasi dengan model seperti GPT-5. Ini akan menonaktifkan streaming dan ringkasan reasoning tetapi memungkinkan model berfungsi.",
 		"rateLimitSeconds": {
 			"label": "Rate limit",
 			"description": "Waktu minimum antara permintaan API."

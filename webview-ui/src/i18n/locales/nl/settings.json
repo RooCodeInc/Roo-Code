@@ -444,6 +444,8 @@
 			},
 			"resetDefaults": "Standaardwaarden herstellen"
 		},
+		"unverifiedOrganization": "Niet-geverifieerde organisatie",
+		"unverifiedOrganizationDescription": "Vink dit vakje aan als je organisatieverificatiefouten ondervindt met modellen zoals GPT-5. Dit zal streaming en redenering samenvattingen uitschakelen maar de modellen laten werken.",
 		"rateLimitSeconds": {
 			"label": "Snelheidslimiet",
 			"description": "Minimale tijd tussen API-verzoeken."

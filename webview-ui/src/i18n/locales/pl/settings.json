@@ -444,6 +444,8 @@
 			},
 			"resetDefaults": "Przywróć domyślne"
 		},
+		"unverifiedOrganization": "Niezweryfikowana organizacja",
+		"unverifiedOrganizationDescription": "Zaznacz to pole, jeśli napotkasz błędy weryfikacji organizacji z modelami takimi jak GPT-5. Spowoduje to wyłączenie strumieniowania i podsumowań rozumowania, ale pozwoli modelom działać.",
 		"rateLimitSeconds": {
 			"label": "Limit szybkości",
 			"description": "Minimalny czas między żądaniami API."

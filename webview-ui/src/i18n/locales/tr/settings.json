@@ -444,6 +444,8 @@
 			},
 			"resetDefaults": "Varsayılanlara Sıfırla"
 		},
+		"unverifiedOrganization": "Doğrulanmamış Organizasyon",
+		"unverifiedOrganizationDescription": "GPT-5 gibi modellerle organizasyon doğrulama hataları yaşıyorsanız bu kutuyu işaretleyin. Bu, akış ve akıl yürütme özetlerini devre dışı bırakacak ancak modellerin çalışmasına izin verecektir.",
 		"rateLimitSeconds": {
 			"label": "Hız sınırı",
 			"description": "API istekleri arasındaki minimum süre."

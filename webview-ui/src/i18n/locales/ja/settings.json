@@ -444,6 +444,8 @@
 			},
 			"resetDefaults": "デフォルトにリセット"
 		},
+		"unverifiedOrganization": "未認証の組織",
+		"unverifiedOrganizationDescription": "GPT-5などのモデルで組織認証エラーが発生した場合は、このボックスをチェックしてください。ストリーミングと推論要約は無効になりますが、モデルを動作させることができます。",
 		"rateLimitSeconds": {
 			"label": "レート制限",
 			"description": "APIリクエスト間の最小時間。"

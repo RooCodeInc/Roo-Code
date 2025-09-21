@@ -444,6 +444,8 @@
 			},
 			"resetDefaults": "Réinitialiser les valeurs par défaut"
 		},
+		"unverifiedOrganization": "Organisation Non Vérifiée",
+		"unverifiedOrganizationDescription": "Cochez cette case si vous rencontrez des erreurs de vérification d'organisation avec des modèles comme GPT-5. Cela désactivera le streaming et les résumés de raisonnement mais permettra aux modèles de fonctionner.",
 		"rateLimitSeconds": {
 			"label": "Limite de débit",
 			"description": "Temps minimum entre les requêtes API."

@@ -444,6 +444,8 @@
 			},
 			"resetDefaults": "Đặt lại về mặc định"
 		},
+		"unverifiedOrganization": "Tổ chức Chưa Xác minh",
+		"unverifiedOrganizationDescription": "Đánh dấu vào ô này nếu bạn gặp lỗi xác minh tổ chức với các mô hình như GPT-5. Điều này sẽ tắt streaming và tóm tắt lý luận nhưng cho phép các mô hình hoạt động.",
 		"rateLimitSeconds": {
 			"label": "Giới hạn tốc độ",
 			"description": "Thời gian tối thiểu giữa các yêu cầu API."
