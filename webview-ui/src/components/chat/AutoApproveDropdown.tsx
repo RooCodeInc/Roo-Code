@@ -10,6 +10,7 @@ import { Popover, PopoverContent, PopoverTrigger, StandardTooltip, ToggleSwitch 
 import { AutoApproveSetting, autoApproveSettingsConfig } from "../settings/AutoApproveToggle"
 import { useAutoApprovalToggles } from "@/hooks/useAutoApprovalToggles"
 import { useAutoApprovalState } from "@/hooks/useAutoApprovalState"
+import { getAutoApproveShortcut } from "@/utils/keyboard"
 
 interface AutoApproveDropdownProps {
 	disabled?: boolean
@@ -296,11 +297,13 @@ export const AutoApproveDropdown = ({ disabled = false, triggerClassName = "" }:
 								}
 								handleAutoApprovalToggle()
 							}}>
-							<ToggleSwitch
-								checked={effectiveAutoApprovalEnabled}
-								aria-label="Toggle auto-approval"
-								onChange={handleAutoApprovalToggle}
-							/>
+							<StandardTooltip content={`Toggle auto-approve ${getAutoApproveShortcut()}`}>
+								<ToggleSwitch
+									checked={effectiveAutoApprovalEnabled}
+									aria-label="Toggle auto-approval"
+									onChange={handleAutoApprovalToggle}
+								/>
+							</StandardTooltip>
 							<span className={cn("text-sm font-bold select-none")}>Enabled</span>
 						</label>
 					</div>

@@ -14,6 +14,7 @@ import { MaxLimitInputs } from "./MaxLimitInputs"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { useAutoApprovalState } from "@/hooks/useAutoApprovalState"
 import { useAutoApprovalToggles } from "@/hooks/useAutoApprovalToggles"
+import { getAutoApproveShortcut } from "@/utils/keyboard"
 
 type AutoApproveSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	alwaysAllowReadOnly?: boolean
@@ -135,7 +136,7 @@ export const AutoApproveSettings = ({
 							<span className="font-medium">{t("settings:autoApprove.enabled")}</span>
 						</VSCodeCheckbox>
 						<div className="text-vscode-descriptionForeground text-sm mt-1">
-							{t("settings:autoApprove.description")}
+							{t("settings:autoApprove.description")} {getAutoApproveShortcut()}
 						</div>
 					</div>
 
