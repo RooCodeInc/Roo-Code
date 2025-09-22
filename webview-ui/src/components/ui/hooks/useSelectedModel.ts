@@ -59,8 +59,6 @@ import {
 	deepInfraDefaultModelId,
 	watsonxAiModels,
 	watsonxAiDefaultModelId,
-	watsonxAiDefaultModelId,
-	watsonxAiModels,
 } from "@roo-code/types"
 
 import type { ModelRecord, RouterModels } from "@roo/api"
