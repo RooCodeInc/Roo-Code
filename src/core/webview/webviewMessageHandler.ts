@@ -11,7 +11,7 @@ import {
 	type ClineMessage,
 	type TelemetrySetting,
 	TelemetryEventName,
-	UserSettingsConfig
+	UserSettingsConfig,
 } from "@roo-code/types"
 import { CloudService } from "@roo-code/cloud"
 import { TelemetryService } from "@roo-code/telemetry"
