@@ -2706,7 +2706,6 @@ describe("ClineProvider - Router Models", () => {
 				watsonx: {},
 				huggingface: {},
 				"io-intelligence": {},
-				watsonx: {},
 			},
 		})
 	})
@@ -2759,7 +2758,6 @@ describe("ClineProvider - Router Models", () => {
 				watsonx: {},
 				huggingface: {},
 				"io-intelligence": {},
-				watsonx: {},
 			},
 		})
 
@@ -2875,7 +2873,6 @@ describe("ClineProvider - Router Models", () => {
 				watsonx: {},
 				huggingface: {},
 				"io-intelligence": {},
-				watsonx: {},
 			},
 		})
 	})

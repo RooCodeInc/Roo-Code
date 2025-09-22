@@ -248,7 +248,6 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 				watsonx: {},
 				huggingface: {},
 				"io-intelligence": {},
-				watsonx: {},
 			},
 		})
 	})
@@ -341,7 +340,6 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 				watsonx: {},
 				huggingface: {},
 				"io-intelligence": {},
-				watsonx: {},
 			},
 		})
 	})
@@ -386,7 +384,6 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 				watsonx: {},
 				huggingface: {},
 				"io-intelligence": {},
-				watsonx: {},
 			},
 		})
 
