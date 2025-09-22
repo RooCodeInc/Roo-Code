@@ -77,7 +77,6 @@ export const useSelectedModel = (apiConfiguration?: ProviderSettings) => {
 	const ollamaModelId = provider === "ollama" ? apiConfiguration?.ollamaModelId : undefined
 
 	const routerModels = useRouterModels()
-
 	const openRouterModelProviders = useOpenRouterModelProviders(openRouterModelId)
 	const lmStudioModels = useLmStudioModels(lmStudioModelId)
 	const ollamaModels = useOllamaModels(ollamaModelId)
