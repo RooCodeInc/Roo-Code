@@ -1,5 +1,7 @@
 import { HTMLAttributes, useState } from "react"
 import { X, CheckCheck } from "lucide-react"
+import { Trans } from "react-i18next"
+import { Package } from "@roo/package"
 
 import { useAppTranslation } from "@/i18n/TranslationContext"
 import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
@@ -135,7 +137,27 @@ export const AutoApproveSettings = ({
 					</VSCodeCheckbox>
 					<div className="text-vscode-descriptionForeground text-sm mt-1">
 						<p>{t("settings:autoApprove.description")}</p>
-						<p>{t("settings:autoApprove.toggleShortcut")}</p>
+						<p>
+							<Trans
+								i18nKey="settings:autoApprove.toggleShortcut"
+								components={{
+									SettingsLink: (
+										<a
+											href="#"
+											className="text-vscode-textLink-foreground hover:underline cursor-pointer"
+											onClick={(e) => {
+												e.preventDefault()
+												// Send message to open keyboard shortcuts with search for toggle command
+												vscode.postMessage({
+													type: "openKeyboardShortcuts",
+													text: `${Package.name}.toggleAutoApprove`,
+												})
+											}}
+										/>
+									),
+								}}
+							/>
+						</p>
 					</div>
 
 					<AutoApproveToggle
