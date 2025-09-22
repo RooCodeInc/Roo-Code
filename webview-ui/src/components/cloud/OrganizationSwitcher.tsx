@@ -74,10 +74,10 @@ export const OrganizationSwitcher = ({ userInfo, organizations, onOrganizationCh
 													?.organization.image_url
 											}
 											alt=""
-											className="w-4 h-4 rounded object-cover"
+											className="w-4.5 h-4.5 rounded-full object-cover overflow-clip"
 										/>
 									) : (
-										<Building2 className="w-4 h-4" />
+										<Building2 className="w-4.5 h-4.5" />
 									)}
 									<span className="truncate">
 										{
@@ -88,7 +88,9 @@ export const OrganizationSwitcher = ({ userInfo, organizations, onOrganizationCh
 								</>
 							) : (
 								<>
-									<User className="w-4 h-4" />
+									<div className="p-0.5 bg-vscode-button-background rounded-full flex items-center justify-center bg-vscode-button-background text-vscode-button-foreground text-xs">
+										<User className="w-4 h-4 text-vscode-button-foreground" />
+									</div>
 									<span>{t("cloud:personalAccount")}</span>
 								</>
 							)}
@@ -98,7 +100,7 @@ export const OrganizationSwitcher = ({ userInfo, organizations, onOrganizationCh
 				<SelectContent>
 					<SelectItem value="personal">
 						<div className="flex items-center gap-2">
-							<User className="w-4 h-4" />
+							<User className="w-4.5 h-4.5" />
 							<span>{t("cloud:personalAccount")}</span>
 						</div>
 					</SelectItem>
@@ -110,10 +112,10 @@ export const OrganizationSwitcher = ({ userInfo, organizations, onOrganizationCh
 									<img
 										src={org.organization.image_url}
 										alt=""
-										className="w-4 h-4 rounded object-cover"
+										className="w-4.5 h-4.5 rounded-full object-cover overflow-clip"
 									/>
 								) : (
-									<Building2 className="w-4 h-4" />
+									<Building2 className="w-4.5 h-4.5" />
 								)}
 								<span className="truncate">{org.organization.name}</span>
 							</div>
