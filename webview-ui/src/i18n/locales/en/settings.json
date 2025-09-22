@@ -134,7 +134,8 @@
 		}
 	},
 	"autoApprove": {
-		"description": "Allow Roo to automatically perform operations without requiring approval. Enable these settings only if you fully trust the AI and understand the associated security risks.",
+		"description": "Run these actions without asking for permission. Only enable for actions you fully trust and if you understand the security risks.",
+		"toggleShortcut": "You can configure a global shortcut for this setting in your IDE preferences.",
 		"enabled": "Auto-Approve Enabled",
 		"readOnly": {
 			"label": "Read",

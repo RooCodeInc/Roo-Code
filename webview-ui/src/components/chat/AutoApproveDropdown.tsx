@@ -10,7 +10,6 @@ import { Popover, PopoverContent, PopoverTrigger, StandardTooltip, ToggleSwitch 
 import { AutoApproveSetting, autoApproveSettingsConfig } from "../settings/AutoApproveToggle"
 import { useAutoApprovalToggles } from "@/hooks/useAutoApprovalToggles"
 import { useAutoApprovalState } from "@/hooks/useAutoApprovalState"
-import { getAutoApproveShortcut } from "@/utils/keyboard"
 
 interface AutoApproveDropdownProps {
 	disabled?: boolean
@@ -297,16 +296,12 @@ export const AutoApproveDropdown = ({ disabled = false, triggerClassName = "" }:
 								}
 								handleAutoApprovalToggle()
 							}}>
-							<StandardTooltip content={`${t("chat:autoApprove.toggle")} (${getAutoApproveShortcut()})`}>
-								<span className="flex items-center gap-2">
-									<ToggleSwitch
-										checked={effectiveAutoApprovalEnabled}
-										aria-label="Toggle auto-approval"
-										onChange={handleAutoApprovalToggle}
-									/>
-									<span className={cn("text-sm font-bold select-none")}>Enabled</span>
-								</span>
-							</StandardTooltip>
+							<ToggleSwitch
+								checked={effectiveAutoApprovalEnabled}
+								aria-label="Toggle auto-approval"
+								onChange={handleAutoApprovalToggle}
+							/>
+							<span className={cn("text-sm font-bold select-none")}>Enabled</span>
 						</label>
 					</div>
 				</div>

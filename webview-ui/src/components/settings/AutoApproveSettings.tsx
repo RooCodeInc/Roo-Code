@@ -14,7 +14,6 @@ import { MaxLimitInputs } from "./MaxLimitInputs"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { useAutoApprovalState } from "@/hooks/useAutoApprovalState"
 import { useAutoApprovalToggles } from "@/hooks/useAutoApprovalToggles"
-import { getAutoApproveShortcut } from "@/utils/keyboard"
 
 type AutoApproveSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	alwaysAllowReadOnly?: boolean
@@ -124,22 +123,19 @@ export const AutoApproveSettings = ({
 
 			<Section>
 				<div className="space-y-4">
-					<div>
-						<VSCodeCheckbox
-							checked={effectiveAutoApprovalEnabled}
-							aria-label={t("settings:autoApprove.toggleAriaLabel")}
-							onChange={() => {
-								const newValue = !(autoApprovalEnabled ?? false)
-								setAutoApprovalEnabled(newValue)
-								vscode.postMessage({ type: "autoApprovalEnabled", bool: newValue })
-							}}>
-							<span className="font-medium">
-								{t("settings:autoApprove.enabled")} ({getAutoApproveShortcut()})
-							</span>
-						</VSCodeCheckbox>
-						<div className="text-vscode-descriptionForeground text-sm mt-1">
-							{t("settings:autoApprove.description")}
-						</div>
+					<VSCodeCheckbox
+						checked={effectiveAutoApprovalEnabled}
+						aria-label={t("settings:autoApprove.toggleAriaLabel")}
+						onChange={() => {
+							const newValue = !(autoApprovalEnabled ?? false)
+							setAutoApprovalEnabled(newValue)
+							vscode.postMessage({ type: "autoApprovalEnabled", bool: newValue })
+						}}>
+						<span className="font-medium">{t("settings:autoApprove.enabled")}</span>
+					</VSCodeCheckbox>
+					<div className="text-vscode-descriptionForeground text-sm mt-1">
+						<p>{t("settings:autoApprove.description")}</p>
+						<p>{t("settings:autoApprove.toggleShortcut")}</p>
 					</div>
 
 					<AutoApproveToggle

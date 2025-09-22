@@ -277,7 +277,6 @@
 		"tooltipManage": "Manage auto-approval settings",
 		"tooltipStatus": "Auto-approval enabled for: {{toggles}}",
 		"title": "Auto-approve",
-		"toggle": "Toggle auto-approve",
 		"all": "All",
 		"none": "None",
 		"description": "Run these actions without asking for permission. Only enable for actions you fully trust.",
