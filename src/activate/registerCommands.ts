@@ -225,21 +225,9 @@ const getCommandsMap = ({ context, outputChannel, provider }: RegisterCommandOpt
 		const visibleProvider = getVisibleProviderOrLog(outputChannel)
 
 		if (!visibleProvider) {
-			// If no visible provider, try to get the global state directly
-			const currentState = context.globalState.get<boolean>("autoApprovalEnabled") ?? false
-			const newState = !currentState
-			await context.globalState.update("autoApprovalEnabled", newState)
 			return
 		}
 
-		// Toggle the auto-approval state
-		const currentState = visibleProvider.getValue("autoApprovalEnabled") ?? false
-		const newState = !currentState
-
-		// Update the state
-		await visibleProvider.setValue("autoApprovalEnabled", newState)
-
-		// Post message to webview to update UI
 		visibleProvider.postMessageToWebview({
 			type: "action",
 			action: "toggleAutoApprove",
