@@ -494,7 +494,7 @@ describe("OpenAiHandler", () => {
 				{
 					model: azureOptions.openAiModelId,
 					messages: [
-						{ role: "user", content: systemPrompt },
+						{ role: "system", content: systemPrompt },
 						{ role: "user", content: "Hello!" },
 					],
 				},
