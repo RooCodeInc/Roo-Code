@@ -7,9 +7,8 @@ import { ApiStream } from "../transform/stream"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { WatsonXAI } from "@ibm-cloud/watsonx-ai"
-import { convertToWatsonxAiMessages } from "../transform/watsonxai-format"
-import OpenAI from "openai"
 import { calculateApiCostOpenAI } from "../../shared/cost"
+import { convertToOpenAiMessages } from "../transform/openai-format"
 
 export class WatsonxAIHandler extends BaseProvider implements SingleCompletionHandler {
 	private options: ApiHandlerOptions
@@ -111,12 +110,15 @@ export class WatsonxAIHandler extends BaseProvider implements SingleCompletionHa
 	private createTextChatParams(projectId: string, modelId: string, messages: any[]) {
 		const maxTokens = this.options.modelMaxTokens || 2048
 		const temperature = this.options.modelTemperature || 0.7
+		// Set to 0 for the model's configured max generated tokens
+		const maxCompletionTokens = 0
 		return {
 			projectId,
 			modelId,
 			messages,
 			maxTokens,
 			temperature,
+			maxCompletionTokens,
 		}
 	}
 
@@ -137,7 +139,7 @@ export class WatsonxAIHandler extends BaseProvider implements SingleCompletionHa
 
 		try {
 			// Convert messages to WatsonX format with system prompt
-			const watsonxMessages = [{ role: "system", content: systemPrompt }, ...convertToWatsonxAiMessages(messages)]
+			const watsonxMessages = [{ role: "system", content: systemPrompt }, ...convertToOpenAiMessages(messages)]
 
 			const params = this.createTextChatParams(this.projectId!, modelId, watsonxMessages)
 			let responseText = ""

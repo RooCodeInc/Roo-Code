@@ -82,11 +82,19 @@ export async function getWatsonxModels(
 						} else if (model.short_description) {
 							description = model.short_description
 						}
-						knownModels[modelId] = {
-							contextWindow,
-							maxTokens,
-							supportsPromptCache: false,
-							description,
+						if (
+							!(
+								modelId === "meta-llama/llama-guard-3-11b-vision" ||
+								modelId === "ibm/granite-guardian-3-8b" ||
+								modelId === "ibm/granite-guardian-3-2b"
+							)
+						) {
+							knownModels[modelId] = {
+								contextWindow,
+								maxTokens,
+								supportsPromptCache: false,
+								description,
+							}
 						}
 					}
 				}
