@@ -38,7 +38,13 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<RooModelId> {
 				if (state.state === "active-session") {
 					this.client = new OpenAI({
 						baseURL: this.baseURL,
-						apiKey: this.options.apiKey,
+						apiKey: CloudService.instance.authService?.getSessionToken() ?? "unauthenticated",
+						defaultHeaders: DEFAULT_HEADERS,
+					})
+				} else if (state.state === "logged-out") {
+					this.client = new OpenAI({
+						baseURL: this.baseURL,
+						apiKey: "unauthenticated",
 						defaultHeaders: DEFAULT_HEADERS,
 					})
 				}
