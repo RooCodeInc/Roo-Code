@@ -28,10 +28,14 @@
 		"notifications": "알림",
 		"contextManagement": "컨텍스트",
 		"terminal": "터미널",
+		"slashCommands": "슬래시 명령",
 		"prompts": "프롬프트",
 		"experimental": "실험적",
 		"language": "언어",
 		"about": "Roo Code 정보"
+	},
+	"slashCommands": {
+		"description": "사용자 지정 워크플로와 작업을 신속하게 실행하기 위해 슬래시 명령을 관리합니다. <DocsLink>더 알아보기</DocsLink>"
 	},
 	"prompts": {
 		"description": "프롬프트 향상, 코드 설명, 문제 해결과 같은 빠른 작업에 사용되는 지원 프롬프트를 구성합니다. 이러한 프롬프트는 Roo가 일반적인 개발 작업에 대해 더 나은 지원을 제공하는 데 도움이 됩니다."
@@ -130,6 +134,7 @@
 		"resetToDefault": "기본값으로 재설정"
 	},
 	"autoApprove": {
+		"toggleShortcut": "<SettingsLink>IDE 환경 설정</SettingsLink>에서 이 설정에 대한 전역 바로 가기를 구성할 수 있습니다.",
 		"description": "Roo가 승인 없이 자동으로 작업을 수행할 수 있도록 허용합니다. AI를 완전히 신뢰하고 관련 보안 위험을 이해하는 경우에만 이러한 설정을 활성화하세요.",
 		"enabled": "자동 승인 활성화됨",
 		"toggleAriaLabel": "자동 승인 전환",
@@ -793,7 +798,7 @@
 		"feedback": "질문이나 피드백이 있으시면 <githubLink>github.com/RooCodeInc/Roo-Code</githubLink>에서 이슈를 열거나 <redditLink>reddit.com/r/RooCode</redditLink> 또는 <discordLink>discord.gg/roocode</discordLink>에 가입하세요",
 		"telemetry": {
 			"label": "익명 오류 및 사용 보고 허용",
-			"description": "익명 사용 데이터 및 오류 보고서를 보내 Roo Code 개선에 도움을 주세요. 코드, 프롬프트 또는 개인 정보는 절대 전송되지 않습니다. 자세한 내용은 개인정보 보호정책을 참조하세요."
+			"description": "익명 사용 데이터 및 오류 보고서를 전송하여 Roo Code 개선에 도움을 주세요. 이 텔레메트리는 코드, 프롬프트 또는 개인 정보를 수집하지 않습니다. 자세한 내용은 <privacyLink>개인정보 보호정책</privacyLink>을 참조하세요."
 		},
 		"settings": {
 			"import": "가져오기",

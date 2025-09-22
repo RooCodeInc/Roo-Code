@@ -24,7 +24,9 @@
 		"connectToCloudDescription": "Sign in to Roo Code Cloud to share tasks",
 		"sharingDisabledByOrganization": "Sharing disabled by organization",
 		"shareSuccessOrganization": "Organization link copied to clipboard",
-		"shareSuccessPublic": "Public link copied to clipboard"
+		"shareSuccessPublic": "Public link copied to clipboard",
+		"openInCloud": "Open task in Roo Code Cloud",
+		"openInCloudIntro": "Keep monitoring or interacting with Roo from anywhere. Scan, click or copy to open."
 	},
 	"unpin": "Unpin",
 	"pin": "Pin",
@@ -67,7 +69,7 @@
 		}
 	},
 	"runCommand": {
-		"title": "Run Command",
+		"title": "Run",
 		"tooltip": "Execute this command"
 	},
 	"proceedWhileRunning": {
@@ -134,7 +136,7 @@
 	"addContext": "@ to add context, / for commands",
 	"dragFiles": "hold shift to drag in files",
 	"dragFilesImages": "hold shift to drag in files/images",
-	"errorReadingFile": "Error reading file:",
+	"errorReadingFile": "Error reading file",
 	"noValidImages": "No valid images were processed",
 	"separator": "Separator",
 	"edit": "Edit...",
@@ -175,58 +177,58 @@
 		"wantsToFetch": "Roo wants to fetch detailed instructions to assist with the current task"
 	},
 	"fileOperations": {
-		"wantsToRead": "Roo wants to read this file:",
-		"wantsToReadMultiple": "Roo wants to read multiple files:",
-		"wantsToReadAndXMore": "Roo wants to read this file and {{count}} more:",
-		"wantsToReadOutsideWorkspace": "Roo wants to read this file outside of the workspace:",
-		"didRead": "Roo read this file:",
-		"wantsToEdit": "Roo wants to edit this file:",
-		"wantsToEditOutsideWorkspace": "Roo wants to edit this file outside of the workspace:",
-		"wantsToEditProtected": "Roo wants to edit a protected configuration file:",
-		"wantsToApplyBatchChanges": "Roo wants to apply changes to multiple files:",
-		"wantsToGenerateImage": "Roo wants to generate an image:",
-		"wantsToGenerateImageOutsideWorkspace": "Roo wants to generate an image outside of the workspace:",
-		"wantsToGenerateImageProtected": "Roo wants to generate an image in a protected location:",
-		"didGenerateImage": "Roo generated an image:",
-		"wantsToCreate": "Roo wants to create a new file:",
-		"wantsToSearchReplace": "Roo wants to search and replace in this file:",
-		"didSearchReplace": "Roo performed search and replace on this file:",
-		"wantsToInsert": "Roo wants to insert content into this file:",
-		"wantsToInsertWithLineNumber": "Roo wants to insert content into this file at line {{lineNumber}}:",
-		"wantsToInsertAtEnd": "Roo wants to append content to the end of this file:"
+		"wantsToRead": "Roo wants to read this file",
+		"wantsToReadMultiple": "Roo wants to read multiple files",
+		"wantsToReadAndXMore": "Roo wants to read this file and {{count}} more",
+		"wantsToReadOutsideWorkspace": "Roo wants to read this file outside of the workspace",
+		"didRead": "Roo read this file",
+		"wantsToEdit": "Roo wants to edit this file",
+		"wantsToEditOutsideWorkspace": "Roo wants to edit this file outside of the workspace",
+		"wantsToEditProtected": "Roo wants to edit a protected configuration file",
+		"wantsToApplyBatchChanges": "Roo wants to apply changes to multiple files",
+		"wantsToGenerateImage": "Roo wants to generate an image",
+		"wantsToGenerateImageOutsideWorkspace": "Roo wants to generate an image outside of the workspace",
+		"wantsToGenerateImageProtected": "Roo wants to generate an image in a protected location",
+		"didGenerateImage": "Roo generated an image",
+		"wantsToCreate": "Roo wants to create a new file",
+		"wantsToSearchReplace": "Roo wants to search and replace in this file",
+		"didSearchReplace": "Roo performed search and replace on this file",
+		"wantsToInsert": "Roo wants to insert content into this file",
+		"wantsToInsertWithLineNumber": "Roo wants to insert content into this file at line {{lineNumber}}",
+		"wantsToInsertAtEnd": "Roo wants to append content to the end of this file"
 	},
 	"directoryOperations": {
-		"wantsToViewTopLevel": "Roo wants to view the top level files in this directory:",
-		"didViewTopLevel": "Roo viewed the top level files in this directory:",
-		"wantsToViewTopLevelOutsideWorkspace": "Roo wants to view the top level files in this directory (outside workspace):",
-		"didViewTopLevelOutsideWorkspace": "Roo viewed the top level files in this directory (outside workspace):",
-		"wantsToViewRecursive": "Roo wants to recursively view all files in this directory:",
-		"didViewRecursive": "Roo recursively viewed all files in this directory:",
-		"wantsToViewRecursiveOutsideWorkspace": "Roo wants to recursively view all files in this directory (outside workspace):",
-		"didViewRecursiveOutsideWorkspace": "Roo recursively viewed all files in this directory (outside workspace):",
-		"wantsToViewDefinitions": "Roo wants to view source code definition names used in this directory:",
-		"didViewDefinitions": "Roo viewed source code definition names used in this directory:",
-		"wantsToViewDefinitionsOutsideWorkspace": "Roo wants to view source code definition names used in this directory (outside workspace):",
-		"didViewDefinitionsOutsideWorkspace": "Roo viewed source code definition names used in this directory (outside workspace):",
-		"wantsToSearch": "Roo wants to search this directory for <code>{{regex}}</code>:",
-		"didSearch": "Roo searched this directory for <code>{{regex}}</code>:",
-		"wantsToSearchOutsideWorkspace": "Roo wants to search this directory (outside workspace) for <code>{{regex}}</code>:",
-		"didSearchOutsideWorkspace": "Roo searched this directory (outside workspace) for <code>{{regex}}</code>:"
+		"wantsToViewTopLevel": "Roo wants to view the top level files in this directory",
+		"didViewTopLevel": "Roo viewed the top level files in this directory",
+		"wantsToViewTopLevelOutsideWorkspace": "Roo wants to view the top level files in this directory (outside workspace)",
+		"didViewTopLevelOutsideWorkspace": "Roo viewed the top level files in this directory (outside workspace)",
+		"wantsToViewRecursive": "Roo wants to recursively view all files in this directory",
+		"didViewRecursive": "Roo recursively viewed all files in this directory",
+		"wantsToViewRecursiveOutsideWorkspace": "Roo wants to recursively view all files in this directory (outside workspace)",
+		"didViewRecursiveOutsideWorkspace": "Roo recursively viewed all files in this directory (outside workspace)",
+		"wantsToViewDefinitions": "Roo wants to view source code definition names used in this directory",
+		"didViewDefinitions": "Roo viewed source code definition names used in this directory",
+		"wantsToViewDefinitionsOutsideWorkspace": "Roo wants to view source code definition names used in this directory (outside workspace)",
+		"didViewDefinitionsOutsideWorkspace": "Roo viewed source code definition names used in this directory (outside workspace)",
+		"wantsToSearch": "Roo wants to search this directory for <code>{{regex}}</code>",
+		"didSearch": "Roo searched this directory for <code>{{regex}}</code>",
+		"wantsToSearchOutsideWorkspace": "Roo wants to search this directory (outside workspace) for <code>{{regex}}</code>",
+		"didSearchOutsideWorkspace": "Roo searched this directory (outside workspace) for <code>{{regex}}</code>"
 	},
 	"codebaseSearch": {
-		"wantsToSearch": "Roo wants to search the codebase for <code>{{query}}</code>:",
-		"wantsToSearchWithPath": "Roo wants to search the codebase for <code>{{query}}</code> in <code>{{path}}</code>:",
+		"wantsToSearch": "Roo wants to search the codebase for <code>{{query}}</code>",
+		"wantsToSearchWithPath": "Roo wants to search the codebase for <code>{{query}}</code> in <code>{{path}}</code>",
 		"didSearch_one": "Found 1 result",
 		"didSearch_other": "Found {{count}} results",
 		"resultTooltip": "Similarity score: {{score}} (click to open file)"
 	},
 	"commandOutput": "Command Output",
 	"commandExecution": {
+		"abort": "Abort",
 		"running": "Running",
 		"pid": "PID: {{pid}}",
-		"exited": "Exited ({{exitCode}})",
-		"manageCommands": "Manage Command Permissions",
-		"commandManagementDescription": "Manage command permissions: Click ✓ to allow auto-execution, ✗ to deny execution. Patterns can be toggled on/off or removed from lists. <settingsLink>View all settings</settingsLink>",
+		"exitStatus": "Exited with status {{exitCode}}",
+		"manageCommands": "Auto-approved commands",
 		"addToAllowed": "Add to allowed list",
 		"removeFromAllowed": "Remove from allowed list",
 		"addToDenied": "Add to denied list",
@@ -239,9 +241,12 @@
 	},
 	"response": "Response",
 	"arguments": "Arguments",
+	"feedback": {
+		"youSaid": "You said"
+	},
 	"mcp": {
-		"wantsToUseTool": "Roo wants to use a tool on the {{serverName}} MCP server:",
-		"wantsToAccessResource": "Roo wants to access a resource on the {{serverName}} MCP server:"
+		"wantsToUseTool": "Roo wants to use a tool on the {{serverName}} MCP server",
+		"wantsToAccessResource": "Roo wants to access a resource on the {{serverName}} MCP server"
 	},
 	"modes": {
 		"wantsToSwitch": "Roo wants to switch to {{mode}} mode",
@@ -250,7 +255,7 @@
 		"didSwitchWithReason": "Roo switched to {{mode}} mode because: {{reason}}"
 	},
 	"subtasks": {
-		"wantsToCreate": "Roo wants to create a new subtask in {{mode}} mode:",
+		"wantsToCreate": "Roo wants to create a new subtask in {{mode}} mode",
 		"wantsToFinish": "Roo wants to finish this subtask",
 		"newTaskContent": "Subtask Instructions",
 		"completionContent": "Subtask Completed",
@@ -259,7 +264,7 @@
 		"completionInstructions": "Subtask completed! You can review the results and suggest any corrections or next steps. If everything looks good, confirm to return the result to the parent task."
 	},
 	"questions": {
-		"hasQuestion": "Roo has a question:"
+		"hasQuestion": "Roo has a question"
 	},
 	"taskCompleted": "Task Completed",
 	"error": "Error",
@@ -271,21 +276,31 @@
 		"issues": "It seems like you're having Windows PowerShell issues, please see this"
 	},
 	"autoApprove": {
-		"title": "Auto-approve:",
+		"tooltipManage": "Manage auto-approval settings",
+		"tooltipStatus": "Auto-approval enabled for: {{toggles}}",
+		"title": "Auto-approve",
+		"all": "All",
 		"none": "None",
-		"description": "Auto-approve allows Roo Code to perform actions without asking for permission. Only enable for actions you fully trust. More detailed configuration available in <settingsLink>Settings</settingsLink>.",
+		"description": "Run these actions without asking for permission. Only enable for actions you fully trust.",
 		"selectOptionsFirst": "Select at least one option below to enable auto-approval",
 		"toggleAriaLabel": "Toggle auto-approval",
-		"disabledAriaLabel": "Auto-approval disabled - select options first"
+		"disabledAriaLabel": "Auto-approval disabled - select options first",
+		"triggerLabelOff": "Auto-approve off",
+		"triggerLabel_zero": "0 auto-approve",
+		"triggerLabel_one": "1 auto-approved",
+		"triggerLabel_other": "{{count}} auto-approved",
+		"triggerLabelAll": "YOLO"
 	},
 	"announcement": {
 		"title": "🎉 Roo Code {{version}} Released",
 		"stealthModel": {
-			"feature": "The Sonic stealth model is now <bold>Grok Code Fast</bold>! This high-performance reasoning model is available as <code>grok-code-fast-1</code> under the <bold>xAI (Grok)</bold> provider.",
-			"note": "As a thank you for all the helpful feedback on Sonic, xAI is extending free access to <code>grok-code-fast-1</code> for another week through the <bold>Roo Code Cloud</bold> provider.",
+			"feature": "<bold>Limited-time FREE stealth model</bold> - Code Supernova: A versatile agentic coding model that supports image inputs, accessible through Roo Code Cloud.",
+			"note": "(Note: prompts and completions are logged by the model creator and used to improve the model)",
 			"connectButton": "Connect to Roo Code Cloud",
-			"selectModel": "Visit <settingsLink>Settings</settingsLink> to update your provider configuration."
-		}
+			"selectModel": "Select <code>roo/code-supernova</code> from the Roo Code Cloud provider in Settings to get started.",
+			"goToSettingsButton": "Go to Settings"
+		},
+		"socialLinks": "Join us on <xLink>X</xLink>, <discordLink>Discord</discordLink>, or <redditLink>r/RooCode</redditLink> 🚀"
 	},
 	"reasoning": {
 		"thinking": "Thinking",
@@ -297,7 +312,7 @@
 		"countdownDisplay": "{{count}}s"
 	},
 	"browser": {
-		"rooWantsToUse": "Roo wants to use the browser:",
+		"rooWantsToUse": "Roo wants to use the browser",
 		"consoleLogs": "Console Logs",
 		"noNewLogs": "(No new logs)",
 		"screenshot": "Browser screenshot",
@@ -322,8 +337,6 @@
 		"tooltips": {
 			"expand": "Expand code block",
 			"collapse": "Collapse code block",
-			"enable_wrap": "Enable word wrap",
-			"disable_wrap": "Disable word wrap",
 			"copy_code": "Copy code"
 		}
 	},
@@ -356,11 +369,6 @@
 	"versionIndicator": {
 		"ariaLabel": "Version {{version}} - Click to view release notes"
 	},
-	"rooCloudCTA": {
-		"title": "Roo Code Cloud is evolving!",
-		"description": "Run Roomote agents in the cloud, access your tasks from anywhere, collaborate with others, and more.",
-		"joinWaitlist": "Sign up to get the latest updates."
-	},
 	"command": {
 		"triggerDescription": "Trigger the {{name}} command"
 	},
@@ -368,6 +376,7 @@
 		"tooltip": "Manage slash commands",
 		"title": "Slash Commands",
 		"description": "Use built-in slash commands or create custom ones for quick access to frequently used prompts and workflows. <DocsLink>Docs</DocsLink>",
+		"manageCommands": "Manage slash commands in settings",
 		"builtInCommands": "Built-in Commands",
 		"globalCommands": "Global Commands",
 		"workspaceCommands": "Workspace Commands",
@@ -384,11 +393,17 @@
 		}
 	},
 	"slashCommand": {
-		"wantsToRun": "Roo wants to run a slash command:",
-		"didRun": "Roo ran a slash command:"
+		"wantsToRun": "Roo wants to run a slash command",
+		"didRun": "Roo ran a slash command"
 	},
 	"queuedMessages": {
-		"title": "Queued Messages:",
+		"title": "Queued Messages",
 		"clickToEdit": "Click to edit message"
+	},
+	"contextMenu": {
+		"noResults": "No results",
+		"problems": "Problems",
+		"terminal": "Terminal",
+		"url": "Paste URL to fetch contents"
 	}
 }
