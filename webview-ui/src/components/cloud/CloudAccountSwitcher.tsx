@@ -64,7 +64,7 @@ export const CloudAccountSwitcher = () => {
 			)
 		} else if (selectedOrgId) {
 			// Organization without logo
-			return <Building2 className="w-4 h-4" />
+			return <Building2 className="w-4.5 h-4.5" />
 		} else if (cloudUserInfo.picture) {
 			// Personal account with avatar
 			return (
@@ -87,14 +87,15 @@ export const CloudAccountSwitcher = () => {
 
 	return (
 		<StandardTooltip content={t("cloud:switchAccount")}>
-			<div className="inline-block">
+			<div className="inline-block ml-1">
 				<Select value={currentValue} onValueChange={handleOrganizationChange} disabled={isLoading}>
 					<SelectTrigger
 						className={cn(
-							"h-7 w-7 p-0 border-0 gap-0",
-							"bg-transparent hover:bg-vscode-list-hoverBackground",
+							"h-4.5 w-4.5 p-0 gap-0",
+							"bg-transparent opacity-90 hover:opacity-50",
 							"flex items-center justify-center",
-							"rounded",
+							"rounded-lg overflow-clip",
+							"border border-vscode-dropdown-border",
 							"[&>svg]:hidden", // Hide the default chevron/caret
 							isLoading && "opacity-50",
 						)}
@@ -110,10 +111,10 @@ export const CloudAccountSwitcher = () => {
 									<img
 										src={cloudUserInfo.picture}
 										alt={cloudUserInfo.name || cloudUserInfo.email}
-										className="w-4 h-4 rounded-full object-cover"
+										className="w-4.5 h-4.5 rounded-full object-cover overflow-clip"
 									/>
 								) : (
-									<div className="w-4 h-4 rounded-full flex items-center justify-center bg-vscode-button-background text-vscode-button-foreground text-xs">
+									<div className="w-4.5 h-4.5 rounded-full flex items-center justify-center bg-vscode-button-background text-vscode-button-foreground text-xs">
 										{cloudUserInfo.name?.charAt(0) || cloudUserInfo.email?.charAt(0) || "?"}
 									</div>
 								)}
@@ -131,10 +132,10 @@ export const CloudAccountSwitcher = () => {
 										<img
 											src={org.organization.image_url}
 											alt=""
-											className="w-4 h-4 rounded object-cover"
+											className="w-4.5 h-4.5 rounded-full object-cover overflow-clip"
 										/>
 									) : (
-										<Building2 className="w-4 h-4" />
+										<Building2 className="w-4.5 h-4.5" />
 									)}
 									<span className="truncate">{org.organization.name}</span>
 								</div>
