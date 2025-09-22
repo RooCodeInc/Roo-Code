@@ -297,14 +297,16 @@ export const AutoApproveDropdown = ({ disabled = false, triggerClassName = "" }:
 								}
 								handleAutoApprovalToggle()
 							}}>
-							<StandardTooltip content={`Toggle auto-approve ${getAutoApproveShortcut()}`}>
-								<ToggleSwitch
-									checked={effectiveAutoApprovalEnabled}
-									aria-label="Toggle auto-approval"
-									onChange={handleAutoApprovalToggle}
-								/>
+							<StandardTooltip content={`${t("chat:autoApprove.toggle")} (${getAutoApproveShortcut()})`}>
+								<span>
+									<ToggleSwitch
+										checked={effectiveAutoApprovalEnabled}
+										aria-label="Toggle auto-approval"
+										onChange={handleAutoApprovalToggle}
+									/>
+									<span className={cn("text-sm font-bold select-none")}>Enabled</span>
+								</span>
 							</StandardTooltip>
-							<span className={cn("text-sm font-bold select-none")}>Enabled</span>
 						</label>
 					</div>
 				</div>

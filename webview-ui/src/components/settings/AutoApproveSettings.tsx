@@ -133,10 +133,12 @@ export const AutoApproveSettings = ({
 								setAutoApprovalEnabled(newValue)
 								vscode.postMessage({ type: "autoApprovalEnabled", bool: newValue })
 							}}>
-							<span className="font-medium">{t("settings:autoApprove.enabled")}</span>
+							<span className="font-medium">
+								{t("settings:autoApprove.enabled")} ({getAutoApproveShortcut()})
+							</span>
 						</VSCodeCheckbox>
 						<div className="text-vscode-descriptionForeground text-sm mt-1">
-							{t("settings:autoApprove.description")} {getAutoApproveShortcut()}
+							{t("settings:autoApprove.description")}
 						</div>
 					</div>
 
