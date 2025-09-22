@@ -82,6 +82,8 @@ vitest.mock("@roo-code/cloud", () => ({
 				authService: {
 					getSessionToken: () => mockGetSessionTokenFn(),
 				},
+				on: vitest.fn(),
+				off: vitest.fn(),
 			}
 		},
 	},
@@ -413,7 +415,11 @@ describe("RooHandler", () => {
 
 			try {
 				Object.defineProperty(CloudService, "instance", {
-					get: () => ({ authService: undefined }),
+					get: () => ({
+						authService: undefined,
+						on: vitest.fn(),
+						off: vitest.fn(),
+					}),
 					configurable: true,
 				})
 

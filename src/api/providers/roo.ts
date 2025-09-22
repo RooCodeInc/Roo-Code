@@ -12,6 +12,8 @@ import { DEFAULT_HEADERS } from "./constants"
 import { BaseOpenAiCompatibleProvider } from "./base-openai-compatible-provider"
 
 export class RooHandler extends BaseOpenAiCompatibleProvider<RooModelId> {
+	private authStateListener?: (state: { state: AuthState }) => void
+
 	constructor(options: ApiHandlerOptions) {
 		let sessionToken: string | undefined = undefined
 
@@ -34,11 +36,11 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<RooModelId> {
 		if (CloudService.hasInstance()) {
 			const cloudService = CloudService.instance
 
-			cloudService.on("auth-state-changed", (state: { state: AuthState }) => {
+			this.authStateListener = (state: { state: AuthState }) => {
 				if (state.state === "active-session") {
 					this.client = new OpenAI({
 						baseURL: this.baseURL,
-						apiKey: CloudService.instance.authService?.getSessionToken() ?? "unauthenticated",
+						apiKey: cloudService.authService?.getSessionToken() ?? "unauthenticated",
 						defaultHeaders: DEFAULT_HEADERS,
 					})
 				} else if (state.state === "logged-out") {
@@ -48,7 +50,15 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<RooModelId> {
 						defaultHeaders: DEFAULT_HEADERS,
 					})
 				}
-			})
+			}
+
+			cloudService.on("auth-state-changed", this.authStateListener)
+		}
+	}
+
+	dispose() {
+		if (this.authStateListener && CloudService.hasInstance()) {
+			CloudService.instance.off("auth-state-changed", this.authStateListener)
 		}
 	}
 
