@@ -105,11 +105,11 @@ export class CodeIndexConfigManager {
 
 		if (codebaseIndexEmbedderProvider === "ollama") {
 			this.embedderProvider = "ollama"
-		} else if (provider === "openai-compatible") {
+		} else if (codebaseIndexEmbedderProvider === "openai-compatible") {
 			this.embedderProvider = "openai-compatible"
-		} else if (provider === "gemini") {
+		} else if (codebaseIndexEmbedderProvider === "gemini") {
 			this.embedderProvider = "gemini"
-		} else if (provider === "mistral") {
+		} else if (codebaseIndexEmbedderProvider === "mistral") {
 			this.embedderProvider = "mistral"
 		} else if (codebaseIndexEmbedderProvider === "vercel-ai-gateway") {
 			this.embedderProvider = "vercel-ai-gateway"
