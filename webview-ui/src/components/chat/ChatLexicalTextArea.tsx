@@ -20,16 +20,14 @@ import { AutoApproveDropdown } from "./AutoApproveDropdown"
 import { StandardTooltip } from "../ui"
 import { IndexingStatusBadge } from "./IndexingStatusBadge"
 import { VolumeX } from "lucide-react"
-import { getIconForFilePath, getIconUrlByName } from "vscode-material-icons"
 
 import { MentionNode } from "./lexical/MentionNode"
-import { LexicalMentionPlugin } from "./lexical/LexicalMentionPlugin"
+import { LexicalMentionPlugin, type MentionInfo, type LexicalMentionPluginRef } from "./lexical/LexicalMentionPlugin"
 import { LexicalSelectAllPlugin } from "./lexical/LexicalSelectAllPlugin"
 import ContextMenu from "./ContextMenu"
 import { ContextMenuOptionType, getContextMenuOptions, SearchResult } from "@/utils/context-mentions"
 import Thumbnails from "../common/Thumbnails"
 import { MAX_IMAGES_PER_MESSAGE } from "./ChatView"
-import { removeLeadingNonAlphanumeric } from "@/utils/removeLeadingNonAlphanumeric"
 
 type ChatTextAreaProps = {
 	inputValue: string
@@ -128,72 +126,22 @@ export const ChatLexicalTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaP
 		const [isTtsPlaying, setIsTtsPlaying] = useState(false)
 		const [isDraggingOver, setIsDraggingOver] = useState(false)
 		const [materialIconsBaseUri, setMaterialIconsBaseUri] = useState("")
+		const mentionPluginRef = useRef<LexicalMentionPluginRef>(null)
 
-		// Get the icons base uri on mount
 		useEffect(() => {
 			const w = window as any
 			setMaterialIconsBaseUri(w.MATERIAL_ICONS_BASE_URI)
 		}, [])
 
-		// Extract mentions from input value for context display - only after finishing mention
-		const [validMentions, setValidMentions] = useState<string[]>([])
+		const [validMentions, setValidMentions] = useState<MentionInfo[]>([])
 
-		// Update mentions only when they are complete (not live)
-		useEffect(() => {
-			const mentionRegex = /@([^@\s]+)(?=\s|$)/g // Only match completed mentions (followed by space or end)
-			const mentions = []
-			let match
-			while ((match = mentionRegex.exec(inputValue)) !== null) {
-				mentions.push(match[1])
-			}
-
-			// Only update if mentions actually changed
-			if (JSON.stringify(mentions) !== JSON.stringify(validMentions)) {
-				setValidMentions(mentions)
-			}
-		}, [inputValue, validMentions])
-
-		// Smart filename disambiguation - like VSCode tabs
-		const getDisplayName = useCallback((mention: string, allMentions: string[]) => {
-			// Remove leading non-alphanumeric and trailing slash
-			const path = removeLeadingNonAlphanumeric(mention).replace(/\/$/, "")
-			const pathList = path.split("/")
-			const filename = pathList.at(-1) || mention
-
-			// Check if there are other mentions with the same filename
-			const sameFilenames = allMentions.filter((m) => {
-				const otherPath = removeLeadingNonAlphanumeric(m).replace(/\/$/, "")
-				const otherFilename = otherPath.split("/").at(-1) || m
-				return otherFilename === filename && m !== mention
-			})
-
-			if (sameFilenames.length === 0) {
-				return filename // No conflicts, just show filename
-			}
-
-			// There are conflicts, need to show directory to disambiguate
-			if (pathList.length > 1) {
-				// Show filename with first directory
-				return `${pathList[pathList.length - 2]}/${filename}`
-			}
-
-			return filename
+		const handleMentionUpdate = useCallback((mentions: MentionInfo[]) => {
+			console.log({ mentions })
+			setValidMentions(mentions)
 		}, [])
 
-		// Get material icon for mention
-		const getMaterialIconForMention = useCallback(
-			(mention: string) => {
-				const name = mention.split("/").filter(Boolean).at(-1) ?? ""
-				const iconName = getIconForFilePath(name)
-				return getIconUrlByName(iconName, materialIconsBaseUri)
-			},
-			[materialIconsBaseUri],
-		)
-
-		// Check if we should show the context bar
 		const shouldShowContextBar = validMentions.length > 0 || selectedImages.length > 0
 
-		// Handle image pasting
 		const handlePaste = useCallback(
 			async (e: React.ClipboardEvent) => {
 				const items = e.clipboardData.items
@@ -245,7 +193,6 @@ export const ChatLexicalTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaP
 			[shouldDisableImages, setSelectedImages, t],
 		)
 
-		// Handle drag and drop
 		const handleDrop = useCallback(
 			async (e: React.DragEvent<HTMLDivElement>) => {
 				e.preventDefault()
@@ -438,8 +385,7 @@ export const ChatLexicalTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaP
 				setShowContextMenu(false)
 				setSelectedType(null)
 
-				// Use the global function to insert mention
-				const insertMention = (window as any).__lexicalInsertMention
+				const insertMention = mentionPluginRef.current?.insertMention
 				if (insertMention && value) {
 					let insertValue = value || ""
 
@@ -458,10 +404,10 @@ export const ChatLexicalTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaP
 					}
 
 					const trigger = searchQuery.startsWith("/") ? "/" : "@"
-					insertMention(insertValue, trigger)
+					insertMention(insertValue, trigger, type)
 				}
 			},
-			[searchQuery, setMode, setInputValue],
+			[searchQuery, setMode, setInputValue, mentionPluginRef],
 		)
 
 		// Handle keyboard navigation for context menu
@@ -563,6 +509,8 @@ export const ChatLexicalTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaP
 			[setInputValue],
 		)
 
+		const placeholderBottomText = `\n(${t("chat:addContext")}${shouldDisableImages ? `, ${t("chat:dragFiles")}` : `, ${t("chat:dragFilesImages")}`})`
+
 		const initialConfig = {
 			namespace: "roo-editor",
 			nodes: [MentionNode],
@@ -573,36 +521,41 @@ export const ChatLexicalTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaP
 		}
 
 		return (
-			<div
-				className={cn(
-					"space-y-1 bg-editor-background outline-none border border-none box-border",
-					isEditMode ? "p-2 w-full" : "relative px-1.5 pb-1 w-[calc(100%-16px)] ml-auto mr-auto",
-				)}>
-				{/* Context Bar */}
-				{shouldShowContextBar && (
-					<div className="mb-2">
-						<div className="flex items-center gap-1 p-2 bg-vscode-input-background border border-vscode-focusBorder rounded overflow-x-auto">
+			<div className="px-4 pb-2">
+				<div
+					className={cn(
+						"space-y-1 bg-editor-background border border-none box-border rounded",
+						isEditMode ? "p-2 w-full" : "relative p-2 ml-auto mr-auto",
+						isFocused
+							? "border border-vscode-focusBorder outline outline-vscode-focusBorder"
+							: isDraggingOver
+								? "border-2 border-dashed border-vscode-focusBorder"
+								: "border border-transparent",
+						isEditMode ? "pr-20" : "pr-9",
+						isDraggingOver
+							? "bg-[color-mix(in_srgb,var(--vscode-input-background)_95%,var(--vscode-focusBorder))]"
+							: "bg-vscode-input-background",
+					)}>
+					{/* Context Bar */}
+					{shouldShowContextBar && (
+						<div className="flex items-center gap-1 mb-2">
 							{/* Context mentions */}
-							{validMentions.map((mention, index) => {
-								const displayName = getDisplayName(mention, validMentions)
-								const iconUrl = getMaterialIconForMention(mention)
-								return (
-									<div
-										key={index}
-										className="flex items-center gap-1 px-2 py-1 bg-vscode-editor-background text-vscode-editor-foreground rounded text-xs whitespace-nowrap flex-shrink-0">
-										<img
-											src={iconUrl}
-											alt="File"
-											style={{
-												width: "12px",
-												height: "12px",
-												flexShrink: 0,
-											}}
-										/>
-										<span>{displayName}</span>
-									</div>
-								)
-							})}
+							{validMentions.map((mention, index) => (
+								<div
+									key={index}
+									className="flex items-center gap-1 px-2 py-1 bg-vscode-editor-background text-vscode-editor-foreground rounded text-xs whitespace-nowrap flex-shrink-0">
+									<img
+										src={mention.icon}
+										alt={mention.type === "folder" ? "Folder" : "File"}
+										style={{
+											width: "12px",
+											height: "12px",
+											flexShrink: 0,
+										}}
+									/>
+									<span>{mention.displayName}</span>
+								</div>
+							))}
 
 							{/* Images */}
 							{selectedImages.length > 0 && (
@@ -617,167 +570,164 @@ export const ChatLexicalTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaP
 								/>
 							)}
 						</div>
-					</div>
-				)}
-
-				<div
-					className="relative"
-					onDrop={handleDrop}
-					onDragOver={(e) => {
-						// Only allowed to drop images/files on shift key pressed.
-						if (!e.shiftKey) {
-							setIsDraggingOver(false)
-							return
-						}
-
-						e.preventDefault()
-						setIsDraggingOver(true)
-						e.dataTransfer.dropEffect = "copy"
-					}}
-					onDragLeave={(e) => {
-						e.preventDefault()
-						const rect = e.currentTarget.getBoundingClientRect()
-
-						if (
-							e.clientX <= rect.left ||
-							e.clientX >= rect.right ||
-							e.clientY <= rect.top ||
-							e.clientY >= rect.bottom
-						) {
-							setIsDraggingOver(false)
-						}
-					}}>
-					<LexicalComposer initialConfig={initialConfig}>
-						<PlainTextPlugin
-							contentEditable={
-								<ContentEditable
-									aria-placeholder={placeholderText}
-									placeholder={
-										<p className="absolute left-3 top-3 leading-none m-0">{placeholderText}</p>
-									}
-									className={cn(
-										"relative w-full",
-										"text-vscode-input-foreground",
-										"font-vscode-font-family",
-										"text-vscode-editor-font-size",
-										"leading-vscode-editor-line-height",
-										"cursor-text",
-										"py-2 pl-2",
-										isEditMode ? "pr-20" : "pr-9",
-										isFocused
-											? "border border-vscode-focusBorder outline outline-vscode-focusBorder"
-											: isDraggingOver
-												? "border-2 border-dashed border-vscode-focusBorder"
-												: "border border-transparent",
-										isDraggingOver
-											? "bg-[color-mix(in_srgb,var(--vscode-input-background)_95%,var(--vscode-focusBorder))]"
-											: "bg-vscode-input-background",
-										"transition-background-color duration-150 ease-in-out",
-										"will-change-background-color",
-										"min-h-[94px]",
-										"box-border",
-										"rounded",
-										"resize-none",
-										"overflow-x-hidden",
-										"overflow-y-auto",
-										"flex-none flex-grow",
-										"z-[2]",
-										"scrollbar-none",
-										"scrollbar-hide",
-									)}
-									onFocus={() => setIsFocused(true)}
-									onBlur={() => setIsFocused(false)}
-									onPaste={handlePaste}
-								/>
-							}
-							ErrorBoundary={LexicalErrorBoundary}
-						/>
-						<OnChangePlugin onChange={handleEditorChange} />
-						<HistoryPlugin />
-						<AutoFocusPlugin />
-						<LexicalMentionPlugin
-							onMentionTrigger={handleMentionTrigger}
-							onMentionHide={handleMentionHide}
-						/>
-						<LexicalSelectAllPlugin />
-					</LexicalComposer>
-
-					{showContextMenu && (
-						<div
-							ref={contextMenuContainerRef}
-							className={cn(
-								"absolute",
-								"bottom-full",
-								isEditMode ? "left-6" : "left-0",
-								"right-0",
-								"z-[1000]",
-								isEditMode ? "-mb-3" : "mb-2",
-								"filter",
-								"drop-shadow-md",
-							)}>
-							<ContextMenu
-								onSelect={handleMentionSelect}
-								searchQuery={searchQuery}
-								inputValue={inputValue}
-								onMouseDown={() => {}}
-								selectedIndex={selectedMenuIndex}
-								setSelectedIndex={setSelectedMenuIndex}
-								selectedType={selectedType}
-								queryItems={queryItems}
-								modes={customModes}
-								loading={searchLoading}
-								dynamicSearchResults={fileSearchResults}
-								commands={commands}
-							/>
-						</div>
 					)}
-				</div>
-				<div className="flex items-center gap-2">
-					<div className="flex items-center gap-2 min-w-0 overflow-clip flex-1">
-						<ModeSelector
-							value={mode}
-							title={t("chat:selectMode")}
-							onChange={handleModeChange}
-							triggerClassName="text-ellipsis overflow-hidden flex-shrink-0"
-							modeShortcutText={modeShortcutText}
-							customModes={customModes}
-							customModePrompts={customModePrompts}
-						/>
-						<ApiConfigSelector
-							value={currentConfigId}
-							displayName={displayName}
-							disabled={selectApiConfigDisabled}
-							title={t("chat:selectApiConfig")}
-							onChange={handleApiConfigChange}
-							triggerClassName="min-w-[28px] text-ellipsis overflow-hidden flex-shrink"
-							listApiConfigMeta={listApiConfigMeta || []}
-							pinnedApiConfigs={pinnedApiConfigs}
-							togglePinnedApiConfig={togglePinnedApiConfig}
-						/>
-						<AutoApproveDropdown triggerClassName="min-w-[28px] text-ellipsis overflow-hidden flex-shrink" />
-					</div>
-					<div className="flex flex-shrink-0 items-center gap-0.5 pr-2">
-						{isTtsPlaying && (
-							<StandardTooltip content={t("chat:stopTts")}>
-								<button
-									aria-label={t("chat:stopTts")}
-									onClick={() => vscode.postMessage({ type: "stopTts" })}
-									className={cn(
-										"relative inline-flex items-center justify-center",
-										"bg-transparent border-none p-1.5",
-										"rounded-md min-w-[28px] min-h-[28px]",
-										"text-vscode-foreground opacity-85",
-										"transition-all duration-150",
-										"hover:opacity-100 hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.15)]",
-										"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
-										"active:bg-[rgba(255,255,255,0.1)]",
-										"cursor-pointer",
-									)}>
-									<VolumeX className="w-4 h-4" />
-								</button>
-							</StandardTooltip>
+					<div
+						className="relative"
+						onDrop={handleDrop}
+						onDragOver={(e) => {
+							// Only allowed to drop images/files on shift key pressed.
+							if (!e.shiftKey) {
+								setIsDraggingOver(false)
+								return
+							}
+
+							e.preventDefault()
+							setIsDraggingOver(true)
+							e.dataTransfer.dropEffect = "copy"
+						}}
+						onDragLeave={(e) => {
+							e.preventDefault()
+							const rect = e.currentTarget.getBoundingClientRect()
+
+							if (
+								e.clientX <= rect.left ||
+								e.clientX >= rect.right ||
+								e.clientY <= rect.top ||
+								e.clientY >= rect.bottom
+							) {
+								setIsDraggingOver(false)
+							}
+						}}>
+						<LexicalComposer initialConfig={initialConfig}>
+							<PlainTextPlugin
+								contentEditable={
+									<ContentEditable
+										aria-placeholder={placeholderText}
+										placeholder={
+											<div className="absolute inset-0">
+												<p className="absolute left-0 top-0.5 leading-none m-0 opacity-70">
+													{placeholderText}
+												</p>
+												<p className="absolute left-0 bottom-8.5 leading-none m-0 opacity-50">
+													{placeholderBottomText}
+												</p>
+											</div>
+										}
+										className={cn(
+											"relative w-full outline-none",
+											"text-vscode-input-foreground",
+											"font-vscode-font-family",
+											"text-vscode-editor-font-size",
+											"leading-vscode-editor-line-height",
+											"cursor-text",
+											"transition-background-color duration-150 ease-in-out",
+											"will-change-background-color",
+											"min-h-[94px]",
+											"box-border",
+											"resize-none",
+											"overflow-x-hidden",
+											"overflow-y-auto",
+											"flex-none flex-grow",
+											"z-[2]",
+											"scrollbar-none",
+											"scrollbar-hide",
+										)}
+										onFocus={() => setIsFocused(true)}
+										onBlur={() => setIsFocused(false)}
+										onPaste={handlePaste}
+									/>
+								}
+								ErrorBoundary={LexicalErrorBoundary}
+							/>
+							<OnChangePlugin onChange={handleEditorChange} />
+							<HistoryPlugin />
+							<AutoFocusPlugin />
+							<LexicalMentionPlugin
+								ref={mentionPluginRef}
+								onMentionTrigger={handleMentionTrigger}
+								onMentionHide={handleMentionHide}
+								onMentionUpdate={handleMentionUpdate}
+								materialIconsBaseUri={materialIconsBaseUri}
+							/>
+							<LexicalSelectAllPlugin />
+						</LexicalComposer>
+						{showContextMenu && (
+							<div
+								ref={contextMenuContainerRef}
+								className={cn(
+									"absolute",
+									"bottom-full",
+									isEditMode ? "left-6" : "left-0",
+									"right-0",
+									"z-[1000]",
+									isEditMode ? "-mb-3" : "mb-2",
+									"filter",
+									"drop-shadow-md",
+								)}>
+								<ContextMenu
+									onSelect={handleMentionSelect}
+									searchQuery={searchQuery}
+									inputValue={inputValue}
+									onMouseDown={() => {}}
+									selectedIndex={selectedMenuIndex}
+									setSelectedIndex={setSelectedMenuIndex}
+									selectedType={selectedType}
+									queryItems={queryItems}
+									modes={customModes}
+									loading={searchLoading}
+									dynamicSearchResults={fileSearchResults}
+									commands={commands}
+								/>
+							</div>
 						)}
-						{!isEditMode ? <IndexingStatusBadge /> : null}
+						<div className="flex items-center gap-2">
+							<div className="flex items-center gap-1 min-w-0 overflow-clip flex-1">
+								<ModeSelector
+									value={mode}
+									title={t("chat:selectMode")}
+									onChange={handleModeChange}
+									triggerClassName="text-ellipsis overflow-hidden flex-shrink-0 bg-vscode-editor-background"
+									modeShortcutText={modeShortcutText}
+									customModes={customModes}
+									customModePrompts={customModePrompts}
+								/>
+								<ApiConfigSelector
+									value={currentConfigId}
+									displayName={displayName}
+									disabled={selectApiConfigDisabled}
+									title={t("chat:selectApiConfig")}
+									onChange={handleApiConfigChange}
+									triggerClassName="min-w-[28px] text-ellipsis overflow-hidden flex-shrink bg-vscode-editor-background"
+									listApiConfigMeta={listApiConfigMeta || []}
+									pinnedApiConfigs={pinnedApiConfigs}
+									togglePinnedApiConfig={togglePinnedApiConfig}
+								/>
+								<AutoApproveDropdown triggerClassName="min-w-[28px] text-ellipsis overflow-hidden flex-shrink bg-vscode-editor-background" />
+							</div>
+							<div className="flex flex-shrink-0 items-center gap-0.5 pr-2">
+								{isTtsPlaying && (
+									<StandardTooltip content={t("chat:stopTts")}>
+										<button
+											aria-label={t("chat:stopTts")}
+											onClick={() => vscode.postMessage({ type: "stopTts" })}
+											className={cn(
+												"relative inline-flex items-center justify-center",
+												"bg-transparent border-none p-1.5",
+												"rounded-md min-w-[28px] min-h-[28px]",
+												"text-vscode-foreground opacity-85",
+												"transition-all duration-150",
+												"hover:opacity-100 hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.15)]",
+												"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
+												"active:bg-[rgba(255,255,255,0.1)]",
+												"cursor-pointer",
+											)}>
+											<VolumeX className="w-4 h-4" />
+										</button>
+									</StandardTooltip>
+								)}
+								{!isEditMode ? <IndexingStatusBadge /> : null}
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>

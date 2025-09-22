@@ -726,7 +726,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			let processedText = text
 				.replace(/\n$/, "\n\n")
 				.replace(/[<>&]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" })[c] || c)
-				.replace(mentionRegexGlobal, '<mark class="mention-context-textarea-highlight">$&</mark>')
+				.replace(mentionRegexGlobal, '<mark class="a">$&</mark>')
 
 			// Custom replacement for commands - only highlight valid ones
 			processedText = processedText.replace(commandRegexGlobal, (match, commandName) => {
