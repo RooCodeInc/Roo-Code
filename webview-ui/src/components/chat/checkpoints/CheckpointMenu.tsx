@@ -13,9 +13,16 @@ type CheckpointMenuProps = {
 	commitHash: string
 	currentHash?: string
 	checkpoint: Checkpoint
+	onPopoverOpenChange?: (open: boolean) => void
 }
 
-export const CheckpointMenu = ({ ts, commitHash, currentHash, checkpoint }: CheckpointMenuProps) => {
+export const CheckpointMenu = ({
+	ts,
+	commitHash,
+	currentHash,
+	checkpoint,
+	onPopoverOpenChange,
+}: CheckpointMenuProps) => {
 	const { t } = useTranslation()
 	const [isOpen, setIsOpen] = useState(false)
 	const [isConfirming, setIsConfirming] = useState(false)
@@ -54,6 +61,7 @@ export const CheckpointMenu = ({ ts, commitHash, currentHash, checkpoint }: Chec
 				onOpenChange={(open) => {
 					setIsOpen(open)
 					setIsConfirming(false)
+					onPopoverOpenChange?.(open)
 				}}>
 				<StandardTooltip content={t("chat:checkpoint.menu.restore")}>
 					<PopoverTrigger asChild>

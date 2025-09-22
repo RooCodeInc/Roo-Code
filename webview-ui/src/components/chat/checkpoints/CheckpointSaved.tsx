@@ -1,4 +1,4 @@
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { CheckpointMenu } from "./CheckpointMenu"
@@ -15,6 +15,7 @@ type CheckpointSavedProps = {
 export const CheckpointSaved = ({ checkpoint, ...props }: CheckpointSavedProps) => {
 	const { t } = useTranslation()
 	const isCurrent = props.currentHash === props.commitHash
+	const [isPopoverOpen, setIsPopoverOpen] = useState(false)
 
 	const metadata = useMemo(() => {
 		if (!checkpoint) {
@@ -48,8 +49,8 @@ export const CheckpointSaved = ({ checkpoint, ...props }: CheckpointSavedProps) 
 						"linear-gradient(90deg, rgba(0, 188, 255, .65), rgba(0, 188, 255, .65) 80%, rgba(0, 188, 255, 0) 99%)",
 				}}></span>
 
-			<div className="hidden group-hover:block h-4 -mt-2">
-				<CheckpointMenu {...props} checkpoint={metadata} />
+			<div className={`h-4 -mt-2 ${isPopoverOpen ? "block" : "hidden group-hover:block"}`}>
+				<CheckpointMenu {...props} checkpoint={metadata} onPopoverOpenChange={setIsPopoverOpen} />
 			</div>
 		</div>
 	)
