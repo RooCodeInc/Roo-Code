@@ -326,53 +326,50 @@ export const WatsonxAI = ({
 				</>
 			)}
 
-					<div className="w-full mb-1">
-						<label className="block font-medium mb-1">Authentication Type</label>
-						<Select
-							value={apiConfiguration.watsonxAuthType}
-							onValueChange={(value) => handleAuthTypeChange(value as "apiKey" | "password")}>
-							<SelectTrigger className="w-full">
-								<SelectValue placeholder="Select authentication type" />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="apiKey">API Key</SelectItem>
-								<SelectItem value="password">Password</SelectItem>
-							</SelectContent>
-						</Select>
+			<div className="w-full mb-1">
+				<label className="block font-medium mb-1">Authentication Type</label>
+				<Select
+					value={apiConfiguration.watsonxAuthType}
+					onValueChange={(value) => handleAuthTypeChange(value as "apiKey" | "password")}>
+					<SelectTrigger className="w-full">
+						<SelectValue placeholder="Select authentication type" />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="apiKey">API Key</SelectItem>
+						<SelectItem value="password">Password</SelectItem>
+					</SelectContent>
+				</Select>
+			</div>
+
+			{apiConfiguration.watsonxAuthType === "apiKey" ? (
+				<div className="w-full mb-1">
+					<VSCodeTextField
+						value={apiConfiguration?.watsonxApiKey || ""}
+						type="password"
+						onInput={handleInputChange("watsonxApiKey")}
+						placeholder="API Key"
+						className="w-full">
+						<label className="block font-medium mb-1">API Key</label>
+					</VSCodeTextField>
+					<div className="text-sm text-vscode-descriptionForeground mt-1">
+						{t("settings:providers.apiKeyStorageNotice")}
 					</div>
-
-					{apiConfiguration.watsonxAuthType === "apiKey" ? (
-						<div className="w-full mb-1">
-							<VSCodeTextField
-								value={apiConfiguration?.watsonxApiKey || ""}
-								type="password"
-								onInput={handleInputChange("watsonxApiKey")}
-								placeholder="API Key"
-								className="w-full">
-								<label className="block font-medium mb-1">API Key</label>
-							</VSCodeTextField>
-							<div className="text-sm text-vscode-descriptionForeground mt-1">
-								{t("settings:providers.apiKeyStorageNotice")}
-							</div>
-						</div>
-					) : (
-						<div className="w-full mb-1">
-							<VSCodeTextField
-								value={apiConfiguration.watsonxPassword}
-								type="password"
-								onInput={handleInputChange("watsonxPassword")}
-								placeholder="Password"
-								className="w-full">
-								<label className="block font-medium mb-1">Password</label>
-							</VSCodeTextField>
-							<div className="text-sm text-vscode-descriptionForeground mt-1">
-								{t("settings:providers.passwordStorageNotice")}
-							</div>
-						</div>
-					)}
-				</>
+				</div>
+			) : (
+				<div className="w-full mb-1">
+					<VSCodeTextField
+						value={apiConfiguration.watsonxPassword}
+						type="password"
+						onInput={handleInputChange("watsonxPassword")}
+						placeholder="Password"
+						className="w-full">
+						<label className="block font-medium mb-1">Password</label>
+					</VSCodeTextField>
+					<div className="text-sm text-vscode-descriptionForeground mt-1">
+						{t("settings:providers.passwordStorageNotice")}
+					</div>
+				</div>
 			)}
-
 			<div className="w-full mb-1">
 				<Button
 					variant="outline"
