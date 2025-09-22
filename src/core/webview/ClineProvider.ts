@@ -30,6 +30,7 @@ import {
 	type TerminalActionPromptType,
 	type HistoryItem,
 	type CloudUserInfo,
+	type CloudOrganizationMembership,
 	type CreateTaskOptions,
 	type TokenUsage,
 	RooCodeEventName,
@@ -1821,6 +1822,18 @@ export class ClineProvider
 		const mergedDeniedCommands = this.mergeDeniedCommands(deniedCommands)
 		const cwd = this.cwd
 
+		// Get organization memberships for the account switcher
+		let cloudOrganizationMemberships: CloudOrganizationMembership[] = []
+		try {
+			if (CloudService.hasInstance() && CloudService.instance.isAuthenticated()) {
+				cloudOrganizationMemberships = await CloudService.instance.getOrganizationMemberships()
+			}
+		} catch (error) {
+			console.error(
+				`[getStateToPostToWebview] failed to get organization memberships: ${error instanceof Error ? error.message : String(error)}`,
+			)
+		}
+
 		// Check if there's a system prompt override for the current mode
 		const currentMode = mode ?? defaultModeSlug
 		const hasSystemPromptOverride = await this.hasFileBasedSystemPromptOverride(currentMode)
@@ -1915,6 +1928,7 @@ export class ClineProvider
 			hasSystemPromptOverride,
 			historyPreviewCollapsed: historyPreviewCollapsed ?? false,
 			cloudUserInfo,
+			cloudOrganizationMemberships,
 			cloudIsAuthenticated: cloudIsAuthenticated ?? false,
 			sharingEnabled: sharingEnabled ?? false,
 			organizationAllowList,

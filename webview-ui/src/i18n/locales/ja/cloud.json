@@ -27,5 +27,6 @@
 		"autoApprovePowerUser": "Rooに少し独立性を与えませんか？Roo Code Cloudでどこからでもコントロールできます。<learnMoreLink>詳細</learnMoreLink>。",
 		"longRunningTask": "これには時間がかかるかもしれません。Cloudを使えばどこからでも続けられます。",
 		"taskList": "Roo Code Cloudが登場しました：どこからでもタスクを追跡し、コントロールできます。<learnMoreLink>詳細</learnMoreLink>。"
-	}
+	},
+	"switchAccount": "Switch Roo Cloud Account"
 }

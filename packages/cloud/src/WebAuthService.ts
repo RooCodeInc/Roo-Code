@@ -581,7 +581,7 @@ export class WebAuthService extends EventEmitter<AuthServiceEvents> implements A
 				// We have organization context info
 				if (storedOrgId !== null) {
 					// User is in organization context - fetch user's memberships and filter
-					const orgMemberships = await this.clerkGetOrganizationMemberships()
+					const orgMemberships = await this.getOrganizationMemberships()
 					const userMembership = this.findOrganizationMembership(orgMemberships, storedOrgId)
 
 					if (userMembership) {
@@ -602,7 +602,7 @@ export class WebAuthService extends EventEmitter<AuthServiceEvents> implements A
 				}
 			} else {
 				// Old credentials without organization context - fetch organization info to determine context
-				const orgMemberships = await this.clerkGetOrganizationMemberships()
+				const orgMemberships = await this.getOrganizationMemberships()
 				const primaryOrgMembership = this.findPrimaryOrganizationMembership(orgMemberships)
 
 				if (primaryOrgMembership) {
@@ -652,7 +652,7 @@ export class WebAuthService extends EventEmitter<AuthServiceEvents> implements A
 		userInfo.organizationImageUrl = membership.organization.image_url
 	}
 
-	private async clerkGetOrganizationMemberships(): Promise<CloudOrganizationMembership[]> {
+	public async getOrganizationMemberships(): Promise<CloudOrganizationMembership[]> {
 		const response = await fetch(`${getClerkBaseUrl()}/v1/me/organization_memberships`, {
 			headers: {
 				Authorization: `Bearer ${this.credentials!.clientToken}`,

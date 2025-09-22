@@ -2337,6 +2337,18 @@ export const webviewMessageHandler = async (
 
 			break
 		}
+		case "rooCloudAccountSwitch": {
+			try {
+				// Account switching flow: logout and redirect to switch page
+				await CloudService.instance.logout()
+				// Login with switch landing page to allow account selection
+				await CloudService.instance.login("switch")
+			} catch (error) {
+				provider.log(`CloudService#switchAccount failed: ${error}`)
+				vscode.window.showErrorMessage("Account switch failed.")
+			}
+			break
+		}
 		case "rooCloudManualUrl": {
 			try {
 				if (!message.text) {

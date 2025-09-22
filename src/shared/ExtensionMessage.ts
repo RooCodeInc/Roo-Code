@@ -10,6 +10,7 @@ import type {
 	MarketplaceItem,
 	TodoItem,
 	CloudUserInfo,
+	CloudOrganizationMembership,
 	OrganizationAllowList,
 	ShareVisibility,
 	QueuedMessage,
@@ -187,6 +188,7 @@ export interface ExtensionMessage {
 	hasContent?: boolean // For checkRulesDirectoryResult
 	items?: MarketplaceItem[]
 	userInfo?: CloudUserInfo
+	organizationMemberships?: CloudOrganizationMembership[]
 	organizationAllowList?: OrganizationAllowList
 	tab?: string
 	marketplaceItems?: MarketplaceItem[]
@@ -325,6 +327,7 @@ export type ExtensionState = Pick<
 	historyPreviewCollapsed?: boolean
 
 	cloudUserInfo: CloudUserInfo | null
+	cloudOrganizationMemberships?: CloudOrganizationMembership[]
 	cloudIsAuthenticated: boolean
 	cloudApiUrl?: string
 	sharingEnabled: boolean

@@ -183,6 +183,7 @@ export interface WebviewMessage {
 		| "rooCloudSignIn"
 		| "cloudLandingPageSignIn"
 		| "rooCloudSignOut"
+		| "rooCloudAccountSwitch"
 		| "rooCloudManualUrl"
 		| "condenseTaskContextRequest"
 		| "requestIndexingStatus"

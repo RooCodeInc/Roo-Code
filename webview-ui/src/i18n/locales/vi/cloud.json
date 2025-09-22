@@ -27,5 +27,6 @@
 		"autoApprovePowerUser": "Trao cho Roo một chút độc lập? Kiểm soát nó từ mọi nơi với Roo Code Cloud. <learnMoreLink>Tìm hiểu thêm</learnMoreLink>.",
 		"longRunningTask": "Việc này có thể mất một lúc. Tiếp tục từ mọi nơi với Cloud.",
 		"taskList": "Roo Code Cloud đã có mặt: theo dõi và kiểm soát các tác vụ của bạn từ mọi nơi. <learnMoreLink>Tìm hiểu thêm</learnMoreLink>."
-	}
+	},
+	"switchAccount": "Switch Roo Cloud Account"
 }

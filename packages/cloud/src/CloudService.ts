@@ -8,6 +8,7 @@ import type {
 	AuthService,
 	SettingsService,
 	CloudUserInfo,
+	CloudOrganizationMembership,
 	OrganizationAllowList,
 	OrganizationSettings,
 	ShareVisibility,
@@ -198,6 +199,14 @@ export class CloudService extends EventEmitter<CloudServiceEvents> implements Di
 	public getUserInfo(): CloudUserInfo | null {
 		this.ensureInitialized()
 		return this.authService!.getUserInfo()
+	}
+
+	public async getOrganizationMemberships(): Promise<CloudOrganizationMembership[]> {
+		this.ensureInitialized()
+		if (this.authService && "getOrganizationMemberships" in this.authService) {
+			return (this.authService as WebAuthService).getOrganizationMemberships()
+		}
+		return []
 	}
 
 	public getOrganizationId(): string | null {
