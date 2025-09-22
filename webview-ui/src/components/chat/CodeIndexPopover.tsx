@@ -298,6 +298,27 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 		return () => window.removeEventListener("message", handleMessage)
 	}, [open])
 
+	// Request WatsonX models when provider is selected and API key is available
+	useEffect(() => {
+		if (
+			currentSettings.codebaseIndexEmbedderProvider === "watsonx" &&
+			currentSettings.codebaseIndexWatsonxApiKey &&
+			currentSettings.codebaseIndexWatsonxApiKey !== SECRET_PLACEHOLDER
+		) {
+			vscode.postMessage({
+				type: "requestWatsonxModels",
+				values: {
+					apiKey: currentSettings.codebaseIndexWatsonxApiKey,
+					projectId: currentSettings.codebaseIndexWatsonxProjectId,
+				},
+			})
+		}
+	}, [
+		currentSettings.codebaseIndexEmbedderProvider,
+		currentSettings.codebaseIndexWatsonxApiKey,
+		currentSettings.codebaseIndexWatsonxProjectId,
+	])
+
 	// Use a ref to capture current settings for the save handler
 	const currentSettingsRef = useRef(currentSettings)
 	currentSettingsRef.current = currentSettings
@@ -411,6 +432,16 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 						prev.codebaseIndexVercelAiGatewayApiKey === SECRET_PLACEHOLDER
 					) {
 						updated.codebaseIndexVercelAiGatewayApiKey = secretStatus.hasVercelAiGatewayApiKey
+					}
+
+					if (!prev.codebaseIndexWatsonxApiKey || prev.codebaseIndexWatsonxApiKey === SECRET_PLACEHOLDER) {
+						updated.codebaseIndexWatsonxApiKey = secretStatus.hasWatsonxApiKey ? SECRET_PLACEHOLDER : ""
+					}
+					if (
+						!prev.codebaseIndexWatsonxProjectId ||
+						prev.codebaseIndexWatsonxProjectId === SECRET_PLACEHOLDER
+					) {
+						updated.codebaseIndexWatsonxProjectId = secretStatus.hasWatsonxProjectId
 							? SECRET_PLACEHOLDER
 							: ""
 					}

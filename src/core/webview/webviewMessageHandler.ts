@@ -942,7 +942,6 @@ export const webviewMessageHandler = async (
 				try {
 					const {
 						apiKey,
-						projectId,
 						platform = "ibmCloud",
 						baseUrl,
 						username,
@@ -1000,7 +999,6 @@ export const webviewMessageHandler = async (
 				try {
 					const {
 						apiKey,
-						projectId,
 						platform = "ibmCloud",
 						baseUrl,
 						username,
@@ -2571,6 +2569,20 @@ export const webviewMessageHandler = async (
 						settings.codebaseIndexVercelAiGatewayApiKey,
 					)
 				}
+
+				if (settings.codebaseIndexWatsonxApiKey !== undefined) {
+					await provider.contextProxy.storeSecret(
+						"codebaseIndexWatsonxApiKey",
+						settings.codebaseIndexWatsonxApiKey,
+					)
+				}
+				if (settings.codebaseIndexWatsonxProjectId !== undefined) {
+					await provider.contextProxy.storeSecret(
+						"codebaseIndexWatsonxProjectId",
+						settings.codebaseIndexWatsonxProjectId,
+					)
+				}
+
 				// Send success response first - settings are saved regardless of validation
 				await provider.postMessageToWebview({
 					type: "codeIndexSettingsSaved",

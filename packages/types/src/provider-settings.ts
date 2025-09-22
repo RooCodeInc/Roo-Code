@@ -139,6 +139,8 @@ export const providerNames = [
 	"vertex",
 	"xai",
 	"zai",
+	"vercel-ai-gateway",
+	"watsonx",
 ] as const
 
 export const providerNamesSchema = z.enum(providerNames)
@@ -422,6 +424,13 @@ const rooSchema = apiModelIdProviderModelSchema.extend({
 const vercelAiGatewaySchema = baseProviderSettingsSchema.extend({
 	vercelAiGatewayApiKey: z.string().optional(),
 	vercelAiGatewayModelId: z.string().optional(),
+})
+
+const watsonxSchema = baseProviderSettingsSchema.extend({
+	watsonxBaseUrl: z.string().optional(),
+	watsonxApiKey: z.string().optional(),
+	watsonxProjectId: z.string().optional(),
+	watsonxModelId: z.string().optional(),
 })
 
 const defaultSchema = z.object({

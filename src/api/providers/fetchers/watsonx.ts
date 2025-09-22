@@ -6,7 +6,6 @@ import { WatsonXAI } from "@ibm-cloud/watsonx-ai"
  * Fetches available watsonx models
  *
  * @param apiKey - The watsonx API key (for IBM Cloud or Cloud Pak with API key auth)
- * @param projectId - Optional project ID for watsonx
  * @param baseUrl - Optional base URL for the watsonx API
  * @param platform - Optional platform type (ibmCloud or cloudPak)
  * @param username - Optional username for Cloud Pak for Data
@@ -14,7 +13,7 @@ import { WatsonXAI } from "@ibm-cloud/watsonx-ai"
  * @returns A promise resolving to an object with model IDs as keys and model info as values
  */
 export async function getWatsonxModels(
-	apiKey: string,
+	apiKey?: string,
 	baseUrl?: string,
 	platform: "ibmCloud" | "cloudPak" = "ibmCloud",
 	username?: string,
@@ -121,7 +120,7 @@ export async function getWatsonxModels(
  * @returns A promise resolving to an object with model IDs as keys and model info as values
  */
 export async function getEmbeddedWatsonxModels(
-	apiKey: string,
+	apiKey?: string,
 	baseUrl?: string,
 	platform: "ibmCloud" | "cloudPak" = "ibmCloud",
 	username?: string,
