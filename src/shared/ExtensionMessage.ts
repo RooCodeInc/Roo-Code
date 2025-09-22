@@ -9,9 +9,9 @@ import type {
 	ClineMessage,
 	MarketplaceItem,
 	TodoItem,
+	CloudUserInfo,
 	ModelInfo,
 	OrganizationAllowList,
-	CloudUserInfo,
 	ShareVisibility,
 	QueuedMessage,
 } from "@roo-code/types"
