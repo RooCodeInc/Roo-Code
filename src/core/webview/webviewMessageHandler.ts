@@ -2379,6 +2379,23 @@ export const webviewMessageHandler = async (
 
 			break
 		}
+		case "switchOrganization": {
+			try {
+				const organizationId = message.organizationId ?? null
+
+				// Switch to the new organization context
+				await CloudService.instance.switchOrganization(organizationId)
+
+				// Refresh the state to update UI
+				await provider.postStateToWebview()
+			} catch (error) {
+				provider.log(`Organization switch failed: ${error}`)
+				vscode.window.showErrorMessage(
+					`Failed to switch organization: ${error instanceof Error ? error.message : String(error)}`,
+				)
+			}
+			break
+		}
 
 		case "saveCodeIndexSettingsAtomic": {
 			if (!message.codeIndexSettings) {

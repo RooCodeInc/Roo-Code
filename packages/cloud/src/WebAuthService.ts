@@ -469,6 +469,60 @@ export class WebAuthService extends EventEmitter<AuthServiceEvents> implements A
 		return this.credentials?.organizationId || null
 	}
 
+	/**
+	 * Switch to a different organization context
+	 * @param organizationId The organization ID to switch to, or null for personal account
+	 */
+	public async switchOrganization(organizationId: string | null): Promise<void> {
+		if (!this.credentials) {
+			throw new Error("Cannot switch organization: not authenticated")
+		}
+
+		// Update the stored credentials with the new organization ID
+		const updatedCredentials: AuthCredentials = {
+			...this.credentials,
+			organizationId: organizationId,
+		}
+
+		// Store the updated credentials
+		await this.storeCredentials(updatedCredentials)
+
+		// Update the local credentials
+		this.credentials = updatedCredentials
+
+		// Clear the current session token to force a refresh with new org context
+		this.sessionToken = null
+
+		// Trigger a session refresh to get a new token with the correct org context
+		try {
+			await this.refreshSession()
+			// Fetch updated user info after organization switch to reflect new context
+			await this.fetchUserInfo()
+		} catch (error) {
+			this.log(`[auth] Failed to refresh session after organization switch: ${error}`)
+			// Even if refresh fails, the credentials are updated for next attempt
+		}
+
+		this.log(`[auth] Switched organization context to: ${organizationId || "personal account"}`)
+	}
+
+	/**
+	 * Get all organization memberships for the current user
+	 * @returns Array of organization memberships
+	 */
+	public async getOrganizationMemberships(): Promise<CloudOrganizationMembership[]> {
+		if (!this.credentials) {
+			return []
+		}
+
+		try {
+			return await this.clerkGetOrganizationMemberships()
+		} catch (error) {
+			this.log(`[auth] Failed to get organization memberships: ${error}`)
+			return []
+		}
+	}
+
 	private async clerkSignIn(ticket: string): Promise<AuthCredentials> {
 		const formData = new URLSearchParams()
 		formData.append("strategy", "ticket")

@@ -8,6 +8,7 @@ import type {
 	AuthService,
 	SettingsService,
 	CloudUserInfo,
+	CloudOrganizationMembership,
 	OrganizationAllowList,
 	OrganizationSettings,
 	ShareVisibility,
@@ -240,6 +241,35 @@ export class CloudService extends EventEmitter<CloudServiceEvents> implements Di
 	): Promise<void> {
 		this.ensureInitialized()
 		return this.authService!.handleCallback(code, state, organizationId)
+	}
+
+	public async switchOrganization(organizationId: string | null): Promise<void> {
+		this.ensureInitialized()
+
+		// Check if we have a WebAuthService (not StaticTokenAuthService)
+		if (!(this.authService instanceof WebAuthService)) {
+			throw new Error("Organization switching is only available with web authentication")
+		}
+
+		const webAuthService = this.authService as WebAuthService
+
+		// Perform the organization switch
+		await webAuthService.switchOrganization(organizationId)
+
+		// Broadcast the change
+		await this.authService.broadcast()
+	}
+
+	public async getOrganizationMemberships(): Promise<CloudOrganizationMembership[]> {
+		this.ensureInitialized()
+
+		// Check if we have a WebAuthService (not StaticTokenAuthService)
+		if (!(this.authService instanceof WebAuthService)) {
+			return []
+		}
+
+		const webAuthService = this.authService as WebAuthService
+		return await webAuthService.getOrganizationMemberships()
 	}
 
 	// SettingsService

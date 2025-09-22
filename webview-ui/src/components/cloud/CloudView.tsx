@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react"
 import { VSCodeButton, VSCodeProgressRing, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 
-import { type CloudUserInfo, TelemetryEventName } from "@roo-code/types"
+import { type CloudUserInfo, type CloudOrganizationMembership, TelemetryEventName } from "@roo-code/types"
 
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
@@ -13,6 +13,7 @@ import { TriangleAlert } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Tab, TabContent, TabHeader } from "../common/Tab"
 import { Button } from "@/components/ui/button"
+import { OrganizationSwitcher } from "./OrganizationSwitcher"
 
 // Define the production URL constant locally to avoid importing from cloud package in tests
 const PRODUCTION_ROO_CODE_API_URL = "https://app.roocode.com"
@@ -22,9 +23,10 @@ type CloudViewProps = {
 	isAuthenticated: boolean
 	cloudApiUrl?: string
 	onDone: () => void
+	organizations?: CloudOrganizationMembership[]
 }
 
-export const CloudView = ({ userInfo, isAuthenticated, cloudApiUrl, onDone }: CloudViewProps) => {
+export const CloudView = ({ userInfo, isAuthenticated, cloudApiUrl, onDone, organizations = [] }: CloudViewProps) => {
 	const { t } = useAppTranslation()
 	const {
 		remoteControlEnabled,
@@ -185,16 +187,11 @@ export const CloudView = ({ userInfo, isAuthenticated, cloudApiUrl, onDone }: Cl
 								{userInfo?.email && (
 									<p className="text-sm text-vscode-descriptionForeground my-0">{userInfo?.email}</p>
 								)}
-								{userInfo?.organizationName && (
-									<div className="flex items-center gap-2 text-sm text-vscode-descriptionForeground mt-2">
-										{userInfo.organizationImageUrl && (
-											<img
-												src={userInfo.organizationImageUrl}
-												alt={userInfo.organizationName}
-												className="w-4 h-4 rounded object-cover"
-											/>
-										)}
-										<span>{userInfo.organizationName}</span>
+
+								{/* Organization Switcher - moved below email */}
+								{organizations && organizations.length > 0 && (
+									<div className="w-full max-w-sm mt-4">
+										<OrganizationSwitcher userInfo={userInfo} organizations={organizations} />
 									</div>
 								)}
 							</div>
