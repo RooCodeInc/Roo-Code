@@ -1162,6 +1162,18 @@ export const webviewMessageHandler = async (
 
 			break
 		}
+		case "openKeyboardShortcuts": {
+			// Open VSCode keyboard shortcuts settings and optionally filter to show the Roo Code commands
+			const searchQuery = message.text || ""
+			if (searchQuery) {
+				// Open with a search query pre-filled
+				await vscode.commands.executeCommand("workbench.action.openGlobalKeybindings", searchQuery)
+			} else {
+				// Just open the keyboard shortcuts settings
+				await vscode.commands.executeCommand("workbench.action.openGlobalKeybindings")
+			}
+			break
+		}
 		case "openMcpSettings": {
 			const mcpSettingsFilePath = await provider.getMcpHub()?.getMcpSettingsFilePath()
 
@@ -2418,6 +2430,17 @@ export const webviewMessageHandler = async (
 				vscode.window.showErrorMessage("Sign in failed.")
 			}
 
+			break
+		}
+		case "cloudLandingPageSignIn": {
+			try {
+				const landingPageSlug = message.text || "supernova"
+				TelemetryService.instance.captureEvent(TelemetryEventName.AUTHENTICATION_INITIATED)
+				await CloudService.instance.login(landingPageSlug)
+			} catch (error) {
+				provider.log(`CloudService#login failed: ${error}`)
+				vscode.window.showErrorMessage("Sign in failed.")
+			}
 			break
 		}
 		case "rooCloudSignOut": {

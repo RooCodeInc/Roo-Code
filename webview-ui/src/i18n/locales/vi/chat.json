@@ -61,7 +61,7 @@
 		"tooltip": "Phê duyệt hành động này"
 	},
 	"runCommand": {
-		"title": "Chạy lệnh",
+		"title": "Lệnh",
 		"tooltip": "Thực thi lệnh này"
 	},
 	"proceedWhileRunning": {
@@ -125,7 +125,7 @@
 		"searchPlaceholder": "Tìm kiếm chế độ...",
 		"noResults": "Không tìm thấy kết quả nào"
 	},
-	"errorReadingFile": "Lỗi khi đọc tệp:",
+	"errorReadingFile": "Lỗi khi đọc tệp",
 	"noValidImages": "Không có hình ảnh hợp lệ nào được xử lý",
 	"separator": "Dấu phân cách",
 	"edit": "Chỉnh sửa...",
@@ -163,49 +163,50 @@
 		"wantsToFetch": "Roo muốn lấy hướng dẫn chi tiết để hỗ trợ nhiệm vụ hiện tại"
 	},
 	"fileOperations": {
-		"wantsToRead": "Roo muốn đọc tệp này:",
-		"wantsToReadOutsideWorkspace": "Roo muốn đọc tệp này bên ngoài không gian làm việc:",
-		"didRead": "Roo đã đọc tệp này:",
-		"wantsToEdit": "Roo muốn chỉnh sửa tệp này:",
-		"wantsToEditOutsideWorkspace": "Roo muốn chỉnh sửa tệp này bên ngoài không gian làm việc:",
-		"wantsToEditProtected": "Roo muốn chỉnh sửa tệp cấu hình được bảo vệ:",
-		"wantsToCreate": "Roo muốn tạo một tệp mới:",
-		"wantsToSearchReplace": "Roo muốn thực hiện tìm kiếm và thay thế trong tệp này:",
-		"didSearchReplace": "Roo đã thực hiện tìm kiếm và thay thế trong tệp này:",
-		"wantsToInsert": "Roo muốn chèn nội dung vào tệp này:",
-		"wantsToInsertWithLineNumber": "Roo muốn chèn nội dung vào dòng {{lineNumber}} của tệp này:",
-		"wantsToInsertAtEnd": "Roo muốn thêm nội dung vào cuối tệp này:",
-		"wantsToReadAndXMore": "Roo muốn đọc tệp này và {{count}} tệp khác:",
-		"wantsToReadMultiple": "Roo muốn đọc nhiều tệp:",
-		"wantsToApplyBatchChanges": "Roo muốn áp dụng thay đổi cho nhiều tệp:",
-		"wantsToGenerateImage": "Roo muốn tạo một hình ảnh:",
-		"wantsToGenerateImageOutsideWorkspace": "Roo muốn tạo hình ảnh bên ngoài không gian làm việc:",
-		"wantsToGenerateImageProtected": "Roo muốn tạo hình ảnh ở vị trí được bảo vệ:",
-		"didGenerateImage": "Roo đã tạo một hình ảnh:"
+		"wantsToRead": "Roo muốn đọc tệp này",
+		"wantsToReadOutsideWorkspace": "Roo muốn đọc tệp này bên ngoài không gian làm việc",
+		"didRead": "Roo đã đọc tệp này",
+		"wantsToEdit": "Roo muốn chỉnh sửa tệp này",
+		"wantsToEditOutsideWorkspace": "Roo muốn chỉnh sửa tệp này bên ngoài không gian làm việc",
+		"wantsToEditProtected": "Roo muốn chỉnh sửa tệp cấu hình được bảo vệ",
+		"wantsToCreate": "Roo muốn tạo một tệp mới",
+		"wantsToSearchReplace": "Roo muốn thực hiện tìm kiếm và thay thế trong tệp này",
+		"didSearchReplace": "Roo đã thực hiện tìm kiếm và thay thế trong tệp này",
+		"wantsToInsert": "Roo muốn chèn nội dung vào tệp này",
+		"wantsToInsertWithLineNumber": "Roo muốn chèn nội dung vào dòng {{lineNumber}} của tệp này",
+		"wantsToInsertAtEnd": "Roo muốn thêm nội dung vào cuối tệp này",
+		"wantsToReadAndXMore": "Roo muốn đọc tệp này và {{count}} tệp khác",
+		"wantsToReadMultiple": "Roo muốn đọc nhiều tệp",
+		"wantsToApplyBatchChanges": "Roo muốn áp dụng thay đổi cho nhiều tệp",
+		"wantsToGenerateImage": "Roo muốn tạo một hình ảnh",
+		"wantsToGenerateImageOutsideWorkspace": "Roo muốn tạo hình ảnh bên ngoài không gian làm việc",
+		"wantsToGenerateImageProtected": "Roo muốn tạo hình ảnh ở vị trí được bảo vệ",
+		"didGenerateImage": "Roo đã tạo một hình ảnh"
 	},
 	"directoryOperations": {
-		"wantsToViewTopLevel": "Roo muốn xem các tệp cấp cao nhất trong thư mục này:",
-		"didViewTopLevel": "Roo đã xem các tệp cấp cao nhất trong thư mục này:",
-		"wantsToViewRecursive": "Roo muốn xem đệ quy tất cả các tệp trong thư mục này:",
-		"didViewRecursive": "Roo đã xem đệ quy tất cả các tệp trong thư mục này:",
-		"wantsToViewDefinitions": "Roo muốn xem tên định nghĩa mã nguồn được sử dụng trong thư mục này:",
-		"didViewDefinitions": "Roo đã xem tên định nghĩa mã nguồn được sử dụng trong thư mục này:",
-		"wantsToSearch": "Roo muốn tìm kiếm trong thư mục này cho <code>{{regex}}</code>:",
-		"didSearch": "Roo đã tìm kiếm trong thư mục này cho <code>{{regex}}</code>:",
-		"wantsToSearchOutsideWorkspace": "Roo muốn tìm kiếm trong thư mục này (ngoài không gian làm việc) cho <code>{{regex}}</code>:",
-		"didSearchOutsideWorkspace": "Roo đã tìm kiếm trong thư mục này (ngoài không gian làm việc) cho <code>{{regex}}</code>:",
-		"wantsToViewTopLevelOutsideWorkspace": "Roo muốn xem các tệp cấp cao nhất trong thư mục này (ngoài không gian làm việc):",
-		"didViewTopLevelOutsideWorkspace": "Roo đã xem các tệp cấp cao nhất trong thư mục này (ngoài không gian làm việc):",
-		"wantsToViewRecursiveOutsideWorkspace": "Roo muốn xem đệ quy tất cả các tệp trong thư mục này (ngoài không gian làm việc):",
-		"didViewRecursiveOutsideWorkspace": "Roo đã xem đệ quy tất cả các tệp trong thư mục này (ngoài không gian làm việc):",
-		"wantsToViewDefinitionsOutsideWorkspace": "Roo muốn xem tên định nghĩa mã nguồn được sử dụng trong thư mục này (ngoài không gian làm việc):",
-		"didViewDefinitionsOutsideWorkspace": "Roo đã xem tên định nghĩa mã nguồn được sử dụng trong thư mục này (ngoài không gian làm việc):"
+		"wantsToViewTopLevel": "Roo muốn xem các tệp cấp cao nhất trong thư mục này",
+		"didViewTopLevel": "Roo đã xem các tệp cấp cao nhất trong thư mục này",
+		"wantsToViewRecursive": "Roo muốn xem đệ quy tất cả các tệp trong thư mục này",
+		"didViewRecursive": "Roo đã xem đệ quy tất cả các tệp trong thư mục này",
+		"wantsToViewDefinitions": "Roo muốn xem tên định nghĩa mã nguồn được sử dụng trong thư mục này",
+		"didViewDefinitions": "Roo đã xem tên định nghĩa mã nguồn được sử dụng trong thư mục này",
+		"wantsToSearch": "Roo muốn tìm kiếm trong thư mục này cho <code>{{regex}}</code>",
+		"didSearch": "Roo đã tìm kiếm trong thư mục này cho <code>{{regex}}</code>",
+		"wantsToSearchOutsideWorkspace": "Roo muốn tìm kiếm trong thư mục này (ngoài không gian làm việc) cho <code>{{regex}}</code>",
+		"didSearchOutsideWorkspace": "Roo đã tìm kiếm trong thư mục này (ngoài không gian làm việc) cho <code>{{regex}}</code>",
+		"wantsToViewTopLevelOutsideWorkspace": "Roo muốn xem các tệp cấp cao nhất trong thư mục này (ngoài không gian làm việc)",
+		"didViewTopLevelOutsideWorkspace": "Roo đã xem các tệp cấp cao nhất trong thư mục này (ngoài không gian làm việc)",
+		"wantsToViewRecursiveOutsideWorkspace": "Roo muốn xem đệ quy tất cả các tệp trong thư mục này (ngoài không gian làm việc)",
+		"didViewRecursiveOutsideWorkspace": "Roo đã xem đệ quy tất cả các tệp trong thư mục này (ngoài không gian làm việc)",
+		"wantsToViewDefinitionsOutsideWorkspace": "Roo muốn xem tên định nghĩa mã nguồn được sử dụng trong thư mục này (ngoài không gian làm việc)",
+		"didViewDefinitionsOutsideWorkspace": "Roo đã xem tên định nghĩa mã nguồn được sử dụng trong thư mục này (ngoài không gian làm việc)"
 	},
 	"commandOutput": "Kết quả lệnh",
 	"commandExecution": {
 		"running": "Đang chạy",
+		"abort": "Hủy bỏ",
 		"pid": "PID: {{pid}}",
-		"exited": "Đã thoát ({{exitCode}})",
+		"exitStatus": "Đã thoát với trạng thái {{exitCode}}",
 		"manageCommands": "Quản lý quyền lệnh",
 		"commandManagementDescription": "Quản lý quyền lệnh: Nhấp vào ✓ để cho phép tự động thực thi, ✗ để từ chối thực thi. Các mẫu có thể được bật/tắt hoặc xóa khỏi danh sách. <settingsLink>Xem tất cả cài đặt</settingsLink>",
 		"addToAllowed": "Thêm vào danh sách cho phép",
@@ -220,9 +221,12 @@
 	},
 	"response": "Phản hồi",
 	"arguments": "Tham số",
+	"feedback": {
+		"youSaid": "Bạn đã nói"
+	},
 	"mcp": {
-		"wantsToUseTool": "Roo muốn sử dụng một công cụ trên máy chủ MCP {{serverName}}:",
-		"wantsToAccessResource": "Roo muốn truy cập một tài nguyên trên máy chủ MCP {{serverName}}:"
+		"wantsToUseTool": "Roo muốn sử dụng một công cụ trên máy chủ MCP {{serverName}}",
+		"wantsToAccessResource": "Roo muốn truy cập một tài nguyên trên máy chủ MCP {{serverName}}"
 	},
 	"modes": {
 		"wantsToSwitch": "Roo muốn chuyển sang chế độ <code>{{mode}}</code>",
@@ -231,7 +235,7 @@
 		"didSwitchWithReason": "Roo đã chuyển sang chế độ <code>{{mode}}</code> vì: {{reason}}"
 	},
 	"subtasks": {
-		"wantsToCreate": "Roo muốn tạo một nhiệm vụ phụ mới trong chế độ <code>{{mode}}</code>:",
+		"wantsToCreate": "Roo muốn tạo một nhiệm vụ phụ mới trong chế độ <code>{{mode}}</code>",
 		"wantsToFinish": "Roo muốn hoàn thành nhiệm vụ phụ này",
 		"newTaskContent": "Hướng dẫn nhiệm vụ phụ",
 		"completionContent": "Nhiệm vụ phụ đã hoàn thành",
@@ -240,7 +244,7 @@
 		"completionInstructions": "Nhiệm vụ phụ đã hoàn thành! Bạn có thể xem lại kết quả và đề xuất các sửa đổi hoặc bước tiếp theo. Nếu mọi thứ có vẻ tốt, hãy xác nhận để trả kết quả về nhiệm vụ chính."
 	},
 	"questions": {
-		"hasQuestion": "Roo có một câu hỏi:"
+		"hasQuestion": "Roo có một câu hỏi"
 	},
 	"taskCompleted": "Nhiệm vụ hoàn thành",
 	"powershell": {
@@ -250,6 +254,7 @@
 		"tooltipManage": "Quản lý cài đặt tự động phê duyệt",
 		"tooltipStatus": "Tự động phê duyệt được bật cho: {{toggles}}",
 		"title": "Tự động phê duyệt",
+		"toggle": "Bật/tắt tự động phê duyệt",
 		"all": "Tất cả",
 		"none": "Không có",
 		"description": "Thực hiện các hành động này mà không cần xin phép. Chỉ bật tính năng này cho các hành động bạn hoàn toàn tin tưởng.",
@@ -279,15 +284,17 @@
 	},
 	"announcement": {
 		"title": "🎉 Roo Code {{version}} Đã phát hành",
-		"description": "Giới thiệu <bold>Roo Code Cloud:</bold> Mang sức mạnh của Roo vượt ra ngoài IDE",
-		"feature1": "<bold>Theo dõi tiến trình tác vụ từ bất kỳ đâu (Miễn phí):</bold> Nhận cập nhật thời gian thực về các tác vụ chạy dài mà không bị mắc kẹt trong IDE của bạn",
-		"feature2": "<bold>Điều khiển Tiện ích Roo từ xa (Pro):</bold> Bắt đầu, dừng và tương tác với các tác vụ từ giao diện trình duyệt dựa trên chat.",
-		"learnMore": "Sẵn sàng nắm quyền kiểm soát? Tìm hiểu thêm <learnMoreLink>tại đây</learnMoreLink>.",
-		"visitCloudButton": "Truy cập Roo Code Cloud",
-		"socialLinks": "Tham gia với chúng tôi trên <xLink>X</xLink>, <discordLink>Discord</discordLink>, hoặc <redditLink>r/RooCode</redditLink>"
+		"stealthModel": {
+			"feature": "<bold>Mô hình stealth MIỄN PHÍ có thời hạn</bold> - Code Supernova: Một mô hình lập trình agentic đa năng hỗ trợ đầu vào hình ảnh, có sẵn qua Roo Code Cloud.",
+			"note": "(Lưu ý: các prompt và completion được ghi lại bởi người tạo mô hình và được sử dụng để cải thiện mô hình)",
+			"connectButton": "Kết nối với Roo Code Cloud",
+			"selectModel": "Chọn <code>roo/code-supernova</code> từ nhà cung cấp Roo Code Cloud trong Cài đặt để bắt đầu.",
+			"goToSettingsButton": "Đi tới Cài đặt"
+		},
+		"socialLinks": "Tham gia với chúng tôi trên <xLink>X</xLink>, <discordLink>Discord</discordLink>, hoặc <redditLink>r/RooCode</redditLink> 🚀"
 	},
 	"browser": {
-		"rooWantsToUse": "Roo muốn sử dụng trình duyệt:",
+		"rooWantsToUse": "Roo muốn sử dụng trình duyệt",
 		"consoleLogs": "Nhật ký bảng điều khiển",
 		"noNewLogs": "(Không có nhật ký mới)",
 		"screenshot": "Ảnh chụp màn hình trình duyệt",
@@ -312,8 +319,6 @@
 		"tooltips": {
 			"expand": "Mở rộng khối mã",
 			"collapse": "Thu gọn khối mã",
-			"enable_wrap": "Bật tự động xuống dòng",
-			"disable_wrap": "Tắt tự động xuống dòng",
 			"copy_code": "Sao chép mã"
 		}
 	},
@@ -337,8 +342,8 @@
 		}
 	},
 	"codebaseSearch": {
-		"wantsToSearch": "Roo muốn tìm kiếm trong cơ sở mã cho <code>{{query}}</code>:",
-		"wantsToSearchWithPath": "Roo muốn tìm kiếm trong cơ sở mã cho <code>{{query}}</code> trong <code>{{path}}</code>:",
+		"wantsToSearch": "Roo muốn tìm kiếm trong cơ sở mã cho <code>{{query}}</code>",
+		"wantsToSearchWithPath": "Roo muốn tìm kiếm trong cơ sở mã cho <code>{{query}}</code> trong <code>{{path}}</code>",
 		"didSearch_one": "Đã tìm thấy 1 kết quả",
 		"didSearch_other": "Đã tìm thấy {{count}} kết quả",
 		"resultTooltip": "Điểm tương tự: {{score}} (nhấp để mở tệp)"
@@ -399,23 +404,11 @@
 		"url": "Dán URL để lấy nội dung"
 	},
 	"queuedMessages": {
-		"title": "Tin nhắn trong hàng đợi:",
+		"title": "Tin nhắn trong hàng đợi",
 		"clickToEdit": "Nhấp để chỉnh sửa tin nhắn"
 	},
 	"slashCommand": {
-		"wantsToRun": "Roo muốn chạy lệnh slash:",
-		"didRun": "Roo đã chạy lệnh slash:"
-	},
-	"ask": {
-		"autoApprovedRequestLimitReached": {
-			"title": "Đã Đạt Giới Hạn Yêu Cầu Tự Động Phê Duyệt",
-			"description": "Roo đã đạt đến giới hạn tự động phê duyệt là {{count}} yêu cầu API. Bạn có muốn đặt lại bộ đếm và tiếp tục nhiệm vụ không?",
-			"button": "Đặt lại và Tiếp tục"
-		},
-		"autoApprovedCostLimitReached": {
-			"title": "Đã Đạt Giới Hạn Chi Phí Tự Động Phê Duyệt",
-			"description": "Roo đã đạt đến giới hạn chi phí tự động phê duyệt là ${{count}}. Bạn có muốn đặt lại chi phí và tiếp tục với nhiệm vụ không?",
-			"button": "Đặt lại và Tiếp tục"
-		}
+		"wantsToRun": "Roo muốn chạy lệnh slash",
+		"didRun": "Roo đã chạy lệnh slash"
 	}
 }
