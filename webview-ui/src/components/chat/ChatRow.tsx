@@ -17,7 +17,7 @@ import { findMatchingResourceOrTemplate } from "@src/utils/mcp"
 import { vscode } from "@src/utils/vscode"
 import { removeLeadingNonAlphanumeric } from "@src/utils/removeLeadingNonAlphanumeric"
 import { getLanguageFromPath } from "@src/utils/getLanguageFromPath"
-import { Button, StandardTooltip } from "@src/components/ui"
+import { Button } from "@src/components/ui"
 
 import { ToolUseBlock, ToolUseBlockHeader } from "../common/ToolUseBlock"
 import UpdateTodoListToolBlock from "./UpdateTodoListToolBlock"
@@ -114,7 +114,6 @@ export const ChatRowContent = ({
 	onBatchFileResponse,
 	isFollowUpAnswered,
 	editable,
-	hasCheckpoint,
 }: ChatRowContentProps) => {
 	const { t } = useTranslation()
 
@@ -955,25 +954,6 @@ export const ChatRowContent = ({
 		}
 	}
 
-	const viewFullDiffBtn =
-		hasCheckpoint && isLast && !isStreaming ? (
-			<div style={{ marginTop: 16, display: "flex", justifyContent: "flex-start" }}>
-				<StandardTooltip content={t("chat:checkpoint.menu.viewDiffFromInit")}>
-					<VSCodeButton
-						appearance="primary"
-						className="flex-1 mr-[6px]"
-						onClick={() =>
-							vscode.postMessage({
-								type: "checkpointDiff",
-								payload: { mode: "full", commitHash: "" },
-							})
-						}>
-						{t("chat:checkpoint.menu.viewDiffFromInit")}
-					</VSCodeButton>
-				</StandardTooltip>
-			</div>
-		) : null
-
 	switch (message.type) {
 		case "say":
 			switch (message.say) {
@@ -1293,7 +1273,6 @@ export const ChatRowContent = ({
 							</div>
 							<div style={{ color: "var(--vscode-charts-green)", paddingTop: 10 }}>
 								<Markdown markdown={message.text} />
-								{viewFullDiffBtn}
 							</div>
 						</>
 					)
@@ -1537,7 +1516,6 @@ export const ChatRowContent = ({
 								</div>
 								<div style={{ color: "var(--vscode-charts-green)", paddingTop: 10 }}>
 									<Markdown markdown={message.text} partial={message.partial} />
-									{viewFullDiffBtn}
 								</div>
 							</div>
 						)
