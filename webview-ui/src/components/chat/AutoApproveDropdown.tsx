@@ -298,7 +298,7 @@ export const AutoApproveDropdown = ({ disabled = false, triggerClassName = "" }:
 								handleAutoApprovalToggle()
 							}}>
 							<StandardTooltip content={`${t("chat:autoApprove.toggle")} (${getAutoApproveShortcut()})`}>
-								<span>
+								<span className="flex items-center gap-2">
 									<ToggleSwitch
 										checked={effectiveAutoApprovalEnabled}
 										aria-label="Toggle auto-approval"

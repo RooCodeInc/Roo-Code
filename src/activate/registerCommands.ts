@@ -229,10 +229,6 @@ const getCommandsMap = ({ context, outputChannel, provider }: RegisterCommandOpt
 			const currentState = context.globalState.get<boolean>("autoApprovalEnabled") ?? false
 			const newState = !currentState
 			await context.globalState.update("autoApprovalEnabled", newState)
-
-			// Show notification even without visible provider
-			const message = newState ? t("notification.autoApprove.enabled") : t("notification.autoApprove.disabled")
-			vscode.window.showInformationMessage(message)
 			return
 		}
 
@@ -248,10 +244,6 @@ const getCommandsMap = ({ context, outputChannel, provider }: RegisterCommandOpt
 			type: "action",
 			action: "toggleAutoApprove",
 		})
-
-		// Show toast notification
-		const message = newState ? t("notification.autoApprove.enabled") : t("notification.autoApprove.disabled")
-		vscode.window.showInformationMessage(message)
 	},
 })
 
