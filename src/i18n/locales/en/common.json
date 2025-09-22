@@ -144,12 +144,6 @@
 		"mode_exported": "Mode '{{mode}}' exported successfully",
 		"mode_imported": "Mode imported successfully"
 	},
-	"notification": {
-		"autoApprove": {
-			"enabled": "Auto-approve enabled",
-			"disabled": "Auto-approve disabled"
-		}
-	},
 	"answers": {
 		"yes": "Yes",
 		"no": "No",
