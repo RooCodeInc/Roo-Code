@@ -27,6 +27,7 @@ export const CheckpointMenu = ({ ts, commitHash, checkpoint, open, onOpenChange 
 	const { t } = useTranslation()
 	const [internalOpen, setInternalOpen] = useState(false)
 	const [isConfirming, setIsConfirming] = useState(false)
+	const [isDiffOpen, setIsDiffOpen] = useState(false)
 	const portalContainer = useRooPortal("roo-portal")
 
 	const previousCommitHash = checkpoint?.from
@@ -80,16 +81,6 @@ export const CheckpointMenu = ({ ts, commitHash, checkpoint, open, onOpenChange 
 			<StandardTooltip content={t("chat:checkpoint.menu.viewDiff")}>
 				<Button variant="ghost" size="icon" onClick={onCheckpointDiff}>
 					<span className="codicon codicon-diff-single" />
-				</Button>
-			</StandardTooltip>
-			<StandardTooltip content={t("chat:checkpoint.menu.viewDiffFromInit")}>
-				<Button variant="ghost" size="icon" onClick={onDiffFromInit}>
-					<span className="codicon codicon-versions" />
-				</Button>
-			</StandardTooltip>
-			<StandardTooltip content={t("chat:checkpoint.menu.viewDiffWithCurrent")}>
-				<Button variant="ghost" size="icon" onClick={onDiffWithCurrent}>
-					<span className="codicon codicon-diff" />
 				</Button>
 			</StandardTooltip>
 			<Popover open={isOpen} onOpenChange={handleOpenChange}>
@@ -148,6 +139,37 @@ export const CheckpointMenu = ({ ts, commitHash, checkpoint, open, onOpenChange 
 								</div>
 							)}
 						</div>
+					</div>
+				</PopoverContent>
+			</Popover>
+			<Popover open={isDiffOpen} onOpenChange={(open) => setIsDiffOpen(open)}>
+				<StandardTooltip content={t("chat:task.seeMore")}>
+					<PopoverTrigger asChild>
+						<Button variant="ghost" size="icon" aria-label={t("chat:checkpoint.menu.more")}>
+							<span className="codicon codicon-chevron-down" />
+						</Button>
+					</PopoverTrigger>
+				</StandardTooltip>
+				<PopoverContent align="end" container={portalContainer}>
+					<div className="flex flex-col gap-2">
+						<Button
+							variant="ghost"
+							onClick={() => {
+								onDiffFromInit()
+								setIsDiffOpen(false)
+							}}>
+							<span className="codicon codicon-versions mr-2" />
+							{t("chat:checkpoint.menu.viewDiffFromInit")}
+						</Button>
+						<Button
+							variant="ghost"
+							onClick={() => {
+								onDiffWithCurrent()
+								setIsDiffOpen(false)
+							}}>
+							<span className="codicon codicon-diff mr-2" />
+							{t("chat:checkpoint.menu.viewDiffWithCurrent")}
+						</Button>
 					</div>
 				</PopoverContent>
 			</Popover>
