@@ -5,7 +5,6 @@ import * as vscode from "vscode"
 
 import { WatsonxAIHandler } from "../watsonx"
 import { ApiHandlerOptions } from "../../../shared/api"
-import { getWatsonxModels } from "../fetchers/watsonx"
 
 // Mock WatsonXAI
 const mockTextChat = vitest.fn()
@@ -141,6 +140,7 @@ describe("WatsonxAIHandler", () => {
 				messages: [{ role: "user", content: "Test prompt" }],
 				maxTokens: 2048,
 				temperature: 0.7,
+				maxCompletionTokens: 0,
 			})
 		})
 
@@ -261,6 +261,7 @@ describe("WatsonxAIHandler", () => {
 				],
 				maxTokens: 2048,
 				temperature: 0.7,
+				maxCompletionTokens: 0,
 			})
 		})
 	})

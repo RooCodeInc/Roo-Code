@@ -426,13 +426,6 @@ const vercelAiGatewaySchema = baseProviderSettingsSchema.extend({
 	vercelAiGatewayModelId: z.string().optional(),
 })
 
-const watsonxSchema = baseProviderSettingsSchema.extend({
-	watsonxBaseUrl: z.string().optional(),
-	watsonxApiKey: z.string().optional(),
-	watsonxProjectId: z.string().optional(),
-	watsonxModelId: z.string().optional(),
-})
-
 const defaultSchema = z.object({
 	apiProvider: z.undefined(),
 })
