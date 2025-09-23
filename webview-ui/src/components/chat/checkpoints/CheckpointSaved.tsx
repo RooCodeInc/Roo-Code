@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { cn } from "@/lib/utils"
 
 import { CheckpointMenu } from "./CheckpointMenu"
 import { checkpointSchema } from "./schema"
@@ -49,8 +50,9 @@ export const CheckpointSaved = ({ checkpoint, ...props }: CheckpointSavedProps) 
 						"linear-gradient(90deg, rgba(0, 188, 255, .65), rgba(0, 188, 255, .65) 80%, rgba(0, 188, 255, 0) 99%)",
 				}}></span>
 
-			<div className={`h-4 -mt-2 ${isPopoverOpen ? "block" : "hidden group-hover:block"}`}>
-				<CheckpointMenu {...props} checkpoint={metadata} onPopoverOpenChange={setIsPopoverOpen} />
+			{/* Keep menu visible while popover is open; otherwise rely on group-hover */}
+			<div className={cn("h-4 -mt-2", isPopoverOpen ? "block" : "hidden group-hover:block")}>
+				<CheckpointMenu {...props} checkpoint={metadata} open={isPopoverOpen} onOpenChange={setIsPopoverOpen} />
 			</div>
 		</div>
 	)

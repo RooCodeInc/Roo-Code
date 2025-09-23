@@ -13,7 +13,8 @@ type CheckpointMenuProps = {
 	commitHash: string
 	currentHash?: string
 	checkpoint: Checkpoint
-	onPopoverOpenChange?: (open: boolean) => void
+	open?: boolean
+	onOpenChange?: (open: boolean) => void
 }
 
 export const CheckpointMenu = ({
@@ -21,16 +22,20 @@ export const CheckpointMenu = ({
 	commitHash,
 	currentHash,
 	checkpoint,
-	onPopoverOpenChange,
+	open,
+	onOpenChange,
 }: CheckpointMenuProps) => {
 	const { t } = useTranslation()
-	const [isOpen, setIsOpen] = useState(false)
+	const [internalOpen, setInternalOpen] = useState(false)
 	const [isConfirming, setIsConfirming] = useState(false)
 	const portalContainer = useRooPortal("roo-portal")
 
 	const isCurrent = currentHash === commitHash
 
 	const previousCommitHash = checkpoint?.from
+
+	const isOpen = open ?? internalOpen
+	const setOpen = onOpenChange ?? setInternalOpen
 
 	const onCheckpointDiff = useCallback(() => {
 		vscode.postMessage({
@@ -41,13 +46,21 @@ export const CheckpointMenu = ({
 
 	const onPreview = useCallback(() => {
 		vscode.postMessage({ type: "checkpointRestore", payload: { ts, commitHash, mode: "preview" } })
-		setIsOpen(false)
-	}, [ts, commitHash])
+		setOpen(false)
+	}, [ts, commitHash, setOpen])
 
 	const onRestore = useCallback(() => {
 		vscode.postMessage({ type: "checkpointRestore", payload: { ts, commitHash, mode: "restore" } })
-		setIsOpen(false)
-	}, [ts, commitHash])
+		setOpen(false)
+	}, [ts, commitHash, setOpen])
+
+	const handleOpenChange = useCallback(
+		(open: boolean) => {
+			setOpen(open)
+			setIsConfirming(false)
+		},
+		[setOpen],
+	)
 
 	return (
 		<div className="flex flex-row gap-1">
@@ -56,13 +69,7 @@ export const CheckpointMenu = ({
 					<span className="codicon codicon-diff-single" />
 				</Button>
 			</StandardTooltip>
-			<Popover
-				open={isOpen}
-				onOpenChange={(open) => {
-					setIsOpen(open)
-					setIsConfirming(false)
-					onPopoverOpenChange?.(open)
-				}}>
+			<Popover open={isOpen} onOpenChange={handleOpenChange}>
 				<StandardTooltip content={t("chat:checkpoint.menu.restore")}>
 					<PopoverTrigger asChild>
 						<Button variant="ghost" size="icon">
