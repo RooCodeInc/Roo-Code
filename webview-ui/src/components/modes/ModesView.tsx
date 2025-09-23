@@ -1309,10 +1309,10 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 							const value =
 								(e as unknown as CustomEvent)?.detail?.target?.value ??
 								((e as any).target as HTMLTextAreaElement).value
-							setCustomInstructions(value || undefined)
+							setCustomInstructions(value ?? undefined)
 							vscode.postMessage({
 								type: "customInstructions",
-								text: value.trim() || undefined,
+								text: value.trim() ?? undefined,
 							})
 						}}
 						rows={4}

@@ -56,21 +56,31 @@ const PromptsSettings = ({ customSupportPrompts, setCustomSupportPrompts }: Prom
 	}, [])
 
 	const updateSupportPrompt = (type: SupportPromptType, value: string | undefined) => {
-		// Trim the value when storing, but keep empty strings
-		const trimmedValue = value?.trim()
-		const finalValue = trimmedValue === "" ? undefined : trimmedValue
+		// Don't trim during editing to preserve intentional whitespace
+		// Use nullish coalescing to preserve empty strings
+		const finalValue = value ?? undefined
 
 		if (type === "CONDENSE") {
-			setCustomCondensingPrompt(finalValue || supportPrompt.default.CONDENSE)
+			setCustomCondensingPrompt(finalValue ?? supportPrompt.default.CONDENSE)
 			vscode.postMessage({
 				type: "updateCondensingPrompt",
-				text: finalValue || supportPrompt.default.CONDENSE,
+				text: finalValue ?? supportPrompt.default.CONDENSE,
 			})
 			// Also update the customSupportPrompts to trigger change detection
-			const updatedPrompts = { ...customSupportPrompts, [type]: finalValue }
+			const updatedPrompts = { ...customSupportPrompts }
+			if (finalValue === undefined) {
+				delete updatedPrompts[type]
+			} else {
+				updatedPrompts[type] = finalValue
+			}
 			setCustomSupportPrompts(updatedPrompts)
 		} else {
-			const updatedPrompts = { ...customSupportPrompts, [type]: finalValue }
+			const updatedPrompts = { ...customSupportPrompts }
+			if (finalValue === undefined) {
+				delete updatedPrompts[type]
+			} else {
+				updatedPrompts[type] = finalValue
+			}
 			setCustomSupportPrompts(updatedPrompts)
 		}
 	}
