@@ -106,7 +106,7 @@ export const OrganizationSwitcher = ({ userInfo, organizations, onOrganizationCh
 								</>
 							) : (
 								<>
-									<div className="p-0.5 bg-vscode-button-background rounded-full flex items-center justify-center bg-vscode-button-background text-vscode-button-foreground text-xs">
+									<div className="p-0.5 bg-vscode-button-background rounded-full flex items-center justify-center text-vscode-button-foreground text-xs">
 										<User className="w-4 h-4 text-vscode-button-foreground" />
 									</div>
 									<span>{t("cloud:personalAccount")}</span>

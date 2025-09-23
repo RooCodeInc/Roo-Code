@@ -246,30 +246,19 @@ export class CloudService extends EventEmitter<CloudServiceEvents> implements Di
 	public async switchOrganization(organizationId: string | null): Promise<void> {
 		this.ensureInitialized()
 
-		// Check if we have a WebAuthService (not StaticTokenAuthService)
-		if (!(this.authService instanceof WebAuthService)) {
-			throw new Error("Organization switching is only available with web authentication")
-		}
-
-		const webAuthService = this.authService as WebAuthService
-
 		// Perform the organization switch
-		await webAuthService.switchOrganization(organizationId)
+		// StaticTokenAuthService will throw an error if organization switching is not supported
+		await this.authService!.switchOrganization(organizationId)
 
 		// Broadcast the change
-		await this.authService.broadcast()
+		await this.authService!.broadcast()
 	}
 
 	public async getOrganizationMemberships(): Promise<CloudOrganizationMembership[]> {
 		this.ensureInitialized()
 
-		// Check if we have a WebAuthService (not StaticTokenAuthService)
-		if (!(this.authService instanceof WebAuthService)) {
-			return []
-		}
-
-		const webAuthService = this.authService as WebAuthService
-		return await webAuthService.getOrganizationMemberships()
+		// StaticTokenAuthService will throw an error if organization memberships are not supported
+		return await this.authService!.getOrganizationMemberships()
 	}
 
 	// SettingsService
