@@ -141,7 +141,8 @@ export class WebAuthService extends EventEmitter<AuthServiceEvents> implements A
 				if (
 					this.credentials === null ||
 					this.credentials.clientToken !== credentials.clientToken ||
-					this.credentials.sessionId !== credentials.sessionId
+					this.credentials.sessionId !== credentials.sessionId ||
+					this.credentials.organizationId !== credentials.organizationId
 				) {
 					this.transitionToAttemptingSession(credentials)
 				}
