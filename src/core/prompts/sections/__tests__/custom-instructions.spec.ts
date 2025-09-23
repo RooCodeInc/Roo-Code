@@ -1611,7 +1611,7 @@ describe("File deduplication", () => {
 		vi.clearAllMocks()
 	})
 
-	test("should skip files with duplicate content (same MD5 hash)", async () => {
+	test("should skip files with duplicate content (same content hash)", async () => {
 		// Mock directory structure with different files having identical content
 		const mockEntries = [
 			{

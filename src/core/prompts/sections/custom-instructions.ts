@@ -2,7 +2,6 @@ import fs from "fs/promises"
 import path from "path"
 import * as os from "os"
 import { Dirent } from "fs"
-import { createHash } from "crypto"
 
 import { isLanguage } from "@roo-code/types"
 
@@ -20,10 +19,17 @@ interface FileTracker {
 }
 
 /**
- * Create MD5 hash of file content
+ * Create content hash using FNV-1a algorithm (non-cryptographic, fast, cross-platform)
  */
 function createContentHash(content: string): string {
-	return createHash("md5").update(content, "utf8").digest("hex")
+	let hash = 2166136261 // FNV offset basis (32-bit)
+
+	for (let i = 0; i < content.length; i++) {
+		hash ^= content.charCodeAt(i)
+		hash = Math.imul(hash, 16777619) // FNV prime (32-bit)
+	}
+
+	return (hash >>> 0).toString(16) // Convert to unsigned 32-bit hex
 }
 
 /**
