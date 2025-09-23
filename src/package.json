@@ -3,7 +3,7 @@
 	"displayName": "%extension.displayName%",
 	"description": "%extension.description%",
 	"publisher": "RooVeterinaryInc",
-	"version": "3.28.2",
+	"version": "3.28.6",
 	"icon": "assets/icons/icon.png",
 	"galleryBanner": {
 		"color": "#617A91",
@@ -73,7 +73,7 @@
 			{
 				"command": "roo-cline.plusButtonClicked",
 				"title": "%command.newTask.title%",
-				"icon": "$(add)"
+				"icon": "$(edit)"
 			},
 			{
 				"command": "roo-cline.promptsButtonClicked",
@@ -173,6 +173,11 @@
 			{
 				"command": "roo-cline.acceptInput",
 				"title": "%command.acceptInput.title%",
+				"category": "%configuration.title%"
+			},
+			{
+				"command": "roo-cline.toggleAutoApprove",
+				"title": "%command.toggleAutoApprove.title%",
 				"category": "%configuration.title%"
 			}
 		],
@@ -310,6 +315,13 @@
 				"win": "ctrl+y",
 				"linux": "ctrl+y",
 				"when": "editorTextFocus && editorHasSelection"
+			},
+			{
+				"command": "roo-cline.toggleAutoApprove",
+				"key": "cmd+alt+a",
+				"mac": "cmd+alt+a",
+				"win": "ctrl+alt+a",
+				"linux": "ctrl+alt+a"
 			}
 		],
 		"submenus": [
