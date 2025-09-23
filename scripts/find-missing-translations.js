@@ -190,6 +190,9 @@ async function checkAreaTranslations(area) {
 		`Checking ${englishFileContents.length} translation file(s): ${englishFileContents.map((f) => f.name).join(", ")}`,
 	)
 
+	// Precompute English keys per file
+	const englishFileKeys = new Map(englishFileContents.map((f) => [f.name, findKeys(f.content)]))
+
 	// Results object to store missing translations
 	const missingTranslations = {}
 
@@ -211,7 +214,7 @@ async function checkAreaTranslations(area) {
 					}
 
 					// Find all keys in the English file
-					const englishKeys = findKeys(englishContent)
+					const englishKeys = englishFileKeys.get(name) || []
 
 					// Check for missing keys in the locale file
 					const missingKeys = []
