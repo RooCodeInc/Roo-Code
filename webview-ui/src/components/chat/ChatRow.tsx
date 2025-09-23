@@ -66,7 +66,7 @@ import {
 	TerminalSquare,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { getLine } from "@/utils/path-mentions"
+import { getJumpLine } from "@/utils/path-mentions"
 import { useZgsmUserInfo } from "@/hooks/useZgsmUserInfo"
 import { format } from "date-fns"
 
@@ -587,13 +587,13 @@ export const ChatRowContent = ({
 								isLoading={message.partial && isLast}
 								isExpanded={isExpanded}
 								onToggleExpand={handleToggleExpand}
-								onJumpToFile={() =>
+								onJumpToFile={() => {
 									vscode.postMessage({
 										type: "openFile",
 										text: "./" + tool.path,
-										values: { line: getLine(tool) },
+										values: { line: getJumpLine(tool)[0] || 0 },
 									})
-								}
+								}}
 							/>
 						</div>
 					</>
@@ -643,13 +643,13 @@ export const ChatRowContent = ({
 							<ToolUseBlock>
 								<ToolUseBlockHeader
 									className="group"
-									onClick={() =>
+									onClick={() => {
 										vscode.postMessage({
 											type: "openFile",
 											text: tool.content,
-											values: { line: getLine(tool) },
+											values: { line: getJumpLine(tool)[0] || 0 },
 										})
-									}>
+									}}>
 									{tool.path?.startsWith(".") && <span>.</span>}
 									<span className="whitespace-nowrap overflow-hidden text-ellipsis text-left mr-2 rtl">
 										{removeLeadingNonAlphanumeric(tool.path ?? "") + "\u200E"}

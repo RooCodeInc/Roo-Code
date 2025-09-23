@@ -3,16 +3,10 @@ import { memo } from "react"
 import { ToolUseBlock, ToolUseBlockHeader } from "../common/ToolUseBlock"
 import { vscode } from "@src/utils/vscode"
 import { removeLeadingNonAlphanumeric } from "@src/utils/removeLeadingNonAlphanumeric"
+import { getJumpLine } from "@/utils/path-mentions"
+import { FilePermissionItem } from "@roo-code/types"
 
-interface FilePermissionItem {
-	path: string
-	lineSnippet?: string
-	isOutsideWorkspace?: boolean
-	key: string
-	content?: string // full path
-}
-
-interface BatchFilePermissionProps {
+export interface BatchFilePermissionProps {
 	files: FilePermissionItem[]
 	onPermissionResponse?: (response: { [key: string]: boolean }) => void
 	ts: number
@@ -33,7 +27,13 @@ export const BatchFilePermission = memo(({ files = [], onPermissionResponse, ts 
 						<div key={`${file.path}-${ts}`} className="flex items-center gap-2 mb-[4px]">
 							<ToolUseBlock className="flex-1">
 								<ToolUseBlockHeader
-									onClick={() => vscode.postMessage({ type: "openFile", text: file.content })}>
+									onClick={() => {
+										vscode.postMessage({
+											type: "openFile",
+											text: file.content,
+											values: { line: getJumpLine(file) },
+										})
+									}}>
 									{file.path?.startsWith(".") && <span>.</span>}
 									<span className="whitespace-nowrap overflow-hidden text-ellipsis text-left mr-2 rtl">
 										{removeLeadingNonAlphanumeric(file.path ?? "") + "\u200E"}

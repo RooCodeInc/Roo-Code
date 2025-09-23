@@ -55,3 +55,11 @@ export const toolUsageSchema = z.record(
 )
 
 export type ToolUsage = z.infer<typeof toolUsageSchema>
+
+export interface FilePermissionItem {
+	path: string
+	lineSnippet?: string
+	isOutsideWorkspace?: boolean
+	key: string
+	content?: string // full path
+}

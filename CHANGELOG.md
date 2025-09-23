@@ -1,5 +1,15 @@
 # Costrict Change Log
 
+## [1.6.13]
+
+- New Chat UI (more readable and user-friendly)
+- Updates base URL retrieval in ErrorCodeManager
+- Refines localization strings for clarity
+- Adds os-locale package for improved language detection
+- Add file read character limit
+- Sync roocode
+- Fix known issues
+
 ## [1.6.12]
 
 - Improve default values for zgsm configuration

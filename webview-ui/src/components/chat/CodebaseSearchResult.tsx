@@ -16,7 +16,6 @@ const CodebaseSearchResult: React.FC<CodebaseSearchResultProps> = ({ filePath, s
 	const { t } = useTranslation("chat")
 
 	const handleClick = () => {
-		console.log(filePath)
 		vscode.postMessage({
 			type: "openFile",
 			text: "./" + filePath,

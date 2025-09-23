@@ -20,6 +20,7 @@ import {
 	validateImageForProcessing,
 	processImageFile,
 } from "./helpers/imageHelpers"
+import { DEFAULT_FILE_READ_CHARACTER_LIMIT } from "@roo-code/types"
 
 /**
  * Simplified read file tool for models that only support single file reads
@@ -84,7 +85,8 @@ export async function simpleReadFileTool(
 		}
 
 		// Get max read file line setting
-		const { maxReadFileLine = -1 } = (await cline.providerRef.deref()?.getState()) ?? {}
+		const { maxReadFileLine = -1, maxReadCharacterLimit = DEFAULT_FILE_READ_CHARACTER_LIMIT } =
+			(await cline.providerRef.deref()?.getState()) ?? {}
 
 		// Create approval message
 		const isOutsideWorkspace = isPathOutsideWorkspace(fullPath)
@@ -247,7 +249,7 @@ export async function simpleReadFileTool(
 		}
 
 		// Handle normal file read
-		const content = await extractTextFromFile(fullPath)
+		const content = await extractTextFromFile(fullPath, maxReadFileLine, maxReadCharacterLimit)
 		const lineRangeAttr = ` lines="1-${totalLines}"`
 		let xmlInfo = totalLines > 0 ? `<content${lineRangeAttr}>\n${content}</content>\n` : `<content/>`
 

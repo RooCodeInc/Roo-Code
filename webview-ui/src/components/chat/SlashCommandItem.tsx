@@ -6,6 +6,7 @@ import type { Command } from "@roo/ExtensionMessage"
 import { useAppTranslation } from "@/i18n/TranslationContext"
 import { Button, StandardTooltip } from "@/components/ui"
 import { vscode } from "@/utils/vscode"
+import { getJumpLine } from "@/utils/path-mentions"
 
 interface SlashCommandItemProps {
 	command: Command
@@ -24,6 +25,7 @@ export const SlashCommandItem: React.FC<SlashCommandItemProps> = ({ command, onD
 			vscode.postMessage({
 				type: "openFile",
 				text: command.filePath,
+				values: { line: getJumpLine(command) },
 			})
 		} else {
 			// Fallback: request to open command file by name and source

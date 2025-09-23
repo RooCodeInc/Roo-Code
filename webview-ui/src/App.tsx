@@ -26,12 +26,13 @@ import ErrorBoundary from "./components/ErrorBoundary"
 // import { CloudView } from "./components/cloud/CloudView"
 import { useAddNonInteractiveClickListener } from "./components/ui/hooks/useNonInteractiveClick"
 import { TooltipProvider } from "./components/ui/tooltip"
-import { STANDARD_TOOLTIP_DELAY } from "./components/ui/standard-tooltip"
+import { STANDARD_TOOLTIP_DELAY, StandardTooltip } from "./components/ui/standard-tooltip"
 import { ZgsmAccountView } from "./components/cloud/ZgsmAccountView"
 import { TabContent, TabList, TabTrigger } from "./components/common/Tab"
 import { cn } from "./lib/utils"
 import { ReauthConfirmationDialog } from "./components/chat/ReauthConfirmationDialog"
 import { ZgsmCodebaseDisableConfirmDialog } from "./components/settings/ZgsmCodebaseDisableConfirmDialog"
+import { useTranslation } from "react-i18next"
 
 type Tab = "settings" | "history" | "mcp" | "modes" | "chat" | "marketplace" | "cloud" | "zgsm-account" | "codeReview"
 
@@ -99,6 +100,7 @@ const App = () => {
 		mdmCompliant,
 		apiConfiguration,
 	} = useExtensionState()
+	const { t } = useTranslation()
 
 	// Create a persistent state manager
 	// const marketplaceStateManager = useMemo(() => new MarketplaceViewStateManager(), [])
@@ -371,12 +373,16 @@ const App = () => {
 
 					{tab === "chat" && (
 						<div className="header-right flex absolute right-[12px]">
-							<i
-								className="codicon codicon-add mr-[4px] cursor-pointer p-[2px]"
-								onClick={() => resetTabs()}></i>
-							<i
-								className="codicon codicon-history cursor-pointer p-[2px]"
-								onClick={() => switchTab("history")}></i>
+							<StandardTooltip content={t("chat:startNewTask.title")}>
+								<i
+									className="codicon codicon-add mr-[4px] cursor-pointer p-[2px]"
+									onClick={() => resetTabs()}></i>
+							</StandardTooltip>
+							<StandardTooltip content={t("history:history")}>
+								<i
+									className="codicon codicon-history cursor-pointer p-[2px]"
+									onClick={() => switchTab("history")}></i>
+							</StandardTooltip>
 						</div>
 					)}
 				</div>

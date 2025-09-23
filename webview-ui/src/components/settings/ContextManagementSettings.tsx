@@ -186,7 +186,7 @@ export const ContextManagementSettings = ({
 					</label>
 					<div className="flex items-center gap-2">
 						<Slider
-							min={0}
+							min={2000}
 							max={50000}
 							step={100}
 							value={[maxReadCharacterLimit ?? 20000]}
