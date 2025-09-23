@@ -14,29 +14,20 @@ interface ReasoningBlockProps {
 	metadata?: any
 }
 
-/**
- * Render reasoning with a heading and a simple timer.
- * - Heading uses i18n key chat:reasoning.thinking
- * - Timer runs while reasoning is active (no persistence)
- * - Can be collapsed to show only last 2 lines of content
- */
 export const ReasoningBlock = ({ content, isStreaming, isLast }: ReasoningBlockProps) => {
 	const { t } = useTranslation()
 	const { reasoningBlockCollapsed } = useExtensionState()
 
-	// Initialize collapsed state based on global setting (default to collapsed)
 	const [isCollapsed, setIsCollapsed] = useState(reasoningBlockCollapsed !== false)
 
 	const startTimeRef = useRef<number>(Date.now())
 	const [elapsed, setElapsed] = useState<number>(0)
 	const contentRef = useRef<HTMLDivElement>(null)
 
-	// Update collapsed state when global setting changes
 	useEffect(() => {
 		setIsCollapsed(reasoningBlockCollapsed !== false)
 	}, [reasoningBlockCollapsed])
 
-	// Simple timer that runs while streaming
 	useEffect(() => {
 		if (isLast && isStreaming) {
 			const tick = () => setElapsed(Date.now() - startTimeRef.current)
