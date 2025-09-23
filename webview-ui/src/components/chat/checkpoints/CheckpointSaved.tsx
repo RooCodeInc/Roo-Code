@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useMemo, useRef, useState, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { cn } from "@/lib/utils"
 
@@ -17,6 +17,36 @@ export const CheckpointSaved = ({ checkpoint, ...props }: CheckpointSavedProps) 
 	const { t } = useTranslation()
 	const isCurrent = props.currentHash === props.commitHash
 	const [isPopoverOpen, setIsPopoverOpen] = useState(false)
+	const [isClosing, setIsClosing] = useState(false)
+	const closeTimer = useRef<number | null>(null)
+
+	useEffect(() => {
+		return () => {
+			if (closeTimer.current) {
+				window.clearTimeout(closeTimer.current)
+				closeTimer.current = null
+			}
+		}
+	}, [])
+
+	const handlePopoverOpenChange = (open: boolean) => {
+		setIsPopoverOpen(open)
+		if (open) {
+			setIsClosing(false)
+			if (closeTimer.current) {
+				window.clearTimeout(closeTimer.current)
+				closeTimer.current = null
+			}
+		} else {
+			setIsClosing(true)
+			closeTimer.current = window.setTimeout(() => {
+				setIsClosing(false)
+				closeTimer.current = null
+			}, 200) // keep menu visible briefly to avoid popover jump
+		}
+	}
+
+	const menuVisible = isPopoverOpen || isClosing
 
 	const metadata = useMemo(() => {
 		if (!checkpoint) {
@@ -50,9 +80,16 @@ export const CheckpointSaved = ({ checkpoint, ...props }: CheckpointSavedProps) 
 						"linear-gradient(90deg, rgba(0, 188, 255, .65), rgba(0, 188, 255, .65) 80%, rgba(0, 188, 255, 0) 99%)",
 				}}></span>
 
-			{/* Keep menu visible while popover is open; otherwise rely on group-hover */}
-			<div className={cn("h-4 -mt-2", isPopoverOpen ? "block" : "hidden group-hover:block")}>
-				<CheckpointMenu {...props} checkpoint={metadata} open={isPopoverOpen} onOpenChange={setIsPopoverOpen} />
+			{/* Keep menu visible while popover is open or briefly after close to prevent jump */}
+			<div
+				data-testid="checkpoint-menu-container"
+				className={cn("h-4 -mt-2", menuVisible ? "block" : "hidden group-hover:block")}>
+				<CheckpointMenu
+					{...props}
+					checkpoint={metadata}
+					open={isPopoverOpen}
+					onOpenChange={handlePopoverOpenChange}
+				/>
 			</div>
 		</div>
 	)
