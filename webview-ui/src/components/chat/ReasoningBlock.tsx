@@ -4,7 +4,7 @@ import { useExtensionState } from "@src/context/ExtensionStateContext"
 import { vscode } from "@src/utils/vscode"
 
 import MarkdownBlock from "../common/MarkdownBlock"
-import { Lightbulb, ChevronDown, ChevronRight } from "lucide-react"
+import { Lightbulb, ChevronDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface ReasoningBlockProps {
@@ -76,6 +76,14 @@ export const ReasoningBlock = ({ content, isStreaming, isLast }: ReasoningBlockP
 		setIsCollapsed(!isCollapsed)
 	}
 
+	/*
+	Thinking blocks should be
+	- Collapsed by default
+	- When streaming, show 1-2 lines of content
+	- When not streaming, not show any content
+	- When expanded, always show full content
+	*/
+
 	return (
 		<div className="group">
 			<div
@@ -88,34 +96,15 @@ export const ReasoningBlock = ({ content, isStreaming, isLast }: ReasoningBlockP
 						<span className="text-sm text-vscode-descriptionForeground tabular-nums">{secondsLabel}</span>
 					)}
 				</div>
-				<div className="opacity-0 group-hover:opacity-100 transition-opacity">
-					{isCollapsed ? <ChevronRight className="w-4" /> : <ChevronDown className="w-4" />}
-				</div>
+				<ChevronDown
+					className={cn("w-4 transition-all opacity-0 group-hover:opacity-100", isCollapsed && "rotate-180")}
+				/>
 			</div>
 			{(content?.trim()?.length ?? 0) > 0 && (
 				<div
 					ref={contentRef}
-					className={cn(
-						"border-l border-vscode-descriptionForeground/20 ml-2 pl-4 pb-1 text-vscode-descriptionForeground",
-						isCollapsed && "relative overflow-hidden",
-					)}
-					style={
-						isCollapsed
-							? {
-									maxHeight: "3em", // Approximately 2 lines
-									maskImage: "linear-gradient(to top, transparent 0%, black 30%)",
-									WebkitMaskImage: "linear-gradient(to top, transparent 0%, black 30%)",
-								}
-							: undefined
-					}>
-					{isCollapsed ? (
-						// When collapsed, render content in a container that shows bottom-aligned text
-						<div className="flex flex-col justify-end" style={{ minHeight: "3em" }}>
-							<MarkdownBlock markdown={content} />
-						</div>
-					) : (
-						<MarkdownBlock markdown={content} />
-					)}
+					className="border-l border-vscode-descriptionForeground/20 ml-2 pl-4 pb-1 text-vscode-descriptionForeground">
+					{!isCollapsed && <MarkdownBlock markdown={content} />}
 				</div>
 			)}
 		</div>
