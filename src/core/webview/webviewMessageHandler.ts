@@ -2388,11 +2388,26 @@ export const webviewMessageHandler = async (
 
 				// Refresh the state to update UI
 				await provider.postStateToWebview()
+
+				// Send success response back to webview
+				await provider.postMessageToWebview({
+					type: "organizationSwitchResult",
+					success: true,
+					organizationId: organizationId,
+				})
 			} catch (error) {
 				provider.log(`Organization switch failed: ${error}`)
-				vscode.window.showErrorMessage(
-					`Failed to switch organization: ${error instanceof Error ? error.message : String(error)}`,
-				)
+				const errorMessage = error instanceof Error ? error.message : String(error)
+
+				// Send error response back to webview
+				await provider.postMessageToWebview({
+					type: "organizationSwitchResult",
+					success: false,
+					error: errorMessage,
+					organizationId: message.organizationId ?? null,
+				})
+
+				vscode.window.showErrorMessage(`Failed to switch organization: ${errorMessage}`)
 			}
 			break
 		}

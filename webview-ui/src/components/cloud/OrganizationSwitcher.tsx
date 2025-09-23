@@ -4,6 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectSe
 import { type CloudUserInfo, type CloudOrganizationMembership } from "@roo-code/types"
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { vscode } from "@src/utils/vscode"
+import { type ExtensionMessage } from "@roo/ExtensionMessage"
 
 type OrganizationSwitcherProps = {
 	userInfo: CloudUserInfo
@@ -19,6 +20,28 @@ export const OrganizationSwitcher = ({ userInfo, organizations, onOrganizationCh
 	// Update selected org when userInfo changes
 	useEffect(() => {
 		setSelectedOrgId(userInfo.organizationId || null)
+	}, [userInfo.organizationId])
+
+	// Listen for organization switch results
+	useEffect(() => {
+		const handleMessage = (event: MessageEvent) => {
+			const message = event.data as ExtensionMessage
+			if (message.type === "organizationSwitchResult") {
+				// Reset loading state when we receive the result
+				setIsLoading(false)
+
+				if (message.success) {
+					// Update selected org based on the result
+					setSelectedOrgId(message.organizationId ?? null)
+				} else {
+					// Revert to the previous organization on error
+					setSelectedOrgId(userInfo.organizationId || null)
+				}
+			}
+		}
+
+		window.addEventListener("message", handleMessage)
+		return () => window.removeEventListener("message", handleMessage)
 	}, [userInfo.organizationId])
 
 	const handleOrganizationChange = async (value: string) => {
@@ -44,11 +67,6 @@ export const OrganizationSwitcher = ({ userInfo, organizations, onOrganizationCh
 		if (onOrganizationChange) {
 			onOrganizationChange(newOrgId)
 		}
-
-		// Reset loading state after a delay
-		setTimeout(() => {
-			setIsLoading(false)
-		}, 1000)
 	}
 
 	// If user has no organizations, don't show the switcher
