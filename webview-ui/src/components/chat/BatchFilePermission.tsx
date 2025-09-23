@@ -31,7 +31,7 @@ export const BatchFilePermission = memo(({ files = [], onPermissionResponse, ts 
 										vscode.postMessage({
 											type: "openFile",
 											text: file.content,
-											values: { line: getJumpLine(file) },
+											values: { line: getJumpLine(file)[0] || 0 },
 										})
 									}}>
 									{file.path?.startsWith(".") && <span>.</span>}

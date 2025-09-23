@@ -306,6 +306,18 @@ const getCommandsMap = ({ context, outputChannel, provider }: RegisterCommandOpt
 			}),
 		])
 	},
+	toggleAutoApprove: async () => {
+		const visibleProvider = getVisibleProviderOrLog(outputChannel)
+
+		if (!visibleProvider) {
+			return
+		}
+
+		visibleProvider.postMessageToWebview({
+			type: "action",
+			action: "toggleAutoApprove",
+		})
+	},
 })
 
 async function createAliasedPath(resourceUri: vscode.Uri): Promise<ProcessedResource | null> {

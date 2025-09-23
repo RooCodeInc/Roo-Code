@@ -152,6 +152,7 @@ export interface ExtensionMessage {
 		| "didBecomeVisible"
 		| "focusInput"
 		| "switchTab"
+		| "toggleAutoApprove"
 		| "codeReviewButtonClicked"
 	invoke?:
 		| "newChat"

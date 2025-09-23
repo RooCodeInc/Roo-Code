@@ -235,6 +235,11 @@
 			{
 				"command": "zgsm.view.userHelperDoc",
 				"title": "%command.view.userHelperDoc.title%"
+			},
+			{
+				"command": "zgsm.toggleAutoApprove",
+				"title": "%command.toggleAutoApprove.title%",
+				"category": "%configuration.title%"
 			}
 		],
 		"menus": {
@@ -426,6 +431,13 @@
 				"win": "ctrl+l",
 				"linux": "ctrl+l",
 				"when": "editorTextFocus && editorHasSelection"
+			},
+			{
+				"command": "zgsm.toggleAutoApprove",
+				"key": "cmd+alt+a",
+				"mac": "cmd+alt+a",
+				"win": "ctrl+alt+a",
+				"linux": "ctrl+alt+a"
 			}
 		],
 		"submenus": [

@@ -25,7 +25,7 @@ export const SlashCommandItem: React.FC<SlashCommandItemProps> = ({ command, onD
 			vscode.postMessage({
 				type: "openFile",
 				text: command.filePath,
-				values: { line: getJumpLine(command) },
+				values: { line: getJumpLine(command)[0] || 0 },
 			})
 		} else {
 			// Fallback: request to open command file by name and source

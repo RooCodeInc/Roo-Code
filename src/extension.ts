@@ -205,6 +205,14 @@ export async function activate(context: vscode.ExtensionContext) {
 	// 		`[CloudService] Failed to initialize cloud profile sync: ${error instanceof Error ? error.message : String(error)}`,
 	// 	)
 	// }
+	// Trigger initial cloud profile sync now that CloudService is ready.
+	// try {
+	// 	await provider.initializeCloudProfileSyncWhenReady()
+	// } catch (error) {
+	// 	outputChannel.appendLine(
+	// 		`[CloudService] Failed to initialize cloud profile sync: ${error instanceof Error ? error.message : String(error)}`,
+	// 	)
+	// }
 
 	// // Finish initializing the provider.
 	// TelemetryService.instance.setProvider(provider)

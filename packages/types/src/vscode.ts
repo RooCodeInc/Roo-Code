@@ -66,6 +66,7 @@ export const commandIds = [
 	"acceptInput",
 	"focusPanel",
 	"addFileToContext",
+	"toggleAutoApprove",
 ] as const
 
 export const costrictCommandIds = [

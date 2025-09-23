@@ -109,6 +109,7 @@ describe("BatchFilePermission", () => {
 		expect(mockVscodePostMessage).toHaveBeenCalledWith({
 			type: "openFile",
 			text: "src/components/Button.tsx",
+			values: { line: 0 },
 		})
 	})
 

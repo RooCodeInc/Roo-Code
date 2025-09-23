@@ -256,6 +256,7 @@
 		"tooltipManage": "管理自动批准设置",
 		"tooltipStatus": "自动批准已启用：{{toggles}}",
 		"title": "自动批准",
+		"toggle": "切换自动批准",
 		"all": "全部",
 		"none": "无",
 		"description": "无需请求权限即可执行这些操作。仅对您完全信任的操作启用此功能。",
@@ -320,8 +321,6 @@
 		"tooltips": {
 			"expand": "展开代码块",
 			"collapse": "收起代码块",
-			"enable_wrap": "启用自动换行",
-			"disable_wrap": "禁用自动换行",
 			"copy_code": "复制代码"
 		}
 	},
