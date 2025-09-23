@@ -18,7 +18,7 @@ export const ReasoningBlock = ({ content, isStreaming, isLast }: ReasoningBlockP
 	const { t } = useTranslation()
 	const { reasoningBlockCollapsed } = useExtensionState()
 
-	const [isCollapsed, setIsCollapsed] = useState(reasoningBlockCollapsed !== false)
+	const [isCollapsed, setIsCollapsed] = useState(reasoningBlockCollapsed)
 
 	const startTimeRef = useRef<number>(Date.now())
 	const [elapsed, setElapsed] = useState<number>(0)
@@ -57,7 +57,7 @@ export const ReasoningBlock = ({ content, isStreaming, isLast }: ReasoningBlockP
 					)}
 				</div>
 				<div className="flex items-center gap-2">
-					<span className="text-sm text-vscode-descriptionForeground">
+					<span className="text-sm text-vscode-descriptionForeground" aria-label="Toggle reasoning block">
 						{isCollapsed ? t("chat:reasoning.expand") : t("chat:reasoning.collapse")}
 					</span>
 					<ChevronUp

@@ -15,6 +15,7 @@
 	"command.terminal.explainCommand.title": "Wyjaśnij tę Komendę",
 	"command.acceptInput.title": "Akceptuj Wprowadzanie/Sugestię",
 	"command.toggleAutoApprove.title": "Przełącz Auto-Zatwierdzanie",
+	"command.toggleThinkingBlocks.title": "Przełącz Bloki Myślenia",
 	"views.activitybar.title": "Roo Code",
 	"views.contextMenu.label": "Roo Code",
 	"views.terminalMenu.label": "Roo Code",
@@ -40,5 +41,6 @@
 	"settings.autoImportSettingsPath.description": "Ścieżka do pliku konfiguracyjnego RooCode, który ma być automatycznie importowany podczas uruchamiania rozszerzenia. Obsługuje ścieżki bezwzględne i ścieżki względne do katalogu domowego (np. '~/Documents/roo-code-settings.json'). Pozostaw puste, aby wyłączyć automatyczne importowanie.",
 	"settings.useAgentRules.description": "Włącz wczytywanie plików AGENTS.md dla reguł specyficznych dla agenta (zobacz https://agent-rules.org/)",
 	"settings.apiRequestTimeout.description": "Maksymalny czas w sekundach oczekiwania na odpowiedzi API (0 = brak limitu czasu, 1-3600s, domyślnie: 600s). Wyższe wartości są zalecane dla lokalnych dostawców, takich jak LM Studio i Ollama, którzy mogą potrzebować więcej czasu na przetwarzanie.",
+	"settings.newTaskRequireTodos.description": "Wymaga parametru 'todos' podczas tworzenia nowych zadań za pomocą narzędzia new_task",
 	"settings.codeIndex.embeddingBatchSize.description": "Rozmiar partii dla operacji osadzania podczas indeksowania kodu. Dostosuj to w oparciu o limity twojego dostawcy API. Domyślnie to 60."
 }
