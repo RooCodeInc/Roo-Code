@@ -50,6 +50,7 @@
 		"custom_storage_path_unusable": "Custom storage path \"{{path}}\" is unusable, will use default path",
 		"cannot_access_path": "Cannot access path {{path}}: {{error}}",
 		"settings_import_failed": "Settings import failed: {{error}}.",
+		"settings_import_no_content": "No content received for settings import.",
 		"mistake_limit_guidance": "This may indicate a failure in the model's thought process or inability to use a tool properly, which can be mitigated with some user guidance (e.g. \"Try breaking down the task into smaller steps\").",
 		"violated_organization_allowlist": "Failed to run task: the current profile isn't compatible with your organization settings",
 		"condense_failed": "Failed to condense context",
@@ -143,6 +144,13 @@
 		"image_saved": "Image saved to {{path}}",
 		"mode_exported": "Mode '{{mode}}' exported successfully",
 		"mode_imported": "Mode imported successfully"
+	},
+	"settingsFooter": {
+		"importFromRemoteFile": "Import from remote file system",
+		"importFromRemoteFileDescription": "Browse and select from the remote/workspace filesystem",
+		"importFromLocalFile": "Import from your local machine",
+		"importFromLocalFileDescription": "Browse and select from your local computer via browser",
+		"chooseImportSource": "Choose import source"
 	},
 	"answers": {
 		"yes": "Yes",

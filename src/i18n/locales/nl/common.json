@@ -50,6 +50,7 @@
 		"custom_storage_path_unusable": "Aangepast opslagpad \"{{path}}\" is onbruikbaar, standaardpad wordt gebruikt",
 		"cannot_access_path": "Kan pad {{path}} niet openen: {{error}}",
 		"settings_import_failed": "Importeren van instellingen mislukt: {{error}}.",
+		"settings_import_no_content": "Er is geen inhoud ontvangen voor het importeren van instellingen.",
 		"mistake_limit_guidance": "Dit kan duiden op een fout in het denkproces van het model of het onvermogen om een tool correct te gebruiken, wat kan worden verminderd met gebruikersbegeleiding (bijv. \"Probeer de taak op te delen in kleinere stappen\").",
 		"violated_organization_allowlist": "Taak uitvoeren mislukt: het huidige profiel is niet compatibel met de instellingen van uw organisatie",
 		"condense_failed": "Comprimeren van context mislukt",
@@ -143,6 +144,13 @@
 		"public_share_link_copied": "Openbare deel-link gekopieerd naar klembord!",
 		"mode_exported": "Modus '{{mode}}' succesvol geëxporteerd",
 		"mode_imported": "Modus succesvol geïmporteerd"
+	},
+	"settingsFooter": {
+		"importFromRemoteFile": "Importeren vanaf het externe bestandssysteem",
+		"importFromRemoteFileDescription": "Bladeren en selecteren vanaf het externe/workspace bestandssysteem",
+		"importFromLocalFile": "Importeren vanaf uw lokale machine",
+		"importFromLocalFileDescription": "Bladeren en selecteren vanaf uw lokale computer via de browser",
+		"chooseImportSource": "Kies importbron"
 	},
 	"answers": {
 		"yes": "Ja",

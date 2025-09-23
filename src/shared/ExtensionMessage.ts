@@ -124,6 +124,7 @@ export interface ExtensionMessage {
 		| "commands"
 		| "insertTextIntoTextarea"
 		| "dismissedUpsells"
+		| "requestLocalSettingsFile"
 	text?: string
 	payload?: any // Add a generic payload for now, can refine later
 	action?:
