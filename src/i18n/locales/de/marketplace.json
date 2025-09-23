@@ -64,6 +64,7 @@
 		"installError": "Installation von \"{{itemName}}\" fehlgeschlagen: {{errorMessage}}",
 		"removing": "Element wird entfernt: \"{{itemName}}\"",
 		"removeSuccess": "\"{{itemName}}\" erfolgreich entfernt",
-		"removeError": "Entfernung von \"{{itemName}}\" fehlgeschlagen: {{errorMessage}}"
+		"removeError": "Entfernung von \"{{itemName}}\" fehlgeschlagen: {{errorMessage}}",
+		"notInstalledForTarget": "Modus nicht gefunden"
 	}
 }
