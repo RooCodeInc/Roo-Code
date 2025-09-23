@@ -1,5 +1,12 @@
 # Costrict Change Log
 
+## [1.6.14]
+
+- Optimize the 'line jump' for batch file reading
+- Optimize file read character limit
+- Sync roocode [last commit](https://github.com/zgsm-ai/costrict/commit/0e1b23d09c5d7bfc84f87d85fb9f0022e75c26bd)
+- Fix known issues
+
 ## [1.6.13]
 
 - New Chat UI (more readable and user-friendly)

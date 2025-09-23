@@ -182,7 +182,7 @@ export class ErrorCodeManager {
 					: ""
 
 				solution = `
-<span style="color:#E64545;font-size: 12px;">${solution1}</span> <a href='${baseurl}/credit/manager/credits?state=${hash}' style="color:#0078d4;text-decoration: none;">${solution2}</a>md-preview?state=${hash}' style="color:#0078d4;text-decoration: none;">${solution2}</a>
+<span style="color:#E64545;font-size: 12px;">${solution1}</span> <a href='${baseurl}/credit/manager/md-preview?state=${hash}' style="font-size: 12px;color:#0078d4;text-decoration: none;">${solution2}</a>
 ${checkRemainingQuotaStr}
 `
 			}
