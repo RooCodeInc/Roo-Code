@@ -282,7 +282,6 @@
 	},
 	"reasoning": {
 		"thinking": "Denkt na",
-		"seconds": "{{count}}s",
 		"seconds": "{{count}}s"
 	},
 	"contextCondense": {

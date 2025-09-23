@@ -271,7 +271,6 @@
 	},
 	"reasoning": {
 		"thinking": "Réflexion",
-		"seconds": "{{count}}s",
 		"seconds": "{{count}}s"
 	},
 	"contextCondense": {

@@ -283,7 +283,6 @@
 	},
 	"reasoning": {
 		"thinking": "Обдумывание",
-		"seconds": "{{count}}с",
 		"seconds": "{{count}}с"
 	},
 	"contextCondense": {

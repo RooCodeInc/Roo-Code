@@ -271,7 +271,6 @@
 	},
 	"reasoning": {
 		"thinking": "Denke nach",
-		"seconds": "{{count}}s",
 		"seconds": "{{count}}s"
 	},
 	"contextCondense": {

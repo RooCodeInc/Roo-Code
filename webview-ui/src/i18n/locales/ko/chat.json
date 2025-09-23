@@ -271,7 +271,6 @@
 	},
 	"reasoning": {
 		"thinking": "생각 중",
-		"seconds": "{{count}}초",
 		"seconds": "{{count}}초"
 	},
 	"contextCondense": {

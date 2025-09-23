@@ -305,7 +305,6 @@
 	},
 	"reasoning": {
 		"thinking": "Thinking",
-		"seconds": "{{count}}s",
 		"seconds": "{{count}}s"
 	},
 	"followUpSuggest": {

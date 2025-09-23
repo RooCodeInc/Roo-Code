@@ -272,7 +272,6 @@
 	},
 	"reasoning": {
 		"thinking": "Düşünüyor",
-		"seconds": "{{count}}sn",
 		"seconds": "{{count}}sn"
 	},
 	"contextCondense": {

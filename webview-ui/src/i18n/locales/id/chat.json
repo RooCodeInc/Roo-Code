@@ -309,7 +309,6 @@
 	},
 	"reasoning": {
 		"thinking": "Berpikir",
-		"seconds": "{{count}}d",
 		"seconds": "{{count}}d"
 	},
 	"followUpSuggest": {

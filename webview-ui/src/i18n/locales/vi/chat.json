@@ -272,7 +272,6 @@
 	},
 	"reasoning": {
 		"thinking": "Đang suy nghĩ",
-		"seconds": "{{count}} giây",
 		"seconds": "{{count}} giây"
 	},
 	"contextCondense": {
