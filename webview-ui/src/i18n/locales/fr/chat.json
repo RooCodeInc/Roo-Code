@@ -272,8 +272,7 @@
 	"reasoning": {
 		"thinking": "Réflexion",
 		"seconds": "{{count}}s",
-		"collapse": "Réduire",
-		"expand": "Développer"
+		"seconds": "{{count}}s"
 	},
 	"contextCondense": {
 		"title": "Contexte condensé",

@@ -273,8 +273,7 @@
 	"reasoning": {
 		"thinking": "Đang suy nghĩ",
 		"seconds": "{{count}} giây",
-		"collapse": "Thu gọn",
-		"expand": "Mở rộng"
+		"seconds": "{{count}} giây"
 	},
 	"contextCondense": {
 		"title": "Ngữ cảnh đã tóm tắt",

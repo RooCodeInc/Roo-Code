@@ -283,8 +283,7 @@
 	"reasoning": {
 		"thinking": "Denkt na",
 		"seconds": "{{count}}s",
-		"collapse": "Samenvouwen",
-		"expand": "Uitvouwen"
+		"seconds": "{{count}}s"
 	},
 	"contextCondense": {
 		"title": "Context samengevat",

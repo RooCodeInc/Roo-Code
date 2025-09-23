@@ -273,8 +273,7 @@
 	"reasoning": {
 		"thinking": "Düşünüyor",
 		"seconds": "{{count}}sn",
-		"collapse": "Daralt",
-		"expand": "Genişlet"
+		"seconds": "{{count}}sn"
 	},
 	"contextCondense": {
 		"title": "Bağlam Özetlendi",

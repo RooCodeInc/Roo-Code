@@ -25,7 +25,7 @@ export const ReasoningBlock = ({ content, isStreaming, isLast }: ReasoningBlockP
 	const contentRef = useRef<HTMLDivElement>(null)
 
 	useEffect(() => {
-		setIsCollapsed(reasoningBlockCollapsed !== false)
+		setIsCollapsed(reasoningBlockCollapsed)
 	}, [reasoningBlockCollapsed])
 
 	useEffect(() => {
@@ -57,13 +57,10 @@ export const ReasoningBlock = ({ content, isStreaming, isLast }: ReasoningBlockP
 					)}
 				</div>
 				<div className="flex items-center gap-2">
-					<span className="text-sm text-vscode-descriptionForeground" aria-label="Toggle reasoning block">
-						{isCollapsed ? t("chat:reasoning.expand") : t("chat:reasoning.collapse")}
-					</span>
 					<ChevronUp
 						className={cn(
 							"w-4 transition-all opacity-0 group-hover:opacity-100",
-							isCollapsed && "rotate-180",
+							isCollapsed && "-rotate-180",
 						)}
 					/>
 				</div>

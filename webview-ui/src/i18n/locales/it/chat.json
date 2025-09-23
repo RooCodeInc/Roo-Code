@@ -272,8 +272,7 @@
 	"reasoning": {
 		"thinking": "Sto pensando",
 		"seconds": "{{count}}s",
-		"collapse": "Comprimi",
-		"expand": "Espandi"
+		"seconds": "{{count}}s"
 	},
 	"contextCondense": {
 		"title": "Contesto condensato",

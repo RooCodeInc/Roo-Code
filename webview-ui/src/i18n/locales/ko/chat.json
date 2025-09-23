@@ -272,8 +272,7 @@
 	"reasoning": {
 		"thinking": "생각 중",
 		"seconds": "{{count}}초",
-		"collapse": "접기",
-		"expand": "펼치기"
+		"seconds": "{{count}}초"
 	},
 	"contextCondense": {
 		"title": "컨텍스트 요약됨",

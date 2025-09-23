@@ -310,8 +310,7 @@
 	"reasoning": {
 		"thinking": "Berpikir",
 		"seconds": "{{count}}d",
-		"collapse": "Ciutkan",
-		"expand": "Perluas"
+		"seconds": "{{count}}d"
 	},
 	"followUpSuggest": {
 		"copyToInput": "Salin ke input (sama dengan shift + klik)",

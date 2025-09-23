@@ -308,8 +308,7 @@
 	"reasoning": {
 		"thinking": "思考中",
 		"seconds": "{{count}} 秒",
-		"collapse": "收合",
-		"expand": "展開"
+		"seconds": "{{count}} 秒"
 	},
 	"followUpSuggest": {
 		"copyToInput": "複製到輸入框 (或按住 Shift 並點選)",

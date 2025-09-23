@@ -306,8 +306,7 @@
 	"reasoning": {
 		"thinking": "Thinking",
 		"seconds": "{{count}}s",
-		"collapse": "Collapse",
-		"expand": "Expand"
+		"seconds": "{{count}}s"
 	},
 	"followUpSuggest": {
 		"copyToInput": "Copy to input (same as shift + click)",

@@ -272,8 +272,7 @@
 	"reasoning": {
 		"thinking": "Denke nach",
 		"seconds": "{{count}}s",
-		"collapse": "Einklappen",
-		"expand": "Erweitern"
+		"seconds": "{{count}}s"
 	},
 	"contextCondense": {
 		"title": "Kontext komprimiert",

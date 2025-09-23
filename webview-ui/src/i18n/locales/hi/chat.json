@@ -272,8 +272,7 @@
 	"reasoning": {
 		"thinking": "विचार कर रहा है",
 		"seconds": "{{count}} सेकंड",
-		"collapse": "संक्षिप्त करें",
-		"expand": "विस्तृत करें"
+		"seconds": "{{count}} सेकंड"
 	},
 	"contextCondense": {
 		"title": "संदर्भ संक्षिप्त किया गया",

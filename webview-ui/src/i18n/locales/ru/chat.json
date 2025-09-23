@@ -284,8 +284,7 @@
 	"reasoning": {
 		"thinking": "Обдумывание",
 		"seconds": "{{count}}с",
-		"collapse": "Свернуть",
-		"expand": "Развернуть"
+		"seconds": "{{count}}с"
 	},
 	"contextCondense": {
 		"title": "Контекст сжат",
