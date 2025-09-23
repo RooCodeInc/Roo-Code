@@ -11,15 +11,12 @@
  *   --help              Show this help message
  */
 
-const fs = require("fs")
 const path = require("path")
-const { promisify } = require("util")
+const { promises: fs } = require("fs")
 
-// Promisify fs functions for async/await
-const readFile = promisify(fs.readFile)
-const readdir = promisify(fs.readdir)
-const stat = promisify(fs.stat)
-const exists = promisify(fs.exists)
+const readFile = fs.readFile
+const readdir = fs.readdir
+const stat = fs.stat
 
 // Process command line arguments
 const args = process.argv.slice(2).reduce(
