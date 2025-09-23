@@ -1,8 +1,10 @@
 import React, { useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { useExtensionState } from "@src/context/ExtensionStateContext"
 
 import MarkdownBlock from "../common/MarkdownBlock"
-import { Lightbulb } from "lucide-react"
+import { Lightbulb, ChevronDown, ChevronRight } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 interface ReasoningBlockProps {
 	content: string
@@ -16,12 +18,23 @@ interface ReasoningBlockProps {
  * Render reasoning with a heading and a simple timer.
  * - Heading uses i18n key chat:reasoning.thinking
  * - Timer runs while reasoning is active (no persistence)
+ * - Can be collapsed to show only last 2 lines of content
  */
 export const ReasoningBlock = ({ content, isStreaming, isLast }: ReasoningBlockProps) => {
 	const { t } = useTranslation()
+	const { reasoningBlockCollapsed } = useExtensionState()
+
+	// Initialize collapsed state based on global setting (default to collapsed)
+	const [isCollapsed, setIsCollapsed] = useState(reasoningBlockCollapsed !== false)
 
 	const startTimeRef = useRef<number>(Date.now())
 	const [elapsed, setElapsed] = useState<number>(0)
+	const contentRef = useRef<HTMLDivElement>(null)
+
+	// Update collapsed state when global setting changes
+	useEffect(() => {
+		setIsCollapsed(reasoningBlockCollapsed !== false)
+	}, [reasoningBlockCollapsed])
 
 	// Simple timer that runs while streaming
 	useEffect(() => {
@@ -36,22 +49,50 @@ export const ReasoningBlock = ({ content, isStreaming, isLast }: ReasoningBlockP
 	const seconds = Math.floor(elapsed / 1000)
 	const secondsLabel = t("chat:reasoning.seconds", { count: seconds })
 
+	const handleToggle = () => {
+		setIsCollapsed(!isCollapsed)
+	}
+
 	return (
-		<div>
-			<div className="flex items-center justify-between mb-2.5 pr-2">
+		<div className="group">
+			<div
+				className="flex items-center justify-between mb-2.5 pr-2 cursor-pointer select-none"
+				onClick={handleToggle}>
 				<div className="flex items-center gap-2">
 					<Lightbulb className="w-4" />
 					<span className="font-bold text-vscode-foreground">{t("chat:reasoning.thinking")}</span>
+					{elapsed > 0 && (
+						<span className="text-sm text-vscode-descriptionForeground tabular-nums">{secondsLabel}</span>
+					)}
 				</div>
-				{elapsed > 0 && (
-					<span className="text-sm text-vscode-descriptionForeground tabular-nums flex items-center gap-1">
-						{secondsLabel}
-					</span>
-				)}
+				<div className="opacity-0 group-hover:opacity-100 transition-opacity">
+					{isCollapsed ? <ChevronRight className="w-4" /> : <ChevronDown className="w-4" />}
+				</div>
 			</div>
 			{(content?.trim()?.length ?? 0) > 0 && (
-				<div className="border-l border-vscode-descriptionForeground/20 ml-2 pl-4 pb-1 text-vscode-descriptionForeground">
-					<MarkdownBlock markdown={content} />
+				<div
+					ref={contentRef}
+					className={cn(
+						"border-l border-vscode-descriptionForeground/20 ml-2 pl-4 pb-1 text-vscode-descriptionForeground",
+						isCollapsed && "relative overflow-hidden",
+					)}
+					style={
+						isCollapsed
+							? {
+									maxHeight: "3em", // Approximately 2 lines
+									maskImage: "linear-gradient(to top, transparent 0%, black 30%)",
+									WebkitMaskImage: "linear-gradient(to top, transparent 0%, black 30%)",
+								}
+							: undefined
+					}>
+					{isCollapsed ? (
+						// When collapsed, render content in a container that shows bottom-aligned text
+						<div className="flex flex-col justify-end" style={{ minHeight: "3em" }}>
+							<MarkdownBlock markdown={content} />
+						</div>
+					) : (
+						<MarkdownBlock markdown={content} />
+					)}
 				</div>
 			)}
 		</div>
