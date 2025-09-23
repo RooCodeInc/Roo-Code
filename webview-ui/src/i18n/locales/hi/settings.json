@@ -884,8 +884,8 @@
 	},
 	"ui": {
 		"collapseThinking": {
-			"label": "Collapse Thinking messages by default",
-			"description": "When enabled, thinking blocks will be collapsed by default until you interact with them"
+			"label": "सोच संदेशों को डिफ़ॉल्ट रूप से संक्षिप्त करें",
+			"description": "सक्षम होने पर, सोच ब्लॉक आपके द्वारा उनके साथ इंटरैक्ट करने तक डिफ़ॉल्ट रूप से संक्षिप्त रहेंगे"
 		}
 	}
 }

@@ -913,8 +913,8 @@
 	},
 	"ui": {
 		"collapseThinking": {
-			"label": "Collapse Thinking messages by default",
-			"description": "When enabled, thinking blocks will be collapsed by default until you interact with them"
+			"label": "Ciutkan pesan Berpikir secara default",
+			"description": "Jika diaktifkan, blok berpikir akan diciutkan secara default sampai Anda berinteraksi dengannya"
 		}
 	}
 }

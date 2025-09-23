@@ -884,8 +884,8 @@
 	},
 	"ui": {
 		"collapseThinking": {
-			"label": "Collapse Thinking messages by default",
-			"description": "When enabled, thinking blocks will be collapsed by default until you interact with them"
+			"label": "Düşünme mesajlarını varsayılan olarak daralt",
+			"description": "Etkinleştirildiğinde, düşünme blokları siz onlarla etkileşime girene kadar varsayılan olarak daraltılır"
 		}
 	}
 }

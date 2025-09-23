@@ -884,8 +884,8 @@
 	},
 	"ui": {
 		"collapseThinking": {
-			"label": "Collapse Thinking messages by default",
-			"description": "When enabled, thinking blocks will be collapsed by default until you interact with them"
+			"label": "Comprimi i messaggi di pensiero per impostazione predefinita",
+			"description": "Se abilitato, i blocchi di pensiero verranno compressi per impostazione predefinita finché non interagisci con essi"
 		}
 	}
 }

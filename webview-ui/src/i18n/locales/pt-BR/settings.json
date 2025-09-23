@@ -884,8 +884,8 @@
 	},
 	"ui": {
 		"collapseThinking": {
-			"label": "Collapse Thinking messages by default",
-			"description": "When enabled, thinking blocks will be collapsed by default until you interact with them"
+			"label": "Recolher mensagens de pensamento por padrão",
+			"description": "Quando ativado, os blocos de pensamento serão recolhidos por padrão até que você interaja com eles"
 		}
 	}
 }

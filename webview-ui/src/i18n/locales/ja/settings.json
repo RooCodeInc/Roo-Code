@@ -884,8 +884,8 @@
 	},
 	"ui": {
 		"collapseThinking": {
-			"label": "Collapse Thinking messages by default",
-			"description": "When enabled, thinking blocks will be collapsed by default until you interact with them"
+			"label": "デフォルトで思考メッセージを折りたたむ",
+			"description": "有効にすると、操作するまで思考ブロックがデフォルトで折りたたまれます"
 		}
 	}
 }

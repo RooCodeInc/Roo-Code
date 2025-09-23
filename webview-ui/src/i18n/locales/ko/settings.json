@@ -884,8 +884,8 @@
 	},
 	"ui": {
 		"collapseThinking": {
-			"label": "Collapse Thinking messages by default",
-			"description": "When enabled, thinking blocks will be collapsed by default until you interact with them"
+			"label": "기본적으로 생각 메시지 접기",
+			"description": "활성화하면 상호 작용할 때까지 생각 블록이 기본적으로 접힙니다"
 		}
 	}
 }

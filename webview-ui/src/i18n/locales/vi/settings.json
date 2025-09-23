@@ -884,8 +884,8 @@
 	},
 	"ui": {
 		"collapseThinking": {
-			"label": "Collapse Thinking messages by default",
-			"description": "When enabled, thinking blocks will be collapsed by default until you interact with them"
+			"label": "Thu gọn tin nhắn Suy nghĩ theo mặc định",
+			"description": "Khi được bật, các khối suy nghĩ sẽ được thu gọn theo mặc định cho đến khi bạn tương tác với chúng"
 		}
 	}
 }
