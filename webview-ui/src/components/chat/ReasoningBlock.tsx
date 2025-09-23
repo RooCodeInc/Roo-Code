@@ -1,6 +1,7 @@
-import React, { useEffect, useRef, useState } from "react"
+import React, { useEffect, useRef, useState, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
+import { vscode } from "@src/utils/vscode"
 
 import MarkdownBlock from "../common/MarkdownBlock"
 import { Lightbulb, ChevronDown, ChevronRight } from "lucide-react"
@@ -22,7 +23,7 @@ interface ReasoningBlockProps {
  */
 export const ReasoningBlock = ({ content, isStreaming, isLast }: ReasoningBlockProps) => {
 	const { t } = useTranslation()
-	const { reasoningBlockCollapsed } = useExtensionState()
+	const { reasoningBlockCollapsed, setReasoningBlockCollapsed } = useExtensionState()
 
 	// Initialize collapsed state based on global setting (default to collapsed)
 	const [isCollapsed, setIsCollapsed] = useState(reasoningBlockCollapsed !== false)
@@ -35,6 +36,28 @@ export const ReasoningBlock = ({ content, isStreaming, isLast }: ReasoningBlockP
 	useEffect(() => {
 		setIsCollapsed(reasoningBlockCollapsed !== false)
 	}, [reasoningBlockCollapsed])
+
+	// Handle keyboard shortcut for toggling collapsed state
+	const handleKeyDown = useCallback(
+		(e: KeyboardEvent) => {
+			// Ctrl/Cmd + Shift + T to toggle reasoning blocks
+			if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "T") {
+				e.preventDefault()
+				const newState = !isCollapsed
+				setIsCollapsed(newState)
+				// Update global setting
+				setReasoningBlockCollapsed(!newState)
+				// Persist to backend
+				vscode.postMessage({ type: "setReasoningBlockCollapsed", bool: !newState })
+			}
+		},
+		[isCollapsed, setReasoningBlockCollapsed],
+	)
+
+	useEffect(() => {
+		window.addEventListener("keydown", handleKeyDown)
+		return () => window.removeEventListener("keydown", handleKeyDown)
+	}, [handleKeyDown])
 
 	// Simple timer that runs while streaming
 	useEffect(() => {
