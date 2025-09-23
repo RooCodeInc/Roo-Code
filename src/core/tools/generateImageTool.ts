@@ -9,9 +9,8 @@ import { getReadablePath } from "../../utils/path"
 import { isPathOutsideWorkspace } from "../../utils/pathUtils"
 import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
 import { OpenRouterHandler } from "../../api/providers/openrouter"
-
-// Hardcoded list of image generation models for now
-const IMAGE_GENERATION_MODELS = ["google/gemini-2.5-flash-image-preview", "google/gemini-2.5-flash-image-preview:free"]
+import { GeminiHandler } from "../../api/providers/gemini"
+import { ImageGenerationProvider, getImageGenerationModelsForProvider } from "@roo-code/types"
 
 export async function generateImageTool(
 	cline: Task,
@@ -128,24 +127,59 @@ export async function generateImageTool(
 	// Check if file is write-protected
 	const isWriteProtected = cline.rooProtectedController?.isWriteProtected(relPath) || false
 
-	// Get OpenRouter API key from global settings (experimental image generation)
-	const openRouterApiKey = state?.openRouterImageApiKey
+	// Get the selected provider from settings (default to openrouter)
+	const selectedProvider = (state?.imageGenerationProvider || "openrouter") as ImageGenerationProvider
 
-	if (!openRouterApiKey) {
-		await cline.say(
-			"error",
-			"OpenRouter API key is required for image generation. Please configure it in the Image Generation experimental settings.",
-		)
-		pushToolResult(
-			formatResponse.toolError(
+	// Get selected model from settings based on provider
+	let selectedModel: string
+	let apiKey: string | undefined
+
+	if (selectedProvider === "openrouter") {
+		apiKey = state?.openRouterImageApiKey
+		if (!apiKey) {
+			await cline.say(
+				"error",
 				"OpenRouter API key is required for image generation. Please configure it in the Image Generation experimental settings.",
-			),
-		)
+			)
+			pushToolResult(
+				formatResponse.toolError(
+					"OpenRouter API key is required for image generation. Please configure it in the Image Generation experimental settings.",
+				),
+			)
+			return
+		}
+		// Get selected model or use default for OpenRouter
+		const models = getImageGenerationModelsForProvider("openrouter")
+		selectedModel =
+			state?.openRouterImageGenerationSelectedModel ||
+			(models[0]?.modelId ?? "google/gemini-2.5-flash-image-preview")
+	} else if (selectedProvider === "gemini") {
+		// For Gemini, we can use the existing Gemini API key from the provider settings
+		// Check for a dedicated image generation API key first, then fall back to the provider's API key
+		apiKey =
+			state?.geminiImageApiKey ||
+			(state?.apiConfiguration?.apiProvider === "gemini" ? state?.apiConfiguration?.geminiApiKey : undefined)
+		if (!apiKey) {
+			await cline.say(
+				"error",
+				"Gemini API key is required for image generation. Please configure it in the Image Generation experimental settings or in the Gemini provider settings.",
+			)
+			pushToolResult(
+				formatResponse.toolError(
+					"Gemini API key is required for image generation. Please configure it in the Image Generation experimental settings or in the Gemini provider settings.",
+				),
+			)
+			return
+		}
+		// Get selected model or use default for Gemini
+		const models = getImageGenerationModelsForProvider("gemini")
+		selectedModel =
+			state?.geminiImageGenerationSelectedModel || (models[0]?.modelId ?? "gemini-2.5-flash-image-preview")
+	} else {
+		await cline.say("error", `Unsupported image generation provider: ${selectedProvider}`)
+		pushToolResult(formatResponse.toolError(`Unsupported image generation provider: ${selectedProvider}`))
 		return
 	}
-
-	// Get selected model from settings or use default
-	const selectedModel = state?.openRouterImageGenerationSelectedModel || IMAGE_GENERATION_MODELS[0]
 
 	// Determine if the path is outside the workspace
 	const fullPath = path.resolve(cline.cwd, removeClosingTag("path", relPath))
@@ -176,16 +210,28 @@ export async function generateImageTool(
 				return
 			}
 
-			// Create a temporary OpenRouter handler with minimal options
-			const openRouterHandler = new OpenRouterHandler({} as any)
+			// Generate image based on provider
+			let result
 
-			// Call the generateImage method with the explicit API key and optional input image
-			const result = await openRouterHandler.generateImage(
-				prompt,
-				selectedModel,
-				openRouterApiKey,
-				inputImageData,
-			)
+			if (selectedProvider === "openrouter") {
+				// Create a temporary OpenRouter handler with minimal options
+				const openRouterHandler = new OpenRouterHandler({} as any)
+
+				// Call the generateImage method with the explicit API key and optional input image
+				result = await openRouterHandler.generateImage(prompt, selectedModel, apiKey!, inputImageData)
+			} else if (selectedProvider === "gemini") {
+				// Create a temporary Gemini handler with minimal options
+				const geminiHandler = new GeminiHandler({ geminiApiKey: apiKey } as any)
+
+				// Call the generateImage method with the optional input image
+				result = await geminiHandler.generateImage(prompt, selectedModel, apiKey, inputImageData)
+			} else {
+				// This should not happen due to earlier check, but for type safety
+				result = {
+					success: false,
+					error: `Unsupported provider: ${selectedProvider}`,
+				}
+			}
 
 			if (!result.success) {
 				await cline.say("error", result.error || "Failed to generate image")
