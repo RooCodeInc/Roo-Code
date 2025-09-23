@@ -175,6 +175,7 @@ export class WebAuthService extends EventEmitter<AuthServiceEvents> implements A
 
 		this.changeState("attempting-session")
 
+		this.timer.stop()
 		this.timer.start()
 	}
 
@@ -485,26 +486,8 @@ export class WebAuthService extends EventEmitter<AuthServiceEvents> implements A
 			organizationId: organizationId,
 		}
 
-		// Store the updated credentials
+		// Store the updated credentials, handleCredentialsChange will handle the update
 		await this.storeCredentials(updatedCredentials)
-
-		// Update the local credentials
-		this.credentials = updatedCredentials
-
-		// Clear the current session token to force a refresh with new org context
-		this.sessionToken = null
-
-		// Trigger a session refresh to get a new token with the correct org context
-		try {
-			await this.refreshSession()
-			// Fetch updated user info after organization switch to reflect new context
-			await this.fetchUserInfo()
-		} catch (error) {
-			this.log(`[auth] Failed to refresh session after organization switch: ${error}`)
-			// Even if refresh fails, the credentials are updated for next attempt
-		}
-
-		this.log(`[auth] Switched organization context to: ${organizationId || "personal account"}`)
 	}
 
 	/**
