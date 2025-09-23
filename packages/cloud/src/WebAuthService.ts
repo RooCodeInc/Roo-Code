@@ -707,9 +707,14 @@ export class WebAuthService extends EventEmitter<AuthServiceEvents> implements A
 	}
 
 	private async clerkGetOrganizationMemberships(): Promise<CloudOrganizationMembership[]> {
+		if (!this.credentials) {
+			this.log("[auth] Cannot get organization memberships: missing credentials")
+			return []
+		}
+
 		const response = await fetch(`${getClerkBaseUrl()}/v1/me/organization_memberships`, {
 			headers: {
-				Authorization: `Bearer ${this.credentials!.clientToken}`,
+				Authorization: `Bearer ${this.credentials.clientToken}`,
 				"User-Agent": this.userAgent(),
 			},
 			signal: AbortSignal.timeout(10000),
