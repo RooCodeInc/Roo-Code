@@ -29,7 +29,7 @@
 		"checkpoint_timeout": "Expiration du délai lors de la tentative de rétablissement du checkpoint.",
 		"checkpoint_failed": "Échec du rétablissement du checkpoint.",
 		"git_not_installed": "Git est requis pour la fonctionnalité des points de contrôle. Veuillez installer Git pour activer les points de contrôle.",
-		"nested_git_repos_warning": "Les points de contrôle sont désactivés car des dépôts git imbriqués ont été détectés dans l'espace de travail. Pour utiliser les points de contrôle, veuillez supprimer ou déplacer les dépôts git imbriqués.",
+		"nested_git_repos_warning": "Les points de contrôle sont désactivés car un dépôt git imbriqué a été détecté à : {{path}}. Pour utiliser les points de contrôle, veuillez supprimer ou déplacer ce dépôt git imbriqué.",
 		"no_workspace": "Veuillez d'abord ouvrir un espace de travail",
 		"update_support_prompt": "Erreur lors de la mise à jour du prompt de support",
 		"reset_support_prompt": "Erreur lors de la réinitialisation du prompt de support",
@@ -161,6 +161,10 @@
 		"incomplete": "Tâche #{{taskNumber}} (Incomplète)",
 		"no_messages": "Tâche #{{taskNumber}} (Aucun message)"
 	},
+	"interruption": {
+		"responseInterruptedByUser": "Réponse interrompue par l'utilisateur",
+		"responseInterruptedByApiError": "Réponse interrompue par une erreur d'API"
+	},
 	"storage": {
 		"prompt_custom_path": "Entrez le chemin de stockage personnalisé pour l'historique des conversations, laissez vide pour utiliser l'emplacement par défaut",
 		"path_placeholder": "D:\\RooCodeStorage",
@@ -231,5 +235,9 @@
 		"preventCompletionWithOpenTodos": {
 			"description": "Empêcher la finalisation des tâches lorsqu'il y a des todos incomplets dans la liste de todos"
 		}
+	},
+	"docsLink": {
+		"label": "Docs",
+		"url": "https://docs.roocode.com"
 	}
 }

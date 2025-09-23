@@ -1,5 +1,71 @@
 # Roo Code Changelog
 
+## [3.28.6] - 2025-09-23
+
+![3.28.6 Release - Kangaroo studying ancient codex](/releases/3.28.6-release.png)
+
+- Feat: Add GPT-5-Codex model (thanks @daniel-lxs!)
+- Feat: Add keyboard shortcut for toggling auto-approve (Cmd/Ctrl+Alt+A) (thanks @brunobergher!)
+- Fix: Improve reasoning block formatting for better readability (thanks @daniel-lxs!)
+- Fix: Respect Ollama Modelfile num_ctx configuration (#7797 by @hannesrudolph, PR by @app/roomote)
+- Fix: Prevent checkpoint text from wrapping in non-English languages (#8206 by @NaccOll, PR by @app/roomote)
+- Remove language selection and word wrap toggle from CodeBlock (thanks @mrubens!)
+- Feat: Add package.nls.json checking to find-missing-translations script (thanks @app/roomote!)
+- Fix: Bare metal evals fixes (thanks @cte!)
+- Fix: Follow-up questions should trigger the "interactive" state (thanks @cte!)
+
+## [3.28.5] - 2025-09-20
+
+- Add an announcement for Supernova (thanks @mrubens!)
+- Wrap code blocks by default for improved readability (thanks @mrubens!)
+- Fix: Resolve duplicate rehydrate during reasoning; centralize rehydrate and preserve cancel metadata (#8153 by @hannesrudolph, PR by @hannesrudolph)
+- Fix: Support dash prefix in parseMarkdownChecklist for todo lists (#8054 by @NaccOll, PR by app/roomote)
+- Fix: Apply tiered pricing for Gemini models via Vertex AI (#8017 by @ikumi3, PR by app/roomote)
+- Update SambaNova models to latest versions (thanks @snova-jorgep!)
+- Update privacy policy to allow occasional emails (thanks @jdilla1277!)
+
+## [3.28.4] - 2025-09-19
+
+![3.28.4 Release - Supernova Discovery](/releases/3.28.4-release.png)
+
+- UX: Redesigned Message Feed (thanks @brunobergher!)
+- UX: Responsive Auto-Approve (thanks @brunobergher!)
+- Add telemetry retry queue for network resilience (thanks @daniel-lxs!)
+- Fix: Transform keybindings in nightly build to fix command+y shortcut (thanks @app/roomote!)
+- New code-supernova stealth model in the Roo Code Cloud provider (thanks @mrubens!)
+
+## [3.28.3] - 2025-09-16
+
+![3.28.3 Release - UI/UX Improvements and Bug Fixes](/releases/3.28.3-release.png)
+
+- Fix: Filter out Claude Code built-in tools (ExitPlanMode, BashOutput, KillBash) (#7817 by @juliettefournier-econ, PR by @roomote)
+- Replace + icon with edit icon for New Task button (#7941 by @hannesrudolph, PR by @roomote)
+- Fix: Corrected C# tree-sitter query (#5238 by @vadash, PR by @mubeen-zulfiqar)
+- Add keyboard shortcut for "Add to Context" action (#7907 by @hannesrudolph, PR by @roomote)
+- Fix: Context menu is obscured when edit message (#7759 by @mini2s, PR by @NaccOll)
+- Fix: Handle ByteString conversion errors in OpenAI embedders (#7959 by @PavelA85, PR by @daniel-lxs)
+- Add Z.ai coding plan support (thanks @daniel-lxs!)
+- Move slash commands to Settings tab with gear icon for discoverability (thanks @roomote!)
+- Reposition Add Image button inside ChatTextArea (thanks @roomote!)
+- Bring back a way to temporarily and globally pause auto-approve without losing your toggle state (thanks @brunobergher!)
+- Makes text area buttons appear only when there's text (thanks @brunobergher!)
+- CONTRIBUTING.md tweaks and issue template rewrite (thanks @hannesrudolph!)
+- Bump axios from 1.9.0 to 1.12.0 (thanks @dependabot!)
+
+## [3.28.2] - 2025-09-14
+
+![3.28.2 Release - Auto-approve improvements](/releases/3.28.2-release.png)
+
+- Improve auto-approve UI with smaller and more subtle design (thanks @brunobergher!)
+- Fix: Message queue re-queue loop in Task.ask() causing performance issues (#7861 by @hannesrudolph, PR by @daniel-lxs)
+- Fix: Restrict @-mention parsing to line-start or whitespace boundaries to prevent false triggers (#7875 by @hannesrudolph, PR by @app/roomote)
+- Fix: Make nested git repository warning persistent with path info for better visibility (#7884 by @hannesrudolph, PR by @app/roomote)
+- Fix: Include API key in Ollama /api/tags requests for authenticated instances (#7902 by @ItsOnlyBinary, PR by @app/roomote)
+- Fix: Preserve original first message context during conversation condensing (thanks @daniel-lxs!)
+- Add Qwen3 Next 80B A3B models to chutes provider (thanks @daniel-lxs!)
+- Disable Roomote Control on logout for better security (thanks @cte!)
+- Add padding to the cloudview for better visual spacing (thanks @mrubens!)
+
 ## [3.28.1] - 2025-09-11
 
 ![3.28.1 Release - Kangaroo riding rocket to the clouds](/releases/3.28.1-release.png)

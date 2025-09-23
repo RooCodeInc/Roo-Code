@@ -29,7 +29,7 @@
 		"checkpoint_timeout": "Kontrol noktasını geri yüklemeye çalışırken zaman aşımına uğradı.",
 		"checkpoint_failed": "Kontrol noktası geri yüklenemedi.",
 		"git_not_installed": "Kontrol noktaları özelliği için Git gereklidir. Kontrol noktalarını etkinleştirmek için lütfen Git'i yükleyin.",
-		"nested_git_repos_warning": "Çalışma alanında iç içe git depoları tespit edildiği için kontrol noktaları devre dışı bırakıldı. Kontrol noktalarını kullanmak için lütfen iç içe git depolarını kaldırın veya taşıyın.",
+		"nested_git_repos_warning": "{{path}} konumunda iç içe git deposu tespit edildiği için kontrol noktaları devre dışı bırakıldı. Kontrol noktalarını kullanmak için lütfen bu iç içe git deposunu kaldırın veya taşıyın.",
 		"no_workspace": "Lütfen önce bir proje klasörü açın",
 		"update_support_prompt": "Destek istemi güncellenemedi",
 		"reset_support_prompt": "Destek istemi sıfırlanamadı",
@@ -161,6 +161,10 @@
 		"incomplete": "Görev #{{taskNumber}} (Tamamlanmamış)",
 		"no_messages": "Görev #{{taskNumber}} (Mesaj yok)"
 	},
+	"interruption": {
+		"responseInterruptedByUser": "Yanıt kullanıcı tarafından kesildi",
+		"responseInterruptedByApiError": "Yanıt API hatası nedeniyle kesildi"
+	},
 	"storage": {
 		"prompt_custom_path": "Konuşma geçmişi için özel depolama yolunu girin, varsayılan konumu kullanmak için boş bırakın",
 		"path_placeholder": "D:\\RooCodeStorage",
@@ -231,5 +235,9 @@
 		"preventCompletionWithOpenTodos": {
 			"description": "Todo listesinde tamamlanmamış todolar olduğunda görev tamamlanmasını engelle"
 		}
+	},
+	"docsLink": {
+		"label": "Docs",
+		"url": "https://docs.roocode.com"
 	}
 }

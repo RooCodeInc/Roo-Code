@@ -61,7 +61,7 @@
 		"tooltip": "Aprobar esta acción"
 	},
 	"runCommand": {
-		"title": "Ejecutar comando",
+		"title": "Comando",
 		"tooltip": "Ejecutar este comando"
 	},
 	"proceedWhileRunning": {
@@ -125,7 +125,7 @@
 		"searchPlaceholder": "Buscar modos...",
 		"noResults": "No se encontraron resultados"
 	},
-	"errorReadingFile": "Error al leer el archivo:",
+	"errorReadingFile": "Error al leer el archivo",
 	"noValidImages": "No se procesaron imágenes válidas",
 	"separator": "Separador",
 	"edit": "Editar...",
@@ -163,66 +163,69 @@
 		"wantsToFetch": "Roo quiere obtener instrucciones detalladas para ayudar con la tarea actual"
 	},
 	"fileOperations": {
-		"wantsToRead": "Roo quiere leer este archivo:",
-		"wantsToReadOutsideWorkspace": "Roo quiere leer este archivo fuera del espacio de trabajo:",
-		"didRead": "Roo leyó este archivo:",
-		"wantsToEdit": "Roo quiere editar este archivo:",
-		"wantsToEditOutsideWorkspace": "Roo quiere editar este archivo fuera del espacio de trabajo:",
-		"wantsToEditProtected": "Roo quiere editar un archivo de configuración protegido:",
-		"wantsToCreate": "Roo quiere crear un nuevo archivo:",
-		"wantsToSearchReplace": "Roo quiere realizar búsqueda y reemplazo en este archivo:",
-		"didSearchReplace": "Roo realizó búsqueda y reemplazo en este archivo:",
-		"wantsToInsert": "Roo quiere insertar contenido en este archivo:",
-		"wantsToInsertWithLineNumber": "Roo quiere insertar contenido en este archivo en la línea {{lineNumber}}:",
-		"wantsToInsertAtEnd": "Roo quiere añadir contenido al final de este archivo:",
-		"wantsToReadAndXMore": "Roo quiere leer este archivo y {{count}} más:",
-		"wantsToReadMultiple": "Roo quiere leer varios archivos:",
-		"wantsToApplyBatchChanges": "Roo quiere aplicar cambios a múltiples archivos:",
-		"wantsToGenerateImage": "Roo quiere generar una imagen:",
-		"wantsToGenerateImageOutsideWorkspace": "Roo quiere generar una imagen fuera del espacio de trabajo:",
-		"wantsToGenerateImageProtected": "Roo quiere generar una imagen en una ubicación protegida:",
-		"didGenerateImage": "Roo generó una imagen:"
+		"wantsToRead": "Roo quiere leer este archivo",
+		"wantsToReadOutsideWorkspace": "Roo quiere leer este archivo fuera del espacio de trabajo",
+		"didRead": "Roo leyó este archivo",
+		"wantsToEdit": "Roo quiere editar este archivo",
+		"wantsToEditOutsideWorkspace": "Roo quiere editar este archivo fuera del espacio de trabajo",
+		"wantsToEditProtected": "Roo quiere editar un archivo de configuración protegido",
+		"wantsToCreate": "Roo quiere crear un nuevo archivo",
+		"wantsToSearchReplace": "Roo quiere realizar búsqueda y reemplazo en este archivo",
+		"didSearchReplace": "Roo realizó búsqueda y reemplazo en este archivo",
+		"wantsToInsert": "Roo quiere insertar contenido en este archivo",
+		"wantsToInsertWithLineNumber": "Roo quiere insertar contenido en este archivo en la línea {{lineNumber}}",
+		"wantsToInsertAtEnd": "Roo quiere añadir contenido al final de este archivo",
+		"wantsToReadAndXMore": "Roo quiere leer este archivo y {{count}} más",
+		"wantsToReadMultiple": "Roo quiere leer varios archivos",
+		"wantsToApplyBatchChanges": "Roo quiere aplicar cambios a múltiples archivos",
+		"wantsToGenerateImage": "Roo quiere generar una imagen",
+		"wantsToGenerateImageOutsideWorkspace": "Roo quiere generar una imagen fuera del espacio de trabajo",
+		"wantsToGenerateImageProtected": "Roo quiere generar una imagen en una ubicación protegida",
+		"didGenerateImage": "Roo generó una imagen"
 	},
 	"directoryOperations": {
-		"wantsToViewTopLevel": "Roo quiere ver los archivos de nivel superior en este directorio:",
-		"didViewTopLevel": "Roo vio los archivos de nivel superior en este directorio:",
-		"wantsToViewRecursive": "Roo quiere ver recursivamente todos los archivos en este directorio:",
-		"didViewRecursive": "Roo vio recursivamente todos los archivos en este directorio:",
-		"wantsToViewDefinitions": "Roo quiere ver nombres de definiciones de código fuente utilizados en este directorio:",
-		"didViewDefinitions": "Roo vio nombres de definiciones de código fuente utilizados en este directorio:",
-		"wantsToSearch": "Roo quiere buscar en este directorio <code>{{regex}}</code>:",
-		"didSearch": "Roo buscó en este directorio <code>{{regex}}</code>:",
-		"wantsToSearchOutsideWorkspace": "Roo quiere buscar en este directorio (fuera del espacio de trabajo) <code>{{regex}}</code>:",
-		"didSearchOutsideWorkspace": "Roo buscó en este directorio (fuera del espacio de trabajo) <code>{{regex}}</code>:",
-		"wantsToViewTopLevelOutsideWorkspace": "Roo quiere ver los archivos de nivel superior en este directorio (fuera del espacio de trabajo):",
-		"didViewTopLevelOutsideWorkspace": "Roo vio los archivos de nivel superior en este directorio (fuera del espacio de trabajo):",
-		"wantsToViewRecursiveOutsideWorkspace": "Roo quiere ver recursivamente todos los archivos en este directorio (fuera del espacio de trabajo):",
-		"didViewRecursiveOutsideWorkspace": "Roo vio recursivamente todos los archivos en este directorio (fuera del espacio de trabajo):",
-		"wantsToViewDefinitionsOutsideWorkspace": "Roo quiere ver nombres de definiciones de código fuente utilizados en este directorio (fuera del espacio de trabajo):",
-		"didViewDefinitionsOutsideWorkspace": "Roo vio nombres de definiciones de código fuente utilizados en este directorio (fuera del espacio de trabajo):"
+		"wantsToViewTopLevel": "Roo quiere ver los archivos de nivel superior en este directorio",
+		"didViewTopLevel": "Roo vio los archivos de nivel superior en este directorio",
+		"wantsToViewRecursive": "Roo quiere ver recursivamente todos los archivos en este directorio",
+		"didViewRecursive": "Roo vio recursivamente todos los archivos en este directorio",
+		"wantsToViewDefinitions": "Roo quiere ver nombres de definiciones de código fuente utilizados en este directorio",
+		"didViewDefinitions": "Roo vio nombres de definiciones de código fuente utilizados en este directorio",
+		"wantsToSearch": "Roo quiere buscar en este directorio <code>{{regex}}</code>",
+		"didSearch": "Roo buscó en este directorio <code>{{regex}}</code>",
+		"wantsToSearchOutsideWorkspace": "Roo quiere buscar en este directorio (fuera del espacio de trabajo) <code>{{regex}}</code>",
+		"didSearchOutsideWorkspace": "Roo buscó en este directorio (fuera del espacio de trabajo) <code>{{regex}}</code>",
+		"wantsToViewTopLevelOutsideWorkspace": "Roo quiere ver los archivos de nivel superior en este directorio (fuera del espacio de trabajo)",
+		"didViewTopLevelOutsideWorkspace": "Roo vio los archivos de nivel superior en este directorio (fuera del espacio de trabajo)",
+		"wantsToViewRecursiveOutsideWorkspace": "Roo quiere ver recursivamente todos los archivos en este directorio (fuera del espacio de trabajo)",
+		"didViewRecursiveOutsideWorkspace": "Roo vio recursivamente todos los archivos en este directorio (fuera del espacio de trabajo)",
+		"wantsToViewDefinitionsOutsideWorkspace": "Roo quiere ver nombres de definiciones de código fuente utilizados en este directorio (fuera del espacio de trabajo)",
+		"didViewDefinitionsOutsideWorkspace": "Roo vio nombres de definiciones de código fuente utilizados en este directorio (fuera del espacio de trabajo)"
 	},
 	"commandOutput": "Salida del comando",
 	"commandExecution": {
+		"abort": "Abortar",
 		"running": "Ejecutando",
 		"pid": "PID: {{pid}}",
-		"exited": "Finalizado ({{exitCode}})",
-		"manageCommands": "Gestionar permisos de comandos",
-		"commandManagementDescription": "Gestionar permisos de comandos: Haz clic en ✓ para permitir la ejecución automática, ✗ para denegar la ejecución. Los patrones se pueden activar/desactivar o eliminar de las listas. <settingsLink>Ver todos los ajustes</settingsLink>",
-		"addToAllowed": "Añadir a la lista de permitidos",
+		"exitStatus": "Salió con el estado {{exitCode}}",
+		"manageCommands": "Comandos aprobados automáticamente",
+		"addToAllowed": "Agregar a la lista de permitidos",
 		"removeFromAllowed": "Eliminar de la lista de permitidos",
-		"addToDenied": "Añadir a la lista de denegados",
+		"addToDenied": "Agregar a la lista de denegados",
 		"removeFromDenied": "Eliminar de la lista de denegados",
-		"abortCommand": "Abortar ejecución del comando",
+		"abortCommand": "Abortar la ejecución del comando",
 		"expandOutput": "Expandir salida",
-		"collapseOutput": "Contraer salida",
-		"expandManagement": "Expandir sección de gestión de comandos",
-		"collapseManagement": "Contraer sección de gestión de comandos"
+		"collapseOutput": "Colapsar salida",
+		"expandManagement": "Expandir la sección de administración de comandos",
+		"collapseManagement": "Colapsar la sección de administración de comandos"
 	},
 	"response": "Respuesta",
 	"arguments": "Argumentos",
+	"feedback": {
+		"youSaid": "Has dicho"
+	},
 	"mcp": {
-		"wantsToUseTool": "Roo quiere usar una herramienta en el servidor MCP {{serverName}}:",
-		"wantsToAccessResource": "Roo quiere acceder a un recurso en el servidor MCP {{serverName}}:"
+		"wantsToUseTool": "Roo quiere usar una herramienta en el servidor MCP {{serverName}}",
+		"wantsToAccessResource": "Roo quiere acceder a un recurso en el servidor MCP {{serverName}}"
 	},
 	"modes": {
 		"wantsToSwitch": "Roo quiere cambiar a modo <code>{{mode}}</code>",
@@ -231,7 +234,7 @@
 		"didSwitchWithReason": "Roo cambió a modo <code>{{mode}}</code> porque: {{reason}}"
 	},
 	"subtasks": {
-		"wantsToCreate": "Roo quiere crear una nueva subtarea en modo <code>{{mode}}</code>:",
+		"wantsToCreate": "Roo quiere crear una nueva subtarea en modo <code>{{mode}}</code>",
 		"wantsToFinish": "Roo quiere finalizar esta subtarea",
 		"newTaskContent": "Instrucciones de la subtarea",
 		"completionContent": "Subtarea completada",
@@ -240,19 +243,28 @@
 		"completionInstructions": "¡Subtarea completada! Puedes revisar los resultados y sugerir correcciones o próximos pasos. Si todo se ve bien, confirma para devolver el resultado a la tarea principal."
 	},
 	"questions": {
-		"hasQuestion": "Roo tiene una pregunta:"
+		"hasQuestion": "Roo tiene una pregunta"
 	},
 	"taskCompleted": "Tarea completada",
 	"powershell": {
 		"issues": "Parece que estás teniendo problemas con Windows PowerShell, por favor consulta esta"
 	},
 	"autoApprove": {
-		"title": "Auto-aprobar:",
+		"tooltipManage": "Administrar la configuración de aprobación automática",
+		"tooltipStatus": "Aprobación automática habilitada para: {{toggles}}",
+		"title": "Aprobación automática",
+		"toggle": "Alternar aprobación automática",
+		"all": "Todo",
 		"none": "Ninguno",
-		"description": "Auto-aprobar permite a Roo Code realizar acciones sin pedir permiso. Habilita solo para acciones en las que confíes plenamente. Configuración más detallada disponible en <settingsLink>Configuración</settingsLink>.",
+		"description": "Ejecuta estas acciones sin pedir permiso. Habilita esto solo para acciones en las que confíes plenamente.",
 		"selectOptionsFirst": "Selecciona al menos una opción a continuación para habilitar la aprobación automática",
-		"toggleAriaLabel": "Alternar aprobación automática",
-		"disabledAriaLabel": "Aprobación automática desactivada: seleccione primero las opciones"
+		"toggleAriaLabel": "Conmutar la aprobación automática",
+		"disabledAriaLabel": "Aprobación automática deshabilitada: selecciona primero las opciones",
+		"triggerLabelOff": "Aprobación automática desactivada",
+		"triggerLabel_zero": "0 aprobaciones automáticas",
+		"triggerLabel_one": "1 aprobación automática",
+		"triggerLabel_other": "{{count}} aprobaciones automáticas",
+		"triggerLabelAll": "YOLO"
 	},
 	"reasoning": {
 		"thinking": "Pensando",
@@ -271,15 +283,17 @@
 	},
 	"announcement": {
 		"title": "🎉 Roo Code {{version}} publicado",
-		"description": "Presentamos <bold>Roo Code Cloud:</bold> Llevando el poder de Roo más allá del IDE",
-		"feature1": "<bold>Seguir el progreso de las tareas desde cualquier lugar (Gratis):</bold> Obtén actualizaciones en tiempo real de tareas de larga duración sin estar atrapado en tu IDE",
-		"feature2": "<bold>Controlar la extensión Roo remotamente (Pro):</bold> Inicia, detén e interactúa con tareas desde una interfaz de navegador basada en chat.",
-		"learnMore": "¿Listo para tomar el control? Aprende más <learnMoreLink>aquí</learnMoreLink>.",
-		"visitCloudButton": "Visitar Roo Code Cloud",
-		"socialLinks": "Únete a nosotros en <xLink>X</xLink>, <discordLink>Discord</discordLink>, o <redditLink>r/RooCode</redditLink>"
+		"stealthModel": {
+			"feature": "<bold>Modelo stealth GRATUITO por tiempo limitado</bold> - Code Supernova: Un modelo de codificación agéntica versátil que soporta entradas de imágenes, accesible a través de Roo Code Cloud.",
+			"note": "(Nota: los prompts y completaciones son registrados por el creador del modelo y utilizados para mejorarlo)",
+			"connectButton": "Conectar a Roo Code Cloud",
+			"selectModel": "Selecciona <code>roo/code-supernova</code> del proveedor Roo Code Cloud en Configuración para comenzar.",
+			"goToSettingsButton": "Ir a Configuración"
+		},
+		"socialLinks": "Únete a nosotros en <xLink>X</xLink>, <discordLink>Discord</discordLink>, o <redditLink>r/RooCode</redditLink> 🚀"
 	},
 	"browser": {
-		"rooWantsToUse": "Roo quiere usar el navegador:",
+		"rooWantsToUse": "Roo quiere usar el navegador",
 		"consoleLogs": "Registros de la consola",
 		"noNewLogs": "(No hay nuevos registros)",
 		"screenshot": "Captura de pantalla del navegador",
@@ -304,8 +318,6 @@
 		"tooltips": {
 			"expand": "Expandir bloque de código",
 			"collapse": "Contraer bloque de código",
-			"enable_wrap": "Activar ajuste de línea",
-			"disable_wrap": "Desactivar ajuste de línea",
 			"copy_code": "Copiar código"
 		}
 	},
@@ -329,8 +341,8 @@
 		}
 	},
 	"codebaseSearch": {
-		"wantsToSearch": "Roo quiere buscar en la base de código <code>{{query}}</code>:",
-		"wantsToSearchWithPath": "Roo quiere buscar en la base de código <code>{{query}}</code> en <code>{{path}}</code>:",
+		"wantsToSearch": "Roo quiere buscar en la base de código <code>{{query}}</code>",
+		"wantsToSearchWithPath": "Roo quiere buscar en la base de código <code>{{query}}</code> en <code>{{path}}</code>",
 		"didSearch_one": "Se encontró 1 resultado",
 		"didSearch_other": "Se encontraron {{count}} resultados",
 		"resultTooltip": "Puntuación de similitud: {{score}} (haz clic para abrir el archivo)"
@@ -368,6 +380,7 @@
 		"tooltip": "Gestionar comandos de barra",
 		"title": "Comandos de Barra",
 		"description": "Usa comandos de barra integrados o crea personalizados para acceder rápidamente a prompts y flujos de trabajo utilizados con frecuencia. <DocsLink>Documentación</DocsLink>",
+		"manageCommands": "Administrar comandos de barra en la configuración",
 		"builtInCommands": "Comandos Integrados",
 		"globalCommands": "Comandos Globales",
 		"workspaceCommands": "Comandos del Espacio de Trabajo",
@@ -383,12 +396,18 @@
 			"confirm": "Eliminar"
 		}
 	},
+	"contextMenu": {
+		"noResults": "No hay resultados",
+		"problems": "Problemas",
+		"terminal": "Terminal",
+		"url": "Pega la URL para obtener el contenido"
+	},
 	"queuedMessages": {
-		"title": "Mensajes en cola:",
+		"title": "Mensajes en cola",
 		"clickToEdit": "Haz clic para editar el mensaje"
 	},
 	"slashCommand": {
-		"wantsToRun": "Roo quiere ejecutar un comando slash:",
-		"didRun": "Roo ejecutó un comando slash:"
+		"wantsToRun": "Roo quiere ejecutar un comando slash",
+		"didRun": "Roo ejecutó un comando slash"
 	}
 }

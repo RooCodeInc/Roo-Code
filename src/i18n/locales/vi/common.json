@@ -29,7 +29,7 @@
 		"checkpoint_timeout": "Đã hết thời gian khi cố gắng khôi phục điểm kiểm tra.",
 		"checkpoint_failed": "Không thể khôi phục điểm kiểm tra.",
 		"git_not_installed": "Yêu cầu Git cho tính năng điểm kiểm tra. Vui lòng cài đặt Git để bật điểm kiểm tra.",
-		"nested_git_repos_warning": "Điểm kiểm tra bị vô hiệu hóa vì phát hiện các kho git lồng nhau trong không gian làm việc. Để sử dụng điểm kiểm tra, vui lòng xóa hoặc di chuyển các kho git lồng nhau.",
+		"nested_git_repos_warning": "Điểm kiểm tra bị vô hiệu hóa vì phát hiện kho git lồng nhau tại: {{path}}. Để sử dụng điểm kiểm tra, vui lòng xóa hoặc di chuyển kho git lồng nhau này.",
 		"no_workspace": "Vui lòng mở thư mục dự án trước",
 		"update_support_prompt": "Không thể cập nhật lời nhắc hỗ trợ",
 		"reset_support_prompt": "Không thể đặt lại lời nhắc hỗ trợ",
@@ -161,6 +161,10 @@
 		"incomplete": "Nhiệm vụ #{{taskNumber}} (Chưa hoàn thành)",
 		"no_messages": "Nhiệm vụ #{{taskNumber}} (Không có tin nhắn)"
 	},
+	"interruption": {
+		"responseInterruptedByUser": "Phản hồi bị gián đoạn bởi người dùng",
+		"responseInterruptedByApiError": "Phản hồi bị gián đoạn bởi lỗi API"
+	},
 	"storage": {
 		"prompt_custom_path": "Nhập đường dẫn lưu trữ tùy chỉnh cho lịch sử hội thoại, để trống để sử dụng vị trí mặc định",
 		"path_placeholder": "D:\\RooCodeStorage",
@@ -238,5 +242,9 @@
 		"preventCompletionWithOpenTodos": {
 			"description": "Ngăn chặn hoàn thành nhiệm vụ khi có các todo chưa hoàn thành trong danh sách todo"
 		}
+	},
+	"docsLink": {
+		"label": "Docs",
+		"url": "https://docs.roocode.com"
 	}
 }

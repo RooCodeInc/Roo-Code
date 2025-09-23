@@ -28,10 +28,14 @@
 		"notifications": "通知",
 		"contextManagement": "コンテキスト",
 		"terminal": "ターミナル",
+		"slashCommands": "スラッシュコマンド",
 		"prompts": "プロンプト",
 		"experimental": "実験的",
 		"language": "言語",
 		"about": "Roo Codeについて"
+	},
+	"slashCommands": {
+		"description": "スラッシュコマンドを管理して、カスタムワークフローやアクションを素早く実行します。<DocsLink>詳細はこちら</DocsLink>"
 	},
 	"prompts": {
 		"description": "プロンプトの強化、コードの説明、問題の修正などの迅速なアクションに使用されるサポートプロンプトを設定します。これらのプロンプトは、Rooが一般的な開発タスクでより良いサポートを提供するのに役立ちます。"
@@ -130,6 +134,7 @@
 		"resetToDefault": "デフォルトにリセット"
 	},
 	"autoApprove": {
+		"toggleShortcut": "<SettingsLink>IDEの環境設定</SettingsLink>で、この設定のグローバルショートカットを設定できます。",
 		"description": "Rooが承認なしで自動的に操作を実行できるようにします。AIを完全に信頼し、関連するセキュリティリスクを理解している場合にのみ、これらの設定を有効にしてください。",
 		"enabled": "自動承認が有効",
 		"toggleAriaLabel": "自動承認の切り替え",
@@ -376,6 +381,8 @@
 			"modelId": "モデルID",
 			"apiKey": "Ollama APIキー",
 			"apiKeyHelp": "認証されたOllamaインスタンスやクラウドサービス用のオプションAPIキー。ローカルインストールの場合は空のままにしてください。",
+			"numCtx": "コンテキストウィンドウサイズ (num_ctx)",
+			"numCtxHelp": "モデルのデフォルトのコンテキストウィンドウサイズを上書きします。モデルのModelfile構成を使用するには、空のままにします。最小値は128です。",
 			"description": "Ollamaを使用すると、ローカルコンピューターでモデルを実行できます。始め方については、クイックスタートガイドをご覧ください。",
 			"warning": "注意：Roo Codeは複雑なプロンプトを使用し、Claudeモデルで最適に動作します。能力の低いモデルは期待通りに動作しない場合があります。"
 		},
