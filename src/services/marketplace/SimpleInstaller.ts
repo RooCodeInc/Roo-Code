@@ -2,7 +2,7 @@ import * as vscode from "vscode"
 import * as path from "path"
 import * as fs from "fs/promises"
 import * as yaml from "yaml"
-import type { MarketplaceItem, MarketplaceItemType, InstallMarketplaceItemOptions, McpParameter, ModeConfig } from "@roo-code/types"
+import type { MarketplaceItem, McpParameter, ModeConfig } from "@roo-code/types"
 import { GlobalFileNames } from "../../shared/globalFileNames"
 import { ensureSettingsDirectoryExists } from "../../utils/globalContext"
 import type { CustomModesManager } from "../../core/config/CustomModesManager"
@@ -22,6 +22,7 @@ export class SimpleInstaller {
 
 	async installItem(item: MarketplaceItem, options: InstallOptions): Promise<{ filePath: string; line?: number }> {
 		const { target } = options
+		const itemType = item.type
 
 		switch (item.type) {
 			case "mode":
@@ -29,7 +30,7 @@ export class SimpleInstaller {
 			case "mcp":
 				return await this.installMcp(item, target, options)
 			default:
-				throw new Error("Unsupported item type")
+				throw new Error(`Unsupported item type: ${itemType}`)
 		}
 	}
 
@@ -293,6 +294,7 @@ export class SimpleInstaller {
 
 	async removeItem(item: MarketplaceItem, options: InstallOptions): Promise<void> {
 		const { target } = options
+		const itemType = item.type
 
 		switch (item.type) {
 			case "mode":
@@ -302,7 +304,7 @@ export class SimpleInstaller {
 				await this.removeMcp(item, target)
 				break
 			default:
-				throw new Error("Unsupported item type")
+				throw new Error(`Unsupported item type: ${itemType}`)
 		}
 	}
 
@@ -343,16 +345,12 @@ export class SimpleInstaller {
 		)
 
 		if (!candidate) {
-			throw new Error(t("common:customModes.errors.modeNotFound"))
+			const msg = t("marketplace:installation.notInstalledForTarget")
+			throw new Error(msg === "installation.notInstalledForTarget" ? "Mode not found" : msg)
 		}
 
 		// Delete only from the selected source to avoid unintended removals
-		if (typeof (this.customModesManager as any).deleteCustomModeForSource === "function") {
-			await (this.customModesManager as any).deleteCustomModeForSource(modeSlug, target, true)
-		} else {
-			// Scoped deletion not supported in this version
-			throw new Error("Scoped deletion is not supported in this version")
-		}
+		await this.customModesManager.deleteCustomModeForSource(modeSlug, target, true)
 	}
 
 	private async removeMcp(item: MarketplaceItem, target: "project" | "global"): Promise<void> {

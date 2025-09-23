@@ -4,7 +4,13 @@ import * as path from "path"
 import * as vscode from "vscode"
 import * as yaml from "yaml"
 
-import type { OrganizationSettings, MarketplaceItem, MarketplaceItemType, McpMarketplaceItem, ModeConfig } from "@roo-code/types"
+import type {
+	OrganizationSettings,
+	MarketplaceItem,
+	MarketplaceItemType,
+	McpMarketplaceItem,
+	ModeConfig,
+} from "@roo-code/types"
 import { customModesSettingsSchema } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 import { CloudService } from "@roo-code/cloud"
@@ -254,10 +260,7 @@ export class MarketplaceManager {
 	}
 
 	// Helper: parse YAML and collect installed mode metadata with proper typing
-	private collectInstalledModesFromYaml(
-		content: string,
-		out: Record<string, { type: string }>,
-	): void {
+	private collectInstalledModesFromYaml(content: string, out: Record<string, { type: string }>): void {
 		try {
 			const parsed = yaml.parse(content)
 			const result = customModesSettingsSchema.safeParse(parsed)
@@ -266,7 +269,7 @@ export class MarketplaceManager {
 			}
 			for (const mode of result.data.customModes) {
 				if (this.isMarketplaceInstalledMode(mode)) {
-					out[mode.marketplaceItemId!] = { type: "mode" }
+					out[mode.marketplaceItemId] = { type: "mode" }
 				}
 			}
 		} catch {
