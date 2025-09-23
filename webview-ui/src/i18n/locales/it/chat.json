@@ -272,7 +272,6 @@
 	"reasoning": {
 		"thinking": "Sto pensando",
 		"seconds": "{{count}}s",
-		"seconds": "{{count}}s"
 	},
 	"contextCondense": {
 		"title": "Contesto condensato",
