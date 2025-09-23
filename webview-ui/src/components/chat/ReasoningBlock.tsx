@@ -53,7 +53,7 @@ export const ReasoningBlock = ({ content, isStreaming, isLast }: ReasoningBlockP
 					<Lightbulb className="w-4" />
 					<span className="font-bold text-vscode-foreground">{t("chat:reasoning.thinking")}</span>
 					{elapsed > 0 && (
-						<span className="text-sm text-vscode-descriptionForeground tabular-nums">{secondsLabel}</span>
+						<span className="text-sm text-vscode-descriptionForeground mt-0.5">{secondsLabel}</span>
 					)}
 				</div>
 				<div className="flex items-center gap-2">
@@ -65,11 +65,11 @@ export const ReasoningBlock = ({ content, isStreaming, isLast }: ReasoningBlockP
 					/>
 				</div>
 			</div>
-			{(content?.trim()?.length ?? 0) > 0 && (
+			{(content?.trim()?.length ?? 0) > 0 && !isCollapsed && (
 				<div
 					ref={contentRef}
 					className="border-l border-vscode-descriptionForeground/20 ml-2 pl-4 pb-1 text-vscode-descriptionForeground">
-					{!isCollapsed && <MarkdownBlock markdown={content} />}
+					<MarkdownBlock markdown={content} />
 				</div>
 			)}
 		</div>
