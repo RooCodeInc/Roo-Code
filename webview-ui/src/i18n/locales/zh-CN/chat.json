@@ -272,7 +272,9 @@
 	},
 	"reasoning": {
 		"thinking": "思考中",
-		"seconds": "{{count}}秒"
+		"seconds": "{{count}}秒",
+		"collapse": "收起",
+		"expand": "展开"
 	},
 	"contextCondense": {
 		"title": "上下文已压缩",

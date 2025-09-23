@@ -1,10 +1,9 @@
-import React, { useEffect, useRef, useState, useCallback } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
-import { vscode } from "@src/utils/vscode"
 
 import MarkdownBlock from "../common/MarkdownBlock"
-import { Lightbulb, ChevronDown } from "lucide-react"
+import { Lightbulb, ChevronUp } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface ReasoningBlockProps {
@@ -23,7 +22,7 @@ interface ReasoningBlockProps {
  */
 export const ReasoningBlock = ({ content, isStreaming, isLast }: ReasoningBlockProps) => {
 	const { t } = useTranslation()
-	const { reasoningBlockCollapsed, setReasoningBlockCollapsed } = useExtensionState()
+	const { reasoningBlockCollapsed } = useExtensionState()
 
 	// Initialize collapsed state based on global setting (default to collapsed)
 	const [isCollapsed, setIsCollapsed] = useState(reasoningBlockCollapsed !== false)
@@ -36,28 +35,6 @@ export const ReasoningBlock = ({ content, isStreaming, isLast }: ReasoningBlockP
 	useEffect(() => {
 		setIsCollapsed(reasoningBlockCollapsed !== false)
 	}, [reasoningBlockCollapsed])
-
-	// Handle keyboard shortcut for toggling collapsed state
-	const handleKeyDown = useCallback(
-		(e: KeyboardEvent) => {
-			// Ctrl/Cmd + Shift + T to toggle reasoning blocks
-			if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "T") {
-				e.preventDefault()
-				const newState = !isCollapsed
-				setIsCollapsed(newState)
-				// Update global setting
-				setReasoningBlockCollapsed(!newState)
-				// Persist to backend
-				vscode.postMessage({ type: "setReasoningBlockCollapsed", bool: !newState })
-			}
-		},
-		[isCollapsed, setReasoningBlockCollapsed],
-	)
-
-	useEffect(() => {
-		window.addEventListener("keydown", handleKeyDown)
-		return () => window.removeEventListener("keydown", handleKeyDown)
-	}, [handleKeyDown])
 
 	// Simple timer that runs while streaming
 	useEffect(() => {
@@ -76,14 +53,6 @@ export const ReasoningBlock = ({ content, isStreaming, isLast }: ReasoningBlockP
 		setIsCollapsed(!isCollapsed)
 	}
 
-	/*
-	Thinking blocks should be
-	- Collapsed by default
-	- When streaming, show 1-2 lines of content
-	- When not streaming, not show any content
-	- When expanded, always show full content
-	*/
-
 	return (
 		<div className="group">
 			<div
@@ -96,9 +65,17 @@ export const ReasoningBlock = ({ content, isStreaming, isLast }: ReasoningBlockP
 						<span className="text-sm text-vscode-descriptionForeground tabular-nums">{secondsLabel}</span>
 					)}
 				</div>
-				<ChevronDown
-					className={cn("w-4 transition-all opacity-0 group-hover:opacity-100", isCollapsed && "rotate-180")}
-				/>
+				<div className="flex items-center gap-2">
+					<span className="text-sm text-vscode-descriptionForeground">
+						{isCollapsed ? t("chat:reasoning.expand") : t("chat:reasoning.collapse")}
+					</span>
+					<ChevronUp
+						className={cn(
+							"w-4 transition-all opacity-0 group-hover:opacity-100",
+							isCollapsed && "rotate-180",
+						)}
+					/>
+				</div>
 			</div>
 			{(content?.trim()?.length ?? 0) > 0 && (
 				<div

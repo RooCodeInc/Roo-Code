@@ -309,7 +309,9 @@
 	},
 	"reasoning": {
 		"thinking": "Berpikir",
-		"seconds": "{{count}}d"
+		"seconds": "{{count}}d",
+		"collapse": "Ciutkan",
+		"expand": "Perluas"
 	},
 	"followUpSuggest": {
 		"copyToInput": "Salin ke input (sama dengan shift + klik)",

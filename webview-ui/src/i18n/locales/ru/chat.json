@@ -283,7 +283,9 @@
 	},
 	"reasoning": {
 		"thinking": "Обдумывание",
-		"seconds": "{{count}}с"
+		"seconds": "{{count}}с",
+		"collapse": "Свернуть",
+		"expand": "Развернуть"
 	},
 	"contextCondense": {
 		"title": "Контекст сжат",

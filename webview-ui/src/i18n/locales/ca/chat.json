@@ -271,7 +271,9 @@
 	},
 	"reasoning": {
 		"thinking": "Pensant",
-		"seconds": "{{count}}s"
+		"seconds": "{{count}}s",
+		"collapse": "Replegar",
+		"expand": "Expandir"
 	},
 	"contextCondense": {
 		"title": "Context condensat",

@@ -271,7 +271,9 @@
 	},
 	"reasoning": {
 		"thinking": "考え中",
-		"seconds": "{{count}}秒"
+		"seconds": "{{count}}秒",
+		"collapse": "折りたたむ",
+		"expand": "展開"
 	},
 	"contextCondense": {
 		"title": "コンテキスト要約",

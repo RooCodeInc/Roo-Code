@@ -342,6 +342,14 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 							vscode.postMessage({ type: "autoApprovalEnabled", bool: newValue })
 							return { ...prevState, autoApprovalEnabled: newValue }
 						})
+					} else if (message.action === "toggleThinkingBlocks") {
+						// Toggle the reasoning blocks collapsed state
+						setReasoningBlockCollapsed((prev) => {
+							const newValue = !prev
+							// Also send the update to the extension to persist
+							vscode.postMessage({ type: "setReasoningBlockCollapsed", bool: newValue })
+							return newValue
+						})
 					}
 					break
 				}
