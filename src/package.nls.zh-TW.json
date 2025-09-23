@@ -15,7 +15,6 @@
 	"command.terminal.explainCommand.title": "解釋此命令",
 	"command.acceptInput.title": "接受輸入/建議",
 	"command.toggleAutoApprove.title": "切換自動批准",
-	"command.toggleThinkingBlocks.title": "切換思維區塊",
 	"views.activitybar.title": "Roo Code",
 	"views.contextMenu.label": "Roo Code",
 	"views.terminalMenu.label": "Roo Code",

@@ -179,11 +179,6 @@
 				"command": "roo-cline.toggleAutoApprove",
 				"title": "%command.toggleAutoApprove.title%",
 				"category": "%configuration.title%"
-			},
-			{
-				"command": "roo-cline.toggleThinkingBlocks",
-				"title": "%command.toggleThinkingBlocks.title%",
-				"category": "%configuration.title%"
 			}
 		],
 		"menus": {
@@ -327,13 +322,6 @@
 				"mac": "cmd+alt+a",
 				"win": "ctrl+alt+a",
 				"linux": "ctrl+alt+a"
-			},
-			{
-				"command": "roo-cline.toggleThinkingBlocks",
-				"key": "cmd+alt+shift+t",
-				"mac": "cmd+alt+shift+t",
-				"win": "ctrl+alt+shift+t",
-				"linux": "ctrl+alt+shift+t"
 			}
 		],
 		"submenus": [

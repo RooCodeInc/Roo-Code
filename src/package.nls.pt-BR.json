@@ -15,7 +15,6 @@
 	"command.terminal.explainCommand.title": "Explicar Este Comando",
 	"command.acceptInput.title": "Aceitar Entrada/Sugestão",
 	"command.toggleAutoApprove.title": "Alternar Auto-Aprovação",
-	"command.toggleThinkingBlocks.title": "Alternar Blocos de Pensamento",
 	"views.activitybar.title": "Roo Code",
 	"views.contextMenu.label": "Roo Code",
 	"views.terminalMenu.label": "Roo Code",

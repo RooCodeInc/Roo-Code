@@ -30,6 +30,7 @@
 		"terminal": "터미널",
 		"slashCommands": "슬래시 명령",
 		"prompts": "프롬프트",
+		"ui": "UI",
 		"experimental": "실험적",
 		"language": "언어",
 		"about": "Roo Code 정보"
@@ -879,6 +880,12 @@
 			"input": "입력",
 			"output": "출력",
 			"cacheReads": "캐시 읽기"
+		}
+	},
+	"ui": {
+		"collapseThinking": {
+			"label": "Collapse Thinking messages by default",
+			"description": "When enabled, thinking blocks will be collapsed by default until you interact with them"
 		}
 	}
 }

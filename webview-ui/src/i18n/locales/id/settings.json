@@ -30,6 +30,7 @@
 		"terminal": "Terminal",
 		"slashCommands": "Perintah Slash",
 		"prompts": "Prompt",
+		"ui": "UI",
 		"experimental": "Eksperimental",
 		"language": "Bahasa",
 		"about": "Tentang Roo Code"
@@ -908,6 +909,12 @@
 			"input": "Input",
 			"output": "Output",
 			"cacheReads": "Pembacaan cache"
+		}
+	},
+	"ui": {
+		"collapseThinking": {
+			"label": "Collapse Thinking messages by default",
+			"description": "When enabled, thinking blocks will be collapsed by default until you interact with them"
 		}
 	}
 }

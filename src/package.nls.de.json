@@ -15,7 +15,6 @@
 	"command.terminal.explainCommand.title": "Diesen Befehl Erklären",
 	"command.acceptInput.title": "Eingabe/Vorschlag Akzeptieren",
 	"command.toggleAutoApprove.title": "Auto-Genehmigung Umschalten",
-	"command.toggleThinkingBlocks.title": "Denkblöcke Umschalten",
 	"views.activitybar.title": "Roo Code",
 	"views.contextMenu.label": "Roo Code",
 	"views.terminalMenu.label": "Roo Code",

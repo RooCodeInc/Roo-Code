@@ -30,6 +30,7 @@
 		"terminal": "Terminal",
 		"slashCommands": "Comandos de Barra",
 		"prompts": "Prompts",
+		"ui": "UI",
 		"experimental": "Experimental",
 		"language": "Idioma",
 		"about": "Sobre"
@@ -879,6 +880,12 @@
 			"input": "Entrada",
 			"output": "Saída",
 			"cacheReads": "Leituras de cache"
+		}
+	},
+	"ui": {
+		"collapseThinking": {
+			"label": "Collapse Thinking messages by default",
+			"description": "When enabled, thinking blocks will be collapsed by default until you interact with them"
 		}
 	}
 }

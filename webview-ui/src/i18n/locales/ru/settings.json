@@ -30,6 +30,7 @@
 		"terminal": "Терминал",
 		"slashCommands": "Слэш-команды",
 		"prompts": "Промпты",
+		"ui": "UI",
 		"experimental": "Экспериментальное",
 		"language": "Язык",
 		"about": "О Roo Code"
@@ -879,6 +880,12 @@
 			"input": "Вход",
 			"output": "Выход",
 			"cacheReads": "Чтения из кэша"
+		}
+	},
+	"ui": {
+		"collapseThinking": {
+			"label": "Collapse Thinking messages by default",
+			"description": "When enabled, thinking blocks will be collapsed by default until you interact with them"
 		}
 	}
 }

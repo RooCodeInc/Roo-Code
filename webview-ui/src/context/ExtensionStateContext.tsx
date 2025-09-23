@@ -26,7 +26,6 @@ import { convertTextMateToHljs } from "@src/utils/textMateToHljs"
 
 export interface ExtensionStateContextType extends ExtensionState {
 	historyPreviewCollapsed?: boolean // Add the new state property
-	reasoningBlockCollapsed?: boolean // Add reasoning block collapsed state
 	didHydrateState: boolean
 	showWelcome: boolean
 	theme: any
@@ -240,6 +239,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		terminalZdotdir: false, // Default ZDOTDIR handling setting
 		terminalCompressProgressBar: true, // Default to compress progress bar output
 		historyPreviewCollapsed: false, // Initialize the new state (default to expanded)
+		reasoningBlockCollapsed: true, // Default to collapsed
 		cloudUserInfo: null,
 		cloudIsAuthenticated: false,
 		sharingEnabled: false,
@@ -282,7 +282,6 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		global: {},
 	})
 	const [includeTaskHistoryInEnhance, setIncludeTaskHistoryInEnhance] = useState(true)
-	const [reasoningBlockCollapsed, setReasoningBlockCollapsed] = useState(true) // Default to collapsed
 
 	const setListApiConfigMeta = useCallback(
 		(value: ProviderSettingsEntry[]) => setState((prevState) => ({ ...prevState, listApiConfigMeta: value })),
@@ -320,10 +319,6 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 					if ((newState as any).includeTaskHistoryInEnhance !== undefined) {
 						setIncludeTaskHistoryInEnhance((newState as any).includeTaskHistoryInEnhance)
 					}
-					// Update reasoningBlockCollapsed if present in state message
-					if ((newState as any).reasoningBlockCollapsed !== undefined) {
-						setReasoningBlockCollapsed((newState as any).reasoningBlockCollapsed)
-					}
 					// Handle marketplace data if present in state message
 					if (newState.marketplaceItems !== undefined) {
 						setMarketplaceItems(newState.marketplaceItems)
@@ -341,14 +336,6 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 							// Also send the update to the extension
 							vscode.postMessage({ type: "autoApprovalEnabled", bool: newValue })
 							return { ...prevState, autoApprovalEnabled: newValue }
-						})
-					} else if (message.action === "toggleThinkingBlocks") {
-						// Toggle the reasoning blocks collapsed state
-						setReasoningBlockCollapsed((prev) => {
-							const newValue = !prev
-							// Also send the update to the extension to persist
-							vscode.postMessage({ type: "setReasoningBlockCollapsed", bool: newValue })
-							return newValue
 						})
 					}
 					break
@@ -428,7 +415,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 
 	const contextValue: ExtensionStateContextType = {
 		...state,
-		reasoningBlockCollapsed,
+		reasoningBlockCollapsed: state.reasoningBlockCollapsed ?? true,
 		didHydrateState,
 		showWelcome,
 		theme,
@@ -544,7 +531,8 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 			}),
 		setHistoryPreviewCollapsed: (value) =>
 			setState((prevState) => ({ ...prevState, historyPreviewCollapsed: value })),
-		setReasoningBlockCollapsed,
+		setReasoningBlockCollapsed: (value) =>
+			setState((prevState) => ({ ...prevState, reasoningBlockCollapsed: value })),
 		setHasOpenedModeSelector: (value) => setState((prevState) => ({ ...prevState, hasOpenedModeSelector: value })),
 		setAutoCondenseContext: (value) => setState((prevState) => ({ ...prevState, autoCondenseContext: value })),
 		setAutoCondenseContextPercent: (value) =>
