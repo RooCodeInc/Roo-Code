@@ -789,10 +789,10 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 
 					if (startsWithSpace) {
 						// Keep the space but only highlight the command part
-						return ` <mark class="${mentionClass}" title="${tooltipText}">${commandPart}</mark>`
+						return ` <mark class="${mentionClass}">${commandPart}</mark>`
 					} else {
 						// Highlight the entire command (starts at beginning of line)
-						return `<mark class="${mentionClass}" title="${tooltipText}">${commandPart}</mark>`
+						return `<mark class="${mentionClass}">${commandPart}</mark>`
 					}
 				}
 				return match // Return unhighlighted if command is not valid
