@@ -249,9 +249,6 @@ export class CloudService extends EventEmitter<CloudServiceEvents> implements Di
 		// Perform the organization switch
 		// StaticTokenAuthService will throw an error if organization switching is not supported
 		await this.authService!.switchOrganization(organizationId)
-
-		// Broadcast the change
-		await this.authService!.broadcast()
 	}
 
 	public async getOrganizationMemberships(): Promise<CloudOrganizationMembership[]> {
