@@ -103,8 +103,6 @@ export const mainlandZAiModels = {
 	},
 } as const satisfies Record<string, ModelInfo>
 
-export const ZAI_DEFAULT_TEMPERATURE = 0
-
 export const zaiApiLineConfigs = {
 	international_coding: {
 		name: "International Coding Plan",

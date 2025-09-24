@@ -5,7 +5,6 @@ import {
 	mainlandZAiDefaultModelId,
 	type InternationalZAiModelId,
 	type MainlandZAiModelId,
-	ZAI_DEFAULT_TEMPERATURE,
 	zaiApiLineConfigs,
 } from "@roo-code/types"
 
@@ -26,7 +25,6 @@ export class ZAiHandler extends BaseOpenAiCompatibleProvider<InternationalZAiMod
 			apiKey: options.zaiApiKey ?? "not-provided",
 			defaultProviderModelId: defaultModelId,
 			providerModels: models,
-			defaultTemperature: ZAI_DEFAULT_TEMPERATURE,
 		})
 	}
 }

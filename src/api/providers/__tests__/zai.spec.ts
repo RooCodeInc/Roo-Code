@@ -13,7 +13,6 @@ import {
 	mainlandZAiDefaultModelId,
 	internationalZAiModels,
 	mainlandZAiModels,
-	ZAI_DEFAULT_TEMPERATURE,
 } from "@roo-code/types"
 
 import { ZAiHandler } from "../zai"
@@ -228,7 +227,7 @@ describe("ZAiHandler", () => {
 				expect.objectContaining({
 					model: modelId,
 					max_tokens: modelInfo.maxTokens,
-					temperature: ZAI_DEFAULT_TEMPERATURE,
+					temperature: 0, // Default temperature from base provider when not specified
 					messages: expect.arrayContaining([{ role: "system", content: systemPrompt }]),
 					stream: true,
 					stream_options: { include_usage: true },
