@@ -69,7 +69,7 @@
 		}
 	},
 	"runCommand": {
-		"title": "命令",
+		"title": "執行命令",
 		"tooltip": "執行此命令"
 	},
 	"proceedWhileRunning": {
@@ -224,7 +224,7 @@
 	"commandOutput": "命令輸出",
 	"commandExecution": {
 		"abort": "中止",
-		"running": "執行中",
+		"running": "命令執行",
 		"pid": "PID: {{pid}}",
 		"exitStatus": "已結束，狀態碼 {{exitCode}}",
 		"manageCommands": "管理命令權限",
@@ -241,6 +241,9 @@
 	},
 	"response": "回應",
 	"arguments": "參數",
+	"text": {
+		"rooSaid": "Roo 說"
+	},
 	"feedback": {
 		"youSaid": "{{username}}說",
 		"defaultUserName": "您"
@@ -305,7 +308,7 @@
 		"socialLinks": "在 <xLink>X</xLink>、<discordLink>Discord</discordLink> 或 <redditLink>r/RooCode</redditLink> 上關注我們 🚀"
 	},
 	"reasoning": {
-		"thinking": "思考中",
+		"thinking": "思考",
 		"seconds": "{{count}} 秒"
 	},
 	"followUpSuggest": {

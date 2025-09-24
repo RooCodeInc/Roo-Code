@@ -240,6 +240,9 @@
 	},
 	"response": "Response",
 	"arguments": "Arguments",
+	"text": {
+		"rooSaid": "Roo said"
+	},
 	"feedback": {
 		"youSaid": "{{username}} said",
 		"defaultUserName": "You"

@@ -61,7 +61,7 @@
 		"tooltip": "批准此操作"
 	},
 	"runCommand": {
-		"title": "命令",
+		"title": "运行命令",
 		"tooltip": "执行此命令"
 	},
 	"proceedWhileRunning": {
@@ -205,7 +205,7 @@
 	"commandOutput": "命令输出",
 	"commandExecution": {
 		"abort": "中止",
-		"running": "运行中",
+		"running": "运行命令",
 		"pid": "PID: {{pid}}",
 		"exitStatus": "已退出，状态码 {{exitCode}}",
 		"manageCommands": "管理命令权限",
@@ -222,6 +222,9 @@
 	},
 	"response": "响应",
 	"arguments": "参数",
+	"text": {
+		"rooSaid": "Roo 说"
+	},
 	"feedback": {
 		"youSaid": "{{username}}说",
 		"defaultUserName": "你"
@@ -270,7 +273,7 @@
 		"triggerLabelAll": "YOLO"
 	},
 	"reasoning": {
-		"thinking": "思考中",
+		"thinking": "思考",
 		"seconds": "{{count}}秒"
 	},
 	"contextCondense": {

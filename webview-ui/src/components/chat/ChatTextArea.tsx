@@ -38,6 +38,7 @@ import { useRouterModels } from "../ui/hooks/useRouterModels"
 import { ProviderSettings } from "@roo-code/types"
 import ProviderRenderer from "../settings/ProviderRenderer"
 import { RouterModels } from "@roo/api"
+// import { CloudAccountSwitcher } from "../cloud/CloudAccountSwitcher"
 
 interface ChatTextAreaProps {
 	inputValue: string
@@ -98,6 +99,8 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			commands,
 			apiConfiguration,
 			organizationAllowList,
+			// cloudUserInfo,
+			// cloudOrganizations,
 		} = useExtensionState()
 
 		const selectedProviderModels = useMemo(() => {
@@ -1352,7 +1355,14 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 						)}
 						<AutoApproveDropdown triggerClassName="min-w-[28px] text-ellipsis overflow-hidden flex-shrink" />
 					</div>
-					<div className={cn("flex flex-shrink-0 items-center gap-0.5", isEditMode ? "mr-[8px]" : "")}>
+					<div
+						className={cn(
+							"flex flex-shrink-0 items-center gap-0.5",
+							isEditMode ? "mr-[8px]" : "",
+							// !isEditMode && cloudOrganizations && cloudOrganizations.length > 0 && cloudUserInfo
+							// 	? ""
+							// 	: "pr-2",
+						)}>
 						{isTtsPlaying && (
 							<StandardTooltip content={t("chat:stopTts")}>
 								<button
@@ -1373,6 +1383,10 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 								</button>
 							</StandardTooltip>
 						)}
+						{/* {!isEditMode ? <IndexingStatusBadge /> : null}
+						{!isEditMode && cloudOrganizations && cloudOrganizations.length > 0 && cloudUserInfo && (
+							<CloudAccountSwitcher />
+						)} */}
 					</div>
 				</div>
 			</div>

@@ -4,6 +4,9 @@
 	"instructions": {
 		"wantsToFetch": "Costrict 想要獲取詳細指令以協助當前任務"
 	},
+	"text": {
+		"rooSaid": "Costrict 說"
+	},
 	"fileOperations": {
 		"wantsToRead": "Costrict 想要讀取此檔案",
 		"wantsToReadMultiple": "Costrict 想要讀取多個檔案",

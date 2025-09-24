@@ -4,6 +4,9 @@
 	"instructions": {
 		"wantsToFetch": "Costrict 想要获取详细指令以协助当前任务"
 	},
+	"text": {
+		"rooSaid": "Contact 说"
+	},
 	"fileOperations": {
 		"wantsToRead": "需要读取文件",
 		"wantsToReadOutsideWorkspace": "请求访问外部文件",

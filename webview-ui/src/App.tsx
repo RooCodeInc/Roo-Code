@@ -96,6 +96,7 @@ const App = () => {
 		// cloudUserInfo,
 		// cloudIsAuthenticated,
 		// cloudApiUrl,
+		// cloudOrganizations,
 		renderContext,
 		mdmCompliant,
 		apiConfiguration,
@@ -342,6 +343,7 @@ const App = () => {
 					userInfo={cloudUserInfo}
 					isAuthenticated={cloudIsAuthenticated}
 					cloudApiUrl={cloudApiUrl}
+					organizations={cloudOrganizations}
 					onDone={() => switchTab("chat")}
 				/>
 			)} */}

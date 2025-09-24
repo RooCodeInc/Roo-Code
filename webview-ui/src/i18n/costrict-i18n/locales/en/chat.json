@@ -4,6 +4,9 @@
 	"instructions": {
 		"wantsToFetch": "Costrict wants to fetch detailed instructions to assist with the current task"
 	},
+	"text": {
+		"rooSaid": "Costrict said"
+	},
 	"fileOperations": {
 		"wantsToRead": "Costrict wants to read this file",
 		"wantsToReadMultiple": "Costrict wants to read multiple files",

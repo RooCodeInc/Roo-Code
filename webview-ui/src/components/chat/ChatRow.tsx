@@ -64,6 +64,7 @@ import {
 	PocketKnife,
 	FolderTree,
 	TerminalSquare,
+	MessageCircle,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { getJumpLine } from "@/utils/path-mentions"
@@ -1189,21 +1190,28 @@ export const ChatRowContent = ({
 				case "text":
 					return (
 						<div>
-							<Markdown
-								markdown={HighlightedPlainText({
-									message: message || {},
-									query: searchQuery,
-									flag: t("settings:experimental.CHAT_SEARCH.placeholder"),
-								})}
-								partial={message.partial}
-							/>
-							{message.images && message.images.length > 0 && (
-								<div style={{ marginTop: "10px" }}>
-									{message.images.map((image, index) => (
-										<ImageBlock key={index} imageData={image} />
-									))}
-								</div>
-							)}
+							<div style={headerStyle}>
+								<MessageCircle className="w-4" aria-label="Speech bubble icon" />
+								<span style={{ fontWeight: "bold" }}>{t("chat:text.rooSaid")}</span>
+								{message.ts ? format(new Date(message.ts), "yyyy-MM-dd HH:mm:ss") : ""}
+							</div>
+							<div className="pl-6">
+								<Markdown
+									markdown={HighlightedPlainText({
+										message: message || {},
+										query: searchQuery,
+										flag: t("settings:experimental.CHAT_SEARCH.placeholder"),
+									})}
+									partial={message.partial}
+								/>
+								{message.images && message.images.length > 0 && (
+									<div style={{ marginTop: "10px" }}>
+										{message.images.map((image, index) => (
+											<ImageBlock key={index} imageData={image} />
+										))}
+									</div>
+								)}
+							</div>
 						</div>
 					)
 				case "user_feedback":
