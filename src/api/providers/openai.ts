@@ -38,10 +38,10 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		super()
 		this.options = options
 
-		const baseURL = this.options.openAiBaseUrl ?? "https://api.openai.com/v1"
+		const baseURL = this.normalizeBaseUrl(this.options.openAiBaseUrl ?? "https://api.openai.com/v1")
 		const apiKey = this.options.openAiApiKey ?? "not-provided"
-		const isAzureAiInference = this._isAzureAiInference(this.options.openAiBaseUrl)
-		const urlHost = this._getUrlHost(this.options.openAiBaseUrl)
+		const isAzureAiInference = this._isAzureAiInference(baseURL)
+		const urlHost = this._getUrlHost(baseURL)
 		const isAzureOpenAi = urlHost === "azure.com" || urlHost.endsWith(".azure.com") || options.openAiUseAzure
 
 		const headers = {
@@ -424,6 +424,41 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 	}
 
 	/**
+	 * Normalizes the base URL to ensure it ends with /v1 for OpenAI-compatible APIs
+	 * but doesn't duplicate /v1 if it's already present
+	 */
+	private normalizeBaseUrl(baseUrl: string): string {
+		// Trim whitespace
+		let normalizedUrl = baseUrl.trim()
+
+		// For standard OpenAI API, keep as-is
+		if (normalizedUrl === "https://api.openai.com/v1") {
+			return normalizedUrl
+		}
+
+		// For Azure endpoints, don't modify
+		const urlHost = this._getUrlHost(normalizedUrl)
+		if (urlHost.endsWith(".azure.com") || urlHost.endsWith(".services.ai.azure.com")) {
+			return normalizedUrl
+		}
+
+		// For other OpenAI-compatible APIs, ensure /v1 is present but not duplicated
+		// The OpenAI SDK expects the base URL to include /v1 for compatibility
+		if (!normalizedUrl.endsWith("/v1")) {
+			// Remove trailing slash if present
+			if (normalizedUrl.endsWith("/")) {
+				normalizedUrl = normalizedUrl.slice(0, -1)
+			}
+			// Only add /v1 if it's not already there
+			if (!normalizedUrl.endsWith("/v1")) {
+				normalizedUrl = `${normalizedUrl}/v1`
+			}
+		}
+
+		return normalizedUrl
+	}
+
+	/**
 	 * Adds max_completion_tokens to the request body if needed based on provider configuration
 	 * Note: max_tokens is deprecated in favor of max_completion_tokens as per OpenAI documentation
 	 * O3 family models handle max_tokens separately in handleO3FamilyMessage
@@ -449,11 +484,29 @@ export async function getOpenAiModels(baseUrl?: string, apiKey?: string, openAiH
 			return []
 		}
 
-		// Trim whitespace from baseUrl to handle cases where users accidentally include spaces
-		const trimmedBaseUrl = baseUrl.trim()
+		// Normalize the base URL using the same logic as the OpenAiHandler
+		let normalizedUrl = baseUrl.trim()
 
-		if (!URL.canParse(trimmedBaseUrl)) {
+		if (!URL.canParse(normalizedUrl)) {
 			return []
+		}
+
+		// For Azure endpoints, don't modify
+		const urlHost = new URL(normalizedUrl).host
+		const isAzure = urlHost.endsWith(".azure.com") || urlHost.endsWith(".services.ai.azure.com")
+
+		if (!isAzure && normalizedUrl !== "https://api.openai.com/v1") {
+			// For other OpenAI-compatible APIs, ensure /v1 is present but not duplicated
+			if (!normalizedUrl.endsWith("/v1")) {
+				// Remove trailing slash if present
+				if (normalizedUrl.endsWith("/")) {
+					normalizedUrl = normalizedUrl.slice(0, -1)
+				}
+				// Only add /v1 if it's not already there
+				if (!normalizedUrl.endsWith("/v1")) {
+					normalizedUrl = `${normalizedUrl}/v1`
+				}
+			}
 		}
 
 		const config: Record<string, any> = {}
@@ -470,7 +523,7 @@ export async function getOpenAiModels(baseUrl?: string, apiKey?: string, openAiH
 			config["headers"] = headers
 		}
 
-		const response = await axios.get(`${trimmedBaseUrl}/models`, config)
+		const response = await axios.get(`${normalizedUrl}/models`, config)
 		const modelsArray = response.data?.data?.map((model: any) => model.id) || []
 		return [...new Set<string>(modelsArray)]
 	} catch (error) {
