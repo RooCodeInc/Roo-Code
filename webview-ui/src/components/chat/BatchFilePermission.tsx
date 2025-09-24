@@ -3,6 +3,7 @@ import { memo } from "react"
 import { ToolUseBlock, ToolUseBlockHeader } from "../common/ToolUseBlock"
 import { vscode } from "@src/utils/vscode"
 import { removeLeadingNonAlphanumeric } from "@src/utils/removeLeadingNonAlphanumeric"
+import { StandardTooltip } from "@src/components/ui"
 
 interface FilePermissionItem {
 	path: string
@@ -35,10 +36,13 @@ export const BatchFilePermission = memo(({ files = [], onPermissionResponse, ts 
 								<ToolUseBlockHeader
 									onClick={() => vscode.postMessage({ type: "openFile", text: file.content })}>
 									{file.path?.startsWith(".") && <span>.</span>}
-									<span className="whitespace-nowrap overflow-hidden text-ellipsis text-left mr-2 rtl">
-										{removeLeadingNonAlphanumeric(file.path ?? "") + "\u200E"}
-										{file.lineSnippet && ` ${file.lineSnippet}`}
-									</span>
+									<StandardTooltip
+										content={`${file.path}${file.lineSnippet ? ` ${file.lineSnippet}` : ""}`}>
+										<span className="whitespace-nowrap overflow-hidden text-ellipsis text-left mr-2 rtl">
+											{removeLeadingNonAlphanumeric(file.path ?? "") + "\u200E"}
+											{file.lineSnippet && ` ${file.lineSnippet}`}
+										</span>
+									</StandardTooltip>
 									<div className="flex-grow"></div>
 									<span className="codicon codicon-link-external text-[13.5px] my-[1px]" />
 								</ToolUseBlockHeader>

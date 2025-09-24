@@ -16,6 +16,7 @@ import { findMatchingResourceOrTemplate } from "@src/utils/mcp"
 import { vscode } from "@src/utils/vscode"
 import { removeLeadingNonAlphanumeric } from "@src/utils/removeLeadingNonAlphanumeric"
 import { getLanguageFromPath } from "@src/utils/getLanguageFromPath"
+import { StandardTooltip } from "@src/components/ui"
 
 import { ToolUseBlock, ToolUseBlockHeader } from "../common/ToolUseBlock"
 import UpdateTodoListToolBlock from "./UpdateTodoListToolBlock"
@@ -600,10 +601,12 @@ export const ChatRowContent = ({
 									className="group"
 									onClick={() => vscode.postMessage({ type: "openFile", text: tool.content })}>
 									{tool.path?.startsWith(".") && <span>.</span>}
-									<span className="whitespace-nowrap overflow-hidden text-ellipsis text-left mr-2 rtl">
-										{removeLeadingNonAlphanumeric(tool.path ?? "") + "\u200E"}
-										{tool.reason}
-									</span>
+									<StandardTooltip content={`${tool.path}${tool.reason ? ` ${tool.reason}` : ""}`}>
+										<span className="whitespace-nowrap overflow-hidden text-ellipsis text-left mr-2 rtl">
+											{removeLeadingNonAlphanumeric(tool.path ?? "") + "\u200E"}
+											{tool.reason}
+										</span>
+									</StandardTooltip>
 									<div style={{ flexGrow: 1 }}></div>
 									<SquareArrowOutUpRight
 										className="w-4 codicon codicon-link-external opacity-0 group-hover:opacity-100 transition-opacity"
