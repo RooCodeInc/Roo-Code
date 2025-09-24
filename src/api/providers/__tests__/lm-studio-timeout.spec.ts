@@ -72,7 +72,7 @@ describe("LmStudioHandler timeout configuration", () => {
 		)
 	})
 
-	it("should handle zero timeout (no timeout)", () => {
+	it("should handle zero timeout", () => {
 		;(getApiRequestTimeout as any).mockReturnValue(0)
 
 		const options: ApiHandlerOptions = {
@@ -84,7 +84,7 @@ describe("LmStudioHandler timeout configuration", () => {
 
 		expect(mockOpenAIConstructor).toHaveBeenCalledWith(
 			expect.objectContaining({
-				timeout: 0, // No timeout
+				timeout: 0,
 			}),
 		)
 	})
