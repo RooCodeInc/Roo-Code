@@ -152,16 +152,18 @@ export const OrganizationSwitcher = ({
 						</SelectItem>
 					))}
 
-					{/* Add separator before Create Team Account option */}
-					<SelectSeparator />
-
-					{/* Create Team Account Option */}
-					<SelectItem value="create-team">
-						<div className="flex items-center gap-2">
-							<Plus className="w-4.5 h-4.5" />
-							<span>{t("cloud:createTeamAccount")}</span>
-						</div>
-					</SelectItem>
+					{/* Only show Create Team Account if user has no organizations */}
+					{organizations.length === 0 && (
+						<>
+							<SelectSeparator />
+							<SelectItem value="create-team">
+								<div className="flex items-center gap-2">
+									<Plus className="w-4.5 h-4.5" />
+									<span>{t("cloud:createTeamAccount")}</span>
+								</div>
+							</SelectItem>
+						</>
+					)}
 				</SelectContent>
 			</Select>
 		</div>
