@@ -64,7 +64,7 @@ export class WatsonxAIHandler extends BaseProvider implements SingleCompletionHa
 					serviceOptions.authenticator = new CloudPakForDataAuthenticator({
 						username: username,
 						apikey: apiKey,
-						url: serviceUrl,
+						url: `${serviceUrl}/icp4d-api`,
 					})
 				} else {
 					const password = this.options.watsonxPassword
@@ -75,7 +75,7 @@ export class WatsonxAIHandler extends BaseProvider implements SingleCompletionHa
 					serviceOptions.authenticator = new CloudPakForDataAuthenticator({
 						username: username,
 						password: password,
-						url: serviceUrl,
+						url: `${serviceUrl}/icp4d-api`,
 					})
 				}
 			} else {

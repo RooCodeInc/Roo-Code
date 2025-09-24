@@ -21,6 +21,7 @@ export async function getWatsonxModels(
 ): Promise<Record<string, ModelInfo>> {
 	try {
 		let options: any = {
+			serviceUrl: baseUrl,
 			version: "2024-05-31",
 		}
 
@@ -40,13 +41,13 @@ export async function getWatsonxModels(
 			if (username) {
 				if (password) {
 					options.authenticator = new CloudPakForDataAuthenticator({
-						url: baseUrl,
+						url: `${baseUrl}/icp4d-api`,
 						username: username,
 						password: password,
 					})
 				} else if (apiKey) {
 					options.authenticator = new CloudPakForDataAuthenticator({
-						url: baseUrl,
+						url: `${baseUrl}/icp4d-api`,
 						username: username,
 						apikey: apiKey,
 					})
@@ -128,6 +129,7 @@ export async function getEmbeddedWatsonxModels(
 ): Promise<Record<string, { dimension: number }>> {
 	try {
 		let options: any = {
+			serviceUrl: baseUrl,
 			version: "2024-05-31",
 		}
 
@@ -147,13 +149,13 @@ export async function getEmbeddedWatsonxModels(
 			if (username) {
 				if (password) {
 					options.authenticator = new CloudPakForDataAuthenticator({
-						url: baseUrl,
+						url: `${baseUrl}/icp4d-api`,
 						username: username,
 						password: password,
 					})
 				} else if (apiKey) {
 					options.authenticator = new CloudPakForDataAuthenticator({
-						url: baseUrl,
+						url: `${baseUrl}/icp4d-api`,
 						username: username,
 						apikey: apiKey,
 					})
