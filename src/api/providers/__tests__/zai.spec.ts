@@ -1,8 +1,5 @@
 // npx vitest run src/api/providers/__tests__/zai.spec.ts
 
-// Mock vscode first to avoid import errors
-vitest.mock("vscode", (importOriginal) => importOriginal())
-
 import OpenAI from "openai"
 import { Anthropic } from "@anthropic-ai/sdk"
 
