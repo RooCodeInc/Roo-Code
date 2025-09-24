@@ -30,12 +30,19 @@
 		"terminal": "Terminal",
 		"slashCommands": "Slash Commands",
 		"prompts": "Prompts",
+		"ui": "UI",
 		"experimental": "Experimental",
 		"language": "Language",
 		"about": "About Roo Code"
 	},
 	"slashCommands": {
 		"description": "Manage your slash commands to quickly execute custom workflows and actions. <DocsLink>Learn more</DocsLink>"
+	},
+	"ui": {
+		"collapseThinking": {
+			"label": "Collapse Thinking messages by default",
+			"description": "When enabled, thinking blocks will be collapsed by default until you interact with them"
+		}
 	},
 	"prompts": {
 		"description": "Configure support prompts that are used for quick actions like enhancing prompts, explaining code, and fixing issues. These prompts help Roo provide better assistance for common development tasks."
@@ -387,6 +394,8 @@
 			"modelId": "Model ID",
 			"apiKey": "Ollama API Key",
 			"apiKeyHelp": "Optional API key for authenticated Ollama instances or cloud services. Leave empty for local installations.",
+			"numCtx": "Context Window Size (num_ctx)",
+			"numCtxHelp": "Override the model's default context window size. Leave empty to use the model's Modelfile configuration. Minimum value is 128.",
 			"description": "Ollama allows you to run models locally on your computer. For instructions on how to get started, see their quickstart guide.",
 			"warning": "Note: Roo Code uses complex prompts and works best with Claude models. Less capable models may not work as expected."
 		},
