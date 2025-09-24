@@ -912,7 +912,8 @@
 		"providerNotAllowed": "提供商 '{{provider}}' 不允许用于您的组织",
 		"modelNotAllowed": "模型 '{{model}}' 不允许用于提供商 '{{provider}}'，您的组织不允许",
 		"profileInvalid": "此配置文件包含您的组织不允许的提供商或模型",
-		"qwenCodeOauthPath": "您必须提供有效的 OAuth 凭证路径"
+		"qwenCodeOauthPath": "您必须提供有效的 OAuth 凭证路径",
+		"openAiNativeCodexOauthPath": "可选：ChatGPT Codex auth.json 路径。为空时默认为 ~/.codex/auth.json。"
 	},
 	"placeholders": {
 		"apiKey": "请输入 API 密钥...",

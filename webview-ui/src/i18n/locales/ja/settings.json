@@ -912,7 +912,8 @@
 		"providerNotAllowed": "プロバイダー「{{provider}}」は組織によって許可されていません",
 		"modelNotAllowed": "モデル「{{model}}」はプロバイダー「{{provider}}」に対して組織によって許可されていません",
 		"profileInvalid": "このプロファイルには、組織によって許可されていないプロバイダーまたはモデルが含まれています",
-		"qwenCodeOauthPath": "有効なOAuth認証情報のパスを提供する必要があります"
+		"qwenCodeOauthPath": "有効なOAuth認証情報のパスを提供する必要があります",
+		"openAiNativeCodexOauthPath": "オプション: ChatGPT Codex auth.jsonへのパス。空の場合、デフォルトは ~/.codex/auth.json です。"
 	},
 	"placeholders": {
 		"apiKey": "API キーを入力...",

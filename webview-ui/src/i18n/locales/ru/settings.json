@@ -912,7 +912,8 @@
 		"providerNotAllowed": "Провайдер '{{provider}}' не разрешен вашей организацией",
 		"modelNotAllowed": "Модель '{{model}}' не разрешена для провайдера '{{provider}}' вашей организацией",
 		"profileInvalid": "Этот профиль содержит провайдера или модель, которые не разрешены вашей организацией",
-		"qwenCodeOauthPath": "Вы должны указать допустимый путь к учетным данным OAuth"
+		"qwenCodeOauthPath": "Вы должны указать допустимый путь к учетным данным OAuth",
+		"openAiNativeCodexOauthPath": "Необязательно: Путь к auth.json ChatGPT Codex. Когда пусто, по умолчанию ~/.codex/auth.json."
 	},
 	"placeholders": {
 		"apiKey": "Введите API-ключ...",

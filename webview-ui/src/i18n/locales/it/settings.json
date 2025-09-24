@@ -912,7 +912,8 @@
 		"providerNotAllowed": "Il fornitore '{{provider}}' non è consentito dalla tua organizzazione",
 		"modelNotAllowed": "Il modello '{{model}}' non è consentito per il fornitore '{{provider}}' dalla tua organizzazione.",
 		"profileInvalid": "Questo profilo contiene un fornitore o un modello non consentito dalla tua organizzazione.",
-		"qwenCodeOauthPath": "Devi fornire un percorso valido per le credenziali OAuth"
+		"qwenCodeOauthPath": "Devi fornire un percorso valido per le credenziali OAuth",
+		"openAiNativeCodexOauthPath": "Opzionale: Percorso all'auth.json di ChatGPT Codex. Quando vuoto, predefinito a ~/.codex/auth.json."
 	},
 	"placeholders": {
 		"apiKey": "Inserisci chiave API...",

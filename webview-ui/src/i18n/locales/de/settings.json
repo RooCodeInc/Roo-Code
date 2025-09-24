@@ -911,7 +911,8 @@
 		"providerNotAllowed": "Anbieter '{{provider}}' ist von deiner Organisation nicht erlaubt",
 		"modelNotAllowed": "Modell '{{model}}' ist für Anbieter '{{provider}}' von deiner Organisation nicht erlaubt",
 		"profileInvalid": "Dieses Profil enthält einen Anbieter oder ein Modell, das von deiner Organisation nicht erlaubt ist",
-		"qwenCodeOauthPath": "Du musst einen gültigen OAuth-Anmeldedaten-Pfad angeben"
+		"qwenCodeOauthPath": "Du musst einen gültigen OAuth-Anmeldedaten-Pfad angeben",
+		"openAiNativeCodexOauthPath": "Optional: Pfad zur ChatGPT Codex auth.json. Wenn leer, wird standardmäßig ~/.codex/auth.json verwendet."
 	},
 	"placeholders": {
 		"apiKey": "API-Schlüssel eingeben...",

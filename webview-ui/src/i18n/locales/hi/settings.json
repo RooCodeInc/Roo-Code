@@ -912,7 +912,8 @@
 		"providerNotAllowed": "प्रदाता '{{provider}}' आपके संगठन द्वारा अनुमत नहीं है",
 		"modelNotAllowed": "मॉडल '{{model}}' प्रदाता '{{provider}}' के लिए आपके संगठन द्वारा अनुमत नहीं है",
 		"profileInvalid": "इस प्रोफ़ाइल में एक प्रदाता या मॉडल शामिल है जो आपके संगठन द्वारा अनुमत नहीं है",
-		"qwenCodeOauthPath": "आपको एक वैध OAuth क्रेडेंशियल पथ प्रदान करना होगा"
+		"qwenCodeOauthPath": "आपको एक वैध OAuth क्रेडेंशियल पथ प्रदान करना होगा",
+		"openAiNativeCodexOauthPath": "वैकल्पिक: ChatGPT Codex auth.json का पथ। जब खाली हो, तो डिफ़ॉल्ट ~/.codex/auth.json है।"
 	},
 	"placeholders": {
 		"apiKey": "API कुंजी दर्ज करें...",
