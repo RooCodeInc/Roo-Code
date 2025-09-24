@@ -400,6 +400,90 @@ describe("FileRestrictionError", () => {
 		})
 	})
 
+	describe("boomerang mode", () => {
+		it("is configured correctly", () => {
+			const boomerangMode = modes.find((mode) => mode.slug === "boomerang")
+			expect(boomerangMode).toBeDefined()
+			expect(boomerangMode).toMatchObject({
+				slug: "boomerang",
+				name: "🪃 Boomerang",
+				roleDefinition:
+					"You are Roo, a strategic planner and workflow orchestrator who combines deep analysis with automatic task delegation. You first thoroughly analyze and plan complex projects, then automatically delegate the implementation to appropriate specialized modes based on your analysis.",
+				groups: [
+					"read",
+					["edit", { fileRegex: "\\.md$", description: "Markdown files only" }],
+					"browser",
+					"mcp",
+				],
+			})
+			expect(boomerangMode?.customInstructions).toContain("Phase 1: Deep Analysis and Planning")
+			expect(boomerangMode?.customInstructions).toContain("Phase 2: Automatic Task Delegation")
+			expect(boomerangMode?.whenToUse).toContain(
+				"Use this mode when you need both deep planning analysis and automatic task execution",
+			)
+			expect(boomerangMode?.description).toBe("Deep planning followed by automatic task delegation")
+		})
+
+		it("allows boomerang mode to edit markdown files only", () => {
+			// Should allow editing markdown files
+			expect(
+				isToolAllowedForMode("write_to_file", "boomerang", [], undefined, {
+					path: "plan.md",
+					content: "# Project Plan",
+				}),
+			).toBe(true)
+
+			// Should allow applying diffs to markdown files
+			expect(
+				isToolAllowedForMode("apply_diff", "boomerang", [], undefined, {
+					path: "boomerang-plan.md",
+					diff: "- old\n+ new",
+				}),
+			).toBe(true)
+
+			// Should reject non-markdown files
+			expect(() =>
+				isToolAllowedForMode("write_to_file", "boomerang", [], undefined, {
+					path: "script.js",
+					content: "console.log('test')",
+				}),
+			).toThrow(FileRestrictionError)
+			expect(() =>
+				isToolAllowedForMode("write_to_file", "boomerang", [], undefined, {
+					path: "script.js",
+					content: "console.log('test')",
+				}),
+			).toThrow(/Markdown files only/)
+
+			// Should maintain read capabilities
+			expect(isToolAllowedForMode("read_file", "boomerang", [])).toBe(true)
+			expect(isToolAllowedForMode("browser_action", "boomerang", [])).toBe(true)
+			expect(isToolAllowedForMode("use_mcp_tool", "boomerang", [])).toBe(true)
+		})
+
+		it("has access to new_task tool for delegation", () => {
+			// Should have access to new_task tool (part of ALWAYS_AVAILABLE_TOOLS)
+			expect(isToolAllowedForMode("new_task", "boomerang", [])).toBe(true)
+			expect(isToolAllowedForMode("update_todo_list", "boomerang", [])).toBe(true)
+		})
+
+		it("has access to planning and analysis tools", () => {
+			// Should have access to read tools for analysis
+			expect(isToolAllowedForMode("read_file", "boomerang", [])).toBe(true)
+			expect(isToolAllowedForMode("search_files", "boomerang", [])).toBe(true)
+			expect(isToolAllowedForMode("list_files", "boomerang", [])).toBe(true)
+			expect(isToolAllowedForMode("list_code_definition_names", "boomerang", [])).toBe(true)
+			expect(isToolAllowedForMode("codebase_search", "boomerang", [])).toBe(true)
+
+			// Should have access to browser for research
+			expect(isToolAllowedForMode("browser_action", "boomerang", [])).toBe(true)
+
+			// Should have access to MCP tools
+			expect(isToolAllowedForMode("use_mcp_tool", "boomerang", [])).toBe(true)
+			expect(isToolAllowedForMode("access_mcp_resource", "boomerang", [])).toBe(true)
+		})
+	})
+
 	describe("getFullModeDetails", () => {
 		beforeEach(() => {
 			vi.clearAllMocks()
