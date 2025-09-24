@@ -342,6 +342,70 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					}
 				}
 
+				// Special handling for folder selection with concrete value
+				if (type === ContextMenuOptionType.Folder && value) {
+					if (textAreaRef.current) {
+						// Ensure the path ends with "/"
+						let folderPath = value
+						if (!folderPath.endsWith("/")) {
+							folderPath += "/"
+						}
+
+						// Insert the folder mention without a trailing space
+						const beforeCursor = textAreaRef.current.value.slice(0, cursorPosition)
+						const afterCursor = textAreaRef.current.value.slice(cursorPosition)
+						const lastAtIndex = beforeCursor.lastIndexOf("@")
+
+						let newValue: string
+						let newCursorPosition: number
+
+						if (lastAtIndex !== -1) {
+							// Replace everything after the @ with the folder path
+							const beforeMention = textAreaRef.current.value.slice(0, lastAtIndex)
+							// Don't add a trailing space after the folder path
+							newValue = beforeMention + "@" + folderPath + afterCursor
+							newCursorPosition = lastAtIndex + 1 + folderPath.length
+						} else {
+							// Insert at cursor position
+							newValue = beforeCursor + "@" + folderPath + afterCursor
+							newCursorPosition = cursorPosition + 1 + folderPath.length
+						}
+
+						setInputValue(newValue)
+						setCursorPosition(newCursorPosition)
+						setIntendedCursorPosition(newCursorPosition)
+
+						// Keep the menu open and search for folder contents
+						// Don't call setShowContextMenu(false)
+						setSelectedType(null)
+						setSelectedMenuIndex(0)
+
+						// Extract the query for searching folder contents
+						const query = folderPath
+						setSearchQuery(query)
+
+						// Trigger file search for the folder contents
+						const reqId = Math.random().toString(36).substring(2, 9)
+						setSearchRequestId(reqId)
+						setSearchLoading(true)
+
+						// Send message to extension to search files in the folder
+						vscode.postMessage({
+							type: "searchFiles",
+							query: query,
+							requestId: reqId,
+						})
+
+						// Focus the textarea
+						setTimeout(() => {
+							if (textAreaRef.current) {
+								textAreaRef.current.focus()
+							}
+						}, 0)
+					}
+					return
+				}
+
 				setShowContextMenu(false)
 				setSelectedType(null)
 
@@ -387,7 +451,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				}
 			},
 			// eslint-disable-next-line react-hooks/exhaustive-deps
-			[setInputValue, cursorPosition],
+			[setInputValue, cursorPosition, setSearchRequestId, setSearchLoading],
 		)
 
 		const handleKeyDown = useCallback(
