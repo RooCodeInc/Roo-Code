@@ -59,7 +59,7 @@
 		"tooltip": "Одобрить это действие"
 	},
 	"runCommand": {
-		"title": "Выполнить команду",
+		"title": "Команда",
 		"tooltip": "Выполнить эту команду"
 	},
 	"proceedWhileRunning": {
@@ -123,7 +123,7 @@
 	"addContext": "@ для добавления контекста, / для команд",
 	"dragFiles": "удерживайте shift для перетаскивания файлов",
 	"dragFilesImages": "удерживайте shift для перетаскивания файлов/изображений",
-	"errorReadingFile": "Ошибка чтения файла:",
+	"errorReadingFile": "Ошибка чтения файла",
 	"noValidImages": "Не удалось обработать ни одно изображение",
 	"separator": "Разделитель",
 	"edit": "Редактировать...",
@@ -156,49 +156,50 @@
 		"wantsToFetch": "Roo хочет получить подробные инструкции для помощи с текущей задачей"
 	},
 	"fileOperations": {
-		"wantsToRead": "Roo хочет прочитать этот файл:",
-		"wantsToReadOutsideWorkspace": "Roo хочет прочитать этот файл вне рабочей области:",
-		"didRead": "Roo прочитал этот файл:",
-		"wantsToEdit": "Roo хочет отредактировать этот файл:",
-		"wantsToEditOutsideWorkspace": "Roo хочет отредактировать этот файл вне рабочей области:",
-		"wantsToEditProtected": "Roo хочет отредактировать защищённый файл конфигурации:",
-		"wantsToCreate": "Roo хочет создать новый файл:",
-		"wantsToSearchReplace": "Roo хочет выполнить поиск и замену в этом файле:",
-		"didSearchReplace": "Roo выполнил поиск и замену в этом файле:",
-		"wantsToInsert": "Roo хочет вставить содержимое в этот файл:",
-		"wantsToInsertWithLineNumber": "Roo хочет вставить содержимое в этот файл на строку {{lineNumber}}:",
-		"wantsToInsertAtEnd": "Roo хочет добавить содержимое в конец этого файла:",
-		"wantsToReadAndXMore": "Roo хочет прочитать этот файл и еще {{count}}:",
-		"wantsToReadMultiple": "Roo хочет прочитать несколько файлов:",
-		"wantsToApplyBatchChanges": "Roo хочет применить изменения к нескольким файлам:",
-		"wantsToGenerateImage": "Roo хочет сгенерировать изображение:",
-		"wantsToGenerateImageOutsideWorkspace": "Roo хочет сгенерировать изображение вне рабочего пространства:",
-		"wantsToGenerateImageProtected": "Roo хочет сгенерировать изображение в защищённом месте:",
-		"didGenerateImage": "Roo сгенерировал изображение:"
+		"wantsToRead": "Roo хочет прочитать этот файл",
+		"wantsToReadOutsideWorkspace": "Roo хочет прочитать этот файл вне рабочей области",
+		"didRead": "Roo прочитал этот файл",
+		"wantsToEdit": "Roo хочет отредактировать этот файл",
+		"wantsToEditOutsideWorkspace": "Roo хочет отредактировать этот файл вне рабочей области",
+		"wantsToEditProtected": "Roo хочет отредактировать защищённый файл конфигурации",
+		"wantsToCreate": "Roo хочет создать новый файл",
+		"wantsToSearchReplace": "Roo хочет выполнить поиск и замену в этом файле",
+		"didSearchReplace": "Roo выполнил поиск и замену в этом файле",
+		"wantsToInsert": "Roo хочет вставить содержимое в этот файл",
+		"wantsToInsertWithLineNumber": "Roo хочет вставить содержимое в этот файл на строку {{lineNumber}}",
+		"wantsToInsertAtEnd": "Roo хочет добавить содержимое в конец этого файла",
+		"wantsToReadAndXMore": "Roo хочет прочитать этот файл и еще {{count}}",
+		"wantsToReadMultiple": "Roo хочет прочитать несколько файлов",
+		"wantsToApplyBatchChanges": "Roo хочет применить изменения к нескольким файлам",
+		"wantsToGenerateImage": "Roo хочет сгенерировать изображение",
+		"wantsToGenerateImageOutsideWorkspace": "Roo хочет сгенерировать изображение вне рабочего пространства",
+		"wantsToGenerateImageProtected": "Roo хочет сгенерировать изображение в защищённом месте",
+		"didGenerateImage": "Roo сгенерировал изображение"
 	},
 	"directoryOperations": {
-		"wantsToViewTopLevel": "Roo хочет просмотреть файлы верхнего уровня в этой директории:",
-		"didViewTopLevel": "Roo просмотрел файлы верхнего уровня в этой директории:",
-		"wantsToViewRecursive": "Roo хочет рекурсивно просмотреть все файлы в этой директории:",
-		"didViewRecursive": "Roo рекурсивно просмотрел все файлы в этой директории:",
-		"wantsToViewDefinitions": "Roo хочет просмотреть имена определений исходного кода в этой директории:",
-		"didViewDefinitions": "Roo просмотрел имена определений исходного кода в этой директории:",
-		"wantsToSearch": "Roo хочет выполнить поиск в этой директории по <code>{{regex}}</code>:",
-		"didSearch": "Roo выполнил поиск в этой директории по <code>{{regex}}</code>:",
-		"wantsToSearchOutsideWorkspace": "Roo хочет выполнить поиск в этой директории (вне рабочего пространства) по <code>{{regex}}</code>:",
-		"didSearchOutsideWorkspace": "Roo выполнил поиск в этой директории (вне рабочего пространства) по <code>{{regex}}</code>:",
-		"wantsToViewTopLevelOutsideWorkspace": "Roo хочет просмотреть файлы верхнего уровня в этой директории (вне рабочего пространства):",
-		"didViewTopLevelOutsideWorkspace": "Roo просмотрел файлы верхнего уровня в этой директории (вне рабочего пространства):",
-		"wantsToViewRecursiveOutsideWorkspace": "Roo хочет рекурсивно просмотреть все файлы в этой директории (вне рабочего пространства):",
-		"didViewRecursiveOutsideWorkspace": "Roo рекурсивно просмотрел все файлы в этой директории (вне рабочего пространства):",
-		"wantsToViewDefinitionsOutsideWorkspace": "Roo хочет просмотреть имена определений исходного кода в этой директории (вне рабочего пространства):",
-		"didViewDefinitionsOutsideWorkspace": "Roo просмотрел имена определений исходного кода в этой директории (вне рабочего пространства):"
+		"wantsToViewTopLevel": "Roo хочет просмотреть файлы верхнего уровня в этой директории",
+		"didViewTopLevel": "Roo просмотрел файлы верхнего уровня в этой директории",
+		"wantsToViewRecursive": "Roo хочет рекурсивно просмотреть все файлы в этой директории",
+		"didViewRecursive": "Roo рекурсивно просмотрел все файлы в этой директории",
+		"wantsToViewDefinitions": "Roo хочет просмотреть имена определений исходного кода в этой директории",
+		"didViewDefinitions": "Roo просмотрел имена определений исходного кода в этой директории",
+		"wantsToSearch": "Roo хочет выполнить поиск в этой директории по <code>{{regex}}</code>",
+		"didSearch": "Roo выполнил поиск в этой директории по <code>{{regex}}</code>",
+		"wantsToSearchOutsideWorkspace": "Roo хочет выполнить поиск в этой директории (вне рабочего пространства) по <code>{{regex}}</code>",
+		"didSearchOutsideWorkspace": "Roo выполнил поиск в этой директории (вне рабочего пространства) по <code>{{regex}}</code>",
+		"wantsToViewTopLevelOutsideWorkspace": "Roo хочет просмотреть файлы верхнего уровня в этой директории (вне рабочего пространства)",
+		"didViewTopLevelOutsideWorkspace": "Roo просмотрел файлы верхнего уровня в этой директории (вне рабочего пространства)",
+		"wantsToViewRecursiveOutsideWorkspace": "Roo хочет рекурсивно просмотреть все файлы в этой директории (вне рабочего пространства)",
+		"didViewRecursiveOutsideWorkspace": "Roo рекурсивно просмотрел все файлы в этой директории (вне рабочего пространства)",
+		"wantsToViewDefinitionsOutsideWorkspace": "Roo хочет просмотреть имена определений исходного кода в этой директории (вне рабочего пространства)",
+		"didViewDefinitionsOutsideWorkspace": "Roo просмотрел имена определений исходного кода в этой директории (вне рабочего пространства)"
 	},
 	"commandOutput": "Вывод команды",
 	"commandExecution": {
 		"running": "Выполняется",
+		"abort": "Прервать",
 		"pid": "PID: {{pid}}",
-		"exited": "Завершено ({{exitCode}})",
+		"exitStatus": "Завершено со статусом {{exitCode}}",
 		"manageCommands": "Управление разрешениями команд",
 		"commandManagementDescription": "Управляйте разрешениями команд: Нажмите ✓, чтобы разрешить автоматическое выполнение, ✗, чтобы запретить выполнение. Шаблоны можно включать/выключать или удалять из списков. <settingsLink>Просмотреть все настройки</settingsLink>",
 		"addToAllowed": "Добавить в список разрешенных",
@@ -213,9 +214,15 @@
 	},
 	"response": "Ответ",
 	"arguments": "Аргументы",
+	"text": {
+		"rooSaid": "Ру сказал"
+	},
+	"feedback": {
+		"youSaid": "Вы сказали"
+	},
 	"mcp": {
-		"wantsToUseTool": "Roo хочет использовать инструмент на сервере MCP {{serverName}}:",
-		"wantsToAccessResource": "Roo хочет получить доступ к ресурсу на сервере MCP {{serverName}}:"
+		"wantsToUseTool": "Roo хочет использовать инструмент на сервере MCP {{serverName}}",
+		"wantsToAccessResource": "Roo хочет получить доступ к ресурсу на сервере MCP {{serverName}}"
 	},
 	"modes": {
 		"wantsToSwitch": "Roo хочет переключиться в режим {{mode}}",
@@ -224,7 +231,7 @@
 		"didSwitchWithReason": "Roo переключился в режим {{mode}}, потому что: {{reason}}"
 	},
 	"subtasks": {
-		"wantsToCreate": "Roo хочет создать новую подзадачу в режиме {{mode}}:",
+		"wantsToCreate": "Roo хочет создать новую подзадачу в режиме {{mode}}",
 		"wantsToFinish": "Roo хочет завершить эту подзадачу",
 		"newTaskContent": "Инструкции по подзадаче",
 		"completionContent": "Подзадача завершена",
@@ -233,7 +240,7 @@
 		"completionInstructions": "Подзадача завершена! Вы можете просмотреть результаты и предложить исправления или следующие шаги. Если всё в порядке, подтвердите для возврата результата в родительскую задачу."
 	},
 	"questions": {
-		"hasQuestion": "У Roo есть вопрос:"
+		"hasQuestion": "У Roo есть вопрос"
 	},
 	"taskCompleted": "Задача завершена",
 	"error": "Ошибка",
@@ -245,29 +252,32 @@
 		"issues": "Похоже, у вас проблемы с Windows PowerShell, пожалуйста, ознакомьтесь с этим"
 	},
 	"autoApprove": {
-		"tooltip": "Управление настройками автоматического одобрения",
-		"title": "Авто-утверждение",
+		"tooltipManage": "Управление настройками автоматического одобрения",
+		"tooltipStatus": "Авто-одобрение включено для: {{toggles}}",
+		"title": "Авто-одобрение",
+		"toggle": "Переключить авто-утверждение",
 		"all": "Все",
 		"none": "Ни одного",
 		"description": "Выполняйте эти действия, не спрашивая разрешения. Включайте это только для действий, которым вы полностью доверяете.",
 		"selectOptionsFirst": "Выберите хотя бы один вариант ниже, чтобы включить авто-утверждение",
 		"toggleAriaLabel": "Переключить авто-утверждение",
 		"disabledAriaLabel": "Авто-утверждение отключено - сначала выберите опции",
-		"triggerLabel_zero": "Нет авто-утверждения",
+		"triggerLabelOff": "Авто-утверждение выкл",
+		"triggerLabel_zero": "0 авто-утвержденных",
 		"triggerLabel_one": "1 авто-утвержден",
-		"triggerLabel_few": "{{count}} авто-утверждено",
-		"triggerLabel_many": "{{count}} авто-утверждено",
-		"triggerLabel_other": "{{count}} авто-утверждено",
+		"triggerLabel_other": "{{count}} авто-утвержденных",
 		"triggerLabelAll": "YOLO"
 	},
 	"announcement": {
 		"title": "🎉 Выпущен Roo Code {{version}}",
-		"description": "Представляем <bold>Roo Code Cloud:</bold> Расширяя возможности Roo за пределы IDE",
-		"feature1": "<bold>Отслеживайте прогресс задач из любого места (Бесплатно):</bold> Получайте обновления в реальном времени о долгосрочных задачах, не привязываясь к IDE",
-		"feature2": "<bold>Управляйте расширением Roo удаленно (Pro):</bold> Запускайте, останавливайте и взаимодействуйте с задачами через браузерный интерфейс на основе чата.",
-		"learnMore": "Готовы взять контроль в свои руки? Узнайте больше <learnMoreLink>здесь</learnMoreLink>.",
-		"visitCloudButton": "Посетить Roo Code Cloud",
-		"socialLinks": "Присоединяйтесь к нам в <xLink>X</xLink>, <discordLink>Discord</discordLink>, или <redditLink>r/RooCode</redditLink>"
+		"stealthModel": {
+			"feature": "<bold>Бесплатная скрытая модель на ограниченное время</bold> - Code Supernova: Универсальная модель агентного программирования, поддерживающая ввод изображений, доступная через Roo Code Cloud.",
+			"note": "(Примечание: промпты и дополнения записываются создателем модели и используются для её улучшения)",
+			"connectButton": "Подключиться к Roo Code Cloud",
+			"selectModel": "Выберите <code>roo/code-supernova</code> от провайдера Roo Code Cloud в Настройках для начала работы.",
+			"goToSettingsButton": "Перейти к Настройкам"
+		},
+		"socialLinks": "Присоединяйтесь к нам в <xLink>X</xLink>, <discordLink>Discord</discordLink>, или <redditLink>r/RooCode</redditLink> 🚀"
 	},
 	"reasoning": {
 		"thinking": "Обдумывание",
@@ -285,7 +295,7 @@
 		"countdownDisplay": "{{count}}с"
 	},
 	"browser": {
-		"rooWantsToUse": "Roo хочет использовать браузер:",
+		"rooWantsToUse": "Roo хочет использовать браузер",
 		"consoleLogs": "Логи консоли",
 		"noNewLogs": "(Новых логов нет)",
 		"screenshot": "Скриншот браузера",
@@ -310,8 +320,6 @@
 		"tooltips": {
 			"expand": "Развернуть блок кода",
 			"collapse": "Свернуть блок кода",
-			"enable_wrap": "Включить перенос строк",
-			"disable_wrap": "Отключить перенос строк",
 			"copy_code": "Копировать код"
 		}
 	},
@@ -335,8 +343,8 @@
 		}
 	},
 	"codebaseSearch": {
-		"wantsToSearch": "Roo хочет выполнить поиск в кодовой базе по <code>{{query}}</code>:",
-		"wantsToSearchWithPath": "Roo хочет выполнить поиск в кодовой базе по <code>{{query}}</code> в <code>{{path}}</code>:",
+		"wantsToSearch": "Roo хочет выполнить поиск в кодовой базе по <code>{{query}}</code>",
+		"wantsToSearchWithPath": "Roo хочет выполнить поиск в кодовой базе по <code>{{query}}</code> в <code>{{path}}</code>",
 		"didSearch_one": "Найден 1 результат",
 		"didSearch_other": "Найдено {{count}} результатов",
 		"resultTooltip": "Оценка схожести: {{score}} (нажмите, чтобы открыть файл)"
@@ -397,12 +405,12 @@
 		"url": "Вставьте URL для получения содержимого"
 	},
 	"queuedMessages": {
-		"title": "Сообщения в очереди:",
+		"title": "Сообщения в очереди",
 		"clickToEdit": "Нажмите, чтобы редактировать сообщение"
 	},
 	"slashCommand": {
-		"wantsToRun": "Roo хочет выполнить слеш-команду:",
-		"didRun": "Roo выполнил слеш-команду:"
+		"wantsToRun": "Roo хочет выполнить слеш-команду",
+		"didRun": "Roo выполнил слеш-команду"
 	},
 	"apiConfigSelector": {
 		"unpin": "Открепить",

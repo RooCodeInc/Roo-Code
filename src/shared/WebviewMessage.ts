@@ -102,6 +102,7 @@ export interface WebviewMessage {
 		| "browserViewportSize"
 		| "screenshotQuality"
 		| "remoteBrowserHost"
+		| "openKeyboardShortcuts"
 		| "openMcpSettings"
 		| "openProjectMcpSettings"
 		| "restartMcpServer"
@@ -183,8 +184,10 @@ export interface WebviewMessage {
 		| "hasOpenedModeSelector"
 		| "cloudButtonClicked"
 		| "rooCloudSignIn"
+		| "cloudLandingPageSignIn"
 		| "rooCloudSignOut"
 		| "rooCloudManualUrl"
+		| "switchOrganization"
 		| "condenseTaskContextRequest"
 		| "requestIndexingStatus"
 		| "startIndexing"
@@ -194,6 +197,7 @@ export interface WebviewMessage {
 		| "focusPanelRequest"
 		| "profileThresholds"
 		| "setHistoryPreviewCollapsed"
+		| "setReasoningBlockCollapsed"
 		| "openExternal"
 		| "filterMarketplaceItems"
 		| "marketplaceButtonClicked"
@@ -275,6 +279,7 @@ export interface WebviewMessage {
 	checkOnly?: boolean // For deleteCustomMode check
 	upsellId?: string // For dismissUpsell
 	list?: string[] // For dismissedUpsells response
+	organizationId?: string | null // For organization switching
 	codeIndexSettings?: {
 		// Global state settings
 		codebaseIndexEnabled: boolean

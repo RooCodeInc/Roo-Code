@@ -30,6 +30,7 @@
 		"terminal": "终端",
 		"slashCommands": "斜杠命令",
 		"prompts": "提示词",
+		"ui": "UI",
 		"experimental": "实验性",
 		"language": "语言",
 		"about": "关于 Roo Code"
@@ -134,6 +135,7 @@
 		"resetToDefault": "恢复默认值"
 	},
 	"autoApprove": {
+		"toggleShortcut": "您可以<SettingsLink>在 IDE 首选项中</SettingsLink>为此设置配置全局快捷方式。",
 		"description": "允许 Roo 自动执行操作而无需批准。只有在您完全信任 AI 并了解相关安全风险的情况下才启用这些设置。",
 		"enabled": "自动批准已启用",
 		"toggleAriaLabel": "切换自动批准",
@@ -380,6 +382,8 @@
 			"modelId": "模型 ID",
 			"apiKey": "Ollama API 密钥",
 			"apiKeyHelp": "用于已认证 Ollama 实例或云服务的可选 API 密钥。本地安装请留空。",
+			"numCtx": "上下文窗口大小 (num_ctx)",
+			"numCtxHelp": "覆盖模型的默认上下文窗口大小。留空以使用模型的 Modelfile 配置。最小值为 128。",
 			"description": "Ollama 允许您在本地计算机上运行模型。有关如何开始使用的说明，请参阅其快速入门指南。",
 			"warning": "注意：Roo Code 使用复杂的提示，与 Claude 模型配合最佳。功能较弱的模型可能无法按预期工作。"
 		},
@@ -876,6 +880,12 @@
 			"input": "输入",
 			"output": "输出",
 			"cacheReads": "缓存读取"
+		}
+	},
+	"ui": {
+		"collapseThinking": {
+			"label": "默认折叠“思考”消息",
+			"description": "启用后，“思考”块将默认折叠，直到您与其交互"
 		}
 	}
 }
