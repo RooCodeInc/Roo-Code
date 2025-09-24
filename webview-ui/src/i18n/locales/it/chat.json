@@ -222,6 +222,9 @@
 	},
 	"response": "Risposta",
 	"arguments": "Argomenti",
+	"text": {
+		"rooSaid": "Roo ha detto"
+	},
 	"feedback": {
 		"youSaid": "Hai detto"
 	},
