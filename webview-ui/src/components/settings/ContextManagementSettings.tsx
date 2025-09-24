@@ -187,13 +187,13 @@ export const ContextManagementSettings = ({
 					<div className="flex items-center gap-2">
 						<Slider
 							min={2000}
-							max={50000}
+							max={100000}
 							step={100}
-							value={[maxReadCharacterLimit ?? 20000]}
+							value={[maxReadCharacterLimit ?? 30000]}
 							onValueChange={([value]) => setCachedStateField("maxReadCharacterLimit", value)}
 							data-testid="terminal-output-character-limit-slider"
 						/>
-						<span className="w-16">{maxReadCharacterLimit ?? 20000}</span>
+						<span className="w-16">{maxReadCharacterLimit ?? 30000}</span>
 					</div>
 					<div className="text-vscode-descriptionForeground text-sm mt-1">
 						{t("settings:contextManagement.maxReadCharacter.description")}

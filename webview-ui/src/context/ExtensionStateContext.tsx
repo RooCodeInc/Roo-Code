@@ -213,7 +213,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		screenshotQuality: 75,
 		terminalOutputLineLimit: 500,
 		terminalOutputCharacterLimit: 50000,
-		maxReadCharacterLimit: 20000,
+		maxReadCharacterLimit: 30000,
 		terminalShellIntegrationTimeout: 4000,
 		mcpEnabled: true,
 		enableMcpServerCreation: false,
