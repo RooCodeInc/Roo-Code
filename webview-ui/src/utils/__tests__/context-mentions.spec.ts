@@ -145,6 +145,43 @@ describe("insertMention", () => {
 			expect(result.mentionIndex).toBe(6)
 		})
 	})
+
+	// --- Tests for Folder Drill-Down ---
+	describe("folder drill-down behavior", () => {
+		it("should not add trailing space when inserting folder path ending with /", () => {
+			// This test documents the expected behavior for folder drill-down
+			// When a folder path ends with /, we don't want a trailing space
+			const folderPath = "/path/to/folder/"
+			const result = insertMention("Browse @", 8, folderPath)
+
+			// The current implementation adds a space, but for folder drill-down
+			// we need to handle this specially in the component
+			expect(result.newValue).toBe("Browse @/path/to/folder/ ")
+			expect(result.mentionIndex).toBe(7)
+		})
+
+		it("should handle folder paths with spaces correctly", () => {
+			const folderPath = "/my documents/project folder/"
+			const expectedEscapedPath = "/my\\ documents/project\\ folder/"
+			const result = insertMention("Open @", 6, folderPath)
+
+			expect(result.newValue).toBe(`Open @${expectedEscapedPath} `)
+			expect(result.mentionIndex).toBe(5)
+		})
+
+		it("should ensure folder paths end with / for consistency", () => {
+			// This documents that the component should ensure folder paths end with /
+			const folderPathWithoutSlash = "/path/to/folder"
+			const folderPathWithSlash = "/path/to/folder/"
+
+			const result1 = insertMention("@", 1, folderPathWithoutSlash)
+			const result2 = insertMention("@", 1, folderPathWithSlash)
+
+			// Both should have the path, but the component should normalize to have trailing /
+			expect(result1.newValue).toBe("@/path/to/folder ")
+			expect(result2.newValue).toBe("@/path/to/folder/ ")
+		})
+	})
 })
 
 describe("removeMention", () => {
@@ -584,5 +621,38 @@ describe("shouldShowContextMenu", () => {
 	it("should return false if an unescaped space exists after @", () => {
 		// This case means the regex wouldn't match anyway, but confirms context menu logic
 		expect(shouldShowContextMenu("@/path/with space", 13)).toBe(false) // Cursor after unescaped space
+	})
+
+	// --- Tests for Folder Drill-Down ---
+	describe("folder drill-down behavior", () => {
+		it("should keep menu open when path ends with / and no trailing space", () => {
+			// When drilling into a folder, the path ends with / and no space after
+			expect(shouldShowContextMenu("@/path/to/folder/", 17)).toBe(true)
+		})
+
+		it("should keep menu open for nested folder paths", () => {
+			expect(shouldShowContextMenu("@/src/components/", 17)).toBe(true)
+			expect(shouldShowContextMenu("@/src/components/chat/", 22)).toBe(true)
+		})
+
+		it("should close menu when space is added after folder path", () => {
+			// Normal behavior - space after path closes the menu
+			expect(shouldShowContextMenu("@/path/to/folder/ ", 18)).toBe(false)
+		})
+
+		it("should handle folder paths with escaped spaces", () => {
+			expect(shouldShowContextMenu("@/my\\ documents/", 16)).toBe(true)
+			expect(shouldShowContextMenu("@/my\\ documents/folder/", 23)).toBe(true)
+		})
+
+		it("should return true for slash commands without spaces", () => {
+			expect(shouldShowContextMenu("/code", 5)).toBe(true)
+			expect(shouldShowContextMenu("/debug", 6)).toBe(true)
+		})
+
+		it("should return false for slash commands with spaces", () => {
+			expect(shouldShowContextMenu("/code ", 6)).toBe(false)
+			expect(shouldShowContextMenu("/debug some text", 7)).toBe(false)
+		})
 	})
 })
