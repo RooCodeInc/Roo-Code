@@ -25,6 +25,7 @@ import {
 	xaiModels,
 	internationalZAiModels,
 	minimaxModels,
+	openAiNativeCodexModels,
 } from "./providers/index.js"
 
 /**
@@ -134,6 +135,7 @@ export const providerNames = [
 	"moonshot",
 	"minimax",
 	"openai-native",
+	"openai-native-codex",
 	"qwen-code",
 	"roo",
 	"sambanova",
@@ -297,6 +299,11 @@ const openAiNativeSchema = apiModelIdProviderModelSchema.extend({
 	openAiNativeServiceTier: serviceTierSchema.optional(),
 })
 
+// ChatGPT Codex (auth.json) variant - uses local OAuth credentials file (path)
+const openAiNativeCodexSchema = apiModelIdProviderModelSchema.extend({
+	openAiNativeCodexOauthPath: z.string().optional(),
+})
+
 const mistralSchema = apiModelIdProviderModelSchema.extend({
 	mistralApiKey: z.string().optional(),
 	mistralCodestralUrl: z.string().optional(),
@@ -437,6 +444,7 @@ export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProv
 	geminiSchema.merge(z.object({ apiProvider: z.literal("gemini") })),
 	geminiCliSchema.merge(z.object({ apiProvider: z.literal("gemini-cli") })),
 	openAiNativeSchema.merge(z.object({ apiProvider: z.literal("openai-native") })),
+	openAiNativeCodexSchema.merge(z.object({ apiProvider: z.literal("openai-native-codex") })),
 	mistralSchema.merge(z.object({ apiProvider: z.literal("mistral") })),
 	deepSeekSchema.merge(z.object({ apiProvider: z.literal("deepseek") })),
 	deepInfraSchema.merge(z.object({ apiProvider: z.literal("deepinfra") })),
@@ -478,6 +486,7 @@ export const providerSettingsSchema = z.object({
 	...geminiSchema.shape,
 	...geminiCliSchema.shape,
 	...openAiNativeSchema.shape,
+	...openAiNativeCodexSchema.shape,
 	...mistralSchema.shape,
 	...deepSeekSchema.shape,
 	...deepInfraSchema.shape,
@@ -560,6 +569,7 @@ export const modelIdKeysByProvider: Record<TypicalProvider, ModelIdKey> = {
 	bedrock: "apiModelId",
 	vertex: "apiModelId",
 	"openai-native": "openAiModelId",
+	"openai-native-codex": "apiModelId",
 	ollama: "ollamaModelId",
 	lmstudio: "lmStudioModelId",
 	gemini: "apiModelId",
@@ -688,6 +698,11 @@ export const MODELS_BY_PROVIDER: Record<
 		id: "openai-native",
 		label: "OpenAI",
 		models: Object.keys(openAiNativeModels),
+	},
+	"openai-native-codex": {
+		id: "openai-native-codex",
+		label: "OpenAI (ChatGPT Codex)",
+		models: Object.keys(openAiNativeCodexModels),
 	},
 	"qwen-code": { id: "qwen-code", label: "Qwen Code", models: Object.keys(qwenCodeModels) },
 	roo: { id: "roo", label: "Roo Code Cloud", models: [] },

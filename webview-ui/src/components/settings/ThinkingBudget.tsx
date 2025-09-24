@@ -62,6 +62,24 @@ interface ThinkingBudgetProps {
 	modelInfo?: ModelInfo
 }
 
+// Helper function to determine if minimal option should be shown
+const shouldShowMinimalOption = (
+	provider: string | undefined,
+	modelId: string | undefined,
+	supportsEffort: boolean | undefined,
+): boolean => {
+	// Keep existing behavior for native OpenAI provider
+	const isGpt5Native = provider === "openai-native" && modelId?.startsWith("gpt-5")
+
+	// For ChatGPT Codex provider, only expose "minimal" for the regular gpt-5 model,
+	// not for the "gpt-5-codex" variant
+	const isGpt5CodexRegular = provider === "openai-native-codex" && modelId === "gpt-5"
+
+	const isOpenRouterWithEffort = provider === "openrouter" && supportsEffort === true
+
+	return !!(isGpt5Native || isGpt5CodexRegular || isOpenRouterWithEffort)
+}
+
 export const ThinkingBudget = ({ apiConfiguration, setApiConfigurationField, modelInfo }: ThinkingBudgetProps) => {
 	const { t } = useAppTranslation()
 	const { id: selectedModelId } = useSelectedModel(apiConfiguration)
@@ -99,11 +117,17 @@ export const ThinkingBudget = ({ apiConfiguration, setApiConfigurationField, mod
 		: (baseAvailableOptions as ReadonlyArray<ReasoningEffortOption>)
 
 	// Default reasoning effort - use model's default if available
-	// GPT-5 models have "medium" as their default in the model configuration
+	// Special-case for ChatGPT Codex "gpt-5": default to "minimal" unless user overrides
 	const modelDefaultReasoningEffort = modelInfo?.reasoningEffort as ReasoningEffortWithMinimal | undefined
-	const defaultReasoningEffort: ReasoningEffortOption = modelInfo?.requiredReasoningEffort
-		? modelDefaultReasoningEffort || "medium"
-		: "disable"
+	// Special-case for ChatGPT Codex "gpt-5": default to "minimal" unless user overrides
+	const defaultReasoningEffort: ReasoningEffortOption =
+		apiConfiguration.apiProvider === "openai-native-codex" &&
+		selectedModelId === "gpt-5" &&
+		isReasoningEffortSupported
+			? "minimal"
+			: modelInfo?.requiredReasoningEffort
+				? modelDefaultReasoningEffort || "medium"
+				: "disable"
 	// Current reasoning effort from settings, or fall back to default
 	const storedReasoningEffort = apiConfiguration.reasoningEffort as ReasoningEffortOption | undefined
 	const currentReasoningEffort: ReasoningEffortOption = storedReasoningEffort || defaultReasoningEffort
