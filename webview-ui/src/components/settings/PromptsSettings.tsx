@@ -105,7 +105,8 @@ const PromptsSettings = ({ customSupportPrompts, setCustomSupportPrompts }: Prom
 
 	const getSupportPromptValue = (type: SupportPromptType): string => {
 		if (type === "CONDENSE") {
-			return customCondensingPrompt || supportPrompt.default.CONDENSE
+			// Preserve empty string - only fall back to default when value is nullish
+			return customCondensingPrompt ?? supportPrompt.default.CONDENSE
 		}
 		return supportPrompt.get(customSupportPrompts, type)
 	}

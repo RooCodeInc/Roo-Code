@@ -1109,7 +1109,8 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 									// For custom modes, update the JSON file
 									updateCustomMode(visualMode, {
 										...customMode,
-										customInstructions: value.trim() || undefined,
+										// Preserve empty string; only treat null/undefined as unset
+										customInstructions: value.trim() ?? undefined,
 										source: customMode.source || "global",
 									})
 								} else {
