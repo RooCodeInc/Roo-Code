@@ -133,11 +133,10 @@ export async function activate(context: vscode.ExtensionContext) {
 
 		if (data.state === "logged-out") {
 			try {
-				await BridgeOrchestrator.disconnect()
-				cloudLogger("[CloudService] BridgeOrchestrator disconnected on logout")
+				await provider.remoteControlEnabled(false)
 			} catch (error) {
 				cloudLogger(
-					`[CloudService] Failed to disconnect BridgeOrchestrator on logout: ${error instanceof Error ? error.message : String(error)}`,
+					`[authStateChangedHandler] remoteControlEnabled(false) failed: ${error instanceof Error ? error.message : String(error)}`,
 				)
 			}
 		}
@@ -148,23 +147,10 @@ export async function activate(context: vscode.ExtensionContext) {
 
 		if (userInfo && CloudService.instance.cloudAPI) {
 			try {
-				const config = await CloudService.instance.cloudAPI.bridgeConfig()
-
-				const isCloudAgent =
-					typeof process.env.ROO_CODE_CLOUD_TOKEN === "string" && process.env.ROO_CODE_CLOUD_TOKEN.length > 0
-
-				const remoteControlEnabled = isCloudAgent
-					? true
-					: (CloudService.instance.getUserSettings()?.settings?.extensionBridgeEnabled ?? false)
-
-				await BridgeOrchestrator.connectOrDisconnect(userInfo, remoteControlEnabled, {
-					...config,
-					provider,
-					sessionId: vscode.env.sessionId,
-				})
+				provider.remoteControlEnabled(CloudService.instance.isTaskSyncEnabled())
 			} catch (error) {
 				cloudLogger(
-					`[CloudService] BridgeOrchestrator#connectOrDisconnect failed on settings change: ${error instanceof Error ? error.message : String(error)}`,
+					`[settingsUpdatedHandler] remoteControlEnabled failed: ${error instanceof Error ? error.message : String(error)}`,
 				)
 			}
 		}
@@ -176,28 +162,15 @@ export async function activate(context: vscode.ExtensionContext) {
 		postStateListener()
 
 		if (!CloudService.instance.cloudAPI) {
-			cloudLogger("[CloudService] CloudAPI is not initialized")
+			cloudLogger("[userInfoHandler] CloudAPI is not initialized")
 			return
 		}
 
 		try {
-			const config = await CloudService.instance.cloudAPI.bridgeConfig()
-
-			const isCloudAgent =
-				typeof process.env.ROO_CODE_CLOUD_TOKEN === "string" && process.env.ROO_CODE_CLOUD_TOKEN.length > 0
-
-			const remoteControlEnabled = isCloudAgent
-				? true
-				: (CloudService.instance.getUserSettings()?.settings?.extensionBridgeEnabled ?? false)
-
-			await BridgeOrchestrator.connectOrDisconnect(userInfo, remoteControlEnabled, {
-				...config,
-				provider,
-				sessionId: vscode.env.sessionId,
-			})
+			provider.remoteControlEnabled(CloudService.instance.isTaskSyncEnabled())
 		} catch (error) {
 			cloudLogger(
-				`[CloudService] BridgeOrchestrator#connectOrDisconnect failed on user change: ${error instanceof Error ? error.message : String(error)}`,
+				`[userInfoHandler] remoteControlEnabled failed: ${error instanceof Error ? error.message : String(error)}`,
 			)
 		}
 	}
@@ -221,7 +194,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	// Add to subscriptions for proper cleanup on deactivate.
 	context.subscriptions.push(cloudService)
 
-	// Trigger initial cloud profile sync now that CloudService is ready
+	// Trigger initial cloud profile sync now that CloudService is ready.
 	try {
 		await provider.initializeCloudProfileSyncWhenReady()
 	} catch (error) {

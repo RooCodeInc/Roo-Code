@@ -1,5 +1,117 @@
 # Roo Code Changelog
 
+## [3.28.7] - 2025-09-23
+
+![3.28.7 Release - Hidden Thinking](/releases/3.28.7-release.png)
+
+- UX: Collapse thinking blocks by default with UI settings to always show them (thanks @brunobergher!)
+- Fix: Resolve checkpoint restore popover positioning issue (#8219 by @NaccOll, PR by @app/roomote)
+- Add cloud account switcher functionality (thanks @mrubens!)
+- Add support for zai-org/GLM-4.5-turbo model in Chutes provider (#8155 by @mugnimaestra, PR by @app/roomote)
+
+## [3.28.6] - 2025-09-23
+
+![3.28.6 Release - Kangaroo studying ancient codex](/releases/3.28.6-release.png)
+
+- Feat: Add GPT-5-Codex model (thanks @daniel-lxs!)
+- Feat: Add keyboard shortcut for toggling auto-approve (Cmd/Ctrl+Alt+A) (thanks @brunobergher!)
+- Fix: Improve reasoning block formatting for better readability (thanks @daniel-lxs!)
+- Fix: Respect Ollama Modelfile num_ctx configuration (#7797 by @hannesrudolph, PR by @app/roomote)
+- Fix: Prevent checkpoint text from wrapping in non-English languages (#8206 by @NaccOll, PR by @app/roomote)
+- Remove language selection and word wrap toggle from CodeBlock (thanks @mrubens!)
+- Feat: Add package.nls.json checking to find-missing-translations script (thanks @app/roomote!)
+- Fix: Bare metal evals fixes (thanks @cte!)
+- Fix: Follow-up questions should trigger the "interactive" state (thanks @cte!)
+
+## [3.28.5] - 2025-09-20
+
+![3.28.5 Release - Kangaroo staying hydrated](/releases/3.28.5-release.png)
+
+- Fix: Resolve duplicate rehydrate during reasoning; centralize rehydrate and preserve cancel metadata (#8153 by @hannesrudolph, PR by @hannesrudolph)
+- Add an announcement for Supernova (thanks @mrubens!)
+- Wrap code blocks by default for improved readability (thanks @mrubens!)
+- Fix: Support dash prefix in parseMarkdownChecklist for todo lists (#8054 by @NaccOll, PR by app/roomote)
+- Fix: Apply tiered pricing for Gemini models via Vertex AI (#8017 by @ikumi3, PR by app/roomote)
+- Update SambaNova models to latest versions (thanks @snova-jorgep!)
+- Update privacy policy to allow occasional emails (thanks @jdilla1277!)
+
+## [3.28.4] - 2025-09-19
+
+![3.28.4 Release - Supernova Discovery](/releases/3.28.4-release.png)
+
+- UX: Redesigned Message Feed (thanks @brunobergher!)
+- UX: Responsive Auto-Approve (thanks @brunobergher!)
+- Add telemetry retry queue for network resilience (thanks @daniel-lxs!)
+- Fix: Transform keybindings in nightly build to fix command+y shortcut (thanks @app/roomote!)
+- New code-supernova stealth model in the Roo Code Cloud provider (thanks @mrubens!)
+
+## [3.28.3] - 2025-09-16
+
+![3.28.3 Release - UI/UX Improvements and Bug Fixes](/releases/3.28.3-release.png)
+
+- Fix: Filter out Claude Code built-in tools (ExitPlanMode, BashOutput, KillBash) (#7817 by @juliettefournier-econ, PR by @roomote)
+- Replace + icon with edit icon for New Task button (#7941 by @hannesrudolph, PR by @roomote)
+- Fix: Corrected C# tree-sitter query (#5238 by @vadash, PR by @mubeen-zulfiqar)
+- Add keyboard shortcut for "Add to Context" action (#7907 by @hannesrudolph, PR by @roomote)
+- Fix: Context menu is obscured when edit message (#7759 by @mini2s, PR by @NaccOll)
+- Fix: Handle ByteString conversion errors in OpenAI embedders (#7959 by @PavelA85, PR by @daniel-lxs)
+- Add Z.ai coding plan support (thanks @daniel-lxs!)
+- Move slash commands to Settings tab with gear icon for discoverability (thanks @roomote!)
+- Reposition Add Image button inside ChatTextArea (thanks @roomote!)
+- Bring back a way to temporarily and globally pause auto-approve without losing your toggle state (thanks @brunobergher!)
+- Makes text area buttons appear only when there's text (thanks @brunobergher!)
+- CONTRIBUTING.md tweaks and issue template rewrite (thanks @hannesrudolph!)
+- Bump axios from 1.9.0 to 1.12.0 (thanks @dependabot!)
+
+## [3.28.2] - 2025-09-14
+
+![3.28.2 Release - Auto-approve improvements](/releases/3.28.2-release.png)
+
+- Improve auto-approve UI with smaller and more subtle design (thanks @brunobergher!)
+- Fix: Message queue re-queue loop in Task.ask() causing performance issues (#7861 by @hannesrudolph, PR by @daniel-lxs)
+- Fix: Restrict @-mention parsing to line-start or whitespace boundaries to prevent false triggers (#7875 by @hannesrudolph, PR by @app/roomote)
+- Fix: Make nested git repository warning persistent with path info for better visibility (#7884 by @hannesrudolph, PR by @app/roomote)
+- Fix: Include API key in Ollama /api/tags requests for authenticated instances (#7902 by @ItsOnlyBinary, PR by @app/roomote)
+- Fix: Preserve original first message context during conversation condensing (thanks @daniel-lxs!)
+- Add Qwen3 Next 80B A3B models to chutes provider (thanks @daniel-lxs!)
+- Disable Roomote Control on logout for better security (thanks @cte!)
+- Add padding to the cloudview for better visual spacing (thanks @mrubens!)
+
+## [3.28.1] - 2025-09-11
+
+![3.28.1 Release - Kangaroo riding rocket to the clouds](/releases/3.28.1-release.png)
+
+- Announce Roo Code Cloud!
+- Add cloud task button for opening tasks in Roo Code Cloud (thanks @app/roomote!)
+- Make Posthog telemetry the default (thanks @mrubens!)
+- Show notification when the checkpoint initialization fails (thanks @app/roomote!)
+- Bust cache in generated image preview (thanks @mrubens!)
+- Fix: Center active mode in selector dropdown on open (#7882 by @hannesrudolph, PR by @app/roomote)
+- Fix: Preserve first message during conversation condensing (thanks @daniel-lxs!)
+
+## [3.28.0] - 2025-09-10
+
+![3.28.0 Release - Continue tasks in Roo Code Cloud](/releases/3.28.0-release.png)
+
+- feat: Continue tasks in Roo Code Cloud (thanks @brunobergher!)
+- feat: Support connecting to Cloud without redirect handling (thanks @mrubens!)
+- feat: Add toggle to control task syncing to Cloud (thanks @jr!)
+- feat: Add click-to-edit, ESC-to-cancel, and fix padding consistency for chat messages (#7788 by @hannesrudolph, PR by @app/roomote)
+- feat: Make reasoning more visible (thanks @app/roomote!)
+- fix: Fix Groq context window display (thanks @mrubens!)
+- fix: Add GIT_EDITOR env var to merge-resolver mode for non-interactive rebase (thanks @daniel-lxs!)
+- fix: Resolve chat message edit/delete duplication issues (thanks @daniel-lxs!)
+- fix: Reduce CodeBlock button z-index to prevent overlap with popovers (#7703 by @A0nameless0man, PR by @daniel-lxs)
+- fix: Revert PR #7188 - Restore temperature parameter to fix TabbyApi/ExLlamaV2 crashes (#7581 by @drknyt, PR by @daniel-lxs)
+- fix: Make ollama models info transport work like lmstudio (#7674 by @ItsOnlyBinary, PR by @ItsOnlyBinary)
+- fix: Update DeepSeek pricing to new unified rates effective Sept 5, 2025 (#7685 by @NaccOll, PR by @app/roomote)
+- feat: Update Vertex AI models and regions (#7725 by @ssweens, PR by @ssweens)
+- chore: Update dependency eslint-plugin-turbo to v2.5.6 (thanks @app/renovate!)
+- chore: Update dependency @changesets/cli to v2.29.6 (thanks @app/renovate!)
+- chore: Update dependency nock to v14.0.10 (thanks @app/renovate!)
+- chore: Update dependency eslint-config-prettier to v10.1.8 (thanks @app/renovate!)
+- chore: Update dependency esbuild to v0.25.9 (thanks @app/renovate!)
+
 ## [3.27.0] - 2025-09-05
 
 ![3.27.0 Release - Bug Fixes and Improvements](/releases/3.27.0-release.png)

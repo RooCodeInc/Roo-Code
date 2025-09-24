@@ -28,10 +28,15 @@
 		"notifications": "Notificaciones",
 		"contextManagement": "Contexto",
 		"terminal": "Terminal",
+		"slashCommands": "Comandos de Barra",
 		"prompts": "Indicaciones",
+		"ui": "UI",
 		"experimental": "Experimental",
 		"language": "Idioma",
 		"about": "Acerca de Roo Code"
+	},
+	"slashCommands": {
+		"description": "Gestiona tus comandos de barra para ejecutar rápidamente flujos de trabajo y acciones personalizadas. <DocsLink>Saber más</DocsLink>"
 	},
 	"prompts": {
 		"description": "Configura indicaciones de soporte que se utilizan para acciones rápidas como mejorar indicaciones, explicar código y solucionar problemas. Estas indicaciones ayudan a Roo a brindar mejor asistencia para tareas comunes de desarrollo."
@@ -130,6 +135,7 @@
 		"resetToDefault": "Restablecer al valor predeterminado"
 	},
 	"autoApprove": {
+		"toggleShortcut": "Puedes configurar un atajo global para esta configuración <SettingsLink>en las preferencias de tu IDE</SettingsLink>.",
 		"description": "Permitir que Roo realice operaciones automáticamente sin requerir aprobación. Habilite esta configuración solo si confía plenamente en la IA y comprende los riesgos de seguridad asociados.",
 		"enabled": "Auto-aprobación habilitada",
 		"toggleAriaLabel": "Alternar aprobación automática",
@@ -376,6 +382,8 @@
 			"modelId": "ID del modelo",
 			"apiKey": "Clave API de Ollama",
 			"apiKeyHelp": "Clave API opcional para instancias de Ollama autenticadas o servicios en la nube. Deja vacío para instalaciones locales.",
+			"numCtx": "Tamaño de la ventana de contexto (num_ctx)",
+			"numCtxHelp": "Sobrescribe el tamaño de la ventana de contexto predeterminado del modelo. Déjelo vacío para usar la configuración del Modelfile del modelo. El valor mínimo es 128.",
 			"description": "Ollama le permite ejecutar modelos localmente en su computadora. Para obtener instrucciones sobre cómo comenzar, consulte la guía de inicio rápido.",
 			"warning": "Nota: Roo Code utiliza prompts complejos y funciona mejor con modelos Claude. Los modelos menos capaces pueden no funcionar como se espera."
 		},
@@ -792,7 +800,7 @@
 		"feedback": "Si tiene alguna pregunta o comentario, no dude en abrir un issue en <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> o unirse a <redditLink>reddit.com/r/RooCode</redditLink> o <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {
 			"label": "Permitir informes anónimos de errores y uso",
-			"description": "Ayude a mejorar Roo Code enviando datos de uso anónimos e informes de errores. Nunca se envía código, prompts o información personal. Consulte nuestra política de privacidad para más detalles."
+			"description": "Ayuda a mejorar Roo Code enviando datos de uso anónimos e informes de errores. Esta telemetría no recopila código, prompts o información personal. Consulta nuestra <privacyLink>política de privacidad</privacyLink> para más detalles."
 		},
 		"settings": {
 			"import": "Importar",
@@ -871,6 +879,12 @@
 			"input": "Entrada",
 			"output": "Salida",
 			"cacheReads": "Lecturas de caché"
+		}
+	},
+	"ui": {
+		"collapseThinking": {
+			"label": "Colapsar mensajes de pensamiento por defecto",
+			"description": "Cuando está activado, los bloques de pensamiento se colapsarán por defecto hasta que interactúes con ellos"
 		}
 	}
 }

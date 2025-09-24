@@ -212,6 +212,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	didFinishAbortingStream = false
 	abandoned = false
+	abortReason?: ClineApiReqCancelReason
 	isInitialized = false
 	isPaused: boolean = false
 	pausedModeSlug: string = defaultModeSlug
@@ -845,9 +846,19 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			const message = this.messageQueueService.dequeueMessage()
 
 			if (message) {
-				setTimeout(async () => {
-					await this.submitUserMessage(message.text, message.images)
-				}, 0)
+				// Check if this is a tool approval ask that needs to be handled
+				if (
+					type === "tool" ||
+					type === "command" ||
+					type === "browser_action_launch" ||
+					type === "use_mcp_server"
+				) {
+					// For tool approvals, we need to approve first, then send the message if there's text/images
+					this.handleWebviewAskResponse("yesButtonClicked", message.text, message.images)
+				} else {
+					// For other ask types (like followup), fulfill the ask directly
+					this.setMessageResponse(message.text, message.images)
+				}
 			}
 		}
 
@@ -1252,6 +1263,16 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		if (lastRelevantMessageIndex !== -1) {
 			modifiedClineMessages.splice(lastRelevantMessageIndex + 1)
+		}
+
+		// Remove any trailing reasoning-only UI messages that were not part of the persisted API conversation
+		while (modifiedClineMessages.length > 0) {
+			const last = modifiedClineMessages[modifiedClineMessages.length - 1]
+			if (last.type === "say" && last.say === "reasoning") {
+				modifiedClineMessages.pop()
+			} else {
+				break
+			}
 		}
 
 		// Since we don't use `api_req_finished` anymore, we need to check if the
@@ -1874,28 +1895,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						lastMessage.partial = false
 						// instead of streaming partialMessage events, we do a save and post like normal to persist to disk
 						console.log("updating partial message", lastMessage)
-						// await this.saveClineMessages()
 					}
 
-					// Let assistant know their response was interrupted for when task is resumed
-					await this.addToApiConversationHistory({
-						role: "assistant",
-						content: [
-							{
-								type: "text",
-								text:
-									assistantMessage +
-									`\n\n[${
-										cancelReason === "streaming_failed"
-											? "Response interrupted by API Error"
-											: "Response interrupted by user"
-									}]`,
-							},
-						],
-					})
-
 					// Update `api_req_started` to have cancelled and cost, so that
-					// we can display the cost of the partial stream.
+					// we can display the cost of the partial stream and the cancellation reason
 					updateApiReqMsg(cancelReason, streamingFailedMessage)
 					await this.saveClineMessages()
 
@@ -1941,10 +1944,22 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						}
 
 						switch (chunk.type) {
-							case "reasoning":
+							case "reasoning": {
 								reasoningMessage += chunk.text
-								await this.say("reasoning", reasoningMessage, undefined, true)
+								// Only apply formatting if the message contains sentence-ending punctuation followed by **
+								let formattedReasoning = reasoningMessage
+								if (reasoningMessage.includes("**")) {
+									// Add line breaks before **Title** patterns that appear after sentence endings
+									// This targets section headers like "...end of sentence.**Title Here**"
+									// Handles periods, exclamation marks, and question marks
+									formattedReasoning = reasoningMessage.replace(
+										/([.!?])\*\*([^*\n]+)\*\*/g,
+										"$1\n\n**$2**",
+									)
+								}
+								await this.say("reasoning", formattedReasoning, undefined, true)
 								break
+							}
 							case "usage":
 								inputTokens += chunk.inputTokens
 								outputTokens += chunk.outputTokens
@@ -2177,24 +2192,23 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						// may have executed), so we just resort to replicating a
 						// cancel task.
 
-						// Check if this was a user-initiated cancellation BEFORE calling abortTask
-						// If this.abort is already true, it means the user clicked cancel, so we should
-						// treat this as "user_cancelled" rather than "streaming_failed"
-						const cancelReason = this.abort ? "user_cancelled" : "streaming_failed"
+						// Determine cancellation reason BEFORE aborting to ensure correct persistence
+						const cancelReason: ClineApiReqCancelReason = this.abort ? "user_cancelled" : "streaming_failed"
 
 						const streamingFailedMessage = this.abort
 							? undefined
 							: (error.message ?? JSON.stringify(serializeError(error), null, 2))
 
-						// Now call abortTask after determining the cancel reason.
-						await this.abortTask()
+						// Persist interruption details first to both UI and API histories
 						await abortStream(cancelReason, streamingFailedMessage)
 
-						const history = await provider?.getTaskWithId(this.taskId)
+						// Record reason for provider to decide rehydration path
+						this.abortReason = cancelReason
 
-						if (history) {
-							await provider?.createTaskWithHistoryItem(history.historyItem)
-						}
+						// Now abort (emits TaskAborted which provider listens to)
+						await this.abortTask()
+
+						// Do not rehydrate here; provider owns rehydration to avoid duplication races
 					}
 				} finally {
 					this.isStreaming = false
@@ -2897,5 +2911,29 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	public get cwd() {
 		return this.workspacePath
+	}
+
+	/**
+	 * Process any queued messages by dequeuing and submitting them.
+	 * This ensures that queued user messages are sent when appropriate,
+	 * preventing them from getting stuck in the queue.
+	 *
+	 * @param context - Context string for logging (e.g., the calling tool name)
+	 */
+	public processQueuedMessages(): void {
+		try {
+			if (!this.messageQueueService.isEmpty()) {
+				const queued = this.messageQueueService.dequeueMessage()
+				if (queued) {
+					setTimeout(() => {
+						this.submitUserMessage(queued.text, queued.images).catch((err) =>
+							console.error(`[Task] Failed to submit queued message:`, err),
+						)
+					}, 0)
+				}
+			}
+		} catch (e) {
+			console.error(`[Task] Queue processing error:`, e)
+		}
 	}
 }

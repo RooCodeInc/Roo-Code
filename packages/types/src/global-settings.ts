@@ -41,6 +41,7 @@ export const globalSettingsSchema = z.object({
 	lastShownAnnouncementId: z.string().optional(),
 	customInstructions: z.string().optional(),
 	taskHistory: z.array(historyItemSchema).optional(),
+	dismissedUpsells: z.array(z.string()).optional(),
 
 	// Image generation settings (experimental) - flattened for simplicity
 	openRouterImageApiKey: z.string().optional(),
@@ -138,8 +139,6 @@ export const globalSettingsSchema = z.object({
 	mcpEnabled: z.boolean().optional(),
 	enableMcpServerCreation: z.boolean().optional(),
 
-	remoteControlEnabled: z.boolean().optional(),
-
 	mode: z.string().optional(),
 	modeApiConfigs: z.record(z.string(), z.string()).optional(),
 	customModes: z.array(modeConfigSchema).optional(),
@@ -148,6 +147,7 @@ export const globalSettingsSchema = z.object({
 	enhancementApiConfigId: z.string().optional(),
 	includeTaskHistoryInEnhance: z.boolean().optional(),
 	historyPreviewCollapsed: z.boolean().optional(),
+	reasoningBlockCollapsed: z.boolean().optional(),
 	profileThresholds: z.record(z.string(), z.number()).optional(),
 	hasOpenedModeSelector: z.boolean().optional(),
 	lastModeExportPath: z.string().optional(),
@@ -315,8 +315,6 @@ export const EVALS_SETTINGS: RooCodeSettings = {
 	telemetrySetting: "enabled",
 
 	mcpEnabled: false,
-
-	remoteControlEnabled: false,
 
 	mode: "code", // "architect",
 

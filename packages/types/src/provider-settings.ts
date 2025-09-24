@@ -28,51 +28,124 @@ import {
 } from "./providers/index.js"
 
 /**
+ * constants
+ */
+
+export const DEFAULT_CONSECUTIVE_MISTAKE_LIMIT = 3
+
+/**
+ * DynamicProvider
+ *
+ * Dynamic provider requires external API calls in order to get the model list.
+ */
+
+export const dynamicProviders = [
+	"openrouter",
+	"vercel-ai-gateway",
+	"huggingface",
+	"litellm",
+	"deepinfra",
+	"io-intelligence",
+	"requesty",
+	"unbound",
+	"glama",
+] as const
+
+export type DynamicProvider = (typeof dynamicProviders)[number]
+
+export const isDynamicProvider = (key: string): key is DynamicProvider =>
+	dynamicProviders.includes(key as DynamicProvider)
+
+/**
+ * LocalProvider
+ *
+ * Local providers require localhost API calls in order to get the model list.
+ */
+
+export const localProviders = ["ollama", "lmstudio"] as const
+
+export type LocalProvider = (typeof localProviders)[number]
+
+export const isLocalProvider = (key: string): key is LocalProvider => localProviders.includes(key as LocalProvider)
+
+/**
+ * InternalProvider
+ *
+ * Internal providers require internal VSCode API calls in order to get the
+ * model list.
+ */
+
+export const internalProviders = ["vscode-lm"] as const
+
+export type InternalProvider = (typeof internalProviders)[number]
+
+export const isInternalProvider = (key: string): key is InternalProvider =>
+	internalProviders.includes(key as InternalProvider)
+
+/**
+ * CustomProvider
+ *
+ * Custom providers are completely configurable within Roo Code settings.
+ */
+
+export const customProviders = ["openai"] as const
+
+export type CustomProvider = (typeof customProviders)[number]
+
+export const isCustomProvider = (key: string): key is CustomProvider => customProviders.includes(key as CustomProvider)
+
+/**
+ * FauxProvider
+ *
+ * Faux providers do not make external inference calls and therefore do not have
+ * model lists.
+ */
+
+export const fauxProviders = ["fake-ai", "human-relay"] as const
+
+export type FauxProvider = (typeof fauxProviders)[number]
+
+export const isFauxProvider = (key: string): key is FauxProvider => fauxProviders.includes(key as FauxProvider)
+
+/**
  * ProviderName
  */
 
 export const providerNames = [
+	...dynamicProviders,
+	...localProviders,
+	...internalProviders,
+	...customProviders,
+	...fauxProviders,
 	"anthropic",
-	"claude-code",
-	"glama",
-	"openrouter",
 	"bedrock",
-	"vertex",
-	"openai",
-	"ollama",
-	"vscode-lm",
-	"lmstudio",
+	"cerebras",
+	"chutes",
+	"claude-code",
+	"doubao",
+	"deepseek",
+	"featherless",
+	"fireworks",
 	"gemini",
 	"gemini-cli",
-	"openai-native",
+	"groq",
 	"mistral",
 	"moonshot",
-	"deepseek",
-	"deepinfra",
-	"doubao",
+	"openai-native",
 	"qwen-code",
-	"unbound",
-	"requesty",
-	"human-relay",
-	"fake-ai",
-	"xai",
-	"groq",
-	"chutes",
-	"litellm",
-	"huggingface",
-	"cerebras",
-	"sambanova",
-	"zai",
-	"fireworks",
-	"featherless",
-	"io-intelligence",
 	"roo",
-	"vercel-ai-gateway",
+	"sambanova",
+	"vertex",
+	"xai",
+	"zai",
 ] as const
 
 export const providerNamesSchema = z.enum(providerNames)
 
 export type ProviderName = z.infer<typeof providerNamesSchema>
+
+export const isProviderName = (key: unknown): key is ProviderName =>
+	typeof key === "string" && providerNames.includes(key as ProviderName)
 
 /**
  * ProviderSettingsEntry
@@ -90,11 +163,6 @@ export type ProviderSettingsEntry = z.infer<typeof providerSettingsEntrySchema>
 /**
  * ProviderSettings
  */
-
-/**
- * Default value for consecutive mistake limit
- */
-export const DEFAULT_CONSECUTIVE_MISTAKE_LIMIT = 3
 
 const baseProviderSettingsSchema = z.object({
 	includeMaxTokens: z.boolean().optional(),
@@ -124,7 +192,7 @@ const anthropicSchema = apiModelIdProviderModelSchema.extend({
 	apiKey: z.string().optional(),
 	anthropicBaseUrl: z.string().optional(),
 	anthropicUseAuthToken: z.boolean().optional(),
-	anthropicBeta1MContext: z.boolean().optional(), // Enable 'context-1m-2025-08-07' beta for 1M context window
+	anthropicBeta1MContext: z.boolean().optional(), // Enable 'context-1m-2025-08-07' beta for 1M context window.
 })
 
 const claudeCodeSchema = apiModelIdProviderModelSchema.extend({
@@ -160,7 +228,7 @@ const bedrockSchema = apiModelIdProviderModelSchema.extend({
 	awsModelContextWindow: z.number().optional(),
 	awsBedrockEndpointEnabled: z.boolean().optional(),
 	awsBedrockEndpoint: z.string().optional(),
-	awsBedrock1MContext: z.boolean().optional(), // Enable 'context-1m-2025-08-07' beta for 1M context window
+	awsBedrock1MContext: z.boolean().optional(), // Enable 'context-1m-2025-08-07' beta for 1M context window.
 })
 
 const vertexSchema = apiModelIdProviderModelSchema.extend({
@@ -190,6 +258,7 @@ const ollamaSchema = baseProviderSettingsSchema.extend({
 	ollamaModelId: z.string().optional(),
 	ollamaBaseUrl: z.string().optional(),
 	ollamaApiKey: z.string().optional(),
+	ollamaNumCtx: z.number().int().min(128).optional(),
 })
 
 const vsCodeLmSchema = baseProviderSettingsSchema.extend({
@@ -308,9 +377,13 @@ const sambaNovaSchema = apiModelIdProviderModelSchema.extend({
 	sambaNovaApiKey: z.string().optional(),
 })
 
+export const zaiApiLineSchema = z.enum(["international_coding", "international", "china_coding", "china"])
+
+export type ZaiApiLine = z.infer<typeof zaiApiLineSchema>
+
 const zaiSchema = apiModelIdProviderModelSchema.extend({
 	zaiApiKey: z.string().optional(),
-	zaiApiLine: z.union([z.literal("china"), z.literal("international")]).optional(),
+	zaiApiLine: zaiApiLineSchema.optional(),
 })
 
 const fireworksSchema = apiModelIdProviderModelSchema.extend({
@@ -331,7 +404,7 @@ const qwenCodeSchema = apiModelIdProviderModelSchema.extend({
 })
 
 const rooSchema = apiModelIdProviderModelSchema.extend({
-	// No additional fields needed - uses cloud authentication
+	// No additional fields needed - uses cloud authentication.
 })
 
 const vercelAiGatewaySchema = baseProviderSettingsSchema.extend({
@@ -436,7 +509,11 @@ export type ProviderSettingsWithId = z.infer<typeof providerSettingsWithIdSchema
 
 export const PROVIDER_SETTINGS_KEYS = providerSettingsSchema.keyof().options
 
-export const MODEL_ID_KEYS: Partial<keyof ProviderSettings>[] = [
+/**
+ * ModelIdKey
+ */
+
+export const modelIdKeys = [
 	"apiModelId",
 	"glamaModelId",
 	"openRouterModelId",
@@ -451,12 +528,62 @@ export const MODEL_ID_KEYS: Partial<keyof ProviderSettings>[] = [
 	"ioIntelligenceModelId",
 	"vercelAiGatewayModelId",
 	"deepInfraModelId",
-]
+] as const satisfies readonly (keyof ProviderSettings)[]
+
+export type ModelIdKey = (typeof modelIdKeys)[number]
 
 export const getModelId = (settings: ProviderSettings): string | undefined => {
-	const modelIdKey = MODEL_ID_KEYS.find((key) => settings[key])
-	return modelIdKey ? (settings[modelIdKey] as string) : undefined
+	const modelIdKey = modelIdKeys.find((key) => settings[key])
+	return modelIdKey ? settings[modelIdKey] : undefined
 }
+
+/**
+ * TypicalProvider
+ */
+
+export type TypicalProvider = Exclude<ProviderName, InternalProvider | CustomProvider | FauxProvider>
+
+export const isTypicalProvider = (key: unknown): key is TypicalProvider =>
+	isProviderName(key) && !isInternalProvider(key) && !isCustomProvider(key) && !isFauxProvider(key)
+
+export const modelIdKeysByProvider: Record<TypicalProvider, ModelIdKey> = {
+	anthropic: "apiModelId",
+	"claude-code": "apiModelId",
+	glama: "glamaModelId",
+	openrouter: "openRouterModelId",
+	bedrock: "apiModelId",
+	vertex: "apiModelId",
+	"openai-native": "openAiModelId",
+	ollama: "ollamaModelId",
+	lmstudio: "lmStudioModelId",
+	gemini: "apiModelId",
+	"gemini-cli": "apiModelId",
+	mistral: "apiModelId",
+	moonshot: "apiModelId",
+	deepseek: "apiModelId",
+	deepinfra: "deepInfraModelId",
+	doubao: "apiModelId",
+	"qwen-code": "apiModelId",
+	unbound: "unboundModelId",
+	requesty: "requestyModelId",
+	xai: "apiModelId",
+	groq: "apiModelId",
+	chutes: "apiModelId",
+	litellm: "litellmModelId",
+	huggingface: "huggingFaceModelId",
+	cerebras: "apiModelId",
+	sambanova: "apiModelId",
+	zai: "apiModelId",
+	fireworks: "apiModelId",
+	featherless: "apiModelId",
+	"io-intelligence": "ioIntelligenceModelId",
+	roo: "apiModelId",
+	"vercel-ai-gateway": "vercelAiGatewayModelId",
+}
+
+/**
+ * ANTHROPIC_STYLE_PROVIDERS
+ */
 
 // Providers that use Anthropic-style API protocol.
 export const ANTHROPIC_STYLE_PROVIDERS: ProviderName[] = ["anthropic", "claude-code", "bedrock"]
@@ -477,6 +604,10 @@ export const getApiProtocol = (provider: ProviderName | undefined, modelId?: str
 
 	return "openai"
 }
+
+/**
+ * MODELS_BY_PROVIDER
+ */
 
 export const MODELS_BY_PROVIDER: Record<
 	Exclude<ProviderName, "fake-ai" | "human-relay" | "gemini-cli" | "lmstudio" | "openai" | "ollama">,
@@ -575,19 +706,3 @@ export const MODELS_BY_PROVIDER: Record<
 	deepinfra: { id: "deepinfra", label: "DeepInfra", models: [] },
 	"vercel-ai-gateway": { id: "vercel-ai-gateway", label: "Vercel AI Gateway", models: [] },
 }
-
-export const dynamicProviders = [
-	"glama",
-	"huggingface",
-	"litellm",
-	"openrouter",
-	"requesty",
-	"unbound",
-	"deepinfra",
-	"vercel-ai-gateway",
-] as const satisfies readonly ProviderName[]
-
-export type DynamicProvider = (typeof dynamicProviders)[number]
-
-export const isDynamicProvider = (key: string): key is DynamicProvider =>
-	dynamicProviders.includes(key as DynamicProvider)

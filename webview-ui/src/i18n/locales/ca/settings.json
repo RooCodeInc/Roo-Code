@@ -28,10 +28,15 @@
 		"notifications": "Notificacions",
 		"contextManagement": "Context",
 		"terminal": "Terminal",
+		"slashCommands": "Comandes de barra",
 		"prompts": "Indicacions",
+		"ui": "UI",
 		"experimental": "Experimental",
 		"language": "Idioma",
 		"about": "Sobre Roo Code"
+	},
+	"slashCommands": {
+		"description": "Gestiona les teves comandes de barra per executar ràpidament fluxos de treball i accions personalitzades. <DocsLink>Aprèn-ne més</DocsLink>"
 	},
 	"prompts": {
 		"description": "Configura les indicacions de suport utilitzades per a accions ràpides com millorar indicacions, explicar codi i solucionar problemes. Aquestes indicacions ajuden Roo a proporcionar millor assistència per a tasques comunes de desenvolupament."
@@ -130,6 +135,7 @@
 		"resetToDefault": "Restablir al valor per defecte"
 	},
 	"autoApprove": {
+		"toggleShortcut": "Pots configurar una drecera global per a aquesta configuració <SettingsLink>a les preferències del teu IDE</SettingsLink>.",
 		"description": "Permet que Roo realitzi operacions automàticament sense requerir aprovació. Activeu aquesta configuració només si confieu plenament en la IA i enteneu els riscos de seguretat associats.",
 		"enabled": "Auto-aprovació activada",
 		"toggleAriaLabel": "Commuta l'aprovació automàtica",
@@ -376,6 +382,8 @@
 			"modelId": "ID del model",
 			"apiKey": "Clau API d'Ollama",
 			"apiKeyHelp": "Clau API opcional per a instàncies d'Ollama autenticades o serveis al núvol. Deixa-ho buit per a instal·lacions locals.",
+			"numCtx": "Mida de la finestra de context (num_ctx)",
+			"numCtxHelp": "Sobreescriu la mida de la finestra de context per defecte del model. Deixeu-ho en blanc per utilitzar la configuració del Modelfile del model. El valor mínim és 128.",
 			"description": "Ollama permet executar models localment al vostre ordinador. Per a instruccions sobre com començar, consulteu la Guia d'inici ràpid.",
 			"warning": "Nota: Roo Code utilitza prompts complexos i funciona millor amb models Claude. Els models menys capaços poden no funcionar com s'espera."
 		},
@@ -792,7 +800,7 @@
 		"feedback": "Si teniu qualsevol pregunta o comentari, no dubteu a obrir un issue a <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> o unir-vos a <redditLink>reddit.com/r/RooCode</redditLink> o <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {
 			"label": "Permetre informes anònims d'errors i ús",
-			"description": "Ajudeu a millorar Roo Code enviant dades d'ús anònimes i informes d'errors. Mai s'envia codi, prompts o informació personal. Vegeu la nostra política de privacitat per a més detalls."
+			"description": "Ajuda a millorar Roo Code enviant dades d'ús anònimes i informes d'error. Aquesta telemetria no recull codi, prompts o informació personal. Consulta la nostra <privacyLink>política de privacitat</privacyLink> per a més detalls. Pots desactivar-ho en qualsevol moment."
 		},
 		"settings": {
 			"import": "Importar",
@@ -871,6 +879,12 @@
 			"input": "Entrada",
 			"output": "Sortida",
 			"cacheReads": "Lectures de memòria cau"
+		}
+	},
+	"ui": {
+		"collapseThinking": {
+			"label": "Replega els missatges de pensament per defecte",
+			"description": "Quan estigui activat, els blocs de pensament es replegaran per defecte fins que interactuïs amb ells"
 		}
 	}
 }

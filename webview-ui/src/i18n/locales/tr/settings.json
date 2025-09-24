@@ -28,10 +28,15 @@
 		"notifications": "Bildirimler",
 		"contextManagement": "Bağlam",
 		"terminal": "Terminal",
+		"slashCommands": "Eğik Çizgi Komutları",
 		"prompts": "Promptlar",
+		"ui": "UI",
 		"experimental": "Deneysel",
 		"language": "Dil",
 		"about": "Roo Code Hakkında"
+	},
+	"slashCommands": {
+		"description": "Özel iş akışlarını ve eylemleri hızlı bir şekilde yürütmek için eğik çizgi komutlarınızı yönetin. <DocsLink>Daha fazla bilgi edinin</DocsLink>"
 	},
 	"prompts": {
 		"description": "Prompt geliştirme, kod açıklama ve sorun çözme gibi hızlı eylemler için kullanılan destek promptlarını yapılandırın. Bu promptlar, Roo'nun yaygın geliştirme görevleri için daha iyi destek sağlamasına yardımcı olur."
@@ -130,6 +135,7 @@
 		"resetToDefault": "Varsayılana sıfırla"
 	},
 	"autoApprove": {
+		"toggleShortcut": "<SettingsLink>IDE tercihlerinizde</SettingsLink> bu ayar için genel bir kısayol yapılandırabilirsiniz.",
 		"description": "Roo'nun onay gerektirmeden otomatik olarak işlemler gerçekleştirmesine izin verin. Bu ayarları yalnızca yapay zekaya tamamen güveniyorsanız ve ilgili güvenlik risklerini anlıyorsanız etkinleştirin.",
 		"enabled": "Oto-onay etkinleştirildi",
 		"toggleAriaLabel": "Otomatik onayı değiştir",
@@ -376,6 +382,8 @@
 			"modelId": "Model Kimliği",
 			"apiKey": "Ollama API Anahtarı",
 			"apiKeyHelp": "Kimlik doğrulamalı Ollama örnekleri veya bulut hizmetleri için isteğe bağlı API anahtarı. Yerel kurulumlar için boş bırakın.",
+			"numCtx": "Bağlam Penceresi Boyutu (num_ctx)",
+			"numCtxHelp": "Modelin varsayılan bağlam penceresi boyutunu geçersiz kılar. Modelin Modelfile yapılandırmasını kullanmak için boş bırakın. Minimum değer 128'dir.",
 			"description": "Ollama, modelleri bilgisayarınızda yerel olarak çalıştırmanıza olanak tanır. Başlamak için hızlı başlangıç kılavuzlarına bakın.",
 			"warning": "Not: Roo Code karmaşık istemler kullanır ve Claude modelleriyle en iyi şekilde çalışır. Daha az yetenekli modeller beklendiği gibi çalışmayabilir."
 		},
@@ -793,7 +801,7 @@
 		"feedback": "Herhangi bir sorunuz veya geri bildiriminiz varsa, <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> adresinde bir konu açmaktan veya <redditLink>reddit.com/r/RooCode</redditLink> ya da <discordLink>discord.gg/roocode</discordLink>'a katılmaktan çekinmeyin",
 		"telemetry": {
 			"label": "Anonim hata ve kullanım raporlamaya izin ver",
-			"description": "Anonim kullanım verileri ve hata raporları göndererek Roo Code'u geliştirmeye yardımcı olun. Hiçbir kod, istem veya kişisel bilgi asla gönderilmez. Daha fazla ayrıntı için gizlilik politikamıza bakın."
+			"description": "Anonim kullanım verileri ve hata raporları göndererek Roo Code'u geliştirmeye yardım edin. Bu telemetri kod, prompt veya kişisel bilgi toplamaz. Daha fazla ayrıntı için <privacyLink>gizlilik politikamıza</privacyLink> bakın. Bunu istediğiniz zaman kapatabilirsiniz."
 		},
 		"settings": {
 			"import": "İçe Aktar",
@@ -872,6 +880,12 @@
 			"input": "Giriş",
 			"output": "Çıkış",
 			"cacheReads": "Önbellek okumaları"
+		}
+	},
+	"ui": {
+		"collapseThinking": {
+			"label": "Düşünme mesajlarını varsayılan olarak daralt",
+			"description": "Etkinleştirildiğinde, düşünme blokları siz onlarla etkileşime girene kadar varsayılan olarak daraltılır"
 		}
 	}
 }

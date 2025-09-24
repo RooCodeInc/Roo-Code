@@ -24,7 +24,9 @@
 		"connectToCloudDescription": "Inicia sessió a Roo Code Cloud per compartir tasques",
 		"sharingDisabledByOrganization": "Compartició deshabilitada per l'organització",
 		"shareSuccessOrganization": "Enllaç d'organització copiat al porta-retalls",
-		"shareSuccessPublic": "Enllaç públic copiat al porta-retalls"
+		"shareSuccessPublic": "Enllaç públic copiat al porta-retalls",
+		"openInCloud": "Obrir tasca a Roo Code Cloud",
+		"openInCloudIntro": "Continua monitoritzant o interactuant amb Roo des de qualsevol lloc. Escaneja, fes clic o copia per obrir."
 	},
 	"unpin": "Desfixar",
 	"pin": "Fixar",
@@ -59,7 +61,7 @@
 		"tooltip": "Aprova aquesta acció"
 	},
 	"runCommand": {
-		"title": "Executar ordre",
+		"title": "Ordre",
 		"tooltip": "Executa aquesta ordre"
 	},
 	"proceedWhileRunning": {
@@ -123,7 +125,7 @@
 		"searchPlaceholder": "Cerca modes...",
 		"noResults": "No s'han trobat resultats"
 	},
-	"errorReadingFile": "Error en llegir el fitxer:",
+	"errorReadingFile": "Error en llegir el fitxer",
 	"noValidImages": "No s'ha processat cap imatge vàlida",
 	"separator": "Separador",
 	"edit": "Edita...",
@@ -161,66 +163,72 @@
 		"wantsToFetch": "Roo vol obtenir instruccions detallades per ajudar amb la tasca actual."
 	},
 	"fileOperations": {
-		"wantsToRead": "Roo vol llegir aquest fitxer:",
-		"wantsToReadOutsideWorkspace": "Roo vol llegir aquest fitxer fora de l'espai de treball:",
-		"didRead": "Roo ha llegit aquest fitxer:",
-		"wantsToEdit": "Roo vol editar aquest fitxer:",
-		"wantsToEditOutsideWorkspace": "Roo vol editar aquest fitxer fora de l'espai de treball:",
-		"wantsToEditProtected": "Roo vol editar un fitxer de configuració protegit:",
-		"wantsToCreate": "Roo vol crear un nou fitxer:",
-		"wantsToSearchReplace": "Roo vol realitzar cerca i substitució en aquest fitxer:",
-		"didSearchReplace": "Roo ha realitzat cerca i substitució en aquest fitxer:",
-		"wantsToInsert": "Roo vol inserir contingut en aquest fitxer:",
-		"wantsToInsertWithLineNumber": "Roo vol inserir contingut a la línia {{lineNumber}} d'aquest fitxer:",
-		"wantsToInsertAtEnd": "Roo vol afegir contingut al final d'aquest fitxer:",
-		"wantsToReadAndXMore": "En Roo vol llegir aquest fitxer i {{count}} més:",
-		"wantsToReadMultiple": "Roo vol llegir diversos fitxers:",
-		"wantsToApplyBatchChanges": "Roo vol aplicar canvis a múltiples fitxers:",
-		"wantsToGenerateImage": "Roo vol generar una imatge:",
-		"wantsToGenerateImageOutsideWorkspace": "Roo vol generar una imatge fora de l'espai de treball:",
-		"wantsToGenerateImageProtected": "Roo vol generar una imatge en una ubicació protegida:",
-		"didGenerateImage": "Roo ha generat una imatge:"
+		"wantsToRead": "Roo vol llegir aquest fitxer",
+		"wantsToReadOutsideWorkspace": "Roo vol llegir aquest fitxer fora de l'espai de treball",
+		"didRead": "Roo ha llegit aquest fitxer",
+		"wantsToEdit": "Roo vol editar aquest fitxer",
+		"wantsToEditOutsideWorkspace": "Roo vol editar aquest fitxer fora de l'espai de treball",
+		"wantsToEditProtected": "Roo vol editar un fitxer de configuració protegit",
+		"wantsToCreate": "Roo vol crear un nou fitxer",
+		"wantsToSearchReplace": "Roo vol realitzar cerca i substitució en aquest fitxer",
+		"didSearchReplace": "Roo ha realitzat cerca i substitució en aquest fitxer",
+		"wantsToInsert": "Roo vol inserir contingut en aquest fitxer",
+		"wantsToInsertWithLineNumber": "Roo vol inserir contingut a la línia {{lineNumber}} d'aquest fitxer",
+		"wantsToInsertAtEnd": "Roo vol afegir contingut al final d'aquest fitxer",
+		"wantsToReadAndXMore": "En Roo vol llegir aquest fitxer i {{count}} més",
+		"wantsToReadMultiple": "Roo vol llegir diversos fitxers",
+		"wantsToApplyBatchChanges": "Roo vol aplicar canvis a múltiples fitxers",
+		"wantsToGenerateImage": "Roo vol generar una imatge",
+		"wantsToGenerateImageOutsideWorkspace": "Roo vol generar una imatge fora de l'espai de treball",
+		"wantsToGenerateImageProtected": "Roo vol generar una imatge en una ubicació protegida",
+		"didGenerateImage": "Roo ha generat una imatge"
 	},
 	"directoryOperations": {
-		"wantsToViewTopLevel": "Roo vol veure els fitxers de nivell superior en aquest directori:",
-		"didViewTopLevel": "Roo ha vist els fitxers de nivell superior en aquest directori:",
-		"wantsToViewRecursive": "Roo vol veure recursivament tots els fitxers en aquest directori:",
-		"didViewRecursive": "Roo ha vist recursivament tots els fitxers en aquest directori:",
-		"wantsToViewDefinitions": "Roo vol veure noms de definicions de codi font utilitzats en aquest directori:",
-		"didViewDefinitions": "Roo ha vist noms de definicions de codi font utilitzats en aquest directori:",
-		"wantsToSearch": "Roo vol cercar en aquest directori <code>{{regex}}</code>:",
-		"didSearch": "Roo ha cercat en aquest directori <code>{{regex}}</code>:",
-		"wantsToSearchOutsideWorkspace": "Roo vol cercar en aquest directori (fora de l'espai de treball) <code>{{regex}}</code>:",
-		"didSearchOutsideWorkspace": "Roo ha cercat en aquest directori (fora de l'espai de treball) <code>{{regex}}</code>:",
-		"wantsToViewTopLevelOutsideWorkspace": "Roo vol veure els fitxers de nivell superior en aquest directori (fora de l'espai de treball):",
-		"didViewTopLevelOutsideWorkspace": "Roo ha vist els fitxers de nivell superior en aquest directori (fora de l'espai de treball):",
-		"wantsToViewRecursiveOutsideWorkspace": "Roo vol veure recursivament tots els fitxers en aquest directori (fora de l'espai de treball):",
-		"didViewRecursiveOutsideWorkspace": "Roo ha vist recursivament tots els fitxers en aquest directori (fora de l'espai de treball):",
-		"wantsToViewDefinitionsOutsideWorkspace": "Roo vol veure noms de definicions de codi font utilitzats en aquest directori (fora de l'espai de treball):",
-		"didViewDefinitionsOutsideWorkspace": "Roo ha vist noms de definicions de codi font utilitzats en aquest directori (fora de l'espai de treball):"
+		"wantsToViewTopLevel": "Roo vol veure els fitxers de nivell superior en aquest directori",
+		"didViewTopLevel": "Roo ha vist els fitxers de nivell superior en aquest directori",
+		"wantsToViewRecursive": "Roo vol veure recursivament tots els fitxers en aquest directori",
+		"didViewRecursive": "Roo ha vist recursivament tots els fitxers en aquest directori",
+		"wantsToViewDefinitions": "Roo vol veure noms de definicions de codi font utilitzats en aquest directori",
+		"didViewDefinitions": "Roo ha vist noms de definicions de codi font utilitzats en aquest directori",
+		"wantsToSearch": "Roo vol cercar en aquest directori <code>{{regex}}</code>",
+		"didSearch": "Roo ha cercat en aquest directori <code>{{regex}}</code>",
+		"wantsToSearchOutsideWorkspace": "Roo vol cercar en aquest directori (fora de l'espai de treball) <code>{{regex}}</code>",
+		"didSearchOutsideWorkspace": "Roo ha cercat en aquest directori (fora de l'espai de treball) <code>{{regex}}</code>",
+		"wantsToViewTopLevelOutsideWorkspace": "Roo vol veure els fitxers de nivell superior en aquest directori (fora de l'espai de treball)",
+		"didViewTopLevelOutsideWorkspace": "Roo ha vist els fitxers de nivell superior en aquest directori (fora de l'espai de treball)",
+		"wantsToViewRecursiveOutsideWorkspace": "Roo vol veure recursivament tots els fitxers en aquest directori (fora de l'espai de treball)",
+		"didViewRecursiveOutsideWorkspace": "Roo ha vist recursivament tots els fitxers en aquest directori (fora de l'espai de treball)",
+		"wantsToViewDefinitionsOutsideWorkspace": "Roo vol veure noms de definicions de codi font utilitzats en aquest directori (fora de l'espai de treball)",
+		"didViewDefinitionsOutsideWorkspace": "Roo ha vist noms de definicions de codi font utilitzats en aquest directori (fora de l'espai de treball)"
 	},
-	"commandOutput": "Sortida de l'ordre",
+	"commandOutput": "Sortida de la comanda",
 	"commandExecution": {
-		"running": "Executant",
+		"abort": "Avortar",
+		"running": "En execució",
 		"pid": "PID: {{pid}}",
-		"exited": "Finalitzat ({{exitCode}})",
-		"manageCommands": "Gestiona els permisos de les ordres",
-		"commandManagementDescription": "Gestiona els permisos de les ordres: Fes clic a ✓ per permetre l'execució automàtica, ✗ per denegar l'execució. Els patrons es poden activar/desactivar o eliminar de les llistes. <settingsLink>Mostra tots els paràmetres</settingsLink>",
-		"addToAllowed": "Afegeix a la llista de permesos",
-		"removeFromAllowed": "Elimina de la llista de permesos",
-		"addToDenied": "Afegeix a la llista de denegats",
-		"removeFromDenied": "Elimina de la llista de denegats",
-		"abortCommand": "Interromp l'execució de l'ordre",
+		"exitStatus": "S'ha sortit amb l'estat {{exitCode}}",
+		"manageCommands": "Comandes aprovades automàticament",
+		"addToAllowed": "Afegeix a la llista permesa",
+		"removeFromAllowed": "Elimina de la llista permesa",
+		"addToDenied": "Afegeix a la llista denegada",
+		"removeFromDenied": "Elimina de la llista denegada",
+		"abortCommand": "Interrompre l'execució de l'ordre",
 		"expandOutput": "Amplia la sortida",
 		"collapseOutput": "Redueix la sortida",
-		"expandManagement": "Amplia la secció de gestió d'ordres",
-		"collapseManagement": "Redueix la secció de gestió d'ordres"
+		"expandManagement": "Amplia la secció de gestió de comandaments",
+		"collapseManagement": "Redueix la secció de gestió de comandaments"
 	},
 	"response": "Resposta",
 	"arguments": "Arguments",
+	"text": {
+		"rooSaid": "En Roo ha dit"
+	},
+	"feedback": {
+		"youSaid": "Has dit"
+	},
 	"mcp": {
-		"wantsToUseTool": "Roo vol utilitzar una eina al servidor MCP {{serverName}}:",
-		"wantsToAccessResource": "Roo vol accedir a un recurs al servidor MCP {{serverName}}:"
+		"wantsToUseTool": "Roo vol utilitzar una eina al servidor MCP {{serverName}}",
+		"wantsToAccessResource": "Roo vol accedir a un recurs al servidor MCP {{serverName}}"
 	},
 	"modes": {
 		"wantsToSwitch": "Roo vol canviar a mode <code>{{mode}}</code>",
@@ -229,7 +237,7 @@
 		"didSwitchWithReason": "Roo ha canviat a mode <code>{{mode}}</code> perquè: {{reason}}"
 	},
 	"subtasks": {
-		"wantsToCreate": "Roo vol crear una nova subtasca en mode <code>{{mode}}</code>:",
+		"wantsToCreate": "Roo vol crear una nova subtasca en mode <code>{{mode}}</code>",
 		"wantsToFinish": "Roo vol finalitzar aquesta subtasca",
 		"newTaskContent": "Instruccions de la subtasca",
 		"completionContent": "Subtasca completada",
@@ -238,19 +246,28 @@
 		"completionInstructions": "Subtasca completada! Pots revisar els resultats i suggerir correccions o següents passos. Si tot sembla correcte, confirma per tornar el resultat a la tasca principal."
 	},
 	"questions": {
-		"hasQuestion": "Roo té una pregunta:"
+		"hasQuestion": "Roo té una pregunta"
 	},
 	"taskCompleted": "Tasca completada",
 	"powershell": {
 		"issues": "Sembla que estàs tenint problemes amb Windows PowerShell, si us plau consulta aquesta documentació per a més informació."
 	},
 	"autoApprove": {
-		"title": "Aprovació automàtica:",
+		"tooltipManage": "Gestiona la configuració d'aprovació automàtica",
+		"tooltipStatus": "Aprovació automàtica activada per a: {{toggles}}",
+		"title": "Aprovació automàtica",
+		"toggle": "Commuta l'aprovació automàtica",
+		"all": "Tot",
 		"none": "Cap",
-		"description": "L'aprovació automàtica permet a Roo Code realitzar accions sense demanar permís. Activa-la només per a accions en les que confies plenament. Configuració més detallada disponible a la <settingsLink>Configuració</settingsLink>.",
+		"description": "Executa aquestes accions sense demanar permís. Activa-ho només per a accions de confiança.",
 		"selectOptionsFirst": "Selecciona almenys una opció a continuació per activar l'aprovació automàtica",
 		"toggleAriaLabel": "Commuta l'aprovació automàtica",
-		"disabledAriaLabel": "Aprovació automàtica desactivada: seleccioneu primer les opcions"
+		"disabledAriaLabel": "Aprovació automàtica desactivada - selecciona primer les opcions",
+		"triggerLabelOff": "Aprovació automàtica desactivada",
+		"triggerLabel_zero": "0 aprovacions automàtiques",
+		"triggerLabel_one": "1 aprovació automàtica",
+		"triggerLabel_other": "{{count}} aprovacions automàtiques",
+		"triggerLabelAll": "YOLO"
 	},
 	"reasoning": {
 		"thinking": "Pensant",
@@ -270,21 +287,16 @@
 	"announcement": {
 		"title": "🎉 Roo Code {{version}} Llançat",
 		"stealthModel": {
-			"feature": "El model stealth Sonic ara és <bold>Grok Code Fast</bold>! Aquest model de raonament d'alt rendiment està disponible com a <code>grok-code-fast-1</code> sota el proveïdor <bold>xAI (Grok)</bold>.",
-			"note": "Com a agraïment per tots els comentaris útils sobre Sonic, xAI està ampliant l'accés gratuït a <code>grok-code-fast-1</code> durant una setmana més a través del proveïdor <bold>Roo Code Cloud</bold>.",
-			"connectButton": "Connectar amb Roo Code Cloud",
-			"selectModel": "Visita la <settingsLink>Configuració</settingsLink> per actualitzar la configuració del proveïdor."
+			"feature": "<bold>Model stealth GRATUÏT per temps limitat</bold> - Code Supernova: Un model de codificació agèntica versàtil que suporta entrades d'imatges, disponible a través de Roo Code Cloud.",
+			"note": "(Nota: els prompts i completacions són registrats pel creador del model i utilitzats per millorar-lo)",
+			"connectButton": "Connectar a Roo Code Cloud",
+			"selectModel": "Selecciona <code>roo/code-supernova</code> del proveïdor Roo Code Cloud a Configuració per començar.",
+			"goToSettingsButton": "Anar a Configuració"
 		},
-		"description": "Roo Code {{version}} porta noves funcions potents i millores significatives per millorar el vostre flux de treball de desenvolupament.",
-		"whatsNew": "Novetats",
-		"feature1": "<bold>Cua de Missatges</bold>: Posa en cua múltiples missatges mentre Roo està treballant, permetent-te continuar planificant el teu flux de treball sense interrupcions.",
-		"feature2": "<bold>Comandaments de Barra Personalitzats</bold>: Crea comandaments de barra personalitzats per a accés ràpid a prompts i fluxos de treball utilitzats freqüentment, amb gestió completa de la interfície d'usuari.",
-		"feature3": "<bold>Eines Gemini Millorades</bold>: Noves capacitats de context d'URL i fonamentació de cerca de Google proporcionen als models Gemini informació web en temps real i capacitats de recerca millorades.",
-		"hideButton": "Amaga l'anunci",
-		"detailsDiscussLinks": "Obtén més detalls i uneix-te a les discussions a <discordLink>Discord</discordLink> i <redditLink>Reddit</redditLink> 🚀"
+		"socialLinks": "Uneix-te a nosaltres a <xLink>X</xLink>, <discordLink>Discord</discordLink>, o <redditLink>r/RooCode</redditLink> 🚀"
 	},
 	"browser": {
-		"rooWantsToUse": "Roo vol utilitzar el navegador:",
+		"rooWantsToUse": "Roo vol utilitzar el navegador",
 		"consoleLogs": "Registres de consola",
 		"noNewLogs": "(Cap registre nou)",
 		"screenshot": "Captura de pantalla del navegador",
@@ -309,8 +321,6 @@
 		"tooltips": {
 			"expand": "Expandir bloc de codi",
 			"collapse": "Contraure bloc de codi",
-			"enable_wrap": "Activar ajustament de línia",
-			"disable_wrap": "Desactivar ajustament de línia",
 			"copy_code": "Copiar codi"
 		}
 	},
@@ -334,8 +344,8 @@
 		}
 	},
 	"codebaseSearch": {
-		"wantsToSearch": "Roo vol cercar a la base de codi <code>{{query}}</code>:",
-		"wantsToSearchWithPath": "Roo vol cercar a la base de codi <code>{{query}}</code> a <code>{{path}}</code>:",
+		"wantsToSearch": "Roo vol cercar a la base de codi <code>{{query}}</code>",
+		"wantsToSearchWithPath": "Roo vol cercar a la base de codi <code>{{query}}</code> a <code>{{path}}</code>",
 		"didSearch_one": "S'ha trobat 1 resultat",
 		"didSearch_other": "S'han trobat {{count}} resultats",
 		"resultTooltip": "Puntuació de similitud: {{score}} (fes clic per obrir el fitxer)"
@@ -373,6 +383,7 @@
 		"tooltip": "Gestionar ordres de barra",
 		"title": "Ordres de Barra",
 		"description": "Utilitza ordres de barra integrades o crea personalitzades per accedir ràpidament a indicacions i fluxos de treball utilitzats amb freqüència. <DocsLink>Documentació</DocsLink>",
+		"manageCommands": "Gestiona les ordres de barra a la configuració",
 		"builtInCommands": "Ordres Integrades",
 		"globalCommands": "Ordres Globals",
 		"workspaceCommands": "Ordres de l'Espai de Treball",
@@ -389,11 +400,17 @@
 		}
 	},
 	"queuedMessages": {
-		"title": "Missatges en cua:",
+		"title": "Missatges en cua",
 		"clickToEdit": "Feu clic per editar el missatge"
 	},
 	"slashCommand": {
-		"wantsToRun": "Roo vol executar una comanda slash:",
-		"didRun": "Roo ha executat una comanda slash:"
+		"wantsToRun": "Roo vol executar una comanda slash",
+		"didRun": "Roo ha executat una comanda slash"
+	},
+	"contextMenu": {
+		"noResults": "Sense resultats",
+		"problems": "Problemes",
+		"terminal": "Terminal",
+		"url": "Enganxa la URL per obtenir-ne el contingut"
 	}
 }
