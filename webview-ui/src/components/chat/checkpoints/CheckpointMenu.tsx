@@ -11,29 +11,47 @@ import { Checkpoint } from "./schema"
 type CheckpointMenuBaseProps = {
 	ts: number
 	commitHash: string
+	currentHash?: string
 	checkpoint: Checkpoint
 }
 type CheckpointMenuControlledProps = {
-	open: boolean
 	onOpenChange: (open: boolean) => void
 }
 type CheckpointMenuUncontrolledProps = {
-	open?: undefined
 	onOpenChange?: undefined
 }
 type CheckpointMenuProps = CheckpointMenuBaseProps & (CheckpointMenuControlledProps | CheckpointMenuUncontrolledProps)
 
-export const CheckpointMenu = ({ ts, commitHash, checkpoint, open, onOpenChange }: CheckpointMenuProps) => {
+export const CheckpointMenu = ({ ts, commitHash, currentHash, checkpoint, onOpenChange }: CheckpointMenuProps) => {
 	const { t } = useTranslation()
-	const [internalOpen, setInternalOpen] = useState(false)
-	const [isConfirming, setIsConfirming] = useState(false)
-	const [isDiffOpen, setIsDiffOpen] = useState(false)
+	const [internalRestoreOpen, setInternalRestoreOpen] = useState(false)
+	const [restoreConfirming, setRestoreIsConfirming] = useState(false)
+	const [internalMoreOpen, setInternalMoreOpen] = useState(false)
 	const portalContainer = useRooPortal("roo-portal")
 
 	const previousCommitHash = checkpoint?.from
 
-	const isOpen = open ?? internalOpen
-	const setOpen = onOpenChange ?? setInternalOpen
+	const restoreOpen = internalRestoreOpen
+	const moreOpen = internalMoreOpen
+	const setRestoreOpen = useCallback(
+		(open: boolean) => {
+			setInternalRestoreOpen(open)
+			if (onOpenChange) {
+				onOpenChange(open)
+			}
+		},
+		[onOpenChange],
+	)
+
+	const setMoreOpen = useCallback(
+		(open: boolean) => {
+			setInternalMoreOpen(open)
+			if (onOpenChange) {
+				onOpenChange(open)
+			}
+		},
+		[onOpenChange],
+	)
 
 	const onCheckpointDiff = useCallback(() => {
 		vscode.postMessage({
@@ -58,22 +76,22 @@ export const CheckpointMenu = ({ ts, commitHash, checkpoint, open, onOpenChange 
 
 	const onPreview = useCallback(() => {
 		vscode.postMessage({ type: "checkpointRestore", payload: { ts, commitHash, mode: "preview" } })
-		setOpen(false)
-	}, [ts, commitHash, setOpen])
+		setRestoreOpen(false)
+	}, [ts, commitHash, setRestoreOpen])
 
 	const onRestore = useCallback(() => {
 		vscode.postMessage({ type: "checkpointRestore", payload: { ts, commitHash, mode: "restore" } })
-		setOpen(false)
-	}, [ts, commitHash, setOpen])
+		setRestoreOpen(false)
+	}, [ts, commitHash, setRestoreOpen])
 
 	const handleOpenChange = useCallback(
 		(open: boolean) => {
-			setOpen(open)
+			setRestoreOpen(open)
 			if (!open) {
-				setIsConfirming(false)
+				setRestoreIsConfirming(false)
 			}
 		},
-		[setOpen],
+		[setRestoreOpen],
 	)
 
 	return (
@@ -83,7 +101,13 @@ export const CheckpointMenu = ({ ts, commitHash, checkpoint, open, onOpenChange 
 					<span className="codicon codicon-diff-single" />
 				</Button>
 			</StandardTooltip>
-			<Popover open={isOpen} onOpenChange={handleOpenChange}>
+			<Popover
+				open={restoreOpen}
+				onOpenChange={(open) => {
+					handleOpenChange(open)
+					setRestoreIsConfirming(false)
+				}}
+				data-testid="restore-popover">
 				<StandardTooltip content={t("chat:checkpoint.menu.restore")}>
 					<PopoverTrigger asChild>
 						<Button variant="ghost" size="icon" aria-label={t("chat:checkpoint.menu.restore")}>
@@ -102,10 +126,10 @@ export const CheckpointMenu = ({ ts, commitHash, checkpoint, open, onOpenChange 
 							</div>
 						</div>
 						<div className="flex flex-col gap-1 group hover:text-foreground">
-							{!isConfirming ? (
+							{!restoreConfirming ? (
 								<Button
 									variant="secondary"
-									onClick={() => setIsConfirming(true)}
+									onClick={() => setRestoreIsConfirming(true)}
 									data-testid="restore-files-and-task-btn">
 									{t("chat:checkpoint.menu.restoreFilesAndTask")}
 								</Button>
@@ -121,7 +145,7 @@ export const CheckpointMenu = ({ ts, commitHash, checkpoint, open, onOpenChange 
 											<div>{t("chat:checkpoint.menu.confirm")}</div>
 										</div>
 									</Button>
-									<Button variant="secondary" onClick={() => setIsConfirming(false)}>
+									<Button variant="secondary" onClick={() => setRestoreIsConfirming(false)}>
 										<div className="flex flex-row gap-1">
 											<Cross2Icon />
 											<div>{t("chat:checkpoint.menu.cancel")}</div>
@@ -129,7 +153,7 @@ export const CheckpointMenu = ({ ts, commitHash, checkpoint, open, onOpenChange 
 									</Button>
 								</>
 							)}
-							{isConfirming ? (
+							{restoreConfirming ? (
 								<div data-testid="checkpoint-confirm-warning" className="text-destructive font-bold">
 									{t("chat:checkpoint.menu.cannotUndo")}
 								</div>
@@ -142,7 +166,7 @@ export const CheckpointMenu = ({ ts, commitHash, checkpoint, open, onOpenChange 
 					</div>
 				</PopoverContent>
 			</Popover>
-			<Popover open={isDiffOpen} onOpenChange={(open) => setIsDiffOpen(open)}>
+			<Popover open={moreOpen} onOpenChange={(open) => setMoreOpen(open)} data-testid="more-popover">
 				<StandardTooltip content={t("chat:task.seeMore")}>
 					<PopoverTrigger asChild>
 						<Button variant="ghost" size="icon" aria-label={t("chat:checkpoint.menu.more")}>
@@ -153,19 +177,19 @@ export const CheckpointMenu = ({ ts, commitHash, checkpoint, open, onOpenChange 
 				<PopoverContent align="end" container={portalContainer}>
 					<div className="flex flex-col gap-2">
 						<Button
-							variant="ghost"
+							variant="secondary"
 							onClick={() => {
 								onDiffFromInit()
-								setIsDiffOpen(false)
+								setMoreOpen(false)
 							}}>
 							<span className="codicon codicon-versions mr-2" />
 							{t("chat:checkpoint.menu.viewDiffFromInit")}
 						</Button>
 						<Button
-							variant="ghost"
+							variant="secondary"
 							onClick={() => {
 								onDiffWithCurrent()
-								setIsDiffOpen(false)
+								setMoreOpen(false)
 							}}>
 							<span className="codicon codicon-diff mr-2" />
 							{t("chat:checkpoint.menu.viewDiffWithCurrent")}
