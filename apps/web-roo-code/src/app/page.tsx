@@ -11,6 +11,8 @@ import {
 	FAQSection,
 	CodeExample,
 } from "@/components/homepage"
+import { EXTERNAL_LINKS } from "@/lib/constants"
+import { ArrowRight } from "lucide-react"
 
 // Invalidate cache when a request comes in, at most once every hour.
 export const revalidate = 3600
@@ -43,17 +45,7 @@ export default async function Home() {
 										target="_blank"
 										className="flex w-full items-center justify-center">
 										Install Extension
-										<svg
-											xmlns="http://www.w3.org/2000/svg"
-											className="ml-2 h-4 w-4"
-											viewBox="0 0 20 20"
-											fill="currentColor">
-											<path
-												fillRule="evenodd"
-												d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z"
-												clipRule="evenodd"
-											/>
-										</svg>
+										<ArrowRight className="ml-2" />
 									</a>
 								</Button>
 								<Button
@@ -61,10 +53,11 @@ export default async function Home() {
 									size="lg"
 									className="w-full sm:w-auto bg-white/20 dark:bg-white/10 backdrop-blur-sm border border-black/40 dark:border-white/30 hover:border-blue-400 hover:bg-white/30 dark:hover:bg-white/20 hover:shadow-[0_0_20px_rgba(59,130,246,0.5)] transition-all duration-300">
 									<a
-										href="https://roocode.com/enterprise"
+										href={EXTERNAL_LINKS.CLOUD_APP}
 										target="_blank"
 										className="flex w-full items-center justify-center">
-										For Enterprise
+										Get started with Cloud
+										<ArrowRight className="ml-2" />
 									</a>
 								</Button>
 							</div>
