@@ -143,7 +143,7 @@ const WelcomeView = () => {
 										// For other providers, let the default link behavior work
 									}}>
 									{provider.incentive && (
-										<div className="absolute top-0 right-0 text-xs text-white bg-vscode-badge-background px-2 py-0.5 rounded-bl rounded-tr-md">
+										<div className="absolute top-0 right-0 text-[10px] text-vscode-badge-foreground bg-vscode-badge-background px-2 py-0.5 rounded-bl rounded-tr-md">
 											{provider.incentive}
 										</div>
 									)}
