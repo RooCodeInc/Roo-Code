@@ -110,7 +110,7 @@ export function NavBar({ stars, downloads }: NavBarProps) {
 						{downloads !== null && <span>{downloads}</span>}
 					</Link>
 					<a
-						href={EXTERNAL_LINKS.CLOUD_APP}
+						href={EXTERNAL_LINKS.CLOUD_APP_LOGIN}
 						target="_blank"
 						rel="noopener noreferrer"
 						className="hidden items-center gap-1.5 rounded-md py-2 text-sm border border-primary-background px-4 font-medium text-primary-background transition-all duration-200 hover:shadow-lg hover:scale-105 md:flex">
@@ -216,7 +216,7 @@ export function NavBar({ stars, downloads }: NavBarProps) {
 							</Link>
 						</div>
 						<a
-							href={EXTERNAL_LINKS.CLOUD_APP}
+							href={EXTERNAL_LINKS.CLOUD_APP_LOGIN}
 							target="_blank"
 							rel="noopener noreferrer"
 							className="flex items-center justify-center gap-2 rounded-lg border border-primary bg-background p-4 mx-4 mb-4 text-base font-semibold text-primary"
