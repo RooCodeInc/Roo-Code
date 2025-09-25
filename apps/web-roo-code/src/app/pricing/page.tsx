@@ -131,7 +131,7 @@ const pricingTiers: PricingTier[] = [
 		description: "For complex orgs",
 		featuresIntro: "Everything in Team, plus:",
 		features: [
-			"SAML SSO + SCIM provisioning",
+			"SAML SSO provisioning",
 			"Custom integrations and terms",
 			"Security questionnaires and all that fun stuff",
 			"Dedicated support",
