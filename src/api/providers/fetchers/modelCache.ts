@@ -27,6 +27,7 @@ import { getDeepInfraModels } from "./deepinfra"
 import { ZgsmAuthConfig } from "../../../core/costrict/auth"
 import { IZgsmModelResponseData } from "@roo-code/types"
 import { getHuggingFaceModels } from "./huggingface"
+import { ClineProvider } from "../../../core/webview/ClineProvider"
 
 const memoryCache = new NodeCache({ stdTTL: 5 * 60, checkperiod: 5 * 60 })
 
@@ -57,6 +58,7 @@ export async function readModels(router: RouterName): Promise<ModelRecord | unde
  */
 export const getModels = async (options: GetModelsOptions): Promise<ModelRecord> => {
 	const { provider } = options
+	const clineProvider = await ClineProvider.getInstance()
 
 	let models = getModelsFromCache(provider)
 
@@ -73,7 +75,7 @@ export const getModels = async (options: GetModelsOptions): Promise<ModelRecord>
 			case "zgsm": {
 				const _models = await getZgsmModels(
 					options.baseUrl || ZgsmAuthConfig.getInstance().getDefaultApiBaseUrl(),
-					options.apiKey,
+					options.apiKey || clineProvider?.getValue("zgsmAccessToken"),
 					options.openAiHeaders,
 				)
 				models = _models.reduce((acc, model: IZgsmModelResponseData) => {

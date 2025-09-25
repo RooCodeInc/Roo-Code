@@ -461,7 +461,9 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 	async fetchModel() {
 		const id = this.options.zgsmModelId ?? zgsmDefaultModelId
 
-		this.modelInfo = (await getModels({ provider: "zgsm" }))[id] || zgsmModels.default
+		this.modelInfo =
+			(await getModels({ provider: "zgsm", baseUrl: this.baseURL, apiKey: this.options.zgsmAccessToken }))[id] ||
+			zgsmModels.default
 	}
 
 	override getModel() {
