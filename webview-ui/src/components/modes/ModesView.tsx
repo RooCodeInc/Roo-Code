@@ -1110,7 +1110,7 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 									updateCustomMode(visualMode, {
 										...customMode,
 										// Preserve empty string; only treat null/undefined as unset
-										customInstructions: value.trim() ?? undefined,
+										customInstructions: value ?? undefined,
 										source: customMode.source || "global",
 									})
 								} else {
@@ -1313,7 +1313,7 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 							setCustomInstructions(value ?? undefined)
 							vscode.postMessage({
 								type: "customInstructions",
-								text: value.trim() ?? undefined,
+								text: value ?? undefined,
 							})
 						}}
 						rows={4}
