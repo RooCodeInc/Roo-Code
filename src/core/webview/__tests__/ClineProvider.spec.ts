@@ -2692,6 +2692,7 @@ describe("ClineProvider - Router Models", () => {
 				"vercel-ai-gateway": mockModels,
 				huggingface: {},
 				"io-intelligence": {},
+				"ibm-watsonx": {},
 			},
 			values: undefined,
 		})
@@ -2745,6 +2746,7 @@ describe("ClineProvider - Router Models", () => {
 				"vercel-ai-gateway": mockModels,
 				huggingface: {},
 				"io-intelligence": {},
+				"ibm-watsonx": {},
 			},
 			values: undefined,
 		})
@@ -2866,6 +2868,7 @@ describe("ClineProvider - Router Models", () => {
 				"vercel-ai-gateway": mockModels,
 				huggingface: {},
 				"io-intelligence": {},
+				"ibm-watsonx": {},
 			},
 			values: undefined,
 		})
