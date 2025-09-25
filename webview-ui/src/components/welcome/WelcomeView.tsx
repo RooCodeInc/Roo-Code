@@ -83,6 +83,13 @@ const WelcomeView = () => {
 									description: t("welcome:routers.openrouter.description"),
 									authUrl: getOpenRouterAuthUrl(uriScheme),
 								},
+								{
+									slug: "roo",
+									name: "Roo Code Cloud",
+									description: t("welcome:routers.roo.description"),
+									incentive: t("welcome:routers.roo.incentive"),
+									authUrl: "#", // Placeholder since onClick handler will prevent default
+								},
 							]
 
 							// Shuffle providers based on machine ID (will be consistent for the same machine)
@@ -94,9 +101,36 @@ const WelcomeView = () => {
 								<a
 									key={index}
 									href={provider.authUrl}
-									className="flex-1 border border-vscode-panel-border hover:bg-secondary rounded-md py-3 px-4 mb-2 flex flex-row gap-3 cursor-pointer transition-all no-underline text-inherit"
+									className="relative flex-1 border border-vscode-panel-border hover:bg-secondary rounded-md py-3 px-4 mb-2 flex flex-row gap-3 cursor-pointer transition-all no-underline text-inherit"
 									target="_blank"
-									rel="noopener noreferrer">
+									rel="noopener noreferrer"
+									onClick={(e) => {
+										// Special handling for Roo provider
+										if (provider.slug === "roo") {
+											e.preventDefault()
+
+											// Set the Roo provider configuration
+											const rooConfig: ProviderSettings = {
+												apiProvider: "roo",
+											}
+
+											// Save the Roo provider configuration
+											vscode.postMessage({
+												type: "upsertApiConfiguration",
+												text: currentApiConfigName,
+												apiConfiguration: rooConfig,
+											})
+
+											// Then trigger cloud sign-in
+											vscode.postMessage({ type: "rooCloudSignIn" })
+										}
+										// For other providers, let the default link behavior work
+									}}>
+									{provider.incentive && (
+										<div className="absolute top-0 right-0 text-xs text-white bg-vscode-badge-background px-2 py-0.5 rounded-bl rounded-tr-md">
+											{provider.incentive}
+										</div>
+									)}
 									<div className="w-8 h-8 flex-shrink-0">
 										<img
 											src={`${imagesBaseUri}/${provider.slug}.png`}
@@ -108,13 +142,8 @@ const WelcomeView = () => {
 										<div className="text-sm font-medium text-vscode-foreground">
 											{provider.name}
 										</div>
-										<div>
-											<div className="text-xs text-vscode-descriptionForeground">
-												{provider.description}
-											</div>
-											{provider.incentive && (
-												<div className="text-xs mt-1">{provider.incentive}</div>
-											)}
+										<div className="text-xs text-vscode-descriptionForeground">
+											{provider.description}
 										</div>
 									</div>
 								</a>
