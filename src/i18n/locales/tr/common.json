@@ -123,6 +123,14 @@
 		"roo": {
 			"authenticationRequired": "Roo sağlayıcısı bulut kimlik doğrulaması gerektirir. Lütfen Roo Code Cloud'a giriş yapın."
 		},
+		"openaiNativeCodex": {
+			"oauthReadFailed": "{{path}} konumunda ChatGPT OAuth kimlik bilgileri yüklenemedi: {{error}}. İpucu: auth.json oluşturmak için Codex CLI ile kimlik doğrulaması yapın (örn. \"codex login\").",
+			"oauthParseFailed": "{{path}} konumunda ChatGPT OAuth kimlik bilgileri JSON'u ayrıştırılamadı: {{error}}. İpucu: dosyanın geçerli JSON olduğundan emin olun veya yeniden oluşturmak için \"codex login\" ile yeniden kimlik doğrulaması yapın.",
+			"missingAccessToken": "ChatGPT OAuth kimlik bilgilerinde tokens.access_token eksik.",
+			"httpError": "Codex HTTP {{status}} (req: {{requestId}}) model={{modelId}}: {{message}}",
+			"noResponseBody": "ChatGPT Yanıtları hatası: Yanıt gövdesi yok",
+			"emptyStream": "ChatGPT Yanıtları akışı {{modelId}} modeli için içerik döndürmedi"
+		},
 		"api": {
 			"invalidKeyInvalidChars": "API anahtarı geçersiz karakterler içeriyor."
 		},

@@ -123,6 +123,14 @@
 		"roo": {
 			"authenticationRequired": "Roo 제공업체는 클라우드 인증이 필요합니다. Roo Code Cloud에 로그인하세요."
 		},
+		"openaiNativeCodex": {
+			"oauthReadFailed": "{{path}}에서 ChatGPT OAuth 자격 증명 로드 실패: {{error}}. 팁: Codex CLI(예: \"codex login\")로 인증하여 auth.json을 생성하세요.",
+			"oauthParseFailed": "{{path}}에서 ChatGPT OAuth 자격 증명 JSON 파싱 실패: {{error}}. 팁: 파일이 유효한 JSON인지 확인하거나 \"codex login\"으로 재인증하여 재생성하세요.",
+			"missingAccessToken": "ChatGPT OAuth 자격 증명에 tokens.access_token이 없습니다.",
+			"httpError": "Codex HTTP {{status}} (req: {{requestId}}) model={{modelId}}: {{message}}",
+			"noResponseBody": "ChatGPT 응답 오류: 응답 본문 없음",
+			"emptyStream": "ChatGPT 응답 스트림이 모델 {{modelId}}에 대한 콘텐츠를 반환하지 않았습니다"
+		},
 		"api": {
 			"invalidKeyInvalidChars": "API 키에 유효하지 않은 문자가 포함되어 있습니다."
 		},

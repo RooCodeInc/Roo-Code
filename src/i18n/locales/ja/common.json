@@ -123,6 +123,14 @@
 		"roo": {
 			"authenticationRequired": "Rooプロバイダーはクラウド認証が必要です。Roo Code Cloudにサインインしてください。"
 		},
+		"openaiNativeCodex": {
+			"oauthReadFailed": "{{path}}でChatGPT OAuth認証情報の読み込みに失敗しました: {{error}}。ヒント: Codex CLI（例：\"codex login\"）で認証してauth.jsonを作成してください。",
+			"oauthParseFailed": "{{path}}でChatGPT OAuth認証情報JSONの解析に失敗しました: {{error}}。ヒント: ファイルが有効なJSONであることを確認するか、\"codex login\"で再認証して再生成してください。",
+			"missingAccessToken": "ChatGPT OAuth認証情報にtokens.access_tokenがありません。",
+			"httpError": "Codex HTTP {{status}} (req: {{requestId}}) model={{modelId}}: {{message}}",
+			"noResponseBody": "ChatGPTレスポンスエラー: レスポンスボディがありません",
+			"emptyStream": "ChatGPTレスポンスストリームがモデル{{modelId}}のコンテンツを返しませんでした"
+		},
 		"api": {
 			"invalidKeyInvalidChars": "APIキーに無効な文字が含まれています。"
 		},

@@ -123,6 +123,14 @@
 		"roo": {
 			"authenticationRequired": "Провайдер Roo требует облачной аутентификации. Войдите в Roo Code Cloud."
 		},
+		"openaiNativeCodex": {
+			"oauthReadFailed": "Не удалось загрузить учетные данные OAuth ChatGPT по пути {{path}}: {{error}}. Совет: аутентифицируйтесь с помощью Codex CLI (например, \"codex login\") для создания auth.json.",
+			"oauthParseFailed": "Не удалось разобрать JSON учетных данных OAuth ChatGPT по пути {{path}}: {{error}}. Совет: убедитесь, что файл является действительным JSON, или повторно аутентифицируйтесь с помощью \"codex login\" для его регенерации.",
+			"missingAccessToken": "В учетных данных OAuth ChatGPT отсутствует tokens.access_token.",
+			"httpError": "Codex HTTP {{status}} (req: {{requestId}}) model={{modelId}}: {{message}}",
+			"noResponseBody": "Ошибка ответов ChatGPT: Нет тела ответа",
+			"emptyStream": "Поток ответов ChatGPT не вернул содержимое для модели {{modelId}}"
+		},
 		"api": {
 			"invalidKeyInvalidChars": "API-ключ содержит недопустимые символы."
 		},

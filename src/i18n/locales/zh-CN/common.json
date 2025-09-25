@@ -128,6 +128,14 @@
 		"roo": {
 			"authenticationRequired": "Roo 提供商需要云认证。请登录 Roo Code Cloud。"
 		},
+		"openaiNativeCodex": {
+			"oauthReadFailed": "无法在 {{path}} 加载 ChatGPT OAuth 凭据：{{error}}。提示：使用 Codex CLI 进行身份验证（例如 \"codex login\"）以创建 auth.json。",
+			"oauthParseFailed": "无法在 {{path}} 解析 ChatGPT OAuth 凭据 JSON：{{error}}。提示：确保文件是有效的 JSON 或使用 \"codex login\" 重新验证以重新生成。",
+			"missingAccessToken": "ChatGPT OAuth 凭据缺少 tokens.access_token。",
+			"httpError": "Codex HTTP {{status}} (req: {{requestId}}) model={{modelId}}: {{message}}",
+			"noResponseBody": "ChatGPT 响应错误：无响应正文",
+			"emptyStream": "ChatGPT 响应流未为模型 {{modelId}} 返回内容"
+		},
 		"api": {
 			"invalidKeyInvalidChars": "API 密钥包含无效字符。"
 		},

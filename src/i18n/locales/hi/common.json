@@ -123,6 +123,14 @@
 		"roo": {
 			"authenticationRequired": "Roo प्रदाता को क्लाउड प्रमाणीकरण की आवश्यकता है। कृपया Roo Code Cloud में साइन इन करें।"
 		},
+		"openaiNativeCodex": {
+			"oauthReadFailed": "{{path}} पर ChatGPT OAuth क्रेडेंशियल लोड करने में विफल: {{error}}। सुझाव: auth.json बनाने के लिए Codex CLI के साथ प्रमाणित करें (जैसे, \"codex login\")।",
+			"oauthParseFailed": "{{path}} पर ChatGPT OAuth क्रेडेंशियल JSON पार्स करने में विफल: {{error}}। सुझाव: सुनिश्चित करें कि फ़ाइल वैध JSON है या इसे पुनर्जनित करने के लिए \"codex login\" के साथ पुनः प्रमाणित करें।",
+			"missingAccessToken": "ChatGPT OAuth क्रेडेंशियल में tokens.access_token गुम है।",
+			"httpError": "Codex HTTP {{status}} (req: {{requestId}}) model={{modelId}}: {{message}}",
+			"noResponseBody": "ChatGPT प्रतिक्रिया त्रुटि: कोई प्रतिक्रिया बॉडी नहीं",
+			"emptyStream": "ChatGPT प्रतिक्रिया स्ट्रीम ने मॉडल {{modelId}} के लिए कोई सामग्री वापस नहीं की"
+		},
 		"api": {
 			"invalidKeyInvalidChars": "API कुंजी में अमान्य वर्ण हैं।"
 		},

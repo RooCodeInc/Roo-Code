@@ -123,6 +123,14 @@
 		"roo": {
 			"authenticationRequired": "Il provider Roo richiede l'autenticazione cloud. Accedi a Roo Code Cloud."
 		},
+		"openaiNativeCodex": {
+			"oauthReadFailed": "Impossibile caricare le credenziali OAuth di ChatGPT in {{path}}: {{error}}. Suggerimento: autenticati con la CLI Codex (es. \"codex login\") per creare auth.json.",
+			"oauthParseFailed": "Impossibile analizzare il JSON delle credenziali OAuth di ChatGPT in {{path}}: {{error}}. Suggerimento: assicurati che il file sia JSON valido o ri-autenticati con \"codex login\" per rigenerarlo.",
+			"missingAccessToken": "Le credenziali OAuth di ChatGPT non hanno tokens.access_token.",
+			"httpError": "Codex HTTP {{status}} (req: {{requestId}}) model={{modelId}}: {{message}}",
+			"noResponseBody": "Errore risposte ChatGPT: Nessun corpo di risposta",
+			"emptyStream": "Il flusso di risposte ChatGPT non ha restituito contenuto per il modello {{modelId}}"
+		},
 		"api": {
 			"invalidKeyInvalidChars": "La chiave API contiene caratteri non validi."
 		},

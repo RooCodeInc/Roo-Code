@@ -123,6 +123,14 @@
 		"roo": {
 			"authenticationRequired": "Penyedia Roo memerlukan autentikasi cloud. Silakan masuk ke Roo Code Cloud."
 		},
+		"openaiNativeCodex": {
+			"oauthReadFailed": "Gagal memuat kredensial OAuth ChatGPT di {{path}}: {{error}}. Tips: autentikasi dengan Codex CLI (mis., \"codex login\") untuk membuat auth.json.",
+			"oauthParseFailed": "Gagal mengurai JSON kredensial OAuth ChatGPT di {{path}}: {{error}}. Tips: pastikan file adalah JSON yang valid atau autentikasi ulang dengan \"codex login\" untuk meregenerasi.",
+			"missingAccessToken": "Kredensial OAuth ChatGPT tidak memiliki tokens.access_token.",
+			"httpError": "Codex HTTP {{status}} (req: {{requestId}}) model={{modelId}}: {{message}}",
+			"noResponseBody": "Error respons ChatGPT: Tidak ada body respons",
+			"emptyStream": "Stream respons ChatGPT tidak mengembalikan konten untuk model {{modelId}}"
+		},
 		"api": {
 			"invalidKeyInvalidChars": "Kunci API mengandung karakter tidak valid."
 		},
