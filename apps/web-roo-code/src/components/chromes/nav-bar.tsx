@@ -29,7 +29,7 @@ export function NavBar({ stars, downloads }: NavBarProps) {
 			<div className="container flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
 				<div className="flex items-center">
 					<Link href="/" className="flex items-center">
-						<Image src={logoSrc} alt="Roo Code Logo" width={120} height={40} className="h-8 w-auto" />
+						<Image src={logoSrc} alt="Roo Code Logo" width={130} height={24} className="h-[24px] w-auto" />
 					</Link>
 				</div>
 
@@ -128,37 +128,37 @@ export function NavBar({ stars, downloads }: NavBarProps) {
 			{/* Mobile Menu Panel - Full Screen */}
 			<div
 				className={`fixed top-16 left-0 bg-background right-0 z-[100] transition-all duration-200 pointer-events-none md:hidden ${isMenuOpen ? "block h-dvh" : "hidden"}`}>
-				<nav className="overflow-y-auto bg-background pointer-events-auto">
+				<nav className="flex flex-col justify-between h-full pb-16 overflow-y-auto bg-background pointer-events-auto">
 					{/* Main navigation items */}
-					<div className="flex-1 py-4">
+					<div className="grow-1 py-4 font-semibold text-lg">
 						<ScrollButton
 							targetId="product"
-							className="w-full px-8 py-5 text-left text-lg font-semibold text-foreground active:opacity-50"
+							className="block w-full p-5 py-3 text-left text-foreground active:opacity-50"
 							onClick={() => setIsMenuOpen(false)}>
 							Product
 						</ScrollButton>
 						<Link
 							href="/enterprise"
-							className="block w-full px-8 py-5 text-left text-lg font-semibold text-foreground active:opacity-50"
+							className="block w-full p-5 py-3 text-left text-foreground active:opacity-50"
 							onClick={() => setIsMenuOpen(false)}>
 							Enterprise
 						</Link>
 						<a
 							href={EXTERNAL_LINKS.DOCUMENTATION}
 							target="_blank"
-							className="block w-full px-8 py-5 text-left text-lg font-semibold text-foreground active:opacity-50"
+							className="block w-full p-5 text-left text-foreground active:opacity-50"
 							onClick={() => setIsMenuOpen(false)}>
 							Docs
 						</a>
 
 						{/* Resources Section */}
 						<div className="mt-4 w-full">
-							<div className="px-8 pb-2 pt-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+							<div className="px-5 pb-2 pt-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
 								Resources
 							</div>
 							<Link
 								href="/evals"
-								className="block w-full px-8 py-4 text-left text-lg font-medium text-foreground active:opacity-50"
+								className="block w-full p-5 py-3 text-left text-foreground active:opacity-50"
 								onClick={() => setIsMenuOpen(false)}>
 								Evals
 							</Link>
@@ -166,7 +166,7 @@ export function NavBar({ stars, downloads }: NavBarProps) {
 								href={EXTERNAL_LINKS.DISCORD}
 								target="_blank"
 								rel="noopener noreferrer"
-								className="block w-full px-8 py-4 text-left text-lg font-medium text-foreground transition-colors hover:bg-accent"
+								className="block w-full p-5 py-3 text-left text-foreground active:opacity-50"
 								onClick={() => setIsMenuOpen(false)}>
 								Discord
 							</a>
@@ -174,7 +174,7 @@ export function NavBar({ stars, downloads }: NavBarProps) {
 								href={EXTERNAL_LINKS.SECURITY}
 								target="_blank"
 								rel="noopener noreferrer"
-								className="block w-full px-8 py-5 text-left text-lg font-semibold text-foreground active:opacity-50"
+								className="block w-full p-5 py-3 text-left text-foreground active:opacity-50"
 								onClick={() => setIsMenuOpen(false)}>
 								Security Center
 							</a>

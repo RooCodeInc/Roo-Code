@@ -3,15 +3,7 @@
 import { getVSCodeDownloads } from "@/lib/stats"
 
 import { Button } from "@/components/ui"
-import { AnimatedText } from "@/components/animated-text"
-import {
-	AnimatedBackground,
-	InstallSection,
-	Features,
-	Testimonials,
-	FAQSection,
-	CodeExample,
-} from "@/components/homepage"
+import { AnimatedBackground, InstallSection, Features, Testimonials, FAQSection } from "@/components/homepage"
 
 // Invalidate cache when a request comes in, at most once every hour.
 export const revalidate = 3600
@@ -21,28 +13,18 @@ export default async function Home() {
 
 	return (
 		<>
-			<section className="relative flex h-[calc(125vh-theme(spacing.12))] items-center overflow-hidden md:h-[calc(100svh-theme(spacing.12))] lg:h-[calc(100vh-theme(spacing.12))]">
+			<section className="relative flex h-[calc(125vh-theme(spacing.12))] items-center overflow-hidden md:h-[calc(80svh-theme(spacing.12))]">
 				<AnimatedBackground />
-				<div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
-					<div className="grid gap-8 md:gap-12 lg:grid-cols-2 lg:gap-16">
-						<div className="flex flex-col justify-center space-y-6 sm:space-y-8">
+				<div className="container relative flex items-center h-full z-10 mx-auto px-4 sm:px-6 lg:px-8">
+					<div className="grid h-full relative gap-8 md:gap-12 lg:grid-cols-2 lg:gap-16">
+						<div className="flex flex-col px-4 justify-center space-y-6 sm:space-y-8">
 							<div>
-								<h1 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl lg:text-6xl">
-									<span className="block">Your</span>
-									<AnimatedText className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-										AI-Powered
-									</AnimatedText>
-									<span className="block">Dev Team, in Your Editor</span>
-									<AnimatedText className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-										and Beyond
-									</AnimatedText>
+								<h1 className="text-3xl font-bold tracking-tight mt-8 sm:text-4xl md:text-5xl lg:text-6xl lg:mt-0">
+									An entire AI-powered dev team. In your editor and beyond.
 								</h1>
 								<p className="mt-4 max-w-md text-base text-muted-foreground sm:mt-6 sm:text-lg">
-									Supercharge your software development with AI that{" "}
-									<AnimatedText className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-										understands your codebase
-									</AnimatedText>{" "}
-									and helps you write, refactor, and debug with ease in your editor and in the cloud.
+									Roo&apos;s model-agnostic, specialized modes and fine-grained auto-approval controls
+									give you the tools (and the confidence) to get AI working for you.
 								</p>
 							</div>
 							<div className="flex flex-col space-y-3 sm:flex-row sm:space-x-4 sm:space-y-0">
@@ -53,7 +35,7 @@ export default async function Home() {
 										href="https://marketplace.visualstudio.com/items?itemName=RooVeterinaryInc.roo-cline"
 										target="_blank"
 										className="flex w-full items-center justify-center">
-										Install Roo Code
+										Install Extension
 										<svg
 											xmlns="http://www.w3.org/2000/svg"
 											className="ml-2 h-4 w-4"
@@ -80,11 +62,10 @@ export default async function Home() {
 								</Button>
 							</div>
 						</div>
-						<div className="relative mt-8 flex items-center justify-center lg:mt-0">
-							<div className="absolute inset-0 flex items-center justify-center">
-								<div className="h-[250px] w-[250px] rounded-full bg-blue-500/20 blur-[100px] sm:h-[300px] sm:w-[300px] md:h-[350px] md:w-[350px]" />
+						<div className="relative flex items-center mx-auto h-full mt-8 lg:mt-0">
+							<div className="flex items-center justify-center">
+								<div className="bg-red-500  h-[600px] w-[320px]">Video will go here</div>
 							</div>
-							<CodeExample />
 						</div>
 					</div>
 				</div>
