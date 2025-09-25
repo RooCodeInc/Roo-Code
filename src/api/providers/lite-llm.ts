@@ -127,7 +127,6 @@ export class LiteLLMHandler extends RouterProvider implements SingleCompletionHa
 
 		// GPT-5 models require max_completion_tokens instead of the deprecated max_tokens parameter
 		if (isGPT5Model && maxTokens) {
-			// @ts-ignore - max_completion_tokens is not in the OpenAI types yet but is supported
 			requestOptions.max_completion_tokens = maxTokens
 		} else if (maxTokens) {
 			requestOptions.max_tokens = maxTokens
