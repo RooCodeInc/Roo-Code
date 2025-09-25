@@ -59,6 +59,7 @@ interface PricingTier {
 	icon: LucideIcon
 	price: string
 	period?: string
+	trial?: string
 	cancellation?: string
 	description: string
 	featuresIntro?: string
@@ -85,14 +86,15 @@ const pricingTiers: PricingTier[] = [
 		],
 		cta: {
 			text: "Get started",
-			href: EXTERNAL_LINKS.CLOUD_APP,
+			href: EXTERNAL_LINKS.CLOUD_APP_SIGNUP,
 		},
 	},
 	{
 		name: "Pro",
 		icon: Star,
 		price: "$20",
-		period: "/month",
+		period: "/mo",
+		trial: "Free 14-day trial · ",
 		cancellation: "Cancel anytime",
 		description: "For pro Roo coders",
 		featuresIntro: "Everything in Free, plus:",
@@ -103,22 +105,23 @@ const pricingTiers: PricingTier[] = [
 			"Paid support",
 		],
 		cta: {
-			text: "Start 14-day Free Trial",
-			href: EXTERNAL_LINKS.CLOUD_APP,
+			text: "Get started",
+			href: EXTERNAL_LINKS.CLOUD_APP_SIGNUP + "?redirect_url=/billing",
 		},
 	},
 	{
 		name: "Team",
 		icon: Users,
 		price: "$99",
-		period: "/month",
+		period: "/mo",
+		trial: "Free 14-day trial · ",
 		cancellation: "Cancel anytime",
 		description: "For AI-forward teams",
 		featuresIntro: "Everything in Pro, plus:",
 		features: ["Unlimited users (no per-seat cost)", "Shared configuration & policies", "Centralized billing"],
 		cta: {
-			text: "Start 14-day Free Trial",
-			href: EXTERNAL_LINKS.CLOUD_APP,
+			text: "Get started",
+			href: EXTERNAL_LINKS.CLOUD_APP_SIGNUP + "?redirect_url=/billing",
 		},
 	},
 	{
@@ -181,7 +184,7 @@ export default function PricingPage() {
 									className="relative p-6 flex flex-col justify-start bg-background border rounded-2xl transition-all hover:shadow-lg">
 									<div className="mb-6">
 										<div className="flex items-center justify-between">
-											<h3 className="text-2xl font-bold">{tier.name}</h3>
+											<h3 className="text-2xl font-bold tracking-tight">{tier.name}</h3>
 											<Icon className="size-6" />
 										</div>
 										<p className="text-sm text-muted-foreground">{tier.description}</p>
@@ -201,20 +204,23 @@ export default function PricingPage() {
 										</ul>
 									</div>
 
-									<p className="text-xl my-0 font-bold tracking-tight">
-										{tier.price}
+									<p className="text-2xl mt-0 mb-1 tracking-tight">
+										<strong>{tier.price}</strong>
 										{tier.period}
 									</p>
-									<p className="text-xs text-muted-foreground">{tier.cancellation}&nbsp;</p>
+									<p className="text-xs text-muted-foreground mb-4">
+										{tier.trial}
+										{tier.cancellation}&nbsp;
+									</p>
 
 									{tier.cta.isContactForm ? (
 										<ContactForm
 											formType="demo"
 											buttonText={tier.cta.text}
-											buttonClassName="w-full mt-2 transition-all duration-300"
+											buttonClassName="w-full transition-all duration-300"
 										/>
 									) : (
-										<Button size="lg" className="w-full mt-2 transition-all duration-300" asChild>
+										<Button size="lg" className="w-full transition-all duration-300" asChild>
 											<Link href={tier.cta.href!} className="flex items-center justify-center">
 												{tier.cta.text}
 											</Link>
@@ -305,11 +311,11 @@ export default function PricingPage() {
 								className="bg-black text-white hover:bg-gray-800 hover:shadow-lg hover:shadow-black/20 dark:bg-white dark:text-black dark:hover:bg-gray-200 dark:hover:shadow-white/20 transition-all duration-300"
 								asChild>
 								<a
-									href={EXTERNAL_LINKS.CLOUD_APP}
+									href={EXTERNAL_LINKS.CLOUD_APP_SIGNUP}
 									target="_blank"
 									rel="noopener noreferrer"
 									className="flex items-center justify-center">
-									Start Free Cloud Trial
+									Create a free Cloud account
 									<ArrowRight className="ml-2 h-4 w-4" />
 								</a>
 							</Button>
