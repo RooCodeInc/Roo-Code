@@ -148,7 +148,6 @@ export class WatsonxAIHandler extends BaseProvider implements SingleCompletionHa
 			const watsonxMessages = [{ role: "system", content: systemPrompt }, ...convertToOpenAiMessages(messages)]
 
 			const params = this.createTextChatParams(this.projectId!, modelId, watsonxMessages)
-
 			const response = await this.service.textChat(params)
 
 			if (!response?.result?.choices?.[0]?.message?.content) {
@@ -172,7 +171,7 @@ export class WatsonxAIHandler extends BaseProvider implements SingleCompletionHa
 				type: "usage",
 				inputTokens: inputTokens,
 				outputTokens,
-				totalCost: totalCost,
+				totalCost: totalCost.totalCost,
 			}
 		} catch (error) {
 			const errorMessage = error?.message || String(error)
