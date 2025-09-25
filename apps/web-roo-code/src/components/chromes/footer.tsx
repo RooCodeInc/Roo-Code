@@ -195,15 +195,6 @@ export function Footer() {
 										</a>
 									</li>
 									<li>
-										<a
-											href={EXTERNAL_LINKS.BLOG}
-											target="_blank"
-											rel="noopener noreferrer"
-											className="text-sm leading-6 text-muted-foreground transition-colors hover:text-foreground">
-											Blog
-										</a>
-									</li>
-									<li>
 										<Link
 											href="/terms"
 											className="text-sm leading-6 text-muted-foreground transition-colors hover:text-foreground">

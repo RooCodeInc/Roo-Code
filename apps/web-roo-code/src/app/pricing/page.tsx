@@ -4,6 +4,7 @@ import Link from "next/link"
 
 import { Button } from "@/components/ui"
 import { AnimatedBackground } from "@/components/homepage"
+import { ContactForm } from "@/components/enterprise/contact-form"
 import { SEO } from "@/lib/seo"
 import { EXTERNAL_LINKS } from "@/lib/constants"
 
@@ -64,7 +65,8 @@ interface PricingTier {
 	features: string[]
 	cta: {
 		text: string
-		href: string
+		href?: string
+		isContactForm?: boolean
 	}
 }
 
@@ -133,7 +135,7 @@ const pricingTiers: PricingTier[] = [
 		],
 		cta: {
 			text: "Talk to Sales",
-			href: "/enterprise#contact",
+			isContactForm: true,
 		},
 	},
 ]
@@ -205,11 +207,19 @@ export default function PricingPage() {
 									</p>
 									<p className="text-xs text-muted-foreground">{tier.cancellation}&nbsp;</p>
 
-									<Button size="lg" className="w-full mt-2 transition-all duration-300" asChild>
-										<Link href={tier.cta.href} className="flex items-center justify-center">
-											{tier.cta.text}
-										</Link>
-									</Button>
+									{tier.cta.isContactForm ? (
+										<ContactForm
+											formType="demo"
+											buttonText={tier.cta.text}
+											buttonClassName="w-full mt-2 transition-all duration-300"
+										/>
+									) : (
+										<Button size="lg" className="w-full mt-2 transition-all duration-300" asChild>
+											<Link href={tier.cta.href!} className="flex items-center justify-center">
+												{tier.cta.text}
+											</Link>
+										</Button>
+									)}
 								</div>
 							)
 						})}

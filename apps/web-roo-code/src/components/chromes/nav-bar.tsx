@@ -40,11 +40,6 @@ export function NavBar({ stars, downloads }: NavBarProps) {
 						className="text-muted-foreground px-4 py-6 transition-transform duration-200 hover:scale-105 hover:text-foreground max-lg:hidden">
 						Product
 					</ScrollButton>
-					<Link
-						href="/enterprise"
-						className="text-muted-foreground px-4 py-6 transition-transform duration-200 hover:scale-105 hover:text-foreground">
-						Enterprise
-					</Link>
 					<a
 						href={EXTERNAL_LINKS.DOCUMENTATION}
 						target="_blank"
@@ -147,12 +142,6 @@ export function NavBar({ stars, downloads }: NavBarProps) {
 							onClick={() => setIsMenuOpen(false)}>
 							Product
 						</ScrollButton>
-						<Link
-							href="/enterprise"
-							className="block w-full p-5 py-3 text-left text-foreground active:opacity-50"
-							onClick={() => setIsMenuOpen(false)}>
-							Enterprise
-						</Link>
 						<a
 							href={EXTERNAL_LINKS.DOCUMENTATION}
 							target="_blank"
