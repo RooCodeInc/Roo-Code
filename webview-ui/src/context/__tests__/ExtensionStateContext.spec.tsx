@@ -235,6 +235,8 @@ describe("mergeExtensionState", () => {
 				newTaskRequireTodos: false,
 				imageGeneration: false,
 				runSlashCommand: false,
+				preventTerminalDisruption: false,
+				assistantMessageParser: false,
 			} as Record<ExperimentId, boolean>,
 		}
 
@@ -255,6 +257,8 @@ describe("mergeExtensionState", () => {
 			newTaskRequireTodos: false,
 			imageGeneration: false,
 			runSlashCommand: false,
+			preventTerminalDisruption: false,
+			assistantMessageParser: false,
 		})
 	})
 })
