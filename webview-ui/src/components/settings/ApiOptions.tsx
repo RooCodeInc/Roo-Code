@@ -240,46 +240,7 @@ const ApiOptions = ({
 			) {
 				vscode.postMessage({ type: "requestRouterModels" })
 			} else if (selectedProvider === "ibm-watsonx") {
-				const {
-					watsonxPlatform,
-					watsonxApiKey,
-					watsonxProjectId,
-					watsonxBaseUrl,
-					watsonxAuthType,
-					watsonxUsername,
-					watsonxPassword,
-					watsonxRegion,
-				} = apiConfiguration
-
-				const ibmCloudReady =
-					watsonxPlatform === "ibmCloud" && !!watsonxApiKey && !!watsonxProjectId && !!watsonxRegion
-
-				const cloudPakReady =
-					watsonxPlatform === "cloudPak" &&
-					!!watsonxBaseUrl &&
-					!!watsonxProjectId &&
-					!!watsonxUsername &&
-					((watsonxAuthType === "apiKey" && !!watsonxApiKey) ||
-						(watsonxAuthType === "password" && !!watsonxPassword))
-
-				if (ibmCloudReady || cloudPakReady) {
-					vscode.postMessage({
-						type: "requestWatsonxModels",
-						values: {
-							apiKey: apiConfiguration.watsonxApiKey,
-							projectId: apiConfiguration.watsonxProjectId,
-							platform: apiConfiguration.watsonxPlatform,
-							baseUrl:
-								apiConfiguration.watsonxPlatform === "ibmCloud"
-									? undefined
-									: apiConfiguration.watsonxBaseUrl,
-							authType: apiConfiguration.watsonxAuthType,
-							username: apiConfiguration.watsonxUsername,
-							password: apiConfiguration.watsonxPassword,
-							region: apiConfiguration.watsonxRegion,
-						},
-					})
-				}
+				vscode.postMessage({ type: "requestWatsonxModels" })
 			}
 		},
 		250,
@@ -294,14 +255,13 @@ const ApiOptions = ({
 			apiConfiguration?.litellmApiKey,
 			apiConfiguration?.deepInfraApiKey,
 			apiConfiguration?.deepInfraBaseUrl,
-			apiConfiguration?.watsonxPlatform,
-			apiConfiguration?.watsonxApiKey,
-			apiConfiguration?.watsonxProjectId,
-			apiConfiguration?.watsonxBaseUrl,
-			apiConfiguration?.watsonxAuthType,
-			apiConfiguration?.watsonxUsername,
-			apiConfiguration?.watsonxPassword,
-			apiConfiguration?.watsonxRegion,
+			apiConfiguration.watsonxPlatform,
+			apiConfiguration.watsonxApiKey,
+			apiConfiguration.watsonxProjectId,
+			apiConfiguration.watsonxBaseUrl,
+			apiConfiguration.watsonxAuthType,
+			apiConfiguration.watsonxUsername,
+			apiConfiguration.watsonxPassword,
 			customHeaders,
 		],
 	)
