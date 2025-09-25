@@ -51,6 +51,11 @@ export function NavBar({ stars, downloads }: NavBarProps) {
 						className="text-muted-foreground px-4 py-6 transition-transform duration-200 hover:scale-105 hover:text-foreground">
 						Docs
 					</a>
+					<Link
+						href="/pricing"
+						className="text-muted-foreground px-4 py-6 transition-transform duration-200 hover:scale-105 hover:text-foreground">
+						Pricing
+					</Link>
 					{/* Resources Dropdown */}
 					<div className="relative group">
 						<button className="flex items-center px-4 py-6 gap-1 text-muted-foreground transition-transform duration-200 hover:scale-105 hover:text-foreground">
@@ -155,6 +160,12 @@ export function NavBar({ stars, downloads }: NavBarProps) {
 							onClick={() => setIsMenuOpen(false)}>
 							Docs
 						</a>
+						<Link
+							href="/pricing"
+							className="block w-full p-5 text-left text-foreground active:opacity-50"
+							onClick={() => setIsMenuOpen(false)}>
+							Pricing
+						</Link>
 
 						{/* Resources Section */}
 						<div className="mt-4 w-full">
