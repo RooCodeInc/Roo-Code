@@ -89,7 +89,7 @@ export default async function Home() {
 					</div>
 				</div>
 			</section>
-			<div id="features">
+			<div id="product">
 				<Features />
 			</div>
 			<div id="testimonials">
