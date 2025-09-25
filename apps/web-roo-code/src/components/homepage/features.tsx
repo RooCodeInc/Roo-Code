@@ -41,7 +41,8 @@ export const features: Feature[] = [
 	{
 		icon: Shield,
 		title: "Secure and Private by Design",
-		description: "Open source and local-first. No code leaves your machine unless you say so.",
+		description:
+			"Open source and local-first. No code leaves your machine unless you say so. SOC 2 Type II compliant.",
 	},
 ]
 
