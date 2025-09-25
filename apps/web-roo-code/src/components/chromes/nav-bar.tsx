@@ -37,7 +37,7 @@ export function NavBar({ stars, downloads }: NavBarProps) {
 				<nav className="grow ml-6 hidden text-sm font-medium md:flex md:items-center">
 					<ScrollButton
 						targetId="product"
-						className="text-foreground px-4 py-6 transition-transform duration-200 hover:scale-105 hover:text-foreground max-lg:hidden">
+						className="text-muted-foreground px-4 py-6 transition-transform duration-200 hover:scale-105 hover:text-foreground max-lg:hidden">
 						Product
 					</ScrollButton>
 					<Link
