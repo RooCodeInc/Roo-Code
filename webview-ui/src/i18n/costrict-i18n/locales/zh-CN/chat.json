@@ -4,6 +4,7 @@
 	"instructions": {
 		"wantsToFetch": "Costrict 想要获取详细指令以协助当前任务"
 	},
+	"error": "Costrict 将自动修复",
 	"text": {
 		"rooSaid": "Costrict 说"
 	},
