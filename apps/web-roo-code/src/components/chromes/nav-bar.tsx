@@ -82,7 +82,7 @@ export function NavBar({ stars, downloads }: NavBarProps) {
 								rel="noopener noreferrer"
 								className="block px-4 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
 								onClick={() => setIsMenuOpen(false)}>
-								Security Center
+								Trust Center
 							</a>
 						</div>
 					</div>
