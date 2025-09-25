@@ -182,9 +182,6 @@ function validateModelsAndKeysProvided(apiConfiguration: ProviderSettings): stri
 				} catch {
 					return i18next.t("settings:validation.watsonx.invalidUrl")
 				}
-				if (!apiConfiguration.watsonxProjectId) {
-					return i18next.t("settings:validation.watsonx.projectId")
-				}
 				if (!apiConfiguration.watsonxUsername) {
 					return i18next.t("settings:validation.watsonx.username")
 				}
