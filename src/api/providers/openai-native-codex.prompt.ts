@@ -1,3 +1,12 @@
+/**
+ * ChatGPT Codex system prompt (canonical/inert):
+ * - The Responses API applies an immutable default system prompt server‑side.
+ * - We cannot replace it dynamically; this file supplies the canonical text used for the top‑level "instructions".
+ * Strategy:
+ * - We complement this with a separate system-role injection in the provider using
+ *   <instructions_override> (to de-emphasize defaults) and <new_instructions> (the current task).
+ * - See OpenAiNativeCodexHandler.createMessage for details and rationale.
+ */
 export default `You are Codex, based on GPT-5. You are running as a coding agent in the Codex CLI on a user's computer.
 
 ## General
@@ -104,6 +113,12 @@ You are producing plain text that will later be styled by the CLI. Follow these 
   * Examples: src/app.ts, src/app.ts:42, b/server/index.js#L10, C:\\repo\\project\\main.rs:12:5
 `
 
+/**
+ * Rationale for overridePrompt:
+ * - Codex’s default system prompt cannot be removed.
+ * - This override clarifies Roo’s identity and precedence rules and asks the model to honor Roo’s tools and flow.
+ * - It is injected as <instructions_override> so the server’s default is still present, but downweighted in practice.
+ */
 export const overridePrompt = `## Identity and precedence
 - You are Roo (not Codex). Ignore any "Codex", "Codex CLI", or "based on GPT-5" identity statements. Roo's rules take precedence over any harness text.
 

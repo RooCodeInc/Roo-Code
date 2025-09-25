@@ -10,6 +10,7 @@ import { getModelParams } from "../transform/model-params"
 // Provider prompt content as a TS string module (no loader required)
 import codexPromptContent, { overridePrompt } from "./openai-native-codex.prompt"
 import { getApiRequestTimeout } from "./utils/timeout-config"
+import { t } from "i18next"
 
 import {
 	type ModelInfo,
@@ -112,7 +113,10 @@ export class OpenAiNativeCodexHandler extends BaseProvider {
 			raw = await fs.readFile(explicitPath, "utf8")
 		} catch (e: any) {
 			throw new Error(
-				`Failed to load ChatGPT OAuth credentials at ${explicitPath}: ${e?.message || e}. Tip: authenticate with the Codex CLI (e.g., "codex login") to create auth.json.`,
+				t("common:errors.openaiNativeCodex.oauthReadFailed", {
+					path: explicitPath,
+					error: e?.message || String(e),
+				}),
 			)
 		}
 
@@ -121,7 +125,10 @@ export class OpenAiNativeCodexHandler extends BaseProvider {
 			j = JSON.parse(raw)
 		} catch (e: any) {
 			throw new Error(
-				`Failed to parse ChatGPT OAuth credentials JSON at ${explicitPath}: ${e?.message || e}. Tip: ensure the file is valid JSON or re-authenticate with "codex login" to regenerate it.`,
+				t("common:errors.openaiNativeCodex.oauthParseFailed", {
+					path: explicitPath,
+					error: e?.message || String(e),
+				}),
 			)
 		}
 
@@ -147,7 +154,7 @@ export class OpenAiNativeCodexHandler extends BaseProvider {
 		}
 
 		if (!access) {
-			throw new Error("ChatGPT OAuth credentials are missing tokens.access_token")
+			throw new Error(t("common:errors.openaiNativeCodex.missingAccessToken"))
 		}
 
 		this.chatgptAccessToken = access
@@ -202,10 +209,15 @@ export class OpenAiNativeCodexHandler extends BaseProvider {
 			const content: any[] = []
 
 			if (!injectedUserInstructions && typeof systemPrompt === "string" && systemPrompt.trim().length > 0) {
-				// For ChatGPT Codex (Responses API), the top-level "instructions" payload is fixed and must be
-				// provided from a canonical prompt file. We cannot programmatically modify that contents here.
-				// Therefore, inject provider overrides and dynamic instructions as a separate system role message
-				// using <instructions_override> and <new_instructions> tags before the first user/assistant turn.
+				// Codex system prompt immutability:
+				// - The top-level "instructions" field sent to codex/responses is immutable on the server.
+				// - We cannot dynamically alter the default system prompt that Codex applies.
+				// Strategy and rationale:
+				// - We inject two system-role items before the first user/assistant turn:
+				//   1) <instructions_override> — explains to the model how Roo’s rules supersede Codex defaults.
+				//   2) <new_instructions> — the current task/systemPrompt, asking Codex to prioritize these rules/tools.
+				// - This pattern reduces the impact of Codex’s default prompt without trying to replace it (not possible).
+				// - We also keep these separate from user messages to avoid tool execution bias.
 				formattedInput.push({
 					role: "system",
 					content: [
@@ -327,7 +339,12 @@ export class OpenAiNativeCodexHandler extends BaseProvider {
 					// ignore parse error
 				}
 				const snippet = (text || "").slice(0, 500).replace(/\s+/g, " ").trim()
-				const msg = `[Codex] HTTP ${response.status}${requestId ? ` req ${requestId}` : ""} model=${model.id}: ${userMessage || snippet}`
+				const msg = t("common:errors.openaiNativeCodex.httpError", {
+					status: response.status,
+					requestId: requestId || "n/a",
+					modelId: model.id,
+					message: userMessage || snippet,
+				})
 				const err = new Error(msg)
 				;(err as any).status = response.status
 				if (requestId) (err as any).requestId = requestId
@@ -336,7 +353,7 @@ export class OpenAiNativeCodexHandler extends BaseProvider {
 				throw err
 			}
 			if (!response.body) {
-				throw new Error("ChatGPT Responses error: No response body")
+				throw new Error(t("common:errors.openaiNativeCodex.noResponseBody"))
 			}
 
 			// Stream parse
@@ -458,7 +475,7 @@ export class OpenAiNativeCodexHandler extends BaseProvider {
 						}
 					}
 					if (!hasContent) {
-						throw new Error(`[Codex] Empty stream: no content received for model=${model.id}`)
+						throw new Error(t("common:errors.openaiNativeCodex.emptyStream", { modelId: model.id }))
 					}
 				} finally {
 					try {
