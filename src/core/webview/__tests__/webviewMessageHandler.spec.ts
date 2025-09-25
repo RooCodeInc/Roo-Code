@@ -254,6 +254,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 				"vercel-ai-gateway": mockModels,
 				huggingface: {},
 				"io-intelligence": {},
+				"ibm-watsonx": {},
 			},
 		})
 	})
@@ -346,6 +347,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 				"vercel-ai-gateway": mockModels,
 				huggingface: {},
 				"io-intelligence": {},
+				"ibm-watsonx": {},
 			},
 		})
 	})
@@ -391,6 +393,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 				"vercel-ai-gateway": mockModels,
 				huggingface: {},
 				"io-intelligence": {},
+				"ibm-watsonx": {},
 			},
 		})
 

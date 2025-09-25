@@ -96,6 +96,7 @@ import {
 	Featherless,
 	VercelAiGateway,
 	DeepInfra,
+	WatsonxAI,
 } from "./providers"
 
 import { MODELS_BY_PROVIDER, PROVIDERS } from "./constants"
@@ -235,6 +236,8 @@ const ApiOptions = ({
 				selectedProvider === "roo"
 			) {
 				vscode.postMessage({ type: "requestRouterModels" })
+			} else if (selectedProvider === "ibm-watsonx") {
+				vscode.postMessage({ type: "requestWatsonxModels" })
 			}
 		},
 		250,
@@ -249,6 +252,13 @@ const ApiOptions = ({
 			apiConfiguration?.litellmApiKey,
 			apiConfiguration?.deepInfraApiKey,
 			apiConfiguration?.deepInfraBaseUrl,
+			apiConfiguration.watsonxPlatform,
+			apiConfiguration.watsonxApiKey,
+			apiConfiguration.watsonxProjectId,
+			apiConfiguration.watsonxBaseUrl,
+			apiConfiguration.watsonxAuthType,
+			apiConfiguration.watsonxUsername,
+			apiConfiguration.watsonxPassword,
 			customHeaders,
 		],
 	)
@@ -362,6 +372,7 @@ const ApiOptions = ({
 				openai: { field: "openAiModelId" },
 				ollama: { field: "ollamaModelId" },
 				lmstudio: { field: "lmStudioModelId" },
+				"ibm-watsonx": { field: "watsonxModelId" },
 			}
 
 			const config = PROVIDER_MODEL_CONFIG[value]
@@ -686,7 +697,16 @@ const ApiOptions = ({
 				<Featherless apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
 			)}
 
-			{selectedProviderModels.length > 0 && (
+			{selectedProvider === "ibm-watsonx" && (
+				<WatsonxAI
+					apiConfiguration={apiConfiguration}
+					setApiConfigurationField={setApiConfigurationField}
+					organizationAllowList={organizationAllowList}
+					modelValidationError={modelValidationError}
+				/>
+			)}
+
+			{selectedProviderModels.length > 0 && selectedProvider !== "ibm-watsonx" && (
 				<>
 					<div>
 						<label className="block font-medium mb-1">{t("settings:providers.model")}</label>
@@ -777,6 +797,7 @@ const ApiOptions = ({
 						<DiffSettingsControl
 							diffEnabled={apiConfiguration.diffEnabled}
 							fuzzyMatchThreshold={apiConfiguration.fuzzyMatchThreshold}
+							provider={apiConfiguration.apiProvider}
 							onChange={(field, value) => setApiConfigurationField(field, value)}
 						/>
 						{selectedModelInfo?.supportsTemperature !== false && (

@@ -56,6 +56,8 @@ import {
 	vercelAiGatewayDefaultModelId,
 	BEDROCK_1M_CONTEXT_MODEL_IDS,
 	deepInfraDefaultModelId,
+	watsonxModels,
+	watsonxDefaultModelId,
 } from "@roo-code/types"
 
 import type { ModelRecord, RouterModels } from "@roo/api"
@@ -343,6 +345,14 @@ function getSelectedModel({
 			const id = apiConfiguration.vercelAiGatewayModelId ?? vercelAiGatewayDefaultModelId
 			const info = routerModels["vercel-ai-gateway"]?.[id]
 			return { id, info }
+		}
+		case "ibm-watsonx": {
+			const id = apiConfiguration.watsonxModelId ?? watsonxDefaultModelId
+			const info = watsonxModels[id as keyof typeof watsonxModels]
+			return {
+				id,
+				info: info,
+			}
 		}
 		// case "anthropic":
 		// case "human-relay":
