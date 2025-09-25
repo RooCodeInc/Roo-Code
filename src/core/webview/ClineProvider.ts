@@ -2256,7 +2256,7 @@ export class ClineProvider
 		}
 
 		// Log out from cloud if authenticated
-		if (CloudService.hasInstance() && CloudService.instance.isAuthenticated()) {
+		if (CloudService.hasInstance()) {
 			try {
 				await CloudService.instance.logout()
 			} catch (error) {
