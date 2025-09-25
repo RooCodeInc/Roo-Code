@@ -95,5 +95,9 @@
 		"months_ago": "fa {{count}} mesos",
 		"year_ago": "fa un any",
 		"years_ago": "fa {{count}} anys"
+	},
+	"thumbnails": {
+		"failedToLoad": "No s'ha pogut carregar la imatge",
+		"altText": "Miniatura {{index}}"
 	}
 }

@@ -95,5 +95,9 @@
 		"months_ago": "{{count}} months ago",
 		"year_ago": "a year ago",
 		"years_ago": "{{count}} years ago"
+	},
+	"thumbnails": {
+		"failedToLoad": "Failed to load image",
+		"altText": "Thumbnail {{index}}"
 	}
 }

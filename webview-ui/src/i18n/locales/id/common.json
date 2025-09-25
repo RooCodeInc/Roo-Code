@@ -95,5 +95,9 @@
 		"months_ago": "{{count}} bulan yang lalu",
 		"year_ago": "satu tahun yang lalu",
 		"years_ago": "{{count}} tahun yang lalu"
+	},
+	"thumbnails": {
+		"failedToLoad": "Gagal memuat gambar",
+		"altText": "Thumbnail {{index}}"
 	}
 }
