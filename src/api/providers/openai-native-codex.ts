@@ -9,6 +9,7 @@ import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
 // Provider prompt content as a TS string module (no loader required)
 import codexPromptContent, { overridePrompt } from "./openai-native-codex.prompt"
+import { getApiRequestTimeout } from "./utils/timeout-config"
 
 import {
 	type ModelInfo,
@@ -110,14 +111,18 @@ export class OpenAiNativeCodexHandler extends BaseProvider {
 		try {
 			raw = await fs.readFile(explicitPath, "utf8")
 		} catch (e: any) {
-			throw new Error(`Failed to load ChatGPT OAuth credentials at ${explicitPath}: ${e?.message || e}`)
+			throw new Error(
+				`Failed to load ChatGPT OAuth credentials at ${explicitPath}: ${e?.message || e}. Tip: authenticate with the Codex CLI (e.g., "codex login") to create auth.json.`,
+			)
 		}
 
 		let j: any
 		try {
 			j = JSON.parse(raw)
 		} catch (e: any) {
-			throw new Error(`Failed to parse ChatGPT OAuth credentials JSON at ${explicitPath}: ${e?.message || e}`)
+			throw new Error(
+				`Failed to parse ChatGPT OAuth credentials JSON at ${explicitPath}: ${e?.message || e}. Tip: ensure the file is valid JSON or re-authenticate with "codex login" to regenerate it.`,
+			)
 		}
 
 		const tokens = (j?.tokens as any) || {}
@@ -263,13 +268,7 @@ export class OpenAiNativeCodexHandler extends BaseProvider {
 		// - Regular "gpt-5" should default to minimal reasoning unless explicitly overridden in settings.
 		// - The "gpt-5-codex" variant should NOT force minimal; use provided/default effort.
 		let effectiveEffort: ReasoningEffortWithMinimal | undefined = reasoningEffort
-		const explicitEffortProvided = typeof (this.options.reasoningEffort as any) === "string"
-		if (!explicitEffortProvided && model.id === "gpt-5") {
-			effectiveEffort = "minimal"
-		}
 
-		const requestedTier = (this.options.openAiNativeServiceTier as ServiceTier | undefined) || undefined
-		const allowedTierNames = new Set(model.info.tiers?.map((t) => t.name).filter(Boolean) || [])
 		const body: any = {
 			model: model.id,
 			input: formattedInput,
@@ -286,9 +285,6 @@ export class OpenAiNativeCodexHandler extends BaseProvider {
 			}),
 			// ChatGPT codex/responses does not support previous_response_id (stateless).
 			// Preserve continuity by sending curated prior items in `input`.
-			...(requestedTier && (requestedTier === "default" || allowedTierNames.has(requestedTier))
-				? { service_tier: requestedTier }
-				: {}),
 		}
 		if (model.info.supportsVerbosity === true) {
 			body.text = { verbosity: (verbosity || "medium") as VerbosityLevel }
@@ -307,11 +303,16 @@ export class OpenAiNativeCodexHandler extends BaseProvider {
 		}
 		if (this.chatgptAccountId) headers["chatgpt-account-id"] = this.chatgptAccountId
 
+		let timeoutId: ReturnType<typeof setTimeout> | undefined
 		try {
+			const timeoutMs = getApiRequestTimeout()
+			const controller = new AbortController()
+			timeoutId = timeoutMs > 0 ? setTimeout(() => controller.abort(), timeoutMs) : undefined
 			const response = await fetch(url, {
 				method: "POST",
 				headers,
 				body: JSON.stringify(requestBody),
+				signal: controller.signal,
 			})
 
 			if (!response.ok) {
@@ -468,7 +469,12 @@ export class OpenAiNativeCodexHandler extends BaseProvider {
 		} catch (err) {
 			throw err as Error
 		} finally {
-			// no-op
+			// Clear timeout if set
+			try {
+				if (typeof timeoutId !== "undefined") {
+					clearTimeout(timeoutId as any)
+				}
+			} catch {}
 		}
 	}
 }

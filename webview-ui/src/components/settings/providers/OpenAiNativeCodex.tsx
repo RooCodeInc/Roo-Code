@@ -43,7 +43,7 @@ export const OpenAiNativeCodex: React.FC<OpenAiNativeCodexProps> = ({ apiConfigu
 				</div>
 
 				<VSCodeLink
-					href="https://chat.openai.com"
+					href="https://chatgpt.com"
 					className="text-vscode-textLink-foreground mt-2 inline-block text-xs">
 					Learn more about ChatGPT
 				</VSCodeLink>

@@ -116,18 +116,11 @@ export const ThinkingBudget = ({ apiConfiguration, setApiConfigurationField, mod
 		? (["disable", ...baseAvailableOptions] as ReasoningEffortOption[])
 		: (baseAvailableOptions as ReadonlyArray<ReasoningEffortOption>)
 
-	// Default reasoning effort - use model's default if available
-	// Special-case for ChatGPT Codex "gpt-5": default to "minimal" unless user overrides
+	// Default reasoning effort - use model's default if available (no special-case overrides)
 	const modelDefaultReasoningEffort = modelInfo?.reasoningEffort as ReasoningEffortWithMinimal | undefined
-	// Special-case for ChatGPT Codex "gpt-5": default to "minimal" unless user overrides
-	const defaultReasoningEffort: ReasoningEffortOption =
-		apiConfiguration.apiProvider === "openai-native-codex" &&
-		selectedModelId === "gpt-5" &&
-		isReasoningEffortSupported
-			? "minimal"
-			: modelInfo?.requiredReasoningEffort
-				? modelDefaultReasoningEffort || "medium"
-				: "disable"
+	const defaultReasoningEffort: ReasoningEffortOption = modelInfo?.requiredReasoningEffort
+		? modelDefaultReasoningEffort || "medium"
+		: "disable"
 	// Current reasoning effort from settings, or fall back to default
 	const storedReasoningEffort = apiConfiguration.reasoningEffort as ReasoningEffortOption | undefined
 	const currentReasoningEffort: ReasoningEffortOption = storedReasoningEffort || defaultReasoningEffort

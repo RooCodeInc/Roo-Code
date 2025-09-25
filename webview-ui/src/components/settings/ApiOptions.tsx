@@ -788,8 +788,11 @@ const ApiOptions = ({
 								}
 
 								// Clear reasoning effort when switching models to allow the new model's default to take effect
-								// This is especially important for GPT-5 models which default to "medium"
-								if (selectedProvider === "openai-native") {
+								// Applies to both OpenAI Native and ChatGPT Codex providers
+								if (
+									selectedProvider === "openai-native" ||
+									selectedProvider === "openai-native-codex"
+								) {
 									setApiConfigurationField("reasoningEffort", undefined)
 								}
 							}}>
