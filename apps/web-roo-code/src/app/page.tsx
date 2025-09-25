@@ -3,7 +3,14 @@
 import { getVSCodeDownloads } from "@/lib/stats"
 
 import { Button } from "@/components/ui"
-import { AnimatedBackground, InstallSection, Features, Testimonials, FAQSection } from "@/components/homepage"
+import {
+	AnimatedBackground,
+	InstallSection,
+	Features,
+	Testimonials,
+	FAQSection,
+	CodeExample,
+} from "@/components/homepage"
 
 // Invalidate cache when a request comes in, at most once every hour.
 export const revalidate = 3600
@@ -64,7 +71,7 @@ export default async function Home() {
 						</div>
 						<div className="relative flex items-center mx-auto h-full mt-8 lg:mt-0">
 							<div className="flex items-center justify-center">
-								<div className="bg-red-500  h-[600px] w-[320px]">Video will go here</div>
+								<CodeExample />
 							</div>
 						</div>
 					</div>
