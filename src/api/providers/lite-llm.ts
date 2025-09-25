@@ -32,6 +32,12 @@ export class LiteLLMHandler extends RouterProvider implements SingleCompletionHa
 		})
 	}
 
+	private isGpt5(modelId: string): boolean {
+		// Match gpt-5, gpt5, and variants like gpt-5o, gpt-5-turbo, gpt5-preview, gpt-5.1
+		// Avoid matching gpt-50, gpt-500, etc.
+		return /\bgpt-?5(?!\d)/i.test(modelId)
+	}
+
 	override async *createMessage(
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
@@ -108,7 +114,7 @@ export class LiteLLMHandler extends RouterProvider implements SingleCompletionHa
 		let maxTokens: number | undefined = info.maxTokens ?? undefined
 
 		// Check if this is a GPT-5 model that requires max_completion_tokens instead of max_tokens
-		const isGPT5Model = modelId.toLowerCase().includes("gpt-5") || modelId.toLowerCase().includes("gpt5")
+		const isGPT5Model = this.isGpt5(modelId)
 
 		const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming = {
 			model: modelId,
@@ -190,7 +196,7 @@ export class LiteLLMHandler extends RouterProvider implements SingleCompletionHa
 		const { id: modelId, info } = await this.fetchModel()
 
 		// Check if this is a GPT-5 model that requires max_completion_tokens instead of max_tokens
-		const isGPT5Model = modelId.toLowerCase().includes("gpt-5") || modelId.toLowerCase().includes("gpt5")
+		const isGPT5Model = this.isGpt5(modelId)
 
 		try {
 			const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {

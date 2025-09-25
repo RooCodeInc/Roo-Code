@@ -34,6 +34,9 @@ vi.mock("../fetchers/modelCache", () => ({
 			"GPT-5": { ...litellmDefaultModelInfo, maxTokens: 8192 },
 			"gpt-5-turbo": { ...litellmDefaultModelInfo, maxTokens: 8192 },
 			"gpt5-preview": { ...litellmDefaultModelInfo, maxTokens: 8192 },
+			"gpt-5o": { ...litellmDefaultModelInfo, maxTokens: 8192 },
+			"gpt-5.1": { ...litellmDefaultModelInfo, maxTokens: 8192 },
+			"gpt-5-mini": { ...litellmDefaultModelInfo, maxTokens: 8192 },
 			"gpt-4": { ...litellmDefaultModelInfo, maxTokens: 8192 },
 			"claude-3-opus": { ...litellmDefaultModelInfo, maxTokens: 8192 },
 			"llama-3": { ...litellmDefaultModelInfo, maxTokens: 8192 },
@@ -200,7 +203,16 @@ describe("LiteLLMHandler", () => {
 		})
 
 		it("should use max_completion_tokens for various GPT-5 model variations", async () => {
-			const gpt5Variations = ["gpt-5", "gpt5", "GPT-5", "gpt-5-turbo", "gpt5-preview"]
+			const gpt5Variations = [
+				"gpt-5",
+				"gpt5",
+				"GPT-5",
+				"gpt-5-turbo",
+				"gpt5-preview",
+				"gpt-5o",
+				"gpt-5.1",
+				"gpt-5-mini",
+			]
 
 			for (const modelId of gpt5Variations) {
 				vi.clearAllMocks()
@@ -307,6 +319,73 @@ describe("LiteLLMHandler", () => {
 
 			expect(createCall.max_completion_tokens).toBeDefined()
 			expect(createCall.max_tokens).toBeUndefined()
+		})
+
+		it("should not set any max token fields when maxTokens is undefined (GPT-5 streaming)", async () => {
+			const optionsWithGPT5: ApiHandlerOptions = {
+				...mockOptions,
+				litellmModelId: "gpt-5",
+			}
+			handler = new LiteLLMHandler(optionsWithGPT5)
+
+			// Force fetchModel to return undefined maxTokens
+			vi.spyOn(handler as any, "fetchModel").mockResolvedValue({
+				id: "gpt-5",
+				info: { ...litellmDefaultModelInfo, maxTokens: undefined },
+			})
+
+			// Mock the stream response
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					yield {
+						choices: [{ delta: { content: "Hello!" } }],
+						usage: {
+							prompt_tokens: 10,
+							completion_tokens: 5,
+						},
+					}
+				},
+			}
+
+			mockCreate.mockReturnValue({
+				withResponse: vi.fn().mockResolvedValue({ data: mockStream }),
+			})
+
+			const generator = handler.createMessage("You are a helpful assistant", [
+				{ role: "user", content: "Hello" } as unknown as Anthropic.Messages.MessageParam,
+			])
+			for await (const _chunk of generator) {
+				// consume
+			}
+
+			// Should not include either token field
+			const createCall = mockCreate.mock.calls[0][0]
+			expect(createCall.max_tokens).toBeUndefined()
+			expect(createCall.max_completion_tokens).toBeUndefined()
+		})
+
+		it("should not set any max token fields when maxTokens is undefined (GPT-5 completePrompt)", async () => {
+			const optionsWithGPT5: ApiHandlerOptions = {
+				...mockOptions,
+				litellmModelId: "gpt-5",
+			}
+			handler = new LiteLLMHandler(optionsWithGPT5)
+
+			// Force fetchModel to return undefined maxTokens
+			vi.spyOn(handler as any, "fetchModel").mockResolvedValue({
+				id: "gpt-5",
+				info: { ...litellmDefaultModelInfo, maxTokens: undefined },
+			})
+
+			mockCreate.mockResolvedValue({
+				choices: [{ message: { content: "Ok" } }],
+			})
+
+			await handler.completePrompt("Test prompt")
+
+			const createCall = mockCreate.mock.calls[0][0]
+			expect(createCall.max_tokens).toBeUndefined()
+			expect(createCall.max_completion_tokens).toBeUndefined()
 		})
 	})
 })
