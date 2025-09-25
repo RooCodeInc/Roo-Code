@@ -386,7 +386,7 @@ export const WatsonxAI = ({
 								(apiConfiguration.watsonxAuthType === "apiKey" && !apiConfiguration.watsonxApiKey) ||
 								(apiConfiguration.watsonxAuthType === "password" && !apiConfiguration.watsonxPassword)))
 					}
-					className="w-full md-1"
+					className="w-full mb-1"
 					title={"Retrieve available models"}>
 					<div className="flex items-center gap-2">
 						{refreshStatus === "loading" ? (
