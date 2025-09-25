@@ -274,7 +274,7 @@
 		"vercelAiGatewayApiKey": "Vercel AI Gateway API Anahtarı",
 		"getVercelAiGatewayApiKey": "Vercel AI Gateway API Anahtarı Al",
 		"apiKeyStorageNotice": "API anahtarları VSCode'un Gizli Depolamasında güvenli bir şekilde saklanır",
-		"passwordStorageNotice": "Passwords are stored securely in VSCode's Secret Storage",
+		"passwordStorageNotice": "Parolalar VSCode'un Gizli Depolamasında güvenli bir şekilde saklanır",
 		"glamaApiKey": "Glama API Anahtarı",
 		"getGlamaApiKey": "Glama API Anahtarı Al",
 		"useCustomBaseUrl": "Özel temel URL kullan",
