@@ -1,7 +1,8 @@
-import { useCallback, useState } from "react"
+import { useCallback, useState, useEffect } from "react"
 import knuthShuffle from "knuth-shuffle-seeded"
 import { Trans } from "react-i18next"
 import { VSCodeButton, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
+import posthog from "posthog-js"
 
 import type { ProviderSettings } from "@roo-code/types"
 
@@ -20,6 +21,14 @@ const WelcomeView = () => {
 	const { apiConfiguration, currentApiConfigName, setApiConfiguration, uriScheme, machineId } = useExtensionState()
 	const { t } = useAppTranslation()
 	const [errorMessage, setErrorMessage] = useState<string | undefined>(undefined)
+	const [showRooProvider, setShowRooProvider] = useState(false)
+
+	// Check PostHog feature flag for Roo provider
+	useEffect(() => {
+		posthog.onFeatureFlags(function () {
+			setShowRooProvider(posthog?.getFeatureFlag("roo-provider-featured") === "test")
+		})
+	}, [])
 
 	// Memoize the setApiConfigurationField function to pass to ApiOptions
 	const setApiConfigurationFieldForApiOptions = useCallback(
@@ -69,7 +78,7 @@ const WelcomeView = () => {
 						{/* Define the providers */}
 						{(() => {
 							// Provider card configuration
-							const providers = [
+							const baseProviders = [
 								{
 									slug: "requesty",
 									name: "Requesty",
@@ -83,14 +92,21 @@ const WelcomeView = () => {
 									description: t("welcome:routers.openrouter.description"),
 									authUrl: getOpenRouterAuthUrl(uriScheme),
 								},
-								{
-									slug: "roo",
-									name: "Roo Code Cloud",
-									description: t("welcome:routers.roo.description"),
-									incentive: t("welcome:routers.roo.incentive"),
-									authUrl: "#", // Placeholder since onClick handler will prevent default
-								},
 							]
+
+							// Conditionally add Roo provider based on feature flag
+							const providers = showRooProvider
+								? [
+										...baseProviders,
+										{
+											slug: "roo",
+											name: "Roo Code Cloud",
+											description: t("welcome:routers.roo.description"),
+											incentive: t("welcome:routers.roo.incentive"),
+											authUrl: "#", // Placeholder since onClick handler will prevent default
+										},
+									]
+								: baseProviders
 
 							// Shuffle providers based on machine ID (will be consistent for the same machine)
 							const orderedProviders = [...providers]
