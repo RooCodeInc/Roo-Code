@@ -78,7 +78,7 @@ const DismissibleUpsell = memo(
 			}
 		}, [upsellId])
 
-		const handleDismiss = async () => {
+		const handleDismiss = () => {
 			// Track telemetry for dismissal
 			telemetryClient.capture(TelemetryEventName.UPSELL_DISMISSED, {
 				upsellId: upsellId,
