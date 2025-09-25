@@ -5,12 +5,14 @@ import { VSCodeButton, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 import posthog from "posthog-js"
 
 import type { ProviderSettings } from "@roo-code/types"
+import { TelemetryEventName } from "@roo-code/types"
 
 import { useExtensionState } from "@src/context/ExtensionStateContext"
 import { validateApiConfiguration } from "@src/utils/validate"
 import { vscode } from "@src/utils/vscode"
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { getRequestyAuthUrl, getOpenRouterAuthUrl } from "@src/oauth/urls"
+import { telemetryClient } from "@src/utils/TelemetryClient"
 
 import ApiOptions from "../settings/ApiOptions"
 import { Tab, TabContent } from "../common/Tab"
@@ -121,6 +123,11 @@ const WelcomeView = () => {
 									target="_blank"
 									rel="noopener noreferrer"
 									onClick={(e) => {
+										// Track telemetry for featured provider click
+										telemetryClient.capture(TelemetryEventName.FEATURED_PROVIDER_CLICKED, {
+											provider: provider.slug,
+										})
+
 										// Special handling for Roo provider
 										if (provider.slug === "roo") {
 											e.preventDefault()
