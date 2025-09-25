@@ -8,7 +8,7 @@ import { BaseProvider } from "./base-provider"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
 // Provider prompt content as a TS string module (no loader required)
-import codexPromptContent from "./openai-native-codex.prompt"
+import codexPromptContent, { overridePrompt } from "./openai-native-codex.prompt"
 
 import {
 	type ModelInfo,
@@ -190,23 +190,27 @@ export class OpenAiNativeCodexHandler extends BaseProvider {
 
 		// Format full conversation (Responses API expects structured input)
 		const formattedInput: any[] = []
-		// Inject systemPrompt into the first user turn wrapped in <user_instructions> XML tags
+		// Inject provider overrides and dynamic instructions as a system role using <instructions_override> and <new_instructions> XML tags
 		let injectedUserInstructions = false
 		for (const message of messages) {
 			const role = message.role === "user" ? "user" : "assistant"
 			const content: any[] = []
 
-			if (
-				role === "user" &&
-				!injectedUserInstructions &&
-				typeof systemPrompt === "string" &&
-				systemPrompt.trim().length > 0
-			) {
+			if (!injectedUserInstructions && typeof systemPrompt === "string" && systemPrompt.trim().length > 0) {
 				// For ChatGPT Codex (Responses API), the top-level "instructions" payload is fixed and must be
 				// provided from a canonical prompt file. We cannot programmatically modify that contents here.
-				// Therefore, the only supported way to pass the dynamic system prompt is to inject it into the
-				// first user turn wrapped in <user_instructions> ... </user_instructions>.
-				content.push({ type: "input_text", text: `<user_instructions>${systemPrompt}</user_instructions>` })
+				// Therefore, inject provider overrides and dynamic instructions as a separate system role message
+				// using <instructions_override> and <new_instructions> tags before the first user/assistant turn.
+				formattedInput.push({
+					role: "system",
+					content: [
+						{
+							type: "input_text",
+							text: `<instructions_override>${overridePrompt}</instructions_override>`,
+						},
+						{ type: "input_text", text: `<new_instructions>${systemPrompt}</new_instructions>` },
+					],
+				})
 				injectedUserInstructions = true
 			}
 
