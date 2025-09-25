@@ -72,6 +72,7 @@ export interface WebviewMessage {
 		| "requestRooModels"
 		| "requestVsCodeLmModels"
 		| "requestHuggingFaceModels"
+		| "requestWatsonxModels"
 		| "openImage"
 		| "saveImage"
 		| "openFile"
