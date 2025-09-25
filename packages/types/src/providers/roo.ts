@@ -1,6 +1,10 @@
 import type { ModelInfo } from "../model.js"
 
-export type RooModelId = "xai/grok-code-fast-1" | "roo/code-supernova"
+export type RooModelId =
+	| "xai/grok-code-fast-1"
+	| "roo/code-supernova"
+	| "xai/grok-4-fast"
+	| "deepseek/deepseek-chat-v3.1"
 
 export const rooDefaultModelId: RooModelId = "xai/grok-code-fast-1"
 
