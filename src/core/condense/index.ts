@@ -102,7 +102,7 @@ export async function summarizeConversation(
 
 	// Always preserve the first message (which may contain slash command content)
 	const firstMessage = messages[0]
-	// Get messages to summarize, excluding the first message and last N messages
+	// Get messages to summarize, including the first message and excluding the last N messages
 	const messagesToSummarize = getMessagesSinceLastSummary(messages.slice(0, -N_MESSAGES_TO_KEEP))
 
 	if (messagesToSummarize.length <= 1) {
