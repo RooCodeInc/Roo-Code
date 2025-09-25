@@ -26,6 +26,11 @@
 	"switchAccount": "切换 Roo Code Cloud 账户",
 	"createTeamAccount": "创建团队账户",
 	"cloudUrlPillLabel": "Roo Code Cloud URL",
+	"quota": {
+		"totalQuota": "总配额",
+		"usedQuota": "已使用",
+		"usageRate": "配额用量"
+	},
 	"upsell": {
 		"autoApprovePowerUser": "给 Roo 一些独立性？使用 Roo Code Cloud 从任何地方控制它。 <learnMoreLink>了解更多</learnMoreLink>。",
 		"longRunningTask": "这可能需要一段时间。使用 Cloud 从任何地方继续。",

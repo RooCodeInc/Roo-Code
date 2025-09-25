@@ -101,7 +101,7 @@ export const ErrorRow = memo(
 						}`}
 						onClick={handleToggleExpand}>
 						<div className="flex items-center gap-2 flex-grow">
-							<MessageCircleWarning className="w-4 text-vscode-errorForeground" />
+							<MessageCircleWarning className="w-4" />
 							<span className="font-bold">{errorTitle}</span>
 						</div>
 						<div className="flex items-center">

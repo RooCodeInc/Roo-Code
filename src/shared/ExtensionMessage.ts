@@ -84,6 +84,7 @@ export interface ExtensionMessage {
 		| "zgsmLogined"
 		| "showReauthConfirmationDialog"
 		| "zgsmCodebaseIndexEnabled"
+		| "zgsmQuotaInfo"
 		// zgsm
 		| "ollamaModels"
 		| "lmStudioModels"

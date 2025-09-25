@@ -515,6 +515,11 @@ export const providerSettingsSchema = z.object({
 })
 
 export type ProviderSettings = z.infer<typeof providerSettingsSchema>
+export interface QuotaInfo {
+	total_quota?: number
+	used_quota?: number
+	is_star?: string
+}
 
 export const providerSettingsWithIdSchema = providerSettingsSchema.extend({ id: z.string().optional() })
 
