@@ -53,7 +53,7 @@ Example:
 [ ] Set up auth middleware
 [ ] Create login endpoint
 [ ] Add session management
-[ ] Write tests
+[ ] Add error handling
 </todos>
 </new_task>
 
