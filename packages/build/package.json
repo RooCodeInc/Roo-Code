@@ -1,6 +1,5 @@
 {
 	"name": "@roo-code/build",
-	"version": "0.0.0",
 	"description": "ESBuild utilities for Roo Code.",
 	"private": true,
 	"type": "module",
