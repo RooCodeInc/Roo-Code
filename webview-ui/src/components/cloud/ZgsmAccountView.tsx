@@ -19,6 +19,7 @@ type AccountViewProps = {
 export const ZgsmAccountView = ({ apiConfiguration, onDone }: AccountViewProps) => {
 	const { t } = useAppTranslation()
 	const [quotaInfo, setQuotaInfo] = useState<QuotaInfo>()
+	const [showQuotaInfo, setShowQuotaInfo] = useState(false)
 	const { userInfo, logoPic, hash } = useZgsmUserInfo(apiConfiguration?.zgsmAccessToken)
 	console.log("New Credit hash: ", hash)
 	const rooLogoUri = (window as any).COSTRICT_BASE_URI + "/logo.svg"
@@ -50,11 +51,17 @@ export const ZgsmAccountView = ({ apiConfiguration, onDone }: AccountViewProps) 
 
 			switch (message.type) {
 				case "zgsmLogined": {
+					// 重置动画状态，为下次显示做准备
+					setShowQuotaInfo(false)
 					onDone()
 					break
 				}
 				case "zgsmQuotaInfo": {
 					setQuotaInfo(message?.values)
+					// 延迟显示动画，让数据先设置好
+					setTimeout(() => {
+						setShowQuotaInfo(true)
+					}, 200)
 					break
 				}
 			}
@@ -63,6 +70,9 @@ export const ZgsmAccountView = ({ apiConfiguration, onDone }: AccountViewProps) 
 	)
 
 	useEffect(() => {
+		// 重置动画状态
+		setShowQuotaInfo(false)
+
 		const timer = setInterval(async () => {
 			vscode.postMessage({ type: "fetchZgsmQuotaInfo" })
 		}, 10_000)
@@ -70,7 +80,7 @@ export const ZgsmAccountView = ({ apiConfiguration, onDone }: AccountViewProps) 
 		return () => {
 			clearInterval(timer)
 		}
-	}, [])
+	}, [apiConfiguration?.zgsmAccessToken])
 
 	useEvent("message", onMessage)
 
@@ -120,8 +130,25 @@ export const ZgsmAccountView = ({ apiConfiguration, onDone }: AccountViewProps) 
 								</div>
 							)}
 							{quotaInfo && (quotaInfo.total_quota || quotaInfo.used_quota) && (
-								<div className="w-full mt-3 space-y-2">
-									<div className="bg-vscode-editor-inactiveSelectionBackground/50 backdrop-blur-sm rounded-lg p-2.5 hover:bg-vscode-editor-inactiveSelectionBackground/70 transition-all duration-200">
+								<div
+									className={`w-full mt-3 space-y-2 transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] transform ${
+										showQuotaInfo
+											? "opacity-100 translate-y-0 scale-100"
+											: "opacity-0 translate-y-6 scale-98"
+									}`}
+									style={{
+										transitionProperty: "opacity, transform",
+										transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
+									}}>
+									<div
+										className={`bg-vscode-editor-inactiveSelectionBackground/50 backdrop-blur-sm rounded-lg p-2.5 hover:bg-vscode-editor-inactiveSelectionBackground/70 transition-all duration-200 transform ${
+											showQuotaInfo ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+										}`}
+										style={{
+											transitionDelay: showQuotaInfo ? "100ms" : "0ms",
+											transitionDuration: "800ms",
+											transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
+										}}>
 										<div className="flex justify-between items-center mb-1.5">
 											<span className="text-xs text-vscode-descriptionForeground font-medium">
 												{t("cloud:quota.usageRate")}
@@ -153,7 +180,15 @@ export const ZgsmAccountView = ({ apiConfiguration, onDone }: AccountViewProps) 
 									</div>
 
 									<div className="grid grid-cols-2 gap-2">
-										<div className="bg-vscode-editor-inactiveSelectionBackground/30 backdrop-blur-sm rounded-lg p-2 hover:bg-vscode-editor-inactiveSelectionBackground/50 transition-all duration-200 group">
+										<div
+											className={`bg-vscode-editor-inactiveSelectionBackground/30 backdrop-blur-sm rounded-lg p-2 hover:bg-vscode-editor-inactiveSelectionBackground/50 transition-all duration-200 group transform ${
+												showQuotaInfo ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+											}`}
+											style={{
+												transitionDelay: showQuotaInfo ? "200ms" : "0ms",
+												transitionDuration: "700ms",
+												transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
+											}}>
 											<div className="flex items-center gap-1.5 mb-1">
 												<div className="w-2 h-2 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full"></div>
 												<span className="text-xs text-vscode-descriptionForeground font-medium">
@@ -174,7 +209,15 @@ export const ZgsmAccountView = ({ apiConfiguration, onDone }: AccountViewProps) 
 											</div>
 										</div>
 
-										<div className="bg-vscode-editor-inactiveSelectionBackground/30 backdrop-blur-sm rounded-lg p-2 hover:bg-vscode-editor-inactiveSelectionBackground/50 transition-all duration-200 group">
+										<div
+											className={`bg-vscode-editor-inactiveSelectionBackground/30 backdrop-blur-sm rounded-lg p-2 hover:bg-vscode-editor-inactiveSelectionBackground/50 transition-all duration-200 group transform ${
+												showQuotaInfo ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+											}`}
+											style={{
+												transitionDelay: showQuotaInfo ? "300ms" : "0ms",
+												transitionDuration: "700ms",
+												transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
+											}}>
 											<div className="flex items-center gap-1.5 mb-1">
 												<div className="w-2 h-2 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full"></div>
 												<span className="text-xs text-vscode-descriptionForeground font-medium">
