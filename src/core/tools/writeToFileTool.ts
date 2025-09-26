@@ -179,7 +179,7 @@ export async function writeToFileTool(
 				cline.diffViewProvider.editType = fileExists ? "modify" : "create"
 				if (fileExists) {
 					const absolutePath = path.resolve(cline.cwd, relPath)
-					cline.diffViewProvider.originalContent = await fs.readFile(absolutePath, "utf-8")
+					cline.diffViewProvider.originalContent = await readFileWithEncodingDetection(absolutePath)
 				} else {
 					cline.diffViewProvider.originalContent = ""
 				}

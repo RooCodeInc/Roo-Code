@@ -301,7 +301,7 @@ Original error: ${errorMessage}`
 
 				let unified = ""
 				try {
-					const original = await fs.readFile(opResult.absolutePath!, "utf-8")
+					const original = await readFileWithEncodingDetection(opResult.absolutePath!)
 					const processed = !cline.api.getModel().id.includes("claude")
 						? (opResult.diffItems || []).map((item) => ({
 								...item,

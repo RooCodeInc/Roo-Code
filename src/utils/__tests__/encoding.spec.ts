@@ -68,6 +68,19 @@ describe("encoding", () => {
 			await expect(detectEncoding(buffer, ".exe")).rejects.toThrow("Cannot read text for file type: .exe")
 		})
 
+		it("should call isBinaryFile with buffer and buffer length", async () => {
+			const buffer = Buffer.from("test content for binary check")
+			mockJschardet.detect.mockReturnValue({
+				encoding: "",
+				confidence: 0,
+			}) // No encoding detected
+			mockIsBinaryFile.mockResolvedValue(false)
+
+			await detectEncoding(buffer, ".txt")
+
+			expect(mockIsBinaryFile).toHaveBeenCalledWith(buffer, buffer.length)
+		})
+
 		it("should handle string detection result from jschardet", async () => {
 			const buffer = Buffer.from("utf8 content")
 			mockIsBinaryFile.mockResolvedValue(false)
@@ -239,6 +252,144 @@ describe("encoding", () => {
 			const result = await detectEncoding(buffer, ".txt")
 			expect(result).toBe("utf8") // Should fallback to utf8
 		})
+
+		describe("BOM (Byte Order Mark) preservation", () => {
+			it("should preserve UTF-8 BOM in encoding detection", async () => {
+				// UTF-8 BOM: 0xEF 0xBB 0xBF
+				const bomBytes = Buffer.from([0xef, 0xbb, 0xbf])
+				const contentBytes = Buffer.from("Hello, world!", "utf8")
+				const bufferWithBOM = Buffer.concat([bomBytes, contentBytes])
+
+				mockIsBinaryFile.mockResolvedValue(false)
+				mockJschardet.detect.mockReturnValue({
+					encoding: "utf8",
+					confidence: 0.9,
+				})
+
+				const result = await detectEncoding(bufferWithBOM, ".txt")
+
+				expect(result).toBe("utf8")
+				expect(mockJschardet.detect).toHaveBeenCalledWith(bufferWithBOM)
+				// Verify the BOM is included in the buffer passed to jschardet
+				expect(mockJschardet.detect.mock.calls[0][0]).toEqual(bufferWithBOM)
+			})
+
+			it("should handle UTF-8 BOM with low confidence detection", async () => {
+				const bomBytes = Buffer.from([0xef, 0xbb, 0xbf])
+				const contentBytes = Buffer.from("Hello", "utf8")
+				const bufferWithBOM = Buffer.concat([bomBytes, contentBytes])
+
+				mockIsBinaryFile.mockResolvedValue(false)
+				mockJschardet.detect.mockReturnValue({
+					encoding: "utf8",
+					confidence: 0.5, // Low confidence
+				})
+
+				const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
+				const result = await detectEncoding(bufferWithBOM, ".txt")
+
+				expect(result).toBe("utf8")
+				expect(consoleSpy).toHaveBeenCalledWith(
+					"Low confidence encoding detection: utf8 (confidence: 0.5), falling back to utf8",
+				)
+			})
+
+			it("should handle UTF-8 BOM with empty content", async () => {
+				// Only BOM, no content
+				const bomOnlyBuffer = Buffer.from([0xef, 0xbb, 0xbf])
+
+				mockIsBinaryFile.mockResolvedValue(false)
+				mockJschardet.detect.mockReturnValue({
+					encoding: "utf8",
+					confidence: 0.9,
+				})
+
+				const result = await detectEncoding(bomOnlyBuffer, ".txt")
+
+				expect(result).toBe("utf8")
+				expect(mockJschardet.detect).toHaveBeenCalledWith(bomOnlyBuffer)
+			})
+
+			it("should preserve UTF-16 LE BOM in encoding detection", async () => {
+				// UTF-16 LE BOM: 0xFF 0xFE
+				const bomBytes = Buffer.from([0xff, 0xfe])
+				const contentBytes = Buffer.from("Hello", "utf16le")
+				const bufferWithBOM = Buffer.concat([bomBytes, contentBytes])
+
+				mockIsBinaryFile.mockResolvedValue(false)
+				mockJschardet.detect.mockReturnValue({
+					encoding: "utf-16le",
+					confidence: 0.9,
+				})
+				mockIconv.encodingExists.mockReturnValue(true)
+
+				const result = await detectEncoding(bufferWithBOM, ".txt")
+
+				expect(result).toBe("utf-16le")
+				expect(mockJschardet.detect).toHaveBeenCalledWith(bufferWithBOM)
+				expect(mockJschardet.detect.mock.calls[0][0]).toEqual(bufferWithBOM)
+			})
+
+			it("should preserve UTF-16 BE BOM in encoding detection", async () => {
+				// UTF-16 BE BOM: 0xFE 0xFF
+				const bomBytes = Buffer.from([0xfe, 0xff])
+				// Create UTF-16 BE content manually since Node.js doesn't have utf16be encoding
+				const contentBytes = Buffer.from([0x00, 0x48, 0x00, 0x65, 0x00, 0x6c, 0x00, 0x6c, 0x00, 0x6f]) // "Hello" in UTF-16 BE
+				const bufferWithBOM = Buffer.concat([bomBytes, contentBytes])
+
+				mockIsBinaryFile.mockResolvedValue(false)
+				mockJschardet.detect.mockReturnValue({
+					encoding: "utf-16be",
+					confidence: 0.9,
+				})
+				mockIconv.encodingExists.mockReturnValue(true)
+
+				const result = await detectEncoding(bufferWithBOM, ".txt")
+
+				expect(result).toBe("utf-16be")
+				expect(mockJschardet.detect).toHaveBeenCalledWith(bufferWithBOM)
+				expect(mockJschardet.detect.mock.calls[0][0]).toEqual(bufferWithBOM)
+			})
+
+			it("should handle UTF-16 LE BOM with unsupported encoding fallback", async () => {
+				const bomBytes = Buffer.from([0xff, 0xfe])
+				const contentBytes = Buffer.from("Hello", "utf16le")
+				const bufferWithBOM = Buffer.concat([bomBytes, contentBytes])
+
+				mockIsBinaryFile.mockResolvedValue(false)
+				mockJschardet.detect.mockReturnValue({
+					encoding: "utf-16le",
+					confidence: 0.9,
+				})
+				mockIconv.encodingExists.mockReturnValue(false) // Simulate unsupported encoding
+
+				const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
+				const result = await detectEncoding(bufferWithBOM, ".txt")
+
+				expect(result).toBe("utf8")
+				expect(consoleSpy).toHaveBeenCalledWith("Unsupported encoding detected: utf-16le, falling back to utf8")
+			})
+
+			it("should handle UTF-16 BE BOM with low confidence", async () => {
+				const bomBytes = Buffer.from([0xfe, 0xff])
+				const contentBytes = Buffer.from([0x00, 0x48, 0x00, 0x65, 0x00, 0x6c, 0x00, 0x6c, 0x00, 0x6f]) // "Hello" in UTF-16 BE
+				const bufferWithBOM = Buffer.concat([bomBytes, contentBytes])
+
+				mockIsBinaryFile.mockResolvedValue(false)
+				mockJschardet.detect.mockReturnValue({
+					encoding: "utf-16be",
+					confidence: 0.4, // Low confidence
+				})
+
+				const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
+				const result = await detectEncoding(bufferWithBOM, ".txt")
+
+				expect(result).toBe("utf8")
+				expect(consoleSpy).toHaveBeenCalledWith(
+					"Low confidence encoding detection: utf-16be (confidence: 0.4), falling back to utf8",
+				)
+			})
+		})
 	})
 
 	describe("readFileWithEncodingDetection", () => {
@@ -383,13 +534,13 @@ describe("encoding", () => {
 			expect(result).toBe(true)
 		})
 
-		it("should return true for file read errors", async () => {
+		it("should return false for file read errors", async () => {
 			const filePath = "/path/to/nonexistent.txt"
 			mockFs.readFile.mockRejectedValue(new Error("File not found"))
 
 			const result = await isBinaryFileWithEncodingDetection(filePath)
 
-			expect(result).toBe(true)
+			expect(result).toBe(false)
 		})
 
 		it("should return false when encoding detection succeeds even with low confidence", async () => {
@@ -405,6 +556,22 @@ describe("encoding", () => {
 			const result = await isBinaryFileWithEncodingDetection(filePath)
 
 			expect(result).toBe(false)
+		})
+
+		it("should call isBinaryFile with buffer and buffer length when encoding detection fails", async () => {
+			const filePath = "/path/to/file.bin"
+			const buffer = Buffer.from("binary content for length test")
+			mockFs.readFile.mockResolvedValue(buffer)
+			mockPath.extname.mockReturnValue(".bin")
+			mockJschardet.detect.mockReturnValue({
+				encoding: "",
+				confidence: 0,
+			})
+			mockIsBinaryFile.mockResolvedValue(true)
+
+			await isBinaryFileWithEncodingDetection(filePath)
+
+			expect(mockIsBinaryFile).toHaveBeenCalledWith(buffer, buffer.length)
 		})
 	})
 })

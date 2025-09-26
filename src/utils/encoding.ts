@@ -35,7 +35,7 @@ export async function detectEncoding(fileBuffer: Buffer, fileExtension?: string)
 	} else {
 		// 2. Only check if it's a binary file when encoding detection fails
 		if (fileExtension) {
-			const isBinary = await isBinaryFile(fileBuffer).catch(() => false)
+			const isBinary = await isBinaryFile(fileBuffer, fileBuffer.length).catch(() => false)
 			if (isBinary) {
 				throw new Error(`Cannot read text for file type: ${fileExtension}`)
 			}
@@ -87,7 +87,8 @@ export async function detectFileEncoding(filePath: string): Promise<string> {
 /**
  * Smart binary file detection that tries encoding detection first
  * @param filePath Path to the file
- * @returns Promise<boolean> true if file is binary, false if it's text
+ * @returns Promise<boolean> true if file is binary, false if it's text or if there's a read error
+ * @note Returns false on read errors to allow callers to handle file access issues explicitly
  */
 export async function isBinaryFileWithEncodingDetection(filePath: string): Promise<boolean> {
 	try {
@@ -101,11 +102,11 @@ export async function isBinaryFileWithEncodingDetection(filePath: string): Promi
 			return false
 		} catch (error) {
 			// If detectEncoding fails, check if it's actually a binary file
-			return await isBinaryFile(fileBuffer).catch(() => false)
+			return await isBinaryFile(fileBuffer, fileBuffer.length).catch(() => false)
 		}
 	} catch (error) {
-		// File read error, assume it's binary
-		return true
+		// File read error, return false to let callers handle read errors explicitly
+		return false
 	}
 }
 

@@ -719,6 +719,9 @@ importers:
       isbinaryfile:
         specifier: ^5.0.2
         version: 5.0.4
+      jschardet:
+        specifier: ^3.1.4
+        version: 3.1.4
       jwt-decode:
         specifier: ^4.0.0
         version: 4.0.0

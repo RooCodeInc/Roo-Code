@@ -56,35 +56,44 @@ export function readLines(filepath: string, endLine?: number, startLine?: number
 		}
 
 		// Sample the first 64KB for encoding detection
-		open(filepath, 'r')
-			.then(fileHandle => {
-				const sampleBuffer = Buffer.alloc(65536);
-				return fileHandle.read(sampleBuffer, 0, sampleBuffer.length, 0)
+		open(filepath, "r")
+			.then((fileHandle) => {
+				const sampleBuffer = Buffer.alloc(65536)
+				return fileHandle
+					.read(sampleBuffer, 0, sampleBuffer.length, 0)
 					.then(() => sampleBuffer)
-					.finally(() => fileHandle.close());
+					.finally(() => fileHandle.close())
 			})
-			.then(sampleBuffer => detectEncoding(sampleBuffer))
-			.then(encoding => {
+			.then((sampleBuffer) => detectEncoding(sampleBuffer))
+			.then((encoding) => {
 				// Node.js native supported encodings
-				const nodeEncodings = ['utf8', 'ascii', 'latin1'];
-				
-				// Choose decoding method based on native support
-				let input: NodeJS.ReadableStream;
-				if (nodeEncodings.includes(encoding.toLowerCase())) {
-					input = createReadStream(filepath, { encoding: encoding as BufferEncoding });
-				} else {
-					input = createReadStream(filepath).pipe(iconv.decodeStream(encoding));
-				}
-				
+				const nodeEncodings = ["utf8", "ascii", "latin1"]
+
 				let buffer = ""
 				let lineCount = 0
 				let result = ""
 
-				// Handle errors
-				input.on("error", reject)
+				// Choose decoding method based on native support
+				let input: NodeJS.ReadableStream
+				if (nodeEncodings.includes(encoding.toLowerCase())) {
+					input = createReadStream(filepath, { encoding: encoding as BufferEncoding })
+					// Handle errors directly
+					input.on("error", reject)
+				} else {
+					// For non-native encodings, create streams and handle errors explicitly
+					const sourceStream = createReadStream(filepath)
+					const decodeStream = iconv.decodeStream(encoding)
+
+					// Handle errors from both streams
+					sourceStream.on("error", reject)
+					decodeStream.on("error", reject)
+
+					// Use pipe but with explicit error handling
+					input = sourceStream.pipe(decodeStream)
+				}
 
 				// Process data chunks directly
-				input.on("data", (chunk) => {
+				input.on("data", (chunk: string) => {
 					// Add chunk to buffer (chunk is already decoded using the detected encoding)
 					buffer += chunk
 
@@ -104,7 +113,7 @@ export function readLines(filepath: string, endLine?: number, startLine?: number
 
 						// If we've reached the end line, we can stop
 						if (endLine !== undefined && lineCount > endLine) {
-							(input as any).destroy?.()
+							;(input as any).destroy?.()
 							resolve(result)
 							return
 						}
@@ -135,8 +144,8 @@ export function readLines(filepath: string, endLine?: number, startLine?: number
 					}
 				})
 			})
-			.catch(error => {
-				reject(error);
-			});
+			.catch((error) => {
+				reject(error)
+			})
 	})
 }
