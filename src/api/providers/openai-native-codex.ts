@@ -248,7 +248,6 @@ export class OpenAiNativeCodexHandler extends BaseProvider {
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
-		;(this as any).lastServiceTier = undefined
 		const model = this.getModel()
 		await this.ensureAuthenticated()
 
@@ -454,7 +453,6 @@ export class OpenAiNativeCodexHandler extends BaseProvider {
 									const parsed = JSON.parse(data)
 									// Persist tier when available (parity with openai-native)
 									if (parsed.response?.service_tier) {
-										;(this as any).lastServiceTier = parsed.response.service_tier as ServiceTier
 									}
 									// Minimal content extraction similar to OpenAI Responses
 									if (parsed?.type === "response.text.delta" && parsed?.delta) {
