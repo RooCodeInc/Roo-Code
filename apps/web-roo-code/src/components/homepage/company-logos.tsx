@@ -3,7 +3,7 @@
 import { motion } from "framer-motion"
 import Image from "next/image"
 
-const logos = ["Apple", "Netflix", "Microsoft", "Red Hat", "Carvana"]
+const logos = ["Apple", "Netflix", "Microsoft", "Amazon", "ByteDance", "Rakuten", "Carvana"]
 
 export function CompanyLogos() {
 	return (
@@ -25,7 +25,7 @@ export function CompanyLogos() {
 						<Image
 							width={0}
 							height={0}
-							className="h-5 w-auto overflow-clip opacity-70 dark:invert"
+							className="h-[18px] w-auto overflow-clip opacity-70 dark:invert"
 							src={`/logos/${logo.toLowerCase().replace(/\s+/g, "-")}.svg`}
 							alt={`${logo} Logo`}
 						/>
