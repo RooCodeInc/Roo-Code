@@ -2,24 +2,27 @@
 
 import { motion } from "framer-motion"
 import { Shield, Users2, ReplaceAll, Keyboard, LucideIcon, CheckCheck, GitPullRequest } from "lucide-react"
+import Image from "next/image"
 
 export interface Feature {
 	icon: LucideIcon
 	title: string
 	description: string
+	logos?: string[]
 }
 
 export const features: Feature[] = [
 	{
 		icon: Users2,
-		title: "Specialized Modes",
+		title: "Specialized modes",
 		description:
-			"Planning, Architecture, Debugging and beyond: Roo's modes stay on-task and deliver. They even know when to hand off work to other modes. Create your own modes or download from the marketplace.",
+			"Planning, Architecture, Debugging and beyond: Roo's modes stay on-task and deliver. They even know when to hand off work to other modes. Create your own or download from the marketplace.",
 	},
 	{
 		icon: ReplaceAll,
-		title: "Model-Agnostic",
-		description: "Bring your own model key or use local inference — no markup, lock-in, no restrictions.",
+		title: "Model-agnostic",
+		description: "Bring your own provider key or even run local inference — no markup, lock-in, no restrictions.",
+		logos: ["Anthropic", "OpenAI", "Gemini", "Grok", "Qwen", "Kimi", "Mistral", "Ollama"],
 	},
 	{
 		icon: CheckCheck,
@@ -35,13 +38,13 @@ export const features: Feature[] = [
 	},
 	{
 		icon: Keyboard,
-		title: "Highly Customizable",
+		title: "Highly customizable",
 		description:
 			"Fine-tune settings for Roo to work for you, like inference context, model properties, slash commands and more.",
 	},
 	{
 		icon: Shield,
-		title: "Secure and Private by Design",
+		title: "Secure and private by design",
 		description:
 			"Client-only architecture means no code leaves your machine unless you say so. SOC 2 Type II compliant.",
 	},
@@ -121,6 +124,20 @@ export function Features() {
 									<p className="leading-relaxed font-light text-muted-foreground">
 										{feature.description}
 									</p>
+									{feature.logos && (
+										<div className="mt-4 flex flex-wrap items-center gap-4">
+											{feature.logos.map((logo) => (
+												<Image
+													key={logo}
+													width={20}
+													height={20}
+													className="w-5 h-5 overflow-clip opacity-50 dark:invert"
+													src={`/logos/${logo.toLowerCase()}.svg`}
+													alt={`${logo} Logo`}
+												/>
+											))}
+										</div>
+									)}
 								</li>
 							)
 						})}
