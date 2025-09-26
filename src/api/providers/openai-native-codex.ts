@@ -1,6 +1,7 @@
 import type { Anthropic } from "@anthropic-ai/sdk"
 import { promises as fs } from "node:fs"
 import os from "node:os"
+import path from "node:path"
 
 import type { ApiHandlerCreateMessageMetadata } from "../index"
 import { BaseProvider } from "./base-provider"
@@ -64,7 +65,6 @@ export class OpenAiNativeCodexHandler extends BaseProvider {
 	protected options: ApiHandlerOptions
 	private chatgptAccessToken!: string
 	private chatgptAccountId?: string
-	private lastResponseId: string | undefined
 	private lastServiceTier: ServiceTier | undefined
 
 	// Inline-loaded provider prompt (via esbuild text loader for .md files)
@@ -134,18 +134,50 @@ export class OpenAiNativeCodexHandler extends BaseProvider {
 		const expandHome = (p: string) => p.replace(/^~(?=\/|\\|$)/, os.homedir())
 		const pathToUse = configured && configured.trim() ? configured.trim() : defaultPath
 		const explicitPath = expandHome(pathToUse)
+		const resolvedPath = path.resolve(explicitPath)
+
+		// Guard file size before reading to prevent loading unexpectedly large files
+		const MAX_OAUTH_SIZE = 1_000_000 // 1 MB
+		try {
+			const stat = await fs.stat(resolvedPath)
+			if (stat.size > MAX_OAUTH_SIZE) {
+				throw new Error(
+					t("common:errors.openaiNativeCodex.oauthFileTooLarge", {
+						path: resolvedPath,
+						size: stat.size,
+						max: MAX_OAUTH_SIZE,
+					}),
+				)
+			}
+		} catch (e: any) {
+			// Surface read failure with localized error (e.g., file missing or inaccessible)
+			const base = t("common:errors.openaiNativeCodex.oauthReadFailed", {
+				path: resolvedPath,
+				error: e?.message || String(e),
+			})
+			throw new Error(base)
+		}
 
 		let raw: string
 		try {
-			raw = await fs.readFile(explicitPath, "utf8")
+			raw = await fs.readFile(resolvedPath, "utf8")
 		} catch (e: any) {
 			const base = t("common:errors.openaiNativeCodex.oauthReadFailed", {
-				path: explicitPath,
+				path: resolvedPath,
 				error: e?.message || String(e),
 			})
-			const tip =
-				" Tip: Authenticate with the Codex CLI to generate auth.json (defaults to ~/.codex/auth.json), then retry."
-			throw new Error(base + tip)
+			throw new Error(base)
+		}
+
+		// Post-read size check using byte length
+		if (Buffer.byteLength(raw, "utf8") > MAX_OAUTH_SIZE) {
+			throw new Error(
+				t("common:errors.openaiNativeCodex.oauthFileTooLarge", {
+					path: resolvedPath,
+					size: Buffer.byteLength(raw, "utf8"),
+					max: MAX_OAUTH_SIZE,
+				}),
+			)
 		}
 
 		let j: AuthJson
@@ -153,12 +185,10 @@ export class OpenAiNativeCodexHandler extends BaseProvider {
 			j = JSON.parse(raw) as AuthJson
 		} catch (e: any) {
 			const base = t("common:errors.openaiNativeCodex.oauthParseFailed", {
-				path: explicitPath,
+				path: resolvedPath,
 				error: e?.message || String(e),
 			})
-			const tip =
-				" Tip: Ensure the file is valid JSON or re-authenticate via the Codex CLI to regenerate auth.json."
-			throw new Error(base + tip)
+			throw new Error(base)
 		}
 
 		const tokens: AuthTokens = j?.tokens ?? {}
@@ -210,19 +240,8 @@ export class OpenAiNativeCodexHandler extends BaseProvider {
 			settings: this.options,
 		})
 
-		const effort =
-			(this.options.reasoningEffort as ReasoningEffortWithMinimal | undefined) ??
-			(info.reasoningEffort as ReasoningEffortWithMinimal | undefined)
-		if (effort) {
-			;(params.reasoning as any) = { reasoning_effort: effort }
-		}
-
+		// Reasoning effort is computed by getModelParams based on model + settings
 		return { id: id as string, info, ...params, verbosity: params.verbosity }
-	}
-
-	// Expose last response id for conversation continuity consumers (e.g., Task.persistGpt5Metadata)
-	getLastResponseId(): string | undefined {
-		return this.lastResponseId
 	}
 
 	override async *createMessage(
@@ -434,10 +453,7 @@ export class OpenAiNativeCodexHandler extends BaseProvider {
 								}
 								try {
 									const parsed = JSON.parse(data)
-									// Persist ids/tier when available (parity with openai-native)
-									if (parsed.response?.id) {
-										this.lastResponseId = parsed.response.id
-									}
+									// Persist tier when available (parity with openai-native)
 									if (parsed.response?.service_tier) {
 										this.lastServiceTier = parsed.response.service_tier as ServiceTier
 									}
