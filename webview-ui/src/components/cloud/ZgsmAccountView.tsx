@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useState, useMemo, memo } from "react"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
+import { StarIcon, StarFilledIcon, CheckCircledIcon } from "@radix-ui/react-icons"
 
 import type { ProviderSettings, QuotaInfo } from "@roo-code/types"
 import { TelemetryEventName } from "@roo-code/types"
@@ -16,34 +17,245 @@ type AccountViewProps = {
 	onDone: () => void
 }
 
-export const ZgsmAccountView = ({ apiConfiguration, onDone }: AccountViewProps) => {
+// 配额信息骨架屏组件
+const QuotaSkeleton = memo(() => (
+	<div className="w-full mt-0 space-y-2">
+		<div className="bg-vscode-editor-inactiveSelectionBackground/30 backdrop-blur-sm rounded-lg p-2.5 animate-pulse">
+			<div className="flex justify-between items-center mb-1.5">
+				<div className="h-3 bg-vscode-editor-inactiveSelectionBackground/50 rounded w-16"></div>
+				<div className="h-4 bg-vscode-editor-inactiveSelectionBackground/50 rounded w-8"></div>
+			</div>
+			<div className="h-1.5 bg-vscode-editor-inactiveSelectionBackground/50 rounded-full"></div>
+		</div>
+		<div className="grid grid-cols-2 gap-2">
+			<div className="bg-vscode-editor-inactiveSelectionBackground/20 backdrop-blur-sm rounded-lg p-2 animate-pulse">
+				<div className="flex items-center gap-1.5 mb-1">
+					<div className="w-2 h-2 bg-vscode-editor-inactiveSelectionBackground/50 rounded-full"></div>
+					<div className="h-3 bg-vscode-editor-inactiveSelectionBackground/50 rounded w-12"></div>
+				</div>
+				<div className="h-4 bg-vscode-editor-inactiveSelectionBackground/50 rounded w-16"></div>
+			</div>
+			<div className="bg-vscode-editor-inactiveSelectionBackground/20 backdrop-blur-sm rounded-lg p-2 animate-pulse">
+				<div className="flex items-center gap-1.5 mb-1">
+					<div className="w-2 h-2 bg-vscode-editor-inactiveSelectionBackground/50 rounded-full"></div>
+					<div className="h-3 bg-vscode-editor-inactiveSelectionBackground/50 rounded w-12"></div>
+				</div>
+				<div className="h-4 bg-vscode-editor-inactiveSelectionBackground/50 rounded w-16"></div>
+			</div>
+		</div>
+	</div>
+))
+
+// 星标状态卡片组件
+const StarStatusCard = memo(
+	({
+		quotaInfo,
+		onStarRepository,
+		_t,
+	}: {
+		quotaInfo?: QuotaInfo
+		onStarRepository: () => void
+		_t: (key: string) => string
+	}) => {
+		const isStarred = quotaInfo?.is_star === "true"
+
+		if (!quotaInfo) return null
+
+		return (
+			<div className="w-full mt-3 bg-vscode-editor-inactiveSelectionBackground/30 backdrop-blur-sm rounded-lg px-3 hover:bg-vscode-editor-inactiveSelectionBackground/50 transition-colors duration-200">
+				{isStarred ? (
+					<div className="flex items-center justify-between">
+						<div className="flex items-center gap-2">
+							<StarFilledIcon className="w-4 h-4 text-yellow-400" />
+							<div>
+								<p className="text-sm font-medium text-vscode-foreground">{_t("account:starThanks")}</p>
+								<p className="text-xs text-vscode-descriptionForeground">
+									{_t("account:starThanksDesc")}
+								</p>
+							</div>
+						</div>
+						<CheckCircledIcon className="w-5 h-5 text-yellow-400" />
+					</div>
+				) : (
+					<div className="flex items-center justify-between">
+						<div className="flex items-center gap-2">
+							<StarIcon className="w-4 h-4 text-vscode-descriptionForeground" />
+							<div>
+								<p className="text-sm font-medium text-vscode-foreground">
+									{_t("account:starProject")}
+								</p>
+								<p className="text-xs text-vscode-descriptionForeground">
+									{_t("account:starProjectDesc")}
+								</p>
+							</div>
+						</div>
+						<button
+							onClick={onStarRepository}
+							className="px-3 py-1.5 bg-vscode-button-background hover:bg-vscode-button-hoverBackground text-vscode-button-foreground text-xs font-medium rounded transition-colors duration-200 flex items-center gap-1">
+							<StarIcon className="w-3 h-3" />
+							{_t("account:starButton")}
+						</button>
+					</div>
+				)}
+			</div>
+		)
+	},
+)
+
+// 优化的配额信息显示组件
+const QuotaInfoDisplay = memo(
+	({ quotaInfo, showQuotaInfo, t }: { quotaInfo: QuotaInfo; showQuotaInfo: boolean; t: (key: string) => string }) => {
+		// 缓存计算结果
+		const quotaCalculations = useMemo(() => {
+			const hasQuota = quotaInfo.total_quota || quotaInfo.used_quota
+			const usagePercentage =
+				quotaInfo.used_quota && quotaInfo.total_quota
+					? Math.round((quotaInfo.used_quota / quotaInfo.total_quota) * 100)
+					: 0
+			const progressWidth =
+				quotaInfo.used_quota && quotaInfo.total_quota
+					? Math.max((quotaInfo.used_quota / quotaInfo.total_quota) * 100, 2)
+					: 0
+			const isStarred = quotaInfo.is_star === "true"
+
+			return {
+				hasQuota,
+				usagePercentage,
+				progressWidth,
+				isStarred,
+				totalQuotaDisplay: quotaInfo.total_quota ? quotaInfo.total_quota.toLocaleString() : "-",
+				usedQuotaDisplay: quotaInfo.used_quota ? quotaInfo.used_quota.toLocaleString() : "-",
+			}
+		}, [quotaInfo.total_quota, quotaInfo.used_quota, quotaInfo.is_star])
+
+		if (!quotaCalculations.hasQuota) {
+			return null
+		}
+
+		return (
+			<div
+				className={`w-full mt-0 space-y-2 transition-all duration-500 ease-out transform ${
+					showQuotaInfo ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-4 scale-98"
+				}`}
+				style={{
+					willChange: showQuotaInfo ? "auto" : "transform, opacity",
+				}}>
+				<div
+					className={`bg-vscode-editor-inactiveSelectionBackground/50 backdrop-blur-sm rounded-lg p-2.5 hover:bg-vscode-editor-inactiveSelectionBackground/70 transition-colors duration-200 transform ${
+						showQuotaInfo ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
+					}`}
+					style={{
+						transitionDelay: showQuotaInfo ? "50ms" : "0ms",
+					}}>
+					<div className="flex justify-between items-center mb-1.5">
+						<span className="text-xs text-vscode-descriptionForeground font-medium">
+							{t("cloud:quota.usageRate")}
+						</span>
+						<span className="text-sm font-bold text-vscode-foreground">
+							{quotaCalculations.usagePercentage}%
+						</span>
+					</div>
+					<div className="relative">
+						<div className="h-1.5 bg-vscode-input-background/50 rounded-full overflow-hidden">
+							<div
+								className="h-full rounded-full transition-all duration-500 ease-out"
+								style={{
+									width: `${quotaCalculations.progressWidth}%`,
+									background: "linear-gradient(135deg, #007aff, #00d4aa)",
+									transform: showQuotaInfo ? "scaleX(1)" : "scaleX(0)",
+									transformOrigin: "left",
+									transitionDelay: showQuotaInfo ? "100ms" : "0ms",
+								}}></div>
+						</div>
+					</div>
+				</div>
+
+				<div className="grid grid-cols-2 gap-2">
+					<div
+						className={`bg-vscode-editor-inactiveSelectionBackground/30 backdrop-blur-sm rounded-lg p-2 hover:bg-vscode-editor-inactiveSelectionBackground/50 transition-colors duration-200 group transform ${
+							showQuotaInfo ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
+						}`}
+						style={{
+							transitionDelay: showQuotaInfo ? "100ms" : "0ms",
+						}}>
+						<div className="flex items-center gap-1.5 mb-1">
+							<div className="w-2 h-2 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full"></div>
+							<span className="text-xs text-vscode-descriptionForeground font-medium">
+								{t("cloud:quota.totalQuota")}
+							</span>
+						</div>
+						<div className="flex items-baseline gap-1">
+							<span className="text-sm font-bold text-vscode-foreground group-hover:text-vscode-focusBorder transition-colors">
+								{quotaCalculations.totalQuotaDisplay}
+							</span>
+							{quotaInfo.total_quota && (
+								<span className="text-xs text-vscode-descriptionForeground opacity-60">Credit</span>
+							)}
+						</div>
+					</div>
+
+					<div
+						className={`bg-vscode-editor-inactiveSelectionBackground/30 backdrop-blur-sm rounded-lg p-2 hover:bg-vscode-editor-inactiveSelectionBackground/50 transition-colors duration-200 group transform ${
+							showQuotaInfo ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
+						}`}
+						style={{
+							transitionDelay: showQuotaInfo ? "150ms" : "0ms",
+						}}>
+						<div className="flex items-center gap-1.5 mb-1">
+							<div className="w-2 h-2 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full"></div>
+							<span className="text-xs text-vscode-descriptionForeground font-medium">
+								{t("cloud:quota.usedQuota")}
+							</span>
+						</div>
+						<div className="flex items-baseline gap-1">
+							<span className="text-sm font-bold text-vscode-foreground group-hover:text-vscode-focusBorder transition-colors">
+								{quotaCalculations.usedQuotaDisplay}
+							</span>
+							{quotaInfo.used_quota && (
+								<span className="text-xs text-vscode-descriptionForeground opacity-60">Credit</span>
+							)}
+						</div>
+					</div>
+				</div>
+			</div>
+		)
+	},
+)
+
+const ZgsmAccountViewComponent = ({ apiConfiguration, onDone }: AccountViewProps) => {
 	const { t } = useAppTranslation()
 	const [quotaInfo, setQuotaInfo] = useState<QuotaInfo>()
 	const [showQuotaInfo, setShowQuotaInfo] = useState(false)
+	const [isLoadingQuota, setIsLoadingQuota] = useState(false)
 	const { userInfo, logoPic, hash } = useZgsmUserInfo(apiConfiguration?.zgsmAccessToken)
 	console.log("New Credit hash: ", hash)
-	const rooLogoUri = (window as any).COSTRICT_BASE_URI + "/logo.svg"
 
-	const handleConnectClick = () => {
+	// 缓存静态资源 URI
+	const coLogoUri = useMemo(() => (window as any).COSTRICT_BASE_URI + "/logo.svg", [])
+
+	// 缓存事件处理函数
+	const handleConnectClick = useCallback(() => {
 		// Send telemetry for account connect action
 		telemetryClient.capture(TelemetryEventName.ACCOUNT_CONNECT_CLICKED)
-
 		vscode.postMessage({ type: "zgsmLogin", apiConfiguration })
-	}
+	}, [apiConfiguration])
 
-	const handleLogoutClick = () => {
+	const handleLogoutClick = useCallback(() => {
 		// Send telemetry for account logout action
 		telemetryClient.capture(TelemetryEventName.ACCOUNT_LOGOUT_CLICKED)
 		vscode.postMessage({ type: "zgsmLogout" })
-	}
+	}, [])
 
-	const handleVisitCloudWebsite = () => {
+	const handleVisitCloudWebsite = useCallback(() => {
 		// Send telemetry for cloud website visit
 		telemetryClient.capture(TelemetryEventName.ACCOUNT_CONNECT_CLICKED)
 		const cloudUrl = `${apiConfiguration?.zgsmBaseUrl?.trim() || "https://zgsm.sangfor.com"}/credit/manager?state=${hash}`
-
 		vscode.postMessage({ type: "openExternal", url: cloudUrl })
-	}
+	}, [apiConfiguration?.zgsmBaseUrl, hash])
+
+	const handleStarRepository = useCallback(() => {
+		vscode.postMessage({ type: "openExternal", url: "https://github.com/zgsm-ai/costrict" })
+	}, [])
 
 	const onMessage = useCallback(
 		(event: MessageEvent) => {
@@ -53,15 +265,19 @@ export const ZgsmAccountView = ({ apiConfiguration, onDone }: AccountViewProps) 
 				case "zgsmLogined": {
 					// 重置动画状态，为下次显示做准备
 					setShowQuotaInfo(false)
+					setIsLoadingQuota(false)
 					onDone()
 					break
 				}
 				case "zgsmQuotaInfo": {
 					setQuotaInfo(message?.values)
-					// 延迟显示动画，让数据先设置好
-					setTimeout(() => {
-						setShowQuotaInfo(true)
-					}, 200)
+					setIsLoadingQuota(false)
+					// 使用 requestAnimationFrame 优化动画时机
+					requestAnimationFrame(() => {
+						setTimeout(() => {
+							setShowQuotaInfo(true)
+						}, 100)
+					})
 					break
 				}
 			}
@@ -70,15 +286,43 @@ export const ZgsmAccountView = ({ apiConfiguration, onDone }: AccountViewProps) 
 	)
 
 	useEffect(() => {
+		if (!apiConfiguration?.zgsmAccessToken) {
+			setQuotaInfo(undefined)
+			setShowQuotaInfo(false)
+			setIsLoadingQuota(false)
+			return
+		}
+
 		// 重置动画状态
 		setShowQuotaInfo(false)
+		setIsLoadingQuota(true)
 
-		const timer = setInterval(async () => {
-			vscode.postMessage({ type: "fetchZgsmQuotaInfo" })
-		}, 10_000)
+		// 立即获取配额信息
 		vscode.postMessage({ type: "fetchZgsmQuotaInfo" })
+
+		// 设置定时器，但减少频率以降低性能影响
+		const timer = setInterval(() => {
+			if (document.visibilityState === "visible") {
+				vscode.postMessage({ type: "fetchZgsmQuotaInfo" })
+			}
+		}, 15_000) // 增加到15秒，减少请求频率
+
 		return () => {
 			clearInterval(timer)
+		}
+	}, [apiConfiguration?.zgsmAccessToken])
+
+	// 页面可见性变化时的处理
+	useEffect(() => {
+		const handleVisibilityChange = () => {
+			if (document.visibilityState === "visible" && apiConfiguration?.zgsmAccessToken) {
+				vscode.postMessage({ type: "fetchZgsmQuotaInfo" })
+			}
+		}
+
+		document.addEventListener("visibilitychange", handleVisibilityChange)
+		return () => {
+			document.removeEventListener("visibilitychange", handleVisibilityChange)
 		}
 	}, [apiConfiguration?.zgsmAccessToken])
 
@@ -95,7 +339,7 @@ export const ZgsmAccountView = ({ apiConfiguration, onDone }: AccountViewProps) 
 			{apiConfiguration?.zgsmAccessToken ? (
 				<>
 					{userInfo && (
-						<div className="flex flex-col items-center mb-5">
+						<div className="flex flex-col items-center mb-0">
 							<div className="w-14 h-14 mb-2 rounded-full overflow-hidden ring-1 ring-vscode-focusBorder/20 hover:ring-vscode-focusBorder/40 transition-all duration-200">
 								{logoPic ? (
 									<img
@@ -117,126 +361,12 @@ export const ZgsmAccountView = ({ apiConfiguration, onDone }: AccountViewProps) 
 							{userInfo?.email && (
 								<p className="text-xs text-vscode-descriptionForeground mb-1">{userInfo?.email}</p>
 							)}
-							{userInfo?.organizationName && (
-								<div className="flex items-center gap-1.5 px-2 py-0.5 bg-vscode-badge-background/10 rounded-full text-xs text-vscode-descriptionForeground">
-									{userInfo.organizationImageUrl && (
-										<img
-											src={userInfo.organizationImageUrl}
-											alt={userInfo.organizationName}
-											className="w-3 h-3 rounded object-cover"
-										/>
-									)}
-									<span>{userInfo.organizationName}</span>
-								</div>
-							)}
-							{quotaInfo && (quotaInfo.total_quota || quotaInfo.used_quota) && (
-								<div
-									className={`w-full mt-3 space-y-2 transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] transform ${
-										showQuotaInfo
-											? "opacity-100 translate-y-0 scale-100"
-											: "opacity-0 translate-y-6 scale-98"
-									}`}
-									style={{
-										transitionProperty: "opacity, transform",
-										transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
-									}}>
-									<div
-										className={`bg-vscode-editor-inactiveSelectionBackground/50 backdrop-blur-sm rounded-lg p-2.5 hover:bg-vscode-editor-inactiveSelectionBackground/70 transition-all duration-200 transform ${
-											showQuotaInfo ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-										}`}
-										style={{
-											transitionDelay: showQuotaInfo ? "100ms" : "0ms",
-											transitionDuration: "800ms",
-											transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
-										}}>
-										<div className="flex justify-between items-center mb-1.5">
-											<span className="text-xs text-vscode-descriptionForeground font-medium">
-												{t("cloud:quota.usageRate")}
-											</span>
-											<span className="text-sm font-bold text-vscode-foreground">
-												{quotaInfo.used_quota && quotaInfo.total_quota
-													? `${Math.round((quotaInfo.used_quota / quotaInfo.total_quota) * 100)}%`
-													: "0%"}
-											</span>
-										</div>
-										<div className="relative">
-											<div className="h-1.5 bg-vscode-input-background/50 rounded-full overflow-hidden">
-												<div
-													className="h-full rounded-full transition-all duration-700 ease-out"
-													style={{
-														width: `${
-															quotaInfo.used_quota && quotaInfo.total_quota
-																? Math.max(
-																		(quotaInfo.used_quota / quotaInfo.total_quota) *
-																			100,
-																		2,
-																	)
-																: 0
-														}%`,
-														background: "linear-gradient(135deg, #007aff, #00d4aa)",
-													}}></div>
-											</div>
-										</div>
-									</div>
-
-									<div className="grid grid-cols-2 gap-2">
-										<div
-											className={`bg-vscode-editor-inactiveSelectionBackground/30 backdrop-blur-sm rounded-lg p-2 hover:bg-vscode-editor-inactiveSelectionBackground/50 transition-all duration-200 group transform ${
-												showQuotaInfo ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-											}`}
-											style={{
-												transitionDelay: showQuotaInfo ? "200ms" : "0ms",
-												transitionDuration: "700ms",
-												transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
-											}}>
-											<div className="flex items-center gap-1.5 mb-1">
-												<div className="w-2 h-2 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full"></div>
-												<span className="text-xs text-vscode-descriptionForeground font-medium">
-													{t("cloud:quota.totalQuota")}
-												</span>
-											</div>
-											<div className="flex items-baseline gap-1">
-												<span className="text-sm font-bold text-vscode-foreground group-hover:text-vscode-focusBorder transition-colors">
-													{quotaInfo.total_quota
-														? quotaInfo.total_quota.toLocaleString()
-														: "-"}
-												</span>
-												{quotaInfo.total_quota && (
-													<span className="text-xs text-vscode-descriptionForeground opacity-60">
-														Credit
-													</span>
-												)}
-											</div>
-										</div>
-
-										<div
-											className={`bg-vscode-editor-inactiveSelectionBackground/30 backdrop-blur-sm rounded-lg p-2 hover:bg-vscode-editor-inactiveSelectionBackground/50 transition-all duration-200 group transform ${
-												showQuotaInfo ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-											}`}
-											style={{
-												transitionDelay: showQuotaInfo ? "300ms" : "0ms",
-												transitionDuration: "700ms",
-												transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
-											}}>
-											<div className="flex items-center gap-1.5 mb-1">
-												<div className="w-2 h-2 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full"></div>
-												<span className="text-xs text-vscode-descriptionForeground font-medium">
-													{t("cloud:quota.usedQuota")}
-												</span>
-											</div>
-											<div className="flex items-baseline gap-1">
-												<span className="text-sm font-bold text-vscode-foreground group-hover:text-vscode-focusBorder transition-colors">
-													{quotaInfo.used_quota ? quotaInfo.used_quota.toLocaleString() : "-"}
-												</span>
-												{quotaInfo.used_quota && (
-													<span className="text-xs text-vscode-descriptionForeground opacity-60">
-														Credit
-													</span>
-												)}
-											</div>
-										</div>
-									</div>
-								</div>
+							{/* 星标状态卡片 */}
+							<StarStatusCard quotaInfo={quotaInfo} onStarRepository={handleStarRepository} _t={t} />
+							{/* 配额信息显示区域 */}
+							{isLoadingQuota && !quotaInfo && <QuotaSkeleton />}
+							{quotaInfo && (
+								<QuotaInfoDisplay quotaInfo={quotaInfo} showQuotaInfo={showQuotaInfo} t={t} />
 							)}
 						</div>
 					)}
@@ -261,18 +391,17 @@ export const ZgsmAccountView = ({ apiConfiguration, onDone }: AccountViewProps) 
 							<div
 								className="w-10 h-10 bg-vscode-foreground"
 								style={{
-									WebkitMaskImage: `url('${rooLogoUri}')`,
+									WebkitMaskImage: `url('${coLogoUri}')`,
 									WebkitMaskRepeat: "no-repeat",
 									WebkitMaskSize: "contain",
-									maskImage: `url('${rooLogoUri}')`,
+									maskImage: `url('${coLogoUri}')`,
 									maskRepeat: "no-repeat",
 									maskSize: "contain",
 								}}>
-								<img src={rooLogoUri} alt="Costrict logo" className="w-10 h-10 opacity-0" />
+								<img src={coLogoUri} alt="Costrict logo" className="w-10 h-10 opacity-0" />
 							</div>
 						</div>
 						<h2 className="text-lg font-semibold text-vscode-foreground mb-1">{t("account:signIn")}</h2>
-						<p className="text-xs text-vscode-descriptionForeground opacity-80">??????????????</p>
 					</div>
 
 					<div className="flex flex-col gap-4">
@@ -285,3 +414,5 @@ export const ZgsmAccountView = ({ apiConfiguration, onDone }: AccountViewProps) 
 		</div>
 	)
 }
+
+export const ZgsmAccountView = memo(ZgsmAccountViewComponent)

@@ -358,5 +358,5 @@ export function validateZgsmBaseUrl(apiConfiguration: ProviderSettings): string 
 		return undefined
 	}
 
-	return i18next.t("settings:validation.apiKey")
+	return i18next.t("settings:codeIndex.validation.invalidBaseUrl")
 }

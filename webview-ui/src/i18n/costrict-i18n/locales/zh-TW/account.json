@@ -6,5 +6,10 @@
 	"remoteControlDescription": "允許透過 Costrict 追蹤和操作此工作區中的工作",
 	"cloudBenefitWalkaway": "使用 Costrict Control 隨時隨地追蹤和控制工作",
 	"remoteControl": "Costrict Control",
-	"loginForFullFeatures": "登入後可使用完整功能"
+	"loginForFullFeatures": "登入後可使用完整功能",
+	"starThanks": "感謝您的支持！",
+	"starThanksDesc": "您已為 Costrict 儲存庫點讚",
+	"starProject": "支持 Costrict 專案",
+	"starProjectDesc": "為我們的開源專案點讚支持",
+	"starButton": "去點讚"
 }
