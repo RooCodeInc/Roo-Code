@@ -26,7 +26,34 @@ import { calculateApiCostOpenAI } from "../../shared/cost"
 
 export type OpenAiNativeCodexModel = ReturnType<OpenAiNativeCodexHandler["getModel"]>
 
-const GPT5_MODEL_PREFIX = "gpt-5"
+// Codex input typing for safer transforms and tests
+type CodexRole = "system" | "user" | "assistant"
+interface CodexInputText {
+	type: "input_text"
+	text: string
+}
+interface CodexOutputText {
+	type: "output_text"
+	text: string
+}
+interface CodexInputImage {
+	type: "input_image"
+	image_url: string
+}
+type CodexContent = CodexInputText | CodexOutputText | CodexInputImage
+interface CodexMessage {
+	role: CodexRole
+	content: CodexContent[]
+}
+
+interface AuthTokens {
+	access_token?: string
+	account_id?: string
+	id_token?: string
+}
+interface AuthJson {
+	tokens?: AuthTokens
+}
 
 /**
  * OpenAI Native (Codex) provider
@@ -121,9 +148,9 @@ export class OpenAiNativeCodexHandler extends BaseProvider {
 			throw new Error(base + tip)
 		}
 
-		let j: any
+		let j: AuthJson
 		try {
-			j = JSON.parse(raw)
+			j = JSON.parse(raw) as AuthJson
 		} catch (e: any) {
 			const base = t("common:errors.openaiNativeCodex.oauthParseFailed", {
 				path: explicitPath,
@@ -134,24 +161,14 @@ export class OpenAiNativeCodexHandler extends BaseProvider {
 			throw new Error(base + tip)
 		}
 
-		const tokens = (j?.tokens as any) || {}
+		const tokens: AuthTokens = j?.tokens ?? {}
 		const access = typeof tokens.access_token === "string" ? tokens.access_token : undefined
 		let account = typeof tokens.account_id === "string" ? tokens.account_id : undefined
 
 		if (!account && typeof tokens.id_token === "string") {
-			try {
-				const parts = tokens.id_token.split(".")
-				if (parts.length === 3) {
-					const payload = parts[1]
-					const padded = payload + "=".repeat((4 - (payload.length % 4)) % 4)
-					const claims = JSON.parse(Buffer.from(padded, "base64").toString("utf8"))
-					const auth = claims?.["https://api.openai.com/auth"]
-					if (auth && typeof auth.chatgpt_account_id === "string") {
-						account = auth.chatgpt_account_id
-					}
-				}
-			} catch {
-				// ignore
+			const decoded = this.extractAccountIdFromIdToken(tokens.id_token)
+			if (decoded) {
+				account = decoded
 			}
 		}
 
@@ -161,6 +178,21 @@ export class OpenAiNativeCodexHandler extends BaseProvider {
 
 		this.chatgptAccessToken = access
 		this.chatgptAccountId = account
+	}
+
+	// Extract ChatGPT account id from id_token without verifying signature (local decode for UX only)
+	protected extractAccountIdFromIdToken(idToken: string): string | undefined {
+		try {
+			const parts = idToken.split(".")
+			if (parts.length !== 3) return undefined
+			const payload = parts[1]
+			const padded = payload + "=".repeat((4 - (payload.length % 4)) % 4)
+			const claims = JSON.parse(Buffer.from(padded, "base64").toString("utf8"))
+			const auth = claims?.["https://api.openai.com/auth"]
+			return typeof auth?.chatgpt_account_id === "string" ? auth.chatgpt_account_id : undefined
+		} catch {
+			return undefined
+		}
 	}
 
 	override getModel() {
@@ -202,13 +234,34 @@ export class OpenAiNativeCodexHandler extends BaseProvider {
 		const model = this.getModel()
 		await this.ensureAuthenticated()
 
-		// Format full conversation (Responses API expects structured input)
-		const formattedInput: any[] = []
+		// Transform messages to Codex input with strong typing
+		const formattedInput = this.buildCodexInput(messages, systemPrompt)
+
+		// Use provider-local prompt content for top-level instructions (TS string module)
+		const codexPrompt = codexPromptContent
+
+		// Codex (chatgpt.com codex/responses) is stateless and does NOT support previous_response_id.
+		// We always send curated prior items in `input` to preserve continuity.
+		const requestBody = this.buildRequestBody(
+			model,
+			formattedInput,
+			codexPrompt,
+			(model as any).verbosity as VerbosityLevel | undefined,
+			(model as any).reasoning?.reasoning_effort as ReasoningEffortWithMinimal | undefined,
+		)
+
+		yield* this.makeResponsesRequest(requestBody, model)
+	}
+
+	// Split out for unit testing and clearer typing
+	protected buildCodexInput(messages: Anthropic.Messages.MessageParam[], systemPrompt: string): CodexMessage[] {
+		const formatted: CodexMessage[] = []
 		// Inject provider overrides and dynamic instructions as a system role using <instructions_override> and <new_instructions> XML tags
 		let injectedUserInstructions = false
+
 		for (const message of messages) {
-			const role = message.role === "user" ? "user" : "assistant"
-			const content: any[] = []
+			const role: CodexRole = message.role === "user" ? "user" : "assistant"
+			const content: CodexContent[] = []
 
 			if (!injectedUserInstructions && typeof systemPrompt === "string" && systemPrompt.trim().length > 0) {
 				// Codex system prompt immutability:
@@ -220,7 +273,7 @@ export class OpenAiNativeCodexHandler extends BaseProvider {
 				//   2) <new_instructions> — the current task/systemPrompt, asking Codex to prioritize these rules/tools.
 				// - This pattern reduces the impact of Codex’s default prompt without trying to replace it (not possible).
 				// - We also keep these separate from user messages to avoid tool execution bias.
-				formattedInput.push({
+				formatted.push({
 					role: "system",
 					content: [
 						{
@@ -239,8 +292,11 @@ export class OpenAiNativeCodexHandler extends BaseProvider {
 			} else if (Array.isArray(message.content)) {
 				for (const block of message.content) {
 					if (block.type === "text") {
-						if (role === "user") content.push({ type: "input_text", text: (block as any).text })
-						else content.push({ type: "output_text", text: (block as any).text })
+						const text = (block as any).text as string
+						if (typeof text === "string") {
+							if (role === "user") content.push({ type: "input_text", text })
+							else content.push({ type: "output_text", text })
+						}
 					} else if (block.type === "image") {
 						const image = block as Anthropic.Messages.ImageBlockParam
 						const imageUrl = `data:${image.source.media_type};base64,${image.source.data}`
@@ -248,49 +304,43 @@ export class OpenAiNativeCodexHandler extends BaseProvider {
 					}
 				}
 			}
-			if (content.length > 0) formattedInput.push({ role, content })
+			if (content.length > 0) formatted.push({ role, content })
 		}
 
-		// Use provider-local prompt content for top-level instructions (TS string module)
-		// IMPORTANT: For ChatGPT Codex, we do not modify the "instructions" payload dynamically.
-		// We import a TS string module to keep the default, required contents easy to update as Codex evolves.
-		const codexPrompt = codexPromptContent
-
-		// Codex (chatgpt.com codex/responses) is stateless and does NOT support previous_response_id.
-		// We always send curated prior items in `input` to preserve continuity.
-		const requestBody = this.buildRequestBody(
-			model,
-			formattedInput,
-			codexPrompt,
-			(model as any).verbosity,
-			(model as any).reasoning?.reasoning_effort as ReasoningEffortWithMinimal | undefined,
-			metadata,
-		)
-
-		yield* this.makeResponsesRequest(requestBody, model)
+		return formatted
 	}
 
 	private buildRequestBody(
 		model: OpenAiNativeCodexModel,
-		formattedInput: any[],
-		systemPrompt: string,
-		verbosity: any,
+		formattedInput: CodexMessage[],
+		providerPrompt: string,
+		verbosity: VerbosityLevel | undefined,
 		reasoningEffort: ReasoningEffortWithMinimal | undefined,
-		metadata?: ApiHandlerCreateMessageMetadata,
 	) {
 		// For Codex provider:
 		// - Use the model's default reasoning effort (currently "medium") unless explicitly overridden in settings.
 		// - Both "gpt-5" and "gpt-5-codex" follow the provided/default effort without forcing "minimal".
 		let effectiveEffort: ReasoningEffortWithMinimal | undefined = reasoningEffort
 
-		const body: any = {
+		const body: {
+			model: string
+			input: CodexMessage[]
+			stream: true
+			store: false
+			instructions: string
+			reasoning?: {
+				effort: ReasoningEffortWithMinimal
+				summary?: "auto"
+			}
+			text?: { verbosity: VerbosityLevel }
+		} = {
 			model: model.id,
 			input: formattedInput,
 			stream: true,
 			// ChatGPT Responses requires store=false
 			store: false,
 			// Top-level instructions string passed in by caller (createMessage supplies provider prompt)
-			instructions: systemPrompt,
+			instructions: providerPrompt,
 			...(effectiveEffort && {
 				reasoning: {
 					effort: effectiveEffort,
