@@ -62,7 +62,6 @@ export enum TelemetryEventName {
 	ACCOUNT_LOGOUT_SUCCESS = "Account Logout Success",
 
 	FEATURED_PROVIDER_CLICKED = "Featured Provider Clicked",
-
 	UPSELL_DISMISSED = "Upsell Dismissed",
 	UPSELL_CLICKED = "Upsell Clicked",
 
