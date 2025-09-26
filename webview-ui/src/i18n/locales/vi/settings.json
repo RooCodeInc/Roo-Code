@@ -721,7 +721,7 @@
 					"multiBlock": "Chiến lược diff đa khối cho phép cập nhật nhiều khối mã trong một tệp trong một yêu cầu."
 				},
 				"watsonx": {
-					"description": "When enabled, Roo will be able to edit files more quickly and will automatically reject truncated full-file writes."
+					"description": "Khi được bật, Roo sẽ có thể chỉnh sửa tệp nhanh hơn và sẽ tự động từ chối ghi toàn bộ tệp bị cắt ngắn."
 				}
 			},
 			"matchPrecision": {

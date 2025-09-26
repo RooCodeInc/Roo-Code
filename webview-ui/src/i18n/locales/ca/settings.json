@@ -720,7 +720,7 @@
 					"multiBlock": "L'estratègia de diff multi-bloc permet actualitzar múltiples blocs de codi en un fitxer en una sola sol·licitud."
 				},
 				"watsonx": {
-					"description": "When enabled, Roo will be able to edit files more quickly and will automatically reject truncated full-file writes."
+					"description": "Quan està habilitat, Roo podrà editar fitxers més ràpidament i rebutjarà automàticament escriptures completes de fitxers truncats."
 				}
 			},
 			"matchPrecision": {

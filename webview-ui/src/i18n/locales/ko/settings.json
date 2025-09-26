@@ -721,7 +721,7 @@
 					"multiBlock": "다중 블록 diff 전략은 하나의 요청으로 파일의 여러 코드 블록을 업데이트할 수 있습니다."
 				},
 				"watsonx": {
-					"description": "When enabled, Roo will be able to edit files more quickly and will automatically reject truncated full-file writes."
+					"description": "활성화되면 Roo는 파일을 더 빠르게 편집할 수 있으며 잘린 전체 파일 쓰기를 자동으로 거부합니다."
 				}
 			},
 			"matchPrecision": {

@@ -720,7 +720,7 @@
 					"multiBlock": "La stratégie de diff multi-blocs permet de mettre à jour plusieurs blocs de code dans un fichier en une seule requête."
 				},
 				"watsonx": {
-					"description": "When enabled, Roo will be able to edit files more quickly and will automatically reject truncated full-file writes."
+					"description": "Lorsque cette option est activée, Roo pourra éditer des fichiers plus rapidement et rejettera automatiquement les écritures de fichiers complets tronqués."
 				}
 			},
 			"matchPrecision": {

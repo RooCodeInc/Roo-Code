@@ -721,7 +721,7 @@
 					"multiBlock": "मल्टी-ब्लॉक diff रणनीति एक अनुरोध में एक फाइल में कई कोड ब्लॉक अपडेट करने की अनुमति देती है।"
 				},
 				"watsonx": {
-					"description": "When enabled, Roo will be able to edit files more quickly and will automatically reject truncated full-file writes."
+					"description": "जब सक्षम किया जाता है, तो Roo फाइलों को तेजी से संपादित कर सकेगा और स्वचालित रूप से काटे गए पूर्ण-फाइल लेखन को अस्वीकार करेगा।"
 				}
 			},
 			"matchPrecision": {

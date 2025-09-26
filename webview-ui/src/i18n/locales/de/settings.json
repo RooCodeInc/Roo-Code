@@ -720,7 +720,7 @@
 					"multiBlock": "Die Mehrblock-Diff-Strategie ermöglicht das Aktualisieren mehrerer Codeblöcke in einer Datei in einer Anfrage."
 				},
 				"watsonx": {
-					"description": "When enabled, Roo will be able to edit files more quickly and will automatically reject truncated full-file writes."
+					"description": "Wenn aktiviert, kann Roo Dateien schneller bearbeiten und lehnt automatisch abgeschnittene vollständige Dateischreibvorgänge ab."
 				}
 			},
 			"matchPrecision": {
