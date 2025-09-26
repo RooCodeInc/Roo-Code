@@ -274,7 +274,7 @@
 		"vercelAiGatewayApiKey": "Clau API de Vercel AI Gateway",
 		"getVercelAiGatewayApiKey": "Obtenir clau API de Vercel AI Gateway",
 		"apiKeyStorageNotice": "Les claus API s'emmagatzemen de forma segura a l'Emmagatzematge Secret de VSCode",
-		"passwordStorageNotice": "Passwords are stored securely in VSCode's Secret Storage",
+		"passwordStorageNotice": "Les contrasenyes s'emmagatzemen de forma segura a l'Emmagatzematge Secret de VSCode",
 		"glamaApiKey": "Clau API de Glama",
 		"getGlamaApiKey": "Obtenir clau API de Glama",
 		"useCustomBaseUrl": "Utilitzar URL base personalitzada",
@@ -754,7 +754,7 @@
 					"multiBlock": "L'estratègia de diff multi-bloc permet actualitzar múltiples blocs de codi en un fitxer en una sola sol·licitud."
 				},
 				"watsonx": {
-					"description": "When enabled, Roo will be able to edit files more quickly and will automatically reject truncated full-file writes."
+					"description": "Quan està habilitat, Roo podrà editar fitxers més ràpidament i rebutjarà automàticament escriptures completes de fitxers truncats."
 				}
 			},
 			"matchPrecision": {
@@ -903,15 +903,14 @@
 		"profileInvalid": "Aquest perfil conté un proveïdor o model que no està permès per la vostra organització",
 		"qwenCodeOauthPath": "Has de proporcionar una ruta vàlida de credencials OAuth",
 		"watsonx": {
-			"platform": "You must select a platform.",
-			"region": "You must select a region.",
-			"projectId": "You must provide a valid project ID.",
-			"authType": "You must select an authentication type.",
-			"username": "You must provide a valid username.",
-			"apiKey": "You must provide a valid API key.",
-			"password": "You must provide a valid password.",
-			"baseUrl": "You must provide IBM Cloud Pak for Data URL.",
-			"invalidUrl": "You must provide a valid IBM Cloud Pak for Data URL."
+			"platform": "Heu de seleccionar una plataforma.",
+			"region": "Heu de seleccionar una regió.",
+			"projectId": "Heu de proporcionar un ID de projecte vàlid.",
+			"authType": "Heu de seleccionar un tipus d'autenticació.",
+			"username": "Heu de proporcionar un nom d'usuari vàlid.",
+			"apiKey": "Heu de proporcionar una clau API vàlida.",
+			"password": "Heu de proporcionar una contrasenya vàlida.",
+			"baseUrl": "Heu de proporcionar una URL vàlida d'IBM Cloud Pak for Data."
 		}
 	},
 	"placeholders": {

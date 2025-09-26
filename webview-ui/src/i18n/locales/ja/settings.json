@@ -274,7 +274,7 @@
 		"vercelAiGatewayApiKey": "Vercel AI Gateway APIキー",
 		"getVercelAiGatewayApiKey": "Vercel AI Gateway APIキーを取得",
 		"apiKeyStorageNotice": "APIキーはVSCodeのシークレットストレージに安全に保存されます",
-		"passwordStorageNotice": "Passwords are stored securely in VSCode's Secret Storage",
+		"passwordStorageNotice": "パスワードはVSCodeのシークレットストレージに安全に保存されます",
 		"glamaApiKey": "Glama APIキー",
 		"getGlamaApiKey": "Glama APIキーを取得",
 		"useCustomBaseUrl": "カスタムベースURLを使用",
@@ -755,7 +755,7 @@
 					"multiBlock": "マルチブロックdiff戦略は、1つのリクエストでファイル内の複数のコードブロックを更新できます。"
 				},
 				"watsonx": {
-					"description": "When enabled, Roo will be able to edit files more quickly and will automatically reject truncated full-file writes."
+					"description": "有効にすると、Rooはファイルをより迅速に編集でき、切り詰められた全ファイル書き込みを自動的に拒否します。"
 				}
 			},
 			"matchPrecision": {
@@ -904,15 +904,14 @@
 		"profileInvalid": "このプロファイルには、組織によって許可されていないプロバイダーまたはモデルが含まれています",
 		"qwenCodeOauthPath": "有効なOAuth認証情報のパスを提供する必要があります",
 		"watsonx": {
-			"platform": "You must select a platform.",
-			"region": "You must select a region.",
-			"projectId": "You must provide a valid project ID.",
-			"authType": "You must select an authentication type.",
-			"username": "You must provide a valid username.",
-			"apiKey": "You must provide a valid API key.",
-			"password": "You must provide a valid password.",
-			"baseUrl": "You must provide IBM Cloud Pak for Data URL.",
-			"invalidUrl": "You must provide a valid IBM Cloud Pak for Data URL."
+			"platform": "プラットフォームを選択する必要があります。",
+			"region": "リージョンを選択する必要があります。",
+			"projectId": "有効なプロジェクトIDを提供する必要があります。",
+			"authType": "認証タイプを選択する必要があります。",
+			"username": "有効なユーザー名を提供する必要があります。",
+			"apiKey": "有効なAPIキーを提供する必要があります。",
+			"password": "有効なパスワードを提供する必要があります。",
+			"baseUrl": "有効なIBM Cloud Pak for Data URLを提供する必要があります。"
 		}
 	},
 	"placeholders": {

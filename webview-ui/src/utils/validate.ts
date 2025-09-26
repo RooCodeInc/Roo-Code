@@ -177,10 +177,10 @@ function validateModelsAndKeysProvided(apiConfiguration: ProviderSettings): stri
 				try {
 					const url = new URL(apiConfiguration.watsonxBaseUrl)
 					if (!url.protocol || !url.hostname) {
-						return i18next.t("settings:validation.watsonx.invalidUrl")
+						return i18next.t("settings:validation.watsonx.baseUrl")
 					}
 				} catch {
-					return i18next.t("settings:validation.watsonx.invalidUrl")
+					return i18next.t("settings:validation.watsonx.baseUrl")
 				}
 				if (!apiConfiguration.watsonxUsername) {
 					return i18next.t("settings:validation.watsonx.username")

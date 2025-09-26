@@ -278,7 +278,7 @@
 		"vercelAiGatewayApiKey": "Vercel AI Gateway API Key",
 		"getVercelAiGatewayApiKey": "Dapatkan Vercel AI Gateway API Key",
 		"apiKeyStorageNotice": "API key disimpan dengan aman di Secret Storage VSCode",
-		"passwordStorageNotice": "Passwords are stored securely in VSCode's Secret Storage",
+		"passwordStorageNotice": "Kata sandi disimpan dengan aman di Secret Storage VSCode",
 		"glamaApiKey": "Glama API Key",
 		"getGlamaApiKey": "Dapatkan Glama API Key",
 		"useCustomBaseUrl": "Gunakan base URL kustom",
@@ -759,7 +759,7 @@
 					"multiBlock": "Strategi multi-block diff memungkinkan memperbarui beberapa blok kode dalam file dalam satu permintaan."
 				},
 				"watsonx": {
-					"description": "When enabled, Roo will be able to edit files more quickly and will automatically reject truncated full-file writes."
+					"description": "Ketika diaktifkan, Roo akan dapat mengedit file lebih cepat dan akan secara otomatis menolak penulisan file penuh yang terpotong."
 				}
 			},
 			"matchPrecision": {
@@ -933,15 +933,14 @@
 		"profileInvalid": "Profil ini berisi provider atau model yang tidak diizinkan oleh organisasi kamu",
 		"qwenCodeOauthPath": "Kamu harus memberikan jalur kredensial OAuth yang valid",
 		"watsonx": {
-			"platform": "You must select a platform.",
-			"region": "You must select a region.",
-			"projectId": "You must provide a valid project ID.",
-			"authType": "You must select an authentication type.",
-			"username": "You must provide a valid username.",
-			"apiKey": "You must provide a valid API key.",
-			"password": "You must provide a valid password.",
-			"baseUrl": "You must provide IBM Cloud Pak for Data URL.",
-			"invalidUrl": "You must provide a valid IBM Cloud Pak for Data URL."
+			"platform": "Kamu harus memilih platform.",
+			"region": "Kamu harus memilih region.",
+			"projectId": "Kamu harus menyediakan project ID yang valid.",
+			"authType": "Kamu harus memilih tipe autentikasi.",
+			"username": "Kamu harus menyediakan username yang valid.",
+			"apiKey": "Kamu harus menyediakan API key yang valid.",
+			"password": "Kamu harus menyediakan password yang valid.",
+			"baseUrl": "Kamu harus menyediakan URL IBM Cloud Pak for Data yang valid."
 		}
 	},
 	"placeholders": {

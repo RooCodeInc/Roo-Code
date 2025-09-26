@@ -274,7 +274,7 @@
 		"vercelAiGatewayApiKey": "Vercel AI Gateway API 키",
 		"getVercelAiGatewayApiKey": "Vercel AI Gateway API 키 받기",
 		"apiKeyStorageNotice": "API 키는 VSCode의 보안 저장소에 안전하게 저장됩니다",
-		"passwordStorageNotice": "Passwords are stored securely in VSCode's Secret Storage",
+		"passwordStorageNotice": "비밀번호는 VSCode의 보안 저장소에 안전하게 저장됩니다",
 		"glamaApiKey": "Glama API 키",
 		"getGlamaApiKey": "Glama API 키 받기",
 		"useCustomBaseUrl": "사용자 정의 기본 URL 사용",
@@ -755,7 +755,7 @@
 					"multiBlock": "다중 블록 diff 전략은 하나의 요청으로 파일의 여러 코드 블록을 업데이트할 수 있습니다."
 				},
 				"watsonx": {
-					"description": "When enabled, Roo will be able to edit files more quickly and will automatically reject truncated full-file writes."
+					"description": "활성화되면 Roo는 파일을 더 빠르게 편집할 수 있으며 잘린 전체 파일 쓰기를 자동으로 거부합니다."
 				}
 			},
 			"matchPrecision": {
@@ -904,15 +904,14 @@
 		"profileInvalid": "이 프로필에는 조직에서 허용되지 않는 제공자 또는 모델이 포함되어 있습니다",
 		"qwenCodeOauthPath": "유효한 OAuth 자격 증명 경로를 제공해야 합니다",
 		"watsonx": {
-			"platform": "You must select a platform.",
-			"region": "You must select a region.",
-			"projectId": "You must provide a valid project ID.",
-			"authType": "You must select an authentication type.",
-			"username": "You must provide a valid username.",
-			"apiKey": "You must provide a valid API key.",
-			"password": "You must provide a valid password.",
-			"baseUrl": "You must provide IBM Cloud Pak for Data URL.",
-			"invalidUrl": "You must provide a valid IBM Cloud Pak for Data URL."
+			"platform": "플랫폼을 선택해야 합니다.",
+			"region": "리전을 선택해야 합니다.",
+			"projectId": "유효한 프로젝트 ID를 제공해야 합니다.",
+			"authType": "인증 유형을 선택해야 합니다.",
+			"username": "유효한 사용자 이름을 제공해야 합니다.",
+			"apiKey": "유효한 API 키를 제공해야 합니다.",
+			"password": "유효한 비밀번호를 제공해야 합니다.",
+			"baseUrl": "유효한 IBM Cloud Pak for Data URL을 제공해야 합니다."
 		}
 	},
 	"placeholders": {

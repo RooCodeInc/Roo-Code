@@ -1062,13 +1062,31 @@ export const webviewMessageHandler = async (
 					const { apiKey, projectId, platform, baseUrl, authType, username, password, region } =
 						message.values
 
-					if (!apiKey && !(username && (authType === "password" ? password : apiKey))) {
-						console.error("Missing authentication credentials for IBM watsonx models")
-						provider.postMessageToWebview({
-							type: "watsonxModels",
-							watsonxModels: {},
-						})
-						return
+					if (platform !== "ibmCloud") {
+						if (!apiKey && !region && !projectId) {
+							console.error("Missing IBM Cloud authentication credentials for IBM watsonx models")
+							provider.postMessageToWebview({
+								type: "watsonxModels",
+								watsonxModels: {},
+							})
+							return
+						}
+					} else if (platform === "cloudPak") {
+						if (authType === "password" && !(username && password && projectId)) {
+							console.error("Missing IBM Cloud Pak authentication credentials for IBM watsonx models")
+							provider.postMessageToWebview({
+								type: "watsonxModels",
+								watsonxModels: {},
+							})
+							return
+						} else if (authType === "apikey" && !(apiKey && projectId)) {
+							console.error("Missing IBM Cloud Pak authentication credentials for IBM watsonx models")
+							provider.postMessageToWebview({
+								type: "watsonxModels",
+								watsonxModels: {},
+							})
+							return
+						}
 					}
 
 					let effectiveBaseUrl = baseUrl

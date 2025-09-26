@@ -274,7 +274,7 @@
 		"vercelAiGatewayApiKey": "Vercel AI Gateway API कुंजी",
 		"getVercelAiGatewayApiKey": "Vercel AI Gateway API कुंजी प्राप्त करें",
 		"apiKeyStorageNotice": "API कुंजियाँ VSCode के सुरक्षित स्टोरेज में सुरक्षित रूप से संग्रहीत हैं",
-		"passwordStorageNotice": "Passwords are stored securely in VSCode's Secret Storage",
+		"passwordStorageNotice": "पासवर्ड VSCode के सीक्रेट स्टोरेज में सुरक्षित रूप से संग्रहीत किए जाते हैं",
 		"glamaApiKey": "Glama API कुंजी",
 		"getGlamaApiKey": "Glama API कुंजी प्राप्त करें",
 		"useCustomBaseUrl": "कस्टम बेस URL का उपयोग करें",
@@ -755,7 +755,7 @@
 					"multiBlock": "मल्टी-ब्लॉक diff रणनीति एक अनुरोध में एक फाइल में कई कोड ब्लॉक अपडेट करने की अनुमति देती है।"
 				},
 				"watsonx": {
-					"description": "When enabled, Roo will be able to edit files more quickly and will automatically reject truncated full-file writes."
+					"description": "जब सक्षम किया जाता है, तो Roo फाइलों को तेजी से संपादित कर सकेगा और स्वचालित रूप से काटे गए पूर्ण-फाइल लेखन को अस्वीकार करेगा।"
 				}
 			},
 			"matchPrecision": {
@@ -904,15 +904,14 @@
 		"profileInvalid": "इस प्रोफ़ाइल में एक प्रदाता या मॉडल शामिल है जो आपके संगठन द्वारा अनुमत नहीं है",
 		"qwenCodeOauthPath": "आपको एक वैध OAuth क्रेडेंशियल पथ प्रदान करना होगा",
 		"watsonx": {
-			"platform": "You must select a platform.",
-			"region": "You must select a region.",
-			"projectId": "You must provide a valid project ID.",
-			"authType": "You must select an authentication type.",
-			"username": "You must provide a valid username.",
-			"apiKey": "You must provide a valid API key.",
-			"password": "You must provide a valid password.",
-			"baseUrl": "You must provide IBM Cloud Pak for Data URL.",
-			"invalidUrl": "You must provide a valid IBM Cloud Pak for Data URL."
+			"platform": "आपको एक प्लेटफॉर्म चुनना होगा।",
+			"region": "आपको एक क्षेत्र चुनना होगा।",
+			"projectId": "आपको एक वैध प्रोजेक्ट ID प्रदान करना होगा।",
+			"authType": "आपको एक प्रमाणीकरण प्रकार चुनना होगा।",
+			"username": "आपको एक वैध उपयोगकर्ता नाम प्रदान करना होगा।",
+			"apiKey": "आपको एक वैध API कुंजी प्रदान करनी होगी।",
+			"password": "आपको एक वैध पासवर्ड प्रदान करना होगा।",
+			"baseUrl": "आपको एक वैध IBM Cloud Pak for Data URL प्रदान करना होगा।"
 		}
 	},
 	"placeholders": {

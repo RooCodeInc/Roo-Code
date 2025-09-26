@@ -274,7 +274,7 @@
 		"vercelAiGatewayApiKey": "Chiave API Vercel AI Gateway",
 		"getVercelAiGatewayApiKey": "Ottieni chiave API Vercel AI Gateway",
 		"apiKeyStorageNotice": "Le chiavi API sono memorizzate in modo sicuro nell'Archivio Segreto di VSCode",
-		"passwordStorageNotice": "Passwords are stored securely in VSCode's Secret Storage",
+		"passwordStorageNotice": "Le password sono memorizzate in modo sicuro nell'Archivio Segreto di VSCode",
 		"glamaApiKey": "Chiave API Glama",
 		"getGlamaApiKey": "Ottieni chiave API Glama",
 		"useCustomBaseUrl": "Usa URL base personalizzato",
@@ -755,7 +755,7 @@
 					"multiBlock": "La strategia diff multi-blocco consente di aggiornare più blocchi di codice in un file in una singola richiesta."
 				},
 				"watsonx": {
-					"description": "When enabled, Roo will be able to edit files more quickly and will automatically reject truncated full-file writes."
+					"description": "Quando abilitato, Roo sarà in grado di modificare i file più velocemente e rifiuterà automaticamente scritture di file completi troncati."
 				}
 			},
 			"matchPrecision": {
@@ -904,15 +904,14 @@
 		"profileInvalid": "Questo profilo contiene un fornitore o un modello non consentito dalla tua organizzazione.",
 		"qwenCodeOauthPath": "Devi fornire un percorso valido per le credenziali OAuth",
 		"watsonx": {
-			"platform": "You must select a platform.",
-			"region": "You must select a region.",
-			"projectId": "You must provide a valid project ID.",
-			"authType": "You must select an authentication type.",
-			"username": "You must provide a valid username.",
-			"apiKey": "You must provide a valid API key.",
-			"password": "You must provide a valid password.",
-			"baseUrl": "You must provide IBM Cloud Pak for Data URL.",
-			"invalidUrl": "You must provide a valid IBM Cloud Pak for Data URL."
+			"platform": "È necessario selezionare una piattaforma.",
+			"region": "È necessario selezionare una regione.",
+			"projectId": "È necessario fornire un ID progetto valido.",
+			"authType": "È necessario selezionare un tipo di autenticazione.",
+			"username": "È necessario fornire un nome utente valido.",
+			"apiKey": "È necessario fornire una chiave API valida.",
+			"password": "È necessario fornire una password valida.",
+			"baseUrl": "È necessario fornire un URL IBM Cloud Pak for Data valido."
 		}
 	},
 	"placeholders": {
