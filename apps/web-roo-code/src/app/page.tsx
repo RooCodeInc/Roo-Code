@@ -10,6 +10,7 @@ import {
 	Testimonials,
 	FAQSection,
 	CodeExample,
+	UserLogos,
 } from "@/components/homepage"
 import { EXTERNAL_LINKS } from "@/lib/constants"
 import { ArrowRight } from "lucide-react"
@@ -61,6 +62,7 @@ export default async function Home() {
 									</a>
 								</Button>
 							</div>
+							<UserLogos />
 						</div>
 						<div className="relative flex items-center mx-auto h-full mt-8 lg:mt-0">
 							<div className="flex items-center justify-center">
