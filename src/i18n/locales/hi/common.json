@@ -126,6 +126,7 @@
 		"openaiNativeCodex": {
 			"oauthReadFailed": "{{path}} पर ChatGPT OAuth क्रेडेंशियल लोड करने में विफल: {{error}}। सुझाव: auth.json बनाने के लिए Codex CLI के साथ प्रमाणित करें (जैसे, \"codex login\")।",
 			"oauthParseFailed": "{{path}} पर ChatGPT OAuth क्रेडेंशियल JSON पार्स करने में विफल: {{error}}। सुझाव: सुनिश्चित करें कि फ़ाइल वैध JSON है या इसे पुनर्जनित करने के लिए \"codex login\" के साथ पुनः प्रमाणित करें।",
+			"oauthFileTooLarge": "{{path}} पर OAuth क्रेडेंशियल फ़ाइल बहुत बड़ी है ({{size}} बाइट्स)। अधिकतम अनुमतित {{max}} बाइट्स है।",
 			"missingAccessToken": "ChatGPT OAuth क्रेडेंशियल में tokens.access_token गुम है।",
 			"httpError": "Codex HTTP {{status}} (req: {{requestId}}) model={{modelId}}: {{message}}",
 			"noResponseBody": "ChatGPT प्रतिक्रिया त्रुटि: कोई प्रतिक्रिया बॉडी नहीं",

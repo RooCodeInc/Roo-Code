@@ -126,6 +126,7 @@
 		"openaiNativeCodex": {
 			"oauthReadFailed": "Nie udało się załadować danych uwierzytelniających OAuth ChatGPT w {{path}}: {{error}}. Wskazówka: uwierzytelnij się za pomocą Codex CLI (np. \"codex login\"), aby utworzyć auth.json.",
 			"oauthParseFailed": "Nie udało się przeanalizować JSON danych uwierzytelniających OAuth ChatGPT w {{path}}: {{error}}. Wskazówka: upewnij się, że plik jest prawidłowym JSON lub ponownie uwierzytelnij się za pomocą \"codex login\", aby go zregenerować.",
+			"oauthFileTooLarge": "Plik danych uwierzytelniających OAuth w {{path}} jest za duży ({{size}} bajtów). Maksymalny dozwolony rozmiar to {{max}} bajtów.",
 			"missingAccessToken": "Dane uwierzytelniające OAuth ChatGPT nie zawierają tokens.access_token.",
 			"httpError": "Codex HTTP {{status}} (req: {{requestId}}) model={{modelId}}: {{message}}",
 			"noResponseBody": "Błąd odpowiedzi ChatGPT: Brak treści odpowiedzi",

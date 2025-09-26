@@ -440,6 +440,13 @@
 			"authenticatedMessage": "Roo Code Cloud 계정을 통해 안전하게 인증되었습니다.",
 			"connectButton": "Roo Code Cloud에 연결"
 		},
+		"openAiNativeCodex": {
+			"oauthPathLabel": "OAuth 자격 증명 경로",
+			"oauthPathDescription": "ChatGPT Codex auth.json 자격 증명 경로입니다. 비어있으면 기본값 {{defaultPath}}를 사용합니다 (Windows: C:\\\\Users\\\\USERNAME\\\\.codex\\\\auth.json).",
+			"oauthCliDescription": "ChatGPT Codex는 공식 Codex CLI를 통해 ChatGPT 웹 자격 증명을 사용합니다. auth.json이 생성되도록 Codex CLI로 인증하세요. 사용자 정의 위치를 사용하는 경우 여기에 전체 파일 경로를 설정하세요.",
+			"oauthConnectDescription": "인증 후 Roo는 auth.json에서 액세스 토큰을 읽고 ChatGPT Responses (Codex)에 연결합니다.",
+			"learnMoreLinkText": "ChatGPT에 대해 자세히 알아보기"
+		},
 		"openRouter": {
 			"providerRouting": {
 				"title": "OpenRouter 제공자 라우팅",

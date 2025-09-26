@@ -130,6 +130,7 @@
 		"openaiNativeCodex": {
 			"oauthReadFailed": "Falha ao carregar credenciais OAuth do ChatGPT em {{path}}: {{error}}. Dica: autentique-se com a CLI do Codex (ex: \"codex login\") para criar auth.json.",
 			"oauthParseFailed": "Falha ao analisar JSON das credenciais OAuth do ChatGPT em {{path}}: {{error}}. Dica: certifique-se de que o arquivo seja JSON válido ou autentique-se novamente com \"codex login\" para regenerá-lo.",
+			"oauthFileTooLarge": "Arquivo de credenciais OAuth em {{path}} é muito grande ({{size}} bytes). O máximo permitido é {{max}} bytes.",
 			"missingAccessToken": "Credenciais OAuth do ChatGPT estão faltando tokens.access_token.",
 			"httpError": "Codex HTTP {{status}} (req: {{requestId}}) model={{modelId}}: {{message}}",
 			"noResponseBody": "Erro de respostas do ChatGPT: Sem corpo de resposta",

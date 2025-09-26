@@ -440,6 +440,13 @@
 			"authenticatedMessage": "Roo Code Cloud hesabın üzerinden güvenli bir şekilde kimlik doğrulandı.",
 			"connectButton": "Roo Code Cloud'a Bağlan"
 		},
+		"openAiNativeCodex": {
+			"oauthPathLabel": "OAuth kimlik bilgileri yolu",
+			"oauthPathDescription": "ChatGPT Codex auth.json kimlik bilgilerinizin yolu. Boş bırakılırsa varsayılan {{defaultPath}} (Windows: C:\\\\Users\\\\USERNAME\\\\.codex\\\\auth.json).",
+			"oauthCliDescription": "ChatGPT Codex, resmi Codex CLI aracılığıyla ChatGPT web kimlik bilgilerinizi kullanır. auth.json oluşturulması için Codex CLI ile kimlik doğrulaması yapın. Özel bir konum kullanıyorsanız, burada tam dosya yolunu ayarlayın.",
+			"oauthConnectDescription": "Kimlik doğrulamasından sonra Roo, auth.json'dan erişim belirtecini okuyacak ve ChatGPT Responses (Codex) ile bağlantı kuracak.",
+			"learnMoreLinkText": "ChatGPT hakkında daha fazla bilgi edinin"
+		},
 		"openRouter": {
 			"providerRouting": {
 				"title": "OpenRouter Sağlayıcı Yönlendirmesi",

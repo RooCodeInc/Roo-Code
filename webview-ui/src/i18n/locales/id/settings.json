@@ -444,6 +444,13 @@
 			"authenticatedMessage": "Terautentikasi dengan aman melalui akun Roo Code Cloud Anda.",
 			"connectButton": "Hubungkan ke Roo Code Cloud"
 		},
+		"openAiNativeCodex": {
+			"oauthPathLabel": "Jalur Kredensial OAuth",
+			"oauthPathDescription": "Jalur ke kredensial auth.json ChatGPT Codex Anda. Default ke {{defaultPath}} jika dibiarkan kosong (Windows: C:\\\\Users\\\\USERNAME\\\\.codex\\\\auth.json).",
+			"oauthCliDescription": "ChatGPT Codex menggunakan kredensial web ChatGPT Anda melalui CLI Codex resmi. Autentikasi dengan CLI Codex agar auth.json dibuat. Jika Anda menggunakan lokasi kustom, atur jalur file lengkap di sini.",
+			"oauthConnectDescription": "Setelah autentikasi, Roo akan membaca token akses dari auth.json dan terhubung ke ChatGPT Responses (Codex).",
+			"learnMoreLinkText": "Pelajari lebih lanjut tentang ChatGPT"
+		},
 		"openRouter": {
 			"providerRouting": {
 				"title": "OpenRouter Provider Routing",

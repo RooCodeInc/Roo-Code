@@ -440,6 +440,13 @@
 			"authenticatedMessage": "Đã xác thực an toàn thông qua tài khoản Roo Code Cloud của bạn.",
 			"connectButton": "Kết nối với Roo Code Cloud"
 		},
+		"openAiNativeCodex": {
+			"oauthPathLabel": "Đường dẫn thông tin xác thực OAuth",
+			"oauthPathDescription": "Đường dẫn đến thông tin xác thực auth.json ChatGPT Codex của bạn. Mặc định {{defaultPath}} nếu để trống (Windows: C:\\\\Users\\\\USERNAME\\\\.codex\\\\auth.json).",
+			"oauthCliDescription": "ChatGPT Codex sử dụng thông tin xác thực web ChatGPT của bạn thông qua CLI Codex chính thức. Xác thực với CLI Codex để tạo auth.json. Nếu bạn sử dụng vị trí tùy chỉnh, hãy đặt đường dẫn tệp đầy đủ ở đây.",
+			"oauthConnectDescription": "Sau khi xác thực, Roo sẽ đọc token truy cập từ auth.json và kết nối với ChatGPT Responses (Codex).",
+			"learnMoreLinkText": "Tìm hiểu thêm về ChatGPT"
+		},
 		"openRouter": {
 			"providerRouting": {
 				"title": "Định tuyến nhà cung cấp OpenRouter",

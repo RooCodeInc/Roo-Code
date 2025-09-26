@@ -440,6 +440,13 @@
 			"authenticatedMessage": "已透過 Roo Code Cloud 帳戶安全認證。",
 			"connectButton": "連接到 Roo Code Cloud"
 		},
+		"openAiNativeCodex": {
+			"oauthPathLabel": "OAuth 憑證路徑",
+			"oauthPathDescription": "您的 ChatGPT Codex auth.json 憑證路徑。如果留空則預設為 {{defaultPath}}（Windows: C:\\\\Users\\\\USERNAME\\\\.codex\\\\auth.json）。",
+			"oauthCliDescription": "ChatGPT Codex 透過官方 Codex CLI 使用您的 ChatGPT 網頁憑證。使用 Codex CLI 進行認證以建立 auth.json。如果您使用自訂位置，請在此設定完整檔案路徑。",
+			"oauthConnectDescription": "認證後，Roo 將從 auth.json 讀取存取權杖並連接到 ChatGPT Responses（Codex）。",
+			"learnMoreLinkText": "深入了解 ChatGPT"
+		},
 		"openRouter": {
 			"providerRouting": {
 				"title": "OpenRouter 供應商路由",

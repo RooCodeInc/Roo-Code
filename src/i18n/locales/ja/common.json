@@ -126,6 +126,7 @@
 		"openaiNativeCodex": {
 			"oauthReadFailed": "{{path}}でChatGPT OAuth認証情報の読み込みに失敗しました: {{error}}。ヒント: Codex CLI（例：\"codex login\"）で認証してauth.jsonを作成してください。",
 			"oauthParseFailed": "{{path}}でChatGPT OAuth認証情報JSONの解析に失敗しました: {{error}}。ヒント: ファイルが有効なJSONであることを確認するか、\"codex login\"で再認証して再生成してください。",
+			"oauthFileTooLarge": "{{path}}のOAuth認証情報ファイルが大きすぎます（{{size}}バイト）。最大許可サイズは{{max}}バイトです。",
 			"missingAccessToken": "ChatGPT OAuth認証情報にtokens.access_tokenがありません。",
 			"httpError": "Codex HTTP {{status}} (req: {{requestId}}) model={{modelId}}: {{message}}",
 			"noResponseBody": "ChatGPTレスポンスエラー: レスポンスボディがありません",

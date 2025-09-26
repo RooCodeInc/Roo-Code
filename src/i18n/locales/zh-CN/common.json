@@ -131,6 +131,7 @@
 		"openaiNativeCodex": {
 			"oauthReadFailed": "无法在 {{path}} 加载 ChatGPT OAuth 凭据：{{error}}。提示：使用 Codex CLI 进行身份验证（例如 \"codex login\"）以创建 auth.json。",
 			"oauthParseFailed": "无法在 {{path}} 解析 ChatGPT OAuth 凭据 JSON：{{error}}。提示：确保文件是有效的 JSON 或使用 \"codex login\" 重新验证以重新生成。",
+			"oauthFileTooLarge": "{{path}} 处的 OAuth 凭据文件过大（{{size}} 字节）。最大允许大小为 {{max}} 字节。",
 			"missingAccessToken": "ChatGPT OAuth 凭据缺少 tokens.access_token。",
 			"httpError": "Codex HTTP {{status}} (req: {{requestId}}) model={{modelId}}: {{message}}",
 			"noResponseBody": "ChatGPT 响应错误：无响应正文",

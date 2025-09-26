@@ -126,6 +126,7 @@
 		"openaiNativeCodex": {
 			"oauthReadFailed": "Không thể tải thông tin xác thực OAuth ChatGPT tại {{path}}: {{error}}. Mẹo: xác thực với Codex CLI (ví dụ: \"codex login\") để tạo auth.json.",
 			"oauthParseFailed": "Không thể phân tích JSON thông tin xác thực OAuth ChatGPT tại {{path}}: {{error}}. Mẹo: đảm bảo tệp là JSON hợp lệ hoặc xác thực lại với \"codex login\" để tạo lại.",
+			"oauthFileTooLarge": "Tệp thông tin xác thực OAuth tại {{path}} quá lớn ({{size}} byte). Kích thước tối đa cho phép là {{max}} byte.",
 			"missingAccessToken": "Thông tin xác thực OAuth ChatGPT thiếu tokens.access_token.",
 			"httpError": "Codex HTTP {{status}} (req: {{requestId}}) model={{modelId}}: {{message}}",
 			"noResponseBody": "Lỗi phản hồi ChatGPT: Không có nội dung phản hồi",

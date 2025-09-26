@@ -440,6 +440,13 @@
 			"authenticatedMessage": "Autenticado de forma segura a través de tu cuenta de Roo Code Cloud.",
 			"connectButton": "Conectar a Roo Code Cloud"
 		},
+		"openAiNativeCodex": {
+			"oauthPathLabel": "Ruta de credenciales OAuth",
+			"oauthPathDescription": "Ruta a tus credenciales auth.json de ChatGPT Codex. Por defecto {{defaultPath}} si se deja vacío (Windows: C:\\\\Users\\\\USERNAME\\\\.codex\\\\auth.json).",
+			"oauthCliDescription": "ChatGPT Codex usa tus credenciales web de ChatGPT a través del CLI oficial de Codex. Autentícate con el CLI de Codex para que se cree auth.json. Si usas una ubicación personalizada, establece aquí la ruta completa del archivo.",
+			"oauthConnectDescription": "Después de la autenticación, Roo leerá el token de acceso desde auth.json y se conectará a ChatGPT Responses (Codex).",
+			"learnMoreLinkText": "Aprende más sobre ChatGPT"
+		},
 		"openRouter": {
 			"providerRouting": {
 				"title": "Enrutamiento de Proveedores de OpenRouter",

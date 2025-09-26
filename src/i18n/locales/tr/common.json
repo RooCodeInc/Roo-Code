@@ -126,6 +126,7 @@
 		"openaiNativeCodex": {
 			"oauthReadFailed": "{{path}} konumunda ChatGPT OAuth kimlik bilgileri yüklenemedi: {{error}}. İpucu: auth.json oluşturmak için Codex CLI ile kimlik doğrulaması yapın (örn. \"codex login\").",
 			"oauthParseFailed": "{{path}} konumunda ChatGPT OAuth kimlik bilgileri JSON'u ayrıştırılamadı: {{error}}. İpucu: dosyanın geçerli JSON olduğundan emin olun veya yeniden oluşturmak için \"codex login\" ile yeniden kimlik doğrulaması yapın.",
+			"oauthFileTooLarge": "{{path}} konumundaki OAuth kimlik bilgileri dosyası çok büyük ({{size}} bayt). İzin verilen maksimum {{max}} bayttır.",
 			"missingAccessToken": "ChatGPT OAuth kimlik bilgilerinde tokens.access_token eksik.",
 			"httpError": "Codex HTTP {{status}} (req: {{requestId}}) model={{modelId}}: {{message}}",
 			"noResponseBody": "ChatGPT Yanıtları hatası: Yanıt gövdesi yok",
