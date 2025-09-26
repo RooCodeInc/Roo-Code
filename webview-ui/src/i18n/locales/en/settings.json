@@ -228,6 +228,7 @@
 		"description": "Save different API configurations to quickly switch between providers and settings.",
 		"apiProvider": "API Provider",
 		"model": "Model",
+		"modelUnavailable": "unavailable",
 		"nameEmpty": "Name cannot be empty",
 		"nameExists": "A profile with this name already exists",
 		"deleteProfile": "Delete Profile",
@@ -799,7 +800,8 @@
 		"label": "Model",
 		"searchPlaceholder": "Search",
 		"noMatchFound": "No match found",
-		"useCustomModel": "Use custom: {{modelId}}"
+		"useCustomModel": "Use custom: {{modelId}}",
+		"unavailable": "unavailable"
 	},
 	"footer": {
 		"feedback": "If you have any questions or feedback, feel free to open an issue at <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> or join <redditLink>reddit.com/r/RooCode</redditLink> or <discordLink>discord.gg/roocode</discordLink>",

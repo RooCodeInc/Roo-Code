@@ -223,6 +223,7 @@
 		"description": "다양한 API 구성을 저장하여 제공자와 설정 간에 빠르게 전환할 수 있습니다.",
 		"apiProvider": "API 제공자",
 		"model": "모델",
+		"modelUnavailable": "사용 불가",
 		"nameEmpty": "이름은 비워둘 수 없습니다",
 		"nameExists": "이 이름의 프로필이 이미 존재합니다",
 		"deleteProfile": "프로필 삭제",
@@ -795,7 +796,8 @@
 		"label": "모델",
 		"searchPlaceholder": "검색",
 		"noMatchFound": "일치하는 항목 없음",
-		"useCustomModel": "사용자 정의 사용: {{modelId}}"
+		"useCustomModel": "사용자 정의 사용: {{modelId}}",
+		"unavailable": "사용 불가"
 	},
 	"footer": {
 		"feedback": "질문이나 피드백이 있으시면 <githubLink>github.com/RooCodeInc/Roo-Code</githubLink>에서 이슈를 열거나 <redditLink>reddit.com/r/RooCode</redditLink> 또는 <discordLink>discord.gg/roocode</discordLink>에 가입하세요",

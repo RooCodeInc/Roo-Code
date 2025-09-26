@@ -223,6 +223,7 @@
 		"description": "保存多组API配置便于快速切换",
 		"apiProvider": "API提供商",
 		"model": "模型",
+		"modelUnavailable": "不可用",
 		"nameEmpty": "名称不能为空",
 		"nameExists": "已存在同名的配置文件",
 		"deleteProfile": "删除配置文件",
@@ -795,7 +796,8 @@
 		"label": "模型",
 		"searchPlaceholder": "搜索",
 		"noMatchFound": "未找到匹配项",
-		"useCustomModel": "使用自定义：{{modelId}}"
+		"useCustomModel": "使用自定义：{{modelId}}",
+		"unavailable": "不可用"
 	},
 	"footer": {
 		"feedback": "如果您有任何问题或反馈，请随时在 <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> 上提出问题或加入 <redditLink>reddit.com/r/RooCode</redditLink> 或 <discordLink>discord.gg/roocode</discordLink>",
