@@ -112,24 +112,26 @@ export class OpenAiNativeCodexHandler extends BaseProvider {
 		try {
 			raw = await fs.readFile(explicitPath, "utf8")
 		} catch (e: any) {
-			throw new Error(
-				t("common:errors.openaiNativeCodex.oauthReadFailed", {
-					path: explicitPath,
-					error: e?.message || String(e),
-				}),
-			)
+			const base = t("common:errors.openaiNativeCodex.oauthReadFailed", {
+				path: explicitPath,
+				error: e?.message || String(e),
+			})
+			const tip =
+				" Tip: Authenticate with the Codex CLI to generate auth.json (defaults to ~/.codex/auth.json), then retry."
+			throw new Error(base + tip)
 		}
 
 		let j: any
 		try {
 			j = JSON.parse(raw)
 		} catch (e: any) {
-			throw new Error(
-				t("common:errors.openaiNativeCodex.oauthParseFailed", {
-					path: explicitPath,
-					error: e?.message || String(e),
-				}),
-			)
+			const base = t("common:errors.openaiNativeCodex.oauthParseFailed", {
+				path: explicitPath,
+				error: e?.message || String(e),
+			})
+			const tip =
+				" Tip: Ensure the file is valid JSON or re-authenticate via the Codex CLI to regenerate auth.json."
+			throw new Error(base + tip)
 		}
 
 		const tokens = (j?.tokens as any) || {}
@@ -277,8 +279,8 @@ export class OpenAiNativeCodexHandler extends BaseProvider {
 		metadata?: ApiHandlerCreateMessageMetadata,
 	) {
 		// For Codex provider:
-		// - Regular "gpt-5" should default to minimal reasoning unless explicitly overridden in settings.
-		// - The "gpt-5-codex" variant should NOT force minimal; use provided/default effort.
+		// - Use the model's default reasoning effort (currently "medium") unless explicitly overridden in settings.
+		// - Both "gpt-5" and "gpt-5-codex" follow the provided/default effort without forcing "minimal".
 		let effectiveEffort: ReasoningEffortWithMinimal | undefined = reasoningEffort
 
 		const body: any = {
