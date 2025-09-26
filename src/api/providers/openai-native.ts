@@ -314,105 +314,94 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 	): ApiStream {
 		// Handle non-streaming responses
 		if (requestBody.stream === false) {
-			try {
-				// Make the non-streaming request
-				const response = await (this.client as any).responses.create(requestBody)
-
-				// Extract text from the response
-				yield* this.handleResponse(response, model)
-			} catch (sdkErr: any) {
-				let errorMessage = this.getErrorMessageByStatus(sdkErr?.status)
-				let errorDetails = sdkErr?.message || sdkErr?.error?.message || ""
-
-				if (this.shouldRetryWithoutPreviousId(sdkErr, requestBody)) {
-					// Log the error and retry without the previous_response_id
-					let retryRequestBody = this.prepareRetryRequestBody(requestBody, systemPrompt, messages)
-
-					try {
-						// Retry with the SDK
-						const response = await (this.client as any).responses.create(retryRequestBody)
-
-						yield* this.handleResponse(response, model)
-					} catch (retryErr) {
-						// If retry also fails
-						errorMessage = this.getErrorMessageByStatus(retryErr?.status)
-						errorDetails = retryErr?.message || retryErr?.error?.message || errorDetails || ""
-
-						if (errorDetails) {
-							errorMessage += ` - ${errorDetails}`
-						}
-
-						// Streaming is disabled, do NOT fallback to SSE
-						throw new Error(errorMessage)
-					}
-					return
-				}
-
-				// For other errors
-				if (errorDetails) {
-					errorMessage += ` - ${errorDetails}`
-				}
-
-				// Streaming is disabled, do NOT fallback to SSE
-				throw new Error(errorMessage)
-			}
+			yield* this.withPreviousIdRetry({
+				requestBody,
+				context: { systemPrompt, messages },
+				attempt: async (body: any) => this.performNonStreamingSdkRequest(body, model),
+				fallback: async (_body: any, originalError: any) => {
+					throw this.formatSdkError(originalError)
+				},
+			})
 			return
 		}
 
-		// Handle streaming responses
+		// Streaming path with SSE fallback
+		yield* this.withPreviousIdRetry({
+			requestBody,
+			context: { systemPrompt, messages, metadata },
+			attempt: async (body: any) => this.performStreamingSdkRequest(body, model),
+			fallback: async (body: any, _err: any) =>
+				this.makeGpt5ResponsesAPIRequest(body, model, metadata, systemPrompt, messages),
+		})
+	}
+
+	// Generic retry orchestrator for previous_response_id related failures
+	private async *withPreviousIdRetry({
+		requestBody,
+		attempt,
+		fallback,
+		context: { systemPrompt, messages, metadata } = {} as any,
+	}: {
+		requestBody: any
+		attempt: (body: any) => ApiStream | Promise<ApiStream>
+		fallback: (body: any, originalError: any) => ApiStream | Promise<ApiStream> | void
+		context?: {
+			systemPrompt?: string
+			messages?: Anthropic.Messages.MessageParam[]
+			metadata?: ApiHandlerCreateMessageMetadata
+		}
+	}): ApiStream {
 		try {
-			// Use the official SDK
-			const stream = (await (this.client as any).responses.create(requestBody)) as AsyncIterable<any>
-
-			if (typeof (stream as any)[Symbol.asyncIterator] !== "function") {
-				throw new Error(
-					"OpenAI SDK did not return an AsyncIterable for Responses API streaming. Falling back to SSE.",
-				)
-			}
-
-			for await (const event of stream) {
-				for await (const outChunk of this.processEvent(event, model)) {
-					yield outChunk
-				}
-			}
-		} catch (sdkErr: any) {
-			if (this.shouldRetryWithoutPreviousId(sdkErr, requestBody)) {
+			yield* await attempt(requestBody)
+		} catch (err: any) {
+			const firstErrorDetail = this.extractErrorDetail(err)
+			if (this.shouldRetryWithoutPreviousId(err, requestBody)) {
 				// Log the error and retry without the previous_response_id
-				let retryRequestBody = this.prepareRetryRequestBody(requestBody, systemPrompt, messages)
-
+				const retryRequestBody = this.prepareRetryRequestBody(requestBody, systemPrompt, messages)
 				try {
-					// Retry with the SDK
-					const retryStream = (await (this.client as any).responses.create(
-						retryRequestBody,
-					)) as AsyncIterable<any>
-
-					if (typeof (retryStream as any)[Symbol.asyncIterator] !== "function") {
-						// If SDK fails, fall back to SSE
-						yield* this.makeGpt5ResponsesAPIRequest(
-							retryRequestBody,
-							model,
-							metadata,
-							systemPrompt,
-							messages,
-						)
-						return
-					}
-
-					for await (const event of retryStream) {
-						for await (const outChunk of this.processEvent(event, model)) {
-							yield outChunk
-						}
-					}
+					// Retry via helper; if helper throws we'll fallback below
+					yield* await attempt(retryRequestBody)
 					return
 				} catch (retryErr) {
-					// If retry also fails, fall back to SSE
-					yield* this.makeGpt5ResponsesAPIRequest(retryRequestBody, model, metadata, systemPrompt, messages)
+					// If retry also fails, use fallback mechanism
+					// Always attach original detail so downstream formatting can fall back if needed
+					if (firstErrorDetail) {
+						;(retryErr as any).previousErrorDetail = firstErrorDetail
+					}
+					const fb = await fallback(retryRequestBody, retryErr)
+					if (fb) {
+						yield* fb
+					}
 					return
 				}
 			}
+			const fb = await fallback(requestBody, err)
+			if (fb) {
+				yield* fb
+			}
+		}
+	}
 
-			// For other errors, fallback to manual SSE via fetch
-			yield* this.makeGpt5ResponsesAPIRequest(requestBody, model, metadata, systemPrompt, messages)
+	private async *performNonStreamingSdkRequest(requestBody: any, model: OpenAiNativeModel): ApiStream {
+		// Perform a non-streaming SDK request and yield the response chunks
+		const response = await (this.client as any).responses.create(requestBody)
+		yield* this.handleResponse(response, model)
+	}
+
+	private async *performStreamingSdkRequest(requestBody: any, model: OpenAiNativeModel): ApiStream {
+		// Perform a streaming SDK request and yield processed events
+		const stream = (await (this.client as any).responses.create(requestBody)) as AsyncIterable<any>
+
+		if (typeof (stream as any)[Symbol.asyncIterator] !== "function") {
+			throw new Error(
+				"OpenAI SDK did not return an AsyncIterable for Responses API streaming. Falling back to SSE.",
+			)
+		}
+
+		for await (const event of stream) {
+			for await (const outChunk of this.processEvent(event, model)) {
+				yield outChunk
+			}
 		}
 	}
 
@@ -725,6 +714,20 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 				errorMessage = `Responses API error (${status})`
 		}
 		return errorMessage
+	}
+
+	private formatSdkError(err: any): Error {
+		const status = err?.status || err?.response?.status
+		let errorMessage = this.getErrorMessageByStatus(status)
+		const errorDetails = this.extractErrorDetail(err)
+		if (errorDetails) {
+			errorMessage += ` - ${errorDetails}`
+		}
+		return new Error(errorMessage)
+	}
+
+	private extractErrorDetail(err: any) {
+		return err?.message || err?.error?.message || err?.previousErrorDetail || ""
 	}
 
 	/**
