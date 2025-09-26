@@ -5,12 +5,12 @@ import { getVSCodeDownloads } from "@/lib/stats"
 import { Button } from "@/components/ui"
 import {
 	AnimatedBackground,
-	InstallSection,
-	Features,
-	Testimonials,
-	FAQSection,
 	CodeExample,
-	UserLogos,
+	CompanyLogos,
+	FAQSection,
+	Features,
+	InstallSection,
+	Testimonials,
 } from "@/components/homepage"
 import { EXTERNAL_LINKS } from "@/lib/constants"
 import { ArrowRight } from "lucide-react"
@@ -29,10 +29,10 @@ export default async function Home() {
 					<div className="grid h-full relative gap-8 md:gap-12 lg:grid-cols-2 lg:gap-16">
 						<div className="flex flex-col px-4 justify-center space-y-6 sm:space-y-8">
 							<div>
-								<h1 className="text-3xl font-bold tracking-tight mt-8 sm:text-4xl md:text-4xl lg:text-5xl lg:mt-0">
-									The AI dev team which gets things done.
+								<h1 className="text-4xl font-bold tracking-tight mt-8 text-center md:text-left md:text-4xl lg:text-5xl lg:mt-0">
+									The AI dev team that gets things done.
 								</h1>
-								<p className="mt-4 max-w-md text-base text-muted-foreground sm:mt-6 sm:text-lg">
+								<p className="mt-4 max-w-md text-lg text-muted-foreground text-center md:text-left sm:mt-6">
 									Roo&apos;s specialized modes stay on task and ship great code. Open source and works
 									with any model.
 								</p>
@@ -45,7 +45,7 @@ export default async function Home() {
 										href="https://marketplace.visualstudio.com/items?itemName=RooVeterinaryInc.roo-cline"
 										target="_blank"
 										className="flex w-full items-center justify-center">
-										Install VSCode Extension
+										Install VS Code Extension
 										<ArrowRight className="ml-2" />
 									</a>
 								</Button>
@@ -62,7 +62,7 @@ export default async function Home() {
 									</a>
 								</Button>
 							</div>
-							<UserLogos />
+							<CompanyLogos />
 						</div>
 						<div className="relative flex items-center mx-auto h-full mt-8 lg:mt-0">
 							<div className="flex items-center justify-center">
