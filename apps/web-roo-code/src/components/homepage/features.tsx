@@ -1,7 +1,7 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { Brain, Shield, Users2, ReplaceAll, Keyboard, LucideIcon, CheckCheck } from "lucide-react"
+import { Shield, Users2, ReplaceAll, Keyboard, LucideIcon, CheckCheck, GitPullRequest } from "lucide-react"
 
 export interface Feature {
 	icon: LucideIcon
@@ -14,7 +14,7 @@ export const features: Feature[] = [
 		icon: Users2,
 		title: "Specialized Modes",
 		description:
-			"Planning, Architecture, Debugging and beyond: Roo's modes stay on-task and deliver. Create your own modes or download from the marketplace.",
+			"Planning, Architecture, Debugging and beyond: Roo's modes stay on-task and deliver. They even know when to hand off work to other modes. Create your own modes or download from the marketplace.",
 	},
 	{
 		icon: ReplaceAll,
@@ -24,7 +24,14 @@ export const features: Feature[] = [
 	{
 		icon: CheckCheck,
 		title: "Granular auto-approval",
-		description: "Control each action and make Roo as autonomous as you want as you build confidence. Or go YOLO.",
+		description:
+			"Control each action and make Roo as autonomous as you want as you build confidence. Or go YOLO and let it rip.",
+	},
+	{
+		icon: GitPullRequest,
+		title: "Proudly open source",
+		description:
+			"Community-driven and fully auditable: no throttling or surprises about what's happening behind the scenes.",
 	},
 	{
 		icon: Keyboard,
@@ -33,16 +40,10 @@ export const features: Feature[] = [
 			"Fine-tune settings for Roo to work for you, like inference context, model properties, slash commands and more.",
 	},
 	{
-		icon: Brain,
-		title: "Deep Project-wide Context",
-		description:
-			"Roo Code reads your entire codebase, preserving valid code through diff-based edits for seamless multi-file refactors.",
-	},
-	{
 		icon: Shield,
 		title: "Secure and Private by Design",
 		description:
-			"Open source and local-first. No code leaves your machine unless you say so. SOC 2 Type II compliant.",
+			"Client-only architecture means no code leaves your machine unless you say so. SOC 2 Type II compliant.",
 	},
 ]
 
@@ -108,7 +109,7 @@ export function Features() {
 					initial="hidden"
 					whileInView="visible"
 					viewport={{ once: true }}>
-					<ul className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-8">
+					<ul className="grid grid-cols-1 place-items-center gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-8">
 						{features.map((feature, index) => {
 							const Icon = feature.icon
 							return (

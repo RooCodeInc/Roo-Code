@@ -28,12 +28,12 @@ export default async function Home() {
 					<div className="grid h-full relative gap-8 md:gap-12 lg:grid-cols-2 lg:gap-16">
 						<div className="flex flex-col px-4 justify-center space-y-6 sm:space-y-8">
 							<div>
-								<h1 className="text-3xl font-bold tracking-tight mt-8 sm:text-4xl md:text-5xl lg:text-6xl lg:mt-0">
-									An entire AI-powered dev team. In your editor and beyond.
+								<h1 className="text-3xl font-bold tracking-tight mt-8 sm:text-4xl md:text-4xl lg:text-5xl lg:mt-0">
+									The AI dev team which gets things done.
 								</h1>
 								<p className="mt-4 max-w-md text-base text-muted-foreground sm:mt-6 sm:text-lg">
-									Roo&apos;s model-agnostic, specialized modes and fine-grained auto-approval controls
-									give you the tools (and the confidence) to get AI working for you.
+									Roo&apos;s specialized modes stay on task and ship great code. Open source and works
+									with any model.
 								</p>
 							</div>
 							<div className="flex flex-col space-y-3 sm:flex-row sm:space-x-4 sm:space-y-0">
@@ -44,7 +44,7 @@ export default async function Home() {
 										href="https://marketplace.visualstudio.com/items?itemName=RooVeterinaryInc.roo-cline"
 										target="_blank"
 										className="flex w-full items-center justify-center">
-										Install Extension
+										Install VSCode Extension
 										<ArrowRight className="ml-2" />
 									</a>
 								</Button>
@@ -56,7 +56,7 @@ export default async function Home() {
 										href={EXTERNAL_LINKS.CLOUD_APP_SIGNUP}
 										target="_blank"
 										className="flex w-full items-center justify-center">
-										Get started with Cloud
+										Try Cloud
 										<ArrowRight className="ml-2" />
 									</a>
 								</Button>
