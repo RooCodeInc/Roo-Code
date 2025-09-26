@@ -65,7 +65,6 @@ export class OpenAiNativeCodexHandler extends BaseProvider {
 	protected options: ApiHandlerOptions
 	private chatgptAccessToken!: string
 	private chatgptAccountId?: string
-	private lastServiceTier: ServiceTier | undefined
 
 	// Inline-loaded provider prompt (via esbuild text loader for .md files)
 
