@@ -164,9 +164,9 @@ const dynamicProviderExtras = {
 	ollama: {} as {}, // eslint-disable-line @typescript-eslint/no-empty-object-type
 	lmstudio: {} as {}, // eslint-disable-line @typescript-eslint/no-empty-object-type
 	"ibm-watsonx": {} as {
-		apiKey: string
-		platform: string
-		projectId: string
+		apiKey?: string
+		platform?: string
+		projectId?: string
 		baseUrl?: string
 		region?: string
 		authType?: string
