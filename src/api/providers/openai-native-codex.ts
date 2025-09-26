@@ -16,7 +16,6 @@ import { t } from "i18next"
 import {
 	type ModelInfo,
 	type ReasoningEffortWithMinimal,
-	type ServiceTier,
 	type VerbosityLevel,
 	openAiNativeCodexDefaultModelId,
 	openAiNativeCodexModels,
@@ -452,10 +451,7 @@ export class OpenAiNativeCodexHandler extends BaseProvider {
 								}
 								try {
 									const parsed = JSON.parse(data)
-									// Persist tier when available (parity with openai-native)
-									if (parsed.response?.service_tier) {
-										;(this as any).lastServiceTier = parsed.response.service_tier as ServiceTier
-									}
+									// service_tier ignored (not used)
 									// Minimal content extraction similar to OpenAI Responses
 									if (parsed?.type === "response.text.delta" && parsed?.delta) {
 										hasContent = true
