@@ -43,7 +43,7 @@ describe("ZAiHandler", () => {
 			new ZAiHandler({ zaiApiKey: "test-zai-api-key", zaiApiLine: "international" })
 			expect(OpenAI).toHaveBeenCalledWith(
 				expect.objectContaining({
-					baseURL: "https://api.z.ai/api/paas/v4",
+					baseURL: "https://api.z.ai/api/coding/paas/v4",
 				}),
 			)
 		})
@@ -81,7 +81,7 @@ describe("ZAiHandler", () => {
 		it("should use the correct China Z AI base URL", () => {
 			new ZAiHandler({ zaiApiKey: "test-zai-api-key", zaiApiLine: "china" })
 			expect(OpenAI).toHaveBeenCalledWith(
-				expect.objectContaining({ baseURL: "https://open.bigmodel.cn/api/paas/v4" }),
+				expect.objectContaining({ baseURL: "https://open.bigmodel.cn/api/coding/paas/v4" }),
 			)
 		})
 

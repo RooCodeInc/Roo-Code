@@ -102,12 +102,20 @@ export const ModelInfoView = ({
 
 	const infoItems = shouldShowTierPricingTable ? baseInfoItems : [...baseInfoItems, ...priceInfoItems]
 
+	// Localize provider-specific model descriptions when available
+	const zaiDescKey = `settings:providers.zaiModels.${selectedModelId}.description`
+	const zaiLocalizedDesc = apiProvider === "zai" ? t(zaiDescKey) : undefined
+	const descriptionToUse =
+		apiProvider === "zai" && zaiLocalizedDesc && zaiLocalizedDesc !== zaiDescKey
+			? zaiLocalizedDesc
+			: modelInfo?.description
+
 	return (
 		<>
-			{modelInfo?.description && (
+			{descriptionToUse && (
 				<ModelDescriptionMarkdown
 					key="description"
-					markdown={modelInfo.description}
+					markdown={descriptionToUse}
 					isExpanded={isDescriptionExpanded}
 					setIsExpanded={setIsDescriptionExpanded}
 				/>
