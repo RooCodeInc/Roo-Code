@@ -2296,9 +2296,24 @@ export const webviewMessageHandler = async (
 
 		case "telemetrySetting": {
 			const telemetrySetting = message.text as TelemetrySetting
-			await updateGlobalState("telemetrySetting", telemetrySetting)
+			const previousSetting = getGlobalState("telemetrySetting") || "unset"
 			const isOptedIn = telemetrySetting !== "disabled"
+			const wasPreviouslyOptedIn = previousSetting !== "disabled"
+
+			// If turning telemetry OFF, fire event BEFORE disabling
+			if (wasPreviouslyOptedIn && !isOptedIn && TelemetryService.hasInstance()) {
+				TelemetryService.instance.captureTelemetrySettingsChanged(previousSetting, telemetrySetting)
+			}
+
+			// Update the telemetry state
+			await updateGlobalState("telemetrySetting", telemetrySetting)
 			TelemetryService.instance.updateTelemetryState(isOptedIn)
+
+			// If turning telemetry ON, fire event AFTER enabling
+			if (!wasPreviouslyOptedIn && isOptedIn && TelemetryService.hasInstance()) {
+				TelemetryService.instance.captureTelemetrySettingsChanged(previousSetting, telemetrySetting)
+			}
+
 			await provider.postStateToWebview()
 			break
 		}

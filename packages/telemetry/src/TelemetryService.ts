@@ -227,6 +227,18 @@ export class TelemetryService {
 	}
 
 	/**
+	 * Captures when telemetry settings are changed
+	 * @param previousSetting The previous telemetry setting
+	 * @param newSetting The new telemetry setting
+	 */
+	public captureTelemetrySettingsChanged(previousSetting: string, newSetting: string): void {
+		this.captureEvent(TelemetryEventName.TELEMETRY_SETTINGS_CHANGED, {
+			previousSetting,
+			newSetting,
+		})
+	}
+
+	/**
 	 * Checks if telemetry is currently enabled
 	 * @returns Whether telemetry is enabled
 	 */
