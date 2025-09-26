@@ -1376,15 +1376,9 @@ export class McpHub {
 						await this.deleteConnection(serverName, serverSource)
 						// When re-enabling, file watchers will be set up in connectToServer
 						await this.connectToServer(serverName, config, serverSource)
-					} else if (connection.server.status === "connected") {
-						// Only refresh capabilities if connected
-						connection.server.tools = await this.fetchToolsList(serverName, serverSource)
-						connection.server.resources = await this.fetchResourcesList(serverName, serverSource)
-						connection.server.resourceTemplates = await this.fetchResourceTemplatesList(
-							serverName,
-							serverSource,
-						)
 					}
+					// Note: We don't need to refresh resources when the server is already connected
+					// because toggling disabled state doesn't affect the resources/tools available
 				} catch (error) {
 					console.error(`Failed to refresh capabilities for ${serverName}:`, error)
 				}
