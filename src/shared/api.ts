@@ -165,9 +165,9 @@ const dynamicProviderExtras = {
 	lmstudio: {} as {}, // eslint-disable-line @typescript-eslint/no-empty-object-type
 	roo: {} as { apiKey?: string; baseUrl?: string },
 	"ibm-watsonx": {} as {
-		apiKey: string
-		platform: string
-		projectId: string
+		apiKey?: string
+		platform?: string
+		projectId?: string
 		baseUrl?: string
 		region?: string
 		authType?: string
