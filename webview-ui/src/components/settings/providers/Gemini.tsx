@@ -79,7 +79,7 @@ export const Gemini = ({ apiConfiguration, setApiConfigurationField, fromWelcome
 						<Checkbox
 							className="mt-6"
 							data-testid="checkbox-url-context"
-							checked={!!apiConfiguration.enableUrlContext}
+							checked={apiConfiguration.enableUrlContext === true}
 							onChange={(checked: boolean) => setApiConfigurationField("enableUrlContext", checked)}>
 							{t("settings:providers.geminiParameters.urlContext.title")}
 						</Checkbox>
@@ -89,7 +89,7 @@ export const Gemini = ({ apiConfiguration, setApiConfigurationField, fromWelcome
 
 						<Checkbox
 							data-testid="checkbox-grounding-search"
-							checked={!!apiConfiguration.enableGrounding}
+							checked={apiConfiguration.enableGrounding === true}
 							onChange={(checked: boolean) => setApiConfigurationField("enableGrounding", checked)}>
 							{t("settings:providers.geminiParameters.groundingSearch.title")}
 						</Checkbox>
