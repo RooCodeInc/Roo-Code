@@ -769,7 +769,7 @@
 					"multiBlock": "多區塊策略可在單一請求中更新檔案內的多個程式碼區塊。"
 				},
 				"watsonx": {
-					"description": "When enabled, Roo will be able to edit files more quickly and will automatically reject truncated full-file writes."
+					"description": "啟用後，Roo 可更快速地編輯檔案，並自動拒絕不完整的整檔覆寫。"
 				}
 			},
 			"matchPrecision": {

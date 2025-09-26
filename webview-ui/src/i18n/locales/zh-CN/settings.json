@@ -769,7 +769,7 @@
 					"multiBlock": "多块 diff 策略允许在一个请求中更新文件中的多个代码块。"
 				},
 				"watsonx": {
-					"description": "When enabled, Roo will be able to edit files more quickly and will automatically reject truncated full-file writes."
+					"description": "启用后，Roo 将能够更快地编辑文件，并自动拒绝被截断的完整文件写入。"
 				}
 			},
 			"matchPrecision": {

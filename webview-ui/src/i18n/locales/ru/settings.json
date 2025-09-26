@@ -769,7 +769,7 @@
 					"multiBlock": "Мультиблочная стратегия позволяет обновлять несколько блоков кода в файле за один запрос."
 				},
 				"watsonx": {
-					"description": "When enabled, Roo will be able to edit files more quickly and will automatically reject truncated full-file writes."
+					"description": "Если включено, Roo сможет быстрее редактировать файлы и автоматически отклонять усечённые полные записи файлов."
 				}
 			},
 			"matchPrecision": {
