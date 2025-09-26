@@ -250,7 +250,7 @@
 		"vercelAiGatewayApiKey": "Khóa API Vercel AI Gateway",
 		"getVercelAiGatewayApiKey": "Lấy khóa API Vercel AI Gateway",
 		"apiKeyStorageNotice": "Khóa API được lưu trữ an toàn trong Bộ lưu trữ bí mật của VSCode",
-		"passwordStorageNotice": "Passwords are stored securely in VSCode's Secret Storage",
+		"passwordStorageNotice": "Mật khẩu được lưu trữ an toàn trong Bộ lưu trữ bí mật của VSCode",
 		"glamaApiKey": "Khóa API Glama",
 		"getGlamaApiKey": "Lấy khóa API Glama",
 		"useCustomBaseUrl": "Sử dụng URL cơ sở tùy chỉnh",
@@ -707,7 +707,7 @@
 					"multiBlock": "Chiến lược diff đa khối cho phép cập nhật nhiều khối mã trong một tệp trong một yêu cầu."
 				},
 				"watsonx": {
-					"description": "When enabled, Roo will be able to edit files more quickly and will automatically reject truncated full-file writes."
+					"description": "Khi được bật, Roo sẽ có thể chỉnh sửa tệp nhanh hơn và sẽ tự động từ chối ghi toàn bộ tệp bị cắt ngắn."
 				}
 			},
 			"matchPrecision": {
@@ -849,15 +849,14 @@
 		"profileInvalid": "Hồ sơ này chứa một nhà cung cấp hoặc mô hình không được phép bởi tổ chức của bạn",
 		"qwenCodeOauthPath": "Bạn phải cung cấp đường dẫn thông tin xác thực OAuth hợp lệ",
 		"watsonx": {
-			"platform": "You must select a platform.",
-			"region": "You must select a region.",
-			"projectId": "You must provide a valid project ID.",
-			"authType": "You must select an authentication type.",
-			"username": "You must provide a valid username.",
-			"apiKey": "You must provide a valid API key.",
-			"password": "You must provide a valid password.",
-			"baseUrl": "You must provide IBM Cloud Pak for Data URL.",
-			"invalidUrl": "You must provide a valid IBM Cloud Pak for Data URL."
+			"platform": "Bạn phải chọn một nền tảng.",
+			"region": "Bạn phải chọn một khu vực.",
+			"projectId": "Bạn phải cung cấp ID dự án hợp lệ.",
+			"authType": "Bạn phải chọn một loại xác thực.",
+			"username": "Bạn phải cung cấp tên người dùng hợp lệ.",
+			"apiKey": "Bạn phải cung cấp khóa API hợp lệ.",
+			"password": "Bạn phải cung cấp mật khẩu hợp lệ.",
+			"baseUrl": "Bạn phải cung cấp URL IBM Cloud Pak for Data hợp lệ."
 		}
 	},
 	"placeholders": {

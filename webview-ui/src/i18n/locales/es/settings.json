@@ -706,7 +706,7 @@
 					"multiBlock": "La estrategia de diff multi-bloque permite actualizar múltiples bloques de código en un archivo en una sola solicitud."
 				},
 				"watsonx": {
-					"description": "When enabled, Roo will be able to edit files more quickly and will automatically reject truncated full-file writes."
+					"description": "Cuando está habilitado, Roo podrá editar archivos más rápidamente y rechazará automáticamente escrituras completas de archivos truncados."
 				}
 			},
 			"matchPrecision": {
@@ -848,15 +848,14 @@
 		"profileInvalid": "Este perfil contiene un proveedor o modelo que no está permitido por su organización",
 		"qwenCodeOauthPath": "Debes proporcionar una ruta válida de credenciales OAuth",
 		"watsonx": {
-			"platform": "You must select a platform.",
-			"region": "You must select a region.",
-			"projectId": "You must provide a valid project ID.",
-			"authType": "You must select an authentication type.",
-			"username": "You must provide a valid username.",
-			"apiKey": "You must provide a valid API key.",
-			"password": "You must provide a valid password.",
-			"baseUrl": "You must provide IBM Cloud Pak for Data URL.",
-			"invalidUrl": "You must provide a valid IBM Cloud Pak for Data URL."
+			"platform": "Debe seleccionar una plataforma.",
+			"region": "Debe seleccionar una región.",
+			"projectId": "Debe proporcionar un ID de proyecto válido.",
+			"authType": "Debe seleccionar un tipo de autenticación.",
+			"username": "Debe proporcionar un nombre de usuario válido.",
+			"apiKey": "Debe proporcionar una clave API válida.",
+			"password": "Debe proporcionar una contraseña válida.",
+			"baseUrl": "Debe proporcionar una URL válida de IBM Cloud Pak for Data."
 		}
 	},
 	"placeholders": {

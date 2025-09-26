@@ -250,7 +250,7 @@
 		"vercelAiGatewayApiKey": "Klucz API Vercel AI Gateway",
 		"getVercelAiGatewayApiKey": "Uzyskaj klucz API Vercel AI Gateway",
 		"apiKeyStorageNotice": "Klucze API są bezpiecznie przechowywane w Tajnym Magazynie VSCode",
-		"passwordStorageNotice": "Passwords are stored securely in VSCode's Secret Storage",
+		"passwordStorageNotice": "Hasła są bezpiecznie przechowywane w Tajnym Magazynie VSCode",
 		"glamaApiKey": "Klucz API Glama",
 		"getGlamaApiKey": "Uzyskaj klucz API Glama",
 		"useCustomBaseUrl": "Użyj niestandardowego URL bazowego",
@@ -707,7 +707,7 @@
 					"multiBlock": "Strategia diff wieloblokowego pozwala na aktualizację wielu bloków kodu w pliku w jednym żądaniu."
 				},
 				"watsonx": {
-					"description": "When enabled, Roo will be able to edit files more quickly and will automatically reject truncated full-file writes."
+					"description": "Gdy włączone, Roo będzie w stanie edytować pliki szybciej i automatycznie odrzuci obcięte pełne zapisy plików."
 				}
 			},
 			"matchPrecision": {
@@ -849,15 +849,14 @@
 		"profileInvalid": "Ten profil zawiera dostawcę lub model, który nie jest dozwolony przez Twoją organizację",
 		"qwenCodeOauthPath": "Musisz podać prawidłową ścieżkę do poświadczeń OAuth",
 		"watsonx": {
-			"platform": "You must select a platform.",
-			"region": "You must select a region.",
-			"projectId": "You must provide a valid project ID.",
-			"authType": "You must select an authentication type.",
-			"username": "You must provide a valid username.",
-			"apiKey": "You must provide a valid API key.",
-			"password": "You must provide a valid password.",
-			"baseUrl": "You must provide IBM Cloud Pak for Data URL.",
-			"invalidUrl": "You must provide a valid IBM Cloud Pak for Data URL."
+			"platform": "Musisz wybrać platformę.",
+			"region": "Musisz wybrać region.",
+			"projectId": "Musisz podać prawidłowe ID projektu.",
+			"authType": "Musisz wybrać typ uwierzytelniania.",
+			"username": "Musisz podać prawidłową nazwę użytkownika.",
+			"apiKey": "Musisz podać prawidłowy klucz API.",
+			"password": "Musisz podać prawidłowe hasło.",
+			"baseUrl": "Musisz podać prawidłowy URL IBM Cloud Pak for Data."
 		}
 	},
 	"placeholders": {

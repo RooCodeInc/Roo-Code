@@ -860,8 +860,7 @@
 			"username": "You must provide a valid username.",
 			"apiKey": "You must provide a valid API key.",
 			"password": "You must provide a valid password.",
-			"baseUrl": "You must provide IBM Cloud Pak for Data URL.",
-			"invalidUrl": "You must provide a valid IBM Cloud Pak for Data URL."
+			"baseUrl": "You must provide a valid IBM Cloud Pak for Data URL."
 		}
 	},
 	"placeholders": {

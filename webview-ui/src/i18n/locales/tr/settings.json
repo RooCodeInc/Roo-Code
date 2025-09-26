@@ -707,7 +707,7 @@
 					"multiBlock": "Çoklu blok diff stratejisi, tek bir istekte bir dosyadaki birden çok kod bloğunu güncellemenize olanak tanır."
 				},
 				"watsonx": {
-					"description": "When enabled, Roo will be able to edit files more quickly and will automatically reject truncated full-file writes."
+					"description": "Etkinleştirildiğinde, Roo dosyaları daha hızlı düzenleyebilecek ve kesik tam dosya yazımlarını otomatik olarak reddedecektir."
 				}
 			},
 			"matchPrecision": {
@@ -849,15 +849,14 @@
 		"profileInvalid": "Bu profil, kuruluşunuz tarafından izin verilmeyen bir sağlayıcı veya model içeriyor",
 		"qwenCodeOauthPath": "Geçerli bir OAuth kimlik bilgileri yolu sağlamalısın",
 		"watsonx": {
-			"platform": "You must select a platform.",
-			"region": "You must select a region.",
-			"projectId": "You must provide a valid project ID.",
-			"authType": "You must select an authentication type.",
-			"username": "You must provide a valid username.",
-			"apiKey": "You must provide a valid API key.",
-			"password": "You must provide a valid password.",
-			"baseUrl": "You must provide IBM Cloud Pak for Data URL.",
-			"invalidUrl": "You must provide a valid IBM Cloud Pak for Data URL."
+			"platform": "Bir platform seçmelisiniz.",
+			"region": "Bir bölge seçmelisiniz.",
+			"projectId": "Geçerli bir proje kimliği sağlamalısınız.",
+			"authType": "Bir kimlik doğrulama türü seçmelisiniz.",
+			"username": "Geçerli bir kullanıcı adı sağlamalısınız.",
+			"apiKey": "Geçerli bir API anahtarı sağlamalısınız.",
+			"password": "Geçerli bir parola sağlamalısınız.",
+			"baseUrl": "Geçerli bir IBM Cloud Pak for Data URL'si sağlamalısınız."
 		}
 	},
 	"placeholders": {

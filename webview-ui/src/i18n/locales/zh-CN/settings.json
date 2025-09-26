@@ -250,7 +250,7 @@
 		"vercelAiGatewayApiKey": "Vercel AI Gateway API 密钥",
 		"getVercelAiGatewayApiKey": "获取 Vercel AI Gateway API 密钥",
 		"apiKeyStorageNotice": "API 密钥安全存储在 VSCode 的密钥存储中",
-		"passwordStorageNotice": "Passwords are stored securely in VSCode's Secret Storage",
+		"passwordStorageNotice": "密码安全存储在 VSCode 的密钥存储中",
 		"glamaApiKey": "Glama API 密钥",
 		"getGlamaApiKey": "获取 Glama API 密钥",
 		"useCustomBaseUrl": "使用自定义基础 URL",
@@ -707,7 +707,7 @@
 					"multiBlock": "多块 diff 策略允许在一个请求中更新文件中的多个代码块。"
 				},
 				"watsonx": {
-					"description": "When enabled, Roo will be able to edit files more quickly and will automatically reject truncated full-file writes."
+					"description": "启用后，Roo 将能够更快地编辑文件，并自动拒绝被截断的完整文件写入。"
 				}
 			},
 			"matchPrecision": {
@@ -849,15 +849,14 @@
 		"profileInvalid": "此配置文件包含您的组织不允许的提供商或模型",
 		"qwenCodeOauthPath": "您必须提供有效的 OAuth 凭证路径",
 		"watsonx": {
-			"platform": "You must select a platform.",
-			"region": "You must select a region.",
-			"projectId": "You must provide a valid project ID.",
-			"authType": "You must select an authentication type.",
-			"username": "You must provide a valid username.",
-			"apiKey": "You must provide a valid API key.",
-			"password": "You must provide a valid password.",
-			"baseUrl": "You must provide IBM Cloud Pak for Data URL.",
-			"invalidUrl": "You must provide a valid IBM Cloud Pak for Data URL."
+			"platform": "您必须选择平台。",
+			"region": "您必须选择区域。",
+			"projectId": "您必须提供有效的项目 ID。",
+			"authType": "您必须选择认证类型。",
+			"username": "您必须提供有效的用户名。",
+			"apiKey": "您必须提供有效的 API 密钥。",
+			"password": "您必须提供有效的密码。",
+			"baseUrl": "您必须提供有效的 IBM Cloud Pak for Data URL。"
 		}
 	},
 	"placeholders": {
