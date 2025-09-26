@@ -514,6 +514,10 @@
 		}
 	},
 	"checkpoints": {
+		"timeout": {
+			"label": "Batas waktu inisialisasi checkpoint (detik)",
+			"description": "Waktu maksimum menunggu inisialisasi layanan checkpoint. Default 15 detik. Rentang: 10-60 detik."
+		},
 		"enable": {
 			"label": "Aktifkan checkpoint otomatis",
 			"description": "Ketika diaktifkan, Roo akan secara otomatis membuat checkpoint selama eksekusi tugas, memudahkan untuk meninjau perubahan atau kembali ke state sebelumnya. <0>Pelajari lebih lanjut</0>"

@@ -27,6 +27,8 @@
 		"could_not_open_file": "Nie można otworzyć pliku: {{errorMessage}}",
 		"could_not_open_file_generic": "Nie można otworzyć pliku!",
 		"checkpoint_timeout": "Upłynął limit czasu podczas próby przywrócenia punktu kontrolnego.",
+		"wait_checkpoint_long_time": "Czekałeś {{timeout}} sekund na inicjalizację punktu kontrolnego. Jeśli nie potrzebujesz tej funkcji, wyłącz ją w ustawieniach.",
+		"init_checkpoint_fail_long_time": "Inicjalizacja punktu kontrolnego trwała ponad {{timeout}} sekund. Funkcja punktu kontrolnego została wyłączona dla tego zadania. Możesz ją wyłączyć lub wydłużyć czas oczekiwania w ustawieniach.",
 		"checkpoint_failed": "Nie udało się przywrócić punktu kontrolnego.",
 		"git_not_installed": "Funkcja punktów kontrolnych wymaga oprogramowania Git. Zainstaluj Git, aby włączyć punkty kontrolne.",
 		"nested_git_repos_warning": "Punkty kontrolne są wyłączone, ponieważ wykryto zagnieżdżone repozytorium git w: {{path}}. Aby używać punktów kontrolnych, usuń lub przenieś to zagnieżdżone repozytorium git.",

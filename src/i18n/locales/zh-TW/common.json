@@ -27,6 +27,8 @@
 		"could_not_open_file": "無法開啟檔案：{{errorMessage}}",
 		"could_not_open_file_generic": "無法開啟檔案！",
 		"checkpoint_timeout": "嘗試恢復檢查點時超時。",
+		"wait_checkpoint_long_time": "初始化存檔點已等待 {{timeout}} 秒。如果你不需要存檔點功能，請在設定中關閉。",
+		"init_checkpoint_fail_long_time": "存檔點初始化已超過 {{timeout}} 秒。此工作已停用存檔點功能。你可以關閉存檔點或在設定中延長等待時間。",
 		"checkpoint_failed": "恢復檢查點失敗。",
 		"git_not_installed": "存檔點功能需要 Git。請安裝 Git 以啟用存檔點。",
 		"nested_git_repos_warning": "存檔點已停用，因為在 {{path}} 偵測到巢狀的 git 儲存庫。要使用存檔點，請移除或重新配置此巢狀的 git 儲存庫。",
