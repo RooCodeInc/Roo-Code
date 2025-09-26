@@ -191,6 +191,12 @@ function runProcess({
 				process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS ||
 				CLAUDE_CODE_DEFAULT_MAX_OUTPUT_TOKENS.toString(),
 		},
+		// IMPORTANT: These options are critical for Claude CLI authentication
+		// extendEnv: true - Inherits parent process environment variables including ANTHROPIC_API_KEY
+		// shell: true - Ensures proper environment variable expansion for authentication tokens
+		// Without these, Claude CLI fails with "Invalid API key" even when properly authenticated
+		extendEnv: true,
+		shell: true,
 		cwd,
 		maxBuffer: 1024 * 1024 * 1000,
 		timeout: CLAUDE_CODE_TIMEOUT,

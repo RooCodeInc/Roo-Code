@@ -518,4 +518,61 @@ describe("runClaudeCode", () => {
 		// Should throw ClaudeCodeNotFoundError, not generic exit code error
 		await expect(generator.next()).rejects.toThrow(/errors\.claudeCode\.notFound/)
 	})
+
+	test("should inherit environment variables for authentication", async () => {
+		const { runClaudeCode } = await import("../run")
+
+		// Set a test environment variable
+		process.env.ANTHROPIC_API_KEY = "test-api-key-12345"
+
+		const options = {
+			systemPrompt: "You are a helpful assistant",
+			messages: [{ role: "user" as const, content: "Hello" }],
+		}
+
+		const generator = runClaudeCode(options)
+
+		// Consume at least one item to trigger process spawn
+		await generator.next()
+
+		// Clean up the generator
+		await generator.return(undefined)
+
+		// Verify execa was called with proper environment options
+		const [, , execaOptions] = mockExeca.mock.calls[0]
+
+		// Should have extendEnv set to true to inherit environment
+		expect(execaOptions.extendEnv).toBe(true)
+
+		// Should use shell to ensure proper environment variable expansion
+		expect(execaOptions.shell).toBe(true)
+
+		// Should still include process.env
+		expect(execaOptions.env).toBeDefined()
+
+		// Clean up
+		delete process.env.ANTHROPIC_API_KEY
+	})
+
+	test("should pass CLAUDE_CODE_MAX_OUTPUT_TOKENS in environment", async () => {
+		const { runClaudeCode } = await import("../run")
+
+		const options = {
+			systemPrompt: "You are a helpful assistant",
+			messages: [{ role: "user" as const, content: "Hello" }],
+			maxOutputTokens: 32000,
+		}
+
+		const generator = runClaudeCode(options)
+
+		// Consume at least one item to trigger process spawn
+		await generator.next()
+
+		// Clean up the generator
+		await generator.return(undefined)
+
+		// Verify the environment variable was set correctly
+		const [, , execaOptions] = mockExeca.mock.calls[0]
+		expect(execaOptions.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS).toBe("32000")
+	})
 })
