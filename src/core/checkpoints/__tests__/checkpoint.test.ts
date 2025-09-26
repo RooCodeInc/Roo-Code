@@ -283,7 +283,7 @@ describe("Checkpoint functionality", () => {
 			]
 		})
 
-		it("should show diff for full mode", async () => {
+		it("should show diff for to-current mode", async () => {
 			const mockChanges = [
 				{
 					paths: { absolute: "/test/file.ts", relative: "file.ts" },
@@ -295,7 +295,7 @@ describe("Checkpoint functionality", () => {
 			await checkpointDiff(mockTask, {
 				ts: 4,
 				commitHash: "commit2",
-				mode: "full",
+				mode: "to-current",
 			})
 
 			expect(mockCheckpointService.getDiff).toHaveBeenCalledWith({
@@ -304,7 +304,7 @@ describe("Checkpoint functionality", () => {
 			})
 			expect(vscode.commands.executeCommand).toHaveBeenCalledWith(
 				"vscode.changes",
-				"Changes since task started",
+				"Changes to current workspace",
 				expect.any(Array),
 			)
 		})
@@ -361,7 +361,7 @@ describe("Checkpoint functionality", () => {
 			await checkpointDiff(mockTask, {
 				ts: 4,
 				commitHash: "commit2",
-				mode: "full",
+				mode: "to-current",
 			})
 
 			expect(vscode.window.showInformationMessage).toHaveBeenCalledWith("No changes found.")
@@ -374,7 +374,7 @@ describe("Checkpoint functionality", () => {
 			await checkpointDiff(mockTask, {
 				ts: 4,
 				commitHash: "commit2",
-				mode: "full",
+				mode: "to-current",
 			})
 
 			expect(mockTask.enableCheckpoints).toBe(false)
