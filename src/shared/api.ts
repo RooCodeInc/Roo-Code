@@ -166,9 +166,9 @@ const dynamicProviderExtras = {
 	roo: {} as { apiKey?: string; baseUrl?: string },
 	chutes: {} as { apiKey?: string },
 	"ibm-watsonx": {} as {
-		apiKey: string
-		platform: string
-		projectId: string
+		apiKey?: string
+		platform?: string
+		projectId?: string
 		baseUrl?: string
 		region?: string
 		authType?: string
