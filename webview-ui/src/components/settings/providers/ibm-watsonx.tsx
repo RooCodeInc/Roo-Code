@@ -379,6 +379,7 @@ export const WatsonxAI = ({
 					}}
 					disabled={
 						refreshStatus === "loading" ||
+						!apiConfiguration.watsonxProjectId ||
 						(apiConfiguration.watsonxPlatform === "ibmCloud" && !apiConfiguration.watsonxApiKey) ||
 						(apiConfiguration.watsonxPlatform === "cloudPak" &&
 							(!apiConfiguration.watsonxBaseUrl ||
