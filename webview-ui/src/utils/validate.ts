@@ -39,22 +39,22 @@ export function validateApiConfiguration(
 function validateModelsAndKeysProvided(apiConfiguration: ProviderSettings): string | undefined {
 	switch (apiConfiguration.apiProvider) {
 		case "openrouter":
-			if (!apiConfiguration.openRouterApiKey) {
+			if (!(apiConfiguration.openRouterApiKey || apiConfiguration.openRouterConfigUseEnvVars)) {
 				return i18next.t("settings:validation.apiKey")
 			}
 			break
 		case "glama":
-			if (!apiConfiguration.glamaApiKey) {
+			if (!(apiConfiguration.glamaApiKey || apiConfiguration.glamaConfigUseEnvVars)) {
 				return i18next.t("settings:validation.apiKey")
 			}
 			break
 		case "unbound":
-			if (!apiConfiguration.unboundApiKey) {
+			if (!(apiConfiguration.unboundApiKey || apiConfiguration.unboundConfigUseEnvVars)) {
 				return i18next.t("settings:validation.apiKey")
 			}
 			break
 		case "requesty":
-			if (!apiConfiguration.requestyApiKey) {
+			if (!(apiConfiguration.requestyApiKey || apiConfiguration.requestyConfigUseEnvVars)) {
 				return i18next.t("settings:validation.apiKey")
 			}
 			break
@@ -64,12 +64,12 @@ function validateModelsAndKeysProvided(apiConfiguration: ProviderSettings): stri
 			}
 			break
 		case "litellm":
-			if (!apiConfiguration.litellmApiKey) {
+			if (!(apiConfiguration.litellmApiKey || apiConfiguration.litellmConfigUseEnvVars)) {
 				return i18next.t("settings:validation.apiKey")
 			}
 			break
 		case "anthropic":
-			if (!apiConfiguration.apiKey) {
+			if (!(apiConfiguration.apiKey || apiConfiguration.anthropicConfigUseEnvVars)) {
 				return i18next.t("settings:validation.apiKey")
 			}
 			break
@@ -84,22 +84,24 @@ function validateModelsAndKeysProvided(apiConfiguration: ProviderSettings): stri
 			}
 			break
 		case "gemini":
-			if (!apiConfiguration.geminiApiKey) {
+			if (!(apiConfiguration.geminiApiKey || apiConfiguration.geminiConfigUseEnvVars)) {
 				return i18next.t("settings:validation.apiKey")
 			}
 			break
 		case "openai-native":
-			if (!apiConfiguration.openAiNativeApiKey) {
+			if (!(apiConfiguration.openAiNativeApiKey || apiConfiguration.openAiNativeConfigUseEnvVars)) {
 				return i18next.t("settings:validation.apiKey")
 			}
 			break
 		case "mistral":
-			if (!apiConfiguration.mistralApiKey) {
+			if (!(apiConfiguration.mistralApiKey || apiConfiguration.mistralConfigUseEnvVars)) {
 				return i18next.t("settings:validation.apiKey")
 			}
 			break
 		case "openai":
-			if (!apiConfiguration.openAiBaseUrl || !apiConfiguration.openAiApiKey || !apiConfiguration.openAiModelId) {
+			if (!apiConfiguration.openAiBaseUrl
+			   || !(apiConfiguration.openAiApiKey || apiConfiguration.openAiConfigUseEnvVars)
+			   || !apiConfiguration.openAiModelId) {
 				return i18next.t("settings:validation.openAi")
 			}
 			break
