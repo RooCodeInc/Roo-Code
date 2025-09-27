@@ -45,7 +45,7 @@ interface ChatTextAreaProps {
 	onSelectImages: () => void
 	shouldDisableImages: boolean
 	onHeightChange?: (height: number) => void
-	mode: Mode
+	mode: Mode | undefined | null
 	setMode: (value: Mode) => void
 	modeShortcutText: string
 	// Edit mode props
