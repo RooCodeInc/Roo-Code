@@ -444,8 +444,10 @@
 			},
 			"resetDefaults": "デフォルトにリセット"
 		},
-		"unverifiedOrganization": "未認証の組織",
-		"unverifiedOrganizationDescription": "GPT-5などのモデルで組織認証エラーが発生した場合は、このボックスをチェックしてください。ストリーミングと推論要約は無効になりますが、モデルを動作させることができます。",
+		"disableStreaming": "ストリーミングを無効にする",
+		"disableStreamingDescription": "OpenAIモデルのリアルタイム応答ストリーミングを無効にします。",
+		"disableReasoningSummaries": "推論要約を無効にする",
+		"disableReasoningSummariesDescription": "GPT-5などのモデルで推論要約を無効にします。",
 		"rateLimitSeconds": {
 			"label": "レート制限",
 			"description": "APIリクエスト間の最小時間。"

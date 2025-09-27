@@ -127,10 +127,10 @@ describe("OpenAiNativeHandler", () => {
 		})
 
 		it("should handle non-streaming responses via SDK when stream=false", async () => {
-			// Reconfigure handler to force non-stream (buildRequestBody sets stream = !openAiNativeUnverifiedOrg)
+			// Reconfigure handler to force non-stream (buildRequestBody sets stream = !openAiNativeDisableStreaming)
 			handler = new OpenAiNativeHandler({
 				...mockOptions,
-				openAiNativeUnverifiedOrg: true, // => stream: false
+				openAiNativeDisableStreaming: true, // => stream: false
 			})
 
 			// Mock SDK non-streaming JSON response
@@ -176,7 +176,7 @@ describe("OpenAiNativeHandler", () => {
 			// Reconfigure handler to force non-stream (stream=false)
 			handler = new OpenAiNativeHandler({
 				...mockOptions,
-				openAiNativeUnverifiedOrg: true,
+				openAiNativeDisableStreaming: true,
 			})
 
 			// First SDK call fails with 400 indicating previous_response_id not found
@@ -233,11 +233,11 @@ describe("OpenAiNativeHandler", () => {
 			expect(usage.outputTokens).toBe(3)
 		})
 
-		it("should NOT fallback to SSE when unverified org is true and non-stream SDK error occurs", async () => {
-			// Force non-stream path via unverified org toggle
+		it("should NOT fallback to SSE when streaming is disabled and non-stream SDK error occurs", async () => {
+			// Force non-stream path via disable streaming toggle
 			handler = new OpenAiNativeHandler({
 				...mockOptions,
-				openAiNativeUnverifiedOrg: true, // => stream: false
+				openAiNativeDisableStreaming: true, // => stream: false
 			})
 
 			// Make SDK throw a non-previous_response error (e.g., 500)
@@ -1894,7 +1894,8 @@ describe("Unverified org gating behavior", () => {
 		const handler = new OpenAiNativeHandler({
 			apiModelId: "gpt-5-2025-08-07",
 			openAiNativeApiKey: "test-api-key",
-			openAiNativeUnverifiedOrg: true, // => stream=false, and summary must be omitted
+			openAiNativeDisableStreaming: true, // => stream=false
+			openAiNativeDisableReasoningSummaries: true, // => summary must be omitted
 		})
 
 		// SDK returns a minimal valid non-stream response
@@ -1927,7 +1928,7 @@ describe("Unverified org gating behavior", () => {
 		const handler = new OpenAiNativeHandler({
 			apiModelId: "gpt-5-2025-08-07",
 			openAiNativeApiKey: "test-api-key",
-			openAiNativeUnverifiedOrg: true, // => summary must be omitted in completePrompt too
+			openAiNativeDisableReasoningSummaries: true, // => summary must be omitted in completePrompt too
 		})
 
 		// SDK returns a non-stream completion
@@ -1960,7 +1961,8 @@ describe("Unverified org gating behavior", () => {
 		const handler = new OpenAiNativeHandler({
 			apiModelId: "gpt-5-2025-08-07",
 			openAiNativeApiKey: "test-api-key",
-			openAiNativeUnverifiedOrg: false, // => stream=true, and summary should be included
+			openAiNativeDisableStreaming: false, // => stream=true
+			openAiNativeDisableReasoningSummaries: false, // => summary should be included
 		})
 
 		// Mock SDK to return a proper async iterable for streaming

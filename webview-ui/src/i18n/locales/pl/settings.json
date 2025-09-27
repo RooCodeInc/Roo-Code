@@ -444,8 +444,10 @@
 			},
 			"resetDefaults": "Przywróć domyślne"
 		},
-		"unverifiedOrganization": "Niezweryfikowana organizacja",
-		"unverifiedOrganizationDescription": "Zaznacz to pole, jeśli napotkasz błędy weryfikacji organizacji z modelami takimi jak GPT-5. Spowoduje to wyłączenie strumieniowania i podsumowań rozumowania, ale pozwoli modelom działać.",
+		"disableStreaming": "Wyłącz strumieniowanie",
+		"disableStreamingDescription": "Wyłącz strumieniowanie odpowiedzi w czasie rzeczywistym dla modeli OpenAI.",
+		"disableReasoningSummaries": "Wyłącz podsumowania rozumowania",
+		"disableReasoningSummariesDescription": "Wyłącz podsumowania rozumowania w modelach takich jak GPT-5.",
 		"rateLimitSeconds": {
 			"label": "Limit szybkości",
 			"description": "Minimalny czas między żądaniami API."

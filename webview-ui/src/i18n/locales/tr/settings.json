@@ -1,8 +1,8 @@
 {
 	"common": {
-		"save": "Kaydet",
+		"disableStreamingDescription": "OpenAI modelleri için gerçek zamanlı yanıt akışını devre dışı bırakın.",
 		"done": "Tamamlandı",
-		"cancel": "İptal",
+		"disableReasoningSummariesDescription": "GPT-5 gibi modellerde akıl yürütme özetlerini devre dışı bırakın.",
 		"reset": "Sıfırla",
 		"select": "Seç",
 		"add": "Başlık Ekle",
@@ -444,8 +444,10 @@
 			},
 			"resetDefaults": "Varsayılanlara Sıfırla"
 		},
-		"unverifiedOrganization": "Doğrulanmamış Organizasyon",
-		"unverifiedOrganizationDescription": "GPT-5 gibi modellerle organizasyon doğrulama hataları yaşıyorsanız bu kutuyu işaretleyin. Bu, akış ve akıl yürütme özetlerini devre dışı bırakacak ancak modellerin çalışmasına izin verecektir.",
+		"disableStreaming": "Akışı devre dışı bırak",
+		"disableStreamingDescription": "OpenAI modelleriyle akış hataları yaşıyorsanız bu kutuyu işaretleyin. Bu, gerçek zamanlı yanıt akışını devre dışı bırakacak ancak modellerin çalışmasına izin verecektir.",
+		"disableReasoningSummaries": "Akıl yürütme özetlerini devre dışı bırak",
+		"disableReasoningSummariesDescription": "GPT-5 gibi modellerle akıl yürütme özeti hataları yaşıyorsanız bu kutuyu işaretleyin. Bu, akıl yürütme özetlerini devre dışı bırakacak ancak modellerin çalışmasına izin verecektir.",
 		"rateLimitSeconds": {
 			"label": "Hız sınırı",
 			"description": "API istekleri arasındaki minimum süre."

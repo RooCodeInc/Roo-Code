@@ -444,8 +444,10 @@
 			},
 			"resetDefaults": "Auf Standardwerte zurücksetzen"
 		},
-		"unverifiedOrganization": "Nicht verifizierte Organisation",
-		"unverifiedOrganizationDescription": "Aktiviere diese Option, wenn du Organisationsverifizierungsfehler mit Modellen wie GPT-5 hast. Dies deaktiviert Streaming und Reasoning-Zusammenfassungen, ermöglicht aber das Funktionieren der Modelle.",
+		"disableStreaming": "Streaming deaktivieren",
+		"disableStreamingDescription": "Echtzeit-Antwort-Streaming für OpenAI-Modelle deaktivieren.",
+		"disableReasoningSummaries": "Reasoning-Zusammenfassungen deaktivieren",
+		"disableReasoningSummariesDescription": "Reasoning-Zusammenfassungen in Modellen wie GPT-5 deaktivieren.",
 		"rateLimitSeconds": {
 			"label": "Ratenbegrenzung",
 			"description": "Minimale Zeit zwischen API-Anfragen."

@@ -444,8 +444,10 @@
 			},
 			"resetDefaults": "डिफ़ॉल्ट पर रीसेट करें"
 		},
-		"unverifiedOrganization": "असत्यापित संगठन",
-		"unverifiedOrganizationDescription": "यदि आपको GPT-5 जैसे मॉडल के साथ संगठन सत्यापन त्रुटियां आती हैं तो इस बॉक्स को चेक करें। यह स्ट्रीमिंग और रीज़निंग सारांश को निष्क्रिय कर देगा लेकिन मॉडल को काम करने की अनुमति देगा।",
+		"disableStreaming": "स्ट्रीमिंग अक्षम करें",
+		"disableStreamingDescription": "OpenAI मॉडल के लिए रियल-टाइम रिस्पॉन्स स्ट्रीमिंग को अक्षम करें।",
+		"disableReasoningSummaries": "रीज़निंग सारांश अक्षम करें",
+		"disableReasoningSummariesDescription": "GPT-5 जैसे मॉडल में रीज़निंग सारांश को अक्षम करें।",
 		"rateLimitSeconds": {
 			"label": "दर सीमा",
 			"description": "API अनुरोधों के बीच न्यूनतम समय।"

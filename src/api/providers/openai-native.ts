@@ -222,11 +222,11 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 	}
 
 	private canOrganizationUseStreaming(): boolean {
-		return !this.options.openAiNativeUnverifiedOrg
+		return !this.options.openAiNativeDisableStreaming
 	}
 
 	private canOrganizationUseGpt5ReasoningSummary(): boolean {
-		return !!(this.options.enableGpt5ReasoningSummary && !this.options.openAiNativeUnverifiedOrg)
+		return !!(this.options.enableGpt5ReasoningSummary && !this.options.openAiNativeDisableReasoningSummaries)
 	}
 
 	private buildRequestBody(

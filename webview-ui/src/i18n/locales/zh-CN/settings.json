@@ -444,8 +444,10 @@
 			},
 			"resetDefaults": "重置为默认值"
 		},
-		"unverifiedOrganization": "未验证组织",
-		"unverifiedOrganizationDescription": "如果你在使用 GPT-5 等模型时遇到组织验证错误，请勾选此选项。这将禁用流式传输和推理摘要，但允许模型正常工作。",
+		"disableStreaming": "禁用流式传输",
+		"disableStreamingDescription": "为 OpenAI 模型禁用实时响应流式传输。",
+		"disableReasoningSummaries": "禁用推理摘要",
+		"disableReasoningSummariesDescription": "在 GPT-5 等模型中禁用推理摘要。",
 		"rateLimitSeconds": {
 			"label": "API 请求频率限制",
 			"description": "设置API请求的最小间隔时间"

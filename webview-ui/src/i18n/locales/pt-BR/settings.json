@@ -444,8 +444,10 @@
 			},
 			"resetDefaults": "Restaurar Padrões"
 		},
-		"unverifiedOrganization": "Organização não verificada",
-		"unverifiedOrganizationDescription": "Marque esta caixa se você encontrar erros de verificação de organização com modelos como GPT-5. Isso desabilitará streaming e resumos de raciocínio, mas permitirá que os modelos funcionem.",
+		"disableStreaming": "Desabilitar streaming",
+		"disableStreamingDescription": "Desabilitar o streaming de resposta em tempo real para modelos OpenAI.",
+		"disableReasoningSummaries": "Desabilitar resumos de raciocínio",
+		"disableReasoningSummariesDescription": "Desabilitar os resumos de raciocínio em modelos como GPT-5.",
 		"rateLimitSeconds": {
 			"label": "Limite de taxa",
 			"description": "Tempo mínimo entre requisições de API."

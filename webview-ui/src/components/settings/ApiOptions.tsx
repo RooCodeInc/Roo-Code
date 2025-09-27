@@ -825,16 +825,33 @@ const ApiOptions = ({
 								</div>
 							)}
 						{selectedProvider === "openai-native" && (
-							<div>
-								<VSCodeCheckbox
-									checked={apiConfiguration?.openAiNativeUnverifiedOrg ?? false}
-									onChange={(e: any) =>
-										setApiConfigurationField("openAiNativeUnverifiedOrg", e.target.checked)
-									}>
-									{t("settings:providers.unverifiedOrganization")}
-								</VSCodeCheckbox>
-								<div className="text-sm text-vscode-descriptionForeground mt-1">
-									{t("settings:providers.unverifiedOrganizationDescription")}
+							<div className="space-y-4">
+								<div>
+									<VSCodeCheckbox
+										checked={apiConfiguration?.openAiNativeDisableStreaming ?? false}
+										onChange={(e: any) =>
+											setApiConfigurationField("openAiNativeDisableStreaming", e.target.checked)
+										}>
+										{t("settings:providers.disableStreaming")}
+									</VSCodeCheckbox>
+									<div className="text-sm text-vscode-descriptionForeground mt-1">
+										{t("settings:providers.disableStreamingDescription")}
+									</div>
+								</div>
+								<div>
+									<VSCodeCheckbox
+										checked={apiConfiguration?.openAiNativeDisableReasoningSummaries ?? false}
+										onChange={(e: any) =>
+											setApiConfigurationField(
+												"openAiNativeDisableReasoningSummaries",
+												e.target.checked,
+											)
+										}>
+										{t("settings:providers.disableReasoningSummaries")}
+									</VSCodeCheckbox>
+									<div className="text-sm text-vscode-descriptionForeground mt-1">
+										{t("settings:providers.disableReasoningSummariesDescription")}
+									</div>
 								</div>
 							</div>
 						)}
