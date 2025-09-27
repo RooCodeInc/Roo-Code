@@ -21,6 +21,10 @@
 		},
 		"packages/{build,cloud,evals,ipc,telemetry,types}": {
 			"project": ["src/**/*.ts"]
+		},
+		"apps/docs": {
+			"entry": ["src/**/*.{ts,tsx}"],
+			"project": ["src/**/*.{ts,tsx}"]
 		}
 	}
 }

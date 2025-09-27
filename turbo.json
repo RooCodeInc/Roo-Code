@@ -11,11 +11,30 @@
 			"cache": false
 		},
 		"build": {
-			"outputs": ["dist/**"],
-			"inputs": ["src/**", "package.json", "tsconfig.json", "tsup.config.ts", "vite.config.ts"]
+			"outputs": ["dist/**", "build/**"],
+			"inputs": [
+				"src/**",
+				"docs/**",
+				"package.json",
+				"tsconfig.json",
+				"tsup.config.ts",
+				"vite.config.ts",
+				"docusaurus.config.ts"
+			]
 		},
 		"watch:tsc": {
 			"cache": false
+		},
+		"dev": {
+			"cache": false,
+			"persistent": true
+		},
+		"start": {
+			"cache": false,
+			"persistent": true
+		},
+		"typecheck": {
+			"dependsOn": ["@roo-code/types#build"]
 		}
 	}
 }

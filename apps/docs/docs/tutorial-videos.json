@@ -1,0 +1,48 @@
+{
+	"videos": [
+		{
+			"id": "Mcq3r1EPZ-4",
+			"title": "Installing Roo Code"
+		},
+		{
+			"id": "ZBML8h5cCgo",
+			"title": "Configuring Profiles"
+		},
+		{
+			"id": "QDy3dm1xJ6Y",
+			"title": "Setting up MCP Servers"
+		},
+		{
+			"id": "jW4_PPyRXCs",
+			"title": "Auto Approve Feature"
+		},
+		{
+			"id": "qgqceCuhlRA",
+			"title": "Custom Modes"
+		},
+		{
+			"id": "Ho30nyY332E",
+			"title": "Checkpoints"
+		},
+		{
+			"id": "r1bpod1VWhg",
+			"title": "Codebase Indexing"
+		},
+		{
+			"id": "9k8OAXlszak",
+			"title": "Context Condensing"
+		},
+		{
+			"id": "WatooxMlW0U",
+			"title": "Roo Marketplace"
+		},
+		{
+			"id": "6h5vB9PpoPk",
+			"title": "Todo Lists"
+		},
+		{
+			"id": "IOpmeUGLpg0",
+			"title": "Slash Commands"
+		}
+	]
+}

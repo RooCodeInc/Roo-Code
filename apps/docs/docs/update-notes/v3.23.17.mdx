@@ -1,0 +1,49 @@
+---
+description: This release introduces intelligent merge conflict resolution, new AI providers, enhanced stability, and numerous quality-of-life improvements.
+keywords:
+  - roo code 3.23.17
+  - merge resolver
+  - mistral embedding
+  - moonshot provider
+  - qwen model
+image: /img/social-share.jpg
+---
+
+# Roo Code 3.23.17 Release Notes (2025-07-22)
+
+This release introduces new AI providers, enhanced stability, and numerous quality-of-life improvements.
+
+## QOL Improvements
+
+* **Jump to New Files**: Added jump icon for newly created files, matching the experience of edited files (thanks mkdir700!) ([#5738](https://github.com/RooCodeInc/Roo-Code/pull/5738))
+* **Apply Diff Error Messages**: Added case sensitivity reminder when apply_diff fails, helping users understand matching requirements (thanks maskelihileci!) ([#6076](https://github.com/RooCodeInc/Roo-Code/pull/6076))
+* **Context Condensing Prompt Location**: Moved to Prompts section for better discoverability and persistent visibility (thanks SannidhyaSah, notadamking!) ([#5279](https://github.com/RooCodeInc/Roo-Code/pull/5279))
+* **Todo List Tool Control**: Added checkbox in provider settings to enable/disable the todo list tool ([#6032](https://github.com/RooCodeInc/Roo-Code/pull/6032))
+* **MCP Content Optimization**: Automatically omits MCP-related prompts when no servers are configured ([#5889](https://github.com/RooCodeInc/Roo-Code/pull/5889))
+* **Git Installation Check**: Shows clear warning with download link when Git is not installed for checkpoints feature (thanks MuriloFP!) ([#5920](https://github.com/RooCodeInc/Roo-Code/pull/5920))
+* **Configurable Eval Timeouts**: Added slider to set evaluation timeouts between 5-10 minutes ([#5865](https://github.com/RooCodeInc/Roo-Code/pull/5865))
+
+### Bug Fixes
+
+* **Terminal Output Limits**: Fixed critical crashes caused by terminal commands outputting extremely long lines. Now properly limits output to prevent context explosion (thanks robottwo!) ([#5777](https://github.com/RooCodeInc/Roo-Code/pull/5777))
+* **API Error Messages**: Fixed issue where all API failures showed as "API Request Cancelled". Now displays correct error messages for better troubleshooting (thanks MDean-Slalom, daniel-lxs!) ([#6025](https://github.com/RooCodeInc/Roo-Code/pull/6025))
+* **AWS Bedrock Token Counting**: Fixed inaccurate token counts and false context window errors for Bedrock users (thanks daniel-lxs, fedorbass!) ([#6019](https://github.com/RooCodeInc/Roo-Code/pull/6019))
+* **Export During API Operations**: Restored ability to export, share, and copy content while API is running (thanks MuriloFP, KJ7LNW!) ([#5849](https://github.com/RooCodeInc/Roo-Code/pull/5849))
+* **Symlinked Rules Files**: Fixed sorting of symlinked rules files to use symlink names, allowing proper ordering with numbered prefixes (thanks dsent!) ([#5903](https://github.com/RooCodeInc/Roo-Code/pull/5903))
+* **Global Mode Export**: Fixed issue where exporting global modes didn't include associated rules files ([#5837](https://github.com/RooCodeInc/Roo-Code/pull/5837))
+* **Vitest Command**: Added missing run parameter to prevent tests hanging in watch mode (thanks KJ7LNW!) ([#5991](https://github.com/RooCodeInc/Roo-Code/pull/5991))
+* **Evaluation System**: Fixed evaluation timeout handling that was broken in a previous update ([#6065](https://github.com/RooCodeInc/Roo-Code/pull/6065))
+* **Cloud Session Handling**: Improved session error handling to prevent unnecessary logouts during service issues ([#6051](https://github.com/RooCodeInc/Roo-Code/pull/6051))
+
+## Provider Updates
+
+* **Mistral Embedding Provider**: Codebase indexing gets a major upgrade with Mistral as a new embedding provider, offering superior performance at no cost. Simply select Mistral's codestral-embed model in your embedding settings for better code understanding and more accurate AI responses (thanks SannidhyaSah, shariqriazz!) ([#5946](https://github.com/RooCodeInc/Roo-Code/pull/5946))
+* **Qwen3-235B Model**: Added support for Qwen3-235B-A22B-Instruct-2507 with massive 262K token context window on Chutes AI (thanks apple-techie!) ([#6052](https://github.com/RooCodeInc/Roo-Code/pull/6052))
+* **Moonshot AI**: Added Moonshot as a new AI provider option (thanks CellenLee!) ([#6046](https://github.com/RooCodeInc/Roo-Code/pull/6046))
+* **Llama 4 Maverick**: Added Llama 4 Maverick model (128K context) to Google Vertex AI in US-EAST5 region (thanks MuriloFP, konstantinosbotonakis!) ([#6023](https://github.com/RooCodeInc/Roo-Code/pull/6023))
+
+## Misc Improvements
+
+* **Merge Resolver Mode**: Added intelligent merge conflict resolution mode that analyzes commit history to make smart decisions about which changes to keep (thanks daniel-lxs!) ([#6090](https://github.com/RooCodeInc/Roo-Code/pull/6090))
+* **Token Fallback Logic**: Improved sliding window with consistent 8192 token fallback for more predictable context handling ([#5993](https://github.com/RooCodeInc/Roo-Code/pull/5993))
+* **Todo List Clarification**: Updated documentation to clarify that todo list tool is for complicated tasks, not just multi-step ones ([#5926](https://github.com/RooCodeInc/Roo-Code/pull/5926))

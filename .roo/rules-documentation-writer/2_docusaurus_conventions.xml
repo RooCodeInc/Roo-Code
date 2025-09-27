@@ -1,0 +1,353 @@
+<docusaurus_conventions>
+  <overview>
+    This guide covers Docusaurus-specific formatting rules for Roo Code documentation. Before applying these conventions, always explore the project structure to understand the actual directory layout.
+  </overview>
+
+  <discovery_first>
+    <principle>Always use list_files to discover the actual project structure before making assumptions about paths</principle>
+    <principle>Check for existing patterns in similar files before creating new content</principle>
+    <principle>Verify directory existence before referencing specific paths</principle>
+  </discovery_first>
+
+  <linking>
+    <rule name="internal_links">
+      <description>Use paths relative to the documentation root. Do not include the `.md` extension. Discover the documentation structure first.</description>
+      <discovery_steps>
+        <step>Use list_files to find the documentation root directory</step>
+        <step>Identify the path structure used in existing documentation</step>
+        <step>Follow the established pattern</step>
+      </discovery_steps>
+      <good>[Link to Guide](/intro/)</good>
+      <bad>[Link to Guide](../intro.md)</bad>
+    </rule>
+    <rule name="site_alias">
+      <description>Use `@site` for code imports or asset references from the project root. Do not use it for Markdown links.</description>
+      <good>import Header from '@site/src/components/Header';</good>
+      <bad>[Link](@site/docs/intro.md)</bad>
+    </rule>
+  </linking>
+
+  <media>
+    <rule name="images">
+      <description>Discover the image storage location in the project before placing images. Look for existing image references to understand the pattern.</description>
+      <discovery_steps>
+        <step>Use list_files to find where images are stored (commonly in static/img or similar)</step>
+        <step>Check existing documentation for image reference patterns</step>
+        <step>Follow the established convention</step>
+      </discovery_steps>
+
+      <policy>
+        <when_to_use>
+          <item>Clarify a decision point or non-obvious UI state</item>
+          <item>Demonstrate outcome/results that text alone cannot convey</item>
+        </when_to_use>
+        <avoid>
+          <item>Narrating obvious UI (“This page shows…”, “It includes…”) without decisions or implications</item>
+          <item>Listing every field/tab in a screen</item>
+        </avoid>
+        <limits>
+          <maxPerSection>1</maxPerSection>
+          <maxPerPage>3</maxPerPage>
+        </limits>
+        <alt_text>
+          <rule>Describe the action or outcome, not the chrome. Example: "Toggle Roomote Control to enable remote tasks".</rule>
+        </alt_text>
+        <width_default>800</width_default>
+        <format>Use HTML img tags per project rules. See Image Tag Format in .roorules.</format>
+      </policy>
+
+      <example>
+        <![CDATA[
+ <!-- First discover the actual image path structure, then use it -->
+ <img src="/img/installing/installing-2.png" alt="VS Code's Install from VSIX dialog" width="600" />
+        ]]>
+      </example>
+    </rule>
+  </media>
+
+  <versioning>
+    <rule name="no_version_numbers">
+      <description>Do not include version numbers or phrases like "as of version X.Y" in general documentation. First discover where version information is stored in the project.</description>
+      <discovery_steps>
+        <step>Use list_files to find version-related documentation directories</step>
+        <step>Check for patterns like update-notes, changelog, or release directories</step>
+        <step>Place version-specific information in the appropriate location</step>
+      </discovery_steps>
+    </rule>
+  </versioning>
+
+  <frontmatter>
+    <rule name="metadata">
+      <description>Check existing documentation files for frontmatter patterns before adding new ones. The required fields may vary by project.</description>
+      <discovery_steps>
+        <step>Read several existing documentation files to understand the frontmatter pattern</step>
+        <step>Identify which fields are consistently used</step>
+        <step>Follow the established pattern</step>
+      </discovery_steps>
+      <example>
+        <![CDATA[
+---
+description: A concise summary of the page content.
+keywords:
+  - relevant
+  - keywords
+  - for
+  - search
+image: /img/social-share.jpg
+---
+        ]]>
+      </example>
+    </rule>
+  </frontmatter>
+
+  <general_discovery_workflow>
+    <step number="1">Use list_files to explore the project structure</step>
+    <step number="2">Read existing files similar to what you're creating/editing</step>
+    <step number="3">Identify patterns in paths, formatting, and conventions</step>
+    <step number="4">Follow the established patterns rather than assuming standard locations</step>
+    <step number="5">When in doubt, ask for clarification rather than making assumptions</step>
+  </general_discovery_workflow>
+
+  <redundancy_prevention_workflow>
+    <mandatory_enforcement>
+      <rule>This workflow is MANDATORY for ALL edits to existing documentation files</rule>
+      <rule>You CANNOT skip any step - each must be completed and documented</rule>
+      <rule>Failure to complete this workflow will result in rejection of changes</rule>
+    </mandatory_enforcement>
+    
+    <overview>
+      CRITICAL: This workflow MUST be completed BEFORE making ANY changes to existing documentation. No exceptions.
+    </overview>
+    
+    <step number="1" status="MANDATORY">
+      <title>Comprehensive Content Discovery</title>
+      <blocking_requirement>You CANNOT proceed without completing ALL searches</blocking_requirement>
+      <actions>
+        <action mandatory="true">Use codebase_search with the exact topic/feature name</action>
+        <action mandatory="true">Use codebase_search with ALL variations of key terms (minimum 3-5 variations required)</action>
+        <action mandatory="true">Search for related concepts that might contain overlapping information</action>
+        <action mandatory="true">Document EVERY location found with file path and line numbers</action>
+      </actions>
+      <validation_requirement>
+        You MUST provide evidence of searches performed:
+        - List each search query used
+        - Number of results found for each
+        - File paths discovered
+      </validation_requirement>
+      <example>
+        <![CDATA[
+<!-- MANDATORY: Search with multiple variations -->
+<codebase_search>
+<query>authentication setup configuration</query>
+<path>docs</path>
+</codebase_search>
+
+<!-- Then search variations -->
+<codebase_search>
+<query>auth config login security</query>
+<path>docs</path>
+</codebase_search>
+
+<!-- Then related concepts -->
+<codebase_search>
+<query>user access credentials permissions</query>
+<path>docs</path>
+</codebase_search>
+        ]]>
+      </example>
+    </step>
+
+    <step number="2" status="MANDATORY">
+      <title>Exhaustive Duplication Analysis</title>
+      <blocking_requirement>You MUST read EVERY discovered file before proceeding</blocking_requirement>
+      <actions>
+        <action mandatory="true">Read ALL discovered related content in full - no skimming</action>
+        <action mandatory="true">Create a detailed comparison table showing:
+          - What information exists where
+          - How it relates to the requested change
+          - Overlap percentage with requested content
+        </action>
+        <action mandatory="true">Identify if the requested change would duplicate ANY existing information</action>
+        <action mandatory="true">Document your findings in a structured format</action>
+      </actions>
+      <decision_matrix status="MANDATORY">
+        <scenario condition="Content exists and is complete">
+          <required_action>STOP immediately. Inform user with specific file location. DO NOT create duplicate content.</required_action>
+        </scenario>
+        <scenario condition="Content exists but is incomplete">
+          <required_action>STOP creating new content. Enhance existing content at its current location instead.</required_action>
+        </scenario>
+        <scenario condition="Content is scattered across multiple files">
+          <required_action>STOP and propose consolidation plan to user before any edits.</required_action>
+        </scenario>
+        <scenario condition="Content doesn't exist">
+          <required_action>Document this finding and proceed with caution to next step.</required_action>
+        </scenario>
+      </decision_matrix>
+    </step>
+
+    <step number="3" status="MANDATORY">
+      <title>Impact Analysis and Cross-Reference Validation</title>
+      <blocking_requirement>Complete impact analysis before ANY file modifications</blocking_requirement>
+      <actions>
+        <action mandatory="true">List ALL internal links that reference or might reference this content</action>
+        <action mandatory="true">Identify ALL files that would need updates if content is moved or changed</action>
+        <action mandatory="true">Check for hardcoded references in:
+          - Other documentation files
+          - Configuration files
+          - Code examples
+          - Tutorials or guides
+        </action>
+        <action mandatory="true">Create an impact report listing all affected files</action>
+        <action mandatory="true">Plan redirect updates for docusaurus.config.ts if needed</action>
+      </actions>
+    </step>
+
+    <step number="4" status="MANDATORY">
+      <title>Terminology and Consistency Verification</title>
+      <actions>
+        <action mandatory="true">Create a terminology map of all technical terms used</action>
+        <action mandatory="true">Verify terms match existing usage across ALL documentation</action>
+        <action mandatory="true">Check glossary or terminology guide for standard definitions</action>
+        <action mandatory="true">Document any terminology conflicts found</action>
+      </actions>
+    </step>
+
+    <step number="5" status="MANDATORY">
+      <title>User Approval Gate</title>
+      <blocking_requirement>You CANNOT proceed with edits without explicit user approval</blocking_requirement>
+      <actions>
+        <action mandatory="true">Present complete validation findings using ask_followup_question</action>
+        <action mandatory="true">Include:
+          - All discovered duplicate or related content with specific locations
+          - Impact analysis results
+          - Recommended approach (update existing, consolidate, or create new)
+          - List of all files that would be affected
+        </action>
+        <action mandatory="true">Wait for explicit user approval before making ANY changes</action>
+      </actions>
+    </step>
+  </redundancy_prevention_workflow>
+
+  <cohesion_guidelines>
+    <guideline name="information_architecture">
+      <description>Maintain logical information hierarchy and flow</description>
+      <checks>
+        <check>Does this content belong in the current section?</check>
+        <check>Would users expect to find this information here?</check>
+        <check>Does it follow the progression from basic to advanced?</check>
+      </checks>
+    </guideline>
+    
+    <guideline name="single_source_of_truth">
+      <description>Each piece of information should have one authoritative location</description>
+      <implementation>
+        <step>Core information lives in one place</step>
+        <step>Other locations reference the authoritative source</step>
+        <step>Use includes or references rather than duplication</step>
+      </implementation>
+    </guideline>
+
+    <guideline name="contextual_linking">
+      <description>Connect related content through meaningful links</description>
+      <best_practices>
+        <practice>Link to prerequisites before advanced topics</practice>
+        <practice>Provide "See also" sections for related content</practice>
+        <practice>Ensure bidirectional linking where appropriate</practice>
+      </best_practices>
+    </guideline>
+  </cohesion_guidelines>
+  <documentation_update_protocol>
+    <mandatory_notice>
+      <enforcement>This protocol is MANDATORY for ALL updates to existing documentation</enforcement>
+      <consequence>Skipping any validation step will invalidate the entire update</consequence>
+    </mandatory_notice>
+    
+    <overview>
+      CRITICAL: When updating existing documentation, this protocol MUST be followed completely. No shortcuts allowed.
+    </overview>
+    
+    <pre_update_validation status="MANDATORY">
+      <blocking_gate>You CANNOT begin updates until ALL validation steps are complete</blocking_gate>
+      <step mandatory="true">Run codebase_search to identify ALL documents that reference the content being updated</step>
+      <step mandatory="true">Create a dependency map showing:
+        - Which files reference this content
+        - Which examples depend on this content
+        - Which tutorials or guides link to this content
+      </step>
+      <step mandatory="true">Read EVERY dependent file to understand impact</step>
+      <step mandatory="true">Verify that the update won't invalidate ANY existing instructions</step>
+      <step mandatory="true">Document backward compatibility concerns if features have changed</step>
+      <step mandatory="true">Create a comprehensive update plan BEFORE making any changes</step>
+    </pre_update_validation>
+
+    <update_impact_assessment status="MANDATORY">
+      <requirement>You MUST answer ALL questions with evidence before proceeding</requirement>
+      <question mandatory="true">Will this update require changes to other documents? List each file.</question>
+      <question mandatory="true">Are there code examples that need to be updated? Provide file paths.</question>
+      <question mandatory="true">Do any quickstart guides or tutorials reference this content? List them.</question>
+      <question mandatory="true">Will this change affect the logical flow of the documentation? Explain how.</question>
+      <question mandatory="true">Have you verified this won't create contradictions? Provide evidence.</question>
+      <validation_gate>
+        If ANY answer is "yes" or "maybe", you MUST:
+        1. Document all required changes
+        2. Get user approval for the full scope
+        3. Update ALL affected files in the correct order
+      </validation_gate>
+    </update_impact_assessment>
+
+    <update_execution status="CONDITIONAL">
+      <condition>Only proceed after pre-update validation is complete and approved</condition>
+      <requirement>Updates must be made in dependency order to prevent broken states</requirement>
+      <steps>
+        <step>Update the primary content first</step>
+        <step>Update all dependent content in order of dependency</step>
+        <step>Verify each update before proceeding to the next</step>
+        <step>Test all cross-references after each change</step>
+      </steps>
+    </update_execution>
+
+    <post_update_checklist status="MANDATORY">
+      <requirement>EVERY item must be verified before considering the update complete</requirement>
+      <item mandatory="true">Re-run codebase_search to verify all references are still valid</item>
+      <item mandatory="true">Test EVERY cross-reference link in affected documents</item>
+      <item mandatory="true">Verify NO broken links have been introduced (use search for old paths)</item>
+      <item mandatory="true">Confirm terminology remains consistent across ALL affected documents</item>
+      <item mandatory="true">Verify the update enhances rather than contradicts existing content</item>
+      <item mandatory="true">Ensure version-specific information is properly isolated</item>
+      <item mandatory="true">Document what was changed and why in a change log</item>
+    </post_update_checklist>
+
+    <final_validation_gate status="MANDATORY">
+      <requirement>Use ask_followup_question to confirm all updates are complete and validated</requirement>
+      <requirement>Provide a summary of:
+        - All files that were updated
+        - All validation checks performed
+        - Any remaining concerns or follow-up needed
+      </requirement>
+    </final_validation_gate>
+  </documentation_update_protocol>
+
+  <ask_before_proceeding>
+    <description>Use ask_followup_question when uncertainty exists about redundancy or impact</description>
+    <scenarios>
+      <scenario>When similar content exists in multiple locations</scenario>
+      <scenario>When the requested change might contradict existing documentation</scenario>
+      <scenario>When consolidation might be better than addition</scenario>
+      <scenario>When the impact on other documents is unclear</scenario>
+    </scenarios>
+    <example>
+      <![CDATA[
+<ask_followup_question>
+<question>I found existing content about this topic in three different locations. How would you like me to proceed?</question>
+<follow_up>
+<suggest>Update the main guide and add cross-references from the other locations</suggest>
+<suggest>Consolidate all information into a single comprehensive guide</suggest>
+<suggest>Keep them separate but ensure they're consistent and cross-linked</suggest>
+<suggest>Show me the existing locations first so I can decide</suggest>
+</follow_up>
+</ask_followup_question>
+      ]]>
+    </example>
+  </ask_before_proceeding>
+</docusaurus_conventions>

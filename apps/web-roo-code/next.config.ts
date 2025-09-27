@@ -1,9 +1,25 @@
 import type { NextConfig } from "next"
 
+// Get the docs URL from environment variable, with a fallback for local development
+const DOCS_URL = process.env.DOCS_URL || "https://roo-docs.vercel.app"
+
 const nextConfig: NextConfig = {
 	webpack: (config) => {
 		config.resolve.extensionAlias = { ".js": [".ts", ".tsx", ".js", ".jsx"] }
 		return config
+	},
+	async rewrites() {
+		return [
+			// Proxy /docs to the separate docs deployment
+			{
+				source: "/docs",
+				destination: `${DOCS_URL}/docs`,
+			},
+			{
+				source: "/docs/:path*",
+				destination: `${DOCS_URL}/docs/:path*`,
+			},
+		]
 	},
 	async redirects() {
 		return [

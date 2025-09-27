@@ -1,0 +1,99 @@
+---
+description: Combined release notes for Roo Code v3.28, featuring Task Sync & Roomote Control for mobile task management, Roo Code Cloud integration, improved chat editing, and various bug fixes.
+keywords:
+  - roo code 3.28
+  - roomote control
+  - task sync
+  - cloud integration
+  - chat editing
+image: /img/social-share.jpg
+---
+
+# Roo Code 3.28 Combined Release Notes
+
+This version introduces Task Sync & Roomote Control for monitoring and controlling tasks from your phone, plus Roo Code Cloud integration features, enhanced chat editing, conversation preservation improvements, and multiple bug fixes.
+
+## Task Sync & Roomote Control
+
+Introducing our new cloud connectivity features that let you **monitor and control long-running tasks from your phone** - no more waiting at your desk! ([#7799](https://github.com/RooCodeInc/Roo-Code/pull/7799), [#7805](https://github.com/RooCodeInc/Roo-Code/pull/7805), [#7850](https://github.com/RooCodeInc/Roo-Code/pull/7850)):
+
+> **Important**: Roo Code remains **completely free and open source**. Task Sync and Roomote Control are optional supplementary services that connect your local VS Code to the cloud - all processing still happens in your VS Code instance.
+
+<img src="/img/v3.28.0/v3.28.0.png" alt="Roomote Control interface showing real-time task monitoring and control from browser" width="300" />
+
+**[Task Sync](/roo-code-cloud/task-sync) (FREE for All Users)**:
+- **Monitor from Anywhere**: Check on long-running tasks from your phone while away from your desk
+- **Real-time Updates**: Live streaming of your local task messages and progress
+- **Task History**: Your tasks are saved to the cloud for later reference
+- **Cloud Visibility**: View your VS Code tasks from any browser
+
+**[Roomote Control](/roo-code-cloud/roomote-control) ([14-Day Free Trial, then $20/month](/roo-code-cloud/billing-subscriptions#pro-plan-20month))**:
+- **Continue Tasks Remotely**: Keep tasks going from your phone - respond to prompts, fix errors, approve actions
+- **Full Chat Control**: Interact with the chatbox as though you were in your IDE
+- **Start/Stop Tasks**: Launch new tasks or terminate running ones from anywhere
+- **Complete Control**: Full bidirectional control of your local VS Code from anywhere
+
+Task Sync enables monitoring your local development environment from any device. Add Roomote Control for full remote control capabilities - whether you're on another computer, tablet, or smartphone.
+
+> **📚 Documentation**: See [Task Sync](/roo-code-cloud/task-sync), [Roomote Control Guide](/roo-code-cloud/roomote-control), and [Billing & Subscriptions](/roo-code-cloud/billing-subscriptions).
+
+## QOL Improvements
+
+* **Click-to-Edit Chat Messages**: Click directly on any message text to edit it, with ESC to cancel and improved padding consistency ([#7790](https://github.com/RooCodeInc/Roo-Code/pull/7790))
+* **Enhanced Reasoning Display**: The AI's thinking process now shows a persistent timer and displays reasoning content in clean italic text ([#7752](https://github.com/RooCodeInc/Roo-Code/pull/7752))
+* **Manual Auth URL Input**: Users in containerized environments can now paste authentication redirect URLs manually when automatic redirection fails ([#7805](https://github.com/RooCodeInc/Roo-Code/pull/7805))
+* **Active Mode Centering**: The mode selector dropdown now automatically centers the active mode when opened ([#7883](https://github.com/RooCodeInc/Roo-Code/pull/7883))
+* **Preserve First Message**: The first message containing slash commands or initial context is now preserved during conversation condensing instead of being replaced with a summary ([#7910](https://github.com/RooCodeInc/Roo-Code/pull/7910))
+* **Checkpoint Initialization Notifications**: You'll now receive clear notifications when checkpoint initialization fails, particularly with nested Git repositories ([#7766](https://github.com/RooCodeInc/Roo-Code/pull/7766))
+
+* Smaller and more subtle auto-approve UI (thanks brunobergher!) ([#7894](https://github.com/RooCodeInc/Roo-Code/pull/7894))
+* Disable Roomote Control on logout for better security ([#7976](https://github.com/RooCodeInc/Roo-Code/pull/7976))
+* Add padding to the cloudview for better visual spacing ([#7954](https://github.com/RooCodeInc/Roo-Code/pull/7954))
+
+* Temporarily pause auto-approve with a global “Enabled” switch so you can pause without losing your per-toggle selections; the UI clearly distinguishes global vs. per-toggle states ([#8024](https://github.com/RooCodeInc/Roo-Code/pull/8024))
+* Slash commands management moved to Settings > Slash Commands with a gear shortcut from the chat popover; the popover is now selection-only for quick use ([#7988](https://github.com/RooCodeInc/Roo-Code/pull/7988))
+* Keyboard shortcut to quickly “Add to Context” (macOS: Cmd+Y; Windows/Linux: Ctrl+Y) ([#7908](https://github.com/RooCodeInc/Roo-Code/pull/7908))
+* Add Image button moved inside the text area (top-right) and Enhance Prompt positioned above Send to reduce pointer travel and clarify layout ([#7989](https://github.com/RooCodeInc/Roo-Code/pull/7989))
+* Composer action buttons now appear only when there’s text input, reducing visual clutter and accidental clicks ([#7987](https://github.com/RooCodeInc/Roo-Code/pull/7987))
+* New Task button icon switched from “+” to a compose/pencil icon to better match its purpose and align with codicon standards ([#7942](https://github.com/RooCodeInc/Roo-Code/pull/7942))
+## Bug Fixes
+
+* **Groq Context Window**: Fixed incorrect display of cached tokens in context window ([#7839](https://github.com/RooCodeInc/Roo-Code/pull/7839))
+* **Chat Message Operations**: Resolved duplication issues when editing messages and "Couldn't find timestamp" errors when deleting ([#7793](https://github.com/RooCodeInc/Roo-Code/pull/7793))
+* **UI Overlap**: Fixed CodeBlock button z-index to prevent overlap with popovers and configuration panels (thanks A0nameless0man!) ([#7783](https://github.com/RooCodeInc/Roo-Code/pull/7783))
+* Fix message queue re-queue loop in Task.ask() that could degrade performance ([#7823](https://github.com/RooCodeInc/Roo-Code/pull/7823))
+* Restrict @-mention parsing to line-start or whitespace boundaries to prevent false triggers ([#7876](https://github.com/RooCodeInc/Roo-Code/pull/7876))
+* Make nested git repository warning persistent with path info for better visibility ([#7885](https://github.com/RooCodeInc/Roo-Code/pull/7885))
+* Include API key in Ollama /api/tags requests to support authenticated instances (thanks ItsOnlyBinary!) ([#7903](https://github.com/RooCodeInc/Roo-Code/pull/7903))
+* Preserve original first message context during conversation condensing for more coherent long chats ([#7939](https://github.com/RooCodeInc/Roo-Code/pull/7939))
+
+* **Temperature Parameter**: Restored temperature parameter to fix crashes in TabbyApi and ExLlamaV2 backends (thanks drknyt!) ([#7594](https://github.com/RooCodeInc/Roo-Code/pull/7594))
+* **Ollama Model Info**: Fixed max context window display for Ollama models (thanks ItsOnlyBinary!) ([#7679](https://github.com/RooCodeInc/Roo-Code/pull/7679))
+* **Image Preview Caching**: This ensures the chat always displays the newly generated image instead of a cached version ([#7860](https://github.com/RooCodeInc/Roo-Code/pull/7860))
+
+* Restore square brackets in Gemini-generated code so arrays/indexers render correctly (e.g., `string[] items = new string[5];`) (thanks AtkinsDynamicObjects!) ([#7577](https://github.com/RooCodeInc/Roo-Code/pull/7577))
+* Filter out Claude Code built-in tools (ExitPlanMode, BashOutput, KillBash) to avoid erroneous tool calls and distracting warnings (thanks juliettefournier-econ!) ([#7818](https://github.com/RooCodeInc/Roo-Code/pull/7818))
+* Fix an issue where the context menu could be obscured while editing messages; the menu stays visible and usable across screen sizes (thanks NaccOll, mini2s!) ([#7951](https://github.com/RooCodeInc/Roo-Code/pull/7951))
+* Surface a clear, actionable error instead of cryptic ByteString conversion failures during code indexing when API keys contain invalid/special characters (thanks PavelA85!) ([#8008](https://github.com/RooCodeInc/Roo-Code/pull/8008))
+* Correct C# tree-sitter query so C# files are parsed and indexed properly, improving semantic search, navigation, and context quality (thanks mubeen-zulfiqar, vadash, Source-GuyCoder!) ([#7813](https://github.com/RooCodeInc/Roo-Code/pull/7813))
+
+
+## Provider Updates
+
+* **Vertex AI Models**: Added support for 6 new models including DeepSeek-V3, GPT-OSS, and Qwen models, plus the us-south1 region (thanks ssweens!) ([#7727](https://github.com/RooCodeInc/Roo-Code/pull/7727))
+* **DeepSeek Pricing**: Updated to new unified rates effective September 5, 2025 - $0.56/M input tokens, $1.68/M output tokens (thanks NaccOll!) ([#7687](https://github.com/RooCodeInc/Roo-Code/pull/7687))
+
+* **Chutes Provider**: Add Qwen3 Next 80B A3B models ([#7948](https://github.com/RooCodeInc/Roo-Code/pull/7948))
+* **Z.ai Coding Plans**: Region-aware options (International/China) with automatic base URL selection and sensible defaults to simplify setup (thanks chrarnoldus!) ([#8003](https://github.com/RooCodeInc/Roo-Code/pull/8003))
+## Misc Improvements
+
+* **Cloud Task Button**: Added a new button for opening tasks in Roo Code Cloud with QR codes and shareable URLs ([#7572](https://github.com/RooCodeInc/Roo-Code/pull/7572))
+* **Telemetry Default**: Posthog telemetry is now enabled by default with easy opt-out options in settings ([#7909](https://github.com/RooCodeInc/Roo-Code/pull/7909))
+* **Roo Code Cloud Announcement**: Updated in-app announcements about Roo Code Cloud features, localized in 18 languages ([#7914](https://github.com/RooCodeInc/Roo-Code/pull/7914))
+* **Merge Resolver Mode**: Added GIT_EDITOR environment variable to prevent hanging during non-interactive rebase operations ([#7819](https://github.com/RooCodeInc/Roo-Code/pull/7819))
+* Updated dependency esbuild to v0.25.9 for improved build performance ([#5455](https://github.com/RooCodeInc/Roo-Code/pull/5455))
+* Updated dependency @changesets/cli to v2.29.6 ([#7376](https://github.com/RooCodeInc/Roo-Code/pull/7376))
+* Updated dependency nock to v14.0.10 ([#6465](https://github.com/RooCodeInc/Roo-Code/pull/6465))
+* Updated dependency eslint-config-prettier to v10.1.8 ([#6464](https://github.com/RooCodeInc/Roo-Code/pull/6464))
+* Updated dependency eslint-plugin-turbo to v2.5.6 ([#7764](https://github.com/RooCodeInc/Roo-Code/pull/7764))
+* Updated dependency axios to v1.12.0 for improved reliability and security of HTTP requests ([#7963](https://github.com/RooCodeInc/Roo-Code/pull/7963))

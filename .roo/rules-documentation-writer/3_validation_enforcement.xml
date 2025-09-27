@@ -1,0 +1,242 @@
+<validation_enforcement_rules>
+  <overview>
+    This document defines the strict enforcement rules and consequences for the documentation writer mode.
+    ALL validation steps are MANDATORY when editing existing documentation files.
+  </overview>
+
+  <enforcement_hierarchy>
+    <level name="CRITICAL" severity="1">
+      <description>Violations that result in immediate task rejection</description>
+      <violations>
+        <violation>Skipping the redundancy prevention workflow when editing existing files</violation>
+        <violation>Making changes without completing content discovery searches</violation>
+        <violation>Creating duplicate content when similar content already exists</violation>
+        <violation>Proceeding with edits without user approval after validation</violation>
+      </violations>
+      <consequences>
+        <consequence>Task is immediately rejected</consequence>
+        <consequence>All changes are reverted</consequence>
+        <consequence>Mode must restart from the beginning</consequence>
+      </consequences>
+    </level>
+
+    <level name="BLOCKING" severity="2">
+      <description>Issues that prevent progression until resolved</description>
+      <violations>
+        <violation>Incomplete validation checklist items</violation>
+        <violation>Missing impact analysis for cross-references</violation>
+        <violation>Failing to read all discovered related content</violation>
+        <violation>Not searching for term variations during discovery</violation>
+      </violations>
+      <consequences>
+        <consequence>Cannot proceed to implementation phase</consequence>
+        <consequence>Must complete all missing steps</consequence>
+        <consequence>Must document completion of each step</consequence>
+      </consequences>
+    </level>
+
+    <level name="WARNING" severity="3">
+      <description>Issues that require correction but allow conditional progression</description>
+      <violations>
+        <violation>Inconsistent terminology usage</violation>
+        <violation>Missing bidirectional links</violation>
+        <violation>Incomplete post-update verification</violation>
+      </violations>
+      <consequences>
+        <consequence>Must acknowledge the issue</consequence>
+        <consequence>Must create a plan to address it</consequence>
+        <consequence>May proceed with user approval</consequence>
+      </consequences>
+    </level>
+  </enforcement_hierarchy>
+
+  <validation_gates>
+    <gate name="pre_edit_gate" type="BLOCKING">
+      <description>MANDATORY gate before ANY edits to existing files</description>
+      <requirements>
+        <requirement>Must complete ALL content discovery searches</requirement>
+        <requirement>Must read ALL discovered related content</requirement>
+        <requirement>Must document validation findings</requirement>
+        <requirement>Must get explicit user approval to proceed</requirement>
+      </requirements>
+      <enforcement>
+        If ANY requirement is not met:
+        - You CANNOT make any edits
+        - You MUST inform the user what's missing
+        - You MUST complete missing steps before proceeding
+      </enforcement>
+    </gate>
+
+    <gate name="duplication_prevention_gate" type="CRITICAL">
+      <description>Prevents creation of duplicate content</description>
+      <requirements>
+        <requirement>If similar content exists, MUST update existing location</requirement>
+        <requirement>If content is scattered, MUST propose consolidation</requirement>
+        <requirement>CANNOT create new content if it duplicates existing</requirement>
+      </requirements>
+      <enforcement>
+        If duplicate content is detected:
+        - IMMEDIATELY STOP all work
+        - Report exact locations of existing content
+        - Redirect efforts to enhancing existing content
+      </enforcement>
+    </gate>
+
+    <gate name="value_filter_gate" type="CRITICAL">
+      <description>Enforces value-first writing and bans obvious-UI narration.</description>
+      <requirements>
+        <requirement>Include a brief "Why it matters" section or opener (1–3 sentences) that frames value/outcomes.</requirement>
+        <requirement>Document decision points/trade-offs where the user must choose (e.g., Pro vs free, security implications).</requirement>
+        <requirement>Remove or condense any enumeration of on-screen elements unless each item carries a decision, consequence, or non-obvious behavior.</requirement>
+        <requirement>Apply screenshot limits (≤1 per section, ≤3 per page) and ensure alt text describes action/outcome.</requirement>
+      </requirements>
+      <evidence>
+        <item>Checklist confirming presence of "Why it matters" and decisions</item>
+        <item>Notes on removed UI narration and reasons</item>
+        <item>Screenshot count and alt-text review</item>
+      </evidence>
+      <enforcement>
+        If requirements are not met:
+        - Block the edit and return a summary of violations with specific locations.
+        - Require revision to pass this gate before proceeding.
+      </enforcement>
+    </gate>
+
+    <gate name="obvious_ui_narration_blocker" type="CRITICAL">
+      <description>Blocks screen narration that restates visible UI without adding decisions or implications.</description>
+      <blocked_phrases examples="non-exhaustive">
+        <phrase>This page shows</phrase>
+        <phrase>It includes</phrase>
+        <phrase>The page displays</phrase>
+        <phrase>List of</phrase>
+      </blocked_phrases>
+      <exceptions>
+        <exception>Allowed only when each listed item includes why it matters, a decision, or an implication.</exception>
+      </exceptions>
+      <enforcement>
+        If narration-only content is detected:
+        - Remove or compress into a single contextual sentence tied to a decision or outcome.
+      </enforcement>
+    </gate>
+
+    <gate name="consistency_gate" type="BLOCKING">
+      <description>Ensures documentation remains consistent</description>
+      <requirements>
+        <requirement>All terminology must match existing usage</requirement>
+        <requirement>All cross-references must remain valid</requirement>
+        <requirement>No contradictions with existing content</requirement>
+      </requirements>
+      <enforcement>
+        If inconsistencies are found:
+        - Document all inconsistencies
+        - Create a resolution plan
+        - Get approval before proceeding
+      </enforcement>
+    </gate>
+  </validation_gates>
+
+  <mandatory_workflows>
+    <workflow name="existing_file_edit">
+      <description>MANDATORY workflow for ANY edit to existing documentation</description>
+      <steps>
+        <step order="1" mandatory="true">Run redundancy prevention workflow</step>
+        <step order="2" mandatory="true">Complete content discovery with multiple search terms</step>
+        <step order="3" mandatory="true">Read and analyze ALL discovered content</step>
+        <step order="4" mandatory="true">Create validation report with findings</step>
+        <step order="5" mandatory="true">Pass the Value Filter Gate and Obvious-UI Narration Blocker with documented evidence</step>
+        <step order="6" mandatory="true">Get user approval via ask_followup_question</step>
+        <step order="7" conditional="true">Proceed with approved approach only</step>
+        <step order="8" mandatory="true">Verify all changes maintain consistency</step>
+      </steps>
+      <skip_consequence>
+        Skipping ANY mandatory step results in:
+        - Immediate task rejection
+        - Requirement to restart from step 1
+        - Documentation of the violation
+      </skip_consequence>
+    </workflow>
+  </mandatory_workflows>
+
+  <evidence_requirements>
+    <description>Documentation required to prove validation completion</description>
+    <required_evidence>
+      <evidence type="search_queries">
+        <description>List of all codebase_search queries performed</description>
+        <format>Query text, number of results, relevant findings</format>
+      </evidence>
+      <evidence type="content_analysis">
+        <description>Summary of all discovered related content</description>
+        <format>File path, line numbers, content summary, relevance</format>
+      </evidence>
+      <evidence type="impact_assessment">
+        <description>List of all files affected by the change</description>
+        <format>File path, type of impact, required updates</format>
+      </evidence>
+      <evidence type="validation_report">
+        <description>Comprehensive report of all validation findings</description>
+        <format>Structured summary with recommendations</format>
+      </evidence>
+    </required_evidence>
+  </evidence_requirements>
+
+  <user_communication_requirements>
+    <requirement type="validation_reporting">
+      <description>MUST report validation findings before making changes</description>
+      <template><![CDATA[
+<ask_followup_question>
+<question>I've completed the mandatory validation process. Here are my findings:
+
+**Content Discovery Results:**
+- Searched for: [list all search terms]
+- Found existing content in: [list all locations]
+
+**Duplication Analysis:**
+[Detailed analysis of existing content]
+
+**Recommended Approach:**
+[Specific recommendation based on findings]
+
+**Files That Would Be Affected:**
+[Complete list with impact description]
+
+Should I proceed with this approach?</question>
+<follow_up>
+<suggest>Yes, proceed with the recommended approach</suggest>
+<suggest>No, let me provide different instructions</suggest>
+<suggest>Show me the existing content first</suggest>
+<suggest>Consolidate the scattered content instead</suggest>
+</follow_up>
+</ask_followup_question>
+      ]]></template>
+    </requirement>
+  </user_communication_requirements>
+
+  <accountability_measures>
+    <measure type="validation_log">
+      <description>Every validation step must be logged</description>
+      <includes>
+        <item>Timestamp of each step</item>
+        <item>Actions taken</item>
+        <item>Results found</item>
+        <item>Decisions made</item>
+      </includes>
+    </measure>
+    <measure type="change_justification">
+      <description>Every edit must have documented justification</description>
+      <includes>
+        <item>Why the change is needed</item>
+        <item>What validation was performed</item>
+        <item>How it improves documentation</item>
+        <item>What alternatives were considered</item>
+      </includes>
+    </measure>
+  </accountability_measures>
+
+  <final_notice>
+    <critical_reminder>
+      These enforcement rules are NOT optional. They are MANDATORY for ALL documentation edits.
+      The documentation writer mode MUST follow these rules without exception.
+      Failure to comply will result in task rejection and requirement to start over.
+    </critical_reminder>
+  </final_notice>
+</validation_enforcement_rules>

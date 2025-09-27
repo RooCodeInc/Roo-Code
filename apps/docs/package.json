@@ -1,0 +1,64 @@
+{
+	"name": "@roo-code/docs",
+	"version": "0.0.0",
+	"private": true,
+	"scripts": {
+		"docusaurus": "docusaurus",
+		"start": "docusaurus start",
+		"dev": "docusaurus start",
+		"build": "docusaurus build",
+		"swizzle": "docusaurus swizzle",
+		"deploy": "docusaurus deploy",
+		"clean": "docusaurus clear",
+		"clear": "docusaurus clear",
+		"serve": "docusaurus serve",
+		"write-translations": "docusaurus write-translations",
+		"write-heading-ids": "docusaurus write-heading-ids",
+		"check-types": "tsc",
+		"typecheck": "tsc",
+		"lint": "eslint src",
+		"lint:fix": "eslint src --fix",
+		"test": "echo 'No tests configured for docs'"
+	},
+	"dependencies": {
+		"@docusaurus/core": "^3.8.1",
+		"@docusaurus/plugin-client-redirects": "^3.8.1",
+		"@docusaurus/preset-classic": "^3.8.1",
+		"@easyops-cn/docusaurus-search-local": "^0.48.5",
+		"@mdx-js/react": "^3.0.0",
+		"@roo-code/types": "workspace:*",
+		"@vscode/codicons": "^0.0.36",
+		"clsx": "^2.0.0",
+		"posthog-docusaurus": "^2.0.4",
+		"prism-react-renderer": "^2.3.0",
+		"react": "^19.0.0",
+		"react-cookie-consent": "^9.0.0",
+		"react-dom": "^19.0.0",
+		"react-icons": "^5.5.0",
+		"tldts": "^7.0.14"
+	},
+	"devDependencies": {
+		"@docusaurus/module-type-aliases": "^3.8.1",
+		"@docusaurus/tsconfig": "^3.8.1",
+		"@docusaurus/types": "^3.8.1",
+		"@roo-code/config-eslint": "workspace:^",
+		"dotenv": "^16.4.7",
+		"eslint": "^9.27.0",
+		"typescript": "^5.4.5"
+	},
+	"browserslist": {
+		"production": [
+			">0.5%",
+			"not dead",
+			"not op_mini all"
+		],
+		"development": [
+			"last 3 chrome version",
+			"last 3 firefox version",
+			"last 5 safari version"
+		]
+	},
+	"engines": {
+		"node": "20.19.2"
+	}
+}

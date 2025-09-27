@@ -1,0 +1,29 @@
+---
+description: Adds new Fireworks AI models, fixes token calculation, and improves chat input focus.
+keywords:
+  - roo code 3.25.9
+  - fireworks ai models
+  - glm-4.5
+  - bug fixes
+image: /img/social-share.jpg
+---
+
+# Roo Code 3.25.9 Release Notes (2025-08-07)
+
+This release adds new AI models to the Fireworks provider, fixes token calculation issues, and improves the chat creation experience.
+
+## Provider Updates
+
+* **Fireworks AI Models**: Added GLM-4.5 series models (355B and 106B parameters with 128K context) and OpenAI gpt-oss models (20b for edge deployments, 120b for production use) to expand model selection options (thanks alexfarlander!) ([#6784](https://github.com/RooCodeInc/Roo-Code/pull/6784))
+
+## QOL Improvements
+
+* **Chat Input Focus**: The chat input now automatically focuses when creating a new chat via the + button, allowing you to start typing immediately ([#6689](https://github.com/RooCodeInc/Roo-Code/pull/6689))
+
+## Bug Fixes
+
+* **Token Calculation**: Fixed rounding errors that prevented certain models like GLM-4.5 from working properly by ensuring max output tokens are correctly rounded up (thanks markp018!) ([#6808](https://github.com/RooCodeInc/Roo-Code/pull/6808))
+
+## Misc Improvements
+
+* **Cloud Integration**: Reverted to using the npm package version of @roo-code/cloud for improved build stability and maintenance ([#6795](https://github.com/RooCodeInc/Roo-Code/pull/6795))

@@ -1,0 +1,48 @@
+{
+	"buildCommand": "pnpm build",
+	"outputDirectory": "build",
+	"framework": "docusaurus-2",
+	"rewrites": [
+		{
+			"source": "/docs",
+			"destination": "/index.html"
+		},
+		{
+			"source": "/docs/(.*)",
+			"destination": "/$1"
+		}
+	],
+	"headers": [
+		{
+			"source": "/assets/(.*)",
+			"headers": [
+				{
+					"key": "Cache-Control",
+					"value": "public, max-age=31536000, immutable"
+				}
+			]
+		},
+		{
+			"source": "/img/(.*)",
+			"headers": [
+				{
+					"key": "Cache-Control",
+					"value": "public, max-age=31536000, immutable"
+				}
+			]
+		},
+		{
+			"source": "/(.*)",
+			"headers": [
+				{
+					"key": "X-Frame-Options",
+					"value": "SAMEORIGIN"
+				},
+				{
+					"key": "Access-Control-Allow-Origin",
+					"value": "https://roocode.com"
+				}
+			]
+		}
+	]
+}

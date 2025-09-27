@@ -1,0 +1,34 @@
+---
+description: Introduces GPT-5 model support with verbosity controls and fixes XML parsing and MCP error display issues.
+keywords:
+  - roo code 3.25.10
+  - gpt-5
+  - openai models
+  - verbosity controls
+  - bug fixes
+image: /img/social-share.jpg
+---
+
+# Roo Code 3.25.10 Release Notes (2025-08-07)
+
+This release introduces support for OpenAI's GPT-5 models with verbosity controls and fixes important bugs in XML parsing and error message display.
+
+## GPT-5 Model Support
+
+We've added support for OpenAI's latest GPT-5 model family ([#6819](https://github.com/RooCodeInc/Roo-Code/pull/6819)):
+
+- **GPT-5 Models**: Three new model variants are now available:
+  - `gpt-5-2025-08-07`: The full GPT-5 model, now set as the default for OpenAI Native provider
+  - `gpt-5-mini-2025-08-07`: A smaller, faster variant for quick responses
+  - `gpt-5-nano-2025-08-07`: The most compact version for resource-constrained scenarios
+
+- **Verbosity Controls**: New settings to control model output detail levels (low, medium, high), allowing you to fine-tune response length and detail based on your needs
+
+All GPT-5 models support streaming responses for real-time interaction.
+
+> **📚 Documentation**: See [OpenAI Provider Guide](/providers/openai) for detailed information about GPT-5 models and verbosity settings.
+
+## Bug Fixes
+
+* **XML Parsing**: Fixed errors when using the apply_diff tool with complex XML files containing special characters by implementing proper CDATA sections ([#6811](https://github.com/RooCodeInc/Roo-Code/pull/6811))
+* **MCP Error Messages**: Fixed an issue where MCP server errors displayed raw translation keys instead of proper error messages ([#6821](https://github.com/RooCodeInc/Roo-Code/pull/6821))

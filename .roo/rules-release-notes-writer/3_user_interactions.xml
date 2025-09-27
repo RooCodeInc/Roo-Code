@@ -1,0 +1,308 @@
+<user_interactions>
+  <overview>
+    User confirmation workflows and interaction patterns for obtaining approval
+    at critical points to prevent repeated edits and ensure accuracy.
+  </overview>
+
+  <confirmation_points>
+    <point name="feature_selection">
+      <when>After PR analysis, before writing release notes</when>
+      <purpose>Verify which features to highlight</purpose>
+      <template><![CDATA[
+<ask_followup_question>
+<question>I've analyzed all PRs for v[VERSION]. Here are the changes I found:
+
+**Major Features:**
+[List major features with brief descriptions]
+
+**Bug Fixes:** [COUNT] fixes
+**QOL Improvements:** [COUNT] improvements
+**Other Changes:** [COUNT] items
+
+Which features should I highlight with expanded sections in the release notes?</question>
+<follow_up>
+<suggest>Highlight all major features as listed above</suggest>
+<suggest>Focus on [specific feature 1] and [specific feature 2]</suggest>
+<suggest>Keep all changes in grouped sections (no expanded features)</suggest>
+<suggest>Let me specify which features to expand</suggest>
+</follow_up>
+</ask_followup_question>
+      ]]></template>
+      <gating_rules>
+        <rule priority="CRITICAL">Do not proceed unless the response clearly matches one of the provided options.</rule>
+        <rule priority="HIGH">If the user types a freeform response, re-ask using ask_followup_question with options reformulated from their input; require selection of one provided option.</rule>
+        <rule>Repeat this gating loop until a provided option is explicitly selected.</rule>
+      </gating_rules>
+      <fallback_prompt><![CDATA[
+<ask_followup_question>
+<question>To proceed I need an explicit selection. Based on your input, which option should I follow?</question>
+<follow_up>
+<suggest>Highlight all major features as listed</suggest>
+<suggest>Highlight only: [feature A], [feature B]</suggest>
+<suggest>Keep everything grouped (no expanded sections)</suggest>
+<suggest>Let me specify which features to expand</suggest>
+</follow_up>
+</ask_followup_question>
+      ]]></fallback_prompt>
+    </point>
+
+    <point name="changelog_alignment">
+      <when>After fetching PRs and before feature selection</when>
+      <purpose>Partition PRs by presence in the changelog and select inclusion policy</purpose>
+      <summary>
+        Present counts and reasons for exclusion, then offer three paths:
+        - Only changelog PRs
+        - All PRs
+        - Review excluded PRs one by one
+      </summary>
+      <template_inclusion_policy><![CDATA[
+<ask_followup_question>
+<question>Changelog alignment for v[VERSION]: [IN_COUNT] PRs referenced, [EX_COUNT] not referenced. How should I proceed?</question>
+<follow_up>
+<suggest>Only include the PRs referenced in the changelog</suggest>
+<suggest>Include all PRs from the date range</suggest>
+<suggest>Review each excluded PR one by one so I can choose</suggest>
+</follow_up>
+</ask_followup_question>
+      ]]></template_inclusion_policy>
+      <template_per_pr_review><![CDATA[
+<ask_followup_question>
+<question>Include PR #[NUMBER] - [TITLE]? Short analysis: [USER IMPACT / WHY IT MATTERS].</question>
+<follow_up>
+<suggest>Yes, include this PR</suggest>
+<suggest>No, skip this PR</suggest>
+</follow_up>
+</ask_followup_question>
+      ]]></template_per_pr_review>
+      <gating_rules>
+        <rule priority="CRITICAL">Do not proceed until an explicit option is selected.</rule>
+        <rule priority="HIGH">For freeform answers, re-ask with options that reflect the user's intent; require selection.</rule>
+      </gating_rules>
+    </point>
+
+    <point name="patch_release_review">
+      <when>After creating patch notes, before updating combined notes</when>
+      <purpose>Ensure patch notes are final before propagating</purpose>
+      <critical>NEVER update combined notes until explicit confirmation</critical>
+      <template><![CDATA[
+<ask_followup_question>
+<question>I've created the release notes for v[VERSION]. The file includes:
+
+- [COUNT] bug fixes
+- [COUNT] QOL improvements  
+- [COUNT] other changes
+
+Would you like to review before I update the combined v[X.Y] notes?</question>
+<follow_up>
+<suggest>Show me the release notes file for review</suggest>
+<suggest>The content looks good, proceed with all updates</suggest>
+<suggest>Let me make some adjustments first</suggest>
+<suggest>Change the emphasis on certain features</suggest>
+</follow_up>
+</ask_followup_question>
+      ]]></template>
+    </point>
+
+    <point name="documentation_needs">
+      <when>After identifying documentation flags</when>
+      <purpose>Confirm documentation update requirements</purpose>
+      <template><![CDATA[
+<ask_followup_question>
+<question>I've identified [COUNT] items that need documentation updates:
+
+[List of flagged items with docs-new, docs-update, etc.]
+
+Should I create a documentation update task after completing the release notes?</question>
+<follow_up>
+<suggest>Yes, create the documentation task with all items</suggest>
+<suggest>Create task for new features only</suggest>
+<suggest>Skip documentation task for now</suggest>
+<suggest>Let me review the specific items first</suggest>
+</follow_up>
+</ask_followup_question>
+      ]]></template>
+    </point>
+
+    <point name="final_review">
+      <when>After all updates complete</when>
+      <purpose>Final confirmation before PR creation</purpose>
+      <template><![CDATA[
+<ask_followup_question>
+<question>I've completed all updates for v[VERSION]:
+
+✓ Release notes created
+✓ Index and sidebar updated
+[✓ Combined notes updated - if patch]
+[✓ Documentation tasks identified: [COUNT] - if any]
+
+Would you like to create a PR or make any final adjustments?</question>
+<follow_up>
+<suggest>Create a PR with all changes</suggest>
+<suggest>Show me all modified files</suggest>
+<suggest>Make additional adjustments</suggest>
+<suggest>Create documentation update task first</suggest>
+</follow_up>
+</ask_followup_question>
+      ]]></template>
+    </point>
+  </confirmation_points>
+
+
+  <latest_version_interaction>
+    <trigger>User says "latest"</trigger>
+    <workflow>
+      <step>Detect missing versions from changelog</step>
+      <step>Present found versions</step>
+    </workflow>
+    <template><![CDATA[
+<ask_followup_question>
+<question>I found [COUNT] versions in the changelog that don't have release notes:
+[List versions]
+
+Which would you like to process?</question>
+<follow_up>
+<suggest>All missing versions ([list])</suggest>
+<suggest>Just the most recent version</suggest>
+<suggest>Let me select specific versions</suggest>
+<suggest>Show changelog entries first</suggest>
+</follow_up>
+</ask_followup_question>
+    ]]></template>
+  </latest_version_interaction>
+
+  <adjustment_handling>
+    <principle>Each adjustment triggers new confirmation cycle</principle>
+    <workflow>
+      <step>User requests change</step>
+      <step>Apply specific change only</step>
+      <step>Show result of change</step>
+      <step>Ask for confirmation before proceeding</step>
+    </workflow>
+    <common_adjustments>
+      <adjustment>Reorder sections</adjustment>
+      <adjustment>Change feature emphasis (expanded vs grouped)</adjustment>
+      <adjustment>Edit descriptions or benefits</adjustment>
+      <adjustment>Add missing items</adjustment>
+    </common_adjustments>
+  </adjustment_handling>
+
+  <discord_format_interaction>
+    <trigger>Discord release notes for X.Y.Z</trigger>
+    <options>
+      <single_version>Generate Discord format for one version</single_version>
+      <multiple_versions>Combine multiple versions</multiple_versions>
+      <compression>Compress minor items if over 2000 chars or on request</compression>
+    </options>
+    <compression_workflow>
+      <trigger>User says "compress", "condense", or content exceeds 2000 chars</trigger>
+      <steps>
+        <step>Keep Feature Highlights section intact</step>
+        <step>Count all improvements below Feature Highlights</step>
+        <step>Replace all sections with single "Other Improvements and Fixes" paragraph</step>
+        <step>Include contributor acknowledgments in compressed section</step>
+      </steps>
+      <validation>
+        <item>Verify actual count of improvements (not estimate)</item>
+        <item>Ensure all contributors are acknowledged</item>
+        <item>Maintain markdown code block wrapper</item>
+      </validation>
+    </compression_workflow>
+    <template><![CDATA[
+<ask_followup_question>
+<question>How would you like the Discord announcement formatted?</question>
+<follow_up>
+<suggest>Standard format with all details</suggest>
+<suggest>Compressed format (group minor items)</suggest>
+<suggest>Highlights only (major features)</suggest>
+<suggest>Multiple versions combined</suggest>
+</follow_up>
+</ask_followup_question>
+    ]]></template>
+  </discord_format_interaction>
+
+  <discord_combined_interaction>
+    <trigger>Combined Discord announcement for multiple versions</trigger>
+    <workflow>
+      <step>Identify all versions to combine</step>
+      <step>Read release notes for each version</step>
+      <step>Merge and format according to Discord rules</step>
+      <step>Present formatted output in markdown code block</step>
+    </workflow>
+    <formatting_checklist>
+      <item>Title uses version range (X.Y.Z-X.Y.Z)</item>
+      <item>Intro sentence summarizes all versions</item>
+      <item>Features merged and deduplicated</item>
+      <item>No version numbers in body text</item>
+      <item>Footer has links to each version</item>
+      <item>Entire output wrapped in ```markdown block</item>
+      <item>No "Happy coding!" or similar closings</item>
+      <item>"Feature Highlights" not "Major Features"</item>
+    </formatting_checklist>
+    <template><![CDATA[
+<ask_followup_question>
+<question>I'll create a combined Discord announcement for versions [list]. Should I:</question>
+<follow_up>
+<suggest>Include all features and changes from all versions</suggest>
+<suggest>Focus on major features only</suggest>
+<suggest>Group similar changes across versions</suggest>
+<suggest>Create separate announcements for each version</suggest>
+</follow_up>
+</ask_followup_question>
+    ]]></template>
+  </discord_combined_interaction>
+
+  <best_practices>
+    <practice priority="critical">
+      Never assume approval - require explicit confirmation
+    </practice>
+    <practice priority="critical">
+      For patch releases, always confirm before updating combined notes
+    </practice>
+    <practice priority="high">
+      Show concrete examples in confirmation questions
+    </practice>
+    <practice priority="high">
+      Provide clear options covering common scenarios
+    </practice>
+    <practice priority="high">
+      Order suggestions by likelihood or importance
+    </practice>
+    <practice priority="medium">
+      Keep confirmation cycles focused on specific decisions
+    </practice>
+    <practice priority="medium">
+      Track confirmation state to avoid re-asking
+    </practice>
+  </best_practices>
+
+  <error_recovery>
+    <scenario name="missing_files">
+      <error>Release notes file doesn't exist for Discord format</error>
+      <recovery>
+        <ask_followup_question>
+          <question>The release notes for v[VERSION] don't exist yet. Would you like to:</question>
+          <follow_up>
+            <suggest>Create the release notes first</suggest>
+            <suggest>Process a different version</suggest>
+            <suggest>Cancel the Discord format request</suggest>
+          </follow_up>
+        </ask_followup_question>
+      </recovery>
+    </scenario>
+    
+    <scenario name="no_prs_found">
+      <error>No PRs found in date range</error>
+      <recovery>
+        <ask_followup_question>
+          <question>No PRs found for the specified date range. This might mean:</question>
+          <follow_up>
+            <suggest>Try a wider date range</suggest>
+            <suggest>Check if the version tag exists</suggest>
+            <suggest>Manually provide PR numbers</suggest>
+            <suggest>Cancel and investigate</suggest>
+          </follow_up>
+        </ask_followup_question>
+      </recovery>
+    </scenario>
+  </error_recovery>
+</user_interactions>

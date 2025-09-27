@@ -1,0 +1,27 @@
+---
+description: This release improves performance for large codebases and enhances development workflows.
+keywords:
+  - roo code 3.23.16
+  - performance improvements
+  - code indexing
+  - rate limiting
+image: /img/social-share.jpg
+---
+
+# Roo Code 3.23.16 Release Notes (2025-07-19)
+
+This release improves performance for large codebases and enhances development workflows.
+
+## Performance Improvements
+
+* **Code Indexing**: Added memory-safe batch limiting to prevent overflow when scanning large codebases (thanks daniel-lxs!) ([#5891](https://github.com/RooCodeInc/Roo-Code/pull/5891))
+* **API Rate Limiting**: Implemented global rate limiting with exponential backoff for OpenAI-compatible embeddings, preventing API overload and improving reliability (thanks daniel-lxs!) ([#5854](https://github.com/RooCodeInc/Roo-Code/pull/5854))
+
+## QOL Improvements
+
+* **Development Environment**: Fixed Docker port conflicts for evaluation services by using ports 5433 (PostgreSQL) and 6380 (Redis) instead of default ports (thanks roomote!) ([#5909](https://github.com/RooCodeInc/Roo-Code/pull/5909))
+* **Release Engineering**: Enhanced release notes generation to include issue numbers and reporters for better attribution (thanks roomote!) ([#5940](https://github.com/RooCodeInc/Roo-Code/pull/5940))
+
+## Misc Improvements
+
+* **Repository Statistics**: Excluded non-English translation files from GitHub language statistics for more accurate codebase representation (thanks roomote!) ([#5943](https://github.com/RooCodeInc/Roo-Code/pull/5943))

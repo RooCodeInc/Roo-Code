@@ -1,0 +1,172 @@
+---
+description: Learn how Intelligent Context Condensing helps manage long conversations by summarizing earlier dialogue to prevent information loss when approaching context limits.
+keywords:
+  - context condensing
+  - context window
+  - conversation management
+  - token optimization
+  - AI summarization
+image: /img/social-share.jpg
+sidebar_label: 'Intelligent Context Condensing'
+---
+import Codicon from '@site/src/components/Codicon';
+
+# Intelligent Context Condensing
+
+The Intelligent Context Condensing feature helps manage long conversations by summarizing earlier parts of the dialogue. This prevents important information from being lost when the context window nears its limit. This feature is **enabled by default**.
+
+<div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden' }}>
+  <iframe
+    src="https://www.youtube.com/embed/9k8OAXlszak"
+    style={{
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+    }}
+    frameBorder="0"
+    allow="autoplay; encrypted-media"
+    allowFullScreen
+  ></iframe>
+</div>
+
+<br />
+---
+
+## How It Works
+
+As your conversation with Roo Code grows, it might approach the context window limit of the underlying AI model. When this happens, older messages would typically be removed to make space. Intelligent Context Condensing aims to prevent this abrupt loss by:
+
+1.  **Summarizing:** Using an AI model, it condenses earlier parts of the conversation.
+2.  **Retaining Essentials:** The goal is to reduce the overall token count while keeping the key information from the summarized messages.
+3.  **Maintaining Flow:** This allows the AI to have a more coherent understanding of the entire conversation, even very long ones.
+4.  **Preserving First Message:** The first message containing slash commands or initial context is always preserved during condensing, ensuring critical initial instructions aren't lost.
+
+**Important Considerations:**
+*   **Summarization Impact:** While original messages are preserved if you use [Checkpoints](/features/checkpoints) to rewind, the summarized version is what's used in ongoing LLM calls to keep the context manageable.
+*   **Cost:** The AI call to perform the summarization incurs a cost. This cost is included in the context condensing metrics displayed in the UI.
+*   **First Message Protection:** The initial message with slash commands or setup instructions will never be condensed.
+
+---
+
+## Configuration
+
+Intelligent Context Condensing is **enabled by default** and offers several configuration options:
+
+1.  Open Roo Code settings (<Codicon name="gear" /> icon in the top right corner of the Roo Code panel).
+2.  Navigate to the "Context" settings section for context-related options, or the "Prompt" settings section for the custom prompt.
+3.  Configure the available options:
+    - **Automatically trigger intelligent context condensing**: Enabled by default, this controls whether condensing happens automatically (found in "Context" settings)
+    - **Threshold to trigger intelligent context condensing**: A percentage slider (default 100%) that determines when condensing activates based on context window usage (found in "Context" settings)
+    - **API Configuration for Context Condensing**: Choose which API configuration to use for condensing operations (defaults to your current active configuration) (found in "Context" settings)
+    - **Custom Context Condensing Prompt**: Customize the system prompt used for context condensing operations (found in "Prompt" settings)
+
+<img src="/img/intelligent-context-condensing/intelligent-context-condensing.png" alt="Settings for Intelligent Context Condensing" width="600" />
+*Intelligent Context Condensing configuration options: automatic triggering toggle, threshold slider, API configuration selection, and custom prompt customization.*
+---
+
+## Controlling and Understanding Context Condensing
+
+Roo Code provides several ways to control and understand the Intelligent Context Condensing feature:
+
+### Controlling Context Condensing
+*   **Automatic Threshold:** The threshold slider in "Context" settings allows you to define a percentage (e.g., 80%) of context window usage. Roo Code will attempt to condense the context automatically when the conversation reaches this level of capacity.
+*   **API Configuration:** Select which API configuration to use for context condensing operations. This allows you to use a different provider or model specifically for condensing if desired.
+*   **Custom Prompts:** Modify the system prompt used for condensing to better suit your workflow or to emphasize certain aspects of conversation summarization.
+*   **Manual Trigger:** A **Condense Context** button is available at the top of the task, positioned to the right of the context bar. This allows you to initiate the context condensing process at any time.
+
+    <img src="/img/intelligent-context-condensing/intelligent-context-condensing-1.png" alt="Manual Condense Context button in expanded task view" width="600" />
+    *The Manual Condense Context button (highlighted with a yellow arrow) is easily accessible for manual control.*
+
+### Understanding Context Condensing Activity
+*   **Context Condensing Metrics:** When context condensing occurs, Roo Code displays:
+    *   The context token counts before and after context condensing.
+    *   The cost associated with the context condensing AI call.
+    *   An expandable summary detailing what was condensed (this information is part of the `ContextCondenseRow` component visible in the chat history).
+
+<img src="/img/intelligent-context-condensing/intelligent-context-condensing-2.png" alt="Context condensed message in chat" width="600" />
+*After context condensing, a message indicates the context has been condensed, showing token changes and cost.*
+
+*   **Visual Indicators:**
+    *   A progress indicator ("Condensing context...") is shown in the chat interface while context condensing is active.
+
+<img src="/img/intelligent-context-condensation/intelligent-context-condensation-3.png" alt="Condensing context progress indicator in chat" width="600" />
+*The "Condensing context..." indicator appears in the chat during the process.*
+
+    *   The task header also displays the current context condensing status.
+    *   The `ContextWindowProgress` bar offers a visual representation of token distribution, including current usage, space reserved for the AI's output, available space, and raw token numbers.
+*   **Interface Clarity:** The "Condense Context" button includes a tooltip explaining its function, available in all supported languages.
+
+---
+
+## Tips for Effective Context Condensing
+
+### Customizing the Context Condensing Prompt
+
+You can customize the context reduction prompt to better suit your specific domain or use case. This is particularly useful if you find that the default condensing process loses important information specific to your workflow.
+
+To customize the prompt:
+1. Go to Roo Code settings (<Codicon name="gear" /> icon)
+2. Navigate to the "Prompt" settings section
+3. Find the "Custom Context Condensing Prompt" in the pulldown
+4. Enter your custom prompt that instructs the AI on how to preserve specific types of information
+
+For example, if you're working on a complex debugging session, you might add instructions like:
+- "Always preserve error messages and stack traces in full"
+- "Maintain all variable names and their last known values"
+- "Keep track of all attempted solutions and their outcomes"
+
+This customization ensures that the context condensing process retains the information most critical to your specific use case.
+
+---
+
+## Automatic Error Recovery
+
+When Roo Code encounters context window limit errors, it now automatically recovers to keep your work flowing:
+
+### How Error Recovery Works
+
+1. **Error Detection**: Roo Code detects context window errors from multiple providers (OpenAI, Anthropic, Cerebras, and others)
+2. **Automatic Truncation**: The system automatically reduces the context by 25%
+3. **Retry Mechanism**: After truncation, Roo Code retries your request (up to 3 attempts)
+4. **Seamless Continuation**: Your work continues without manual intervention
+
+This automatic recovery ensures that:
+- You don't lose work due to context limit errors
+- Long conversations can continue smoothly
+- The system intelligently manages context without requiring manual restarts
+
+### When Recovery Triggers
+
+The automatic recovery activates when:
+- The API returns a context window exceeded error
+- The conversation approaches the maximum token limit
+- Multiple providers report similar context-related errors
+
+This feature works alongside Intelligent Context Condensing to provide multiple layers of context management, ensuring your conversations can continue even in challenging scenarios.
+
+---
+
+## Technical Implementation
+
+### Token Counting
+Roo Code uses a sophisticated token counting system that:
+- Employs native token counting endpoints when available (e.g., Anthropic's API)
+- Falls back to tiktoken estimation if API calls fail
+- Provides accurate counting for different content types:
+  - Text content: Uses word-based estimation with punctuation and newline overhead
+  - Image content: Uses a conservative estimate of 300 tokens per image
+  - System prompts: Includes additional overhead for structural elements
+
+### Context Window Management
+- By default, 30% of the context window is reserved (20% for model output and 10% as a safety buffer), leaving 70% available for conversation history.
+- This reservation can be overridden by model-specific settings
+- The system automatically calculates available space while maintaining this reservation
+
+### Error Handling Strategy
+- **Multi-Provider Support**: Recognizes context errors from OpenAI, Anthropic, Cerebras, and other providers
+- **Progressive Reduction**: Reduces context by 25% on each retry attempt
+- **Retry Limits**: Maximum of 3 automatic retry attempts before requiring manual intervention
+- **State Preservation**: Maintains conversation state during recovery attempts
+

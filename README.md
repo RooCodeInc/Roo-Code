@@ -35,7 +35,7 @@
 - [简体中文](locales/zh-CN/README.md)
 - [繁體中文](locales/zh-TW/README.md)
 - ...
-  </details>
+      </details>
 
 ---
 
@@ -148,6 +148,20 @@ If you prefer to install the VSIX package manually:
     ```sh
     code --install-extension bin/roo-cline-<version>.vsix
     ```
+
+### Running the Documentation Site
+
+The documentation site is now part of the monorepo and can be run locally:
+
+```sh
+# Start the documentation dev server
+cd apps/docs && pnpm start
+
+# Or from the root directory
+pnpm --filter @roo-code/docs start
+```
+
+The documentation will be available at http://localhost:3000
 
 ---
 
