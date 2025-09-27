@@ -246,6 +246,7 @@
 		"vercelAiGatewayApiKey": "Vercel AI Gateway APIキー",
 		"getVercelAiGatewayApiKey": "Vercel AI Gateway APIキーを取得",
 		"apiKeyStorageNotice": "APIキーはVSCodeのシークレットストレージに安全に保存されます",
+		"passwordStorageNotice": "パスワードはVSCodeのシークレットストレージに安全に保存されます",
 		"glamaApiKey": "Glama APIキー",
 		"getGlamaApiKey": "Glama APIキーを取得",
 		"useCustomBaseUrl": "カスタムベースURLを使用",
@@ -684,6 +685,9 @@
 					"standard": "標準diff戦略は一度に1つのコードブロックに変更を適用します。",
 					"unified": "統合diff戦略はdiffを適用するための複数のアプローチを取り、最良のアプローチを選択します。",
 					"multiBlock": "マルチブロックdiff戦略は、1つのリクエストでファイル内の複数のコードブロックを更新できます。"
+				},
+				"watsonx": {
+					"description": "有効にすると、Rooはファイルをより迅速に編集でき、切り詰められた全ファイル書き込みを自動的に拒否します。"
 				}
 			},
 			"matchPrecision": {
@@ -828,7 +832,17 @@
 		"providerNotAllowed": "プロバイダー「{{provider}}」は組織によって許可されていません",
 		"modelNotAllowed": "モデル「{{model}}」はプロバイダー「{{provider}}」に対して組織によって許可されていません",
 		"profileInvalid": "このプロファイルには、組織によって許可されていないプロバイダーまたはモデルが含まれています",
-		"qwenCodeOauthPath": "有効なOAuth認証情報のパスを提供する必要があります"
+		"qwenCodeOauthPath": "有効なOAuth認証情報のパスを提供する必要があります",
+		"watsonx": {
+			"platform": "プラットフォームを選択する必要があります。",
+			"region": "リージョンを選択する必要があります。",
+			"projectId": "有効なプロジェクトIDを提供する必要があります。",
+			"authType": "認証タイプを選択する必要があります。",
+			"username": "有効なユーザー名を提供する必要があります。",
+			"apiKey": "有効なAPIキーを提供する必要があります。",
+			"password": "有効なパスワードを提供する必要があります。",
+			"baseUrl": "有効なIBM Cloud Pak for Data URLを提供する必要があります。"
+		}
 	},
 	"placeholders": {
 		"apiKey": "API キーを入力...",

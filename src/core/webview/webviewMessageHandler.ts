@@ -59,6 +59,7 @@ const ALLOWED_VSCODE_SETTINGS = new Set(["terminal.integrated.inheritEnv"])
 
 import { MarketplaceManager, MarketplaceItemType } from "../../services/marketplace"
 import { setPendingTodoList } from "../tools/updateTodoListTool"
+import { getWatsonxModels } from "../../api/providers/fetchers/ibm-watsonx"
 
 export const webviewMessageHandler = async (
 	provider: ClineProvider,
@@ -768,6 +769,7 @@ export const webviewMessageHandler = async (
 				glama: {},
 				ollama: {},
 				lmstudio: {},
+				"ibm-watsonx": {},
 			}
 
 			const safeGetModels = async (options: GetModelsOptions): Promise<ModelRecord> => {
@@ -948,6 +950,76 @@ export const webviewMessageHandler = async (
 			} catch (error) {
 				console.error("Failed to fetch Hugging Face models:", error)
 				provider.postMessageToWebview({ type: "huggingFaceModels", huggingFaceModels: [] })
+			}
+			break
+		case "requestWatsonxModels":
+			if (message?.values) {
+				try {
+					const { apiKey, projectId, platform, baseUrl, authType, username, password, region } =
+						message.values
+
+					if (platform !== "ibmCloud") {
+						if (!apiKey && !region && !projectId) {
+							console.error("Missing IBM Cloud authentication credentials for IBM watsonx models")
+							provider.postMessageToWebview({
+								type: "watsonxModels",
+								watsonxModels: {},
+							})
+							return
+						}
+					} else if (platform === "cloudPak") {
+						if (authType === "password" && !(username && password && projectId)) {
+							console.error("Missing IBM Cloud Pak authentication credentials for IBM watsonx models")
+							provider.postMessageToWebview({
+								type: "watsonxModels",
+								watsonxModels: {},
+							})
+							return
+						} else if (authType === "apikey" && !(apiKey && projectId)) {
+							console.error("Missing IBM Cloud Pak authentication credentials for IBM watsonx models")
+							provider.postMessageToWebview({
+								type: "watsonxModels",
+								watsonxModels: {},
+							})
+							return
+						}
+					}
+
+					let effectiveBaseUrl = baseUrl
+					if (platform === "ibmCloud" && region && !baseUrl) {
+						const regionToUrl: Record<string, string> = {
+							"us-south": "https://us-south.ml.cloud.ibm.com",
+							"eu-de": "https://eu-de.ml.cloud.ibm.com",
+							"eu-gb": "https://eu-gb.ml.cloud.ibm.com",
+							"jp-tok": "https://jp-tok.ml.cloud.ibm.com",
+							"au-syd": "https://au-syd.ml.cloud.ibm.com",
+							"ca-tor": "https://ca-tor.ml.cloud.ibm.com",
+							"ap-south-1": "https://ap-south-1.aws.wxai.ibm.com",
+						}
+						effectiveBaseUrl = regionToUrl[region] || "https://us-south.ml.cloud.ibm.com"
+					}
+
+					const watsonxModels = await getWatsonxModels(
+						apiKey,
+						projectId,
+						effectiveBaseUrl,
+						platform,
+						authType,
+						username,
+						password,
+					)
+
+					provider.postMessageToWebview({
+						type: "watsonxModels",
+						watsonxModels: watsonxModels,
+					})
+				} catch (error) {
+					console.error("Failed to fetch IBM watsonx models:", error)
+					provider.postMessageToWebview({
+						type: "watsonxModels",
+						watsonxModels: {},
+					})
+				}
 			}
 			break
 		case "openImage":

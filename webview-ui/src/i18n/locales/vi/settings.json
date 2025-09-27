@@ -246,6 +246,7 @@
 		"vercelAiGatewayApiKey": "Khóa API Vercel AI Gateway",
 		"getVercelAiGatewayApiKey": "Lấy khóa API Vercel AI Gateway",
 		"apiKeyStorageNotice": "Khóa API được lưu trữ an toàn trong Bộ lưu trữ bí mật của VSCode",
+		"passwordStorageNotice": "Mật khẩu được lưu trữ an toàn trong Bộ lưu trữ bí mật của VSCode",
 		"glamaApiKey": "Khóa API Glama",
 		"getGlamaApiKey": "Lấy khóa API Glama",
 		"useCustomBaseUrl": "Sử dụng URL cơ sở tùy chỉnh",
@@ -684,6 +685,9 @@
 					"standard": "Chiến lược diff tiêu chuẩn áp dụng thay đổi cho một khối mã tại một thời điểm.",
 					"unified": "Chiến lược diff thống nhất thực hiện nhiều cách tiếp cận để áp dụng diff và chọn cách tiếp cận tốt nhất.",
 					"multiBlock": "Chiến lược diff đa khối cho phép cập nhật nhiều khối mã trong một tệp trong một yêu cầu."
+				},
+				"watsonx": {
+					"description": "Khi được bật, Roo sẽ có thể chỉnh sửa tệp nhanh hơn và sẽ tự động từ chối ghi toàn bộ tệp bị cắt ngắn."
 				}
 			},
 			"matchPrecision": {
@@ -828,7 +832,17 @@
 		"providerNotAllowed": "Nhà cung cấp '{{provider}}' không được phép bởi tổ chức của bạn",
 		"modelNotAllowed": "Mô hình '{{model}}' không được phép cho nhà cung cấp '{{provider}}' bởi tổ chức của bạn",
 		"profileInvalid": "Hồ sơ này chứa một nhà cung cấp hoặc mô hình không được phép bởi tổ chức của bạn",
-		"qwenCodeOauthPath": "Bạn phải cung cấp đường dẫn thông tin xác thực OAuth hợp lệ"
+		"qwenCodeOauthPath": "Bạn phải cung cấp đường dẫn thông tin xác thực OAuth hợp lệ",
+		"watsonx": {
+			"platform": "Bạn phải chọn một nền tảng.",
+			"region": "Bạn phải chọn một khu vực.",
+			"projectId": "Bạn phải cung cấp ID dự án hợp lệ.",
+			"authType": "Bạn phải chọn một loại xác thực.",
+			"username": "Bạn phải cung cấp tên người dùng hợp lệ.",
+			"apiKey": "Bạn phải cung cấp khóa API hợp lệ.",
+			"password": "Bạn phải cung cấp mật khẩu hợp lệ.",
+			"baseUrl": "Bạn phải cung cấp URL IBM Cloud Pak for Data hợp lệ."
+		}
 	},
 	"placeholders": {
 		"apiKey": "Nhập khóa API...",

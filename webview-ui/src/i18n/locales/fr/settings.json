@@ -246,6 +246,7 @@
 		"vercelAiGatewayApiKey": "Clé API Vercel AI Gateway",
 		"getVercelAiGatewayApiKey": "Obtenir la clé API Vercel AI Gateway",
 		"apiKeyStorageNotice": "Les clés API sont stockées en toute sécurité dans le stockage sécurisé de VSCode",
+		"passwordStorageNotice": "Les mots de passe sont stockés en toute sécurité dans le stockage sécurisé de VSCode",
 		"glamaApiKey": "Clé API Glama",
 		"getGlamaApiKey": "Obtenir la clé API Glama",
 		"useCustomBaseUrl": "Utiliser une URL de base personnalisée",
@@ -683,6 +684,9 @@
 					"standard": "La stratégie de diff standard applique les modifications à un seul bloc de code à la fois.",
 					"unified": "La stratégie de diff unifié prend plusieurs approches pour appliquer les diffs et choisit la meilleure approche.",
 					"multiBlock": "La stratégie de diff multi-blocs permet de mettre à jour plusieurs blocs de code dans un fichier en une seule requête."
+				},
+				"watsonx": {
+					"description": "Lorsque cette option est activée, Roo pourra éditer des fichiers plus rapidement et rejettera automatiquement les écritures de fichiers complets tronqués."
 				}
 			},
 			"matchPrecision": {
@@ -827,7 +831,17 @@
 		"providerNotAllowed": "Le fournisseur '{{provider}}' n'est pas autorisé par votre organisation",
 		"modelNotAllowed": "Le modèle '{{model}}' n'est pas autorisé pour le fournisseur '{{provider}}' par votre organisation",
 		"profileInvalid": "Ce profil contient un fournisseur ou un modèle qui n'est pas autorisé par votre organisation",
-		"qwenCodeOauthPath": "Tu dois fournir un chemin valide pour les identifiants OAuth"
+		"qwenCodeOauthPath": "Tu dois fournir un chemin valide pour les identifiants OAuth",
+		"watsonx": {
+			"platform": "Vous devez sélectionner une plateforme.",
+			"region": "Vous devez sélectionner une région.",
+			"projectId": "Vous devez fournir un ID de projet valide.",
+			"authType": "Vous devez sélectionner un type d'authentification.",
+			"username": "Vous devez fournir un nom d'utilisateur valide.",
+			"apiKey": "Vous devez fournir une clé API valide.",
+			"password": "Vous devez fournir un mot de passe valide.",
+			"baseUrl": "Vous devez fournir une URL IBM Cloud Pak for Data valide."
+		}
 	},
 	"placeholders": {
 		"apiKey": "Saisissez la clé API...",
