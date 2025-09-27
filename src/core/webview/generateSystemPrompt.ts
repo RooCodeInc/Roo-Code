@@ -45,24 +45,24 @@ export const generateSystemPrompt = async (provider: ClineProvider, message: Web
 	const rooIgnoreInstructions = provider.getCurrentTask()?.rooIgnoreController?.getInstructions()
 
 	// Determine if browser tools can be used based on model support, mode, and user settings
-	let modelSupportsComputerUse = false
+	let modelSupportsImages = false
 
-	// Create a temporary API handler to check if the model supports computer use
+	// Create a temporary API handler to check if the model supports images
 	// This avoids relying on an active Cline instance which might not exist during preview
 	try {
 		const tempApiHandler = buildApiHandler(apiConfiguration)
-		modelSupportsComputerUse = tempApiHandler.getModel().info.supportsComputerUse ?? false
+		modelSupportsImages = tempApiHandler.getModel().info.supportsImages ?? false
 	} catch (error) {
-		console.error("Error checking if model supports computer use:", error)
+		console.error("Error checking if model supports images:", error)
 	}
 
 	// Check if the current mode includes the browser tool group
 	const modeConfig = getModeBySlug(mode, customModes)
 	const modeSupportsBrowser = modeConfig?.groups.some((group) => getGroupName(group) === "browser") ?? false
 
-	// Only enable browser tools if the model supports it, the mode includes browser tools,
+	// Only enable browser tools if the model supports images, the mode includes browser tools,
 	// and browser tools are enabled in settings
-	const canUseBrowserTool = modelSupportsComputerUse && modeSupportsBrowser && (browserToolEnabled ?? true)
+	const canUseBrowserTool = modelSupportsImages && modeSupportsBrowser && (browserToolEnabled ?? true)
 
 	const systemPrompt = await SYSTEM_PROMPT(
 		provider.context,

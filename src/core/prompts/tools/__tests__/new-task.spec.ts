@@ -5,7 +5,7 @@ describe("getNewTaskDescription", () => {
 	it("should NOT show todos parameter at all when setting is disabled", () => {
 		const args: ToolArgs = {
 			cwd: "/test",
-			supportsComputerUse: false,
+			supportsImages: false,
 			settings: {
 				newTaskRequireTodos: false,
 			},
@@ -33,7 +33,7 @@ describe("getNewTaskDescription", () => {
 	it("should show todos as required when setting is enabled", () => {
 		const args: ToolArgs = {
 			cwd: "/test",
-			supportsComputerUse: false,
+			supportsImages: false,
 			settings: {
 				newTaskRequireTodos: true,
 			},
@@ -59,7 +59,7 @@ describe("getNewTaskDescription", () => {
 	it("should NOT show todos parameter when settings is undefined", () => {
 		const args: ToolArgs = {
 			cwd: "/test",
-			supportsComputerUse: false,
+			supportsImages: false,
 			settings: undefined,
 		}
 
@@ -75,7 +75,7 @@ describe("getNewTaskDescription", () => {
 	it("should NOT show todos parameter when newTaskRequireTodos is undefined", () => {
 		const args: ToolArgs = {
 			cwd: "/test",
-			supportsComputerUse: false,
+			supportsImages: false,
 			settings: {},
 		}
 
@@ -91,7 +91,7 @@ describe("getNewTaskDescription", () => {
 	it("should include todos in examples only when setting is enabled", () => {
 		const argsWithSettingOff: ToolArgs = {
 			cwd: "/test",
-			supportsComputerUse: false,
+			supportsImages: false,
 			settings: {
 				newTaskRequireTodos: false,
 			},
@@ -99,7 +99,7 @@ describe("getNewTaskDescription", () => {
 
 		const argsWithSettingOn: ToolArgs = {
 			cwd: "/test",
-			supportsComputerUse: false,
+			supportsImages: false,
 			settings: {
 				newTaskRequireTodos: true,
 			},
