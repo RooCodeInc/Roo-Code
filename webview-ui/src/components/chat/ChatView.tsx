@@ -78,6 +78,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	ref,
 ) => {
 	const isMountedRef = useRef(true)
+	const [isPaused, setIsPaused] = useState(false)
 
 	const [audioBaseUri] = useState(() => {
 		const w = window as any
@@ -459,6 +460,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			setEnableButtons(false)
 			setPrimaryButtonText(undefined)
 			setSecondaryButtonText(undefined)
+			setIsPaused(false)
 		}
 	}, [messages.length])
 
@@ -578,6 +580,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		setSelectedImages([])
 		setClineAsk(undefined)
 		setEnableButtons(false)
+		setIsPaused(false)
 		// Do not reset mode here as it should persist.
 		// setPrimaryButtonText(undefined)
 		// setSecondaryButtonText(undefined)
@@ -728,8 +731,14 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			const trimmedInput = text?.trim()
 
 			if (isStreaming) {
-				vscode.postMessage({ type: "cancelTask" })
-				setDidClickCancel(true)
+				// If paused, resume; otherwise pause
+				if (isPaused) {
+					vscode.postMessage({ type: "resumeTask" })
+					setIsPaused(false)
+				} else {
+					vscode.postMessage({ type: "pauseTask" })
+					setIsPaused(true)
+				}
 				return
 			}
 
@@ -767,7 +776,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			setClineAsk(undefined)
 			setEnableButtons(false)
 		},
-		[clineAsk, startNewTask, isStreaming],
+		[clineAsk, startNewTask, isStreaming, isPaused],
 	)
 
 	const { info: model } = useSelectedModel(apiConfiguration)
@@ -1945,26 +1954,69 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 										</StandardTooltip>
 									)}
 									{(secondaryButtonText || isStreaming) && (
-										<StandardTooltip
-											content={
-												isStreaming
-													? t("chat:cancel.tooltip")
-													: secondaryButtonText === t("chat:startNewTask.title")
-														? t("chat:startNewTask.tooltip")
-														: secondaryButtonText === t("chat:reject.title")
-															? t("chat:reject.tooltip")
-															: secondaryButtonText === t("chat:terminate.title")
-																? t("chat:terminate.tooltip")
-																: undefined
-											}>
-											<VSCodeButton
-												appearance="secondary"
-												disabled={!enableButtons && !(isStreaming && !didClickCancel)}
-												className={isStreaming ? "flex-[2] ml-0" : "flex-1 ml-[6px]"}
-												onClick={() => handleSecondaryButtonClick(inputValue, selectedImages)}>
-												{isStreaming ? t("chat:cancel.title") : secondaryButtonText}
-											</VSCodeButton>
-										</StandardTooltip>
+										<>
+											{isStreaming && (
+												<StandardTooltip
+													content={
+														isPaused
+															? t("chat:resume.tooltip", {
+																	defaultValue: "Resume the AI's response",
+																})
+															: t("chat:pause.tooltip", {
+																	defaultValue: "Pause the AI's response",
+																})
+													}>
+													<VSCodeButton
+														appearance="secondary"
+														disabled={didClickCancel}
+														className="flex-1 mr-[6px]"
+														onClick={() =>
+															handleSecondaryButtonClick(inputValue, selectedImages)
+														}>
+														{isPaused
+															? t("chat:resume.title", { defaultValue: "Resume" })
+															: t("chat:pause.title", { defaultValue: "Pause" })}
+													</VSCodeButton>
+												</StandardTooltip>
+											)}
+											{isStreaming && (
+												<StandardTooltip content={t("chat:cancel.tooltip")}>
+													<VSCodeButton
+														appearance="secondary"
+														disabled={didClickCancel}
+														className="flex-1 ml-[6px]"
+														onClick={() => {
+															vscode.postMessage({ type: "cancelTask" })
+															setDidClickCancel(true)
+															setIsPaused(false)
+														}}>
+														{t("chat:cancel.title")}
+													</VSCodeButton>
+												</StandardTooltip>
+											)}
+											{!isStreaming && secondaryButtonText && (
+												<StandardTooltip
+													content={
+														secondaryButtonText === t("chat:startNewTask.title")
+															? t("chat:startNewTask.tooltip")
+															: secondaryButtonText === t("chat:reject.title")
+																? t("chat:reject.tooltip")
+																: secondaryButtonText === t("chat:terminate.title")
+																	? t("chat:terminate.tooltip")
+																	: undefined
+													}>
+													<VSCodeButton
+														appearance="secondary"
+														disabled={!enableButtons}
+														className="flex-1 ml-[6px]"
+														onClick={() =>
+															handleSecondaryButtonClick(inputValue, selectedImages)
+														}>
+														{secondaryButtonText}
+													</VSCodeButton>
+												</StandardTooltip>
+											)}
+										</>
 									)}
 								</>
 							)}

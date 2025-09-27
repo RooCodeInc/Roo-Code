@@ -76,6 +76,8 @@ export interface WebviewMessage {
 		| "openFile"
 		| "openMention"
 		| "cancelTask"
+		| "pauseTask"
+		| "resumeTask"
 		| "updateVSCodeSetting"
 		| "getVSCodeSetting"
 		| "vsCodeSetting"

@@ -1935,6 +1935,16 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					const iterator = stream[Symbol.asyncIterator]()
 					let item = await iterator.next()
 					while (!item.done) {
+						// Check if task is paused and wait if necessary
+						while (this.isPaused) {
+							// Wait for 100ms before checking again
+							await delay(100)
+							// Check if abort was requested while paused
+							if (this.abort) {
+								break
+							}
+						}
+
 						const chunk = item.value
 						item = await iterator.next()
 						if (!chunk) {
