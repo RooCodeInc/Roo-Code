@@ -16,6 +16,7 @@ import {
 	LmStudioHandler,
 	GeminiHandler,
 	OpenAiNativeHandler,
+	OpenAiNativeCodexHandler,
 	DeepSeekHandler,
 	MoonshotHandler,
 	MistralHandler,
@@ -115,6 +116,8 @@ export function buildApiHandler(configuration: ProviderSettings): ApiHandler {
 			return new GeminiHandler(options)
 		case "openai-native":
 			return new OpenAiNativeHandler(options)
+		case "openai-native-codex":
+			return new OpenAiNativeCodexHandler(options)
 		case "deepseek":
 			return new DeepSeekHandler(options)
 		case "doubao":

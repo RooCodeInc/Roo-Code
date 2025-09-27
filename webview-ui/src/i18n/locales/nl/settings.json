@@ -399,6 +399,13 @@
 			"authenticatedMessage": "Veilig geauthenticeerd via je Roo Code Cloud-account.",
 			"connectButton": "Verbinden met Roo Code Cloud"
 		},
+		"openAiNativeCodex": {
+			"oauthPathLabel": "OAuth-referentiepad",
+			"oauthPathDescription": "Pad naar je ChatGPT Codex auth.json-referenties. Standaard {{defaultPath}} als leeg gelaten (Windows: C:\\\\Users\\\\USERNAME\\\\.codex\\\\auth.json).",
+			"oauthCliDescription": "ChatGPT Codex gebruikt je ChatGPT-webreferenties via de officiële Codex CLI. Authenticeer met de Codex CLI zodat auth.json wordt aangemaakt. Als je een aangepaste locatie gebruikt, stel hier het volledige bestandspad in.",
+			"oauthConnectDescription": "Na authenticatie zal Roo het toegangstoken uit auth.json lezen en verbinden met ChatGPT Responses (Codex).",
+			"learnMoreLinkText": "Meer leren over ChatGPT"
+		},
 		"openRouter": {
 			"providerRouting": {
 				"title": "OpenRouter-providerroutering",
@@ -828,7 +835,8 @@
 		"providerNotAllowed": "Provider '{{provider}}' is niet toegestaan door je organisatie",
 		"modelNotAllowed": "Model '{{model}}' is niet toegestaan voor provider '{{provider}}' door je organisatie",
 		"profileInvalid": "Dit profiel bevat een provider of model dat niet is toegestaan door je organisatie",
-		"qwenCodeOauthPath": "Je moet een geldig OAuth-referentiepad opgeven"
+		"qwenCodeOauthPath": "Je moet een geldig OAuth-referentiepad opgeven",
+		"openAiNativeCodexOauthPath": "Optioneel: Pad naar ChatGPT Codex auth.json. Wanneer leeg, standaard ~/.codex/auth.json."
 	},
 	"placeholders": {
 		"apiKey": "Voer API-sleutel in...",

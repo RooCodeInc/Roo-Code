@@ -399,6 +399,13 @@
 			"authenticatedMessage": "Autenticat de forma segura a través del teu compte de Roo Code Cloud.",
 			"connectButton": "Connecta amb Roo Code Cloud"
 		},
+		"openAiNativeCodex": {
+			"oauthPathLabel": "Ruta de credencials OAuth",
+			"oauthPathDescription": "Ruta a les teves credencials auth.json de ChatGPT Codex. Per defecte {{defaultPath}} si es deixa buit (Windows: C:\\\\Users\\\\USERNAME\\\\.codex\\\\auth.json).",
+			"oauthCliDescription": "ChatGPT Codex utilitza les teves credencials web de ChatGPT a través de la CLI oficial de Codex. Autentica't amb la CLI de Codex perquè es creï auth.json. Si utilitzes una ubicació personalitzada, estableix aquí la ruta completa del fitxer.",
+			"oauthConnectDescription": "Després de l'autenticació, Roo llegirà el token d'accés des d'auth.json i es connectarà a ChatGPT Responses (Codex).",
+			"learnMoreLinkText": "Aprèn més sobre ChatGPT"
+		},
 		"openRouter": {
 			"providerRouting": {
 				"title": "Encaminament de Proveïdors d'OpenRouter",
@@ -827,7 +834,8 @@
 		"providerNotAllowed": "El proveïdor '{{provider}}' no està permès per la vostra organització",
 		"modelNotAllowed": "El model '{{model}}' no està permès per al proveïdor '{{provider}}' per la vostra organització",
 		"profileInvalid": "Aquest perfil conté un proveïdor o model que no està permès per la vostra organització",
-		"qwenCodeOauthPath": "Has de proporcionar una ruta vàlida de credencials OAuth"
+		"qwenCodeOauthPath": "Has de proporcionar una ruta vàlida de credencials OAuth",
+		"openAiNativeCodexOauthPath": "Opcional: Camí a l'auth.json de ChatGPT Codex. Quan estigui buit, per defecte és ~/.codex/auth.json."
 	},
 	"placeholders": {
 		"apiKey": "Introduïu la clau API...",
