@@ -36,6 +36,9 @@ const Thumbnails = ({ images, style, setImages, onHeightChange }: ThumbnailsProp
 		vscode.postMessage({ type: "openImage", text: image })
 	}
 
+	// Never render base64 data URIs
+	const safeImages = images.filter((img) => typeof img === "string" && !img.startsWith("data:"))
+
 	return (
 		<div
 			ref={containerRef}
@@ -47,7 +50,7 @@ const Thumbnails = ({ images, style, setImages, onHeightChange }: ThumbnailsProp
 				rowGap: 3,
 				...style,
 			}}>
-			{images.map((image, index) => (
+			{safeImages.map((image, index) => (
 				<div
 					key={index}
 					style={{ position: "relative" }}
