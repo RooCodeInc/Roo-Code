@@ -28,6 +28,7 @@ import { TerminalRegistry } from "./integrations/terminal/TerminalRegistry"
 import { McpServerManager } from "./services/mcp/McpServerManager"
 import { CodeIndexManager } from "./services/code-index/manager"
 import { MdmService } from "./services/mdm/MdmService"
+import { FcoTextDocumentContentProvider } from "./services/files-changed/FcoTextDocumentContentProvider"
 import { migrateSettings } from "./utils/migrateSettings"
 import { autoImportSettings } from "./utils/autoImportSettings"
 import { API } from "./extension/api"
@@ -252,6 +253,10 @@ export async function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
 		vscode.workspace.registerTextDocumentContentProvider(DIFF_VIEW_URI_SCHEME, diffContentProvider),
 	)
+
+	// Register FCO (Files Changed Overview) diff content provider for performance optimization
+	const fcoContentProvider = FcoTextDocumentContentProvider.getInstance()
+	context.subscriptions.push(vscode.workspace.registerTextDocumentContentProvider("fco-diff", fcoContentProvider))
 
 	context.subscriptions.push(vscode.window.registerUriHandler({ handleUri }))
 

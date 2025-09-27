@@ -148,6 +148,13 @@ vi.mock("react-i18next", () => ({
 			return key
 		},
 	}),
+	withTranslation: () => (Component: any) => {
+		Component.defaultProps = {
+			...Component.defaultProps,
+			t: (key: string) => key,
+		}
+		return Component
+	},
 	initReactI18next: {
 		type: "3rdParty",
 		init: () => {},
