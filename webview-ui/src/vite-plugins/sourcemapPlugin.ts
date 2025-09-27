@@ -60,14 +60,29 @@ export function sourcemapPlugin(): Plugin {
 						// Read the JS file
 						let jsContent = fs.readFileSync(jsPath, "utf8")
 
-						// Check if the source map is already referenced
-						if (!jsContent.includes("//# sourceMappingURL=")) {
+						// Check if the source map is already referenced or has incorrect reference
+						const sourceMappingURLRegex = /\/\/# sourceMappingURL=([^\s\n]+)/
+						const match = jsContent.match(sourceMappingURLRegex)
+
+						if (match) {
+							// Check if the existing reference is incorrect (e.g., index.sourcemap instead of index.js.map)
+							const currentMapRef = match[1]
+							const expectedMapRef = `${jsFile}.map`
+
+							if (currentMapRef !== expectedMapRef) {
+								console.log(
+									`Fixing source map reference in ${jsFile}: ${currentMapRef} -> ${expectedMapRef}`,
+								)
+								jsContent = jsContent.replace(
+									sourceMappingURLRegex,
+									`//# sourceMappingURL=${expectedMapRef}`,
+								)
+								fs.writeFileSync(jsPath, jsContent)
+							}
+						} else {
 							console.log(`Adding source map reference to ${jsFile}`)
-
-							// Add source map reference
+							// Add source map reference with explicit .map extension
 							jsContent += `\n//# sourceMappingURL=${jsFile}.map\n`
-
-							// Write the updated JS file
 							fs.writeFileSync(jsPath, jsContent)
 						}
 
