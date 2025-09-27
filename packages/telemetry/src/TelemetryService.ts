@@ -1,6 +1,11 @@
 import { ZodError } from "zod"
 
-import { type TelemetryClient, type TelemetryPropertiesProvider, TelemetryEventName } from "@roo-code/types"
+import {
+	type TelemetryClient,
+	type TelemetryPropertiesProvider,
+	TelemetryEventName,
+	type TelemetrySetting,
+} from "@roo-code/types"
 
 /**
  * TelemetryService wrapper class that defers initialization.
@@ -240,6 +245,18 @@ export class TelemetryService {
 
 	public captureError(errorType: string) {
 		this.captureEvent(TelemetryEventName.ERROR, { error_type: errorType })
+	}
+
+	/**
+	 * Captures when telemetry settings are changed
+	 * @param previousSetting The previous telemetry setting
+	 * @param newSetting The new telemetry setting
+	 */
+	public captureTelemetrySettingsChanged(previousSetting: TelemetrySetting, newSetting: TelemetrySetting): void {
+		this.captureEvent(TelemetryEventName.TELEMETRY_SETTINGS_CHANGED, {
+			previousSetting,
+			newSetting,
+		})
 	}
 
 	/**

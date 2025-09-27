@@ -52,7 +52,7 @@ export default function Terms() {
 
 					<p className="lead">
 						These Terms of Service (&quot;<strong>TOS</strong>&quot;) govern access to and use of the
-						Costrict Code Cloud service (the &quot;<strong>Service</strong>&quot;). They apply to:
+						Costrict Cloud service (the &quot;<strong>Service</strong>&quot;). They apply to:
 					</p>
 					<ul className="lead">
 						<li>

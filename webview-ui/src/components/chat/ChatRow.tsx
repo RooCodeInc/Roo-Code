@@ -313,9 +313,9 @@ export const ChatRowContent = ({
 						)
 					) : cost !== null && cost !== undefined ? (
 						isExpanded ? (
-							<ChevronDown className="w-4" />
+							<ChevronDown className="w-4 shrink-0" />
 						) : (
-							<ChevronRight className="w-4" />
+							<ChevronRight className="w-4 shrink-0" />
 						)
 					) : apiRequestFailedMessage ? (
 						getIconSpan("error", errorColor)
@@ -350,7 +350,7 @@ export const ChatRowContent = ({
 				]
 			case "followup":
 				return [
-					<MessageCircleQuestionMark className="w-4" aria-label="Question icon" />,
+					<MessageCircleQuestionMark className="w-4 shrink-0" aria-label="Question icon" />,
 					<span style={{ color: normalColor, fontWeight: "bold" }}>{t("chat:questions.hasQuestion")}</span>,
 				]
 			default:
@@ -412,7 +412,7 @@ export const ChatRowContent = ({
 					return (
 						<>
 							<div style={headerStyle}>
-								<FileDiff className="w-4" aria-label="Batch diff icon" />
+								<FileDiff className="w-4 shrink-0" aria-label="Batch diff icon" />
 								<span style={{ fontWeight: "bold" }}>
 									{t("chat:fileOperations.wantsToApplyBatchChanges")}
 								</span>
@@ -607,7 +607,7 @@ export const ChatRowContent = ({
 					return (
 						<>
 							<div style={headerStyle}>
-								<Eye className="w-4" aria-label="View files icon" />
+								<Eye className="w-4 shrink-0" aria-label="View files icon" />
 								<span style={{ fontWeight: "bold" }}>
 									{t("chat:fileOperations.wantsToReadMultiple")}
 								</span>
@@ -627,7 +627,7 @@ export const ChatRowContent = ({
 				return (
 					<>
 						<div style={headerStyle}>
-							<FileCode2 className="w-4" aria-label="Read file icon" />
+							<FileCode2 className="w-4 shrink-0" aria-label="Read file icon" />
 							<span style={{ fontWeight: "bold" }}>
 								{message.type === "ask"
 									? tool.isOutsideWorkspace
@@ -658,7 +658,7 @@ export const ChatRowContent = ({
 									</span>
 									<div style={{ flexGrow: 1 }}></div>
 									<SquareArrowOutUpRight
-										className="w-4 codicon codicon-link-external opacity-0 group-hover:opacity-100 transition-opacity"
+										className="w-4 shrink-0 codicon codicon-link-external opacity-0 group-hover:opacity-100 transition-opacity"
 										style={{ fontSize: 13.5, margin: "1px 0" }}
 									/>
 								</ToolUseBlockHeader>
@@ -688,7 +688,7 @@ export const ChatRowContent = ({
 				return (
 					<>
 						<div style={headerStyle}>
-							<ListTree className="w-4" aria-label="List files icon" />
+							<ListTree className="w-4 shrink-0" aria-label="List files icon" />
 							<span style={{ fontWeight: "bold" }}>
 								{message.type === "ask"
 									? tool.isOutsideWorkspace
@@ -714,7 +714,7 @@ export const ChatRowContent = ({
 				return (
 					<>
 						<div style={headerStyle}>
-							<FolderTree className="w-4" aria-label="Folder tree icon" />
+							<FolderTree className="w-4 shrink-0" aria-label="Folder tree icon" />
 							<span style={{ fontWeight: "bold" }}>
 								{message.type === "ask"
 									? tool.isOutsideWorkspace
@@ -806,7 +806,7 @@ export const ChatRowContent = ({
 				return (
 					<>
 						<div style={headerStyle}>
-							<PocketKnife className="w-4" aria-label="Switch mode icon" />
+							<PocketKnife className="w-4 shrink-0" aria-label="Switch mode icon" />
 							<span style={{ fontWeight: "bold" }}>
 								{message.type === "ask" ? (
 									<>
@@ -1191,7 +1191,7 @@ export const ChatRowContent = ({
 					return (
 						<div>
 							<div style={headerStyle}>
-								<MessageCircle className="w-4" aria-label="Speech bubble icon" />
+								<MessageCircle className="w-4 shrink-0" aria-label="Speech bubble icon" />
 								<span style={{ fontWeight: "bold" }}>{t("chat:text.rooSaid")}</span>
 								{message.ts ? format(new Date(message.ts), "yyyy-MM-dd HH:mm:ss") : ""}
 							</div>
@@ -1226,7 +1226,7 @@ export const ChatRowContent = ({
 										className="w-6 h-6 rounded-full object-cover"
 									/>
 								) : (
-									<User className="w-4" aria-label="User icon" />
+									<User className="w-4 shrink-0" aria-label="User icon" />
 								)}
 								<span style={{ fontWeight: "bold" }}>
 									{t("chat:feedback.youSaid", {
@@ -1308,7 +1308,7 @@ export const ChatRowContent = ({
 													e.stopPropagation()
 													vscode.postMessage({ type: "deleteMessage", value: message.ts })
 												}}>
-												<Trash2 className="w-4" aria-label="Delete message icon" />
+												<Trash2 className="w-4 shrink-0" aria-label="Delete message icon" />
 											</div>
 										</div>
 									</div>
