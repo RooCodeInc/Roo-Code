@@ -123,8 +123,8 @@ const QuotaInfoDisplay = memo(
 				usagePercentage,
 				progressWidth,
 				isStarred,
-				totalQuotaDisplay: quotaInfo.total_quota ? quotaInfo.total_quota.toLocaleString() : "-",
-				usedQuotaDisplay: quotaInfo.used_quota ? quotaInfo.used_quota.toLocaleString() : "-",
+				totalQuotaDisplay: quotaInfo.total_quota ? quotaInfo.total_quota.toLocaleString() : "",
+				usedQuotaDisplay: quotaInfo.used_quota ? quotaInfo.used_quota.toLocaleString() : "",
 			}
 		}, [quotaInfo.total_quota, quotaInfo.used_quota, quotaInfo.is_star])
 
@@ -362,7 +362,9 @@ const ZgsmAccountViewComponent = ({ apiConfiguration, onDone }: AccountViewProps
 								<p className="text-xs text-vscode-descriptionForeground mb-1">{userInfo?.email}</p>
 							)}
 							{/* 星标状态卡片 */}
-							<StarStatusCard quotaInfo={quotaInfo} onStarRepository={handleStarRepository} _t={t} />
+							{quotaInfo?.is_star != null && (
+								<StarStatusCard quotaInfo={quotaInfo} onStarRepository={handleStarRepository} _t={t} />
+							)}
 							{/* 配额信息显示区域 */}
 							{isLoadingQuota && !quotaInfo && <QuotaSkeleton />}
 							{quotaInfo && (

@@ -1,5 +1,12 @@
 # Costrict Change Log
 
+## [1.6.15]
+
+- Increase max read character limit to 30,000
+- Add user quota information
+- Sync roocode [last commit](https://github.com/zgsm-ai/costrict/commit/87d50a78cb92ab5f050a4ec1233afe7004a52e3c)
+- Fix known issues
+
 ## [1.6.14]
 
 - Optimize the 'line jump' for batch file reading
