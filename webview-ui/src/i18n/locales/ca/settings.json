@@ -444,8 +444,10 @@
 			},
 			"resetDefaults": "Restablir als valors per defecte"
 		},
-		"unverifiedOrganization": "Organització no verificada",
-		"unverifiedOrganizationDescription": "Marqueu aquesta casella si trobeu errors de verificació d'organització amb models com GPT-5. Això deshabilitarà el streaming i els resums de raonament però permetrà que els models funcionin.",
+		"disableStreaming": "Desactivar streaming",
+		"disableStreamingDescription": "Desactivar el streaming de resposta en temps real per als models OpenAI.",
+		"disableReasoningSummaries": "Desactivar resums de raonament",
+		"disableReasoningSummariesDescription": "Desactivar els resums de raonament en models com GPT-5.",
 		"rateLimitSeconds": {
 			"label": "Límit de freqüència",
 			"description": "Temps mínim entre sol·licituds d'API."
