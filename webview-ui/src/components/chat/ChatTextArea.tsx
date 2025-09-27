@@ -341,6 +341,72 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					}
 				}
 
+				// Special handling for concrete folder selections:
+				// - Keep the picker open
+				// - Ensure trailing slash
+				// - Insert without trailing space
+				// - Trigger a follow-up search to show folder contents
+				if (type === ContextMenuOptionType.Folder && value && textAreaRef.current) {
+					// Normalize folder path to end with a trailing slash
+					let folderPath = value
+					if (!folderPath.endsWith("/")) {
+						folderPath = folderPath + "/"
+					}
+
+					// Manually build insertion without a trailing space (more deterministic than insertMention)
+					const original = textAreaRef.current.value
+					const beforeCursor = original.slice(0, cursorPosition)
+					const afterCursor = original.slice(cursorPosition)
+					const lastAtIndex = beforeCursor.lastIndexOf("@")
+
+					let beforeMention = beforeCursor
+					let afterCursorContent = afterCursor
+
+					if (lastAtIndex !== -1) {
+						// Replace everything from '@' to cursor with the folder path
+						beforeMention = original.slice(0, lastAtIndex)
+						// Match insertMention behavior for non-space-delimited languages
+						const isAlphaNumSpace = /^[a-zA-Z0-9\s]*$/.test(afterCursor)
+						afterCursorContent = isAlphaNumSpace ? afterCursor.replace(/^[^\s]*/, "") : afterCursor
+					}
+
+					const updatedValue = beforeMention + "@" + folderPath + afterCursorContent
+					const afterMentionPos =
+						(lastAtIndex !== -1 ? lastAtIndex : beforeCursor.length) + 1 + folderPath.length
+
+					setInputValue(updatedValue)
+					setCursorPosition(afterMentionPos)
+					setIntendedCursorPosition(afterMentionPos)
+
+					// Keep the context menu open for drill-down
+					setShowContextMenu(true)
+					setSelectedType(null)
+
+					// Compute the next-level query (text after '@' up to the caret)
+					const nextQuery = updatedValue.slice(
+						(lastAtIndex !== -1 ? lastAtIndex : beforeCursor.length) + 1,
+						afterMentionPos,
+					)
+					setSearchQuery(nextQuery)
+
+					// Kick off a search to populate folder children
+					const reqId = Math.random().toString(36).substring(2, 9)
+					setSearchRequestId(reqId)
+					setSearchLoading(true)
+					vscode.postMessage({
+						type: "searchFiles",
+						query: unescapeSpaces(nextQuery),
+						requestId: reqId,
+					})
+
+					// Keep focus in the textarea for continued typing
+					setTimeout(() => {
+						textAreaRef.current?.focus()
+					}, 0)
+
+					return
+				}
+
 				setShowContextMenu(false)
 				setSelectedType(null)
 
