@@ -200,9 +200,16 @@ export const rooCodeTelemetryEventSchema = z.discriminatedUnion("type", [
 			TelemetryEventName.TAB_SHOWN,
 			TelemetryEventName.MODE_SETTINGS_CHANGED,
 			TelemetryEventName.CUSTOM_MODE_CREATED,
-			TelemetryEventName.TELEMETRY_SETTINGS_CHANGED,
 		]),
 		properties: telemetryPropertiesSchema,
+	}),
+	z.object({
+		type: z.literal(TelemetryEventName.TELEMETRY_SETTINGS_CHANGED),
+		properties: z.object({
+			...telemetryPropertiesSchema.shape,
+			previousSetting: telemetrySettingsSchema,
+			newSetting: telemetrySettingsSchema,
+		}),
 	}),
 	z.object({
 		type: z.literal(TelemetryEventName.TASK_MESSAGE),

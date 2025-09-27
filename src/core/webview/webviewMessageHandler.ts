@@ -2304,10 +2304,11 @@ export const webviewMessageHandler = async (
 			if (wasPreviouslyOptedIn && !isOptedIn && TelemetryService.hasInstance()) {
 				TelemetryService.instance.captureTelemetrySettingsChanged(previousSetting, telemetrySetting)
 			}
-
 			// Update the telemetry state
 			await updateGlobalState("telemetrySetting", telemetrySetting)
-			TelemetryService.instance.updateTelemetryState(isOptedIn)
+			if (TelemetryService.hasInstance()) {
+				TelemetryService.instance.updateTelemetryState(isOptedIn)
+			}
 
 			// If turning telemetry ON, fire event AFTER enabling
 			if (!wasPreviouslyOptedIn && isOptedIn && TelemetryService.hasInstance()) {
