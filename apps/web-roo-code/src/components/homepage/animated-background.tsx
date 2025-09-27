@@ -225,8 +225,9 @@ export function AnimatedBackground() {
 			connectParticles()
 		}
 
-		// Animation loop.
-		let animationId: number
+		// Animation loop and reduced-motion handling.
+		let animationId: number | undefined
+		let isAnimating = false
 
 		// Target position for smooth following.
 		let targetX = canvas.width * 0.2
@@ -265,14 +266,56 @@ export function AnimatedBackground() {
 			drawGrid()
 		}
 
-		animate()
+		const startAnimation = () => {
+			if (isAnimating) return
+			isAnimating = true
+			window.addEventListener("mousemove", handleMouseMove)
+			animate()
+		}
 
-		window.addEventListener("mousemove", handleMouseMove)
+		const stopAnimation = () => {
+			if (!isAnimating) return
+			isAnimating = false
+			window.removeEventListener("mousemove", handleMouseMove)
+			if (animationId !== undefined) cancelAnimationFrame(animationId)
+		}
+
+		// Respect user preference for reduced motion
+		const mediaQuery =
+			typeof window !== "undefined" && "matchMedia" in window
+				? window.matchMedia("(prefers-reduced-motion: reduce)")
+				: null
+
+		const onMotionPreferenceChange = (e: MediaQueryListEvent) => {
+			if (e.matches) {
+				// User prefers reduced motion now
+				stopAnimation()
+				// Render a single static frame
+				drawGrid()
+			} else {
+				// User allows motion
+				startAnimation()
+			}
+		}
+
+		if (mediaQuery) {
+			if (mediaQuery.matches) {
+				// Reduced motion: render one static frame
+				drawGrid()
+			} else {
+				startAnimation()
+			}
+			mediaQuery.addEventListener("change", onMotionPreferenceChange)
+		} else {
+			// Fallback if matchMedia is unavailable
+			startAnimation()
+		}
 
 		return () => {
 			window.removeEventListener("resize", resizeCanvas)
-			window.removeEventListener("mousemove", handleMouseMove)
-			cancelAnimationFrame(animationId)
+			// Ensure animation and listeners are stopped
+			stopAnimation()
+			if (mediaQuery) mediaQuery.removeEventListener("change", onMotionPreferenceChange)
 		}
 	}, [])
 
