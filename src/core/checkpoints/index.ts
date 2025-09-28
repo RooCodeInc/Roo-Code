@@ -177,7 +177,7 @@ async function checkGitInstallation(
 	}
 }
 
-export async function checkpointSave(task: Task, force = false, suppressMessage = false) {
+export async function checkpointSave(task: Task, force = false, suppressMessage = false, customMessage?: string) {
 	const service = await getCheckpointService(task)
 
 	if (!service) {
@@ -186,13 +186,14 @@ export async function checkpointSave(task: Task, force = false, suppressMessage 
 
 	TelemetryService.instance.captureCheckpointCreated(task.taskId)
 
+	// Use custom message if provided, otherwise use default format
+	const message = customMessage || `Task: ${task.taskId}, Time: ${Date.now()}`
+
 	// Start the checkpoint process in the background.
-	return service
-		.saveCheckpoint(`Task: ${task.taskId}, Time: ${Date.now()}`, { allowEmpty: force, suppressMessage })
-		.catch((err) => {
-			console.error("[Task#checkpointSave] caught unexpected error, disabling checkpoints", err)
-			task.enableCheckpoints = false
-		})
+	return service.saveCheckpoint(message, { allowEmpty: force, suppressMessage }).catch((err) => {
+		console.error("[Task#checkpointSave] caught unexpected error, disabling checkpoints", err)
+		task.enableCheckpoints = false
+	})
 }
 
 export type CheckpointRestoreOptions = {

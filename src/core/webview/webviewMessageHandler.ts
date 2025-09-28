@@ -1000,6 +1000,35 @@ export const webviewMessageHandler = async (
 
 			break
 		}
+		case "saveCustomCheckpoint": {
+			const currentTask = provider.getCurrentTask()
+			if (!currentTask) {
+				vscode.window.showErrorMessage(t("common:checkpoint.no_active_task"))
+				break
+			}
+
+			if (!getGlobalState("enableCheckpoints")) {
+				vscode.window.showErrorMessage(t("common:checkpoint.checkpoints_disabled"))
+				break
+			}
+
+			// Use the message text as the custom checkpoint message
+			const customMessage = message.text || t("common:checkpoint.custom_checkpoint_default")
+
+			try {
+				// Force checkpoint creation with custom message
+				// Parameters: force=true (create even without changes), suppressMessage=false (show in UI), customMessage
+				await currentTask.checkpointSave(true, false, customMessage)
+				vscode.window.showInformationMessage(t("common:checkpoint.custom_checkpoint_saved"))
+			} catch (error) {
+				vscode.window.showErrorMessage(
+					t("common:checkpoint.custom_checkpoint_failed", {
+						error: error instanceof Error ? error.message : String(error),
+					}),
+				)
+			}
+			break
+		}
 		case "cancelTask":
 			await provider.cancelTask()
 			break

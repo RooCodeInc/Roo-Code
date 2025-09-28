@@ -54,6 +54,7 @@ export const commandIds = [
 	"acceptInput",
 	"focusPanel",
 	"toggleAutoApprove",
+	"saveCustomCheckpoint",
 ] as const
 
 export type CommandId = (typeof commandIds)[number]
