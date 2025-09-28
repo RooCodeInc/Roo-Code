@@ -132,7 +132,7 @@ export class UnboundHandler extends RouterProvider implements SingleCompletionHa
 		}
 	}
 
-	async completePrompt(prompt: string): Promise<string> {
+	async completePrompt(prompt: string, metadata?: ApiHandlerCreateMessageMetadata): Promise<string> {
 		const { id: modelId, info } = await this.fetchModel()
 
 		try {
@@ -142,6 +142,8 @@ export class UnboundHandler extends RouterProvider implements SingleCompletionHa
 				unbound_metadata: {
 					originApp: ORIGIN_APP,
 				},
+				prompt_cache_key: metadata?.taskId,
+				safety_identifier: metadata?.safetyIdentifier,
 			}
 
 			if (this.supportsTemperature(modelId)) {

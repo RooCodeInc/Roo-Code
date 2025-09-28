@@ -104,7 +104,7 @@ export class MistralHandler extends BaseProvider implements SingleCompletionHand
 		return { id, info, maxTokens, temperature }
 	}
 
-	async completePrompt(prompt: string): Promise<string> {
+	async completePrompt(prompt: string, metadata?: ApiHandlerCreateMessageMetadata): Promise<string> {
 		try {
 			const { id: model, temperature } = this.getModel()
 

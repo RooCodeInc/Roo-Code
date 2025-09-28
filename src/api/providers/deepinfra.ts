@@ -60,10 +60,6 @@ export class DeepInfraHandler extends RouterProvider implements SingleCompletion
 		// Ensure we have up-to-date model metadata
 		await this.fetchModel()
 		const { id: modelId, info, reasoningEffort: reasoning_effort } = await this.fetchModel()
-		let prompt_cache_key = undefined
-		if (info.supportsPromptCache && _metadata?.taskId) {
-			prompt_cache_key = _metadata.taskId
-		}
 
 		const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming = {
 			model: modelId,
@@ -71,7 +67,8 @@ export class DeepInfraHandler extends RouterProvider implements SingleCompletion
 			stream: true,
 			stream_options: { include_usage: true },
 			reasoning_effort,
-			prompt_cache_key,
+			prompt_cache_key: _metadata?.taskId,
+			safety_identifier: _metadata?.safetyIdentifier,
 		} as OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming
 
 		if (this.supportsTemperature(modelId)) {
@@ -106,13 +103,15 @@ export class DeepInfraHandler extends RouterProvider implements SingleCompletion
 		}
 	}
 
-	async completePrompt(prompt: string): Promise<string> {
+	async completePrompt(prompt: string, metadata?: ApiHandlerCreateMessageMetadata): Promise<string> {
 		await this.fetchModel()
 		const { id: modelId, info } = this.getModel()
 
 		const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {
 			model: modelId,
 			messages: [{ role: "user", content: prompt }],
+			prompt_cache_key: metadata?.taskId,
+			safety_identifier: metadata?.safetyIdentifier,
 		}
 		if (this.supportsTemperature(modelId)) {
 			requestOptions.temperature = this.options.modelTemperature ?? 0

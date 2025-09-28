@@ -1268,7 +1268,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		this.lastResponseId = responseId
 	}
 
-	async completePrompt(prompt: string): Promise<string> {
+	async completePrompt(prompt: string, metadata?: ApiHandlerCreateMessageMetadata): Promise<string> {
 		try {
 			const model = this.getModel()
 			const { verbosity, reasoning } = model
@@ -1287,6 +1287,8 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 				],
 				stream: false, // Non-streaming for completePrompt
 				store: false, // Don't store prompt completions
+				prompt_cache_key: metadata?.taskId,
+				safety_identifier: metadata?.safetyIdentifier,
 			}
 
 			// Include service tier if selected and supported

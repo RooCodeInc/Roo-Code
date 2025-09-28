@@ -12,7 +12,7 @@ import { convertToOpenAiMessages } from "../transform/openai-format"
 import { ApiStream } from "../transform/stream"
 
 import { BaseProvider } from "./base-provider"
-import type { SingleCompletionHandler } from "../index"
+import type { ApiHandlerCreateMessageMetadata, SingleCompletionHandler } from "../index"
 
 const QWEN_OAUTH_BASE_URL = "https://chat.qwen.ai"
 const QWEN_OAUTH_TOKEN_ENDPOINT = `${QWEN_OAUTH_BASE_URL}/api/v1/oauth2/token`
@@ -201,7 +201,11 @@ export class QwenCodeHandler extends BaseProvider implements SingleCompletionHan
 		}
 	}
 
-	override async *createMessage(systemPrompt: string, messages: Anthropic.Messages.MessageParam[]): ApiStream {
+	override async *createMessage(
+		systemPrompt: string,
+		messages: Anthropic.Messages.MessageParam[],
+		metadata?: ApiHandlerCreateMessageMetadata,
+	): ApiStream {
 		await this.ensureAuthenticated()
 		const client = this.ensureClient()
 		const model = this.getModel()
@@ -220,6 +224,8 @@ export class QwenCodeHandler extends BaseProvider implements SingleCompletionHan
 			stream: true,
 			stream_options: { include_usage: true },
 			max_completion_tokens: model.info.maxTokens,
+			prompt_cache_key: metadata?.taskId,
+			safety_identifier: metadata?.safetyIdentifier,
 		}
 
 		const stream = await this.callApiWithRetry(() => client.chat.completions.create(requestOptions))
@@ -290,7 +296,7 @@ export class QwenCodeHandler extends BaseProvider implements SingleCompletionHan
 		return { id, info }
 	}
 
-	async completePrompt(prompt: string): Promise<string> {
+	async completePrompt(prompt: string, metadata?: ApiHandlerCreateMessageMetadata): Promise<string> {
 		await this.ensureAuthenticated()
 		const client = this.ensureClient()
 		const model = this.getModel()
@@ -299,6 +305,8 @@ export class QwenCodeHandler extends BaseProvider implements SingleCompletionHan
 			model: model.id,
 			messages: [{ role: "user", content: prompt }],
 			max_completion_tokens: model.info.maxTokens,
+			prompt_cache_key: metadata?.taskId,
+			safety_identifier: metadata?.safetyIdentifier,
 		}
 
 		const response = await this.callApiWithRetry(() => client.chat.completions.create(requestOptions))

@@ -63,6 +63,8 @@ export class XAIHandler extends BaseProvider implements SingleCompletionHandler 
 				stream: true,
 				stream_options: { include_usage: true },
 				...(reasoning && reasoning),
+				prompt_cache_key: metadata?.taskId,
+				safety_identifier: metadata?.safetyIdentifier,
 			})
 		} catch (error) {
 			throw handleOpenAIError(error, this.providerName)
@@ -109,7 +111,7 @@ export class XAIHandler extends BaseProvider implements SingleCompletionHandler 
 		}
 	}
 
-	async completePrompt(prompt: string): Promise<string> {
+	async completePrompt(prompt: string, metadata?: ApiHandlerCreateMessageMetadata): Promise<string> {
 		const { id: modelId, reasoning } = this.getModel()
 
 		try {
@@ -117,6 +119,8 @@ export class XAIHandler extends BaseProvider implements SingleCompletionHandler 
 				model: modelId,
 				messages: [{ role: "user", content: prompt }],
 				...(reasoning && reasoning),
+				prompt_cache_key: metadata?.taskId,
+				safety_identifier: metadata?.safetyIdentifier,
 			})
 
 			return response.choices[0]?.message.content || ""

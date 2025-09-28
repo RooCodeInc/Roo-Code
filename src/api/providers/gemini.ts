@@ -209,7 +209,7 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 		return citationLinks.join(", ")
 	}
 
-	async completePrompt(prompt: string): Promise<string> {
+	async completePrompt(prompt: string, metadata?: ApiHandlerCreateMessageMetadata): Promise<string> {
 		try {
 			const { id: model } = this.getModel()
 

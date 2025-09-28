@@ -34,7 +34,7 @@ import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from ".
  * // Stream a conversation
  * const systemPrompt = "You are a helpful assistant";
  * const messages = [{ role: "user", content: "Hello!" }];
- * for await (const chunk of handler.createMessage(systemPrompt, messages)) {
+ * for await (const chunk of handler.createMessage(systemPrompt, messages, metadata)) {
  *   console.log(chunk);
  * }
  * ```
@@ -536,7 +536,7 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 		}
 	}
 
-	async completePrompt(prompt: string): Promise<string> {
+	async completePrompt(prompt: string, metadata?: ApiHandlerCreateMessageMetadata): Promise<string> {
 		try {
 			const client = await this.getClient()
 			const response = await client.sendRequest(

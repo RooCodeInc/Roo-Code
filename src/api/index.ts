@@ -44,7 +44,7 @@ import {
 import { NativeOllamaHandler } from "./providers/native-ollama"
 
 export interface SingleCompletionHandler {
-	completePrompt(prompt: string): Promise<string>
+	completePrompt(prompt: string, metadata?: ApiHandlerCreateMessageMetadata): Promise<string>
 }
 
 export interface ApiHandlerCreateMessageMetadata {
@@ -65,6 +65,7 @@ export interface ApiHandlerCreateMessageMetadata {
 	 * @default true
 	 */
 	store?: boolean
+	safetyIdentifier?: string
 }
 
 export interface ApiHandler {

@@ -14,6 +14,7 @@ import { convertToOpenAiMessages } from "../transform/openai-format"
 import { ApiStream } from "../transform/stream"
 
 import { BaseOpenAiCompatibleProvider } from "./base-openai-compatible-provider"
+import { ApiHandlerCreateMessageMetadata } from ".."
 
 export class FeatherlessHandler extends BaseOpenAiCompatibleProvider<FeatherlessModelId> {
 	constructor(options: ApiHandlerOptions) {
@@ -31,6 +32,7 @@ export class FeatherlessHandler extends BaseOpenAiCompatibleProvider<Featherless
 	private getCompletionParams(
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
+		metadata?: ApiHandlerCreateMessageMetadata,
 	): OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming {
 		const {
 			id: model,
@@ -46,15 +48,21 @@ export class FeatherlessHandler extends BaseOpenAiCompatibleProvider<Featherless
 			messages: [{ role: "system", content: systemPrompt }, ...convertToOpenAiMessages(messages)],
 			stream: true,
 			stream_options: { include_usage: true },
+			prompt_cache_key: metadata?.taskId,
+			safety_identifier: metadata?.safetyIdentifier,
 		}
 	}
 
-	override async *createMessage(systemPrompt: string, messages: Anthropic.Messages.MessageParam[]): ApiStream {
+	override async *createMessage(
+		systemPrompt: string,
+		messages: Anthropic.Messages.MessageParam[],
+		metadata?: ApiHandlerCreateMessageMetadata,
+	): ApiStream {
 		const model = this.getModel()
 
 		if (model.id.includes("DeepSeek-R1")) {
 			const stream = await this.client.chat.completions.create({
-				...this.getCompletionParams(systemPrompt, messages),
+				...this.getCompletionParams(systemPrompt, messages, metadata),
 				messages: convertToR1Format([{ role: "user", content: systemPrompt }, ...messages]),
 			})
 
@@ -90,7 +98,7 @@ export class FeatherlessHandler extends BaseOpenAiCompatibleProvider<Featherless
 				yield processedChunk
 			}
 		} else {
-			yield* super.createMessage(systemPrompt, messages)
+			yield* super.createMessage(systemPrompt, messages, metadata)
 		}
 	}
 

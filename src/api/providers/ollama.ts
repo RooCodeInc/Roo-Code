@@ -64,6 +64,8 @@ export class OllamaHandler extends BaseProvider implements SingleCompletionHandl
 				temperature: this.options.modelTemperature ?? 0,
 				stream: true,
 				stream_options: { include_usage: true },
+				prompt_cache_key: metadata?.taskId,
+				safety_identifier: metadata?.safetyIdentifier,
 			})
 		} catch (error) {
 			throw handleOpenAIError(error, this.providerName)
@@ -109,7 +111,7 @@ export class OllamaHandler extends BaseProvider implements SingleCompletionHandl
 		}
 	}
 
-	async completePrompt(prompt: string): Promise<string> {
+	async completePrompt(prompt: string, metadata?: ApiHandlerCreateMessageMetadata): Promise<string> {
 		try {
 			const modelId = this.getModel().id
 			const useR1Format = modelId.toLowerCase().includes("deepseek-r1")
@@ -122,6 +124,8 @@ export class OllamaHandler extends BaseProvider implements SingleCompletionHandl
 						: [{ role: "user", content: prompt }],
 					temperature: this.options.modelTemperature ?? (useR1Format ? DEEP_SEEK_DEFAULT_TEMPERATURE : 0),
 					stream: false,
+					prompt_cache_key: metadata?.taskId,
+					safety_identifier: metadata?.safetyIdentifier,
 				})
 			} catch (error) {
 				throw handleOpenAIError(error, this.providerName)
