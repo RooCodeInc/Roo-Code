@@ -1,0 +1,52 @@
+---
+description: This release enhances GPT-5 support, adds the new IO Intelligence provider, and includes several new features, QOL improvements, and bug fixes.
+keywords:
+  - roo code 3.25.11
+  - new features
+  - bug fixes
+  - gpt-5
+  - io intelligence
+image: /img/social-share.jpg
+---
+
+# Roo Code 3.25.11 Release Notes (2025-08-11)
+
+This release enhances GPT-5 support, adds the new IO Intelligence provider, and includes several new features, quality-of-life improvements, and bug fixes.
+
+## Enhanced GPT-5 Support
+
+We've enhanced our GPT-5 integration, enabling you to leverage more advanced capabilities for streaming, multi-turn conversations, and efficient token management. This release also adds support for the new GPT-5 models from OpenAI, including `gpt-5-2025-08-07`, `gpt-5-mini-2025-08-07`, and `gpt-5-nano-2025-08-07`.
+
+> **📚 Documentation**: See the [OpenAI Provider documentation](/providers/openai) for more details.
+
+## New IO Intelligence Provider
+
+We've added IO Intelligence as a new provider, giving you access to a wide range of AI models like Llama, DeepSeek, Qwen, and Mistral through a unified API ([#6875](https://github.com/RooCodeInc/Roo-Code/pull/6875)).
+
+> **📚 Documentation**: See the [IO Intelligence Provider documentation](/providers/io-intelligence) for more information.
+
+## Codex Mini Model Support
+
+We've added support for the `codex-mini-latest` model in the OpenAI Native provider, allowing you to leverage its specialized code-related capabilities directly (thanks KJ7LNW!) ([#6931](https://github.com/RooCodeInc/Roo-Code/pull/6931)).
+
+## QOL Improvements
+
+* **`codebase_search` Tool**: Clarified that the `path` parameter is optional and the tool searches the entire workspace by default ([#6877](https://github.com/RooCodeInc/Roo-Code/pull/6877)).
+* **`@roo-code/cloud` Linking**: Improved the developer workflow by allowing `@roo-code/cloud` to be directly linked from a local repository, with HMR support ([#6799](https://github.com/RooCodeInc/Roo-Code/pull/6799)).
+* **Chat Input Focus**: The chat input is now automatically focused when creating a new chat from the extension's top menu ([#6689](https://github.com/RooCodeInc/Roo-Code/pull/6689)).
+* **Token Usage Reporting**: Fixed an issue where token usage and cost were underreported, providing more accurate cost tracking (thanks chrarnoldus!) ([#6122](https://github.com/RooCodeInc/Roo-Code/pull/6122)).
+
+## Bug Fixes
+
+* **MCP Server Startup**: Fixed an issue where MCP servers would fail to start and removed unnecessary refresh notifications ([#6878](https://github.com/RooCodeInc/Roo-Code/pull/6878)).
+* **Tool Repetition Detector**: Fixed a bug where setting the "Errors and Repetition Limit" to 1 would incorrectly block the first tool call (thanks NaccOll!) ([#6836](https://github.com/RooCodeInc/Roo-Code/pull/6836)).
+* **MCP Error Messages**: Fixed an issue where MCP server error messages were displaying raw translation keys ([#6821](https://github.com/RooCodeInc/Roo-Code/pull/6821)).
+* **`apply_diff` Tool**: Fixed a bug that caused XML parsing errors when working with complex XML content ([#6811](https://github.com/RooCodeInc/Roo-Code/pull/6811)).
+* **`max_tokens` Calculation**: Fixed an error for models with very large context windows where requests would fail due to incorrect calculation of maximum output tokens (thanks markp018!) ([#6808](https://github.com/RooCodeInc/Roo-Code/pull/6808)).
+* **Scroll Jitter**: Fixed a scroll jitter issue that occurred during message streaming, especially with code blocks ([#6780](https://github.com/RooCodeInc/Roo-Code/pull/6780)).
+* **MCP Server Refresh**: Fixed an issue where MCP servers would unnecessarily refresh when unrelated settings were saved ([#6779](https://github.com/RooCodeInc/Roo-Code/pull/6779)).
+* **AWS Bedrock Connection**: Fixed a connection issue when using AWS Bedrock with LiteLLM ([#6778](https://github.com/RooCodeInc/Roo-Code/pull/6778)).
+
+## Provider Updates
+
+* **Fireworks**: Added support for four new models: GLM-4.5, GLM-4.5-Air, gpt-oss-20b, and gpt-oss-120b (thanks alexfarlander!) ([#6784](https://github.com/RooCodeInc/Roo-Code/pull/6784)).

@@ -1,0 +1,347 @@
+<content_standards>
+  <overview>
+    Formatting, content standards, and PR analysis patterns for release notes.
+    Ensures consistent, user-focused documentation in docs/update-notes.
+  </overview>
+
+  <file_structure>
+    <naming_conventions>
+      <convention type="patch_release">
+        <format>vX.Y.Z.mdx</format>
+        <example>v3.20.3.mdx</example>
+      </convention>
+      <convention type="minor_major_release">
+        <format>vX.Y.mdx</format>
+        <example>v3.20.mdx</example>
+        <description>Summarizes a release cycle</description>
+      </convention>
+    </naming_conventions>
+
+    <required_elements>
+      <element name="frontmatter">
+        <format><![CDATA[
+---
+description: A concise summary of the release.
+keywords:
+  - roo code x.y.z
+  - new features
+  - bug fixes
+image: /img/social-share.jpg
+---
+        ]]></format>
+      </element>
+      
+      <element name="title">
+        <format># Roo Code X.Y.Z Release Notes (YYYY-MM-DD)</format>
+        <requirements>
+          - Include version number
+          - Include release date in ISO 8601 format
+          - Date from GitHub tag OR current date if PR list provided
+        </requirements>
+      </element>
+
+      <element name="summary_sentence">
+        <location>Below title</location>
+        <example>This release adds context condensing, improves performance, and fixes UI bugs.</example>
+      </element>
+    </required_elements>
+  </file_structure>
+
+  <pr_analysis>
+    <framework>
+      <step number="1">What changed? (Identify core feature)</step>
+      <step number="2">Why did it change? (Problem solved)</step>
+      <step number="3">How does this impact users? (Concrete benefits)</step>
+    </framework>
+
+    <categorization>
+      <category name="major_features">
+        <criteria>New functionality changing user experience</criteria>
+        <format>Own ## heading with expanded description</format>
+        <template><![CDATA[
+## [Feature Name]
+
+We've [improvement description] (thanks [contributors]!) ([#PR](link)):
+
+- **[Benefit 1]**: [How this helps users]
+- **[Benefit 2]**: [Another benefit]
+
+[Concluding sentence about impact]
+
+> **📚 Documentation**: See [Feature Guide](/path/to/feature) for detailed usage instructions.
+        ]]></template>
+      </category>
+      
+      <category name="qol_improvements">
+        <criteria>UI/UX enhancements, workflow optimizations</criteria>
+        <format>Under ## QOL Improvements</format>
+        <critical>MUST come before Bug Fixes section</critical>
+      </category>
+      
+      <category name="bug_fixes">
+        <criteria>Resolves issues, fixes errors</criteria>
+        <format>Under ## Bug Fixes as bullet points</format>
+        <critical>MUST come after QOL Improvements section</critical>
+      </category>
+      
+      <category name="provider_updates">
+        <criteria>API provider changes</criteria>
+        <format>Under ## Provider Updates</format>
+      </category>
+    </categorization>
+
+    <documentation_flags>
+      <flag name="docs-new">Completely new feature requiring new page</flag>
+      <flag name="docs-update">Existing documentation needs updating</flag>
+      <flag name="docs-example">New examples or use cases to add</flag>
+      <flag name="docs-migration">Migration guide needed for breaking changes</flag>
+    </documentation_flags>
+  </pr_analysis>
+
+  <content_formatting>
+    <expanded_sections>
+      <description>Major features with details</description>
+      <format><![CDATA[
+## Feature Name
+
+Description of what the feature does (thanks contributor!) ([#PR](link)):
+
+- **Key Point 1**: Explanation of this aspect.
+- **Key Point 2**: Another explanation.
+
+Concluding sentence about the benefit.
+
+> **📚 Documentation**: See [Feature Guide](/path/to/feature) for detailed usage.
+      ]]></format>
+    </expanded_sections>
+
+    <grouped_sections>
+      <description>Smaller fixes and improvements</description>
+      <format><![CDATA[
+## Section Name
+
+* **Item Name**: Single-line description (thanks contributor!) ([#PR](link))
+* **Another Item**: Another description ([#PR](link))
+      ]]></format>
+    </grouped_sections>
+
+    <contributor_acknowledgments>
+      <format>(thanks username!)</format>
+      <multiple>(thanks author, reporter!)</multiple>
+      <rules>
+        - Omit @ from GitHub usernames
+        - Place inside parentheses before PR link
+        - Include both PR author and issue reporter
+        - List PR author first
+        - If PR author equals issue reporter, use a single username once
+        - Do not thank these names: outlined in the special instructions section `Release Notes "thank you" exclusions`
+      </rules>
+    </contributor_acknowledgments>
+
+    <pr_links>
+      <format>([#PR_NUMBER](https://github.com/RooCodeInc/Roo-Code/pull/PR_NUMBER))</format>
+      <placement>
+        <expanded>In intro paragraph or bullet points</expanded>
+        <grouped>At end of each bullet point</grouped>
+      </placement>
+    </pr_links>
+  </content_formatting>
+
+  <section_ordering>
+    <order>
+      1. Major feature sections (each with own heading)
+      2. ## QOL Improvements
+      3. ## Bug Fixes
+      4. ## Misc Improvements
+      5. ## Provider Updates
+      6. ## Documentation Updates
+    </order>
+    <critical>QOL Improvements MUST always come before Bug Fixes</critical>
+  </section_ordering>
+
+  <index_updates>
+    <file>docs/update-notes/index.md</file>
+    <format>[X.Y.Z](/update-notes/vX.Y.Z) (YYYY-MM-DD)</format>
+    <rules>
+      - List chronologically, newest first
+      - Use absolute paths from site root (no /docs prefix)
+      - Omit .md extension
+      - Include release date in ISO 8601 format
+    </rules>
+  </index_updates>
+
+  <sidebar_updates>
+    <file>sidebars.ts</file>
+    <format>'update-notes/vX.Y.Z'</format>
+    <rules>
+      - Add to "Update Notes" category
+      - Use Docusaurus ID format
+      - Maintain chronological order
+    </rules>
+  </sidebar_updates>
+
+  <combined_notes_updates>
+    <description>Integrate patch releases into parent minor/major file</description>
+    <rules>
+      - Add changes to corresponding existing sections
+      - Maintain consistent formatting and section order
+      - Append new items to end of respective sections
+      - Consolidate duplicate fixes across patches
+      - Update summary sentence if significant features added
+    </rules>
+  </combined_notes_updates>
+
+  <language_guide>
+    <focus>User benefits, not implementation details</focus>
+    <tense>Present tense ("adds" not "added")</tense>
+    <transformations>
+      <from>Refactored</from><to>Improved</to>
+      <from>Implemented</from><to>Added</to>
+      <from>Optimized algorithm</from><to>Made faster</to>
+      <from>Fixed race condition</from><to>Fixed timing issue</to>
+    </transformations>
+  </language_guide>
+
+  <documentation_links>
+    <patterns>
+      <inline>[Feature Name](/path/to/feature)</inline>
+      <see_also><![CDATA[
+> **📚 Documentation**: See [Feature Guide](/path) for detailed usage instructions.
+      ]]></see_also>
+      <migration><![CDATA[
+> **🔄 Migration Guide**: If upgrading from v[OLD], see our [migration guide](/migration/vX-to-vY).
+      ]]></migration>
+    </patterns>
+    <auto_linking>
+      - Modes: /features/modes/[mode-slug]
+      - Tools: /advanced-usage/available-tools#[tool-name]
+      - MCP: /features/mcp/
+      - Providers: /providers/
+    </auto_linking>
+    <rules>
+      - Use absolute paths starting from root (without /docs prefix)
+      - No .md extensions in links
+      - All major features must have documentation links
+    </rules>
+  </documentation_links>
+
+  <forbidden_elements>
+    - "Summary" or "Highlights" sections in docs/update-notes (Discord announcements may use "Feature Highlights")
+    - Version numbers in docs outside update-notes
+    - Temporal references like "as of version X.Y.Z"
+    - Marketing language or buzzwords
+    - Generic headings like "## Changes" or "## Updates"
+  </forbidden_elements>
+
+  <discord_formatting>
+    <overview>
+      Special formatting rules for Discord announcements to ensure readability
+      and engagement in chat format.
+    </overview>
+
+    <structure>
+      <element name="wrapper">
+        <format>```markdown ... ```</format>
+        <description>Entire announcement wrapped in markdown code block</description>
+      </element>
+      
+      <element name="title">
+        <format># 🚀 Roo Code X.Y.Z Release Notes</format>
+        <format_combined># 🚀 Roo Code X.Y.Z-X.Y.Z Release Updates</format_combined>
+        <rules>
+          - Always include rocket emoji
+          - Use "Release Notes" for single version
+          - Use "Release Updates" for combined versions
+        </rules>
+      </element>
+
+      <element name="intro_sentence">
+        <format>We've shipped [updates/an update] with [feature summary]!</format>
+        <rules>
+          - Must summarize key features
+          - No marketing language ("powerful", "revolutionary")
+          - Be specific about what's included
+        </rules>
+        <examples>
+          <single>We've shipped an update with subtask todo lists, Vertex AI grounding, and performance improvements!</single>
+          <combined>We've shipped three updates with subtask todo lists, Vertex AI grounding features, Kimi K2 prompt caching, and the new Featherless provider!</combined>
+        </examples>
+      </element>
+
+      <element name="sections">
+        <order>
+          1. ## ✨ Feature Highlights (not "Major Features")
+          2. ## 🎯 Provider Updates
+          3. ## 💪 QOL Improvements
+          4. ## 🐛 Bug Fixes
+          5. ## 🔧 Additional Improvements
+        </order>
+        <rules>
+          - Use emojis for section headers
+          - "Feature Highlights" instead of "Major Features"
+          - Keep descriptions concise for chat readability
+        </rules>
+      </element>
+
+      <element name="compression_pattern">
+        <description>When user requests compression or content is too long</description>
+        <trigger>User says "compress" or "condense"</trigger>
+        <format><![CDATA[
+## 🔧 Other Improvements and Fixes
+
+These releases include [COUNT] improvements across bug fixes, provider updates, QOL enhancements, and misc updates. Thanks to [contributor1], [contributor2], [contributor3], and all other contributors who made these releases possible!
+        ]]></format>
+        <rules>
+          - Replace all sections below "Feature Highlights" with single paragraph
+          - Count actual number of improvements (not estimate)
+          - List specific contributor names from the releases
+          - Use "Other Improvements and Fixes" as section title
+          - Include all contributor acknowledgments in one place
+        </rules>
+        <example><![CDATA[
+## 🔧 Other Improvements and Fixes
+
+These releases include 18 improvements across bug fixes, provider updates, QOL enhancements, and misc updates. Thanks to anguslees, DarinVerheijke, semidark, elianiva, and all other contributors who made these releases possible!
+        ]]></example>
+      </element>
+
+      <element name="footer">
+        <format_single>📚 **Full Release Notes** [vX.Y.Z](https://docs.roocode.com/update-notes/vX.Y.Z)</format_single>
+        <format_combined>📚 **Full Release Notes** [vX.Y.Z](link) | [vX.Y.Z](link) | [vX.Y.Z](link)</format_combined>
+        <rules>
+          - Use book emoji
+          - Bold "Full Release Notes"
+          - Markdown link format with version as link text
+          - Pipe separator for multiple versions
+        </rules>
+      </element>
+    </structure>
+
+    <content_rules>
+      <rule priority="critical">No version numbers in body text (only header/footer)</rule>
+      <rule priority="critical">Never use the word "powerful" or similar marketing terms</rule>
+      <rule priority="high">Remove all PR numbers and links</rule>
+      <rule priority="high">Keep contributor thanks but remove PR references</rule>
+      <rule priority="high">No closing phrases like "Happy coding!"</rule>
+      <rule priority="medium">Use bullet points (•) instead of asterisks (*)</rule>
+      <rule priority="medium">Group minor items if over 2000 characters</rule>
+    </content_rules>
+
+    <transformations>
+      <from>([#PR](link))</from>
+      <to>(remove entirely)</to>
+      
+      <from>/path/to/feature</from>
+      <to>https://docs.roocode.com/path/to/feature</to>
+      
+      <from>## Major Features</from>
+      <to>## ✨ Feature Highlights</to>
+      
+      <from>* </from>
+      <to>• </to>
+      
+      <from>Happy coding! 🦘</from>
+      <to>(remove entirely)</to>
+    </transformations>
+  </discord_formatting>
+</content_standards>

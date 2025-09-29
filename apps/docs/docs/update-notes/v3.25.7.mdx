@@ -1,0 +1,68 @@
+---
+description: Three new AI providers join Roo Code - Claude Opus 4.1, Z AI, and Fireworks AI - plus quality of life improvements and bug fixes.
+keywords:
+  - roo code 3.25.7
+  - claude opus 4.1
+  - z ai provider
+  - fireworks ai
+  - multi-folder workspace
+  - checkpoint improvements
+image: /img/social-share.jpg
+---
+
+# Roo Code 3.25.7 Release Notes (2025-08-05)
+
+This release introduces Groq's GPT-OSS models, adds support for Claude Opus 4.1, brings two new AI providers (Z AI and Fireworks AI), and includes numerous quality of life improvements.
+
+## Groq GPT-OSS Models
+
+Groq now offers OpenAI's GPT-OSS models with impressive capabilities ([#6732](https://github.com/RooCodeInc/Roo-Code/pull/6732)):
+
+- **GPT-OSS-120b and GPT-OSS-20b**: Mixture of Experts models with 131K context windows
+- **High Performance**: Optimized for fast inference on Groq's infrastructure
+
+These models bring powerful open-source alternatives to Groq's already impressive lineup.
+
+## Z AI Provider
+
+Z AI (formerly Zhipu AI) is now available as a provider (thanks jues!) ([#6657](https://github.com/RooCodeInc/Roo-Code/pull/6657)):
+
+- **GLM-4.5 Series Models**: Access to GLM-4.5 and GLM-4.5-Air models
+- **Dual Regional Support**: Choose between international and mainland China endpoints
+- **Flexible Configuration**: Easy API key setup with regional selection
+
+> **📚 Documentation**: See [Z AI Provider Guide](/providers/zai) for setup instructions.
+
+## Claude Opus 4.1 Support
+
+We've added support for the new Claude Opus 4.1 model across multiple providers ([#6728](https://github.com/RooCodeInc/Roo-Code/pull/6728)):
+
+- **Available Providers**: Anthropic, Claude Code, Bedrock, Vertex AI, and LiteLLM
+- **Enhanced Capabilities**: 8192 max tokens, reasoning budget support, and prompt caching
+- **Pricing**: $15/M input, $75/M output, $18.75/M cache writes, $1.5/M cache reads
+
+Note: OpenRouter support for Claude Opus 4.1 is not yet available.
+
+## QOL Improvements
+
+* **Multi-Folder Workspace Support**: Code indexing now works correctly across all folders in multi-folder workspaces (thanks NaccOll!) ([#6204](https://github.com/RooCodeInc/Roo-Code/pull/6204)) - [Learn more](/features/codebase-indexing)
+* **Checkpoint Timing**: Checkpoints now save before file changes are made, allowing easy undo of unwanted modifications (thanks NaccOll!) ([#6359](https://github.com/RooCodeInc/Roo-Code/pull/6359)) - [Learn more](/features/checkpoints)
+* **Redesigned Task Header**: Cleaner, more intuitive interface with improved visual hierarchy (thanks brunobergher!) ([#6561](https://github.com/RooCodeInc/Roo-Code/pull/6561))
+* **Consistent Checkpoint Terminology**: Removed "Initial Checkpoint" terminology for better consistency ([#6643](https://github.com/RooCodeInc/Roo-Code/pull/6643))
+* **Responsive Mode Dropdowns**: Mode selection dropdowns now resize properly with the window (thanks AyazKaan!) ([#6422](https://github.com/RooCodeInc/Roo-Code/pull/6422))
+* **Performance Boost**: Significantly improved performance when processing long AI responses (thanks qdaxb!) ([#5341](https://github.com/RooCodeInc/Roo-Code/pull/5341))
+* **Cleaner Command Approval UI**: Simplified interface shows only unique command patterns ([#6623](https://github.com/RooCodeInc/Roo-Code/pull/6623))
+* **Smart Todo List Reminder**: Todo list reminder now respects configuration settings (thanks NaccOll!) ([#6411](https://github.com/RooCodeInc/Roo-Code/pull/6411)) - [Learn more](/features/task-todo-list)
+* **Cleaner Task History**: Improved task history display showing more content (3 lines), up to 5 tasks in preview, and simplified footer ([#6687](https://github.com/RooCodeInc/Roo-Code/pull/6687))
+* **Internal Architecture**: Improved event handling for better extensibility ([#6606](https://github.com/RooCodeInc/Roo-Code/pull/6606))
+
+## Provider Updates
+
+* **Fireworks AI Provider**: New provider offering hosted versions of popular open-source models like Kimi and Qwen (thanks ershang-fireworks!) ([#6652](https://github.com/RooCodeInc/Roo-Code/pull/6652))
+* **Cerebras GPT-OSS-120b**: Added OpenAI's GPT-OSS-120b model to Cerebras provider - free to use with 64K context and ~2800 tokens/sec ([#6734](https://github.com/RooCodeInc/Roo-Code/pull/6734))
+
+## Bug Fixes
+
+* **Mode Name Validation**: Prevents empty mode names from causing YAML parsing errors (thanks kfxmvp!) ([#5767](https://github.com/RooCodeInc/Roo-Code/pull/5767))
+* **Text Highlight Alignment**: Fixed misalignment in chat input area highlights (thanks NaccOll!) ([#6648](https://github.com/RooCodeInc/Roo-Code/pull/6648))
+* **MCP Server Setting**: Properly respects the "Enable MCP Server Creation" setting (thanks characharm!) ([#6613](https://github.com/RooCodeInc/Roo-Code/pull/6613))

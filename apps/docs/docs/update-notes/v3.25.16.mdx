@@ -1,0 +1,39 @@
+---
+description: Improves Ollama integration, adds GPT-5 chat support, and fixes multiple UI and stability issues.
+keywords:
+  - roo code 3.25.16
+  - ollama native api
+  - gpt-5 chat
+  - bug fixes
+image: /img/social-share.jpg
+---
+
+# Roo Code 3.25.16 Release Notes (2025-08-17)
+
+This release improves provider integrations with native Ollama API support and GPT-5 chat model, enhances task history handling, and fixes several UI and stability issues.
+
+## Provider Updates
+
+* **Native Ollama API**: Fixed Ollama models to use native API instead of OpenAI compatibility layer for improved performance and reliability ([#7137](https://github.com/RooCodeInc/Roo-Code/pull/7137))
+* **OpenAI GPT-5 Chat**: Added support for gpt-5-chat-latest model optimized for conversational AI and non-reasoning tasks ([#7058](https://github.com/RooCodeInc/Roo-Code/pull/7058))
+
+## QOL Improvements
+
+* **Enhanced Task History**: Made "enhance with task history" default to true for better context retention in conversations (thanks liwilliam2021!) ([#7140](https://github.com/RooCodeInc/Roo-Code/pull/7140))
+* **Improved Scrollbar**: Fixed scrollbar jumping in long conversations by removing the 500-message limit ([#7064](https://github.com/RooCodeInc/Roo-Code/pull/7064))
+
+## Bug Fixes
+
+* **Settings UI**: Fixed allowedMaxRequests and allowedMaxCost values not displaying properly (thanks chrarnoldus!) ([#6925](https://github.com/RooCodeInc/Roo-Code/pull/6925))
+* **Provider Settings**: Fixed save button not enabling for provider dropdown and checkbox changes ([#7113](https://github.com/RooCodeInc/Roo-Code/pull/7113))
+* **XML Entity Handling**: Fixed XML entity decoding issues in diff tools that caused content mismatches ([#7108](https://github.com/RooCodeInc/Roo-Code/pull/7108))
+* **Condensing State**: Fixed condensing state not resetting when switching between tasks (thanks f14XuanLv!) ([#6922](https://github.com/RooCodeInc/Roo-Code/pull/6922))
+* **Workspace Paths**: Fixed workspace path resolution in codebase search tool (thanks NaccOll!) ([#6902](https://github.com/RooCodeInc/Roo-Code/pull/6902))
+* **Multi-folder Workspaces**: Fixed checkpoint handling for multi-folder workspace configurations (thanks NaccOll!) ([#6903](https://github.com/RooCodeInc/Roo-Code/pull/6903))
+* **Diff Processing**: Added type checking to prevent errors when processing diff content ([#6906](https://github.com/RooCodeInc/Roo-Code/pull/6906))
+
+## Misc Improvements
+
+* **Task System**: Added API for resuming tasks, improved event handling, and enhanced metadata support ([#7122](https://github.com/RooCodeInc/Roo-Code/pull/7122), [#7128](https://github.com/RooCodeInc/Roo-Code/pull/7128), [#7117](https://github.com/RooCodeInc/Roo-Code/pull/7117), [#7092](https://github.com/RooCodeInc/Roo-Code/pull/7092))
+* **Web Infrastructure**: Improved sitemap generation and SEO metadata (thanks elianiva, abumalick!) ([#7102](https://github.com/RooCodeInc/Roo-Code/pull/7102), [#7096](https://github.com/RooCodeInc/Roo-Code/pull/7096), [#6206](https://github.com/RooCodeInc/Roo-Code/pull/6206))
+* **Task Execution**: Refactored task execution system for better call stack management (thanks catrielmuller!) ([#7035](https://github.com/RooCodeInc/Roo-Code/pull/7035))

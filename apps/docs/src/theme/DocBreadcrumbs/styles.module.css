@@ -1,0 +1,16 @@
+.breadcrumbsContainer {
+	--ifm-breadcrumb-size-multiplier: 0.8;
+	margin-bottom: 0.8rem;
+}
+
+.breadcrumbsWrapper {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 1rem;
+}
+
+.breadcrumbsWrapper .breadcrumbs {
+	margin: 0;
+	flex: 1;
+}

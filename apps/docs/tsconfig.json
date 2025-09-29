@@ -1,0 +1,14 @@
+{
+	// This file is not used in compilation. It is here just for a nice editor experience.
+	"extends": "@docusaurus/tsconfig",
+	"compilerOptions": {
+		"baseUrl": ".",
+		"paths": {
+			"@roo-code/types": ["../../packages/types/src/index.ts"],
+			"@site/*": ["./src/*"],
+			"@theme/*": ["./src/theme/*"],
+			"@theme-original/*": ["./node_modules/@docusaurus/theme-classic/lib/theme/*"]
+		}
+	},
+	"exclude": [".docusaurus", "build"]
+}

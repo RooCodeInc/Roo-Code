@@ -10,7 +10,7 @@ suite.skip("Roo Code Subtasks", () => {
 
 		const messages: Record<string, ClineMessage[]> = {}
 
-		api.on(RooCodeEventName.Message, ({ taskId, message }) => {
+		api.on(RooCodeEventName.Message, ({ taskId, message }: { taskId: string; message: ClineMessage }) => {
 			if (message.type === "say" && message.partial === false) {
 				messages[taskId] = messages[taskId] || []
 				messages[taskId].push(message)
@@ -37,7 +37,7 @@ suite.skip("Roo Code Subtasks", () => {
 		let spawnedTaskId: string | undefined = undefined
 
 		// Wait for the subtask to be spawned and then cancel it.
-		api.on(RooCodeEventName.TaskSpawned, (_, childTaskId) => (spawnedTaskId = childTaskId))
+		api.on(RooCodeEventName.TaskSpawned, (_: string, childTaskId: string) => (spawnedTaskId = childTaskId))
 		await waitFor(() => !!spawnedTaskId)
 		await sleep(1_000) // Give the task a chance to start and populate the history.
 		await api.cancelCurrentTask()

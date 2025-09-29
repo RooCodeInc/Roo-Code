@@ -1,0 +1,68 @@
+.container {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+}
+
+.githubButton,
+.installButton {
+	display: flex;
+	align-items: center;
+	gap: 0.375rem;
+	text-decoration: none;
+	font-size: 0.875rem;
+	font-weight: 500;
+	transition: color 0.2s ease;
+	white-space: nowrap;
+}
+
+.githubButton {
+	color: var(--ifm-color-gray-400);
+}
+
+.githubButton:hover {
+	color: var(--ifm-color-gray-200);
+	text-decoration: none;
+}
+
+.installButton {
+	background: hsl(var(--primary, 0 0% 9%));
+	color: hsl(var(--primary-foreground, 0 0% 98%));
+	border-radius: 0.375rem;
+	padding: 0.375rem 0.75rem;
+	transition: all 0.2s ease;
+}
+
+.installButton:hover {
+	background: hsl(var(--primary-hover, 0 0% 9% / 0.9));
+	text-decoration: none;
+	color: hsl(var(--primary-foreground, 0 0% 98%));
+	scale: 1.05;
+}
+
+[data-theme="dark"] .installButton {
+	background: hsl(var(--primary, 0 0% 98%));
+	color: hsl(var(--primary-foreground, 0 0% 9%));
+}
+
+[data-theme="dark"] .installButton:hover {
+	background: hsl(var(--primary-dark-hover, 0 0% 98% / 0.9));
+	color: hsl(var(--primary-foreground, 0 0% 9%));
+}
+
+.icon {
+	width: 1rem;
+	height: 1rem;
+	flex-shrink: 0;
+}
+
+.separator {
+	font-weight: 900;
+}
+
+/* Hide on mobile */
+@media (max-width: 996px) {
+	.container {
+		display: none;
+	}
+}

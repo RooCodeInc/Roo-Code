@@ -1,0 +1,2374 @@
+/**
+ * Any CSS included here will be global. The classic template
+ * bundles Infima by default. Infima is a CSS framework designed to
+ * work well for content-centric websites.
+ */
+
+/* Light mode color system */
+:root {
+	--background: 0 0% 100%;
+	--foreground: 0 0% 3.9%;
+	--card: 0 0% 100%;
+	--card-foreground: 0 0% 3.9%;
+	--popover: 0 0% 100%;
+	--popover-foreground: 0 0% 3.9%;
+	--primary: 0 0% 9%;
+	--primary-foreground: 0 0% 98%;
+	--secondary: 0 0% 96.1%;
+	--secondary-foreground: 0 0% 9%;
+	--muted: 0 0% 96.1%;
+	--muted-foreground: 0 0% 45.1%;
+	--accent: 0 0% 96.1%;
+	--accent-foreground: 0 0% 9%;
+	--ring: 0 0% 3.9%;
+	--destructive: 0 84.2% 60.2%;
+	--destructive-foreground: 0 0% 98%;
+	--border: 0 0% 89.8%;
+	--input: 0 0% 89.8%;
+	--ring: 0 0% 3.9%;
+	--radius: 0.5rem;
+
+	--chart-1: 0 100% 50%;
+	--chart-2: 29 100% 50%;
+	--chart-3: 51 100% 50%;
+	--chart-4: 83 100% 50%;
+	--chart-5: 115 100% 50%;
+
+	/* GitHub install button colors */
+	--primary-hover: 0 0% 9% / 0.9;
+	--ifm-color-gray-400: #9ca3af;
+	--ifm-color-gray-200: #e5e7eb;
+
+	/* Docusaurus variables for light theme */
+	--ifm-color-primary: #60a5fa; /* Blue like roocode.com */
+	--ifm-color-primary-dark: #3b82f6;
+	--ifm-color-primary-darker: #2563eb;
+	--ifm-color-primary-darkest: #1d4ed8;
+	--ifm-color-primary-light: #93bbfc;
+	--ifm-color-primary-lighter: #a5c6fd;
+	--ifm-color-primary-lightest: #c7dbfe;
+	--ifm-code-font-size: 95%;
+	--docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+	--ifm-background-color: hsl(var(--background));
+	--ifm-font-color-base: hsl(var(--foreground));
+}
+
+/* Dark mode - force pure black background */
+[data-theme="dark"] {
+	--background: 0 0% 0%;
+	--foreground: 0 0% 98%;
+	--card: 0 0% 4%;
+	--card-foreground: 0 0% 98%;
+	--popover: 0 0% 4%;
+	--popover-foreground: 0 0% 98%;
+	--primary: 0 0% 98%; /* White for dark mode */
+	--primary-foreground: 0 0% 9%; /* Dark text on white */
+	--secondary: 0 0% 8%;
+	--secondary-foreground: 0 0% 98%;
+	--muted: 0 0% 8%;
+	--muted-foreground: 0 0% 70%; /* Brighter for better readability */
+	--accent: 0 0% 14.9%;
+	--accent-foreground: 0 0% 98%;
+	--ring: 0 0% 83.1%;
+	--destructive: 0 62.8% 30.6%;
+	--destructive-foreground: 0 0% 98%;
+	--border: 0 0% 14.9%;
+	--input: 0 0% 14.9%;
+	--ring: 0 0% 83.1%;
+
+	/* GitHub install button colors for dark mode */
+	--primary-dark-hover: 0 0% 98% / 0.9;
+	--ifm-color-gray-400: #9ca3af;
+	--ifm-color-gray-200: #e5e7eb;
+
+	--ifm-background-color: #000000;
+	--ifm-background-surface-color: #000000;
+	/* Keep Docusaurus primary as blue for links */
+	--ifm-color-primary: #60a5fa;
+	--ifm-color-primary-dark: #3b82f6;
+	--ifm-color-primary-darker: #2563eb;
+	--ifm-color-primary-darkest: #1d4ed8;
+	--ifm-color-primary-light: #93bbfc;
+	--ifm-color-primary-lighter: #a5c6fd;
+	--ifm-color-primary-lightest: #c7dbfe;
+}
+
+/* Force black background in dark mode */
+[data-theme="dark"] html,
+[data-theme="dark"] body {
+	background-color: #000000 !important;
+}
+
+/* Ensure main content area is also black */
+.main-wrapper {
+	background-color: #000000 !important;
+	position: relative;
+	z-index: 1;
+}
+
+/* Ensure all content is above the animated background */
+#__docusaurus {
+	position: relative;
+	z-index: 1;
+}
+
+/* Exact utility classes from roocode.com */
+.roo-gradient-heading {
+	background: linear-gradient(to bottom, hsl(var(--foreground)), hsl(var(--foreground) / 0.7));
+	background-clip: text;
+	-webkit-background-clip: text;
+	color: transparent;
+	font-size: 2.25rem;
+	font-weight: 700;
+	letter-spacing: -0.025em;
+}
+
+@media (min-width: 640px) {
+	.roo-gradient-heading {
+		font-size: 3rem;
+	}
+}
+
+.roo-text-gradient-blue {
+	background: linear-gradient(to right, rgb(96, 165, 250), rgb(34, 211, 238));
+	background-clip: text;
+	-webkit-background-clip: text;
+	color: transparent;
+}
+
+.roo-feature-card {
+	position: relative;
+	height: 100%;
+	border-radius: calc(var(--radius) + 4px);
+	border: 1px solid hsl(var(--border) / 0.5);
+	background: hsl(var(--background) / 0.3);
+	backdrop-filter: blur(16px);
+	padding: 2rem;
+	transition: border-color 0.3s ease;
+}
+
+.roo-feature-card:hover {
+	border-color: hsl(var(--border));
+}
+
+.roo-feature-card::before {
+	content: "";
+	position: absolute;
+	inset: -1px;
+	border-radius: calc(var(--radius) + 4px);
+	background: linear-gradient(to right, rgb(59, 130, 246, 0.3), rgb(14, 165, 233, 0.3), rgb(168, 85, 247, 0.3));
+	opacity: 0;
+	filter: blur(2px);
+	transition: opacity 0.5s ease;
+	z-index: -1;
+}
+
+.roo-feature-card:hover::before {
+	opacity: 1;
+}
+
+/* Exact background blur effects from sections */
+.roo-section-background {
+	position: relative;
+	overflow: hidden;
+	border-top: 1px solid hsl(var(--border));
+	padding: 8rem 0;
+}
+
+.roo-section-background::before {
+	content: "";
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 800px;
+	height: 800px;
+	background: radial-gradient(circle, rgb(59, 130, 246, 0.1) 0%, transparent 70%);
+	border-radius: 50%;
+	transform: translate(-50%, -50%);
+	filter: blur(120px);
+	z-index: -1;
+}
+
+/* Container system */
+.roo-container {
+	margin: 0 auto;
+	max-width: 1200px;
+	padding-left: 1rem;
+	padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+	.roo-container {
+		padding-left: 1.5rem;
+		padding-right: 1.5rem;
+	}
+}
+
+@media (min-width: 1024px) {
+	.roo-container {
+		padding-left: 2rem;
+		padding-right: 2rem;
+	}
+}
+
+/* Exact animations from roocode.com */
+@keyframes fade-in {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+@keyframes pulse-glow {
+	0%,
+	100% {
+		opacity: 0.6;
+	}
+	50% {
+		opacity: 0.8;
+	}
+}
+
+.roo-fade-in {
+	animation: fade-in 0.5s ease-out;
+}
+
+.roo-pulse-glow {
+	animation: pulse-glow 3s infinite;
+}
+
+/* Ensure animated background is behind content */
+body {
+	position: relative;
+}
+
+/* Ensure no other backgrounds interfere */
+body,
+html,
+#__docusaurus,
+.main-wrapper,
+[class*="docusaurus"],
+[class*="theme-doc"],
+.navbar__inner,
+article,
+main,
+.container,
+.container-fluid,
+.row,
+.col {
+	background: transparent !important;
+	background-color: transparent !important;
+}
+
+/* Specifically target the root layout */
+.layout-wrapper,
+.layout-main,
+[class*="layout"],
+[class*="wrapper"],
+[class*="container"] {
+	background: transparent !important;
+	background-color: transparent !important;
+}
+
+/* Target any potential viewport-sized backgrounds */
+div[style*="height: 100vh"],
+div[style*="height:100vh"],
+div[style*="min-height: 100vh"],
+div[style*="min-height:100vh"] {
+	background: transparent !important;
+	background-color: transparent !important;
+}
+
+/* Hide unwanted navigation items */
+.menu__list-item:has(> .menu__link[href="/docs"]),
+.menu__list-item:has(> .menu__link[href="/tutorial"]) {
+	display: none;
+}
+
+/* Hide unwanted footer items */
+.footer__link-item[href="/docs"],
+.footer__link-item[href="/tutorial"] {
+	display: none;
+}
+
+/* Video Grid Styles with Roo Code styling */
+.video-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+	gap: 2rem;
+	margin: 2rem 0;
+	max-width: 1200px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.video-container {
+	position: relative;
+	width: 100%;
+	padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+	border-radius: calc(var(--radius) + 4px);
+	overflow: hidden;
+	border: 1px solid hsl(var(--border) / 0.5);
+	background: hsl(var(--background) / 0.3);
+	backdrop-filter: blur(16px);
+}
+
+.video-container iframe {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	border: 0;
+	border-radius: calc(var(--radius) + 4px);
+}
+
+.video-info {
+	margin-top: 0.75rem;
+}
+
+.video-title {
+	font-weight: 500;
+	color: var(--ifm-heading-color);
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+	line-height: 1.4;
+	max-height: 2.8em; /* 2 lines * 1.4 line-height */
+}
+
+/* Basic Codicon styles */
+.codicon {
+	vertical-align: middle;
+	line-height: 1;
+}
+
+/* Enhanced code blocks with Roo Code styling */
+pre {
+	white-space: pre-wrap !important;
+	word-wrap: break-word !important;
+	overflow-x: auto;
+	border-radius: calc(var(--radius) + 4px) !important;
+	border: 1px solid hsl(var(--border) / 0.5) !important;
+	background: hsl(var(--background) / 0.8) !important;
+	backdrop-filter: blur(16px);
+}
+
+/* Enhanced container system */
+:root {
+	--ifm-container-width: 1400px; /* Increased from 1200px for wider content */
+}
+
+/* Exact navbar styling from roocode.com */
+.navbar {
+	position: sticky !important;
+	top: 0 !important;
+	z-index: 50 !important;
+	height: 64px !important; /* 4rem */
+	border-bottom: 1px solid hsl(var(--border)) !important;
+	background-color: hsl(var(--background) / 0.8) !important; /* 80% opacity like roocode.com */
+	backdrop-filter: blur(12px) !important;
+	-webkit-backdrop-filter: blur(12px) !important;
+	padding: 0 !important;
+}
+
+/* Remove backdrop-filter on mobile to fix menu stacking context issues */
+@media (max-width: 996px) {
+	.navbar {
+		backdrop-filter: none !important;
+		-webkit-backdrop-filter: none !important;
+	}
+
+	/* Make mobile navigation menu background solid */
+	.navbar-sidebar {
+		background-color: hsl(var(--background)) !important;
+	}
+
+	.navbar-sidebar__backdrop {
+		background-color: rgba(0, 0, 0, 0.6) !important;
+	}
+
+	.navbar-sidebar__brand,
+	.navbar-sidebar__items {
+		background-color: hsl(var(--background)) !important;
+	}
+
+	/* Ensure mobile menu items over content area are solid */
+	.navbar-sidebar__item,
+	.navbar__item,
+	.menu {
+		background-color: hsl(var(--background)) !important;
+	}
+
+	/* Target the actual menu container in mobile */
+	.navbar-sidebar .menu {
+		background-color: hsl(var(--background)) !important;
+	}
+
+	/* Ensure dropdown menus are also solid */
+	.navbar__link--has-icon,
+	.dropdown__menu {
+		background-color: hsl(var(--background)) !important;
+	}
+
+	/* Hide "Back to main menu" button on mobile */
+	.navbar-sidebar__back {
+		display: none !important;
+	}
+}
+
+/* Remove backgrounds from inner navbar elements only */
+.navbar__inner,
+.navbar__items,
+.navbar__brand {
+	background: transparent !important;
+	background-color: transparent !important;
+}
+
+/* Ensure proper dark mode border color */
+[data-theme="dark"] .navbar {
+	border-bottom-color: hsl(0 0% 14.9%) !important;
+	background-color: rgba(0, 0, 0, 0.8) !important; /* 80% black opacity */
+}
+
+/* Match roocode.com's container system */
+.navbar__inner {
+	max-width: 1400px; /* Match the container width */
+	margin: 0 auto;
+	padding: 0 1rem; /* px-4 */
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+@media (min-width: 640px) {
+	.navbar__inner {
+		padding: 0 1.5rem; /* sm:px-6 */
+	}
+}
+
+@media (min-width: 1024px) {
+	.navbar__inner {
+		padding: 0 2rem; /* lg:px-8 */
+	}
+}
+
+/* Logo height */
+.navbar__logo {
+	height: 32px; /* h-8 */
+	width: auto;
+}
+
+/* Footer styling */
+.footer {
+	padding-left: calc((100vw - var(--ifm-container-width)) / 2);
+	padding-right: calc((100vw - var(--ifm-container-width)) / 2);
+	background: hsl(var(--background) / 0.95) !important;
+	backdrop-filter: blur(20px);
+	border: none !important;
+}
+
+/* Center footer content on mobile */
+@media (max-width: 996px) {
+	.footer {
+		text-align: center !important;
+		padding-left: 1rem !important;
+		padding-right: 1rem !important;
+	}
+
+	.footer__items {
+		justify-content: center !important;
+		flex-direction: column !important;
+		align-items: center !important;
+	}
+
+	.footer__col {
+		text-align: center !important;
+		margin-bottom: 2rem !important;
+		width: 100% !important;
+		display: flex !important;
+		flex-direction: column !important;
+		align-items: center !important;
+	}
+
+	.footer__title {
+		text-align: center !important;
+		margin-bottom: 1rem !important;
+	}
+
+	.footer__links {
+		text-align: center !important;
+		display: flex !important;
+		flex-direction: column !important;
+		align-items: center !important;
+		width: 100% !important;
+	}
+
+	.footer__link-item {
+		display: block !important;
+		text-align: center !important;
+		margin: 0.5rem 0 !important;
+		width: auto !important;
+	}
+
+	/* Hide external link icons on mobile footer */
+	.footer__link-item svg,
+	.footer__link-item .icon,
+	.footer__link-item::after {
+		display: none !important;
+	}
+}
+
+.main-wrapper {
+	max-width: var(--ifm-container-width);
+	margin: 0 auto;
+	position: relative;
+	z-index: 1;
+	background: transparent;
+	min-height: 100vh;
+}
+
+/* Clean sidebar like roocode.com */
+.theme-doc-sidebar-container {
+	background: hsl(var(--background) / 0.7) !important;
+	backdrop-filter: blur(20px);
+	border-right: 1px solid hsl(var(--border) / 0.1) !important;
+}
+
+/* Clean TOC */
+.theme-doc-toc-desktop {
+	background: transparent !important;
+	border: none !important;
+}
+
+/* Transparent containers */
+.container-fluid,
+.container {
+	background: transparent;
+}
+
+/* Feature cards with subtle backgrounds */
+.roo-feature-card {
+	background: hsl(var(--background) / 0.4) !important;
+	backdrop-filter: blur(20px);
+	border: 1px solid hsl(var(--border) / 0.2);
+}
+
+.roo-section-background {
+	background: transparent !important;
+}
+
+/* Ensure dark theme by default */
+html,
+body {
+	background: hsl(var(--background)) !important;
+	color: hsl(var(--foreground)) !important;
+	margin: 0;
+	padding: 0;
+	overflow-x: hidden;
+}
+
+/* Ensure the main docusaurus wrapper doesn't have a conflicting background */
+div#__docusaurus {
+	background: transparent !important;
+}
+
+/* Make all layout containers transparent */
+div[class*="layout"],
+div[class*="main-wrapper"],
+.main-wrapper > .container,
+.container-fluid {
+	background: transparent !important;
+}
+
+/* Override Docusaurus defaults for dark theme */
+html[data-theme="dark"],
+html[data-theme="light"] {
+	--ifm-background-color: hsl(var(--background));
+	--ifm-font-color-base: hsl(var(--foreground));
+	--ifm-heading-color: hsl(var(--foreground));
+}
+
+/* Set default theme to dark to match roocode.com */
+html {
+	--ifm-background-color: hsl(var(--background));
+	--ifm-font-color-base: hsl(var(--foreground));
+	--ifm-heading-color: hsl(var(--foreground));
+}
+
+/* Enhanced cards and content blocks */
+.alert {
+	border-radius: calc(var(--radius) + 4px) !important;
+	border: 1px solid hsl(var(--border) / 0.5) !important;
+	background: hsl(var(--background) / 0.8) !important;
+	backdrop-filter: blur(16px);
+}
+
+/* Enhanced buttons */
+.button {
+	border-radius: calc(var(--radius) + 4px) !important;
+	backdrop-filter: blur(16px);
+	transition: all 0.3s ease !important;
+}
+
+.button:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* ============================================
+   TYPOGRAPHY SYSTEM FROM ROOCODE.COM
+   ============================================ */
+
+/* Import Inter font from Google Fonts */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap");
+
+/* Set Inter as primary font */
+body {
+	font-family: Inter, sans-serif;
+}
+
+/* Monospace font for code */
+.font-mono {
+	font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+/* ============================================
+   HEADING STYLES
+   ============================================ */
+
+/* Primary hero heading - responsive scaling */
+.roo-hero-heading {
+	font-size: 1.875rem; /* text-3xl */
+	font-weight: 700; /* font-bold */
+	letter-spacing: -0.025em; /* tracking-tight */
+	line-height: 1.2;
+}
+
+@media (min-width: 640px) {
+	.roo-hero-heading {
+		font-size: 2.25rem;
+	} /* sm:text-4xl */
+}
+
+@media (min-width: 768px) {
+	.roo-hero-heading {
+		font-size: 3rem;
+	} /* md:text-5xl */
+}
+
+@media (min-width: 1024px) {
+	.roo-hero-heading {
+		font-size: 3.75rem;
+	} /* lg:text-6xl */
+}
+
+/* Gradient text effect for hero */
+.roo-gradient-text {
+	background: linear-gradient(to right, rgb(96, 165, 250), rgb(34, 211, 238));
+	background-clip: text;
+	-webkit-background-clip: text;
+	color: transparent;
+}
+
+/* Section headings */
+.roo-section-heading {
+	font-size: 1.875rem; /* text-3xl */
+	font-weight: 700; /* font-bold */
+	letter-spacing: -0.025em; /* tracking-tight */
+}
+
+@media (min-width: 640px) {
+	.roo-section-heading {
+		font-size: 2.25rem;
+	} /* sm:text-4xl */
+}
+
+/* Gradient section headings */
+.roo-section-heading-gradient {
+	background: linear-gradient(to bottom, hsl(var(--foreground)), hsl(var(--foreground) / 0.7));
+	background-clip: text;
+	-webkit-background-clip: text;
+	color: transparent;
+	font-size: 2.25rem; /* text-4xl */
+	font-weight: 700; /* font-bold */
+	letter-spacing: -0.025em; /* tracking-tight */
+}
+
+@media (min-width: 640px) {
+	.roo-section-heading-gradient {
+		font-size: 3rem;
+	} /* sm:text-5xl */
+}
+
+/* Subsection headings */
+.roo-subsection-heading {
+	font-size: 1.25rem; /* text-xl */
+	font-weight: 500; /* font-medium */
+	color: hsl(var(--foreground) / 0.9);
+	margin-bottom: 0.75rem;
+}
+
+/* Card titles */
+.roo-card-title {
+	font-size: 1.25rem; /* text-xl */
+	font-weight: 700; /* font-bold */
+	margin-bottom: 0.5rem;
+}
+
+/* Feature card titles */
+.roo-feature-title {
+	font-size: 1.25rem; /* text-xl */
+	font-weight: 500; /* font-medium */
+	color: hsl(var(--foreground) / 0.9);
+	margin-bottom: 0.75rem;
+}
+
+/* ============================================
+   BODY TEXT STYLES
+   ============================================ */
+
+/* Primary body text */
+.roo-body-text {
+	font-size: 1rem; /* text-base */
+	color: hsl(var(--muted-foreground));
+	margin-top: 1rem;
+	max-width: 28rem; /* max-w-md */
+}
+
+@media (min-width: 640px) {
+	.roo-body-text {
+		margin-top: 1.5rem; /* sm:mt-6 */
+		font-size: 1.125rem; /* sm:text-lg */
+	}
+}
+
+/* Lead text / larger body text */
+.roo-lead-text {
+	font-size: 1.125rem; /* text-lg */
+	color: hsl(var(--muted-foreground));
+	margin-top: 1.5rem;
+}
+
+/* Feature descriptions */
+.roo-feature-description {
+	line-height: 1.625; /* leading-relaxed */
+	color: hsl(var(--muted-foreground));
+}
+
+/* Small descriptive text */
+.roo-small-text {
+	font-size: 0.875rem; /* text-sm */
+	color: hsl(var(--muted-foreground));
+	line-height: 1.5; /* leading-6 */
+}
+
+/* Footer text */
+.roo-footer-text {
+	font-size: 0.875rem; /* text-sm */
+	line-height: 1.5; /* leading-6 */
+	color: hsl(var(--muted-foreground));
+}
+
+/* Copyright text */
+.roo-copyright {
+	font-size: 0.875rem; /* text-sm */
+	line-height: 1.25; /* leading-5 */
+	color: hsl(var(--muted-foreground));
+	text-align: center;
+}
+
+/* ============================================
+   CODE & MONOSPACE TEXT
+   ============================================ */
+
+/* Code blocks */
+.roo-code-block {
+	font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+	font-size: 0.75rem; /* text-xs */
+	color: hsl(var(--muted-foreground));
+	white-space: pre;
+	display: block;
+	overflow-y: hidden;
+	height: 25vh;
+}
+
+@media (min-width: 640px) {
+	.roo-code-block {
+		font-size: 0.875rem; /* sm:text-sm */
+	}
+}
+
+@media (min-width: 1024px) {
+	.roo-code-block {
+		max-height: 50vh; /* lg:max-h-[50vh] */
+	}
+}
+
+/* ============================================
+   LINK STYLES
+   ============================================ */
+
+/* Main navigation links */
+.roo-nav-link {
+	font-size: 0.875rem; /* text-sm */
+	font-weight: 500; /* font-medium */
+	color: hsl(var(--muted-foreground));
+	transition:
+		transform 200ms,
+		color 200ms;
+	text-decoration: none;
+}
+
+.roo-nav-link:hover {
+	transform: scale(1.05); /* hover:scale-105 */
+	color: hsl(var(--foreground)); /* hover:text-foreground */
+}
+
+/* Mobile navigation links */
+.roo-mobile-nav-link {
+	width: 100%;
+	padding: 0.75rem 2rem; /* py-3 px-8 */
+	text-align: left;
+	font-size: 0.875rem; /* text-sm */
+	font-weight: 500; /* font-medium */
+	color: hsl(var(--foreground) / 0.8);
+	transition:
+		background-color 200ms,
+		color 200ms;
+	text-decoration: none;
+}
+
+.roo-mobile-nav-link:hover {
+	background-color: hsl(var(--accent)); /* hover:bg-accent */
+	color: hsl(var(--foreground)); /* hover:text-foreground */
+}
+
+/* Footer section links */
+.roo-footer-link {
+	font-size: 0.875rem; /* text-sm */
+	line-height: 1.5; /* leading-6 */
+	color: hsl(var(--muted-foreground));
+	transition: color 200ms;
+	text-decoration: none;
+}
+
+.roo-footer-link:hover {
+	color: hsl(var(--foreground)); /* hover:text-foreground */
+}
+
+/* Social media links */
+.roo-social-link {
+	color: hsl(var(--muted-foreground));
+	transition: color 200ms;
+	text-decoration: none;
+}
+
+.roo-social-link:hover {
+	color: hsl(var(--foreground)); /* hover:text-foreground */
+}
+
+/* GitHub stats link */
+.roo-github-link {
+	display: flex;
+	align-items: center;
+	gap: 0.375rem; /* gap-1.5 */
+	font-size: 0.875rem; /* text-sm */
+	font-weight: 500; /* font-medium */
+	color: hsl(var(--muted-foreground));
+	transition: color 200ms;
+	text-decoration: none;
+}
+
+.roo-github-link:hover {
+	color: hsl(var(--foreground)); /* hover:text-foreground */
+}
+
+/* Documentation/external links */
+.roo-external-link {
+	color: hsl(var(--muted-foreground));
+	transition:
+		transform 200ms,
+		color 200ms;
+	text-decoration: none;
+}
+
+.roo-external-link:hover {
+	transform: scale(1.05); /* hover:scale-105 */
+	color: hsl(var(--foreground)); /* hover:text-foreground */
+}
+
+/* Email links */
+.roo-email-link {
+	font-size: 0.875rem; /* text-sm */
+	line-height: 1.5; /* leading-6 */
+	color: hsl(var(--muted-foreground));
+	transition: color 200ms;
+	text-decoration: none;
+}
+
+.roo-email-link:hover {
+	color: hsl(var(--foreground)); /* hover:text-foreground */
+}
+
+/* Scroll to section links */
+.roo-scroll-link {
+	color: hsl(var(--muted-foreground));
+	transition:
+		transform 200ms,
+		color 200ms;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+.roo-scroll-link:hover {
+	transform: scale(1.05); /* hover:scale-105 */
+	color: hsl(var(--foreground)); /* hover:text-foreground */
+}
+
+/* Footer scroll links */
+.roo-footer-scroll-link {
+	font-size: 0.875rem; /* text-sm */
+	line-height: 1.5; /* leading-6 */
+	color: hsl(var(--muted-foreground));
+	transition: color 200ms;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+.roo-footer-scroll-link:hover {
+	color: hsl(var(--foreground)); /* hover:text-foreground */
+}
+
+/* ============================================
+   TEXT COLORS & STATES
+   ============================================ */
+
+/* Text color classes */
+.roo-text-foreground {
+	color: hsl(var(--foreground));
+}
+
+.roo-text-muted {
+	color: hsl(var(--muted-foreground));
+}
+
+.roo-text-foreground-90 {
+	color: hsl(var(--foreground) / 0.9);
+}
+
+.roo-text-foreground-80 {
+	color: hsl(var(--foreground) / 0.8);
+}
+
+/* Brand colors for accent text */
+.roo-text-blue-400 {
+	color: rgb(96, 165, 250);
+}
+
+.roo-text-cyan-400 {
+	color: rgb(34, 211, 238);
+}
+
+.roo-text-green-400 {
+	color: rgb(74, 222, 128);
+}
+
+.roo-text-green-500 {
+	color: rgb(34, 197, 94);
+}
+
+.roo-text-red-500 {
+	color: rgb(239, 68, 68);
+}
+
+/* Specific text colors used in components */
+.roo-text-gray-400 {
+	color: rgb(156, 163, 175);
+}
+
+.roo-text-gray-200 {
+	color: rgb(229, 231, 235);
+}
+
+/* ============================================
+   BUTTON TYPOGRAPHY & LINKS
+   ============================================ */
+
+/* Primary action buttons */
+.roo-button-primary {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem; /* gap-2 */
+	white-space: nowrap;
+	border-radius: calc(var(--radius) - 2px);
+	font-size: 0.875rem; /* text-sm */
+	font-weight: 500; /* font-medium */
+	transition: color 200ms;
+	background-color: hsl(var(--primary));
+	color: hsl(var(--primary-foreground));
+	box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+	height: 2.25rem; /* h-9 */
+	padding: 0.5rem 1rem; /* px-4 py-2 */
+	text-decoration: none;
+}
+
+.roo-button-primary:hover {
+	background-color: hsl(var(--primary) / 0.9); /* hover:bg-primary/90 */
+}
+
+/* Large buttons */
+.roo-button-lg {
+	height: 2.5rem; /* h-10 */
+	border-radius: calc(var(--radius) - 2px);
+	padding: 0 2rem; /* px-8 */
+}
+
+/* Button with custom hover states */
+.roo-button-custom-hover {
+	width: 100%;
+	transition: background-color 200ms;
+}
+
+.roo-button-custom-hover:hover {
+	background-color: rgb(229, 231, 235); /* hover:bg-gray-200 */
+}
+
+[data-theme="dark"] .roo-button-custom-hover {
+	background-color: white;
+	color: black;
+}
+
+/* Outline buttons */
+.roo-button-outline {
+	border: 1px solid hsl(var(--input));
+	background-color: hsl(var(--background));
+	box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+	transition:
+		background-color 200ms,
+		color 200ms;
+}
+
+.roo-button-outline:hover {
+	background-color: hsl(var(--accent)); /* hover:bg-accent */
+	color: hsl(var(--accent-foreground)); /* hover:text-accent-foreground */
+}
+
+/* Install button with icon */
+.roo-install-button {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.375rem; /* gap-1.5 */
+	border-radius: 9999px; /* rounded-full */
+	background-color: hsl(var(--primary));
+	padding: 0.375rem 0.75rem; /* px-3 py-1.5 */
+	font-size: 0.875rem; /* text-sm */
+	font-weight: 500; /* font-medium */
+	color: hsl(var(--primary-foreground));
+	transition: background-color 200ms;
+	text-decoration: none;
+}
+
+.roo-install-button:hover {
+	background-color: hsl(var(--primary) / 0.9); /* hover:bg-primary/90 */
+}
+
+/* Font weight for separator dots */
+.roo-font-black {
+	font-weight: 900; /* font-black */
+}
+
+/* ============================================
+   INTERACTIVE STATES
+   ============================================ */
+
+/* Scale hover effect for navigation */
+.roo-hover-scale {
+	transition:
+		transform 200ms,
+		color 200ms;
+}
+
+.roo-hover-scale:hover {
+	transform: scale(1.05); /* hover:scale-105 */
+}
+
+/* Background hover effects */
+.roo-hover-bg {
+	transition: background-color 200ms;
+}
+
+.roo-hover-bg:hover {
+	background-color: hsl(var(--accent)); /* hover:bg-accent */
+}
+
+/* Card hover effects */
+.roo-card-hover {
+	transition: border-color 300ms;
+}
+
+.roo-card-hover:hover {
+	border-color: hsl(var(--border)); /* hover:border-border */
+}
+
+/* Focus visible states */
+.roo-focus-visible {
+	outline: none;
+}
+
+.roo-focus-visible:focus-visible {
+	outline: 2px solid hsl(var(--ring));
+	outline-offset: 2px;
+}
+
+/* ============================================
+   RESPONSIVE TYPOGRAPHY
+   ============================================ */
+
+/* Text that hides on small screens */
+.roo-hide-small {
+	display: none;
+}
+
+@media (min-width: 320px) {
+	.roo-hide-small {
+		display: inline; /* max-[320px]:hidden */
+	}
+}
+
+/* Large screen only text */
+.roo-lg-only {
+	display: none;
+}
+
+@media (min-width: 1024px) {
+	.roo-lg-only {
+		display: inline; /* max-lg:hidden */
+	}
+}
+
+/* Font size adjustments for mobile install buttons */
+@media (max-width: 1023px) {
+	.roo-install-mobile {
+		font-size: 0.75rem; /* max-lg:text-xs */
+	}
+}
+
+/* ============================================
+   APPLY TYPOGRAPHY TO DOCUSAURUS ELEMENTS
+   ============================================ */
+
+/* Apply Inter font to all Docusaurus elements */
+.navbar,
+.footer,
+.theme-doc-markdown,
+.theme-doc-sidebar-container,
+.theme-doc-toc-desktop,
+.menu,
+.table-of-contents {
+	font-family: Inter, sans-serif !important;
+}
+
+/* Apply navigation link styles */
+.navbar__link {
+	font-size: 0.875rem; /* text-sm */
+	font-weight: 500; /* font-medium */
+	color: hsl(var(--muted-foreground));
+	transition:
+		transform 200ms,
+		color 200ms;
+	text-decoration: none;
+}
+
+.navbar__link:hover {
+	transform: scale(1.05);
+	color: hsl(var(--foreground));
+	background: transparent !important; /* Remove any hover backgrounds */
+}
+
+/* Apply footer link styles */
+.footer__link-item {
+	font-size: 0.875rem;
+	line-height: 1.5;
+	color: hsl(var(--muted-foreground));
+	transition: color 200ms;
+}
+
+.footer__link-item:hover {
+	color: hsl(var(--foreground));
+}
+
+/* Docusaurus Search Box - Dark Theme Styling */
+.navbar__search-input {
+	background: none;
+	background-color: hsl(var(--background) / 0.5) !important;
+	border: 1px solid hsl(var(--border) / 0.5) !important;
+	border-radius: calc(var(--radius) + 4px) !important;
+	color: hsl(var(--foreground)) !important;
+	font-size: 0.875rem !important;
+	padding: 0.5rem 1rem !important;
+	transition: all 200ms ease !important;
+	backdrop-filter: blur(16px) !important;
+	-webkit-backdrop-filter: blur(16px) !important;
+}
+
+/* Search box hover and focus states */
+.navbar__search-input:hover {
+	border-color: hsl(var(--border)) !important;
+	background-color: hsl(var(--background) / 0.7) !important;
+}
+
+.navbar__search-input:focus {
+	outline: none !important;
+	border-color: hsl(var(--foreground) / 0.5) !important;
+	background-color: hsl(var(--background) / 0.8) !important;
+	box-shadow: 0 0 0 2px hsl(var(--foreground) / 0.1) !important;
+}
+
+/* Search box placeholder */
+.navbar__search-input::placeholder {
+	color: hsl(var(--muted-foreground)) !important;
+	opacity: 0.7 !important;
+}
+
+/* Search button/icon styling */
+.navbar__search-button {
+	background: transparent !important;
+	border: none !important;
+	color: hsl(var(--muted-foreground)) !important;
+	transition: color 200ms ease !important;
+}
+
+.navbar__search-button:hover {
+	color: hsl(var(--foreground)) !important;
+}
+
+/* If using Algolia DocSearch */
+.DocSearch-Button {
+	background: hsl(var(--background) / 0.5) !important;
+	border: 1px solid hsl(var(--border) / 0.5) !important;
+	border-radius: calc(var(--radius) + 4px) !important;
+	color: hsl(var(--muted-foreground)) !important;
+	font-size: 0.875rem !important;
+	padding: 0 1rem !important;
+	height: 36px !important;
+	transition: all 200ms ease !important;
+	backdrop-filter: blur(16px) !important;
+	-webkit-backdrop-filter: blur(16px) !important;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+}
+
+/* Center the search icon when button is minimized */
+.DocSearch-Search-Icon {
+	margin: 0 auto !important;
+}
+
+/* Light colored search icon in dark mode */
+[data-theme="dark"] .DocSearch-Search-Icon {
+	color: hsl(var(--foreground) / 0.8) !important;
+	fill: hsl(var(--foreground) / 0.8) !important;
+}
+
+[data-theme="dark"] .DocSearch-Button .DocSearch-Search-Icon {
+	color: hsl(var(--foreground) / 0.8) !important;
+	fill: hsl(var(--foreground) / 0.8) !important;
+}
+
+[data-theme="dark"] .DocSearch-Button svg {
+	color: hsl(var(--foreground) / 0.8) !important;
+	fill: hsl(var(--foreground) / 0.8) !important;
+}
+
+/* Additional targeting for search icon in dark mode */
+[data-theme="dark"] .DocSearch-Button svg path,
+[data-theme="dark"] .DocSearch-Button svg circle,
+[data-theme="dark"] .DocSearch-Button svg g {
+	fill: hsl(var(--foreground) / 0.8) !important;
+	stroke: hsl(var(--foreground) / 0.8) !important;
+}
+
+/* Override any Algolia defaults in dark mode */
+[data-theme="dark"] .DocSearch {
+	--docsearch-icon-color: hsl(var(--foreground) / 0.8) !important;
+	--docsearch-icon-stroke-width: 1.4 !important;
+}
+
+/* Ensure search icon is visible in both light and dark modes */
+.DocSearch-Search-Icon {
+	color: hsl(var(--muted-foreground)) !important;
+	fill: hsl(var(--muted-foreground)) !important;
+}
+
+.DocSearch-Button svg {
+	color: hsl(var(--muted-foreground)) !important;
+	fill: hsl(var(--muted-foreground)) !important;
+}
+
+/* Hide the "Search" text completely, show only the spyglass */
+.DocSearch-Button-Placeholder {
+	display: none !important;
+}
+
+/* Also hide any other search text variants */
+.DocSearch-Button .DocSearch-Button-Placeholder,
+.DocSearch-Button-Placeholder,
+.DocSearch-Button span:not(.DocSearch-Search-Icon):not(.DocSearch-Button-Keys) {
+	display: none !important;
+}
+
+/* Ensure search button only shows icon and keys */
+.DocSearch-Button {
+	gap: 0.5rem !important;
+}
+
+/* Hide placeholder text in expanded search as well */
+.DocSearch-Input::placeholder {
+	opacity: 0 !important;
+}
+
+/* Mobile responsive search button centering */
+@media (max-width: 768px) {
+	.DocSearch-Button {
+		width: 40px !important;
+		height: 40px !important;
+		padding: 0 !important;
+		min-width: 40px !important;
+		justify-content: center !important;
+	}
+
+	.DocSearch-Button-Container {
+		display: flex !important;
+		align-items: center !important;
+		justify-content: center !important;
+		width: 100% !important;
+		height: 100% !important;
+	}
+
+	/* Hide keys on mobile */
+	.DocSearch-Button-Keys {
+		display: none !important;
+	}
+}
+
+.DocSearch-Button:hover {
+	border-color: hsl(var(--border)) !important;
+	background-color: hsl(var(--background) / 0.7) !important;
+	box-shadow: none !important;
+}
+
+/* DocSearch button placeholder text */
+.DocSearch-Button-Placeholder {
+	color: hsl(var(--muted-foreground)) !important;
+	font-size: 0.875rem !important;
+}
+
+/* DocSearch button keys - styled to match roocode.com */
+.DocSearch-Button-Keys {
+	display: flex !important;
+	align-items: center;
+	gap: 0.25rem;
+}
+
+.DocSearch-Button-Key {
+	background: hsl(var(--background) / 0.8) !important;
+	border: 1px solid hsl(var(--border) / 0.3) !important;
+	border-radius: 0.25rem !important;
+	color: hsl(var(--muted-foreground)) !important;
+	font-size: 0.75rem !important;
+	font-weight: 500 !important;
+	padding: 0.125rem 0.25rem !important;
+	line-height: 1 !important;
+	min-width: 1rem !important;
+	text-align: center !important;
+	box-shadow: none !important;
+}
+
+[data-theme="dark"] .DocSearch-Button-Key {
+	background: hsl(var(--background) / 0.6) !important;
+	border-color: hsl(var(--border) / 0.4) !important;
+	color: hsl(var(--muted-foreground) / 0.8) !important;
+}
+
+/* DocSearch modal theming */
+.DocSearch-Modal {
+	background-color: hsl(var(--background) / 0.95) !important;
+	backdrop-filter: blur(20px) !important;
+}
+
+.DocSearch-Container {
+	background-color: hsl(var(--background) / 0.8) !important;
+	backdrop-filter: blur(20px) !important;
+}
+
+.DocSearch-Form {
+	background-color: hsl(var(--background) / 0.5) !important;
+	border: 1px solid hsl(var(--border) / 0.5) !important;
+	border-radius: calc(var(--radius) + 4px) !important;
+}
+
+.DocSearch-Input {
+	color: hsl(var(--foreground)) !important;
+	font-size: 1rem !important;
+}
+
+/* Search results theming */
+.DocSearch-Hit {
+	background-color: hsl(var(--background) / 0.3) !important;
+	border: 1px solid hsl(var(--border) / 0.3) !important;
+	border-radius: calc(var(--radius)) !important;
+}
+
+.DocSearch-Hit[aria-selected="true"] {
+	background-color: hsl(var(--background) / 0.5) !important;
+	border-color: hsl(var(--border) / 0.5) !important;
+}
+
+/* Remove any default shadows or effects that don't match */
+.navbar__search-input,
+.DocSearch-Button {
+	box-shadow: none !important;
+}
+
+/* Ensure dark theme colors in search dropdown */
+[data-theme="dark"] .DocSearch {
+	--docsearch-primary-color: hsl(var(--foreground));
+	--docsearch-text-color: hsl(var(--foreground));
+	--docsearch-spacing: 12px;
+	--docsearch-icon-stroke-width: 1.4;
+	--docsearch-highlight-color: hsl(var(--foreground));
+	--docsearch-muted-color: hsl(var(--muted-foreground));
+	--docsearch-container-background: hsl(var(--background) / 0.8);
+	--docsearch-icon-color: hsl(var(--muted-foreground));
+	--docsearch-modal-background: hsl(var(--background));
+	--docsearch-modal-shadow: none;
+	--docsearch-searchbox-background: hsl(var(--background) / 0.5);
+	--docsearch-searchbox-focus-background: hsl(var(--background) / 0.7);
+	--docsearch-searchbox-shadow: none;
+	--docsearch-hit-color: hsl(var(--foreground));
+	--docsearch-hit-active-color: hsl(var(--foreground));
+	--docsearch-hit-background: hsl(var(--background) / 0.3);
+	--docsearch-hit-shadow: none;
+	--docsearch-key-gradient: transparent;
+	--docsearch-footer-background: hsl(var(--background) / 0.5);
+}
+
+/* ============================================
+   CONTENT STYLING TO MATCH ROOCODE.COM
+   ============================================ */
+
+/* Better font rendering on dark background */
+[data-theme="dark"] body {
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	text-rendering: optimizeLegibility;
+}
+
+/* Ensure all body text is bright enough */
+.theme-doc-markdown p,
+.theme-doc-markdown li,
+.theme-doc-markdown td,
+.theme-doc-markdown dd,
+.theme-doc-markdown .admonition-content {
+	color: hsl(var(--foreground) / 0.9) !important; /* 90% brightness */
+	font-weight: 400 !important; /* Normal weight */
+}
+
+/* Keep navigation and secondary text slightly dimmer */
+.menu__link,
+.table-of-contents__link,
+.navbar__link,
+.breadcrumbs__link,
+.footer__link-item {
+	color: hsl(var(--foreground) / 0.7) !important; /* 70% for secondary text */
+}
+
+/* Active/hover states should be full brightness */
+.menu__link:hover,
+.menu__link--active,
+.table-of-contents__link:hover,
+.table-of-contents__link--active,
+.navbar__link:hover,
+.breadcrumbs__link:hover,
+.footer__link-item:hover {
+	color: hsl(var(--foreground)) !important; /* 100% on hover/active */
+}
+
+/* Ensure headings are at full brightness */
+.theme-doc-markdown h1,
+.theme-doc-markdown h2,
+.theme-doc-markdown h3,
+.theme-doc-markdown h4,
+.theme-doc-markdown h5,
+.theme-doc-markdown h6 {
+	color: hsl(var(--foreground)) !important; /* 100% brightness */
+	font-weight: 700; /* Bold for h1-h3 */
+}
+
+.theme-doc-markdown h4,
+.theme-doc-markdown h5,
+.theme-doc-markdown h6 {
+	font-weight: 600; /* Slightly less bold for smaller headings */
+}
+
+/* Content spacing and layout */
+.theme-doc-markdown {
+	max-width: none; /* Remove width restriction */
+	margin: 0;
+	padding: 1.5rem 2rem 3rem; /* Reduced top padding */
+	position: relative;
+	background: transparent;
+	border: none;
+}
+
+/* Override any article padding that might be adding space */
+article {
+	padding-top: 0 !important;
+}
+
+/* Target the main content container more specifically */
+.theme-doc-markdown > *:first-child {
+	margin-top: 0 !important;
+	padding-top: 0 !important;
+}
+
+/* Ensure the markdown container itself has no top padding */
+.markdown {
+	padding-top: 0 !important;
+}
+
+/* Target the main wrapper to ensure no extra top spacing */
+main[class*="docMainContainer"] {
+	padding-top: 1rem !important;
+}
+
+/* Heading styles */
+.theme-doc-markdown h1,
+.theme-doc-markdown h2,
+.theme-doc-markdown h3 {
+	color: hsl(var(--foreground)) !important;
+	background: none !important;
+	-webkit-background-clip: unset !important;
+	background-clip: unset !important;
+}
+
+.theme-doc-markdown h1 {
+	font-size: 1.575rem;
+	font-weight: 700;
+	letter-spacing: -0.025em;
+	line-height: 1.2;
+	margin-top: 0; /* Remove top margin for H1 */
+	margin-bottom: 1.5rem;
+}
+
+@media (min-width: 640px) {
+	.theme-doc-markdown h1 {
+		font-size: 2.1rem;
+	}
+}
+
+.theme-doc-markdown h2 {
+	font-size: 1.875rem;
+	font-weight: 700;
+	letter-spacing: -0.025em;
+	margin-top: 1.5rem; /* Reduced from 2rem */
+	margin-bottom: 1rem;
+}
+
+@media (min-width: 640px) {
+	.theme-doc-markdown h2 {
+		font-size: 2.25rem;
+	}
+}
+
+.theme-doc-markdown h3 {
+	font-size: 1.5rem;
+	font-weight: 600;
+	margin-top: 1.25rem; /* Reduced from 1.5rem */
+	margin-bottom: 0.75rem;
+}
+
+.theme-doc-markdown h4,
+.theme-doc-markdown h5,
+.theme-doc-markdown h6 {
+	font-size: 1.25rem;
+	font-weight: 500;
+	margin-top: 1.25rem;
+	margin-bottom: 0.5rem;
+}
+
+/* Paragraph spacing - match roocode.com */
+.theme-doc-markdown p {
+	font-size: 1rem;
+	line-height: 1.625;
+	color: hsl(var(--foreground) / 0.9); /* 90% brightness like roocode.com */
+	margin-bottom: 1rem;
+	font-weight: 400; /* Ensure normal weight */
+}
+
+@media (min-width: 640px) {
+	.theme-doc-markdown p {
+		font-size: 1.125rem;
+	}
+}
+
+/* Link styles */
+.theme-doc-markdown a:not(.hash-link) {
+	color: #60a5fa; /* Blue accent */
+	transition: color 200ms;
+	text-decoration: underline;
+	text-underline-offset: 2px;
+}
+
+.theme-doc-markdown a:not(.hash-link):hover {
+	color: #93bbfc; /* Lighter blue on hover */
+}
+
+/* List spacing */
+.theme-doc-markdown ul,
+.theme-doc-markdown ol {
+	margin-bottom: 1.5rem;
+	padding-left: 1.5rem;
+}
+
+.theme-doc-markdown li {
+	margin-bottom: 0.5rem;
+	line-height: 1.625;
+	color: hsl(var(--foreground) / 0.9); /* Match paragraph brightness */
+	font-weight: 400;
+}
+
+/* Nested list spacing */
+.theme-doc-markdown li > ul,
+.theme-doc-markdown li > ol {
+	margin-top: 0.5rem;
+	margin-bottom: 0.5rem;
+}
+
+/* Code blocks with roocode.com styling */
+.theme-code-block {
+	margin: 2rem 0; /* More spacing */
+	border-radius: calc(var(--radius) + 4px) !important;
+	overflow: hidden;
+}
+
+/* Code block container */
+.prism-code {
+	background: hsl(var(--background) / 0.6) !important;
+	border: 1px solid hsl(var(--border) / 0.3) !important;
+	font-size: 0.875rem !important; /* Consistent with roocode.com */
+	line-height: 1.7 !important;
+	padding: 1.5rem !important;
+}
+
+/* Inline code styling */
+.theme-doc-markdown code {
+	background-color: hsl(var(--background) / 0.6) !important;
+	border: 1px solid hsl(var(--border) / 0.3) !important;
+	padding: 0.2rem 0.4rem !important;
+	font-size: 0.85em !important;
+	border-radius: 0.375rem !important;
+}
+
+/* Code block title */
+.theme-code-block-title {
+	background: hsl(var(--background) / 0.8) !important;
+	border: 1px solid hsl(var(--border) / 0.3) !important;
+	border-bottom: none !important;
+	padding: 0.75rem 1rem !important;
+	font-size: 0.875rem !important;
+	color: hsl(var(--muted-foreground)) !important;
+	font-weight: 500 !important;
+}
+
+/* Blockquotes like roocode.com */
+.theme-doc-markdown blockquote {
+	border-left: 4px solid hsl(var(--border));
+	background: hsl(var(--background) / 0.5);
+	backdrop-filter: blur(16px);
+	padding: 1rem 1.5rem;
+	margin: 2rem 0;
+	border-radius: 0 calc(var(--radius)) calc(var(--radius)) 0;
+}
+
+.theme-doc-markdown blockquote p {
+	margin-bottom: 0;
+	color: hsl(var(--muted-foreground));
+	font-style: italic;
+}
+
+/* Admonitions (alerts) with roocode.com style */
+.theme-admonition {
+	margin: 2rem 0 !important;
+	padding: 1.5rem !important;
+	border-radius: calc(var(--radius) + 4px) !important;
+	border: 1px solid hsl(var(--border) / 0.5) !important;
+	background: hsl(var(--background) / 0.6) !important;
+	backdrop-filter: blur(16px) !important;
+}
+
+.theme-admonition-heading {
+	margin-bottom: 0.75rem !important;
+	font-weight: 600 !important;
+}
+
+.theme-admonition-icon {
+	margin-right: 0.5rem !important;
+}
+
+/* Tables with roocode.com styling */
+.theme-doc-markdown table {
+	width: 100%;
+	margin: 2rem 0;
+	border-collapse: separate;
+	border-spacing: 0;
+	border: 1px solid hsl(var(--border) / 0.5);
+	border-radius: calc(var(--radius) + 4px);
+	overflow: hidden;
+	background: hsl(var(--background) / 0.3);
+	backdrop-filter: blur(16px);
+}
+
+.theme-doc-markdown th {
+	background: hsl(var(--background) / 0.6);
+	padding: 0.75rem 1rem;
+	text-align: left;
+	font-weight: 600;
+	color: hsl(var(--foreground));
+	border-bottom: 1px solid hsl(var(--border) / 0.5);
+}
+
+.theme-doc-markdown td {
+	padding: 0.75rem 1rem;
+	border-bottom: 1px solid hsl(var(--border) / 0.3);
+	color: hsl(var(--foreground) / 0.9); /* Match body text brightness */
+}
+
+.theme-doc-markdown tr:last-child td {
+	border-bottom: none;
+}
+
+/* Heading anchor links */
+.hash-link {
+	opacity: 0;
+	color: hsl(var(--muted-foreground)) !important;
+	transition: opacity 200ms ease;
+	margin-left: 0.5rem;
+	text-decoration: none !important;
+}
+
+.theme-doc-markdown h1:hover .hash-link,
+.theme-doc-markdown h2:hover .hash-link,
+.theme-doc-markdown h3:hover .hash-link,
+.theme-doc-markdown h4:hover .hash-link {
+	opacity: 0.7;
+}
+
+.hash-link:hover {
+	opacity: 1 !important;
+	color: hsl(var(--foreground)) !important;
+}
+
+/* Sidebar item spacing */
+.menu__list-item {
+	margin-bottom: 0; /* Remove spacing between items */
+}
+
+.menu__link {
+	padding: 0.375rem 0.75rem; /* Reduced vertical padding */
+	border-radius: calc(var(--radius) - 2px);
+	transition: all 200ms ease;
+	font-size: 0.875rem; /* Ensure consistent font size */
+}
+
+/* Nested menu items */
+.menu__list .menu__list {
+	margin-left: 0.75rem; /* Indentation for nested items */
+	margin-top: 0;
+	margin-bottom: 0;
+}
+
+/* Category headers */
+.menu__list-item-collapsible {
+	margin-bottom: 0;
+}
+
+.menu__link--sublist {
+	font-weight: 600; /* Make category headers bold */
+	padding: 0.5rem 0.75rem;
+}
+
+/* Remove extra spacing from menu lists */
+.menu__list {
+	padding-left: 0;
+	margin-bottom: 0;
+}
+
+.menu__link:hover {
+	background: hsl(var(--background) / 0.5);
+}
+
+.menu__link--active {
+	background: hsl(var(--background) / 0.7);
+	font-weight: 500;
+}
+
+/* TOC styling */
+.table-of-contents {
+	padding: 0.5rem 0.75rem; /* Match left sidebar spacing */
+	background: hsl(var(--background) / 0.3);
+	border-radius: calc(var(--radius));
+	border: 1px solid hsl(var(--border) / 0.3);
+	backdrop-filter: blur(16px);
+}
+
+/* Hide TOC on mobile and medium devices where it gets squished */
+@media (max-width: 1300px) {
+	.theme-doc-toc-desktop,
+	.theme-doc-toc-mobile,
+	.table-of-contents,
+	[class*="toc"],
+	[class*="TOC"],
+	.tocCollapsible,
+	.tocCollapsibleButton {
+		display: none !important;
+	}
+}
+
+.table-of-contents__link {
+	padding: 0.25rem 0.5rem;
+	border-radius: calc(var(--radius) - 4px);
+	display: block;
+	transition: all 200ms ease;
+}
+
+.table-of-contents__link:hover {
+	background: hsl(var(--background) / 0.5);
+}
+
+.table-of-contents__link--active {
+	background: hsl(var(--background) / 0.7);
+	font-weight: 500;
+}
+
+/* Images with roocode.com styling */
+.theme-doc-markdown img {
+	max-width: 100%;
+	height: auto;
+	border-radius: calc(var(--radius) + 4px);
+	border: 1px solid hsl(var(--border) / 0.3);
+	margin: 2rem 0;
+	box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
+
+/* Image captions */
+.theme-doc-markdown img + em {
+	display: block;
+	text-align: center;
+	color: hsl(var(--muted-foreground));
+	font-size: 0.875rem;
+	margin-top: -1.5rem;
+	margin-bottom: 2rem;
+}
+
+/* HR styling */
+.theme-doc-markdown hr {
+	border: none;
+	height: 1px;
+	background: hsl(var(--border) / 0.5);
+	margin: 1.5rem 0; /* Reduced from 3rem */
+	position: relative;
+}
+
+/* Optional: decorative HR */
+.theme-doc-markdown hr::after {
+	content: "◆";
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	background: hsl(var(--background));
+	padding: 0 1rem;
+	color: hsl(var(--muted-foreground));
+	font-size: 0.75rem;
+}
+
+/* Smooth scrolling for anchor links */
+html {
+	scroll-behavior: smooth;
+	scroll-padding-top: calc(64px + 2rem); /* navbar height + padding */
+}
+
+/* Highlight target sections */
+:target {
+	animation: highlight 2s ease;
+}
+
+@keyframes highlight {
+	0% {
+		background-color: hsl(var(--foreground) / 0.1);
+	}
+	100% {
+		background-color: transparent;
+	}
+}
+
+/* ============================================
+   FINAL ROOCODE.COM MATCHING STYLES
+   ============================================ */
+
+/* Apply sidebar link styles */
+.menu__link {
+	font-size: 0.875rem;
+	font-weight: 400;
+	color: hsl(var(--muted-foreground));
+	transition: all 200ms ease;
+	border-radius: calc(var(--radius) - 2px);
+	padding: 0.5rem 0.75rem;
+}
+
+.menu__link:hover {
+	color: hsl(var(--foreground));
+	background: hsl(var(--background) / 0.5);
+}
+
+.menu__link--active {
+	color: hsl(var(--foreground));
+	background: hsl(var(--background) / 0.7);
+	font-weight: 500;
+}
+
+/* Apply TOC link styles */
+.table-of-contents__link {
+	font-size: 0.875rem;
+	color: hsl(var(--muted-foreground));
+	transition: all 200ms ease;
+	padding: 0.25rem 0.5rem;
+	border-radius: calc(var(--radius) - 4px);
+	display: block;
+}
+
+.table-of-contents__link:hover {
+	color: hsl(var(--foreground));
+	background: hsl(var(--background) / 0.5);
+}
+
+.table-of-contents__link--active {
+	color: hsl(var(--foreground));
+	background: hsl(var(--background) / 0.7);
+	font-weight: 500;
+}
+
+/* Prism syntax highlighting for dark mode */
+[data-theme="dark"] .prism-code {
+	--prism-color: hsl(var(--foreground));
+	--prism-background-color: hsl(var(--background) / 0.6);
+}
+
+[data-theme="dark"] .token.comment,
+[data-theme="dark"] .token.prolog,
+[data-theme="dark"] .token.doctype,
+[data-theme="dark"] .token.cdata {
+	color: hsl(var(--muted-foreground) / 0.7);
+}
+
+[data-theme="dark"] .token.punctuation {
+	color: hsl(var(--foreground) / 0.8);
+}
+
+[data-theme="dark"] .token.property,
+[data-theme="dark"] .token.tag,
+[data-theme="dark"] .token.boolean,
+[data-theme="dark"] .token.number,
+[data-theme="dark"] .token.constant,
+[data-theme="dark"] .token.symbol,
+[data-theme="dark"] .token.deleted {
+	color: #60a5fa; /* Blue */
+}
+
+[data-theme="dark"] .token.selector,
+[data-theme="dark"] .token.attr-name,
+[data-theme="dark"] .token.string,
+[data-theme="dark"] .token.char,
+[data-theme="dark"] .token.builtin,
+[data-theme="dark"] .token.inserted {
+	color: #4ade80; /* Green */
+}
+
+[data-theme="dark"] .token.operator,
+[data-theme="dark"] .token.entity,
+[data-theme="dark"] .token.url,
+[data-theme="dark"] .language-css .token.string,
+[data-theme="dark"] .style .token.string {
+	color: #22d3ee; /* Cyan */
+}
+
+[data-theme="dark"] .token.atrule,
+[data-theme="dark"] .token.attr-value,
+[data-theme="dark"] .token.keyword {
+	color: #a78bfa; /* Purple */
+}
+
+[data-theme="dark"] .token.function,
+[data-theme="dark"] .token.class-name {
+	color: #fbbf24; /* Yellow */
+}
+
+[data-theme="dark"] .token.regex,
+[data-theme="dark"] .token.important,
+[data-theme="dark"] .token.variable {
+	color: #fb923c; /* Orange */
+}
+
+/* Primary buttons in dark mode should be white */
+[data-theme="dark"] .button--primary {
+	background-color: hsl(var(--foreground)) !important;
+	color: hsl(var(--background)) !important;
+	border: none !important;
+}
+
+[data-theme="dark"] .button--primary:hover {
+	background-color: hsl(var(--foreground) / 0.9) !important;
+	transform: translateY(-2px);
+}
+
+/* Secondary/outline buttons */
+.button--secondary,
+.button--outline {
+	background-color: transparent !important;
+	border: 1px solid hsl(var(--border) / 0.5) !important;
+	color: hsl(var(--foreground)) !important;
+}
+
+.button--secondary:hover,
+.button--outline:hover {
+	background-color: hsl(var(--background) / 0.5) !important;
+	border-color: hsl(var(--border)) !important;
+}
+
+/* Mobile adjustments */
+@media (max-width: 996px) {
+	.theme-doc-markdown {
+		padding: 1rem;
+	}
+
+	.theme-doc-markdown h1 {
+		font-size: 1.875rem;
+	}
+
+	.theme-doc-markdown h2 {
+		font-size: 1.5rem;
+	}
+}
+
+/* Breadcrumbs styling */
+.theme-doc-breadcrumbs {
+	margin-bottom: 1rem;
+	font-size: 0.875rem;
+}
+
+.breadcrumbs__item {
+	color: hsl(var(--muted-foreground));
+}
+
+.breadcrumbs__link {
+	color: hsl(var(--muted-foreground));
+	transition: color 200ms;
+}
+
+.breadcrumbs__link:hover {
+	color: hsl(var(--foreground));
+	text-decoration: none;
+}
+
+/* Pagination styling */
+.pagination-nav {
+	margin-top: 3rem;
+	padding-top: 2rem;
+	border-top: 1px solid hsl(var(--border) / 0.5);
+}
+
+.pagination-nav__link {
+	border: 1px solid hsl(var(--border) / 0.5);
+	border-radius: calc(var(--radius) + 4px);
+	padding: 1rem;
+	transition: all 200ms ease;
+	background: hsl(var(--background) / 0.3);
+	backdrop-filter: blur(16px);
+}
+
+.pagination-nav__link:hover {
+	border-color: hsl(var(--border));
+	background: hsl(var(--background) / 0.5);
+	text-decoration: none;
+}
+
+.pagination-nav__sublabel {
+	color: hsl(var(--muted-foreground));
+	font-size: 0.875rem;
+}
+
+.pagination-nav__label {
+	color: hsl(var(--foreground));
+	font-weight: 500;
+}
+/* ============================================
+   FOOTER LAYOUT - ROOCODE.COM STYLE
+   ============================================ */
+
+/* Footer Layout - roocode.com style */
+.footer__main {
+	display: flex;
+	gap: 4rem;
+	margin-bottom: 2rem;
+}
+
+.footer__brand {
+	flex: 0 0 300px;
+	max-width: 300px;
+}
+
+.footer__logo-container {
+	margin-bottom: 1rem;
+	/* Align logo with column titles - move it up to match their baseline */
+	margin-top: -8px; /* Offset to align with titles */
+}
+
+.footer__logo-container img {
+	height: 24px !important; /* Smaller than navbar logo */
+	width: auto !important;
+}
+
+/* Make footer titles uppercase */
+.footer__title {
+	text-transform: uppercase !important;
+	letter-spacing: 0.05em !important;
+	font-weight: 600 !important;
+}
+
+/* Add top border to footer */
+.footer {
+	border-top: 1px solid hsl(var(--foreground) / 0.1) !important;
+}
+
+/* Simple approach - since we removed external icons from FooterLinkItem, just ensure social icons are visible */
+.footer__social-icons {
+	margin-top: 1rem;
+	display: block !important;
+}
+
+.footer__social-icons svg {
+	display: inline-block !important;
+	visibility: visible !important;
+}
+
+/* Clean footer link styling */
+.footer a {
+	text-decoration: none !important;
+}
+
+.footer a:hover {
+	text-decoration: none !important;
+}
+
+/* Social icons now handled by component CSS modules */
+
+/* Three-column navbar layout */
+.navbar__inner {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	width: 100%;
+	max-width: var(--ifm-container-width);
+	margin: 0 auto;
+	padding: 0 var(--ifm-spacing-horizontal);
+	gap: 1rem;
+}
+
+/* Left section - Logo */
+.navbar__items:first-child {
+	flex: 0 0 auto;
+	display: flex;
+	align-items: center;
+}
+
+/* Center section - Search - Absolutely centered */
+.navbar__items--center {
+	position: absolute;
+	left: 50%;
+	transform: translateX(-50%);
+	display: flex;
+	justify-content: center;
+	max-width: 400px;
+	width: 100%;
+	z-index: 1;
+}
+
+/* Right section - Links */
+.navbar__items--right {
+	flex: 0 0 auto;
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+}
+
+/* Search bar styling */
+.DocSearch-Button {
+	width: 100% !important;
+	max-width: 400px;
+	margin: 0 auto;
+}
+
+/* Mobile adjustments */
+@media (max-width: 996px) {
+	.navbar__inner {
+		flex-wrap: wrap;
+	}
+
+	.navbar__items--center {
+		order: 3;
+		flex-basis: 100%;
+		margin: 0.5rem 0 0 0;
+		max-width: none;
+	}
+
+	.navbar__items--right {
+		gap: 0.5rem;
+	}
+
+	/* Hide search when mobile menu is expanded */
+	.navbar-sidebar--show .navbar__items--center {
+		display: none;
+	}
+}
+
+.footer__tagline {
+	color: hsl(var(--foreground) / 0.7);
+	font-size: 0.9rem;
+	line-height: 1.5;
+	margin-bottom: 1.5rem;
+}
+
+.footer__social-icons {
+	margin-top: 1rem;
+}
+
+.footer__links-wrapper {
+	flex: 1;
+}
+
+.footer__bottom {
+	text-align: center;
+	padding-top: 1rem;
+	border-top: 1px solid hsl(var(--foreground) / 0.1);
+}
+
+/* Mobile footer adjustments */
+@media (max-width: 968px) {
+	.footer__main {
+		flex-direction: column;
+		gap: 1rem; /* Reduced from 2rem */
+		margin-bottom: 1rem; /* Reduced spacing */
+	}
+
+	.footer__brand {
+		flex: none;
+		max-width: none;
+		text-align: center;
+		margin-bottom: 1rem; /* Add some spacing after brand */
+	}
+
+	.footer__logo-container {
+		margin-top: 0; /* Reset negative margin on mobile */
+		margin-bottom: 0.5rem; /* Reduce spacing */
+	}
+
+	.footer__tagline {
+		margin-bottom: 1rem; /* Reduce spacing */
+		font-size: 0.85rem; /* Slightly smaller on mobile */
+		line-height: 1.4;
+	}
+
+	.footer__social-icons {
+		margin-top: 0.5rem; /* Reduce spacing */
+		margin-bottom: 1rem;
+	}
+
+	.footer__col {
+		text-align: center;
+		margin-bottom: 1rem !important; /* Reduce spacing between columns */
+	}
+
+	.footer__title {
+		margin-bottom: 0.5rem !important; /* Reduce title spacing */
+		font-size: 0.9rem; /* Slightly smaller */
+	}
+
+	.footer__item {
+		margin-bottom: 0.3rem !important; /* Reduce item spacing */
+	}
+
+	.footer__links {
+		justify-content: center;
+		gap: 0; /* Remove gap between columns */
+	}
+
+	.footer__links-wrapper {
+		margin-top: 0;
+	}
+}
+
+/* ============================================
+   CUSTOM TUTORIAL VIDEOS SIDEBAR STYLES
+   ============================================ */
+
+/* Move external link icons to the right for Tutorial Videos */
+.menu__list-item a[href^="https://www.youtube.com/watch"]
+{
+	display: flex !important;
+	justify-content: space-between !important;
+	align-items: center !important;
+	padding-right: 0.5rem !important;
+	width: 100% !important;
+}
+
+/* Ensure the link text takes up available space */
+.menu__list-item a[href^="https://www.youtube.com/watch"] .menu__link-text
+{
+	flex: 1 !important;
+	overflow: hidden !important;
+	text-overflow: ellipsis !important;
+	white-space: nowrap !important;
+	margin-right: 0.5rem !important;
+}
+
+/* Move the external link icon (svg) to the right */
+.menu__list-item a[href^="https://www.youtube.com/watch"] svg
+{
+	order: 2 !important;
+	margin-left: auto !important;
+	margin-right: 0 !important;
+	flex-shrink: 0 !important;
+	width: 13px !important;
+	height: 13px !important;
+	opacity: 0.6 !important;
+}
+
+/* Show icon more prominently on hover */
+.menu__list-item a[href^="https://www.youtube.com/watch"]:hover svg
+{
+	opacity: 1 !important;
+}
+
+/* Ensure consistent spacing for all tutorial video links */
+.menu__list-item:has(> a[href^="https://www.youtube.com/watch"])
+{
+	margin-bottom: 0 !important;
+}

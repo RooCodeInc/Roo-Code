@@ -1,0 +1,25 @@
+# Roo Code Documentation Rules
+
+## Documentation Links
+
+- Do not include .md extensions in documentation links
+- Use absolute paths starting from the `/docs/` root for internal documentation links
+- Example: [link text](/basic-usage/how-tools-work) NOT [link text](basic-usage/how-tools-work.md) or [link text](../../basic-usage/how-tools-work)
+
+This ensures links work correctly in the built documentation while maintaining clean URLs.
+
+## Context7 MCP
+
+When making structural or formatting changes beyond simple .md or .mdx files, always check the Context7 MCP, the `context7CompatibleLibraryID` will be `/facebook/docusaurus`
+
+## Release Notes "thank you" exclusions
+
+Do not thank daniel-lxs, cte, hannesrudolph, jr, roomote, app/roomote, dleffel, brunobergher or mrubens in release notes
+
+## Misc
+
+When moving a section, make sure to add the forwarding link in docusaurus.config.ts
+
+## Image Tag Format
+
+example: `<img src="<PATH>" alt="<ALT>" width="<WIDTH>" />`

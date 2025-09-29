@@ -1,0 +1,251 @@
+<writing_style_guide>
+  <overview>
+    This guide defines the writing style for Roo Code documentation. The style is direct, concise, and technical. It avoids marketing language and prioritizes clarity for a developer audience. All output must be in markdown.
+  </overview>
+
+  <discovery_principle>
+    <rule>Before writing or editing documentation, always explore existing documentation to understand established patterns, style, and structure.</rule>
+    <steps>
+      <step>Use list_files to explore the documentation structure</step>
+      <step>Read similar existing documents to understand the style</step>
+      <step>Follow established patterns rather than imposing new ones</step>
+    </steps>
+  </discovery_principle>
+
+  <content_validation_principle>
+    <rule>MANDATORY: Before making ANY changes to existing documentation files, you MUST complete the redundancy validation workflow. This is NOT optional.</rule>
+    <enforcement>
+      <requirement>You CANNOT proceed with edits until validation is complete</requirement>
+      <requirement>You MUST document validation results before making changes</requirement>
+      <requirement>Skipping validation steps will result in task rejection</requirement>
+    </enforcement>
+    <redundancy_check priority="CRITICAL">
+      <mandatory_step order="1">Use codebase_search to find ALL mentions of the topic across documentation</mandatory_step>
+      <mandatory_step order="2">Search for multiple variations of key terms (e.g., if editing "authentication", also search "auth", "login", "security", "credentials")</mandatory_step>
+      <mandatory_step order="3">Read and analyze EVERY discovered location thoroughly</mandatory_step>
+      <mandatory_step order="4">Create a validation report listing:
+        - All locations where similar content exists
+        - The current state of each location
+        - Potential conflicts or duplications
+        - Recommendation for how to proceed
+      </mandatory_step>
+      <mandatory_step order="5">If similar content exists, you MUST determine:
+        - Is this an update to existing content? (proceed to that location)
+        - Is this a consolidation opportunity? (merge content)
+        - Is this truly new, non-redundant content? (proceed with caution)
+      </mandatory_step>
+    </redundancy_check>
+    <cohesion_validation priority="CRITICAL">
+      <mandatory_step>Check for contradictions with existing documentation</mandatory_step>
+      <mandatory_step>Verify that new content aligns with established terminology and concepts</mandatory_step>
+      <mandatory_step>Ensure cross-references are accurate and bidirectional where appropriate</mandatory_step>
+      <mandatory_step>Validate that the change enhances rather than fragments the documentation flow</mandatory_step>
+      <mandatory_step>Document how the change improves overall documentation cohesion</mandatory_step>
+    </cohesion_validation>
+    <validation_gate>
+      <rule>You MUST use ask_followup_question to confirm validation results with the user BEFORE proceeding with any edits</rule>
+      <template>
+        "I've completed the mandatory redundancy validation. Here's what I found: [validation results]. Based on this analysis, I recommend: [recommendation]. Should I proceed with this approach?"
+      </template>
+    </validation_gate>
+  </content_validation_principle>
+
+  <core_principles>
+    <principle name="directness">
+      <rule>Start with the most important information. No filler introductions.</rule>
+      <bad>In this guide, we will explore how to configure the tool.</bad>
+      <good>To configure the tool, open...</good>
+    </principle>
+    <principle name="brevity">
+      <rule>Use short sentences. Cut unnecessary words. If it doesn't add value, remove it.</rule>
+    </principle>
+    <principle name="utility">
+      <rule>Focus on what the user can do and why it matters. Provide actionable steps.</rule>
+    </principle>
+
+    <principle name="value_filter">
+      <rule>Keep only what changes decisions, prevents mistakes, or unlocks outcomes. Cut narration of obvious UI.</rule>
+      <keep>
+        <item>Why it matters (value/outcome; 1–3 sentences at the top)</item>
+        <item>Decision points and trade-offs (e.g., Pro vs free, security implications)</item>
+        <item>Non-obvious behavior, caveats, limits, prerequisites</item>
+        <item>Short, actionable steps; error handling and recovery</item>
+      </keep>
+      <cut>
+        <item>Listing every visible control or tab on a page</item>
+        <item>Describing screenshots (“This page shows…”, “It includes…”) without decisions or implications</item>
+        <item>Explaining basic concepts common to developers</item>
+        <item>Redundant restatement of labels already visible in screenshots</item>
+      </cut>
+    </principle>
+
+    <principle name="consistency">
+      <rule>When editing a document, use its existing style, structure, and format as a guideline for any updates. Do not make major changes unless explicitly asked.</rule>
+      <discovery_approach>
+        <step>Read the entire document first to understand its current style</step>
+        <step>Identify patterns in headings, formatting, and tone</step>
+        <step>Match the existing style in your edits</step>
+      </discovery_approach>
+    </principle>
+
+    <principle name="voice_style">
+      <rule>Bold, honest, human. No fluff, no fake hype.</rule>
+      <do>
+        <item>Short, punchy sentences. Speak like a helpful colleague.</item>
+        <item>Expose real value. If it matters, state it clearly; if not, leave it out.</item>
+        <item>Be excited when the feature earns it. Be candid about limits.</item>
+      </do>
+      <dont>
+        <item>Don’t use buzzwords, clickbait, or corporate tone.</item>
+        <item>Don’t exaggerate beyond the truth—real impact sells itself.</item>
+        <item>Don’t narrate the screen. Focus on decisions and outcomes.</item>
+      </dont>
+    </principle>
+  </core_principles>
+
+  <banned_language>
+    <description>Avoid marketing jargon, buzzwords, and clichés. These words are ambiguous and reduce signal.</description>
+    <discovery_note>When editing existing documentation, check if any of these words are already used and maintain consistency with the existing approach.</discovery_note>
+    <words>
+      <word>seamlessly</word>
+      <word>comprehensive</word>
+      <word>enhanced</word>
+      <word>streamlined</word>
+      <word>powerful</word>
+      <word>improved</word>
+      <word>intuitive</word>
+      <word>state-of-the-art</word>
+      <word>revolutionary</word>
+      <word>robust</word>
+      <word>easily</word>
+      <word>simply</word>
+    </words>
+  </banned_language>
+
+  <formatting>
+    <guideline>Use structured headings, lists, and short paragraphs for scannability.</guideline>
+    <guideline>Provide clear, copy-pasteable code snippets.</guideline>
+    <guideline>Assume user familiarity with basic concepts. Do not over-explain.</guideline>
+
+    <page_skeleton>
+      <section order="1" name="why_it_matters">Explain the outcome and value in 1–3 sentences.</section>
+      <section order="2" name="what_you_can_do">Concrete capabilities and decision points; link to authoritative references instead of duplication.</section>
+      <section order="3" name="quickstart">Minimal steps to success (include only non-obvious choices).</section>
+      <section order="4" name="limits_and_pricing">Important limits, access requirements, pricing—only what affects decisions.</section>
+      <section order="5" name="troubleshooting">Common failure modes and fixes.</section>
+    </page_skeleton>
+
+    <screenshot_policy>
+      <rule>Only include screenshots when they clarify a decision, show non-obvious state, or demonstrate outcome.</rule>
+      <limits>
+        <maxPerSection>1</maxPerSection>
+        <maxPerPage>3</maxPerPage>
+      </limits>
+      <prohibitions>
+        <item>No narration of on-screen labels or obvious layout.</item>
+        <item>No screenshot that repeats text already stated without adding decision context.</item>
+      </prohibitions>
+      <requirements>
+        <item>Alt text describes action/outcome, not the UI chrome.</item>
+        <item>Prefer width="800" unless smaller improves readability.</item>
+        <item>Use captions or surrounding text to explain the decision/implication.</item>
+        <item>Follow Docusaurus image rules; see rules in 2_docusaurus_conventions.xml.</item>
+      </requirements>
+    </screenshot_policy>
+
+    <discovery_approach>
+      <step>Before formatting new content, examine existing documentation for:
+        - Heading hierarchy patterns (H1, H2, H3 usage)
+        - List formatting preferences (bullets vs numbers)
+        - Code block styling and language tags
+        - Paragraph length and structure
+      </step>
+      <step>Match the discovered patterns to maintain consistency</step>
+    </discovery_approach>
+  </formatting>
+
+  <before_writing_checklist>
+    <item>Have I explored the existing documentation structure?</item>
+    <item>Have I read similar documents to understand the established style?</item>
+    <item>Have I identified the patterns for paths, links, and references?</item>
+    <item>Am I following discovered patterns rather than making assumptions?</item>
+    <item>Have I searched for existing content that might overlap with my changes?</item>
+    <item>Have I verified that my changes don't contradict existing documentation?</item>
+    <item>Have I checked that cross-references will remain valid?</item>
+  </before_writing_checklist>
+
+  <content_change_workflow>
+    <mandatory_notice>
+      <warning>This workflow is MANDATORY for ALL documentation changes. Each phase MUST be completed in order.</warning>
+      <enforcement>Skipping any phase or step will invalidate the entire change request.</enforcement>
+    </mandatory_notice>
+    
+    <phase name="analysis" status="MANDATORY">
+      <description>Analyze the requested change and its impact</description>
+      <blocking_requirement>You CANNOT proceed to the next phase until ALL steps are complete</blocking_requirement>
+      <steps>
+        <step validation="required">Identify the scope and purpose of the requested change</step>
+        <step validation="required">List ALL key concepts, terms, and their variations (e.g., "config" → "configuration", "setup", "settings")</step>
+        <step validation="required">Determine which documents might be affected (use list_files to verify)</step>
+        <step validation="required">Document your analysis results before proceeding</step>
+      </steps>
+    </phase>
+    
+    <phase name="discovery" status="MANDATORY">
+      <description>Search for ALL existing related content - this phase is NOT optional</description>
+      <blocking_requirement>You MUST find and analyze ALL related content before proceeding</blocking_requirement>
+      <steps>
+        <step validation="required">Use codebase_search with the primary term from the request</step>
+        <step validation="required">Use codebase_search with EACH variation of key terms identified in analysis</step>
+        <step validation="required">Read ALL potentially related documentation sections in full</step>
+        <step validation="required">Create a comprehensive map documenting:
+          - Every location where related information exists
+          - The specific content at each location
+          - How each location relates to the requested change
+        </step>
+        <step validation="required">Identify any gaps, overlaps, or contradictions</step>
+        <step validation="required">If you find existing content, you MUST read it completely before proceeding</step>
+      </steps>
+    </phase>
+    
+    <phase name="validation" status="MANDATORY">
+      <description>Validate the change against existing content - MUST be completed before ANY edits</description>
+      <blocking_requirement>You MUST answer ALL questions and get user confirmation before implementation</blocking_requirement>
+      <validation_checklist>
+        <check mandatory="true">Does this exact information already exist elsewhere? (If yes, STOP and redirect to existing location)</check>
+        <check mandatory="true">Does similar but incomplete information exist? (If yes, enhance existing rather than duplicate)</check>
+        <check mandatory="true">Will this change create any contradictions with existing docs?</check>
+        <check mandatory="true">Have you verified ALL cross-references will remain valid?</check>
+        <check mandatory="true">Does this enhance the documentation flow or fragment it?</check>
+        <check mandatory="true">Have you identified ALL files that need updates to maintain consistency?</check>
+      </validation_checklist>
+      <user_confirmation_required>
+        <rule>You MUST use ask_followup_question to present validation findings and get approval</rule>
+        <rule>Include specific file paths and line numbers in your validation report</rule>
+        <rule>Provide clear recommendations based on your findings</rule>
+      </user_confirmation_required>
+    </phase>
+    
+    <phase name="implementation" status="CONDITIONAL">
+      <description>Apply changes ONLY after validation is approved by user</description>
+      <blocking_requirement>You can ONLY enter this phase after user approves validation results</blocking_requirement>
+      <steps>
+        <step validation="required">If updating existing content, preserve ALL valuable context</step>
+        <step validation="required">If adding new content, ensure it links appropriately to ALL related topics discovered in phase 2</step>
+        <step validation="required">Update ALL affected cross-references in other documents</step>
+        <step validation="required">Maintain consistent terminology throughout ALL affected files</step>
+        <step validation="required">Verify no information is lost or contradicted by your changes</step>
+      </steps>
+    </phase>
+    
+    <phase name="post_implementation_verification" status="MANDATORY">
+      <description>Verify the changes maintain documentation integrity</description>
+      <steps>
+        <step validation="required">Re-run codebase_search to ensure no duplicates were created</step>
+        <step validation="required">Verify all cross-references still work</step>
+        <step validation="required">Confirm terminology remains consistent</step>
+        <step validation="required">Document what was changed and why for future reference</step>
+      </steps>
+    </phase>
+  </content_change_workflow>
+</writing_style_guide>
