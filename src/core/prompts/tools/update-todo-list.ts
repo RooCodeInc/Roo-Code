@@ -38,7 +38,7 @@ Replace the entire TODO list with an updated checklist reflecting the current st
 [x] Analyze requirements
 [x] Design architecture
 [-] Implement core logic
-[ ] Write tests
+[ ] Add error handling
 [ ] Update documentation
 </todos>
 </update_todo_list>
@@ -49,7 +49,7 @@ Replace the entire TODO list with an updated checklist reflecting the current st
 [x] Analyze requirements
 [x] Design architecture
 [x] Implement core logic
-[-] Write tests
+[-] Add error handling
 [ ] Update documentation
 [ ] Add performance benchmarks
 </todos>
