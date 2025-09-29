@@ -317,6 +317,34 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		})
 	}, [])
 
+	// ApiConfigManager handlers
+	const handleDeleteConfig = useCallback((configName: string) => {
+		vscode.postMessage({ type: "deleteApiConfiguration", text: configName })
+	}, [])
+
+	const handleRenameConfig = useCallback(
+		(oldName: string, newName: string) => {
+			vscode.postMessage({
+				type: "renameApiConfiguration",
+				values: { oldName, newName },
+				apiConfiguration,
+			})
+			prevApiConfigName.current = newName
+		},
+		[apiConfiguration],
+	)
+
+	const handleUpsertConfig = useCallback(
+		(configName: string) => {
+			vscode.postMessage({
+				type: "upsertApiConfiguration",
+				text: configName,
+				apiConfiguration,
+			})
+		},
+		[apiConfiguration],
+	)
+
 	const isSettingValid = !errorMessage
 
 	const handleSubmit = () => {
@@ -412,6 +440,13 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 			}
 		},
 		[isChangeDetected],
+	)
+
+	const handleSelectConfig = useCallback(
+		(configName: string) => {
+			checkUnsaveChanges(() => vscode.postMessage({ type: "loadApiConfiguration", text: configName }))
+		},
+		[checkUnsaveChanges],
 	)
 
 	useImperativeHandle(ref, () => ({ checkUnsaveChanges }), [checkUnsaveChanges])
@@ -638,29 +673,10 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 								<ApiConfigManager
 									currentApiConfigName={currentApiConfigName}
 									listApiConfigMeta={listApiConfigMeta}
-									onSelectConfig={(configName: string) =>
-										checkUnsaveChanges(() =>
-											vscode.postMessage({ type: "loadApiConfiguration", text: configName }),
-										)
-									}
-									onDeleteConfig={(configName: string) =>
-										vscode.postMessage({ type: "deleteApiConfiguration", text: configName })
-									}
-									onRenameConfig={(oldName: string, newName: string) => {
-										vscode.postMessage({
-											type: "renameApiConfiguration",
-											values: { oldName, newName },
-											apiConfiguration,
-										})
-										prevApiConfigName.current = newName
-									}}
-									onUpsertConfig={(configName: string) =>
-										vscode.postMessage({
-											type: "upsertApiConfiguration",
-											text: configName,
-											apiConfiguration,
-										})
-									}
+									onSelectConfig={handleSelectConfig}
+									onDeleteConfig={handleDeleteConfig}
+									onRenameConfig={handleRenameConfig}
+									onUpsertConfig={handleUpsertConfig}
 								/>
 								<ApiOptions
 									uriScheme={uriScheme}

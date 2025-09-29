@@ -4,6 +4,13 @@ import { render, screen, fireEvent, within } from "@/utils/test-utils"
 
 import ApiConfigManager from "../ApiConfigManager"
 
+// Mock the ExtensionStateContext
+vitest.mock("@/context/ExtensionStateContext", () => ({
+	useExtensionState: () => ({
+		apiConfigCustomOrder: [],
+	}),
+}))
+
 // Mock VSCode components
 vitest.mock("@vscode/webview-ui-toolkit/react", () => ({
 	VSCodeTextField: ({ value, onInput, placeholder, onKeyDown, "data-testid": dataTestId }: any) => (
@@ -258,11 +265,14 @@ describe("ApiConfigManager", () => {
 	it("allows selecting a different config", () => {
 		render(<ApiConfigManager {...defaultProps} />)
 
-		// The SearchableSelect mock renders as a simple select element
-		const selectElement = screen.getByTestId("select-component") as HTMLSelectElement
+		// Find the config item for "Another Config" and click it
+		const configItems = screen.getAllByRole("option")
+		const anotherConfigItem = configItems.find((item) =>
+			item.getAttribute("aria-label")?.includes("Another Config"),
+		)
 
-		// Change the select value to "Another Config"
-		fireEvent.change(selectElement, { target: { value: "Another Config" } })
+		expect(anotherConfigItem).toBeDefined()
+		fireEvent.click(anotherConfigItem!)
 
 		expect(mockOnSelectConfig).toHaveBeenCalledWith("Another Config")
 	})

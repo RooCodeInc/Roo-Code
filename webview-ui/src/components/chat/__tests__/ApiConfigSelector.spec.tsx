@@ -436,135 +436,30 @@ describe("ApiConfigSelector", () => {
 		expect(searchInput.value).toBe("Config")
 	})
 
-	test("reorders configs in custom mode via drag-and-drop and disables drag after Done", async () => {
-		render(<ApiConfigSelector {...defaultProps} />)
-
-		// Open the dropdown (Popover content is always rendered by the mock, but keep action for parity)
-		const trigger = screen.getByTestId("dropdown-trigger")
-		fireEvent.click(trigger)
-
-		// First switch to custom mode
-		const customButton = screen.getByText("chat:apiConfigSelector.custom")
-		fireEvent.click(customButton)
-
-		// Enter reorder mode by clicking the Reorder button
-		const reorderButton = screen.getByText("chat:apiConfigSelector.reorder")
-		fireEvent.click(reorderButton)
-
-		const content = screen.getByTestId("popover-content")
-
-		// Collect list rows
-		const queryRows = () => Array.from(content.querySelectorAll("[data-config-item]"))
-		const getNames = (rows: Element[]) =>
-			rows.map((row) => row.querySelector(".flex-1 span.flex-shrink-0")?.textContent?.trim() || "")
-
-		// Initial order should be: pinned "Config 1" first, then "Config 2", "Config 3"
-		const rowsBefore = queryRows()
-		const startNames = getNames(rowsBefore)
-		expect(startNames).toEqual(["Config 1", "Config 2", "Config 3"])
-
-		// Move "Config 3" above "Config 2"
-		const fromIndex = startNames.indexOf("Config 3")
-		const toIndex = startNames.indexOf("Config 2")
-
-		// Create mock dataTransfer object for drag events
-		const mockDataTransfer = {
-			effectAllowed: "",
-			dropEffect: "",
-			setData: vi.fn(),
+	test("switches between sort modes", () => {
+		const mockOnSortModeChange = vi.fn()
+		const props = {
+			...defaultProps,
+			sortMode: "alphabetical" as const,
+			onSortModeChange: mockOnSortModeChange,
 		}
 
-		// Verify items are draggable in reorder mode
-		rowsBefore.forEach((row) => {
-			expect((row as HTMLElement).getAttribute("draggable")).toBe("true")
-		})
-
-		// Simulate drag and drop with proper dataTransfer mock
-		fireEvent.dragStart(rowsBefore[fromIndex] as HTMLElement, { dataTransfer: mockDataTransfer })
-		fireEvent.dragOver(rowsBefore[toIndex] as HTMLElement, { dataTransfer: mockDataTransfer })
-		fireEvent.dragEnd(rowsBefore[fromIndex] as HTMLElement, { dataTransfer: mockDataTransfer })
-
-		// Click Done to exit reorder mode and ensure items are no longer draggable
-		const doneButton = screen.getByText("chat:apiConfigSelector.done")
-		fireEvent.click(doneButton)
-
-		const rowsFinal = queryRows()
-		rowsFinal.forEach((row) => {
-			// draggable attribute should not be true after exiting reorder mode
-			expect((row as HTMLElement).getAttribute("draggable")).not.toBe("true")
-		})
-	})
-
-	test("displays keyboard navigation hint in reorder mode", () => {
-		render(<ApiConfigSelector {...defaultProps} />)
+		render(<ApiConfigSelector {...props} />)
 
 		const trigger = screen.getByTestId("dropdown-trigger")
 		fireEvent.click(trigger)
 
-		// First switch to custom mode
+		// Switch to custom mode
 		const customButton = screen.getByText("chat:apiConfigSelector.custom")
 		fireEvent.click(customButton)
 
-		// Enter reorder mode by clicking the Reorder button
-		const reorderButton = screen.getByText("chat:apiConfigSelector.reorder")
-		fireEvent.click(reorderButton)
+		expect(mockOnSortModeChange).toHaveBeenCalledWith("custom")
 
-		// Check that keyboard navigation hint is displayed
-		expect(screen.getByText("chat:apiConfigSelector.keyboardNavigation")).toBeInTheDocument()
+		// Switch back to alphabetical mode
+		const alphabeticalButton = screen.getByText("chat:apiConfigSelector.alphabetical")
+		fireEvent.click(alphabeticalButton)
 
-		// Exit reorder mode
-		const doneButton = screen.getByText("chat:apiConfigSelector.done")
-		fireEvent.click(doneButton)
-
-		// Check that keyboard navigation hint is no longer displayed
-		expect(screen.queryByText("chat:apiConfigSelector.keyboardNavigation")).not.toBeInTheDocument()
-	})
-
-	test("handles keyboard navigation in reorder mode", () => {
-		render(<ApiConfigSelector {...defaultProps} />)
-
-		const trigger = screen.getByTestId("dropdown-trigger")
-		fireEvent.click(trigger)
-
-		// First switch to custom mode
-		const customButton = screen.getByText("chat:apiConfigSelector.custom")
-		fireEvent.click(customButton)
-
-		// Enter reorder mode by clicking the Reorder button
-		const reorderButton = screen.getByText("chat:apiConfigSelector.reorder")
-		fireEvent.click(reorderButton)
-
-		const content = screen.getByTestId("popover-content")
-		const configItems = content.querySelectorAll("[data-config-item]")
-
-		expect((configItems[0] as HTMLElement).tabIndex).toBe(-1)
-		expect((configItems[1] as HTMLElement).tabIndex).toBe(-1)
-		expect((configItems[2] as HTMLElement).tabIndex).toBe(-1)
-
-		// Simulate arrow down key on first item
-		fireEvent.keyDown(configItems[0] as HTMLElement, { key: "ArrowDown" })
-
-		// Now second item should be focused
-		expect((configItems[0] as HTMLElement).tabIndex).toBe(-1)
-		expect((configItems[1] as HTMLElement).tabIndex).toBe(0)
-		expect((configItems[2] as HTMLElement).tabIndex).toBe(-1)
-
-		// Simulate arrow up key on second item
-		fireEvent.keyDown(configItems[1] as HTMLElement, { key: "ArrowUp" })
-
-		// First item should be focused again
-		expect((configItems[0] as HTMLElement).tabIndex).toBe(0)
-		expect((configItems[1] as HTMLElement).tabIndex).toBe(-1)
-		expect((configItems[2] as HTMLElement).tabIndex).toBe(-1)
-
-		// Exit reorder mode
-		const doneButton = screen.getByText("chat:apiConfigSelector.done")
-		fireEvent.click(doneButton)
-
-		// All items should be focusable again (tabIndex=0)
-		configItems.forEach((item) => {
-			expect((item as HTMLElement).tabIndex).toBe(0)
-		})
+		expect(mockOnSortModeChange).toHaveBeenCalledWith("alphabetical")
 	})
 
 	test("pinned configs remain fixed at top while unpinned configs scroll", () => {
