@@ -138,7 +138,7 @@ const ConfigListItem = memo(function ConfigListItemComponent({
 		return (
 			<div
 				data-testid="rename-form"
-				className="pl-3 pr-2 py-0.5 text-sm flex items-center border rounded-md border-vscode-focusBorder">
+				className="pl-3 pr-2 py-0.5 text-sm flex items-center border rounded-md border-vscode-focusBorder bg-vscode-sidebar-background">
 				<div className="mr-2 flex items-center justify-center size-4">
 					{isReorderingMode ? (
 						<div
@@ -222,7 +222,7 @@ const ConfigListItem = memo(function ConfigListItemComponent({
 			}}
 			tabIndex={isFocused ? 0 : -1}
 			className={cn(
-				"px-3 py-2 text-sm flex items-center group relative border rounded-md",
+				"px-3 py-2 text-sm flex items-center group relative border rounded-md bg-vscode-sideBar-background",
 				!isReorderingMode && "cursor-pointer hover:bg-vscode-list-hoverBackground",
 				isReorderingMode && "cursor-move",
 				isCurrentConfig &&
