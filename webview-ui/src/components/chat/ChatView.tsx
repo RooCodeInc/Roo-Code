@@ -58,6 +58,7 @@ import DismissibleUpsell from "../common/DismissibleUpsell"
 import { useCloudUpsell } from "@src/hooks/useCloudUpsell"
 import { Cloud } from "lucide-react"
 import { ChatLexicalTextArea } from "./ChatLexicalTextArea"
+import { LexicalEditor } from "lexical"
 
 export interface ChatViewProps {
 	isHidden: boolean
@@ -173,7 +174,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 
 	const [inputValue, setInputValue] = useState("")
 	const inputValueRef = useRef(inputValue)
-	const textAreaRef = useRef<HTMLTextAreaElement>(null)
+	const textAreaRef = useRef<LexicalEditor>(null)
 	const [sendingDisabled, setSendingDisabled] = useState(false)
 	const [selectedImages, setSelectedImages] = useState<string[]>([])
 

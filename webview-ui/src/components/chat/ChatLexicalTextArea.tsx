@@ -6,10 +6,11 @@ import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin"
 import { LexicalComposer } from "@lexical/react/LexicalComposer"
 import { PlainTextPlugin } from "@lexical/react/LexicalPlainTextPlugin"
 import { ContentEditable } from "@lexical/react/LexicalContentEditable"
+import { EditorRefPlugin } from "@lexical/react/LexicalEditorRefPlugin"
 import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin"
 import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary"
 import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin"
-import { $getRoot, EditorState } from "lexical"
+import { $getRoot, EditorState, LexicalEditor } from "lexical"
 
 import { cn } from "@/lib/utils"
 import { ModeSelector } from "./ModeSelector"
@@ -54,7 +55,7 @@ function onError(error: unknown) {
 	console.error(error)
 }
 
-export const ChatLexicalTextArea = forwardRef<HTMLDivElement, ChatTextAreaProps>(
+export const ChatLexicalTextArea = forwardRef<LexicalEditor, ChatTextAreaProps>(
 	(
 		{
 			inputValue,
@@ -693,6 +694,17 @@ export const ChatLexicalTextArea = forwardRef<HTMLDivElement, ChatTextAreaProps>
 								"rounded",
 							)}>
 							<LexicalComposer initialConfig={initialConfig}>
+								{/* this needs to be placed first in plugin list */}
+								{/* see: https://github.com/facebook/lexical/discussions/3590#discussioncomment-8955421 */}
+								<EditorRefPlugin
+									editorRef={(el) => {
+										if (typeof ref === "function") {
+											ref(el)
+										} else if (ref) {
+											ref.current = el
+										}
+									}}
+								/>
 								<PlainTextPlugin
 									contentEditable={
 										<ContentEditable
@@ -750,7 +762,6 @@ export const ChatLexicalTextArea = forwardRef<HTMLDivElement, ChatTextAreaProps>
 												setIsMouseDownOnMenu(false)
 											}}
 											onPaste={handlePaste}
-											ref={ref}
 										/>
 									}
 									ErrorBoundary={LexicalErrorBoundary}
