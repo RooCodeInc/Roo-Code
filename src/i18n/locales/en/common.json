@@ -29,7 +29,7 @@
 		"checkpoint_timeout": "Timed out when attempting to restore checkpoint.",
 		"checkpoint_failed": "Failed to restore checkpoint.",
 		"git_not_installed": "Git is required for the checkpoints feature. Please install Git to enable checkpoints.",
-		"nested_git_repos_warning": "Checkpoints are disabled because a nested git repository was detected at: {{path}}. To use checkpoints, please remove or relocate this nested git repository.",
+		"nested_git_repos_warning": "Checkpoints are disabled because a Git repository was detected below the workspace root at: {{path}}. To use checkpoints, please remove or relocate this git repository, or open a Git repository as the workspace root.\n\nFor more information, see https://docs.roocode.com/features/checkpoints#git-repositories-below-the-workspace-root",
 		"no_workspace": "Please open a project folder first",
 		"update_support_prompt": "Failed to update support prompt",
 		"reset_support_prompt": "Failed to reset support prompt",

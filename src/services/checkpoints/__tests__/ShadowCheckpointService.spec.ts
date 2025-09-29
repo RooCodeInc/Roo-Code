@@ -378,11 +378,11 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 			})
 		})
 
-		describe(`${klass.name}#hasNestedGitRepositories`, () => {
-			it("throws error when nested git repositories are detected during initialization", async () => {
+		describe(`${klass.name}#hasChildGitRepositories`, () => {
+			it("throws error when child git repositories are detected during initialization", async () => {
 				// Create a new temporary workspace and service for this test.
-				const shadowDir = path.join(tmpDir, `${prefix}-nested-git-${Date.now()}`)
-				const workspaceDir = path.join(tmpDir, `workspace-nested-git-${Date.now()}`)
+				const shadowDir = path.join(tmpDir, `${prefix}-child-git-${Date.now()}`)
+				const workspaceDir = path.join(tmpDir, `workspace-child-git-${Date.now()}`)
 
 				// Create a primary workspace repo.
 				await fs.mkdir(workspaceDir, { recursive: true })
@@ -391,19 +391,19 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 				await mainGit.addConfig("user.name", "Roo Code")
 				await mainGit.addConfig("user.email", "support@roocode.com")
 
-				// Create a nested repo inside the workspace.
-				const nestedRepoPath = path.join(workspaceDir, "nested-project")
-				await fs.mkdir(nestedRepoPath, { recursive: true })
-				const nestedGit = simpleGit(nestedRepoPath)
-				await nestedGit.init()
-				await nestedGit.addConfig("user.name", "Roo Code")
-				await nestedGit.addConfig("user.email", "support@roocode.com")
+				// Create a child repo inside the workspace.
+				const childRepoPath = path.join(workspaceDir, "nested-project")
+				await fs.mkdir(childRepoPath, { recursive: true })
+				const childGit = simpleGit(childRepoPath)
+				await childGit.init()
+				await childGit.addConfig("user.name", "Roo Code")
+				await childGit.addConfig("user.email", "support@roocode.com")
 
-				// Add a file to the nested repo.
-				const nestedFile = path.join(nestedRepoPath, "nested-file.txt")
-				await fs.writeFile(nestedFile, "Content in nested repo")
-				await nestedGit.add(".")
-				await nestedGit.commit("Initial commit in nested repo")
+				// Add a file to the child repo.
+				const childFile = path.join(childRepoPath, "nested-file.txt")
+				await fs.writeFile(childFile, "Content in child repo")
+				await childGit.add(".")
+				await childGit.commit("Initial commit in child repo")
 
 				// Create a test file in the main workspace.
 				const mainFile = path.join(workspaceDir, "main-file.txt")
@@ -411,18 +411,18 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 				await mainGit.add(".")
 				await mainGit.commit("Initial commit in main repo")
 
-				// Confirm nested git directory exists before initialization.
-				const nestedGitDir = path.join(nestedRepoPath, ".git")
-				const headFile = path.join(nestedGitDir, "HEAD")
+				// Confirm child git directory exists before initialization.
+				const childGitDir = path.join(childRepoPath, ".git")
+				const headFile = path.join(childGitDir, "HEAD")
 				await fs.writeFile(headFile, "HEAD")
-				expect(await fileExistsAtPath(nestedGitDir)).toBe(true)
+				expect(await fileExistsAtPath(childGitDir)).toBe(true)
 
 				vitest.spyOn(fileSearch, "executeRipgrep").mockImplementation(({ args }) => {
 					const searchPattern = args[4]
 
 					if (searchPattern.includes(".git/HEAD")) {
 						// Return the HEAD file path, not the .git directory
-						const headFilePath = path.join(path.relative(workspaceDir, nestedGitDir), "HEAD")
+						const headFilePath = path.join(path.relative(workspaceDir, childGitDir), "HEAD")
 						return Promise.resolve([
 							{
 								path: headFilePath,
@@ -437,10 +437,10 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 
 				const service = new klass(taskId, shadowDir, workspaceDir, () => {})
 
-				// Verify that initialization throws an error when nested git repos are detected
-				// The error message now includes the specific path of the nested repository
+				// Verify that initialization throws an error when child git repos are detected
+				// The error message now includes the specific path of the child repository
 				await expect(service.initShadowGit()).rejects.toThrowError(
-					/Checkpoints are disabled because a nested git repository was detected at:/,
+					/Checkpoints are disabled because a child git repository was detected at:/,
 				)
 
 				// Clean up.
@@ -449,12 +449,12 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 				await fs.rm(workspaceDir, { recursive: true, force: true })
 			})
 
-			it("succeeds when no nested git repositories are detected", async () => {
+			it("succeeds when no child git repositories are detected", async () => {
 				// Create a new temporary workspace and service for this test.
-				const shadowDir = path.join(tmpDir, `${prefix}-no-nested-git-${Date.now()}`)
-				const workspaceDir = path.join(tmpDir, `workspace-no-nested-git-${Date.now()}`)
+				const shadowDir = path.join(tmpDir, `${prefix}-no-child-git-${Date.now()}`)
+				const workspaceDir = path.join(tmpDir, `workspace-no-child-git-${Date.now()}`)
 
-				// Create a primary workspace repo without any nested repos.
+				// Create a primary workspace repo without any child repos.
 				await fs.mkdir(workspaceDir, { recursive: true })
 				const mainGit = simpleGit(workspaceDir)
 				await mainGit.init()
@@ -468,13 +468,13 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 				await mainGit.commit("Initial commit in main repo")
 
 				vitest.spyOn(fileSearch, "executeRipgrep").mockImplementation(() => {
-					// Return empty array to simulate no nested git repos found
+					// Return empty array to simulate no child git repos found
 					return Promise.resolve([])
 				})
 
 				const service = new klass(taskId, shadowDir, workspaceDir, () => {})
 
-				// Verify that initialization succeeds when no nested git repos are detected
+				// Verify that initialization succeeds when no child git repos are detected
 				await expect(service.initShadowGit()).resolves.not.toThrow()
 				expect(service.isInitialized).toBe(true)
 
