@@ -177,7 +177,7 @@ export interface WebviewMessage {
 		| "maxDiagnosticMessages"
 		| "searchFiles"
 		| "toggleApiConfigPin"
-		| "setApiConfigCustomOrder"
+		| "setApiConfigsCustomOrder"
 		| "moveApiConfigUp"
 		| "moveApiConfigDown"
 		| "setHistoryPreviewCollapsed"
