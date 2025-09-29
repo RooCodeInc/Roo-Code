@@ -70,6 +70,10 @@
 		"description": "Manage your slash commands to quickly execute custom workflows and actions. <DocsLink>Learn more</DocsLink>"
 	},
 	"ui": {
+		"taskTitles": {
+			"label": "Enable editable task titles",
+			"description": "Show and edit custom titles for tasks in chat and history instead of only the original task text"
+		},
 		"collapseThinking": {
 			"label": "Collapse Thinking messages by default",
 			"description": "When enabled, thinking blocks will be collapsed by default until you interact with them"

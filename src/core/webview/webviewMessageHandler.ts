@@ -1668,7 +1668,6 @@ export const webviewMessageHandler = async (
 			await updateGlobalState("hasOpenedModeSelector", message.bool ?? true)
 			await provider.postStateToWebview()
 			break
-
 		case "toggleApiConfigPin":
 			if (message.text) {
 				const currentPinned = getGlobalState("pinnedApiConfigs") ?? {}
