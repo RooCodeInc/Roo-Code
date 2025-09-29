@@ -1,4 +1,5 @@
-import { memo, useEffect, useRef, useState, useMemo } from "react"
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import type { KeyboardEvent as ReactKeyboardEvent } from "react"
 import { useTranslation } from "react-i18next"
 import { useCloudUpsell } from "@src/hooks/useCloudUpsell"
 import { CloudUpsellDialog } from "@src/components/cloud/CloudUpsellDialog"
@@ -12,6 +13,7 @@ import {
 	HardDriveUpload,
 	FoldVertical,
 	Globe,
+	Pencil,
 } from "lucide-react"
 import prettyBytes from "pretty-bytes"
 
@@ -26,6 +28,7 @@ import { StandardTooltip, Button } from "@src/components/ui"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
 import { useSelectedModel } from "@/components/ui/hooks/useSelectedModel"
 import { vscode } from "@src/utils/vscode"
+import { DecoratedVSCodeTextField } from "@src/components/common/DecoratedVSCodeTextField"
 
 import Thumbnails from "../common/Thumbnails"
 
@@ -61,7 +64,13 @@ const TaskHeader = ({
 	todos,
 }: TaskHeaderProps) => {
 	const { t } = useTranslation()
-	const { apiConfiguration, currentTaskItem, clineMessages, isBrowserSessionActive } = useExtensionState()
+	const {
+		apiConfiguration,
+		currentTaskItem,
+		clineMessages,
+		isBrowserSessionActive,
+		taskTitlesEnabled = false,
+	} = useExtensionState()
 	const { id: modelId, info: model } = useSelectedModel(apiConfiguration)
 	const [isTaskExpanded, setIsTaskExpanded] = useState(false)
 	const [showLongRunningTaskMessage, setShowLongRunningTaskMessage] = useState(false)
@@ -93,6 +102,103 @@ const TaskHeader = ({
 		return () => clearTimeout(timer)
 	}, [currentTaskItem, isTaskComplete])
 
+	const [isEditingTitle, setIsEditingTitle] = useState(false)
+	const [titleInput, setTitleInput] = useState(currentTaskItem?.title ?? "")
+	const titleInputRef = useRef<HTMLInputElement | null>(null)
+	const skipBlurSubmitRef = useRef(false)
+	const currentTitle = currentTaskItem?.title?.trim() ?? ""
+
+	useEffect(() => {
+		if (!isEditingTitle) {
+			setTitleInput(currentTaskItem?.title ?? "")
+		}
+	}, [currentTaskItem?.title, isEditingTitle])
+
+	useEffect(() => {
+		setIsEditingTitle(false)
+	}, [currentTaskItem?.id])
+
+	useEffect(() => {
+		if (!taskTitlesEnabled) {
+			setIsEditingTitle(false)
+			return
+		}
+
+		if (isEditingTitle) {
+			skipBlurSubmitRef.current = false
+			requestAnimationFrame(() => {
+				titleInputRef.current?.focus()
+				titleInputRef.current?.select()
+			})
+		}
+	}, [isEditingTitle, taskTitlesEnabled])
+
+	const submitTitle = useCallback(() => {
+		if (!taskTitlesEnabled) {
+			return
+		}
+
+		if (!currentTaskItem) {
+			setIsEditingTitle(false)
+			return
+		}
+
+		const trimmed = titleInput.trim()
+		const existingTrimmed = currentTaskItem.title?.trim() ?? ""
+
+		setIsEditingTitle(false)
+
+		if (trimmed === existingTrimmed) {
+			setTitleInput(currentTaskItem.title ?? "")
+			return
+		}
+
+		vscode.postMessage({
+			type: "setTaskTitle",
+			text: trimmed,
+			ids: [currentTaskItem.id],
+		})
+
+		setTitleInput(trimmed)
+	}, [currentTaskItem, taskTitlesEnabled, titleInput])
+
+	useEffect(() => {
+		if (!isEditingTitle) {
+			skipBlurSubmitRef.current = false
+		}
+	}, [isEditingTitle])
+
+	const handleTitleBlur = useCallback(() => {
+		if (!taskTitlesEnabled) {
+			return
+		}
+		if (skipBlurSubmitRef.current) {
+			skipBlurSubmitRef.current = false
+			return
+		}
+		submitTitle()
+	}, [submitTitle, taskTitlesEnabled])
+
+	const handleTitleKeyDown = useCallback(
+		(event: ReactKeyboardEvent<HTMLInputElement>) => {
+			if (!taskTitlesEnabled) {
+				return
+			}
+
+			if (event.key === "Enter") {
+				event.preventDefault()
+				skipBlurSubmitRef.current = true
+				submitTitle()
+			} else if (event.key === "Escape") {
+				event.preventDefault()
+				skipBlurSubmitRef.current = true
+				setIsEditingTitle(false)
+				setTitleInput(currentTaskItem?.title ?? "")
+			}
+		},
+		[currentTaskItem?.title, submitTitle, taskTitlesEnabled],
+	)
+
 	const textContainerRef = useRef<HTMLDivElement>(null)
 	const textRef = useRef<HTMLDivElement>(null)
 	const contextWindow = model?.contextWindow || 1
@@ -118,7 +224,96 @@ const TaskHeader = ({
 		/>
 	)
 
+	const renderTitleEditor = () => (
+		<div onClick={(event) => event.stopPropagation()} className="w-full" data-testid="task-title-editor">
+			<DecoratedVSCodeTextField
+				ref={titleInputRef}
+				value={titleInput}
+				onInput={(event: any) => setTitleInput(event.target.value)}
+				onBlur={handleTitleBlur}
+				onKeyDown={handleTitleKeyDown}
+				placeholder={t("chat:task.titlePlaceholder")}
+				data-testid="task-title-input"
+			/>
+		</div>
+	)
+
+	const renderTitleAction = () => {
+		if (!taskTitlesEnabled || !currentTaskItem || isEditingTitle) {
+			return null
+		}
+
+		const tooltipKey = currentTitle.length > 0 ? "chat:task.editTitle" : "chat:task.addTitle"
+
+		return (
+			<StandardTooltip content={t(tooltipKey)}>
+				<button
+					type="button"
+					className="shrink-0 min-h-[20px] min-w-[20px] p-[2px] cursor-pointer opacity-85 hover:opacity-100 bg-transparent border-none rounded-md text-inherit"
+					onClick={(event) => {
+						event.stopPropagation()
+						skipBlurSubmitRef.current = false
+						setTitleInput(currentTitle)
+						setIsEditingTitle(true)
+					}}
+					aria-label={t(tooltipKey)}
+					data-testid="task-title-edit-button">
+					<Pencil size={16} />
+				</button>
+			</StandardTooltip>
+		)
+	}
+
+	const renderCollapsedTitleContent = () => {
+		if (!taskTitlesEnabled || !currentTaskItem) {
+			return (
+				<span className="whitespace-nowrap overflow-hidden text-ellipsis">
+					<Mention text={task.text} />
+				</span>
+			)
+		}
+
+		if (isEditingTitle) {
+			return renderTitleEditor()
+		}
+
+		if (currentTitle.length > 0) {
+			return (
+				<span className="truncate text-base" data-testid="task-title-text">
+					{currentTitle}
+				</span>
+			)
+		}
+
+		return (
+			<span className="whitespace-nowrap overflow-hidden text-ellipsis">
+				<Mention text={task.text} />
+			</span>
+		)
+	}
+
+	const renderExpandedTitleContent = () => {
+		if (!taskTitlesEnabled || !currentTaskItem) {
+			return null
+		}
+
+		if (isEditingTitle) {
+			return renderTitleEditor()
+		}
+
+		if (currentTitle.length > 0) {
+			return (
+				<span className="text-base" data-testid="task-title-text">
+					{currentTitle}
+				</span>
+			)
+		}
+
+		return null
+	}
+
 	const hasTodos = todos && Array.isArray(todos) && todos.length > 0
+	const expandedTitleContent = renderExpandedTitleContent()
 
 	return (
 		<div className="group pt-2 pb-0 px-3">
@@ -169,18 +364,25 @@ const TaskHeader = ({
 				<div className="flex justify-between items-center gap-0">
 					<div className="flex items-center select-none grow min-w-0">
 						<div className="grow min-w-0">
-							{isTaskExpanded && <span className="font-bold">{t("chat:task.title")}</span>}
-							{!isTaskExpanded && (
-								<div className="flex items-center gap-2">
+							{isTaskExpanded ? (
+								<div className="flex flex-col gap-1 min-w-0">
+									<div className="flex items-center gap-2">
+										<span className="font-bold">{t("chat:task.title")}</span>
+										{renderTitleAction()}
+									</div>
+									{expandedTitleContent ? <div className="min-w-0">{expandedTitleContent}</div> : null}
+								</div>
+							) : (
+								<div className="flex items-center gap-2 min-w-0">
 									<SquarePen className="size-3 shrink-0" />
-									<span className="whitespace-nowrap overflow-hidden text-ellipsis">
-										<Mention text={task.text} />
-									</span>
+									<div className="min-w-0 flex-1">{renderCollapsedTitleContent()}</div>
+									{renderTitleAction()}
 								</div>
 							)}
 						</div>
 						<div className="flex items-center shrink-0 ml-2" onClick={(e) => e.stopPropagation()}>
-							<StandardTooltip content={isTaskExpanded ? t("chat:task.collapse") : t("chat:task.expand")}>
+							<StandardTooltip
+								content={isTaskExpanded ? t("chat:task.collapse") : t("chat:task.expand")}>
 								<button
 									onClick={() => setIsTaskExpanded(!isTaskExpanded)}
 									className="shrink-0 min-h-[20px] min-w-[20px] p-[2px] cursor-pointer opacity-85 hover:opacity-100 bg-transparent border-none rounded-md">
@@ -319,7 +521,7 @@ const TaskHeader = ({
 												{t("chat:task.contextWindow")}
 											</th>
 											<td className="font-light align-top">
-												<div className={`max-w-md -mt-1.5 flex flex-nowrap gap-1`}>
+												<div className="max-w-md -mt-1.5 flex flex-nowrap gap-1">
 													<ContextWindowProgress
 														contextWindow={contextWindow}
 														contextTokens={contextTokens || 0}

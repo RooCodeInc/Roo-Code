@@ -9,6 +9,7 @@ import TaskItemFooter from "./TaskItemFooter"
 
 interface DisplayHistoryItem extends HistoryItem {
 	highlight?: string
+	titleHighlight?: string
 }
 
 interface TaskItemProps {
@@ -69,6 +70,26 @@ const TaskItem = ({
 				)}
 
 				<div className="flex-1 min-w-0">
+					{(item.title || item.titleHighlight) &&
+						(item.titleHighlight ? (
+							<div
+								className={cn("text-vscode-foreground font-semibold truncate mb-1", {
+									"text-base": !isCompact,
+									"text-sm": isCompact,
+								})}
+								data-testid="task-item-title"
+								dangerouslySetInnerHTML={{ __html: item.titleHighlight }}
+							/>
+						) : (
+							<div
+								className={cn("text-vscode-foreground font-semibold truncate mb-1", {
+									"text-base": !isCompact,
+									"text-sm": isCompact,
+								})}
+								data-testid="task-item-title">
+								{item.title}
+							</div>
+						))}
 					<div
 						className={cn(
 							"overflow-hidden whitespace-pre-wrap font-light text-vscode-foreground text-ellipsis line-clamp-3",
