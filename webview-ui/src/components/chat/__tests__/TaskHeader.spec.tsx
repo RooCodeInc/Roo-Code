@@ -49,6 +49,7 @@ let mockExtensionState: {
 	apiConfiguration: ProviderSettings
 	currentTaskItem: { id: string } | null
 	clineMessages: any[]
+	taskTitlesEnabled: boolean
 } = {
 	apiConfiguration: {
 		apiProvider: "anthropic",
@@ -57,6 +58,7 @@ let mockExtensionState: {
 	} as ProviderSettings,
 	currentTaskItem: { id: "test-task-id" },
 	clineMessages: [],
+	taskTitlesEnabled: true,
 }
 
 // Mock the ExtensionStateContext
@@ -111,6 +113,7 @@ describe("TaskHeader", () => {
 			} as ProviderSettings,
 			currentTaskItem: { id: "test-task-id" },
 			clineMessages: [],
+			taskTitlesEnabled: true,
 		}
 	})
 	const defaultProps: TaskHeaderProps = {
@@ -221,6 +224,14 @@ describe("TaskHeader", () => {
 		})
 	})
 
+	it("hides title controls when task titles are disabled", () => {
+		mockExtensionState.taskTitlesEnabled = false
+		renderTaskHeader()
+
+		expect(screen.queryByTestId("task-title-edit-button")).not.toBeInTheDocument()
+		expect(screen.queryByTestId("task-title-display")).not.toBeInTheDocument()
+	})
+
 	describe("DismissibleUpsell behavior", () => {
 		beforeEach(() => {
 			vi.useFakeTimers()
@@ -233,6 +244,7 @@ describe("TaskHeader", () => {
 				} as ProviderSettings,
 				currentTaskItem: { id: "test-task-id" },
 				clineMessages: [],
+				taskTitlesEnabled: true,
 			}
 		})
 

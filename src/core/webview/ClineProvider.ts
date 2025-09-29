@@ -1960,6 +1960,7 @@ export class ClineProvider
 			historyPreviewCollapsed,
 			reasoningBlockCollapsed,
 			enterBehavior,
+			taskTitlesEnabled,
 			cloudUserInfo,
 			cloudIsAuthenticated,
 			sharingEnabled,
@@ -2050,6 +2051,7 @@ export class ClineProvider
 			taskHistory: (taskHistory || [])
 				.filter((item: HistoryItem) => item.ts && item.task)
 				.sort((a: HistoryItem, b: HistoryItem) => b.ts - a.ts),
+			taskTitlesEnabled: taskTitlesEnabled ?? false,
 			soundEnabled: soundEnabled ?? false,
 			ttsEnabled: ttsEnabled ?? false,
 			ttsSpeed: ttsSpeed ?? 1.0,
@@ -2358,6 +2360,7 @@ export class ClineProvider
 			historyPreviewCollapsed: stateValues.historyPreviewCollapsed ?? false,
 			reasoningBlockCollapsed: stateValues.reasoningBlockCollapsed ?? true,
 			enterBehavior: stateValues.enterBehavior ?? "send",
+			taskTitlesEnabled: stateValues.taskTitlesEnabled ?? false,
 			cloudUserInfo,
 			cloudIsAuthenticated,
 			sharingEnabled,

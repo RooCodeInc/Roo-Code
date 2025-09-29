@@ -212,6 +212,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		includeCurrentTime,
 		includeCurrentCost,
 		maxGitStatusFiles,
+		taskTitlesEnabled,
 	} = cachedState
 
 	const apiConfiguration = useMemo(() => cachedState.apiConfiguration ?? {}, [cachedState.apiConfiguration])
@@ -410,6 +411,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					condensingApiConfigId: condensingApiConfigId || "",
 					includeTaskHistoryInEnhance: includeTaskHistoryInEnhance ?? true,
 					reasoningBlockCollapsed: reasoningBlockCollapsed ?? true,
+					taskTitlesEnabled: taskTitlesEnabled ?? false,
 					enterBehavior: enterBehavior ?? "send",
 					includeCurrentTime: includeCurrentTime ?? true,
 					includeCurrentCost: includeCurrentCost ?? true,
@@ -828,6 +830,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					{/* UI Section */}
 					{activeTab === "ui" && (
 						<UISettings
+							taskTitlesEnabled={taskTitlesEnabled ?? false}
 							reasoningBlockCollapsed={reasoningBlockCollapsed ?? true}
 							enterBehavior={enterBehavior ?? "send"}
 							setCachedStateField={setCachedStateField}

@@ -4,6 +4,7 @@ import type { HistoryItem } from "@roo-code/types"
 import { vscode } from "@/utils/vscode"
 import { cn } from "@/lib/utils"
 import { Checkbox } from "@/components/ui/checkbox"
+import { useExtensionState } from "@/context/ExtensionStateContext"
 
 import TaskItemFooter from "./TaskItemFooter"
 
@@ -33,6 +34,7 @@ const TaskItem = ({
 	onDelete,
 	className,
 }: TaskItemProps) => {
+	const { taskTitlesEnabled = false } = useExtensionState()
 	const handleClick = () => {
 		if (isSelectionMode && onToggleSelection) {
 			onToggleSelection(item.id, !isSelected)
@@ -42,6 +44,9 @@ const TaskItem = ({
 	}
 
 	const isCompact = variant === "compact"
+	const showTitle = taskTitlesEnabled && Boolean(item.title?.trim())
+	const displayHighlight = showTitle && item.titleHighlight ? item.titleHighlight : item.highlight
+	const displayText = showTitle && item.title ? item.title : item.task
 
 	return (
 		<div
@@ -70,37 +75,24 @@ const TaskItem = ({
 				)}
 
 				<div className="flex-1 min-w-0">
-					{(item.title || item.titleHighlight) &&
-						(item.titleHighlight ? (
-							<div
-								className={cn("text-vscode-foreground font-semibold truncate mb-1", {
-									"text-base": !isCompact,
-									"text-sm": isCompact,
-								})}
-								data-testid="task-item-title"
-								dangerouslySetInnerHTML={{ __html: item.titleHighlight }}
-							/>
-						) : (
-							<div
-								className={cn("text-vscode-foreground font-semibold truncate mb-1", {
-									"text-base": !isCompact,
-									"text-sm": isCompact,
-								})}
-								data-testid="task-item-title">
-								{item.title}
-							</div>
-						))}
 					<div
 						className={cn(
 							"overflow-hidden whitespace-pre-wrap font-light text-vscode-foreground text-ellipsis line-clamp-3",
 							{
 								"text-base": !isCompact,
+								"text-sm": isCompact,
 							},
 							!isCompact && isSelectionMode ? "mb-1" : "",
 						)}
-						data-testid="task-content"
-						{...(item.highlight ? { dangerouslySetInnerHTML: { __html: item.highlight } } : {})}>
-						{item.highlight ? undefined : item.task}
+						data-testid="task-content">
+						{displayHighlight ? (
+							<span
+								className={cn(showTitle && "font-semibold")}
+								dangerouslySetInnerHTML={{ __html: displayHighlight }}
+							/>
+						) : (
+							<span className={cn(showTitle && "font-semibold")}>{displayText}</span>
+						)}
 					</div>
 
 					<TaskItemFooter

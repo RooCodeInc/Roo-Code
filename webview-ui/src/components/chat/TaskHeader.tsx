@@ -370,7 +370,9 @@ const TaskHeader = ({
 										<span className="font-bold">{t("chat:task.title")}</span>
 										{renderTitleAction()}
 									</div>
-									{expandedTitleContent ? <div className="min-w-0">{expandedTitleContent}</div> : null}
+									{expandedTitleContent ? (
+										<div className="min-w-0">{expandedTitleContent}</div>
+									) : null}
 								</div>
 							) : (
 								<div className="flex items-center gap-2 min-w-0">
