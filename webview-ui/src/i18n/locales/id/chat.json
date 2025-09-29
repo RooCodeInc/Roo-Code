@@ -242,6 +242,9 @@
 	},
 	"response": "Respons",
 	"arguments": "Argumen",
+	"text": {
+		"rooSaid": "Roo berkata"
+	},
 	"feedback": {
 		"youSaid": "Anda bilang"
 	},
@@ -280,6 +283,7 @@
 		"tooltipManage": "Kelola pengaturan persetujuan otomatis",
 		"tooltipStatus": "Persetujuan otomatis diaktifkan untuk: {{toggles}}",
 		"title": "Setujui Otomatis",
+		"toggle": "Beralih persetujuan otomatis",
 		"all": "Semua",
 		"none": "Tidak ada",
 		"description": "Jalankan tindakan ini tanpa meminta izin. Hanya aktifkan untuk tindakan yang Anda percayai sepenuhnya.",
@@ -294,12 +298,14 @@
 	},
 	"announcement": {
 		"title": "🎉 Roo Code {{version}} Dirilis",
-		"description": "Memperkenalkan <bold>Roo Code Cloud:</bold> Membawa kekuatan Roo melampaui IDE",
-		"feature1": "<bold>Lacak kemajuan tugas dari mana saja (Gratis):</bold> Dapatkan pembaruan real-time tentang tugas yang berjalan lama tanpa terjebak di IDE Anda",
-		"feature2": "<bold>Kontrol Ekstensi Roo dari jarak jauh (Pro):</bold> Mulai, hentikan, dan berinteraksi dengan tugas dari antarmuka browser berbasis chat.",
-		"learnMore": "Siap mengambil kontrol? Pelajari lebih lanjut <learnMoreLink>di sini</learnMoreLink>.",
-		"visitCloudButton": "Kunjungi Roo Code Cloud",
-		"socialLinks": "Bergabunglah dengan kami di <xLink>X</xLink>, <discordLink>Discord</discordLink>, atau <redditLink>r/RooCode</redditLink>"
+		"stealthModel": {
+			"feature": "<bold>Model stealth GRATIS waktu terbatas</bold> - Code Supernova: Sekarang diupgrade dengan <bold>jendela konteks 1M token</bold>! Model coding agentik serbaguna yang mendukung input gambar, tersedia melalui Roo Code Cloud.",
+			"note": "(Catatan: prompt dan completion dicatat oleh pembuat model dan digunakan untuk meningkatkan model)",
+			"connectButton": "Hubungkan ke Roo Code Cloud",
+			"selectModel": "Pilih <code>roo/code-supernova</code> dari penyedia Roo Code Cloud di Pengaturan untuk memulai.",
+			"goToSettingsButton": "Pergi ke Pengaturan"
+		},
+		"socialLinks": "Bergabunglah dengan kami di <xLink>X</xLink>, <discordLink>Discord</discordLink>, atau <redditLink>r/RooCode</redditLink> 🚀"
 	},
 	"reasoning": {
 		"thinking": "Berpikir",
@@ -336,8 +342,6 @@
 		"tooltips": {
 			"expand": "Perluas blok kode",
 			"collapse": "Tutup blok kode",
-			"enable_wrap": "Aktifkan word wrap",
-			"disable_wrap": "Nonaktifkan word wrap",
 			"copy_code": "Salin kode"
 		}
 	},
@@ -414,17 +418,5 @@
 	"slashCommand": {
 		"wantsToRun": "Roo ingin menjalankan perintah slash",
 		"didRun": "Roo telah menjalankan perintah slash"
-	},
-	"ask": {
-		"autoApprovedRequestLimitReached": {
-			"title": "Batas Permintaan yang Disetujui Otomatis Tercapai",
-			"description": "Roo telah mencapai batas {{count}} permintaan API yang disetujui otomatis. Apakah Anda ingin mengatur ulang hitungan dan melanjutkan tugas?",
-			"button": "Setel Ulang dan Lanjutkan"
-		},
-		"autoApprovedCostLimitReached": {
-			"title": "Batas Biaya yang Disetujui Otomatis Tercapai",
-			"description": "Roo telah mencapai batas biaya yang disetujui otomatis sebesar ${{count}}. Apakah Anda ingin mengatur ulang biaya dan melanjutkan tugas?",
-			"button": "Setel Ulang dan Lanjutkan"
-		}
 	}
 }

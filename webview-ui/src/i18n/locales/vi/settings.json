@@ -30,6 +30,7 @@
 		"terminal": "Terminal",
 		"slashCommands": "Lệnh Gạch Chéo",
 		"prompts": "Lời nhắc",
+		"ui": "UI",
 		"experimental": "Thử nghiệm",
 		"language": "Ngôn ngữ",
 		"about": "Giới thiệu"
@@ -134,6 +135,7 @@
 		"resetToDefault": "Đặt lại về mặc định"
 	},
 	"autoApprove": {
+		"toggleShortcut": "Bạn có thể định cấu hình một phím tắt chung cho cài đặt này <SettingsLink>trong tùy chọn IDE của bạn</SettingsLink>.",
 		"description": "Cho phép Roo tự động thực hiện các hoạt động mà không cần phê duyệt. Chỉ bật những cài đặt này nếu bạn hoàn toàn tin tưởng AI và hiểu rõ các rủi ro bảo mật liên quan.",
 		"enabled": "Phê duyệt tự động đã bật",
 		"toggleAriaLabel": "Chuyển đổi tự động phê duyệt",
@@ -380,6 +382,8 @@
 			"modelId": "ID mô hình",
 			"apiKey": "Khóa API Ollama",
 			"apiKeyHelp": "Khóa API tùy chọn cho các phiên bản Ollama đã xác thực hoặc dịch vụ đám mây. Để trống cho cài đặt cục bộ.",
+			"numCtx": "Kích thước cửa sổ ngữ cảnh (num_ctx)",
+			"numCtxHelp": "Ghi đè kích thước cửa sổ ngữ cảnh mặc định của mô hình. Để trống để sử dụng cấu hình Modelfile của mô hình. Giá trị tối thiểu là 128.",
 			"description": "Ollama cho phép bạn chạy các mô hình cục bộ trên máy tính của bạn. Để biết hướng dẫn về cách bắt đầu, xem hướng dẫn nhanh của họ.",
 			"warning": "Lưu ý: Roo Code sử dụng các lời nhắc phức tạp và hoạt động tốt nhất với các mô hình Claude. Các mô hình kém mạnh hơn có thể không hoạt động như mong đợi."
 		},
@@ -876,6 +880,12 @@
 			"input": "Đầu vào",
 			"output": "Đầu ra",
 			"cacheReads": "Lượt đọc bộ nhớ đệm"
+		}
+	},
+	"ui": {
+		"collapseThinking": {
+			"label": "Thu gọn tin nhắn Suy nghĩ theo mặc định",
+			"description": "Khi được bật, các khối suy nghĩ sẽ được thu gọn theo mặc định cho đến khi bạn tương tác với chúng"
 		}
 	}
 }

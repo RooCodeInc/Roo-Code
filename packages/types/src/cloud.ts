@@ -239,9 +239,10 @@ export interface AuthService extends EventEmitter<AuthServiceEvents> {
 	broadcast(): void
 
 	// Authentication methods
-	login(): Promise<void>
+	login(landingPageSlug?: string): Promise<void>
 	logout(): Promise<void>
 	handleCallback(code: string | null, state: string | null, organizationId?: string | null): Promise<void>
+	switchOrganization(organizationId: string | null): Promise<void>
 
 	// State methods
 	getState(): AuthState
@@ -253,6 +254,9 @@ export interface AuthService extends EventEmitter<AuthServiceEvents> {
 	getSessionToken(): string | undefined
 	getUserInfo(): CloudUserInfo | null
 	getStoredOrganizationId(): string | null
+
+	// Organization management
+	getOrganizationMemberships(): Promise<CloudOrganizationMembership[]>
 }
 
 /**

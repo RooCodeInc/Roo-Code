@@ -8,6 +8,7 @@ import type {
 	AuthService,
 	SettingsService,
 	CloudUserInfo,
+	CloudOrganizationMembership,
 	OrganizationAllowList,
 	OrganizationSettings,
 	ShareVisibility,
@@ -170,9 +171,9 @@ export class CloudService extends EventEmitter<CloudServiceEvents> implements Di
 
 	// AuthService
 
-	public async login(): Promise<void> {
+	public async login(landingPageSlug?: string): Promise<void> {
 		this.ensureInitialized()
-		return this.authService!.login()
+		return this.authService!.login(landingPageSlug)
 	}
 
 	public async logout(): Promise<void> {
@@ -240,6 +241,21 @@ export class CloudService extends EventEmitter<CloudServiceEvents> implements Di
 	): Promise<void> {
 		this.ensureInitialized()
 		return this.authService!.handleCallback(code, state, organizationId)
+	}
+
+	public async switchOrganization(organizationId: string | null): Promise<void> {
+		this.ensureInitialized()
+
+		// Perform the organization switch
+		// StaticTokenAuthService will throw an error if organization switching is not supported
+		await this.authService!.switchOrganization(organizationId)
+	}
+
+	public async getOrganizationMemberships(): Promise<CloudOrganizationMembership[]> {
+		this.ensureInitialized()
+
+		// StaticTokenAuthService will throw an error if organization memberships are not supported
+		return await this.authService!.getOrganizationMemberships()
 	}
 
 	// SettingsService

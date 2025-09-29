@@ -1044,6 +1044,18 @@ export const webviewMessageHandler = async (
 
 			break
 		}
+		case "openKeyboardShortcuts": {
+			// Open VSCode keyboard shortcuts settings and optionally filter to show the Roo Code commands
+			const searchQuery = message.text || ""
+			if (searchQuery) {
+				// Open with a search query pre-filled
+				await vscode.commands.executeCommand("workbench.action.openGlobalKeybindings", searchQuery)
+			} else {
+				// Just open the keyboard shortcuts settings
+				await vscode.commands.executeCommand("workbench.action.openGlobalKeybindings")
+			}
+			break
+		}
 		case "openMcpSettings": {
 			const mcpSettingsFilePath = await provider.getMcpHub()?.getMcpSettingsFilePath()
 
@@ -1603,6 +1615,10 @@ export const webviewMessageHandler = async (
 			break
 		case "setHistoryPreviewCollapsed": // Add the new case handler
 			await updateGlobalState("historyPreviewCollapsed", message.bool ?? false)
+			// No need to call postStateToWebview here as the UI already updated optimistically
+			break
+		case "setReasoningBlockCollapsed":
+			await updateGlobalState("reasoningBlockCollapsed", message.bool ?? true)
 			// No need to call postStateToWebview here as the UI already updated optimistically
 			break
 		case "toggleApiConfigPin":
@@ -2280,9 +2296,25 @@ export const webviewMessageHandler = async (
 
 		case "telemetrySetting": {
 			const telemetrySetting = message.text as TelemetrySetting
-			await updateGlobalState("telemetrySetting", telemetrySetting)
+			const previousSetting = getGlobalState("telemetrySetting") || "unset"
 			const isOptedIn = telemetrySetting !== "disabled"
-			TelemetryService.instance.updateTelemetryState(isOptedIn)
+			const wasPreviouslyOptedIn = previousSetting !== "disabled"
+
+			// If turning telemetry OFF, fire event BEFORE disabling
+			if (wasPreviouslyOptedIn && !isOptedIn && TelemetryService.hasInstance()) {
+				TelemetryService.instance.captureTelemetrySettingsChanged(previousSetting, telemetrySetting)
+			}
+			// Update the telemetry state
+			await updateGlobalState("telemetrySetting", telemetrySetting)
+			if (TelemetryService.hasInstance()) {
+				TelemetryService.instance.updateTelemetryState(isOptedIn)
+			}
+
+			// If turning telemetry ON, fire event AFTER enabling
+			if (!wasPreviouslyOptedIn && isOptedIn && TelemetryService.hasInstance()) {
+				TelemetryService.instance.captureTelemetrySettingsChanged(previousSetting, telemetrySetting)
+			}
+
 			await provider.postStateToWebview()
 			break
 		}
@@ -2300,6 +2332,17 @@ export const webviewMessageHandler = async (
 				vscode.window.showErrorMessage("Sign in failed.")
 			}
 
+			break
+		}
+		case "cloudLandingPageSignIn": {
+			try {
+				const landingPageSlug = message.text || "supernova"
+				TelemetryService.instance.captureEvent(TelemetryEventName.AUTHENTICATION_INITIATED)
+				await CloudService.instance.login(landingPageSlug)
+			} catch (error) {
+				provider.log(`CloudService#login failed: ${error}`)
+				vscode.window.showErrorMessage("Sign in failed.")
+			}
 			break
 		}
 		case "rooCloudSignOut": {
@@ -2354,6 +2397,38 @@ export const webviewMessageHandler = async (
 				vscode.window.showErrorMessage(`${t("common:errors.manual_url_auth_error")}: ${errorMessage}`)
 			}
 
+			break
+		}
+		case "switchOrganization": {
+			try {
+				const organizationId = message.organizationId ?? null
+
+				// Switch to the new organization context
+				await CloudService.instance.switchOrganization(organizationId)
+
+				// Refresh the state to update UI
+				await provider.postStateToWebview()
+
+				// Send success response back to webview
+				await provider.postMessageToWebview({
+					type: "organizationSwitchResult",
+					success: true,
+					organizationId: organizationId,
+				})
+			} catch (error) {
+				provider.log(`Organization switch failed: ${error}`)
+				const errorMessage = error instanceof Error ? error.message : String(error)
+
+				// Send error response back to webview
+				await provider.postMessageToWebview({
+					type: "organizationSwitchResult",
+					success: false,
+					error: errorMessage,
+					organizationId: message.organizationId ?? null,
+				})
+
+				vscode.window.showErrorMessage(`Failed to switch organization: ${errorMessage}`)
+			}
 			break
 		}
 

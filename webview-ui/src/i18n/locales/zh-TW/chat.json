@@ -224,7 +224,6 @@
 	"commandExecution": {
 		"running": "正在執行",
 		"abort": "中止",
-		"running": "執行中",
 		"pid": "PID: {{pid}}",
 		"exitStatus": "已結束，狀態碼 {{exitCode}}",
 		"manageCommands": "管理命令權限",
@@ -241,6 +240,9 @@
 	},
 	"response": "回應",
 	"arguments": "參數",
+	"text": {
+		"rooSaid": "Roo 說"
+	},
 	"feedback": {
 		"youSaid": "您說"
 	},
@@ -279,6 +281,7 @@
 		"tooltipManage": "管理自動批准設定",
 		"tooltipStatus": "自動批准已啟用：{{toggles}}",
 		"title": "自動批准",
+		"toggle": "切換自動批准",
 		"all": "全部",
 		"none": "無",
 		"description": "無需請求權限即可執行這些操作。僅對您完全信任的操作啟用此功能。",
@@ -293,12 +296,14 @@
 	},
 	"announcement": {
 		"title": "🎉 Roo Code {{version}} 已發布",
-		"description": "介紹 <bold>Roo Code Cloud：</bold>將 Roo 的強大功能延伸到 IDE 之外",
-		"feature1": "<bold>隨時隨地追蹤任務進度（免費）：</bold>取得長時間執行任務的即時更新，無需被困在 IDE 中",
-		"feature2": "<bold>遠端控制 Roo 擴充功能（Pro）：</bold>透過基於聊天的瀏覽器介面啟動、停止並與任務互動。",
-		"learnMore": "準備好掌控一切了嗎？在<learnMoreLink>這裡</learnMoreLink>了解更多。",
-		"visitCloudButton": "造訪 Roo Code Cloud",
-		"socialLinks": "在 <xLink>X</xLink>、<discordLink>Discord</discordLink> 或 <redditLink>r/RooCode</redditLink> 上關注我們"
+		"stealthModel": {
+			"feature": "<bold>限時免費隱形模型</bold> - Code Supernova：現已升級為 <bold>1M Token 上下文視窗</bold>！一個支援圖像輸入的多功能代理程式編程模型，透過 Roo Code Cloud 提供。",
+			"note": "(注意：提示和完成會被模型創建者記錄並用於改進模型)",
+			"connectButton": "連接到 Roo Code Cloud",
+			"selectModel": "在設定中從 Roo Code Cloud 提供商選擇 <code>roo/code-supernova</code> 開始使用。",
+			"goToSettingsButton": "前往設定"
+		},
+		"socialLinks": "在 <xLink>X</xLink>、<discordLink>Discord</discordLink> 或 <redditLink>r/RooCode</redditLink> 上關注我們 🚀"
 	},
 	"reasoning": {
 		"thinking": "思考中",
@@ -335,8 +340,6 @@
 		"tooltips": {
 			"expand": "展開程式碼區塊",
 			"collapse": "摺疊程式碼區塊",
-			"enable_wrap": "啟用自動換行",
-			"disable_wrap": "停用自動換行",
 			"copy_code": "複製程式碼"
 		}
 	},
@@ -410,17 +413,5 @@
 	"slashCommand": {
 		"wantsToRun": "Roo 想要執行斜線指令",
 		"didRun": "Roo 執行了斜線指令"
-	},
-	"ask": {
-		"autoApprovedRequestLimitReached": {
-			"title": "已達自動核准請求上限",
-			"description": "Roo 已達到 {{count}} 次 API 請求的自動核准上限。您想重設計數並繼續工作嗎？",
-			"button": "重設並繼續"
-		},
-		"autoApprovedCostLimitReached": {
-			"title": "已達自動核准費用上限",
-			"description": "Roo 已達到 ${{count}} 的自動核准費用上限。您想重設費用並繼續工作嗎？",
-			"button": "重設並繼續"
-		}
 	}
 }
