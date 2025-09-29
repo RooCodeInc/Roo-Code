@@ -4,45 +4,114 @@ import { useRef, useCallback, useEffect } from "react"
 import { motion } from "framer-motion"
 import useEmblaCarousel from "embla-carousel-react"
 import AutoPlay from "embla-carousel-autoplay"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { ChevronLeft, ChevronRight, Star } from "lucide-react"
 
 export interface Testimonial {
-	id: number
 	name: string
 	role: string
-	company: string
-	image?: string
+	origin: string
 	quote: string
+	image?: string
+	stars?: number
 }
 
 export const testimonials: Testimonial[] = [
 	{
-		id: 1,
 		name: "Luca",
 		role: "Reviewer",
-		company: "VS Code Marketplace",
+		origin: "VS Code Marketplace",
 		quote: "Roo Code is an absolute game-changer! 🚀 It makes coding faster, easier, and more intuitive with its smart AI-powered suggestions, real-time debugging, and automation features. The seamless integration with VS Code is a huge plus, and the constant updates ensure it keeps getting better",
+		stars: 5,
 	},
 	{
-		id: 2,
 		name: "Taro Woollett-Chiba",
 		role: "AI Product Lead",
-		company: "Vendidit",
+		origin: "Vendidit",
 		quote: "Easily the best AI code editor. Roo Code has the best features and capabilities, along with the best development team. I swear, they're the fastest to support new models and implement useful functionality whenever users mention it... simply amazing.",
 	},
 	{
-		id: 3,
 		name: "Can Nuri",
 		role: "Reviewer",
-		company: "VS Code Marketplace",
+		origin: "VS Code Marketplace",
 		quote: "Roo Code is one of the most inspiring projects I have seen for a long time. It shapes the way I think and deal with software development.",
+		stars: 5,
 	},
 	{
-		id: 4,
 		name: "Michael",
 		role: "Reviewer",
-		company: "VS Code Marketplace",
+		origin: "VS Code Marketplace",
 		quote: "I switched from Windsurf to Roo Code in January and honestly, it's been a huge upgrade. Windsurf kept making mistakes and being dumb when I ask it for things. Roo just gets it. Projects that used to take a full day now wrap up before lunch. ",
+		stars: 5,
+	},
+	{
+		name: "Darien Hardin",
+		role: "Reviewer",
+		origin: "VS Code Marketplace",
+		quote: "By far the best coding tool I have used. Looking forward to where this goes in the future. Also, their Discord is an excellent resource with many knowledgeable users sharing their discoveries.",
+		stars: 5,
+	},
+	{
+		name: "Wiliam Azzam",
+		role: "Reviewer",
+		origin: "VS Code Marketplace",
+		quote: "I've tried Cursor, Windsurf, Cline, Trae and others, and although using RooCode with OpenRouter is more expensive, it is also far more effective. Its agents and initial setup, and learning how to use Code/Architect/Orchestrator, help a great deal in developing quality projects.",
+		stars: 5,
+	},
+	{
+		name: "Matěj Zapletal",
+		role: "Reviewer",
+		origin: "VS Code Marketplace",
+		quote: "Definitely the best AI coding agent extension.",
+		stars: 5,
+	},
+	{
+		name: "Ali Davachi",
+		role: "Reviewer",
+		origin: "VS Code Marketplace",
+		quote: "We tried the rest, now we are using the best.  The alternatives are more restrictive.  I didn't use competitors for a reason.  This team is killing it.",
+		stars: 5,
+	},
+	{
+		name: "Ryan Booth",
+		role: "Reviewer",
+		origin: "VS Code Marketplace",
+		quote: "I work inside Roo about 60+ hours a week and usually roo is building something at all hours of the day. An amazing tool by an amazing team!",
+		stars: 5,
+	},
+	{
+		name: "Matthew Martin",
+		role: "Reviewer",
+		origin: "VS Code Marketplace",
+		quote: "i spent a fortune trying to dial in various tools to get them to work the way i want, and then i found roocode.  customizable for your flavors on your terms.  this is what i always wanted.",
+		stars: 5,
+	},
+	{
+		name: "Edwin Jacques",
+		role: "Reviewer",
+		origin: "VS Code Marketplace",
+		quote: "The BEST. Super fast, no-nonsense, UI that makes sense, many API provider choices, responsive, helpful developer community.",
+		stars: 5,
+	},
+	{
+		name: "Sean McCann",
+		role: "Reviewer",
+		origin: "VS Code Marketplace",
+		quote: "Roo Code is impressively capable while staying refreshingly simple. It integrates seamlessly into VS Code and handles everything from generating code to refactoring with accuracy and speed. It feels like a natural part of the workflow—no clutter, just results. Extra points for the flexibility of the different agents and the ability to customize them to fit the job.",
+		stars: 5,
+	},
+	{
+		name: "Colin Tate",
+		role: "Reviewer",
+		origin: "VS Code Marketplace",
+		quote: "Absolutely amazing extension. I had tried Cursor previously, and this just beats it hands down. I've used it for several large projects now, and it is now my go-to for creating things that would normally take weeks or months. Highly recommended.",
+		stars: 5,
+	},
+	{
+		name: "Michael Scott",
+		role: "Reviewer",
+		origin: "VS Code Marketplace",
+		quote: "I've used all the IDEs and all the assistants - Roo Code is hands down the best of them. It's also one of the few that lets you bring your own API keys - no subscriptions required, just pay as you need/go! Fantastic team and support as well!",
+		stars: 5,
 	},
 ]
 
@@ -127,7 +196,7 @@ export function Testimonials() {
 						AI-forward developers are using Roo Code
 					</h2>
 					<p className="mt-6 text-lg text-muted-foreground">
-						Join more than 800k people revolutionizing their workflow worldwide
+						Join more than 1M people revolutionizing their workflow worldwide
 					</p>
 				</div>
 
@@ -162,7 +231,7 @@ export function Testimonials() {
 						<div className="flex">
 							{testimonials.map((testimonial) => (
 								<div
-									key={testimonial.id}
+									key={testimonial.name}
 									className="relative min-w-0 flex-[0_0_85%] px-2 md:flex-[0_0_70%] md:px-4 lg:flex-[0_0_60%]">
 									<div className="group relative py-10 h-full">
 										<div className="relative flex h-full flex-col rounded-2xl border border-border bg-background transition-all duration-500 ease-out group-hover:scale-[1.02] group-hover:border-border group-hover:bg-background/40 group-hover:shadow-xl dark:border-border/70 dark:bg-background/40 dark:group-hover:border-border dark:group-hover:bg-background/60 dark:group-hover:shadow-[0_20px_50px_rgba(59,130,246,0.15)]">
@@ -178,7 +247,15 @@ export function Testimonials() {
 														{testimonial.name}
 													</h3>
 													<p className="text-sm text-muted-foreground transition-colors duration-300 dark:text-muted-foreground/80">
-														{testimonial.role} at {testimonial.company}
+														{testimonial.role} at {testimonial.origin}
+														{testimonial.stars && (
+															<span className="flex items-center mt-1">
+																{" "}
+																{Array.from({ length: testimonial.stars }, (_, i) => (
+																	<Star key={i} className="size-4 fill-violet-500" />
+																))}
+															</span>
+														)}
 													</p>
 												</div>
 											</div>
