@@ -37,7 +37,7 @@ export const ApiConfigSelector = ({
 	togglePinnedApiConfig,
 }: ApiConfigSelectorProps) => {
 	const { t } = useTranslation()
-	const { apiConfigCustomOrder: customOrder = [] } = useExtensionState()
+	const { apiConfigsCustomOrder: customOrder = [] } = useExtensionState()
 	const [open, setOpen] = useState(false)
 	const [searchValue, setSearchValue] = useState("")
 

@@ -52,7 +52,15 @@ export const globalSettingsSchema = z.object({
 	currentApiConfigName: z.string().optional(),
 	listApiConfigMeta: z.array(providerSettingsEntrySchema).optional(),
 	pinnedApiConfigs: z.record(z.string(), z.boolean()).optional(),
-	apiConfigCustomOrder: z.array(z.string()).optional(),
+	apiConfigsCustomOrder: z
+		.array(
+			z.object({
+				id: z.string(),
+				index: z.number(),
+				pinned: z.boolean(),
+			}),
+		)
+		.optional(),
 
 	lastShownAnnouncementId: z.string().optional(),
 	customInstructions: z.string().optional(),
@@ -285,7 +293,7 @@ export const EVALS_SETTINGS: RooCodeSettings = {
 	lastShownAnnouncementId: "jul-09-2025-3-23-0",
 
 	pinnedApiConfigs: {},
-	apiConfigCustomOrder: [],
+	apiConfigsCustomOrder: [],
 
 	autoApprovalEnabled: true,
 	alwaysAllowReadOnly: true,

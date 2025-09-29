@@ -1881,8 +1881,8 @@ export class ClineProvider
 			openRouterImageApiKey,
 			openRouterImageGenerationSelectedModel,
 			openRouterUseMiddleOutTransform,
+			apiConfigsCustomOrder,
 			featureRoomoteControlEnabled,
-			apiConfigCustomOrder,
 		} = await this.getState()
 
 		let cloudOrganizations: CloudOrganizationMembership[] = []
@@ -1969,7 +1969,7 @@ export class ClineProvider
 			currentApiConfigName: currentApiConfigName ?? "default",
 			listApiConfigMeta: listApiConfigMeta ?? [],
 			pinnedApiConfigs: pinnedApiConfigs ?? {},
-			apiConfigCustomOrder: apiConfigCustomOrder ?? [],
+			apiConfigsCustomOrder: apiConfigsCustomOrder ?? [],
 			mode: mode ?? defaultModeSlug,
 			customModePrompts: customModePrompts ?? {},
 			customSupportPrompts: customSupportPrompts ?? {},
@@ -2196,7 +2196,7 @@ export class ClineProvider
 			currentApiConfigName: stateValues.currentApiConfigName ?? "default",
 			listApiConfigMeta: stateValues.listApiConfigMeta ?? [],
 			pinnedApiConfigs: stateValues.pinnedApiConfigs ?? {},
-			apiConfigCustomOrder: stateValues.apiConfigCustomOrder ?? [],
+			apiConfigsCustomOrder: stateValues.apiConfigsCustomOrder ?? [],
 			modeApiConfigs: stateValues.modeApiConfigs ?? ({} as Record<Mode, string>),
 			customModePrompts: stateValues.customModePrompts ?? {},
 			customSupportPrompts: stateValues.customSupportPrompts ?? {},

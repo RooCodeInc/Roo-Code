@@ -7,7 +7,18 @@ import ApiConfigManager from "../ApiConfigManager"
 // Mock the ExtensionStateContext
 vitest.mock("@/context/ExtensionStateContext", () => ({
 	useExtensionState: () => ({
-		apiConfigCustomOrder: [],
+		apiConfigsCustomOrder: [
+			{ id: "config1", index: 0 },
+			{ id: "config2", index: 1 },
+			{ id: "config3", index: 2 },
+		],
+	}),
+}))
+
+// Mock the translation hook
+vitest.mock("@/i18n/TranslationContext", () => ({
+	useAppTranslation: () => ({
+		t: (key: string) => key,
 	}),
 }))
 
@@ -34,8 +45,8 @@ vitest.mock("@/components/ui", () => ({
 	),
 	DialogContent: ({ children }: any) => <div data-testid="dialog-content">{children}</div>,
 	DialogTitle: ({ children }: any) => <div data-testid="dialog-title">{children}</div>,
-	Button: ({ children, onClick, disabled, "data-testid": dataTestId }: any) => (
-		<button onClick={onClick} disabled={disabled} data-testid={dataTestId}>
+	Button: ({ children, onClick, disabled, "data-testid": dataTestId, className }: any) => (
+		<button onClick={onClick} disabled={disabled} data-testid={dataTestId} className={className}>
 			{children}
 		</button>
 	),
@@ -352,5 +363,89 @@ describe("ApiConfigManager", () => {
 		// Test Escape key
 		fireEvent.keyDown(input, { key: "Escape" })
 		expect(screen.queryByDisplayValue("New Name")).not.toBeInTheDocument()
+	})
+
+	describe("Reordering Mode", () => {
+		const mockConfigsForReordering = [
+			{ id: "1", name: "config1", apiProvider: "openai" as const, modelId: "gpt-4" },
+			{ id: "2", name: "config2", apiProvider: "anthropic" as const, modelId: "claude-3" },
+			{ id: "3", name: "config3", apiProvider: "openai" as const, modelId: "gpt-3.5" },
+		]
+
+		const reorderingProps = {
+			...defaultProps,
+			currentApiConfigName: "config1",
+			listApiConfigMeta: mockConfigsForReordering,
+		}
+
+		it("should render reorder toggle button", () => {
+			render(<ApiConfigManager {...reorderingProps} />)
+
+			const reorderButton = screen.getByTestId("reorder-toggle-button")
+			expect(reorderButton).toBeInTheDocument()
+		})
+
+		it("should toggle reordering mode when reorder button is clicked", () => {
+			render(<ApiConfigManager {...reorderingProps} />)
+
+			const reorderButton = screen.getByTestId("reorder-toggle-button")
+
+			// Initially not in reordering mode
+			expect(reorderButton).not.toHaveClass("bg-vscode-button-background")
+
+			// Click to enter reordering mode
+			fireEvent.click(reorderButton)
+			expect(reorderButton).toHaveClass("bg-vscode-button-background")
+
+			// Click again to exit reordering mode
+			fireEvent.click(reorderButton)
+			expect(reorderButton).not.toHaveClass("bg-vscode-button-background")
+		})
+
+		it("should show different help text based on reordering mode", () => {
+			render(<ApiConfigManager {...reorderingProps} />)
+
+			const reorderButton = screen.getByTestId("reorder-toggle-button")
+
+			// Initially shows normal help text
+			expect(screen.getByText("settings:providers.normalModeHelpText")).toBeInTheDocument()
+
+			// Enter reordering mode
+			fireEvent.click(reorderButton)
+			expect(screen.getByText("settings:providers.reorderModeHelpText")).toBeInTheDocument()
+		})
+
+		it("should show checkmark for current config when not in reordering mode", () => {
+			render(<ApiConfigManager {...reorderingProps} />)
+
+			// Should show checkmark for current config
+			const checkmarks = screen.getAllByText("", { selector: ".codicon-check" })
+			expect(checkmarks.length).toBeGreaterThan(0)
+		})
+
+		it("should disable regular click behavior in reordering mode", () => {
+			render(<ApiConfigManager {...reorderingProps} />)
+
+			const reorderButton = screen.getByTestId("reorder-toggle-button")
+			const configItems = screen.getAllByRole("option")
+
+			// Enter reordering mode
+			fireEvent.click(reorderButton)
+
+			// Click on a config item should not trigger selection
+			fireEvent.click(configItems[1])
+			expect(mockOnSelectConfig).not.toHaveBeenCalled()
+		})
+
+		it("should allow regular click behavior when not in reordering mode", () => {
+			render(<ApiConfigManager {...reorderingProps} />)
+
+			const configItems = screen.getAllByRole("option")
+
+			// Click on a config item should trigger selection
+			// The actual order depends on the sorting logic, so let's just test that clicking works
+			fireEvent.click(configItems[0])
+			expect(mockOnSelectConfig).toHaveBeenCalled()
+		})
 	})
 })

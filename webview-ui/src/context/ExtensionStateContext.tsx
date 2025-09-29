@@ -243,6 +243,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		maxImageFileSize: 5, // Default max image file size in MB
 		maxTotalImageSize: 20, // Default max total image size in MB
 		pinnedApiConfigs: {}, // Empty object for pinned API configs
+		apiConfigsCustomOrder: [], // Empty array for API config custom order
 		terminalZshOhMy: false, // Default Oh My Zsh integration setting
 		maxConcurrentFileReads: 5, // Default concurrent file reads
 		terminalZshP10k: false, // Default Powerlevel10k integration setting

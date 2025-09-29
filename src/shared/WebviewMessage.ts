@@ -181,7 +181,7 @@ export interface WebviewMessage {
 		| "includeCurrentCost"
 		| "searchFiles"
 		| "toggleApiConfigPin"
-		| "setApiConfigCustomOrder"
+		| "setApiConfigsCustomOrder"
 		| "moveApiConfigUp"
 		| "moveApiConfigDown"
 		| "setHistoryPreviewCollapsed"
