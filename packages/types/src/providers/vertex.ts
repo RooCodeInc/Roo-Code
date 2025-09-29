@@ -6,7 +6,20 @@ export type VertexModelId = keyof typeof vertexModels
 export const vertexDefaultModelId: VertexModelId = "claude-sonnet-4@20250514"
 
 export const vertexModels = {
+	// Deprecated: Use claude-sonnet-4-5@20250929 instead
 	"claude-4.5-sonnet": {
+		maxTokens: 8192,
+		contextWindow: 200_000,
+		supportsImages: true,
+		supportsComputerUse: true,
+		supportsPromptCache: true,
+		inputPrice: 3.0,
+		outputPrice: 15.0,
+		cacheWritesPrice: 3.75,
+		cacheReadsPrice: 0.3,
+		supportsReasoningBudget: true,
+	},
+	"claude-sonnet-4-5@20250929": {
 		maxTokens: 8192,
 		contextWindow: 200_000,
 		supportsImages: true,
