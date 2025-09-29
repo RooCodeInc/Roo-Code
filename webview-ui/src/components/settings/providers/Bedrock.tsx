@@ -7,6 +7,7 @@ import {
 	type ModelInfo,
 	BEDROCK_REGIONS,
 	BEDROCK_CLAUDE_SONNET_4_MODEL_ID,
+	BEDROCK_CLAUDE_SONNET_4_5_MODEL_ID,
 } from "@roo-code/types"
 
 import { useAppTranslation } from "@src/i18n/TranslationContext"
@@ -24,8 +25,10 @@ export const Bedrock = ({ apiConfiguration, setApiConfigurationField, selectedMo
 	const { t } = useAppTranslation()
 	const [awsEndpointSelected, setAwsEndpointSelected] = useState(!!apiConfiguration?.awsBedrockEndpointEnabled)
 
-	// Check if the selected model supports 1M context (Claude Sonnet 4)
-	const supports1MContextBeta = apiConfiguration?.apiModelId === BEDROCK_CLAUDE_SONNET_4_MODEL_ID
+	// Check if the selected model supports 1M context (Claude Sonnet 4 or 4.5)
+	const supports1MContextBeta =
+		apiConfiguration?.apiModelId === BEDROCK_CLAUDE_SONNET_4_MODEL_ID ||
+		apiConfiguration?.apiModelId === BEDROCK_CLAUDE_SONNET_4_5_MODEL_ID
 
 	// Update the endpoint enabled state when the configuration changes
 	useEffect(() => {

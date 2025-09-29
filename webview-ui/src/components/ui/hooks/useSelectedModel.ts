@@ -56,6 +56,7 @@ import {
 	qwenCodeModels,
 	vercelAiGatewayDefaultModelId,
 	BEDROCK_CLAUDE_SONNET_4_MODEL_ID,
+	BEDROCK_CLAUDE_SONNET_4_5_MODEL_ID,
 	deepInfraDefaultModelId,
 } from "@roo-code/types"
 
@@ -200,8 +201,12 @@ function getSelectedModel({
 				}
 			}
 
-			// Apply 1M context for Claude Sonnet 4 when enabled
-			if (id === BEDROCK_CLAUDE_SONNET_4_MODEL_ID && apiConfiguration.awsBedrock1MContext && baseInfo) {
+			// Apply 1M context for Claude Sonnet 4 or 4.5 when enabled
+			if (
+				(id === BEDROCK_CLAUDE_SONNET_4_MODEL_ID || id === BEDROCK_CLAUDE_SONNET_4_5_MODEL_ID) &&
+				apiConfiguration.awsBedrock1MContext &&
+				baseInfo
+			) {
 				// Create a new ModelInfo object with updated context window
 				const info: ModelInfo = {
 					...baseInfo,

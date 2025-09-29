@@ -22,6 +22,7 @@ import {
 	BEDROCK_DEFAULT_CONTEXT,
 	AWS_INFERENCE_PROFILE_MAPPING,
 	BEDROCK_CLAUDE_SONNET_4_MODEL_ID,
+	BEDROCK_CLAUDE_SONNET_4_5_MODEL_ID,
 } from "@roo-code/types"
 
 import { ApiStream } from "../transform/stream"
@@ -381,7 +382,9 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 		// Check if 1M context is enabled for Claude Sonnet 4
 		// Use parseBaseModelId to handle cross-region inference prefixes
 		const baseModelId = this.parseBaseModelId(modelConfig.id)
-		const is1MContextEnabled = baseModelId === BEDROCK_CLAUDE_SONNET_4_MODEL_ID && this.options.awsBedrock1MContext
+		const is1MContextEnabled =
+			(baseModelId === BEDROCK_CLAUDE_SONNET_4_MODEL_ID || baseModelId === BEDROCK_CLAUDE_SONNET_4_5_MODEL_ID) &&
+			this.options.awsBedrock1MContext
 
 		// Add anthropic_beta for 1M context to additionalModelRequestFields
 		if (is1MContextEnabled) {
@@ -979,7 +982,10 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 		// Check if 1M context is enabled for Claude Sonnet 4
 		// Use parseBaseModelId to handle cross-region inference prefixes
 		const baseModelId = this.parseBaseModelId(modelConfig.id)
-		if (baseModelId === BEDROCK_CLAUDE_SONNET_4_MODEL_ID && this.options.awsBedrock1MContext) {
+		if (
+			(baseModelId === BEDROCK_CLAUDE_SONNET_4_MODEL_ID || baseModelId === BEDROCK_CLAUDE_SONNET_4_5_MODEL_ID) &&
+			this.options.awsBedrock1MContext
+		) {
 			// Update context window to 1M tokens when 1M context beta is enabled
 			modelConfig.info = {
 				...modelConfig.info,
