@@ -440,7 +440,7 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 				// Verify that initialization throws an error when child git repos are detected
 				// The error message now includes the specific path of the child repository
 				await expect(service.initShadowGit()).rejects.toThrowError(
-					/Checkpoints are disabled because a child git repository was detected at:/,
+					/Checkpoints are disabled because a Git repository was detected below the workspace root at: .*?\. To use checkpoints, please remove or relocate this git repository, or open a Git repository as the workspace root\./,
 				)
 
 				// Clean up.
