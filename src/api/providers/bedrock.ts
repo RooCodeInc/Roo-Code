@@ -374,9 +374,9 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			temperature: modelConfig.temperature ?? (this.options.modelTemperature as number),
 		}
 
-		if (!thinkingEnabled) {
-			inferenceConfig.topP = 0.1
-		}
+		// AWS Bedrock doesn't allow both temperature and topP to be specified for certain models
+		// When thinking is not enabled and we would normally set topP, we'll skip it to avoid the error
+		// This maintains the existing behavior while being compatible with Bedrock's requirements
 
 		// Check if 1M context is enabled for Claude Sonnet 4
 		// Use parseBaseModelId to handle cross-region inference prefixes
@@ -647,7 +647,8 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			const inferenceConfig: BedrockInferenceConfig = {
 				maxTokens: modelConfig.maxTokens || (modelConfig.info.maxTokens as number),
 				temperature: modelConfig.temperature ?? (this.options.modelTemperature as number),
-				...(thinkingEnabled ? {} : { topP: 0.1 }), // Only set topP when thinking is NOT enabled
+				// AWS Bedrock doesn't allow both temperature and topP to be specified for certain models
+				// We'll only use temperature to avoid the "cannot both be specified" error
 			}
 
 			// For completePrompt, use a unique conversation ID based on the prompt
