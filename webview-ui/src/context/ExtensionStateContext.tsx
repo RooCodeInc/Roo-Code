@@ -143,6 +143,8 @@ export interface ExtensionStateContextType extends ExtensionState {
 	togglePinnedApiConfig: (configName: string) => void
 	terminalCompressProgressBar?: boolean
 	setTerminalCompressProgressBar: (value: boolean) => void
+	taskTitlesEnabled?: boolean
+	setTaskTitlesEnabled: (value: boolean) => void
 	setHistoryPreviewCollapsed: (value: boolean) => void
 	setReasoningBlockCollapsed: (value: boolean) => void
 	autoCondenseContext: boolean
@@ -242,6 +244,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		terminalCompressProgressBar: true, // Default to compress progress bar output
 		historyPreviewCollapsed: false, // Initialize the new state (default to expanded)
 		reasoningBlockCollapsed: true, // Default to collapsed
+		taskTitlesEnabled: false,
 		cloudUserInfo: null,
 		cloudIsAuthenticated: false,
 		cloudOrganizations: [],
@@ -419,6 +422,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 	const contextValue: ExtensionStateContextType = {
 		...state,
 		reasoningBlockCollapsed: state.reasoningBlockCollapsed ?? true,
+		taskTitlesEnabled: state.taskTitlesEnabled ?? false,
 		didHydrateState,
 		showWelcome,
 		theme,
@@ -537,6 +541,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 			setState((prevState) => ({ ...prevState, historyPreviewCollapsed: value })),
 		setReasoningBlockCollapsed: (value) =>
 			setState((prevState) => ({ ...prevState, reasoningBlockCollapsed: value })),
+		setTaskTitlesEnabled: (value) => setState((prevState) => ({ ...prevState, taskTitlesEnabled: value })),
 		setHasOpenedModeSelector: (value) => setState((prevState) => ({ ...prevState, hasOpenedModeSelector: value })),
 		setAutoCondenseContext: (value) => setState((prevState) => ({ ...prevState, autoCondenseContext: value })),
 		setAutoCondenseContextPercent: (value) =>

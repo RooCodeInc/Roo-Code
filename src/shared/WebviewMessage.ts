@@ -196,6 +196,7 @@ export interface WebviewMessage {
 		| "profileThresholds"
 		| "setHistoryPreviewCollapsed"
 		| "setReasoningBlockCollapsed"
+		| "setTaskTitlesEnabled"
 		| "openExternal"
 		| "filterMarketplaceItems"
 		| "marketplaceButtonClicked"

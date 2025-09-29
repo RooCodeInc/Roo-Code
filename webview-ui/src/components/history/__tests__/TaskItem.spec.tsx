@@ -3,6 +3,10 @@ import { render, screen, fireEvent } from "@/utils/test-utils"
 import TaskItem from "../TaskItem"
 
 vi.mock("@src/utils/vscode")
+const mockUseExtensionState = vi.hoisted(() => vi.fn(() => ({ taskTitlesEnabled: true })))
+vi.mock("@/context/ExtensionStateContext", () => ({
+	useExtensionState: mockUseExtensionState,
+}))
 vi.mock("@src/i18n/TranslationContext", () => ({
 	useAppTranslation: () => ({
 		t: (key: string) => key,
@@ -29,6 +33,7 @@ const mockTask = {
 describe("TaskItem", () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
+		mockUseExtensionState.mockReturnValue({ taskTitlesEnabled: true })
 	})
 
 	it("renders task information", () => {
@@ -80,7 +85,7 @@ describe("TaskItem", () => {
 		expect(screen.getByTestId("export")).toBeInTheDocument()
 	})
 
-	it("renders title above task content when provided", () => {
+	it("renders title instead of task text when provided", () => {
 		render(
 			<TaskItem
 				item={{ ...mockTask, title: "Important task" }}
@@ -91,8 +96,28 @@ describe("TaskItem", () => {
 			/>,
 		)
 
-		expect(screen.getByTestId("task-item-title")).toHaveTextContent("Important task")
-		expect(screen.getByTestId("task-content")).toHaveTextContent("Test task")
+		const content = screen.getByTestId("task-content")
+		expect(content).toHaveTextContent("Important task")
+		expect(content).not.toHaveTextContent("Test task")
+		expect(content.querySelector("span")?.className).toContain("font-semibold")
+	})
+
+	it("falls back to task text when feature disabled", () => {
+		mockUseExtensionState.mockReturnValue({ taskTitlesEnabled: false })
+		render(
+			<TaskItem
+				item={{ ...mockTask, title: "Hidden title" }}
+				variant="full"
+				isSelected={false}
+				onToggleSelection={vi.fn()}
+				isSelectionMode={false}
+			/>,
+		)
+
+		const content = screen.getByTestId("task-content")
+		expect(content).toHaveTextContent("Test task")
+		expect(content).not.toHaveTextContent("Hidden title")
+		expect(content.querySelector("span")?.className || "").not.toContain("font-semibold")
 	})
 
 	it("displays time ago information", () => {

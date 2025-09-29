@@ -53,7 +53,7 @@ const TaskHeader = ({
 	todos,
 }: TaskHeaderProps) => {
 	const { t } = useTranslation()
-	const { apiConfiguration, currentTaskItem, clineMessages } = useExtensionState()
+	const { apiConfiguration, currentTaskItem, clineMessages, taskTitlesEnabled = false } = useExtensionState()
 	const { id: modelId, info: model } = useSelectedModel(apiConfiguration)
 	const [isTaskExpanded, setIsTaskExpanded] = useState(false)
 	const [showLongRunningTaskMessage, setShowLongRunningTaskMessage] = useState(false)
@@ -102,6 +102,11 @@ const TaskHeader = ({
 	}, [currentTaskItem?.id])
 
 	useEffect(() => {
+		if (!taskTitlesEnabled) {
+			setIsEditingTitle(false)
+			return
+		}
+
 		if (isEditingTitle) {
 			skipBlurSubmitRef.current = false
 			requestAnimationFrame(() => {
@@ -109,9 +114,13 @@ const TaskHeader = ({
 				titleInputRef.current?.select()
 			})
 		}
-	}, [isEditingTitle])
+	}, [isEditingTitle, taskTitlesEnabled])
 
 	const submitTitle = useCallback(() => {
+		if (!taskTitlesEnabled) {
+			return
+		}
+
 		if (!currentTaskItem) {
 			setIsEditingTitle(false)
 			return
@@ -134,7 +143,7 @@ const TaskHeader = ({
 		})
 
 		setTitleInput(trimmed)
-	}, [currentTaskItem, titleInput])
+	}, [currentTaskItem, taskTitlesEnabled, titleInput])
 
 	useEffect(() => {
 		if (!isEditingTitle) {
@@ -143,15 +152,22 @@ const TaskHeader = ({
 	}, [isEditingTitle])
 
 	const handleTitleBlur = useCallback(() => {
+		if (!taskTitlesEnabled) {
+			return
+		}
 		if (skipBlurSubmitRef.current) {
 			skipBlurSubmitRef.current = false
 			return
 		}
 		submitTitle()
-	}, [submitTitle])
+	}, [submitTitle, taskTitlesEnabled])
 
 	const handleTitleKeyDown = useCallback(
 		(event: ReactKeyboardEvent<HTMLInputElement>) => {
+			if (!taskTitlesEnabled) {
+				return
+			}
+
 			if (event.key === "Enter") {
 				event.preventDefault()
 				skipBlurSubmitRef.current = true
@@ -163,7 +179,7 @@ const TaskHeader = ({
 				setTitleInput(currentTaskItem?.title ?? "")
 			}
 		},
-		[currentTaskItem?.title, submitTitle],
+		[currentTaskItem?.title, submitTitle, taskTitlesEnabled],
 	)
 
 	const textContainerRef = useRef<HTMLDivElement>(null)
@@ -181,9 +197,13 @@ const TaskHeader = ({
 		</StandardTooltip>
 	)
 
-	const renderTitleSection = () => {
-		if (!currentTaskItem) {
-			return null
+	const renderPrimaryValue = () => {
+		if (!taskTitlesEnabled || !currentTaskItem) {
+			return (
+				<div className="truncate min-w-0" data-testid="task-primary-text">
+					<Mention text={task.text} />
+				</div>
+			)
 		}
 
 		if (isEditingTitle) {
@@ -203,17 +223,20 @@ const TaskHeader = ({
 		}
 
 		const tooltipKey = currentTitle.length > 0 ? "chat:task.editTitle" : "chat:task.addTitle"
+		const showTitle = currentTitle.length > 0
+		const displayNode = showTitle ? (
+			<span className="truncate text-base font-semibold" data-testid="task-title-text">
+				{currentTitle}
+			</span>
+		) : (
+			<div className="truncate min-w-0" data-testid="task-title-text">
+				<Mention text={task.text} />
+			</div>
+		)
 
 		return (
-			<div className="flex items-center gap-1 text-vscode-foreground" data-testid="task-title-display">
-				<span
-					className={cn(
-						"text-base font-semibold truncate max-w-full",
-						currentTitle.length === 0 && "italic text-vscode-descriptionForeground font-normal",
-					)}
-					data-testid="task-title-text">
-					{currentTitle || t("chat:task.titlePlaceholder")}
-				</span>
+			<div className="flex items-center gap-1 min-w-0 text-vscode-foreground" data-testid="task-title-display">
+				<div className="min-w-0 flex-1">{displayNode}</div>
 				<StandardTooltip content={t(tooltipKey)}>
 					<button
 						type="button"
@@ -232,6 +255,13 @@ const TaskHeader = ({
 			</div>
 		)
 	}
+
+	const renderCollapsedSummary = () => (
+		<div className="flex items-baseline gap-1 min-w-0">
+			<span className="font-bold shrink-0">{t("chat:task.title")}</span>
+			<div className="min-w-0 flex-1">{renderPrimaryValue()}</div>
+		</div>
+	)
 
 	const hasTodos = todos && Array.isArray(todos) && todos.length > 0
 
@@ -279,15 +309,14 @@ const TaskHeader = ({
 					}}>
 					<div className="flex justify-between items-start gap-0">
 						<div className="flex flex-col grow min-w-0 gap-1">
-							{renderTitleSection()}
 							<div className="whitespace-nowrap overflow-hidden text-ellipsis grow min-w-0 select-none">
 								{isTaskExpanded ? (
-									<span className="font-bold">{t("chat:task.title")}</span>
-								) : (
-									<div className="flex items-baseline gap-1">
+									<div className="flex flex-col gap-1 min-w-0">
 										<span className="font-bold">{t("chat:task.title")}</span>
-										<Mention text={task.text} />
+										<div className="min-w-0">{renderPrimaryValue()}</div>
 									</div>
+								) : (
+									renderCollapsedSummary()
 								)}
 							</div>
 						</div>

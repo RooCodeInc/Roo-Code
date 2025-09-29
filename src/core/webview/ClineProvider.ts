@@ -1793,6 +1793,7 @@ export class ClineProvider
 			terminalCompressProgressBar,
 			historyPreviewCollapsed,
 			reasoningBlockCollapsed,
+			taskTitlesEnabled,
 			cloudUserInfo,
 			cloudIsAuthenticated,
 			sharingEnabled,
@@ -1866,6 +1867,7 @@ export class ClineProvider
 			taskHistory: (taskHistory || [])
 				.filter((item: HistoryItem) => item.ts && item.task)
 				.sort((a: HistoryItem, b: HistoryItem) => b.ts - a.ts),
+			taskTitlesEnabled: taskTitlesEnabled ?? false,
 			soundEnabled: soundEnabled ?? false,
 			ttsEnabled: ttsEnabled ?? false,
 			ttsSpeed: ttsSpeed ?? 1.0,
@@ -2142,6 +2144,7 @@ export class ClineProvider
 			maxConcurrentFileReads: stateValues.maxConcurrentFileReads ?? 5,
 			historyPreviewCollapsed: stateValues.historyPreviewCollapsed ?? false,
 			reasoningBlockCollapsed: stateValues.reasoningBlockCollapsed ?? true,
+			taskTitlesEnabled: stateValues.taskTitlesEnabled ?? false,
 			cloudUserInfo,
 			cloudIsAuthenticated,
 			sharingEnabled,
