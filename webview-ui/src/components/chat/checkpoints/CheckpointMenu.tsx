@@ -178,7 +178,7 @@ export const CheckpointMenu = ({ ts, commitHash, currentHash, checkpoint, onOpen
 				<StandardTooltip content={t("chat:task.seeMore")}>
 					<PopoverTrigger asChild>
 						<Button variant="ghost" size="icon" aria-label={t("chat:checkpoint.menu.more")}>
-							<span className="codicon codicon-chevron-down" />
+							<span className="codicon codicon-ellipsis" />
 						</Button>
 					</PopoverTrigger>
 				</StandardTooltip>
