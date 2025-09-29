@@ -1,5 +1,6 @@
 import { Mode } from "@roo/modes"
 import { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { VolumeX, Image, WandSparkles, SendHorizontal, MessageSquareX } from "lucide-react"
 
 import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin"
 import { LexicalComposer } from "@lexical/react/LexicalComposer"
@@ -19,15 +20,15 @@ import { vscode } from "@/utils/vscode"
 import { AutoApproveDropdown } from "./AutoApproveDropdown"
 import { StandardTooltip } from "../ui"
 import { IndexingStatusBadge } from "./IndexingStatusBadge"
-import { VolumeX } from "lucide-react"
 
 import { MentionNode } from "./lexical/MentionNode"
 import { LexicalMentionPlugin, type MentionInfo, type LexicalMentionPluginRef } from "./lexical/LexicalMentionPlugin"
 import { LexicalSelectAllPlugin } from "./lexical/LexicalSelectAllPlugin"
 import ContextMenu from "./ContextMenu"
 import { ContextMenuOptionType, getContextMenuOptions, SearchResult } from "@/utils/context-mentions"
-import Thumbnails from "../common/Thumbnails"
 import { MAX_IMAGES_PER_MESSAGE } from "./ChatView"
+import { CloudAccountSwitcher } from "../cloud/CloudAccountSwitcher"
+import { ChatContextBar } from "./ChatContextBar"
 
 type ChatTextAreaProps = {
 	inputValue: string
@@ -53,26 +54,26 @@ function onError(error: unknown) {
 	console.error(error)
 }
 
-export const ChatLexicalTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
+export const ChatLexicalTextArea = forwardRef<HTMLDivElement, ChatTextAreaProps>(
 	(
 		{
 			inputValue,
 			setInputValue,
+			sendingDisabled,
 			selectApiConfigDisabled,
 			placeholderText,
 			selectedImages,
 			setSelectedImages,
-			// onSend,
-			// onSelectImages,
+			onSend,
+			onSelectImages,
 			shouldDisableImages,
-			// onHeightChange,
 			mode,
 			setMode,
 			modeShortcutText,
 			isEditMode = false,
-			// onCancel,
+			onCancel,
 		},
-		// ref,
+		ref,
 	) => {
 		const { t } = useAppTranslation()
 		const {
@@ -88,6 +89,7 @@ export const ChatLexicalTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaP
 			// taskHistory,
 			// clineMessages,
 			commands,
+			cloudUserInfo,
 		} = useExtensionState()
 
 		const [isFocused, setIsFocused] = useState(false)
@@ -101,6 +103,8 @@ export const ChatLexicalTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaP
 		const [gitCommits, setGitCommits] = useState<any[]>([])
 		const contextMenuContainerRef = useRef<HTMLDivElement>(null)
 		const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+		const [isEnhancingPrompt, setIsEnhancingPrompt] = useState(false)
+		const [isMouseDownOnMenu, setIsMouseDownOnMenu] = useState(false)
 
 		// Find the ID and display text for the currently selected API configuration.
 		const { currentConfigId, displayName } = useMemo(() => {
@@ -133,6 +137,21 @@ export const ChatLexicalTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaP
 			setMaterialIconsBaseUri(w.MATERIAL_ICONS_BASE_URI)
 		}, [])
 
+		const hasInputContent = useMemo(() => {
+			return inputValue.trim().length > 0
+		}, [inputValue])
+
+		const handleEnhancePrompt = useCallback(() => {
+			const trimmedInput = inputValue.trim()
+
+			if (trimmedInput) {
+				setIsEnhancingPrompt(true)
+				vscode.postMessage({ type: "enhancePrompt" as const, text: trimmedInput })
+			} else {
+				setInputValue(t("chat:enhancePromptDescription"))
+			}
+		}, [inputValue, setInputValue, t])
+
 		const [validMentions, setValidMentions] = useState<MentionInfo[]>([])
 
 		const handleMentionUpdate = useCallback((mentions: MentionInfo[]) => {
@@ -140,11 +159,39 @@ export const ChatLexicalTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaP
 			setValidMentions(mentions)
 		}, [])
 
-		const shouldShowContextBar = validMentions.length > 0 || selectedImages.length > 0
+		const handleRemoveMention = useCallback(
+			(indexToRemove: number) => {
+				const mentionToRemove = validMentions[indexToRemove]
+				if (mentionToRemove && mentionPluginRef.current?.removeMention) {
+					// Remove the mention from the editor content
+					mentionPluginRef.current.removeMention(mentionToRemove)
+					// The mention update callback will automatically update the validMentions state
+				}
+			},
+			[validMentions],
+		)
+
+		const handleRemoveImage = useCallback(
+			(indexToRemove: number) => {
+				setSelectedImages((prevImages) => prevImages.filter((_, index) => index !== indexToRemove))
+			},
+			[setSelectedImages],
+		)
 
 		const handlePaste = useCallback(
 			async (e: React.ClipboardEvent) => {
 				const items = e.clipboardData.items
+				const pastedText = e.clipboardData.getData("text")
+
+				const urlRegex = /^\S+:\/\/\S+$/
+				if (urlRegex.test(pastedText.trim())) {
+					e.preventDefault()
+					// Lexical will handle inserting text, but we may need to adjust cursor
+					// or ensure the space is added, depending on how Lexical handles pastes.
+					// For now, let Lexical's default paste handle it.
+					return
+				}
+
 				const acceptedTypes = ["png", "jpeg", "webp"]
 
 				const imageItems = Array.from(items).filter((item) => {
@@ -197,6 +244,16 @@ export const ChatLexicalTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaP
 			async (e: React.DragEvent<HTMLDivElement>) => {
 				e.preventDefault()
 				setIsDraggingOver(false)
+
+				const textFieldList = e.dataTransfer.getData("text")
+				const textUriList = e.dataTransfer.getData("application/vnd.code.uri-list")
+				const text = textFieldList || textUriList
+
+				// Lexical handles text drops intrinsically.
+				if (text) {
+					// We'll let Lexical's default drop behavior handle the text content.
+					return
+				}
 
 				const files = Array.from(e.dataTransfer.files)
 
@@ -251,6 +308,11 @@ export const ChatLexicalTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaP
 					setIsTtsPlaying(true)
 				} else if (message.type === "ttsStop") {
 					setIsTtsPlaying(false)
+				} else if (message.type === "enhancedPrompt") {
+					if (message.text) {
+						setInputValue(message.text)
+					}
+					setIsEnhancingPrompt(false)
 				} else if (message.type === "commitSearchResults") {
 					const commits = message.commits.map((commit: any) => ({
 						type: ContextMenuOptionType.Git,
@@ -266,12 +328,15 @@ export const ChatLexicalTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaP
 					if (message.requestId === searchRequestId) {
 						setFileSearchResults(message.results || [])
 					}
+				} else if (message.type === "insertTextIntoTextarea") {
+					// Lexical editor handles inserts differently. Future improvement.
+					console.log("Insert text requested for Lexical, but not yet implemented:", message.text)
 				}
 			}
 
 			window.addEventListener("message", messageHandler)
 			return () => window.removeEventListener("message", messageHandler)
-		}, [searchRequestId])
+		}, [searchRequestId, setInputValue])
 
 		const queryItems = useMemo(() => {
 			return [
@@ -406,6 +471,7 @@ export const ChatLexicalTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaP
 					const trigger = searchQuery.startsWith("/") ? "/" : "@"
 					insertMention(insertValue, trigger, type)
 				}
+				setIsMouseDownOnMenu(false) // Reset this state
 			},
 			[searchQuery, setMode, setInputValue, mentionPluginRef],
 		)
@@ -498,6 +564,31 @@ export const ChatLexicalTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaP
 			handleMentionSelect,
 		])
 
+		// Effect to handle clicks outside the context menu to close it
+		useEffect(() => {
+			const handleClickOutside = (event: MouseEvent) => {
+				if (
+					contextMenuContainerRef.current &&
+					!contextMenuContainerRef.current.contains(event.target as Node) &&
+					!isMouseDownOnMenu
+				) {
+					setShowContextMenu(false)
+				}
+			}
+
+			if (showContextMenu) {
+				document.addEventListener("mousedown", handleClickOutside)
+			}
+
+			return () => {
+				document.removeEventListener("mousedown", handleClickOutside)
+			}
+		}, [showContextMenu, isMouseDownOnMenu])
+
+		const handleMenuMouseDown = useCallback(() => {
+			setIsMouseDownOnMenu(true)
+		}, [])
+
 		const handleEditorChange = useCallback(
 			(editorState: EditorState) => {
 				editorState.read(() => {
@@ -521,58 +612,21 @@ export const ChatLexicalTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaP
 		}
 
 		return (
-			<div className="px-4 pb-2">
-				<div
-					className={cn(
-						"space-y-1 bg-editor-background border border-none box-border rounded",
-						isEditMode ? "p-2 w-full" : "relative p-2 ml-auto mr-auto",
-						isFocused
-							? "border border-vscode-focusBorder outline outline-vscode-focusBorder"
-							: isDraggingOver
-								? "border-2 border-dashed border-vscode-focusBorder"
-								: "border border-transparent",
-						isEditMode ? "pr-20" : "pr-9",
-						isDraggingOver
-							? "bg-[color-mix(in_srgb,var(--vscode-input-background)_95%,var(--vscode-focusBorder))]"
-							: "bg-vscode-input-background",
-					)}>
+			<div
+				className={cn(
+					"flex flex-col gap-1 bg-editor-background outline-none border border-none box-border",
+					isEditMode ? "p-2 w-full" : "relative px-1.5 pb-1 w-[calc(100%-16px)] ml-auto mr-auto",
+				)}>
+				<div className={cn(!isEditMode && "relative")}>
 					{/* Context Bar */}
-					{shouldShowContextBar && (
-						<div className="flex items-center gap-1 mb-2">
-							{/* Context mentions */}
-							{validMentions.map((mention, index) => (
-								<div
-									key={index}
-									className="flex items-center gap-1 px-2 py-1 bg-vscode-editor-background text-vscode-editor-foreground rounded text-xs whitespace-nowrap flex-shrink-0">
-									<img
-										src={mention.icon}
-										alt={mention.type === "folder" ? "Folder" : "File"}
-										style={{
-											width: "12px",
-											height: "12px",
-											flexShrink: 0,
-										}}
-									/>
-									<span>{mention.displayName}</span>
-								</div>
-							))}
-
-							{/* Images */}
-							{selectedImages.length > 0 && (
-								<Thumbnails
-									images={selectedImages}
-									setImages={setSelectedImages}
-									style={{
-										marginBottom: 0,
-										display: "flex",
-										gap: 4,
-									}}
-								/>
-							)}
-						</div>
-					)}
+					<ChatContextBar
+						validMentions={validMentions}
+						selectedImages={selectedImages}
+						onRemoveMention={handleRemoveMention}
+						onRemoveImage={handleRemoveImage}
+					/>
 					<div
-						className="relative"
+						className={cn("chat-text-area", !isEditMode && "relative", "flex", "flex-col", "outline-none")}
 						onDrop={handleDrop}
 						onDragOver={(e) => {
 							// Only allowed to drop images/files on shift key pressed.
@@ -598,62 +652,10 @@ export const ChatLexicalTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaP
 								setIsDraggingOver(false)
 							}
 						}}>
-						<LexicalComposer initialConfig={initialConfig}>
-							<PlainTextPlugin
-								contentEditable={
-									<ContentEditable
-										aria-placeholder={placeholderText}
-										placeholder={
-											<div className="absolute inset-0">
-												<p className="absolute left-0 top-0.5 leading-none m-0 opacity-70">
-													{placeholderText}
-												</p>
-												<p className="absolute left-0 bottom-8.5 leading-none m-0 opacity-50">
-													{placeholderBottomText}
-												</p>
-											</div>
-										}
-										className={cn(
-											"relative w-full outline-none",
-											"text-vscode-input-foreground",
-											"font-vscode-font-family",
-											"text-vscode-editor-font-size",
-											"leading-vscode-editor-line-height",
-											"cursor-text",
-											"transition-background-color duration-150 ease-in-out",
-											"will-change-background-color",
-											"min-h-[94px]",
-											"box-border",
-											"resize-none",
-											"overflow-x-hidden",
-											"overflow-y-auto",
-											"flex-none flex-grow",
-											"z-[2]",
-											"scrollbar-none",
-											"scrollbar-hide",
-										)}
-										onFocus={() => setIsFocused(true)}
-										onBlur={() => setIsFocused(false)}
-										onPaste={handlePaste}
-									/>
-								}
-								ErrorBoundary={LexicalErrorBoundary}
-							/>
-							<OnChangePlugin onChange={handleEditorChange} />
-							<HistoryPlugin />
-							<AutoFocusPlugin />
-							<LexicalMentionPlugin
-								ref={mentionPluginRef}
-								onMentionTrigger={handleMentionTrigger}
-								onMentionHide={handleMentionHide}
-								onMentionUpdate={handleMentionUpdate}
-								materialIconsBaseUri={materialIconsBaseUri}
-							/>
-							<LexicalSelectAllPlugin />
-						</LexicalComposer>
 						{showContextMenu && (
 							<div
 								ref={contextMenuContainerRef}
+								onMouseDown={handleMenuMouseDown}
 								className={cn(
 									"absolute",
 									"bottom-full",
@@ -668,7 +670,7 @@ export const ChatLexicalTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaP
 									onSelect={handleMentionSelect}
 									searchQuery={searchQuery}
 									inputValue={inputValue}
-									onMouseDown={() => {}}
+									onMouseDown={handleMenuMouseDown}
 									selectedIndex={selectedMenuIndex}
 									setSelectedIndex={setSelectedMenuIndex}
 									selectedType={selectedType}
@@ -680,54 +682,242 @@ export const ChatLexicalTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaP
 								/>
 							</div>
 						)}
-						<div className="flex items-center gap-2">
-							<div className="flex items-center gap-1 min-w-0 overflow-clip flex-1">
-								<ModeSelector
-									value={mode}
-									title={t("chat:selectMode")}
-									onChange={handleModeChange}
-									triggerClassName="text-ellipsis overflow-hidden flex-shrink-0 bg-vscode-editor-background"
-									modeShortcutText={modeShortcutText}
-									customModes={customModes}
-									customModePrompts={customModePrompts}
+						<div
+							className={cn(
+								"relative",
+								"flex-1",
+								"flex",
+								"flex-col-reverse",
+								"min-h-0",
+								"overflow-hidden",
+								"rounded",
+							)}>
+							<LexicalComposer initialConfig={initialConfig}>
+								<PlainTextPlugin
+									contentEditable={
+										<ContentEditable
+											aria-placeholder={placeholderText}
+											placeholder={
+												<div className="absolute inset-0">
+													<p className="absolute left-2 top-2 leading-none m-0 opacity-70">
+														{placeholderText}
+													</p>
+													<p
+														className={cn(
+															"absolute left-2 -bottom-0 z-30 flex items-center h-8 font-vscode-font-family text-vscode-editor-font-size leading-vscode-editor-line-height pointer-events-none",
+															isEditMode ? "pr-20" : "pr-9",
+														)}
+														style={{
+															color: "color-mix(in oklab, var(--vscode-input-foreground) 50%, transparent)",
+															userSelect: "none",
+														}}>
+														{placeholderBottomText}
+													</p>
+												</div>
+											}
+											className={cn(
+												"relative w-full outline-none",
+												"text-vscode-input-foreground",
+												"font-vscode-font-family",
+												"text-vscode-editor-font-size",
+												"leading-vscode-editor-line-height",
+												"cursor-text",
+												"transition-background-color duration-150 ease-in-out",
+												"will-change-background-color",
+												"min-h-[94px]",
+												"box-border",
+												"resize-none",
+												"overflow-x-hidden",
+												"overflow-y-auto",
+												"flex-none flex-grow",
+												"z-[2]",
+												"scrollbar-none",
+												"scrollbar-hide",
+												isFocused
+													? "border border-vscode-focusBorder outline outline-vscode-focusBorder"
+													: isDraggingOver
+														? "border-2 border-dashed border-vscode-focusBorder"
+														: "border border-transparent",
+												isDraggingOver
+													? "bg-[color-mix(in_srgb,var(--vscode-input-background)_95%,var(--vscode-focusBorder))]"
+													: "bg-vscode-input-background",
+												"pl-2 py-2",
+												isEditMode ? "pr-20" : "pr-9",
+											)}
+											onFocus={() => setIsFocused(true)}
+											onBlur={() => {
+												setIsFocused(false)
+												setIsMouseDownOnMenu(false)
+											}}
+											onPaste={handlePaste}
+											ref={ref}
+										/>
+									}
+									ErrorBoundary={LexicalErrorBoundary}
 								/>
-								<ApiConfigSelector
-									value={currentConfigId}
-									displayName={displayName}
-									disabled={selectApiConfigDisabled}
-									title={t("chat:selectApiConfig")}
-									onChange={handleApiConfigChange}
-									triggerClassName="min-w-[28px] text-ellipsis overflow-hidden flex-shrink bg-vscode-editor-background"
-									listApiConfigMeta={listApiConfigMeta || []}
-									pinnedApiConfigs={pinnedApiConfigs}
-									togglePinnedApiConfig={togglePinnedApiConfig}
+								<OnChangePlugin onChange={handleEditorChange} />
+								<HistoryPlugin />
+								<AutoFocusPlugin />
+								<LexicalMentionPlugin
+									ref={mentionPluginRef}
+									onMentionTrigger={handleMentionTrigger}
+									onMentionHide={handleMentionHide}
+									onMentionUpdate={handleMentionUpdate}
+									materialIconsBaseUri={materialIconsBaseUri}
 								/>
-								<AutoApproveDropdown triggerClassName="min-w-[28px] text-ellipsis overflow-hidden flex-shrink bg-vscode-editor-background" />
-							</div>
-							<div className="flex flex-shrink-0 items-center gap-0.5 pr-2">
-								{isTtsPlaying && (
-									<StandardTooltip content={t("chat:stopTts")}>
+								<LexicalSelectAllPlugin />
+							</LexicalComposer>
+
+							<div className="absolute bottom-2 right-1 z-30 flex flex-col items-center gap-0">
+								<StandardTooltip content={t("chat:addImages")}>
+									<button
+										aria-label={t("chat:addImages")}
+										disabled={shouldDisableImages}
+										onClick={!shouldDisableImages ? onSelectImages : undefined}
+										className={cn(
+											"relative inline-flex items-center justify-center",
+											"bg-transparent border-none p-1.5",
+											"rounded-md min-w-[28px] min-h-[28px]",
+											"text-vscode-descriptionForeground hover:text-vscode-foreground",
+											"transition-all duration-1000",
+											"cursor-pointer",
+											!shouldDisableImages
+												? "opacity-50 hover:opacity-100 delay-750 pointer-events-auto"
+												: "opacity-0 pointer-events-none duration-200 delay-0",
+											!shouldDisableImages &&
+												"hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.15)]",
+											"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
+											!shouldDisableImages && "active:bg-[rgba(255,255,255,0.1)]",
+											shouldDisableImages &&
+												"opacity-40 cursor-not-allowed grayscale-[30%] hover:bg-transparent hover:border-[rgba(255,255,255,0.08)] active:bg-transparent",
+										)}>
+										<Image className="w-4 h-4" />
+									</button>
+								</StandardTooltip>
+								<StandardTooltip content={t("chat:enhancePrompt")}>
+									<button
+										aria-label={t("chat:enhancePrompt")}
+										disabled={false}
+										onClick={handleEnhancePrompt}
+										className={cn(
+											"relative inline-flex items-center justify-center",
+											"bg-transparent border-none p-1.5",
+											"rounded-md min-w-[28px] min-h-[28px]",
+											"text-vscode-descriptionForeground hover:text-vscode-foreground",
+											"transition-all duration-1000",
+											"cursor-pointer",
+											hasInputContent
+												? "opacity-50 hover:opacity-100 delay-750 pointer-events-auto"
+												: "opacity-0 pointer-events-none duration-200 delay-0",
+											hasInputContent &&
+												"hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.15)]",
+											"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
+											hasInputContent && "active:bg-[rgba(255,255,255,0.1)]",
+										)}>
+										<WandSparkles className={cn("w-4 h-4", isEnhancingPrompt && "animate-spin")} />
+									</button>
+								</StandardTooltip>
+								{isEditMode && (
+									<StandardTooltip content={t("chat:cancel.title")}>
 										<button
-											aria-label={t("chat:stopTts")}
-											onClick={() => vscode.postMessage({ type: "stopTts" })}
+											aria-label={t("chat:cancel.title")}
+											disabled={false}
+											onClick={onCancel}
 											className={cn(
 												"relative inline-flex items-center justify-center",
 												"bg-transparent border-none p-1.5",
 												"rounded-md min-w-[28px] min-h-[28px]",
-												"text-vscode-foreground opacity-85",
+												"opacity-60 hover:opacity-100 text-vscode-descriptionForeground hover:text-vscode-foreground",
 												"transition-all duration-150",
-												"hover:opacity-100 hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.15)]",
+												"hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.15)]",
 												"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
 												"active:bg-[rgba(255,255,255,0.1)]",
 												"cursor-pointer",
 											)}>
-											<VolumeX className="w-4 h-4" />
+											<MessageSquareX className="w-4 h-4" />
 										</button>
 									</StandardTooltip>
 								)}
-								{!isEditMode ? <IndexingStatusBadge /> : null}
+								<StandardTooltip content={t("chat:sendMessage")}>
+									<button
+										aria-label={t("chat:sendMessage")}
+										disabled={sendingDisabled || !hasInputContent}
+										onClick={onSend}
+										className={cn(
+											"relative inline-flex items-center justify-center",
+											"bg-transparent border-none p-1.5",
+											"rounded-md min-w-[28px] min-h-[28px]",
+											"text-vscode-descriptionForeground hover:text-vscode-foreground",
+											"transition-all duration-200",
+											hasInputContent && !sendingDisabled
+												? "opacity-100 hover:opacity-100 pointer-events-auto"
+												: "opacity-0 pointer-events-none",
+											hasInputContent &&
+												!sendingDisabled &&
+												"hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.15)]",
+											"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
+											hasInputContent && !sendingDisabled && "active:bg-[rgba(255,255,255,0.1)]",
+											hasInputContent && !sendingDisabled && "cursor-pointer",
+										)}>
+										<SendHorizontal className="w-4 h-4" />
+									</button>
+								</StandardTooltip>
 							</div>
 						</div>
+					</div>
+				</div>
+
+				<div className="flex items-center gap-2">
+					<div className="flex items-center gap-2 min-w-0 overflow-clip flex-1">
+						<ModeSelector
+							value={mode}
+							title={t("chat:selectMode")}
+							onChange={handleModeChange}
+							triggerClassName="text-ellipsis overflow-hidden flex-shrink-0"
+							modeShortcutText={modeShortcutText}
+							customModes={customModes}
+							customModePrompts={customModePrompts}
+						/>
+						<ApiConfigSelector
+							value={currentConfigId}
+							displayName={displayName}
+							disabled={selectApiConfigDisabled}
+							title={t("chat:selectApiConfig")}
+							onChange={handleApiConfigChange}
+							triggerClassName="min-w-[28px] text-ellipsis overflow-hidden flex-shrink"
+							listApiConfigMeta={listApiConfigMeta || []}
+							pinnedApiConfigs={pinnedApiConfigs}
+							togglePinnedApiConfig={togglePinnedApiConfig}
+						/>
+						<AutoApproveDropdown triggerClassName="min-w-[28px] text-ellipsis overflow-hidden flex-shrink" />
+					</div>
+					<div
+						className={cn(
+							"flex flex-shrink-0 items-center gap-0.5",
+							!isEditMode && cloudUserInfo ? "" : "pr-2",
+						)}>
+						{isTtsPlaying && (
+							<StandardTooltip content={t("chat:stopTts")}>
+								<button
+									aria-label={t("chat:stopTts")}
+									onClick={() => vscode.postMessage({ type: "stopTts" })}
+									className={cn(
+										"relative inline-flex items-center justify-center",
+										"bg-transparent border-none p-1.5",
+										"rounded-md min-w-[28px] min-h-[28px]",
+										"text-vscode-foreground opacity-85",
+										"transition-all duration-150",
+										"hover:opacity-100 hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.15)]",
+										"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
+										"active:bg-[rgba(255,255,255,0.1)]",
+										"cursor-pointer",
+									)}>
+									<VolumeX className="w-4 h-4" />
+								</button>
+							</StandardTooltip>
+						)}
+						{!isEditMode ? <IndexingStatusBadge /> : null}
+						{!isEditMode && cloudUserInfo && <CloudAccountSwitcher />}
 					</div>
 				</div>
 			</div>

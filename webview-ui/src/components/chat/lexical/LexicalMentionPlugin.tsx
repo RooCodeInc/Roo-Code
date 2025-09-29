@@ -28,6 +28,7 @@ export interface MentionInfo {
 
 export interface LexicalMentionPluginRef {
 	insertMention: (mentionText: string, trigger: string, type?: ContextMenuOptionType) => void
+	removeMention: (mentionInfo: MentionInfo) => void
 }
 
 interface LexicalMentionPluginProps {
@@ -270,7 +271,61 @@ export const LexicalMentionPlugin = forwardRef<LexicalMentionPluginRef, LexicalM
 			[editor, onMentionHide],
 		)
 
-		useImperativeHandle(ref, () => ({ insertMention }), [insertMention])
+		const removeMention = useCallback(
+			(mentionInfo: MentionInfo) => {
+				editor.update(() => {
+					const root = $getRoot()
+
+					const traverse = (node: any, visited = new Set()) => {
+						// Prevent infinite recursion by tracking visited nodes
+						if (!node || visited.has(node)) {
+							return false
+						}
+						visited.add(node)
+
+						if ($isMentionNode(node) && node.getTrigger() === "@") {
+							// Check if this is the mention we want to remove
+							if (node.getMentionName() === mentionInfo.path) {
+								// Remove the mention node and any trailing space
+								const nextSibling = node.getNextSibling()
+								if ($isTextNode(nextSibling) && nextSibling.getTextContent().startsWith(" ")) {
+									// Remove the space after the mention
+									const remainingText = nextSibling.getTextContent().slice(1)
+									if (remainingText) {
+										nextSibling.setTextContent(remainingText)
+									} else {
+										nextSibling.remove()
+									}
+								}
+								node.remove()
+								return true // Found and removed
+							}
+						}
+
+						// Safely get children with error handling
+						try {
+							const children = node.getChildren?.() || []
+							for (const child of children) {
+								if (child && typeof child === "object") {
+									if (traverse(child, visited)) {
+										return true // Found and removed in child
+									}
+								}
+							}
+						} catch (error) {
+							console.warn("Error traversing node children:", error)
+						}
+
+						return false
+					}
+
+					traverse(root)
+				})
+			},
+			[editor],
+		)
+
+		useImperativeHandle(ref, () => ({ insertMention, removeMention }), [insertMention, removeMention])
 
 		useEffect(() => {
 			const removeKeyDownListener = editor.registerCommand(
