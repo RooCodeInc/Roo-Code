@@ -33,7 +33,7 @@ export const useTaskSearch = () => {
 
 	const fzf = useMemo(() => {
 		return new Fzf(presentableTasks, {
-			selector: (item) => item.task,
+			selector: (item) => (item.title ? `${item.title} ${item.task}` : item.task),
 		})
 	}, [presentableTasks])
 
@@ -44,14 +44,24 @@ export const useTaskSearch = () => {
 			const searchResults = fzf.find(searchQuery)
 			results = searchResults.map((result) => {
 				const positions = Array.from(result.positions)
-				const taskEndIndex = result.item.task.length
+				const titleLength = result.item.title ? result.item.title.length : 0
+				const separatorLength = titleLength > 0 ? 1 : 0
+				const taskOffset = titleLength + separatorLength
+				const titlePositions = titleLength > 0 ? positions.filter((p) => p < titleLength) : []
+				const taskPositions = positions.filter((p) => p >= taskOffset).map((p) => p - taskOffset)
+
+				const titleHighlight =
+					titlePositions.length > 0 && result.item.title
+						? highlightFzfMatch(result.item.title, titlePositions)
+						: undefined
+
+				const taskHighlight =
+					taskPositions.length > 0 ? highlightFzfMatch(result.item.task, taskPositions) : undefined
 
 				return {
 					...result.item,
-					highlight: highlightFzfMatch(
-						result.item.task,
-						positions.filter((p) => p < taskEndIndex),
-					),
+					titleHighlight,
+					highlight: taskHighlight,
 					workspace: result.item.workspace,
 				}
 			})

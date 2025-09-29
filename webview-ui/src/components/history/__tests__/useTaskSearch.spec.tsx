@@ -20,6 +20,7 @@ const mockTaskHistory: HistoryItem[] = [
 	{
 		id: "task-1",
 		number: 1,
+		title: "Build component",
 		task: "Create a React component",
 		ts: new Date("2022-02-16T12:00:00").getTime(),
 		tokensIn: 100,
@@ -30,6 +31,7 @@ const mockTaskHistory: HistoryItem[] = [
 	{
 		id: "task-2",
 		number: 2,
+		title: "Write tests",
 		task: "Write unit tests",
 		ts: new Date("2022-02-17T12:00:00").getTime(),
 		tokensIn: 200,
@@ -152,6 +154,19 @@ describe("useTaskSearch", () => {
 		expect(result.current.tasks).toHaveLength(1)
 		expect(result.current.tasks[0].id).toBe("task-1")
 		expect((result.current.tasks[0] as any).highlight).toBe("<mark>Create a React component</mark>")
+	})
+
+	it("matches search queries against task titles", () => {
+		const { result } = renderHook(() => useTaskSearch())
+
+		act(() => {
+			result.current.setShowAllWorkspaces(true)
+			result.current.setSearchQuery("build")
+		})
+
+		expect(result.current.tasks).toHaveLength(1)
+		expect(result.current.tasks[0].id).toBe("task-1")
+		expect((result.current.tasks[0] as any).titleHighlight).toBe("<mark>Build component</mark>")
 	})
 
 	it("automatically switches to mostRelevant when searching", () => {

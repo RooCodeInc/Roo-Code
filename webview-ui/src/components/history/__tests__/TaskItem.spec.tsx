@@ -80,6 +80,21 @@ describe("TaskItem", () => {
 		expect(screen.getByTestId("export")).toBeInTheDocument()
 	})
 
+	it("renders title above task content when provided", () => {
+		render(
+			<TaskItem
+				item={{ ...mockTask, title: "Important task" }}
+				variant="full"
+				isSelected={false}
+				onToggleSelection={vi.fn()}
+				isSelectionMode={false}
+			/>,
+		)
+
+		expect(screen.getByTestId("task-item-title")).toHaveTextContent("Important task")
+		expect(screen.getByTestId("task-content")).toHaveTextContent("Test task")
+	})
+
 	it("displays time ago information", () => {
 		render(
 			<TaskItem
