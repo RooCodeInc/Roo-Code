@@ -127,8 +127,8 @@ export function Testimonials() {
 		[
 			AutoPlay({
 				playOnInit: true,
-				delay: 4000,
-				stopOnInteraction: true,
+				delay: 3_500,
+				stopOnInteraction: false,
 				stopOnMouseEnter: true,
 				stopOnFocusIn: true,
 			}),
@@ -201,7 +201,7 @@ export function Testimonials() {
 				</div>
 
 				<motion.div
-					className="relative mx-auto max-w-[1400px]"
+					className="relative -mx-4 md:mx-auto max-w-[1400px]"
 					variants={containerVariants}
 					initial="hidden"
 					whileInView="visible"
@@ -209,7 +209,7 @@ export function Testimonials() {
 					{/* Previous Button */}
 					<button
 						onClick={scrollPrev}
-						className="absolute left-0 top-1/2 z-20 -translate-y-1/2 rounded-full border border-border/50 bg-background/80 p-2 backdrop-blur-xl transition-all duration-300 hover:scale-110 hover:shadow-lg md:left-4 md:p-3 lg:left-8"
+						className="absolute left-1 top-1/2 z-20 -translate-y-1/2 rounded-full border border-border/50 bg-background/80 p-2 backdrop-blur-xl transition-all duration-300 hover:scale-110 hover:shadow-lg md:left-4 md:p-3 lg:left-8"
 						aria-label="Previous testimonial">
 						<ChevronLeft className="h-5 w-5 text-muted-foreground transition-colors hover:text-foreground md:h-6 md:w-6" />
 					</button>
@@ -217,14 +217,14 @@ export function Testimonials() {
 					{/* Next Button */}
 					<button
 						onClick={scrollNext}
-						className="absolute right-0 top-1/2 z-20 -translate-y-1/2 rounded-full border border-border/50 bg-background/80 p-2 backdrop-blur-xl transition-all duration-300 hover:scale-110 hover:shadow-lg md:right-4 md:p-3 lg:right-8"
+						className="absolute right-1 top-1/2 z-20 -translate-y-1/2 rounded-full border border-border/50 bg-background/80 p-2 backdrop-blur-xl transition-all duration-300 hover:scale-110 hover:shadow-lg md:right-4 md:p-3 lg:right-8"
 						aria-label="Next testimonial">
 						<ChevronRight className="h-5 w-5 text-muted-foreground transition-colors hover:text-foreground md:h-6 md:w-6" />
 					</button>
 
 					{/* Gradient Overlays */}
-					<div className="absolute inset-y-0 left-0 z-10 w-[10%] bg-gradient-to-r from-background to-transparent pointer-events-none md:w-[15%]" />
-					<div className="absolute inset-y-0 right-0 z-10 w-[10%] bg-gradient-to-l from-background to-transparent pointer-events-none md:w-[15%]" />
+					<div className="hidden md:block absolute inset-y-0 left-0 z-10 w-[10%] bg-gradient-to-r from-background to-transparent pointer-events-none md:w-[15%]" />
+					<div className="hidden md:block absolute inset-y-0 right-0 z-10 w-[10%] bg-gradient-to-l from-background to-transparent pointer-events-none md:w-[15%]" />
 
 					{/* Embla Carousel Container */}
 					<div className="overflow-hidden" ref={emblaRef}>
@@ -232,12 +232,12 @@ export function Testimonials() {
 							{testimonials.map((testimonial) => (
 								<div
 									key={testimonial.name}
-									className="relative min-w-0 flex-[0_0_85%] px-2 md:flex-[0_0_70%] md:px-4 lg:flex-[0_0_60%]">
+									className="relative min-w-0 flex-[0_0_85%] px-2 md:flex-[0_0_70%] md:px-4 lg:flex-[0_0_30%]">
 									<div className="group relative py-10 h-full">
 										<div className="relative flex h-full flex-col rounded-2xl border border-border bg-background transition-all duration-500 ease-out group-hover:scale-[1.02] group-hover:border-border group-hover:bg-background/40 group-hover:shadow-xl dark:border-border/70 dark:bg-background/40 dark:group-hover:border-border dark:group-hover:bg-background/60 dark:group-hover:shadow-[0_20px_50px_rgba(59,130,246,0.15)]">
-											<div className="flex flex-1 flex-col p-6 md:p-8">
+											<div className="flex flex-1 flex-col p-4 md:p-6">
 												<div className="flex-1">
-													<p className="relative text-sm leading-relaxed text-muted-foreground transition-colors duration-300 group-hover:text-foreground/80 dark:text-foreground/70 dark:group-hover:text-foreground/90 md:text-lg">
+													<p className="relative text-sm leading-relaxed text-muted-foreground transition-colors duration-300 group-hover:text-foreground/80 dark:text-foreground/70 dark:group-hover:text-foreground/90">
 														{testimonial.quote}
 													</p>
 												</div>
