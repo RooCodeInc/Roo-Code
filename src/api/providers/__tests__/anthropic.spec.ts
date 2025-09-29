@@ -265,13 +265,14 @@ describe("AnthropicHandler", () => {
 			expect(result.temperature).toBe(0)
 		})
 
-		it("should handle Claude 4.5 Sonnet model correctly", () => {
+		it("should handle Claude 4.5 Sonnet model correctly and convert ID to API format", () => {
 			const handler = new AnthropicHandler({
 				apiKey: "test-api-key",
 				apiModelId: "claude-4.5-sonnet",
 			})
 			const model = handler.getModel()
-			expect(model.id).toBe("claude-4.5-sonnet")
+			// The model ID should be converted to the format expected by Anthropic API
+			expect(model.id).toBe("claude-sonnet-4-5")
 			expect(model.info.maxTokens).toBe(64000)
 			expect(model.info.contextWindow).toBe(200000)
 			expect(model.info.supportsReasoningBudget).toBe(true)

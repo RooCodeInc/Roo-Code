@@ -45,15 +45,23 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 		const cacheControl: CacheControlEphemeral = { type: "ephemeral" }
 		let { id: modelId, betas = [], maxTokens, temperature, reasoning: thinking } = this.getModel()
 
+		// Store the original model ID for switch statements
+		const originalModelId = modelId
+
+		// Convert claude-4.5-sonnet to the format expected by Anthropic API
+		if (modelId === "claude-4.5-sonnet") {
+			modelId = "claude-sonnet-4-5" as any
+		}
+
 		// Add 1M context beta flag if enabled for Claude Sonnet 4 and 4.5
 		if (
-			(modelId === "claude-sonnet-4-20250514" || modelId === "claude-4.5-sonnet") &&
+			(originalModelId === "claude-sonnet-4-20250514" || originalModelId === "claude-4.5-sonnet") &&
 			this.options.anthropicBeta1MContext
 		) {
 			betas.push("context-1m-2025-08-07")
 		}
 
-		switch (modelId) {
+		switch (originalModelId) {
 			case "claude-4.5-sonnet":
 			case "claude-sonnet-4-20250514":
 			case "claude-opus-4-1-20250805":
@@ -113,7 +121,7 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 						// https://github.com/anthropics/anthropic-sdk-typescript/commit/c920b77fc67bd839bfeb6716ceab9d7c9bbe7393
 
 						// Then check for models that support prompt caching
-						switch (modelId) {
+						switch (originalModelId) {
 							case "claude-4.5-sonnet":
 							case "claude-sonnet-4-20250514":
 							case "claude-opus-4-1-20250805":
@@ -275,8 +283,18 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 		// reasoning model and that reasoning is required to be enabled.
 		// The actual model ID honored by Anthropic's API does not have this
 		// suffix.
+
+		// Map internal model IDs to Anthropic API model IDs
+		let apiModelId = id
+		if (id === "claude-3-7-sonnet-20250219:thinking") {
+			apiModelId = "claude-3-7-sonnet-20250219"
+		} else if (id === "claude-4.5-sonnet") {
+			// Convert claude-4.5-sonnet to the format expected by Anthropic API
+			apiModelId = "claude-sonnet-4-5" as AnthropicModelId
+		}
+
 		return {
-			id: id === "claude-3-7-sonnet-20250219:thinking" ? "claude-3-7-sonnet-20250219" : id,
+			id: apiModelId,
 			info,
 			betas: id === "claude-3-7-sonnet-20250219:thinking" ? ["output-128k-2025-02-19"] : undefined,
 			...params,
