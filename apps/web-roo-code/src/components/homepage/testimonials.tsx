@@ -191,9 +191,9 @@ export function Testimonials() {
 			</div>
 
 			<div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
-				<div className="mx-auto mb-8 max-w-5xl text-center">
+				<div className="mx-auto mb-8 md:max-w-2xl text-center">
 					<h2 className="text-4xl font-bold tracking-tight sm:text-5xl">
-						AI-forward developers are using Roo Code
+						Developers <em>really</em> shipping with AI are using Roo Code
 					</h2>
 					<p className="mt-6 text-lg text-muted-foreground">
 						Join more than 1M people revolutionizing their workflow worldwide
