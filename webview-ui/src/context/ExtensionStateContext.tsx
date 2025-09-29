@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useEffect, useState } from "react"
+import React, { createContext, useCallback, useContext, useEffect, useState, useRef, useMemo } from "react"
 
 import {
 	type ProviderSettings,
@@ -301,48 +301,77 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		}))
 	}, [])
 
-	const handleMessage = useCallback(
-		(event: MessageEvent) => {
-			const message: ExtensionMessage = event.data
-			switch (message.type) {
-				case "state": {
-					const newState = message.state!
-					setState((prevState) => mergeExtensionState(prevState, newState))
-					setShowWelcome(!checkExistKey(newState.apiConfiguration))
-					setDidHydrateState(true)
-					// Update alwaysAllowFollowupQuestions if present in state message
-					if ((newState as any).alwaysAllowFollowupQuestions !== undefined) {
-						setAlwaysAllowFollowupQuestions((newState as any).alwaysAllowFollowupQuestions)
+	// Use a ref to batch message updates
+	const pendingUpdatesRef = useRef<ExtensionMessage[]>([])
+	const updateTimerRef = useRef<NodeJS.Timeout | null>(null)
+
+	// Process batched updates
+	const processBatchedUpdates = useCallback(() => {
+		if (pendingUpdatesRef.current.length === 0) return
+
+		const updates = pendingUpdatesRef.current
+		pendingUpdatesRef.current = []
+
+		// Process all updates in a single state update
+		setState((prevState) => {
+			let newState = prevState
+
+			for (const message of updates) {
+				switch (message.type) {
+					case "state": {
+						const stateUpdate = message.state!
+						newState = mergeExtensionState(newState, stateUpdate)
+						setShowWelcome(!checkExistKey(stateUpdate.apiConfiguration))
+						setDidHydrateState(true)
+						// Update alwaysAllowFollowupQuestions if present in state message
+						if ((stateUpdate as any).alwaysAllowFollowupQuestions !== undefined) {
+							setAlwaysAllowFollowupQuestions((stateUpdate as any).alwaysAllowFollowupQuestions)
+						}
+						// Update followupAutoApproveTimeoutMs if present in state message
+						if ((stateUpdate as any).followupAutoApproveTimeoutMs !== undefined) {
+							setFollowupAutoApproveTimeoutMs((stateUpdate as any).followupAutoApproveTimeoutMs)
+						}
+						// Update includeTaskHistoryInEnhance if present in state message
+						if ((stateUpdate as any).includeTaskHistoryInEnhance !== undefined) {
+							setIncludeTaskHistoryInEnhance((stateUpdate as any).includeTaskHistoryInEnhance)
+						}
+						// Handle marketplace data if present in state message
+						if (stateUpdate.marketplaceItems !== undefined) {
+							setMarketplaceItems(stateUpdate.marketplaceItems)
+						}
+						if (stateUpdate.marketplaceInstalledMetadata !== undefined) {
+							setMarketplaceInstalledMetadata(stateUpdate.marketplaceInstalledMetadata)
+						}
+						break
 					}
-					// Update followupAutoApproveTimeoutMs if present in state message
-					if ((newState as any).followupAutoApproveTimeoutMs !== undefined) {
-						setFollowupAutoApproveTimeoutMs((newState as any).followupAutoApproveTimeoutMs)
-					}
-					// Update includeTaskHistoryInEnhance if present in state message
-					if ((newState as any).includeTaskHistoryInEnhance !== undefined) {
-						setIncludeTaskHistoryInEnhance((newState as any).includeTaskHistoryInEnhance)
-					}
-					// Handle marketplace data if present in state message
-					if (newState.marketplaceItems !== undefined) {
-						setMarketplaceItems(newState.marketplaceItems)
-					}
-					if (newState.marketplaceInstalledMetadata !== undefined) {
-						setMarketplaceInstalledMetadata(newState.marketplaceInstalledMetadata)
-					}
-					break
-				}
-				case "action": {
-					if (message.action === "toggleAutoApprove") {
-						// Toggle the auto-approval state
-						setState((prevState) => {
-							const newValue = !(prevState.autoApprovalEnabled ?? false)
+					case "action": {
+						if (message.action === "toggleAutoApprove") {
+							const newValue = !(newState.autoApprovalEnabled ?? false)
 							// Also send the update to the extension
 							vscode.postMessage({ type: "autoApprovalEnabled", bool: newValue })
-							return { ...prevState, autoApprovalEnabled: newValue }
-						})
+							newState = { ...newState, autoApprovalEnabled: newValue }
+						}
+						break
 					}
-					break
+					case "messageUpdated": {
+						const clineMessage = message.clineMessage!
+						const lastIndex = findLastIndex(newState.clineMessages, (msg) => msg.ts === clineMessage.ts)
+						if (lastIndex !== -1) {
+							const newClineMessages = [...newState.clineMessages]
+							newClineMessages[lastIndex] = clineMessage
+							newState = { ...newState, clineMessages: newClineMessages }
+						}
+						break
+					}
 				}
+			}
+
+			return newState
+		})
+
+		// Process non-state updates
+		for (const message of updates) {
+			switch (message.type) {
 				case "theme": {
 					if (message.text) {
 						setTheme(convertTextMateToHljs(JSON.parse(message.text)))
@@ -352,27 +381,12 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 				case "workspaceUpdated": {
 					const paths = message.filePaths ?? []
 					const tabs = message.openedTabs ?? []
-
 					setFilePaths(paths)
 					setOpenedTabs(tabs)
 					break
 				}
 				case "commands": {
 					setCommands(message.commands ?? [])
-					break
-				}
-				case "messageUpdated": {
-					const clineMessage = message.clineMessage!
-					setState((prevState) => {
-						// worth noting it will never be possible for a more up-to-date message to be sent here or in normal messages post since the presentAssistantContent function uses lock
-						const lastIndex = findLastIndex(prevState.clineMessages, (msg) => msg.ts === clineMessage.ts)
-						if (lastIndex !== -1) {
-							const newClineMessages = [...prevState.clineMessages]
-							newClineMessages[lastIndex] = clineMessage
-							return { ...prevState, clineMessages: newClineMessages }
-						}
-						return prevState
-					})
 					break
 				}
 				case "mcpServers": {
@@ -401,8 +415,28 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 					break
 				}
 			}
+		}
+	}, [setListApiConfigMeta])
+
+	const handleMessage = useCallback(
+		(event: MessageEvent) => {
+			const message: ExtensionMessage = event.data
+
+			// Add message to pending updates
+			pendingUpdatesRef.current.push(message)
+
+			// Clear existing timer
+			if (updateTimerRef.current) {
+				clearTimeout(updateTimerRef.current)
+			}
+
+			// Set a new timer to batch updates (10ms delay)
+			updateTimerRef.current = setTimeout(() => {
+				processBatchedUpdates()
+				updateTimerRef.current = null
+			}, 10)
 		},
-		[setListApiConfigMeta],
+		[processBatchedUpdates],
 	)
 
 	useEffect(() => {
@@ -416,150 +450,180 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		vscode.postMessage({ type: "webviewDidLaunch" })
 	}, [])
 
-	const contextValue: ExtensionStateContextType = {
-		...state,
-		reasoningBlockCollapsed: state.reasoningBlockCollapsed ?? true,
-		didHydrateState,
-		showWelcome,
-		theme,
-		mcpServers,
-		currentCheckpoint,
-		filePaths,
-		openedTabs,
-		commands,
-		soundVolume: state.soundVolume,
-		ttsSpeed: state.ttsSpeed,
-		fuzzyMatchThreshold: state.fuzzyMatchThreshold,
-		writeDelayMs: state.writeDelayMs,
-		screenshotQuality: state.screenshotQuality,
-		routerModels: extensionRouterModels,
-		cloudIsAuthenticated: state.cloudIsAuthenticated ?? false,
-		cloudOrganizations: state.cloudOrganizations ?? [],
-		organizationSettingsVersion: state.organizationSettingsVersion ?? -1,
-		marketplaceItems,
-		marketplaceInstalledMetadata,
-		profileThresholds: state.profileThresholds ?? {},
-		alwaysAllowFollowupQuestions,
-		followupAutoApproveTimeoutMs,
-		remoteControlEnabled: state.remoteControlEnabled ?? false,
-		taskSyncEnabled: state.taskSyncEnabled,
-		featureRoomoteControlEnabled: state.featureRoomoteControlEnabled ?? false,
-		setExperimentEnabled: (id, enabled) =>
-			setState((prevState) => ({ ...prevState, experiments: { ...prevState.experiments, [id]: enabled } })),
-		setApiConfiguration,
-		setCustomInstructions: (value) => setState((prevState) => ({ ...prevState, customInstructions: value })),
-		setAlwaysAllowReadOnly: (value) => setState((prevState) => ({ ...prevState, alwaysAllowReadOnly: value })),
-		setAlwaysAllowReadOnlyOutsideWorkspace: (value) =>
-			setState((prevState) => ({ ...prevState, alwaysAllowReadOnlyOutsideWorkspace: value })),
-		setAlwaysAllowWrite: (value) => setState((prevState) => ({ ...prevState, alwaysAllowWrite: value })),
-		setAlwaysAllowWriteOutsideWorkspace: (value) =>
-			setState((prevState) => ({ ...prevState, alwaysAllowWriteOutsideWorkspace: value })),
-		setAlwaysAllowExecute: (value) => setState((prevState) => ({ ...prevState, alwaysAllowExecute: value })),
-		setAlwaysAllowBrowser: (value) => setState((prevState) => ({ ...prevState, alwaysAllowBrowser: value })),
-		setAlwaysAllowMcp: (value) => setState((prevState) => ({ ...prevState, alwaysAllowMcp: value })),
-		setAlwaysAllowModeSwitch: (value) => setState((prevState) => ({ ...prevState, alwaysAllowModeSwitch: value })),
-		setAlwaysAllowSubtasks: (value) => setState((prevState) => ({ ...prevState, alwaysAllowSubtasks: value })),
-		setAlwaysAllowFollowupQuestions,
-		setFollowupAutoApproveTimeoutMs: (value) =>
-			setState((prevState) => ({ ...prevState, followupAutoApproveTimeoutMs: value })),
-		setShowAnnouncement: (value) => setState((prevState) => ({ ...prevState, shouldShowAnnouncement: value })),
-		setAllowedCommands: (value) => setState((prevState) => ({ ...prevState, allowedCommands: value })),
-		setDeniedCommands: (value) => setState((prevState) => ({ ...prevState, deniedCommands: value })),
-		setAllowedMaxRequests: (value) => setState((prevState) => ({ ...prevState, allowedMaxRequests: value })),
-		setAllowedMaxCost: (value) => setState((prevState) => ({ ...prevState, allowedMaxCost: value })),
-		setSoundEnabled: (value) => setState((prevState) => ({ ...prevState, soundEnabled: value })),
-		setSoundVolume: (value) => setState((prevState) => ({ ...prevState, soundVolume: value })),
-		setTtsEnabled: (value) => setState((prevState) => ({ ...prevState, ttsEnabled: value })),
-		setTtsSpeed: (value) => setState((prevState) => ({ ...prevState, ttsSpeed: value })),
-		setDiffEnabled: (value) => setState((prevState) => ({ ...prevState, diffEnabled: value })),
-		setEnableCheckpoints: (value) => setState((prevState) => ({ ...prevState, enableCheckpoints: value })),
-		setBrowserViewportSize: (value: string) =>
-			setState((prevState) => ({ ...prevState, browserViewportSize: value })),
-		setFuzzyMatchThreshold: (value) => setState((prevState) => ({ ...prevState, fuzzyMatchThreshold: value })),
-		setWriteDelayMs: (value) => setState((prevState) => ({ ...prevState, writeDelayMs: value })),
-		setScreenshotQuality: (value) => setState((prevState) => ({ ...prevState, screenshotQuality: value })),
-		setTerminalOutputLineLimit: (value) =>
-			setState((prevState) => ({ ...prevState, terminalOutputLineLimit: value })),
-		setTerminalOutputCharacterLimit: (value) =>
-			setState((prevState) => ({ ...prevState, terminalOutputCharacterLimit: value })),
-		setTerminalShellIntegrationTimeout: (value) =>
-			setState((prevState) => ({ ...prevState, terminalShellIntegrationTimeout: value })),
-		setTerminalShellIntegrationDisabled: (value) =>
-			setState((prevState) => ({ ...prevState, terminalShellIntegrationDisabled: value })),
-		setTerminalZdotdir: (value) => setState((prevState) => ({ ...prevState, terminalZdotdir: value })),
-		setMcpEnabled: (value) => setState((prevState) => ({ ...prevState, mcpEnabled: value })),
-		setEnableMcpServerCreation: (value) =>
-			setState((prevState) => ({ ...prevState, enableMcpServerCreation: value })),
-		setRemoteControlEnabled: (value) => setState((prevState) => ({ ...prevState, remoteControlEnabled: value })),
-		setTaskSyncEnabled: (value) => setState((prevState) => ({ ...prevState, taskSyncEnabled: value }) as any),
-		setFeatureRoomoteControlEnabled: (value) =>
-			setState((prevState) => ({ ...prevState, featureRoomoteControlEnabled: value })),
-		setAlwaysApproveResubmit: (value) => setState((prevState) => ({ ...prevState, alwaysApproveResubmit: value })),
-		setRequestDelaySeconds: (value) => setState((prevState) => ({ ...prevState, requestDelaySeconds: value })),
-		setCurrentApiConfigName: (value) => setState((prevState) => ({ ...prevState, currentApiConfigName: value })),
-		setListApiConfigMeta,
-		setMode: (value: Mode) => setState((prevState) => ({ ...prevState, mode: value })),
-		setCustomModePrompts: (value) => setState((prevState) => ({ ...prevState, customModePrompts: value })),
-		setCustomSupportPrompts: (value) => setState((prevState) => ({ ...prevState, customSupportPrompts: value })),
-		setEnhancementApiConfigId: (value) =>
-			setState((prevState) => ({ ...prevState, enhancementApiConfigId: value })),
-		setAutoApprovalEnabled: (value) => setState((prevState) => ({ ...prevState, autoApprovalEnabled: value })),
-		setCustomModes: (value) => setState((prevState) => ({ ...prevState, customModes: value })),
-		setMaxOpenTabsContext: (value) => setState((prevState) => ({ ...prevState, maxOpenTabsContext: value })),
-		setMaxWorkspaceFiles: (value) => setState((prevState) => ({ ...prevState, maxWorkspaceFiles: value })),
-		setBrowserToolEnabled: (value) => setState((prevState) => ({ ...prevState, browserToolEnabled: value })),
-		setTelemetrySetting: (value) => setState((prevState) => ({ ...prevState, telemetrySetting: value })),
-		setShowRooIgnoredFiles: (value) => setState((prevState) => ({ ...prevState, showRooIgnoredFiles: value })),
-		setRemoteBrowserEnabled: (value) => setState((prevState) => ({ ...prevState, remoteBrowserEnabled: value })),
-		setAwsUsePromptCache: (value) => setState((prevState) => ({ ...prevState, awsUsePromptCache: value })),
-		setMaxReadFileLine: (value) => setState((prevState) => ({ ...prevState, maxReadFileLine: value })),
-		setMaxImageFileSize: (value) => setState((prevState) => ({ ...prevState, maxImageFileSize: value })),
-		setMaxTotalImageSize: (value) => setState((prevState) => ({ ...prevState, maxTotalImageSize: value })),
-		setPinnedApiConfigs: (value) => setState((prevState) => ({ ...prevState, pinnedApiConfigs: value })),
-		setTerminalCompressProgressBar: (value) =>
-			setState((prevState) => ({ ...prevState, terminalCompressProgressBar: value })),
-		togglePinnedApiConfig: (configId) =>
-			setState((prevState) => {
-				const currentPinned = prevState.pinnedApiConfigs || {}
-				const newPinned = {
-					...currentPinned,
-					[configId]: !currentPinned[configId],
-				}
+	// Memoize the context value to prevent unnecessary re-renders
+	const contextValue: ExtensionStateContextType = useMemo(
+		() => ({
+			...state,
+			reasoningBlockCollapsed: state.reasoningBlockCollapsed ?? true,
+			didHydrateState,
+			showWelcome,
+			theme,
+			mcpServers,
+			currentCheckpoint,
+			filePaths,
+			openedTabs,
+			commands,
+			soundVolume: state.soundVolume,
+			ttsSpeed: state.ttsSpeed,
+			fuzzyMatchThreshold: state.fuzzyMatchThreshold,
+			writeDelayMs: state.writeDelayMs,
+			screenshotQuality: state.screenshotQuality,
+			routerModels: extensionRouterModels,
+			cloudIsAuthenticated: state.cloudIsAuthenticated ?? false,
+			cloudOrganizations: state.cloudOrganizations ?? [],
+			organizationSettingsVersion: state.organizationSettingsVersion ?? -1,
+			marketplaceItems,
+			marketplaceInstalledMetadata,
+			profileThresholds: state.profileThresholds ?? {},
+			alwaysAllowFollowupQuestions,
+			followupAutoApproveTimeoutMs,
+			remoteControlEnabled: state.remoteControlEnabled ?? false,
+			taskSyncEnabled: state.taskSyncEnabled,
+			featureRoomoteControlEnabled: state.featureRoomoteControlEnabled ?? false,
+			setExperimentEnabled: (id, enabled) =>
+				setState((prevState) => ({ ...prevState, experiments: { ...prevState.experiments, [id]: enabled } })),
+			setApiConfiguration,
+			setCustomInstructions: (value) => setState((prevState) => ({ ...prevState, customInstructions: value })),
+			setAlwaysAllowReadOnly: (value) => setState((prevState) => ({ ...prevState, alwaysAllowReadOnly: value })),
+			setAlwaysAllowReadOnlyOutsideWorkspace: (value) =>
+				setState((prevState) => ({ ...prevState, alwaysAllowReadOnlyOutsideWorkspace: value })),
+			setAlwaysAllowWrite: (value) => setState((prevState) => ({ ...prevState, alwaysAllowWrite: value })),
+			setAlwaysAllowWriteOutsideWorkspace: (value) =>
+				setState((prevState) => ({ ...prevState, alwaysAllowWriteOutsideWorkspace: value })),
+			setAlwaysAllowExecute: (value) => setState((prevState) => ({ ...prevState, alwaysAllowExecute: value })),
+			setAlwaysAllowBrowser: (value) => setState((prevState) => ({ ...prevState, alwaysAllowBrowser: value })),
+			setAlwaysAllowMcp: (value) => setState((prevState) => ({ ...prevState, alwaysAllowMcp: value })),
+			setAlwaysAllowModeSwitch: (value) =>
+				setState((prevState) => ({ ...prevState, alwaysAllowModeSwitch: value })),
+			setAlwaysAllowSubtasks: (value) => setState((prevState) => ({ ...prevState, alwaysAllowSubtasks: value })),
+			setAlwaysAllowFollowupQuestions,
+			setFollowupAutoApproveTimeoutMs: (value) =>
+				setState((prevState) => ({ ...prevState, followupAutoApproveTimeoutMs: value })),
+			setShowAnnouncement: (value) => setState((prevState) => ({ ...prevState, shouldShowAnnouncement: value })),
+			setAllowedCommands: (value) => setState((prevState) => ({ ...prevState, allowedCommands: value })),
+			setDeniedCommands: (value) => setState((prevState) => ({ ...prevState, deniedCommands: value })),
+			setAllowedMaxRequests: (value) => setState((prevState) => ({ ...prevState, allowedMaxRequests: value })),
+			setAllowedMaxCost: (value) => setState((prevState) => ({ ...prevState, allowedMaxCost: value })),
+			setSoundEnabled: (value) => setState((prevState) => ({ ...prevState, soundEnabled: value })),
+			setSoundVolume: (value) => setState((prevState) => ({ ...prevState, soundVolume: value })),
+			setTtsEnabled: (value) => setState((prevState) => ({ ...prevState, ttsEnabled: value })),
+			setTtsSpeed: (value) => setState((prevState) => ({ ...prevState, ttsSpeed: value })),
+			setDiffEnabled: (value) => setState((prevState) => ({ ...prevState, diffEnabled: value })),
+			setEnableCheckpoints: (value) => setState((prevState) => ({ ...prevState, enableCheckpoints: value })),
+			setBrowserViewportSize: (value: string) =>
+				setState((prevState) => ({ ...prevState, browserViewportSize: value })),
+			setFuzzyMatchThreshold: (value) => setState((prevState) => ({ ...prevState, fuzzyMatchThreshold: value })),
+			setWriteDelayMs: (value) => setState((prevState) => ({ ...prevState, writeDelayMs: value })),
+			setScreenshotQuality: (value) => setState((prevState) => ({ ...prevState, screenshotQuality: value })),
+			setTerminalOutputLineLimit: (value) =>
+				setState((prevState) => ({ ...prevState, terminalOutputLineLimit: value })),
+			setTerminalOutputCharacterLimit: (value) =>
+				setState((prevState) => ({ ...prevState, terminalOutputCharacterLimit: value })),
+			setTerminalShellIntegrationTimeout: (value) =>
+				setState((prevState) => ({ ...prevState, terminalShellIntegrationTimeout: value })),
+			setTerminalShellIntegrationDisabled: (value) =>
+				setState((prevState) => ({ ...prevState, terminalShellIntegrationDisabled: value })),
+			setTerminalZdotdir: (value) => setState((prevState) => ({ ...prevState, terminalZdotdir: value })),
+			setMcpEnabled: (value) => setState((prevState) => ({ ...prevState, mcpEnabled: value })),
+			setEnableMcpServerCreation: (value) =>
+				setState((prevState) => ({ ...prevState, enableMcpServerCreation: value })),
+			setRemoteControlEnabled: (value) =>
+				setState((prevState) => ({ ...prevState, remoteControlEnabled: value })),
+			setTaskSyncEnabled: (value) => setState((prevState) => ({ ...prevState, taskSyncEnabled: value }) as any),
+			setFeatureRoomoteControlEnabled: (value) =>
+				setState((prevState) => ({ ...prevState, featureRoomoteControlEnabled: value })),
+			setAlwaysApproveResubmit: (value) =>
+				setState((prevState) => ({ ...prevState, alwaysApproveResubmit: value })),
+			setRequestDelaySeconds: (value) => setState((prevState) => ({ ...prevState, requestDelaySeconds: value })),
+			setCurrentApiConfigName: (value) =>
+				setState((prevState) => ({ ...prevState, currentApiConfigName: value })),
+			setListApiConfigMeta,
+			setMode: (value: Mode) => setState((prevState) => ({ ...prevState, mode: value })),
+			setCustomModePrompts: (value) => setState((prevState) => ({ ...prevState, customModePrompts: value })),
+			setCustomSupportPrompts: (value) =>
+				setState((prevState) => ({ ...prevState, customSupportPrompts: value })),
+			setEnhancementApiConfigId: (value) =>
+				setState((prevState) => ({ ...prevState, enhancementApiConfigId: value })),
+			setAutoApprovalEnabled: (value) => setState((prevState) => ({ ...prevState, autoApprovalEnabled: value })),
+			setCustomModes: (value) => setState((prevState) => ({ ...prevState, customModes: value })),
+			setMaxOpenTabsContext: (value) => setState((prevState) => ({ ...prevState, maxOpenTabsContext: value })),
+			setMaxWorkspaceFiles: (value) => setState((prevState) => ({ ...prevState, maxWorkspaceFiles: value })),
+			setBrowserToolEnabled: (value) => setState((prevState) => ({ ...prevState, browserToolEnabled: value })),
+			setTelemetrySetting: (value) => setState((prevState) => ({ ...prevState, telemetrySetting: value })),
+			setShowRooIgnoredFiles: (value) => setState((prevState) => ({ ...prevState, showRooIgnoredFiles: value })),
+			setRemoteBrowserEnabled: (value) =>
+				setState((prevState) => ({ ...prevState, remoteBrowserEnabled: value })),
+			setAwsUsePromptCache: (value) => setState((prevState) => ({ ...prevState, awsUsePromptCache: value })),
+			setMaxReadFileLine: (value) => setState((prevState) => ({ ...prevState, maxReadFileLine: value })),
+			setMaxImageFileSize: (value) => setState((prevState) => ({ ...prevState, maxImageFileSize: value })),
+			setMaxTotalImageSize: (value) => setState((prevState) => ({ ...prevState, maxTotalImageSize: value })),
+			setPinnedApiConfigs: (value) => setState((prevState) => ({ ...prevState, pinnedApiConfigs: value })),
+			setTerminalCompressProgressBar: (value) =>
+				setState((prevState) => ({ ...prevState, terminalCompressProgressBar: value })),
+			togglePinnedApiConfig: (configId) =>
+				setState((prevState) => {
+					const currentPinned = prevState.pinnedApiConfigs || {}
+					const newPinned = {
+						...currentPinned,
+						[configId]: !currentPinned[configId],
+					}
 
-				// If the config is now unpinned, remove it from the object
-				if (!newPinned[configId]) {
-					delete newPinned[configId]
-				}
+					// If the config is now unpinned, remove it from the object
+					if (!newPinned[configId]) {
+						delete newPinned[configId]
+					}
 
-				return { ...prevState, pinnedApiConfigs: newPinned }
-			}),
-		setHistoryPreviewCollapsed: (value) =>
-			setState((prevState) => ({ ...prevState, historyPreviewCollapsed: value })),
-		setReasoningBlockCollapsed: (value) =>
-			setState((prevState) => ({ ...prevState, reasoningBlockCollapsed: value })),
-		setHasOpenedModeSelector: (value) => setState((prevState) => ({ ...prevState, hasOpenedModeSelector: value })),
-		setAutoCondenseContext: (value) => setState((prevState) => ({ ...prevState, autoCondenseContext: value })),
-		setAutoCondenseContextPercent: (value) =>
-			setState((prevState) => ({ ...prevState, autoCondenseContextPercent: value })),
-		setCondensingApiConfigId: (value) => setState((prevState) => ({ ...prevState, condensingApiConfigId: value })),
-		setCustomCondensingPrompt: (value) =>
-			setState((prevState) => ({ ...prevState, customCondensingPrompt: value })),
-		setProfileThresholds: (value) => setState((prevState) => ({ ...prevState, profileThresholds: value })),
-		alwaysAllowUpdateTodoList: state.alwaysAllowUpdateTodoList,
-		setAlwaysAllowUpdateTodoList: (value) => {
-			setState((prevState) => ({ ...prevState, alwaysAllowUpdateTodoList: value }))
-		},
-		includeDiagnosticMessages: state.includeDiagnosticMessages,
-		setIncludeDiagnosticMessages: (value) => {
-			setState((prevState) => ({ ...prevState, includeDiagnosticMessages: value }))
-		},
-		maxDiagnosticMessages: state.maxDiagnosticMessages,
-		setMaxDiagnosticMessages: (value) => {
-			setState((prevState) => ({ ...prevState, maxDiagnosticMessages: value }))
-		},
-		includeTaskHistoryInEnhance,
-		setIncludeTaskHistoryInEnhance,
-	}
+					return { ...prevState, pinnedApiConfigs: newPinned }
+				}),
+			setHistoryPreviewCollapsed: (value) =>
+				setState((prevState) => ({ ...prevState, historyPreviewCollapsed: value })),
+			setReasoningBlockCollapsed: (value) =>
+				setState((prevState) => ({ ...prevState, reasoningBlockCollapsed: value })),
+			setHasOpenedModeSelector: (value) =>
+				setState((prevState) => ({ ...prevState, hasOpenedModeSelector: value })),
+			setAutoCondenseContext: (value) => setState((prevState) => ({ ...prevState, autoCondenseContext: value })),
+			setAutoCondenseContextPercent: (value) =>
+				setState((prevState) => ({ ...prevState, autoCondenseContextPercent: value })),
+			setCondensingApiConfigId: (value) =>
+				setState((prevState) => ({ ...prevState, condensingApiConfigId: value })),
+			setCustomCondensingPrompt: (value) =>
+				setState((prevState) => ({ ...prevState, customCondensingPrompt: value })),
+			setProfileThresholds: (value) => setState((prevState) => ({ ...prevState, profileThresholds: value })),
+			alwaysAllowUpdateTodoList: state.alwaysAllowUpdateTodoList,
+			setAlwaysAllowUpdateTodoList: (value) => {
+				setState((prevState) => ({ ...prevState, alwaysAllowUpdateTodoList: value }))
+			},
+			includeDiagnosticMessages: state.includeDiagnosticMessages,
+			setIncludeDiagnosticMessages: (value) => {
+				setState((prevState) => ({ ...prevState, includeDiagnosticMessages: value }))
+			},
+			maxDiagnosticMessages: state.maxDiagnosticMessages,
+			setMaxDiagnosticMessages: (value) => {
+				setState((prevState) => ({ ...prevState, maxDiagnosticMessages: value }))
+			},
+			includeTaskHistoryInEnhance,
+			setIncludeTaskHistoryInEnhance,
+		}),
+		[
+			state,
+			didHydrateState,
+			showWelcome,
+			theme,
+			mcpServers,
+			currentCheckpoint,
+			filePaths,
+			openedTabs,
+			commands,
+			extensionRouterModels,
+			marketplaceItems,
+			marketplaceInstalledMetadata,
+			alwaysAllowFollowupQuestions,
+			followupAutoApproveTimeoutMs,
+			includeTaskHistoryInEnhance,
+			setApiConfiguration,
+			setListApiConfigMeta,
+		],
+	)
 
 	return <ExtensionStateContext.Provider value={contextValue}>{children}</ExtensionStateContext.Provider>
 }

@@ -560,59 +560,62 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				const newCursorPosition = e.target.selectionStart
 				setCursorPosition(newCursorPosition)
 
-				const showMenu = shouldShowContextMenu(newValue, newCursorPosition)
-				setShowContextMenu(showMenu)
+				// Defer context menu logic to avoid blocking input
+				requestAnimationFrame(() => {
+					const showMenu = shouldShowContextMenu(newValue, newCursorPosition)
+					setShowContextMenu(showMenu)
 
-				if (showMenu) {
-					if (newValue.startsWith("/") && !newValue.includes(" ")) {
-						// Handle slash command - request fresh commands
-						const query = newValue
-						setSearchQuery(query)
-						// Set to first selectable item (skip section headers)
-						setSelectedMenuIndex(1) // Section header is at 0, first command is at 1
-						// Request commands fresh each time slash menu is shown
-						vscode.postMessage({ type: "requestCommands" })
-					} else {
-						// Existing @ mention handling.
-						const lastAtIndex = newValue.lastIndexOf("@", newCursorPosition - 1)
-						const query = newValue.slice(lastAtIndex + 1, newCursorPosition)
-						setSearchQuery(query)
-
-						// Send file search request if query is not empty.
-						if (query.length > 0) {
-							setSelectedMenuIndex(0)
-
-							// Don't clear results until we have new ones. This
-							// prevents flickering.
-
-							// Clear any existing timeout.
-							if (searchTimeoutRef.current) {
-								clearTimeout(searchTimeoutRef.current)
-							}
-
-							// Set a timeout to debounce the search requests.
-							searchTimeoutRef.current = setTimeout(() => {
-								// Generate a request ID for this search.
-								const reqId = Math.random().toString(36).substring(2, 9)
-								setSearchRequestId(reqId)
-								setSearchLoading(true)
-
-								// Send message to extension to search files.
-								vscode.postMessage({
-									type: "searchFiles",
-									query: unescapeSpaces(query),
-									requestId: reqId,
-								})
-							}, 200) // 200ms debounce.
+					if (showMenu) {
+						if (newValue.startsWith("/") && !newValue.includes(" ")) {
+							// Handle slash command - request fresh commands
+							const query = newValue
+							setSearchQuery(query)
+							// Set to first selectable item (skip section headers)
+							setSelectedMenuIndex(1) // Section header is at 0, first command is at 1
+							// Request commands fresh each time slash menu is shown
+							vscode.postMessage({ type: "requestCommands" })
 						} else {
-							setSelectedMenuIndex(3) // Set to "File" option by default.
+							// Existing @ mention handling.
+							const lastAtIndex = newValue.lastIndexOf("@", newCursorPosition - 1)
+							const query = newValue.slice(lastAtIndex + 1, newCursorPosition)
+							setSearchQuery(query)
+
+							// Send file search request if query is not empty.
+							if (query.length > 0) {
+								setSelectedMenuIndex(0)
+
+								// Don't clear results until we have new ones. This
+								// prevents flickering.
+
+								// Clear any existing timeout.
+								if (searchTimeoutRef.current) {
+									clearTimeout(searchTimeoutRef.current)
+								}
+
+								// Set a timeout to debounce the search requests.
+								searchTimeoutRef.current = setTimeout(() => {
+									// Generate a request ID for this search.
+									const reqId = Math.random().toString(36).substring(2, 9)
+									setSearchRequestId(reqId)
+									setSearchLoading(true)
+
+									// Send message to extension to search files.
+									vscode.postMessage({
+										type: "searchFiles",
+										query: unescapeSpaces(query),
+										requestId: reqId,
+									})
+								}, 200) // 200ms debounce.
+							} else {
+								setSelectedMenuIndex(3) // Set to "File" option by default.
+							}
 						}
+					} else {
+						setSearchQuery("")
+						setSelectedMenuIndex(-1)
+						setFileSearchResults([]) // Clear file search results.
 					}
-				} else {
-					setSearchQuery("")
-					setSelectedMenuIndex(-1)
-					setFileSearchResults([]) // Clear file search results.
-				}
+				})
 			},
 			[setInputValue, setSearchRequestId, setFileSearchResults, setSearchLoading, resetOnInputChange],
 		)
@@ -714,45 +717,56 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			setIsMouseDownOnMenu(true)
 		}, [])
 
+		// Debounce highlight updates for better performance
+		const updateHighlightsDebounced = useRef<NodeJS.Timeout | null>(null)
+
 		const updateHighlights = useCallback(() => {
-			if (!textAreaRef.current || !highlightLayerRef.current) return
-
-			const text = textAreaRef.current.value
-
-			// Helper function to check if a command is valid
-			const isValidCommand = (commandName: string): boolean => {
-				return commands?.some((cmd) => cmd.name === commandName) || false
+			// Clear existing timeout
+			if (updateHighlightsDebounced.current) {
+				clearTimeout(updateHighlightsDebounced.current)
 			}
 
-			// Process the text to highlight mentions and valid commands
-			let processedText = text
-				.replace(/\n$/, "\n\n")
-				.replace(/[<>&]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" })[c] || c)
-				.replace(mentionRegexGlobal, '<mark class="mention-context-textarea-highlight">$&</mark>')
+			// Debounce the highlight update
+			updateHighlightsDebounced.current = setTimeout(() => {
+				if (!textAreaRef.current || !highlightLayerRef.current) return
 
-			// Custom replacement for commands - only highlight valid ones
-			processedText = processedText.replace(commandRegexGlobal, (match, commandName) => {
-				// Only highlight if the command exists in the valid commands list
-				if (isValidCommand(commandName)) {
-					// Check if the match starts with a space
-					const startsWithSpace = match.startsWith(" ")
-					const commandPart = `/${commandName}`
+				const text = textAreaRef.current.value
 
-					if (startsWithSpace) {
-						// Keep the space but only highlight the command part
-						return ` <mark class="mention-context-textarea-highlight">${commandPart}</mark>`
-					} else {
-						// Highlight the entire command (starts at beginning of line)
-						return `<mark class="mention-context-textarea-highlight">${commandPart}</mark>`
-					}
+				// Helper function to check if a command is valid
+				const isValidCommand = (commandName: string): boolean => {
+					return commands?.some((cmd) => cmd.name === commandName) || false
 				}
-				return match // Return unhighlighted if command is not valid
-			})
 
-			highlightLayerRef.current.innerHTML = processedText
+				// Process the text to highlight mentions and valid commands
+				let processedText = text
+					.replace(/\n$/, "\n\n")
+					.replace(/[<>&]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" })[c] || c)
+					.replace(mentionRegexGlobal, '<mark class="mention-context-textarea-highlight">$&</mark>')
 
-			highlightLayerRef.current.scrollTop = textAreaRef.current.scrollTop
-			highlightLayerRef.current.scrollLeft = textAreaRef.current.scrollLeft
+				// Custom replacement for commands - only highlight valid ones
+				processedText = processedText.replace(commandRegexGlobal, (match, commandName) => {
+					// Only highlight if the command exists in the valid commands list
+					if (isValidCommand(commandName)) {
+						// Check if the match starts with a space
+						const startsWithSpace = match.startsWith(" ")
+						const commandPart = `/${commandName}`
+
+						if (startsWithSpace) {
+							// Keep the space but only highlight the command part
+							return ` <mark class="mention-context-textarea-highlight">${commandPart}</mark>`
+						} else {
+							// Highlight the entire command (starts at beginning of line)
+							return `<mark class="mention-context-textarea-highlight">${commandPart}</mark>`
+						}
+					}
+					return match // Return unhighlighted if command is not valid
+				})
+
+				highlightLayerRef.current.innerHTML = processedText
+
+				highlightLayerRef.current.scrollTop = textAreaRef.current.scrollTop
+				highlightLayerRef.current.scrollLeft = textAreaRef.current.scrollLeft
+			}, 50) // 50ms debounce for highlight updates
 		}, [commands])
 
 		useLayoutEffect(() => {
@@ -1023,7 +1037,8 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 								value={inputValue}
 								onChange={(e) => {
 									handleInputChange(e)
-									updateHighlights()
+									// Defer highlight update to not block typing
+									requestAnimationFrame(() => updateHighlights())
 								}}
 								onFocus={() => setIsFocused(true)}
 								onKeyDown={(e) => {
@@ -1081,7 +1096,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 									"scrollbar-none",
 									"scrollbar-hide",
 								)}
-								onScroll={() => updateHighlights()}
+								onScroll={() => requestAnimationFrame(() => updateHighlights())}
 							/>
 
 							<div className="absolute bottom-2 right-1 z-30 flex flex-col items-center gap-0">
