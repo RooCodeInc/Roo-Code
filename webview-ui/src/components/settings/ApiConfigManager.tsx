@@ -168,18 +168,22 @@ const ApiConfigManager = ({
 			const [movedItem] = reorderedConfigs.splice(fromIndex, 1)
 			reorderedConfigs.splice(toIndex, 0, movedItem)
 
-			// Create new order array with updated indices
-			const newOrder = reorderedConfigs.map((config, index) => ({
-				id: config.id,
-				index,
-			}))
+			// Create new order array with updated indices, preserving pinned status
+			const newOrder = reorderedConfigs.map((config, index) => {
+				const existingOrderItem = customOrder.find((item) => item.id === config.id)
+				return {
+					id: config.id,
+					index,
+					pinned: existingOrderItem?.pinned ?? false,
+				}
+			})
 
 			vscode.postMessage({
 				type: "setApiConfigsCustomOrder",
 				values: { customOrder: newOrder },
 			})
 		},
-		[sortedConfigs],
+		[sortedConfigs, customOrder],
 	)
 
 	const handleDragStart = useCallback((e: React.DragEvent, index: number) => {
