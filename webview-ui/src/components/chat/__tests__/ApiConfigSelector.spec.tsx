@@ -437,29 +437,30 @@ describe("ApiConfigSelector", () => {
 	})
 
 	test("switches between sort modes", () => {
-		const mockOnSortModeChange = vi.fn()
-		const props = {
-			...defaultProps,
-			sortMode: "alphabetical" as const,
-			onSortModeChange: mockOnSortModeChange,
-		}
-
-		render(<ApiConfigSelector {...props} />)
+		render(<ApiConfigSelector {...defaultProps} />)
 
 		const trigger = screen.getByTestId("dropdown-trigger")
 		fireEvent.click(trigger)
 
+		// Check that alphabetical button is initially active (default state)
+		const alphabeticalButton = screen.getByText("chat:apiConfigSelector.alphabetical")
+		expect(alphabeticalButton).toHaveAttribute("aria-pressed", "true")
+
 		// Switch to custom mode
 		const customButton = screen.getByText("chat:apiConfigSelector.custom")
+		expect(customButton).toHaveAttribute("aria-pressed", "false")
 		fireEvent.click(customButton)
 
-		expect(mockOnSortModeChange).toHaveBeenCalledWith("custom")
+		// Check that custom button is now active
+		expect(customButton).toHaveAttribute("aria-pressed", "true")
+		expect(alphabeticalButton).toHaveAttribute("aria-pressed", "false")
 
 		// Switch back to alphabetical mode
-		const alphabeticalButton = screen.getByText("chat:apiConfigSelector.alphabetical")
 		fireEvent.click(alphabeticalButton)
 
-		expect(mockOnSortModeChange).toHaveBeenCalledWith("alphabetical")
+		// Check that alphabetical button is active again
+		expect(alphabeticalButton).toHaveAttribute("aria-pressed", "true")
+		expect(customButton).toHaveAttribute("aria-pressed", "false")
 	})
 
 	test("pinned configs remain fixed at top while unpinned configs scroll", () => {
