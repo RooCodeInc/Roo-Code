@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import type { ProviderSettings } from "@roo-code/types"
 
 import TaskHeader, { TaskHeaderProps } from "../TaskHeader"
+import { vscode } from "@/utils/vscode"
 
 // Mock i18n
 vi.mock("react-i18next", () => ({
@@ -27,9 +28,20 @@ vi.mock("@/utils/vscode", () => ({
 	},
 }))
 
-// Mock the VSCodeBadge component
+// Mock the VSCodeBadge/TextField components
 vi.mock("@vscode/webview-ui-toolkit/react", () => ({
 	VSCodeBadge: ({ children }: { children: React.ReactNode }) => <div data-testid="vscode-badge">{children}</div>,
+	VSCodeTextField: React.forwardRef<HTMLInputElement, any>(
+		({ onInput, "data-testid": dataTestId, value = "", ...rest }: any, ref) => (
+			<input
+				ref={ref}
+				data-testid={dataTestId}
+				value={value}
+				onChange={(event) => onInput?.({ target: event.target })}
+				{...rest}
+			/>
+		),
+	),
 }))
 
 // Create a variable to hold the mock state
@@ -89,6 +101,18 @@ vi.mock("@roo/array", () => ({
 }))
 
 describe("TaskHeader", () => {
+	beforeEach(() => {
+		vi.clearAllMocks()
+		mockExtensionState = {
+			apiConfiguration: {
+				apiProvider: "anthropic",
+				apiKey: "test-api-key",
+				apiModelId: "claude-3-opus-20240229",
+			} as ProviderSettings,
+			currentTaskItem: { id: "test-task-id" },
+			clineMessages: [],
+		}
+	})
 	const defaultProps: TaskHeaderProps = {
 		task: { type: "say", ts: Date.now(), text: "Test task", images: [] },
 		tokensIn: 100,
@@ -178,6 +202,23 @@ describe("TaskHeader", () => {
 		expect(condenseButton).toBeDisabled()
 		fireEvent.click(condenseButton!)
 		expect(handleCondenseContext).not.toHaveBeenCalled()
+	})
+
+	it("posts setTaskTitle message when editing title", () => {
+		renderTaskHeader()
+
+		const editButton = screen.getByTestId("task-title-edit-button")
+		fireEvent.click(editButton)
+
+		const input = screen.getByTestId("task-title-input")
+		fireEvent.change(input, { target: { value: "New task title" } })
+		fireEvent.keyDown(input, { key: "Enter", code: "Enter" })
+
+		expect(vscode.postMessage).toHaveBeenCalledWith({
+			type: "setTaskTitle",
+			text: "New task title",
+			ids: ["test-task-id"],
+		})
 	})
 
 	describe("DismissibleUpsell behavior", () => {
