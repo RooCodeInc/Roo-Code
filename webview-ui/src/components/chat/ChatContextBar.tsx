@@ -30,7 +30,6 @@ export const ChatContextBar = ({
 	const contextItems = useMemo<ContextItem[]>(() => {
 		const items: ContextItem[] = []
 
-		// Add mentions
 		validMentions.forEach((mention, index) => {
 			items.push({
 				type: "mention",
@@ -41,7 +40,6 @@ export const ChatContextBar = ({
 			})
 		})
 
-		// Add images
 		selectedImages.forEach((image, index) => {
 			items.push({
 				type: "image",
@@ -91,6 +89,7 @@ export const ChatContextBar = ({
 							onClick={(e) => {
 								e.stopPropagation()
 								handleRemove(item)
+								setHoveredIndex(null)
 							}}
 							className="flex shrink-0 items-center justify-center cursor-pointer">
 							<X className="size-3 text-vscode-input-foreground" />
@@ -100,9 +99,7 @@ export const ChatContextBar = ({
 							src={item.icon}
 							alt={item.iconAlt}
 							className="size-3 shrink-0"
-							style={{
-								...item.iconStyle,
-							}}
+							style={{ ...item.iconStyle }}
 						/>
 					)}
 					<span>{item.displayName}</span>
