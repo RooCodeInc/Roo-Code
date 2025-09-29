@@ -57,7 +57,7 @@ export const ApiConfigSelector = ({
 			case "custom":
 				if (customOrder && customOrder.length > 0) {
 					// Sort by custom order, with unordered items at the end
-					const orderMap = new Map(customOrder.map((id: string, index: number) => [id, index]))
+					const orderMap = new Map(customOrder.map((item) => [item.id, item.index]))
 					sorted.sort((a, b) => {
 						const aIndex = orderMap.get(a.id) ?? Number.MAX_SAFE_INTEGER
 						const bIndex = orderMap.get(b.id) ?? Number.MAX_SAFE_INTEGER
