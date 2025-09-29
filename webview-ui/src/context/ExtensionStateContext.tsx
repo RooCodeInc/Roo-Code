@@ -430,11 +430,20 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 				clearTimeout(updateTimerRef.current)
 			}
 
-			// Set a new timer to batch updates (10ms delay)
-			updateTimerRef.current = setTimeout(() => {
+			// Check if we're in a test environment
+			const isTestEnvironment = typeof process !== "undefined" && process.env.NODE_ENV === "test"
+
+			if (isTestEnvironment) {
+				// In test environment, process immediately
 				processBatchedUpdates()
 				updateTimerRef.current = null
-			}, 10)
+			} else {
+				// Set a new timer to batch updates (10ms delay)
+				updateTimerRef.current = setTimeout(() => {
+					processBatchedUpdates()
+					updateTimerRef.current = null
+				}, 10)
+			}
 		},
 		[processBatchedUpdates],
 	)

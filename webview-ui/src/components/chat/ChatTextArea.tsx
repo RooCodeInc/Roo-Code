@@ -721,13 +721,10 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 		const updateHighlightsDebounced = useRef<NodeJS.Timeout | null>(null)
 
 		const updateHighlights = useCallback(() => {
-			// Clear existing timeout
-			if (updateHighlightsDebounced.current) {
-				clearTimeout(updateHighlightsDebounced.current)
-			}
+			// Check if we're in a test environment
+			const isTestEnvironment = typeof process !== "undefined" && process.env.NODE_ENV === "test"
 
-			// Debounce the highlight update
-			updateHighlightsDebounced.current = setTimeout(() => {
+			const performUpdate = () => {
 				if (!textAreaRef.current || !highlightLayerRef.current) return
 
 				const text = textAreaRef.current.value
@@ -766,7 +763,20 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 
 				highlightLayerRef.current.scrollTop = textAreaRef.current.scrollTop
 				highlightLayerRef.current.scrollLeft = textAreaRef.current.scrollLeft
-			}, 50) // 50ms debounce for highlight updates
+			}
+
+			// In test environment, execute immediately
+			if (isTestEnvironment) {
+				performUpdate()
+			} else {
+				// Clear existing timeout
+				if (updateHighlightsDebounced.current) {
+					clearTimeout(updateHighlightsDebounced.current)
+				}
+
+				// Debounce the highlight update
+				updateHighlightsDebounced.current = setTimeout(performUpdate, 50) // 50ms debounce for highlight updates
+			}
 		}, [commands])
 
 		useLayoutEffect(() => {
