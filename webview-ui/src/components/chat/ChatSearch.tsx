@@ -61,7 +61,7 @@ export const ChatSearch: React.FC<ChatSearchProps> = ({
 		onSearchChange(hasResults, searchQuery)
 	}, [hasResults, searchQuery, onSearchChange])
 
-	// 当搜索结果变化时，自动导航到当前结果
+	// Automatically navigate to current result when search results change
 	useDebounceEffect(
 		() => {
 			if (hasResults && searchResults[currentResultIndex]) {

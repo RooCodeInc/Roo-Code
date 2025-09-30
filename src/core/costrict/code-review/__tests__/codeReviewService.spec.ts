@@ -486,6 +486,7 @@ describe("CodeReviewService", () => {
 				data: {
 					issues: [],
 					progress: 0,
+					review_progress: "Starting review...",
 					total: 1,
 					is_done: false,
 					next_offset: 0,
@@ -532,6 +533,7 @@ describe("CodeReviewService", () => {
 				data: {
 					issues: [mockIssue],
 					progress: 1,
+					review_progress: "Analyzing issues...",
 					total: 1,
 					is_done: false,
 					next_offset: 1,
@@ -577,6 +579,7 @@ describe("CodeReviewService", () => {
 				data: {
 					issues: [mockIssue],
 					progress: 2,
+					review_progress: "Analyzing file 2/5...",
 					total: 5,
 					is_done: false,
 					next_offset: 2,
@@ -764,6 +767,7 @@ describe("Polling Mechanism", () => {
 			data: {
 				issues: [],
 				progress: 0,
+				review_progress: "Initializing review...",
 				total: 1,
 				is_done: false,
 				next_offset: 0,
@@ -811,6 +815,7 @@ describe("Polling Mechanism", () => {
 				data: {
 					issues: [{ ...mockIssue, id: "issue-1" }],
 					progress: 1,
+					review_progress: "Analyzing file 1/3...",
 					total: 3,
 					is_done: false,
 					next_offset: 1,
@@ -822,6 +827,7 @@ describe("Polling Mechanism", () => {
 				data: {
 					issues: [{ ...mockIssue, id: "issue-2" }],
 					progress: 2,
+					review_progress: "Analyzing file 2/3...",
 					total: 3,
 					is_done: false,
 					next_offset: 2,
@@ -833,6 +839,7 @@ describe("Polling Mechanism", () => {
 				data: {
 					issues: [{ ...mockIssue, id: "issue-3" }],
 					progress: 3,
+					review_progress: "Review completed",
 					total: 3,
 					is_done: true,
 					next_offset: 3,
@@ -925,6 +932,7 @@ describe("Polling Mechanism", () => {
 			data: {
 				issues: [],
 				progress: 0,
+				review_progress: "Starting polling interval test...",
 				total: 1,
 				is_done: false,
 				next_offset: 0,
@@ -970,6 +978,7 @@ describe("Polling Mechanism", () => {
 			data: {
 				issues: [],
 				progress: 0,
+				review_progress: "Handling abort signal test...",
 				total: 1,
 				is_done: false,
 				next_offset: 0,
@@ -1015,6 +1024,7 @@ describe("Polling Mechanism", () => {
 				data: {
 					issues: [],
 					progress: callCount,
+					review_progress: `Processing item ${callCount}/10...`,
 					total: 10,
 					is_done: false,
 					next_offset: callCount,
@@ -1134,6 +1144,7 @@ describe("CodeReviewService - setActiveIssue and updateIssueStatus", () => {
 		isCompleted: false,
 		createdAt: new Date(),
 		progress: 1,
+		review_progress: "Analyzing code patterns...",
 		total: 2,
 	}
 

@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useCallback } from "react"
+import { CircleAlert } from "lucide-react"
 import { ReviewIssue, TaskStatus, SeverityLevel } from "@roo/codeReview"
 import TaskSummary from "./TaskSummary"
 import FileIssueList from "./FileIssueList"
@@ -28,30 +29,13 @@ interface CodeReviewContentProps {
 
 type ConfidenceLevel = "low" | "middle" | "high"
 
-// Confidence configuration object
-const CONFIDENCE_CONFIG = {
-	low: {
-		color: "#7F9C89",
-		radius: "rounded-l-[20px]",
-	},
-	middle: {
-		color: "#6AB883",
-		radius: "",
-	},
-	high: {
-		color: "#4AF783",
-		radius: "rounded-r-[20px]",
-	},
-} as const
-
-const CONFIDENCE_INACTIVE_COLOR = "rgba(255, 255, 255, 0.1)"
+const CONFIDENCE_INACTIVE_COLOR = "rgba(0, 203, 68, 0.15)"
 
 // Utility function to calculate confidence styles
-const getConfidenceStyles = (value: ConfidenceLevel, isSelected: boolean) => {
-	const config = CONFIDENCE_CONFIG[value]
+const getConfidenceStyles = (isSelected: boolean) => {
 	return {
-		backgroundColor: isSelected ? config.color : CONFIDENCE_INACTIVE_COLOR,
-		radiusClass: config.radius,
+		backgroundColor: isSelected ? "#00CB44" : CONFIDENCE_INACTIVE_COLOR,
+		color: isSelected ? "#FFFFFF" : "#00CB44",
 	}
 }
 
@@ -203,7 +187,7 @@ const CodeReviewContent: React.FC<CodeReviewContentProps> = ({ issues, taskStatu
 
 	return (
 		<div className="flex flex-col h-full">
-			{taskStatus === TaskStatus.COMPLETED && (
+			{(taskStatus === TaskStatus.COMPLETED || (taskStatus === TaskStatus.ERROR && issues.length !== 0)) && (
 				<div className="px-5 mb-4">
 					<div className="flex justify-between items-center flex-shrink-0">
 						<TaskSummary issues={filteredIssues} />
@@ -266,6 +250,40 @@ const CodeReviewContent: React.FC<CodeReviewContentProps> = ({ issues, taskStatu
 									</div>
 									<div className="mb-4">
 										<div className="flex items-center mb-2">
+											<span>{t("codereview:codeReviewContent.confidenceLabel")}</span>
+											<TooltipProvider>
+												<Tooltip>
+													<TooltipTrigger asChild>
+														<CircleAlert className="w-4 h-4 ml-1" />
+													</TooltipTrigger>
+													<TooltipContent side="top" className="w-52">
+														{t("codereview:codeReviewContent.confidenceTooltip")}
+													</TooltipContent>
+												</Tooltip>
+											</TooltipProvider>
+										</div>
+										<div className="flex items-center gap-2">
+											{confidence.map(({ label, value }) => {
+												const isSelected = filterState.selectedConfidence === value
+												const { backgroundColor, color } = getConfidenceStyles(isSelected)
+
+												return (
+													<div
+														className={`flex justify-center items-center rounded-[20px] py-[3px] px-4 cursor-pointer transition-all duration-200`}
+														style={{
+															backgroundColor,
+															color,
+														}}
+														key={value}
+														onClick={() => toggleConfidenceSelect(value)}>
+														<span>{label}</span>
+													</div>
+												)
+											})}
+										</div>
+									</div>
+									<div>
+										<div className="flex items-center mb-2">
 											{t("codereview:codeReviewContent.issueLable")}
 										</div>
 										<div className="flex items-center gap-2 flex-wrap">
@@ -285,40 +303,6 @@ const CodeReviewContent: React.FC<CodeReviewContentProps> = ({ issues, taskStatu
 														}}
 														onClick={() => toggleIssueType(type)}>
 														{type}
-													</div>
-												)
-											})}
-										</div>
-									</div>
-									<div>
-										<div className="flex items-center mb-2">
-											{t("codereview:codeReviewContent.confidenceLabel")}
-										</div>
-										<div className="text-sm text-neutral-500 mb-2">
-											{t("codereview:codeReviewContent.confidenceTooltip")}
-										</div>
-										<div className="flex items-center w-full">
-											{confidence.map(({ label, value }) => {
-												const isSelected = filterState.selectedConfidence === value
-												const { backgroundColor, radiusClass } = getConfidenceStyles(
-													value,
-													isSelected,
-												)
-
-												return (
-													<div
-														className="flex flex-col items-center gap-1 flex-1"
-														key={value}>
-														<div
-															className={`w-full h-2 text-center py-1 cursor-pointer select-none ${radiusClass}`}
-															style={{
-																backgroundColor,
-																color: isSelected
-																	? "var(--vscode-list-activeSelectionForeground)"
-																	: "var(--vscode-foreground)",
-															}}
-															onClick={() => toggleConfidenceSelect(value)}></div>
-														<span>{label}</span>
 													</div>
 												)
 											})}

@@ -1,0 +1,39 @@
+{
+	"commit": {
+		"error": {
+			"noChanges": "No changes detected in the workspace",
+			"authRequired": "Authentication required for AI commit generation",
+			"aiFailed": "AI failed to generate commit message",
+			"notInitialized": "Commit service not initialized",
+			"noWorkspace": "No workspace folder found",
+			"notGitRepo": "Current workspace is not a git repository",
+			"failedToGetGitDiff": "Failed to get git diff: {{0}}"
+		},
+		"progress": {
+			"generating": "Generating commit message..."
+		},
+		"message": {
+			"copiedToClipboard": "Commit message generated but could not be automatically populated in the input box. The commit message has been copied to clipboard.",
+			"generationFailed": "Failed to generate commit message: {{error}}",
+			"executing": "Please wait, commit generation is already in progress"
+		},
+		"action": {
+			"addFile": "add {{0}}",
+			"fixIssue": "fix issue in {{0}}",
+			"updateDocs": "update documentation for {{0}}",
+			"addTests": "add tests for {{0}}",
+			"updateFile": "update {{0}}",
+			"addFiles": "add {{0}} files",
+			"fixIssues": "fix issues in {{0}} files",
+			"updateDocumentation": "update documentation",
+			"addTestsMultiple": "add tests",
+			"updateFiles": "update {{0}} files"
+		},
+		"files": {
+			"added": "Added files:",
+			"modified": "Modified files:",
+			"deleted": "Deleted files:",
+			"renamed": "Renamed files:"
+		}
+	}
+}

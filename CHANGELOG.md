@@ -1,5 +1,23 @@
 # Costrict Change Log
 
+## [1.6.17]
+
+- Enhance rate limit detection and retry logic in API requests
+- Add `getAllInstance()` method to ClineProvider for better instance management
+- Update UI to properly handle rate limit retry messages
+- Fix known issues
+
+## [1.6.16]
+
+- Add auto-generation of commit messages based on local i18n language
+- Optimize request cancellation edge case handling
+- Enhance provider API completePrompt request, support system prompts and language metadata
+- Update internationalization
+- Change default request interval from 0s to 1s to reduce concurrency
+- Optimized CodeReview
+- Sync roocode [last commit](https://github.com/zgsm-ai/costrict/commit/a57528dc8e65c468fa244f0e174a47fea8331f7e)
+- Fix known issues
+
 ## [1.6.15]
 
 - Increase max read character limit to 30,000

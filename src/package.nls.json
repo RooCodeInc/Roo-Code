@@ -41,6 +41,7 @@
 	"command.view.userHelperDoc.title": "Costrict Official Site",
 	"command.addFileToContext.title": "Add To Context",
 	"command.toggleAutoApprove.title": "Toggle Auto-Approve",
+	"command.generateCommitMessage.title": "Generate Commit Message With Costrict",
 
 	"intelligentCodeCompletion.enabled.description": "Enable intelligent code completion",
 	"intelligentCodeCompletion.betaMode.description": "Enable beta features for early access. See version notes for feature list.",

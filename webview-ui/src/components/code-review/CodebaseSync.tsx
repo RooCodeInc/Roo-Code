@@ -147,7 +147,14 @@ const CodebaseSync: React.FC<CodebaseSyncProps> = ({ onCancel, targets }) => {
 						style={{ borderTopColor: "rgba(23, 112, 230, 0.7)" }}
 					/>
 					<span className="ml-2">
-						{t("codereview:codebase.running", { progress: indexStatus.process.toFixed(1) })}
+						{t("codereview:codebase.running", {
+							progress: (() => {
+								const adjustedProgress = indexStatus.process * 0.3
+								return adjustedProgress === 0 || adjustedProgress === 100
+									? Math.round(adjustedProgress).toString()
+									: adjustedProgress.toFixed(1)
+							})(),
+						})}
 					</span>
 				</div>
 			)}

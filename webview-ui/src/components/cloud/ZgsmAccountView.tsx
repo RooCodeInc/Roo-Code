@@ -17,7 +17,7 @@ type AccountViewProps = {
 	onDone: () => void
 }
 
-// 配额信息骨架屏组件
+// Quota information skeleton component
 const QuotaSkeleton = memo(() => (
 	<div className="w-full mt-0 space-y-2">
 		<div className="bg-vscode-editor-inactiveSelectionBackground/30 backdrop-blur-sm rounded-lg p-2.5 animate-pulse">
@@ -46,7 +46,7 @@ const QuotaSkeleton = memo(() => (
 	</div>
 ))
 
-// 星标状态卡片组件
+// Star status card component
 const StarStatusCard = memo(
 	({
 		quotaInfo,
@@ -102,10 +102,10 @@ const StarStatusCard = memo(
 	},
 )
 
-// 优化的配额信息显示组件
+// Optimized quota information display component
 const QuotaInfoDisplay = memo(
 	({ quotaInfo, showQuotaInfo, t }: { quotaInfo: QuotaInfo; showQuotaInfo: boolean; t: (key: string) => string }) => {
-		// 缓存计算结果
+		// Cache calculation results
 		const quotaCalculations = useMemo(() => {
 			const hasQuota = quotaInfo.total_quota || quotaInfo.used_quota
 			const usagePercentage =
@@ -230,10 +230,10 @@ const ZgsmAccountViewComponent = ({ apiConfiguration, onDone }: AccountViewProps
 	const { userInfo, logoPic, hash } = useZgsmUserInfo(apiConfiguration?.zgsmAccessToken)
 	console.log("New Credit hash: ", hash)
 
-	// 缓存静态资源 URI
+	// Cache static resource URI
 	const coLogoUri = useMemo(() => (window as any).COSTRICT_BASE_URI + "/logo.svg", [])
 
-	// 缓存事件处理函数
+	// Cache event handler function
 	const handleConnectClick = useCallback(() => {
 		// Send telemetry for account connect action
 		telemetryClient.capture(TelemetryEventName.ACCOUNT_CONNECT_CLICKED)
@@ -263,7 +263,7 @@ const ZgsmAccountViewComponent = ({ apiConfiguration, onDone }: AccountViewProps
 
 			switch (message.type) {
 				case "zgsmLogined": {
-					// 重置动画状态，为下次显示做准备
+					// Reset animation state to prepare for next display
 					setShowQuotaInfo(false)
 					setIsLoadingQuota(false)
 					onDone()
@@ -272,7 +272,7 @@ const ZgsmAccountViewComponent = ({ apiConfiguration, onDone }: AccountViewProps
 				case "zgsmQuotaInfo": {
 					setQuotaInfo(message?.values)
 					setIsLoadingQuota(false)
-					// 使用 requestAnimationFrame 优化动画时机
+					// Use requestAnimationFrame to optimize animation timing
 					requestAnimationFrame(() => {
 						setTimeout(() => {
 							setShowQuotaInfo(true)
@@ -293,26 +293,26 @@ const ZgsmAccountViewComponent = ({ apiConfiguration, onDone }: AccountViewProps
 			return
 		}
 
-		// 重置动画状态
+		// Reset animation state
 		setShowQuotaInfo(false)
 		setIsLoadingQuota(true)
 
-		// 立即获取配额信息
+		// Immediately fetch quota information
 		vscode.postMessage({ type: "fetchZgsmQuotaInfo" })
 
-		// 设置定时器，但减少频率以降低性能影响
+		// Set timer but reduce frequency to minimize performance impact
 		const timer = setInterval(() => {
 			if (document.visibilityState === "visible") {
 				vscode.postMessage({ type: "fetchZgsmQuotaInfo" })
 			}
-		}, 15_000) // 增加到15秒，减少请求频率
+		}, 15_000) // Increased to 15 seconds to reduce request frequency
 
 		return () => {
 			clearInterval(timer)
 		}
 	}, [apiConfiguration?.zgsmAccessToken])
 
-	// 页面可见性变化时的处理
+	// Handle page visibility changes
 	useEffect(() => {
 		const handleVisibilityChange = () => {
 			if (document.visibilityState === "visible" && apiConfiguration?.zgsmAccessToken) {
@@ -349,7 +349,7 @@ const ZgsmAccountViewComponent = ({ apiConfiguration, onDone }: AccountViewProps
 									/>
 								) : (
 									<div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-vscode-button-background to-vscode-button-hoverBackground text-vscode-button-foreground text-lg font-medium">
-										{userInfo?.name?.charAt(0) || userInfo?.email?.charAt(0) || "?"}
+										{userInfo?.name?.charAt(0) || userInfo?.email?.charAt(0) || "Costrict"}
 									</div>
 								)}
 							</div>
@@ -361,11 +361,14 @@ const ZgsmAccountViewComponent = ({ apiConfiguration, onDone }: AccountViewProps
 							{userInfo?.email && (
 								<p className="text-xs text-vscode-descriptionForeground mb-1">{userInfo?.email}</p>
 							)}
-							{/* 星标状态卡片 */}
+							{userInfo.id && (
+								<h2 className="text-xs text-vscode-descriptionForeground mb-1">ID: {userInfo.id}</h2>
+							)}
+							{/* Star status card */}
 							{quotaInfo?.is_star != null && (
 								<StarStatusCard quotaInfo={quotaInfo} onStarRepository={handleStarRepository} _t={t} />
 							)}
-							{/* 配额信息显示区域 */}
+							{/* Quota information display area */}
 							{isLoadingQuota && !quotaInfo && <QuotaSkeleton />}
 							{quotaInfo && (
 								<QuotaInfoDisplay quotaInfo={quotaInfo} showQuotaInfo={showQuotaInfo} t={t} />

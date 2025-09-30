@@ -18,6 +18,7 @@ import { MdmService } from "../services/mdm/MdmService"
 import { t } from "../i18n"
 import { EditorContext, EditorUtils } from "../integrations/editor/EditorUtils"
 import * as path from "path"
+import { handleGenerateCommitMessage } from "../core/costrict/commit"
 
 interface UriSource {
 	path: string
@@ -317,6 +318,14 @@ const getCommandsMap = ({ context, outputChannel, provider }: RegisterCommandOpt
 			type: "action",
 			action: "toggleAutoApprove",
 		})
+	},
+	generateCommitMessage: async () => {
+		try {
+			await handleGenerateCommitMessage(provider)
+		} catch (error) {
+			const errorMessage = error instanceof Error ? error.message : String(error)
+			vscode.window.showErrorMessage(`Failed to generate commit message: ${errorMessage}`)
+		}
 	},
 })
 

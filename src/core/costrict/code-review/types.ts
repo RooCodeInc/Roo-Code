@@ -89,6 +89,8 @@ export interface ReviewTaskResult {
 		is_done: boolean
 		/** Current progress (number of processed files) */
 		progress: number
+
+		review_progress: string
 		/** Total number of files */
 		total: number
 		/** Offset for next query */
@@ -183,19 +185,11 @@ export interface ReviewTask {
 	targets: ReviewTarget[]
 	/** Task completion status */
 	isCompleted: boolean
-	/** Task creation timestamp */
-	createdAt: Date
 	/** Current progress */
 	progress: number
+	review_progress: string
 	/** Total items to process */
 	total: number
-}
-
-export interface TaskData {
-	issues: ReviewIssue[]
-	progress: number | null
-	error?: string
-	message?: string
 }
 
 export interface CancelReviewTaskRequest {

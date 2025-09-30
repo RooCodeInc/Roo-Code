@@ -732,7 +732,7 @@ describe("extractTextFromFile with character limit", () => {
 	})
 
 	it("should apply character limit when file content exceeds limit", async () => {
-		// 创建一个包含大量字符的文件
+		// Create a file with a large number of characters
 		const longContent = "a".repeat(1000)
 		await fs.writeFile(testFilePath, longContent)
 
@@ -746,15 +746,15 @@ describe("extractTextFromFile with character limit", () => {
 	})
 
 	it("should apply character limit even when line limit is not exceeded", async () => {
-		// 创建少量行但每行很长的文件
+		// Create a file with few lines but each line is very long
 		const longLine = "x".repeat(500)
 		const content = `${longLine}\n${longLine}\n${longLine}`
 		await fs.writeFile(testFilePath, content)
 
 		const { extractTextFromFile } = await import("../extract-text")
-		const result = await extractTextFromFile(testFilePath, 10, 200) // 行数限制10，字符限制200
+		const result = await extractTextFromFile(testFilePath, 10, 200) // Line limit: 10, Character limit: 200
 
-		// 字符限制应该优先生效
+		// Character limit should take precedence
 		expect(result).toContain("characters omitted")
 		expect(result).not.toContain("lines omitted")
 	})
@@ -774,7 +774,7 @@ describe("extractTextFromFile with character limit", () => {
 	})
 
 	it("should show different truncation messages for different scenarios", async () => {
-		// 测试场景1：只有行数限制
+		// Test scenario 1: Only line limit
 		const lines = Array.from({ length: 20 }, (_, i) => `line${i + 1}`)
 		const content1 = lines.join("\n")
 		await fs.writeFile(testFilePath, content1)
@@ -784,7 +784,7 @@ describe("extractTextFromFile with character limit", () => {
 		expect(result1).toContain("showing 5 of 20 total lines")
 		expect(result1).not.toContain("character limit")
 
-		// 测试场景2：行数限制 + 字符限制都生效
+		// Test scenario 2: Both line and character limits are active
 		const longLines = Array.from({ length: 20 }, (_, i) => `${"x".repeat(100)}_line${i + 1}`)
 		const content2 = longLines.join("\n")
 		await fs.writeFile(testFilePath, content2)
@@ -793,7 +793,7 @@ describe("extractTextFromFile with character limit", () => {
 		expect(result2).toContain("showing 5 of 20 total lines")
 		expect(result2).toContain("character limit (200)")
 
-		// 测试场景3：只有字符限制
+		// Test scenario 3: Only character limit
 		const longContent = "a".repeat(1000)
 		await fs.writeFile(testFilePath, longContent)
 
@@ -810,13 +810,13 @@ describe("extractTextFromFile with character limit", () => {
 		const { extractTextFromFile } = await import("../extract-text")
 		const result = await extractTextFromFile(testFilePath, undefined, 1000)
 
-		// 内容应该完整保留，只添加行号
+		// Content should be preserved intact, only add line numbers
 		expect(result).toBe("1 | short content\n")
 		expect(result).not.toContain("characters omitted")
 	})
 
 	it("should handle character limit with line limit when both are exceeded", async () => {
-		// 创建很多长行的文件
+		// Create a file with many long lines
 		const longLine = "y".repeat(100)
 		const lines = Array.from({ length: 30 }, (_, i) => `${longLine}_${i + 1}`)
 		const content = lines.join("\n")
@@ -836,7 +836,7 @@ describe("extractTextFromFile with character limit", () => {
 
 		const { extractTextFromFile } = await import("../extract-text")
 
-		// 测试无效的字符限制参数
+		// Test invalid character limit parameter
 		await expect(extractTextFromFile(testFilePath, undefined, 0)).rejects.toThrow(
 			"Invalid maxReadCharacterLimit: 0. Must be a positive integer or undefined for unlimited.",
 		)
@@ -853,12 +853,12 @@ describe("extractTextFromFile with character limit", () => {
 		const { extractTextFromFile } = await import("../extract-text")
 		const result = await extractTextFromFile(testFilePath, undefined, undefined)
 
-		// 应该返回完整内容加行号
+		// Should return complete content with line numbers
 		expect(result).toBe("1 | test content without limit\n")
 	})
 
 	it("should apply character limit to line-limited content correctly", async () => {
-		// 创建内容，行数超限但字符数在限制内
+		// Create content where line count exceeds limit but character count is within limit
 		const lines = Array.from({ length: 20 }, (_, i) => `line${i + 1}`)
 		const content = lines.join("\n")
 		await fs.writeFile(testFilePath, content)

@@ -1407,7 +1407,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		[setExpandedRows], // setExpandedRows is stable
 	)
 
-	// 滚动到指定消息
+	// Scroll to specified message
 	const scrollToMessage = useCallback(
 		(messageIndex: number) => {
 			if (virtuosoRef.current && messageIndex >= 0 && messageIndex < groupedMessages.length && !isStreaming) {
@@ -1416,7 +1416,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					behavior: "smooth",
 					align: "center",
 				})
-				// 禁用自动滚动，因为用户正在手动导航
+				// Disable auto-scrolling because user is manually navigating
 				disableAutoScrollRef.current = true
 			}
 		},

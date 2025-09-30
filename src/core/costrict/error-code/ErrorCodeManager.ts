@@ -1,6 +1,7 @@
 import axios from "axios"
 import { jwtDecode } from "jwt-decode"
 import crypto from "crypto"
+import retry from "async-retry"
 
 import { t } from "../../../i18n"
 import { ClineProvider } from "../../webview/ClineProvider"
@@ -47,12 +48,22 @@ export class ErrorCodeManager {
 	 */
 	public async refreshErrorCodes(): Promise<void> {
 		try {
-			// Clear existing error code mapping
-			this.errorMap = {}
-			// Get remote error codes
-			const remoteErrorMap = await this.fetchRemoteCodes()
-			this.errorMap = remoteErrorMap
+			await retry(
+				async () => {
+					// Clear existing error code mapping
+					this.errorMap = {}
+					// Get remote error codes
+					const remoteErrorMap = await this.fetchRemoteCodes()
+					this.errorMap = remoteErrorMap
+					this.provider.setValue("errorCode", remoteErrorMap)
+				},
+				{
+					retries: 2,
+				},
+			)
 		} catch (error) {
+			const { errorCode } = await this.provider.getState()
+			this.errorMap = (errorCode ?? {}) as IErrorMap
 			console.error("Failed to refresh error codes:", error)
 		}
 	}
@@ -65,7 +76,7 @@ export class ErrorCodeManager {
 		try {
 			const { language, apiConfiguration } = await this.provider.getState()
 			const baseUrl = apiConfiguration.zgsmBaseUrl || ZgsmAuthConfig.getInstance().getDefaultApiBaseUrl()
-			const response = await axios.get(`${baseUrl}/shenma/api/v1/error-code/error_codes_${language}.json`)
+			const response = await axios.get(`${baseUrl}/costrict/error-code/error_codes_${language}.json`)
 			return response.data
 		} catch (error) {
 			console.error("Failed to fetch remote error codes:", error)
@@ -124,7 +135,7 @@ export class ErrorCodeManager {
 		let status = error.status as number
 		const { code, headers } = error
 		const requestId = headers?.get("x-request-id") ?? null
-		const { apiConfiguration } = await this.provider.getState()
+		const { apiConfiguration, errorCode } = await this.provider.getState()
 		const { zgsmApiKeyExpiredAt, zgsmApiKeyUpdatedAt, isOldModeLoginState } = this.parseZgsmTokenInfo(
 			apiConfiguration.zgsmAccessToken,
 		)
@@ -159,7 +170,8 @@ export class ErrorCodeManager {
 			"quota-manager.voucher_expired",
 		]
 		if (code) {
-			let { message, solution } = this.errorMap[code] || this.unknownError
+			const errorMap = Object.keys(this.errorMap).length > 0 ? this.errorMap : (errorCode ?? {}) // Use fetched error codes or fallback to provider state
+			let { message, solution } = errorMap[code] || this.unknownError
 			if (authRequiredCodes.includes(code)) {
 				rawError = message
 				message = defaultError["401"].message

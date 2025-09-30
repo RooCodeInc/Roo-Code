@@ -96,14 +96,17 @@ export enum TaskStatus {
 	ERROR = "error",
 }
 
+export interface TaskData {
+	issues: ReviewIssue[]
+	progress: number | null
+	reviewProgress?: string
+	error?: string
+	message?: string
+}
+
 export interface ReviewTaskPayload {
 	status: TaskStatus
-	data: {
-		issues: ReviewIssue[]
-		progress: number | null
-		error?: string
-		message?: string
-	}
+	data: TaskData
 }
 
 /**

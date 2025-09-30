@@ -1,0 +1,39 @@
+{
+	"commit": {
+		"error": {
+			"noChanges": "工作空間中未檢測到更改",
+			"authRequired": "AI 提交生成需要身份驗證",
+			"aiFailed": "AI 生成提交訊息失敗",
+			"notInitialized": "提交服務未初始化",
+			"noWorkspace": "未找到工作空間資料夾",
+			"notGitRepo": "當前工作空間不是 git 倉庫",
+			"failedToGetGitDiff": "獲取 git 差異失敗：{{0}}"
+		},
+		"progress": {
+			"generating": "正在生成提交訊息..."
+		},
+		"message": {
+			"copiedToClipboard": "提交訊息已生成，但無法自動填充到輸入框中。提交訊息已複製到剪貼簿。",
+			"generationFailed": "生成提交訊息失敗：{{error}}",
+			"executing": "點擊過於頻繁，請等待當前提交生成完成"
+		},
+		"action": {
+			"addFile": "添加 {{0}}",
+			"fixIssue": "修復 {{0}} 中的問題",
+			"updateDocs": "更新 {{0}} 的文檔",
+			"addTests": "為 {{0}} 添加測試",
+			"updateFile": "更新 {{0}}",
+			"addFiles": "添加 {{0}} 個檔案",
+			"fixIssues": "修復 {{0}} 個檔案中的問題",
+			"updateDocumentation": "更新文檔",
+			"addTestsMultiple": "添加測試",
+			"updateFiles": "更新 {{0}} 個檔案"
+		},
+		"files": {
+			"added": "添加的檔案：",
+			"modified": "修改的檔案：",
+			"deleted": "刪除的檔案：",
+			"renamed": "重新命名的檔案："
+		}
+	}
+}

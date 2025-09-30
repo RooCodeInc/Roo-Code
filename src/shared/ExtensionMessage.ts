@@ -316,6 +316,7 @@ export type ExtensionState = Pick<
 	| "openRouterImageGenerationSelectedModel"
 	| "includeTaskHistoryInEnhance"
 	| "reasoningBlockCollapsed"
+	| "errorCode"
 > & {
 	version: string
 	clineMessages: ClineMessage[]

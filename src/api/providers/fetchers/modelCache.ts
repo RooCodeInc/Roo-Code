@@ -58,7 +58,7 @@ export async function readModels(router: RouterName): Promise<ModelRecord | unde
  */
 export const getModels = async (options: GetModelsOptions): Promise<ModelRecord> => {
 	const { provider } = options
-	const clineProvider = await ClineProvider.getInstance()
+	let clineProvider = await ClineProvider.getAllInstance()
 
 	let models = getModelsFromCache(provider)
 

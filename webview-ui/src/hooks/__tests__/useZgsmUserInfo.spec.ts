@@ -62,8 +62,8 @@ describe("useZgsmUserInfo", () => {
 		expect(result.current.isAuthenticated).toBe(false)
 	})
 
-	it("应该在有token时解析用户信息", async () => {
-		// 创建一个有效的JWT token (简化版)
+	it("should parse user info when token is present", async () => {
+		// Create a valid JWT token (simplified version)
 		const mockPayload = {
 			id: "user123",
 			email: "test@example.com",
@@ -109,14 +109,14 @@ describe("useZgsmUserInfo", () => {
 		const { result } = renderHook(() => useZgsmUserInfo(apiConfiguration))
 
 		expect(result.current.userInfo).toBeNull()
-		expect(result.current.isAuthenticated).toBe(true) // token存在但无效
+		expect(result.current.isAuthenticated).toBe(true) // token exists but is invalid
 		expect(consoleSpy).toHaveBeenCalledWith("Failed to parse JWT token:", expect.any(Error))
 
 		consoleSpy.mockRestore()
 	})
 
-	it("应该在登出时发送遥测事件", async () => {
-		// 创建一个有效的JWT token，确保能够正确解析
+	it("should send telemetry event on logout", async () => {
+		// Create a valid JWT token to ensure it can be parsed correctly
 		const mockPayload = {
 			id: "user123",
 			email: "test@example.com",
@@ -131,12 +131,12 @@ describe("useZgsmUserInfo", () => {
 			initialProps: { config: apiConfiguration },
 		})
 
-		// 等待初始认证状态设置完成
+		// Wait for initial authentication state to be set
 		await waitFor(() => {
 			expect(result.current.isAuthenticated).toBe(true)
 		})
 
-		// 模拟登出 - 移除token
+		// Simulate logout - remove token
 		rerender({ config: {} as ProviderSettings })
 
 		expect(telemetryClient.capture).toHaveBeenCalledWith(TelemetryEventName.ACCOUNT_LOGOUT_SUCCESS)

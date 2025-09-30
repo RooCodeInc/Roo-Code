@@ -108,16 +108,16 @@ export function useZgsmUserInfo(tokenOrConfig?: string | ProviderSettings): Zgsm
 
 				const userInfo: ZgsmUserInfo = {
 					id: parsedJwt.id,
-					name: parsedJwt?.properties?.oauth_GitHub_username || parsedJwt.id,
-					picture: undefined,
-					email: parsedJwt.email,
+					name: parsedJwt?.properties?.oauth_GitHub_username || parsedJwt.id || parsedJwt.phone,
+					picture: parsedJwt.avatar || parsedJwt?.properties?.oauth_GitHub_avatarUrl,
+					email: parsedJwt.email || parsedJwt?.properties?.oauth_GitHub_email,
 					phone: parsedJwt.phone,
 					organizationName: parsedJwt.organizationName,
 					organizationImageUrl: parsedJwt.organizationImageUrl,
 				}
 
 				const [logoPic, hash] = await Promise.all([
-					parsedJwt.avatar ? imageUrlToBase64(parsedJwt.avatar) : Promise.resolve(""),
+					userInfo.picture ? imageUrlToBase64(userInfo.picture) : Promise.resolve(""),
 					hashToken(token),
 				])
 

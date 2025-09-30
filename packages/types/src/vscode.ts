@@ -67,6 +67,7 @@ export const commandIds = [
 	"focusPanel",
 	"addFileToContext",
 	"toggleAutoApprove",
+	"generateCommitMessage",
 ] as const
 
 export const costrictCommandIds = [

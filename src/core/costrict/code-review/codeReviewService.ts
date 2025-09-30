@@ -16,12 +16,12 @@ import path from "node:path"
 import type { AxiosRequestConfig } from "axios"
 import { v7 as uuidv7 } from "uuid"
 
-import { ReviewTask, TaskData } from "./types"
+import { ReviewTask } from "./types"
 import { createReviewTaskAPI, getReviewResultsAPI, updateIssueStatusAPI, cancelReviewTaskAPI } from "./api"
 import { ReviewComment } from "./reviewComment"
 import { ZgsmAuthConfig, ZgsmAuthService } from "../auth"
 
-import { ReviewIssue, IssueStatus, TaskStatus, ReviewTarget } from "../../../shared/codeReview"
+import { ReviewIssue, IssueStatus, TaskStatus, ReviewTarget, TaskData } from "../../../shared/codeReview"
 import { ExtensionMessage } from "../../../shared/ExtensionMessage"
 import { Package } from "../../../shared/package"
 
@@ -236,8 +236,8 @@ export class CodeReviewService {
 				taskId: taskResponse.data.review_task_id,
 				targets: targets,
 				isCompleted: false,
-				createdAt: new Date(),
 				progress: 0,
+				review_progress: "",
 				total: targets.length,
 			}
 
@@ -538,31 +538,22 @@ export class CodeReviewService {
 					...requestOptions,
 					signal: this.taskAbortController?.signal,
 				})
-				const { issues, is_done, progress, total, next_offset, is_task_failed, error_msg } = data
+				const { issues, is_done, progress, review_progress, total, next_offset, is_task_failed, error_msg } =
+					data
 
 				// Process new issues if any
+				let shouldUpdateMessage = false
 				if (issues.length > 0) {
 					this.updateCachedIssues(issues)
-
-					// Send issues updated message with unified event
-					this.sendReviewTaskUpdateMessage(TaskStatus.RUNNING, {
-						issues: this.getAllCachedIssues(),
-						progress,
-					})
+					shouldUpdateMessage = true
 				}
-
 				// Update task progress
 				if (this.currentTask) {
 					this.currentTask.progress = progress
 					this.currentTask.total = total
-
-					// Send progress update message with unified event
-					this.sendReviewTaskUpdateMessage(TaskStatus.RUNNING, {
-						issues: this.getAllCachedIssues(),
-						progress,
-					})
+					this.currentTask.review_progress = review_progress
+					shouldUpdateMessage = true
 				}
-
 				// Check if task is completed
 				if (is_done) {
 					if (is_task_failed) {
@@ -570,6 +561,15 @@ export class CodeReviewService {
 					}
 					this.completeTask()
 					break
+				}
+
+				// Send unified update message if needed (only once)
+				if (shouldUpdateMessage) {
+					this.sendReviewTaskUpdateMessage(TaskStatus.RUNNING, {
+						issues: this.getAllCachedIssues(),
+						progress,
+						reviewProgress: review_progress,
+					})
 				}
 
 				// Update offset for next iteration

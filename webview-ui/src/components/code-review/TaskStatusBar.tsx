@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useMemo } from "react"
 import { ReviewIssue, TaskStatus } from "@roo/codeReview"
 import { CheckIcon, InfoCircledIcon } from "@radix-ui/react-icons"
 import { useAppTranslation } from "@/i18n/TranslationContext"
@@ -6,22 +6,28 @@ import { useAppTranslation } from "@/i18n/TranslationContext"
 interface TaskStatusBarProps {
 	taskStatus: TaskStatus
 	progress: number | null
+	reviewProgress: string
 	message: string
 	errorMessage: string
 	issues: ReviewIssue[]
 	onTaskCancel: () => void
+	hasRunCodebaseSync?: boolean // 是否运行过索引同步服务
 }
 
 const TaskStatusBar: React.FC<TaskStatusBarProps> = ({
 	taskStatus,
 	progress,
+	reviewProgress,
 	issues,
 	message,
 	errorMessage,
 	onTaskCancel,
+	hasRunCodebaseSync = false,
 }) => {
 	const { t } = useAppTranslation()
-
+	const adjustedProgress = useMemo(() => {
+		return hasRunCodebaseSync ? Math.round((progress ?? 0 * 0.7 + 0.3) * 100) : Math.round((progress ?? 0) * 100)
+	}, [progress, hasRunCodebaseSync])
 	return (
 		<div className="flex items-center mt-5">
 			{taskStatus === TaskStatus.RUNNING && (
@@ -35,9 +41,9 @@ const TaskStatusBar: React.FC<TaskStatusBarProps> = ({
 							{progress !== null && (
 								<div>
 									<span className="ml-2">
-										{t("codereview:taskStatusBar.running", {
-											progress: Math.round(progress * 100),
-										})}
+										{reviewProgress
+											? `${reviewProgress} ${adjustedProgress}%`
+											: t("codereview:taskStatusBar.running", { progress: adjustedProgress })}
 									</span>
 									<span className="ml-2 text-[#1876F2] cursor-pointer" onClick={() => onTaskCancel()}>
 										{t("codereview:taskStatusBar.cancel")}

@@ -76,7 +76,6 @@ import { fileExistsAtPath } from "../../utils/fs"
 import { setTtsEnabled, setTtsSpeed } from "../../utils/tts"
 import { getWorkspaceGitInfo } from "../../utils/git"
 import { getWorkspacePath, toRelativePath } from "../../utils/path"
-// import { getWorkspacePath } from "../../utils/path"
 import { OrganizationAllowListViolationError } from "../../utils/errors"
 
 import { setPanel } from "../../activate/registerCommands"
@@ -630,6 +629,9 @@ export class ClineProvider
 	public static getVisibleInstance(): ClineProvider | undefined {
 		return findLast(Array.from(this.activeInstances), (instance) => instance.view?.visible === true)
 	}
+	public static getAllInstance(): ClineProvider | undefined {
+		return Array.from(this.activeInstances)[0]
+	}
 
 	public static async getInstance(): Promise<ClineProvider | undefined> {
 		let visibleProvider = ClineProvider.getVisibleInstance()
@@ -672,6 +674,7 @@ export class ClineProvider
 	): Promise<void> {
 		// Capture telemetry for code action usage
 		TelemetryService.instance.captureCodeActionUsed(promptType)
+
 		const visibleProvider = await ClineProvider.getInstance()
 
 		if (!visibleProvider) {
@@ -2103,6 +2106,7 @@ export class ClineProvider
 		// 		`[getState] failed to get task sync enabled state: ${error instanceof Error ? error.message : String(error)}`,
 		// 	)
 		// }
+
 		// Return the same structure as before.
 		providerSettings.openAiHeaders = providerSettings.openAiHeaders ?? {}
 		return {
@@ -2179,7 +2183,6 @@ export class ClineProvider
 			maxWorkspaceFiles: stateValues.maxWorkspaceFiles ?? 200,
 			openRouterUseMiddleOutTransform: stateValues.openRouterUseMiddleOutTransform,
 			browserToolEnabled: stateValues.browserToolEnabled ?? true,
-			// telemetrySetting: stateValues.telemetrySetting || "disabled",
 			telemetrySetting: stateValues.telemetrySetting || "unset",
 			showRooIgnoredFiles: stateValues.showRooIgnoredFiles ?? false,
 			maxReadFileLine: stateValues.maxReadFileLine ?? 500,
@@ -2245,6 +2248,7 @@ export class ClineProvider
 				// 	return false
 				// }
 			})(),
+			errorCode: stateValues.errorCode ?? {},
 		}
 	}
 
@@ -2381,58 +2385,6 @@ export class ClineProvider
 		return true
 	}
 
-	// public async handleRemoteControlToggle(enabled: boolean) {
-	// 	const { CloudService: CloudServiceImport, ExtensionBridgeService } = await import("@roo-code/cloud")
-
-	// 	const userInfo = CloudServiceImport.instance.getUserInfo()
-
-	// 	const bridgeConfig = await CloudServiceImport.instance.cloudAPI?.bridgeConfig().catch(() => undefined)
-
-	// 	if (!bridgeConfig) {
-	// 		this.log("[ClineProvider#handleRemoteControlToggle] Failed to get bridge config")
-	// 		return
-	// 	}
-
-	// 	await ExtensionBridgeService.handleRemoteControlState(
-	// 		userInfo,
-	// 		enabled,
-	// 		{ ...bridgeConfig, provider: this, sessionId: vscode.env.sessionId },
-	// 		(message: string) => this.log(message),
-	// 	)
-
-	// 	if (isRemoteControlEnabled(userInfo, enabled)) {
-	// 		const currentTask = this.getCurrentTask()
-
-	// 		if (currentTask && !currentTask.bridgeService) {
-	// 			try {
-	// 				currentTask.bridgeService = ExtensionBridgeService.getInstance()
-
-	// 				if (currentTask.bridgeService) {
-	// 					await currentTask.bridgeService.subscribeToTask(currentTask)
-	// 				}
-	// 			} catch (error) {
-	// 				const message = `[ClineProvider#handleRemoteControlToggle] subscribeToTask failed - ${error instanceof Error ? error.message : String(error)}`
-	// 				this.log(message)
-	// 				console.error(message)
-	// 			}
-	// 		}
-	// 	} else {
-	// 		for (const task of this.clineStack) {
-	// 			if (task.bridgeService) {
-	// 				try {
-	// 					await task.bridgeService.unsubscribeFromTask(task.taskId)
-	// 					task.bridgeService = null
-	// 				} catch (error) {
-	// 					const message = `[ClineProvider#handleRemoteControlToggle] unsubscribeFromTask failed - ${error instanceof Error ? error.message : String(error)}`
-	// 					this.log(message)
-	// 					console.error(message)
-	// 				}
-	// 			}
-	// 		}
-
-	// 		ExtensionBridgeService.resetInstance()
-	// 	}
-	// }
 	public async remoteControlEnabled(enabled: boolean) {
 		if (!enabled) {
 			await BridgeOrchestrator.disconnect()
@@ -2729,7 +2681,10 @@ export class ClineProvider
 			},
 		).catch(() => {
 			console.error("Failed to abort task")
+			task?.api?.cancelChat?.(task.abortReason)
 		})
+
+		task?.api?.cancelChat?.(task.abortReason)
 
 		// Defensive safeguard: if current instance already changed, skip rehydrate
 		const current = this.getCurrentTask()

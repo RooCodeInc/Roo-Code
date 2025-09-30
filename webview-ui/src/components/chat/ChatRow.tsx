@@ -104,14 +104,18 @@ const ChatRow = memo(
 		const prevHeightRef = useRef(0)
 
 		const [chatrow, { height }] = useSize(
-			<div
-				className={`px-[15px] py-[10px] transition-all duration-300 ease-in-out ${
-					props.shouldHighlight
-						? "bg-vscode-editor-findMatchHighlightBackground border-l-4 border-vscode-editor-findMatchBorder shadow-sm"
-						: ""
-				}`}>
-				<ChatRowContent {...props} />
-			</div>,
+			message?.metadata?.isRateLimitRetry ? (
+				<></>
+			) : (
+				<div
+					className={`px-[15px] py-[10px] transition-all duration-300 ease-in-out ${
+						props.shouldHighlight
+							? "bg-vscode-editor-findMatchHighlightBackground border-l-4 border-vscode-editor-findMatchBorder shadow-sm"
+							: ""
+					}`}>
+					<ChatRowContent {...props} />
+				</div>
+			),
 		)
 
 		useEffect(() => {
@@ -1403,13 +1407,13 @@ export const ChatRowContent = ({
 				case "user_edit_todos":
 					return <UpdateTodoListToolBlock userEdited onChange={() => {}} />
 				case "api_req_retry_delayed":
-					return (
+					return message?.metadata?.isRateLimitRetry ? null : (
 						<ErrorRow
 							type="api_req_retry_delayed"
 							message={message.text || ""}
 							apiConfiguration={apiConfiguration}
 							additionalContent={
-								!message?.metadata?.isRateLimit ? (
+								!message?.metadata?.isRateLimit && !message?.metadata?.isRateLimitRetry ? (
 									<>
 										<br />
 										<br />

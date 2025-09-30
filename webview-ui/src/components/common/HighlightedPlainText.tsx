@@ -12,7 +12,7 @@ const HighlightedPlainText = ({ message, query = "", flag = "" }: HighlightedPla
 	const originText = message.text || ""
 	const lowerQuery = query.toLowerCase()
 
-	// 首先以换行符号分割
+	// First split by newline characters
 	const lines = originText.split("\n")
 	const result: string[] = []
 	let i = 0
@@ -20,9 +20,9 @@ const HighlightedPlainText = ({ message, query = "", flag = "" }: HighlightedPla
 	while (i < lines.length) {
 		const line = lines[i]
 
-		// 检查是否是代码块开始（精确匹配```开头，可能包含语言标识）
+		// Check if it's the start of a code block (exact match with ``` prefix, may include language identifier)
 		if (line.trim().startsWith("```")) {
-			// 找到代码块结束
+			// Find the end of the code block
 			let codeBlockEnd = -1
 			for (let j = i + 1; j < lines.length; j++) {
 				if (lines[j].trim() === "```") {
@@ -32,11 +32,11 @@ const HighlightedPlainText = ({ message, query = "", flag = "" }: HighlightedPla
 			}
 
 			if (codeBlockEnd !== -1) {
-				// 提取完整的代码块
+				// Extract the complete code block
 				const codeBlockLines = lines.slice(i, codeBlockEnd + 1)
 				const codeBlockContent = codeBlockLines.join("\n")
 
-				// 检查代码块是否包含查询字符串
+				// Check if the code block contains the query string
 				if (codeBlockContent.toLowerCase().includes(lowerQuery)) {
 					result.push(
 						`<mark>⬇️${flag ? `${flag}: ` : ""}${query.length > 20 ? `${query.substring(0, 19)}...` : query}⬇️</mark>`,
@@ -49,7 +49,7 @@ const HighlightedPlainText = ({ message, query = "", flag = "" }: HighlightedPla
 			}
 		}
 
-		// 处理普通文本行
+		// Process regular text lines
 		if (line.toLowerCase().includes(lowerQuery)) {
 			result.push(
 				`${line} <mark>⬅️${flag ? `${flag}: ` : ""}${query.length > 20 ? `${query.substring(0, 19)}...` : query}⬅️</mark>`,

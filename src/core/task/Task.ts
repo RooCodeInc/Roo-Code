@@ -37,7 +37,7 @@ import {
 	QueuedMessage,
 } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
-import { CloudService, BridgeOrchestrator } from "@roo-code/cloud"
+// import { CloudService, BridgeOrchestrator } from "@roo-code/cloud"
 
 // api
 import { ApiHandler, ApiHandlerCreateMessageMetadata, buildApiHandler } from "../../api"
@@ -130,7 +130,6 @@ export interface TaskOptions extends CreateTaskOptions {
 	enableCheckpoints?: boolean
 	useZgsmCustomConfig?: boolean
 	zgsmCodebaseIndexEnabled?: boolean
-	enableTaskBridge?: boolean
 	enableBridge?: boolean
 	fuzzyMatchThreshold?: number
 	consecutiveMistakeLimit?: number
@@ -229,7 +228,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	api: ApiHandler & {
 		setChatType?: (type: "user" | "system") => void
 		getChatType?: () => "user" | "system"
-		cancelChat?: (cancelType: ClineApiReqCancelReason) => void
+		cancelChat?: (cancelType?: ClineApiReqCancelReason) => void
 	}
 	private static lastGlobalApiRequestTime?: number
 	private autoApprovalHandler: AutoApprovalHandler
@@ -630,7 +629,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		// if (shouldCaptureMessage) {
 		// 	CloudService.instance.captureEvent({
-		// 		event: TelemetryEventName.TASK_MESSAGE as any,
+		// 		event: TelemetryEventName.TASK_MESSAGE,
 		// 		properties: { taskId: this.taskId, message },
 		// 	})
 		// }
@@ -659,14 +658,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		await provider?.postMessageToWebview({ type: "messageUpdated", clineMessage: message })
 		this.emit(RooCodeEventName.Message, { action: "updated", message })
 
-		const shouldCaptureMessage = message.partial !== true && CloudService.isEnabled()
+		// const shouldCaptureMessage = message.partial !== true && CloudService.isEnabled()
 
-		if (shouldCaptureMessage) {
-			CloudService.instance.captureEvent({
-				event: TelemetryEventName.TASK_MESSAGE as any,
-				properties: { taskId: this.taskId, message },
-			})
-		}
+		// if (shouldCaptureMessage) {
+		// 	CloudService.instance.captureEvent({
+		// 		event: TelemetryEventName.TASK_MESSAGE,
+		// 		properties: { taskId: this.taskId, message },
+		// 	})
+		// }
 	}
 
 	private async saveClineMessages() {
@@ -1087,6 +1086,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		if (this.abort) {
 			throw new Error(`[Costrict#say] task ${this.taskId}.${this.instanceId} aborted`)
 		}
+		const isRateLimitRetry = !!(type === "api_req_retry_delayed" && text && text?.startsWith("Rate limiting for"))
 
 		if (partial !== undefined) {
 			const lastMessage = this.clineMessages.at(-1)
@@ -1118,7 +1118,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						images,
 						partial,
 						contextCondense,
-						metadata: options.metadata,
+						metadata: { ...options.metadata, isRateLimitRetry },
 					})
 				}
 			} else {
@@ -1206,15 +1206,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	// Start / Resume / Abort / Dispose
 
 	private async startTask(task?: string, images?: string[]): Promise<void> {
-		if (this.enableBridge) {
-			try {
-				await BridgeOrchestrator.subscribeToTask(this)
-			} catch (error) {
-				console.error(
-					`[Task#startTask] BridgeOrchestrator.subscribeToTask() failed: ${error instanceof Error ? error.message : String(error)}`,
-				)
-			}
-		}
+		// if (this.enableBridge) {
+		// 	try {
+		// 		await BridgeOrchestrator.subscribeToTask(this)
+		// 	} catch (error) {
+		// 		console.error(
+		// 			`[Task#startTask] BridgeOrchestrator.subscribeToTask() failed: ${error instanceof Error ? error.message : String(error)}`,
+		// 		)
+		// 	}
+		// }
 
 		// `conversationHistory` (for API) and `clineMessages` (for webview)
 		// need to be in sync.
@@ -1247,15 +1247,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	}
 
 	private async resumeTaskFromHistory() {
-		if (this.enableBridge) {
-			try {
-				await BridgeOrchestrator.subscribeToTask(this)
-			} catch (error) {
-				console.error(
-					`[Task#resumeTaskFromHistory] BridgeOrchestrator.subscribeToTask() failed: ${error instanceof Error ? error.message : String(error)}`,
-				)
-			}
-		}
+		// if (this.enableBridge) {
+		// 	try {
+		// 		await BridgeOrchestrator.subscribeToTask(this)
+		// 	} catch (error) {
+		// 		console.error(
+		// 			`[Task#resumeTaskFromHistory] BridgeOrchestrator.subscribeToTask() failed: ${error instanceof Error ? error.message : String(error)}`,
+		// 		)
+		// 	}
+		// }
 
 		const modifiedClineMessages = await this.getSavedClineMessages()
 
@@ -1470,25 +1470,25 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		let newUserContent: Anthropic.Messages.ContentBlockParam[] = [...modifiedOldUserContent]
 
-		const agoText = ((): string => {
-			const timestamp = lastClineMessage?.ts ?? Date.now()
-			const now = Date.now()
-			const diff = now - timestamp
-			const minutes = Math.floor(diff / 60000)
-			const hours = Math.floor(minutes / 60)
-			const days = Math.floor(hours / 24)
+		// const agoText = ((): string => {
+		// 	const timestamp = lastClineMessage?.ts ?? Date.now()
+		// 	const now = Date.now()
+		// 	const diff = now - timestamp
+		// 	const minutes = Math.floor(diff / 60000)
+		// 	const hours = Math.floor(minutes / 60)
+		// 	const days = Math.floor(hours / 24)
 
-			if (days > 0) {
-				return `${days} day${days > 1 ? "s" : ""} ago`
-			}
-			if (hours > 0) {
-				return `${hours} hour${hours > 1 ? "s" : ""} ago`
-			}
-			if (minutes > 0) {
-				return `${minutes} minute${minutes > 1 ? "s" : ""} ago`
-			}
-			return "just now"
-		})()
+		// 	if (days > 0) {
+		// 		return `${days} day${days > 1 ? "s" : ""} ago`
+		// 	}
+		// 	if (hours > 0) {
+		// 		return `${hours} hour${hours > 1 ? "s" : ""} ago`
+		// 	}
+		// 	if (minutes > 0) {
+		// 		return `${minutes} minute${minutes > 1 ? "s" : ""} ago`
+		// 	}
+		// 	return "just now"
+		// })()
 
 		if (responseText) {
 			newUserContent.push({
@@ -1570,15 +1570,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			this.pauseInterval = undefined
 		}
 
-		if (this.enableBridge) {
-			BridgeOrchestrator.getInstance()
-				?.unsubscribeFromTask(this.taskId)
-				.catch((error: { message: any }) =>
-					console.error(
-						`[Task#dispose] BridgeOrchestrator#unsubscribeFromTask() failed: ${error instanceof Error ? error.message : String(error)}`,
-					),
-				)
-		}
+		// if (this.enableBridge) {
+		// 	BridgeOrchestrator.getInstance()
+		// 		?.unsubscribeFromTask(this.taskId)
+		// 		.catch((error) =>
+		// 			console.error(
+		// 				`[Task#dispose] BridgeOrchestrator#unsubscribeFromTask() failed: ${error instanceof Error ? error.message : String(error)}`,
+		// 			),
+		// 		)
+		// }
 
 		// Release any terminals associated with this task.
 		try {
@@ -1925,6 +1925,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// Signals to provider that it can retrieve the saved messages
 					// from disk, as abortTask can not be awaited on in nature.
 					this.didFinishAbortingStream = true
+
 					this?.api?.cancelChat?.(cancelReason)
 				}
 
@@ -2017,6 +2018,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 						if (this.abort) {
 							console.log(`aborting stream, this.abandoned = ${this.abandoned}`)
+							this?.api?.cancelChat?.(this.abortReason)
 
 							if (!this.abandoned) {
 								// Only need to gracefully abort if this instance
@@ -2229,7 +2231,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 						// Now abort (emits TaskAborted which provider listens to)
 						await this.abortTask()
-
+						this?.api?.cancelChat?.(cancelReason)
 						// Do not rehydrate here; provider owns rehydration to avoid duplication races
 					}
 				} finally {
@@ -2566,15 +2568,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 
 		let rateLimitDelay = 0
-		const rateLimit = apiConfiguration?.rateLimitSeconds || 0
-		if (Task.lastGlobalApiRequestTime && rateLimit > 0) {
+
+		// Use the shared timestamp so that subtasks respect the same rate-limit
+		// window as their parent tasks.
+		if (Task.lastGlobalApiRequestTime) {
 			const now = Date.now()
 			const timeSinceLastRequest = now - Task.lastGlobalApiRequestTime
-			const remainingDelay = rateLimit * 1000 - timeSinceLastRequest
-			// Only apply rate limit if there's actually time remaining to wait
-			if (remainingDelay > 0) {
-				rateLimitDelay = Math.ceil(remainingDelay / 1000)
-			}
+			const rateLimit = apiConfiguration?.rateLimitSeconds || 0
+			rateLimitDelay = Math.ceil(Math.max(0, rateLimit * 1000 - timeSinceLastRequest) / 1000)
 		}
 
 		// Only show rate limiting message if we're not retrying. If retrying, we'll include the delay there.
@@ -2582,11 +2583,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			// Show countdown timer
 			for (let i = rateLimitDelay; i > 0; i--) {
 				const delayMessage = `Rate limiting for ${i} seconds...`
-				await this.say("api_req_retry_delayed", delayMessage, undefined, true, undefined, undefined, {
-					metadata: {
-						isRateLimit: true,
-					},
-				})
+				this.providerRef.deref()?.log(`[Task#${this.taskId}] ${delayMessage}`)
+				await this.say("api_req_retry_delayed", delayMessage, undefined, true)
 				await delay(1000)
 			}
 		}
@@ -2783,7 +2781,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				for (let i = finalDelay; i > 0; i--) {
 					await this.say(
 						"api_req_retry_delayed",
-						`${errorMsg}\nRetry attempt ${retryAttempt + 1}\nRetrying in ${i} seconds...`,
+						`${errorMsg}\n\nRetry attempt ${retryAttempt + 1}\nRetrying in ${i} seconds...`,
 						undefined,
 						true,
 					)
@@ -2792,7 +2790,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 				await this.say(
 					"api_req_retry_delayed",
-					`${errorMsg}\nRetry attempt ${retryAttempt + 1}\nRetrying now...`,
+					`${errorMsg}\n\nRetry attempt ${retryAttempt + 1}\nRetrying now...`,
 					undefined,
 					false,
 				)
