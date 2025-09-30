@@ -1081,14 +1081,10 @@ export const ChatRowContent = ({
 											"cursor-pointer hover:bg-vscode-dropdown-background hover:border-vscode-dropdown-border transition-colors",
 									)}
 									style={{ opacity: cost !== null && cost !== undefined && cost > 0 ? 1 : 0 }}
-									onClick={
-										cloudIsAuthenticated
-											? (e) => {
-													e.stopPropagation() // Prevent parent onClick from firing
-													vscode.postMessage({ type: "switchTab", tab: "cloud" })
-												}
-											: undefined
-									}
+									onClick={(e) => {
+										e.stopPropagation() // Prevent parent onClick from firing
+										vscode.postMessage({ type: "switchTab", tab: "cloud" })
+									}}
 									title={cloudIsAuthenticated ? t("chat:apiRequest.viewTokenUsage") : undefined}>
 									${Number(cost || 0)?.toFixed(4)}
 								</div>
