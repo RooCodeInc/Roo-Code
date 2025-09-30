@@ -59,28 +59,13 @@ export const UsagePreview = ({ onViewDetails }: UsagePreviewProps) => {
 			const message = event.data
 
 			if (message.type === "usagePreviewData") {
-				console.log("[UsagePreview] Received usagePreviewData:", message)
-				console.log("[UsagePreview] Data structure:", {
-					hasData: !!message.data,
-					dataKeys: message.data ? Object.keys(message.data) : [],
-					hasDays: message.data?.days !== undefined,
-					daysIsArray: Array.isArray(message.data?.days),
-					daysLength: message.data?.days?.length || 0,
-				})
-
 				if (message.error) {
-					console.log("[UsagePreview] Setting error:", message.error)
 					setError(message.error)
 				} else if (message.data) {
 					// Validate the data structure
 					if (!message.data.days || !Array.isArray(message.data.days)) {
-						console.error(
-							"[UsagePreview] Invalid data structure - missing or non-array days:",
-							message.data,
-						)
 						setError("Invalid data format received")
 					} else {
-						console.log("[UsagePreview] Setting valid data with", message.data.days.length, "days")
 						setData(message.data)
 					}
 				}
@@ -106,8 +91,8 @@ export const UsagePreview = ({ onViewDetails }: UsagePreviewProps) => {
 
 	const getBarHeight = (cost: number): number => {
 		if (!data || !data.days || data.days.length === 0) return 1
-		const maxCost = Math.max(...data.days.map((d) => d.cost))
-		return Math.max(1, ~~(cost / maxCost) * 100) // Avoid NaN and enforce minimum height for visibility
+		const maxCost = ~~Math.max(...data.days.map((d) => d.cost)) // Avoid NaN
+		return Math.max(1, ~~(cost / maxCost) * 100) // Enforce minimum height for visibility
 	}
 
 	// Retry loading
@@ -134,7 +119,7 @@ export const UsagePreview = ({ onViewDetails }: UsagePreviewProps) => {
 	}
 
 	// Error state
-	if (error) {
+	if (error || !data) {
 		return (
 			<div
 				className="cursor-pointer group rounded-lg bg-vscode-editor-background hover:bg-vscode-list-hoverBackground transition-colors relative"
@@ -152,34 +137,14 @@ export const UsagePreview = ({ onViewDetails }: UsagePreviewProps) => {
 		)
 	}
 
-	// Use placeholder data if no real data available
-	const displayData = data || {
-		days: [
-			{ date: "2025-09-17", taskCount: 2, tokenCount: 3200000, cost: 3.2 },
-			{ date: "2025-09-18", taskCount: 1, tokenCount: 1600000, cost: 1.6 },
-			{ date: "2025-09-19", taskCount: 1, tokenCount: 2400000, cost: 2.4 },
-			{ date: "2025-09-20", taskCount: 0, tokenCount: 1200000, cost: 1.2 },
-			{ date: "2025-09-21", taskCount: 3, tokenCount: 4000000, cost: 4.0 },
-			{ date: "2025-09-22", taskCount: 1, tokenCount: 2800000, cost: 2.8 },
-			{ date: "2025-09-23", taskCount: 1, tokenCount: 2000000, cost: 2.61 },
-		],
-		totals: {
-			tasks: 9,
-			tokens: 14800000,
-			cost: 17.81,
-		},
-	}
-
 	return (
-		<div
-			className="cursor-pointer group rounded-lg bg-vscode-editor-background hover:bg-vscode-list-hoverBackground transition-colors relative"
-			onClick={onViewDetails}>
+		<div className="cursor-pointer group rounded-lg bg-vscode-editor-background relative" onClick={onViewDetails}>
 			<div className="p-4">
 				{/* Chart with daily usage bars */}
 				<div className="h-24 min-[450px]:h-40 rounded mb-3 flex items-end gap-1 pb-2">
-					{displayData.days &&
-						Array.isArray(displayData.days) &&
-						displayData.days.map((day, index) => (
+					{data &&
+						Array.isArray(data.days) &&
+						data.days.map((day, index) => (
 							<div key={index} className="w-full flex flex-col items-center justify-end h-full">
 								<div
 									className="w-full rounded-t-xs transition-all bg-vscode-button-background"
@@ -193,22 +158,22 @@ export const UsagePreview = ({ onViewDetails }: UsagePreviewProps) => {
 				</div>
 
 				{/* Stats text */}
-				<div className="flex flex-col justify-between text-sm min-[450px]:flex-row min-[450px]:items-center">
+				<div className="flex flex-col justify-between text-sm min-[400px]:flex-row min-[450px]:items-center">
 					<span className="flex items-center gap-1 text-vscode-descriptionForeground">
-						{t("cloud:usageStats.pastDays", { count: displayData.days.length })}
+						{t("cloud:usageStats.pastDays", { count: data.days.length })}
 					</span>
 					<span className="text-vscode-foreground">
-						{displayData.totals.tasks} tasks · {formatTokenCount(displayData.totals.tokens)} tokens ·{" "}
-						{formatCost(displayData.totals.cost)}
+						{data.totals.tasks} tasks · {formatTokenCount(data.totals.tokens)} tokens ·{" "}
+						{formatCost(data.totals.cost)}
 					</span>
 				</div>
 			</div>
 
 			{/* Hover overlay */}
-			<div className="absolute inset-0 bg-vscode-editor-background/95 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+			<div className="absolute inset-0 bg-vscode-editor-background/85 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
 				<div className="flex items-center gap-2 text-vscode-foreground">
 					<span>{t("cloud:usageStats.seeMoreStats")}</span>
-					<SquareArrowOutUpRight className="w-4 h-4" />
+					<SquareArrowOutUpRight className="size-3" />
 				</div>
 			</div>
 		</div>

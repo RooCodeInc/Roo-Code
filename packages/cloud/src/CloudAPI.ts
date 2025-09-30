@@ -77,9 +77,7 @@ export class CloudAPI {
 			}
 
 			// Log before attempting to read the body
-			this.log(`[CloudAPI] Reading response body for ${endpoint}`)
 			const data = await response.json()
-			this.log(`[CloudAPI] Successfully read response body for ${endpoint}`)
 
 			if (parseResponse) {
 				return parseResponse(data)
@@ -109,22 +107,14 @@ export class CloudAPI {
 		let responseBody: unknown
 
 		try {
-			// Clone the response before reading to avoid "Body has already been read" error
-			this.log(`[CloudAPI] Handling error response for ${endpoint}, status: ${response.status}`)
-
-			// Read the body as text first, then try to parse as JSON
 			const bodyText = await response.text()
-			this.log(`[CloudAPI] Error response body text: ${bodyText}`)
 
 			try {
 				responseBody = JSON.parse(bodyText)
-				this.log(`[CloudAPI] Parsed error response as JSON:`, responseBody)
 			} catch {
 				responseBody = bodyText
-				this.log(`[CloudAPI] Error response is plain text: ${bodyText}`)
 			}
-		} catch (error) {
-			this.log(`[CloudAPI] Failed to read error response body: ${error}`)
+		} catch (_error) {
 			responseBody = "Failed to read error response"
 		}
 
@@ -146,15 +136,12 @@ export class CloudAPI {
 	}
 
 	async shareTask(taskId: string, visibility: ShareVisibility = "organization"): Promise<ShareResponse> {
-		this.log(`[CloudAPI] Sharing task ${taskId} with visibility: ${visibility}`)
-
 		const response = await this.request("/api/extension/share", {
 			method: "POST",
 			body: JSON.stringify({ taskId, visibility }),
 			parseResponse: (data) => shareResponseSchema.parse(data),
 		})
 
-		this.log("[CloudAPI] Share response:", response)
 		return response
 	}
 
@@ -173,22 +160,12 @@ export class CloudAPI {
 	}
 
 	async getUsagePreview(): Promise<UsageStats> {
-		this.log("[CloudAPI] Fetching usage preview - starting request")
-
-		try {
-			const response = await this.request("/api/analytics/usage/daily?period=7&format=array", {
-				method: "GET",
-				parseResponse: (data) => {
-					this.log("[CloudAPI] Parsing usage preview response data:", data)
-					return usageStatsSchema.parse(data)
-				},
-			})
-
-			this.log("[CloudAPI] Usage preview response successfully received:", response)
-			return response
-		} catch (error) {
-			this.log("[CloudAPI] Error fetching usage preview:", error)
-			throw error
-		}
+		const response = await this.request("/api/analytics/usage/daily?period=7", {
+			method: "GET",
+			parseResponse: (data) => {
+				return usageStatsSchema.parse(data)
+			},
+		})
+		return response
 	}
 }

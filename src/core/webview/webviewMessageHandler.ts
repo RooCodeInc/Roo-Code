@@ -3112,8 +3112,6 @@ export const webviewMessageHandler = async (
 		}
 		case "getUsagePreview": {
 			try {
-				provider.log("[webviewMessageHandler] Received getUsagePreview request")
-
 				// Get the CloudAPI instance and fetch usage preview
 				const cloudApi = CloudService.instance.cloudAPI
 				if (!cloudApi) {
@@ -3128,12 +3126,7 @@ export const webviewMessageHandler = async (
 				}
 
 				// Fetch usage preview data
-				provider.log("[webviewMessageHandler] Calling cloudApi.getUsagePreview()")
 				const rawUsageData = await cloudApi.getUsagePreview()
-				provider.log(`[webviewMessageHandler] Raw API response structure: ${JSON.stringify(rawUsageData)}`)
-				provider.log(
-					`[webviewMessageHandler] Raw API response has properties: ${Object.keys(rawUsageData).join(", ")}`,
-				)
 
 				// Transform the data to match UI expectations
 				// The API returns data with separate arrays, but UI expects an array of day objects
@@ -3151,9 +3144,6 @@ export const webviewMessageHandler = async (
 						cost: 0,
 					},
 				}
-
-				provider.log(`[webviewMessageHandler] Transformed data for UI: ${JSON.stringify(transformedData)}`)
-				provider.log(`[webviewMessageHandler] Transformed data has ${transformedData.days.length} days`)
 
 				// Send the transformed data back to the webview
 				await provider.postMessageToWebview({
