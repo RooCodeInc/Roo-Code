@@ -6,6 +6,25 @@ import { getRooCodeApiUrl } from "./config.js"
 import { getUserAgent } from "./utils.js"
 import { AuthenticationError, CloudAPIError, NetworkError, TaskNotFoundError } from "./errors.js"
 
+// Usage stats schemas
+const usageStatsSchema = z.object({
+	success: z.boolean(),
+	data: z.object({
+		dates: z.array(z.string()), // Array of date strings
+		tasks: z.array(z.number()), // Array of task counts
+		tokens: z.array(z.number()), // Array of token counts
+		costs: z.array(z.number()), // Array of costs in USD
+		totals: z.object({
+			tasks: z.number(),
+			tokens: z.number(),
+			cost: z.number(), // Total cost in USD
+		}),
+	}),
+	period: z.number(), // Period in days (e.g., 30)
+})
+
+export type UsageStats = z.infer<typeof usageStatsSchema>
+
 interface CloudAPIRequestOptions extends Omit<RequestInit, "headers"> {
 	timeout?: number
 	headers?: Record<string, string>
@@ -53,10 +72,14 @@ export class CloudAPI {
 			})
 
 			if (!response.ok) {
+				this.log(`[CloudAPI] Request to ${endpoint} failed with status ${response.status}`)
 				await this.handleErrorResponse(response, endpoint)
 			}
 
+			// Log before attempting to read the body
+			this.log(`[CloudAPI] Reading response body for ${endpoint}`)
 			const data = await response.json()
+			this.log(`[CloudAPI] Successfully read response body for ${endpoint}`)
 
 			if (parseResponse) {
 				return parseResponse(data)
@@ -86,9 +109,23 @@ export class CloudAPI {
 		let responseBody: unknown
 
 		try {
-			responseBody = await response.json()
-		} catch {
-			responseBody = await response.text()
+			// Clone the response before reading to avoid "Body has already been read" error
+			this.log(`[CloudAPI] Handling error response for ${endpoint}, status: ${response.status}`)
+
+			// Read the body as text first, then try to parse as JSON
+			const bodyText = await response.text()
+			this.log(`[CloudAPI] Error response body text: ${bodyText}`)
+
+			try {
+				responseBody = JSON.parse(bodyText)
+				this.log(`[CloudAPI] Parsed error response as JSON:`, responseBody)
+			} catch {
+				responseBody = bodyText
+				this.log(`[CloudAPI] Error response is plain text: ${bodyText}`)
+			}
+		} catch (error) {
+			this.log(`[CloudAPI] Failed to read error response body: ${error}`)
+			responseBody = "Failed to read error response"
 		}
 
 		switch (response.status) {
@@ -133,5 +170,25 @@ export class CloudAPI {
 					})
 					.parse(data),
 		})
+	}
+
+	async getUsagePreview(): Promise<UsageStats> {
+		this.log("[CloudAPI] Fetching usage preview - starting request")
+
+		try {
+			const response = await this.request("/api/analytics/usage/daily?period=7&format=array", {
+				method: "GET",
+				parseResponse: (data) => {
+					this.log("[CloudAPI] Parsing usage preview response data:", data)
+					return usageStatsSchema.parse(data)
+				},
+			})
+
+			this.log("[CloudAPI] Usage preview response successfully received:", response)
+			return response
+		} catch (error) {
+			this.log("[CloudAPI] Error fetching usage preview:", error)
+			throw error
+		}
 	}
 }

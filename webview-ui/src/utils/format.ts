@@ -26,6 +26,15 @@ export const formatDate = (timestamp: number) => {
 	})
 }
 
+export const formatDateShort = (timestamp: number) => {
+	const date = new Date(timestamp)
+	const locale = i18next.language || "en"
+	return date.toLocaleDateString(locale, {
+		month: "numeric",
+		day: "numeric",
+	})
+}
+
 export const formatTimeAgo = (timestamp: number) => {
 	const now = Date.now()
 	const diff = now - timestamp

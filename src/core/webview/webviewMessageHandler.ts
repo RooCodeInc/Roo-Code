@@ -3110,5 +3110,73 @@ export const webviewMessageHandler = async (
 			})
 			break
 		}
+		case "getUsagePreview": {
+			try {
+				provider.log("[webviewMessageHandler] Received getUsagePreview request")
+
+				// Get the CloudAPI instance and fetch usage preview
+				const cloudApi = CloudService.instance.cloudAPI
+				if (!cloudApi) {
+					// User is not authenticated
+					provider.log("[webviewMessageHandler] User not authenticated for usage preview")
+					await provider.postMessageToWebview({
+						type: "usagePreviewData",
+						error: "Authentication required",
+						data: null,
+					})
+					break
+				}
+
+				// Fetch usage preview data
+				provider.log("[webviewMessageHandler] Calling cloudApi.getUsagePreview()")
+				const rawUsageData = await cloudApi.getUsagePreview()
+				provider.log(`[webviewMessageHandler] Raw API response structure: ${JSON.stringify(rawUsageData)}`)
+				provider.log(
+					`[webviewMessageHandler] Raw API response has properties: ${Object.keys(rawUsageData).join(", ")}`,
+				)
+
+				// Transform the data to match UI expectations
+				// The API returns data with separate arrays, but UI expects an array of day objects
+				const transformedData = {
+					days:
+						rawUsageData.data?.dates?.map((date: string, index: number) => ({
+							date: date,
+							taskCount: rawUsageData.data.tasks[index] || 0,
+							tokenCount: rawUsageData.data.tokens[index] || 0,
+							cost: rawUsageData.data.costs[index] || 0,
+						})) || [],
+					totals: rawUsageData.data?.totals || {
+						tasks: 0,
+						tokens: 0,
+						cost: 0,
+					},
+				}
+
+				provider.log(`[webviewMessageHandler] Transformed data for UI: ${JSON.stringify(transformedData)}`)
+				provider.log(`[webviewMessageHandler] Transformed data has ${transformedData.days.length} days`)
+
+				// Send the transformed data back to the webview
+				await provider.postMessageToWebview({
+					type: "usagePreviewData",
+					data: transformedData,
+					error: undefined,
+				})
+			} catch (error) {
+				provider.log(
+					`[webviewMessageHandler] Failed to fetch usage preview: ${error instanceof Error ? error.message : String(error)}`,
+				)
+				provider.log(
+					`[webviewMessageHandler] Error stack trace: ${error instanceof Error ? error.stack : "No stack trace"}`,
+				)
+
+				// Send error back to webview
+				await provider.postMessageToWebview({
+					type: "usagePreviewData",
+					error: error instanceof Error ? error.message : "Failed to load usage data",
+					data: null,
+				})
+			}
+			break
+		}
 	}
 }
