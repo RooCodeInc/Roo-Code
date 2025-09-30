@@ -32,6 +32,18 @@ export const internationalZAiModels = {
 		description:
 			"GLM-4.5-Air is the lightweight version of GLM-4.5. It balances performance and cost-effectiveness, and can flexibly switch to hybrid thinking models.",
 	},
+	"glm-4.5v": {
+		maxTokens: 16_384,
+		contextWindow: 64_000,
+		supportsImages: true,
+		supportsPromptCache: true,
+		inputPrice: 0.6,
+		outputPrice: 1.8,
+		cacheWritesPrice: 0,
+		cacheReadsPrice: 0.11,
+		description:
+			"GLM-4.5V is Zhipu's  new generation of visual reasoning models based on the MOE architecture.",
+	},
 	"glm-4.6": {
 		maxTokens: 98_304,
 		contextWindow: 204_800,
@@ -43,7 +55,7 @@ export const internationalZAiModels = {
 		cacheReadsPrice: 0.11,
 		description:
 			"GLM-4.6 is Zhipu's newest model with an extended context window of up to 200k tokens, providing enhanced capabilities for processing longer documents and conversations.",
-	},
+	}
 } as const satisfies Record<string, ModelInfo>
 
 export type MainlandZAiModelId = keyof typeof mainlandZAiModels
@@ -113,6 +125,38 @@ export const mainlandZAiModels = {
 			},
 		],
 	},
+	"glm-4.5v": {
+		maxTokens: 16_384,
+		contextWindow: 64_000,
+		supportsImages: true,
+		supportsPromptCache: true,
+		inputPrice: 0.6,
+		outputPrice: 1.8,
+		cacheWritesPrice: 0,
+		cacheReadsPrice: 0.11,
+		description:
+			"GLM-4.5V is Zhipu's  new generation of visual reasoning models based on the MOE architecture.",
+		tiers: [
+			{
+				contextWindow: 32_000,
+				inputPrice: 0.21,
+				outputPrice: 0.4,
+				cacheReadsPrice: 0.06
+			},
+			{
+				contextWindow: 64_000,
+				inputPrice: 0.6,
+				outputPrice: 1.8,
+				cacheReadsPrice: 0.11
+			},
+			{
+				contextWindow: Infinity,
+				inputPrice: 0.6,
+				outputPrice: 1.8,
+				cacheReadsPrice: 0.11
+			},
+		],
+	},
 	"glm-4.6": {
 		maxTokens: 98_304,
 		contextWindow: 204_800,
@@ -150,7 +194,7 @@ export const mainlandZAiModels = {
 				cacheReadsPrice: 0.057,
 			},
 		],
-	},
+	}
 } as const satisfies Record<string, ModelInfo>
 
 export const ZAI_DEFAULT_TEMPERATURE = 0
