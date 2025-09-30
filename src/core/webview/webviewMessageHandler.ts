@@ -3130,14 +3130,19 @@ export const webviewMessageHandler = async (
 
 				// Transform the data to match UI expectations
 				// The API returns data with separate arrays, but UI expects an array of day objects
+				const dates = rawUsageData.data?.dates ?? []
+				const tasks = rawUsageData.data?.tasks ?? []
+				const tokens = rawUsageData.data?.tokens ?? []
+				const costs = rawUsageData.data?.costs ?? []
+				const len = Math.min(dates.length, tasks.length, tokens.length, costs.length)
+
 				const transformedData = {
-					days:
-						rawUsageData.data?.dates?.map((date: string, index: number) => ({
-							date: date,
-							taskCount: rawUsageData.data.tasks[index] || 0,
-							tokenCount: rawUsageData.data.tokens[index] || 0,
-							cost: rawUsageData.data.costs[index] || 0,
-						})) || [],
+					days: Array.from({ length: len }).map((_, index) => ({
+						date: dates[index] ?? "",
+						taskCount: tasks[index] ?? 0,
+						tokenCount: tokens[index] ?? 0,
+						cost: costs[index] ?? 0,
+					})),
 					totals: rawUsageData.data?.totals || {
 						tasks: 0,
 						tokens: 0,

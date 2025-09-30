@@ -55,10 +55,16 @@ export const UsagePreview = ({ onViewDetails }: UsagePreviewProps) => {
 		vscode.postMessage({ type: "getUsagePreview" })
 
 		// Listen for the response
+		let timeoutId: ReturnType<typeof setTimeout> | null = null
 		const handleMessage = (event: MessageEvent) => {
 			const message = event.data
 
 			if (message.type === "usagePreviewData") {
+				// Clear timeout on success/error to avoid stale timeout flipping UI into error
+				if (timeoutId) {
+					clearTimeout(timeoutId)
+				}
+
 				if (message.error) {
 					setError(message.error)
 				} else if (message.data) {
@@ -76,7 +82,7 @@ export const UsagePreview = ({ onViewDetails }: UsagePreviewProps) => {
 		window.addEventListener("message", handleMessage)
 
 		// Clean up listener after 10 seconds (timeout)
-		const timeout = setTimeout(() => {
+		timeoutId = setTimeout(() => {
 			if (isLoading) {
 				setError(t("cloud:usagePreview.failedToLoad"))
 				setIsLoading(false)
@@ -84,15 +90,19 @@ export const UsagePreview = ({ onViewDetails }: UsagePreviewProps) => {
 		}, 10000)
 
 		return () => {
-			clearTimeout(timeout)
+			if (timeoutId) {
+				clearTimeout(timeoutId)
+			}
 			window.removeEventListener("message", handleMessage)
 		}
 	}, []) // eslint-disable-line react-hooks/exhaustive-deps
 
 	const getBarHeight = (cost: number): number => {
 		if (!data || !data.days || data.days.length === 0) return 1
-		const maxCost = ~~Math.max(...data.days.map((d) => d.cost)) // Avoid NaN
-		return Math.max(1, ~~(cost / maxCost) * 100) // Enforce minimum height for visibility
+		const maxCost = Math.max(...data.days.map((d) => d.cost))
+		if (!Number.isFinite(maxCost) || maxCost <= 0) return 1
+		// Compute percentage first, then round; enforce minimum height for visibility
+		return Math.max(1, Math.round((cost / maxCost) * 100))
 	}
 
 	// Retry loading
