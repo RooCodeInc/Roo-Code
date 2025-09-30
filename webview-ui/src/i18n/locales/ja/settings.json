@@ -223,6 +223,7 @@
 		"description": "異なるAPI設定を保存して、プロバイダーと設定をすばやく切り替えることができます。",
 		"apiProvider": "APIプロバイダー",
 		"model": "モデル",
+		"modelUnavailable": "利用不可",
 		"nameEmpty": "名前を空にすることはできません",
 		"nameExists": "この名前のプロファイルは既に存在します",
 		"deleteProfile": "プロファイルを削除",
@@ -795,7 +796,8 @@
 		"label": "モデル",
 		"searchPlaceholder": "検索",
 		"noMatchFound": "一致するものが見つかりません",
-		"useCustomModel": "カスタムを使用: {{modelId}}"
+		"useCustomModel": "カスタムを使用: {{modelId}}",
+		"unavailable": "利用不可"
 	},
 	"footer": {
 		"feedback": "質問やフィードバックがある場合は、<githubLink>github.com/RooCodeInc/Roo-Code</githubLink>で問題を開くか、<redditLink>reddit.com/r/RooCode</redditLink>や<discordLink>discord.gg/roocode</discordLink>に参加してください",

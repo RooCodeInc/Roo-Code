@@ -223,6 +223,7 @@
 		"description": "Сохраняйте различные конфигурации API для быстрого переключения между провайдерами и настройками.",
 		"apiProvider": "Провайдер API",
 		"model": "Модель",
+		"modelUnavailable": "недоступна",
 		"nameEmpty": "Имя не может быть пустым",
 		"nameExists": "Профиль с таким именем уже существует",
 		"deleteProfile": "Удалить профиль",
@@ -795,7 +796,8 @@
 		"label": "Модель",
 		"searchPlaceholder": "Поиск",
 		"noMatchFound": "Совпадений не найдено",
-		"useCustomModel": "Использовать пользовательскую: {{modelId}}"
+		"useCustomModel": "Использовать пользовательскую: {{modelId}}",
+		"unavailable": "недоступна"
 	},
 	"footer": {
 		"feedback": "Если у вас есть вопросы или предложения, откройте issue на <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> или присоединяйтесь к <redditLink>reddit.com/r/RooCode</redditLink> или <discordLink>discord.gg/roocode</discordLink>",
