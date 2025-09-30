@@ -42,7 +42,7 @@ export const internationalZAiModels = {
 		cacheWritesPrice: 0,
 		cacheReadsPrice: 0.11,
 		description:
-			"GLM-4.5V is Zhipu's  new generation of visual reasoning models based on the MOE architecture.",
+			"GLM-4.5V is Zhipu's new generation of visual reasoning models based on the MOE architecture.",
 	},
 	"glm-4.6": {
 		maxTokens: 98_304,
@@ -135,7 +135,7 @@ export const mainlandZAiModels = {
 		cacheWritesPrice: 0,
 		cacheReadsPrice: 0.11,
 		description:
-			"GLM-4.5V is Zhipu's  new generation of visual reasoning models based on the MOE architecture.",
+			"GLM-4.5V is Zhipu's new generation of visual reasoning models based on the MOE architecture.",
 		tiers: [
 			{
 				contextWindow: 32_000,
