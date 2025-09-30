@@ -1,28 +1,35 @@
 import { ioIntelligenceDefaultModelId, ioIntelligenceModels, type IOIntelligenceModelId } from "@roo-code/types"
 import { Anthropic } from "@anthropic-ai/sdk"
+import OpenAI from "openai"
 
 import type { ApiHandlerOptions, ModelRecord } from "../../shared/api"
-import { BaseOpenAiCompatibleProvider } from "./base-openai-compatible-provider"
+import { BaseProvider } from "./base-provider"
 import { getModels } from "./fetchers/modelCache"
-import type { ApiHandlerCreateMessageMetadata } from "../index"
+import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { ApiStream } from "../transform/stream"
+import { convertToOpenAiMessages } from "../transform/openai-format"
+import { getModelParams } from "../transform/model-params"
+import { DEFAULT_HEADERS } from "./constants"
+import { handleOpenAIError } from "./utils/openai-error-handler"
 
-export class IOIntelligenceHandler extends BaseOpenAiCompatibleProvider<IOIntelligenceModelId> {
+export class IOIntelligenceHandler extends BaseProvider implements SingleCompletionHandler {
+	protected options: ApiHandlerOptions
+	private client: OpenAI
 	protected models: ModelRecord = {}
+	private readonly providerName = "IO Intelligence"
 
 	constructor(options: ApiHandlerOptions) {
+		super()
+		this.options = options
+
 		if (!options.ioIntelligenceApiKey) {
 			throw new Error("IO Intelligence API key is required")
 		}
 
-		super({
-			...options,
-			providerName: "IO Intelligence",
+		this.client = new OpenAI({
 			baseURL: "https://api.intelligence.io.solutions/api/v1",
-			defaultProviderModelId: ioIntelligenceDefaultModelId,
-			providerModels: ioIntelligenceModels,
-			defaultTemperature: 0.7,
 			apiKey: options.ioIntelligenceApiKey,
+			defaultHeaders: DEFAULT_HEADERS,
 		})
 	}
 
@@ -44,9 +51,68 @@ export class IOIntelligenceHandler extends BaseOpenAiCompatibleProvider<IOIntell
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
-		await this.fetchModel()
+		const model = await this.fetchModel()
 
-		yield* super.createMessage(systemPrompt, messages, metadata)
+		const { id: modelId, maxTokens, temperature } = model
+
+		// Convert Anthropic messages to OpenAI format
+		const openAiMessages: OpenAI.Chat.ChatCompletionMessageParam[] = [
+			{ role: "system", content: systemPrompt },
+			...convertToOpenAiMessages(messages),
+		]
+
+		const completionParams: OpenAI.Chat.ChatCompletionCreateParams = {
+			model: modelId,
+			...(maxTokens && maxTokens > 0 && { max_tokens: maxTokens }),
+			temperature: temperature ?? 0.7,
+			messages: openAiMessages,
+			stream: true,
+			stream_options: { include_usage: true },
+		}
+
+		let stream: AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>
+		try {
+			stream = await this.client.chat.completions.create(completionParams)
+		} catch (error) {
+			throw handleOpenAIError(error, this.providerName)
+		}
+
+		let lastUsage: OpenAI.Completions.CompletionUsage | undefined = undefined
+
+		for await (const chunk of stream) {
+			const delta = chunk.choices[0]?.delta
+
+			if (delta?.content) {
+				yield { type: "text", text: delta.content }
+			}
+
+			if (chunk.usage) {
+				lastUsage = chunk.usage
+			}
+		}
+
+		if (lastUsage) {
+			yield {
+				type: "usage",
+				inputTokens: lastUsage.prompt_tokens || 0,
+				outputTokens: lastUsage.completion_tokens || 0,
+			}
+		}
+	}
+
+	async completePrompt(prompt: string): Promise<string> {
+		const { id: modelId } = await this.fetchModel()
+
+		try {
+			const response = await this.client.chat.completions.create({
+				model: modelId,
+				messages: [{ role: "user", content: prompt }],
+			})
+
+			return response.choices[0]?.message.content || ""
+		} catch (error) {
+			throw handleOpenAIError(error, this.providerName)
+		}
 	}
 
 	override getModel() {
@@ -55,23 +121,27 @@ export class IOIntelligenceHandler extends BaseOpenAiCompatibleProvider<IOIntell
 
 		if (!modelInfo) {
 			modelInfo =
-				this.providerModels[modelId as IOIntelligenceModelId] ??
-				this.providerModels[ioIntelligenceDefaultModelId]
+				ioIntelligenceModels[modelId as IOIntelligenceModelId] ??
+				ioIntelligenceModels[ioIntelligenceDefaultModelId]
 		}
 
-		if (modelInfo) {
-			return { id: modelId as IOIntelligenceModelId, info: modelInfo }
-		}
-
-		// Return the requested model ID even if not found, with fallback info.
-		return {
-			id: modelId as IOIntelligenceModelId,
-			info: {
+		if (!modelInfo) {
+			// Return the requested model ID even if not found, with fallback info
+			modelInfo = {
 				maxTokens: 8192,
 				contextWindow: 128000,
 				supportsImages: false,
 				supportsPromptCache: false,
-			},
+			}
 		}
+
+		const params = getModelParams({
+			format: "openai",
+			modelId,
+			model: modelInfo,
+			settings: this.options,
+		})
+
+		return { id: modelId, info: modelInfo, ...params }
 	}
 }
