@@ -446,11 +446,6 @@
 		"sort": "Urutkan",
 		"alphabetical": "A–Z",
 		"custom": "Kustom",
-		"reorder": "Susun ulang…",
-		"dragToReorder": "Seret untuk menyusun ulang konfigurasi",
-		"keyboardNavigation": "Gunakan tombol panah untuk navigasi, Alt/Option + tombol panah untuk menyusun ulang",
-		"cancel": "Batal",
-		"done": "Selesai",
 		"editConfigurations": "Edit konfigurasi"
 	}
 }

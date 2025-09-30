@@ -440,11 +440,6 @@
 		"sort": "Sorteren",
 		"alphabetical": "A–Z",
 		"custom": "Aangepast",
-		"reorder": "Herordenen…",
-		"dragToReorder": "Slepen om configuraties te herordenen",
-		"keyboardNavigation": "Gebruik de pijltoetsen om te navigeren, Alt/Option + pijltoetsen om te herordenen",
-		"cancel": "Annuleren",
-		"done": "Klaar",
 		"editConfigurations": "Configuraties bewerken"
 	}
 }

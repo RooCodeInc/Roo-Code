@@ -440,11 +440,6 @@
 		"sort": "Ordenar",
 		"alphabetical": "A–Z",
 		"custom": "Personalizado",
-		"reorder": "Reordenar…",
-		"dragToReorder": "Arraste para reordenar configurações",
-		"keyboardNavigation": "Use as setas direcionais para navegar, Alt/Option + setas para reordenar",
-		"cancel": "Cancelar",
-		"done": "Concluído",
 		"editConfigurations": "Editar configurações"
 	}
 }

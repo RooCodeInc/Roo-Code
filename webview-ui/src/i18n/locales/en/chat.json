@@ -426,11 +426,6 @@
 		"sort": "Sort",
 		"alphabetical": "A–Z",
 		"custom": "Custom",
-		"reorder": "Reorder…",
-		"dragToReorder": "Drag to reorder configurations",
-		"keyboardNavigation": "Use arrow keys to navigate, Alt/Option + arrow keys to reorder",
-		"cancel": "Cancel",
-		"done": "Done",
 		"editConfigurations": "Edit configurations"
 	}
 }

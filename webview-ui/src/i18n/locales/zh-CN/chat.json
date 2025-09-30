@@ -441,11 +441,6 @@
 		"sort": "排序",
 		"alphabetical": "A–Z",
 		"custom": "自定义",
-		"reorder": "重新排序…",
-		"dragToReorder": "拖拽以重新排序配置",
-		"keyboardNavigation": "使用方向键导航，Alt/Option + 方向键重新排序",
-		"cancel": "取消",
-		"done": "完成",
 		"editConfigurations": "编辑配置"
 	}
 }
