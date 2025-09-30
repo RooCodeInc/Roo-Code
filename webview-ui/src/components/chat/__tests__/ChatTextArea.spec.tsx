@@ -1068,8 +1068,12 @@ describe("ChatTextArea", () => {
 				/>,
 			)
 
-			// Find the send button by its icon
-			const sendButton = container.querySelector('button[aria-label="Send message"]')
+			// Find the send button by looking for the button with SendHorizontal icon
+			const buttons = container.querySelectorAll("button")
+			const sendButton = Array.from(buttons).find(
+				(button) => button.querySelector(".lucide-send-horizontal") !== null,
+			)
+
 			expect(sendButton).toBeInTheDocument()
 
 			// Check that the button is visible (has opacity-100 class when content exists)
@@ -1082,8 +1086,12 @@ describe("ChatTextArea", () => {
 		it("should hide send button when there is no text and no images", () => {
 			const { container } = render(<ChatTextArea {...defaultProps} inputValue="" selectedImages={[]} />)
 
-			// Find the send button by its icon
-			const sendButton = container.querySelector('button[aria-label="Send message"]')
+			// Find the send button by looking for the button with SendHorizontal icon
+			const buttons = container.querySelectorAll("button")
+			const sendButton = Array.from(buttons).find(
+				(button) => button.querySelector(".lucide-send-horizontal") !== null,
+			)
+
 			expect(sendButton).toBeInTheDocument()
 
 			// Check that the button is hidden (has opacity-0 class when no content)
@@ -1096,8 +1104,12 @@ describe("ChatTextArea", () => {
 		it("should show send button when there is text but no images", () => {
 			const { container } = render(<ChatTextArea {...defaultProps} inputValue="Some text" selectedImages={[]} />)
 
-			// Find the send button by its icon
-			const sendButton = container.querySelector('button[aria-label="Send message"]')
+			// Find the send button by looking for the button with SendHorizontal icon
+			const buttons = container.querySelectorAll("button")
+			const sendButton = Array.from(buttons).find(
+				(button) => button.querySelector(".lucide-send-horizontal") !== null,
+			)
+
 			expect(sendButton).toBeInTheDocument()
 
 			// Check that the button is visible
@@ -1114,8 +1126,12 @@ describe("ChatTextArea", () => {
 				/>,
 			)
 
-			// Find the send button by its icon
-			const sendButton = container.querySelector('button[aria-label="Send message"]')
+			// Find the send button by looking for the button with SendHorizontal icon
+			const buttons = container.querySelectorAll("button")
+			const sendButton = Array.from(buttons).find(
+				(button) => button.querySelector(".lucide-send-horizontal") !== null,
+			)
+
 			expect(sendButton).toBeInTheDocument()
 
 			// Check that the button is visible
