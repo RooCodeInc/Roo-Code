@@ -105,8 +105,9 @@ export const UsagePreview = ({ onViewDetails }: UsagePreviewProps) => {
 	}, []) // eslint-disable-line react-hooks/exhaustive-deps
 
 	const getBarHeight = (cost: number): number => {
+		if (!data || !data.days || data.days.length === 0) return 1
 		const maxCost = Math.max(...data.days.map((d) => d.cost))
-		return Math.max(1, ~~(cost / maxCost) * 100) // Avoid NaN and enforce minimum 10% height for visibility
+		return Math.max(1, ~~(cost / maxCost) * 100) // Avoid NaN and enforce minimum height for visibility
 	}
 
 	// Retry loading

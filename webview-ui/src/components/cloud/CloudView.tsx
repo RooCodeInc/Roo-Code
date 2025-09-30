@@ -274,7 +274,7 @@ export const CloudView = ({ userInfo, isAuthenticated, cloudApiUrl, onDone, orga
 
 							{/* Usage Stats Chart Section */}
 							<div className="mt-4 mb-4 px-4">
-								<UsagePreview cloudApiUrl={cloudApiUrl} onViewDetails={handleViewUsageStats} />
+								<UsagePreview onViewDetails={handleViewUsageStats} />
 							</div>
 
 							<div className="flex flex-col gap-2 mt-4 px-4">
