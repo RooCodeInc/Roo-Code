@@ -129,10 +129,7 @@ describe("IOIntelligenceHandler", () => {
 	it("should initialize with correct configuration", () => {
 		expect(handler).toBeInstanceOf(IOIntelligenceHandler)
 		expect(handler["client"]).toBeDefined()
-		expect(handler["options"]).toEqual({
-			...mockOptions,
-			apiKey: mockOptions.ioIntelligenceApiKey,
-		})
+		expect(handler["options"]).toEqual(mockOptions)
 	})
 
 	it("should throw error when API key is missing", () => {
