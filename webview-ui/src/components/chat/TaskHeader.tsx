@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next"
 import { useCloudUpsell } from "@src/hooks/useCloudUpsell"
 import { CloudUpsellDialog } from "@src/components/cloud/CloudUpsellDialog"
 import DismissibleUpsell from "@src/components/common/DismissibleUpsell"
-import { FoldVertical, ChevronUp, ChevronDown } from "lucide-react"
+import { FoldVertical, ChevronUp, ChevronDown, ChartColumn } from "lucide-react"
 import prettyBytes from "pretty-bytes"
 
 import type { ClineMessage } from "@roo-code/types"
@@ -50,7 +50,7 @@ const TaskHeader = ({
 	todos,
 }: TaskHeaderProps) => {
 	const { t } = useTranslation()
-	const { apiConfiguration, currentTaskItem, clineMessages } = useExtensionState()
+	const { apiConfiguration, currentTaskItem, clineMessages, cloudIsAuthenticated } = useExtensionState()
 	const { id: modelId, info: model } = useSelectedModel(apiConfiguration)
 	const [isTaskExpanded, setIsTaskExpanded] = useState(false)
 	const [showLongRunningTaskMessage, setShowLongRunningTaskMessage] = useState(false)
@@ -302,6 +302,24 @@ const TaskHeader = ({
 											</th>
 											<td className="align-top">
 												<span>${totalCost?.toFixed(2)}</span>
+												{cloudIsAuthenticated ? (
+													<StandardTooltip content={t("chat:apiRequest.viewTokenUsage")}>
+														<ChartColumn
+															className="inline size-3.5 -mt-0.5 ml-2 text-vscode-textLink-foreground cursor-pointer hover:text-vscode-textLink-activeForeground transition-colors"
+															onClick={(e) => {
+																e.stopPropagation()
+																import("@src/utils/vscode").then(({ vscode }) => {
+																	vscode.postMessage({
+																		type: "switchTab",
+																		tab: "cloud",
+																	})
+																})
+															}}
+														/>
+													</StandardTooltip>
+												) : (
+													<ChartColumn className="inline size-3.5 -mt-0.5 ml-2 text-vscode-textLink-foreground" />
+												)}
 											</td>
 										</tr>
 									)}
