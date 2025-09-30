@@ -148,7 +148,10 @@ export const CloudView = ({ userInfo, isAuthenticated, cloudApiUrl, onDone, orga
 
 	const handleViewUsageStats = () => {
 		const baseUrl = cloudApiUrl || PRODUCTION_ROO_CODE_API_URL
-		vscode.postMessage({ type: "openExternal", url: `${baseUrl}/usage` })
+		vscode.postMessage({
+			type: "openExternal",
+			url: `${baseUrl}/usage?utm_source=extension&utm_medium=stats_preview&utm_campaign=stats_preview`,
+		})
 	}
 
 	const handleRemoteControlToggle = () => {
