@@ -88,7 +88,7 @@ describe("useZgsmUserInfo", () => {
 			expect(result.current.userInfo).toEqual({
 				id: "user123",
 				name: "testuser",
-				picture: undefined,
+				picture: "https://example.com/avatar.png",
 				email: "test@example.com",
 				phone: "1234567890",
 				organizationName: "Test Org",
