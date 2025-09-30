@@ -1,5 +1,16 @@
 # Costrict Change Log
 
+## [1.6.18]
+
+- Increase context window size for ZGSM provider
+- Add user ID display and improve cloud account handling
+- Enhance error handling with errorCode field in global settings
+- Improve stream cancellation and request handling
+- Enhance commit message generation with i18n support
+- Optimize rate limit retry message handling in UI
+- Sync roocode [last commit](https://github.com/zgsm-ai/costrict/commit/702b269a1bf17e76d856e7a989657417a85eaa42)
+- Fix known issues
+
 ## [1.6.17]
 
 - Enhance rate limit detection and retry logic in API requests
