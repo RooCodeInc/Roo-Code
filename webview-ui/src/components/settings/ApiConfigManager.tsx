@@ -91,11 +91,6 @@ const ApiConfigManager = ({
 		[organizationAllowList],
 	)
 
-	// Get existing config names for validation
-	const existingConfigNames = useMemo(() => {
-		return listApiConfigMeta.map((config) => config.name)
-	}, [listApiConfigMeta])
-
 	const validateName = useCallback(
 		(name: string, isNewProfile: boolean): string | null => {
 			const trimmed = name.trim()
@@ -358,8 +353,8 @@ const ApiConfigManager = ({
 							isFocused={focusedIndex === index}
 							isValid={isProfileValid(config)}
 							isOnlyProfile={isOnlyProfile}
-							existingConfigNames={existingConfigNames}
 							isReorderingMode={isReorderingMode}
+							validateName={validateName}
 							onDragStart={handleDragStart}
 							onDragEnd={handleDragEnd}
 							onDragOver={handleDragOver}

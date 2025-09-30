@@ -1701,7 +1701,6 @@ export const webviewMessageHandler = async (
 			break
 		case "setApiConfigsCustomOrder":
 			if (message.values && Array.isArray(message.values.customOrder)) {
-				// Validate that each item has the required structure
 				const isValidOrder = message.values.customOrder.every(
 					(item: any) =>
 						typeof item === "object" &&
@@ -1713,66 +1712,6 @@ export const webviewMessageHandler = async (
 				if (isValidOrder) {
 					await updateGlobalState("apiConfigsCustomOrder", message.values.customOrder)
 					await provider.postStateToWebview()
-				}
-			}
-			break
-		case "moveApiConfigUp":
-			if (message.text) {
-				const currentOrder = getGlobalState("apiConfigsCustomOrder") || []
-				const pinnedApiConfigs = getGlobalState("pinnedApiConfigs") || {}
-				const isPinned = !!pinnedApiConfigs[message.text]
-
-				// Find the item in the current order
-				const itemIndex = currentOrder.findIndex((item: any) => item.id === message.text)
-
-				if (itemIndex > 0) {
-					// Find previous item with same pinned status
-					const sameTypeItems = currentOrder.filter((item: any) => item.pinned === isPinned)
-					const currentItemInType = sameTypeItems.findIndex((item: any) => item.id === message.text)
-
-					if (currentItemInType > 0) {
-						const newOrder = [...currentOrder]
-						const prevItem = sameTypeItems[currentItemInType - 1]
-						const prevItemIndex = currentOrder.findIndex((item: any) => item.id === prevItem.id)
-
-						// Swap indices
-						const tempIndex = newOrder[itemIndex].index
-						newOrder[itemIndex].index = newOrder[prevItemIndex].index
-						newOrder[prevItemIndex].index = tempIndex
-
-						await updateGlobalState("apiConfigsCustomOrder", newOrder)
-						await provider.postStateToWebview()
-					}
-				}
-			}
-			break
-		case "moveApiConfigDown":
-			if (message.text) {
-				const currentOrder = getGlobalState("apiConfigsCustomOrder") || []
-				const pinnedApiConfigs = getGlobalState("pinnedApiConfigs") || {}
-				const isPinned = !!pinnedApiConfigs[message.text]
-
-				// Find the item in the current order
-				const itemIndex = currentOrder.findIndex((item: any) => item.id === message.text)
-
-				if (itemIndex !== -1 && itemIndex < currentOrder.length - 1) {
-					// Find next item with same pinned status
-					const sameTypeItems = currentOrder.filter((item: any) => item.pinned === isPinned)
-					const currentItemInType = sameTypeItems.findIndex((item: any) => item.id === message.text)
-
-					if (currentItemInType < sameTypeItems.length - 1) {
-						const newOrder = [...currentOrder]
-						const nextItem = sameTypeItems[currentItemInType + 1]
-						const nextItemIndex = currentOrder.findIndex((item: any) => item.id === nextItem.id)
-
-						// Swap indices
-						const tempIndex = newOrder[itemIndex].index
-						newOrder[itemIndex].index = newOrder[nextItemIndex].index
-						newOrder[nextItemIndex].index = tempIndex
-
-						await updateGlobalState("apiConfigsCustomOrder", newOrder)
-						await provider.postStateToWebview()
-					}
 				}
 			}
 			break

@@ -182,8 +182,6 @@ export interface WebviewMessage {
 		| "searchFiles"
 		| "toggleApiConfigPin"
 		| "setApiConfigsCustomOrder"
-		| "moveApiConfigUp"
-		| "moveApiConfigDown"
 		| "setHistoryPreviewCollapsed"
 		| "hasOpenedModeSelector"
 		| "cloudButtonClicked"

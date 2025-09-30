@@ -1,5 +1,4 @@
-import { useState, useMemo, useCallback, useRef } from "react"
-import { useTranslation } from "react-i18next"
+import { useState, useMemo, useCallback } from "react"
 import { Fzf } from "fzf"
 
 import { cn } from "@/lib/utils"
@@ -10,6 +9,84 @@ import { Button } from "@/components/ui"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 
 import { IconButton } from "./IconButton"
+import { useAppTranslation } from "@/i18n/TranslationContext"
+
+interface ConfigItemProps {
+	config: { id: string; name: string; modelId?: string }
+	isPinned: boolean
+	index: number
+	value: string
+	onSelect: (configId: string) => void
+	togglePinnedApiConfig: (id: string) => void
+}
+
+const ConfigItem = ({ config, isPinned, index, value, onSelect, togglePinnedApiConfig }: ConfigItemProps) => {
+	const { t } = useAppTranslation()
+	const isCurrentConfig = config.id === value
+
+	return (
+		<div
+			key={config.id}
+			data-config-item
+			data-config-item-index={index}
+			role="option"
+			aria-selected={isCurrentConfig}
+			aria-label={`${config.name}${config.modelId ? ` - ${config.modelId}` : ""}`}
+			onClick={() => onSelect(config.id)}
+			onKeyDown={(e) => {
+				if (e.key === "Enter" || e.key === " ") {
+					e.preventDefault()
+					onSelect(config.id)
+				}
+			}}
+			className={cn(
+				"px-3 py-1.5 text-sm flex items-center group relative",
+				"cursor-pointer hover:bg-vscode-list-hoverBackground",
+				isCurrentConfig &&
+					"bg-vscode-list-activeSelectionBackground text-vscode-list-activeSelectionForeground",
+			)}>
+			<div className="flex-1 min-w-0 flex items-center gap-1 overflow-hidden">
+				<span className="flex-shrink-0">{config.name}</span>
+				{config.modelId && (
+					<>
+						<span
+							className="text-vscode-descriptionForeground opacity-70 min-w-0 overflow-hidden"
+							style={{ direction: "rtl", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+							{config.modelId}
+						</span>
+					</>
+				)}
+			</div>
+
+			<div className="flex items-center gap-1">
+				{isCurrentConfig && (
+					<div className="size-5 p-1 flex items-center justify-center">
+						<span className="codicon codicon-check text-xs" />
+					</div>
+				)}
+				<StandardTooltip
+					content={isPinned ? t("chat:apiConfigSelector.unpin") : t("chat:apiConfigSelector.pin")}>
+					<Button
+						variant="ghost"
+						size="icon"
+						tabIndex={-1}
+						aria-label={isPinned ? t("chat:apiConfigSelector.unpin") : t("chat:apiConfigSelector.pin")}
+						onClick={(e) => {
+							e.stopPropagation()
+							togglePinnedApiConfig(config.id)
+							vscode.postMessage({ type: "toggleApiConfigPin", text: config.id })
+						}}
+						className={cn("size-5 flex items-center justify-center", {
+							"opacity-0 group-hover:opacity-100": !isPinned && !isCurrentConfig,
+							"bg-accent opacity-100": isPinned,
+						})}>
+						<span className="codicon codicon-pin text-xs opacity-50" />
+					</Button>
+				</StandardTooltip>
+			</div>
+		</div>
+	)
+}
 
 type SortMode = "alphabetical" | "custom"
 
@@ -36,7 +113,7 @@ export const ApiConfigSelector = ({
 	pinnedApiConfigs,
 	togglePinnedApiConfig,
 }: ApiConfigSelectorProps) => {
-	const { t } = useTranslation()
+	const { t } = useAppTranslation()
 	const { apiConfigsCustomOrder: customOrder = [] } = useExtensionState()
 	const [open, setOpen] = useState(false)
 	const [searchValue, setSearchValue] = useState("")
@@ -44,7 +121,6 @@ export const ApiConfigSelector = ({
 	const [sortMode, setSortMode] = useState<SortMode>("alphabetical")
 
 	const portalContainer = useRooPortal("roo-portal")
-	const scrollContainerRef = useRef<HTMLDivElement | null>(null)
 
 	// Sort configs based on sort mode
 	const sortedConfigs = useMemo(() => {
@@ -76,13 +152,8 @@ export const ApiConfigSelector = ({
 			return sortedConfigs
 		}
 
-		const searchableItems = sortedConfigs.map((config) => ({
-			original: config,
-			searchStr: config.name,
-		}))
-
-		const fzf = new Fzf(searchableItems, { selector: (item) => item.searchStr })
-		const matchingItems = fzf.find(searchValue).map((result) => result.item.original)
+		const fzf = new Fzf(sortedConfigs, { selector: (item) => item.name })
+		const matchingItems = fzf.find(searchValue).map((result) => result.item)
 		return matchingItems
 	}, [sortedConfigs, searchValue])
 
@@ -107,88 +178,12 @@ export const ApiConfigSelector = ({
 		setOpen(false)
 	}, [])
 
-	const renderConfigItem = useCallback(
-		(config: { id: string; name: string; modelId?: string }, isPinned: boolean, index: number) => {
-			const isCurrentConfig = config.id === value
-
-			return (
-				<div
-					key={config.id}
-					data-config-item
-					data-config-item-index={index}
-					role="option"
-					aria-selected={isCurrentConfig}
-					aria-label={`${config.name}${config.modelId ? ` - ${config.modelId}` : ""}`}
-					onClick={() => handleSelect(config.id)}
-					onKeyDown={(e) => {
-						if (e.key === "Enter" || e.key === " ") {
-							e.preventDefault()
-							handleSelect(config.id)
-						}
-					}}
-					tabIndex={0}
-					className={cn(
-						"px-3 py-1.5 text-sm flex items-center group relative",
-						"cursor-pointer hover:bg-vscode-list-hoverBackground",
-						isCurrentConfig &&
-							"bg-vscode-list-activeSelectionBackground text-vscode-list-activeSelectionForeground",
-					)}>
-					<div className="flex-1 min-w-0 flex items-center gap-1 overflow-hidden">
-						<span className="flex-shrink-0">{config.name}</span>
-						{config.modelId && (
-							<>
-								<span
-									className="text-vscode-descriptionForeground opacity-70 min-w-0 overflow-hidden"
-									style={{ direction: "rtl", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-									{config.modelId}
-								</span>
-							</>
-						)}
-					</div>
-
-					<div className="flex items-center gap-1">
-						{isCurrentConfig && (
-							<div className="size-5 p-1 flex items-center justify-center">
-								<span className="codicon codicon-check text-xs" />
-							</div>
-						)}
-						<StandardTooltip
-							content={isPinned ? t("chat:apiConfigSelector.unpin") : t("chat:apiConfigSelector.pin")}>
-							<Button
-								variant="ghost"
-								size="icon"
-								tabIndex={-1}
-								aria-label={
-									isPinned ? t("chat:apiConfigSelector.unpin") : t("chat:apiConfigSelector.pin")
-								}
-								onClick={(e) => {
-									e.stopPropagation()
-									togglePinnedApiConfig(config.id)
-									vscode.postMessage({ type: "toggleApiConfigPin", text: config.id })
-								}}
-								className={cn("size-5 flex items-center justify-center", {
-									"opacity-0 group-hover:opacity-100": !isPinned && !isCurrentConfig,
-									"bg-accent opacity-100": isPinned,
-								})}>
-								<span className="codicon codicon-pin text-xs opacity-50" />
-							</Button>
-						</StandardTooltip>
-					</div>
-				</div>
-			)
-		},
-		[value, handleSelect, togglePinnedApiConfig, t],
-	)
-
 	return (
 		<Popover open={open} onOpenChange={setOpen} data-testid="api-config-selector-root">
 			<StandardTooltip content={title}>
 				<PopoverTrigger
 					disabled={disabled}
 					data-testid="dropdown-trigger"
-					aria-label={title}
-					aria-expanded={open}
-					aria-haspopup="listbox"
 					className={cn(
 						"min-w-0 inline-flex items-center relative whitespace-nowrap px-1.5 py-1 text-xs",
 						"bg-transparent border border-[rgba(255,255,255,0.08)] rounded-md text-vscode-foreground",
@@ -223,15 +218,6 @@ export const ApiConfigSelector = ({
 									<span
 										className="codicon codicon-close text-vscode-input-foreground opacity-50 hover:opacity-100 text-xs cursor-pointer"
 										onClick={() => setSearchValue("")}
-										aria-label="Clear search"
-										role="button"
-										tabIndex={0}
-										onKeyDown={(e) => {
-											if (e.key === "Enter" || e.key === " ") {
-												e.preventDefault()
-												setSearchValue("")
-											}
-										}}
 									/>
 								</div>
 							)}
@@ -244,37 +230,54 @@ export const ApiConfigSelector = ({
 						</div>
 					)}
 
-					{/* Config list - single scroll container with a11y attributes and ref for drag-and-drop */}
-					{filteredConfigs.length === 0 && searchValue ? (
-						<div className="py-2 px-3 text-sm text-vscode-foreground/70">{t("common:ui.no_results")}</div>
-					) : (
-						<div
-							ref={scrollContainerRef}
-							className="max-h-[300px] overflow-y-auto"
-							role="listbox"
-							aria-label={t("prompts:apiConfiguration.select")}>
-							{/* Pinned configs - sticky header */}
-							{pinnedConfigs.length > 0 && (
-								<div
-									className={cn(
-										"sticky top-0 z-10 bg-vscode-dropdown-background py-1",
-										unpinnedConfigs.length > 0 && "border-b border-vscode-dropdown-foreground/10",
-									)}
-									aria-label="Pinned configurations">
-									{pinnedConfigs.map((config, index) => renderConfigItem(config, true, index))}
-								</div>
-							)}
+				{/* Config list - single scroll container with a11y attributes and sticky pinned structure */}
+				{filteredConfigs.length === 0 && searchValue ? (
+					<div className="py-2 px-3 text-sm text-vscode-foreground/70">{t("common:ui.no_results")}</div>
+				) : (
+					<div
+						className="max-h-[300px] overflow-y-auto"
+						role="listbox"
+						aria-label={t("prompts:apiConfiguration.select")}>
+						{/* Pinned configs - sticky header */}
+						{pinnedConfigs.length > 0 && (
+							<div
+								className={cn(
+									"sticky top-0 z-10 bg-vscode-dropdown-background py-1",
+									unpinnedConfigs.length > 0 && "border-b border-vscode-dropdown-foreground/10",
+								)}
+								aria-label="Pinned configurations">
+								{pinnedConfigs.map((config, index) => (
+									<ConfigItem
+										key={config.id}
+										config={config}
+										isPinned
+										index={index}
+										value={value}
+										onSelect={handleSelect}
+										togglePinnedApiConfig={togglePinnedApiConfig}
+									/>
+								))}
+							</div>
+						)}
 
-							{/* Unpinned configs */}
-							{unpinnedConfigs.length > 0 && (
-								<div className="py-1" aria-label="All configurations">
-									{unpinnedConfigs.map((config, index) =>
-										renderConfigItem(config, false, pinnedConfigs.length + index)
-									)}
-								</div>
-							)}
-						</div>
-					)}
+						{/* Unpinned configs */}
+						{unpinnedConfigs.length > 0 && (
+							<div className="py-1" aria-label="All configurations">
+								{unpinnedConfigs.map((config, index) => (
+									<ConfigItem
+										key={config.id}
+										config={config}
+										isPinned={false}
+										index={pinnedConfigs.length + index}
+										value={value}
+										onSelect={handleSelect}
+										togglePinnedApiConfig={togglePinnedApiConfig}
+									/>
+								))}
+							</div>
+						)}
+					</div>
+				)}
 
 					{/* Bottom bar with controls */}
 					<div className="flex flex-col border-t border-vscode-dropdown-border">
