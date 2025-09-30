@@ -31,6 +31,7 @@ import { MAX_IMAGES_PER_MESSAGE } from "./ChatView"
 import ContextMenu from "./ContextMenu"
 import { IndexingStatusBadge } from "./IndexingStatusBadge"
 import { usePromptHistory } from "./hooks/usePromptHistory"
+import { CloudAccountSwitcher } from "../cloud/CloudAccountSwitcher"
 
 interface ChatTextAreaProps {
 	inputValue: string
@@ -87,6 +88,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			taskHistory,
 			clineMessages,
 			commands,
+			cloudUserInfo,
 		} = useExtensionState()
 
 		// Find the ID and display text for the currently selected API configuration.
@@ -1232,7 +1234,11 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 						/>
 						<AutoApproveDropdown triggerClassName="min-w-[28px] text-ellipsis overflow-hidden flex-shrink" />
 					</div>
-					<div className="flex flex-shrink-0 items-center gap-0.5 pr-2">
+					<div
+						className={cn(
+							"flex flex-shrink-0 items-center gap-0.5",
+							!isEditMode && cloudUserInfo ? "" : "pr-2",
+						)}>
 						{isTtsPlaying && (
 							<StandardTooltip content={t("chat:stopTts")}>
 								<button
@@ -1254,6 +1260,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 							</StandardTooltip>
 						)}
 						{!isEditMode ? <IndexingStatusBadge /> : null}
+						{!isEditMode && cloudUserInfo && <CloudAccountSwitcher />}
 					</div>
 				</div>
 			</div>

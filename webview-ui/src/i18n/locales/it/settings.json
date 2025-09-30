@@ -30,6 +30,7 @@
 		"terminal": "Terminal",
 		"slashCommands": "Comandi Slash",
 		"prompts": "Prompt",
+		"ui": "UI",
 		"experimental": "Sperimentale",
 		"language": "Lingua",
 		"about": "Informazioni su Roo Code"
@@ -134,6 +135,7 @@
 		"resetToDefault": "Ripristina al valore predefinito"
 	},
 	"autoApprove": {
+		"toggleShortcut": "Puoi configurare una scorciatoia globale per questa impostazione <SettingsLink>nelle preferenze del tuo IDE</SettingsLink>.",
 		"description": "Permetti a Roo di eseguire automaticamente operazioni senza richiedere approvazione. Abilita queste impostazioni solo se ti fidi completamente dell'IA e comprendi i rischi di sicurezza associati.",
 		"enabled": "Auto-approvazione abilitata",
 		"toggleAriaLabel": "Attiva/disattiva approvazione automatica",
@@ -380,8 +382,10 @@
 			"modelId": "ID modello",
 			"apiKey": "Chiave API Ollama",
 			"apiKeyHelp": "Chiave API opzionale per istanze Ollama autenticate o servizi cloud. Lascia vuoto per installazioni locali.",
+			"numCtx": "Dimensione della finestra di contesto (num_ctx)",
+			"numCtxHelp": "Sovrascrive la dimensione predefinita della finestra di contesto del modello. Lasciare vuoto per utilizzare la configurazione del Modelfile del modello. Il valore minimo è 128.",
 			"description": "Ollama ti permette di eseguire modelli localmente sul tuo computer. Per iniziare, consulta la guida rapida.",
-			"warning": "Nota: Roo Code utilizza prompt complessi e funziona meglio con i modelli Claude. I modelli con capacità inferiori potrebbero non funzionare come previsto."
+			"warning": "Nota: Roo Code utiliza prompt complessi e funziona meglio con i modelli Claude. I modelli con capacità inferiori potrebbero non funzionare come previsto."
 		},
 		"unboundApiKey": "Chiave API Unbound",
 		"getUnboundApiKey": "Ottieni chiave API Unbound",
@@ -876,6 +880,12 @@
 			"input": "Input",
 			"output": "Output",
 			"cacheReads": "Letture cache"
+		}
+	},
+	"ui": {
+		"collapseThinking": {
+			"label": "Comprimi i messaggi di pensiero per impostazione predefinita",
+			"description": "Se abilitato, i blocchi di pensiero verranno compressi per impostazione predefinita finché non interagisci con essi"
 		}
 	}
 }

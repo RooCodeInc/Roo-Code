@@ -30,6 +30,7 @@
 		"terminal": "Terminal",
 		"slashCommands": "Commandes Slash",
 		"prompts": "Invites",
+		"ui": "UI",
 		"experimental": "Expérimental",
 		"language": "Langue",
 		"about": "À propos de Roo Code"
@@ -134,6 +135,7 @@
 		"resetToDefault": "Réinitialiser par défaut"
 	},
 	"autoApprove": {
+		"toggleShortcut": "Vous pouvez configurer un raccourci global pour ce paramètre <SettingsLink>dans les préférences de votre IDE</SettingsLink>.",
 		"description": "Permettre à Roo d'effectuer automatiquement des opérations sans requérir d'approbation. Activez ces paramètres uniquement si vous faites entièrement confiance à l'IA et que vous comprenez les risques de sécurité associés.",
 		"enabled": "Auto-approbation activée",
 		"toggleAriaLabel": "Activer/désactiver l'approbation automatique",
@@ -380,6 +382,8 @@
 			"modelId": "ID du modèle",
 			"apiKey": "Clé API Ollama",
 			"apiKeyHelp": "Clé API optionnelle pour les instances Ollama authentifiées ou les services cloud. Laissez vide pour les installations locales.",
+			"numCtx": "Taille de la fenêtre de contexte (num_ctx)",
+			"numCtxHelp": "Remplace la taille de la fenêtre de contexte par défaut du modèle. Laissez vide pour utiliser la configuration du Modelfile du modèle. La valeur minimale est 128.",
 			"description": "Ollama vous permet d'exécuter des modèles localement sur votre ordinateur. Pour obtenir des instructions sur la mise en route, consultez le guide de démarrage rapide.",
 			"warning": "Remarque : Roo Code utilise des prompts complexes et fonctionne mieux avec les modèles Claude. Les modèles moins performants peuvent ne pas fonctionner comme prévu."
 		},
@@ -875,6 +879,12 @@
 			"input": "Entrée",
 			"output": "Sortie",
 			"cacheReads": "Lectures du cache"
+		}
+	},
+	"ui": {
+		"collapseThinking": {
+			"label": "Réduire les messages de réflexion par défaut",
+			"description": "Si activé, les blocs de réflexion seront réduits par défaut jusqu'à ce que vous interagissiez avec eux"
 		}
 	}
 }

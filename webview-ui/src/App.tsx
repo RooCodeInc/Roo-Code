@@ -77,6 +77,7 @@ const App = () => {
 		cloudUserInfo,
 		cloudIsAuthenticated,
 		cloudApiUrl,
+		cloudOrganizations,
 		renderContext,
 		mdmCompliant,
 	} = useExtensionState()
@@ -279,6 +280,7 @@ const App = () => {
 					userInfo={cloudUserInfo}
 					isAuthenticated={cloudIsAuthenticated}
 					cloudApiUrl={cloudApiUrl}
+					organizations={cloudOrganizations}
 					onDone={() => switchTab("chat")}
 				/>
 			)}

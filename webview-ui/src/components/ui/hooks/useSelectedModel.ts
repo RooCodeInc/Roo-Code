@@ -55,7 +55,7 @@ import {
 	qwenCodeDefaultModelId,
 	qwenCodeModels,
 	vercelAiGatewayDefaultModelId,
-	BEDROCK_CLAUDE_SONNET_4_MODEL_ID,
+	BEDROCK_1M_CONTEXT_MODEL_IDS,
 	deepInfraDefaultModelId,
 } from "@roo-code/types"
 
@@ -200,8 +200,8 @@ function getSelectedModel({
 				}
 			}
 
-			// Apply 1M context for Claude Sonnet 4 when enabled
-			if (id === BEDROCK_CLAUDE_SONNET_4_MODEL_ID && apiConfiguration.awsBedrock1MContext && baseInfo) {
+			// Apply 1M context for Claude Sonnet 4 / 4.5 when enabled
+			if (BEDROCK_1M_CONTEXT_MODEL_IDS.includes(id as any) && apiConfiguration.awsBedrock1MContext && baseInfo) {
 				// Create a new ModelInfo object with updated context window
 				const info: ModelInfo = {
 					...baseInfo,
@@ -263,9 +263,17 @@ function getSelectedModel({
 		case "ollama": {
 			const id = apiConfiguration.ollamaModelId ?? ""
 			const info = ollamaModels && ollamaModels[apiConfiguration.ollamaModelId!]
+
+			const adjustedInfo =
+				info?.contextWindow &&
+				apiConfiguration?.ollamaNumCtx &&
+				apiConfiguration.ollamaNumCtx < info.contextWindow
+					? { ...info, contextWindow: apiConfiguration.ollamaNumCtx }
+					: info
+
 			return {
 				id,
-				info: info || undefined,
+				info: adjustedInfo || undefined,
 			}
 		}
 		case "lmstudio": {
