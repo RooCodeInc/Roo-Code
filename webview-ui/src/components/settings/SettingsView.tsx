@@ -299,7 +299,6 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		})
 	}, [])
 
-	// ApiConfigManager handlers
 	const handleDeleteConfig = useCallback((configName: string) => {
 		vscode.postMessage({ type: "deleteApiConfiguration", text: configName })
 	}, [])

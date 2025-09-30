@@ -22,8 +22,8 @@ interface ConfigListItemProps {
 	isFocused: boolean
 	isValid: boolean
 	isOnlyProfile: boolean
-	existingConfigNames: string[]
 	isReorderingMode: boolean
+	validateName: (name: string, isNewProfile: boolean) => string | null
 	onDragStart: (event: React.DragEvent, index: number) => void
 	onDragEnd: () => void
 	onDragOver: (event: React.DragEvent, index: number) => void
@@ -41,8 +41,8 @@ const ConfigListItem = memo(function ConfigListItemComponent({
 	isFocused,
 	isValid,
 	isOnlyProfile,
-	existingConfigNames,
 	isReorderingMode,
+	validateName,
 	onDragStart,
 	onDragEnd,
 	onDragOver,
@@ -68,25 +68,6 @@ const ConfigListItem = memo(function ConfigListItemComponent({
 		}
 	}, [isEditing])
 
-	const validateName = useCallback(
-		(name: string): string | null => {
-			const trimmed = name.trim()
-			if (!trimmed) return t("settings:providers.nameEmpty")
-
-			const nameExists = existingConfigNames.some(
-				(configName) => configName.toLowerCase() === trimmed.toLowerCase(),
-			)
-
-			// Only block if trying to rename to a different existing profile
-			if (nameExists && trimmed.toLowerCase() !== config.name.toLowerCase()) {
-				return t("settings:providers.nameExists")
-			}
-
-			return null
-		},
-		[existingConfigNames, config.name, t],
-	)
-
 	const handleStartEdit = useCallback(() => {
 		setIsEditing(true)
 		setEditingValue(config.name)
@@ -101,7 +82,8 @@ const ConfigListItem = memo(function ConfigListItemComponent({
 
 	const handleSaveEdit = useCallback(() => {
 		const trimmedValue = editingValue.trim()
-		const error = validateName(trimmedValue)
+		// Pass false for isNewProfile since this is a rename operation
+		const error = validateName(trimmedValue, false)
 
 		if (error) {
 			setEditingError(error)
@@ -138,54 +120,60 @@ const ConfigListItem = memo(function ConfigListItemComponent({
 		return (
 			<div
 				data-testid="rename-form"
-				className="pl-3 pr-2 py-0.5 text-sm flex items-center border rounded-md border-vscode-focusBorder bg-vscode-sidebar-background">
-				<div className="mr-2 flex items-center justify-center size-4">
-					{isReorderingMode ? (
-						<div
-							className="text-vscode-descriptionForeground cursor-grab hover:cursor-grabbing"
-							draggable
-							onDragStart={(e) => {
-								e.stopPropagation()
-								onDragStart(e, index)
-							}}
-							onDragEnd={onDragEnd}
-							onClick={(e) => e.stopPropagation()}>
-							<GripVertical className="size-3" />
-						</div>
-					) : (
-						<div className="flex items-center justify-center size-4">
-							{isCurrentConfig && (
-								<span className="codicon codicon-check text-xs text-vscode-charts-green" />
-							)}
-						</div>
-					)}
+				className="pl-3 pr-2 py-0.5 text-sm border rounded-md border-vscode-focusBorder bg-vscode-sidebar-background">
+				<div className="flex items-center">
+					<div className="mr-2 flex items-center justify-center size-4">
+						{isReorderingMode ? (
+							<div
+								className="text-vscode-descriptionForeground cursor-grab hover:cursor-grabbing"
+								draggable
+								onDragStart={(e) => {
+									e.stopPropagation()
+									onDragStart(e, index)
+								}}
+								onDragEnd={onDragEnd}
+								onClick={(e) => e.stopPropagation()}>
+								<GripVertical className="size-3" />
+							</div>
+						) : (
+							<div className="flex items-center justify-center size-4">
+								{isCurrentConfig && (
+									<span className="codicon codicon-check text-xs text-vscode-charts-green" />
+								)}
+							</div>
+						)}
+					</div>
+
+					<VSCodeTextField
+						ref={editInputRef}
+						value={editingValue}
+						onInput={handleInputChange}
+						placeholder={t("settings:providers.enterNewName")}
+						onKeyDown={handleInputKeyDown}
+						className="flex-1 mr-2"
+					/>
+
+					<StandardTooltip content={t("settings:common.save")}>
+						<Button
+							variant="ghost"
+							size="icon"
+							disabled={!editingValue.trim()}
+							data-testid="save-rename-button"
+							onClick={handleSaveEdit}>
+							<span className="codicon codicon-save" />
+						</Button>
+					</StandardTooltip>
+
+					<StandardTooltip content={t("settings:common.cancel")}>
+						<Button
+							variant="ghost"
+							size="icon"
+							data-testid="cancel-rename-button"
+							onClick={handleCancelEdit}>
+							<span className="codicon codicon-close" />
+						</Button>
+					</StandardTooltip>
 				</div>
-
-				<VSCodeTextField
-					ref={editInputRef}
-					value={editingValue}
-					onInput={handleInputChange}
-					placeholder={t("settings:providers.enterNewName")}
-					onKeyDown={handleInputKeyDown}
-					className="flex-1 mr-2"
-				/>
-
-				<StandardTooltip content={t("settings:common.save")}>
-					<Button
-						variant="ghost"
-						size="icon"
-						disabled={!editingValue.trim()}
-						data-testid="save-rename-button"
-						onClick={handleSaveEdit}>
-						<span className="codicon codicon-save" />
-					</Button>
-				</StandardTooltip>
-
-				<StandardTooltip content={t("settings:common.cancel")}>
-					<Button variant="ghost" size="icon" data-testid="cancel-rename-button" onClick={handleCancelEdit}>
-						<span className="codicon codicon-close" />
-					</Button>
-				</StandardTooltip>
 
 				{editingError && (
 					<div className="text-vscode-errorForeground text-sm" data-testid="error-message">
