@@ -1,9 +1,8 @@
 import axios from "axios"
 import { z } from "zod"
-
 import { type ModelInfo, IO_INTELLIGENCE_CACHE_DURATION } from "@roo-code/types"
-
 import type { ModelRecord } from "../../../shared/api"
+import { parseApiPrice } from "../../../shared/cost"
 
 const ioIntelligenceModelSchema = z.object({
 	id: z.string(),
@@ -29,6 +28,15 @@ const ioIntelligenceModelSchema = z.object({
 			is_blocking: z.boolean(),
 		}),
 	),
+	max_tokens: z.number().nullable().optional(),
+	context_window: z.number().optional(),
+	supports_images_input: z.boolean().optional().default(false),
+	supports_prompt_cache: z.boolean().optional().default(false),
+	input_token_price: z.number().nullable().optional(),
+	output_token_price: z.number().nullable().optional(),
+	cache_write_token_price: z.number().nullable().optional(),
+	cache_read_token_price: z.number().nullable().optional(),
+	precision: z.string().nullable().optional(),
 })
 
 export type IOIntelligenceModel = z.infer<typeof ioIntelligenceModelSchema>
@@ -47,35 +55,22 @@ interface CacheEntry {
 
 let cache: CacheEntry | null = null
 
-/**
- * Model context length mapping based on the documentation
- * <mcreference link="https://docs.io.net/reference/get-started-with-io-intelligence-api" index="1">1</mcreference>
- */
-const MODEL_CONTEXT_LENGTHS: Record<string, number> = {
-	"meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8": 430000,
-	"deepseek-ai/DeepSeek-R1-0528": 128000,
-	"Intel/Qwen3-Coder-480B-A35B-Instruct-int4-mixed-ar": 106000,
-	"openai/gpt-oss-120b": 131072,
-}
-
-const VISION_MODELS = new Set([
-	"Qwen/Qwen2.5-VL-32B-Instruct",
-	"meta-llama/Llama-3.2-90B-Vision-Instruct",
-	"meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
-])
-
 function parseIOIntelligenceModel(model: IOIntelligenceModel): ModelInfo {
-	const contextLength = MODEL_CONTEXT_LENGTHS[model.id] || 8192
-	// Cap maxTokens at 32k for very large context windows, or 20% of context length, whichever is smaller.
-	const maxTokens = Math.min(contextLength, Math.ceil(contextLength * 0.2), 32768)
-	const supportsImages = VISION_MODELS.has(model.id)
+	const contextWindow = model.context_window || 8192
+
+	// Use API max_tokens if provided, otherwise calculate 20% of context window
+	const maxTokens = model.max_tokens && model.max_tokens > 0 ? model.max_tokens : Math.ceil(contextWindow * 0.2)
 
 	return {
 		maxTokens,
-		contextWindow: contextLength,
-		supportsImages,
-		supportsPromptCache: false,
-		supportsComputerUse: false,
+		contextWindow,
+		supportsImages: model.supports_images_input,
+		supportsPromptCache: model.supports_prompt_cache,
+		supportsComputerUse: false, // Not supported by IO Intelligence
+		inputPrice: parseApiPrice(model.input_token_price),
+		outputPrice: parseApiPrice(model.output_token_price),
+		cacheWritesPrice: parseApiPrice(model.cache_write_token_price),
+		cacheReadsPrice: parseApiPrice(model.cache_read_token_price),
 		description: `${model.id} via IO Intelligence`,
 	}
 }
@@ -98,18 +93,17 @@ export async function getIOIntelligenceModels(apiKey?: string): Promise<ModelRec
 			"Content-Type": "application/json",
 		}
 
+		// Note: IO Intelligence models endpoint does not require authentication
+		// API key is optional for future use if needed
 		if (apiKey) {
 			headers.Authorization = `Bearer ${apiKey}`
-		} else {
-			console.error("IO Intelligence API key is required")
-			throw new Error("IO Intelligence API key is required")
 		}
 
 		const response = await axios.get<IOIntelligenceApiResponse>(
 			"https://api.intelligence.io.solutions/api/v1/models",
 			{
 				headers,
-				timeout: 10_000,
+				timeout: 10000,
 			},
 		)
 

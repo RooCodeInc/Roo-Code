@@ -1,9 +1,15 @@
 import { ioIntelligenceDefaultModelId, ioIntelligenceModels, type IOIntelligenceModelId } from "@roo-code/types"
+import { Anthropic } from "@anthropic-ai/sdk"
 
-import type { ApiHandlerOptions } from "../../shared/api"
+import type { ApiHandlerOptions, ModelRecord } from "../../shared/api"
 import { BaseOpenAiCompatibleProvider } from "./base-openai-compatible-provider"
+import { getModels } from "./fetchers/modelCache"
+import type { ApiHandlerCreateMessageMetadata } from "../index"
+import { ApiStream } from "../transform/stream"
 
 export class IOIntelligenceHandler extends BaseOpenAiCompatibleProvider<IOIntelligenceModelId> {
+	protected models: ModelRecord = {}
+
 	constructor(options: ApiHandlerOptions) {
 		if (!options.ioIntelligenceApiKey) {
 			throw new Error("IO Intelligence API key is required")
@@ -20,11 +26,38 @@ export class IOIntelligenceHandler extends BaseOpenAiCompatibleProvider<IOIntell
 		})
 	}
 
-	override getModel() {
-		const modelId = this.options.ioIntelligenceModelId || (ioIntelligenceDefaultModelId as IOIntelligenceModelId)
+	public async fetchModel() {
+		try {
+			this.models = await getModels({
+				provider: "io-intelligence",
+				apiKey: this.options.ioIntelligenceApiKey || undefined,
+			})
+		} catch (error) {
+			console.error("Failed to fetch IO Intelligence models, falling back to default models:", error)
+			this.models = ioIntelligenceModels
+		}
+		return this.getModel()
+	}
 
-		const modelInfo =
-			this.providerModels[modelId as IOIntelligenceModelId] ?? this.providerModels[ioIntelligenceDefaultModelId]
+	override async *createMessage(
+		systemPrompt: string,
+		messages: Anthropic.Messages.MessageParam[],
+		metadata?: ApiHandlerCreateMessageMetadata,
+	): ApiStream {
+		await this.fetchModel()
+
+		yield* super.createMessage(systemPrompt, messages, metadata)
+	}
+
+	override getModel() {
+		const modelId = this.options.ioIntelligenceModelId || ioIntelligenceDefaultModelId
+		let modelInfo = this.models[modelId]
+
+		if (!modelInfo) {
+			modelInfo =
+				this.providerModels[modelId as IOIntelligenceModelId] ??
+				this.providerModels[ioIntelligenceDefaultModelId]
+		}
 
 		if (modelInfo) {
 			return { id: modelId as IOIntelligenceModelId, info: modelInfo }
