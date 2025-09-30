@@ -33,9 +33,9 @@ const ioIntelligenceModelSchema = z.object({
 		}),
 	),
 	max_tokens: z.number().nullable().optional(),
-	context_window: z.number(),
-	supports_images_input: z.boolean(),
-	supports_prompt_cache: z.boolean(),
+	context_window: z.number().optional(),
+	supports_images_input: z.boolean().optional().default(false),
+	supports_prompt_cache: z.boolean().optional().default(false),
 	input_token_price: z.number().nullable().optional(),
 	output_token_price: z.number().nullable().optional(),
 	cache_write_token_price: z.number().nullable().optional(),
@@ -71,8 +71,8 @@ let cache: CacheEntry | null = null
 function parseIOIntelligenceModel(model: IOIntelligenceModel): ModelInfo {
 	const contextWindow = model.context_window || 8192
 
-	// Use API max_tokens if provided, otherwise calculate 75% of context window
-	const maxTokens = model.max_tokens && model.max_tokens > 0 ? model.max_tokens : Math.ceil(contextWindow * 0.75)
+	// Use API max_tokens if provided, otherwise calculate 20% of context window
+	const maxTokens = model.max_tokens && model.max_tokens > 0 ? model.max_tokens : Math.ceil(contextWindow * 0.2)
 
 	return {
 		maxTokens,
