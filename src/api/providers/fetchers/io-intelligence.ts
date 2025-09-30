@@ -56,7 +56,7 @@ interface CacheEntry {
 let cache: CacheEntry | null = null
 
 function parseIOIntelligenceModel(model: IOIntelligenceModel): ModelInfo {
-	const contextWindow = model.context_window || 8192
+	const contextWindow = model.context_window ?? model.max_model_len ?? 8192
 
 	// Use API max_tokens if provided, otherwise calculate 20% of context window
 	const maxTokens = model.max_tokens && model.max_tokens > 0 ? model.max_tokens : Math.ceil(contextWindow * 0.2)
