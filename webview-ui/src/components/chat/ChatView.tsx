@@ -57,6 +57,7 @@ import { CheckpointWarning } from "./CheckpointWarning"
 import { QueuedMessages } from "./QueuedMessages"
 import DismissibleUpsell from "../common/DismissibleUpsell"
 import { useCloudUpsell } from "@src/hooks/useCloudUpsell"
+import { useAutosaveDraft } from "@src/hooks/useAutosaveDraft"
 import { Cloud } from "lucide-react"
 
 export interface ChatViewProps {
@@ -171,7 +172,17 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	// Has to be after api_req_finished are all reduced into api_req_started messages.
 	const apiMetrics = useMemo(() => getApiMetrics(modifiedMessages), [modifiedMessages])
 
-	const [inputValue, setInputValue] = useState("")
+	// Auto-save draft functionality
+	const {
+		draftContent: inputValue,
+		updateDraft: setInputValue,
+		clearDraft,
+		hasInitialDraft,
+	} = useAutosaveDraft({
+		key: currentTaskItem?.id || "default",
+		debounceMs: 300,
+		clearOnSubmit: true,
+	})
 	const inputValueRef = useRef(inputValue)
 	const textAreaRef = useRef<HTMLTextAreaElement>(null)
 	const [sendingDisabled, setSendingDisabled] = useState(false)
@@ -573,7 +584,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		userRespondedRef.current = false
 
 		// Only reset message-specific state, preserving mode.
-		setInputValue("")
+		clearDraft()
 		setSendingDisabled(true)
 		setSelectedImages([])
 		setClineAsk(undefined)
@@ -598,7 +609,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					try {
 						console.log("queueMessage", text, images)
 						vscode.postMessage({ type: "queueMessage", text, images })
-						setInputValue("")
+						clearDraft()
 						setSelectedImages([])
 					} catch (error) {
 						console.error(
@@ -650,7 +661,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				handleChatReset()
 			}
 		},
-		[handleChatReset, markFollowUpAsAnswered, sendingDisabled], // messagesRef and clineAskRef are stable
+		[handleChatReset, markFollowUpAsAnswered, sendingDisabled, clearDraft], // messagesRef and clineAskRef are stable
 	)
 
 	const handleSetChatBoxMessage = useCallback(
@@ -665,7 +676,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			setInputValue(newValue)
 			setSelectedImages([...selectedImages, ...images])
 		},
-		[inputValue, selectedImages],
+		[inputValue, selectedImages, setInputValue],
 	)
 
 	const startNewTask = useCallback(() => vscode.postMessage({ type: "clearTask" }), [])
@@ -697,7 +708,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							images: images,
 						})
 						// Clear input state after sending
-						setInputValue("")
+						clearDraft()
 						setSelectedImages([])
 					} else {
 						vscode.postMessage({ type: "askResponse", askResponse: "yesButtonClicked" })
@@ -752,7 +763,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							images: images,
 						})
 						// Clear input state after sending
-						setInputValue("")
+						clearDraft()
 						setSelectedImages([])
 					} else {
 						// Responds to the API with a "This operation failed" and lets it try again
@@ -1478,9 +1489,8 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 
 			if (event?.shiftKey) {
 				// Always append to existing text, don't overwrite
-				setInputValue((currentValue: string) => {
-					return currentValue !== "" ? `${currentValue} \n${suggestion.answer}` : suggestion.answer
-				})
+				const newValue = inputValue !== "" ? `${inputValue} \n${suggestion.answer}` : suggestion.answer
+				setInputValue(newValue)
 			} else {
 				// Don't clear the input value when sending a follow-up choice
 				// The message should be sent but the text area should preserve what the user typed
