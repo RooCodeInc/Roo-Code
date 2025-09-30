@@ -64,7 +64,7 @@ export const UsagePreview = ({ onViewDetails }: UsagePreviewProps) => {
 				} else if (message.data) {
 					// Validate the data structure
 					if (!message.data.days || !Array.isArray(message.data.days)) {
-						setError("Invalid data format received")
+						setError(t("cloud:usagePreview.invalidDataFormat"))
 					} else {
 						setData(message.data)
 					}
@@ -78,7 +78,7 @@ export const UsagePreview = ({ onViewDetails }: UsagePreviewProps) => {
 		// Clean up listener after 10 seconds (timeout)
 		const timeout = setTimeout(() => {
 			if (isLoading) {
-				setError("Failed to load usage data")
+				setError(t("cloud:usagePreview.failedToLoad"))
 				setIsLoading(false)
 			}
 		}, 10000)
@@ -128,9 +128,9 @@ export const UsagePreview = ({ onViewDetails }: UsagePreviewProps) => {
 					{/* Error message in chart area */}
 					<div className="mb-3 text-vscode-descriptionForeground">
 						<CircleAlert className="size-4 mb-2 text-vscode-muted-foreground" />
-						<p className="text-xs font-mono font-bold">Couldn&apos;t load chart:</p>
+						<p className="text-xs font-mono font-bold">{t("cloud:usagePreview.couldNotLoadChart")}</p>
 						<p className="text-xs font-mono">{error}</p>
-						<p className="text-xs font-medium mt-1">Click to retry</p>
+						<p className="text-xs font-medium mt-1">{t("cloud:usagePreview.clickToRetry")}</p>
 					</div>
 				</div>
 			</div>
@@ -160,10 +160,13 @@ export const UsagePreview = ({ onViewDetails }: UsagePreviewProps) => {
 				{/* Stats text */}
 				<div className="flex flex-col justify-between text-sm min-[400px]:flex-row min-[450px]:items-center">
 					<span className="flex items-center gap-1 text-vscode-descriptionForeground">
-						{t("cloud:usageStats.pastDays", { count: data.days.length })}
+						{t("cloud:usagePreview.costPastDays", { count: data.days.length })}
 					</span>
 					<span className="text-vscode-foreground">
-						{data.totals.tasks} tasks · {formatTokenCount(data.totals.tokens)} tokens ·{" "}
+						{t("cloud:usagePreview.tasks", { count: data.totals.tasks })}
+						<span> · </span>
+						{t("cloud:usagePreview.tokens", { count: formatTokenCount(data.totals.tokens) })}
+						<span> · </span>
 						{formatCost(data.totals.cost)}
 					</span>
 				</div>
@@ -172,7 +175,7 @@ export const UsagePreview = ({ onViewDetails }: UsagePreviewProps) => {
 			{/* Hover overlay */}
 			<div className="absolute inset-0 bg-vscode-editor-background/85 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
 				<div className="flex items-center gap-2 text-vscode-foreground">
-					<span>{t("cloud:usageStats.seeMoreStats")}</span>
+					<span>{t("cloud:usagePreview.seeMoreStats")}</span>
 					<SquareArrowOutUpRight className="size-3" />
 				</div>
 			</div>
