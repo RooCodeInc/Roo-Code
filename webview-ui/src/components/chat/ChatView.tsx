@@ -24,6 +24,7 @@ import { AudioType } from "@roo/WebviewMessage"
 import { getAllModes } from "@roo/modes"
 import { ProfileValidator } from "@roo/ProfileValidator"
 import { getLatestTodo } from "@roo/todo"
+import { mentionRegexGlobal, commandRegexGlobal } from "@roo/context-mentions"
 
 import { vscode } from "@src/utils/vscode"
 import {
@@ -123,6 +124,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		soundVolume,
 		cloudIsAuthenticated,
 		messageQueue = [],
+		persistContextReferences,
 	} = useExtensionState()
 
 	const messagesRef = useRef(messages)
@@ -563,6 +565,23 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		}
 	}, [])
 
+	/**
+	 * Extracts mentions from text
+	 * @param text - The text to extract mentions from
+	 * @returns The extracted mentions as a string
+	 */
+	const extractMentions = useCallback((text: string): string => {
+		// Extract all @mentions and /commands from the text
+		const mentionMatches = text.match(mentionRegexGlobal) || []
+		const commandMatches = text.match(commandRegexGlobal) || []
+
+		// Combine and deduplicate
+		const allMentions = [...new Set([...mentionMatches, ...commandMatches])]
+
+		// Return as space-separated string
+		return allMentions.join(" ")
+	}, [])
+
 	const handleChatReset = useCallback(() => {
 		// Clear any pending auto-approval timeout
 		if (autoApproveTimeoutRef.current) {
@@ -573,7 +592,13 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		userRespondedRef.current = false
 
 		// Only reset message-specific state, preserving mode.
-		setInputValue("")
+		// If persistContextReferences is enabled, extract and preserve mentions
+		if (persistContextReferences && inputValueRef.current) {
+			const mentions = extractMentions(inputValueRef.current)
+			setInputValue(mentions)
+		} else {
+			setInputValue("")
+		}
 		setSendingDisabled(true)
 		setSelectedImages([])
 		setClineAsk(undefined)
@@ -582,7 +607,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		// setPrimaryButtonText(undefined)
 		// setSecondaryButtonText(undefined)
 		disableAutoScrollRef.current = false
-	}, [])
+	}, [persistContextReferences, extractMentions])
 
 	/**
 	 * Handles sending messages to the extension
@@ -598,7 +623,13 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					try {
 						console.log("queueMessage", text, images)
 						vscode.postMessage({ type: "queueMessage", text, images })
-						setInputValue("")
+						// If persistContextReferences is enabled, preserve mentions
+						if (persistContextReferences) {
+							const mentions = extractMentions(inputValueRef.current)
+							setInputValue(mentions)
+						} else {
+							setInputValue("")
+						}
 						setSelectedImages([])
 					} catch (error) {
 						console.error(
@@ -650,7 +681,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				handleChatReset()
 			}
 		},
-		[handleChatReset, markFollowUpAsAnswered, sendingDisabled], // messagesRef and clineAskRef are stable
+		[handleChatReset, markFollowUpAsAnswered, sendingDisabled, persistContextReferences, extractMentions], // messagesRef and clineAskRef are stable
 	)
 
 	const handleSetChatBoxMessage = useCallback(
