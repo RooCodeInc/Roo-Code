@@ -4,7 +4,6 @@ import { getStructuredData } from "@/lib/structured-data"
  * StructuredData Component
  *
  * Renders JSON-LD structured data in the document head for SEO.
- * This component should only be used once per page, typically in the root layout.
  *
  * The structured data includes:
  * - Organization information (brand, logo, social profiles)
