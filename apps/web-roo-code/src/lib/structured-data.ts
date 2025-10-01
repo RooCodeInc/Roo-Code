@@ -77,7 +77,7 @@ export function getStructuredData(): StructuredDataGraph {
 			width: 512,
 			height: 512,
 		},
-		alternateName: ["RooCode", "Roo Code AI"],
+		alternateName: ["RooCode"],
 		sameAs: [
 			EXTERNAL_LINKS.GITHUB,
 			EXTERNAL_LINKS.MARKETPLACE,
