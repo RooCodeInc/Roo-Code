@@ -422,7 +422,7 @@
 			},
 			"computerUse": {
 				"label": "Computergebruik",
-				"description": "Kan dit model met een browser werken? (bijv. Claude 3.7 Sonnet)."
+				"description": "Kan dit model met een browser werken? (bijv. Claude Sonnet)."
 			},
 			"promptCache": {
 				"label": "Prompt caching",
@@ -672,7 +672,7 @@
 	"advanced": {
 		"diff": {
 			"label": "Bewerken via diffs inschakelen",
-			"description": "Indien ingeschakeld kan Roo sneller bestanden bewerken en worden afgekorte volledige-bestandswijzigingen automatisch geweigerd. Werkt het beste met het nieuwste Claude 3.7 Sonnet-model.",
+			"description": "Indien ingeschakeld kan Roo sneller bestanden bewerken en worden afgekorte volledige-bestandswijzigingen automatisch geweigerd. Werkt het beste met het nieuwste Claude Sonnet-model.",
 			"strategy": {
 				"label": "Diff-strategie",
 				"options": {

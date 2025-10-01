@@ -422,7 +422,7 @@
 			},
 			"computerUse": {
 				"label": "计算机功能调用",
-				"description": "此模型是否能够与浏览器交互？（例如 Claude 3.7 Sonnet）。"
+				"description": "此模型是否能够与浏览器交互？（例如 Claude Sonnet）。"
 			},
 			"promptCache": {
 				"label": "提示缓存",
@@ -672,7 +672,7 @@
 	"advanced": {
 		"diff": {
 			"label": "启用diff更新",
-			"description": "启用后，Roo 将能够通过差异算法写入，避免模型输出完整文件，以降低Token消耗。与最新的 Claude 3.7 Sonnet 模型配合最佳。",
+			"description": "启用后，Roo 将能够通过差异算法写入，避免模型输出完整文件，以降低Token消耗。与最新的 Claude Sonnet 模型配合最佳。",
 			"strategy": {
 				"label": "Diff 策略",
 				"options": {

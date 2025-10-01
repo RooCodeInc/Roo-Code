@@ -422,7 +422,7 @@
 			},
 			"computerUse": {
 				"label": "コンピューター使用",
-				"description": "このモデルはブラウザとの対話が可能ですか？（例：Claude 3.7 Sonnet）"
+				"description": "このモデルはブラウザとの対話が可能ですか？（例：Claude Sonnet）"
 			},
 			"promptCache": {
 				"label": "プロンプトキャッシュ",
@@ -672,7 +672,7 @@
 	"advanced": {
 		"diff": {
 			"label": "diff経由の編集を有効化",
-			"description": "有効にすると、Rooはファイルをより迅速に編集でき、切り詰められた全ファイル書き込みを自動的に拒否します。最新のClaude 3.7 Sonnetモデルで最良に機能します。",
+			"description": "有効にすると、Rooはファイルをより迅速に編集でき、切り詰められた全ファイル書き込みを自動的に拒否します。最新のClaude Sonnetモデルで最良に機能します。",
 			"strategy": {
 				"label": "Diff戦略",
 				"options": {

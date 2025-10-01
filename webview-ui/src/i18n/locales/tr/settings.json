@@ -422,7 +422,7 @@
 			},
 			"computerUse": {
 				"label": "Bilgisayar Kullanımı",
-				"description": "Bu model bir tarayıcıyla etkileşim kurabilir mi? (örn. Claude 3.7 Sonnet)"
+				"description": "Bu model bir tarayıcıyla etkileşim kurabilir mi? (örn. Claude Sonnet)"
 			},
 			"promptCache": {
 				"label": "İstem Önbelleği",
@@ -672,7 +672,7 @@
 	"advanced": {
 		"diff": {
 			"label": "Diff'ler aracılığıyla düzenlemeyi etkinleştir",
-			"description": "Etkinleştirildiğinde, Roo dosyaları daha hızlı düzenleyebilecek ve kesik tam dosya yazımlarını otomatik olarak reddedecektir. En son Claude 3.7 Sonnet modeliyle en iyi şekilde çalışır.",
+			"description": "Etkinleştirildiğinde, Roo dosyaları daha hızlı düzenleyebilecek ve kesik tam dosya yazımlarını otomatik olarak reddedecektir. En son Claude Sonnet modeliyle en iyi şekilde çalışır.",
 			"strategy": {
 				"label": "Diff stratejisi",
 				"options": {

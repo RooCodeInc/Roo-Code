@@ -422,7 +422,7 @@
 			},
 			"computerUse": {
 				"label": "電腦使用",
-				"description": "此模型是否能夠與瀏覽器互動？（例如 Claude 3.7 Sonnet）"
+				"description": "此模型是否能夠與瀏覽器互動？（例如 Claude Sonnet）"
 			},
 			"promptCache": {
 				"label": "提示快取",
@@ -672,7 +672,7 @@
 	"advanced": {
 		"diff": {
 			"label": "透過差異比對編輯",
-			"description": "啟用後，Roo 可更快速地編輯檔案，並自動拒絕不完整的整檔覆寫。搭配最新的 Claude 3.7 Sonnet 模型效果最佳。",
+			"description": "啟用後，Roo 可更快速地編輯檔案，並自動拒絕不完整的整檔覆寫。搭配最新的 Claude Sonnet 模型效果最佳。",
 			"strategy": {
 				"label": "差異比對策略",
 				"options": {

@@ -422,7 +422,7 @@
 			},
 			"computerUse": {
 				"label": "Ús de l'ordinador",
-				"description": "Aquest model és capaç d'interactuar amb un navegador? (com Claude 3.7 Sonnet)"
+				"description": "Aquest model és capaç d'interactuar amb un navegador? (com Claude Sonnet)"
 			},
 			"promptCache": {
 				"label": "Emmagatzematge en caché de prompts",
@@ -671,7 +671,7 @@
 	"advanced": {
 		"diff": {
 			"label": "Habilitar edició mitjançant diffs",
-			"description": "Quan està habilitat, Roo podrà editar fitxers més ràpidament i rebutjarà automàticament escriptures completes de fitxers truncats. Funciona millor amb l'últim model Claude 3.7 Sonnet.",
+			"description": "Quan està habilitat, Roo podrà editar fitxers més ràpidament i rebutjarà automàticament escriptures completes de fitxers truncats. Funciona millor amb l'últim model Claude Sonnet.",
 			"strategy": {
 				"label": "Estratègia de diff",
 				"options": {

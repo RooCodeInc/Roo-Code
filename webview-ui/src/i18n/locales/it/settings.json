@@ -422,7 +422,7 @@
 			},
 			"computerUse": {
 				"label": "Uso del computer",
-				"description": "Il modello è in grado di interagire con il browser? (es. Claude 3.7 Sonnet)."
+				"description": "Il modello è in grado di interagire con il browser? (es. Claude Sonnet)."
 			},
 			"promptCache": {
 				"label": "Cache dei prompt",
@@ -672,7 +672,7 @@
 	"advanced": {
 		"diff": {
 			"label": "Abilita modifica tramite diff",
-			"description": "Quando abilitato, Roo sarà in grado di modificare i file più velocemente e rifiuterà automaticamente scritture di file completi troncati. Funziona meglio con l'ultimo modello Claude 3.7 Sonnet.",
+			"description": "Quando abilitato, Roo sarà in grado di modificare i file più velocemente e rifiuterà automaticamente scritture di file completi troncati. Funziona meglio con l'ultimo modello Claude Sonnet.",
 			"strategy": {
 				"label": "Strategia diff",
 				"options": {
