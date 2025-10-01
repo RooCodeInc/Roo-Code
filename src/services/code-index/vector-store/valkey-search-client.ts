@@ -1,13 +1,13 @@
 import Valkey, { Command, Redis } from "iovalkey"
 import { createHash } from "crypto"
 import * as path from "path"
-import { IVectorStore, VectorStoreSearchResult } from "../interfaces"
-import { DEFAULT_MAX_SEARCH_RESULTS } from "../constants"
+import { IVectorStore, VectorStoreSearchResult, Payload } from "../interfaces"
+import { DEFAULT_MAX_SEARCH_RESULTS, DEFAULT_SEARCH_MIN_SCORE } from "../constants"
 import { t } from "../../../i18n"
 
 export class ValkeySearchVectorStore implements IVectorStore {
 	private readonly vectorSize: number
-	private readonly DISTANCE_METRIC = "COSINE"
+	private readonly DISTANCE_METRIC = "L2"
 	private client: Redis | null = null
 	private isInitializing = false
 	private readonly indexName: string
@@ -16,6 +16,7 @@ export class ValkeySearchVectorStore implements IVectorStore {
 	private readonly valkeyUsername?: string
 	private readonly valkeyPassword?: string
 	private readonly useSsl: boolean
+	private readonly workspacePath: string
 
 	constructor(
 		workspacePath: string,
@@ -26,6 +27,7 @@ export class ValkeySearchVectorStore implements IVectorStore {
 		password?: string,
 		useSsl: boolean = false,
 	) {
+		this.workspacePath = workspacePath
 		this.valkeyHostname = hostname
 		this.valkeyPort = port
 		this.valkeyUsername = username
@@ -95,40 +97,29 @@ export class ValkeySearchVectorStore implements IVectorStore {
 		}
 	}
 
-	private float32ToBuffer(vector: number[]): Buffer {
-		const buffer = Buffer.alloc(vector.length * 4)
-		for (let i = 0; i < vector.length; i++) {
-			buffer.writeFloatLE(vector[i], i * 4)
-		}
-		return buffer
-	}
-
 	async initialize(): Promise<boolean> {
 		await this.ensureConnected()
 
-		let info: {
-			attributes: Array<{ attribute: string; dimension?: number }>
-		} | null = null
-
 		try {
-			info = (await this.client?.sendCommand(new Command("FT.INFO", [this.indexName]))) as {
-				attributes: Array<{ attribute: string; dimension?: number }>
-			}
-			if (info) {
-				const vectorAttr = info?.attributes?.find((attr) => attr.attribute === "vector")
-				if (vectorAttr?.dimension === this.vectorSize) {
-					return false
-				}
+			const infoArray = await this.client?.sendCommand(
+				new Command("FT.INFO", [this.indexName], {
+					replyEncoding: "utf-8",
+				}),
+			)
+			const dimension = await this.getIndexDimension(this.indexName)
 
+			if (Array.isArray(infoArray) && dimension === this.vectorSize) {
+				return false
+			} else {
 				await this.deleteCollection()
 			}
 		} catch (error) {
-			return false
+			// Index does not exist, continue creation
 		}
 
 		try {
 			await this._createIndex()
-			await this._createPayloadIndexes()
+			await this.saveIndexDimension(this.indexName, this.vectorSize)
 			return true
 		} catch (error) {
 			throw new Error(error.message)
@@ -140,22 +131,49 @@ export class ValkeySearchVectorStore implements IVectorStore {
 			new Command("FT.CREATE", [
 				this.indexName,
 				"ON",
-				"JSON",
+				"HASH",
 				"SCHEMA",
-				"$.vector",
-				"AS",
 				"vector",
 				"VECTOR",
-				"FLAT",
-				"6",
+				"HNSW",
+				"10",
 				"TYPE",
 				"FLOAT32",
 				"DIM",
 				String(this.vectorSize),
 				"DISTANCE_METRIC",
 				this.DISTANCE_METRIC,
+				"M",
+				"64",
+				"EF_CONSTRUCTION",
+				"512",
+				"pathSegments",
+				"TAG",
+				"SEPARATOR",
+				"|",
+				"CASESENSITIVE",
+				"filePath",
+				"TAG",
+				"CASESENSITIVE",
 			]),
 		)
+		await this.saveIndexDimension(this.indexName, this.vectorSize)
+	}
+
+	buildPathSegments(filePath?: string): string[] {
+		if (!filePath) return []
+
+		const normalizedPath = path.posix.normalize(filePath.replace(/\\/g, "/"))
+
+		if (normalizedPath === "/" || normalizedPath === "." || normalizedPath === "./") return ["/"]
+
+		const parts = normalizedPath.split("/").filter(Boolean)
+		const prefixes: string[] = []
+		for (let i = 0; i < parts.length; i++) {
+			const pref = "/" + parts.slice(0, i + 1).join("/")
+			prefixes.push(pref)
+		}
+		return prefixes
 	}
 
 	async upsertPoints(
@@ -169,76 +187,116 @@ export class ValkeySearchVectorStore implements IVectorStore {
 
 		if (points.length === 0) return
 
-		try {
-			const pipeline = this.client?.pipeline()
-			for (const point of points) {
-				const docId = `${this.indexName}:${point.id}`
-				const segments = point.payload.filePath?.split(path.sep) || []
-				const indexedPayload: Record<string, string> = {}
-				segments.forEach((seg: string, i: number) => {
-					indexedPayload[`pathSegments_${i}`] = seg
-				})
+		const pipeline = this.client?.pipeline()
+		for (const point of points) {
+			const docId = `${this.indexName}:${point.id}`
 
-				pipeline?.hset(docId, {
-					...point.payload,
-					vector: this.float32ToBuffer(point.vector),
-					...indexedPayload,
-				})
-			}
-			await pipeline?.exec()
-		} catch (error) {
-			console.error("[ValkeySearch] Failed to upsert points:", error)
-			throw error
+			const pathSegments = this.buildPathSegments(point.payload?.filePath)
+
+			const args = [
+				docId,
+				"filePath",
+				point.payload.filePath,
+				"pathSegments",
+				pathSegments.join("|"),
+				"codeChunk",
+				point.payload.codeChunk,
+				"startLine",
+				String(point.payload.startLine),
+				"endLine",
+				String(point.payload.endLine),
+				"vector",
+				this.float32Buffer(point.vector),
+			]
+
+			pipeline?.call("HSET", args)
 		}
+		await pipeline?.exec()
 	}
 
-	async search(queryVector: number[], directoryPrefix?: string): Promise<VectorStoreSearchResult[]> {
+	float32Buffer(arr: number[]) {
+		const floatArray = new Float32Array(arr)
+		const float32Buffer = Buffer.from(floatArray.buffer)
+		return float32Buffer
+	}
+
+	async search(
+		queryVector: number[],
+		directoryPrefix?: string,
+		minScore?: number,
+		maxResults?: number,
+	): Promise<VectorStoreSearchResult[]> {
 		await this.ensureConnected()
 
-		const queryParts: string[] = []
+		let directoryFilter: string | undefined = undefined
 		if (directoryPrefix) {
-			const segments = directoryPrefix.split(path.sep).filter(Boolean)
-			segments.forEach((seg: string, i: number) => {
-				queryParts.push(`@pathSegments_${i}:{${seg}}`)
-			})
+			const normalizedPrefix = path.posix.normalize(directoryPrefix.replace(/\\/g, "/"))
+			if (normalizedPrefix !== "." && normalizedPrefix !== "./") {
+				directoryFilter = normalizedPrefix
+			}
 		}
 
-		const vectorBuffer = this.float32ToBuffer(queryVector)
+		const vectorBuffer = this.float32Buffer(queryVector)
+		const searchLimit = maxResults ?? DEFAULT_MAX_SEARCH_RESULTS
+
+		const q = directoryFilter
+			? `@pathSegments:{${directoryFilter}*} => [KNN ${searchLimit} @vector $qvec AS score]`
+			: `*=>[KNN ${searchLimit} @vector $qvec AS score]`
+
+		const searchParams = [
+			this.indexName,
+			q,
+			"PARAMS",
+			"2",
+			"qvec",
+			vectorBuffer,
+			"SORTBY",
+			"score",
+			"RETURN",
+			"5",
+			"score",
+			"filePath",
+			"codeChunk",
+			"startLine",
+			"endLine",
+			"DIALECT",
+			"2",
+			"LIMIT",
+			"0",
+			String(searchLimit),
+		]
+
 		const results = await this.client?.sendCommand(
-			new Command("FT.SEARCH", [
-				this.indexName,
-				queryParts.length > 0 ? `(${queryParts.join(" ")})` : "*",
-				"PARAMS",
-				"2",
-				"vector",
-				vectorBuffer.toString("base64"),
-				"DIALECT",
-				"2",
-				"RETURN",
-				"3",
-				"payload",
-				"vector",
-				"id",
-				"LIMIT",
-				"0",
-				String(DEFAULT_MAX_SEARCH_RESULTS),
-			]),
+			new Command("FT.SEARCH", searchParams, { replyEncoding: "utf8" }),
 		)
 
-		if (!Array.isArray(results) || results.length < 2) return []
+		if (!Array.isArray(results) || results.length < 2) {
+			return []
+		}
 
 		const parsedResults: VectorStoreSearchResult[] = []
+		const totalResults = results[0] as number
+
 		for (let i = 1; i < results.length; i += 2) {
-			const docId = results[i]
-			const [payload] = results[i + 1] as string[]
+			const docId = results[i] as string
+			const fields = results[i + 1] as string[]
+
+			const score = parseFloat(fields[1])
+			const payload: Payload = {
+				filePath: fields[3],
+				codeChunk: fields[5],
+				startLine: parseInt(fields[7]),
+				endLine: parseInt(fields[9]),
+			}
 
 			parsedResults.push({
-				id: docId,
-				payload: payload ? JSON.parse(payload) : {},
-				score: 0, // Valkey doesn't return score with this query format
+				id: docId.replace(`${this.indexName}:`, ""),
+				payload: payload,
+				score: 1 - score,
 			})
 		}
-		return parsedResults
+
+		return parsedResults.filter((r) => r.score >= (minScore || DEFAULT_SEARCH_MIN_SCORE))
 	}
 
 	async deletePointsByFilePath(filePath: string): Promise<void> {
@@ -250,16 +308,32 @@ export class ValkeySearchVectorStore implements IVectorStore {
 		await this.ensureConnected()
 
 		try {
-			for (const filePath of filePaths) {
-				const result = await this.client?.sendCommand(
-					new Command("FT.SEARCH", [this.indexName, `@filePath:"${filePath}"`, "LIMIT", "0", "10000"]),
-				)
+			const collectionExists = await this.collectionExists()
+			if (!collectionExists) {
+				return
+			}
+			const workspaceRoot = this.workspacePath
 
-				if (Array.isArray(result)) {
-					for (let i = 1; i < result.length; i += 2) {
-						await this.client?.sendCommand(new Command("DEL", [result[i]]))
-					}
+			const normalizedFilePaths = filePaths.map((filePath) => {
+				const relativePath = path.isAbsolute(filePath) ? path.relative(workspaceRoot, filePath) : filePath
+				const normalizedRelativePath = relativePath.startsWith("/") ? relativePath.slice(1) : relativePath
+				return `${path.posix.normalize(normalizedRelativePath.replace(/\\/g, "/")).replaceAll(".", "\\.").replaceAll("/", "\\/").replaceAll("-", "\\-")}`
+			})
+			const query = `@filePath:{${normalizedFilePaths.join("|")}}`
+
+			const result = await this.client?.sendCommand(
+				new Command("FT.SEARCH", [this.indexName, query, "NOCONTENT", "LIMIT", "0", "10000"], {
+					replyEncoding: "utf8",
+				}),
+			)
+
+			const pipeline = this.client?.pipeline()
+			if (Array.isArray(result) && result.length > 1) {
+				for (let i = 1; i < result.length; i++) {
+					const docId = result[i] as string
+					pipeline?.call("JSON.DEL", [docId])
 				}
+				await pipeline?.exec()
 			}
 		} catch (error) {
 			console.error("Failed to delete points by file paths:", error)
@@ -269,55 +343,98 @@ export class ValkeySearchVectorStore implements IVectorStore {
 
 	async deleteCollection(): Promise<void> {
 		await this.ensureConnected()
+		await this.clearCollection()
 		await this.client?.sendCommand(new Command("FT.DROPINDEX", [this.indexName]))
+		await this.removeIndexDimension(this.indexName)
 	}
 
 	async clearCollection(): Promise<void> {
 		await this.ensureConnected()
-		try {
-			const keys = await this.client?.sendCommand(new Command("KEYS", [`${this.indexName}:*`]))
-			if (Array.isArray(keys) && keys.length > 0) {
-				await this.client?.sendCommand(new Command("DEL", keys))
+		const result = await this.client?.sendCommand(
+			new Command("FT.SEARCH", [this.indexName, "*", "NOCONTENT", "LIMIT", "0", "1000000"], {
+				replyEncoding: "utf8",
+			}),
+		)
+
+		if (Array.isArray(result) && result.length > 1) {
+			const pipeline = this.client?.pipeline()
+			for (let i = 1; i < result.length; i++) {
+				const docId = result[i] as string
+				pipeline?.call("JSON.DEL", [docId])
 			}
-		} catch (error) {
-			console.error("Failed to clear collection:", error)
-			throw error
+			await pipeline?.exec()
 		}
 	}
 
 	async collectionExists(): Promise<boolean> {
 		await this.ensureConnected()
 		try {
-			await this.client?.sendCommand(new Command("FT.INFO", [this.indexName]))
+			await this.client?.sendCommand(
+				new Command("FT.INFO", [this.indexName], {
+					replyEncoding: "utf-8",
+				}),
+			)
 			return true
 		} catch (error) {
 			return false
 		}
 	}
 
-	async destroy() {
-		if (this.client && this.client.disconnect) {
-			this.client.disconnect()
+	/**
+	 * Save index dimension to Redis/Valkey using JSON
+	 * @param indexName - index name
+	 * @param dimension - dimension
+	 */
+	async saveIndexDimension(indexName: string, dimension: number): Promise<void> {
+		await this.ensureConnected()
+		const key = `index:meta:${indexName}`
+		const metadata = {
+			dimension: dimension,
+			createdAt: new Date().toISOString(),
+			distanceMetric: this.DISTANCE_METRIC,
+		}
+
+		await this.client?.sendCommand(new Command("JSON.SET", [key, "$", JSON.stringify(metadata)]))
+	}
+
+	/**
+	 * Get index dimension from Redis/Valkey
+	 * @param indexName - index name
+	 * @returns dimension or null if not found
+	 */
+	async getIndexDimension(indexName: string): Promise<number | null> {
+		await this.ensureConnected()
+		try {
+			const key = `index:meta:${indexName}`
+
+			const result = await this.client?.sendCommand(
+				new Command("JSON.GET", [key, "$.dimension"], {
+					replyEncoding: "utf8",
+				}),
+			)
+
+			if (result && typeof result === "string") {
+				const parsed = JSON.parse(result)
+				if (Array.isArray(parsed) && parsed.length > 0) {
+					return parsed[0]
+				}
+			}
+
+			return null
+		} catch (error) {
+			return null
 		}
 	}
 
-	private async _createPayloadIndexes(): Promise<void> {
-		for (let i = 0; i <= 4; i++) {
-			try {
-				await this.client?.sendCommand(
-					new Command("FT.ALTER", [
-						this.indexName,
-						"SCHEMA",
-						"ADD",
-						`$.pathSegments.${i}`,
-						"AS",
-						`pathSegments_${i}`,
-						"TAG",
-					]),
-				)
-			} catch (error) {
-				console.warn(`[ValkeySearch] Failed to create index for pathSegments.${i}:`, error)
-			}
+	async removeIndexDimension(indexName: string): Promise<void> {
+		await this.ensureConnected()
+		const key = `index:meta:${indexName}`
+		await this.client?.sendCommand(new Command("JSON.DEL", [key]))
+	}
+
+	async destroy() {
+		if (this.client && this.client.disconnect) {
+			this.client.disconnect()
 		}
 	}
 }
