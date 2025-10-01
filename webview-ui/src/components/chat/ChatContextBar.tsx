@@ -31,12 +31,25 @@ export const ChatContextBar = ({
 		const items: ContextItem[] = []
 
 		validMentions.forEach((mention, index) => {
+			let iconAlt = "File"
+			if (mention.type === "folder") {
+				iconAlt = "Folder"
+			} else if (mention.type === "url") {
+				iconAlt = "URL"
+			} else if (mention.type === "problems") {
+				iconAlt = "Problems"
+			} else if (mention.type === "terminal") {
+				iconAlt = "Terminal"
+			} else if (mention.type === "git") {
+				iconAlt = "Git"
+			}
+
 			items.push({
 				type: "mention",
 				icon: mention.icon,
 				displayName: mention.displayName,
 				originalIndex: index,
-				iconAlt: mention.type === "folder" ? "Folder" : "File",
+				iconAlt,
 			})
 		})
 

@@ -79,10 +79,9 @@ export function LexicalContextMenuPlugin({
 
 					if (optionsLength === 0) return prevIndex
 
-					// Find selectable options (non-URL types)
+					// Find selectable options
 					const selectableOptions = options.filter(
 						(option) =>
-							option.type !== ContextMenuOptionType.URL &&
 							option.type !== ContextMenuOptionType.NoResults &&
 							option.type !== ContextMenuOptionType.SectionHeader,
 					)
@@ -124,10 +123,9 @@ export function LexicalContextMenuPlugin({
 
 					if (optionsLength === 0) return prevIndex
 
-					// Find selectable options (non-URL types)
+					// Find selectable options
 					const selectableOptions = options.filter(
 						(option) =>
-							option.type !== ContextMenuOptionType.URL &&
 							option.type !== ContextMenuOptionType.NoResults &&
 							option.type !== ContextMenuOptionType.SectionHeader,
 					)
@@ -167,7 +165,6 @@ export function LexicalContextMenuPlugin({
 					)[selectedMenuIndex]
 					if (
 						selectedOption &&
-						selectedOption.type !== ContextMenuOptionType.URL &&
 						selectedOption.type !== ContextMenuOptionType.NoResults &&
 						selectedOption.type !== ContextMenuOptionType.SectionHeader
 					) {
@@ -196,7 +193,6 @@ export function LexicalContextMenuPlugin({
 					)[selectedMenuIndex]
 					if (
 						selectedOption &&
-						selectedOption.type !== ContextMenuOptionType.URL &&
 						selectedOption.type !== ContextMenuOptionType.NoResults &&
 						selectedOption.type !== ContextMenuOptionType.SectionHeader
 					) {

@@ -444,12 +444,10 @@ export const ChatLexicalTextArea = forwardRef<LexicalEditor, ChatTextAreaProps>(
 				setSelectedType(null)
 
 				const insertMention = mentionPluginRef.current?.insertMention
-				if (insertMention && value) {
+				if (insertMention) {
 					let insertValue = value || ""
 
-					if (type === ContextMenuOptionType.URL) {
-						insertValue = value || ""
-					} else if (type === ContextMenuOptionType.File || type === ContextMenuOptionType.Folder) {
+					if (type === ContextMenuOptionType.File || type === ContextMenuOptionType.Folder) {
 						insertValue = value || ""
 					} else if (type === ContextMenuOptionType.Problems) {
 						insertValue = "problems"
@@ -485,6 +483,12 @@ export const ChatLexicalTextArea = forwardRef<LexicalEditor, ChatTextAreaProps>(
 				document.removeEventListener("mousedown", handleClickOutside)
 			}
 		}, [showContextMenu, isMouseDownOnMenu])
+
+		useEffect(() => {
+			if (!showContextMenu) {
+				setSelectedType(null)
+			}
+		}, [showContextMenu])
 
 		const handleMenuMouseDown = useCallback(() => {
 			setIsMouseDownOnMenu(true)

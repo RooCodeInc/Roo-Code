@@ -2,6 +2,7 @@ import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext
 import {
 	$getSelection,
 	$isRangeSelection,
+	$isTextNode,
 	$createTextNode,
 	COMMAND_PRIORITY_HIGH,
 	PASTE_COMMAND,
@@ -59,10 +60,73 @@ export const LexicalPastePlugin = ({
 					return true
 				}
 
-				// Handle URL pasting - let Lexical handle it normally
+				// Handle URL pasting after @
 				const urlRegex = /^\S+:\/\/\S+$/
 				if (text && urlRegex.test(text.trim())) {
-					// Let Lexical's default paste handle URLs
+					// Check if cursor is after @
+					const anchor = selection.anchor
+					const anchorNode = anchor.getNode()
+
+					if (anchorNode && anchorNode.getTextContent) {
+						const textContent = anchorNode.getTextContent()
+						const offset = anchor.offset
+						const textBeforeCursor = textContent.slice(0, offset)
+
+						// Check if there's an @ before the cursor
+						const lastAtIndex = textBeforeCursor.lastIndexOf("@")
+						if (lastAtIndex !== -1 && lastAtIndex === offset - 1) {
+							// Cursor is right after @, convert to mention
+							event.preventDefault()
+
+							editor.update(() => {
+								const currentSelection = $getSelection()
+								if (!$isRangeSelection(currentSelection)) {
+									return
+								}
+
+								const currentAnchor = currentSelection.anchor
+								const currentNode = currentAnchor.getNode()
+
+								// Ensure we're working with a text node
+								if (!$isTextNode(currentNode)) {
+									return
+								}
+
+								const currentOffset = currentAnchor.offset
+								const currentText = currentNode.getTextContent()
+
+								const atIndex = currentText.lastIndexOf("@", currentOffset - 1)
+								if (atIndex === -1) return
+
+								const beforeText = currentText.slice(0, atIndex)
+								const afterText = currentText.slice(currentOffset)
+
+								const mentionNode = $createMentionNode(text.trim(), "@", undefined, {
+									type: ContextMenuOptionType.URL,
+								})
+
+								if (beforeText) {
+									currentNode.setTextContent(beforeText)
+									currentNode.insertAfter(mentionNode)
+								} else {
+									currentNode.replace(mentionNode)
+								}
+
+								if (afterText) {
+									const afterTextNode = new TextNode(afterText)
+									mentionNode.insertAfter(afterTextNode)
+								}
+
+								const spaceNode = new TextNode(" ")
+								mentionNode.insertAfter(spaceNode)
+								spaceNode.select()
+							})
+
+							return true
+						}
+					}
+
+					// Let Lexical's default paste handle URLs if not after @
 					return false
 				}
 

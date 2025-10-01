@@ -23,7 +23,7 @@ export interface MentionInfo {
 	path: string
 	displayName: string
 	icon: string
-	type: "file" | "folder"
+	type: "file" | "folder" | "url" | "problems" | "terminal" | "git"
 }
 
 export interface LexicalMentionPluginRef {
@@ -129,23 +129,55 @@ export const LexicalMentionPlugin = forwardRef<LexicalMentionPluginRef, LexicalM
 			// Extract just the paths for display name calculation
 			const mentionPaths = mentionNodes.map((node) => node.path)
 
+			// SVG data URL for link icon
+			const linkIconSvg = `data:image/svg+xml,${encodeURIComponent(
+				'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"><path d="M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z"/></svg>',
+			)}`
+
 			// Convert to MentionInfo objects with all necessary display information
 			const mentions: MentionInfo[] = mentionNodes.map((node) => {
 				// Use stored type data if available, otherwise fall back to path-based detection
 				const storedType = node.data?.type
-				let type: "file" | "folder"
+				let type: "file" | "folder" | "url" | "problems" | "terminal" | "git"
+				let displayName: string
+				let icon: string
 
-				if (storedType === "file" || storedType === "folder") {
-					type = storedType
+				// Determine type and display info based on stored data or path
+				if (storedType === ContextMenuOptionType.URL) {
+					type = "url"
+					displayName = node.path
+					icon = linkIconSvg
+				} else if (storedType === ContextMenuOptionType.Problems) {
+					type = "problems"
+					displayName = "Problems"
+					icon = linkIconSvg // You can change this to a different icon if needed
+				} else if (storedType === ContextMenuOptionType.Terminal) {
+					type = "terminal"
+					displayName = "Terminal"
+					icon = linkIconSvg // You can change this to a different icon if needed
+				} else if (storedType === ContextMenuOptionType.Git) {
+					type = "git"
+					displayName = node.path
+					icon = linkIconSvg // You can change this to a different icon if needed
+				} else if (storedType === ContextMenuOptionType.File) {
+					type = "file"
+					displayName = getDisplayName(node.path, mentionPaths)
+					icon = getMaterialIconForMention(node.path, "file")
+				} else if (storedType === ContextMenuOptionType.Folder) {
+					type = "folder"
+					displayName = getDisplayName(node.path, mentionPaths)
+					icon = getMaterialIconForMention(node.path, "folder")
 				} else {
 					// Fall back to path-based detection for backward compatibility
 					type = isFolder(node.path) ? "folder" : "file"
+					displayName = getDisplayName(node.path, mentionPaths)
+					icon = getMaterialIconForMention(node.path, type)
 				}
 
 				return {
 					path: node.path,
-					displayName: getDisplayName(node.path, mentionPaths),
-					icon: getMaterialIconForMention(node.path, type),
+					displayName,
+					icon,
 					type,
 				}
 			})
