@@ -196,12 +196,8 @@ const ApiOptions = ({
 			apiConfiguration.openRouterModelId in routerModels.openrouter,
 	})
 
-	// Update `apiModelId` whenever `selectedModelId` changes.
-	useEffect(() => {
-		if (selectedModelId && apiConfiguration.apiModelId !== selectedModelId) {
-			setApiConfigurationField("apiModelId", selectedModelId)
-		}
-	}, [selectedModelId, setApiConfigurationField, apiConfiguration.apiModelId])
+	// Removed the effect that was causing race condition with user selection
+	// The apiModelId is now properly set directly in the onValueChange callback
 
 	// Debounced refresh model updates, only executed 250ms after the user
 	// stops typing.
@@ -683,7 +679,34 @@ const ApiOptions = ({
 					<div>
 						<label className="block font-medium mb-1">{t("settings:providers.model")}</label>
 						<Select
-							value={selectedModelId === "custom-arn" ? "custom-arn" : selectedModelId}
+							value={
+								selectedModelId === "custom-arn"
+									? "custom-arn"
+									: // For providers that use apiModelId, use the actual value from config
+										// to avoid race conditions with useSelectedModel hook
+										selectedProvider === "claude-code" ||
+										  selectedProvider === "anthropic" ||
+										  selectedProvider === "bedrock" ||
+										  selectedProvider === "cerebras" ||
+										  selectedProvider === "qwen-code" ||
+										  selectedProvider === "openai-native" ||
+										  selectedProvider === "gemini" ||
+										  selectedProvider === "deepseek" ||
+										  selectedProvider === "doubao" ||
+										  selectedProvider === "moonshot" ||
+										  selectedProvider === "mistral" ||
+										  selectedProvider === "xai" ||
+										  selectedProvider === "groq" ||
+										  selectedProvider === "chutes" ||
+										  selectedProvider === "vertex" ||
+										  selectedProvider === "sambanova" ||
+										  selectedProvider === "zai" ||
+										  selectedProvider === "fireworks" ||
+										  selectedProvider === "featherless" ||
+										  selectedProvider === "roo"
+										? apiConfiguration.apiModelId || selectedModelId
+										: selectedModelId
+							}
 							onValueChange={(value) => {
 								setApiConfigurationField("apiModelId", value)
 
