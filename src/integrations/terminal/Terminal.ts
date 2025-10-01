@@ -1,5 +1,6 @@
 import * as vscode from "vscode"
 import pWaitFor from "p-wait-for"
+import * as path from "path"
 
 import type { RooTerminalCallbacks, RooTerminalProcessResultPromise } from "./types"
 import { BaseTerminal } from "./BaseTerminal"
@@ -16,8 +17,11 @@ export class Terminal extends BaseTerminal {
 		super("vscode", id, cwd)
 
 		const env = Terminal.getEnv()
-		const iconPath = new vscode.ThemeIcon("rocket")
-		this.terminal = terminal ?? vscode.window.createTerminal({ cwd, name: "Roo Code", iconPath, env })
+		const iconPath = {
+			dark: vscode.Uri.file(path.join(__dirname, "..", "assets", "icons", "icon.png")),
+			light: vscode.Uri.file(path.join(__dirname, "..", "assets", "icons", "icon.svg")),
+		}
+		this.terminal = terminal ?? vscode.window.createTerminal({ cwd, name: "Charles", iconPath, env })
 
 		if (Terminal.getTerminalZdotdir()) {
 			ShellIntegrationManager.terminalTmpDirs.set(id, env.ZDOTDIR)
