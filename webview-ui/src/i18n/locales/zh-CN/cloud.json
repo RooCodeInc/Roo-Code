@@ -35,7 +35,7 @@
 		"clickToRetry": "点击重试",
 		"tasks_one": "{{count}} 个任务",
 		"tasks_other": "{{count}} 个任务",
-		"tokens": "{{count}} token"
+		"tokens": "{{count}} 令牌"
 	},
 	"upsell": {
 		"autoApprovePowerUser": "给 Roo 一些独立性？使用 Roo Code Cloud 从任何地方控制它。 <learnMoreLink>了解更多</learnMoreLink>。",
