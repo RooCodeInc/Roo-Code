@@ -34,8 +34,9 @@ import { MentionNode } from "./lexical/MentionNode"
 import { LexicalMentionPlugin, type MentionInfo, type LexicalMentionPluginRef } from "./lexical/LexicalMentionPlugin"
 import { LexicalSelectAllPlugin } from "./lexical/LexicalSelectAllPlugin"
 import { LexicalPromptHistoryPlugin } from "./lexical/LexicalPromptHistoryPlugin"
+import { LexicalContextMenuPlugin } from "./lexical/LexicalContextMenuPlugin"
 import ContextMenu from "./ContextMenu"
-import { ContextMenuOptionType, getContextMenuOptions, SearchResult } from "@/utils/context-mentions"
+import { ContextMenuOptionType, SearchResult } from "@/utils/context-mentions"
 import { MAX_IMAGES_PER_MESSAGE } from "./ChatView"
 import { CloudAccountSwitcher } from "../cloud/CloudAccountSwitcher"
 import { ChatContextBar } from "./ChatContextBar"
@@ -112,7 +113,6 @@ export const ChatLexicalTextArea = forwardRef<LexicalEditor, ChatTextAreaProps>(
 		const [searchLoading, setSearchLoading] = useState(false)
 		const [searchRequestId, setSearchRequestId] = useState<string>("")
 		const [gitCommits, setGitCommits] = useState<any[]>([])
-		const contextMenuContainerRef = useRef<HTMLDivElement>(null)
 		const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 		const [isEnhancingPrompt, setIsEnhancingPrompt] = useState(false)
 		const [isMouseDownOnMenu, setIsMouseDownOnMenu] = useState(false)
@@ -530,102 +530,10 @@ export const ChatLexicalTextArea = forwardRef<LexicalEditor, ChatTextAreaProps>(
 			[searchQuery, setMode, setInputValue, mentionPluginRef],
 		)
 
-		// Handle keyboard navigation for context menu
-		useEffect(() => {
-			const handleKeyDown = (event: KeyboardEvent) => {
-				if (!showContextMenu) return
-
-				if (event.key === "Escape") {
-					setSelectedType(null)
-					setSelectedMenuIndex(3) // File by default
-					return
-				}
-
-				if (event.key === "ArrowUp" || event.key === "ArrowDown") {
-					event.preventDefault()
-					setSelectedMenuIndex((prevIndex) => {
-						const direction = event.key === "ArrowUp" ? -1 : 1
-						const options = getContextMenuOptions(
-							searchQuery,
-							selectedType,
-							queryItems,
-							fileSearchResults,
-							customModes,
-							commands,
-						)
-						const optionsLength = options.length
-
-						if (optionsLength === 0) return prevIndex
-
-						// Find selectable options (non-URL types)
-						const selectableOptions = options.filter(
-							(option) =>
-								option.type !== ContextMenuOptionType.URL &&
-								option.type !== ContextMenuOptionType.NoResults &&
-								option.type !== ContextMenuOptionType.SectionHeader,
-						)
-
-						if (selectableOptions.length === 0) return -1 // No selectable options
-
-						// Find the index of the next selectable option
-						const currentSelectableIndex = selectableOptions.findIndex(
-							(option) => option === options[prevIndex],
-						)
-
-						const newSelectableIndex =
-							(currentSelectableIndex + direction + selectableOptions.length) % selectableOptions.length
-
-						// Find the index of the selected option in the original options array
-						return options.findIndex((option) => option === selectableOptions[newSelectableIndex])
-					})
-					return
-				}
-
-				if ((event.key === "Enter" || event.key === "Tab") && selectedMenuIndex !== -1) {
-					event.preventDefault()
-					event.stopPropagation()
-					const selectedOption = getContextMenuOptions(
-						searchQuery,
-						selectedType,
-						queryItems,
-						fileSearchResults,
-						customModes,
-						commands,
-					)[selectedMenuIndex]
-					if (
-						selectedOption &&
-						selectedOption.type !== ContextMenuOptionType.URL &&
-						selectedOption.type !== ContextMenuOptionType.NoResults &&
-						selectedOption.type !== ContextMenuOptionType.SectionHeader
-					) {
-						handleMentionSelect(selectedOption.type, selectedOption.value)
-					}
-					return
-				}
-			}
-
-			document.addEventListener("keydown", handleKeyDown, { capture: true })
-			return () => document.removeEventListener("keydown", handleKeyDown, { capture: true })
-		}, [
-			showContextMenu,
-			searchQuery,
-			selectedMenuIndex,
-			selectedType,
-			queryItems,
-			fileSearchResults,
-			customModes,
-			commands,
-			handleMentionSelect,
-		])
-
 		// Effect to handle clicks outside the context menu to close it
 		useEffect(() => {
-			const handleClickOutside = (event: MouseEvent) => {
-				if (
-					contextMenuContainerRef.current &&
-					!contextMenuContainerRef.current.contains(event.target as Node) &&
-					!isMouseDownOnMenu
-				) {
+			const handleClickOutside = () => {
+				if (!isMouseDownOnMenu) {
 					setShowContextMenu(false)
 				}
 			}
@@ -708,7 +616,6 @@ export const ChatLexicalTextArea = forwardRef<LexicalEditor, ChatTextAreaProps>(
 						}}>
 						{showContextMenu && (
 							<div
-								ref={contextMenuContainerRef}
 								onMouseDown={handleMenuMouseDown}
 								className={cn(
 									"absolute",
@@ -836,6 +743,19 @@ export const ChatLexicalTextArea = forwardRef<LexicalEditor, ChatTextAreaProps>(
 								<LexicalPromptHistoryPlugin
 									promptHistory={promptHistory}
 									showContextMenu={showContextMenu}
+								/>
+								<LexicalContextMenuPlugin
+									showContextMenu={showContextMenu}
+									searchQuery={searchQuery}
+									selectedMenuIndex={selectedMenuIndex}
+									setSelectedMenuIndex={setSelectedMenuIndex}
+									selectedType={selectedType}
+									setSelectedType={setSelectedType}
+									queryItems={queryItems}
+									fileSearchResults={fileSearchResults}
+									customModes={customModes}
+									commands={commands}
+									onMentionSelect={handleMentionSelect}
 								/>
 								<LexicalSelectAllPlugin />
 							</LexicalComposer>
