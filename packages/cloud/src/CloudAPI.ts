@@ -1,29 +1,17 @@
 import { z } from "zod"
 
-import { type AuthService, type ShareVisibility, type ShareResponse, shareResponseSchema } from "@roo-code/types"
+import {
+	type AuthService,
+	type ShareVisibility,
+	type ShareResponse,
+	shareResponseSchema,
+	type UsageStats,
+	usageStatsSchema,
+} from "@roo-code/types"
 
 import { getRooCodeApiUrl } from "./config.js"
 import { getUserAgent } from "./utils.js"
 import { AuthenticationError, CloudAPIError, NetworkError, TaskNotFoundError } from "./errors.js"
-
-// Usage stats schemas
-const usageStatsSchema = z.object({
-	success: z.boolean(),
-	data: z.object({
-		dates: z.array(z.string()), // Array of date strings
-		tasks: z.array(z.number()), // Array of task counts
-		tokens: z.array(z.number()), // Array of token counts
-		costs: z.array(z.number()), // Array of costs in USD
-		totals: z.object({
-			tasks: z.number(),
-			tokens: z.number(),
-			cost: z.number(), // Total cost in USD
-		}),
-	}),
-	period: z.number(), // Period in days (e.g., 30)
-})
-
-export type UsageStats = z.infer<typeof usageStatsSchema>
 
 interface CloudAPIRequestOptions extends Omit<RequestInit, "headers"> {
 	timeout?: number
