@@ -94,7 +94,7 @@ export function getStructuredData(): StructuredDataGraph {
 		"@id": `${SEO.url}#website`,
 		url: SEO.url,
 		name: SEO.name,
-		alternateName: ["RooCode", "Roo Cline"],
+		alternateName: ["RooCode"],
 		publisher: { "@id": orgId },
 	}
 
