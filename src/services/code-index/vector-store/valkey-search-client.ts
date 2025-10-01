@@ -250,8 +250,6 @@ export class ValkeySearchVectorStore implements IVectorStore {
 			"2",
 			"qvec",
 			vectorBuffer,
-			"SORTBY",
-			"score",
 			"RETURN",
 			"5",
 			"score",
@@ -275,7 +273,6 @@ export class ValkeySearchVectorStore implements IVectorStore {
 		}
 
 		const parsedResults: VectorStoreSearchResult[] = []
-		const totalResults = results[0] as number
 
 		for (let i = 1; i < results.length; i += 2) {
 			const docId = results[i] as string
@@ -296,7 +293,9 @@ export class ValkeySearchVectorStore implements IVectorStore {
 			})
 		}
 
-		return parsedResults.filter((r) => r.score >= (minScore || DEFAULT_SEARCH_MIN_SCORE))
+		return parsedResults
+			.filter((r) => r.score >= (minScore || DEFAULT_SEARCH_MIN_SCORE))
+			.sort((a, b) => b.score - a.score)
 	}
 
 	async deletePointsByFilePath(filePath: string): Promise<void> {
@@ -331,7 +330,7 @@ export class ValkeySearchVectorStore implements IVectorStore {
 			if (Array.isArray(result) && result.length > 1) {
 				for (let i = 1; i < result.length; i++) {
 					const docId = result[i] as string
-					pipeline?.call("JSON.DEL", [docId])
+					pipeline?.call("DEL", [docId])
 				}
 				await pipeline?.exec()
 			}
@@ -360,7 +359,7 @@ export class ValkeySearchVectorStore implements IVectorStore {
 			const pipeline = this.client?.pipeline()
 			for (let i = 1; i < result.length; i++) {
 				const docId = result[i] as string
-				pipeline?.call("JSON.DEL", [docId])
+				pipeline?.call("DEL", [docId])
 			}
 			await pipeline?.exec()
 		}
