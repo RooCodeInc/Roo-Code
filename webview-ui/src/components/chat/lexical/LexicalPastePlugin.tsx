@@ -101,7 +101,8 @@ export const LexicalPastePlugin = ({
 								const beforeText = currentText.slice(0, atIndex)
 								const afterText = currentText.slice(currentOffset)
 
-								const mentionNode = $createMentionNode(text.trim(), "@", undefined, {
+								const url = text.trim()
+								const mentionNode = $createMentionNode("@", url, null, undefined, {
 									type: ContextMenuOptionType.URL,
 								})
 
@@ -247,9 +248,13 @@ function parseTextIntoNodes(text: string): Array<TextNode> {
 			}
 
 			const data = contextType ? { type: contextType } : undefined
-			nodes.push($createMentionNode(item.mentionText, "@", undefined, data))
+			nodes.push($createMentionNode("@", mentionText, null, undefined, data))
 		} else if (item.type === "command") {
-			nodes.push($createMentionNode(item.mentionText, "/", undefined, { type: ContextMenuOptionType.Command }))
+			nodes.push(
+				$createMentionNode("/", item.mentionText, null, undefined, {
+					type: ContextMenuOptionType.Command,
+				}),
+			)
 		}
 
 		lastIndex = item.index + item.match.length

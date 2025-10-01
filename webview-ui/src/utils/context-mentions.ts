@@ -5,7 +5,7 @@ import type { Command } from "@roo/ExtensionMessage"
 
 import { mentionRegex } from "@roo/context-mentions"
 
-import { escapeSpaces } from "./path-mentions"
+import { escapeSpaces, getBasename } from "./path-mentions"
 
 /**
  * Gets the description for a mode, prioritizing description > whenToUse > roleDefinition
@@ -19,10 +19,6 @@ export interface SearchResult {
 	path: string
 	type: "file" | "folder"
 	label?: string
-}
-
-function getBasename(filepath: string): string {
-	return filepath.split("/").pop() || filepath
 }
 
 export function insertMention(

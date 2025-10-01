@@ -17,7 +17,7 @@ import { getIconForFilePath, getIconUrlByName } from "vscode-material-icons"
 
 import { $createMentionNode, $isMentionNode } from "./MentionNode"
 import { shouldShowContextMenu, ContextMenuOptionType } from "@/utils/context-mentions"
-import { removeLeadingNonAlphanumeric } from "@/utils/removeLeadingNonAlphanumeric"
+import { getDisplayNameForPath } from "@/utils/path-mentions"
 
 export interface MentionInfo {
 	path: string
@@ -42,33 +42,6 @@ export const LexicalMentionPlugin = forwardRef<LexicalMentionPluginRef, LexicalM
 	({ onMentionTrigger, onMentionHide, onMentionUpdate, materialIconsBaseUri = "" }, ref) => {
 		const [editor] = useLexicalComposerContext()
 		const [isShowingMentions, setIsShowingMentions] = useState(false)
-
-		// Helper function to get display name with conflict resolution
-		const getDisplayName = useCallback((mention: string, allMentions: string[]) => {
-			// Remove leading non-alphanumeric and trailing slash
-			const path = removeLeadingNonAlphanumeric(mention).replace(/\/$/, "")
-			const pathList = path.split("/")
-			const filename = pathList.at(-1) || mention
-
-			// Check if there are other mentions with the same filename
-			const sameFilenames = allMentions.filter((m) => {
-				const otherPath = removeLeadingNonAlphanumeric(m).replace(/\/$/, "")
-				const otherFilename = otherPath.split("/").at(-1) || m
-				return otherFilename === filename && m !== mention
-			})
-
-			if (sameFilenames.length === 0) {
-				return filename // No conflicts, just show filename
-			}
-
-			// There are conflicts, need to show directory to disambiguate
-			if (pathList.length > 1) {
-				// Show filename with first directory
-				return `${pathList[pathList.length - 2]}/${filename}`
-			}
-
-			return filename
-		}, [])
 
 		// Helper function to get material icon for mention
 		const getMaterialIconForMention = useCallback(
@@ -105,7 +78,7 @@ export const LexicalMentionPlugin = forwardRef<LexicalMentionPluginRef, LexicalM
 
 					if ($isMentionNode(node) && node.getTrigger() === "@") {
 						mentionNodes.push({
-							path: node.getMentionName(),
+							path: node.getValue(),
 							data: node.getData(),
 						})
 					}
@@ -161,16 +134,16 @@ export const LexicalMentionPlugin = forwardRef<LexicalMentionPluginRef, LexicalM
 					icon = linkIconSvg // You can change this to a different icon if needed
 				} else if (storedType === ContextMenuOptionType.File) {
 					type = "file"
-					displayName = getDisplayName(node.path, mentionPaths)
+					displayName = getDisplayNameForPath(node.path, mentionPaths)
 					icon = getMaterialIconForMention(node.path, "file")
 				} else if (storedType === ContextMenuOptionType.Folder) {
 					type = "folder"
-					displayName = getDisplayName(node.path, mentionPaths)
+					displayName = getDisplayNameForPath(node.path, mentionPaths)
 					icon = getMaterialIconForMention(node.path, "folder")
 				} else {
 					// Fall back to path-based detection for backward compatibility
 					type = isFolder(node.path) ? "folder" : "file"
-					displayName = getDisplayName(node.path, mentionPaths)
+					displayName = getDisplayNameForPath(node.path, mentionPaths)
 					icon = getMaterialIconForMention(node.path, type)
 				}
 
@@ -183,7 +156,7 @@ export const LexicalMentionPlugin = forwardRef<LexicalMentionPluginRef, LexicalM
 			})
 
 			return mentions
-		}, [editor, getDisplayName, getMaterialIconForMention, isFolder])
+		}, [editor, getMaterialIconForMention, isFolder])
 
 		const updateMentions = useCallback(() => {
 			const currentMentions = extractMentionsFromEditor()
@@ -277,7 +250,7 @@ export const LexicalMentionPlugin = forwardRef<LexicalMentionPluginRef, LexicalM
 
 					// Create mention node with type information
 					const data = type ? { type } : undefined
-					const mentionNode = $createMentionNode(mentionText, trigger, undefined, data)
+					const mentionNode = $createMentionNode(trigger, mentionText, null, undefined, data)
 
 					if (beforeText) {
 						anchorNode.setTextContent(beforeText)
@@ -317,7 +290,7 @@ export const LexicalMentionPlugin = forwardRef<LexicalMentionPluginRef, LexicalM
 
 						if ($isMentionNode(node) && node.getTrigger() === "@") {
 							// Check if this is the mention we want to remove
-							if (node.getMentionName() === mentionInfo.path) {
+							if (node.getValue() === mentionInfo.path) {
 								// Remove the mention node and any trailing space
 								const nextSibling = node.getNextSibling()
 								if ($isTextNode(nextSibling) && nextSibling.getTextContent().startsWith(" ")) {

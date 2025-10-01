@@ -174,7 +174,6 @@ export const ChatLexicalTextArea = forwardRef<LexicalEditor, ChatTextAreaProps>(
 		const [validMentions, setValidMentions] = useState<MentionInfo[]>([])
 
 		const handleMentionUpdate = useCallback((mentions: MentionInfo[]) => {
-			console.log({ mentions })
 			setValidMentions(mentions)
 		}, [])
 
@@ -646,12 +645,10 @@ export const ChatLexicalTextArea = forwardRef<LexicalEditor, ChatTextAreaProps>(
 												"min-h-[94px]",
 												"box-border",
 												"resize-none",
-												"overflow-x-hidden",
-												"overflow-y-auto",
+												"overflow-x-hidden overflow-y-auto",
 												"flex-none flex-grow",
 												"z-[2]",
-												"scrollbar-none",
-												"scrollbar-hide",
+												"scrollbar-none scrollbar-hide",
 												isFocused
 													? "border border-vscode-focusBorder outline outline-vscode-focusBorder"
 													: isDraggingOver
