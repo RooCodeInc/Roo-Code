@@ -82,3 +82,7 @@ export const formatTimeAgo = (timestamp: number) => {
 
 	return i18next.t("common:time_ago.just_now")
 }
+
+export const formatCost = (cost: number): string => {
+	return `$${cost.toFixed(2)}`
+}

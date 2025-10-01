@@ -3,7 +3,7 @@ import { VSCodeProgressRing } from "@vscode/webview-ui-toolkit/react"
 import { CircleAlert, SquareArrowOutUpRight } from "lucide-react"
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { vscode } from "@src/utils/vscode"
-import { formatDateShort } from "@/utils/format"
+import { formatDateShort, formatLargeNumber, formatCost } from "@/utils/format"
 
 interface DailyUsage {
 	date: string // ISO date string
@@ -30,21 +30,6 @@ export const UsagePreview = ({ onViewDetails }: UsagePreviewProps) => {
 	const [isLoading, setIsLoading] = useState(true)
 	const [error, setError] = useState<string | null>(null)
 	const [data, setData] = useState<UsageStats | null>(null)
-
-	// Format large numbers (e.g., 14800000 -> "14.8M")
-	const formatTokenCount = (tokens: number): string => {
-		if (tokens >= 1_000_000) {
-			return `${(tokens / 1_000_000).toFixed(1)}M`
-		} else if (tokens >= 1_000) {
-			return `${(tokens / 1_000).toFixed(1)}K`
-		}
-		return tokens.toString()
-	}
-
-	// Format cost (e.g., 17.81 -> "$17.81")
-	const formatCost = (cost: number): string => {
-		return `$${cost.toFixed(2)}`
-	}
 
 	// Fetch usage data on mount
 	useEffect(() => {
@@ -175,7 +160,7 @@ export const UsagePreview = ({ onViewDetails }: UsagePreviewProps) => {
 					<span className="text-vscode-foreground">
 						{t("cloud:usagePreview.tasks", { count: data.totals.tasks })}
 						<span> · </span>
-						{t("cloud:usagePreview.tokens", { count: formatTokenCount(data.totals.tokens) })}
+						{t("cloud:usagePreview.tokens", { count: formatLargeNumber(data.totals.tokens) })}
 						<span> · </span>
 						{formatCost(data.totals.cost)}
 					</span>
