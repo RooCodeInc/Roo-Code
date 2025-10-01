@@ -17,8 +17,8 @@
  * - Let the autosave provide recovery if something goes wrong
  */
 
-import React, { useState, useCallback, useEffect } from "react"
-import { render, screen, fireEvent, waitFor, act } from "@testing-library/react"
+import React, { useCallback } from "react"
+import { render, screen, fireEvent, act } from "@testing-library/react"
 import { vi, describe, it, expect, beforeEach, afterEach } from "vitest"
 import { useAutosaveDraft } from "../../../hooks/useAutosaveDraft"
 
@@ -47,7 +47,6 @@ const MessageEditorWithRaceCondition: React.FC<MessageEditorProps> = ({
 	const { draftContent, updateDraft, clearDraft } = useAutosaveDraft({
 		key: taskId,
 		debounceMs: 100,
-		clearOnSubmit: true,
 	})
 
 	const handleSend = useCallback(() => {

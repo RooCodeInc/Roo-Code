@@ -177,11 +177,10 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		draftContent: inputValue,
 		updateDraft: setInputValue,
 		clearDraft,
-		hasInitialDraft,
+		hasInitialDraft: _hasInitialDraft,
 	} = useAutosaveDraft({
 		key: currentTaskItem?.id || "default",
 		debounceMs: 100,
-		clearOnSubmit: true,
 	})
 	const inputValueRef = useRef(inputValue)
 	const textAreaRef = useRef<HTMLTextAreaElement>(null)
@@ -593,7 +592,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		// setPrimaryButtonText(undefined)
 		// setSecondaryButtonText(undefined)
 		disableAutoScrollRef.current = false
-	}, [])
+	}, [clearDraft])
 
 	/**
 	 * Handles sending messages to the extension
@@ -665,7 +664,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				handleChatReset()
 			}
 		},
-		[handleChatReset, markFollowUpAsAnswered, sendingDisabled, clearDraft], // messagesRef and clineAskRef are stable
+		[handleChatReset, markFollowUpAsAnswered, sendingDisabled], // messagesRef and clineAskRef are stable
 	)
 
 	const handleSetChatBoxMessage = useCallback(
@@ -732,7 +731,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			setClineAsk(undefined)
 			setEnableButtons(false)
 		},
-		[clineAsk, startNewTask],
+		[clineAsk, startNewTask, clearDraft],
 	)
 
 	const handleSecondaryButtonClick = useCallback(
@@ -782,7 +781,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			setClineAsk(undefined)
 			setEnableButtons(false)
 		},
-		[clineAsk, startNewTask, isStreaming],
+		[clineAsk, startNewTask, isStreaming, clearDraft],
 	)
 
 	const { info: model } = useSelectedModel(apiConfiguration)
@@ -1504,7 +1503,15 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				setInputValue(preservedInput)
 			}
 		},
-		[handleSendMessage, setInputValue, switchToMode, alwaysAllowModeSwitch, clineAsk, markFollowUpAsAnswered],
+		[
+			handleSendMessage,
+			setInputValue,
+			switchToMode,
+			alwaysAllowModeSwitch,
+			clineAsk,
+			markFollowUpAsAnswered,
+			inputValue,
+		],
 	)
 
 	const handleBatchFileResponse = useCallback((response: { [key: string]: boolean }) => {

@@ -95,7 +95,7 @@ describe("ChatView Autosave Integration", () => {
 		hideAnnouncement: vi.fn(),
 	}
 
-	const createMockState = (overrides: any = {}) => ({
+	const _createMockState = (overrides: any = {}) => ({
 		version: "1.0.0",
 		clineMessages: [],
 		taskHistory: [],
@@ -109,12 +109,10 @@ describe("ChatView Autosave Integration", () => {
 		...overrides,
 	})
 
-	const renderChatView = (stateOverrides: any = {}) => {
-		const mockState = createMockState(stateOverrides)
-
+	const renderChatView = (_stateOverrides: any = {}) => {
 		return render(
 			<QueryClientProvider client={queryClient}>
-				<ExtensionStateContextProvider initialState={mockState}>
+				<ExtensionStateContextProvider>
 					<ChatView {...defaultProps} />
 				</ExtensionStateContextProvider>
 			</QueryClientProvider>,

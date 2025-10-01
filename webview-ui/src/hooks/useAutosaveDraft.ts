@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 
 /**
  * Configuration options for the useAutosaveDraft hook
@@ -8,8 +8,6 @@ export interface UseAutosaveDraftOptions {
 	key: string
 	/** Debounce delay in milliseconds before saving to localStorage (default: 100ms for fast responsiveness) */
 	debounceMs?: number
-	/** Whether to automatically clear the draft after submission */
-	clearOnSubmit?: boolean
 	/** Prefix for localStorage keys to avoid collisions */
 	storagePrefix?: string
 }
@@ -62,7 +60,7 @@ export interface UseAutosaveDraftReturn {
  * ```
  */
 export const useAutosaveDraft = (options: UseAutosaveDraftOptions): UseAutosaveDraftReturn => {
-	const { key, debounceMs = 100, clearOnSubmit = true, storagePrefix = "roo-draft" } = options
+	const { key, debounceMs = 100, storagePrefix = "roo-draft" } = options
 
 	// Local state for the hook
 	const [draftContent, setDraftContent] = useState<string>("")
