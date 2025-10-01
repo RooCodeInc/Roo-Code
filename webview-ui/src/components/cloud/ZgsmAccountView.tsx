@@ -110,8 +110,8 @@ const QuotaInfoDisplay = memo(
 			const hasQuota = quotaInfo.total_quota || quotaInfo.used_quota
 			const usagePercentage =
 				quotaInfo.used_quota && quotaInfo.total_quota
-					? Math.round((quotaInfo.used_quota / quotaInfo.total_quota) * 100)
-					: 0
+					? ((quotaInfo.used_quota / quotaInfo.total_quota) * 100)?.toFixed(2) || "0"
+					: "0"
 			const progressWidth =
 				quotaInfo.used_quota && quotaInfo.total_quota
 					? Math.max((quotaInfo.used_quota / quotaInfo.total_quota) * 100, 2)

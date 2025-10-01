@@ -9,11 +9,12 @@ export interface GitDiffInfo {
 	renamed: string[]
 	diffContent: string
 }
+type CommitType = "feat" | "fix" | "docs" | "style" | "refactor" | "test" | "chore" | "perf"
 
 export interface CommitMessageSuggestion {
 	subject: string
 	body?: string
-	type: "feat" | "fix" | "docs" | "style" | "refactor" | "test" | "chore"
+	type: CommitType
 	scope?: string
 }
 
@@ -21,4 +22,5 @@ export interface CommitGenerationOptions {
 	useConventionalCommits?: boolean
 	includeFileChanges?: boolean
 	maxLength?: number
+	language?: string
 }

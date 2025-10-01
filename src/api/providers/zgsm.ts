@@ -502,7 +502,7 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 				model: model.id,
 				messages: messages,
 				temperature: 0.9,
-				max_tokens: 200,
+				max_tokens: metadata?.maxLength ?? 200,
 			}
 
 			// Add max_tokens if needed

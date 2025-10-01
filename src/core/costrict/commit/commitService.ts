@@ -43,15 +43,23 @@ export class CommitService {
 					cancellable: false,
 				},
 				async (progress) => {
-					progress.report({ increment: 20 })
+					progress.report({ increment: 50 })
+
+					// Get configuration from VSCode settings
+					const config = vscode.workspace.getConfiguration("zgsm.commit")
+					const useConventionalCommits = config.get<boolean>("useConventionalCommits", true)
+					const maxLength = config.get<number>("maxLength", 72)
+					const language = config.get<string>("language", "auto")
 
 					// Generate commit message
 					const suggestion = await this.generator!.generateCommitMessage({
-						useConventionalCommits: true,
+						useConventionalCommits,
 						includeFileChanges: true,
+						maxLength,
+						language,
 					})
 
-					progress.report({ increment: 50 })
+					progress.report({ increment: 80 })
 
 					// Populate the commit message in SCM input
 					await this.populateCommitMessage(suggestion)

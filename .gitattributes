@@ -16,10 +16,13 @@ locales/** linguist-generated=true
 
 # Mark all locale directories as generated first
 src/i18n/locales/** linguist-generated=true
+src/i18n/costrict-i18n/locales/** linguist-generated=true
 webview-ui/src/i18n/locales/** linguist-generated=true
+webview-ui/src/i18n/costrict-i18n/locales/** linguist-generated=true
 
 # Then explicitly mark English directories as NOT generated (override the above)
 src/i18n/locales/en/** linguist-generated=false
 webview-ui/src/i18n/locales/en/** linguist-generated=false
-
+src/i18n/costrict-i18n/locales/en/** linguist-generated=false
+webview-ui/src/i18n/costrict-i18n/locales/en/** linguist-generated=false
 # This approach uses gitattributes' last-match-wins rule to exclude English while including all other locales

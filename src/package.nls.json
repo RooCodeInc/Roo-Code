@@ -70,5 +70,8 @@
 	"settings.apiResponseRenderMode.description": "API response rendering speed mode (fast = minimal delay, medium = balanced, slow = maximum compatibility). Higher values provide better compatibility but may feel less responsive.",
 	"settings.autoCommit.description": "Automatically commit current changed files after accepting AI model changes",
 	"settings.newTaskRequireTodos.description": "Require todos parameter when creating new tasks with the new_task tool",
-	"settings.codeIndex.embeddingBatchSize.description": "The batch size for embedding operations during code indexing. Adjust this based on your API provider's limits. Default is 60."
+	"settings.codeIndex.embeddingBatchSize.description": "The batch size for embedding operations during code indexing. Adjust this based on your API provider's limits. Default is 60.",
+	"settings.commit.useConventionalCommits.description": "Use conventional commit format when generating commit messages",
+	"settings.commit.maxLength.description": "Maximum length for commit message subject line (20-200 characters)",
+	"settings.commit.language.description": "Language for commit message generation (auto = use system language)"
 }

@@ -691,6 +691,29 @@
 					"minimum": 1,
 					"maximum": 200,
 					"description": "%settings.codeIndex.embeddingBatchSize.description%"
+				},
+				"zgsm.commit.useConventionalCommits": {
+					"type": "boolean",
+					"default": true,
+					"description": "%settings.commit.useConventionalCommits.description%"
+				},
+				"zgsm.commit.maxLength": {
+					"type": "number",
+					"default": 72,
+					"minimum": 20,
+					"maximum": 300,
+					"description": "%settings.commit.maxLength.description%"
+				},
+				"zgsm.commit.language": {
+					"type": "string",
+					"enum": [
+						"auto",
+						"zh-CN",
+						"zh-TW",
+						"en"
+					],
+					"default": "auto",
+					"description": "%settings.commit.language.description%"
 				}
 			}
 		}
