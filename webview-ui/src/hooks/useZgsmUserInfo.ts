@@ -107,7 +107,7 @@ export function useZgsmUserInfo(tokenOrConfig?: string | ProviderSettings): Zgsm
 				const parsedJwt = parseJwt(token)
 
 				const userInfo: ZgsmUserInfo = {
-					id: parsedJwt.id,
+					id: parsedJwt.universal_id || parsedJwt.id,
 					name: parsedJwt?.properties?.oauth_GitHub_username || parsedJwt.id || parsedJwt.phone,
 					picture: parsedJwt.avatar || parsedJwt?.properties?.oauth_GitHub_avatarUrl,
 					email: parsedJwt.email || parsedJwt?.properties?.oauth_GitHub_email,

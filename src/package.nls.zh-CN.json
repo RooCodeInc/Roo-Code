@@ -70,5 +70,8 @@
 	"settings.apiResponseRenderMode.description": "API 响应渲染速度模式（fast = 最小延迟，medium = 平衡模式，slow = 最大兼容性）。更高的值提供更好的兼容性但可能感觉响应较慢。",
 	"settings.apiRequestTimeout.description": "等待 API 响应的最长时间（秒）（0 = 无超时，1-3600秒，默认值：600秒）。对于像 LM Studio 和 Ollama 这样可能需要更多处理时间的本地提供商，建议使用更高的值。",
 	"settings.newTaskRequireTodos.description": "使用 new_task 工具创建新任务时需要 todos 参数",
-	"settings.codeIndex.embeddingBatchSize.description": "代码索引期间嵌入操作的批处理大小。根据 API 提供商的限制调整此设置。默认值为 60。"
+	"settings.codeIndex.embeddingBatchSize.description": "代码索引期间嵌入操作的批处理大小。根据 API 提供商的限制调整此设置。默认值为 60。",
+	"settings.commit.useConventionalCommits.description": "生成提交信息时使用常规提交格式",
+	"settings.commit.maxLength.description": "提交信息主题行的最大长度（20-300个字符）",
+	"settings.commit.language.description": "提交信息生成语言（auto = 使用系统语言）"
 }
