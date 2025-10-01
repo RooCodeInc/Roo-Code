@@ -6,7 +6,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react"
 export interface UseAutosaveDraftOptions {
 	/** Unique key to identify the draft (e.g., conversation/task ID) */
 	key: string
-	/** Debounce delay in milliseconds before saving to localStorage */
+	/** Debounce delay in milliseconds before saving to localStorage (default: 100ms for fast responsiveness) */
 	debounceMs?: number
 	/** Whether to automatically clear the draft after submission */
 	clearOnSubmit?: boolean
@@ -49,7 +49,7 @@ export interface UseAutosaveDraftReturn {
  *   hasInitialDraft
  * } = useAutosaveDraft({
  *   key: currentTask?.id || 'default',
- *   debounceMs: 300,
+ *   debounceMs: 100,
  *   clearOnSubmit: true
  * })
  *
@@ -62,7 +62,7 @@ export interface UseAutosaveDraftReturn {
  * ```
  */
 export const useAutosaveDraft = (options: UseAutosaveDraftOptions): UseAutosaveDraftReturn => {
-	const { key, debounceMs = 500, clearOnSubmit = true, storagePrefix = "roo-draft" } = options
+	const { key, debounceMs = 100, clearOnSubmit = true, storagePrefix = "roo-draft" } = options
 
 	// Local state for the hook
 	const [draftContent, setDraftContent] = useState<string>("")
