@@ -10,7 +10,15 @@ import { EditorRefPlugin } from "@lexical/react/LexicalEditorRefPlugin"
 import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin"
 import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary"
 import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin"
-import { $getRoot, EditorState, LexicalEditor } from "lexical"
+import {
+	$getRoot,
+	EditorState,
+	LexicalEditor,
+	$getSelection,
+	$isRangeSelection,
+	$createParagraphNode,
+	$createTextNode,
+} from "lexical"
 
 import { cn } from "@/lib/utils"
 import { ModeSelector } from "./ModeSelector"
@@ -25,11 +33,13 @@ import { IndexingStatusBadge } from "./IndexingStatusBadge"
 import { MentionNode } from "./lexical/MentionNode"
 import { LexicalMentionPlugin, type MentionInfo, type LexicalMentionPluginRef } from "./lexical/LexicalMentionPlugin"
 import { LexicalSelectAllPlugin } from "./lexical/LexicalSelectAllPlugin"
+import { LexicalPromptHistoryPlugin } from "./lexical/LexicalPromptHistoryPlugin"
 import ContextMenu from "./ContextMenu"
 import { ContextMenuOptionType, getContextMenuOptions, SearchResult } from "@/utils/context-mentions"
 import { MAX_IMAGES_PER_MESSAGE } from "./ChatView"
 import { CloudAccountSwitcher } from "../cloud/CloudAccountSwitcher"
 import { ChatContextBar } from "./ChatContextBar"
+import { usePromptHistoryData } from "./hooks/usePromptHistoryData"
 
 type ChatTextAreaProps = {
 	inputValue: string
@@ -84,11 +94,11 @@ export const ChatLexicalTextArea = forwardRef<LexicalEditor, ChatTextAreaProps>(
 			listApiConfigMeta,
 			customModes,
 			customModePrompts,
-			// cwd,
+			cwd,
 			pinnedApiConfigs,
 			togglePinnedApiConfig,
-			// taskHistory,
-			// clineMessages,
+			taskHistory,
+			clineMessages,
 			commands,
 			cloudUserInfo,
 		} = useExtensionState()
@@ -106,6 +116,13 @@ export const ChatLexicalTextArea = forwardRef<LexicalEditor, ChatTextAreaProps>(
 		const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 		const [isEnhancingPrompt, setIsEnhancingPrompt] = useState(false)
 		const [isMouseDownOnMenu, setIsMouseDownOnMenu] = useState(false)
+		const editorRef = useRef<LexicalEditor | null>(null)
+
+		const { promptHistory } = usePromptHistoryData({
+			clineMessages,
+			taskHistory,
+			cwd,
+		})
 
 		// Find the ID and display text for the currently selected API configuration.
 		const { currentConfigId, displayName } = useMemo(() => {
@@ -310,10 +327,49 @@ export const ChatLexicalTextArea = forwardRef<LexicalEditor, ChatTextAreaProps>(
 				} else if (message.type === "ttsStop") {
 					setIsTtsPlaying(false)
 				} else if (message.type === "enhancedPrompt") {
-					if (message.text) {
+					if (message.text && editorRef.current) {
+						editorRef.current.update(() => {
+							const root = $getRoot()
+							const selection = $getSelection()
+
+							// Clear current content
+							root.clear()
+
+							// Insert new text
+							const paragraphNode = $createParagraphNode()
+							const textNode = $createTextNode(message.text)
+							paragraphNode.append(textNode)
+							root.append(paragraphNode)
+
+							// Move cursor to end
+							if ($isRangeSelection(selection)) {
+								root.selectEnd()
+							}
+						})
 						setInputValue(message.text)
 					}
 					setIsEnhancingPrompt(false)
+				} else if (message.type === "insertTextIntoTextarea") {
+					if (message.text && editorRef.current) {
+						// Insert text at cursor position
+						editorRef.current.update(() => {
+							const selection = $getSelection()
+							if ($isRangeSelection(selection)) {
+								const anchor = selection.anchor
+								const textContent = anchor.getNode().getTextContent()
+								const offset = anchor.offset
+
+								// Check if we need to add a space before
+								const textBefore = textContent.slice(0, offset)
+								const needsSpaceBefore = textBefore.length > 0 && !textBefore.endsWith(" ")
+								const prefix = needsSpaceBefore ? " " : ""
+
+								// Insert the text with space after
+								const insertText = prefix + message.text + " "
+								selection.insertText(insertText)
+							}
+						})
+					}
 				} else if (message.type === "commitSearchResults") {
 					const commits = message.commits.map((commit: any) => ({
 						type: ContextMenuOptionType.Git,
@@ -329,9 +385,6 @@ export const ChatLexicalTextArea = forwardRef<LexicalEditor, ChatTextAreaProps>(
 					if (message.requestId === searchRequestId) {
 						setFileSearchResults(message.results || [])
 					}
-				} else if (message.type === "insertTextIntoTextarea") {
-					// Lexical editor handles inserts differently. Future improvement.
-					console.log("Insert text requested for Lexical, but not yet implemented:", message.text)
 				}
 			}
 
@@ -698,6 +751,10 @@ export const ChatLexicalTextArea = forwardRef<LexicalEditor, ChatTextAreaProps>(
 								{/* see: https://github.com/facebook/lexical/discussions/3590#discussioncomment-8955421 */}
 								<EditorRefPlugin
 									editorRef={(el) => {
+										// Store editor ref locally
+										editorRef.current = el
+
+										// Also forward to parent ref
 										if (typeof ref === "function") {
 											ref(el)
 										} else if (ref) {
@@ -775,6 +832,10 @@ export const ChatLexicalTextArea = forwardRef<LexicalEditor, ChatTextAreaProps>(
 									onMentionHide={handleMentionHide}
 									onMentionUpdate={handleMentionUpdate}
 									materialIconsBaseUri={materialIconsBaseUri}
+								/>
+								<LexicalPromptHistoryPlugin
+									promptHistory={promptHistory}
+									showContextMenu={showContextMenu}
 								/>
 								<LexicalSelectAllPlugin />
 							</LexicalComposer>
