@@ -35,6 +35,7 @@ import { LexicalMentionPlugin, type MentionInfo, type LexicalMentionPluginRef } 
 import { LexicalSelectAllPlugin } from "./lexical/LexicalSelectAllPlugin"
 import { LexicalPromptHistoryPlugin } from "./lexical/LexicalPromptHistoryPlugin"
 import { LexicalContextMenuPlugin } from "./lexical/LexicalContextMenuPlugin"
+import { LexicalPastePlugin } from "./lexical/LexicalPastePlugin"
 import ContextMenu from "./ContextMenu"
 import { ContextMenuOptionType, SearchResult } from "@/utils/context-mentions"
 import { MAX_IMAGES_PER_MESSAGE } from "./ChatView"
@@ -194,68 +195,6 @@ export const ChatLexicalTextArea = forwardRef<LexicalEditor, ChatTextAreaProps>(
 				setSelectedImages((prevImages) => prevImages.filter((_, index) => index !== indexToRemove))
 			},
 			[setSelectedImages],
-		)
-
-		const handlePaste = useCallback(
-			async (e: React.ClipboardEvent) => {
-				const items = e.clipboardData.items
-				const pastedText = e.clipboardData.getData("text")
-
-				const urlRegex = /^\S+:\/\/\S+$/
-				if (urlRegex.test(pastedText.trim())) {
-					e.preventDefault()
-					// Lexical will handle inserting text, but we may need to adjust cursor
-					// or ensure the space is added, depending on how Lexical handles pastes.
-					// For now, let Lexical's default paste handle it.
-					return
-				}
-
-				const acceptedTypes = ["png", "jpeg", "webp"]
-
-				const imageItems = Array.from(items).filter((item) => {
-					const [type, subtype] = item.type.split("/")
-					return type === "image" && acceptedTypes.includes(subtype)
-				})
-
-				if (!shouldDisableImages && imageItems.length > 0) {
-					e.preventDefault()
-
-					const imagePromises = imageItems.map((item) => {
-						return new Promise<string | null>((resolve) => {
-							const blob = item.getAsFile()
-
-							if (!blob) {
-								resolve(null)
-								return
-							}
-
-							const reader = new FileReader()
-
-							reader.onloadend = () => {
-								if (reader.error) {
-									console.error(t("chat:errorReadingFile"), reader.error)
-									resolve(null)
-								} else {
-									const result = reader.result
-									resolve(typeof result === "string" ? result : null)
-								}
-							}
-
-							reader.readAsDataURL(blob)
-						})
-					})
-
-					const imageDataArray = await Promise.all(imagePromises)
-					const dataUrls = imageDataArray.filter((dataUrl): dataUrl is string => dataUrl !== null)
-
-					if (dataUrls.length > 0) {
-						setSelectedImages((prevImages) => [...prevImages, ...dataUrls].slice(0, MAX_IMAGES_PER_MESSAGE))
-					} else {
-						console.warn(t("chat:noValidImages"))
-					}
-				}
-			},
-			[shouldDisableImages, setSelectedImages, t],
 		)
 
 		const handleDrop = useCallback(
@@ -725,7 +664,6 @@ export const ChatLexicalTextArea = forwardRef<LexicalEditor, ChatTextAreaProps>(
 												setIsFocused(false)
 												setIsMouseDownOnMenu(false)
 											}}
-											onPaste={handlePaste}
 										/>
 									}
 									ErrorBoundary={LexicalErrorBoundary}
@@ -733,6 +671,11 @@ export const ChatLexicalTextArea = forwardRef<LexicalEditor, ChatTextAreaProps>(
 								<OnChangePlugin onChange={handleEditorChange} />
 								<HistoryPlugin />
 								<AutoFocusPlugin />
+								<LexicalPastePlugin
+									materialIconsBaseUri={materialIconsBaseUri}
+									shouldDisableImages={shouldDisableImages}
+									setSelectedImages={setSelectedImages}
+								/>
 								<LexicalMentionPlugin
 									ref={mentionPluginRef}
 									onMentionTrigger={handleMentionTrigger}
