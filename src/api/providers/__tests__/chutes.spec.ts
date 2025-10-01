@@ -275,6 +275,52 @@ describe("ChutesHandler", () => {
 		)
 	})
 
+	it("should return zai-org/GLM-4.6-FP8 model with correct configuration", () => {
+		const testModelId: ChutesModelId = "zai-org/GLM-4.6-FP8"
+		const handlerWithModel = new ChutesHandler({
+			apiModelId: testModelId,
+			chutesApiKey: "test-chutes-api-key",
+		})
+		const model = handlerWithModel.getModel()
+		expect(model.id).toBe(testModelId)
+		expect(model.info).toEqual(
+			expect.objectContaining({
+				maxTokens: 32768,
+				contextWindow: 200000,
+				supportsImages: false,
+				supportsPromptCache: false,
+				inputPrice: 0,
+				outputPrice: 0,
+				description:
+					"GLM-4.6-FP8 model with 200K token context window, state-of-the-art performance with fast inference.",
+				temperature: 0.5, // Default temperature for non-DeepSeek models
+			}),
+		)
+	})
+
+	it("should return meituan-longcat/LongCat-Flash-Thinking-FP8 model with correct configuration", () => {
+		const testModelId: ChutesModelId = "meituan-longcat/LongCat-Flash-Thinking-FP8"
+		const handlerWithModel = new ChutesHandler({
+			apiModelId: testModelId,
+			chutesApiKey: "test-chutes-api-key",
+		})
+		const model = handlerWithModel.getModel()
+		expect(model.id).toBe(testModelId)
+		expect(model.info).toEqual(
+			expect.objectContaining({
+				maxTokens: 32768,
+				contextWindow: 128000,
+				supportsImages: false,
+				supportsPromptCache: false,
+				inputPrice: 0,
+				outputPrice: 0,
+				description:
+					"LongCat Flash Thinking FP8 model with 128K context window, optimized for complex reasoning and coding tasks.",
+				temperature: 0.5, // Default temperature for non-DeepSeek models
+			}),
+		)
+	})
+
 	it("should return Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8 model with correct configuration", () => {
 		const testModelId: ChutesModelId = "Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8"
 		const handlerWithModel = new ChutesHandler({

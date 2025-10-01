@@ -35,6 +35,7 @@ export type ChutesModelId =
 	| "zai-org/GLM-4.5-turbo"
 	| "zai-org/GLM-4.6-FP8"
 	| "zai-org/GLM-4.6-turbo"
+	| "meituan-longcat/LongCat-Flash-Thinking-FP8"
 	| "moonshotai/Kimi-K2-Instruct-75k"
 	| "moonshotai/Kimi-K2-Instruct-0905"
 	| "Qwen/Qwen3-235B-A22B-Thinking-2507"
@@ -338,6 +339,16 @@ export const chutesModels = {
 		inputPrice: 1.15,
 		outputPrice: 3.25,
 		description: "GLM-4.6-turbo model with 200K-token context window, optimized for fast inference.",
+	},
+	"meituan-longcat/LongCat-Flash-Thinking-FP8": {
+		maxTokens: 32768,
+		contextWindow: 128000,
+		supportsImages: false,
+		supportsPromptCache: false,
+		inputPrice: 0,
+		outputPrice: 0,
+		description:
+			"LongCat Flash Thinking FP8 model with 128K context window, optimized for complex reasoning and coding tasks.",
 	},
 	"Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8": {
 		maxTokens: 32768,
