@@ -246,7 +246,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 				lmstudio: {},
 				"vercel-ai-gateway": mockModels,
 				huggingface: {},
-				"io-intelligence": {},
+				"io-intelligence": mockModels,
 			},
 		})
 	})
@@ -337,7 +337,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 				lmstudio: {},
 				"vercel-ai-gateway": mockModels,
 				huggingface: {},
-				"io-intelligence": {},
+				"io-intelligence": mockModels,
 			},
 		})
 	})
@@ -360,6 +360,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 			.mockRejectedValueOnce(new Error("Unbound API error")) // unbound
 			.mockResolvedValueOnce(mockModels) // vercel-ai-gateway
 			.mockResolvedValueOnce(mockModels) // deepinfra
+			.mockResolvedValueOnce(mockModels) // io-intelligence
 			.mockRejectedValueOnce(new Error("LiteLLM connection failed")) // litellm
 
 		await webviewMessageHandler(mockClineProvider, {
@@ -380,7 +381,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 				lmstudio: {},
 				"vercel-ai-gateway": mockModels,
 				huggingface: {},
-				"io-intelligence": {},
+				"io-intelligence": mockModels,
 			},
 		})
 
@@ -416,6 +417,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 			.mockRejectedValueOnce(new Error("Unbound API error")) // unbound
 			.mockRejectedValueOnce(new Error("Vercel AI Gateway error")) // vercel-ai-gateway
 			.mockRejectedValueOnce(new Error("DeepInfra API error")) // deepinfra
+			.mockRejectedValueOnce(new Error("IO Intelligence API error")) // io-intelligence
 			.mockRejectedValueOnce(new Error("LiteLLM connection failed")) // litellm
 
 		await webviewMessageHandler(mockClineProvider, {
@@ -456,6 +458,13 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 			success: false,
 			error: "DeepInfra API error",
 			values: { provider: "deepinfra" },
+		})
+
+		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
+			type: "singleRouterModelFetchResponse",
+			success: false,
+			error: "IO Intelligence API error",
+			values: { provider: "io-intelligence" },
 		})
 
 		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
