@@ -96,6 +96,15 @@ export const useAutosaveDraft = (options: UseAutosaveDraftOptions): UseAutosaveD
 			setDraftContent(savedDraft)
 			setHasInitialDraft(true)
 		}
+
+		// Cleanup: clear any pending debounce when storageKey changes
+		return () => {
+			if (debounceTimerRef.current !== null) {
+				clearTimeout(debounceTimerRef.current)
+				debounceTimerRef.current = null
+			}
+			setIsDebouncing(false)
+		}
 	}, [storageKey, safeLocalStorage])
 
 	/**

@@ -608,12 +608,14 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					try {
 						console.log("queueMessage", text, images)
 						vscode.postMessage({ type: "queueMessage", text, images })
+						// Clear selectedImages to prevent image duplication
+						// Images are now in the queue, so we clear them from the UI state
+						setSelectedImages([])
 						// RACE CONDITION FIX: Do NOT clear draft immediately when queueing
 						// The message is queued, not sent yet. Keep the draft visible until
 						// the system processes the queue. This prevents data loss if user
 						// typed quickly (<100ms) or if concurrent tool response arrived.
 						// The draft will be cleared when the queued message is actually processed.
-						// Note: setSelectedImages is also kept to maintain the message state
 					} catch (error) {
 						console.error(
 							`Failed to queue message: ${error instanceof Error ? error.message : String(error)}`,
