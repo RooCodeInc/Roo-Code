@@ -1277,18 +1277,20 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 								<StandardTooltip content={t("chat:sendMessage")}>
 									<button
 										aria-label={t("chat:sendMessage")}
-										disabled={false}
+										disabled={!hasInputContent}
 										onClick={onSend}
 										className={cn(
 											"relative inline-flex items-center justify-center",
 											"bg-transparent border-none p-1.5",
 											"rounded-md min-w-[28px] min-h-[28px]",
-											"opacity-60 hover:opacity-100 text-vscode-descriptionForeground hover:text-vscode-foreground",
+											"hover:opacity-100 text-vscode-descriptionForeground hover:text-vscode-foreground",
 											"transition-all duration-150",
 											"hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.15)]",
 											"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
 											"active:bg-[rgba(255,255,255,0.1)]",
-											"cursor-pointer",
+											hasInputContent
+												? "opacity-100 pointer-events-auto cursor-pointer"
+												: "opacity-60 pointer-events-auto cursor-not-allowed",
 										)}>
 										<SendHorizontal className="w-4 h-4" />
 									</button>

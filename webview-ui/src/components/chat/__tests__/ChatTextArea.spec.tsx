@@ -1137,9 +1137,9 @@ describe("ChatTextArea", () => {
 
 			// Check that the button is visible (has opacity-100 class when content exists)
 			expect(sendButton).toHaveClass("opacity-100")
-			expect(sendButton).toHaveClass("pointer-events-auto")
-			expect(sendButton).not.toHaveClass("opacity-0")
-			expect(sendButton).not.toHaveClass("pointer-events-none")
+			expect(sendButton).toHaveClass("cursor-pointer")
+			expect(sendButton).not.toHaveClass("opacity-60")
+			expect(sendButton).not.toHaveClass("cursor-not-allowed")
 		})
 
 		it("should hide send button when there is no text and no images", () => {
@@ -1153,11 +1153,11 @@ describe("ChatTextArea", () => {
 
 			expect(sendButton).toBeInTheDocument()
 
-			// Check that the button is hidden (has opacity-0 class when no content)
-			expect(sendButton).toHaveClass("opacity-0")
-			expect(sendButton).toHaveClass("pointer-events-none")
+			// Check that the button is hidden (has opacity-60 class when no content)
+			expect(sendButton).toHaveClass("opacity-60")
+			expect(sendButton).toHaveClass("cursor-not-allowed")
 			expect(sendButton).not.toHaveClass("opacity-100")
-			expect(sendButton).not.toHaveClass("pointer-events-auto")
+			expect(sendButton).not.toHaveClass("cursor-pointer")
 		})
 
 		it("should show send button when there is text but no images", () => {

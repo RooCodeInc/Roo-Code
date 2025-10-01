@@ -1,6 +1,6 @@
 <div align="center">
     <h1>Costrict  (prev. Shenma)</h1>
-    <h2>An enterprise-grade AI agent built for serious development</h2>
+    <h2>Strict AI coder for enterprises</h2>
 </div>
 <br>
 <div align="center">
