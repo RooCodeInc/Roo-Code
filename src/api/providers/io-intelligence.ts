@@ -117,6 +117,12 @@ export class IOIntelligenceHandler extends BaseProvider implements SingleComplet
 
 	override getModel() {
 		const modelId = this.options.ioIntelligenceModelId || ioIntelligenceDefaultModelId
+
+		// If models haven't been fetched yet, use fallback
+		if (!this.models || Object.keys(this.models).length === 0) {
+			this.models = ioIntelligenceModels
+		}
+
 		let modelInfo = this.models[modelId]
 
 		if (!modelInfo) {
