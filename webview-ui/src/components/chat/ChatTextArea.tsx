@@ -42,6 +42,17 @@ import { ContextMenuOptionType, SearchResult } from "@/utils/context-mentions"
 import { MAX_IMAGES_PER_MESSAGE } from "./ChatView"
 import { CloudAccountSwitcher } from "../cloud/CloudAccountSwitcher"
 import { ChatContextBar } from "./ChatContextBar"
+import { escapeSpaces } from "@/utils/path-mentions"
+
+// Utility function for normalizing directory paths
+const normalizeDirectoryPath = (path: string): string => {
+	// Ensure directories have exactly one trailing slash
+	if (path.endsWith("/")) {
+		// Remove multiple trailing slashes and add exactly one
+		return path.replace(/\/+$/, "/")
+	}
+	return path
+}
 
 type ChatTextAreaProps = {
 	inputValue: string
@@ -338,7 +349,7 @@ export const ChatTextArea = forwardRef<LexicalEditor, ChatTextAreaProps>(
 					.filter((path) => !openedTabs.some((tab) => tab.path && "/" + tab.path === path))
 					.map((path) => ({
 						type: path.endsWith("/") ? ContextMenuOptionType.Folder : ContextMenuOptionType.File,
-						value: path,
+						value: path.endsWith("/") ? normalizeDirectoryPath(path) : path,
 					})),
 			]
 		}, [filePaths, gitCommits, openedTabs])
@@ -413,13 +424,7 @@ export const ChatTextArea = forwardRef<LexicalEditor, ChatTextAreaProps>(
 					setSelectedMenuIndex(-1)
 					setInputValue("")
 					setShowContextMenu(false)
-if (type === ContextMenuOptionType.Command && value) {
-  setSelectedMenuIndex(-1)
-  setShowContextMenu(false)
-  mentionPluginRef.current?.insertMention(value, "/", ContextMenuOptionType.Command)
-  return
-}
-					setInputValue(commandMention + " ")
+					setInputValue(value + " ")
 					return
 				}
 
@@ -444,7 +449,12 @@ if (type === ContextMenuOptionType.Command && value) {
 					let insertValue = value || ""
 
 					if (type === ContextMenuOptionType.File || type === ContextMenuOptionType.Folder) {
-						insertValue = value || ""
+						// Escape spaces in file/folder paths and normalize directory paths
+						let processedValue = value || ""
+						if (type === ContextMenuOptionType.Folder) {
+							processedValue = normalizeDirectoryPath(processedValue)
+						}
+						insertValue = escapeSpaces(processedValue)
 					} else if (type === ContextMenuOptionType.Problems) {
 						insertValue = "problems"
 					} else if (type === ContextMenuOptionType.Terminal) {
@@ -508,8 +518,8 @@ if (type === ContextMenuOptionType.Command && value) {
 							} else if (type === "terminal") {
 								serializedText += "@terminal"
 							} else {
-								// File or folder mention
-								serializedText += `@${value}`
+								const escapedValue = escapeSpaces(value)
+								serializedText += `@${escapedValue}`
 							}
 						} else if (trigger === "/") {
 							// Command mention
