@@ -536,7 +536,8 @@
 			"password": "Kata sandi",
 			"apiKey": "Kunci API",
 			"authType": "Jenis autentikasi",
-			"projectId": "ID Proyek"
+			"projectId": "ID Proyek",
+			"urlDescription": "Masukkan URL lengkap instans IBM Cloud Pak for Data Anda"
 		}
 	},
 	"browser": {

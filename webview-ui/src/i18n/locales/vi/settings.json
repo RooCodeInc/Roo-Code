@@ -532,7 +532,8 @@
 			"password": "Mật khẩu",
 			"apiKey": "Khóa API",
 			"authType": "Loại xác thực",
-			"projectId": "ID dự án"
+			"projectId": "ID dự án",
+			"urlDescription": "Nhập URL đầy đủ của phiên bản IBM Cloud Pak for Data của bạn"
 		}
 	},
 	"browser": {

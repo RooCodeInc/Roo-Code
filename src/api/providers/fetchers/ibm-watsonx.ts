@@ -134,12 +134,16 @@ export async function getWatsonxModels(
 				}
 			}
 		} catch (error) {
-			console.warn("Error fetching models from IBM watsonx API:", error)
-			return {}
+			console.error("Error fetching models from IBM watsonx API:", error)
+			throw new Error(
+				`Failed to fetch models from IBM watsonx API: ${error instanceof Error ? error.message : "Unknown error"}`,
+			)
 		}
 		return knownModels
 	} catch (apiError) {
 		console.error("Error fetching IBM watsonx models:", apiError)
-		return {}
+		throw new Error(
+			`Failed to fetch models from IBM watsonx API: ${apiError instanceof Error ? apiError.message : "Unknown error"}`,
+		)
 	}
 }

@@ -532,7 +532,8 @@
 			"password": "पासवर्ड",
 			"apiKey": "API कुंजी",
 			"authType": "प्रमाणीकरण प्रकार",
-			"projectId": "परियोजना आईडी"
+			"projectId": "परियोजना आईडी",
+			"urlDescription": "अपने IBM Cloud Pak for Data इंस्टेंस का पूरा URL दर्ज करें"
 		}
 	},
 	"browser": {

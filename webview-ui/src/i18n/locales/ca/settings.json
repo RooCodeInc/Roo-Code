@@ -532,7 +532,8 @@
 			"password": "Contrasenya",
 			"apiKey": "Clau API",
 			"authType": "Tipus d'autenticació",
-			"projectId": "ID del projecte"
+			"projectId": "ID del projecte",
+			"urlDescription": "Introduïu l'URL complet de la vostra instància d'IBM Cloud Pak for Data"
 		}
 	},
 	"browser": {

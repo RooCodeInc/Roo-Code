@@ -526,13 +526,14 @@
 			"maxTokensDescription": "Claude Codeレスポンスの最大出力トークン数。デフォルトは8000です。"
 		},
 		"watsonx": {
-			"platform": "プラットフォームを選択",
-			"region": "リージョンを選択",
+			"platform": "プラットフォーム",
+			"region": "リージョン",
 			"username": "ユーザー名",
 			"password": "パスワード",
 			"apiKey": "APIキー",
-			"authType": "認証タイプを選択",
-			"projectId": "プロジェクトID"
+			"authType": "認証タイプ",
+			"projectId": "プロジェクトID",
+			"urlDescription": "IBM Cloud Pak for Dataインスタンスの完全なURLを入力してください"
 		}
 	},
 	"browser": {

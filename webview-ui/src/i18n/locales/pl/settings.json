@@ -532,7 +532,8 @@
 			"password": "Hasło",
 			"apiKey": "Klucz API",
 			"authType": "Typ uwierzytelniania",
-			"projectId": "ID projektu"
+			"projectId": "ID projektu",
+			"urlDescription": "Wprowadź pełny adres URL instancji IBM Cloud Pak for Data"
 		}
 	},
 	"browser": {
