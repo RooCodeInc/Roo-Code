@@ -380,7 +380,7 @@ export const WatsonxAI = ({
 					) : (
 						<div className="w-full mb-1">
 							<VSCodeTextField
-								value={apiConfiguration.watsonxPassword}
+				value={apiConfiguration.watsonxPassword || ""}
 								type="password"
 								onInput={handleInputChange("watsonxPassword")}
 								placeholder={t("settings:providers.watsonx.password")}
