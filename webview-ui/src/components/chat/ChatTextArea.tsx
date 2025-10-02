@@ -537,9 +537,13 @@ export const ChatTextArea = forwardRef<LexicalEditor, ChatTextAreaProps>(
 				}
 
 				const children = root.getChildren()
-				for (const child of children) {
+				children.forEach((child, i) => {
 					traverse(child)
-				}
+					// Add newline between paragraph-level children (except after the last one)
+					if (i < children.length - 1) {
+						serializedText += "\n"
+					}
+				})
 
 				return serializedText
 			})
