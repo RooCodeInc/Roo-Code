@@ -29,11 +29,10 @@ export const ZAi = ({ apiConfiguration, setApiConfigurationField }: ZAiProps) =>
 	)
 
 	const handleCheckboxChange = useCallback(
-		(field: keyof ProviderSettings) => (event: Event) => {
-			const target = event.target as HTMLInputElement
-			setApiConfigurationField(field, target.checked)
+		(field: keyof ProviderSettings) => () => {
+			setApiConfigurationField(field, !apiConfiguration?.[field])
 		},
-		[setApiConfigurationField],
+		[setApiConfigurationField, apiConfiguration],
 	)
 
 	return (
