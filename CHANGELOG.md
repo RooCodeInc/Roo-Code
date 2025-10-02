@@ -1,5 +1,36 @@
 # Roo Code Changelog
 
+## [3.28.14] - 2025-09-30
+
+![3.28.14 Release - GLM-4.6 Model Support](/releases/3.28.14-release.png)
+
+- Add support for GLM-4.6 model for z.ai provider (#8406 by @dmarkey, PR by @roomote)
+
+## [3.28.13] - 2025-09-29
+
+- Fix: Remove topP parameter from Bedrock inference config (#8377 by @ronyblum, PR by @daniel-lxs)
+- Fix: Correct Vertex AI Sonnet 4.5 model configuration (#8387 by @nickcatal, PR by @mrubens!)
+
+## [3.28.12] - 2025-09-29
+
+- Fix: Correct Anthropic Sonnet 4.5 model ID and add Bedrock 1M context checkbox (thanks @daniel-lxs!)
+
+## [3.28.11] - 2025-09-29
+
+- Fix: Correct AWS Bedrock Claude Sonnet 4.5 model identifier (#8371 by @sunhyung, PR by @app/roomote)
+- Fix: Correct Claude Sonnet 4.5 model ID format (thanks @daniel-lxs!)
+
+## [3.28.10] - 2025-09-29
+
+![3.28.10 Release - Kangaroo Writing Sonnet 4.5](/releases/3.28.10-release.png)
+
+- Feat: Add Sonnet 4.5 support (thanks @daniel-lxs!)
+- Fix: Resolve max_completion_tokens issue for GPT-5 models in LiteLLM provider (#6979 by @lx1054331851, PR by @roomote)
+- Fix: Make chat icons properly sized with shrink-0 class (thanks @mrubens!)
+- Enhancement: Track telemetry settings changes for better analytics (thanks @mrubens!)
+- Web: Add testimonials section to website (thanks @brunobergher!)
+- CI: Refresh contrib.rocks cache workflow for contributor badges (thanks @hannesrudolph!)
+
 ## [3.28.9] - 2025-09-26
 
 ![3.28.9 Release - Supernova Upgrade](/releases/3.28.9-release.png)
