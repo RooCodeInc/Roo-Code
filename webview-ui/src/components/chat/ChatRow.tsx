@@ -1085,7 +1085,7 @@ export const ChatRowContent = ({
 										e.stopPropagation() // Prevent parent onClick from firing
 										vscode.postMessage({ type: "switchTab", tab: "cloud" })
 									}}
-									title={cloudIsAuthenticated ? t("chat:apiRequest.viewTokenUsage") : undefined}>
+									title={t("chat:apiRequest.viewTokenUsage")}>
 									${Number(cost || 0)?.toFixed(4)}
 								</div>
 							</div>

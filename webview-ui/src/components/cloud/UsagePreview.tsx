@@ -136,7 +136,10 @@ export const UsagePreview = ({ onViewDetails }: UsagePreviewProps) => {
 		<div className="cursor-pointer group rounded-lg bg-vscode-editor-background relative" onClick={onViewDetails}>
 			<div className="p-4">
 				{/* Chart with daily usage bars */}
-				<div className="h-24 min-[450px]:h-40 rounded mb-3 flex items-end gap-1 pb-2">
+				<div
+					className="h-24 min-[450px]:h-40 rounded mb-3 flex items-end gap-1 pb-2"
+					role="img"
+					aria-label={t("cloud:usagePreview.costPastDays", { count: data.days.length })}>
 					{data &&
 						Array.isArray(data.days) &&
 						data.days.map((day, index) => (
@@ -144,6 +147,7 @@ export const UsagePreview = ({ onViewDetails }: UsagePreviewProps) => {
 								<div
 									className="w-full rounded-t-xs transition-all bg-vscode-button-background"
 									style={{ height: `${getBarHeight(day.cost)}%` }}
+									aria-label={`${formatDateShort(new Date(day.date).getTime())}: ${formatCost(day.cost)}`}
 								/>
 								<span className="text-[9px] h-[1em] hidden min-[300px]:block overflow-clip text-center text-muted-foreground mt-0.5">
 									{formatDateShort(new Date(day.date).getTime())}
