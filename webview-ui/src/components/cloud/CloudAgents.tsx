@@ -46,10 +46,10 @@ const CloudAgents: React.FC<CloudAgentsProps> = ({ cloudApiUrl, sessionToken }) 
 				console.error("Failed to fetch cloud agents, using mock data:", err)
 				// Use mock data on error
 				const mockAgents: CloudAgent[] = [
-					{ id: "1", name: "Code Assistant", type: "code", icon: "💻" },
-					{ id: "2", name: "Test Generator", type: "test", icon: "🧪" },
-					{ id: "3", name: "Code Reviewer", type: "review", icon: "👁️" },
-					{ id: "4", name: "Documentation Writer", type: "docs", icon: "📝" },
+					{ id: "1", name: "Code Assistant", type: "code" },
+					{ id: "2", name: "Test Generator", type: "test" },
+					{ id: "3", name: "Code Reviewer", type: "review" },
+					{ id: "4", name: "Documentation Writer", type: "docs" },
 				]
 				setAgents(mockAgents)
 			} finally {
