@@ -15,7 +15,6 @@ import { handleNewTask } from "./handleTask"
 import { CodeIndexManager } from "../services/code-index/manager"
 import { importSettingsWithFeedback } from "../core/config/importExport"
 import { MdmService } from "../services/mdm/MdmService"
-import { t } from "../i18n"
 
 /**
  * Helper to get the visible ClineProvider instance or log if not found.
@@ -239,15 +238,6 @@ const getCommandsMap = ({ context, outputChannel, provider }: RegisterCommandOpt
 		const newMultiplier = Math.min(Math.round((currentMultiplier + 0.1) * 10) / 10, 3.0)
 
 		await config.update("fontSizeMultiplier", newMultiplier, vscode.ConfigurationTarget.Global)
-
-		const visibleProvider = getVisibleProviderOrLog(outputChannel)
-		if (visibleProvider) {
-			visibleProvider.postMessageToWebview({
-				type: "action",
-				action: "fontSizeChanged",
-				fontSizeMultiplier: newMultiplier,
-			})
-		}
 	},
 	decreaseFontSize: async () => {
 		const config = vscode.workspace.getConfiguration(Package.name)
@@ -255,15 +245,6 @@ const getCommandsMap = ({ context, outputChannel, provider }: RegisterCommandOpt
 		const newMultiplier = Math.min(Math.round((currentMultiplier - 0.1) * 10) / 10, 3.0)
 
 		await config.update("fontSizeMultiplier", newMultiplier, vscode.ConfigurationTarget.Global)
-
-		const visibleProvider = getVisibleProviderOrLog(outputChannel)
-		if (visibleProvider) {
-			visibleProvider.postMessageToWebview({
-				type: "action",
-				action: "fontSizeChanged",
-				fontSizeMultiplier: newMultiplier,
-			})
-		}
 	},
 })
 
