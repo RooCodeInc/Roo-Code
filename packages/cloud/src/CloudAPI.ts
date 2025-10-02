@@ -156,10 +156,10 @@ export class CloudAPI {
 
 			// Return mock data when API fails as requested
 			return [
-				{ id: "1", name: "Code Assistant", type: "code", icon: "💻" },
-				{ id: "2", name: "Test Generator", type: "test", icon: "🧪" },
-				{ id: "3", name: "Code Reviewer", type: "review", icon: "👁️" },
-				{ id: "4", name: "Documentation Writer", type: "docs", icon: "📝" },
+				{ id: "1", name: "Code Assistant", type: "code" },
+				{ id: "2", name: "Test Generator", type: "test" },
+				{ id: "3", name: "Code Reviewer", type: "review" },
+				{ id: "4", name: "Documentation Writer", type: "docs" },
 			]
 		}
 	}
