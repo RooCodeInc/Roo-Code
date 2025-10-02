@@ -524,6 +524,15 @@
 			"placeholder": "Domyślnie: claude",
 			"maxTokensLabel": "Maksymalna liczba tokenów wyjściowych",
 			"maxTokensDescription": "Maksymalna liczba tokenów wyjściowych dla odpowiedzi Claude Code. Domyślnie 8000."
+		},
+		"watsonx": {
+			"platform": "Platforma",
+			"region": "Region",
+			"username": "Nazwa użytkownika",
+			"password": "Hasło",
+			"apiKey": "Klucz API",
+			"authType": "Typ uwierzytelniania",
+			"projectId": "ID projektu"
 		}
 	},
 	"browser": {
