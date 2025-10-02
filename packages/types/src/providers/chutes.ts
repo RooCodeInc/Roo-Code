@@ -7,7 +7,7 @@ export type ChutesModelId =
 	| "deepseek-ai/DeepSeek-V3"
 	| "deepseek-ai/DeepSeek-V3.1"
 	| "deepseek-ai/DeepSeek-V3.1-Terminus"
-	| "deepseek-ai/DeepSeek-V3.1-Turbo"
+	| "deepseek-ai/DeepSeek-V3.1-turbo"
 	| "unsloth/Llama-3.3-70B-Instruct"
 	| "chutesai/Llama-4-Scout-17B-16E-Instruct"
 	| "unsloth/Mistral-Nemo-Instruct-2407"
@@ -31,6 +31,7 @@ export type ChutesModelId =
 	| "tngtech/DeepSeek-R1T-Chimera"
 	| "zai-org/GLM-4.5-Air"
 	| "zai-org/GLM-4.5-FP8"
+	| "zai-org/GLM-4.6-FP8"
 	| "moonshotai/Kimi-K2-Instruct-75k"
 	| "moonshotai/Kimi-K2-Instruct-0905"
 	| "Qwen/Qwen3-235B-A22B-Thinking-2507"
@@ -72,6 +73,7 @@ export const chutesModels = {
 		contextWindow: 163840,
 		supportsImages: false,
 		supportsPromptCache: false,
+		supportsReasoningEffort: true,
 		inputPrice: 0,
 		outputPrice: 0,
 		description: "DeepSeek V3.1 model.",
@@ -81,15 +83,17 @@ export const chutesModels = {
 		contextWindow: 163840,
 		supportsImages: false,
 		supportsPromptCache: false,
+		supportsReasoningEffort: true,
 		inputPrice: 0,
 		outputPrice: 0,
 		description: "DeepSeek V3.1 Terminus variant - optimized for complex reasoning and extended context.",
 	},
-	"deepseek-ai/DeepSeek-V3.1-Turbo": {
+	"deepseek-ai/DeepSeek-V3.1-turbo": {
 		maxTokens: 32768,
 		contextWindow: 163840,
 		supportsImages: false,
 		supportsPromptCache: false,
+		supportsReasoningEffort: true,
 		inputPrice: 0,
 		outputPrice: 0,
 		description: "DeepSeek V3.1 Turbo variant - faster inference with maintained quality.",
@@ -279,6 +283,7 @@ export const chutesModels = {
 		contextWindow: 151329,
 		supportsImages: false,
 		supportsPromptCache: false,
+		supportsReasoningEffort: true,
 		inputPrice: 0,
 		outputPrice: 0,
 		description:
@@ -289,10 +294,22 @@ export const chutesModels = {
 		contextWindow: 131072,
 		supportsImages: false,
 		supportsPromptCache: false,
+		supportsReasoningEffort: true,
 		inputPrice: 0,
 		outputPrice: 0,
 		description:
 			"GLM-4.5-FP8 model with 128k token context window, optimized for agent-based applications with MoE architecture.",
+	},
+	"zai-org/GLM-4.6-FP8": {
+		maxTokens: 32768,
+		contextWindow: 204800,
+		supportsImages: false,
+		supportsPromptCache: false,
+		supportsReasoningEffort: true,
+		inputPrice: 0,
+		outputPrice: 0,
+		description:
+			"GLM-4.6-FP8 model with 200K context window, FP8 precision for efficient inference. Improved reasoning, coding, and agent capabilities.",
 	},
 	"Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8": {
 		maxTokens: 32768,

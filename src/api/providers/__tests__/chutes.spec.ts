@@ -253,6 +253,30 @@ describe("ChutesHandler", () => {
 		)
 	})
 
+	it("should return zai-org/GLM-4.6-FP8 model with correct configuration", () => {
+		const testModelId: ChutesModelId = "zai-org/GLM-4.6-FP8"
+		const handlerWithModel = new ChutesHandler({
+			apiModelId: testModelId,
+			chutesApiKey: "test-chutes-api-key",
+		})
+		const model = handlerWithModel.getModel()
+		expect(model.id).toBe(testModelId)
+		expect(model.info).toEqual(
+			expect.objectContaining({
+				maxTokens: 32768,
+				contextWindow: 204800,
+				supportsImages: false,
+				supportsPromptCache: false,
+				supportsReasoningEffort: true,
+				inputPrice: 0,
+				outputPrice: 0,
+				description:
+					"GLM-4.6-FP8 model with 200K context window, FP8 precision for efficient inference. Improved reasoning, coding, and agent capabilities.",
+				temperature: 0.5, // Default temperature for non-DeepSeek models
+			}),
+		)
+	})
+
 	it("should return Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8 model with correct configuration", () => {
 		const testModelId: ChutesModelId = "Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8"
 		const handlerWithModel = new ChutesHandler({
@@ -311,6 +335,7 @@ describe("ChutesHandler", () => {
 				contextWindow: 163840,
 				supportsImages: false,
 				supportsPromptCache: false,
+				supportsReasoningEffort: true,
 				inputPrice: 0,
 				outputPrice: 0,
 				description: "DeepSeek V3.1 Terminus variant - optimized for complex reasoning and extended context.",
@@ -319,8 +344,8 @@ describe("ChutesHandler", () => {
 		)
 	})
 
-	it("should return DeepSeek V3.1 Turbo model with correct configuration", () => {
-		const testModelId: ChutesModelId = "deepseek-ai/DeepSeek-V3.1-Turbo"
+	it("should return DeepSeek V3.1 turbo model with correct configuration", () => {
+		const testModelId: ChutesModelId = "deepseek-ai/DeepSeek-V3.1-turbo"
 		const handlerWithModel = new ChutesHandler({
 			apiModelId: testModelId,
 			chutesApiKey: "test-chutes-api-key",
@@ -333,6 +358,7 @@ describe("ChutesHandler", () => {
 				contextWindow: 163840,
 				supportsImages: false,
 				supportsPromptCache: false,
+				supportsReasoningEffort: true,
 				inputPrice: 0,
 				outputPrice: 0,
 				description: "DeepSeek V3.1 Turbo variant - faster inference with maintained quality.",
@@ -515,7 +541,7 @@ describe("ChutesHandler", () => {
 		expect(model.info.temperature).toBe(0.5)
 	})
 
-	it.skip("should enable reasoning for DeepSeek V3.1 models when enableReasoningEffort is true", async () => {
+	it("should enable reasoning for DeepSeek V3.1 models when enableReasoningEffort is true", async () => {
 		const modelId: ChutesModelId = "deepseek-ai/DeepSeek-V3.1"
 		const handlerWithModel = new ChutesHandler({
 			apiModelId: modelId,
@@ -525,10 +551,17 @@ describe("ChutesHandler", () => {
 
 		mockCreate.mockImplementationOnce(async () => ({
 			[Symbol.asyncIterator]: async function* () {
+				// First yield reasoning content
 				yield {
-					choices: [{ delta: { content: "<think>Reasoning content</think>Regular content" } }],
+					choices: [{ delta: { reasoning_content: "Let me think about this..." } }],
 				}
+				// Then yield regular content
 				yield {
+					choices: [{ delta: { content: "Here's my response." } }],
+				}
+				// Finally yield usage
+				yield {
+					choices: [],
 					usage: { prompt_tokens: 100, completion_tokens: 50 },
 				}
 			},
@@ -543,12 +576,22 @@ describe("ChutesHandler", () => {
 			chunks.push(chunk)
 		}
 
-		// Should parse reasoning content separately
-		expect(chunks).toContainEqual({ type: "reasoning", text: "Reasoning content" })
-		expect(chunks).toContainEqual({ type: "text", text: "Regular content" })
+		// Should parse reasoning content and regular content separately
+		expect(chunks).toContainEqual({ type: "reasoning", text: "Let me think about this..." })
+		expect(chunks).toContainEqual({ type: "text", text: "Here's my response." })
+		expect(chunks).toContainEqual({ type: "usage", inputTokens: 100, outputTokens: 50 })
+
+		// Verify that the API was called with reasoning enabled
+		expect(mockCreate).toHaveBeenCalledWith(
+			expect.objectContaining({
+				chat_template_kwargs: {
+					thinking: true,
+				},
+			}),
+		)
 	})
 
-	it.skip("should enable reasoning for GLM-4.5 models when enableReasoningEffort is true", async () => {
+	it("should enable reasoning for GLM-4.5 models when enableReasoningEffort is true", async () => {
 		const modelId: ChutesModelId = "zai-org/GLM-4.5-Air"
 		const handlerWithModel = new ChutesHandler({
 			apiModelId: modelId,
@@ -558,10 +601,17 @@ describe("ChutesHandler", () => {
 
 		mockCreate.mockImplementationOnce(async () => ({
 			[Symbol.asyncIterator]: async function* () {
+				// First yield reasoning content
 				yield {
-					choices: [{ delta: { content: "<think>GLM reasoning</think>GLM response" } }],
+					choices: [{ delta: { reasoning_content: "GLM reasoning process..." } }],
 				}
+				// Then yield regular content
 				yield {
+					choices: [{ delta: { content: "GLM response" } }],
+				}
+				// Finally yield usage
+				yield {
+					choices: [],
 					usage: { prompt_tokens: 100, completion_tokens: 50 },
 				}
 			},
@@ -577,8 +627,17 @@ describe("ChutesHandler", () => {
 		}
 
 		// Should parse reasoning content separately
-		expect(chunks).toContainEqual({ type: "reasoning", text: "GLM reasoning" })
+		expect(chunks).toContainEqual({ type: "reasoning", text: "GLM reasoning process..." })
 		expect(chunks).toContainEqual({ type: "text", text: "GLM response" })
+
+		// Verify that the API was called with reasoning enabled
+		expect(mockCreate).toHaveBeenCalledWith(
+			expect.objectContaining({
+				chat_template_kwargs: {
+					thinking: true,
+				},
+			}),
+		)
 	})
 
 	it.skip("should disable reasoning for DeepSeek V3.1 models when enableReasoningEffort is false", async () => {
@@ -595,6 +654,7 @@ describe("ChutesHandler", () => {
 					choices: [{ delta: { content: "<think>Reasoning content</think>Regular content" } }],
 				}
 				yield {
+					choices: [],
 					usage: { prompt_tokens: 100, completion_tokens: 50 },
 				}
 			},

@@ -27,6 +27,7 @@ export class ChutesHandler extends BaseOpenAiCompatibleProvider<ChutesModelId> {
 	private getCompletionParams(
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
+		enableReasoning: boolean = false,
 	): OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming {
 		const {
 			id: model,
@@ -35,7 +36,7 @@ export class ChutesHandler extends BaseOpenAiCompatibleProvider<ChutesModelId> {
 
 		const temperature = this.options.modelTemperature ?? this.getModel().info.temperature
 
-		return {
+		const params: any = {
 			model,
 			max_tokens,
 			temperature,
@@ -43,28 +44,25 @@ export class ChutesHandler extends BaseOpenAiCompatibleProvider<ChutesModelId> {
 			stream: true,
 			stream_options: { include_usage: true },
 		}
+
+		// Add reasoning support for DeepSeek V3.1, GLM-4.5, and GLM-4.6 models
+		if (enableReasoning) {
+			params.chat_template_kwargs = {
+				thinking: true,
+			}
+		}
+
+		return params
 	}
 
 	override async *createMessage(systemPrompt: string, messages: Anthropic.Messages.MessageParam[]): ApiStream {
 		const model = this.getModel()
 
-		// Check if this is a model that supports reasoning mode
-		const modelSupportsReasoning =
-			model.id.includes("DeepSeek-R1") || model.id.includes("DeepSeek-V3.1") || model.id.includes("GLM-4.5")
-
-		// Check if reasoning is enabled via user settings
-		const reasoningEnabled = this.options.enableReasoningEffort !== false
-
-		if (modelSupportsReasoning && reasoningEnabled) {
-			// For DeepSeek R1 models, use the R1 format conversion
-			const isR1Model = model.id.includes("DeepSeek-R1")
-			const messageParams = isR1Model
-				? { messages: convertToR1Format([{ role: "user", content: systemPrompt }, ...messages]) }
-				: {}
-
+		// Handle DeepSeek R1 models with XML tag parsing
+		if (model.id.includes("DeepSeek-R1")) {
 			const stream = await this.client.chat.completions.create({
 				...this.getCompletionParams(systemPrompt, messages),
-				...messageParams,
+				messages: convertToR1Format([{ role: "user", content: systemPrompt }, ...messages]),
 			})
 
 			const matcher = new XmlMatcher(
@@ -98,7 +96,48 @@ export class ChutesHandler extends BaseOpenAiCompatibleProvider<ChutesModelId> {
 			for (const processedChunk of matcher.final()) {
 				yield processedChunk
 			}
+			return
+		}
+
+		// Handle DeepSeek V3.1, GLM-4.5, and GLM-4.6 models with reasoning_content parsing
+		const isHybridReasoningModel =
+			model.id.includes("DeepSeek-V3.1") || model.id.includes("GLM-4.5") || model.id.includes("GLM-4.6")
+		const reasoningEnabled = this.options.enableReasoningEffort === true
+
+		if (isHybridReasoningModel && reasoningEnabled) {
+			const stream = await this.client.chat.completions.create(
+				this.getCompletionParams(systemPrompt, messages, true),
+			)
+
+			for await (const chunk of stream) {
+				const delta = chunk.choices[0]?.delta
+
+				// Handle reasoning content from the response
+				if ((delta as any)?.reasoning_content) {
+					yield {
+						type: "reasoning",
+						text: (delta as any).reasoning_content,
+					}
+				}
+
+				// Handle regular text content
+				if (delta?.content) {
+					yield {
+						type: "text",
+						text: delta.content,
+					}
+				}
+
+				if (chunk.usage) {
+					yield {
+						type: "usage",
+						inputTokens: chunk.usage.prompt_tokens || 0,
+						outputTokens: chunk.usage.completion_tokens || 0,
+					}
+				}
+			}
 		} else {
+			// For non-reasoning models or when reasoning is disabled, use the base implementation
 			yield* super.createMessage(systemPrompt, messages)
 		}
 	}
