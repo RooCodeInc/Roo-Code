@@ -5,7 +5,7 @@ import { useExtensionState } from "@src/context/ExtensionStateContext"
 import { vscode } from "@src/utils/vscode"
 import * as pathMentions from "@src/utils/path-mentions"
 
-import { ChatTextArea } from "../ChatTextArea"
+import { ChatLexicalTextArea } from "../ChatLexicalTextArea"
 
 vi.mock("@src/utils/vscode", () => ({
 	vscode: {
@@ -43,7 +43,7 @@ const getEnhancePromptButton = () => {
 	})
 }
 
-describe("ChatTextArea", () => {
+describe("ChatLexicalTextArea", () => {
 	const defaultProps = {
 		inputValue: "",
 		setInputValue: vi.fn(),
@@ -83,7 +83,7 @@ describe("ChatTextArea", () => {
 				taskHistory: [],
 				cwd: "/test/workspace",
 			})
-			render(<ChatTextArea {...defaultProps} sendingDisabled={true} />)
+			render(<ChatLexicalTextArea {...defaultProps} sendingDisabled={true} />)
 			const enhanceButton = getEnhancePromptButton()
 			expect(enhanceButton).toHaveClass("cursor-pointer")
 		})
@@ -104,7 +104,7 @@ describe("ChatTextArea", () => {
 				cwd: "/test/workspace",
 			})
 
-			render(<ChatTextArea {...defaultProps} inputValue="Test prompt" />)
+			render(<ChatLexicalTextArea {...defaultProps} inputValue="Test prompt" />)
 
 			const enhanceButton = getEnhancePromptButton()
 			fireEvent.click(enhanceButton)
@@ -126,7 +126,7 @@ describe("ChatTextArea", () => {
 				cwd: "/test/workspace",
 			})
 
-			render(<ChatTextArea {...defaultProps} inputValue="" />)
+			render(<ChatLexicalTextArea {...defaultProps} inputValue="" />)
 
 			// Clear any calls from component initialization (e.g., IndexingStatusBadge)
 			mockPostMessage.mockClear()
@@ -148,7 +148,7 @@ describe("ChatTextArea", () => {
 				cwd: "/test/workspace",
 			})
 
-			render(<ChatTextArea {...defaultProps} inputValue="Test prompt" />)
+			render(<ChatLexicalTextArea {...defaultProps} inputValue="Test prompt" />)
 
 			const enhanceButton = getEnhancePromptButton()
 			fireEvent.click(enhanceButton)
@@ -161,7 +161,7 @@ describe("ChatTextArea", () => {
 
 	describe("effect dependencies", () => {
 		it("should update when apiConfiguration changes", () => {
-			const { rerender } = render(<ChatTextArea {...defaultProps} />)
+			const { rerender } = render(<ChatLexicalTextArea {...defaultProps} />)
 
 			// Update apiConfiguration
 			;(useExtensionState as ReturnType<typeof vi.fn>).mockReturnValue({
@@ -175,7 +175,7 @@ describe("ChatTextArea", () => {
 				cwd: "/test/workspace",
 			})
 
-			rerender(<ChatTextArea {...defaultProps} />)
+			rerender(<ChatLexicalTextArea {...defaultProps} />)
 
 			// Verify the enhance button appears after apiConfiguration changes
 			expect(getEnhancePromptButton()).toBeInTheDocument()
@@ -194,7 +194,7 @@ describe("ChatTextArea", () => {
 			})
 
 			const { container } = render(
-				<ChatTextArea {...defaultProps} setInputValue={setInputValue} inputValue="Original prompt" />,
+				<ChatLexicalTextArea {...defaultProps} setInputValue={setInputValue} inputValue="Original prompt" />,
 			)
 
 			const textarea = container.querySelector("textarea")!
@@ -230,7 +230,7 @@ describe("ChatTextArea", () => {
 				writable: true,
 			})
 
-			render(<ChatTextArea {...defaultProps} setInputValue={setInputValue} inputValue="Original prompt" />)
+			render(<ChatLexicalTextArea {...defaultProps} setInputValue={setInputValue} inputValue="Original prompt" />)
 
 			// Simulate receiving enhanced prompt message
 			window.dispatchEvent(
@@ -249,7 +249,7 @@ describe("ChatTextArea", () => {
 		it("should not crash when textarea ref is not available", () => {
 			const setInputValue = vi.fn()
 
-			render(<ChatTextArea {...defaultProps} setInputValue={setInputValue} />)
+			render(<ChatLexicalTextArea {...defaultProps} setInputValue={setInputValue} />)
 
 			// Simulate receiving enhanced prompt message when textarea ref might not be ready
 			expect(() => {
@@ -282,7 +282,7 @@ describe("ChatTextArea", () => {
 			const setInputValue = vi.fn()
 
 			const { container } = render(
-				<ChatTextArea {...defaultProps} setInputValue={setInputValue} inputValue="Initial text" />,
+				<ChatLexicalTextArea {...defaultProps} setInputValue={setInputValue} inputValue="Initial text" />,
 			)
 
 			// Create a mock dataTransfer object with text data containing multiple file paths
@@ -311,7 +311,7 @@ describe("ChatTextArea", () => {
 			const setInputValue = vi.fn()
 
 			const { container } = render(
-				<ChatTextArea {...defaultProps} setInputValue={setInputValue} inputValue="Initial text" />,
+				<ChatLexicalTextArea {...defaultProps} setInputValue={setInputValue} inputValue="Initial text" />,
 			)
 
 			// Create a mock dataTransfer object with text data containing empty lines
@@ -338,7 +338,7 @@ describe("ChatTextArea", () => {
 			const initialCursorPosition = 5
 
 			const { container } = render(
-				<ChatTextArea {...defaultProps} setInputValue={setInputValue} inputValue="Hello world" />,
+				<ChatLexicalTextArea {...defaultProps} setInputValue={setInputValue} inputValue="Hello world" />,
 			)
 
 			// Set the cursor position manually
@@ -367,7 +367,9 @@ describe("ChatTextArea", () => {
 		it("should handle very long file paths correctly", () => {
 			const setInputValue = vi.fn()
 
-			const { container } = render(<ChatTextArea {...defaultProps} setInputValue={setInputValue} inputValue="" />)
+			const { container } = render(
+				<ChatLexicalTextArea {...defaultProps} setInputValue={setInputValue} inputValue="" />,
+			)
 
 			// Create a very long file path
 			const longPath =
@@ -397,7 +399,9 @@ describe("ChatTextArea", () => {
 		it("should handle paths with special characters correctly", () => {
 			const setInputValue = vi.fn()
 
-			const { container } = render(<ChatTextArea {...defaultProps} setInputValue={setInputValue} inputValue="" />)
+			const { container } = render(
+				<ChatLexicalTextArea {...defaultProps} setInputValue={setInputValue} inputValue="" />,
+			)
 
 			// Create paths with special characters
 			const specialPath1 = "/Users/test/project/file with spaces.js"
@@ -433,7 +437,9 @@ describe("ChatTextArea", () => {
 		it("should handle paths outside the current working directory", () => {
 			const setInputValue = vi.fn()
 
-			const { container } = render(<ChatTextArea {...defaultProps} setInputValue={setInputValue} inputValue="" />)
+			const { container } = render(
+				<ChatLexicalTextArea {...defaultProps} setInputValue={setInputValue} inputValue="" />,
+			)
 
 			// Create paths outside the current working directory
 			const outsidePath = "/Users/other/project/file.js"
@@ -466,7 +472,7 @@ describe("ChatTextArea", () => {
 			const setInputValue = vi.fn()
 
 			const { container } = render(
-				<ChatTextArea {...defaultProps} setInputValue={setInputValue} inputValue="Initial text" />,
+				<ChatLexicalTextArea {...defaultProps} setInputValue={setInputValue} inputValue="Initial text" />,
 			)
 
 			// Create a mock dataTransfer object with empty text
@@ -511,7 +517,7 @@ describe("ChatTextArea", () => {
 			it("should navigate to previous prompt on arrow up when cursor is at beginning", () => {
 				const setInputValue = vi.fn()
 				const { container } = render(
-					<ChatTextArea {...defaultProps} setInputValue={setInputValue} inputValue="" />,
+					<ChatLexicalTextArea {...defaultProps} setInputValue={setInputValue} inputValue="" />,
 				)
 
 				const textarea = container.querySelector("textarea")!
@@ -528,7 +534,7 @@ describe("ChatTextArea", () => {
 			it("should navigate through history with multiple arrow up presses", () => {
 				const setInputValue = vi.fn()
 				const { container } = render(
-					<ChatTextArea {...defaultProps} setInputValue={setInputValue} inputValue="" />,
+					<ChatLexicalTextArea {...defaultProps} setInputValue={setInputValue} inputValue="" />,
 				)
 
 				const textarea = container.querySelector("textarea")!
@@ -548,7 +554,7 @@ describe("ChatTextArea", () => {
 			it("should navigate forward with arrow down", () => {
 				const setInputValue = vi.fn()
 				const { container } = render(
-					<ChatTextArea {...defaultProps} setInputValue={setInputValue} inputValue="" />,
+					<ChatLexicalTextArea {...defaultProps} setInputValue={setInputValue} inputValue="" />,
 				)
 
 				const textarea = container.querySelector("textarea")!
@@ -566,7 +572,7 @@ describe("ChatTextArea", () => {
 			it("should preserve current input when starting navigation", () => {
 				const setInputValue = vi.fn()
 				const { container } = render(
-					<ChatTextArea {...defaultProps} setInputValue={setInputValue} inputValue="Current input" />,
+					<ChatLexicalTextArea {...defaultProps} setInputValue={setInputValue} inputValue="Current input" />,
 				)
 
 				const textarea = container.querySelector("textarea")!
@@ -585,7 +591,7 @@ describe("ChatTextArea", () => {
 			it("should reset history navigation when user types", () => {
 				const setInputValue = vi.fn()
 				const { container } = render(
-					<ChatTextArea {...defaultProps} setInputValue={setInputValue} inputValue="" />,
+					<ChatLexicalTextArea {...defaultProps} setInputValue={setInputValue} inputValue="" />,
 				)
 
 				const textarea = container.querySelector("textarea")!
@@ -605,7 +611,7 @@ describe("ChatTextArea", () => {
 				const onSend = vi.fn()
 				const setInputValue = vi.fn()
 				const { container } = render(
-					<ChatTextArea
+					<ChatLexicalTextArea
 						{...defaultProps}
 						onSend={onSend}
 						setInputValue={setInputValue}
@@ -628,7 +634,7 @@ describe("ChatTextArea", () => {
 			it("should navigate history when cursor is at first line", () => {
 				const setInputValue = vi.fn()
 				const { container } = render(
-					<ChatTextArea {...defaultProps} setInputValue={setInputValue} inputValue="" />,
+					<ChatLexicalTextArea {...defaultProps} setInputValue={setInputValue} inputValue="" />,
 				)
 
 				const textarea = container.querySelector("textarea")!
@@ -662,7 +668,7 @@ describe("ChatTextArea", () => {
 
 				const setInputValue = vi.fn()
 				const { container } = render(
-					<ChatTextArea {...defaultProps} setInputValue={setInputValue} inputValue="" />,
+					<ChatLexicalTextArea {...defaultProps} setInputValue={setInputValue} inputValue="" />,
 				)
 
 				const textarea = container.querySelector("textarea")!
@@ -690,7 +696,7 @@ describe("ChatTextArea", () => {
 
 				const setInputValue = vi.fn()
 				const { container } = render(
-					<ChatTextArea {...defaultProps} setInputValue={setInputValue} inputValue="" />,
+					<ChatLexicalTextArea {...defaultProps} setInputValue={setInputValue} inputValue="" />,
 				)
 
 				const textarea = container.querySelector("textarea")!
@@ -721,7 +727,7 @@ describe("ChatTextArea", () => {
 
 				const setInputValue = vi.fn()
 				const { container } = render(
-					<ChatTextArea {...defaultProps} setInputValue={setInputValue} inputValue="" />,
+					<ChatLexicalTextArea {...defaultProps} setInputValue={setInputValue} inputValue="" />,
 				)
 
 				const textarea = container.querySelector("textarea")!
@@ -755,7 +761,7 @@ describe("ChatTextArea", () => {
 
 				const setInputValue = vi.fn()
 				const { container } = render(
-					<ChatTextArea {...defaultProps} setInputValue={setInputValue} inputValue="" />,
+					<ChatLexicalTextArea {...defaultProps} setInputValue={setInputValue} inputValue="" />,
 				)
 
 				const textarea = container.querySelector("textarea")!
@@ -772,7 +778,7 @@ describe("ChatTextArea", () => {
 			it("should reset navigation position when switching between history sources", () => {
 				const setInputValue = vi.fn()
 				const { rerender } = render(
-					<ChatTextArea {...defaultProps} setInputValue={setInputValue} inputValue="" />,
+					<ChatLexicalTextArea {...defaultProps} setInputValue={setInputValue} inputValue="" />,
 				)
 
 				// Start with task history
@@ -790,7 +796,7 @@ describe("ChatTextArea", () => {
 					cwd: "/test/workspace",
 				})
 
-				rerender(<ChatTextArea {...defaultProps} setInputValue={setInputValue} inputValue="" />)
+				rerender(<ChatLexicalTextArea {...defaultProps} setInputValue={setInputValue} inputValue="" />)
 
 				const textarea = document.querySelector("textarea")!
 
@@ -814,7 +820,7 @@ describe("ChatTextArea", () => {
 				})
 
 				setInputValue.mockClear()
-				rerender(<ChatTextArea {...defaultProps} setInputValue={setInputValue} inputValue="" />)
+				rerender(<ChatLexicalTextArea {...defaultProps} setInputValue={setInputValue} inputValue="" />)
 
 				// Should start from beginning of conversation history (newest first)
 				fireEvent.keyDown(textarea, { key: "ArrowUp" })
@@ -824,7 +830,7 @@ describe("ChatTextArea", () => {
 			it("should not navigate history with arrow up when cursor is not at beginning", () => {
 				const setInputValue = vi.fn()
 				const { container } = render(
-					<ChatTextArea {...defaultProps} setInputValue={setInputValue} inputValue="Some text here" />,
+					<ChatLexicalTextArea {...defaultProps} setInputValue={setInputValue} inputValue="Some text here" />,
 				)
 
 				const textarea = container.querySelector("textarea")!
@@ -844,7 +850,7 @@ describe("ChatTextArea", () => {
 			it("should navigate history with arrow up when cursor is at beginning", () => {
 				const setInputValue = vi.fn()
 				const { container } = render(
-					<ChatTextArea {...defaultProps} setInputValue={setInputValue} inputValue="Some text here" />,
+					<ChatLexicalTextArea {...defaultProps} setInputValue={setInputValue} inputValue="Some text here" />,
 				)
 
 				const textarea = container.querySelector("textarea")!
@@ -864,7 +870,7 @@ describe("ChatTextArea", () => {
 			it("should navigate history with Command+Up when cursor is at beginning", () => {
 				const setInputValue = vi.fn()
 				const { container } = render(
-					<ChatTextArea {...defaultProps} setInputValue={setInputValue} inputValue="Some text here" />,
+					<ChatLexicalTextArea {...defaultProps} setInputValue={setInputValue} inputValue="Some text here" />,
 				)
 
 				const textarea = container.querySelector("textarea")!
@@ -884,7 +890,7 @@ describe("ChatTextArea", () => {
 			it("should not navigate history with Command+Up when cursor is not at beginning", () => {
 				const setInputValue = vi.fn()
 				const { container } = render(
-					<ChatTextArea {...defaultProps} setInputValue={setInputValue} inputValue="Some text here" />,
+					<ChatLexicalTextArea {...defaultProps} setInputValue={setInputValue} inputValue="Some text here" />,
 				)
 
 				const textarea = container.querySelector("textarea")!
@@ -921,7 +927,7 @@ describe("ChatTextArea", () => {
 		})
 
 		it("should highlight valid slash commands", () => {
-			const { getByTestId } = render(<ChatTextArea {...defaultProps} inputValue="/setup the project" />)
+			const { getByTestId } = render(<ChatLexicalTextArea {...defaultProps} inputValue="/setup the project" />)
 
 			const highlightLayer = getByTestId("highlight-layer")
 			expect(highlightLayer).toBeInTheDocument()
@@ -932,7 +938,7 @@ describe("ChatTextArea", () => {
 		})
 
 		it("should not highlight invalid slash commands", () => {
-			const { getByTestId } = render(<ChatTextArea {...defaultProps} inputValue="/invalid command" />)
+			const { getByTestId } = render(<ChatLexicalTextArea {...defaultProps} inputValue="/invalid command" />)
 
 			const highlightLayer = getByTestId("highlight-layer")
 			expect(highlightLayer).toBeInTheDocument()
@@ -946,7 +952,7 @@ describe("ChatTextArea", () => {
 		})
 
 		it("should highlight only the command portion, not arguments", () => {
-			const { getByTestId } = render(<ChatTextArea {...defaultProps} inputValue="/deploy to production" />)
+			const { getByTestId } = render(<ChatLexicalTextArea {...defaultProps} inputValue="/deploy to production" />)
 
 			const highlightLayer = getByTestId("highlight-layer")
 			expect(highlightLayer).toBeInTheDocument()
@@ -961,7 +967,9 @@ describe("ChatTextArea", () => {
 		})
 
 		it("should handle commands with dashes and underscores", () => {
-			const { getByTestId } = render(<ChatTextArea {...defaultProps} inputValue="/test-command with args" />)
+			const { getByTestId } = render(
+				<ChatLexicalTextArea {...defaultProps} inputValue="/test-command with args" />,
+			)
 
 			const highlightLayer = getByTestId("highlight-layer")
 			expect(highlightLayer).toBeInTheDocument()
@@ -973,7 +981,7 @@ describe("ChatTextArea", () => {
 		})
 
 		it("should be case-sensitive when matching commands", () => {
-			const { getByTestId } = render(<ChatTextArea {...defaultProps} inputValue="/Setup the project" />)
+			const { getByTestId } = render(<ChatLexicalTextArea {...defaultProps} inputValue="/Setup the project" />)
 
 			const highlightLayer = getByTestId("highlight-layer")
 			expect(highlightLayer).toBeInTheDocument()
@@ -986,7 +994,9 @@ describe("ChatTextArea", () => {
 		})
 
 		it("should highlight multiple valid commands in the same text", () => {
-			const { getByTestId } = render(<ChatTextArea {...defaultProps} inputValue="/setup first then /deploy" />)
+			const { getByTestId } = render(
+				<ChatLexicalTextArea {...defaultProps} inputValue="/setup first then /deploy" />,
+			)
 
 			const highlightLayer = getByTestId("highlight-layer")
 			expect(highlightLayer).toBeInTheDocument()
@@ -1000,7 +1010,7 @@ describe("ChatTextArea", () => {
 
 		it("should handle mixed valid and invalid commands", () => {
 			const { getByTestId } = render(
-				<ChatTextArea {...defaultProps} inputValue="/setup first then /invalid then /deploy" />,
+				<ChatLexicalTextArea {...defaultProps} inputValue="/setup first then /invalid then /deploy" />,
 			)
 
 			const highlightLayer = getByTestId("highlight-layer")
@@ -1028,7 +1038,7 @@ describe("ChatTextArea", () => {
 				commands: undefined,
 			})
 
-			const { getByTestId } = render(<ChatTextArea {...defaultProps} inputValue="/setup the project" />)
+			const { getByTestId } = render(<ChatLexicalTextArea {...defaultProps} inputValue="/setup the project" />)
 
 			const highlightLayer = getByTestId("highlight-layer")
 			expect(highlightLayer).toBeInTheDocument()
@@ -1047,12 +1057,12 @@ describe("ChatTextArea", () => {
 			return screen.getByTestId("dropdown-trigger")
 		}
 		it("should be enabled independently of sendingDisabled", () => {
-			render(<ChatTextArea {...defaultProps} sendingDisabled={true} selectApiConfigDisabled={false} />)
+			render(<ChatLexicalTextArea {...defaultProps} sendingDisabled={true} selectApiConfigDisabled={false} />)
 			const apiConfigDropdown = getApiConfigDropdown()
 			expect(apiConfigDropdown).not.toHaveAttribute("disabled")
 		})
 		it("should be disabled when selectApiConfigDisabled is true", () => {
-			render(<ChatTextArea {...defaultProps} sendingDisabled={true} selectApiConfigDisabled={true} />)
+			render(<ChatLexicalTextArea {...defaultProps} sendingDisabled={true} selectApiConfigDisabled={true} />)
 			const apiConfigDropdown = getApiConfigDropdown()
 			expect(apiConfigDropdown).toHaveAttribute("disabled")
 		})

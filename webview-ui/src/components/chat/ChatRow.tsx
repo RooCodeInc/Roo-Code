@@ -42,7 +42,7 @@ import { CondenseContextErrorRow, CondensingContextRow, ContextCondenseRow } fro
 import CodebaseSearchResultsDisplay from "./CodebaseSearchResultsDisplay"
 import { appendImages } from "@src/utils/imageUtils"
 import { McpExecution } from "./McpExecution"
-import { ChatTextArea } from "./ChatTextArea"
+import { ChatLexicalTextArea } from "./ChatLexicalTextArea"
 import { MAX_IMAGES_PER_MESSAGE } from "./ChatView"
 import { useSelectedModel } from "../ui/hooks/useSelectedModel"
 import {
@@ -1151,7 +1151,7 @@ export const ChatRowContent = ({
 								)}>
 								{isEditing ? (
 									<div className="flex flex-col gap-2">
-										<ChatTextArea
+										<ChatLexicalTextArea
 											inputValue={editedContent}
 											setInputValue={setEditedContent}
 											sendingDisabled={false}
