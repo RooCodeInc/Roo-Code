@@ -2036,7 +2036,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 					const drainStreamInBackgroundToFindAllUsage = async (apiReqIndex: number) => {
 						const timeoutMs = DEFAULT_USAGE_COLLECTION_TIMEOUT_MS
-						const startTime = Date.now()
+						const startTime = performance.now()
 						const modelId = getModelId(this.apiConfiguration)
 
 						// Local variables to accumulate usage data without affecting the main flow
@@ -2107,7 +2107,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 							// Use the same iterator that the main loop was using
 							while (!item.done) {
 								// Check for timeout
-								if (Date.now() - startTime > timeoutMs) {
+								if (performance.now() - startTime > timeoutMs) {
 									console.warn(
 										`[Background Usage Collection] Timed out after ${timeoutMs}ms for model: ${modelId}, processed ${chunkCount} chunks`,
 									)
@@ -2559,10 +2559,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// Use the shared timestamp so that subtasks respect the same rate-limit
 		// window as their parent tasks.
 		if (Task.lastGlobalApiRequestTime) {
-			const now = Date.now()
+			const now = performance.now()
 			const timeSinceLastRequest = now - Task.lastGlobalApiRequestTime
 			const rateLimit = apiConfiguration?.rateLimitSeconds || 0
-			rateLimitDelay = Math.ceil(Math.max(0, rateLimit * 1000 - timeSinceLastRequest) / 1000)
+			rateLimitDelay = Math.ceil(Math.min(rateLimit, Math.max(0, rateLimit * 1000 - timeSinceLastRequest) / 1000))
 		}
 
 		// Only show rate limiting message if we're not retrying. If retrying, we'll include the delay there.
@@ -2577,7 +2577,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		// Update last request time before making the request so that subsequent
 		// requests — even from new subtasks — will honour the provider's rate-limit.
-		Task.lastGlobalApiRequestTime = Date.now()
+		Task.lastGlobalApiRequestTime = performance.now()
 
 		const systemPrompt = await this.getSystemPrompt()
 		this.lastUsedInstructions = systemPrompt
