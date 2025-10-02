@@ -1008,9 +1008,11 @@ export const webviewMessageHandler = async (
 					const { apiKey, projectId, platform, baseUrl, authType, username, password, region } =
 						message.values
 
-					if (platform !== "ibmCloud") {
-						if (!apiKey && !region && !projectId) {
-							console.error("Missing IBM Cloud authentication credentials for IBM watsonx models")
+					if (platform === "ibmCloud") {
+						if (!apiKey || !region || !projectId) {
+							console.error(
+								"Missing IBM Cloud authentication credentials in IBM watsonx AI provider for IBM watsonx models",
+							)
 							provider.postMessageToWebview({
 								type: "watsonxModels",
 								watsonxModels: {},
@@ -1018,20 +1020,28 @@ export const webviewMessageHandler = async (
 							return
 						}
 					} else if (platform === "cloudPak") {
-						if (authType === "password" && !(username && password && projectId)) {
-							console.error("Missing IBM Cloud Pak authentication credentials for IBM watsonx models")
-							provider.postMessageToWebview({
-								type: "watsonxModels",
-								watsonxModels: {},
-							})
-							return
-						} else if (authType === "apikey" && !(apiKey && projectId)) {
-							console.error("Missing IBM Cloud Pak authentication credentials for IBM watsonx models")
-							provider.postMessageToWebview({
-								type: "watsonxModels",
-								watsonxModels: {},
-							})
-							return
+						if (authType === "password") {
+							if (!baseUrl || !username || !password || !projectId) {
+								console.error(
+									"Missing IBM Cloud Pak for Data authentication credentials in IBM watsonx AI provider for IBM watsonx models",
+								)
+								provider.postMessageToWebview({
+									type: "watsonxModels",
+									watsonxModels: {},
+								})
+								return
+							}
+						} else if (authType === "apiKey") {
+							if (!baseUrl || !apiKey || !username || !projectId) {
+								console.error(
+									"Missing IBM Cloud Pak for Data authentication credentials in IBM watsonx AI provider for IBM watsonx models",
+								)
+								provider.postMessageToWebview({
+									type: "watsonxModels",
+									watsonxModels: {},
+								})
+								return
+							}
 						}
 					}
 
@@ -1046,7 +1056,7 @@ export const webviewMessageHandler = async (
 							"ca-tor": "https://ca-tor.ml.cloud.ibm.com",
 							"ap-south-1": "https://ap-south-1.aws.wxai.ibm.com",
 						}
-						effectiveBaseUrl = regionToUrl[region] || "https://us-south.ml.cloud.ibm.com"
+						effectiveBaseUrl = regionToUrl[region]
 					}
 
 					const watsonxModels = await getWatsonxModels(
