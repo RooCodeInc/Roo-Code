@@ -6,9 +6,11 @@ import WatsonxAiMlVml_v1 from "@ibm-cloud/watsonx-ai/dist/watsonx-ai-ml/vml_v1.j
 /**
  * Fetches available watsonx models
  *
- * @param apiKey - The watsonx API key (for IBM Cloud or Cloud Pak with API key auth)
+ * @param apiKey - The watsonx API key (for IBM Cloud or IBM Cloud Pak for Data with API key auth)
+ * @param projectId Optional IBM Cloud project ID or IBM Cloud Pak for Data project ID
  * @param baseUrl - Optional base URL for the watsonx API
  * @param platform - Optional platform type (ibmCloud or cloudPak)
+ * @param authType - Optional authentication type (API key or password) for Cloud Pak for Data
  * @param username - Optional username for Cloud Pak for Data
  * @param password - Optional password for Cloud Pak for Data (when using password auth)
  * @returns A promise resolving to an object with model IDs as keys and model info as values
@@ -24,7 +26,6 @@ export async function getWatsonxModels(
 ): Promise<Record<string, ModelInfo>> {
 	try {
 		let options: UserOptions = {
-			serviceUrl: baseUrl,
 			version: "2024-05-31",
 		}
 
@@ -39,6 +40,10 @@ export async function getWatsonxModels(
 			if (!projectId) {
 				throw new Error("Project ID is required for IBM Cloud")
 			}
+			if (!baseUrl) {
+				throw new Error("Base URL is required for for IBM Cloud")
+			}
+			options.serviceUrl = baseUrl
 			options.authenticator = new IamAuthenticator({
 				apikey: apiKey,
 			})
@@ -61,7 +66,7 @@ export async function getWatsonxModels(
 			if (authType === "password" && !password) {
 				throw new Error("Password is required for IBM Cloud Pak for Data")
 			}
-
+			options.serviceUrl = baseUrl
 			if (username) {
 				if (password) {
 					options.authenticator = new CloudPakForDataAuthenticator({
