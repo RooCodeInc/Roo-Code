@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react"
-import { Button } from "@/components/ui"
 import { Brain, Plus } from "lucide-react"
 import type { CloudAgent } from "@roo-code/types"
 
@@ -81,24 +80,29 @@ const CloudAgents: React.FC<CloudAgentsProps> = ({ cloudApiUrl, sessionToken }) 
 
 	return (
 		<div className="flex flex-col gap-3 mt-6 w-full">
-			<div className="flex flex-wrap items-center justify-between mt-4 mb-2">
+			<div className="flex flex-wrap items-center justify-between mt-4 mb-1">
 				<h2 className="font-semibold text-lg shrink-0 m-0">Cloud Agents</h2>
-				<button
-					onClick={handleCreateClick}
-					className="text-base flex items-center gap-1 text-vscode-descriptionForeground hover:text-vscode-textLink-foreground transition-colors cursor-pointer"
-					title="Create new agent">
-					<Plus className="h-4 w-4" />
-					Create
-				</button>
+				{agents.length > 0 && (
+					<button
+						onClick={handleCreateClick}
+						className="text-base flex items-center gap-1 text-vscode-descriptionForeground hover:text-vscode-textLink-foreground transition-colors cursor-pointer"
+						title="Create new agent">
+						<Plus className="h-4 w-4" />
+						Create
+					</button>
+				)}
 			</div>
 
 			{agents.length === 0 ? (
-				<div className="flex flex-col items-center justify-center py-8 text-center">
-					<p className="text-sm text-vscode-descriptionForeground mb-4">Create your first cloud agent</p>
-					<Button variant="outline" size="sm" onClick={handleCreateClick}>
-						<Plus className="h-3 w-3 mr-1" />
-						Create Agent
-					</Button>
+				<div className="items-center gap-3 px-4 py-1 rounded-xl bg-vscode-editor-background">
+					<p className="text-base text-vscode-descriptionForeground mb-4">
+						No Cloud agents yes?
+						<button
+							className="inline-flex ml-1 cursor-pointer text-vscode-textLink-foreground hover:underline"
+							onClick={handleCreateClick}>
+							Create your first.
+						</button>
+					</p>
 				</div>
 			) : (
 				<div className="flex flex-col gap-1">
