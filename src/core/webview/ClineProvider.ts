@@ -838,6 +838,15 @@ export class ClineProvider
 				// Sends latest theme name to webview
 				await this.postMessageToWebview({ type: "theme", text: JSON.stringify(await getTheme()) })
 			}
+			if (e && e.affectsConfiguration(`${Package.name}.fontSizeMultiplier`)) {
+				const fontSizeMultiplier =
+					vscode.workspace.getConfiguration(Package.name).get<number>("fontSizeMultiplier") || 1.0
+				await this.postMessageToWebview({
+					type: "action",
+					action: "fontSizeChanged",
+					fontSizeMultiplier,
+				})
+			}
 		})
 		this.webviewDisposables.push(configDisposable)
 
