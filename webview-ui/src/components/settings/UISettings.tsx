@@ -40,12 +40,17 @@ export const UISettings = ({ reasoningBlockCollapsed, setCachedStateField, ...pr
 					{/* Collapse Thinking Messages Setting */}
 					<div className="flex flex-col gap-1">
 						<div className="flex items-center space-x-2">
-							<Checkbox
-								checked={reasoningBlockCollapsed}
-								onCheckedChange={handleReasoningBlockCollapsedChange}
-								data-testid="collapse-thinking-checkbox"
-							/>
-							<span className="font-medium">{t("settings:ui.collapseThinking.label")}</span>
+							<label
+								htmlFor="collapse-thinking-checkbox"
+								className="flex items-center space-x-2 cursor-pointer">
+								<Checkbox
+									id="collapse-thinking-checkbox"
+									checked={reasoningBlockCollapsed}
+									onCheckedChange={handleReasoningBlockCollapsedChange}
+									data-testid="collapse-thinking-checkbox"
+								/>
+								<span className="font-medium">{t("settings:ui.collapseThinking.label")}</span>
+							</label>
 						</div>
 						<div className="text-vscode-descriptionForeground text-sm ml-5 mt-1">
 							{t("settings:ui.collapseThinking.description")}
