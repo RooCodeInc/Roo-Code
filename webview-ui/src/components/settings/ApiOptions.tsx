@@ -271,6 +271,7 @@ const ApiOptions = ({
 			apiConfiguration?.watsonxAuthType,
 			apiConfiguration?.watsonxUsername,
 			apiConfiguration?.watsonxPassword,
+			apiConfiguration?.watsonxRegion,
 			customHeaders,
 		],
 	)

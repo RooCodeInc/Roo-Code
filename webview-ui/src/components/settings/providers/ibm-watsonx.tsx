@@ -256,7 +256,7 @@ export const WatsonxAI = ({
 		<>
 			{/* Platform Selection */}
 			<div className="w-full mb-1">
-				<label className="block font-medium mb-1">Platform</label>
+				<label className="block font-medium mb-1">{t("settings:providers.watsonx.platform")}</label>
 				<Select
 					value={apiConfiguration.watsonxPlatform}
 					onValueChange={(value) => handlePlatformChange(value as "ibmCloud" | "cloudPak")}>
@@ -273,7 +273,7 @@ export const WatsonxAI = ({
 			{/* IBM Cloud specific fields */}
 			{apiConfiguration.watsonxPlatform === "ibmCloud" && (
 				<div className="w-full mb-1">
-					<label className="block font-medium mb-1">Region</label>
+					<label className="block font-medium mb-1">{t("settings:providers.watsonx.region")}</label>
 					<Select value={selectedRegion} onValueChange={handleRegionSelect}>
 						<SelectTrigger className="w-full">
 							<SelectValue placeholder={t("settings:providers.watsonx.region")} />
@@ -303,7 +303,7 @@ export const WatsonxAI = ({
 						<label className="block font-medium mb-1">URL</label>
 					</VSCodeTextField>
 					<div className="text-sm text-vscode-descriptionForeground mt-1">
-						Enter the full URL of your IBM Cloud Pak for Data instance
+						{t("settings:providers.watsonx.urlDescription")}
 					</div>
 				</div>
 			)}
@@ -314,7 +314,7 @@ export const WatsonxAI = ({
 					onInput={handleInputChange("watsonxProjectId")}
 					placeholder={t("settings:providers.watsonx.projectId")}
 					className="w-full">
-					<label className="block font-medium mb-1">Project ID</label>
+					<label className="block font-medium mb-1">{t("settings:providers.watsonx.projectId")}</label>
 				</VSCodeTextField>
 			</div>
 
@@ -326,7 +326,7 @@ export const WatsonxAI = ({
 						onInput={handleInputChange("watsonxApiKey")}
 						placeholder={t("settings:providers.watsonx.apiKey")}
 						className="w-full">
-						<label className="block font-medium mb-1">API Key</label>
+						<label className="block font-medium mb-1">{t("settings:providers.watsonx.apiKey")}</label>
 					</VSCodeTextField>
 					<div className="text-sm text-vscode-descriptionForeground mt-1">
 						{t("settings:providers.apiKeyStorageNotice")}
@@ -342,12 +342,12 @@ export const WatsonxAI = ({
 							onInput={handleInputChange("watsonxUsername")}
 							placeholder={t("settings:providers.watsonx.username")}
 							className="w-full">
-							<label className="block font-medium mb-1">Username</label>
+							<label className="block font-medium mb-1">{t("settings:providers.watsonx.username")}</label>
 						</VSCodeTextField>
 					</div>
 
 					<div className="w-full mb-1">
-						<label className="block font-medium mb-1">Authentication Type</label>
+						<label className="block font-medium mb-1">{t("settings:providers.watsonx.authType")}</label>
 						<Select
 							value={apiConfiguration.watsonxAuthType}
 							onValueChange={(value) => handleAuthTypeChange(value as "apiKey" | "password")}>
@@ -355,8 +355,8 @@ export const WatsonxAI = ({
 								<SelectValue placeholder={t("settings:providers.watsonx.authType")} />
 							</SelectTrigger>
 							<SelectContent>
-								<SelectItem value="apiKey">API Key</SelectItem>
-								<SelectItem value="password">Password</SelectItem>
+								<SelectItem value="apiKey">{t("settings:providers.watsonx.apiKey")}</SelectItem>
+								<SelectItem value="password">{t("settings:providers.watsonx.password")}</SelectItem>
 							</SelectContent>
 						</Select>
 					</div>
@@ -369,7 +369,9 @@ export const WatsonxAI = ({
 								onInput={handleInputChange("watsonxApiKey")}
 								placeholder={t("settings:providers.watsonx.apiKey")}
 								className="w-full">
-								<label className="block font-medium mb-1">API Key</label>
+								<label className="block font-medium mb-1">
+									{t("settings:providers.watsonx.apiKey")}
+								</label>
 							</VSCodeTextField>
 							<div className="text-sm text-vscode-descriptionForeground mt-1">
 								{t("settings:providers.apiKeyStorageNotice")}
@@ -383,7 +385,9 @@ export const WatsonxAI = ({
 								onInput={handleInputChange("watsonxPassword")}
 								placeholder={t("settings:providers.watsonx.password")}
 								className="w-full">
-								<label className="block font-medium mb-1">Password</label>
+								<label className="block font-medium mb-1">
+									{t("settings:providers.watsonx.password")}
+								</label>
 							</VSCodeTextField>
 							<div className="text-sm text-vscode-descriptionForeground mt-1">
 								{t("settings:providers.passwordStorageNotice")}
