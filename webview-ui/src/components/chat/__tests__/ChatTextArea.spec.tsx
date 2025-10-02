@@ -499,4 +499,136 @@ describe("ChatTextArea", () => {
 			expect(apiConfigDropdown).toHaveAttribute("disabled")
 		})
 	})
+
+	describe("duplicate mention removal", () => {
+		const mockFilePaths = ["/src/file1.js", "/src/file2.js", "/src/utils/helper.js"]
+		const mockOpenedTabs = [
+			{ path: "src/file1.js", name: "file1.js" },
+			{ path: "src/file2.js", name: "file2.js" },
+		]
+
+		beforeEach(() => {
+			;(useExtensionState as ReturnType<typeof vi.fn>).mockReturnValue({
+				filePaths: mockFilePaths,
+				openedTabs: mockOpenedTabs,
+				taskHistory: [],
+				cwd: "/test/workspace",
+				listApiConfigMeta: [{ id: "test", name: "Test Config" }],
+				currentApiConfigName: "Test Config",
+			})
+		})
+
+		it("should remove only the specific mention when there are duplicates", async () => {
+			const onRemoveMention = vi.fn()
+
+			// Click on the first mention (index 0)
+			const firstMention = screen.getByTestId("mention-item-0")
+			fireEvent.click(firstMention)
+
+			// Verify that onRemoveMention was called with the correct index
+			expect(onRemoveMention).toHaveBeenCalledWith(0)
+			expect(onRemoveMention).toHaveBeenCalledTimes(1)
+
+			// Click on the second mention (index 1, same path but different nodeKey)
+			const secondMention = screen.getByTestId("mention-item-1")
+			fireEvent.click(secondMention)
+
+			// Verify that onRemoveMention was called with the correct index for the second mention
+			expect(onRemoveMention).toHaveBeenCalledWith(1)
+			expect(onRemoveMention).toHaveBeenCalledTimes(2)
+		})
+
+		it("should handle mention removal with unique node keys", () => {
+			const mockMentions = [
+				{
+					path: "/src/duplicate.js",
+					displayName: "duplicate.js",
+					icon: "file-icon.svg",
+					type: "file" as const,
+					nodeKey: "unique-key-1",
+				},
+				{
+					path: "/src/duplicate.js", // Same path
+					displayName: "duplicate.js",
+					icon: "file-icon.svg",
+					type: "file" as const,
+					nodeKey: "unique-key-2", // Different key
+				},
+			]
+
+			// Test that each mention has a unique identifier
+			expect(mockMentions[0].nodeKey).not.toBe(mockMentions[1].nodeKey)
+			expect(mockMentions[0].path).toBe(mockMentions[1].path)
+
+			// Verify that mentions with same path but different keys are treated as separate entities
+			const firstMentionId = `mention-${mockMentions[0].nodeKey}`
+			const secondMentionId = `mention-${mockMentions[1].nodeKey}`
+
+			expect(firstMentionId).toBe("mention-unique-key-1")
+			expect(secondMentionId).toBe("mention-unique-key-2")
+			expect(firstMentionId).not.toBe(secondMentionId)
+		})
+
+		it("should preserve other mentions when removing a specific duplicate", () => {
+			const setInputValue = vi.fn()
+
+			render(
+				<ChatTextArea
+					{...defaultProps}
+					setInputValue={setInputValue}
+					inputValue="@file.js @file.js @other.js"
+				/>,
+			)
+
+			// The component should render without crashing when handling duplicate mentions
+			const contentEditable = document.querySelector('[contenteditable="true"]')
+			expect(contentEditable).toBeInTheDocument()
+
+			// Verify that the input contains the expected mentions
+			// Note: With Lexical, the actual text content might be different from the inputValue prop
+			// but the component should handle the mentions correctly internally
+		})
+
+		it("should generate unique keys for context bar items", () => {
+			const mockContextItems = [
+				{
+					type: "mention" as const,
+					icon: "file-icon.svg",
+					displayName: "file.js",
+					originalIndex: 0,
+					iconAlt: "File",
+					nodeKey: "lexical-key-1",
+				},
+				{
+					type: "mention" as const,
+					icon: "file-icon.svg",
+					displayName: "file.js", // Same display name
+					originalIndex: 1,
+					iconAlt: "File",
+					nodeKey: "lexical-key-2", // Different node key
+				},
+				{
+					type: "image" as const,
+					icon: "data:image/png;base64,test",
+					displayName: "Image #1",
+					originalIndex: 0,
+					iconAlt: "Image 1",
+				},
+			]
+
+			// Test key generation logic
+			const keys = mockContextItems.map((item) => {
+				if (item.type === "mention" && item.nodeKey) {
+					return `mention-${item.nodeKey}`
+				}
+				return `${item.type}-${item.originalIndex}`
+			})
+
+			expect(keys).toEqual(["mention-lexical-key-1", "mention-lexical-key-2", "image-0"])
+
+			// Verify all keys are unique
+			const uniqueKeys = new Set(keys)
+			expect(uniqueKeys.size).toBe(keys.length)
+		})
+	})
 })

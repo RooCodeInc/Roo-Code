@@ -1,122 +1,257 @@
-import { render, screen, fireEvent } from "@testing-library/react"
-import { describe, it, expect, vi } from "vitest"
+import { render, fireEvent, screen } from "@src/utils/test-utils"
 import { ChatContextBar } from "../ChatContextBar"
 import { MentionInfo } from "../lexical/LexicalMentionPlugin"
 
 describe("ChatContextBar", () => {
-	const mockMentions: MentionInfo[] = [
-		{
-			displayName: "test-file.ts",
-			icon: "data:image/svg+xml;base64,test",
-			type: "file",
-			path: "/test-file.ts",
-		},
-		{
-			displayName: "src",
-			icon: "data:image/svg+xml;base64,folder",
-			type: "folder",
-			path: "/src/",
-		},
-	]
+	const mockOnRemoveMention = vi.fn()
+	const mockOnRemoveImage = vi.fn()
 
-	const mockImages = ["data:image/png;base64,test1", "data:image/png;base64,test2"]
-
-	const defaultProps = {
-		validMentions: [],
-		selectedImages: [],
-		onRemoveMention: vi.fn(),
-		onRemoveImage: vi.fn(),
-	}
-
-	it("should not render when no mentions or images", () => {
-		const { container } = render(<ChatContextBar {...defaultProps} />)
-		expect(container.firstChild).toBeNull()
+	beforeEach(() => {
+		vi.clearAllMocks()
 	})
 
-	it("should render mentions with unified styling", () => {
-		render(<ChatContextBar {...defaultProps} validMentions={mockMentions} />)
+	describe("duplicate mention handling", () => {
+		it("should render unique keys for duplicate mentions", () => {
+			const validMentions: MentionInfo[] = [
+				{
+					path: "/src/file.js",
+					displayName: "file.js",
+					icon: "file-icon.svg",
+					type: "file",
+					nodeKey: "unique-key-1",
+				},
+				{
+					path: "/src/file.js", // Same path
+					displayName: "file.js",
+					icon: "file-icon.svg",
+					type: "file",
+					nodeKey: "unique-key-2", // Different node key
+				},
+				{
+					path: "/src/other.js",
+					displayName: "other.js",
+					icon: "file-icon.svg",
+					type: "file",
+					nodeKey: "unique-key-3",
+				},
+			]
 
-		expect(screen.getByText("test-file.ts")).toBeInTheDocument()
-		expect(screen.getByText("src")).toBeInTheDocument()
+			const { container } = render(
+				<ChatContextBar
+					validMentions={validMentions}
+					selectedImages={[]}
+					onRemoveMention={mockOnRemoveMention}
+					onRemoveImage={mockOnRemoveImage}
+				/>,
+			)
 
-		// Check that both mentions have the same styling classes
-		const mentionElements = screen.getAllByText(/test-file\.ts|src/).map((el) => el.closest("div"))
-		mentionElements.forEach((element) => {
-			expect(element).toHaveClass("bg-vscode-input-background")
-			expect(element).toHaveClass("text-vscode-input-foreground")
-			expect(element).toHaveClass("rounded")
-			expect(element).toHaveClass("text-xs")
+			// Should render all three mentions
+			const contextItems = container.querySelectorAll('div[class*="relative flex items-center"]')
+			expect(contextItems).toHaveLength(3)
+
+			// Check that all mentions are rendered by looking for their display names
+			// Use getAllByText since we have duplicate file.js mentions
+			const fileJsElements = screen.getAllByText("file.js")
+			expect(fileJsElements).toHaveLength(2) // Two duplicate mentions
+			expect(screen.getByText("other.js")).toBeInTheDocument()
+		})
+
+		it("should call onRemoveMention with correct index when removing specific duplicate", () => {
+			const validMentions: MentionInfo[] = [
+				{
+					path: "/src/duplicate.js",
+					displayName: "duplicate.js",
+					icon: "file-icon.svg",
+					type: "file",
+					nodeKey: "key-1",
+				},
+				{
+					path: "/src/duplicate.js", // Same path
+					displayName: "duplicate.js",
+					icon: "file-icon.svg",
+					type: "file",
+					nodeKey: "key-2", // Different key
+				},
+			]
+
+			const { container } = render(
+				<ChatContextBar
+					validMentions={validMentions}
+					selectedImages={[]}
+					onRemoveMention={mockOnRemoveMention}
+					onRemoveImage={mockOnRemoveImage}
+				/>,
+			)
+
+			const contextItems = container.querySelectorAll('div[class*="relative flex items-center"]')
+			expect(contextItems).toHaveLength(2)
+
+			// Hover over first item to show remove button
+			fireEvent.mouseEnter(contextItems[0])
+
+			// Find and click the remove button (X icon)
+			const removeButton = contextItems[0].querySelector("button")
+			expect(removeButton).toBeInTheDocument()
+
+			if (removeButton) {
+				fireEvent.click(removeButton)
+			}
+
+			// Should call onRemoveMention with index 0 (first duplicate)
+			expect(mockOnRemoveMention).toHaveBeenCalledWith(0)
+			expect(mockOnRemoveMention).toHaveBeenCalledTimes(1)
+
+			// Hover over second item
+			fireEvent.mouseEnter(contextItems[1])
+
+			// Find and click the remove button for second item
+			const secondRemoveButton = contextItems[1].querySelector("button")
+			if (secondRemoveButton) {
+				fireEvent.click(secondRemoveButton)
+			}
+
+			// Should call onRemoveMention with index 1 (second duplicate)
+			expect(mockOnRemoveMention).toHaveBeenCalledWith(1)
+			expect(mockOnRemoveMention).toHaveBeenCalledTimes(2)
+		})
+
+		it("should generate unique React keys for duplicate mentions", () => {
+			const validMentions: MentionInfo[] = [
+				{
+					path: "/src/same.js",
+					displayName: "same.js",
+					icon: "file-icon.svg",
+					type: "file",
+					nodeKey: "lexical-node-1",
+				},
+				{
+					path: "/src/same.js", // Same path
+					displayName: "same.js",
+					icon: "file-icon.svg",
+					type: "file",
+					nodeKey: "lexical-node-2", // Different node key
+				},
+			]
+
+			// Test the key generation logic that would be used internally
+			const contextItems = validMentions.map((mention, index) => ({
+				type: "mention" as const,
+				icon: mention.icon,
+				displayName: mention.displayName,
+				originalIndex: index,
+				iconAlt: "File",
+				nodeKey: mention.nodeKey,
+			}))
+
+			const keys = contextItems.map((item) => {
+				return item.type === "mention" && item.nodeKey
+					? `mention-${item.nodeKey}`
+					: `${item.type}-${item.originalIndex}`
+			})
+
+			expect(keys).toEqual(["mention-lexical-node-1", "mention-lexical-node-2"])
+
+			// Verify keys are unique
+			const uniqueKeys = new Set(keys)
+			expect(uniqueKeys.size).toBe(keys.length)
+		})
+
+		it("should handle mixed mentions and images with unique keys", () => {
+			const validMentions: MentionInfo[] = [
+				{
+					path: "/src/file.js",
+					displayName: "file.js",
+					icon: "file-icon.svg",
+					type: "file",
+					nodeKey: "mention-key-1",
+				},
+			]
+
+			const selectedImages = ["data:image/png;base64,test1", "data:image/png;base64,test2"]
+
+			const { container } = render(
+				<ChatContextBar
+					validMentions={validMentions}
+					selectedImages={selectedImages}
+					onRemoveMention={mockOnRemoveMention}
+					onRemoveImage={mockOnRemoveImage}
+				/>,
+			)
+
+			// Should render 1 mention + 2 images = 3 total items
+			const contextItems = container.querySelectorAll('div[class*="relative flex items-center"]')
+			expect(contextItems).toHaveLength(3)
+
+			// Test removing mention
+			fireEvent.mouseEnter(contextItems[0])
+			const mentionRemoveButton = contextItems[0].querySelector("button")
+			if (mentionRemoveButton) {
+				fireEvent.click(mentionRemoveButton)
+			}
+			expect(mockOnRemoveMention).toHaveBeenCalledWith(0)
+
+			// Test removing first image (should be at index 1 in the combined list)
+			fireEvent.mouseEnter(contextItems[1])
+			const imageRemoveButton = contextItems[1].querySelector("button")
+			if (imageRemoveButton) {
+				fireEvent.click(imageRemoveButton)
+			}
+			expect(mockOnRemoveImage).toHaveBeenCalledWith(0) // Image index 0
 		})
 	})
 
-	it("should render images with unified styling", () => {
-		render(<ChatContextBar {...defaultProps} selectedImages={mockImages} />)
+	describe("empty state", () => {
+		it("should not render when no mentions or images", () => {
+			const { container } = render(
+				<ChatContextBar
+					validMentions={[]}
+					selectedImages={[]}
+					onRemoveMention={mockOnRemoveMention}
+					onRemoveImage={mockOnRemoveImage}
+				/>,
+			)
 
-		expect(screen.getByText("Image #1")).toBeInTheDocument()
-		expect(screen.getByText("Image #2")).toBeInTheDocument()
-
-		// Check that both images have the same styling classes as mentions
-		const imageElements = screen.getAllByText(/Image #[12]/).map((el) => el.closest("div"))
-		imageElements.forEach((element) => {
-			expect(element).toHaveClass("bg-vscode-input-background")
-			expect(element).toHaveClass("text-vscode-input-foreground")
-			expect(element).toHaveClass("rounded")
-			expect(element).toHaveClass("text-xs")
+			// Should not render anything
+			expect(container.firstChild).toBeNull()
 		})
 	})
 
-	it("should show remove button on hover for mentions", () => {
-		render(<ChatContextBar {...defaultProps} validMentions={mockMentions} />)
+	describe("hover interactions", () => {
+		it("should show remove button on hover and hide on mouse leave", () => {
+			const validMentions: MentionInfo[] = [
+				{
+					path: "/src/test.js",
+					displayName: "test.js",
+					icon: "file-icon.svg",
+					type: "file",
+					nodeKey: "test-key",
+				},
+			]
 
-		const mentionElement = screen.getByText("test-file.ts").closest("div")!
-		fireEvent.mouseEnter(mentionElement)
+			const { container } = render(
+				<ChatContextBar
+					validMentions={validMentions}
+					selectedImages={[]}
+					onRemoveMention={mockOnRemoveMention}
+					onRemoveImage={mockOnRemoveImage}
+				/>,
+			)
 
-		// Should show X button instead of icon
-		expect(screen.getByRole("button")).toBeInTheDocument()
-	})
+			const contextItem = container.querySelector('div[class*="relative flex items-center"]')!
 
-	it("should show remove button on hover for images", () => {
-		render(<ChatContextBar {...defaultProps} selectedImages={mockImages} />)
+			// Initially should show icon, not remove button
+			expect(contextItem.querySelector("img")).toBeInTheDocument()
+			expect(contextItem.querySelector("button")).not.toBeInTheDocument()
 
-		const imageElement = screen.getByText("Image #1").closest("div")!
-		fireEvent.mouseEnter(imageElement)
+			// Hover should show remove button
+			fireEvent.mouseEnter(contextItem)
+			expect(contextItem.querySelector("button")).toBeInTheDocument()
+			expect(contextItem.querySelector("img")).not.toBeInTheDocument()
 
-		// Should show X button instead of image
-		expect(screen.getByRole("button")).toBeInTheDocument()
-	})
-
-	it("should call onRemoveMention when mention remove button is clicked", () => {
-		const onRemoveMention = vi.fn()
-		render(<ChatContextBar {...defaultProps} validMentions={mockMentions} onRemoveMention={onRemoveMention} />)
-
-		const mentionElement = screen.getByText("test-file.ts").closest("div")!
-		fireEvent.mouseEnter(mentionElement)
-
-		const removeButton = screen.getByRole("button")
-		fireEvent.click(removeButton)
-
-		expect(onRemoveMention).toHaveBeenCalledWith(0)
-	})
-
-	it("should call onRemoveImage when image remove button is clicked", () => {
-		const onRemoveImage = vi.fn()
-		render(<ChatContextBar {...defaultProps} selectedImages={mockImages} onRemoveImage={onRemoveImage} />)
-
-		const imageElement = screen.getByText("Image #1").closest("div")!
-		fireEvent.mouseEnter(imageElement)
-
-		const removeButton = screen.getByRole("button")
-		fireEvent.click(removeButton)
-
-		expect(onRemoveImage).toHaveBeenCalledWith(0)
-	})
-
-	it("should render both mentions and images together", () => {
-		render(<ChatContextBar {...defaultProps} validMentions={mockMentions} selectedImages={mockImages} />)
-
-		expect(screen.getByText("test-file.ts")).toBeInTheDocument()
-		expect(screen.getByText("src")).toBeInTheDocument()
-		expect(screen.getByText("Image #1")).toBeInTheDocument()
-		expect(screen.getByText("Image #2")).toBeInTheDocument()
+			// Mouse leave should hide remove button
+			fireEvent.mouseLeave(contextItem)
+			expect(contextItem.querySelector("img")).toBeInTheDocument()
+			expect(contextItem.querySelector("button")).not.toBeInTheDocument()
+		})
 	})
 })

@@ -24,6 +24,7 @@ export interface MentionInfo {
 	displayName: string
 	icon: string
 	type: "file" | "folder" | "url" | "problems" | "terminal" | "git"
+	nodeKey: string // Unique identifier for the mention node
 }
 
 export interface LexicalMentionPluginRef {
@@ -64,7 +65,7 @@ export const LexicalMentionPlugin = forwardRef<LexicalMentionPluginRef, LexicalM
 		}, [])
 
 		const extractMentionsFromEditor = useCallback(() => {
-			const mentionNodes: Array<{ path: string; data?: Record<string, any> }> = []
+			const mentionNodes: Array<{ path: string; data?: Record<string, any>; nodeKey: string }> = []
 
 			editor.getEditorState().read(() => {
 				const root = $getRoot()
@@ -80,6 +81,7 @@ export const LexicalMentionPlugin = forwardRef<LexicalMentionPluginRef, LexicalM
 						mentionNodes.push({
 							path: node.getValue(),
 							data: node.getData(),
+							nodeKey: node.getKey(),
 						})
 					}
 
@@ -152,6 +154,7 @@ export const LexicalMentionPlugin = forwardRef<LexicalMentionPluginRef, LexicalM
 					displayName,
 					icon,
 					type,
+					nodeKey: node.nodeKey,
 				}
 			})
 
@@ -289,8 +292,8 @@ export const LexicalMentionPlugin = forwardRef<LexicalMentionPluginRef, LexicalM
 						visited.add(node)
 
 						if ($isMentionNode(node) && node.getTrigger() === "@") {
-							// Check if this is the mention we want to remove
-							if (node.getValue() === mentionInfo.path) {
+							// Check if this is the mention we want to remove using the unique node key
+							if (node.getKey() === mentionInfo.nodeKey) {
 								// Remove the mention node and any trailing space
 								const nextSibling = node.getNextSibling()
 								if ($isTextNode(nextSibling) && nextSibling.getTextContent().startsWith(" ")) {
