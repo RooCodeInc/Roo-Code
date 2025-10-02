@@ -495,8 +495,9 @@
 			"username": "使用者名稱",
 			"password": "密碼",
 			"apiKey": "API 金鑰",
-			"authType": "認證類型",
-			"projectId": "專案 ID"
+			"authType": "驗證類型",
+			"projectId": "專案 ID",
+			"urlDescription": "輸入您的 IBM Cloud Pak for Data 實例的完整 URL"
 		}
 	},
 	"browser": {

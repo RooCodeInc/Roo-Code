@@ -490,13 +490,14 @@
 			"maxTokensDescription": "Claude Code 响应的最大输出 Token 数量。默认为 8000。"
 		},
 		"watsonx": {
-			"platform": "选择平台",
-			"region": "选择区域",
+			"platform": "平台",
+			"region": "区域",
 			"username": "用户名",
 			"password": "密码",
 			"apiKey": "API 密钥",
-			"authType": "选择认证类型",
-			"projectId": "项目 ID"
+			"authType": "认证类型",
+			"projectId": "项目 ID",
+			"urlDescription": "输入您的 IBM Cloud Pak for Data 实例的完整 URL"
 		}
 	},
 	"browser": {

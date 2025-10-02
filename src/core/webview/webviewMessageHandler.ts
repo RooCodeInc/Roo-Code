@@ -1076,8 +1076,10 @@ export const webviewMessageHandler = async (
 				} catch (error) {
 					console.error("Failed to fetch IBM watsonx models:", error)
 					provider.postMessageToWebview({
-						type: "watsonxModels",
-						watsonxModels: {},
+						type: "singleRouterModelFetchResponse",
+						success: false,
+						error: "Failed to fetch IBM watsonx models",
+						values: { provider: "ibm-watsonx" },
 					})
 				}
 			}

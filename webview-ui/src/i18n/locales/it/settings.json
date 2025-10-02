@@ -490,13 +490,14 @@
 			"maxTokensDescription": "Numero massimo di token di output per le risposte di Claude Code. Il valore predefinito è 8000."
 		},
 		"watsonx": {
-			"platform": "Seleziona una piattaforma",
-			"region": "Seleziona una regione",
+			"platform": "Piattaforma",
+			"region": "Regione",
 			"username": "Nome utente",
 			"password": "Password",
 			"apiKey": "Chiave API",
-			"authType": "Seleziona tipo di autenticazione",
-			"projectId": "ID progetto"
+			"authType": "Tipo di autenticazione",
+			"projectId": "ID progetto",
+			"urlDescription": "Inserisci l'URL completo della tua istanza IBM Cloud Pak for Data"
 		}
 	},
 	"browser": {

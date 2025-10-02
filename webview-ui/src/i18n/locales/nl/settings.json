@@ -496,7 +496,8 @@
 			"password": "Wachtwoord",
 			"apiKey": "API-sleutel",
 			"authType": "Authenticatietype",
-			"projectId": "Project-ID"
+			"projectId": "Project-ID",
+			"urlDescription": "Voer de volledige URL van uw IBM Cloud Pak for Data-instantie in"
 		}
 	},
 	"browser": {

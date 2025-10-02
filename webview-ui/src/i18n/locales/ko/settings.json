@@ -490,13 +490,14 @@
 			"maxTokensDescription": "Claude Code 응답의 최대 출력 토큰 수. 기본값은 8000입니다."
 		},
 		"watsonx": {
-			"platform": "플랫폼 선택",
-			"region": "리전 선택",
+			"platform": "플랫폼",
+			"region": "지역",
 			"username": "사용자 이름",
 			"password": "비밀번호",
 			"apiKey": "API 키",
-			"authType": "인증 유형 선택",
-			"projectId": "프로젝트 ID"
+			"authType": "인증 유형",
+			"projectId": "프로젝트 ID",
+			"urlDescription": "IBM Cloud Pak for Data 인스턴스의 전체 URL을 입력하세요"
 		}
 	},
 	"browser": {

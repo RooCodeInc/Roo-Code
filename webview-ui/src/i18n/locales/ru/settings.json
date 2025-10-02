@@ -494,9 +494,10 @@
 			"region": "Регион",
 			"username": "Имя пользователя",
 			"password": "Пароль",
-			"apiKey": "API ключ",
+			"apiKey": "API-ключ",
 			"authType": "Тип аутентификации",
-			"projectId": "ID проекта"
+			"projectId": "ID проекта",
+			"urlDescription": "Введите полный URL вашего экземпляра IBM Cloud Pak for Data"
 		}
 	},
 	"browser": {

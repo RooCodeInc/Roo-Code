@@ -490,13 +490,14 @@
 			"maxTokensDescription": "Maximale Anzahl an Ausgabe-Tokens für Claude Code-Antworten. Standard ist 8000."
 		},
 		"watsonx": {
-			"platform": "Plattform auswählen",
-			"region": "Region auswählen",
+			"platform": "Plattform",
+			"region": "Region",
 			"username": "Benutzername",
 			"password": "Passwort",
 			"apiKey": "API-Schlüssel",
-			"authType": "Authentifizierungstyp auswählen",
-			"projectId": "Projekt-ID"
+			"authType": "Authentifizierungstyp",
+			"projectId": "Projekt-ID",
+			"urlDescription": "Geben Sie die vollständige URL Ihrer IBM Cloud Pak for Data-Instanz ein"
 		}
 	},
 	"browser": {

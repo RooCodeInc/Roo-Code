@@ -490,13 +490,14 @@
 			"maxTokensDescription": "Nombre maximum de jetons de sortie pour les réponses de Claude Code. La valeur par défaut est 8000."
 		},
 		"watsonx": {
-			"platform": "Sélectionner une plateforme",
-			"region": "Sélectionner une région",
+			"platform": "Plateforme",
+			"region": "Région",
 			"username": "Nom d'utilisateur",
 			"password": "Mot de passe",
 			"apiKey": "Clé API",
-			"authType": "Sélectionner le type d'authentification",
-			"projectId": "ID du projet"
+			"authType": "Type d'authentification",
+			"projectId": "ID du projet",
+			"urlDescription": "Entrez l'URL complète de votre instance IBM Cloud Pak for Data"
 		}
 	},
 	"browser": {

@@ -496,7 +496,8 @@
 			"password": "Şifre",
 			"apiKey": "API Anahtarı",
 			"authType": "Kimlik doğrulama türü",
-			"projectId": "Proje Kimliği"
+			"projectId": "Proje Kimliği",
+			"urlDescription": "IBM Cloud Pak for Data örneğinizin tam URL'sini girin"
 		}
 	},
 	"browser": {
