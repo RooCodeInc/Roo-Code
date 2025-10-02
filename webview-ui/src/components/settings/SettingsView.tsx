@@ -68,6 +68,7 @@ import { Section } from "./Section"
 import PromptsSettings from "./PromptsSettings"
 import { SlashCommandsSettings } from "./SlashCommandsSettings"
 import { UISettings } from "./UISettings"
+import { CondensationProviderSettings } from "./CondensationProviderSettings"
 
 export const settingsTabsContainer = "flex flex-1 overflow-hidden [&.narrow_.tab-label]:hidden"
 export const settingsTabList =
@@ -729,23 +730,26 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 
 					{/* Context Management Section */}
 					{activeTab === "contextManagement" && (
-						<ContextManagementSettings
-							autoCondenseContext={autoCondenseContext}
-							autoCondenseContextPercent={autoCondenseContextPercent}
-							listApiConfigMeta={listApiConfigMeta ?? []}
-							maxOpenTabsContext={maxOpenTabsContext}
-							maxWorkspaceFiles={maxWorkspaceFiles ?? 200}
-							showRooIgnoredFiles={showRooIgnoredFiles}
-							maxReadFileLine={maxReadFileLine}
-							maxImageFileSize={maxImageFileSize}
-							maxTotalImageSize={maxTotalImageSize}
-							maxConcurrentFileReads={maxConcurrentFileReads}
-							profileThresholds={profileThresholds}
-							includeDiagnosticMessages={includeDiagnosticMessages}
-							maxDiagnosticMessages={maxDiagnosticMessages}
-							writeDelayMs={writeDelayMs}
-							setCachedStateField={setCachedStateField}
-						/>
+						<>
+							<ContextManagementSettings
+								autoCondenseContext={autoCondenseContext}
+								autoCondenseContextPercent={autoCondenseContextPercent}
+								listApiConfigMeta={listApiConfigMeta ?? []}
+								maxOpenTabsContext={maxOpenTabsContext}
+								maxWorkspaceFiles={maxWorkspaceFiles ?? 200}
+								showRooIgnoredFiles={showRooIgnoredFiles}
+								maxReadFileLine={maxReadFileLine}
+								maxImageFileSize={maxImageFileSize}
+								maxTotalImageSize={maxTotalImageSize}
+								maxConcurrentFileReads={maxConcurrentFileReads}
+								profileThresholds={profileThresholds}
+								includeDiagnosticMessages={includeDiagnosticMessages}
+								maxDiagnosticMessages={maxDiagnosticMessages}
+								writeDelayMs={writeDelayMs}
+								setCachedStateField={setCachedStateField}
+							/>
+							<CondensationProviderSettings />
+						</>
 					)}
 
 					{/* Terminal Section */}

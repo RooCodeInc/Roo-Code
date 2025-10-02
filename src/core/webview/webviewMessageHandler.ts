@@ -25,6 +25,8 @@ import { changeLanguage, t } from "../../i18n"
 import { Package } from "../../shared/package"
 import { type RouterName, type ModelRecord, toRouterName } from "../../shared/api"
 import { MessageEnhancer } from "./messageEnhancer"
+import { getCondensationManager } from "../condense/CondensationManager"
+import { getProviderRegistry } from "../condense/ProviderRegistry"
 
 import {
 	type WebviewMessage,
@@ -3108,6 +3110,81 @@ export const webviewMessageHandler = async (
 				type: "dismissedUpsells",
 				list: dismissedUpsells,
 			})
+			break
+		}
+		case "getCondensationProviders": {
+			try {
+				const manager = getCondensationManager()
+				const providers = manager.listProviders()
+				const defaultProviderId = manager.getDefaultProvider()
+
+				await provider.postMessageToWebview({
+					type: "condensationProviders",
+					providers,
+					defaultProviderId,
+				})
+			} catch (error) {
+				provider.log(
+					`Error getting condensation providers: ${error instanceof Error ? error.message : String(error)}`,
+				)
+			}
+			break
+		}
+		case "setDefaultCondensationProvider": {
+			try {
+				const manager = getCondensationManager()
+				if (message.providerId) {
+					manager.setDefaultProvider(message.providerId)
+
+					// Send updated list
+					const providers = manager.listProviders()
+					const defaultProviderId = manager.getDefaultProvider()
+
+					await provider.postMessageToWebview({
+						type: "condensationProviders",
+						providers,
+						defaultProviderId,
+					})
+				}
+			} catch (error) {
+				provider.log(
+					`Failed to set default provider: ${error instanceof Error ? error.message : String(error)}`,
+				)
+				vscode.window.showErrorMessage(
+					`Failed to set default provider: ${error instanceof Error ? error.message : String(error)}`,
+				)
+			}
+			break
+		}
+		case "updateCondensationProviderConfig": {
+			try {
+				const registry = getProviderRegistry()
+				if (message.providerId) {
+					const updates: any = {}
+					if (message.enabled !== undefined) updates.enabled = message.enabled
+					if (message.priority !== undefined) updates.priority = message.priority
+
+					registry.updateConfig(message.providerId, updates)
+
+					// Send updated list
+					const manager = getCondensationManager()
+					const providers = manager.listProviders()
+					const defaultProviderId = manager.getDefaultProvider()
+
+					await provider.postMessageToWebview({
+						type: "condensationProviders",
+						providers,
+						defaultProviderId,
+					})
+				}
+			} catch (error) {
+				provider.log(
+					`Failed to update provider config: ${error instanceof Error ? error.message : String(error)}`,
+				)
+				vscode.window.showErrorMessage(
+					`Failed to update provider config: ${error instanceof Error ? error.message : String(error)}`,
+				)
+			}
 			break
 		}
 	}

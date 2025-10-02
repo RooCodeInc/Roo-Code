@@ -126,6 +126,7 @@ export interface ExtensionMessage {
 		| "insertTextIntoTextarea"
 		| "dismissedUpsells"
 		| "organizationSwitchResult"
+		| "condensationProviders"
 	text?: string
 	payload?: any // Add a generic payload for now, can refine later
 	action?:
@@ -205,6 +206,16 @@ export interface ExtensionMessage {
 	queuedMessages?: QueuedMessage[]
 	list?: string[] // For dismissedUpsells
 	organizationId?: string | null // For organizationSwitchResult
+	// Condensation provider fields
+	providers?: Array<{
+		id: string
+		name: string
+		description: string
+		enabled: boolean
+		priority: number
+	}>
+	defaultProviderId?: string
+	providerId?: string
 }
 
 export type ExtensionState = Pick<
