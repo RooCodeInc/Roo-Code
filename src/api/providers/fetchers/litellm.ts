@@ -56,7 +56,7 @@ export async function getLiteLLMModels(apiKey: string, baseUrl: string): Promise
 				}
 
 				models[modelName] = {
-					maxTokens: modelInfo.max_tokens || 8192,
+					maxTokens: modelInfo.max_output_tokens || modelInfo.max_tokens || 8192,
 					contextWindow: modelInfo.max_input_tokens || 200000,
 					supportsImages: Boolean(modelInfo.supports_vision),
 					// litellm_params.model may have a prefix like openrouter/
