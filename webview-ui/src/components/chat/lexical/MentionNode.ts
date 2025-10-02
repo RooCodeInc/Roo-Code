@@ -26,10 +26,11 @@ function convertMentionElement(domNode: HTMLElement): DOMConversionOutput | null
 	const textContent = domNode.textContent
 	const trigger = domNode.getAttribute("data-lexical-mention-trigger")
 	const value = domNode.getAttribute("data-lexical-mention-value")
+	const label = domNode.getAttribute("data-lexical-mention-label")
 
 	if (textContent !== null && trigger !== null && value !== null) {
 		return {
-			node: $createMentionNode(trigger, value, null),
+			node: $createMentionNode(trigger, value, label, textContent),
 		}
 	}
 
@@ -87,18 +88,24 @@ export class MentionNode extends TextNode {
 		data?: Record<string, any>,
 		key?: NodeKey,
 	) {
-		super(text ?? `${trigger}${label}`, key)
+		super(text ?? "", key)
+
 		this.__trigger = trigger
 		this.__value = value
 		this.__label = label
 		this.__data = data
+
+		// Set the formatted text if not explicitly provided
+		if (!text) {
+			this.__text = this.getFormattedDisplayText()
+		}
 	}
 
 	exportJSON(): SerializedMentionNode {
 		return {
 			...super.exportJSON(),
 			value: this.__value,
-			label: this.getFormattedDisplayText(),
+			label: this.__label,
 			trigger: this.__trigger,
 			data: this.__data,
 			type: "mention",
