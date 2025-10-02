@@ -24,14 +24,17 @@ describe("ClaudeCodeHandler", () => {
 		vi.clearAllMocks()
 		const options: ApiHandlerOptions = {
 			claudeCodePath: "claude",
-			apiModelId: "claude-3-5-sonnet-20241022",
+			apiModelId: "claude-sonnet-4-20250514",
 		}
 		handler = new ClaudeCodeHandler(options)
 	})
 
-	test("should create handler with correct model configuration", () => {
+	test("should create handler with correct model configuration", async () => {
+		// Wait for async initialization to complete
+		await new Promise((resolve) => setTimeout(resolve, 100))
+
 		const model = handler.getModel()
-		expect(model.id).toBe("claude-3-5-sonnet-20241022")
+		expect(model.id).toBe("claude-sonnet-4-20250514")
 		expect(model.info.supportsImages).toBe(false)
 		expect(model.info.supportsPromptCache).toBe(true) // Claude Code now supports prompt caching
 	})
@@ -100,15 +103,16 @@ describe("ClaudeCodeHandler", () => {
 			systemPrompt,
 			messages: filteredMessages,
 			path: "claude",
-			modelId: "claude-3-5-sonnet-20241022",
-			maxOutputTokens: undefined, // No maxOutputTokens configured in this test
+			modelId: "claude-sonnet-4-20250514",
+			maxOutputTokens: undefined,
+			envVars: {},
 		})
 	})
 
 	test("should pass maxOutputTokens to runClaudeCode when configured", async () => {
 		const options: ApiHandlerOptions = {
 			claudeCodePath: "claude",
-			apiModelId: "claude-3-5-sonnet-20241022",
+			apiModelId: "claude-sonnet-4-20250514",
 			claudeCodeMaxOutputTokens: 16384,
 		}
 		const handlerWithMaxTokens = new ClaudeCodeHandler(options)
@@ -136,8 +140,9 @@ describe("ClaudeCodeHandler", () => {
 			systemPrompt,
 			messages: filteredMessages,
 			path: "claude",
-			modelId: "claude-3-5-sonnet-20241022",
+			modelId: "claude-sonnet-4-20250514",
 			maxOutputTokens: 16384,
+			envVars: {},
 		})
 	})
 
@@ -180,11 +185,13 @@ describe("ClaudeCodeHandler", () => {
 			results.push(chunk)
 		}
 
-		expect(results).toHaveLength(1)
+		// Should have reasoning chunk and usage chunk
+		expect(results).toHaveLength(2)
 		expect(results[0]).toEqual({
 			type: "reasoning",
 			text: "I need to think about this carefully...",
 		})
+		expect(results[1]).toHaveProperty("type", "usage")
 	})
 
 	test("should handle redacted thinking content", async () => {
@@ -225,11 +232,13 @@ describe("ClaudeCodeHandler", () => {
 			results.push(chunk)
 		}
 
-		expect(results).toHaveLength(1)
+		// Should have reasoning chunk and usage chunk
+		expect(results).toHaveLength(2)
 		expect(results[0]).toEqual({
 			type: "reasoning",
 			text: "[Redacted thinking block]",
 		})
+		expect(results[1]).toHaveProperty("type", "usage")
 	})
 
 	test("should handle mixed content types", async () => {
@@ -275,7 +284,8 @@ describe("ClaudeCodeHandler", () => {
 			results.push(chunk)
 		}
 
-		expect(results).toHaveLength(2)
+		// Should have reasoning, text, and usage chunks
+		expect(results).toHaveLength(3)
 		expect(results[0]).toEqual({
 			type: "reasoning",
 			text: "Let me think about this...",
@@ -284,6 +294,7 @@ describe("ClaudeCodeHandler", () => {
 			type: "text",
 			text: "Here's my response!",
 		})
+		expect(results[2]).toHaveProperty("type", "usage")
 	})
 
 	test("should handle string chunks from generator", async () => {
@@ -305,7 +316,8 @@ describe("ClaudeCodeHandler", () => {
 			results.push(chunk)
 		}
 
-		expect(results).toHaveLength(2)
+		// Should have two text chunks and usage chunk
+		expect(results).toHaveLength(3)
 		expect(results[0]).toEqual({
 			type: "text",
 			text: "This is a string chunk",
@@ -314,6 +326,7 @@ describe("ClaudeCodeHandler", () => {
 			type: "text",
 			text: "Another string chunk",
 		})
+		expect(results[2]).toHaveProperty("type", "usage")
 	})
 
 	test("should handle usage and cost tracking with paid usage", async () => {

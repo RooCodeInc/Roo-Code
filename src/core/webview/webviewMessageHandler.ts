@@ -770,6 +770,19 @@ export const webviewMessageHandler = async (
 				lmstudio: {},
 			}
 
+			// Check for claude-code alternative provider models
+			try {
+				const { ClaudeCodeHandler } = await import("../../api/providers/claude-code")
+				const claudeCodeModels = await ClaudeCodeHandler.getAvailableModels(apiConfiguration.claudeCodePath)
+				if (claudeCodeModels && claudeCodeModels.provider !== "claude-code") {
+					// We have alternative provider models, add them to routerModels
+					// Use a special key to pass them to the frontend
+					;(routerModels as any)["claude-code"] = claudeCodeModels.models
+				}
+			} catch (error) {
+				console.debug("Failed to get claude-code models:", error)
+			}
+
 			const safeGetModels = async (options: GetModelsOptions): Promise<ModelRecord> => {
 				try {
 					return await getModels(options)

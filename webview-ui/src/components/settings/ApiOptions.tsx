@@ -258,6 +258,20 @@ const ApiOptions = ({
 	}, [apiConfiguration, routerModels, organizationAllowList, setErrorMessage])
 
 	const selectedProviderModels = useMemo(() => {
+		// Check for dynamic models from claude-code alternative providers
+		// Use type assertion since claude-code is not part of RouterModels type but we add it dynamically
+		const routerModelsWithClaudeCode = routerModels as any
+		if (selectedProvider === "claude-code" && routerModelsWithClaudeCode?.["claude-code"]) {
+			const dynamicModels = routerModelsWithClaudeCode["claude-code"]
+			if (Object.keys(dynamicModels).length > 0) {
+				// Use dynamic models from alternative providers
+				return Object.keys(dynamicModels).map((modelId) => ({
+					value: modelId,
+					label: modelId,
+				}))
+			}
+		}
+
 		const models = MODELS_BY_PROVIDER[selectedProvider]
 		if (!models) return []
 
@@ -271,7 +285,7 @@ const ApiOptions = ({
 			: []
 
 		return modelOptions
-	}, [selectedProvider, organizationAllowList])
+	}, [selectedProvider, organizationAllowList, routerModels])
 
 	const onProviderChange = useCallback(
 		(value: ProviderName) => {

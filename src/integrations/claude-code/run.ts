@@ -17,6 +17,7 @@ type ClaudeCodeOptions = {
 	messages: Anthropic.Messages.MessageParam[]
 	path?: string
 	modelId?: string
+	envVars?: Record<string, string>
 }
 
 type ProcessState = {
@@ -27,7 +28,7 @@ type ProcessState = {
 }
 
 export async function* runClaudeCode(
-	options: ClaudeCodeOptions & { maxOutputTokens?: number },
+	options: ClaudeCodeOptions & { maxOutputTokens?: number; envVars?: Record<string, string> },
 ): AsyncGenerator<ClaudeCodeMessage | string> {
 	const claudePath = options.path || "claude"
 	let process
@@ -152,7 +153,8 @@ function runProcess({
 	path,
 	modelId,
 	maxOutputTokens,
-}: ClaudeCodeOptions & { maxOutputTokens?: number }) {
+	envVars,
+}: ClaudeCodeOptions & { maxOutputTokens?: number; envVars?: Record<string, string> }) {
 	const claudePath = path || "claude"
 	const isWindows = os.platform() === "win32"
 
@@ -185,6 +187,7 @@ function runProcess({
 		stderr: "pipe",
 		env: {
 			...process.env,
+			...envVars, // Merge in any environment variables from Claude Code config
 			// Use the configured value, or the environment variable, or default to CLAUDE_CODE_DEFAULT_MAX_OUTPUT_TOKENS
 			CLAUDE_CODE_MAX_OUTPUT_TOKENS:
 				maxOutputTokens?.toString() ||
