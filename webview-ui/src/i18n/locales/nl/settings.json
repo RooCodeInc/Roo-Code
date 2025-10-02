@@ -705,10 +705,10 @@
 					"standard": "Standaard diff-strategie past wijzigingen toe op één codeblok tegelijk.",
 					"unified": "Unified diff-strategie gebruikt meerdere methoden om diffs toe te passen en kiest de beste aanpak.",
 					"multiBlock": "Multi-block diff-strategie laat toe om meerdere codeblokken in één verzoek bij te werken."
-				},
-				"watsonx": {
-					"description": "Indien ingeschakeld kan Roo sneller bestanden bewerken en worden afgekorte volledige-bestandswijzigingen automatisch geweigerd."
 				}
+			},
+			"watsonx": {
+				"description": "Indien ingeschakeld kan Roo sneller bestanden bewerken en worden afgekorte volledige-bestandswijzigingen automatisch geweigerd."
 			},
 			"matchPrecision": {
 				"label": "Matchnauwkeurigheid",

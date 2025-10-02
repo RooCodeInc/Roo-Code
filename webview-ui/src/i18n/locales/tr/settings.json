@@ -705,10 +705,10 @@
 					"standard": "Standart diff stratejisi, bir seferde tek bir kod bloğuna değişiklikler uygular.",
 					"unified": "Birleştirilmiş diff stratejisi, diff'leri uygulamak için birden çok yaklaşım benimser ve en iyi yaklaşımı seçer.",
 					"multiBlock": "Çoklu blok diff stratejisi, tek bir istekte bir dosyadaki birden çok kod bloğunu güncellemenize olanak tanır."
-				},
-				"watsonx": {
-					"description": "Etkinleştirildiğinde, Roo dosyaları daha hızlı düzenleyebilecek ve kesik tam dosya yazımlarını otomatik olarak reddedecektir."
 				}
+			},
+			"watsonx": {
+				"description": "Etkinleştirildiğinde, Roo dosyaları daha hızlı düzenleyebilecek ve kesik tam dosya yazımlarını otomatik olarak reddedecektir."
 			},
 			"matchPrecision": {
 				"label": "Eşleşme hassasiyeti",
