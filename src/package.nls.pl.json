@@ -15,6 +15,8 @@
 	"command.terminal.explainCommand.title": "Wyjaśnij tę Komendę",
 	"command.acceptInput.title": "Akceptuj Wprowadzanie/Sugestię",
 	"command.toggleAutoApprove.title": "Przełącz Auto-Zatwierdzanie",
+	"command.increaseFontSize.title": "Zwiększ Rozmiar Czcionki",
+	"command.decreaseFontSize.title": "Zmniejsz Rozmiar Czcionki",
 	"views.activitybar.title": "Roo Code",
 	"views.contextMenu.label": "Roo Code",
 	"views.terminalMenu.label": "Roo Code",
@@ -42,5 +44,6 @@
 	"settings.useAgentRules.description": "Włącz wczytywanie plików AGENTS.md dla reguł specyficznych dla agenta (zobacz https://agent-rules.org/)",
 	"settings.apiRequestTimeout.description": "Maksymalny czas w sekundach oczekiwania na odpowiedzi API (0 = brak limitu czasu, 1-3600s, domyślnie: 600s). Wyższe wartości są zalecane dla lokalnych dostawców, takich jak LM Studio i Ollama, którzy mogą potrzebować więcej czasu na przetwarzanie.",
 	"settings.newTaskRequireTodos.description": "Wymagaj parametru todos podczas tworzenia nowych zadań za pomocą narzędzia new_task",
-	"settings.codeIndex.embeddingBatchSize.description": "Rozmiar partii dla operacji osadzania podczas indeksowania kodu. Dostosuj to w oparciu o limity twojego dostawcy API. Domyślnie to 60."
+	"settings.codeIndex.embeddingBatchSize.description": "Rozmiar partii dla operacji osadzania podczas indeksowania kodu. Dostosuj to w oparciu o limity twojego dostawcy API. Domyślnie to 60.",
+	"settings.fontSizeMultiplier.description": "Mnożnik rozmiaru czcionki dla interfejsu RooCode. Dostosowuje wszystkie rozmiary czcionek proporcjonalnie (0.5-3.0, domyślnie: 1.0)"
 }
