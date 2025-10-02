@@ -18,6 +18,7 @@ import {
 	$isRangeSelection,
 	$createParagraphNode,
 	$createTextNode,
+	$isTextNode,
 } from "lexical"
 
 import { cn } from "@/lib/utils"
@@ -30,7 +31,7 @@ import { AutoApproveDropdown } from "./AutoApproveDropdown"
 import { StandardTooltip } from "../ui"
 import { IndexingStatusBadge } from "./IndexingStatusBadge"
 
-import { MentionNode } from "./lexical/MentionNode"
+import { MentionNode, $isMentionNode } from "./lexical/MentionNode"
 import { LexicalMentionPlugin, type MentionInfo, type LexicalMentionPluginRef } from "./lexical/LexicalMentionPlugin"
 import { LexicalSelectAllPlugin } from "./lexical/LexicalSelectAllPlugin"
 import { LexicalPromptHistoryPlugin } from "./lexical/LexicalPromptHistoryPlugin"
@@ -41,7 +42,6 @@ import { ContextMenuOptionType, SearchResult } from "@/utils/context-mentions"
 import { MAX_IMAGES_PER_MESSAGE } from "./ChatView"
 import { CloudAccountSwitcher } from "../cloud/CloudAccountSwitcher"
 import { ChatContextBar } from "./ChatContextBar"
-import { usePromptHistoryData } from "./hooks/usePromptHistoryData"
 
 type ChatTextAreaProps = {
 	inputValue: string
@@ -51,7 +51,7 @@ type ChatTextAreaProps = {
 	placeholderText: string
 	selectedImages: string[]
 	setSelectedImages: React.Dispatch<React.SetStateAction<string[]>>
-	onSend: () => void
+	onSend: (serializedContent: string) => void
 	onSelectImages: () => void
 	shouldDisableImages: boolean
 	onHeightChange?: (height: number) => void
@@ -96,11 +96,8 @@ export const ChatLexicalTextArea = forwardRef<LexicalEditor, ChatTextAreaProps>(
 			listApiConfigMeta,
 			customModes,
 			customModePrompts,
-			cwd,
 			pinnedApiConfigs,
 			togglePinnedApiConfig,
-			taskHistory,
-			clineMessages,
 			commands,
 			cloudUserInfo,
 		} = useExtensionState()
@@ -118,12 +115,6 @@ export const ChatLexicalTextArea = forwardRef<LexicalEditor, ChatTextAreaProps>(
 		const [isEnhancingPrompt, setIsEnhancingPrompt] = useState(false)
 		const [isMouseDownOnMenu, setIsMouseDownOnMenu] = useState(false)
 		const editorRef = useRef<LexicalEditor | null>(null)
-
-		const { promptHistory } = usePromptHistoryData({
-			clineMessages,
-			taskHistory,
-			cwd,
-		})
 
 		// Find the ID and display text for the currently selected API configuration.
 		const { currentConfigId, displayName } = useMemo(() => {
@@ -493,15 +484,93 @@ export const ChatLexicalTextArea = forwardRef<LexicalEditor, ChatTextAreaProps>(
 			setIsMouseDownOnMenu(true)
 		}, [])
 
+		const serializeEditorContent = useCallback((editorState: EditorState): string => {
+			return editorState.read(() => {
+				const root = $getRoot()
+				let serializedText = ""
+
+				const traverse = (node: any) => {
+					if ($isMentionNode(node)) {
+						const trigger = node.getTrigger()
+						const value = node.getValue()
+						const data = node.getData()
+
+						if (trigger === "@") {
+							const type = data?.type
+							if (type === "problems") {
+								serializedText += "@problems"
+							} else if (type === "terminal") {
+								serializedText += "@terminal"
+							} else {
+								// File or folder mention
+								serializedText += `@${value}`
+							}
+						} else if (trigger === "/") {
+							// Command mention
+							serializedText += `/${value}`
+						}
+					} else if ($isTextNode(node)) {
+						serializedText += node.getTextContent()
+					} else {
+						// Traverse children for other node types
+						const children = node.getChildren?.() || []
+						for (const child of children) {
+							traverse(child)
+						}
+					}
+				}
+
+				const children = root.getChildren()
+				for (const child of children) {
+					traverse(child)
+				}
+
+				return serializedText
+			})
+		}, [])
+
+		const getDisplayText = useCallback((editorState: EditorState): string => {
+			return editorState.read(() => {
+				const root = $getRoot()
+				return root.getTextContent()
+			})
+		}, [])
+
+		const getSerializedContent = useCallback((): string => {
+			if (editorRef.current) {
+				return serializeEditorContent(editorRef.current.getEditorState())
+			}
+			return inputValue
+		}, [serializeEditorContent, inputValue])
+
+		// Function to clear the editor content
+		const clearEditor = useCallback(() => {
+			if (editorRef.current) {
+				editorRef.current.update(() => {
+					const root = $getRoot()
+					root.clear()
+				})
+			}
+			setInputValue("")
+			setSelectedImages([])
+		}, [setInputValue, setSelectedImages])
+
+		// Wrapper function for onSend that resets the textarea after sending
+		const handleSend = useCallback(
+			(serializedContent: string) => {
+				onSend(serializedContent)
+				clearEditor()
+			},
+			[onSend, clearEditor],
+		)
+
 		const handleEditorChange = useCallback(
 			(editorState: EditorState) => {
-				editorState.read(() => {
-					const root = $getRoot()
-					const textContent = root.getTextContent()
-					setInputValue(textContent)
-				})
+				// Update display text for UI
+				const displayText = getDisplayText(editorState)
+				setInputValue(displayText)
 			},
-			[setInputValue],
+			[setInputValue, getDisplayText],
 		)
 
 		const placeholderBottomText = `\n(${t("chat:addContext")}${shouldDisableImages ? `, ${t("chat:dragFiles")}` : `, ${t("chat:dragFilesImages")}`})`
@@ -600,10 +669,8 @@ export const ChatLexicalTextArea = forwardRef<LexicalEditor, ChatTextAreaProps>(
 								{/* see: https://github.com/facebook/lexical/discussions/3590#discussioncomment-8955421 */}
 								<EditorRefPlugin
 									editorRef={(el) => {
-										// Store editor ref locally
 										editorRef.current = el
 
-										// Also forward to parent ref
 										if (typeof ref === "function") {
 											ref(el)
 										} else if (ref) {
@@ -685,8 +752,11 @@ export const ChatLexicalTextArea = forwardRef<LexicalEditor, ChatTextAreaProps>(
 									materialIconsBaseUri={materialIconsBaseUri}
 								/>
 								<LexicalPromptHistoryPlugin
-									promptHistory={promptHistory}
 									showContextMenu={showContextMenu}
+									onSend={() => {
+										handleSend(getSerializedContent())
+									}}
+									sendingDisabled={sendingDisabled || !hasInputContent}
 								/>
 								<LexicalContextMenuPlugin
 									showContextMenu={showContextMenu}
@@ -778,7 +848,7 @@ export const ChatLexicalTextArea = forwardRef<LexicalEditor, ChatTextAreaProps>(
 									<button
 										aria-label={t("chat:sendMessage")}
 										disabled={sendingDisabled || !hasInputContent}
-										onClick={onSend}
+										onClick={() => handleSend(getSerializedContent())}
 										className={cn(
 											"relative inline-flex items-center justify-center",
 											"bg-transparent border-none p-1.5",

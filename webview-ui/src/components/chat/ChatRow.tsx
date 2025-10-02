@@ -176,16 +176,19 @@ export const ChatRowContent = ({
 	}, [message.text, message.images, mode])
 
 	// Handle save edit
-	const handleSaveEdit = useCallback(() => {
-		setIsEditing(false)
-		// Send edited message to backend
-		vscode.postMessage({
-			type: "submitEditedMessage",
-			value: message.ts,
-			editedMessageContent: editedContent,
-			images: editImages,
-		})
-	}, [message.ts, editedContent, editImages])
+	const handleSaveEdit = useCallback(
+		(serializedContent: string) => {
+			setIsEditing(false)
+			// Send edited message to backend
+			vscode.postMessage({
+				type: "submitEditedMessage",
+				value: message.ts,
+				editedMessageContent: serializedContent,
+				images: editImages,
+			})
+		},
+		[message.ts, editImages],
+	)
 
 	// Handle image selection for editing
 	const handleSelectImages = useCallback(() => {

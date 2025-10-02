@@ -11,17 +11,31 @@ import {
 	KEY_ENTER_COMMAND,
 } from "lexical"
 import { useCallback, useEffect, useRef, useState } from "react"
+import { usePromptHistoryData } from "../hooks/usePromptHistoryData"
+import { useExtensionState } from "@/context/ExtensionStateContext"
 
 interface LexicalPromptHistoryPluginProps {
-	promptHistory: string[]
 	showContextMenu: boolean
+	onSend: () => void
+	sendingDisabled: boolean
 }
 
-export function LexicalPromptHistoryPlugin({ promptHistory, showContextMenu }: LexicalPromptHistoryPluginProps): null {
+export function LexicalPromptHistoryPlugin({
+	showContextMenu,
+	onSend,
+	sendingDisabled,
+}: LexicalPromptHistoryPluginProps): null {
 	const [editor] = useLexicalComposerContext()
 	const [historyIndex, setHistoryIndex] = useState(-1)
 	const [tempInput, setTempInput] = useState("")
 	const isNavigatingRef = useRef(false)
+
+	const { clineMessages, taskHistory, cwd } = useExtensionState()
+	const { promptHistory } = usePromptHistoryData({
+		clineMessages,
+		taskHistory,
+		cwd,
+	})
 
 	const resetHistoryNavigation = useCallback(() => {
 		setHistoryIndex(-1)
@@ -201,13 +215,23 @@ export function LexicalPromptHistoryPlugin({ promptHistory, showContextMenu }: L
 		const removeEnterListener = editor.registerCommand(
 			KEY_ENTER_COMMAND,
 			(event) => {
-				if (showContextMenu) {
+				if (showContextMenu || sendingDisabled) {
 					return false
 				}
 
-				// If in history navigation mode, reset navigation and send
+				// Allow Shift+Enter to add a new line
+				if (event?.shiftKey) {
+					return false
+				}
+
 				event?.preventDefault()
-				resetHistoryNavigation()
+
+				if (historyIndex !== -1) {
+					resetHistoryNavigation()
+				}
+
+				onSend()
+
 				return true
 			},
 			COMMAND_PRIORITY_HIGH,
@@ -226,6 +250,8 @@ export function LexicalPromptHistoryPlugin({ promptHistory, showContextMenu }: L
 		navigateToHistory,
 		returnToCurrentInput,
 		resetHistoryNavigation,
+		onSend,
+		sendingDisabled,
 	])
 
 	return null
