@@ -27,6 +27,13 @@ export class WatsonxAIHandler extends BaseProvider implements SingleCompletionHa
 		const serviceUrl = this.options.watsonxBaseUrl
 		const platform = this.options.watsonxPlatform
 
+		if (!platform) {
+			throw new Error("Platform selection is required for IBM watsonx AI provider")
+		}
+		if (!serviceUrl) {
+			throw new Error("Base URL in IBM watsonx AI provider is required")
+		}
+
 		try {
 			const serviceOptions: UserOptions = {
 				version: "2024-05-31",
@@ -41,10 +48,6 @@ export class WatsonxAIHandler extends BaseProvider implements SingleCompletionHa
 				}
 
 				const authType = this.options.watsonxAuthType
-
-				if (!serviceUrl) {
-					throw new Error("You must provide a valid service URL for IBM Cloud Pak for Data.")
-				}
 
 				try {
 					const url = new URL(serviceUrl)
@@ -89,7 +92,6 @@ export class WatsonxAIHandler extends BaseProvider implements SingleCompletionHa
 					apikey: apiKey,
 				})
 			}
-
 			this.service = WatsonXAI.newInstance(serviceOptions)
 		} catch (error) {
 			throw new Error(
