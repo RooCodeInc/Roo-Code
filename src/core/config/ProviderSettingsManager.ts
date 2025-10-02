@@ -16,6 +16,7 @@ import {
 import { TelemetryService } from "@roo-code/telemetry"
 
 import { Mode, modes } from "../../shared/modes"
+import { buildApiHandler } from "../../api"
 
 // Type-safe model migrations mapping
 type ModelMigrations = {
@@ -528,6 +529,25 @@ export class ProviderSettingsManager {
 				for (const name in configs) {
 					// Avoid leaking properties from other providers.
 					configs[name] = discriminatedProviderSettingsWithIdSchema.parse(configs[name])
+
+					// If it has no apiProvider, skip filtering
+					if (!configs[name].apiProvider) {
+						continue
+					}
+
+					// Try to build an API handler to get model information
+					const apiHandler = buildApiHandler(configs[name])
+					const modelInfo = apiHandler.getModel().info
+
+					// Check if the model supports reasoning budgets
+					const supportsThinkingBudget =
+						modelInfo.supportsReasoningBudget || modelInfo.requiredReasoningBudget
+
+					// If the model doesn't support reasoning budgets, remove the token fields
+					if (!supportsThinkingBudget) {
+						delete configs[name].modelMaxTokens
+						delete configs[name].modelMaxThinkingTokens
+					}
 				}
 				return profiles
 			})
