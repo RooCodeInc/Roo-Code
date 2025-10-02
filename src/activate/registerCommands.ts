@@ -242,7 +242,7 @@ const getCommandsMap = ({ context, outputChannel, provider }: RegisterCommandOpt
 	decreaseFontSize: async () => {
 		const config = vscode.workspace.getConfiguration(Package.name)
 		const currentMultiplier = config.get<number>("fontSizeMultiplier") || 1.0
-		const newMultiplier = Math.min(Math.round((currentMultiplier - 0.1) * 10) / 10, 3.0)
+const newMultiplier = Math.max(Math.round((currentMultiplier - 0.1) * 10) / 10, 0.5)
 
 		await config.update("fontSizeMultiplier", newMultiplier, vscode.ConfigurationTarget.Global)
 	},
