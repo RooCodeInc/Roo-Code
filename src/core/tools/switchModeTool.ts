@@ -61,6 +61,11 @@ export async function switchModeTool(
 				return
 			}
 
+			// Create a checkpoint before switching modes
+			// Use allowEmpty=true to ensure checkpoint is created even with no file changes
+			// Suppress the checkpoint_saved chat row to keep the timeline clean
+			await cline.checkpointSave(true, true)
+
 			// Switch the mode using shared handler
 			await cline.providerRef.deref()?.handleModeSwitch(mode_slug)
 

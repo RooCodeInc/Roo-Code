@@ -89,6 +89,11 @@ export async function attemptCompletionTool(
 
 			cline.consecutiveMistakeCount = 0
 
+			// Create a checkpoint when task is completed
+			// Use allowEmpty=true to ensure checkpoint is created even with no file changes
+			// Suppress the checkpoint_saved chat row to keep the timeline clean
+			await cline.checkpointSave(true, true)
+
 			// Command execution is permanently disabled in attempt_completion
 			// Users must use execute_command tool separately before attempt_completion
 			await cline.say("completion_result", result, undefined, false)
