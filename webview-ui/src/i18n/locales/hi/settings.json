@@ -524,6 +524,15 @@
 			"placeholder": "डिफ़ॉल्ट: claude",
 			"maxTokensLabel": "अधिकतम आउटपुट टोकन",
 			"maxTokensDescription": "Claude Code प्रतिक्रियाओं के लिए आउटपुट टोकन की अधिकतम संख्या। डिफ़ॉल्ट 8000 है।"
+		},
+		"watsonx": {
+			"platform": "प्लेटफॉर्म",
+			"region": "क्षेत्र",
+			"username": "उपयोगकर्ता नाम",
+			"password": "पासवर्ड",
+			"apiKey": "API कुंजी",
+			"authType": "प्रमाणीकरण प्रकार",
+			"projectId": "परियोजना आईडी"
 		}
 	},
 	"browser": {

@@ -524,6 +524,15 @@
 			"placeholder": "Standaard: claude",
 			"maxTokensLabel": "Max Output Tokens",
 			"maxTokensDescription": "Maximaal aantal output-tokens voor Claude Code-reacties. Standaard is 8000."
+		},
+		"watsonx": {
+			"platform": "Platform",
+			"region": "Regio",
+			"username": "Gebruikersnaam",
+			"password": "Wachtwoord",
+			"apiKey": "API-sleutel",
+			"authType": "Authenticatietype",
+			"projectId": "Project-ID"
 		}
 	},
 	"browser": {

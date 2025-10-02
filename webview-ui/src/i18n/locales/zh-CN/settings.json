@@ -524,6 +524,15 @@
 			"placeholder": "默认：claude",
 			"maxTokensLabel": "最大输出 Token",
 			"maxTokensDescription": "Claude Code 响应的最大输出 Token 数量。默认为 8000。"
+		},
+		"watsonx": {
+			"platform": "选择平台",
+			"region": "选择区域",
+			"username": "用户名",
+			"password": "密码",
+			"apiKey": "API 密钥",
+			"authType": "选择认证类型",
+			"projectId": "项目 ID"
 		}
 	},
 	"browser": {

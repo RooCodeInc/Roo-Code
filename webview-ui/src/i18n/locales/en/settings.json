@@ -533,6 +533,15 @@
 			"placeholder": "Default: claude",
 			"maxTokensLabel": "Max Output Tokens",
 			"maxTokensDescription": "Maximum number of output tokens for Claude Code responses. Default is 8000."
+		},
+		"watsonx": {
+			"platform": "Select a platform",
+			"region": "Select a region",
+			"username": "Username",
+			"password": "Password",
+			"apiKey": "API Key",
+			"authType": "Select authentication type",
+			"projectId": "Project ID"
 		}
 	},
 	"browser": {

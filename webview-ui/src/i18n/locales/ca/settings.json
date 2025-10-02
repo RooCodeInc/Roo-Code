@@ -524,6 +524,15 @@
 			"placeholder": "Per defecte: claude",
 			"maxTokensLabel": "Tokens màxims de sortida",
 			"maxTokensDescription": "Nombre màxim de tokens de sortida per a les respostes de Claude Code. El valor per defecte és 8000."
+		},
+		"watsonx": {
+			"platform": "Plataforma",
+			"region": "Regió",
+			"username": "Nom d'usuari",
+			"password": "Contrasenya",
+			"apiKey": "Clau API",
+			"authType": "Tipus d'autenticació",
+			"projectId": "ID del projecte"
 		}
 	},
 	"browser": {

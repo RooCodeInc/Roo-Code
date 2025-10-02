@@ -524,6 +524,15 @@
 			"placeholder": "Varsayılan: claude",
 			"maxTokensLabel": "Maksimum Çıktı Token sayısı",
 			"maxTokensDescription": "Claude Code yanıtları için maksimum çıktı token sayısı. Varsayılan 8000'dir."
+		},
+		"watsonx": {
+			"platform": "Platform",
+			"region": "Bölge",
+			"username": "Kullanıcı adı",
+			"password": "Şifre",
+			"apiKey": "API Anahtarı",
+			"authType": "Kimlik doğrulama türü",
+			"projectId": "Proje Kimliği"
 		}
 	},
 	"browser": {
