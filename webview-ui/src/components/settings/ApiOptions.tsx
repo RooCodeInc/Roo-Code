@@ -247,7 +247,19 @@ const ApiOptions = ({
 			) {
 				vscode.postMessage({ type: "requestRouterModels" })
 			} else if (selectedProvider === "ibm-watsonx") {
-				vscode.postMessage({ type: "requestWatsonxModels" })
+				vscode.postMessage({
+					type: "requestWatsonxModels",
+					values: {
+						apiKey: apiConfiguration.watsonxApiKey,
+						projectId: apiConfiguration.watsonxProjectId,
+						platform: apiConfiguration.watsonxPlatform,
+						baseUrl: apiConfiguration.watsonxBaseUrl,
+						authType: apiConfiguration.watsonxAuthType,
+						username: apiConfiguration.watsonxUsername,
+						password: apiConfiguration.watsonxPassword,
+						region: apiConfiguration.watsonxRegion,
+					},
+				})
 			}
 		},
 		250,
@@ -262,13 +274,13 @@ const ApiOptions = ({
 			apiConfiguration?.litellmApiKey,
 			apiConfiguration?.deepInfraApiKey,
 			apiConfiguration?.deepInfraBaseUrl,
-			apiConfiguration.watsonxPlatform,
-			apiConfiguration.watsonxApiKey,
-			apiConfiguration.watsonxProjectId,
-			apiConfiguration.watsonxBaseUrl,
-			apiConfiguration.watsonxAuthType,
-			apiConfiguration.watsonxUsername,
-			apiConfiguration.watsonxPassword,
+			apiConfiguration?.watsonxPlatform,
+			apiConfiguration?.watsonxApiKey,
+			apiConfiguration?.watsonxProjectId,
+			apiConfiguration?.watsonxBaseUrl,
+			apiConfiguration?.watsonxAuthType,
+			apiConfiguration?.watsonxUsername,
+			apiConfiguration?.watsonxPassword,
 			customHeaders,
 		],
 	)

@@ -757,10 +757,10 @@
 					"standard": "Strategi diff standard menerapkan perubahan ke satu blok kode pada satu waktu.",
 					"unified": "Strategi unified diff mengambil beberapa pendekatan untuk menerapkan diff dan memilih pendekatan terbaik.",
 					"multiBlock": "Strategi multi-block diff memungkinkan memperbarui beberapa blok kode dalam file dalam satu permintaan."
-				},
-				"watsonx": {
-					"description": "Ketika diaktifkan, Roo akan dapat mengedit file lebih cepat dan akan secara otomatis menolak penulisan file penuh yang terpotong."
 				}
+			},
+			"watsonx": {
+				"description": "Ketika diaktifkan, Roo akan dapat mengedit file lebih cepat dan akan secara otomatis menolak penulisan file penuh yang terpotong."
 			},
 			"matchPrecision": {
 				"label": "Presisi pencocokan",
