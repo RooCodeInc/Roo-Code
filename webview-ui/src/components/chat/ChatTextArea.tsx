@@ -413,7 +413,12 @@ export const ChatTextArea = forwardRef<LexicalEditor, ChatTextAreaProps>(
 					setSelectedMenuIndex(-1)
 					setInputValue("")
 					setShowContextMenu(false)
-					const commandMention = `/${value}`
+if (type === ContextMenuOptionType.Command && value) {
+  setSelectedMenuIndex(-1)
+  setShowContextMenu(false)
+  mentionPluginRef.current?.insertMention(value, "/", ContextMenuOptionType.Command)
+  return
+}
 					setInputValue(commandMention + " ")
 					return
 				}
