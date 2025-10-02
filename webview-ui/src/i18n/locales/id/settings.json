@@ -492,6 +492,15 @@
 			"placeholder": "Default: claude",
 			"maxTokensLabel": "Token Output Maks",
 			"maxTokensDescription": "Jumlah maksimum token output untuk respons Claude Code. Default adalah 8000."
+		},
+		"watsonx": {
+			"platform": "Platform",
+			"region": "Wilayah",
+			"username": "Nama pengguna",
+			"password": "Kata sandi",
+			"apiKey": "Kunci API",
+			"authType": "Jenis autentikasi",
+			"projectId": "ID Proyek"
 		}
 	},
 	"browser": {

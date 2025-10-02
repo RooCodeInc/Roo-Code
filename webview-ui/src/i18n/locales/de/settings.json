@@ -488,6 +488,15 @@
 			"placeholder": "Standard: claude",
 			"maxTokensLabel": "Maximale Ausgabe-Tokens",
 			"maxTokensDescription": "Maximale Anzahl an Ausgabe-Tokens für Claude Code-Antworten. Standard ist 8000."
+		},
+		"watsonx": {
+			"platform": "Plattform auswählen",
+			"region": "Region auswählen",
+			"username": "Benutzername",
+			"password": "Passwort",
+			"apiKey": "API-Schlüssel",
+			"authType": "Authentifizierungstyp auswählen",
+			"projectId": "Projekt-ID"
 		}
 	},
 	"browser": {

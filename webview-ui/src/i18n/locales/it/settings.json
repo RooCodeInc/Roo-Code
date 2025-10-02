@@ -488,6 +488,15 @@
 			"placeholder": "Predefinito: claude",
 			"maxTokensLabel": "Token di output massimi",
 			"maxTokensDescription": "Numero massimo di token di output per le risposte di Claude Code. Il valore predefinito è 8000."
+		},
+		"watsonx": {
+			"platform": "Seleziona una piattaforma",
+			"region": "Seleziona una regione",
+			"username": "Nome utente",
+			"password": "Password",
+			"apiKey": "Chiave API",
+			"authType": "Seleziona tipo di autenticazione",
+			"projectId": "ID progetto"
 		}
 	},
 	"browser": {

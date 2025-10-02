@@ -488,6 +488,15 @@
 			"placeholder": "デフォルト：claude",
 			"maxTokensLabel": "最大出力トークン",
 			"maxTokensDescription": "Claude Codeレスポンスの最大出力トークン数。デフォルトは8000です。"
+		},
+		"watsonx": {
+			"platform": "プラットフォームを選択",
+			"region": "リージョンを選択",
+			"username": "ユーザー名",
+			"password": "パスワード",
+			"apiKey": "APIキー",
+			"authType": "認証タイプを選択",
+			"projectId": "プロジェクトID"
 		}
 	},
 	"browser": {

@@ -488,6 +488,15 @@
 			"placeholder": "По умолчанию: claude",
 			"maxTokensLabel": "Макс. выходных токенов",
 			"maxTokensDescription": "Максимальное количество выходных токенов для ответов Claude Code. По умолчанию 8000."
+		},
+		"watsonx": {
+			"platform": "Платформа",
+			"region": "Регион",
+			"username": "Имя пользователя",
+			"password": "Пароль",
+			"apiKey": "API ключ",
+			"authType": "Тип аутентификации",
+			"projectId": "ID проекта"
 		}
 	},
 	"browser": {

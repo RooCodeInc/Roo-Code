@@ -488,6 +488,15 @@
 			"placeholder": "Padrão: claude",
 			"maxTokensLabel": "Tokens de saída máximos",
 			"maxTokensDescription": "Número máximo de tokens de saída para respostas do Claude Code. O padrão é 8000."
+		},
+		"watsonx": {
+			"platform": "Plataforma",
+			"region": "Região",
+			"username": "Nome de usuário",
+			"password": "Senha",
+			"apiKey": "Chave API",
+			"authType": "Tipo de autenticação",
+			"projectId": "ID do projeto"
 		}
 	},
 	"browser": {

@@ -488,6 +488,15 @@
 			"placeholder": "기본값: claude",
 			"maxTokensLabel": "최대 출력 토큰",
 			"maxTokensDescription": "Claude Code 응답의 최대 출력 토큰 수. 기본값은 8000입니다."
+		},
+		"watsonx": {
+			"platform": "플랫폼 선택",
+			"region": "리전 선택",
+			"username": "사용자 이름",
+			"password": "비밀번호",
+			"apiKey": "API 키",
+			"authType": "인증 유형 선택",
+			"projectId": "프로젝트 ID"
 		}
 	},
 	"browser": {

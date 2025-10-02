@@ -488,6 +488,15 @@
 			"placeholder": "Défaut : claude",
 			"maxTokensLabel": "Jetons de sortie max",
 			"maxTokensDescription": "Nombre maximum de jetons de sortie pour les réponses de Claude Code. La valeur par défaut est 8000."
+		},
+		"watsonx": {
+			"platform": "Sélectionner une plateforme",
+			"region": "Sélectionner une région",
+			"username": "Nom d'utilisateur",
+			"password": "Mot de passe",
+			"apiKey": "Clé API",
+			"authType": "Sélectionner le type d'authentification",
+			"projectId": "ID du projet"
 		}
 	},
 	"browser": {
