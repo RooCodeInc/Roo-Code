@@ -1,6 +1,12 @@
 import { z } from "zod"
 
-import { type AuthService, type ShareVisibility, type ShareResponse, shareResponseSchema } from "@roo-code/types"
+import {
+	type AuthService,
+	type ShareVisibility,
+	type ShareResponse,
+	shareResponseSchema,
+	type CloudAgent,
+} from "@roo-code/types"
 
 import { getRooCodeApiUrl } from "./config.js"
 import { getUserAgent } from "./utils.js"
@@ -133,5 +139,28 @@ export class CloudAPI {
 					})
 					.parse(data),
 		})
+	}
+
+	async getCloudAgents(): Promise<CloudAgent[]> {
+		try {
+			this.log("[CloudAPI] Fetching cloud agents")
+
+			const response = await this.request<{ agents: CloudAgent[] }>("/api/cloud_agents", {
+				method: "GET",
+			})
+
+			this.log("[CloudAPI] Cloud agents response:", response)
+			return response.agents || []
+		} catch (error) {
+			this.log("[CloudAPI] Failed to fetch cloud agents, returning mock data:", error)
+
+			// Return mock data when API fails as requested
+			return [
+				{ id: "1", name: "Code Assistant", type: "code", icon: "💻" },
+				{ id: "2", name: "Test Generator", type: "test", icon: "🧪" },
+				{ id: "3", name: "Code Reviewer", type: "review", icon: "👁️" },
+				{ id: "4", name: "Documentation Writer", type: "docs", icon: "📝" },
+			]
+		}
 	}
 }

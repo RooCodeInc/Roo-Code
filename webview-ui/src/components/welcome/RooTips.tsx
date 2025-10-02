@@ -3,16 +3,17 @@ import { useTranslation } from "react-i18next"
 import { Trans } from "react-i18next"
 
 import { buildDocLink } from "@src/utils/docLinks"
+import { ListTree, Users } from "lucide-react"
 
 const tips = [
 	{
-		icon: "codicon-account",
+		icon: <Users className="size-4 shrink-0 mt-0.5" />,
 		href: buildDocLink("basic-usage/using-modes", "tips"),
 		titleKey: "rooTips.customizableModes.title",
 		descriptionKey: "rooTips.customizableModes.description",
 	},
 	{
-		icon: "codicon-list-tree",
+		icon: <ListTree className="size-4 shrink-0 mt-0.5" />,
 		href: buildDocLink("features/boomerang-tasks", "tips"),
 		titleKey: "rooTips.boomerangTasks.title",
 		descriptionKey: "rooTips.boomerangTasks.description",
@@ -23,8 +24,8 @@ const RooTips = () => {
 	const { t } = useTranslation("chat")
 
 	return (
-		<div>
-			<p className="text-vscode-editor-foreground leading-tight font-vscode-font-family text-center text-balance max-w-[380px] mx-auto my-0">
+		<div className="flex flex-col gap-2 mb-4 max-w-[450px]font-light text-vscode-descriptionForeground">
+			<p className="my-0 pr-8">
 				<Trans
 					i18nKey="chat:about"
 					components={{
@@ -36,14 +37,14 @@ const RooTips = () => {
 					}}
 				/>
 			</p>
-			<div className="flex flex-col items-center justify-center px-5 py-2.5 gap-4">
+			<div className="gap-4">
 				{tips.map((tip) => (
-					<div
-						key={tip.titleKey}
-						className="flex items-center gap-2 text-vscode-editor-foreground font-vscode max-w-[250px]">
-						<span className={`codicon ${tip.icon}`}></span>
+					<div key={tip.titleKey} className="flex items-start gap-2 mt-2 mr-6">
+						{tip.icon}
 						<span>
-							<VSCodeLink className="forced-color-adjust-none" href={tip.href}>
+							<VSCodeLink
+								className="text-vscode-editor-foreground underline forced-color-adjust-none"
+								href={tip.href}>
 								{t(tip.titleKey)}
 							</VSCodeLink>
 							: {t(tip.descriptionKey)}

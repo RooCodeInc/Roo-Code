@@ -721,3 +721,30 @@ export type LeaveResponse = {
 	taskId?: string
 	timestamp?: string
 }
+
+/**
+ * CloudAgent
+ */
+
+export interface CloudAgent {
+	id: string
+	name: string
+	type: string // e.g., "code", "review", "test", "docs"
+}
+
+/**
+ * CloudAgents API Response
+ */
+
+export const cloudAgentsResponseSchema = z.object({
+	agents: z.array(
+		z.object({
+			id: z.string(),
+			name: z.string(),
+			type: z.string(),
+			icon: z.string(),
+		}),
+	),
+})
+
+export type CloudAgentsResponse = z.infer<typeof cloudAgentsResponseSchema>
