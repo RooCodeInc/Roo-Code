@@ -262,5 +262,97 @@ describe("ZAiHandler", () => {
 				undefined,
 			)
 		})
+
+		it("should include enable_thinking parameter when zaiEnableThinking is true", async () => {
+			const handlerWithThinking = new ZAiHandler({
+				zaiApiKey: "test-zai-api-key",
+				zaiApiLine: "international",
+				zaiEnableThinking: true,
+			})
+
+			mockCreate.mockImplementationOnce(() => {
+				return {
+					[Symbol.asyncIterator]: () => ({
+						async next() {
+							return { done: true }
+						},
+					}),
+				}
+			})
+
+			const systemPrompt = "Test system prompt"
+			const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Test message" }]
+
+			const messageGenerator = handlerWithThinking.createMessage(systemPrompt, messages)
+			await messageGenerator.next()
+
+			expect(mockCreate).toHaveBeenCalledWith(
+				expect.objectContaining({
+					enable_thinking: true,
+				}),
+				undefined,
+			)
+		})
+
+		it("should not include enable_thinking parameter when zaiEnableThinking is false", async () => {
+			const handlerWithoutThinking = new ZAiHandler({
+				zaiApiKey: "test-zai-api-key",
+				zaiApiLine: "international",
+				zaiEnableThinking: false,
+			})
+
+			mockCreate.mockImplementationOnce(() => {
+				return {
+					[Symbol.asyncIterator]: () => ({
+						async next() {
+							return { done: true }
+						},
+					}),
+				}
+			})
+
+			const systemPrompt = "Test system prompt"
+			const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Test message" }]
+
+			const messageGenerator = handlerWithoutThinking.createMessage(systemPrompt, messages)
+			await messageGenerator.next()
+
+			expect(mockCreate).toHaveBeenCalledWith(
+				expect.not.objectContaining({
+					enable_thinking: true,
+				}),
+				undefined,
+			)
+		})
+
+		it("should not include enable_thinking parameter when zaiEnableThinking is undefined", async () => {
+			const handlerDefault = new ZAiHandler({
+				zaiApiKey: "test-zai-api-key",
+				zaiApiLine: "international",
+			})
+
+			mockCreate.mockImplementationOnce(() => {
+				return {
+					[Symbol.asyncIterator]: () => ({
+						async next() {
+							return { done: true }
+						},
+					}),
+				}
+			})
+
+			const systemPrompt = "Test system prompt"
+			const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Test message" }]
+
+			const messageGenerator = handlerDefault.createMessage(systemPrompt, messages)
+			await messageGenerator.next()
+
+			expect(mockCreate).toHaveBeenCalledWith(
+				expect.not.objectContaining({
+					enable_thinking: true,
+				}),
+				undefined,
+			)
+		})
 	})
 })

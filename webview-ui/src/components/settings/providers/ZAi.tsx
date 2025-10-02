@@ -1,5 +1,5 @@
 import { useCallback } from "react"
-import { VSCodeTextField, VSCodeDropdown, VSCodeOption } from "@vscode/webview-ui-toolkit/react"
+import { VSCodeTextField, VSCodeDropdown, VSCodeOption, VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
 
 import { zaiApiLineConfigs, zaiApiLineSchema, type ProviderSettings } from "@roo-code/types"
 
@@ -25,6 +25,14 @@ export const ZAi = ({ apiConfiguration, setApiConfigurationField }: ZAiProps) =>
 			(event: E | Event) => {
 				setApiConfigurationField(field, transform(event as E))
 			},
+		[setApiConfigurationField],
+	)
+
+	const handleCheckboxChange = useCallback(
+		(field: keyof ProviderSettings) => (event: Event) => {
+			const target = event.target as HTMLInputElement
+			setApiConfigurationField(field, target.checked)
+		},
 		[setApiConfigurationField],
 	)
 
@@ -72,6 +80,16 @@ export const ZAi = ({ apiConfiguration, setApiConfigurationField }: ZAiProps) =>
 						{t("settings:providers.getZaiApiKey")}
 					</VSCodeButtonLink>
 				)}
+			</div>
+			<div>
+				<VSCodeCheckbox
+					checked={apiConfiguration?.zaiEnableThinking || false}
+					onChange={handleCheckboxChange("zaiEnableThinking")}>
+					<label className="font-medium">{t("settings:providers.zaiEnableThinking")}</label>
+				</VSCodeCheckbox>
+				<div className="text-xs text-vscode-descriptionForeground mt-1 ml-6">
+					{t("settings:providers.zaiEnableThinkingDescription")}
+				</div>
 			</div>
 		</>
 	)
