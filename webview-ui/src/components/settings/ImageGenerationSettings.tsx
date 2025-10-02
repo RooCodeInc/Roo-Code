@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react"
-import { VSCodeCheckbox, VSCodeTextField, VSCodeDropdown, VSCodeOption } from "@vscode/webview-ui-toolkit/react"
+import { VSCodeTextField, VSCodeDropdown, VSCodeOption } from "@vscode/webview-ui-toolkit/react"
 import { useAppTranslation } from "@/i18n/TranslationContext"
+import { Checkbox } from "@/components/ui/checkbox"
 
 interface ImageGenerationSettingsProps {
 	enabled: boolean
@@ -54,9 +55,8 @@ export const ImageGenerationSettings = ({
 		<div className="space-y-4">
 			<div>
 				<div className="flex items-center gap-2">
-					<VSCodeCheckbox checked={enabled} onChange={(e: any) => onChange(e.target.checked)}>
-						<span className="font-medium">{t("settings:experimental.IMAGE_GENERATION.name")}</span>
-					</VSCodeCheckbox>
+					<Checkbox checked={enabled} onCheckedChange={onChange} />
+					<span className="font-medium">{t("settings:experimental.IMAGE_GENERATION.name")}</span>
 				</div>
 				<p className="text-vscode-descriptionForeground text-sm mt-0">
 					{t("settings:experimental.IMAGE_GENERATION.description")}

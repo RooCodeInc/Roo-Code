@@ -1,7 +1,7 @@
 import { HTMLAttributes } from "react"
 import { useAppTranslation } from "@/i18n/TranslationContext"
-import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
 import { Bell } from "lucide-react"
+import { Checkbox } from "@/components/ui/checkbox"
 
 import { SetCachedStateField } from "./types"
 import { SectionHeader } from "./SectionHeader"
@@ -36,12 +36,14 @@ export const NotificationSettings = ({
 
 			<Section>
 				<div>
-					<VSCodeCheckbox
-						checked={ttsEnabled}
-						onChange={(e: any) => setCachedStateField("ttsEnabled", e.target.checked)}
-						data-testid="tts-enabled-checkbox">
+					<div className="flex items-center space-x-2">
+						<Checkbox
+							checked={ttsEnabled}
+							onCheckedChange={(checked) => setCachedStateField("ttsEnabled", checked === true)}
+							data-testid="tts-enabled-checkbox"
+						/>
 						<span className="font-medium">{t("settings:notifications.tts.label")}</span>
-					</VSCodeCheckbox>
+					</div>
 					<div className="text-vscode-descriptionForeground text-sm mt-1">
 						{t("settings:notifications.tts.description")}
 					</div>
@@ -69,12 +71,14 @@ export const NotificationSettings = ({
 				)}
 
 				<div>
-					<VSCodeCheckbox
-						checked={soundEnabled}
-						onChange={(e: any) => setCachedStateField("soundEnabled", e.target.checked)}
-						data-testid="sound-enabled-checkbox">
+					<div className="flex items-center space-x-2">
+						<Checkbox
+							checked={soundEnabled}
+							onCheckedChange={(checked) => setCachedStateField("soundEnabled", checked === true)}
+							data-testid="sound-enabled-checkbox"
+						/>
 						<span className="font-medium">{t("settings:notifications.sound.label")}</span>
-					</VSCodeCheckbox>
+					</div>
 					<div className="text-vscode-descriptionForeground text-sm mt-1">
 						{t("settings:notifications.sound.description")}
 					</div>

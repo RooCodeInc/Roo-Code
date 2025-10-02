@@ -65,7 +65,7 @@ export function TodoListDisplay({ todos }: { todos: any[] }) {
 						marginRight: 8,
 						marginLeft: 2,
 						flexShrink: 0,
-						fontSize: 14,
+						fontSize: "calc(14px * var(--roo-font-size-multiplier, 1))",
 					}}
 				/>
 			)
@@ -163,13 +163,13 @@ export function TodoListDisplay({ todos }: { todos: any[] }) {
 						className="codicon codicon-checklist"
 						style={{
 							color: "var(--vscode-descriptionForeground)",
-							fontSize: 12,
+							fontSize: "calc(12px * var(--roo-font-size-multiplier, 1))",
 						}}
 					/>
 					<span
 						style={{
 							color: "var(--vscode-descriptionForeground)",
-							fontSize: 12,
+							fontSize: "calc(12px * var(--roo-font-size-multiplier, 1))",
 							fontWeight: 500,
 						}}>
 						{completedCount}/{totalCount}
@@ -224,11 +224,17 @@ export function TodoListDisplay({ todos }: { todos: any[] }) {
 									className="codicon codicon-checklist"
 									style={{ color: "var(--vscode-foreground)" }}
 								/>
-								<span style={{ fontWeight: "bold", fontSize: 14 }}>Todo List</span>
+								<span
+									style={{
+										fontWeight: "bold",
+										fontSize: "calc(14px * var(--roo-font-size-multiplier, 1))",
+									}}>
+									Todo List
+								</span>
 								<span
 									style={{
 										color: "var(--vscode-descriptionForeground)",
-										fontSize: 13,
+										fontSize: "calc(13px * var(--roo-font-size-multiplier, 1))",
 										fontWeight: 500,
 									}}>
 									{completedCount}/{totalCount}
@@ -237,7 +243,7 @@ export function TodoListDisplay({ todos }: { todos: any[] }) {
 							<span
 								className="codicon codicon-chevron-up"
 								style={{
-									fontSize: 14,
+									fontSize: "calc(14px * var(--roo-font-size-multiplier, 1))",
 									opacity: 0.7,
 									cursor: "pointer",
 									padding: "4px",

@@ -1,9 +1,9 @@
-import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
 import { useEffect, useState } from "react"
 import { useAppTranslation } from "@/i18n/TranslationContext"
 import { useDebounce } from "react-use"
 
 import { Slider } from "@/components/ui"
+import { Checkbox } from "@/components/ui/checkbox"
 
 interface TemperatureControlProps {
 	value: number | undefined | null
@@ -28,20 +28,22 @@ export const TemperatureControl = ({ value, onChange, maxValue = 1 }: Temperatur
 	return (
 		<>
 			<div>
-				<VSCodeCheckbox
-					checked={isCustomTemperature}
-					onChange={(e: any) => {
-						const isChecked = e.target.checked
-						setIsCustomTemperature(isChecked)
+				<div className="flex items-center space-x-2">
+					<Checkbox
+						checked={isCustomTemperature}
+						onCheckedChange={(checked) => {
+							const isChecked = checked === true
+							setIsCustomTemperature(isChecked)
 
-						if (!isChecked) {
-							setInputValue(null) // Unset the temperature, note that undefined is unserializable.
-						} else {
-							setInputValue(value ?? 0) // Use the value from apiConfiguration, if set.
-						}
-					}}>
+							if (!isChecked) {
+								setInputValue(null) // Unset the temperature, note that undefined is unserializable.
+							} else {
+								setInputValue(value ?? 0) // Use the value from apiConfiguration, if set.
+							}
+						}}
+					/>
 					<label className="block font-medium mb-1">{t("settings:temperature.useCustom")}</label>
-				</VSCodeCheckbox>
+				</div>
 				<div className="text-sm text-vscode-descriptionForeground mt-1">
 					{t("settings:temperature.description")}
 				</div>

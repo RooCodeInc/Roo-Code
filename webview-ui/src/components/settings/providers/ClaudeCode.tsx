@@ -33,7 +33,7 @@ export const ClaudeCode: React.FC<ClaudeCodeProps> = ({ apiConfiguration, setApi
 
 				<p
 					style={{
-						fontSize: "12px",
+						fontSize: "calc(12px * var(--roo-font-size-multiplier, 1))",
 						marginTop: 3,
 						color: "var(--vscode-descriptionForeground)",
 					}}>

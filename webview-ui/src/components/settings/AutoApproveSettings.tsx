@@ -4,9 +4,9 @@ import { Trans } from "react-i18next"
 import { Package } from "@roo/package"
 
 import { useAppTranslation } from "@/i18n/TranslationContext"
-import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
 import { vscode } from "@/utils/vscode"
 import { Button, Input, Slider } from "@/components/ui"
+import { Checkbox } from "@/components/ui/checkbox"
 
 import { SetCachedStateField } from "./types"
 import { SectionHeader } from "./SectionHeader"
@@ -125,16 +125,18 @@ export const AutoApproveSettings = ({
 
 			<Section>
 				<div className="space-y-4">
-					<VSCodeCheckbox
-						checked={effectiveAutoApprovalEnabled}
-						aria-label={t("settings:autoApprove.toggleAriaLabel")}
-						onChange={() => {
-							const newValue = !(autoApprovalEnabled ?? false)
-							setAutoApprovalEnabled(newValue)
-							vscode.postMessage({ type: "autoApprovalEnabled", bool: newValue })
-						}}>
+					<div className="flex items-center space-x-2">
+						<Checkbox
+							checked={effectiveAutoApprovalEnabled}
+							aria-label={t("settings:autoApprove.toggleAriaLabel")}
+							onCheckedChange={() => {
+								const newValue = !(autoApprovalEnabled ?? false)
+								setAutoApprovalEnabled(newValue)
+								vscode.postMessage({ type: "autoApprovalEnabled", bool: newValue })
+							}}
+						/>
 						<span className="font-medium">{t("settings:autoApprove.enabled")}</span>
-					</VSCodeCheckbox>
+					</div>
 					<div className="text-vscode-descriptionForeground text-sm mt-1">
 						<p>{t("settings:autoApprove.description")}</p>
 						<p>
@@ -191,16 +193,18 @@ export const AutoApproveSettings = ({
 							<div>{t("settings:autoApprove.readOnly.label")}</div>
 						</div>
 						<div>
-							<VSCodeCheckbox
-								checked={alwaysAllowReadOnlyOutsideWorkspace}
-								onChange={(e: any) =>
-									setCachedStateField("alwaysAllowReadOnlyOutsideWorkspace", e.target.checked)
-								}
-								data-testid="always-allow-readonly-outside-workspace-checkbox">
+							<div className="flex items-center space-x-2">
+								<Checkbox
+									checked={alwaysAllowReadOnlyOutsideWorkspace}
+									onCheckedChange={(checked) =>
+										setCachedStateField("alwaysAllowReadOnlyOutsideWorkspace", checked === true)
+									}
+									data-testid="always-allow-readonly-outside-workspace-checkbox"
+								/>
 								<span className="font-medium">
 									{t("settings:autoApprove.readOnly.outsideWorkspace.label")}
 								</span>
-							</VSCodeCheckbox>
+							</div>
 							<div className="text-vscode-descriptionForeground text-sm mt-1">
 								{t("settings:autoApprove.readOnly.outsideWorkspace.description")}
 							</div>
@@ -215,29 +219,33 @@ export const AutoApproveSettings = ({
 							<div>{t("settings:autoApprove.write.label")}</div>
 						</div>
 						<div>
-							<VSCodeCheckbox
-								checked={alwaysAllowWriteOutsideWorkspace}
-								onChange={(e: any) =>
-									setCachedStateField("alwaysAllowWriteOutsideWorkspace", e.target.checked)
-								}
-								data-testid="always-allow-write-outside-workspace-checkbox">
+							<div className="flex items-center space-x-2">
+								<Checkbox
+									checked={alwaysAllowWriteOutsideWorkspace}
+									onCheckedChange={(checked) =>
+										setCachedStateField("alwaysAllowWriteOutsideWorkspace", checked === true)
+									}
+									data-testid="always-allow-write-outside-workspace-checkbox"
+								/>
 								<span className="font-medium">
 									{t("settings:autoApprove.write.outsideWorkspace.label")}
 								</span>
-							</VSCodeCheckbox>
+							</div>
 							<div className="text-vscode-descriptionForeground text-sm mt-1">
 								{t("settings:autoApprove.write.outsideWorkspace.description")}
 							</div>
 						</div>
 						<div>
-							<VSCodeCheckbox
-								checked={alwaysAllowWriteProtected}
-								onChange={(e: any) =>
-									setCachedStateField("alwaysAllowWriteProtected", e.target.checked)
-								}
-								data-testid="always-allow-write-protected-checkbox">
+							<div className="flex items-center space-x-2">
+								<Checkbox
+									checked={alwaysAllowWriteProtected}
+									onCheckedChange={(checked) =>
+										setCachedStateField("alwaysAllowWriteProtected", checked === true)
+									}
+									data-testid="always-allow-write-protected-checkbox"
+								/>
 								<span className="font-medium">{t("settings:autoApprove.write.protected.label")}</span>
-							</VSCodeCheckbox>
+							</div>
 							<div className="text-vscode-descriptionForeground text-sm mt-1 mb-3">
 								{t("settings:autoApprove.write.protected.description")}
 							</div>

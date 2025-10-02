@@ -3,7 +3,7 @@ import { useDeepCompareEffect, useEvent, useMount } from "react-use"
 import debounce from "debounce"
 import { Virtuoso, type VirtuosoHandle } from "react-virtuoso"
 import removeMd from "remove-markdown"
-import { VSCodeButton, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
+import { VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 import useSound from "use-sound"
 import { LRUCache } from "lru-cache"
 import { Trans, useTranslation } from "react-i18next"
@@ -37,7 +37,7 @@ import { useExtensionState } from "@src/context/ExtensionStateContext"
 import { useSelectedModel } from "@src/components/ui/hooks/useSelectedModel"
 import RooHero from "@src/components/welcome/RooHero"
 import RooTips from "@src/components/welcome/RooTips"
-import { StandardTooltip } from "@src/components/ui"
+import { Button, StandardTooltip } from "@src/components/ui"
 import { useAutoApprovalState } from "@src/hooks/useAutoApprovalState"
 import { useAutoApprovalToggles } from "@src/hooks/useAutoApprovalToggles"
 import { CloudUpsellDialog } from "@src/components/cloud/CloudUpsellDialog"
@@ -1900,15 +1900,15 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							}`}>
 							{showScrollToBottom ? (
 								<StandardTooltip content={t("chat:scrollToBottom")}>
-									<VSCodeButton
-										appearance="secondary"
+									<Button
+										variant="secondary"
 										className="flex-[2]"
 										onClick={() => {
 											scrollToBottomSmooth()
 											disableAutoScrollRef.current = false
 										}}>
 										<span className="codicon codicon-chevron-down"></span>
-									</VSCodeButton>
+									</Button>
 								</StandardTooltip>
 							) : (
 								<>
@@ -1935,13 +1935,13 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 																				? t("chat:proceedWhileRunning.tooltip")
 																				: undefined
 											}>
-											<VSCodeButton
-												appearance="primary"
+											<Button
+												variant="default"
 												disabled={!enableButtons}
 												className={secondaryButtonText ? "flex-1 mr-[6px]" : "flex-[2] mr-0"}
 												onClick={() => handlePrimaryButtonClick(inputValue, selectedImages)}>
 												{primaryButtonText}
-											</VSCodeButton>
+											</Button>
 										</StandardTooltip>
 									)}
 									{(secondaryButtonText || isStreaming) && (
@@ -1957,13 +1957,13 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 																? t("chat:terminate.tooltip")
 																: undefined
 											}>
-											<VSCodeButton
-												appearance="secondary"
+											<Button
+												variant="secondary"
 												disabled={!enableButtons && !(isStreaming && !didClickCancel)}
-												className={isStreaming ? "flex-[2] ml-0" : "flex-1 ml-[6px]"}
+												className={isStreaming ? "flex-[2] ml-0" : "flex-1 ml-[px]"}
 												onClick={() => handleSecondaryButtonClick(inputValue, selectedImages)}>
 												{isStreaming ? t("chat:cancel.title") : secondaryButtonText}
-											</VSCodeButton>
+											</Button>
 										</StandardTooltip>
 									)}
 								</>

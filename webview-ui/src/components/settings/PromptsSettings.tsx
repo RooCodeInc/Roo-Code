@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react"
-import { VSCodeTextArea, VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
+import { VSCodeTextArea } from "@vscode/webview-ui-toolkit/react"
+import { Checkbox } from "@/components/ui/checkbox"
 
 import { supportPrompt, SupportPromptType } from "@roo/support-prompt"
 
@@ -234,20 +235,22 @@ const PromptsSettings = ({
 							{activeSupportOption === "ENHANCE" && (
 								<>
 									<div>
-										<VSCodeCheckbox
-											checked={includeTaskHistoryInEnhance}
-											onChange={(e: any) => {
-												const value = e.target.checked
-												setIncludeTaskHistoryInEnhance(value)
-												vscode.postMessage({
-													type: "includeTaskHistoryInEnhance",
-													bool: value,
-												})
-											}}>
+										<div className="flex items-center space-x-2">
+											<Checkbox
+												checked={includeTaskHistoryInEnhance}
+												onCheckedChange={(checked) => {
+													const value = checked === true
+													setIncludeTaskHistoryInEnhance(value)
+													vscode.postMessage({
+														type: "includeTaskHistoryInEnhance",
+														bool: value,
+													})
+												}}
+											/>
 											<span className="font-medium">
 												{t("prompts:supportPrompts.enhance.includeTaskHistory")}
 											</span>
-										</VSCodeCheckbox>
+										</div>
 										<div className="text-vscode-descriptionForeground text-sm mt-1 mb-3">
 											{t("prompts:supportPrompts.enhance.includeTaskHistoryDescription")}
 										</div>

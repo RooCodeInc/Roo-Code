@@ -266,6 +266,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		maxDiagnosticMessages: 50,
 		openRouterImageApiKey: "",
 		openRouterImageGenerationSelectedModel: "",
+		fontSizeMultiplier: 1.0,
 	})
 
 	const [didHydrateState, setDidHydrateState] = useState(false)

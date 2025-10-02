@@ -1,8 +1,8 @@
 import { HTMLAttributes } from "react"
 import { useAppTranslation } from "@/i18n/TranslationContext"
-import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
 import { Glasses } from "lucide-react"
 import { telemetryClient } from "@/utils/TelemetryClient"
+import { Checkbox } from "@/components/ui/checkbox"
 
 import { SetCachedStateField } from "./types"
 import { SectionHeader } from "./SectionHeader"
@@ -39,12 +39,14 @@ export const UISettings = ({ reasoningBlockCollapsed, setCachedStateField, ...pr
 				<div className="space-y-6">
 					{/* Collapse Thinking Messages Setting */}
 					<div className="flex flex-col gap-1">
-						<VSCodeCheckbox
-							checked={reasoningBlockCollapsed}
-							onChange={(e: any) => handleReasoningBlockCollapsedChange(e.target.checked)}
-							data-testid="collapse-thinking-checkbox">
+						<div className="flex items-center space-x-2">
+							<Checkbox
+								checked={reasoningBlockCollapsed}
+								onCheckedChange={handleReasoningBlockCollapsedChange}
+								data-testid="collapse-thinking-checkbox"
+							/>
 							<span className="font-medium">{t("settings:ui.collapseThinking.label")}</span>
-						</VSCodeCheckbox>
+						</div>
 						<div className="text-vscode-descriptionForeground text-sm ml-5 mt-1">
 							{t("settings:ui.collapseThinking.description")}
 						</div>

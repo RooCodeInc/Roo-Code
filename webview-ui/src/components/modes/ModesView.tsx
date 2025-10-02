@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react"
 import {
-	VSCodeCheckbox,
 	VSCodeRadioGroup,
 	VSCodeRadio,
 	VSCodeTextArea,
 	VSCodeLink,
 	VSCodeTextField,
 } from "@vscode/webview-ui-toolkit/react"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Trans } from "react-i18next"
 import { ChevronDown, X, Upload, Download } from "lucide-react"
 
@@ -1021,32 +1021,45 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 											: currentMode?.groups?.some((g) => getGroupName(g) === group)
 
 										return (
-											<VSCodeCheckbox
-												key={group}
-												checked={isGroupEnabled}
-												onChange={handleGroupChange(group, Boolean(isCustomMode), customMode)}
-												disabled={!isCustomMode}>
-												{t(`prompts:tools.toolNames.${group}`)}
-												{group === "edit" && (
-													<div className="text-xs text-vscode-descriptionForeground mt-0.5">
-														{t("prompts:tools.allowedFiles")}{" "}
-														{(() => {
-															const currentMode = getCurrentMode()
-															const editGroup = currentMode?.groups?.find(
-																(g) =>
-																	Array.isArray(g) &&
-																	g[0] === "edit" &&
-																	g[1]?.fileRegex,
-															)
-															if (!Array.isArray(editGroup)) return t("prompts:allFiles")
-															return (
-																editGroup[1].description ||
-																`/${editGroup[1].fileRegex}/`
-															)
-														})()}
-													</div>
-												)}
-											</VSCodeCheckbox>
+											<div key={group} className="flex items-start space-x-2">
+												<Checkbox
+													checked={isGroupEnabled}
+													onCheckedChange={(checked) => {
+														const event = {
+															target: { checked: checked === true },
+														} as any
+														handleGroupChange(
+															group,
+															Boolean(isCustomMode),
+															customMode,
+														)(event)
+													}}
+													disabled={!isCustomMode}
+												/>
+												<div className="flex-1">
+													<span>{t(`prompts:tools.toolNames.${group}`)}</span>
+													{group === "edit" && (
+														<div className="text-xs text-vscode-descriptionForeground mt-0.5">
+															{t("prompts:tools.allowedFiles")}{" "}
+															{(() => {
+																const currentMode = getCurrentMode()
+																const editGroup = currentMode?.groups?.find(
+																	(g) =>
+																		Array.isArray(g) &&
+																		g[0] === "edit" &&
+																		g[1]?.fileRegex,
+																)
+																if (!Array.isArray(editGroup))
+																	return t("prompts:allFiles")
+																return (
+																	editGroup[1].description ||
+																	`/${editGroup[1].fileRegex}/`
+																)
+															})()}
+														</div>
+													)}
+												</div>
+											</div>
 										)
 									})}
 								</div>
@@ -1458,7 +1471,7 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 								</div>
 								<div
 									style={{
-										fontSize: "13px",
+										fontSize: "calc(13px * var(--roo-font-size-multiplier, 1))",
 										color: "var(--vscode-descriptionForeground)",
 										marginBottom: "8px",
 									}}>
@@ -1519,23 +1532,22 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 								</div>
 								<div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-2">
 									{availableGroups.map((group) => (
-										<VSCodeCheckbox
-											key={group}
-											checked={newModeGroups.some((g) => getGroupName(g) === group)}
-											onChange={(e: Event | React.FormEvent<HTMLElement>) => {
-												const target =
-													(e as CustomEvent)?.detail?.target || (e.target as HTMLInputElement)
-												const checked = target.checked
-												if (checked) {
-													setNewModeGroups([...newModeGroups, group])
-												} else {
-													setNewModeGroups(
-														newModeGroups.filter((g) => getGroupName(g) !== group),
-													)
-												}
-											}}>
-											{t(`prompts:tools.toolNames.${group}`)}
-										</VSCodeCheckbox>
+										<div key={group} className="flex items-center space-x-2">
+											<Checkbox
+												checked={newModeGroups.some((g) => getGroupName(g) === group)}
+												onCheckedChange={(checked) => {
+													const isChecked = checked === true
+													if (isChecked) {
+														setNewModeGroups([...newModeGroups, group])
+													} else {
+														setNewModeGroups(
+															newModeGroups.filter((g) => getGroupName(g) !== group),
+														)
+													}
+												}}
+											/>
+											<span>{t(`prompts:tools.toolNames.${group}`)}</span>
+										</div>
 									))}
 								</div>
 								{groupsError && (

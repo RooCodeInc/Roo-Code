@@ -1,5 +1,6 @@
 import { useCallback, useState, useEffect, useRef } from "react"
-import { VSCodeTextField, VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
+import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
+import { Checkbox } from "@/components/ui/checkbox"
 
 import { type ProviderSettings, type OrganizationAllowList, litellmDefaultModelId } from "@roo-code/types"
 
@@ -160,13 +161,15 @@ export const LiteLLM = ({
 				if (selectedModel?.supportsPromptCache) {
 					return (
 						<div className="mt-4">
-							<VSCodeCheckbox
-								checked={apiConfiguration.litellmUsePromptCache || false}
-								onChange={(e: any) => {
-									setApiConfigurationField("litellmUsePromptCache", e.target.checked)
-								}}>
+							<div className="flex items-center space-x-2">
+								<Checkbox
+									checked={apiConfiguration.litellmUsePromptCache || false}
+									onCheckedChange={(checked) => {
+										setApiConfigurationField("litellmUsePromptCache", checked === true)
+									}}
+								/>
 								<span className="font-medium">{t("settings:providers.enablePromptCaching")}</span>
-							</VSCodeCheckbox>
+							</div>
 							<div className="text-sm text-vscode-descriptionForeground ml-6 mt-1">
 								{t("settings:providers.enablePromptCachingTitle")}
 							</div>

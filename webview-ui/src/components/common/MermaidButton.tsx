@@ -205,7 +205,12 @@ export function MermaidButton({ containerRef, code, isLoading, svgToPng, childre
 							className="w-full min-h-[200px] bg-vscode-editor-background text-vscode-editor-foreground border border-vscode-editorGroup-border rounded-[3px] p-2 font-mono resize-y outline-none"
 							readOnly
 							value={code}
-							style={{ height: "100%", minHeight: "unset", fontSize: "var(--vscode-editor-font-size)" }}
+							style={{
+								height: "100%",
+								minHeight: "unset",
+								fontSize:
+									"calc(var(--vscode-editor-font-size, var(--vscode-font-size)) * var(--roo-font-size-multiplier, 1))",
+							}}
 						/>
 					)}
 				</div>

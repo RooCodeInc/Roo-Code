@@ -1817,6 +1817,10 @@ export class ClineProvider
 			featureRoomoteControlEnabled,
 		} = await this.getState()
 
+		// Get font size multiplier from VSCode settings
+		const fontSizeMultiplier =
+			vscode.workspace.getConfiguration(Package.name).get<number>("fontSizeMultiplier") || 1.0
+
 		let cloudOrganizations: CloudOrganizationMembership[] = []
 
 		try {
@@ -1964,6 +1968,7 @@ export class ClineProvider
 			openRouterImageGenerationSelectedModel,
 			openRouterUseMiddleOutTransform,
 			featureRoomoteControlEnabled,
+			fontSizeMultiplier,
 		}
 	}
 
@@ -2195,6 +2200,8 @@ export class ClineProvider
 					return false
 				}
 			})(),
+			fontSizeMultiplier:
+				vscode.workspace.getConfiguration(Package.name).get<number>("fontSizeMultiplier") || 1.0,
 		}
 	}
 

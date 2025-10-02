@@ -1,9 +1,10 @@
 import { HTMLAttributes } from "react"
 import { useAppTranslation } from "@/i18n/TranslationContext"
-import { VSCodeCheckbox, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
+import { VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 import { GitBranch } from "lucide-react"
 import { Trans } from "react-i18next"
 import { buildDocLink } from "@src/utils/docLinks"
+import { Checkbox } from "@/components/ui/checkbox"
 
 import { SetCachedStateField } from "./types"
 import { SectionHeader } from "./SectionHeader"
@@ -27,13 +28,15 @@ export const CheckpointSettings = ({ enableCheckpoints, setCachedStateField, ...
 
 			<Section>
 				<div>
-					<VSCodeCheckbox
-						checked={enableCheckpoints}
-						onChange={(e: any) => {
-							setCachedStateField("enableCheckpoints", e.target.checked)
-						}}>
+					<div className="flex items-center space-x-2">
+						<Checkbox
+							checked={enableCheckpoints}
+							onCheckedChange={(checked) => {
+								setCachedStateField("enableCheckpoints", checked === true)
+							}}
+						/>
 						<span className="font-medium">{t("settings:checkpoints.enable.label")}</span>
-					</VSCodeCheckbox>
+					</div>
 					<div className="text-vscode-descriptionForeground text-sm mt-1">
 						<Trans i18nKey="settings:checkpoints.enable.description">
 							<VSCodeLink

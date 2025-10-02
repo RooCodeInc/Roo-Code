@@ -49,7 +49,7 @@ mermaid.initialize({
 	suppressErrorRendering: true,
 	themeVariables: {
 		...MERMAID_THEME,
-		fontSize: "16px",
+		fontSize: "calc(16px * var(--roo-font-size-multiplier, 1))",
 		fontFamily: "var(--vscode-font-family, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif)",
 
 		// Additional styling
@@ -163,7 +163,7 @@ export default function MermaidBlock({ code }: MermaidBlockProps) {
 						style={{
 							borderBottom: isErrorExpanded ? "1px solid var(--vscode-editorGroup-border)" : "none",
 							fontWeight: "normal",
-							fontSize: "var(--vscode-font-size)",
+							fontSize: "calc(var(--vscode-font-size) * var(--roo-font-size-multiplier, 1))",
 							color: "var(--vscode-editor-foreground)",
 							display: "flex",
 							alignItems: "center",
@@ -183,7 +183,7 @@ export default function MermaidBlock({ code }: MermaidBlockProps) {
 								style={{
 									color: "var(--vscode-editorWarning-foreground)",
 									opacity: 0.8,
-									fontSize: 16,
+									fontSize: "calc(16px * var(--roo-font-size-multiplier, 1))",
 									marginBottom: "-1.5px",
 								}}></span>
 							<span style={{ fontWeight: "bold" }}>{t("common:mermaid.render_error")}</span>
@@ -289,7 +289,7 @@ const LoadingMessage = styled.div`
 	padding: 8px 0;
 	color: var(--vscode-descriptionForeground);
 	font-style: italic;
-	font-size: 0.9em;
+	font-size: calc(0.9em * var(--roo-font-size-multiplier, 1));
 `
 
 const CopyButton = styled.button`

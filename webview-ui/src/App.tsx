@@ -79,6 +79,7 @@ const App = () => {
 		cloudOrganizations,
 		renderContext,
 		mdmCompliant,
+		fontSizeMultiplier,
 	} = useExtensionState()
 
 	// Create a persistent state manager
@@ -140,6 +141,15 @@ const App = () => {
 			const message: ExtensionMessage = e.data
 
 			if (message.type === "action" && message.action) {
+				// Handle fontSizeChanged action
+				if (message.action === "fontSizeChanged" && message.fontSizeMultiplier !== undefined) {
+					document.documentElement.style.setProperty(
+						"--roo-font-size-multiplier",
+						message.fontSizeMultiplier.toString(),
+					)
+					return
+				}
+
 				// Handle switchTab action with tab parameter
 				if (message.action === "switchTab" && message.tab) {
 					const targetTab = message.tab as Tab
@@ -223,6 +233,13 @@ const App = () => {
 		// Log initialization for debugging
 		console.debug("App initialized with source map support")
 	}, [])
+
+	// Initialize font size multiplier when the component mounts or when it changes
+	useEffect(() => {
+		if (fontSizeMultiplier !== undefined) {
+			document.documentElement.style.setProperty("--roo-font-size-multiplier", fontSizeMultiplier.toString())
+		}
+	}, [fontSizeMultiplier])
 
 	// Focus the WebView when non-interactive content is clicked (only in editor/tab mode)
 	useAddNonInteractiveClickListener(

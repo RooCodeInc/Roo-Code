@@ -127,7 +127,10 @@ export const FollowUpSuggest = ({
 						</Button>
 						{suggestion.mode && (
 							<div className="absolute bottom-0 right-0 text-[10px] bg-vscode-badge-background text-vscode-badge-foreground px-1 py-0.5 border border-vscode-badge-background flex items-center gap-0.5">
-								<span className="codicon codicon-arrow-right" style={{ fontSize: "8px" }} />
+								<span
+									className="codicon codicon-arrow-right"
+									style={{ fontSize: "calc(8px * var(--roo-font-size-multiplier, 1))" }}
+								/>
 								{suggestion.mode}
 							</div>
 						)}

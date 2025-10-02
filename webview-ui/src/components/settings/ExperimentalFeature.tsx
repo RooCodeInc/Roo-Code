@@ -1,5 +1,5 @@
-import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
 import { useAppTranslation } from "@/i18n/TranslationContext"
+import { Checkbox } from "@/components/ui/checkbox"
 
 interface ExperimentalFeatureProps {
 	enabled: boolean
@@ -18,9 +18,8 @@ export const ExperimentalFeature = ({ enabled, onChange, experimentKey }: Experi
 	return (
 		<div>
 			<div className="flex items-center gap-2">
-				<VSCodeCheckbox checked={enabled} onChange={(e: any) => onChange(e.target.checked)}>
-					<span className="font-medium">{t(nameKey)}</span>
-				</VSCodeCheckbox>
+				<Checkbox checked={enabled} onCheckedChange={onChange} />
+				<span className="font-medium">{t(nameKey)}</span>
 			</div>
 			<p className="text-vscode-descriptionForeground text-sm mt-0">{t(descriptionKey)}</p>
 		</div>
