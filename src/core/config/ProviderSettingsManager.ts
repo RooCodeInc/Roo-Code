@@ -536,17 +536,23 @@ export class ProviderSettingsManager {
 					}
 
 					// Try to build an API handler to get model information
-					const apiHandler = buildApiHandler(configs[name])
-					const modelInfo = apiHandler.getModel().info
+					try {
+						const apiHandler = buildApiHandler(configs[name])
+						const modelInfo = apiHandler.getModel().info
 
-					// Check if the model supports reasoning budgets
-					const supportsThinkingBudget =
-						modelInfo.supportsReasoningBudget || modelInfo.requiredReasoningBudget
+						// Check if the model supports reasoning budgets
+						const supportsReasoningBudget =
+							modelInfo.supportsReasoningBudget || modelInfo.requiredReasoningBudget
 
-					// If the model doesn't support reasoning budgets, remove the token fields
-					if (!supportsThinkingBudget) {
-						delete configs[name].modelMaxTokens
-						delete configs[name].modelMaxThinkingTokens
+						// If the model doesn't support reasoning budgets, remove the token fields
+						if (!supportsReasoningBudget) {
+							delete configs[name].modelMaxTokens
+							delete configs[name].modelMaxThinkingTokens
+						}
+					} catch (error) {
+						// If we can't build the API handler or get model info, skip filtering
+						// to avoid accidental data loss from incomplete configurations
+						console.warn(`Skipping token field filtering for config '${name}': ${error}`)
 					}
 				}
 				return profiles
