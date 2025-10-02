@@ -1,5 +1,5 @@
 import { useCallback, useState, useEffect, useRef } from "react"
-import { VSCodeLink, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
+import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 import { ModelInfo, watsonxDefaultModelId, type OrganizationAllowList, type ProviderSettings } from "@roo-code/types"
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 
@@ -9,7 +9,6 @@ import { ExtensionMessage } from "@roo/ExtensionMessage"
 import { inputEventTransform } from "../transforms"
 import { RouterName } from "@roo/api"
 import { ModelPicker } from "../ModelPicker"
-import { Trans } from "react-i18next"
 
 const WATSONX_REGIONS = {
 	"us-south": "Dallas",
@@ -174,31 +173,31 @@ export const WatsonxAI = ({
 		if (platform === "cloudPak") {
 			if (!baseUrl) {
 				setRefreshStatus("error")
-				setRefreshError("URL is required for IBM Cloud Pak for Data")
+				setRefreshError(t("settings:validation.watsonx.baseUrl"))
 				return
 			}
 
 			if (!projectId) {
 				setRefreshStatus("error")
-				setRefreshError("Project ID is required for IBM Cloud Pak for Data")
+				setRefreshError(t("settings:validation.watsonx.projectId"))
 				return
 			}
 
 			if (!username) {
 				setRefreshStatus("error")
-				setRefreshError("Username is required for IBM Cloud Pak for Data")
+				setRefreshError(t("settings:validation.watsonx.username"))
 				return
 			}
 
 			if (authType === "apiKey" && !apiKey) {
 				setRefreshStatus("error")
-				setRefreshError("API Key is required for IBM Cloud Pak for Data")
+				setRefreshError(t("settings:validation.watsonx.apiKey"))
 				return
 			}
 
 			if (authType === "password" && !password) {
 				setRefreshStatus("error")
-				setRefreshError("Password is required for IBM Cloud Pak for Data")
+				setRefreshError(t("settings:validation.watsonx.password"))
 				return
 			}
 		}
@@ -220,15 +219,38 @@ export const WatsonxAI = ({
 
 	// Refresh models when component mounts if API key is available
 	useEffect(() => {
-		if (
+		const shouldFetchIbmCloud =
 			!initialModelFetchAttempted.current &&
+			apiConfiguration.watsonxPlatform === "ibmCloud" &&
 			apiConfiguration.watsonxApiKey &&
+			apiConfiguration.watsonxProjectId
+
+		const shouldFetchCloudPak =
+			apiConfiguration.watsonxPlatform === "cloudPak" &&
+			apiConfiguration.watsonxBaseUrl &&
+			apiConfiguration.watsonxProjectId &&
+			apiConfiguration.watsonxUsername &&
+			((apiConfiguration.watsonxAuthType === "password" && apiConfiguration.watsonxPassword) ||
+				(apiConfiguration.watsonxAuthType === "apiKey" && apiConfiguration.watsonxApiKey))
+
+		if (
+			(shouldFetchIbmCloud || shouldFetchCloudPak) &&
 			(!watsonxModels || Object.keys(watsonxModels).length === 0)
 		) {
 			initialModelFetchAttempted.current = true
 			handleRefreshModels()
 		}
-	}, [apiConfiguration.watsonxApiKey, watsonxModels, handleRefreshModels])
+	}, [
+		apiConfiguration.watsonxApiKey,
+		apiConfiguration.watsonxPassword,
+		apiConfiguration.watsonxProjectId,
+		apiConfiguration.watsonxBaseUrl,
+		apiConfiguration.watsonxUsername,
+		apiConfiguration.watsonxPlatform,
+		apiConfiguration.watsonxAuthType,
+		watsonxModels,
+		handleRefreshModels,
+	])
 
 	return (
 		<>
@@ -239,7 +261,7 @@ export const WatsonxAI = ({
 					value={apiConfiguration.watsonxPlatform}
 					onValueChange={(value) => handlePlatformChange(value as "ibmCloud" | "cloudPak")}>
 					<SelectTrigger className="w-full">
-						<SelectValue placeholder="Select a platform" />
+						<SelectValue placeholder={t("settings:providers.watsonx.platform")} />
 					</SelectTrigger>
 					<SelectContent>
 						<SelectItem value="ibmCloud">IBM Cloud</SelectItem>
@@ -254,7 +276,7 @@ export const WatsonxAI = ({
 					<label className="block font-medium mb-1">Region</label>
 					<Select value={selectedRegion} onValueChange={handleRegionSelect}>
 						<SelectTrigger className="w-full">
-							<SelectValue placeholder="Select a region" />
+							<SelectValue placeholder={t("settings:providers.watsonx.region")} />
 						</SelectTrigger>
 						<SelectContent>
 							{Object.entries(WATSONX_REGIONS).map(([regionCode, regionName]) => (
@@ -290,7 +312,7 @@ export const WatsonxAI = ({
 				<VSCodeTextField
 					value={apiConfiguration?.watsonxProjectId || ""}
 					onInput={handleInputChange("watsonxProjectId")}
-					placeholder="Project ID"
+					placeholder={t("settings:providers.watsonx.projectId")}
 					className="w-full">
 					<label className="block font-medium mb-1">Project ID</label>
 				</VSCodeTextField>
@@ -302,7 +324,7 @@ export const WatsonxAI = ({
 						value={apiConfiguration?.watsonxApiKey || ""}
 						type="password"
 						onInput={handleInputChange("watsonxApiKey")}
-						placeholder={t("settings:placeholders.apiKey")}
+						placeholder={t("settings:providers.watsonx.apiKey")}
 						className="w-full">
 						<label className="block font-medium mb-1">API Key</label>
 					</VSCodeTextField>
@@ -318,7 +340,7 @@ export const WatsonxAI = ({
 						<VSCodeTextField
 							value={apiConfiguration.watsonxUsername ? apiConfiguration.watsonxUsername : ""}
 							onInput={handleInputChange("watsonxUsername")}
-							placeholder="Username"
+							placeholder={t("settings:providers.watsonx.username")}
 							className="w-full">
 							<label className="block font-medium mb-1">Username</label>
 						</VSCodeTextField>
@@ -330,7 +352,7 @@ export const WatsonxAI = ({
 							value={apiConfiguration.watsonxAuthType}
 							onValueChange={(value) => handleAuthTypeChange(value as "apiKey" | "password")}>
 							<SelectTrigger className="w-full">
-								<SelectValue placeholder="Select authentication type" />
+								<SelectValue placeholder={t("settings:providers.watsonx.authType")} />
 							</SelectTrigger>
 							<SelectContent>
 								<SelectItem value="apiKey">API Key</SelectItem>
@@ -345,7 +367,7 @@ export const WatsonxAI = ({
 								value={apiConfiguration?.watsonxApiKey || ""}
 								type="password"
 								onInput={handleInputChange("watsonxApiKey")}
-								placeholder="API Key"
+								placeholder={t("settings:providers.watsonx.apiKey")}
 								className="w-full">
 								<label className="block font-medium mb-1">API Key</label>
 							</VSCodeTextField>
@@ -359,7 +381,7 @@ export const WatsonxAI = ({
 								value={apiConfiguration.watsonxPassword}
 								type="password"
 								onInput={handleInputChange("watsonxPassword")}
-								placeholder="Password"
+								placeholder={t("settings:providers.watsonx.password")}
 								className="w-full">
 								<label className="block font-medium mb-1">Password</label>
 							</VSCodeTextField>
@@ -380,9 +402,11 @@ export const WatsonxAI = ({
 					disabled={
 						refreshStatus === "loading" ||
 						!apiConfiguration.watsonxProjectId ||
-						(apiConfiguration.watsonxPlatform === "ibmCloud" && !apiConfiguration.watsonxApiKey) ||
+						(apiConfiguration.watsonxPlatform === "ibmCloud" &&
+							(!apiConfiguration.watsonxApiKey || !apiConfiguration.watsonxProjectId)) ||
 						(apiConfiguration.watsonxPlatform === "cloudPak" &&
 							(!apiConfiguration.watsonxBaseUrl ||
+								!apiConfiguration.watsonxProjectId ||
 								!apiConfiguration.watsonxUsername ||
 								(apiConfiguration.watsonxAuthType === "apiKey" && !apiConfiguration.watsonxApiKey) ||
 								(apiConfiguration.watsonxAuthType === "password" && !apiConfiguration.watsonxPassword)))
@@ -419,27 +443,12 @@ export const WatsonxAI = ({
 				defaultModelId={watsonxDefaultModelId}
 				models={watsonxModels && Object.keys(watsonxModels).length > 0 ? watsonxModels : {}}
 				modelIdKey="watsonxModelId"
-				serviceName="ibm-watsonx"
+				serviceName="IBM watsonx"
 				serviceUrl="https://www.ibm.com/products/watsonx-ai/foundation-models"
 				setApiConfigurationField={setApiConfigurationField}
 				organizationAllowList={organizationAllowList}
 				errorMessage={modelValidationError}
 			/>
-
-			<div className="text-sm text-vscode-descriptionForeground">
-				<Trans
-					i18nKey="settings:providers.watsonx.description"
-					components={{
-						serviceLink: (
-							<VSCodeLink
-								href={"https://www.ibm.com/products/watsonx-ai/foundation-models"}
-								className="text-sm"
-							/>
-						),
-					}}
-					values={{ serviceName: "IBM watsonx" }}
-				/>
-			</div>
 		</>
 	)
 }
