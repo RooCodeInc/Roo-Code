@@ -169,11 +169,11 @@ interface ChatTextAreaProps {
 const mockInputRef = React.createRef<HTMLInputElement>()
 const mockFocus = vi.fn()
 
-vi.mock("../ChatLexicalTextArea", () => {
+vi.mock("../ChatTextArea", () => {
 	// eslint-disable-next-line @typescript-eslint/no-require-imports
 	const mockReact = require("react")
 
-	const ChatLexicalTextAreaComponent = mockReact.forwardRef(function MockChatLexicalTextArea(
+	const ChatTextAreaComponent = mockReact.forwardRef(function MockChatTextArea(
 		props: ChatTextAreaProps,
 		ref: React.ForwardedRef<{ focus: () => void }>,
 	) {
@@ -198,7 +198,7 @@ vi.mock("../ChatLexicalTextArea", () => {
 	})
 
 	return {
-		ChatLexicalTextArea: ChatLexicalTextAreaComponent,
+		ChatTextArea: ChatTextAreaComponent,
 	}
 })
 

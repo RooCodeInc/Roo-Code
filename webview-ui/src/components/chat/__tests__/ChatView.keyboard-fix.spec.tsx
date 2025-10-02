@@ -72,8 +72,8 @@ vi.mock("react-i18next", () => ({
 	Trans: ({ i18nKey }: { i18nKey: string }) => <>{i18nKey}</>,
 }))
 
-vi.mock("../ChatLexicalTextArea", () => {
-	const ChatLexicalTextAreaComponent = React.forwardRef(function MockChatLexicalTextArea(
+vi.mock("../ChatTextArea", () => {
+	const ChatTextAreaComponent = React.forwardRef(function MockChatTextArea(
 		_props: any,
 		ref: React.ForwardedRef<{ focus: () => void }>,
 	) {
@@ -84,7 +84,7 @@ vi.mock("../ChatLexicalTextArea", () => {
 	})
 
 	return {
-		ChatLexicalTextArea: ChatLexicalTextAreaComponent,
+		ChatTextArea: ChatTextAreaComponent,
 	}
 })
 

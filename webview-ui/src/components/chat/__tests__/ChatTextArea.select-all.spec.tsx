@@ -1,5 +1,5 @@
 import { render } from "@testing-library/react"
-import { ChatLexicalTextArea } from "../ChatLexicalTextArea"
+import { ChatTextArea } from "../ChatTextArea"
 import { vi } from "vitest"
 import { TooltipProvider } from "@/components/ui/tooltip"
 
@@ -41,7 +41,7 @@ vi.mock("vscode-material-icons", () => ({
 	getIconUrlByName: vi.fn(() => "icon-url"),
 }))
 
-describe("ChatLexicalTextArea - Select All Functionality", () => {
+describe("ChatTextArea - Select All Functionality", () => {
 	const defaultProps = {
 		inputValue: "Test content in the editor",
 		setInputValue: vi.fn(),
@@ -70,7 +70,7 @@ describe("ChatLexicalTextArea - Select All Functionality", () => {
 	it("should render without crashing with LexicalSelectAllPlugin", () => {
 		const { container } = render(
 			<TooltipProvider>
-				<ChatLexicalTextArea {...defaultProps} />
+				<ChatTextArea {...defaultProps} />
 			</TooltipProvider>,
 		)
 
@@ -81,7 +81,7 @@ describe("ChatLexicalTextArea - Select All Functionality", () => {
 	it("should handle keyboard events properly", () => {
 		const { container } = render(
 			<TooltipProvider>
-				<ChatLexicalTextArea {...defaultProps} />
+				<ChatTextArea {...defaultProps} />
 			</TooltipProvider>,
 		)
 
@@ -111,7 +111,7 @@ describe("ChatLexicalTextArea - Select All Functionality", () => {
 	it("should not interfere with other keyboard shortcuts", () => {
 		const { container } = render(
 			<TooltipProvider>
-				<ChatLexicalTextArea {...defaultProps} />
+				<ChatTextArea {...defaultProps} />
 			</TooltipProvider>,
 		)
 

@@ -58,7 +58,7 @@ import DismissibleUpsell from "../common/DismissibleUpsell"
 import { useCloudUpsell } from "@src/hooks/useCloudUpsell"
 import { Cloud } from "lucide-react"
 import { LexicalEditor } from "lexical"
-import { ChatLexicalTextArea } from "./ChatLexicalTextArea"
+import { ChatTextArea } from "./ChatTextArea"
 
 export interface ChatViewProps {
 	isHidden: boolean
@@ -1993,7 +1993,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					}
 				}}
 			/>
-			<ChatLexicalTextArea
+			<ChatTextArea
 				ref={textAreaRef}
 				inputValue={inputValue}
 				setInputValue={setInputValue}
