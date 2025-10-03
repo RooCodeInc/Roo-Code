@@ -533,7 +533,11 @@
 			"apiKey": "Khóa API",
 			"authType": "Loại xác thực",
 			"projectId": "ID dự án",
-			"urlDescription": "Nhập URL đầy đủ của phiên bản IBM Cloud Pak for Data của bạn"
+			"urlDescription": "Nhập URL đầy đủ của phiên bản IBM Cloud Pak for Data của bạn",
+			"selectedEndpoint": "Điểm cuối đã chọn",
+			"retrieveModels": "Lấy mô hình",
+			"retrieveSuccessful": "Lấy mô hình thành công",
+			"retrieveError": "Không thể lấy mô hình. Vui lòng kiểm tra thông tin đăng nhập của bạn và thử lại"
 		}
 	},
 	"browser": {

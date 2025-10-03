@@ -533,7 +533,11 @@
 			"apiKey": "API 密钥",
 			"authType": "认证类型",
 			"projectId": "项目 ID",
-			"urlDescription": "输入您的 IBM Cloud Pak for Data 实例的完整 URL"
+			"urlDescription": "输入您的 IBM Cloud Pak for Data 实例的完整 URL",
+			"selectedEndpoint": "已选端点",
+			"retrieveModels": "获取模型",
+			"retrieveSuccessful": "模型获取成功",
+			"retrieveError": "获取模型失败。请检查您的凭据并重试"
 		}
 	},
 	"browser": {

@@ -533,7 +533,11 @@
 			"apiKey": "API कुंजी",
 			"authType": "प्रमाणीकरण प्रकार",
 			"projectId": "परियोजना आईडी",
-			"urlDescription": "अपने IBM Cloud Pak for Data इंस्टेंस का पूरा URL दर्ज करें"
+			"urlDescription": "अपने IBM Cloud Pak for Data इंस्टेंस का पूरा URL दर्ज करें",
+			"selectedEndpoint": "चयनित एंडपॉइंट",
+			"retrieveModels": "मॉडल प्राप्त करें",
+			"retrieveSuccessful": "मॉडल सफलतापूर्वक प्राप्त किए गए",
+			"retrieveError": "मॉडल प्राप्त करने में विफल। कृपया अपने क्रेडेंशियल्स जांचें और पुनः प्रयास करें"
 		}
 	},
 	"browser": {

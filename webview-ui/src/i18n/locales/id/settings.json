@@ -537,7 +537,11 @@
 			"apiKey": "Kunci API",
 			"authType": "Jenis autentikasi",
 			"projectId": "ID Proyek",
-			"urlDescription": "Masukkan URL lengkap instans IBM Cloud Pak for Data Anda"
+			"urlDescription": "Masukkan URL lengkap instans IBM Cloud Pak for Data Anda",
+			"selectedEndpoint": "Titik akhir yang dipilih",
+			"retrieveModels": "Ambil Model",
+			"retrieveSuccessful": "Model berhasil diambil",
+			"retrieveError": "Gagal mengambil model. Silakan periksa kredensial Anda dan coba lagi"
 		}
 	},
 	"browser": {

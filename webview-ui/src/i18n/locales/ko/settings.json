@@ -533,7 +533,11 @@
 			"apiKey": "API 키",
 			"authType": "인증 유형",
 			"projectId": "프로젝트 ID",
-			"urlDescription": "IBM Cloud Pak for Data 인스턴스의 전체 URL을 입력하세요"
+			"urlDescription": "IBM Cloud Pak for Data 인스턴스의 전체 URL을 입력하세요",
+			"selectedEndpoint": "선택된 엔드포인트",
+			"retrieveModels": "모델 검색",
+			"retrieveSuccessful": "모델을 성공적으로 검색했습니다",
+			"retrieveError": "모델을 검색하지 못했습니다. 자격 증명을 확인하고 다시 시도하세요"
 		}
 	},
 	"browser": {

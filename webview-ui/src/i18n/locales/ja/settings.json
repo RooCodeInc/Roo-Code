@@ -533,7 +533,11 @@
 			"apiKey": "APIキー",
 			"authType": "認証タイプ",
 			"projectId": "プロジェクトID",
-			"urlDescription": "IBM Cloud Pak for Dataインスタンスの完全なURLを入力してください"
+			"urlDescription": "IBM Cloud Pak for Dataインスタンスの完全なURLを入力してください",
+			"selectedEndpoint": "選択されたエンドポイント",
+			"retrieveModels": "モデルを取得",
+			"retrieveSuccessful": "モデルが正常に取得されました",
+			"retrieveError": "モデルの取得に失敗しました。認証情報を確認して再試行してください"
 		}
 	},
 	"browser": {

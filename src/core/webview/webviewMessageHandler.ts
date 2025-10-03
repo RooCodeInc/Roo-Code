@@ -63,7 +63,7 @@ const ALLOWED_VSCODE_SETTINGS = new Set(["terminal.integrated.inheritEnv"])
 
 import { MarketplaceManager, MarketplaceItemType } from "../../services/marketplace"
 import { setPendingTodoList } from "../tools/UpdateTodoListTool"
-import { getWatsonxModels } from "../../api/providers/fetchers/ibm-watsonx"
+import { getWatsonxModels, regionToWatsonxBaseUrl } from "../../api/providers/fetchers/ibm-watsonx"
 
 export const webviewMessageHandler = async (
 	provider: ClineProvider,
@@ -1068,8 +1068,10 @@ export const webviewMessageHandler = async (
 								"Missing IBM Cloud authentication credentials in IBM watsonx AI provider for IBM watsonx models",
 							)
 							provider.postMessageToWebview({
-								type: "watsonxModels",
-								watsonxModels: {},
+								type: "singleRouterModelFetchResponse",
+								success: false,
+								error: "Missing IBM Cloud authentication credentials for IBM watsonx models",
+								values: { provider: "ibm-watsonx" },
 							})
 							return
 						}
@@ -1080,8 +1082,10 @@ export const webviewMessageHandler = async (
 									"Missing IBM Cloud Pak for Data authentication credentials in IBM watsonx AI provider for IBM watsonx models",
 								)
 								provider.postMessageToWebview({
-									type: "watsonxModels",
-									watsonxModels: {},
+									type: "singleRouterModelFetchResponse",
+									success: false,
+									error: "Missing IBM Cloud Pak for Data authentication credentials for IBM watsonx models",
+									values: { provider: "ibm-watsonx" },
 								})
 								return
 							}
@@ -1091,8 +1095,10 @@ export const webviewMessageHandler = async (
 									"Missing IBM Cloud Pak for Data authentication credentials in IBM watsonx AI provider for IBM watsonx models",
 								)
 								provider.postMessageToWebview({
-									type: "watsonxModels",
-									watsonxModels: {},
+									type: "singleRouterModelFetchResponse",
+									success: false,
+									error: "Missing IBM Cloud Pak for Data authentication credentials for IBM watsonx models",
+									values: { provider: "ibm-watsonx" },
 								})
 								return
 							}
@@ -1101,16 +1107,7 @@ export const webviewMessageHandler = async (
 
 					let effectiveBaseUrl = baseUrl
 					if (platform === "ibmCloud" && region && !baseUrl) {
-						const regionToUrl: Record<string, string> = {
-							"us-south": "https://us-south.ml.cloud.ibm.com",
-							"eu-de": "https://eu-de.ml.cloud.ibm.com",
-							"eu-gb": "https://eu-gb.ml.cloud.ibm.com",
-							"jp-tok": "https://jp-tok.ml.cloud.ibm.com",
-							"au-syd": "https://au-syd.ml.cloud.ibm.com",
-							"ca-tor": "https://ca-tor.ml.cloud.ibm.com",
-							"ap-south-1": "https://ap-south-1.aws.wxai.ibm.com",
-						}
-						effectiveBaseUrl = regionToUrl[region]
+						effectiveBaseUrl = regionToWatsonxBaseUrl(region)
 					}
 
 					const watsonxModels = await getWatsonxModels(
