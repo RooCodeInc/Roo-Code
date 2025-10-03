@@ -10,11 +10,18 @@ import { useEvent, useMount } from "react-use"
 import { ExtensionMessage } from "@roo/ExtensionMessage"
 
 import { cn } from "@/lib/utils"
-import { Slider } from "@/components/ui"
+import { Slider, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui"
 
 import { SetCachedStateField } from "./types"
 import { SectionHeader } from "./SectionHeader"
 import { Section } from "./Section"
+
+interface TerminalProfile {
+	name: string
+	displayName: string
+	shellPath?: string
+	isDefault?: boolean
+}
 
 type TerminalSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	terminalOutputLineLimit?: number
@@ -28,6 +35,7 @@ type TerminalSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	terminalZshP10k?: boolean
 	terminalZdotdir?: boolean
 	terminalCompressProgressBar?: boolean
+	terminalPreferredProfile?: string
 	setCachedStateField: SetCachedStateField<
 		| "terminalOutputLineLimit"
 		| "terminalOutputCharacterLimit"
@@ -40,6 +48,7 @@ type TerminalSettingsProps = HTMLAttributes<HTMLDivElement> & {
 		| "terminalZshP10k"
 		| "terminalZdotdir"
 		| "terminalCompressProgressBar"
+		| "terminalPreferredProfile"
 	>
 }
 
@@ -55,6 +64,7 @@ export const TerminalSettings = ({
 	terminalZshP10k,
 	terminalZdotdir,
 	terminalCompressProgressBar,
+	terminalPreferredProfile,
 	setCachedStateField,
 	className,
 	...props
@@ -62,8 +72,12 @@ export const TerminalSettings = ({
 	const { t } = useAppTranslation()
 
 	const [inheritEnv, setInheritEnv] = useState<boolean>(true)
+	const [availableProfiles, setAvailableProfiles] = useState<TerminalProfile[]>([])
 
-	useMount(() => vscode.postMessage({ type: "getVSCodeSetting", setting: "terminal.integrated.inheritEnv" }))
+	useMount(() => {
+		vscode.postMessage({ type: "getVSCodeSetting", setting: "terminal.integrated.inheritEnv" })
+		vscode.postMessage({ type: "getTerminalProfiles" })
+	})
 
 	const onMessage = useCallback((event: MessageEvent) => {
 		const message: ExtensionMessage = event.data
@@ -76,6 +90,11 @@ export const TerminalSettings = ({
 						break
 					default:
 						break
+				}
+				break
+			case "terminalProfiles":
+				if (message.profiles) {
+					setAvailableProfiles(message.profiles)
 				}
 				break
 			default:
@@ -199,6 +218,45 @@ export const TerminalSettings = ({
 						</div>
 					</div>
 					<div className="flex flex-col gap-3 pl-3 border-l-2 border-vscode-button-background">
+						<div>
+							<label className="block font-medium mb-1">
+								{t("settings:terminal.preferredProfile.label")}
+							</label>
+							<Select
+								value={terminalPreferredProfile || "default"}
+								onValueChange={(value) => {
+									const profileValue = value === "default" ? undefined : value
+									setCachedStateField("terminalPreferredProfile", profileValue)
+								}}
+								data-testid="terminal-preferred-profile-dropdown">
+								<SelectTrigger className="w-full">
+									<SelectValue placeholder="Select profile..." />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="default">Default (System)</SelectItem>
+									{availableProfiles
+										.filter((item) => item.name !== "")
+										.map((profile) => (
+											<SelectItem key={profile.name} value={profile.name}>
+												{profile.displayName}
+											</SelectItem>
+										))}
+								</SelectContent>
+							</Select>
+							<div className="text-vscode-descriptionForeground text-sm mt-1">
+								<Trans i18nKey="settings:terminal.preferredProfile.description">
+									<VSCodeLink
+										href={buildDocLink(
+											"features/shell-integration#terminal-profile-selection",
+											"settings_terminal_preferred_profile",
+										)}
+										style={{ display: "inline" }}>
+										{" "}
+									</VSCodeLink>
+								</Trans>
+							</div>
+						</div>
+
 						<div>
 							<VSCodeCheckbox
 								checked={terminalShellIntegrationDisabled ?? true}

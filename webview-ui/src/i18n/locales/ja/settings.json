@@ -683,7 +683,11 @@
 		},
 		"inheritEnv": {
 			"label": "環境変数を継承",
-			"description": "親VS Codeプロセスから環境変数を継承するには、これをオンにします。<0>詳細情報</0>"
+			"description": "有効にすると、ターミナルは VSCode の親プロセスから環境変数を継承します。ユーザープロファイルで定義されたシェル統合設定などが含まれます。これは VSCode のグローバル設定 `terminal.integrated.inheritEnv` を直接切り替えます。 <0>詳細情報</0>"
+		},
+		"preferredProfile": {
+			"label": "優先ターミナルプロファイル",
+			"description": "ターミナルを作成する際に Roo が使用する VSCode ターミナルプロファイルを選択します。'Default' を選択すると VSCode のデフォルト動作を使用し、特定のプロファイルを選択するとデフォルトシェルを上書きします。 <0>詳細情報</0>"
 		}
 	},
 	"advancedSettings": {

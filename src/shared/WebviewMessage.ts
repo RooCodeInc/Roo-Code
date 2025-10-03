@@ -134,6 +134,8 @@ export interface WebviewMessage {
 		| "terminalZshP10k"
 		| "terminalZdotdir"
 		| "terminalCompressProgressBar"
+		| "terminalPreferredProfile"
+		| "getTerminalProfiles"
 		| "mcpEnabled"
 		| "enableMcpServerCreation"
 		| "remoteControlEnabled"

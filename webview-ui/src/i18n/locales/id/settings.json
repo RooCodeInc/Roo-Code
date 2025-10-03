@@ -686,8 +686,12 @@
 			"description": "Aktifkan saat integrasi shell zsh gagal atau bertentangan dengan dotfile Anda. <0>Pelajari lebih lanjut</0>"
 		},
 		"inheritEnv": {
-			"label": "Warisi variabel lingkungan",
-			"description": "Aktifkan untuk mewarisi variabel lingkungan dari proses induk VS Code. <0>Pelajari lebih lanjut</0>"
+			"label": "Warisi variabel environment",
+			"description": "Ketika diaktifkan, terminal akan mewarisi variabel environment dari proses parent VSCode, seperti pengaturan integrasi shell yang didefinisikan user-profile. Ini secara langsung mengalihkan pengaturan global VSCode `terminal.integrated.inheritEnv`. <0>Pelajari lebih lanjut</0>"
+		},
+		"preferredProfile": {
+			"label": "Profil terminal pilihan",
+			"description": "Pilih profil terminal VSCode mana yang harus digunakan Roo saat membuat terminal. Pilih 'Default' untuk menggunakan perilaku default VSCode, atau pilih profil spesifik untuk mengganti shell default. <0>Pelajari lebih lanjut</0>"
 		}
 	},
 	"advancedSettings": {

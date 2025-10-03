@@ -682,7 +682,11 @@
 		},
 		"inheritEnv": {
 			"label": "Hereta variables d'entorn",
-			"description": "Activa per heretar variables d'entorn del procés pare de VS Code. <0>Aprèn-ne més</0>"
+			"description": "Quan està habilitat, el terminal hereta les variables d'entorn del procés pare de VSCode, com ara la configuració d'integració del shell definida al perfil d'usuari. Això commuta directament la configuració global de VSCode `terminal.integrated.inheritEnv`. <0>Més informació</0>"
+		},
+		"preferredProfile": {
+			"label": "Perfil de terminal preferit",
+			"description": "Selecciona quin perfil de terminal de VSCode hauria d'utilitzar Roo en crear terminals. Tria 'Default' per utilitzar el comportament per defecte de VSCode, o selecciona un perfil específic per substituir la shell per defecte. <0>Més informació</0>"
 		}
 	},
 	"advancedSettings": {

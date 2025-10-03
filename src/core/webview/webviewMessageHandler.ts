@@ -36,6 +36,7 @@ import {
 import { checkExistKey } from "../../shared/checkExistApiConfig"
 import { experimentDefault } from "../../shared/experiments"
 import { Terminal } from "../../integrations/terminal/Terminal"
+import { TerminalProfileService } from "../../integrations/terminal/TerminalProfileService"
 import { openFile } from "../../integrations/misc/open-file"
 import { openImage, saveImage } from "../../integrations/misc/image-handler"
 import { selectImages } from "../../integrations/misc/process-images"
@@ -1522,6 +1523,31 @@ export const webviewMessageHandler = async (
 			await provider.postStateToWebview()
 			if (message.bool !== undefined) {
 				Terminal.setCompressProgressBar(message.bool)
+			}
+			break
+		case "terminalPreferredProfile":
+			await updateGlobalState("terminalPreferredProfile", message.text)
+			await provider.postStateToWebview()
+			if (message.text !== undefined) {
+				Terminal.setTerminalPreferredProfile(message.text)
+			}
+			break
+		case "getTerminalProfiles":
+			try {
+				const profiles = TerminalProfileService.getAllSelectableProfiles()
+				await provider.postMessageToWebview({
+					type: "terminalProfiles",
+					profiles,
+				})
+			} catch (error) {
+				provider.log(
+					`Error getting terminal profiles: ${error instanceof Error ? error.message : String(error)}`,
+				)
+				// Send empty array on error
+				await provider.postMessageToWebview({
+					type: "terminalProfiles",
+					profiles: [],
+				})
 			}
 			break
 		case "mode":

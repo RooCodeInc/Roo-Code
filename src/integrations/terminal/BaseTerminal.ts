@@ -160,6 +160,7 @@ export abstract class BaseTerminal implements RooTerminal {
 	private static terminalZshP10k: boolean = false
 	private static terminalZdotdir: boolean = false
 	private static compressProgressBar: boolean = true
+	private static terminalPreferredProfile: string | undefined = undefined
 
 	/**
 	 * Compresses terminal output by applying run-length encoding and truncating to line limit
@@ -313,5 +314,21 @@ export abstract class BaseTerminal implements RooTerminal {
 	 */
 	public static getCompressProgressBar(): boolean {
 		return BaseTerminal.compressProgressBar
+	}
+
+	/**
+	 * Sets the preferred terminal profile
+	 * @param profileName The preferred terminal profile name
+	 */
+	public static setTerminalPreferredProfile(profileName: string | undefined): void {
+		BaseTerminal.terminalPreferredProfile = profileName
+	}
+
+	/**
+	 * Gets the preferred terminal profile
+	 * @returns The preferred terminal profile name
+	 */
+	public static getTerminalPreferredProfile(): string | undefined {
+		return BaseTerminal.terminalPreferredProfile
 	}
 }

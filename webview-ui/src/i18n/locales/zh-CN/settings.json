@@ -683,7 +683,11 @@
 		},
 		"inheritEnv": {
 			"label": "继承环境变量",
-			"description": "启用此选项以从父 VS Code 进程继承环境变量。<0>了解更多</0>"
+			"description": "启用后，终端将从 VSCode 父进程继承环境变量，如用户配置文件中定义的 shell 集成设置。这直接切换 VSCode 全局设置 `terminal.integrated.inheritEnv`。 <0>了解更多</0>"
+		},
+		"preferredProfile": {
+			"label": "首选终端配置文件",
+			"description": "选择 Roo 在创建终端时应使用的 VSCode 终端配置文件。选择 'Default' 以使用 VSCode 的默认行为，或选择特定配置文件以覆盖默认 shell。 <0>了解更多</0>"
 		}
 	},
 	"advancedSettings": {

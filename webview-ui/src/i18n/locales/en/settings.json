@@ -685,6 +685,10 @@
 			"label": "Enable ZDOTDIR handling",
 			"description": "Turn this on when zsh shell integration fails or conflicts with your dotfiles. <0>Learn more</0>"
 		},
+		"preferredProfile": {
+			"label": "Preferred terminal profile",
+			"description": "Select which VSCode terminal profile Roo should use when creating terminals. Choose 'Default' to use VSCode's default behavior, or select a specific profile to override the default shell. <0>Learn more</0>"
+		},
 		"inheritEnv": {
 			"label": "Inherit environment variables",
 			"description": "Turn this on to inherit environment variables from the parent VS Code process. <0>Learn more</0>"

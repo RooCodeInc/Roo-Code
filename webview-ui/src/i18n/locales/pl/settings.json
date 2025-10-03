@@ -683,7 +683,11 @@
 		},
 		"inheritEnv": {
 			"label": "Dziedzicz zmienne środowiskowe",
-			"description": "Włącz, aby dziedziczyć zmienne środowiskowe z procesu nadrzędnego VS Code. <0>Dowiedz się więcej</0>"
+			"description": "Po włączeniu terminal dziedziczy zmienne środowiskowe z procesu nadrzędnego VSCode, takie jak ustawienia integracji powłoki zdefiniowane w profilu użytkownika. Przełącza to bezpośrednio globalne ustawienie VSCode `terminal.integrated.inheritEnv`. <0>Dowiedz się więcej</0>"
+		},
+		"preferredProfile": {
+			"label": "Preferowany profil terminala",
+			"description": "Wybierz, który profil terminala VSCode powinien używać Roo podczas tworzenia terminali. Wybierz 'Domyślny', aby używać domyślnego zachowania VSCode, lub wybierz konkretny profil, aby zastąpić domyślną powłokę. <0>Dowiedz się więcej</0>"
 		}
 	},
 	"advancedSettings": {

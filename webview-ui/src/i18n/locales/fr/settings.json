@@ -682,7 +682,11 @@
 		},
 		"inheritEnv": {
 			"label": "Hériter des variables d'environnement",
-			"description": "Activez pour hériter des variables d'environnement du processus parent VS Code. <0>En savoir plus</0>"
+			"description": "Lorsqu'activé, le terminal hérite des variables d'environnement du processus parent VSCode, comme les paramètres d'intégration du shell définis dans le profil utilisateur. Cela bascule directement le paramètre global VSCode `terminal.integrated.inheritEnv`. <0>En savoir plus</0>"
+		},
+		"preferredProfile": {
+			"label": "Profil terminal préféré",
+			"description": "Sélectionnez quel profil de terminal VSCode Roo devrait utiliser lors de la création de terminaux. Choisissez 'Default' pour utiliser le comportement par défaut de VSCode, ou sélectionnez un profil spécifique pour remplacer le shell par défaut. <0>En savoir plus</0>"
 		}
 	},
 	"advancedSettings": {

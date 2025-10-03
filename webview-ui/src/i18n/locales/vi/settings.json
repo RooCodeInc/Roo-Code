@@ -683,7 +683,11 @@
 		},
 		"inheritEnv": {
 			"label": "Kế thừa biến môi trường",
-			"description": "Bật tính năng này để kế thừa các biến môi trường từ quy trình mẹ của VS Code. <0>Tìm hiểu thêm</0>"
+			"description": "Khi được bật, terminal sẽ kế thừa các biến môi trường từ tiến trình cha của VSCode, như các cài đặt tích hợp shell được định nghĩa trong hồ sơ người dùng. Điều này trực tiếp chuyển đổi cài đặt toàn cục của VSCode `terminal.integrated.inheritEnv`. <0>Tìm hiểu thêm</0>"
+		},
+		"preferredProfile": {
+			"label": "Hồ sơ terminal ưu tiên",
+			"description": "Chọn hồ sơ terminal VSCode mà Roo nên sử dụng khi tạo terminal. Chọn 'Mặc định' để sử dụng hành vi mặc định của VSCode, hoặc chọn một hồ sơ cụ thể để ghi đè shell mặc định. <0>Tìm hiểu thêm</0>"
 		}
 	},
 	"advancedSettings": {

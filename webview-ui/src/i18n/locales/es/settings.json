@@ -680,6 +680,10 @@
 			"label": "Activar manejo de ZDOTDIR",
 			"description": "Activa cuando la integración del shell de zsh falle o entre en conflicto con tus dotfiles. <0>Más información</0>"
 		},
+		"preferredProfile": {
+			"label": "Perfil de terminal preferido",
+			"description": "Selecciona qué perfil de terminal de VSCode debe usar Roo al crear terminales. Elige 'Predeterminado' para usar el comportamiento predeterminado de VSCode, o selecciona un perfil específico para anular el shell predeterminado. <0>Más información</0>"
+		},
 		"inheritEnv": {
 			"label": "Heredar variables de entorno",
 			"description": "Activa para heredar variables de entorno del proceso padre de VS Code. <0>Más información</0>"

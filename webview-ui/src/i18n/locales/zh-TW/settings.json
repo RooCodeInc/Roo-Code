@@ -683,7 +683,11 @@
 		},
 		"inheritEnv": {
 			"label": "繼承環境變數",
-			"description": "啟用此選項以從父 VS Code 程序繼承環境變數。<0>了解更多</0>"
+			"description": "啟用後，終端機將從 VSCode 父程序繼承環境變數，如使用者設定檔中定義的 shell 整合設定。這直接切換 VSCode 全域設定 `terminal.integrated.inheritEnv`。 <0>了解更多</0>"
+		},
+		"preferredProfile": {
+			"label": "偏好的終端機設定檔",
+			"description": "選擇 Roo 在建立終端機時應使用的 VSCode 終端機設定檔。選擇「預設」以使用 VSCode 的預設行為，或選擇特定設定檔以覆寫預設 shell。 <0>了解更多</0>"
 		}
 	},
 	"advancedSettings": {

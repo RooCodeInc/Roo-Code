@@ -683,7 +683,11 @@
 		},
 		"inheritEnv": {
 			"label": "Omgevingsvariabelen overnemen",
-			"description": "Schakel in om omgevingsvariabelen over te nemen van het bovenliggende VS Code-proces. <0>Meer informatie</0>"
+			"description": "Indien ingeschakeld, neemt de terminal omgevingsvariabelen over van het bovenliggende VSCode-proces, zoals shell-integratie-instellingen uit het gebruikersprofiel. Dit schakelt direct de VSCode-instelling `terminal.integrated.inheritEnv` om. <0>Meer informatie</0>"
+		},
+		"preferredProfile": {
+			"label": "Voorkeursprofiel terminal",
+			"description": "Selecteer welk VSCode-terminalprofiel Roo moet gebruiken bij het maken van terminals. Kies 'Default' om het standaardgedrag van VSCode te gebruiken, of selecteer een specifiek profiel om de standaardshell te overschrijven. <0>Meer informatie</0>"
 		}
 	},
 	"advancedSettings": {

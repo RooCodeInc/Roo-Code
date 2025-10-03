@@ -681,6 +681,10 @@
 			"label": "ZDOTDIR işlemeyi etkinleştir",
 			"description": "zsh kabuk entegrasyonu başarısız olduğunda veya dotfiles'larınızla çakıştığında bunu açın. <0>Daha fazla bilgi edinin</0>"
 		},
+		"preferredProfile": {
+			"label": "Tercih edilen terminal profili",
+			"description": "Terminal oluştururken Roo'nun hangi VSCode terminal profilini kullanacağını seçin. VSCode'un varsayılan davranışını kullanmak için 'Varsayılan'ı seçin veya varsayılan kabuğu geçersiz kılmak için belirli bir profili seçin. <0>Daha fazla bilgi edinin</0>"
+		},
 		"inheritEnv": {
 			"label": "Ortam değişkenlerini devral",
 			"description": "Ana VS Code işleminden ortam değişkenlerini devralmak için bunu açın. <0>Daha fazla bilgi edinin</0>"
