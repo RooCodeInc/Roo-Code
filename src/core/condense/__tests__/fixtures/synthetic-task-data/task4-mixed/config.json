@@ -1,0 +1,16 @@
+{
+	"apiVersion": "1.0.0",
+	"environment": "test",
+	"endpoints": {
+		"base": "https://api.example.com",
+		"auth": "/auth/login",
+		"data": "/api/v1/data"
+	},
+	"timeout": 5000,
+	"retryAttempts": 3,
+	"features": {
+		"caching": true,
+		"compression": true,
+		"logging": true
+	}
+}

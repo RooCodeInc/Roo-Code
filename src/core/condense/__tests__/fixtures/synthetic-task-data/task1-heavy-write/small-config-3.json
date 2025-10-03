@@ -1,0 +1,91 @@
+{
+	"name": "small-config-3",
+	"description": "Logging and monitoring configuration for testing condensation efficiency",
+	"version": "1.5.2",
+	"logging": {
+		"level": "debug",
+		"format": "json",
+		"outputs": [
+			{
+				"type": "console",
+				"enabled": true,
+				"colorize": true,
+				"timestamp": true
+			},
+			{
+				"type": "file",
+				"enabled": true,
+				"filename": "logs/app-%DATE%.log",
+				"datePattern": "YYYY-MM-DD",
+				"maxSize": "20m",
+				"maxFiles": "14d",
+				"compress": true
+			},
+			{
+				"type": "syslog",
+				"enabled": false,
+				"host": "logs.example.com",
+				"port": 514,
+				"protocol": "udp4",
+				"facility": "local0"
+			}
+		],
+		"transports": {
+			"errorFile": {
+				"level": "error",
+				"filename": "logs/error.log",
+				"handleExceptions": true,
+				"humanReadableUnhandledException": true,
+				"maxsize": 5242880,
+				"maxFiles": 5
+			},
+			"combinedFile": {
+				"level": "info",
+				"filename": "logs/combined.log",
+				"maxsize": 5242880,
+				"maxFiles": 5
+			}
+		}
+	},
+	"monitoring": {
+		"enabled": true,
+		"provider": "prometheus",
+		"port": 9090,
+		"path": "/metrics",
+		"defaultLabels": {
+			"app": "condensation-test",
+			"environment": "test",
+			"version": "1.5.2"
+		},
+		"metrics": {
+			"httpRequestDuration": {
+				"type": "histogram",
+				"help": "Duration of HTTP requests in ms",
+				"labelNames": ["method", "route", "status_code"],
+				"buckets": [0.1, 5, 15, 50, 100, 500, 1000, 5000]
+			},
+			"activeConnections": {
+				"type": "gauge",
+				"help": "Number of active connections"
+			},
+			"requestCounter": {
+				"type": "counter",
+				"help": "Total number of requests",
+				"labelNames": ["method", "route"]
+			}
+		}
+	},
+	"tracing": {
+		"enabled": true,
+		"serviceName": "condensation-test-service",
+		"sampler": {
+			"type": "probabilistic",
+			"param": 0.1
+		},
+		"reporter": {
+			"logSpans": true,
+			"agentHost": "localhost",
+			"agentPort": 6831
+		}
+	}
+}

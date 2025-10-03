@@ -1,0 +1,72 @@
+{
+	"name": "small-config-2",
+	"description": "Database configuration for testing condensation with nested structures",
+	"version": "2.1.0",
+	"database": {
+		"type": "postgresql",
+		"host": "localhost",
+		"port": 5432,
+		"name": "testdb",
+		"username": "testuser",
+		"password": "encrypted_password_placeholder",
+		"ssl": {
+			"enabled": true,
+			"rejectUnauthorized": true,
+			"ca": "/path/to/ca-certificate.crt"
+		},
+		"pool": {
+			"min": 2,
+			"max": 10,
+			"acquireTimeoutMillis": 30000,
+			"idleTimeoutMillis": 30000,
+			"createTimeoutMillis": 3000
+		}
+	},
+	"migrations": {
+		"directory": "./migrations",
+		"tableName": "knex_migrations",
+		"extension": "ts",
+		"loadExtensions": [".ts"],
+		"schemaName": "public"
+	},
+	"seeds": {
+		"directory": "./seeds",
+		"loadExtensions": [".ts"]
+	},
+	"redis": {
+		"host": "localhost",
+		"port": 6379,
+		"password": null,
+		"db": 0,
+		"keyPrefix": "app:",
+		"retryStrategy": {
+			"times": 10,
+			"delay": 50
+		}
+	},
+	"cache": {
+		"enabled": true,
+		"ttl": 3600,
+		"checkPeriod": 600,
+		"maxKeys": 1000,
+		"strategy": "lru"
+	},
+	"queues": {
+		"email": {
+			"concurrency": 5,
+			"attempts": 3,
+			"backoff": {
+				"type": "exponential",
+				"delay": 1000
+			}
+		},
+		"notifications": {
+			"concurrency": 10,
+			"attempts": 2,
+			"backoff": {
+				"type": "fixed",
+				"delay": 500
+			}
+		}
+	}
+}

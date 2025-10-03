@@ -1,0 +1,84 @@
+{
+	"name": "small-config-5",
+	"description": "Service mesh and microservices configuration for testing condensation",
+	"version": "2.0.0",
+	"serviceMesh": {
+		"enabled": true,
+		"provider": "istio",
+		"namespace": "condensation-test",
+		"mtls": {
+			"mode": "STRICT",
+			"enabled": true
+		},
+		"routing": {
+			"timeout": "30s",
+			"retries": {
+				"attempts": 3,
+				"perTryTimeout": "10s",
+				"retryOn": "5xx,reset,connect-failure,refused-stream"
+			}
+		},
+		"circuitBreaker": {
+			"consecutiveErrors": 5,
+			"interval": "30s",
+			"baseEjectionTime": "30s",
+			"maxEjectionPercent": 50
+		}
+	},
+	"services": {
+		"userService": {
+			"name": "user-service",
+			"version": "v1",
+			"replicas": 3,
+			"port": 8080,
+			"healthCheck": {
+				"path": "/health",
+				"interval": "10s",
+				"timeout": "5s",
+				"successThreshold": 1,
+				"failureThreshold": 3
+			}
+		},
+		"orderService": {
+			"name": "order-service",
+			"version": "v1",
+			"replicas": 2,
+			"port": 8081,
+			"healthCheck": {
+				"path": "/health",
+				"interval": "10s",
+				"timeout": "5s",
+				"successThreshold": 1,
+				"failureThreshold": 3
+			}
+		},
+		"paymentService": {
+			"name": "payment-service",
+			"version": "v1",
+			"replicas": 5,
+			"port": 8082,
+			"healthCheck": {
+				"path": "/health",
+				"interval": "10s",
+				"timeout": "5s",
+				"successThreshold": 1,
+				"failureThreshold": 3
+			}
+		}
+	},
+	"loadBalancing": {
+		"policy": "ROUND_ROBIN",
+		"localitySettings": {
+			"enabled": true,
+			"distribute": [
+				{
+					"from": "us-east-1",
+					"to": {
+						"us-east-1": 80,
+						"us-west-1": 20
+					}
+				}
+			]
+		}
+	}
+}

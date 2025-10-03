@@ -1,0 +1,80 @@
+{
+	"name": "small-config-4",
+	"description": "Security and authentication configuration for condensation testing",
+	"version": "3.0.1",
+	"security": {
+		"cors": {
+			"enabled": true,
+			"origin": ["http://localhost:3000", "https://app.example.com"],
+			"methods": ["GET", "POST", "PUT", "DELETE", "PATCH"],
+			"allowedHeaders": ["Content-Type", "Authorization", "X-Request-ID"],
+			"exposedHeaders": ["X-Total-Count", "X-Page-Number"],
+			"credentials": true,
+			"maxAge": 86400
+		},
+		"helmet": {
+			"enabled": true,
+			"contentSecurityPolicy": {
+				"directives": {
+					"defaultSrc": ["'self'"],
+					"styleSrc": ["'self'", "'unsafe-inline'"],
+					"scriptSrc": ["'self'", "'unsafe-eval'"],
+					"imgSrc": ["'self'", "data:", "https:"],
+					"connectSrc": ["'self'", "https://api.example.com"]
+				}
+			},
+			"hsts": {
+				"maxAge": 31536000,
+				"includeSubDomains": true,
+				"preload": true
+			}
+		},
+		"rateLimit": {
+			"windowMs": 900000,
+			"max": 100,
+			"standardHeaders": true,
+			"legacyHeaders": false,
+			"skipSuccessfulRequests": false,
+			"skipFailedRequests": false
+		}
+	},
+	"authentication": {
+		"jwt": {
+			"secret": "your-secret-key-here",
+			"expiresIn": "1h",
+			"refreshTokenExpiresIn": "7d",
+			"issuer": "condensation-test-app",
+			"audience": "condensation-test-users",
+			"algorithms": ["HS256"]
+		},
+		"oauth": {
+			"providers": {
+				"google": {
+					"enabled": true,
+					"clientId": "google-client-id",
+					"clientSecret": "google-client-secret",
+					"callbackURL": "/auth/google/callback",
+					"scope": ["profile", "email"]
+				},
+				"github": {
+					"enabled": true,
+					"clientId": "github-client-id",
+					"clientSecret": "github-client-secret",
+					"callbackURL": "/auth/github/callback",
+					"scope": ["user:email", "read:user"]
+				}
+			}
+		},
+		"session": {
+			"secret": "session-secret-key",
+			"resave": false,
+			"saveUninitialized": false,
+			"cookie": {
+				"secure": true,
+				"httpOnly": true,
+				"maxAge": 86400000,
+				"sameSite": "strict"
+			}
+		}
+	}
+}

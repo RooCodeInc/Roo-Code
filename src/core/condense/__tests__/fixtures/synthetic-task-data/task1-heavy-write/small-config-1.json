@@ -1,0 +1,60 @@
+{
+	"name": "small-config-1",
+	"description": "Basic API configuration for testing condensation with simple JSON structures",
+	"version": "1.0.0",
+	"apiEndpoint": "https://api.example.com/v1",
+	"timeout": 5000,
+	"retryAttempts": 3,
+	"retryDelay": 1000,
+	"headers": {
+		"Content-Type": "application/json",
+		"Accept": "application/json",
+		"User-Agent": "CondensationTestClient/1.0"
+	},
+	"authentication": {
+		"type": "bearer",
+		"tokenEndpoint": "https://auth.example.com/token",
+		"scopes": ["read", "write", "admin"]
+	},
+	"features": {
+		"caching": true,
+		"compression": true,
+		"logging": {
+			"enabled": true,
+			"level": "info",
+			"destination": "stdout"
+		},
+		"rateLimiting": {
+			"enabled": true,
+			"maxRequests": 100,
+			"windowMs": 60000
+		}
+	},
+	"endpoints": {
+		"users": "/users",
+		"posts": "/posts",
+		"comments": "/comments",
+		"tags": "/tags",
+		"categories": "/categories"
+	},
+	"defaultParams": {
+		"limit": 20,
+		"offset": 0,
+		"sort": "desc",
+		"include": ["metadata", "timestamps"]
+	},
+	"errorHandling": {
+		"retryOn": [500, 502, 503, 504],
+		"throwOn": [400, 401, 403, 404],
+		"fallbackResponse": {
+			"status": "error",
+			"message": "Service temporarily unavailable"
+		}
+	},
+	"monitoring": {
+		"enabled": true,
+		"metricsEndpoint": "https://metrics.example.com/api",
+		"reportInterval": 60000,
+		"includeTimings": true
+	}
+}
