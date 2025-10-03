@@ -497,7 +497,11 @@
 			"apiKey": "Clau API",
 			"authType": "Tipus d'autenticació",
 			"projectId": "ID del projecte",
-			"urlDescription": "Introduïu l'URL complet de la vostra instància d'IBM Cloud Pak for Data"
+			"urlDescription": "Introduïu l'URL complet de la vostra instància d'IBM Cloud Pak for Data",
+			"selectedEndpoint": "Punt final seleccionat",
+			"retrieveModels": "Recuperar models",
+			"retrieveSuccessful": "Models recuperats correctament",
+			"retrieveError": "No s'han pogut recuperar els models. Comproveu les vostres credencials i torneu-ho a provar"
 		}
 	},
 	"browser": {

@@ -497,7 +497,11 @@
 			"apiKey": "Clave API",
 			"authType": "Tipo de autenticación",
 			"projectId": "ID del proyecto",
-			"urlDescription": "Introduzca la URL completa de su instancia de IBM Cloud Pak for Data"
+			"urlDescription": "Introduzca la URL completa de su instancia de IBM Cloud Pak for Data",
+			"selectedEndpoint": "Punto final seleccionado",
+			"retrieveModels": "Recuperar modelos",
+			"retrieveSuccessful": "Modelos recuperados correctamente",
+			"retrieveError": "Error al recuperar los modelos. Por favor, compruebe sus credenciales e inténtelo de nuevo"
 		}
 	},
 	"browser": {

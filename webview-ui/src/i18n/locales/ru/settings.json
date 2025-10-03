@@ -497,7 +497,11 @@
 			"apiKey": "API-ключ",
 			"authType": "Тип аутентификации",
 			"projectId": "ID проекта",
-			"urlDescription": "Введите полный URL вашего экземпляра IBM Cloud Pak for Data"
+			"urlDescription": "Введите полный URL вашего экземпляра IBM Cloud Pak for Data",
+			"selectedEndpoint": "Выбранная конечная точка",
+			"retrieveModels": "Получить модели",
+			"retrieveSuccessful": "Модели успешно получены",
+			"retrieveError": "Не удалось получить модели. Пожалуйста, проверьте ваши учетные данные и попробуйте снова"
 		}
 	},
 	"browser": {

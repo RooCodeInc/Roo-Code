@@ -497,7 +497,11 @@
 			"apiKey": "API-Schlüssel",
 			"authType": "Authentifizierungstyp",
 			"projectId": "Projekt-ID",
-			"urlDescription": "Geben Sie die vollständige URL Ihrer IBM Cloud Pak for Data-Instanz ein"
+			"urlDescription": "Geben Sie die vollständige URL Ihrer IBM Cloud Pak for Data-Instanz ein",
+			"selectedEndpoint": "Ausgewählter Endpunkt",
+			"retrieveModels": "Modelle abrufen",
+			"retrieveSuccessful": "Modelle erfolgreich abgerufen",
+			"retrieveError": "Modelle konnten nicht abgerufen werden. Bitte überprüfen Sie Ihre Anmeldedaten und versuchen Sie es erneut"
 		}
 	},
 	"browser": {

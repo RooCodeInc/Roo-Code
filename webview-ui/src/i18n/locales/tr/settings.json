@@ -497,7 +497,11 @@
 			"apiKey": "API Anahtarı",
 			"authType": "Kimlik doğrulama türü",
 			"projectId": "Proje Kimliği",
-			"urlDescription": "IBM Cloud Pak for Data örneğinizin tam URL'sini girin"
+			"urlDescription": "IBM Cloud Pak for Data örneğinizin tam URL'sini girin",
+			"selectedEndpoint": "Seçilen uç nokta",
+			"retrieveModels": "Modelleri Al",
+			"retrieveSuccessful": "Modeller başarıyla alındı",
+			"retrieveError": "Modeller alınamadı. Lütfen kimlik bilgilerinizi kontrol edin ve tekrar deneyin"
 		}
 	},
 	"browser": {
