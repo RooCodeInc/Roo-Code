@@ -2,6 +2,7 @@ import { ApiHandler } from "../../api/index"
 import { ApiMessage } from "../task-persistence/apiMessages"
 import { getProviderRegistry } from "./ProviderRegistry"
 import { NativeCondensationProvider } from "./providers/NativeProvider"
+import { LosslessCondensationProvider } from "./providers/lossless"
 import { CondensationContext, CondensationOptions, CondensationResult, ICondensationProvider } from "./types"
 
 /**
@@ -28,7 +29,7 @@ export class CondensationManager {
 	}
 
 	/**
-	 * Register default providers (Native)
+	 * Register default providers (Native, Lossless)
 	 */
 	private registerDefaultProviders(): void {
 		const registry = getProviderRegistry()
@@ -38,6 +39,13 @@ export class CondensationManager {
 		registry.register(nativeProvider, {
 			enabled: true,
 			priority: 100,
+		})
+
+		// Register Lossless provider
+		const losslessProvider = new LosslessCondensationProvider()
+		registry.register(losslessProvider, {
+			enabled: true,
+			priority: 90,
 		})
 	}
 
