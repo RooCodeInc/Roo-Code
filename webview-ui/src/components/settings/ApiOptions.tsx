@@ -247,19 +247,46 @@ const ApiOptions = ({
 			) {
 				vscode.postMessage({ type: "requestRouterModels" })
 			} else if (selectedProvider === "ibm-watsonx") {
-				vscode.postMessage({
-					type: "requestWatsonxModels",
-					values: {
-						apiKey: apiConfiguration.watsonxApiKey,
-						projectId: apiConfiguration.watsonxProjectId,
-						platform: apiConfiguration.watsonxPlatform,
-						baseUrl: apiConfiguration.watsonxBaseUrl,
-						authType: apiConfiguration.watsonxAuthType,
-						username: apiConfiguration.watsonxUsername,
-						password: apiConfiguration.watsonxPassword,
-						region: apiConfiguration.watsonxRegion,
-					},
-				})
+				const {
+					watsonxPlatform,
+					watsonxApiKey,
+					watsonxProjectId,
+					watsonxBaseUrl,
+					watsonxAuthType,
+					watsonxUsername,
+					watsonxPassword,
+					watsonxRegion,
+				} = apiConfiguration
+
+				const ibmCloudReady =
+					watsonxPlatform === "ibmCloud" && !!watsonxApiKey && !!watsonxProjectId && !!watsonxRegion
+
+				const cloudPakReady =
+					watsonxPlatform === "cloudPak" &&
+					!!watsonxBaseUrl &&
+					!!watsonxProjectId &&
+					!!watsonxUsername &&
+					((watsonxAuthType === "apiKey" && !!watsonxApiKey) ||
+						(watsonxAuthType === "password" && !!watsonxPassword))
+
+				if (ibmCloudReady || cloudPakReady) {
+					vscode.postMessage({
+						type: "requestWatsonxModels",
+						values: {
+							apiKey: apiConfiguration.watsonxApiKey,
+							projectId: apiConfiguration.watsonxProjectId,
+							platform: apiConfiguration.watsonxPlatform,
+							baseUrl:
+								apiConfiguration.watsonxPlatform === "ibmCloud"
+									? undefined
+									: apiConfiguration.watsonxBaseUrl,
+							authType: apiConfiguration.watsonxAuthType,
+							username: apiConfiguration.watsonxUsername,
+							password: apiConfiguration.watsonxPassword,
+							region: apiConfiguration.watsonxRegion,
+						},
+					})
+				}
 			}
 		},
 		250,
