@@ -1,0 +1,102 @@
+{
+	"already-condensed": {
+		"sourceTaskId": "39a2bac9-bcc1-4153-8692-e351bd341816",
+		"sourceWorkspace": "c:/dev/roo-extensions",
+		"originalMessageCount": 2639,
+		"originalTotalSize": 4139819,
+		"description": "Real conversation showing Native Provider's destructive condensation. Original 2600+ messages reduced to single 'Previous Conversation' summary paragraph.",
+		"captureDate": "2025-10-03",
+		"condensationRounds": "Multiple (evident from 'Previous Conversation' pattern)",
+		"keyCharacteristics": [
+			"Shows 'Previous Conversation' summary pattern",
+			"Massive context loss from original conversation",
+			"Initial user instructions preserved (recent Native improvement)",
+			"Hundreds of tool calls and responses lost in summary",
+			"Conversation structure completely destroyed"
+		],
+		"expectedBehaviors": {
+			"native": {
+				"messageReduction": "Further condenses, compounding loss",
+				"estimatedOutput": "~5-8 messages",
+				"contextLoss": "SEVERE - Multiple rounds of lossy summarization",
+				"quality": "⭐⭐ LOSSY"
+			},
+			"lossless": {
+				"messageReduction": "Preserves remaining structure, removes redundancy",
+				"estimatedOutput": "All conversation turns preserved",
+				"contextLoss": "MINIMAL - Structure maintained",
+				"quality": "⭐⭐⭐⭐⭐ High quality"
+			},
+			"truncation": {
+				"messageReduction": "Simple chronological cut",
+				"estimatedOutput": "Recent N messages",
+				"contextLoss": "MODERATE - Predictable, preserves recent context",
+				"quality": "⭐⭐⭐ Simple but reliable"
+			}
+		},
+		"fixtureNote": "Fixture contains representative sample showing condensation pattern. See sourceTaskId for full conversation."
+	},
+	"heavy-uncondensed": {
+		"sourceTaskId": "7b285fbb-1e4d-438f-9dea-e97f2e6c70ed",
+		"sourceWorkspace": "c:/dev/roo-code",
+		"originalMessageCount": 2639,
+		"originalTotalSize": 4139819,
+		"description": "Large pristine conversation demonstrating what Native Provider does to fresh, uncondensed data. Perfect baseline for comparing all providers.",
+		"captureDate": "2025-10-03",
+		"condensationRounds": "0 (pristine)",
+		"keyCharacteristics": [
+			"NO prior condensation - pristine state",
+			"Complete conversation history preserved",
+			"Multiple tool calls: file reads, searches, edits",
+			"Iterative development process visible",
+			"Real-world problem-solving patterns"
+		],
+		"toolCallStats": {
+			"totalToolCalls": "~600+ (estimated from message count)",
+			"readFile": "~150+",
+			"applyDiff": "~100+",
+			"executeCommand": "~80+",
+			"searchFiles": "~50+",
+			"writeToFile": "~40+"
+		},
+		"expectedBehaviors": {
+			"native": {
+				"messageReduction": "AGGRESSIVE - Reduces to ~10 messages",
+				"estimatedOutput": "~10 messages total",
+				"contextLoss": "EXTREME - 99%+ of conversation lost",
+				"quality": "⭐⭐ LOSSY - This is the PROBLEM",
+				"conversationalTurnsPreserved": "~2-3 turns only"
+			},
+			"lossless": {
+				"messageReduction": "30-40% through intelligent deduplication",
+				"estimatedOutput": "~1600-1850 messages",
+				"contextLoss": "MINIMAL - All conversation turns preserved",
+				"quality": "⭐⭐⭐⭐⭐ Preserves conversation structure",
+				"conversationalTurnsPreserved": "ALL turns preserved"
+			},
+			"truncation": {
+				"messageReduction": "Simple chronological cut",
+				"estimatedOutput": "Recent N messages (configurable)",
+				"contextLoss": "MODERATE - Old context lost",
+				"quality": "⭐⭐⭐ Predictable and simple",
+				"conversationalTurnsPreserved": "Recent turns only"
+			}
+		},
+		"fixtureNote": "Fixture contains representative sample. See sourceTaskId for full conversation showing complete iterative development process."
+	},
+	"testingStrategy": {
+		"purpose": "Demonstrate Native Provider problems with REAL data",
+		"approach": "Use actual task history to expose excessive loss",
+		"keyMetrics": [
+			"Conversational turns preserved (user/assistant pairs)",
+			"Tool call information retention",
+			"Context continuity across messages",
+			"Reduction ratio vs quality tradeoff"
+		],
+		"correctedBenchmarks": {
+			"before": "Native: ⭐⭐⭐⭐⭐ (based on synthetic data)",
+			"after": "Native: ⭐⭐ LOSSY (based on real data)",
+			"insight": "Synthetic tests completely missed the real behavior"
+		}
+	}
+}
