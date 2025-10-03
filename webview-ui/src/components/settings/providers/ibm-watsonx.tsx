@@ -166,7 +166,7 @@ export const WatsonxAI = ({
 
 		if (platform === "ibmCloud" && (!apiKey || !baseUrl || !projectId)) {
 			setRefreshStatus("error")
-			setRefreshError(t("settings:providers.refreshModels.missingConfig"))
+			setRefreshError(t("settings:providers.refreshModels.error"))
 			return
 		}
 
