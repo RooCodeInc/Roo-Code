@@ -12,6 +12,10 @@ import type { ModelInfo } from "@roo-code/types"
 vi.mock("@src/i18n/TranslationContext", () => ({
 	useAppTranslation: () => ({
 		t: (key: string, options?: any) => {
+			// Handle specific translation keys
+			if (key === "settings:validation.modelDeprecated") {
+				return "This model is no longer available. Please select a different model."
+			}
 			if (options) return `${key} ${JSON.stringify(options)}`
 			return key
 		},
