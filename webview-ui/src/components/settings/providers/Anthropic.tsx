@@ -2,13 +2,16 @@ import { useCallback, useState } from "react"
 import { Checkbox } from "vscrui"
 import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 
-import type { ProviderSettings } from "@roo-code/types"
+import type { ProviderSettings, OrganizationAllowList } from "@roo-code/types"
+import { anthropicModels, anthropicDefaultModelId } from "@roo-code/types"
 
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { VSCodeButtonLink } from "@src/components/common/VSCodeButtonLink"
 import { useSelectedModel } from "@src/components/ui/hooks/useSelectedModel"
+import { useExtensionState } from "@src/context/ExtensionStateContext"
 
 import { inputEventTransform, noTransform } from "../transforms"
+import { ModelPicker } from "../ModelPicker"
 
 type AnthropicProps = {
 	apiConfiguration: ProviderSettings
@@ -18,6 +21,7 @@ type AnthropicProps = {
 export const Anthropic = ({ apiConfiguration, setApiConfigurationField }: AnthropicProps) => {
 	const { t } = useAppTranslation()
 	const selectedModel = useSelectedModel(apiConfiguration)
+	const { organizationAllowList } = useExtensionState()
 
 	const [anthropicBaseUrlSelected, setAnthropicBaseUrlSelected] = useState(!!apiConfiguration?.anthropicBaseUrl)
 
@@ -35,6 +39,10 @@ export const Anthropic = ({ apiConfiguration, setApiConfigurationField }: Anthro
 			},
 		[setApiConfigurationField],
 	)
+
+	// When using custom base URL, show ModelPicker to allow custom models
+	// Otherwise, the model selection is handled by ApiOptions.tsx
+	const showModelPicker = anthropicBaseUrlSelected
 
 	return (
 		<>
@@ -82,9 +90,25 @@ export const Anthropic = ({ apiConfiguration, setApiConfigurationField }: Anthro
 							className="w-full mt-1">
 							{t("settings:providers.anthropicUseAuthToken")}
 						</Checkbox>
+						<div className="text-sm text-vscode-descriptionForeground mt-1">
+							When using a custom base URL, you can use any model ID including custom models from services
+							like z.ai
+						</div>
 					</>
 				)}
 			</div>
+			{showModelPicker && (
+				<ModelPicker
+					defaultModelId={anthropicDefaultModelId}
+					models={anthropicModels as any}
+					modelIdKey={"apiModelId" as any}
+					serviceName="Anthropic"
+					serviceUrl="https://docs.anthropic.com/en/docs/about-claude/models"
+					apiConfiguration={apiConfiguration}
+					setApiConfigurationField={setApiConfigurationField as any}
+					organizationAllowList={organizationAllowList || ({} as OrganizationAllowList)}
+				/>
+			)}
 			{supports1MContextBeta && (
 				<div>
 					<Checkbox
