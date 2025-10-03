@@ -15,6 +15,7 @@ import { logger } from "../../utils/logging"
 import { GlobalFileNames } from "../../shared/globalFileNames"
 import { ensureSettingsDirectoryExists } from "../../utils/globalContext"
 import { t } from "../../i18n"
+import { ModeFamiliesManager } from "./ModeFamiliesManager"
 
 const ROOMODES_FILENAME = ".roomodes"
 
@@ -55,6 +56,7 @@ export class CustomModesManager {
 	constructor(
 		private readonly context: vscode.ExtensionContext,
 		private readonly onUpdate: () => Promise<void>,
+		private readonly modeFamiliesManager?: ModeFamiliesManager,
 	) {
 		this.watchCustomModesFiles().catch((error) => {
 			console.error("[CustomModesManager] Failed to setup file watchers:", error)
@@ -356,6 +358,10 @@ export class CustomModesManager {
 		// Check if we have a valid cached result.
 		const now = Date.now()
 
+		// Include active family ID in cache key for proper invalidation
+		const activeFamilyId = this.modeFamiliesManager ? await this.modeFamiliesManager.getActiveFamily().then(f => f?.id || null) : null
+		const cacheKey = `customModes:${activeFamilyId}`
+
 		if (this.cachedModes && now - this.cachedAt < CustomModesManager.cacheTTL) {
 			return this.cachedModes
 		}
@@ -394,10 +400,22 @@ export class CustomModesManager {
 
 		await this.context.globalState.update("customModes", mergedModes)
 
-		this.cachedModes = mergedModes
+		// Apply family filtering if ModeFamiliesManager is available
+		let filteredModes = mergedModes
+		if (this.modeFamiliesManager) {
+			try {
+				filteredModes = await this.modeFamiliesManager.getFilteredModes(mergedModes)
+			} catch (error) {
+				console.error("[CustomModesManager] Error filtering modes by family:", error)
+				// Fall back to returning all modes if filtering fails
+				filteredModes = mergedModes
+			}
+		}
+
+		this.cachedModes = filteredModes
 		this.cachedAt = now
 
-		return mergedModes
+		return filteredModes
 	}
 
 	public async updateCustomMode(slug: string, config: ModeConfig): Promise<void> {
@@ -1000,6 +1018,95 @@ export class CustomModesManager {
 	private clearCache(): void {
 		this.cachedModes = null
 		this.cachedAt = 0
+	}
+
+	/**
+	 * Clear cache when family changes occur
+	 * This ensures that mode filtering updates when families are modified
+	 */
+	public clearCacheForFamilyChange(): void {
+		this.clearCache()
+	}
+
+	/**
+	 * Get all modes without family filtering (bypasses family restrictions)
+	 * This is useful for administrative operations or when all modes are needed
+	 */
+	public async getAllModes(): Promise<ModeConfig[]> {
+		// Check if we have a valid cached result for all modes.
+		const now = Date.now()
+		const cacheKey = "allModes"
+
+		if (this.cachedModes && now - this.cachedAt < CustomModesManager.cacheTTL) {
+			return this.cachedModes
+		}
+
+		// Get modes from settings file.
+		const settingsPath = await this.getCustomModesFilePath()
+		const settingsModes = await this.loadModesFromFile(settingsPath)
+
+		// Get modes from .roomodes if it exists.
+		const roomodesPath = await this.getWorkspaceRoomodes()
+		const roomodesModes = roomodesPath ? await this.loadModesFromFile(roomodesPath) : []
+
+		// Create maps to store modes by source.
+		const projectModes = new Map<string, ModeConfig>()
+		const globalModes = new Map<string, ModeConfig>()
+
+		// Add project modes (they take precedence).
+		for (const mode of roomodesModes) {
+			projectModes.set(mode.slug, { ...mode, source: "project" as const })
+		}
+
+		// Add global modes.
+		for (const mode of settingsModes) {
+			if (!projectModes.has(mode.slug)) {
+				globalModes.set(mode.slug, { ...mode, source: "global" as const })
+			}
+		}
+
+		// Combine modes in the correct order: project modes first, then global modes.
+		const mergedModes = [
+			...roomodesModes.map((mode) => ({ ...mode, source: "project" as const })),
+			...settingsModes
+				.filter((mode) => !projectModes.has(mode.slug))
+				.map((mode) => ({ ...mode, source: "global" as const })),
+		]
+
+		await this.context.globalState.update("customModes", mergedModes)
+
+		this.cachedModes = mergedModes
+		this.cachedAt = now
+
+		return mergedModes
+	}
+
+	/**
+	 * Check if family filtering is currently active
+	 */
+	public isFamilyFilteringActive(): boolean {
+		return this.modeFamiliesManager !== undefined
+	}
+
+	/**
+	 * Get the current active family information if family filtering is enabled
+	 */
+	public async getActiveFamilyInfo(): Promise<{ isActive: boolean; familyName?: string; familyId?: string }> {
+		if (!this.modeFamiliesManager) {
+			return { isActive: false }
+		}
+
+		try {
+			const activeFamily = await this.modeFamiliesManager.getActiveFamily()
+			return {
+				isActive: !!activeFamily,
+				familyName: activeFamily?.name,
+				familyId: activeFamily?.id,
+			}
+		} catch (error) {
+			console.error("[CustomModesManager] Error getting active family info:", error)
+			return { isActive: false }
+		}
 	}
 
 	dispose(): void {

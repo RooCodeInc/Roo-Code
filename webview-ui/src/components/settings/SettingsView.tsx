@@ -25,6 +25,7 @@ import {
 	LucideIcon,
 	SquareSlash,
 	Glasses,
+	Users,
 } from "lucide-react"
 
 import type { ProviderSettings, ExperimentId, TelemetrySetting } from "@roo-code/types"
@@ -68,6 +69,7 @@ import { Section } from "./Section"
 import PromptsSettings from "./PromptsSettings"
 import { SlashCommandsSettings } from "./SlashCommandsSettings"
 import { UISettings } from "./UISettings"
+import { ModeFamiliesSettings } from "./ModeFamiliesSettings"
 
 export const settingsTabsContainer = "flex flex-1 overflow-hidden [&.narrow_.tab-label]:hidden"
 export const settingsTabList =
@@ -93,6 +95,7 @@ const sectionNames = [
 	"ui",
 	"experimental",
 	"language",
+	"modeFamilies",
 	"about",
 ] as const
 
@@ -481,6 +484,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 			{ id: "ui", icon: Glasses },
 			{ id: "experimental", icon: FlaskConical },
 			{ id: "language", icon: Globe },
+			{ id: "modeFamilies", icon: Users },
 			{ id: "about", icon: Info },
 		],
 		[], // No dependencies needed now
@@ -806,6 +810,9 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					{activeTab === "language" && (
 						<LanguageSettings language={language || "en"} setCachedStateField={setCachedStateField} />
 					)}
+
+					{/* Mode Families Section */}
+					{activeTab === "modeFamilies" && <ModeFamiliesSettings />}
 
 					{/* About Section */}
 					{activeTab === "about" && (
