@@ -147,3 +147,22 @@ export async function getWatsonxModels(
 		)
 	}
 }
+
+/**
+ * Returns the base URL for IBM Watsonx services corresponding to the given region.
+ *
+ * @param region - The region identifier (e.g., "us-south", "eu-de").
+ * @returns The base URL as a string for the specified region, or `undefined` if the region is not recognized.
+ */
+export function regionToWatsonxBaseUrl(region: string): string {
+	const regionToUrl: Record<string, string> = {
+		"us-south": "https://us-south.ml.cloud.ibm.com",
+		"eu-de": "https://eu-de.ml.cloud.ibm.com",
+		"eu-gb": "https://eu-gb.ml.cloud.ibm.com",
+		"jp-tok": "https://jp-tok.ml.cloud.ibm.com",
+		"au-syd": "https://au-syd.ml.cloud.ibm.com",
+		"ca-tor": "https://ca-tor.ml.cloud.ibm.com",
+		"ap-south-1": "https://ap-south-1.aws.wxai.ibm.com",
+	}
+	return regionToUrl[region]
+}

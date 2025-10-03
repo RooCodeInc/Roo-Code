@@ -287,7 +287,8 @@ export const WatsonxAI = ({
 						</SelectContent>
 					</Select>
 					<div className="text-sm text-vscode-descriptionForeground mt-1">
-						Selected endpoint: {REGION_TO_URL[selectedRegion as keyof typeof REGION_TO_URL]}
+						{t("settings:providers.watsonx.selectedEndpoint")}:{" "}
+						{REGION_TO_URL[selectedRegion as keyof typeof REGION_TO_URL]}
 					</div>
 				</div>
 			)}
@@ -423,7 +424,7 @@ export const WatsonxAI = ({
 						) : (
 							<span className="codicon codicon-refresh" />
 						)}
-						{"Retrieve Models"}
+						{t("settings:providers.watsonx.retrieveModels")}
 					</div>
 				</Button>
 			</div>
@@ -434,11 +435,13 @@ export const WatsonxAI = ({
 				</div>
 			)}
 			{refreshStatus === "success" && (
-				<div className="text-sm text-vscode-foreground mb-1">{"Models retrieved successfully"}</div>
+				<div className="text-sm text-vscode-foreground mb-1">
+					{t("settings:providers.watsonx.retrieveSuccessful")}
+				</div>
 			)}
 			{refreshStatus === "error" && (
 				<div className="text-sm text-vscode-errorForeground mb-1">
-					{refreshError || "Failed to retrieve models"}
+					{refreshError || t("settings:providers.watsonx.retrieveError")}
 				</div>
 			)}
 
