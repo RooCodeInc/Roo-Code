@@ -1,0 +1,164 @@
+{
+	"files_in_context": [
+		{
+			"path": "src/core/condense/__tests__/fixtures/synthetic-task-data/task1-heavy-write/small-config-1.json",
+			"record_state": "active",
+			"record_source": "roo_edited",
+			"roo_read_date": 1759497922609,
+			"roo_edit_date": 1759497922609,
+			"user_edit_date": null
+		},
+		{
+			"path": "src/core/condense/__tests__/fixtures/synthetic-task-data/task1-heavy-write/small-config-2.json",
+			"record_state": "active",
+			"record_source": "roo_edited",
+			"roo_read_date": 1759497939746,
+			"roo_edit_date": 1759497939746,
+			"user_edit_date": null
+		},
+		{
+			"path": "src/core/condense/__tests__/fixtures/synthetic-task-data/task1-heavy-write/small-config-3.json",
+			"record_state": "active",
+			"record_source": "roo_edited",
+			"roo_read_date": 1759497954721,
+			"roo_edit_date": 1759497954721,
+			"user_edit_date": null
+		},
+		{
+			"path": "src/core/condense/__tests__/fixtures/synthetic-task-data/task1-heavy-write/small-config-4.json",
+			"record_state": "active",
+			"record_source": "roo_edited",
+			"roo_read_date": 1759497970967,
+			"roo_edit_date": 1759497970967,
+			"user_edit_date": null
+		},
+		{
+			"path": "src/core/condense/__tests__/fixtures/synthetic-task-data/task1-heavy-write/small-config-5.json",
+			"record_state": "active",
+			"record_source": "roo_edited",
+			"roo_read_date": 1759497985148,
+			"roo_edit_date": 1759497985148,
+			"user_edit_date": null
+		},
+		{
+			"path": "src/core/condense/__tests__/fixtures/synthetic-task-data/task1-heavy-write/medium-interfaces-1.ts",
+			"record_state": "active",
+			"record_source": "roo_edited",
+			"roo_read_date": 1759498027206,
+			"roo_edit_date": 1759498027206,
+			"user_edit_date": null
+		},
+		{
+			"path": "src/core/condense/__tests__/fixtures/synthetic-task-data/task1-heavy-write/medium-interfaces-2.ts",
+			"record_state": "active",
+			"record_source": "roo_edited",
+			"roo_read_date": 1759498072415,
+			"roo_edit_date": 1759498072415,
+			"user_edit_date": null
+		},
+		{
+			"path": "src/core/condense/__tests__/fixtures/synthetic-task-data/task1-heavy-write/medium-interfaces-3.ts",
+			"record_state": "active",
+			"record_source": "roo_edited",
+			"roo_read_date": 1759498112158,
+			"roo_edit_date": 1759498112158,
+			"user_edit_date": null
+		},
+		{
+			"path": "src/core/condense/__tests__/fixtures/synthetic-task-data/task1-heavy-write/medium-interfaces-4.ts",
+			"record_state": "active",
+			"record_source": "roo_edited",
+			"roo_read_date": 1759498162127,
+			"roo_edit_date": 1759498162127,
+			"user_edit_date": null
+		},
+		{
+			"path": "src/core/condense/__tests__/fixtures/synthetic-task-data/task1-heavy-write/medium-interfaces-5.ts",
+			"record_state": "active",
+			"record_source": "roo_edited",
+			"roo_read_date": 1759498219004,
+			"roo_edit_date": 1759498219004,
+			"user_edit_date": null
+		},
+		{
+			"path": "src/core/condense/__tests__/fixtures/synthetic-task-data/task1-heavy-write/large-mockdata-1.ts",
+			"record_state": "active",
+			"record_source": "roo_edited",
+			"roo_read_date": 1759498313907,
+			"roo_edit_date": 1759498313907,
+			"user_edit_date": null
+		},
+		{
+			"path": "src/core/condense/__tests__/fixtures/synthetic-task-data/task1-heavy-write/large-mockdata-2.ts",
+			"record_state": "active",
+			"record_source": "roo_edited",
+			"roo_read_date": 1759498408536,
+			"roo_edit_date": 1759498408536,
+			"user_edit_date": null
+		},
+		{
+			"path": "src/core/condense/__tests__/fixtures/synthetic-task-data/task1-heavy-write/large-mockdata-3.ts",
+			"record_state": "active",
+			"record_source": "roo_edited",
+			"roo_read_date": 1759498506185,
+			"roo_edit_date": 1759498506185,
+			"user_edit_date": null
+		},
+		{
+			"path": "src/core/condense/__tests__/fixtures/synthetic-task-data/task1-heavy-write/large-mockdata-4.ts",
+			"record_state": "active",
+			"record_source": "roo_edited",
+			"roo_read_date": 1759498603895,
+			"roo_edit_date": 1759498603895,
+			"user_edit_date": null
+		},
+		{
+			"path": "src/core/condense/__tests__/fixtures/synthetic-task-data/task1-heavy-write/large-mockdata-5.ts",
+			"record_state": "active",
+			"record_source": "roo_edited",
+			"roo_read_date": 1759498672780,
+			"roo_edit_date": 1759498672780,
+			"user_edit_date": null
+		},
+		{
+			"path": "src/core/condense/__tests__/fixtures/synthetic-task-data/task1-heavy-write/xlarge-documentation-1.md",
+			"record_state": "active",
+			"record_source": "roo_edited",
+			"roo_read_date": 1759498774594,
+			"roo_edit_date": 1759498774594,
+			"user_edit_date": null
+		},
+		{
+			"path": "src/core/condense/__tests__/fixtures/synthetic-task-data/task1-heavy-write/xlarge-documentation-2.md",
+			"record_state": "active",
+			"record_source": "roo_edited",
+			"roo_read_date": 1759498880042,
+			"roo_edit_date": 1759498880042,
+			"user_edit_date": null
+		},
+		{
+			"path": "src/core/condense/__tests__/fixtures/synthetic-task-data/task1-heavy-write/xlarge-documentation-3.md",
+			"record_state": "active",
+			"record_source": "roo_edited",
+			"roo_read_date": 1759498980618,
+			"roo_edit_date": 1759498980618,
+			"user_edit_date": null
+		},
+		{
+			"path": "src/core/condense/__tests__/fixtures/synthetic-task-data/task1-heavy-write/xlarge-documentation-4.md",
+			"record_state": "active",
+			"record_source": "roo_edited",
+			"roo_read_date": 1759499082761,
+			"roo_edit_date": 1759499082761,
+			"user_edit_date": null
+		},
+		{
+			"path": "src/core/condense/__tests__/fixtures/synthetic-task-data/task1-heavy-write/xlarge-documentation-5.md",
+			"record_state": "active",
+			"record_source": "roo_edited",
+			"roo_read_date": 1759499176533,
+			"roo_edit_date": 1759499176533,
+			"user_edit_date": null
+		}
+	]
+}

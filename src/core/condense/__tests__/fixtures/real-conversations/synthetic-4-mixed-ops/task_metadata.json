@@ -1,0 +1,140 @@
+{
+	"files_in_context": [
+		{
+			"path": "src/core/condense/__tests__/fixtures/synthetic-task-data/task4-mixed/config.json",
+			"record_state": "stale",
+			"record_source": "roo_edited",
+			"roo_read_date": 1759500702607,
+			"roo_edit_date": 1759500702607,
+			"user_edit_date": null
+		},
+		{
+			"path": "src/core/condense/__tests__/fixtures/synthetic-task-data/task4-mixed/utils.ts",
+			"record_state": "stale",
+			"record_source": "roo_edited",
+			"roo_read_date": 1759500712807,
+			"roo_edit_date": 1759500712807,
+			"user_edit_date": null
+		},
+		{
+			"path": "src/core/condense/__tests__/fixtures/synthetic-task-data/task4-mixed/types.ts",
+			"record_state": "stale",
+			"record_source": "roo_edited",
+			"roo_read_date": 1759500724179,
+			"roo_edit_date": 1759500724179,
+			"user_edit_date": null
+		},
+		{
+			"path": "src/core/condense/__tests__/fixtures/synthetic-task-data/task4-mixed/index.ts",
+			"record_state": "stale",
+			"record_source": "roo_edited",
+			"roo_read_date": 1759500738725,
+			"roo_edit_date": 1759500738725,
+			"user_edit_date": null
+		},
+		{
+			"path": "src/core/condense/__tests__/fixtures/synthetic-task-data/task4-mixed/README.md",
+			"record_state": "stale",
+			"record_source": "roo_edited",
+			"roo_read_date": 1759500756986,
+			"roo_edit_date": 1759500756986,
+			"user_edit_date": null
+		},
+		{
+			"path": "src/core/condense/__tests__/fixtures/synthetic-task-data/task4-mixed/config.json",
+			"record_state": "active",
+			"record_source": "read_tool",
+			"roo_read_date": 1759500771501,
+			"roo_edit_date": 1759500702607,
+			"user_edit_date": null
+		},
+		{
+			"path": "src/core/condense/__tests__/fixtures/synthetic-task-data/task4-mixed/utils.ts",
+			"record_state": "stale",
+			"record_source": "read_tool",
+			"roo_read_date": 1759500778200,
+			"roo_edit_date": 1759500712807,
+			"user_edit_date": null
+		},
+		{
+			"path": "src/core/condense/__tests__/fixtures/synthetic-task-data/task4-mixed/types.ts",
+			"record_state": "stale",
+			"record_source": "read_tool",
+			"roo_read_date": 1759500778208,
+			"roo_edit_date": 1759500724179,
+			"user_edit_date": null
+		},
+		{
+			"path": "src/core/condense/__tests__/fixtures/synthetic-task-data/task4-mixed/index.ts",
+			"record_state": "active",
+			"record_source": "read_tool",
+			"roo_read_date": 1759500778215,
+			"roo_edit_date": 1759500738725,
+			"user_edit_date": null
+		},
+		{
+			"path": "src/core/condense/__tests__/fixtures/synthetic-task-data/task4-mixed/README.md",
+			"record_state": "active",
+			"record_source": "read_tool",
+			"roo_read_date": 1759500778224,
+			"roo_edit_date": 1759500756986,
+			"user_edit_date": null
+		},
+		{
+			"path": "src/core/condense/__tests__/fixtures/synthetic-task-data/task4-mixed/utils.ts",
+			"record_state": "stale",
+			"record_source": "roo_edited",
+			"roo_read_date": 1759500809069,
+			"roo_edit_date": 1759500809069,
+			"user_edit_date": null
+		},
+		{
+			"path": "src/core/condense/__tests__/fixtures/synthetic-task-data/task4-mixed/types.ts",
+			"record_state": "stale",
+			"record_source": "roo_edited",
+			"roo_read_date": 1759500818311,
+			"roo_edit_date": 1759500818311,
+			"user_edit_date": null
+		},
+		{
+			"path": "src/core/condense/__tests__/fixtures/synthetic-task-data/task4-mixed/utils.ts",
+			"record_state": "active",
+			"record_source": "read_tool",
+			"roo_read_date": 1759500831356,
+			"roo_edit_date": 1759500809069,
+			"user_edit_date": null
+		},
+		{
+			"path": "src/core/condense/__tests__/fixtures/synthetic-task-data/task4-mixed/types.ts",
+			"record_state": "active",
+			"record_source": "read_tool",
+			"roo_read_date": 1759500831365,
+			"roo_edit_date": 1759500818311,
+			"user_edit_date": null
+		},
+		{
+			"path": "src/core/condense/__tests__/fixtures/synthetic-task-data/task4-mixed/tests/utils.test.ts",
+			"record_state": "active",
+			"record_source": "roo_edited",
+			"roo_read_date": 1759500856800,
+			"roo_edit_date": 1759500856800,
+			"user_edit_date": null
+		},
+		{
+			"path": "src/core/condense/__tests__/fixtures/synthetic-task-data/task4-mixed/tests/types.test.ts",
+			"record_state": "active",
+			"record_source": "roo_edited",
+			"roo_read_date": 1759500879424,
+			"roo_edit_date": 1759500879424,
+			"user_edit_date": null
+		},
+		{
+			"path": "src/core/condense/__tests__/fixtures/synthetic-task-data/task4-mixed/CHANGELOG.md",
+			"record_state": "active",
+			"record_source": "roo_edited",
+			"roo_read_date": 1759500896709,
+			"roo_edit_date": 1759500896709,
+			"user_edit_date": null
+		}
+	]
+}

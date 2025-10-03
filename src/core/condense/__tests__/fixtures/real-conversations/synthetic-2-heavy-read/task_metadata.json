@@ -1,0 +1,92 @@
+{
+	"files_in_context": [
+		{
+			"path": "package.json",
+			"record_state": "active",
+			"record_source": "read_tool",
+			"roo_read_date": 1759499864808,
+			"roo_edit_date": null,
+			"user_edit_date": null
+		},
+		{
+			"path": "README.md",
+			"record_state": "active",
+			"record_source": "read_tool",
+			"roo_read_date": 1759499874520,
+			"roo_edit_date": null,
+			"user_edit_date": null
+		},
+		{
+			"path": "src/package.json",
+			"record_state": "active",
+			"record_source": "read_tool",
+			"roo_read_date": 1759499898461,
+			"roo_edit_date": null,
+			"user_edit_date": null
+		},
+		{
+			"path": "src/extension.ts",
+			"record_state": "active",
+			"record_source": "read_tool",
+			"roo_read_date": 1759499910282,
+			"roo_edit_date": null,
+			"user_edit_date": null
+		},
+		{
+			"path": "src/shared/ExtensionMessage.ts",
+			"record_state": "active",
+			"record_source": "read_tool",
+			"roo_read_date": 1759499951394,
+			"roo_edit_date": null,
+			"user_edit_date": null
+		},
+		{
+			"path": "src/shared/WebviewMessage.ts",
+			"record_state": "active",
+			"record_source": "read_tool",
+			"roo_read_date": 1759499962951,
+			"roo_edit_date": null,
+			"user_edit_date": null
+		},
+		{
+			"path": "webview-ui/package.json",
+			"record_state": "active",
+			"record_source": "read_tool",
+			"roo_read_date": 1759499975998,
+			"roo_edit_date": null,
+			"user_edit_date": null
+		},
+		{
+			"path": "src/core/diff/strategies/multi-search-replace.ts",
+			"record_state": "active",
+			"record_source": "read_tool",
+			"roo_read_date": 1759499996576,
+			"roo_edit_date": null,
+			"user_edit_date": null
+		},
+		{
+			"path": "src/api/transform/openai-format.ts",
+			"record_state": "active",
+			"record_source": "read_tool",
+			"roo_read_date": 1759500010098,
+			"roo_edit_date": null,
+			"user_edit_date": null
+		},
+		{
+			"path": "src/integrations/editor/DiffViewProvider.ts",
+			"record_state": "active",
+			"record_source": "read_tool",
+			"roo_read_date": 1759500018803,
+			"roo_edit_date": null,
+			"user_edit_date": null
+		},
+		{
+			"path": "src/services/browser/BrowserSession.ts",
+			"record_state": "active",
+			"record_source": "read_tool",
+			"roo_read_date": 1759500028778,
+			"roo_edit_date": null,
+			"user_edit_date": null
+		}
+	]
+}

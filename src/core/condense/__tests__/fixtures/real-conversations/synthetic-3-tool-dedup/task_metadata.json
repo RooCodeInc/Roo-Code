@@ -1,0 +1,148 @@
+{
+	"files_in_context": [
+		{
+			"path": "package.json",
+			"record_state": "stale",
+			"record_source": "read_tool",
+			"roo_read_date": 1759500140845,
+			"roo_edit_date": null,
+			"user_edit_date": null
+		},
+		{
+			"path": "package.json",
+			"record_state": "stale",
+			"record_source": "read_tool",
+			"roo_read_date": 1759500147273,
+			"roo_edit_date": null,
+			"user_edit_date": null
+		},
+		{
+			"path": "package.json",
+			"record_state": "stale",
+			"record_source": "read_tool",
+			"roo_read_date": 1759500152989,
+			"roo_edit_date": null,
+			"user_edit_date": null
+		},
+		{
+			"path": "package.json",
+			"record_state": "active",
+			"record_source": "read_tool",
+			"roo_read_date": 1759500227303,
+			"roo_edit_date": null,
+			"user_edit_date": null
+		},
+		{
+			"path": "README.md",
+			"record_state": "stale",
+			"record_source": "read_tool",
+			"roo_read_date": 1759500245577,
+			"roo_edit_date": null,
+			"user_edit_date": null
+		},
+		{
+			"path": "README.md",
+			"record_state": "active",
+			"record_source": "read_tool",
+			"roo_read_date": 1759500267747,
+			"roo_edit_date": null,
+			"user_edit_date": null
+		},
+		{
+			"path": "LICENSE",
+			"record_state": "active",
+			"record_source": "read_tool",
+			"roo_read_date": 1759500330749,
+			"roo_edit_date": null,
+			"user_edit_date": null
+		},
+		{
+			"path": "test-dedup.md",
+			"record_state": "stale",
+			"record_source": "roo_edited",
+			"roo_read_date": 1759500386028,
+			"roo_edit_date": 1759500386028,
+			"user_edit_date": null
+		},
+		{
+			"path": "test-dedup.md",
+			"record_state": "stale",
+			"record_source": "read_tool",
+			"roo_read_date": 1759500392795,
+			"roo_edit_date": 1759500386028,
+			"user_edit_date": null
+		},
+		{
+			"path": "test-dedup.md",
+			"record_state": "stale",
+			"record_source": "roo_edited",
+			"roo_read_date": 1759500404058,
+			"roo_edit_date": 1759500404058,
+			"user_edit_date": null
+		},
+		{
+			"path": "test-dedup.md",
+			"record_state": "stale",
+			"record_source": "read_tool",
+			"roo_read_date": 1759500412445,
+			"roo_edit_date": 1759500404058,
+			"user_edit_date": null
+		},
+		{
+			"path": "test-dedup.md",
+			"record_state": "stale",
+			"record_source": "roo_edited",
+			"roo_read_date": 1759500421091,
+			"roo_edit_date": 1759500421091,
+			"user_edit_date": null
+		},
+		{
+			"path": "test-dedup.md",
+			"record_state": "stale",
+			"record_source": "read_tool",
+			"roo_read_date": 1759500426544,
+			"roo_edit_date": 1759500421091,
+			"user_edit_date": null
+		},
+		{
+			"path": "test-dedup.md",
+			"record_state": "stale",
+			"record_source": "roo_edited",
+			"roo_read_date": 1759500434422,
+			"roo_edit_date": 1759500434422,
+			"user_edit_date": null
+		},
+		{
+			"path": "test-dedup.md",
+			"record_state": "stale",
+			"record_source": "roo_edited",
+			"roo_read_date": 1759500536551,
+			"roo_edit_date": 1759500536551,
+			"user_edit_date": null
+		},
+		{
+			"path": "test-dedup.md",
+			"record_state": "stale",
+			"record_source": "read_tool",
+			"roo_read_date": 1759500542927,
+			"roo_edit_date": 1759500536551,
+			"user_edit_date": null
+		},
+		{
+			"path": "test-dedup.md",
+			"record_state": "stale",
+			"record_source": "roo_edited",
+			"roo_read_date": 1759500553073,
+			"roo_edit_date": 1759500553073,
+			"user_edit_date": null
+		},
+		{
+			"path": "test-dedup.md",
+			"record_state": "active",
+			"record_source": "read_tool",
+			"roo_read_date": 1759500559722,
+			"roo_edit_date": 1759500553073,
+			"user_edit_date": null
+		}
+	]
+}
