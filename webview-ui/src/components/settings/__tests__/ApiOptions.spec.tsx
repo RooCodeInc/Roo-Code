@@ -371,12 +371,12 @@ describe("ApiOptions", () => {
 	})
 
 	describe("OpenAI provider tests", () => {
-		it("removes reasoningEffort from openAiCustomModelInfo when unchecked", () => {
+		it("removes reasoningEffort from customModelInfo when unchecked", () => {
 			const mockSetApiConfigurationField = vi.fn()
 			const initialConfig = {
 				apiProvider: "openai" as const,
 				enableReasoningEffort: true,
-				openAiCustomModelInfo: {
+				customModelInfo: {
 					...openAiModelInfoSaneDefaults, // Start with defaults
 					reasoningEffort: "low" as const, // Set an initial value
 				},
@@ -400,10 +400,8 @@ describe("ApiOptions", () => {
 			// 1. Check if enableReasoningEffort was set to false
 			expect(mockSetApiConfigurationField).toHaveBeenCalledWith("enableReasoningEffort", false)
 
-			// 2. Check if openAiCustomModelInfo was updated
-			const updateCall = mockSetApiConfigurationField.mock.calls.find(
-				(call) => call[0] === "openAiCustomModelInfo",
-			)
+			// 2. Check if customModelInfo was updated
+			const updateCall = mockSetApiConfigurationField.mock.calls.find((call) => call[0] === "customModelInfo")
 			expect(updateCall).toBeDefined()
 
 			// 3. Check if reasoningEffort property is absent in the updated info
@@ -419,7 +417,7 @@ describe("ApiOptions", () => {
 			const initialConfig = {
 				apiProvider: "openai" as const,
 				enableReasoningEffort: false, // Initially disabled
-				openAiCustomModelInfo: {
+				customModelInfo: {
 					...openAiModelInfoSaneDefaults,
 				},
 			}
@@ -438,7 +436,7 @@ describe("ApiOptions", () => {
 			const initialConfig = {
 				apiProvider: "openai" as const,
 				enableReasoningEffort: false, // Initially disabled
-				openAiCustomModelInfo: {
+				customModelInfo: {
 					...openAiModelInfoSaneDefaults,
 				},
 			}
@@ -461,12 +459,12 @@ describe("ApiOptions", () => {
 			// However, we've tested the state update call.
 		})
 
-		it.skip("updates reasoningEffort in openAiCustomModelInfo when select value changes", () => {
+		it.skip("updates reasoningEffort in customModelInfo when select value changes", () => {
 			const mockSetApiConfigurationField = vi.fn()
 			const initialConfig = {
 				apiProvider: "openai" as const,
 				enableReasoningEffort: true, // Initially enabled
-				openAiCustomModelInfo: {
+				customModelInfo: {
 					...openAiModelInfoSaneDefaults,
 					reasoningEffort: "low" as const,
 				},
@@ -480,7 +478,7 @@ describe("ApiOptions", () => {
 			// Find the reasoning effort select among all comboboxes by its current value
 			// const allSelects = screen.getAllByRole("combobox") as HTMLSelectElement[]
 			// const reasoningSelect = allSelects.find(
-			// 	(el) => el.value === initialConfig.openAiCustomModelInfo.reasoningEffort,
+			// 	(el) => el.value === initialConfig.customModelInfo.reasoningEffort,
 			// )
 			// expect(reasoningSelect).toBeDefined()
 			const selectContainer = screen.getByTestId("reasoning-effort")
@@ -491,15 +489,15 @@ describe("ApiOptions", () => {
 			// Simulate changing the reasoning effort to 'high'
 			fireEvent.change(selectContainer.querySelector("select")!, { target: { value: "high" } })
 
-			// Check if setApiConfigurationField was called correctly for openAiCustomModelInfo
+			// Check if setApiConfigurationField was called correctly for customModelInfo
 			expect(mockSetApiConfigurationField).toHaveBeenCalledWith(
-				"openAiCustomModelInfo",
+				"customModelInfo",
 				expect.objectContaining({ reasoningEffort: "high" }),
 			)
 
 			// Check that other properties were preserved
 			expect(mockSetApiConfigurationField).toHaveBeenCalledWith(
-				"openAiCustomModelInfo",
+				"customModelInfo",
 				expect.objectContaining({
 					contextWindow: openAiModelInfoSaneDefaults.contextWindow,
 				}),

@@ -6,6 +6,7 @@ import { BaseProvider } from "./base-provider"
 import type { ApiHandlerOptions } from "../../shared/api"
 import { getOllamaModels } from "./fetchers/ollama"
 import { XmlMatcher } from "../../utils/xml-matcher"
+import { mergeModelInfo } from "./utils/model-info-merger"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 
 interface OllamaChatOptions {
@@ -274,9 +275,14 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 
 	override getModel(): { id: string; info: ModelInfo } {
 		const modelId = this.options.ollamaModelId || ""
+		let info = this.models[modelId] || openAiModelInfoSaneDefaults
+
+		// Merge with custom model info if provided
+		info = mergeModelInfo(info, this.options)
+
 		return {
 			id: modelId,
-			info: this.models[modelId] || openAiModelInfoSaneDefaults,
+			info,
 		}
 	}
 
