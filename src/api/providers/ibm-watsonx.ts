@@ -1,4 +1,3 @@
-import * as vscode from "vscode"
 import { Anthropic } from "@anthropic-ai/sdk"
 import { ModelInfo, watsonxDefaultModelId, watsonxModels, WatsonxAIModelId } from "@roo-code/types"
 import type { ApiHandlerOptions } from "../../shared/api"
@@ -9,6 +8,7 @@ import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from ".
 import { WatsonXAI } from "@ibm-cloud/watsonx-ai"
 import { calculateApiCostOpenAI } from "../../shared/cost"
 import { convertToOpenAiMessages } from "../transform/openai-format"
+import { regionToWatsonxBaseUrl } from "./fetchers/ibm-watsonx"
 
 export class WatsonxAIHandler extends BaseProvider implements SingleCompletionHandler {
 	private options: ApiHandlerOptions
@@ -24,12 +24,17 @@ export class WatsonxAIHandler extends BaseProvider implements SingleCompletionHa
 			throw new Error("You must provide a valid IBM watsonx project ID.")
 		}
 
-		const serviceUrl = this.options.watsonxBaseUrl
+		let serviceUrl = this.options.watsonxBaseUrl
 		const platform = this.options.watsonxPlatform
+
+		if (platform === "ibmCloud" && !serviceUrl && this.options.watsonxRegion) {
+			serviceUrl = regionToWatsonxBaseUrl(this.options.watsonxRegion)
+		}
 
 		if (!platform) {
 			throw new Error("Platform selection is required for IBM watsonx AI provider")
 		}
+
 		if (!serviceUrl) {
 			throw new Error("Base URL in IBM watsonx AI provider is required")
 		}
