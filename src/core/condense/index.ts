@@ -9,6 +9,7 @@ import { maybeRemoveImageBlocks } from "../../api/transform/image-cleaning"
 import { getCondensationManager } from "./CondensationManager"
 
 export { LosslessCondensationProvider } from "./providers/lossless"
+export { TruncationCondensationProvider } from "./providers/truncation"
 
 export const N_MESSAGES_TO_KEEP = 3
 export const MIN_CONDENSE_THRESHOLD = 5 // Minimum percentage of context window to trigger condensing

@@ -3,6 +3,7 @@ import { ApiMessage } from "../task-persistence/apiMessages"
 import { getProviderRegistry } from "./ProviderRegistry"
 import { NativeCondensationProvider } from "./providers/NativeProvider"
 import { LosslessCondensationProvider } from "./providers/lossless"
+import { TruncationCondensationProvider } from "./providers/truncation"
 import { CondensationContext, CondensationOptions, CondensationResult, ICondensationProvider } from "./types"
 
 /**
@@ -29,7 +30,7 @@ export class CondensationManager {
 	}
 
 	/**
-	 * Register default providers (Native, Lossless)
+	 * Register default providers (Native, Lossless, Truncation)
 	 */
 	private registerDefaultProviders(): void {
 		const registry = getProviderRegistry()
@@ -46,6 +47,13 @@ export class CondensationManager {
 		registry.register(losslessProvider, {
 			enabled: true,
 			priority: 90,
+		})
+
+		// Register Truncation provider
+		const truncationProvider = new TruncationCondensationProvider()
+		registry.register(truncationProvider, {
+			enabled: true,
+			priority: 80,
 		})
 	}
 

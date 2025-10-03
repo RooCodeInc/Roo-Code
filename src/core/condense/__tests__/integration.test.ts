@@ -106,6 +106,156 @@ describe("Condense Integration", () => {
 		expect(result.error).toBeUndefined()
 	})
 
+	describe("Truncation Provider Integration", () => {
+		it("should truncate messages successfully", async () => {
+			const messages: ApiMessage[] = []
+			for (let i = 0; i < 50; i++) {
+				messages.push({
+					role: i % 2 === 0 ? ("user" as const) : ("assistant" as const),
+					content: `Message ${i} with longer content to ensure truncation is needed `.repeat(3),
+					ts: 1000 + i,
+				} as any)
+			}
+
+			const { CondensationManager } = await import("../CondensationManager")
+			const manager = CondensationManager.getInstance()
+
+			vi.mocked(mockApiHandler.countTokens).mockResolvedValue(100)
+
+			const result = await manager.condense(messages, mockApiHandler, {
+				providerId: "truncation",
+				systemPrompt: "",
+				taskId: "test-123",
+				prevContextTokens: 10000,
+				targetTokens: 2000,
+			})
+
+			expect(result.error).toBeUndefined()
+			expect(result.messages.length).toBeLessThan(messages.length)
+			expect(result.cost).toBe(0) // Truncation is free
+			expect(result.metrics?.timeElapsed).toBeDefined()
+			expect(result.metrics!.timeElapsed).toBeLessThan(10) // Should be very fast
+		})
+
+		it("should preserve first and recent messages", async () => {
+			const messages: ApiMessage[] = []
+			for (let i = 0; i < 30; i++) {
+				messages.push({
+					role: i % 2 === 0 ? ("user" as const) : ("assistant" as const),
+					content: `Message ${i}`,
+					ts: 1000 + i,
+				} as any)
+			}
+
+			const { CondensationManager } = await import("../CondensationManager")
+			const manager = CondensationManager.getInstance()
+
+			vi.mocked(mockApiHandler.countTokens).mockResolvedValue(100)
+
+			const result = await manager.condense(messages, mockApiHandler, {
+				providerId: "truncation",
+				systemPrompt: "",
+				taskId: "test-123",
+				prevContextTokens: 5000,
+				targetTokens: 1000,
+			})
+
+			// First message should be preserved
+			expect(result.messages[0]).toEqual(messages[0])
+
+			// Last 10 messages should be preserved (default preserveRecent)
+			const lastMessages = result.messages.slice(-10)
+			expect(lastMessages).toEqual(messages.slice(-10))
+		})
+
+		it("should be faster than lossless provider", async () => {
+			const messages: ApiMessage[] = Array.from({ length: 100 }, (_, i) => ({
+				role: i % 2 === 0 ? ("user" as const) : ("assistant" as const),
+				content: `Message ${i} with content`,
+				ts: 1000 + i,
+			})) as any
+
+			const { CondensationManager } = await import("../CondensationManager")
+			const manager = CondensationManager.getInstance()
+
+			vi.mocked(mockApiHandler.countTokens).mockResolvedValue(100)
+
+			// Test Truncation Provider
+			const truncationStart = performance.now()
+			const truncationResult = await manager.condense(messages, mockApiHandler, {
+				providerId: "truncation",
+				systemPrompt: "",
+				taskId: "test-123",
+				prevContextTokens: 10000,
+				targetTokens: 2000,
+			})
+			const truncationTime = performance.now() - truncationStart
+
+			// Test Lossless Provider
+			const losslessStart = performance.now()
+			const losslessResult = await manager.condense(messages, mockApiHandler, {
+				providerId: "lossless",
+				systemPrompt: "",
+				taskId: "test-123",
+				prevContextTokens: 10000,
+			})
+			const losslessTime = performance.now() - losslessStart
+
+			expect(truncationResult.error).toBeUndefined()
+			expect(losslessResult.error).toBeUndefined()
+
+			// Truncation should be fast (<10ms target)
+			expect(truncationTime).toBeLessThan(10)
+		})
+
+		it("should handle complex messages with tool results", async () => {
+			const messages: ApiMessage[] = [{ role: "user", content: "Start task", ts: 1000 } as any]
+
+			// Add many tool interactions
+			for (let i = 0; i < 20; i++) {
+				messages.push({
+					role: "assistant",
+					content: [{ type: "tool_use", id: `tool${i}`, name: "read_file", input: { path: `file${i}.ts` } }],
+					ts: 1001 + i * 2,
+				} as any)
+				messages.push({
+					role: "user",
+					content: [
+						{
+							type: "tool_result",
+							tool_use_id: `tool${i}`,
+							content: `Very long file content that should be removed `.repeat(50),
+						},
+					],
+					ts: 1002 + i * 2,
+				} as any)
+			}
+
+			messages.push({ role: "assistant", content: "Final response", ts: 2000 } as any)
+
+			const { CondensationManager } = await import("../CondensationManager")
+			const manager = CondensationManager.getInstance()
+
+			vi.mocked(mockApiHandler.countTokens).mockResolvedValue(100)
+
+			const result = await manager.condense(messages, mockApiHandler, {
+				providerId: "truncation",
+				systemPrompt: "",
+				taskId: "test-123",
+				prevContextTokens: 15000,
+				targetTokens: 2000,
+			})
+
+			expect(result.error).toBeUndefined()
+			expect(result.messages.length).toBeLessThan(messages.length)
+			expect(result.metrics?.removalStats).toBeDefined()
+
+			// Should have removed tool results (high priority for removal)
+			const stats = result.metrics?.removalStats
+			expect(stats?.toolResultsRemoved).toBeGreaterThan(0)
+		})
+	})
+
 	it("should support dedicated API handler", async () => {
 		const messages: ApiMessage[] = [
 			{ role: "user", content: "Test", ts: 1000 },
