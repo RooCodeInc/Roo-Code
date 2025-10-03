@@ -143,6 +143,8 @@ export interface ExtensionStateContextType extends ExtensionState {
 	togglePinnedApiConfig: (configName: string) => void
 	terminalCompressProgressBar?: boolean
 	setTerminalCompressProgressBar: (value: boolean) => void
+	terminalPreferredProfile?: string
+	setTerminalPreferredProfile: (value: string) => void
 	setHistoryPreviewCollapsed: (value: boolean) => void
 	setReasoningBlockCollapsed: (value: boolean) => void
 	autoCondenseContext: boolean
@@ -240,6 +242,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		terminalZshP10k: false, // Default Powerlevel10k integration setting
 		terminalZdotdir: false, // Default ZDOTDIR handling setting
 		terminalCompressProgressBar: true, // Default to compress progress bar output
+		terminalPreferredProfile: "", // Default to empty (use VSCode default)
 		historyPreviewCollapsed: false, // Initialize the new state (default to expanded)
 		reasoningBlockCollapsed: true, // Default to collapsed
 		cloudUserInfo: null,
@@ -518,6 +521,8 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		setPinnedApiConfigs: (value) => setState((prevState) => ({ ...prevState, pinnedApiConfigs: value })),
 		setTerminalCompressProgressBar: (value) =>
 			setState((prevState) => ({ ...prevState, terminalCompressProgressBar: value })),
+		setTerminalPreferredProfile: (value) =>
+			setState((prevState) => ({ ...prevState, terminalPreferredProfile: value })),
 		togglePinnedApiConfig: (configId) =>
 			setState((prevState) => {
 				const currentPinned = prevState.pinnedApiConfigs || {}

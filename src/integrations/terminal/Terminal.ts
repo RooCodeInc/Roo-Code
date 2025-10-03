@@ -5,6 +5,7 @@ import type { RooTerminalCallbacks, RooTerminalProcessResultPromise } from "./ty
 import { BaseTerminal } from "./BaseTerminal"
 import { TerminalProcess } from "./TerminalProcess"
 import { ShellIntegrationManager } from "./ShellIntegrationManager"
+import { TerminalProfileService } from "./TerminalProfileService"
 import { mergePromise } from "./mergePromise"
 
 export class Terminal extends BaseTerminal {
@@ -17,7 +18,34 @@ export class Terminal extends BaseTerminal {
 
 		const env = Terminal.getEnv()
 		const iconPath = new vscode.ThemeIcon("rocket")
-		this.terminal = terminal ?? vscode.window.createTerminal({ cwd, name: "Roo Code", iconPath, env })
+
+		// Get the full profile configuration from the user's preferred profile
+		const preferredProfile = Terminal.getTerminalPreferredProfile()
+		const profileOptions = TerminalProfileService.getTerminalOptionsForRoo(preferredProfile)
+
+		const terminalOptions: vscode.TerminalOptions = {
+			cwd,
+			name: "Roo Code",
+			iconPath,
+			env,
+		}
+
+		// Apply profile configuration if available
+		if (profileOptions) {
+			// Merge profile options with our base options
+			Object.assign(terminalOptions, profileOptions)
+
+			// Merge environment variables (profile env + our env)
+			if (profileOptions.env) {
+				terminalOptions.env = { ...profileOptions.env, ...env }
+			}
+
+			// Keep our icon and name unless profile specifies otherwise
+			terminalOptions.name = "Roo Code"
+			terminalOptions.iconPath = iconPath
+		}
+
+		this.terminal = terminal ?? vscode.window.createTerminal(terminalOptions)
 
 		if (Terminal.getTerminalZdotdir()) {
 			ShellIntegrationManager.terminalTmpDirs.set(id, env.ZDOTDIR)
