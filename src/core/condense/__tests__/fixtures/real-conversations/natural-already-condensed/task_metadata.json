@@ -1,0 +1,20 @@
+{
+	"files_in_context": [
+		{
+			"path": "webview-ui/src/components/chat/ChatTextArea.tsx",
+			"record_state": "active",
+			"record_source": "read_tool",
+			"roo_read_date": 1758845035108,
+			"roo_edit_date": null,
+			"user_edit_date": null
+		},
+		{
+			"path": "C:\\dev\\roo-extensions\\docs\\roo-code\\ARCHITECTURE-HOOK-AUTOSAVE-DRAFT.md",
+			"record_state": "active",
+			"record_source": "roo_edited",
+			"roo_read_date": 1758845546140,
+			"roo_edit_date": 1758845546140,
+			"user_edit_date": null
+		}
+	]
+}
