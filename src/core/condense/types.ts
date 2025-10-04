@@ -73,6 +73,32 @@ export interface ProviderMetrics {
 }
 
 /**
+ * Smart Provider Analysis Result
+ */
+export interface SmartProviderAnalysis {
+	totalMessages: number
+	conversationMessages: number
+	toolMessages: number
+	toolHeavyRatio: number
+	estimatedTokens: number
+	isEmergency: boolean
+	isLarge: boolean
+	isToolHeavy: boolean
+}
+
+/**
+ * Smart Provider Metadata
+ */
+export interface SmartProviderMetadata {
+	selectedProvider: string
+	actualProvider?: string
+	analysis: SmartProviderAnalysis
+	fallbackUsed: boolean
+	fallbackReason?: string
+	selectionReason: string
+}
+
+/**
  * Base interface for all condensation providers
  */
 export interface ICondensationProvider {
@@ -119,4 +145,138 @@ export interface ProviderConfig {
 	priority: number
 	/** Provider-specific config */
 	config?: Record<string, any>
+}
+
+// ============================================================================
+// Smart Provider Pass-Based Architecture Types (Spec 004)
+// ============================================================================
+
+/**
+ * Decomposed message into 3 content types
+ */
+export interface DecomposedMessage {
+	messageIndex: number
+	originalMessage: ApiMessage
+	messageText: string | null
+	toolParameters: any[] | null
+	toolResults: any[] | null
+}
+
+/**
+ * Parameters for TRUNCATE operation
+ */
+export interface TruncateParams {
+	maxChars?: number
+	maxLines?: number
+	addEllipsis?: boolean
+}
+
+/**
+ * Parameters for SUMMARIZE operation
+ */
+export interface SummarizeParams {
+	apiProfile?: string
+	maxTokens?: number
+	customPrompt?: string
+}
+
+/**
+ * The 4 operations available for content
+ */
+export type ContentOperation =
+	| { operation: "keep" }
+	| { operation: "suppress" }
+	| { operation: "truncate"; params: TruncateParams }
+	| { operation: "summarize"; params: SummarizeParams }
+
+/**
+ * Operations configuration per content type
+ */
+export interface ContentTypeOperations {
+	messageText: ContentOperation
+	toolParameters: ContentOperation
+	toolResults: ContentOperation
+}
+
+/**
+ * Selection strategy for pass
+ */
+export interface SelectionStrategy {
+	type: "preserve_recent" | "preserve_percent" | "custom"
+	keepRecentCount?: number
+	keepPercentage?: number
+	customSelector?: (messages: ApiMessage[]) => ApiMessage[]
+}
+
+/**
+ * Batch mode configuration
+ */
+export interface BatchModeConfig {
+	operation: "keep" | "summarize"
+	summarizationConfig?: {
+		apiProfile?: string
+		customPrompt?: string
+		keepFirst: number
+		keepLast: number
+	}
+}
+
+/**
+ * Individual mode configuration
+ */
+export interface IndividualModeConfig {
+	defaults: ContentTypeOperations
+	overrides?: Array<{
+		messageIndex: number
+		operations: Partial<ContentTypeOperations>
+	}>
+}
+
+/**
+ * Execution condition for pass
+ */
+export interface ExecutionCondition {
+	type: "always" | "conditional"
+	condition?: {
+		tokenThreshold?: number
+	}
+}
+
+/**
+ * Complete pass configuration
+ */
+export interface PassConfig {
+	id: string
+	name: string
+	description?: string
+	selection: SelectionStrategy
+	mode: "batch" | "individual"
+	batchConfig?: BatchModeConfig
+	individualConfig?: IndividualModeConfig
+	execution: ExecutionCondition
+}
+
+/**
+ * Complete Smart Provider configuration
+ */
+export interface SmartProviderConfig {
+	losslessPrelude?: {
+		enabled: boolean
+		operations?: {
+			deduplicateFileReads?: boolean
+			consolidateToolResults?: boolean
+			removeObsoleteState?: boolean
+		}
+	}
+	passes: PassConfig[]
+}
+
+/**
+ * Result of a single pass execution
+ */
+export interface PassResult {
+	messages: ApiMessage[]
+	cost: number
+	tokensSaved: number
+	passId: string
 }
