@@ -22,6 +22,7 @@ import {
 	processImageFile,
 	ImageMemoryTracker,
 } from "./helpers/imageHelpers"
+import { truncateDefinitionsToLineLimit } from "./helpers/truncateDefinitions"
 
 export function getReadFileToolDescription(blockName: string, blockParams: any): string {
 	// Handle both single path and multiple files via args
@@ -576,7 +577,9 @@ export async function readFileTool(
 					try {
 						const defResult = await parseSourceCodeDefinitionsForFile(fullPath, cline.rooIgnoreController)
 						if (defResult) {
-							xmlInfo += `<list_code_definition_names>${defResult}</list_code_definition_names>\n`
+							// Truncate definitions to match the truncated file content
+							const truncatedDefs = truncateDefinitionsToLineLimit(defResult, maxReadFileLine)
+							xmlInfo += `<list_code_definition_names>${truncatedDefs}</list_code_definition_names>\n`
 						}
 						xmlInfo += `<notice>Showing only ${maxReadFileLine} of ${totalLines} total lines. Use line_range if you need to read more lines</notice>\n`
 						updateFileResult(relPath, {
