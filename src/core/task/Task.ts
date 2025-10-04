@@ -2963,6 +2963,140 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		yield* iterator
 	}
 
+	// Shared exponential backoff for retries (first-chunk and mid-stream)
+	private async backoffAndAnnounce(retryAttempt: number, error: any, header?: string): Promise<void> {
+		try {
+			const state = await this.providerRef.deref()?.getState()
+			const baseDelay = state?.requestDelaySeconds || 5
+
+			let exponentialDelay = Math.min(
+				Math.ceil(baseDelay * Math.pow(2, retryAttempt)),
+				MAX_EXPONENTIAL_BACKOFF_SECONDS,
+			)
+
+			// Respect provider rate limit window
+			let rateLimitDelay = 0
+			const rateLimit = state?.apiConfiguration?.rateLimitSeconds || 0
+			if (Task.lastGlobalApiRequestTime && rateLimit > 0) {
+				const elapsed = performance.now() - Task.lastGlobalApiRequestTime
+				rateLimitDelay = Math.ceil(Math.min(rateLimit, Math.max(0, rateLimit * 1000 - elapsed) / 1000))
+			}
+
+			// Prefer RetryInfo on 429 if present
+			if (error?.status === 429) {
+				const retryInfo = error?.errorDetails?.find(
+					(d: any) => d["@type"] === "type.googleapis.com/google.rpc.RetryInfo",
+				)
+				const match = retryInfo?.retryDelay?.match?.(/^(\d+)s$/)
+				if (match) {
+					exponentialDelay = Number(match[1]) + 1
+				}
+			}
+
+			const finalDelay = Math.max(exponentialDelay, rateLimitDelay)
+			if (finalDelay <= 0) return
+
+			// Build detail text; fall back to error message if none provided
+			let errorMsg = header
+			if (!errorMsg) {
+				if (error?.error?.metadata?.raw) {
+					errorMsg = JSON.stringify(error.error.metadata.raw, null, 2)
+				} else if (error?.message) {
+					errorMsg = error.message
+				} else {
+					errorMsg = "Unknown error"
+				}
+			}
+
+			// Sanitize detail for UI display
+			const sanitizedDetail = (() => {
+				if (!errorMsg) {
+					return undefined
+				}
+				const firstLine = errorMsg
+					.split("\n")
+					.map((line) => line.trim())
+					.find((line) => line.length > 0)
+				if (!firstLine) {
+					return undefined
+				}
+				return firstLine.length > 160 ? `${firstLine.slice(0, 157)}…` : firstLine
+			})()
+
+			// Helper to send rate limit updates with structured metadata
+			const sendRateLimitUpdate = async (payload: RateLimitRetryPayload, isPartial: boolean): Promise<void> => {
+				await this.say("api_req_retry_delayed", undefined, undefined, isPartial, undefined, undefined, {
+					metadata: { rateLimitRetry: payload },
+				})
+			}
+
+			// Show countdown timer with exponential backoff using structured metadata
+			for (let i = finalDelay; i > 0; i--) {
+				// Check abort flag during countdown to allow early exit
+				if (this.abort) {
+					await sendRateLimitUpdate(
+						{
+							type: "rate_limit_retry",
+							status: "cancelled",
+							remainingSeconds: i,
+							attempt: retryAttempt + 1,
+							origin: "retry_attempt",
+							detail: sanitizedDetail,
+						},
+						false,
+					)
+					throw new Error(`[Task#${this.taskId}] Aborted during retry countdown`)
+				}
+
+				await sendRateLimitUpdate(
+					{
+						type: "rate_limit_retry",
+						status: "waiting",
+						remainingSeconds: i,
+						attempt: retryAttempt + 1,
+						origin: "retry_attempt",
+						detail: sanitizedDetail,
+					},
+					true,
+				)
+				await delay(1000)
+			}
+
+			// Final check before retrying
+			if (this.abort) {
+				await sendRateLimitUpdate(
+					{
+						type: "rate_limit_retry",
+						status: "cancelled",
+						remainingSeconds: 0,
+						attempt: retryAttempt + 1,
+						origin: "retry_attempt",
+						detail: sanitizedDetail,
+					},
+					false,
+				)
+				throw new Error(`[Task#${this.taskId}] Aborted during retry countdown`)
+			}
+
+			await sendRateLimitUpdate(
+				{
+					type: "rate_limit_retry",
+					status: "retrying",
+					remainingSeconds: 0,
+					attempt: retryAttempt + 1,
+					origin: "retry_attempt",
+					detail: sanitizedDetail,
+				},
+				false,
+			)
+		} catch (err) {
+			console.error("Exponential backoff failed:", err)
+			// Re-throw if it's an abort error so it propagates correctly
+			if (err instanceof Error && err.message.includes("Aborted during retry countdown")) {
+				throw err
+			}
+		}
+	}
 	// Checkpoints
 
 	public async checkpointSave(force: boolean = false, suppressMessage: boolean = false) {
