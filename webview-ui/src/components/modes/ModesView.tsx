@@ -868,7 +868,7 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 							})()}
 							onChange={(e) => {
 								const value =
-									(e as unknown as CustomEvent)?.detail?.target?.value ||
+									(e as unknown as CustomEvent)?.detail?.target?.value ??
 									((e as any).target as HTMLTextAreaElement).value
 								const customMode = findModeBySlug(visualMode, customModes)
 								if (customMode) {
@@ -923,7 +923,7 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 							})()}
 							onChange={(e) => {
 								const value =
-									(e as unknown as CustomEvent)?.detail?.target?.value ||
+									(e as unknown as CustomEvent)?.detail?.target?.value ??
 									((e as any).target as HTMLTextAreaElement).value
 								const customMode = findModeBySlug(visualMode, customModes)
 								if (customMode) {
@@ -978,7 +978,7 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 							})()}
 							onChange={(e) => {
 								const value =
-									(e as unknown as CustomEvent)?.detail?.target?.value ||
+									(e as unknown as CustomEvent)?.detail?.target?.value ??
 									((e as any).target as HTMLTextAreaElement).value
 								const customMode = findModeBySlug(visualMode, customModes)
 								if (customMode) {
@@ -1137,14 +1137,15 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 							})()}
 							onChange={(e) => {
 								const value =
-									(e as unknown as CustomEvent)?.detail?.target?.value ||
+									(e as unknown as CustomEvent)?.detail?.target?.value ??
 									((e as any).target as HTMLTextAreaElement).value
 								const customMode = findModeBySlug(visualMode, customModes)
 								if (customMode) {
 									// For custom modes, update the JSON file
 									updateCustomMode(visualMode, {
 										...customMode,
-										customInstructions: value.trim() || undefined,
+										// Preserve empty string; only treat null/undefined as unset
+										customInstructions: value ?? undefined,
 										source: customMode.source || "global",
 									})
 								} else {
@@ -1354,12 +1355,12 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 						value={customInstructions || ""}
 						onChange={(e) => {
 							const value =
-								(e as unknown as CustomEvent)?.detail?.target?.value ||
+								(e as unknown as CustomEvent)?.detail?.target?.value ??
 								((e as any).target as HTMLTextAreaElement).value
-							setCustomInstructions(value || undefined)
+							setCustomInstructions(value ?? undefined)
 							vscode.postMessage({
 								type: "customInstructions",
-								text: value.trim() || undefined,
+								text: value ?? undefined,
 							})
 						}}
 						rows={4}
