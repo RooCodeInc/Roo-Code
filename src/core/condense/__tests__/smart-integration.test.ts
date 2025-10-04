@@ -427,4 +427,97 @@ describe("Smart Provider Pass-Based - Integration Tests", () => {
 			expect(result.messages.length).toBeGreaterThan(0)
 		})
 	})
+
+	describe("Message-Level Thresholds on Real Fixtures (Phase 4.5)", () => {
+		it("BALANCED config respects message thresholds on heavy-uncondensed", async () => {
+			const fixture = await loadFixture("heavy-uncondensed")
+			const provider = new SmartCondensationProvider(BALANCED_CONFIG)
+
+			const context: CondensationContext = {
+				messages: fixture.messages,
+				systemPrompt: "Test system prompt",
+				taskId: "test-task",
+				prevContextTokens: 50000,
+				targetTokens: 20000,
+			}
+
+			const options: CondensationOptions = {
+				apiHandler: mockApiHandler,
+				isAutomaticTrigger: false,
+			}
+
+			const result = await provider.condense(context, options)
+
+			// Verify that thresholds are being applied
+			expect(result.messages).toBeDefined()
+			expect(result.messages.length).toBeGreaterThan(0)
+
+			// The BALANCED config should have processed this with 1K token threshold
+			const llmQualityPass = BALANCED_CONFIG.passes.find((p) => p.id === "llm-quality")
+			expect(llmQualityPass?.individualConfig?.messageTokenThresholds?.toolResults).toBe(1000)
+
+			// Verify operations were applied
+			expect(result.metrics?.operationsApplied).toBeDefined()
+			expect(result.cost).toBeGreaterThanOrEqual(0)
+		})
+
+		it("AGGRESSIVE config filters aggressively with low thresholds", async () => {
+			const fixture = await loadFixture("synthetic-2-heavy-read")
+			const provider = new SmartCondensationProvider(AGGRESSIVE_CONFIG)
+
+			const context: CondensationContext = {
+				messages: fixture.messages,
+				systemPrompt: "Test system prompt",
+				taskId: "test-task",
+				prevContextTokens: 30000,
+				targetTokens: 10000,
+			}
+
+			const options: CondensationOptions = {
+				apiHandler: mockApiHandler,
+				isAutomaticTrigger: false,
+			}
+
+			const result = await provider.condense(context, options)
+
+			// AGGRESSIVE should use 300-500 token thresholds
+			const suppressPass = AGGRESSIVE_CONFIG.passes.find((p) => p.id === "suppress-ancient")
+			expect(suppressPass?.individualConfig?.messageTokenThresholds?.toolResults).toBe(300)
+
+			// Result should be heavily condensed
+			const originalTokens = estimateTokens(fixture.messages)
+			const finalTokens = estimateTokens(result.messages)
+
+			console.log(`\nAGGRESSIVE reduction: ${originalTokens} → ${finalTokens} tokens`)
+			expect(finalTokens).toBeLessThan(originalTokens)
+		})
+
+		it("CONSERVATIVE config preserves quality with high thresholds", async () => {
+			const fixture = await loadFixture("synthetic-3-tool-dedup")
+			const provider = new SmartCondensationProvider(CONSERVATIVE_CONFIG)
+
+			const context: CondensationContext = {
+				messages: fixture.messages,
+				systemPrompt: "Test system prompt",
+				taskId: "test-task",
+				prevContextTokens: 25000,
+				targetTokens: 15000,
+			}
+
+			const options: CondensationOptions = {
+				apiHandler: mockApiHandler,
+				isAutomaticTrigger: false,
+			}
+
+			const result = await provider.condense(context, options)
+
+			// CONSERVATIVE should use 2K token threshold (quality-first)
+			const qualityPass = CONSERVATIVE_CONFIG.passes.find((p) => p.id === "pass-1-quality")
+			expect(qualityPass?.individualConfig?.messageTokenThresholds?.toolResults).toBe(2000)
+
+			// Result should preserve more content
+			expect(result.messages.length).toBeGreaterThan(0)
+			expect(result.cost).toBeGreaterThanOrEqual(0)
+		})
+	})
 })

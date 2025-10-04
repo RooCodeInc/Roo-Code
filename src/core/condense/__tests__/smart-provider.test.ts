@@ -186,7 +186,9 @@ describe("Smart Provider Pass-Based - Unit Tests", () => {
 				mockOptions,
 			)
 
-			expect(result.content).toBe("[Tool parameters suppressed]")
+			// SUPPRESS now returns array format for toolParameters
+			expect(Array.isArray(result.content)).toBe(true)
+			expect(result.content[0].input.note).toBe("[Tool parameters suppressed]")
 			expect(result.cost).toBe(0)
 		})
 
@@ -202,7 +204,9 @@ describe("Smart Provider Pass-Based - Unit Tests", () => {
 				mockOptions,
 			)
 
-			expect(result.content).toBe("[Tool results suppressed]")
+			// SUPPRESS now returns array format for toolResults
+			expect(Array.isArray(result.content)).toBe(true)
+			expect(result.content[0].content).toBe("[Tool results suppressed]")
 			expect(result.cost).toBe(0)
 		})
 	})
@@ -599,6 +603,138 @@ describe("Smart Provider Pass-Based - Unit Tests", () => {
 			// Aggressive should prioritize suppression
 			const firstPass = AGGRESSIVE_CONFIG.passes[0]
 			expect(firstPass.id).toBe("suppress-ancient")
+		})
+	})
+
+	describe("Message-Level Thresholds (Phase 4.5)", () => {
+		it("applies operation only to content exceeding threshold", async () => {
+			const config = {
+				passes: [
+					{
+						id: "threshold-test",
+						name: "Threshold Test",
+						selection: { type: "preserve_recent" as const, keepRecentCount: 0 },
+						mode: "individual" as const,
+						individualConfig: {
+							defaults: {
+								messageText: { operation: "keep" as const },
+								toolParameters: { operation: "keep" as const },
+								toolResults: { operation: "suppress" as const },
+							},
+							messageTokenThresholds: {
+								toolResults: 500, // Only suppress if >500 tokens
+							},
+						},
+						execution: { type: "always" as const },
+					},
+				],
+			}
+
+			const providerWithThresholds = new SmartCondensationProvider(config)
+
+			// Create messages with different sizes
+			const messages: ApiMessage[] = [
+				{
+					ts: Date.now(),
+					role: "user",
+					content: [
+						{
+							type: "tool_result",
+							tool_use_id: "small_result",
+							content: "A".repeat(400), // ~100 tokens (< 500 threshold)
+						},
+					],
+				},
+				{
+					ts: Date.now() + 1,
+					role: "user",
+					content: [
+						{
+							type: "tool_result",
+							tool_use_id: "large_result",
+							content: "B".repeat(3000), // ~750 tokens (> 500 threshold)
+						},
+					],
+				},
+			]
+
+			mockContext.messages = messages
+			const result = await providerWithThresholds.condense(mockContext, mockOptions)
+
+			// Small result: KEEP (below threshold)
+			const firstMsg = result.messages[0].content as any[]
+			expect(firstMsg[0].content).toBe("A".repeat(400))
+
+			// Large result: SUPPRESS (above threshold)
+			const secondMsg = result.messages[1].content as any[]
+			expect(secondMsg[0].content).toContain("[Tool results suppressed]")
+		})
+
+		it("handles absence of thresholds (always process)", async () => {
+			const config = {
+				passes: [
+					{
+						id: "no-threshold-test",
+						name: "No Threshold Test",
+						selection: { type: "preserve_recent" as const, keepRecentCount: 0 },
+						mode: "individual" as const,
+						individualConfig: {
+							defaults: {
+								messageText: { operation: "keep" as const },
+								toolParameters: { operation: "keep" as const },
+								toolResults: { operation: "suppress" as const },
+							},
+							// No messageTokenThresholds defined
+						},
+						execution: { type: "always" as const },
+					},
+				],
+			}
+
+			const providerNoThresholds = new SmartCondensationProvider(config)
+
+			const messages: ApiMessage[] = [
+				{
+					ts: Date.now(),
+					role: "user",
+					content: [
+						{
+							type: "tool_result",
+							tool_use_id: "tiny_result",
+							content: "Small", // Very small, but should still be suppressed
+						},
+					],
+				},
+			]
+
+			mockContext.messages = messages
+			const result = await providerNoThresholds.condense(mockContext, mockOptions)
+
+			// Without threshold, operation applied regardless of size
+			const msg = result.messages[0].content as any[]
+			expect(msg[0].content).toContain("[Tool results suppressed]")
+		})
+
+		it("validates BALANCED config has realistic thresholds", () => {
+			const llmQualityPass = BALANCED_CONFIG.passes.find((p) => p.id === "llm-quality")
+			expect(llmQualityPass).toBeDefined()
+			expect(llmQualityPass?.individualConfig?.messageTokenThresholds).toBeDefined()
+			expect(llmQualityPass?.individualConfig?.messageTokenThresholds?.toolResults).toBe(1000)
+		})
+
+		it("validates CONSERVATIVE config has quality-first thresholds", () => {
+			const qualityPass = CONSERVATIVE_CONFIG.passes.find((p) => p.id === "pass-1-quality")
+			expect(qualityPass).toBeDefined()
+			expect(qualityPass?.individualConfig?.messageTokenThresholds).toBeDefined()
+			expect(qualityPass?.individualConfig?.messageTokenThresholds?.toolResults).toBe(2000)
+		})
+
+		it("validates AGGRESSIVE config has aggressive thresholds", () => {
+			const suppressPass = AGGRESSIVE_CONFIG.passes.find((p) => p.id === "suppress-ancient")
+			expect(suppressPass).toBeDefined()
+			expect(suppressPass?.individualConfig?.messageTokenThresholds).toBeDefined()
+			expect(suppressPass?.individualConfig?.messageTokenThresholds?.toolParameters).toBe(300)
+			expect(suppressPass?.individualConfig?.messageTokenThresholds?.toolResults).toBe(300)
 		})
 	})
 })

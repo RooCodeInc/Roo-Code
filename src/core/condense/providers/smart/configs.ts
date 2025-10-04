@@ -54,6 +54,10 @@ export const CONSERVATIVE_CONFIG: SmartProviderConfig = {
 						},
 					},
 				},
+				// Phase 4.5: Individual message thresholds (quality-first)
+				messageTokenThresholds: {
+					toolResults: 2000, // Only summarize tool results >2K tokens
+				},
 			},
 			execution: { type: "always" },
 		},
@@ -126,6 +130,10 @@ export const BALANCED_CONFIG: SmartProviderConfig = {
 						},
 					},
 				},
+				// Phase 4.5: Individual message thresholds (balanced approach)
+				messageTokenThresholds: {
+					toolResults: 1000, // Summarize tool results >1K tokens
+				},
 			},
 			execution: { type: "always" },
 		},
@@ -147,6 +155,11 @@ export const BALANCED_CONFIG: SmartProviderConfig = {
 						operation: "truncate",
 						params: { maxLines: 5 },
 					},
+				},
+				// Phase 4.5: Individual message thresholds (balanced truncation)
+				messageTokenThresholds: {
+					toolParameters: 500, // Truncate params >500 tokens
+					toolResults: 500, // Truncate results >500 tokens
 				},
 			},
 			execution: {
@@ -215,6 +228,11 @@ export const AGGRESSIVE_CONFIG: SmartProviderConfig = {
 					toolParameters: { operation: "suppress" },
 					toolResults: { operation: "suppress" },
 				},
+				// Phase 4.5: Individual message thresholds (aggressive suppression)
+				messageTokenThresholds: {
+					toolParameters: 300, // Suppress params >300 tokens
+					toolResults: 300, // Suppress results >300 tokens
+				},
 			},
 			execution: { type: "always" },
 		},
@@ -236,6 +254,11 @@ export const AGGRESSIVE_CONFIG: SmartProviderConfig = {
 						operation: "truncate",
 						params: { maxLines: 3 },
 					},
+				},
+				// Phase 4.5: Individual message thresholds (aggressive truncation)
+				messageTokenThresholds: {
+					toolParameters: 500, // Truncate params >500 tokens
+					toolResults: 500, // Truncate results >500 tokens
 				},
 			},
 			execution: { type: "always" },

@@ -216,14 +216,23 @@ export class SmartCondensationProvider extends BaseCondensationProvider {
 		messages: ApiMessage[],
 	): { selectedMessages: ApiMessage[]; preservedMessages: ApiMessage[] } {
 		if (selection.type === "preserve_recent") {
-			const keepCount = selection.keepRecentCount || 10
+			// Use nullish coalescing (??) instead of logical OR (||) to handle keepCount=0 correctly
+			// Because 0 || 10 evaluates to 10 (0 is falsy), but we want 0 to mean "process all messages"
+			const keepCount = selection.keepRecentCount ?? 10
+
+			// Special case: if keepCount is 0, select all messages for processing
+			// slice(0, -0) would return [] instead of all messages due to JavaScript semantics
+			if (keepCount === 0) {
+				return { selectedMessages: messages, preservedMessages: [] }
+			}
+
 			const preservedMessages = messages.slice(-keepCount)
 			const selectedMessages = messages.slice(0, -keepCount)
 			return { selectedMessages, preservedMessages }
 		}
 
 		if (selection.type === "preserve_percent") {
-			const keepPercentage = selection.keepPercentage || 30
+			const keepPercentage = selection.keepPercentage ?? 30
 			const keepCount = Math.floor(messages.length * (keepPercentage / 100))
 			const preservedMessages = messages.slice(-keepCount)
 			const selectedMessages = messages.slice(0, -keepCount)
@@ -305,43 +314,73 @@ export class SmartCondensationProvider extends BaseCondensationProvider {
 			let processedResults = decomposed.toolResults
 			let messageCost = 0
 
-			// Process message text
+			// Get token thresholds for this message (Phase 4.5)
+			const thresholds = this.getThresholdsForMessage(i, pass.individualConfig)
+
+			// Process message text (with threshold check)
 			if (decomposed.messageText !== null) {
-				const textResult = await this.applyOperation(
+				const shouldProcess = this.shouldProcessContent(
 					decomposed.messageText,
-					operations.messageText,
 					"messageText",
-					context,
-					options,
+					thresholds.messageText,
 				)
-				processedText = textResult.content as string | null
-				messageCost += textResult.cost
+
+				if (shouldProcess) {
+					const textResult = await this.applyOperation(
+						decomposed.messageText,
+						operations.messageText,
+						"messageText",
+						context,
+						options,
+					)
+					processedText = textResult.content as string | null
+					messageCost += textResult.cost
+				}
+				// else: keep as-is (processedText already = decomposed.messageText)
 			}
 
-			// Process tool parameters
+			// Process tool parameters (with threshold check)
 			if (decomposed.toolParameters !== null) {
-				const paramsResult = await this.applyOperation(
+				const shouldProcess = this.shouldProcessContent(
 					decomposed.toolParameters,
-					operations.toolParameters,
 					"toolParameters",
-					context,
-					options,
+					thresholds.toolParameters,
 				)
-				processedParams = paramsResult.content as any[] | null
-				messageCost += paramsResult.cost
+
+				if (shouldProcess) {
+					const paramsResult = await this.applyOperation(
+						decomposed.toolParameters,
+						operations.toolParameters,
+						"toolParameters",
+						context,
+						options,
+					)
+					processedParams = paramsResult.content as any[] | null
+					messageCost += paramsResult.cost
+				}
+				// else: keep as-is (processedParams already = decomposed.toolParameters)
 			}
 
-			// Process tool results
+			// Process tool results (with threshold check)
 			if (decomposed.toolResults !== null) {
-				const resultsResult = await this.applyOperation(
+				const shouldProcess = this.shouldProcessContent(
 					decomposed.toolResults,
-					operations.toolResults,
 					"toolResults",
-					context,
-					options,
+					thresholds.toolResults,
 				)
-				processedResults = resultsResult.content as any[] | null
-				messageCost += resultsResult.cost
+
+				if (shouldProcess) {
+					const resultsResult = await this.applyOperation(
+						decomposed.toolResults,
+						operations.toolResults,
+						"toolResults",
+						context,
+						options,
+					)
+					processedResults = resultsResult.content as any[] | null
+					messageCost += resultsResult.cost
+				}
+				// else: keep as-is (processedResults already = decomposed.toolResults)
 			}
 
 			// Recompose message
@@ -384,6 +423,77 @@ export class SmartCondensationProvider extends BaseCondensationProvider {
 		}
 
 		return operations
+	}
+
+	/**
+	 * Get token thresholds for a specific message (defaults + overrides) - Phase 4.5
+	 */
+	private getThresholdsForMessage(
+		messageIndex: number,
+		config: PassConfig["individualConfig"],
+	): { messageText?: number; toolParameters?: number; toolResults?: number } {
+		if (!config) {
+			return {}
+		}
+
+		// Start with defaults
+		let thresholds = config.messageTokenThresholds ? { ...config.messageTokenThresholds } : {}
+
+		// Apply override thresholds if any
+		if (config.overrides) {
+			const override = config.overrides.find((o) => o.messageIndex === messageIndex)
+			if (override?.messageTokenThresholds) {
+				thresholds = {
+					...thresholds,
+					...override.messageTokenThresholds,
+				}
+			}
+		}
+
+		return thresholds
+	}
+
+	/**
+	 * Check if content should be processed based on token threshold - Phase 4.5
+	 * @returns true if should process (no threshold OR content exceeds threshold), false to keep as-is
+	 */
+	private shouldProcessContent(
+		content: string | any[] | null,
+		contentType: "messageText" | "toolParameters" | "toolResults",
+		threshold?: number,
+	): boolean {
+		// No threshold defined: always process
+		if (threshold === undefined || threshold === null) {
+			return true
+		}
+
+		// No content: don't process
+		if (content === null) {
+			return false
+		}
+
+		// Estimate tokens for this content
+		let tokens = 0
+
+		if (contentType === "messageText" && typeof content === "string") {
+			tokens = this.countTokens(content)
+		} else if (contentType === "toolParameters" && Array.isArray(content)) {
+			tokens = this.countTokens(JSON.stringify(content))
+		} else if (contentType === "toolResults" && Array.isArray(content)) {
+			// For toolResults, count only the actual content, not metadata
+			tokens = content.reduce((total, result) => {
+				const resultContent = result.content
+				if (typeof resultContent === "string") {
+					return total + this.countTokens(resultContent)
+				} else if (Array.isArray(resultContent)) {
+					return total + this.countTokens(JSON.stringify(resultContent))
+				}
+				return total
+			}, 0)
+		}
+
+		// Process only if exceeds threshold
+		return tokens >= threshold
 	}
 
 	/**
@@ -554,21 +664,32 @@ export class SmartCondensationProvider extends BaseCondensationProvider {
 	private applySuppressOperation(
 		content: string | any[],
 		contentType: "messageText" | "toolParameters" | "toolResults",
-	): Promise<{ content: string | null; cost: number }> {
-		// Use marker text to indicate suppression
-		let marker = ""
-		switch (contentType) {
-			case "messageText":
-				marker = "[Content suppressed]"
-				break
-			case "toolParameters":
-				marker = "[Tool parameters suppressed]"
-				break
-			case "toolResults":
-				marker = "[Tool results suppressed]"
-				break
+	): Promise<{ content: string | any[] | null; cost: number }> {
+		// For array content (toolParameters, toolResults), return array with suppression marker
+		if (Array.isArray(content)) {
+			let marker = ""
+			switch (contentType) {
+				case "toolParameters":
+					marker = "[Tool parameters suppressed]"
+					// Return array format expected by recomposeMessage
+					return Promise.resolve({
+						content: [{ id: "suppressed", name: "suppressed", input: { note: marker } }],
+						cost: 0,
+					})
+				case "toolResults":
+					marker = "[Tool results suppressed]"
+					// Return array format expected by recomposeMessage
+					return Promise.resolve({
+						content: [{ tool_use_id: "suppressed", content: marker, is_error: false }],
+						cost: 0,
+					})
+				default:
+					return Promise.resolve({ content: marker, cost: 0 })
+			}
 		}
 
+		// For string content (messageText), return string marker
+		const marker = "[Content suppressed]"
 		return Promise.resolve({ content: marker, cost: 0 })
 	}
 

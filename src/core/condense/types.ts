@@ -226,9 +226,21 @@ export interface BatchModeConfig {
  */
 export interface IndividualModeConfig {
 	defaults: ContentTypeOperations
+	/** Optional token thresholds per content type (Phase 4.5) */
+	messageTokenThresholds?: {
+		messageText?: number
+		toolParameters?: number
+		toolResults?: number
+	}
 	overrides?: Array<{
 		messageIndex: number
 		operations: Partial<ContentTypeOperations>
+		/** Optional token thresholds override for this message */
+		messageTokenThresholds?: {
+			messageText?: number
+			toolParameters?: number
+			toolResults?: number
+		}
 	}>
 }
 

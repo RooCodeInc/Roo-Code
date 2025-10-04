@@ -16,6 +16,7 @@ import { join } from "path"
 import { NativeCondensationProvider } from "../providers/NativeProvider"
 import { LosslessCondensationProvider } from "../providers/lossless"
 import { TruncationCondensationProvider } from "../providers/truncation"
+import { SmartCondensationProvider } from "../providers/smart"
 import type { ApiMessage } from "../../task-persistence/apiMessages"
 import type { CondensationContext, CondensationOptions } from "../types"
 

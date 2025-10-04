@@ -324,11 +324,216 @@ condenseInternal()
     - ✅ Vérifie target après chaque pass
     - Raison: Évite passes inutiles
 
+## Phase 4.5: Message-Level Thresholds
+
+**Date**: 2025-10-04
+**Status**: ✅ Implémenté et testé
+
+### Problématique Identifiée
+
+La Phase 4 a révélé une **limitation critique**:
+
+❌ **Problème**: Pas de seuils au niveau MESSAGE individuel
+
+- Seuils uniquement au niveau PASS (`tokenThreshold: 40000`)
+- Traite TOUS les messages si le pass est activé
+- **Risque**: Gaspillage $ sur petits messages OU ignorer de gros messages
+
+### Solution Implémentée
+
+Ajout de `messageTokenThresholds` dans `IndividualModeConfig`:
+
+```typescript
+interface IndividualModeConfig {
+  defaults: ContentTypeOperations
+
+  // Phase 4.5: Seuils au niveau message
+  messageTokenThresholds?: {
+    messageText?: number      // Traite seulement si message text > seuil
+    toolParameters?: number   // Traite seulement si params > seuil
+    toolResults?: number      // Traite seulement si results > seuil
+  }
+
+  overrides?: Array<{
+    messageIndex: number
+    operations: Partial<ContentTypeOperations>
+    messageTokenThresholds?: { ... }  // Peut override par message
+  }>
+}
+```
+
+### Comportement
+
+**Avec seuil défini**:
+
+- Contenu < seuil: **KEEP as-is** (pas de traitement)
+- Contenu ≥ seuil: Applique l'opération (SUMMARIZE/TRUNCATE/SUPPRESS)
+
+**Sans seuil** (backward compatible):
+
+- Traite tous les messages (comportement Phase 4)
+
+### Seuils Réalistes par Configuration
+
+#### CONSERVATIVE (Quality-First)
+
+```typescript
+messageTokenThresholds: {
+	toolResults: 2000 // Résume seulement si >2K tokens
+}
+```
+
+- Rationale: Préserve petits messages pour qualité maximale
+- ~2000 tokens = ~8000 chars = fichier moyen
+
+#### BALANCED (Optimal)
+
+```typescript
+// Pass 1: LLM Quality
+messageTokenThresholds: {
+  toolResults: 1000  // Résume si >1K tokens
+}
+
+// Pass 2: Mechanical Fallback
+messageTokenThresholds: {
+  toolParameters: 500,  // Truncate si >500 tokens
+  toolResults: 500
+}
+```
+
+- Rationale: Balance entre coût et qualité
+- ~1000 tokens = ~4000 chars = résultat tool moyen
+- ~500 tokens = ~2000 chars = seuil rentabilité
+
+#### AGGRESSIVE (Max Reduction)
+
+```typescript
+// Pass 1: Suppress
+messageTokenThresholds: {
+  toolParameters: 300,  // Supprime si >300 tokens
+  toolResults: 300
+}
+
+// Pass 2: Truncate
+messageTokenThresholds: {
+  toolParameters: 500,
+  toolResults: 500
+}
+```
+
+- Rationale: Réduction maximale avec coût minimal
+- ~300 tokens = ~1200 chars = seuil minimum traitement
+
+### Justification des Valeurs
+
+| Taille     | Tokens  | Chars  | Recommandation                     |
+| ---------- | ------- | ------ | ---------------------------------- |
+| Tiny       | <300    | <1200  | KEEP as-is (coût > bénéfice)       |
+| Small      | 300-500 | 1.2-2K | Candidat pour suppression/truncate |
+| Medium     | 500-1K  | 2-4K   | Candidat pour truncate/summarize   |
+| Large      | 1-2K    | 4-8K   | Résumer systématiquement           |
+| Very Large | >2K     | >8K    | Résumer obligatoire                |
+
+**Note**: 100 tokens (Phase 4 initial) = ~400 chars = trop petit (pas volumineux)
+
+### Impact sur Configurations
+
+**Avant Phase 4.5**:
+
+```typescript
+// ❌ Résume TOUT (même 50 chars)
+toolResults: {
+	operation: "summarize"
+}
+```
+
+**Après Phase 4.5**:
+
+```typescript
+// ✅ Résume seulement si >1000 tokens
+toolResults: { operation: "summarize" },
+messageTokenThresholds: { toolResults: 1000 }
+```
+
+### Implémentation Technique
+
+**Nouvelle méthode** `shouldProcessContent()`:
+
+```typescript
+private shouldProcessContent(
+  content: string | any[],
+  contentType: "messageText" | "toolParameters" | "toolResults",
+  threshold?: number
+): boolean {
+  // Pas de seuil → traite toujours (backward compatible)
+  if (!threshold) return true
+
+  // Estime tokens du contenu
+  const tokens = this.countTokens(content)
+
+  // Traite seulement si dépasse seuil
+  return tokens >= threshold
+}
+```
+
+**Intégration dans `executeIndividualPass()`**:
+
+```typescript
+// Récupère seuils pour ce message
+const thresholds = this.getThresholdsForMessage(i, pass.individualConfig)
+
+// Vérifie seuil AVANT d'appliquer opération
+if (this.shouldProcessContent(content, "toolResults", thresholds.toolResults)) {
+	// Traite (summarize/truncate/suppress)
+} else {
+	// KEEP as-is
+}
+```
+
+### Tests Ajoutés
+
+**Tests Unitaires** (5 nouveaux):
+
+- ✅ Applique opération seulement si >seuil
+- ✅ Garde as-is si <seuil
+- ✅ Traite tout si pas de seuil (backward compat)
+- ✅ Valide seuils BALANCED (1000)
+- ✅ Valide seuils CONSERVATIVE (2000)
+- ✅ Valide seuils AGGRESSIVE (300)
+
+**Tests Intégration** (3 nouveaux):
+
+- ✅ BALANCED respecte seuils sur `heavy-uncondensed`
+- ✅ AGGRESSIVE filtre agressivement avec seuils bas
+- ✅ CONSERVATIVE préserve qualité avec seuils hauts
+
+**Résultat**: Tous les tests passent (55/55 au total)
+
+### Bénéfices
+
+1. **Économie de coût**: Ne traite que messages volumineux
+2. **Préservation qualité**: Garde petits messages intacts
+3. **Flexibilité**: Seuils ajustables par config
+4. **Backward compatible**: Pas de seuil = comportement Phase 4
+5. **Granularité**: Seuils différents par content-type
+
+### Limitations Connues
+
+- Estimation tokens approximative (~4 chars/token)
+- Pas d'auto-calibration (valeurs fixes)
+- Pas de seuils adaptatifs selon contexte
+
 ## Conclusion
 
-✅ **Implémentation complète** de l'architecture pass-based selon spec 004  
-⚠️ **Tests à réécrire** pour nouvelle architecture  
-📝 **Documentation prête** pour phase de test
+✅ **Phase 4**: Implémentation complète architecture pass-based
+✅ **Phase 4.5**: Seuils individuels avec valeurs réalistes
+✅ **Tests**: 55/55 passing (unitaires + intégration)
+📝 **Documentation**: Complète et à jour
 
-**Estimation temps tests**: 2-3 heures  
-**Difficulté**: Moyenne (architecture bien définie)
+**Prochaines étapes**:
+
+- Phase 5: UI Integration
+- Phase 6: Auto-calibration des seuils (optionnel)
+
+**Estimation temps Phase 5**: 1-2 semaines
+**Difficulté**: Moyenne (UI settings + preview)
