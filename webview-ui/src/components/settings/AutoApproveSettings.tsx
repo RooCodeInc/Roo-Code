@@ -187,10 +187,7 @@ export const AutoApproveSettings = ({
 					<div>
 						<VSCodeCheckbox
 							checked={preserveHtmlEntities}
-							onChange={(e: any) => {
-								setCachedStateField("preserveHtmlEntities", e.target.checked)
-								vscode.postMessage({ type: "preserveHtmlEntities", bool: e.target.checked })
-							}}
+							onChange={(e: any) => setCachedStateField("preserveHtmlEntities", e.target.checked)}
 							data-testid="preserve-html-entities-checkbox">
 							<span className="font-medium">{t("settings:advanced.preserveHtmlEntities.label")}</span>
 						</VSCodeCheckbox>
