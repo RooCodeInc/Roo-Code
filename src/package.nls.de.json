@@ -33,7 +33,7 @@
 	"commands.commandExecutionTimeout.description": "Maximale Zeit in Sekunden, die auf den Abschluss der Befehlsausführung gewartet wird, bevor ein Timeout auftritt (0 = kein Timeout, 1-600s, Standard: 0s)",
 	"commands.commandTimeoutAllowlist.description": "Befehlspräfixe, die vom Timeout der Befehlsausführung ausgeschlossen sind. Befehle, die diesen Präfixen entsprechen, werden ohne Timeout-Beschränkungen ausgeführt.",
 	"commands.preventCompletionWithOpenTodos.description": "Aufgabenabschluss verhindern, wenn unvollständige Todos in der Todo-Liste vorhanden sind",
-	"settings.vsCodeLmModelSelector.description": "Einstellungen für die VSCode-Sprachmodell-API",
+	"settings.vsCodeLmModelSelector.description": "VS Code Language Model API Integration. Wichtig: Modelle, auf die über VS Code zugegriffen wird, können vom Anbieter angepasst oder feinabgestimmt sein, sodass sich das Verhalten von der direkten Verwendung desselben Modells über einen typischen Anbieter oder Router unterscheiden kann.\n\nUm ein Modell aus dem Language Model Dropdown zu verwenden, wechsle zuerst zu diesem Modell und klicke dann auf Akzeptieren in der Copilot Chat Eingabeaufforderung. Andernfalls kann ein Fehler wie 400 \"The requested model is not supported\" auftreten.",
 	"settings.vsCodeLmModelSelector.vendor.description": "Der Anbieter des Sprachmodells (z.B. copilot)",
 	"settings.vsCodeLmModelSelector.family.description": "Die Familie des Sprachmodells (z.B. gpt-4)",
 	"settings.customStoragePath.description": "Benutzerdefinierter Speicherpfad. Leer lassen, um den Standardspeicherort zu verwenden. Unterstützt absolute Pfade (z.B. 'D:\\RooCodeStorage')",
