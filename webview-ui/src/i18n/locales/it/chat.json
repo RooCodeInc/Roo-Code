@@ -146,6 +146,14 @@
 		"cancelled": "Richiesta API annullata",
 		"streamingFailed": "Streaming API fallito"
 	},
+	"rateLimitRetry": {
+		"title": "Limite di frequenza raggiunto — attendi.",
+		"waiting": "Riprovo tra {{seconds}}s",
+		"waitingWithAttempt": "Riprovo tra {{seconds}}s (tentativo {{attempt}})",
+		"waitingWithAttemptMax": "Riprovo tra {{seconds}}s (tentativo {{attempt}}/{{maxAttempts}})",
+		"retrying": "Riprovo ora…",
+		"cancelled": "Riprova annullata"
+	},
 	"checkpoint": {
 		"regular": "Checkpoint",
 		"initializingWarning": "Inizializzazione del checkpoint in corso... Se questa operazione richiede troppo tempo, puoi disattivare i checkpoint nelle <settingsLink>impostazioni</settingsLink> e riavviare l'attività.",

@@ -152,6 +152,14 @@
 		"cancelled": "Permintaan API Dibatalkan",
 		"streamingFailed": "Streaming API Gagal"
 	},
+	"rateLimitRetry": {
+		"title": "Batas kecepatan tercapai — mohon tunggu.",
+		"waiting": "Mencoba lagi dalam {{seconds}}d",
+		"waitingWithAttempt": "Mencoba lagi dalam {{seconds}}d (percobaan {{attempt}})",
+		"waitingWithAttemptMax": "Mencoba lagi dalam {{seconds}}d (percobaan {{attempt}}/{{maxAttempts}})",
+		"retrying": "Mencoba lagi sekarang…",
+		"cancelled": "Percobaan ulang dibatalkan"
+	},
 	"checkpoint": {
 		"regular": "Checkpoint",
 		"initializingWarning": "Masih menginisialisasi checkpoint... Jika ini terlalu lama, kamu bisa menonaktifkan checkpoint di <settingsLink>pengaturan</settingsLink> dan restart tugas.",
