@@ -346,7 +346,7 @@
 		"enablePromptCachingTitle": "지원되는 모델의 성능을 향상시키고 비용을 절감하기 위해 프롬프트 캐시를 활성화합니다.",
 		"cacheUsageNote": "참고: 캐시 사용이 표시되지 않는 경우, 다른 모델을 선택한 다음 원하는 모델을 다시 선택해 보세요.",
 		"vscodeLmModel": "언어 모델",
-		"vscodeLmWarning": "Note: Models accessed via the VS Code Language Model API may be wrapped or fine-tuned by the provider, so behavior can differ from using the same model directly from a typical provider or router. To use a model from the Language Model dropdown, first switch to that model and then click Accept in the Copilot Chat prompt; otherwise you may see an error such as 400 \"The requested model is not supported\".",
+		"vscodeLmWarning": "참고: VS Code Language Model API를 통해 액세스되는 모델은 공급자가 래핑하거나 미세 조정했을 수 있어, 일반적인 공급자나 라우터에서 동일한 모델을 직접 사용할 때와 동작이 다를 수 있습니다. ‘Language Model’ 드롭다운의 모델을 사용하려면 먼저 해당 모델로 전환한 다음 Copilot Chat 프롬프트에서 ‘허용(수락)’을 클릭하세요. 그렇지 않으면 400 ‘The requested model is not supported’와 같은 오류가 발생할 수 있습니다.",
 		"geminiParameters": {
 			"urlContext": {
 				"title": "URL 컨텍스트 활성화",

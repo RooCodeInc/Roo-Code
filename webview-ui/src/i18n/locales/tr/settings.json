@@ -346,7 +346,7 @@
 		"enablePromptCachingTitle": "Desteklenen modeller için performansı artırmak ve maliyetleri azaltmak için istem önbelleğini etkinleştir.",
 		"cacheUsageNote": "Not: Önbellek kullanımını görmüyorsanız, farklı bir model seçip ardından istediğiniz modeli tekrar seçmeyi deneyin.",
 		"vscodeLmModel": "Dil Modeli",
-		"vscodeLmWarning": "Note: Models accessed via the VS Code Language Model API may be wrapped or fine-tuned by the provider, so behavior can differ from using the same model directly from a typical provider or router. To use a model from the Language Model dropdown, first switch to that model and then click Accept in the Copilot Chat prompt; otherwise you may see an error such as 400 \"The requested model is not supported\".",
+		"vscodeLmWarning": "Not: VS Code Language Model API üzerinden erişilen modeller sağlayıcı tarafından sarılmış veya ince ayarlanmış olabilir; bu nedenle davranış, aynı modelin tipik bir sağlayıcı ya da yönlendirici üzerinden doğrudan kullanılmasından farklı olabilir. «Language Model» açılır menüsünden bir model kullanmak için önce o modele geçin ve ardından Copilot Chat isteminde «Kabul Et»e tıklayın; aksi takdirde 400 «The requested model is not supported» gibi bir hata görebilirsiniz.",
 		"geminiParameters": {
 			"urlContext": {
 				"title": "URL bağlamını etkinleştir",
