@@ -154,9 +154,9 @@
 	},
 	"rateLimitRetry": {
 		"title": "Batas kecepatan tercapai — mohon tunggu.",
-		"waiting": "Mencoba lagi dalam {{seconds}}d",
-		"waitingWithAttempt": "Mencoba lagi dalam {{seconds}}d (percobaan {{attempt}})",
-		"waitingWithAttemptMax": "Mencoba lagi dalam {{seconds}}d (percobaan {{attempt}}/{{maxAttempts}})",
+		"waiting": "Mencoba lagi dalam {{seconds}}dtk",
+		"waitingWithAttempt": "Mencoba lagi dalam {{seconds}}dtk (percobaan {{attempt}})",
+		"waitingWithAttemptMax": "Mencoba lagi dalam {{seconds}}dtk (percobaan {{attempt}}/{{maxAttempts}})",
 		"retrying": "Mencoba lagi sekarang…",
 		"cancelled": "Percobaan ulang dibatalkan"
 	},
