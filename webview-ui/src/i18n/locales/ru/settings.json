@@ -346,7 +346,7 @@
 		"enablePromptCachingTitle": "Включить кэширование подсказок для повышения производительности и снижения затрат для поддерживаемых моделей.",
 		"cacheUsageNote": "Примечание: если вы не видите использование кэша, попробуйте выбрать другую модель, а затем вернуться к нужной.",
 		"vscodeLmModel": "Языковая модель",
-		"vscodeLmWarning": "Внимание: это очень экспериментальная интеграция, поддержка провайдера может отличаться. Если возникает ошибка о неподдерживаемой модели — проблема на стороне провайдера.",
+		"vscodeLmWarning": "Note: Models accessed via the VS Code Language Model API may be wrapped or fine-tuned by the provider, so behavior can differ from using the same model directly from a typical provider or router. To use a model from the Language Model dropdown, first switch to that model and then click Accept in the Copilot Chat prompt; otherwise you may see an error such as 400 \"The requested model is not supported\".",
 		"geminiParameters": {
 			"urlContext": {
 				"title": "Включить контекст URL",
