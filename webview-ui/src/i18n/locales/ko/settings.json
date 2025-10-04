@@ -670,6 +670,10 @@
 		"title": "고급 설정"
 	},
 	"advanced": {
+		"preserveHtmlEntities": {
+			"label": "HTML 엔티티 보존",
+			"description": "활성화되면 &lt;, &gt;, &amp;와 같은 HTML 엔티티가 파일 편집 및 명령에서 그대로 보존됩니다. 비활성화되면 자동으로 리터럴 문자(<, >, &)로 변환됩니다. 참고: Claude 모델은 이 설정과 관계없이 항상 엔티티를 보존합니다."
+		},
 		"diff": {
 			"label": "diff를 통한 편집 활성화",
 			"description": "활성화되면 Roo는 파일을 더 빠르게 편집할 수 있으며 잘린 전체 파일 쓰기를 자동으로 거부합니다. 최신 Claude 3.7 Sonnet 모델에서 가장 잘 작동합니다.",

@@ -670,6 +670,10 @@
 		"title": "Gelişmiş ayarlar"
 	},
 	"advanced": {
+		"preserveHtmlEntities": {
+			"label": "HTML varlıklarını koru",
+			"description": "Etkinleştirildiğinde, &lt;, &gt; ve &amp; gibi HTML varlıkları dosya düzenlemelerinde ve komutlarda olduğu gibi korunacaktır. Devre dışı bırakıldığında, otomatik olarak gerçek karakterlerine (<, >, &) dönüştürülecektir. Not: Claude modelleri bu ayardan bağımsız olarak her zaman varlıkları korur."
+		},
 		"diff": {
 			"label": "Diff'ler aracılığıyla düzenlemeyi etkinleştir",
 			"description": "Etkinleştirildiğinde, Roo dosyaları daha hızlı düzenleyebilecek ve kesik tam dosya yazımlarını otomatik olarak reddedecektir. En son Claude 3.7 Sonnet modeliyle en iyi şekilde çalışır.",

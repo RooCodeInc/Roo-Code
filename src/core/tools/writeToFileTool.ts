@@ -83,7 +83,15 @@ export async function writeToFileTool(
 		newContent = newContent.split("\n").slice(0, -1).join("\n")
 	}
 
-	if (!cline.api.getModel().id.includes("claude")) {
+	// Get the preserveHtmlEntities setting from the provider
+	const provider = cline.providerRef.deref()
+	const state = await provider?.getState()
+	const preserveHtmlEntities = state?.preserveHtmlEntities ?? false
+
+	// Only unescape HTML entities if:
+	// 1. The setting is not explicitly set to preserve them, AND
+	// 2. The model is not Claude (Claude handles entities correctly by default)
+	if (!preserveHtmlEntities && !cline.api.getModel().id.includes("claude")) {
 		newContent = unescapeHtmlEntities(newContent)
 	}
 

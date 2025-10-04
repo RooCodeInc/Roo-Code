@@ -670,6 +670,10 @@
 		"title": "Geavanceerde instellingen"
 	},
 	"advanced": {
+		"preserveHtmlEntities": {
+			"label": "HTML-entiteiten behouden",
+			"description": "Indien ingeschakeld, worden HTML-entiteiten zoals &lt;, &gt; en &amp; ongewijzigd behouden in bestandsbewerkingen en commando's. Indien uitgeschakeld, worden ze automatisch geconverteerd naar hun letterlijke tekens (<, >, &). Let op: Claude-modellen behouden altijd entiteiten, ongeacht deze instelling."
+		},
 		"diff": {
 			"label": "Bewerken via diffs inschakelen",
 			"description": "Indien ingeschakeld kan Roo sneller bestanden bewerken en worden afgekorte volledige-bestandswijzigingen automatisch geweigerd. Werkt het beste met het nieuwste Claude 3.7 Sonnet-model.",

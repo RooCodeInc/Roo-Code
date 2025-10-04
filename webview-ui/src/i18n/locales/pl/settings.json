@@ -670,6 +670,10 @@
 		"title": "Ustawienia zaawansowane"
 	},
 	"advanced": {
+		"preserveHtmlEntities": {
+			"label": "Zachowaj encje HTML",
+			"description": "Gdy włączone, encje HTML takie jak &lt;, &gt; i &amp; będą zachowane w oryginalnej postaci w edycjach plików i poleceniach. Gdy wyłączone, zostaną automatycznie przekonwertowane na ich dosłowne znaki (<, >, &). Uwaga: Modele Claude zawsze zachowują encje niezależnie od tego ustawienia."
+		},
 		"diff": {
 			"label": "Włącz edycję przez różnice",
 			"description": "Gdy włączone, Roo będzie w stanie edytować pliki szybciej i automatycznie odrzuci obcięte pełne zapisy plików. Działa najlepiej z najnowszym modelem Claude 3.7 Sonnet.",

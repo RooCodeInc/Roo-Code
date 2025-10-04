@@ -670,6 +670,10 @@
 		"title": "高级设置"
 	},
 	"advanced": {
+		"preserveHtmlEntities": {
+			"label": "保留 HTML 实体",
+			"description": "启用后，HTML 实体如 &lt;、&gt; 和 &amp; 将在文件编辑和命令中按原样保留。禁用后，它们将自动转换为其字面字符（<、>、&）。注意：Claude 模型始终保留实体，无论此设置如何。"
+		},
 		"diff": {
 			"label": "启用diff更新",
 			"description": "启用后，Roo 将能够通过差异算法写入，避免模型输出完整文件，以降低Token消耗。与最新的 Claude 3.7 Sonnet 模型配合最佳。",

@@ -1373,6 +1373,10 @@ export const webviewMessageHandler = async (
 			await updateGlobalState("diagnosticsEnabled", message.bool ?? true)
 			await provider.postStateToWebview()
 			break
+		case "preserveHtmlEntities":
+			await updateGlobalState("preserveHtmlEntities", message.bool ?? false)
+			await provider.postStateToWebview()
+			break
 		case "terminalOutputLineLimit":
 			// Validate that the line limit is a positive number
 			const lineLimit = message.value

@@ -669,6 +669,10 @@
 		"title": "Erweiterte Einstellungen"
 	},
 	"advanced": {
+		"preserveHtmlEntities": {
+			"label": "HTML-Entitäten beibehalten",
+			"description": "Wenn aktiviert, werden HTML-Entitäten wie &lt;, &gt; und &amp; in Dateibearbeitungen und Befehlen unverändert beibehalten. Wenn deaktiviert, werden sie automatisch in ihre wörtlichen Zeichen (<, >, &) konvertiert. Hinweis: Claude-Modelle behalten Entitäten unabhängig von dieser Einstellung immer bei."
+		},
 		"diff": {
 			"label": "Bearbeitung durch Diffs aktivieren",
 			"description": "Wenn aktiviert, kann Roo Dateien schneller bearbeiten und lehnt automatisch abgeschnittene vollständige Dateischreibvorgänge ab. Funktioniert am besten mit dem neuesten Claude 3.7 Sonnet-Modell.",

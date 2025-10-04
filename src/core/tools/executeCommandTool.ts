@@ -53,7 +53,19 @@ export async function executeCommandTool(
 
 			task.consecutiveMistakeCount = 0
 
-			command = unescapeHtmlEntities(command) // Unescape HTML entities.
+			// Get the preserveHtmlEntities setting from the provider
+			const provider = task.providerRef.deref()
+			const providerState = await provider?.getState()
+			const preserveHtmlEntities = providerState?.preserveHtmlEntities ?? false
+
+			// Unescape HTML entities in the command if the setting allows it.
+			// This is necessary because some models may escape special characters
+			// like <, >, &, etc. in their output, which would break command execution.
+			// Only unescape if the setting is not explicitly set to preserve them.
+			if (!preserveHtmlEntities) {
+				command = unescapeHtmlEntities(command)
+			}
+			
 			const didApprove = await askApproval("command", command)
 
 			if (!didApprove) {
@@ -61,8 +73,6 @@ export async function executeCommandTool(
 			}
 
 			const executionId = task.lastMessageTs?.toString() ?? Date.now().toString()
-			const provider = await task.providerRef.deref()
-			const providerState = await provider?.getState()
 
 			const {
 				terminalOutputLineLimit = 500,

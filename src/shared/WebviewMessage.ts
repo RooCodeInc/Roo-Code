@@ -114,6 +114,7 @@ export interface WebviewMessage {
 		| "fuzzyMatchThreshold"
 		| "writeDelayMs"
 		| "diagnosticsEnabled"
+		| "preserveHtmlEntities"
 		| "enhancePrompt"
 		| "enhancedPrompt"
 		| "draggedImages"

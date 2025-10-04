@@ -37,6 +37,7 @@ type AutoApproveSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	allowedMaxRequests?: number | undefined
 	allowedMaxCost?: number | undefined
 	deniedCommands?: string[]
+	preserveHtmlEntities?: boolean
 	setCachedStateField: SetCachedStateField<
 		| "alwaysAllowReadOnly"
 		| "alwaysAllowReadOnlyOutsideWorkspace"
@@ -57,6 +58,7 @@ type AutoApproveSettingsProps = HTMLAttributes<HTMLDivElement> & {
 		| "allowedMaxCost"
 		| "deniedCommands"
 		| "alwaysAllowUpdateTodoList"
+		| "preserveHtmlEntities"
 	>
 }
 
@@ -80,6 +82,7 @@ export const AutoApproveSettings = ({
 	allowedMaxRequests,
 	allowedMaxCost,
 	deniedCommands,
+	preserveHtmlEntities,
 	setCachedStateField,
 	...props
 }: AutoApproveSettingsProps) => {
@@ -238,8 +241,22 @@ export const AutoApproveSettings = ({
 								data-testid="always-allow-write-protected-checkbox">
 								<span className="font-medium">{t("settings:autoApprove.write.protected.label")}</span>
 							</VSCodeCheckbox>
-							<div className="text-vscode-descriptionForeground text-sm mt-1 mb-3">
+							<div className="text-vscode-descriptionForeground text-sm mt-1">
 								{t("settings:autoApprove.write.protected.description")}
+							</div>
+						</div>
+						<div>
+							<VSCodeCheckbox
+								checked={preserveHtmlEntities}
+								onChange={(e: any) => {
+									setCachedStateField("preserveHtmlEntities", e.target.checked)
+									vscode.postMessage({ type: "preserveHtmlEntities", bool: e.target.checked })
+								}}
+								data-testid="preserve-html-entities-checkbox">
+								<span className="font-medium">{t("settings:advanced.preserveHtmlEntities.label")}</span>
+							</VSCodeCheckbox>
+							<div className="text-vscode-descriptionForeground text-sm mt-1 mb-3">
+								{t("settings:advanced.preserveHtmlEntities.description")}
 							</div>
 						</div>
 					</div>

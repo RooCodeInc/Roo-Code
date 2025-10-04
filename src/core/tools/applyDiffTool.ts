@@ -25,7 +25,15 @@ export async function applyDiffToolLegacy(
 	const relPath: string | undefined = block.params.path
 	let diffContent: string | undefined = block.params.diff
 
-	if (diffContent && !cline.api.getModel().id.includes("claude")) {
+	// Get the preserveHtmlEntities setting from the provider
+	const provider = cline.providerRef.deref()
+	const state = await provider?.getState()
+	const preserveHtmlEntities = state?.preserveHtmlEntities ?? false
+
+	// Only unescape HTML entities if:
+	// 1. The setting is not explicitly set to preserve them, AND
+	// 2. The model is not Claude (Claude handles entities correctly by default)
+	if (diffContent && !preserveHtmlEntities && !cline.api.getModel().id.includes("claude")) {
 		diffContent = unescapeHtmlEntities(diffContent)
 	}
 

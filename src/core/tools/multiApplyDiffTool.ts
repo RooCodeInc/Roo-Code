@@ -60,8 +60,10 @@ export async function applyDiffTool(
 ) {
 	// Check if MULTI_FILE_APPLY_DIFF experiment is enabled
 	const provider = cline.providerRef.deref()
+	let preserveHtmlEntities = false
 	if (provider) {
 		const state = await provider.getState()
+		preserveHtmlEntities = state?.preserveHtmlEntities ?? false
 		const isMultiFileApplyDiffEnabled = experiments.isEnabled(
 			state.experiments ?? {},
 			EXPERIMENT_IDS.MULTI_FILE_APPLY_DIFF,
@@ -422,12 +424,16 @@ Original error: ${errorMessage}`
 				let formattedError = ""
 
 				// Pre-process all diff items for HTML entity unescaping if needed
-				const processedDiffItems = !cline.api.getModel().id.includes("claude")
-					? diffItems.map((item) => ({
-							...item,
-							content: item.content ? unescapeHtmlEntities(item.content) : item.content,
-						}))
-					: diffItems
+				// Only unescape if:
+				// 1. The setting is not explicitly set to preserve them, AND
+				// 2. The model is not Claude (Claude handles entities correctly by default)
+				const processedDiffItems =
+					!preserveHtmlEntities && !cline.api.getModel().id.includes("claude")
+						? diffItems.map((item) => ({
+								...item,
+								content: item.content ? unescapeHtmlEntities(item.content) : item.content,
+							}))
+						: diffItems
 
 				// Apply all diffs at once with the array-based method
 				const diffResult = (await cline.diffStrategy?.applyDiff(originalContent, processedDiffItems)) ?? {
@@ -518,12 +524,12 @@ ${errorDetails ? `\nTechnical details:\n${errorDetails}\n` : ""}
 				cline.consecutiveMistakeCountForApplyDiff.delete(relPath)
 
 				// Check if preventFocusDisruption experiment is enabled
-				const provider = cline.providerRef.deref()
-				const state = await provider?.getState()
-				const diagnosticsEnabled = state?.diagnosticsEnabled ?? true
-				const writeDelayMs = state?.writeDelayMs ?? DEFAULT_WRITE_DELAY_MS
+				const providerForExperiment = cline.providerRef.deref()
+				const stateForExperiment = await providerForExperiment?.getState()
+				const diagnosticsEnabled = stateForExperiment?.diagnosticsEnabled ?? true
+				const writeDelayMs = stateForExperiment?.writeDelayMs ?? DEFAULT_WRITE_DELAY_MS
 				const isPreventFocusDisruptionEnabled = experiments.isEnabled(
-					state?.experiments ?? {},
+					stateForExperiment?.experiments ?? {},
 					EXPERIMENT_IDS.PREVENT_FOCUS_DISRUPTION,
 				)
 
