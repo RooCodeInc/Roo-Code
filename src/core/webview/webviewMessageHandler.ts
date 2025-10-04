@@ -2220,12 +2220,20 @@ export const webviewMessageHandler = async (
 						// Update state after importing
 						const customModes = await provider.customModesManager.getCustomModes()
 						await updateGlobalState("customModes", customModes)
+
+						// Switch to the first imported mode if available
+						if (result.importedSlugs && result.importedSlugs.length > 0) {
+							const firstImportedSlug = result.importedSlugs[0]
+							await updateGlobalState("mode", firstImportedSlug)
+						}
+
 						await provider.postStateToWebview()
 
-						// Send success message to webview
+						// Send success message to webview with the imported slug
 						provider.postMessageToWebview({
 							type: "importModeResult",
 							success: true,
+							importedSlug: result.importedSlugs?.[0],
 						})
 
 						// Show success message

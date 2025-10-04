@@ -870,6 +870,7 @@ describe("CustomModesManager", () => {
 				const result = await manager.importModeWithRules(importYaml)
 
 				expect(result.success).toBe(true)
+				expect(result.importedSlugs).toEqual(["imported-mode"])
 				expect(fs.writeFile).toHaveBeenCalledWith(
 					expect.stringContaining(".roomodes"),
 					expect.stringContaining("imported-mode"),
@@ -991,6 +992,7 @@ describe("CustomModesManager", () => {
 				const result = await manager.importModeWithRules(importYaml)
 
 				expect(result.success).toBe(true)
+				expect(result.importedSlugs).toEqual(["mode1", "mode2"])
 				expect(roomodesContent.customModes).toHaveLength(2)
 				expect(roomodesContent.customModes[0].slug).toBe("mode1")
 				expect(roomodesContent.customModes[1].slug).toBe("mode2")

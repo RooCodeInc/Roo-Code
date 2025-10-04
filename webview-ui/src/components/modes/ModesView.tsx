@@ -465,6 +465,9 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 					if (message.error !== "cancelled") {
 						console.error("Failed to import mode:", message.error)
 					}
+				} else if (message.importedSlug) {
+					// Switch to the imported mode
+					setVisualMode(message.importedSlug)
 				}
 			} else if (message.type === "checkRulesDirectoryResult") {
 				setHasRulesToExport((prev) => ({

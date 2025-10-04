@@ -179,6 +179,7 @@ export interface ExtensionMessage {
 	customMode?: ModeConfig
 	slug?: string
 	success?: boolean
+	importedSlug?: string
 	values?: Record<string, any>
 	requestId?: string
 	promptText?: string

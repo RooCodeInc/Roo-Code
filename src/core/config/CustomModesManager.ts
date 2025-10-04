@@ -41,6 +41,7 @@ interface ExportResult {
 interface ImportResult {
 	success: boolean
 	error?: string
+	importedSlugs?: string[]
 }
 
 export class CustomModesManager {
@@ -953,6 +954,8 @@ export class CustomModesManager {
 				}
 			}
 
+			const importedSlugs: string[] = []
+
 			// Process each mode in the import
 			for (const importMode of importData.customModes) {
 				const { rulesFiles, ...modeConfig } = importMode
@@ -984,12 +987,14 @@ export class CustomModesManager {
 
 				// Import rules files (this also handles cleanup of existing rules folders)
 				await this.importRulesFiles(importMode, rulesFiles || [], source)
+
+				importedSlugs.push(importMode.slug)
 			}
 
 			// Refresh the modes after import
 			await this.refreshMergedState()
 
-			return { success: true }
+			return { success: true, importedSlugs }
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error)
 			logger.error("Failed to import mode with rules", { error: errorMessage })
