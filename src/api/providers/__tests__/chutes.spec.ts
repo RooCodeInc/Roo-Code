@@ -518,7 +518,7 @@ describe("ChutesHandler", () => {
 	})
 
 	it("should have correct pricing and context for zai-org/GLM-4.6-turbo", () => {
-		// This test ensures the GLM-4.6-turbo model has correct pricing > 0 and context window
+		// This test ensures the GLM-4.6-turbo model has the expected pricing and context window
 		// Assert exact values and capabilities to catch regressions
 		const model = chutesModels["zai-org/GLM-4.6-turbo"]
 		expect(model.maxTokens).toBe(32768)
