@@ -508,6 +508,7 @@ describe("ChutesHandler", () => {
 		})
 		const selected = handlerWithModel.getModel()
 		expect(selected.info.temperature).toBe(0.5)
+		expect(selected.info).toEqual(expect.objectContaining(chutesModels[modelId]))
 	})
 
 	it("should have correct pricing and context for zai-org/GLM-4.6-turbo", () => {
