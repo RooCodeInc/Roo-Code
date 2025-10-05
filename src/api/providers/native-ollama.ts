@@ -6,6 +6,7 @@ import { BaseProvider } from "./base-provider"
 import type { ApiHandlerOptions } from "../../shared/api"
 import { getOllamaModels } from "./fetchers/ollama"
 import { XmlMatcher } from "../../utils/xml-matcher"
+import { SquareBracketMatcher } from "../../utils/square-bracket-matcher"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 
 interface OllamaChatOptions {
@@ -173,20 +174,31 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 		const client = this.ensureClient()
 		const { id: modelId, info: modelInfo } = await this.fetchModel()
 		const useR1Format = modelId.toLowerCase().includes("deepseek-r1")
+		const useMagistralFormat = modelId.toLowerCase().includes("magistral")
 
 		const ollamaMessages: Message[] = [
 			{ role: "system", content: systemPrompt },
 			...convertToOllamaMessages(messages),
 		]
 
-		const matcher = new XmlMatcher(
-			"think",
-			(chunk) =>
-				({
-					type: chunk.matched ? "reasoning" : "text",
-					text: chunk.data,
-				}) as const,
-		)
+		// Use square bracket matcher for Magistral models, XML matcher for others
+		const matcher = useMagistralFormat
+			? new SquareBracketMatcher(
+					"THINK",
+					(chunk) =>
+						({
+							type: chunk.matched ? "reasoning" : "text",
+							text: chunk.data,
+						}) as const,
+				)
+			: new XmlMatcher(
+					"think",
+					(chunk) =>
+						({
+							type: chunk.matched ? "reasoning" : "text",
+							text: chunk.data,
+						}) as const,
+				)
 
 		try {
 			// Build options object conditionally
