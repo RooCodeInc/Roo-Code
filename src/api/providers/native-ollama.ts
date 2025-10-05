@@ -181,7 +181,8 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 			...convertToOllamaMessages(messages),
 		]
 
-		// Use square bracket matcher for Magistral models, XML matcher for others
+		// Magistral models use square bracket syntax [THINK]...[/THINK] for reasoning blocks
+		// instead of the XML-style <think>...</think> tags used by other models
 		const matcher = useMagistralFormat
 			? new SquareBracketMatcher(
 					"THINK",
