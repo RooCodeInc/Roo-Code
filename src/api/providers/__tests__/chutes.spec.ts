@@ -502,9 +502,13 @@ describe("ChutesHandler", () => {
 
 	it("should have correct pricing and context for zai-org/GLM-4.6-turbo", () => {
 		// This test ensures the GLM-4.6-turbo model has correct pricing > 0 and context window
+		// Assert exact values and capabilities to catch regressions
 		const model = chutesModels["zai-org/GLM-4.6-turbo"]
-		expect(model.inputPrice).toBeGreaterThan(0)
-		expect(model.outputPrice).toBeGreaterThan(0)
-		expect(model.contextWindow).toBeGreaterThanOrEqual(200000)
+		expect(model.maxTokens).toBe(32768)
+		expect(model.contextWindow).toBe(202752)
+		expect(model.supportsImages).toBe(false)
+		expect(model.supportsPromptCache).toBe(false)
+		expect(model.inputPrice).toBe(1.15)
+		expect(model.outputPrice).toBe(3.25)
 	})
 })
