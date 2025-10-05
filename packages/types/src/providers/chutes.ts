@@ -332,8 +332,8 @@ export const chutesModels = {
 		contextWindow: 202752,
 		supportsImages: false,
 		supportsPromptCache: false,
-		inputPrice: 0,
-		outputPrice: 0,
+		inputPrice: 1.1500,
+		outputPrice: 3.2500,
 		description: "GLM-4.6-turbo model with 200K+ token context window, optimized for fast inference.",
 	},
 	"Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8": {
