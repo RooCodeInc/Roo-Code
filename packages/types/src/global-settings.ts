@@ -49,6 +49,12 @@ export const globalSettingsSchema = z.object({
 
 	condensingApiConfigId: z.string().optional(),
 	customCondensingPrompt: z.string().optional(),
+	smartProviderSettings: z
+		.object({
+			preset: z.enum(["conservative", "balanced", "aggressive"]),
+			customConfig: z.string().optional(),
+		})
+		.optional(),
 
 	autoApprovalEnabled: z.boolean().optional(),
 	alwaysAllowReadOnly: z.boolean().optional(),

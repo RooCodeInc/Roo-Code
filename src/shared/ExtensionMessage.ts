@@ -216,6 +216,10 @@ export interface ExtensionMessage {
 	}>
 	defaultProviderId?: string
 	providerId?: string
+	smartProviderSettings?: {
+		preset: "conservative" | "balanced" | "aggressive"
+		customConfig?: string
+	}
 }
 
 export type ExtensionState = Pick<

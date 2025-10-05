@@ -232,7 +232,10 @@ export interface WebviewMessage {
 		| "getCondensationProviders"
 		| "setDefaultCondensationProvider"
 		| "updateCondensationProviderConfig"
+		| "updateSmartProviderSettings"
+		| "showMessage"
 	text?: string
+	message?: string
 	editedMessageContent?: string
 	tab?: "settings" | "history" | "mcp" | "modes" | "chat" | "marketplace" | "cloud"
 	disabled?: boolean
@@ -284,6 +287,13 @@ export interface WebviewMessage {
 	providerId?: string
 	enabled?: boolean
 	priority?: number
+	// Smart provider settings
+	smartProviderSettings?: {
+		preset?: "conservative" | "balanced" | "aggressive"
+		customConfig?: string
+	}
+	// Message display
+	level?: "info" | "warning" | "error"
 	codeIndexSettings?: {
 		// Global state settings
 		codebaseIndexEnabled: boolean
