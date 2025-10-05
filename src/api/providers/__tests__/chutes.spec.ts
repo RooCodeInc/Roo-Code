@@ -492,4 +492,17 @@ describe("ChutesHandler", () => {
 		const model = handlerWithModel.getModel()
 		expect(model.info.temperature).toBe(0.5)
 	})
+
+	it("should include zai-org/GLM-4.6-turbo in chutesModels", () => {
+		// This test ensures the GLM-4.6-turbo model exists to prevent regressions
+		expect(chutesModels).toHaveProperty("zai-org/GLM-4.6-turbo")
+	})
+
+	it("should have correct pricing and context for zai-org/GLM-4.6-turbo", () => {
+		// This test ensures the GLM-4.6-turbo model has correct pricing > 0 and context window
+		const model = chutesModels["zai-org/GLM-4.6-turbo"]
+		expect(model.inputPrice).toBeGreaterThan(0)
+		expect(model.outputPrice).toBeGreaterThan(0)
+		expect(model.contextWindow).toBeGreaterThanOrEqual(200000)
+	})
 })
