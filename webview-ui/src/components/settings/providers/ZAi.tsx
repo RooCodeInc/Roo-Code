@@ -33,14 +33,15 @@ export const ZAi = ({ apiConfiguration, setApiConfigurationField }: ZAiProps) =>
 			<div>
 				<label className="block font-medium mb-1">{t("settings:providers.zaiEntrypoint")}</label>
 				<VSCodeDropdown
-					value={apiConfiguration.zaiApiLine || zaiApiLineSchema.enum.international_coding}
+					value={apiConfiguration.zaiApiLine || zaiApiLineSchema.enum.international}
 					onChange={handleInputChange("zaiApiLine")}
 					className={cn("w-full")}>
 					{zaiApiLineSchema.options.map((zaiApiLine) => {
 						const config = zaiApiLineConfigs[zaiApiLine]
+						const label = t(`settings:providers.zaiEntrypointOptions.${zaiApiLine}`)
 						return (
 							<VSCodeOption key={zaiApiLine} value={zaiApiLine} className="p-2">
-								{config.name} ({config.baseUrl})
+								{label} ({config.baseUrl})
 							</VSCodeOption>
 						)
 					})}
@@ -64,7 +65,7 @@ export const ZAi = ({ apiConfiguration, setApiConfigurationField }: ZAiProps) =>
 				{!apiConfiguration?.zaiApiKey && (
 					<VSCodeButtonLink
 						href={
-							zaiApiLineConfigs[apiConfiguration.zaiApiLine ?? "international_coding"].isChina
+							zaiApiLineConfigs[apiConfiguration.zaiApiLine ?? "international"].isChina
 								? "https://open.bigmodel.cn/console/overview"
 								: "https://z.ai/manage-apikey/apikey-list"
 						}
