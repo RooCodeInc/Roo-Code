@@ -292,3 +292,47 @@ export interface PassResult {
 	tokensSaved: number
 	passId: string
 }
+
+// ============================================================================
+// Condensation Settings (Phase 5 - Backend Integration)
+// ============================================================================
+
+/**
+ * Smart Provider preset configuration
+ */
+export type SmartProviderPreset = "conservative" | "balanced" | "aggressive"
+
+/**
+ * Provider configuration for condensation settings
+ */
+export interface ProviderSelection {
+	type: "native" | "lossless" | "truncation" | "smart"
+	config?: any
+}
+
+/**
+ * Smart Provider specific settings
+ */
+export interface SmartProviderSettings {
+	preset: SmartProviderPreset
+	customConfig?: string // JSON string of SmartProviderConfig
+}
+
+/**
+ * Per-model condensation provider overrides
+ */
+export interface PerModelOverride {
+	enabled: boolean
+	provider: ProviderSelection
+}
+
+/**
+ * Complete condensation settings structure
+ */
+export interface CondensationSettings {
+	defaultProvider: ProviderSelection
+	smartProviderSettings?: SmartProviderSettings
+	perModelOverrides?: {
+		[modelId: string]: PerModelOverride
+	}
+}

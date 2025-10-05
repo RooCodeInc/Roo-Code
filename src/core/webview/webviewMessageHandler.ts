@@ -3115,6 +3115,38 @@ export const webviewMessageHandler = async (
 		case "getCondensationProviders": {
 			try {
 				const manager = getCondensationManager()
+
+				// Load Smart Provider settings from global state
+				const smartProviderSettings = getGlobalState("smartProviderSettings") || {
+					preset: "balanced",
+				}
+
+				// Re-register Smart Provider with saved settings if different from default
+				if (smartProviderSettings.preset !== "balanced" || smartProviderSettings.customConfig) {
+					const registry = getProviderRegistry()
+					const { SmartCondensationProvider } = await import("../condense/providers/smart")
+					const { getConfigByName } = await import("../condense/providers/smart/configs")
+
+					let config
+					if (smartProviderSettings.customConfig) {
+						try {
+							config = JSON.parse(smartProviderSettings.customConfig)
+						} catch (parseError) {
+							provider.log(`Invalid saved custom config, using ${smartProviderSettings.preset} preset`)
+							config = getConfigByName(smartProviderSettings.preset)
+						}
+					} else {
+						config = getConfigByName(smartProviderSettings.preset)
+					}
+
+					registry.unregister("smart")
+					const smartProvider = new SmartCondensationProvider(config)
+					registry.register(smartProvider, {
+						enabled: true,
+						priority: 95,
+					})
+				}
+
 				const providers = manager.listProviders()
 				const defaultProviderId = manager.getDefaultProvider()
 
@@ -3122,6 +3154,7 @@ export const webviewMessageHandler = async (
 					type: "condensationProviders",
 					providers,
 					defaultProviderId,
+					smartProviderSettings,
 				})
 			} catch (error) {
 				provider.log(
@@ -3183,6 +3216,76 @@ export const webviewMessageHandler = async (
 				)
 				vscode.window.showErrorMessage(
 					`Failed to update provider config: ${error instanceof Error ? error.message : String(error)}`,
+				)
+			}
+			break
+		}
+		case "updateSmartProviderSettings": {
+			try {
+				const { smartProviderSettings } = message
+				if (!smartProviderSettings) {
+					throw new Error("Missing smartProviderSettings")
+				}
+
+				// Ensure preset has a value (default to balanced if not provided)
+				const preset = smartProviderSettings.preset || "balanced"
+				const normalizedSettings = {
+					preset,
+					customConfig: smartProviderSettings.customConfig,
+				}
+
+				// Store settings in global state
+				await updateGlobalState("smartProviderSettings", normalizedSettings)
+
+				// Re-register Smart Provider with new config
+				const registry = getProviderRegistry()
+				const { SmartCondensationProvider } = await import("../condense/providers/smart")
+				const { getConfigByName } = await import("../condense/providers/smart/configs")
+
+				let config
+				if (normalizedSettings.customConfig) {
+					// Use custom JSON config
+					try {
+						config = JSON.parse(normalizedSettings.customConfig)
+					} catch (parseError) {
+						throw new Error(
+							`Invalid custom config JSON: ${parseError instanceof Error ? parseError.message : String(parseError)}`,
+						)
+					}
+				} else {
+					// Use preset config
+					config = getConfigByName(preset)
+				}
+
+				// Unregister old Smart Provider and register new one
+				registry.unregister("smart")
+				const smartProvider = new SmartCondensationProvider(config)
+				registry.register(smartProvider, {
+					enabled: true,
+					priority: 95,
+				})
+
+				// Send updated list with new settings
+				const manager = getCondensationManager()
+				const providers = manager.listProviders()
+				const defaultProviderId = manager.getDefaultProvider()
+
+				await provider.postMessageToWebview({
+					type: "condensationProviders",
+					providers,
+					defaultProviderId,
+					smartProviderSettings: normalizedSettings,
+				})
+
+				provider.log(
+					`Smart Provider settings updated: preset=${preset}${normalizedSettings.customConfig ? " (custom config)" : ""}`,
+				)
+			} catch (error) {
+				provider.log(
+					`Failed to update Smart Provider settings: ${error instanceof Error ? error.message : String(error)}`,
+				)
+				vscode.window.showErrorMessage(
+					`Failed to update Smart Provider settings: ${error instanceof Error ? error.message : String(error)}`,
 				)
 			}
 			break

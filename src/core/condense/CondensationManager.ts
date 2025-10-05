@@ -4,6 +4,8 @@ import { getProviderRegistry } from "./ProviderRegistry"
 import { NativeCondensationProvider } from "./providers/NativeProvider"
 import { LosslessCondensationProvider } from "./providers/lossless"
 import { TruncationCondensationProvider } from "./providers/truncation"
+import { SmartCondensationProvider } from "./providers/smart"
+import { BALANCED_CONFIG } from "./providers/smart/configs"
 import { CondensationContext, CondensationOptions, CondensationResult, ICondensationProvider } from "./types"
 
 /**
@@ -35,7 +37,7 @@ export class CondensationManager {
 	private registerDefaultProviders(): void {
 		const registry = getProviderRegistry()
 
-		// Register Native provider as default
+		// Register Native provider
 		const nativeProvider = new NativeCondensationProvider()
 		registry.register(nativeProvider, {
 			enabled: true,
@@ -54,6 +56,13 @@ export class CondensationManager {
 		registry.register(truncationProvider, {
 			enabled: true,
 			priority: 80,
+		})
+
+		// Register Smart Provider with BALANCED config as default
+		const smartProvider = new SmartCondensationProvider(BALANCED_CONFIG)
+		registry.register(smartProvider, {
+			enabled: true,
+			priority: 95, // Between Lossless and Native
 		})
 	}
 
