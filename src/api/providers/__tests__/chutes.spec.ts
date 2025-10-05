@@ -493,22 +493,28 @@ describe("ChutesHandler", () => {
 		expect(model.info.temperature).toBe(0.5)
 	})
 
-	it("should include zai-org/GLM-4.6-turbo in chutesModels", () => {
-		// This test ensures the GLM-4.6-turbo model exists to prevent regressions
-		const modelId = "zai-org/GLM-4.6-turbo"
-		// Compile-time assertion that GLM-4.6-turbo is part of ChutesModelId (no unused var)
-		const expectType = <T>(_value: T) => {}
-		expectType<ChutesModelId>(modelId)
-		expect(chutesModels).toHaveProperty(modelId)
-
-		// Handler-level assertion that GLM-4.6-turbo uses the default non-DeepSeek temperature (0.5)
+	it("should return zai-org/GLM-4.6-turbo model with correct configuration", () => {
+		const testModelId: ChutesModelId = "zai-org/GLM-4.6-turbo"
 		const handlerWithModel = new ChutesHandler({
-			apiModelId: "zai-org/GLM-4.6-turbo",
+			apiModelId: testModelId,
 			chutesApiKey: "test-chutes-api-key",
 		})
-		const selected = handlerWithModel.getModel()
-		expect(selected.info.temperature).toBe(0.5)
-		expect(selected.info).toEqual(expect.objectContaining(chutesModels[modelId]))
+		const model = handlerWithModel.getModel()
+		expect(model.id).toBe(testModelId)
+		expect(model.info).toEqual(
+			expect.objectContaining({
+				maxTokens: 32768,
+				contextWindow: 202752,
+				supportsImages: false,
+				supportsPromptCache: false,
+				inputPrice: 1.15,
+				outputPrice: 3.25,
+				description: "GLM-4.6-turbo model with 200K+ token context window, optimized for fast inference.",
+				temperature: 0.5, // Default temperature for non-DeepSeek models
+			}),
+		)
+		// Strengthen test by also asserting the selected model.info matches the static config to catch mapping/regression errors beyond temperature
+		expect(model.info).toEqual(expect.objectContaining(chutesModels[testModelId]))
 	})
 
 	it("should have correct pricing and context for zai-org/GLM-4.6-turbo", () => {
