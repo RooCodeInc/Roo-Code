@@ -364,7 +364,7 @@ export const CondensationProviderSettings: React.FC = () => {
 										</div>
 
 										<div className="mt-3">
-											<VSCodeLink href="https://github.com/RooVetGit/Roo-Code/blob/main/docs/smart-provider-pass-based-implementation.md">
+											<VSCodeLink href="https://github.com/RooVetGit/Roo-Code/blob/main/src/core/condense/providers/smart/README.md">
 												📚 View Configuration Documentation
 											</VSCodeLink>
 										</div>
