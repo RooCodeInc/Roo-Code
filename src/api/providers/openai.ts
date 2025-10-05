@@ -219,8 +219,8 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			}
 		} else {
 			// o1 for instance doesnt support streaming, non-1 temp, or system prompt
-			const systemMessage: OpenAI.Chat.ChatCompletionUserMessageParam = {
-				role: "user",
+			const systemMessage: OpenAI.Chat.ChatCompletionSystemMessageParam = {
+				role: "system",
 				content: systemPrompt,
 			}
 
