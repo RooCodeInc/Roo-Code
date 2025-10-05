@@ -495,6 +495,8 @@ describe("ChutesHandler", () => {
 
 	it("should include zai-org/GLM-4.6-turbo in chutesModels", () => {
 		// This test ensures the GLM-4.6-turbo model exists to prevent regressions
+		// Compile-time assertion that GLM-4.6-turbo is part of ChutesModelId
+		const _: ChutesModelId = "zai-org/GLM-4.6-turbo"
 		expect(chutesModels).toHaveProperty("zai-org/GLM-4.6-turbo")
 	})
 
