@@ -528,4 +528,40 @@ describe("ChutesHandler", () => {
 		expect(model.inputPrice).toBe(1.15)
 		expect(model.outputPrice).toBe(3.25)
 	})
+
+	it("createMessage should pass correct parameters to Chutes client for GLM-4.6-turbo model", async () => {
+		const modelId: ChutesModelId = "zai-org/GLM-4.6-turbo"
+		const modelInfo = chutesModels[modelId]
+		const handlerWithModel = new ChutesHandler({ apiModelId: modelId, chutesApiKey: "test-chutes-api-key" })
+
+		mockCreate.mockImplementationOnce(() => {
+			return {
+				[Symbol.asyncIterator]: () => ({
+					async next() {
+						return { done: true }
+					},
+				}),
+			}
+		})
+
+		const systemPrompt = "Test system prompt for GLM-4.6-turbo"
+		const messages: Anthropic.Messages.MessageParam[] = [
+			{ role: "user", content: "Test message for GLM-4.6-turbo" },
+		]
+
+		const messageGenerator = handlerWithModel.createMessage(systemPrompt, messages)
+		await messageGenerator.next()
+
+		expect(mockCreate).toHaveBeenCalledWith(
+			expect.objectContaining({
+				model: modelId,
+				max_tokens: modelInfo.maxTokens, // Should be 32768
+				temperature: 0.5, // Default temperature for non-DeepSeek models
+				messages: expect.arrayContaining([{ role: "system", content: systemPrompt }]),
+				stream: true,
+				stream_options: { include_usage: true },
+			}),
+			undefined,
+		)
+	})
 })
