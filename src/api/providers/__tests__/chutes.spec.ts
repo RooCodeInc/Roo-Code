@@ -495,9 +495,19 @@ describe("ChutesHandler", () => {
 
 	it("should include zai-org/GLM-4.6-turbo in chutesModels", () => {
 		// This test ensures the GLM-4.6-turbo model exists to prevent regressions
-		// Compile-time assertion that GLM-4.6-turbo is part of ChutesModelId
-		const _: ChutesModelId = "zai-org/GLM-4.6-turbo"
-		expect(chutesModels).toHaveProperty("zai-org/GLM-4.6-turbo")
+		const modelId: ChutesModelId = "zai-org/GLM-4.6-turbo"
+		// Compile-time assertion that GLM-4.6-turbo is part of ChutesModelId (no unused var)
+		const expectType = <T>(_value: T) => {}
+		expectType<ChutesModelId>(modelId)
+		expect(chutesModels).toHaveProperty(modelId)
+
+		// Handler-level assertion that GLM-4.6-turbo uses the default non-DeepSeek temperature (0.5)
+		const handlerWithModel = new ChutesHandler({
+			apiModelId: "zai-org/GLM-4.6-turbo",
+			chutesApiKey: "test-chutes-api-key",
+		})
+		const selected = handlerWithModel.getModel()
+		expect(selected.info.temperature).toBe(0.5)
 	})
 
 	it("should have correct pricing and context for zai-org/GLM-4.6-turbo", () => {
