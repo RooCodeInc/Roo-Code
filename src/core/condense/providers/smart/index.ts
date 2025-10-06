@@ -20,6 +20,7 @@ import type {
 	DecomposedMessage,
 	ContentOperation,
 	ContentTypeOperations,
+	PassMetrics,
 } from "../../types"
 import { ApiMessage } from "../../../task-persistence/apiMessages"
 import { LosslessCondensationProvider } from "../lossless"
@@ -75,9 +76,13 @@ export class SmartCondensationProvider extends BaseCondensationProvider {
 		let workingMessages = [...context.messages]
 		const operations: string[] = []
 		let totalCost = 0
+		const passMetrics: PassMetrics[] = []
 
 		// Step 1: Optional lossless prelude
 		if (this.config.losslessPrelude?.enabled) {
+			const preludeStart = Date.now()
+			const tokensBefore = this.estimateMessagesTokens(workingMessages)
+
 			const preludeResult = await this.losslessProvider.condense(
 				{ ...context, messages: workingMessages },
 				options,
@@ -85,6 +90,19 @@ export class SmartCondensationProvider extends BaseCondensationProvider {
 			workingMessages = preludeResult.messages
 			totalCost += preludeResult.cost
 			operations.push("lossless_prelude")
+
+			// Capture prelude metrics
+			passMetrics.push({
+				passId: "lossless_prelude",
+				passType: "quality",
+				operationsApplied: ["lossless"],
+				tokensBefore,
+				tokensAfter: this.estimateMessagesTokens(workingMessages),
+				timeElapsed: Date.now() - preludeStart,
+				apiCalls: 0,
+				cost: preludeResult.cost,
+				errors: preludeResult.error ? [preludeResult.error] : undefined,
+			})
 		}
 
 		// Step 2: Execute passes sequentially
@@ -94,11 +112,27 @@ export class SmartCondensationProvider extends BaseCondensationProvider {
 				continue
 			}
 
+			const passStart = Date.now()
+			const tokensBefore = this.estimateMessagesTokens(workingMessages)
+
 			// Execute pass
 			const passResult = await this.executePass(pass, workingMessages, context, options)
 			workingMessages = passResult.messages
 			totalCost += passResult.cost
 			operations.push(`pass_${pass.id}`)
+
+			// Capture pass metrics
+			passMetrics.push({
+				passId: pass.id,
+				passType: pass.mode === "batch" ? "batch" : "individual",
+				operationsApplied: this.getOperationsForPass(pass),
+				tokensBefore,
+				tokensAfter: this.estimateMessagesTokens(workingMessages),
+				timeElapsed: Date.now() - passStart,
+				apiCalls: this.getApiCallsForPass(pass),
+				cost: passResult.cost,
+				errors: passResult.errors,
+			})
 
 			// Early exit if target reached
 			if (await this.isTargetReached(workingMessages, context)) {
@@ -124,6 +158,7 @@ export class SmartCondensationProvider extends BaseCondensationProvider {
 				condensedTokens,
 				reductionPercentage: originalTokens > 0 ? (tokensSaved / originalTokens) * 100 : 0,
 				operationsApplied: operations,
+				passes: passMetrics,
 			},
 		}
 	}
@@ -174,22 +209,29 @@ export class SmartCondensationProvider extends BaseCondensationProvider {
 		messages: ApiMessage[],
 		context: CondensationContext,
 		options: CondensationOptions,
-	): Promise<PassResult> {
+	): Promise<PassResult & { errors?: string[] }> {
 		// Apply selection strategy
 		const { selectedMessages, preservedMessages } = this.applySelection(pass.selection, messages)
 
 		// Execute based on mode
 		let processedMessages: ApiMessage[]
 		let cost = 0
+		const errors: string[] = []
 
-		if (pass.mode === "batch") {
-			const batchResult = await this.executeBatchPass(pass, selectedMessages, context, options)
-			processedMessages = batchResult.messages
-			cost = batchResult.cost
-		} else {
-			const individualResult = await this.executeIndividualPass(pass, selectedMessages, context, options)
-			processedMessages = individualResult.messages
-			cost = individualResult.cost
+		try {
+			if (pass.mode === "batch") {
+				const batchResult = await this.executeBatchPass(pass, selectedMessages, context, options)
+				processedMessages = batchResult.messages
+				cost = batchResult.cost
+			} else {
+				const individualResult = await this.executeIndividualPass(pass, selectedMessages, context, options)
+				processedMessages = individualResult.messages
+				cost = individualResult.cost
+			}
+		} catch (error) {
+			// Capture error but don't fail the entire pass
+			errors.push(error instanceof Error ? error.message : String(error))
+			processedMessages = selectedMessages // Fallback to original messages
 		}
 
 		// Combine preserved and processed messages
@@ -205,6 +247,7 @@ export class SmartCondensationProvider extends BaseCondensationProvider {
 			cost,
 			tokensSaved,
 			passId: pass.id,
+			errors: errors.length > 0 ? errors : undefined,
 		}
 	}
 
@@ -865,5 +908,55 @@ export class SmartCondensationProvider extends BaseCondensationProvider {
 		})
 
 		return total
+	}
+
+	/**
+	 * Get operations applied in a pass for telemetry
+	 */
+	private getOperationsForPass(pass: PassConfig): string[] {
+		const operations: string[] = []
+
+		if (pass.mode === "batch") {
+			if (pass.batchConfig) {
+				operations.push(pass.batchConfig.operation)
+			}
+		} else if (pass.mode === "individual" && pass.individualConfig) {
+			const config = pass.individualConfig
+			if (config.defaults.messageText.operation !== "keep") {
+				operations.push(`messageText:${config.defaults.messageText.operation}`)
+			}
+			if (config.defaults.toolParameters.operation !== "keep") {
+				operations.push(`toolParameters:${config.defaults.toolParameters.operation}`)
+			}
+			if (config.defaults.toolResults.operation !== "keep") {
+				operations.push(`toolResults:${config.defaults.toolResults.operation}`)
+			}
+		}
+
+		return operations.length > 0 ? operations : ["keep"]
+	}
+
+	/**
+	 * Estimate API calls for a pass for telemetry
+	 */
+	private getApiCallsForPass(pass: PassConfig): number {
+		if (pass.mode === "batch") {
+			// Batch mode makes 1 API call if summarizing
+			return pass.batchConfig?.operation === "summarize" ? 1 : 0
+		}
+
+		// Individual mode: count summarize operations
+		if (pass.individualConfig) {
+			const config = pass.individualConfig
+			let apiCalls = 0
+
+			if (config.defaults.messageText.operation === "summarize") apiCalls++
+			if (config.defaults.toolParameters.operation === "summarize") apiCalls++
+			if (config.defaults.toolResults.operation === "summarize") apiCalls++
+
+			return apiCalls
+		}
+
+		return 0
 	}
 }

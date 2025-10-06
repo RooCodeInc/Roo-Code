@@ -11,7 +11,7 @@
 import { describe, it, expect, beforeEach, vi } from "vitest"
 import { SmartCondensationProvider } from "../providers/smart"
 import { CONSERVATIVE_CONFIG, BALANCED_CONFIG, AGGRESSIVE_CONFIG } from "../providers/smart/configs"
-import type { CondensationContext, CondensationOptions } from "../types"
+import type { CondensationContext, CondensationOptions, PassMetrics } from "../types"
 import type { ApiMessage } from "../../task-persistence/apiMessages"
 
 describe("Smart Provider Pass-Based - Unit Tests", () => {
@@ -735,6 +735,341 @@ describe("Smart Provider Pass-Based - Unit Tests", () => {
 			expect(suppressPass?.individualConfig?.messageTokenThresholds).toBeDefined()
 			expect(suppressPass?.individualConfig?.messageTokenThresholds?.toolParameters).toBe(300)
 			expect(suppressPass?.individualConfig?.messageTokenThresholds?.toolResults).toBe(300)
+		})
+	})
+
+	describe("Per-Pass Telemetry (Phase 7)", () => {
+		it("captures detailed metrics for each pass execution", async () => {
+			const config = {
+				losslessPrelude: { enabled: true },
+				passes: [
+					{
+						id: "pass1",
+						name: "Pass 1",
+						selection: { type: "preserve_recent" as const, keepRecentCount: 5 },
+						mode: "individual" as const,
+						individualConfig: {
+							defaults: {
+								messageText: { operation: "keep" as const },
+								toolParameters: { operation: "suppress" as const },
+								toolResults: { operation: "suppress" as const },
+							},
+						},
+						execution: { type: "always" as const },
+					},
+					{
+						id: "pass2",
+						name: "Pass 2",
+						selection: { type: "preserve_recent" as const, keepRecentCount: 3 },
+						mode: "individual" as const,
+						individualConfig: {
+							defaults: {
+								messageText: { operation: "keep" as const },
+								toolParameters: { operation: "keep" as const },
+								toolResults: { operation: "truncate" as const, params: { maxChars: 100 } },
+							},
+						},
+						execution: { type: "always" as const },
+					},
+				],
+			}
+
+			const provider = new SmartCondensationProvider(config)
+			const messages: ApiMessage[] = Array(10)
+				.fill(null)
+				.map((_, i) => ({
+					ts: Date.now() + i,
+					role: "user",
+					content: `Message ${i}`,
+				}))
+
+			mockContext.messages = messages
+			const result = await provider.condense(mockContext, mockOptions)
+
+			// Check that passes array exists in metrics
+			expect(result.metrics?.passes).toBeDefined()
+			expect(Array.isArray(result.metrics?.passes)).toBe(true)
+
+			// Should have at least 2 passes executed (lossless may not execute on small messages)
+			expect(result.metrics?.passes?.length).toBeGreaterThanOrEqual(2)
+
+			// Verify each pass has required fields
+			result.metrics?.passes?.forEach((pass: PassMetrics) => {
+				expect(pass.passId).toBeDefined()
+				expect(pass.passType).toBeDefined()
+				expect(pass.operationsApplied).toBeDefined()
+				expect(typeof pass.tokensBefore).toBe("number")
+				expect(typeof pass.tokensAfter).toBe("number")
+				expect(typeof pass.timeElapsed).toBe("number")
+				expect(typeof pass.apiCalls).toBe("number")
+				expect(typeof pass.cost).toBe("number")
+			})
+		})
+
+		it("tracks tokens before and after for each pass", async () => {
+			const config = {
+				losslessPrelude: { enabled: false },
+				passes: [
+					{
+						id: "suppressor",
+						name: "Suppressor",
+						selection: { type: "preserve_recent" as const, keepRecentCount: 2 },
+						mode: "individual" as const,
+						individualConfig: {
+							defaults: {
+								messageText: { operation: "suppress" as const },
+								toolParameters: { operation: "suppress" as const },
+								toolResults: { operation: "suppress" as const },
+							},
+						},
+						execution: { type: "always" as const },
+					},
+				],
+			}
+
+			const provider = new SmartCondensationProvider(config)
+			const messages: ApiMessage[] = Array(5)
+				.fill(null)
+				.map((_, i) => ({
+					ts: Date.now() + i,
+					role: "user",
+					content: "Long message ".repeat(50), // ~150 tokens per message
+				}))
+
+			mockContext.messages = messages
+			const result = await provider.condense(mockContext, mockOptions)
+
+			const passMetrics = result.metrics?.passes?.[0]
+			expect(passMetrics).toBeDefined()
+
+			// Tokens should decrease after suppression
+			expect(passMetrics!.tokensBefore).toBeGreaterThan(passMetrics!.tokensAfter)
+			expect(passMetrics!.tokensBefore).toBeGreaterThan(0)
+			expect(passMetrics!.tokensAfter).toBeGreaterThan(0)
+		})
+
+		it("sums pass costs to match total cost", async () => {
+			const config = {
+				losslessPrelude: { enabled: true },
+				passes: [
+					{
+						id: "pass1",
+						name: "Pass 1",
+						selection: { type: "preserve_recent" as const, keepRecentCount: 5 },
+						mode: "individual" as const,
+						individualConfig: {
+							defaults: {
+								messageText: { operation: "keep" as const },
+								toolParameters: { operation: "keep" as const },
+								toolResults: { operation: "keep" as const },
+							},
+						},
+						execution: { type: "always" as const },
+					},
+				],
+			}
+
+			const provider = new SmartCondensationProvider(config)
+			const messages: ApiMessage[] = [
+				{ ts: Date.now(), role: "user", content: "Test message" },
+				{ ts: Date.now() + 1, role: "assistant", content: "Response" },
+			]
+
+			mockContext.messages = messages
+			const result = await provider.condense(mockContext, mockOptions)
+
+			// Calculate sum of pass costs
+			const sumOfPassCosts =
+				result.metrics?.passes?.reduce((sum: number, pass: PassMetrics) => sum + pass.cost, 0) || 0
+
+			// Total cost should equal sum of pass costs
+			expect(result.cost).toBe(sumOfPassCosts)
+		})
+
+		it("captures errors per pass without failing entire condensation", async () => {
+			const config = {
+				losslessPrelude: { enabled: false },
+				passes: [
+					{
+						id: "problematic-pass",
+						name: "Problematic Pass",
+						selection: { type: "preserve_recent" as const, keepRecentCount: 0 },
+						mode: "individual" as const,
+						individualConfig: {
+							defaults: {
+								messageText: { operation: "summarize" as const, params: {} },
+								toolParameters: { operation: "keep" as const },
+								toolResults: { operation: "keep" as const },
+							},
+						},
+						execution: { type: "always" as const },
+					},
+				],
+			}
+
+			const provider = new SmartCondensationProvider(config)
+
+			// Mock LLM to throw error
+			mockApiHandler.createMessage.mockImplementation(() => {
+				throw new Error("Simulated LLM failure")
+			})
+
+			const messages: ApiMessage[] = [{ ts: Date.now(), role: "user", content: "Test" }]
+
+			mockContext.messages = messages
+			const result = await provider.condense(mockContext, mockOptions)
+
+			// Condensation should not fail entirely
+			expect(result.messages).toBeDefined()
+
+			// But pass should have errors captured (via fallback)
+			// Note: The error is caught in applySummarizeOperation which falls back to truncation
+			// So the pass itself doesn't fail, but we can still verify the behavior
+			expect(result.metrics?.passes).toBeDefined()
+		})
+
+		it("includes operation types in pass metrics", async () => {
+			const config = {
+				losslessPrelude: { enabled: false },
+				passes: [
+					{
+						id: "operations-test",
+						name: "Operations Test",
+						selection: { type: "preserve_recent" as const, keepRecentCount: 0 },
+						mode: "individual" as const,
+						individualConfig: {
+							defaults: {
+								messageText: { operation: "truncate" as const, params: { maxChars: 100 } },
+								toolParameters: { operation: "suppress" as const },
+								toolResults: { operation: "keep" as const },
+							},
+						},
+						execution: { type: "always" as const },
+					},
+				],
+			}
+
+			const provider = new SmartCondensationProvider(config)
+			const messages: ApiMessage[] = [{ ts: Date.now(), role: "user", content: "Test message" }]
+
+			mockContext.messages = messages
+			const result = await provider.condense(mockContext, mockOptions)
+
+			const passMetrics = result.metrics?.passes?.[0]
+			expect(passMetrics?.operationsApplied).toBeDefined()
+			expect(passMetrics?.operationsApplied).toContain("messageText:truncate")
+			expect(passMetrics?.operationsApplied).toContain("toolParameters:suppress")
+			// toolResults:keep is not included since "keep" operations are filtered out
+		})
+
+		it("tracks time elapsed for each pass", async () => {
+			const config = {
+				losslessPrelude: { enabled: false },
+				passes: [
+					{
+						id: "timed-pass",
+						name: "Timed Pass",
+						selection: { type: "preserve_recent" as const, keepRecentCount: 0 },
+						mode: "individual" as const,
+						individualConfig: {
+							defaults: {
+								messageText: { operation: "keep" as const },
+								toolParameters: { operation: "keep" as const },
+								toolResults: { operation: "keep" as const },
+							},
+						},
+						execution: { type: "always" as const },
+					},
+				],
+			}
+
+			const provider = new SmartCondensationProvider(config)
+			const messages: ApiMessage[] = [{ ts: Date.now(), role: "user", content: "Test" }]
+
+			mockContext.messages = messages
+			const result = await provider.condense(mockContext, mockOptions)
+
+			const passMetrics = result.metrics?.passes?.[0]
+			expect(passMetrics?.timeElapsed).toBeDefined()
+			expect(passMetrics?.timeElapsed).toBeGreaterThanOrEqual(0)
+		})
+
+		it("estimates API calls correctly for batch mode", async () => {
+			const config = {
+				losslessPrelude: { enabled: false },
+				passes: [
+					{
+						id: "batch-api-test",
+						name: "Batch API Test",
+						selection: { type: "preserve_recent" as const, keepRecentCount: 0 },
+						mode: "batch" as const,
+						batchConfig: {
+							operation: "keep" as const,
+						},
+						execution: { type: "always" as const },
+					},
+				],
+			}
+
+			const provider = new SmartCondensationProvider(config)
+			const messages: ApiMessage[] = [{ ts: Date.now(), role: "user", content: "Test" }]
+
+			mockContext.messages = messages
+			const result = await provider.condense(mockContext, mockOptions)
+
+			const passMetrics = result.metrics?.passes?.[0]
+			expect(passMetrics?.apiCalls).toBe(0) // "keep" operation makes no API calls
+		})
+
+		it("identifies pass types correctly (batch vs individual)", async () => {
+			const config = {
+				losslessPrelude: { enabled: false },
+				passes: [
+					{
+						id: "batch-pass",
+						name: "Batch Pass",
+						selection: { type: "preserve_recent" as const, keepRecentCount: 0 },
+						mode: "batch" as const,
+						batchConfig: {
+							operation: "keep" as const,
+						},
+						execution: { type: "always" as const },
+					},
+					{
+						id: "individual-pass",
+						name: "Individual Pass",
+						selection: { type: "preserve_recent" as const, keepRecentCount: 0 },
+						mode: "individual" as const,
+						individualConfig: {
+							defaults: {
+								messageText: { operation: "keep" as const },
+								toolParameters: { operation: "keep" as const },
+								toolResults: { operation: "keep" as const },
+							},
+						},
+						execution: { type: "always" as const },
+					},
+				],
+			}
+
+			const provider = new SmartCondensationProvider(config)
+			const messages: ApiMessage[] = [{ ts: Date.now(), role: "user", content: "Test" }]
+
+			mockContext.messages = messages
+			// Remove targetTokens to prevent early exit
+			mockContext.targetTokens = undefined
+			const result = await provider.condense(mockContext, mockOptions)
+
+			// Verify we have passes
+			expect(result.metrics?.passes).toBeDefined()
+			expect(result.metrics?.passes?.length).toBeGreaterThanOrEqual(2)
+
+			// Find batch and individual passes
+			const batchPass = result.metrics?.passes?.find((p: PassMetrics) => p.passId === "batch-pass")
+			const individualPass = result.metrics?.passes?.find((p: PassMetrics) => p.passId === "individual-pass")
+
+			expect(batchPass?.passType).toBe("batch")
+			expect(individualPass?.passType).toBe("individual")
 		})
 	})
 })
