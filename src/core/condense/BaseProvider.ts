@@ -38,7 +38,26 @@ export abstract class BaseCondensationProvider implements ICondensationProvider 
 		try {
 			const result = await this.condenseInternal(context, options)
 
-			// 4. Add metrics
+			// 4. Universal check: Ensure condensation actually reduced context
+			// Only check if we have a valid baseline (prevContextTokens > 0)
+			if (
+				context.prevContextTokens > 0 &&
+				result.newContextTokens !== undefined &&
+				result.newContextTokens >= context.prevContextTokens
+			) {
+				return {
+					messages: context.messages,
+					cost: result.cost || 0,
+					error: "Condensation failed: context grew or stayed the same",
+					metrics: {
+						...result.metrics, // Preserve provider-specific metrics
+						providerId: this.id,
+						timeElapsed: Date.now() - startTime,
+					},
+				}
+			}
+
+			// 5. Add metrics
 			const timeElapsed = Date.now() - startTime
 			result.metrics = {
 				providerId: this.id,

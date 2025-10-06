@@ -162,10 +162,6 @@ export class NativeCondensationProvider extends BaseCondensationProvider {
 		)
 
 		const newContextTokens = outputTokens + (await apiHandler.countTokens(contextBlocks))
-		if (newContextTokens >= prevContextTokens) {
-			const error = t("common:errors.condense_context_grew")
-			return { ...response, cost, error }
-		}
 
 		return {
 			messages: newMessages,

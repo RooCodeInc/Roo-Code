@@ -568,10 +568,10 @@ describe("Condense Integration", () => {
 			mockApiHandler,
 			"System prompt",
 			"task-123",
-			0, // Zero previous context
+			30, // Previous context baseline
 		)
 
-		// Should fail because new context would grow from 0
+		// Should fail because new context (40) >= previous context (30)
 		expect(result.error).toBeDefined()
 		expect(result.messages).toEqual(messages)
 	})
