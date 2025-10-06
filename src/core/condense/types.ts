@@ -284,6 +284,21 @@ export interface SmartProviderConfig {
 }
 
 /**
+ * Detailed metrics for a single pass execution
+ */
+export interface PassMetrics {
+	passId: string
+	passType: "quality" | "fallback" | "batch" | "individual"
+	operationsApplied: string[]
+	tokensBefore: number
+	tokensAfter: number
+	timeElapsed: number
+	apiCalls: number
+	cost: number
+	errors?: string[]
+}
+
+/**
  * Result of a single pass execution
  */
 export interface PassResult {
