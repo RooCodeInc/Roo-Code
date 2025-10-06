@@ -9,6 +9,7 @@ export interface RooTerminal {
 	running: boolean
 	taskId?: string
 	process?: RooTerminalProcess
+	requestedCwd?: string
 	getCurrentWorkingDirectory(): string
 	isClosed: () => boolean
 	runCommand: (command: string, callbacks: RooTerminalCallbacks) => RooTerminalProcessResultPromise

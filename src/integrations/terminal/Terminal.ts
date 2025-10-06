@@ -1,6 +1,7 @@
 import * as vscode from "vscode"
 import pWaitFor from "p-wait-for"
 
+import { arePathsEqual } from "../../utils/path"
 import type { RooTerminalCallbacks, RooTerminalProcessResultPromise } from "./types"
 import { BaseTerminal } from "./BaseTerminal"
 import { TerminalProcess } from "./TerminalProcess"
@@ -47,7 +48,14 @@ export class Terminal extends BaseTerminal {
 		this.busy = true
 
 		const process = new TerminalProcess(this)
-		process.command = command
+		const currentCwd = this.getCurrentWorkingDirectory()
+		let commandToRun = command
+
+		if (this.requestedCwd && !arePathsEqual(this.requestedCwd, currentCwd)) {
+			// Wrap path in quotes to handle spaces
+			commandToRun = `cd "${this.requestedCwd}" && ${command}`
+		}
+		process.command = commandToRun
 		this.process = process
 
 		// Set up event handlers from callbacks before starting process.
@@ -76,7 +84,7 @@ export class Terminal extends BaseTerminal {
 					ShellIntegrationManager.zshCleanupTmpDir(this.id)
 
 					// Run the command in the terminal
-					process.run(command)
+					process.run(commandToRun)
 				})
 				.catch(() => {
 					console.log(`[Terminal ${this.id}] Shell integration not available. Command execution aborted.`)

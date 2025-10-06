@@ -192,12 +192,22 @@ export class TerminalRegistry {
 			})
 		}
 
+		// Third priority: find any idle terminal with the same provider,
+		// preferably one with the same task ID.
+		if (!terminal) {
+			const idleTerminals = terminals.filter((t) => !t.busy && t.provider === provider)
+			if (idleTerminals.length > 0) {
+				terminal = idleTerminals.find((t) => t.taskId === taskId) ?? idleTerminals[0]
+			}
+		}
+
 		// If no suitable terminal found, create a new one.
 		if (!terminal) {
 			terminal = this.createTerminal(cwd, provider)
 		}
 
 		terminal.taskId = taskId
+		terminal.requestedCwd = cwd
 
 		return terminal
 	}
