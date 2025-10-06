@@ -125,3 +125,15 @@ export type IpcServerEvents = {
 	[IpcMessageType.TaskCommand]: [clientId: string, data: TaskCommand]
 	[IpcMessageType.TaskEvent]: [relayClientId: string | undefined, data: TaskEvent]
 }
+
+/**
+ * RooCodeIpcServer
+ */
+
+export interface RooCodeIpcServer {
+	socketPath: string
+	isListening: boolean
+	listen(): void
+	broadcast(message: IpcMessage): void
+	send(client: string | unknown, message: IpcMessage): void
+}

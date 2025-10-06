@@ -233,6 +233,21 @@ const getCommandsMap = ({ context, outputChannel, provider }: RegisterCommandOpt
 			action: "toggleAutoApprove",
 		})
 	},
+	refreshMcpServers: async () => {
+		const visibleProvider = getVisibleProviderOrLog(outputChannel)
+
+		if (!visibleProvider) {
+			return
+		}
+
+		const mcpHub = visibleProvider.getMcpHub()
+		if (mcpHub) {
+			await mcpHub.refreshAllConnections()
+			vscode.window.showInformationMessage("MCP servers refreshed successfully")
+		} else {
+			vscode.window.showWarningMessage("MCP hub is not available")
+		}
+	},
 })
 
 export const openClineInNewTab = async ({ context, outputChannel }: Omit<RegisterCommandOptions, "provider">) => {

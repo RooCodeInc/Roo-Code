@@ -6,18 +6,20 @@ import * as os from "os"
 import * as vscode from "vscode"
 
 import {
-	type RooCodeAPI,
 	type RooCodeSettings,
 	type RooCodeEvents,
+	type RooCodeAPI,
 	type ProviderSettings,
 	type ProviderSettingsEntry,
 	type TaskEvent,
 	type CreateTaskOptions,
+	type McpApi,
 	RooCodeEventName,
 	TaskCommandName,
 	isSecretStateKey,
 	IpcOrigin,
 	IpcMessageType,
+	setMcpApi,
 } from "@roo-code/types"
 import { IpcServer } from "@roo-code/ipc"
 
@@ -94,6 +96,19 @@ export class API extends EventEmitter<RooCodeEvents> implements RooCodeAPI {
 				}
 			})
 		}
+
+		// Initialize the global MCP API
+		setMcpApi(this)
+	}
+
+	// McpApi implementation
+	public async refreshMcpServers(): Promise<void> {
+		const mcpHub = this.sidebarProvider.getMcpHub()
+		if (mcpHub) {
+			await mcpHub.refreshAllConnections()
+		} else {
+			throw new Error("MCP hub is not available")
+		}
 	}
 
 	public override emit<K extends keyof RooCodeEvents>(
@@ -111,7 +126,7 @@ export class API extends EventEmitter<RooCodeEvents> implements RooCodeAPI {
 		images,
 		newTab,
 	}: {
-		configuration: RooCodeSettings
+		configuration?: RooCodeSettings
 		text?: string
 		images?: string[]
 		newTab?: boolean
@@ -139,7 +154,13 @@ export class API extends EventEmitter<RooCodeEvents> implements RooCodeAPI {
 			consecutiveMistakeLimit: Number.MAX_SAFE_INTEGER,
 		}
 
-		const task = await provider.createTask(text, images, undefined, options, configuration)
+		const task = await provider.createTask(
+			text,
+			images,
+			undefined,
+			options,
+			configuration || this.getConfiguration(),
+		)
 
 		if (!task) {
 			throw new Error("Failed to create task due to policy restrictions")

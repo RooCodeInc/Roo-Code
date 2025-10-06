@@ -179,6 +179,11 @@
 				"command": "roo-cline.toggleAutoApprove",
 				"title": "%command.toggleAutoApprove.title%",
 				"category": "%configuration.title%"
+			},
+			{
+				"command": "roo-cline.refreshMcpServers",
+				"title": "Refresh MCP Servers",
+				"category": "%configuration.title%"
 			}
 		],
 		"menus": {
