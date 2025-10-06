@@ -119,4 +119,39 @@ export abstract class BaseCondensationProvider implements ICondensationProvider 
 		// Rough estimation: 1 token ≈ 4 characters
 		return Math.ceil(text.length / 4)
 	}
+
+	/**
+	 * Retry an operation with exponential back-off
+	 * @param operation The async operation to retry
+	 * @param maxRetries Maximum number of retry attempts (default: 3)
+	 * @param baseDelayMs Base delay in milliseconds (default: 1000ms)
+	 * @returns Result of the operation
+	 * @throws Last error if all retries fail
+	 */
+	protected async retryWithBackoff<T>(
+		operation: () => Promise<T>,
+		maxRetries: number = 3,
+		baseDelayMs: number = 1000,
+	): Promise<T> {
+		let lastError: Error | undefined
+
+		for (let attempt = 0; attempt < maxRetries; attempt++) {
+			try {
+				return await operation()
+			} catch (error) {
+				lastError = error as Error
+
+				if (attempt < maxRetries - 1) {
+					const delay = baseDelayMs * Math.pow(2, attempt)
+					// Log retry attempt (can be overridden by subclasses)
+					console.warn(`Retry ${attempt + 1}/${maxRetries} after ${delay}ms delay`, {
+						error: lastError.message,
+					})
+					await new Promise((resolve) => setTimeout(resolve, delay))
+				}
+			}
+		}
+
+		throw lastError
+	}
 }

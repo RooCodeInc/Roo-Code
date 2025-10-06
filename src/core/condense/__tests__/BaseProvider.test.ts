@@ -88,4 +88,119 @@ describe("BaseCondensationProvider", () => {
 		expect(count).toBeGreaterThan(0)
 		expect(count).toBe(Math.ceil("hello world".length / 4))
 	})
+
+	describe("retryWithBackoff", () => {
+		it("should succeed on first attempt without retrying", async () => {
+			const provider = new TestProvider()
+			let attempts = 0
+
+			const result = await (provider as any).retryWithBackoff(async () => {
+				attempts++
+				return "success"
+			})
+
+			expect(result).toBe("success")
+			expect(attempts).toBe(1)
+		})
+
+		it("should retry with exponential backoff delays", async () => {
+			const provider = new TestProvider()
+			let attempts = 0
+			const delays: number[] = []
+			let lastTime = Date.now()
+
+			const result = await (provider as any).retryWithBackoff(
+				async () => {
+					attempts++
+					if (attempts < 3) {
+						const now = Date.now()
+						if (attempts > 1) {
+							delays.push(now - lastTime)
+						}
+						lastTime = now
+						throw new Error(`Attempt ${attempts} failed`)
+					}
+					return "success"
+				},
+				3,
+				100, // 100ms base delay for faster tests
+			)
+
+			expect(result).toBe("success")
+			expect(attempts).toBe(3)
+			// First retry: ~100ms, second retry: ~200ms (with some tolerance)
+			expect(delays[0]).toBeGreaterThanOrEqual(90)
+			expect(delays[0]).toBeLessThan(150)
+		})
+
+		it("should throw last error after max retries", async () => {
+			const provider = new TestProvider()
+			let attempts = 0
+
+			await expect(
+				(provider as any).retryWithBackoff(
+					async () => {
+						attempts++
+						throw new Error(`Failure ${attempts}`)
+					},
+					3,
+					10, // Fast for tests
+				),
+			).rejects.toThrow("Failure 3")
+
+			expect(attempts).toBe(3)
+		})
+
+		it("should use custom maxRetries and baseDelay", async () => {
+			const provider = new TestProvider()
+			let attempts = 0
+
+			await expect(
+				(provider as any).retryWithBackoff(
+					async () => {
+						attempts++
+						throw new Error("Always fails")
+					},
+					2, // Only 2 retries
+					50, // 50ms base
+				),
+			).rejects.toThrow("Always fails")
+
+			expect(attempts).toBe(2)
+		})
+
+		it("should calculate exponential delays correctly", async () => {
+			const provider = new TestProvider()
+			const delays: number[] = []
+			let lastTime = Date.now()
+			let attempts = 0
+
+			try {
+				await (provider as any).retryWithBackoff(
+					async () => {
+						attempts++
+						const now = Date.now()
+						if (attempts > 1) {
+							delays.push(now - lastTime)
+						}
+						lastTime = now
+						throw new Error("Test")
+					},
+					4, // 4 attempts
+					100, // 100ms base
+				)
+			} catch {
+				// Expected to fail
+			}
+
+			expect(attempts).toBe(4)
+			// Delays should be approximately: 100ms, 200ms, 400ms
+			expect(delays[0]).toBeGreaterThanOrEqual(90) // ~100ms
+			expect(delays[0]).toBeLessThan(150)
+			expect(delays[1]).toBeGreaterThanOrEqual(190) // ~200ms
+			expect(delays[1]).toBeLessThan(250)
+			expect(delays[2]).toBeGreaterThanOrEqual(390) // ~400ms
+			expect(delays[2]).toBeLessThan(450)
+		})
+	})
 })
