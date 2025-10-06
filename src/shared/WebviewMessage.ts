@@ -156,6 +156,7 @@ export interface WebviewMessage {
 		| "openCustomModesSettings"
 		| "checkpointDiff"
 		| "checkpointRestore"
+		| "saveCustomCheckpoint"
 		| "deleteMcpServer"
 		| "maxOpenTabsContext"
 		| "maxWorkspaceFiles"

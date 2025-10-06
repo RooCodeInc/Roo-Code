@@ -30,6 +30,8 @@
 		"checkpoint_failed": "Failed to restore checkpoint.",
 		"git_not_installed": "Git is required for the checkpoints feature. Please install Git to enable checkpoints.",
 		"nested_git_repos_warning": "Checkpoints are disabled because a nested git repository was detected at: {{path}}. To use checkpoints, please remove or relocate this nested git repository.",
+		"no_active_task": "No active task. Please start a task first.",
+		"checkpoints_disabled": "Checkpoints are disabled for this task. Please enable checkpoints in settings.",
 		"no_workspace": "Please open a project folder first",
 		"update_support_prompt": "Failed to update support prompt",
 		"reset_support_prompt": "Failed to reset support prompt",
@@ -223,5 +225,14 @@
 	"docsLink": {
 		"label": "Docs",
 		"url": "https://docs.roocode.com"
+	},
+	"checkpoint": {
+		"custom_prompt": "Enter a description for this checkpoint",
+		"custom_placeholder": "e.g., 'Before refactoring authentication'",
+		"custom_default": "Manual checkpoint",
+		"custom_saved": "Custom checkpoint saved successfully",
+		"custom_checkpoint_default": "Manual checkpoint",
+		"custom_checkpoint_saved": "Custom checkpoint saved successfully",
+		"custom_checkpoint_failed": "Failed to save custom checkpoint: {{error}}"
 	}
 }

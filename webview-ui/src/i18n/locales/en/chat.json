@@ -152,6 +152,9 @@
 	"checkpoint": {
 		"regular": "Checkpoint",
 		"initializingWarning": "Still initializing checkpoint... If this takes too long, you can disable checkpoints in <settingsLink>settings</settingsLink> and restart your task.",
+		"save_custom": "Save Custom Checkpoint",
+		"custom_prompt": "Enter a description for this checkpoint",
+		"custom_default": "Manual checkpoint",
 		"menu": {
 			"viewDiff": "View Diff",
 			"restore": "Restore Checkpoint",

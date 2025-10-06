@@ -5,6 +5,7 @@ import type { HistoryItem } from "@roo-code/types"
 
 import { vscode } from "@/utils/vscode"
 import { useCopyToClipboard } from "@/utils/clipboard"
+import { useExtensionState } from "@/context/ExtensionStateContext"
 
 import { DeleteTaskDialog } from "../history/DeleteTaskDialog"
 import { IconButton } from "./IconButton"
@@ -20,9 +21,25 @@ export const TaskActions = ({ item, buttonsDisabled }: TaskActionsProps) => {
 	const [deleteTaskId, setDeleteTaskId] = useState<string | null>(null)
 	const { t } = useTranslation()
 	const { copyWithFeedback, showCopyFeedback } = useCopyToClipboard()
+	const { enableCheckpoints } = useExtensionState()
+
+	const handleCustomCheckpoint = () => {
+		const message = prompt(t("chat:checkpoint.custom_prompt"), t("chat:checkpoint.custom_default"))
+		if (message !== null) {
+			vscode.postMessage({ type: "saveCustomCheckpoint", text: message })
+		}
+	}
 
 	return (
 		<div className="flex flex-row items-center">
+			{enableCheckpoints && (
+				<IconButton
+					iconClass="codicon-save"
+					title={t("chat:checkpoint.save_custom")}
+					disabled={buttonsDisabled}
+					onClick={handleCustomCheckpoint}
+				/>
+			)}
 			<IconButton
 				iconClass="codicon-desktop-download"
 				title={t("chat:task.export")}

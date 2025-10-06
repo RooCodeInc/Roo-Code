@@ -233,6 +233,42 @@ const getCommandsMap = ({ context, outputChannel, provider }: RegisterCommandOpt
 			action: "toggleAutoApprove",
 		})
 	},
+	saveCustomCheckpoint: async () => {
+		const visibleProvider = getVisibleProviderOrLog(outputChannel)
+
+		if (!visibleProvider) {
+			return
+		}
+
+		// Get the current task
+		const currentTask = visibleProvider.getCurrentTask()
+		if (!currentTask) {
+			vscode.window.showInformationMessage(t("common:errors.no_active_task"))
+			return
+		}
+
+		// Check if checkpoints are enabled
+		if (!currentTask.enableCheckpoints) {
+			vscode.window.showInformationMessage(t("common:errors.checkpoints_disabled"))
+			return
+		}
+
+		// Save a custom checkpoint with a user-provided message
+		const message = await vscode.window.showInputBox({
+			prompt: t("common:checkpoint.custom_prompt"),
+			placeHolder: t("common:checkpoint.custom_placeholder"),
+			value: t("common:checkpoint.custom_default"),
+		})
+
+		if (message !== undefined) {
+			// Force save checkpoint even if no file changes with custom message
+			await currentTask.checkpointSave(true, false, message)
+			await currentTask.say("checkpoint_saved_custom", message, undefined, false, undefined, undefined, {
+				isNonInteractive: true,
+			})
+			vscode.window.showInformationMessage(t("common:checkpoint.custom_saved"))
+		}
+	},
 })
 
 export const openClineInNewTab = async ({ context, outputChannel }: Omit<RegisterCommandOptions, "provider">) => {
