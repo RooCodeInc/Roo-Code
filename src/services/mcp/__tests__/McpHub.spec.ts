@@ -1798,6 +1798,119 @@ describe("McpHub", () => {
 		})
 	})
 
+	describe("Certificate trust configuration", () => {
+		it("should accept SSE server with certificate trust configuration", () => {
+			const config = {
+				type: "sse",
+				url: "https://api.example.com/mcp",
+				headers: { Authorization: "Bearer token" },
+				certificateTrust: {
+					allowSelfSigned: true,
+					caCertPath: "/path/to/ca.pem",
+					rejectUnauthorized: false,
+				},
+			}
+
+			const result = ServerConfigSchema.safeParse(config)
+			expect(result.success).toBe(true)
+			if (result.success && result.data.type === "sse") {
+				expect(result.data.type).toBe("sse")
+				expect(result.data.certificateTrust).toEqual({
+					allowSelfSigned: true,
+					caCertPath: "/path/to/ca.pem",
+					rejectUnauthorized: false,
+				})
+			}
+		})
+
+		it("should accept StreamableHTTP server with certificate trust configuration", () => {
+			const config = {
+				type: "streamable-http",
+				url: "https://api.example.com/mcp",
+				headers: { Authorization: "Bearer token" },
+				certificateTrust: {
+					allowSelfSigned: false,
+					rejectUnauthorized: true,
+				},
+			}
+
+			const result = ServerConfigSchema.safeParse(config)
+			expect(result.success).toBe(true)
+			if (result.success && result.data.type === "streamable-http") {
+				expect(result.data.type).toBe("streamable-http")
+				expect(result.data.certificateTrust).toEqual({
+					allowSelfSigned: false,
+					rejectUnauthorized: true,
+				})
+			}
+		})
+
+		it("should accept SSE server with only CA certificate path", () => {
+			const config = {
+				type: "sse",
+				url: "https://api.example.com/mcp",
+				certificateTrust: {
+					caCertPath: "/path/to/ca.pem",
+				},
+			}
+
+			const result = ServerConfigSchema.safeParse(config)
+			expect(result.success).toBe(true)
+			if (result.success && result.data.type === "sse") {
+				expect(result.data.certificateTrust?.caCertPath).toBe("/path/to/ca.pem")
+				expect(result.data.certificateTrust?.rejectUnauthorized).toBe(true) // default value
+			}
+		})
+
+		it("should accept server without certificate trust configuration", () => {
+			const config = {
+				type: "sse",
+				url: "https://api.example.com/mcp",
+			}
+
+			const result = ServerConfigSchema.safeParse(config)
+			expect(result.success).toBe(true)
+			if (result.success && result.data.type === "sse") {
+				expect(result.data.certificateTrust).toBeUndefined()
+			}
+		})
+
+		it("should not accept certificate trust for stdio servers", () => {
+			const config = {
+				type: "stdio",
+				command: "node",
+				args: ["server.js"],
+				certificateTrust: {
+					allowSelfSigned: true,
+				},
+			}
+
+			// Note: stdio schema doesn't include certificateTrust, so it will be stripped
+			const result = ServerConfigSchema.safeParse(config)
+			expect(result.success).toBe(true)
+			if (result.success) {
+				expect(result.data.type).toBe("stdio")
+				expect((result.data as any).certificateTrust).toBeUndefined()
+			}
+		})
+
+		it("should default rejectUnauthorized to true when not specified", () => {
+			const config = {
+				type: "sse",
+				url: "https://api.example.com/mcp",
+				certificateTrust: {
+					allowSelfSigned: true,
+				},
+			}
+
+			const result = ServerConfigSchema.safeParse(config)
+			expect(result.success).toBe(true)
+			if (result.success && result.data.type === "sse") {
+				expect(result.data.certificateTrust?.rejectUnauthorized).toBe(true)
+			}
+		})
+	})
+
 	describe("Windows command wrapping", () => {
 		let StdioClientTransport: ReturnType<typeof vi.fn>
 		let Client: ReturnType<typeof vi.fn>

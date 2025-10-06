@@ -65,6 +65,16 @@ const BaseConfigSchema = z.object({
 	disabledTools: z.array(z.string()).default([]),
 })
 
+// Certificate trust configuration schema
+const CertificateTrustSchema = z.object({
+	// Allow self-signed certificates
+	allowSelfSigned: z.boolean().optional(),
+	// Path to CA certificate file (PEM format)
+	caCertPath: z.string().optional(),
+	// Reject unauthorized certificates (default: true for security)
+	rejectUnauthorized: z.boolean().optional().default(true),
+})
+
 // Custom error messages for better user feedback
 const typeErrorMessage = "Server type must be 'stdio', 'sse', or 'streamable-http'"
 const stdioFieldsErrorMessage =
@@ -102,6 +112,8 @@ const createServerTypeSchema = () => {
 			type: z.enum(["sse"]).optional(),
 			url: z.string().url("URL must be a valid URL format"),
 			headers: z.record(z.string()).optional(),
+			// Certificate trust configuration for HTTPS connections
+			certificateTrust: CertificateTrustSchema.optional(),
 			// Ensure no stdio fields are present
 			command: z.undefined().optional(),
 			args: z.undefined().optional(),
@@ -117,6 +129,8 @@ const createServerTypeSchema = () => {
 			type: z.enum(["streamable-http"]).optional(),
 			url: z.string().url("URL must be a valid URL format"),
 			headers: z.record(z.string()).optional(),
+			// Certificate trust configuration for HTTPS connections
+			certificateTrust: CertificateTrustSchema.optional(),
 			// Ensure no stdio fields are present
 			command: z.undefined().optional(),
 			args: z.undefined().optional(),
@@ -735,10 +749,47 @@ export class McpHub {
 				}
 			} else if (configInjected.type === "streamable-http") {
 				// Streamable HTTP connection
+				const requestInit: RequestInit = {
+					headers: configInjected.headers,
+				}
+
+				// Apply certificate trust settings if configured
+				if (configInjected.certificateTrust) {
+					const { allowSelfSigned, caCertPath, rejectUnauthorized } = configInjected.certificateTrust
+
+					// For Node.js fetch, we need to configure the agent
+					if (typeof process !== "undefined" && process.versions && process.versions.node) {
+						const https = await import("https")
+						const fs = await import("fs/promises")
+
+						const agentOptions: any = {}
+
+						// Handle certificate rejection
+						if (rejectUnauthorized === false || allowSelfSigned === true) {
+							agentOptions.rejectUnauthorized = false
+						}
+
+						// Load CA certificate if provided
+						if (caCertPath) {
+							try {
+								const caCert = await fs.readFile(caCertPath, "utf-8")
+								agentOptions.ca = caCert
+							} catch (error) {
+								console.error(`Failed to load CA certificate from ${caCertPath}:`, error)
+								throw new Error(
+									`Failed to load CA certificate: ${error instanceof Error ? error.message : String(error)}`,
+								)
+							}
+						}
+
+						// Create HTTPS agent with certificate trust settings
+						const agent = new https.Agent(agentOptions)
+						;(requestInit as any).agent = agent
+					}
+				}
+
 				transport = new StreamableHTTPClientTransport(new URL(configInjected.url), {
-					requestInit: {
-						headers: configInjected.headers,
-					},
+					requestInit,
 				})
 
 				// Set up Streamable HTTP specific error handling
@@ -766,18 +817,67 @@ export class McpHub {
 						headers: configInjected.headers,
 					},
 				}
+
 				// Configure ReconnectingEventSource options
-				const reconnectingEventSourceOptions = {
+				const reconnectingEventSourceOptions: any = {
 					max_retry_time: 5000, // Maximum retry time in milliseconds
 					withCredentials: configInjected.headers?.["Authorization"] ? true : false, // Enable credentials if Authorization header exists
-					fetch: (url: string | URL, init: RequestInit) => {
+				}
+
+				// Apply certificate trust settings if configured
+				if (configInjected.certificateTrust) {
+					const { allowSelfSigned, caCertPath, rejectUnauthorized } = configInjected.certificateTrust
+
+					// For Node.js fetch used by ReconnectingEventSource
+					if (typeof process !== "undefined" && process.versions && process.versions.node) {
+						const https = await import("https")
+						const fs = await import("fs/promises")
+
+						const agentOptions: any = {}
+
+						// Handle certificate rejection
+						if (rejectUnauthorized === false || allowSelfSigned === true) {
+							agentOptions.rejectUnauthorized = false
+						}
+
+						// Load CA certificate if provided
+						if (caCertPath) {
+							try {
+								const caCert = await fs.readFile(caCertPath, "utf-8")
+								agentOptions.ca = caCert
+							} catch (error) {
+								console.error(`Failed to load CA certificate from ${caCertPath}:`, error)
+								throw new Error(
+									`Failed to load CA certificate: ${error instanceof Error ? error.message : String(error)}`,
+								)
+							}
+						}
+
+						// Create HTTPS agent with certificate trust settings
+						const agent = new https.Agent(agentOptions)
+
+						// Custom fetch function that includes the HTTPS agent
+						reconnectingEventSourceOptions.fetch = (url: string | URL, init: RequestInit) => {
+							const headers = new Headers({ ...(init?.headers || {}), ...(configInjected.headers || {}) })
+							// Use type assertion for Node.js-specific agent property
+							return fetch(url, {
+								...init,
+								headers,
+								...({ agent } as any),
+							})
+						}
+					}
+				} else {
+					// Default fetch function without certificate trust modifications
+					reconnectingEventSourceOptions.fetch = (url: string | URL, init: RequestInit) => {
 						const headers = new Headers({ ...(init?.headers || {}), ...(configInjected.headers || {}) })
 						return fetch(url, {
 							...init,
 							headers,
 						})
-					},
+					}
 				}
+
 				global.EventSource = ReconnectingEventSource
 				transport = new SSEClientTransport(new URL(configInjected.url), {
 					...sseOptions,
