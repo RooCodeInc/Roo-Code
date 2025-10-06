@@ -62,6 +62,10 @@ describe("CondensationManager", () => {
 		// Get manager instance (singleton)
 		manager = CondensationManager.getInstance()
 
+		// Clear loop guard attempts map
+		const managerAny = manager as any
+		managerAny.condensationAttempts.clear()
+
 		// Re-register native provider since registry was cleared
 		const nativeProvider = new NativeCondensationProvider()
 		registry.register(nativeProvider, {
@@ -388,9 +392,10 @@ describe("CondensationManager", () => {
 		vi.mocked(mockApiHandler.createMessage).mockReturnValue(mockStream as any)
 		vi.mocked(mockApiHandler.countTokens).mockResolvedValue(80)
 
-		// Launch multiple concurrent requests
-		const promises = Array.from({ length: 5 }, () =>
+		// Launch multiple concurrent requests with unique task IDs
+		const promises = Array.from({ length: 5 }, (_, i) =>
 			manager.condense(messages, mockApiHandler, {
+				taskId: `concurrent-task-${i}`,
 				prevContextTokens: 200,
 			}),
 		)
@@ -400,6 +405,250 @@ describe("CondensationManager", () => {
 		results.forEach((result) => {
 			expect(result.error).toBeUndefined()
 			expect(result.cost).toBeGreaterThan(0)
+		})
+	})
+
+	describe("Loop Guard", () => {
+		it("should allow 3 successive attempts", async () => {
+			const messages = [
+				{ role: "user", content: "Hello" },
+				{ role: "assistant", content: "Hi there!" },
+				{ role: "user", content: "How are you?" },
+				{ role: "assistant", content: "I'm doing well!" },
+				{ role: "user", content: "Can you help me?" },
+			] as any
+
+			// Mock successful condensation
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					yield { type: "text" as const, text: "Summary" }
+					yield {
+						type: "usage" as const,
+						inputTokens: 50,
+						outputTokens: 10,
+						totalCost: 0.0003,
+					}
+				},
+			}
+
+			vi.mocked(mockApiHandler.createMessage).mockReturnValue(mockStream as any)
+			vi.mocked(mockApiHandler.countTokens).mockResolvedValue(80)
+
+			// Execute 3 successive attempts - all should pass
+			for (let i = 0; i < 3; i++) {
+				const result = await manager.condense(messages, mockApiHandler, {
+					taskId: "test-task",
+					prevContextTokens: 200,
+				})
+
+				expect(result.error).toBeUndefined()
+				expect(result.cost).toBeGreaterThan(0)
+			}
+		})
+
+		it("should trigger loop guard on 4th attempt", async () => {
+			const messages = [
+				{ role: "user", content: "Hello" },
+				{ role: "assistant", content: "Hi there!" },
+				{ role: "user", content: "How are you?" },
+				{ role: "assistant", content: "I'm doing well!" },
+				{ role: "user", content: "Can you help me?" },
+			] as any
+
+			// Mock condensation that doesn't reduce context (triggers loop guard)
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					yield { type: "text" as const, text: "Summary" }
+					yield {
+						type: "usage" as const,
+						inputTokens: 50,
+						outputTokens: 10,
+						totalCost: 0.0003,
+					}
+				},
+			}
+
+			vi.mocked(mockApiHandler.createMessage).mockReturnValue(mockStream as any)
+			// Return same or higher token count to prevent counter reset
+			vi.mocked(mockApiHandler.countTokens).mockResolvedValue(200)
+
+			// Execute 3 attempts first - they won't reset counter because context doesn't reduce
+			for (let i = 0; i < 3; i++) {
+				await manager.condense(messages, mockApiHandler, {
+					taskId: "test-task-guard",
+					prevContextTokens: 200,
+				})
+			}
+
+			// 4th attempt should trigger loop guard
+			const result = await manager.condense(messages, mockApiHandler, {
+				taskId: "test-task-guard",
+				prevContextTokens: 200,
+			})
+
+			expect(result.error).toBe("Loop guard: max 3 attempts reached")
+			expect(result.cost).toBe(0)
+			expect(result.messages).toEqual(messages)
+			expect(result.metrics?.loopGuardTriggered).toBe(true)
+		})
+
+		it("should reset counter after cooldown", async () => {
+			const messages = [
+				{ role: "user", content: "Hello" },
+				{ role: "assistant", content: "Hi there!" },
+				{ role: "user", content: "How are you?" },
+				{ role: "assistant", content: "I'm doing well!" },
+				{ role: "user", content: "Can you help me?" },
+			] as any
+
+			// Mock successful condensation
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					yield { type: "text" as const, text: "Summary" }
+					yield {
+						type: "usage" as const,
+						inputTokens: 50,
+						outputTokens: 10,
+						totalCost: 0.0003,
+					}
+				},
+			}
+
+			vi.mocked(mockApiHandler.createMessage).mockReturnValue(mockStream as any)
+			vi.mocked(mockApiHandler.countTokens).mockResolvedValue(80)
+
+			// Execute 3 attempts
+			for (let i = 0; i < 3; i++) {
+				await manager.condense(messages, mockApiHandler, {
+					taskId: "test-task-cooldown",
+					prevContextTokens: 200,
+				})
+			}
+
+			// Wait for cooldown (simulate by directly manipulating the attempts map)
+			// Access private field for testing
+			const managerAny = manager as any
+			const attempts = managerAny.condensationAttempts.get("test-task-cooldown")
+			if (attempts) {
+				attempts.lastAttempt = Date.now() - 61000 // 61 seconds ago
+			}
+
+			// Next attempt should succeed (cooldown expired)
+			const result = await manager.condense(messages, mockApiHandler, {
+				taskId: "test-task-cooldown",
+				prevContextTokens: 200,
+			})
+
+			expect(result.error).toBeUndefined()
+			expect(result.cost).toBeGreaterThan(0)
+		})
+
+		it("should reset counter on successful condensation", async () => {
+			const messages = [
+				{ role: "user", content: "Hello" },
+				{ role: "assistant", content: "Hi there!" },
+				{ role: "user", content: "How are you?" },
+				{ role: "assistant", content: "I'm doing well!" },
+				{ role: "user", content: "Can you help me?" },
+			] as any
+
+			// Mock successful condensation
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					yield { type: "text" as const, text: "Summary" }
+					yield {
+						type: "usage" as const,
+						inputTokens: 50,
+						outputTokens: 10,
+						totalCost: 0.0003,
+					}
+				},
+			}
+
+			vi.mocked(mockApiHandler.createMessage).mockReturnValue(mockStream as any)
+			vi.mocked(mockApiHandler.countTokens).mockResolvedValue(80)
+
+			// First 2 attempts that don't reduce context
+			vi.mocked(mockApiHandler.countTokens).mockResolvedValue(200)
+			for (let i = 0; i < 2; i++) {
+				await manager.condense(messages, mockApiHandler, {
+					taskId: "test-task-success",
+					prevContextTokens: 200,
+				})
+			}
+
+			// Verify counter exists before last condensation
+			const managerAny = manager as any
+			let attempts = managerAny.condensationAttempts.get("test-task-success")
+			expect(attempts).toBeDefined()
+			expect(attempts.count).toBe(2)
+
+			// Execute one more condensation that DOES reduce context
+			vi.mocked(mockApiHandler.countTokens).mockResolvedValue(80)
+			await manager.condense(messages, mockApiHandler, {
+				taskId: "test-task-success",
+				prevContextTokens: 200,
+			})
+
+			// Counter should be reset after successful reduction
+			attempts = managerAny.condensationAttempts.get("test-task-success")
+			expect(attempts).toBeUndefined()
+		})
+
+		it("should maintain independent counters for different tasks", async () => {
+			const messages = [
+				{ role: "user", content: "Hello" },
+				{ role: "assistant", content: "Hi there!" },
+				{ role: "user", content: "How are you?" },
+				{ role: "assistant", content: "I'm doing well!" },
+				{ role: "user", content: "Can you help me?" },
+			] as any
+
+			// Mock condensation that doesn't reduce context
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					yield { type: "text" as const, text: "Summary" }
+					yield {
+						type: "usage" as const,
+						inputTokens: 50,
+						outputTokens: 10,
+						totalCost: 0.0003,
+					}
+				},
+			}
+
+			vi.mocked(mockApiHandler.createMessage).mockReturnValue(mockStream as any)
+
+			// Task 1: Execute 3 attempts that don't reduce context
+			vi.mocked(mockApiHandler.countTokens).mockResolvedValue(200)
+			for (let i = 0; i < 3; i++) {
+				await manager.condense(messages, mockApiHandler, {
+					taskId: "task-1",
+					prevContextTokens: 200,
+				})
+			}
+
+			// Task 2: Execute 1 attempt that DOES reduce context
+			vi.mocked(mockApiHandler.countTokens).mockResolvedValue(80)
+			const result2 = await manager.condense(messages, mockApiHandler, {
+				taskId: "task-2",
+				prevContextTokens: 200,
+			})
+
+			// Task 2 should succeed (independent counter, first attempt, and context reduces)
+			expect(result2.error).toBeUndefined()
+			expect(result2.cost).toBeGreaterThan(0)
+
+			// Reset mock for task-1 (no reduction)
+			vi.mocked(mockApiHandler.countTokens).mockResolvedValue(200)
+
+			// Task 1 should be blocked (4th attempt)
+			const result1 = await manager.condense(messages, mockApiHandler, {
+				taskId: "task-1",
+				prevContextTokens: 200,
+			})
+
+			expect(result1.error).toBe("Loop guard: max 3 attempts reached")
 		})
 	})
 })

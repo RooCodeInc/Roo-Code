@@ -15,6 +15,9 @@ import { CondensationContext, CondensationOptions, CondensationResult, ICondensa
 export class CondensationManager {
 	private static instance: CondensationManager
 	private defaultProviderId: string = "native"
+	private condensationAttempts = new Map<string, { count: number; lastAttempt: number }>()
+	private readonly MAX_ATTEMPTS = 3
+	private readonly COOLDOWN_MS = 60000 // 1 minute
 
 	private constructor() {
 		// Register default providers
@@ -104,6 +107,33 @@ export class CondensationManager {
 			isAutomaticTrigger?: boolean
 		},
 	): Promise<CondensationResult> {
+		const taskId = options?.taskId || "unknown"
+		const now = Date.now()
+
+		// Check loop guard
+		const attempts = this.condensationAttempts.get(taskId)
+		if (attempts) {
+			// Reset if cooldown expired
+			if (now - attempts.lastAttempt > this.COOLDOWN_MS) {
+				this.condensationAttempts.delete(taskId)
+			} else if (attempts.count >= this.MAX_ATTEMPTS) {
+				return {
+					messages,
+					cost: 0,
+					error: `Loop guard: max ${this.MAX_ATTEMPTS} attempts reached`,
+					metrics: {
+						providerId: "loop-guard",
+						timeElapsed: 0,
+						loopGuardTriggered: true,
+					},
+				}
+			}
+		}
+
+		// Increment counter
+		const newCount = (attempts?.count || 0) + 1
+		this.condensationAttempts.set(taskId, { count: newCount, lastAttempt: now })
+
 		// Get provider
 		const providerId = options?.providerId || this.defaultProviderId
 		const provider = this.getProvider(providerId)
@@ -126,7 +156,15 @@ export class CondensationManager {
 		}
 
 		// Execute condensation
-		return provider.condense(context, condensationOptions)
+		const result = await provider.condense(context, condensationOptions)
+
+		// Reset counter only if condensation actually succeeded in reducing context
+		// (no error AND context was reduced)
+		if (!result.error && result.newContextTokens && result.newContextTokens < context.prevContextTokens) {
+			this.condensationAttempts.delete(taskId)
+		}
+
+		return result
 	}
 
 	/**
