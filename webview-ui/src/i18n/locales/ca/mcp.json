@@ -60,6 +60,14 @@
 	"execution": {
 		"running": "En execució",
 		"completed": "Completat",
-		"error": "Error"
+		"error": "Error",
+		"imageCountTooltip": "{{count}} imatge(s) en la resposta"
+	},
+	"imageSettings": {
+		"maxImagesLabel": "Màxim d'imatges per resposta",
+		"maxSizeLabel": "Mida màxima de la imatge (MB)",
+		"maxImagesDescription": "El nombre màxim d'imatges que es poden enviar en una sola resposta.",
+		"maxSizeDescription": "La mida màxima de cada imatge en megabytes.",
+		"validationError": "Si us plau, introduïu un número entre 1 i 100."
 	}
 }
