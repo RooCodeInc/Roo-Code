@@ -1337,11 +1337,11 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		return result
 	}, [isCondensing, visibleMessages])
 
-	// scrolling
+	// scrolling - increase debounce delay for smoother performance
 
 	const scrollToBottomSmooth = useMemo(
 		() =>
-			debounce(() => virtuosoRef.current?.scrollTo({ top: Number.MAX_SAFE_INTEGER, behavior: "smooth" }), 10, {
+			debounce(() => virtuosoRef.current?.scrollTo({ top: Number.MAX_SAFE_INTEGER, behavior: "smooth" }), 50, {
 				immediate: true,
 			}),
 		[],
@@ -1398,7 +1398,8 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	useEffect(() => {
 		let timer: ReturnType<typeof setTimeout> | undefined
 		if (!disableAutoScrollRef.current) {
-			timer = setTimeout(() => scrollToBottomSmooth(), 50)
+			// Increase delay for better performance
+			timer = setTimeout(() => scrollToBottomSmooth(), 100)
 		}
 		return () => {
 			if (timer) {
