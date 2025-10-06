@@ -41,7 +41,7 @@ export async function getWatsonxModels(
 				throw new Error("Project ID is required for IBM Cloud")
 			}
 			if (!baseUrl) {
-				throw new Error("Base URL is required for for IBM Cloud")
+				throw new Error("Base URL is required for IBM Cloud")
 			}
 			options.serviceUrl = baseUrl
 			options.authenticator = new IamAuthenticator({
@@ -148,6 +148,16 @@ export async function getWatsonxModels(
 	}
 }
 
+export const REGION_TO_URL: Record<string, string> = {
+	"us-south": "https://us-south.ml.cloud.ibm.com",
+	"eu-de": "https://eu-de.ml.cloud.ibm.com",
+	"eu-gb": "https://eu-gb.ml.cloud.ibm.com",
+	"jp-tok": "https://jp-tok.ml.cloud.ibm.com",
+	"au-syd": "https://au-syd.ml.cloud.ibm.com",
+	"ca-tor": "https://ca-tor.ml.cloud.ibm.com",
+	"ap-south-1": "https://ap-south-1.aws.wxai.ibm.com",
+	custom: "",
+}
 /**
  * Returns the base URL for IBM Watsonx services corresponding to the given region.
  *
@@ -155,14 +165,5 @@ export async function getWatsonxModels(
  * @returns The base URL as a string for the specified region, or `undefined` if the region is not recognized.
  */
 export function regionToWatsonxBaseUrl(region: string): string {
-	const regionToUrl: Record<string, string> = {
-		"us-south": "https://us-south.ml.cloud.ibm.com",
-		"eu-de": "https://eu-de.ml.cloud.ibm.com",
-		"eu-gb": "https://eu-gb.ml.cloud.ibm.com",
-		"jp-tok": "https://jp-tok.ml.cloud.ibm.com",
-		"au-syd": "https://au-syd.ml.cloud.ibm.com",
-		"ca-tor": "https://ca-tor.ml.cloud.ibm.com",
-		"ap-south-1": "https://ap-south-1.aws.wxai.ibm.com",
-	}
-	return regionToUrl[region]
+	return REGION_TO_URL[region]
 }
