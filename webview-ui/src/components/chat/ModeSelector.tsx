@@ -4,7 +4,7 @@ import { Check, X } from "lucide-react"
 
 import { type ModeConfig, type CustomModePrompts, TelemetryEventName } from "@roo-code/types"
 
-import { type Mode, getAllModes } from "@roo/modes"
+import { type Mode, getAllModes, defaultModeSlug } from "@roo/modes"
 
 import { vscode } from "@/utils/vscode"
 import { telemetryClient } from "@/utils/TelemetryClient"
@@ -19,7 +19,7 @@ import { IconButton } from "./IconButton"
 const SEARCH_THRESHOLD = 6
 
 interface ModeSelectorProps {
-	value: Mode
+	value: Mode | undefined | null
 	onChange: (value: Mode) => void
 	disabled?: boolean
 	title: string
@@ -71,8 +71,21 @@ export const ModeSelector = ({
 		}))
 	}, [customModes, customModePrompts])
 
+	// Ensure we have a valid mode value, fallback to default if undefined/null
+	const effectiveValue = React.useMemo(() => {
+		if (!value) {
+			return defaultModeSlug
+		}
+		// Check if the value exists in available modes
+		const modeExists = modes.some((mode) => mode.slug === value)
+		return modeExists ? value : defaultModeSlug
+	}, [value, modes])
+
 	// Find the selected mode.
-	const selectedMode = React.useMemo(() => modes.find((mode) => mode.slug === value), [modes, value])
+	const selectedMode = React.useMemo(
+		() => modes.find((mode) => mode.slug === effectiveValue),
+		[modes, effectiveValue],
+	)
 
 	// Memoize searchable items for fuzzy search with separate name and
 	// description search.
@@ -209,7 +222,7 @@ export const ModeSelector = ({
 							? "bg-primary opacity-90 hover:bg-primary-hover text-vscode-button-foreground"
 							: null,
 					)}>
-					<span className="truncate">{selectedMode?.name || ""}</span>
+					<span className="truncate">{selectedMode?.name || modes[0]?.name || "Code"}</span>
 				</PopoverTrigger>
 			</StandardTooltip>
 			<PopoverContent
@@ -254,7 +267,7 @@ export const ModeSelector = ({
 						) : (
 							<div className="py-1">
 								{filteredModes.map((mode) => {
-									const isSelected = mode.slug === value
+									const isSelected = mode.slug === effectiveValue
 									return (
 										<div
 											key={mode.slug}
