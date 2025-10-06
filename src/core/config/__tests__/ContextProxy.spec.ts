@@ -9,11 +9,29 @@ import { ContextProxy } from "../ContextProxy"
 vi.mock("vscode", () => ({
 	Uri: {
 		file: vi.fn((path) => ({ path })),
+		joinPath: vi.fn((base, ...paths) => ({ path: `${base.path}/${paths.join("/")}` })),
 	},
 	ExtensionMode: {
 		Development: 1,
 		Production: 2,
 		Test: 3,
+	},
+	FileSystemError: class FileSystemError extends Error {
+		code: string
+		constructor(message: string) {
+			super(message)
+			this.code = "FileNotFound"
+		}
+	},
+	workspace: {
+		fs: {
+			readFile: vi.fn().mockRejectedValue(Object.assign(new Error("FileNotFound"), { code: "FileNotFound" })),
+			writeFile: vi.fn().mockResolvedValue(undefined),
+			delete: vi.fn().mockResolvedValue(undefined),
+		},
+	},
+	window: {
+		showInformationMessage: vi.fn(),
 	},
 }))
 
@@ -71,12 +89,14 @@ describe("ContextProxy", () => {
 	describe("constructor", () => {
 		it("should initialize state cache with all global state keys", () => {
 			// +1 for the migration check of old nested settings
-			expect(mockGlobalState.get).toHaveBeenCalledTimes(GLOBAL_STATE_KEYS.length + 1)
+			// +1 for the taskHistory migration check
+			expect(mockGlobalState.get).toHaveBeenCalledTimes(GLOBAL_STATE_KEYS.length + 2)
 			for (const key of GLOBAL_STATE_KEYS) {
 				expect(mockGlobalState.get).toHaveBeenCalledWith(key)
 			}
-			// Also check for migration call
+			// Also check for migration calls
 			expect(mockGlobalState.get).toHaveBeenCalledWith("openRouterImageGenerationSettings")
+			expect(mockGlobalState.get).toHaveBeenCalledWith("taskHistory")
 		})
 
 		it("should initialize secret cache with all secret keys", () => {
@@ -99,8 +119,10 @@ describe("ContextProxy", () => {
 			const result = proxy.getGlobalState("apiProvider")
 			expect(result).toBe("deepseek")
 
-			// Original context should be called once during updateGlobalState (+1 for migration check)
-			expect(mockGlobalState.get).toHaveBeenCalledTimes(GLOBAL_STATE_KEYS.length + 1) // From initialization + migration check
+			// Original context should be called during initialization
+			// +1 for openRouterImageGenerationSettings migration check
+			// +1 for taskHistory migration check
+			expect(mockGlobalState.get).toHaveBeenCalledTimes(GLOBAL_STATE_KEYS.length + 2)
 		})
 
 		it("should handle default values correctly", async () => {
@@ -109,23 +131,16 @@ describe("ContextProxy", () => {
 			expect(result).toBe("deepseek")
 		})
 
-		it("should bypass cache for pass-through state keys", async () => {
-			// Setup mock return value
-			mockGlobalState.get.mockReturnValue("pass-through-value")
-
-			// Use a pass-through key (taskHistory)
+		it("should return value from cache for taskHistory", async () => {
+			// taskHistory is now loaded from file and stored in cache
 			const result = proxy.getGlobalState("taskHistory")
 
-			// Should get value directly from original context
-			expect(result).toBe("pass-through-value")
-			expect(mockGlobalState.get).toHaveBeenCalledWith("taskHistory")
+			// Should return the cached value (empty array from file read)
+			expect(result).toEqual([])
 		})
 
-		it("should respect default values for pass-through state keys", async () => {
-			// Setup mock to return undefined
-			mockGlobalState.get.mockReturnValue(undefined)
-
-			// Use a pass-through key with default value
+		it("should respect default values for taskHistory", async () => {
+			// Use taskHistory with default value
 			const historyItems = [
 				{
 					id: "1",
@@ -140,8 +155,8 @@ describe("ContextProxy", () => {
 
 			const result = proxy.getGlobalState("taskHistory", historyItems)
 
-			// Should return default value when original context returns undefined
-			expect(result).toBe(historyItems)
+			// Should return cached value (empty array) since it exists
+			expect(result).toEqual([])
 		})
 	})
 
@@ -157,7 +172,7 @@ describe("ContextProxy", () => {
 			expect(storedValue).toBe("deepseek")
 		})
 
-		it("should bypass cache for pass-through state keys", async () => {
+		it("should write taskHistory to file instead of global state", async () => {
 			const historyItems = [
 				{
 					id: "1",
@@ -172,16 +187,15 @@ describe("ContextProxy", () => {
 
 			await proxy.updateGlobalState("taskHistory", historyItems)
 
-			// Should update original context
-			expect(mockGlobalState.update).toHaveBeenCalledWith("taskHistory", historyItems)
+			// Should NOT update original context for taskHistory
+			expect(mockGlobalState.update).not.toHaveBeenCalledWith("taskHistory", historyItems)
 
-			// Setup mock for subsequent get
-			mockGlobalState.get.mockReturnValue(historyItems)
+			// Should write to file (mocked in vscode.workspace.fs.writeFile)
+			expect(vscode.workspace.fs.writeFile).toHaveBeenCalled()
 
-			// Should get fresh value from original context
+			// Should get value from cache
 			const storedValue = proxy.getGlobalState("taskHistory")
-			expect(storedValue).toBe(historyItems)
-			expect(mockGlobalState.get).toHaveBeenCalledWith("taskHistory")
+			expect(storedValue).toEqual(historyItems)
 		})
 	})
 
