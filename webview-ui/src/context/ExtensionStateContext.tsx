@@ -158,6 +158,8 @@ export interface ExtensionStateContextType extends ExtensionState {
 	setMaxDiagnosticMessages: (value: number) => void
 	includeTaskHistoryInEnhance?: boolean
 	setIncludeTaskHistoryInEnhance: (value: boolean) => void
+	requireCtrlEnterToSend?: boolean
+	setRequireCtrlEnterToSend: (value: boolean) => void
 }
 
 export const ExtensionStateContext = createContext<ExtensionStateContextType | undefined>(undefined)
@@ -264,6 +266,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		alwaysAllowUpdateTodoList: true,
 		includeDiagnosticMessages: true,
 		maxDiagnosticMessages: 50,
+		requireCtrlEnterToSend: false,
 		openRouterImageApiKey: "",
 		openRouterImageGenerationSelectedModel: "",
 	})
@@ -559,6 +562,10 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		},
 		includeTaskHistoryInEnhance,
 		setIncludeTaskHistoryInEnhance,
+		requireCtrlEnterToSend: state.requireCtrlEnterToSend,
+		setRequireCtrlEnterToSend: (value) => {
+			setState((prevState) => ({ ...prevState, requireCtrlEnterToSend: value }))
+		},
 	}
 
 	return <ExtensionStateContext.Provider value={contextValue}>{children}</ExtensionStateContext.Provider>

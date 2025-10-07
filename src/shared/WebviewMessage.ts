@@ -48,6 +48,7 @@ export interface WebviewMessage {
 		| "alwaysAllowExecute"
 		| "alwaysAllowFollowupQuestions"
 		| "alwaysAllowUpdateTodoList"
+		| "requireCtrlEnterToSend"
 		| "followupAutoApproveTimeoutMs"
 		| "webviewDidLaunch"
 		| "newTask"
