@@ -31,8 +31,8 @@ import { handleOpenAIError } from "./utils/openai-error-handler"
 // compatible with the OpenAI API. We can also rename it to `OpenAIHandler`.
 export class OpenAiHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
-	private client: OpenAI
-	private readonly providerName = "OpenAI"
+	protected client: OpenAI
+	protected readonly providerName = "OpenAI"
 
 	constructor(options: ApiHandlerOptions) {
 		super()

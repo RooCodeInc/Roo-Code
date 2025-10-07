@@ -21,6 +21,8 @@ import {
 	fireworksModels,
 	rooModels,
 	featherlessModels,
+	siliconCloudModels,
+	siliconCloudModelsByApiLine,
 } from "@roo-code/types"
 
 export const MODELS_BY_PROVIDER: Partial<Record<ProviderName, Record<string, ModelInfo>>> = {
@@ -44,7 +46,10 @@ export const MODELS_BY_PROVIDER: Partial<Record<ProviderName, Record<string, Mod
 	fireworks: fireworksModels,
 	roo: rooModels,
 	featherless: featherlessModels,
+	siliconcloud: siliconCloudModels,
 }
+
+export const SILICON_CLOUD_MODELS_BY_API_LINE = siliconCloudModelsByApiLine
 
 export const PROVIDERS = [
 	{ value: "openrouter", label: "OpenRouter" },
@@ -80,5 +85,6 @@ export const PROVIDERS = [
 	{ value: "featherless", label: "Featherless AI" },
 	{ value: "io-intelligence", label: "IO Intelligence" },
 	{ value: "roo", label: "Roo Code Cloud" },
+	{ value: "siliconcloud", label: "SiliconCloud" },
 	{ value: "vercel-ai-gateway", label: "Vercel AI Gateway" },
 ].sort((a, b) => a.label.localeCompare(b.label))

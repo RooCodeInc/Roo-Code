@@ -38,6 +38,8 @@ import {
 	claudeCodeModels,
 	sambaNovaModels,
 	sambaNovaDefaultModelId,
+	siliconCloudDefaultModelId,
+	siliconCloudModelsByApiLine,
 	doubaoModels,
 	doubaoDefaultModelId,
 	internationalZAiDefaultModelId,
@@ -311,6 +313,13 @@ function getSelectedModel({
 		case "sambanova": {
 			const id = apiConfiguration.apiModelId ?? sambaNovaDefaultModelId
 			const info = sambaNovaModels[id as keyof typeof sambaNovaModels]
+			return { id, info }
+		}
+		case "siliconcloud": {
+			const apiLine = apiConfiguration.siliconCloudApiLine || "china"
+			const models = siliconCloudModelsByApiLine[apiLine]
+			const id = apiConfiguration.apiModelId ?? siliconCloudDefaultModelId
+			const info = models[id]
 			return { id, info }
 		}
 		case "fireworks": {

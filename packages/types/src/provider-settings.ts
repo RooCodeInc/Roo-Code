@@ -21,6 +21,7 @@ import {
 	qwenCodeModels,
 	rooModels,
 	sambaNovaModels,
+	siliconCloudModels,
 	vertexModels,
 	vscodeLlmModels,
 	xaiModels,
@@ -135,6 +136,7 @@ export const providerNames = [
 	"qwen-code",
 	"roo",
 	"sambanova",
+	"siliconcloud",
 	"vertex",
 	"xai",
 	"zai",
@@ -377,6 +379,15 @@ const sambaNovaSchema = apiModelIdProviderModelSchema.extend({
 	sambaNovaApiKey: z.string().optional(),
 })
 
+export const siliconCloudApiLineSchema = z.enum(["china", "china-overseas", "international"])
+
+export type SiliconCloudApiLine = z.infer<typeof siliconCloudApiLineSchema>
+
+const siliconCloudSchema = apiModelIdProviderModelSchema.extend({
+	siliconCloudApiKey: z.string().optional(),
+	siliconCloudApiLine: siliconCloudApiLineSchema.optional(),
+})
+
 export const zaiApiLineSchema = z.enum(["international_coding", "international", "china_coding", "china"])
 
 export type ZaiApiLine = z.infer<typeof zaiApiLineSchema>
@@ -446,6 +457,7 @@ export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProv
 	litellmSchema.merge(z.object({ apiProvider: z.literal("litellm") })),
 	cerebrasSchema.merge(z.object({ apiProvider: z.literal("cerebras") })),
 	sambaNovaSchema.merge(z.object({ apiProvider: z.literal("sambanova") })),
+	siliconCloudSchema.merge(z.object({ apiProvider: z.literal("siliconcloud") })),
 	zaiSchema.merge(z.object({ apiProvider: z.literal("zai") })),
 	fireworksSchema.merge(z.object({ apiProvider: z.literal("fireworks") })),
 	featherlessSchema.merge(z.object({ apiProvider: z.literal("featherless") })),
@@ -487,6 +499,7 @@ export const providerSettingsSchema = z.object({
 	...litellmSchema.shape,
 	...cerebrasSchema.shape,
 	...sambaNovaSchema.shape,
+	...siliconCloudSchema.shape,
 	...zaiSchema.shape,
 	...fireworksSchema.shape,
 	...featherlessSchema.shape,
@@ -573,6 +586,7 @@ export const modelIdKeysByProvider: Record<TypicalProvider, ModelIdKey> = {
 	huggingface: "huggingFaceModelId",
 	cerebras: "apiModelId",
 	sambanova: "apiModelId",
+	siliconcloud: "apiModelId",
 	zai: "apiModelId",
 	fireworks: "apiModelId",
 	featherless: "apiModelId",
@@ -683,6 +697,7 @@ export const MODELS_BY_PROVIDER: Record<
 		label: "SambaNova",
 		models: Object.keys(sambaNovaModels),
 	},
+	siliconcloud: { id: "siliconcloud", label: "SiliconCloud", models: Object.keys(siliconCloudModels) },
 	vertex: {
 		id: "vertex",
 		label: "GCP Vertex AI",

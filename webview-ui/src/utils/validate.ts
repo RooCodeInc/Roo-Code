@@ -9,6 +9,7 @@ import {
 	isDynamicProvider,
 	isFauxProvider,
 	isCustomProvider,
+	siliconCloudModelsByApiLine,
 } from "@roo-code/types"
 
 import type { RouterModels } from "@roo/api"
@@ -154,6 +155,17 @@ function validateModelsAndKeysProvided(apiConfiguration: ProviderSettings): stri
 		case "vercel-ai-gateway":
 			if (!apiConfiguration.vercelAiGatewayApiKey) {
 				return i18next.t("settings:validation.apiKey")
+			}
+			break
+		case "siliconcloud":
+			if (!apiConfiguration.siliconCloudApiKey) {
+				return i18next.t("settings:validation.apiKey")
+			}
+			if (apiConfiguration.siliconCloudApiLine) {
+				const models = siliconCloudModelsByApiLine[apiConfiguration.siliconCloudApiLine]
+				if (apiConfiguration.apiModelId && !models[apiConfiguration.apiModelId as keyof typeof models]) {
+					return i18next.t("settings:validation.modelAvailability", { modelId: apiConfiguration.apiModelId })
+				}
 			}
 			break
 	}

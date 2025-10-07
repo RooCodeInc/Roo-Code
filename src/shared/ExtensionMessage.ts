@@ -77,6 +77,7 @@ export interface ExtensionMessage {
 		| "listApiConfig"
 		| "routerModels"
 		| "openAiModels"
+		| "siliconCloudModels"
 		| "ollamaModels"
 		| "lmStudioModels"
 		| "vsCodeLmModels"
@@ -152,6 +153,7 @@ export interface ExtensionMessage {
 	clineMessage?: ClineMessage
 	routerModels?: RouterModels
 	openAiModels?: string[]
+	siliconCloudModels?: string[]
 	ollamaModels?: ModelRecord
 	lmStudioModels?: ModelRecord
 	vsCodeLmModels?: { vendor?: string; family?: string; version?: string; id?: string }[]

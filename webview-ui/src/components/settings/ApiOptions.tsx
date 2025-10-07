@@ -37,6 +37,7 @@ import {
 	rooDefaultModelId,
 	vercelAiGatewayDefaultModelId,
 	deepInfraDefaultModelId,
+	siliconCloudDefaultModelId,
 } from "@roo-code/types"
 
 import { vscode } from "@src/utils/vscode"
@@ -95,9 +96,10 @@ import {
 	Featherless,
 	VercelAiGateway,
 	DeepInfra,
+	SiliconCloud,
 } from "./providers"
 
-import { MODELS_BY_PROVIDER, PROVIDERS } from "./constants"
+import { MODELS_BY_PROVIDER, PROVIDERS, SILICON_CLOUD_MODELS_BY_API_LINE } from "./constants"
 import { inputEventTransform, noTransform } from "./transforms"
 import { ModelInfoView } from "./ModelInfoView"
 import { ApiErrorMessage } from "./ApiErrorMessage"
@@ -258,7 +260,12 @@ const ApiOptions = ({
 	}, [apiConfiguration, routerModels, organizationAllowList, setErrorMessage])
 
 	const selectedProviderModels = useMemo(() => {
-		const models = MODELS_BY_PROVIDER[selectedProvider]
+		let models = MODELS_BY_PROVIDER[selectedProvider]
+
+		if (selectedProvider === "siliconcloud") {
+			const apiLine = apiConfiguration.siliconCloudApiLine || "china"
+			models = SILICON_CLOUD_MODELS_BY_API_LINE[apiLine]
+		}
 		if (!models) return []
 
 		const filteredModels = filterModels(models, selectedProvider, organizationAllowList)
@@ -280,7 +287,7 @@ const ApiOptions = ({
 			: []
 
 		return availableModels
-	}, [selectedProvider, organizationAllowList, selectedModelId])
+	}, [selectedProvider, organizationAllowList, selectedModelId, apiConfiguration.siliconCloudApiLine])
 
 	const onProviderChange = useCallback(
 		(value: ProviderName) => {
@@ -354,6 +361,7 @@ const ApiOptions = ({
 				"io-intelligence": { field: "ioIntelligenceModelId", default: ioIntelligenceDefaultModelId },
 				roo: { field: "apiModelId", default: rooDefaultModelId },
 				"vercel-ai-gateway": { field: "vercelAiGatewayModelId", default: vercelAiGatewayDefaultModelId },
+				siliconcloud: { field: "apiModelId", default: siliconCloudDefaultModelId },
 				openai: { field: "openAiModelId" },
 				ollama: { field: "ollamaModelId" },
 				lmstudio: { field: "lmStudioModelId" },
@@ -512,6 +520,10 @@ const ApiOptions = ({
 					organizationAllowList={organizationAllowList}
 					modelValidationError={modelValidationError}
 				/>
+			)}
+
+			{selectedProvider === "siliconcloud" && (
+				<SiliconCloud apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
 			)}
 
 			{selectedProvider === "anthropic" && (

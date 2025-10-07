@@ -387,6 +387,10 @@
 			"description": "Ollama le permite ejecutar modelos localmente en su computadora. Para obtener instrucciones sobre cómo comenzar, consulte la guía de inicio rápido.",
 			"warning": "Nota: Roo Code utiliza prompts complejos y funciona mejor con modelos Claude. Los modelos menos capaces pueden no funcionar como se espera."
 		},
+		"siliconCloudApiKey": "Clave API de SiliconCloud",
+		"getSiliconCloudApiKey": "Obtener clave API de SiliconCloud",
+		"siliconCloudEntrypoint": "Punto de entrada de SiliconCloud",
+		"siliconCloudEntrypointDescription": "Por favor, seleccione el punto de entrada de API apropiado según su ubicación.",
 		"unboundApiKey": "Clave API de Unbound",
 		"getUnboundApiKey": "Obtener clave API de Unbound",
 		"unboundRefreshModelsSuccess": "¡Lista de modelos actualizada! Ahora puede seleccionar entre los últimos modelos.",
