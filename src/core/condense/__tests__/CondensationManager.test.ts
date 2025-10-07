@@ -651,4 +651,157 @@ describe("CondensationManager", () => {
 			expect(result1.error).toBe("Loop guard: max 3 attempts reached")
 		})
 	})
+
+	describe("Hierarchical Provider Thresholds (Phase 7)", () => {
+		it("should use global thresholds when no provider overrides exist", () => {
+			const thresholds = manager.getEffectiveThresholds("native")
+
+			expect(thresholds.trigger).toBe(80000)
+			expect(thresholds.stop).toBe(40000)
+			expect(thresholds.minGain).toBe(5000)
+		})
+
+		it("should use provider-specific threshold overrides when available", () => {
+			manager.updateConfig({
+				thresholds: {
+					global: {
+						triggerTokens: 80000,
+						stopTokens: 40000,
+						minGainTokens: 5000,
+					},
+					providers: {
+						smart: {
+							triggerTokens: 100000,
+							stopTokens: 50000,
+							minGainTokens: 10000,
+						},
+					},
+				},
+			})
+
+			const smartThresholds = manager.getEffectiveThresholds("smart")
+
+			expect(smartThresholds.trigger).toBe(100000)
+			expect(smartThresholds.stop).toBe(50000)
+			expect(smartThresholds.minGain).toBe(10000)
+		})
+
+		it("should mix global and provider-specific thresholds (partial override)", () => {
+			manager.updateConfig({
+				thresholds: {
+					global: {
+						triggerTokens: 80000,
+						stopTokens: 40000,
+						minGainTokens: 5000,
+					},
+					providers: {
+						smart: {
+							triggerTokens: 120000, // Override only trigger
+							// stopTokens and minGainTokens will use global
+						},
+					},
+				},
+			})
+
+			const smartThresholds = manager.getEffectiveThresholds("smart")
+
+			expect(smartThresholds.trigger).toBe(120000) // Provider-specific
+			expect(smartThresholds.stop).toBe(40000) // Global fallback
+			expect(smartThresholds.minGain).toBe(5000) // Global fallback
+		})
+
+		it("should fallback to global for unknown providers", () => {
+			manager.updateConfig({
+				thresholds: {
+					global: {
+						triggerTokens: 80000,
+						stopTokens: 40000,
+						minGainTokens: 5000,
+					},
+					providers: {
+						smart: {
+							triggerTokens: 100000,
+						},
+					},
+				},
+			})
+
+			// Request thresholds for provider without overrides
+			const nativeThresholds = manager.getEffectiveThresholds("native")
+
+			expect(nativeThresholds.trigger).toBe(80000)
+			expect(nativeThresholds.stop).toBe(40000)
+			expect(nativeThresholds.minGain).toBe(5000)
+		})
+
+		it("should determine condensation trigger correctly with provider thresholds", () => {
+			manager.updateConfig({
+				thresholds: {
+					global: {
+						triggerTokens: 80000,
+						stopTokens: 40000,
+						minGainTokens: 5000,
+					},
+					providers: {
+						smart: {
+							triggerTokens: 120000,
+						},
+					},
+				},
+			})
+
+			// Below global threshold but would be below smart threshold
+			expect(manager.shouldCondense(90000, "native")).toBe(true) // Uses global 80K
+			expect(manager.shouldCondense(90000, "smart")).toBe(false) // Uses smart 120K
+
+			// Above both thresholds
+			expect(manager.shouldCondense(150000, "native")).toBe(true)
+			expect(manager.shouldCondense(150000, "smart")).toBe(true)
+		})
+
+		it("should update configuration correctly", () => {
+			const initialConfig = manager.getConfig()
+			expect(initialConfig.enabled).toBe(true)
+			expect(initialConfig.selectedProvider).toBe("native")
+
+			manager.updateConfig({
+				enabled: false,
+				selectedProvider: "smart",
+			})
+
+			const updatedConfig = manager.getConfig()
+			expect(updatedConfig.enabled).toBe(false)
+			expect(updatedConfig.selectedProvider).toBe("smart")
+			// Thresholds should remain unchanged
+			expect(updatedConfig.thresholds.global.triggerTokens).toBe(80000)
+		})
+
+		it("should preserve existing config when updating partial values", () => {
+			manager.updateConfig({
+				thresholds: {
+					global: {
+						triggerTokens: 90000,
+						stopTokens: 45000,
+						minGainTokens: 6000,
+					},
+				},
+			})
+
+			// Update only one threshold value
+			manager.updateConfig({
+				thresholds: {
+					global: {
+						triggerTokens: 95000,
+						stopTokens: 45000,
+						minGainTokens: 6000,
+					},
+				},
+			})
+
+			const config = manager.getConfig()
+			expect(config.thresholds.global.triggerTokens).toBe(95000)
+			expect(config.thresholds.global.stopTokens).toBe(45000)
+			expect(config.thresholds.global.minGainTokens).toBe(6000)
+		})
+	})
 })

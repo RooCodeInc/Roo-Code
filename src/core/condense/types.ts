@@ -342,6 +342,44 @@ export interface PerModelOverride {
 }
 
 /**
+ * Provider-specific threshold overrides (Phase 7)
+ *
+ * NOTE: This is distinct from profileThresholds in CondensationOptions.
+ * - profileThresholds: Per-LLM-profile thresholds (% of context window) - determines WHEN to condense
+ * - ProviderThresholds: Per-condensation-provider thresholds (absolute tokens) - determines HOW to condense
+ *
+ * Example:
+ * - profileThresholds["gpt-4"] = 75 → Trigger condensation at 75% context for GPT-4
+ * - providers["smart"].triggerTokens = 100000 → Smart provider uses 100K trigger instead of global 80K
+ */
+export interface ProviderThresholds {
+	triggerTokens?: number
+	stopTokens?: number
+	minGainTokens?: number
+}
+
+/**
+ * Condensation configuration with hierarchical thresholds (Phase 7)
+ *
+ * This configuration manages the CondensationManager's internal behavior,
+ * independent of the sliding-window's profileThresholds system.
+ */
+export interface CondensationConfig {
+	enabled: boolean
+	selectedProvider: string
+	thresholds: {
+		global: {
+			triggerTokens: number
+			stopTokens: number
+			minGainTokens: number
+		}
+		providers?: {
+			[providerId: string]: ProviderThresholds
+		}
+	}
+}
+
+/**
  * Complete condensation settings structure
  */
 export interface CondensationSettings {

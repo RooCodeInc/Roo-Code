@@ -6,7 +6,13 @@ import { LosslessCondensationProvider } from "./providers/lossless"
 import { TruncationCondensationProvider } from "./providers/truncation"
 import { SmartCondensationProvider } from "./providers/smart"
 import { BALANCED_CONFIG } from "./providers/smart/configs"
-import { CondensationContext, CondensationOptions, CondensationResult, ICondensationProvider } from "./types"
+import {
+	CondensationContext,
+	CondensationOptions,
+	CondensationResult,
+	ICondensationProvider,
+	CondensationConfig,
+} from "./types"
 
 /**
  * Manager for orchestrating condensation operations
@@ -18,6 +24,19 @@ export class CondensationManager {
 	private condensationAttempts = new Map<string, { count: number; lastAttempt: number }>()
 	private readonly MAX_ATTEMPTS = 3
 	private readonly COOLDOWN_MS = 60000 // 1 minute
+
+	// Default condensation configuration
+	private config: CondensationConfig = {
+		enabled: true,
+		selectedProvider: "native",
+		thresholds: {
+			global: {
+				triggerTokens: 80000,
+				stopTokens: 40000,
+				minGainTokens: 5000,
+			},
+		},
+	}
 
 	private constructor() {
 		// Register default providers
@@ -234,6 +253,59 @@ export class CondensationManager {
 				priority: config?.priority ?? 100,
 			}
 		})
+	}
+
+	/**
+	 * Get effective thresholds for a provider (Phase 7)
+	 * Falls back to global thresholds if provider-specific not defined
+	 */
+	getEffectiveThresholds(providerId: string): {
+		trigger: number
+		stop: number
+		minGain: number
+	} {
+		const global = this.config.thresholds.global
+		const providerOverrides = this.config.thresholds.providers?.[providerId]
+
+		return {
+			trigger: providerOverrides?.triggerTokens ?? global.triggerTokens,
+			stop: providerOverrides?.stopTokens ?? global.stopTokens,
+			minGain: providerOverrides?.minGainTokens ?? global.minGainTokens,
+		}
+	}
+
+	/**
+	 * Check if condensation should be triggered (Phase 7)
+	 * Uses provider-specific thresholds if available
+	 */
+	shouldCondense(contextTokens: number, providerId: string): boolean {
+		const thresholds = this.getEffectiveThresholds(providerId)
+		return contextTokens >= thresholds.trigger
+	}
+
+	/**
+	 * Update condensation configuration (Phase 7)
+	 */
+	updateConfig(config: Partial<CondensationConfig>): void {
+		this.config = {
+			...this.config,
+			...config,
+			thresholds: {
+				...this.config.thresholds,
+				...config.thresholds,
+				global: {
+					...this.config.thresholds.global,
+					...config.thresholds?.global,
+				},
+			},
+		}
+	}
+
+	/**
+	 * Get current configuration (Phase 7)
+	 */
+	getConfig(): CondensationConfig {
+		return { ...this.config }
 	}
 }
 
