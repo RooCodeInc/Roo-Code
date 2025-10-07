@@ -1,6 +1,12 @@
 import { useCallback, useState, useEffect, useRef } from "react"
 import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
-import { ModelInfo, watsonxDefaultModelId, type OrganizationAllowList, type ProviderSettings } from "@roo-code/types"
+import {
+	ModelInfo,
+	watsonxDefaultModelId,
+	REGION_TO_URL,
+	type OrganizationAllowList,
+	type ProviderSettings,
+} from "@roo-code/types"
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 
 import { vscode } from "@src/utils/vscode"
@@ -18,17 +24,6 @@ const WATSONX_REGIONS = {
 	"au-syd": "Sydney",
 	"ca-tor": "Toronto",
 	"ap-south-1": "Mumbai",
-}
-
-const REGION_TO_URL = {
-	"us-south": "https://us-south.ml.cloud.ibm.com",
-	"eu-de": "https://eu-de.ml.cloud.ibm.com",
-	"eu-gb": "https://eu-gb.ml.cloud.ibm.com",
-	"jp-tok": "https://jp-tok.ml.cloud.ibm.com",
-	"au-syd": "https://au-syd.ml.cloud.ibm.com",
-	"ca-tor": "https://ca-tor.ml.cloud.ibm.com",
-	"ap-south-1": "https://ap-south-1.aws.wxai.ibm.com",
-	custom: "",
 }
 
 type WatsonxAIProps = {
@@ -50,6 +45,48 @@ export const WatsonxAI = ({
 	const [refreshError, setRefreshError] = useState<string | undefined>()
 	const watsonxErrorJustReceived = useRef(false)
 	const initialModelFetchAttempted = useRef(false)
+
+	const refreshStatusRef = useRef(refreshStatus)
+	const refreshErrorRef = useRef(refreshError)
+	const tRef = useRef(t)
+
+	useEffect(() => {
+		refreshStatusRef.current = refreshStatus
+	}, [refreshStatus])
+	useEffect(() => {
+		refreshErrorRef.current = refreshError
+	}, [refreshError])
+	useEffect(() => {
+		tRef.current = t
+	}, [t])
+
+	useEffect(() => {
+		const handleMessage = (event: MessageEvent<ExtensionMessage>) => {
+			const message = event.data
+			if (message.type === "singleRouterModelFetchResponse" && !message.success) {
+				const providerName = message.values?.provider as RouterName
+				if (providerName === "ibm-watsonx") {
+					watsonxErrorJustReceived.current = true
+					setRefreshStatus("error")
+					setRefreshError(message.error)
+				}
+			} else if (message.type === "watsonxModels") {
+				setWatsonxModels(message.watsonxModels ?? {})
+				if (refreshStatusRef.current === "loading") {
+					if (!watsonxErrorJustReceived.current) {
+						setRefreshStatus("success")
+					} else {
+						watsonxErrorJustReceived.current = false
+					}
+				}
+			}
+		}
+
+		window.addEventListener("message", handleMessage)
+		return () => {
+			window.removeEventListener("message", handleMessage)
+		}
+	}, [])
 
 	useEffect(() => {
 		if (!apiConfiguration.watsonxPlatform) {
@@ -108,34 +145,6 @@ export const WatsonxAI = ({
 		},
 		[setApiConfigurationField],
 	)
-
-	useEffect(() => {
-		const handleMessage = (event: MessageEvent<ExtensionMessage>) => {
-			const message = event.data
-			if (message.type === "singleRouterModelFetchResponse" && !message.success) {
-				const providerName = message.values?.provider as RouterName
-				if (providerName === "ibm-watsonx") {
-					watsonxErrorJustReceived.current = true
-					setRefreshStatus("error")
-					setRefreshError(message.error)
-				}
-			} else if (message.type === "watsonxModels") {
-				setWatsonxModels(message.watsonxModels ?? {})
-				if (refreshStatus === "loading") {
-					if (!watsonxErrorJustReceived.current) {
-						setRefreshStatus("success")
-					} else {
-						watsonxErrorJustReceived.current = false
-					}
-				}
-			}
-		}
-
-		window.addEventListener("message", handleMessage)
-		return () => {
-			window.removeEventListener("message", handleMessage)
-		}
-	}, [refreshStatus, refreshError, t])
 
 	const handleInputChange = useCallback(
 		<E,>(field: keyof ProviderSettings, transform: (event: E) => any = inputEventTransform) =>
@@ -212,7 +221,7 @@ export const WatsonxAI = ({
 				authType: authType,
 				username: username,
 				password: password,
-				region: selectedRegion,
+				region: platform === "ibmCloud" ? selectedRegion : undefined,
 			},
 		})
 	}, [apiConfiguration, setRefreshStatus, setRefreshError, t, selectedRegion])
@@ -381,7 +390,7 @@ export const WatsonxAI = ({
 					) : (
 						<div className="w-full mb-1">
 							<VSCodeTextField
-				value={apiConfiguration.watsonxPassword || ""}
+								value={apiConfiguration.watsonxPassword || ""}
 								type="password"
 								onInput={handleInputChange("watsonxPassword")}
 								placeholder={t("settings:providers.watsonx.password")}
