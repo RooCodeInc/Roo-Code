@@ -61,7 +61,7 @@ export const SiliconCloud = ({ apiConfiguration, setApiConfigurationField }: Sil
 				{t("settings:providers.apiKeyStorageNotice")}
 			</div>
 			{!apiConfiguration?.siliconCloudApiKey && (
-				<VSCodeButtonLink href="https://siliconflow.cn/" appearance="secondary">
+				<VSCodeButtonLink href={apiConfiguration.siliconCloudApiLine === "international" ? "https://siliconflow.com/" : "https://siliconflow.cn/"} appearance="secondary">
 					{t("settings:providers.getSiliconCloudApiKey")}
 				</VSCodeButtonLink>
 			)}
