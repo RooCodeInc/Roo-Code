@@ -283,10 +283,17 @@
 		"getFireworksApiKey": "Lấy khóa API Fireworks",
 		"featherlessApiKey": "Khóa API Featherless",
 		"getFeatherlessApiKey": "Lấy khóa API Featherless",
-		"siliconCloudApiKey": "Khóa API SiliconCloud",
-		"getSiliconCloudApiKey": "Lấy khóa API SiliconCloud",
-		"siliconCloudEntrypoint": "Điểm truy cập SiliconCloud",
-		"siliconCloudEntrypointDescription": "Vui lòng chọn điểm truy cập API phù hợp dựa trên vị trí của bạn.",
+		"siliconcloud": {
+			"apiKey": "Khóa API SiliconCloud",
+			"getApiKey": "Lấy khóa API SiliconCloud",
+			"entrypoint": "Khu vực dịch vụ SiliconCloud",
+			"entrypointDescription": "Vui lòng chọn khu vực dịch vụ phù hợp dựa trên vị trí của bạn.",
+			"apiLineConfigs": {
+				"china": "国内版",
+				"chinaOverseas": "国内版（海外访问）",
+				"international": "国际版"
+			}
+		},
 		"ioIntelligenceApiKey": "Khóa API IO Intelligence",
 		"ioIntelligenceApiKeyPlaceholder": "Nhập khóa API IO Intelligence của bạn",
 		"getIoIntelligenceApiKey": "Lấy khóa API IO Intelligence",

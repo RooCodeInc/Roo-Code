@@ -290,10 +290,17 @@
 		"getIoIntelligenceApiKey": "IO Intelligence API-Schlüssel erhalten",
 		"deepSeekApiKey": "DeepSeek API-Schlüssel",
 		"getDeepSeekApiKey": "DeepSeek API-Schlüssel erhalten",
-		"siliconCloudApiKey": "SiliconCloud API-Schlüssel",
-		"getSiliconCloudApiKey": "SiliconCloud API-Schlüssel erhalten",
-		"siliconCloudEntrypoint": "SiliconCloud-Endpunkt",
-		"siliconCloudEntrypointDescription": "Wähle den passenden API-Endpunkt basierend auf deinem Standort.",
+		"siliconcloud": {
+			"apiKey": "SiliconCloud API-Schlüssel",
+			"getApiKey": "SiliconCloud API-Schlüssel erhalten",
+			"entrypoint": "SiliconCloud-Serviceregion",
+			"entrypointDescription": "Wähle die passende Serviceregion basierend auf deinem Standort.",
+			"apiLineConfigs": {
+				"china": "国内版",
+				"chinaOverseas": "国内版（海外访问）",
+				"international": "国际版"
+			}
+		},
 		"moonshotApiKey": "Moonshot API-Schlüssel",
 		"getMoonshotApiKey": "Moonshot API-Schlüssel erhalten",
 		"moonshotBaseUrl": "Moonshot-Einstiegspunkt",

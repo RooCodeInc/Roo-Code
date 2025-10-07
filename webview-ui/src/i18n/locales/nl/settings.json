@@ -283,10 +283,17 @@
 		"getFireworksApiKey": "Fireworks API-sleutel ophalen",
 		"featherlessApiKey": "Featherless API-sleutel",
 		"getFeatherlessApiKey": "Featherless API-sleutel ophalen",
-		"siliconCloudApiKey": "SiliconCloud API-sleutel",
-		"getSiliconCloudApiKey": "SiliconCloud API-sleutel ophalen",
-		"siliconCloudEntrypoint": "SiliconCloud-toegangspunt",
-		"siliconCloudEntrypointDescription": "Selecteer het juiste API-toegangspunt op basis van je locatie.",
+		"siliconcloud": {
+			"apiKey": "SiliconCloud API-sleutel",
+			"getApiKey": "SiliconCloud API-sleutel ophalen",
+			"entrypoint": "SiliconCloud-serviceregio",
+			"entrypointDescription": "Selecteer de juiste serviceregio op basis van je locatie.",
+			"apiLineConfigs": {
+				"china": "国内版",
+				"chinaOverseas": "国内版（海外访问）",
+				"international": "国际版"
+			}
+		},
 		"ioIntelligenceApiKey": "IO Intelligence API-sleutel",
 		"ioIntelligenceApiKeyPlaceholder": "Voer je IO Intelligence API-sleutel in",
 		"getIoIntelligenceApiKey": "IO Intelligence API-sleutel ophalen",

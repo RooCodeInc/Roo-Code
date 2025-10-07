@@ -283,10 +283,17 @@
 		"getFireworksApiKey": "Fireworks API कुंजी प्राप्त करें",
 		"featherlessApiKey": "Featherless API कुंजी",
 		"getFeatherlessApiKey": "Featherless API कुंजी प्राप्त करें",
-		"siliconCloudApiKey": "SiliconCloud API कुंजी",
-		"getSiliconCloudApiKey": "SiliconCloud API कुंजी प्राप्त करें",
-		"siliconCloudEntrypoint": "SiliconCloud प्रवेश बिंदु",
-		"siliconCloudEntrypointDescription": "कृपया अपने स्थान के आधार पर उपयुक्त API प्रवेश बिंदु चुनें।",
+		"siliconcloud": {
+			"apiKey": "SiliconCloud API कुंजी",
+			"getApiKey": "SiliconCloud API कुंजी प्राप्त करें",
+			"entrypoint": "SiliconCloud सेवा क्षेत्र",
+			"entrypointDescription": "कृपया अपने स्थान के आधार पर उपयुक्त सेवा क्षेत्र चुनें।",
+			"apiLineConfigs": {
+				"china": "国内版",
+				"chinaOverseas": "国内版（海外访问）",
+				"international": "国际版"
+			}
+		},
 		"ioIntelligenceApiKey": "IO Intelligence API कुंजी",
 		"ioIntelligenceApiKeyPlaceholder": "अपना आईओ इंटेलिजेंस एपीआई कुंजी दर्ज करें",
 		"getIoIntelligenceApiKey": "IO Intelligence API कुंजी प्राप्त करें",

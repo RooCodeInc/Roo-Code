@@ -379,7 +379,7 @@ const sambaNovaSchema = apiModelIdProviderModelSchema.extend({
 	sambaNovaApiKey: z.string().optional(),
 })
 
-export const siliconCloudApiLineSchema = z.enum(["china", "china-overseas", "international"])
+export const siliconCloudApiLineSchema = z.enum(["china", "chinaOverseas", "international"])
 
 export type SiliconCloudApiLine = z.infer<typeof siliconCloudApiLineSchema>
 

@@ -283,10 +283,17 @@
 		"getFireworksApiKey": "Fireworks APIキーを取得",
 		"featherlessApiKey": "Featherless APIキー",
 		"getFeatherlessApiKey": "Featherless APIキーを取得",
-		"siliconCloudApiKey": "SiliconCloud APIキー",
-		"getSiliconCloudApiKey": "SiliconCloud APIキーを取得",
-		"siliconCloudEntrypoint": "SiliconCloud エントリーポイント",
-		"siliconCloudEntrypointDescription": "場所に応じて適切なAPIエントリーポイントを選択してください。",
+		"siliconcloud": {
+			"apiKey": "SiliconCloud APIキー",
+			"getApiKey": "SiliconCloud APIキーを取得",
+			"entrypoint": "SiliconCloud サービスリージョン",
+			"entrypointDescription": "お住まいの地域に応じて適切なサービスリージョンを選択してください。",
+			"apiLineConfigs": {
+				"china": "国内版",
+				"chinaOverseas": "国内版（海外访问）",
+				"international": "国际版"
+			}
+		},
 		"ioIntelligenceApiKey": "IO Intelligence APIキー",
 		"ioIntelligenceApiKeyPlaceholder": "IO Intelligence APIキーを入力してください",
 		"getIoIntelligenceApiKey": "IO Intelligence APIキーを取得",

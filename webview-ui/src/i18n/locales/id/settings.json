@@ -287,10 +287,17 @@
 		"getFireworksApiKey": "Dapatkan Fireworks API Key",
 		"featherlessApiKey": "Featherless API Key",
 		"getFeatherlessApiKey": "Dapatkan Featherless API Key",
-		"siliconCloudApiKey": "SiliconCloud API Key",
-		"getSiliconCloudApiKey": "Dapatkan SiliconCloud API Key",
-		"siliconCloudEntrypoint": "Titik Masuk SiliconCloud",
-		"siliconCloudEntrypointDescription": "Silakan pilih titik masuk API yang sesuai berdasarkan lokasi kamu.",
+		"siliconcloud": {
+			"apiKey": "SiliconCloud API Key",
+			"getApiKey": "Dapatkan SiliconCloud API Key",
+			"entrypoint": "Wilayah Layanan SiliconCloud",
+			"entrypointDescription": "Silakan pilih wilayah layanan yang sesuai berdasarkan lokasi kamu.",
+			"apiLineConfigs": {
+				"china": "国内版",
+				"chinaOverseas": "国内版（海外访问）",
+				"international": "国际版"
+			}
+		},
 		"ioIntelligenceApiKey": "IO Intelligence API Key",
 		"ioIntelligenceApiKeyPlaceholder": "Masukkan kunci API IO Intelligence Anda",
 		"getIoIntelligenceApiKey": "Dapatkan IO Intelligence API Key",

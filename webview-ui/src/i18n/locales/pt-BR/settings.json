@@ -283,10 +283,17 @@
 		"getFireworksApiKey": "Obter chave de API Fireworks",
 		"featherlessApiKey": "Chave de API Featherless",
 		"getFeatherlessApiKey": "Obter chave de API Featherless",
-		"siliconCloudApiKey": "Chave de API SiliconCloud",
-		"getSiliconCloudApiKey": "Obter chave de API SiliconCloud",
-		"siliconCloudEntrypoint": "Ponto de entrada SiliconCloud",
-		"siliconCloudEntrypointDescription": "Selecione o ponto de entrada de API apropriado com base na sua localização.",
+		"siliconcloud": {
+			"apiKey": "Chave de API SiliconCloud",
+			"getApiKey": "Obter chave de API SiliconCloud",
+			"entrypoint": "Região de serviço SiliconCloud",
+			"entrypointDescription": "Selecione a região de serviço apropriada com base na sua localização.",
+			"apiLineConfigs": {
+				"china": "国内版",
+				"chinaOverseas": "国内版（海外访问）",
+				"international": "国际版"
+			}
+		},
 		"ioIntelligenceApiKey": "Chave de API IO Intelligence",
 		"ioIntelligenceApiKeyPlaceholder": "Insira sua chave de API da IO Intelligence",
 		"getIoIntelligenceApiKey": "Obter chave de API IO Intelligence",

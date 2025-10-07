@@ -324,10 +324,17 @@
 		"getMistralApiKey": "Obtenir la clé API Mistral / Codestral",
 		"codestralBaseUrl": "URL de base Codestral (Optionnel)",
 		"codestralBaseUrlDesc": "Définir une URL alternative pour le modèle Codestral.",
-		"siliconCloudApiKey": "Clé API SiliconCloud",
-		"getSiliconCloudApiKey": "Obtenir la clé API SiliconCloud",
-		"siliconCloudEntrypoint": "Point d'entrée SiliconCloud",
-		"siliconCloudEntrypointDescription": "Sélectionnez le point d'entrée API approprié en fonction de votre localisation.",
+		"siliconcloud": {
+			"apiKey": "Clé API SiliconCloud",
+			"getApiKey": "Obtenir la clé API SiliconCloud",
+			"entrypoint": "Région de service SiliconCloud",
+			"entrypointDescription": "Sélectionnez la région de service appropriée en fonction de votre localisation.",
+			"apiLineConfigs": {
+				"china": "国内版",
+				"chinaOverseas": "国内版（海外访问）",
+				"international": "国际版"
+			}
+		},
 		"xaiApiKey": "Clé API xAI",
 		"getXaiApiKey": "Obtenir la clé API xAI",
 		"litellmApiKey": "Clé API LiteLLM",

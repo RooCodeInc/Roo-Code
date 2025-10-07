@@ -283,10 +283,17 @@
 		"getFireworksApiKey": "Fireworks API 키 받기",
 		"featherlessApiKey": "Featherless API 키",
 		"getFeatherlessApiKey": "Featherless API 키 받기",
-		"siliconCloudApiKey": "SiliconCloud API 키",
-		"getSiliconCloudApiKey": "SiliconCloud API 키 받기",
-		"siliconCloudEntrypoint": "SiliconCloud 엔트리포인트",
-		"siliconCloudEntrypointDescription": "위치에 따라 적절한 API 엔트리포인트를 선택하세요.",
+		"siliconcloud": {
+			"apiKey": "SiliconCloud API 키",
+			"getApiKey": "SiliconCloud API 키 받기",
+			"entrypoint": "SiliconCloud 서비스 지역",
+			"entrypointDescription": "위치에 따라 적절한 서비스 지역을 선택하세요.",
+			"apiLineConfigs": {
+				"china": "国内版",
+				"chinaOverseas": "国内版（海外访问）",
+				"international": "国际版"
+			}
+		},
 		"ioIntelligenceApiKey": "IO Intelligence API 키",
 		"ioIntelligenceApiKeyPlaceholder": "IO Intelligence API 키를 입력하세요",
 		"getIoIntelligenceApiKey": "IO Intelligence API 키 받기",

@@ -283,10 +283,17 @@
 		"getFireworksApiKey": "Fireworks API Anahtarı Al",
 		"featherlessApiKey": "Featherless API Anahtarı",
 		"getFeatherlessApiKey": "Featherless API Anahtarı Al",
-		"siliconCloudApiKey": "SiliconCloud API Anahtarı",
-		"getSiliconCloudApiKey": "SiliconCloud API Anahtarı Al",
-		"siliconCloudEntrypoint": "SiliconCloud Giriş Noktası",
-		"siliconCloudEntrypointDescription": "Konumuna göre uygun API giriş noktasını seç.",
+		"siliconcloud": {
+			"apiKey": "SiliconCloud API Anahtarı",
+			"getApiKey": "SiliconCloud API Anahtarı Al",
+			"entrypoint": "SiliconCloud Hizmet Bölgesi",
+			"entrypointDescription": "Konumuna göre uygun hizmet bölgesini seç.",
+			"apiLineConfigs": {
+				"china": "国内版",
+				"chinaOverseas": "国内版（海外访问）",
+				"international": "国际版"
+			}
+		},
 		"ioIntelligenceApiKey": "IO Intelligence API Anahtarı",
 		"ioIntelligenceApiKeyPlaceholder": "IO Intelligence API anahtarınızı girin",
 		"getIoIntelligenceApiKey": "IO Intelligence API Anahtarı Al",

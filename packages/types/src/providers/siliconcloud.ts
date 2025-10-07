@@ -4,10 +4,10 @@ import { SiliconCloudApiLine } from "../provider-settings.js"
 export const siliconCloudDefaultModelId = "zai-org/GLM-4.6"
 
 export const siliconCloudApiLineConfigs = {
-	china: { name: "国内版", baseUrl: "https://api.siliconflow.cn/v1" },
-	"china-overseas": { name: "国内版（海外访问）", baseUrl: "https://api-st.siliconflow.cn/v1" },
-	international: { name: "国际版", baseUrl: "https://api.siliconflow.com/v1" },
-} satisfies Record<SiliconCloudApiLine, { name: string; baseUrl: string }>
+	china: { baseUrl: "https://api.siliconflow.cn/v1" },
+	chinaOverseas: { baseUrl: "https://api-st.siliconflow.cn/v1" },
+	international: { baseUrl: "https://api.siliconflow.com/v1" },
+} satisfies Record<SiliconCloudApiLine, { baseUrl: string }>
 
 const siliconCloudChinaModels: Record<string, ModelInfo> = {
 	"Pro/deepseek-ai/DeepSeek-V3.1-Terminus": {
@@ -164,7 +164,7 @@ const siliconCloudInternationalModels: Record<string, ModelInfo> = {
 
 export const siliconCloudModelsByApiLine = {
 	china: siliconCloudChinaModels,
-	"china-overseas": siliconCloudChinaModels,
+	chinaOverseas: siliconCloudChinaModels,
 	international: siliconCloudInternationalModels,
 } as const satisfies Record<SiliconCloudApiLine, Record<string, ModelInfo>>
 

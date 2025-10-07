@@ -31,7 +31,7 @@ export const SiliconCloud = ({ apiConfiguration, setApiConfigurationField }: Sil
 	return (
 		<>
 			<div>
-				<label className="block font-medium mb-1">{t("settings:providers.siliconCloudEntrypoint")}</label>
+				<label className="block font-medium mb-1">{t("settings:providers.siliconcloud.entrypoint")}</label>
 				<VSCodeDropdown
 					value={apiConfiguration.siliconCloudApiLine || "china"}
 					onChange={handleInputChange("siliconCloudApiLine")}
@@ -40,13 +40,13 @@ export const SiliconCloud = ({ apiConfiguration, setApiConfigurationField }: Sil
 						const config = siliconCloudApiLineConfigs[apiLine]
 						return (
 							<VSCodeOption key={apiLine} value={apiLine} className="p-2">
-								{config.name} ({config.baseUrl})
+								{t(`settings:providers.siliconcloud.apiLineConfigs.${apiLine}`)} ({config.baseUrl})
 							</VSCodeOption>
 						)
 					})}
 				</VSCodeDropdown>
 				<div className="text-xs text-vscode-descriptionForeground mt-1">
-					{t("settings:providers.siliconCloudEntrypointDescription")}
+					{t("settings:providers.siliconcloud.entrypointDescription")}
 				</div>
 			</div>
 			<VSCodeTextField
@@ -55,14 +55,14 @@ export const SiliconCloud = ({ apiConfiguration, setApiConfigurationField }: Sil
 				onInput={handleInputChange("siliconCloudApiKey")}
 				placeholder={t("settings:placeholders.apiKey")}
 				className="w-full">
-				<label className="block font-medium mb-1">{t("settings:providers.siliconCloudApiKey")}</label>
+				<label className="block font-medium mb-1">{t("settings:providers.siliconcloud.apiKey")}</label>
 			</VSCodeTextField>
 			<div className="text-sm text-vscode-descriptionForeground -mt-2">
 				{t("settings:providers.apiKeyStorageNotice")}
 			</div>
 			{!apiConfiguration?.siliconCloudApiKey && (
 				<VSCodeButtonLink href={apiConfiguration.siliconCloudApiLine === "international" ? "https://siliconflow.com/" : "https://siliconflow.cn/"} appearance="secondary">
-					{t("settings:providers.getSiliconCloudApiKey")}
+					{t("settings:providers.siliconcloud.getApiKey")}
 				</VSCodeButtonLink>
 			)}
 		</>

@@ -283,10 +283,17 @@
 		"getFireworksApiKey": "Получить Fireworks API-ключ",
 		"featherlessApiKey": "Featherless API-ключ",
 		"getFeatherlessApiKey": "Получить Featherless API-ключ",
-		"siliconCloudApiKey": "SiliconCloud API-ключ",
-		"getSiliconCloudApiKey": "Получить SiliconCloud API-ключ",
-		"siliconCloudEntrypoint": "Точка входа SiliconCloud",
-		"siliconCloudEntrypointDescription": "Выбери подходящую точку входа API в зависимости от твоего местоположения.",
+		"siliconcloud": {
+			"apiKey": "SiliconCloud API-ключ",
+			"getApiKey": "Получить SiliconCloud API-ключ",
+			"entrypoint": "Регион сервиса SiliconCloud",
+			"entrypointDescription": "Выбери подходящий регион сервиса в зависимости от твоего местоположения.",
+			"apiLineConfigs": {
+				"china": "国内版",
+				"chinaOverseas": "国内版（海外访问）",
+				"international": "国际版"
+			}
+		},
 		"ioIntelligenceApiKey": "IO Intelligence API-ключ",
 		"ioIntelligenceApiKeyPlaceholder": "Введите свой ключ API IO Intelligence",
 		"getIoIntelligenceApiKey": "Получить IO Intelligence API-ключ",
