@@ -886,6 +886,10 @@
 		"collapseThinking": {
 			"label": "Réduire les messages de réflexion par défaut",
 			"description": "Si activé, les blocs de réflexion seront réduits par défaut jusqu'à ce que vous interagissiez avec eux"
+		},
+		"requireCtrlEnterToSend": {
+			"label": "Requiert Ctrl+Entrée pour envoyer des messages",
+			"description": "Lorsqu'activé, vous devez appuyer sur Ctrl+Entrée pour envoyer des messages au lieu de simplement Entrée"
 		}
 	}
 }

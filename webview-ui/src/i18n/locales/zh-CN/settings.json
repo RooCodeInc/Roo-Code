@@ -887,6 +887,10 @@
 		"collapseThinking": {
 			"label": "默认折叠“思考”消息",
 			"description": "启用后，“思考”块将默认折叠，直到您与其交互"
+		},
+		"requireCtrlEnterToSend": {
+			"label": "发送消息需按 Ctrl+Enter",
+			"description": "启用时，你需要按 Ctrl+Enter 才能发送消息，而不是仅按 Enter。"
 		}
 	}
 }

@@ -887,6 +887,10 @@
 		"collapseThinking": {
 			"label": "Thu gọn tin nhắn Suy nghĩ theo mặc định",
 			"description": "Khi được bật, các khối suy nghĩ sẽ được thu gọn theo mặc định cho đến khi bạn tương tác với chúng"
+		},
+		"requireCtrlEnterToSend": {
+			"label": "Yêu cầu Ctrl+Enter để gửi tin nhắn",
+			"description": "Khi bật, bạn phải nhấn Ctrl+Enter để gửi tin nhắn thay vì chỉ nhấn Enter."
 		}
 	}
 }

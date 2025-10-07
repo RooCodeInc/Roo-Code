@@ -886,6 +886,10 @@
 		"collapseThinking": {
 			"label": "Gedankenblöcke standardmäßig ausblenden",
 			"description": "Wenn aktiviert, werden Gedankenblöcke standardmäßig ausgeblendet, bis du mit ihnen interagierst"
+		},
+		"requireCtrlEnterToSend": {
+			"label": "Erfordert Strg+Enter zum Senden von Nachrichten",
+			"description": "Wenn aktiviert, musst du Strg+Enter drücken, um Nachrichten zu senden, anstatt nur Enter."
 		}
 	}
 }
