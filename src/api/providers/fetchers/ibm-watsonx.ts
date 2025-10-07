@@ -1,4 +1,4 @@
-import { ModelInfo } from "@roo-code/types"
+import { ModelInfo, REGION_TO_URL } from "@roo-code/types"
 import { IamAuthenticator, CloudPakForDataAuthenticator, UserOptions } from "ibm-cloud-sdk-core"
 import { WatsonXAI } from "@ibm-cloud/watsonx-ai"
 import WatsonxAiMlVml_v1 from "@ibm-cloud/watsonx-ai/dist/watsonx-ai-ml/vml_v1.js"
@@ -148,16 +148,6 @@ export async function getWatsonxModels(
 	}
 }
 
-export const REGION_TO_URL: Record<string, string> = {
-	"us-south": "https://us-south.ml.cloud.ibm.com",
-	"eu-de": "https://eu-de.ml.cloud.ibm.com",
-	"eu-gb": "https://eu-gb.ml.cloud.ibm.com",
-	"jp-tok": "https://jp-tok.ml.cloud.ibm.com",
-	"au-syd": "https://au-syd.ml.cloud.ibm.com",
-	"ca-tor": "https://ca-tor.ml.cloud.ibm.com",
-	"ap-south-1": "https://ap-south-1.aws.wxai.ibm.com",
-	custom: "",
-}
 /**
  * Returns the base URL for IBM Watsonx services corresponding to the given region.
  *
