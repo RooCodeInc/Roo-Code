@@ -117,8 +117,8 @@ const siliconCloudInternationalModels: Record<string, ModelInfo> = {
 		description:
 			"DeepSeek-V3.1-Terminus is an updated version of the V3.1 model from DeepSeek, positioned as a hybrid, agent-oriented large language model. This update maintains the model's original capabilities while focusing on addressing user-reported issues and improving stability. It significantly enhances language consistency, reducing instances of mixed Chinese-English text and abnormal characters. The model integrates both a 'Thinking Mode' for complex, multi-step reasoning and a 'Non-thinking Mode' for direct, quick responses, switchable via the chat template. As a key enhancement, V3.1-Terminus features improved performance for its Code Agent and Search Agent, making it more reliable for tool use and executing complex, multi-step tasks",
 	},
-	"moonshot-ai/Kimi-K2-Instruct-0905": {
-		...siliconCloudChinaModels["moonshot-ai/Kimi-K2-Instruct-0905"]!,
+	"moonshotai/Kimi-K2-Instruct-0905": {
+		...siliconCloudChinaModels["moonshotai/Kimi-K2-Instruct-0905"]!,
 		inputPrice: 0.4,
 		outputPrice: 2,
 		description:
