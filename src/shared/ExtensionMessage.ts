@@ -127,6 +127,7 @@ export interface ExtensionMessage {
 		| "dismissedUpsells"
 		| "organizationSwitchResult"
 		| "requireCtrlEnterToSend"
+		| "usagePreviewData"
 	text?: string
 	payload?: any // Add a generic payload for now, can refine later
 	bool?: boolean
@@ -207,6 +208,7 @@ export interface ExtensionMessage {
 	queuedMessages?: QueuedMessage[]
 	list?: string[] // For dismissedUpsells
 	organizationId?: string | null // For organizationSwitchResult
+	data?: any // For usagePreviewData
 }
 
 export type ExtensionState = Pick<
