@@ -289,9 +289,9 @@
 			"entrypoint": "Регион сервиса SiliconCloud",
 			"entrypointDescription": "Выбери подходящий регион сервиса в зависимости от твоего местоположения.",
 			"apiLineConfigs": {
-				"china": "国内版",
-				"chinaOverseas": "国内版（海外访问）",
-				"international": "国际版"
+				"china": "Национальная",
+				"chinaOverseas": "Национальная (Доступ из-за рубежа)",
+				"international": "Международная"
 			}
 		},
 		"ioIntelligenceApiKey": "IO Intelligence API-ключ",

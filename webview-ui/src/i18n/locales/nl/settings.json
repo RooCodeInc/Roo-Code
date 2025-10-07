@@ -289,9 +289,9 @@
 			"entrypoint": "SiliconCloud-serviceregio",
 			"entrypointDescription": "Selecteer de juiste serviceregio op basis van je locatie.",
 			"apiLineConfigs": {
-				"china": "国内版",
-				"chinaOverseas": "国内版（海外访问）",
-				"international": "国际版"
+				"china": "Binnenlands",
+				"chinaOverseas": "Binnenlands (Toegang vanuit het buitenland)",
+				"international": "Internationaal"
 			}
 		},
 		"ioIntelligenceApiKey": "IO Intelligence API-sleutel",

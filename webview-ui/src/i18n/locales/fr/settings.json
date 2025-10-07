@@ -330,9 +330,9 @@
 			"entrypoint": "Région de service SiliconCloud",
 			"entrypointDescription": "Sélectionnez la région de service appropriée en fonction de votre localisation.",
 			"apiLineConfigs": {
-				"china": "国内版",
-				"chinaOverseas": "国内版（海外访问）",
-				"international": "国际版"
+				"china": "National",
+				"chinaOverseas": "National (Accès depuis l'étranger)",
+				"international": "International"
 			}
 		},
 		"xaiApiKey": "Clé API xAI",

@@ -296,9 +296,9 @@
 			"entrypoint": "SiliconCloud-Serviceregion",
 			"entrypointDescription": "Wähle die passende Serviceregion basierend auf deinem Standort.",
 			"apiLineConfigs": {
-				"china": "国内版",
-				"chinaOverseas": "国内版（海外访问）",
-				"international": "国际版"
+				"china": "Inland",
+				"chinaOverseas": "Inland (Zugriff aus dem Ausland)",
+				"international": "International"
 			}
 		},
 		"moonshotApiKey": "Moonshot API-Schlüssel",

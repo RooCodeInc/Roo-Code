@@ -289,9 +289,9 @@
 			"entrypoint": "SiliconCloud 서비스 지역",
 			"entrypointDescription": "위치에 따라 적절한 서비스 지역을 선택하세요.",
 			"apiLineConfigs": {
-				"china": "国内版",
-				"chinaOverseas": "国内版（海外访问）",
-				"international": "国际版"
+				"china": "국내판",
+				"chinaOverseas": "국내판 (해외 접속)",
+				"international": "국제판"
 			}
 		},
 		"ioIntelligenceApiKey": "IO Intelligence API 키",

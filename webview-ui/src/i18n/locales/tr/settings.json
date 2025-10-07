@@ -289,9 +289,9 @@
 			"entrypoint": "SiliconCloud Hizmet Bölgesi",
 			"entrypointDescription": "Konumuna göre uygun hizmet bölgesini seç.",
 			"apiLineConfigs": {
-				"china": "国内版",
-				"chinaOverseas": "国内版（海外访问）",
-				"international": "国际版"
+				"china": "Ulusal",
+				"chinaOverseas": "Ulusal (Yurtdışından Erişim)",
+				"international": "Uluslararası"
 			}
 		},
 		"ioIntelligenceApiKey": "IO Intelligence API Anahtarı",

@@ -289,9 +289,9 @@
 			"entrypoint": "Khu vực dịch vụ SiliconCloud",
 			"entrypointDescription": "Vui lòng chọn khu vực dịch vụ phù hợp dựa trên vị trí của bạn.",
 			"apiLineConfigs": {
-				"china": "国内版",
-				"chinaOverseas": "国内版（海外访问）",
-				"international": "国际版"
+				"china": "Trong nước",
+				"chinaOverseas": "Trong nước (Truy cập từ nước ngoài)",
+				"international": "Quốc tế"
 			}
 		},
 		"ioIntelligenceApiKey": "Khóa API IO Intelligence",

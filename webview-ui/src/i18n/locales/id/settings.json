@@ -293,9 +293,9 @@
 			"entrypoint": "Wilayah Layanan SiliconCloud",
 			"entrypointDescription": "Silakan pilih wilayah layanan yang sesuai berdasarkan lokasi kamu.",
 			"apiLineConfigs": {
-				"china": "国内版",
-				"chinaOverseas": "国内版（海外访问）",
-				"international": "国际版"
+				"china": "Domestik",
+				"chinaOverseas": "Domestik (Akses dari Luar Negeri)",
+				"international": "Internasional"
 			}
 		},
 		"ioIntelligenceApiKey": "IO Intelligence API Key",

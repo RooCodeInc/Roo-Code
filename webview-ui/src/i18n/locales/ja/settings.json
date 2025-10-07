@@ -290,8 +290,8 @@
 			"entrypointDescription": "お住まいの地域に応じて適切なサービスリージョンを選択してください。",
 			"apiLineConfigs": {
 				"china": "国内版",
-				"chinaOverseas": "国内版（海外访问）",
-				"international": "国际版"
+				"chinaOverseas": "国内版（海外アクセス）",
+				"international": "国際版"
 			}
 		},
 		"ioIntelligenceApiKey": "IO Intelligence APIキー",
