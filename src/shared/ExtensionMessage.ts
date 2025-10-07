@@ -126,8 +126,10 @@ export interface ExtensionMessage {
 		| "insertTextIntoTextarea"
 		| "dismissedUpsells"
 		| "organizationSwitchResult"
+		| "requireCtrlEnterToSend"
 	text?: string
 	payload?: any // Add a generic payload for now, can refine later
+	bool?: boolean
 	action?:
 		| "chatButtonClicked"
 		| "mcpButtonClicked"
@@ -232,7 +234,6 @@ export type ExtensionState = Pick<
 	| "alwaysAllowFollowupQuestions"
 	| "alwaysAllowExecute"
 	| "alwaysAllowUpdateTodoList"
-	| "requireCtrlEnterToSend"
 	| "followupAutoApproveTimeoutMs"
 	| "allowedCommands"
 	| "deniedCommands"
@@ -289,6 +290,7 @@ export type ExtensionState = Pick<
 	| "openRouterImageGenerationSelectedModel"
 	| "includeTaskHistoryInEnhance"
 	| "reasoningBlockCollapsed"
+	| "requireCtrlEnterToSend"
 > & {
 	version: string
 	clineMessages: ClineMessage[]

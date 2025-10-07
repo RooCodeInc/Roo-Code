@@ -577,10 +577,6 @@ export const webviewMessageHandler = async (
 			await updateGlobalState("alwaysAllowUpdateTodoList", message.bool)
 			await provider.postStateToWebview()
 			break
-		case "requireCtrlEnterToSend":
-			await updateGlobalState("requireCtrlEnterToSend", message.bool ?? false)
-			await provider.postStateToWebview()
-			break
 		case "askResponse":
 			provider.getCurrentTask()?.handleWebviewAskResponse(message.askResponse!, message.text, message.images)
 			break
@@ -1458,10 +1454,6 @@ export const webviewMessageHandler = async (
 				Terminal.setTerminalZdotdir(message.bool)
 			}
 			break
-		case "requireCtrlEnterToSend":
-			await updateGlobalState("requireCtrlEnterToSend", message.bool)
-			await provider.postStateToWebview()
-			break
 		case "terminalCompressProgressBar":
 			await updateGlobalState("terminalCompressProgressBar", message.bool)
 			await provider.postStateToWebview()
@@ -1627,6 +1619,10 @@ export const webviewMessageHandler = async (
 			break
 		case "setReasoningBlockCollapsed":
 			await updateGlobalState("reasoningBlockCollapsed", message.bool ?? true)
+			// No need to call postStateToWebview here as the UI already updated optimistically
+			break
+		case "requireCtrlEnterToSend":
+			await updateGlobalState("requireCtrlEnterToSend", message.bool)
 			// No need to call postStateToWebview here as the UI already updated optimistically
 			break
 		case "toggleApiConfigPin":
