@@ -30,6 +30,7 @@
 		"terminal": "Terminal",
 		"slashCommands": "Commandes Slash",
 		"prompts": "Invites",
+		"ui": "UI",
 		"experimental": "Expérimental",
 		"language": "Langue",
 		"about": "À propos de Roo Code"
@@ -832,6 +833,7 @@
 			"regionMismatch": "Attention : La région dans votre ARN ({{arnRegion}}) ne correspond pas à votre région sélectionnée ({{region}}). Cela peut causer des problèmes d'accès. Le fournisseur utilisera la région de l'ARN."
 		},
 		"modelAvailability": "L'ID de modèle ({{modelId}}) que vous avez fourni n'est pas disponible. Veuillez choisir un modèle différent.",
+		"modelDeprecated": "Ce modèle n'est plus disponible. Veuillez sélectionner un modèle différent.",
 		"providerNotAllowed": "Le fournisseur '{{provider}}' n'est pas autorisé par votre organisation",
 		"modelNotAllowed": "Le modèle '{{model}}' n'est pas autorisé pour le fournisseur '{{provider}}' par votre organisation",
 		"profileInvalid": "Ce profil contient un fournisseur ou un modèle qui n'est pas autorisé par votre organisation",
@@ -887,6 +889,12 @@
 			"input": "Entrée",
 			"output": "Sortie",
 			"cacheReads": "Lectures du cache"
+		}
+	},
+	"ui": {
+		"collapseThinking": {
+			"label": "Réduire les messages de réflexion par défaut",
+			"description": "Si activé, les blocs de réflexion seront réduits par défaut jusqu'à ce que vous interagissiez avec eux"
 		}
 	}
 }

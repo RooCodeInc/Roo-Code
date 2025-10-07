@@ -221,6 +221,9 @@
 	},
 	"response": "响应",
 	"arguments": "参数",
+	"text": {
+		"rooSaid": "Roo 说"
+	},
 	"feedback": {
 		"youSaid": "你说"
 	},
@@ -285,7 +288,7 @@
 	"announcement": {
 		"title": "🎉 Roo Code {{version}} 已发布",
 		"stealthModel": {
-			"feature": "<bold>限时免费隐形模型</bold> - Code Supernova：一个支持图像输入的多功能代理编程模型，通过 Roo Code Cloud 提供。",
+			"feature": "<bold>限时免费隐形模型</bold> - Code Supernova：现已升级为 <bold>1M Token 上下文窗口</bold>！一个支持图像输入的多功能代理编程模型，通过 Roo Code Cloud 提供。",
 			"note": "(注意：提示词和补全内容会被模型创建者记录并用于改进模型)",
 			"connectButton": "连接到 Roo Code Cloud",
 			"selectModel": "在设置中从 Roo Code Cloud 提供商选择 <code>roo/code-supernova</code> 开始使用。",

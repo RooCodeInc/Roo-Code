@@ -30,6 +30,7 @@
 		"terminal": "Terminal",
 		"slashCommands": "Comandes de barra",
 		"prompts": "Indicacions",
+		"ui": "UI",
 		"experimental": "Experimental",
 		"language": "Idioma",
 		"about": "Sobre Roo Code"
@@ -834,6 +835,7 @@
 			"regionMismatch": "Avís: La regió del vostre ARN ({{arnRegion}}) no coincideix amb la regió seleccionada ({{region}}). Això pot causar problemes d'accés. El proveïdor utilitzarà la regió de l'ARN."
 		},
 		"modelAvailability": "L'ID de model ({{modelId}}) que heu proporcionat no està disponible. Si us plau, trieu un altre model.",
+		"modelDeprecated": "Aquest model ja no està disponible. Si us plau, seleccioneu un model diferent.",
 		"providerNotAllowed": "El proveïdor '{{provider}}' no està permès per la vostra organització",
 		"modelNotAllowed": "El model '{{model}}' no està permès per al proveïdor '{{provider}}' per la vostra organització",
 		"profileInvalid": "Aquest perfil conté un proveïdor o model que no està permès per la vostra organització",
@@ -889,6 +891,12 @@
 			"input": "Entrada",
 			"output": "Sortida",
 			"cacheReads": "Lectures de memòria cau"
+		}
+	},
+	"ui": {
+		"collapseThinking": {
+			"label": "Replega els missatges de pensament per defecte",
+			"description": "Quan estigui activat, els blocs de pensament es replegaran per defecte fins que interactuïs amb ells"
 		}
 	}
 }
