@@ -13,7 +13,7 @@ import { ApiHandlerCreateMessageMetadata } from ".."
 
 const SILICON_CLOUD_PROVIDER_NAME = "siliconcloud" as const
 
-export class SiliconCloudProvider extends OpenAiHandler {
+export class SiliconCloudHandler extends OpenAiHandler {
 	constructor(options: ApiHandlerOptions) {
 		const apiLine = options.siliconCloudApiLine || "china"
 

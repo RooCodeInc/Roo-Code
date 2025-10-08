@@ -40,7 +40,7 @@ import {
 	FeatherlessHandler,
 	VercelAiGatewayHandler,
 	DeepInfraHandler,
-	SiliconCloudProvider,
+	SiliconCloudHandler,
 } from "./providers"
 import { NativeOllamaHandler } from "./providers/native-ollama"
 
@@ -167,7 +167,7 @@ export function buildApiHandler(configuration: ProviderSettings): ApiHandler {
 		case "vercel-ai-gateway":
 			return new VercelAiGatewayHandler(options)
 		case "siliconcloud":
-			return new SiliconCloudProvider(options)
+			return new SiliconCloudHandler(options)
 		default:
 			apiProvider satisfies "gemini-cli" | undefined
 			return new AnthropicHandler(options)
