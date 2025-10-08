@@ -46,7 +46,6 @@
 		"requireCtrlEnterToSend": {
 			"label": "Require Ctrl/Cmd+Enter to send messages",
 			"description": "When enabled, you must press Ctrl or Cmd+Enter to send messages instead of just Enter"
-			"description": "When enabled, you must press Ctrl+Enter to send messages instead of just Enter"
 		}
 	},
 	"prompts": {
