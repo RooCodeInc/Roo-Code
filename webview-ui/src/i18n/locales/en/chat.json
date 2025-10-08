@@ -92,6 +92,14 @@
 		"title": "Cancel",
 		"tooltip": "Cancel the current operation"
 	},
+	"pause": {
+		"title": "Pause",
+		"tooltip": "Pause the AI's response"
+	},
+	"resume": {
+		"title": "Resume",
+		"tooltip": "Resume the AI's response"
+	},
 	"editMessage": {
 		"placeholder": "Edit your message..."
 	},

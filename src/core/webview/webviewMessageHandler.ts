@@ -1003,6 +1003,12 @@ export const webviewMessageHandler = async (
 		case "cancelTask":
 			await provider.cancelTask()
 			break
+		case "pauseTask":
+			await provider.pauseTask()
+			break
+		case "resumeTask":
+			await provider.resumeTask()
+			break
 		case "allowedCommands": {
 			// Validate and sanitize the commands array
 			const commands = message.commands ?? []
