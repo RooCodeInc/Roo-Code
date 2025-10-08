@@ -116,8 +116,7 @@ interface PendingEditOperation {
 
 export class ClineProvider
 	extends EventEmitter<TaskProviderEvents>
-	implements vscode.WebviewViewProvider, TelemetryPropertiesProvider, TaskProviderLike
-{
+	implements vscode.WebviewViewProvider, TelemetryPropertiesProvider, TaskProviderLike {
 	// Used in package.json as the view's id. This value cannot be changed due
 	// to how VSCode caches views based on their id, and updating the id would
 	// break existing instances of the extension.
@@ -222,8 +221,7 @@ export class ClineProvider
 					}
 				} catch (error) {
 					this.log(
-						`[onTaskAborted] Failed to rehydrate after streaming failure: ${
-							error instanceof Error ? error.message : String(error)
+						`[onTaskAborted] Failed to rehydrate after streaming failure: ${error instanceof Error ? error.message : String(error)
 						}`,
 					)
 				}
@@ -881,8 +879,7 @@ export class ClineProvider
 					} catch (error) {
 						// Log the error but continue with task restoration.
 						this.log(
-							`Failed to restore API configuration for mode '${historyItem.mode}': ${
-								error instanceof Error ? error.message : String(error)
+							`Failed to restore API configuration for mode '${historyItem.mode}': ${error instanceof Error ? error.message : String(error)
 							}. Continuing with default configuration.`,
 						)
 						// The task will continue with the current/default configuration.
@@ -1179,7 +1176,7 @@ export class ClineProvider
 				}
 
 				// Only update the task's mode after successful persistence.
-				;(task as any)._taskMode = newMode
+				; (task as any)._taskMode = newMode
 			} catch (error) {
 				// If persistence fails, log the error but don't update the in-memory state.
 				this.log(
@@ -1946,6 +1943,7 @@ export class ClineProvider
 				codebaseIndexOpenAiCompatibleBaseUrl: codebaseIndexConfig?.codebaseIndexOpenAiCompatibleBaseUrl,
 				codebaseIndexSearchMaxResults: codebaseIndexConfig?.codebaseIndexSearchMaxResults,
 				codebaseIndexSearchMinScore: codebaseIndexConfig?.codebaseIndexSearchMinScore,
+				codebaseIndexBranchIsolationEnabled: codebaseIndexConfig?.codebaseIndexBranchIsolationEnabled ?? false,
 			},
 			// Only set mdmCompliant if there's an actual MDM policy
 			// undefined means no MDM policy, true means compliant, false means non-compliant

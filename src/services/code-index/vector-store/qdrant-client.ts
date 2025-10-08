@@ -23,8 +23,19 @@ export class QdrantVectorStore implements IVectorStore {
 	 * Creates a new Qdrant vector store
 	 * @param workspacePath Path to the workspace
 	 * @param url Optional URL to the Qdrant server
+	 * @param vectorSize Size of the embedding vectors
+	 * @param apiKey Optional API key for Qdrant authentication
+	 * @param branchIsolationEnabled Whether to include branch name in collection naming
+	 * @param currentBranch Current Git branch name (used when branchIsolationEnabled is true)
 	 */
-	constructor(workspacePath: string, url: string, vectorSize: number, apiKey?: string) {
+	constructor(
+		workspacePath: string,
+		url: string,
+		vectorSize: number,
+		apiKey?: string,
+		branchIsolationEnabled?: boolean,
+		currentBranch?: string,
+	) {
 		// Parse the URL to determine the appropriate QdrantClient configuration
 		const parsedUrl = this.parseQdrantUrl(url)
 
@@ -80,7 +91,31 @@ export class QdrantVectorStore implements IVectorStore {
 		// Generate collection name from workspace path
 		const hash = createHash("sha256").update(workspacePath).digest("hex")
 		this.vectorSize = vectorSize
-		this.collectionName = `ws-${hash.substring(0, 16)}`
+
+		// If branch isolation is enabled and we have a branch name, include it in the collection name
+		if (branchIsolationEnabled && currentBranch) {
+			const sanitizedBranch = this.sanitizeBranchName(currentBranch)
+			this.collectionName = `ws-${hash.substring(0, 16)}-br-${sanitizedBranch}`
+		} else {
+			this.collectionName = `ws-${hash.substring(0, 16)}`
+		}
+	}
+
+	/**
+	 * Sanitizes a Git branch name for use in Qdrant collection naming
+	 * @param branch The branch name to sanitize
+	 * @returns A sanitized branch name safe for collection naming
+	 */
+	private sanitizeBranchName(branch: string): string {
+		// Replace invalid characters with hyphens, collapse multiple hyphens, limit length
+		return (
+			branch
+				.replace(/[^a-zA-Z0-9_-]/g, "-") // Replace invalid chars with hyphens
+				.replace(/--+/g, "-") // Collapse multiple hyphens
+				.replace(/^-+|-+$/g, "") // Remove leading/trailing hyphens
+				.substring(0, 50) // Limit length to 50 characters
+				.toLowerCase() || "default"
+		) // Fallback to 'default' if empty after sanitization
 	}
 
 	/**

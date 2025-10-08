@@ -90,6 +90,23 @@ export async function getGitRepositoryInfo(workspaceRoot: string): Promise<GitRe
 }
 
 /**
+ * Gets the current Git branch name for a workspace
+ * @param workspaceRoot The root path of the workspace
+ * @returns Current branch name or undefined if not in a Git repo or on detached HEAD
+ */
+export async function getCurrentBranch(workspaceRoot: string): Promise<string | undefined> {
+	try {
+		const headPath = path.join(workspaceRoot, ".git", "HEAD")
+		const headContent = await fs.readFile(headPath, "utf8")
+		const branchMatch = headContent.match(/ref: refs\/heads\/(.+)/)
+		return branchMatch?.[1]?.trim()
+	} catch {
+		// Not a git repository or error reading HEAD file
+		return undefined
+	}
+}
+
+/**
  * Converts a git URL to HTTPS format
  * @param url The git URL to convert
  * @returns The URL in HTTPS format, or the original URL if conversion is not possible

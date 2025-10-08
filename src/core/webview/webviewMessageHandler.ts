@@ -1394,7 +1394,7 @@ export const webviewMessageHandler = async (
 			} else {
 				vscode.window.showErrorMessage(
 					t("common:errors.invalid_character_limit") ||
-						"Terminal output character limit must be a positive number",
+					"Terminal output character limit must be a positive number",
 				)
 			}
 			break
@@ -2005,10 +2005,10 @@ export const webviewMessageHandler = async (
 						const existingMode = existingModes.find((mode) => mode.slug === message.modeConfig?.slug)
 						const changedSettings = existingMode
 							? Object.keys(message.modeConfig).filter(
-									(key) =>
-										JSON.stringify((existingMode as Record<string, unknown>)[key]) !==
-										JSON.stringify((message.modeConfig as Record<string, unknown>)[key]),
-								)
+								(key) =>
+									JSON.stringify((existingMode as Record<string, unknown>)[key]) !==
+									JSON.stringify((message.modeConfig as Record<string, unknown>)[key]),
+							)
 							: []
 
 						if (changedSettings.length > 0) {
@@ -2457,6 +2457,7 @@ export const webviewMessageHandler = async (
 					codebaseIndexOpenAiCompatibleBaseUrl: settings.codebaseIndexOpenAiCompatibleBaseUrl,
 					codebaseIndexSearchMaxResults: settings.codebaseIndexSearchMaxResults,
 					codebaseIndexSearchMinScore: settings.codebaseIndexSearchMinScore,
+					codebaseIndexBranchIsolationEnabled: settings.codebaseIndexBranchIsolationEnabled,
 				}
 
 				// Save global state first
@@ -2604,13 +2605,13 @@ export const webviewMessageHandler = async (
 			const status = manager
 				? manager.getCurrentStatus()
 				: {
-						systemStatus: "Standby",
-						message: "No workspace folder open",
-						processedItems: 0,
-						totalItems: 0,
-						currentItemUnit: "items",
-						workspacePath: undefined,
-					}
+					systemStatus: "Standby",
+					message: "No workspace folder open",
+					processedItems: 0,
+					totalItems: 0,
+					currentItemUnit: "items",
+					workspacePath: undefined,
+				}
 
 			provider.postMessageToWebview({
 				type: "indexingStatusUpdate",

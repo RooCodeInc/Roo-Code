@@ -64,6 +64,7 @@ interface LocalCodeIndexSettings {
 	codebaseIndexEmbedderModelDimension?: number // Generic dimension for all providers
 	codebaseIndexSearchMaxResults?: number
 	codebaseIndexSearchMinScore?: number
+	codebaseIndexBranchIsolationEnabled?: boolean
 
 	// Secret settings (start empty, will be loaded separately)
 	codeIndexOpenAiKey?: string
@@ -187,6 +188,7 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 		codebaseIndexEmbedderModelDimension: undefined,
 		codebaseIndexSearchMaxResults: CODEBASE_INDEX_DEFAULTS.DEFAULT_SEARCH_RESULTS,
 		codebaseIndexSearchMinScore: CODEBASE_INDEX_DEFAULTS.DEFAULT_SEARCH_MIN_SCORE,
+		codebaseIndexBranchIsolationEnabled: false,
 		codeIndexOpenAiKey: "",
 		codeIndexQdrantApiKey: "",
 		codebaseIndexOpenAiCompatibleBaseUrl: "",
@@ -222,6 +224,7 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 					codebaseIndexConfig.codebaseIndexSearchMaxResults ?? CODEBASE_INDEX_DEFAULTS.DEFAULT_SEARCH_RESULTS,
 				codebaseIndexSearchMinScore:
 					codebaseIndexConfig.codebaseIndexSearchMinScore ?? CODEBASE_INDEX_DEFAULTS.DEFAULT_SEARCH_MIN_SCORE,
+				codebaseIndexBranchIsolationEnabled: codebaseIndexConfig.codebaseIndexBranchIsolationEnabled ?? false,
 				codeIndexOpenAiKey: "",
 				codeIndexQdrantApiKey: "",
 				codebaseIndexOpenAiCompatibleBaseUrl: codebaseIndexConfig.codebaseIndexOpenAiCompatibleBaseUrl || "",
@@ -716,15 +719,15 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 													{getAvailableModels().map((modelId) => {
 														const model =
 															codebaseIndexModels?.[
-																currentSettings.codebaseIndexEmbedderProvider
+															currentSettings.codebaseIndexEmbedderProvider
 															]?.[modelId]
 														return (
 															<VSCodeOption key={modelId} value={modelId} className="p-2">
 																{modelId}{" "}
 																{model
 																	? t("settings:codeIndex.modelDimensions", {
-																			dimension: model.dimension,
-																		})
+																		dimension: model.dimension,
+																	})
 																	: ""}
 															</VSCodeOption>
 														)
@@ -973,15 +976,15 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 													{getAvailableModels().map((modelId) => {
 														const model =
 															codebaseIndexModels?.[
-																currentSettings.codebaseIndexEmbedderProvider
+															currentSettings.codebaseIndexEmbedderProvider
 															]?.[modelId]
 														return (
 															<VSCodeOption key={modelId} value={modelId} className="p-2">
 																{modelId}{" "}
 																{model
 																	? t("settings:codeIndex.modelDimensions", {
-																			dimension: model.dimension,
-																		})
+																		dimension: model.dimension,
+																	})
 																	: ""}
 															</VSCodeOption>
 														)
@@ -1038,15 +1041,15 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 													{getAvailableModels().map((modelId) => {
 														const model =
 															codebaseIndexModels?.[
-																currentSettings.codebaseIndexEmbedderProvider
+															currentSettings.codebaseIndexEmbedderProvider
 															]?.[modelId]
 														return (
 															<VSCodeOption key={modelId} value={modelId} className="p-2">
 																{modelId}{" "}
 																{model
 																	? t("settings:codeIndex.modelDimensions", {
-																			dimension: model.dimension,
-																		})
+																		dimension: model.dimension,
+																	})
 																	: ""}
 															</VSCodeOption>
 														)
@@ -1108,15 +1111,15 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 													{getAvailableModels().map((modelId) => {
 														const model =
 															codebaseIndexModels?.[
-																currentSettings.codebaseIndexEmbedderProvider
+															currentSettings.codebaseIndexEmbedderProvider
 															]?.[modelId]
 														return (
 															<VSCodeOption key={modelId} value={modelId} className="p-2">
 																{modelId}{" "}
 																{model
 																	? t("settings:codeIndex.modelDimensions", {
-																			dimension: model.dimension,
-																		})
+																		dimension: model.dimension,
+																	})
 																	: ""}
 															</VSCodeOption>
 														)
@@ -1216,7 +1219,7 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 												step={CODEBASE_INDEX_DEFAULTS.SEARCH_SCORE_STEP}
 												value={[
 													currentSettings.codebaseIndexSearchMinScore ??
-														CODEBASE_INDEX_DEFAULTS.DEFAULT_SEARCH_MIN_SCORE,
+													CODEBASE_INDEX_DEFAULTS.DEFAULT_SEARCH_MIN_SCORE,
 												]}
 												onValueChange={(values) =>
 													updateSetting("codebaseIndexSearchMinScore", values[0])
@@ -1262,7 +1265,7 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 												step={CODEBASE_INDEX_DEFAULTS.SEARCH_RESULTS_STEP}
 												value={[
 													currentSettings.codebaseIndexSearchMaxResults ??
-														CODEBASE_INDEX_DEFAULTS.DEFAULT_SEARCH_RESULTS,
+													CODEBASE_INDEX_DEFAULTS.DEFAULT_SEARCH_RESULTS,
 												]}
 												onValueChange={(values) =>
 													updateSetting("codebaseIndexSearchMaxResults", values[0])
@@ -1286,6 +1289,31 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 												<span className="codicon codicon-discard" />
 											</VSCodeButton>
 										</div>
+									</div>
+
+									{/* Branch Isolation Toggle */}
+									<div className="space-y-2">
+										<div className="flex items-center gap-2">
+											<VSCodeCheckbox
+												checked={currentSettings.codebaseIndexBranchIsolationEnabled ?? false}
+												onChange={(e: any) =>
+													updateSetting("codebaseIndexBranchIsolationEnabled", e.target.checked)
+												}>
+												<span className="text-sm font-medium">
+													{t("settings:codeIndex.branchIsolation.enableLabel")}
+												</span>
+											</VSCodeCheckbox>
+											<StandardTooltip
+												content={t("settings:codeIndex.branchIsolation.enableDescription")}>
+												<span className="codicon codicon-info text-xs text-vscode-descriptionForeground cursor-help" />
+											</StandardTooltip>
+										</div>
+										{currentSettings.codebaseIndexBranchIsolationEnabled && (
+											<div className="ml-6 mt-2 flex items-start gap-2 text-xs text-vscode-descriptionForeground">
+												<span className="codicon codicon-warning mt-0.5" />
+												<span>{t("settings:codeIndex.branchIsolation.storageWarning")}</span>
+											</div>
+										)}
 									</div>
 								</div>
 							)}

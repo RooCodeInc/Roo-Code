@@ -122,6 +122,11 @@
 			"error": "Error"
 		},
 		"close": "Close",
+		"branchIsolation": {
+			"enableLabel": "Enable Branch Isolation",
+			"enableDescription": "Index each Git branch separately to prevent conflicts when switching branches. Requires more storage space.",
+			"storageWarning": "Each branch will have its own index, increasing storage requirements."
+		},
 		"validation": {
 			"qdrantUrlRequired": "Qdrant URL is required",
 			"invalidQdrantUrl": "Invalid Qdrant URL",

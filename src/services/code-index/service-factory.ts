@@ -18,6 +18,7 @@ import { TelemetryService } from "@roo-code/telemetry"
 import { TelemetryEventName } from "@roo-code/types"
 import { Package } from "../../shared/package"
 import { BATCH_SEGMENT_THRESHOLD } from "./constants"
+import { getCurrentBranch } from "../../utils/git"
 
 /**
  * Factory class responsible for creating and configuring code indexing service dependencies.
@@ -27,7 +28,7 @@ export class CodeIndexServiceFactory {
 		private readonly configManager: CodeIndexConfigManager,
 		private readonly workspacePath: string,
 		private readonly cacheManager: CacheManager,
-	) {}
+	) { }
 
 	/**
 	 * Creates an embedder instance based on the current configuration.
@@ -113,7 +114,7 @@ export class CodeIndexServiceFactory {
 	/**
 	 * Creates a vector store instance using the current configuration.
 	 */
-	public createVectorStore(): IVectorStore {
+	public async createVectorStore(): Promise<IVectorStore> {
 		const config = this.configManager.getConfig()
 
 		const provider = config.embedderProvider as EmbedderProvider
@@ -145,8 +146,20 @@ export class CodeIndexServiceFactory {
 			throw new Error(t("embeddings:serviceFactory.qdrantUrlMissing"))
 		}
 
-		// Assuming constructor is updated: new QdrantVectorStore(workspacePath, url, vectorSize, apiKey?)
-		return new QdrantVectorStore(this.workspacePath, config.qdrantUrl, vectorSize, config.qdrantApiKey)
+		// Get current branch if branch isolation is enabled
+		let currentBranch: string | undefined
+		if (config.branchIsolationEnabled) {
+			currentBranch = await getCurrentBranch(this.workspacePath)
+		}
+
+		return new QdrantVectorStore(
+			this.workspacePath,
+			config.qdrantUrl,
+			vectorSize,
+			config.qdrantApiKey,
+			config.branchIsolationEnabled,
+			currentBranch,
+		)
 	}
 
 	/**
@@ -208,24 +221,24 @@ export class CodeIndexServiceFactory {
 	 * Creates all required service dependencies if the service is properly configured.
 	 * @throws Error if the service is not properly configured
 	 */
-	public createServices(
+	public async createServices(
 		context: vscode.ExtensionContext,
 		cacheManager: CacheManager,
 		ignoreInstance: Ignore,
 		rooIgnoreController?: RooIgnoreController,
-	): {
+	): Promise<{
 		embedder: IEmbedder
 		vectorStore: IVectorStore
 		parser: ICodeParser
 		scanner: DirectoryScanner
 		fileWatcher: IFileWatcher
-	} {
+	}> {
 		if (!this.configManager.isFeatureConfigured) {
 			throw new Error(t("embeddings:serviceFactory.codeIndexingNotConfigured"))
 		}
 
 		const embedder = this.createEmbedder()
-		const vectorStore = this.createVectorStore()
+		const vectorStore = await this.createVectorStore()
 		const parser = codeParser
 		const scanner = this.createDirectoryScanner(embedder, vectorStore, parser, ignoreInstance)
 		const fileWatcher = this.createFileWatcher(
