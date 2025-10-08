@@ -62,10 +62,18 @@ vi.mock("child_process", () => {
 
 // Ensure fs/promises and file utils are mockable from tests
 // Provide explicit mock factory so readdir/readFile are defined vi.fn()
-vi.mock("fs/promises", () => ({
-	readdir: vi.fn(),
-	readFile: vi.fn(),
-}))
+vi.mock("fs/promises", () => {
+	const mockReaddir = vi.fn()
+	const mockReadFile = vi.fn()
+	return {
+		readdir: mockReaddir,
+		readFile: mockReadFile,
+		default: {
+			readdir: mockReaddir,
+			readFile: mockReadFile,
+		},
+	}
+})
 vi.mock("../../../utils/fs")
 // Mock fs so BaseIgnoreController's realpathSync won't touch the real filesystem
 vi.mock("fs", () => ({

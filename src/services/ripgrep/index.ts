@@ -235,7 +235,9 @@ function formatResults(fileResults: SearchFileResult[], cwd: string): string {
 
 	// Group results by file name
 	fileResults.slice(0, MAX_RESULTS).forEach((file) => {
-		const relativeFilePath = path.relative(cwd, file.file)
+		// If file.file is already a relative path, use it as-is
+		// Otherwise, make it relative to cwd
+		const relativeFilePath = path.isAbsolute(file.file) ? path.relative(cwd, file.file) : file.file
 		if (!groupedResults[relativeFilePath]) {
 			groupedResults[relativeFilePath] = []
 
