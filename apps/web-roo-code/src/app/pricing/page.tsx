@@ -81,8 +81,9 @@ const pricingTiers: PricingTier[] = [
 		description: "For folks just getting started",
 		features: [
 			"Token usage analytics",
-			"Access your task history across devices",
 			"Follow your tasks from anywhere",
+			"Share tasks with friends and co-workers",
+			"Early access to free AI Models",
 			"Community support",
 		],
 		cta: {
@@ -269,8 +270,11 @@ export default function PricingPage() {
 								You can run as many as you want, and bring your own inference provider key.
 							</p>
 							<p className="mt-2 text-sm text-muted-foreground">
-								To cover our costs, we charge $0.25 per million tokens used by them (outside of
-								inference costs).
+								To cover our infrastructure costs, we charge $0.25 per million tokens used by them
+								(outside of inference providers).
+							</p>
+							<p className="mt-2 text-sm text-muted-foreground">
+								There are no tiers, no monthly fees, no dumbing-down of models to increase our profit.
 							</p>
 						</div>
 						<div className="rounded-lg border border-border bg-card p-6">
