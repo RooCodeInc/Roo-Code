@@ -163,7 +163,6 @@ export class CodeIndexManager {
 		// Re-check Git branch watcher after services were recreated
 		await this._setupGitHeadWatcher()
 
-
 		// 5. Handle Indexing Start/Restart
 		// The enhanced vectorStore.initialize() in startIndexing() now handles dimension changes automatically
 		// by detecting incompatible collections and recreating them, so we rely on that for dimension changes
@@ -430,13 +429,23 @@ export class CodeIndexManager {
 				if (newBranch === this._lastKnownBranch) return
 				this._lastKnownBranch = newBranch
 				await this._recreateServices()
-				this._orchestrator?.startIndexing()
+
+				// Smart re-indexing: only do full scan if collection doesn't exist or is empty
+				// If collection exists with data, file watcher will handle incremental updates
+				const collectionExists = await this._serviceFactory?.getVectorStore()?.collectionExists()
+				if (!collectionExists) {
+					// New branch or first time indexing this branch - do full scan
+					this._orchestrator?.startIndexing()
+				} else {
+					// Collection exists - just validate/initialize without full scan
+					// File watcher will detect any file changes from the branch switch
+					await this._serviceFactory?.getVectorStore()?.initialize()
+				}
 			} catch (error) {
 				console.error("Failed to handle Git branch change:", error)
 			}
 		}, 250)
 	}
-
 
 	/**
 	 * Handle code index settings changes.
@@ -486,7 +495,6 @@ export class CodeIndexManager {
 					throw error
 				}
 			}
-
 		}
 	}
 }
