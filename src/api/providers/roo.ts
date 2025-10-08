@@ -74,6 +74,8 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<RooModelId> {
 			metadata?.taskId ? { headers: { "X-Roo-Task-ID": metadata.taskId } } : undefined,
 		)
 
+		let hasYieldedContent = false
+
 		for await (const chunk of stream) {
 			const delta = chunk.choices[0]?.delta
 
@@ -83,6 +85,7 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<RooModelId> {
 						type: "text",
 						text: delta.content,
 					}
+					hasYieldedContent = true
 				}
 
 				if ("reasoning_content" in delta && typeof delta.reasoning_content === "string") {
@@ -90,6 +93,7 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<RooModelId> {
 						type: "reasoning",
 						text: delta.reasoning_content,
 					}
+					// Don't count reasoning as content for the purpose of ensuring text output
 				}
 			}
 
@@ -99,6 +103,15 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<RooModelId> {
 					inputTokens: chunk.usage.prompt_tokens || 0,
 					outputTokens: chunk.usage.completion_tokens || 0,
 				}
+			}
+		}
+
+		// If we only received reasoning content and no text content, yield an empty text chunk
+		// This ensures the UI doesn't show a blank response
+		if (!hasYieldedContent) {
+			yield {
+				type: "text",
+				text: "",
 			}
 		}
 	}
