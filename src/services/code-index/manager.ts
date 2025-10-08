@@ -16,6 +16,8 @@ import { t } from "../../i18n"
 import { TelemetryService } from "@roo-code/telemetry"
 import { TelemetryEventName } from "@roo-code/types"
 
+import { getCurrentBranch } from "../../utils/git"
+
 export class CodeIndexManager {
 	// --- Singleton Implementation ---
 	private static instances = new Map<string, CodeIndexManager>() // Map workspace path to instance
@@ -29,6 +31,12 @@ export class CodeIndexManager {
 	private _cacheManager: CacheManager | undefined
 
 	// Flag to prevent race conditions during error recovery
+
+	// Git branch change watcher for branch isolation
+	private _gitHeadWatcher?: vscode.FileSystemWatcher
+	private _lastKnownBranch?: string
+	private _gitHeadDebounce?: ReturnType<typeof setTimeout>
+
 	private _isRecoveringFromError = false
 
 	public static getInstance(context: vscode.ExtensionContext, workspacePath?: string): CodeIndexManager | undefined {
@@ -141,8 +149,13 @@ export class CodeIndexManager {
 		// 4. CacheManager Initialization
 		if (!this._cacheManager) {
 			this._cacheManager = new CacheManager(this.context, this.workspacePath)
+
 			await this._cacheManager.initialize()
 		}
+
+		// Ensure Git branch watcher is set up (when branch isolation is enabled)
+		await this._setupGitHeadWatcher()
+
 
 		// 4. Determine if Core Services Need Recreation
 		const needsServiceRecreation = !this._serviceFactory || requiresRestart
@@ -150,6 +163,10 @@ export class CodeIndexManager {
 		if (needsServiceRecreation) {
 			await this._recreateServices()
 		}
+
+		// Re-check Git branch watcher after services were recreated
+		await this._setupGitHeadWatcher()
+
 
 		// 5. Handle Indexing Start/Restart
 		// The enhanced vectorStore.initialize() in startIndexing() now handles dimension changes automatically
@@ -235,6 +252,11 @@ export class CodeIndexManager {
 			// This ensures a clean slate even if state update failed
 			this._configManager = undefined
 			this._serviceFactory = undefined
+			if (this._gitHeadWatcher) {
+				this._gitHeadWatcher.dispose()
+				this._gitHeadWatcher = undefined
+			}
+
 			this._orchestrator = undefined
 			this._searchService = undefined
 
@@ -250,6 +272,11 @@ export class CodeIndexManager {
 		if (this._orchestrator) {
 			this.stopWatcher()
 		}
+		if (this._gitHeadWatcher) {
+			this._gitHeadWatcher.dispose()
+			this._gitHeadWatcher = undefined
+		}
+
 		this._stateManager.dispose()
 	}
 
@@ -362,6 +389,7 @@ export class CodeIndexManager {
 		// (Re)Initialize search service
 		this._searchService = new CodeIndexSearchService(
 			this._configManager!,
+
 			this._stateManager,
 			embedder,
 			vectorStore,
@@ -370,6 +398,46 @@ export class CodeIndexManager {
 		// Clear any error state after successful recreation
 		this._stateManager.setSystemState("Standby", "")
 	}
+
+	// --- Git branch watcher (Phase 1: auto branch switch handling) ---
+	private async _setupGitHeadWatcher(): Promise<void> {
+		const isEnabled = this._configManager?.getConfig().branchIsolationEnabled
+		if (!isEnabled) {
+			if (this._gitHeadWatcher) {
+				this._gitHeadWatcher.dispose()
+				this._gitHeadWatcher = undefined
+			}
+			this._lastKnownBranch = undefined
+			return
+		}
+		this._lastKnownBranch = await getCurrentBranch(this.workspacePath)
+		if (!this._gitHeadWatcher) {
+			const pattern = new vscode.RelativePattern(this.workspacePath, ".git/HEAD")
+			this._gitHeadWatcher = vscode.workspace.createFileSystemWatcher(pattern)
+			const handler = () => this._onGitHeadChange()
+			this._gitHeadWatcher.onDidChange(handler)
+
+			this._gitHeadWatcher.onDidCreate(handler)
+			this._gitHeadWatcher.onDidDelete(handler)
+		}
+	}
+
+	private async _onGitHeadChange(): Promise<void> {
+		if (this._gitHeadDebounce) clearTimeout(this._gitHeadDebounce)
+		this._gitHeadDebounce = setTimeout(async () => {
+			try {
+				if (!this._configManager?.getConfig().branchIsolationEnabled) return
+				const newBranch = await getCurrentBranch(this.workspacePath)
+				if (newBranch === this._lastKnownBranch) return
+				this._lastKnownBranch = newBranch
+				await this._recreateServices()
+				this._orchestrator?.startIndexing()
+			} catch (error) {
+				console.error("Failed to handle Git branch change:", error)
+			}
+		}, 250)
+	}
+
 
 	/**
 	 * Handle code index settings changes.
@@ -417,6 +485,10 @@ export class CodeIndexManager {
 					throw error
 				}
 			}
+
+			// Ensure Git branch watcher reflects latest settings
+			await this._setupGitHeadWatcher()
+
 		}
 	}
 }
