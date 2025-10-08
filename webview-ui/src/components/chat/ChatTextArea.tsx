@@ -469,8 +469,8 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				}
 
 				if (event.key === "Enter" && !event.shiftKey && !isComposing) {
-					// If Ctrl+Enter is required but Ctrl key is not pressed, don't send
-					if (requireCtrlEnterToSend && !event.ctrlKey) {
+					// If Ctrl+Enter is required but neither Ctrl nor Meta (Cmd) key is pressed, don't send
+					if (requireCtrlEnterToSend && !event.ctrlKey && !event.metaKey) {
 						return
 					}
 
