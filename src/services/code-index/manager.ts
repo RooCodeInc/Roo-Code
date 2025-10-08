@@ -432,14 +432,21 @@ export class CodeIndexManager {
 
 				// Smart re-indexing: only do full scan if collection doesn't exist or is empty
 				// If collection exists with data, file watcher will handle incremental updates
-				const collectionExists = await this._serviceFactory?.getVectorStore()?.collectionExists()
+				const vectorStore = this._orchestrator?.getVectorStore()
+				if (!vectorStore) {
+					// No orchestrator yet, just start indexing
+					this._orchestrator?.startIndexing()
+					return
+				}
+
+				const collectionExists = await vectorStore.collectionExists()
 				if (!collectionExists) {
 					// New branch or first time indexing this branch - do full scan
 					this._orchestrator?.startIndexing()
 				} else {
 					// Collection exists - just validate/initialize without full scan
 					// File watcher will detect any file changes from the branch switch
-					await this._serviceFactory?.getVectorStore()?.initialize()
+					await vectorStore.initialize()
 				}
 			} catch (error) {
 				console.error("Failed to handle Git branch change:", error)

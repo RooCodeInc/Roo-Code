@@ -124,7 +124,7 @@
 		"close": "Close",
 		"branchIsolation": {
 			"enableLabel": "Enable Branch Isolation",
-			"enableDescription": "Index each Git branch separately to prevent conflicts when switching branches. Requires more storage space.",
+			"enableDescription": "Index each Git branch separately to get better search results and prevent conflicts when switching branches. Requires more storage space.",
 			"storageWarning": "Each branch will have its own index, increasing storage requirements."
 		},
 		"validation": {
