@@ -12,7 +12,6 @@ import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { VSCodeButtonLink } from "@src/components/common/VSCodeButtonLink"
 
 import { inputEventTransform } from "../transforms"
-import { cn } from "@/lib/utils"
 
 type SiliconCloudProps = {
 	apiConfiguration: ProviderSettings
@@ -40,7 +39,7 @@ export const SiliconCloud = ({ apiConfiguration, setApiConfigurationField }: Sil
 				<VSCodeDropdown
 					value={apiConfiguration.siliconCloudApiLine || siliconCloudDefaultApiLine}
 					onChange={handleInputChange("siliconCloudApiLine")}
-					className={cn("w-full")}>
+					className="w-full">
 					{siliconCloudApiLineSchema.options.map((apiLine) => {
 						const config = siliconCloudApiLineConfigs[apiLine]
 						return (
