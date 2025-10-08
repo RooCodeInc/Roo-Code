@@ -1,7 +1,7 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 
-import { siliconCloudDefaultModelId, siliconCloudApiLineConfigs, siliconCloudModels } from "@roo-code/types"
+import { siliconCloudDefaultModelId, siliconCloudApiLineConfigs, siliconCloudModels, ModelInfo } from "@roo-code/types"
 
 import { type ApiHandlerOptions } from "../../shared/api"
 import { type ApiStream } from "../transform/stream"
@@ -27,7 +27,8 @@ export class SiliconCloudHandler extends OpenAiHandler {
 
 	override getModel() {
 		const id = this.options.apiModelId || siliconCloudDefaultModelId
-		const info = siliconCloudModels[id as keyof typeof siliconCloudModels]
+		const info =
+			siliconCloudModels[id as keyof typeof siliconCloudModels] ?? siliconCloudModels[siliconCloudDefaultModelId]
 		const params = getModelParams({ format: "openai", modelId: id, model: info, settings: this.options })
 		return { id, info, ...params }
 	}
