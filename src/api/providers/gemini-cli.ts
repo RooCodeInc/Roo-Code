@@ -3,7 +3,7 @@ import { OAuth2Client } from "google-auth-library"
 import * as fs from "fs/promises"
 import * as path from "path"
 import * as os from "os"
-import axios from "axios"
+import dotenvx from "@dotenvx/dotenvx"
 
 import { type ModelInfo, type GeminiCliModelId, geminiCliDefaultModelId, geminiCliModels } from "@roo-code/types"
 
@@ -139,8 +139,31 @@ export class GeminiCliHandler extends BaseProvider implements SingleCompletionHa
 			return this.projectId
 		}
 
-		// Start with a default project ID (can be anything for personal OAuth)
-		const initialProjectId = "default"
+		// Construct the path to the .env file for Gemini CLI configuration
+		// Uses the custom OAuth path if provided, otherwise defaults to ~/.gemini/.env
+		const envPath = path.join(
+			this.options.geminiCliOAuthPath
+				? path.dirname(this.options.geminiCliOAuthPath)
+				: path.join(os.homedir(), ".gemini"),
+			".env",
+		)
+
+		// Load environment variables from the .env file with override enabled
+		const { parsed, error } = dotenvx.config({ path: envPath, override: true })
+
+		// Handle case where .env file is missing or has invalid format
+		if (error) {
+			console.warn("[GeminiCLI] .env file not found or invalid format, proceeding with default project ID")
+		}
+
+		// Check if GOOGLE_CLOUD_PROJECT is defined in the parsed .env file
+		if (parsed?.GOOGLE_CLOUD_PROJECT) {
+			this.projectId = parsed.GOOGLE_CLOUD_PROJECT
+			return this.projectId
+		}
+
+		// Fallback to environment variable or default project ID if not found in .env
+		const initialProjectId = process.env.GOOGLE_CLOUD_PROJECT || "default"
 
 		// Prepare client metadata
 		const clientMetadata = {
@@ -389,8 +412,9 @@ export class GeminiCliHandler extends BaseProvider implements SingleCompletionHa
 				data: JSON.stringify(requestBody),
 			})
 
-			// Extract text from response
-			const responseData = response.data as any
+			const rawData = response.data as any
+			const responseData = rawData.response || rawData
+
 			if (responseData.candidates && responseData.candidates.length > 0) {
 				const candidate = responseData.candidates[0]
 				if (candidate.content && candidate.content.parts) {

@@ -99,6 +99,7 @@ import {
 	Featherless,
 	VercelAiGateway,
 	DeepInfra,
+	GeminiCli,
 } from "./providers"
 
 import { MODELS_BY_PROVIDER, PROVIDERS } from "./constants"
@@ -114,7 +115,6 @@ import { RateLimitSecondsControl } from "./RateLimitSecondsControl"
 import { ConsecutiveMistakeLimitControl } from "./ConsecutiveMistakeLimitControl"
 import { BedrockCustomArn } from "./providers/BedrockCustomArn"
 // import { buildDocLink } from "@src/utils/docLinks"
-import { GeminiCli } from "./providers/GeminiCli"
 import { SetCachedStateField } from "./types"
 
 export interface ApiOptionsProps {
