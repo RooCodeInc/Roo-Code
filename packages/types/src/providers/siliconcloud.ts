@@ -2,6 +2,7 @@ import type { ModelInfo } from "../model.js"
 import { SiliconCloudApiLine } from "../provider-settings.js"
 
 export const siliconCloudDefaultModelId = "zai-org/GLM-4.6"
+export const siliconCloudDefaultApiLine: SiliconCloudApiLine = "china"
 
 export const siliconCloudApiLineConfigs = {
 	china: { baseUrl: "https://api.siliconflow.cn/v1" },
@@ -97,7 +98,7 @@ const siliconCloudChinaModels: Record<string, ModelInfo> = {
 		description:
 			"Qwen3-Next-80B-A3B-Instruct 是由阿里巴巴通义千问团队发布的下一代基础模型。它基于全新的 Qwen3-Next 架构,旨在实现极致的训练和推理效率。该模型采用了创新的混合注意力机制（Gated DeltaNet 和 Gated Attention）、高稀疏度混合专家（MoE）结构以及多项训练稳定性优化。作为一个拥有 800 亿总参数的稀疏模型，它在推理时仅需激活约 30 亿参数，从而大幅降低了计算成本，并在处理超过 32K tokens 的长上下文任务时，推理吞吐量比 Qwen3-32B 模型高出 10 倍以上。此模型为指令微调版本，专为通用任务设计，不支持思维链（Thinking）模式。在性能上，它与通义千问的旗舰模型 Qwen3-235B 在部分基准测试中表现相当，尤其在超长上下文任务中展现出明显优势",
 		supportsPromptCache: false,
-	}
+	},
 }
 
 const siliconCloudInternationalModels: Record<string, ModelInfo> = {

@@ -38,6 +38,7 @@ import {
 	vercelAiGatewayDefaultModelId,
 	deepInfraDefaultModelId,
 	siliconCloudDefaultModelId,
+	siliconCloudDefaultApiLine,
 } from "@roo-code/types"
 
 import { vscode } from "@src/utils/vscode"
@@ -263,7 +264,7 @@ const ApiOptions = ({
 		let models = MODELS_BY_PROVIDER[selectedProvider]
 
 		if (selectedProvider === "siliconcloud") {
-			const apiLine = apiConfiguration.siliconCloudApiLine || "china"
+			const apiLine = apiConfiguration.siliconCloudApiLine || siliconCloudDefaultApiLine
 			models = SILICON_CLOUD_MODELS_BY_API_LINE[apiLine]
 		}
 		if (!models) return []

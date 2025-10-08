@@ -1,7 +1,12 @@
 import { useCallback } from "react"
 import { VSCodeTextField, VSCodeDropdown, VSCodeOption } from "@vscode/webview-ui-toolkit/react"
 
-import { type ProviderSettings, siliconCloudApiLineSchema, siliconCloudApiLineConfigs } from "@roo-code/types"
+import {
+	type ProviderSettings,
+	siliconCloudApiLineSchema,
+	siliconCloudApiLineConfigs,
+	siliconCloudDefaultApiLine,
+} from "@roo-code/types"
 
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { VSCodeButtonLink } from "@src/components/common/VSCodeButtonLink"
@@ -33,7 +38,7 @@ export const SiliconCloud = ({ apiConfiguration, setApiConfigurationField }: Sil
 			<div>
 				<label className="block font-medium mb-1">{t("settings:providers.siliconcloud.entrypoint")}</label>
 				<VSCodeDropdown
-					value={apiConfiguration.siliconCloudApiLine || "china"}
+					value={apiConfiguration.siliconCloudApiLine || siliconCloudDefaultApiLine}
 					onChange={handleInputChange("siliconCloudApiLine")}
 					className={cn("w-full")}>
 					{siliconCloudApiLineSchema.options.map((apiLine) => {
@@ -61,7 +66,13 @@ export const SiliconCloud = ({ apiConfiguration, setApiConfigurationField }: Sil
 				{t("settings:providers.apiKeyStorageNotice")}
 			</div>
 			{!apiConfiguration?.siliconCloudApiKey && (
-				<VSCodeButtonLink href={apiConfiguration.siliconCloudApiLine === "international" ? "https://siliconflow.com/" : "https://siliconflow.cn/"} appearance="secondary">
+				<VSCodeButtonLink
+					href={
+						apiConfiguration.siliconCloudApiLine === "international"
+							? "https://siliconflow.com/"
+							: "https://siliconflow.cn/"
+					}
+					appearance="secondary">
 					{t("settings:providers.siliconcloud.getApiKey")}
 				</VSCodeButtonLink>
 			)}

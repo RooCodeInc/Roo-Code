@@ -1,7 +1,12 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 
-import { siliconCloudDefaultModelId, siliconCloudApiLineConfigs, siliconCloudModels, ModelInfo } from "@roo-code/types"
+import {
+	siliconCloudModels,
+	siliconCloudApiLineConfigs,
+	siliconCloudDefaultModelId,
+	siliconCloudDefaultApiLine,
+} from "@roo-code/types"
 
 import { type ApiHandlerOptions } from "../../shared/api"
 import { type ApiStream } from "../transform/stream"
@@ -15,7 +20,7 @@ const SILICON_CLOUD_PROVIDER_NAME = "siliconcloud" as const
 
 export class SiliconCloudHandler extends OpenAiHandler {
 	constructor(options: ApiHandlerOptions) {
-		const apiLine = options.siliconCloudApiLine || "china"
+		const apiLine = options.siliconCloudApiLine || siliconCloudDefaultApiLine
 
 		super({
 			...options,

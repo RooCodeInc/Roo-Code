@@ -10,6 +10,7 @@ import {
 	isFauxProvider,
 	isCustomProvider,
 	siliconCloudModelsByApiLine,
+	siliconCloudDefaultApiLine,
 } from "@roo-code/types"
 
 import type { RouterModels } from "@roo/api"
@@ -157,17 +158,17 @@ function validateModelsAndKeysProvided(apiConfiguration: ProviderSettings): stri
 				return i18next.t("settings:validation.apiKey")
 			}
 			break
-		case "siliconcloud":
+		case "siliconcloud": {
 			if (!apiConfiguration.siliconCloudApiKey) {
 				return i18next.t("settings:validation.apiKey")
 			}
-			if (apiConfiguration.siliconCloudApiLine) {
-				const models = siliconCloudModelsByApiLine[apiConfiguration.siliconCloudApiLine]
-				if (apiConfiguration.apiModelId && !models[apiConfiguration.apiModelId as keyof typeof models]) {
-					return i18next.t("settings:validation.modelAvailability", { modelId: apiConfiguration.apiModelId })
-				}
+			const apiLine = apiConfiguration.siliconCloudApiLine || siliconCloudDefaultApiLine
+			const models = siliconCloudModelsByApiLine[apiLine]
+			if (apiConfiguration.apiModelId && !models[apiConfiguration.apiModelId as keyof typeof models]) {
+				return i18next.t("settings:validation.modelAvailability", { modelId: apiConfiguration.apiModelId })
 			}
 			break
+		}
 	}
 
 	return undefined

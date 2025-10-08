@@ -40,6 +40,7 @@ import {
 	sambaNovaDefaultModelId,
 	siliconCloudDefaultModelId,
 	siliconCloudModelsByApiLine,
+	siliconCloudDefaultApiLine,
 	doubaoModels,
 	doubaoDefaultModelId,
 	internationalZAiDefaultModelId,
@@ -316,7 +317,7 @@ function getSelectedModel({
 			return { id, info }
 		}
 		case "siliconcloud": {
-			const apiLine = apiConfiguration.siliconCloudApiLine || "china"
+			const apiLine = apiConfiguration.siliconCloudApiLine || siliconCloudDefaultApiLine
 			const models = siliconCloudModelsByApiLine[apiLine]
 			const id = apiConfiguration.apiModelId ?? siliconCloudDefaultModelId
 			const info = models[id]
