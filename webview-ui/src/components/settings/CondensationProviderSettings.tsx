@@ -74,13 +74,14 @@ const PROVIDER_INFO = {
 
 export const CondensationProviderSettings: React.FC = () => {
 	const [_providers, setProviders] = useState<Provider[]>([])
-	const [defaultProviderId, setDefaultProviderId] = useState<string>("smart")
+	const [defaultProviderId, setDefaultProviderId] = useState<string>("native")
 	const [smartSettings, setSmartSettings] = useState<SmartProviderSettings>({
 		preset: "balanced",
 		customConfig: undefined,
 	})
 	const [showAdvanced, setShowAdvanced] = useState(false)
 	const [customConfigText, setCustomConfigText] = useState("")
+	const [presetConfigJson, setPresetConfigJson] = useState<string>("")
 	const [configError, setConfigError] = useState<string | undefined>()
 
 	useEffect(() => {
@@ -92,15 +93,24 @@ export const CondensationProviderSettings: React.FC = () => {
 			const message = event.data
 			if (message.type === "condensationProviders") {
 				setProviders(message.providers || [])
-				setDefaultProviderId(message.defaultProviderId || "smart")
+				setDefaultProviderId(message.defaultProviderId || "native")
 
 				// Load Smart Provider settings if available
 				if (message.smartProviderSettings) {
 					setSmartSettings(message.smartProviderSettings)
+
+					// Load preset config JSON from backend
+					if (message.presetConfigJson) {
+						setPresetConfigJson(message.presetConfigJson)
+					}
+
+					// If custom config exists, display it; otherwise show preset
 					if (message.smartProviderSettings.customConfig) {
 						setCustomConfigText(
 							JSON.stringify(JSON.parse(message.smartProviderSettings.customConfig), null, 2),
 						)
+					} else {
+						setCustomConfigText(message.presetConfigJson || "")
 					}
 				}
 			}
@@ -171,12 +181,19 @@ export const CondensationProviderSettings: React.FC = () => {
 			customConfig: undefined,
 		}
 		setSmartSettings(newSettings)
-		setCustomConfigText("")
+		setCustomConfigText(presetConfigJson)
 		setConfigError(undefined)
 
 		vscode.postMessage({
 			type: "updateSmartProviderSettings",
 			smartProviderSettings: newSettings,
+		})
+
+		// Show success message
+		vscode.postMessage({
+			type: "showMessage",
+			level: "info",
+			message: `Reset to ${smartSettings.preset} preset configuration`,
 		})
 	}
 
@@ -316,7 +333,7 @@ export const CondensationProviderSettings: React.FC = () => {
 										onClick={handleToggleAdvanced}
 										className="w-full flex items-center justify-center gap-2">
 										{showAdvanced ? <ChevronUp className="w-4" /> : <ChevronDown className="w-4" />}
-										<span>{showAdvanced ? "Hide" : "Show"} Advanced Configuration</span>
+										<span>{showAdvanced ? "Hide" : "Show"} Advanced Config</span>
 									</VSCodeButton>
 								</div>
 
@@ -338,12 +355,6 @@ export const CondensationProviderSettings: React.FC = () => {
 											value={customConfigText}
 											onChange={(e: any) => setCustomConfigText(e.target.value)}
 											rows={15}
-											placeholder={`{
-  "losslessPrelude": { "enabled": true, ... },
-  "passes": [
-    { "id": "pass-1", "mode": "individual", ... }
-  ]
-}`}
 											className="w-full font-mono text-xs"
 										/>
 

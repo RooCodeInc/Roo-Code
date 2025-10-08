@@ -3121,11 +3121,15 @@ export const webviewMessageHandler = async (
 					preset: "balanced",
 				}
 
+				// Get preset config JSON for UI display
+				const { getConfigByName } = await import("../condense/providers/smart/configs")
+				const presetConfig = getConfigByName(smartProviderSettings.preset || "balanced")
+				const presetConfigJson = JSON.stringify(presetConfig, null, 2)
+
 				// Re-register Smart Provider with saved settings if different from default
 				if (smartProviderSettings.preset !== "balanced" || smartProviderSettings.customConfig) {
 					const registry = getProviderRegistry()
 					const { SmartCondensationProvider } = await import("../condense/providers/smart")
-					const { getConfigByName } = await import("../condense/providers/smart/configs")
 
 					let config
 					if (smartProviderSettings.customConfig) {
@@ -3133,10 +3137,10 @@ export const webviewMessageHandler = async (
 							config = JSON.parse(smartProviderSettings.customConfig)
 						} catch (parseError) {
 							provider.log(`Invalid saved custom config, using ${smartProviderSettings.preset} preset`)
-							config = getConfigByName(smartProviderSettings.preset)
+							config = presetConfig
 						}
 					} else {
-						config = getConfigByName(smartProviderSettings.preset)
+						config = presetConfig
 					}
 
 					registry.unregister("smart")
@@ -3155,6 +3159,7 @@ export const webviewMessageHandler = async (
 					providers,
 					defaultProviderId,
 					smartProviderSettings,
+					presetConfigJson,
 				})
 			} catch (error) {
 				provider.log(
@@ -3270,11 +3275,16 @@ export const webviewMessageHandler = async (
 				const providers = manager.listProviders()
 				const defaultProviderId = manager.getDefaultProvider()
 
+				// Get preset config JSON for UI display
+				const presetConfig = getConfigByName(preset)
+				const presetConfigJson = JSON.stringify(presetConfig, null, 2)
+
 				await provider.postMessageToWebview({
 					type: "condensationProviders",
 					providers,
 					defaultProviderId,
 					smartProviderSettings: normalizedSettings,
+					presetConfigJson,
 				})
 
 				provider.log(

@@ -70,11 +70,11 @@ describe("CondensationProviderSettings - Basic Rendering", () => {
 		expect(screen.getAllByText("Truncation Provider")[0]).toBeInTheDocument()
 	})
 
-	it("shows Smart Provider as selected by default", () => {
+	it("shows Native Provider as selected by default", () => {
 		render(<CondensationProviderSettings />)
 
 		const radioGroup = screen.getByRole("radiogroup")
-		expect(radioGroup).toHaveAttribute("data-value", "smart")
+		expect(radioGroup).toHaveAttribute("data-value", "native")
 	})
 
 	it("displays provider badges correctly", () => {
@@ -86,10 +86,10 @@ describe("CondensationProviderSettings - Basic Rendering", () => {
 		expect(screen.getByText("FAST")).toBeInTheDocument()
 	})
 
-	it("shows Smart Provider configuration when Smart is selected", () => {
+	it("does not show Smart Provider configuration when Native is selected by default", () => {
 		render(<CondensationProviderSettings />)
 
-		expect(screen.getByText("Smart Provider Configuration")).toBeInTheDocument()
+		expect(screen.queryByText("Smart Provider Configuration")).not.toBeInTheDocument()
 	})
 })
 
