@@ -179,7 +179,7 @@ export default function PricingPage() {
 										<p className="text-sm text-muted-foreground font-light mb-2">
 											{tier.featuresIntro}&nbsp;
 										</p>
-										<ul className="space-y-3 my-0 min-h-40">
+										<ul className="space-y-3 my-0 min-h-37">
 											{tier.features.map((feature) => (
 												<li key={feature} className="flex items-start gap-2">
 													<Check className="mt-0.5 h-4 w-4 text-muted-foreground shrink-0" />
@@ -200,12 +200,10 @@ export default function PricingPage() {
 										</p>
 									)}
 
-									{tier.trial && (
-										<p className="text-xs text-muted-foreground mb-4">
-											{tier.trial}
-											{tier.cancellation}&nbsp;
-										</p>
-									)}
+									<p className="text-xs text-muted-foreground mb-4">
+										{tier.trial}
+										{tier.cancellation}
+									</p>
 
 									{tier.cta.isContactForm ? (
 										<ContactForm
@@ -245,7 +243,6 @@ export default function PricingPage() {
 				<div className="container mx-auto px-4 sm:px-6 lg:px-8">
 					<div className="mx-auto max-w-3xl text-center">
 						<h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Frequently Asked Questions</h2>
-						<p className="mt-4 text-lg text-muted-foreground">Got questions about our pricing?</p>
 					</div>
 					<div className="mx-auto mt-12 grid max-w-5xl gap-8 md:grid-cols-2">
 						<div className="rounded-lg border border-border bg-card p-6">
@@ -259,15 +256,29 @@ export default function PricingPage() {
 						<div className="rounded-lg border border-border bg-card p-6">
 							<h3 className="font-semibold">Is there a free trial?</h3>
 							<p className="mt-2 text-sm text-muted-foreground">
-								Yes, all paid plans come with a 14-day free trial.
+								Yes, all paid plans come with a 14-day free trial to try out functionality.
+							</p>
+							<p className="mt-2 text-sm text-muted-foreground">
+								To use Cloud Agents, you can buy credits.
+							</p>
+						</div>
+						<div className="rounded-lg border border-border bg-card p-6">
+							<h3 className="font-semibold">How do Cloud Agent credits work?</h3>
+							<p className="mt-2 text-sm text-muted-foreground">
+								Cloud Agents are a version of Roo running in the cloud without depending on your IDE.
+								You can run as many as you want, and bring your own inference provider key.
+							</p>
+							<p className="mt-2 text-sm text-muted-foreground">
+								To cover our costs, we charge $0.25 per million tokens used by them (outside of
+								inference costs).
 							</p>
 						</div>
 						<div className="rounded-lg border border-border bg-card p-6">
 							<h3 className="font-semibold">Do I need a credit card for the free trial?</h3>
 							<p className="mt-2 text-sm text-muted-foreground">
-								Yes, but you won&apos;t be charged until your trial ends. You can cancel anytime with
-								one click .
+								Yes, but you won&apos;t be charged until your trial ends, except for credit purchases.
 							</p>
+							<p className="mt-2 text-sm text-muted-foreground">You can cancel anytime with one click.</p>
 						</div>
 						<div className="rounded-lg border border-border bg-card p-6">
 							<h3 className="font-semibold">What payment methods do you accept?</h3>
