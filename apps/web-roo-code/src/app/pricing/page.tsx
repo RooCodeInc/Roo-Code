@@ -59,6 +59,7 @@ interface PricingTier {
 	icon: LucideIcon
 	price: string
 	period?: string
+	creditPrice?: string
 	trial?: string
 	cancellation?: string
 	description: string
@@ -94,14 +95,14 @@ const pricingTiers: PricingTier[] = [
 		icon: Star,
 		price: "$20",
 		period: "/mo",
+		creditPrice: "$0.25",
 		trial: "Free 14-day trial · ",
 		cancellation: "Cancel anytime",
 		description: "For pro Roo coders",
-		featuresIntro: "Everything in Free, plus:",
+		featuresIntro: "Everything in Free +",
 		features: [
-			"Roomote Control",
-			"Start, stop and control tasks from anywhere",
-			"Course-correct Roo from afar",
+			"Cloud Agents: PR Reviewer and more",
+			"Roomote Control: Start, stop and control tasks from anywhere",
 			"Paid support",
 		],
 		cta: {
@@ -114,31 +115,15 @@ const pricingTiers: PricingTier[] = [
 		icon: Users,
 		price: "$99",
 		period: "/mo",
+		creditPrice: "$0.25",
 		trial: "Free 14-day trial · ",
 		cancellation: "Cancel anytime",
 		description: "For AI-forward teams",
-		featuresIntro: "Everything in Pro, plus:",
+		featuresIntro: "Everything in Pro +",
 		features: ["Unlimited users (no per-seat cost)", "Shared configuration & policies", "Centralized billing"],
 		cta: {
 			text: "Get started",
 			href: EXTERNAL_LINKS.CLOUD_APP_SIGNUP + "?redirect_url=/billing",
-		},
-	},
-	{
-		name: "Enterprise",
-		icon: Building2,
-		price: "Custom",
-		description: "For complex orgs",
-		featuresIntro: "Everything in Team, plus:",
-		features: [
-			"SAML SSO provisioning",
-			"Custom integrations and terms",
-			"Security questionnaires and all that fun stuff",
-			"Dedicated support",
-		],
-		cta: {
-			text: "Talk to Sales",
-			isContactForm: true,
 		},
 	},
 ]
@@ -175,7 +160,7 @@ export default function PricingPage() {
 			{/* Pricing Tiers */}
 			<section className="">
 				<div className="container mx-auto px-4 sm:px-6 lg:px-8">
-					<div className="mx-auto grid max-w-6xl gap-4 lg:grid-cols-4">
+					<div className="mx-auto grid max-w-6xl gap-4 lg:grid-cols-3">
 						{pricingTiers.map((tier) => {
 							const Icon = tier.icon
 							return (
@@ -194,7 +179,7 @@ export default function PricingPage() {
 										<p className="text-sm text-muted-foreground font-light mb-2">
 											{tier.featuresIntro}&nbsp;
 										</p>
-										<ul className="space-y-3 my-0">
+										<ul className="space-y-3 my-0 min-h-40">
 											{tier.features.map((feature) => (
 												<li key={feature} className="flex items-start gap-2">
 													<Check className="mt-0.5 h-4 w-4 text-muted-foreground shrink-0" />
@@ -208,10 +193,19 @@ export default function PricingPage() {
 										<strong>{tier.price}</strong>
 										{tier.period}
 									</p>
-									<p className="text-xs text-muted-foreground mb-4">
-										{tier.trial}
-										{tier.cancellation}&nbsp;
-									</p>
+
+									{tier.creditPrice && (
+										<p className="text-sm text-muted-foreground mb-1">
+											+ {tier.creditPrice}/M tokens for Cloud tasks
+										</p>
+									)}
+
+									{tier.trial && (
+										<p className="text-xs text-muted-foreground mb-4">
+											{tier.trial}
+											{tier.cancellation}&nbsp;
+										</p>
+									)}
 
 									{tier.cta.isContactForm ? (
 										<ContactForm
@@ -230,6 +224,19 @@ export default function PricingPage() {
 							)
 						})}
 					</div>
+				</div>
+
+				<div className="mx-auto grid max-w-6xl gap-4 mt-4 relative">
+					<p className="bg-background border rounded-2xl p-6 text-center text-sm text-muted-foreground">
+						<Building2 className="inline size-4 mr-2 mb-0.5" />
+						Need SAML, advanced security, custom integrations or terms? Enterprise is for you.
+						<Link
+							href="/enterprise#contact"
+							className="font-medium ml-1 text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300">
+							Talk to Sales
+						</Link>
+						.
+					</p>
 				</div>
 			</section>
 
