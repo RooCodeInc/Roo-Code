@@ -153,10 +153,6 @@ export class CodeIndexManager {
 			await this._cacheManager.initialize()
 		}
 
-		// Ensure Git branch watcher is set up (when branch isolation is enabled)
-		await this._setupGitHeadWatcher()
-
-
 		// 4. Determine if Core Services Need Recreation
 		const needsServiceRecreation = !this._serviceFactory || requiresRestart
 
@@ -397,6 +393,9 @@ export class CodeIndexManager {
 
 		// Clear any error state after successful recreation
 		this._stateManager.setSystemState("Standby", "")
+
+		// Ensure Git branch watcher is set up with current branch after service recreation
+		await this._setupGitHeadWatcher()
 	}
 
 	// --- Git branch watcher (Phase 1: auto branch switch handling) ---
@@ -458,6 +457,8 @@ export class CodeIndexManager {
 				if (this._orchestrator) {
 					this._orchestrator.stopWatcher()
 				}
+				// Dispose Git branch watcher if it exists
+				await this._setupGitHeadWatcher()
 				// Set state to indicate service is disabled
 				this._stateManager.setSystemState("Standby", "Code indexing is disabled")
 				return
@@ -485,9 +486,6 @@ export class CodeIndexManager {
 					throw error
 				}
 			}
-
-			// Ensure Git branch watcher reflects latest settings
-			await this._setupGitHeadWatcher()
 
 		}
 	}
