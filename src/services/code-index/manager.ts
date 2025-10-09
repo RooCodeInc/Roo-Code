@@ -32,6 +32,9 @@ export class CodeIndexManager {
 	// Flag to prevent race conditions during error recovery
 	private _isRecoveringFromError = false
 
+	// Flag to prevent race conditions during branch changes
+	private _isBranchChanging = false
+
 	// Git branch change watcher for branch isolation
 	private _gitBranchWatcher?: GitBranchWatcher
 
@@ -419,6 +422,13 @@ export class CodeIndexManager {
 	 * @param newBranch New branch name
 	 */
 	private async _onBranchChange(oldBranch: string | undefined, newBranch: string | undefined): Promise<void> {
+		// Prevent concurrent branch changes
+		if (this._isBranchChanging) {
+			console.log("[CodeIndexManager] Branch change already in progress, skipping")
+			return
+		}
+
+		this._isBranchChanging = true
 		try {
 			const vectorStore = this._orchestrator?.getVectorStore()
 			if (!vectorStore) {
@@ -448,6 +458,8 @@ export class CodeIndexManager {
 			// If collection exists, file watcher will detect any file changes from the branch switch
 		} catch (error) {
 			console.error("[CodeIndexManager] Failed to handle Git branch change:", error)
+		} finally {
+			this._isBranchChanging = false
 		}
 	}
 
