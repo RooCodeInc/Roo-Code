@@ -785,6 +785,7 @@ export class QdrantVectorStore implements IVectorStore {
 		if (this.collectionName !== collectionName) {
 			this.collectionName = collectionName
 			this._invalidateCollectionCache()
+			this._collectionEnsured = false // Reset flag when collection name changes
 		}
 	}
 
