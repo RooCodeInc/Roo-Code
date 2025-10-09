@@ -269,18 +269,14 @@ function getShellFromEnv(): string | null {
 
 	if (process.platform === "win32") {
 		// On Windows, COMSPEC typically holds cmd.exe
-		return env.COMSPEC || "C:\\Windows\\System32\\cmd.exe"
+		return env.COMSPEC || null
 	}
 
-	if (process.platform === "darwin") {
-		// On macOS/Linux, SHELL is commonly the environment variable
-		return env.SHELL || "/bin/zsh"
+	// On Unix-like systems (macOS, Linux), SHELL is the environment variable
+	if (process.platform === "darwin" || process.platform === "linux") {
+		return env.SHELL || null
 	}
 
-	if (process.platform === "linux") {
-		// On Linux, SHELL is commonly the environment variable
-		return env.SHELL || "/bin/bash"
-	}
 	return null
 }
 
