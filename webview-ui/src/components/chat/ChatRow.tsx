@@ -1118,19 +1118,54 @@ export const ChatRowContent = ({
 					return null // we should never see this message type
 				case "text":
 					return (
-						<div>
+						<div className="group">
 							<div style={headerStyle}>
 								<MessageCircle className="w-4 shrink-0" aria-label="Speech bubble icon" />
 								<span style={{ fontWeight: "bold" }}>{t("chat:text.rooSaid")}</span>
+								{/* Add edit button for AI responses */}
+								{!isStreaming && !message.partial && editable && (
+									<div
+										className="cursor-pointer shrink-0 opacity-0 group-hover:opacity-100 transition-opacity ml-auto"
+										onClick={(e) => {
+											e.stopPropagation()
+											handleEditClick()
+										}}>
+										<Edit className="w-4 shrink-0" aria-label="Edit AI response icon" />
+									</div>
+								)}
 							</div>
 							<div className="pl-6">
-								<Markdown markdown={message.text} partial={message.partial} />
-								{message.images && message.images.length > 0 && (
-									<div style={{ marginTop: "10px" }}>
-										{message.images.map((image, index) => (
-											<ImageBlock key={index} imageData={image} />
-										))}
+								{isEditing ? (
+									<div className="flex flex-col gap-2">
+										<ChatTextArea
+											inputValue={editedContent}
+											setInputValue={setEditedContent}
+											sendingDisabled={false}
+											selectApiConfigDisabled={true}
+											placeholderText={t("chat:editMessage.placeholder")}
+											selectedImages={editImages}
+											setSelectedImages={setEditImages}
+											onSend={handleSaveEdit}
+											onSelectImages={handleSelectImages}
+											shouldDisableImages={!model?.supportsImages}
+											mode={editMode}
+											setMode={setEditMode}
+											modeShortcutText=""
+											isEditMode={true}
+											onCancel={handleCancelEdit}
+										/>
 									</div>
+								) : (
+									<>
+										<Markdown markdown={message.text} partial={message.partial} />
+										{message.images && message.images.length > 0 && (
+											<div style={{ marginTop: "10px" }}>
+												{message.images.map((image, index) => (
+													<ImageBlock key={index} imageData={image} />
+												))}
+											</div>
+										)}
+									</>
 								)}
 							</div>
 						</div>

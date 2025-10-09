@@ -1542,22 +1542,27 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					onFollowUpUnmount={handleFollowUpUnmount}
 					isFollowUpAnswered={messageOrGroup.isAnswered === true || messageOrGroup.ts === currentFollowUpTs}
 					editable={
-						messageOrGroup.type === "ask" &&
-						messageOrGroup.ask === "tool" &&
-						(() => {
-							let tool: any = {}
-							try {
-								tool = JSON.parse(messageOrGroup.text || "{}")
-							} catch (_) {
-								if (messageOrGroup.text?.includes("updateTodoList")) {
-									tool = { tool: "updateTodoList" }
+						// Allow editing of user feedback messages
+						messageOrGroup.say === "user_feedback" ||
+						// Allow editing of AI text responses
+						(messageOrGroup.say === "text" && !messageOrGroup.partial) ||
+						// Allow editing of updateTodoList tool messages when buttons are enabled
+						(messageOrGroup.type === "ask" &&
+							messageOrGroup.ask === "tool" &&
+							(() => {
+								let tool: any = {}
+								try {
+									tool = JSON.parse(messageOrGroup.text || "{}")
+								} catch (_) {
+									if (messageOrGroup.text?.includes("updateTodoList")) {
+										tool = { tool: "updateTodoList" }
+									}
 								}
-							}
-							if (tool.tool === "updateTodoList" && alwaysAllowUpdateTodoList) {
-								return false
-							}
-							return tool.tool === "updateTodoList" && enableButtons && !!primaryButtonText
-						})()
+								if (tool.tool === "updateTodoList" && alwaysAllowUpdateTodoList) {
+									return false
+								}
+								return tool.tool === "updateTodoList" && enableButtons && !!primaryButtonText
+							})())
 					}
 				/>
 			)

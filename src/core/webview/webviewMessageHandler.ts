@@ -1530,12 +1530,54 @@ export const webviewMessageHandler = async (
 				message.value &&
 				message.editedMessageContent
 			) {
-				await handleMessageModificationsOperation(
-					message.value,
-					"edit",
-					message.editedMessageContent,
-					message.images,
-				)
+				// Check if this is an AI message edit
+				const currentCline = provider.getCurrentTask()
+				if (currentCline) {
+					const messageIndex = currentCline.clineMessages.findIndex(
+						(msg: ClineMessage) => msg.ts === message.value,
+					)
+					if (messageIndex !== -1) {
+						const targetMessage = currentCline.clineMessages[messageIndex]
+
+						// If this is an AI text message, handle it differently
+						if (targetMessage.say === "text" && !targetMessage.partial) {
+							// For AI messages, we need to update the message directly
+							// and update the API conversation history
+							targetMessage.text = message.editedMessageContent
+							if (message.images) {
+								targetMessage.images = message.images
+							}
+
+							// Save the updated messages
+							await saveTaskMessages({
+								messages: currentCline.clineMessages,
+								taskId: currentCline.taskId,
+								globalStoragePath: provider.contextProxy.globalStorageUri.fsPath,
+							})
+
+							// Also update the API conversation history if this message exists there
+							const apiIndex = currentCline.apiConversationHistory.findIndex(
+								(msg: ApiMessage) => msg.ts === message.value,
+							)
+							if (apiIndex !== -1) {
+								// Update the content for assistant messages in API history
+								// Note: ApiMessage type doesn't support images property directly
+								currentCline.apiConversationHistory[apiIndex].content = message.editedMessageContent
+							}
+
+							// Update the UI to reflect the changes
+							await provider.postStateToWebview()
+						} else {
+							// For user feedback messages, use the existing edit flow
+							await handleMessageModificationsOperation(
+								message.value,
+								"edit",
+								message.editedMessageContent,
+								message.images,
+							)
+						}
+					}
+				}
 			}
 			break
 		}
