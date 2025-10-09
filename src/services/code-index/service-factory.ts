@@ -11,6 +11,7 @@ import { codeParser, DirectoryScanner, FileWatcher } from "./processors"
 import { ICodeParser, IEmbedder, IFileWatcher, IVectorStore } from "./interfaces"
 import { CodeIndexConfigManager } from "./config-manager"
 import { CacheManager } from "./cache-manager"
+import { getCurrentBranch } from "../../utils/git"
 import { RooIgnoreController } from "../../core/ignore/RooIgnoreController"
 import { Ignore } from "ignore"
 import { t } from "../../i18n"
@@ -145,12 +146,24 @@ export class CodeIndexServiceFactory {
 			throw new Error(t("embeddings:serviceFactory.qdrantUrlMissing"))
 		}
 
+		// Get current branch if branch isolation is enabled to avoid file I/O on first call
+		let initialBranch: string | undefined
+		if (config.branchIsolationEnabled) {
+			try {
+				initialBranch = await getCurrentBranch(this.workspacePath)
+			} catch (error) {
+				// If we can't get the branch, that's okay - vector store will handle it
+				console.warn("[ServiceFactory] Failed to get initial branch:", error)
+			}
+		}
+
 		return new QdrantVectorStore(
 			this.workspacePath,
 			config.qdrantUrl,
 			vectorSize,
 			config.qdrantApiKey,
 			config.branchIsolationEnabled,
+			initialBranch,
 		)
 	}
 

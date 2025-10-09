@@ -30,6 +30,11 @@ export class QdrantVectorStore implements IVectorStore {
 	private _collectionExistsCache?: boolean
 	private _collectionInfoCache?: Schemas["CollectionInfo"] | null
 
+	// Branch name cache to avoid redundant file I/O operations
+	// This cache is invalidated when GitBranchWatcher detects a branch change
+	private _cachedBranchName: string | undefined | null = undefined
+	private _branchCacheValid: boolean = false
+
 	/**
 	 * Creates a new Qdrant vector store
 	 * @param workspacePath Path to the workspace
@@ -37,6 +42,7 @@ export class QdrantVectorStore implements IVectorStore {
 	 * @param vectorSize Size of the embedding vectors
 	 * @param apiKey Optional API key for Qdrant authentication
 	 * @param branchIsolationEnabled Whether to use branch-specific collections
+	 * @param initialBranch Optional initial branch name to avoid file I/O on first call
 	 */
 	constructor(
 		workspacePath: string,
@@ -44,6 +50,7 @@ export class QdrantVectorStore implements IVectorStore {
 		vectorSize: number,
 		apiKey?: string,
 		branchIsolationEnabled: boolean = false,
+		initialBranch?: string,
 	) {
 		// Parse the URL to determine the appropriate QdrantClient configuration
 		const parsedUrl = this.parseQdrantUrl(url)
@@ -104,6 +111,12 @@ export class QdrantVectorStore implements IVectorStore {
 
 		// Base collection name (will be updated dynamically if branch isolation is enabled)
 		this.collectionName = `ws-${hash.substring(0, 16)}`
+
+		// If initial branch is provided, cache it to avoid file I/O on first call
+		if (initialBranch !== undefined) {
+			this._cachedBranchName = initialBranch
+			this._branchCacheValid = true
+		}
 	}
 
 	/**
@@ -734,9 +747,19 @@ export class QdrantVectorStore implements IVectorStore {
 	/**
 	 * Updates the collection name based on the current Git branch
 	 * Only called when branch isolation is enabled
+	 * Uses cached branch name to avoid redundant file I/O operations
 	 */
 	private async updateCollectionNameForBranch(): Promise<void> {
-		const branch = await getCurrentBranch(this.workspacePath)
+		// Use cached branch name if available, otherwise fetch from git
+		let branch: string | undefined
+		if (this._branchCacheValid) {
+			branch = this._cachedBranchName ?? undefined
+		} else {
+			branch = await getCurrentBranch(this.workspacePath)
+			// Cache the branch name for future calls
+			this._cachedBranchName = branch
+			this._branchCacheValid = true
+		}
 
 		// Generate base collection name
 		const hash = createHash("sha256").update(this.workspacePath).digest("hex")
@@ -757,6 +780,16 @@ export class QdrantVectorStore implements IVectorStore {
 			this.collectionName = collectionName
 			this._invalidateCollectionCache()
 		}
+	}
+
+	/**
+	 * Invalidates the branch name cache
+	 * Should be called when GitBranchWatcher detects a branch change
+	 * This forces the next call to updateCollectionNameForBranch to re-read from git
+	 */
+	public invalidateBranchCache(): void {
+		this._branchCacheValid = false
+		this._cachedBranchName = undefined
 	}
 
 	/**

@@ -104,19 +104,35 @@ export class GitBranchWatcher implements vscode.Disposable {
 
 				// Detect branch change
 				const oldBranch = this._currentBranch
-				const newBranch = await getCurrentBranch(this._workspacePath)
+				let newBranch: string | undefined
+
+				try {
+					newBranch = await getCurrentBranch(this._workspacePath)
+				} catch (gitError) {
+					// Error reading git state - log but don't crash
+					console.error("[GitBranchWatcher] Failed to detect branch change:", gitError)
+					return
+				}
 
 				// Only notify if branch actually changed
 				if (newBranch !== oldBranch) {
-					// Update cached branch BEFORE calling callback
-					// This ensures getCurrentBranch() returns the new branch immediately
-					this._currentBranch = newBranch
+					try {
+						// Notify listener first - only update state if callback succeeds
+						// This prevents state inconsistency if the callback fails
+						await this._callback(oldBranch, newBranch)
 
-					// Notify listener
-					await this._callback(oldBranch, newBranch)
+						// Update cached branch AFTER successful callback
+						this._currentBranch = newBranch
+					} catch (callbackError) {
+						// Callback failed - log error but don't update state
+						// The next branch change will retry from the correct old state
+						console.error("[GitBranchWatcher] Callback failed, state not updated:", callbackError)
+						// Don't re-throw - we want to continue watching for changes
+					}
 				}
 			} catch (error) {
-				console.error("[GitBranchWatcher] Failed to handle branch change:", error)
+				// Unexpected error - should not happen with the nested try-catches above
+				console.error("[GitBranchWatcher] Unexpected error in branch change handler:", error)
 			}
 		}, debounceMs)
 	}

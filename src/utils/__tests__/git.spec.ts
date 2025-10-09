@@ -12,6 +12,8 @@ import {
 	extractRepositoryName,
 	getWorkspaceGitInfo,
 	convertGitUrlToHttps,
+	getCurrentBranch,
+	sanitizeBranchName,
 } from "../git"
 import { truncateOutput } from "../../integrations/misc/extract-text"
 
@@ -832,5 +834,161 @@ describe("getWorkspaceGitInfo", () => {
 		// Verify the fs operations were called with the correct workspace path
 		expect(gitSpy).toHaveBeenCalled()
 		expect(readFileSpy).toHaveBeenCalled()
+	})
+})
+
+describe("getCurrentBranch", () => {
+	let readFileSpy: any
+
+	beforeEach(() => {
+		readFileSpy = vitest.mocked(fs.promises.readFile)
+		readFileSpy.mockClear()
+	})
+
+	it("should return branch name from HEAD file", async () => {
+		readFileSpy.mockResolvedValue("ref: refs/heads/main\n")
+
+		const branch = await getCurrentBranch("/test/workspace")
+
+		expect(branch).toBe("main")
+		expect(readFileSpy).toHaveBeenCalledWith(path.join("/test/workspace", ".git", "HEAD"), "utf8")
+	})
+
+	it("should return branch name with special characters", async () => {
+		readFileSpy.mockResolvedValue("ref: refs/heads/feature/my-feature-123\n")
+
+		const branch = await getCurrentBranch("/test/workspace")
+
+		expect(branch).toBe("feature/my-feature-123")
+	})
+
+	it("should trim whitespace from branch name", async () => {
+		readFileSpy.mockResolvedValue("ref: refs/heads/develop  \n")
+
+		const branch = await getCurrentBranch("/test/workspace")
+
+		expect(branch).toBe("develop")
+	})
+
+	it("should return undefined for detached HEAD", async () => {
+		// Detached HEAD shows commit hash instead of ref
+		readFileSpy.mockResolvedValue("abc123def456\n")
+
+		const branch = await getCurrentBranch("/test/workspace")
+
+		expect(branch).toBeUndefined()
+	})
+
+	it("should return undefined when .git/HEAD file doesn't exist", async () => {
+		readFileSpy.mockRejectedValue(new Error("ENOENT: no such file or directory"))
+
+		const branch = await getCurrentBranch("/test/workspace")
+
+		expect(branch).toBeUndefined()
+	})
+
+	it("should return undefined when not a git repository", async () => {
+		readFileSpy.mockRejectedValue(new Error("Not a git repository"))
+
+		const branch = await getCurrentBranch("/test/workspace")
+
+		expect(branch).toBeUndefined()
+	})
+
+	it("should handle empty HEAD file", async () => {
+		readFileSpy.mockResolvedValue("")
+
+		const branch = await getCurrentBranch("/test/workspace")
+
+		expect(branch).toBeUndefined()
+	})
+
+	it("should handle malformed HEAD file", async () => {
+		readFileSpy.mockResolvedValue("invalid content")
+
+		const branch = await getCurrentBranch("/test/workspace")
+
+		expect(branch).toBeUndefined()
+	})
+})
+
+describe("sanitizeBranchName", () => {
+	it("should convert to lowercase", () => {
+		expect(sanitizeBranchName("MAIN")).toBe("main")
+		expect(sanitizeBranchName("Feature-Branch")).toBe("feature-branch")
+	})
+
+	it("should replace invalid characters with hyphens", () => {
+		expect(sanitizeBranchName("feature/my-feature")).toBe("feature-my-feature")
+		expect(sanitizeBranchName("bug#123")).toBe("bug-123")
+		expect(sanitizeBranchName("fix@issue")).toBe("fix-issue")
+	})
+
+	it("should collapse multiple hyphens", () => {
+		expect(sanitizeBranchName("feature--branch")).toBe("feature-branch")
+		expect(sanitizeBranchName("fix---bug")).toBe("fix-bug")
+		expect(sanitizeBranchName("test----123")).toBe("test-123")
+	})
+
+	it("should remove leading and trailing hyphens", () => {
+		expect(sanitizeBranchName("-feature-")).toBe("feature")
+		expect(sanitizeBranchName("--branch--")).toBe("branch")
+		expect(sanitizeBranchName("---test---")).toBe("test")
+	})
+
+	it("should preserve valid characters (alphanumeric, underscore, hyphen)", () => {
+		expect(sanitizeBranchName("feature_branch-123")).toBe("feature_branch-123")
+		expect(sanitizeBranchName("test_123-abc")).toBe("test_123-abc")
+	})
+
+	it("should limit length to 50 characters", () => {
+		const longBranch = "a".repeat(100)
+		const sanitized = sanitizeBranchName(longBranch)
+		expect(sanitized).toHaveLength(50)
+		expect(sanitized).toBe("a".repeat(50))
+	})
+
+	it("should handle branch names with slashes", () => {
+		expect(sanitizeBranchName("feature/user-auth")).toBe("feature-user-auth")
+		expect(sanitizeBranchName("bugfix/issue-123")).toBe("bugfix-issue-123")
+	})
+
+	it("should handle branch names with special characters", () => {
+		expect(sanitizeBranchName("feature@v1.2.3")).toBe("feature-v1-2-3")
+		expect(sanitizeBranchName("fix(scope):description")).toBe("fix-scope-description")
+	})
+
+	it("should return 'default' for empty string after sanitization", () => {
+		expect(sanitizeBranchName("")).toBe("default")
+		expect(sanitizeBranchName("---")).toBe("default")
+		expect(sanitizeBranchName("@@@")).toBe("default")
+	})
+
+	it("should handle unicode characters", () => {
+		expect(sanitizeBranchName("feature-émoji-🚀")).toBe("feature-moji")
+		expect(sanitizeBranchName("测试分支")).toBe("default")
+	})
+
+	it("should handle complex real-world branch names", () => {
+		expect(sanitizeBranchName("feature/JIRA-123-implement-user-authentication")).toBe(
+			"feature-jira-123-implement-user-authentication",
+		)
+		expect(sanitizeBranchName("hotfix/v2.1.3-critical-bug")).toBe("hotfix-v2-1-3-critical-bug")
+		expect(sanitizeBranchName("release/2024.01.15")).toBe("release-2024-01-15")
+	})
+
+	it("should handle edge case with only invalid characters", () => {
+		expect(sanitizeBranchName("///")).toBe("default")
+		expect(sanitizeBranchName("@#$%")).toBe("default")
+	})
+
+	it("should truncate and clean up long branch names properly", () => {
+		const longBranch = "feature/very-long-branch-name-that-exceeds-fifty-characters-limit-and-should-be-truncated"
+		const sanitized = sanitizeBranchName(longBranch)
+		expect(sanitized).toHaveLength(50)
+		// The actual truncated result
+		expect(sanitized).toBe("feature-very-long-branch-name-that-exceeds-fifty-c")
+		// Should not end with hyphen after truncation
+		expect(sanitized.endsWith("-")).toBe(false)
 	})
 })
