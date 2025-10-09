@@ -28,6 +28,18 @@ export const anthropicModels = {
 			},
 		],
 	},
+	"claude-sonnet-4-5-1m": {
+		maxTokens: 64_000, // Overridden to 8k if `enableReasoningEffort` is false.
+		contextWindow: 1_000_000, // 1M context window
+		supportsImages: true,
+		supportsComputerUse: true,
+		supportsPromptCache: true,
+		inputPrice: 6.0, // $6 per million input tokens (1M context)
+		outputPrice: 22.5, // $22.50 per million output tokens (1M context)
+		cacheWritesPrice: 7.5, // $7.50 per million tokens (1M context)
+		cacheReadsPrice: 0.6, // $0.60 per million tokens (1M context)
+		supportsReasoningBudget: true,
+	},
 	"claude-sonnet-4-20250514": {
 		maxTokens: 64_000, // Overridden to 8k if `enableReasoningEffort` is false.
 		contextWindow: 200_000, // Default 200K, extendable to 1M with beta flag 'context-1m-2025-08-07'
