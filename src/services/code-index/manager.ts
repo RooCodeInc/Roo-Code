@@ -8,6 +8,7 @@ import { CodeIndexServiceFactory } from "./service-factory"
 import { CodeIndexSearchService } from "./search-service"
 import { CodeIndexOrchestrator } from "./orchestrator"
 import { CacheManager } from "./cache-manager"
+import { GitBranchWatcher } from "./git-branch-watcher"
 import { RooIgnoreController } from "../../core/ignore/RooIgnoreController"
 import fs from "fs/promises"
 import ignore from "ignore"
@@ -15,8 +16,6 @@ import path from "path"
 import { t } from "../../i18n"
 import { TelemetryService } from "@roo-code/telemetry"
 import { TelemetryEventName } from "@roo-code/types"
-
-import { getCurrentBranch } from "../../utils/git"
 
 export class CodeIndexManager {
 	// --- Singleton Implementation ---
@@ -31,13 +30,10 @@ export class CodeIndexManager {
 	private _cacheManager: CacheManager | undefined
 
 	// Flag to prevent race conditions during error recovery
+	private _isRecoveringFromError = false
 
 	// Git branch change watcher for branch isolation
-	private _gitHeadWatcher?: vscode.FileSystemWatcher
-	private _lastKnownBranch?: string
-	private _gitHeadDebounce?: ReturnType<typeof setTimeout>
-
-	private _isRecoveringFromError = false
+	private _gitBranchWatcher?: GitBranchWatcher
 
 	public static getInstance(context: vscode.ExtensionContext, workspacePath?: string): CodeIndexManager | undefined {
 		// If workspacePath is not provided, try to get it from the active editor or first workspace folder
@@ -247,9 +243,9 @@ export class CodeIndexManager {
 			// This ensures a clean slate even if state update failed
 			this._configManager = undefined
 			this._serviceFactory = undefined
-			if (this._gitHeadWatcher) {
-				this._gitHeadWatcher.dispose()
-				this._gitHeadWatcher = undefined
+			if (this._gitBranchWatcher) {
+				this._gitBranchWatcher.dispose()
+				this._gitBranchWatcher = undefined
 			}
 
 			this._orchestrator = undefined
@@ -267,9 +263,9 @@ export class CodeIndexManager {
 		if (this._orchestrator) {
 			this.stopWatcher()
 		}
-		if (this._gitHeadWatcher) {
-			this._gitHeadWatcher.dispose()
-			this._gitHeadWatcher = undefined
+		if (this._gitBranchWatcher) {
+			this._gitBranchWatcher.dispose()
+			this._gitBranchWatcher = undefined
 		}
 
 		this._stateManager.dispose()
@@ -399,59 +395,55 @@ export class CodeIndexManager {
 
 	// --- Git branch watcher (Phase 1: auto branch switch handling) ---
 	private async _setupGitHeadWatcher(): Promise<void> {
-		const isEnabled = this._configManager?.getConfig().branchIsolationEnabled
-		if (!isEnabled) {
-			if (this._gitHeadWatcher) {
-				this._gitHeadWatcher.dispose()
-				this._gitHeadWatcher = undefined
-			}
-			this._lastKnownBranch = undefined
-			return
-		}
-		this._lastKnownBranch = await getCurrentBranch(this.workspacePath)
-		if (!this._gitHeadWatcher) {
-			const pattern = new vscode.RelativePattern(this.workspacePath, ".git/HEAD")
-			this._gitHeadWatcher = vscode.workspace.createFileSystemWatcher(pattern)
-			const handler = () => this._onGitHeadChange()
-			this._gitHeadWatcher.onDidChange(handler)
+		const isEnabled = this._configManager?.getConfig().branchIsolationEnabled ?? false
 
-			this._gitHeadWatcher.onDidCreate(handler)
-			this._gitHeadWatcher.onDidDelete(handler)
+		// Create watcher if it doesn't exist
+		if (!this._gitBranchWatcher) {
+			this._gitBranchWatcher = new GitBranchWatcher(
+				this.workspacePath,
+				async (oldBranch, newBranch) => this._onBranchChange(oldBranch, newBranch),
+				{ enabled: isEnabled, debounceMs: 500 },
+			)
+		} else {
+			// Update existing watcher config
+			await this._gitBranchWatcher.updateConfig({ enabled: isEnabled, debounceMs: 500 })
 		}
+
+		// Initialize the watcher
+		await this._gitBranchWatcher.initialize()
 	}
 
-	private async _onGitHeadChange(): Promise<void> {
-		if (this._gitHeadDebounce) clearTimeout(this._gitHeadDebounce)
-		this._gitHeadDebounce = setTimeout(async () => {
-			try {
-				if (!this._configManager?.getConfig().branchIsolationEnabled) return
-				const newBranch = await getCurrentBranch(this.workspacePath)
-				if (newBranch === this._lastKnownBranch) return
-				this._lastKnownBranch = newBranch
-				await this._recreateServices()
+	/**
+	 * Handles Git branch changes
+	 * @param oldBranch Previous branch name
+	 * @param newBranch New branch name
+	 */
+	private async _onBranchChange(oldBranch: string | undefined, newBranch: string | undefined): Promise<void> {
+		try {
+			// Recreate services with new branch context
+			await this._recreateServices()
 
-				// Smart re-indexing: only do full scan if collection doesn't exist or is empty
-				// If collection exists with data, file watcher will handle incremental updates
-				const vectorStore = this._orchestrator?.getVectorStore()
-				if (!vectorStore) {
-					// No orchestrator yet, just start indexing
-					this._orchestrator?.startIndexing()
-					return
-				}
-
-				const collectionExists = await vectorStore.collectionExists()
-				if (!collectionExists) {
-					// New branch or first time indexing this branch - do full scan
-					this._orchestrator?.startIndexing()
-				} else {
-					// Collection exists - just validate/initialize without full scan
-					// File watcher will detect any file changes from the branch switch
-					await vectorStore.initialize()
-				}
-			} catch (error) {
-				console.error("Failed to handle Git branch change:", error)
+			// Smart re-indexing: only do full scan if collection doesn't exist or is empty
+			// If collection exists with data, file watcher will handle incremental updates
+			const vectorStore = this._orchestrator?.getVectorStore()
+			if (!vectorStore) {
+				// No orchestrator yet, just start indexing
+				this._orchestrator?.startIndexing()
+				return
 			}
-		}, 250)
+
+			const collectionExists = await vectorStore.collectionExists()
+			if (!collectionExists) {
+				// New branch or first time indexing this branch - do full scan
+				this._orchestrator?.startIndexing()
+			} else {
+				// Collection exists - just validate/initialize without full scan
+				// File watcher will detect any file changes from the branch switch
+				await vectorStore.initialize()
+			}
+		} catch (error) {
+			console.error("[CodeIndexManager] Failed to handle Git branch change:", error)
+		}
 	}
 
 	/**

@@ -26,6 +26,10 @@ export class QdrantVectorStore implements IVectorStore {
 	private _collectionEnsured = false
 	private _ensurePromise?: Promise<void>
 
+	// Collection existence cache to avoid redundant API calls
+	private _collectionExistsCache?: boolean
+	private _collectionInfoCache?: Schemas["CollectionInfo"] | null
+
 	/**
 	 * Creates a new Qdrant vector store
 	 * @param workspacePath Path to the workspace
@@ -146,16 +150,33 @@ export class QdrantVectorStore implements IVectorStore {
 		}
 	}
 
-	private async getCollectionInfo(): Promise<Schemas["CollectionInfo"] | null> {
+	/**
+	 * Gets collection info with caching to avoid redundant API calls
+	 * @param useCache Whether to use cached value (default: true)
+	 * @returns Collection info or null if collection doesn't exist
+	 */
+	private async getCollectionInfo(useCache: boolean = true): Promise<Schemas["CollectionInfo"] | null> {
+		// Return cached value if available and cache is enabled
+		if (useCache && this._collectionInfoCache !== undefined) {
+			return this._collectionInfoCache
+		}
+
 		try {
 			const collectionInfo = await this.client.getCollection(this.collectionName)
+
+			// Cache the result
+			this._collectionInfoCache = collectionInfo
+			this._collectionExistsCache = true
+
 			return collectionInfo
 		} catch (error: any) {
 			// Check if this is a "not found" error (404) vs a connection error
 			const status = error?.status || error?.response?.status || error?.statusCode
 
 			if (status === 404) {
-				// Collection doesn't exist - this is expected, return null
+				// Collection doesn't exist - cache this result
+				this._collectionInfoCache = null
+				this._collectionExistsCache = false
 				return null
 			}
 
@@ -168,6 +189,15 @@ export class QdrantVectorStore implements IVectorStore {
 			// Re-throw connection/server errors instead of silently returning null
 			throw new Error(`Failed to access Qdrant collection "${this.collectionName}": ${errorMessage}`)
 		}
+	}
+
+	/**
+	 * Invalidates the collection info cache
+	 * Should be called when collection is created, deleted, or modified
+	 */
+	private _invalidateCollectionCache(): void {
+		this._collectionInfoCache = undefined
+		this._collectionExistsCache = undefined
 	}
 
 	/**
@@ -194,7 +224,13 @@ export class QdrantVectorStore implements IVectorStore {
 					on_disk: true,
 				},
 			})
+
+			// Invalidate cache immediately after collection creation
+			// This ensures cache consistency even if index creation fails
+			this._invalidateCollectionCache()
+
 			await this._createPayloadIndexes()
+
 			console.log(`[QdrantVectorStore] Successfully created collection "${this.collectionName}"`)
 			created = true
 		} else {
@@ -652,6 +688,9 @@ export class QdrantVectorStore implements IVectorStore {
 			// Check if collection exists before attempting deletion to avoid errors
 			if (await this.collectionExists()) {
 				await this.client.deleteCollection(this.collectionName)
+
+				// Invalidate cache after deleting collection
+				this._invalidateCollectionCache()
 			}
 		} catch (error) {
 			console.error(`[QdrantVectorStore] Failed to delete collection ${this.collectionName}:`, error)
@@ -713,8 +752,11 @@ export class QdrantVectorStore implements IVectorStore {
 			this.currentBranch = null
 		}
 
-		// Update the collection name
-		this.collectionName = collectionName
+		// Update the collection name and invalidate cache if name changed
+		if (this.collectionName !== collectionName) {
+			this.collectionName = collectionName
+			this._invalidateCollectionCache()
+		}
 	}
 
 	/**
