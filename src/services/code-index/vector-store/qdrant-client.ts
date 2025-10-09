@@ -106,6 +106,9 @@ export class QdrantVectorStore implements IVectorStore {
 		}
 
 		// Generate base collection name from workspace path
+		// Note: This is NOT password hashing - it's creating a deterministic identifier
+		// from the workspace path for collection naming. SHA-256 is appropriate here.
+		// codeql[js/insufficient-password-hash] - False positive: not hashing passwords
 		const hash = createHash("sha256").update(workspacePath).digest("hex")
 		this.vectorSize = vectorSize
 
@@ -762,6 +765,9 @@ export class QdrantVectorStore implements IVectorStore {
 		}
 
 		// Generate base collection name
+		// Note: This is NOT password hashing - it's creating a deterministic identifier
+		// from the workspace path for collection naming. SHA-256 is appropriate here.
+		// codeql[js/insufficient-password-hash] - False positive: not hashing passwords
 		const hash = createHash("sha256").update(this.workspacePath).digest("hex")
 		let collectionName = `ws-${hash.substring(0, 16)}`
 
