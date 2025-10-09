@@ -109,6 +109,11 @@
 			"error": "Error"
 		},
 		"close": "Tancar",
+		"branchIsolation": {
+			"enableLabel": "Habilitar aïllament de branques",
+			"enableDescription": "Indexar cada branca de Git per separat per obtenir millors resultats de cerca i evitar conflictes en canviar de branca. Requereix més espai d'emmagatzematge.",
+			"storageWarning": "Cada branca tindrà el seu propi índex, augmentant els requisits d'emmagatzematge."
+		},
 		"validation": {
 			"invalidQdrantUrl": "URL de Qdrant no vàlida",
 			"invalidOllamaUrl": "URL d'Ollama no vàlida",

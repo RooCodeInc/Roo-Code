@@ -109,6 +109,11 @@
 			"error": "错误"
 		},
 		"close": "关闭",
+		"branchIsolation": {
+			"enableLabel": "启用分支隔离",
+			"enableDescription": "单独索引每个 Git 分支，以获取更佳的搜索结果并防止切换分支时发生冲突。需要更多存储空间。",
+			"storageWarning": "每个分支将有自己的索引，从而增加存储要求。"
+		},
 		"validation": {
 			"invalidQdrantUrl": "无效的 Qdrant URL",
 			"invalidOllamaUrl": "无效的 Ollama URL",

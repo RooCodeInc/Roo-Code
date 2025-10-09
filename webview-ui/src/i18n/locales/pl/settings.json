@@ -109,6 +109,11 @@
 			"error": "Błąd"
 		},
 		"close": "Zamknij",
+		"branchIsolation": {
+			"enableLabel": "Włącz izolację gałęzi",
+			"enableDescription": "Indeksuj każdą gałąź Git oddzielnie, aby uzyskać lepsze wyniki wyszukiwania i zapobiec konfliktom podczas przełączania gałęzi. Wymaga to więcej miejsca na dysku.",
+			"storageWarning": "Każda gałąź będzie miała swój własny indeks, co zwiększa wymagania dotyczące miejsca na dysku."
+		},
 		"validation": {
 			"invalidQdrantUrl": "Nieprawidłowy URL Qdrant",
 			"invalidOllamaUrl": "Nieprawidłowy URL Ollama",

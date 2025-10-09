@@ -109,6 +109,11 @@
 			"error": "Erreur"
 		},
 		"close": "Fermer",
+		"branchIsolation": {
+			"enableLabel": "Activer l'isolation de branche",
+			"enableDescription": "Indexer chaque branche Git séparément pour obtenir de meilleurs résultats de recherche et éviter les conflits lors du changement de branche. Nécessite plus d'espace de stockage.",
+			"storageWarning": "Chaque branche aura son propre index, ce qui augmentera les besoins en stockage."
+		},
 		"validation": {
 			"invalidQdrantUrl": "URL Qdrant invalide",
 			"invalidOllamaUrl": "URL Ollama invalide",
