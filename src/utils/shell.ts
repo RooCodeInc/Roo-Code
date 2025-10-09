@@ -1,7 +1,10 @@
 import * as vscode from "vscode"
 import { userInfo } from "os"
+import { terminalUnsupportedSyntax } from "./shellConstants"
 import fs from "fs"
 import * as path from "path"
+import { exec } from "child_process"
+import { promisify } from "util"
 
 // Security: Allowlist of approved shell executables to prevent arbitrary command execution
 const SHELL_ALLOWLIST = new Set<string>([
@@ -16,6 +19,7 @@ const SHELL_ALLOWLIST = new Set<string>([
 
 	// Windows WSL
 	"C:\\Windows\\System32\\wsl.exe",
+	"wsl.exe",
 
 	// Git Bash on Windows
 	"C:\\Program Files\\Git\\bin\\bash.exe",
@@ -142,9 +146,15 @@ function getWindowsTerminalConfig() {
 		const config = vscode.workspace.getConfiguration("terminal.integrated")
 		const defaultProfileName = config.get<string>("defaultProfile.windows")
 		const profiles = config.get<WindowsTerminalProfiles>("profiles.windows") || {}
-		return { defaultProfileName, profiles }
+		return {
+			defaultProfileName,
+			profiles,
+		}
 	} catch {
-		return { defaultProfileName: null, profiles: {} as WindowsTerminalProfiles }
+		return {
+			defaultProfileName: null,
+			profiles: {} as WindowsTerminalProfiles,
+		}
 	}
 }
 
@@ -203,7 +213,7 @@ function getWindowsShellFromVSCode(): string | null {
 		if (normalizedPath) {
 			// If there's an explicit PowerShell path, return that
 			return normalizedPath
-		} else if (profile?.source === "PowerShell") {
+		} else if (profile?.source === "PowerShell" && profile?.path) {
 			// If the profile is sourced from PowerShell, assume the newest
 			return SHELL_PATHS.POWERSHELL_7
 		}
@@ -586,4 +596,234 @@ function detectLinuxVSCodeDefaultShell(): string | null {
  */
 export function getActiveTerminalShellType(): string | null {
 	return detectSystemAvailableShell()
+}
+
+interface TerminalUnsupportedSyntax {
+	unsupported?: string[]
+	features?: string[]
+}
+
+export interface TerminalInfo {
+	name: string
+	version: string
+	path: string
+	unsupportSyntax?: string[]
+	features?: string[]
+}
+
+const execAsync = promisify(exec)
+
+/**
+ * Get PowerShell version information by executing command
+ * @param shellPath PowerShell path
+ * @returns Version string or null
+ */
+async function getPowerShellVersion(shellPath: string): Promise<string | null> {
+	try {
+		// Execute PowerShell command to get version information
+		const { stdout } = await execAsync(`"${shellPath}" -Command "$PSVersionTable"`)
+		const getPSVersion = (str: string) => str.replace(/\\x1b\[[0-9;]*m/g, "").match(/PSVersion\s+([0-9.]+)/)
+		const versionMatch = getPSVersion(stdout)
+		if (versionMatch) {
+			const major = versionMatch[1]
+			// Try to get more detailed version information
+			try {
+				const { stdout: detailStdout } = await execAsync(
+					`"${shellPath}" -Command "$PSVersionTable.PSVersion.ToString()"`,
+				)
+				return detailStdout.trim()
+			} catch {
+				return major
+			}
+		}
+		return null
+	} catch (error) {
+		console.debug("[getPowerShellVersion] Failed to get PowerShell version:", error)
+		return null
+	}
+}
+
+/**
+ * Get Git Bash version information by executing command
+ */
+export async function getGitBashVersion(): Promise<{ path: string; version: string } | { version: null }> {
+	async function getBashPathsFromWhere(): Promise<string[]> {
+		try {
+			const { stdout } = await execAsync("where bash")
+			return stdout
+				.split(/\r?\n/)
+				.map((p) => p.trim())
+				.filter(Boolean)
+		} catch {
+			return []
+		}
+	}
+
+	async function getBashPathFromRegistry(): Promise<string | null> {
+		try {
+			const { stdout } = await execAsync('reg query "HKEY_LOCAL_MACHINE\\SOFTWARE\\GitForWindows" /v InstallPath')
+			const match = stdout.match(/InstallPath\s+REG_SZ\s+(.+)/)
+			if (match) {
+				return `${match[1]}\\bin\\bash.exe`
+			}
+		} catch {}
+		return null
+	}
+
+	const fallbackPaths = [
+		"C:\\Program Files\\Git\\bin\\bash.exe",
+		"C:\\Program Files (x86)\\Git\\bin\\bash.exe",
+		"C:\\Program Files\\Git\\usr\\bin\\bash.exe",
+	]
+
+	const paths = new Set<string>()
+
+	for (const p of await getBashPathsFromWhere()) paths.add(p)
+	const regPath = await getBashPathFromRegistry()
+	if (regPath) paths.add(regPath)
+	for (const p of fallbackPaths) paths.add(p)
+
+	const validCandidates: { path: string; version: string }[] = []
+
+	for (const path of paths) {
+		try {
+			const { stdout } = await execAsync(`"${path}" --version`)
+			const versionMatch = stdout.match(/version\s+([\d.]+)/i)
+			if (versionMatch) {
+				validCandidates.push({ path, version: versionMatch[1] })
+			}
+		} catch {
+			continue
+		}
+	}
+
+	if (validCandidates.length === 0) {
+		console.debug("[getGitBashVersion] No valid Git Bash found.")
+		return { version: null }
+	}
+
+	// Prioritize the "Git for Windows" version
+	const preferred = validCandidates.find((c) => c.path.toLowerCase().includes("program files\\git"))
+	return preferred || validCandidates[0]
+}
+
+/**
+ * Get CMD version information by executing command
+ * @param shellPath CMD path
+ * @returns Version string or null
+ */
+async function getCMDVersion(shellPath: string): Promise<string | null> {
+	try {
+		// Execute ver command to get Windows version information
+		const { stdout } = await execAsync(`cmd /c ver`)
+		const versionMatch = stdout.match(/([\d.]+)/)
+		if (versionMatch) {
+			return versionMatch[1]
+		}
+		return null
+	} catch (error) {
+		console.debug("[getCMDVersion] Failed to get CMD version:", error)
+		return null
+	}
+}
+
+/**
+ * Get terminal name and version information on Windows operating system
+ * The retrieval logic is consistent with getShell, but returns terminal name and version information
+ * Get accurate version information by executing commands
+ *
+ * @returns Terminal information object containing name, version and path
+ */
+export async function getWindowsTerminalInfo(): Promise<TerminalInfo | null> {
+	if (process.platform !== "win32") {
+		return null
+	}
+
+	const shellPath = getShell()
+
+	// Determine terminal name and version based on path
+	if (shellPath.toLowerCase().includes("pwsh.exe")) {
+		// PowerShell 7+
+		const version = await getPowerShellVersion(shellPath)
+		return {
+			name: "PowerShell",
+			version: version || "Unknown",
+			path: shellPath,
+			unsupportSyntax: terminalUnsupportedSyntax.powershell7.unsupported,
+			features: terminalUnsupportedSyntax.powershell7.features,
+		}
+	} else if (shellPath.toLowerCase().includes("powershell.exe")) {
+		// Windows PowerShell (5.1 and earlier versions)
+		const version = await getPowerShellVersion(shellPath)
+		return {
+			name: "Windows PowerShell",
+			version: version || "5.1",
+			path: shellPath,
+			unsupportSyntax: terminalUnsupportedSyntax.powershell5.unsupported,
+			features: terminalUnsupportedSyntax.powershell5.features,
+		}
+	} else if (shellPath.toLowerCase().includes("cmd.exe")) {
+		// Command Prompt
+		const version = await getCMDVersion(shellPath)
+		return {
+			name: "Command Prompt",
+			version: version || "Built-in",
+			path: shellPath,
+			unsupportSyntax: terminalUnsupportedSyntax.cmd.unsupported,
+		}
+	} else if (shellPath.toLowerCase().includes("bash.exe")) {
+		// Git Bash, MSYS2, MinGW, Cygwin, etc.
+		if (shellPath.toLowerCase().includes("git")) {
+			const { version } = await getGitBashVersion()
+			return {
+				name: "Git Bash",
+				version: version || "Unknown",
+				path: shellPath,
+				unsupportSyntax: terminalUnsupportedSyntax.gitBash.unsupported,
+				features: terminalUnsupportedSyntax.gitBash.features,
+			}
+		} else if (shellPath.toLowerCase().includes("msys64")) {
+			const { version } = await getGitBashVersion()
+			return {
+				name: "MSYS2",
+				version: version || "64-bit",
+				path: shellPath,
+			}
+		} else if (shellPath.toLowerCase().includes("msys32")) {
+			const { version } = await getGitBashVersion()
+			return {
+				name: "MSYS2",
+				version: version || "32-bit",
+				path: shellPath,
+			}
+		} else if (shellPath.toLowerCase().includes("mingw")) {
+			const { version } = await getGitBashVersion()
+			return {
+				name: "MinGW",
+				version: version || "Unknown",
+				path: shellPath,
+			}
+		} else if (shellPath.toLowerCase().includes("cygwin")) {
+			const { version } = await getGitBashVersion()
+			return {
+				name: "Cygwin",
+				version: version || "Unknown",
+				path: shellPath,
+			}
+		} else {
+			const { version } = await getGitBashVersion()
+			return {
+				name: "Bash",
+				version: version || "Unknown",
+				path: shellPath,
+			}
+		}
+	} else {
+		// Unknown terminal
+		return {
+			name: "Unknown Terminal",
+			version: "Unknown",
+			path: shellPath,
+		}
+	}
 }

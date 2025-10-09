@@ -20,7 +20,7 @@ import { formatResponse } from "../prompts/responses"
 
 import { Task } from "../task/Task"
 import { formatReminderSection } from "./reminder"
-import { getShell } from "../../utils/shell"
+import { getShell, getWindowsTerminalInfo } from "../../utils/shell"
 import { getOperatingSystem } from "../../utils/zgsmUtils"
 import { defaultLang } from "../../utils/language"
 
@@ -238,8 +238,28 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 		globalCustomInstructions: promptSuggestion + simpleAskSuggestion + shellSuggestion + globalCustomInstructions,
 		language: language ?? formatLanguage(await defaultLang()),
 	})
+
+	const formatUnsupport = (data: string[]): string => {
+		return data.join("\n")
+	}
+
 	details += `\n\n# Operating System\n${getOperatingSystem()}`
 	details += `\n\n# Default Shell\n${getShell()}`
+	const winTerminalInfo = await getWindowsTerminalInfo()
+
+	if (winTerminalInfo) {
+		const { version, name, unsupportSyntax, features } = winTerminalInfo
+		details += `\n\n# Shell Version\n${name} ${version}`
+
+		if (unsupportSyntax) {
+			details += `\n\n## Shell Unsupport Syntax\n${formatUnsupport(unsupportSyntax)}`
+		}
+
+		if (features) {
+			details += `\n\n## Shell Support Syntax\n${formatUnsupport(features)}`
+		}
+	}
+
 	details += `\n\n# Current Mode\n`
 	details += `<slug>${currentMode}</slug>\n`
 	details += `<name>${modeDetails.name}</name>\n`
