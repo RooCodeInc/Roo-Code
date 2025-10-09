@@ -95,7 +95,7 @@ export class BridgeOrchestrator {
 
 		if (!instance) {
 			try {
-				console.log(`[BridgeOrchestrator#connectOrDisconnect] Connecting...`)
+				console.log(`[BridgeOrchestrator#connectOrDisconnect] Connecting to ${options.socketBridgeUrl}...`)
 				// Populate telemetry properties before registering the instance.
 				await options.provider.getTelemetryProperties()
 
