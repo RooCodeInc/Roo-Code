@@ -179,6 +179,9 @@ const baseProviderSettingsSchema = z.object({
 	modelMaxTokens: z.number().optional(),
 	modelMaxThinkingTokens: z.number().optional(),
 
+	// Model context window override.
+	modelContextWindow: z.number().optional(),
+
 	// Model verbosity.
 	verbosity: verbosityLevelsSchema.optional(),
 })

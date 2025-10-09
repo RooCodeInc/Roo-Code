@@ -921,9 +921,13 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 		if (this.options.modelMaxTokens && this.options.modelMaxTokens > 0) {
 			model.info.maxTokens = this.options.modelMaxTokens
 		}
+		// Support both awsModelContextWindow (for backward compatibility) and modelContextWindow
 		if (this.options.awsModelContextWindow && this.options.awsModelContextWindow > 0) {
 			model.info.contextWindow = this.options.awsModelContextWindow
 		}
+
+		// Apply general model overrides (including modelContextWindow)
+		model.info = this.applyModelOverrides(model.info, this.options)
 
 		return model
 	}
@@ -981,6 +985,9 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 				contextWindow: 1_000_000,
 			}
 		}
+
+		// Apply general model overrides (including modelContextWindow) after all specific logic
+		modelConfig.info = this.applyModelOverrides(modelConfig.info, this.options)
 
 		// Get model params including reasoning configuration
 		const params = getModelParams({

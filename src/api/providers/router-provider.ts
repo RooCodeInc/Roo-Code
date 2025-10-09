@@ -63,9 +63,13 @@ export abstract class RouterProvider extends BaseProvider {
 	override getModel(): { id: string; info: ModelInfo } {
 		const id = this.modelId ?? this.defaultModelId
 
-		return this.models[id]
-			? { id, info: this.models[id] }
-			: { id: this.defaultModelId, info: this.defaultModelInfo }
+		// Get the base model info
+		const baseInfo = this.models[id] ? this.models[id] : this.defaultModelInfo
+
+		// Apply user-configured overrides (e.g., custom context window)
+		const info = this.applyModelOverrides(baseInfo, this.options)
+
+		return { id: this.models[id] ? id : this.defaultModelId, info }
 	}
 
 	protected supportsTemperature(modelId: string): boolean {

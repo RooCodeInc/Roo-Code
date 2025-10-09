@@ -140,6 +140,9 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 				? (this.options.apiModelId as ModelName)
 				: this.defaultProviderModelId
 
-		return { id, info: this.providerModels[id] }
+		// Apply user-configured overrides (e.g., custom context window)
+		const info = this.applyModelOverrides(this.providerModels[id], this.options)
+
+		return { id, info }
 	}
 }

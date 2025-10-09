@@ -264,6 +264,9 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 			}
 		}
 
+		// Apply user-configured overrides (e.g., custom context window)
+		info = this.applyModelOverrides(info, this.options)
+
 		const params = getModelParams({
 			format: "anthropic",
 			modelId: id,

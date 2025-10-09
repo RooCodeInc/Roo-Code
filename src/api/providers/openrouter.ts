@@ -232,6 +232,9 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 			info = this.endpoints[this.options.openRouterSpecificProvider]
 		}
 
+		// Apply user-configured overrides (e.g., custom context window)
+		info = this.applyModelOverrides(info, this.options)
+
 		const isDeepSeekR1 = id.startsWith("deepseek/deepseek-r1") || id === "perplexity/sonar-reasoning"
 
 		const params = getModelParams({
