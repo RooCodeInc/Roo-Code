@@ -117,11 +117,11 @@ export class GitBranchWatcher implements vscode.Disposable {
 				// Only notify if branch actually changed
 				if (newBranch !== oldBranch) {
 					try {
-						// Notify listener first - only update state if callback succeeds
-						// This prevents state inconsistency if the callback fails
+						// Notify listener first - only update state if callback completes without throwing
+						// This prevents state inconsistency if the callback throws an error
 						await this._callback(oldBranch, newBranch)
 
-						// Update cached branch AFTER successful callback
+						// Update cached branch only after callback completes successfully (without throwing)
 						this._currentBranch = newBranch
 					} catch (callbackError) {
 						// Callback failed - log error but don't update state
