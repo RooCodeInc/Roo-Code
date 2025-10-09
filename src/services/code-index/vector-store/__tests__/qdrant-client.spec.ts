@@ -1071,6 +1071,7 @@ describe("QdrantVectorStore", () => {
 				},
 			]
 
+			mockQdrantClientInstance.getCollection.mockResolvedValue({ vectors_count: 100 })
 			mockQdrantClientInstance.upsert.mockResolvedValue({} as any)
 
 			await vectorStore.upsertPoints(mockPoints)
@@ -1126,6 +1127,7 @@ describe("QdrantVectorStore", () => {
 				},
 			]
 
+			mockQdrantClientInstance.getCollection.mockResolvedValue({ vectors_count: 100 })
 			mockQdrantClientInstance.upsert.mockResolvedValue({} as any)
 
 			await vectorStore.upsertPoints(mockPoints)
@@ -1147,6 +1149,7 @@ describe("QdrantVectorStore", () => {
 		})
 
 		it("should handle empty input arrays", async () => {
+			mockQdrantClientInstance.getCollection.mockResolvedValue({ vectors_count: 100 })
 			mockQdrantClientInstance.upsert.mockResolvedValue({} as any)
 
 			await vectorStore.upsertPoints([])
@@ -1171,6 +1174,7 @@ describe("QdrantVectorStore", () => {
 				},
 			]
 
+			mockQdrantClientInstance.getCollection.mockResolvedValue({ vectors_count: 100 })
 			mockQdrantClientInstance.upsert.mockResolvedValue({} as any)
 
 			await vectorStore.upsertPoints(mockPoints)
@@ -1214,6 +1218,7 @@ describe("QdrantVectorStore", () => {
 			]
 
 			const upsertError = new Error("Upsert failed")
+			mockQdrantClientInstance.getCollection.mockResolvedValue({ vectors_count: 100 })
 			mockQdrantClientInstance.upsert.mockRejectedValue(upsertError)
 			vitest.spyOn(console, "error").mockImplementation(() => {})
 
@@ -1255,6 +1260,7 @@ describe("QdrantVectorStore", () => {
 				],
 			}
 
+			mockQdrantClientInstance.getCollection.mockResolvedValue({ vectors_count: 100 })
 			mockQdrantClientInstance.query.mockResolvedValue(mockQdrantResults)
 
 			const results = await vectorStore.search(queryVector)
@@ -1296,6 +1302,7 @@ describe("QdrantVectorStore", () => {
 				],
 			}
 
+			mockQdrantClientInstance.getCollection.mockResolvedValue({ vectors_count: 100 })
 			mockQdrantClientInstance.query.mockResolvedValue(mockQdrantResults)
 
 			const results = await vectorStore.search(queryVector, directoryPrefix)
@@ -1333,6 +1340,7 @@ describe("QdrantVectorStore", () => {
 			const customMinScore = 0.8
 			const mockQdrantResults = { points: [] }
 
+			mockQdrantClientInstance.getCollection.mockResolvedValue({ vectors_count: 100 })
 			mockQdrantClientInstance.query.mockResolvedValue(mockQdrantResults)
 
 			await vectorStore.search(queryVector, undefined, customMinScore)
@@ -1357,6 +1365,7 @@ describe("QdrantVectorStore", () => {
 			const customMaxResults = 100
 			const mockQdrantResults = { points: [] }
 
+			mockQdrantClientInstance.getCollection.mockResolvedValue({ vectors_count: 100 })
 			mockQdrantClientInstance.query.mockResolvedValue(mockQdrantResults)
 
 			await vectorStore.search(queryVector, undefined, undefined, customMaxResults)
@@ -1411,6 +1420,7 @@ describe("QdrantVectorStore", () => {
 				],
 			}
 
+			mockQdrantClientInstance.getCollection.mockResolvedValue({ vectors_count: 100 })
 			mockQdrantClientInstance.query.mockResolvedValue(mockQdrantResults)
 
 			const results = await vectorStore.search(queryVector)
@@ -1458,6 +1468,7 @@ describe("QdrantVectorStore", () => {
 				],
 			}
 
+			mockQdrantClientInstance.getCollection.mockResolvedValue({ vectors_count: 100 })
 			mockQdrantClientInstance.query.mockResolvedValue(mockQdrantResults)
 
 			const results = await vectorStore.search(queryVector)
@@ -1472,6 +1483,7 @@ describe("QdrantVectorStore", () => {
 			const queryVector = [0.1, 0.2, 0.3]
 			const mockQdrantResults = { points: [] }
 
+			mockQdrantClientInstance.getCollection.mockResolvedValue({ vectors_count: 100 })
 			mockQdrantClientInstance.query.mockResolvedValue(mockQdrantResults)
 
 			const results = await vectorStore.search(queryVector)
