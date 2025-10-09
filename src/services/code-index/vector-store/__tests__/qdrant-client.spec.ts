@@ -1569,6 +1569,8 @@ describe("QdrantVectorStore", () => {
 					],
 				}
 
+				// Mock getCollection to return valid collection info
+				mockQdrantClientInstance.getCollection.mockResolvedValue({ vectors_count: 100 })
 				mockQdrantClientInstance.query.mockResolvedValue(mockQdrantResults)
 
 				const results = await vectorStore.search(queryVector, directoryPrefix)
@@ -1595,6 +1597,8 @@ describe("QdrantVectorStore", () => {
 				const directoryPrefix = "./"
 				const mockQdrantResults = { points: [] }
 
+				// Mock getCollection to return valid collection info
+				mockQdrantClientInstance.getCollection.mockResolvedValue({ vectors_count: 100 })
 				mockQdrantClientInstance.query.mockResolvedValue(mockQdrantResults)
 
 				await vectorStore.search(queryVector, directoryPrefix)
@@ -1619,6 +1623,8 @@ describe("QdrantVectorStore", () => {
 				const directoryPrefix = ""
 				const mockQdrantResults = { points: [] }
 
+				// Mock getCollection to return valid collection info
+				mockQdrantClientInstance.getCollection.mockResolvedValue({ vectors_count: 100 })
 				mockQdrantClientInstance.query.mockResolvedValue(mockQdrantResults)
 
 				await vectorStore.search(queryVector, directoryPrefix)
@@ -1667,6 +1673,8 @@ describe("QdrantVectorStore", () => {
 				const directoryPrefix = ".///"
 				const mockQdrantResults = { points: [] }
 
+				// Mock getCollection to return valid collection info
+				mockQdrantClientInstance.getCollection.mockResolvedValue({ vectors_count: 100 })
 				mockQdrantClientInstance.query.mockResolvedValue(mockQdrantResults)
 
 				await vectorStore.search(queryVector, directoryPrefix)
@@ -1691,6 +1699,8 @@ describe("QdrantVectorStore", () => {
 				const directoryPrefix = "./src"
 				const mockQdrantResults = { points: [] }
 
+				// Mock getCollection to return valid collection info
+				mockQdrantClientInstance.getCollection.mockResolvedValue({ vectors_count: 100 })
 				mockQdrantClientInstance.query.mockResolvedValue(mockQdrantResults)
 
 				await vectorStore.search(queryVector, directoryPrefix)
@@ -1722,6 +1732,8 @@ describe("QdrantVectorStore", () => {
 				const directoryPrefix = "src"
 				const mockQdrantResults = { points: [] }
 
+				// Mock getCollection to return valid collection info
+				mockQdrantClientInstance.getCollection.mockResolvedValue({ vectors_count: 100 })
 				mockQdrantClientInstance.query.mockResolvedValue(mockQdrantResults)
 
 				await vectorStore.search(queryVector, directoryPrefix)
