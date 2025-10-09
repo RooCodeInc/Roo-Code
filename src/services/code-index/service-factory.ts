@@ -18,7 +18,6 @@ import { TelemetryService } from "@roo-code/telemetry"
 import { TelemetryEventName } from "@roo-code/types"
 import { Package } from "../../shared/package"
 import { BATCH_SEGMENT_THRESHOLD } from "./constants"
-import { getCurrentBranch } from "../../utils/git"
 
 /**
  * Factory class responsible for creating and configuring code indexing service dependencies.
@@ -28,7 +27,7 @@ export class CodeIndexServiceFactory {
 		private readonly configManager: CodeIndexConfigManager,
 		private readonly workspacePath: string,
 		private readonly cacheManager: CacheManager,
-	) { }
+	) {}
 
 	/**
 	 * Creates an embedder instance based on the current configuration.
@@ -146,19 +145,12 @@ export class CodeIndexServiceFactory {
 			throw new Error(t("embeddings:serviceFactory.qdrantUrlMissing"))
 		}
 
-		// Get current branch if branch isolation is enabled
-		let currentBranch: string | undefined
-		if (config.branchIsolationEnabled) {
-			currentBranch = await getCurrentBranch(this.workspacePath)
-		}
-
 		return new QdrantVectorStore(
 			this.workspacePath,
 			config.qdrantUrl,
 			vectorSize,
 			config.qdrantApiKey,
 			config.branchIsolationEnabled,
-			currentBranch,
 		)
 	}
 

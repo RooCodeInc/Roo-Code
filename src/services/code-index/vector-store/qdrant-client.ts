@@ -6,6 +6,7 @@ import { IVectorStore } from "../interfaces/vector-store"
 import { Payload, VectorStoreSearchResult } from "../interfaces"
 import { DEFAULT_MAX_SEARCH_RESULTS, DEFAULT_SEARCH_MIN_SCORE } from "../constants"
 import { t } from "../../../i18n"
+import { getCurrentBranch, sanitizeBranchName } from "../../../utils/git"
 
 /**
  * Qdrant implementation of the vector store interface
@@ -15,9 +16,11 @@ export class QdrantVectorStore implements IVectorStore {
 	private readonly DISTANCE_METRIC = "Cosine"
 
 	private client: QdrantClient
-	private readonly collectionName: string
+	private collectionName: string
 	private readonly qdrantUrl: string = "http://localhost:6333"
 	private readonly workspacePath: string
+	private readonly branchIsolationEnabled: boolean
+	private currentBranch: string | null = null
 
 	// Lazy collection creation flag
 	private _collectionEnsured = false
@@ -29,16 +32,14 @@ export class QdrantVectorStore implements IVectorStore {
 	 * @param url Optional URL to the Qdrant server
 	 * @param vectorSize Size of the embedding vectors
 	 * @param apiKey Optional API key for Qdrant authentication
-	 * @param branchIsolationEnabled Whether to include branch name in collection naming
-	 * @param currentBranch Current Git branch name (used when branchIsolationEnabled is true)
+	 * @param branchIsolationEnabled Whether to use branch-specific collections
 	 */
 	constructor(
 		workspacePath: string,
 		url: string,
 		vectorSize: number,
 		apiKey?: string,
-		branchIsolationEnabled?: boolean,
-		currentBranch?: string,
+		branchIsolationEnabled: boolean = false,
 	) {
 		// Parse the URL to determine the appropriate QdrantClient configuration
 		const parsedUrl = this.parseQdrantUrl(url)
@@ -46,6 +47,7 @@ export class QdrantVectorStore implements IVectorStore {
 		// Store the resolved URL for our property
 		this.qdrantUrl = parsedUrl
 		this.workspacePath = workspacePath
+		this.branchIsolationEnabled = branchIsolationEnabled
 
 		try {
 			const urlObj = new URL(parsedUrl)
@@ -92,34 +94,12 @@ export class QdrantVectorStore implements IVectorStore {
 			})
 		}
 
-		// Generate collection name from workspace path
+		// Generate base collection name from workspace path
 		const hash = createHash("sha256").update(workspacePath).digest("hex")
 		this.vectorSize = vectorSize
 
-		// If branch isolation is enabled and we have a branch name, include it in the collection name
-		if (branchIsolationEnabled && currentBranch) {
-			const sanitizedBranch = this.sanitizeBranchName(currentBranch)
-			this.collectionName = `ws-${hash.substring(0, 16)}-br-${sanitizedBranch}`
-		} else {
-			this.collectionName = `ws-${hash.substring(0, 16)}`
-		}
-	}
-
-	/**
-	 * Sanitizes a Git branch name for use in Qdrant collection naming
-	 * @param branch The branch name to sanitize
-	 * @returns A sanitized branch name safe for collection naming
-	 */
-	private sanitizeBranchName(branch: string): string {
-		// Replace invalid characters with hyphens, collapse multiple hyphens, limit length
-		return (
-			branch
-				.replace(/[^a-zA-Z0-9_-]/g, "-") // Replace invalid chars with hyphens
-				.replace(/--+/g, "-") // Collapse multiple hyphens
-				.replace(/^-+|-+$/g, "") // Remove leading/trailing hyphens
-				.substring(0, 50) // Limit length to 50 characters
-				.toLowerCase() || "default"
-		) // Fallback to 'default' if empty after sanitization
+		// Base collection name (will be updated dynamically if branch isolation is enabled)
+		this.collectionName = `ws-${hash.substring(0, 16)}`
 	}
 
 	/**
@@ -267,6 +247,11 @@ export class QdrantVectorStore implements IVectorStore {
 	 * @throws {Error} If vector dimension mismatch cannot be resolved
 	 */
 	async initialize(): Promise<boolean> {
+		// Update collection name based on current branch if branch isolation is enabled
+		if (this.branchIsolationEnabled) {
+			await this.updateCollectionNameForBranch()
+		}
+
 		try {
 			// Use shared helper to create or validate collection
 			const created = await this._createOrValidateCollection()
@@ -418,6 +403,11 @@ export class QdrantVectorStore implements IVectorStore {
 		// Create and store the ensure promise
 		this._ensurePromise = (async () => {
 			try {
+				// Update collection name based on current branch if branch isolation is enabled
+				if (this.branchIsolationEnabled) {
+					await this.updateCollectionNameForBranch()
+				}
+
 				// Use shared helper to create or validate collection
 				await this._createOrValidateCollection()
 
@@ -700,5 +690,38 @@ export class QdrantVectorStore implements IVectorStore {
 	async collectionExists(): Promise<boolean> {
 		const collectionInfo = await this.getCollectionInfo()
 		return collectionInfo !== null
+	}
+
+	/**
+	 * Updates the collection name based on the current Git branch
+	 * Only called when branch isolation is enabled
+	 */
+	private async updateCollectionNameForBranch(): Promise<void> {
+		const branch = await getCurrentBranch(this.workspacePath)
+
+		// Generate base collection name
+		const hash = createHash("sha256").update(this.workspacePath).digest("hex")
+		let collectionName = `ws-${hash.substring(0, 16)}`
+
+		if (branch) {
+			// Sanitize branch name for use in collection name
+			const sanitizedBranch = sanitizeBranchName(branch)
+			collectionName = `${collectionName}-br-${sanitizedBranch}`
+			this.currentBranch = branch
+		} else {
+			// Detached HEAD or not a git repo - use workspace-only collection
+			this.currentBranch = null
+		}
+
+		// Update the collection name
+		this.collectionName = collectionName
+	}
+
+	/**
+	 * Gets the current branch being used for the collection
+	 * @returns The current branch name or null if not using branch isolation
+	 */
+	public getCurrentBranch(): string | null {
+		return this.branchIsolationEnabled ? this.currentBranch : null
 	}
 }

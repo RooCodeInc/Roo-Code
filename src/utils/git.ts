@@ -107,6 +107,23 @@ export async function getCurrentBranch(workspaceRoot: string): Promise<string | 
 }
 
 /**
+ * Sanitizes a Git branch name for use in collection naming or file paths
+ * @param branch The branch name to sanitize
+ * @returns A sanitized branch name safe for use in identifiers
+ */
+export function sanitizeBranchName(branch: string): string {
+	// Replace invalid characters with hyphens, collapse multiple hyphens, limit length
+	return (
+		branch
+			.replace(/[^a-zA-Z0-9_-]/g, "-") // Replace invalid chars with hyphens
+			.replace(/--+/g, "-") // Collapse multiple hyphens
+			.replace(/^-+|-+$/g, "") // Remove leading/trailing hyphens
+			.substring(0, 50) // Limit length to 50 characters
+			.toLowerCase() || "default"
+	) // Fallback to 'default' if empty after sanitization
+}
+
+/**
  * Converts a git URL to HTTPS format
  * @param url The git URL to convert
  * @returns The URL in HTTPS format, or the original URL if conversion is not possible
