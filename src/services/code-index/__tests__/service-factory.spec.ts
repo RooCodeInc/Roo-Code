@@ -524,7 +524,7 @@ describe("CodeIndexServiceFactory", () => {
 			)
 		})
 
-		it("should throw error when manual modelDimension is invalid for OpenAI Compatible", () => {
+		it("should throw error when manual modelDimension is invalid for OpenAI Compatible", async () => {
 			// Arrange
 			const testModelId = "custom-model"
 			const testConfig = {
@@ -542,12 +542,12 @@ describe("CodeIndexServiceFactory", () => {
 			mockGetModelDimension.mockReturnValue(undefined)
 
 			// Act & Assert
-			expect(() => factory.createVectorStore()).toThrow(
+			await expect(factory.createVectorStore()).rejects.toThrow(
 				"serviceFactory.vectorDimensionNotDeterminedOpenAiCompatible",
 			)
 		})
 
-		it("should throw error when both manual dimension and getModelDimension fail for OpenAI Compatible", () => {
+		it("should throw error when both manual dimension and getModelDimension fail for OpenAI Compatible", async () => {
 			// Arrange
 			const testModelId = "unknown-model"
 			const testConfig = {
@@ -564,7 +564,7 @@ describe("CodeIndexServiceFactory", () => {
 			mockGetModelDimension.mockReturnValue(undefined)
 
 			// Act & Assert
-			expect(() => factory.createVectorStore()).toThrow(
+			await expect(factory.createVectorStore()).rejects.toThrow(
 				"serviceFactory.vectorDimensionNotDeterminedOpenAiCompatible",
 			)
 		})
@@ -648,7 +648,7 @@ describe("CodeIndexServiceFactory", () => {
 			)
 		})
 
-		it("should throw error when vector dimension cannot be determined", () => {
+		it("should throw error when vector dimension cannot be determined", async () => {
 			// Arrange
 			const testConfig = {
 				embedderProvider: "openai",
@@ -660,10 +660,10 @@ describe("CodeIndexServiceFactory", () => {
 			mockGetModelDimension.mockReturnValue(undefined)
 
 			// Act & Assert
-			expect(() => factory.createVectorStore()).toThrow("serviceFactory.vectorDimensionNotDetermined")
+			await expect(factory.createVectorStore()).rejects.toThrow("serviceFactory.vectorDimensionNotDetermined")
 		})
 
-		it("should throw error when Qdrant URL is missing", () => {
+		it("should throw error when Qdrant URL is missing", async () => {
 			// Arrange
 			const testConfig = {
 				embedderProvider: "openai",
@@ -675,7 +675,7 @@ describe("CodeIndexServiceFactory", () => {
 			mockGetModelDimension.mockReturnValue(1536)
 
 			// Act & Assert
-			expect(() => factory.createVectorStore()).toThrow("serviceFactory.qdrantUrlMissing")
+			await expect(factory.createVectorStore()).rejects.toThrow("serviceFactory.qdrantUrlMissing")
 		})
 	})
 

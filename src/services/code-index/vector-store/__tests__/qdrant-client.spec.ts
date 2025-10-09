@@ -1485,6 +1485,7 @@ describe("QdrantVectorStore", () => {
 			const directoryPrefix = "src/components/ui/forms"
 			const mockQdrantResults = { points: [] }
 
+			mockQdrantClientInstance.getCollection.mockResolvedValue({ vectors_count: 100 })
 			mockQdrantClientInstance.query.mockResolvedValue(mockQdrantResults)
 
 			await vectorStore.search(queryVector, directoryPrefix)
@@ -1526,6 +1527,7 @@ describe("QdrantVectorStore", () => {
 		it("should handle error scenarios when qdrantClient.query fails", async () => {
 			const queryVector = [0.1, 0.2, 0.3]
 			const queryError = new Error("Query failed")
+			mockQdrantClientInstance.getCollection.mockResolvedValue({ vectors_count: 100 })
 			mockQdrantClientInstance.query.mockRejectedValue(queryError)
 			vitest.spyOn(console, "error").mockImplementation(() => {})
 
@@ -1540,6 +1542,7 @@ describe("QdrantVectorStore", () => {
 			const queryVector = [0.1, 0.2, 0.3]
 			const mockQdrantResults = { points: [] }
 
+			mockQdrantClientInstance.getCollection.mockResolvedValue({ vectors_count: 100 })
 			mockQdrantClientInstance.query.mockResolvedValue(mockQdrantResults)
 
 			await vectorStore.search(queryVector)
