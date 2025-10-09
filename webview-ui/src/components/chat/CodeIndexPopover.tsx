@@ -1313,12 +1313,11 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 												<span className="codicon codicon-info text-xs text-vscode-descriptionForeground cursor-help" />
 											</StandardTooltip>
 										</div>
-										{currentSettings.codebaseIndexBranchIsolationEnabled && (
-											<div className="ml-6 mt-2 flex items-start gap-2 text-xs text-vscode-descriptionForeground">
-												<span className="codicon codicon-warning mt-0.5" />
-												<span>{t("settings:codeIndex.branchIsolation.storageWarning")}</span>
-											</div>
-										)}
+										{/* Show warning always, not just when enabled */}
+										<div className="ml-6 mt-2 flex items-start gap-2 text-xs text-vscode-descriptionForeground">
+											<span className="codicon codicon-warning mt-0.5" />
+											<span>{t("settings:codeIndex.branchIsolation.storageWarning")}</span>
+										</div>
 									</div>
 								</div>
 							)}
