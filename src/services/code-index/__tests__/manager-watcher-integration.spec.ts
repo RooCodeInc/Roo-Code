@@ -10,11 +10,11 @@ vi.mock("../service-factory")
 vi.mock("../git-branch-watcher")
 vi.mock("../../../utils/git")
 
-import { ServiceFactory } from "../service-factory"
+import { CodeIndexServiceFactory } from "../service-factory"
 import { GitBranchWatcher } from "../git-branch-watcher"
 import { getCurrentBranch } from "../../../utils/git"
 
-const mockedServiceFactory = vi.mocked(ServiceFactory)
+const mockedServiceFactory = vi.mocked(CodeIndexServiceFactory)
 const mockedGitBranchWatcher = vi.mocked(GitBranchWatcher)
 const mockedGetCurrentBranch = vi.mocked(getCurrentBranch)
 
@@ -97,15 +97,16 @@ describe("CodeIndexManager + GitBranchWatcher Integration", () => {
 		if (manager) {
 			manager.dispose()
 		}
+		CodeIndexManager.disposeAll()
 		branchChangeCallback = null
 	})
 
 	describe("branch change handling", () => {
 		it("should invalidate cache and reinitialize vector store on branch change", async () => {
-			manager = new CodeIndexManager(mockContext, "/test/workspace")
+			manager = CodeIndexManager.getInstance(mockContext, "/test/workspace")!
 
 			// Start the manager
-			await manager.start()
+			await manager.startIndexing()
 
 			expect(mockWatcher.initialize).toHaveBeenCalled()
 			expect(mockOrchestrator.startIndexing).toHaveBeenCalled()
@@ -129,9 +130,9 @@ describe("CodeIndexManager + GitBranchWatcher Integration", () => {
 		})
 
 		it("should recreate services if orchestrator doesn't exist", async () => {
-			manager = new CodeIndexManager(mockContext, "/test/workspace")
+			manager = CodeIndexManager.getInstance(mockContext, "/test/workspace")!
 
-			await manager.start()
+			await manager.startIndexing()
 
 			// Simulate orchestrator being disposed
 			mockOrchestrator.getVectorStore.mockReturnValue(null)
@@ -148,9 +149,9 @@ describe("CodeIndexManager + GitBranchWatcher Integration", () => {
 		})
 
 		it("should handle branch change errors gracefully", async () => {
-			manager = new CodeIndexManager(mockContext, "/test/workspace")
+			manager = CodeIndexManager.getInstance(mockContext, "/test/workspace")!
 
-			await manager.start()
+			await manager.startIndexing()
 
 			// Make vector store initialization fail
 			mockVectorStore.initialize.mockRejectedValueOnce(new Error("Init failed"))
@@ -168,10 +169,10 @@ describe("CodeIndexManager + GitBranchWatcher Integration", () => {
 		})
 
 		it("should not process branch changes when manager is stopped", async () => {
-			manager = new CodeIndexManager(mockContext, "/test/workspace")
+			manager = CodeIndexManager.getInstance(mockContext, "/test/workspace")!
 
-			await manager.start()
-			await manager.stop()
+			await manager.startIndexing()
+			manager.stopWatcher()
 
 			vi.clearAllMocks()
 
@@ -187,9 +188,9 @@ describe("CodeIndexManager + GitBranchWatcher Integration", () => {
 
 	describe("watcher lifecycle", () => {
 		it("should initialize watcher when manager starts", async () => {
-			manager = new CodeIndexManager(mockContext, "/test/workspace")
+			manager = CodeIndexManager.getInstance(mockContext, "/test/workspace")!
 
-			await manager.start()
+			await manager.startIndexing()
 
 			expect(mockedGitBranchWatcher).toHaveBeenCalledWith(
 				"/test/workspace",
@@ -203,9 +204,9 @@ describe("CodeIndexManager + GitBranchWatcher Integration", () => {
 		})
 
 		it("should dispose watcher when manager is disposed", async () => {
-			manager = new CodeIndexManager(mockContext, "/test/workspace")
+			manager = CodeIndexManager.getInstance(mockContext, "/test/workspace")!
 
-			await manager.start()
+			await manager.startIndexing()
 
 			manager.dispose()
 
@@ -219,9 +220,9 @@ describe("CodeIndexManager + GitBranchWatcher Integration", () => {
 				embedderProvider: "openai",
 			})
 
-			manager = new CodeIndexManager(mockContext, "/test/workspace")
+			manager = CodeIndexManager.getInstance(mockContext, "/test/workspace")!
 
-			await manager.start()
+			await manager.startIndexing()
 
 			expect(mockedGitBranchWatcher).not.toHaveBeenCalled()
 		})
@@ -229,9 +230,9 @@ describe("CodeIndexManager + GitBranchWatcher Integration", () => {
 
 	describe("state consistency", () => {
 		it("should maintain consistent state across multiple branch changes", async () => {
-			manager = new CodeIndexManager(mockContext, "/test/workspace")
+			manager = CodeIndexManager.getInstance(mockContext, "/test/workspace")!
 
-			await manager.start()
+			await manager.startIndexing()
 
 			// First branch change
 			mockVectorStore.getCurrentBranch.mockReturnValue("feature-1")
@@ -261,9 +262,9 @@ describe("CodeIndexManager + GitBranchWatcher Integration", () => {
 		})
 
 		it("should handle rapid branch changes with debouncing", async () => {
-			manager = new CodeIndexManager(mockContext, "/test/workspace")
+			manager = CodeIndexManager.getInstance(mockContext, "/test/workspace")!
 
-			await manager.start()
+			await manager.startIndexing()
 
 			// Simulate rapid branch changes (watcher handles debouncing)
 			// The callback should only be called once per actual change
@@ -280,9 +281,9 @@ describe("CodeIndexManager + GitBranchWatcher Integration", () => {
 
 	describe("error recovery", () => {
 		it("should recover from vector store initialization failure", async () => {
-			manager = new CodeIndexManager(mockContext, "/test/workspace")
+			manager = CodeIndexManager.getInstance(mockContext, "/test/workspace")!
 
-			await manager.start()
+			await manager.startIndexing()
 
 			// First branch change fails
 			mockVectorStore.initialize.mockRejectedValueOnce(new Error("Init failed"))

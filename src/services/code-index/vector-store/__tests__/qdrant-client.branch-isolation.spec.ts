@@ -474,8 +474,8 @@ describe("QdrantVectorStore - Branch Isolation", () => {
 
 			// Verify results are from feature branch only
 			expect(searchResults).toHaveLength(1)
-			expect(searchResults[0].payload.filePath).toBe("feature.ts")
-			expect(searchResults[0].payload.codeChunk).toBe("feature branch code")
+			expect(searchResults[0]?.payload?.filePath).toBe("feature.ts")
+			expect(searchResults[0]?.payload?.codeChunk).toBe("feature branch code")
 
 			// Verify main branch document is NOT in results
 			expect(searchResults).not.toContainEqual(
@@ -550,7 +550,7 @@ describe("QdrantVectorStore - Branch Isolation", () => {
 			expect(mockQdrantClient.query).toHaveBeenCalledWith(mainCollectionName, expect.any(Object))
 
 			// Should get main branch results
-			expect(results[0].payload.filePath).toBe("main.ts")
+			expect(results[0]?.payload?.filePath).toBe("main.ts")
 		})
 	})
 })
