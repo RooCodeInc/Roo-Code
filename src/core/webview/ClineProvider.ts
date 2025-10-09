@@ -1820,7 +1820,9 @@ export class ClineProvider
 		let cloudOrganizations: CloudOrganizationMembership[] = []
 
 		try {
-			cloudOrganizations = await CloudService.instance.getOrganizationMemberships()
+			if (!CloudService.instance.isCloudAgent) {
+				cloudOrganizations = await CloudService.instance.getOrganizationMemberships()
+			}
 		} catch (error) {
 			console.error(
 				`[getStateToPostToWebview] failed to get cloud organizations: ${error instanceof Error ? error.message : String(error)}`,
