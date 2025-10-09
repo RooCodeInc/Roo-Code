@@ -367,6 +367,8 @@ describe("CodeIndexServiceFactory", () => {
 				"http://localhost:6333",
 				3072,
 				"test-key",
+				undefined, // branchIsolationEnabled
+				undefined, // initialBranch
 			)
 		})
 
@@ -392,6 +394,8 @@ describe("CodeIndexServiceFactory", () => {
 				"http://localhost:6333",
 				768,
 				"test-key",
+				undefined, // branchIsolationEnabled
+				undefined, // initialBranch
 			)
 		})
 
@@ -417,6 +421,8 @@ describe("CodeIndexServiceFactory", () => {
 				"http://localhost:6333",
 				3072,
 				"test-key",
+				undefined, // branchIsolationEnabled
+				undefined, // initialBranch
 			)
 		})
 
@@ -449,6 +455,8 @@ describe("CodeIndexServiceFactory", () => {
 				"http://localhost:6333",
 				modelDimension, // Should use model's built-in dimension, not manual
 				"test-key",
+				undefined, // branchIsolationEnabled
+				undefined, // initialBranch
 			)
 		})
 
@@ -480,6 +488,8 @@ describe("CodeIndexServiceFactory", () => {
 				"http://localhost:6333",
 				manualDimension, // Should use manual dimension as fallback
 				"test-key",
+				undefined, // branchIsolationEnabled
+				undefined, // initialBranch
 			)
 		})
 
@@ -509,6 +519,8 @@ describe("CodeIndexServiceFactory", () => {
 				"http://localhost:6333",
 				768,
 				"test-key",
+				undefined, // branchIsolationEnabled
+				undefined, // initialBranch
 			)
 		})
 
@@ -578,6 +590,8 @@ describe("CodeIndexServiceFactory", () => {
 				"http://localhost:6333",
 				3072,
 				"test-key",
+				undefined, // branchIsolationEnabled
+				undefined, // initialBranch
 			)
 		})
 
@@ -603,6 +617,8 @@ describe("CodeIndexServiceFactory", () => {
 				"http://localhost:6333",
 				3072,
 				"test-key",
+				undefined, // branchIsolationEnabled
+				undefined, // initialBranch
 			)
 		})
 
@@ -627,6 +643,8 @@ describe("CodeIndexServiceFactory", () => {
 				"http://localhost:6333",
 				1536,
 				"test-key",
+				undefined, // branchIsolationEnabled
+				undefined, // initialBranch
 			)
 		})
 
