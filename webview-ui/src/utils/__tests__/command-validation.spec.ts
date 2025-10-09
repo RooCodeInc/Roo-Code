@@ -41,8 +41,30 @@ describe("Command Validation", () => {
 			expect(parseCommand("npm test $(echo test)")).toEqual(["npm test", "echo test"])
 			expect(parseCommand("npm test `echo test`")).toEqual(["npm test", "echo test"])
 			expect(parseCommand("diff <(sort f1) <(sort f2)")).toEqual(["diff", "sort f1", "sort f2"])
+			// fish-style command substitution using parentheses
+			expect(parseCommand("echo (whoami)")).toEqual(["echo", "whoami"])
+			expect(parseCommand("echo (echo test)")).toEqual(["echo", "echo test"])
 		})
 
+		it("handles nested backticks with escaped inner backticks", () => {
+			const cmd = "echo `echo \\`whoami\\``"
+			// Should surface both the outer echo and the inner whoami as separate sub-commands
+			expect(parseCommand(cmd)).toEqual(["echo", "echo", "whoami"])
+		})
+
+		it("does not treat parentheses inside quotes as subshells", () => {
+			expect(parseCommand('echo "(whoami)"')).toEqual(['echo "(whoami)"'])
+			expect(parseCommand("echo '(date)'")).toEqual(["echo '(date)'"])
+			expect(parseCommand('printf "(x)"')).toEqual(['printf "(x)"'])
+		})
+
+		it("parses POSIX grouping subshell: (cd dir && ls)", () => {
+			expect(parseCommand("(cd dir && ls)")).toEqual(["cd dir", "ls"])
+		})
+
+		it("parses multiple groupings separated by a pipe: (echo a) | (echo b)", () => {
+			expect(parseCommand("(echo a) | (echo b)")).toEqual(["echo a", "echo b"])
+		})
 		it("handles empty and whitespace input", () => {
 			expect(parseCommand("")).toEqual([])
 			expect(parseCommand("	")).toEqual([])
@@ -295,6 +317,8 @@ ls -la || echo "Failed"`
 		it("detects zsh glob qualifiers with code execution (e:...:)", () => {
 			// Basic glob qualifier with command execution
 			expect(containsDangerousSubstitution("ls *(e:whoami:)")).toBe(true)
+			// Zsh extended glob with qualifier list and brace-arg: e{'whoami'} as reported
+			expect(containsDangerousSubstitution("ls *(.e{'whoami'})")).toBe(true)
 
 			// Various glob patterns with code execution
 			expect(containsDangerousSubstitution("cat ?(e:rm -rf /:)")).toBe(true)
@@ -311,6 +335,44 @@ ls -la || echo "Failed"`
 			// Glob qualifiers with complex commands
 			expect(containsDangerousSubstitution("ls *(e:open -a Calculator:)")).toBe(true)
 			expect(containsDangerousSubstitution("rm *(e:sudo apt install malware:)")).toBe(true)
+
+			// Plus-shorthand qualifier that executes a command
+			expect(containsDangerousSubstitution("ls *(+whoami)")).toBe(true)
+			expect(containsDangerousSubstitution("ls *(.+{'whoami'})")).toBe(true)
+			expect(containsDangerousSubstitution('ls *(+"whoami")')).toBe(true)
+		})
+
+		it("does not flag non-glob e:...: parenthetical as dangerous", () => {
+			expect(containsDangerousSubstitution("(e:whoami:)")).toBe(false)
+			expect(containsDangerousSubstitution('echo "(e:whoami:)"')).toBe(false)
+		})
+
+		it('detects bash $"..." string interpolation with command substitution', () => {
+			// The exact example from the issue
+			expect(containsDangerousSubstitution('echo $"test$(whoami)"')).toBe(true)
+
+			// Various forms of command substitution inside $"..."
+			expect(containsDangerousSubstitution('echo $"Hello $(date)"')).toBe(true)
+			expect(containsDangerousSubstitution('echo $"User: `whoami`"')).toBe(true)
+			expect(containsDangerousSubstitution('echo $"test`pwd`"')).toBe(true)
+
+			// Multiple command substitutions
+			expect(containsDangerousSubstitution('echo $"$(date) - $(whoami)"')).toBe(true)
+			expect(containsDangerousSubstitution('echo $"User: `whoami` in `pwd`"')).toBe(true)
+
+			// Command substitution at different positions
+			expect(containsDangerousSubstitution('echo $"$(whoami) is the user"')).toBe(true)
+			expect(containsDangerousSubstitution('echo $"The user is $(whoami)"')).toBe(true)
+			expect(containsDangerousSubstitution('echo $"Current $(date) time"')).toBe(true)
+
+			// Complex command substitutions
+			expect(containsDangerousSubstitution('echo $"Files: $(ls -la)"')).toBe(true)
+			expect(containsDangerousSubstitution('echo $"Process: $(ps aux | grep node)"')).toBe(true)
+			expect(containsDangerousSubstitution('echo $"Result: `rm -rf /`"')).toBe(true)
+		})
+
+		it('detects $"..." with escaped quotes and command substitution', () => {
+			expect(containsDangerousSubstitution('echo $"val=\\"$(whoami)\\""')).toBe(true)
 		})
 
 		it("does NOT flag safe parameter expansions", () => {
@@ -351,6 +413,15 @@ ls -la || echo "Failed"`
 			expect(containsDangerousSubstitution("rm *.txt")).toBe(false)
 			expect(containsDangerousSubstitution("cat ?(foo|bar)")).toBe(false)
 			expect(containsDangerousSubstitution("echo *(^/)")).toBe(false) // Safe glob qualifier (not e:)
+
+			// Safe $"..." strings without command substitution
+			expect(containsDangerousSubstitution('echo $"Hello World"')).toBe(false)
+			expect(containsDangerousSubstitution('echo $"This is a test"')).toBe(false)
+			expect(containsDangerousSubstitution('echo $"User: $USER"')).toBe(false) // Variable expansion is safe
+			expect(containsDangerousSubstitution('echo $"Path: ${PATH}"')).toBe(false) // Variable expansion is safe
+			expect(containsDangerousSubstitution('echo $"Count: $count"')).toBe(false)
+			expect(containsDangerousSubstitution('echo $"Translated string with no substitution"')).toBe(false)
+			expect(containsDangerousSubstitution('echo $""')).toBe(false) // Empty translated string
 		})
 
 		it("handles complex combinations of dangerous patterns", () => {
@@ -379,6 +450,9 @@ ls -la || echo "Failed"`
 
 			// The zsh glob qualifier exploit
 			expect(containsDangerousSubstitution("ls *(e:whoami:)")).toBe(true)
+
+			// The bash $"..." string interpolation exploit
+			expect(containsDangerousSubstitution('echo $"test$(whoami)"')).toBe(true)
 		})
 	})
 })
@@ -526,6 +600,11 @@ echo "Successfully converted $count .jsx files to .tsx"`
 			expect(result).toEqual(["total=$((price * quantity + tax))"])
 		})
 
+		it("extracts subshells inside arithmetic expressions", () => {
+			const cmd = "arr=(); echo $((arr[$(whoami)]))"
+			expect(parseCommand(cmd)).toEqual(["arr=()", "echo $((arr[$(whoami)]))", "whoami"])
+		})
+
 		it("should handle complex parameter expansions without errors", () => {
 			const commands = [
 				"echo ${var:-default}",
@@ -558,6 +637,11 @@ echo "Successfully converted $count .jsx files to .tsx"`
 					parseCommand(cmd)
 				}).not.toThrow()
 			})
+		})
+
+		it("should handle process substitutions with nested/quoted parentheses", () => {
+			expect(() => parseCommand('cmd >(grep "(")')).not.toThrow()
+			expect(() => parseCommand('cmd >(grep "\\(foo\\)")')).not.toThrow()
 		})
 
 		it("should handle special bash variables without errors", () => {
@@ -1001,6 +1085,10 @@ describe("Unified Command Decision Functions", () => {
 				const globExploit = "ls *(e:whoami:)"
 				// Even though 'ls' might be allowed, the dangerous pattern prevents auto-approval
 				expect(getCommandDecision(globExploit, ["ls", "echo"], [])).toBe("ask_user")
+				// Plus-shorthand form should also prevent auto-approval
+				expect(getCommandDecision("ls *(+whoami)", ["ls", "echo"], [])).toBe("ask_user")
+				// Zsh extended glob with qualifier list and brace-arg form
+				expect(getCommandDecision("ls *(.e{'whoami'})", ["ls", "echo"], [])).toBe("ask_user")
 
 				// Various forms should all be blocked
 				expect(getCommandDecision("cat ?(e:rm -rf /:)", ["cat"], [])).toBe("ask_user")
@@ -1039,6 +1127,28 @@ describe("Unified Command Decision Functions", () => {
 
 			// Main command with denied prefix should also be auto-denied
 			expect(getCommandDecision("npm test $(echo hello)", allowedCommands, deniedCommands)).toBe("auto_deny")
+
+			// Nested backticks with escaped inner backticks should not be auto-approved when inner command isn't allowed
+			expect(getCommandDecision("echo `echo \\`whoami\\``", ["echo"], [])).toBe("ask_user")
+			// And should be auto-denied when inner command is on the denylist
+			expect(getCommandDecision("echo `echo \\`whoami\\``", ["echo"], ["whoami"])).toBe("auto_deny")
+
+			// Fish-style substitutions behave like subshells
+			expect(getCommandDecision("npm install (echo test)", allowedCommands, deniedCommands)).toBe("auto_approve")
+			expect(getCommandDecision("npm install (npm test)", allowedCommands, deniedCommands)).toBe("auto_deny")
+
+			// Ensure hidden subshell commands are validated even if outer command is allowed
+			expect(getCommandDecision("echo (whoami)", ["echo", "ls"], [])).toBe("ask_user")
+			expect(getCommandDecision("echo (whoami)", ["echo", "ls"], ["whoami"])).toBe("auto_deny")
+		})
+
+		it("flags subshell commands inside arithmetic expressions", () => {
+			// When whoami appears inside $(( ... )) via $(whoami), it must be validated
+			expect(getCommandDecision("arr=(); echo $((arr[$(whoami)]))", ["echo", "arr="], [])).toBe("ask_user")
+			// If whoami is explicitly denied, the whole chain must be auto-denied
+			expect(getCommandDecision("arr=(); echo $((arr[$(whoami)]))", ["echo", "arr="], ["whoami"])).toBe(
+				"auto_deny",
+			)
 		})
 
 		it("properly validates subshell commands when no denylist is present", () => {
@@ -1429,5 +1539,22 @@ describe("Unified Command Decision Functions", () => {
 				})
 			})
 		})
+	})
+})
+
+// Additional regression tests from jr/more-subshells review
+describe("Regression: escaped quotes and process substitution", () => {
+	it("parses double-quoted strings with escaped quotes without splitting", () => {
+		expect(parseCommand('echo "val=\\"x\\""')).toEqual(['echo "val=\\"x\\""'])
+	})
+
+	it("does not flag bash array assignments as zsh process substitution", () => {
+		expect(containsDangerousSubstitution("arr=(a b)")).toBe(false)
+		expect(containsDangerousSubstitution("arr=()")).toBe(false)
+	})
+
+	it("handles escaped quotes inside backticks", () => {
+		const cmd = 'echo `printf \\"%s\\"`'
+		expect(parseCommand(cmd)).toEqual(["echo", 'printf "%s"'])
 	})
 })
