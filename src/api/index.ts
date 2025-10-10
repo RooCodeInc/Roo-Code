@@ -106,6 +106,7 @@ export function buildApiHandler(configuration: ProviderSettings): ApiHandler {
 				? new AnthropicVertexHandler(options)
 				: new VertexHandler(options)
 		case "openai":
+		case "openai-compatible":
 			return new OpenAiHandler(options)
 		case "ollama":
 			return new NativeOllamaHandler(options)

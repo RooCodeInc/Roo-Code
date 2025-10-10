@@ -56,6 +56,7 @@ export class ProfileValidator {
 	private static getModelIdFromProfile(profile: ProviderSettings): string | undefined {
 		switch (profile.apiProvider) {
 			case "openai":
+			case "openai-compatible":
 				return profile.openAiModelId
 			case "anthropic":
 			case "openai-native":
