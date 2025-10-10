@@ -510,6 +510,10 @@
 		}
 	},
 	"checkpoints": {
+		"timeout": {
+			"label": "Tiempo de espera para inicializar el punto de control (segundos)",
+			"description": "Tiempo máximo de espera para inicializar el servicio de puntos de control. El valor por defecto es 15 segundos. Rango: 10-60 segundos."
+		},
 		"enable": {
 			"label": "Habilitar puntos de control automáticos",
 			"description": "Cuando está habilitado, Roo creará automáticamente puntos de control durante la ejecución de tareas, facilitando la revisión de cambios o la reversión a estados anteriores. <0>Más información</0>"

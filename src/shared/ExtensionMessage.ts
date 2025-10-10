@@ -92,6 +92,7 @@ export interface ExtensionMessage {
 		| "checkRulesDirectoryResult"
 		| "deleteCustomModeCheck"
 		| "currentCheckpointUpdated"
+		| "checkpointInitWarning"
 		| "showHumanRelayDialog"
 		| "humanRelayResponse"
 		| "humanRelayCancel"
@@ -128,6 +129,8 @@ export interface ExtensionMessage {
 		| "organizationSwitchResult"
 	text?: string
 	payload?: any // Add a generic payload for now, can refine later
+	// Checkpoint warning message
+	checkpointWarning?: string
 	action?:
 		| "chatButtonClicked"
 		| "mcpButtonClicked"
@@ -303,6 +306,7 @@ export type ExtensionState = Pick<
 	requestDelaySeconds: number
 
 	enableCheckpoints: boolean
+	checkpointTimeout: number // Timeout for checkpoint initialization in seconds (default: 15)
 	maxOpenTabsContext: number // Maximum number of VSCode open tabs to include in context (0-500)
 	maxWorkspaceFiles: number // Maximum number of files to include in current working directory details (0-500)
 	showRooIgnoredFiles: boolean // Whether to show .rooignore'd files in listings

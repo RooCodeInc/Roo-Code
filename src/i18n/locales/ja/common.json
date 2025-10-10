@@ -27,6 +27,8 @@
 		"could_not_open_file": "ファイルを開けませんでした：{{errorMessage}}",
 		"could_not_open_file_generic": "ファイルを開けませんでした！",
 		"checkpoint_timeout": "チェックポイントの復元を試みる際にタイムアウトしました。",
+		"wait_checkpoint_long_time": "{{timeout}} 秒間チェックポイントの初期化を待機しました。チェックポイント機能が不要な場合は、設定でオフにしてください。",
+		"init_checkpoint_fail_long_time": "チェックポイントの初期化が {{timeout}} 秒以上かかりました。このタスクではチェックポイント機能が無効化されました。チェックポイントをオフにするか、設定で待機時間を延長できます。",
 		"checkpoint_failed": "チェックポイントの復元に失敗しました。",
 		"git_not_installed": "チェックポイント機能にはGitが必要です。チェックポイントを有効にするにはGitをインストールしてください。",
 		"nested_git_repos_warning": "{{path}} でネストされたgitリポジトリが検出されたため、チェックポイントが無効になっています。チェックポイントを使用するには、このネストされたgitリポジトリを削除または移動してください。",

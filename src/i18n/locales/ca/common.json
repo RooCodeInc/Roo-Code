@@ -31,6 +31,8 @@
 		"could_not_open_file": "No s'ha pogut obrir el fitxer: {{errorMessage}}",
 		"could_not_open_file_generic": "No s'ha pogut obrir el fitxer!",
 		"checkpoint_timeout": "S'ha esgotat el temps en intentar restaurar el punt de control.",
+		"wait_checkpoint_long_time": "Has esperat {{timeout}} segons per inicialitzar el punt de control. Si no necessites aquesta funció, desactiva-la a la configuració.",
+		"init_checkpoint_fail_long_time": "La inicialització del punt de control ha trigat més de {{timeout}} segons. La funció de punt de control s'ha desactivat per a aquesta tasca. Pots desactivar-la o augmentar el temps d'espera a la configuració.",
 		"checkpoint_failed": "Ha fallat la restauració del punt de control.",
 		"git_not_installed": "Git és necessari per a la funció de punts de control. Si us plau, instal·la Git per activar els punts de control.",
 		"nested_git_repos_warning": "Els punts de control estan deshabilitats perquè s'ha detectat un repositori git niat a: {{path}}. Per utilitzar punts de control, si us plau elimina o reubica aquest repositori git niat.",

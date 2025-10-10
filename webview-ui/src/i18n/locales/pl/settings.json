@@ -510,6 +510,10 @@
 		}
 	},
 	"checkpoints": {
+		"timeout": {
+			"label": "Limit czasu inicjalizacji punktu kontrolnego (sekundy)",
+			"description": "Maksymalny czas oczekiwania na inicjalizację usługi punktów kontrolnych. Domyślnie 15 sekund. Zakres: 10-60 sekund."
+		},
 		"enable": {
 			"label": "Włącz automatyczne punkty kontrolne",
 			"description": "Gdy włączone, Roo automatycznie utworzy punkty kontrolne podczas wykonywania zadań, ułatwiając przeglądanie zmian lub powrót do wcześniejszych stanów. <0>Dowiedz się więcej</0>"

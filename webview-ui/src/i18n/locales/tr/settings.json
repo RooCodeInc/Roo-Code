@@ -510,6 +510,10 @@
 		}
 	},
 	"checkpoints": {
+		"timeout": {
+			"label": "Kontrol noktası başlatma zaman aşımı (saniye)",
+			"description": "Kontrol noktası servisini başlatmak için maksimum bekleme süresi. Varsayılan 15 saniye. Aralık: 10-60 saniye."
+		},
 		"enable": {
 			"label": "Otomatik kontrol noktalarını etkinleştir",
 			"description": "Etkinleştirildiğinde, Roo görev yürütme sırasında otomatik olarak kontrol noktaları oluşturarak değişiklikleri gözden geçirmeyi veya önceki durumlara dönmeyi kolaylaştırır. <0>Daha fazla bilgi</0>"
