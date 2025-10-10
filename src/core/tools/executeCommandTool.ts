@@ -30,6 +30,7 @@ export async function executeCommandTool(
 ) {
 	let command: string | undefined = block.params.command
 	const customCwd: string | undefined = block.params.cwd
+	const runInBackground: boolean = block.params.runInBackground === "true"
 
 	try {
 		if (block.partial) {
@@ -94,6 +95,7 @@ export async function executeCommandTool(
 				terminalOutputLineLimit,
 				terminalOutputCharacterLimit,
 				commandExecutionTimeout,
+				runInBackground,
 			}
 
 			try {
@@ -141,6 +143,7 @@ export type ExecuteCommandOptions = {
 	terminalOutputLineLimit?: number
 	terminalOutputCharacterLimit?: number
 	commandExecutionTimeout?: number
+	runInBackground?: boolean
 }
 
 export async function executeCommand(
@@ -153,6 +156,7 @@ export async function executeCommand(
 		terminalOutputLineLimit = 500,
 		terminalOutputCharacterLimit = DEFAULT_TERMINAL_OUTPUT_CHARACTER_LIMIT,
 		commandExecutionTimeout = 0,
+		runInBackground: runInBackgroundRequested = false,
 	}: ExecuteCommandOptions,
 ): Promise<[boolean, ToolResponse]> {
 	// Convert milliseconds back to seconds for display purposes.
@@ -174,7 +178,7 @@ export async function executeCommand(
 	}
 
 	let message: { text?: string; images?: string[] } | undefined
-	let runInBackground = false
+	let runInBackground = runInBackgroundRequested
 	let completed = false
 	let result: string = ""
 	let exitDetails: ExitCodeDetails | undefined
@@ -195,7 +199,10 @@ export async function executeCommand(
 			const status: CommandExecutionStatus = { executionId, status: "output", output: compressedOutput }
 			provider?.postMessageToWebview({ type: "commandExecutionStatus", text: JSON.stringify(status) })
 
-			if (runInBackground) {
+			// If runInBackgroundRequested, automatically continue the process
+			if (runInBackgroundRequested && !completed) {
+				completed = true
+				process.continue()
 				return
 			}
 
