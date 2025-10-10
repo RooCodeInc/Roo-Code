@@ -117,12 +117,12 @@ describe("Task Message Persistence Debouncing", () => {
 		vi.mocked(taskPersistence.taskMetadata).mockResolvedValue({
 			historyItem: {} as any,
 			tokenUsage: {
-				totalTokens: 0,
+				totalTokensIn: 0,
+				totalTokensOut: 0,
 				totalCost: 0,
-				inputTokens: 0,
-				outputTokens: 0,
-				cacheWriteTokens: 0,
-				cacheReadTokens: 0,
+				contextTokens: 0,
+				totalCacheWrites: 0,
+				totalCacheReads: 0,
 			},
 		})
 

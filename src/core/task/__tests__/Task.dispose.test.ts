@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
 import { Task } from "../Task"
 import type { ClineProvider } from "../../webview/ClineProvider"
 import type { ProviderSettings } from "@roo-code/types"
+import { RooCodeEventName } from "@roo-code/types"
 import * as taskPersistence from "../../task-persistence"
 
 // Mock vscode first - must include all exports used by the codebase
@@ -115,12 +116,12 @@ describe("Task disposal and resource cleanup", () => {
 		vi.mocked(taskPersistence.taskMetadata).mockResolvedValue({
 			historyItem: {} as any,
 			tokenUsage: {
-				totalTokens: 0,
+				totalTokensIn: 0,
+				totalTokensOut: 0,
 				totalCost: 0,
-				inputTokens: 0,
-				outputTokens: 0,
-				cacheWriteTokens: 0,
-				cacheReadTokens: 0,
+				contextTokens: 0,
+				totalCacheWrites: 0,
+				totalCacheReads: 0,
 			},
 		})
 	})
@@ -150,7 +151,7 @@ describe("Task disposal and resource cleanup", () => {
 		expect(task.clineMessages.length).toBeGreaterThan(0)
 
 		// Add data to other arrays that dispose should clear
-		task["assistantMessageContent"] = [{ type: "text", text: "Assistant message", partial: false }]
+		task["assistantMessageContent"] = [{ type: "text", content: "Assistant message", partial: false }]
 		task["userMessageContent"] = [{ type: "text", text: "User message" }]
 		task["apiConversationHistory"] = [{ role: "user", content: [{ type: "text", text: "Test" }] }]
 
@@ -180,19 +181,19 @@ describe("Task disposal and resource cleanup", () => {
 		// Add event listeners
 		const listener1 = vi.fn()
 		const listener2 = vi.fn()
-		task.on("stateChanged", listener1)
-		task.on("askResponse", listener2)
+		task.on(RooCodeEventName.TaskActive, listener1)
+		task.on(RooCodeEventName.TaskAskResponded, listener2)
 
 		// Verify listeners are registered
-		expect(task.listenerCount("stateChanged")).toBe(1)
-		expect(task.listenerCount("askResponse")).toBe(1)
+		expect(task.listenerCount(RooCodeEventName.TaskActive)).toBe(1)
+		expect(task.listenerCount(RooCodeEventName.TaskAskResponded)).toBe(1)
 
 		// Dispose
 		task.dispose()
 
 		// Verify all listeners are removed
-		expect(task.listenerCount("stateChanged")).toBe(0)
-		expect(task.listenerCount("askResponse")).toBe(0)
+		expect(task.listenerCount(RooCodeEventName.TaskActive)).toBe(0)
+		expect(task.listenerCount(RooCodeEventName.TaskAskResponded)).toBe(0)
 	})
 
 	it("should clear all timers on dispose", async () => {
@@ -328,7 +329,7 @@ describe("Task disposal and resource cleanup", () => {
 			text: "Test 2",
 		})
 
-		task["assistantMessageContent"] = [{ type: "text", text: "Assistant message", partial: false }]
+		task["assistantMessageContent"] = [{ type: "text", content: "Assistant message", partial: false }]
 		task["userMessageContent"] = [{ type: "text", text: "User message" }]
 		task["consecutiveMistakeCountForApplyDiff"].set("test.js", 5)
 

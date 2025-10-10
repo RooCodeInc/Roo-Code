@@ -104,4 +104,12 @@ export class RooProtectedController {
 	static getProtectedPatterns(): readonly string[] {
 		return RooProtectedController.PROTECTED_PATTERNS
 	}
+
+	/**
+	 * Clean up resources
+	 */
+	dispose(): void {
+		// Currently no resources to clean up, but method is here for consistency
+		// with other controller classes that may need cleanup
+	}
 }
