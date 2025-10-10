@@ -16,6 +16,13 @@ vi.mock("react-i18next", () => ({
 			return translations[key] || key
 		},
 	}),
+	withTranslation: () => (Component: any) => {
+		Component.defaultProps = {
+			...Component.defaultProps,
+			t: (key: string) => key,
+		}
+		return Component
+	},
 	Trans: ({ i18nKey, children }: { i18nKey: string; children?: React.ReactNode }) => {
 		return <>{children || i18nKey}</>
 	},
