@@ -259,6 +259,32 @@ describe("DirectoryScanner", () => {
 			expect(mockCodeParser.parseFile).toHaveBeenCalledTimes(2)
 		})
 
+		it("should process files when workspace is under hidden parent directory", async () => {
+			const { listFiles } = await import("../../../glob/list-files")
+			// Simulate workspace at /Users/test/.root-project
+			vi.mocked(listFiles).mockResolvedValue([["src/file1.js"], false])
+
+			const mockBlocks: any[] = [
+				{
+					file_path: "src/file1.js",
+					content: "test content",
+					start_line: 1,
+					end_line: 5,
+					identifier: "test",
+					type: "function",
+					fileHash: "hash",
+					segmentHash: "segment-hash",
+				},
+			]
+			;(mockCodeParser.parseFile as any).mockResolvedValue(mockBlocks)
+
+			const result = await scanner.scanDirectory("/Users/test/.root-project")
+
+			// File should be processed, not filtered out
+			expect(result.stats.processed).toBe(1)
+			expect(mockCodeParser.parseFile).toHaveBeenCalledWith("src/file1.js", expect.any(Object))
+		})
+
 		it("should process markdown files alongside code files", async () => {
 			// Create scanner without embedder to test the non-embedding path
 			const scannerNoEmbeddings = new DirectoryScanner(

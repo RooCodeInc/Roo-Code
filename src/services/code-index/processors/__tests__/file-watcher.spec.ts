@@ -275,6 +275,30 @@ describe("FileWatcher", () => {
 			expect(processedFiles).not.toContain(".hidden/src/components/Button.tsx")
 			expect(processedFiles).not.toContain("src/components/.hidden/Button.tsx")
 		})
+
+		it("should process files when workspace is under hidden parent directory", async () => {
+			// Create file watcher with workspace under hidden parent directory
+			const watcherUnderHidden = new FileWatcher(
+				"/Users/test/.config/project",
+				mockContext,
+				mockCacheManager,
+				mockEmbedder,
+				mockVectorStore,
+				mockIgnoreInstance,
+			)
+
+			await watcherUnderHidden.initialize()
+
+			// Simulate file creation in workspace under hidden parent
+			await mockOnDidCreate({ fsPath: "/Users/test/.config/project/src/file.ts" })
+
+			// Wait for batch processing
+			await new Promise((resolve) => setTimeout(resolve, 600))
+
+			// File should be processed, not filtered out
+			// The key assertion is that upsertPoints was called, meaning the file wasn't filtered
+			expect(mockVectorStore.upsertPoints).toHaveBeenCalled()
+		})
 	})
 
 	describe("dispose", () => {
