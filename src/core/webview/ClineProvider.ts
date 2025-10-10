@@ -1211,14 +1211,20 @@ export class ClineProvider
 				await this.activateProviderProfile({ name: profile.name })
 			}
 		} else {
-			// If no saved config for this mode, save current config as default.
+			// If no saved config exists for this mode, handle the current configuration
 			const currentApiConfigName = this.getGlobalState("currentApiConfigName")
+			const currentConfig = listApiConfig.find(({ name }) => name === currentApiConfigName)
 
-			if (currentApiConfigName) {
-				const config = listApiConfig.find((c) => c.name === currentApiConfigName)
+			if (currentApiConfigName && currentConfig?.id) {
+				// Always save the current config as the default for the new mode
+				// This ensures that custom OpenAI providers (and all other providers) persist across mode switches
+				await this.providerSettingsManager.setModeConfig(newMode, currentConfig.id)
 
-				if (config?.id) {
-					await this.providerSettingsManager.setModeConfig(newMode, config.id)
+				// For custom OpenAI providers, we need to ensure the configuration is properly loaded
+				// The "openai" provider is the customizable one that users configure for OpenAI-compatible endpoints
+				if (currentConfig.apiProvider === "openai") {
+					// Re-activate the profile to ensure all settings are properly loaded
+					await this.activateProviderProfile({ name: currentConfig.name })
 				}
 			}
 		}
