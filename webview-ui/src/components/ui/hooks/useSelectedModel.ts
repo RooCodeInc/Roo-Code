@@ -192,12 +192,44 @@ function getSelectedModel({
 			const id = apiConfiguration.apiModelId ?? bedrockDefaultModelId
 			const baseInfo = bedrockModels[id as keyof typeof bedrockModels]
 
+			// Helper function to check if a model ID or ARN represents a Claude Sonnet 4.5 model
+			const isClaudeSonnet45Model = (modelId: string): boolean => {
+				if (!modelId) return false
+				const lowerId = modelId.toLowerCase()
+				return (
+					lowerId.includes("claude-sonnet-4-5") ||
+					lowerId.includes("claude-sonnet-4.5") ||
+					// Specific check for the global inference profile ARN
+					lowerId.includes("global.anthropic.claude-sonnet-4-5-20250929")
+				)
+			}
+
 			// Special case for custom ARN.
 			if (id === "custom-arn") {
-				return {
-					id,
-					info: { maxTokens: 5000, contextWindow: 128_000, supportsPromptCache: false, supportsImages: true },
+				const customArn = apiConfiguration.awsCustomArn || ""
+				const isClaudeSonnet45 = isClaudeSonnet45Model(customArn)
+
+				// Base info for custom ARNs
+				let info: ModelInfo = {
+					maxTokens: 5000,
+					contextWindow: 128_000,
+					supportsPromptCache: false,
+					supportsImages: true,
 				}
+
+				// If it's a Claude Sonnet 4.5 model, add thinking support and better defaults
+				if (isClaudeSonnet45) {
+					info = {
+						maxTokens: 8192,
+						contextWindow: apiConfiguration.awsBedrock1MContext ? 1_000_000 : 200_000,
+						supportsImages: true,
+						supportsPromptCache: true,
+						supportsReasoningBudget: true,
+						supportsComputerUse: true,
+					}
+				}
+
+				return { id, info }
 			}
 
 			// Apply 1M context for Claude Sonnet 4 / 4.5 when enabled

@@ -19,9 +19,25 @@ export const Bedrock = ({ apiConfiguration, setApiConfigurationField, selectedMo
 	const { t } = useAppTranslation()
 	const [awsEndpointSelected, setAwsEndpointSelected] = useState(!!apiConfiguration?.awsBedrockEndpointEnabled)
 
+	// Helper function to check if a model ID or ARN represents a Claude Sonnet 4.5 model
+	const isClaudeSonnet45Model = (modelId: string): boolean => {
+		if (!modelId) return false
+		const id = modelId.toLowerCase()
+		return (
+			id.includes("claude-sonnet-4-5") ||
+			id.includes("claude-sonnet-4.5") ||
+			// Specific check for the global inference profile ARN mentioned in the issue
+			id.includes("global.anthropic.claude-sonnet-4-5-20250929")
+		)
+	}
+
 	// Check if the selected model supports 1M context (Claude Sonnet 4 / 4.5)
+	// This includes both known model IDs and custom ARNs that match Claude 4.5 patterns
 	const supports1MContextBeta =
-		!!apiConfiguration?.apiModelId && BEDROCK_1M_CONTEXT_MODEL_IDS.includes(apiConfiguration.apiModelId as any)
+		(!!apiConfiguration?.apiModelId && BEDROCK_1M_CONTEXT_MODEL_IDS.includes(apiConfiguration.apiModelId as any)) ||
+		(apiConfiguration?.apiModelId === "custom-arn" &&
+			apiConfiguration?.awsCustomArn &&
+			isClaudeSonnet45Model(apiConfiguration.awsCustomArn))
 
 	// Update the endpoint enabled state when the configuration changes
 	useEffect(() => {

@@ -252,9 +252,34 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 	}
 
 	// Helper to guess model info from custom modelId string if not in bedrockModels
-	private guessModelInfoFromId(modelId: string): Partial<ModelInfo> {
+	private guessModelInfoFromId(modelId: string | undefined): Partial<ModelInfo> {
+		// Handle undefined or empty modelId
+		if (!modelId) {
+			return {
+				maxTokens: BEDROCK_MAX_TOKENS,
+				contextWindow: BEDROCK_DEFAULT_CONTEXT,
+				supportsImages: false,
+				supportsPromptCache: false,
+			}
+		}
 		// Define a mapping for model ID patterns and their configurations
 		const modelConfigMap: Record<string, Partial<ModelInfo>> = {
+			// Claude 4.5 Sonnet models (including global inference profile)
+			"claude-sonnet-4-5": {
+				maxTokens: 8192,
+				contextWindow: 200_000,
+				supportsImages: true,
+				supportsPromptCache: true,
+				supportsReasoningBudget: true,
+			},
+			// Claude 4 Sonnet models
+			"claude-sonnet-4": {
+				maxTokens: 8192,
+				contextWindow: 200_000,
+				supportsImages: true,
+				supportsPromptCache: true,
+				supportsReasoningBudget: true,
+			},
 			"claude-4": {
 				maxTokens: 8192,
 				contextWindow: 200_000,
@@ -266,6 +291,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 				contextWindow: 200_000,
 				supportsImages: true,
 				supportsPromptCache: true,
+				supportsReasoningBudget: true,
 			},
 			"claude-3-5": {
 				maxTokens: 8192,
@@ -376,8 +402,10 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 		// Check if 1M context is enabled for Claude Sonnet 4
 		// Use parseBaseModelId to handle cross-region inference prefixes
 		const baseModelId = this.parseBaseModelId(modelConfig.id)
-		const is1MContextEnabled =
-			BEDROCK_1M_CONTEXT_MODEL_IDS.includes(baseModelId as any) && this.options.awsBedrock1MContext
+		// Check if it's a known model ID or if it's a custom ARN that matches Claude 4.5 pattern
+		const isEligibleFor1MContext =
+			BEDROCK_1M_CONTEXT_MODEL_IDS.includes(baseModelId as any) || this.isClaudeSonnet45Model(modelConfig.id)
+		const is1MContextEnabled = isEligibleFor1MContext && this.options.awsBedrock1MContext
 
 		// Add anthropic_beta for 1M context to additionalModelRequestFields
 		if (is1MContextEnabled) {
@@ -887,6 +915,18 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 
 		// Return the model ID as-is for all other cases
 		return modelId
+	}
+
+	// Helper method to check if a model ID represents a Claude Sonnet 4.5 model
+	private isClaudeSonnet45Model(modelId: string): boolean {
+		const id = modelId.toLowerCase()
+		// Check for various Claude 4.5 patterns including global inference profile
+		return (
+			id.includes("claude-sonnet-4-5") ||
+			id.includes("claude-sonnet-4.5") ||
+			// Specific check for the global inference profile ARN mentioned in the issue
+			id.includes("global.anthropic.claude-sonnet-4-5-20250929")
+		)
 	}
 
 	//Prompt Router responses come back in a different sequence and the model used is in the response and must be fetched by name
