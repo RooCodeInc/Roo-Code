@@ -1,5 +1,12 @@
 # Costrict Change Log
 
+## [1.6.19]
+
+- Optimized gemini-cli provider
+- Optimized shell prompts
+- Sync roocode [last commit](https://github.com/zgsm-ai/costrict/commit/507a600ee99faa4fc02fc446f90b9a7a82ce71a5)
+- Fix known issues
+
 ## [1.6.18]
 
 - Increase context window size for ZGSM provider
