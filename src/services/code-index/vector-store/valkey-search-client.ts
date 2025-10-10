@@ -7,7 +7,7 @@ import { t } from "../../../i18n"
 
 export class ValkeySearchVectorStore implements IVectorStore {
 	private readonly vectorSize: number
-	private readonly DISTANCE_METRIC = "L2"
+	private readonly DISTANCE_METRIC = "COSINE"
 	private client: Redis | null = null
 	private isInitializing = false
 	private readonly indexName: string
@@ -349,20 +349,24 @@ export class ValkeySearchVectorStore implements IVectorStore {
 
 	async clearCollection(): Promise<void> {
 		await this.ensureConnected()
-		const result = await this.client?.sendCommand(
-			new Command("FT.SEARCH", [this.indexName, "*", "NOCONTENT", "LIMIT", "0", "1000000"], {
-				replyEncoding: "utf8",
-			}),
-		)
-
-		if (Array.isArray(result) && result.length > 1) {
-			const pipeline = this.client?.pipeline()
-			for (let i = 1; i < result.length; i++) {
-				const docId = result[i] as string
-				pipeline?.call("DEL", [docId])
-			}
-			await pipeline?.exec()
+		if (!this.client) {
+			return
 		}
+
+		let cursor = "0"
+		do {
+			// Using 'SCAN' to iterate through keys with the given prefix
+			const scanResult = await this.client.scan(cursor, "MATCH", `${this.indexName}:*`, "COUNT", 100)
+			cursor = scanResult[0]
+			const keys = scanResult[1]
+
+			if (keys.length > 0) {
+				// Deleting the found keys in a pipeline for efficiency
+				const pipeline = this.client.pipeline()
+				keys.forEach((key) => pipeline.del(key))
+				await pipeline.exec()
+			}
+		} while (cursor !== "0")
 	}
 
 	async collectionExists(): Promise<boolean> {
