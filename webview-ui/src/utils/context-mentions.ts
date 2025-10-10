@@ -5,7 +5,7 @@ import type { Command } from "@roo/ExtensionMessage"
 
 import { mentionRegex } from "@roo/context-mentions"
 
-import { escapeSpaces } from "./path-mentions"
+import { escapeSpaces, getBasename } from "./path-mentions"
 
 /**
  * Gets the description for a mode, prioritizing description > whenToUse > roleDefinition
@@ -19,10 +19,6 @@ export interface SearchResult {
 	path: string
 	type: "file" | "folder"
 	label?: string
-}
-
-function getBasename(filepath: string): string {
-	return filepath.split("/").pop() || filepath
 }
 
 export function insertMention(
@@ -252,7 +248,6 @@ export function getContextMenuOptions(
 		return [
 			{ type: ContextMenuOptionType.Problems },
 			{ type: ContextMenuOptionType.Terminal },
-			{ type: ContextMenuOptionType.URL },
 			{ type: ContextMenuOptionType.Folder },
 			{ type: ContextMenuOptionType.File },
 			{ type: ContextMenuOptionType.Git },
@@ -278,9 +273,6 @@ export function getContextMenuOptions(
 	}
 	if ("terminal".startsWith(lowerQuery)) {
 		suggestions.push({ type: ContextMenuOptionType.Terminal })
-	}
-	if (query.startsWith("http")) {
-		suggestions.push({ type: ContextMenuOptionType.URL, value: query })
 	}
 
 	// Add exact SHA matches to suggestions

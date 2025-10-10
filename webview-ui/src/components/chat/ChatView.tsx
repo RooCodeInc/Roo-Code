@@ -49,7 +49,6 @@ import HistoryPreview from "../history/HistoryPreview"
 import Announcement from "./Announcement"
 import BrowserSessionRow from "./BrowserSessionRow"
 import ChatRow from "./ChatRow"
-import { ChatTextArea } from "./ChatTextArea"
 import TaskHeader from "./TaskHeader"
 import SystemPromptWarning from "./SystemPromptWarning"
 import ProfileViolationWarning from "./ProfileViolationWarning"
@@ -58,6 +57,8 @@ import { QueuedMessages } from "./QueuedMessages"
 import DismissibleUpsell from "../common/DismissibleUpsell"
 import { useCloudUpsell } from "@src/hooks/useCloudUpsell"
 import { Cloud } from "lucide-react"
+import { LexicalEditor } from "lexical"
+import { ChatTextArea } from "./ChatTextArea"
 
 export interface ChatViewProps {
 	isHidden: boolean
@@ -173,7 +174,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 
 	const [inputValue, setInputValue] = useState("")
 	const inputValueRef = useRef(inputValue)
-	const textAreaRef = useRef<HTMLTextAreaElement>(null)
+	const textAreaRef = useRef<LexicalEditor>(null)
 	const [sendingDisabled, setSendingDisabled] = useState(false)
 	const [selectedImages, setSelectedImages] = useState<string[]>([])
 
@@ -678,7 +679,8 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			// Mark that user has responded
 			userRespondedRef.current = true
 
-			const trimmedInput = text?.trim()
+			// Use provided text or fallback to inputValue
+			const trimmedInput = text?.trim() || inputValue.trim()
 
 			switch (clineAsk) {
 				case "api_req_failed":
@@ -717,7 +719,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			setClineAsk(undefined)
 			setEnableButtons(false)
 		},
-		[clineAsk, startNewTask],
+		[clineAsk, startNewTask, inputValue],
 	)
 
 	const handleSecondaryButtonClick = useCallback(
@@ -725,7 +727,8 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			// Mark that user has responded
 			userRespondedRef.current = true
 
-			const trimmedInput = text?.trim()
+			// Use provided text or fallback to inputValue
+			const trimmedInput = text?.trim() || inputValue.trim()
 
 			if (isStreaming) {
 				vscode.postMessage({ type: "cancelTask" })
@@ -767,7 +770,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			setClineAsk(undefined)
 			setEnableButtons(false)
 		},
-		[clineAsk, startNewTask, isStreaming],
+		[clineAsk, startNewTask, isStreaming, inputValue],
 	)
 
 	const { info: model } = useSelectedModel(apiConfiguration)
@@ -1756,6 +1759,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			if (enableButtons && primaryButtonText) {
 				handlePrimaryButtonClick(inputValue, selectedImages)
 			} else if (!sendingDisabled && !isProfileDisabled && (inputValue.trim() || selectedImages.length > 0)) {
+				// For acceptInput, we'll use the display text since we don't have direct access to serialized content
 				handleSendMessage(inputValue, selectedImages)
 			}
 		},
@@ -1998,7 +2002,9 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				placeholderText={placeholderText}
 				selectedImages={selectedImages}
 				setSelectedImages={setSelectedImages}
-				onSend={() => handleSendMessage(inputValue, selectedImages)}
+				onSend={(serializedContent) => {
+					handleSendMessage(serializedContent, selectedImages)
+				}}
 				onSelectImages={selectImages}
 				shouldDisableImages={shouldDisableImages}
 				onHeightChange={() => {

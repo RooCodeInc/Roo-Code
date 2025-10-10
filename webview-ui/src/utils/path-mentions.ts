@@ -2,6 +2,102 @@
  * Utilities for handling path-related operations in mentions
  */
 
+import { removeLeadingNonAlphanumeric } from "./removeLeadingNonAlphanumeric"
+
+/**
+ * Extract the basename (filename or directory name) from a path
+ * Similar to Node.js path.basename() but works in the browser
+ */
+export function getBasename(path: string): string {
+	if (!path) return ""
+
+	// Remove trailing slashes
+	const trimmed = path.replace(/\/+$/, "")
+
+	// Find the last slash
+	const lastSlashIndex = trimmed.lastIndexOf("/")
+
+	// If no slash found, return the whole path
+	if (lastSlashIndex === -1) {
+		return trimmed
+	}
+
+	// Return everything after the last slash
+	return trimmed.slice(lastSlashIndex + 1)
+}
+
+/**
+ * Extract the directory name from a path
+ * For directories with trailing slash, returns the last directory name
+ */
+export function getDirname(path: string): string {
+	if (!path) return ""
+
+	// If path ends with slash, it's already a directory
+	if (path.endsWith("/")) {
+		return getBasename(path)
+	}
+
+	// Otherwise get the parent directory
+	const lastSlashIndex = path.lastIndexOf("/")
+	if (lastSlashIndex === -1) {
+		return path
+	}
+
+	return path.slice(0, lastSlashIndex + 1)
+}
+
+/**
+ * Extract domain from a URL
+ */
+export function getDomainFromUrl(url: string): string {
+	try {
+		const urlObj = new URL(url)
+		return urlObj.hostname
+	} catch {
+		// If URL parsing fails, try to extract domain manually
+		const match = url.match(/^(?:https?:\/\/)?([^/\s:]+)/)
+		return match ? match[1] : url
+	}
+}
+
+/**
+ * Extract a display label from a value based on its type
+ */
+export function extractLabelFromValue(value: string, type?: string): string {
+	if (!value) return ""
+
+	switch (type) {
+		case "file":
+		case "openedFile":
+			return getBasename(value)
+
+		case "folder":
+			// For folders, get the directory name (last part of path)
+			return getBasename(value) || value
+
+		case "url":
+			return getDomainFromUrl(value)
+
+		case "git":
+			// For git hashes, return first 7 characters if longer
+			if (value.length > 7 && /^[a-f0-9]+$/i.test(value)) {
+				return value.slice(0, 7)
+			}
+			return value
+
+		case "problems":
+			return "problems"
+
+		case "terminal":
+			return "terminal"
+
+		default:
+			// For everything else (commands, mode, etc), use the value as-is
+			return value
+	}
+}
+
 /**
  * Escapes spaces in a path with backslashes
  *
@@ -10,6 +106,40 @@
  */
 export function escapeSpaces(path: string): string {
 	return path.replace(/ /g, "\\ ")
+}
+
+/**
+ * Get display name for a path with conflict resolution
+ * If multiple paths have the same filename, shows parent directory to disambiguate
+ *
+ * @param path The path to get display name for
+ * @param allPaths All paths in the current context (for conflict detection)
+ * @returns A display name that disambiguates conflicts
+ */
+export function getDisplayNameForPath(path: string, allPaths: string[]): string {
+	// Remove leading non-alphanumeric and trailing slash
+	const cleanPath = removeLeadingNonAlphanumeric(path).replace(/\/$/, "")
+	const pathList = cleanPath.split("/")
+	const filename = pathList.at(-1) || path
+
+	// Check if there are other paths with the same filename
+	const sameFilenames = allPaths.filter((p) => {
+		const otherPath = removeLeadingNonAlphanumeric(p).replace(/\/$/, "")
+		const otherFilename = otherPath.split("/").at(-1) || p
+		return otherFilename === filename && p !== path
+	})
+
+	if (sameFilenames.length === 0) {
+		return filename // No conflicts, just show filename
+	}
+
+	// There are conflicts, need to show directory to disambiguate
+	if (pathList.length > 1) {
+		// Show filename with first directory
+		return `${pathList[pathList.length - 2]}/${filename}`
+	}
+
+	return filename
 }
 
 /**
