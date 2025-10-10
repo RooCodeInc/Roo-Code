@@ -448,6 +448,10 @@
 			},
 			"resetDefaults": "Standaardwaarden herstellen"
 		},
+		"disableStreaming": "Streaming uitschakelen",
+		"disableStreamingDescription": "Schakel realtime respons streaming uit voor OpenAI modellen.",
+		"disableReasoningSummaries": "Redenering samenvattingen uitschakelen",
+		"disableReasoningSummariesDescription": "Schakel redenering samenvattingen uit in modellen zoals GPT-5.",
 		"rateLimitSeconds": {
 			"label": "Snelheidslimiet",
 			"description": "Minimale tijd tussen API-verzoeken."

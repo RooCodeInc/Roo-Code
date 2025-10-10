@@ -1,7 +1,7 @@
 import React, { memo, useCallback, useEffect, useMemo, useState } from "react"
 import { convertHeadersToObject } from "./utils/headers"
 import { useDebounce } from "react-use"
-import { VSCodeLink, VSCodeButton } from "@vscode/webview-ui-toolkit/react"
+import { VSCodeLink, VSCodeButton, VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
 import { ExternalLinkIcon } from "@radix-ui/react-icons"
 
 import {
@@ -843,6 +843,37 @@ const ApiOptions = ({
 									</div>
 								</div>
 							)}
+						{selectedProvider === "openai-native" && (
+							<div className="space-y-4">
+								<div>
+									<VSCodeCheckbox
+										checked={apiConfiguration?.openAiNativeDisableStreaming ?? false}
+										onChange={(e: any) =>
+											setApiConfigurationField("openAiNativeDisableStreaming", e.target.checked)
+										}>
+										{t("settings:providers.disableStreaming")}
+									</VSCodeCheckbox>
+									<div className="text-sm text-vscode-descriptionForeground mt-1">
+										{t("settings:providers.disableStreamingDescription")}
+									</div>
+								</div>
+								<div>
+									<VSCodeCheckbox
+										checked={apiConfiguration?.openAiNativeDisableReasoningSummaries ?? false}
+										onChange={(e: any) =>
+											setApiConfigurationField(
+												"openAiNativeDisableReasoningSummaries",
+												e.target.checked,
+											)
+										}>
+										{t("settings:providers.disableReasoningSummaries")}
+									</VSCodeCheckbox>
+									<div className="text-sm text-vscode-descriptionForeground mt-1">
+										{t("settings:providers.disableReasoningSummariesDescription")}
+									</div>
+								</div>
+							</div>
+						)}
 					</CollapsibleContent>
 				</Collapsible>
 			)}

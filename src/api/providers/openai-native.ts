@@ -221,6 +221,14 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		yield* this.executeRequest(requestBody, model, metadata, systemPrompt, messages)
 	}
 
+	private canOrganizationUseStreaming(): boolean {
+		return !this.options.openAiNativeDisableStreaming
+	}
+
+	private canOrganizationUseGpt5ReasoningSummary(): boolean {
+		return !!(this.options.enableGpt5ReasoningSummary && !this.options.openAiNativeDisableReasoningSummaries)
+	}
+
 	private buildRequestBody(
 		model: OpenAiNativeModel,
 		formattedInput: any,
@@ -251,10 +259,14 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		const requestedTier = (this.options.openAiNativeServiceTier as ServiceTier | undefined) || undefined
 		const allowedTierNames = new Set(model.info.tiers?.map((t) => t.name).filter(Boolean) || [])
 
+		// Centralized gating for unverified organizations
+		const stream = this.canOrganizationUseStreaming()
+		const enableGpt5ReasoningSummary = this.canOrganizationUseGpt5ReasoningSummary()
+
 		const body: Gpt5RequestBody = {
 			model: model.id,
 			input: formattedInput,
-			stream: true,
+			stream: stream,
 			store: metadata?.store !== false, // Default to true unless explicitly set to false
 			// Always include instructions (system prompt) for Responses API.
 			// Unlike Chat Completions, system/developer roles in input have no special semantics here.
@@ -263,7 +275,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			...(reasoningEffort && {
 				reasoning: {
 					effort: reasoningEffort,
-					...(this.options.enableGpt5ReasoningSummary ? { summary: "auto" as const } : {}),
+					...(enableGpt5ReasoningSummary ? { summary: "auto" as const } : {}),
 				},
 			}),
 			// Only include temperature if the model supports it
@@ -300,77 +312,171 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		systemPrompt?: string,
 		messages?: Anthropic.Messages.MessageParam[],
 	): ApiStream {
+		// Handle non-streaming responses
+		if (requestBody.stream === false) {
+			yield* this.withPreviousIdRetry({
+				requestBody,
+				context: { systemPrompt, messages },
+				attempt: async (body: any) => this.performNonStreamingSdkRequest(body, model),
+				fallback: async (_body: any, originalError: any) => {
+					throw this.formatSdkError(originalError)
+				},
+			})
+			return
+		}
+
+		// Streaming path with SSE fallback
+		yield* this.withPreviousIdRetry({
+			requestBody,
+			context: { systemPrompt, messages, metadata },
+			attempt: async (body: any) => this.performStreamingSdkRequest(body, model),
+			fallback: async (body: any, _err: any) =>
+				this.makeGpt5ResponsesAPIRequest(body, model, metadata, systemPrompt, messages),
+		})
+	}
+
+	// Generic retry orchestrator for previous_response_id related failures
+	private async *withPreviousIdRetry({
+		requestBody,
+		attempt,
+		fallback,
+		context: { systemPrompt, messages, metadata } = {} as any,
+	}: {
+		requestBody: any
+		attempt: (body: any) => ApiStream | Promise<ApiStream>
+		fallback: (body: any, originalError: any) => ApiStream | Promise<ApiStream> | void
+		context?: {
+			systemPrompt?: string
+			messages?: Anthropic.Messages.MessageParam[]
+			metadata?: ApiHandlerCreateMessageMetadata
+		}
+	}): ApiStream {
 		try {
-			// Use the official SDK
-			const stream = (await (this.client as any).responses.create(requestBody)) as AsyncIterable<any>
-
-			if (typeof (stream as any)[Symbol.asyncIterator] !== "function") {
-				throw new Error(
-					"OpenAI SDK did not return an AsyncIterable for Responses API streaming. Falling back to SSE.",
-				)
-			}
-
-			for await (const event of stream) {
-				for await (const outChunk of this.processEvent(event, model)) {
-					yield outChunk
-				}
-			}
-		} catch (sdkErr: any) {
-			// Check if this is a 400 error about previous_response_id not found
-			const errorMessage = sdkErr?.message || sdkErr?.error?.message || ""
-			const is400Error = sdkErr?.status === 400 || sdkErr?.response?.status === 400
-			const isPreviousResponseError =
-				errorMessage.includes("Previous response") || errorMessage.includes("not found")
-
-			if (is400Error && requestBody.previous_response_id && isPreviousResponseError) {
+			yield* await attempt(requestBody)
+		} catch (err: any) {
+			const firstErrorDetail = this.extractErrorDetail(err)
+			if (this.shouldRetryWithoutPreviousId(err, requestBody)) {
 				// Log the error and retry without the previous_response_id
-
-				// Clear the stored lastResponseId to prevent using it again
-				this.lastResponseId = undefined
-
-				// Re-prepare the full conversation without previous_response_id
-				let retryRequestBody = { ...requestBody }
-				delete retryRequestBody.previous_response_id
-
-				// If we have the original messages, re-prepare the full conversation
-				if (systemPrompt && messages) {
-					const { formattedInput } = this.prepareStructuredInput(systemPrompt, messages, undefined)
-					retryRequestBody.input = formattedInput
-				}
-
+				const retryRequestBody = this.prepareRetryRequestBody(requestBody, systemPrompt, messages)
 				try {
-					// Retry with the SDK
-					const retryStream = (await (this.client as any).responses.create(
-						retryRequestBody,
-					)) as AsyncIterable<any>
-
-					if (typeof (retryStream as any)[Symbol.asyncIterator] !== "function") {
-						// If SDK fails, fall back to SSE
-						yield* this.makeGpt5ResponsesAPIRequest(
-							retryRequestBody,
-							model,
-							metadata,
-							systemPrompt,
-							messages,
-						)
-						return
-					}
-
-					for await (const event of retryStream) {
-						for await (const outChunk of this.processEvent(event, model)) {
-							yield outChunk
-						}
-					}
+					// Retry via helper; if helper throws we'll fallback below
+					yield* await attempt(retryRequestBody)
 					return
 				} catch (retryErr) {
-					// If retry also fails, fall back to SSE
-					yield* this.makeGpt5ResponsesAPIRequest(retryRequestBody, model, metadata, systemPrompt, messages)
+					// If retry also fails, use fallback mechanism
+					// Always attach original detail so downstream formatting can fall back if needed
+					if (firstErrorDetail) {
+						;(retryErr as any).previousErrorDetail = firstErrorDetail
+					}
+					const fb = await fallback(retryRequestBody, retryErr)
+					if (fb) {
+						yield* fb
+					}
 					return
 				}
 			}
+			const fb = await fallback(requestBody, err)
+			if (fb) {
+				yield* fb
+			}
+		}
+	}
 
-			// For other errors, fallback to manual SSE via fetch
-			yield* this.makeGpt5ResponsesAPIRequest(requestBody, model, metadata, systemPrompt, messages)
+	private async *performNonStreamingSdkRequest(requestBody: any, model: OpenAiNativeModel): ApiStream {
+		// Perform a non-streaming SDK request and yield the response chunks
+		const response = await (this.client as any).responses.create(requestBody)
+		yield* this.handleResponse(response, model)
+	}
+
+	private async *performStreamingSdkRequest(requestBody: any, model: OpenAiNativeModel): ApiStream {
+		// Perform a streaming SDK request and yield processed events
+		const stream = (await (this.client as any).responses.create(requestBody)) as AsyncIterable<any>
+
+		if (typeof (stream as any)[Symbol.asyncIterator] !== "function") {
+			throw new Error(
+				"OpenAI SDK did not return an AsyncIterable for Responses API streaming. Falling back to SSE.",
+			)
+		}
+
+		for await (const event of stream) {
+			for await (const outChunk of this.processEvent(event, model)) {
+				yield outChunk
+			}
+		}
+	}
+
+	private prepareRetryRequestBody(
+		requestBody: any,
+		systemPrompt: string | undefined,
+		messages: Anthropic.Messages.MessageParam[] | undefined,
+	) {
+		// Clear the stored lastResponseId to prevent using it again
+		this.lastResponseId = undefined
+		// Resolve the promise once to unblock any waiting requests
+		this.resolveResponseId(undefined)
+
+		// Re-prepare the full conversation without previous_response_id
+		let retryRequestBody = { ...requestBody }
+		delete retryRequestBody.previous_response_id
+
+		// If we have the original messages, re-prepare the full conversation
+		if (systemPrompt && messages) {
+			const { formattedInput } = this.prepareStructuredInput(systemPrompt, messages, undefined)
+			retryRequestBody.input = formattedInput
+		}
+		return retryRequestBody
+	}
+
+	private shouldRetryWithoutPreviousId(sdkErr: any, requestBody: any) {
+		// Check if this is a 400 error about previous_response_id not found
+		const errorMessage = sdkErr?.message || sdkErr?.error?.message || ""
+		const is400Error = sdkErr?.status === 400 || sdkErr?.response?.status === 400
+		const isPreviousResponseError = errorMessage.includes("Previous response") || errorMessage.includes("not found")
+
+		return is400Error && requestBody.previous_response_id && isPreviousResponseError
+	}
+
+	private async *handleResponse(response: any, model: OpenAiNativeModel): ApiStream {
+		if (response?.output && Array.isArray(response.output)) {
+			for (const outputItem of response.output) {
+				if (outputItem.type === "message" && outputItem.content) {
+					for (const content of outputItem.content) {
+						if (content.type === "output_text" && content.text) {
+							yield { type: "text", text: content.text }
+						}
+					}
+				}
+				// Handle reasoning summaries if present
+				if (outputItem.type === "reasoning" && Array.isArray(outputItem.summary)) {
+					for (const summary of outputItem.summary) {
+						if (summary?.type === "summary_text" && typeof summary.text === "string") {
+							yield { type: "reasoning", text: summary.text }
+						}
+					}
+				}
+			}
+		}
+
+		// Fallback: check for direct text in response
+		if (response?.text) {
+			yield { type: "text", text: response.text }
+		}
+
+		// Handle usage data
+		if (response?.usage) {
+			const usageData = this.normalizeUsage(response.usage, model)
+			if (usageData) {
+				yield usageData
+			}
+		}
+
+		// Store response ID for conversation continuity
+		if (response?.id) {
+			this.resolveResponseId(response.id)
+		}
+		// Capture resolved service tier if present
+		if (response?.service_tier) {
+			this.lastServiceTier = response.service_tier as ServiceTier
 		}
 	}
 
@@ -545,32 +651,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 					return
 				}
 
-				// Provide user-friendly error messages based on status code
-				switch (response.status) {
-					case 400:
-						errorMessage = "Invalid request to Responses API. Please check your input parameters."
-						break
-					case 401:
-						errorMessage = "Authentication failed. Please check your OpenAI API key."
-						break
-					case 403:
-						errorMessage = "Access denied. Your API key may not have access to this endpoint."
-						break
-					case 404:
-						errorMessage =
-							"Responses API endpoint not found. The endpoint may not be available yet or requires a different configuration."
-						break
-					case 429:
-						errorMessage = "Rate limit exceeded. Please try again later."
-						break
-					case 500:
-					case 502:
-					case 503:
-						errorMessage = "OpenAI service error. Please try again later."
-						break
-					default:
-						errorMessage = `Responses API error (${response.status})`
-				}
+				errorMessage = this.getErrorMessageByStatus(response.status)
 
 				// Append details if available
 				if (errorDetails) {
@@ -598,6 +679,55 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			// Handle non-Error objects
 			throw new Error(`Unexpected error connecting to Responses API`)
 		}
+	}
+
+	private getErrorMessageByStatus(status: number) {
+		// Provide user-friendly error messages based on status code
+		if (!status) {
+			return "Responses API error: No status code"
+		}
+
+		let errorMessage
+		switch (status) {
+			case 400:
+				errorMessage = "Invalid request to Responses API. Please check your input parameters."
+				break
+			case 401:
+				errorMessage = "Authentication failed. Please check your OpenAI API key."
+				break
+			case 403:
+				errorMessage = "Access denied. Your API key may not have access to this endpoint."
+				break
+			case 404:
+				errorMessage =
+					"Responses API endpoint not found. The endpoint may not be available yet or requires a different configuration."
+				break
+			case 429:
+				errorMessage = "Rate limit exceeded. Please try again later."
+				break
+			case 500:
+			case 502:
+			case 503:
+				errorMessage = "OpenAI service error. Please try again later."
+				break
+			default:
+				errorMessage = `Responses API error (${status})`
+		}
+		return errorMessage
+	}
+
+	private formatSdkError(err: any): Error {
+		const status = err?.status || err?.response?.status
+		let errorMessage = this.getErrorMessageByStatus(status)
+		const errorDetails = this.extractErrorDetail(err)
+		if (errorDetails) {
+			errorMessage += ` - ${errorDetails}`
+		}
+		return new Error(errorMessage)
+	}
+
+	private extractErrorDetail(err: any) {
+		return err?.message || err?.error?.message || err?.previousErrorDetail || ""
 	}
 
 	/**
@@ -1300,7 +1430,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			if (reasoningEffort) {
 				requestBody.reasoning = {
 					effort: reasoningEffort,
-					...(this.options.enableGpt5ReasoningSummary ? { summary: "auto" as const } : {}),
+					...(this.canOrganizationUseGpt5ReasoningSummary() ? { summary: "auto" as const } : {}),
 				}
 			}
 

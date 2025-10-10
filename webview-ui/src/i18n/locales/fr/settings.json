@@ -448,6 +448,10 @@
 			},
 			"resetDefaults": "Réinitialiser les valeurs par défaut"
 		},
+		"disableStreaming": "Désactiver le streaming",
+		"disableStreamingDescription": "Désactiver le streaming de réponse en temps réel pour les modèles OpenAI.",
+		"disableReasoningSummaries": "Désactiver les résumés de raisonnement",
+		"disableReasoningSummariesDescription": "Désactiver les résumés de raisonnement dans des modèles comme GPT-5.",
 		"rateLimitSeconds": {
 			"label": "Limite de débit",
 			"description": "Temps minimum entre les requêtes API."
