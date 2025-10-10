@@ -2,12 +2,14 @@ import {
 	ArrowRight,
 	ChartLine,
 	Cloud,
+	Lock,
 	LucideIcon,
 	Megaphone,
 	MessageCircleQuestionMark,
 	ReplaceAll,
 	Router,
 	Share2,
+	Users,
 } from "lucide-react"
 import type { Metadata } from "next"
 
@@ -15,6 +17,7 @@ import { Button } from "@/components/ui"
 import { AnimatedBackground } from "@/components/homepage"
 import { SEO } from "@/lib/seo"
 import { EXTERNAL_LINKS } from "@/lib/constants"
+import Image from "next/image"
 
 const TITLE = "Roo Code Cloud"
 const DESCRIPTION = ""
@@ -59,13 +62,6 @@ interface Feature {
 	logos?: string[]
 }
 
-// "Share tasks with friends and co-workers",
-// "Early access to free AI Models",
-// "Cloud Agents: PR Reviewer and more",
-// "Roomote Control: Start, stop and control tasks from anywhere",
-// "Shared configuration & policies",
-// "Centralized billing"
-
 const cloudFeatures: Feature[] = [
 	{
 		icon: Router,
@@ -100,11 +96,27 @@ const cloudFeatures: Feature[] = [
 		description: "Share tasks with friends and co-workers and let them follow your work.",
 	},
 	{
+		icon: Users,
+		title: "Team Management",
+		description:
+			"Manage your team and their access to tasks and resources, with centralized billing, analytics and configuration.",
+	},
+	{
+		icon: Lock,
+		title: "Secure and Private",
+		description:
+			"Your data is never used for training, and we're SOC2 Type 2 and GDPR compliant, following state-of-the-art security practices, with deep respect for your IP.",
+	},
+	{
 		icon: MessageCircleQuestionMark,
 		title: "Priority support",
 		description: "Get quick help from the people who know Roo best.",
 	},
 ]
+
+// Workaround for next/image choking on these for some reason
+import screenshotLight from "/public/heroes/cloud-screen-dark.png"
+import screenshotDark from "/public/heroes/cloud-screen-light.png"
 
 export default function CloudPage() {
 	return (
@@ -116,10 +128,11 @@ export default function CloudPage() {
 						<div className="flex flex-col px-4 justify-center space-y-6 sm:space-y-8">
 							<div>
 								<h1 className="text-4xl font-bold tracking-tight mt-8 text-center md:text-left md:text-4xl lg:text-5xl lg:mt-0">
-									Go beyond the extension
+									Go <em>way</em> beyond the IDE
 								</h1>
 								<p className="mt-4 max-w-md text-lg text-muted-foreground text-center md:text-left sm:mt-6">
-									Your AI Dev team in the Cloud
+									Roo Code Cloud gives you (and your team) the tools to take AI-coding to the next
+									level
 								</p>
 							</div>
 							<div className="flex flex-col space-y-3 sm:flex-row sm:space-x-4 sm:space-y-0">
@@ -132,14 +145,33 @@ export default function CloudPage() {
 										target="_blank"
 										rel="noopener noreferrer"
 										className="flex w-full items-center justify-center">
-										Get started
+										Start Free Trial
 										<ArrowRight className="ml-2" />
 									</a>
 								</Button>
 							</div>
 						</div>
-						<div className="relative flex items-center mx-auto h-full mt-8 lg:mt-0">
-							<div className="flex items-center justify-center">blah</div>
+						<div className="flex items-center justify-end mx-auto h-full mt-8 lg:mt-0">
+							<div className="w-[900px] h-[500px] p-2 bg-black dark:bg-white relative rounded-md overflow-clip shadow-2xl">
+								<div className="hidden dark:block">
+									<Image
+										src={screenshotDark}
+										alt="Screenshot of Roo Code Cloud"
+										className="max-w-full h-auto"
+										width={2620}
+										height={1572}
+									/>
+								</div>
+								<div className="block dark:hidden">
+									<Image
+										src={screenshotLight}
+										alt="Screenshot of Roo Code Cloud"
+										className="max-w-full h-auto"
+										width={2620}
+										height={1572}
+									/>
+								</div>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -149,9 +181,7 @@ export default function CloudPage() {
 				<div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
 					<div className="mx-auto mb-12 md:mb-24 max-w-4xl text-center">
 						<div>
-							<h2 className="text-4xl font-bold tracking-tight sm:text-5xl">
-								Go <em>way</em> beyond the IDE
-							</h2>
+							<h2 className="text-4xl font-bold tracking-tight sm:text-5xl">Power and Flexibility</h2>
 							<p className="mt-6 text-lg text-muted-foreground">
 								Code in the cloud, access free models, get usage analytics and more
 							</p>
