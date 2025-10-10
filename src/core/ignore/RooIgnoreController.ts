@@ -1,9 +1,9 @@
 import path from "path"
 import { fileExistsAtPath } from "../../utils/fs"
 import fs from "fs/promises"
-import fsSync from "fs"
-import ignore, { Ignore } from "ignore"
+import ignore from "ignore"
 import * as vscode from "vscode"
+import { BaseIgnoreController } from "./BaseIgnoreController"
 
 export const LOCK_TEXT_SYMBOL = "\u{1F512}"
 
@@ -12,18 +12,14 @@ export const LOCK_TEXT_SYMBOL = "\u{1F512}"
  * Designed to be instantiated once in Cline.ts and passed to file manipulation services.
  * Uses the 'ignore' library to support standard .gitignore syntax in .rooignore files.
  */
-export class RooIgnoreController {
-	private cwd: string
-	private ignoreInstance: Ignore
-	private disposables: vscode.Disposable[] = []
+export class RooIgnoreController extends BaseIgnoreController {
 	rooIgnoreContent: string | undefined
 
 	constructor(cwd: string) {
-		this.cwd = cwd
-		this.ignoreInstance = ignore()
+		super(cwd)
 		this.rooIgnoreContent = undefined
 		// Set up file watcher for .rooignore
-		this.setupFileWatcher()
+		this.setupRooIgnoreWatcher()
 	}
 
 	/**
@@ -37,25 +33,9 @@ export class RooIgnoreController {
 	/**
 	 * Set up the file watcher for .rooignore changes
 	 */
-	private setupFileWatcher(): void {
+	private setupRooIgnoreWatcher(): void {
 		const rooignorePattern = new vscode.RelativePattern(this.cwd, ".rooignore")
-		const fileWatcher = vscode.workspace.createFileSystemWatcher(rooignorePattern)
-
-		// Watch for changes and updates
-		this.disposables.push(
-			fileWatcher.onDidChange(() => {
-				this.loadRooIgnore()
-			}),
-			fileWatcher.onDidCreate(() => {
-				this.loadRooIgnore()
-			}),
-			fileWatcher.onDidDelete(() => {
-				this.loadRooIgnore()
-			}),
-		)
-
-		// Add fileWatcher itself to disposables
-		this.disposables.push(fileWatcher)
+		this.setupFileWatcher(rooignorePattern, () => this.loadRooIgnore())
 	}
 
 	/**
@@ -81,38 +61,10 @@ export class RooIgnoreController {
 	}
 
 	/**
-	 * Check if a file should be accessible to the LLM
-	 * Automatically resolves symlinks
-	 * @param filePath - Path to check (relative to cwd)
-	 * @returns true if file is accessible, false if ignored
+	 * Check if the controller has any patterns loaded
 	 */
-	validateAccess(filePath: string): boolean {
-		// Always allow access if .rooignore does not exist
-		if (!this.rooIgnoreContent) {
-			return true
-		}
-		try {
-			const absolutePath = path.resolve(this.cwd, filePath)
-
-			// Follow symlinks to get the real path
-			let realPath: string
-			try {
-				realPath = fsSync.realpathSync(absolutePath)
-			} catch {
-				// If realpath fails (file doesn't exist, broken symlink, etc.),
-				// use the original path
-				realPath = absolutePath
-			}
-
-			// Convert real path to relative for .rooignore checking
-			const relativePath = path.relative(this.cwd, realPath).toPosix()
-
-			// Check if the real path is ignored
-			return !this.ignoreInstance.ignores(relativePath)
-		} catch (error) {
-			// Allow access to files outside cwd or on errors (backward compatibility)
-			return true
-		}
+	protected hasPatterns(): boolean {
+		return this.rooIgnoreContent !== undefined
 	}
 
 	/**
@@ -169,34 +121,6 @@ export class RooIgnoreController {
 		}
 
 		return undefined
-	}
-
-	/**
-	 * Filter an array of paths, removing those that should be ignored
-	 * @param paths - Array of paths to filter (relative to cwd)
-	 * @returns Array of allowed paths
-	 */
-	filterPaths(paths: string[]): string[] {
-		try {
-			return paths
-				.map((p) => ({
-					path: p,
-					allowed: this.validateAccess(p),
-				}))
-				.filter((x) => x.allowed)
-				.map((x) => x.path)
-		} catch (error) {
-			console.error("Error filtering paths:", error)
-			return [] // Fail closed for security
-		}
-	}
-
-	/**
-	 * Clean up resources when the controller is no longer needed
-	 */
-	dispose(): void {
-		this.disposables.forEach((d) => d.dispose())
-		this.disposables = []
 	}
 
 	/**

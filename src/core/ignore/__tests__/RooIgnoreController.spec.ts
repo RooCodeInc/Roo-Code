@@ -519,6 +519,9 @@ describe("RooIgnoreController", () => {
 			const onDeleteHandler = mockWatcher.onDidDelete.mock.calls[0][0]
 			await onDeleteHandler()
 
+			// Wait for debounced reload to complete (100ms timeout + buffer)
+			await new Promise((resolve) => setTimeout(resolve, 150))
+
 			// Verify content was reset
 			expect(controller.rooIgnoreContent).toBeUndefined()
 
