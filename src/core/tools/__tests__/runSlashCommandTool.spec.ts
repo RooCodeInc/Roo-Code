@@ -3,11 +3,20 @@ import { runSlashCommandTool } from "../runSlashCommandTool"
 import { Task } from "../../task/Task"
 import { formatResponse } from "../../prompts/responses"
 import { getCommand, getCommandNames } from "../../../services/command/commands"
+import { parseMentions } from "../../mentions"
 
 // Mock dependencies
 vi.mock("../../../services/command/commands", () => ({
 	getCommand: vi.fn(),
 	getCommandNames: vi.fn(),
+}))
+
+vi.mock("../../mentions", () => ({
+	parseMentions: vi.fn(),
+}))
+
+vi.mock("../../../services/browser/UrlContentFetcher", () => ({
+	UrlContentFetcher: vi.fn().mockImplementation(() => ({})),
 }))
 
 describe("runSlashCommandTool", () => {
@@ -19,6 +28,9 @@ describe("runSlashCommandTool", () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks()
+
+		// By default, mock parseMentions to return the original content unchanged
+		vi.mocked(parseMentions).mockImplementation((content) => Promise.resolve(content))
 
 		mockTask = {
 			consecutiveMistakeCount: 0,
@@ -376,5 +388,148 @@ Deploy application to production`,
 		)
 
 		expect(mockTask.consecutiveMistakeCount).toBe(0)
+	})
+
+	it("should process mentions in command content", async () => {
+		const mockCommand = {
+			name: "test",
+			content: "Check @/README.md for details",
+			source: "project" as const,
+			filePath: ".roo/commands/test.md",
+			description: "Test command with file reference",
+		}
+
+		vi.mocked(getCommand).mockResolvedValue(mockCommand)
+		vi.mocked(parseMentions).mockResolvedValue(
+			"Check 'README.md' (see below for file content)\n\n<file_content path=\"README.md\">\n# README\nTest content\n</file_content>",
+		)
+
+		mockAskApproval.mockResolvedValue(true)
+
+		const block = {
+			type: "tool_use" as const,
+			name: "run_slash_command" as const,
+			params: {
+				command: "test",
+			},
+			partial: false,
+		}
+
+		await runSlashCommandTool(
+			mockTask as Task,
+			block,
+			mockAskApproval,
+			mockHandleError,
+			mockPushToolResult,
+			mockRemoveClosingTag,
+		)
+
+		// Verify parseMentions was called with the command content
+		expect(vi.mocked(parseMentions)).toHaveBeenCalledWith(
+			"Check @/README.md for details",
+			"/test/project",
+			expect.any(Object), // UrlContentFetcher instance
+			undefined,
+			undefined,
+			false,
+			true,
+			50,
+			undefined,
+		)
+
+		// Verify the processed content is included in the result
+		expect(mockPushToolResult).toHaveBeenCalledWith(
+			expect.stringContaining("Check 'README.md' (see below for file content)"),
+		)
+		expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining('<file_content path="README.md">'))
+	})
+
+	it("should handle mention processing errors gracefully", async () => {
+		const mockCommand = {
+			name: "test",
+			content: "Check @/README.md for details",
+			source: "project" as const,
+			filePath: ".roo/commands/test.md",
+			description: "Test command with file reference",
+		}
+
+		vi.mocked(getCommand).mockResolvedValue(mockCommand)
+		vi.mocked(parseMentions).mockRejectedValue(new Error("Failed to process mentions"))
+
+		mockAskApproval.mockResolvedValue(true)
+
+		const block = {
+			type: "tool_use" as const,
+			name: "run_slash_command" as const,
+			params: {
+				command: "test",
+			},
+			partial: false,
+		}
+
+		// Mock console.warn to verify it's called
+		const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
+
+		await runSlashCommandTool(
+			mockTask as Task,
+			block,
+			mockAskApproval,
+			mockHandleError,
+			mockPushToolResult,
+			mockRemoveClosingTag,
+		)
+
+		// Should log a warning when mention processing fails
+		expect(consoleWarnSpy).toHaveBeenCalledWith(
+			expect.stringContaining("Failed to process mentions in slash command content:"),
+		)
+
+		// Should still return the original content when mention processing fails
+		expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("Check @/README.md for details"))
+
+		consoleWarnSpy.mockRestore()
+	})
+
+	it("should process multiple file references in command content", async () => {
+		const mockCommand = {
+			name: "docs",
+			content: "Review @/README.md and @/CONTRIBUTING.md for guidelines",
+			source: "project" as const,
+			filePath: ".roo/commands/docs.md",
+			description: "Documentation command",
+		}
+
+		vi.mocked(getCommand).mockResolvedValue(mockCommand)
+		vi.mocked(parseMentions).mockResolvedValue(
+			"Review 'README.md' (see below for file content) and 'CONTRIBUTING.md' (see below for file content)\n\n" +
+				'<file_content path="README.md">\n# README\n</file_content>\n\n' +
+				'<file_content path="CONTRIBUTING.md">\n# Contributing\n</file_content>',
+		)
+
+		mockAskApproval.mockResolvedValue(true)
+
+		const block = {
+			type: "tool_use" as const,
+			name: "run_slash_command" as const,
+			params: {
+				command: "docs",
+			},
+			partial: false,
+		}
+
+		await runSlashCommandTool(
+			mockTask as Task,
+			block,
+			mockAskApproval,
+			mockHandleError,
+			mockPushToolResult,
+			mockRemoveClosingTag,
+		)
+
+		// Verify both files are included in the processed content
+		expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining('<file_content path="README.md">'))
+		expect(mockPushToolResult).toHaveBeenCalledWith(
+			expect.stringContaining('<file_content path="CONTRIBUTING.md">'),
+		)
 	})
 })
