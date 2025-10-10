@@ -8,6 +8,7 @@ import {
 } from "../constants"
 import { createHash } from "crypto"
 import { RooIgnoreController } from "../../../core/ignore/RooIgnoreController"
+import { RooIndexIgnoreController } from "../../../core/ignore/RooIndexIgnoreController"
 import { v5 as uuidv5 } from "uuid"
 import { Ignore } from "ignore"
 import { scannerExtensions } from "../shared/supported-extensions"
@@ -35,6 +36,7 @@ export class FileWatcher implements IFileWatcher {
 	private ignoreInstance?: Ignore
 	private fileWatcher?: vscode.FileSystemWatcher
 	private ignoreController: RooIgnoreController
+	private indexIgnoreController: RooIndexIgnoreController
 	private accumulatedEvents: Map<string, { uri: vscode.Uri; type: "create" | "change" | "delete" }> = new Map()
 	private batchProcessDebounceTimer?: NodeJS.Timeout
 	private readonly BATCH_DEBOUNCE_DELAY_MS = 500
@@ -81,8 +83,10 @@ export class FileWatcher implements IFileWatcher {
 		ignoreInstance?: Ignore,
 		ignoreController?: RooIgnoreController,
 		batchSegmentThreshold?: number,
+		indexIgnoreController?: RooIndexIgnoreController,
 	) {
 		this.ignoreController = ignoreController || new RooIgnoreController(workspacePath)
+		this.indexIgnoreController = indexIgnoreController || new RooIndexIgnoreController(workspacePath)
 		if (ignoreInstance) {
 			this.ignoreInstance = ignoreInstance
 		}
@@ -106,6 +110,9 @@ export class FileWatcher implements IFileWatcher {
 	 * Initializes the file watcher
 	 */
 	async initialize(): Promise<void> {
+		// Initialize the index ignore controller
+		await this.indexIgnoreController.initialize()
+
 		// Create file watcher
 		const filePattern = new vscode.RelativePattern(
 			this.workspacePath,
@@ -517,16 +524,31 @@ export class FileWatcher implements IFileWatcher {
 				}
 			}
 
-			// Check if file should be ignored
+			// Check if file should be ignored for access (.rooignore)
 			const relativeFilePath = generateRelativeFilePath(filePath, this.workspacePath)
-			if (
-				!this.ignoreController.validateAccess(filePath) ||
-				(this.ignoreInstance && this.ignoreInstance.ignores(relativeFilePath))
-			) {
+			if (!this.ignoreController.validateAccess(filePath)) {
 				return {
 					path: filePath,
 					status: "skipped" as const,
-					reason: "File is ignored by .rooignore or .gitignore",
+					reason: "File is ignored by .rooignore",
+				}
+			}
+
+			// Check if file should be ignored for indexing (.rooindexignore)
+			if (!this.indexIgnoreController.shouldIndex(filePath)) {
+				return {
+					path: filePath,
+					status: "skipped" as const,
+					reason: "File is ignored by .rooindexignore",
+				}
+			}
+
+			// Check if file should be ignored by .gitignore
+			if (this.ignoreInstance && this.ignoreInstance.ignores(relativeFilePath)) {
+				return {
+					path: filePath,
+					status: "skipped" as const,
+					reason: "File is ignored by .gitignore",
 				}
 			}
 
