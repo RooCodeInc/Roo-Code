@@ -30,6 +30,7 @@ export async function executeCommandTool(
 ) {
 	let command: string | undefined = block.params.command
 	const customCwd: string | undefined = block.params.cwd
+	const runInBackground: boolean = block.params.runInBackground === "true"
 
 	try {
 		if (block.partial) {
@@ -94,6 +95,7 @@ export async function executeCommandTool(
 				terminalOutputLineLimit,
 				terminalOutputCharacterLimit,
 				commandExecutionTimeout,
+				runInBackground,
 			}
 
 			try {
@@ -141,6 +143,7 @@ export type ExecuteCommandOptions = {
 	terminalOutputLineLimit?: number
 	terminalOutputCharacterLimit?: number
 	commandExecutionTimeout?: number
+	runInBackground?: boolean
 }
 
 export async function executeCommand(
@@ -153,6 +156,7 @@ export async function executeCommand(
 		terminalOutputLineLimit = 500,
 		terminalOutputCharacterLimit = DEFAULT_TERMINAL_OUTPUT_CHARACTER_LIMIT,
 		commandExecutionTimeout = 0,
+		runInBackground: runInBackgroundRequested = false,
 	}: ExecuteCommandOptions,
 ): Promise<[boolean, ToolResponse]> {
 	// Convert milliseconds back to seconds for display purposes.
@@ -174,8 +178,8 @@ export async function executeCommand(
 	}
 
 	let message: { text?: string; images?: string[] } | undefined
-	let runInBackground = false
 	let completed = false
+	let userChoseBackgroundMode = false
 	let result: string = ""
 	let exitDetails: ExitCodeDetails | undefined
 	let shellIntegrationError: string | undefined
@@ -195,13 +199,13 @@ export async function executeCommand(
 			const status: CommandExecutionStatus = { executionId, status: "output", output: compressedOutput }
 			provider?.postMessageToWebview({ type: "commandExecutionStatus", text: JSON.stringify(status) })
 
-			if (runInBackground) {
+			if (userChoseBackgroundMode) {
 				return
 			}
 
 			try {
 				const { response, text, images } = await task.ask("command_output", "")
-				runInBackground = true
+				userChoseBackgroundMode = true
 
 				if (response === "messageResponse") {
 					message = { text, images }
@@ -219,10 +223,16 @@ export async function executeCommand(
 			task.say("command_output", result)
 			completed = true
 		},
-		onShellExecutionStarted: (pid: number | undefined) => {
+		onShellExecutionStarted: (pid: number | undefined, process: RooTerminalProcess) => {
 			console.log(`[executeCommand] onShellExecutionStarted: ${pid}`)
 			const status: CommandExecutionStatus = { executionId, status: "started", pid, command }
 			provider?.postMessageToWebview({ type: "commandExecutionStatus", text: JSON.stringify(status) })
+
+			if (runInBackgroundRequested) {
+				userChoseBackgroundMode = true
+				process.continue()
+				return
+			}
 		},
 		onShellExecutionComplete: (details: ExitCodeDetails) => {
 			const status: CommandExecutionStatus = { executionId, status: "exited", exitCode: details.exitCode }
