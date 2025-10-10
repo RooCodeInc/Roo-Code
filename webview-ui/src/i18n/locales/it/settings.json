@@ -670,6 +670,10 @@
 		"title": "Impostazioni avanzate"
 	},
 	"advanced": {
+		"preserveHtmlEntities": {
+			"label": "Preserva entità HTML",
+			"description": "Quando abilitato, le entità HTML come &lt;, &gt; e &amp; verranno preservate così come sono nelle modifiche ai file e nei comandi. Quando disabilitato, verranno automaticamente convertite nei loro caratteri letterali (<, >, &). Nota: i modelli Claude preservano sempre le entità indipendentemente da questa impostazione."
+		},
 		"diff": {
 			"label": "Abilita modifica tramite diff",
 			"description": "Quando abilitato, Roo sarà in grado di modificare i file più velocemente e rifiuterà automaticamente scritture di file completi troncati. Funziona meglio con l'ultimo modello Claude 3.7 Sonnet.",

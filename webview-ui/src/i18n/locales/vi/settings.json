@@ -670,6 +670,10 @@
 		"title": "Cài đặt nâng cao"
 	},
 	"advanced": {
+		"preserveHtmlEntities": {
+			"label": "Bảo toàn thực thể HTML",
+			"description": "Khi được bật, các thực thể HTML như &lt;, &gt; và &amp; sẽ được giữ nguyên trong các chỉnh sửa tệp và lệnh. Khi tắt, chúng sẽ được tự động chuyển đổi thành các ký tự thực của chúng (<, >, &). Lưu ý: Các mô hình Claude luôn bảo toàn thực thể bất kể cài đặt này."
+		},
 		"diff": {
 			"label": "Bật chỉnh sửa qua diff",
 			"description": "Khi được bật, Roo sẽ có thể chỉnh sửa tệp nhanh hơn và sẽ tự động từ chối ghi toàn bộ tệp bị cắt ngắn. Hoạt động tốt nhất với mô hình Claude 3.7 Sonnet mới nhất.",

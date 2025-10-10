@@ -674,6 +674,10 @@
 		"title": "Advanced settings"
 	},
 	"advanced": {
+		"preserveHtmlEntities": {
+			"label": "Preserve HTML entities",
+			"description": "When enabled, HTML entities like &lt;, &gt;, and &amp; will be preserved as-is in file edits and commands. When disabled, they will be automatically converted to their literal characters (<, >, &). Note: Claude models always preserve entities regardless of this setting."
+		},
 		"diff": {
 			"label": "Enable editing through diffs",
 			"description": "When enabled, Roo will be able to edit files more quickly and will automatically reject truncated full-file writes. Works best with the latest Claude 3.7 Sonnet model.",

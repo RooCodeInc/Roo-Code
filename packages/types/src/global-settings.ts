@@ -124,6 +124,8 @@ export const globalSettingsSchema = z.object({
 
 	diagnosticsEnabled: z.boolean().optional(),
 
+	preserveHtmlEntities: z.boolean().optional(),
+
 	rateLimitSeconds: z.number().optional(),
 	diffEnabled: z.boolean().optional(),
 	fuzzyMatchThreshold: z.number().optional(),

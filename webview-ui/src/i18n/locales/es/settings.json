@@ -669,6 +669,10 @@
 		"title": "Configuración avanzada"
 	},
 	"advanced": {
+		"preserveHtmlEntities": {
+			"label": "Preservar entidades HTML",
+			"description": "Cuando está habilitado, las entidades HTML como &lt;, &gt; y &amp; se preservarán tal cual en las ediciones de archivos y comandos. Cuando está deshabilitado, se convertirán automáticamente a sus caracteres literales (<, >, &). Nota: los modelos Claude siempre preservan las entidades independientemente de esta configuración."
+		},
 		"diff": {
 			"label": "Habilitar edición a través de diffs",
 			"description": "Cuando está habilitado, Roo podrá editar archivos más rápidamente y rechazará automáticamente escrituras completas de archivos truncados. Funciona mejor con el último modelo Claude 3.7 Sonnet.",

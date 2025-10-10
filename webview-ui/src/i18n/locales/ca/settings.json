@@ -669,6 +669,10 @@
 		"title": "Configuració avançada"
 	},
 	"advanced": {
+		"preserveHtmlEntities": {
+			"label": "Preserva entitats HTML",
+			"description": "Quan estigui activat, les entitats HTML com &lt;, &gt; i &amp; es preservaran tal com estan en les edicions de fitxers i comandes. Quan estigui desactivat, es convertiran automàticament als seus caràcters literals (<, >, &). Nota: els models Claude sempre preserven les entitats independentment d'aquesta configuració."
+		},
 		"diff": {
 			"label": "Habilitar edició mitjançant diffs",
 			"description": "Quan està habilitat, Roo podrà editar fitxers més ràpidament i rebutjarà automàticament escriptures completes de fitxers truncats. Funciona millor amb l'últim model Claude 3.7 Sonnet.",
