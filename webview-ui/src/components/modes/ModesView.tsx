@@ -48,6 +48,8 @@ import {
 	StandardTooltip,
 } from "@src/components/ui"
 import { DeleteModeDialog } from "@src/components/modes/DeleteModeDialog"
+import { FamilyContextIndicator } from "@src/components/modes/FamilyContextIndicator"
+import { FamilySwitcher } from "@src/components/modes/FamilySwitcher"
 import { useEscapeKey } from "@src/hooks/useEscapeKey"
 
 // Get all available groups that should show in prompts view
@@ -67,7 +69,7 @@ function getGroupName(group: GroupEntry): ToolGroup {
 const ModesView = ({ onDone }: ModesViewProps) => {
 	const { t } = useAppTranslation()
 
-	const {
+		const {
 		customModePrompts,
 		listApiConfigMeta,
 		currentApiConfigName,
@@ -75,7 +77,11 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 		customInstructions,
 		setCustomInstructions,
 		customModes,
-	} = useExtensionState()
+		modeFamilies,
+		activeFamily,
+		setActiveFamily,
+	} = useExtensionState()</search>
+</search_and_replace>
 
 	// Use a local state to track the visually active mode
 	// This prevents flickering when switching modes rapidly by:
@@ -515,7 +521,18 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 			<TabContent>
 				<div>
 					<div onClick={(e) => e.stopPropagation()} className="flex justify-between items-center mb-3">
-						<h3 className="text-vscode-foreground m-0">{t("prompts:modes.title")}</h3>
+						<div className="flex items-center gap-3">
+							<h3 className="text-vscode-foreground m-0">{t("prompts:modes.title")}</h3>
+							<FamilyContextIndicator
+								activeFamily={activeFamily}
+								hasFamilies={modeFamilies?.config.families.length > 0}
+								onManageFamilies={() => {
+									vscode.postMessage({
+										type: "openCustomModesSettings",
+									})
+								}}
+							/>
+						</div>
 						<div className="flex gap-2">
 							<StandardTooltip content={t("prompts:modes.createNewMode")}>
 								<Button variant="ghost" size="icon" onClick={openCreateModeDialog}>
@@ -610,8 +627,31 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 						</Trans>
 					</div>
 
-					<div className="flex items-center gap-1 mb-3">
-						<Popover open={open} onOpenChange={onOpenChange}>
+										<div className="flex items-center gap-3 mb-3">
+						<FamilySwitcher
+							families={modeFamilies?.config.families || []}
+							activeFamily={activeFamily}
+							onFamilyChange={(familyId) => {
+								if (familyId) {
+									const family = modeFamilies?.config.families.find(f => f.id === familyId)
+									if (family) {
+										setActiveFamily(family)
+										vscode.postMessage({
+											type: "setActiveModeFamily",
+											familyId: family.id,
+										})
+									}
+								} else {
+									setActiveFamily(null)
+									vscode.postMessage({
+										type: "setActiveModeFamily",
+										familyId: null,
+									})
+								}
+							}}
+						/>
+						<Popover open={open} onOpenChange={onOpenChange}></search>
+</search_and_replace>
 							<PopoverTrigger asChild>
 								<Button
 									variant="combobox"
@@ -654,15 +694,44 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 											)}
 										</CommandEmpty>
 										<CommandGroup>
-											{modes
-												.filter((modeConfig) =>
-													searchValue
-														? modeConfig.name
-																.toLowerCase()
-																.includes(searchValue.toLowerCase())
-														: true,
-												)
-												.map((modeConfig) => (
+																						{modes
+												.filter((modeConfig) => {
+													// If search is active, filter by search term
+													if (searchValue) {
+														return modeConfig.name
+															.toLowerCase()
+															.includes(searchValue.toLowerCase())
+													}
+
+													// If no active family, show all modes
+													if (!activeFamily) {
+														return true
+													}
+
+													// If active family exists, prioritize modes in that family
+													// Show modes in family first, then other available modes
+													return true // Show all modes but with visual distinction
+												})
+												.sort((a, b) => {
+													// If no active family, maintain original order
+													if (!activeFamily) {
+														return 0
+													}
+
+													// Prioritize modes in active family
+													const aInFamily = activeFamily.enabledModes.includes(a.slug)
+													const bInFamily = activeFamily.enabledModes.includes(b.slug)
+
+													if (aInFamily && !bInFamily) return -1
+													if (!aInFamily && bInFamily) return 1
+
+													// Within same group, maintain original order
+													return 0
+												})
+												.map((modeConfig) => {
+													const isInActiveFamily = activeFamily?.enabledModes.includes(modeConfig.slug)
+													return (</search>
+</search_and_replace>
 													<CommandItem
 														key={modeConfig.slug}
 														value={modeConfig.slug}
@@ -671,17 +740,24 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 															setOpen(false)
 														}}
 														data-testid={`mode-option-${modeConfig.slug}`}>
-														<div className="flex items-center justify-between w-full">
-															<span
-																style={{
-																	whiteSpace: "nowrap",
-																	overflow: "hidden",
-																	textOverflow: "ellipsis",
-																	flex: 2,
-																	minWidth: 0,
-																}}>
-																{modeConfig.name}
-															</span>
+																												<div className="flex items-center justify-between w-full">
+															<div className="flex items-center gap-2 flex-1 min-w-0">
+																<span
+																	style={{
+																		whiteSpace: "nowrap",
+																		overflow: "hidden",
+																		textOverflow: "ellipsis",
+																		flex: 2,
+																		minWidth: 0,
+																	}}>
+																	{modeConfig.name}
+																</span>
+																{isInActiveFamily && (
+																	<span className="text-xs text-vscode-textLink-foreground">
+																		✓ Family
+																	</span>
+																)}
+															</div>
 															<span
 																className="text-foreground"
 																style={{
@@ -696,7 +772,8 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 																}}>
 																{modeConfig.slug}
 															</span>
-														</div>
+														</div></search>
+</search_and_replace>
 													</CommandItem>
 												))}
 										</CommandGroup>

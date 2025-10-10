@@ -86,6 +86,7 @@ import { forceFullModelDetailsLoad, hasLoadedFullDetails } from "../../api/provi
 import { ContextProxy } from "../config/ContextProxy"
 import { ProviderSettingsManager } from "../config/ProviderSettingsManager"
 import { CustomModesManager } from "../config/CustomModesManager"
+import { ModeFamiliesManager } from "../config/ModeFamiliesManager"
 import { Task } from "../task/Task"
 import { getSystemPromptFilePath } from "../prompts/sections/custom-system-prompt"
 
@@ -147,6 +148,7 @@ export class ClineProvider
 	public readonly latestAnnouncementId = "sep-2025-code-supernova-1m" // Code Supernova 1M context window announcement
 	public readonly providerSettingsManager: ProviderSettingsManager
 	public readonly customModesManager: CustomModesManager
+	public readonly modeFamiliesManager: ModeFamiliesManager
 
 	constructor(
 		readonly context: vscode.ExtensionContext,
@@ -174,9 +176,15 @@ export class ClineProvider
 
 		this.providerSettingsManager = new ProviderSettingsManager(this.context)
 
-		this.customModesManager = new CustomModesManager(this.context, async () => {
+		// Initialize ModeFamiliesManager first
+		this.modeFamiliesManager = new ModeFamiliesManager(this.context, async () => {
 			await this.postStateToWebview()
 		})
+
+		// Initialize CustomModesManager with ModeFamiliesManager dependency
+		this.customModesManager = new CustomModesManager(this.context, async () => {
+			await this.postStateToWebview()
+		}, this.modeFamiliesManager)
 
 		// Initialize MCP Hub through the singleton manager
 		McpServerManager.getInstance(this.context, this)
@@ -609,6 +617,7 @@ export class ClineProvider
 		this.mcpHub = undefined
 		this.marketplaceManager?.cleanup()
 		this.customModesManager?.dispose()
+		this.modeFamiliesManager?.dispose()
 		this.log("Disposed all disposables")
 		ClineProvider.activeInstances.delete(this)
 

@@ -24,6 +24,7 @@ import { RouterModels } from "@roo/api"
 
 import { vscode } from "@src/utils/vscode"
 import { convertTextMateToHljs } from "@src/utils/textMateToHljs"
+import { ModeFamily, ModeFamilyConfig, ModeFamiliesState } from "@src/components/settings/types"
 
 export interface ExtensionStateContextType extends ExtensionState {
 	historyPreviewCollapsed?: boolean // Add the new state property
@@ -158,6 +159,11 @@ export interface ExtensionStateContextType extends ExtensionState {
 	setMaxDiagnosticMessages: (value: number) => void
 	includeTaskHistoryInEnhance?: boolean
 	setIncludeTaskHistoryInEnhance: (value: boolean) => void
+	// Mode Families state
+	modeFamilies?: ModeFamiliesState
+	setModeFamilies: (value: ModeFamiliesState) => void
+	activeFamily?: ModeFamily | null
+	setActiveFamily: (family: ModeFamily | null) => void
 }
 
 export const ExtensionStateContext = createContext<ExtensionStateContextType | undefined>(undefined)
@@ -266,6 +272,15 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		maxDiagnosticMessages: 50,
 		openRouterImageApiKey: "",
 		openRouterImageGenerationSelectedModel: "",
+		// Mode Families state
+		modeFamilies: {
+			config: {
+				families: [],
+				activeFamilyId: undefined,
+			},
+			availableModes: [],
+			isLoading: false,
+		},
 	})
 
 	const [didHydrateState, setDidHydrateState] = useState(false)
@@ -559,6 +574,21 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		},
 		includeTaskHistoryInEnhance,
 		setIncludeTaskHistoryInEnhance,
+		modeFamilies: state.modeFamilies,
+		setModeFamilies: (value) => setState((prevState) => ({ ...prevState, modeFamilies: value })),
+		activeFamily: state.modeFamilies?.config.families.find(f => f.id === state.modeFamilies.config.activeFamilyId) || null,
+		setActiveFamily: (family) => {
+			setState((prevState) => ({
+				...prevState,
+				modeFamilies: {
+					...prevState.modeFamilies!,
+					config: {
+						...prevState.modeFamilies!.config,
+						activeFamilyId: family?.id,
+					},
+				},
+			}))
+		},
 	}
 
 	return <ExtensionStateContext.Provider value={contextValue}>{children}</ExtensionStateContext.Provider>
