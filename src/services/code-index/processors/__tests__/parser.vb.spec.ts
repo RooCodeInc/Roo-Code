@@ -242,6 +242,7 @@ describe("Fallback Extensions Configuration", () => {
 		expect(shouldUseFallbackChunking(".vb")).toBe(true)
 		expect(shouldUseFallbackChunking(".scala")).toBe(true)
 		expect(shouldUseFallbackChunking(".swift")).toBe(true)
+		expect(shouldUseFallbackChunking(".al")).toBe(true)
 
 		// Extensions that should not use fallback (have working parsers)
 		expect(shouldUseFallbackChunking(".js")).toBe(false)
@@ -258,5 +259,7 @@ describe("Fallback Extensions Configuration", () => {
 		expect(shouldUseFallbackChunking(".Vb")).toBe(true)
 		expect(shouldUseFallbackChunking(".SCALA")).toBe(true)
 		expect(shouldUseFallbackChunking(".Scala")).toBe(true)
+		expect(shouldUseFallbackChunking(".AL")).toBe(true)
+		expect(shouldUseFallbackChunking(".Al")).toBe(true)
 	})
 })
