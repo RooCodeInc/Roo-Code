@@ -118,6 +118,21 @@ export class LmStudioHandler extends BaseProvider implements SingleCompletionHan
 						yield processedChunk
 					}
 				}
+
+				// This is a hack to show the debug reasoning in the UI.
+				if (
+					this.options.lmStudioShowDebugThoughts === true &&
+					"reasoning" in delta &&
+					delta.reasoning &&
+					typeof delta.reasoning === "string"
+				) {
+					const reasoning = delta.reasoning
+					assistantText += reasoning
+					yield {
+						type: "reasoning",
+						text: reasoning,
+					}
+				}
 			}
 
 			for (const processedChunk of matcher.final()) {
