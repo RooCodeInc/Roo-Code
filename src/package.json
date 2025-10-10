@@ -3,7 +3,7 @@
 	"displayName": "%extension.displayName%",
 	"description": "%extension.description%",
 	"publisher": "RooVeterinaryInc",
-	"version": "3.28.6",
+	"version": "3.28.15",
 	"icon": "assets/icons/icon.png",
 	"galleryBanner": {
 		"color": "#617A91",
@@ -20,7 +20,7 @@
 		"type": "git",
 		"url": "https://github.com/RooCodeInc/Roo-Code"
 	},
-	"homepage": "https://github.com/RooCodeInc/Roo-Code",
+	"homepage": "https://roocode.com",
 	"categories": [
 		"AI",
 		"Chat",

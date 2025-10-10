@@ -30,6 +30,7 @@
 		"terminal": "終端機",
 		"slashCommands": "斜線命令",
 		"prompts": "提示詞",
+		"ui": "UI",
 		"experimental": "實驗性",
 		"language": "語言",
 		"about": "關於 Roo Code"
@@ -835,6 +836,7 @@
 			"regionMismatch": "警告：您 ARN 中的區域 ({{arnRegion}}) 與您選擇的區域 ({{region}}) 不符，可能導致存取問題。系統將使用 ARN 中指定的區域。"
 		},
 		"modelAvailability": "您指定的模型 ID ({{modelId}}) 目前無法使用，請選擇其他模型。",
+		"modelDeprecated": "此模型已停用，請選擇其他模型。",
 		"providerNotAllowed": "供應商 '{{provider}}' 不允許用於您的組織。",
 		"modelNotAllowed": "模型 '{{model}}' 不允許用於供應商 '{{provider}}'，您的組織不允許",
 		"profileInvalid": "此設定檔包含您的組織不允許的供應商或模型",
@@ -890,6 +892,12 @@
 			"input": "輸入",
 			"output": "輸出",
 			"cacheReads": "快取讀取"
+		}
+	},
+	"ui": {
+		"collapseThinking": {
+			"label": "預設折疊“思考”訊息",
+			"description": "啟用後，“思考”塊將預設折疊，直到您與其互動"
 		}
 	}
 }

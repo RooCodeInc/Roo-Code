@@ -30,6 +30,7 @@
 		"terminal": "터미널",
 		"slashCommands": "슬래시 명령",
 		"prompts": "프롬프트",
+		"ui": "UI",
 		"experimental": "실험적",
 		"language": "언어",
 		"about": "Roo Code 정보"
@@ -835,6 +836,7 @@
 			"regionMismatch": "경고: ARN의 리전({{arnRegion}})이 선택한 리전({{region}})과 일치하지 않습니다. 접근 문제가 발생할 수 있습니다. 제공자는 ARN의 리전을 사용합니다."
 		},
 		"modelAvailability": "제공한 모델 ID({{modelId}})를 사용할 수 없습니다. 다른 모델을 선택하세요.",
+		"modelDeprecated": "이 모델은 더 이상 사용할 수 없습니다. 다른 모델을 선택하세요.",
 		"providerNotAllowed": "제공자 '{{provider}}'는 조직에서 허용되지 않습니다",
 		"modelNotAllowed": "모델 '{{model}}'은 제공자 '{{provider}}'에 대해 조직에서 허용되지 않습니다",
 		"profileInvalid": "이 프로필에는 조직에서 허용되지 않는 제공자 또는 모델이 포함되어 있습니다",
@@ -890,6 +892,12 @@
 			"input": "입력",
 			"output": "출력",
 			"cacheReads": "캐시 읽기"
+		}
+	},
+	"ui": {
+		"collapseThinking": {
+			"label": "기본적으로 생각 메시지 접기",
+			"description": "활성화하면 상호 작용할 때까지 생각 블록이 기본적으로 접힙니다"
 		}
 	}
 }
