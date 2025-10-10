@@ -20,7 +20,7 @@ import { EXTERNAL_LINKS } from "@/lib/constants"
 import Image from "next/image"
 
 const TITLE = "Roo Code Cloud"
-const DESCRIPTION = ""
+const DESCRIPTION = "Roo Code Cloud gives you and your team the tools to take AI-coding to the next level with cloud agents, remote control, and more."
 const PATH = "/cloud"
 const OG_IMAGE = SEO.ogImage
 
