@@ -114,8 +114,9 @@ describe("LmStudioHandler", () => {
 			expect(textChunks[0].text).toBe("Test response")
 		})
 
-		it("should handle API errors", async () => {
-			mockCreate.mockRejectedValueOnce(new Error("API Error"))
+		it("should handle connection errors", async () => {
+			const connectionError = new Error("connect ECONNREFUSED 127.0.0.1:1234")
+			mockCreate.mockRejectedValueOnce(connectionError)
 
 			const stream = handler.createMessage(systemPrompt, messages)
 
@@ -123,7 +124,45 @@ describe("LmStudioHandler", () => {
 				for await (const _chunk of stream) {
 					// Should not reach here
 				}
-			}).rejects.toThrow("Please check the LM Studio developer logs to debug what went wrong")
+			}).rejects.toThrow("Cannot connect to LM Studio at http://localhost:1234")
+		})
+
+		it("should handle model not found errors", async () => {
+			const modelError = new Error("model 'local-model' not found")
+			mockCreate.mockRejectedValueOnce(modelError)
+
+			const stream = handler.createMessage(systemPrompt, messages)
+
+			await expect(async () => {
+				for await (const _chunk of stream) {
+					// Should not reach here
+				}
+			}).rejects.toThrow('Model "local-model" not found in LM Studio')
+		})
+
+		it("should handle context length errors", async () => {
+			const contextError = new Error("context length exceeded")
+			mockCreate.mockRejectedValueOnce(contextError)
+
+			const stream = handler.createMessage(systemPrompt, messages)
+
+			await expect(async () => {
+				for await (const _chunk of stream) {
+					// Should not reach here
+				}
+			}).rejects.toThrow("Context length exceeded")
+		})
+
+		it("should handle generic API errors", async () => {
+			mockCreate.mockRejectedValueOnce(new Error("Unknown API Error"))
+
+			const stream = handler.createMessage(systemPrompt, messages)
+
+			await expect(async () => {
+				for await (const _chunk of stream) {
+					// Should not reach here
+				}
+			}).rejects.toThrow("LM Studio completion error")
 		})
 	})
 
@@ -139,11 +178,31 @@ describe("LmStudioHandler", () => {
 			})
 		})
 
-		it("should handle API errors", async () => {
-			mockCreate.mockRejectedValueOnce(new Error("API Error"))
+		it("should handle connection errors", async () => {
+			const connectionError = new Error("connect ECONNREFUSED 127.0.0.1:1234")
+			mockCreate.mockRejectedValueOnce(connectionError)
 			await expect(handler.completePrompt("Test prompt")).rejects.toThrow(
-				"Please check the LM Studio developer logs to debug what went wrong",
+				"Cannot connect to LM Studio at http://localhost:1234",
 			)
+		})
+
+		it("should handle model not found errors", async () => {
+			const modelError = new Error("model 'local-model' not found")
+			mockCreate.mockRejectedValueOnce(modelError)
+			await expect(handler.completePrompt("Test prompt")).rejects.toThrow(
+				'Model "local-model" not found in LM Studio',
+			)
+		})
+
+		it("should handle context length errors", async () => {
+			const contextError = new Error("token limit exceeded")
+			mockCreate.mockRejectedValueOnce(contextError)
+			await expect(handler.completePrompt("Test prompt")).rejects.toThrow("Context length exceeded")
+		})
+
+		it("should handle generic API errors", async () => {
+			mockCreate.mockRejectedValueOnce(new Error("Unknown API Error"))
+			await expect(handler.completePrompt("Test prompt")).rejects.toThrow("LM Studio completion error")
 		})
 
 		it("should handle empty response", async () => {
