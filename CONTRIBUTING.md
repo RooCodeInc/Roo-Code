@@ -124,6 +124,20 @@ pnpm install
 - Provide screenshots/videos for UI changes.
 - Indicate if documentation updates are necessary.
 
+### Addressing Automated Review Comments
+
+Our repository uses automated review tools (including Roomote and other bots) to help maintain code quality. When you submit a PR, you may receive automated comments. Here's how to handle them:
+
+- **Review all automated comments carefully** - They often catch important issues like code style violations, security concerns, or missing tests.
+- **For each automated comment, you must either:**
+    - **Fix the issue:** Commit the necessary changes to address the feedback.
+    - **Provide justification:** If you believe the suggestion is not applicable, comment on the PR explaining why the proposed change is not needed or appropriate for your specific case.
+- **Do not ignore automated comments** - Unaddressed automated feedback may delay or prevent PR approval.
+- **Common automated reviewers include:**
+    - Roomote - Code quality and best practices
+    - Security bots - Vulnerability scanning
+    - CI/CD checks - Test failures and build issues
+
 ### Pull Request Policy
 
 - Must reference an assigned GitHub Issue. To get assigned: comment "Claiming" on the issue and DM **Hannes Rudolph (`hrudolph`)** on [Discord](https://discord.gg/roocode). Assignment will be confirmed in the thread.
