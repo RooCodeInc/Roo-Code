@@ -48,11 +48,16 @@
 		"geminiConfigMissing": "Falta la configuración de Gemini para crear el incrustador",
 		"mistralConfigMissing": "Falta la configuración de Mistral para la creación del incrustador",
 		"vercelAiGatewayConfigMissing": "Falta la configuración de Vercel AI Gateway para la creación del incrustador",
+		"nebiusConfigMissing": "Falta la configuración de Nebius para la creación del incrustador",
 		"invalidEmbedderType": "Tipo de incrustador configurado inválido: {{embedderProvider}}",
 		"vectorDimensionNotDeterminedOpenAiCompatible": "No se pudo determinar la dimensión del vector para el modelo '{{modelId}}' con el proveedor '{{provider}}'. Asegúrate de que la 'Dimensión de incrustación' esté configurada correctamente en los ajustes del proveedor compatible con OpenAI.",
 		"vectorDimensionNotDetermined": "No se pudo determinar la dimensión del vector para el modelo '{{modelId}}' con el proveedor '{{provider}}'. Verifica los perfiles del modelo o la configuración.",
 		"qdrantUrlMissing": "Falta la URL de Qdrant para crear el almacén de vectores",
 		"codeIndexingNotConfigured": "No se pueden crear servicios: La indexación de código no está configurada correctamente"
+	},
+	"nebius": {
+		"rateLimitExceeded": "Límite de Nebius excedido para {{type}} (límite: {{limit}} por {{window}}).",
+		"waitingForRateLimit": "Esperando el restablecimiento del límite de Nebius (pausando {{waitTimeMs}}ms)..."
 	},
 	"orchestrator": {
 		"indexingFailedNoBlocks": "Indexación fallida: No se indexaron exitosamente bloques de código. Esto usualmente indica un problema de configuración del incrustador.",
