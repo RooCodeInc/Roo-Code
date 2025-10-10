@@ -275,6 +275,46 @@ describe("FileWatcher", () => {
 			expect(processedFiles).not.toContain(".hidden/src/components/Button.tsx")
 			expect(processedFiles).not.toContain("src/components/.hidden/Button.tsx")
 		})
+
+		it("should process files when workspace is under hidden parent directory", async () => {
+			// Mock parseFile to return blocks for this test
+			const { codeParser } = await import("../parser")
+			vi.mocked(codeParser.parseFile).mockResolvedValue([
+				{
+					file_path: "/Users/test/.config/project/src/file.ts",
+					content: "test content",
+					start_line: 1,
+					end_line: 5,
+					identifier: "test",
+					type: "function",
+					fileHash: "hash",
+					segmentHash: "segment-hash",
+				} as any,
+			])
+
+			// Create a new watcher instance with workspace under hidden parent
+			const watcherUnderHidden = new FileWatcher(
+				"/Users/test/.config/project",
+				mockContext,
+				mockCacheManager,
+				mockEmbedder,
+				mockVectorStore,
+			)
+
+			await watcherUnderHidden.initialize()
+
+			// Capture the event handler for the new watcher instance
+			const createHandler = mockWatcher.onDidCreate.mock.calls[mockWatcher.onDidCreate.mock.calls.length - 1][0]
+
+			// Simulate file creation using the captured handler
+			await createHandler({ fsPath: "/Users/test/.config/project/src/file.ts" })
+
+			// Wait for batch processing
+			await new Promise((resolve) => setTimeout(resolve, 600))
+
+			// File should be processed, not filtered out
+			expect(mockVectorStore.upsertPoints).toHaveBeenCalled()
+		})
 	})
 
 	describe("dispose", () => {
