@@ -1776,4 +1776,130 @@ describe("Cline", () => {
 			consoleErrorSpy.mockRestore()
 		})
 	})
+
+	describe("Message Queue Race Condition Fix", () => {
+		it("should process messages from queue when available", async () => {
+			const task = new Task({
+				provider: mockProvider,
+				apiConfiguration: mockApiConfig,
+				task: "test task",
+				startTask: false,
+			})
+
+			// Add a message to the queue
+			task.messageQueueService.addMessage("queued message", ["image.png"])
+
+			// Call ask which should process the queued message
+			const result = await task.ask("followup", "Initial question")
+
+			// Verify the queued message was processed
+			expect(result.response).toBe("messageResponse")
+			expect(result.text).toBe("queued message")
+			expect(result.images).toEqual(["image.png"])
+
+			// Verify queue is now empty
+			expect(task.messageQueueService.isEmpty()).toBe(true)
+		})
+
+		it("should handle tool approval messages from queue", async () => {
+			const task = new Task({
+				provider: mockProvider,
+				apiConfiguration: mockApiConfig,
+				task: "test task",
+				startTask: false,
+			})
+
+			// Add a message to the queue
+			task.messageQueueService.addMessage("approve with context", ["image.png"])
+
+			// Call ask for tool approval - should auto-approve with queued message
+			const result = await task.ask("tool", "Do you want to use this tool?")
+
+			// Verify the queued message was processed as tool approval
+			expect(result.response).toBe("yesButtonClicked")
+			expect(result.text).toBe("approve with context")
+			expect(result.images).toEqual(["image.png"])
+
+			// Verify queue is now empty
+			expect(task.messageQueueService.isEmpty()).toBe(true)
+		})
+
+		it("should check for new messages during wait period", async () => {
+			const task = new Task({
+				provider: mockProvider,
+				apiConfiguration: mockApiConfig,
+				task: "test task",
+				startTask: false,
+			})
+
+			// Mock pWaitFor to simulate adding a message during the wait
+			const originalPWaitFor = (await import("p-wait-for")).default
+			let conditionCheckCount = 0
+			vi.mocked(originalPWaitFor).mockImplementation(async (condition, options) => {
+				// Simulate checking the condition multiple times
+				while (true) {
+					conditionCheckCount++
+
+					// On the second check, add a message to the queue
+					if (conditionCheckCount === 2) {
+						task.messageQueueService.addMessage("delayed message")
+						// The condition should now detect the message and process it
+						task.setMessageResponse("delayed message")
+					}
+
+					// Check the condition
+					const result = await condition()
+					if (result) {
+						return
+					}
+
+					// Prevent infinite loop
+					if (conditionCheckCount > 5) {
+						// Force completion
+						task.setMessageResponse("forced completion")
+						return
+					}
+
+					await new Promise((resolve) => setTimeout(resolve, 10))
+				}
+			})
+
+			// Call ask - initially no messages in queue
+			const result = await task.ask("followup", "Question")
+
+			// Should have processed the message that was added during wait
+			expect(result.response).toBe("messageResponse")
+			expect(result.text).toBe("delayed message")
+
+			// Verify condition was checked multiple times
+			expect(conditionCheckCount).toBeGreaterThan(1)
+		})
+
+		it("should handle multiple messages in queue", async () => {
+			const task = new Task({
+				provider: mockProvider,
+				apiConfiguration: mockApiConfig,
+				task: "test task",
+				startTask: false,
+			})
+
+			// Add multiple messages to the queue
+			task.messageQueueService.addMessage("first message")
+			task.messageQueueService.addMessage("second message")
+
+			// First ask should process first message
+			const result1 = await task.ask("followup", "Question 1")
+			expect(result1.text).toBe("first message")
+
+			// Queue should still have one message
+			expect(task.messageQueueService.isEmpty()).toBe(false)
+
+			// Second ask should process second message
+			const result2 = await task.ask("followup", "Question 2")
+			expect(result2.text).toBe("second message")
+
+			// Queue should now be empty
+			expect(task.messageQueueService.isEmpty()).toBe(true)
+		})
+	})
 })

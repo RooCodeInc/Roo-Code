@@ -799,9 +799,35 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// The state is mutable if the message is complete and the task will
 		// block (via the `pWaitFor`).
 		const isBlocking = !(this.askResponse !== undefined || this.lastMessageTs !== askTs)
-		const isMessageQueued = !this.messageQueueService.isEmpty()
-		const isStatusMutable = !partial && isBlocking && !isMessageQueued
 		let statusMutationTimeouts: NodeJS.Timeout[] = []
+
+		// Process any queued messages first
+		let processedQueuedMessage = false
+		if (!partial && isBlocking && !this.messageQueueService.isEmpty()) {
+			console.log("Task#ask will process message queue")
+
+			const message = this.messageQueueService.dequeueMessage()
+
+			if (message) {
+				processedQueuedMessage = true
+				// Check if this is a tool approval ask that needs to be handled
+				if (
+					type === "tool" ||
+					type === "command" ||
+					type === "browser_action_launch" ||
+					type === "use_mcp_server"
+				) {
+					// For tool approvals, we need to approve first, then send the message if there's text/images
+					this.handleWebviewAskResponse("yesButtonClicked", message.text, message.images)
+				} else {
+					// For other ask types (like followup), fulfill the ask directly
+					this.setMessageResponse(message.text, message.images)
+				}
+			}
+		}
+
+		// Only set status mutations if we didn't process a queued message and there are no more queued messages
+		const isStatusMutable = !partial && isBlocking && !processedQueuedMessage && this.messageQueueService.isEmpty()
 
 		if (isStatusMutable) {
 			console.log(`Task#ask will block -> type: ${type}`)
@@ -840,30 +866,41 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					}, 1_000),
 				)
 			}
-		} else if (isMessageQueued) {
-			console.log("Task#ask will process message queue")
-
-			const message = this.messageQueueService.dequeueMessage()
-
-			if (message) {
-				// Check if this is a tool approval ask that needs to be handled
-				if (
-					type === "tool" ||
-					type === "command" ||
-					type === "browser_action_launch" ||
-					type === "use_mcp_server"
-				) {
-					// For tool approvals, we need to approve first, then send the message if there's text/images
-					this.handleWebviewAskResponse("yesButtonClicked", message.text, message.images)
-				} else {
-					// For other ask types (like followup), fulfill the ask directly
-					this.setMessageResponse(message.text, message.images)
-				}
-			}
 		}
 
-		// Wait for askResponse to be set.
-		await pWaitFor(() => this.askResponse !== undefined || this.lastMessageTs !== askTs, { interval: 100 })
+		// Wait for askResponse to be set, but also check for new queued messages periodically
+		await pWaitFor(
+			() => {
+				// If response is ready, we're done
+				if (this.askResponse !== undefined || this.lastMessageTs !== askTs) {
+					return true
+				}
+
+				// Check if new messages were queued while waiting
+				if (!this.messageQueueService.isEmpty()) {
+					console.log("Task#ask detected new queued message while waiting")
+					const message = this.messageQueueService.dequeueMessage()
+
+					if (message) {
+						// Process the newly queued message
+						if (
+							type === "tool" ||
+							type === "command" ||
+							type === "browser_action_launch" ||
+							type === "use_mcp_server"
+						) {
+							this.handleWebviewAskResponse("yesButtonClicked", message.text, message.images)
+						} else {
+							this.setMessageResponse(message.text, message.images)
+						}
+						return true
+					}
+				}
+
+				return false
+			},
+			{ interval: 100 },
+		)
 
 		if (this.lastMessageTs !== askTs) {
 			// Could happen if we send multiple asks in a row i.e. with
