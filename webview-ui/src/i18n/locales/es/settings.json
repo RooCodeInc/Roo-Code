@@ -246,6 +246,7 @@
 		"vercelAiGatewayApiKey": "Clave API de Vercel AI Gateway",
 		"getVercelAiGatewayApiKey": "Obtener clave API de Vercel AI Gateway",
 		"apiKeyStorageNotice": "Las claves API se almacenan de forma segura en el Almacenamiento Secreto de VSCode",
+		"passwordStorageNotice": "Las contraseñas se almacenan de forma segura en el Almacenamiento Secreto de VSCode",
 		"glamaApiKey": "Clave API de Glama",
 		"getGlamaApiKey": "Obtener clave API de Glama",
 		"useCustomBaseUrl": "Usar URL base personalizada",
@@ -479,6 +480,20 @@
 			"placeholder": "Por defecto: claude",
 			"maxTokensLabel": "Tokens máximos de salida",
 			"maxTokensDescription": "Número máximo de tokens de salida para las respuestas de Claude Code. El valor predeterminado es 8000."
+		},
+		"watsonx": {
+			"platform": "Plataforma",
+			"region": "Región",
+			"username": "Nombre de usuario",
+			"password": "Contraseña",
+			"apiKey": "Clave API",
+			"authType": "Tipo de autenticación",
+			"projectId": "ID del proyecto",
+			"urlDescription": "Introduzca la URL completa de su instancia de IBM Cloud Pak for Data",
+			"selectedEndpoint": "Punto final seleccionado",
+			"retrieveModels": "Recuperar modelos",
+			"retrieveSuccessful": "Modelos recuperados correctamente",
+			"retrieveError": "Error al recuperar los modelos. Por favor, compruebe sus credenciales e inténtelo de nuevo"
 		}
 	},
 	"browser": {
@@ -685,6 +700,9 @@
 					"multiBlock": "La estrategia de diff multi-bloque permite actualizar múltiples bloques de código en un archivo en una sola solicitud."
 				}
 			},
+			"watsonx": {
+				"description": "Cuando está habilitado, Roo podrá editar archivos más rápidamente y rechazará automáticamente escrituras completas de archivos truncados."
+			},
 			"matchPrecision": {
 				"label": "Precisión de coincidencia",
 				"description": "Este control deslizante controla cuán precisamente deben coincidir las secciones de código al aplicar diffs. Valores más bajos permiten coincidencias más flexibles pero aumentan el riesgo de reemplazos incorrectos. Use valores por debajo del 100% con extrema precaución."
@@ -828,7 +846,17 @@
 		"providerNotAllowed": "El proveedor '{{provider}}' no está permitido por su organización",
 		"modelNotAllowed": "El modelo '{{model}}' no está permitido para el proveedor '{{provider}}' por su organización",
 		"profileInvalid": "Este perfil contiene un proveedor o modelo que no está permitido por su organización",
-		"qwenCodeOauthPath": "Debes proporcionar una ruta válida de credenciales OAuth"
+		"qwenCodeOauthPath": "Debes proporcionar una ruta válida de credenciales OAuth",
+		"watsonx": {
+			"platform": "Debe seleccionar una plataforma.",
+			"region": "Debe seleccionar una región.",
+			"projectId": "Debe proporcionar un ID de proyecto válido.",
+			"authType": "Debe seleccionar un tipo de autenticación.",
+			"username": "Debe proporcionar un nombre de usuario válido.",
+			"apiKey": "Debe proporcionar una clave API válida.",
+			"password": "Debe proporcionar una contraseña válida.",
+			"baseUrl": "Debe proporcionar una URL válida de IBM Cloud Pak for Data."
+		}
 	},
 	"placeholders": {
 		"apiKey": "Ingrese clave API...",
