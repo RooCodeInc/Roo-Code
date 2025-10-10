@@ -60,6 +60,8 @@ export class VercelAiGatewayHandler extends RouterProvider implements SingleComp
 				: undefined,
 			max_completion_tokens: info.maxTokens,
 			stream: true,
+			prompt_cache_key: metadata?.taskId,
+			safety_identifier: metadata?.safetyIdentifier,
 		}
 
 		const completion = await this.client.chat.completions.create(body)
@@ -87,7 +89,7 @@ export class VercelAiGatewayHandler extends RouterProvider implements SingleComp
 		}
 	}
 
-	async completePrompt(prompt: string): Promise<string> {
+	async completePrompt(prompt: string, metadata?: ApiHandlerCreateMessageMetadata): Promise<string> {
 		const { id: modelId, info } = await this.fetchModel()
 
 		try {
@@ -95,6 +97,8 @@ export class VercelAiGatewayHandler extends RouterProvider implements SingleComp
 				model: modelId,
 				messages: [{ role: "user", content: prompt }],
 				stream: false,
+				prompt_cache_key: metadata?.taskId,
+				safety_identifier: metadata?.safetyIdentifier,
 			}
 
 			if (this.supportsTemperature(modelId)) {

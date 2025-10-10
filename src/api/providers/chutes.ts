@@ -9,6 +9,7 @@ import { convertToOpenAiMessages } from "../transform/openai-format"
 import { ApiStream } from "../transform/stream"
 
 import { BaseOpenAiCompatibleProvider } from "./base-openai-compatible-provider"
+import { ApiHandlerCreateMessageMetadata } from ".."
 
 export class ChutesHandler extends BaseOpenAiCompatibleProvider<ChutesModelId> {
 	constructor(options: ApiHandlerOptions) {
@@ -44,13 +45,19 @@ export class ChutesHandler extends BaseOpenAiCompatibleProvider<ChutesModelId> {
 		}
 	}
 
-	override async *createMessage(systemPrompt: string, messages: Anthropic.Messages.MessageParam[]): ApiStream {
+	override async *createMessage(
+		systemPrompt: string,
+		messages: Anthropic.Messages.MessageParam[],
+		metadata?: ApiHandlerCreateMessageMetadata,
+	): ApiStream {
 		const model = this.getModel()
 
 		if (model.id.includes("DeepSeek-R1")) {
 			const stream = await this.client.chat.completions.create({
 				...this.getCompletionParams(systemPrompt, messages),
 				messages: convertToR1Format([{ role: "user", content: systemPrompt }, ...messages]),
+				prompt_cache_key: metadata?.taskId,
+				safety_identifier: metadata?.safetyIdentifier,
 			})
 
 			const matcher = new XmlMatcher(
@@ -85,7 +92,7 @@ export class ChutesHandler extends BaseOpenAiCompatibleProvider<ChutesModelId> {
 				yield processedChunk
 			}
 		} else {
-			yield* super.createMessage(systemPrompt, messages)
+			yield* super.createMessage(systemPrompt, messages, metadata)
 		}
 	}
 

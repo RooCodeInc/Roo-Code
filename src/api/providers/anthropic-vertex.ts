@@ -175,7 +175,7 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 		return { id: id.endsWith(":thinking") ? id.replace(":thinking", "") : id, info, ...params }
 	}
 
-	async completePrompt(prompt: string) {
+	async completePrompt(prompt: string, metadata?: ApiHandlerCreateMessageMetadata) {
 		try {
 			let {
 				id,

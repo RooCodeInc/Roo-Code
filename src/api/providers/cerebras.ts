@@ -277,7 +277,7 @@ export class CerebrasHandler extends BaseProvider implements SingleCompletionHan
 		}
 	}
 
-	async completePrompt(prompt: string): Promise<string> {
+	async completePrompt(prompt: string, metadata?: ApiHandlerCreateMessageMetadata): Promise<string> {
 		const { id: model } = this.getModel()
 
 		// Prepare request body for non-streaming completion
@@ -285,6 +285,8 @@ export class CerebrasHandler extends BaseProvider implements SingleCompletionHan
 			model,
 			messages: [{ role: "user", content: prompt }],
 			stream: false,
+			prompt_cache_key: metadata?.taskId,
+			safety_identifier: metadata?.safetyIdentifier,
 		}
 
 		try {
