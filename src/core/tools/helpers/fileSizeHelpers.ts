@@ -47,43 +47,38 @@ export interface BatchFileSizeCheckResult {
  * @returns File size check result
  */
 export async function checkFileSizeForRead(filePath: string): Promise<FileSizeCheckResult> {
-	try {
-		const stats = await fs.stat(filePath)
-		const sizeInBytes = stats.size
-		const estimatedTokens = Math.ceil(sizeInBytes / FILE_SIZE_LIMITS.BYTES_PER_TOKEN)
+	const stats = await fs.stat(filePath)
+	const sizeInBytes = stats.size
+	const estimatedTokens = Math.ceil(sizeInBytes / FILE_SIZE_LIMITS.BYTES_PER_TOKEN)
 
-		// Check if file exceeds hard limit
-		if (sizeInBytes > FILE_SIZE_LIMITS.SINGLE_FILE_MAX_BYTES) {
-			return {
-				sizeInBytes,
-				estimatedTokens,
-				shouldWarn: false,
-				shouldBlock: true,
-				errorMessage: `File size (${formatBytes(sizeInBytes)}, ~${estimatedTokens.toLocaleString()} tokens) exceeds maximum allowed size (${formatBytes(FILE_SIZE_LIMITS.SINGLE_FILE_MAX_BYTES)}). Consider using line_range to read specific sections, or use list_code_definition_names to get an overview first.`,
-			}
-		}
-
-		// Check if file should trigger warning
-		if (sizeInBytes > FILE_SIZE_LIMITS.SINGLE_FILE_WARNING_BYTES) {
-			return {
-				sizeInBytes,
-				estimatedTokens,
-				shouldWarn: true,
-				shouldBlock: false,
-				warningMessage: `⚠️ Large file warning: This file is ${formatBytes(sizeInBytes)} (~${estimatedTokens.toLocaleString()} tokens). Reading it will consume significant context. Consider using line_range to read specific sections, or list_code_definition_names to get an overview first.`,
-			}
-		}
-
-		// File size is acceptable
+	// Check if file exceeds hard limit
+	if (sizeInBytes > FILE_SIZE_LIMITS.SINGLE_FILE_MAX_BYTES) {
 		return {
 			sizeInBytes,
 			estimatedTokens,
 			shouldWarn: false,
-			shouldBlock: false,
+			shouldBlock: true,
+			errorMessage: `File size (${formatBytes(sizeInBytes)}, ~${estimatedTokens.toLocaleString()} tokens) exceeds maximum allowed size (${formatBytes(FILE_SIZE_LIMITS.SINGLE_FILE_MAX_BYTES)}). Consider using line_range to read specific sections, or use list_code_definition_names to get an overview first.`,
 		}
-	} catch (error) {
-		// If we can't stat the file, let the normal read process handle the error
-		throw error
+	}
+
+	// Check if file should trigger warning
+	if (sizeInBytes > FILE_SIZE_LIMITS.SINGLE_FILE_WARNING_BYTES) {
+		return {
+			sizeInBytes,
+			estimatedTokens,
+			shouldWarn: true,
+			shouldBlock: false,
+			warningMessage: `⚠️ Large file warning: This file is ${formatBytes(sizeInBytes)} (~${estimatedTokens.toLocaleString()} tokens). Reading it will consume significant context. Consider using line_range to read specific sections, or list_code_definition_names to get an overview first.`,
+		}
+	}
+
+	// File size is acceptable
+	return {
+		sizeInBytes,
+		estimatedTokens,
+		shouldWarn: false,
+		shouldBlock: false,
 	}
 }
 
