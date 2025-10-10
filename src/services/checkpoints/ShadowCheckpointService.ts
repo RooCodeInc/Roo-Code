@@ -70,17 +70,17 @@ export abstract class ShadowCheckpointService extends EventEmitter {
 			throw new Error("Shadow git repo already initialized")
 		}
 
-		const nestedGitPath = await this.getNestedGitRepository()
+		const childGitPath = await this.getChildGitRepository()
 
-		if (nestedGitPath) {
+		if (childGitPath) {
 			// Show persistent error message with the offending path
-			const relativePath = path.relative(this.workspaceDir, nestedGitPath)
-			const message = t("common:errors.nested_git_repos_warning", { path: relativePath })
+			const relativePath = path.relative(this.workspaceDir, childGitPath)
+			const message = t("common:errors.child_git_repos_warning", { path: relativePath })
 			vscode.window.showErrorMessage(message)
 
 			throw new Error(
-				`Checkpoints are disabled because a nested git repository was detected at: ${relativePath}. ` +
-					"Please remove or relocate nested git repositories to use the checkpoints feature.",
+				`Checkpoints are disabled because a Git repository was detected below the workspace root at: ${relativePath}. ` +
+				`To use checkpoints, please remove or relocate this git repository, or open a Git repository as the workspace root.`,
 			)
 		}
 
@@ -160,17 +160,17 @@ export abstract class ShadowCheckpointService extends EventEmitter {
 		}
 	}
 
-	private async getNestedGitRepository(): Promise<string | null> {
+	private async getChildGitRepository(): Promise<string | null> {
 		try {
 			// Find all .git/HEAD files that are not at the root level.
 			const args = ["--files", "--hidden", "--follow", "-g", "**/.git/HEAD", this.workspaceDir]
 
 			const gitPaths = await executeRipgrep({ args, workspacePath: this.workspaceDir })
 
-			// Filter to only include nested git directories (not the root .git).
+			// Filter to only include child git directories (not the root .git).
 			// Since we're searching for HEAD files, we expect type to be "file"
-			const nestedGitPaths = gitPaths.filter(({ type, path: filePath }) => {
-				// Check if it's a file and is a nested .git/HEAD (not at root)
+			const childGitPaths = gitPaths.filter(({ type, path: filePath }) => {
+				// Check if it's a file and is a child .git/HEAD (not at root)
 				if (type !== "file") return false
 
 				// Ensure it's a .git/HEAD file and not the root one
@@ -182,10 +182,10 @@ export abstract class ShadowCheckpointService extends EventEmitter {
 				)
 			})
 
-			if (nestedGitPaths.length > 0) {
-				// Get the first nested git repository path
+			if (childGitPaths.length > 0) {
+				// Get the first child git repository path
 				// Remove .git/HEAD from the path to get the repository directory
-				const headPath = nestedGitPaths[0].path
+				const headPath = childGitPaths[0].path
 
 				// Use path module to properly extract the repository directory
 				// The HEAD file is at .git/HEAD, so we need to go up two directories
@@ -195,7 +195,7 @@ export abstract class ShadowCheckpointService extends EventEmitter {
 				const absolutePath = path.join(this.workspaceDir, repoDir)
 
 				this.log(
-					`[${this.constructor.name}#getNestedGitRepository] found ${nestedGitPaths.length} nested git repositories, first at: ${repoDir}`,
+					`[${this.constructor.name}#getChildGitRepository] found ${childGitPaths.length} child git repositories, first at: ${repoDir}`,
 				)
 				return absolutePath
 			}
@@ -203,10 +203,10 @@ export abstract class ShadowCheckpointService extends EventEmitter {
 			return null
 		} catch (error) {
 			this.log(
-				`[${this.constructor.name}#getNestedGitRepository] failed to check for nested git repos: ${error instanceof Error ? error.message : String(error)}`,
+				`[${this.constructor.name}#getChildGitRepository] failed to check for child git repos: ${error instanceof Error ? error.message : String(error)}`,
 			)
 
-			// If we can't check, assume there are no nested repos to avoid blocking the feature.
+			// If we can't check, assume there are no child repos to avoid blocking the feature.
 			return null
 		}
 	}
