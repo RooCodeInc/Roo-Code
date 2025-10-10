@@ -887,6 +887,10 @@
 		"collapseThinking": {
 			"label": "デフォルトで思考メッセージを折りたたむ",
 			"description": "有効にすると、操作するまで思考ブロックがデフォルトで折りたたまれます"
+		},
+		"requireCtrlEnterToSend": {
+			"label": "メッセージ送信にCtrl+Enterを必須にする",
+			"description": "有効にすると、EnterキーだけでなくCtrl+Enterを押す必要があります"
 		}
 	}
 }

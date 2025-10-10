@@ -126,8 +126,11 @@ export interface ExtensionMessage {
 		| "insertTextIntoTextarea"
 		| "dismissedUpsells"
 		| "organizationSwitchResult"
+		| "requireCtrlEnterToSend"
+		| "usagePreviewData"
 	text?: string
 	payload?: any // Add a generic payload for now, can refine later
+	bool?: boolean
 	action?:
 		| "chatButtonClicked"
 		| "mcpButtonClicked"
@@ -288,6 +291,7 @@ export type ExtensionState = Pick<
 	| "openRouterImageGenerationSelectedModel"
 	| "includeTaskHistoryInEnhance"
 	| "reasoningBlockCollapsed"
+	| "requireCtrlEnterToSend"
 > & {
 	version: string
 	clineMessages: ClineMessage[]

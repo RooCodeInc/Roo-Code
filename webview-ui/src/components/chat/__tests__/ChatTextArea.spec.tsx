@@ -1058,6 +1058,85 @@ describe("ChatTextArea", () => {
 		})
 	})
 
+	describe("keyboard handling with requireCtrlEnterToSend", () => {
+		beforeEach(() => {
+			;(useExtensionState as ReturnType<typeof vi.fn>).mockReturnValue({
+				filePaths: [],
+				openedTabs: [],
+				apiConfiguration: {
+					apiProvider: "anthropic",
+				},
+				taskHistory: [],
+				cwd: "/test/workspace",
+				requireCtrlEnterToSend: true,
+			})
+		})
+
+		it("should send message with Ctrl+Enter when requireCtrlEnterToSend is enabled", () => {
+			const onSend = vi.fn()
+			const { container } = render(<ChatTextArea {...defaultProps} onSend={onSend} inputValue="Test message" />)
+
+			const textarea = container.querySelector("textarea")!
+			fireEvent.keyDown(textarea, { key: "Enter", ctrlKey: true })
+
+			expect(onSend).toHaveBeenCalled()
+		})
+
+		it("should send message with Cmd+Enter when requireCtrlEnterToSend is enabled", () => {
+			const onSend = vi.fn()
+			const { container } = render(<ChatTextArea {...defaultProps} onSend={onSend} inputValue="Test message" />)
+
+			const textarea = container.querySelector("textarea")!
+			fireEvent.keyDown(textarea, { key: "Enter", metaKey: true })
+
+			expect(onSend).toHaveBeenCalled()
+		})
+
+		it("should not send message with regular Enter when requireCtrlEnterToSend is enabled", () => {
+			const onSend = vi.fn()
+			const { container } = render(<ChatTextArea {...defaultProps} onSend={onSend} inputValue="Test message" />)
+
+			const textarea = container.querySelector("textarea")!
+			fireEvent.keyDown(textarea, { key: "Enter" })
+
+			expect(onSend).not.toHaveBeenCalled()
+		})
+
+		it("should insert newline with Shift+Enter when requireCtrlEnterToSend is enabled", () => {
+			const setInputValue = vi.fn()
+			const { container } = render(
+				<ChatTextArea {...defaultProps} setInputValue={setInputValue} inputValue="Test message" />,
+			)
+
+			const textarea = container.querySelector("textarea")!
+			fireEvent.keyDown(textarea, { key: "Enter", shiftKey: true })
+
+			// Should not call onSend, allowing default behavior (insert newline)
+			expect(setInputValue).not.toHaveBeenCalled()
+		})
+
+		it("should send message with regular Enter when requireCtrlEnterToSend is disabled", () => {
+			;(useExtensionState as ReturnType<typeof vi.fn>).mockReturnValue({
+				filePaths: [],
+				openedTabs: [],
+				apiConfiguration: {
+					apiProvider: "anthropic",
+				},
+				taskHistory: [],
+				cwd: "/test/workspace",
+				requireCtrlEnterToSend: false,
+			})
+
+			const onSend = vi.fn()
+			const { container } = render(<ChatTextArea {...defaultProps} onSend={onSend} inputValue="Test message" />)
+
+			const textarea = container.querySelector("textarea")!
+			fireEvent.keyDown(textarea, { key: "Enter" })
+
+			expect(onSend).toHaveBeenCalled()
+		})
+	})
+
 	describe("send button visibility", () => {
 		it("should show send button when there are images but no text", () => {
 			const { container } = render(
