@@ -384,6 +384,7 @@ export type ZaiApiLine = z.infer<typeof zaiApiLineSchema>
 const zaiSchema = apiModelIdProviderModelSchema.extend({
 	zaiApiKey: z.string().optional(),
 	zaiApiLine: zaiApiLineSchema.optional(),
+	zaiEnableThinking: z.boolean().optional(),
 })
 
 const fireworksSchema = apiModelIdProviderModelSchema.extend({
