@@ -109,6 +109,11 @@
 			"error": "Error"
 		},
 		"close": "Cerrar",
+		"branchIsolation": {
+			"enableLabel": "Habilitar aislamiento de ramas",
+			"enableDescription": "Indexar cada rama de Git por separado para obtener mejores resultados de búsqueda y evitar conflictos al cambiar de rama. Requiere más espacio de almacenamiento.",
+			"storageWarning": "Cada rama tendrá su propio índice, lo que aumentará los requisitos de almacenamiento."
+		},
 		"validation": {
 			"invalidQdrantUrl": "URL de Qdrant no válida",
 			"invalidOllamaUrl": "URL de Ollama no válida",

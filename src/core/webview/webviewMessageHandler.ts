@@ -2457,6 +2457,7 @@ export const webviewMessageHandler = async (
 					codebaseIndexOpenAiCompatibleBaseUrl: settings.codebaseIndexOpenAiCompatibleBaseUrl,
 					codebaseIndexSearchMaxResults: settings.codebaseIndexSearchMaxResults,
 					codebaseIndexSearchMinScore: settings.codebaseIndexSearchMinScore,
+					codebaseIndexBranchIsolationEnabled: settings.codebaseIndexBranchIsolationEnabled,
 				}
 
 				// Save global state first
@@ -2494,15 +2495,16 @@ export const webviewMessageHandler = async (
 					)
 				}
 
-				// Send success response first - settings are saved regardless of validation
+				// Update webview state FIRST to ensure React context has the new config
+				// before sending the success message
+				await provider.postStateToWebview()
+
+				// Send success response - settings are saved regardless of validation
 				await provider.postMessageToWebview({
 					type: "codeIndexSettingsSaved",
 					success: true,
 					settings: globalStateConfig,
 				})
-
-				// Update webview state
-				await provider.postStateToWebview()
 
 				// Then handle validation and initialization for the current workspace
 				const currentCodeIndexManager = provider.getCurrentWorkspaceCodeIndexManager()

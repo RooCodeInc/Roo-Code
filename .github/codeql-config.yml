@@ -1,0 +1,10 @@
+name: "CodeQL Config"
+
+# Suppress false positives
+query-filters:
+  - exclude:
+      id: js/insufficient-password-hash
+      # Suppress false positive: SHA-256 is used for creating workspace identifiers, not password hashing
+      # Files: src/services/code-index/vector-store/qdrant-client.ts
+      # Context: createHash("sha256") is used to generate deterministic collection names from workspace paths
+

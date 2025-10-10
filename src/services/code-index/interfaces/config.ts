@@ -19,6 +19,7 @@ export interface CodeIndexConfig {
 	qdrantApiKey?: string
 	searchMinScore?: number
 	searchMaxResults?: number
+	branchIsolationEnabled?: boolean
 }
 
 /**
@@ -39,4 +40,5 @@ export type PreviousConfigSnapshot = {
 	vercelAiGatewayApiKey?: string
 	qdrantUrl?: string
 	qdrantApiKey?: string
+	branchIsolationEnabled?: boolean
 }

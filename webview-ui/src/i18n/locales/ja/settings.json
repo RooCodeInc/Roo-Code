@@ -109,6 +109,11 @@
 			"error": "エラー"
 		},
 		"close": "閉じる",
+		"branchIsolation": {
+			"enableLabel": "ブランチの分離を有効にする",
+			"enableDescription": "検索結果を改善し、ブランチ切り替え時の競合を防ぐために、各Gitブランチを個別にインデックス化します。より多くのストレージ容量が必要です。",
+			"storageWarning": "各ブランチに独自のインデックスが作成され、ストレージ要件が増加します。"
+		},
 		"validation": {
 			"invalidQdrantUrl": "無効なQdrant URL",
 			"invalidOllamaUrl": "無効なOllama URL",

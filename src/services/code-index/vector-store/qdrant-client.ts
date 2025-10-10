@@ -6,6 +6,7 @@ import { IVectorStore } from "../interfaces/vector-store"
 import { Payload, VectorStoreSearchResult } from "../interfaces"
 import { DEFAULT_MAX_SEARCH_RESULTS, DEFAULT_SEARCH_MIN_SCORE } from "../constants"
 import { t } from "../../../i18n"
+import { getCurrentBranch, sanitizeBranchName } from "../../../utils/git"
 
 /**
  * Qdrant implementation of the vector store interface
@@ -15,22 +16,49 @@ export class QdrantVectorStore implements IVectorStore {
 	private readonly DISTANCE_METRIC = "Cosine"
 
 	private client: QdrantClient
-	private readonly collectionName: string
+	private collectionName: string
 	private readonly qdrantUrl: string = "http://localhost:6333"
 	private readonly workspacePath: string
+	private readonly branchIsolationEnabled: boolean
+	private currentBranch: string | null = null
+
+	// Lazy collection creation flag
+	private _collectionEnsured = false
+	private _ensurePromise?: Promise<void>
+
+	// Collection existence cache to avoid redundant API calls
+	private _collectionExistsCache?: boolean
+	private _collectionInfoCache?: Schemas["CollectionInfo"] | null
+
+	// Branch name cache to avoid redundant file I/O operations
+	// This cache is invalidated when GitBranchWatcher detects a branch change
+	private _cachedBranchName: string | undefined | null = undefined
+	private _branchCacheValid: boolean = false
 
 	/**
 	 * Creates a new Qdrant vector store
 	 * @param workspacePath Path to the workspace
 	 * @param url Optional URL to the Qdrant server
+	 * @param vectorSize Size of the embedding vectors
+	 * @param apiKey Optional API key for Qdrant authentication
+	 * @param branchIsolationEnabled Whether to use branch-specific collections
+	 * @param initialBranch Optional initial branch name to avoid file I/O on first call
 	 */
-	constructor(workspacePath: string, url: string, vectorSize: number, apiKey?: string) {
+	constructor(
+		workspacePath: string,
+		url: string,
+		vectorSize: number,
+		apiKey?: string,
+		branchIsolationEnabled: boolean = false,
+		initialBranch?: string,
+	) {
 		// Parse the URL to determine the appropriate QdrantClient configuration
 		const parsedUrl = this.parseQdrantUrl(url)
 
 		// Store the resolved URL for our property
 		this.qdrantUrl = parsedUrl
 		this.workspacePath = workspacePath
+		this.branchIsolationEnabled = branchIsolationEnabled
 
 		try {
 			const urlObj = new URL(parsedUrl)
@@ -77,10 +105,21 @@ export class QdrantVectorStore implements IVectorStore {
 			})
 		}
 
-		// Generate collection name from workspace path
+		// Generate base collection name from workspace path
+		// This creates a deterministic identifier from the workspace path for collection naming.
+		// SHA-256 is used here for creating a unique, stable identifier - NOT for password hashing.
+		// lgtm[js/insufficient-password-hash]
 		const hash = createHash("sha256").update(workspacePath).digest("hex")
 		this.vectorSize = vectorSize
+
+		// Base collection name (will be updated dynamically if branch isolation is enabled)
 		this.collectionName = `ws-${hash.substring(0, 16)}`
+
+		// If initial branch is provided, cache it to avoid file I/O on first call
+		if (initialBranch !== undefined) {
+			this._cachedBranchName = initialBranch
+			this._branchCacheValid = true
+		}
 	}
 
 	/**
@@ -127,73 +166,151 @@ export class QdrantVectorStore implements IVectorStore {
 		}
 	}
 
-	private async getCollectionInfo(): Promise<Schemas["CollectionInfo"] | null> {
+	/**
+	 * Gets collection info with caching to avoid redundant API calls
+	 * @param useCache Whether to use cached value (default: true)
+	 * @returns Collection info or null if collection doesn't exist
+	 */
+	private async getCollectionInfo(useCache: boolean = true): Promise<Schemas["CollectionInfo"] | null> {
+		// Return cached value if available and cache is enabled
+		if (useCache && this._collectionInfoCache !== undefined) {
+			return this._collectionInfoCache
+		}
+
 		try {
 			const collectionInfo = await this.client.getCollection(this.collectionName)
+
+			// Cache the result
+			this._collectionInfoCache = collectionInfo
+			this._collectionExistsCache = true
+
 			return collectionInfo
-		} catch (error: unknown) {
-			if (error instanceof Error) {
-				console.warn(
-					`[QdrantVectorStore] Warning during getCollectionInfo for "${this.collectionName}". Collection may not exist or another error occurred:`,
-					error.message,
-				)
+		} catch (error: any) {
+			// Check if this is a "not found" error (404) vs a connection error
+			const status = error?.status || error?.response?.status || error?.statusCode
+
+			if (status === 404) {
+				// Collection doesn't exist - cache this result
+				this._collectionInfoCache = null
+				this._collectionExistsCache = false
+				return null
 			}
-			return null
+
+			// For other errors (connection issues, server errors, etc.), log and re-throw
+			const errorMessage = error?.message || String(error)
+			console.error(`[QdrantVectorStore] Error accessing collection "${this.collectionName}":`, errorMessage, {
+				status,
+			})
+
+			// Re-throw connection/server errors instead of silently returning null
+			throw new Error(`Failed to access Qdrant collection "${this.collectionName}": ${errorMessage}`)
 		}
 	}
 
 	/**
-	 * Initializes the vector store
+	 * Invalidates the collection info cache
+	 * Should be called when collection is created, deleted, or modified
+	 */
+	private _invalidateCollectionCache(): void {
+		this._collectionInfoCache = undefined
+		this._collectionExistsCache = undefined
+	}
+
+	/**
+	 * Helper method to create or validate collection with proper dimension checking.
+	 * Extracted to eliminate code duplication between initialize() and _ensureCollectionExists().
 	 * @returns Promise resolving to boolean indicating if a new collection was created
 	 */
-	async initialize(): Promise<boolean> {
+	private async _createOrValidateCollection(): Promise<boolean> {
 		let created = false
-		try {
-			const collectionInfo = await this.getCollectionInfo()
+		const collectionInfo = await this.getCollectionInfo()
 
-			if (collectionInfo === null) {
-				// Collection info not retrieved (assume not found or inaccessible), create it
-				await this.client.createCollection(this.collectionName, {
-					vectors: {
-						size: this.vectorSize,
-						distance: this.DISTANCE_METRIC,
-						on_disk: true,
-					},
-					hnsw_config: {
-						m: 64,
-						ef_construct: 512,
-						on_disk: true,
-					},
-				})
-				created = true
+		if (collectionInfo === null) {
+			// Collection doesn't exist, create it
+			console.log(`[QdrantVectorStore] Creating new collection "${this.collectionName}"...`)
+			await this.client.createCollection(this.collectionName, {
+				vectors: {
+					size: this.vectorSize,
+					distance: this.DISTANCE_METRIC,
+					on_disk: true,
+				},
+				hnsw_config: {
+					m: 64,
+					ef_construct: 512,
+					on_disk: true,
+				},
+			})
+
+			// Invalidate cache immediately after collection creation
+			// This ensures cache consistency even if index creation fails
+			this._invalidateCollectionCache()
+
+			await this._createPayloadIndexes()
+
+			console.log(`[QdrantVectorStore] Successfully created collection "${this.collectionName}"`)
+			created = true
+		} else {
+			// Collection exists, validate vector size
+			console.log(`[QdrantVectorStore] Collection "${this.collectionName}" already exists, validating...`)
+			const vectorsConfig = collectionInfo.config?.params?.vectors
+			let existingVectorSize: number
+
+			if (typeof vectorsConfig === "number") {
+				existingVectorSize = vectorsConfig
+			} else if (
+				vectorsConfig &&
+				typeof vectorsConfig === "object" &&
+				"size" in vectorsConfig &&
+				typeof vectorsConfig.size === "number"
+			) {
+				existingVectorSize = vectorsConfig.size
 			} else {
-				// Collection exists, check vector size
-				const vectorsConfig = collectionInfo.config?.params?.vectors
-				let existingVectorSize: number
-
-				if (typeof vectorsConfig === "number") {
-					existingVectorSize = vectorsConfig
-				} else if (
-					vectorsConfig &&
-					typeof vectorsConfig === "object" &&
-					"size" in vectorsConfig &&
-					typeof vectorsConfig.size === "number"
-				) {
-					existingVectorSize = vectorsConfig.size
-				} else {
-					existingVectorSize = 0 // Fallback for unknown configuration
-				}
-
-				if (existingVectorSize === this.vectorSize) {
-					created = false // Exists and correct
-				} else {
-					// Exists but wrong vector size, recreate with enhanced error handling
-					created = await this._recreateCollectionWithNewDimension(existingVectorSize)
-				}
+				existingVectorSize = 0
 			}
 
-			// Create payload indexes
-			await this._createPayloadIndexes()
+			if (existingVectorSize !== this.vectorSize && existingVectorSize !== 0) {
+				// Dimension mismatch, recreate
+				console.warn(
+					`[QdrantVectorStore] Dimension mismatch for "${this.collectionName}": expected ${this.vectorSize}, found ${existingVectorSize}. Recreating...`,
+				)
+				created = await this._recreateCollectionWithNewDimension(existingVectorSize)
+				await this._createPayloadIndexes()
+			} else {
+				console.log(`[QdrantVectorStore] Collection "${this.collectionName}" validated successfully`)
+			}
+		}
+
+		return created
+	}
+
+	/**
+	 * Initializes the vector store by eagerly creating or validating the collection.
+	 *
+	 * This method is called by the orchestrator before full workspace scans to ensure
+	 * the collection exists upfront. For file-watcher-only workflows, collection creation
+	 * is deferred to _ensureCollectionExists() (lazy creation) on first write.
+	 *
+	 * When to use:
+	 * - initialize(): Called before full scans; creates collection eagerly
+	 * - _ensureCollectionExists(): Called on first write; creates collection lazily
+	 *
+	 * @returns Promise resolving to boolean indicating if a new collection was created
+	 * @throws {Error} If collection creation fails or Qdrant connection fails
+	 * @throws {Error} If vector dimension mismatch cannot be resolved
+	 */
+	async initialize(): Promise<boolean> {
+		// Update collection name based on current branch if branch isolation is enabled
+		if (this.branchIsolationEnabled) {
+			await this.updateCollectionNameForBranch()
+		}
+
+		try {
+			// Use shared helper to create or validate collection
+			const created = await this._createOrValidateCollection()
+
+			// Mark collection as ensured since we just created/validated it
+			this._collectionEnsured = true
+
 			return created
 		} catch (error: any) {
 			const errorMessage = error?.message || error
@@ -315,6 +432,68 @@ export class QdrantVectorStore implements IVectorStore {
 	}
 
 	/**
+	 * Ensures the collection exists before writing.
+	 * Creates the collection and indexes lazily on first write.
+	 * Uses promise-based locking to prevent race conditions from concurrent calls.
+	 *
+	 * This method is called by upsertPoints() to implement lazy collection creation.
+	 * Unlike initialize(), which eagerly creates collections for full scans, this method
+	 * defers creation until the first write operation, reducing storage overhead for
+	 * branches that are never indexed.
+	 *
+	 * @throws {Error} If collection creation fails or Qdrant connection fails
+	 * @throws {Error} If vector dimension mismatch cannot be resolved
+	 */
+	private async _ensureCollectionExists(): Promise<void> {
+		if (this._collectionEnsured) return
+
+		// Prevent concurrent calls - return existing promise if already in progress
+		if (this._ensurePromise) {
+			return this._ensurePromise
+		}
+
+		// Create and store the ensure promise
+		this._ensurePromise = (async () => {
+			try {
+				// Update collection name based on current branch if branch isolation is enabled
+				if (this.branchIsolationEnabled) {
+					await this.updateCollectionNameForBranch()
+				}
+
+				// Use shared helper to create or validate collection
+				await this._createOrValidateCollection()
+
+				// Only set flag on success
+				this._collectionEnsured = true
+			} catch (error: any) {
+				// Reset promise on error so next call can retry
+				this._ensurePromise = undefined
+
+				const errorMessage = error?.message || error
+				console.error(
+					`[QdrantVectorStore] Failed to ensure collection "${this.collectionName}" exists:`,
+					errorMessage,
+				)
+
+				// If this is already a vector dimension mismatch error, re-throw as-is
+				if (error instanceof Error && error.cause !== undefined) {
+					throw error
+				}
+
+				// Otherwise, provide a user-friendly error message
+				throw new Error(
+					t("embeddings:vectorStore.qdrantConnectionFailed", { qdrantUrl: this.qdrantUrl, errorMessage }),
+				)
+			} finally {
+				// Clear promise after completion (success or failure)
+				this._ensurePromise = undefined
+			}
+		})()
+
+		return this._ensurePromise
+	}
+
+	/**
 	 * Upserts points into the vector store
 	 * @param points Array of points to upsert
 	 */
@@ -326,6 +505,9 @@ export class QdrantVectorStore implements IVectorStore {
 		}>,
 	): Promise<void> {
 		try {
+			// Ensure collection exists before writing
+			await this._ensureCollectionExists()
+
 			const processedPoints = points.map((point) => {
 				if (point.payload?.filePath) {
 					const segments = point.payload.filePath.split(path.sep).filter(Boolean)
@@ -386,6 +568,12 @@ export class QdrantVectorStore implements IVectorStore {
 		maxResults?: number,
 	): Promise<VectorStoreSearchResult[]> {
 		try {
+			// If collection doesn't exist yet, return empty results
+			const collectionInfo = await this.getCollectionInfo()
+			if (collectionInfo === null) {
+				return []
+			}
+
 			let filter = undefined
 
 			if (directoryPrefix) {
@@ -516,6 +704,9 @@ export class QdrantVectorStore implements IVectorStore {
 			// Check if collection exists before attempting deletion to avoid errors
 			if (await this.collectionExists()) {
 				await this.client.deleteCollection(this.collectionName)
+
+				// Invalidate cache after deleting collection
+				this._invalidateCollectionCache()
 			}
 		} catch (error) {
 			console.error(`[QdrantVectorStore] Failed to delete collection ${this.collectionName}:`, error)
@@ -528,6 +719,13 @@ export class QdrantVectorStore implements IVectorStore {
 	 */
 	async clearCollection(): Promise<void> {
 		try {
+			// Only clear if collection exists
+			const exists = await this.collectionExists()
+			if (!exists) {
+				console.warn(`[QdrantVectorStore] Skipping clear - collection "${this.collectionName}" does not exist`)
+				return
+			}
+
 			await this.client.delete(this.collectionName, {
 				filter: {
 					must: [],
@@ -547,5 +745,65 @@ export class QdrantVectorStore implements IVectorStore {
 	async collectionExists(): Promise<boolean> {
 		const collectionInfo = await this.getCollectionInfo()
 		return collectionInfo !== null
+	}
+
+	/**
+	 * Updates the collection name based on the current Git branch
+	 * Only called when branch isolation is enabled
+	 * Uses cached branch name to avoid redundant file I/O operations
+	 */
+	private async updateCollectionNameForBranch(): Promise<void> {
+		// Use cached branch name if available, otherwise fetch from git
+		let branch: string | undefined
+		if (this._branchCacheValid) {
+			branch = this._cachedBranchName ?? undefined
+		} else {
+			branch = await getCurrentBranch(this.workspacePath)
+			// Cache the branch name for future calls
+			this._cachedBranchName = branch
+			this._branchCacheValid = true
+		}
+
+		// Generate base collection name
+		// This creates a deterministic identifier from the workspace path for collection naming.
+		// SHA-256 is used here for creating a unique, stable identifier - NOT for password hashing.
+		// lgtm[js/insufficient-password-hash]
+		const hash = createHash("sha256").update(this.workspacePath).digest("hex")
+		let collectionName = `ws-${hash.substring(0, 16)}`
+
+		if (branch) {
+			// Sanitize branch name for use in collection name
+			const sanitizedBranch = sanitizeBranchName(branch)
+			collectionName = `${collectionName}-br-${sanitizedBranch}`
+			this.currentBranch = branch
+		} else {
+			// Detached HEAD or not a git repo - use workspace-only collection
+			this.currentBranch = null
+		}
+
+		// Update the collection name and invalidate cache if name changed
+		if (this.collectionName !== collectionName) {
+			this.collectionName = collectionName
+			this._invalidateCollectionCache()
+			this._collectionEnsured = false // Reset flag when collection name changes
+		}
+	}
+
+	/**
+	 * Invalidates the branch name cache
+	 * Should be called when GitBranchWatcher detects a branch change
+	 * This forces the next call to updateCollectionNameForBranch to re-read from git
+	 */
+	public invalidateBranchCache(): void {
+		this._branchCacheValid = false
+		this._cachedBranchName = undefined
+	}
+
+	/**
+	 * Gets the current branch being used for the collection
+	 * @returns The current branch name or null if not using branch isolation
+	 */
+	public getCurrentBranch(): string | null {
+		return this.branchIsolationEnabled ? this.currentBranch : null
 	}
 }

@@ -109,6 +109,11 @@
 			"error": "Erro"
 		},
 		"close": "Fechar",
+		"branchIsolation": {
+			"enableLabel": "Habilitar Isolamento de Branch",
+			"enableDescription": "Indexar cada branch Git separadamente para obter melhores resultados de pesquisa e evitar conflitos ao alternar branches. Requer mais espaço de armazenamento.",
+			"storageWarning": "Cada branch terá seu próprio índice, o que aumentará os requisitos de armazenamento."
+		},
 		"validation": {
 			"invalidQdrantUrl": "URL do Qdrant inválida",
 			"invalidOllamaUrl": "URL do Ollama inválida",

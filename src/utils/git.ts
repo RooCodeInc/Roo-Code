@@ -90,6 +90,40 @@ export async function getGitRepositoryInfo(workspaceRoot: string): Promise<GitRe
 }
 
 /**
+ * Gets the current Git branch name for a workspace
+ * @param workspaceRoot The root path of the workspace
+ * @returns Current branch name or undefined if not in a Git repo or on detached HEAD
+ */
+export async function getCurrentBranch(workspaceRoot: string): Promise<string | undefined> {
+	try {
+		const headPath = path.join(workspaceRoot, ".git", "HEAD")
+		const headContent = await fs.readFile(headPath, "utf8")
+		const branchMatch = headContent.match(/ref: refs\/heads\/(.+)/)
+		return branchMatch?.[1]?.trim()
+	} catch {
+		// Not a git repository or error reading HEAD file
+		return undefined
+	}
+}
+
+/**
+ * Sanitizes a Git branch name for use in collection naming or file paths
+ * @param branch The branch name to sanitize
+ * @returns A sanitized branch name safe for use in identifiers
+ */
+export function sanitizeBranchName(branch: string): string {
+	// Replace invalid characters with hyphens, collapse multiple hyphens, limit length
+	return (
+		branch
+			.replace(/[^a-zA-Z0-9_-]/g, "-") // Replace invalid chars with hyphens
+			.replace(/--+/g, "-") // Collapse multiple hyphens
+			.replace(/^-+|-+$/g, "") // Remove leading/trailing hyphens
+			.substring(0, 50) // Limit length to 50 characters
+			.toLowerCase() || "default"
+	) // Fallback to 'default' if empty after sanitization
+}
+
+/**
  * Converts a git URL to HTTPS format
  * @param url The git URL to convert
  * @returns The URL in HTTPS format, or the original URL if conversion is not possible

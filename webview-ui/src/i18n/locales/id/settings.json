@@ -109,6 +109,11 @@
 			"error": "Error"
 		},
 		"close": "Tutup",
+		"branchIsolation": {
+			"enableLabel": "Aktifkan Isolasi Cabang",
+			"enableDescription": "Indeks setiap cabang Git secara terpisah untuk mendapatkan hasil pencarian yang lebih baik dan mencegah konflik saat beralih cabang. Memerlukan lebih banyak ruang penyimpanan.",
+			"storageWarning": "Setiap cabang akan memiliki indeksnya sendiri, yang meningkatkan persyaratan penyimpanan."
+		},
 		"validation": {
 			"invalidQdrantUrl": "URL Qdrant tidak valid",
 			"invalidOllamaUrl": "URL Ollama tidak valid",

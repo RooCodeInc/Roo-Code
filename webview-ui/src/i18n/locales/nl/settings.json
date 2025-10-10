@@ -109,6 +109,11 @@
 			"error": "Fout"
 		},
 		"close": "Sluiten",
+		"branchIsolation": {
+			"enableLabel": "Branch-isolatie inschakelen",
+			"enableDescription": "Elke Git-branch afzonderlijk indexeren voor betere zoekresultaten en om conflicten bij het wisselen van branches te voorkomen. Vereist meer opslagruimte.",
+			"storageWarning": "Elke branch krijgt een eigen index, wat de opslagvereisten verhoogt."
+		},
 		"validation": {
 			"invalidQdrantUrl": "Ongeldige Qdrant URL",
 			"invalidOllamaUrl": "Ongeldige Ollama URL",

@@ -109,6 +109,11 @@
 			"error": "Lỗi"
 		},
 		"close": "Đóng",
+		"branchIsolation": {
+			"enableLabel": "Bật tính năng cách ly nhánh",
+			"enableDescription": "Lập chỉ mục từng nhánh Git riêng biệt để nhận kết quả tìm kiếm tốt hơn và ngăn chặn xung đột khi chuyển đổi nhánh. Yêu cầu nhiều dung lượng lưu trữ hơn.",
+			"storageWarning": "Mỗi nhánh sẽ có chỉ mục riêng, làm tăng dung lượng lưu trữ cần thiết."
+		},
 		"validation": {
 			"invalidQdrantUrl": "URL Qdrant không hợp lệ",
 			"invalidOllamaUrl": "URL Ollama không hợp lệ",
