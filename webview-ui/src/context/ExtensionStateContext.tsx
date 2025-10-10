@@ -177,6 +177,13 @@ export const mergeExtensionState = (prevState: ExtensionState, newState: Extensi
 	const experiments = { ...prevExperiments, ...newExperiments }
 	const rest = { ...prevRest, ...newRest }
 
+	// Ensure taskHistory always gets a new array reference to trigger React re-renders
+	// This is crucial for updates after clearTask() where the array content is the same
+	// but we need the UI to refresh (e.g., history preview component)
+	if (newState.taskHistory) {
+		rest.taskHistory = [...newState.taskHistory]
+	}
+
 	// Note that we completely replace the previous apiConfiguration and customSupportPrompts objects
 	// with new ones since the state that is broadcast is the entire objects so merging is not necessary.
 	return { ...rest, apiConfiguration, customModePrompts, customSupportPrompts, experiments }
