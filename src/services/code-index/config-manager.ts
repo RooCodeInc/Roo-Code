@@ -11,6 +11,7 @@ import { getDefaultModelId, getModelDimension, getModelScoreThreshold } from "..
  */
 export class CodeIndexConfigManager {
 	private codebaseIndexEnabled: boolean = true
+	private codebaseIndexBranchIsolation: boolean = false
 	private embedderProvider: EmbedderProvider = "openai"
 	private modelId?: string
 	private modelDimension?: number
@@ -45,6 +46,7 @@ export class CodeIndexConfigManager {
 		// Load configuration from storage
 		const codebaseIndexConfig = this.contextProxy?.getGlobalState("codebaseIndexConfig") ?? {
 			codebaseIndexEnabled: true,
+			codebaseIndexBranchIsolation: false,
 			codebaseIndexQdrantUrl: "http://localhost:6333",
 			codebaseIndexEmbedderProvider: "openai",
 			codebaseIndexEmbedderBaseUrl: "",
@@ -55,6 +57,7 @@ export class CodeIndexConfigManager {
 
 		const {
 			codebaseIndexEnabled,
+			codebaseIndexBranchIsolation,
 			codebaseIndexQdrantUrl,
 			codebaseIndexEmbedderProvider,
 			codebaseIndexEmbedderBaseUrl,
@@ -74,6 +77,7 @@ export class CodeIndexConfigManager {
 
 		// Update instance variables with configuration
 		this.codebaseIndexEnabled = codebaseIndexEnabled ?? true
+		this.codebaseIndexBranchIsolation = codebaseIndexBranchIsolation ?? false
 		this.qdrantUrl = codebaseIndexQdrantUrl
 		this.qdrantApiKey = qdrantApiKey ?? ""
 		this.searchMinScore = codebaseIndexSearchMinScore
@@ -156,6 +160,7 @@ export class CodeIndexConfigManager {
 		// Capture the ACTUAL previous state before loading new configuration
 		const previousConfigSnapshot: PreviousConfigSnapshot = {
 			enabled: this.codebaseIndexEnabled,
+			branchIsolation: this.codebaseIndexBranchIsolation,
 			configured: this.isConfigured(),
 			embedderProvider: this.embedderProvider,
 			modelId: this.modelId,
@@ -259,6 +264,7 @@ export class CodeIndexConfigManager {
 
 		// Handle null/undefined values safely
 		const prevEnabled = prev?.enabled ?? false
+		const prevBranchIsolation = prev?.branchIsolation ?? false
 		const prevConfigured = prev?.configured ?? false
 		const prevProvider = prev?.embedderProvider ?? "openai"
 		const prevOpenAiKey = prev?.openAiKey ?? ""
@@ -279,6 +285,11 @@ export class CodeIndexConfigManager {
 
 		// 2. Transition from enabled to disabled
 		if (prevEnabled && !this.codebaseIndexEnabled) {
+			return true
+		}
+
+		// 2.5. Branch isolation setting changed
+		if (prevBranchIsolation !== this.codebaseIndexBranchIsolation) {
 			return true
 		}
 
@@ -479,5 +490,13 @@ export class CodeIndexConfigManager {
 	 */
 	public get currentSearchMaxResults(): number {
 		return this.searchMaxResults ?? DEFAULT_MAX_SEARCH_RESULTS
+	}
+
+	/**
+	 * Gets whether branch isolation is enabled for codebase indexing.
+	 * When enabled, each Git branch will have its own separate index.
+	 */
+	public get isBranchIsolationEnabled(): boolean {
+		return this.codebaseIndexBranchIsolation
 	}
 }

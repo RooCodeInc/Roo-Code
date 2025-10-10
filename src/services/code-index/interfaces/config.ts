@@ -26,6 +26,7 @@ export interface CodeIndexConfig {
  */
 export type PreviousConfigSnapshot = {
 	enabled: boolean
+	branchIsolation: boolean
 	configured: boolean
 	embedderProvider: EmbedderProvider
 	modelId?: string
