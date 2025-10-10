@@ -157,6 +157,12 @@ export class Terminal extends BaseTerminal {
 			// VTE must be disabled because it prevents the prompt command from executing
 			// See https://wiki.gnome.org/Apps/Terminal/VTE
 			VTE_VERSION: "0",
+
+			// Ensure UTF-8 encoding for proper Unicode character display
+			// This fixes issues with non-ASCII characters (Cyrillic, Chinese, Hindi, etc.)
+			// being displayed as "?" or diamond symbols in terminal output
+			LANG: "en_US.UTF-8",
+			LC_ALL: "en_US.UTF-8",
 		}
 
 		// Set Oh My Zsh shell integration if enabled

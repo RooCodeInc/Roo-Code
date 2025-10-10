@@ -48,6 +48,8 @@ describe("TerminalRegistry", () => {
 					PAGER,
 					VTE_VERSION: "0",
 					PROMPT_EOL_MARK: "",
+					LANG: "en_US.UTF-8",
+					LC_ALL: "en_US.UTF-8",
 				},
 			})
 		})
@@ -69,6 +71,8 @@ describe("TerminalRegistry", () => {
 						PROMPT_COMMAND: "sleep 0.05",
 						VTE_VERSION: "0",
 						PROMPT_EOL_MARK: "",
+						LANG: "en_US.UTF-8",
+						LC_ALL: "en_US.UTF-8",
 					},
 				})
 			} finally {
@@ -91,6 +95,8 @@ describe("TerminalRegistry", () => {
 						VTE_VERSION: "0",
 						PROMPT_EOL_MARK: "",
 						ITERM_SHELL_INTEGRATION_INSTALLED: "Yes",
+						LANG: "en_US.UTF-8",
+						LC_ALL: "en_US.UTF-8",
 					},
 				})
 			} finally {
@@ -112,6 +118,8 @@ describe("TerminalRegistry", () => {
 						VTE_VERSION: "0",
 						PROMPT_EOL_MARK: "",
 						POWERLEVEL9K_TERM_SHELL_INTEGRATION: "true",
+						LANG: "en_US.UTF-8",
+						LC_ALL: "en_US.UTF-8",
 					},
 				})
 			} finally {

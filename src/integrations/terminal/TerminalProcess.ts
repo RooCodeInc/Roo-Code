@@ -114,9 +114,21 @@ export class TerminalProcess extends BaseTerminalProcess {
 			(defaultWindowsShellProfile === null ||
 				(defaultWindowsShellProfile as string)?.toLowerCase().includes("powershell"))
 
-		if (isPowerShell) {
-			let commandToExecute = command
+		let commandToExecute = command
 
+		// On Windows, prepend chcp 65001 to set UTF-8 code page for proper Unicode support
+		// This fixes issues with non-ASCII characters being displayed as "?" or diamond symbols
+		if (process.platform === "win32") {
+			if (isPowerShell) {
+				// PowerShell syntax: use semicolon to chain commands and redirect output to null
+				commandToExecute = `chcp 65001 > $null ; ${command}`
+			} else {
+				// CMD syntax: use && to chain commands and redirect output to nul
+				commandToExecute = `chcp 65001 > nul && ${command}`
+			}
+		}
+
+		if (isPowerShell) {
 			// Only add the PowerShell counter workaround if enabled
 			if (Terminal.getPowershellCounter()) {
 				commandToExecute += ` ; "(Roo/PS Workaround: ${this.terminal.cmdCounter++})" > $null`
@@ -126,11 +138,9 @@ export class TerminalProcess extends BaseTerminalProcess {
 			if (Terminal.getCommandDelay() > 0) {
 				commandToExecute += ` ; start-sleep -milliseconds ${Terminal.getCommandDelay()}`
 			}
-
-			terminal.shellIntegration.executeCommand(commandToExecute)
-		} else {
-			terminal.shellIntegration.executeCommand(command)
 		}
+
+		terminal.shellIntegration.executeCommand(commandToExecute)
 
 		this.isHot = true
 
