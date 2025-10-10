@@ -157,6 +157,8 @@
 		"initializingWarning": "Masih menginisialisasi checkpoint... Jika ini terlalu lama, kamu bisa menonaktifkan checkpoint di <settingsLink>pengaturan</settingsLink> dan restart tugas.",
 		"menu": {
 			"viewDiff": "Lihat Diff",
+			"viewDiffFromInit": "Lihat Diff dengan Checkpoint Pertama",
+			"viewDiffWithCurrent": "Lihat Diff dengan Workspace Saat Ini",
 			"restore": "Pulihkan Checkpoint",
 			"restoreFiles": "Pulihkan File",
 			"restoreFilesDescription": "Mengembalikan file proyek kamu ke snapshot yang diambil pada titik ini.",
