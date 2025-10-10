@@ -42,6 +42,10 @@
 		"collapseThinking": {
 			"label": "Collapse Thinking messages by default",
 			"description": "When enabled, thinking blocks will be collapsed by default until you interact with them"
+		},
+		"sendMessageOnEnter": {
+			"label": "Send message with Enter key",
+			"description": "When enabled, pressing Enter sends messages and Shift+Enter creates new lines. When disabled, Enter creates new lines and Shift/Ctrl+Enter sends messages."
 		}
 	},
 	"prompts": {

@@ -72,6 +72,7 @@ describe("ChatTextArea", () => {
 			},
 			taskHistory: [],
 			cwd: "/test/workspace",
+			sendMessageOnEnter: true, // Default to true for backward compatibility
 		})
 	})
 
@@ -1137,6 +1138,241 @@ describe("ChatTextArea", () => {
 			// Check that the button is visible
 			expect(sendButton).toHaveClass("opacity-100")
 			expect(sendButton).toHaveClass("pointer-events-auto")
+		})
+	})
+
+	describe("sendMessageOnEnter setting", () => {
+		it("should send message on Enter when sendMessageOnEnter is true (default)", () => {
+			const onSend = vi.fn()
+			;(useExtensionState as ReturnType<typeof vi.fn>).mockReturnValue({
+				filePaths: [],
+				openedTabs: [],
+				apiConfiguration: {
+					apiProvider: "anthropic",
+				},
+				taskHistory: [],
+				cwd: "/test/workspace",
+				sendMessageOnEnter: true,
+			})
+
+			const { container } = render(<ChatTextArea {...defaultProps} onSend={onSend} inputValue="Test message" />)
+
+			const textarea = container.querySelector("textarea")!
+
+			// Simulate Enter key press
+			fireEvent.keyDown(textarea, { key: "Enter" })
+
+			expect(onSend).toHaveBeenCalled()
+		})
+
+		it("should create newline on Enter when sendMessageOnEnter is false", () => {
+			const onSend = vi.fn()
+			;(useExtensionState as ReturnType<typeof vi.fn>).mockReturnValue({
+				filePaths: [],
+				openedTabs: [],
+				apiConfiguration: {
+					apiProvider: "anthropic",
+				},
+				taskHistory: [],
+				cwd: "/test/workspace",
+				sendMessageOnEnter: false,
+			})
+
+			const { container } = render(<ChatTextArea {...defaultProps} onSend={onSend} inputValue="Test message" />)
+
+			const textarea = container.querySelector("textarea")!
+
+			// Simulate Enter key press
+			fireEvent.keyDown(textarea, { key: "Enter" })
+
+			// Should not send message
+			expect(onSend).not.toHaveBeenCalled()
+		})
+
+		it("should send message on Shift+Enter when sendMessageOnEnter is false", () => {
+			const onSend = vi.fn()
+			;(useExtensionState as ReturnType<typeof vi.fn>).mockReturnValue({
+				filePaths: [],
+				openedTabs: [],
+				apiConfiguration: {
+					apiProvider: "anthropic",
+				},
+				taskHistory: [],
+				cwd: "/test/workspace",
+				sendMessageOnEnter: false,
+			})
+
+			const { container } = render(<ChatTextArea {...defaultProps} onSend={onSend} inputValue="Test message" />)
+
+			const textarea = container.querySelector("textarea")!
+
+			// Simulate Shift+Enter key press
+			fireEvent.keyDown(textarea, { key: "Enter", shiftKey: true })
+
+			expect(onSend).toHaveBeenCalled()
+		})
+
+		it("should send message on Ctrl+Enter when sendMessageOnEnter is false", () => {
+			const onSend = vi.fn()
+			;(useExtensionState as ReturnType<typeof vi.fn>).mockReturnValue({
+				filePaths: [],
+				openedTabs: [],
+				apiConfiguration: {
+					apiProvider: "anthropic",
+				},
+				taskHistory: [],
+				cwd: "/test/workspace",
+				sendMessageOnEnter: false,
+			})
+
+			const { container } = render(<ChatTextArea {...defaultProps} onSend={onSend} inputValue="Test message" />)
+
+			const textarea = container.querySelector("textarea")!
+
+			// Simulate Ctrl+Enter key press
+			fireEvent.keyDown(textarea, { key: "Enter", ctrlKey: true })
+
+			expect(onSend).toHaveBeenCalled()
+		})
+
+		it("should create newline on Shift+Enter when sendMessageOnEnter is true", () => {
+			const onSend = vi.fn()
+			;(useExtensionState as ReturnType<typeof vi.fn>).mockReturnValue({
+				filePaths: [],
+				openedTabs: [],
+				apiConfiguration: {
+					apiProvider: "anthropic",
+				},
+				taskHistory: [],
+				cwd: "/test/workspace",
+				sendMessageOnEnter: true,
+			})
+
+			const { container } = render(<ChatTextArea {...defaultProps} onSend={onSend} inputValue="Test message" />)
+
+			const textarea = container.querySelector("textarea")!
+
+			// Simulate Shift+Enter key press
+			fireEvent.keyDown(textarea, { key: "Enter", shiftKey: true })
+
+			// Should not send message
+			expect(onSend).not.toHaveBeenCalled()
+		})
+
+		it("should not send message during IME composition regardless of setting", () => {
+			const onSend = vi.fn()
+			;(useExtensionState as ReturnType<typeof vi.fn>).mockReturnValue({
+				filePaths: [],
+				openedTabs: [],
+				apiConfiguration: {
+					apiProvider: "anthropic",
+				},
+				taskHistory: [],
+				cwd: "/test/workspace",
+				sendMessageOnEnter: true,
+			})
+
+			const { container } = render(<ChatTextArea {...defaultProps} onSend={onSend} inputValue="Test message" />)
+
+			const textarea = container.querySelector("textarea")!
+
+			// Create a proper KeyboardEvent with isComposing property
+			const composingEvent = new KeyboardEvent("keydown", {
+				key: "Enter",
+				bubbles: true,
+				cancelable: true,
+			})
+			// Override the isComposing property
+			Object.defineProperty(composingEvent, "isComposing", {
+				value: true,
+				writable: false,
+			})
+
+			// Dispatch the event directly
+			textarea.dispatchEvent(composingEvent)
+
+			// Should not send message during composition
+			expect(onSend).not.toHaveBeenCalled()
+
+			// Now Enter should work without composition
+			fireEvent.keyDown(textarea, { key: "Enter" })
+			expect(onSend).toHaveBeenCalled()
+		})
+
+		it("should use default value (true) when sendMessageOnEnter is undefined", () => {
+			const onSend = vi.fn()
+			;(useExtensionState as ReturnType<typeof vi.fn>).mockReturnValue({
+				filePaths: [],
+				openedTabs: [],
+				apiConfiguration: {
+					apiProvider: "anthropic",
+				},
+				taskHistory: [],
+				cwd: "/test/workspace",
+				sendMessageOnEnter: undefined,
+			})
+
+			const { container } = render(<ChatTextArea {...defaultProps} onSend={onSend} inputValue="Test message" />)
+
+			const textarea = container.querySelector("textarea")!
+
+			// Simulate Enter key press
+			fireEvent.keyDown(textarea, { key: "Enter" })
+
+			// Should send message (default behavior)
+			expect(onSend).toHaveBeenCalled()
+		})
+
+		it("should call onSend even with empty message (actual behavior)", () => {
+			const onSend = vi.fn()
+			;(useExtensionState as ReturnType<typeof vi.fn>).mockReturnValue({
+				filePaths: [],
+				openedTabs: [],
+				apiConfiguration: {
+					apiProvider: "anthropic",
+				},
+				taskHistory: [],
+				cwd: "/test/workspace",
+				sendMessageOnEnter: true,
+			})
+
+			const { container } = render(<ChatTextArea {...defaultProps} onSend={onSend} inputValue="" />)
+
+			const textarea = container.querySelector("textarea")!
+
+			// Simulate Enter key press with empty input
+			fireEvent.keyDown(textarea, { key: "Enter" })
+
+			// The actual implementation calls onSend regardless of empty input
+			// The parent component (ChatView) is responsible for checking if message is empty
+			expect(onSend).toHaveBeenCalled()
+		})
+
+		it("should call onSend even when sendingDisabled is true (actual behavior)", () => {
+			const onSend = vi.fn()
+			;(useExtensionState as ReturnType<typeof vi.fn>).mockReturnValue({
+				filePaths: [],
+				openedTabs: [],
+				apiConfiguration: {
+					apiProvider: "anthropic",
+				},
+				taskHistory: [],
+				cwd: "/test/workspace",
+				sendMessageOnEnter: true,
+			})
+
+			const { container } = render(
+				<ChatTextArea {...defaultProps} onSend={onSend} inputValue="Test message" sendingDisabled={true} />,
+			)
+
+			const textarea = container.querySelector("textarea")!
+
+			// Simulate Enter key press
+			fireEvent.keyDown(textarea, { key: "Enter" })
+
+			// The actual implementation calls onSend regardless of sendingDisabled
+			// The parent component is responsible for checking if sending is disabled
+			expect(onSend).toHaveBeenCalled()
 		})
 	})
 })

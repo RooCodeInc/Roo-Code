@@ -89,6 +89,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			clineMessages,
 			commands,
 			cloudUserInfo,
+			sendMessageOnEnter,
 		} = useExtensionState()
 
 		// Find the ID and display text for the currently selected API configuration.
@@ -467,12 +468,22 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					return
 				}
 
-				if (event.key === "Enter" && !event.shiftKey && !isComposing) {
-					event.preventDefault()
+				// Handle Enter key based on user preference
+				const isEnterToSend = sendMessageOnEnter ?? true // Default to true (current behavior)
 
-					// Always call onSend - let ChatView handle queueing when disabled
-					resetHistoryNavigation()
-					onSend()
+				if (!isComposing) {
+					if (isEnterToSend && event.key === "Enter" && !event.shiftKey) {
+						// Enter sends, Shift+Enter for newline
+						event.preventDefault()
+						resetHistoryNavigation()
+						onSend()
+					} else if (!isEnterToSend && event.key === "Enter" && (event.shiftKey || event.ctrlKey)) {
+						// Shift+Enter or Ctrl+Enter sends, Enter for newline
+						event.preventDefault()
+						resetHistoryNavigation()
+						onSend()
+					}
+					// If neither condition matches, let the default behavior happen (newline)
 				}
 
 				if (event.key === "Backspace" && !isComposing) {
@@ -536,6 +547,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				handleHistoryNavigation,
 				resetHistoryNavigation,
 				commands,
+				sendMessageOnEnter,
 			],
 		)
 

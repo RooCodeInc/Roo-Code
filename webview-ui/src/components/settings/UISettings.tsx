@@ -11,10 +11,16 @@ import { ExtensionStateContextType } from "@/context/ExtensionStateContext"
 
 interface UISettingsProps extends HTMLAttributes<HTMLDivElement> {
 	reasoningBlockCollapsed: boolean
+	sendMessageOnEnter: boolean
 	setCachedStateField: SetCachedStateField<keyof ExtensionStateContextType>
 }
 
-export const UISettings = ({ reasoningBlockCollapsed, setCachedStateField, ...props }: UISettingsProps) => {
+export const UISettings = ({
+	reasoningBlockCollapsed,
+	sendMessageOnEnter,
+	setCachedStateField,
+	...props
+}: UISettingsProps) => {
 	const { t } = useAppTranslation()
 
 	const handleReasoningBlockCollapsedChange = (value: boolean) => {
@@ -22,6 +28,15 @@ export const UISettings = ({ reasoningBlockCollapsed, setCachedStateField, ...pr
 
 		// Track telemetry event
 		telemetryClient.capture("ui_settings_collapse_thinking_changed", {
+			enabled: value,
+		})
+	}
+
+	const handleSendMessageOnEnterChange = (value: boolean) => {
+		setCachedStateField("sendMessageOnEnter", value)
+
+		// Track telemetry event
+		telemetryClient.capture("ui_settings_send_message_on_enter_changed", {
 			enabled: value,
 		})
 	}
@@ -47,6 +62,19 @@ export const UISettings = ({ reasoningBlockCollapsed, setCachedStateField, ...pr
 						</VSCodeCheckbox>
 						<div className="text-vscode-descriptionForeground text-sm ml-5 mt-1">
 							{t("settings:ui.collapseThinking.description")}
+						</div>
+					</div>
+
+					{/* Send Message on Enter Setting */}
+					<div className="flex flex-col gap-1">
+						<VSCodeCheckbox
+							checked={sendMessageOnEnter}
+							onChange={(e: any) => handleSendMessageOnEnterChange(e.target.checked)}
+							data-testid="send-message-on-enter-checkbox">
+							<span className="font-medium">{t("settings:ui.sendMessageOnEnter.label")}</span>
+						</VSCodeCheckbox>
+						<div className="text-vscode-descriptionForeground text-sm ml-5 mt-1">
+							{t("settings:ui.sendMessageOnEnter.description")}
 						</div>
 					</div>
 				</div>
