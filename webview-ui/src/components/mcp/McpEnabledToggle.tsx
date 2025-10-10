@@ -1,28 +1,26 @@
-import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
-import { FormEvent } from "react"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { vscode } from "@src/utils/vscode"
+import { Checkbox } from "@/components/ui/checkbox"
 
 const McpEnabledToggle = () => {
 	const { mcpEnabled, setMcpEnabled } = useExtensionState()
 	const { t } = useAppTranslation()
 
-	const handleChange = (e: Event | FormEvent<HTMLElement>) => {
-		const target = ("target" in e ? e.target : null) as HTMLInputElement | null
-		if (!target) return
-		setMcpEnabled(target.checked)
-		vscode.postMessage({ type: "mcpEnabled", bool: target.checked })
+	const handleChange = (checked: boolean) => {
+		setMcpEnabled(checked)
+		vscode.postMessage({ type: "mcpEnabled", bool: checked })
 	}
 
 	return (
 		<div style={{ marginBottom: "20px" }}>
-			<VSCodeCheckbox checked={mcpEnabled} onChange={handleChange}>
+			<div className="flex items-center space-x-2">
+				<Checkbox checked={mcpEnabled} onCheckedChange={handleChange} />
 				<span style={{ fontWeight: "500" }}>{t("mcp:enableToggle.title")}</span>
-			</VSCodeCheckbox>
+			</div>
 			<p
 				style={{
-					fontSize: "12px",
+					fontSize: "calc(12px * var(--roo-font-size-multiplier, 1))",
 					marginTop: "5px",
 					color: "var(--vscode-descriptionForeground)",
 				}}>

@@ -98,8 +98,8 @@ describe("McpToolRow", () => {
 
 		render(<McpToolRow tool={alwaysAllowedTool} serverName="test-server" alwaysAllowMcp={true} />)
 
-		const checkbox = screen.getByRole("checkbox") as HTMLInputElement
-		expect(checkbox.checked).toBe(true)
+		const checkbox = screen.getByRole("checkbox")
+		expect(checkbox).toHaveAttribute("aria-checked", "true")
 	})
 
 	it("prevents event propagation when clicking the checkbox", () => {

@@ -2,12 +2,12 @@ import React, { useState } from "react"
 import { Trans } from "react-i18next"
 import {
 	VSCodeButton,
-	VSCodeCheckbox,
 	VSCodeLink,
 	VSCodePanels,
 	VSCodePanelTab,
 	VSCodePanelView,
 } from "@vscode/webview-ui-toolkit/react"
+import { Checkbox } from "@/components/ui/checkbox"
 
 import { McpServer } from "@roo/mcp"
 
@@ -60,7 +60,7 @@ const McpView = ({ onDone }: McpViewProps) => {
 				<div
 					style={{
 						color: "var(--vscode-foreground)",
-						fontSize: "13px",
+						fontSize: "calc(13px * var(--roo-font-size-multiplier, 1))",
 						marginBottom: "10px",
 						marginTop: "5px",
 					}}>
@@ -78,17 +78,20 @@ const McpView = ({ onDone }: McpViewProps) => {
 				{mcpEnabled && (
 					<>
 						<div style={{ marginBottom: 15 }}>
-							<VSCodeCheckbox
-								checked={enableMcpServerCreation}
-								onChange={(e: any) => {
-									setEnableMcpServerCreation(e.target.checked)
-									vscode.postMessage({ type: "enableMcpServerCreation", bool: e.target.checked })
-								}}>
+							<div className="flex items-center space-x-2">
+								<Checkbox
+									checked={enableMcpServerCreation}
+									onCheckedChange={(checked) => {
+										const isChecked = checked === true
+										setEnableMcpServerCreation(isChecked)
+										vscode.postMessage({ type: "enableMcpServerCreation", bool: isChecked })
+									}}
+								/>
 								<span style={{ fontWeight: "500" }}>{t("mcp:enableServerCreation.title")}</span>
-							</VSCodeCheckbox>
+							</div>
 							<div
 								style={{
-									fontSize: "12px",
+									fontSize: "calc(12px * var(--roo-font-size-multiplier, 1))",
 									marginTop: "5px",
 									color: "var(--vscode-descriptionForeground)",
 								}}>
@@ -178,7 +181,7 @@ const McpView = ({ onDone }: McpViewProps) => {
 						<div
 							style={{
 								marginTop: "15px",
-								fontSize: "12px",
+								fontSize: "calc(12px * var(--roo-font-size-multiplier, 1))",
 								color: "var(--vscode-descriptionForeground)",
 							}}>
 							<VSCodeLink
@@ -297,7 +300,7 @@ const ServerRow = ({ server, alwaysAllowMcp }: { server: McpServer; alwaysAllowM
 							style={{
 								marginLeft: "8px",
 								padding: "1px 6px",
-								fontSize: "11px",
+								fontSize: "calc(11px * var(--roo-font-size-multiplier, 1))",
 								borderRadius: "4px",
 								background: "var(--vscode-badge-background)",
 								color: "var(--vscode-badge-foreground)",
@@ -314,7 +317,9 @@ const ServerRow = ({ server, alwaysAllowMcp }: { server: McpServer; alwaysAllowM
 						size="icon"
 						onClick={() => setShowDeleteConfirm(true)}
 						style={{ marginRight: "8px" }}>
-						<span className="codicon codicon-trash" style={{ fontSize: "14px" }}></span>
+						<span
+							className="codicon codicon-trash"
+							style={{ fontSize: "calc(14px * var(--roo-font-size-multiplier, 1))" }}></span>
 					</Button>
 					<Button
 						variant="ghost"
@@ -322,7 +327,9 @@ const ServerRow = ({ server, alwaysAllowMcp }: { server: McpServer; alwaysAllowM
 						onClick={handleRestart}
 						disabled={server.status === "connecting"}
 						style={{ marginRight: "8px" }}>
-						<span className="codicon codicon-refresh" style={{ fontSize: "14px" }}></span>
+						<span
+							className="codicon codicon-refresh"
+							style={{ fontSize: "calc(14px * var(--roo-font-size-multiplier, 1))" }}></span>
 					</Button>
 				</div>
 				<div
@@ -357,7 +364,7 @@ const ServerRow = ({ server, alwaysAllowMcp }: { server: McpServer; alwaysAllowM
 							style={{
 								background: "var(--vscode-textCodeBlock-background)",
 								padding: "0 10px 10px 10px",
-								fontSize: "13px",
+								fontSize: "calc(13px * var(--roo-font-size-multiplier, 1))",
 								borderRadius: "0 0 4px 4px",
 							}}>
 							<VSCodePanels style={{ marginBottom: "10px" }}>
@@ -431,7 +438,11 @@ const ServerRow = ({ server, alwaysAllowMcp }: { server: McpServer; alwaysAllowM
 
 								{server.instructions && (
 									<VSCodePanelView id="instructions-view">
-										<div style={{ padding: "10px 0", fontSize: "12px" }}>
+										<div
+											style={{
+												padding: "10px 0",
+												fontSize: "calc(12px * var(--roo-font-size-multiplier, 1))",
+											}}>
 											<div className="opacity-80 whitespace-pre-wrap break-words">
 												{server.instructions}
 											</div>
@@ -495,7 +506,7 @@ const ServerRow = ({ server, alwaysAllowMcp }: { server: McpServer; alwaysAllowM
 								</div>
 								<span
 									style={{
-										fontSize: "12px",
+										fontSize: "calc(12px * var(--roo-font-size-multiplier, 1))",
 										color: "var(--vscode-descriptionForeground)",
 										display: "block",
 									}}>
@@ -508,7 +519,7 @@ const ServerRow = ({ server, alwaysAllowMcp }: { server: McpServer; alwaysAllowM
 					!server.disabled && (
 						<div
 							style={{
-								fontSize: "13px",
+								fontSize: "calc(13px * var(--roo-font-size-multiplier, 1))",
 								background: "var(--vscode-textCodeBlock-background)",
 								borderRadius: "0 0 4px 4px",
 								width: "100%",

@@ -73,7 +73,7 @@ const CodeAccordian = ({
 					{onJumpToFile && path && (
 						<span
 							className="codicon codicon-link-external mr-1"
-							style={{ fontSize: 13.5 }}
+							style={{ fontSize: "calc(13.5px * var(--roo-font-size-multiplier, 1))" }}
 							onClick={(e) => {
 								e.stopPropagation()
 								onJumpToFile()

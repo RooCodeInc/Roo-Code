@@ -15,7 +15,7 @@ export const StyledMarkdown = styled.div`
 		"Open Sans",
 		"Helvetica Neue",
 		sans-serif;
-	font-size: 12px;
+	font-size: calc(12px * var(--roo-font-size-multiplier, 1));
 	color: var(--vscode-descriptionForeground);
 
 	p,
