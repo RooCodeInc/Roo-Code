@@ -3,8 +3,13 @@
 import * as vscode from "vscode"
 import { Terminal } from "../Terminal"
 import { TerminalRegistry } from "../TerminalRegistry"
+import { arePathsEqual } from "../../../utils/path"
 
 const PAGER = process.platform === "win32" ? "" : "cat"
+
+vi.mock("../../../utils/path", () => ({
+	arePathsEqual: vi.fn((a, b) => a === b),
+}))
 
 vi.mock("execa", () => ({
 	execa: vi.fn(),
@@ -117,6 +122,80 @@ describe("TerminalRegistry", () => {
 			} finally {
 				Terminal.setTerminalZshP10k(false)
 			}
+		})
+	})
+
+	describe("getOrCreateTerminal", () => {
+		let createTerminalSpy: any
+
+		beforeEach(() => {
+			// Reset terminals before each test
+			;(TerminalRegistry as any).terminals = []
+			createTerminalSpy = vi.spyOn(TerminalRegistry, "createTerminal")
+		})
+
+		afterEach(() => {
+			createTerminalSpy.mockRestore()
+		})
+
+		it("should create a new terminal if none exist", async () => {
+			await TerminalRegistry.getOrCreateTerminal("/test/path", "task1")
+			expect(createTerminalSpy).toHaveBeenCalledWith("/test/path", "vscode")
+		})
+
+		it("should reuse a terminal with the same task ID and cwd", async () => {
+			const existingTerminal = new Terminal(1, undefined, "/test/path")
+			existingTerminal.taskId = "task1"
+			;(TerminalRegistry as any).terminals.push(existingTerminal)
+
+			const terminal = await TerminalRegistry.getOrCreateTerminal("/test/path", "task1")
+			expect(terminal).toBe(existingTerminal)
+			expect(createTerminalSpy).not.toHaveBeenCalled()
+		})
+
+		it("should reuse an idle terminal with the same cwd", async () => {
+			const existingTerminal = new Terminal(1, undefined, "/test/path")
+			;(TerminalRegistry as any).terminals.push(existingTerminal)
+
+			const terminal = await TerminalRegistry.getOrCreateTerminal("/test/path", "task2")
+			expect(terminal).toBe(existingTerminal)
+			expect(createTerminalSpy).not.toHaveBeenCalled()
+		})
+
+		it("should reuse an idle terminal with a different cwd if no better option is available", async () => {
+			const existingTerminal = new Terminal(1, undefined, "/other/path")
+			;(TerminalRegistry as any).terminals.push(existingTerminal)
+
+			const terminal = await TerminalRegistry.getOrCreateTerminal("/test/path", "task1")
+			expect(terminal).toBe(existingTerminal)
+			expect(createTerminalSpy).not.toHaveBeenCalled()
+			expect(terminal.requestedCwd).toBe("/test/path")
+		})
+
+		it("should prioritize reusing a terminal with the same task ID when cwd has drifted", async () => {
+			const terminal1 = new Terminal(1, undefined, "/other/path1")
+			terminal1.taskId = "task1"
+			const terminal2 = new Terminal(2, undefined, "/other/path2")
+			terminal2.taskId = "task2"
+			;(TerminalRegistry as any).terminals.push(terminal1, terminal2)
+
+			const terminal = await TerminalRegistry.getOrCreateTerminal("/test/path", "task1")
+			expect(terminal).toBe(terminal1)
+			expect(createTerminalSpy).not.toHaveBeenCalled()
+		})
+
+		it("should create a new terminal if all existing terminals are busy", async () => {
+			const existingTerminal = new Terminal(1, undefined, "/test/path")
+			existingTerminal.busy = true
+			;(TerminalRegistry as any).terminals.push(existingTerminal)
+
+			await TerminalRegistry.getOrCreateTerminal("/test/path", "task1")
+			expect(createTerminalSpy).toHaveBeenCalledWith("/test/path", "vscode")
+		})
+
+		it("should set the requestedCwd on the returned terminal", async () => {
+			const terminal = await TerminalRegistry.getOrCreateTerminal("/test/path", "task1")
+			expect(terminal.requestedCwd).toBe("/test/path")
 		})
 	})
 })

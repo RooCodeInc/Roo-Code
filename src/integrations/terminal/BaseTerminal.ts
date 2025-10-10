@@ -20,6 +20,7 @@ export abstract class BaseTerminal implements RooTerminal {
 	protected streamClosed: boolean
 
 	public taskId?: string
+	public requestedCwd?: string
 	public process?: RooTerminalProcess
 	public completedProcesses: RooTerminalProcess[] = []
 
