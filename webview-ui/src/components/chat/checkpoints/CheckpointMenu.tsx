@@ -86,7 +86,7 @@ export const CheckpointMenu = ({
 						</Button>
 					</PopoverTrigger>
 				</StandardTooltip>
-				<PopoverContent align="end" container={portalContainer}>
+				<PopoverContent align="end" container={portalContainer || undefined}>
 					<div className="flex flex-col gap-2">
 						{!isCurrent && (
 							<div className="flex flex-col gap-1 group hover:text-foreground">
