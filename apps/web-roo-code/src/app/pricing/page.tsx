@@ -180,7 +180,7 @@ export default function PricingPage() {
 										<p className="text-sm text-muted-foreground font-light mb-2">
 											{tier.featuresIntro}&nbsp;
 										</p>
-										<ul className="space-y-3 my-0 min-h-37">
+										<ul className="space-y-3 my-0 h-[148px]">
 											{tier.features.map((feature) => (
 												<li key={feature} className="flex items-start gap-2">
 													<Check className="mt-0.5 h-4 w-4 text-muted-foreground shrink-0" />

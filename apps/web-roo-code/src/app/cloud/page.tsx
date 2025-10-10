@@ -203,6 +203,20 @@ export default function CloudPage() {
 										<p className="leading-relaxed font-light text-muted-foreground">
 											{feature.description}
 										</p>
+										{feature.logos && (
+											<div className="mt-4 flex flex-wrap items-center gap-4">
+												{feature.logos.map((logo) => (
+													<Image
+														key={logo}
+														width={20}
+														height={20}
+														className="w-5 h-5 overflow-clip opacity-50 dark:invert"
+														src={`/logos/${logo.toLowerCase()}.svg`}
+														alt={`${logo} Logo`}
+													/>
+												))}
+											</div>
+										)}
 									</li>
 								)
 							})}
