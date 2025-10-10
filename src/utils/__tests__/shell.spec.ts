@@ -247,6 +247,8 @@ describe("Shell Detection Tests", () => {
 
 		it("falls back to /bin/zsh if no config, userInfo, or env variable is set", () => {
 			vscode.workspace.getConfiguration = () => ({ get: () => undefined }) as any
+			// With the fix, getShellFromEnv() returns null when SHELL is not set,
+			// so it falls back to the safe default from getSafeFallbackShell()
 			expect(getShell()).toBe("/bin/zsh")
 		})
 	})
@@ -303,6 +305,8 @@ describe("Shell Detection Tests", () => {
 
 		it("falls back to /bin/bash if nothing is set", () => {
 			vscode.workspace.getConfiguration = () => ({ get: () => undefined }) as any
+			// With the fix, getShellFromEnv() returns null when SHELL is not set,
+			// so it falls back to the safe default from getSafeFallbackShell()
 			expect(getShell()).toBe("/bin/bash")
 		})
 	})
@@ -345,6 +349,8 @@ describe("Shell Detection Tests", () => {
 				throw new Error("userInfo error")
 			})
 			delete process.env.SHELL
+			// With the fix, getShellFromEnv() returns null when SHELL is not set,
+			// so it falls back to the safe default from getSafeFallbackShell()
 			expect(getShell()).toBe("/bin/bash")
 		})
 	})
