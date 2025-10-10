@@ -16,7 +16,7 @@ import {
 import { CloudService } from "@roo-code/cloud"
 import { TelemetryService } from "@roo-code/telemetry"
 
-import { type ApiMessage } from "../task-persistence/apiMessages"
+import { type ApiMessage, saveApiMessages } from "../task-persistence/apiMessages"
 import { saveTaskMessages } from "../task-persistence"
 
 import { ClineProvider } from "./ClineProvider"
@@ -111,6 +111,83 @@ export const webviewMessageHandler = async (
 			await currentCline.overwriteApiConversationHistory(
 				currentCline.apiConversationHistory.slice(0, apiConversationHistoryIndex),
 			)
+		}
+
+		// Perform hygiene: UI is source-of-truth during rewinds (purge API summaries whose UI counterparts were removed)
+		await performCondenseHygiene(currentCline, { uiOnly: true })
+	}
+
+	/**
+	 * Clean up orphaned condenseParent references after truncation
+	 */
+	const performCondenseHygiene = async (currentCline: any, opts?: { uiOnly?: boolean }) => {
+		// Build active condenseIds. If uiOnly, treat UI as source-of-truth (used during rewind/delete).
+		// Otherwise, include API summaries too (general hygiene).
+		const activeCondenseIds = new Set<string>()
+
+		// Always include UI-derived condenseIds
+		currentCline.clineMessages.forEach((msg: any) => {
+			if (msg.say === "condense_context" && msg.metadata?.condenseId) {
+				activeCondenseIds.add(msg.metadata.condenseId)
+			}
+		})
+
+		// Optionally include API summaries that remain in history (non-delete hygiene)
+		if (!opts?.uiOnly) {
+			currentCline.apiConversationHistory.forEach((msg: ApiMessage) => {
+				if (msg.isSummary && msg.condenseId) {
+					activeCondenseIds.add(msg.condenseId)
+				}
+			})
+		}
+
+		let apiHistoryModified = false
+		let uiMessagesModified = false
+
+		// Purge API summaries that are not represented by UI when uiOnly=true (rewind to pre-condense state).
+		// In general hygiene (uiOnly=false), we only remove summaries with condenseIds not present anywhere.
+		const beforeLen = currentCline.apiConversationHistory.length
+		currentCline.apiConversationHistory = currentCline.apiConversationHistory.filter((msg: ApiMessage) => {
+			if (msg.isSummary && msg.condenseId && !activeCondenseIds.has(msg.condenseId)) {
+				return false
+			}
+			return true
+		})
+		if (currentCline.apiConversationHistory.length !== beforeLen) {
+			apiHistoryModified = true
+		}
+
+		// Clean up orphaned condenseParent references in API history
+		currentCline.apiConversationHistory.forEach((msg: ApiMessage) => {
+			if (msg.condenseParent && !activeCondenseIds.has(msg.condenseParent)) {
+				delete msg.condenseParent
+				apiHistoryModified = true
+			}
+		})
+
+		// Clean up orphaned condenseParent references in UI messages
+		currentCline.clineMessages.forEach((msg: any) => {
+			if (msg.metadata?.condenseParent && !activeCondenseIds.has(msg.metadata.condenseParent)) {
+				delete msg.metadata.condenseParent
+				uiMessagesModified = true
+			}
+		})
+
+		// Save if any modifications were made
+		if (apiHistoryModified) {
+			await saveApiMessages({
+				messages: currentCline.apiConversationHistory,
+				taskId: currentCline.taskId,
+				globalStoragePath: provider.contextProxy.globalStorageUri.fsPath,
+			})
+		}
+
+		if (uiMessagesModified) {
+			await saveTaskMessages({
+				messages: currentCline.clineMessages,
+				taskId: currentCline.taskId,
+				globalStoragePath: provider.contextProxy.globalStorageUri.fsPath,
+			})
 		}
 	}
 

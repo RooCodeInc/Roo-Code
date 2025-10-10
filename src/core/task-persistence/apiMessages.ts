@@ -9,7 +9,12 @@ import { fileExistsAtPath } from "../../utils/fs"
 import { GlobalFileNames } from "../../shared/globalFileNames"
 import { getTaskDirectoryPath } from "../../utils/storage"
 
-export type ApiMessage = Anthropic.MessageParam & { ts?: number; isSummary?: boolean }
+export type ApiMessage = Anthropic.MessageParam & {
+	ts?: number
+	isSummary?: boolean
+	condenseId?: string
+	condenseParent?: string
+}
 
 export async function readApiMessages({
 	taskId,

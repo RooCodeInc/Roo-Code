@@ -188,21 +188,33 @@ describe("summarizeConversation", () => {
 		expect(maybeRemoveImageBlocks).toHaveBeenCalled()
 
 		// Verify the structure of the result
-		// The result should be: first message + summary + last N messages
-		expect(result.messages.length).toBe(1 + 1 + N_MESSAGES_TO_KEEP) // First + summary + last N
+		// With non-destructive condense, all original messages are preserved plus the summary
+		expect(result.messages.length).toBe(messages.length + 1) // All original messages + summary
 
 		// Check that the first message is preserved
 		expect(result.messages[0]).toEqual(messages[0])
 
-		// Check that the summary message was inserted correctly
-		const summaryMessage = result.messages[1]
-		expect(summaryMessage.role).toBe("assistant")
-		expect(summaryMessage.content).toBe("This is a summary")
-		expect(summaryMessage.isSummary).toBe(true)
+		// Find the summary message (it should be inserted after the first message and before tail)
+		const summaryMessage = result.messages.find((m) => m.isSummary)
+		expect(summaryMessage).toBeDefined()
+		expect(summaryMessage?.role).toBe("assistant")
+		expect(summaryMessage?.content).toBe("This is a summary")
+		expect(summaryMessage?.isSummary).toBe(true)
+		expect(summaryMessage?.condenseId).toBeDefined()
 
-		// Check that the last N_MESSAGES_TO_KEEP messages are preserved
-		const lastMessages = messages.slice(-N_MESSAGES_TO_KEEP)
-		expect(result.messages.slice(-N_MESSAGES_TO_KEEP)).toEqual(lastMessages)
+		// Check that middle messages are tagged with condenseParent
+		const middleMessages = result.messages.slice(1, messages.length - N_MESSAGES_TO_KEEP + 1)
+		middleMessages.forEach((msg) => {
+			if (!msg.isSummary) {
+				expect(msg.condenseParent).toBe(summaryMessage?.condenseId)
+			}
+		})
+
+		// Check that the last N_MESSAGES_TO_KEEP messages are preserved without condenseParent
+		const tailMessages = result.messages.slice(-N_MESSAGES_TO_KEEP)
+		tailMessages.forEach((msg) => {
+			expect(msg.condenseParent).toBeUndefined()
+		})
 
 		// Check the cost and token counts
 		expect(result.cost).toBe(0.05)
@@ -424,8 +436,8 @@ describe("summarizeConversation", () => {
 		)
 
 		// Should successfully summarize
-		// Result should be: first message + summary + last N messages
-		expect(result.messages.length).toBe(1 + 1 + N_MESSAGES_TO_KEEP) // First + summary + last N
+		// With non-destructive condense, all original messages are preserved plus the summary
+		expect(result.messages.length).toBe(messages.length + 1) // All original messages + summary
 		expect(result.cost).toBe(0.03)
 		expect(result.summary).toBe("Concise summary")
 		expect(result.error).toBeUndefined()

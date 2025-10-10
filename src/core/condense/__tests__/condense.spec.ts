@@ -84,8 +84,9 @@ describe("Condense", () => {
 			expect(summaryMessage?.content).toBe("Mock summary of the conversation")
 
 			// Verify we have the expected number of messages
-			// [first message, summary, last N messages]
-			expect(result.messages.length).toBe(1 + 1 + N_MESSAGES_TO_KEEP)
+			// With non-destructive condense, we keep ALL messages plus the summary
+			// [first message, middle messages (tagged), summary, last N messages]
+			expect(result.messages.length).toBe(messages.length + 1) // All original messages + 1 summary
 
 			// Verify the last N messages are preserved
 			const lastMessages = result.messages.slice(-N_MESSAGES_TO_KEEP)

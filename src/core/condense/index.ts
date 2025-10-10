@@ -181,15 +181,35 @@ export async function summarizeConversation(
 		return { ...response, cost, error }
 	}
 
+	// Generate a unique condenseId for this condensation
+	const condenseId = `condense-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`
+
+	// Choose a unique timestamp that sorts just before the first kept tail message
+	const summaryTs = Math.min((keepMessages[0]?.ts ?? Date.now()) - 1, Date.now())
+
+	// Create the summary message with condenseId
 	const summaryMessage: ApiMessage = {
 		role: "assistant",
 		content: summary,
-		ts: keepMessages[0].ts,
+		ts: summaryTs,
 		isSummary: true,
+		condenseId: condenseId,
 	}
 
-	// Reconstruct messages: [first message, summary, last N messages]
-	const newMessages = [firstMessage, summaryMessage, ...keepMessages]
+	// Tag middle messages from the full middle span, including any previous summaries
+	// that were part of this summarization window. Preserve existing condenseId/isSummary.
+	const windowTs = new Set(messagesToSummarize.map((m) => m.ts).filter((ts): ts is number => typeof ts === "number"))
+	const middleMessages = messages.slice(1, -N_MESSAGES_TO_KEEP).map((msg) => {
+		if (typeof msg.ts === "number" && windowTs.has(msg.ts)) {
+			// Do not alter isSummary or condenseId on prior summaries; only add condenseParent if missing
+			return { ...msg, condenseParent: msg.condenseParent ?? condenseId }
+		}
+		return msg
+	})
+
+	// Reconstruct messages: [first message, tagged middle messages, summary, last N messages]
+	// This preserves ALL messages, with middle ones tagged for filtering
+	const newMessages = [firstMessage, ...middleMessages, summaryMessage, ...keepMessages]
 
 	// Count the tokens in the context for the next API request
 	// We only estimate the tokens in summaryMesage if outputTokens is 0, otherwise we use outputTokens

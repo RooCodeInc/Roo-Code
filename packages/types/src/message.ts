@@ -225,6 +225,8 @@ export const clineMessageSchema = z.object({
 					reasoning_summary: z.string().optional(),
 				})
 				.optional(),
+			condenseId: z.string().optional(),
+			condenseParent: z.string().optional(),
 		})
 		.optional(),
 })
