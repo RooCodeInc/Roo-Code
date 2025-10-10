@@ -1,9 +1,9 @@
 {
-	"name": "roo-cline",
-	"displayName": "%extension.displayName%",
-	"description": "%extension.description%",
+	"name": "roo-codep",
+	"displayName": "ROO CODEP",
+	"description": "ROO CODE Preview - Testing roadmap2026 memory optimization and performance improvements",
 	"publisher": "RooVeterinaryInc",
-	"version": "3.28.15",
+	"version": "3.28.15-preview.1",
 	"icon": "assets/icons/icon.png",
 	"galleryBanner": {
 		"color": "#617A91",

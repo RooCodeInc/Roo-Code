@@ -72,6 +72,11 @@ export enum TelemetryEventName {
 	CONSECUTIVE_MISTAKE_ERROR = "Consecutive Mistake Error",
 	CODE_INDEX_ERROR = "Code Index Error",
 	TELEMETRY_SETTINGS_CHANGED = "Telemetry Settings Changed",
+
+	// Memory Monitoring Events
+	MEMORY_USAGE = "Memory Usage",
+	MEMORY_WARNING = "Memory Warning",
+	IMAGE_CLEANUP = "Image Cleanup",
 }
 
 /**

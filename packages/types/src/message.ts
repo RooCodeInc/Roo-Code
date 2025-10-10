@@ -207,6 +207,7 @@ export const clineMessageSchema = z.object({
 	say: clineSaySchema.optional(),
 	text: z.string().optional(),
 	images: z.array(z.string()).optional(),
+	imageIds: z.array(z.string()).optional(),
 	partial: z.boolean().optional(),
 	reasoning: z.string().optional(),
 	conversationHistoryIndex: z.number().optional(),

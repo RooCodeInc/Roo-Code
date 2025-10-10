@@ -9,6 +9,9 @@ import delay from "delay"
 import pWaitFor from "p-wait-for"
 import { serializeError } from "serialize-error"
 
+import { ImageManager } from "../image-storage"
+import { MemoryMonitor, type MemoryUsage } from "../memory/MemoryMonitor"
+
 import {
 	type TaskLike,
 	type TaskMetadata,
@@ -238,6 +241,16 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	fileContextTracker: FileContextTracker
 	urlContentFetcher: UrlContentFetcher
 	terminalProcess?: RooTerminalProcess
+	imageManager: ImageManager
+	memoryMonitor: MemoryMonitor
+
+	// Resource management for disposal
+	private disposables: vscode.Disposable[] = []
+
+	// Message persistence optimization
+	private saveDebounceTimer?: NodeJS.Timeout
+	private pendingSave: boolean = false
+	private readonly SAVE_DEBOUNCE_MS = 1000 // 1 second debounce
 
 	// Computer User
 	browserSession: BrowserSession
@@ -252,6 +265,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	// LLM Messages & Chat Messages
 	apiConversationHistory: ApiMessage[] = []
 	clineMessages: ClineMessage[] = []
+	// Message index for O(1) lookups by timestamp
+	private messageIndex: Map<number, ClineMessage> = new Map()
 
 	// Ask
 	private askResponse?: ClineAskResponse
@@ -360,6 +375,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.consecutiveMistakeLimit = consecutiveMistakeLimit ?? DEFAULT_CONSECUTIVE_MISTAKE_LIMIT
 		this.providerRef = new WeakRef(provider)
 		this.globalStoragePath = provider.context.globalStorageUri.fsPath
+		this.imageManager = new ImageManager(this.globalStoragePath)
+		this.imageManager.setTaskId(this.taskId)
 		this.diffViewProvider = new DiffViewProvider(this.cwd, this)
 		this.enableCheckpoints = enableCheckpoints
 		this.enableBridge = enableBridge
@@ -412,6 +429,16 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 
 		this.toolRepetitionDetector = new ToolRepetitionDetector(this.consecutiveMistakeLimit)
+
+		// Initialize memory monitor
+		this.memoryMonitor = new MemoryMonitor(
+			this.taskId,
+			TelemetryService.instance,
+			this.imageManager,
+			() => this.clineMessages,
+			() => this.apiConversationHistory,
+		)
+		this.memoryMonitor.start()
 
 		// Initialize todo list if provided
 		if (initialTodos && initialTodos.length > 0) {
@@ -608,11 +635,31 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	}
 
 	private async addToClineMessages(message: ClineMessage) {
+		// 检测并处理Base64图片数据
+		if (message.images && message.images.length > 0) {
+			// 判断是否为Base64数据（以data:image/开头）
+			const hasBase64Images = message.images.some((img) => img.startsWith("data:image/"))
+
+			if (hasBase64Images) {
+				try {
+					// 保存图片到磁盘并获取图片ID
+					const imageIds = await this.imageManager.saveImages(this.taskId, message.images)
+					// 替换消息：移除Base64数据，只保存图片ID
+					message = { ...message, imageIds, images: undefined }
+				} catch (error) {
+					console.error("[Task] Failed to save images:", error)
+					// 如果保存失败，保留原始Base64数据以确保不丢失图片
+				}
+			}
+		}
+
 		this.clineMessages.push(message)
+		// Update message index for O(1) lookups
+		this.messageIndex.set(message.ts, message)
 		const provider = this.providerRef.deref()
 		await provider?.postStateToWebview()
 		this.emit(RooCodeEventName.Message, { action: "created", message })
-		await this.saveClineMessages()
+		this.scheduleSave() // Use debounced save instead of immediate save
 
 		const shouldCaptureMessage = message.partial !== true && CloudService.isEnabled()
 
@@ -627,6 +674,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	public async overwriteClineMessages(newMessages: ClineMessage[]) {
 		this.clineMessages = newMessages
 
+		// Rebuild message index when overwriting messages
+		this.messageIndex.clear()
+		for (const message of newMessages) {
+			this.messageIndex.set(message.ts, message)
+		}
+
 		// If deletion or history truncation leaves a condense_context as the last message,
 		// ensure the next API call suppresses previous_response_id so the condensed context is respected.
 		try {
@@ -639,7 +692,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 
 		restoreTodoListForTask(this)
-		await this.saveClineMessages()
+		this.scheduleSave() // Use debounced save
 	}
 
 	private async updateClineMessage(message: ClineMessage) {
@@ -654,6 +707,43 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				event: TelemetryEventName.TASK_MESSAGE,
 				properties: { taskId: this.taskId, message },
 			})
+		}
+	}
+
+	/**
+	 * Schedule a debounced save operation.
+	 * Multiple rapid calls will be coalesced into a single save.
+	 */
+	private scheduleSave() {
+		this.pendingSave = true
+
+		if (this.saveDebounceTimer) {
+			clearTimeout(this.saveDebounceTimer)
+		}
+
+		this.saveDebounceTimer = setTimeout(() => {
+			if (this.pendingSave) {
+				this.saveClineMessages().catch((error) => {
+					console.error("[Task] Debounced save failed:", error)
+				})
+				this.pendingSave = false
+			}
+		}, this.SAVE_DEBOUNCE_MS)
+	}
+
+	/**
+	 * Force immediate save, bypassing debounce.
+	 * Use this before critical operations like API calls.
+	 */
+	private async flushPendingSave(): Promise<void> {
+		if (this.saveDebounceTimer) {
+			clearTimeout(this.saveDebounceTimer)
+			this.saveDebounceTimer = undefined
+		}
+
+		if (this.pendingSave) {
+			await this.saveClineMessages()
+			this.pendingSave = false
 		}
 	}
 
@@ -688,14 +778,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 	}
 
+	/**
+	 * Find a message by timestamp using O(1) Map lookup.
+	 * Previously used O(n) linear search.
+	 */
 	private findMessageByTimestamp(ts: number): ClineMessage | undefined {
-		for (let i = this.clineMessages.length - 1; i >= 0; i--) {
-			if (this.clineMessages[i].ts === ts) {
-				return this.clineMessages[i]
-			}
-		}
-
-		return undefined
+		return this.messageIndex.get(ts)
 	}
 
 	// Note that `partial` has three valid states true (partial message),
@@ -774,7 +862,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					lastMessage.partial = false
 					lastMessage.progressStatus = progressStatus
 					lastMessage.isProtected = isProtected
-					await this.saveClineMessages()
+					// Use scheduleSave for debounced persistence
+					this.scheduleSave()
 					this.updateClineMessage(lastMessage)
 				} else {
 					// This is a new and complete message, so add it like normal.
@@ -1127,7 +1216,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 					// Instead of streaming partialMessage events, we do a save
 					// and post like normal to persist to disk.
-					await this.saveClineMessages()
+					this.scheduleSave() // Use debounced save
 
 					// More performant than an entire `postStateToWebview`.
 					this.updateClineMessage(lastMessage)
@@ -1527,7 +1616,31 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	public dispose(): void {
 		console.log(`[Task#dispose] disposing task ${this.taskId}.${this.instanceId}`)
 
-		// Dispose message queue and remove event listeners.
+		// 1. Remove all event listeners FIRST (highest priority to prevent leaks)
+		try {
+			this.removeAllListeners()
+		} catch (error) {
+			console.error("[Task#dispose] Error removing event listeners:", error)
+		}
+
+		// 2. Flush any pending saves before disposal
+		try {
+			if (this.saveDebounceTimer) {
+				clearTimeout(this.saveDebounceTimer)
+				this.saveDebounceTimer = undefined
+			}
+			if (this.pendingSave) {
+				// Synchronous save on dispose - we need to ensure data is persisted
+				this.saveClineMessages().catch((error) => {
+					console.error("[Task#dispose] Failed to flush pending save:", error)
+				})
+				this.pendingSave = false
+			}
+		} catch (error) {
+			console.error("[Task#dispose] Error flushing pending save:", error)
+		}
+
+		// 3. Dispose message queue and remove event listeners
 		try {
 			if (this.messageQueueStateChangedHandler) {
 				this.messageQueueService.removeListener("stateChanged", this.messageQueueStateChangedHandler)
@@ -1536,76 +1649,148 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 			this.messageQueueService.dispose()
 		} catch (error) {
-			console.error("Error disposing message queue:", error)
+			console.error("[Task#dispose] Error disposing message queue:", error)
 		}
 
-		// Remove all event listeners to prevent memory leaks.
+		// 4. Stop memory monitor
 		try {
-			this.removeAllListeners()
+			if (this.memoryMonitor) {
+				this.memoryMonitor.dispose()
+			}
 		} catch (error) {
-			console.error("Error removing event listeners:", error)
+			console.error("[Task#dispose] Error disposing memory monitor:", error)
 		}
 
-		// Stop waiting for child task completion.
-		if (this.pauseInterval) {
-			clearInterval(this.pauseInterval)
-			this.pauseInterval = undefined
-		}
-
-		if (this.enableBridge) {
-			BridgeOrchestrator.getInstance()
-				?.unsubscribeFromTask(this.taskId)
-				.catch((error) =>
-					console.error(
-						`[Task#dispose] BridgeOrchestrator#unsubscribeFromTask() failed: ${error instanceof Error ? error.message : String(error)}`,
-					),
-				)
-		}
-
-		// Release any terminals associated with this task.
+		// 5. Clean up task images
 		try {
-			// Release any terminals associated with this task.
+			this.imageManager.cleanupTaskImages(this.taskId).catch((error) => {
+				console.error("[Task#dispose] Failed to cleanup task images:", error)
+			})
+		} catch (error) {
+			console.error("[Task#dispose] Error cleaning up images:", error)
+		}
+
+		// 6. Clear all timers
+		try {
+			if (this.pauseInterval) {
+				clearInterval(this.pauseInterval)
+				this.pauseInterval = undefined
+			}
+		} catch (error) {
+			console.error("[Task#dispose] Error clearing pause interval:", error)
+		}
+
+		// 7. Dispose all registered disposables
+		try {
+			for (const disposable of this.disposables) {
+				try {
+					disposable?.dispose()
+				} catch (error) {
+					console.error("[Task#dispose] Failed to dispose resource:", error)
+				}
+			}
+			this.disposables = []
+		} catch (error) {
+			console.error("[Task#dispose] Error disposing disposables array:", error)
+		}
+
+		// 8. Unsubscribe from bridge if enabled
+		if (this.enableBridge) {
+			try {
+				BridgeOrchestrator.getInstance()
+					?.unsubscribeFromTask(this.taskId)
+					.catch((error) =>
+						console.error(
+							`[Task#dispose] BridgeOrchestrator#unsubscribeFromTask() failed: ${error instanceof Error ? error.message : String(error)}`,
+						),
+					)
+			} catch (error) {
+				console.error("[Task#dispose] Error unsubscribing from bridge:", error)
+			}
+		}
+
+		// 9. Release terminals
+		try {
 			TerminalRegistry.releaseTerminalsForTask(this.taskId)
 		} catch (error) {
-			console.error("Error releasing terminals:", error)
+			console.error("[Task#dispose] Error releasing terminals:", error)
 		}
 
+		// 10. Close browsers
 		try {
 			this.urlContentFetcher.closeBrowser()
 		} catch (error) {
-			console.error("Error closing URL content fetcher browser:", error)
+			console.error("[Task#dispose] Error closing URL content fetcher browser:", error)
 		}
 
 		try {
 			this.browserSession.closeBrowser()
 		} catch (error) {
-			console.error("Error closing browser session:", error)
+			console.error("[Task#dispose] Error closing browser session:", error)
 		}
 
+		// 11. Dispose controllers
 		try {
 			if (this.rooIgnoreController) {
 				this.rooIgnoreController.dispose()
 				this.rooIgnoreController = undefined
 			}
 		} catch (error) {
-			console.error("Error disposing RooIgnoreController:", error)
-			// This is the critical one for the leak fix.
+			console.error("[Task#dispose] Error disposing RooIgnoreController:", error)
+		}
+
+		try {
+			if (this.rooProtectedController) {
+				this.rooProtectedController.dispose()
+				this.rooProtectedController = undefined
+			}
+		} catch (error) {
+			console.error("[Task#dispose] Error disposing RooProtectedController:", error)
 		}
 
 		try {
 			this.fileContextTracker.dispose()
 		} catch (error) {
-			console.error("Error disposing file context tracker:", error)
+			console.error("[Task#dispose] Error disposing file context tracker:", error)
 		}
 
+		// 12. Revert diff changes if streaming
 		try {
-			// If we're not streaming then `abortStream` won't be called.
 			if (this.isStreaming && this.diffViewProvider.isEditing) {
 				this.diffViewProvider.revertChanges().catch(console.error)
 			}
 		} catch (error) {
-			console.error("Error reverting diff changes:", error)
+			console.error("[Task#dispose] Error reverting diff changes:", error)
 		}
+
+		// 13. Break circular references
+		try {
+			// Clear provider reference (WeakRef will handle garbage collection)
+			// Note: We don't set providerRef to undefined as it's readonly,
+			// but the WeakRef will allow GC when the provider is disposed
+
+			// Clear other references
+			this.rooIgnoreController = undefined
+			this.rooProtectedController = undefined
+			this.checkpointService = undefined
+			this.terminalProcess = undefined
+		} catch (error) {
+			console.error("[Task#dispose] Error breaking circular references:", error)
+		}
+
+		// 14. Clear large data structures
+		try {
+			this.clineMessages = []
+			this.apiConversationHistory = []
+			this.assistantMessageContent = []
+			this.userMessageContent = []
+			this.consecutiveMistakeCountForApplyDiff.clear()
+			this.messageIndex.clear()
+		} catch (error) {
+			console.error("[Task#dispose] Error clearing large data structures:", error)
+		}
+
+		console.log(`[Task#dispose] completed disposal for task ${this.taskId}.${this.instanceId}`)
 	}
 
 	// Subtasks
@@ -1839,7 +2024,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				apiProtocol,
 			} satisfies ClineApiReqInfo)
 
-			await this.saveClineMessages()
+			// Force immediate save before API call to ensure state is persisted
+			await this.flushPendingSave()
 			await provider?.postStateToWebview()
 
 			try {
@@ -2269,7 +2455,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				}
 
 				await this.persistGpt5Metadata(reasoningMessage)
-				await this.saveClineMessages()
+				// Force immediate save after completing API response
+				await this.flushPendingSave()
 				await this.providerRef.deref()?.postStateToWebview()
 
 				// Reset parser after each complete conversation round
@@ -2927,6 +3114,13 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	public get cwd() {
 		return this.workspacePath
+	}
+
+	/**
+	 * Get current memory usage for this task
+	 */
+	public getMemoryUsage(): MemoryUsage {
+		return this.memoryMonitor.getMemoryUsage()
 	}
 
 	/**

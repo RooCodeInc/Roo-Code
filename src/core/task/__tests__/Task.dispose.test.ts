@@ -1,41 +1,87 @@
-import { ProviderSettings } from "@roo-code/types"
-
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
 import { Task } from "../Task"
-import { ClineProvider } from "../../webview/ClineProvider"
+import type { ClineProvider } from "../../webview/ClineProvider"
+import type { ProviderSettings } from "@roo-code/types"
+import * as taskPersistence from "../../task-persistence"
 
-// Mock dependencies
-vi.mock("../../webview/ClineProvider")
-vi.mock("../../../integrations/terminal/TerminalRegistry", () => ({
-	TerminalRegistry: {
-		releaseTerminalsForTask: vi.fn(),
+// Mock vscode first - must include all exports used by the codebase
+vi.mock("vscode", () => ({
+	workspace: {
+		getConfiguration: vi.fn(() => ({
+			get: vi.fn(() => true),
+		})),
+		createFileSystemWatcher: vi.fn(() => ({
+			onDidCreate: vi.fn(),
+			onDidChange: vi.fn(),
+			onDidDelete: vi.fn(),
+			dispose: vi.fn(),
+		})),
 	},
-}))
-vi.mock("../../ignore/RooIgnoreController")
-vi.mock("../../protect/RooProtectedController")
-vi.mock("../../context-tracking/FileContextTracker")
-vi.mock("../../../services/browser/UrlContentFetcher")
-vi.mock("../../../services/browser/BrowserSession")
-vi.mock("../../../integrations/editor/DiffViewProvider")
-vi.mock("../../tools/ToolRepetitionDetector")
-vi.mock("../../../api", () => ({
-	buildApiHandler: vi.fn(() => ({
-		getModel: () => ({ info: {}, id: "test-model" }),
+	window: {
+		createTextEditorDecorationType: vi.fn(() => ({
+			dispose: vi.fn(),
+		})),
+		showErrorMessage: vi.fn(),
+		showInformationMessage: vi.fn(),
+	},
+	RelativePattern: vi.fn(),
+	Uri: {
+		file: vi.fn((path) => ({ fsPath: path })),
+	},
+	EventEmitter: vi.fn(() => ({
+		event: vi.fn(),
+		fire: vi.fn(),
+		dispose: vi.fn(),
 	})),
 }))
-vi.mock("./AutoApprovalHandler")
 
-// Mock TelemetryService
+// Mock other dependencies
+vi.mock("../../task-persistence")
+vi.mock("../../webview/ClineProvider")
 vi.mock("@roo-code/telemetry", () => ({
 	TelemetryService: {
 		instance: {
 			captureTaskCreated: vi.fn(),
 			captureTaskRestarted: vi.fn(),
+			captureConversationMessage: vi.fn(),
+			captureEvent: vi.fn(),
+			captureMemoryUsage: vi.fn(),
+			captureMemoryWarning: vi.fn(),
+			captureImageCleanup: vi.fn(),
 		},
 	},
 }))
+vi.mock("@roo-code/cloud", () => ({
+	CloudService: {
+		isEnabled: vi.fn(() => false),
+		instance: {
+			captureEvent: vi.fn(),
+		},
+	},
+	BridgeOrchestrator: {
+		subscribeToTask: vi.fn(),
+		getInstance: vi.fn(() => ({
+			unsubscribeFromTask: vi.fn(),
+		})),
+	},
+}))
+vi.mock("../../ignore/RooIgnoreController")
+vi.mock("../../protect/RooProtectedController")
+vi.mock("../../context-tracking/FileContextTracker")
+vi.mock("../../services/browser/UrlContentFetcher")
+vi.mock("../../services/browser/BrowserSession")
+vi.mock("../../integrations/editor/DiffViewProvider")
+vi.mock("../../../api", () => ({
+	buildApiHandler: vi.fn(() => ({
+		getModel: vi.fn(() => ({
+			id: "test-model",
+			info: {},
+		})),
+	})),
+}))
 
-describe("Task dispose method", () => {
-	let mockProvider: any
+describe("Task disposal and resource cleanup", () => {
+	let mockProvider: Partial<ClineProvider>
 	let mockApiConfiguration: ProviderSettings
 	let task: Task
 
@@ -43,159 +89,298 @@ describe("Task dispose method", () => {
 		// Reset all mocks
 		vi.clearAllMocks()
 
-		// Mock provider
+		// Setup mock provider
 		mockProvider = {
 			context: {
-				globalStorageUri: { fsPath: "/test/path" },
-			},
-			getState: vi.fn().mockResolvedValue({ mode: "code" }),
+				globalStorageUri: { fsPath: "/mock/storage" },
+			} as any,
+			getState: vi.fn().mockResolvedValue({
+				mode: "code",
+				experiments: {},
+			}),
+			postStateToWebview: vi.fn().mockResolvedValue(undefined),
+			postMessageToWebview: vi.fn(),
 			log: vi.fn(),
 		}
 
-		// Mock API configuration
 		mockApiConfiguration = {
 			apiProvider: "anthropic",
-			apiKey: "test-key",
+			apiModelId: "claude-3-5-sonnet-20241022",
 		} as ProviderSettings
 
-		// Create task instance without starting it
-		task = new Task({
-			provider: mockProvider as ClineProvider,
-			apiConfiguration: mockApiConfiguration,
-			startTask: false,
+		// Mock task persistence functions
+		vi.mocked(taskPersistence.readTaskMessages).mockResolvedValue([])
+		vi.mocked(taskPersistence.readApiMessages).mockResolvedValue([])
+		vi.mocked(taskPersistence.saveTaskMessages).mockResolvedValue()
+		vi.mocked(taskPersistence.taskMetadata).mockResolvedValue({
+			historyItem: {} as any,
+			tokenUsage: {
+				totalTokens: 0,
+				totalCost: 0,
+				inputTokens: 0,
+				outputTokens: 0,
+				cacheWriteTokens: 0,
+				cacheReadTokens: 0,
+			},
 		})
 	})
 
 	afterEach(() => {
-		// Clean up
-		if (task && !task.abort) {
-			task.dispose()
-		}
+		task?.dispose()
 	})
 
-	test("should remove all event listeners when dispose is called", () => {
-		// Add some event listeners using type assertion to bypass strict typing for testing
-		const listener1 = vi.fn(() => {})
-		const listener2 = vi.fn(() => {})
-		const listener3 = vi.fn((taskId: string) => {})
-
-		// Use type assertion to bypass strict event typing for testing
-		;(task as any).on("TaskStarted", listener1)
-		;(task as any).on("TaskAborted", listener2)
-		;(task as any).on("TaskIdle", listener3)
-
-		// Verify listeners are added
-		expect(task.listenerCount("TaskStarted")).toBe(1)
-		expect(task.listenerCount("TaskAborted")).toBe(1)
-		expect(task.listenerCount("TaskIdle")).toBe(1)
-
-		// Spy on removeAllListeners method
-		const removeAllListenersSpy = vi.spyOn(task, "removeAllListeners")
-
-		// Call dispose
-		task.dispose()
-
-		// Verify removeAllListeners was called
-		expect(removeAllListenersSpy).toHaveBeenCalledOnce()
-
-		// Verify all listeners are removed
-		expect(task.listenerCount("TaskStarted")).toBe(0)
-		expect(task.listenerCount("TaskAborted")).toBe(0)
-		expect(task.listenerCount("TaskIdle")).toBe(0)
-	})
-
-	test("should handle errors when removing event listeners", () => {
-		// Mock removeAllListeners to throw an error
-		const originalRemoveAllListeners = task.removeAllListeners
-		task.removeAllListeners = vi.fn(() => {
-			throw new Error("Test error")
+	it("should clean up all resources on dispose", async () => {
+		// Create task instance without starting it
+		task = new Task({
+			provider: mockProvider as ClineProvider,
+			apiConfiguration: mockApiConfiguration,
+			task: "test task",
+			startTask: false,
 		})
 
-		// Spy on console.error
+		// Add some messages to simulate usage
+		await task["addToClineMessages"]({
+			ts: Date.now(),
+			type: "say",
+			say: "text",
+			text: "Hello",
+		})
+
+		// Verify clineMessages exist
+		expect(task.clineMessages.length).toBeGreaterThan(0)
+
+		// Add data to other arrays that dispose should clear
+		task["assistantMessageContent"] = [{ type: "text", text: "Assistant message", partial: false }]
+		task["userMessageContent"] = [{ type: "text", text: "User message" }]
+		task["apiConversationHistory"] = [{ role: "user", content: [{ type: "text", text: "Test" }] }]
+
+		// Verify data exists
+		expect(task.assistantMessageContent.length).toBeGreaterThan(0)
+		expect(task.userMessageContent.length).toBeGreaterThan(0)
+		expect(task.apiConversationHistory.length).toBeGreaterThan(0)
+
+		// Dispose
+		task.dispose()
+
+		// Verify all resources are cleaned up
+		expect(task.clineMessages).toHaveLength(0)
+		expect(task.apiConversationHistory).toHaveLength(0)
+		expect(task.assistantMessageContent).toHaveLength(0)
+		expect(task.userMessageContent).toHaveLength(0)
+	})
+
+	it("should clear all event listeners on dispose", async () => {
+		task = new Task({
+			provider: mockProvider as ClineProvider,
+			apiConfiguration: mockApiConfiguration,
+			task: "test task",
+			startTask: false,
+		})
+
+		// Add event listeners
+		const listener1 = vi.fn()
+		const listener2 = vi.fn()
+		task.on("stateChanged", listener1)
+		task.on("askResponse", listener2)
+
+		// Verify listeners are registered
+		expect(task.listenerCount("stateChanged")).toBe(1)
+		expect(task.listenerCount("askResponse")).toBe(1)
+
+		// Dispose
+		task.dispose()
+
+		// Verify all listeners are removed
+		expect(task.listenerCount("stateChanged")).toBe(0)
+		expect(task.listenerCount("askResponse")).toBe(0)
+	})
+
+	it("should clear all timers on dispose", async () => {
+		task = new Task({
+			provider: mockProvider as ClineProvider,
+			apiConfiguration: mockApiConfiguration,
+			task: "test task",
+			startTask: false,
+		})
+
+		// Set timers by triggering debounced save
+		await task["addToClineMessages"]({
+			ts: Date.now(),
+			type: "say",
+			say: "text",
+			text: "Test",
+		})
+
+		// Verify timer exists
+		expect(task["saveDebounceTimer"]).toBeDefined()
+
+		// Dispose
+		task.dispose()
+
+		// Verify timer is cleared
+		expect(task["saveDebounceTimer"]).toBeUndefined()
+	})
+
+	it("should flush pending saves before disposal", async () => {
+		task = new Task({
+			provider: mockProvider as ClineProvider,
+			apiConfiguration: mockApiConfiguration,
+			task: "test task",
+			startTask: false,
+		})
+		const saveSpy = vi.spyOn(task as any, "saveClineMessages")
+
+		// Trigger a debounced save
+		await task["addToClineMessages"]({
+			ts: Date.now(),
+			type: "say",
+			say: "text",
+			text: "Test",
+		})
+
+		// Verify there's a pending save
+		expect(task["pendingSave"]).toBe(true)
+
+		// Dispose (should flush pending save)
+		task.dispose()
+
+		// Verify save was attempted
+		expect(task["pendingSave"]).toBe(false)
+		expect(saveSpy).toHaveBeenCalled()
+	})
+
+	it("should dispose message queue service", async () => {
+		task = new Task({
+			provider: mockProvider as ClineProvider,
+			apiConfiguration: mockApiConfiguration,
+			task: "test task",
+			startTask: false,
+		})
+		const disposeSpy = vi.spyOn(task.messageQueueService, "dispose")
+
+		task.dispose()
+
+		expect(disposeSpy).toHaveBeenCalled()
+	})
+
+	it("should handle dispose errors gracefully", async () => {
+		task = new Task({
+			provider: mockProvider as ClineProvider,
+			apiConfiguration: mockApiConfiguration,
+			task: "test task",
+			startTask: false,
+		})
 		const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
 
-		// Call dispose - should not throw
+		// Mock a method to throw an error
+		task.messageQueueService.dispose = vi.fn(() => {
+			throw new Error("Mock disposal error")
+		})
+
+		// Should not throw
 		expect(() => task.dispose()).not.toThrow()
 
-		// Verify error was logged
-		expect(consoleErrorSpy).toHaveBeenCalledWith("Error removing event listeners:", expect.any(Error))
+		// Should log the error
+		expect(consoleErrorSpy).toHaveBeenCalled()
 
-		// Restore
-		task.removeAllListeners = originalRemoveAllListeners
 		consoleErrorSpy.mockRestore()
 	})
 
-	test("should clean up all resources in correct order", () => {
-		const removeAllListenersSpy = vi.spyOn(task, "removeAllListeners")
-		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {})
+	it("should clear circular references", async () => {
+		task = new Task({
+			provider: mockProvider as ClineProvider,
+			apiConfiguration: mockApiConfiguration,
+			task: "test task",
+			startTask: false,
+		})
 
-		// Call dispose
+		// Verify controllers exist before dispose
+		expect(task["rooIgnoreController"]).toBeDefined()
+
 		task.dispose()
 
-		// Verify dispose was called and logged
-		expect(consoleLogSpy).toHaveBeenCalledWith(
-			expect.stringContaining(`[Task#dispose] disposing task ${task.taskId}.${task.instanceId}`),
-		)
-
-		// Verify removeAllListeners was called first (before other cleanup)
-		expect(removeAllListenersSpy).toHaveBeenCalledOnce()
-
-		// Clean up
-		consoleLogSpy.mockRestore()
+		// Verify circular references are broken
+		expect(task["rooIgnoreController"]).toBeUndefined()
+		expect(task["rooProtectedController"]).toBeUndefined()
+		expect(task["checkpointService"]).toBeUndefined()
+		expect(task["terminalProcess"]).toBeUndefined()
 	})
 
-	test("should prevent memory leaks by removing listeners before other cleanup", () => {
-		// Add multiple listeners of different types using type assertion for testing
-		const listeners = {
-			TaskStarted: vi.fn(() => {}),
-			TaskAborted: vi.fn(() => {}),
-			TaskIdle: vi.fn((taskId: string) => {}),
-			TaskActive: vi.fn((taskId: string) => {}),
-			TaskAskResponded: vi.fn(() => {}),
-			Message: vi.fn((data: { action: "created" | "updated"; message: any }) => {}),
-			TaskTokenUsageUpdated: vi.fn((taskId: string, tokenUsage: any) => {}),
-			TaskToolFailed: vi.fn((taskId: string, tool: any, error: string) => {}),
-			TaskUnpaused: vi.fn(() => {}),
-		}
+	it("should clear large data structures", async () => {
+		task = new Task({
+			provider: mockProvider as ClineProvider,
+			apiConfiguration: mockApiConfiguration,
+			task: "test task",
+			startTask: false,
+		})
 
-		// Add all listeners using type assertion to bypass strict typing for testing
-		const taskAny = task as any
-		taskAny.on("TaskStarted", listeners.TaskStarted)
-		taskAny.on("TaskAborted", listeners.TaskAborted)
-		taskAny.on("TaskIdle", listeners.TaskIdle)
-		taskAny.on("TaskActive", listeners.TaskActive)
-		taskAny.on("TaskAskResponded", listeners.TaskAskResponded)
-		taskAny.on("Message", listeners.Message)
-		taskAny.on("TaskTokenUsageUpdated", listeners.TaskTokenUsageUpdated)
-		taskAny.on("TaskToolFailed", listeners.TaskToolFailed)
-		taskAny.on("TaskUnpaused", listeners.TaskUnpaused)
+		// Add data to large structures
+		await task["addToClineMessages"]({
+			ts: Date.now(),
+			type: "say",
+			say: "text",
+			text: "Test 1",
+		})
+		await task["addToClineMessages"]({
+			ts: Date.now(),
+			type: "say",
+			say: "text",
+			text: "Test 2",
+		})
 
-		// Verify all listeners are added
-		expect(task.listenerCount("TaskStarted")).toBe(1)
-		expect(task.listenerCount("TaskAborted")).toBe(1)
-		expect(task.listenerCount("TaskIdle")).toBe(1)
-		expect(task.listenerCount("TaskActive")).toBe(1)
-		expect(task.listenerCount("TaskAskResponded")).toBe(1)
-		expect(task.listenerCount("Message")).toBe(1)
-		expect(task.listenerCount("TaskTokenUsageUpdated")).toBe(1)
-		expect(task.listenerCount("TaskToolFailed")).toBe(1)
-		expect(task.listenerCount("TaskUnpaused")).toBe(1)
+		task["assistantMessageContent"] = [{ type: "text", text: "Assistant message", partial: false }]
+		task["userMessageContent"] = [{ type: "text", text: "User message" }]
+		task["consecutiveMistakeCountForApplyDiff"].set("test.js", 5)
 
-		// Call dispose
+		// Verify data exists
+		expect(task.clineMessages.length).toBeGreaterThan(0)
+		expect(task["assistantMessageContent"].length).toBeGreaterThan(0)
+		expect(task["userMessageContent"].length).toBeGreaterThan(0)
+		expect(task["consecutiveMistakeCountForApplyDiff"].size).toBeGreaterThan(0)
+
 		task.dispose()
 
-		// Verify all listeners are removed
-		expect(task.listenerCount("TaskStarted")).toBe(0)
-		expect(task.listenerCount("TaskAborted")).toBe(0)
-		expect(task.listenerCount("TaskIdle")).toBe(0)
-		expect(task.listenerCount("TaskActive")).toBe(0)
-		expect(task.listenerCount("TaskAskResponded")).toBe(0)
-		expect(task.listenerCount("Message")).toBe(0)
-		expect(task.listenerCount("TaskTokenUsageUpdated")).toBe(0)
-		expect(task.listenerCount("TaskToolFailed")).toBe(0)
-		expect(task.listenerCount("TaskUnpaused")).toBe(0)
+		// Verify all large structures are cleared
+		expect(task.clineMessages).toHaveLength(0)
+		expect(task.apiConversationHistory).toHaveLength(0)
+		expect(task["assistantMessageContent"]).toHaveLength(0)
+		expect(task["userMessageContent"]).toHaveLength(0)
+		expect(task["consecutiveMistakeCountForApplyDiff"].size).toBe(0)
+	})
 
-		// Verify total listener count is 0
-		expect(task.eventNames().length).toBe(0)
+	it("should complete dispose successfully multiple times", async () => {
+		task = new Task({
+			provider: mockProvider as ClineProvider,
+			apiConfiguration: mockApiConfiguration,
+			task: "test task",
+			startTask: false,
+		})
+
+		// First disposal
+		task.dispose()
+
+		// Second disposal should not throw
+		expect(() => task.dispose()).not.toThrow()
+	})
+
+	it("should log disposal start and completion", async () => {
+		task = new Task({
+			provider: mockProvider as ClineProvider,
+			apiConfiguration: mockApiConfiguration,
+			task: "test task",
+			startTask: false,
+		})
+		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {})
+
+		task.dispose()
+
+		expect(consoleLogSpy).toHaveBeenCalledWith(
+			expect.stringContaining(`[Task#dispose] disposing task ${task.taskId}`),
+		)
+		expect(consoleLogSpy).toHaveBeenCalledWith(
+			expect.stringContaining(`[Task#dispose] completed disposal for task ${task.taskId}`),
+		)
+
+		consoleLogSpy.mockRestore()
 	})
 })

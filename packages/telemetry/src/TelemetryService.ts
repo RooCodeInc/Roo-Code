@@ -244,6 +244,58 @@ export class TelemetryService {
 	}
 
 	/**
+	 * Captures memory usage metrics
+	 * @param taskId The task ID
+	 * @param memoryUsage Memory usage details in MB
+	 */
+	public captureMemoryUsage(
+		taskId: string,
+		memoryUsage: {
+			messagesMemoryMB: number
+			imagesMemoryMB: number
+			apiHistoryMemoryMB: number
+			totalMemoryMB: number
+		},
+	): void {
+		this.captureEvent(TelemetryEventName.MEMORY_USAGE, { taskId, ...memoryUsage })
+	}
+
+	/**
+	 * Captures memory warning when usage exceeds threshold
+	 * @param taskId The task ID
+	 * @param level Warning level (warning or critical)
+	 * @param memoryUsageMB Current memory usage in MB
+	 * @param thresholdMB The threshold that was exceeded
+	 */
+	public captureMemoryWarning(
+		taskId: string,
+		level: "warning" | "critical",
+		memoryUsageMB: number,
+		thresholdMB: number,
+	): void {
+		this.captureEvent(TelemetryEventName.MEMORY_WARNING, {
+			taskId,
+			level,
+			memoryUsageMB,
+			thresholdMB,
+		})
+	}
+
+	/**
+	 * Captures image cleanup event
+	 * @param taskId The task ID
+	 * @param cleanedCount Number of images cleaned
+	 * @param freedMemoryMB Memory freed in MB
+	 */
+	public captureImageCleanup(taskId: string, cleanedCount: number, freedMemoryMB: number): void {
+		this.captureEvent(TelemetryEventName.IMAGE_CLEANUP, {
+			taskId,
+			cleanedCount,
+			freedMemoryMB,
+		})
+	}
+
+	/**
 	 * Checks if telemetry is currently enabled
 	 * @returns Whether telemetry is enabled
 	 */

@@ -7,7 +7,13 @@ import { TelemetryService } from "@roo-code/telemetry"
 import { ApiHandler } from "../../../api"
 import { ApiMessage } from "../../task-persistence/apiMessages"
 import { maybeRemoveImageBlocks } from "../../../api/transform/image-cleaning"
-import { summarizeConversation, getMessagesSinceLastSummary, N_MESSAGES_TO_KEEP } from "../index"
+import {
+	summarizeConversation,
+	getMessagesSinceLastSummary,
+	N_MESSAGES_TO_KEEP,
+	calculateMessagesToKeep,
+	selectMessagesToKeep,
+} from "../index"
 
 vi.mock("../../../api/transform/image-cleaning", () => ({
 	maybeRemoveImageBlocks: vi.fn((messages: ApiMessage[], _apiHandler: ApiHandler) => [...messages]),
@@ -820,5 +826,88 @@ describe("summarizeConversation with custom settings", () => {
 			true, // usedCustomPrompt
 			true, // usedCustomApiHandler
 		)
+	})
+})
+
+describe("calculateMessagesToKeep", () => {
+	it("should return 2 messages when context usage > 85%", () => {
+		const result = calculateMessagesToKeep(20, 90)
+		expect(result).toBe(2)
+	})
+
+	it("should return 3 messages when context usage is between 75-85%", () => {
+		const result = calculateMessagesToKeep(20, 80)
+		expect(result).toBe(3)
+	})
+
+	it("should return 5 messages when context usage < 50%", () => {
+		const result = calculateMessagesToKeep(20, 40)
+		expect(result).toBe(5)
+	})
+
+	it("should limit to 2 messages for very long conversations (>50 messages)", () => {
+		const result = calculateMessagesToKeep(60, 40) // Even with low usage, limit to 2
+		expect(result).toBe(2)
+	})
+
+	it("should keep at least 4 messages for short conversations (<10 messages)", () => {
+		const result = calculateMessagesToKeep(8, 80) // Even with high usage, keep 4
+		expect(result).toBe(4)
+	})
+})
+
+describe("selectMessagesToKeep", () => {
+	it("should select high-importance messages", async () => {
+		const messages: ApiMessage[] = [
+			{ role: "user", content: "必须使用 PostgreSQL", ts: 1 },
+			{ role: "assistant", content: "好的", ts: 2 },
+			{ role: "user", content: "添加认证", ts: 3 },
+			{ role: "assistant", content: "I'll add authentication", ts: 4 },
+			{ role: "user", content: "最后的请求", ts: 5 },
+		]
+
+		const mockCountTokens = async (content: any) => {
+			const text = Array.isArray(content)
+				? content.map((block: any) => (block.type === "text" ? block.text : "")).join(" ")
+				: content
+			return text.length / 4
+		}
+
+		const selected = await selectMessagesToKeep(messages, 3, mockCountTokens)
+
+		// Should always include the last message
+		expect(selected).toContain(messages[4])
+		// Should include at least 3 messages
+		expect(selected.length).toBeGreaterThanOrEqual(3)
+		expect(selected.length).toBeLessThanOrEqual(3)
+	})
+
+	it("should preserve message order", async () => {
+		const messages: ApiMessage[] = [
+			{ role: "user", content: "First", ts: 1 },
+			{ role: "assistant", content: "Second", ts: 2 },
+			{ role: "user", content: "Third", ts: 3 },
+			{ role: "assistant", content: "Fourth", ts: 4 },
+		]
+
+		const mockCountTokens = async () => 10
+
+		const selected = await selectMessagesToKeep(messages, 2, mockCountTokens)
+
+		// Verify messages are in original order
+		for (let i = 1; i < selected.length; i++) {
+			const currentIndex = messages.indexOf(selected[i])
+			const prevIndex = messages.indexOf(selected[i - 1])
+			expect(currentIndex).toBeGreaterThan(prevIndex)
+		}
+	})
+
+	it("should handle empty message array", async () => {
+		const messages: ApiMessage[] = []
+		const mockCountTokens = async () => 0
+
+		const selected = await selectMessagesToKeep(messages, 3, mockCountTokens)
+
+		expect(selected).toHaveLength(0)
 	})
 })

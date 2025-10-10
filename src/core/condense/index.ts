@@ -6,6 +6,7 @@ import { t } from "../../i18n"
 import { ApiHandler } from "../../api"
 import { ApiMessage } from "../task-persistence/apiMessages"
 import { maybeRemoveImageBlocks } from "../../api/transform/image-cleaning"
+import { scoreAllMessages, MessageImportanceScore } from "./message-importance"
 
 export const N_MESSAGES_TO_KEEP = 3
 export const MIN_CONDENSE_THRESHOLD = 5 // Minimum percentage of context window to trigger condensing
@@ -15,14 +16,36 @@ const SUMMARY_PROMPT = `\
 Your task is to create a detailed summary of the conversation so far, paying close attention to the user's explicit requests and your previous actions.
 This summary should be thorough in capturing technical details, code patterns, and architectural decisions that would be essential for continuing with the conversation and supporting any continuing tasks.
 
+**CRITICAL**: You MUST preserve all user instructions, especially short but important commands like:
+- Configuration changes ("use PostgreSQL", "change port to 3001")
+- Global requirements ("all APIs need logging", "use red theme")
+- Technical decisions ("use JWT authentication", "implement caching with Redis")
+- Corrections and modifications ("change the color to blue", "fix the error in line 42")
+
+Even if these instructions are brief (5-20 tokens), they are often the most important directives.
+
 Your summary should be structured as follows:
 Context: The context to continue the conversation with. If applicable based on the current task, this should include:
   1. Previous Conversation: High level details about what was discussed throughout the entire conversation with the user. This should be written to allow someone to be able to follow the general overarching conversation flow.
-  2. Current Work: Describe in detail what was being worked on prior to this request to summarize the conversation. Pay special attention to the more recent messages in the conversation.
-  3. Key Technical Concepts: List all important technical concepts, technologies, coding conventions, and frameworks discussed, which might be relevant for continuing with this work.
-  4. Relevant Files and Code: If applicable, enumerate specific files and code sections examined, modified, or created for the task continuation. Pay special attention to the most recent messages and changes.
-  5. Problem Solving: Document problems solved thus far and any ongoing troubleshooting efforts.
-  6. Pending Tasks and Next Steps: Outline all pending tasks that you have explicitly been asked to work on, as well as list the next steps you will take for all outstanding work, if applicable. Include code snippets where they add clarity. For any next steps, include direct quotes from the most recent conversation showing exactly what task you were working on and where you left off. This should be verbatim to ensure there's no information loss in context between tasks.
+  
+  2. **User Instructions (CRITICAL)**: List ALL user instructions verbatim, especially:
+     - Short commands (e.g., "use PostgreSQL", "change port to 3001")
+     - Configuration requirements (e.g., "all APIs need logging")
+     - Technical decisions (e.g., "implement JWT authentication")
+     - Style preferences (e.g., "use blue theme")
+     
+     Format each instruction as:
+     - "[Verbatim user quote]" (Message #X)
+  
+  3. Current Work: Describe in detail what was being worked on prior to this request to summarize the conversation. Pay special attention to the more recent messages in the conversation.
+  
+  4. Key Technical Concepts: List all important technical concepts, technologies, coding conventions, and frameworks discussed, which might be relevant for continuing with this work.
+  
+  5. Relevant Files and Code: If applicable, enumerate specific files and code sections examined, modified, or created for the task continuation. Pay special attention to the most recent messages and changes.
+  
+  6. Problem Solving: Document problems solved thus far and any ongoing troubleshooting efforts.
+  
+  7. Pending Tasks and Next Steps: Outline all pending tasks that you have explicitly been asked to work on, as well as list the next steps you will take for all outstanding work, if applicable. Include code snippets where they add clarity. For any next steps, include direct quotes from the most recent conversation showing exactly what task you were working on and where you left off. This should be verbatim to ensure there's no information loss in context between tasks.
 
 Example summary structure:
 1. Previous Conversation:
@@ -57,6 +80,80 @@ export type SummarizeResponse = {
 	cost: number // The cost of the summarization operation
 	newContextTokens?: number // The number of tokens in the context for the next API request
 	error?: string // Populated iff the operation fails: error message shown to the user on failure (see Task.ts)
+}
+
+/**
+ * 动态计算要保留的消息数量
+ */
+export function calculateMessagesToKeep(totalMessages: number, contextUsagePercent: number): number {
+	// 基础保留数量
+	let keep = 3
+
+	// 根据上下文使用率调整
+	if (contextUsagePercent > 85) {
+		keep = 2 // 紧急情况，只保留2条
+	} else if (contextUsagePercent > 75) {
+		keep = 3 // 正常
+	} else if (contextUsagePercent < 50) {
+		keep = 5 // 空间充足，多保留几条
+	}
+
+	// 根据总消息数调整
+	if (totalMessages > 50) {
+		keep = Math.min(keep, 2) // 超长对话，强制减少保留
+	} else if (totalMessages < 10) {
+		keep = Math.max(keep, 4) // 短对话，保留更多上下文
+	}
+
+	return keep
+}
+
+/**
+ * 智能选择要保留的消息
+ */
+export async function selectMessagesToKeep(
+	messages: ApiMessage[],
+	targetKeepCount: number,
+	countTokens: (content: any) => Promise<number>,
+): Promise<ApiMessage[]> {
+	// 处理空数组情况
+	if (messages.length === 0) {
+		return []
+	}
+
+	// 对所有消息评分
+	const scoredMessages = await scoreAllMessages(messages, countTokens)
+
+	// 如果消息数少于目标数量，返回全部
+	if (scoredMessages.length <= targetKeepCount) {
+		return messages
+	}
+
+	// 按分数降序排序
+	const sortedByImportance = [...scoredMessages].sort((a, b) => b.score - a.score)
+
+	// 必须保留：最后一条消息（通常是用户的最新请求）
+	const lastMessage = scoredMessages[scoredMessages.length - 1]
+
+	// 选择高分消息
+	const selected = new Set<ApiMessage>([lastMessage.message])
+
+	for (const scored of sortedByImportance) {
+		if (selected.size >= targetKeepCount) break
+
+		// 优先保留高分消息
+		if (scored.score >= 70) {
+			selected.add(scored.message)
+		}
+	}
+
+	// 如果还不够，补充最近的消息
+	for (let i = scoredMessages.length - 2; i >= 0 && selected.size < targetKeepCount; i--) {
+		selected.add(scoredMessages[i].message)
+	}
+
+	// 按原始顺序返回
+	return messages.filter((msg) => selected.has(msg))
 }
 
 /**
@@ -103,18 +200,11 @@ export async function summarizeConversation(
 
 	// Always preserve the first message (which may contain slash command content)
 	const firstMessage = messages[0]
-	// Get messages to summarize, including the first message and excluding the last N messages
-	const messagesToSummarize = getMessagesSinceLastSummary(messages.slice(0, -N_MESSAGES_TO_KEEP))
 
-	if (messagesToSummarize.length <= 1) {
-		const error =
-			messages.length <= N_MESSAGES_TO_KEEP + 1
-				? t("common:errors.condense_not_enough_messages")
-				: t("common:errors.condensed_recently")
-		return { ...response, error }
-	}
+	// 保留最后N条消息（使用简单策略以保持向后兼容）
+	const keepCount = N_MESSAGES_TO_KEEP
+	const keepMessages = messages.slice(-keepCount)
 
-	const keepMessages = messages.slice(-N_MESSAGES_TO_KEEP)
 	// Check if there's a recent summary in the messages we're keeping
 	const recentSummaryExists = keepMessages.some((message) => message.isSummary)
 
@@ -123,14 +213,29 @@ export async function summarizeConversation(
 		return { ...response, error }
 	}
 
+	// 要压缩的消息：排除第一条和最后N条
+	const messagesToSummarize = messages.slice(1, -keepCount)
+
+	// 获取自上次摘要以来的消息（包含原始第一条消息以保持上下文）
+	const messagesToSummarizeWithContext = getMessagesSinceLastSummary(messagesToSummarize, firstMessage)
+
+	if (messagesToSummarizeWithContext.length <= 1) {
+		const error =
+			messages.length <= keepCount + 1
+				? t("common:errors.condense_not_enough_messages")
+				: t("common:errors.condensed_recently")
+		return { ...response, error }
+	}
+
 	const finalRequestMessage: Anthropic.MessageParam = {
 		role: "user",
 		content: "Summarize the conversation so far, as described in the prompt instructions.",
 	}
 
-	const requestMessages = maybeRemoveImageBlocks([...messagesToSummarize, finalRequestMessage], apiHandler).map(
-		({ role, content }) => ({ role, content }),
-	)
+	const requestMessages = maybeRemoveImageBlocks(
+		[...messagesToSummarizeWithContext, finalRequestMessage],
+		apiHandler,
+	).map(({ role, content }) => ({ role, content }))
 
 	// Note: this doesn't need to be a stream, consider using something like apiHandler.completePrompt
 	// Use custom prompt if provided and non-empty, otherwise use the default SUMMARY_PROMPT
@@ -212,10 +317,14 @@ export async function summarizeConversation(
 }
 
 /* Returns the list of all messages since the last summary message, including the summary. Returns all messages if there is no summary. */
-export function getMessagesSinceLastSummary(messages: ApiMessage[]): ApiMessage[] {
+export function getMessagesSinceLastSummary(messages: ApiMessage[], originalFirstMessage?: ApiMessage): ApiMessage[] {
 	let lastSummaryIndexReverse = [...messages].reverse().findIndex((message) => message.isSummary)
 
 	if (lastSummaryIndexReverse === -1) {
+		// No summary found - ensure we include the original first message if provided
+		if (originalFirstMessage && messages.length > 0 && messages[0] !== originalFirstMessage) {
+			return [originalFirstMessage, ...messages]
+		}
 		return messages
 	}
 
@@ -226,11 +335,11 @@ export function getMessagesSinceLastSummary(messages: ApiMessage[]): ApiMessage[
 	// We preserve the original first message to maintain context.
 	// See https://github.com/RooCodeInc/Roo-Code/issues/4147
 	if (messagesSinceSummary.length > 0 && messagesSinceSummary[0].role !== "user") {
-		// Get the original first message (should always be a user message with the task)
-		const originalFirstMessage = messages[0]
-		if (originalFirstMessage && originalFirstMessage.role === "user") {
+		// Use the provided original first message, or fall back to messages[0]
+		const firstMsg = originalFirstMessage || messages[0]
+		if (firstMsg && firstMsg.role === "user") {
 			// Use the original first message unchanged to maintain full context
-			return [originalFirstMessage, ...messagesSinceSummary]
+			return [firstMsg, ...messagesSinceSummary]
 		} else {
 			// Fallback to generic message if no original first message exists (shouldn't happen)
 			const userMessage: ApiMessage = {

@@ -22,6 +22,7 @@ import {
 	processImageFile,
 	ImageMemoryTracker,
 } from "./helpers/imageHelpers"
+import { checkFileSizeForRead, checkBatchFileSizeForRead } from "./helpers/fileSizeHelpers"
 
 export function getReadFileToolDescription(blockName: string, blockParams: any): string {
 	// Handle both single path and multiple files via args
@@ -207,7 +208,30 @@ export async function readFileTool(
 	}
 
 	try {
-		// First validate all files and prepare for batch approval
+		// First perform batch file size check
+		const fullPaths = fileResults.map((result) => path.resolve(cline.cwd, result.path))
+		let batchSizeCheck
+		try {
+			batchSizeCheck = await checkBatchFileSizeForRead(fullPaths)
+		} catch (error) {
+			// If batch size check fails, continue without it (files may not exist yet)
+			console.warn("[readFileTool] Batch size check failed:", error)
+			batchSizeCheck = null
+		}
+
+		// If batch size check blocks reading, return error immediately
+		if (batchSizeCheck?.shouldBlock) {
+			cline.consecutiveMistakeCount++
+			cline.recordToolError("read_file")
+			await handleError("reading files", new Error(batchSizeCheck.errorMessage || "Batch size limit exceeded"))
+			pushToolResult(`<files><error>${batchSizeCheck.errorMessage}</error></files>`)
+			return
+		}
+
+		// If there's a warning, we'll include it in the result later
+		const batchWarning = batchSizeCheck?.warningMessage
+
+		// Then validate all files and prepare for batch approval
 		const filesToApprove: FileResult[] = []
 
 		for (let i = 0; i < fileResults.length; i++) {
@@ -442,6 +466,12 @@ export async function readFileTool(
 			maxTotalImageSize = DEFAULT_MAX_TOTAL_IMAGE_SIZE_MB,
 		} = state ?? {}
 
+		// Track if we need to prepend batch warning
+		let shouldPrependBatchWarning = false
+		if (batchWarning && fileResults.some((result) => result.status === "approved")) {
+			shouldPrependBatchWarning = true
+		}
+
 		// Then process only approved files
 		for (const fileResult of fileResults) {
 			// Skip files that weren't approved
@@ -622,7 +652,14 @@ export async function readFileTool(
 
 		// Generate final XML result from all file results
 		const xmlResults = fileResults.filter((result) => result.xmlContent).map((result) => result.xmlContent)
-		const filesXml = `<files>\n${xmlResults.join("\n")}\n</files>`
+
+		// Prepend batch warning if needed
+		let filesXml: string
+		if (shouldPrependBatchWarning && batchWarning) {
+			filesXml = `<files>\n<batch_warning>${batchWarning}</batch_warning>\n${xmlResults.join("\n")}\n</files>`
+		} else {
+			filesXml = `<files>\n${xmlResults.join("\n")}\n</files>`
+		}
 
 		// Collect all image data URLs from file results
 		const fileImageUrls = fileResults
