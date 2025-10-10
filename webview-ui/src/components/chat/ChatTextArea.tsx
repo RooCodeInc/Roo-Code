@@ -371,7 +371,26 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 						isSlashCommand,
 					)
 
-					setInputValue(newValue)
+					// Use execCommand to preserve undo history
+					try {
+						if (document.execCommand) {
+							// Focus the textarea to ensure it's the active element
+							textAreaRef.current.focus()
+
+							// Select all text first
+							textAreaRef.current.select()
+
+							// Insert the new text using execCommand to preserve undo stack
+							document.execCommand("insertText", false, newValue)
+						} else {
+							// Fallback to direct value setting if execCommand is not available
+							setInputValue(newValue)
+						}
+					} catch {
+						// Fallback to direct value setting if execCommand fails
+						setInputValue(newValue)
+					}
+
 					const newCursorPosition = newValue.indexOf(" ", mentionIndex + insertValue.length) + 1
 					setCursorPosition(newCursorPosition)
 					setIntendedCursorPosition(newCursorPosition)
