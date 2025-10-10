@@ -422,6 +422,11 @@ describe("Command Execution Timeout Integration", () => {
 
 			mockTerminal = {
 				runCommand: vitest.fn().mockImplementation((command, callbacks) => {
+					// Simulate shell execution starting (this is where runInBackground logic triggers)
+					setTimeout(() => {
+						callbacks.onShellExecutionStarted(12345, mockProcess)
+					}, 5)
+
 					// Simulate command producing output
 					setTimeout(() => {
 						callbacks.onLine("Starting development server...\n", mockProcess)
@@ -429,8 +434,8 @@ describe("Command Execution Timeout Integration", () => {
 
 					// Simulate command completion
 					setTimeout(() => {
-						callbacks.onCompleted("Development server started successfully")
-						callbacks.onShellExecutionComplete({ exitCode: 0 })
+						callbacks.onCompleted("Development server started successfully", mockProcess)
+						callbacks.onShellExecutionComplete({ exitCode: 0 }, mockProcess)
 					}, 50)
 
 					return Promise.resolve()

@@ -178,8 +178,8 @@ export async function executeCommand(
 	}
 
 	let message: { text?: string; images?: string[] } | undefined
-	let runInBackground = runInBackgroundRequested
 	let completed = false
+	let userChoseBackgroundMode = false
 	let result: string = ""
 	let exitDetails: ExitCodeDetails | undefined
 	let shellIntegrationError: string | undefined
@@ -199,16 +199,13 @@ export async function executeCommand(
 			const status: CommandExecutionStatus = { executionId, status: "output", output: compressedOutput }
 			provider?.postMessageToWebview({ type: "commandExecutionStatus", text: JSON.stringify(status) })
 
-			// If runInBackgroundRequested, automatically continue the process
-			if (runInBackgroundRequested && !completed) {
-				completed = true
-				process.continue()
+			if (userChoseBackgroundMode) {
 				return
 			}
 
 			try {
 				const { response, text, images } = await task.ask("command_output", "")
-				runInBackground = true
+				userChoseBackgroundMode = true
 
 				if (response === "messageResponse") {
 					message = { text, images }
@@ -226,10 +223,16 @@ export async function executeCommand(
 			task.say("command_output", result)
 			completed = true
 		},
-		onShellExecutionStarted: (pid: number | undefined) => {
+		onShellExecutionStarted: (pid: number | undefined, process: RooTerminalProcess) => {
 			console.log(`[executeCommand] onShellExecutionStarted: ${pid}`)
 			const status: CommandExecutionStatus = { executionId, status: "started", pid, command }
 			provider?.postMessageToWebview({ type: "commandExecutionStatus", text: JSON.stringify(status) })
+
+			if (runInBackgroundRequested) {
+				userChoseBackgroundMode = true
+				process.continue()
+				return
+			}
 		},
 		onShellExecutionComplete: (details: ExitCodeDetails) => {
 			const status: CommandExecutionStatus = { executionId, status: "exited", exitCode: details.exitCode }
