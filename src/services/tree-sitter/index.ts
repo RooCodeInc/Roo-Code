@@ -91,6 +91,8 @@ const extensions = [
 	"erb",
 	// Visual Basic .NET
 	"vb",
+	// AL Language
+	"al",
 ].map((e) => `.${e}`)
 
 export { extensions }
