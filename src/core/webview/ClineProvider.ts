@@ -1536,8 +1536,42 @@ export class ClineProvider
 		if (!task) {
 			throw new Error(`Task with id ${taskId} not found in stack`)
 		}
-		await task.condenseContext()
-		await this.postMessageToWebview({ type: "condenseTaskContextResponse", text: taskId })
+
+		try {
+			await task.condenseContext()
+			await this.postMessageToWebview({ type: "condenseTaskContextResponse", text: taskId })
+		} catch (error) {
+			this.log(`[condenseTaskContext] Error condensing context: ${error}`)
+
+			// If it's a context window error, try to recover
+			if (error instanceof Error && error.message.includes("context")) {
+				// Notify user about the issue
+				vscode.window.showWarningMessage("Context window limit reached. Attempting recovery...")
+
+				// Try to recover by clearing some history
+				try {
+					// Force a more aggressive context reduction
+					await task.handleContextWindowExceededError()
+
+					// Retry condensing with reduced context
+					await task.condenseContext()
+					await this.postMessageToWebview({ type: "condenseTaskContextResponse", text: taskId })
+
+					vscode.window.showInformationMessage("Context successfully reduced. You can continue working.")
+				} catch (recoveryError) {
+					this.log(`[condenseTaskContext] Recovery failed: ${recoveryError}`)
+					vscode.window.showErrorMessage(
+						"Failed to recover from context window error. Please start a new conversation.",
+					)
+					throw recoveryError
+				}
+			} else {
+				vscode.window.showErrorMessage(
+					"Failed to condense context. Please try again or start a new conversation.",
+				)
+				throw error
+			}
+		}
 	}
 
 	// this function deletes a task from task hidtory, and deletes it's checkpoints and delete the task folder
@@ -2583,62 +2617,75 @@ export class ClineProvider
 
 		console.log(`[cancelTask] cancelling task ${task.taskId}.${task.instanceId}`)
 
-		const { historyItem, uiMessagesFilePath } = await this.getTaskWithId(task.taskId)
+		try {
+			const { historyItem, uiMessagesFilePath } = await this.getTaskWithId(task.taskId)
 
-		// Preserve parent and root task information for history item.
-		const rootTask = task.rootTask
-		const parentTask = task.parentTask
+			// Preserve parent and root task information for history item.
+			const rootTask = task.rootTask
+			const parentTask = task.parentTask
 
-		// Mark this as a user-initiated cancellation so provider-only rehydration can occur
-		task.abortReason = "user_cancelled"
+			// Mark this as a user-initiated cancellation so provider-only rehydration can occur
+			task.abortReason = "user_cancelled"
 
-		// Capture the current instance to detect if rehydrate already occurred elsewhere
-		const originalInstanceId = task.instanceId
+			// Capture the current instance to detect if rehydrate already occurred elsewhere
+			const originalInstanceId = task.instanceId
 
-		// Begin abort (non-blocking)
-		task.abortTask()
+			// Begin abort (non-blocking)
+			task.abortTask()
 
-		// Immediately mark the original instance as abandoned to prevent any residual activity
-		task.abandoned = true
+			// Immediately mark the original instance as abandoned to prevent any residual activity
+			task.abandoned = true
 
-		await pWaitFor(
-			() =>
-				this.getCurrentTask()! === undefined ||
-				this.getCurrentTask()!.isStreaming === false ||
-				this.getCurrentTask()!.didFinishAbortingStream ||
-				// If only the first chunk is processed, then there's no
-				// need to wait for graceful abort (closes edits, browser,
-				// etc).
-				this.getCurrentTask()!.isWaitingForFirstChunk,
-			{
-				timeout: 3_000,
-			},
-		).catch(() => {
-			console.error("Failed to abort task")
-		})
+			await pWaitFor(
+				() =>
+					this.getCurrentTask()! === undefined ||
+					this.getCurrentTask()!.isStreaming === false ||
+					this.getCurrentTask()!.didFinishAbortingStream ||
+					// If only the first chunk is processed, then there's no
+					// need to wait for graceful abort (closes edits, browser,
+					// etc).
+					this.getCurrentTask()!.isWaitingForFirstChunk,
+				{
+					timeout: 3_000,
+				},
+			).catch(() => {
+				console.error("Failed to abort task")
+			})
 
-		// Defensive safeguard: if current instance already changed, skip rehydrate
-		const current = this.getCurrentTask()
-		if (current && current.instanceId !== originalInstanceId) {
-			this.log(
-				`[cancelTask] Skipping rehydrate: current instance ${current.instanceId} != original ${originalInstanceId}`,
-			)
-			return
-		}
-
-		// Final race check before rehydrate to avoid duplicate rehydration
-		{
-			const currentAfterCheck = this.getCurrentTask()
-			if (currentAfterCheck && currentAfterCheck.instanceId !== originalInstanceId) {
+			// Defensive safeguard: if current instance already changed, skip rehydrate
+			const current = this.getCurrentTask()
+			if (current && current.instanceId !== originalInstanceId) {
 				this.log(
-					`[cancelTask] Skipping rehydrate after final check: current instance ${currentAfterCheck.instanceId} != original ${originalInstanceId}`,
+					`[cancelTask] Skipping rehydrate: current instance ${current.instanceId} != original ${originalInstanceId}`,
 				)
 				return
 			}
-		}
 
-		// Clears task again, so we need to abortTask manually above.
-		await this.createTaskWithHistoryItem({ ...historyItem, rootTask, parentTask })
+			// Final race check before rehydrate to avoid duplicate rehydration
+			{
+				const currentAfterCheck = this.getCurrentTask()
+				if (currentAfterCheck && currentAfterCheck.instanceId !== originalInstanceId) {
+					this.log(
+						`[cancelTask] Skipping rehydrate after final check: current instance ${currentAfterCheck.instanceId} != original ${originalInstanceId}`,
+					)
+					return
+				}
+			}
+
+			// Clears task again, so we need to abortTask manually above.
+			await this.createTaskWithHistoryItem({ ...historyItem, rootTask, parentTask })
+		} catch (error) {
+			// If cancellation fails, ensure UI doesn't freeze
+			this.log(`[cancelTask] Error during task cancellation: ${error}`)
+
+			// Try to clear the task to prevent UI from being stuck
+			await this.clearTask()
+
+			// Notify the user
+			vscode.window.showErrorMessage(
+				"Failed to cancel task properly. The task has been cleared. You can start a new task.",
+			)
+		}
 	}
 
 	// Clear the current task without treating it as a subtask.

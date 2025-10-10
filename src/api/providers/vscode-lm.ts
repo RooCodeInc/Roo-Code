@@ -44,6 +44,7 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 	private client: vscode.LanguageModelChat | null
 	private disposable: vscode.Disposable | null
 	private currentRequestCancellation: vscode.CancellationTokenSource | null
+	private isRecovering: boolean = false
 
 	constructor(options: ApiHandlerOptions) {
 		super()
@@ -330,6 +331,63 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 		return content
 	}
 
+	/**
+	 * Check if an error is a context window error
+	 */
+	private isContextWindowError(error: unknown): boolean {
+		if (!error) return false
+
+		const errorMessage = error instanceof Error ? error.message : String(error)
+		const lowerMessage = errorMessage.toLowerCase()
+
+		// Check for common context window error patterns
+		return (
+			(lowerMessage.includes("context") &&
+				(lowerMessage.includes("window") ||
+					lowerMessage.includes("length") ||
+					lowerMessage.includes("limit"))) ||
+			(lowerMessage.includes("token") && lowerMessage.includes("limit")) ||
+			(lowerMessage.includes("maximum") && lowerMessage.includes("tokens")) ||
+			lowerMessage.includes("too many tokens") ||
+			lowerMessage.includes("exceeds")
+		)
+	}
+
+	/**
+	 * Handle context window errors with recovery mechanism
+	 */
+	private async handleContextWindowError(error: unknown): Promise<void> {
+		if (this.isRecovering) {
+			console.warn("Roo Code <Language Model API>: Already recovering from context window error")
+			return
+		}
+
+		this.isRecovering = true
+
+		try {
+			console.warn("Roo Code <Language Model API>: Context window error detected, attempting recovery")
+
+			// Clean up current state
+			this.ensureCleanState()
+
+			// Reset the client to force re-initialization
+			this.client = null
+
+			// Wait a bit before retrying
+			await new Promise((resolve) => setTimeout(resolve, 1000))
+
+			// Re-initialize the client
+			await this.initializeClient()
+
+			console.log("Roo Code <Language Model API>: Recovery from context window error successful")
+		} catch (recoveryError) {
+			console.error("Roo Code <Language Model API>: Failed to recover from context window error:", recoveryError)
+			throw recoveryError
+		} finally {
+			this.isRecovering = false
+		}
+	}
+
 	override async *createMessage(
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
@@ -452,6 +510,21 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 		} catch (error: unknown) {
 			this.ensureCleanState()
 
+			// Check if this is a context window error
+			if (this.isContextWindowError(error)) {
+				// Handle context window error with recovery
+				await this.handleContextWindowError(error)
+
+				// Create a specific error for context window issues
+				const contextError = new Error(
+					"Context window exceeded. The conversation is too long for the current model. " +
+						"Please try condensing the context or starting a new conversation.",
+				)
+				// Add a flag to indicate this is a context window error
+				;(contextError as any).isContextWindowError = true
+				throw contextError
+			}
+
 			if (error instanceof vscode.CancellationError) {
 				throw new Error("Roo Code <Language Model API>: Request cancelled by user")
 			}
@@ -552,6 +625,12 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 			}
 			return result
 		} catch (error) {
+			// Check if this is a context window error
+			if (this.isContextWindowError(error)) {
+				await this.handleContextWindowError(error)
+				throw new Error("Context window exceeded. Please reduce the prompt size and try again.")
+			}
+
 			if (error instanceof Error) {
 				throw new Error(`VSCode LM completion error: ${error.message}`)
 			}

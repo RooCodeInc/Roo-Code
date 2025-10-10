@@ -2456,7 +2456,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		)
 	}
 
-	private async handleContextWindowExceededError(): Promise<void> {
+	public async handleContextWindowExceededError(): Promise<void> {
 		const state = await this.providerRef.deref()?.getState()
 		const { profileThresholds = {} } = state ?? {}
 
@@ -2481,38 +2481,62 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				`Forcing truncation to ${FORCED_CONTEXT_REDUCTION_PERCENT}% of current context.`,
 		)
 
-		// Force aggressive truncation by keeping only 75% of the conversation history
-		const truncateResult = await truncateConversationIfNeeded({
-			messages: this.apiConversationHistory,
-			totalTokens: contextTokens || 0,
-			maxTokens,
-			contextWindow,
-			apiHandler: this.api,
-			autoCondenseContext: true,
-			autoCondenseContextPercent: FORCED_CONTEXT_REDUCTION_PERCENT,
-			systemPrompt: await this.getSystemPrompt(),
-			taskId: this.taskId,
-			profileThresholds,
-			currentProfileId,
-		})
+		try {
+			// Force aggressive truncation by keeping only 75% of the conversation history
+			const truncateResult = await truncateConversationIfNeeded({
+				messages: this.apiConversationHistory,
+				totalTokens: contextTokens || 0,
+				maxTokens,
+				contextWindow,
+				apiHandler: this.api,
+				autoCondenseContext: true,
+				autoCondenseContextPercent: FORCED_CONTEXT_REDUCTION_PERCENT,
+				systemPrompt: await this.getSystemPrompt(),
+				taskId: this.taskId,
+				profileThresholds,
+				currentProfileId,
+			})
 
-		if (truncateResult.messages !== this.apiConversationHistory) {
-			await this.overwriteApiConversationHistory(truncateResult.messages)
-		}
+			if (truncateResult.messages !== this.apiConversationHistory) {
+				await this.overwriteApiConversationHistory(truncateResult.messages)
+			}
 
-		if (truncateResult.summary) {
-			const { summary, cost, prevContextTokens, newContextTokens = 0 } = truncateResult
-			const contextCondense: ContextCondense = { summary, cost, newContextTokens, prevContextTokens }
-			await this.say(
-				"condense_context",
-				undefined /* text */,
-				undefined /* images */,
-				false /* partial */,
-				undefined /* checkpoint */,
-				undefined /* progressStatus */,
-				{ isNonInteractive: true } /* options */,
-				contextCondense,
-			)
+			if (truncateResult.summary) {
+				const { summary, cost, prevContextTokens, newContextTokens = 0 } = truncateResult
+				const contextCondense: ContextCondense = { summary, cost, newContextTokens, prevContextTokens }
+				await this.say(
+					"condense_context",
+					undefined /* text */,
+					undefined /* images */,
+					false /* partial */,
+					undefined /* checkpoint */,
+					undefined /* progressStatus */,
+					{ isNonInteractive: true } /* options */,
+					contextCondense,
+				)
+			}
+		} catch (error) {
+			// If truncation fails, log the error but don't throw to prevent UI from freezing
+			console.error(`[Task#${this.taskId}] Failed to handle context window error:`, error)
+
+			// Try a more aggressive truncation as a last resort
+			if (this.apiConversationHistory.length > 2) {
+				const fallbackMessages = [
+					this.apiConversationHistory[0], // Keep first message
+					...this.apiConversationHistory.slice(-2), // Keep last 2 messages
+				]
+				await this.overwriteApiConversationHistory(fallbackMessages)
+
+				await this.say(
+					"error",
+					"Context window exceeded. Conversation history has been significantly reduced to continue.",
+					undefined,
+					false,
+					undefined,
+					undefined,
+					{ isNonInteractive: true },
+				)
+			}
 		}
 	}
 
@@ -2715,7 +2739,23 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						`Retry attempt ${retryAttempt + 1}/${MAX_CONTEXT_WINDOW_RETRIES}. ` +
 						`Attempting automatic truncation...`,
 				)
+
+				// Notify UI that we're handling a context window error to prevent grey screen
+				await this.say(
+					"text",
+					"⚠️ Context window limit reached. Automatically reducing conversation size to continue...",
+					undefined,
+					false,
+					undefined,
+					undefined,
+					{ isNonInteractive: true },
+				)
+
 				await this.handleContextWindowExceededError()
+
+				// Give UI time to update before retrying
+				await delay(500)
+
 				// Retry the request after handling the context window error
 				yield* this.attemptApiRequest(retryAttempt + 1)
 				return
