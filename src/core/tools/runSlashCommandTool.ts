@@ -3,6 +3,8 @@ import { ToolUse, AskApproval, HandleError, PushToolResult, RemoveClosingTag } f
 import { formatResponse } from "../prompts/responses"
 import { getCommand, getCommandNames } from "../../services/command/commands"
 import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
+import { parseMentions } from "../mentions"
+import { UrlContentFetcher } from "../../services/browser/UrlContentFetcher"
 
 export async function runSlashCommandTool(
 	task: Task,
@@ -78,6 +80,29 @@ export async function runSlashCommandTool(
 				return
 			}
 
+			// Process mentions in the command content
+			const provider = task.providerRef.deref()
+			const urlContentFetcher = new UrlContentFetcher(provider!.context)
+			let processedContent = command.content
+
+			try {
+				// Process @/file references and other mentions in the command content
+				processedContent = await parseMentions(
+					command.content,
+					task.cwd,
+					urlContentFetcher,
+					undefined, // fileContextTracker - not needed for slash commands
+					undefined, // rooIgnoreController - will use default
+					false, // showRooIgnoredFiles
+					true, // includeDiagnosticMessages
+					50, // maxDiagnosticMessages
+					undefined, // maxReadFileLine
+				)
+			} catch (error) {
+				// If mention processing fails, log the error but continue with original content
+				console.warn(`Failed to process mentions in slash command content: ${error}`)
+			}
+
 			// Build the result message
 			let result = `Command: /${commandName}`
 
@@ -94,7 +119,7 @@ export async function runSlashCommandTool(
 			}
 
 			result += `\nSource: ${command.source}`
-			result += `\n\n--- Command Content ---\n\n${command.content}`
+			result += `\n\n--- Command Content ---\n\n${processedContent}`
 
 			// Return the command content as the tool result
 			pushToolResult(result)
