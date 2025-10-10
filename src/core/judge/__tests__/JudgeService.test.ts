@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from "vitest"
 import { JudgeService } from "../JudgeService"
 import { JudgeConfig, TaskContext } from "../types"
-import { ClineMessage } from "../../../shared/ExtensionMessage"
+import { ClineMessage } from "@roo-code/types"
 
 // Mock vscode - must include all exports used by the codebase
 vi.mock("vscode", () => ({

@@ -115,6 +115,7 @@ import { processUserContentMentions } from "../mentions/processUserContentMentio
 import { getMessagesSinceLastSummary, summarizeConversation } from "../condense"
 import { Gpt5Metadata, ClineMessageWithMetadata } from "./types"
 import { MessageQueueService } from "../message-queue/MessageQueueService"
+import { JudgeResult } from "../judge/types"
 
 import { AutoApprovalHandler } from "./AutoApprovalHandler"
 
@@ -3303,7 +3304,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		if (judgeResult.missingItems.length > 0) {
 			feedback += `**Missing Items**:\n`
-			judgeResult.missingItems.forEach((item, i) => {
+			judgeResult.missingItems.forEach((item: string, i: number) => {
 				feedback += `${i + 1}. ${item}\n`
 			})
 			feedback += `\n`
@@ -3311,7 +3312,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		if (judgeResult.suggestions.length > 0) {
 			feedback += `**Suggestions for Improvement**:\n`
-			judgeResult.suggestions.forEach((suggestion, i) => {
+			judgeResult.suggestions.forEach((suggestion: string, i: number) => {
 				feedback += `${i + 1}. ${suggestion}\n`
 			})
 			feedback += `\n`
@@ -3319,7 +3320,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		if (judgeResult.criticalIssues && judgeResult.criticalIssues.length > 0) {
 			feedback += `**⚠️ Critical Issues**:\n`
-			judgeResult.criticalIssues.forEach((issue, i) => {
+			judgeResult.criticalIssues.forEach((issue: string, i: number) => {
 				feedback += `${i + 1}. ${issue}\n`
 			})
 			feedback += `\n`
@@ -3417,9 +3418,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		for (const message of this.clineMessages) {
 			if (message.type === "say") {
 				// 提取工具相关的消息
-				if (message.say === "tool" || message.say === "command" || message.say === "completion_result") {
-					toolCalls.push(message.say)
+				const sayType = message.say
+				if (sayType === "completion_result") {
+					toolCalls.push(sayType)
 				}
+			}
+			// 也可以从 ask 类型中提取工具使用
+			if (message.type === "ask" && (message.ask === "tool" || message.ask === "command")) {
+				toolCalls.push(message.ask)
 			}
 		}
 

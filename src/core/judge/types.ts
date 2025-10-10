@@ -1,5 +1,4 @@
-import { ProviderSettings } from "@roo-code/types"
-import { ClineMessage } from "../../shared/ExtensionMessage"
+import { ProviderSettings, ClineMessage } from "@roo-code/types"
 
 /**
  * 裁判调用策略

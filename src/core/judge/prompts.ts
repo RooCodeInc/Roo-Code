@@ -1,3 +1,4 @@
+import { ClineMessage } from "@roo-code/types"
 import { TaskContext, JudgeDetailLevel } from "./types"
 
 /**
