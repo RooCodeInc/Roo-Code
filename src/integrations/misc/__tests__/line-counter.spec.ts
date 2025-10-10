@@ -7,6 +7,7 @@ vitest.mock("fs", () => ({
 	default: {
 		promises: {
 			access: vitest.fn(),
+			stat: vitest.fn(),
 		},
 		constants: {
 			F_OK: 0,
@@ -40,15 +41,15 @@ describe("countFileLines", () => {
 
 	it("should throw error if file does not exist", async () => {
 		// Setup
-		;(fs.promises.access as Mock).mockRejectedValueOnce(new Error("File not found"))
+		;(fs.promises.stat as Mock).mockRejectedValueOnce(new Error("File not found"))
 
 		// Test & Assert
 		await expect(countFileLines("non-existent-file.txt")).rejects.toThrow("File not found")
 	})
 
 	it("should return the correct line count for a file", async () => {
-		// Setup
-		;(fs.promises.access as Mock).mockResolvedValueOnce(undefined)
+		// Setup - Mock small file (< 1MB) to use JavaScript implementation
+		;(fs.promises.stat as Mock).mockResolvedValueOnce({ size: 100 })
 
 		const mockEventEmitter = {
 			on: vitest.fn().mockImplementation(function (this: any, event, callback) {
@@ -81,13 +82,13 @@ describe("countFileLines", () => {
 
 		// Assert
 		expect(result).toBe(10)
-		expect(fs.promises.access).toHaveBeenCalledWith("test-file.txt", fs.constants.F_OK)
+		expect(fs.promises.stat).toHaveBeenCalledWith("test-file.txt")
 		expect(createReadStream).toHaveBeenCalledWith("test-file.txt")
 	})
 
 	it("should handle files with no lines", async () => {
-		// Setup
-		;(fs.promises.access as Mock).mockResolvedValueOnce(undefined)
+		// Setup - Mock small file (< 1MB) to use JavaScript implementation
+		;(fs.promises.stat as Mock).mockResolvedValueOnce({ size: 0 })
 
 		const mockEventEmitter = {
 			on: vitest.fn().mockImplementation(function (this: any, event, callback) {
@@ -117,8 +118,8 @@ describe("countFileLines", () => {
 	})
 
 	it("should handle errors during reading", async () => {
-		// Setup
-		;(fs.promises.access as Mock).mockResolvedValueOnce(undefined)
+		// Setup - Mock small file (< 1MB) to use JavaScript implementation
+		;(fs.promises.stat as Mock).mockResolvedValueOnce({ size: 100 })
 
 		const mockEventEmitter = {
 			on: vitest.fn().mockImplementation(function (this: any, event, callback) {

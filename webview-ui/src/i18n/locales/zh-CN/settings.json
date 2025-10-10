@@ -755,6 +755,27 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "启用模型发起的斜杠命令",
 			"description": "启用后 Roo 可运行斜杠命令执行工作流程。"
+		},
+		"judgeMode": {
+			"label": "裁判模式",
+			"enabled": "启用裁判模式",
+			"description": "启用后，在最终完成任务前，将使用独立的AI模型自动验证任务完成质量。这有助于确保任务真正完成并满足要求。",
+			"modeLabel": "裁判模式",
+			"modeAlways": "总是",
+			"modeAsk": "询问",
+			"modeNever": "从不",
+			"modeAlwaysDesc": "自动判断每次任务完成",
+			"modeAskDesc": "在判断每次任务完成前询问",
+			"modeNeverDesc": "从不使用裁判模式",
+			"detailLevelLabel": "详细程度",
+			"detailConcise": "简洁",
+			"detailDetailed": "详细",
+			"detailLevelDesc": "简洁模式提供简短的通过/失败结果。详细模式包含全面的分析和建议。",
+			"modelConfigLabel": "裁判模型配置",
+			"useCurrentModel": "使用当前模型",
+			"modelConfigDesc": "选择用于裁判操作的API配置。使用与主任务不同的模型可以提供更客观的验证。",
+			"allowUserOverride": "允许用户覆盖裁判决定",
+			"allowUserOverrideDesc": "启用后，即使裁判判定任务未完成，您也可以选择继续。"
 		}
 	},
 	"promptCaching": {

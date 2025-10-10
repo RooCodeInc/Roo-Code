@@ -2,6 +2,7 @@ import path from "path"
 import * as fs from "fs/promises"
 import { t } from "../../../i18n"
 import prettyBytes from "pretty-bytes"
+import * as NativeImageProcessor from "../../../../native/bindings/image-processor"
 
 /**
  * Default maximum allowed image file size in bytes (5MB)
@@ -70,11 +71,24 @@ export interface ImageProcessingResult {
 }
 
 /**
+ * Minimum file size (in bytes) to use native Rust module for Base64 encoding
+ * Below this threshold, JavaScript is faster due to FFI overhead
+ * Based on performance testing: Rust wins at 2MB+
+ */
+const NATIVE_BASE64_THRESHOLD_BYTES = 2 * 1024 * 1024 // 2MB
+
+/**
  * Reads an image file and returns both the data URL and buffer
  */
 export async function readImageAsDataUrlWithBuffer(filePath: string): Promise<{ dataUrl: string; buffer: Buffer }> {
 	const fileBuffer = await fs.readFile(filePath)
-	const base64 = fileBuffer.toString("base64")
+
+	// Smart selection: Use Rust for large files (>2MB), JavaScript for small files
+	// Reason: FFI overhead makes Rust slower for small data, but faster for large data
+	const useNative = NativeImageProcessor.isNativeAvailable() && fileBuffer.length >= NATIVE_BASE64_THRESHOLD_BYTES
+
+	const base64 = useNative ? NativeImageProcessor.encodeBase64(fileBuffer) : fileBuffer.toString("base64")
+
 	const ext = path.extname(filePath).toLowerCase()
 
 	const mimeType = IMAGE_MIME_TYPES[ext] || "image/png"

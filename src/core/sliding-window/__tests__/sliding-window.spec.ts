@@ -821,6 +821,78 @@ describe("Sliding Window", () => {
 			// Clean up
 			summarizeSpy.mockRestore()
 		})
+
+		/**
+		 * Test that empty message array is handled correctly
+		 */
+		it("should handle empty message array without errors", async () => {
+			const modelInfo = createModelInfo(100000, 30000)
+			const emptyMessages: ApiMessage[] = []
+
+			const result = await truncateConversationIfNeeded({
+				messages: emptyMessages,
+				totalTokens: 0,
+				contextWindow: modelInfo.contextWindow,
+				maxTokens: modelInfo.maxTokens,
+				apiHandler: mockApiHandler,
+				autoCondenseContext: false,
+				autoCondenseContextPercent: 100,
+				systemPrompt: "System prompt",
+				taskId,
+				profileThresholds: {},
+				currentProfileId: "default",
+			})
+
+			// Should return empty messages without attempting to truncate
+			expect(result).toEqual({
+				messages: [],
+				summary: "",
+				cost: 0,
+				prevContextTokens: 0,
+				error: undefined,
+			})
+		})
+
+		/**
+		 * Test that empty message array with autoCondenseContext doesn't call summarization
+		 */
+		it("should not call summarizeConversation with empty message array", async () => {
+			// Reset any previous mock calls
+			vi.clearAllMocks()
+			const summarizeSpy = vi.spyOn(condenseModule, "summarizeConversation")
+
+			const modelInfo = createModelInfo(100000, 30000)
+			const emptyMessages: ApiMessage[] = []
+
+			const result = await truncateConversationIfNeeded({
+				messages: emptyMessages,
+				totalTokens: 0,
+				contextWindow: modelInfo.contextWindow,
+				maxTokens: modelInfo.maxTokens,
+				apiHandler: mockApiHandler,
+				autoCondenseContext: true, // Even with auto-condense enabled
+				autoCondenseContextPercent: 50,
+				systemPrompt: "System prompt",
+				taskId,
+				profileThresholds: {},
+				currentProfileId: "default",
+			})
+
+			// Should not call summarizeConversation for empty array
+			expect(summarizeSpy).not.toHaveBeenCalled()
+
+			// Should return empty result
+			expect(result).toEqual({
+				messages: [],
+				summary: "",
+				cost: 0,
+				prevContextTokens: 0,
+				error: undefined,
+			})
+
+			// Clean up
+			summarizeSpy.mockRestore()
+		})
 	})
 
 	/**

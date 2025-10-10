@@ -3146,4 +3146,302 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			console.error(`[Task] Queue processing error:`, e)
 		}
 	}
+
+	// Judge Mode Methods
+
+	/**
+	 * 检查是否应该调用裁判
+	 */
+	async shouldInvokeJudge(): Promise<boolean> {
+		try {
+			const judgeConfig = await this.getJudgeConfig()
+
+			if (!judgeConfig.enabled) {
+				return false
+			}
+
+			if (judgeConfig.mode === "always") {
+				return true
+			}
+
+			if (judgeConfig.mode === "ask") {
+				// 询问用户是否调用裁判
+				const { response } = await this.ask(
+					"followup",
+					"Do you want to invoke the judge to verify task completion?",
+				)
+				return response === "yesButtonClicked"
+			}
+
+			return false
+		} catch (error) {
+			console.error("[Task#shouldInvokeJudge] Error:", error)
+			return false
+		}
+	}
+
+	/**
+	 * 调用裁判判断任务是否完成
+	 */
+	async invokeJudge(attemptResult: string): Promise<JudgeResult> {
+		try {
+			const provider = this.providerRef.deref()
+			if (!provider) {
+				throw new Error("Provider not available")
+			}
+
+			// 显示裁判正在工作的消息
+			await this.say(
+				"text",
+				"🧑‍⚖️ Judge is evaluating the task completion...",
+				undefined,
+				false,
+				undefined,
+				undefined,
+				{
+					isNonInteractive: true,
+				},
+			)
+
+			const judgeConfig = await this.getJudgeConfig()
+			const judgeService = await this.getJudgeService()
+
+			if (!judgeService) {
+				throw new Error("Judge service not available")
+			}
+
+			// 构建任务上下文
+			const taskContext: import("../judge").TaskContext = {
+				originalTask: this.metadata.task || "",
+				conversationHistory: this.clineMessages,
+				toolCalls: this.getToolCallHistory(),
+				fileChanges: this.getFileChangeHistory(),
+				currentMode: await this.getTaskMode(),
+			}
+
+			// 调用裁判服务
+			const judgeResult = await judgeService.judgeCompletion(taskContext, attemptResult)
+
+			return judgeResult
+		} catch (error) {
+			console.error("[Task#invokeJudge] Error:", error)
+			// 如果裁判失败，返回默认批准以避免阻塞用户
+			return {
+				approved: true,
+				reasoning: `Judge service error: ${error instanceof Error ? error.message : String(error)}. Approving by default.`,
+				missingItems: [],
+				suggestions: [],
+			}
+		}
+	}
+
+	/**
+	 * 处理裁判拒绝任务完成的情况
+	 */
+	async handleJudgeRejection(judgeResult: JudgeResult): Promise<void> {
+		try {
+			const judgeConfig = await this.getJudgeConfig()
+
+			// 格式化裁判反馈
+			const feedback = this.formatJudgeFeedback(judgeResult)
+
+			// 显示裁判反馈
+			await this.say("text", feedback, undefined, false, undefined, undefined, {
+				isNonInteractive: false,
+			})
+
+			if (judgeConfig.allowUserOverride) {
+				// 询问用户是否接受裁判的判断
+				const { response } = await this.ask(
+					"followup",
+					"The judge has rejected the task completion. Do you want to continue working on this task based on the judge's feedback?",
+				)
+
+				if (response === "noButtonClicked") {
+					// 用户选择忽略裁判，强制完成任务
+					await this.say(
+						"text",
+						"User chose to ignore judge's feedback and complete the task anyway.",
+						undefined,
+						false,
+						undefined,
+						undefined,
+						{
+							isNonInteractive: true,
+						},
+					)
+					return
+				}
+			}
+
+			// 将裁判反馈作为新的用户消息注入对话
+			await this.addToApiConversationHistory({
+				role: "user",
+				content: [
+					{
+						type: "text",
+						text: `[Judge Feedback]\n\n${feedback}\n\nPlease address the issues mentioned above and try again.`,
+					},
+				],
+			})
+		} catch (error) {
+			console.error("[Task#handleJudgeRejection] Error:", error)
+		}
+	}
+
+	/**
+	 * 格式化裁判反馈消息
+	 */
+	private formatJudgeFeedback(judgeResult: JudgeResult): string {
+		let feedback = `## 🧑‍⚖️ Judge Feedback\n\n`
+		feedback += `**Decision**: Task completion rejected\n\n`
+		feedback += `**Reasoning**: ${judgeResult.reasoning}\n\n`
+
+		if (judgeResult.overallScore !== undefined) {
+			feedback += `**Overall Score**: ${judgeResult.overallScore}/10\n\n`
+		}
+
+		if (judgeResult.missingItems.length > 0) {
+			feedback += `**Missing Items**:\n`
+			judgeResult.missingItems.forEach((item, i) => {
+				feedback += `${i + 1}. ${item}\n`
+			})
+			feedback += `\n`
+		}
+
+		if (judgeResult.suggestions.length > 0) {
+			feedback += `**Suggestions for Improvement**:\n`
+			judgeResult.suggestions.forEach((suggestion, i) => {
+				feedback += `${i + 1}. ${suggestion}\n`
+			})
+			feedback += `\n`
+		}
+
+		if (judgeResult.criticalIssues && judgeResult.criticalIssues.length > 0) {
+			feedback += `**⚠️ Critical Issues**:\n`
+			judgeResult.criticalIssues.forEach((issue, i) => {
+				feedback += `${i + 1}. ${issue}\n`
+			})
+			feedback += `\n`
+		}
+
+		return feedback
+	}
+
+	/**
+	 * 获取裁判配置
+	 */
+	async getJudgeConfig(): Promise<import("../judge").JudgeConfig> {
+		try {
+			const provider = this.providerRef.deref()
+			if (!provider) {
+				throw new Error("Provider not available")
+			}
+
+			const state = await provider.getState()
+			const judgeConfig = state?.judgeConfig
+
+			if (!judgeConfig) {
+				// 返回默认配置
+				return {
+					enabled: false,
+					mode: "always",
+					detailLevel: "detailed",
+					allowUserOverride: true,
+				}
+			}
+
+			return judgeConfig
+		} catch (error) {
+			console.error("[Task#getJudgeConfig] Error:", error)
+			// 返回默认配置
+			return {
+				enabled: false,
+				mode: "always",
+				detailLevel: "detailed",
+				allowUserOverride: true,
+			}
+		}
+	}
+
+	/**
+	 * 获取或创建裁判服务实例
+	 */
+	private judgeService?: import("../judge").JudgeService
+
+	async getJudgeService(): Promise<import("../judge").JudgeService | undefined> {
+		try {
+			if (this.judgeService) {
+				return this.judgeService
+			}
+
+			const provider = this.providerRef.deref()
+			if (!provider) {
+				throw new Error("Provider not available")
+			}
+
+			const judgeConfig = await this.getJudgeConfig()
+
+			if (!judgeConfig.enabled) {
+				return undefined
+			}
+
+			// 动态导入 JudgeService
+			const { JudgeService } = await import("../judge")
+
+			// 如果有独立的模型配置，使用它；否则使用主模型
+			const modelConfig = judgeConfig.modelConfig || this.apiConfiguration
+
+			// 创建新的 JudgeService 实例
+			this.judgeService = new JudgeService(
+				{
+					...judgeConfig,
+					modelConfig,
+				},
+				provider.context,
+			)
+
+			return this.judgeService
+		} catch (error) {
+			console.error("[Task#getJudgeService] Error:", error)
+			return undefined
+		}
+	}
+
+	/**
+	 * 获取工具调用历史
+	 */
+	private getToolCallHistory(): string[] {
+		const toolCalls: string[] = []
+
+		for (const message of this.clineMessages) {
+			if (message.type === "say") {
+				// 提取工具相关的消息
+				if (message.say === "tool" || message.say === "command" || message.say === "completion_result") {
+					toolCalls.push(message.say)
+				}
+			}
+		}
+
+		return toolCalls
+	}
+
+	/**
+	 * 获取文件修改历史
+	 */
+	private getFileChangeHistory(): string[] {
+		const fileChanges: string[] = []
+
+		for (const message of this.clineMessages) {
+			if (message.type === "say" && message.text) {
+				// 尝试从消息中提取文件路径
+				const filePathMatch = message.text.match(/(?:file|path):\s*([^\s\n]+)/i)
+				if (filePathMatch) {
+					fileChanges.push(filePathMatch[1])
+				}
+			}
+		}
+
+		return Array.from(new Set(fileChanges)) // 去重
+	}
 }

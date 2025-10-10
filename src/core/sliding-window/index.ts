@@ -105,6 +105,12 @@ export async function truncateConversationIfNeeded({
 }: TruncateOptions): Promise<TruncateResponse> {
 	let error: string | undefined
 	let cost = 0
+
+	// Early return if no messages - prevents errors on empty conversation history
+	if (!messages || messages.length === 0) {
+		return { messages: [], summary: "", cost: 0, prevContextTokens: 0, error: undefined }
+	}
+
 	// Calculate the maximum tokens reserved for response
 	const reservedTokens = maxTokens || ANTHROPIC_DEFAULT_MAX_TOKENS
 

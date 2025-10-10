@@ -1422,8 +1422,10 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 
 	// Effect to handle showing the checkpoint warning after a delay
 	useEffect(() => {
-		// Only show the warning when there's a task but no visible messages yet
-		if (task && modifiedMessages.length === 0 && !isStreaming && !isHidden) {
+		// Only show the warning when there's a task but no messages yet (excluding the task message itself)
+		// Use messages.length instead of modifiedMessages.length to check if any messages exist
+		// messages[0] is the task message, so we check if there are any messages beyond that
+		if (task && messages.length <= 1 && !isStreaming && !isHidden) {
 			const timer = setTimeout(() => {
 				setShowCheckpointWarning(true)
 			}, 5000) // 5 seconds
@@ -1432,14 +1434,15 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		} else {
 			setShowCheckpointWarning(false)
 		}
-	}, [task, modifiedMessages.length, isStreaming, isHidden])
+	}, [task, messages.length, isStreaming, isHidden])
 
 	// Effect to hide the checkpoint warning when messages appear
 	useEffect(() => {
-		if (modifiedMessages.length > 0 || isStreaming || isHidden) {
+		// Hide warning when we have messages beyond the initial task message
+		if (messages.length > 1 || isStreaming || isHidden) {
 			setShowCheckpointWarning(false)
 		}
-	}, [modifiedMessages.length, isStreaming, isHidden])
+	}, [messages.length, isStreaming, isHidden])
 
 	const placeholderText = task ? t("chat:typeMessage") : t("chat:typeTask")
 

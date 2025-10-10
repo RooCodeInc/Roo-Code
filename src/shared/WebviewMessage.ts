@@ -229,6 +229,11 @@ export interface WebviewMessage {
 		| "editQueuedMessage"
 		| "dismissUpsell"
 		| "getDismissedUpsells"
+		| "judgeEnabled"
+		| "judgeMode"
+		| "judgeDetailLevel"
+		| "judgeAllowUserOverride"
+		| "judgeModelConfigId"
 	text?: string
 	editedMessageContent?: string
 	tab?: "settings" | "history" | "mcp" | "modes" | "chat" | "marketplace" | "cloud"

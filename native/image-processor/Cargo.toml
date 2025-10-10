@@ -1,0 +1,26 @@
+[package]
+name = "image-processor"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+# Neon for Node.js bindings
+neon = { version = "1.0", default-features = false, features = ["napi-6"] }
+
+# Image processing
+base64 = "0.22"
+image = "0.25"
+
+# Error handling
+anyhow = "1.0"
+thiserror = "1.0"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true

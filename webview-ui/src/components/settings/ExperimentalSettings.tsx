@@ -13,6 +13,7 @@ import { SectionHeader } from "./SectionHeader"
 import { Section } from "./Section"
 import { ExperimentalFeature } from "./ExperimentalFeature"
 import { ImageGenerationSettings } from "./ImageGenerationSettings"
+import { JudgeSettings } from "./JudgeSettings"
 
 type ExperimentalSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	experiments: Experiments
@@ -97,6 +98,12 @@ export const ExperimentalSettings = ({
 							/>
 						)
 					})}
+
+				{/* Judge Mode Settings */}
+				<JudgeSettings
+					apiConfiguration={apiConfiguration}
+					setApiConfigurationField={setApiConfigurationField}
+				/>
 			</Section>
 		</div>
 	)

@@ -1,0 +1,23 @@
+# Rust build artifacts
+**/target/
+**/*.node
+**/*.so
+**/*.dylib
+**/*.dll
+
+# Cargo lock files (for libraries, should not be committed)
+**/Cargo.lock
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+
+# Debug files
+*.dSYM/
+*.pdb

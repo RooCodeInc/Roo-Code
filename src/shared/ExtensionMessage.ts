@@ -289,6 +289,14 @@ export type ExtensionState = Pick<
 	| "includeTaskHistoryInEnhance"
 	| "reasoningBlockCollapsed"
 > & {
+	// Judge mode configuration
+	judgeConfig?: {
+		enabled: boolean
+		mode: "always" | "ask" | "never"
+		detailLevel: "concise" | "detailed"
+		allowUserOverride: boolean
+		modelConfig?: ProviderSettings
+	}
 	version: string
 	clineMessages: ClineMessage[]
 	currentTaskItem?: HistoryItem

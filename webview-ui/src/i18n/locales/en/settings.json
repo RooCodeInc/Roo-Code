@@ -759,6 +759,27 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "Enable model-initiated slash commands",
 			"description": "When enabled, Roo can run your slash commands to execute workflows."
+		},
+		"judgeMode": {
+			"label": "Judge Mode",
+			"enabled": "Enable Judge Mode",
+			"description": "When enabled, an independent AI model will automatically verify task completion quality before finalizing. This helps ensure tasks are truly complete and meet requirements.",
+			"modeLabel": "Judge Mode",
+			"modeAlways": "Always",
+			"modeAsk": "Ask",
+			"modeNever": "Never",
+			"modeAlwaysDesc": "Automatically judge every task completion",
+			"modeAskDesc": "Ask before judging each task completion",
+			"modeNeverDesc": "Never use judge mode",
+			"detailLevelLabel": "Detail Level",
+			"detailConcise": "Concise",
+			"detailDetailed": "Detailed",
+			"detailLevelDesc": "Concise provides brief pass/fail results. Detailed includes comprehensive analysis and suggestions.",
+			"modelConfigLabel": "Judge Model Configuration",
+			"useCurrentModel": "Use Current Model",
+			"modelConfigDesc": "Select which API configuration to use for judge operations. Using a different model than the main task can provide more objective verification.",
+			"allowUserOverride": "Allow user to override judge decisions",
+			"allowUserOverrideDesc": "When enabled, you can choose to proceed even if the judge determines the task is incomplete."
 		}
 	},
 	"promptCaching": {

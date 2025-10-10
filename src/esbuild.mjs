@@ -101,6 +101,9 @@ async function main() {
 		entryPoints: ["extension.ts"],
 		outfile: "dist/extension.js",
 		external: ["vscode"],
+		loader: {
+			".node": "copy",
+		},
 	}
 
 	/**

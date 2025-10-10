@@ -5,6 +5,7 @@ import { RooCodeEventName } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 
 import { Task } from "../task/Task"
+import { JudgeResult } from "../judge"
 import {
 	ToolResponse,
 	ToolUse,
@@ -88,6 +89,20 @@ export async function attemptCompletionTool(
 			}
 
 			cline.consecutiveMistakeCount = 0
+
+			// Judge mode check: Invoke judge if enabled
+			const shouldInvokeJudge = await cline.shouldInvokeJudge()
+			if (shouldInvokeJudge) {
+				const judgeResult = await cline.invokeJudge(result)
+
+				if (!judgeResult.approved) {
+					// Judge rejected the completion
+					await cline.handleJudgeRejection(judgeResult)
+					return // Don't complete the task, continue the conversation
+				}
+
+				// Judge approved - continue with completion
+			}
 
 			// Command execution is permanently disabled in attempt_completion
 			// Users must use execute_command tool separately before attempt_completion

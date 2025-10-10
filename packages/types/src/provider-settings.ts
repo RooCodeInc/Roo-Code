@@ -181,6 +181,13 @@ const baseProviderSettingsSchema = z.object({
 
 	// Model verbosity.
 	verbosity: verbosityLevelsSchema.optional(),
+
+	// Judge mode configuration.
+	judgeEnabled: z.boolean().optional(),
+	judgeMode: z.enum(["always", "ask", "never"]).optional(),
+	judgeDetailLevel: z.enum(["concise", "detailed"]).optional(),
+	judgeAllowUserOverride: z.boolean().optional(),
+	judgeModelConfigId: z.string().optional(), // ID of a separate API configuration to use for judge
 })
 
 // Several of the providers share common model config properties.
