@@ -288,5 +288,55 @@ describe("AnthropicHandler", () => {
 			expect(model.info.inputPrice).toBe(6.0)
 			expect(model.info.outputPrice).toBe(22.5)
 		})
+
+		it("should map claude-sonnet-4-5 to claude-sonnet-4-5-20250929 for API calls", async () => {
+			const handler = new AnthropicHandler({
+				apiKey: "test-api-key",
+				apiModelId: "claude-sonnet-4-5",
+			})
+
+			// Test createMessage
+			const stream = handler.createMessage("Test system", [{ role: "user", content: "Test message" }])
+
+			// Consume the stream to trigger the API call
+			for await (const chunk of stream) {
+				// Just consume the stream
+			}
+
+			// Verify the API was called with the full snapshot name
+			expect(mockCreate).toHaveBeenCalledWith(
+				expect.objectContaining({
+					model: "claude-sonnet-4-5-20250929",
+					stream: true,
+				}),
+				expect.any(Object),
+			)
+
+			// Clear mock for next test
+			mockCreate.mockClear()
+
+			// Test completePrompt
+			await handler.completePrompt("Test prompt")
+
+			// Verify the API was called with the full snapshot name
+			expect(mockCreate).toHaveBeenCalledWith(
+				expect.objectContaining({
+					model: "claude-sonnet-4-5-20250929",
+					stream: false,
+				}),
+			)
+		})
+
+		it("should handle claude-sonnet-4-5-20250929 model directly", () => {
+			const handler = new AnthropicHandler({
+				apiKey: "test-api-key",
+				apiModelId: "claude-sonnet-4-5-20250929",
+			})
+			const model = handler.getModel()
+			expect(model.id).toBe("claude-sonnet-4-5-20250929")
+			expect(model.info.maxTokens).toBe(64000)
+			expect(model.info.contextWindow).toBe(200000)
+			expect(model.info.supportsReasoningBudget).toBe(true)
+		})
 	})
 })
