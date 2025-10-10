@@ -29,10 +29,12 @@ export class LmStudioHandler extends BaseProvider implements SingleCompletionHan
 		// LM Studio uses "noop" as a placeholder API key
 		const apiKey = "noop"
 
+		const timeout = getApiRequestTimeout()
+
 		this.client = new OpenAI({
 			baseURL: (this.options.lmStudioBaseUrl || "http://localhost:1234") + "/v1",
-			apiKey: apiKey,
-			timeout: getApiRequestTimeout(),
+			apiKey: "noop",
+			timeout,
 		})
 	}
 

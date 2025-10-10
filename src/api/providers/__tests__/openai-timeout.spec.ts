@@ -137,7 +137,7 @@ describe("OpenAiHandler timeout configuration", () => {
 
 		expect(mockOpenAIConstructor).toHaveBeenCalledWith(
 			expect.objectContaining({
-				timeout: 0, // No timeout
+				timeout: 0,
 			}),
 		)
 	})
