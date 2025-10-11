@@ -154,7 +154,7 @@ export interface ExtensionMessage {
 	openAiModels?: string[]
 	ollamaModels?: ModelRecord
 	lmStudioModels?: ModelRecord
-	vsCodeLmModels?: { vendor?: string; family?: string; version?: string; id?: string }[]
+	vsCodeLmModels?: { vendor?: string; family?: string; version?: string; id?: string; name?: string }[]
 	huggingFaceModels?: Array<{
 		id: string
 		object: string

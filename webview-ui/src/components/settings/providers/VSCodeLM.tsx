@@ -1,10 +1,9 @@
 import { useState, useCallback } from "react"
 import { useEvent } from "react-use"
-import { LanguageModelChatSelector } from "vscode"
 
 import type { ProviderSettings } from "@roo-code/types"
 
-import { ExtensionMessage } from "@roo/ExtensionMessage"
+import { ExtensionMessage, LanguageModelChatSelector } from "@roo/ExtensionMessage"
 
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@src/components/ui"
@@ -19,7 +18,7 @@ type VSCodeLMProps = {
 export const VSCodeLM = ({ apiConfiguration, setApiConfigurationField }: VSCodeLMProps) => {
 	const { t } = useAppTranslation()
 
-	const [vsCodeLmModels, setVsCodeLmModels] = useState<LanguageModelChatSelector[]>([])
+	const [vsCodeLmModels, setVsCodeLmModels] = useState<Array<LanguageModelChatSelector & { name?: string }>>([])
 
 	const handleInputChange = useCallback(
 		<K extends keyof ProviderSettings, E>(
@@ -66,13 +65,23 @@ export const VSCodeLM = ({ apiConfiguration, setApiConfigurationField }: VSCodeL
 							<SelectValue placeholder={t("settings:common.select")} />
 						</SelectTrigger>
 						<SelectContent>
-							{vsCodeLmModels.map((model) => (
-								<SelectItem
-									key={`${model.vendor}/${model.family}`}
-									value={`${model.vendor}/${model.family}`}>
-									{`${model.vendor} - ${model.family}`}
-								</SelectItem>
-							))}
+							{vsCodeLmModels.map((model) => {
+								// Create a more user-friendly display name
+								// Use the model's name property if available, otherwise fall back to vendor/family
+								const displayName =
+									model.name ||
+									(model.vendor && model.family
+										? `${model.vendor} - ${model.family}`
+										: model.id || "Unknown Model")
+
+								return (
+									<SelectItem
+										key={`${model.vendor}/${model.family}`}
+										value={`${model.vendor}/${model.family}`}>
+										{displayName}
+									</SelectItem>
+								)
+							})}
 						</SelectContent>
 					</Select>
 				) : (
