@@ -189,17 +189,20 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			)
 
 			let lastUsage
+			let hasContent = false
 
 			for await (const chunk of stream) {
 				const delta = chunk.choices[0]?.delta ?? {}
 
 				if (delta.content) {
+					hasContent = true
 					for (const chunk of matcher.update(delta.content)) {
 						yield chunk
 					}
 				}
 
 				if ("reasoning_content" in delta && delta.reasoning_content) {
+					hasContent = true
 					yield {
 						type: "reasoning",
 						text: (delta.reasoning_content as string | undefined) || "",
@@ -211,7 +214,20 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			}
 
 			for (const chunk of matcher.final()) {
+				hasContent = true
 				yield chunk
+			}
+
+			// For GLM models that may return empty streams, provide a fallback response
+			if (
+				!hasContent &&
+				modelId &&
+				(modelId.toLowerCase().includes("glm") || modelId.toLowerCase().includes("chatglm"))
+			) {
+				yield {
+					type: "text",
+					text: "I'm having trouble generating a response. Please try rephrasing your request or breaking it down into smaller steps.",
+				}
 			}
 
 			if (lastUsage) {
