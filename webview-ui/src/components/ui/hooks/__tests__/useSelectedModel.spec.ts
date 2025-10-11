@@ -499,7 +499,7 @@ describe("useSelectedModel", () => {
 			expect(result.current.info?.contextWindow).toBe(200_000)
 		})
 
-		it("should not affect context window for non-Claude Sonnet 4 Bedrock models", () => {
+		it("should enable 1M context window for Bedrock Claude 3.5 Sonnet when awsBedrock1MContext is true", () => {
 			const apiConfiguration: ProviderSettings = {
 				apiProvider: "bedrock",
 				apiModelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
@@ -510,6 +510,99 @@ describe("useSelectedModel", () => {
 			const { result } = renderHook(() => useSelectedModel(apiConfiguration), { wrapper })
 
 			expect(result.current.id).toBe("anthropic.claude-3-5-sonnet-20241022-v2:0")
+			expect(result.current.info?.contextWindow).toBe(1_000_000)
+		})
+
+		it("should enable 1M context window for older Bedrock Claude 3.5 Sonnet when awsBedrock1MContext is true", () => {
+			const apiConfiguration: ProviderSettings = {
+				apiProvider: "bedrock",
+				apiModelId: "anthropic.claude-3-5-sonnet-20240620-v1:0",
+				awsBedrock1MContext: true,
+			}
+
+			const wrapper = createWrapper()
+			const { result } = renderHook(() => useSelectedModel(apiConfiguration), { wrapper })
+
+			expect(result.current.id).toBe("anthropic.claude-3-5-sonnet-20240620-v1:0")
+			expect(result.current.info?.contextWindow).toBe(1_000_000)
+		})
+
+		it("should not affect context window for non-Claude Sonnet models", () => {
+			const apiConfiguration: ProviderSettings = {
+				apiProvider: "bedrock",
+				apiModelId: "anthropic.claude-3-opus-20240229-v1:0",
+				awsBedrock1MContext: true,
+			}
+
+			const wrapper = createWrapper()
+			const { result } = renderHook(() => useSelectedModel(apiConfiguration), { wrapper })
+
+			expect(result.current.id).toBe("anthropic.claude-3-opus-20240229-v1:0")
+			expect(result.current.info?.contextWindow).toBe(200_000)
+		})
+	})
+
+	describe("anthropic provider with 1M context", () => {
+		beforeEach(() => {
+			mockUseRouterModels.mockReturnValue({
+				data: {
+					openrouter: {},
+					requesty: {},
+					glama: {},
+					unbound: {},
+					litellm: {},
+					"io-intelligence": {},
+				},
+				isLoading: false,
+				isError: false,
+			} as any)
+
+			mockUseOpenRouterModelProviders.mockReturnValue({
+				data: {},
+				isLoading: false,
+				isError: false,
+			} as any)
+		})
+
+		it("should enable 1M context window for Claude Sonnet 4 when anthropicBeta1MContext is true", () => {
+			const apiConfiguration: ProviderSettings = {
+				apiProvider: "anthropic",
+				apiModelId: "claude-sonnet-4-20250514",
+				anthropicBeta1MContext: true,
+			}
+
+			const wrapper = createWrapper()
+			const { result } = renderHook(() => useSelectedModel(apiConfiguration), { wrapper })
+
+			expect(result.current.id).toBe("claude-sonnet-4-20250514")
+			expect(result.current.info?.contextWindow).toBe(1_000_000)
+		})
+
+		it("should enable 1M context window for Claude 3.5 Sonnet (claude-sonnet-4-5) when anthropicBeta1MContext is true", () => {
+			const apiConfiguration: ProviderSettings = {
+				apiProvider: "anthropic",
+				apiModelId: "claude-sonnet-4-5",
+				anthropicBeta1MContext: true,
+			}
+
+			const wrapper = createWrapper()
+			const { result } = renderHook(() => useSelectedModel(apiConfiguration), { wrapper })
+
+			expect(result.current.id).toBe("claude-sonnet-4-5")
+			expect(result.current.info?.contextWindow).toBe(1_000_000)
+		})
+
+		it("should use default context window when anthropicBeta1MContext is false", () => {
+			const apiConfiguration: ProviderSettings = {
+				apiProvider: "anthropic",
+				apiModelId: "claude-sonnet-4-5",
+				anthropicBeta1MContext: false,
+			}
+
+			const wrapper = createWrapper()
+			const { result } = renderHook(() => useSelectedModel(apiConfiguration), { wrapper })
+
+			expect(result.current.id).toBe("claude-sonnet-4-5")
 			expect(result.current.info?.contextWindow).toBe(200_000)
 		})
 	})

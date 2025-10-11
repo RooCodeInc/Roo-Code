@@ -364,7 +364,7 @@ function getSelectedModel({
 			const id = apiConfiguration.apiModelId ?? anthropicDefaultModelId
 			const baseInfo = anthropicModels[id as keyof typeof anthropicModels]
 
-			// Apply 1M context beta tier pricing for Claude Sonnet 4
+			// Apply 1M context beta tier pricing for Claude Sonnet 4 and 4.5
 			if (
 				provider === "anthropic" &&
 				(id === "claude-sonnet-4-20250514" || id === "claude-sonnet-4-5") &&
