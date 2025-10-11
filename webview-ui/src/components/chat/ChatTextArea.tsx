@@ -123,7 +123,23 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			const messageHandler = (event: MessageEvent) => {
 				const message = event.data
 
-				if (message.type === "enhancedPrompt") {
+				if (message.type === "pastedImageSaved") {
+					// Handle response from backend after saving pasted image
+					if (message.requestId && pendingImageUploadsRef.current.has(message.requestId)) {
+						// Remove from pending uploads
+						pendingImageUploadsRef.current.delete(message.requestId)
+
+						if (message.imageUri && !message.error) {
+							// Add the file URI to selected images (never base64)
+							setSelectedImages((prevImages) =>
+								[...prevImages, message.imageUri].slice(0, MAX_IMAGES_PER_MESSAGE),
+							)
+						} else {
+							console.error("Failed to save pasted image:", message.error)
+							// Do not fallback to base64 to ensure it is never rendered
+						}
+					}
+				} else if (message.type === "enhancedPrompt") {
 					if (message.text && textAreaRef.current) {
 						try {
 							// Use execCommand to replace text while preserving undo history
@@ -196,7 +212,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 
 			window.addEventListener("message", messageHandler)
 			return () => window.removeEventListener("message", messageHandler)
-		}, [setInputValue, searchRequestId, inputValue])
+		}, [setInputValue, searchRequestId, inputValue, setSelectedImages])
 
 		const [isDraggingOver, setIsDraggingOver] = useState(false)
 		const [textAreaBaseHeight, setTextAreaBaseHeight] = useState<number | undefined>(undefined)
@@ -632,6 +648,10 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			setIsFocused(false)
 		}, [isMouseDownOnMenu])
 
+		// Track pending image upload request IDs only (never store base64)
+		// This ensures the frontend never retains image data URLs
+		const pendingImageUploadsRef = useRef<Set<string>>(new Set())
+
 		const handlePaste = useCallback(
 			async (e: React.ClipboardEvent) => {
 				const items = e.clipboardData.items
@@ -701,13 +721,26 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					const dataUrls = imageDataArray.filter((dataUrl): dataUrl is string => dataUrl !== null)
 
 					if (dataUrls.length > 0) {
-						setSelectedImages((prevImages) => [...prevImages, ...dataUrls].slice(0, MAX_IMAGES_PER_MESSAGE))
+						// Process each image: send to backend to save as temp file
+						for (const dataUrl of dataUrls) {
+							const requestId = Math.random().toString(36).substring(2, 9)
+
+							// Track request ID only; never store base64
+							pendingImageUploadsRef.current.add(requestId)
+
+							// Send to backend to save as temporary file
+							vscode.postMessage({
+								type: "savePastedImage",
+								dataUri: dataUrl,
+								requestId: requestId,
+							})
+						}
 					} else {
 						console.warn(t("chat:noValidImages"))
 					}
 				}
 			},
-			[shouldDisableImages, setSelectedImages, cursorPosition, setInputValue, inputValue, t],
+			[shouldDisableImages, cursorPosition, setInputValue, inputValue, t],
 		)
 
 		const handleMenuMouseDown = useCallback(() => {
@@ -853,12 +886,19 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 						const dataUrls = imageDataArray.filter((dataUrl): dataUrl is string => dataUrl !== null)
 
 						if (dataUrls.length > 0) {
-							setSelectedImages((prevImages) =>
-								[...prevImages, ...dataUrls].slice(0, MAX_IMAGES_PER_MESSAGE),
-							)
+							// Process each dropped image: send to backend to save as temp file
+							for (const dataUrl of dataUrls) {
+								const requestId = Math.random().toString(36).substring(2, 9)
 
-							if (typeof vscode !== "undefined") {
-								vscode.postMessage({ type: "draggedImages", dataUrls: dataUrls })
+								// Track request ID only; never store base64
+								pendingImageUploadsRef.current.add(requestId)
+
+								// Send to backend to save as temporary file
+								vscode.postMessage({
+									type: "savePastedImage",
+									dataUri: dataUrl,
+									requestId: requestId,
+								})
 							}
 						} else {
 							console.warn(t("chat:noValidImages"))
@@ -874,7 +914,6 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				setCursorPosition,
 				setIntendedCursorPosition,
 				shouldDisableImages,
-				setSelectedImages,
 				t,
 			],
 		)
