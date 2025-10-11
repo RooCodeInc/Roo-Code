@@ -749,6 +749,9 @@ export const webviewMessageHandler = async (
 		case "resetState":
 			await provider.resetState()
 			break
+		case "hardResetElectronCache":
+			await provider.hardResetElectronCache()
+			break
 		case "flushRouterModels":
 			const routerNameFlush: RouterName = toRouterName(message.text)
 			await flushModels(routerNameFlush)
