@@ -26,7 +26,7 @@ const mockContext = {
 describe("ProviderSettingsManager", () => {
 	let providerSettingsManager: ProviderSettingsManager
 
-	beforeEach(() => {
+	beforeEach(async () => {
 		vi.clearAllMocks()
 		// Reset all mock implementations to default successful behavior
 		mockSecrets.get.mockResolvedValue(null)
@@ -36,6 +36,8 @@ describe("ProviderSettingsManager", () => {
 		mockGlobalState.update.mockResolvedValue(undefined)
 
 		providerSettingsManager = new ProviderSettingsManager(mockContext)
+		// Wait for initialization to complete in tests
+		await providerSettingsManager.ensureInitialized()
 	})
 
 	describe("initialize", () => {
@@ -43,7 +45,7 @@ describe("ProviderSettingsManager", () => {
 			// Mock readConfig to return null
 			mockSecrets.get.mockResolvedValueOnce(null)
 
-			await providerSettingsManager.initialize()
+			await providerSettingsManager.ensureInitialized()
 
 			// Should not write to storage because readConfig returns defaultConfig
 			expect(mockSecrets.store).not.toHaveBeenCalled()
@@ -72,7 +74,7 @@ describe("ProviderSettingsManager", () => {
 				}),
 			)
 
-			await providerSettingsManager.initialize()
+			await providerSettingsManager.ensureInitialized()
 
 			expect(mockSecrets.store).not.toHaveBeenCalled()
 		})
@@ -97,7 +99,9 @@ describe("ProviderSettingsManager", () => {
 				}),
 			)
 
-			await providerSettingsManager.initialize()
+			// Create a new instance to trigger initialization with the mocked data
+			const newManager = new ProviderSettingsManager(mockContext)
+			await newManager.ensureInitialized()
 
 			// Should have written the config with new IDs
 			expect(mockSecrets.store).toHaveBeenCalled()
@@ -136,7 +140,9 @@ describe("ProviderSettingsManager", () => {
 				}),
 			)
 
-			await providerSettingsManager.initialize()
+			// Create a new instance to trigger initialization with the mocked data
+			const newManager = new ProviderSettingsManager(mockContext)
+			await newManager.ensureInitialized()
 
 			// Get the last call to store, which should contain the migrated config
 			const calls = mockSecrets.store.mock.calls
@@ -176,7 +182,9 @@ describe("ProviderSettingsManager", () => {
 				}),
 			)
 
-			await providerSettingsManager.initialize()
+			// Create a new instance to trigger initialization with the mocked data
+			const newManager = new ProviderSettingsManager(mockContext)
+			await newManager.ensureInitialized()
 
 			// Get the last call to store, which should contain the migrated config
 			const calls = mockSecrets.store.mock.calls
@@ -218,7 +226,9 @@ describe("ProviderSettingsManager", () => {
 				}),
 			)
 
-			await providerSettingsManager.initialize()
+			// Create a new instance to trigger initialization with the mocked data
+			const newManager = new ProviderSettingsManager(mockContext)
+			await newManager.ensureInitialized()
 
 			// Get the last call to store, which should contain the migrated config
 			const calls = mockSecrets.store.mock.calls
@@ -267,7 +277,9 @@ describe("ProviderSettingsManager", () => {
 				}),
 			)
 
-			await providerSettingsManager.initialize()
+			// Create a new instance to trigger initialization with the mocked data
+			const newManager = new ProviderSettingsManager(mockContext)
+			await newManager.ensureInitialized()
 
 			// Get the last call to store, which should contain the migrated config
 			const calls = mockSecrets.store.mock.calls
@@ -305,15 +317,17 @@ describe("ProviderSettingsManager", () => {
 				}),
 			)
 
-			await providerSettingsManager.initialize()
+			// Create a new instance to trigger initialization with the mocked data
+			const firstManager = new ProviderSettingsManager(mockContext)
+			await firstManager.ensureInitialized()
 
 			// Verify migration happened
 			let calls = mockSecrets.store.mock.calls
 			let storedConfig = JSON.parse(calls[calls.length - 1][1])
 			expect(storedConfig.apiConfigs.default.apiModelId).toEqual("roo/code-supernova-1-million")
 
-			// Create a new instance to simulate another load
-			const newManager = new ProviderSettingsManager(mockContext)
+			// Clear mocks for second test
+			mockSecrets.store.mockClear()
 
 			// Somehow the model got reverted (e.g., manual edit, sync issue)
 			mockSecrets.get.mockResolvedValue(
@@ -336,7 +350,9 @@ describe("ProviderSettingsManager", () => {
 				}),
 			)
 
-			await newManager.initialize()
+			// Create another new instance to simulate another load
+			const secondManager = new ProviderSettingsManager(mockContext)
+			await secondManager.ensureInitialized()
 
 			// Verify migration happened again
 			calls = mockSecrets.store.mock.calls
@@ -347,7 +363,10 @@ describe("ProviderSettingsManager", () => {
 		it("should throw error if secrets storage fails", async () => {
 			mockSecrets.get.mockRejectedValue(new Error("Storage failed"))
 
-			await expect(providerSettingsManager.initialize()).rejects.toThrow(
+			// Create a new instance that will fail during initialization
+			const failingManager = new ProviderSettingsManager(mockContext)
+
+			await expect(failingManager.ensureInitialized()).rejects.toThrow(
 				"Failed to initialize config: Error: Failed to read provider profiles from secrets: Error: Storage failed",
 			)
 		})
@@ -408,8 +427,11 @@ describe("ProviderSettingsManager", () => {
 		it("should throw error if reading from secrets fails", async () => {
 			mockSecrets.get.mockRejectedValue(new Error("Read failed"))
 
-			await expect(providerSettingsManager.listConfig()).rejects.toThrow(
-				"Failed to list configs: Error: Failed to read provider profiles from secrets: Error: Read failed",
+			// Create a new instance that will fail during initialization
+			const failingManager = new ProviderSettingsManager(mockContext)
+
+			await expect(failingManager.listConfig()).rejects.toThrow(
+				"Failed to initialize config: Error: Failed to read provider profiles from secrets: Error: Read failed",
 			)
 		})
 	})
@@ -730,7 +752,9 @@ describe("ProviderSettingsManager", () => {
 
 			mockSecrets.get.mockResolvedValue(JSON.stringify(invalidConfig))
 
-			await providerSettingsManager.initialize()
+			// Create a new instance to trigger initialization with the mocked data
+			const newManager = new ProviderSettingsManager(mockContext)
+			await newManager.ensureInitialized()
 
 			const storeCalls = mockSecrets.store.mock.calls
 			expect(storeCalls.length).toBeGreaterThan(0) // Ensure store was called at least once.
@@ -788,8 +812,11 @@ describe("ProviderSettingsManager", () => {
 		it("should throw error if secrets storage fails", async () => {
 			mockSecrets.get.mockRejectedValue(new Error("Storage failed"))
 
-			await expect(providerSettingsManager.hasConfig("test")).rejects.toThrow(
-				"Failed to check config existence: Error: Failed to read provider profiles from secrets: Error: Storage failed",
+			// Create a new instance that will fail during initialization
+			const failingManager = new ProviderSettingsManager(mockContext)
+
+			await expect(failingManager.hasConfig("test")).rejects.toThrow(
+				"Failed to initialize config: Error: Failed to read provider profiles from secrets: Error: Storage failed",
 			)
 		})
 	})

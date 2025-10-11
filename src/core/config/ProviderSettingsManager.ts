@@ -74,12 +74,15 @@ export class ProviderSettingsManager {
 	}
 
 	private readonly context: ExtensionContext
+	private initializationPromise: Promise<void> | null = null
+	private isInitialized = false
 
 	constructor(context: ExtensionContext) {
 		this.context = context
-
-		// TODO: We really shouldn't have async methods in the constructor.
-		this.initialize().catch(console.error)
+		// Initialize asynchronously with timeout protection
+		this.ensureInitialized().catch((error) => {
+			console.error("ProviderSettingsManager initialization failed:", error)
+		})
 	}
 
 	public generateId() {
@@ -95,9 +98,49 @@ export class ProviderSettingsManager {
 	}
 
 	/**
+	 * Ensure the manager is initialized before use.
+	 * This method is idempotent and will only initialize once.
+	 */
+	public async ensureInitialized(timeoutMs: number = 10000): Promise<void> {
+		if (this.isInitialized) {
+			return
+		}
+
+		if (!this.initializationPromise) {
+			this.initializationPromise = this.initializeWithTimeout(timeoutMs)
+		}
+
+		await this.initializationPromise
+	}
+
+	/**
+	 * Initialize config if it doesn't exist and run migrations.
+	 * This is now a private method that should be called via ensureInitialized.
+	 */
+	private async initializeWithTimeout(timeoutMs: number): Promise<void> {
+		const timeoutPromise = new Promise<never>((_, reject) => {
+			setTimeout(() => {
+				reject(new Error(`ProviderSettingsManager initialization timed out after ${timeoutMs}ms`))
+			}, timeoutMs)
+		})
+
+		const initPromise = this.initialize()
+
+		try {
+			await Promise.race([initPromise, timeoutPromise])
+			this.isInitialized = true
+		} catch (error) {
+			console.error("ProviderSettingsManager initialization failed:", error)
+			// Set to initialized even on error to prevent infinite retries
+			this.isInitialized = true
+			throw error
+		}
+	}
+
+	/**
 	 * Initialize config if it doesn't exist and run migrations.
 	 */
-	public async initialize() {
+	private async initialize() {
 		try {
 			return await this.lock(async () => {
 				const providerProfiles = await this.load()
@@ -349,6 +392,7 @@ export class ProviderSettingsManager {
 	 * List all available configs with metadata.
 	 */
 	public async listConfig(): Promise<ProviderSettingsEntry[]> {
+		await this.ensureInitialized()
 		try {
 			return await this.lock(async () => {
 				const providerProfiles = await this.load()
@@ -371,6 +415,7 @@ export class ProviderSettingsManager {
 	 * otherwise generates a new one (for creation scenarios).
 	 */
 	public async saveConfig(name: string, config: ProviderSettingsWithId): Promise<string> {
+		await this.ensureInitialized()
 		try {
 			return await this.lock(async () => {
 				const providerProfiles = await this.load()
@@ -392,6 +437,7 @@ export class ProviderSettingsManager {
 	public async getProfile(
 		params: { name: string } | { id: string },
 	): Promise<ProviderSettingsWithId & { name: string }> {
+		await this.ensureInitialized()
 		try {
 			return await this.lock(async () => {
 				const providerProfiles = await this.load()
@@ -434,6 +480,7 @@ export class ProviderSettingsManager {
 	public async activateProfile(
 		params: { name: string } | { id: string },
 	): Promise<ProviderSettingsWithId & { name: string }> {
+		await this.ensureInitialized()
 		const { name, ...providerSettings } = await this.getProfile(params)
 
 		try {
@@ -452,6 +499,7 @@ export class ProviderSettingsManager {
 	 * Delete a config by name.
 	 */
 	public async deleteConfig(name: string) {
+		await this.ensureInitialized()
 		try {
 			return await this.lock(async () => {
 				const providerProfiles = await this.load()
@@ -476,6 +524,7 @@ export class ProviderSettingsManager {
 	 * Check if a config exists by name.
 	 */
 	public async hasConfig(name: string) {
+		await this.ensureInitialized()
 		try {
 			return await this.lock(async () => {
 				const providerProfiles = await this.load()
@@ -490,6 +539,7 @@ export class ProviderSettingsManager {
 	 * Set the API config for a specific mode.
 	 */
 	public async setModeConfig(mode: Mode, configId: string) {
+		await this.ensureInitialized()
 		try {
 			return await this.lock(async () => {
 				const providerProfiles = await this.load()
@@ -510,6 +560,7 @@ export class ProviderSettingsManager {
 	 * Get the API config ID for a specific mode.
 	 */
 	public async getModeConfigId(mode: Mode) {
+		await this.ensureInitialized()
 		try {
 			return await this.lock(async () => {
 				const { modeApiConfigs } = await this.load()
@@ -521,6 +572,7 @@ export class ProviderSettingsManager {
 	}
 
 	public async export() {
+		await this.ensureInitialized()
 		try {
 			return await this.lock(async () => {
 				const profiles = providerProfilesSchema.parse(await this.load())
@@ -537,6 +589,7 @@ export class ProviderSettingsManager {
 	}
 
 	public async import(providerProfiles: ProviderProfiles) {
+		await this.ensureInitialized()
 		try {
 			return await this.lock(() => this.store(providerProfiles))
 		} catch (error) {
@@ -631,6 +684,7 @@ export class ProviderSettingsManager {
 		cloudProfiles: Record<string, ProviderSettingsWithId>,
 		currentActiveProfileName?: string,
 	): Promise<SyncCloudProfilesResult> {
+		await this.ensureInitialized()
 		try {
 			return await this.lock(async () => {
 				const providerProfiles = await this.load()
