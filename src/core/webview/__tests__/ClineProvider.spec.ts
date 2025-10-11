@@ -3852,4 +3852,88 @@ describe("ClineProvider - Comprehensive Edit/Delete Edge Cases", () => {
 			})
 		})
 	})
+
+	describe("condenseTaskContext", () => {
+		test("processes queued messages after condensation completes", async () => {
+			// Setup a task with mocked methods
+			const mockTask = new Task(defaultTaskOptions)
+			const taskId = "test-task-id"
+			Object.defineProperty(mockTask, "taskId", { value: taskId, writable: true })
+
+			// Add the condenseContext method to the mock task
+			mockTask.condenseContext = vi.fn().mockResolvedValue(undefined)
+
+			// Add the processQueuedMessages method to the mock task
+			mockTask.processQueuedMessages = vi.fn().mockImplementation(() => {})
+
+			// Mock the message queue service to have queued messages
+			const mockMessageQueueService = {
+				isEmpty: vi.fn().mockReturnValue(false),
+				messages: [
+					{ id: "msg1", text: "Queued message 1", images: [] },
+					{ id: "msg2", text: "Queued message 2", images: [] },
+				],
+				dequeueMessage: vi.fn().mockReturnValueOnce({ text: "Queued message 1", images: [] }),
+			}
+			Object.defineProperty(mockTask, "messageQueueService", { value: mockMessageQueueService, writable: true })
+
+			// Add task to provider stack
+			await provider.addClineToStack(mockTask)
+
+			// Mock postMessageToWebview
+			const postMessageSpy = vi.spyOn(provider, "postMessageToWebview").mockResolvedValue(undefined)
+
+			// Call condenseTaskContext
+			await provider.condenseTaskContext(taskId)
+
+			// Verify the expected sequence of calls
+			expect(mockTask.condenseContext).toHaveBeenCalled()
+			expect(postMessageSpy).toHaveBeenCalledWith({ type: "condenseTaskContextResponse", text: taskId })
+			expect(mockTask.processQueuedMessages).toHaveBeenCalled()
+		})
+
+		test("throws error when task is not found", async () => {
+			const nonExistentTaskId = "non-existent-task"
+
+			// Attempt to condense context for non-existent task
+			await expect(provider.condenseTaskContext(nonExistentTaskId)).rejects.toThrow(
+				`Task with id ${nonExistentTaskId} not found in stack`,
+			)
+		})
+
+		test("handles empty message queue correctly", async () => {
+			// Setup a task with empty message queue
+			const mockTask = new Task(defaultTaskOptions)
+			const taskId = "test-task-id-empty-queue"
+			Object.defineProperty(mockTask, "taskId", { value: taskId, writable: true })
+
+			// Add the condenseContext method to the mock task
+			mockTask.condenseContext = vi.fn().mockResolvedValue(undefined)
+
+			// Add the processQueuedMessages method to the mock task
+			mockTask.processQueuedMessages = vi.fn().mockImplementation(() => {})
+
+			// Mock empty message queue
+			const mockMessageQueueService = {
+				isEmpty: vi.fn().mockReturnValue(true),
+				messages: [],
+				dequeueMessage: vi.fn().mockReturnValue(undefined),
+			}
+			Object.defineProperty(mockTask, "messageQueueService", { value: mockMessageQueueService, writable: true })
+
+			// Add task to provider stack
+			await provider.addClineToStack(mockTask)
+
+			// Mock postMessageToWebview
+			const postMessageSpy = vi.spyOn(provider, "postMessageToWebview").mockResolvedValue(undefined)
+
+			// Call condenseTaskContext
+			await provider.condenseTaskContext(taskId)
+
+			// Verify calls were made even with empty queue
+			expect(mockTask.condenseContext).toHaveBeenCalled()
+			expect(postMessageSpy).toHaveBeenCalledWith({ type: "condenseTaskContextResponse", text: taskId })
+			expect(mockTask.processQueuedMessages).toHaveBeenCalled()
+		})
+	})
 })

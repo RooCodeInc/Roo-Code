@@ -1538,6 +1538,10 @@ export class ClineProvider
 		}
 		await task.condenseContext()
 		await this.postMessageToWebview({ type: "condenseTaskContextResponse", text: taskId })
+
+		// Process any queued messages after condensation completes
+		// This ensures messages sent during condensation are not lost
+		task.processQueuedMessages()
 	}
 
 	// this function deletes a task from task hidtory, and deletes it's checkpoints and delete the task folder
