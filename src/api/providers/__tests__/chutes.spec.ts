@@ -492,4 +492,76 @@ describe("ChutesHandler", () => {
 		const model = handlerWithModel.getModel()
 		expect(model.info.temperature).toBe(0.5)
 	})
+
+	it("should return zai-org/GLM-4.6-turbo model with correct configuration", () => {
+		const testModelId: ChutesModelId = "zai-org/GLM-4.6-turbo"
+		const handlerWithModel = new ChutesHandler({
+			apiModelId: testModelId,
+			chutesApiKey: "test-chutes-api-key",
+		})
+		const model = handlerWithModel.getModel()
+		expect(model.id).toBe(testModelId)
+		expect(model.info).toEqual(
+			expect.objectContaining({
+				maxTokens: 32768,
+				contextWindow: 202752,
+				supportsImages: false,
+				supportsPromptCache: false,
+				inputPrice: 1.15,
+				outputPrice: 3.25,
+				description: "GLM-4.6-turbo model with 200K+ token context window, optimized for fast inference.",
+				temperature: 0.5, // Default temperature for non-DeepSeek models
+			}),
+		)
+		// Strengthen test by also asserting the selected model.info matches the static config to catch mapping/regression errors beyond temperature
+		expect(model.info).toEqual(expect.objectContaining(chutesModels[testModelId]))
+	})
+
+	it("should have correct pricing and context for zai-org/GLM-4.6-turbo", () => {
+		// This test ensures the GLM-4.6-turbo model has the expected pricing and context window
+		// Assert exact values and capabilities to catch regressions
+		const model = chutesModels["zai-org/GLM-4.6-turbo"]
+		expect(model.maxTokens).toBe(32768)
+		expect(model.contextWindow).toBe(202752)
+		expect(model.supportsImages).toBe(false)
+		expect(model.supportsPromptCache).toBe(false)
+		expect(model.inputPrice).toBe(1.15)
+		expect(model.outputPrice).toBe(3.25)
+	})
+
+	it("createMessage should pass correct parameters to Chutes client for GLM-4.6-turbo model", async () => {
+		const modelId: ChutesModelId = "zai-org/GLM-4.6-turbo"
+		const modelInfo = chutesModels[modelId]
+		const handlerWithModel = new ChutesHandler({ apiModelId: modelId, chutesApiKey: "test-chutes-api-key" })
+
+		mockCreate.mockImplementationOnce(() => {
+			return {
+				[Symbol.asyncIterator]: () => ({
+					async next() {
+						return { done: true }
+					},
+				}),
+			}
+		})
+
+		const systemPrompt = "Test system prompt for GLM-4.6-turbo"
+		const messages: Anthropic.Messages.MessageParam[] = [
+			{ role: "user", content: "Test message for GLM-4.6-turbo" },
+		]
+
+		const messageGenerator = handlerWithModel.createMessage(systemPrompt, messages)
+		await messageGenerator.next()
+
+		expect(mockCreate).toHaveBeenCalledWith(
+			expect.objectContaining({
+				model: modelId,
+				max_tokens: modelInfo.maxTokens, // Should be 32768
+				temperature: 0.5, // Default temperature for non-DeepSeek models
+				messages: expect.arrayContaining([{ role: "system", content: systemPrompt }]),
+				stream: true,
+				stream_options: { include_usage: true },
+			}),
+			undefined,
+		)
+	})
 })
