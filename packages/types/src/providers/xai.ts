@@ -28,6 +28,15 @@ export const xaiModels = {
 		cacheReadsPrice: 0.75,
 		description: "xAI's Grok-4 model with 256K context window",
 	},
+	"grok-4-fast": {
+		maxTokens: 30_000,
+		contextWindow: 2_000_000,
+		supportsImages: false,
+		supportsPromptCache: false,
+		inputPrice: 1.0,
+		outputPrice: 5.0,
+		description: "xAI's Grok-4 Fast model with 2M context window and SOTA cost-efficiency",
+	},
 	"grok-3": {
 		maxTokens: 8192,
 		contextWindow: 131072,
