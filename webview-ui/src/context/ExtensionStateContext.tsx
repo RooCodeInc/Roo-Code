@@ -27,6 +27,7 @@ import { convertTextMateToHljs } from "@src/utils/textMateToHljs"
 
 export interface ExtensionStateContextType extends ExtensionState {
 	historyPreviewCollapsed?: boolean // Add the new state property
+	persistContextReferences?: boolean // Add property for persisting context references
 	didHydrateState: boolean
 	showWelcome: boolean
 	theme: any
@@ -158,6 +159,7 @@ export interface ExtensionStateContextType extends ExtensionState {
 	setMaxDiagnosticMessages: (value: number) => void
 	includeTaskHistoryInEnhance?: boolean
 	setIncludeTaskHistoryInEnhance: (value: boolean) => void
+	setPersistContextReferences: (value: boolean) => void
 }
 
 export const ExtensionStateContext = createContext<ExtensionStateContextType | undefined>(undefined)
@@ -559,6 +561,10 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		},
 		includeTaskHistoryInEnhance,
 		setIncludeTaskHistoryInEnhance,
+		persistContextReferences: state.persistContextReferences ?? false,
+		setPersistContextReferences: (value) => {
+			setState((prevState) => ({ ...prevState, persistContextReferences: value }))
+		},
 	}
 
 	return <ExtensionStateContext.Provider value={contextValue}>{children}</ExtensionStateContext.Provider>

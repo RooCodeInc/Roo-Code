@@ -423,6 +423,11 @@
 					"default": false,
 					"description": "%settings.newTaskRequireTodos.description%"
 				},
+				"roo-cline.persistContextReferences": {
+					"type": "boolean",
+					"default": false,
+					"description": "%settings.persistContextReferences.description%"
+				},
 				"roo-cline.codeIndex.embeddingBatchSize": {
 					"type": "number",
 					"default": 60,
