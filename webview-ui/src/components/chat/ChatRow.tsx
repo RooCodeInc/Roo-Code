@@ -16,6 +16,7 @@ import { findMatchingResourceOrTemplate } from "@src/utils/mcp"
 import { vscode } from "@src/utils/vscode"
 import { removeLeadingNonAlphanumeric } from "@src/utils/removeLeadingNonAlphanumeric"
 import { getLanguageFromPath } from "@src/utils/getLanguageFromPath"
+import { formatMessageTime } from "@src/utils/formatTime"
 
 import { ToolUseBlock, ToolUseBlockHeader } from "../common/ToolUseBlock"
 import UpdateTodoListToolBlock from "./UpdateTodoListToolBlock"
@@ -345,6 +346,9 @@ export const ChatRowContent = ({
 		wordBreak: "break-word",
 	}
 
+	// 格式化消息时间戳
+	const messageTime = useMemo(() => formatMessageTime(message.ts), [message.ts])
+
 	const tool = useMemo(
 		() => (message.ask === "tool" ? safeJsonParse<ClineSayTool>(message.text) : null),
 		[message.ask, message.text],
@@ -384,6 +388,9 @@ export const ChatRowContent = ({
 								<span style={{ fontWeight: "bold" }}>
 									{t("chat:fileOperations.wantsToApplyBatchChanges")}
 								</span>
+								<span className="ml-auto text-xs text-vscode-descriptionForeground opacity-60">
+									{messageTime}
+								</span>
 							</div>
 							<BatchDiffApproval files={tool.batchDiffs} ts={message.ts} />
 						</>
@@ -408,6 +415,9 @@ export const ChatRowContent = ({
 									: tool.isOutsideWorkspace
 										? t("chat:fileOperations.wantsToEditOutsideWorkspace")
 										: t("chat:fileOperations.wantsToEdit")}
+							</span>
+							<span className="ml-auto text-xs text-vscode-descriptionForeground opacity-60">
+								{messageTime}
 							</span>
 						</div>
 						<div className="pl-6">
@@ -446,6 +456,9 @@ export const ChatRowContent = ({
 													lineNumber: tool.lineNumber,
 												})}
 							</span>
+							<span className="ml-auto text-xs text-vscode-descriptionForeground opacity-60">
+								{messageTime}
+							</span>
 						</div>
 						<div className="pl-6">
 							<CodeAccordian
@@ -479,6 +492,9 @@ export const ChatRowContent = ({
 										? t("chat:fileOperations.wantsToSearchReplace")
 										: t("chat:fileOperations.didSearchReplace")}
 							</span>
+							<span className="ml-auto text-xs text-vscode-descriptionForeground opacity-60">
+								{messageTime}
+							</span>
 						</div>
 						<div className="pl-6">
 							<CodeAccordian
@@ -511,6 +527,9 @@ export const ChatRowContent = ({
 									values={{ query: tool.query }}
 								/>
 							)}
+						</span>
+						<span className="ml-auto text-xs text-vscode-descriptionForeground opacity-60">
+							{messageTime}
 						</span>
 					</div>
 				)
@@ -547,6 +566,9 @@ export const ChatRowContent = ({
 									? t("chat:fileOperations.wantsToEditProtected")
 									: t("chat:fileOperations.wantsToCreate")}
 							</span>
+							<span className="ml-auto text-xs text-vscode-descriptionForeground opacity-60">
+								{messageTime}
+							</span>
 						</div>
 						<div className="pl-6">
 							<CodeAccordian
@@ -572,6 +594,9 @@ export const ChatRowContent = ({
 								<Eye className="w-4 shrink-0" aria-label="View files icon" />
 								<span style={{ fontWeight: "bold" }}>
 									{t("chat:fileOperations.wantsToReadMultiple")}
+								</span>
+								<span className="ml-auto text-xs text-vscode-descriptionForeground opacity-60">
+									{messageTime}
 								</span>
 							</div>
 							<BatchFilePermission
@@ -601,6 +626,9 @@ export const ChatRowContent = ({
 											: t("chat:fileOperations.wantsToRead")
 									: t("chat:fileOperations.didRead")}
 							</span>
+							<span className="ml-auto text-xs text-vscode-descriptionForeground opacity-60">
+								{messageTime}
+							</span>
 						</div>
 						<div className="pl-6">
 							<ToolUseBlock>
@@ -628,6 +656,9 @@ export const ChatRowContent = ({
 						<div style={headerStyle}>
 							{toolIcon("file-code")}
 							<span style={{ fontWeight: "bold" }}>{t("chat:instructions.wantsToFetch")}</span>
+							<span className="ml-auto text-xs text-vscode-descriptionForeground opacity-60">
+								{messageTime}
+							</span>
 						</div>
 						<div className="pl-6">
 							<CodeAccordian
@@ -653,6 +684,9 @@ export const ChatRowContent = ({
 									: tool.isOutsideWorkspace
 										? t("chat:directoryOperations.didViewTopLevelOutsideWorkspace")
 										: t("chat:directoryOperations.didViewTopLevel")}
+							</span>
+							<span className="ml-auto text-xs text-vscode-descriptionForeground opacity-60">
+								{messageTime}
 							</span>
 						</div>
 						<div className="pl-6">
@@ -680,6 +714,9 @@ export const ChatRowContent = ({
 										? t("chat:directoryOperations.didViewRecursiveOutsideWorkspace")
 										: t("chat:directoryOperations.didViewRecursive")}
 							</span>
+							<span className="ml-auto text-xs text-vscode-descriptionForeground opacity-60">
+								{messageTime}
+							</span>
 						</div>
 						<div className="pl-6">
 							<CodeAccordian
@@ -705,6 +742,9 @@ export const ChatRowContent = ({
 									: tool.isOutsideWorkspace
 										? t("chat:directoryOperations.didViewDefinitionsOutsideWorkspace")
 										: t("chat:directoryOperations.didViewDefinitions")}
+							</span>
+							<span className="ml-auto text-xs text-vscode-descriptionForeground opacity-60">
+								{messageTime}
 							</span>
 						</div>
 						<div className="pl-6">
@@ -745,6 +785,9 @@ export const ChatRowContent = ({
 										values={{ regex: tool.regex }}
 									/>
 								)}
+							</span>
+							<span className="ml-auto text-xs text-vscode-descriptionForeground opacity-60">
+								{messageTime}
 							</span>
 						</div>
 						<div className="pl-6">
@@ -798,6 +841,9 @@ export const ChatRowContent = ({
 									</>
 								)}
 							</span>
+							<span className="ml-auto text-xs text-vscode-descriptionForeground opacity-60">
+								{messageTime}
+							</span>
 						</div>
 					</>
 				)
@@ -812,6 +858,9 @@ export const ChatRowContent = ({
 									components={{ code: <code>{tool.mode}</code> }}
 									values={{ mode: tool.mode }}
 								/>
+							</span>
+							<span className="ml-auto text-xs text-vscode-descriptionForeground opacity-60">
+								{messageTime}
 							</span>
 						</div>
 						<div
@@ -850,6 +899,9 @@ export const ChatRowContent = ({
 						<div style={headerStyle}>
 							{toolIcon("check-all")}
 							<span style={{ fontWeight: "bold" }}>{t("chat:subtasks.wantsToFinish")}</span>
+							<span className="ml-auto text-xs text-vscode-descriptionForeground opacity-60">
+								{messageTime}
+							</span>
 						</div>
 						<div
 							style={{
@@ -891,6 +943,9 @@ export const ChatRowContent = ({
 								{message.type === "ask"
 									? t("chat:slashCommand.wantsToRun")
 									: t("chat:slashCommand.didRun")}
+							</span>
+							<span className="ml-auto text-xs text-vscode-descriptionForeground opacity-60">
+								{messageTime}
 							</span>
 						</div>
 						<div
@@ -972,6 +1027,9 @@ export const ChatRowContent = ({
 											? t("chat:fileOperations.wantsToGenerateImageOutsideWorkspace")
 											: t("chat:fileOperations.wantsToGenerateImage")
 									: t("chat:fileOperations.didGenerateImage")}
+							</span>
+							<span className="ml-auto text-xs text-vscode-descriptionForeground opacity-60">
+								{messageTime}
 							</span>
 						</div>
 						{message.type === "ask" && (
@@ -1130,6 +1188,9 @@ export const ChatRowContent = ({
 							<div style={headerStyle}>
 								<MessageCircle className="w-4 shrink-0" aria-label="Speech bubble icon" />
 								<span style={{ fontWeight: "bold" }}>{t("chat:text.rooSaid")}</span>
+								<span className="ml-auto text-xs text-vscode-descriptionForeground opacity-60">
+									{messageTime}
+								</span>
 							</div>
 							<div className="pl-6">
 								<Markdown markdown={message.text} partial={message.partial} />
@@ -1149,6 +1210,9 @@ export const ChatRowContent = ({
 							<div style={headerStyle}>
 								<User className="w-4 shrink-0" aria-label="User icon" />
 								<span style={{ fontWeight: "bold" }}>{t("chat:feedback.youSaid")}</span>
+								<span className="ml-auto text-xs text-vscode-descriptionForeground opacity-60">
+									{messageTime}
+								</span>
 							</div>
 							<div
 								className={cn(
@@ -1239,6 +1303,9 @@ export const ChatRowContent = ({
 							<div style={headerStyle}>
 								{icon}
 								{title}
+								<span className="ml-auto text-xs text-vscode-descriptionForeground opacity-60">
+									{messageTime}
+								</span>
 							</div>
 							<div className="border-l border-green-600/30 ml-2 pl-4 pb-1">
 								<Markdown markdown={message.text} />
@@ -1313,6 +1380,9 @@ export const ChatRowContent = ({
 												marginBottom: "-1.5px",
 											}}></span>
 										<span style={{ fontWeight: "bold" }}>{t("chat:slashCommand.didRun")}</span>
+										<span className="ml-auto text-xs text-vscode-descriptionForeground opacity-60">
+											{messageTime}
+										</span>
 									</div>
 									<div className="pl-6">
 										<ToolUseBlock>
@@ -1437,6 +1507,9 @@ export const ChatRowContent = ({
 							<div style={headerStyle}>
 								{icon}
 								{title}
+								<span className="ml-auto text-xs text-vscode-descriptionForeground opacity-60">
+									{messageTime}
+								</span>
 							</div>
 							<div className="w-full bg-vscode-editor-background border border-vscode-border rounded-xs p-2 mt-2">
 								{useMcpServer.type === "access_mcp_resource" && (
@@ -1479,6 +1552,9 @@ export const ChatRowContent = ({
 								<div style={headerStyle}>
 									{icon}
 									{title}
+									<span className="ml-auto text-xs text-vscode-descriptionForeground opacity-60">
+										{messageTime}
+									</span>
 								</div>
 								<div style={{ color: "var(--vscode-charts-green)", paddingTop: 10 }}>
 									<Markdown markdown={message.text} partial={message.partial} />
@@ -1495,6 +1571,9 @@ export const ChatRowContent = ({
 								<div style={headerStyle}>
 									{icon}
 									{title}
+									<span className="ml-auto text-xs text-vscode-descriptionForeground opacity-60">
+										{messageTime}
+									</span>
 								</div>
 							)}
 							<div className="flex flex-col gap-2 ml-6">

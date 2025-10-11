@@ -1,0 +1,125 @@
+name: Roadmap2026 Branch Release
+
+on:
+  push:
+    branches:
+      - roadmap2026
+
+env:
+  NODE_VERSION: "20.19.2"
+  PNPM_VERSION: "10.8.1"
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Required for creating releases and tags
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history for proper versioning
+
+      - name: Setup Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Create .env file
+        run: echo "POSTHOG_API_KEY=${{ secrets.POSTHOG_API_KEY }}" >> .env
+
+      - name: Run type checking
+        run: pnpm check-types
+
+      - name: Build project
+        run: pnpm build
+
+      - name: Package Extension (VSIX)
+        run: pnpm vsix
+
+      - name: Get package version and commit info
+        id: version
+        run: |
+          PACKAGE_VERSION=$(node -p "require('./src/package.json').version")
+          COMMIT_SHORT_SHA=$(git rev-parse --short HEAD)
+          TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+          RELEASE_TAG="roadmap2026-${PACKAGE_VERSION}-${TIMESTAMP}-${COMMIT_SHORT_SHA}"
+          VSIX_NAME="roo-cline-${PACKAGE_VERSION}.vsix"
+          
+          echo "package_version=${PACKAGE_VERSION}" >> $GITHUB_OUTPUT
+          echo "release_tag=${RELEASE_TAG}" >> $GITHUB_OUTPUT
+          echo "vsix_name=${VSIX_NAME}" >> $GITHUB_OUTPUT
+          echo "commit_sha=${COMMIT_SHORT_SHA}" >> $GITHUB_OUTPUT
+          echo "timestamp=${TIMESTAMP}" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          RELEASE_TAG="${{ steps.version.outputs.release_tag }}"
+          PACKAGE_VERSION="${{ steps.version.outputs.package_version }}"
+          COMMIT_SHA="${{ steps.version.outputs.commit_sha }}"
+          TIMESTAMP="${{ steps.version.outputs.timestamp }}"
+          VSIX_NAME="${{ steps.version.outputs.vsix_name }}"
+          
+          # Create release notes
+          RELEASE_NOTES="## Roadmap2026 Development Build
+
+          **Version:** ${PACKAGE_VERSION}
+          **Branch:** roadmap2026
+          **Commit:** ${COMMIT_SHA}
+          **Build Time:** ${TIMESTAMP}
+          **Commit Message:** ${{ github.event.head_commit.message }}
+
+          ### Changes in this build
+          
+          This is an automated build from the roadmap2026 branch.
+          
+          ### Installation
+          
+          Download the \`${VSIX_NAME}\` file and install it manually in VS Code:
+          1. Open VS Code
+          2. Go to Extensions view (Ctrl+Shift+X)
+          3. Click on the '...' menu at the top of the Extensions view
+          4. Select 'Install from VSIX...'
+          5. Choose the downloaded file
+          
+          ### Commit Details
+          
+          \`\`\`
+          ${{ github.event.head_commit.message }}
+          \`\`\`
+          
+          **Author:** ${{ github.event.head_commit.author.name }} <${{ github.event.head_commit.author.email }}>
+          **Committer:** ${{ github.event.head_commit.committer.name }} <${{ github.event.head_commit.committer.email }}>
+          "
+          
+          # Create release
+          gh release create "${RELEASE_TAG}" \
+            --title "Roadmap2026 Build - ${PACKAGE_VERSION} (${TIMESTAMP})" \
+            --notes "${RELEASE_NOTES}" \
+            --target roadmap2026 \
+            --prerelease \
+            bin/${VSIX_NAME}
+          
+          echo "✅ Successfully created GitHub Release: ${RELEASE_TAG}"
+          echo "📦 VSIX file: ${VSIX_NAME}"
+          echo "🔗 Release URL: https://github.com/${{ github.repository }}/releases/tag/${RELEASE_TAG}"
+
+      - name: Summary
+        run: |
+          echo "## 🎉 Build and Release Completed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Release Tag:** \`${{ steps.version.outputs.release_tag }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Package Version:** \`${{ steps.version.outputs.package_version }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**VSIX File:** \`${{ steps.version.outputs.vsix_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Steps Completed:" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ pnpm install" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ pnpm check-types" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ pnpm build" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ pnpm vsix" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ GitHub Release created" >> $GITHUB_STEP_SUMMARY
