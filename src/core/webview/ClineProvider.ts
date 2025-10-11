@@ -846,6 +846,12 @@ export class ClineProvider
 	}
 
 	public async createTaskWithHistoryItem(historyItem: HistoryItem & { rootTask?: Task; parentTask?: Task }) {
+		// 在切换任务前，确保当前任务的消息已保存
+		const currentTask = this.getCurrentTask()
+		if (currentTask) {
+			await currentTask.flushPendingSave()
+		}
+
 		await this.removeClineFromStack()
 
 		// If the history item has a saved mode, restore it and its associated API configuration.
@@ -1512,6 +1518,12 @@ export class ClineProvider
 	async showTaskWithId(id: string) {
 		if (id !== this.getCurrentTask()?.taskId) {
 			// Non-current task.
+			// 确保当前任务的消息已保存到磁盘
+			const currentTask = this.getCurrentTask()
+			if (currentTask) {
+				await currentTask.flushPendingSave()
+			}
+
 			const { historyItem } = await this.getTaskWithId(id)
 			await this.createTaskWithHistoryItem(historyItem) // Clears existing task.
 		}
@@ -2501,6 +2513,12 @@ export class ClineProvider
 		options: CreateTaskOptions = {},
 		configuration: RooCodeSettings = {},
 	): Promise<Task> {
+		// 在创建新任务前，确保当前任务的消息已保存
+		const currentTask = this.getCurrentTask()
+		if (currentTask) {
+			await currentTask.flushPendingSave()
+		}
+
 		if (configuration) {
 			await this.setValues(configuration)
 
@@ -2582,6 +2600,9 @@ export class ClineProvider
 		}
 
 		console.log(`[cancelTask] cancelling task ${task.taskId}.${task.instanceId}`)
+
+		// 在取消任务前，确保消息已保存到磁盘
+		await task.flushPendingSave()
 
 		const { historyItem, uiMessagesFilePath } = await this.getTaskWithId(task.taskId)
 

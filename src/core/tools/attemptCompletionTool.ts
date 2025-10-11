@@ -97,11 +97,44 @@ export async function attemptCompletionTool(
 
 				if (!judgeResult.approved) {
 					// Judge rejected the completion
-					await cline.handleJudgeRejection(judgeResult)
-					return // Don't complete the task, continue the conversation
+					const shouldForceComplete = await cline.handleJudgeRejection(judgeResult)
+
+					if (!shouldForceComplete) {
+						// User chose to continue working, don't complete the task
+						// Must push tool result to inform LLM to continue
+						pushToolResult(
+							formatResponse.toolError(
+								"Task completion rejected by judge. Please address the feedback and try again.",
+							),
+						)
+						return
+					}
+					// If shouldForceComplete is true, continue to complete the task below
 				}
 
-				// Judge approved - continue with completion
+				// Judge approved or user forced completion - show appropriate message
+				if (judgeResult.approved) {
+					let approvalMessage = `## ✅ Judge Approval\n\n`
+					approvalMessage += `**Decision**: Task completion approved\n\n`
+					approvalMessage += `**Reasoning**: ${judgeResult.reasoning}\n\n`
+
+					if (judgeResult.overallScore !== undefined) {
+						approvalMessage += `**Overall Score**: ${judgeResult.overallScore}/10\n\n`
+					}
+
+					if (judgeResult.suggestions && judgeResult.suggestions.length > 0) {
+						approvalMessage += `**Optional Suggestions for Future Improvements**:\n`
+						judgeResult.suggestions.forEach((suggestion: string, i: number) => {
+							approvalMessage += `${i + 1}. ${suggestion}\n`
+						})
+						approvalMessage += `\n`
+					}
+
+					// Display judge approval message
+					await cline.say("text", approvalMessage, undefined, false, undefined, undefined, {
+						isNonInteractive: true,
+					})
+				}
 			}
 
 			// Command execution is permanently disabled in attempt_completion

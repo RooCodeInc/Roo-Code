@@ -35,7 +35,7 @@ export interface JudgeConfig {
  * 默认裁判配置
  */
 export const DEFAULT_JUDGE_CONFIG: JudgeConfig = {
-	enabled: false,
+	enabled: true,
 	mode: "always",
 	detailLevel: "detailed",
 	allowUserOverride: true,

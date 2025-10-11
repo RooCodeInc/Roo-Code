@@ -99,8 +99,23 @@ export const FollowUpSuggest = ({
 
 	// Don't render if there are no suggestions or no click handler.
 	if (!suggestions?.length || !onSuggestionClick) {
+		console.log("[FollowUpSuggest] Not rendering:", {
+			suggestionsLength: suggestions?.length,
+			hasSuggestions: !!suggestions?.length,
+			hasClickHandler: !!onSuggestionClick,
+			suggestions,
+		})
 		return null
 	}
+
+	console.log("[FollowUpSuggest] Rendering with:", {
+		suggestionsCount: suggestions.length,
+		suggestions,
+		ts,
+		isAnswered,
+		autoApprovalEnabled,
+		alwaysAllowFollowupQuestions,
+	})
 
 	return (
 		<div className="flex mb-2 flex-col h-full gap-2">

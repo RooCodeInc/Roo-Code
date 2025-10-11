@@ -352,7 +352,15 @@ export const ChatRowContent = ({
 
 	const followUpData = useMemo(() => {
 		if (message.type === "ask" && message.ask === "followup" && !message.partial) {
-			return safeJsonParse<FollowUpData>(message.text)
+			console.log("[ChatRow] Parsing followup data:", {
+				messageType: message.type,
+				messageAsk: message.ask,
+				messagePartial: message.partial,
+				messageText: message.text,
+			})
+			const parsed = safeJsonParse<FollowUpData>(message.text)
+			console.log("[ChatRow] Parsed followup data:", parsed)
+			return parsed
 		}
 		return null
 	}, [message.type, message.ask, message.partial, message.text])
