@@ -38,7 +38,12 @@ export abstract class BaseTerminal implements RooTerminal {
 
 	abstract isClosed(): boolean
 
-	abstract runCommand(command: string, callbacks: RooTerminalCallbacks): RooTerminalProcessResultPromise
+	abstract runCommand(
+		command: string,
+		callbacks: RooTerminalCallbacks,
+		commandMaxWaitTime?: number,
+		autoSkippedCommands?: string[],
+	): RooTerminalProcessResultPromise
 
 	/**
 	 * Sets the active stream for this terminal and notifies the process

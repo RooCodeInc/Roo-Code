@@ -15,7 +15,12 @@ export class ExecaTerminal extends BaseTerminal {
 		return false
 	}
 
-	public override runCommand(command: string, callbacks: RooTerminalCallbacks): RooTerminalProcessResultPromise {
+	public override runCommand(
+		command: string,
+		callbacks: RooTerminalCallbacks,
+		commandMaxWaitTime?: number,
+		autoSkippedCommands?: string[],
+	): RooTerminalProcessResultPromise {
 		this.busy = true
 
 		const process = new ExecaTerminalProcess(this)
@@ -30,6 +35,7 @@ export class ExecaTerminal extends BaseTerminal {
 		const promise = new Promise<void>((resolve, reject) => {
 			process.once("continue", () => resolve())
 			process.once("error", (error) => reject(error))
+			// Note: ExecaTerminalProcess doesn't support timeout yet, but we maintain the interface
 			process.run(command)
 		})
 

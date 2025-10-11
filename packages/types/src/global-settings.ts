@@ -71,6 +71,8 @@ export const globalSettingsSchema = z.object({
 	deniedCommands: z.array(z.string()).optional(),
 	commandExecutionTimeout: z.number().optional(),
 	commandTimeoutAllowlist: z.array(z.string()).optional(),
+	commandMaxWaitTime: z.number().optional(),
+	autoSkippedCommands: z.array(z.string()).optional(),
 	preventCompletionWithOpenTodos: z.boolean().optional(),
 	allowedMaxRequests: z.number().nullish(),
 	allowedMaxCost: z.number().nullish(),
@@ -271,6 +273,8 @@ export const EVALS_SETTINGS: RooCodeSettings = {
 	allowedCommands: ["*"],
 	commandExecutionTimeout: 20,
 	commandTimeoutAllowlist: [],
+	commandMaxWaitTime: 30,
+	autoSkippedCommands: ["npm run dev", "npm start", "python -m http.server", "yarn dev", "yarn start"],
 	preventCompletionWithOpenTodos: false,
 
 	browserToolEnabled: false,

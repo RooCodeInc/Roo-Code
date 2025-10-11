@@ -28,6 +28,8 @@ type TerminalSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	terminalZshP10k?: boolean
 	terminalZdotdir?: boolean
 	terminalCompressProgressBar?: boolean
+	commandMaxWaitTime?: number
+	autoSkippedCommands?: string[]
 	setCachedStateField: SetCachedStateField<
 		| "terminalOutputLineLimit"
 		| "terminalOutputCharacterLimit"
@@ -40,6 +42,8 @@ type TerminalSettingsProps = HTMLAttributes<HTMLDivElement> & {
 		| "terminalZshP10k"
 		| "terminalZdotdir"
 		| "terminalCompressProgressBar"
+		| "commandMaxWaitTime"
+		| "autoSkippedCommands"
 	>
 }
 
@@ -55,6 +59,8 @@ export const TerminalSettings = ({
 	terminalZshP10k,
 	terminalZdotdir,
 	terminalCompressProgressBar,
+	commandMaxWaitTime,
+	autoSkippedCommands,
 	setCachedStateField,
 	className,
 	...props
@@ -177,6 +183,85 @@ export const TerminalSettings = ({
 										href={buildDocLink(
 											"features/shell-integration#compress-progress-bar-output",
 											"settings_terminal_compress_progress_bar",
+										)}
+										style={{ display: "inline" }}>
+										{" "}
+									</VSCodeLink>
+								</Trans>
+							</div>
+						</div>
+						<div>
+							<label className="block font-medium mb-1">
+								{t("settings:terminal.commandMaxWaitTime.label")}
+							</label>
+							<div className="flex items-center gap-2">
+								<Slider
+									min={0}
+									max={300}
+									step={5}
+									value={[commandMaxWaitTime ?? 30]}
+									onValueChange={([value]) => setCachedStateField("commandMaxWaitTime", value)}
+									data-testid="terminal-command-max-wait-time-slider"
+								/>
+								<span className="w-10">{commandMaxWaitTime ?? 30}s</span>
+							</div>
+							<div className="text-vscode-descriptionForeground text-sm mt-1">
+								<Trans i18nKey="settings:terminal.commandMaxWaitTime.description">
+									<VSCodeLink
+										href={buildDocLink(
+											"features/shell-integration#command-max-wait-time",
+											"settings_terminal_command_max_wait_time",
+										)}
+										style={{ display: "inline" }}>
+										{" "}
+									</VSCodeLink>
+								</Trans>
+							</div>
+						</div>
+						<div>
+							<label className="block font-medium mb-1">
+								{t("settings:terminal.autoSkippedCommands.label")}
+							</label>
+							<div className="flex flex-col gap-2">
+								{(autoSkippedCommands ?? []).map((command, index) => (
+									<div key={index} className="flex items-center gap-2">
+										<input
+											type="text"
+											value={command}
+											onChange={(e) => {
+												const newCommands = [...(autoSkippedCommands ?? [])]
+												newCommands[index] = e.target.value
+												setCachedStateField("autoSkippedCommands", newCommands)
+											}}
+											className="flex-1 px-2 py-1 bg-vscode-input-background text-vscode-input-foreground border border-vscode-input-border rounded"
+											placeholder={t("settings:terminal.autoSkippedCommands.placeholder")}
+										/>
+										<button
+											onClick={() => {
+												const newCommands = (autoSkippedCommands ?? []).filter(
+													(_, i) => i !== index,
+												)
+												setCachedStateField("autoSkippedCommands", newCommands)
+											}}
+											className="px-2 py-1 bg-vscode-button-background text-vscode-button-foreground rounded hover:bg-vscode-button-hoverBackground">
+											{t("common:remove")}
+										</button>
+									</div>
+								))}
+								<button
+									onClick={() => {
+										setCachedStateField("autoSkippedCommands", [...(autoSkippedCommands ?? []), ""])
+									}}
+									className="px-2 py-1 bg-vscode-button-background text-vscode-button-foreground rounded hover:bg-vscode-button-hoverBackground self-start">
+									{t("settings:terminal.autoSkippedCommands.addButton")}
+								</button>
+							</div>
+							<div className="text-vscode-descriptionForeground text-sm mt-1">
+								<Trans i18nKey="settings:terminal.autoSkippedCommands.description">
+									<VSCodeLink
+										href={buildDocLink(
+											"features/shell-integration#auto-skipped-commands",
+											"settings_terminal_auto_skipped_commands",
 										)}
 										style={{ display: "inline" }}>
 										{" "}

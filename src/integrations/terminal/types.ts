@@ -11,7 +11,12 @@ export interface RooTerminal {
 	process?: RooTerminalProcess
 	getCurrentWorkingDirectory(): string
 	isClosed: () => boolean
-	runCommand: (command: string, callbacks: RooTerminalCallbacks) => RooTerminalProcessResultPromise
+	runCommand: (
+		command: string,
+		callbacks: RooTerminalCallbacks,
+		commandMaxWaitTime?: number,
+		autoSkippedCommands?: string[],
+	) => RooTerminalProcessResultPromise
 	setActiveStream(stream: AsyncIterable<string> | undefined, pid?: number): void
 	shellExecutionComplete(exitDetails: ExitCodeDetails): void
 	getProcessesWithOutput(): RooTerminalProcess[]
@@ -49,6 +54,8 @@ export interface RooTerminalProcessEvents {
 	shell_execution_complete: [exitDetails: ExitCodeDetails]
 	error: [error: Error]
 	no_shell_integration: [message: string]
+	command_timeout: [command: string]
+	background_command: [command: string]
 }
 
 export interface ExitCodeDetails {

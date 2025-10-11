@@ -40,7 +40,12 @@ export class Terminal extends BaseTerminal {
 		return this.terminal.exitStatus !== undefined
 	}
 
-	public override runCommand(command: string, callbacks: RooTerminalCallbacks): RooTerminalProcessResultPromise {
+	public override runCommand(
+		command: string,
+		callbacks: RooTerminalCallbacks,
+		commandMaxWaitTime?: number,
+		autoSkippedCommands?: string[],
+	): RooTerminalProcessResultPromise {
 		// We set busy before the command is running because the terminal may be
 		// waiting on terminal integration, and we must prevent another instance
 		// from selecting the terminal for use during that time.
@@ -59,6 +64,19 @@ export class Terminal extends BaseTerminal {
 		process.once("shell_execution_complete", (details) => callbacks.onShellExecutionComplete(details, process))
 		process.once("no_shell_integration", (msg) => callbacks.onNoShellIntegration?.(msg, process))
 
+		// Add handlers for timeout and background command events
+		process.once("command_timeout", (cmd: string) => {
+			console.log(`[Terminal] Command timeout for: ${cmd}`)
+			callbacks.onLine?.(
+				`\n[Command timeout reached - continuing with other tasks while this runs in background]\n`,
+				process,
+			)
+		})
+		process.once("background_command", (cmd: string) => {
+			console.log(`[Terminal] Background command started: ${cmd}`)
+			callbacks.onLine?.(`\n[Running in background - continuing with other tasks]\n`, process)
+		})
+
 		const promise = new Promise<void>((resolve, reject) => {
 			// Set up event handlers
 			process.once("continue", () => resolve())
@@ -75,8 +93,8 @@ export class Terminal extends BaseTerminal {
 					// Clean up temporary directory if shell integration is available, zsh did its job:
 					ShellIntegrationManager.zshCleanupTmpDir(this.id)
 
-					// Run the command in the terminal
-					process.run(command)
+					// Run the command in the terminal with timeout settings
+					process.run(command, commandMaxWaitTime, autoSkippedCommands)
 				})
 				.catch(() => {
 					console.log(`[Terminal ${this.id}] Shell integration not available. Command execution aborted.`)

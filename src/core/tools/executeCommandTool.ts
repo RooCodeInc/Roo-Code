@@ -68,6 +68,8 @@ export async function executeCommandTool(
 				terminalOutputLineLimit = 500,
 				terminalOutputCharacterLimit = DEFAULT_TERMINAL_OUTPUT_CHARACTER_LIMIT,
 				terminalShellIntegrationDisabled = false,
+				commandMaxWaitTime = 30,
+				autoSkippedCommands = [],
 			} = providerState ?? {}
 
 			// Get command execution timeout from VSCode configuration (in seconds)
@@ -94,6 +96,8 @@ export async function executeCommandTool(
 				terminalOutputLineLimit,
 				terminalOutputCharacterLimit,
 				commandExecutionTimeout,
+				commandMaxWaitTime,
+				autoSkippedCommands,
 			}
 
 			try {
@@ -141,6 +145,8 @@ export type ExecuteCommandOptions = {
 	terminalOutputLineLimit?: number
 	terminalOutputCharacterLimit?: number
 	commandExecutionTimeout?: number
+	commandMaxWaitTime?: number
+	autoSkippedCommands?: string[]
 }
 
 export async function executeCommand(
@@ -153,6 +159,8 @@ export async function executeCommand(
 		terminalOutputLineLimit = 500,
 		terminalOutputCharacterLimit = DEFAULT_TERMINAL_OUTPUT_CHARACTER_LIMIT,
 		commandExecutionTimeout = 0,
+		commandMaxWaitTime = 30,
+		autoSkippedCommands = [],
 	}: ExecuteCommandOptions,
 ): Promise<[boolean, ToolResponse]> {
 	// Convert milliseconds back to seconds for display purposes.
@@ -249,7 +257,7 @@ export async function executeCommand(
 		workingDir = terminal.getCurrentWorkingDirectory()
 	}
 
-	const process = terminal.runCommand(command, callbacks)
+	const process = terminal.runCommand(command, callbacks, commandMaxWaitTime, autoSkippedCommands)
 	task.terminalProcess = process
 
 	// Implement command execution timeout (skip if timeout is 0).

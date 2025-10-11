@@ -1815,6 +1815,8 @@ export class ClineProvider
 			openRouterImageGenerationSelectedModel,
 			openRouterUseMiddleOutTransform,
 			featureRoomoteControlEnabled,
+			commandMaxWaitTime,
+			autoSkippedCommands,
 		} = await this.getState()
 
 		let cloudOrganizations: CloudOrganizationMembership[] = []
@@ -1964,6 +1966,8 @@ export class ClineProvider
 			openRouterImageGenerationSelectedModel,
 			openRouterUseMiddleOutTransform,
 			featureRoomoteControlEnabled,
+			commandMaxWaitTime: commandMaxWaitTime ?? 30,
+			autoSkippedCommands: autoSkippedCommands ?? [],
 		}
 	}
 
@@ -2195,6 +2199,8 @@ export class ClineProvider
 					return false
 				}
 			})(),
+			commandMaxWaitTime: stateValues.commandMaxWaitTime ?? 30,
+			autoSkippedCommands: stateValues.autoSkippedCommands ?? [],
 		}
 	}
 

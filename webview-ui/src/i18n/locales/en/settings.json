@@ -668,6 +668,16 @@
 		"inheritEnv": {
 			"label": "Inherit environment variables",
 			"description": "When enabled, the terminal will inherit environment variables from VSCode's parent process, such as user-profile-defined shell integration settings. This directly toggles VSCode global setting `terminal.integrated.inheritEnv`. <0>Learn more</0>"
+		},
+		"commandMaxWaitTime": {
+			"label": "Command max wait time",
+			"description": "Maximum time in seconds to wait for a command to complete before allowing Roo to continue with other tasks. The command will continue running in the background. Set to 0 to disable timeout. <0>Learn more</0>"
+		},
+		"autoSkippedCommands": {
+			"label": "Auto-skipped commands",
+			"description": "List of command patterns that should automatically run in the background, allowing Roo to continue with other tasks immediately. Supports wildcards (*). <0>Learn more</0>",
+			"placeholder": "e.g., npm run dev, yarn start, python -m http.server",
+			"addButton": "Add Command Pattern"
 		}
 	},
 	"advancedSettings": {

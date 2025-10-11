@@ -16,6 +16,10 @@ import { Terminal } from "./Terminal"
 
 export class TerminalProcess extends BaseTerminalProcess {
 	private terminalRef: WeakRef<Terminal>
+	private commandTimeout?: NodeJS.Timeout
+	private commandMaxWaitTime: number = 30000 // Default 30 seconds
+	private autoSkippedCommands: string[] = []
+	private isBackgroundCommand: boolean = false
 
 	constructor(terminal: Terminal) {
 		super()
@@ -44,8 +48,19 @@ export class TerminalProcess extends BaseTerminalProcess {
 		return terminal
 	}
 
-	public override async run(command: string) {
+	public override async run(command: string, commandMaxWaitTime?: number, autoSkippedCommands?: string[]) {
 		this.command = command
+
+		// Update settings if provided
+		if (commandMaxWaitTime !== undefined) {
+			this.commandMaxWaitTime = commandMaxWaitTime * 1000 // Convert to milliseconds
+		}
+		if (autoSkippedCommands !== undefined) {
+			this.autoSkippedCommands = autoSkippedCommands
+		}
+
+		// Check if this command should run in background
+		this.isBackgroundCommand = this.shouldRunInBackground(command)
 
 		const terminal = this.terminal.terminal
 
@@ -134,6 +149,30 @@ export class TerminalProcess extends BaseTerminalProcess {
 
 		this.isHot = true
 
+		// Set up timeout for long-running commands if not a background command
+		if (!this.isBackgroundCommand && this.commandMaxWaitTime > 0) {
+			this.commandTimeout = setTimeout(() => {
+				console.log(
+					`[TerminalProcess] Command timeout reached after ${this.commandMaxWaitTime / 1000} seconds for: ${command}`,
+				)
+
+				// Emit event to allow Roo to continue with other tasks
+				this.emit("command_timeout", command)
+
+				// Don't abort the command, just allow Roo to continue
+				// The command will continue running in the background
+				this.isBackgroundCommand = true
+			}, this.commandMaxWaitTime)
+		}
+
+		// If it's a background command, emit immediately to allow Roo to continue
+		if (this.isBackgroundCommand) {
+			console.log(`[TerminalProcess] Running command in background: ${command}`)
+			setTimeout(() => {
+				this.emit("background_command", command)
+			}, 100) // Small delay to ensure command starts
+		}
+
 		// Wait for stream to be available
 		let stream: AsyncIterable<string>
 
@@ -207,6 +246,12 @@ export class TerminalProcess extends BaseTerminalProcess {
 
 		// Set streamClosed immediately after stream ends.
 		this.terminal.setActiveStream(undefined)
+
+		// Clear timeout if command completed before timeout
+		if (this.commandTimeout) {
+			clearTimeout(this.commandTimeout)
+			this.commandTimeout = undefined
+		}
 
 		// Wait for shell execution to complete.
 		await shellExecutionComplete
@@ -463,5 +508,25 @@ export class TerminalProcess extends BaseTerminalProcess {
 		}
 
 		return match133 !== undefined ? match133 : match633
+	}
+
+	/**
+	 * Check if a command should run in the background based on patterns
+	 */
+	private shouldRunInBackground(command: string): boolean {
+		if (!this.autoSkippedCommands || this.autoSkippedCommands.length === 0) {
+			return false
+		}
+
+		const lowerCommand = command.toLowerCase()
+		return this.autoSkippedCommands.some((pattern) => {
+			const lowerPattern = pattern.toLowerCase()
+			// Support wildcards in patterns
+			if (lowerPattern.includes("*")) {
+				const regex = new RegExp(lowerPattern.replace(/\*/g, ".*"))
+				return regex.test(lowerCommand)
+			}
+			return lowerCommand.includes(lowerPattern)
+		})
 	}
 }
