@@ -1776,4 +1776,127 @@ describe("Cline", () => {
 			consoleErrorSpy.mockRestore()
 		})
 	})
+
+	describe("GPT-5 Subtask Completion", () => {
+		it("should NOT skip previous_response_id for GPT-5 models after subtask completion", async () => {
+			// Create a mock GPT-5 API configuration
+			const gpt5ApiConfig = {
+				apiProvider: "openai-native" as const,
+				apiModelId: "gpt-5-codex",
+				openAiNativeApiKey: "test-key",
+			}
+
+			// Create parent task with GPT-5 model
+			const parentTask = new Task({
+				provider: mockProvider,
+				apiConfiguration: gpt5ApiConfig,
+				task: "parent task",
+				startTask: false,
+			})
+
+			// Mock the API model to return GPT-5
+			vi.spyOn(parentTask.api, "getModel").mockReturnValue({
+				id: "gpt-5-codex",
+				info: {
+					contextWindow: 128000,
+					maxTokens: 4096,
+					inputPrice: 0.25,
+					outputPrice: 0.75,
+				} as any,
+			})
+
+			// Spy on say and addToApiConversationHistory
+			const saySpy = vi.spyOn(parentTask, "say").mockResolvedValue(undefined)
+			const addToApiSpy = vi.spyOn(parentTask as any, "addToApiConversationHistory").mockResolvedValue(undefined)
+
+			// Call completeSubtask
+			await parentTask.completeSubtask("Subtask completed successfully")
+
+			// Verify the subtask result was added
+			expect(saySpy).toHaveBeenCalledWith("subtask_result", "Subtask completed successfully")
+			expect(addToApiSpy).toHaveBeenCalledWith({
+				role: "user",
+				content: [{ type: "text", text: "[new_task completed] Result: Subtask completed successfully" }],
+			})
+
+			// Verify skipPrevResponseIdOnce is NOT set for GPT-5 models
+			expect((parentTask as any).skipPrevResponseIdOnce).toBe(false)
+		})
+
+		it("should skip previous_response_id for non-GPT-5 models after subtask completion", async () => {
+			// Create a mock non-GPT-5 API configuration
+			const claudeApiConfig = {
+				apiProvider: "anthropic" as const,
+				apiModelId: "claude-3-5-sonnet-20241022",
+				apiKey: "test-key",
+			}
+
+			// Create parent task with Claude model
+			const parentTask = new Task({
+				provider: mockProvider,
+				apiConfiguration: claudeApiConfig,
+				task: "parent task",
+				startTask: false,
+			})
+
+			// Mock the API model to return Claude
+			vi.spyOn(parentTask.api, "getModel").mockReturnValue({
+				id: "claude-3-5-sonnet-20241022",
+				info: {
+					contextWindow: 200000,
+					maxTokens: 4096,
+					inputPrice: 0.25,
+					outputPrice: 0.75,
+				} as any,
+			})
+
+			// Spy on say and addToApiConversationHistory
+			const saySpy = vi.spyOn(parentTask, "say").mockResolvedValue(undefined)
+			const addToApiSpy = vi.spyOn(parentTask as any, "addToApiConversationHistory").mockResolvedValue(undefined)
+
+			// Call completeSubtask
+			await parentTask.completeSubtask("Subtask completed successfully")
+
+			// Verify the subtask result was added
+			expect(saySpy).toHaveBeenCalledWith("subtask_result", "Subtask completed successfully")
+			expect(addToApiSpy).toHaveBeenCalledWith({
+				role: "user",
+				content: [{ type: "text", text: "[new_task completed] Result: Subtask completed successfully" }],
+			})
+
+			// Verify skipPrevResponseIdOnce IS set for non-GPT-5 models
+			expect((parentTask as any).skipPrevResponseIdOnce).toBe(true)
+		})
+
+		it("should handle edge case where model ID is undefined", async () => {
+			// Create task with minimal configuration
+			const parentTask = new Task({
+				provider: mockProvider,
+				apiConfiguration: mockApiConfig,
+				task: "parent task",
+				startTask: false,
+			})
+
+			// Mock the API model to return undefined ID
+			vi.spyOn(parentTask.api, "getModel").mockReturnValue({
+				id: undefined as any,
+				info: {
+					contextWindow: 200000,
+					maxTokens: 4096,
+					inputPrice: 0.25,
+					outputPrice: 0.75,
+				} as any,
+			})
+
+			// Spy on say and addToApiConversationHistory
+			const saySpy = vi.spyOn(parentTask, "say").mockResolvedValue(undefined)
+			const addToApiSpy = vi.spyOn(parentTask as any, "addToApiConversationHistory").mockResolvedValue(undefined)
+
+			// Call completeSubtask
+			await parentTask.completeSubtask("Subtask completed")
+
+			// When model ID is undefined, should default to skipping (non-GPT-5 behavior)
+			expect((parentTask as any).skipPrevResponseIdOnce).toBe(true)
+		})
+	})
 })

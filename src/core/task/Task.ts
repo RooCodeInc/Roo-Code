@@ -1666,9 +1666,20 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				content: [{ type: "text", text: `[new_task completed] Result: ${lastMessage}` }],
 			})
 
-			// Set skipPrevResponseIdOnce to ensure the next API call sends the full conversation
-			// including the subtask result, not just from before the subtask was created
-			this.skipPrevResponseIdOnce = true
+			// For GPT-5 models, we should NOT skip the previous_response_id after subtask completion
+			// because GPT-5 relies on response continuity to maintain context. When we skip it,
+			// GPT-5 only receives the latest message without the subtask result context.
+			// For other models, we skip to ensure the full conversation is sent.
+			const modelId = this.api.getModel().id
+			const isGpt5Model = modelId && modelId.startsWith("gpt-5")
+
+			if (!isGpt5Model) {
+				// Only skip previous_response_id for non-GPT-5 models
+				// This ensures the next API call sends the full conversation
+				// including the subtask result, not just from before the subtask was created
+				this.skipPrevResponseIdOnce = true
+			}
+			// For GPT-5 models, we maintain continuity by keeping the previous_response_id chain intact
 		} catch (error) {
 			this.providerRef
 				.deref()
