@@ -379,7 +379,7 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 		})
 
 		describe(`${klass.name}#hasNestedGitRepositories`, () => {
-			it("throws error when nested git repositories are detected during initialization", async () => {
+			it("excludes nested git repositories from checkpoints instead of throwing error", async () => {
 				// Create a new temporary workspace and service for this test.
 				const shadowDir = path.join(tmpDir, `${prefix}-nested-git-${Date.now()}`)
 				const workspaceDir = path.join(tmpDir, `workspace-nested-git-${Date.now()}`)
@@ -437,11 +437,25 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 
 				const service = new klass(taskId, shadowDir, workspaceDir, () => {})
 
-				// Verify that initialization throws an error when nested git repos are detected
-				// The error message now includes the specific path of the nested repository
-				await expect(service.initShadowGit()).rejects.toThrowError(
-					/Checkpoints are disabled because a nested git repository was detected at:/,
-				)
+				// Verify that initialization succeeds and excludes nested git repos
+				await expect(service.initShadowGit()).resolves.not.toThrow()
+				expect(service.isInitialized).toBe(true)
+
+				// Verify that the nested git repo is excluded by checking the exclude file
+				const excludesPath = path.join(service.checkpointsDir, ".git", "info", "exclude")
+				const excludeContent = await fs.readFile(excludesPath, "utf-8")
+				expect(excludeContent).toContain("nested-project/")
+
+				// Verify that changes in the nested repo are not tracked
+				await fs.writeFile(nestedFile, "Modified content in nested repo")
+				const checkpoint = await service.saveCheckpoint("Test checkpoint")
+				// Should not create a checkpoint since nested repo changes are excluded
+				expect(checkpoint?.commit).toBeFalsy()
+
+				// Verify that changes in the main repo are still tracked
+				await fs.writeFile(mainFile, "Modified content in main repo")
+				const mainCheckpoint = await service.saveCheckpoint("Main repo checkpoint")
+				expect(mainCheckpoint?.commit).toBeTruthy()
 
 				// Clean up.
 				vitest.restoreAllMocks()

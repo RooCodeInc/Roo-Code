@@ -142,7 +142,9 @@
 		"image_copied_to_clipboard": "Image data URI copied to clipboard",
 		"image_saved": "Image saved to {{path}}",
 		"mode_exported": "Mode '{{mode}}' exported successfully",
-		"mode_imported": "Mode imported successfully"
+		"mode_imported": "Mode imported successfully",
+		"nested_git_repo_excluded": "Nested git repository at '{{path}}' will be excluded from checkpoints",
+		"nested_git_repos_excluded": "{{count}} nested git repositories will be excluded from checkpoints"
 	},
 	"answers": {
 		"yes": "Yes",
