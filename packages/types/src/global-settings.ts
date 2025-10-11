@@ -76,6 +76,7 @@ export const globalSettingsSchema = z.object({
 	allowedMaxCost: z.number().nullish(),
 	autoCondenseContext: z.boolean().optional(),
 	autoCondenseContextPercent: z.number().optional(),
+	vectorMemoryEnabled: z.boolean().optional(),
 	maxConcurrentFileReads: z.number().optional(),
 
 	/**

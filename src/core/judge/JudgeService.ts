@@ -98,7 +98,8 @@ export class JudgeService {
 			const jsonMatch = response.match(/```json\s*([\s\S]*?)\s*```/) || response.match(/\{[\s\S]*\}/)
 
 			if (!jsonMatch) {
-				throw new Error("No JSON found in response")
+				// 如果没有找到 JSON，尝试 Markdown 格式解析
+				return this.parseMarkdownResponse(response)
 			}
 
 			const jsonStr = jsonMatch[1] || jsonMatch[0]
@@ -116,40 +117,102 @@ export class JudgeService {
 				criticalIssues: parsed.criticalIssues,
 			}
 		} catch (error) {
-			console.error("[JudgeService] Failed to parse judge response:", error)
+			console.error("[JudgeService] Failed to parse judge response as JSON:", error)
 			console.error("[JudgeService] Response was:", response)
 
-			// 回退解析：尝试从文本中提取关键信息
-			return this.fallbackParsing(response)
+			// 回退到 Markdown 格式解析
+			return this.parseMarkdownResponse(response)
 		}
 	}
 
 	/**
-	 * 回退解析：当 JSON 解析失败时使用
+	 * 解析 Markdown 格式的裁判响应
+	 * 支持类似以下格式：
+	 * " Judge Approval
+	 * Decision: Task completion approved
+	 * Reasoning: ...
+	 * Optional Suggestions for Future Improvements:
+	 * ..."
 	 */
-	private fallbackParsing(response: string): JudgeResult {
-		// 尝试通过关键词判断是否批准
-		const lowerResponse = response.toLowerCase()
-		const approved =
-			lowerResponse.includes('"approved": true') ||
-			lowerResponse.includes("approved") ||
-			(!lowerResponse.includes("not complete") && !lowerResponse.includes("incomplete"))
-
-		// 尝试提取理由
-		let reasoning = "无法解析裁判响应"
-		const reasoningMatch = response.match(/"reasoning":\s*"([^"]+)"/)
-		if (reasoningMatch) {
-			reasoning = reasoningMatch[1]
+	private parseMarkdownResponse(response: string): JudgeResult {
+		// 判断是否批准
+		let approved = false
+		const decisionMatch = response.match(/Decision:\s*(.+?)(?:\n|$)/i)
+		if (decisionMatch) {
+			const decision = decisionMatch[1].toLowerCase()
+			approved = decision.includes("approved") || decision.includes("批准")
 		} else {
-			// 使用整个响应的前200个字符作为理由
-			reasoning = response.substring(0, 200) + (response.length > 200 ? "..." : "")
+			// 如果没有明确的 Decision 字段，尝试从整体文本判断
+			const lowerResponse = response.toLowerCase()
+			approved =
+				lowerResponse.includes("approved") ||
+				lowerResponse.includes("批准") ||
+				lowerResponse.includes("task completion approved") ||
+				(!lowerResponse.includes("rejected") && !lowerResponse.includes("拒绝"))
 		}
+
+		// 提取理由
+		let reasoning = ""
+		const reasoningMatch = response.match(
+			/Reasoning:\s*([\s\S]*?)(?:\n\n|\n(?:Optional Suggestions|Overall Score|$))/i,
+		)
+		if (reasoningMatch) {
+			reasoning = reasoningMatch[1].trim()
+		} else {
+			// 如果没有明确的 Reasoning 字段，使用整个响应作为理由
+			reasoning = response.trim()
+		}
+
+		// 提取评分
+		let overallScore: number | undefined
+		const scoreMatch = response.match(/Overall Score:\s*(\d+)\/10/i)
+		if (scoreMatch) {
+			overallScore = parseInt(scoreMatch[1], 10)
+		}
+
+		// 提取建议列表
+		const suggestions: string[] = []
+		const suggestionsSection = response.match(
+			/(?:Optional Suggestions for Future Improvements|Suggestions):\s*([\s\S]*?)(?:\n\n|$)/i,
+		)
+		if (suggestionsSection) {
+			// 提取编号列表项
+			const suggestionMatches = suggestionsSection[1].matchAll(/(?:\d+\.|[-*])\s*(.+?)(?:\n|$)/g)
+			for (const match of suggestionMatches) {
+				const suggestion = match[1].trim()
+				if (suggestion) {
+					suggestions.push(suggestion)
+				}
+			}
+		}
+
+		// 提取缺失项
+		const missingItems: string[] = []
+		const missingSection = response.match(/(?:Missing Items|缺失项):\s*([\s\S]*?)(?:\n\n|$)/i)
+		if (missingSection) {
+			const missingMatches = missingSection[1].matchAll(/(?:\d+\.|[-*])\s*(.+?)(?:\n|$)/g)
+			for (const match of missingMatches) {
+				const item = match[1].trim()
+				if (item) {
+					missingItems.push(item)
+				}
+			}
+		}
+
+		console.log("[JudgeService] Parsed Markdown response:", {
+			approved,
+			reasoning: reasoning.substring(0, 100) + "...",
+			overallScore,
+			suggestionsCount: suggestions.length,
+			missingItemsCount: missingItems.length,
+		})
 
 		return {
 			approved,
-			reasoning,
-			missingItems: [],
-			suggestions: ["裁判响应格式不正确，建议手动检查"],
+			reasoning: reasoning || "未提供详细理由",
+			overallScore,
+			missingItems,
+			suggestions,
 		}
 	}
 

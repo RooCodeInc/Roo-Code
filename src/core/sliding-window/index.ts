@@ -6,6 +6,8 @@ import { ApiHandler } from "../../api"
 import { MAX_CONDENSE_THRESHOLD, MIN_CONDENSE_THRESHOLD, summarizeConversation, SummarizeResponse } from "../condense"
 import { ApiMessage } from "../task-persistence/apiMessages"
 import { ANTHROPIC_DEFAULT_MAX_TOKENS } from "@roo-code/types"
+import { ConversationMemory } from "../memory/ConversationMemory"
+import { VectorMemoryStore } from "../memory/VectorMemoryStore"
 
 /**
  * Default percentage of the context window to use as a buffer when deciding when to truncate
@@ -77,6 +79,9 @@ type TruncateOptions = {
 	condensingApiHandler?: ApiHandler
 	profileThresholds: Record<string, number>
 	currentProfileId: string
+	conversationMemory?: ConversationMemory
+	useMemoryEnhancement?: boolean
+	vectorMemoryStore?: VectorMemoryStore
 }
 
 type TruncateResponse = SummarizeResponse & { prevContextTokens: number }
@@ -102,6 +107,9 @@ export async function truncateConversationIfNeeded({
 	condensingApiHandler,
 	profileThresholds,
 	currentProfileId,
+	conversationMemory,
+	useMemoryEnhancement = true,
+	vectorMemoryStore,
 }: TruncateOptions): Promise<TruncateResponse> {
 	let error: string | undefined
 	let cost = 0
@@ -161,6 +169,9 @@ export async function truncateConversationIfNeeded({
 				true, // automatic trigger
 				customCondensingPrompt,
 				condensingApiHandler,
+				conversationMemory,
+				useMemoryEnhancement,
+				vectorMemoryStore,
 			)
 			if (result.error) {
 				error = result.error

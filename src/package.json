@@ -3,7 +3,7 @@
 	"displayName": "Roo-Cline",
 	"description": "Autonomous coding agent right in your IDE. Designed to work with the latest Claude Sonnet 4.0, GPT-4o, Gemini 2.0 and any OpenRouter models. Claude Code Generator",
 	"publisher": "RooVeterinaryInc",
-	"version": "3.28.22",
+	"version": "3.28.24",
 	"icon": "assets/icons/icon.png",
 	"galleryBanner": {
 		"color": "#617A91",
@@ -429,6 +429,21 @@
 					"minimum": 1,
 					"maximum": 200,
 					"description": "%settings.codeIndex.embeddingBatchSize.description%"
+				},
+				"roo-cline.vectorMemory.enabled": {
+					"type": "boolean",
+					"default": false,
+					"description": "%settings.vectorMemory.enabled.description%"
+				},
+				"roo-cline.vectorMemory.qdrantUrl": {
+					"type": "string",
+					"default": "http://localhost:6333",
+					"description": "%settings.vectorMemory.qdrantUrl.description%"
+				},
+				"roo-cline.vectorMemory.qdrantApiKey": {
+					"type": "string",
+					"default": "",
+					"description": "%settings.vectorMemory.qdrantApiKey.description%"
 				}
 			}
 		}
@@ -462,9 +477,11 @@
 		"@roo-code/ipc": "workspace:^",
 		"@roo-code/telemetry": "workspace:^",
 		"@roo-code/types": "workspace:^",
+		"@types/better-sqlite3": "^7.6.13",
 		"@vscode/codicons": "^0.0.36",
 		"async-mutex": "^0.5.0",
 		"axios": "^1.12.0",
+		"better-sqlite3": "^12.4.1",
 		"cheerio": "^1.0.0",
 		"chokidar": "^4.0.1",
 		"clone-deep": "^4.0.1",

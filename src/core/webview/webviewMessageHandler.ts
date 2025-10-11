@@ -584,6 +584,10 @@ export const webviewMessageHandler = async (
 			await updateGlobalState("autoCondenseContext", message.bool)
 			await provider.postStateToWebview()
 			break
+		case "vectorMemoryEnabled":
+			await updateGlobalState("vectorMemoryEnabled", message.bool)
+			await provider.postStateToWebview()
+			break
 		case "autoCondenseContextPercent":
 			await updateGlobalState("autoCondenseContextPercent", message.value)
 			await provider.postStateToWebview()

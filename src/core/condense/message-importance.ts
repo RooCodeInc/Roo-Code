@@ -6,6 +6,10 @@ export interface MessageImportanceScore {
 	reasons: string[]
 	isUserMessage: boolean
 	tokenCount: number
+	/** 标记为记忆相关（类似 Augment 的 isMemoryRelated） */
+	isMemoryRelated?: boolean
+	/** 记忆类型标签 */
+	memoryTags?: string[]
 }
 
 /**
@@ -198,13 +202,89 @@ export function calculateMessageImportance(
 	// 确保分数在0-100范围内
 	score = Math.max(0, Math.min(100, score))
 
+	// ===== 记忆相关标记（参考 Augment 的 isMemoryRelated） =====
+	const isMemoryRelated = checkIfMemoryRelated(message, content, score)
+	const memoryTags = extractMemoryTags(content)
+
 	return {
 		message,
 		score,
 		reasons,
 		isUserMessage: message.role === "user",
 		tokenCount,
+		isMemoryRelated,
+		memoryTags: memoryTags.length > 0 ? memoryTags : undefined,
 	}
+}
+
+/**
+ * 检查消息是否与记忆相关（类似 Augment 的 isMemoryRelated 函数）
+ *
+ * 在 Augment 中，isMemoryRelated 检查：
+ * 1. 节点类型是否为 AGENT_MEMORY
+ * 2. 工具调用是否为 'remember'
+ *
+ * 在我们的系统中，我们检查：
+ * 1. 用户消息中包含关键指令模式
+ * 2. 消息重要性评分高
+ * 3. 包含配置或技术决策关键词
+ */
+function checkIfMemoryRelated(message: ApiMessage, content: string, score: number): boolean {
+	// 1. 高分消息通常是重要的
+	if (score >= 80) {
+		return true
+	}
+
+	// 2. 摘要消息始终是记忆相关的
+	if (message.isSummary) {
+		return true
+	}
+
+	// 3. 用户消息中包含显式记忆关键词
+	if (message.role === "user") {
+		const memoryKeywords = [
+			/(?:记住|remember|note|重要|important|关键|critical|必须|must)/i,
+			/(?:所有|all|每个|every|总是|always)\s+.{5,50}\s+(?:需要|need|应该|should|必须|must)/i,
+			/(?:使用|use|采用|with)\s+(?:postgresql|redis|mongodb|mysql|jwt|oauth|port\s+\d+)/i,
+		]
+
+		for (const pattern of memoryKeywords) {
+			if (pattern.test(content)) {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
+/**
+ * 提取记忆标签
+ */
+function extractMemoryTags(content: string): string[] {
+	const tags: string[] = []
+	const contentLower = content.toLowerCase()
+
+	// 技术栈标签
+	const techStack = ["postgresql", "redis", "mongodb", "mysql", "react", "vue", "typescript", "python"]
+	for (const tech of techStack) {
+		if (contentLower.includes(tech)) {
+			tags.push(tech)
+		}
+	}
+
+	// 配置类标签
+	if (/port|端口/.test(contentLower)) {
+		tags.push("configuration:port")
+	}
+	if (/database|数据库/.test(contentLower)) {
+		tags.push("configuration:database")
+	}
+	if (/auth|认证|authorization|授权/.test(contentLower)) {
+		tags.push("configuration:auth")
+	}
+
+	return tags
 }
 
 /**

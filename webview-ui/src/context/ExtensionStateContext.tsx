@@ -257,9 +257,11 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		organizationSettingsVersion: -1,
 		autoCondenseContext: true,
 		autoCondenseContextPercent: 100,
+		vectorMemoryEnabled: false,
 		profileThresholds: {},
 		codebaseIndexConfig: {
 			codebaseIndexEnabled: true,
+			codebaseIndexMode: "vector",
 			codebaseIndexQdrantUrl: "http://localhost:6333",
 			codebaseIndexEmbedderProvider: "openai",
 			codebaseIndexEmbedderBaseUrl: "",

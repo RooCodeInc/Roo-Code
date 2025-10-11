@@ -53,6 +53,11 @@
 		"statusTitle": "Status",
 		"enableLabel": "Enable Codebase Indexing",
 		"enableDescription": "Enable code indexing for improved search and context understanding",
+		"indexModeLabel": "Index Mode",
+		"vectorMode": "Vector",
+		"localMode": "Local",
+		"vectorModeDescription": "Uses vector embeddings for semantic search with Qdrant database. Provides intelligent context-aware search but requires external services and API keys.",
+		"localModeDescription": "Uses local AST-based indexing with SQLite. Fast, private, and works offline without any external dependencies or API keys.",
 		"settingsTitle": "Indexing Settings",
 		"disabledMessage": "Codebase indexing is currently disabled. Enable it in the global settings to configure indexing options.",
 		"providerLabel": "Embeddings Provider",
@@ -610,6 +615,13 @@
 			"profileDescription": "Custom threshold for this profile only (overrides global default)",
 			"inheritDescription": "This profile inherits the global default threshold ({{threshold}}%)",
 			"usesGlobal": "(uses global {{threshold}}%)"
+		},
+		"vectorMemory": {
+			"label": "Enable vector-based memory system",
+			"description": "When enabled, Roo will use vector embeddings to store and retrieve conversation memories semantically. This provides intelligent context augmentation during compression.",
+			"requiresCodeIndex": "Vector memory requires codebase indexing to be enabled and completed first",
+			"waitingForIndex": "Waiting for codebase indexing to complete...",
+			"ready": "Vector memory is ready to use"
 		}
 	},
 	"terminal": {

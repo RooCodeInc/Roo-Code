@@ -285,6 +285,30 @@ export class CodeIndexManager {
 	}
 
 	/**
+	 * 获取embedder实例，用于向量记忆系统
+	 * @returns embedder实例，如果未初始化则返回undefined
+	 */
+	public getEmbedder() {
+		if (!this.isFeatureEnabled || !this.isInitialized) {
+			return undefined
+		}
+		// 从serviceFactory获取embedder
+		return this._serviceFactory?.getEmbedder()
+	}
+
+	/**
+	 * 获取向量维度大小
+	 * @returns 向量维度，如果未配置则返回undefined
+	 */
+	public getVectorSize(): number | undefined {
+		if (!this._configManager) {
+			return undefined
+		}
+		const config = this._configManager.getCurrentConfig()
+		return config?.modelDimension
+	}
+
+	/**
 	 * Private helper method to recreate services with current configuration.
 	 * Used by both initialize() and handleSettingsChange().
 	 */

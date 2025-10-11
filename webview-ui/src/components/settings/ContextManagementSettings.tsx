@@ -27,6 +27,7 @@ type ContextManagementSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	includeDiagnosticMessages?: boolean
 	maxDiagnosticMessages?: number
 	writeDelayMs: number
+	vectorMemoryEnabled?: boolean
 	setCachedStateField: SetCachedStateField<
 		| "autoCondenseContext"
 		| "autoCondenseContextPercent"
@@ -41,6 +42,7 @@ type ContextManagementSettingsProps = HTMLAttributes<HTMLDivElement> & {
 		| "includeDiagnosticMessages"
 		| "maxDiagnosticMessages"
 		| "writeDelayMs"
+		| "vectorMemoryEnabled"
 	>
 }
 
@@ -60,6 +62,7 @@ export const ContextManagementSettings = ({
 	includeDiagnosticMessages,
 	maxDiagnosticMessages,
 	writeDelayMs,
+	vectorMemoryEnabled,
 	className,
 	...props
 }: ContextManagementSettingsProps) => {
@@ -437,6 +440,21 @@ export const ContextManagementSettings = ({
 						</div>
 					</div>
 				)}
+			</Section>
+
+			{/* Vector Memory Section */}
+			<Section className="pt-2">
+				<div className="flex flex-col gap-3">
+					<VSCodeCheckbox
+						checked={vectorMemoryEnabled}
+						onChange={(e: any) => setCachedStateField("vectorMemoryEnabled", e.target.checked)}
+						data-testid="vector-memory-enabled-checkbox">
+						<span className="font-medium">{t("settings:contextManagement.vectorMemory.label")}</span>
+					</VSCodeCheckbox>
+					<div className="text-vscode-descriptionForeground text-sm">
+						{t("settings:contextManagement.vectorMemory.description")}
+					</div>
+				</div>
 			</Section>
 		</div>
 	)

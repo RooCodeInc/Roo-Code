@@ -7,6 +7,8 @@ import { ApiHandler } from "../../api"
 import { ApiMessage } from "../task-persistence/apiMessages"
 import { maybeRemoveImageBlocks } from "../../api/transform/image-cleaning"
 import { scoreAllMessages, MessageImportanceScore } from "./message-importance"
+import { ConversationMemory } from "../memory/ConversationMemory"
+import { VectorMemoryStore, MemorySearchResult } from "../memory/VectorMemoryStore"
 
 export const N_MESSAGES_TO_KEEP = 3
 export const MIN_CONDENSE_THRESHOLD = 5 // Minimum percentage of context window to trigger condensing
@@ -188,6 +190,9 @@ export async function summarizeConversation(
 	isAutomaticTrigger?: boolean,
 	customCondensingPrompt?: string,
 	condensingApiHandler?: ApiHandler,
+	conversationMemory?: ConversationMemory,
+	useMemoryEnhancement: boolean = true,
+	vectorMemoryStore?: VectorMemoryStore,
 ): Promise<SummarizeResponse> {
 	TelemetryService.instance.captureContextCondensed(
 		taskId,
@@ -227,9 +232,70 @@ export async function summarizeConversation(
 		return { ...response, error }
 	}
 
+	// 如果启用了记忆增强，提取并添加记忆上下文
+	let memoryContext = ""
+	if (useMemoryEnhancement && conversationMemory) {
+		// 从所有消息中提取记忆（包括最近的）
+		const extractionResult = await conversationMemory.extractMemories(messages)
+
+		// 如果配置了向量记忆存储，将新记忆存储到向量数据库
+		if (vectorMemoryStore && extractionResult.newMemoriesCount > 0) {
+			try {
+				await vectorMemoryStore.storeMemories(extractionResult.memories, taskId)
+			} catch (error) {
+				console.warn("Failed to store memories to vector store:", error)
+			}
+		}
+
+		// 生成基础记忆摘要（基于ConversationMemory）
+		memoryContext = conversationMemory.generateMemorySummary()
+
+		// 如果配置了向量记忆存储，使用语义搜索检索相关历史记忆
+		if (vectorMemoryStore && memoryContext) {
+			try {
+				// 使用当前对话的最后几条消息作为查询上下文
+				const recentMessages = messages.slice(-3)
+				const queryContext = recentMessages
+					.map((m) =>
+						typeof m.content === "string"
+							? m.content
+							: m.content.map((block) => (block.type === "text" ? block.text : "")).join(" "),
+					)
+					.join(" ")
+					.slice(0, 500) // 限制长度
+
+				// 搜索项目级别的相关记忆（跨对话）
+				const relevantMemories: MemorySearchResult[] = await vectorMemoryStore.searchProjectMemories(
+					queryContext,
+					{
+						minScore: 0.75, // 较高的相似度阈值
+						maxResults: 5, // 限制数量以避免上下文过长
+					},
+				)
+
+				// 将检索到的历史记忆添加到上下文
+				if (relevantMemories.length > 0) {
+					const historicalContext = relevantMemories
+						.map((result) => `- ${result.memory.content} (相似度: ${(result.score * 100).toFixed(1)}%)`)
+						.join("\n")
+
+					memoryContext += `\n\n### 相关历史记忆（跨对话）：\n${historicalContext}`
+				}
+			} catch (error) {
+				console.warn("Failed to search vector memories:", error)
+			}
+		}
+	}
+
+	// 构建最终请求消息，包含记忆上下文
+	let finalContent = "Summarize the conversation so far, as described in the prompt instructions."
+	if (memoryContext) {
+		finalContent += "\n\n" + memoryContext + "\n\n**Please incorporate these critical memories into your summary.**"
+	}
+
 	const finalRequestMessage: Anthropic.MessageParam = {
 		role: "user",
-		content: "Summarize the conversation so far, as described in the prompt instructions.",
+		content: finalContent,
 	}
 
 	const requestMessages = maybeRemoveImageBlocks(

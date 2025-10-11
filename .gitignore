@@ -50,3 +50,5 @@ logs
 # Qdrant
 qdrant_storage/
 qdrant/qdrant_data
+.ollama.txt
+/agumentcode/

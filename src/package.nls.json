@@ -42,5 +42,8 @@
 	"settings.useAgentRules.description": "Enable loading of AGENTS.md files for agent-specific rules (see https://agent-rules.org/)",
 	"settings.apiRequestTimeout.description": "Maximum time in seconds to wait for API responses (0 = no timeout, 1-3600s, default: 600s). Higher values are recommended for local providers like LM Studio and Ollama that may need more processing time.",
 	"settings.newTaskRequireTodos.description": "Require todos parameter when creating new tasks with the new_task tool",
-	"settings.codeIndex.embeddingBatchSize.description": "The batch size for embedding operations during code indexing. Adjust this based on your API provider's limits. Default is 60."
+	"settings.codeIndex.embeddingBatchSize.description": "The batch size for embedding operations during code indexing. Adjust this based on your API provider's limits. Default is 60.",
+	"settings.vectorMemory.enabled.description": "Enable vector memory system for semantic search across conversation history. Requires a running Qdrant instance.",
+	"settings.vectorMemory.qdrantUrl.description": "URL of the Qdrant vector database server (e.g. 'http://localhost:6333' or 'https://your-qdrant-instance.com'). Used for storing and retrieving conversation memories.",
+	"settings.vectorMemory.qdrantApiKey.description": "Optional API key for authenticating with Qdrant server. Leave empty if authentication is not required."
 }

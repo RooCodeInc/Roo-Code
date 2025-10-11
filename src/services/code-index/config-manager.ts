@@ -480,4 +480,11 @@ export class CodeIndexConfigManager {
 	public get currentSearchMaxResults(): number {
 		return this.searchMaxResults ?? DEFAULT_MAX_SEARCH_RESULTS
 	}
+
+	/**
+	 * Gets the current configuration state (alias for getConfig for backward compatibility)
+	 */
+	public getCurrentConfig(): CodeIndexConfig {
+		return this.getConfig()
+	}
 }

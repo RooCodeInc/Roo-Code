@@ -57,6 +57,7 @@ interface CodeIndexPopoverProps {
 interface LocalCodeIndexSettings {
 	// Global state settings
 	codebaseIndexEnabled: boolean
+	codebaseIndexMode?: "vector" | "local"
 	codebaseIndexQdrantUrl: string
 	codebaseIndexEmbedderProvider: EmbedderProvider
 	codebaseIndexEmbedderBaseUrl?: string
@@ -180,6 +181,7 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 	// Default settings template
 	const getDefaultSettings = (): LocalCodeIndexSettings => ({
 		codebaseIndexEnabled: true,
+		codebaseIndexMode: "vector",
 		codebaseIndexQdrantUrl: "",
 		codebaseIndexEmbedderProvider: "openai",
 		codebaseIndexEmbedderBaseUrl: "",
@@ -212,6 +214,7 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 		if (codebaseIndexConfig) {
 			const settings = {
 				codebaseIndexEnabled: codebaseIndexConfig.codebaseIndexEnabled ?? true,
+				codebaseIndexMode: (codebaseIndexConfig.codebaseIndexMode as "vector" | "local") || "vector",
 				codebaseIndexQdrantUrl: codebaseIndexConfig.codebaseIndexQdrantUrl || "",
 				codebaseIndexEmbedderProvider: codebaseIndexConfig.codebaseIndexEmbedderProvider || "openai",
 				codebaseIndexEmbedderBaseUrl: codebaseIndexConfig.codebaseIndexEmbedderBaseUrl || "",
@@ -588,6 +591,35 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 							</div>
 						</div>
 
+						{/* Index Mode Selection */}
+						<div className="mb-4">
+							<div className="space-y-2">
+								<label className="text-sm font-medium">{t("settings:codeIndex.indexModeLabel")}</label>
+								<Select
+									value={currentSettings.codebaseIndexMode || "vector"}
+									onValueChange={(value: "vector" | "local") => {
+										updateSetting("codebaseIndexMode", value)
+									}}>
+									<SelectTrigger className="w-full">
+										<SelectValue />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="vector">
+											{t("settings:codeIndex.vectorMode")} - Vector Database (Qdrant)
+										</SelectItem>
+										<SelectItem value="local">
+											{t("settings:codeIndex.localMode")} - Local AST Index (SQLite)
+										</SelectItem>
+									</SelectContent>
+								</Select>
+								<p className="text-xs text-vscode-descriptionForeground">
+									{currentSettings.codebaseIndexMode === "local"
+										? t("settings:codeIndex.localModeDescription")
+										: t("settings:codeIndex.vectorModeDescription")}
+								</p>
+							</div>
+						</div>
+
 						{/* Status Section */}
 						<div className="space-y-2">
 							<h4 className="text-sm font-medium">{t("settings:codeIndex.statusTitle")}</h4>
@@ -633,7 +665,7 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 								</span>
 							</button>
 
-							{isSetupSettingsOpen && (
+							{isSetupSettingsOpen && currentSettings.codebaseIndexMode === "vector" && (
 								<div className="mt-4 space-y-4">
 									{/* Embedder Provider Section */}
 									<div className="space-y-2">

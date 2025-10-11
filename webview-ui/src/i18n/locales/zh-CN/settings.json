@@ -47,6 +47,11 @@
 		"statusTitle": "状态",
 		"enableLabel": "启用代码库索引",
 		"enableDescription": "启用代码索引以改进搜索和上下文理解",
+		"indexModeLabel": "索引模式",
+		"vectorMode": "向量",
+		"localMode": "本地",
+		"vectorModeDescription": "使用 Qdrant 向量数据库进行语义搜索。提供智能的上下文感知搜索，但需要外部服务和 API 密钥。",
+		"localModeDescription": "使用 SQLite 本地 AST 索引。快速、私密，无需任何外部依赖或 API 密钥即可离线工作。",
 		"settingsTitle": "索引设置",
 		"disabledMessage": "代码库索引当前已禁用。在全局设置中启用它以配置索引选项。",
 		"providerLabel": "嵌入提供商",
@@ -596,6 +601,13 @@
 			"profileDescription": "仅此配置文件的自定义阈值（覆盖全局默认）",
 			"inheritDescription": "此配置文件继承全局默认阈值（{{threshold}}%）",
 			"usesGlobal": "（使用全局 {{threshold}}%）"
+		},
+		"vectorMemory": {
+			"label": "启用向量记忆系统",
+			"description": "启用后，Roo 将使用向量嵌入来语义化存储和检索对话记忆。这在上下文压缩时提供智能的上下文增强。",
+			"requiresCodeIndex": "向量记忆需要先启用代码库索引并完成索引",
+			"waitingForIndex": "等待代码库索引完成...",
+			"ready": "向量记忆已就绪"
 		},
 		"maxImageFileSize": {
 			"label": "最大图像文件大小",

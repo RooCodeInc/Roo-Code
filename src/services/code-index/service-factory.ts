@@ -23,6 +23,8 @@ import { BATCH_SEGMENT_THRESHOLD } from "./constants"
  * Factory class responsible for creating and configuring code indexing service dependencies.
  */
 export class CodeIndexServiceFactory {
+	private embedderInstance?: IEmbedder
+
 	constructor(
 		private readonly configManager: CodeIndexConfigManager,
 		private readonly workspacePath: string,
@@ -225,6 +227,9 @@ export class CodeIndexServiceFactory {
 		}
 
 		const embedder = this.createEmbedder()
+		// 存储embedder实例以便getEmbedder()方法使用
+		this.embedderInstance = embedder
+
 		const vectorStore = this.createVectorStore()
 		const parser = codeParser
 		const scanner = this.createDirectoryScanner(embedder, vectorStore, parser, ignoreInstance)
@@ -244,5 +249,14 @@ export class CodeIndexServiceFactory {
 			scanner,
 			fileWatcher,
 		}
+	}
+
+	/**
+	 * 获取已创建的embedder实例
+	 * 用于向量记忆系统等需要复用embedder的场景
+	 * @returns embedder实例，如果未创建则返回undefined
+	 */
+	public getEmbedder(): IEmbedder | undefined {
+		return this.embedderInstance
 	}
 }

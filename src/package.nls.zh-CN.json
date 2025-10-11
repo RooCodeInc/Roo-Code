@@ -42,5 +42,8 @@
 	"settings.useAgentRules.description": "为特定于代理的规则启用 AGENTS.md 文件的加载（请参阅 https://agent-rules.org/）",
 	"settings.apiRequestTimeout.description": "等待 API 响应的最长时间（秒）（0 = 无超时，1-3600秒，默认值：600秒）。对于像 LM Studio 和 Ollama 这样可能需要更多处理时间的本地提供商，建议使用更高的值。",
 	"settings.newTaskRequireTodos.description": "使用 new_task 工具创建新任务时需要 todos 参数",
-	"settings.codeIndex.embeddingBatchSize.description": "代码索引期间嵌入操作的批处理大小。根据 API 提供商的限制调整此设置。默认值为 60。"
+	"settings.codeIndex.embeddingBatchSize.description": "代码索引期间嵌入操作的批处理大小。根据 API 提供商的限制调整此设置。默认值为 60。",
+	"settings.vectorMemory.enabled.description": "启用向量记忆系统，用于跨对话历史的语义搜索。需要运行 Qdrant 实例。",
+	"settings.vectorMemory.qdrantUrl.description": "Qdrant 向量数据库服务器的 URL（例如 'http://localhost:6333' 或 'https://your-qdrant-instance.com'）。用于存储和检索对话记忆。",
+	"settings.vectorMemory.qdrantApiKey.description": "用于 Qdrant 服务器身份验证的可选 API 密钥。如果不需要身份验证，请留空。"
 }

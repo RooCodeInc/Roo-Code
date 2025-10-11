@@ -594,6 +594,9 @@ describe("Sliding Window", () => {
 				true,
 				undefined, // customCondensingPrompt
 				undefined, // condensingApiHandler
+				undefined, // conversationMemory
+				true, // useMemoryEnhancement
+				undefined, // vectorMemoryStore
 			)
 
 			// Verify the result contains the summary information
@@ -765,6 +768,9 @@ describe("Sliding Window", () => {
 				true,
 				undefined, // customCondensingPrompt
 				undefined, // condensingApiHandler
+				undefined, // conversationMemory
+				true, // useMemoryEnhancement
+				undefined, // vectorMemoryStore
 			)
 
 			// Verify the result contains the summary information

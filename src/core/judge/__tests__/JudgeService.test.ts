@@ -296,4 +296,178 @@ describe("JudgeService", () => {
 			expect(currentConfig.mode).toBe(originalConfig.mode)
 		})
 	})
+
+	describe("response parsing", () => {
+		it("should parse JSON response correctly", async () => {
+			const jsonResponse = `\`\`\`json
+{
+		"approved": true,
+		"reasoning": "Task completed successfully",
+		"completeness_score": 9,
+		"correctness_score": 8,
+		"quality_score": 9,
+		"overall_score": 9,
+		"missingItems": [],
+		"suggestions": ["Consider adding more tests"],
+		"criticalIssues": []
+}
+\`\`\``
+
+			const mockHandler = {
+				createMessage: vi.fn(async function* () {
+					yield { type: "text", text: jsonResponse }
+				}),
+			}
+
+			judgeService.setApiHandler(mockHandler as any)
+			const result = await judgeService.judgeCompletion(mockTaskContext, "Task completed")
+
+			expect(result.approved).toBe(true)
+			expect(result.reasoning).toBe("Task completed successfully")
+			expect(result.overallScore).toBe(9)
+			expect(result.suggestions).toContain("Consider adding more tests")
+		})
+
+		it("should parse Markdown response with Decision and Reasoning", async () => {
+			const markdownResponse = `# Judge Approval
+Decision: Task completion approved
+
+Reasoning: 核心架构设计和实现已完成，完全符合原始任务的关键要求。
+
+Overall Score: 7/10
+
+Optional Suggestions for Future Improvements:
+1. 添加更多单元测试
+2. 完善错误处理
+3. 更新文档`
+
+			const mockHandler = {
+				createMessage: vi.fn(async function* () {
+					yield { type: "text", text: markdownResponse }
+				}),
+			}
+
+			judgeService.setApiHandler(mockHandler as any)
+			const result = await judgeService.judgeCompletion(mockTaskContext, "Task completed")
+
+			expect(result.approved).toBe(true)
+			expect(result.reasoning).toContain("核心架构设计和实现已完成")
+			expect(result.overallScore).toBe(7)
+			expect(result.suggestions).toHaveLength(3)
+			expect(result.suggestions[0]).toBe("添加更多单元测试")
+		})
+
+		it("should parse Markdown response with rejection", async () => {
+			const markdownResponse = `# Judge Review
+Decision: Task completion rejected
+
+Reasoning: 任务尚未完成，存在多个关键问题需要解决。
+
+Missing Items:
+1. 单元测试缺失
+2. 文档未更新
+3. 错误处理不完整`
+
+			const mockHandler = {
+				createMessage: vi.fn(async function* () {
+					yield { type: "text", text: markdownResponse }
+				}),
+			}
+
+			judgeService.setApiHandler(mockHandler as any)
+			const result = await judgeService.judgeCompletion(mockTaskContext, "Task completed")
+
+			expect(result.approved).toBe(false)
+			expect(result.reasoning).toContain("任务尚未完成")
+			expect(result.missingItems).toHaveLength(3)
+			expect(result.missingItems[0]).toBe("单元测试缺失")
+		})
+
+		it("should handle Markdown response without explicit Decision field", async () => {
+			const markdownResponse = `The task has been approved. All requirements are met.
+
+Reasoning: Implementation looks good and tests are passing.
+
+Suggestions:
+- Consider refactoring for better performance
+- Add more documentation`
+
+			const mockHandler = {
+				createMessage: vi.fn(async function* () {
+					yield { type: "text", text: markdownResponse }
+				}),
+			}
+
+			judgeService.setApiHandler(mockHandler as any)
+			const result = await judgeService.judgeCompletion(mockTaskContext, "Task completed")
+
+			expect(result.approved).toBe(true)
+			expect(result.reasoning).toContain("Implementation looks good")
+			expect(result.suggestions).toHaveLength(2)
+		})
+
+		it("should handle plain text response", async () => {
+			const plainResponse = `Task completion approved. Everything looks good.`
+
+			const mockHandler = {
+				createMessage: vi.fn(async function* () {
+					yield { type: "text", text: plainResponse }
+				}),
+			}
+
+			judgeService.setApiHandler(mockHandler as any)
+			const result = await judgeService.judgeCompletion(mockTaskContext, "Task completed")
+
+			expect(result.approved).toBe(true)
+			expect(result.reasoning).toBe(plainResponse)
+		})
+
+		it("should handle mixed format with both JSON and Markdown", async () => {
+			const mixedResponse = `Here's my assessment:
+
+\`\`\`json
+{
+		"approved": false,
+		"reasoning": "Missing tests",
+		"overall_score": 5
+}
+\`\`\``
+
+			const mockHandler = {
+				createMessage: vi.fn(async function* () {
+					yield { type: "text", text: mixedResponse }
+				}),
+			}
+
+			judgeService.setApiHandler(mockHandler as any)
+			const result = await judgeService.judgeCompletion(mockTaskContext, "Task completed")
+
+			// Should prefer JSON parsing
+			expect(result.approved).toBe(false)
+			expect(result.reasoning).toBe("Missing tests")
+			expect(result.overallScore).toBe(5)
+		})
+
+		it("should handle response with Chinese Decision field", async () => {
+			const chineseResponse = `# 裁判审查
+Decision: 批准任务完成
+
+Reasoning: 所有要求都已满足，代码质量良好。
+
+Overall Score: 8/10`
+
+			const mockHandler = {
+				createMessage: vi.fn(async function* () {
+					yield { type: "text", text: chineseResponse }
+				}),
+			}
+
+			judgeService.setApiHandler(mockHandler as any)
+			const result = await judgeService.judgeCompletion(mockTaskContext, "Task completed")
+
+			expect(result.approved).toBe(true)
+			expect(result.reasoning).toContain("所有要求都已满足")
+			expect(result.overallScore).toBe(8)
+		})
+	})
 })

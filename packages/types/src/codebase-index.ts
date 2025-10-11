@@ -20,6 +20,7 @@ export const CODEBASE_INDEX_DEFAULTS = {
 
 export const codebaseIndexConfigSchema = z.object({
 	codebaseIndexEnabled: z.boolean().optional(),
+	codebaseIndexMode: z.enum(["vector", "local"]).optional(),
 	codebaseIndexQdrantUrl: z.string().optional(),
 	codebaseIndexEmbedderProvider: z
 		.enum(["openai", "ollama", "openai-compatible", "gemini", "mistral", "vercel-ai-gateway"])

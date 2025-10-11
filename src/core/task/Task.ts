@@ -9,9 +9,6 @@ import delay from "delay"
 import pWaitFor from "p-wait-for"
 import { serializeError } from "serialize-error"
 
-import { ImageManager } from "../image-storage"
-import { MemoryMonitor, type MemoryUsage } from "../memory/MemoryMonitor"
-
 import {
 	type TaskLike,
 	type TaskMetadata,
@@ -39,6 +36,8 @@ import {
 	isResumableAsk,
 	QueuedMessage,
 } from "@roo-code/types"
+import { ConversationMemory } from "../memory/ConversationMemory"
+import { VectorMemoryStore, VectorMemoryStoreConfig } from "../memory/VectorMemoryStore"
 import { TelemetryService } from "@roo-code/telemetry"
 import { CloudService, BridgeOrchestrator } from "@roo-code/cloud"
 
@@ -66,6 +65,7 @@ import { BrowserSession } from "../../services/browser/BrowserSession"
 import { McpHub } from "../../services/mcp/McpHub"
 import { McpServerManager } from "../../services/mcp/McpServerManager"
 import { RepoPerTaskCheckpointService } from "../../services/checkpoints"
+import { CodeIndexManager } from "../../services/code-index/manager"
 
 // integrations
 import { DiffViewProvider } from "../../integrations/editor/DiffViewProvider"
@@ -115,7 +115,6 @@ import { processUserContentMentions } from "../mentions/processUserContentMentio
 import { getMessagesSinceLastSummary, summarizeConversation } from "../condense"
 import { Gpt5Metadata, ClineMessageWithMetadata } from "./types"
 import { MessageQueueService } from "../message-queue/MessageQueueService"
-import { JudgeResult } from "../judge/types"
 
 import { AutoApprovalHandler } from "./AutoApprovalHandler"
 
@@ -242,16 +241,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	fileContextTracker: FileContextTracker
 	urlContentFetcher: UrlContentFetcher
 	terminalProcess?: RooTerminalProcess
-	imageManager: ImageManager
-	memoryMonitor: MemoryMonitor
-
-	// Resource management for disposal
-	private disposables: vscode.Disposable[] = []
-
-	// Message persistence optimization
-	private saveDebounceTimer?: NodeJS.Timeout
-	private pendingSave: boolean = false
-	private readonly SAVE_DEBOUNCE_MS = 1000 // 1 second debounce
+	conversationMemory: ConversationMemory
+	vectorMemoryStore?: VectorMemoryStore
 
 	// Computer User
 	browserSession: BrowserSession
@@ -266,8 +257,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	// LLM Messages & Chat Messages
 	apiConversationHistory: ApiMessage[] = []
 	clineMessages: ClineMessage[] = []
-	// Message index for O(1) lookups by timestamp
-	private messageIndex: Map<number, ClineMessage> = new Map()
 
 	// Ask
 	private askResponse?: ClineAskResponse
@@ -360,6 +349,13 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.rooIgnoreController = new RooIgnoreController(this.cwd)
 		this.rooProtectedController = new RooProtectedController(this.cwd)
 		this.fileContextTracker = new FileContextTracker(provider, this.taskId)
+		this.conversationMemory = new ConversationMemory(this.taskId)
+
+		// 初始化向量记忆存储（如果配置启用）
+		this.initializeVectorMemoryStore(provider).catch((error) => {
+			console.warn("Failed to initialize VectorMemoryStore:", error)
+			// 非关键功能，失败不影响主流程
+		})
 
 		this.rooIgnoreController.initialize().catch((error) => {
 			console.error("Failed to initialize RooIgnoreController:", error)
@@ -376,8 +372,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.consecutiveMistakeLimit = consecutiveMistakeLimit ?? DEFAULT_CONSECUTIVE_MISTAKE_LIMIT
 		this.providerRef = new WeakRef(provider)
 		this.globalStoragePath = provider.context.globalStorageUri.fsPath
-		this.imageManager = new ImageManager(this.globalStoragePath)
-		this.imageManager.setTaskId(this.taskId)
 		this.diffViewProvider = new DiffViewProvider(this.cwd, this)
 		this.enableCheckpoints = enableCheckpoints
 		this.enableBridge = enableBridge
@@ -431,16 +425,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		this.toolRepetitionDetector = new ToolRepetitionDetector(this.consecutiveMistakeLimit)
 
-		// Initialize memory monitor
-		this.memoryMonitor = new MemoryMonitor(
-			this.taskId,
-			TelemetryService.instance,
-			this.imageManager,
-			() => this.clineMessages,
-			() => this.apiConversationHistory,
-		)
-		this.memoryMonitor.start()
-
 		// Initialize todo list if provided
 		if (initialTodos && initialTodos.length > 0) {
 			this.todoList = initialTodos
@@ -490,6 +474,70 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			// Use the provider's log method for better error visibility
 			const errorMessage = `Failed to initialize task mode: ${error instanceof Error ? error.message : String(error)}`
 			provider.log(errorMessage)
+		}
+	}
+
+	/**
+	 * 初始化向量记忆存储
+	 * 从CodeIndexManager获取embedder，配置并初始化VectorMemoryStore
+	 */
+	private async initializeVectorMemoryStore(provider: ClineProvider): Promise<void> {
+		try {
+			// 检查是否启用向量记忆功能
+			const config = vscode.workspace.getConfiguration("roo-cline")
+			const vectorMemoryEnabled = config.get<boolean>("vectorMemory.enabled", false)
+
+			if (!vectorMemoryEnabled) {
+				return
+			}
+
+			// 获取Qdrant配置
+			const qdrantUrl = config.get<string>("vectorMemory.qdrantUrl", "http://localhost:6333")
+			const qdrantApiKey = config.get<string>("vectorMemory.qdrantApiKey")
+
+			// 从CodeIndexManager获取embedder和向量维度
+			const codeIndexManager = CodeIndexManager.getInstance(provider.context, this.cwd)
+
+			if (!codeIndexManager || !codeIndexManager.isInitialized) {
+				console.warn("CodeIndexManager not available, skipping VectorMemoryStore initialization")
+				return
+			}
+
+			// 获取embedder实例
+			const embedder = codeIndexManager.getEmbedder()
+			if (!embedder) {
+				console.warn("Embedder not available from CodeIndexManager, skipping VectorMemoryStore initialization")
+				return
+			}
+
+			// 获取向量维度
+			const vectorSize = codeIndexManager.getVectorSize()
+			if (!vectorSize) {
+				console.warn("Vector size not available, skipping VectorMemoryStore initialization")
+				return
+			}
+
+			// 生成项目ID（基于工作空间路径）
+			const projectId = this.cwd
+
+			// 配置VectorMemoryStore
+			const vectorMemoryConfig: VectorMemoryStoreConfig = {
+				qdrantUrl,
+				qdrantApiKey,
+				vectorSize,
+				workspacePath: this.cwd,
+				projectId,
+			}
+
+			// 创建并初始化VectorMemoryStore
+			this.vectorMemoryStore = new VectorMemoryStore(embedder, vectorMemoryConfig)
+			await this.vectorMemoryStore.initialize()
+
+			console.log("VectorMemoryStore initialized successfully")
+		} catch (error) {
+			console.error("Error initializing VectorMemoryStore:", error)
+			// 非关键功能，记录错误但不抛出
+			this.vectorMemoryStore = undefined
 		}
 	}
 
@@ -636,31 +684,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	}
 
 	private async addToClineMessages(message: ClineMessage) {
-		// 检测并处理Base64图片数据
-		if (message.images && message.images.length > 0) {
-			// 判断是否为Base64数据（以data:image/开头）
-			const hasBase64Images = message.images.some((img) => img.startsWith("data:image/"))
-
-			if (hasBase64Images) {
-				try {
-					// 保存图片到磁盘并获取图片ID
-					const imageIds = await this.imageManager.saveImages(this.taskId, message.images)
-					// 替换消息：移除Base64数据，只保存图片ID
-					message = { ...message, imageIds, images: undefined }
-				} catch (error) {
-					console.error("[Task] Failed to save images:", error)
-					// 如果保存失败，保留原始Base64数据以确保不丢失图片
-				}
-			}
-		}
-
 		this.clineMessages.push(message)
-		// Update message index for O(1) lookups
-		this.messageIndex.set(message.ts, message)
 		const provider = this.providerRef.deref()
 		await provider?.postStateToWebview()
 		this.emit(RooCodeEventName.Message, { action: "created", message })
-		this.scheduleSave() // Use debounced save instead of immediate save
+		await this.saveClineMessages()
 
 		const shouldCaptureMessage = message.partial !== true && CloudService.isEnabled()
 
@@ -675,12 +703,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	public async overwriteClineMessages(newMessages: ClineMessage[]) {
 		this.clineMessages = newMessages
 
-		// Rebuild message index when overwriting messages
-		this.messageIndex.clear()
-		for (const message of newMessages) {
-			this.messageIndex.set(message.ts, message)
-		}
-
 		// If deletion or history truncation leaves a condense_context as the last message,
 		// ensure the next API call suppresses previous_response_id so the condensed context is respected.
 		try {
@@ -693,7 +715,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 
 		restoreTodoListForTask(this)
-		this.scheduleSave() // Use debounced save
+		await this.saveClineMessages()
 	}
 
 	private async updateClineMessage(message: ClineMessage) {
@@ -708,43 +730,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				event: TelemetryEventName.TASK_MESSAGE,
 				properties: { taskId: this.taskId, message },
 			})
-		}
-	}
-
-	/**
-	 * Schedule a debounced save operation.
-	 * Multiple rapid calls will be coalesced into a single save.
-	 */
-	private scheduleSave() {
-		this.pendingSave = true
-
-		if (this.saveDebounceTimer) {
-			clearTimeout(this.saveDebounceTimer)
-		}
-
-		this.saveDebounceTimer = setTimeout(() => {
-			if (this.pendingSave) {
-				this.saveClineMessages().catch((error) => {
-					console.error("[Task] Debounced save failed:", error)
-				})
-				this.pendingSave = false
-			}
-		}, this.SAVE_DEBOUNCE_MS)
-	}
-
-	/**
-	 * Force immediate save, bypassing debounce.
-	 * Use this before critical operations like API calls.
-	 */
-	public async flushPendingSave(): Promise<void> {
-		if (this.saveDebounceTimer) {
-			clearTimeout(this.saveDebounceTimer)
-			this.saveDebounceTimer = undefined
-		}
-
-		if (this.pendingSave) {
-			await this.saveClineMessages()
-			this.pendingSave = false
 		}
 	}
 
@@ -779,12 +764,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 	}
 
-	/**
-	 * Find a message by timestamp using O(1) Map lookup.
-	 * Previously used O(n) linear search.
-	 */
 	private findMessageByTimestamp(ts: number): ClineMessage | undefined {
-		return this.messageIndex.get(ts)
+		for (let i = this.clineMessages.length - 1; i >= 0; i--) {
+			if (this.clineMessages[i].ts === ts) {
+				return this.clineMessages[i]
+			}
+		}
+
+		return undefined
 	}
 
 	// Note that `partial` has three valid states true (partial message),
@@ -863,8 +850,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					lastMessage.partial = false
 					lastMessage.progressStatus = progressStatus
 					lastMessage.isProtected = isProtected
-					// Use scheduleSave for debounced persistence
-					this.scheduleSave()
+					await this.saveClineMessages()
 					this.updateClineMessage(lastMessage)
 				} else {
 					// This is a new and complete message, so add it like normal.
@@ -1112,6 +1098,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			false, // manual trigger
 			customCondensingPrompt, // User's custom prompt
 			condensingApiHandler, // Specific handler for condensing
+			this.conversationMemory,
+			true, // useMemoryEnhancement
+			this.vectorMemoryStore, // Vector memory store for semantic search
 		)
 		if (error) {
 			this.say(
@@ -1217,7 +1206,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 					// Instead of streaming partialMessage events, we do a save
 					// and post like normal to persist to disk.
-					this.scheduleSave() // Use debounced save
+					await this.saveClineMessages()
 
 					// More performant than an entire `postStateToWebview`.
 					this.updateClineMessage(lastMessage)
@@ -1296,8 +1285,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// messages from previous session).
 		this.clineMessages = []
 		this.apiConversationHistory = []
-		// 清空消息索引，避免首次对话时出现旧数据
-		this.messageIndex.clear()
 
 		// The todo list is already set in the constructor if initialTodos were provided
 		// No need to add any messages - the todoList property is already set
@@ -1386,8 +1373,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 
 		await this.overwriteClineMessages(modifiedClineMessages)
-		// 不要重新读取，因为 overwriteClineMessages 已经设置了正确的消息
-		// this.clineMessages = await this.getSavedClineMessages()
+		this.clineMessages = await this.getSavedClineMessages()
 
 		// Now present the cline messages to the user and ask if they want to
 		// resume (NOTE: we ran into a bug before where the
@@ -1602,52 +1588,25 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.abort = true
 		this.emit(RooCodeEventName.TaskAborted)
 
-		// 先保存消息，再清理资源
-		try {
-			// 先刷新待保存的消息
-			await this.flushPendingSave()
-			// 保存消息
-			await this.saveClineMessages()
-		} catch (error) {
-			console.error(`Error saving messages during abort for task ${this.taskId}.${this.instanceId}:`, error)
-		}
-
 		try {
 			this.dispose() // Call the centralized dispose method
 		} catch (error) {
 			console.error(`Error during task ${this.taskId}.${this.instanceId} disposal:`, error)
 			// Don't rethrow - we want abort to always succeed
 		}
+		// Save the countdown message in the automatic retry or other content.
+		try {
+			// Save the countdown message in the automatic retry or other content.
+			await this.saveClineMessages()
+		} catch (error) {
+			console.error(`Error saving messages during abort for task ${this.taskId}.${this.instanceId}:`, error)
+		}
 	}
 
 	public dispose(): void {
 		console.log(`[Task#dispose] disposing task ${this.taskId}.${this.instanceId}`)
 
-		// 1. Remove all event listeners FIRST (highest priority to prevent leaks)
-		try {
-			this.removeAllListeners()
-		} catch (error) {
-			console.error("[Task#dispose] Error removing event listeners:", error)
-		}
-
-		// 2. Flush any pending saves before disposal
-		try {
-			if (this.saveDebounceTimer) {
-				clearTimeout(this.saveDebounceTimer)
-				this.saveDebounceTimer = undefined
-			}
-			if (this.pendingSave) {
-				// Synchronous save on dispose - we need to ensure data is persisted
-				this.saveClineMessages().catch((error) => {
-					console.error("[Task#dispose] Failed to flush pending save:", error)
-				})
-				this.pendingSave = false
-			}
-		} catch (error) {
-			console.error("[Task#dispose] Error flushing pending save:", error)
-		}
-
-		// 3. Dispose message queue and remove event listeners
+		// Dispose message queue and remove event listeners.
 		try {
 			if (this.messageQueueStateChangedHandler) {
 				this.messageQueueService.removeListener("stateChanged", this.messageQueueStateChangedHandler)
@@ -1656,150 +1615,86 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 			this.messageQueueService.dispose()
 		} catch (error) {
-			console.error("[Task#dispose] Error disposing message queue:", error)
+			console.error("Error disposing message queue:", error)
 		}
 
-		// 4. Stop memory monitor
+		// Remove all event listeners to prevent memory leaks.
 		try {
-			if (this.memoryMonitor) {
-				this.memoryMonitor.dispose()
-			}
+			this.removeAllListeners()
 		} catch (error) {
-			console.error("[Task#dispose] Error disposing memory monitor:", error)
+			console.error("Error removing event listeners:", error)
 		}
 
-		// 5. Clean up task images
-		try {
-			this.imageManager.cleanupTaskImages(this.taskId).catch((error) => {
-				console.error("[Task#dispose] Failed to cleanup task images:", error)
-			})
-		} catch (error) {
-			console.error("[Task#dispose] Error cleaning up images:", error)
+		// Stop waiting for child task completion.
+		if (this.pauseInterval) {
+			clearInterval(this.pauseInterval)
+			this.pauseInterval = undefined
 		}
 
-		// 6. Clear all timers
-		try {
-			if (this.pauseInterval) {
-				clearInterval(this.pauseInterval)
-				this.pauseInterval = undefined
-			}
-		} catch (error) {
-			console.error("[Task#dispose] Error clearing pause interval:", error)
-		}
-
-		// 7. Dispose all registered disposables
-		try {
-			for (const disposable of this.disposables) {
-				try {
-					disposable?.dispose()
-				} catch (error) {
-					console.error("[Task#dispose] Failed to dispose resource:", error)
-				}
-			}
-			this.disposables = []
-		} catch (error) {
-			console.error("[Task#dispose] Error disposing disposables array:", error)
-		}
-
-		// 8. Unsubscribe from bridge if enabled
 		if (this.enableBridge) {
-			try {
-				BridgeOrchestrator.getInstance()
-					?.unsubscribeFromTask(this.taskId)
-					.catch((error) =>
-						console.error(
-							`[Task#dispose] BridgeOrchestrator#unsubscribeFromTask() failed: ${error instanceof Error ? error.message : String(error)}`,
-						),
-					)
-			} catch (error) {
-				console.error("[Task#dispose] Error unsubscribing from bridge:", error)
-			}
+			BridgeOrchestrator.getInstance()
+				?.unsubscribeFromTask(this.taskId)
+				.catch((error) =>
+					console.error(
+						`[Task#dispose] BridgeOrchestrator#unsubscribeFromTask() failed: ${error instanceof Error ? error.message : String(error)}`,
+					),
+				)
 		}
 
-		// 9. Release terminals
+		// Release any terminals associated with this task.
 		try {
+			// Release any terminals associated with this task.
 			TerminalRegistry.releaseTerminalsForTask(this.taskId)
 		} catch (error) {
-			console.error("[Task#dispose] Error releasing terminals:", error)
+			console.error("Error releasing terminals:", error)
 		}
 
-		// 10. Close browsers
 		try {
 			this.urlContentFetcher.closeBrowser()
 		} catch (error) {
-			console.error("[Task#dispose] Error closing URL content fetcher browser:", error)
+			console.error("Error closing URL content fetcher browser:", error)
 		}
 
 		try {
 			this.browserSession.closeBrowser()
 		} catch (error) {
-			console.error("[Task#dispose] Error closing browser session:", error)
+			console.error("Error closing browser session:", error)
 		}
 
-		// 11. Dispose controllers
 		try {
 			if (this.rooIgnoreController) {
 				this.rooIgnoreController.dispose()
 				this.rooIgnoreController = undefined
 			}
 		} catch (error) {
-			console.error("[Task#dispose] Error disposing RooIgnoreController:", error)
-		}
-
-		try {
-			if (this.rooProtectedController) {
-				this.rooProtectedController.dispose()
-				this.rooProtectedController = undefined
-			}
-		} catch (error) {
-			console.error("[Task#dispose] Error disposing RooProtectedController:", error)
+			console.error("Error disposing RooIgnoreController:", error)
+			// This is the critical one for the leak fix.
 		}
 
 		try {
 			this.fileContextTracker.dispose()
 		} catch (error) {
-			console.error("[Task#dispose] Error disposing file context tracker:", error)
+			console.error("Error disposing file context tracker:", error)
 		}
 
-		// 12. Revert diff changes if streaming
 		try {
+			if (this.conversationMemory) {
+				this.conversationMemory.dispose().catch((error) => {
+					console.error("Error disposing conversation memory:", error)
+				})
+			}
+		} catch (error) {
+			console.error("Error disposing conversation memory:", error)
+		}
+
+		try {
+			// If we're not streaming then `abortStream` won't be called.
 			if (this.isStreaming && this.diffViewProvider.isEditing) {
 				this.diffViewProvider.revertChanges().catch(console.error)
 			}
 		} catch (error) {
-			console.error("[Task#dispose] Error reverting diff changes:", error)
+			console.error("Error reverting diff changes:", error)
 		}
-
-		// 13. Break circular references
-		try {
-			// Clear provider reference (WeakRef will handle garbage collection)
-			// Note: We don't set providerRef to undefined as it's readonly,
-			// but the WeakRef will allow GC when the provider is disposed
-
-			// Clear other references
-			this.rooIgnoreController = undefined
-			this.rooProtectedController = undefined
-			this.checkpointService = undefined
-			this.terminalProcess = undefined
-		} catch (error) {
-			console.error("[Task#dispose] Error breaking circular references:", error)
-		}
-
-		// 14. Clear large data structures (only clear in-memory caches, not persisted data)
-		try {
-			// 不要清空 clineMessages 和 apiConversationHistory，因为它们需要被保存
-			// this.clineMessages = []
-			// this.apiConversationHistory = []
-			this.assistantMessageContent = []
-			this.userMessageContent = []
-			this.consecutiveMistakeCountForApplyDiff.clear()
-			// 保留 messageIndex，因为它用于快速查找已保存的消息
-			// this.messageIndex.clear()
-		} catch (error) {
-			console.error("[Task#dispose] Error clearing large data structures:", error)
-		}
-
-		console.log(`[Task#dispose] completed disposal for task ${this.taskId}.${this.instanceId}`)
 	}
 
 	// Subtasks
@@ -2033,8 +1928,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				apiProtocol,
 			} satisfies ClineApiReqInfo)
 
-			// Force immediate save before API call to ensure state is persisted
-			await this.flushPendingSave()
+			await this.saveClineMessages()
 			await provider?.postStateToWebview()
 
 			try {
@@ -2464,8 +2358,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				}
 
 				await this.persistGpt5Metadata(reasoningMessage)
-				// Force immediate save after completing API response
-				await this.flushPendingSave()
+				await this.saveClineMessages()
 				await this.providerRef.deref()?.postStateToWebview()
 
 				// Reset parser after each complete conversation round
@@ -2690,6 +2583,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			taskId: this.taskId,
 			profileThresholds,
 			currentProfileId,
+			conversationMemory: this.conversationMemory,
+			useMemoryEnhancement: true,
+			vectorMemoryStore: this.vectorMemoryStore,
 		})
 
 		if (truncateResult.messages !== this.apiConversationHistory) {
@@ -2807,6 +2703,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				condensingApiHandler,
 				profileThresholds,
 				currentProfileId,
+				conversationMemory: this.conversationMemory,
+				useMemoryEnhancement: true,
+				vectorMemoryStore: this.vectorMemoryStore,
 			})
 			if (truncateResult.messages !== this.apiConversationHistory) {
 				await this.overwriteApiConversationHistory(truncateResult.messages)
@@ -3126,13 +3025,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	}
 
 	/**
-	 * Get current memory usage for this task
-	 */
-	public getMemoryUsage(): MemoryUsage {
-		return this.memoryMonitor.getMemoryUsage()
-	}
-
-	/**
 	 * Process any queued messages by dequeuing and submitting them.
 	 * This ensures that queued user messages are sent when appropriate,
 	 * preventing them from getting stuck in the queue.
@@ -3154,405 +3046,5 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		} catch (e) {
 			console.error(`[Task] Queue processing error:`, e)
 		}
-	}
-
-	// Judge Mode Methods
-
-	/**
-	 * 检查是否应该调用裁判
-	 */
-	async shouldInvokeJudge(): Promise<boolean> {
-		try {
-			const judgeConfig = await this.getJudgeConfig()
-
-			if (!judgeConfig.enabled) {
-				return false
-			}
-
-			if (judgeConfig.mode === "always") {
-				return true
-			}
-
-			if (judgeConfig.mode === "ask") {
-				// 询问用户是否调用裁判
-				const { response } = await this.ask(
-					"followup",
-					"Do you want to invoke the judge to verify task completion?",
-				)
-				return response === "yesButtonClicked"
-			}
-
-			return false
-		} catch (error) {
-			console.error("[Task#shouldInvokeJudge] Error:", error)
-			return false
-		}
-	}
-
-	/**
-	 * 调用裁判判断任务是否完成
-	 */
-	async invokeJudge(attemptResult: string): Promise<JudgeResult> {
-		try {
-			const provider = this.providerRef.deref()
-			if (!provider) {
-				throw new Error("Provider not available")
-			}
-
-			// 显示裁判正在工作的消息
-			await this.say(
-				"text",
-				"🧑‍⚖️ Judge is evaluating the task completion...",
-				undefined,
-				false,
-				undefined,
-				undefined,
-				{
-					isNonInteractive: true,
-				},
-			)
-
-			const judgeConfig = await this.getJudgeConfig()
-			const judgeService = await this.getJudgeService()
-
-			if (!judgeService) {
-				throw new Error("Judge service not available")
-			}
-
-			// 构建增强的任务描述，包含原始任务和最近的用户反馈
-			const enhancedTaskDescription = this.buildEnhancedTaskDescription()
-
-			// 构建任务上下文
-			const taskContext: import("../judge").TaskContext = {
-				originalTask: enhancedTaskDescription,
-				conversationHistory: this.clineMessages,
-				toolCalls: this.getToolCallHistory(),
-				fileChanges: this.getFileChangeHistory(),
-				currentMode: await this.getTaskMode(),
-			}
-
-			// 调用裁判服务
-			const judgeResult = await judgeService.judgeCompletion(taskContext, attemptResult)
-
-			return judgeResult
-		} catch (error) {
-			console.error("[Task#invokeJudge] Error:", error)
-			// 如果裁判失败，返回默认批准以避免阻塞用户
-			return {
-				approved: true,
-				reasoning: `Judge service error: ${error instanceof Error ? error.message : String(error)}. Approving by default.`,
-				missingItems: [],
-				suggestions: [],
-			}
-		}
-	}
-
-	/**
-	 * 构建增强的任务描述，包含原始任务和最近的用户反馈
-	 * 这确保裁判能够考虑用户在任务执行过程中提出的新问题和需求
-	 */
-	private buildEnhancedTaskDescription(): string {
-		let taskDescription = this.metadata.task || ""
-
-		// 找到上次裁判反馈的位置（如果有的话）
-		let lastJudgeFeedbackIndex = -1
-		for (let i = this.clineMessages.length - 1; i >= 0; i--) {
-			const message = this.clineMessages[i]
-			if (message.type === "say" && message.say === "text" && message.text?.includes("🧑‍⚖️ Judge Feedback")) {
-				lastJudgeFeedbackIndex = i
-				break
-			}
-		}
-
-		// 收集"上次裁判之后"的用户消息，如果没有裁判记录，则收集最近5条
-		const recentUserMessages: string[] = []
-		const startIndex = lastJudgeFeedbackIndex !== -1 ? lastJudgeFeedbackIndex + 1 : 0
-
-		// 从上次裁判之后（或从开始）往后遍历，收集用户消息
-		for (let i = startIndex; i < this.clineMessages.length && recentUserMessages.length < 10; i++) {
-			const message = this.clineMessages[i]
-
-			// 收集用户反馈消息
-			if (message.type === "say" && message.say === "user_feedback" && message.text) {
-				recentUserMessages.push(message.text)
-			}
-			// 收集用户的 ask 消息中的文本（排除系统生成的消息）
-			else if (message.type === "ask" && message.text && !message.text.startsWith("[")) {
-				recentUserMessages.push(message.text)
-			}
-		}
-
-		// 如果有用户消息，将它们添加到任务描述中
-		if (recentUserMessages.length > 0) {
-			if (lastJudgeFeedbackIndex !== -1) {
-				// 如果之前有裁判反馈，强调这些是"新的"用户需求
-				taskDescription += "\n\n## New User Requirements (Since Last Judge Feedback):\n"
-			} else {
-				// 第一次调用裁判，这些是"最近的"用户反馈
-				taskDescription += "\n\n## Recent User Feedback and Requirements:\n"
-			}
-
-			recentUserMessages.forEach((msg, index) => {
-				taskDescription += `\n${index + 1}. ${msg}`
-			})
-		}
-
-		return taskDescription
-	}
-
-	/**
-	 * 处理裁判拒绝任务完成的情况
-	 * @returns {Promise<boolean>} 返回 true 表示用户选择强制完成，false 表示继续工作
-	 */
-	async handleJudgeRejection(judgeResult: JudgeResult): Promise<boolean> {
-		try {
-			const judgeConfig = await this.getJudgeConfig()
-
-			// 格式化裁判反馈
-			const feedback = this.formatJudgeFeedback(judgeResult)
-
-			// 显示裁判反馈
-			await this.say("text", feedback, undefined, false, undefined, undefined, {
-				isNonInteractive: false,
-			})
-
-			if (judgeConfig.allowUserOverride) {
-				// 创建带有建议选项的 followup 数据
-				const followUpData = {
-					question: "The judge has rejected the task completion. What would you like to do?",
-					suggest: [
-						{ answer: "Continue working on the task based on the feedback" },
-						{ answer: "Complete the task anyway (ignore judge)" },
-					],
-				}
-
-				// 调试日志
-				console.log("[Task#handleJudgeRejection] Sending followup with data:", followUpData)
-
-				// 询问用户是否接受裁判的判断
-				const { response, text } = await this.ask("followup", JSON.stringify(followUpData), false)
-
-				console.log("[Task#handleJudgeRejection] User response:", response, "text:", text)
-
-				// 处理用户响应 - 检查用户是否选择强制完成
-				// 支持英文和中文的多种表达方式
-				const userWantsToComplete =
-					response === "noButtonClicked" ||
-					(response === "messageResponse" &&
-						text &&
-						// 英文表达
-						(text.toLowerCase().includes("complete") ||
-							text.toLowerCase().includes("ignore") ||
-							text.toLowerCase().includes("anyway") ||
-							text.toLowerCase().includes("finish") ||
-							text.toLowerCase().includes("force") ||
-							text.toLowerCase().includes("override") ||
-							// 中文表达
-							text.includes("完成") ||
-							text.includes("无论如何") ||
-							text.includes("强制") ||
-							text.includes("忽略") ||
-							text.includes("不管") ||
-							text.includes("继续完成") ||
-							text.includes("直接完成")))
-
-				if (userWantsToComplete) {
-					// 用户选择忽略裁判，强制完成任务
-					await this.say(
-						"text",
-						"User chose to ignore judge's feedback and complete the task anyway.",
-						undefined,
-						false,
-						undefined,
-						undefined,
-						{
-							isNonInteractive: true,
-						},
-					)
-					return true // 返回 true 表示应该强制完成任务
-				}
-
-				// 用户选择继续工作
-				console.log("[Task#handleJudgeRejection] User chose to continue working")
-			}
-
-			// 将裁判反馈作为新的用户消息注入对话
-			await this.addToApiConversationHistory({
-				role: "user",
-				content: [
-					{
-						type: "text",
-						text: `[Judge Feedback]\n\n${feedback}\n\nPlease address the issues mentioned above and try again.`,
-					},
-				],
-			})
-
-			return false // 返回 false 表示不应该完成任务，继续工作
-		} catch (error) {
-			console.error("[Task#handleJudgeRejection] Error:", error)
-			// 出错时默认不完成任务
-			return false
-		}
-	}
-
-	/**
-	 * 格式化裁判反馈消息
-	 */
-	private formatJudgeFeedback(judgeResult: JudgeResult): string {
-		let feedback = `## 🧑‍⚖️ Judge Feedback\n\n`
-		feedback += `**Decision**: Task completion rejected\n\n`
-		feedback += `**Reasoning**: ${judgeResult.reasoning}\n\n`
-
-		if (judgeResult.overallScore !== undefined) {
-			feedback += `**Overall Score**: ${judgeResult.overallScore}/10\n\n`
-		}
-
-		if (judgeResult.missingItems.length > 0) {
-			feedback += `**Missing Items**:\n`
-			judgeResult.missingItems.forEach((item: string, i: number) => {
-				feedback += `${i + 1}. ${item}\n`
-			})
-			feedback += `\n`
-		}
-
-		if (judgeResult.suggestions.length > 0) {
-			feedback += `**Suggestions for Improvement**:\n`
-			judgeResult.suggestions.forEach((suggestion: string, i: number) => {
-				feedback += `${i + 1}. ${suggestion}\n`
-			})
-			feedback += `\n`
-		}
-
-		if (judgeResult.criticalIssues && judgeResult.criticalIssues.length > 0) {
-			feedback += `**⚠️ Critical Issues**:\n`
-			judgeResult.criticalIssues.forEach((issue: string, i: number) => {
-				feedback += `${i + 1}. ${issue}\n`
-			})
-			feedback += `\n`
-		}
-
-		return feedback
-	}
-
-	/**
-	 * 获取裁判配置
-	 */
-	async getJudgeConfig(): Promise<import("../judge").JudgeConfig> {
-		try {
-			const provider = this.providerRef.deref()
-			if (!provider) {
-				throw new Error("Provider not available")
-			}
-
-			const state = await provider.getState()
-			const judgeConfig = state?.judgeConfig
-
-			if (!judgeConfig) {
-				// 返回默认配置
-				return {
-					enabled: true,
-					mode: "always",
-					detailLevel: "detailed",
-					allowUserOverride: true,
-				}
-			}
-
-			return judgeConfig
-		} catch (error) {
-			console.error("[Task#getJudgeConfig] Error:", error)
-			// 返回默认配置
-			return {
-				enabled: true,
-				mode: "always",
-				detailLevel: "detailed",
-				allowUserOverride: true,
-			}
-		}
-	}
-
-	/**
-	 * 获取或创建裁判服务实例
-	 */
-	private judgeService?: import("../judge").JudgeService
-
-	async getJudgeService(): Promise<import("../judge").JudgeService | undefined> {
-		try {
-			if (this.judgeService) {
-				return this.judgeService
-			}
-
-			const provider = this.providerRef.deref()
-			if (!provider) {
-				throw new Error("Provider not available")
-			}
-
-			const judgeConfig = await this.getJudgeConfig()
-
-			if (!judgeConfig.enabled) {
-				return undefined
-			}
-
-			// 动态导入 JudgeService
-			const { JudgeService } = await import("../judge")
-
-			// 如果有独立的模型配置，使用它；否则使用主模型
-			const modelConfig = judgeConfig.modelConfig || this.apiConfiguration
-
-			// 创建新的 JudgeService 实例
-			this.judgeService = new JudgeService(
-				{
-					...judgeConfig,
-					modelConfig,
-				},
-				provider.context,
-			)
-
-			return this.judgeService
-		} catch (error) {
-			console.error("[Task#getJudgeService] Error:", error)
-			return undefined
-		}
-	}
-
-	/**
-	 * 获取工具调用历史
-	 */
-	private getToolCallHistory(): string[] {
-		const toolCalls: string[] = []
-
-		for (const message of this.clineMessages) {
-			if (message.type === "say") {
-				// 提取工具相关的消息
-				const sayType = message.say
-				if (sayType === "completion_result") {
-					toolCalls.push(sayType)
-				}
-			}
-			// 也可以从 ask 类型中提取工具使用
-			if (message.type === "ask" && (message.ask === "tool" || message.ask === "command")) {
-				toolCalls.push(message.ask)
-			}
-		}
-
-		return toolCalls
-	}
-
-	/**
-	 * 获取文件修改历史
-	 */
-	private getFileChangeHistory(): string[] {
-		const fileChanges: string[] = []
-
-		for (const message of this.clineMessages) {
-			if (message.type === "say" && message.text) {
-				// 尝试从消息中提取文件路径
-				const filePathMatch = message.text.match(/(?:file|path):\s*([^\s\n]+)/i)
-				if (filePathMatch) {
-					fileChanges.push(filePathMatch[1])
-				}
-			}
-		}
-
-		return Array.from(new Set(fileChanges)) // 去重
 	}
 }

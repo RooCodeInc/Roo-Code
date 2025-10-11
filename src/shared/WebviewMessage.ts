@@ -88,6 +88,7 @@ export interface WebviewMessage {
 		| "alwaysAllowUpdateTodoList"
 		| "autoCondenseContext"
 		| "autoCondenseContextPercent"
+		| "vectorMemoryEnabled"
 		| "condensingApiConfigId"
 		| "updateCondensingPrompt"
 		| "playSound"

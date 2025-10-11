@@ -2,6 +2,7 @@ import * as vscode from "vscode"
 
 import { Task } from "../task/Task"
 import { CodeIndexManager } from "../../services/code-index/manager"
+import { LocalCodeIndexManager } from "../../services/local-code-index/manager"
 import { getWorkspacePath } from "../../utils/path"
 import { formatResponse } from "../prompts/responses"
 import { VectorStoreSearchResult } from "../../services/code-index/interfaces"
@@ -17,7 +18,7 @@ export async function codebaseSearchTool(
 	removeClosingTag: RemoveClosingTag,
 ) {
 	const toolName = "codebase_search"
-	const workspacePath = (cline.cwd && cline.cwd.trim() !== '') ? cline.cwd : getWorkspacePath()
+	const workspacePath = cline.cwd && cline.cwd.trim() !== "" ? cline.cwd : getWorkspacePath()
 
 	if (!workspacePath) {
 		// This case should ideally not happen if Cline is initialized correctly
@@ -69,20 +70,58 @@ export async function codebaseSearchTool(
 			throw new Error("Extension context is not available.")
 		}
 
-		const manager = CodeIndexManager.getInstance(context)
+		// Check which indexing mode to use
+		const contextProxy = cline.providerRef.deref()?.contextProxy
+		const codebaseIndexConfig = contextProxy?.getGlobalState("codebaseIndexConfig") ?? {}
+		const indexMode = codebaseIndexConfig.codebaseIndexMode || "vector" // Default to vector mode
 
-		if (!manager) {
-			throw new Error("CodeIndexManager is not available.")
-		}
+		let searchResults: VectorStoreSearchResult[] = []
 
-		if (!manager.isFeatureEnabled) {
-			throw new Error("Code Indexing is disabled in the settings.")
-		}
-		if (!manager.isFeatureConfigured) {
-			throw new Error("Code Indexing is not configured (Missing OpenAI Key or Qdrant URL).")
-		}
+		if (indexMode === "local") {
+			// Use local AST-based index
+			const localManager = LocalCodeIndexManager.getInstance(workspacePath)
 
-		const searchResults: VectorStoreSearchResult[] = await manager.searchIndex(query, directoryPrefix)
+			if (!localManager) {
+				throw new Error("LocalCodeIndexManager is not available.")
+			}
+
+			if (!localManager.isInitialized()) {
+				throw new Error("Local code index is not initialized. Please build the index first.")
+			}
+
+			// Search using local index
+			const localResults = localManager.search(query, {
+				limit: codebaseIndexConfig.codebaseIndexSearchMaxResults || 10,
+			})
+
+			// Convert local results to VectorStoreSearchResult format
+			searchResults = localResults.map((result, index) => ({
+				id: `local-${index}-${Date.now()}`,
+				score: result.score,
+				payload: {
+					filePath: path.join(workspacePath, result.filePath),
+					startLine: result.startLine,
+					endLine: result.endLine,
+					codeChunk: result.content || "",
+				},
+			}))
+		} else {
+			// Use vector-based index (Qdrant)
+			const manager = CodeIndexManager.getInstance(context)
+
+			if (!manager) {
+				throw new Error("CodeIndexManager is not available.")
+			}
+
+			if (!manager.isFeatureEnabled) {
+				throw new Error("Code Indexing is disabled in the settings.")
+			}
+			if (!manager.isFeatureConfigured) {
+				throw new Error("Code Indexing is not configured (Missing OpenAI Key or Qdrant URL).")
+			}
+
+			searchResults = await manager.searchIndex(query, directoryPrefix)
+		}
 
 		// 3. Format and push results
 		if (!searchResults || searchResults.length === 0) {
