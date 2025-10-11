@@ -4,11 +4,91 @@ import { Fzf } from "fzf"
 import { cn } from "@/lib/utils"
 import { useRooPortal } from "@/components/ui/hooks/useRooPortal"
 import { Popover, PopoverContent, PopoverTrigger, StandardTooltip } from "@/components/ui"
-import { useAppTranslation } from "@/i18n/TranslationContext"
 import { vscode } from "@/utils/vscode"
 import { Button } from "@/components/ui"
+import { useExtensionState } from "@/context/ExtensionStateContext"
 
 import { IconButton } from "./IconButton"
+import { useAppTranslation } from "@/i18n/TranslationContext"
+
+interface ConfigItemProps {
+	config: { id: string; name: string; modelId?: string }
+	isPinned: boolean
+	index: number
+	value: string
+	onSelect: (configId: string) => void
+	togglePinnedApiConfig: (id: string) => void
+}
+
+const ConfigItem = ({ config, isPinned, index, value, onSelect, togglePinnedApiConfig }: ConfigItemProps) => {
+	const { t } = useAppTranslation()
+	const isCurrentConfig = config.id === value
+
+	return (
+		<div
+			key={config.id}
+			data-config-item
+			data-config-item-index={index}
+			role="option"
+			aria-selected={isCurrentConfig}
+			aria-label={`${config.name}${config.modelId ? ` - ${config.modelId}` : ""}`}
+			onClick={() => onSelect(config.id)}
+			onKeyDown={(e) => {
+				if (e.key === "Enter" || e.key === " ") {
+					e.preventDefault()
+					onSelect(config.id)
+				}
+			}}
+			className={cn(
+				"px-3 py-1.5 text-sm flex items-center group relative",
+				"cursor-pointer hover:bg-vscode-list-hoverBackground",
+				isCurrentConfig &&
+					"bg-vscode-list-activeSelectionBackground text-vscode-list-activeSelectionForeground",
+			)}>
+			<div className="flex-1 min-w-0 flex items-center gap-1 overflow-hidden">
+				<span className="flex-shrink-0">{config.name}</span>
+				{config.modelId && (
+					<>
+						<span
+							className="text-vscode-descriptionForeground opacity-70 min-w-0 overflow-hidden"
+							style={{ direction: "rtl", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+							{config.modelId}
+						</span>
+					</>
+				)}
+			</div>
+
+			<div className="flex items-center gap-1">
+				{isCurrentConfig && (
+					<div className="size-5 p-1 flex items-center justify-center">
+						<span className="codicon codicon-check text-xs" />
+					</div>
+				)}
+				<StandardTooltip
+					content={isPinned ? t("chat:apiConfigSelector.unpin") : t("chat:apiConfigSelector.pin")}>
+					<Button
+						variant="ghost"
+						size="icon"
+						tabIndex={-1}
+						aria-label={isPinned ? t("chat:apiConfigSelector.unpin") : t("chat:apiConfigSelector.pin")}
+						onClick={(e) => {
+							e.stopPropagation()
+							togglePinnedApiConfig(config.id)
+							vscode.postMessage({ type: "toggleApiConfigPin", text: config.id })
+						}}
+						className={cn("size-5 flex items-center justify-center", {
+							"opacity-0 group-hover:opacity-100": !isPinned && !isCurrentConfig,
+							"bg-accent opacity-100": isPinned,
+						})}>
+						<span className="codicon codicon-pin text-xs opacity-50" />
+					</Button>
+				</StandardTooltip>
+			</div>
+		</div>
+	)
+}
+
+type SortMode = "alphabetical" | "custom"
 
 interface ApiConfigSelectorProps {
 	value: string
@@ -34,35 +114,47 @@ export const ApiConfigSelector = ({
 	togglePinnedApiConfig,
 }: ApiConfigSelectorProps) => {
 	const { t } = useAppTranslation()
+	const { apiConfigsCustomOrder: customOrder = [] } = useExtensionState()
 	const [open, setOpen] = useState(false)
 	const [searchValue, setSearchValue] = useState("")
+	const [sortMode, setSortMode] = useState<SortMode>("alphabetical")
+
 	const portalContainer = useRooPortal("roo-portal")
 
-	// Create searchable items for fuzzy search.
-	const searchableItems = useMemo(
-		() =>
-			listApiConfigMeta.map((config) => ({
-				original: config,
-				searchStr: config.name,
-			})),
-		[listApiConfigMeta],
-	)
+	// Sort configs based on sort mode
+	const sortedConfigs = useMemo(() => {
+		const sorted = [...listApiConfigMeta]
 
-	// Create Fzf instance.
-	const fzfInstance = useMemo(
-		() => new Fzf(searchableItems, { selector: (item) => item.searchStr }),
-		[searchableItems],
-	)
+		switch (sortMode) {
+			case "alphabetical":
+				sorted.sort((a, b) => a.name.localeCompare(b.name))
+				break
+			case "custom":
+				if (customOrder && customOrder.length > 0) {
+					// Sort by custom order, with unordered items at the end
+					const orderMap = new Map(customOrder.map((item) => [item.id, item.index]))
+					sorted.sort((a, b) => {
+						const aIndex = orderMap.get(a.id) ?? Number.MAX_SAFE_INTEGER
+						const bIndex = orderMap.get(b.id) ?? Number.MAX_SAFE_INTEGER
+						return (aIndex as number) - (bIndex as number)
+					})
+				}
+				break
+		}
+
+		return sorted
+	}, [listApiConfigMeta, sortMode, customOrder])
 
 	// Filter configs based on search.
 	const filteredConfigs = useMemo(() => {
 		if (!searchValue) {
-			return listApiConfigMeta
+			return sortedConfigs
 		}
 
-		const matchingItems = fzfInstance.find(searchValue).map((result) => result.item.original)
+		const fzf = new Fzf(sortedConfigs, { selector: (item) => item.name })
+		const matchingItems = fzf.find(searchValue).map((result) => result.item)
 		return matchingItems
-	}, [listApiConfigMeta, searchValue, fzfInstance])
+	}, [sortedConfigs, searchValue])
 
 	// Separate pinned and unpinned configs.
 	const { pinnedConfigs, unpinnedConfigs } = useMemo(() => {
@@ -84,62 +176,6 @@ export const ApiConfigSelector = ({
 		vscode.postMessage({ type: "switchTab", tab: "settings" })
 		setOpen(false)
 	}, [])
-
-	const renderConfigItem = useCallback(
-		(config: { id: string; name: string; modelId?: string }, isPinned: boolean) => {
-			const isCurrentConfig = config.id === value
-
-			return (
-				<div
-					key={config.id}
-					onClick={() => handleSelect(config.id)}
-					className={cn(
-						"px-3 py-1.5 text-sm cursor-pointer flex items-center group",
-						"hover:bg-vscode-list-hoverBackground",
-						isCurrentConfig &&
-							"bg-vscode-list-activeSelectionBackground text-vscode-list-activeSelectionForeground",
-					)}>
-					<div className="flex-1 min-w-0 flex items-center gap-1 overflow-hidden">
-						<span className="flex-shrink-0">{config.name}</span>
-						{config.modelId && (
-							<>
-								<span
-									className="text-vscode-descriptionForeground opacity-70 min-w-0 overflow-hidden"
-									style={{ direction: "rtl", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-									{config.modelId}
-								</span>
-							</>
-						)}
-					</div>
-					<div className="flex items-center gap-1">
-						{isCurrentConfig && (
-							<div className="size-5 p-1 flex items-center justify-center">
-								<span className="codicon codicon-check text-xs" />
-							</div>
-						)}
-						<StandardTooltip content={isPinned ? t("chat:unpin") : t("chat:pin")}>
-							<Button
-								variant="ghost"
-								size="icon"
-								tabIndex={-1}
-								onClick={(e) => {
-									e.stopPropagation()
-									togglePinnedApiConfig(config.id)
-									vscode.postMessage({ type: "toggleApiConfigPin", text: config.id })
-								}}
-								className={cn("size-5 flex items-center justify-center", {
-									"opacity-0 group-hover:opacity-100": !isPinned && !isCurrentConfig,
-									"bg-accent opacity-100": isPinned,
-								})}>
-								<span className="codicon codicon-pin text-xs opacity-50" />
-							</Button>
-						</StandardTooltip>
-					</div>
-				</div>
-			)
-		},
-		[value, handleSelect, t, togglePinnedApiConfig],
-	)
 
 	return (
 		<Popover open={open} onOpenChange={setOpen} data-testid="api-config-selector-root">
@@ -194,7 +230,10 @@ export const ApiConfigSelector = ({
 					)}
 
 					{/* Config list */}
-					<div className="max-h-[300px] overflow-y-auto">
+					<div
+						className="max-h-[300px] overflow-y-auto"
+						role="listbox"
+						aria-label={t("prompts:apiConfiguration.select")}>
 						{filteredConfigs.length === 0 && searchValue ? (
 							<div className="py-2 px-3 text-sm text-vscode-foreground/70">
 								{t("common:ui.no_results")}
@@ -202,7 +241,17 @@ export const ApiConfigSelector = ({
 						) : (
 							<div className="py-1">
 								{/* Pinned configs */}
-								{pinnedConfigs.map((config) => renderConfigItem(config, true))}
+								{pinnedConfigs.map((config, index) => (
+									<ConfigItem
+										key={config.id}
+										config={config}
+										isPinned
+										index={index}
+										value={value}
+										onSelect={handleSelect}
+										togglePinnedApiConfig={togglePinnedApiConfig}
+									/>
+								))}
 
 								{/* Separator between pinned and unpinned */}
 								{pinnedConfigs.length > 0 && unpinnedConfigs.length > 0 && (
@@ -210,32 +259,79 @@ export const ApiConfigSelector = ({
 								)}
 
 								{/* Unpinned configs */}
-								{unpinnedConfigs.map((config) => renderConfigItem(config, false))}
+								{unpinnedConfigs.map((config, index) => (
+									<ConfigItem
+										key={config.id}
+										config={config}
+										isPinned={false}
+										index={pinnedConfigs.length + index}
+										value={value}
+										onSelect={handleSelect}
+										togglePinnedApiConfig={togglePinnedApiConfig}
+									/>
+								))}
 							</div>
 						)}
 					</div>
 
-					{/* Bottom bar with buttons on left and title on right */}
-					<div className="flex flex-row items-center justify-between px-2 py-2 border-t border-vscode-dropdown-border">
-						<div className="flex flex-row gap-1">
-							<IconButton
-								iconClass="codicon-settings-gear"
-								title={t("chat:edit")}
-								onClick={handleEditClick}
-								tooltip={false}
-							/>
+					{/* Bottom bar with controls */}
+					<div className="flex flex-col border-t border-vscode-dropdown-border">
+						{/* Sort controls */}
+						<div className="flex items-center justify-between px-2 py-1.5 border-b border-vscode-dropdown-border">
+							<div className="flex items-center gap-2">
+								<span className="text-xs text-vscode-descriptionForeground">
+									{t("chat:apiConfigSelector.sort")}
+								</span>
+								<div className="flex items-center gap-1">
+									{(["alphabetical", "custom"] as const).map((mode) => (
+										<Button
+											key={mode}
+											variant="ghost"
+											size="sm"
+											aria-label={`${t("chat:apiConfigSelector.sort")} ${mode === "alphabetical" ? t("chat:apiConfigSelector.alphabetical") : t("chat:apiConfigSelector.custom")}`}
+											aria-pressed={sortMode === mode}
+											onClick={() => setSortMode(mode)}
+											className={cn(
+												"h-6 px-2 text-xs",
+												sortMode === mode &&
+													"bg-vscode-button-background text-vscode-button-foreground",
+											)}>
+											{mode === "alphabetical"
+												? t("chat:apiConfigSelector.alphabetical")
+												: t("chat:apiConfigSelector.custom")}
+										</Button>
+									))}
+								</div>
+							</div>
 						</div>
 
-						{/* Info icon and title on the right with matching spacing */}
-						<div className="flex items-center gap-1 pr-1">
-							{listApiConfigMeta.length > 6 && (
-								<StandardTooltip content={t("prompts:apiConfiguration.select")}>
-									<span className="codicon codicon-info text-xs text-vscode-descriptionForeground opacity-70 hover:opacity-100 cursor-help" />
-								</StandardTooltip>
-							)}
-							<h4 className="m-0 font-medium text-sm text-vscode-descriptionForeground">
-								{t("prompts:apiConfiguration.title")}
-							</h4>
+						{/* Bottom bar with settings and title */}
+						<div className="flex flex-row items-center justify-between px-2 py-2">
+							<div className="flex flex-row gap-1">
+								<IconButton
+									iconClass="codicon-settings-gear"
+									title={t("chat:apiConfigSelector.editConfigurations")}
+									onClick={handleEditClick}
+									tooltip={false}
+									aria-label="chat:edit"
+								/>
+							</div>
+
+							{/* Info icon and title on the right with matching spacing */}
+							<div className="flex items-center gap-1 pr-1">
+								{listApiConfigMeta.length > 6 && (
+									<StandardTooltip content={t("prompts:apiConfiguration.select")}>
+										<span
+											className="codicon codicon-info text-xs text-vscode-descriptionForeground opacity-70 hover:opacity-100 cursor-help"
+											aria-label={t("prompts:apiConfiguration.select")}
+											role="img"
+										/>
+									</StandardTooltip>
+								)}
+								<h4 className="m-0 font-medium text-sm text-vscode-descriptionForeground">
+									{t("prompts:apiConfiguration.title")}
+								</h4>
+							</div>
 						</div>
 					</div>
 				</div>

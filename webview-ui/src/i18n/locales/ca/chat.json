@@ -28,8 +28,6 @@
 		"openInCloud": "Obrir tasca a Roo Code Cloud",
 		"openInCloudIntro": "Continua monitoritzant o interactuant amb Roo des de qualsevol lloc. Escaneja, fes clic o copia per obrir."
 	},
-	"unpin": "Desfixar",
-	"pin": "Fixar",
 	"tokenProgress": {
 		"availableSpace": "Espai disponible: {{amount}} tokens",
 		"tokensUsed": "Tokens utilitzats: {{used}} de {{total}}",
@@ -412,5 +410,13 @@
 		"problems": "Problemes",
 		"terminal": "Terminal",
 		"url": "Enganxa la URL per obtenir-ne el contingut"
+	},
+	"apiConfigSelector": {
+		"unpin": "Desfixar",
+		"pin": "Fixar",
+		"sort": "Ordenar",
+		"alphabetical": "A–Z",
+		"custom": "Personalitzat",
+		"editConfigurations": "Editar configuracions"
 	}
 }
