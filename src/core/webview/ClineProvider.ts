@@ -148,6 +148,17 @@ export class ClineProvider
 	public readonly providerSettingsManager: ProviderSettingsManager
 	public readonly customModesManager: CustomModesManager
 
+	// Throttling/backpressure for heavy webview messages
+	private stateFlushQueued = false
+	private stateQueueDirty = false
+	private stateFlushPromise?: Promise<void>
+	private readonly STATE_THROTTLE_MS = 33 // ~30 FPS coalescing
+
+	// Throttle noisy indexing status updates
+	private indexStatusThrottleTimer?: NodeJS.Timeout
+	private pendingIndexStatus?: IndexProgressUpdate
+	private readonly INDEX_STATUS_THROTTLE_MS = 100
+
 	constructor(
 		readonly context: vscode.ExtensionContext,
 		private readonly outputChannel: vscode.OutputChannel,
@@ -799,6 +810,8 @@ export class ClineProvider
 			const viewStateDisposable = webviewView.onDidChangeViewState(() => {
 				if (this.view?.visible) {
 					this.postMessageToWebview({ type: "action", action: "didBecomeVisible" })
+					// Push latest state when tab becomes visible to avoid stale UI without flooding while hidden
+					void this.postStateToWebview()
 				}
 			})
 
@@ -808,6 +821,8 @@ export class ClineProvider
 			const visibilityDisposable = webviewView.onDidChangeVisibility(() => {
 				if (this.view?.visible) {
 					this.postMessageToWebview({ type: "action", action: "didBecomeVisible" })
+					// Ensure UI sync after becoming visible
+					void this.postStateToWebview()
 				}
 			})
 
@@ -971,7 +986,16 @@ export class ClineProvider
 	}
 
 	public async postMessageToWebview(message: ExtensionMessage) {
-		await this.view?.webview.postMessage(message)
+		try {
+			// Reduce background chatter: drop chat row updates when panel isn't visible
+			if (message.type === "messageUpdated" && !this.isVisible()) {
+				return
+			}
+			if (!this.view) return
+			await this.view.webview.postMessage(message)
+		} catch (error) {
+			this.log(`[postMessageToWebview] failed: ${error instanceof Error ? error.message : String(error)}`)
+		}
 	}
 
 	private async getHMRHtmlContent(webview: vscode.Webview): Promise<string> {
@@ -1602,13 +1626,40 @@ export class ClineProvider
 	}
 
 	async postStateToWebview() {
-		const state = await this.getStateToPostToWebview()
-		this.postMessageToWebview({ type: "state", state })
+		// Coalesce multiple rapid callers into a single flush, awaited by all
+		this.stateQueueDirty = true
+		if (!this.stateFlushQueued) {
+			this.stateFlushQueued = true
+			this.stateFlushPromise = this.flushStateQueue()
+		}
+		return this.stateFlushPromise
+	}
 
-		// Check MDM compliance and send user to account tab if not compliant
-		// Only redirect if there's an actual MDM policy requiring authentication
-		if (this.mdmService?.requiresCloudAuth() && !this.checkMdmCompliance()) {
-			await this.postMessageToWebview({ type: "action", action: "cloudButtonClicked" })
+	private async flushStateQueue(): Promise<void> {
+		try {
+			// Small delay window to coalesce bursts from multiple sources
+			await delay(this.STATE_THROTTLE_MS)
+
+			// Drain while new calls arrive during awaits
+			do {
+				this.stateQueueDirty = false
+
+				const state = await this.getStateToPostToWebview()
+				await this.postMessageToWebview({ type: "state", state })
+
+				// Check MDM compliance and send user to account tab if not compliant
+				// Only redirect if there's an actual MDM policy requiring authentication
+				if (this.mdmService?.requiresCloudAuth() && !this.checkMdmCompliance()) {
+					await this.postMessageToWebview({ type: "action", action: "cloudButtonClicked" })
+				}
+
+				// Allow any additional state requests queued during the await to be coalesced
+				if (this.stateQueueDirty) {
+					await delay(this.STATE_THROTTLE_MS)
+				}
+			} while (this.stateQueueDirty)
+		} finally {
+			this.stateFlushQueued = false
 		}
 	}
 
@@ -2288,6 +2339,11 @@ export class ClineProvider
 		return this._workspaceTracker
 	}
 
+	// Public visibility helper for rate limiting background chatter
+	public isVisible(): boolean {
+		return this.view?.visible === true
+	}
+
 	get viewLaunched() {
 		return this.isViewLaunched
 	}
@@ -2409,13 +2465,24 @@ export class ClineProvider
 		if (currentManager) {
 			this.codeIndexStatusSubscription = currentManager.onProgressUpdate((update: IndexProgressUpdate) => {
 				// Only send updates if this manager is still the current one
-				if (currentManager === this.getCurrentWorkspaceCodeIndexManager()) {
-					// Get the full status from the manager to ensure we have all fields correctly formatted
-					const fullStatus = currentManager.getCurrentStatus()
-					this.postMessageToWebview({
-						type: "indexingStatusUpdate",
-						values: fullStatus,
-					})
+				if (currentManager !== this.getCurrentWorkspaceCodeIndexManager()) {
+					return
+				}
+
+				// Throttle: coalesce frequent progress updates into ~10 Hz
+				this.pendingIndexStatus = currentManager.getCurrentStatus()
+
+				if (!this.indexStatusThrottleTimer) {
+					this.indexStatusThrottleTimer = setTimeout(() => {
+						const values = this.pendingIndexStatus ?? currentManager.getCurrentStatus()
+						this.pendingIndexStatus = undefined
+						this.indexStatusThrottleTimer = undefined
+
+						this.postMessageToWebview({
+							type: "indexingStatusUpdate",
+							values,
+						})
+					}, this.INDEX_STATUS_THROTTLE_MS)
 				}
 			})
 

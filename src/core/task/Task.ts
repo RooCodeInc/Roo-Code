@@ -277,6 +277,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	public readonly messageQueueService: MessageQueueService
 	private messageQueueStateChangedHandler: (() => void) | undefined
 
+	// Throttled chat row update batching to reduce webview message flood
+	private messageUpdateBuffer: Map<number, ClineMessage> = new Map()
+	private messageUpdateTimer?: NodeJS.Timeout
+	private readonly MESSAGE_UPDATE_THROTTLE_MS = 33 // ~30 FPS
+
 	// Streaming
 	isWaitingForFirstChunk = false
 	isStreaming = false
@@ -644,16 +649,65 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	private async updateClineMessage(message: ClineMessage) {
 		const provider = this.providerRef.deref()
-		await provider?.postMessageToWebview({ type: "messageUpdated", clineMessage: message })
+
+		// Emit internal event immediately (used for token usage, etc)
 		this.emit(RooCodeEventName.Message, { action: "updated", message })
 
+		// Telemetry capture remains unchanged below
 		const shouldCaptureMessage = message.partial !== true && CloudService.isEnabled()
-
 		if (shouldCaptureMessage) {
 			CloudService.instance.captureEvent({
 				event: TelemetryEventName.TASK_MESSAGE,
 				properties: { taskId: this.taskId, message },
 			})
+		}
+
+		// Batch UI updates within a short window to avoid overwhelming the webview
+		const ts = (message as any)?.ts as number | undefined
+		if (typeof ts === "number") {
+			this.messageUpdateBuffer.set(ts, message)
+		} else {
+			// Fallback: no timestamp - only send if panel is visible and provider exists
+			if (!provider || !provider.isVisible()) {
+				// Drop non-essential delta; UI will resync on next visibility/state push
+				return
+			}
+			await provider.postMessageToWebview({ type: "messageUpdated", clineMessage: message })
+			return
+		}
+
+		if (!this.messageUpdateTimer) {
+			this.messageUpdateTimer = setTimeout(async () => {
+				try {
+					// Atomically swap buffers so new arrivals during flush aren't lost
+					const batchMap = this.messageUpdateBuffer
+					this.messageUpdateBuffer = new Map()
+					this.messageUpdateTimer = undefined
+
+					const batch = Array.from(batchMap.values())
+
+					const providerNow = this.providerRef.deref()
+					if (!providerNow) {
+						console.warn(
+							`[Task#updateClineMessage] Dropping ${batch.length} messageUpdated deltas: provider unavailable`,
+						)
+						return
+					}
+					if (!providerNow.isVisible()) {
+						// Drop deltas while hidden; UI will receive a full state sync on visibility
+						console.debug(
+							`[Task#updateClineMessage] Dropping ${batch.length} messageUpdated deltas while hidden`,
+						)
+						return
+					}
+
+					for (const m of batch) {
+						await providerNow.postMessageToWebview({ type: "messageUpdated", clineMessage: m })
+					}
+				} catch (e) {
+					console.error("[Task#updateClineMessage] Failed to flush message updates:", e)
+				}
+			}, this.MESSAGE_UPDATE_THROTTLE_MS)
 		}
 	}
 
