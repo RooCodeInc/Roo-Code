@@ -4,6 +4,7 @@ import * as path from "path"
 import { fileURLToPath } from "url"
 import process from "node:process"
 import * as console from "node:console"
+import { execSync } from "child_process"
 
 import { copyPaths, copyWasms, copyLocales, setupLocaleWatcher } from "@roo-code/build"
 
@@ -47,18 +48,36 @@ async function main() {
 			name: "copyFiles",
 			setup(build) {
 				build.onEnd(() => {
-					copyPaths(
-						[
-							["../README.md", "README.md"],
-							["../CHANGELOG.md", "CHANGELOG.md"],
-							["../LICENSE", "LICENSE"],
-							["../.env", ".env", { optional: true }],
-							["node_modules/vscode-material-icons/generated", "assets/vscode-material-icons"],
-							["../webview-ui/audio", "webview-ui/audio"],
-						],
-						srcDir,
-						buildDir,
-					)
+					// Generate truncated CHANGELOG for VS Code extension
+					let changelogGenerated = false
+					try {
+						console.log("[extension] Generating truncated CHANGELOG for VS Code...")
+						execSync("node ../scripts/generate-vscode-changelog.js", {
+							cwd: srcDir,
+							stdio: "inherit"
+						})
+						changelogGenerated = true
+					} catch (error) {
+						console.error("[extension] Failed to generate truncated CHANGELOG:", error.message)
+						console.log("[extension] Falling back to original CHANGELOG.md")
+					}
+					
+					const filesToCopy = [
+						["../README.md", "README.md"],
+						["../LICENSE", "LICENSE"],
+						["../.env", ".env", { optional: true }],
+						["node_modules/vscode-material-icons/generated", "assets/vscode-material-icons"],
+						["../webview-ui/audio", "webview-ui/audio"],
+					]
+					
+					// Use truncated CHANGELOG if it was generated, otherwise use original
+					if (changelogGenerated && fs.existsSync(path.join(srcDir, "..", "CHANGELOG.vscode.md"))) {
+						filesToCopy.splice(1, 0, ["../CHANGELOG.vscode.md", "CHANGELOG.md"])
+					} else {
+						filesToCopy.splice(1, 0, ["../CHANGELOG.md", "CHANGELOG.md"])
+					}
+					
+					copyPaths(filesToCopy, srcDir, buildDir)
 				})
 			},
 		},
