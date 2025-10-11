@@ -160,6 +160,9 @@ export abstract class BaseTerminal implements RooTerminal {
 	private static terminalZshP10k: boolean = false
 	private static terminalZdotdir: boolean = false
 	private static compressProgressBar: boolean = true
+	private static completionMarkersEnabled: boolean = false
+	private static promptDetectionEnabled: boolean = false
+	private static customPromptPatterns: string = ""
 
 	/**
 	 * Compresses terminal output by applying run-length encoding and truncating to line limit
@@ -313,5 +316,53 @@ export abstract class BaseTerminal implements RooTerminal {
 	 */
 	public static getCompressProgressBar(): boolean {
 		return BaseTerminal.compressProgressBar
+	}
+
+	/**
+	 * Sets whether to use completion markers for command detection
+	 * @param enabled Whether to enable completion markers
+	 */
+	public static setCompletionMarkersEnabled(enabled: boolean): void {
+		BaseTerminal.completionMarkersEnabled = enabled
+	}
+
+	/**
+	 * Gets whether completion markers are enabled
+	 * @returns Whether completion markers are enabled
+	 */
+	public static getCompletionMarkersEnabled(): boolean {
+		return BaseTerminal.completionMarkersEnabled
+	}
+
+	/**
+	 * Sets whether to use prompt detection for command completion
+	 * @param enabled Whether to enable prompt detection
+	 */
+	public static setPromptDetectionEnabled(enabled: boolean): void {
+		BaseTerminal.promptDetectionEnabled = enabled
+	}
+
+	/**
+	 * Gets whether prompt detection is enabled
+	 * @returns Whether prompt detection is enabled
+	 */
+	public static getPromptDetectionEnabled(): boolean {
+		return BaseTerminal.promptDetectionEnabled
+	}
+
+	/**
+	 * Sets custom prompt patterns for detection
+	 * @param patterns Custom prompt patterns (pipe-separated regex strings)
+	 */
+	public static setCustomPromptPatterns(patterns: string): void {
+		BaseTerminal.customPromptPatterns = patterns
+	}
+
+	/**
+	 * Gets custom prompt patterns
+	 * @returns Custom prompt patterns string
+	 */
+	public static getCustomPromptPatterns(): string {
+		return BaseTerminal.customPromptPatterns
 	}
 }

@@ -738,6 +738,9 @@ export class ClineProvider
 				terminalZshP10k = false,
 				terminalPowershellCounter = false,
 				terminalZdotdir = false,
+				terminalCompletionMarkersEnabled = false,
+				terminalPromptDetectionEnabled = false,
+				terminalCustomPromptPatterns = "",
 			}) => {
 				Terminal.setShellIntegrationTimeout(terminalShellIntegrationTimeout)
 				Terminal.setShellIntegrationDisabled(terminalShellIntegrationDisabled)
@@ -747,6 +750,9 @@ export class ClineProvider
 				Terminal.setTerminalZshP10k(terminalZshP10k)
 				Terminal.setPowershellCounter(terminalPowershellCounter)
 				Terminal.setTerminalZdotdir(terminalZdotdir)
+				Terminal.setCompletionMarkersEnabled(terminalCompletionMarkersEnabled)
+				Terminal.setPromptDetectionEnabled(terminalPromptDetectionEnabled)
+				Terminal.setCustomPromptPatterns(terminalCustomPromptPatterns)
 			},
 		)
 
@@ -1766,6 +1772,9 @@ export class ClineProvider
 			terminalZshOhMy,
 			terminalZshP10k,
 			terminalZdotdir,
+			terminalCompletionMarkersEnabled,
+			terminalPromptDetectionEnabled,
+			terminalCustomPromptPatterns,
 			fuzzyMatchThreshold,
 			mcpEnabled,
 			enableMcpServerCreation,
@@ -1892,6 +1901,9 @@ export class ClineProvider
 			terminalZshOhMy: terminalZshOhMy ?? false,
 			terminalZshP10k: terminalZshP10k ?? false,
 			terminalZdotdir: terminalZdotdir ?? false,
+			terminalCompletionMarkersEnabled: terminalCompletionMarkersEnabled ?? false,
+			terminalPromptDetectionEnabled: terminalPromptDetectionEnabled ?? false,
+			terminalCustomPromptPatterns: terminalCustomPromptPatterns ?? "",
 			fuzzyMatchThreshold: fuzzyMatchThreshold ?? 1.0,
 			mcpEnabled: mcpEnabled ?? true,
 			enableMcpServerCreation: enableMcpServerCreation ?? true,
@@ -2113,6 +2125,9 @@ export class ClineProvider
 			terminalZshOhMy: stateValues.terminalZshOhMy ?? false,
 			terminalZshP10k: stateValues.terminalZshP10k ?? false,
 			terminalZdotdir: stateValues.terminalZdotdir ?? false,
+			terminalCompletionMarkersEnabled: stateValues.terminalCompletionMarkersEnabled ?? false,
+			terminalPromptDetectionEnabled: stateValues.terminalPromptDetectionEnabled ?? false,
+			terminalCustomPromptPatterns: stateValues.terminalCustomPromptPatterns ?? "",
 			terminalCompressProgressBar: stateValues.terminalCompressProgressBar ?? true,
 			mode: stateValues.mode ?? defaultModeSlug,
 			language: stateValues.language ?? formatLanguage(vscode.env.language),

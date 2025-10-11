@@ -1461,6 +1461,27 @@ export const webviewMessageHandler = async (
 				Terminal.setCompressProgressBar(message.bool)
 			}
 			break
+		case "terminalCompletionMarkersEnabled":
+			await updateGlobalState("terminalCompletionMarkersEnabled", message.bool)
+			await provider.postStateToWebview()
+			if (message.bool !== undefined) {
+				Terminal.setCompletionMarkersEnabled(message.bool)
+			}
+			break
+		case "terminalPromptDetectionEnabled":
+			await updateGlobalState("terminalPromptDetectionEnabled", message.bool)
+			await provider.postStateToWebview()
+			if (message.bool !== undefined) {
+				Terminal.setPromptDetectionEnabled(message.bool)
+			}
+			break
+		case "terminalCustomPromptPatterns":
+			await updateGlobalState("terminalCustomPromptPatterns", message.text)
+			await provider.postStateToWebview()
+			if (message.text !== undefined) {
+				Terminal.setCustomPromptPatterns(message.text)
+			}
+			break
 		case "mode":
 			await provider.handleModeSwitch(message.text as Mode)
 			break

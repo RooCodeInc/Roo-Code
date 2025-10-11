@@ -13,14 +13,21 @@ import { inspect } from "util"
 import type { ExitCodeDetails } from "./types"
 import { BaseTerminalProcess } from "./BaseTerminalProcess"
 import { Terminal } from "./Terminal"
+import { PowerShellPromptDetector } from "./PowerShellPromptDetector"
+import { CompletionMarkers } from "./CompletionMarkers"
 
 export class TerminalProcess extends BaseTerminalProcess {
 	private terminalRef: WeakRef<Terminal>
+	private promptDetector: PowerShellPromptDetector
+	private completionMarkers: CompletionMarkers
+	private isPowerShell: boolean = false
 
 	constructor(terminal: Terminal) {
 		super()
 
 		this.terminalRef = new WeakRef(terminal)
+		this.promptDetector = new PowerShellPromptDetector()
+		this.completionMarkers = new CompletionMarkers()
 
 		this.once("completed", () => {
 			this.terminal.busy = false
@@ -109,22 +116,28 @@ export class TerminalProcess extends BaseTerminalProcess {
 			.getConfiguration("terminal.integrated.defaultProfile")
 			.get("windows")
 
-		const isPowerShell =
+		this.isPowerShell =
 			process.platform === "win32" &&
 			(defaultWindowsShellProfile === null ||
 				(defaultWindowsShellProfile as string)?.toLowerCase().includes("powershell"))
 
-		if (isPowerShell) {
+		if (this.isPowerShell) {
 			let commandToExecute = command
 
-			// Only add the PowerShell counter workaround if enabled
-			if (Terminal.getPowershellCounter()) {
-				commandToExecute += ` ; "(Roo/PS Workaround: ${this.terminal.cmdCounter++})" > $null`
-			}
+			// Check if completion markers are enabled
+			if (Terminal.getCompletionMarkersEnabled()) {
+				this.completionMarkers.setEnabled(true)
+				commandToExecute = this.completionMarkers.wrapCommandForPowerShell(commandToExecute)
+			} else {
+				// Only add the PowerShell counter workaround if enabled
+				if (Terminal.getPowershellCounter()) {
+					commandToExecute += ` ; "(Roo/PS Workaround: ${this.terminal.cmdCounter++})" > $null`
+				}
 
-			// Only add the sleep command if the command delay is greater than 0
-			if (Terminal.getCommandDelay() > 0) {
-				commandToExecute += ` ; start-sleep -milliseconds ${Terminal.getCommandDelay()}`
+				// Only add the sleep command if the command delay is greater than 0
+				if (Terminal.getCommandDelay() > 0) {
+					commandToExecute += ` ; start-sleep -milliseconds ${Terminal.getCommandDelay()}`
+				}
 			}
 
 			terminal.shellIntegration.executeCommand(commandToExecute)
@@ -174,6 +187,15 @@ export class TerminalProcess extends BaseTerminalProcess {
 			// Check for command output start marker
 			if (!commandOutputStarted) {
 				preOutput += data
+
+				// Check for explicit completion markers first
+				if (this.completionMarkers.isEnabled() && this.completionMarkers.hasStartMarker(data)) {
+					commandOutputStarted = true
+					this.fullOutput = "" // Reset fullOutput when command actually starts
+					this.emit("line", "") // Trigger UI to proceed
+					continue
+				}
+
 				const match = this.matchAfterVsceStartMarkers(data)
 
 				if (match !== undefined) {
@@ -191,6 +213,23 @@ export class TerminalProcess extends BaseTerminalProcess {
 			// filtering here: fullOutput cannot change in length (see getUnretrievedOutput),
 			// and chunks may not be complete so you cannot rely on detecting or removing escape sequences mid-stream.
 			this.fullOutput += data
+
+			// Check for completion markers or prompt detection
+			if (this.isPowerShell) {
+				// Check for explicit end marker
+				if (this.completionMarkers.isEnabled() && this.completionMarkers.hasEndMarker(this.fullOutput)) {
+					// Command completed with explicit marker
+					break
+				}
+
+				// Check for prompt detection if enabled
+				if (Terminal.getPromptDetectionEnabled() && this.promptDetector.endsWithPrompt(this.fullOutput)) {
+					// High confidence that command completed
+					if (this.promptDetector.getDetectionConfidence() > 0.8) {
+						break
+					}
+				}
+			}
 
 			// For non-immediately returning commands we want to show loading spinner
 			// right away but this wouldn't happen until it emits a line break, so
@@ -240,12 +279,24 @@ export class TerminalProcess extends BaseTerminalProcess {
 			return
 		}
 
-		// fullOutput begins after C marker so we only need to trim off D marker
-		// (if D exists, see VSCode bug# 237208):
-		const match = this.matchBeforeVsceEndMarkers(this.fullOutput)
+		// Clean up output based on detection method used
+		if (this.completionMarkers.isEnabled()) {
+			// Extract content between markers
+			const extracted = this.completionMarkers.extractContentBetweenMarkers(this.fullOutput)
+			if (extracted) {
+				this.fullOutput = extracted.content
+			} else {
+				// Fallback to removing markers if extraction fails
+				this.fullOutput = this.completionMarkers.removeMarkers(this.fullOutput)
+			}
+		} else {
+			// fullOutput begins after C marker so we only need to trim off D marker
+			// (if D exists, see VSCode bug# 237208):
+			const match = this.matchBeforeVsceEndMarkers(this.fullOutput)
 
-		if (match !== undefined) {
-			this.fullOutput = match
+			if (match !== undefined) {
+				this.fullOutput = match
+			}
 		}
 
 		// For now we don't want this delaying requests since we don't send
