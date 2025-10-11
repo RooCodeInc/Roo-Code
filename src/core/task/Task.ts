@@ -2434,7 +2434,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				enableMcpServerCreation,
 				language,
 				rooIgnoreInstructions,
-				maxReadFileLine !== -1,
+				true, // Always enable partial reads - line ranges bypass maxReadFileLine
 				{
 					maxConcurrentFileReads: maxConcurrentFileReads ?? 5,
 					todoListEnabled: apiConfiguration?.todoListEnabled ?? true,

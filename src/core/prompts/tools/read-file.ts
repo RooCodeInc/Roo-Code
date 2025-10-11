@@ -9,11 +9,11 @@ Description: Request to read the contents of ${isMultipleReadsEnabled ? "one or 
 
 ${isMultipleReadsEnabled ? `**IMPORTANT: You can read a maximum of ${maxConcurrentReads} files in a single request.** If you need to read more files, use multiple sequential read_file requests.` : "**IMPORTANT: Multiple file reads are currently disabled. You can only read one file at a time.**"}
 
-${args.partialReadsEnabled ? `By specifying line ranges, you can efficiently read specific portions of large files without loading the entire file into memory.` : ""}
+${args.partialReadsEnabled ? `**Line ranges bypass the "Always read entire file" setting** - when you specify explicit line ranges, you can read any lines from any file regardless of the maxReadFileLine configuration. This is useful for targeted work based on tool outputs that reference specific line numbers (e.g., linters, search results, diffs).` : ""}
 Parameters:
 - args: Contains one or more file elements, where each file contains:
   - path: (required) File path (relative to workspace directory ${args.cwd})
-  ${args.partialReadsEnabled ? `- line_range: (optional) One or more line range elements in format "start-end" (1-based, inclusive)` : ""}
+  ${args.partialReadsEnabled ? `- line_range: (optional) One or more line range elements in format "start-end" (1-based, inclusive). Line ranges always bypass maxReadFileLine restrictions.` : ""}
 
 Usage:
 <read_file>

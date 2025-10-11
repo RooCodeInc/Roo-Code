@@ -9,8 +9,6 @@ import { parseSourceCodeDefinitionsForFile } from "../../../services/tree-sitter
 import { isBinaryFile } from "isbinaryfile"
 import { ReadFileToolUse, ToolParamName, ToolResponse } from "../../../shared/tools"
 import { readFileTool } from "../readFileTool"
-import { formatResponse } from "../../prompts/responses"
-import { DEFAULT_MAX_IMAGE_FILE_SIZE_MB, DEFAULT_MAX_TOTAL_IMAGE_SIZE_MB } from "../helpers/imageHelpers"
 
 vi.mock("path", async () => {
 	const originalPath = await vi.importActual("path")
@@ -474,6 +472,85 @@ describe("read_file tool with maxReadFileLine setting", () => {
 			// Verify - just check that the result contains the expected elements
 			expect(rangeResult).toContain(`<file><path>${testFilePath}</path>`)
 			expect(rangeResult).toContain(`<content lines="2-4">`)
+		})
+
+		it("should bypass maxReadFileLine when line ranges are specified", async () => {
+			// Setup - file has 1000 lines, maxReadFileLine is 100, but we request lines 500-600
+			mockedCountFileLines.mockResolvedValue(1000)
+			mockedReadLines.mockResolvedValue("Line 500\nLine 501\n...Line 600")
+			addLineNumbersMock.mockReturnValue("500 | Line 500\n501 | Line 501\n...600 | Line 600")
+
+			// Execute with maxReadFileLine=100 but requesting lines 500-600
+			const result = await executeReadFileTool(
+				{},
+				{
+					maxReadFileLine: 100,
+					totalLines: 1000,
+					start_line: "500",
+					end_line: "600",
+				},
+			)
+
+			// Verify that we got the requested range, not limited by maxReadFileLine
+			expect(result).toContain(`<file><path>${testFilePath}</path>`)
+			expect(result).toContain(`<content lines="500-600">`)
+			expect(result).not.toContain("Showing only 100 of 1000 total lines")
+
+			// Verify readLines was called with the correct range
+			expect(mockedReadLines).toHaveBeenCalledWith(absoluteFilePath, 599, 499) // end-1, start-1
+		})
+
+		it("should bypass maxReadFileLine=0 (definitions only) when line ranges are specified", async () => {
+			// Setup - maxReadFileLine is 0 (definitions only), but we request specific lines
+			mockedCountFileLines.mockResolvedValue(100)
+			mockedReadLines.mockResolvedValue("Line 10\nLine 11\nLine 12")
+			addLineNumbersMock.mockReturnValue("10 | Line 10\n11 | Line 11\n12 | Line 12")
+
+			// Execute with maxReadFileLine=0 but requesting lines 10-12
+			const result = await executeReadFileTool(
+				{},
+				{
+					maxReadFileLine: 0,
+					totalLines: 100,
+					start_line: "10",
+					end_line: "12",
+					skipAddLineNumbersCheck: true,
+				},
+			)
+
+			// Verify that we got the actual content, not just definitions
+			expect(result).toContain(`<file><path>${testFilePath}</path>`)
+			expect(result).toContain(`<content lines="10-12">`)
+			expect(result).not.toContain("<list_code_definition_names>")
+
+			// Verify readLines was called
+			expect(mockedReadLines).toHaveBeenCalledWith(absoluteFilePath, 11, 9) // end-1, start-1
+		})
+
+		it("should bypass maxReadFileLine=-1 (always read entire file) when line ranges are specified", async () => {
+			// Setup - maxReadFileLine is -1 (always read entire file), but we request specific lines
+			mockedCountFileLines.mockResolvedValue(1000)
+			mockedReadLines.mockResolvedValue("Line 250\nLine 251\nLine 252")
+			addLineNumbersMock.mockReturnValue("250 | Line 250\n251 | Line 251\n252 | Line 252")
+
+			// Execute with maxReadFileLine=-1 but requesting lines 250-252
+			const result = await executeReadFileTool(
+				{},
+				{
+					maxReadFileLine: -1,
+					totalLines: 1000,
+					start_line: "250",
+					end_line: "252",
+				},
+			)
+
+			// Verify that we got the requested range, not the entire file
+			expect(result).toContain(`<file><path>${testFilePath}</path>`)
+			expect(result).toContain(`<content lines="250-252">`)
+			expect(result).not.toContain("lines=\"1-1000\"") // Should not read entire file
+
+			// Verify readLines was called with the correct range
+			expect(mockedReadLines).toHaveBeenCalledWith(absoluteFilePath, 251, 249) // end-1, start-1
 		})
 	})
 })
