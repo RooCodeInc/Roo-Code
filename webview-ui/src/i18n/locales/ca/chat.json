@@ -143,6 +143,14 @@
 		"cancelled": "Sol·licitud API cancel·lada",
 		"streamingFailed": "Transmissió API ha fallat"
 	},
+	"rateLimitRetry": {
+		"title": "Límit de peticions assolit — si us plau, espera.",
+		"waiting": "Reintentant en {{seconds}}s",
+		"waitingWithAttempt": "Reintentant en {{seconds}}s (intent {{attempt}})",
+		"waitingWithAttemptMax": "Reintentant en {{seconds}}s (intent {{attempt}}/{{maxAttempts}})",
+		"retrying": "Reintentant ara…",
+		"cancelled": "Reintent cancel·lat"
+	},
 	"checkpoint": {
 		"regular": "Punt de control",
 		"initializingWarning": "Encara s'està inicialitzant el punt de control... Si això triga massa, pots desactivar els punts de control a la <settingsLink>configuració</settingsLink> i reiniciar la teva tasca.",

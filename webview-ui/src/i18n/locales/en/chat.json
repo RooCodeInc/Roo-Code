@@ -149,6 +149,14 @@
 		"cancelled": "API Request Cancelled",
 		"streamingFailed": "API Streaming Failed"
 	},
+	"rateLimitRetry": {
+		"title": "Rate limit triggered — please wait.",
+		"waiting": "Retrying in {{seconds}}s",
+		"waitingWithAttempt": "Retrying in {{seconds}}s (attempt {{attempt}})",
+		"waitingWithAttemptMax": "Retrying in {{seconds}}s (attempt {{attempt}}/{{maxAttempts}})",
+		"retrying": "Retrying now…",
+		"cancelled": "Retry cancelled"
+	},
 	"checkpoint": {
 		"regular": "Checkpoint",
 		"initializingWarning": "Still initializing checkpoint... If this takes too long, you can disable checkpoints in <settingsLink>settings</settingsLink> and restart your task.",
