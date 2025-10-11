@@ -610,6 +610,14 @@
 			"profileDescription": "Custom threshold for this profile only (overrides global default)",
 			"inheritDescription": "This profile inherits the global default threshold ({{threshold}}%)",
 			"usesGlobal": "(uses global {{threshold}}%)"
+		},
+		"includeCurrentTime": {
+			"label": "Include current time in context",
+			"description": "When enabled, the current time and timezone information will be included in the system prompt. Disable this if models are stopping work due to time concerns."
+		},
+		"includeCurrentCost": {
+			"label": "Include current cost in context",
+			"description": "When enabled, the current API usage cost will be included in the system prompt. Disable this if models are stopping work due to cost concerns."
 		}
 	},
 	"terminal": {
