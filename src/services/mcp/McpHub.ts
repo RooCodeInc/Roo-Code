@@ -831,14 +831,33 @@ export class McpHub {
 
 			// Connect (this will automatically start the transport)
 			await client.connect(transport)
-			connection.server.status = "connected"
-			connection.server.error = ""
-			connection.server.instructions = client.getInstructions()
 
-			// Initial fetch of tools and resources
-			connection.server.tools = await this.fetchToolsList(name, source)
-			connection.server.resources = await this.fetchResourcesList(name, source)
-			connection.server.resourceTemplates = await this.fetchResourceTemplatesList(name, source)
+			// Wait for the connection to be fully established before marking as connected
+			// This helps prevent "Connection closed" errors on first tool call after installation
+			try {
+				// Attempt to fetch tools list as a connection readiness check
+				// If this fails, the connection isn't ready yet
+				const tools = await this.fetchToolsListWithRetry(name, source, client)
+
+				// Connection is ready, mark as connected
+				connection.server.status = "connected"
+				connection.server.error = ""
+				connection.server.instructions = client.getInstructions()
+				connection.server.tools = tools
+
+				// Fetch remaining resources
+				connection.server.resources = await this.fetchResourcesList(name, source)
+				connection.server.resourceTemplates = await this.fetchResourceTemplatesList(name, source)
+			} catch (readinessError) {
+				// If we can't fetch tools, the connection isn't ready
+				console.error(`Server ${name} failed readiness check:`, readinessError)
+				connection.server.status = "disconnected"
+				this.appendErrorMessage(
+					connection,
+					`Connection not ready: ${readinessError instanceof Error ? readinessError.message : String(readinessError)}`,
+				)
+				throw new Error(`MCP server ${name} failed to initialize properly. Please try restarting the server.`)
+			}
 		} catch (error) {
 			// Update status with error
 			const connection = this.findConnection(name, source)
@@ -900,6 +919,90 @@ export class McpHub {
 		return this.connections.find(
 			(conn) => conn.server.name === serverName && (conn.server.source === "global" || !conn.server.source),
 		)
+	}
+
+	/**
+	 * Fetches the tools list with retry logic to handle connection initialization race conditions.
+	 * This is particularly important for newly installed MCP servers from the marketplace.
+	 * @param serverName The name of the server
+	 * @param source The source of the server (global or project)
+	 * @param client Optional client to use directly (for initial connection check)
+	 * @returns Promise<McpTool[]> The list of tools
+	 */
+	private async fetchToolsListWithRetry(
+		serverName: string,
+		source?: "global" | "project",
+		client?: Client,
+	): Promise<McpTool[]> {
+		const maxRetries = 3
+		const baseDelay = 500 // Start with 500ms delay
+
+		for (let attempt = 0; attempt < maxRetries; attempt++) {
+			try {
+				// If client is provided, use it directly for the request
+				if (client) {
+					const response = await client.request({ method: "tools/list" }, ListToolsResultSchema)
+
+					// If successful, fetch the full tool configuration
+					const connection = this.findConnection(serverName, source)
+					if (connection) {
+						const actualSource = connection.server.source || "global"
+						let alwaysAllowConfig: string[] = []
+						let disabledToolsList: string[] = []
+
+						try {
+							let serverConfigData: Record<string, any> = {}
+							if (actualSource === "project") {
+								const projectMcpPath = await this.getProjectMcpPath()
+								if (projectMcpPath) {
+									const content = await fs.readFile(projectMcpPath, "utf-8")
+									serverConfigData = JSON.parse(content)
+								}
+							} else {
+								const configPath = await this.getMcpSettingsFilePath()
+								const content = await fs.readFile(configPath, "utf-8")
+								serverConfigData = JSON.parse(content)
+							}
+							if (serverConfigData) {
+								alwaysAllowConfig = serverConfigData.mcpServers?.[serverName]?.alwaysAllow || []
+								disabledToolsList = serverConfigData.mcpServers?.[serverName]?.disabledTools || []
+							}
+						} catch (error) {
+							console.error(`Failed to read tool configuration for ${serverName}:`, error)
+						}
+
+						const tools = (response?.tools || []).map((tool) => ({
+							...tool,
+							alwaysAllow: alwaysAllowConfig.includes(tool.name),
+							enabledForPrompt: !disabledToolsList.includes(tool.name),
+						}))
+
+						return tools
+					}
+					return response?.tools || []
+				} else {
+					// Use the existing fetchToolsList method
+					return await this.fetchToolsList(serverName, source)
+				}
+			} catch (error) {
+				const isLastAttempt = attempt === maxRetries - 1
+
+				if (isLastAttempt) {
+					console.error(`Failed to fetch tools for ${serverName} after ${maxRetries} attempts:`, error)
+					throw error
+				}
+
+				// Calculate exponential backoff delay
+				const delay = baseDelay * Math.pow(2, attempt)
+				console.log(
+					`Retrying tools fetch for ${serverName} after ${delay}ms (attempt ${attempt + 1}/${maxRetries})`,
+				)
+				await new Promise((resolve) => setTimeout(resolve, delay))
+			}
+		}
+
+		// This should never be reached due to the throw in the last attempt
+		return []
 	}
 
 	private async fetchToolsList(serverName: string, source?: "global" | "project"): Promise<McpTool[]> {
@@ -1601,19 +1704,50 @@ export class McpHub {
 			timeout = 60 * 1000
 		}
 
-		return await connection.client.request(
-			{
-				method: "tools/call",
-				params: {
-					name: toolName,
-					arguments: toolArguments,
-				},
-			},
-			CallToolResultSchema,
-			{
-				timeout,
-			},
-		)
+		// Add retry logic for tool calls to handle connection initialization race conditions
+		// This is particularly important for the first tool call after marketplace installation
+		const maxRetries = 2
+		const retryDelay = 1000 // 1 second delay between retries
+
+		for (let attempt = 0; attempt < maxRetries; attempt++) {
+			try {
+				return await connection.client.request(
+					{
+						method: "tools/call",
+						params: {
+							name: toolName,
+							arguments: toolArguments,
+						},
+					},
+					CallToolResultSchema,
+					{
+						timeout,
+					},
+				)
+			} catch (error: any) {
+				const isLastAttempt = attempt === maxRetries - 1
+				const isConnectionError = error?.code === -32000 && error?.message?.includes("Connection closed")
+
+				// Only retry on connection errors, not on other types of errors
+				if (!isConnectionError || isLastAttempt) {
+					throw error
+				}
+
+				console.log(
+					`Tool call failed with connection error, retrying in ${retryDelay}ms (attempt ${attempt + 1}/${maxRetries})`,
+				)
+				await new Promise((resolve) => setTimeout(resolve, retryDelay))
+
+				// Check if connection is still valid before retrying
+				const retryConnection = this.findConnection(serverName, source)
+				if (!retryConnection || retryConnection.type !== "connected") {
+					throw new Error(`Connection lost for server: ${serverName}`)
+				}
+			}
+		}
+
+		// This should never be reached due to the throw in the last attempt
+		throw new Error(`Failed to call tool ${toolName} on server ${serverName} after ${maxRetries} attempts`)
 	}
 
 	/**
