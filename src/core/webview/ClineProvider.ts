@@ -481,13 +481,13 @@ export class ClineProvider
 	// exists).
 	// This is used when a subtask is finished and the parent task needs to be
 	// resumed.
-	async finishSubTask(lastMessage: string) {
+	async finishSubTask(lastMessage: string, wasCancelled: boolean = false) {
 		// Remove the last cline instance from the stack (this is the finished
 		// subtask).
 		await this.removeClineFromStack()
 		// Resume the last cline instance in the stack (if it exists - this is
 		// the 'parent' calling task).
-		await this.getCurrentTask()?.completeSubtask(lastMessage)
+		await this.getCurrentTask()?.completeSubtask(lastMessage, wasCancelled)
 	}
 	// Pending Edit Operations Management
 
@@ -2583,6 +2583,44 @@ export class ClineProvider
 
 		console.log(`[cancelTask] cancelling task ${task.taskId}.${task.instanceId}`)
 
+		// Check if this is a subtask
+		const isSubtask = task.parentTask !== undefined
+
+		if (isSubtask) {
+			// For subtasks, we handle cancellation differently to prevent automatic restart
+			console.log(`[cancelTask] Cancelling subtask ${task.taskId}.${task.instanceId}`)
+
+			// Mark this as a user-initiated cancellation
+			task.abortReason = "user_cancelled"
+
+			// Begin abort (non-blocking)
+			task.abortTask()
+
+			// Mark as abandoned to prevent residual activity
+			task.abandoned = true
+
+			// Wait for the task to finish aborting
+			await pWaitFor(
+				() =>
+					this.getCurrentTask()! === undefined ||
+					this.getCurrentTask()!.isStreaming === false ||
+					this.getCurrentTask()!.didFinishAbortingStream ||
+					this.getCurrentTask()!.isWaitingForFirstChunk,
+				{
+					timeout: 3_000,
+				},
+			).catch(() => {
+				console.error("Failed to abort subtask")
+			})
+
+			// Notify the parent task that the subtask was cancelled
+			await this.finishSubTask("Subtask was cancelled by user", true)
+
+			// Don't rehydrate - let the parent task handle what to do next
+			return
+		}
+
+		// For non-subtasks, use the original cancellation logic with rehydration
 		const { historyItem, uiMessagesFilePath } = await this.getTaskWithId(task.taskId)
 
 		// Preserve parent and root task information for history item.

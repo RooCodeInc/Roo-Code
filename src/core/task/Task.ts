@@ -146,6 +146,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	readonly rootTaskId?: string
 	readonly parentTaskId?: string
 	childTaskId?: string
+	wasSubtaskCancelled?: boolean
 
 	readonly instanceId: string
 	readonly metadata: TaskMetadata
@@ -1649,32 +1650,55 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		})
 	}
 
-	public async completeSubtask(lastMessage: string) {
+	public async completeSubtask(lastMessage: string, wasCancelled: boolean = false) {
 		this.isPaused = false
 		this.childTaskId = undefined
+		this.wasSubtaskCancelled = wasCancelled
 
 		this.emit(RooCodeEventName.TaskUnpaused, this.taskId)
 
-		// Fake an answer from the subtask that it has completed running and
-		// this is the result of what it has done add the message to the chat
-		// history and to the webview ui.
-		try {
-			await this.say("subtask_result", lastMessage)
+		// Only add the subtask result if it wasn't cancelled
+		if (!wasCancelled) {
+			// Fake an answer from the subtask that it has completed running and
+			// this is the result of what it has done add the message to the chat
+			// history and to the webview ui.
+			try {
+				await this.say("subtask_result", lastMessage)
 
-			await this.addToApiConversationHistory({
-				role: "user",
-				content: [{ type: "text", text: `[new_task completed] Result: ${lastMessage}` }],
-			})
+				await this.addToApiConversationHistory({
+					role: "user",
+					content: [{ type: "text", text: `[new_task completed] Result: ${lastMessage}` }],
+				})
 
-			// Set skipPrevResponseIdOnce to ensure the next API call sends the full conversation
-			// including the subtask result, not just from before the subtask was created
-			this.skipPrevResponseIdOnce = true
-		} catch (error) {
-			this.providerRef
-				.deref()
-				?.log(`Error failed to add reply from subtask into conversation of parent task, error: ${error}`)
+				// Set skipPrevResponseIdOnce to ensure the next API call sends the full conversation
+				// including the subtask result, not just from before the subtask was created
+				this.skipPrevResponseIdOnce = true
+			} catch (error) {
+				this.providerRef
+					.deref()
+					?.log(`Error failed to add reply from subtask into conversation of parent task, error: ${error}`)
 
-			throw error
+				throw error
+			}
+		} else {
+			// If the subtask was cancelled, add a message indicating that
+			try {
+				await this.say("subtask_result", "Subtask was cancelled by user")
+
+				await this.addToApiConversationHistory({
+					role: "user",
+					content: [{ type: "text", text: `[new_task cancelled] The subtask was cancelled by the user.` }],
+				})
+
+				// Set skipPrevResponseIdOnce to ensure the next API call sends the full conversation
+				this.skipPrevResponseIdOnce = true
+			} catch (error) {
+				this.providerRef
+					.deref()
+					?.log(`Error failed to add cancellation message to parent task, error: ${error}`)
+
+				throw error
+			}
 		}
 	}
 
