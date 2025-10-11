@@ -58,7 +58,11 @@ The Model Context Protocol (MCP) enables communication between the system and MC
 
 # Connected MCP Servers
 
-When a server is connected, you can use the server's tools via the \`use_mcp_tool\` tool, and access the server's resources via the \`access_mcp_resource\` tool.
+When a server is connected, you MUST use the server's tools via the \`use_mcp_tool\` wrapper, and access the server's resources via the \`access_mcp_resource\` wrapper.
+
+**CRITICAL**: Never call MCP tools directly by their tool name. Always use the \`use_mcp_tool\` wrapper format:
+- ❌ WRONG: \`<tool_name>...\</tool_name>\`
+- ✅ CORRECT: \`<use_mcp_tool><server_name>...\</server_name><tool_name>...\</tool_name><arguments>...\</arguments>\</use_mcp_tool>\`
 
 ${connectedServers}`
 
