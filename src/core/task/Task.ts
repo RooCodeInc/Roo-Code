@@ -1219,6 +1219,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		// Task starting
 
+		// Create a checkpoint at task start to allow reverting to the beginning
+		// Use allowEmpty=true to ensure checkpoint is created even with no file changes
+		// Suppress the checkpoint_saved chat row to keep the timeline clean
+		await this.checkpointSave(true, true)
+
 		await this.initiateTaskLoop([
 			{
 				type: "text",
