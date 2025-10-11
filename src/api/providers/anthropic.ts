@@ -41,205 +41,246 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
-		let stream: AnthropicStream<Anthropic.Messages.RawMessageStreamEvent>
-		const cacheControl: CacheControlEphemeral = { type: "ephemeral" }
-		let { id: modelId, betas = [], maxTokens, temperature, reasoning: thinking } = this.getModel()
+		try {
+			let stream: AnthropicStream<Anthropic.Messages.RawMessageStreamEvent>
+			const cacheControl: CacheControlEphemeral = { type: "ephemeral" }
+			let { id: modelId, betas = [], maxTokens, temperature, reasoning: thinking } = this.getModel()
 
-		// Add 1M context beta flag if enabled for Claude Sonnet 4 and 4.5
-		if (
-			(modelId === "claude-sonnet-4-20250514" || modelId === "claude-sonnet-4-5") &&
-			this.options.anthropicBeta1MContext
-		) {
-			betas.push("context-1m-2025-08-07")
-		}
+			// Add 1M context beta flag if enabled for Claude Sonnet 4 and 4.5
+			if (
+				(modelId === "claude-sonnet-4-20250514" || modelId === "claude-sonnet-4-5") &&
+				this.options.anthropicBeta1MContext
+			) {
+				betas.push("context-1m-2025-08-07")
+			}
 
-		switch (modelId) {
-			case "claude-sonnet-4-5":
-			case "claude-sonnet-4-20250514":
-			case "claude-opus-4-1-20250805":
-			case "claude-opus-4-20250514":
-			case "claude-3-7-sonnet-20250219":
-			case "claude-3-5-sonnet-20241022":
-			case "claude-3-5-haiku-20241022":
-			case "claude-3-opus-20240229":
-			case "claude-3-haiku-20240307": {
-				/**
-				 * The latest message will be the new user message, one before
-				 * will be the assistant message from a previous request, and
-				 * the user message before that will be a previously cached user
-				 * message. So we need to mark the latest user message as
-				 * ephemeral to cache it for the next request, and mark the
-				 * second to last user message as ephemeral to let the server
-				 * know the last message to retrieve from the cache for the
-				 * current request.
-				 */
-				const userMsgIndices = messages.reduce(
-					(acc, msg, index) => (msg.role === "user" ? [...acc, index] : acc),
-					[] as number[],
-				)
+			switch (modelId) {
+				case "claude-sonnet-4-5":
+				case "claude-sonnet-4-20250514":
+				case "claude-opus-4-1-20250805":
+				case "claude-opus-4-20250514":
+				case "claude-3-7-sonnet-20250219":
+				case "claude-3-5-sonnet-20241022":
+				case "claude-3-5-haiku-20241022":
+				case "claude-3-opus-20240229":
+				case "claude-3-haiku-20240307": {
+					/**
+					 * The latest message will be the new user message, one before
+					 * will be the assistant message from a previous request, and
+					 * the user message before that will be a previously cached user
+					 * message. So we need to mark the latest user message as
+					 * ephemeral to cache it for the next request, and mark the
+					 * second to last user message as ephemeral to let the server
+					 * know the last message to retrieve from the cache for the
+					 * current request.
+					 */
+					const userMsgIndices = messages.reduce(
+						(acc, msg, index) => (msg.role === "user" ? [...acc, index] : acc),
+						[] as number[],
+					)
 
-				const lastUserMsgIndex = userMsgIndices[userMsgIndices.length - 1] ?? -1
-				const secondLastMsgUserIndex = userMsgIndices[userMsgIndices.length - 2] ?? -1
+					const lastUserMsgIndex = userMsgIndices[userMsgIndices.length - 1] ?? -1
+					const secondLastMsgUserIndex = userMsgIndices[userMsgIndices.length - 2] ?? -1
 
-				stream = await this.client.messages.create(
-					{
+					stream = await this.client.messages.create(
+						{
+							model: modelId,
+							max_tokens: maxTokens ?? ANTHROPIC_DEFAULT_MAX_TOKENS,
+							temperature,
+							thinking,
+							// Setting cache breakpoint for system prompt so new tasks can reuse it.
+							system: [{ text: systemPrompt, type: "text", cache_control: cacheControl }],
+							messages: messages.map((message, index) => {
+								if (index === lastUserMsgIndex || index === secondLastMsgUserIndex) {
+									return {
+										...message,
+										content:
+											typeof message.content === "string"
+												? [{ type: "text", text: message.content, cache_control: cacheControl }]
+												: message.content.map((content, contentIndex) =>
+														contentIndex === message.content.length - 1
+															? { ...content, cache_control: cacheControl }
+															: content,
+													),
+									}
+								}
+								return message
+							}),
+							stream: true,
+						},
+						(() => {
+							// prompt caching: https://x.com/alexalbert__/status/1823751995901272068
+							// https://github.com/anthropics/anthropic-sdk-typescript?tab=readme-ov-file#default-headers
+							// https://github.com/anthropics/anthropic-sdk-typescript/commit/c920b77fc67bd839bfeb6716ceab9d7c9bbe7393
+
+							// Then check for models that support prompt caching
+							switch (modelId) {
+								case "claude-sonnet-4-5":
+								case "claude-sonnet-4-20250514":
+								case "claude-opus-4-1-20250805":
+								case "claude-opus-4-20250514":
+								case "claude-3-7-sonnet-20250219":
+								case "claude-3-5-sonnet-20241022":
+								case "claude-3-5-haiku-20241022":
+								case "claude-3-opus-20240229":
+								case "claude-3-haiku-20240307":
+									betas.push("prompt-caching-2024-07-31")
+									return { headers: { "anthropic-beta": betas.join(",") } }
+								default:
+									return undefined
+							}
+						})(),
+					)
+					break
+				}
+				default: {
+					stream = (await this.client.messages.create({
 						model: modelId,
 						max_tokens: maxTokens ?? ANTHROPIC_DEFAULT_MAX_TOKENS,
 						temperature,
-						thinking,
-						// Setting cache breakpoint for system prompt so new tasks can reuse it.
-						system: [{ text: systemPrompt, type: "text", cache_control: cacheControl }],
-						messages: messages.map((message, index) => {
-							if (index === lastUserMsgIndex || index === secondLastMsgUserIndex) {
-								return {
-									...message,
-									content:
-										typeof message.content === "string"
-											? [{ type: "text", text: message.content, cache_control: cacheControl }]
-											: message.content.map((content, contentIndex) =>
-													contentIndex === message.content.length - 1
-														? { ...content, cache_control: cacheControl }
-														: content,
-												),
-								}
-							}
-							return message
-						}),
+						system: [{ text: systemPrompt, type: "text" }],
+						messages,
 						stream: true,
-					},
-					(() => {
-						// prompt caching: https://x.com/alexalbert__/status/1823751995901272068
-						// https://github.com/anthropics/anthropic-sdk-typescript?tab=readme-ov-file#default-headers
-						// https://github.com/anthropics/anthropic-sdk-typescript/commit/c920b77fc67bd839bfeb6716ceab9d7c9bbe7393
-
-						// Then check for models that support prompt caching
-						switch (modelId) {
-							case "claude-sonnet-4-5":
-							case "claude-sonnet-4-20250514":
-							case "claude-opus-4-1-20250805":
-							case "claude-opus-4-20250514":
-							case "claude-3-7-sonnet-20250219":
-							case "claude-3-5-sonnet-20241022":
-							case "claude-3-5-haiku-20241022":
-							case "claude-3-opus-20240229":
-							case "claude-3-haiku-20240307":
-								betas.push("prompt-caching-2024-07-31")
-								return { headers: { "anthropic-beta": betas.join(",") } }
-							default:
-								return undefined
-						}
-					})(),
-				)
-				break
-			}
-			default: {
-				stream = (await this.client.messages.create({
-					model: modelId,
-					max_tokens: maxTokens ?? ANTHROPIC_DEFAULT_MAX_TOKENS,
-					temperature,
-					system: [{ text: systemPrompt, type: "text" }],
-					messages,
-					stream: true,
-				})) as any
-				break
-			}
-		}
-
-		let inputTokens = 0
-		let outputTokens = 0
-		let cacheWriteTokens = 0
-		let cacheReadTokens = 0
-
-		for await (const chunk of stream) {
-			switch (chunk.type) {
-				case "message_start": {
-					// Tells us cache reads/writes/input/output.
-					const {
-						input_tokens = 0,
-						output_tokens = 0,
-						cache_creation_input_tokens,
-						cache_read_input_tokens,
-					} = chunk.message.usage
-
-					yield {
-						type: "usage",
-						inputTokens: input_tokens,
-						outputTokens: output_tokens,
-						cacheWriteTokens: cache_creation_input_tokens || undefined,
-						cacheReadTokens: cache_read_input_tokens || undefined,
-					}
-
-					inputTokens += input_tokens
-					outputTokens += output_tokens
-					cacheWriteTokens += cache_creation_input_tokens || 0
-					cacheReadTokens += cache_read_input_tokens || 0
-
+					})) as any
 					break
 				}
-				case "message_delta":
-					// Tells us stop_reason, stop_sequence, and output tokens
-					// along the way and at the end of the message.
-					yield {
-						type: "usage",
-						inputTokens: 0,
-						outputTokens: chunk.usage.output_tokens || 0,
-					}
-
-					break
-				case "message_stop":
-					// No usage data, just an indicator that the message is done.
-					break
-				case "content_block_start":
-					switch (chunk.content_block.type) {
-						case "thinking":
-							// We may receive multiple text blocks, in which
-							// case just insert a line break between them.
-							if (chunk.index > 0) {
-								yield { type: "reasoning", text: "\n" }
-							}
-
-							yield { type: "reasoning", text: chunk.content_block.thinking }
-							break
-						case "text":
-							// We may receive multiple text blocks, in which
-							// case just insert a line break between them.
-							if (chunk.index > 0) {
-								yield { type: "text", text: "\n" }
-							}
-
-							yield { type: "text", text: chunk.content_block.text }
-							break
-					}
-					break
-				case "content_block_delta":
-					switch (chunk.delta.type) {
-						case "thinking_delta":
-							yield { type: "reasoning", text: chunk.delta.thinking }
-							break
-						case "text_delta":
-							yield { type: "text", text: chunk.delta.text }
-							break
-					}
-
-					break
-				case "content_block_stop":
-					break
 			}
-		}
 
-		if (inputTokens > 0 || outputTokens > 0 || cacheWriteTokens > 0 || cacheReadTokens > 0) {
-			yield {
-				type: "usage",
-				inputTokens: 0,
-				outputTokens: 0,
-				totalCost: calculateApiCostAnthropic(
-					this.getModel().info,
-					inputTokens,
-					outputTokens,
-					cacheWriteTokens,
-					cacheReadTokens,
-				),
+			let inputTokens = 0
+			let outputTokens = 0
+			let cacheWriteTokens = 0
+			let cacheReadTokens = 0
+
+			for await (const chunk of stream) {
+				switch (chunk.type) {
+					case "message_start": {
+						// Tells us cache reads/writes/input/output.
+						const {
+							input_tokens = 0,
+							output_tokens = 0,
+							cache_creation_input_tokens,
+							cache_read_input_tokens,
+						} = chunk.message.usage
+
+						yield {
+							type: "usage",
+							inputTokens: input_tokens,
+							outputTokens: output_tokens,
+							cacheWriteTokens: cache_creation_input_tokens || undefined,
+							cacheReadTokens: cache_read_input_tokens || undefined,
+						}
+
+						inputTokens += input_tokens
+						outputTokens += output_tokens
+						cacheWriteTokens += cache_creation_input_tokens || 0
+						cacheReadTokens += cache_read_input_tokens || 0
+
+						break
+					}
+					case "message_delta":
+						// Tells us stop_reason, stop_sequence, and output tokens
+						// along the way and at the end of the message.
+						yield {
+							type: "usage",
+							inputTokens: 0,
+							outputTokens: chunk.usage.output_tokens || 0,
+						}
+
+						break
+					case "message_stop":
+						// No usage data, just an indicator that the message is done.
+						break
+					case "content_block_start":
+						switch (chunk.content_block.type) {
+							case "thinking":
+								// We may receive multiple text blocks, in which
+								// case just insert a line break between them.
+								if (chunk.index > 0) {
+									yield { type: "reasoning", text: "\n" }
+								}
+
+								yield { type: "reasoning", text: chunk.content_block.thinking }
+								break
+							case "text":
+								// We may receive multiple text blocks, in which
+								// case just insert a line break between them.
+								if (chunk.index > 0) {
+									yield { type: "text", text: "\n" }
+								}
+
+								yield { type: "text", text: chunk.content_block.text }
+								break
+						}
+						break
+					case "content_block_delta":
+						switch (chunk.delta.type) {
+							case "thinking_delta":
+								yield { type: "reasoning", text: chunk.delta.thinking }
+								break
+							case "text_delta":
+								yield { type: "text", text: chunk.delta.text }
+								break
+						}
+
+						break
+					case "content_block_stop":
+						break
+				}
 			}
+
+			if (inputTokens > 0 || outputTokens > 0 || cacheWriteTokens > 0 || cacheReadTokens > 0) {
+				yield {
+					type: "usage",
+					inputTokens: 0,
+					outputTokens: 0,
+					totalCost: calculateApiCostAnthropic(
+						this.getModel().info,
+						inputTokens,
+						outputTokens,
+						cacheWriteTokens,
+						cacheReadTokens,
+					),
+				}
+			}
+		} catch (error: any) {
+			// Handle specific error messages that might be incorrectly formatted
+			if (error.message && typeof error.message === "string") {
+				// Check for the specific malformed error message pattern
+				if (error.message.includes("Claude AI usage limit reached")) {
+					// Parse the timestamp if present
+					const timestampMatch = error.message.match(/\|(\d+)/)
+					const timestamp = timestampMatch ? parseInt(timestampMatch[1]) : null
+
+					// Check if this is likely a false positive (timestamp in the future or unrealistic)
+					const currentTime = Math.floor(Date.now() / 1000)
+					const oneYearFromNow = currentTime + 365 * 24 * 60 * 60
+
+					if (timestamp && timestamp > oneYearFromNow) {
+						// This is likely a false positive error
+						console.error(
+							`Detected potentially false rate limit error for model ${this.getModel().id}. Original error: ${error.message}`,
+						)
+
+						// Throw a more informative error
+						throw new Error(
+							`API error for model ${this.getModel().id}: The API returned an unexpected error format. ` +
+								`This may be a temporary issue. Please try again or check your API configuration. ` +
+								`(Original message: ${error.message})`,
+						)
+					}
+				}
+
+				// Check for actual rate limit errors from Anthropic API
+				if (error.status === 429 || error.message.includes("rate_limit_error")) {
+					throw new Error(
+						`Rate limit exceeded for model ${this.getModel().id}. ` +
+							`Please wait before making more requests or consider upgrading your API plan.`,
+					)
+				}
+			}
+
+			// Re-throw the original error if it doesn't match our patterns
+			throw error
 		}
 	}
 
@@ -284,19 +325,60 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 	}
 
 	async completePrompt(prompt: string) {
-		let { id: model, temperature } = this.getModel()
+		try {
+			let { id: model, temperature } = this.getModel()
 
-		const message = await this.client.messages.create({
-			model,
-			max_tokens: ANTHROPIC_DEFAULT_MAX_TOKENS,
-			thinking: undefined,
-			temperature,
-			messages: [{ role: "user", content: prompt }],
-			stream: false,
-		})
+			const message = await this.client.messages.create({
+				model,
+				max_tokens: ANTHROPIC_DEFAULT_MAX_TOKENS,
+				thinking: undefined,
+				temperature,
+				messages: [{ role: "user", content: prompt }],
+				stream: false,
+			})
 
-		const content = message.content.find(({ type }) => type === "text")
-		return content?.type === "text" ? content.text : ""
+			const content = message.content.find(({ type }) => type === "text")
+			return content?.type === "text" ? content.text : ""
+		} catch (error: any) {
+			// Handle specific error messages that might be incorrectly formatted
+			if (error.message && typeof error.message === "string") {
+				// Check for the specific malformed error message pattern
+				if (error.message.includes("Claude AI usage limit reached")) {
+					// Parse the timestamp if present
+					const timestampMatch = error.message.match(/\|(\d+)/)
+					const timestamp = timestampMatch ? parseInt(timestampMatch[1]) : null
+
+					// Check if this is likely a false positive (timestamp in the future or unrealistic)
+					const currentTime = Math.floor(Date.now() / 1000)
+					const oneYearFromNow = currentTime + 365 * 24 * 60 * 60
+
+					if (timestamp && timestamp > oneYearFromNow) {
+						// This is likely a false positive error
+						console.error(
+							`Detected potentially false rate limit error for model ${this.getModel().id}. Original error: ${error.message}`,
+						)
+
+						// Throw a more informative error
+						throw new Error(
+							`API error for model ${this.getModel().id}: The API returned an unexpected error format. ` +
+								`This may be a temporary issue. Please try again or check your API configuration. ` +
+								`(Original message: ${error.message})`,
+						)
+					}
+				}
+
+				// Check for actual rate limit errors from Anthropic API
+				if (error.status === 429 || error.message.includes("rate_limit_error")) {
+					throw new Error(
+						`Rate limit exceeded for model ${this.getModel().id}. ` +
+							`Please wait before making more requests or consider upgrading your API plan.`,
+					)
+				}
+			}
+
+			// Re-throw the original error if it doesn't match our patterns
+			throw error
+		}
 	}
 
 	/**
