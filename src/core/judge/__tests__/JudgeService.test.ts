@@ -229,6 +229,84 @@ describe("JudgeService", () => {
 			expect(emptyContext.conversationHistory).toHaveLength(0)
 		})
 
+		it("should handle context with multiple user feedbacks for summary", () => {
+			const multipleMessagesContext: TaskContext = {
+				...mockTaskContext,
+				conversationHistory: [
+					{
+						ts: Date.now(),
+						type: "say",
+						say: "user_feedback",
+						text: "First user requirement",
+					},
+					{
+						ts: Date.now() + 1000,
+						type: "say",
+						say: "text",
+						text: "Assistant response",
+					},
+					{
+						ts: Date.now() + 2000,
+						type: "say",
+						say: "user_feedback",
+						text: "Second user requirement",
+					},
+					{
+						ts: Date.now() + 3000,
+						type: "say",
+						say: "completion_result",
+						text: "Task partially completed",
+					},
+					{
+						ts: Date.now() + 4000,
+						type: "say",
+						say: "user_feedback",
+						text: "Third user requirement - most recent",
+					},
+				] as ClineMessage[],
+			}
+
+			// Context should be built as: original task + context summary (last 3 feedbacks + last 2 attempts)
+			expect(multipleMessagesContext.conversationHistory).toHaveLength(5)
+			const userFeedbacks = multipleMessagesContext.conversationHistory.filter(
+				(m) => m.type === "say" && m.say === "user_feedback",
+			)
+			expect(userFeedbacks).toHaveLength(3)
+		})
+
+		it("should handle context with completion attempts for summary", () => {
+			const completionContext: TaskContext = {
+				...mockTaskContext,
+				conversationHistory: [
+					{
+						ts: Date.now(),
+						type: "say",
+						say: "completion_result",
+						text: "First attempt completed",
+					},
+					{
+						ts: Date.now() + 1000,
+						type: "say",
+						say: "user_feedback",
+						text: "Please improve this",
+					},
+					{
+						ts: Date.now() + 2000,
+						type: "say",
+						say: "completion_result",
+						text: "Second attempt completed",
+					},
+				] as ClineMessage[],
+			}
+
+			// Context should include last 2 completion attempts in summary
+			expect(completionContext.conversationHistory).toHaveLength(3)
+			const completionResults = completionContext.conversationHistory.filter(
+				(m) => m.type === "say" && m.say === "completion_result",
+			)
+			expect(completionResults).toHaveLength(2)
+		})
+
 		it("should handle empty files modified list", () => {
 			const noFilesContext: TaskContext = {
 				...mockTaskContext,

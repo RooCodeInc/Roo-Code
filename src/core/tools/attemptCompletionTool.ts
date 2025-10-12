@@ -93,6 +93,19 @@ export async function attemptCompletionTool(
 			// Judge mode check: Invoke judge if enabled
 			const shouldInvokeJudge = await cline.shouldInvokeJudge()
 			if (shouldInvokeJudge) {
+				// Show "judging in progress" message before invoking judge
+				await cline.say(
+					"text",
+					"🧑‍⚖️ 裁判正在分析任务完成情况，请稍后...",
+					undefined,
+					false,
+					undefined,
+					undefined,
+					{
+						isNonInteractive: false,
+					},
+				)
+
 				const judgeResult = await cline.invokeJudge(result)
 
 				if (!judgeResult.approved) {

@@ -3141,33 +3141,101 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	/**
 	 * 构建增强的任务描述
-	 * 包含原始任务和最近的用户反馈，以解决上下文问题
+	 * 策略：第一条原始任务 + 上下文总结（用户需求变更、任务完成尝试）
 	 */
 	private buildEnhancedTaskDescription(): string {
+		// 1. 原始任务（第一条消息）
 		let taskDescription = this.metadata.task || ""
 
-		const recentUserMessages: string[] = []
+		// 2. 构建上下文总结
+		const contextSummary = this.buildContextSummary()
 
-		// 从后往前遍历，收集最近5条用户反馈
-		for (let i = this.clineMessages.length - 1; i >= 0 && recentUserMessages.length < 5; i--) {
-			const message = this.clineMessages[i]
-
-			if (message.type === "say" && message.say === "user_feedback" && message.text) {
-				recentUserMessages.unshift(message.text)
-			} else if (message.type === "ask" && message.text && !message.text.startsWith("[")) {
-				// 排除系统生成的消息（通常以 [ 开头）
-				recentUserMessages.unshift(message.text)
-			}
-		}
-
-		if (recentUserMessages.length > 0) {
-			taskDescription += "\n\n## Recent User Feedback and Requirements:\n"
-			recentUserMessages.forEach((msg, index) => {
-				taskDescription += `\n${index + 1}. ${msg}`
-			})
+		if (contextSummary) {
+			taskDescription += "\n\n## Context Summary\n" + contextSummary
 		}
 
 		return taskDescription
+	}
+
+	/**
+	 * 构建上下文总结
+	 * 智能分析对话历史，提取关键信息：
+	 * - 用户的需求变更和反馈
+	 * - 任务完成尝试的关键信息
+	 * - 当前任务状态
+	 */
+	private buildContextSummary(): string {
+		const summaryParts: string[] = []
+
+		// 收集用户反馈和需求变更
+		const userFeedbacks = this.clineMessages
+			.filter((m) => m.type === "say" && m.say === "user_feedback" && m.text)
+			.map((m) => m.text!)
+
+		if (userFeedbacks.length > 0) {
+			// 只取最后3条，保持简洁
+			const recentFeedbacks = userFeedbacks.slice(-3)
+			summaryParts.push(
+				"### User Requirements and Feedback:\n" +
+					recentFeedbacks
+						.map((fb, i) => `${i + 1}. ${fb.substring(0, 200)}${fb.length > 200 ? "..." : ""}`)
+						.join("\n"),
+			)
+		}
+
+		// 收集任务完成尝试
+		const completionAttempts = this.clineMessages
+			.filter((m) => m.type === "say" && m.say === "completion_result" && m.text)
+			.map((m) => m.text!)
+
+		if (completionAttempts.length > 0) {
+			// 只取最后2条尝试
+			const recentAttempts = completionAttempts.slice(-2)
+			summaryParts.push(
+				"### Recent Completion Attempts:\n" +
+					recentAttempts
+						.map(
+							(attempt, i) =>
+								`${i + 1}. ${attempt.substring(0, 150)}${attempt.length > 150 ? "..." : ""}`,
+						)
+						.join("\n"),
+			)
+		}
+
+		// 分析工具使用情况，了解已执行的操作
+		const toolUsageSummary = this.getToolUsageSummary()
+		if (toolUsageSummary) {
+			summaryParts.push("### Actions Performed:\n" + toolUsageSummary)
+		}
+
+		return summaryParts.join("\n\n")
+	}
+
+	/**
+	 * 获取工具使用摘要
+	 * 帮助裁判了解已执行的操作类型
+	 */
+	private getToolUsageSummary(): string {
+		const toolCounts: Record<string, number> = {}
+
+		for (const message of this.clineMessages) {
+			if (message.type === "say" && message.say) {
+				const toolTypes = ["write_to_file", "read_file", "execute_command", "apply_diff", "search_files"]
+				for (const tool of toolTypes) {
+					if (message.text?.includes(tool)) {
+						toolCounts[tool] = (toolCounts[tool] || 0) + 1
+					}
+				}
+			}
+		}
+
+		if (Object.keys(toolCounts).length === 0) {
+			return ""
+		}
+
+		return Object.entries(toolCounts)
+			.map(([tool, count]) => `- ${tool}: ${count} time(s)`)
+			.join("\n")
 	}
 
 	/**
