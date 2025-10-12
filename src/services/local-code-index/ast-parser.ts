@@ -1,4 +1,4 @@
-import Parser from "web-tree-sitter"
+import Parser, { Node as SyntaxNode } from "web-tree-sitter"
 import { loadRequiredLanguageParsers, type LanguageParser } from "../tree-sitter/languageParser"
 import * as path from "path"
 import * as fs from "fs/promises"
@@ -36,6 +36,9 @@ export class LocalASTParser {
 
 		try {
 			const tree = parser.parse(content)
+			if (!tree) {
+				return null
+			}
 			const lines = content.split("\n")
 
 			return {
@@ -140,7 +143,7 @@ export class LocalASTParser {
 	/**
 	 * 解析单个代码块
 	 */
-	private parseCodeBlock(node: Parser.SyntaxNode, lines: string[], content: string): ParsedCodeBlock | null {
+	private parseCodeBlock(node: SyntaxNode, lines: string[], content: string): ParsedCodeBlock | null {
 		const startLine = node.startPosition.row
 		const endLine = node.endPosition.row
 
@@ -178,18 +181,18 @@ export class LocalASTParser {
 			startColumn: node.startPosition.column,
 			endColumn: node.endPosition.column,
 			content: blockContent,
-			signature,
-			docComment,
+			signature: signature ?? undefined,
+			docComment: docComment ?? undefined,
 			modifiers,
 			parameters,
-			returnType,
+			returnType: returnType ?? undefined,
 		}
 	}
 
 	/**
 	 * 推断代码块类型
 	 */
-	private inferBlockType(node: Parser.SyntaxNode): CodeBlockType | null {
+	private inferBlockType(node: SyntaxNode): CodeBlockType | null {
 		const typeMap: Record<string, CodeBlockType> = {
 			class_declaration: "class",
 			interface_declaration: "interface",
@@ -212,7 +215,7 @@ export class LocalASTParser {
 	/**
 	 * 提取名称
 	 */
-	private extractName(node: Parser.SyntaxNode): string | null {
+	private extractName(node: SyntaxNode): string | null {
 		// 查找 identifier 或 name 节点
 		const nameNode = node.childForFieldName("name") || node.descendantsOfType("identifier")[0]
 
@@ -222,7 +225,7 @@ export class LocalASTParser {
 	/**
 	 * 提取文档注释
 	 */
-	private extractDocComment(node: Parser.SyntaxNode, lines: string[]): string | null {
+	private extractDocComment(node: SyntaxNode, lines: string[]): string | null {
 		const startLine = node.startPosition.row
 
 		// 向上查找注释
@@ -248,7 +251,7 @@ export class LocalASTParser {
 	/**
 	 * 提取函数签名
 	 */
-	private extractSignature(node: Parser.SyntaxNode, lines: string[]): string | null {
+	private extractSignature(node: SyntaxNode, lines: string[]): string | null {
 		const startLine = node.startPosition.row
 		const line = lines[startLine]
 
@@ -265,7 +268,7 @@ export class LocalASTParser {
 	/**
 	 * 提取修饰符
 	 */
-	private extractModifiers(node: Parser.SyntaxNode): string[] {
+	private extractModifiers(node: SyntaxNode): string[] {
 		const modifiers: string[] = []
 
 		// 检查常见修饰符
@@ -283,7 +286,7 @@ export class LocalASTParser {
 		]
 
 		for (const child of node.children) {
-			if (modifierTypes.includes(child.type) || modifierTypes.includes(child.text)) {
+			if (child && (modifierTypes.includes(child.type) || modifierTypes.includes(child.text))) {
 				modifiers.push(child.text)
 			}
 		}
@@ -294,7 +297,7 @@ export class LocalASTParser {
 	/**
 	 * 提取参数列表
 	 */
-	private extractParameters(node: Parser.SyntaxNode): ParsedCodeBlock["parameters"] {
+	private extractParameters(node: SyntaxNode): ParsedCodeBlock["parameters"] {
 		const paramsNode = node.childForFieldName("parameters")
 		if (!paramsNode) return undefined
 
@@ -302,9 +305,10 @@ export class LocalASTParser {
 
 		for (const param of paramsNode.children) {
 			if (
-				param.type === "required_parameter" ||
-				param.type === "optional_parameter" ||
-				param.type.includes("parameter")
+				param &&
+				(param.type === "required_parameter" ||
+					param.type === "optional_parameter" ||
+					param.type.includes("parameter"))
 			) {
 				const name = param.childForFieldName("pattern")?.text || param.text
 				const typeNode = param.childForFieldName("type")
@@ -320,7 +324,7 @@ export class LocalASTParser {
 	/**
 	 * 提取返回类型
 	 */
-	private extractReturnType(node: Parser.SyntaxNode): string | null {
+	private extractReturnType(node: SyntaxNode): string | null {
 		const returnTypeNode = node.childForFieldName("return_type")
 		return returnTypeNode ? returnTypeNode.text : null
 	}
@@ -338,9 +342,11 @@ export class LocalASTParser {
 			const importNodes = tree.rootNode.descendantsOfType(nodeType)
 
 			for (const node of importNodes) {
-				const importInfo = this.parseImportNode(node, lines)
-				if (importInfo) {
-					imports.push(importInfo)
+				if (node) {
+					const importInfo = this.parseImportNode(node, lines)
+					if (importInfo) {
+						imports.push(importInfo)
+					}
 				}
 			}
 		}
@@ -368,7 +374,7 @@ export class LocalASTParser {
 	/**
 	 * 解析导入节点
 	 */
-	private parseImportNode(node: Parser.SyntaxNode, lines: string[]): ParsedImport | null {
+	private parseImportNode(node: SyntaxNode, lines: string[]): ParsedImport | null {
 		const lineNumber = node.startPosition.row
 		const line = lines[lineNumber]
 

@@ -310,6 +310,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	private tokenUsageSnapshot?: TokenUsage
 	private tokenUsageSnapshotAt?: number
 
+	// Message Persistence Debouncing
+	private readonly SAVE_DEBOUNCE_MS = 1000
+	private saveDebounceTimer?: NodeJS.Timeout
+	private pendingSave: boolean = false
+
 	constructor({
 		provider,
 		apiConfiguration,
@@ -741,6 +746,72 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	}
 
 	private async saveClineMessages() {
+		// Clear any existing debounce timer
+		if (this.saveDebounceTimer) {
+			clearTimeout(this.saveDebounceTimer)
+			this.saveDebounceTimer = undefined
+		}
+
+		// Mark that we have a pending save
+		this.pendingSave = true
+
+		// Set up debounced save
+		this.saveDebounceTimer = setTimeout(async () => {
+			try {
+				await saveTaskMessages({
+					messages: this.clineMessages,
+					taskId: this.taskId,
+					globalStoragePath: this.globalStoragePath,
+				})
+
+				const { historyItem, tokenUsage } = await taskMetadata({
+					taskId: this.taskId,
+					rootTaskId: this.rootTaskId,
+					parentTaskId: this.parentTaskId,
+					taskNumber: this.taskNumber,
+					messages: this.clineMessages,
+					globalStoragePath: this.globalStoragePath,
+					workspace: this.cwd,
+					mode: this._taskMode || defaultModeSlug, // Use the task's own mode, not the current provider mode.
+				})
+
+				if (hasTokenUsageChanged(tokenUsage, this.tokenUsageSnapshot)) {
+					this.emit(RooCodeEventName.TaskTokenUsageUpdated, this.taskId, tokenUsage)
+					this.tokenUsageSnapshot = undefined
+					this.tokenUsageSnapshotAt = undefined
+				}
+
+				await this.providerRef.deref()?.updateTaskHistory(historyItem)
+
+				// Clear pending save flag after successful save
+				this.pendingSave = false
+				this.saveDebounceTimer = undefined
+			} catch (error) {
+				console.error("Failed to save Roo messages:", error)
+				// Clear flags even on error to allow retry
+				this.pendingSave = false
+				this.saveDebounceTimer = undefined
+			}
+		}, this.SAVE_DEBOUNCE_MS)
+	}
+
+	/**
+	 * Flush any pending debounced saves immediately
+	 * Used when we need to ensure messages are persisted (e.g., before disposal)
+	 */
+	public async flushPendingSave(): Promise<void> {
+		// If there's no pending save, nothing to do
+		if (!this.pendingSave) {
+			return
+		}
+
+		// Clear the debounce timer
+		if (this.saveDebounceTimer) {
+			clearTimeout(this.saveDebounceTimer)
+			this.saveDebounceTimer = undefined
+		}
+
+		// Perform the save immediately
 		try {
 			await saveTaskMessages({
 				messages: this.clineMessages,
@@ -756,7 +827,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				messages: this.clineMessages,
 				globalStoragePath: this.globalStoragePath,
 				workspace: this.cwd,
-				mode: this._taskMode || defaultModeSlug, // Use the task's own mode, not the current provider mode.
+				mode: this._taskMode || defaultModeSlug,
 			})
 
 			if (hasTokenUsageChanged(tokenUsage, this.tokenUsageSnapshot)) {
@@ -766,8 +837,13 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			}
 
 			await this.providerRef.deref()?.updateTaskHistory(historyItem)
+
+			// Clear pending save flag
+			this.pendingSave = false
 		} catch (error) {
-			console.error("Failed to save Roo messages:", error)
+			console.error("Failed to flush pending save:", error)
+			// Clear flag even on error
+			this.pendingSave = false
 		}
 	}
 
@@ -1612,6 +1688,25 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	public dispose(): void {
 		console.log(`[Task#dispose] disposing task ${this.taskId}.${this.instanceId}`)
+
+		// Flush any pending saves before disposal
+		try {
+			if (this.pendingSave) {
+				// Note: This is a fire-and-forget async operation
+				// We can't await here as dispose() is synchronous
+				this.flushPendingSave().catch((error) => {
+					console.error("Error flushing pending save during disposal:", error)
+				})
+			}
+
+			// Clear debounce timer
+			if (this.saveDebounceTimer) {
+				clearTimeout(this.saveDebounceTimer)
+				this.saveDebounceTimer = undefined
+			}
+		} catch (error) {
+			console.error("Error handling pending saves during disposal:", error)
+		}
 
 		// Dispose message queue and remove event listeners.
 		try {

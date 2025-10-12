@@ -92,7 +92,7 @@ describe("VectorMemoryStore Integration with Context Condensing", () => {
 		} as unknown as VectorMemoryStore
 
 		// Create conversation memory
-		conversationMemory = new ConversationMemory()
+		conversationMemory = new ConversationMemory("test-task-id")
 	})
 
 	afterEach(() => {

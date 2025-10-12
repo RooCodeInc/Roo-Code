@@ -189,7 +189,7 @@ describe("Task - ImageManager Integration", () => {
 
 		// Verify both images were saved
 		for (const imageId of message.imageIds!) {
-			const imageManager = task["imageManager"]
+			const imageManager = (task as any)["imageManager"]
 			const loadedImage = await imageManager.loadImage(task.taskId, imageId)
 			expect(loadedImage).toBeDefined()
 			expect(loadedImage).toMatch(/^data:image\/(png|jpeg);base64,/)

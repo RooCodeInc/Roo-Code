@@ -557,6 +557,7 @@ describe("ClineProvider", () => {
 			remoteControlEnabled: false,
 			taskSyncEnabled: false,
 			featureRoomoteControlEnabled: false,
+			vectorMemoryEnabled: false,
 		}
 
 		const message: ExtensionMessage = {
