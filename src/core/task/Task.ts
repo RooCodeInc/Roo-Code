@@ -9,6 +9,10 @@ import delay from "delay"
 import pWaitFor from "p-wait-for"
 import { serializeError } from "serialize-error"
 
+// Judge
+import { JudgeService } from "../judge/JudgeService"
+import { JudgeConfig, JudgeResult, DEFAULT_JUDGE_CONFIG } from "../judge/types"
+
 import {
 	type TaskLike,
 	type TaskMetadata,
@@ -243,6 +247,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	terminalProcess?: RooTerminalProcess
 	conversationMemory: ConversationMemory
 	vectorMemoryStore?: VectorMemoryStore
+
+	// Judge Service
+	private judgeService?: JudgeService
 
 	// Computer User
 	browserSession: BrowserSession
@@ -2981,6 +2988,260 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			console.error(`[Task#${this.taskId}] Error persisting GPT-5 metadata:`, error)
 			// Non-fatal error in metadata persistence
 		}
+	}
+
+	// Judge Mode Methods
+
+	/**
+	 * 获取裁判配置
+	 * 从 provider state 中获取裁判模式的配置
+	 */
+	private async getJudgeConfig(): Promise<JudgeConfig> {
+		try {
+			const state = await this.providerRef.deref()?.getState()
+			const judgeConfig = state?.judgeConfig
+
+			if (judgeConfig) {
+				return judgeConfig
+			}
+
+			return DEFAULT_JUDGE_CONFIG
+		} catch (error) {
+			console.error("[Task#getJudgeConfig] Error getting judge config:", error)
+			return DEFAULT_JUDGE_CONFIG
+		}
+	}
+
+	/**
+	 * 判断是否应该调用裁判
+	 */
+	async shouldInvokeJudge(): Promise<boolean> {
+		const judgeConfig = await this.getJudgeConfig()
+
+		if (!judgeConfig.enabled) {
+			return false
+		}
+
+		if (judgeConfig.mode === "always") {
+			return true
+		}
+
+		if (judgeConfig.mode === "ask") {
+			// 询问用户是否调用裁判
+			const { response } = await this.ask(
+				"followup",
+				JSON.stringify({
+					question: "Do you want to invoke the judge to verify task completion?",
+					suggest: [
+						{ answer: "Yes, invoke the judge to verify completion" },
+						{ answer: "No, skip judge verification" },
+					],
+				}),
+			)
+			return response === "yesButtonClicked"
+		}
+
+		return false
+	}
+
+	/**
+	 * 构建增强的任务描述
+	 * 包含原始任务和最近的用户反馈，以解决上下文问题
+	 */
+	private buildEnhancedTaskDescription(): string {
+		let taskDescription = this.metadata.task || ""
+
+		const recentUserMessages: string[] = []
+
+		// 从后往前遍历，收集最近5条用户反馈
+		for (let i = this.clineMessages.length - 1; i >= 0 && recentUserMessages.length < 5; i--) {
+			const message = this.clineMessages[i]
+
+			if (message.type === "say" && message.say === "user_feedback" && message.text) {
+				recentUserMessages.unshift(message.text)
+			} else if (message.type === "ask" && message.text && !message.text.startsWith("[")) {
+				// 排除系统生成的消息（通常以 [ 开头）
+				recentUserMessages.unshift(message.text)
+			}
+		}
+
+		if (recentUserMessages.length > 0) {
+			taskDescription += "\n\n## Recent User Feedback and Requirements:\n"
+			recentUserMessages.forEach((msg, index) => {
+				taskDescription += `\n${index + 1}. ${msg}`
+			})
+		}
+
+		return taskDescription
+	}
+
+	/**
+	 * 调用裁判服务
+	 */
+	async invokeJudge(attemptResult: string): Promise<JudgeResult> {
+		// 初始化裁判服务（如果还没有）
+		if (!this.judgeService) {
+			const judgeConfig = await this.getJudgeConfig()
+			const provider = this.providerRef.deref()
+
+			if (!provider) {
+				throw new Error("Provider not available for judge service initialization")
+			}
+
+			this.judgeService = new JudgeService(judgeConfig, provider.context)
+
+			// 如果没有配置独立的裁判模型，使用主模型的 ApiHandler
+			if (!judgeConfig.modelConfig) {
+				this.judgeService.setApiHandler(this.api)
+			}
+		}
+
+		// 使用增强的任务描述，包含最近的用户反馈
+		const enhancedTaskDescription = this.buildEnhancedTaskDescription()
+
+		// 构建任务上下文
+		const taskContext: import("../judge/types").TaskContext = {
+			originalTask: enhancedTaskDescription,
+			conversationHistory: this.clineMessages,
+			toolCalls: this.getToolCallHistory(),
+			fileChanges: this.getFileChangeHistory(),
+			currentMode: await this.getTaskMode(),
+		}
+
+		return await this.judgeService.judgeCompletion(taskContext, attemptResult)
+	}
+
+	/**
+	 * 处理裁判拒绝的情况
+	 * 返回 true 表示用户选择强制完成，false 表示继续工作
+	 */
+	async handleJudgeRejection(judgeResult: JudgeResult): Promise<boolean> {
+		const config = await this.getJudgeConfig()
+
+		// 构建裁判反馈消息
+		let feedback = `## 🧑‍⚖️ Judge Feedback\n\n`
+		feedback += `**Decision**: Task completion rejected\n\n`
+		feedback += `**Reasoning**: ${judgeResult.reasoning}\n\n`
+
+		if (judgeResult.missingItems && judgeResult.missingItems.length > 0) {
+			feedback += `**Missing Items**:\n`
+			judgeResult.missingItems.forEach((item, i) => {
+				feedback += `${i + 1}. ${item}\n`
+			})
+			feedback += `\n`
+		}
+
+		if (judgeResult.suggestions && judgeResult.suggestions.length > 0) {
+			feedback += `**Suggestions**:\n`
+			judgeResult.suggestions.forEach((suggestion, i) => {
+				feedback += `${i + 1}. ${suggestion}\n`
+			})
+		}
+
+		if (config.allowUserOverride) {
+			// 首先使用 say() 显示裁判反馈
+			await this.say("text", feedback, undefined, false, undefined, undefined, {
+				isNonInteractive: false,
+			})
+
+			// 然后使用 ask("followup") 询问用户
+			const question = "Do you want to continue working on this task?"
+			const suggestions = [
+				{ answer: "Yes, continue working to address the judge's feedback" },
+				{ answer: "No, complete the task anyway and ignore the judge's feedback" },
+			]
+
+			const { response, text } = await this.ask(
+				"followup",
+				JSON.stringify({ question, suggest: suggestions }),
+				false,
+			)
+
+			// 检测用户是否想要强制完成
+			const userWantsToComplete =
+				response === "noButtonClicked" ||
+				(response === "messageResponse" &&
+					text &&
+					(text.toLowerCase().includes("complete") ||
+						text.toLowerCase().includes("ignore") ||
+						text.toLowerCase().includes("anyway") ||
+						text.toLowerCase().includes("finish")))
+
+			if (userWantsToComplete) {
+				// 用户选择忽略裁判反馈，强制完成任务
+				await this.say(
+					"user_feedback",
+					"User chose to complete the task anyway, ignoring judge feedback.",
+					undefined,
+					false,
+					undefined,
+					undefined,
+					{ isNonInteractive: false },
+				)
+				return true
+			}
+
+			// 用户选择继续工作
+			return false
+		} else {
+			// 不允许用户覆盖，直接将裁判反馈注入对话
+			await this.say("text", feedback, undefined, false, undefined, undefined, {
+				isNonInteractive: false,
+			})
+			return false
+		}
+	}
+
+	/**
+	 * 获取工具调用历史
+	 */
+	private getToolCallHistory(): string[] {
+		const toolCalls: string[] = []
+
+		for (const message of this.clineMessages) {
+			if (message.type === "say" && message.say) {
+				// 提取工具调用类型
+				const toolTypes = [
+					"tool",
+					"command",
+					"completion_result",
+					"api_req_started",
+					"browser_action",
+					"browser_action_launch",
+					"use_mcp_server",
+				]
+
+				if (toolTypes.includes(message.say)) {
+					toolCalls.push(message.say)
+				}
+			}
+		}
+
+		return toolCalls
+	}
+
+	/**
+	 * 获取文件修改历史
+	 */
+	private getFileChangeHistory(): string[] {
+		const fileChanges: Set<string> = new Set()
+
+		for (const message of this.clineMessages) {
+			if (message.type === "say" && message.say && message.text) {
+				// 从工具调用中提取文件路径
+				// 使用类型断言来避免类型检查错误
+				const sayType = message.say as string
+				if ((sayType === "tool" || sayType === "completion_result") && message.text.includes("write_to_file")) {
+					// 尝试从文本中提取文件路径
+					const pathMatch = message.text.match(/(?:path|file):\s*([^\s,)]+)/)
+					if (pathMatch && pathMatch[1]) {
+						fileChanges.add(pathMatch[1])
+					}
+				}
+			}
+		}
+
+		return Array.from(fileChanges)
 	}
 
 	// Getters
