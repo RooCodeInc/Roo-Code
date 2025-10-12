@@ -48,11 +48,16 @@
 		"geminiConfigMissing": "Отсутствует конфигурация Gemini для создания эмбеддера",
 		"mistralConfigMissing": "Конфигурация Mistral отсутствует для создания эмбеддера",
 		"vercelAiGatewayConfigMissing": "Конфигурация Vercel AI Gateway отсутствует для создания эмбеддера",
+		"nebiusConfigMissing": "Отсутствует конфигурация Nebius для создания эмбеддера",
 		"invalidEmbedderType": "Настроен недопустимый тип эмбеддера: {{embedderProvider}}",
 		"vectorDimensionNotDeterminedOpenAiCompatible": "Не удалось определить размерность вектора для модели '{{modelId}}' с провайдером '{{provider}}'. Убедитесь, что 'Размерность эмбеддинга' правильно установлена в настройках провайдера, совместимого с OpenAI.",
 		"vectorDimensionNotDetermined": "Не удалось определить размерность вектора для модели '{{modelId}}' с провайдером '{{provider}}'. Проверьте профили модели или конфигурацию.",
 		"qdrantUrlMissing": "Отсутствует URL Qdrant для создания векторного хранилища",
 		"codeIndexingNotConfigured": "Невозможно создать сервисы: Индексация кода не настроена должным образом"
+	},
+	"nebius": {
+		"rateLimitExceeded": "Превышен лимит Nebius для {{type}} (лимит: {{limit}} на {{window}}).",
+		"waitingForRateLimit": "Ожидание сброса лимита Nebius (пауза {{waitTimeMs}} мс)..."
 	},
 	"orchestrator": {
 		"indexingFailedNoBlocks": "Индексация не удалась: Ни один блок кода не был успешно проиндексирован. Это обычно указывает на проблему конфигурации эмбеддера.",

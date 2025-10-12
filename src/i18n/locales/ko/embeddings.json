@@ -48,11 +48,16 @@
 		"geminiConfigMissing": "임베더 생성을 위한 Gemini 구성이 누락되었습니다",
 		"mistralConfigMissing": "임베더 생성을 위한 Mistral 구성이 없습니다",
 		"vercelAiGatewayConfigMissing": "임베더 생성을 위한 Vercel AI Gateway 구성이 없습니다",
+		"nebiusConfigMissing": "임베더 생성을 위한 Nebius 구성이 없습니다",
 		"invalidEmbedderType": "잘못된 임베더 유형이 구성되었습니다: {{embedderProvider}}",
 		"vectorDimensionNotDeterminedOpenAiCompatible": "프로바이더 '{{provider}}'의 모델 '{{modelId}}'에 대한 벡터 차원을 결정할 수 없습니다. OpenAI 호환 프로바이더 설정에서 '임베딩 차원'이 올바르게 설정되어 있는지 확인하세요.",
 		"vectorDimensionNotDetermined": "프로바이더 '{{provider}}'의 모델 '{{modelId}}'에 대한 벡터 차원을 결정할 수 없습니다. 모델 프로필 또는 구성을 확인하세요.",
 		"qdrantUrlMissing": "벡터 저장소 생성을 위한 Qdrant URL이 누락되었습니다",
 		"codeIndexingNotConfigured": "서비스를 생성할 수 없습니다: 코드 인덱싱이 올바르게 구성되지 않았습니다"
+	},
+	"nebius": {
+		"rateLimitExceeded": "Nebius 제한을 {{type}}에 대해 초과했습니다(제한: {{window}}당 {{limit}}).",
+		"waitingForRateLimit": "Nebius 제한이 재설정될 때까지 대기 중({{waitTimeMs}}ms 대기)..."
 	},
 	"orchestrator": {
 		"indexingFailedNoBlocks": "인덱싱 실패: 코드 블록이 성공적으로 인덱싱되지 않았습니다. 이는 일반적으로 임베더 구성 문제를 나타냅니다.",

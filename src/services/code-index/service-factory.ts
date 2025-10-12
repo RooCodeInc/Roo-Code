@@ -5,6 +5,7 @@ import { OpenAICompatibleEmbedder } from "./embedders/openai-compatible"
 import { GeminiEmbedder } from "./embedders/gemini"
 import { MistralEmbedder } from "./embedders/mistral"
 import { VercelAiGatewayEmbedder } from "./embedders/vercel-ai-gateway"
+import { NebiusEmbedder } from "./embedders/nebius"
 import { EmbedderProvider, getDefaultModelId, getModelDimension } from "../../shared/embeddingModels"
 import { QdrantVectorStore } from "./vector-store/qdrant-client"
 import { codeParser, DirectoryScanner, FileWatcher } from "./processors"
@@ -79,6 +80,11 @@ export class CodeIndexServiceFactory {
 				throw new Error(t("embeddings:serviceFactory.vercelAiGatewayConfigMissing"))
 			}
 			return new VercelAiGatewayEmbedder(config.vercelAiGatewayOptions.apiKey, config.modelId)
+		} else if (provider === "nebius") {
+			if (!config.nebiusOptions?.apiKey) {
+				throw new Error(t("embeddings:serviceFactory.nebiusConfigMissing"))
+			}
+			return new NebiusEmbedder(config.nebiusOptions.apiKey, config.modelId)
 		}
 
 		throw new Error(

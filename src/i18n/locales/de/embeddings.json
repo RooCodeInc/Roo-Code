@@ -48,11 +48,16 @@
 		"geminiConfigMissing": "Gemini-Konfiguration fehlt für die Erstellung des Embedders",
 		"mistralConfigMissing": "Mistral-Konfiguration fehlt für die Erstellung des Embedders",
 		"vercelAiGatewayConfigMissing": "Vercel AI Gateway-Konfiguration fehlt für die Erstellung des Embedders",
+		"nebiusConfigMissing": "Nebius-Konfiguration fehlt für die Erstellung des Embedders",
 		"invalidEmbedderType": "Ungültiger Embedder-Typ konfiguriert: {{embedderProvider}}",
 		"vectorDimensionNotDeterminedOpenAiCompatible": "Konnte die Vektordimension für Modell '{{modelId}}' mit Anbieter '{{provider}}' nicht bestimmen. Stelle sicher, dass die 'Embedding-Dimension' in den OpenAI-kompatiblen Anbietereinstellungen korrekt eingestellt ist.",
 		"vectorDimensionNotDetermined": "Konnte die Vektordimension für Modell '{{modelId}}' mit Anbieter '{{provider}}' nicht bestimmen. Überprüfe die Modellprofile oder Konfiguration.",
 		"qdrantUrlMissing": "Qdrant-URL fehlt für die Erstellung des Vektorspeichers",
 		"codeIndexingNotConfigured": "Kann keine Dienste erstellen: Code-Indizierung ist nicht richtig konfiguriert"
+	},
+	"nebius": {
+		"rateLimitExceeded": "Nebius-Ratenlimit für {{type}} überschritten (Limit: {{limit}} pro {{window}}).",
+		"waitingForRateLimit": "Warte auf Zurücksetzen des Nebius-Ratenlimits (pausiere {{waitTimeMs}}ms)..."
 	},
 	"orchestrator": {
 		"indexingFailedNoBlocks": "Indizierung fehlgeschlagen: Keine Code-Blöcke wurden erfolgreich indiziert. Dies deutet normalerweise auf ein Embedder-Konfigurationsproblem hin.",

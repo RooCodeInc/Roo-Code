@@ -48,11 +48,16 @@
 		"geminiConfigMissing": "Falta la configuració de Gemini per crear l'embedder",
 		"mistralConfigMissing": "Falta la configuració de Mistral per crear l'embedder",
 		"vercelAiGatewayConfigMissing": "Falta la configuració de Vercel AI Gateway per crear l'embedder",
+		"nebiusConfigMissing": "Falta la configuració de Nebius per crear l'embedder",
 		"invalidEmbedderType": "Tipus d'embedder configurat no vàlid: {{embedderProvider}}",
 		"vectorDimensionNotDeterminedOpenAiCompatible": "No s'ha pogut determinar la dimensió del vector per al model '{{modelId}}' amb el proveïdor '{{provider}}'. Assegura't que la 'Dimensió d'incrustació' estigui configurada correctament als paràmetres del proveïdor compatible amb OpenAI.",
 		"vectorDimensionNotDetermined": "No s'ha pogut determinar la dimensió del vector per al model '{{modelId}}' amb el proveïdor '{{provider}}'. Comprova els perfils del model o la configuració.",
 		"qdrantUrlMissing": "Falta l'URL de Qdrant per crear l'emmagatzematge de vectors",
 		"codeIndexingNotConfigured": "No es poden crear serveis: La indexació de codi no està configurada correctament"
+	},
+	"nebius": {
+		"rateLimitExceeded": "S'ha superat el límit de Nebius per a {{type}} (límit: {{limit}} per {{window}}).",
+		"waitingForRateLimit": "Esperant que es restableixi el límit de Nebius (pausant {{waitTimeMs}}ms)..."
 	},
 	"orchestrator": {
 		"indexingFailedNoBlocks": "Indexació fallida: No s'ha indexat cap bloc de codi amb èxit. Això normalment indica un problema de configuració de l'embedder.",

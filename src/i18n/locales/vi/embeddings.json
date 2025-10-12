@@ -48,11 +48,16 @@
 		"geminiConfigMissing": "Thiếu cấu hình Gemini để tạo embedder",
 		"mistralConfigMissing": "Thiếu cấu hình Mistral để tạo trình nhúng",
 		"vercelAiGatewayConfigMissing": "Thiếu cấu hình Vercel AI Gateway để tạo trình nhúng",
+		"nebiusConfigMissing": "Thiếu cấu hình Nebius để tạo trình nhúng",
 		"invalidEmbedderType": "Loại embedder được cấu hình không hợp lệ: {{embedderProvider}}",
 		"vectorDimensionNotDeterminedOpenAiCompatible": "Không thể xác định kích thước vector cho mô hình '{{modelId}}' với nhà cung cấp '{{provider}}'. Hãy đảm bảo 'Kích thước Embedding' được cài đặt đúng trong cài đặt nhà cung cấp tương thích OpenAI.",
 		"vectorDimensionNotDetermined": "Không thể xác định kích thước vector cho mô hình '{{modelId}}' với nhà cung cấp '{{provider}}'. Kiểm tra hồ sơ mô hình hoặc cấu hình.",
 		"qdrantUrlMissing": "Thiếu URL Qdrant để tạo kho lưu trữ vector",
 		"codeIndexingNotConfigured": "Không thể tạo dịch vụ: Lập chỉ mục mã không được cấu hình đúng cách"
+	},
+	"nebius": {
+		"rateLimitExceeded": "Giới hạn Nebius vượt quá cho {{type}} (giới hạn: {{limit}} mỗi {{window}}).",
+		"waitingForRateLimit": "Đang chờ đặt lại giới hạn Nebius (tạm dừng {{waitTimeMs}}ms)..."
 	},
 	"orchestrator": {
 		"indexingFailedNoBlocks": "Lập chỉ mục thất bại: Không có khối mã nào được lập chỉ mục thành công. Điều này thường cho thấy vấn đề cấu hình embedder.",
