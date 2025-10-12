@@ -95,5 +95,9 @@
 		"months_ago": "il y a {{count}} mois",
 		"year_ago": "il y a un an",
 		"years_ago": "il y a {{count}} ans"
+	},
+	"thumbnails": {
+		"failedToLoad": "Échec du chargement de l'image",
+		"altText": "Miniature {{index}}"
 	}
 }
