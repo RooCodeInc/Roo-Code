@@ -65,7 +65,7 @@ const toolDescriptionMap: Record<string, (args: ToolArgs) => string | undefined>
 export function getToolDescriptionsForMode(
 	mode: Mode,
 	cwd: string,
-	supportsComputerUse: boolean,
+	supportsImages: boolean,
 	codeIndexManager?: CodeIndexManager,
 	diffStrategy?: DiffStrategy,
 	browserViewportSize?: string,
@@ -80,7 +80,7 @@ export function getToolDescriptionsForMode(
 	const config = getModeConfig(mode, customModes)
 	const args: ToolArgs = {
 		cwd,
-		supportsComputerUse,
+		supportsImages,
 		diffStrategy,
 		browserViewportSize,
 		mcpHub,

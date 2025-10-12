@@ -1,7 +1,7 @@
 import { ToolArgs } from "./types"
 
 export function getBrowserActionDescription(args: ToolArgs): string | undefined {
-	if (!args.supportsComputerUse) {
+	if (!args.supportsImages) {
 		return undefined
 	}
 	return `## browser_action
