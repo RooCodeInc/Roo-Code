@@ -663,7 +663,10 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			}
 
 			setInputValue(newValue)
-			setSelectedImages([...selectedImages, ...images])
+			setSelectedImages([
+				...selectedImages,
+				...(images || []).filter((i) => typeof i === "string" && !i.startsWith("data:")),
+			])
 		},
 		[inputValue, selectedImages],
 	)
@@ -798,7 +801,11 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					// When context is "edit", ChatRow will handle the images
 					if (message.context !== "edit") {
 						setSelectedImages((prevImages: string[]) =>
-							appendImages(prevImages, message.images, MAX_IMAGES_PER_MESSAGE),
+							appendImages(
+								prevImages,
+								(message.images || []).filter((i) => typeof i === "string" && !i.startsWith("data:")),
+								MAX_IMAGES_PER_MESSAGE,
+							),
 						)
 					}
 					break
