@@ -97,6 +97,38 @@ export class LmStudioHandler extends BaseProvider implements SingleCompletionHan
 			try {
 				results = await this.client.chat.completions.create(params)
 			} catch (error) {
+				// Handle specific error cases
+				const errorMessage = error instanceof Error ? error.message : String(error)
+
+				// Check for connection errors
+				if (errorMessage.includes("ECONNREFUSED") || errorMessage.includes("ENOTFOUND")) {
+					throw new Error(
+						`Cannot connect to LM Studio at ${this.options.lmStudioBaseUrl || "http://localhost:1234"}. Please ensure LM Studio is running and the server is started.`,
+					)
+				}
+
+				// Check for model not found errors
+				if (
+					errorMessage.includes("model") &&
+					(errorMessage.includes("not found") || errorMessage.includes("does not exist"))
+				) {
+					throw new Error(
+						`Model "${this.getModel().id}" not found in LM Studio. Please ensure the model is loaded in LM Studio.`,
+					)
+				}
+
+				// Check for context length errors
+				if (
+					errorMessage.includes("context") ||
+					errorMessage.includes("token") ||
+					errorMessage.includes("length")
+				) {
+					throw new Error(
+						`Context length exceeded for model "${this.getModel().id}". Please load the model with a larger context window in LM Studio, or use a different model that supports longer contexts.`,
+					)
+				}
+
+				// Use the enhanced error handler for other OpenAI-like errors
 				throw handleOpenAIError(error, this.providerName)
 			}
 
@@ -138,8 +170,14 @@ export class LmStudioHandler extends BaseProvider implements SingleCompletionHan
 				outputTokens,
 			} as const
 		} catch (error) {
+			// If error was already processed and re-thrown above, just re-throw it
+			if (error instanceof Error && error.message.includes("LM Studio")) {
+				throw error
+			}
+
+			// Generic fallback error
 			throw new Error(
-				"Please check the LM Studio developer logs to debug what went wrong. You may need to load the model with a larger context length to work with Roo Code's prompts.",
+				`LM Studio error: ${error instanceof Error ? error.message : String(error)}. Please check the LM Studio developer logs for more details.`,
 			)
 		}
 	}
@@ -178,12 +216,50 @@ export class LmStudioHandler extends BaseProvider implements SingleCompletionHan
 			try {
 				response = await this.client.chat.completions.create(params)
 			} catch (error) {
+				// Handle specific error cases
+				const errorMessage = error instanceof Error ? error.message : String(error)
+
+				// Check for connection errors
+				if (errorMessage.includes("ECONNREFUSED") || errorMessage.includes("ENOTFOUND")) {
+					throw new Error(
+						`Cannot connect to LM Studio at ${this.options.lmStudioBaseUrl || "http://localhost:1234"}. Please ensure LM Studio is running and the server is started.`,
+					)
+				}
+
+				// Check for model not found errors
+				if (
+					errorMessage.includes("model") &&
+					(errorMessage.includes("not found") || errorMessage.includes("does not exist"))
+				) {
+					throw new Error(
+						`Model "${this.getModel().id}" not found in LM Studio. Please ensure the model is loaded in LM Studio.`,
+					)
+				}
+
+				// Check for context length errors
+				if (
+					errorMessage.includes("context") ||
+					errorMessage.includes("token") ||
+					errorMessage.includes("length")
+				) {
+					throw new Error(
+						`Context length exceeded for model "${this.getModel().id}". Please load the model with a larger context window in LM Studio, or use a different model that supports longer contexts.`,
+					)
+				}
+
+				// Use the enhanced error handler for other OpenAI-like errors
 				throw handleOpenAIError(error, this.providerName)
 			}
 			return response.choices[0]?.message.content || ""
 		} catch (error) {
+			// If error was already processed and re-thrown above, just re-throw it
+			if (error instanceof Error && error.message.includes("LM Studio")) {
+				throw error
+			}
+
+			// Generic fallback error
 			throw new Error(
-				"Please check the LM Studio developer logs to debug what went wrong. You may need to load the model with a larger context length to work with Roo Code's prompts.",
+				`LM Studio error: ${error instanceof Error ? error.message : String(error)}. Please check the LM Studio developer logs for more details.`,
 			)
 		}
 	}
