@@ -1,4 +1,5 @@
 import { Command } from "./commands"
+import { PROJECT_WIKI_TEMPLATE } from "../../core/costrict/wiki/wiki-prompts/project_wiki"
 
 interface BuiltInCommandDefinition {
 	name: string
@@ -481,6 +482,11 @@ description: "生成项目测试指导文档"
 
 - 严格按照本 Prompt 定义的工作流（即对应路径下的任务清单）推进任务。
 `,
+	},
+	"project-wiki": {
+		name: "project-wiki",
+		description: "Perform an in-depth analysis of the project and create a comprehensive project wiki.",
+		content: PROJECT_WIKI_TEMPLATE,
 	},
 }
 

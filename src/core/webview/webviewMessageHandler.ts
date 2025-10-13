@@ -71,7 +71,7 @@ import { ErrorCodeManager } from "../costrict/error-code"
 import { writeCostrictAccessToken } from "../costrict/codebase-index/utils"
 import { workspaceEventMonitor } from "../costrict/codebase-index/workspace-event-monitor"
 import { fetchZgsmQuotaInfo } from "../../api/providers/fetchers/zgsm"
-import { ensureProjectWikiCommandExists } from "../costrict/wiki/projectWikiHelpers"
+import { ensureProjectWikiSubtasksExists } from "../costrict/wiki/projectWikiHelpers"
 
 export const webviewMessageHandler = async (
 	provider: ClineProvider,
@@ -558,7 +558,7 @@ export const webviewMessageHandler = async (
 			// task. This essentially creates a fresh slate for the new task.
 			try {
 				if (message.values?.checkProjectWiki) {
-					await ensureProjectWikiCommandExists()
+					await ensureProjectWikiSubtasksExists()
 				}
 				await provider.createTask(message.text, message.images)
 				// Task created successfully - notify the UI to reset

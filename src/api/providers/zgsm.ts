@@ -535,7 +535,7 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 								requestId,
 								cachedClientId,
 								cachedWorkspacePath,
-								"system",
+								"user",
 							),
 						},
 						timeout: 20000,

@@ -1,19 +1,19 @@
 import { getCommands, getCommand } from "../services/command/commands"
-import { ensureProjectWikiCommandExists } from "../core/costrict/wiki/projectWikiHelpers"
+import { ensureProjectWikiSubtasksExists } from "../core/costrict/wiki/projectWikiHelpers"
 import { projectWikiCommandName } from "../core/costrict/wiki/projectWikiHelpers"
 
 describe("Project Wiki Command Integration", () => {
 	const testCwd = process.cwd()
 
-	describe("动态命令初始化", () => {
-		it("应该能够初始化 project-wiki 命令而不抛出错误", async () => {
-			// 测试 ensureProjectWikiCommandExists 函数
-			await expect(ensureProjectWikiCommandExists()).resolves.not.toThrow()
+	describe("子任务文件初始化", () => {
+		it("应该能够初始化 project-wiki 子任务文件而不抛出错误", async () => {
+			// 测试 ensureProjectWikiSubtasksExists 函数
+			await expect(ensureProjectWikiSubtasksExists()).resolves.not.toThrow()
 		})
 
 		it("getCommands() 应该包含 project-wiki 命令", async () => {
-			// 确保命令已初始化
-			await ensureProjectWikiCommandExists()
+			// 确保子任务文件已初始化
+			await ensureProjectWikiSubtasksExists()
 
 			// 获取所有命令
 			const commands = await getCommands(testCwd)
@@ -29,16 +29,16 @@ describe("Project Wiki Command Integration", () => {
 
 			if (projectWikiCommand) {
 				expect(projectWikiCommand.name).toBe(projectWikiCommandName)
-				expect(projectWikiCommand.source).toBe("global")
+				// 命令来源可能是 built-in 或 global，取决于是否存在全局文件
+				expect(["built-in", "global"]).toContain(projectWikiCommand.source)
 				expect(typeof projectWikiCommand.content).toBe("string")
 				expect(projectWikiCommand.content.length).toBeGreaterThan(0)
-				expect(projectWikiCommand.filePath).toContain("project-wiki.md")
 			}
 		})
 
 		it("getCommand() 应该能够获取 project-wiki 命令", async () => {
-			// 确保命令已初始化
-			await ensureProjectWikiCommandExists()
+			// 确保子任务文件已初始化
+			await ensureProjectWikiSubtasksExists()
 
 			// 获取特定命令
 			const command = await getCommand(testCwd, projectWikiCommandName)
@@ -46,33 +46,34 @@ describe("Project Wiki Command Integration", () => {
 			// 验证命令存在且正确
 			expect(command).toBeDefined()
 			expect(command?.name).toBe(projectWikiCommandName)
-			expect(command?.source).toBe("global")
+			// 命令来源可能是 built-in 或 global，取决于是否存在全局文件
+			expect(["built-in", "global"]).toContain(command?.source)
 			expect(typeof command?.content).toBe("string")
 			expect(command?.content.length).toBeGreaterThan(0)
 		})
 	})
 
 	describe("错误处理机制", () => {
-		it("即使 ensureProjectWikiCommandExists 失败，getCommands 也应该正常工作", async () => {
+		it("即使 ensureProjectWikiSubtasksExists 失败，getCommands 也应该正常工作", async () => {
 			// 这个测试验证错误隔离机制
-			// 即使动态命令初始化失败，其他命令仍应正常工作
+			// 即使子任务文件初始化失败，其他命令仍应正常工作
 			const commands = await getCommands(testCwd)
 
 			// 应该返回数组（可能为空，但不应该抛出错误）
 			expect(Array.isArray(commands)).toBe(true)
 		})
 
-		it("应该能够处理重复的命令初始化调用", async () => {
+		it("应该能够处理重复的子任务文件初始化调用", async () => {
 			// 多次调用应该不会出错
-			await expect(ensureProjectWikiCommandExists()).resolves.not.toThrow()
-			await expect(ensureProjectWikiCommandExists()).resolves.not.toThrow()
-			await expect(ensureProjectWikiCommandExists()).resolves.not.toThrow()
+			await expect(ensureProjectWikiSubtasksExists()).resolves.not.toThrow()
+			await expect(ensureProjectWikiSubtasksExists()).resolves.not.toThrow()
+			await expect(ensureProjectWikiSubtasksExists()).resolves.not.toThrow()
 		})
 	})
 
 	describe("命令内容验证", () => {
 		it("project-wiki 命令应该包含预期的内容结构", async () => {
-			await ensureProjectWikiCommandExists()
+			await ensureProjectWikiSubtasksExists()
 			const command = await getCommand(testCwd, projectWikiCommandName)
 
 			expect(command).toBeDefined()

@@ -61,7 +61,7 @@ vi.mock("../wiki-prompts/subtasks/constants", () => ({
 
 vi.mock("../wiki-prompts/project_wiki", () => ({
 	projectWikiVersion: "v1.0.1",
-	PROJECT_WIKI_TEMPLATE: "---\ndescription: \"项目深度分析与知识文档生成\"\nversion: v1.0.1\n---\n# 测试模板",
+	PROJECT_WIKI_TEMPLATE: '---\ndescription: "项目深度分析与知识文档生成"\nversion: v1.0.1\n---\n# 测试模板',
 }))
 
 vi.mock("../wiki-prompts/subtasks/01_Project_Overview_Analysis", () => ({
@@ -110,7 +110,7 @@ vi.mock("../wiki-prompts/subtasks/11_Project_Rules_Generation", () => ({
 
 // 导入模块
 import * as fs from "fs"
-import { ensureProjectWikiCommandExists, setLogger } from "../projectWikiHelpers"
+import { ensureProjectWikiSubtasksExists, setLogger } from "../projectWikiHelpers"
 
 describe("projectWikiHelpers", () => {
 	beforeEach(() => {
@@ -119,55 +119,47 @@ describe("projectWikiHelpers", () => {
 		setLogger(mockLogger)
 	})
 
-	describe("ensureProjectWikiCommandExists", () => {
-		it("应该在文件不存在时创建项目wiki命令", async () => {
-			// Mock fs.access 抛出错误表示文件不存在
-			vi.mocked(fs.promises.access).mockRejectedValue(new Error("File not found"))
+	describe("ensureProjectWikiSubtasksExists", () => {
+		it("应该在子任务目录不存在时创建子任务文件", async () => {
+			// Mock fs.stat 抛出错误表示目录不存在
 			vi.mocked(fs.promises.stat).mockRejectedValue(new Error("Directory not found"))
 			vi.mocked(fs.promises.mkdir).mockResolvedValue(undefined)
 			vi.mocked(fs.promises.writeFile).mockResolvedValue(undefined)
 			vi.mocked(fs.promises.rm).mockResolvedValue(undefined)
 
-			await ensureProjectWikiCommandExists()
+			await ensureProjectWikiSubtasksExists()
 
-			expect(fs.promises.mkdir).toHaveBeenCalledWith("/home/user/.roo/commands", { recursive: true })
+			expect(fs.promises.mkdir).toHaveBeenCalledWith("/home/user/.roo/commands/project-wiki-tasks/", {
+				recursive: true,
+			})
 			expect(fs.promises.writeFile).toHaveBeenCalled()
-			expect(mockLogger.info).toHaveBeenCalledWith("[projectWikiHelpers] Starting ensureProjectWikiCommandExists...")
+			expect(mockLogger.info).toHaveBeenCalledWith(
+				"[projectWikiHelpers] Starting ensureProjectWikiSubtasksExists...",
+			)
 		})
 
-		it("应该在版本不匹配时重新创建文件", async () => {
-			// Mock 文件存在但版本不匹配
-			vi.mocked(fs.promises.access).mockResolvedValue(undefined)
-			vi.mocked(fs.promises.readFile).mockResolvedValue(`---
-description: "项目深度分析与知识文档生成"
-version: "v1.0.0"
----
-# 旧版本模板`)
+		it("应该在子任务文件不完整时重新创建", async () => {
+			// Mock 子任务目录存在但文件不完整
 			vi.mocked(fs.promises.stat).mockResolvedValue({
 				isDirectory: () => true,
 			} as any)
 			vi.mocked(fs.promises.readdir).mockResolvedValue([
 				"01_Project_Overview_Analysis.md",
 				"02_Overall_Architecture_Analysis.md",
+				// 缺少其他文件
 			] as any)
 			vi.mocked(fs.promises.mkdir).mockResolvedValue(undefined)
 			vi.mocked(fs.promises.writeFile).mockResolvedValue(undefined)
 			vi.mocked(fs.promises.rm).mockResolvedValue(undefined)
 
-			await ensureProjectWikiCommandExists()
+			await ensureProjectWikiSubtasksExists()
 
 			expect(fs.promises.rm).toHaveBeenCalled()
 			expect(fs.promises.writeFile).toHaveBeenCalled()
 		})
 
-		it("应该正确处理文件存在的情况", async () => {
-			// Mock 文件存在的情况
-			vi.mocked(fs.promises.access).mockResolvedValue(undefined)
-			vi.mocked(fs.promises.readFile).mockResolvedValue(`---
-description: "项目深度分析与知识文档生成"
-version: "v1.0.1"
----
-# 当前版本模板`)
+		it("应该正确处理子任务文件完整的情况", async () => {
+			// Mock 子任务文件完整的情况
 			vi.mocked(fs.promises.stat).mockResolvedValue({
 				isDirectory: () => true,
 			} as any)
@@ -188,112 +180,70 @@ version: "v1.0.1"
 			vi.mocked(fs.promises.writeFile).mockResolvedValue(undefined)
 			vi.mocked(fs.promises.rm).mockResolvedValue(undefined)
 
-			await ensureProjectWikiCommandExists()
+			await ensureProjectWikiSubtasksExists()
 
 			// 验证启动日志被调用
-			expect(mockLogger.info).toHaveBeenCalledWith("[projectWikiHelpers] Starting ensureProjectWikiCommandExists...")
-			// 验证设置命令的日志被调用
-			expect(mockLogger.info).toHaveBeenCalledWith("[projectWikiHelpers] Setting up project-wiki command...")
-			// 验证写文件操作被调用
-			expect(fs.promises.writeFile).toHaveBeenCalled()
-		})
-
-		it("应该在子任务目录缺少文件时重新创建", async () => {
-			// Mock 主文件存在但子任务目录缺少文件
-			vi.mocked(fs.promises.access).mockResolvedValue(undefined)
-			vi.mocked(fs.promises.readFile).mockResolvedValue(`---
-description: "项目深度分析与知识文档生成"
-version: "v1.0.1"
----
-# 当前版本模板`)
-			vi.mocked(fs.promises.stat).mockResolvedValue({
-				isDirectory: () => true,
-			} as any)
-			vi.mocked(fs.promises.readdir).mockResolvedValue([
-				"01_Project_Overview_Analysis.md",
-				// 缺少其他文件
-			] as any)
-			vi.mocked(fs.promises.mkdir).mockResolvedValue(undefined)
-			vi.mocked(fs.promises.writeFile).mockResolvedValue(undefined)
-			vi.mocked(fs.promises.rm).mockResolvedValue(undefined)
-
-			await ensureProjectWikiCommandExists()
-
-			expect(fs.promises.rm).toHaveBeenCalled()
-			expect(fs.promises.writeFile).toHaveBeenCalled()
+			expect(mockLogger.info).toHaveBeenCalledWith(
+				"[projectWikiHelpers] Starting ensureProjectWikiSubtasksExists...",
+			)
+			// 验证子任务已存在的日志被调用
+			expect(mockLogger.info).toHaveBeenCalledWith("[projectWikiHelpers] project-wiki subtasks already exist")
+			// 验证不需要重新生成文件
+			expect(fs.promises.writeFile).not.toHaveBeenCalled()
 		})
 
 		it("应该处理错误情况", async () => {
 			const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {})
-			
+
 			// Mock mkdir 抛出错误
 			vi.mocked(fs.promises.mkdir).mockRejectedValue(new Error("Permission denied"))
 
-			await ensureProjectWikiCommandExists()
+			await ensureProjectWikiSubtasksExists()
 
 			expect(consoleSpy).toHaveBeenCalledWith(
-				"[commands] Failed to initialize project-wiki command:",
-				expect.stringContaining("Permission denied")
+				"[commands] Failed to initialize project-wiki subtasks:",
+				expect.stringContaining("Permission denied"),
 			)
 
 			consoleSpy.mockRestore()
 		})
 
-		it("应该正确处理前置matter解析错误", async () => {
-			// Mock 文件存在但前置matter格式错误
-			vi.mocked(fs.promises.access).mockResolvedValue(undefined)
-			vi.mocked(fs.promises.readFile).mockResolvedValue(`# 没有前置matter的文件`)
-			vi.mocked(fs.promises.stat).mockResolvedValue({
-				isDirectory: () => true,
-			} as any)
-			vi.mocked(fs.promises.readdir).mockResolvedValue([] as any)
-			vi.mocked(fs.promises.mkdir).mockResolvedValue(undefined)
-			vi.mocked(fs.promises.writeFile).mockResolvedValue(undefined)
-			vi.mocked(fs.promises.rm).mockResolvedValue(undefined)
-
-			await ensureProjectWikiCommandExists()
-
-			// 验证启动日志被调用
-			expect(mockLogger.info).toHaveBeenCalledWith("[projectWikiHelpers] Starting ensureProjectWikiCommandExists...")
-			// 验证设置命令的日志被调用
-			expect(mockLogger.info).toHaveBeenCalledWith("[projectWikiHelpers] Setting up project-wiki command...")
-			// 验证写文件操作被调用
-			expect(fs.promises.writeFile).toHaveBeenCalled()
-		})
-
 		it("应该正确处理部分子任务文件生成失败的情况", async () => {
-			// Mock 文件不存在，需要创建
-			vi.mocked(fs.promises.access).mockRejectedValue(new Error("File not found"))
+			// Mock 子任务目录不存在，需要创建
 			vi.mocked(fs.promises.stat).mockRejectedValue(new Error("Directory not found"))
 			vi.mocked(fs.promises.mkdir).mockResolvedValue(undefined)
 			vi.mocked(fs.promises.writeFile)
-				.mockResolvedValueOnce(undefined) // 主文件成功
 				.mockRejectedValueOnce(new Error("Write failed")) // 第一个子任务文件失败
 				.mockResolvedValue(undefined) // 其他文件成功
 			vi.mocked(fs.promises.rm).mockResolvedValue(undefined)
 
-			await ensureProjectWikiCommandExists()
+			await ensureProjectWikiSubtasksExists()
 
 			// 验证启动和设置日志被调用
-			expect(mockLogger.info).toHaveBeenCalledWith("[projectWikiHelpers] Starting ensureProjectWikiCommandExists...")
-			expect(mockLogger.info).toHaveBeenCalledWith("[projectWikiHelpers] Setting up project-wiki command...")
+			expect(mockLogger.info).toHaveBeenCalledWith(
+				"[projectWikiHelpers] Starting ensureProjectWikiSubtasksExists...",
+			)
+			expect(mockLogger.info).toHaveBeenCalledWith("[projectWikiHelpers] Setting up project-wiki subtasks...")
 			// 验证警告日志被调用（部分文件生成失败）
 			expect(mockLogger.warn).toHaveBeenCalledWith(expect.stringContaining("Failed to generate"))
 		})
 
 		it("应该正确处理Promise.allSettled的混合结果", async () => {
 			// Mock 混合的成功和失败情况
-			vi.mocked(fs.promises.access).mockRejectedValue(new Error("File not found"))
 			vi.mocked(fs.promises.stat).mockRejectedValue(new Error("Directory not found"))
 			vi.mocked(fs.promises.mkdir).mockResolvedValue(undefined)
 			vi.mocked(fs.promises.writeFile).mockResolvedValue(undefined)
 			vi.mocked(fs.promises.rm).mockResolvedValue(undefined)
 
-			await ensureProjectWikiCommandExists()
+			await ensureProjectWikiSubtasksExists()
 
 			// 验证基本流程被执行
-			expect(mockLogger.info).toHaveBeenCalledWith("[projectWikiHelpers] Starting ensureProjectWikiCommandExists...")
-			expect(fs.promises.mkdir).toHaveBeenCalledWith("/home/user/.roo/commands", { recursive: true })
+			expect(mockLogger.info).toHaveBeenCalledWith(
+				"[projectWikiHelpers] Starting ensureProjectWikiSubtasksExists...",
+			)
+			expect(fs.promises.mkdir).toHaveBeenCalledWith("/home/user/.roo/commands/project-wiki-tasks/", {
+				recursive: true,
+			})
 		})
 	})
 
