@@ -3,7 +3,7 @@
 	"displayName": "Roo-Cline",
 	"description": "Autonomous coding agent right in your IDE. Designed to work with the latest Claude Sonnet 4.0, GPT-4o, Gemini 2.0 and any OpenRouter models. Claude Code Generator",
 	"publisher": "RooVeterinaryInc",
-	"version": "3.28.27",
+	"version": "3.28.28",
 	"icon": "assets/icons/icon.png",
 	"galleryBanner": {
 		"color": "#617A91",

@@ -124,4 +124,89 @@ describe("getNewTaskDescription", () => {
 		const usagePattern = /<new_task>\s*<mode>.*<\/mode>\s*<message>.*<\/message>\s*<\/new_task>/s
 		expect(descriptionOff).toMatch(usagePattern)
 	})
+
+	it("should include usage guidance section in both versions", () => {
+		const argsWithoutTodos: ToolArgs = {
+			cwd: "/test",
+			supportsComputerUse: false,
+			settings: {
+				newTaskRequireTodos: false,
+			},
+		}
+
+		const argsWithTodos: ToolArgs = {
+			cwd: "/test",
+			supportsComputerUse: false,
+			settings: {
+				newTaskRequireTodos: true,
+			},
+		}
+
+		const descriptionWithoutTodos = getNewTaskDescription(argsWithoutTodos)
+		const descriptionWithTodos = getNewTaskDescription(argsWithTodos)
+
+		// Both versions should contain "When to Use" section
+		expect(descriptionWithoutTodos).toContain("**When to Use:**")
+		expect(descriptionWithTodos).toContain("**When to Use:**")
+
+		// Both should explain mode switching scenario
+		expect(descriptionWithoutTodos).toContain("switch modes")
+		expect(descriptionWithTodos).toContain("switch modes")
+
+		// Both versions should contain "When NOT to Use" section
+		expect(descriptionWithoutTodos).toContain("**When NOT to Use:**")
+		expect(descriptionWithTodos).toContain("**When NOT to Use:**")
+
+		// Both should warn against simple tasks
+		expect(descriptionWithoutTodos).toContain("task is **simple**")
+		expect(descriptionWithTodos).toContain("task is **simple**")
+
+		// Both versions should contain comparison with update_todo_list
+		expect(descriptionWithoutTodos).toContain("**Comparison with update_todo_list:**")
+		expect(descriptionWithTodos).toContain("**Comparison with update_todo_list:**")
+
+		// Both should mention TODO list system
+		expect(descriptionWithoutTodos).toContain("update_todo_list")
+		expect(descriptionWithTodos).toContain("update_todo_list")
+
+		// Both versions should contain best practice section
+		expect(descriptionWithoutTodos).toContain("**Best Practice - Hybrid Approach:**")
+		expect(descriptionWithTodos).toContain("**Best Practice - Hybrid Approach:**")
+
+		// Both should mention combining both tools
+		expect(descriptionWithoutTodos).toContain("Combine both tools")
+		expect(descriptionWithTodos).toContain("Combine both tools")
+	})
+
+	it("should include specific usage scenarios in guidance", () => {
+		const args: ToolArgs = {
+			cwd: "/test",
+			supportsComputerUse: false,
+			settings: {
+				newTaskRequireTodos: false,
+			},
+		}
+
+		const description = getNewTaskDescription(args)
+
+		// Check for specific "When to Use" scenarios
+		expect(description).toContain("isolated context")
+		expect(description).toContain("different expertise or approaches")
+		expect(description).toContain("separated stages")
+
+		// Check for specific "When NOT to Use" scenarios
+		expect(description).toContain("completed in the **current mode**")
+		expect(description).toContain("share the same context")
+		expect(description).toContain("unnecessary overhead")
+
+		// Check for comparison points
+		expect(description).toContain("same mode and context")
+		expect(description).toContain("different modes or isolated contexts")
+		expect(description).toContain("step-by-step tracking")
+
+		// Check for best practice guidance
+		expect(description).toContain("phase-based subtasks")
+		expect(description).toContain("track detailed progress steps")
+		expect(description).toContain("high-level task separation")
+	})
 })

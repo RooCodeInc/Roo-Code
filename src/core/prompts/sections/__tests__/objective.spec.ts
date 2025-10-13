@@ -79,4 +79,53 @@ describe("getObjectiveSection", () => {
 			expect(objective).toContain("ask_followup_question tool")
 		}
 	})
+
+	it("should include task decomposition strategy section", () => {
+		const objectiveEnabled = getObjectiveSection(mockCodeIndexManagerEnabled)
+		const objectiveDisabled = getObjectiveSection(mockCodeIndexManagerDisabled)
+
+		// Check that task decomposition strategy is included in both cases
+		for (const objective of [objectiveEnabled, objectiveDisabled]) {
+			expect(objective).toContain("## Task Decomposition Strategy")
+			expect(objective).toContain("When facing a complex task, choose the appropriate decomposition approach:")
+		}
+	})
+
+	it("should explain when to use TODO list vs subtasks", () => {
+		const objective = getObjectiveSection(mockCodeIndexManagerEnabled)
+
+		// Check TODO list guidance
+		expect(objective).toContain("**Use TODO List (update_todo_list) when:**")
+		expect(objective).toContain("same mode")
+		expect(objective).toContain("share the same context")
+		expect(objective).toContain("fine-grained progress tracking")
+		expect(objective).toContain("moderately complex")
+
+		// Check subtask guidance
+		expect(objective).toContain("**Create Subtasks (new_task) when:**")
+		expect(objective).toContain("switch modes")
+		expect(objective).toContain("clearly separated stages")
+		expect(objective).toContain("different expertise")
+		expect(objective).toContain("independent task management")
+		expect(objective).toContain("**boundaries**")
+	})
+
+	it("should recommend hybrid approach for complex tasks", () => {
+		const objective = getObjectiveSection(mockCodeIndexManagerEnabled)
+
+		// Check hybrid approach guidance
+		expect(objective).toContain("**Hybrid Approach (Recommended for Complex Tasks):**")
+		expect(objective).toContain("Create subtasks with `new_task` for major phases with different modes")
+		expect(objective).toContain("Within each subtask, use `update_todo_list` to track detailed steps")
+		expect(objective).toContain("high-level separation and fine-grained progress tracking")
+	})
+
+	it("should include concrete examples for task decomposition", () => {
+		const objective = getObjectiveSection(mockCodeIndexManagerEnabled)
+
+		// Check that examples are included
+		expect(objective).toContain("Example:")
+		expect(objective).toContain("Implement user login feature")
+		expect(objective).toContain("Build a complete API")
+	})
 })
