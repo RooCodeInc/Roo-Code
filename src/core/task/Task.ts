@@ -2339,17 +2339,55 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					continue
 				} else {
 					// If there's no assistant_responses, that means we got no text
-					// or tool_use content blocks from API which we should assume is
-					// an error.
-					await this.say(
-						"error",
-						"Unexpected API Response: The language model did not provide any assistant messages. This may indicate an issue with the API or the model's output.",
-					)
+					// or tool_use content blocks from API. This can happen with some models
+					// like GLM-4.6 that may return empty streams occasionally.
+					// Instead of treating this as a fatal error, we'll handle it gracefully.
+					const modelId = this.api.getModel().id
+					const isGLMModel =
+						modelId && (modelId.toLowerCase().includes("glm") || modelId.toLowerCase().includes("chatglm"))
 
-					await this.addToApiConversationHistory({
-						role: "assistant",
-						content: [{ type: "text", text: "Failure: I did not provide a response." }],
-					})
+					if (isGLMModel) {
+						// For GLM models, treat empty response as a temporary issue and retry
+						await this.say(
+							"error",
+							"The GLM model returned an empty response. This can happen occasionally with GLM models. Retrying with a clarification request...",
+						)
+
+						// Add a minimal assistant response to maintain conversation flow
+						await this.addToApiConversationHistory({
+							role: "assistant",
+							content: [
+								{
+									type: "text",
+									text: "I encountered an issue generating a response. Let me try again.",
+								},
+							],
+						})
+
+						// Add a user message prompting the model to respond
+						this.userMessageContent.push({
+							type: "text",
+							text: "Please provide a response to the previous request. If you're having trouble, break down the task into smaller steps.",
+						})
+
+						// Continue the loop to retry with the clarification
+						stack.push({
+							userContent: [...this.userMessageContent],
+							includeFileDetails: false,
+						})
+						continue
+					} else {
+						// For other models, log a more informative error
+						await this.say(
+							"error",
+							"Unexpected API Response: The language model did not provide any assistant messages. This may indicate an issue with the API or the model's output. Consider checking your API configuration or trying a different model.",
+						)
+
+						await this.addToApiConversationHistory({
+							role: "assistant",
+							content: [{ type: "text", text: "Failure: I did not provide a response." }],
+						})
+					}
 				}
 
 				// If we reach here without continuing, return false (will always be false for now)
