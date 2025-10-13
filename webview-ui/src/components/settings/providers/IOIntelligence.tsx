@@ -11,6 +11,7 @@ import {
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { VSCodeButtonLink } from "@src/components/common/VSCodeButtonLink"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
+import { PasswordInputField } from "@src/components/ui/password-input"
 
 import { ModelPicker } from "../ModelPicker"
 
@@ -45,14 +46,12 @@ export const IOIntelligence = ({
 
 	return (
 		<>
-			<VSCodeTextField
+			<PasswordInputField
 				value={apiConfiguration?.ioIntelligenceApiKey || ""}
-				type="password"
-				onInput={handleInputChange("ioIntelligenceApiKey")}
+				onChange={handleInputChange("ioIntelligenceApiKey")}
 				placeholder={t("settings:providers.ioIntelligenceApiKeyPlaceholder")}
-				className="w-full">
-				<label className="block font-medium mb-1">{t("settings:providers.ioIntelligenceApiKey")}</label>
-			</VSCodeTextField>
+				label={t("settings:providers.ioIntelligenceApiKey")}
+				className="w-full"></PasswordInputField>
 			<div className="text-sm text-vscode-descriptionForeground -mt-2">
 				{t("settings:providers.apiKeyStorageNotice")}
 			</div>

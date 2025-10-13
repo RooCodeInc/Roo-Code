@@ -10,6 +10,7 @@ import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { VSCodeButtonLink } from "@src/components/common/VSCodeButtonLink"
 import { vscode } from "@src/utils/vscode"
 import { Button } from "@src/components/ui"
+import { PasswordInputField } from "@src/components/ui/password-input"
 
 import { inputEventTransform } from "../transforms"
 import { ModelPicker } from "../ModelPicker"
@@ -141,14 +142,12 @@ export const Unbound = ({
 
 	return (
 		<>
-			<VSCodeTextField
+			<PasswordInputField
 				value={apiConfiguration?.unboundApiKey || ""}
-				type="password"
-				onInput={handleInputChange("unboundApiKey")}
+				onChange={handleInputChange("unboundApiKey")}
 				placeholder={t("settings:placeholders.apiKey")}
-				className="w-full">
-				<label className="block font-medium mb-1">{t("settings:providers.unboundApiKey")}</label>
-			</VSCodeTextField>
+				label={t("settings:providers.unboundApiKey")}
+				className="w-full"></PasswordInputField>
 			<div className="text-sm text-vscode-descriptionForeground -mt-2">
 				{t("settings:providers.apiKeyStorageNotice")}
 			</div>

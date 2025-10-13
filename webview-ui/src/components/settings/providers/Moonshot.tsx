@@ -5,6 +5,7 @@ import type { ProviderSettings } from "@roo-code/types"
 
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { VSCodeButtonLink } from "@src/components/common/VSCodeButtonLink"
+import { PasswordInputField } from "@src/components/ui/password-input"
 
 import { inputEventTransform } from "../transforms"
 import { cn } from "@/lib/utils"
@@ -45,14 +46,12 @@ export const Moonshot = ({ apiConfiguration, setApiConfigurationField }: Moonsho
 				</VSCodeDropdown>
 			</div>
 			<div>
-				<VSCodeTextField
+				<PasswordInputField
 					value={apiConfiguration?.moonshotApiKey || ""}
-					type="password"
-					onInput={handleInputChange("moonshotApiKey")}
+					onChange={handleInputChange("moonshotApiKey")}
 					placeholder={t("settings:placeholders.apiKey")}
-					className="w-full">
-					<label className="block font-medium mb-1">{t("settings:providers.moonshotApiKey")}</label>
-				</VSCodeTextField>
+					label={t("settings:providers.moonshotApiKey")}
+					className="w-full"></PasswordInputField>
 				<div className="text-sm text-vscode-descriptionForeground">
 					{t("settings:providers.apiKeyStorageNotice")}
 				</div>

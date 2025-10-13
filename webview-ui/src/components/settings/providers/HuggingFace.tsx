@@ -11,6 +11,7 @@ import { VSCodeButtonLink } from "@src/components/common/VSCodeButtonLink"
 import { SearchableSelect, type SearchableSelectOption } from "@src/components/ui"
 import { cn } from "@src/lib/utils"
 import { formatPrice } from "@/utils/formatPrice"
+import { PasswordInputField } from "@src/components/ui/password-input"
 
 import { inputEventTransform } from "../transforms"
 
@@ -166,14 +167,12 @@ export const HuggingFace = ({ apiConfiguration, setApiConfigurationField }: Hugg
 
 	return (
 		<>
-			<VSCodeTextField
+			<PasswordInputField
 				value={apiConfiguration?.huggingFaceApiKey || ""}
-				type="password"
-				onInput={handleInputChange("huggingFaceApiKey")}
+				onChange={handleInputChange("huggingFaceApiKey")}
 				placeholder={t("settings:placeholders.apiKey")}
-				className="w-full">
-				<label className="block font-medium mb-1">{t("settings:providers.huggingFaceApiKey")}</label>
-			</VSCodeTextField>
+				label={t("settings:providers.huggingFaceApiKey")}
+				className="w-full"></PasswordInputField>
 
 			<div className="text-sm text-vscode-descriptionForeground -mt-2">
 				{t("settings:providers.apiKeyStorageNotice")}

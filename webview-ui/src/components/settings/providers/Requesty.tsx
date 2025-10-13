@@ -8,6 +8,7 @@ import type { RouterModels } from "@roo/api"
 import { vscode } from "@src/utils/vscode"
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { Button } from "@src/components/ui"
+import { PasswordInputField } from "@src/components/ui/password-input"
 
 import { inputEventTransform } from "../transforms"
 import { ModelPicker } from "../ModelPicker"
@@ -65,12 +66,7 @@ export const Requesty = ({
 
 	return (
 		<>
-			<VSCodeTextField
-				value={apiConfiguration?.requestyApiKey || ""}
-				type="password"
-				onInput={handleInputChange("requestyApiKey")}
-				placeholder={t("settings:providers.getRequestyApiKey")}
-				className="w-full">
+			<>
 				<div className="flex justify-between items-center mb-1">
 					<label className="block font-medium">{t("settings:providers.requestyApiKey")}</label>
 					{apiConfiguration?.requestyApiKey && (
@@ -80,7 +76,12 @@ export const Requesty = ({
 						/>
 					)}
 				</div>
-			</VSCodeTextField>
+				<PasswordInputField
+					value={apiConfiguration?.requestyApiKey || ""}
+					onChange={handleInputChange("requestyApiKey")}
+					placeholder={t("settings:providers.getRequestyApiKey")}
+					className="w-full"></PasswordInputField>
+			</>
 			<div className="text-sm text-vscode-descriptionForeground -mt-2">
 				{t("settings:providers.apiKeyStorageNotice")}
 			</div>

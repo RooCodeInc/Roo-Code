@@ -8,6 +8,7 @@ import type { RouterModels } from "@roo/api"
 import { vscode } from "@src/utils/vscode"
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { Button } from "@src/components/ui"
+import { PasswordInputField } from "@src/components/ui/password-input"
 
 import { inputEventTransform } from "../transforms"
 import { ModelPicker } from "../ModelPicker"
@@ -51,14 +52,12 @@ export const DeepInfra = ({
 
 	return (
 		<>
-			<VSCodeTextField
+			<PasswordInputField
 				value={apiConfiguration?.deepInfraApiKey || ""}
-				type="password"
-				onInput={handleInputChange("deepInfraApiKey")}
+				onChange={handleInputChange("deepInfraApiKey")}
 				placeholder={t("settings:placeholders.apiKey")}
-				className="w-full">
-				<label className="block font-medium mb-1">{t("settings:providers.apiKey")}</label>
-			</VSCodeTextField>
+				label={t("settings:providers.apiKey")}
+				className="w-full"></PasswordInputField>
 
 			<Button
 				variant="outline"

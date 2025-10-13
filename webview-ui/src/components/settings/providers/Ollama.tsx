@@ -9,6 +9,7 @@ import { ExtensionMessage } from "@roo/ExtensionMessage"
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { useRouterModels } from "@src/components/ui/hooks/useRouterModels"
 import { vscode } from "@src/utils/vscode"
+import { PasswordInputField } from "@src/components/ui/password-input"
 
 import { inputEventTransform } from "../transforms"
 import { ModelRecord } from "@roo/api"
@@ -88,17 +89,17 @@ export const Ollama = ({ apiConfiguration, setApiConfigurationField }: OllamaPro
 				<label className="block font-medium mb-1">{t("settings:providers.ollama.baseUrl")}</label>
 			</VSCodeTextField>
 			{apiConfiguration?.ollamaBaseUrl && (
-				<VSCodeTextField
-					value={apiConfiguration?.ollamaApiKey || ""}
-					type="password"
-					onInput={handleInputChange("ollamaApiKey")}
-					placeholder={t("settings:placeholders.apiKey")}
-					className="w-full">
-					<label className="block font-medium mb-1">{t("settings:providers.ollama.apiKey")}</label>
+				<>
+					<PasswordInputField
+						value={apiConfiguration?.ollamaApiKey || ""}
+						onChange={handleInputChange("ollamaApiKey")}
+						placeholder={t("settings:placeholders.apiKey")}
+						label={t("settings:providers.ollama.apiKey")}
+						className="w-full"></PasswordInputField>
 					<div className="text-xs text-vscode-descriptionForeground mt-1">
 						{t("settings:providers.ollama.apiKeyHelp")}
 					</div>
-				</VSCodeTextField>
+				</>
 			)}
 			<VSCodeTextField
 				value={apiConfiguration?.ollamaModelId || ""}

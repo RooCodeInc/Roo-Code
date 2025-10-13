@@ -10,6 +10,7 @@ import { vscode } from "@src/utils/vscode"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { Button } from "@src/components/ui"
+import { PasswordInputField } from "@src/components/ui/password-input"
 
 import { inputEventTransform } from "../transforms"
 import { ModelPicker } from "../ModelPicker"
@@ -99,14 +100,12 @@ export const LiteLLM = ({
 				<label className="block font-medium mb-1">{t("settings:providers.litellmBaseUrl")}</label>
 			</VSCodeTextField>
 
-			<VSCodeTextField
+			<PasswordInputField
 				value={apiConfiguration?.litellmApiKey || ""}
-				type="password"
-				onInput={handleInputChange("litellmApiKey")}
+				onChange={handleInputChange("litellmApiKey")}
 				placeholder={t("settings:placeholders.apiKey")}
-				className="w-full">
-				<label className="block font-medium mb-1">{t("settings:providers.litellmApiKey")}</label>
-			</VSCodeTextField>
+				label={t("settings:providers.litellmApiKey")}
+				className="w-full"></PasswordInputField>
 
 			<div className="text-sm text-vscode-descriptionForeground -mt-2">
 				{t("settings:providers.apiKeyStorageNotice")}

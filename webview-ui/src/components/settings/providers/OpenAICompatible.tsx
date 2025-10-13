@@ -16,6 +16,7 @@ import { ExtensionMessage } from "@roo/ExtensionMessage"
 
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { Button, StandardTooltip } from "@src/components/ui"
+import { PasswordInputField } from "@src/components/ui/password-input"
 
 import { convertHeadersToObject } from "../utils/headers"
 import { inputEventTransform, noTransform } from "../transforms"
@@ -129,14 +130,12 @@ export const OpenAICompatible = ({
 				className="w-full">
 				<label className="block font-medium mb-1">{t("settings:providers.openAiBaseUrl")}</label>
 			</VSCodeTextField>
-			<VSCodeTextField
+			<PasswordInputField
 				value={apiConfiguration?.openAiApiKey || ""}
-				type="password"
-				onInput={handleInputChange("openAiApiKey")}
+				onChange={handleInputChange("openAiApiKey")}
 				placeholder={t("settings:placeholders.apiKey")}
-				className="w-full">
-				<label className="block font-medium mb-1">{t("settings:providers.apiKey")}</label>
-			</VSCodeTextField>
+				label={t("settings:providers.apiKey")}
+				className="w-full"></PasswordInputField>
 			<ModelPicker
 				apiConfiguration={apiConfiguration}
 				setApiConfigurationField={setApiConfigurationField}

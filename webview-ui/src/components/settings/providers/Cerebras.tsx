@@ -5,6 +5,7 @@ import type { ProviderSettings } from "@roo-code/types"
 
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { VSCodeButtonLink } from "@src/components/common/VSCodeButtonLink"
+import { PasswordInputField } from "@src/components/ui/password-input"
 
 import { inputEventTransform } from "../transforms"
 
@@ -29,14 +30,12 @@ export const Cerebras = ({ apiConfiguration, setApiConfigurationField }: Cerebra
 
 	return (
 		<>
-			<VSCodeTextField
+			<PasswordInputField
 				value={apiConfiguration?.cerebrasApiKey || ""}
-				type="password"
-				onInput={handleInputChange("cerebrasApiKey")}
+				onChange={handleInputChange("cerebrasApiKey")}
 				placeholder={t("settings:placeholders.apiKey")}
-				className="w-full">
-				<label className="block font-medium mb-1">{t("settings:providers.cerebrasApiKey")}</label>
-			</VSCodeTextField>
+				label={t("settings:providers.cerebrasApiKey")}
+				className="w-full"></PasswordInputField>
 			<div className="text-sm text-vscode-descriptionForeground -mt-2">
 				{t("settings:providers.apiKeyStorageNotice")}
 			</div>

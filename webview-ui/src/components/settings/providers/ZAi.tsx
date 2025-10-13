@@ -5,6 +5,7 @@ import { zaiApiLineConfigs, zaiApiLineSchema, type ProviderSettings } from "@roo
 
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { VSCodeButtonLink } from "@src/components/common/VSCodeButtonLink"
+import { PasswordInputField } from "@src/components/ui/password-input"
 
 import { inputEventTransform } from "../transforms"
 import { cn } from "@/lib/utils"
@@ -50,14 +51,12 @@ export const ZAi = ({ apiConfiguration, setApiConfigurationField }: ZAiProps) =>
 				</div>
 			</div>
 			<div>
-				<VSCodeTextField
+				<PasswordInputField
 					value={apiConfiguration?.zaiApiKey || ""}
-					type="password"
-					onInput={handleInputChange("zaiApiKey")}
+					onChange={handleInputChange("zaiApiKey")}
 					placeholder={t("settings:placeholders.apiKey")}
-					className="w-full">
-					<label className="block font-medium mb-1">{t("settings:providers.zaiApiKey")}</label>
-				</VSCodeTextField>
+					label={t("settings:providers.zaiApiKey")}
+					className="w-full"></PasswordInputField>
 				<div className="text-sm text-vscode-descriptionForeground">
 					{t("settings:providers.apiKeyStorageNotice")}
 				</div>
