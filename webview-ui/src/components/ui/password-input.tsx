@@ -3,7 +3,7 @@ import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 
 type PasswordInputFieldProps = {
 	value: string
-	onChange: (value: string) => void
+	onChange: (event: { target: { value: string } }) => void
 	placeholder?: string
 	label?: string
 	className?: string
@@ -31,7 +31,7 @@ export const PasswordInputField: React.FC<PasswordInputFieldProps> = ({
 				<VSCodeTextField
 					value={value}
 					type={isPasswordVisible ? "text" : "password"}
-					onInput={(e) => onChange((e.target as HTMLInputElement).value)}
+					onInput={(e) => onChange({ target: { value: (e.target as HTMLInputElement).value } })}
 					placeholder={placeholder}
 					className={className}
 					disabled={disabled}
