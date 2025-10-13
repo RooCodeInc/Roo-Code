@@ -1689,7 +1689,17 @@ export class McpHub {
 		await fs.writeFile(normalizedPath, JSON.stringify(config, null, 2))
 
 		if (connection) {
-			connection.server.tools = await this.fetchToolsList(serverName, source)
+			// Check if the connection is still active before fetching tools
+			if (connection.type === "connected" && connection.server.status === "connected") {
+				try {
+					connection.server.tools = await this.fetchToolsList(serverName, source)
+				} catch (error) {
+					// If fetching tools fails, log the error but don't throw
+					// This prevents the "Connection closed" error from disrupting the UI
+					console.error(`Failed to fetch tools after updating ${listName} for ${serverName}:`, error)
+					// The tools list will be refreshed on the next successful connection
+				}
+			}
 			await this.notifyWebviewOfServerChanges()
 		}
 	}
@@ -1701,6 +1711,18 @@ export class McpHub {
 		shouldAllow: boolean,
 	): Promise<void> {
 		try {
+			// Check if the connection exists and is active before proceeding
+			const connection = this.findConnection(serverName, source)
+			if (!connection) {
+				throw new Error(`Server ${serverName} with source ${source} not found`)
+			}
+
+			// If the server is disconnected, we can still update the config
+			// but we should handle it gracefully
+			if (connection.type === "disconnected" || connection.server.status === "disconnected") {
+				console.warn(`Server ${serverName} is disconnected. Updating configuration only.`)
+			}
+
 			await this.updateServerToolList(serverName, source, toolName, "alwaysAllow", shouldAllow)
 		} catch (error) {
 			this.showErrorMessage(
