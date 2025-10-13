@@ -45,6 +45,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 	commands = [],
 }) => {
 	const [materialIconsBaseUri, setMaterialIconsBaseUri] = useState("")
+	const [hasMouseMoved, setHasMouseMoved] = useState(false)
 	const menuRef = useRef<HTMLDivElement>(null)
 
 	const filteredOptions = useMemo(() => {
@@ -72,6 +73,11 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 		const w = window as any
 		setMaterialIconsBaseUri(w.MATERIAL_ICONS_BASE_URI)
 	}, [])
+
+	// Reset mouse moved state when menu changes
+	useEffect(() => {
+		setHasMouseMoved(false)
+	}, [searchQuery, selectedType])
 
 	const renderOptionContent = (option: ContextMenuQueryItem) => {
 		switch (option.type) {
@@ -265,6 +271,12 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 		})
 	}
 
+	const handleMouseMove = () => {
+		if (!hasMouseMoved) {
+			setHasMouseMoved(true)
+		}
+	}
+
 	return (
 		<div
 			style={{
@@ -274,7 +286,8 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 				right: 15,
 				overflowX: "hidden",
 			}}
-			onMouseDown={onMouseDown}>
+			onMouseDown={onMouseDown}
+			onMouseMove={handleMouseMove}>
 			<div
 				ref={menuRef}
 				style={{
@@ -365,7 +378,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 										}
 									: {}),
 							}}
-							onMouseEnter={() => isOptionSelectable(option) && setSelectedIndex(index)}>
+							onMouseEnter={() => hasMouseMoved && isOptionSelectable(option) && setSelectedIndex(index)}>
 							<div
 								style={{
 									display: "flex",
