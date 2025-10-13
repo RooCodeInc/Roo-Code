@@ -14,6 +14,8 @@ const DESCRIPTION =
 const PATH = "/pricing"
 const OG_IMAGE = SEO.ogImage
 
+const PRICE_CREDITS = 5
+
 export const metadata: Metadata = {
 	title: TITLE,
 	description: DESCRIPTION,
@@ -96,8 +98,8 @@ const pricingTiers: PricingTier[] = [
 		icon: Star,
 		price: "$20",
 		period: "/mo",
-		creditPrice: "$0.25",
 		trial: "Free 14-day trial · ",
+		creditPrice: `$${PRICE_CREDITS}`,
 		cancellation: "Cancel anytime",
 		description: "For pro Roo coders",
 		featuresIntro: "Everything in Free +",
@@ -116,7 +118,7 @@ const pricingTiers: PricingTier[] = [
 		icon: Users,
 		price: "$99",
 		period: "/mo",
-		creditPrice: "$0.25",
+		creditPrice: `$${PRICE_CREDITS}`,
 		trial: "Free 14-day trial · ",
 		cancellation: "Cancel anytime",
 		description: "For AI-forward teams",
@@ -142,7 +144,7 @@ export default function PricingPage() {
 						<p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
 							Simple, transparent pricing that scales with your needs.
 							<br />
-							Free 14-day trials to kick the tires.
+							No inference markups. Free 14-day trials to kick the tires.
 						</p>
 					</div>
 				</div>
@@ -197,7 +199,7 @@ export default function PricingPage() {
 
 									{tier.creditPrice && (
 										<p className="text-sm text-muted-foreground mb-1">
-											+ {tier.creditPrice}/M tokens for Cloud tasks
+											+ {tier.creditPrice}/hour for Cloud tasks
 										</p>
 									)}
 
@@ -270,11 +272,11 @@ export default function PricingPage() {
 								You can run as many as you want, and bring your own inference provider key.
 							</p>
 							<p className="mt-2 text-sm text-muted-foreground">
-								To cover our infrastructure costs, we charge $0.25 per million tokens used by them
-								(outside of inference providers).
+								To cover our infrastructure costs, we charge ${PRICE_CREDITS}/hour while the agent is
+								running (independent of inference costs).
 							</p>
 							<p className="mt-2 text-sm text-muted-foreground">
-								There are no tiers, no monthly fees, no dumbing-down of models to increase our profit.
+								There are no markups, no tiers, no dumbing-down of models to increase our profit.
 							</p>
 						</div>
 						<div className="rounded-lg border border-border bg-card p-6">
