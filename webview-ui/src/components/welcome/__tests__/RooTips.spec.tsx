@@ -94,9 +94,9 @@ describe("RooTips Component", () => {
 		})
 
 		test("renders tip cards", () => {
-			expect(screen.getByRole("button", { name: "rooTips.debug.title" })).toBeInTheDocument()
 			expect(screen.getByRole("button", { name: "rooTips.projectWiki.title" })).toBeInTheDocument()
 			expect(screen.getByRole("button", { name: "rooTips.testGuide.title" })).toBeInTheDocument()
+			expect(screen.getByRole("button", { name: "rooTips.debug.title" })).toBeInTheDocument()
 		})
 
 		test("uses VSCode theme colors correctly", () => {

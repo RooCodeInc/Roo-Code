@@ -13,17 +13,23 @@ import { Button } from "@/components/ui"
 
 const tips = [
 	{
-		icon: "codicon-debug-all",
-		click: (e?: any) => {
-			e?.preventDefault()
+		icon: "codicon-book",
+		click: (e: any) => {
+			e.preventDefault()
 			vscode.postMessage({
 				type: "mode",
-				text: "debug",
+				text: "code",
+			})
+			vscode.postMessage({
+				type: "newTask",
+				text: "/project-wiki",
+				values: {
+					checkProjectWiki: true,
+				},
 			})
 		},
-		disabled: true,
-		titleKey: "rooTips.debug.title",
-		descriptionKey: "rooTips.debug.description",
+		titleKey: "rooTips.projectWiki.title",
+		descriptionKey: "rooTips.projectWiki.description",
 	},
 	{
 		icon: "codicon-book",
@@ -33,7 +39,6 @@ const tips = [
 				type: "mode",
 				text: "code",
 			})
-			// 调用 project-wiki 自定义指令
 			vscode.postMessage({
 				type: "newTask",
 				text: "/test-guide",
@@ -46,24 +51,17 @@ const tips = [
 		descriptionKey: "rooTips.testGuide.description",
 	},
 	{
-		icon: "codicon-book",
-		click: (e: any) => {
-			e.preventDefault()
+		icon: "codicon-debug-all",
+		click: (e?: any) => {
+			e?.preventDefault()
 			vscode.postMessage({
 				type: "mode",
-				text: "code",
-			})
-			// 调用 project-wiki 自定义指令
-			vscode.postMessage({
-				type: "newTask",
-				text: "/project-wiki",
-				values: {
-					checkProjectWiki: true,
-				},
+				text: "debug",
 			})
 		},
-		titleKey: "rooTips.projectWiki.title",
-		descriptionKey: "rooTips.projectWiki.description",
+		disabled: true,
+		titleKey: "rooTips.debug.title",
+		descriptionKey: "rooTips.debug.description",
 	},
 ] as {
 	icon: string
