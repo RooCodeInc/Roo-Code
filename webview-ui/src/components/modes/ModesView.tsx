@@ -623,11 +623,9 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 										<span className="truncate">
 											{getCurrentMode()?.name || t("prompts:modes.selectMode")}
 										</span>
-										{getCurrentMode()?.source && (
+										{getCurrentMode() && (
 											<span className="text-[10px] px-1 py-0.5 rounded bg-vscode-badge-background text-vscode-badge-foreground">
-												{getCurrentMode()?.source === "project"
-													? t("common:scope.project")
-													: t("common:scope.global")}
+												{getCurrentMode()?.source || "global"}
 											</span>
 										)}
 									</div>
@@ -691,13 +689,9 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 																	}}>
 																	{modeConfig.name}
 																</span>
-																{modeConfig.source && (
-																	<span className="text-[10px] px-1 py-0.5 rounded bg-vscode-badge-background text-vscode-badge-foreground">
-																		{modeConfig.source === "project"
-																			? t("common:scope.project")
-																			: t("common:scope.global")}
-																	</span>
-																)}
+																<span className="text-[10px] px-1 py-0.5 rounded bg-vscode-badge-background text-vscode-badge-foreground">
+																	{modeConfig.source || "global"}
+																</span>
 															</div>
 															<span
 																className="text-foreground"
@@ -758,16 +752,7 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 					{visualMode && findModeBySlug(visualMode, customModes) && (
 						<div className="flex gap-3 mb-4">
 							<div className="flex-1">
-								<div className="flex items-center gap-1.5 mb-1">
-									<span className="font-bold">{t("prompts:createModeDialog.name.label")}</span>
-									{findModeBySlug(visualMode, customModes)?.source && (
-										<span className="text-[10px] px-1 py-0.5 rounded bg-vscode-badge-background text-vscode-badge-foreground">
-											{findModeBySlug(visualMode, customModes)?.source === "project"
-												? t("common:customModes.scope.project")
-												: t("common:customModes.scope.global")}
-										</span>
-									)}
-								</div>
+								<div className="font-bold mb-1">{t("prompts:createModeDialog.name.label")}</div>
 								<div className="flex gap-2">
 									<Input
 										type="text"

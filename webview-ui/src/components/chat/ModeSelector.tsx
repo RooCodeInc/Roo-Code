@@ -210,13 +210,6 @@ export const ModeSelector = ({
 							: null,
 					)}>
 					<span className="truncate">{selectedMode?.name || ""}</span>
-					{selectedMode?.source && (
-						<span className="text-[10px] px-1 py-0.5 rounded bg-vscode-badge-background text-vscode-badge-foreground">
-							{selectedMode.source === "project"
-								? t("common:customModes.scope.project")
-								: t("common:customModes.scope.global")}
-						</span>
-					)}
 				</PopoverTrigger>
 			</StandardTooltip>
 			<PopoverContent
@@ -262,7 +255,6 @@ export const ModeSelector = ({
 							<div className="py-1">
 								{filteredModes.map((mode) => {
 									const isSelected = mode.slug === value
-									const isCustomMode = mode.source !== undefined
 									return (
 										<div
 											key={mode.slug}
@@ -279,13 +271,9 @@ export const ModeSelector = ({
 											<div className="flex-1 min-w-0">
 												<div className="flex items-center gap-1.5">
 													<span className="font-bold truncate">{mode.name}</span>
-													{isCustomMode && (
-														<span className="text-[10px] px-1 py-0.5 rounded bg-vscode-badge-background text-vscode-badge-foreground">
-															{mode.source === "project"
-																? t("common:scope.project")
-																: t("common:scope.global")}
-														</span>
-													)}
+													<span className="text-[10px] px-1 py-0.5 rounded bg-vscode-badge-background text-vscode-badge-foreground">
+														{mode.source || "global"}
+													</span>
 												</div>
 												{mode.description && (
 													<div className="text-xs text-vscode-descriptionForeground truncate">
