@@ -1,6 +1,5 @@
 import { useCallback, useState, useEffect, useMemo } from "react"
 import { useEvent } from "react-use"
-import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 
 import type { ProviderSettings } from "@roo-code/types"
 

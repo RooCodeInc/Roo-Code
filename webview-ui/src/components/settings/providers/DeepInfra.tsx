@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from "react"
-import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 
 import { OrganizationAllowList, type ProviderSettings, deepInfraDefaultModelId } from "@roo-code/types"
 
