@@ -245,21 +245,48 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 
 	getModel() {
 		const modelId = this.options.apiModelId
-		let id = modelId && modelId in anthropicModels ? (modelId as AnthropicModelId) : anthropicDefaultModelId
-		let info: ModelInfo = anthropicModels[id]
 
-		// If 1M context beta is enabled for Claude Sonnet 4 or 4.5, update the model info
-		if ((id === "claude-sonnet-4-20250514" || id === "claude-sonnet-4-5") && this.options.anthropicBeta1MContext) {
-			// Use the tier pricing for 1M context
-			const tier = info.tiers?.[0]
-			if (tier) {
-				info = {
-					...info,
-					contextWindow: tier.contextWindow,
-					inputPrice: tier.inputPrice,
-					outputPrice: tier.outputPrice,
-					cacheWritesPrice: tier.cacheWritesPrice,
-					cacheReadsPrice: tier.cacheReadsPrice,
+		// When using a custom base URL, allow any model ID to be used
+		// This enables compatibility with services like z.ai that provide
+		// Anthropic-compatible endpoints with custom models
+		const isUsingCustomBaseUrl = !!this.options.anthropicBaseUrl
+
+		let id: string
+		let info: ModelInfo
+
+		if (isUsingCustomBaseUrl && modelId && !(modelId in anthropicModels)) {
+			// Custom model with custom base URL - use the model ID as-is
+			// and provide default model info since we don't know the specifics
+			id = modelId
+			info = {
+				maxTokens: ANTHROPIC_DEFAULT_MAX_TOKENS,
+				contextWindow: 200_000, // Default context window
+				supportsImages: false, // Conservative default
+				supportsPromptCache: false, // Conservative default
+				inputPrice: 0, // Unknown pricing
+				outputPrice: 0, // Unknown pricing
+			}
+		} else {
+			// Standard Anthropic model or no custom base URL
+			id = modelId && modelId in anthropicModels ? (modelId as AnthropicModelId) : anthropicDefaultModelId
+			info = anthropicModels[id as AnthropicModelId]
+
+			// If 1M context beta is enabled for Claude Sonnet 4 or 4.5, update the model info
+			if (
+				(id === "claude-sonnet-4-20250514" || id === "claude-sonnet-4-5") &&
+				this.options.anthropicBeta1MContext
+			) {
+				// Use the tier pricing for 1M context
+				const tier = info.tiers?.[0]
+				if (tier) {
+					info = {
+						...info,
+						contextWindow: tier.contextWindow,
+						inputPrice: tier.inputPrice,
+						outputPrice: tier.outputPrice,
+						cacheWritesPrice: tier.cacheWritesPrice,
+						cacheReadsPrice: tier.cacheReadsPrice,
+					}
 				}
 			}
 		}
