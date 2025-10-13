@@ -35,6 +35,10 @@ vi.mock("vscode", () => ({
 		createTextEditorDecorationType: vi.fn(() => ({
 			dispose: vi.fn(),
 		})),
+		createOutputChannel: vi.fn(() => ({
+			appendLine: vi.fn(),
+			dispose: vi.fn(),
+		})),
 	},
 	ProgressLocation: {
 		Notification: 15,
@@ -199,74 +203,6 @@ describe("CommitMessageGenerator", () => {
 
 			const result = (generator as any).getCommitLanguage(options)
 			expect(result).toBe("en")
-		})
-	})
-
-	describe("getLocalizedPromptPrefix", () => {
-		it("should return Chinese prompt for zh-CN", () => {
-			const result = (generator as any).getLocalizedPromptPrefix("zh-CN")
-			expect(result).toContain("根据以下 git 变更生成提交信息")
-		})
-
-		it("should return Traditional Chinese prompt for zh-TW", () => {
-			const result = (generator as any).getLocalizedPromptPrefix("zh-TW")
-			expect(result).toContain("根據以下 git 變更生成提交訊息")
-		})
-
-		it("should return English prompt for other languages", () => {
-			const result = (generator as any).getLocalizedPromptPrefix("en")
-			expect(result).toContain("Generate a commit message based on the following git changes")
-		})
-	})
-
-	describe("getLocalizedConventionalPrompt", () => {
-		it("should return Chinese conventional prompt for zh-CN", () => {
-			const result = (generator as any).getLocalizedConventionalPrompt("zh-CN")
-			expect(result).toContain("约定式提交格式")
-		})
-
-		it("should return Traditional Chinese conventional prompt for zh-TW", () => {
-			const result = (generator as any).getLocalizedConventionalPrompt("zh-TW")
-			expect(result).toContain("約定式提交格式")
-		})
-
-		it("should return English conventional prompt for other languages", () => {
-			const result = (generator as any).getLocalizedConventionalPrompt("en")
-			expect(result).toContain("conventional commit format")
-		})
-	})
-
-	describe("getLocalizedSimplePrompt", () => {
-		it("should return Chinese simple prompt for zh-CN", () => {
-			const result = (generator as any).getLocalizedSimplePrompt("zh-CN")
-			expect(result).toContain("简洁的提交信息")
-		})
-
-		it("should return Traditional Chinese simple prompt for zh-TW", () => {
-			const result = (generator as any).getLocalizedSimplePrompt("zh-TW")
-			expect(result).toContain("簡潔的提交訊息")
-		})
-
-		it("should return English simple prompt for other languages", () => {
-			const result = (generator as any).getLocalizedSimplePrompt("en")
-			expect(result).toContain("concise commit message")
-		})
-	})
-
-	describe("getLocalizedReturnPrompt", () => {
-		it("should return Chinese return prompt for zh-CN", () => {
-			const result = (generator as any).getLocalizedReturnPrompt("zh-CN")
-			expect(result).toContain("只返回提交信息")
-		})
-
-		it("should return Traditional Chinese return prompt for zh-TW", () => {
-			const result = (generator as any).getLocalizedReturnPrompt("zh-TW")
-			expect(result).toContain("只返回提交訊息")
-		})
-
-		it("should return English return prompt for other languages", () => {
-			const result = (generator as any).getLocalizedReturnPrompt("en")
-			expect(result).toContain("Return only the commit message")
 		})
 	})
 

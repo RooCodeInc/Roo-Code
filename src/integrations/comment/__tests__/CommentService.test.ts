@@ -13,7 +13,13 @@ const mockCommentController = {
 const mockCommentThread = {
 	dispose: vi.fn(),
 	contextValue: "",
-	collapsibleState: 0,
+	_collapsibleState: 1, // Start with expanded state
+	get collapsibleState() {
+		return this._collapsibleState
+	},
+	set collapsibleState(value) {
+		this._collapsibleState = value
+	},
 	canReply: true,
 	label: "",
 	uri: vscode.Uri.file("/test/file.ts"),

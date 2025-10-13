@@ -1,6 +1,7 @@
 import path from "path"
 
 import { Task } from "../task/Task"
+import { handleRooCommandsApprovalSkip } from "../costrict/wiki/utils/rooCommandsUtils"
 import { ClineSayTool } from "../../shared/ExtensionMessage"
 import { formatResponse } from "../prompts/responses"
 import { t } from "../../i18n"
@@ -21,7 +22,7 @@ import {
 	validateImageForProcessing,
 	processImageFile,
 	ImageMemoryTracker,
-} from "./helpers/imageHelpers"
+} from "../costrict/wiki/imageHelpers"
 import { DEFAULT_FILE_READ_CHARACTER_LIMIT } from "@roo-code/types"
 
 export function getReadFileToolDescription(blockName: string, blockParams: any): string {
@@ -248,6 +249,11 @@ export async function readFileTool(
 					}
 				}
 				if (hasRangeError) continue
+			}
+
+			// (project-wiki) Skip approval for ${HOME}/.roo/commands directory
+			if (handleRooCommandsApprovalSkip(fileResult, relPath, cline, updateFileResult)) {
+				continue
 			}
 
 			// Then check RooIgnore validation

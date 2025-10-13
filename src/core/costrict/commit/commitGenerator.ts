@@ -8,9 +8,11 @@ import { ProviderSettings } from "@roo-code/types"
 import type { ClineProvider } from "../../webview/ClineProvider"
 import { t } from "../../../i18n"
 import { singleCompletionHandler } from "../../../utils/single-completion-handler"
+import { truncateOutput } from "../../../integrations/misc/extract-text"
 
 const execAsync = promisify(exec)
 
+const GIT_OUTPUT_CHAR_LIMIT = 30000
 /**
  * Commit message generator service
  */
@@ -189,15 +191,22 @@ export class CommitMessageGenerator {
 		// Prepare prompt for AI
 		const systemPrompt =
 			"You are an expert at generating concise, meaningful commit messages based on git diff information. Follow conventional commit format when appropriate."
-		const aiMessage = await singleCompletionHandler(
+		let aiMessage = await singleCompletionHandler(
 			apiConfiguration!,
 			this.buildAIPrompt(diffInfo, options),
 			systemPrompt,
 			{
 				language: lang,
 				maxLength: options.maxLength,
+				modelId: options.commitModelId,
 			},
 		)
+
+		if (aiMessage.includes("</think>")) {
+			// Remove the <think> tag
+			aiMessage = (aiMessage.split("</think>")[1] || "").trim()
+		}
+
 		if (!aiMessage) {
 			throw new Error(t("commit:commit.error.aiFailed"))
 		}
@@ -355,11 +364,10 @@ export class CommitMessageGenerator {
 	 * Build prompt for AI commit generation
 	 */
 	private buildAIPrompt(diffInfo: GitDiffInfo, options: CommitGenerationOptions): string {
-		const { useConventionalCommits = true, language } = options
+		const { useConventionalCommits = true } = options
 		const lang = this.getCommitLanguage(options)
-
 		// Build language-specific prompt
-		let prompt = this.getLocalizedPromptPrefix(lang)
+		let prompt = t("commit:commit.prompt.prefix", { lng: lang })
 
 		if (diffInfo.added.length > 0) {
 			prompt += `Added files:\n${diffInfo.added.map((f) => `- ${f}`).join("\n")}\n\n`
@@ -379,15 +387,16 @@ export class CommitMessageGenerator {
 
 		// Filter diff content to exclude content from files that should only show filenames
 		const filteredDiffContent = this.filterDiffContent(diffInfo.diffContent, diffInfo)
-		prompt += `Diff content:\n${filteredDiffContent}\n\n`
+
+		prompt += `Diff content:\n${truncateOutput(filteredDiffContent, undefined, GIT_OUTPUT_CHAR_LIMIT)}\n\n`
 
 		if (useConventionalCommits) {
-			prompt += this.getLocalizedConventionalPrompt(lang)
+			prompt += t("commit:commit.prompt.conventional", { lng: lang })
 		} else {
-			prompt += this.getLocalizedSimplePrompt(lang)
+			prompt += t("commit:commit.prompt.simple", { lng: lang })
 		}
 
-		prompt += this.getLocalizedReturnPrompt(lang)
+		prompt += t("commit:commit.prompt.return", { lng: lang })
 
 		return prompt
 	}
@@ -758,10 +767,6 @@ export class CommitMessageGenerator {
 	private generateBody(diffInfo: GitDiffInfo): string {
 		const lines: string[] = []
 
-		// const summary = `Added: ${diffInfo.added.length}, Modified: ${diffInfo.modified.length}, Deleted: ${diffInfo.deleted.length}, Renamed: ${diffInfo.renamed.length}`
-		// lines.push(summary)
-		// if (lines.length > 0) lines.push("")
-
 		if (diffInfo.added.length > 0) {
 			lines.push(t("commit:commit.files.added"))
 			diffInfo.added.forEach((file) => lines.push(`- ${file}`))
@@ -807,61 +812,5 @@ export class CommitMessageGenerator {
 
 		// Fallback to VSCode environment language
 		return vscode.env.language || "en"
-	}
-
-	/**
-	 * Get localized prompt prefix based on language
-	 */
-	private getLocalizedPromptPrefix(lang: string): string {
-		switch (lang) {
-			case "zh-CN":
-				return `根据以下 git 变更生成提交信息：\n\n`
-			case "zh-TW":
-				return `根據以下 git 變更生成提交訊息：\n\n`
-			default:
-				return `Generate a commit message based on the following git changes:\n\n`
-		}
-	}
-
-	/**
-	 * Get localized conventional commit prompt
-	 */
-	private getLocalizedConventionalPrompt(lang: string): string {
-		switch (lang) {
-			case "zh-CN":
-				return `请生成遵循约定式提交格式的提交信息 (type(scope): description)。`
-			case "zh-TW":
-				return `請生成遵循約定式提交格式的提交訊息 (type(scope): description)。`
-			default:
-				return `Please generate a commit message following conventional commit format (type(scope): description).`
-		}
-	}
-
-	/**
-	 * Get localized simple commit prompt
-	 */
-	private getLocalizedSimplePrompt(lang: string): string {
-		switch (lang) {
-			case "zh-CN":
-				return `请生成简洁的提交信息。`
-			case "zh-TW":
-				return `請生成簡潔的提交訊息。`
-			default:
-				return `Please generate a concise commit message.`
-		}
-	}
-
-	/**
-	 * Get localized return instruction
-	 */
-	private getLocalizedReturnPrompt(lang: string): string {
-		switch (lang) {
-			case "zh-CN":
-				return ` 只返回提交信息，不要解释。`
-			case "zh-TW":
-				return ` 只返回提交訊息，不要解釋。`
-			default:
-				return ` Return only the commit message, no explanations.`
-		}
 	}
 }

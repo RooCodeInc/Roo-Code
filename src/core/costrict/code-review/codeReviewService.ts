@@ -17,7 +17,7 @@ import type { AxiosRequestConfig } from "axios"
 import { v7 as uuidv7 } from "uuid"
 
 import { ReviewTask } from "./types"
-import { createReviewTaskAPI, getReviewResultsAPI, updateIssueStatusAPI, cancelReviewTaskAPI } from "./api"
+import { createReviewTaskAPI, getReviewResultsAPI, updateIssueStatusAPI, cancelReviewTaskAPI, getPrompt } from "./api"
 import { ReviewComment } from "./reviewComment"
 import { ZgsmAuthConfig, ZgsmAuthService } from "../auth"
 
@@ -56,6 +56,7 @@ export class CodeReviewService {
 	private cachedIssues: Map<string, ReviewIssue> = new Map()
 	private currentActiveIssueId: string | null = null
 	private logger: ILogger
+	private taskList: Map<string, string> = new Map()
 	/**
 	 * Private constructor for singleton pattern
 	 */
@@ -511,6 +512,32 @@ export class CodeReviewService {
 	 */
 	public isTaskRunning(): boolean {
 		return this.currentTask !== null && !this.currentTask.isCompleted
+	}
+
+	public async askWithAI(id: string) {
+		const provider = this.getProvider()
+		if (!provider) {
+			return
+		}
+		const requestOptions = await this.getRequestOptions()
+		const { data } = await getPrompt(id, requestOptions)
+
+		const task = await provider.createTask(data.prompt)
+		await provider.postMessageToWebview({
+			type: "action",
+			action: "switchTab",
+			tab: "chat",
+		})
+		this.taskList.set(task.taskId, id)
+	}
+
+	public async checkAndAcceptIssueByTaskId(taskId: string) {
+		if (!taskId && !this.taskList.has(taskId)) {
+			return
+		}
+		const issueId = this.taskList.get(taskId)!
+		await this.updateIssueStatus(issueId, IssueStatus.ACCEPT)
+		this.taskList.delete(taskId)
 	}
 
 	// ===== Polling Methods =====

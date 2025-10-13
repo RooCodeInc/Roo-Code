@@ -52,7 +52,7 @@ import { findLast } from "../../shared/array"
 import { supportPrompt, type SupportPromptType } from "../../shared/support-prompt"
 import { GlobalFileNames } from "../../shared/globalFileNames"
 import type { ExtensionMessage, ExtensionState, MarketplaceInstalledMetadata } from "../../shared/ExtensionMessage"
-import { Mode, defaultModeSlug, getModeBySlug } from "../../shared/modes"
+import { Mode, defaultModeSlug, getModeBySlug, ZgsmCodeMode } from "../../shared/modes"
 import { experimentDefault } from "../../shared/experiments"
 import { formatLanguage } from "../../shared/language"
 import { WebviewMessage } from "../../shared/WebviewMessage"
@@ -740,6 +740,36 @@ export class ClineProvider
 
 		try {
 			await visibleProvider.createTask(prompt)
+		} catch (error) {
+			if (error instanceof OrganizationAllowListViolationError) {
+				// Errors from terminal commands seem to get swallowed / ignored.
+				vscode.window.showErrorMessage(error.message)
+			}
+
+			throw error
+		}
+	}
+
+	public static async handleWorkflowAction(
+		type: SupportPromptType,
+		params: Record<string, string | any[]>,
+		mode: string,
+	): Promise<void> {
+		const visibleProvider = await ClineProvider.getInstance()
+
+		if (!visibleProvider) {
+			return
+		}
+		const { customSupportPrompts } = await visibleProvider.getState()
+
+		const prompt = supportPrompt.create(type, params, customSupportPrompts)
+
+		TelemetryService.instance.captureCodeActionUsed(prompt)
+
+		await visibleProvider.setMode(mode)
+
+		try {
+			await visibleProvider.createTask(prompt, undefined, undefined, { zgsmWorkflowMode: mode })
 		} catch (error) {
 			if (error instanceof OrganizationAllowListViolationError) {
 				// Errors from terminal commands seem to get swallowed / ignored.
@@ -1816,6 +1846,7 @@ export class ClineProvider
 			currentApiConfigName,
 			listApiConfigMeta,
 			pinnedApiConfigs,
+			zgsmCodeMode,
 			mode,
 			customModePrompts,
 			customSupportPrompts,
@@ -1946,6 +1977,7 @@ export class ClineProvider
 			listApiConfigMeta: listApiConfigMeta ?? [],
 			pinnedApiConfigs: pinnedApiConfigs ?? {},
 			mode: mode ?? defaultModeSlug,
+			zgsmCodeMode: zgsmCodeMode ?? "vibe",
 			customModePrompts: customModePrompts ?? {},
 			customSupportPrompts: customSupportPrompts ?? {},
 			enhancementApiConfigId,
@@ -2164,6 +2196,7 @@ export class ClineProvider
 			terminalZdotdir: stateValues.terminalZdotdir ?? false,
 			terminalCompressProgressBar: stateValues.terminalCompressProgressBar ?? true,
 			mode: stateValues.mode ?? defaultModeSlug,
+			zgsmCodeMode: stateValues.zgsmCodeMode ?? "vibe",
 			language: stateValues.language ?? formatLanguage(await defaultLang()),
 			mcpEnabled: stateValues.mcpEnabled ?? true,
 			enableMcpServerCreation: stateValues.enableMcpServerCreation ?? true,
@@ -2682,7 +2715,6 @@ export class ClineProvider
 			},
 		).catch(() => {
 			console.error("Failed to abort task")
-			task?.api?.cancelChat?.(task.abortReason)
 		})
 
 		task?.api?.cancelChat?.(task.abortReason)
@@ -2747,6 +2779,11 @@ export class ClineProvider
 
 	public async setMode(mode: string): Promise<void> {
 		await this.setValues({ mode })
+	}
+
+	public async setZgsmCodeMode(zgsmCodeMode: ZgsmCodeMode): Promise<void> {
+		await this.setValues({ zgsmCodeMode })
+		await this.postStateToWebview()
 	}
 
 	// Provider Profiles

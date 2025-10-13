@@ -6,5 +6,13 @@
 		"title": "幫助改進 Costrict",
 		"anonymousTelemetry": "傳送匿名錯誤和使用資料，以協助我們修復錯誤並改善擴充功能。我們絕不會傳送任何程式碼、命令提示詞、或個人資訊 (除非您使用了 Costrict)。詳細資訊請參閱我們的<privacyLink>隱私權政策</privacyLink>。"
 	},
-	"chooseProvider": "Costrict  需要一個 API 金鑰才能發揮魔力。"
+	"chooseProvider": "Costrict  需要一個 API 金鑰才能發揮魔力。",
+	"vibe": {
+		"description": "氛圍編程，輕量交互模式，需求澄清與代碼生成交替進行。適配快速開發或簡單任務，若使用者具備較強提示詞能力，可高效產出高質量代碼。"
+	},
+	"strict": {
+		"description": "嚴肅編程，標準開發模式，遵從「需求澄清→設計約束→任務拆解→測試案例」完整流程，以測試驅動開發為核心實現子任務自校驗自修復閉環。適配複雜任務，通過標準化流程提升普通開發者代碼交付能力。"
+	},
+	"developmentMode": "開發模式",
+	"commonFeatures": "常用功能"
 }

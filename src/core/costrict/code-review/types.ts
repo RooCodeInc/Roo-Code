@@ -201,3 +201,9 @@ export interface CancelReviewTaskResponse {
 	success: boolean
 	message: string
 }
+
+export interface IReviewPrompt {
+	data: {
+		prompt: string
+	}
+}

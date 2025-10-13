@@ -94,6 +94,7 @@ export interface CreateTaskOptions {
 	initialTodos?: TodoItem[]
 	useZgsmCustomConfig?: boolean
 	zgsmCodebaseIndexEnabled?: boolean
+	zgsmWorkflowMode?: string
 }
 
 export enum TaskStatus {

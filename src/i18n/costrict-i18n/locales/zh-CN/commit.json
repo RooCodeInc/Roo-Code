@@ -34,6 +34,12 @@
 			"modified": "修改的文件：",
 			"deleted": "删除的文件：",
 			"renamed": "重命名的文件："
+		},
+		"prompt": {
+			"prefix": "根据以下 git 变更生成提交信息：\n\n",
+			"conventional": "请生成遵循约定式提交格式的提交信息 (type(scope): description)。",
+			"simple": "请生成简洁的提交信息。",
+			"return": " 只返回提交信息，不要解释。"
 		}
 	}
 }

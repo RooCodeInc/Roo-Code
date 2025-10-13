@@ -10,6 +10,14 @@ vi.mock("vscode", () => ({
 		showErrorMessage: vi.fn(),
 		createTextEditorDecorationType: vi.fn(() => ({})),
 		showInformationMessage: vi.fn(),
+		createOutputChannel: vi.fn(() => ({
+			appendLine: vi.fn(),
+			append: vi.fn(),
+			clear: vi.fn(),
+			show: vi.fn(),
+			hide: vi.fn(),
+			dispose: vi.fn(),
+		})),
 	},
 	Uri: {
 		file: vi.fn((path: string) => ({ fsPath: path })),
@@ -18,6 +26,23 @@ vi.mock("vscode", () => ({
 	commands: {
 		executeCommand: vi.fn(),
 	},
+	workspace: {
+		workspaceFolders: [
+			{
+				uri: { fsPath: "/test/workspace" },
+			},
+		],
+		createFileSystemWatcher: vi.fn(() => ({
+			onDidCreate: vi.fn(),
+			onDidChange: vi.fn(),
+			onDidDelete: vi.fn(),
+			dispose: vi.fn(),
+		})),
+	},
+	env: {
+		uriScheme: "vscode",
+	},
+	RelativePattern: vi.fn((base: string, pattern: string) => ({ base, pattern })),
 }))
 
 // Mock other dependencies

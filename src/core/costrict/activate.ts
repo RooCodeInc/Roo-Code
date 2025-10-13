@@ -38,6 +38,7 @@ import { writeCostrictAccessToken } from "./codebase-index/utils"
 import { getPanel } from "../../activate/registerCommands"
 import { t } from "../../i18n"
 import prettyBytes from "pretty-bytes"
+import { ensureProjectWikiCommandExists } from "./wiki/projectWikiHelpers"
 
 const HISTORY_WARN_SIZE = 1000 * 1000 * 1000 * 3
 
@@ -75,7 +76,7 @@ export async function activate(
 	provider: ClineProvider,
 	outputChannel: vscode.OutputChannel,
 ) {
-	const logger = createLogger(Package.outputChannel, { channel: outputChannel })
+	const logger = createLogger(Package.outputChannel)
 	initErrorCodeManager(provider)
 	initGitCheckoutDetector(context, logger)
 	await initialize(provider, logger)
@@ -210,6 +211,9 @@ export async function activate(
 	})
 	setTimeout(() => {
 		loginTip()
+
+		// init project-wiki command.
+		ensureProjectWikiCommandExists()
 	}, 2000)
 }
 

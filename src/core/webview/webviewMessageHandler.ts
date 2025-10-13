@@ -51,7 +51,7 @@ import { getOpenAiModels } from "../../api/providers/openai"
 import { getVsCodeLmModels } from "../../api/providers/vscode-lm"
 import { openMention } from "../mentions"
 import { getWorkspacePath } from "../../utils/path"
-import { Mode, defaultModeSlug } from "../../shared/modes"
+import { Mode, defaultModeSlug, ZgsmCodeMode } from "../../shared/modes"
 import { getModels, flushModels } from "../../api/providers/fetchers/modelCache"
 import { GetModelsOptions } from "../../shared/api"
 import { generateSystemPrompt } from "./generateSystemPrompt"
@@ -71,6 +71,7 @@ import { ErrorCodeManager } from "../costrict/error-code"
 import { writeCostrictAccessToken } from "../costrict/codebase-index/utils"
 import { workspaceEventMonitor } from "../costrict/codebase-index/workspace-event-monitor"
 import { fetchZgsmQuotaInfo } from "../../api/providers/fetchers/zgsm"
+import { ensureProjectWikiCommandExists } from "../costrict/wiki/projectWikiHelpers"
 
 export const webviewMessageHandler = async (
 	provider: ClineProvider,
@@ -556,6 +557,9 @@ export const webviewMessageHandler = async (
 			// agentically running promises in old instance don't affect our new
 			// task. This essentially creates a fresh slate for the new task.
 			try {
+				if (message.values?.checkProjectWiki) {
+					await ensureProjectWikiCommandExists()
+				}
 				await provider.createTask(message.text, message.images)
 				// Task created successfully - notify the UI to reset
 				await provider.postMessageToWebview({
@@ -1557,6 +1561,9 @@ export const webviewMessageHandler = async (
 			break
 		case "mode":
 			await provider.handleModeSwitch(message.text as Mode)
+			break
+		case "zgsmCodeMode":
+			await provider.setZgsmCodeMode(message.text as ZgsmCodeMode)
 			break
 		case "updateSupportPrompt":
 			try {

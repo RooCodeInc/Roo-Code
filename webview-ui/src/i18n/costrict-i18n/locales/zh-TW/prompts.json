@@ -44,6 +44,26 @@
 			"EXPLAIN": {
 				"label": "解釋程式碼",
 				"description": "取得程式碼片段、函式或整個檔案的詳細解釋。有助於理解複雜程式碼或學習新模式。可在程式碼操作（編輯器中的燈泡圖示）和編輯器右鍵選單中使用。"
+			},
+			"WORKFLOW_TASK_RUN": {
+				"label": "執行工作流程任務",
+				"description": "執行工作流程任務"
+			},
+			"WORKFLOW_TASK_RETRY": {
+				"label": "重試工作流程任務",
+				"description": "重試工作流程任務"
+			},
+			"WORKFLOW_RQS_UPDATE": {
+				"label": "需求更新",
+				"description": "當需求文件確認更新後，Costrict 將更新相關的設計文件"
+			},
+			"WORKFLOW_DESIGN_UPDATE": {
+				"label": "設計更新",
+				"description": "當設計文件確認更新後，Costrict 將更新相關的任務文件"
+			},
+			"WORKFLOW_TASK_RUN_TESTS": {
+				"label": "測試案例更新",
+				"description": "當測試案例文件確認更新後，Costrict 將更新相關的任務文件"
 			}
 		}
 	},

@@ -11,6 +11,10 @@ vi.mock("vscode", async (importOriginal) => ({
 	window: {
 		showErrorMessage: vi.fn(),
 		createTextEditorDecorationType: vi.fn(),
+		createOutputChannel: () => ({
+			appendLine: vi.fn(),
+			show: vi.fn(),
+		}),
 	},
 }))
 

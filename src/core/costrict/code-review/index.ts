@@ -103,6 +103,17 @@ export function initCodeReview(
 				reviewInstance.updateIssueStatus(comment.id, IssueStatus.REJECT)
 			})
 		},
+		askReviewSuggestionWithAI: async (thread: vscode.CommentThread) => {
+			const visibleProvider = await ClineProvider.getInstance()
+			if (!visibleProvider) {
+				return
+			}
+			reviewInstance.setProvider(visibleProvider)
+			const comment = thread.comments[0] as ReviewComment
+			if (comment) {
+				reviewInstance.askWithAI(comment.id)
+			}
+		},
 	}
 	for (const [id, callback] of Object.entries(commandMap)) {
 		const command = getCommand(id as CostrictCommandId)

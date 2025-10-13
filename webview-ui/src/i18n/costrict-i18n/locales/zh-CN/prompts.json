@@ -44,6 +44,26 @@
 			"ZGSM_EXPLAIN": {
 				"label": "解释代码",
 				"description": "解读代码逻辑（支持文件/片段），可在代码操作（编辑器中的灯泡图标）和编辑器上下文菜单（右键点击选中的代码）中使用。"
+			},
+			"WORKFLOW_TASK_RUN": {
+				"label": "运行工作流任务",
+				"description": "运行工作流任务"
+			},
+			"WORKFLOW_TASK_RETRY": {
+				"label": "重试工作流任务",
+				"description": "重试工作流任务"
+			},
+			"WORKFLOW_RQS_UPDATE": {
+				"label": "需求更新",
+				"description": "当需求文档确认更新后，Costrict 将更新相关的设计文档"
+			},
+			"WORKFLOW_DESIGN_UPDATE": {
+				"label": "设计更新",
+				"description": "当设计文档确认更新后，Costrict 将更新相关的任务文档"
+			},
+			"WORKFLOW_TASK_RUN_TESTS": {
+				"label": "测试案例更新",
+				"description": "当测试案例文档确认更新后，Costrict 将更新相关的任务文档"
 			}
 		}
 	},

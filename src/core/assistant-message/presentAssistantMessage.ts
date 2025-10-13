@@ -37,6 +37,7 @@ import { Task } from "../task/Task"
 import { codebaseSearchTool } from "../tools/codebaseSearchTool"
 import { experiments, EXPERIMENT_IDS } from "../../shared/experiments"
 import { applyDiffToolLegacy } from "../tools/applyDiffTool"
+import { updateCospecMetadata } from "../checkpoints"
 
 /**
  * Processes and presents assistant message content to the user interface.
@@ -260,7 +261,9 @@ export async function presentAssistantMessage(cline: Task) {
 
 			const pushToolResult = (content: ToolResponse) => {
 				cline.userMessageContent.push({ type: "text", text: `${toolDescription()} Result:` })
-
+				if (["write_to_file", "apply_diff", "insert_content", "search_and_replace"].includes(block.name) && block.partial === false) {
+					updateCospecMetadata(cline, block?.params?.path)
+				}
 				if (typeof content === "string") {
 					cline.userMessageContent.push({ type: "text", text: content || "(tool did not return anything)" })
 				} else {

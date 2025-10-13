@@ -42,6 +42,7 @@
 	"command.view.userHelperDoc.title": "Costrict官網",
 	"command.addFileToContext.title": "添加上下文",
 	"command.generateCommitMessage.title": "使用 Costrict 產生提交訊息",
+	"command.askReviewSuggestionWithAI.title": "修復程式碼",
 
 	"intelligentCodeCompletion.enabled.description": "啟用智慧程式碼補全",
 	"intelligentCodeCompletion.betaMode.description": "啟用測試版功能以獲得早期存取權。請查看版本說明了解功能列表。",
@@ -72,6 +73,7 @@
 	"settings.newTaskRequireTodos.description": "使用 new_task 工具建立新工作時需要 todos 參數",
 	"settings.codeIndex.embeddingBatchSize.description": "程式碼索引期間嵌入操作的批次大小。根據 API 提供商的限制調整此設定。預設值為 60。",
 	"settings.commit.useConventionalCommits.description": "產生提交訊息時使用常規提交格式",
+	"settings.commit.commitModelId.description": "設定生成提交信息嘅模型ID（例如：gpt-4）",
 	"settings.commit.maxLength.description": "提交訊息主旨行的最大長度（20-300個字元）",
 	"settings.commit.language.description": "提交訊息生成語言（auto = 使用系統語言）"
 }

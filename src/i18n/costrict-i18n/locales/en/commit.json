@@ -34,6 +34,12 @@
 			"modified": "Modified files:",
 			"deleted": "Deleted files:",
 			"renamed": "Renamed files:"
+		},
+		"prompt": {
+			"prefix": "Generate a commit message based on the following git changes:\n\n",
+			"conventional": "Please generate a commit message following conventional commit format (type(scope): description).",
+			"simple": "Please generate a concise commit message.",
+			"return": " Return only the commit message, no explanations."
 		}
 	}
 }

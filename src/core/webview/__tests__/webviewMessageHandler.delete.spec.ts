@@ -20,6 +20,10 @@ vi.mock("vscode", () => ({
 		showWarningMessage: vi.fn(),
 		showInformationMessage: vi.fn(),
 		createTextEditorDecorationType: vi.fn(() => ({})),
+		createOutputChannel: () => ({
+			appendLine: vi.fn(),
+			show: vi.fn(),
+		}),
 	},
 	workspace: {
 		workspaceFolders: undefined,

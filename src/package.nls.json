@@ -42,6 +42,7 @@
 	"command.addFileToContext.title": "Add To Context",
 	"command.toggleAutoApprove.title": "Toggle Auto-Approve",
 	"command.generateCommitMessage.title": "Generate Commit Message With Costrict",
+	"command.askReviewSuggestionWithAI.title": "Fix Code",
 
 	"intelligentCodeCompletion.enabled.description": "Enable intelligent code completion",
 	"intelligentCodeCompletion.betaMode.description": "Enable beta features for early access. See version notes for feature list.",
@@ -72,6 +73,7 @@
 	"settings.newTaskRequireTodos.description": "Require todos parameter when creating new tasks with the new_task tool",
 	"settings.codeIndex.embeddingBatchSize.description": "The batch size for embedding operations during code indexing. Adjust this based on your API provider's limits. Default is 60.",
 	"settings.commit.useConventionalCommits.description": "Use conventional commit format when generating commit messages",
+	"settings.commit.commitModelId.description": "Set the Model ID for Generate Commit Message (e.g. gpt-4)",
 	"settings.commit.maxLength.description": "Maximum length for commit message subject line (20-300 characters)",
 	"settings.commit.language.description": "Language for commit message generation (auto = use system language)"
 }

@@ -54,8 +54,10 @@ export class ErrorCodeManager {
 					this.errorMap = {}
 					// Get remote error codes
 					const remoteErrorMap = await this.fetchRemoteCodes()
-					this.errorMap = remoteErrorMap
-					this.provider.setValue("errorCode", remoteErrorMap)
+					if (Object.keys(remoteErrorMap).length) {
+						this.errorMap = remoteErrorMap
+						this.provider.setValue("errorCode", remoteErrorMap)
+					}
 				},
 				{
 					retries: 2,
@@ -80,8 +82,9 @@ export class ErrorCodeManager {
 			return response.data
 		} catch (error) {
 			console.error("Failed to fetch remote error codes:", error)
+			throw error
 			// Return empty object as fallback for any exception
-			return {}
+			// return {}
 		}
 	}
 	/**

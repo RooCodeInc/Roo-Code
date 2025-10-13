@@ -11,25 +11,28 @@ import i18n from "../../../i18n/setup"
  * @param providerName - The name of the provider for context in error messages
  * @returns The original error or a transformed user-friendly error
  */
-export function handleOpenAIError(error: unknown, providerName: string): Error {
-	const status = (error as any)?.status
+export function handleOpenAIError(error: any, providerName: string): Error & { status?: number } {
+	const _error = error as any
+
 	if (error instanceof Error) {
 		const msg = error.message || ""
 		// Invalid character/ByteString conversion error in API key
 		if (msg.includes("Cannot convert argument to a ByteString")) {
-			const err = new Error(i18n.t("common:errors.api.invalidKeyInvalidChars"))
-			;(err as any).status = status // Preserve original status if available
-			return err
+			error = new Error(i18n.t("common:errors.api.invalidKeyInvalidChars"))
+		} else {
+			// For other Error instances, wrap with provider-specific prefix
+			error = new Error(`${providerName} completion error: ${msg}`)
 		}
-
-		// For other Error instances, wrap with provider-specific prefix
-		const err = new Error(`${providerName} completion error: ${msg}`)
-		;(err as any).status = status // Preserve original status if available
-		return err
+	} else {
+		// Non-Error: wrap with provider-specific prefix
+		error = new Error(`${providerName} completion error: ${String(error)}`)
 	}
 
-	// Non-Error: wrap with provider-specific prefix
-	const err = new Error(`${providerName} completion error: ${String(error)}`)
-	;(err as any).status = status // Preserve original status if available
-	return err
+	if (_error.status != null) {
+		Object.assign(error, {
+			status: _error.status,
+		})
+	}
+
+	return error as Error & { status?: number }
 }

@@ -15,6 +15,40 @@ import { getApiMetrics } from "../../shared/getApiMetrics"
 import { DIFF_VIEW_URI_SCHEME } from "../../integrations/editor/DiffViewProvider"
 
 import { CheckpointServiceOptions, RepoPerTaskCheckpointService } from "../../services/checkpoints"
+import { CospecMetadataManager } from "../costrict/workflow/CospecMetadataManager"
+import * as path from "path"
+import * as fs from "fs/promises"
+import { isCoworkflowDocument } from "../costrict/workflow/commands"
+
+/**
+ */
+async function updateCospecMetadataForCheckpoint(
+	workspaceDir: string,
+	editFilePath: string, // 这里时 ai 通过编辑的 文件路径
+	taskId: string,
+	checkpointId: string,
+): Promise<void> {
+	if (!isCoworkflowDocument(editFilePath)) {
+		return
+	}
+	const fileName =  path.basename(editFilePath)
+	const cospecDir = path.join(workspaceDir, path.dirname(editFilePath))
+	const fileAbsPath = path.join(workspaceDir, editFilePath)
+	const metadata = await CospecMetadataManager.getMetadataOrDefault(cospecDir)
+	Object.assign(metadata, {
+		[fileName.replace(".md", "")]: {
+			lastTaskId: taskId,
+			lastCheckpointId: checkpointId,
+			content: await fs.readFile(fileAbsPath, "utf-8"),
+		}
+	})
+
+	try {
+		await CospecMetadataManager.writeMetadata(path.join(cospecDir), metadata)
+	} catch (error) {
+		console.error(`[updateCospecMetadataForCheckpoint]\n${cospecDir}\n${error.message}`)
+	}
+}
 
 export async function getCheckpointService(
 	task: Task,
@@ -187,12 +221,14 @@ export async function checkpointSave(task: Task, force = false, suppressMessage 
 	TelemetryService.instance.captureCheckpointCreated(task.taskId)
 
 	// Start the checkpoint process in the background.
-	return service
+	const checkpointResult = service
 		.saveCheckpoint(`Task: ${task.taskId}, Time: ${Date.now()}`, { allowEmpty: force, suppressMessage })
 		.catch((err) => {
 			console.error("[Task#checkpointSave] caught unexpected error, disabling checkpoints", err)
 			task.enableCheckpoints = false
 		})
+
+	return checkpointResult
 }
 
 export type CheckpointRestoreOptions = {
@@ -323,5 +359,26 @@ export async function checkpointDiff(task: Task, { ts, previousCommitHash, commi
 		const provider = task.providerRef.deref()
 		provider?.log("[checkpointDiff] disabling checkpoints for this task")
 		task.enableCheckpoints = false
+	}
+}
+
+export async function updateCospecMetadata(task: Task, editFilePath?: string) {
+	try {
+		const workspaceDir = task.cwd || getWorkspacePath()
+		const checkpointId = task.clineMessages.filter((v) => v.say === "checkpoint_saved")[0].text
+		if (workspaceDir && checkpointId && editFilePath) {
+			await updateCospecMetadataForCheckpoint(
+				workspaceDir,
+				editFilePath,
+				task.taskId,
+				checkpointId
+				// checkpointInfo?.checkpoint?.to as string,
+			)
+		}
+	} catch (error) {
+		console.error(
+			"[Task#updateCospecMetadataForCheckpoint] caught unexpected error, disabling checkpoints",
+			error,
+		)
 	}
 }

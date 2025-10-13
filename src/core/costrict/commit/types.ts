@@ -23,4 +23,5 @@ export interface CommitGenerationOptions {
 	includeFileChanges?: boolean
 	maxLength?: number
 	language?: string
+	commitModelId?: string
 }

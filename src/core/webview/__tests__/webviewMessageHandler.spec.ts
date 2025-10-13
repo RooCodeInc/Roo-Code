@@ -47,6 +47,10 @@ vi.mock("vscode", async (importOriginal) => ({
 		showInformationMessage: vi.fn(),
 		showErrorMessage: vi.fn(),
 		createTextEditorDecorationType: vi.fn(),
+		createOutputChannel: () => ({
+			appendLine: vi.fn(),
+			show: vi.fn(),
+		}),
 	},
 	workspace: {
 		workspaceFolders: [{ uri: { fsPath: "/mock/workspace" } }],

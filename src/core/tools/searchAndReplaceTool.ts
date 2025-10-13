@@ -19,6 +19,7 @@ import { RecordSource } from "../context-tracking/FileContextTrackerTypes"
 import { DEFAULT_WRITE_DELAY_MS } from "@roo-code/types"
 import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
 import { TelemetryService } from "@roo-code/telemetry"
+import { CodeReviewService } from "../costrict/code-review"
 
 /**
  * Tool for performing search and replace operations on files
@@ -273,6 +274,8 @@ export async function searchAndReplaceTool(
 		} catch (err) {
 			console.log(err)
 		}
+		const codeReviewService = CodeReviewService.getInstance()
+		codeReviewService.checkAndAcceptIssueByTaskId(cline.taskId)
 
 		cline.didEditFile = true
 

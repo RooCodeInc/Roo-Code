@@ -1,5 +1,6 @@
 import * as vscode from "vscode"
 import { inspect } from "util"
+import { Package } from "../shared/package"
 
 /**
  * Log levels (smaller value indicates lower priority)
@@ -39,12 +40,12 @@ export interface ILogger {
  * preventing state fragmentation caused by multiple creations.
  */
 const loggerRegistry = new Map<string, ChannelLogger>()
-
+let _channelPannel: vscode.OutputChannel | undefined
 /**
  * Factory function: Get (or create) VS Code Logger instance.
  * Always returns the same instance for loggers with the same name.
  */
-export function createLogger(name: string, options: LoggerOptions = {}): ILogger {
+export function createLogger(name: string = Package.outputChannel, options: LoggerOptions = {}): ChannelLogger {
 	const cached = loggerRegistry.get(name)
 	if (cached) return cached
 
@@ -68,7 +69,7 @@ export function deactivate(): void {
 
 class ChannelLogger implements ILogger {
 	private static readonly MAX_BUFFER_SIZE = 1000
-	private readonly channel: vscode.OutputChannel
+	readonly channel: vscode.OutputChannel
 	private readonly buffer: string[] = []
 	private flushHandle: NodeJS.Immediate | null = null
 	private readonly level: LogLevel

@@ -4,6 +4,7 @@
 	"instructions": {
 		"wantsToFetch": "Costrict 想要獲取詳細指令以協助當前任務"
 	},
+	"about": "企業嚴肅開發的AI智慧夥伴",
 	"error": "Costrict 將自動修復",
 	"text": {
 		"rooSaid": "Costrict 說"
@@ -108,5 +109,23 @@
 	},
 	"autoApprove": {
 		"triggerLabelAll": "全部批准"
+	},
+	"rooTips": {
+		"test": {
+			"title": "測試",
+			"description": "自動生成並運行測試，確保代碼可靠與穩定"
+		},
+		"debug": {
+			"title": "問題排障",
+			"description": "輸入問題日誌或故障描述，AI協助定位問題根源，提供修復方案。"
+		},
+		"projectWiki": {
+			"title": "項目文檔",
+			"description": "大模型生成「適配AI讀取」的專案知識庫與規則（Rules），幫助AI理解業務，提升代碼生成準確度。"
+		},
+		"testGuide": {
+			"title": "測試方案",
+			"description": "分析並生成項目測試方案"
+		}
 	}
 }

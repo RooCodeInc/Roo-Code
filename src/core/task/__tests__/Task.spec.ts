@@ -99,6 +99,10 @@ vi.mock("vscode", async (importOriginal) => {
 				onDidChangeTabs: vi.fn(() => ({ dispose: vi.fn() })),
 			},
 			showErrorMessage: vi.fn(),
+			createOutputChannel: () => ({
+				appendLine: vi.fn(),
+				show: vi.fn(),
+			}),
 		},
 		workspace: {
 			workspaceFolders: [

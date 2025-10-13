@@ -18,6 +18,7 @@ import { fileExistsAtPath } from "../../utils/fs"
 import { RecordSource } from "../context-tracking/FileContextTrackerTypes"
 import { unescapeHtmlEntities } from "../../utils/text-normalization"
 import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
+import { CodeReviewService } from "../costrict/code-review"
 
 export async function applyDiffToolLegacy(
 	cline: Task,
@@ -244,6 +245,8 @@ export async function applyDiffToolLegacy(
 				await cline.fileContextTracker.trackFileContext(relPath, "roo_edited" as RecordSource)
 			}
 			captureCodeAccept(fileLanguage, changedLines)
+			const codeReviewService = CodeReviewService.getInstance()
+			codeReviewService.checkAndAcceptIssueByTaskId(cline.taskId)
 
 			// Used to determine if we should wait for busy terminal to update before sending api request
 			cline.didEditFile = true

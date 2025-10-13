@@ -4,6 +4,7 @@
 	"instructions": {
 		"wantsToFetch": "Costrict 想要获取详细指令以协助当前任务"
 	},
+	"about": "企业严肃开发的AI智能伙伴",
 	"error": "Costrict 将自动修复",
 	"text": {
 		"rooSaid": "Costrict 说"
@@ -108,5 +109,23 @@
 	},
 	"autoApprove": {
 		"triggerLabelAll": "全部批准"
+	},
+	"rooTips": {
+		"test": {
+			"title": "测试",
+			"description": "自动生成并运行测试，确保代码可靠与稳定"
+		},
+		"debug": {
+			"title": "问题排障",
+			"description": "输入问题日志或故障描述，AI协助定位问题根源，并提供修复方案。"
+		},
+		"projectWiki": {
+			"title": "项目文档",
+			"description": "反推代码生成项目知识库与规则，帮助AI和人理解已有业务。Token消耗量大。"
+		},
+		"testGuide": {
+			"title": "测试方案",
+			"description": "根据项目代码，分析并生成可执行的测试方案。"
+		}
 	}
 }

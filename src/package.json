@@ -3,7 +3,7 @@
 	"displayName": "%extension.displayName.long%",
 	"description": "%extension.description%",
 	"publisher": "zgsm-ai",
-	"version": "1.6.19",
+	"version": "2.0.0",
 	"icon": "assets/images/shenma_robot_logo_big.png",
 	"galleryBanner": {
 		"color": "#617A91",
@@ -216,6 +216,11 @@
 				"category": "%configuration.title%"
 			},
 			{
+				"command": "zgsm.askReviewSuggestionWithAI",
+				"title": "%command.askReviewSuggestionWithAI.title%",
+				"icon": "$(sparkle)"
+			},
+			{
 				"command": "zgsm.improveCode",
 				"title": "%command.improveCode.title%",
 				"category": "%configuration.title%"
@@ -247,6 +252,36 @@
 				"title": "%command.generateCommitMessage.title%",
 				"category": "%configuration.title%",
 				"icon": "assets/images/shenma_robot_logo_big.png"
+			},
+			{
+				"command": "zgsm.coworkflow.updateSection",
+				"title": "Update Section",
+				"category": "Coworkflow"
+			},
+			{
+				"command": "zgsm.coworkflow.runTask",
+				"title": "Run Task",
+				"category": "Coworkflow"
+			},
+			{
+				"command": "zgsm.coworkflow.retryTask",
+				"title": "Retry Task",
+				"category": "Coworkflow"
+			},
+			{
+				"command": "zgsm.coworkflow.refreshCodeLens",
+				"title": "Refresh CodeLens",
+				"category": "Coworkflow"
+			},
+			{
+				"command": "zgsm.coworkflow.refreshDecorations",
+				"title": "Refresh Decorations",
+				"category": "Coworkflow"
+			},
+			{
+				"command": "zgsm.coworkflow.runTest",
+				"title": "Generate Test Case",
+				"category": "Coworkflow"
 			}
 		],
 		"menus": {
@@ -426,6 +461,11 @@
 				{
 					"command": "zgsm.rejectIssue",
 					"group": "navigation@2",
+					"when": "commentThread == CostrictCodeReview"
+				},
+				{
+					"command": "zgsm.askReviewSuggestionWithAI",
+					"group": "navigation@3",
 					"when": "commentThread == CostrictCodeReview"
 				}
 			],
@@ -696,6 +736,11 @@
 					"type": "boolean",
 					"default": true,
 					"description": "%settings.commit.useConventionalCommits.description%"
+				},
+				"zgsm.commit.commitModelId": {
+					"type": "string",
+					"default": "",
+					"description": "%settings.commit.commitModelId.description%"
 				},
 				"zgsm.commit.maxLength": {
 					"type": "number",

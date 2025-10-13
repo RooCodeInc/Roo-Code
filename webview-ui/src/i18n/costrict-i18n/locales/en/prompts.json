@@ -44,6 +44,26 @@
 			"ZGSM_EXPLAIN": {
 				"label": "Explain Code",
 				"description": "Get detailed explanations of code snippets, functions, or entire files. Useful for understanding complex code or learning new patterns. Available in code actions (lightbulb icon in the editor) and the editor context menu (right-click on selected code)."
+			},
+			"WORKFLOW_TASK_RUN": {
+				"label": "Run Workflow Task",
+				"description": "Run a workflow task"
+			},
+			"WORKFLOW_TASK_RETRY": {
+				"label": "Retry Workflow Task",
+				"description": "Retry a workflow task"
+			},
+			"WORKFLOW_RQS_UPDATE": {
+				"label": "Requirements Update",
+				"description": "When the requirement document is confirmed to be updated, Coctrict will update the associated design document"
+			},
+			"WORKFLOW_DESIGN_UPDATE": {
+				"label": "Design Update",
+				"description": "When the design document is confirmed to be updated, Costrict will update the associated tasks document"
+			},
+			"WORKFLOW_TASK_RUN_TESTS": {
+				"label": "Test Case Update",
+				"description": "When the test case document is confirmed to be updated, Costrict will update the associated tasks document"
 			}
 		}
 	},

@@ -16,6 +16,7 @@ import {
 	UpdateIssueStatusResponse,
 	CancelReviewTaskRequest,
 	CancelReviewTaskResponse,
+	IReviewPrompt,
 } from "./types"
 import { IssueStatus } from "../../../shared/codeReview"
 import type { AxiosRequestConfig } from "axios"
@@ -214,5 +215,13 @@ export async function cancelReviewTaskAPI(params: CancelReviewTaskRequest, optio
 		params,
 		options,
 	)
+	return response.data
+}
+
+export async function getPrompt(id: string, options: AxiosRequestConfig = {}) {
+	if (!id) {
+		throw new Error("Issue ID is required")
+	}
+	const response = await axiosInstance.get<IReviewPrompt>(`issue-manager/api/v1/issues/${id}/fix`, options)
 	return response.data
 }
