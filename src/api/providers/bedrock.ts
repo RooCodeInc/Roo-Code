@@ -254,47 +254,112 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 	// Helper to guess model info from custom modelId string if not in bedrockModels
 	private guessModelInfoFromId(modelId: string): Partial<ModelInfo> {
 		// Define a mapping for model ID patterns and their configurations
+		// Order matters - more specific patterns should come first
 		const modelConfigMap: Record<string, Partial<ModelInfo>> = {
-			"claude-4": {
+			// Claude 4.5 Sonnet (most specific)
+			"claude-sonnet-4-5": {
 				maxTokens: 8192,
 				contextWindow: 200_000,
 				supportsImages: true,
+				supportsComputerUse: true,
 				supportsPromptCache: true,
+				supportsReasoningBudget: true,
 			},
-			"claude-3-7": {
+			// Claude 4 Sonnet
+			"claude-sonnet-4": {
 				maxTokens: 8192,
 				contextWindow: 200_000,
 				supportsImages: true,
+				supportsComputerUse: true,
 				supportsPromptCache: true,
+				supportsReasoningBudget: true,
 			},
-			"claude-3-5": {
+			// Claude 4 Opus
+			"claude-opus-4": {
 				maxTokens: 8192,
 				contextWindow: 200_000,
 				supportsImages: true,
+				supportsComputerUse: true,
 				supportsPromptCache: true,
+				supportsReasoningBudget: true,
 			},
-			"claude-4-opus": {
-				maxTokens: 4096,
+			// Claude 3.7 Sonnet
+			"claude-3-7-sonnet": {
+				maxTokens: 8192,
 				contextWindow: 200_000,
 				supportsImages: true,
+				supportsComputerUse: true,
+				supportsPromptCache: true,
+				supportsReasoningBudget: true,
+			},
+			// Claude 3.5 Sonnet
+			"claude-3-5-sonnet": {
+				maxTokens: 8192,
+				contextWindow: 200_000,
+				supportsImages: true,
+				supportsComputerUse: true,
 				supportsPromptCache: true,
 			},
+			// Claude 3.5 Haiku
+			"claude-3-5-haiku": {
+				maxTokens: 8192,
+				contextWindow: 200_000,
+				supportsImages: false,
+				supportsPromptCache: true,
+			},
+			// Claude 3 Opus
 			"claude-3-opus": {
 				maxTokens: 4096,
 				contextWindow: 200_000,
 				supportsImages: true,
-				supportsPromptCache: true,
+				supportsPromptCache: false,
 			},
+			// Claude 3 Sonnet
+			"claude-3-sonnet": {
+				maxTokens: 4096,
+				contextWindow: 200_000,
+				supportsImages: true,
+				supportsPromptCache: false,
+			},
+			// Claude 3 Haiku
 			"claude-3-haiku": {
 				maxTokens: 4096,
 				contextWindow: 200_000,
 				supportsImages: true,
+				supportsPromptCache: false,
+			},
+			// Generic Claude 4 (fallback for any Claude 4 variant)
+			"claude-4": {
+				maxTokens: 8192,
+				contextWindow: 200_000,
+				supportsImages: true,
+				supportsComputerUse: true,
+				supportsPromptCache: true,
+				supportsReasoningBudget: true,
+			},
+			// Generic Claude 3.7
+			"claude-3-7": {
+				maxTokens: 8192,
+				contextWindow: 200_000,
+				supportsImages: true,
+				supportsComputerUse: true,
+				supportsPromptCache: true,
+				supportsReasoningBudget: true,
+			},
+			// Generic Claude 3.5
+			"claude-3-5": {
+				maxTokens: 8192,
+				contextWindow: 200_000,
+				supportsImages: true,
+				supportsComputerUse: true,
 				supportsPromptCache: true,
 			},
 		}
 
 		// Match the model ID to a configuration
 		const id = modelId.toLowerCase()
+
+		// Check patterns in order (more specific first)
 		for (const [pattern, config] of Object.entries(modelConfigMap)) {
 			if (id.includes(pattern)) {
 				return config
@@ -882,6 +947,24 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			if (modelId.startsWith(inferenceProfile)) {
 				// Remove the inference profile prefix from the model ID
 				return modelId.substring(inferenceProfile.length)
+			}
+		}
+
+		// Also handle additional regional prefixes that might not be in the mapping
+		// These are commonly used in cross-region inference IDs
+		const additionalRegionalPrefixes = [
+			"au.", // Australia (e.g., au.anthropic.claude-sonnet-4-5-20250929-v1:0)
+			"af.", // Africa
+			"me.", // Middle East
+			"il.", // Israel
+			"cn.", // China
+			"jp.", // Japan (alternative to ap-)
+		]
+
+		for (const prefix of additionalRegionalPrefixes) {
+			if (modelId.startsWith(prefix)) {
+				// Remove the regional prefix from the model ID
+				return modelId.substring(prefix.length)
 			}
 		}
 
