@@ -189,7 +189,8 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	const scrollContainerRef = useRef<HTMLDivElement>(null)
 	const disableAutoScrollRef = useRef(false)
 	const [showScrollToBottom, setShowScrollToBottom] = useState(false)
-	const [isAtBottom, setIsAtBottom] = useState(false)
+	const [isAtBottom, setIsAtBottom] = useState(true) // Start at bottom by default
+	const wasAtBottomBeforeUpdateRef = useRef(true) // Track if user was at bottom before messages update
 	const lastTtsRef = useRef<string>("")
 	const [wasStreaming, setWasStreaming] = useState<boolean>(false)
 	const [showCheckpointWarning, setShowCheckpointWarning] = useState<boolean>(false)
@@ -1395,9 +1396,18 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		[scrollToBottomSmooth, scrollToBottomAuto],
 	)
 
+	// Track if user was at bottom before messages update
+	useEffect(() => {
+		wasAtBottomBeforeUpdateRef.current = isAtBottom
+	}, [isAtBottom, groupedMessages.length]) // Capture state before the update
+
 	useEffect(() => {
 		let timer: ReturnType<typeof setTimeout> | undefined
-		if (!disableAutoScrollRef.current) {
+		// Only auto-scroll if:
+		// 1. Auto-scroll is not disabled by user interaction
+		// 2. User was at the bottom before the new messages arrived
+		// 3. We're in a streaming state (to handle continuous updates)
+		if (!disableAutoScrollRef.current && wasAtBottomBeforeUpdateRef.current) {
 			timer = setTimeout(() => scrollToBottomSmooth(), 50)
 		}
 		return () => {
@@ -1407,18 +1417,43 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		}
 	}, [groupedMessages.length, scrollToBottomSmooth])
 
-	const handleWheel = useCallback((event: Event) => {
-		const wheelEvent = event as WheelEvent
+	const handleWheel = useCallback(
+		(event: Event) => {
+			const wheelEvent = event as WheelEvent
 
-		if (wheelEvent.deltaY && wheelEvent.deltaY < 0) {
+			// Check if the wheel event is within our scroll container
 			if (scrollContainerRef.current?.contains(wheelEvent.target as Node)) {
-				// User scrolled up
-				disableAutoScrollRef.current = true
+				// Disable auto-scroll on any deliberate scroll action (up or down)
+				// Only re-enable when user scrolls back to bottom
+				if (wheelEvent.deltaY !== 0) {
+					// Any scroll movement
+					if (!isAtBottom) {
+						// User is scrolling while not at bottom - disable auto-scroll
+						disableAutoScrollRef.current = true
+					}
+					// If user is at bottom and scrolling down, keep auto-scroll enabled
+					// If user is at bottom and scrolling up, it will be disabled
+					if (wheelEvent.deltaY < 0) {
+						// Scrolling up always disables auto-scroll
+						disableAutoScrollRef.current = true
+					}
+				}
 			}
-		}
-	}, [])
+		},
+		[isAtBottom],
+	)
 
 	useEvent("wheel", handleWheel, window, { passive: true }) // passive improves scrolling performance
+
+	// Also handle touch scrolling for mobile devices
+	const handleTouchMove = useCallback(() => {
+		// During touch scrolling, check if we're at bottom
+		if (!isAtBottom && scrollContainerRef.current) {
+			disableAutoScrollRef.current = true
+		}
+	}, [isAtBottom])
+
+	useEvent("touchmove", handleTouchMove, scrollContainerRef.current, { passive: true })
 
 	// Effect to handle showing the checkpoint warning after a delay
 	useEffect(() => {
@@ -1878,12 +1913,14 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							increaseViewportBy={{ top: 3_000, bottom: 1000 }}
 							data={groupedMessages}
 							itemContent={itemContent}
-							atBottomStateChange={(isAtBottom: boolean) => {
-								setIsAtBottom(isAtBottom)
-								if (isAtBottom) {
+							atBottomStateChange={(atBottom: boolean) => {
+								setIsAtBottom(atBottom)
+								if (atBottom) {
+									// User scrolled back to bottom, re-enable auto-scroll
 									disableAutoScrollRef.current = false
 								}
-								setShowScrollToBottom(disableAutoScrollRef.current && !isAtBottom)
+								// Show scroll-to-bottom button when auto-scroll is disabled and not at bottom
+								setShowScrollToBottom(disableAutoScrollRef.current && !atBottom)
 							}}
 							atBottomThreshold={10}
 							initialTopMostItemIndex={groupedMessages.length - 1}
