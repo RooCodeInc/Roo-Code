@@ -3097,7 +3097,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			const judgeConfig = state?.judgeConfig
 
 			if (judgeConfig) {
-				return judgeConfig
+				// 确保配置包含所有必需字段，使用DEFAULT_JUDGE_CONFIG作为默认值
+				return {
+					...DEFAULT_JUDGE_CONFIG,
+					...judgeConfig,
+				}
 			}
 
 			return DEFAULT_JUDGE_CONFIG
@@ -3286,6 +3290,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		feedback += `**Decision**: Task completion rejected\n\n`
 		feedback += `**Reasoning**: ${judgeResult.reasoning}\n\n`
 
+		// 如果有严重问题，优先显示
+		if (judgeResult.criticalIssues && judgeResult.criticalIssues.length > 0) {
+			feedback += `**🚨 Critical Issues (Must Fix)**:\n`
+			judgeResult.criticalIssues.forEach((issue, i) => {
+				feedback += `${i + 1}. ${issue}\n`
+			})
+			feedback += `\n`
+		}
+
 		if (judgeResult.missingItems && judgeResult.missingItems.length > 0) {
 			feedback += `**Missing Items**:\n`
 			judgeResult.missingItems.forEach((item, i) => {
@@ -3301,6 +3314,33 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			})
 		}
 
+		// 检查是否存在严重问题且配置为强制拦截
+		const hasCriticalIssues = judgeResult.hasCriticalIssues
+		const shouldBlockOverride = hasCriticalIssues && config.blockOnCriticalIssues
+
+		if (shouldBlockOverride) {
+			// 存在严重问题，强制要求修复，不允许用户覆盖
+			await this.say("text", feedback, undefined, false, undefined, undefined, {
+				isNonInteractive: false,
+			})
+
+			// 显示额外的严重性警告
+			await this.say(
+				"text",
+				"⛔ **Critical issues detected!** Task completion is blocked. You must address the critical issues before attempting completion again.",
+				undefined,
+				false,
+				undefined,
+				undefined,
+				{
+					isNonInteractive: false,
+				},
+			)
+
+			// 强制返回false，不给用户选择权
+			return false
+		}
+
 		if (config.allowUserOverride) {
 			// 首先使用 say() 显示裁判反馈
 			await this.say("text", feedback, undefined, false, undefined, undefined, {
@@ -3308,11 +3348,19 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			})
 
 			// 然后使用 ask("followup") 询问用户
-			const question = "Do you want to continue working on this task?"
-			const suggestions = [
-				{ answer: "Yes, continue working to address the judge's feedback" },
-				{ answer: "No, complete the task anyway and ignore the judge's feedback" },
-			]
+			const question = hasCriticalIssues
+				? "⚠️ Critical issues found! Do you want to continue working to fix them?"
+				: "Do you want to continue working on this task?"
+
+			const suggestions = hasCriticalIssues
+				? [
+						{ answer: "Yes, continue working to fix the critical issues" },
+						{ answer: "No, complete the task anyway (not recommended with critical issues)" },
+					]
+				: [
+						{ answer: "Yes, continue working to address the judge's feedback" },
+						{ answer: "No, complete the task anyway and ignore the judge's feedback" },
+					]
 
 			const { response, text } = await this.ask(
 				"followup",

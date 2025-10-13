@@ -791,7 +791,9 @@
 			"useCurrentModel": "Use Current Model",
 			"modelConfigDesc": "Select which API configuration to use for judge operations. Using a different model than the main task can provide more objective verification.",
 			"allowUserOverride": "Allow user to override judge decisions",
-			"allowUserOverrideDesc": "When enabled, you can choose to proceed even if the judge determines the task is incomplete."
+			"allowUserOverrideDesc": "When enabled, you can choose to proceed even if the judge determines the task is incomplete.",
+			"blockOnCriticalIssues": "Block on critical issues",
+			"blockOnCriticalIssuesDesc": "When enabled, task completion will be forcefully blocked if critical issues are detected by the judge. User override will not be allowed for critical issues."
 		}
 	},
 	"promptCaching": {

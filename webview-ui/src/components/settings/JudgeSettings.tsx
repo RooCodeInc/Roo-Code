@@ -24,6 +24,7 @@ export const JudgeSettings = ({
 	const judgeMode = apiConfiguration?.judgeMode ?? "always"
 	const judgeDetailLevel = apiConfiguration?.judgeDetailLevel ?? "detailed"
 	const judgeAllowUserOverride = apiConfiguration?.judgeAllowUserOverride ?? true
+	const judgeBlockOnCriticalIssues = apiConfiguration?.judgeBlockOnCriticalIssues ?? true
 	const judgeModelConfigId = apiConfiguration?.judgeModelConfigId ?? ""
 
 	return (
@@ -133,6 +134,23 @@ export const JudgeSettings = ({
 							</VSCodeCheckbox>
 							<div className="text-vscode-descriptionForeground text-sm mt-1">
 								{t("settings:experimental.judgeMode.allowUserOverrideDesc")}
+							</div>
+						</div>
+
+						{/* Block on Critical Issues */}
+						<div>
+							<VSCodeCheckbox
+								checked={judgeBlockOnCriticalIssues}
+								onChange={(e: any) =>
+									setApiConfigurationField?.("judgeBlockOnCriticalIssues", e.target.checked)
+								}
+								data-testid="judge-block-critical-checkbox">
+								<span className="font-medium">
+									{t("settings:experimental.judgeMode.blockOnCriticalIssues")}
+								</span>
+							</VSCodeCheckbox>
+							<div className="text-vscode-descriptionForeground text-sm mt-1">
+								{t("settings:experimental.judgeMode.blockOnCriticalIssuesDesc")}
 							</div>
 						</div>
 					</>

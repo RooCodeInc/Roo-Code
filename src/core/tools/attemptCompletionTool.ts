@@ -114,19 +114,67 @@ export async function attemptCompletionTool(
 
 					if (!shouldForceComplete) {
 						// User chose to continue working, don't complete the task
-						// Must push tool result to inform LLM to continue
-						pushToolResult(
-							formatResponse.toolError(
-								"Task completion rejected by judge. Please address the feedback and try again.",
-							),
-						)
+						// Build detailed feedback for the AI to understand what needs to be fixed
+						let errorMessage = "Task completion rejected by judge. Please address the following issues:\n\n"
+
+						if (judgeResult.hasCriticalIssues && judgeResult.criticalIssues) {
+							errorMessage += "🚨 **CRITICAL ISSUES (Must Fix)**:\n"
+							judgeResult.criticalIssues.forEach((issue, i) => {
+								errorMessage += `${i + 1}. ${issue}\n`
+							})
+							errorMessage += "\n"
+						}
+
+						if (judgeResult.missingItems && judgeResult.missingItems.length > 0) {
+							errorMessage += "**Missing Items**:\n"
+							judgeResult.missingItems.forEach((item, i) => {
+								errorMessage += `${i + 1}. ${item}\n`
+							})
+							errorMessage += "\n"
+						}
+
+						if (judgeResult.suggestions && judgeResult.suggestions.length > 0) {
+							errorMessage += "**Suggestions for Improvement**:\n"
+							judgeResult.suggestions.forEach((suggestion, i) => {
+								errorMessage += `${i + 1}. ${suggestion}\n`
+							})
+						}
+
+						errorMessage += "\nJudge's Reasoning: " + judgeResult.reasoning
+
+						// Push detailed error to AI
+						pushToolResult(formatResponse.toolError(errorMessage))
 						return
 					}
-					// If shouldForceComplete is true, continue to complete the task below
-				}
 
-				// Judge approved or user forced completion - show appropriate message
-				if (judgeResult.approved) {
+					// User forced completion despite judge rejection
+					const hasCriticalIssues = judgeResult.hasCriticalIssues
+					let forceCompleteMessage = hasCriticalIssues
+						? `## ⛔ Task Completion Override (With Critical Issues)\n\n`
+						: `## ⚠️ Task Completion Override\n\n`
+
+					forceCompleteMessage += `**Decision**: Task completion forced by user (judge rejected)\n\n`
+
+					if (hasCriticalIssues && judgeResult.criticalIssues) {
+						forceCompleteMessage += `**⚠️ Warning**: The following critical issues were detected but overridden:\n`
+						judgeResult.criticalIssues.forEach((issue, i) => {
+							forceCompleteMessage += `${i + 1}. ${issue}\n`
+						})
+						forceCompleteMessage += `\n`
+					}
+
+					forceCompleteMessage += `**Judge's Reasoning**: ${judgeResult.reasoning}\n\n`
+
+					if (judgeResult.overallScore !== undefined) {
+						forceCompleteMessage += `**Judge's Overall Score**: ${judgeResult.overallScore}/10\n\n`
+					}
+
+					// Display forced completion message
+					await cline.say("text", forceCompleteMessage, undefined, false, undefined, undefined, {
+						isNonInteractive: true,
+					})
+				} else {
+					// Judge approved - show approval message
 					let approvalMessage = `## ✅ Judge Approval\n\n`
 					approvalMessage += `**Decision**: Task completion approved\n\n`
 					approvalMessage += `**Reasoning**: ${judgeResult.reasoning}\n\n`

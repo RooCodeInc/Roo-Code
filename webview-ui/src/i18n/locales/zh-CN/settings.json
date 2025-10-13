@@ -787,7 +787,9 @@
 			"useCurrentModel": "使用当前模型",
 			"modelConfigDesc": "选择用于裁判操作的API配置。使用与主任务不同的模型可以提供更客观的验证。",
 			"allowUserOverride": "允许用户覆盖裁判决定",
-			"allowUserOverrideDesc": "启用后，即使裁判判定任务未完成，您也可以选择继续。"
+			"allowUserOverrideDesc": "启用后，即使裁判判定任务未完成，您也可以选择继续。",
+			"blockOnCriticalIssues": "严重问题强制拦截",
+			"blockOnCriticalIssuesDesc": "启用后，当裁判检测到严重问题时，将强制阻止任务完成，不允许用户覆盖。这确保关键错误必须修复后才能继续。"
 		}
 	},
 	"promptCaching": {

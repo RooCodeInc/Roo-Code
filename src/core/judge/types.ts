@@ -29,6 +29,8 @@ export interface JudgeConfig {
 	detailLevel: JudgeDetailLevel
 	/** 是否允许用户覆盖裁判判断 */
 	allowUserOverride: boolean
+	/** 当存在严重问题时，是否强制禁止用户覆盖（即使allowUserOverride为true） */
+	blockOnCriticalIssues: boolean
 }
 
 /**
@@ -39,6 +41,7 @@ export const DEFAULT_JUDGE_CONFIG: JudgeConfig = {
 	mode: "always",
 	detailLevel: "detailed",
 	allowUserOverride: true,
+	blockOnCriticalIssues: true, // 默认启用严重问题强制拦截
 }
 
 /**
@@ -77,8 +80,10 @@ export interface JudgeResult {
 	missingItems: string[]
 	/** 改进建议列表 */
 	suggestions: string[]
-	/** 严重问题列表 */
+	/** 严重问题列表 - 如果有严重问题，将强制要求修复 */
 	criticalIssues?: string[]
+	/** 是否存在严重问题（由criticalIssues自动计算） */
+	hasCriticalIssues: boolean
 }
 
 /**

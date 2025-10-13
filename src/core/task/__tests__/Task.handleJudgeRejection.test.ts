@@ -58,6 +58,7 @@ describe("Task.handleJudgeRejection", () => {
 		suggestions: ["Fix the failing tests", "Add error handling"],
 		missingItems: ["Test coverage for edge cases"],
 		overallScore: 3,
+		hasCriticalIssues: false,
 	}
 
 	beforeEach(() => {
@@ -107,6 +108,7 @@ describe("Task.handleJudgeRejection", () => {
 			mode: "always",
 			detailLevel: "concise",
 			allowUserOverride: true,
+			blockOnCriticalIssues: true,
 		})
 	})
 
@@ -218,6 +220,7 @@ describe("Task.handleJudgeRejection", () => {
 			mode: "always",
 			detailLevel: "concise",
 			allowUserOverride: false,
+			blockOnCriticalIssues: true,
 		})
 
 		// Reset the ask mock
@@ -256,6 +259,7 @@ describe("Task.handleJudgeRejection", () => {
 			missingItems: [],
 			suggestions: [],
 			overallScore: 2,
+			hasCriticalIssues: false,
 		}
 
 		await task.handleJudgeRejection(resultWithoutSuggestions)

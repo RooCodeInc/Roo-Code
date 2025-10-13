@@ -44,6 +44,7 @@ describe("JudgeService", () => {
 		mode: "always",
 		detailLevel: "concise",
 		allowUserOverride: true,
+		blockOnCriticalIssues: true,
 	}
 
 	const mockTaskContext: TaskContext = {
@@ -102,6 +103,7 @@ describe("JudgeService", () => {
 				mode: "never",
 				detailLevel: "detailed",
 				allowUserOverride: false,
+				blockOnCriticalIssues: false,
 			}
 
 			judgeService.updateConfig(newConfig)
@@ -187,6 +189,7 @@ describe("JudgeService", () => {
 				mode: "ask",
 				detailLevel: "detailed",
 				allowUserOverride: true,
+				blockOnCriticalIssues: true,
 				modelConfig: {
 					provider: "anthropic",
 					modelId: "claude-3-5-sonnet-20250110",
@@ -208,6 +211,7 @@ describe("JudgeService", () => {
 				mode: "never",
 				detailLevel: "concise",
 				allowUserOverride: false,
+				blockOnCriticalIssues: false,
 			}
 
 			const service = new JudgeService(minimalConfig, mockContext)

@@ -52,6 +52,7 @@ export class JudgeService {
 				reasoning: `裁判服务遇到错误，默认批准任务完成。错误信息: ${error instanceof Error ? error.message : String(error)}`,
 				missingItems: [],
 				suggestions: ["建议检查裁判服务配置"],
+				hasCriticalIssues: false,
 			}
 		}
 	}
@@ -105,6 +106,7 @@ export class JudgeService {
 			const jsonStr = jsonMatch[1] || jsonMatch[0]
 			const parsed: JudgeResponseJson = JSON.parse(jsonStr)
 
+			const criticalIssues = parsed.criticalIssues || []
 			return {
 				approved: parsed.approved ?? false,
 				reasoning: parsed.reasoning || "未提供理由",
@@ -114,7 +116,8 @@ export class JudgeService {
 				overallScore: parsed.overall_score,
 				missingItems: parsed.missingItems || [],
 				suggestions: parsed.suggestions || [],
-				criticalIssues: parsed.criticalIssues,
+				criticalIssues,
+				hasCriticalIssues: criticalIssues.length > 0,
 			}
 		} catch (error) {
 			console.error("[JudgeService] Failed to parse judge response as JSON:", error)
@@ -199,12 +202,26 @@ export class JudgeService {
 			}
 		}
 
+		// 提取严重问题
+		const criticalIssues: string[] = []
+		const criticalSection = response.match(/(?:Critical Issues|严重问题):\s*([\s\S]*?)(?:\n\n|$)/i)
+		if (criticalSection) {
+			const criticalMatches = criticalSection[1].matchAll(/(?:\d+\.|[-*])\s*(.+?)(?:\n|$)/g)
+			for (const match of criticalMatches) {
+				const issue = match[1].trim()
+				if (issue) {
+					criticalIssues.push(issue)
+				}
+			}
+		}
+
 		console.log("[JudgeService] Parsed Markdown response:", {
 			approved,
 			reasoning: reasoning.substring(0, 100) + "...",
 			overallScore,
 			suggestionsCount: suggestions.length,
 			missingItemsCount: missingItems.length,
+			criticalIssuesCount: criticalIssues.length,
 		})
 
 		return {
@@ -213,6 +230,8 @@ export class JudgeService {
 			overallScore,
 			missingItems,
 			suggestions,
+			criticalIssues,
+			hasCriticalIssues: criticalIssues.length > 0,
 		}
 	}
 
