@@ -95,7 +95,9 @@ export async function attemptCompletionTool(
 			TelemetryService.instance.captureTaskCompleted(cline.taskId)
 			cline.emit(RooCodeEventName.TaskCompleted, cline.taskId, cline.getTokenUsage(), cline.toolUsage)
 
-			if (cline.parentTask) {
+			// Check both parentTask (direct reference) and parentTaskId (persisted ID)
+			// This handles cases where VSCode was closed and the direct reference was lost
+			if (cline.parentTask || cline.parentTaskId) {
 				const didApprove = await askFinishSubTaskApproval()
 
 				if (!didApprove) {

@@ -482,12 +482,37 @@ export class ClineProvider
 	// This is used when a subtask is finished and the parent task needs to be
 	// resumed.
 	async finishSubTask(lastMessage: string) {
+		// Get the current task before removing it from the stack
+		const currentTask = this.getCurrentTask()
+		const parentTaskId = currentTask?.parentTaskId
+
 		// Remove the last cline instance from the stack (this is the finished
 		// subtask).
 		await this.removeClineFromStack()
-		// Resume the last cline instance in the stack (if it exists - this is
-		// the 'parent' calling task).
-		await this.getCurrentTask()?.completeSubtask(lastMessage)
+
+		// Check if there's a parent task in the stack
+		let parentTask = this.getCurrentTask()
+
+		// If no parent task in stack but we have a parentTaskId,
+		// we need to restore the parent task (happens when VSCode was closed)
+		if (!parentTask && parentTaskId) {
+			try {
+				// Restore the parent task from history
+				const { historyItem } = await this.getTaskWithId(parentTaskId)
+				parentTask = await this.createTaskWithHistoryItem(historyItem)
+				this.log(`[finishSubTask] Restored parent task ${parentTaskId} from history to receive subtask result`)
+			} catch (error) {
+				this.log(
+					`[finishSubTask] Failed to restore parent task ${parentTaskId}: ${error instanceof Error ? error.message : String(error)}`,
+				)
+				// Even if parent restoration fails, we should still show completion
+				// The user can manually resume the parent from task history
+				return
+			}
+		}
+
+		// Resume the parent task with the subtask result
+		await parentTask?.completeSubtask(lastMessage)
 	}
 	// Pending Edit Operations Management
 
