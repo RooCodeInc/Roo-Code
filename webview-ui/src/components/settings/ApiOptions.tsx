@@ -56,11 +56,11 @@ import {
 	SelectValue,
 	SelectContent,
 	SelectItem,
-	SearchableSelect,
 	Collapsible,
 	CollapsibleTrigger,
 	CollapsibleContent,
 } from "@src/components/ui"
+import { CategorizedProviderSelect } from "./CategorizedProviderSelect"
 
 import {
 	Anthropic,
@@ -443,15 +443,11 @@ const ApiOptions = ({
 						</div>
 					)}
 				</div>
-				<SearchableSelect
+				<CategorizedProviderSelect
 					value={selectedProvider}
 					onValueChange={(value) => onProviderChange(value as ProviderName)}
-					options={providerOptions}
+					availableProviders={providerOptions}
 					placeholder={t("settings:common.select")}
-					searchPlaceholder={t("settings:providers.searchProviderPlaceholder")}
-					emptyMessage={t("settings:providers.noProviderMatchFound")}
-					className="w-full"
-					data-testid="provider-select"
 				/>
 			</div>
 
