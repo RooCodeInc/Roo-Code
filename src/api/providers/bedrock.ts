@@ -219,7 +219,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 		this.costModelConfig = this.getModel()
 
 		const clientConfig: BedrockRuntimeClientConfig = {
-			defaultUserAgentProvider: () => Promise.resolve([["roo-cline", Package.version]]),
+			defaultUserAgentProvider: () => Promise.resolve([["RooCode", Package.version]]),
 			region: this.options.awsRegion,
 			// Add the endpoint configuration when specified and enabled
 			...(this.options.awsBedrockEndpoint &&
