@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react"
-import { Cloud, Plus, SquarePen } from "lucide-react"
+import { Cloud, Hammer, Plus, SquarePen } from "lucide-react"
 import type { CloudAgent } from "@roo-code/types"
 import { useTranslation } from "react-i18next"
 import { vscode } from "@/utils/vscode"
@@ -103,14 +103,18 @@ const CloudAgents: React.FC = () => {
 							className="flex items-center relative group gap-2 px-4 py-2 rounded-xl bg-vscode-editor-background hover:bg-vscode-list-hoverBackground cursor-pointer transition-colors"
 							onClick={() => handleAgentClick(agent.id)}
 							aria-label={t("chat:cloudAgents.clickToRun", { name: agent.name })}>
-							<span
-								className="text-xl size-5 bg-foreground"
-								role="img"
-								aria-label={agent.type}
-								style={{
-									mask: `url('${agent.icon}') no-repeat center`,
-									maskSize: "contain",
-								}}></span>
+							{agent.icon ? (
+								<span
+									className="text-xl size-5 bg-foreground"
+									role="img"
+									aria-label={agent.type}
+									style={{
+										mask: `url('${agent.icon}') no-repeat center`,
+										maskSize: "contain",
+									}}></span>
+							) : (
+								<Hammer className="size-5 text-vscode-descriptionForeground shrink-0" />
+							)}
 							<div className="flex-1 min-w-0">
 								<div className="text-base font-medium text-vscode-foreground truncate">
 									{agent.name}

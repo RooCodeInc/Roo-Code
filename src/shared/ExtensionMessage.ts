@@ -14,6 +14,7 @@ import type {
 	OrganizationAllowList,
 	ShareVisibility,
 	QueuedMessage,
+	CloudAgent,
 } from "@roo-code/types"
 
 import { GitCommit } from "../utils/git"
@@ -206,7 +207,7 @@ export interface ExtensionMessage {
 	queuedMessages?: QueuedMessage[]
 	list?: string[] // For dismissedUpsells
 	organizationId?: string | null // For organizationSwitchResult
-	agents?: any[] // For cloudAgents
+	agents?: CloudAgent[] // For cloudAgents
 }
 
 export type ExtensionState = Pick<
