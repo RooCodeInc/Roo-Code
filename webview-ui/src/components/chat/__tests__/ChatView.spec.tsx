@@ -198,8 +198,7 @@ vi.mock("../ChatTextArea", () => {
 	})
 
 	return {
-		default: ChatTextAreaComponent,
-		ChatTextArea: ChatTextAreaComponent, // Export as named export too
+		ChatTextArea: ChatTextAreaComponent,
 	}
 })
 

@@ -247,11 +247,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 	}
 
 	const isOptionSelectable = (option: ContextMenuQueryItem): boolean => {
-		return (
-			option.type !== ContextMenuOptionType.NoResults &&
-			option.type !== ContextMenuOptionType.URL &&
-			option.type !== ContextMenuOptionType.SectionHeader
-		)
+		return option.type !== ContextMenuOptionType.NoResults && option.type !== ContextMenuOptionType.SectionHeader
 	}
 
 	const handleSettingsClick = (e: React.MouseEvent) => {
