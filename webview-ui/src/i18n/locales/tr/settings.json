@@ -661,6 +661,10 @@
 			"label": "ZDOTDIR işlemeyi etkinleştir",
 			"description": "Etkinleştirildiğinde, zsh kabuğu entegrasyonunu düzgün şekilde işlemek için ZDOTDIR için geçici bir dizin oluşturur. Bu, zsh yapılandırmanızı korurken VSCode kabuk entegrasyonunun zsh ile düzgün çalışmasını sağlar. <0>Daha fazla bilgi</0>"
 		},
+		"preferredProfile": {
+			"label": "Tercih edilen terminal profili",
+			"description": "Terminal oluştururken Roo'nun hangi VSCode terminal profilini kullanacağını seçin. VSCode'un varsayılan davranışını kullanmak için 'Varsayılan'ı seçin veya varsayılan kabuğu geçersiz kılmak için belirli bir profili seçin. <0>Daha fazla bilgi edinin</0>"
+		},
 		"inheritEnv": {
 			"label": "Ortam değişkenlerini devral",
 			"description": "Etkinleştirildiğinde, terminal VSCode üst işleminden ortam değişkenlerini devralır, örneğin kullanıcı profilinde tanımlanan kabuk entegrasyon ayarları gibi. Bu, VSCode'un global ayarı olan `terminal.integrated.inheritEnv` değerini doğrudan değiştirir. <0>Daha fazla bilgi</0>"
