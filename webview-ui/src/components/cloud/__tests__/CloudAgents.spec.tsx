@@ -142,7 +142,7 @@ describe("CloudAgents", () => {
 		})
 
 		await waitFor(() => {
-			expect(screen.getByText(/Code away from your IDE/)).toBeInTheDocument()
+			expect(screen.getByText(/any Cloud Agents yet/)).toBeInTheDocument()
 		})
 
 		// Find and click the "Create your first" button in the empty state

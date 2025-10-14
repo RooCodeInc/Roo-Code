@@ -1813,7 +1813,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							<RooHero />
 
 							{/* New users should see tips */}
-							{taskHistory.length < 400000 && <RooTips />}
+							{taskHistory.length < 4 && <RooTips />}
 
 							{/* Everyone should see their task history if any */}
 							{taskHistory.length > 0 && <HistoryPreview />}
