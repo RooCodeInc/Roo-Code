@@ -82,7 +82,7 @@ describe("CloudAgents", () => {
 
 		// Wait for the component to render agents
 		await waitFor(() => {
-			expect(screen.getByText("Cloud Agents")).toBeInTheDocument()
+			expect(screen.getByText("chat:cloudAgents.title")).toBeInTheDocument()
 			expect(screen.getByText("Code Assistant")).toBeInTheDocument()
 			expect(screen.getByText("Test Agent")).toBeInTheDocument()
 		})
@@ -120,10 +120,12 @@ describe("CloudAgents", () => {
 		})
 
 		await waitFor(() => {
-			expect(screen.getByText("Cloud Agents")).toBeInTheDocument()
+			expect(screen.getByText("chat:cloudAgents.title")).toBeInTheDocument()
+			expect(screen.getByText("Code Assistant")).toBeInTheDocument()
+			expect(screen.getByText("Test Agent")).toBeInTheDocument()
 		})
 
-		const createButton = screen.getByTitle("Create new agent")
+		const createButton = screen.getByTitle("chat:cloudAgents.create")
 		fireEvent.click(createButton)
 
 		expect(mockPostMessage).toHaveBeenCalledWith({
@@ -142,11 +144,11 @@ describe("CloudAgents", () => {
 		})
 
 		await waitFor(() => {
-			expect(screen.getByText(/any Cloud Agents yet/)).toBeInTheDocument()
+			expect(screen.getByText("chat:cloudAgents.createFirst")).toBeInTheDocument()
 		})
 
 		// Find and click the "Create your first" button in the empty state
-		const createFirstButton = screen.getByText("Create your first.")
+		const createFirstButton = screen.getByText("chat:cloudAgents.createFirst")
 		fireEvent.click(createFirstButton)
 
 		expect(mockPostMessage).toHaveBeenCalledWith({
@@ -168,7 +170,7 @@ describe("CloudAgents", () => {
 		// Wait for the component to process the error
 		await waitFor(() => {
 			// Component should render nothing on error
-			expect(screen.queryByText("Cloud Agents")).not.toBeInTheDocument()
+			expect(screen.queryByText("chat:cloudAgents.title")).not.toBeInTheDocument()
 		})
 	})
 

@@ -76,7 +76,7 @@ const CloudAgents: React.FC = () => {
 					<button
 						onClick={handleCreateClick}
 						className="text-base flex items-center gap-1 text-vscode-descriptionForeground hover:text-vscode-textLink-foreground transition-colors cursor-pointer"
-						title={t("chat:cloudAgents.createNew")}>
+						title={t("chat:cloudAgents.create")}>
 						<Plus className="h-4 w-4" />
 						{t("chat:cloudAgents.create")}
 					</button>
