@@ -744,7 +744,7 @@ export const cloudAgentsResponseSchema = z.object({
 			id: z.string(),
 			name: z.string(),
 			type: z.string(),
-			icon: z.string(),
+			icon: z.string().optional(),
 		}),
 	),
 })

@@ -24,13 +24,13 @@ const RooTips = () => {
 	const { t } = useTranslation("chat")
 
 	return (
-		<div className="flex flex-col gap-2 mb-4 max-w-[450px]font-light text-vscode-descriptionForeground">
+		<div className="flex flex-col gap-2 mb-4 max-w-[450px] font-light text-vscode-descriptionForeground">
 			<p className="my-0 pr-8">
 				<Trans i18nKey="chat:about" />
 			</p>
 			<div className="gap-4">
 				{tips.map((tip) => (
-					<div key={tip.titleKey} className="flex items-start gap-2 mt-2 mr-6">
+					<div key={tip.titleKey} className="flex items-start gap-2 mt-2 mr-6 leading-relaxed">
 						{tip.icon}
 						<span>
 							<VSCodeLink className="text-muted-foreground underline" href={tip.href}>
