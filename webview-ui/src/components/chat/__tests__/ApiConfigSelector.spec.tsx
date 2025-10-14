@@ -435,4 +435,31 @@ describe("ApiConfigSelector", () => {
 		// Search value should be maintained
 		expect(searchInput.value).toBe("Config")
 	})
+
+	test("switches between sort modes", () => {
+		render(<ApiConfigSelector {...defaultProps} />)
+
+		const trigger = screen.getByTestId("dropdown-trigger")
+		fireEvent.click(trigger)
+
+		// Check that alphabetical button is initially active (default state)
+		const alphabeticalButton = screen.getByText("chat:apiConfigSelector.alphabetical")
+		expect(alphabeticalButton).toHaveAttribute("aria-pressed", "true")
+
+		// Switch to custom mode
+		const customButton = screen.getByText("chat:apiConfigSelector.custom")
+		expect(customButton).toHaveAttribute("aria-pressed", "false")
+		fireEvent.click(customButton)
+
+		// Check that custom button is now active
+		expect(customButton).toHaveAttribute("aria-pressed", "true")
+		expect(alphabeticalButton).toHaveAttribute("aria-pressed", "false")
+
+		// Switch back to alphabetical mode
+		fireEvent.click(alphabeticalButton)
+
+		// Check that alphabetical button is active again
+		expect(alphabeticalButton).toHaveAttribute("aria-pressed", "true")
+		expect(customButton).toHaveAttribute("aria-pressed", "false")
+	})
 })
