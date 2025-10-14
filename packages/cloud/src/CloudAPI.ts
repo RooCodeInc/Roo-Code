@@ -142,25 +142,13 @@ export class CloudAPI {
 	}
 
 	async getCloudAgents(): Promise<CloudAgent[]> {
-		try {
-			this.log("[CloudAPI] Fetching cloud agents")
+		this.log("[CloudAPI] Fetching cloud agents")
 
-			const response = await this.request<{ agents: CloudAgent[] }>("/api/cloud_agents", {
-				method: "GET",
-			})
+		const response = await this.request<{ success: boolean; data: CloudAgent[] }>("/api/cloud-agents", {
+			method: "GET",
+		})
 
-			this.log("[CloudAPI] Cloud agents response:", response)
-			return response.agents || []
-		} catch (error) {
-			this.log("[CloudAPI] Failed to fetch cloud agents, returning mock data:", error)
-
-			// Return mock data when API fails as requested
-			return [
-				{ id: "1", name: "Code Assistant", type: "code" },
-				{ id: "2", name: "Test Generator", type: "test" },
-				{ id: "3", name: "Code Reviewer", type: "review" },
-				{ id: "4", name: "Documentation Writer", type: "docs" },
-			]
-		}
+		this.log("[CloudAPI] Cloud agents response:", response)
+		return response.data || []
 	}
 }

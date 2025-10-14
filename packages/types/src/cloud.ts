@@ -730,7 +730,8 @@ export type LeaveResponse = {
 export interface CloudAgent {
 	id: string
 	name: string
-	type: string // e.g., "code", "review", "test", "docs"
+	type: string // e.g., "PR Reviewer", "Documentation Writer"
+	icon?: string // e.g., "pr-reviewer", "documentation-writer"
 }
 
 /**

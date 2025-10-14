@@ -17,7 +17,7 @@ const HistoryPreview = () => {
 	return (
 		<div className="flex flex-col gap-1">
 			<div className="flex flex-wrap items-center justify-between mt-4 mb-2">
-				<h2 className="font-semibold text-lg shrink-0 m-0">{t("history:recentTasks")}</h2>
+				<h2 className="font-semibold text-lg grow m-0">{t("history:recentTasks")}</h2>
 				<button
 					onClick={handleViewAllHistory}
 					className="text-base text-vscode-descriptionForeground hover:text-vscode-textLink-foreground transition-colors cursor-pointer"

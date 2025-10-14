@@ -1,67 +1,65 @@
 import React, { useEffect, useState } from "react"
-import { Brain, Plus } from "lucide-react"
+import { Cloud, Plus, SquarePen } from "lucide-react"
 import type { CloudAgent } from "@roo-code/types"
+import { vscode } from "@/utils/vscode"
+import { useExtensionState } from "@/context/ExtensionStateContext"
 
-interface CloudAgentsProps {
-	cloudApiUrl: string
-	sessionToken?: string
-}
-
-const CloudAgents: React.FC<CloudAgentsProps> = ({ cloudApiUrl, sessionToken }) => {
+const CloudAgents: React.FC = () => {
+	const { cloudIsAuthenticated, cloudUserInfo, cloudApiUrl } = useExtensionState()
 	const [agents, setAgents] = useState<CloudAgent[]>([])
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState(false)
 
 	useEffect(() => {
-		const fetchAgents = async () => {
-			try {
-				setLoading(true)
+		const getCloudAgents = () => {
+			// Only fetch agents if user is authenticated
+			if (!cloudIsAuthenticated) {
+				console.log("[CloudAgents] User not authenticated, skipping fetch")
+				setAgents([])
+				setLoading(false)
 				setError(false)
+				return
+			}
 
-				if (!sessionToken) {
-					// Use mock data if no session token
-					const mockAgents: CloudAgent[] = [
-						{ id: "1", name: "Rooviewer", type: "PR Review" },
-						{ id: "2", name: "Gertroode", type: "Documentation Writer" },
-						{ id: "3", name: "Polyglot", type: "String Translator" },
-					]
-					setAgents(mockAgents)
-					return
+			setLoading(true)
+			setError(false)
+
+			console.log("[CloudAgents] Requesting cloud agents from extension")
+
+			// Request cloud agents from the extension
+			vscode.postMessage({ type: "getCloudAgents" })
+		}
+
+		// Set up message listener for the response
+		const handleMessage = (event: MessageEvent) => {
+			const message = event.data
+			if (message.type === "cloudAgents") {
+				console.log("[CloudAgents] Received cloud agents response:", message)
+
+				if (message.error) {
+					console.log("[CloudAgents] Error fetching cloud agents:", message.error)
+					setError(true)
+					// Don't use mock data on error - just show empty state
+					setAgents([])
+				} else {
+					setAgents(message.agents || [])
 				}
 
-				const response = await fetch(`${cloudApiUrl}/api/cloud_agents`, {
-					headers: {
-						"Content-Type": "application/json",
-						Authorization: `Bearer ${sessionToken}`,
-					},
-				})
-
-				if (!response.ok) {
-					throw new Error("Failed to fetch agents")
-				}
-
-				const data = await response.json()
-				setAgents(data.agents || [])
-			} catch (err) {
-				console.error("Failed to fetch cloud agents, using mock data:", err)
-				// Use mock data on error
-				const mockAgents: CloudAgent[] = [
-					{ id: "1", name: "Code Assistant", type: "code" },
-					{ id: "2", name: "Test Generator", type: "test" },
-					{ id: "3", name: "Code Reviewer", type: "review" },
-					{ id: "4", name: "Documentation Writer", type: "docs" },
-				]
-				setAgents(mockAgents)
-			} finally {
 				setLoading(false)
 			}
 		}
 
-		fetchAgents()
-	}, [cloudApiUrl, sessionToken])
+		window.addEventListener("message", handleMessage)
+		getCloudAgents()
 
-	// If there's an error, show nothing as requested
-	if (error) {
+		// Cleanup listener on unmount
+		return () => {
+			window.removeEventListener("message", handleMessage)
+		}
+	}, [cloudIsAuthenticated, cloudUserInfo?.organizationId]) // agents is excluded intentionally as it's set by the response
+
+	// If not authenticated or there's an error, show nothing as requested
+	if (!cloudIsAuthenticated || error) {
 		return null
 	}
 
@@ -71,11 +69,11 @@ const CloudAgents: React.FC<CloudAgentsProps> = ({ cloudApiUrl, sessionToken }) 
 	}
 
 	const handleAgentClick = (agentId: string) => {
-		window.open(`${cloudApiUrl}/cloud-agents/${agentId}`, "_blank")
+		vscode.postMessage({ type: "openExternal", url: `${cloudApiUrl}/cloud-agents/${agentId}/run` })
 	}
 
 	const handleCreateClick = () => {
-		window.open(`${cloudApiUrl}/cloud-agents/create`, "_blank")
+		vscode.postMessage({ type: "openExternal", url: `${cloudApiUrl}/cloud-agents/create` })
 	}
 
 	return (
@@ -94,9 +92,10 @@ const CloudAgents: React.FC<CloudAgentsProps> = ({ cloudApiUrl, sessionToken }) 
 			</div>
 
 			{agents.length === 0 ? (
-				<div className="items-center gap-3 px-4 py-1 rounded-xl bg-vscode-editor-background">
+				<div className="flex items-start gap-3 px-4 py-1 rounded-xl bg-vscode-editor-background">
+					<Cloud className="size-5 mt-4 shrink-0" />
 					<p className="text-base text-vscode-descriptionForeground mb-4">
-						No Cloud agents yes?
+						Code away from your IDE with Roo&apos;s Cloud Agents.
 						<button
 							className="inline-flex ml-1 cursor-pointer text-vscode-textLink-foreground hover:underline"
 							onClick={handleCreateClick}>
@@ -109,19 +108,23 @@ const CloudAgents: React.FC<CloudAgentsProps> = ({ cloudApiUrl, sessionToken }) 
 					{agents.map((agent) => (
 						<div
 							key={agent.id}
-							className="flex items-center gap-3 px-4 py-2 rounded-xl bg-vscode-editor-background hover:bg-vscode-list-hoverBackground cursor-pointer transition-colors"
+							className="flex items-center relative group gap-2 px-4 py-2 rounded-xl bg-vscode-editor-background hover:bg-vscode-list-hoverBackground cursor-pointer transition-colors"
 							onClick={() => handleAgentClick(agent.id)}>
-							<span className="text-xl" role="img" aria-label={agent.type}>
-								<Brain className="size-6" />
-							</span>
+							<span
+								className="text-xl size-5 bg-foreground"
+								role="img"
+								aria-label={agent.type}
+								style={{
+									mask: `url('${agent.icon}') no-repeat center`,
+									maskSize: "contain",
+								}}></span>
 							<div className="flex-1 min-w-0">
 								<div className="text-base font-medium text-vscode-foreground truncate">
 									{agent.name}
 								</div>
-								<div className="text-sm font-light text-vscode-descriptionForeground">
-									{agent.type} agents
-								</div>
+								<div className="text-sm font-light text-vscode-descriptionForeground">{agent.type}</div>
 							</div>
+							<SquarePen className="size-4 opacity-0 group-hover:opacity-100 transition-opacity" />
 						</div>
 					))}
 				</div>

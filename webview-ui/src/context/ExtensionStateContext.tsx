@@ -436,7 +436,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		routerModels: extensionRouterModels,
 		cloudIsAuthenticated: state.cloudIsAuthenticated ?? false,
 		cloudOrganizations: state.cloudOrganizations ?? [],
-		cloudApiUrl: "https://app.roocode.com",
+		cloudApiUrl: state.cloudApiUrl || "https://app.roocode.com",
 		organizationSettingsVersion: state.organizationSettingsVersion ?? -1,
 		marketplaceItems,
 		marketplaceInstalledMetadata,

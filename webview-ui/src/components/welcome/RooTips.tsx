@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next"
 import { Trans } from "react-i18next"
 
 import { buildDocLink } from "@src/utils/docLinks"
-import { ListTree, Users } from "lucide-react"
+import { ReplaceAll, Users } from "lucide-react"
 
 const tips = [
 	{
@@ -13,10 +13,10 @@ const tips = [
 		descriptionKey: "rooTips.customizableModes.description",
 	},
 	{
-		icon: <ListTree className="size-4 shrink-0 mt-0.5" />,
-		href: buildDocLink("features/boomerang-tasks", "tips"),
-		titleKey: "rooTips.boomerangTasks.title",
-		descriptionKey: "rooTips.boomerangTasks.description",
+		icon: <ReplaceAll className="size-4 shrink-0 mt-0.5" />,
+		href: buildDocLink("getting-started/connecting-api-provider", "tips"),
+		titleKey: "rooTips.modelAgnostic.title",
+		descriptionKey: "rooTips.modelAgnostic.description",
 	},
 ]
 
@@ -26,25 +26,14 @@ const RooTips = () => {
 	return (
 		<div className="flex flex-col gap-2 mb-4 max-w-[450px]font-light text-vscode-descriptionForeground">
 			<p className="my-0 pr-8">
-				<Trans
-					i18nKey="chat:about"
-					components={{
-						DocsLink: (
-							<a href={buildDocLink("", "welcome")} target="_blank" rel="noopener noreferrer">
-								the docs
-							</a>
-						),
-					}}
-				/>
+				<Trans i18nKey="chat:about" />
 			</p>
 			<div className="gap-4">
 				{tips.map((tip) => (
 					<div key={tip.titleKey} className="flex items-start gap-2 mt-2 mr-6">
 						{tip.icon}
 						<span>
-							<VSCodeLink
-								className="text-vscode-editor-foreground underline forced-color-adjust-none"
-								href={tip.href}>
+							<VSCodeLink className="text-muted-foreground underline" href={tip.href}>
 								{t(tip.titleKey)}
 							</VSCodeLink>
 							: {t(tip.descriptionKey)}
@@ -52,6 +41,19 @@ const RooTips = () => {
 					</div>
 				))}
 			</div>
+			<p className="my-0 pr-8">
+				<Trans
+					i18nKey="chat:docs"
+					components={{
+						DocsLink: (
+							<VSCodeLink
+								className="text-muted-foreground underline"
+								href={buildDocLink("", "welcome")}
+							/>
+						),
+					}}
+				/>
+			</p>
 		</div>
 	)
 }

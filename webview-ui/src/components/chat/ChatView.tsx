@@ -121,7 +121,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		soundEnabled,
 		soundVolume,
 		cloudIsAuthenticated,
-		cloudApiUrl,
 		messageQueue = [],
 	} = useExtensionState()
 
@@ -1810,15 +1809,21 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							className="absolute top-2 right-3 z-10"
 						/>
 
-						<div className="flex flex-col gap-4">
+						<div className="flex flex-col gap-4 w-full">
 							<RooHero />
 
+							{/* New users should see tips */}
 							{taskHistory.length < 4 && <RooTips />}
 
+							{/* Everyone should see their task history if any */}
 							{taskHistory.length > 0 && <HistoryPreview />}
 						</div>
 
-						{!cloudIsAuthenticated ? (
+						{cloudIsAuthenticated ? (
+							// Logged in users should always see their agents (or be upsold)
+							<CloudAgents />
+						) : (
+							// Logged out users should be upsold at least once on Cloud
 							<DismissibleUpsell
 								upsellId="taskList"
 								icon={<Cloud className="size-5 mt-0.5 shrink-0" />}
@@ -1832,11 +1837,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 									}}
 								/>
 							</DismissibleUpsell>
-						) : (
-							<CloudAgents
-								cloudApiUrl={cloudApiUrl}
-								sessionToken={undefined} // Will use mock data for now
-							/>
 						)}
 					</div>
 				</div>
