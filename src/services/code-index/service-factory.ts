@@ -12,6 +12,7 @@ import { ICodeParser, IEmbedder, IFileWatcher, IVectorStore } from "./interfaces
 import { CodeIndexConfigManager } from "./config-manager"
 import { CacheManager } from "./cache-manager"
 import { RooIgnoreController } from "../../core/ignore/RooIgnoreController"
+import { RooIndexIgnoreController } from "../../core/ignore/RooIndexIgnoreController"
 import { Ignore } from "ignore"
 import { t } from "../../i18n"
 import { TelemetryService } from "@roo-code/telemetry"
@@ -181,6 +182,7 @@ export class CodeIndexServiceFactory {
 		cacheManager: CacheManager,
 		ignoreInstance: Ignore,
 		rooIgnoreController?: RooIgnoreController,
+		rooIndexIgnoreController?: RooIndexIgnoreController,
 	): IFileWatcher {
 		// Get the configurable batch size from VSCode settings
 		let batchSize: number
@@ -201,6 +203,7 @@ export class CodeIndexServiceFactory {
 			ignoreInstance,
 			rooIgnoreController,
 			batchSize,
+			rooIndexIgnoreController,
 		)
 	}
 
@@ -228,6 +231,10 @@ export class CodeIndexServiceFactory {
 		const vectorStore = this.createVectorStore()
 		const parser = codeParser
 		const scanner = this.createDirectoryScanner(embedder, vectorStore, parser, ignoreInstance)
+
+		// Create RooIndexIgnoreController for the file watcher
+		const rooIndexIgnoreController = new RooIndexIgnoreController(this.workspacePath)
+
 		const fileWatcher = this.createFileWatcher(
 			context,
 			embedder,
@@ -235,6 +242,7 @@ export class CodeIndexServiceFactory {
 			cacheManager,
 			ignoreInstance,
 			rooIgnoreController,
+			rooIndexIgnoreController,
 		)
 
 		return {

@@ -1,6 +1,7 @@
 import { listFiles } from "../../glob/list-files"
 import { Ignore } from "ignore"
 import { RooIgnoreController } from "../../../core/ignore/RooIgnoreController"
+import { RooIndexIgnoreController } from "../../../core/ignore/RooIndexIgnoreController"
 import { stat } from "fs/promises"
 import * as path from "path"
 import { generateNormalizedAbsolutePath, generateRelativeFilePath } from "../shared/get-relative-path"
@@ -82,16 +83,22 @@ export class DirectoryScanner implements IDirectoryScanner {
 		// Filter out directories (marked with trailing '/')
 		const filePaths = allPaths.filter((p) => !p.endsWith("/"))
 
-		// Initialize RooIgnoreController if not provided
+		// Initialize RooIgnoreController for access control
 		const ignoreController = new RooIgnoreController(directoryPath)
-
 		await ignoreController.initialize()
 
-		// Filter paths using .rooignore
+		// Initialize RooIndexIgnoreController for indexing exclusions
+		const indexIgnoreController = new RooIndexIgnoreController(directoryPath)
+		await indexIgnoreController.initialize()
+
+		// Filter paths using .rooignore (for access control)
 		const allowedPaths = ignoreController.filterPaths(filePaths)
 
+		// Filter paths using .rooindexignore (for indexing exclusions)
+		const indexablePaths = indexIgnoreController.filterPaths(allowedPaths)
+
 		// Filter by supported extensions, ignore patterns, and excluded directories
-		const supportedPaths = allowedPaths.filter((filePath) => {
+		const supportedPaths = indexablePaths.filter((filePath) => {
 			const ext = path.extname(filePath).toLowerCase()
 			const relativeFilePath = generateRelativeFilePath(filePath, scanWorkspace)
 
