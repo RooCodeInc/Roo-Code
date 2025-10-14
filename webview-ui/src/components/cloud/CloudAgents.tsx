@@ -16,7 +16,6 @@ const CloudAgents: React.FC = () => {
 		const getCloudAgents = () => {
 			// Only fetch agents if user is authenticated
 			if (!cloudIsAuthenticated) {
-				console.log("[CloudAgents] User not authenticated, skipping fetch")
 				setAgents([])
 				setLoading(false)
 				setError(false)
@@ -25,10 +24,6 @@ const CloudAgents: React.FC = () => {
 
 			setLoading(true)
 			setError(false)
-
-			console.log("[CloudAgents] Requesting cloud agents from extension")
-
-			// Request cloud agents from the extension
 			vscode.postMessage({ type: "getCloudAgents" })
 		}
 
@@ -36,12 +31,8 @@ const CloudAgents: React.FC = () => {
 		const handleMessage = (event: MessageEvent) => {
 			const message = event.data
 			if (message.type === "cloudAgents") {
-				console.log("[CloudAgents] Received cloud agents response:", message)
-
 				if (message.error) {
-					console.log("[CloudAgents] Error fetching cloud agents:", message.error)
 					setError(true)
-					// Don't use mock data on error - just show empty state
 					setAgents([])
 				} else {
 					setAgents(message.agents || [])
@@ -60,7 +51,6 @@ const CloudAgents: React.FC = () => {
 		}
 	}, [cloudIsAuthenticated, cloudUserInfo?.organizationId]) // agents is excluded intentionally as it's set by the response
 
-	// If not authenticated or there's an error, show nothing as requested
 	if (!cloudIsAuthenticated || error) {
 		return null
 	}
