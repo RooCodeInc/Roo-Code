@@ -97,7 +97,7 @@
 	},
 	"scrollToBottom": "Scroll to bottom of chat",
 	"about": "Roo Code is a whole AI dev team in your editor.",
-	"docs": "Check out our <DocsLink>documentation</DocsLink> to learn more.",
+	"docs": "Check our <DocsLink>docs</DocsLink> to learn more.",
 	"rooTips": {
 		"customizableModes": {
 			"title": "Customizable modes",
@@ -398,5 +398,12 @@
 		"problems": "Problems",
 		"terminal": "Terminal",
 		"url": "Paste URL to fetch contents"
+	},
+	"cloudAgents": {
+		"create": "Create",
+		"title": "Cloud Agents",
+		"description": "You haven’t created any Cloud Agents yet.",
+		"createFirst": "Create your first",
+		"clickToRun": "Click to run {{name}}"
 	}
 }

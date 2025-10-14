@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react"
 import { Cloud, Plus, SquarePen } from "lucide-react"
 import type { CloudAgent } from "@roo-code/types"
+import { useTranslation } from "react-i18next"
 import { vscode } from "@/utils/vscode"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 
 const CloudAgents: React.FC = () => {
+	const { t } = useTranslation()
 	const { cloudIsAuthenticated, cloudUserInfo, cloudApiUrl } = useExtensionState()
 	const [agents, setAgents] = useState<CloudAgent[]>([])
 	const [loading, setLoading] = useState(true)
@@ -79,14 +81,14 @@ const CloudAgents: React.FC = () => {
 	return (
 		<div className="flex flex-col gap-3 mt-6 w-full">
 			<div className="flex flex-wrap items-center justify-between mt-4 mb-1">
-				<h2 className="font-semibold text-lg shrink-0 m-0">Cloud Agents</h2>
+				<h2 className="font-semibold text-lg shrink-0 m-0">{t("chat:cloudAgents.title")}</h2>
 				{agents.length > 0 && (
 					<button
 						onClick={handleCreateClick}
 						className="text-base flex items-center gap-1 text-vscode-descriptionForeground hover:text-vscode-textLink-foreground transition-colors cursor-pointer"
-						title="Create new agent">
+						title={t("chat:cloudAgents.createNew")}>
 						<Plus className="h-4 w-4" />
-						Create
+						{t("chat:cloudAgents.create")}
 					</button>
 				)}
 			</div>
@@ -95,11 +97,11 @@ const CloudAgents: React.FC = () => {
 				<div className="flex items-start gap-3 px-4 py-1 rounded-xl bg-vscode-editor-background">
 					<Cloud className="size-5 mt-4 shrink-0" />
 					<p className="text-base text-vscode-descriptionForeground mb-4">
-						Code away from your IDE with Roo&apos;s Cloud Agents.
+						{t("chat:cloudAgents.description")}
 						<button
 							className="inline-flex ml-1 cursor-pointer text-vscode-textLink-foreground hover:underline"
 							onClick={handleCreateClick}>
-							Create your first.
+							{t("chat:cloudAgents.createFirst")}
 						</button>
 					</p>
 				</div>
@@ -109,7 +111,8 @@ const CloudAgents: React.FC = () => {
 						<div
 							key={agent.id}
 							className="flex items-center relative group gap-2 px-4 py-2 rounded-xl bg-vscode-editor-background hover:bg-vscode-list-hoverBackground cursor-pointer transition-colors"
-							onClick={() => handleAgentClick(agent.id)}>
+							onClick={() => handleAgentClick(agent.id)}
+							aria-label={t("chat:cloudAgents.clickToRun", { name: agent.name })}>
 							<span
 								className="text-xl size-5 bg-foreground"
 								role="img"
