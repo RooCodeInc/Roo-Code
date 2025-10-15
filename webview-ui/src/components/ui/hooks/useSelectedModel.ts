@@ -362,7 +362,7 @@ function getSelectedModel({
 		default: {
 			provider satisfies "anthropic" | "gemini-cli" | "qwen-code" | "human-relay" | "fake-ai"
 			const id = apiConfiguration.apiModelId ?? anthropicDefaultModelId
-			const baseInfo = anthropicModels[id as keyof typeof anthropicModels]
+			let baseInfo: ModelInfo | undefined = anthropicModels[id as keyof typeof anthropicModels]
 
 			// Apply 1M context beta tier pricing for Claude Sonnet 4
 			if (
@@ -384,7 +384,7 @@ function getSelectedModel({
 				const tier = modelWithTiers.tiers?.[0]
 				if (tier) {
 					// Create a new ModelInfo object with updated values
-					const info: ModelInfo = {
+					baseInfo = {
 						...baseInfo,
 						contextWindow: tier.contextWindow,
 						inputPrice: tier.inputPrice ?? baseInfo.inputPrice,
@@ -392,7 +392,19 @@ function getSelectedModel({
 						cacheWritesPrice: tier.cacheWritesPrice ?? baseInfo.cacheWritesPrice,
 						cacheReadsPrice: tier.cacheReadsPrice ?? baseInfo.cacheReadsPrice,
 					}
-					return { id, info }
+				}
+			}
+
+			// Apply 50% discount for Batch API (applies after 1M context pricing if both enabled)
+			if (provider === "anthropic" && apiConfiguration.anthropicUseBatchApi && baseInfo) {
+				baseInfo = {
+					...baseInfo,
+					inputPrice: typeof baseInfo.inputPrice === "number" ? baseInfo.inputPrice * 0.5 : undefined,
+					outputPrice: typeof baseInfo.outputPrice === "number" ? baseInfo.outputPrice * 0.5 : undefined,
+					cacheWritesPrice:
+						typeof baseInfo.cacheWritesPrice === "number" ? baseInfo.cacheWritesPrice * 0.5 : undefined,
+					cacheReadsPrice:
+						typeof baseInfo.cacheReadsPrice === "number" ? baseInfo.cacheReadsPrice * 0.5 : undefined,
 				}
 			}
 
