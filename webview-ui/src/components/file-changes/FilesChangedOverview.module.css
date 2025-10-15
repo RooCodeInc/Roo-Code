@@ -1,0 +1,27 @@
+/* Files Changed Overview CSS Module */
+
+.header {
+	/* Dynamic border bottom controlled via CSS custom property */
+	border-bottom: var(--header-border-bottom, none);
+}
+
+.content {
+	/* Dynamic opacity controlled via CSS custom property */
+	opacity: var(--content-opacity, 1);
+	max-height: 300px;
+	overflow-y: auto;
+	transition: opacity 200ms ease-in-out;
+	position: relative;
+	padding-top: 0.5rem;
+}
+
+.virtualizationContainer {
+	/* Dynamic height controlled via CSS custom property */
+	height: var(--virtualization-height, auto);
+	position: relative;
+}
+
+.virtualizationOffset {
+	/* Dynamic transform controlled via CSS custom property */
+	transform: var(--virtualization-transform, translateY(0));
+}
