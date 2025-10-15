@@ -255,7 +255,8 @@ function getSelectedModel({
 			const info = mistralModels[id as keyof typeof mistralModels]
 			return { id, info }
 		}
-		case "openai": {
+		case "openai":
+		case "openai-compatible": {
 			const id = apiConfiguration.openAiModelId ?? ""
 			const info = apiConfiguration?.openAiCustomModelInfo ?? openAiModelInfoSaneDefaults
 			return { id, info }
@@ -360,7 +361,7 @@ function getSelectedModel({
 		// case "human-relay":
 		// case "fake-ai":
 		default: {
-			provider satisfies "anthropic" | "gemini-cli" | "qwen-code" | "human-relay" | "fake-ai"
+			provider satisfies "anthropic" | "gemini-cli" | "human-relay" | "fake-ai"
 			const id = apiConfiguration.apiModelId ?? anthropicDefaultModelId
 			const baseInfo = anthropicModels[id as keyof typeof anthropicModels]
 
