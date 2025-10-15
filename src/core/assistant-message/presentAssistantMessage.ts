@@ -37,6 +37,7 @@ import { Task } from "../task/Task"
 import { codebaseSearchTool } from "../tools/codebaseSearchTool"
 import { experiments, EXPERIMENT_IDS } from "../../shared/experiments"
 import { applyDiffToolLegacy } from "../tools/applyDiffTool"
+import { terminalKillTool } from "../tools/terminalKillTool"
 
 /**
  * Processes and presents assistant message content to the user interface.
@@ -223,10 +224,14 @@ export async function presentAssistantMessage(cline: Task) {
 						const modeName = getModeBySlug(mode, customModes)?.name ?? mode
 						return `[${block.name} in ${modeName} mode: '${message}']`
 					}
+					case "terminal_kill":
+						return `[${block.name}']`
 					case "run_slash_command":
 						return `[${block.name} for '${block.params.command}'${block.params.args ? ` with args: ${block.params.args}` : ""}]`
 					case "generate_image":
 						return `[${block.name} for '${block.params.path}']`
+					default:
+						return `[${block.name}]`
 				}
 			}
 
@@ -551,6 +556,9 @@ export async function presentAssistantMessage(cline: Task) {
 						toolDescription,
 						askFinishSubTaskApproval,
 					)
+					break
+				case "terminal_kill":
+					await terminalKillTool(cline, block, askApproval, handleError, pushToolResult, removeClosingTag)
 					break
 				case "run_slash_command":
 					await runSlashCommandTool(cline, block, askApproval, handleError, pushToolResult, removeClosingTag)

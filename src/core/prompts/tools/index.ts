@@ -28,6 +28,7 @@ import { getUpdateTodoListDescription } from "./update-todo-list"
 import { getRunSlashCommandDescription } from "./run-slash-command"
 import { getGenerateImageDescription } from "./generate-image"
 import { CodeIndexManager } from "../../../services/code-index/manager"
+import { getTerminalKillDescription } from "./terminal-ctrl"
 
 // Map of tool names to their description functions
 const toolDescriptionMap: Record<string, (args: ToolArgs) => string | undefined> = {
@@ -58,6 +59,7 @@ const toolDescriptionMap: Record<string, (args: ToolArgs) => string | undefined>
 	apply_diff: (args) =>
 		args.diffStrategy ? args.diffStrategy.getToolDescription({ cwd: args.cwd, toolOptions: args.toolOptions }) : "",
 	update_todo_list: (args) => getUpdateTodoListDescription(args),
+	terminal_kill: (args) => getTerminalKillDescription(args),
 	run_slash_command: () => getRunSlashCommandDescription(),
 	generate_image: (args) => getGenerateImageDescription(args),
 }
@@ -177,6 +179,7 @@ export {
 	getSwitchModeDescription,
 	getInsertContentDescription,
 	getSearchAndReplaceDescription,
+	getTerminalKillDescription,
 	getCodebaseSearchDescription,
 	getRunSlashCommandDescription,
 	getGenerateImageDescription,

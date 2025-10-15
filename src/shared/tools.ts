@@ -67,6 +67,8 @@ export const toolParamNames = [
 	"todos",
 	"prompt",
 	"image",
+	"run_in_background",
+	"terminal_id",
 ] as const
 
 export type ToolParamName = (typeof toolParamNames)[number]
@@ -82,7 +84,12 @@ export interface ToolUse {
 export interface ExecuteCommandToolUse extends ToolUse {
 	name: "execute_command"
 	// Pick<Record<ToolParamName, string>, "command"> makes "command" required, but Partial<> makes it optional
-	params: Partial<Pick<Record<ToolParamName, string>, "command" | "cwd">>
+	params: Partial<Pick<Record<ToolParamName, string>, "command" | "cwd" | "run_in_background">>
+}
+
+export interface TerminalCtrlToolUse extends ToolUse {
+	name: "terminal_kill"
+	params: Partial<Pick<Record<ToolParamName, string>, "terminal_id">>
 }
 
 export interface ReadFileToolUse extends ToolUse {
@@ -200,6 +207,7 @@ export const TOOL_DISPLAY_NAMES: Record<ToolName, string> = {
 	new_task: "create new task",
 	insert_content: "insert content",
 	search_and_replace: "search and replace",
+	terminal_kill: "terminal kill",
 	codebase_search: "codebase search",
 	update_todo_list: "update todo list",
 	run_slash_command: "run slash command",
@@ -225,7 +233,7 @@ export const TOOL_GROUPS: Record<ToolGroup, ToolGroupConfig> = {
 		tools: ["browser_action"],
 	},
 	command: {
-		tools: ["execute_command"],
+		tools: ["execute_command", "terminal_kill"],
 	},
 	mcp: {
 		tools: ["use_mcp_tool", "access_mcp_resource"],
