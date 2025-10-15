@@ -335,6 +335,11 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 			betas.push("context-1m-2025-08-07")
 		}
 
+		// Add prompt caching beta if model supports it
+		if (this.supportsPromptCaching(modelId)) {
+			betas.push("prompt-caching-2024-07-31")
+		}
+
 		// Notify user about batch processing
 		yield {
 			type: "text",
@@ -368,7 +373,7 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 					},
 				],
 			},
-			batchOptions as any,
+			batchOptions,
 		)
 
 		// Poll for batch completion (silently)
@@ -381,6 +386,11 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 			if (status.processing_status === "ended") {
 				completedBatch = status
 				break
+			}
+
+			// Handle non-processing states (API may return states not in current SDK types)
+			if (status.processing_status !== "in_progress" && status.processing_status !== "canceling") {
+				throw new Error(`Batch processing failed with status: ${status.processing_status}`)
 			}
 
 			// Wait before next poll
