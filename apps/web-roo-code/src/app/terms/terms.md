@@ -21,22 +21,22 @@ If Roo Code and Customer later execute a Master Subscription Agreement ("**MSA**
 
 ## 2. Key Commercial Terms
 
-| Term                              | Value                                                                                                                                                                                              |
-| --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Governing Law / Forum             | Delaware law; exclusive jurisdiction and venue in the state or federal courts located in Delaware                                                                                                  |
-| Plans & Subscription Periods      | _Free Plan:_ month-to-month. <br> _Paid Plans:_ Monthly **or** Annual, as selected in an Order Form or the online flow.                                                                            |
-| Auto-Renewal & Non-Renewal Notice | _Free Plan:_ renews continuously until cancelled in the dashboard. <br> _Paid Plans:_ renew for the same period unless either party gives 30 days' written notice before the current period ends.  |
-| Fees & Usage                      | _Free Plan:_ Subscription Fee = $0.<br/>_Paid Plans:_ Fees stated in the Order Form or online checkout, invoiced monthly, **plus** Cloud Agent Credits, credit-card charge upon online checkout.   |
-| Payment Terms                     | _Monthly paid plans:_ credit-card charge on the billing date.<br/>_Annual paid plans:_ invoiced Net 30 (credit card optional).<br/>_Cloud Agent Credits:_ credit-card charge upon online checkout. |
-| Cloud Agent Credit expiration.    | Credits expire one calendar year after purchase                                                                                                                                                    |
-| General Liability Cap             | The greater of (i) USD 100 and (ii) 1 × Fees paid or payable in the 12 months before the event giving rise to liability.                                                                           |
-| Increased Cap / Unlimited Claims  | None.                                                                                                                                                                                              |
-| Trial / Pilot                     | Self-service paid plans offer a 14-day free trial, with no subscription charge during the period. Credits are always charged, including during the free trial.                                     |
-| Beta Features                     | None – only generally available features are provided.                                                                                                                                             |
-| Security Standard                 | Roo Code is SOC2 Type 2 compliant and follows industry-standard security practices.                                                                                                                |
-| Machine-Learning Use              | Roo Code **does not** use Customer Content to train, fine-tune, or improve any ML or AI models.                                                                                                    |
-| Data Processing Addendum (DPA)    | GDPR/CCPA-ready DPA available upon written request. Subprocessors listed [here](/legal/subprocessors).                                                                                             |
-| Publicity / Logo Rights           | Roo Code may identify Customer (name & logo) in marketing materials unless Customer opts out in writing.                                                                                           |
+| Term                              | Value                                                                                                                                                                                             |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Governing Law / Forum             | Delaware law; exclusive jurisdiction and venue in the state or federal courts located in Delaware                                                                                                 |
+| Plans & Subscription Periods      | _Free Plan:_ month-to-month. <br> _Paid Plans:_ Monthly **or** Annual, as selected in an Order Form or the online flow.                                                                           |
+| Auto-Renewal & Non-Renewal Notice | _Free Plan:_ renews continuously until cancelled in the dashboard. <br> _Paid Plans:_ renew for the same period unless either party gives 30 days' written notice before the current period ends. |
+| Fees & Usage                      | _Free Plan:_ Subscription Fee = $0.<br/>_Paid Plans:_ Fees stated in the Order Form or online checkout, invoiced monthly, **plus** Credits, credit-card charge upon online checkout.              |
+| Payment Terms                     | _Monthly paid plans:_ credit-card charge on the billing date.<br/>_Annual paid plans:_ invoiced Net 30 (credit card optional).<br/>_Credits:_ credit-card charge upon online checkout.            |
+| Credit Expiration.                | Credits expire one calendar year after purchase                                                                                                                                                   |
+| General Liability Cap             | The greater of (i) USD 100 and (ii) 1 × Fees paid or payable in the 12 months before the event giving rise to liability.                                                                          |
+| Increased Cap / Unlimited Claims  | None.                                                                                                                                                                                             |
+| Trial / Pilot                     | Self-service paid plans offer a 14-day free trial, with no subscription charge during the period. Credits are always charged, including during the free trial.                                    |
+| Beta Features                     | None – only generally available features are provided.                                                                                                                                            |
+| Security Standard                 | Roo Code is SOC2 Type 2 compliant and follows industry-standard security practices.                                                                                                               |
+| Machine-Learning Use              | Roo Code **does not** use Customer Content to train, fine-tune, or improve any ML or AI models.                                                                                                   |
+| Data Processing Addendum (DPA)    | GDPR/CCPA-ready DPA available upon written request. Subprocessors listed [here](/legal/subprocessors).                                                                                            |
+| Publicity / Logo Rights           | Roo Code may identify Customer (name & logo) in marketing materials unless Customer opts out in writing.                                                                                          |
 
 ## 3. Modifications to the Standard Terms
 
