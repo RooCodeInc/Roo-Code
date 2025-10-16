@@ -971,6 +971,10 @@
 		}
 	},
 	"ui": {
+		"taskTitles": {
+			"label": "Habilita els títols de tasques editables",
+			"description": "Mostra i edita títols personalitzats per a les tasques al xat i a l'historial en lloc de només el text original de la tasca"
+		},
 		"collapseThinking": {
 			"label": "Replega els missatges de pensament per defecte",
 			"description": "Quan estigui activat, els blocs de pensament es replegaran per defecte fins que interactuïs amb ells"

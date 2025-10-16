@@ -971,6 +971,10 @@
 		}
 	},
 	"ui": {
+		"taskTitles": {
+			"label": "Bearbeitbare Aufgabentitel aktivieren",
+			"description": "Zeige und bearbeite benutzerdefinierte Titel für Aufgaben im Chat und im Verlauf statt nur den ursprünglichen Aufgabentext"
+		},
 		"collapseThinking": {
 			"label": "Gedankenblöcke standardmäßig ausblenden",
 			"description": "Wenn aktiviert, werden Gedankenblöcke standardmäßig ausgeblendet, bis du mit ihnen interagierst"

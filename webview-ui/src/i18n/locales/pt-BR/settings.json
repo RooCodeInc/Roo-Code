@@ -972,6 +972,10 @@
 		}
 	},
 	"ui": {
+		"taskTitles": {
+			"label": "Ativar títulos de tarefas editáveis",
+			"description": "Mostrar e editar títulos personalizados para tarefas no chat e no histórico em vez de apenas o texto original da tarefa"
+		},
 		"collapseThinking": {
 			"label": "Recolher mensagens de pensamento por padrão",
 			"description": "Quando ativado, os blocos de pensamento serão recolhidos por padrão até que você interaja com eles"

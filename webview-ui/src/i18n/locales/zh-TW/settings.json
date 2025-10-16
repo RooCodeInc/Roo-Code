@@ -972,6 +972,10 @@
 		}
 	},
 	"ui": {
+		"taskTitles": {
+			"label": "啟用可編輯的任務標題",
+			"description": "在聊天與歷史記錄中顯示並編輯任務的自訂標題，而非僅顯示原始任務文字"
+		},
 		"collapseThinking": {
 			"label": "預設折疊「思考」訊息",
 			"description": "啟用後，「思考」塊將預設折疊，直到您與其互動"

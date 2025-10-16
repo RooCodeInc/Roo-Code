@@ -972,6 +972,10 @@
 		}
 	},
 	"ui": {
+		"taskTitles": {
+			"label": "Bật tiêu đề nhiệm vụ có thể chỉnh sửa",
+			"description": "Hiển thị và chỉnh sửa tiêu đề tùy chỉnh cho nhiệm vụ trong cuộc trò chuyện và lịch sử thay vì chỉ văn bản nhiệm vụ gốc"
+		},
 		"collapseThinking": {
 			"label": "Thu gọn tin nhắn Suy nghĩ theo mặc định",
 			"description": "Khi được bật, các khối suy nghĩ sẽ được thu gọn theo mặc định cho đến khi bạn tương tác với chúng"
