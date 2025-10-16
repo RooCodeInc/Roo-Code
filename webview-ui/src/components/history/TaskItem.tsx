@@ -86,12 +86,9 @@ const TaskItem = ({
 						)}
 						data-testid="task-content">
 						{displayHighlight ? (
-							<span
-								className={cn(showTitle && "font-semibold")}
-								dangerouslySetInnerHTML={{ __html: displayHighlight }}
-							/>
+							<span dangerouslySetInnerHTML={{ __html: displayHighlight }} />
 						) : (
-							<span className={cn(showTitle && "font-semibold")}>{displayText}</span>
+							<span>{displayText}</span>
 						)}
 					</div>
 
