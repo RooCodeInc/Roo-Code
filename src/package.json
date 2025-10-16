@@ -554,6 +554,7 @@
 		"npm-run-all2": "^8.0.1",
 		"ovsx": "0.10.4",
 		"rimraf": "^6.0.1",
+		"tree-sitter-dart": "^1.0.0",
 		"tsup": "^8.4.0",
 		"tsx": "^4.19.3",
 		"typescript": "5.8.3",

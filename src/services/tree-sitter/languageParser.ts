@@ -28,6 +28,7 @@ import {
 	embeddedTemplateQuery,
 	elispQuery,
 	elixirQuery,
+	dartQuery,
 } from "./queries"
 
 export interface LanguageParser {
@@ -217,6 +218,10 @@ export async function loadRequiredLanguageParsers(filesToParse: string[], source
 			case "exs":
 				language = await loadLanguage("elixir", sourceDirectory)
 				query = new Query(language, elixirQuery)
+				break
+			case "dart":
+				language = await loadLanguage("dart", sourceDirectory)
+				query = new Query(language, dartQuery)
 				break
 			default:
 				throw new Error(`Unsupported language: ${ext}`)
