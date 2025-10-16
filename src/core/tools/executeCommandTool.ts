@@ -223,7 +223,7 @@ export async function executeCommand(
 			task.say("command_output", result)
 			completed = true
 		},
-		onShellExecutionStarted: (pid: number | undefined) => {
+		onShellExecutionStarted: (pid: number | undefined, process: RooTerminalProcess) => {
 			console.log(`[executeCommand] onShellExecutionStarted: ${pid}`)
 			const status: CommandExecutionStatus = { executionId, status: "started", pid, command }
 			provider?.postMessageToWebview({ type: "commandExecutionStatus", text: JSON.stringify(status) })
