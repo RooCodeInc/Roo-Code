@@ -452,6 +452,10 @@
 			},
 			"resetDefaults": "Reset ke Default"
 		},
+		"disableStreaming": "Nonaktifkan streaming",
+		"disableStreamingDescription": "Nonaktifkan streaming respons real-time untuk model OpenAI.",
+		"disableReasoningSummaries": "Nonaktifkan ringkasan reasoning",
+		"disableReasoningSummariesDescription": "Nonaktifkan ringkasan reasoning dalam model seperti GPT-5.",
 		"rateLimitSeconds": {
 			"label": "Rate limit",
 			"description": "Waktu minimum antara permintaan API."

@@ -448,6 +448,10 @@
 			},
 			"resetDefaults": "デフォルトにリセット"
 		},
+		"disableStreaming": "ストリーミングを無効にする",
+		"disableStreamingDescription": "OpenAIモデルのリアルタイム応答ストリーミングを無効にします。",
+		"disableReasoningSummaries": "推論要約を無効にする",
+		"disableReasoningSummariesDescription": "GPT-5などのモデルで推論要約を無効にします。",
 		"rateLimitSeconds": {
 			"label": "レート制限",
 			"description": "APIリクエスト間の最小時間。"
