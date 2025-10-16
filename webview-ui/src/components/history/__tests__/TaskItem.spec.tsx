@@ -99,7 +99,7 @@ describe("TaskItem", () => {
 		const content = screen.getByTestId("task-content")
 		expect(content).toHaveTextContent("Important task")
 		expect(content).not.toHaveTextContent("Test task")
-		expect(content.querySelector("span")?.className).toContain("font-semibold")
+		expect(content.querySelector("span")?.className || "").not.toContain("font-semibold")
 	})
 
 	it("falls back to task text when feature disabled", () => {

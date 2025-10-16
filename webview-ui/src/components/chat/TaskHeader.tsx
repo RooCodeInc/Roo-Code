@@ -225,7 +225,7 @@ const TaskHeader = ({
 		const tooltipKey = currentTitle.length > 0 ? "chat:task.editTitle" : "chat:task.addTitle"
 		const showTitle = currentTitle.length > 0
 		const displayNode = showTitle ? (
-			<span className="truncate text-base font-semibold" data-testid="task-title-text">
+			<span className="truncate text-base" data-testid="task-title-text">
 				{currentTitle}
 			</span>
 		) : (
