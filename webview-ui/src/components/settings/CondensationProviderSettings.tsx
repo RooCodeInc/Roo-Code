@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import {
 	VSCodeButton,
 	VSCodeDivider,
@@ -73,6 +73,8 @@ const PROVIDER_INFO = {
 }
 
 export const CondensationProviderSettings: React.FC = () => {
+	console.log("🔍 [CondensationProviderSettings] Component mounting")
+
 	const [_providers, setProviders] = useState<Provider[]>([])
 	const [defaultProviderId, setDefaultProviderId] = useState<string>("native")
 	const [smartSettings, setSmartSettings] = useState<SmartProviderSettings>({
@@ -84,16 +86,50 @@ export const CondensationProviderSettings: React.FC = () => {
 	const [presetConfigJson, setPresetConfigJson] = useState<string>("")
 	const [configError, setConfigError] = useState<string | undefined>()
 
+	// Track local changes to prevent backend messages from overriding user selection
+	const lastLocalChangeRef = useRef<number>(0)
+	const IGNORE_BACKEND_DURATION_MS = 500 // Ignore backend updates for 500ms after local change
+
 	useEffect(() => {
+		console.log("🔍 [CondensationProviderSettings] useEffect running - requesting data from backend")
 		// Request initial data
 		vscode.postMessage({ type: "getCondensationProviders" })
+		console.log("🔍 [CondensationProviderSettings] Message sent to backend: getCondensationProviders")
 
 		// Listen for updates
 		const handleMessage = (event: MessageEvent) => {
 			const message = event.data
+			console.log("🔍 [CondensationProviderSettings] Received message:", message.type, message)
 			if (message.type === "condensationProviders") {
+				console.log("🔍 [CondensationProviderSettings] Processing condensationProviders message:", {
+					providers: message.providers,
+					defaultProviderId: message.defaultProviderId,
+					smartProviderSettings: message.smartProviderSettings,
+				})
 				setProviders(message.providers || [])
-				setDefaultProviderId(message.defaultProviderId || "native")
+
+				// Only update defaultProviderId from backend if:
+				// 1. No recent local change (avoid overriding user selection)
+				// 2. OR the value is actually different (backend initiated change)
+				const timeSinceLocalChange = Date.now() - lastLocalChangeRef.current
+				const isRecentLocalChange = timeSinceLocalChange < IGNORE_BACKEND_DURATION_MS
+
+				console.log("🔍 [CondensationProviderSettings] Backend update check:", {
+					incomingBackend: message.defaultProviderId,
+					timeSinceLocalChange,
+					isRecentLocalChange,
+					willUpdate: !isRecentLocalChange,
+				})
+
+				if (!isRecentLocalChange) {
+					setDefaultProviderId(message.defaultProviderId || "native")
+					console.log(
+						"🔍 [CondensationProviderSettings] Updated defaultProviderId from backend:",
+						message.defaultProviderId,
+					)
+				} else {
+					console.log("🔍 [CondensationProviderSettings] Ignoring backend update - recent local change")
+				}
 
 				// Load Smart Provider settings if available
 				if (message.smartProviderSettings) {
@@ -121,11 +157,25 @@ export const CondensationProviderSettings: React.FC = () => {
 	}, [])
 
 	const handleDefaultProviderChange = (providerId: string) => {
+		console.log("🔍 [CondensationProviderSettings] User selected provider:", providerId)
+
+		// Mark this as a local change to ignore backend echoes
+		lastLocalChangeRef.current = Date.now()
+
+		// Update local state immediately for responsive UI
 		setDefaultProviderId(providerId)
+
+		// Send to backend
 		vscode.postMessage({
 			type: "setDefaultCondensationProvider",
 			providerId,
 		})
+
+		console.log(
+			"🔍 [CondensationProviderSettings] Local change recorded, will ignore backend updates for",
+			IGNORE_BACKEND_DURATION_MS,
+			"ms",
+		)
 	}
 
 	const handleSmartPresetChange = (preset: SmartPreset) => {
@@ -210,6 +260,13 @@ export const CondensationProviderSettings: React.FC = () => {
 
 		return <span className={`text-xs px-2 py-0.5 rounded ${badgeColors[info.badge] || ""}`}>{info.badge}</span>
 	}
+
+	console.log("🔍 [CondensationProviderSettings] Rendering component", {
+		defaultProviderId,
+		smartSettings,
+		showAdvanced,
+		configError,
+	})
 
 	return (
 		<div>
