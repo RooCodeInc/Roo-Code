@@ -225,7 +225,7 @@ export async function presentAssistantMessage(cline: Task) {
 						return `[${block.name} in ${modeName} mode: '${message}']`
 					}
 					case "terminal_kill":
-						return `[${block.name}']`
+						return `[${block.name}]`
 					case "run_slash_command":
 						return `[${block.name} for '${block.params.command}'${block.params.args ? ` with args: ${block.params.args}` : ""}]`
 					case "generate_image":
