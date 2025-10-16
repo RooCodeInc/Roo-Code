@@ -4,6 +4,7 @@ import fs from "fs"
 import path from "path"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
+import rehypeRaw from "rehype-raw"
 
 const TITLE = "Terms of Service"
 const DESCRIPTION =
@@ -55,6 +56,7 @@ export default function Terms() {
 			<div className="prose prose-lg mx-auto max-w-4xl dark:prose-invert">
 				<ReactMarkdown
 					remarkPlugins={[remarkGfm]}
+					rehypePlugins={[rehypeRaw]}
 					components={{
 						h1: ({ ...props }) => (
 							<h1 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl" {...props} />
@@ -74,7 +76,10 @@ export default function Terms() {
 							</div>
 						),
 						th: ({ ...props }) => (
-							<th className="border border-border px-4 py-2 text-left font-semibold" {...props} />
+							<th
+								className="border border-border px-4 py-2 text-left font-bold bg-muted-foreground/5"
+								{...props}
+							/>
 						),
 						td: ({ node: _node, ...props }) => {
 							// Check if this is the first column (Term column)

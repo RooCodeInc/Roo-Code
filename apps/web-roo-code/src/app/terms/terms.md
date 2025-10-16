@@ -1,6 +1,6 @@
 # Roo Code Cloud Terms of Service
 
-_(Version 1.0 – Effective June 19, 2025)_
+_(Version 1.1 – Effective Oct 16, 2025)_
 
 These Terms of Service ("**TOS**") govern access to and use of the Roo Code Cloud service (the "**Service**"). They apply to:
 
@@ -21,21 +21,22 @@ If Roo Code and Customer later execute a Master Subscription Agreement ("**MSA**
 
 ## 2. Key Commercial Terms
 
-| Term                              | Value                                                                                                                                                                                            |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Governing Law / Forum             | Delaware law; exclusive jurisdiction and venue in the state or federal courts located in Delaware                                                                                                |
-| Plans & Subscription Periods      | _Free Plan:_ month-to-month.<br/>_Paid Plans:_ Monthly **or** Annual, as selected in an Order Form or the online flow.                                                                           |
-| Auto-Renewal & Non-Renewal Notice | _Free Plan:_ renews continuously until cancelled in the dashboard.<br/>_Paid Plans:_ renew for the same period unless either party gives 30 days' written notice before the current period ends. |
-| Fees & Usage                      | _Free Plan:_ Subscription Fee = $0.<br/>_Paid Plans:_ Fees stated in the Order Form or online checkout **plus** usage-based fees, calculated and invoiced monthly.                               |
-| Payment Terms                     | _Monthly paid plans:_ credit-card charge on the billing date.<br/>_Annual paid plans:_ invoiced Net 30 (credit card optional).                                                                   |
-| General Liability Cap             | The greater of (i) USD 100 and (ii) 1 × Fees paid or payable in the 12 months before the event giving rise to liability.                                                                         |
-| Increased Cap / Unlimited Claims  | None                                                                                                                                                                                             |
-| Trial / Pilot                     | Not offered                                                                                                                                                                                      |
-| Beta Features                     | None – only generally available features are provided                                                                                                                                            |
-| Security Standard                 | Roo Code maintains commercially reasonable administrative, physical, and technical safeguards                                                                                                    |
-| Machine-Learning Use              | Roo Code **does not** use Customer Content to train, fine-tune, or improve any ML or AI models                                                                                                   |
-| Data Processing Addendum (DPA)    | GDPR/CCPA-ready DPA available upon written request                                                                                                                                               |
-| Publicity / Logo Rights           | Roo Code may identify Customer (name & logo) in marketing materials unless Customer opts out in writing                                                                                          |
+| Term                              | Value                                                                                                                                                                                              |
+| --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Governing Law / Forum             | Delaware law; exclusive jurisdiction and venue in the state or federal courts located in Delaware                                                                                                  |
+| Plans & Subscription Periods      | _Free Plan:_ month-to-month. <br> _Paid Plans:_ Monthly **or** Annual, as selected in an Order Form or the online flow.                                                                            |
+| Auto-Renewal & Non-Renewal Notice | _Free Plan:_ renews continuously until cancelled in the dashboard. <br> _Paid Plans:_ renew for the same period unless either party gives 30 days' written notice before the current period ends.  |
+| Fees & Usage                      | _Free Plan:_ Subscription Fee = $0.<br/>_Paid Plans:_ Fees stated in the Order Form or online checkout, invoiced monthly, **plus** Cloud Agent Credits, credit-card charge upon online checkout.   |
+| Payment Terms                     | _Monthly paid plans:_ credit-card charge on the billing date.<br/>_Annual paid plans:_ invoiced Net 30 (credit card optional).<br/>_Cloud Agent Credits:_ credit-card charge upon online checkout. |
+| Cloud Agent Credit expiration.    | Credits expire one calendar year after purchase                                                                                                                                                    |
+| General Liability Cap             | The greater of (i) USD 100 and (ii) 1 × Fees paid or payable in the 12 months before the event giving rise to liability.                                                                           |
+| Increased Cap / Unlimited Claims  | None.                                                                                                                                                                                              |
+| Trial / Pilot                     | Self-service paid plans offer a 14-day free trial, with no subscription charge during the period. Credits are always charged, including during the free trial.                                     |
+| Beta Features                     | None – only generally available features are provided.                                                                                                                                             |
+| Security Standard                 | Roo Code is SOC2 Type 2 compliant and follows industry-standard security practices.                                                                                                                |
+| Machine-Learning Use              | Roo Code **does not** use Customer Content to train, fine-tune, or improve any ML or AI models.                                                                                                    |
+| Data Processing Addendum (DPA)    | GDPR/CCPA-ready DPA available upon written request. Subprocessors listed [here](/legal/subprocessors).                                                                                             |
+| Publicity / Logo Rights           | Roo Code may identify Customer (name & logo) in marketing materials unless Customer opts out in writing.                                                                                           |
 
 ## 3. Modifications to the Standard Terms
 
@@ -52,7 +53,7 @@ If Roo Code and Customer later execute a Master Subscription Agreement ("**MSA**
    Insert auto-renewal and free-plan language above.
 
 5. **Sections 7 (Trials / Betas) and any SLA references.**  
-   Deleted – Roo Code offers no trials, pilots, betas, or SLA credits under these TOS.
+   Deleted – Roo Code offers no pilots, betas, or SLA credits under these TOS.
 
 6. **Section 12.12 (Publicity).**  
    As reflected in the "Publicity / Logo Rights" row above.
