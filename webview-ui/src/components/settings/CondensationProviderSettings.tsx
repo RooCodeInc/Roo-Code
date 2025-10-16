@@ -86,9 +86,9 @@ export const CondensationProviderSettings: React.FC = () => {
 	const [presetConfigJson, setPresetConfigJson] = useState<string>("")
 	const [configError, setConfigError] = useState<string | undefined>()
 
-	// Track local changes to prevent backend messages from overriding user selection
-	const lastLocalChangeRef = useRef<number>(0)
-	const IGNORE_BACKEND_DURATION_MS = 500 // Ignore backend updates for 500ms after local change
+	// Use ref to track current value accessible in closure (prevents stale closure)
+	// This resolves race condition where backend messages arrive with outdated values
+	const defaultProviderIdRef = useRef<string>("native")
 
 	useEffect(() => {
 		console.log("🔍 [CondensationProviderSettings] useEffect running - requesting data from backend")
@@ -108,27 +108,26 @@ export const CondensationProviderSettings: React.FC = () => {
 				})
 				setProviders(message.providers || [])
 
-				// Only update defaultProviderId from backend if:
-				// 1. No recent local change (avoid overriding user selection)
-				// 2. OR the value is actually different (backend initiated change)
-				const timeSinceLocalChange = Date.now() - lastLocalChangeRef.current
-				const isRecentLocalChange = timeSinceLocalChange < IGNORE_BACKEND_DURATION_MS
+				// Only update defaultProviderId if backend value differs from current ref value
+				// This prevents race conditions where backend echoes old value after user selection
+				const incomingProviderId = message.defaultProviderId || "native"
+				const currentProviderId = defaultProviderIdRef.current
 
 				console.log("🔍 [CondensationProviderSettings] Backend update check:", {
-					incomingBackend: message.defaultProviderId,
-					timeSinceLocalChange,
-					isRecentLocalChange,
-					willUpdate: !isRecentLocalChange,
+					incomingBackend: incomingProviderId,
+					currentRef: currentProviderId,
+					willUpdate: incomingProviderId !== currentProviderId,
 				})
 
-				if (!isRecentLocalChange) {
-					setDefaultProviderId(message.defaultProviderId || "native")
+				if (incomingProviderId !== currentProviderId) {
+					setDefaultProviderId(incomingProviderId)
+					defaultProviderIdRef.current = incomingProviderId
 					console.log(
 						"🔍 [CondensationProviderSettings] Updated defaultProviderId from backend:",
-						message.defaultProviderId,
+						incomingProviderId,
 					)
 				} else {
-					console.log("🔍 [CondensationProviderSettings] Ignoring backend update - recent local change")
+					console.log("🔍 [CondensationProviderSettings] Ignoring backend update - same as current value")
 				}
 
 				// Load Smart Provider settings if available
@@ -159,10 +158,10 @@ export const CondensationProviderSettings: React.FC = () => {
 	const handleDefaultProviderChange = (providerId: string) => {
 		console.log("🔍 [CondensationProviderSettings] User selected provider:", providerId)
 
-		// Mark this as a local change to ignore backend echoes
-		lastLocalChangeRef.current = Date.now()
+		// Update ref immediately to prevent backend race conditions
+		defaultProviderIdRef.current = providerId
 
-		// Update local state immediately for responsive UI
+		// Update local state for responsive UI
 		setDefaultProviderId(providerId)
 
 		// Send to backend
@@ -171,11 +170,7 @@ export const CondensationProviderSettings: React.FC = () => {
 			providerId,
 		})
 
-		console.log(
-			"🔍 [CondensationProviderSettings] Local change recorded, will ignore backend updates for",
-			IGNORE_BACKEND_DURATION_MS,
-			"ms",
-		)
+		console.log("🔍 [CondensationProviderSettings] Ref updated, state synced, backend notified")
 	}
 
 	const handleSmartPresetChange = (preset: SmartPreset) => {
@@ -318,8 +313,7 @@ export const CondensationProviderSettings: React.FC = () => {
 								<div key={provider.id} className="mb-3">
 									<VSCodeRadio
 										value={provider.id}
-										onChange={() => handleDefaultProviderChange(provider.id)}
-										checked={defaultProviderId === provider.id}>
+										onChange={() => handleDefaultProviderChange(provider.id)}>
 										<div className="flex items-start justify-between w-full">
 											<div className="flex-1">
 												<div className="flex items-center gap-2">
