@@ -121,7 +121,7 @@ import screenshotDark from "/public/heroes/cloud-screen.png"
 export default function CloudPage() {
 	return (
 		<>
-			<section className="relative flex md:h-[calc(125vh-theme(spacing.12))] items-center overflow-hidden md:h-[calc(80svh-theme(spacing.12))]">
+			<section className="relative flex md:h-[calc(60vh-theme(spacing.12))] items-center overflow-hidden">
 				<AnimatedBackground />
 				<div className="container relative flex items-center h-full z-10 mx-auto px-4 sm:px-6 lg:px-8">
 					<div className="grid h-full relative gap-8 md:gap-12 lg:grid-cols-2 lg:gap-16">
