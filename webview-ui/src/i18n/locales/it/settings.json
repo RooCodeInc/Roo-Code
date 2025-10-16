@@ -964,6 +964,10 @@
 		}
 	},
 	"ui": {
+		"taskTitles": {
+			"label": "Abilita titoli delle attività modificabili",
+			"description": "Mostra e modifica titoli personalizzati per le attività in chat e nella cronologia invece del solo testo originale dell’attività"
+		},
 		"collapseThinking": {
 			"label": "Comprimi i messaggi di pensiero per impostazione predefinita",
 			"description": "Se abilitato, i blocchi di pensiero verranno compressi per impostazione predefinita finché non interagisci con essi"

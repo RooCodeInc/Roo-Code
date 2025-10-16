@@ -964,6 +964,10 @@
 		}
 	},
 	"ui": {
+		"taskTitles": {
+			"label": "Włącz edytowalne tytuły zadań",
+			"description": "Wyświetlaj i edytuj niestandardowe tytuły zadań na czacie i w historii zamiast wyłącznie oryginalnego tekstu zadania"
+		},
 		"collapseThinking": {
 			"label": "Domyślnie zwijaj komunikaty o myśleniu",
 			"description": "Gdy włączone, bloki myślenia będą domyślnie zwinięte, dopóki nie wejdziesz z nimi w interakcję"
