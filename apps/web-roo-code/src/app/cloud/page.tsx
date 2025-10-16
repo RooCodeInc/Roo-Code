@@ -20,7 +20,8 @@ import { EXTERNAL_LINKS } from "@/lib/constants"
 import Image from "next/image"
 
 const TITLE = "Roo Code Cloud"
-const DESCRIPTION = "Roo Code Cloud gives you and your team the tools to take AI-coding to the next level with cloud agents, remote control, and more."
+const DESCRIPTION =
+	"Roo Code Cloud gives you and your team the tools to take AI-coding to the next level with cloud agents, remote control, and more."
 const PATH = "/cloud"
 const OG_IMAGE = SEO.ogImage
 
@@ -115,13 +116,12 @@ const cloudFeatures: Feature[] = [
 ]
 
 // Workaround for next/image choking on these for some reason
-import screenshotLight from "/public/heroes/cloud-screen-dark.png"
-import screenshotDark from "/public/heroes/cloud-screen-light.png"
+import screenshotDark from "/public/heroes/cloud-screen.png"
 
 export default function CloudPage() {
 	return (
 		<>
-			<section className="relative flex h-[calc(125vh-theme(spacing.12))] items-center overflow-hidden md:h-[calc(80svh-theme(spacing.12))]">
+			<section className="relative flex md:h-[calc(125vh-theme(spacing.12))] items-center overflow-hidden md:h-[calc(80svh-theme(spacing.12))]">
 				<AnimatedBackground />
 				<div className="container relative flex items-center h-full z-10 mx-auto px-4 sm:px-6 lg:px-8">
 					<div className="grid h-full relative gap-8 md:gap-12 lg:grid-cols-2 lg:gap-16">
@@ -152,23 +152,14 @@ export default function CloudPage() {
 							</div>
 						</div>
 						<div className="flex items-center justify-end mx-auto h-full mt-8 lg:mt-0">
-							<div className="w-[900px] h-[500px] p-2 bg-black dark:bg-white relative rounded-md overflow-clip shadow-2xl">
-								<div className="hidden dark:block">
+							<div className="md:w-[900px] md:h-[530px]  bg-black dark:bg-white relative rounded-md overflow-clip shadow-2xl">
+								<div className="block">
 									<Image
 										src={screenshotDark}
 										alt="Screenshot of Roo Code Cloud"
 										className="max-w-full h-auto"
-										width={2620}
-										height={1572}
-									/>
-								</div>
-								<div className="block dark:hidden">
-									<Image
-										src={screenshotLight}
-										alt="Screenshot of Roo Code Cloud"
-										className="max-w-full h-auto"
-										width={2620}
-										height={1572}
+										width={2680}
+										height={1784}
 									/>
 								</div>
 							</div>
