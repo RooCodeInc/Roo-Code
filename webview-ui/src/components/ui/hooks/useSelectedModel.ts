@@ -60,6 +60,7 @@ import {
 } from "@roo-code/types"
 
 import type { ModelRecord, RouterModels } from "@roo/api"
+import { applyBatchApiDiscount } from "@roo/cost"
 
 import { useRouterModels } from "./useRouterModels"
 import { useOpenRouterModelProviders } from "./useOpenRouterModelProviders"
@@ -397,15 +398,7 @@ function getSelectedModel({
 
 			// Apply 50% discount for Batch API (applies after 1M context pricing if both enabled)
 			if (provider === "anthropic" && apiConfiguration.anthropicUseBatchApi && baseInfo) {
-				baseInfo = {
-					...baseInfo,
-					inputPrice: typeof baseInfo.inputPrice === "number" ? baseInfo.inputPrice * 0.5 : undefined,
-					outputPrice: typeof baseInfo.outputPrice === "number" ? baseInfo.outputPrice * 0.5 : undefined,
-					cacheWritesPrice:
-						typeof baseInfo.cacheWritesPrice === "number" ? baseInfo.cacheWritesPrice * 0.5 : undefined,
-					cacheReadsPrice:
-						typeof baseInfo.cacheReadsPrice === "number" ? baseInfo.cacheReadsPrice * 0.5 : undefined,
-				}
+				baseInfo = applyBatchApiDiscount(baseInfo)
 			}
 
 			return { id, info: baseInfo }

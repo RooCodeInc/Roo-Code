@@ -17,7 +17,7 @@ import { getModelParams } from "../transform/model-params"
 
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
-import { calculateApiCostAnthropic } from "../../shared/cost"
+import { calculateApiCostAnthropic, applyBatchApiDiscount } from "../../shared/cost"
 
 // Batch API polling configuration
 const BATCH_POLL_INTERVAL_MS = 5000 // Poll every 5 seconds
@@ -271,13 +271,7 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 
 		// Apply 50% discount for Batch API (applies after 1M context pricing if both enabled)
 		if (this.options.anthropicUseBatchApi) {
-			info = {
-				...info,
-				inputPrice: typeof info.inputPrice === "number" ? info.inputPrice * 0.5 : undefined,
-				outputPrice: typeof info.outputPrice === "number" ? info.outputPrice * 0.5 : undefined,
-				cacheWritesPrice: typeof info.cacheWritesPrice === "number" ? info.cacheWritesPrice * 0.5 : undefined,
-				cacheReadsPrice: typeof info.cacheReadsPrice === "number" ? info.cacheReadsPrice * 0.5 : undefined,
-			}
+			info = applyBatchApiDiscount(info)
 		}
 
 		const params = getModelParams({
@@ -368,6 +362,8 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 			{
 				requests: [
 					{
+						// Using Date.now() is sufficient since we only send one request per batch
+						// If we support multiple requests per batch in the future, consider using crypto.randomUUID()
 						custom_id: `req_${Date.now()}`,
 						params: batchRequest,
 					},
@@ -388,8 +384,10 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 				break
 			}
 
-			// Handle non-processing states (API may return states not in current SDK types)
-			if (status.processing_status !== "in_progress" && status.processing_status !== "canceling") {
+			// Only fail on truly failed states; continue polling for all valid transitional states
+			// Note: SDK types may not include all possible states, so we check the actual string value
+			const statusStr = status.processing_status as string
+			if (statusStr === "errored" || statusStr === "expired" || statusStr === "canceled") {
 				throw new Error(`Batch processing failed with status: ${status.processing_status}`)
 			}
 
@@ -442,8 +440,10 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 					),
 				}
 			} else if (result.result.type === "errored") {
-				const errorType = result.result.error.type
-				throw new Error(`Batch request failed: ${errorType}`)
+				const error = result.result.error
+				// ErrorResponse only has 'type' field in SDK types, but may have 'message' at runtime
+				const errorDetails = JSON.stringify(error)
+				throw new Error(`Batch request failed: ${error.type} - ${errorDetails}`)
 			}
 		}
 	}
