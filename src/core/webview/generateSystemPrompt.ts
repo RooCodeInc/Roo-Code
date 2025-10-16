@@ -89,6 +89,9 @@ export const generateSystemPrompt = async (provider: ClineProvider, message: Web
 				.getConfiguration("roo-cline")
 				.get<boolean>("newTaskRequireTodos", false),
 		},
+		undefined, // todoList
+		undefined, // modelId
+		apiConfiguration?.apiProvider,
 	)
 
 	return systemPrompt

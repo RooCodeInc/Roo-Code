@@ -62,6 +62,7 @@ async function generatePrompt(
 	settings?: SystemPromptSettings,
 	todoList?: TodoItem[],
 	modelId?: string,
+	apiProvider?: string,
 ): Promise<string> {
 	if (!context) {
 		throw new Error("Extension context is required for generating system prompt")
@@ -92,7 +93,7 @@ async function generatePrompt(
 
 ${markdownFormattingSection()}
 
-${getSharedToolUseSection()}
+${getSharedToolUseSection(apiProvider)}
 
 ${getToolDescriptionsForMode(
 	mode,
@@ -153,6 +154,7 @@ export const SYSTEM_PROMPT = async (
 	settings?: SystemPromptSettings,
 	todoList?: TodoItem[],
 	modelId?: string,
+	apiProvider?: string,
 ): Promise<string> => {
 	if (!context) {
 		throw new Error("Extension context is required for generating system prompt")
@@ -225,5 +227,6 @@ ${customInstructions}`
 		settings,
 		todoList,
 		modelId,
+		apiProvider,
 	)
 }

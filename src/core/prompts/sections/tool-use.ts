@@ -1,5 +1,8 @@
-export function getSharedToolUseSection(): string {
-	return `====
+export function getSharedToolUseSection(apiProvider?: string): string {
+	// Enhanced instructions for local models that may struggle with tool formatting
+	const isLocalModel = apiProvider === "ollama" || apiProvider === "lmstudio"
+
+	const baseSection = `====
 
 TOOL USE
 
@@ -16,4 +19,33 @@ Tool uses are formatted using XML-style tags. The tool name itself becomes the X
 </actual_tool_name>
 
 Always use the actual tool name as the XML tag name for proper parsing and execution.`
+
+	if (isLocalModel) {
+		return (
+			baseSection +
+			`
+
+# CRITICAL: Tool Use Requirements for Your Response
+
+**MANDATORY**: Every response MUST contain EXACTLY ONE tool use in the XML format shown above.
+**DO NOT**: Write explanations or text outside of the tool XML tags.
+**DO NOT**: Guess file locations or code content - use the appropriate search tools first.
+**ALWAYS**: Start with codebase_search tool when exploring code for the first time.
+
+Example of a CORRECT response (using codebase_search):
+<codebase_search>
+<query>main function entry point</query>
+</codebase_search>
+
+Example of an INCORRECT response (this will fail):
+I'll search for the main function in your codebase.
+<codebase_search>
+<query>main function</query>
+</codebase_search>
+
+Remember: Your ENTIRE response should be the tool XML, nothing else.`
+		)
+	}
+
+	return baseSection
 }
