@@ -691,6 +691,34 @@ describe("VertexHandler", () => {
 			expect(modelInfo.info.contextWindow).toBe(200_000)
 		})
 
+		it("should return 1M context window for Claude Sonnet 4", () => {
+			handler = new AnthropicVertexHandler({
+				apiModelId: "claude-sonnet-4@20250514",
+				vertexProjectId: "test-project",
+				vertexRegion: "us-central1",
+			})
+
+			const modelInfo = handler.getModel()
+			expect(modelInfo.id).toBe("claude-sonnet-4@20250514")
+			expect(modelInfo.info).toBeDefined()
+			expect(modelInfo.info.maxTokens).toBe(8192)
+			expect(modelInfo.info.contextWindow).toBe(1_000_000)
+		})
+
+		it("should return 1M context window for Claude Sonnet 4.5", () => {
+			handler = new AnthropicVertexHandler({
+				apiModelId: "claude-sonnet-4-5@20250929",
+				vertexProjectId: "test-project",
+				vertexRegion: "us-central1",
+			})
+
+			const modelInfo = handler.getModel()
+			expect(modelInfo.id).toBe("claude-sonnet-4-5@20250929")
+			expect(modelInfo.info).toBeDefined()
+			expect(modelInfo.info.maxTokens).toBe(8192)
+			expect(modelInfo.info.contextWindow).toBe(1_000_000)
+		})
+
 		it("honors custom maxTokens for thinking models", () => {
 			const handler = new AnthropicVertexHandler({
 				apiKey: "test-api-key",
