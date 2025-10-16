@@ -62,7 +62,57 @@ describe("VertexHandler", () => {
 			expect(AnthropicVertex).toHaveBeenCalledWith({
 				projectId: "test-project",
 				region: "us-central1",
+				baseURL: undefined,
 			})
+		})
+
+		it("should use custom baseURL for global region", () => {
+			handler = new AnthropicVertexHandler({
+				apiModelId: "claude-3-5-sonnet-v2@20241022",
+				vertexProjectId: "test-project",
+				vertexRegion: "global",
+			})
+
+			expect(AnthropicVertex).toHaveBeenCalledWith({
+				projectId: "test-project",
+				region: "global",
+				baseURL: "https://aiplatform.googleapis.com/v1",
+			})
+		})
+
+		it("should use custom baseURL for global region with JSON credentials", () => {
+			const mockCredentials = JSON.stringify({ type: "service_account", project_id: "test" })
+			handler = new AnthropicVertexHandler({
+				apiModelId: "claude-3-5-sonnet-v2@20241022",
+				vertexProjectId: "test-project",
+				vertexRegion: "global",
+				vertexJsonCredentials: mockCredentials,
+			})
+
+			expect(AnthropicVertex).toHaveBeenCalledWith(
+				expect.objectContaining({
+					projectId: "test-project",
+					region: "global",
+					baseURL: "https://aiplatform.googleapis.com/v1",
+				}),
+			)
+		})
+
+		it("should use custom baseURL for global region with key file", () => {
+			handler = new AnthropicVertexHandler({
+				apiModelId: "claude-3-5-sonnet-v2@20241022",
+				vertexProjectId: "test-project",
+				vertexRegion: "global",
+				vertexKeyFile: "/path/to/keyfile.json",
+			})
+
+			expect(AnthropicVertex).toHaveBeenCalledWith(
+				expect.objectContaining({
+					projectId: "test-project",
+					region: "global",
+					baseURL: "https://aiplatform.googleapis.com/v1",
+				}),
+			)
 		})
 	})
 

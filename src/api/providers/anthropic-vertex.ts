@@ -34,10 +34,16 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 		const projectId = this.options.vertexProjectId ?? "not-provided"
 		const region = this.options.vertexRegion ?? "us-east5"
 
+		// For the "global" region, we need to use a custom base URL
+		// The default would be "global-aiplatform.googleapis.com" which is incorrect
+		// The correct endpoint for global is "aiplatform.googleapis.com"
+		const baseURL = region === "global" ? `https://aiplatform.googleapis.com/v1` : undefined // Let the SDK use its default for other regions
+
 		if (this.options.vertexJsonCredentials) {
 			this.client = new AnthropicVertex({
 				projectId,
 				region,
+				baseURL,
 				googleAuth: new GoogleAuth({
 					scopes: ["https://www.googleapis.com/auth/cloud-platform"],
 					credentials: safeJsonParse<JWTInput>(this.options.vertexJsonCredentials, undefined),
@@ -47,13 +53,14 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 			this.client = new AnthropicVertex({
 				projectId,
 				region,
+				baseURL,
 				googleAuth: new GoogleAuth({
 					scopes: ["https://www.googleapis.com/auth/cloud-platform"],
 					keyFile: this.options.vertexKeyFile,
 				}),
 			})
 		} else {
-			this.client = new AnthropicVertex({ projectId, region })
+			this.client = new AnthropicVertex({ projectId, region, baseURL })
 		}
 	}
 
