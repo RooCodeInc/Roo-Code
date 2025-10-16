@@ -367,6 +367,8 @@ describe("CodeIndexServiceFactory", () => {
 				"http://localhost:6333",
 				3072,
 				"test-key",
+				undefined, // branchIsolationEnabled
+				undefined, // initialBranch
 			)
 		})
 
@@ -392,6 +394,8 @@ describe("CodeIndexServiceFactory", () => {
 				"http://localhost:6333",
 				768,
 				"test-key",
+				undefined, // branchIsolationEnabled
+				undefined, // initialBranch
 			)
 		})
 
@@ -417,6 +421,8 @@ describe("CodeIndexServiceFactory", () => {
 				"http://localhost:6333",
 				3072,
 				"test-key",
+				undefined, // branchIsolationEnabled
+				undefined, // initialBranch
 			)
 		})
 
@@ -449,6 +455,8 @@ describe("CodeIndexServiceFactory", () => {
 				"http://localhost:6333",
 				modelDimension, // Should use model's built-in dimension, not manual
 				"test-key",
+				undefined, // branchIsolationEnabled
+				undefined, // initialBranch
 			)
 		})
 
@@ -480,6 +488,8 @@ describe("CodeIndexServiceFactory", () => {
 				"http://localhost:6333",
 				manualDimension, // Should use manual dimension as fallback
 				"test-key",
+				undefined, // branchIsolationEnabled
+				undefined, // initialBranch
 			)
 		})
 
@@ -509,10 +519,12 @@ describe("CodeIndexServiceFactory", () => {
 				"http://localhost:6333",
 				768,
 				"test-key",
+				undefined, // branchIsolationEnabled
+				undefined, // initialBranch
 			)
 		})
 
-		it("should throw error when manual modelDimension is invalid for OpenAI Compatible", () => {
+		it("should throw error when manual modelDimension is invalid for OpenAI Compatible", async () => {
 			// Arrange
 			const testModelId = "custom-model"
 			const testConfig = {
@@ -530,12 +542,12 @@ describe("CodeIndexServiceFactory", () => {
 			mockGetModelDimension.mockReturnValue(undefined)
 
 			// Act & Assert
-			expect(() => factory.createVectorStore()).toThrow(
+			await expect(factory.createVectorStore()).rejects.toThrow(
 				"serviceFactory.vectorDimensionNotDeterminedOpenAiCompatible",
 			)
 		})
 
-		it("should throw error when both manual dimension and getModelDimension fail for OpenAI Compatible", () => {
+		it("should throw error when both manual dimension and getModelDimension fail for OpenAI Compatible", async () => {
 			// Arrange
 			const testModelId = "unknown-model"
 			const testConfig = {
@@ -552,7 +564,7 @@ describe("CodeIndexServiceFactory", () => {
 			mockGetModelDimension.mockReturnValue(undefined)
 
 			// Act & Assert
-			expect(() => factory.createVectorStore()).toThrow(
+			await expect(factory.createVectorStore()).rejects.toThrow(
 				"serviceFactory.vectorDimensionNotDeterminedOpenAiCompatible",
 			)
 		})
@@ -578,6 +590,8 @@ describe("CodeIndexServiceFactory", () => {
 				"http://localhost:6333",
 				3072,
 				"test-key",
+				undefined, // branchIsolationEnabled
+				undefined, // initialBranch
 			)
 		})
 
@@ -603,6 +617,8 @@ describe("CodeIndexServiceFactory", () => {
 				"http://localhost:6333",
 				3072,
 				"test-key",
+				undefined, // branchIsolationEnabled
+				undefined, // initialBranch
 			)
 		})
 
@@ -627,10 +643,12 @@ describe("CodeIndexServiceFactory", () => {
 				"http://localhost:6333",
 				1536,
 				"test-key",
+				undefined, // branchIsolationEnabled
+				undefined, // initialBranch
 			)
 		})
 
-		it("should throw error when vector dimension cannot be determined", () => {
+		it("should throw error when vector dimension cannot be determined", async () => {
 			// Arrange
 			const testConfig = {
 				embedderProvider: "openai",
@@ -642,10 +660,10 @@ describe("CodeIndexServiceFactory", () => {
 			mockGetModelDimension.mockReturnValue(undefined)
 
 			// Act & Assert
-			expect(() => factory.createVectorStore()).toThrow("serviceFactory.vectorDimensionNotDetermined")
+			await expect(factory.createVectorStore()).rejects.toThrow("serviceFactory.vectorDimensionNotDetermined")
 		})
 
-		it("should throw error when Qdrant URL is missing", () => {
+		it("should throw error when Qdrant URL is missing", async () => {
 			// Arrange
 			const testConfig = {
 				embedderProvider: "openai",
@@ -657,7 +675,7 @@ describe("CodeIndexServiceFactory", () => {
 			mockGetModelDimension.mockReturnValue(1536)
 
 			// Act & Assert
-			expect(() => factory.createVectorStore()).toThrow("serviceFactory.qdrantUrlMissing")
+			await expect(factory.createVectorStore()).rejects.toThrow("serviceFactory.qdrantUrlMissing")
 		})
 	})
 

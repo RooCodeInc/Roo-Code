@@ -27,6 +27,13 @@ export class CodeIndexOrchestrator {
 	) {}
 
 	/**
+	 * Gets the vector store instance
+	 */
+	public getVectorStore(): IVectorStore {
+		return this.vectorStore
+	}
+
+	/**
 	 * Starts the file watcher if not already running.
 	 */
 	private async _startWatcher(): Promise<void> {

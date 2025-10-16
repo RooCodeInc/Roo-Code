@@ -11,6 +11,7 @@ import { codeParser, DirectoryScanner, FileWatcher } from "./processors"
 import { ICodeParser, IEmbedder, IFileWatcher, IVectorStore } from "./interfaces"
 import { CodeIndexConfigManager } from "./config-manager"
 import { CacheManager } from "./cache-manager"
+import { getCurrentBranch } from "../../utils/git"
 import { RooIgnoreController } from "../../core/ignore/RooIgnoreController"
 import { Ignore } from "ignore"
 import { t } from "../../i18n"
@@ -113,7 +114,7 @@ export class CodeIndexServiceFactory {
 	/**
 	 * Creates a vector store instance using the current configuration.
 	 */
-	public createVectorStore(): IVectorStore {
+	public async createVectorStore(): Promise<IVectorStore> {
 		const config = this.configManager.getConfig()
 
 		const provider = config.embedderProvider as EmbedderProvider
@@ -145,8 +146,25 @@ export class CodeIndexServiceFactory {
 			throw new Error(t("embeddings:serviceFactory.qdrantUrlMissing"))
 		}
 
-		// Assuming constructor is updated: new QdrantVectorStore(workspacePath, url, vectorSize, apiKey?)
-		return new QdrantVectorStore(this.workspacePath, config.qdrantUrl, vectorSize, config.qdrantApiKey)
+		// Get current branch if branch isolation is enabled to avoid file I/O on first call
+		let initialBranch: string | undefined
+		if (config.branchIsolationEnabled) {
+			try {
+				initialBranch = await getCurrentBranch(this.workspacePath)
+			} catch (error) {
+				// If we can't get the branch, that's okay - vector store will handle it
+				console.warn("[ServiceFactory] Failed to get initial branch:", error)
+			}
+		}
+
+		return new QdrantVectorStore(
+			this.workspacePath,
+			config.qdrantUrl,
+			vectorSize,
+			config.qdrantApiKey,
+			config.branchIsolationEnabled,
+			initialBranch,
+		)
 	}
 
 	/**
@@ -208,24 +226,24 @@ export class CodeIndexServiceFactory {
 	 * Creates all required service dependencies if the service is properly configured.
 	 * @throws Error if the service is not properly configured
 	 */
-	public createServices(
+	public async createServices(
 		context: vscode.ExtensionContext,
 		cacheManager: CacheManager,
 		ignoreInstance: Ignore,
 		rooIgnoreController?: RooIgnoreController,
-	): {
+	): Promise<{
 		embedder: IEmbedder
 		vectorStore: IVectorStore
 		parser: ICodeParser
 		scanner: DirectoryScanner
 		fileWatcher: IFileWatcher
-	} {
+	}> {
 		if (!this.configManager.isFeatureConfigured) {
 			throw new Error(t("embeddings:serviceFactory.codeIndexingNotConfigured"))
 		}
 
 		const embedder = this.createEmbedder()
-		const vectorStore = this.createVectorStore()
+		const vectorStore = await this.createVectorStore()
 		const parser = codeParser
 		const scanner = this.createDirectoryScanner(embedder, vectorStore, parser, ignoreInstance)
 		const fileWatcher = this.createFileWatcher(

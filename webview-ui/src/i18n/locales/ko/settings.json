@@ -109,6 +109,11 @@
 			"error": "오류"
 		},
 		"close": "닫기",
+		"branchIsolation": {
+			"enableLabel": "브랜치 격리 활성화",
+			"enableDescription": "더 나은 검색 결과를 얻고 브랜치 전환 시 충돌을 방지하기 위해 각 Git 브랜치를 개별적으로 인덱싱합니다. 더 많은 저장 공간이 필요합니다.",
+			"storageWarning": "각 브랜치에는 자체 인덱스가 있어 저장 공간 요구 사항이 증가합니다."
+		},
 		"validation": {
 			"invalidQdrantUrl": "잘못된 Qdrant URL",
 			"invalidOllamaUrl": "잘못된 Ollama URL",

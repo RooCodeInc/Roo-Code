@@ -109,6 +109,11 @@
 			"error": "Hata"
 		},
 		"close": "Kapat",
+		"branchIsolation": {
+			"enableLabel": "Dal İzolasyonunu Etkinleştir",
+			"enableDescription": "Daha iyi arama sonuçları elde etmek ve dallar arasında geçiş yaparken çakışmaları önlemek için her Git dalını ayrı ayrı dizinleyin. Daha fazla depolama alanı gerektirir.",
+			"storageWarning": "Her dalın kendi dizini olacak, bu da depolama gereksinimlerini artıracaktır."
+		},
 		"validation": {
 			"invalidQdrantUrl": "Geçersiz Qdrant URL'si",
 			"invalidOllamaUrl": "Geçersiz Ollama URL'si",
