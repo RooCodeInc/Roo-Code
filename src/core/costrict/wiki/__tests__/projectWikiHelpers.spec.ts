@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 
-// Mock logger - 必须在模块级别创建
+// Mock logger - must be created at module level
 const mockLogger = {
 	info: vi.fn(),
 	warn: vi.fn(),
@@ -9,11 +9,11 @@ const mockLogger = {
 	dispose: vi.fn(),
 }
 
-// 设置 logger mock
+// Setup logger mock
 vi.mock("../../../utils/logger", () => ({
 	createLogger: vi.fn(() => mockLogger),
 	ILogger: {
-		// Mock ILogger 接口
+		// Mock ILogger interface
 		debug: vi.fn(),
 		info: vi.fn(),
 		warn: vi.fn(),
@@ -41,7 +41,7 @@ vi.mock("fs", () => ({
 
 vi.mock("../wiki-prompts/subtasks/constants", () => ({
 	getGlobalCommandsDir: vi.fn(() => "/home/user/.roo/commands"),
-	subtaskDir: "/home/user/.roo/commands/project-wiki-tasks/",
+	subtaskDir: "/home/user/.roo/commands/costrict-project-wiki-tasks/v1.0.5/",
 	MAIN_WIKI_FILENAME: "project-wiki.md",
 	SUBTASK_FILENAMES: {
 		PROJECT_OVERVIEW_TASK_FILE: "01_Project_Overview_Analysis.md",
@@ -65,63 +65,63 @@ vi.mock("../wiki-prompts/project_wiki", () => ({
 }))
 
 vi.mock("../wiki-prompts/subtasks/01_Project_Overview_Analysis", () => ({
-	PROJECT_OVERVIEW_ANALYSIS_TEMPLATE: "# 项目概览分析模板",
+	PROJECT_OVERVIEW_ANALYSIS_TEMPLATE: (workspace: string) => "# 项目概览分析模板",
 }))
 
 vi.mock("../wiki-prompts/subtasks/02_Overall_Architecture_Analysis", () => ({
-	OVERALL_ARCHITECTURE_ANALYSIS_TEMPLATE: "# 整体架构分析模板",
+	OVERALL_ARCHITECTURE_ANALYSIS_TEMPLATE: (workspace: string) => "# 整体架构分析模板",
 }))
 
 vi.mock("../wiki-prompts/subtasks/03_Service_Dependencies_Analysis", () => ({
-	SERVICE_DEPENDENCIES_ANALYSIS_TEMPLATE: "# 服务依赖分析模板",
+	SERVICE_DEPENDENCIES_ANALYSIS_TEMPLATE: (workspace: string) => "# 服务依赖分析模板",
 }))
 
 vi.mock("../wiki-prompts/subtasks/04_Data_Flow_Integration_Analysis", () => ({
-	DATA_FLOW_INTEGRATION_ANALYSIS_TEMPLATE: "# 数据流分析模板",
+	DATA_FLOW_INTEGRATION_ANALYSIS_TEMPLATE: (workspace: string) => "# 数据流分析模板",
 }))
 
 vi.mock("../wiki-prompts/subtasks/05_Service_Analysis_Template", () => ({
-	SERVICE_ANALYSIS_TEMPLATE: "# 服务分析模板",
+	SERVICE_ANALYSIS_TEMPLATE: (workspace: string) => "# 服务分析模板",
 }))
 
 vi.mock("../wiki-prompts/subtasks/06_Database_Schema_Analysis", () => ({
-	DATABASE_SCHEMA_ANALYSIS_TEMPLATE: "# 数据库分析模板",
+	DATABASE_SCHEMA_ANALYSIS_TEMPLATE: (workspace: string) => "# 数据库分析模板",
 }))
 
 vi.mock("../wiki-prompts/subtasks/07_API_Interface_Analysis", () => ({
-	API_INTERFACE_ANALYSIS_TEMPLATE: "# API分析模板",
+	API_INTERFACE_ANALYSIS_TEMPLATE: (workspace: string) => "# API分析模板",
 }))
 
 vi.mock("../wiki-prompts/subtasks/08_Deploy_Analysis", () => ({
-	DEPLOY_ANALYSIS_TEMPLATE: "# 部署分析模板",
+	DEPLOY_ANALYSIS_TEMPLATE: (workspace: string) => "# 部署分析模板",
 }))
 
 vi.mock("../wiki-prompts/subtasks/09_Develop_Test_Analysis", () => ({
-	DEVELOP_TEST_ANALYSIS_TEMPLATE: "# 开发测试分析模板",
+	DEVELOP_TEST_ANALYSIS_TEMPLATE: (workspace: string) => "# 开发测试分析模板",
 }))
 
 vi.mock("../wiki-prompts/subtasks/10_Index_Generation", () => ({
-	INDEX_GENERATION_TEMPLATE: "# 索引生成模板",
+	INDEX_GENERATION_TEMPLATE: (workspace: string) => "# 索引生成模板",
 }))
 
 vi.mock("../wiki-prompts/subtasks/11_Project_Rules_Generation", () => ({
-	PROJECT_RULES_GENERATION_TEMPLATE: "# 项目规则生成模板",
+	PROJECT_RULES_GENERATION_TEMPLATE: (workspace: string) => "# 项目规则生成模板",
 }))
 
-// 导入模块
+// Import modules
 import * as fs from "fs"
 import { ensureProjectWikiSubtasksExists, setLogger } from "../projectWikiHelpers"
 
 describe("projectWikiHelpers", () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
-		// 重置 logger
+		// Reset logger
 		setLogger(mockLogger)
 	})
 
 	describe("ensureProjectWikiSubtasksExists", () => {
-		it("应该在子任务目录不存在时创建子任务文件", async () => {
-			// Mock fs.stat 抛出错误表示目录不存在
+		it("should create subtask files when subtask directory does not exist", async () => {
+			// Mock fs.stat to throw error indicating directory does not exist
 			vi.mocked(fs.promises.stat).mockRejectedValue(new Error("Directory not found"))
 			vi.mocked(fs.promises.mkdir).mockResolvedValue(undefined)
 			vi.mocked(fs.promises.writeFile).mockResolvedValue(undefined)
@@ -129,17 +129,23 @@ describe("projectWikiHelpers", () => {
 
 			await ensureProjectWikiSubtasksExists()
 
-			expect(fs.promises.mkdir).toHaveBeenCalledWith("/home/user/.roo/commands/project-wiki-tasks/", {
-				recursive: true,
-			})
+			// Verify directory creation was called
+			expect(fs.promises.mkdir).toHaveBeenCalledWith(
+				"/home/user/.roo/commands/costrict-project-wiki-tasks/v1.0.5/",
+				{
+					recursive: true,
+				},
+			)
+			// Verify file writing was called (in generateSubtaskFiles function)
 			expect(fs.promises.writeFile).toHaveBeenCalled()
 			expect(mockLogger.info).toHaveBeenCalledWith(
 				"[projectWikiHelpers] Starting ensureProjectWikiSubtasksExists...",
 			)
+			expect(mockLogger.info).toHaveBeenCalledWith("[projectWikiHelpers] Setting up project-wiki subtasks...")
 		})
 
-		it("应该在子任务文件不完整时重新创建", async () => {
-			// Mock 子任务目录存在但文件不完整
+		it("should recreate when subtask files are incomplete", async () => {
+			// Mock subtask directory exists but files are incomplete
 			vi.mocked(fs.promises.stat).mockResolvedValue({
 				isDirectory: () => true,
 			} as any)
@@ -154,12 +160,21 @@ describe("projectWikiHelpers", () => {
 
 			await ensureProjectWikiSubtasksExists()
 
-			expect(fs.promises.rm).toHaveBeenCalled()
+			// Verify directory was deleted (because files are incomplete)
+			expect(fs.promises.rm).toHaveBeenCalledWith(
+				"/home/user/.roo/commands/costrict-project-wiki-tasks/v1.0.5/",
+				{
+					recursive: true,
+					force: true,
+				},
+			)
+			// Verify file writing was called (regenerate files)
 			expect(fs.promises.writeFile).toHaveBeenCalled()
+			expect(mockLogger.info).toHaveBeenCalledWith("[projectWikiHelpers] Setting up project-wiki subtasks...")
 		})
 
-		it("应该正确处理子任务文件完整的情况", async () => {
-			// Mock 子任务文件完整的情况
+		it("should handle the case when subtask files are complete", async () => {
+			// Mock the case when subtask files are complete
 			vi.mocked(fs.promises.stat).mockResolvedValue({
 				isDirectory: () => true,
 			} as any)
@@ -176,26 +191,28 @@ describe("projectWikiHelpers", () => {
 				"10_Index_Generation.md",
 				"11_Project_Rules_Generation.md",
 			] as any)
+			// Mock version file content to ensure version check passes
+			vi.mocked(fs.promises.readFile).mockResolvedValue(`version: "v1.0.5"`)
 			vi.mocked(fs.promises.mkdir).mockResolvedValue(undefined)
 			vi.mocked(fs.promises.writeFile).mockResolvedValue(undefined)
 			vi.mocked(fs.promises.rm).mockResolvedValue(undefined)
 
 			await ensureProjectWikiSubtasksExists()
 
-			// 验证启动日志被调用
+			// Verify startup log was called
 			expect(mockLogger.info).toHaveBeenCalledWith(
 				"[projectWikiHelpers] Starting ensureProjectWikiSubtasksExists...",
 			)
-			// 验证子任务已存在的日志被调用
+			// Verify subtask already exists log was called
 			expect(mockLogger.info).toHaveBeenCalledWith("[projectWikiHelpers] project-wiki subtasks already exist")
-			// 验证不需要重新生成文件
+			// Verify no need to regenerate files
 			expect(fs.promises.writeFile).not.toHaveBeenCalled()
 		})
 
-		it("应该处理错误情况", async () => {
+		it("should handle error cases", async () => {
 			const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {})
 
-			// Mock mkdir 抛出错误
+			// Mock mkdir to throw error
 			vi.mocked(fs.promises.mkdir).mockRejectedValue(new Error("Permission denied"))
 
 			await ensureProjectWikiSubtasksExists()
@@ -208,28 +225,28 @@ describe("projectWikiHelpers", () => {
 			consoleSpy.mockRestore()
 		})
 
-		it("应该正确处理部分子任务文件生成失败的情况", async () => {
-			// Mock 子任务目录不存在，需要创建
+		it("should handle partial subtask file generation failures", async () => {
+			// Mock subtask directory does not exist, needs to be created
 			vi.mocked(fs.promises.stat).mockRejectedValue(new Error("Directory not found"))
 			vi.mocked(fs.promises.mkdir).mockResolvedValue(undefined)
 			vi.mocked(fs.promises.writeFile)
-				.mockRejectedValueOnce(new Error("Write failed")) // 第一个子任务文件失败
-				.mockResolvedValue(undefined) // 其他文件成功
+				.mockRejectedValueOnce(new Error("Write failed")) // First subtask file fails
+				.mockResolvedValue(undefined) // Other files succeed
 			vi.mocked(fs.promises.rm).mockResolvedValue(undefined)
 
 			await ensureProjectWikiSubtasksExists()
 
-			// 验证启动和设置日志被调用
+			// Verify startup and setup logs were called
 			expect(mockLogger.info).toHaveBeenCalledWith(
 				"[projectWikiHelpers] Starting ensureProjectWikiSubtasksExists...",
 			)
 			expect(mockLogger.info).toHaveBeenCalledWith("[projectWikiHelpers] Setting up project-wiki subtasks...")
-			// 验证警告日志被调用（部分文件生成失败）
+			// Verify warning log was called (partial file generation failed)
 			expect(mockLogger.warn).toHaveBeenCalledWith(expect.stringContaining("Failed to generate"))
 		})
 
-		it("应该正确处理Promise.allSettled的混合结果", async () => {
-			// Mock 混合的成功和失败情况
+		it("should handle mixed results from Promise.allSettled", async () => {
+			// Mock mixed success and failure scenarios
 			vi.mocked(fs.promises.stat).mockRejectedValue(new Error("Directory not found"))
 			vi.mocked(fs.promises.mkdir).mockResolvedValue(undefined)
 			vi.mocked(fs.promises.writeFile).mockResolvedValue(undefined)
@@ -237,18 +254,21 @@ describe("projectWikiHelpers", () => {
 
 			await ensureProjectWikiSubtasksExists()
 
-			// 验证基本流程被执行
+			// Verify basic flow was executed
 			expect(mockLogger.info).toHaveBeenCalledWith(
 				"[projectWikiHelpers] Starting ensureProjectWikiSubtasksExists...",
 			)
-			expect(fs.promises.mkdir).toHaveBeenCalledWith("/home/user/.roo/commands/project-wiki-tasks/", {
-				recursive: true,
-			})
+			expect(fs.promises.mkdir).toHaveBeenCalledWith(
+				"/home/user/.roo/commands/costrict-project-wiki-tasks/v1.0.5/",
+				{
+					recursive: true,
+				},
+			)
 		})
 	})
 
 	describe("setLogger", () => {
-		it("应该正确设置logger实例", () => {
+		it("should set logger instance correctly", () => {
 			const testLogger = {
 				info: vi.fn(),
 				warn: vi.fn(),
@@ -257,7 +277,7 @@ describe("projectWikiHelpers", () => {
 				dispose: vi.fn(),
 			}
 
-			// 测试setLogger函数，我们已经从第113行导入了setLogger
+			// Test setLogger function, we have imported setLogger from line 113
 			expect(() => setLogger(testLogger)).not.toThrow()
 		})
 	})

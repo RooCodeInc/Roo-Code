@@ -5,6 +5,7 @@ let client: net.Socket | null = null
 const ipcPath = getIPCPath()
 const onTokensUpdateCallbacks: ((tokens: any) => void)[] = []
 const onLogoutCallbacks: ((sessionId: string) => void)[] = []
+const onCloseWindowCallbacks: ((sessionId: string) => void)[] = []
 let isConnecting = false
 let retryTimeout: NodeJS.Timeout | null = null
 
@@ -36,6 +37,9 @@ export function connectIPC() {
 			}
 			if (message.type === "zgsm-logout") {
 				onLogoutCallbacks.forEach((cb) => cb(message.payload))
+			}
+			if (message.type === "zgsm-close-window") {
+				onCloseWindowCallbacks.forEach((cb) => cb(message.payload))
 			}
 		} catch (error) {
 			console.error("Failed to parse IPC message:", error)
@@ -89,6 +93,18 @@ export function sendZgsmLogout(sessionId: string) {
 		console.warn("IPC client not connected, cannot send tokens.")
 	}
 }
+export function sendZgsmCloseWindow(sessionId: string) {
+	if (!client || client.destroyed) {
+		return
+	}
+
+	try {
+		const message = JSON.stringify({ type: "zgsm-close-window", payload: sessionId })
+		client.write(message)
+	} catch (error) {
+		console.error("Failed to send tokens over IPC:", error)
+	}
+}
 
 export function onZgsmLogout(callback: (sessionId: string) => void) {
 	onLogoutCallbacks.push(callback)
@@ -97,6 +113,18 @@ export function onZgsmLogout(callback: (sessionId: string) => void) {
 			const index = onLogoutCallbacks.indexOf(callback)
 			if (index > -1) {
 				onLogoutCallbacks.splice(index, 1)
+			}
+		},
+	}
+}
+
+export function onCloseWindow(callback: (sessionId: string) => void) {
+	onCloseWindowCallbacks.push(callback)
+	return {
+		dispose: () => {
+			const index = onCloseWindowCallbacks.indexOf(callback)
+			if (index > -1) {
+				onCloseWindowCallbacks.splice(index, 1)
 			}
 		},
 	}

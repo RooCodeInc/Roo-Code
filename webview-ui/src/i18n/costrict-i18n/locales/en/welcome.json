@@ -8,10 +8,10 @@
 	},
 	"chooseProvider": "To do its magic, Costrict needs an API key.",
 	"vibe": {
-		"description": "Lightweight conversational coding. Alternates between discussing requirements and generating code. Perfect for quick development and simple tasks."
+		"description": "Vibe coding alternates between clarifying requirements and generating code. It is ideal for rapid development and simple tasks, and empowers developers with strong prompt engineering skills to efficiently produce high-quality code."
 	},
 	"strict": {
-		"description": "Structured development methodology. Follows requirement → design → task → test. Uses test-driven development for self-validation and repair."
+		"description": "Strict coding workflow: clarify requirements → design → task decomposition → test, self-verify, self-repair. Ideal for complex tasks, strict coding employs a standard workflow to ensure the quality of the result delivered by AI is top-notch. High token consumption."
 	},
 	"developmentMode": "Development Mode",
 	"commonFeatures": "Common Features"

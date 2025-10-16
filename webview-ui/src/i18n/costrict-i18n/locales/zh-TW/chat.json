@@ -125,7 +125,8 @@
 		},
 		"testGuide": {
 			"title": "測試方案",
-			"description": "分析並生成項目測試方案"
+			"description": "根據項目代碼，分析並生成可執行的測試方案。",
+			"initPrompt": "生成當前項目的測試方案"
 		}
 	}
 }

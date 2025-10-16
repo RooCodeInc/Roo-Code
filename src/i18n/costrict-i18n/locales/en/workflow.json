@@ -1,0 +1,12 @@
+{
+	"actions": {
+		"update": "Update",
+		"requirements": "Sync to Design",
+		"design": "Sync to Tasks",
+		"run": "Run",
+		"runAll": "Run All Tasks",
+		"generateTest": "Generate Test Case",
+		"retry": "Retry",
+		"running": "Running..."
+	}
+}

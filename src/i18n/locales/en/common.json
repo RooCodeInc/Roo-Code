@@ -16,11 +16,14 @@
 	},
 	"confirmation": {
 		"reset_state": "Are you sure you want to reset all state and secret storage in the extension? This cannot be undone.",
+		"fixCodebase": "Fix codebase",
+		"reset_codebase": "Editor needs to be restarted after resetting Codebase",
 		"delete_config_profile": "Are you sure you want to delete this configuration profile?",
 		"delete_custom_mode_with_rules": "Are you sure you want to delete this {scope} mode?\n\nThis will also delete the associated rules folder at:\n{rulesFolderPath}"
 	},
 	"errors": {
 		"invalid_data_uri": "Invalid data URI format",
+		"codebase_startup_failed": "Codebase startup/upgrade failed, please restart editor and try again",
 		"error_copying_image": "Error copying image: {{errorMessage}}",
 		"error_opening_image": "Error opening image: {{error}}",
 		"error_saving_image": "Error saving image: {{errorMessage}}",

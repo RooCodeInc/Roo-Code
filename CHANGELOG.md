@@ -1,5 +1,19 @@
 # Costrict Change Log
 
+## [2.0.1]
+
+- Optimized performance
+- Optimized CodeReview
+- Add TestGuide agent
+- Refactored project wiki command
+- Optimized project wiki prompts
+- Added codebase fix functionality
+- Updated workflow prompts
+- Updated internationalization
+- Updated default model ID（GLM-4.5）
+- Increase context window size for ZGSM provider
+- Fix known issues
+
 ## [2.0.0]
 
 - Add workflow with requirements, design, tasks, and testing support

@@ -70,7 +70,7 @@ import { ZgsmCodebaseIndexManager, IndexSwitchRequest, IndexStatusInfo } from ".
 import { ErrorCodeManager } from "../costrict/error-code"
 import { writeCostrictAccessToken } from "../costrict/codebase-index/utils"
 import { workspaceEventMonitor } from "../costrict/codebase-index/workspace-event-monitor"
-import { fetchZgsmQuotaInfo } from "../../api/providers/fetchers/zgsm"
+import { fetchZgsmQuotaInfo, fetchZgsmInviteCode } from "../../api/providers/fetchers/zgsm"
 import { ensureProjectWikiSubtasksExists } from "../costrict/wiki/projectWikiHelpers"
 
 export const webviewMessageHandler = async (
@@ -557,9 +557,9 @@ export const webviewMessageHandler = async (
 			// agentically running promises in old instance don't affect our new
 			// task. This essentially creates a fresh slate for the new task.
 			try {
-				if (message.values?.checkProjectWiki) {
-					await ensureProjectWikiSubtasksExists()
-				}
+				// if (message.values?.checkProjectWiki) {
+				// 	await ensureProjectWikiSubtasksExists()
+				// }
 				await provider.createTask(message.text, message.images)
 				// Task created successfully - notify the UI to reset
 				await provider.postMessageToWebview({
@@ -811,6 +811,9 @@ export const webviewMessageHandler = async (
 			break
 		case "resetState":
 			await provider.resetState()
+			break
+		case "fixCodebase":
+			await provider.fixCodebase()
 			break
 		case "flushRouterModels":
 			const routerNameFlush: RouterName = toRouterName(message.text)
@@ -3452,6 +3455,22 @@ export const webviewMessageHandler = async (
 				type: "dismissedUpsells",
 				list: dismissedUpsells,
 			})
+			break
+		}
+		case "fetchZgsmInviteCode": {
+			const { apiConfiguration } = await provider.getState()
+
+			// zgsmQuotaInfo
+			const data = await fetchZgsmInviteCode(
+				apiConfiguration.zgsmBaseUrl || ZgsmAuthConfig.getInstance().getDefaultApiBaseUrl(),
+				apiConfiguration.zgsmAccessToken,
+			)
+			if (data) {
+				await provider.postMessageToWebview({
+					type: "zgsmInviteCode",
+					values: data,
+				})
+			}
 			break
 		}
 		case "fetchZgsmQuotaInfo": {

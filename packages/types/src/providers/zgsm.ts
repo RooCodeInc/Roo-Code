@@ -1,11 +1,11 @@
 import { ModelInfo } from "../model.js"
 
-export const zgsmDefaultModelId = "glm45-fp8"
+export const zgsmDefaultModelId = "GLM-4.5"
 
 export const zgsmModels = {
 	default: {
 		maxTokens: 8192,
-		contextWindow: 100_000,
+		contextWindow: 128_000,
 		supportsImages: false,
 		supportsComputerUse: false,
 		supportsPromptCache: true,

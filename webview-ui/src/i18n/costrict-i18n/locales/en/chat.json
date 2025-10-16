@@ -4,7 +4,7 @@
 	"instructions": {
 		"wantsToFetch": "Costrict wants to fetch detailed instructions to assist with the current task"
 	},
-	"about": "Strict AI coder for enterprises",
+	"about": "AI-Powered Strict Coding Assistant for Enterprises",
 	"error": "Costrict will automatically fix",
 	"text": {
 		"rooSaid": "Costrict said"
@@ -113,16 +113,17 @@
 			"description": "Automatically generate and run tests to ensure code reliability and stability"
 		},
 		"debug": {
-			"title": "Auto Debug",
-			"description": "Enter problem logs or fault descriptions, AI assists in locating the root cause and providing repair solutions."
+			"title": "Troubleshooting",
+			"description": "The AI looks at error logs and failure descriptions to help identify root causes and provide solutions."
 		},
 		"projectWiki": {
-			"title": "Project Wiki",
-			"description": "Large model generates project knowledge base and rules adapted for AI reading, helping AI understand business and improve code generation accuracy."
+			"title": "Project Document",
+			"description": "Reverse-engineer code to generate a project knowledge base and rules to help AI and humans understand information and formalize it. High token consumption."
 		},
 		"testGuide": {
-			"title": "Test Guide",
-			"description": "Analyze and generate project testing solutions"
+			"title": "Test Solution",
+			"description": "Generates executable test solutions based on analysis of project code.",
+			"initPrompt": "Generate test solution for the current project"
 		}
 	}
 }

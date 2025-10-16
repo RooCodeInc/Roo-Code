@@ -87,6 +87,7 @@ export interface ReviewIssue {
 	created_at: string
 	/** Update time (ISO 8601 format) */
 	updated_at: string
+	fix_code: string
 }
 
 export enum TaskStatus {

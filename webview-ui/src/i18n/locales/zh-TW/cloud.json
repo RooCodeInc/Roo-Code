@@ -29,7 +29,8 @@
 	"quota": {
 		"totalQuota": "總配額",
 		"usedQuota": "已使用",
-		"usageRate": "配額用量"
+		"usageRate": "配額用量",
+		"getMoreQuota": "獲取更多配額"
 	},
 	"upsell": {
 		"autoApprovePowerUser": "給 Roo 一點獨立性？使用 Roo Code Cloud 隨時隨地控制它。<learnMoreLink>了解更多</learnMoreLink>。",

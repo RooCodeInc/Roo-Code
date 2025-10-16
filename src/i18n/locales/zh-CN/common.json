@@ -16,11 +16,14 @@
 	},
 	"confirmation": {
 		"reset_state": "您确定要重置扩展中的所有状态和密钥存储吗？此操作无法撤消。",
+		"fixCodebase": "修复Codebase",
+		"reset_codebase": "重置 Codebase 后需要重启编辑器",
 		"delete_config_profile": "您确定要删除此配置文件吗？",
 		"delete_custom_mode_with_rules": "您确定要删除此 {scope} 模式吗？\n\n这也将删除位于以下位置的关联规则文件夹：\n{rulesFolderPath}"
 	},
 	"errors": {
 		"invalid_mcp_config": "项目MCP配置格式无效",
+		"codebase_startup_failed": "Codebase 启动/升级失败，请重启编辑器后重试",
 		"invalid_mcp_settings_format": "MCP设置JSON格式无效。请确保您的设置遵循正确的JSON格式。",
 		"invalid_mcp_settings_syntax": "MCP设置JSON格式无效。请检查您的设置文件是否有语法错误。",
 		"invalid_mcp_settings_validation": "MCP设置格式无效：{{errorMessages}}",

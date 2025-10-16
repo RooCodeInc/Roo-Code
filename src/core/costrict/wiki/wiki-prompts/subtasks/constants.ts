@@ -1,6 +1,7 @@
 import * as os from "os"
 import * as path from "path"
 
+export const PROJECT_WIKI_VERSION = "v1.0.5"
 export const WIKI_OUTPUT_DIR = path.join(".cospec", "wiki") + path.sep
 export const GENERAL_RULES_OUTPUT_DIR = path.join(".roo", "rules") + path.sep
 
@@ -25,7 +26,8 @@ export function formatError(error: unknown): string {
 	return String(error)
 }
 
-export const subtaskDir = path.join(getGlobalCommandsDir(), "project-wiki-tasks") + path.sep
+export const subtaskDir =
+	path.join(getGlobalCommandsDir(), "costrict-project-wiki-tasks", PROJECT_WIKI_VERSION) + path.sep
 
 export const deepAnalyzeThreshold = 10
 

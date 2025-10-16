@@ -875,6 +875,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			}
 		}
 
+		// No need to ask about tool calls in review mode; this is a temporary measure and needs to be removed later.
+		if (this._taskMode === "review" && type === "tool") {
+			this.approveAsk()
+		}
+
 		// Wait for askResponse to be set.
 		await pWaitFor(() => this.askResponse !== undefined || this.lastMessageTs !== askTs, { interval: 100 })
 
@@ -2022,7 +2027,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						}
 
 						if (this.abort) {
-							console.log(`aborting stream, this.abandoned = ${this.abandoned}`)
 							this?.api?.cancelChat?.(this.abortReason)
 
 							if (!this.abandoned) {
@@ -2560,6 +2564,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			alwaysApproveResubmit,
 			requestDelaySeconds,
 			mode,
+			zgsmCodeMode,
 			autoCondenseContext = true,
 			autoCondenseContextPercent = 100,
 			profileThresholds = {},
@@ -2719,6 +2724,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		const metadata: ApiHandlerCreateMessageMetadata = {
 			mode: mode,
+			zgsmCodeMode,
 			zgsmWorkflowMode: this.zgsmWorkflowMode,
 			rooTaskMode: this?.rootTask?._taskMode,
 			parentTaskMode: this?.parentTask?._taskMode,

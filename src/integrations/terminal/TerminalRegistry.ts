@@ -48,23 +48,43 @@ export class TerminalRegistry {
 		try {
 			const startDisposable = vscode.window.onDidStartTerminalShellExecution?.(
 				async (e: vscode.TerminalShellExecutionStartEvent) => {
-					// Get a handle to the stream as early as possible:
-					const stream = e.execution.read()
-					const terminal = this.getTerminalByVSCETerminal(e.terminal)
+					try {
+						// API兼容性检查
+						if (!vscode.window.onDidStartTerminalShellExecution) {
+							return
+						}
 
-					console.info("[onDidStartTerminalShellExecution]", {
-						command: e.execution?.commandLine?.value,
-						terminalId: terminal?.id,
-					})
+						// 增强验证
+						if (!e?.execution || !e?.terminal || e.terminal.exitStatus !== undefined) {
+							return
+						}
 
-					if (terminal) {
-						terminal.setActiveStream(stream)
-						terminal.busy = true // Mark terminal as busy when shell execution starts
-					} else {
-						console.error(
-							"[onDidStartTerminalShellExecution] Shell execution started, but not from a Costrict-registered terminal:",
-							e,
-						)
+						// 安全读取流
+						let stream
+						try {
+							stream = e.execution.read()
+							if (!stream) return
+						} catch (streamError) {
+							console.error("[TerminalRegistry] Stream read failed:", streamError)
+							return
+						}
+
+						// 安全获取终端
+						const terminal = this.getTerminalByVSCETerminal(e.terminal)
+						if (!terminal || terminal.isClosed()) {
+							return
+						}
+
+						const commandLine = e.execution?.commandLine?.value || "<unknown>"
+
+						try {
+							terminal.setActiveStream(stream)
+							terminal.busy = true
+						} catch (terminalError) {
+							console.error("[TerminalRegistry] Set stream failed:", terminalError)
+						}
+					} catch (error) {
+						console.error("[TerminalRegistry] Unexpected error:", error)
 					}
 				},
 			)
@@ -311,14 +331,27 @@ export class TerminalRegistry {
 	 * @returns The Terminal object, or undefined if not found
 	 */
 	private static getTerminalByVSCETerminal(vsceTerminal: vscode.Terminal): RooTerminal | undefined {
-		const found = this.terminals.find((t) => t instanceof Terminal && t.terminal === vsceTerminal)
-
-		if (found?.isClosed()) {
-			this.removeTerminal(found.id)
+		if (!vsceTerminal) {
 			return undefined
 		}
 
-		return found
+		try {
+			const found = this.terminals.find((t) => t instanceof Terminal && t.terminal === vsceTerminal)
+
+			if (!found) {
+				return undefined
+			}
+
+			if (found.isClosed()) {
+				this.removeTerminal(found.id)
+				return undefined
+			}
+
+			return found
+		} catch (error) {
+			console.error("[TerminalRegistry] Error in getTerminalByVSCETerminal:", error)
+			return undefined
+		}
 	}
 
 	private static removeTerminal(id: number) {

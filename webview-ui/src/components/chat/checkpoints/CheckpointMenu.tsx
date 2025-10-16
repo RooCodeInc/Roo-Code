@@ -98,7 +98,9 @@ export const CheckpointMenu = ({
 								</div>
 							</div>
 						)}
-						{!isCurrent && (
+						{isCurrent ? (
+							t("chat:checkpoint.menu.alreadyCurrent")
+						) : (
 							<div className="flex flex-col gap-1 group hover:text-foreground">
 								<div className="flex flex-col gap-1 group hover:text-foreground">
 									{!isConfirming ? (

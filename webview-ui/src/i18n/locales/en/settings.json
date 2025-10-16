@@ -828,7 +828,8 @@
 		"settings": {
 			"import": "Import",
 			"export": "Export",
-			"reset": "Reset"
+			"reset": "Reset",
+			"fixCodebase": "Fix codebase"
 		}
 	},
 	"thinkingBudget": {

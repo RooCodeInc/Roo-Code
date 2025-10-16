@@ -218,9 +218,10 @@ export interface WebviewMessage {
 		| "zgsmLogout"
 		| "zgsmAbort"
 		| "useZgsmCustomConfig"
-		| "zgsmCodebaseIndexEnabled"
 		| "showZgsmCodebaseDisableConfirmDialog"
 		| "fetchZgsmQuotaInfo"
+		| "fetchZgsmInviteCode"
+		| "fixCodebase"
 		// zgsm
 		| "profileThresholds"
 		| "shareTaskSuccess"

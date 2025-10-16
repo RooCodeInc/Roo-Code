@@ -1,0 +1,12 @@
+{
+	"actions": {
+		"update": "更新",
+		"requirements": "同步變更至設計",
+		"design": "同步變更至任務",
+		"run": "運行",
+		"runAll": "運行所有任務",
+		"generateTest": "生成測試用例",
+		"retry": "重試",
+		"running": "運行中..."
+	}
+}

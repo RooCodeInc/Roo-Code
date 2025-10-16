@@ -3,13 +3,14 @@ import * as vscode from "vscode"
 import { ClineProvider } from "../../webview/ClineProvider"
 import { getCommand } from "../../../utils/commands"
 import { toRelativePath } from "../../../utils/path"
-import { CostrictCommandId } from "@roo-code/types"
-import { IssueStatus, ReviewTarget, ReviewTargetType } from "../../../shared/codeReview"
+import { CostrictCommandId, RooCodeEventName } from "@roo-code/types"
+import { IssueStatus, ReviewTarget, ReviewTargetType, TaskStatus } from "../../../shared/codeReview"
 import { getVisibleProviderOrLog } from "../../../activate/registerCommands"
 
 import { CodeReviewService } from "./codeReviewService"
 import { CommentService } from "../../../integrations/comment"
 import type { ReviewComment } from "./reviewComment"
+import { supportPrompt } from "../../../shared/support-prompt"
 export function initCodeReview(
 	context: vscode.ExtensionContext,
 	provider: ClineProvider,
@@ -39,10 +40,18 @@ export function initCodeReview(
 			const range = editor.selection
 			const cwd = visibleProvider.cwd.toPosix()
 			reviewInstance.setProvider(visibleProvider)
-			reviewInstance.startReview([
+			const filePath = toRelativePath(fileUri.fsPath.toPosix(), cwd)
+			const params = {
+				filePath,
+				endLine: range.end.line + 1 + "",
+				startLine: range.start.line + 1 + "",
+				selectedText: editor.document.getText(range),
+			}
+			const prompt = supportPrompt.create("ADD_TO_CONTEXT", params)
+			reviewInstance.createReviewTask(prompt, [
 				{
 					type: ReviewTargetType.CODE,
-					file_path: toRelativePath(fileUri.fsPath.toPosix(), cwd),
+					file_path: filePath,
 					line_range: [range.start.line, range.end.line],
 				},
 			])

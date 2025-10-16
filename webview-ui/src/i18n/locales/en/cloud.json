@@ -29,7 +29,8 @@
 	"quota": {
 		"totalQuota": "Total Quota",
 		"usedQuota": "Used",
-		"usageRate": "Usage Rate"
+		"usageRate": "Usage Rate",
+		"getMoreQuota": "Get More Quota"
 	},
 	"upsell": {
 		"autoApprovePowerUser": "Giving Roo some independence? Control it from anywhere with Roo Code Cloud. <learnMoreLink>Learn more</learnMoreLink>.",

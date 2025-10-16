@@ -122,7 +122,7 @@ async function generateSubtaskFiles(subTaskDir: string): Promise<void> {
 		const subTaskFiles = Object.keys(SUBTASK_TEMPLATES)
 		const generateResults = await Promise.allSettled(
 			subTaskFiles.map(async (file) => {
-				const template = SUBTASK_TEMPLATES[file as keyof typeof SUBTASK_TEMPLATES]
+				const template = SUBTASK_TEMPLATES[file as keyof typeof SUBTASK_TEMPLATES]("${workspaceFolder}/")
 				if (!template) {
 					throw new Error(`Template not found for file: ${file}`)
 				}

@@ -108,7 +108,8 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 			metadata?.zgsmWorkflowMode ||
 			metadata?.mode === "strict" ||
 			metadata?.rooTaskMode === "strict" ||
-			metadata?.parentTaskMode === "strict"
+			metadata?.parentTaskMode === "strict" ||
+			metadata?.zgsmCodeMode === "strict"
 		this.apiResponseRenderModeInfo = getApiResponseRenderMode()
 		// 1. Cache calculation results and configuration
 		const { info: modelInfo, reasoning } = this.getModel()
@@ -503,55 +504,51 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 	}
 
 	async completePrompt(prompt: string, systemPrompt?: string, metadata?: any): Promise<string> {
+		const isAzureAiInference = this._isAzureAiInference(this.baseURL)
+		await this.fetchModel()
+		const model = this.getModel()
+		const modelInfo = model?.info
+		const requestId = uuidv7()
+		const cachedClientId = getClientId()
+		const cachedWorkspacePath = getWorkspacePath()
+		const messages = [{ role: "user", content: prompt }] as any[]
+		if (systemPrompt) {
+			messages.unshift({ role: "system", content: systemPrompt })
+		}
+		const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {
+			model: metadata?.modelId || model.id,
+			messages: messages,
+			temperature: 0.9,
+			max_tokens: metadata?.maxLength ?? 200,
+		}
+
+		Object.assign(requestOptions, {
+			extra_body: {
+				prompt_mode: "raw",
+			},
+		})
+
+		// Add max_tokens if needed
+		this.addMaxTokensIfNeeded(requestOptions, modelInfo)
 		try {
-			const isAzureAiInference = this._isAzureAiInference(this.baseURL)
-			await this.fetchModel()
-			const model = this.getModel()
-			const modelInfo = model?.info
-			const requestId = uuidv7()
-			const cachedClientId = getClientId()
-			const cachedWorkspacePath = getWorkspacePath()
-			const messages = [{ role: "user", content: prompt }] as any[]
-			if (systemPrompt) {
-				messages.unshift({ role: "system", content: systemPrompt })
-			}
-			const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {
-				model: metadata?.modelId || model.id,
-				messages: messages,
-				temperature: 0.9,
-				max_tokens: metadata?.maxLength ?? 200,
-			}
-
-			// Add max_tokens if needed
-			this.addMaxTokensIfNeeded(requestOptions, modelInfo)
-			let response
-			try {
-				response = await this.client.chat.completions.create(
-					requestOptions,
-					Object.assign(isAzureAiInference ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {}, {
-						headers: {
-							...this.buildHeaders(
-								{ language: metadata.language, taskId: requestId },
-								requestId,
-								cachedClientId,
-								cachedWorkspacePath,
-								"user",
-							),
-						},
-						timeout: 20000,
-					}),
-				)
-			} catch (error) {
-				throw handleOpenAIError(error, this.providerName)
-			}
-
-			return response.choices[0]?.message.content || ""
+			const response = await this.client.chat.completions.create(
+				requestOptions,
+				Object.assign(isAzureAiInference ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {}, {
+					headers: {
+						...this.buildHeaders(
+							{ language: metadata.language, taskId: requestId },
+							requestId,
+							cachedClientId,
+							cachedWorkspacePath,
+							"user",
+						),
+					},
+					timeout: 20000,
+				}),
+			)
+			return response.choices[0]?.message?.content || ""
 		} catch (error) {
-			if (error instanceof Error) {
-				throw new Error(`${this.providerName} completion error: ${error.message}`)
-			}
-
-			throw error
+			throw handleOpenAIError(error, this.providerName)
 		}
 	}
 

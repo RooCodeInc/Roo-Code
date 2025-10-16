@@ -53,6 +53,16 @@ vi.mock("vscode", () => ({
 		Editing: 0,
 		Preview: 1,
 	},
+	WorkspaceEdit: vi.fn().mockImplementation(() => ({
+		replace: vi.fn(),
+		delete: vi.fn(),
+		insert: vi.fn(),
+		set: vi.fn(),
+		entries: vi.fn().mockReturnValue([]),
+		get: vi.fn().mockReturnValue(new Map()),
+		has: vi.fn().mockReturnValue(false),
+		size: 0,
+	})),
 	window: {
 		createOutputChannel: vi.fn().mockReturnValue({
 			appendLine: vi.fn(),
@@ -66,6 +76,7 @@ vi.mock("vscode", () => ({
 			onDidDelete: vi.fn().mockReturnValue({ dispose: vi.fn() }),
 			dispose: vi.fn(),
 		}),
+		applyEdit: vi.fn().mockResolvedValue({ succeeded: true }),
 	},
 	RelativePattern: vi.fn().mockImplementation((base, pattern) => ({ base, pattern })),
 	env: {
@@ -119,6 +130,13 @@ const mockClineProvider = {
 		},
 		language: "zh-CN",
 	}),
+	removeClineFromStack: vi.fn().mockResolvedValue(undefined),
+	refreshWorkspace: vi.fn().mockResolvedValue(undefined),
+	createTask: vi.fn().mockReturnValue({
+		taskId: "test-task-id",
+		on: vi.fn(),
+		clineMessages: [],
+	}),
 } as unknown as ClineProvider
 
 // Test data
@@ -136,6 +154,7 @@ const mockIssue: ReviewIssue = {
 	confidence: 0.8,
 	created_at: "2024-01-01T00:00:00Z",
 	updated_at: "2024-01-01T00:00:00Z",
+	fix_code: "",
 }
 
 describe("CodeReviewService", () => {
@@ -267,9 +286,9 @@ describe("CodeReviewService", () => {
 			await expect(service.startReviewTask([])).rejects.toThrow("At least one review target is required")
 		})
 
-		it("should not throw error for abortCurrentTask when no task is running", async () => {
+		it("should not throw error for abortCurrentTask when no task is running", () => {
 			// Should not throw error when no current task
-			await expect(service.abortCurrentTask()).resolves.not.toThrow()
+			expect(() => service.abortCurrentTask()).not.toThrow()
 		})
 
 		it("should throw error for setActiveIssue when issue not found", async () => {
@@ -393,7 +412,7 @@ describe("CodeReviewService", () => {
 			await service.startReviewTask([mockReviewTarget])
 
 			// Abort task
-			await service.abortCurrentTask()
+			service.abortCurrentTask()
 
 			// Verify cleanup
 			expect(service.getCurrentTask()).toBeNull()
@@ -427,10 +446,6 @@ describe("CodeReviewService", () => {
 				message: "Success",
 				data: { review_task_id: "test-task" },
 			})
-			mockCancelReviewTaskAPI.mockResolvedValue({
-				success: true,
-				message: "Task canceled successfully",
-			})
 			await service.startReviewTask([mockReviewTarget])
 
 			// Verify task is running
@@ -440,14 +455,9 @@ describe("CodeReviewService", () => {
 			// Cancel task
 			await service.cancelCurrentTask()
 
-			// Verify cancelReviewTaskAPI was called
-			expect(mockCancelReviewTaskAPI).toHaveBeenCalledWith(
-				{
-					client_id: expect.any(String),
-					workspace: "/test/workspace",
-				},
-				expect.any(Object),
-			)
+			// Verify provider methods were called
+			expect(mockClineProvider.removeClineFromStack).toHaveBeenCalled()
+			expect(mockClineProvider.refreshWorkspace).toHaveBeenCalled()
 
 			// Verify task is marked as completed
 			expect(service.getCurrentTask()?.isCompleted).toBe(true)
@@ -473,10 +483,6 @@ describe("CodeReviewService", () => {
 				code: 200,
 				message: "Success",
 				data: { review_task_id: "test-task" },
-			})
-			mockCancelReviewTaskAPI.mockResolvedValue({
-				success: true,
-				message: "Task canceled successfully",
 			})
 
 			// Setup polling response
@@ -523,10 +529,6 @@ describe("CodeReviewService", () => {
 				message: "Success",
 				data: { review_task_id: "test-task" },
 			})
-			mockCancelReviewTaskAPI.mockResolvedValue({
-				success: true,
-				message: "Task canceled successfully",
-			})
 			mockGetReviewResultsAPI.mockResolvedValue({
 				code: 200,
 				message: "Success",
@@ -566,10 +568,6 @@ describe("CodeReviewService", () => {
 				code: 200,
 				message: "Success",
 				data: { review_task_id: "test-task" },
-			})
-			mockCancelReviewTaskAPI.mockResolvedValue({
-				success: true,
-				message: "Task canceled successfully",
 			})
 
 			// Setup polling response with progress
@@ -617,32 +615,6 @@ describe("CodeReviewService", () => {
 						}),
 					}),
 				}),
-			)
-		})
-
-		it("should handle API error when canceling task", async () => {
-			// Setup running task
-			mockCreateReviewTaskAPI.mockResolvedValue({
-				code: 200,
-				message: "Success",
-				data: { review_task_id: "test-task" },
-			})
-			mockCancelReviewTaskAPI.mockRejectedValue(new Error("Cancel API Error"))
-			await service.startReviewTask([mockReviewTarget])
-
-			// Verify task is running
-			expect(service.isTaskRunning()).toBe(true)
-
-			// Cancel task should throw error
-			await expect(service.cancelCurrentTask()).rejects.toThrow("Cancel API Error")
-
-			// Verify cancelReviewTaskAPI was called
-			expect(mockCancelReviewTaskAPI).toHaveBeenCalledWith(
-				{
-					client_id: expect.any(String),
-					workspace: "/test/workspace",
-				},
-				expect.any(Object),
 			)
 		})
 	})
@@ -712,7 +684,7 @@ describe("CodeReviewService", () => {
 			expect(service.getAllCachedIssues()).toHaveLength(2)
 
 			// Clear cache through task abort
-			await service.abortCurrentTask()
+			service.abortCurrentTask()
 
 			// Verify cache is cleared
 			expect(service.getAllCachedIssues()).toHaveLength(0)
@@ -728,7 +700,7 @@ describe("CodeReviewService", () => {
 			expect(service.getCurrentActiveIssueId()).toBe(mockIssue.id)
 
 			// Clear through abort
-			await service.abortCurrentTask()
+			service.abortCurrentTask()
 
 			// Verify active issue is cleared
 			expect(service.getCurrentActiveIssueId()).toBeNull()
@@ -786,7 +758,7 @@ describe("Polling Mechanism", () => {
 		expect(mockGetReviewResultsAPI).toHaveBeenCalledWith("test-task", 0, expect.any(String), expect.any(Object))
 
 		// Abort task
-		await service.abortCurrentTask()
+		service.abortCurrentTask()
 
 		// Reset mock to track new calls
 		mockGetReviewResultsAPI.mockClear()
@@ -992,7 +964,7 @@ describe("Polling Mechanism", () => {
 		mockGetReviewResultsAPI.mockClear()
 
 		// Abort task
-		await service.abortCurrentTask()
+		service.abortCurrentTask()
 
 		// Advance time
 		vi.runOnlyPendingTimers()
@@ -1121,6 +1093,7 @@ describe("CodeReviewService - setActiveIssue and updateIssueStatus", () => {
 		confidence: 0.9,
 		created_at: "2024-01-01T00:00:00Z",
 		updated_at: "2024-01-01T00:00:00Z",
+		fix_code: "",
 	}
 
 	const mockIssue2: ReviewIssue = {
@@ -1136,6 +1109,7 @@ describe("CodeReviewService - setActiveIssue and updateIssueStatus", () => {
 		confidence: 0.8,
 		created_at: "2024-01-01T01:00:00Z",
 		updated_at: "2024-01-01T01:00:00Z",
+		fix_code: "",
 	}
 
 	const mockTask = {
@@ -1171,6 +1145,13 @@ describe("CodeReviewService - setActiveIssue and updateIssueStatus", () => {
 					zgsmBaseUrl: "https://zgsm.sangfor.com",
 				},
 				language: "zh-CN",
+			}),
+			removeClineFromStack: vi.fn().mockResolvedValue(undefined),
+			refreshWorkspace: vi.fn().mockResolvedValue(undefined),
+			createTask: vi.fn().mockReturnValue({
+				taskId: "test-task-id",
+				on: vi.fn(),
+				clineMessages: [],
 			}),
 		} as unknown as ClineProvider
 
@@ -1221,7 +1202,14 @@ describe("CodeReviewService - setActiveIssue and updateIssueStatus", () => {
 
 		it("should auto-ignore current active issue when setting different issue", async () => {
 			// Mock updateIssueStatusAPI to succeed
-			mockUpdateIssueStatusAPI.mockResolvedValue({ success: true })
+			mockUpdateIssueStatusAPI.mockResolvedValue({
+				success: true,
+				code: "0",
+				message: "",
+				data: {
+					slide_line: 0,
+				},
+			})
 
 			// Set up task abort controller
 			;(codeReviewService as any).taskAbortController = new AbortController()
@@ -1278,7 +1266,14 @@ describe("CodeReviewService - setActiveIssue and updateIssueStatus", () => {
 
 		it("should not auto-ignore current issue when its status is not INITIAL", async () => {
 			// Mock updateIssueStatusAPI to succeed
-			mockUpdateIssueStatusAPI.mockResolvedValue({ success: true })
+			mockUpdateIssueStatusAPI.mockResolvedValue({
+				success: true,
+				code: "0",
+				message: "",
+				data: {
+					slide_line: 0,
+				},
+			})
 
 			// Set first issue as active
 			await codeReviewService.setActiveIssue("issue-1")
@@ -1311,7 +1306,14 @@ describe("CodeReviewService - setActiveIssue and updateIssueStatus", () => {
 
 		it("should not auto-ignore current issue when its status is REJECT", async () => {
 			// Mock updateIssueStatusAPI to succeed for initial setup
-			mockUpdateIssueStatusAPI.mockResolvedValue({ success: true })
+			mockUpdateIssueStatusAPI.mockResolvedValue({
+				success: true,
+				code: "0",
+				message: "",
+				data: {
+					slide_line: 0,
+				},
+			})
 
 			// Set first issue as active and update to REJECT status
 			await codeReviewService.setActiveIssue("issue-1")
@@ -1339,7 +1341,14 @@ describe("CodeReviewService - setActiveIssue and updateIssueStatus", () => {
 
 		it("should not auto-ignore current issue when its status is already IGNORE", async () => {
 			// Mock updateIssueStatusAPI to succeed for initial setup
-			mockUpdateIssueStatusAPI.mockResolvedValue({ success: true })
+			mockUpdateIssueStatusAPI.mockResolvedValue({
+				success: true,
+				code: "0",
+				message: "",
+				data: {
+					slide_line: 0,
+				},
+			})
 
 			// Set first issue as active and update to IGNORE status
 			await codeReviewService.setActiveIssue("issue-1")
@@ -1397,7 +1406,14 @@ describe("CodeReviewService - setActiveIssue and updateIssueStatus", () => {
 		})
 
 		it("should successfully update issue status to ACCEPT", async () => {
-			mockUpdateIssueStatusAPI.mockResolvedValue({ success: true })
+			mockUpdateIssueStatusAPI.mockResolvedValue({
+				success: true,
+				code: "0",
+				message: "",
+				data: {
+					slide_line: 0,
+				},
+			})
 
 			await codeReviewService.updateIssueStatus("issue-1", IssueStatus.ACCEPT)
 
@@ -1433,7 +1449,14 @@ describe("CodeReviewService - setActiveIssue and updateIssueStatus", () => {
 		})
 
 		it("should successfully update issue status to IGNORE", async () => {
-			mockUpdateIssueStatusAPI.mockResolvedValue({ success: true })
+			mockUpdateIssueStatusAPI.mockResolvedValue({
+				success: true,
+				code: "0",
+				message: "",
+				data: {
+					slide_line: 0,
+				},
+			})
 
 			await codeReviewService.updateIssueStatus("issue-1", IssueStatus.IGNORE)
 
@@ -1457,7 +1480,14 @@ describe("CodeReviewService - setActiveIssue and updateIssueStatus", () => {
 		})
 
 		it("should successfully update issue status to REJECT", async () => {
-			mockUpdateIssueStatusAPI.mockResolvedValue({ success: true })
+			mockUpdateIssueStatusAPI.mockResolvedValue({
+				success: true,
+				code: "0",
+				message: "",
+				data: {
+					slide_line: 0,
+				},
+			})
 
 			await codeReviewService.updateIssueStatus("issue-1", IssueStatus.REJECT)
 
@@ -1481,7 +1511,14 @@ describe("CodeReviewService - setActiveIssue and updateIssueStatus", () => {
 		})
 
 		it("should collapse comment thread when updating status from INITIAL and issue is active", async () => {
-			mockUpdateIssueStatusAPI.mockResolvedValue({ success: true })
+			mockUpdateIssueStatusAPI.mockResolvedValue({
+				success: true,
+				code: "0",
+				message: "",
+				data: {
+					slide_line: 0,
+				},
+			})
 
 			// Set issue as active first
 			await codeReviewService.setActiveIssue("issue-1")
@@ -1494,7 +1531,14 @@ describe("CodeReviewService - setActiveIssue and updateIssueStatus", () => {
 		})
 
 		it("should collapse comment thread when updating status to INITIAL", async () => {
-			mockUpdateIssueStatusAPI.mockResolvedValue({ success: true })
+			mockUpdateIssueStatusAPI.mockResolvedValue({
+				success: true,
+				code: "0",
+				message: "",
+				data: {
+					slide_line: 0,
+				},
+			})
 
 			// Set issue as active first
 			await codeReviewService.setActiveIssue("issue-1")
@@ -1507,7 +1551,14 @@ describe("CodeReviewService - setActiveIssue and updateIssueStatus", () => {
 		})
 
 		it("should collapse comment thread for non-active issue", async () => {
-			mockUpdateIssueStatusAPI.mockResolvedValue({ success: true })
+			mockUpdateIssueStatusAPI.mockResolvedValue({
+				success: true,
+				code: "0",
+				message: "",
+				data: {
+					slide_line: 0,
+				},
+			})
 
 			// Set different issue as active
 			await codeReviewService.setActiveIssue("issue-2")
@@ -1543,6 +1594,10 @@ describe("CodeReviewService - setActiveIssue and updateIssueStatus", () => {
 			mockUpdateIssueStatusAPI.mockResolvedValue({
 				success: false,
 				message: "Server error",
+				code: "-1",
+				data: {
+					slide_line: 0,
+				},
 			})
 
 			await expect(codeReviewService.updateIssueStatus("issue-1", IssueStatus.ACCEPT)).rejects.toThrow(
@@ -1572,7 +1627,14 @@ describe("CodeReviewService - setActiveIssue and updateIssueStatus", () => {
 		})
 
 		it("should work without CommentService", async () => {
-			mockUpdateIssueStatusAPI.mockResolvedValue({ success: true })
+			mockUpdateIssueStatusAPI.mockResolvedValue({
+				success: true,
+				code: "0",
+				message: "",
+				data: {
+					slide_line: 0,
+				},
+			})
 			codeReviewService.setCommentService(null)
 
 			await codeReviewService.updateIssueStatus("issue-1", IssueStatus.ACCEPT)
@@ -1596,7 +1658,14 @@ describe("CodeReviewService - setActiveIssue and updateIssueStatus", () => {
 		})
 
 		it("should pass abort signal from task controller", async () => {
-			mockUpdateIssueStatusAPI.mockResolvedValue({ success: true })
+			mockUpdateIssueStatusAPI.mockResolvedValue({
+				success: true,
+				code: "0",
+				message: "",
+				data: {
+					slide_line: 0,
+				},
+			})
 			const mockAbortController = new AbortController()
 			;(codeReviewService as any).taskAbortController = mockAbortController
 
@@ -1619,7 +1688,14 @@ describe("CodeReviewService - setActiveIssue and updateIssueStatus", () => {
 		})
 
 		it("should pass undefined signal when no task controller", async () => {
-			mockUpdateIssueStatusAPI.mockResolvedValue({ success: true })
+			mockUpdateIssueStatusAPI.mockResolvedValue({
+				success: true,
+				code: "0",
+				message: "",
+				data: {
+					slide_line: 0,
+				},
+			})
 			;(codeReviewService as any).taskAbortController = null
 
 			await codeReviewService.updateIssueStatus("issue-1", IssueStatus.ACCEPT)
@@ -1643,7 +1719,14 @@ describe("CodeReviewService - setActiveIssue and updateIssueStatus", () => {
 
 	describe("Integration tests", () => {
 		it("should handle complete workflow: set active issue -> update status -> set new active issue", async () => {
-			mockUpdateIssueStatusAPI.mockResolvedValue({ success: true })
+			mockUpdateIssueStatusAPI.mockResolvedValue({
+				success: true,
+				code: "0",
+				message: "",
+				data: {
+					slide_line: 0,
+				},
+			})
 
 			// Set first issue as active
 			await codeReviewService.setActiveIssue("issue-1")
@@ -1664,7 +1747,14 @@ describe("CodeReviewService - setActiveIssue and updateIssueStatus", () => {
 		})
 
 		it("should handle switching active issues with auto-ignore", async () => {
-			mockUpdateIssueStatusAPI.mockResolvedValue({ success: true })
+			mockUpdateIssueStatusAPI.mockResolvedValue({
+				success: true,
+				code: "0",
+				message: "",
+				data: {
+					slide_line: 0,
+				},
+			})
 
 			// Set first issue as active
 			await codeReviewService.setActiveIssue("issue-1")

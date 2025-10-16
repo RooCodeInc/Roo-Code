@@ -12,7 +12,7 @@ import { truncateOutput } from "../../../integrations/misc/extract-text"
 
 const execAsync = promisify(exec)
 
-const GIT_OUTPUT_CHAR_LIMIT = 30000
+const GIT_OUTPUT_CHAR_LIMIT = 40000
 /**
  * Commit message generator service
  */
@@ -152,16 +152,9 @@ export class CommitMessageGenerator {
 			throw new Error(t("commit:commit.error.noChanges"))
 		}
 
-		// Try AI generation first, fallback to rule-based if AI fails
-		try {
-			const aiSuggestion = await this.generateCommitMessageWithAI(diffInfo, options)
-			return aiSuggestion
-		} catch (error) {
-			this.provider?.log("AI generation failed, falling back to rule-based: " + error?.message)
-			// Fallback to rule-based analysis
-			const suggestion = this.analyzeChanges(diffInfo, options)
-			return suggestion
-		}
+		const aiSuggestion = await this.generateCommitMessageWithAI(diffInfo, options)
+		console.log("commit meta:" + JSON.stringify(aiSuggestion))
+		return aiSuggestion
 	}
 
 	/**
@@ -452,35 +445,6 @@ export class CommitMessageGenerator {
 	}
 
 	/**
-	 * Analyze git changes and generate commit message
-	 */
-	private analyzeChanges(diffInfo: GitDiffInfo, options: CommitGenerationOptions): CommitMessageSuggestion {
-		const { useConventionalCommits = true, includeFileChanges = true, maxLength } = options
-
-		// Determine commit type based on file changes
-		const commitType = this.determineCommitType(diffInfo)
-
-		// Generate subject line
-		let subject = this.generateSubjectLine(diffInfo, commitType, useConventionalCommits)
-		// Respect maxLength for subject if provided
-		if (typeof maxLength === "number" && maxLength > 0 && subject.length > maxLength) {
-			subject = subject.slice(0, Math.max(1, maxLength)).trim()
-		}
-
-		// Generate body if needed
-		let body = includeFileChanges ? this.generateBody(diffInfo) : undefined
-		if (body && typeof maxLength === "number" && maxLength > 0 && body.length > maxLength) {
-			body = body.slice(0, Math.max(1, maxLength)).trim()
-		}
-
-		return {
-			subject,
-			body,
-			type: commitType,
-		}
-	}
-
-	/**
 	 * Determine the type of commit based on file changes
 	 */
 	private determineCommitType(diffInfo: GitDiffInfo): CommitMessageSuggestion["type"] {
@@ -617,180 +581,6 @@ export class CommitMessageGenerator {
 		]
 
 		return allFiles.some((file) => pattern.test(file))
-	}
-
-	/**
-	 * Generate subject line for commit message
-	 */
-	private generateSubjectLine(
-		diffInfo: GitDiffInfo,
-		commitType: CommitMessageSuggestion["type"],
-		useConventionalCommits: boolean,
-	): string {
-		const changeCount = this.getTotalChanges(diffInfo)
-
-		if (useConventionalCommits) {
-			const scope = this.determineScope(diffInfo)
-			const scopePart = scope ? `(${scope})` : ""
-
-			const action = this.getActionDescription(diffInfo, commitType)
-
-			return `${commitType}${scopePart}: ${action}`
-		} else {
-			const action = this.getActionDescription(diffInfo, commitType)
-			return `${action}`
-		}
-	}
-
-	/**
-	 * Get total number of changes
-	 */
-	private getTotalChanges(diffInfo: GitDiffInfo): number {
-		return diffInfo.added.length + diffInfo.modified.length + diffInfo.deleted.length + diffInfo.renamed.length
-	}
-
-	/**
-	 * Determine scope based on file changes
-	 */
-	private determineScope(diffInfo: GitDiffInfo): string | undefined {
-		const allFiles = [
-			...diffInfo.added,
-			...diffInfo.modified,
-			...diffInfo.deleted,
-			...diffInfo.renamed.map((r) => r.split(" -> ")[0]),
-		]
-
-		// Prefer monorepo package scopes like packages/* or apps/*
-		const monorepoScopeCandidates = allFiles
-			.map((file) => {
-				const parts = file.split("/")
-				if (parts.length >= 2 && (parts[0] === "packages" || parts[0] === "apps")) {
-					return `${parts[0]}/${parts[1]}`
-				}
-				return undefined
-			})
-			.filter(Boolean) as string[]
-		if (monorepoScopeCandidates.length > 0) {
-			return this.getMostCommon(monorepoScopeCandidates)
-		}
-
-		// Fallback to top-level directory
-		const topDirs = allFiles
-			.map((file) => {
-				const parts = file.split("/")
-				return parts.length > 1 ? parts[0] : undefined
-			})
-			.filter(Boolean) as string[]
-		if (topDirs.length > 0) {
-			return this.getMostCommon(topDirs)
-		}
-
-		// As a last resort, try second-level directory to avoid empty scope
-		const secondLevelDirs = allFiles
-			.map((file) => {
-				const parts = file.split("/")
-				return parts.length > 2 ? `${parts[0]}/${parts[1]}` : undefined
-			})
-			.filter(Boolean) as string[]
-		if (secondLevelDirs.length > 0) {
-			return this.getMostCommon(secondLevelDirs)
-		}
-
-		return undefined
-	}
-
-	/**
-	 * Get the most common element in an array
-	 */
-	private getMostCommon(arr: string[]): string {
-		const frequency: Record<string, number> = {}
-		let maxCount = 0
-		let mostCommon = arr[0]
-
-		for (const item of arr) {
-			frequency[item] = (frequency[item] || 0) + 1
-			if (frequency[item] > maxCount) {
-				maxCount = frequency[item]
-				mostCommon = item
-			}
-		}
-
-		return mostCommon
-	}
-
-	/**
-	 * Get action description based on changes
-	 */
-	private getActionDescription(diffInfo: GitDiffInfo, commitType: CommitMessageSuggestion["type"]): string {
-		const added = diffInfo.added.length
-		const modified = diffInfo.modified.length
-		const deleted = diffInfo.deleted.length
-		const renamed = diffInfo.renamed.length
-		const changeCount = added + modified + deleted + renamed
-
-		const verb = (() => {
-			if (added > 0 && modified === 0 && deleted === 0 && renamed === 0) return "add"
-			if (deleted > 0 && added === 0 && modified === 0 && renamed === 0) return "remove"
-			if (renamed > 0 && added === 0 && modified === 0 && deleted === 0) return "rename"
-			if (commitType === "refactor") return "refactor"
-			if (commitType === "style") return "style"
-			if (commitType === "perf") return "optimize"
-			if (commitType === "fix") return modified > 0 ? "fix" : "update"
-			return added > 0 ? "implement" : "update"
-		})()
-
-		if (changeCount === 1) {
-			const file = [
-				...diffInfo.added,
-				...diffInfo.modified,
-				...diffInfo.deleted,
-				...diffInfo.renamed.map((r) => r.split(" -> ")[0]),
-			][0]
-			const fileName = file.split("/").pop() || file
-			return `${verb} ${fileName}`
-		}
-
-		// multi-file changes
-		if (commitType === "docs") return "update documentation"
-		if (commitType === "test") return "add tests"
-		if (commitType === "style") return "style changes"
-		if (commitType === "refactor") return "refactor code"
-		if (commitType === "perf") return "optimize performance"
-		if (commitType === "fix") return `fix issues in ${changeCount} files`
-		if (commitType === "feat") return `implement changes in ${changeCount} files`
-		return `update ${changeCount} files`
-	}
-
-	/**
-	 * Generate body for commit message
-	 */
-	private generateBody(diffInfo: GitDiffInfo): string {
-		const lines: string[] = []
-
-		if (diffInfo.added.length > 0) {
-			lines.push(t("commit:commit.files.added"))
-			diffInfo.added.forEach((file) => lines.push(`- ${file}`))
-		}
-
-		if (diffInfo.modified.length > 0) {
-			if (lines.length > 0) lines.push("")
-			lines.push(t("commit:commit.files.modified"))
-			diffInfo.modified.forEach((file) => lines.push(`- ${file}`))
-		}
-
-		if (diffInfo.deleted.length > 0) {
-			if (lines.length > 0) lines.push("")
-			lines.push(t("commit:commit.files.deleted"))
-			diffInfo.deleted.forEach((file) => lines.push(`- ${file}`))
-		}
-
-		if (diffInfo.renamed.length > 0) {
-			if (lines.length > 0) lines.push("")
-			lines.push(t("commit:commit.files.renamed"))
-			diffInfo.renamed.forEach((rename) => lines.push(`- ${rename}`))
-		}
-
-		return lines.join("\n")
 	}
 
 	/**

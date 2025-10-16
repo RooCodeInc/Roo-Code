@@ -22,6 +22,7 @@ import { ZgsmAuthService } from "../auth"
 import { ILogger } from "../../../utils/logger"
 // import { getWorkspacePath } from "../../../utils/path"
 import pWaitFor from "p-wait-for"
+import { t } from "../../../i18n"
 
 /**
  * CodebaseIndex manager implementation class (singleton pattern)
@@ -125,7 +126,16 @@ export class ZgsmCodebaseIndexManager implements ICodebaseIndexManager {
 			// Check and upgrade client
 			const state = await this.checkAndUpgradeClient()
 			if (state === "failed") {
-				vscode.window.showWarningMessage(`Codebase startup/upgrade failed, please restart editor and try again`)
+				const selection = await vscode.window.showWarningMessage(
+					t("common:errors.codebase_startup_failed"),
+					t("common:confirmation.fixCodebase"),
+				)
+				if (selection === t("common:confirmation.fixCodebase")) {
+					// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+					this.clineProvider
+						? this.clineProvider?.fixCodebase()
+						: vscode.commands.executeCommand("workbench.action.reloadWindow")
+				}
 				return
 			}
 			if (state === "needZgsm") {

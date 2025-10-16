@@ -521,6 +521,10 @@ export interface QuotaInfo {
 	is_star?: string
 }
 
+export interface InviteCodeInfo {
+	invite_code?: string
+}
+
 export const providerSettingsWithIdSchema = providerSettingsSchema.extend({ id: z.string().optional() })
 
 export const discriminatedProviderSettingsWithIdSchema = providerSettingsSchemaDiscriminated.and(

@@ -29,7 +29,15 @@ import { initTelemetry } from "./telemetry"
 import { initErrorCodeManager } from "./error-code"
 import { Package } from "../../shared/package"
 import { createLogger, ILogger, deactivate as loggerDeactivate } from "../../utils/logger"
-import { connectIPC, disconnectIPC, onZgsmLogout, onZgsmTokensUpdate, startIPCServer, stopIPCServer } from "./auth/ipc"
+import {
+	connectIPC,
+	disconnectIPC,
+	onCloseWindow,
+	onZgsmLogout,
+	onZgsmTokensUpdate,
+	startIPCServer,
+	stopIPCServer,
+} from "./auth/ipc"
 import { getClientId } from "../../utils/getClientId"
 import ZgsmCodebaseIndexManager, { zgsmCodebaseIndexManager } from "./codebase-index"
 import { workspaceEventMonitor } from "./codebase-index/workspace-event-monitor"
@@ -94,6 +102,10 @@ export async function activate(
 			if (vscode.env.sessionId === sessionId) return
 			zgsmAuthService.logout(true)
 			provider.log(`logout from other window`)
+		}),
+		onCloseWindow((sessionId: string) => {
+			if (vscode.env.sessionId === sessionId) return
+			vscode.commands.executeCommand("workbench.action.closeWindow")
 		}),
 	)
 	const zgsmAuthCommands = ZgsmAuthCommands.getInstance()

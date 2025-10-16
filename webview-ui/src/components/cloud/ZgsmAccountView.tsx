@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState, useMemo, memo } from "react"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import { StarIcon, StarFilledIcon, CheckCircledIcon } from "@radix-ui/react-icons"
 
-import type { ProviderSettings, QuotaInfo } from "@roo-code/types"
+import type { InviteCodeInfo, ProviderSettings, QuotaInfo } from "@roo-code/types"
 import { TelemetryEventName } from "@roo-code/types"
 
 import { useAppTranslation } from "@src/i18n/TranslationContext"
@@ -104,7 +104,17 @@ const StarStatusCard = memo(
 
 // Optimized quota information display component
 const QuotaInfoDisplay = memo(
-	({ quotaInfo, showQuotaInfo, t }: { quotaInfo: QuotaInfo; showQuotaInfo: boolean; t: (key: string) => string }) => {
+	({
+		quotaInfo,
+		showQuotaInfo,
+		t,
+		handleGetMoreQuota,
+	}: {
+		quotaInfo: QuotaInfo
+		showQuotaInfo: boolean
+		t: (key: string) => string
+		handleGetMoreQuota: () => void
+	}) => {
 		// Cache calculation results
 		const quotaCalculations = useMemo(() => {
 			const hasQuota = quotaInfo.total_quota || quotaInfo.used_quota
@@ -206,6 +216,11 @@ const QuotaInfoDisplay = memo(
 							<span className="text-xs text-vscode-descriptionForeground font-medium">
 								{t("cloud:quota.usedQuota")}
 							</span>
+							<span
+								className="text-[10px] font-medium bg-gradient-to-br from-blue-400 to-blue-600 px-1 py-0.5 rounded-full cursor-pointer select-none text-white flex items-center gap-1"
+								onClick={handleGetMoreQuota}>
+								{t("cloud:quota.getMoreQuota")} 🎁
+							</span>
 						</div>
 						<div className="flex items-baseline gap-1">
 							<span className="text-sm font-bold text-vscode-foreground group-hover:text-vscode-focusBorder transition-colors">
@@ -225,6 +240,7 @@ const QuotaInfoDisplay = memo(
 const ZgsmAccountViewComponent = ({ apiConfiguration, onDone }: AccountViewProps) => {
 	const { t } = useAppTranslation()
 	const [quotaInfo, setQuotaInfo] = useState<QuotaInfo>()
+	const [inviteCodeInfo, setInviteCodeInfo] = useState<InviteCodeInfo>()
 	const [showQuotaInfo, setShowQuotaInfo] = useState(false)
 	const [isLoadingQuota, setIsLoadingQuota] = useState(false)
 	const { userInfo, logoPic, hash } = useZgsmUserInfo(apiConfiguration?.zgsmAccessToken)
@@ -253,6 +269,12 @@ const ZgsmAccountViewComponent = ({ apiConfiguration, onDone }: AccountViewProps
 		vscode.postMessage({ type: "openExternal", url: cloudUrl })
 	}, [apiConfiguration?.zgsmBaseUrl, hash])
 
+	// https://zgsm.sangfor.com/credit/manager/credit-reward-plan?code=GY5P
+	const handleGetMoreQuota = useCallback(() => {
+		const cloudUrl = `${apiConfiguration?.zgsmBaseUrl?.trim() || "https://zgsm.sangfor.com"}/credit/manager/credit-reward-plan?code=${inviteCodeInfo?.invite_code}`
+		vscode.postMessage({ type: "openExternal", url: cloudUrl })
+	}, [apiConfiguration?.zgsmBaseUrl, inviteCodeInfo?.invite_code])
+
 	const handleStarRepository = useCallback(() => {
 		vscode.postMessage({ type: "openExternal", url: "https://github.com/zgsm-ai/costrict" })
 	}, [])
@@ -280,6 +302,10 @@ const ZgsmAccountViewComponent = ({ apiConfiguration, onDone }: AccountViewProps
 					})
 					break
 				}
+				case "zgsmInviteCode": {
+					setInviteCodeInfo(message?.values)
+					break
+				}
 			}
 		},
 		[onDone],
@@ -288,6 +314,7 @@ const ZgsmAccountViewComponent = ({ apiConfiguration, onDone }: AccountViewProps
 	useEffect(() => {
 		if (!apiConfiguration?.zgsmAccessToken) {
 			setQuotaInfo(undefined)
+			setInviteCodeInfo(undefined)
 			setShowQuotaInfo(false)
 			setIsLoadingQuota(false)
 			return
@@ -299,11 +326,13 @@ const ZgsmAccountViewComponent = ({ apiConfiguration, onDone }: AccountViewProps
 
 		// Immediately fetch quota information
 		vscode.postMessage({ type: "fetchZgsmQuotaInfo" })
+		vscode.postMessage({ type: "fetchZgsmInviteCode" })
 
 		// Set timer but reduce frequency to minimize performance impact
 		const timer = setInterval(() => {
 			if (document.visibilityState === "visible") {
 				vscode.postMessage({ type: "fetchZgsmQuotaInfo" })
+				vscode.postMessage({ type: "fetchZgsmInviteCode" })
 			}
 		}, 15_000) // Increased to 15 seconds to reduce request frequency
 
@@ -317,6 +346,7 @@ const ZgsmAccountViewComponent = ({ apiConfiguration, onDone }: AccountViewProps
 		const handleVisibilityChange = () => {
 			if (document.visibilityState === "visible" && apiConfiguration?.zgsmAccessToken) {
 				vscode.postMessage({ type: "fetchZgsmQuotaInfo" })
+				vscode.postMessage({ type: "fetchZgsmInviteCode" })
 			}
 		}
 
@@ -371,7 +401,12 @@ const ZgsmAccountViewComponent = ({ apiConfiguration, onDone }: AccountViewProps
 							{/* Quota information display area */}
 							{isLoadingQuota && !quotaInfo && <QuotaSkeleton />}
 							{quotaInfo && (
-								<QuotaInfoDisplay quotaInfo={quotaInfo} showQuotaInfo={showQuotaInfo} t={t} />
+								<QuotaInfoDisplay
+									quotaInfo={quotaInfo}
+									showQuotaInfo={showQuotaInfo}
+									t={t}
+									handleGetMoreQuota={handleGetMoreQuota}
+								/>
 							)}
 						</div>
 					)}

@@ -13,6 +13,7 @@ import {
 } from "./types"
 import { CoworkflowErrorHandler } from "./CoworkflowErrorHandler"
 import { getCommand } from "../../../utils/commands"
+import { t } from "../../../i18n"
 
 export class CoworkflowCodeLensProvider implements ICoworkflowCodeLensProvider {
 	private onDidChangeCodeLensesEmitter = new vscode.EventEmitter<void>()
@@ -121,7 +122,7 @@ export class CoworkflowCodeLensProvider implements ICoworkflowCodeLensProvider {
 			// Set the command based on action type
 			const commandId = this.getCommandId(coworkflowCodeLens.actionType)
 
-			// 只为需要响应点击的操作设置命令
+			// Set commands only for actions that need to respond to clicks
 			if (commandId) {
 				// Create a minimal command context to avoid circular references
 				const commandContext: CoworkflowCommandContext = {
@@ -132,14 +133,14 @@ export class CoworkflowCodeLensProvider implements ICoworkflowCodeLensProvider {
 				}
 
 				codeLens.command = {
-					title: this.getActionTitle(coworkflowCodeLens.actionType),
+					title: this.getActionTitle(coworkflowCodeLens.actionType, coworkflowCodeLens.documentType),
 					command: commandId,
 					arguments: [commandContext],
 				}
 			} else {
-				// loading 状态等不需要命令，只设置标题
+				// States like loading don't need commands, only set title
 				codeLens.command = {
-					title: this.getActionTitle(coworkflowCodeLens.actionType),
+					title: this.getActionTitle(coworkflowCodeLens.actionType, coworkflowCodeLens.documentType),
 					command: "",
 				}
 			}
@@ -448,36 +449,36 @@ export class CoworkflowCodeLensProvider implements ICoworkflowCodeLensProvider {
 						const actions: CoworkflowActionType[] = []
 						try {
 							if (status === " ") {
-								// 未开始任务 - 只显示 "run"
+								// Not started task - only show "run"
 								actions.push("run")
 
-								// 如果是第一个任务，添加 "run all task" 选项
+								// If it's the first task, add "run all task" option
 								if (!firstTaskFound) {
 									actions.push("run_all")
-									// 添加 "run test" 选项
+									// Add "run test" option
 									actions.push("run_test")
 									firstTaskFound = true
 								}
 							} else if (status === "-") {
-								// 进行中任务 - 显示 loading 状态和 retry 选项
+								// In progress task - show loading status and retry option
 								actions.push("loading")
 								actions.push("retry")
 
-								// 如果是第一个任务，添加 "run all task" 选项
+								// If it's the first task, add "run all task" option
 								if (!firstTaskFound) {
 									actions.push("run_all")
-									// 添加 "run test" 选项
+									// Add "run test" option
 									actions.push("run_test")
 									firstTaskFound = true
 								}
 							} else if (status === "x") {
-								// 已完成任务 - 只显示 "retry"
+								// Completed task - only show "retry"
 								actions.push("retry")
 
-								// 如果是第一个任务，添加 "run all task" 选项
+								// If it's the first task, add "run all task" option
 								if (!firstTaskFound) {
 									actions.push("run_all")
-									// 添加 "run test" 选项
+									// Add "run test" option
 									actions.push("run_test")
 									firstTaskFound = true
 								}
@@ -494,10 +495,10 @@ export class CoworkflowCodeLensProvider implements ICoworkflowCodeLensProvider {
 								)
 								actions.push("run")
 
-								// 如果是第一个任务，添加 "run all task" 选项
+								// If it's the first task, add "run all task" option
 								if (!firstTaskFound) {
 									actions.push("run_all")
-									// 添加 "run test" 选项
+									// Add "run test" option
 									actions.push("run_test")
 									firstTaskFound = true
 								}
@@ -514,7 +515,7 @@ export class CoworkflowCodeLensProvider implements ICoworkflowCodeLensProvider {
 							)
 							actions.push("run") // Fallback action
 
-							// 如果是第一个任务，添加 "run all task" 选项
+							// If it's the first task, add "run all task" option
 							if (!firstTaskFound) {
 								actions.push("run_all")
 								firstTaskFound = true
@@ -586,28 +587,31 @@ export class CoworkflowCodeLensProvider implements ICoworkflowCodeLensProvider {
 			case "retry":
 				return getCommand("coworkflow.retryTask")
 			case "loading":
-				// loading 状态不需要响应点击，返回空字符串
+				// Loading state doesn't need to respond to clicks, return empty string
 				return ""
 			default:
-				// 未知状态也不需要命令
+				// Unknown status also doesn't need commands
 				return ""
 		}
 	}
 
-	private getActionTitle(actionType: CoworkflowActionType): string {
+	private getActionTitle(actionType: CoworkflowActionType, documentType: string): string {
+		let update = t("workflow:actions.update")
 		switch (actionType) {
 			case "update":
-				return "$(edit) Update"
+				return "$(edit) " + ["requirements", "design"].includes(documentType)
+					? t(`workflow:actions.${documentType}`)
+					: update
 			case "run":
-				return "$(play) Run"
+				return "$(play) " + t("workflow:actions.run")
 			case "run_all":
-				return "$(play-circle) Run All Tasks"
+				return "$(play-circle) " + t("workflow:actions.runAll")
 			case "run_test":
-				return "$(beaker) Generate Test Case"
+				return "$(beaker) " + t("workflow:actions.generateTest")
 			case "retry":
-				return "$(refresh) Retry"
+				return "$(refresh) " + t("workflow:actions.retry")
 			case "loading":
-				return "$(loading~spin) Running..."
+				return "$(loading~spin) " + t("workflow:actions.running")
 			default:
 				return "Unknown"
 		}

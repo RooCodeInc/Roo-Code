@@ -824,7 +824,8 @@
 		"settings": {
 			"import": "导入",
 			"export": "导出",
-			"reset": "重置"
+			"reset": "重置",
+			"fixCodebase": "修复Codebase"
 		}
 	},
 	"thinkingBudget": {

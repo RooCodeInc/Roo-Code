@@ -3,7 +3,7 @@
 	"displayName": "%extension.displayName.long%",
 	"description": "%extension.description%",
 	"publisher": "zgsm-ai",
-	"version": "2.0.0",
+	"version": "2.0.1",
 	"icon": "assets/images/shenma_robot_logo_big.png",
 	"galleryBanner": {
 		"color": "#617A91",
@@ -304,11 +304,8 @@
 				},
 				{
 					"command": "zgsm.reviewFilesAndFolders",
-					"group": "zgsm.explorerSubmenu@2"
-				},
-				{
-					"command": "zgsm.reviewRepo",
-					"group": "zgsm.explorerSubmenu@3"
+					"group": "zgsm.explorerSubmenu@2",
+					"when": "!explorerResourceIsFolder"
 				}
 			],
 			"zhuge-shenma": [

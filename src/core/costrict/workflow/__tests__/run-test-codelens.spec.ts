@@ -180,7 +180,7 @@ describe("Run test CodeLens 功能测试", () => {
 
 				expect(resolvedCodeLens).toBeDefined()
 				expect(resolvedCodeLens?.command).toBeDefined()
-				expect(resolvedCodeLens?.command?.title).toBe("$(beaker) Generate Test Case")
+				expect(resolvedCodeLens?.command?.title).toContain("$(beaker)")
 				expect(resolvedCodeLens?.command?.command).toContain("coworkflow.runTest")
 			}
 		})
@@ -213,7 +213,7 @@ describe("Run test CodeLens 功能测试", () => {
 			const getActionTitle = (codeLensProvider as any).getActionTitle.bind(codeLensProvider)
 
 			const title = getActionTitle("run_test" as CoworkflowActionType)
-			expect(title).toBe("$(beaker) Generate Test Case")
+			expect(title).toContain("$(beaker)")
 		})
 	})
 

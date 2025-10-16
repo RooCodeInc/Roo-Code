@@ -141,6 +141,9 @@ export interface UpdateIssueStatusResponse {
 	success: boolean
 	/** Response message */
 	message: string
+	data: {
+		slide_line: number
+	}
 }
 
 /**
@@ -181,8 +184,6 @@ export interface APIErrorResponse {
 export interface ReviewTask {
 	/** Task ID from server response */
 	taskId: string
-	/** Review targets */
-	targets: ReviewTarget[]
 	/** Task completion status */
 	isCompleted: boolean
 	/** Current progress */
@@ -205,5 +206,22 @@ export interface CancelReviewTaskResponse {
 export interface IReviewPrompt {
 	data: {
 		prompt: string
+	}
+}
+
+export interface ReportIssueReuqest {
+	review_report: string
+	client_id: string
+	workspace: string
+	review_code: ReviewTarget[]
+}
+
+export interface ReportIssueResponse {
+	code: string
+	success: boolean
+	data: {
+		review_task_id: string
+		count: number
+		issues: ReviewIssue[]
 	}
 }

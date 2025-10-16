@@ -1,135 +1,198 @@
-import { SUBTASK_FILENAMES, subtaskDir, deepAnalyzeThreshold } from "./subtasks/constants"
+import {
+	SUBTASK_FILENAMES,
+	SUBTASK_OUTPUT_FILENAMES,
+	WIKI_OUTPUT_DIR,
+	GENERAL_RULES_OUTPUT_DIR,
+	subtaskDir,
+	deepAnalyzeThreshold,
+} from "./subtasks/constants"
 
-export const projectWikiVersion = "v1.0.3"
-const projectWikiCreateTime = new Date().toLocaleString()
-
-export const PROJECT_WIKI_TEMPLATE = `---
+export const PROJECT_WIKI_TEMPLATE = (workspace: string) => `---
 description: "项目深度分析与知识文档生成"
-version: "${projectWikiVersion}"
-createTime: ${projectWikiCreateTime}
 ---
 
 # 🤖 项目深度分析与知识文档生成
 
-## 🎯 您的角色与任务
+## 🎯 角色与任务
 
-**您的身份**：资深架构师 + 技术文档专家
+### 身份定位
+您是**技术架构师**和**文档撰写专家**，负责深度代码分析和技术文档编写。
 
-**核心任务**：为AI Coding Agent生成高质量的项目技术文档和编码约束规则。
+### 核心目标
+通过分析实际代码仓库，为AI Coding Agent生成项目专属的技术文档和编码规则。
 
-**成功标准**：
-- 🤖 **AI友好性**：使用结构化markdown，标题层级清晰，术语标准化
-- 🎯 **项目针对性**：基于实际代码仓库分析，提供具体技术栈细节，避免泛泛而谈
-- 📊 **信息价值**：优先高价值技术信息，去除冗余内容
-- 🔄 **一致性保证**：术语统一，格式规范，引用准确
+### 具体职责
+- **代码分析**：理解项目架构、技术栈、业务逻辑
+- **文档生成**：创建结构化、准确的技术文档
+- **规则提取**：总结项目特有的编码规范和最佳实践
 
----
+## ⚠️ 执行约束
 
-## 🚀 执行流程
-
-### 📏 步骤1：确定分析模式
-**目标**：通过项目规模评估，确定使用精简模式还是深度模式
-
-**执行策略**：
-
-**方案A：环境信息判断**（优先）
-- 直接分析 \`<environment_details>\` 中的文件列表
-- 如能明确判断规模，立即输出结果
-
-**方案B：工具扫描**（备选）
-- 按常见源码目录优先级扫描（如主要源码目录优先）
-- **早期终止机制**：累计文件数 ≥ ${deepAnalyzeThreshold} 时立即停止
-
-**扫描示例**：
-\`\`\`
-示例1：扫描 src/ → 发现10个文件 → 已达标 → 终止扫描 → 选择深度模式
-示例2：扫描 src/ → 发现8个文件 → 扫描 utils/ → 发现3个文件 → 累计11个 → 终止 → 选择深度模式
-\`\`\`
-
-**判断流程**：
-\`\`\`
-IF 环境信息能确定规模 ≥ ${deepAnalyzeThreshold}
-    → 输出："项目规模评估：达到阈值 → 选择深度模式"
-ELSE 使用工具扫描：
-    → 累计文件数 ≥ ${deepAnalyzeThreshold}
-        → 立即终止，输出："项目规模评估：达到阈值 → 选择深度模式"
-    → 扫描完成仍不足阈值
-        → 输出："项目规模评估：未达到阈值 → 选择精简模式"
-\`\`\`
-
-**文件统计规则**：
-- ✅ **计入**：.ts/.js/.tsx/.jsx/.html/.css/.vue/.py/.go/.java/.cpp/.c/.cs/.rb/.php/.sh/.kt/.swift/.rs 等主要源码文件
-- ❌ **排除**：.git/.vscode/node_modules/dist/build/vendor 等非源码目录、文件
-- ⚡ **效率**：早期终止策略，最小化扫描次数
-
-### ⚙️ 步骤2：执行分析
-**根据步骤1确定的结果，直接执行对应模式的分析流程**
+### 必须遵守的原则
+- **基于事实**：只分析实际存在的代码和文件，禁止虚构
+- **顺序执行**：严格按照指定顺序执行，不得跳跃或省略
+- **完整输出**：每个任务必须生成对应文件并声明完成状态
+- **质量保证**：确保所有输出准确、完整、经过验证
 
 ---
 
-## 📋 两种分析模式
+## 📋 执行概览
+
+**整体流程**：
+1. **确定模式** → 根据项目规模选择精简或深度模式
+2. **执行分析** → 按选定模式执行对应的分析流程
+3. **输出结果** → 生成对应的技术文档和规则文件
+
+**关键决策点**：
+- 文件数 < ${deepAnalyzeThreshold} → 精简模式（直接执行）
+- 文件数 ≥ ${deepAnalyzeThreshold} → 深度模式（分步执行）
+
+---
+
+## 🚀 详细执行流程
+
+### 步骤 1：确定分析模式
+**目标**：根据项目规模选择精简模式或深度模式
+
+**判断方法**：
+
+**方法A：环境信息分析**（优先）
+- 直接检查 \`<environment_details>\` 中的文件列表
+- 如果能明确判断规模，立即输出结果
+
+**方法B：目录扫描**（备选）
+- 按优先级扫描源码目录
+- **早期终止**：累计文件数 ≥ ${deepAnalyzeThreshold} 时停止
+
+**决策流程**：
+\`\`\`
+如果环境信息显示规模 ≥ ${deepAnalyzeThreshold}：
+    → 输出："选择深度模式"
+否则进行目录扫描：
+    → 如果累计文件数 ≥ ${deepAnalyzeThreshold}：
+        → 输出："选择深度模式"
+    → 否则：
+        → 输出："选择精简模式"
+\`\`\`
+
+**文件统计标准**：
+- **计入**：.ts/.js/.tsx/.jsx/.html/.css/.vue/.py/.go/.java/.cpp/.c/.cs/.rb/.php/.sh/.kt/.swift/.rs
+- **排除**：.git/.vscode/node_modules/dist/build/vendor 等非源码目录
+- **优化**：采用早期终止策略，提高效率
+
+### 步骤 2：执行分析
+根据步骤1的结果，执行对应的分析模式。
+
+---
+
+## 📋 分析模式详解
 
 ### 🔍 精简模式
-**适用场景**：小型项目（代码文件数 < ${deepAnalyzeThreshold}）
+**适用条件**：代码文件数 < ${deepAnalyzeThreshold}
 
-**执行清单**：
-- [ ] **代码扫描**：使用 list_files + read_file 浏览主要源码文件
-- [ ] **技术栈识别**：通过文件扩展名、配置文件、依赖确定技术栈
-- [ ] **架构分析**：分析目录结构和模块划分
-- [ ] **功能梳理**：识别核心业务功能
+**执行要点**：
+- **直接执行**：在当前 Code 模式直接执行，无需切换模式
+- **完整分析**：一次性完成项目分析
+- **直接输出**：分析结果直接输出，无需生成文件
+- **完成确认**：使用 attempt_completion 工具确认任务完成
 
-**必须包含的内容**：
-- 📋 **技术栈概览**：语言、框架、主要依赖
-- 🏗️ **架构特点**：目录结构、模块划分、设计模式
-- ⚡ **核心功能**：主要业务功能模块
-- 🛠️ **技术选型**：关键决策和理由
-- 📊 **规模评估**：代码量、复杂度、维护性
+**执行步骤**：
+\`\`\`
+1. 代码扫描：使用 list_files + read_file 浏览主要源码文件
+2. 技术栈识别：通过文件扩展名、配置文件、依赖确定技术栈
+3. 架构分析：分析目录结构和模块划分
+4. 功能梳理：识别核心业务功能
+5. 生成结构化分析内容，包含：
+   - 📋 技术栈概览：语言、框架、主要依赖
+   - 🏗️ 架构特点：目录结构、模块划分、设计模式
+   - ⚡ 核心功能：主要业务功能模块
+   - 🛠️ 技术选型：关键决策和理由
+   - 📊 规模评估：代码量、复杂度、维护性
+6. 输出格式：结构化markdown，500-1000字
+7. 使用 attempt_completion 确认完成
+\`\`\`
 
-**输出规范**：
-- 📝 **格式**：结构化markdown，直接输出
-- 🎯 **字数**：500-1000字，简洁明了
-- 📊 **结构**：使用标题、列表、表格提升可读性
+**检查清单**：
+- [ ] 完成代码扫描和技术栈识别
+- [ ] 完成架构分析和功能梳理
+- [ ] 生成结构化分析内容
+- [ ] 使用 attempt_completion 确认完成
 
 ### 📚 深度模式
-**适用场景**：大型项目（代码文件数 ≥ ${deepAnalyzeThreshold}）
+**适用条件**：代码文件数 ≥ ${deepAnalyzeThreshold}
 
-**执行原则**：
-- 🔢 **严格顺序**：必须按 1→2→3→4→5→6→7→8→9→10→11 顺序执行
-- 📖 **任务驱动**：每个任务执行前先用 \`read_file\`工具， 读取对应的指令文件，如果单次无法读完整个指令文件，则多次读取，务必确保完整获取到指令文件的内容
-- ✅ **完成确认**：每个任务完成后声明"任务X已完成"
-- 📁 **文件生成**：每个任务必须生成对应输出文件
+**执行要点**：
+- **模式切换**：必须先切换到 Orchestrator（📋 协调器）模式
+- **严格顺序**：按 1→2→3→4→5→6→7→8→9→10→11 顺序执行
+- **子任务委托**：每个子任务委托给 Code 模式执行
+- **协调管理**：Orchestrator 负责协调和跟踪进度
+- **上下文管理**：通过子任务分解避免上下文累积过长
+- **完成确认**：每个子任务完成后声明"子任务X已完成"
+- **文件输出**：每个子任务必须生成对应文件
 
-**任务执行表**：
+#### 模式切换流程
+\`\`\`
+如果当前模式不是 Orchestrator 模式：
+    → 使用 switch_mode 切换到 Orchestrator 模式
+    → 等待确认
+    → 输出："已切换到 Orchestrator 模式"
+否则：
+    → 输出："当前已在 Orchestrator 模式"
+\`\`\`
 
-| 序号 | 任务图标 | 任务名称 | 指令文件路径 | 产出物 |
-|------|----------|----------|--------------|--------|
-| 1 | 📊 | 项目概览分析 | \`${subtaskDir}${SUBTASK_FILENAMES.PROJECT_OVERVIEW_TASK_FILE}\` | 项目整体概览文档 |
-| 2 | 🏗️ | 整体架构分析 | \`${subtaskDir}${SUBTASK_FILENAMES.OVERALL_ARCHITECTURE_TASK_FILE}\` | 架构设计分析 |
-| 3 | 🔗 | 服务依赖分析 | \`${subtaskDir}${SUBTASK_FILENAMES.SERVICE_DEPENDENCIES_TASK_FILE}\` | 依赖关系梳理 |
-| 4 | 📈 | 数据流分析 | \`${subtaskDir}${SUBTASK_FILENAMES.DATA_FLOW_INTEGRATION_TASK_FILE}\` | 数据流转分析 |
-| 5 | 🔧 | 服务模块分析 | \`${subtaskDir}${SUBTASK_FILENAMES.SERVICE_ANALYSIS_TASK_FILE}\` | 服务模块深入分析 |
-| 6 | 🗄️ | 数据库分析 | \`${subtaskDir}${SUBTASK_FILENAMES.DATABASE_SCHEMA_TASK_FILE}\` | 数据库设计分析 |
-| 7 | 🌐 | API分析 | \`${subtaskDir}${SUBTASK_FILENAMES.API_INTERFACE_TASK_FILE}\` | API接口梳理 |
-| 8 | 🚀 | 部署分析 | \`${subtaskDir}${SUBTASK_FILENAMES.DEPLOY_ANALYSIS_TASK_FILE}\` | 部署配置分析 |
-| 9 | 🧪 | 开发测试分析 | \`${subtaskDir}${SUBTASK_FILENAMES.Develop_TEST_ANALYSIS_TASK_FILE}\` | 开发测试环境分析 |
-| 10 | 📋 | 索引文件生成 | \`${subtaskDir}${SUBTASK_FILENAMES.INDEX_GENERATION_TASK_FILE}\` | AI知识库索引 |
-| 11 | 📜 | 项目规则生成 | \`${subtaskDir}${SUBTASK_FILENAMES.PROJECT_RULES_TASK_FILE}\` | 编码约束规则 |
+#### 子任务执行流程
+\`\`\`
+对于每个子任务（1-11）：
+    1. 使用 new_task 创建 Code 模式子任务
+    2. 提供指令文件路径和执行要求
+    3. 等待子任务完成确认
+    4. 记录执行结果
+    5. 继续下一个子任务
+\`\`\`
 
----
+#### 子任务指令模板
+\`\`\`
+new_task:
+    mode: "code"
+    message: |
+        执行子任务X：[任务名称]
+        
+        指令文件：[指令文件路径]
+        
+        要求：
+        1. 读取并理解指令文件内容
+        2. 按指令要求执行分析
+        3. 生成对应的输出文件
+        4. 使用 attempt_completion 确认完成
+        5. 仅执行此子任务，不执行其他任务
+\`\`\`
 
-## ⚠️ 严格约束条件
+#### 错误处理
+- 如果子任务失败：记录错误信息，跳过该子任务继续执行
+- 如果模式切换失败：使用当前模式继续执行，并记录警告
+- 如果文件生成失败：检查目录权限，重试一次
 
-### 📏 执行纪律
-1. **顺序不可变**：精简模式按1-2-3-4，深度模式按1-2-3-4-5-6-7-8-9-10-11
-2. **前置依赖**：必须确认前一个任务完成才能开始下一个
-3. **事实依据**：所有分析必须基于实际代码，禁止猜测或虚构
-4. **任务状态**: 每完成一个任务都要明确声明完成状态，确保执行过程可追踪！
+#### 子任务列表
 
-### 🚨 错误处理
-1. **指令文件缺失** → 立即报告错误并停止执行
-2. **质量不达标** → 重新生成，直到满足质量标准
-3. **文件生成失败** → 记录错误详情并尝试恢复
-4. **目录不存在** → 自动创建所需输出目录
-5. **文件已存在** → 直接覆盖，确保内容最新
----
+**执行顺序**：严格按照 1→2→3→4→5→6→7→8→9→10→11 顺序执行
+
+| 序号 | 任务名称 | 指令文件路径 | 输出文件路径 |
+|------|----------|----------|----------|
+| 1 | 📊 项目概览分析 | \`${subtaskDir}${SUBTASK_FILENAMES.PROJECT_OVERVIEW_TASK_FILE}\` | \`${workspace}${WIKI_OUTPUT_DIR}${SUBTASK_OUTPUT_FILENAMES.PROJECT_OVERVIEW_TASK_FILE}\` |
+| 2 | 🏗️ 整体架构分析 | \`${subtaskDir}${SUBTASK_FILENAMES.OVERALL_ARCHITECTURE_TASK_FILE}\` | \`${workspace}${WIKI_OUTPUT_DIR}${SUBTASK_OUTPUT_FILENAMES.OVERALL_ARCHITECTURE_TASK_FILE}\` |
+| 3 | 🔗 服务依赖分析 | \`${subtaskDir}${SUBTASK_FILENAMES.SERVICE_DEPENDENCIES_TASK_FILE}\` | \`${workspace}${WIKI_OUTPUT_DIR}${SUBTASK_OUTPUT_FILENAMES.SERVICE_DEPENDENCIES_TASK_FILE}\` |
+| 4 | 📈 数据流分析 | \`${subtaskDir}${SUBTASK_FILENAMES.DATA_FLOW_INTEGRATION_TASK_FILE}\` | \`${workspace}${WIKI_OUTPUT_DIR}${SUBTASK_OUTPUT_FILENAMES.DATA_FLOW_INTEGRATION_TASK_FILE}\` |
+| 5 | 🔧 服务模块分析 | \`${subtaskDir}${SUBTASK_FILENAMES.SERVICE_ANALYSIS_TASK_FILE}\` | \`${workspace}${WIKI_OUTPUT_DIR}${SUBTASK_OUTPUT_FILENAMES.SERVICE_ANALYSIS_TASK_FILE}\` |
+| 6 | 🗄️ 数据库分析 | \`${subtaskDir}${SUBTASK_FILENAMES.DATABASE_SCHEMA_TASK_FILE}\` | \`${workspace}${WIKI_OUTPUT_DIR}${SUBTASK_OUTPUT_FILENAMES.DATABASE_SCHEMA_TASK_FILE}\` |
+| 7 | 🌐 API分析 | \`${subtaskDir}${SUBTASK_FILENAMES.API_INTERFACE_TASK_FILE}\` | \`${workspace}${WIKI_OUTPUT_DIR}${SUBTASK_OUTPUT_FILENAMES.API_INTERFACE_TASK_FILE}\` |
+| 8 | 🚀 部署分析 | \`${subtaskDir}${SUBTASK_FILENAMES.DEPLOY_ANALYSIS_TASK_FILE}\` | \`${workspace}${WIKI_OUTPUT_DIR}${SUBTASK_OUTPUT_FILENAMES.DEPLOY_ANALYSIS_TASK_FILE}\` |
+| 9 | 🧪 开发测试分析 | \`${subtaskDir}${SUBTASK_FILENAMES.Develop_TEST_ANALYSIS_TASK_FILE}\` | \`${workspace}${WIKI_OUTPUT_DIR}${SUBTASK_OUTPUT_FILENAMES.DEVELOPMENT_TEST_ANALYSIS_TASK_FILE}\` |
+| 10 | 📋 索引文件生成 | \`${subtaskDir}${SUBTASK_FILENAMES.INDEX_GENERATION_TASK_FILE}\` | \`${workspace}${WIKI_OUTPUT_DIR}${SUBTASK_OUTPUT_FILENAMES.INDEX_GENERATION_TASK_FILE}\` |
+| 11 | 📜 项目规则生成 | \`${subtaskDir}${SUBTASK_FILENAMES.PROJECT_RULES_TASK_FILE}\` | \`${workspace}${GENERAL_RULES_OUTPUT_DIR}${SUBTASK_OUTPUT_FILENAMES.PROJECT_RULES_TASK_FILE}\` |
+
+**注意事项**：
+- 每个子任务完成后必须声明"子任务X已完成"
+- 所有子任务必须按顺序执行，不得跳跃
+- 输出文件路径中的目录会自动创建
+
 `

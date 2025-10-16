@@ -123,34 +123,6 @@ describe("CommitMessageGenerator", () => {
 		})
 	})
 
-	describe("generateSubjectLine", () => {
-		it("should generate conventional commit format", () => {
-			const diffInfo: GitDiffInfo = {
-				added: ["src/feature/new-file.ts"],
-				modified: [],
-				deleted: [],
-				renamed: [],
-				diffContent: "",
-			}
-
-			const result = (generator as any).generateSubjectLine(diffInfo, "feat", true)
-			expect(result).toMatch(/^feat\(.*\): .*/)
-		})
-
-		it("should generate simple format when conventional commits disabled", () => {
-			const diffInfo: GitDiffInfo = {
-				added: ["src/feature/new-file.ts"],
-				modified: [],
-				deleted: [],
-				renamed: [],
-				diffContent: "",
-			}
-
-			const result = (generator as any).generateSubjectLine(diffInfo, "feat", false)
-			expect(result).not.toMatch(/^feat\(.*\): .*/)
-		})
-	})
-
 	describe("hasChanges", () => {
 		it("should return true when there are changes", () => {
 			const diffInfo: GitDiffInfo = {

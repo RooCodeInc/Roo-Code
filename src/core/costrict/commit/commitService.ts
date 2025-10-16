@@ -71,7 +71,7 @@ export class CommitService {
 			)
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error)
-			vscode.window.showErrorMessage(t("commit:commit.message.generationFailed", { error: errorMessage }))
+			vscode.window.showErrorMessage(errorMessage)
 		}
 	}
 
