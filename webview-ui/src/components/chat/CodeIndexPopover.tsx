@@ -57,6 +57,7 @@ interface CodeIndexPopoverProps {
 interface LocalCodeIndexSettings {
 	// Global state settings
 	codebaseIndexEnabled: boolean
+	codebaseIndexBranchIsolation: boolean
 	codebaseIndexQdrantUrl: string
 	codebaseIndexEmbedderProvider: EmbedderProvider
 	codebaseIndexEmbedderBaseUrl?: string
@@ -180,6 +181,7 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 	// Default settings template
 	const getDefaultSettings = (): LocalCodeIndexSettings => ({
 		codebaseIndexEnabled: true,
+		codebaseIndexBranchIsolation: false,
 		codebaseIndexQdrantUrl: "",
 		codebaseIndexEmbedderProvider: "openai",
 		codebaseIndexEmbedderBaseUrl: "",
@@ -212,6 +214,7 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 		if (codebaseIndexConfig) {
 			const settings = {
 				codebaseIndexEnabled: codebaseIndexConfig.codebaseIndexEnabled ?? true,
+				codebaseIndexBranchIsolation: codebaseIndexConfig.codebaseIndexBranchIsolation ?? false,
 				codebaseIndexQdrantUrl: codebaseIndexConfig.codebaseIndexQdrantUrl || "",
 				codebaseIndexEmbedderProvider: codebaseIndexConfig.codebaseIndexEmbedderProvider || "openai",
 				codebaseIndexEmbedderBaseUrl: codebaseIndexConfig.codebaseIndexEmbedderBaseUrl || "",
@@ -508,8 +511,9 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 			settingsToSave[key] = value
 		}
 
-		// Always include codebaseIndexEnabled to ensure it's persisted
+		// Always include codebaseIndexEnabled and codebaseIndexBranchIsolation to ensure they're persisted
 		settingsToSave.codebaseIndexEnabled = currentSettings.codebaseIndexEnabled
+		settingsToSave.codebaseIndexBranchIsolation = currentSettings.codebaseIndexBranchIsolation
 
 		// Save settings to backend
 		vscode.postMessage({

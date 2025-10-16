@@ -1120,6 +1120,7 @@ describe("CodeIndexConfigManager", () => {
 					ollamaBaseUrl: undefined,
 					qdrantUrl: "http://qdrant.local",
 					qdrantApiKey: undefined,
+					branchIsolation: false,
 				}
 
 				const requiresRestart = configManager.doesConfigChangeRequireRestart(mockPrevConfig)
@@ -1437,6 +1438,7 @@ describe("CodeIndexConfigManager", () => {
 				embedderProvider: "openai",
 				openAiKey: "test-key",
 				qdrantUrl: "http://localhost:6333",
+				branchIsolation: false,
 			}
 
 			// Update to disabled
@@ -1490,6 +1492,7 @@ describe("CodeIndexConfigManager", () => {
 				enabled: false,
 				configured: false,
 				embedderProvider: "openai",
+				branchIsolation: false,
 			}
 
 			// Same config, still disabled
@@ -1514,6 +1517,7 @@ describe("CodeIndexConfigManager", () => {
 				embedderProvider: "openai",
 				openAiKey: "test-key",
 				qdrantUrl: "http://localhost:6333",
+				branchIsolation: false,
 			}
 
 			const result = configManager.doesConfigChangeRequireRestart(previousSnapshot)
@@ -1533,6 +1537,7 @@ describe("CodeIndexConfigManager", () => {
 				enabled: false,
 				configured: false,
 				embedderProvider: "openai",
+				branchIsolation: false,
 			}
 
 			// Provider changed but feature is disabled

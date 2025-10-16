@@ -355,3 +355,67 @@ export async function getWorkingState(cwd: string): Promise<string> {
 		return `Failed to get working state: ${error instanceof Error ? error.message : String(error)}`
 	}
 }
+
+/**
+ * Gets the current Git branch name for a given directory
+ * @param cwd The directory to check (defaults to current working directory)
+ * @returns The current branch name, or null if not in a git repo or in detached HEAD state
+ */
+export async function getCurrentBranch(cwd: string): Promise<string | null> {
+	try {
+		const isInstalled = await checkGitInstalled()
+		if (!isInstalled) {
+			return null
+		}
+
+		const isRepo = await checkGitRepo(cwd)
+		if (!isRepo) {
+			return null
+		}
+
+		// Try to get the current branch name
+		const { stdout } = await execAsync("git rev-parse --abbrev-ref HEAD", { cwd })
+		const branch = stdout.trim()
+
+		// Check if we're in detached HEAD state
+		if (branch === "HEAD") {
+			return null
+		}
+
+		return branch
+	} catch (error) {
+		console.error("Error getting current branch:", error)
+		return null
+	}
+}
+
+/**
+ * Sanitizes a branch name for use in collection names
+ * @param branchName The original branch name
+ * @returns Sanitized branch name suitable for use in identifiers
+ */
+export function sanitizeBranchName(branchName: string): string {
+	// Convert to lowercase
+	let sanitized = branchName.toLowerCase()
+
+	// Replace non-alphanumeric characters with hyphens
+	sanitized = sanitized.replace(/[^a-z0-9]+/g, "-")
+
+	// Remove leading/trailing hyphens
+	sanitized = sanitized.replace(/^-+|-+$/g, "")
+
+	// Collapse multiple consecutive hyphens
+	sanitized = sanitized.replace(/-+/g, "-")
+
+	// Limit length to 50 characters (reasonable limit for branch segment)
+	if (sanitized.length > 50) {
+		sanitized = sanitized.substring(0, 50).replace(/-+$/, "")
+	}
+
+	// If empty after sanitization, use a default
+	if (!sanitized) {
+		sanitized = "default"
+	}
+
+	return sanitized
+}
