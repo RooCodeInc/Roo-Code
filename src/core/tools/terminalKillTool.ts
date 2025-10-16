@@ -34,7 +34,15 @@ export async function terminalKillTool(
 		}
 
 		try {
-			const result = await killTerminalProcess(parseInt(terminalId))
+const parsedId = parseInt(terminalId, 10)
+if (isNaN(parsedId)) {
+	task.consecutiveMistakeCount++
+	task.recordToolError("terminal_ctrl")
+	pushToolResult(formatResponse.toolError(`Invalid terminal_id "${terminalId}". Must be a number.`))
+	return
+}
+
+const result = await killTerminalProcess(parsedId)
 			pushToolResult(formatResponse.toolResult(result))
 		} catch (error) {
 			await handleError("killing terminal process", error)
