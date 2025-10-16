@@ -22,6 +22,7 @@ import {
 	processImageFile,
 	ImageMemoryTracker,
 } from "./helpers/imageHelpers"
+import { regexSearchFiles } from "../../services/ripgrep"
 
 export function getReadFileToolDescription(blockName: string, blockParams: any): string {
 	// Handle both single path and multiple files via args
@@ -54,6 +55,120 @@ export function getReadFileToolDescription(blockName: string, blockParams: any):
 		return `[${blockName} with missing path/args]`
 	}
 }
+
+/**
+ * Pattern 搜索結果介面
+ */
+interface PatternMatch {
+	startLine: number
+	endLine: number
+	matchLine: number // 實際匹配的行號
+	content: string // 帶行號的上下文（前後各 2 行）
+}
+
+/**
+ * 在單個檔案中搜索 pattern
+ * @param filePath - 完整檔案路徑
+ * @param cwd - 工作目錄
+ * @param pattern - Regex pattern
+ * @param rooIgnoreController - Ignore 控制器
+ * @returns 匹配結果數組
+ */
+async function searchPatternInFile(
+	filePath: string,
+	cwd: string,
+	pattern: string,
+	rooIgnoreController?: any,
+): Promise<PatternMatch[]> {
+	try {
+		// 使用 ripgrep 搜索單個檔案
+		const searchResults = await regexSearchFiles(cwd, filePath, pattern, undefined, rooIgnoreController)
+
+		// 解析 ripgrep 輸出
+		// 輸出格式範例：
+		// # src/app.ts
+		//  45 | export async function fetchData() {
+		//  46 |   const response = await fetch(url)
+		//  47 |   return response.json()
+		// ----
+
+		const matches: PatternMatch[] = []
+		const lines = searchResults.split("\n")
+
+		let currentMatchLines: { line: number; text: string }[] = []
+		let inMatchBlock = false
+
+		for (let i = 0; i < lines.length; i++) {
+			const line = lines[i]
+
+			// 跳過檔案名行
+			if (line.startsWith("#")) {
+				continue
+			}
+
+			// 分隔符表示一個匹配塊結束
+			if (line.trim() === "----") {
+				if (currentMatchLines.length > 0) {
+					// 提取行號範圍
+					const lineNumbers = currentMatchLines.map((l) => l.line)
+					const startLine = Math.min(...lineNumbers)
+					const endLine = Math.max(...lineNumbers)
+
+					// 組合內容
+					const content = currentMatchLines
+						.map((l) => `${String(l.line).padStart(3, " ")} | ${l.text}`)
+						.join("\n")
+
+					// 假設匹配行在中間位置
+					const matchLine = currentMatchLines[Math.floor(currentMatchLines.length / 2)].line
+
+					matches.push({
+						startLine,
+						endLine,
+						matchLine,
+						content,
+					})
+
+					currentMatchLines = []
+				}
+				inMatchBlock = false
+				continue
+			}
+
+			// 解析行號和內容
+			// 格式: " 45 | export async function fetchData() {"
+			const match = line.match(/^\s*(\d+)\s+\|\s+(.*)$/)
+			if (match) {
+				const lineNumber = parseInt(match[1], 10)
+				const lineText = match[2]
+				currentMatchLines.push({ line: lineNumber, text: lineText })
+				inMatchBlock = true
+			}
+		}
+
+		// 處理最後一個匹配塊（如果沒有結尾的分隔符）
+		if (currentMatchLines.length > 0) {
+			const lineNumbers = currentMatchLines.map((l) => l.line)
+			const startLine = Math.min(...lineNumbers)
+			const endLine = Math.max(...lineNumbers)
+			const content = currentMatchLines.map((l) => `${String(l.line).padStart(3, " ")} | ${l.text}`).join("\n")
+			const matchLine = currentMatchLines[Math.floor(currentMatchLines.length / 2)].line
+
+			matches.push({
+				startLine,
+				endLine,
+				matchLine,
+				content,
+			})
+		}
+
+		return matches
+	} catch (error) {
+		console.error(`[searchPatternInFile] Error searching pattern in ${filePath}:`, error)
+		return []
+	}
+}
+
 // Types
 interface LineRange {
 	start: number
@@ -63,6 +178,7 @@ interface LineRange {
 interface FileEntry {
 	path?: string
 	lineRanges?: LineRange[]
+	pattern?: string // 新增：用於在檔案中搜索 regex pattern
 }
 
 // New interface to track file processing state
@@ -73,6 +189,7 @@ interface FileResult {
 	error?: string
 	notice?: string
 	lineRanges?: LineRange[]
+	pattern?: string // Pattern for searching within the file
 	xmlContent?: string // Final XML content for this file
 	imageDataUrl?: string // Image data URL for image files
 	feedbackText?: string // User feedback text from approval/denial
@@ -137,6 +254,7 @@ export async function readFileTool(
 				const fileEntry: FileEntry = {
 					path: file.path,
 					lineRanges: [],
+					pattern: file.pattern, // 解析 pattern 參數
 				}
 
 				if (file.line_range) {
@@ -196,6 +314,7 @@ export async function readFileTool(
 		path: entry.path || "",
 		status: "pending",
 		lineRanges: entry.lineRanges,
+		pattern: entry.pattern,
 	}))
 
 	// Function to update file result status
@@ -541,6 +660,118 @@ export async function readFileTool(
 					}
 					updateFileResult(relPath, {
 						xmlContent: `<file><path>${relPath}</path>\n${rangeResults.join("\n")}\n</file>`,
+					})
+					continue
+				}
+
+				// Handle pattern search (lightweight search mode)
+				if (fileResult.pattern) {
+					const matches = await searchPatternInFile(
+						fullPath,
+						cline.cwd,
+						fileResult.pattern,
+						cline.rooIgnoreController,
+					)
+
+					// Track file read
+					await cline.fileContextTracker.trackFileContext(relPath, "read_tool" as RecordSource)
+
+					if (matches.length === 0) {
+						const xmlInfo = `<metadata>
+<total_lines>${totalLines}</total_lines>
+<pattern>${fileResult.pattern}</pattern>
+<matches_count>0</matches_count>
+</metadata>
+<notice>No matches found for pattern "${fileResult.pattern}"</notice>`
+
+						updateFileResult(relPath, {
+							xmlContent: `<file><path>${relPath}</path>\n${xmlInfo}\n</file>`,
+						})
+						continue
+					}
+
+					// 限制返回的匹配數量（最多 20 個）
+					const limitedMatches = matches.slice(0, 20)
+					const hasMore = matches.length > 20
+
+					let xmlInfo = `<metadata>
+<total_lines>${totalLines}</total_lines>
+<pattern>${fileResult.pattern}</pattern>
+<matches_count>${matches.length}</matches_count>
+${hasMore ? `<showing_matches>20</showing_matches>` : ""}
+</metadata>\n`
+
+					// 添加每個匹配的內容
+					limitedMatches.forEach((match, idx) => {
+						const lineAttr = ` lines="${match.startLine}-${match.endLine}"`
+						xmlInfo += `<search_result${lineAttr}>\n${match.content}\n</search_result>\n`
+					})
+
+					// 添加提示信息
+					const firstMatch = limitedMatches[0]
+					const exampleStart = Math.max(1, firstMatch.matchLine - 10)
+					const exampleEnd = Math.min(totalLines, firstMatch.matchLine + 10)
+
+					let notice = `Found ${matches.length} match(es)${hasMore ? `, showing first 20` : ""}.`
+					notice += `\n\nTo read full context around a match, use line_range:\n`
+					notice += `<read_file>\n<args>\n  <file>\n    <path>${relPath}</path>\n`
+					notice += `    <line_range>${exampleStart}-${exampleEnd}</line_range>  <!-- Context around first match -->\n`
+					notice += `  </file>\n</args>\n</read_file>`
+
+					xmlInfo += `<notice>${notice}</notice>`
+
+					updateFileResult(relPath, {
+						xmlContent: `<file><path>${relPath}</path>\n${xmlInfo}\n</file>`,
+					})
+					continue
+				}
+
+				// Auto-limit large files without line_range to protect context (Option G)
+				// This helps weak models learn to use line_range by showing them the correct syntax
+				if (totalLines > 300 && (!fileResult.lineRanges || fileResult.lineRanges.length === 0)) {
+					const autoLimitLines = 100
+					const content = addLineNumbers(await readLines(fullPath, autoLimitLines - 1, 0), 1)
+					const lineRangeAttr = ` lines="1-${autoLimitLines}"`
+					let xmlInfo = `<metadata>\n<total_lines>${totalLines}</total_lines>\n<showing_lines>1-${autoLimitLines}</showing_lines>\n</metadata>\n`
+					xmlInfo += `<content${lineRangeAttr}>\n${content}</content>\n`
+
+					// Try to get code definitions to help model locate specific sections
+					try {
+						const defResult = await parseSourceCodeDefinitionsForFile(fullPath, cline.rooIgnoreController)
+						if (defResult) {
+							xmlInfo += `<list_code_definition_names>${defResult}</list_code_definition_names>\n`
+						}
+					} catch (error) {
+						// Silently ignore definition parsing errors for non-supported languages
+						if (error instanceof Error && !error.message.startsWith("Unsupported language:")) {
+							console.warn(`[read_file] Warning parsing definitions: ${error.message}`)
+						}
+					}
+
+					// Educational notice to teach weak models how to use line_range
+					const educationalNotice = `⚠️ This file has ${totalLines} lines (exceeds 300-line threshold).
+Showing first ${autoLimitLines} lines only to preserve context.
+
+To read specific sections, use line_range parameter:
+<read_file>
+<args>
+  <file>
+    <path>${relPath}</path>
+    <line_range>1-100</line_range>      <!-- First 100 lines -->
+    <line_range>450-550</line_range>    <!-- Lines around specific function -->
+  </file>
+</args>
+</read_file>
+
+You can specify multiple <line_range> elements to read non-adjacent sections efficiently.`
+
+					xmlInfo += `<notice>${educationalNotice}</notice>\n`
+
+					// Track file read
+					await cline.fileContextTracker.trackFileContext(relPath, "read_tool" as RecordSource)
+
+					updateFileResult(relPath, {
+						xmlContent: `<file><path>${relPath}</path>\n${xmlInfo}</file>`,
 					})
 					continue
 				}
