@@ -46,7 +46,6 @@ export const providerProfilesSchema = z.object({
 			openAiHeadersMigrated: z.boolean().optional(),
 			consecutiveMistakeLimitMigrated: z.boolean().optional(),
 			todoListEnabledMigrated: z.boolean().optional(),
-			zaiApiLineCodingOnlyMigrated: z.boolean().optional(),
 		})
 		.optional(),
 })
@@ -71,7 +70,6 @@ export class ProviderSettingsManager {
 			openAiHeadersMigrated: true, // Mark as migrated on fresh installs
 			consecutiveMistakeLimitMigrated: true, // Mark as migrated on fresh installs
 			todoListEnabledMigrated: true, // Mark as migrated on fresh installs
-			zaiApiLineCodingOnlyMigrated: true, // Mark as migrated on fresh installs
 		},
 	}
 
@@ -176,15 +174,6 @@ export class ProviderSettingsManager {
 					await this.migrateTodoListEnabled(providerProfiles)
 					providerProfiles.migrations.todoListEnabledMigrated = true
 					isDirty = true
-				}
-
-				// Migrate Z AI api line to coding-only options
-				if (!providerProfiles.migrations.zaiApiLineCodingOnlyMigrated) {
-					const changed = await this.migrateZaiApiLineCodingOnly(providerProfiles)
-					if (changed) {
-						providerProfiles.migrations.zaiApiLineCodingOnlyMigrated = true
-						isDirty = true
-					}
 				}
 
 				if (isDirty) {
@@ -584,9 +573,7 @@ export class ProviderSettingsManager {
 
 			const apiConfigs = Object.entries(providerProfiles.apiConfigs).reduce(
 				(acc, [key, apiConfig]) => {
-					// Preprocess legacy settings before validation (e.g., Z AI api line)
-					const processed = this.preprocessLegacySettings(apiConfig)
-					const result = providerSettingsWithIdSchema.safeParse(processed)
+					const result = providerSettingsWithIdSchema.safeParse(apiConfig)
 					return result.success ? { ...acc, [key]: result.data } : acc
 				},
 				{} as Record<string, ProviderSettingsWithId>,
@@ -616,50 +603,6 @@ export class ProviderSettingsManager {
 		} catch (error) {
 			throw new Error(`Failed to write provider profiles to secrets: ${error}`)
 		}
-	}
-
-	/**
-	 * Preprocess legacy settings objects before schema validation.
-	 * For example, coerce deprecated Z AI api lines to coding-only variants.
-	 */
-	private preprocessLegacySettings(apiConfig: any): any {
-		try {
-			if (apiConfig && apiConfig.apiProvider === "zai") {
-				const line = apiConfig.zaiApiLine
-				if (line === "international" || line === "intl_standard") {
-					apiConfig.zaiApiLine = "international_coding"
-				} else if (line === "china" || line === "china_standard") {
-					apiConfig.zaiApiLine = "china_coding"
-				}
-			}
-		} catch {
-			// no-op
-		}
-		return apiConfig
-	}
-
-	/**
-	 * Migrate Z AI api line values to coding-only options across all profiles.
-	 */
-	private async migrateZaiApiLineCodingOnly(providerProfiles: ProviderProfiles): Promise<boolean> {
-		let changed = false
-		try {
-			for (const [_name, apiConfig] of Object.entries(providerProfiles.apiConfigs)) {
-				if ((apiConfig as any)?.apiProvider === "zai") {
-					const cfg = apiConfig as any
-					if (cfg.zaiApiLine === "international" || cfg.zaiApiLine === "intl_standard") {
-						cfg.zaiApiLine = "international_coding"
-						changed = true
-					} else if (cfg.zaiApiLine === "china" || cfg.zaiApiLine === "china_standard") {
-						cfg.zaiApiLine = "china_coding"
-						changed = true
-					}
-				}
-			}
-		} catch (error) {
-			console.error(`[MigrateZaiApiLine] Failed to migrate Z AI api line settings:`, error)
-		}
-		return changed
 	}
 
 	private findUniqueProfileName(baseName: string, existingNames: Set<string>): string {
