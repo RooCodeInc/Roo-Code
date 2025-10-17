@@ -72,7 +72,7 @@ export const UISettings = ({
 						<VSCodeCheckbox
 							checked={apiRequestBlockHide}
 							onChange={(e: any) => handleApiRequestBlockHideChange(e.target.checked)}
-							data-testid="collapse-thinking-checkbox">
+							data-testid="hdie-api-request-block">
 							<span className="font-medium">{t("settings:ui.apiRequestBlockHide.label")}</span>
 						</VSCodeCheckbox>
 						<div className="text-vscode-descriptionForeground text-sm ml-5 mt-1">

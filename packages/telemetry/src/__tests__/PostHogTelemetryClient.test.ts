@@ -11,12 +11,23 @@ import { PostHogTelemetryClient } from "../PostHogTelemetryClient"
 
 vi.mock("posthog-node")
 
+// Mock getClientId to prevent VSCode extension initialization
+vi.mock("../../../../src/utils/getClientId", () => ({
+	getClientId: vi.fn(() => "test-client-id"),
+}))
+
+// Mock vscode with all necessary properties to prevent initialization errors
 vi.mock("vscode", () => ({
 	env: {
 		machineId: "test-machine-id",
 	},
 	workspace: {
 		getConfiguration: vi.fn(),
+		workspaceFolders: [],
+		getWorkspaceFolder: vi.fn(),
+	},
+	window: {
+		activeTextEditor: undefined,
 	},
 }))
 
