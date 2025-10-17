@@ -2094,7 +2094,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					}
 				}}
 			/>
-
 			<ChatTextArea
 				ref={textAreaRef}
 				inputValue={inputValue}

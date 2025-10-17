@@ -61,13 +61,6 @@ vi.mock("../AutoApproveMenu", () => ({
 	default: () => null,
 }))
 
-// Mock CloudAgents component
-vi.mock("../../cloud/CloudAgents", () => ({
-	default: function MockCloudAgents() {
-		return <div data-testid="cloud-agents">Cloud Agents</div>
-	},
-}))
-
 // Mock VersionIndicator - returns null by default to prevent rendering in tests
 vi.mock("../../common/VersionIndicator", () => ({
 	default: vi.fn(() => null),

@@ -188,7 +188,6 @@ export interface WebviewMessage {
 		| "rooCloudSignOut"
 		| "rooCloudManualUrl"
 		| "switchOrganization"
-		| "getCloudAgents"
 		| "condenseTaskContextRequest"
 		| "requestIndexingStatus"
 		| "startIndexing"
