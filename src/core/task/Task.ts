@@ -1867,8 +1867,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 			this.clineMessages[lastApiReqIndex].text = JSON.stringify({
 				request: apiRequestBlockHide
-					? finalUserContent.map((block) => formatContentBlockToMarkdown(block)).join("\n\n")
-					: undefined,
+					? undefined
+					: finalUserContent.map((block) => formatContentBlockToMarkdown(block)).join("\n\n"),
 				apiProtocol,
 			} satisfies ClineApiReqInfo)
 
@@ -2769,6 +2769,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				if (error.status === 401) {
 					ZgsmAuthService.openStatusBarLoginTip()
 				}
+			} else {
+				errorMsg = error.message
 			}
 
 			this.isWaitingForFirstChunk = false
