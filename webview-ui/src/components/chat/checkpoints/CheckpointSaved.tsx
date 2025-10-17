@@ -84,12 +84,7 @@ export const CheckpointSaved = ({ checkpoint, ...props }: CheckpointSavedProps) 
 			<div
 				data-testid="checkpoint-menu-container"
 				className={cn("h-4 -mt-2", menuVisible ? "block" : "hidden group-hover:block")}>
-				<CheckpointMenu
-					{...props}
-					checkpoint={metadata}
-					open={isPopoverOpen}
-					onOpenChange={handlePopoverOpenChange}
-				/>
+				<CheckpointMenu {...props} checkpoint={metadata} onOpenChange={handlePopoverOpenChange} />
 			</div>
 		</div>
 	)
