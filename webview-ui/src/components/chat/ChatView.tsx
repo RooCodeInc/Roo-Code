@@ -594,9 +594,18 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			text = text.trim()
 
 			if (text || images.length > 0) {
-				if (sendingDisabled) {
+				// UI hardening: Prefer queuing when no active ask during model flight or transitions
+				// This helps narrow the race condition window where messages could vanish
+				const shouldQueue =
+					sendingDisabled || (messagesRef.current.length > 0 && !clineAskRef.current && isStreaming)
+
+				if (shouldQueue) {
 					try {
-						console.log("queueMessage", text, images)
+						console.log("queueMessage", text, images, {
+							sendingDisabled,
+							noActiveAsk: !clineAskRef.current,
+							isStreaming,
+						})
 						vscode.postMessage({ type: "queueMessage", text, images })
 						setInputValue("")
 						setSelectedImages([])
@@ -650,7 +659,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				handleChatReset()
 			}
 		},
-		[handleChatReset, markFollowUpAsAnswered, sendingDisabled], // messagesRef and clineAskRef are stable
+		[handleChatReset, markFollowUpAsAnswered, sendingDisabled, isStreaming], // messagesRef and clineAskRef are stable
 	)
 
 	const handleSetChatBoxMessage = useCallback(

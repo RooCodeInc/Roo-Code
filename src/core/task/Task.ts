@@ -862,8 +862,48 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			}
 		}
 
+		// Set up queue listener to actively monitor for newly queued messages while waiting
+		let queueListener: (() => void) | undefined
+		if (isBlocking) {
+			queueListener = () => {
+				// Check if a message was queued while we're waiting
+				if (
+					!this.messageQueueService.isEmpty() &&
+					this.askResponse === undefined &&
+					this.lastMessageTs === askTs
+				) {
+					console.log("Task#ask detected queued message while waiting")
+					const message = this.messageQueueService.dequeueMessage()
+
+					if (message) {
+						// Check if this is a tool approval ask that needs to be handled
+						if (
+							type === "tool" ||
+							type === "command" ||
+							type === "browser_action_launch" ||
+							type === "use_mcp_server"
+						) {
+							// For tool approvals, we need to approve first, then send the message if there's text/images
+							this.handleWebviewAskResponse("yesButtonClicked", message.text, message.images)
+						} else {
+							// For other ask types (like followup), fulfill the ask directly
+							this.setMessageResponse(message.text, message.images)
+						}
+					}
+				}
+			}
+
+			// Attach the listener
+			this.messageQueueService.on("stateChanged", queueListener)
+		}
+
 		// Wait for askResponse to be set.
 		await pWaitFor(() => this.askResponse !== undefined || this.lastMessageTs !== askTs, { interval: 100 })
+
+		// Clean up queue listener
+		if (queueListener) {
+			this.messageQueueService.removeListener("stateChanged", queueListener)
+		}
 
 		if (this.lastMessageTs !== askTs) {
 			// Could happen if we send multiple asks in a row i.e. with
@@ -2274,6 +2314,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 				// Reset parser after each complete conversation round
 				this.assistantMessageParser.reset()
+
+				// Drain any queued messages after API turn completes
+				// This ensures that user messages sent during LLM processing are promptly handled
+				// between API steps rather than being stuck in queue
+				while (!this.messageQueueService.isEmpty()) {
+					console.log("[Task] Draining message queue after API turn")
+					this.processQueuedMessages()
+				}
 
 				// Now add to apiConversationHistory.
 				// Need to save assistant responses to file before proceeding to
