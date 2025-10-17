@@ -97,7 +97,10 @@ describe("HistoryPreview", () => {
 			setShowAllWorkspaces: vi.fn(),
 		})
 
+		const { container } = render(<HistoryPreview />)
+
 		// Should render the container but no task items
+		expect(container.firstChild).toHaveClass("flex", "flex-col", "gap-3")
 		expect(screen.queryByTestId(/task-item-/)).not.toBeInTheDocument()
 	})
 
@@ -206,5 +209,23 @@ describe("HistoryPreview", () => {
 			}),
 			expect.anything(),
 		)
+	})
+
+	it("renders with correct container classes", () => {
+		mockUseTaskSearch.mockReturnValue({
+			tasks: mockTasks.slice(0, 1),
+			searchQuery: "",
+			setSearchQuery: vi.fn(),
+			sortOption: "newest",
+			setSortOption: vi.fn(),
+			lastNonRelevantSort: null,
+			setLastNonRelevantSort: vi.fn(),
+			showAllWorkspaces: false,
+			setShowAllWorkspaces: vi.fn(),
+		})
+
+		const { container } = render(<HistoryPreview />)
+
+		expect(container.firstChild).toHaveClass("flex", "flex-col", "gap-3")
 	})
 })

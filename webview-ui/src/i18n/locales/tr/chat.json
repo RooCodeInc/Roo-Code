@@ -85,16 +85,24 @@
 		"tooltip": "Mevcut işlemi iptal et"
 	},
 	"scrollToBottom": "Sohbetin altına kaydır",
-	"about": "Roo Code, düzenleyicinizde bütün bir AI geliştirme ekibidir.",
-	"docs": "Daha fazla bilgi edinmek için <DocsLink>belgelerimize</DocsLink> göz atın.",
+	"about": "AI yardımıyla kod oluşturun, yeniden düzenleyin ve hatalarını ayıklayın. Daha fazla bilgi edinmek için <DocsLink>belgelerimize</DocsLink> göz atın.",
+	"onboarding": "<strong>Bu çalışma alanındaki görev listeniz boş.</strong> Aşağıya bir görev yazarak başlayın. Nasıl başlayacağınızdan emin değil misiniz? Roo'nun sizin için neler yapabileceği hakkında daha fazla bilgiyi <DocsLink>belgelerde</DocsLink> okuyun.",
 	"rooTips": {
-		"customizableModes": {
-			"title": "Özelleştirilebilir modlar",
-			"description": "Göreve sadık kalan ve sonuç veren özel kişilikler."
+		"boomerangTasks": {
+			"title": "Görev Orkestrasyonu",
+			"description": "Görevleri daha küçük, yönetilebilir parçalara ayırın."
 		},
-		"modelAgnostic": {
-			"title": "Kendi modelini getir",
-			"description": "Kendi sağlayıcı anahtarınızı kullanın veya hatta yerel çıkarım çalıştırın — ek ücret yok, kilitlenme yok, kısıtlama yok"
+		"stickyModels": {
+			"title": "Yapışkan Modlar",
+			"description": "Her mod, en son kullandığınız modeli hatırlar"
+		},
+		"tools": {
+			"title": "Araçlar",
+			"description": "AI'nın web'e göz atarak, komutlar çalıştırarak ve daha fazlasını yaparak sorunları çözmesine izin verin."
+		},
+		"customizableModes": {
+			"title": "Özelleştirilebilir Modlar",
+			"description": "Kendi davranışları ve atanmış modelleri ile özelleştirilmiş kişilikler"
 		}
 	},
 	"selectMode": "Etkileşim modunu seçin",
@@ -405,12 +413,5 @@
 	"slashCommand": {
 		"wantsToRun": "Roo bir slash komutu çalıştırmak istiyor",
 		"didRun": "Roo bir slash komutu çalıştırdı"
-	},
-	"cloudAgents": {
-		"create": "Oluştur",
-		"title": "Bulut Aracıları",
-		"description": "Henüz herhangi bir Bulut Aracısı oluşturmadınız.",
-		"createFirst": "İlkini oluştur",
-		"clickToRun": "{{name}}'i çalıştırmak için tıklayın"
 	}
 }
