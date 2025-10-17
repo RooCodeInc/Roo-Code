@@ -474,4 +474,6 @@ export const BEDROCK_REGIONS = [
 export const BEDROCK_1M_CONTEXT_MODEL_IDS = [
 	"anthropic.claude-sonnet-4-20250514-v1:0",
 	"anthropic.claude-sonnet-4-5-20250929-v1:0",
+	"anthropic.claude-3-5-sonnet-20241022-v2:0",
+	"anthropic.claude-3-5-sonnet-20240620-v1:0",
 ] as const
