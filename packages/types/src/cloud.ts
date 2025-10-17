@@ -739,7 +739,8 @@ export interface CloudAgent {
  */
 
 export const cloudAgentsResponseSchema = z.object({
-	agents: z.array(
+	success: z.boolean(),
+	data: z.array(
 		z.object({
 			id: z.string(),
 			name: z.string(),

@@ -2470,24 +2470,13 @@ export const webviewMessageHandler = async (
 					`[getCloudAgents] Error fetching cloud agents: ${error instanceof Error ? error.message : String(error)}`,
 				)
 
-				// Check if it's an authentication error
-				const errorMessage = error instanceof Error ? error.message : String(error)
-				const isAuthError = errorMessage.includes("Authentication") || errorMessage.includes("401")
-
-				// Send empty array with error information
+				// Send response to stop loading state in UI
+				// The CloudAgents component will handle this gracefully by returning null
 				await provider.postMessageToWebview({
 					type: "cloudAgents",
 					agents: [],
-					error: errorMessage,
+					error: error instanceof Error ? error.message : String(error),
 				})
-
-				// If it's an authentication error, show a user-friendly message
-				if (isAuthError) {
-					vscode.window.showErrorMessage(
-						t("common:errors.auth_required_for_cloud_agents") ||
-							"Authentication required to access cloud agents",
-					)
-				}
 			}
 			break
 		}

@@ -27,7 +27,7 @@ describe("CloudAPI", () => {
 				{ id: "2", name: "Agent 2", type: "chat", icon: "chat" },
 			]
 
-			// Mock successful response
+			// Mock successful response with schema-compliant format
 			;(global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
 				ok: true,
 				json: async () => ({ success: true, data: mockAgents }),
@@ -66,11 +66,11 @@ describe("CloudAPI", () => {
 			await expect(cloudAPI.getCloudAgents()).rejects.toThrow(AuthenticationError)
 		})
 
-		it("should return empty array when data is missing", async () => {
-			// Mock response with no data
+		it("should return empty array when agents array is empty", async () => {
+			// Mock response with empty agents array
 			;(global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
 				ok: true,
-				json: async () => ({ success: true }),
+				json: async () => ({ success: true, data: [] }),
 			})
 
 			const agents = await cloudAPI.getCloudAgents()
