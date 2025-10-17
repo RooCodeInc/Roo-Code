@@ -346,7 +346,7 @@
 		"enablePromptCachingTitle": "Habilitar l'emmagatzematge en caché de prompts per millorar el rendiment i reduir els costos per als models compatibles.",
 		"cacheUsageNote": "Nota: Si no veieu l'ús de la caché, proveu de seleccionar un model diferent i després tornar a seleccionar el model desitjat.",
 		"vscodeLmModel": "Model de llenguatge",
-		"vscodeLmWarning": "Nota: Aquesta és una integració molt experimental i el suport del proveïdor variarà. Si rebeu un error sobre un model no compatible, és un problema del proveïdor.",
+		"vscodeLmWarning": "Nota: Els models accessibles a través de l’API VS Code Language Model poden estar encapsulats o ajustats pel proveïdor; per tant, el comportament pot diferir de l’ús directe del mateix model des d’un proveïdor o enrutador típic. Per utilitzar un model del desplegable «Language Model», primer canvia a aquest model i després fes clic a «Acceptar» a l’avís de Copilot Chat; en cas contrari pots veure un error com 400 «The requested model is not supported».",
 		"geminiParameters": {
 			"urlContext": {
 				"title": "Activa el context d'URL",

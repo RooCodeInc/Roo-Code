@@ -346,7 +346,7 @@
 		"enablePromptCachingTitle": "Schakel prompt caching in om de prestaties te verbeteren en de kosten te verlagen voor ondersteunde modellen.",
 		"cacheUsageNote": "Let op: als je geen cachegebruik ziet, probeer dan een ander model te selecteren en vervolgens weer je gewenste model.",
 		"vscodeLmModel": "Taalmodel",
-		"vscodeLmWarning": "Let op: dit is een zeer experimentele integratie en ondersteuning door providers kan variëren. Krijg je een foutmelding dat een model niet wordt ondersteund, dan ligt dat aan de provider.",
+		"vscodeLmWarning": "Let op: Modellen die via de VS Code Language Model API worden benaderd kunnen door de provider worden verpakt of fijn‑afgesteld, waardoor het gedrag kan afwijken van het rechtstreeks gebruiken van hetzelfde model bij een typische provider of router. Om een model uit de keuzelijst ‘Language Model’ te gebruiken, schakel eerst naar dat model en klik vervolgens op ‘Accepteren’ in de Copilot Chat‑prompt; anders kun je een fout zien zoals 400 ‘The requested model is not supported’.",
 		"geminiParameters": {
 			"urlContext": {
 				"title": "URL-context inschakelen",
