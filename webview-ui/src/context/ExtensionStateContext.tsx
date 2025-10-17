@@ -43,6 +43,7 @@ export interface ExtensionStateContextType extends ExtensionState {
 	organizationSettingsVersion: number
 	cloudIsAuthenticated: boolean
 	cloudOrganizations?: CloudOrganizationMembership[]
+	cloudApiUrl?: string
 	sharingEnabled: boolean
 	maxConcurrentFileReads?: number
 	mdmCompliant?: boolean
@@ -493,6 +494,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		routerModels: extensionRouterModels,
 		cloudIsAuthenticated: state.cloudIsAuthenticated ?? false,
 		// cloudOrganizations: state.cloudOrganizations ?? [],
+		// cloudApiUrl: state.cloudApiUrl || "https://app.roocode.com",
 		organizationSettingsVersion: state.organizationSettingsVersion ?? -1,
 		marketplaceItems,
 		marketplaceInstalledMetadata,

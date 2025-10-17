@@ -96,24 +96,16 @@
 		"placeholder": "Edit your message..."
 	},
 	"scrollToBottom": "Scroll to bottom of chat",
-	"about": "Generate, refactor, and debug code with AI assistance. Check out our <DocsLink>documentation</DocsLink> to learn more.",
-	"onboarding": "Your task list in this workspace is empty.",
+	"about": "Roo Code is a whole AI dev team in your editor.",
+	"docs": "Check our <DocsLink>docs</DocsLink> to learn more.",
 	"rooTips": {
-		"boomerangTasks": {
-			"title": "Task Orchestration",
-			"description": "Split tasks into smaller, manageable parts"
-		},
-		"stickyModels": {
-			"title": "Sticky Models",
-			"description": "Each mode remembers your last used model"
-		},
-		"tools": {
-			"title": "Tools",
-			"description": "Allow the AI to solve problems by browsing the web, running commands, and more"
-		},
 		"customizableModes": {
-			"title": "Customizable Modes",
-			"description": "Specialized personas with their own behaviors and assigned models"
+			"title": "Customizable modes",
+			"description": "Specialized personas that stay on-task and deliver."
+		},
+		"modelAgnostic": {
+			"title": "Bring your own model",
+			"description": "Use your own provider key or even run local inference — no markup, lock-in, no restrictions"
 		}
 	},
 	"selectMode": "Select mode for interaction",
@@ -351,18 +343,6 @@
 		"description": "Your command is being executed without VSCode terminal shell integration. To suppress this warning you can disable shell integration in the <strong>Terminal</strong> section of the <settingsLink>Roo Code settings</settingsLink> or troubleshoot VSCode terminal integration using the link below.",
 		"troubleshooting": "Click here for shell integration documentation."
 	},
-	"ask": {
-		"autoApprovedRequestLimitReached": {
-			"title": "Auto-Approved Request Limit Reached",
-			"description": "Roo has reached the auto-approved limit of {{count}} API request(s). Would you like to reset the count and proceed with the task?",
-			"button": "Reset and Continue"
-		},
-		"autoApprovedCostLimitReached": {
-			"title": "Auto-Approved Cost Limit Reached",
-			"description": "Roo has reached the auto-approved cost limit of ${{count}}. Would you like to reset the cost and proceed with the task?",
-			"button": "Reset and Continue"
-		}
-	},
 	"indexingStatus": {
 		"ready": "Index ready",
 		"indexing": "Indexing {{percentage}}%",
@@ -396,14 +376,6 @@
 			"confirm": "Delete"
 		}
 	},
-	"slashCommand": {
-		"wantsToRun": "Roo wants to run a slash command",
-		"didRun": "Roo ran a slash command"
-	},
-	"queuedMessages": {
-		"title": "Queued Messages",
-		"clickToEdit": "Click to edit message"
-	},
 	"contextMenu": {
 		"noResults": "No results",
 		"problems": "Problems",
@@ -412,5 +384,32 @@
 		"gitCommits": "Git Commits",
 		"addFile": "Add File",
 		"addFolder": "Add Folder"
+	},
+	"queuedMessages": {
+		"title": "Queued Messages",
+		"clickToEdit": "Click to edit message"
+	},
+	"slashCommand": {
+		"wantsToRun": "Roo wants to run a slash command",
+		"didRun": "Roo ran a slash command"
+	},
+	"ask": {
+		"autoApprovedRequestLimitReached": {
+			"title": "Auto-Approved Request Limit Reached",
+			"description": "Roo has reached the auto-approved limit of {{count}} API request(s). Would you like to reset the count and proceed with the task?",
+			"button": "Reset and Continue"
+		},
+		"autoApprovedCostLimitReached": {
+			"title": "Auto-Approved Cost Limit Reached",
+			"description": "Roo has reached the auto-approved cost limit of ${{count}}. Would you like to reset the cost and proceed with the task?",
+			"button": "Reset and Continue"
+		}
+	},
+	"cloudAgents": {
+		"create": "Create",
+		"title": "Cloud Agents",
+		"description": "You haven’t created any Cloud Agents yet.",
+		"createFirst": "Create your first",
+		"clickToRun": "Click to run {{name}}"
 	}
 }

@@ -1,6 +1,5 @@
 // import { VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 import { useTranslation } from "react-i18next"
-import { Trans } from "react-i18next"
 import { delay } from "lodash-es"
 
 // import { buildDocLink } from "@src/utils/docLinks"
@@ -116,18 +115,6 @@ const RooTips = () => {
 
 	return (
 		<div className="relative">
-			<p className="text-lg font-bold text-vscode-editor-foreground leading-tight font-vscode-font-family text-center text-balance max-w-[380px] mx-auto my-0">
-				<Trans
-					i18nKey="chat:about"
-					components={{
-						DocsLink: (
-							<a href="https://costrict.ai/" target="_blank" rel="noopener noreferrer">
-								the docs
-							</a>
-						),
-					}}
-				/>
-			</p>
 			<SectionDivider title={tWelcome("developmentMode")} icon="codicon-settings-gear" />
 			<div className="flex flex-row sm:flex-row gap-4">
 				{providers.map((provider, index) => (
@@ -143,10 +130,10 @@ const RooTips = () => {
 				))}
 			</div>
 			<SectionDivider title={tWelcome("commonFeatures")} icon="codicon-tools" />
-			<div className="flex flex-row sm:flex-row gap-4">
+			<div className="flex flex-wrap gap-4">
 				{tips.map((tip, index) => (
 					<StandardTooltip key={`${index}${tip.titleKey}`} content={t(tip.descriptionKey)} maxWidth={200}>
-						<Button variant="outline" onClick={tip.click}>
+						<Button variant="outline" onClick={tip.click} className="flex-shrink-0">
 							{t(tip.titleKey)}
 						</Button>
 					</StandardTooltip>

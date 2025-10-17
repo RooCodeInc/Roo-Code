@@ -368,7 +368,7 @@ const ApiOptions = ({
 				zai: {
 					field: "apiModelId",
 					default:
-						apiConfiguration.zaiApiLine === "china"
+						apiConfiguration.zaiApiLine === "china_coding"
 							? mainlandZAiDefaultModelId
 							: internationalZAiDefaultModelId,
 				},

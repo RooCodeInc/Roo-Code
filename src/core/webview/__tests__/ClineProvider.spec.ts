@@ -351,6 +351,7 @@ vi.mock("@roo-code/cloud", () => ({
 		isEnabled: vi.fn().mockReturnValue(false),
 	},
 	getRooCodeApiUrl: vi.fn().mockReturnValue("https://app.roocode.com"),
+	getCostrictApiUrl: vi.fn().mockReturnValue("https://zgsm.sangfor.com"),
 }))
 
 afterAll(() => {

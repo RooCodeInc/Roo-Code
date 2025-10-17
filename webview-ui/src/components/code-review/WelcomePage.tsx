@@ -9,14 +9,7 @@ const WelcomePage = () => {
 			<div className="welcome-page flex flex-col items-center w-full max-w-[500px] text-center">
 				<RooHero />
 
-				<div className="title text-[16px] font-semibold text-vscode-editorInfo-foreground">
-					{t("codereview:welcomePage.title")}
-				</div>
-				<div className="subtitle text-[13px] text-vscode-editor-foreground mb-[28px] leading-relaxed">
-					{t("codereview:welcomePage.subtitle")}
-				</div>
-
-				<div className="tips-card bg-vscode-editorWidget-background rounded-md w-full text-left border border-vscode-inputOption-activeBorder bg-vscode-list-activeSelectionBackground pb-1">
+				<div className="tips-card bg-vscode-editorWidget-background rounded-md w-full text-left border border-vscode-inputOption-activeBorder bg-vscode-list-activeSelectionBackground pb-1 mt-4">
 					<div className="tips-header flex items-center font-medium text-sm p-4 pb-2">
 						<i className="codicon codicon-lightbulb mr-2 text-lg"></i>
 						<span>Tips</span>
