@@ -906,6 +906,10 @@
 		"collapseThinking": {
 			"label": "默认折叠“思考”消息",
 			"description": "启用后，“思考”块将默认折叠，直到您与其交互"
+		},
+		"apiRequestBlockHide": {
+			"label": "默认隐藏“API 请求”详情",
+			"description": "启用后，“API 请求”详情不会渲染，有利于性能提升"
 		}
 	}
 }

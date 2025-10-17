@@ -1817,21 +1817,25 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			// Determine API protocol based on provider and model
 			const modelId = getModelId(this.apiConfiguration)
 			const apiProtocol = getApiProtocol(this.apiConfiguration.apiProvider, modelId)
-
-			await this.say(
-				"api_req_started",
-				JSON.stringify({
-					apiProtocol,
-				}),
-			)
-
 			const {
 				showRooIgnoredFiles = false,
 				includeDiagnosticMessages = true,
 				maxDiagnosticMessages = 50,
 				maxReadFileLine = -1,
 				maxReadCharacterLimit = 20000,
+				apiRequestBlockHide = true,
 			} = (await this.providerRef.deref()?.getState()) ?? {}
+
+			await this.say(
+				"api_req_started",
+				JSON.stringify({
+					request: apiRequestBlockHide
+						? undefined
+						: currentUserContent.map((block) => formatContentBlockToMarkdown(block)).join("\n\n") +
+							"\n\nLoading...",
+					apiProtocol,
+				}),
+			)
 
 			const parsedUserContent = await processUserContentMentions({
 				userContent: currentUserContent,
@@ -1862,6 +1866,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			const lastApiReqIndex = findLastIndex(this.clineMessages, (m) => m.say === "api_req_started")
 
 			this.clineMessages[lastApiReqIndex].text = JSON.stringify({
+				request: apiRequestBlockHide
+					? finalUserContent.map((block) => formatContentBlockToMarkdown(block)).join("\n\n")
+					: undefined,
 				apiProtocol,
 			} satisfies ClineApiReqInfo)
 

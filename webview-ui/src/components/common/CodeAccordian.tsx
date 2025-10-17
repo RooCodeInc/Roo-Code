@@ -13,6 +13,7 @@ interface CodeAccordianProps {
 	language: string
 	progressStatus?: ToolProgressStatus
 	isLoading?: boolean
+	allowEmptyBlock?: boolean
 	isExpanded: boolean
 	isFeedback?: boolean
 	onToggleExpand: () => void
@@ -26,6 +27,7 @@ const CodeAccordian = ({
 	language,
 	progressStatus,
 	isLoading,
+	allowEmptyBlock = true,
 	isExpanded,
 	isFeedback,
 	onToggleExpand,
@@ -34,6 +36,11 @@ const CodeAccordian = ({
 }: CodeAccordianProps) => {
 	const inferredLanguage = useMemo(() => language ?? (path ? getLanguageFromPath(path) : "txt"), [path, language])
 	const source = useMemo(() => code.trim(), [code])
+
+	if (!allowEmptyBlock && !code) {
+		return null
+	}
+
 	const hasHeader = Boolean(path || isFeedback || header)
 
 	return (

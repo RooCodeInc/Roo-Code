@@ -11,14 +11,28 @@ import { ExtensionStateContextType } from "@/context/ExtensionStateContext"
 
 interface UISettingsProps extends HTMLAttributes<HTMLDivElement> {
 	reasoningBlockCollapsed: boolean
+	apiRequestBlockHide: boolean
 	setCachedStateField: SetCachedStateField<keyof ExtensionStateContextType>
 }
 
-export const UISettings = ({ reasoningBlockCollapsed, setCachedStateField, ...props }: UISettingsProps) => {
+export const UISettings = ({
+	reasoningBlockCollapsed,
+	apiRequestBlockHide,
+	setCachedStateField,
+	...props
+}: UISettingsProps) => {
 	const { t } = useAppTranslation()
 
 	const handleReasoningBlockCollapsedChange = (value: boolean) => {
 		setCachedStateField("reasoningBlockCollapsed", value)
+
+		// Track telemetry event
+		telemetryClient.capture("ui_settings_collapse_thinking_changed", {
+			enabled: value,
+		})
+	}
+	const handleApiRequestBlockHideChange = (value: boolean) => {
+		setCachedStateField("apiRequestBlockHide", value)
 
 		// Track telemetry event
 		telemetryClient.capture("ui_settings_collapse_thinking_changed", {
@@ -47,6 +61,22 @@ export const UISettings = ({ reasoningBlockCollapsed, setCachedStateField, ...pr
 						</VSCodeCheckbox>
 						<div className="text-vscode-descriptionForeground text-sm ml-5 mt-1">
 							{t("settings:ui.collapseThinking.description")}
+						</div>
+					</div>
+				</div>
+			</Section>
+			<Section>
+				<div className="space-y-6">
+					{/* Collapse Thinking Messages Setting */}
+					<div className="flex flex-col gap-1">
+						<VSCodeCheckbox
+							checked={apiRequestBlockHide}
+							onChange={(e: any) => handleApiRequestBlockHideChange(e.target.checked)}
+							data-testid="collapse-thinking-checkbox">
+							<span className="font-medium">{t("settings:ui.apiRequestBlockHide.label")}</span>
+						</VSCodeCheckbox>
+						<div className="text-vscode-descriptionForeground text-sm ml-5 mt-1">
+							{t("settings:ui.apiRequestBlockHide.description")}
 						</div>
 					</div>
 				</div>

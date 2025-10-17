@@ -904,8 +904,12 @@
 	},
 	"ui": {
 		"collapseThinking": {
-			"label": "預設折疊“思考”訊息",
-			"description": "啟用後，“思考”塊將預設折疊，直到您與其互動"
+			"label": "預設折疊「思考」訊息",
+			"description": "啟用後，「思考」塊將預設折疊，直到您與其互動"
+		},
+		"apiRequestBlockHide": {
+			"label": "預設隱藏「API 請求」詳情",
+			"description": "啟用後，「API 請求」詳情不會渲染，有利於效能提升"
 		}
 	}
 }

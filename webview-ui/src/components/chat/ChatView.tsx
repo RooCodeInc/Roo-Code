@@ -96,6 +96,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		currentTaskItem,
 		currentTaskTodos,
 		taskHistory,
+		cwd,
 		apiConfiguration,
 		organizationAllowList,
 		mcpServers,
@@ -138,7 +139,10 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	// task, then the extension is in a bad state and needs to be debugged (see
 	// Cline.abort).
 	const task = useMemo(() => messages.at(0), [messages])
-
+	const curWorkspaceHistory = useMemo(
+		() => (taskHistory || []).filter((t) => t.workspace === cwd),
+		[cwd, taskHistory],
+	)
 	const latestTodos = useMemo(() => {
 		// First check if we have initial todos from the state (for new subtasks)
 		if (currentTaskTodos && currentTaskTodos.length > 0) {
@@ -1896,7 +1900,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			) : (
 				<div className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-4 relative">
 					<div
-						className={` w-full flex flex-col gap-4 m-auto ${taskHistory.length > 0 ? "mt-4" : ""} px-3.5 min-[370px]:px-10 pt-5 transition-all duration-300`}>
+						className={` w-full flex flex-col gap-4 m-auto ${curWorkspaceHistory.length > 0 ? "mt-4" : ""} px-3.5 min-[370px]:px-10 pt-5 transition-all duration-300`}>
 						{/* Version indicator in top-right corner - only on welcome screen */}
 						{/* <VersionIndicator
 							onClick={() => setShowAnnouncementModal(false)}
@@ -1908,7 +1912,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 						{/* {telemetrySetting === "unset" && <TelemetryBanner />} */}
 
 						{/* <div className="mb-2.5">
-							{cloudIsAuthenticated || taskHistory.length < 4 ? (
+							{cloudIsAuthenticated || curWorkspaceHistory.length < 4 ? (
 								<RooTips />
 							) : (
 								<>
@@ -1932,7 +1936,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							<RooTips />
 						</div>
 						{/* Show the task history preview if expanded and tasks exist */}
-						{taskHistory.length > 0 && <HistoryPreview />}
+						{curWorkspaceHistory.length > 0 && <HistoryPreview />}
 
 						{/* {cloudIsAuthenticated ? (
 							// Logged in users should always see their agents (or be upsold)

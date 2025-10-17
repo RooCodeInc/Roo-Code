@@ -197,6 +197,7 @@ describe("SettingsView - Unsaved Changes Detection", () => {
 		openRouterImageApiKey: undefined,
 		openRouterImageGenerationSelectedModel: undefined,
 		reasoningBlockCollapsed: true,
+		apiRequestBlockHide: true,
 	}
 
 	beforeEach(() => {

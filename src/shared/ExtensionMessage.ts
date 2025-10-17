@@ -320,6 +320,7 @@ export type ExtensionState = Pick<
 	| "openRouterImageGenerationSelectedModel"
 	| "includeTaskHistoryInEnhance"
 	| "reasoningBlockCollapsed"
+	| "apiRequestBlockHide"
 	| "errorCode"
 > & {
 	version: string
