@@ -50,6 +50,7 @@
 		"custom_storage_path_unusable": "Özel depolama yolu \"{{path}}\" kullanılamıyor, varsayılan yol kullanılacak",
 		"cannot_access_path": "{{path}} yoluna erişilemiyor: {{error}}",
 		"settings_import_failed": "Ayarlar içe aktarılamadı: {{error}}.",
+		"settings_import_no_content": "Ayarlar içe aktarma için içerik alınmadı.",
 		"mistake_limit_guidance": "Bu, modelin düşünce sürecindeki bir başarısızlığı veya bir aracı düzgün kullanamama durumunu gösterebilir, bu da kullanıcı rehberliği ile hafifletilebilir (örn. \"Görevi daha küçük adımlara bölmeyi deneyin\").",
 		"violated_organization_allowlist": "Görev yürütülemedi: Geçerli profil kuruluşunuzun ayarlarıyla uyumlu değil",
 		"condense_failed": "Bağlam sıkıştırılamadı",
@@ -143,6 +144,13 @@
 		"public_share_link_copied": "Herkese açık paylaşım bağlantısı panoya kopyalandı!",
 		"mode_exported": "'{{mode}}' modu başarıyla dışa aktarıldı",
 		"mode_imported": "Mod başarıyla içe aktarıldı"
+	},
+	"settingsFooter": {
+		"importFromRemoteFile": "Uzak dosya sisteminden içe aktar",
+		"importFromRemoteFileDescription": "Uzak/çalışma alanı dosya sisteminde gezinin ve seçin",
+		"importFromLocalFile": "Yerel makinenizden içe aktar",
+		"importFromLocalFileDescription": "Tarayıcı aracılığıyla yerel bilgisayarınızdan gezinin ve seçin",
+		"chooseImportSource": "İçe aktarma kaynağını seçin"
 	},
 	"answers": {
 		"yes": "Evet",

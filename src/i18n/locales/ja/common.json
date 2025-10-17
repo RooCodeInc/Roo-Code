@@ -50,6 +50,7 @@
 		"custom_storage_path_unusable": "カスタムストレージパス \"{{path}}\" が使用できないため、デフォルトパスを使用します",
 		"cannot_access_path": "パス {{path}} にアクセスできません：{{error}}",
 		"settings_import_failed": "設定のインポートに失敗しました：{{error}}",
+		"settings_import_no_content": "設定のインポート用のコンテンツが受信されませんでした。",
 		"mistake_limit_guidance": "これは、モデルの思考プロセスの失敗やツールを適切に使用できないことを示している可能性があり、ユーザーのガイダンスによって軽減できます（例：「タスクをより小さなステップに分割してみてください」）。",
 		"violated_organization_allowlist": "タスクの実行に失敗しました: 現在のプロファイルは組織の設定と互換性がありません",
 		"condense_failed": "コンテキストの圧縮に失敗しました",
@@ -143,6 +144,13 @@
 		"public_share_link_copied": "公開共有リンクがクリップボードにコピーされました！",
 		"mode_exported": "モード「{{mode}}」が正常にエクスポートされました",
 		"mode_imported": "モードが正常にインポートされました"
+	},
+	"settingsFooter": {
+		"importFromRemoteFile": "リモートファイルシステムからインポート",
+		"importFromRemoteFileDescription": "リモート/ワークスペースのファイルシステムを参照して選択します",
+		"importFromLocalFile": "ローカルマシンからインポート",
+		"importFromLocalFileDescription": "ブラウザを介してローカルコンピュータから参照して選択します",
+		"chooseImportSource": "インポート元を選択"
 	},
 	"answers": {
 		"yes": "はい",

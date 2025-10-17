@@ -7,6 +7,7 @@ import TranslationProvider from "./i18n/TranslationContext"
 import { MarketplaceViewStateManager } from "./components/marketplace/MarketplaceViewStateManager"
 
 import { vscode } from "./utils/vscode"
+import { pickFileAsText } from "./utils/filePicker"
 import { telemetryClient } from "./utils/TelemetryClient"
 import { TelemetryEventName } from "@roo-code/types"
 import { initializeSourceMaps, exposeSourceMapsForDebugging } from "./utils/sourceMapInitializer"
@@ -187,6 +188,17 @@ const App = () => {
 
 			if (message.type === "acceptInput") {
 				chatViewRef.current?.acceptInput()
+			}
+
+			if (message.type === "requestLocalSettingsFile") {
+				const importLocalSettings = async () => {
+					const text = await pickFileAsText({ accept: ".json,application/json" })
+					if (text) {
+						vscode.postMessage({ type: "importSettingsFromLocal", text })
+					}
+				}
+
+				importLocalSettings()
 			}
 		},
 		[switchTab],
