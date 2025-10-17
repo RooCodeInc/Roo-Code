@@ -5,6 +5,15 @@ import crypto from "crypto"
 
 // Import filesystem functions
 import { writeFileSync, existsSync, readFileSync, mkdirSync } from "fs"
+import { computeHash } from "../core/costrict"
+
+const isInvalidId = (id: string): boolean => {
+	return (
+		!id ||
+		id.trim() === "" ||
+		["intellij-machine", "development-machine", "intellij-session", "development-session"].includes(id)
+	)
+}
 
 // Cache for client ID
 let clientIdCache: string | null = null
@@ -22,8 +31,8 @@ const getZgsmDirPath = (): string => {
 // Generates new client ID
 const generateNewClientId = (): string => {
 	let machineId = vscode?.env?.machineId
-	if (!vscode?.env?.machineId || ["intellij-machine", "development-machine"].includes(vscode?.env?.machineId)) {
-		machineId = getUuid()
+	if (isInvalidId(machineId)) {
+		machineId = computeHash(getUuid() + `${Date.now()}`)
 	}
 	return `${machineId}${vscode?.env?.remoteName ? `.${crypto.randomUUID().slice(0, 8)}` : ""}`
 }
@@ -31,11 +40,11 @@ const generateNewClientId = (): string => {
 let sessionId = ""
 // Generates new sessionId
 export const generateNewSessionClientId = (): string => {
-	if (sessionId) {
+	if (sessionId && !isInvalidId(sessionId)) {
 		return sessionId
 	}
 	sessionId = vscode?.env?.sessionId
-	if (!sessionId || ["intellij-session", "development-session"].includes(sessionId)) {
+	if (isInvalidId(sessionId)) {
 		sessionId = getUuid()
 	}
 
@@ -45,7 +54,7 @@ export const generateNewSessionClientId = (): string => {
 // Exported function to get client ID
 export const getClientId = (): string => {
 	// Return cached ID if available
-	if (clientIdCache !== null) {
+	if (clientIdCache !== null && !isInvalidId(clientIdCache)) {
 		return clientIdCache
 	}
 
@@ -56,7 +65,7 @@ export const getClientId = (): string => {
 		// Read existing ID file if available
 		if (existsSync(clientIdFilePath)) {
 			const content = readFileSync(clientIdFilePath, "utf-8")
-			if (content.trim()) {
+			if (!isInvalidId(content)) {
 				clientIdCache = content
 				return content
 			}
