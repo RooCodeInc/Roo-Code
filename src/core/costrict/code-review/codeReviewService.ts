@@ -204,6 +204,7 @@ export class CodeReviewService {
 		const provider = this.getProvider()
 		if (provider) {
 			this.reset()
+			let isCompleted = false
 			const task = await provider.createTask(message, undefined, undefined, undefined, { mode: "review" })
 			provider.postMessageToWebview({
 				type: "action",
@@ -223,37 +224,48 @@ export class CodeReviewService {
 				})
 			})
 			task.on(RooCodeEventName.TaskAskResponded, () => {
-				const messageCount = task.clineMessages.length
+				if (!isCompleted) {
+					const messageCount = task.clineMessages.length
 
-				let progress = 0
-				if (messageCount <= 10) {
-					progress = messageCount * 0.05
-				} else {
-					progress = Math.min(0.5 + (messageCount - 10) * 0.02, 0.95)
+					let progress = 0
+					if (messageCount <= 10) {
+						progress = messageCount * 0.05
+					} else {
+						progress = Math.min(0.5 + (messageCount - 10) * 0.02, 0.95)
+					}
+					this.sendReviewTaskUpdateMessage(TaskStatus.RUNNING, {
+						issues: [],
+						progress: Math.round(progress * 100) / 100,
+					})
 				}
-				this.sendReviewTaskUpdateMessage(TaskStatus.RUNNING, {
-					issues: [],
-					progress: Math.round(progress * 100) / 100,
-				})
 			})
 			task.on(RooCodeEventName.TaskCompleted, async () => {
-				this.logger.info("[CodeReview] Review Task completed")
-				const message = task.clineMessages.find((msg) => msg.type === "say" && msg.say === "completion_result")
-				if (message?.text) {
-					const { issues, review_task_id } = await this.getIssues(message.text, targets)
-					this.currentTask = {
-						...this.currentTask,
-						taskId: review_task_id,
-						isCompleted: true,
-						progress: 1,
-						review_progress: "",
-						total: issues.length,
+				try {
+					this.logger.info("[CodeReview] Review Task completed")
+					isCompleted = true
+					// console.log("task messages", task.clineMessages)
+					const message = task.clineMessages.find(
+						(msg) => msg.type === "say" && msg.text?.includes("I-AM-CODE-REVIEW-REPORT-V1"),
+					)
+					if (message?.text) {
+						const { issues, review_task_id } = await this.getIssues(message.text, targets)
+						if (issues) {
+							this.currentTask = {
+								...this.currentTask,
+								taskId: review_task_id,
+								isCompleted: true,
+								progress: 1,
+								review_progress: "",
+								total: issues?.length ?? 0,
+							}
+							this.updateCachedIssues(issues)
+						}
 					}
-					this.updateCachedIssues(issues)
+				} finally {
+					this.completeTask()
+					await provider.removeClineFromStack()
+					await provider.refreshWorkspace()
 				}
-				this.completeTask()
-				await provider.removeClineFromStack()
-				await provider.refreshWorkspace()
 			})
 		}
 	}

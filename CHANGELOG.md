@@ -1,5 +1,11 @@
 # Costrict Change Log
 
+## [2.0.2]
+
+- Optimized CodeReview
+- Sync roocode [last commit](https://github.com/zgsm-ai/costrict/commit/270dce5050f270aa30a2b39f5a84b931525a7a22)
+- Fix known issues
+
 ## [2.0.1]
 
 - Optimized performance
