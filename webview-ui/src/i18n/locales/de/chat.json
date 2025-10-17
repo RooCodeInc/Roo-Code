@@ -411,5 +411,14 @@
 		"description": "Du hast noch keine Cloud-Agenten erstellt.",
 		"createFirst": "Erstelle deinen ersten",
 		"clickToRun": "Klicke, um {{name}} auszuführen"
+	},
+	"offerPr": {
+		"title": "Create Pull Request",
+		"description": "Would you like to create a pull request for these changes?",
+		"switchToPrCreator": "Switch to PR Creator"
+	},
+	"prReviewerUpsell": {
+		"message": "Get Roo to review this in the Cloud",
+		"createLink": "Create a PR Reviewer Agent"
 	}
 }

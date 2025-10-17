@@ -166,6 +166,8 @@ export const clineSays = [
 	"condense_context_error",
 	"codebase_search_result",
 	"user_edit_todos",
+	"offer_pr",
+	"pr_reviewer_upsell",
 ] as const
 
 export const clineSaySchema = z.enum(clineSays)

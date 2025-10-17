@@ -59,6 +59,7 @@ import {
 	FolderTree,
 	TerminalSquare,
 	MessageCircle,
+	GitPullRequest,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -130,8 +131,14 @@ export const ChatRowContent = ({
 }: ChatRowContentProps) => {
 	const { t } = useTranslation()
 
-	const { mcpServers, alwaysAllowMcp, currentCheckpoint, mode, apiConfiguration } = useExtensionState()
+	const { mcpServers, alwaysAllowMcp, currentCheckpoint, mode, apiConfiguration, cloudApiUrl, cloudIsAuthenticated } =
+		useExtensionState()
 	const { info: model } = useSelectedModel(apiConfiguration)
+
+	// Function to switch modes
+	const switchToMode = useCallback((modeSlug: string) => {
+		vscode.postMessage({ type: "mode", text: modeSlug })
+	}, [])
 	const [isEditing, setIsEditing] = useState(false)
 	const [editedContent, setEditedContent] = useState("")
 	const [editMode, setEditMode] = useState<Mode>(mode || "code")
@@ -1254,6 +1261,43 @@ export const ChatRowContent = ({
 					return <CodebaseSearchResultsDisplay results={results} />
 				case "user_edit_todos":
 					return <UpdateTodoListToolBlock userEdited onChange={() => {}} />
+				case "offer_pr":
+					return (
+						<>
+							<div style={headerStyle}>
+								<GitPullRequest className="w-4 shrink-0" aria-label="Pull request icon" />
+								<span style={{ fontWeight: "bold" }}>{t("chat:offerPr.title")}</span>
+							</div>
+							<div className="ml-6 flex items-center gap-2">
+								<span>{t("chat:offerPr.description")}</span>
+								<button
+									onClick={() => switchToMode("pr-creator")}
+									className="text-vscode-textLink-foreground hover:underline cursor-pointer bg-transparent border-none p-0">
+									{t("chat:offerPr.switchToPrCreator")}
+								</button>
+							</div>
+						</>
+					)
+				case "pr_reviewer_upsell":
+					// Only show if user is authenticated to Cloud
+					if (!cloudIsAuthenticated) {
+						return null
+					}
+					return (
+						<div className="ml-6 text-sm mt-2">
+							{t("chat:prReviewerUpsell.message")}{" "}
+							<button
+								onClick={() => {
+									vscode.postMessage({
+										type: "openExternal",
+										url: `${cloudApiUrl}/cloud-agents/create`,
+									})
+								}}
+								className="text-vscode-textLink-foreground hover:underline cursor-pointer bg-transparent border-none p-0">
+								[{t("chat:prReviewerUpsell.createLink")}]
+							</button>
+						</div>
+					)
 				case "tool" as any:
 					// Handle say tool messages
 					const sayTool = safeJsonParse<ClineSayTool>(message.text)

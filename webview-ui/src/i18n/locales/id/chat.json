@@ -417,5 +417,14 @@
 		"description": "Anda belum membuat Agen Cloud apa pun.",
 		"createFirst": "Buat yang pertama",
 		"clickToRun": "Klik untuk menjalankan {{name}}"
+	},
+	"offerPr": {
+		"title": "Create Pull Request",
+		"description": "Would you like to create a pull request for these changes?",
+		"switchToPrCreator": "Switch to PR Creator"
+	},
+	"prReviewerUpsell": {
+		"message": "Get Roo to review this in the Cloud",
+		"createLink": "Create a PR Reviewer Agent"
 	}
 }

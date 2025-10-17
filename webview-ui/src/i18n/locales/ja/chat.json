@@ -411,5 +411,14 @@
 		"description": "まだクラウドエージェントを作成していません。",
 		"createFirst": "最初に作成する",
 		"clickToRun": "クリックして{{name}}を実行"
+	},
+	"offerPr": {
+		"title": "Create Pull Request",
+		"description": "Would you like to create a pull request for these changes?",
+		"switchToPrCreator": "Switch to PR Creator"
+	},
+	"prReviewerUpsell": {
+		"message": "Get Roo to review this in the Cloud",
+		"createLink": "Create a PR Reviewer Agent"
 	}
 }

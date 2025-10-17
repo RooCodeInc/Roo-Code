@@ -412,5 +412,14 @@
 		"description": "您尚未建立任何雲端代理程式。",
 		"createFirst": "建立您的第一個",
 		"clickToRun": "點擊以執行 {{name}}"
+	},
+	"offerPr": {
+		"title": "Create Pull Request",
+		"description": "Would you like to create a pull request for these changes?",
+		"switchToPrCreator": "Switch to PR Creator"
+	},
+	"prReviewerUpsell": {
+		"message": "Get Roo to review this in the Cloud",
+		"createLink": "Create a PR Reviewer Agent"
 	}
 }

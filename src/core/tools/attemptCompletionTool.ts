@@ -107,6 +107,14 @@ export async function attemptCompletionTool(
 				return
 			}
 
+			// Send offer_pr message if not in PR Creator mode
+			if (cline.taskMode !== "pr-creator") {
+				await cline.say("offer_pr", "", undefined, false)
+			} else {
+				// In PR Creator mode, send PR Reviewer upsell after completion
+				await cline.say("pr_reviewer_upsell", "", undefined, false)
+			}
+
 			// We already sent completion_result says, an
 			// empty string asks relinquishes control over
 			// button and field.
