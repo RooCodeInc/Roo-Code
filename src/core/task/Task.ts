@@ -893,17 +893,19 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				}
 			}
 
-			// Attach the listener
-			this.messageQueueService.on("stateChanged", queueListener)
-		}
+		// Attach the listener
+		this.messageQueueService.on("stateChanged", queueListener)
+	}
 
+	try {
 		// Wait for askResponse to be set.
 		await pWaitFor(() => this.askResponse !== undefined || this.lastMessageTs !== askTs, { interval: 100 })
-
+	} finally {
 		// Clean up queue listener
 		if (queueListener) {
 			this.messageQueueService.removeListener("stateChanged", queueListener)
 		}
+	}
 
 		if (this.lastMessageTs !== askTs) {
 			// Could happen if we send multiple asks in a row i.e. with
