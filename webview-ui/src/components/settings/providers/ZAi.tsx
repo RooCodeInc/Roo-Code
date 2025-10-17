@@ -1,13 +1,13 @@
 import { useCallback } from "react"
-import { VSCodeTextField, VSCodeDropdown, VSCodeOption } from "@vscode/webview-ui-toolkit/react"
+import { VSCodeDropdown, VSCodeOption } from "@vscode/webview-ui-toolkit/react"
 
-import { zaiApiLineConfigs, zaiApiLineSchema, type ProviderSettings } from "@roo-code/types"
+import { zaiApiLineConfigs, zaiApiLineSchema, type ProviderSettings, API_KEYS } from "@roo-code/types"
 
 import { useAppTranslation } from "@src/i18n/TranslationContext"
-import { VSCodeButtonLink } from "@src/components/common/VSCodeButtonLink"
 
 import { inputEventTransform } from "../transforms"
 import { cn } from "@/lib/utils"
+import { ApiKey } from "../ApiKey"
 
 type ZAiProps = {
 	apiConfiguration: ProviderSettings
@@ -49,30 +49,20 @@ export const ZAi = ({ apiConfiguration, setApiConfigurationField }: ZAiProps) =>
 					{t("settings:providers.zaiEntrypointDescription")}
 				</div>
 			</div>
-			<div>
-				<VSCodeTextField
-					value={apiConfiguration?.zaiApiKey || ""}
-					type="password"
-					onInput={handleInputChange("zaiApiKey")}
-					placeholder={t("settings:placeholders.apiKey")}
-					className="w-full">
-					<label className="block font-medium mb-1">{t("settings:providers.zaiApiKey")}</label>
-				</VSCodeTextField>
-				<div className="text-sm text-vscode-descriptionForeground">
-					{t("settings:providers.apiKeyStorageNotice")}
-				</div>
-				{!apiConfiguration?.zaiApiKey && (
-					<VSCodeButtonLink
-						href={
-							zaiApiLineConfigs[apiConfiguration.zaiApiLine ?? "international_coding"].isChina
-								? "https://open.bigmodel.cn/console/overview"
-								: "https://z.ai/manage-apikey/apikey-list"
-						}
-						appearance="secondary">
-						{t("settings:providers.getZaiApiKey")}
-					</VSCodeButtonLink>
-				)}
-			</div>
+			<ApiKey
+				apiKey={apiConfiguration?.zaiApiKey || ""}
+				apiKeyEnvVar={API_KEYS.ZAI}
+				configUseEnvVars={!!apiConfiguration?.zaiConfigUseEnvVars}
+				setApiKey={(value: string) => setApiConfigurationField("zaiApiKey", value)}
+				setConfigUseEnvVars={(value: boolean) => setApiConfigurationField("zaiConfigUseEnvVars", value)}
+				apiKeyLabel={t("settings:providers.zaiApiKey")}
+				getApiKeyUrl={
+					zaiApiLineConfigs[apiConfiguration.zaiApiLine ?? "international_coding"].isChina
+						? "https://open.bigmodel.cn/console/overview"
+						: "https://z.ai/manage-apikey/apikey-list"
+				}
+				getApiKeyLabel={t("settings:providers.getZaiApiKey")}
+			/>
 		</>
 	)
 }

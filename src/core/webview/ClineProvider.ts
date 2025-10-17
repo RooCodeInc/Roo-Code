@@ -37,6 +37,7 @@ import {
 	requestyDefaultModelId,
 	openRouterDefaultModelId,
 	glamaDefaultModelId,
+	API_KEY_ENV_VAR_NAMES,
 	DEFAULT_TERMINAL_OUTPUT_CHARACTER_LIMIT,
 	DEFAULT_WRITE_DELAY_MS,
 	ORGANIZATION_ALLOW_ALL,
@@ -1057,6 +1058,7 @@ export class ClineProvider
 						window.IMAGES_BASE_URI = "${imagesUri}"
 						window.AUDIO_BASE_URI = "${audioUri}"
 						window.MATERIAL_ICONS_BASE_URI = "${materialIconsUri}"
+						window.ENV_VAR_EXISTS = ${JSON.stringify(this.checkEnvVarApiKeys())}
 					</script>
 					<title>Roo Code</title>
 				</head>
@@ -1067,6 +1069,22 @@ export class ClineProvider
 				</body>
 			</html>
 		`
+	}
+
+	/**
+	 * Creates a map of supported API keys with boolean indicating presence.
+	 * Returns only boolean existence for API keys, not the values.
+	 */
+	private checkEnvVarApiKeys(): Record<string, boolean> {
+		const result: Record<string, boolean> = {}
+		API_KEY_ENV_VAR_NAMES.forEach((envVar) => {
+			const exists = !!process.env[envVar]
+			result[envVar] = exists
+			if (exists) {
+				console.log(`[ClineProvider] Found environment variable: ${envVar}`)
+			}
+		})
+		return result
 	}
 
 	/**
@@ -1130,6 +1148,7 @@ export class ClineProvider
 				window.IMAGES_BASE_URI = "${imagesUri}"
 				window.AUDIO_BASE_URI = "${audioUri}"
 				window.MATERIAL_ICONS_BASE_URI = "${materialIconsUri}"
+				window.ENV_VAR_EXISTS = ${JSON.stringify(this.checkEnvVarApiKeys())}
 			</script>
             <title>Roo Code</title>
           </head>
@@ -1836,7 +1855,7 @@ export class ClineProvider
 		const currentMode = mode ?? defaultModeSlug
 		const hasSystemPromptOverride = await this.hasFileBasedSystemPromptOverride(currentMode)
 
-		return {
+		const stateToReturn = {
 			version: this.context.extension?.packageJSON?.version ?? "",
 			apiConfiguration,
 			customInstructions,
@@ -1964,6 +1983,8 @@ export class ClineProvider
 			openRouterUseMiddleOutTransform,
 			featureRoomoteControlEnabled,
 		}
+
+		return stateToReturn
 	}
 
 	/**
