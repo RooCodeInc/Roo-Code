@@ -120,6 +120,16 @@ const DEFAULT_USAGE_COLLECTION_TIMEOUT_MS = 5000 // 5 seconds
 const FORCED_CONTEXT_REDUCTION_PERCENT = 75 // Keep 75% of context (remove 25%) on context window errors
 const MAX_CONTEXT_WINDOW_RETRIES = 3 // Maximum retries for context window errors
 
+interface RateLimitRetryPayload {
+	type: "rate_limit_retry"
+	status: "waiting" | "retrying" | "cancelled"
+	remainingSeconds?: number
+	attempt?: number
+	maxAttempts?: number
+	origin: "pre_request" | "retry_attempt"
+	detail?: string
+}
+
 export interface TaskOptions extends CreateTaskOptions {
 	provider: ClineProvider
 	apiConfiguration: ProviderSettings
@@ -1073,8 +1083,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		if (partial !== undefined) {
 			const lastMessage = this.clineMessages.at(-1)
 
+			const isRateLimitUpdate = type === "api_req_retry_delayed" && options.metadata?.rateLimitRetry !== undefined
 			const isUpdatingPreviousPartial =
-				lastMessage && lastMessage.partial && lastMessage.type === "say" && lastMessage.say === type
+				lastMessage &&
+				lastMessage.type === "say" &&
+				lastMessage.say === type &&
+				(lastMessage.partial || isRateLimitUpdate)
 
 			if (partial) {
 				if (isUpdatingPreviousPartial) {
@@ -1083,6 +1097,13 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					lastMessage.images = images
 					lastMessage.partial = partial
 					lastMessage.progressStatus = progressStatus
+					if (options.metadata) {
+						const messageWithMetadata = lastMessage as ClineMessage & ClineMessageWithMetadata
+						if (!messageWithMetadata.metadata) {
+							messageWithMetadata.metadata = {}
+						}
+						Object.assign(messageWithMetadata.metadata, options.metadata)
+					}
 					this.updateClineMessage(lastMessage)
 				} else {
 					// This is a new partial message, so add it with partial state.
@@ -1170,6 +1191,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				images,
 				checkpoint,
 				contextCondense,
+				metadata: options.metadata,
 			})
 		}
 	}
@@ -2556,6 +2578,124 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		let rateLimitDelay = 0
 
+		const sendRateLimitUpdate = async (payload: RateLimitRetryPayload, isPartial: boolean): Promise<void> => {
+			await this.say("api_req_retry_delayed", undefined, undefined, isPartial, undefined, undefined, {
+				metadata: { rateLimitRetry: payload },
+			})
+		}
+
+		const runRateLimitCountdown = async ({
+			seconds,
+			origin,
+			attempt,
+			maxAttempts,
+			detail,
+		}: {
+			seconds: number
+			origin: RateLimitRetryPayload["origin"]
+			attempt?: number
+			maxAttempts?: number
+			detail?: string
+		}): Promise<boolean> => {
+			const normalizedSeconds = Math.max(0, Math.ceil(seconds))
+
+			if (normalizedSeconds <= 0) {
+				if (this.abort) {
+					await sendRateLimitUpdate(
+						{
+							type: "rate_limit_retry",
+							status: "cancelled",
+							remainingSeconds: 0,
+							attempt,
+							maxAttempts,
+							origin,
+							detail,
+						},
+						false,
+					)
+					return false
+				}
+
+				await sendRateLimitUpdate(
+					{
+						type: "rate_limit_retry",
+						status: "retrying",
+						remainingSeconds: 0,
+						attempt,
+						maxAttempts,
+						origin,
+						detail,
+					},
+					false,
+				)
+				return true
+			}
+
+			for (let i = normalizedSeconds; i > 0; i--) {
+				if (this.abort) {
+					await sendRateLimitUpdate(
+						{
+							type: "rate_limit_retry",
+							status: "cancelled",
+							remainingSeconds: i,
+							attempt,
+							maxAttempts,
+							origin,
+							detail,
+						},
+						false,
+					)
+					return false
+				}
+
+				await sendRateLimitUpdate(
+					{
+						type: "rate_limit_retry",
+						status: "waiting",
+						remainingSeconds: i,
+						attempt,
+						maxAttempts,
+						origin,
+						detail,
+					},
+					true,
+				)
+
+				await delay(1000)
+			}
+
+			if (this.abort) {
+				await sendRateLimitUpdate(
+					{
+						type: "rate_limit_retry",
+						status: "cancelled",
+						remainingSeconds: 0,
+						attempt,
+						maxAttempts,
+						origin,
+						detail,
+					},
+					false,
+				)
+				return false
+			}
+
+			await sendRateLimitUpdate(
+				{
+					type: "rate_limit_retry",
+					status: "retrying",
+					remainingSeconds: 0,
+					attempt,
+					maxAttempts,
+					origin,
+					detail,
+				},
+				false,
+			)
+
+			return true
+		}
+
 		// Use the shared timestamp so that subtasks respect the same rate-limit
 		// window as their parent tasks.
 		if (Task.lastGlobalApiRequestTime) {
@@ -2567,11 +2707,16 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		// Only show rate limiting message if we're not retrying. If retrying, we'll include the delay there.
 		if (rateLimitDelay > 0 && retryAttempt === 0) {
-			// Show countdown timer
-			for (let i = rateLimitDelay; i > 0; i--) {
-				const delayMessage = `Rate limiting for ${i} seconds...`
-				await this.say("api_req_retry_delayed", delayMessage, undefined, true)
-				await delay(1000)
+			const countdownCompleted = await runRateLimitCountdown({
+				seconds: rateLimitDelay,
+				origin: "pre_request",
+				attempt: 1,
+			})
+
+			if (!countdownCompleted) {
+				throw new Error(
+					`[RooCode#attemptApiRequest] task ${this.taskId}.${this.instanceId} aborted during pre-request rate limit wait`,
+				)
 			}
 		}
 
@@ -2723,7 +2868,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 			// note that this api_req_failed ask is unique in that we only present this option if the api hasn't streamed any content yet (ie it fails on the first chunk due), as it would allow them to hit a retry button. However if the api failed mid-stream, it could be in any arbitrary state where some tools may have executed, so that error is handled differently and requires cancelling the task entirely.
 			if (autoApprovalEnabled && alwaysApproveResubmit) {
-				let errorMsg
+				let errorMsg: string
 
 				if (error.error?.metadata?.raw) {
 					errorMsg = JSON.stringify(error.error.metadata.raw, null, 2)
@@ -2755,23 +2900,32 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				// Wait for the greater of the exponential delay or the rate limit delay
 				const finalDelay = Math.max(exponentialDelay, rateLimitDelay)
 
-				// Show countdown timer with exponential backoff
-				for (let i = finalDelay; i > 0; i--) {
-					await this.say(
-						"api_req_retry_delayed",
-						`${errorMsg}\n\nRetry attempt ${retryAttempt + 1}\nRetrying in ${i} seconds...`,
-						undefined,
-						true,
-					)
-					await delay(1000)
-				}
+				const sanitizedDetail = (() => {
+					if (!errorMsg) {
+						return undefined
+					}
+					const firstLine = errorMsg
+						.split("\n")
+						.map((line) => line.trim())
+						.find((line) => line.length > 0)
+					if (!firstLine) {
+						return undefined
+					}
+					return firstLine.length > 160 ? `${firstLine.slice(0, 157)}…` : firstLine
+				})()
 
-				await this.say(
-					"api_req_retry_delayed",
-					`${errorMsg}\n\nRetry attempt ${retryAttempt + 1}\nRetrying now...`,
-					undefined,
-					false,
-				)
+				const countdownCompleted = await runRateLimitCountdown({
+					seconds: finalDelay,
+					origin: "retry_attempt",
+					attempt: retryAttempt + 2,
+					detail: sanitizedDetail,
+				})
+
+				if (!countdownCompleted) {
+					throw new Error(
+						`[RooCode#attemptApiRequest] task ${this.taskId}.${this.instanceId} aborted during rate limit retry wait`,
+					)
+				}
 
 				// Delegate generator output from the recursive call with
 				// incremented retry count.
