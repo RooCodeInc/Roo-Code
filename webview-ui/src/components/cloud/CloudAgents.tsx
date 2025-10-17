@@ -84,9 +84,9 @@ const CloudAgents: React.FC = () => {
 			</div>
 
 			{agents.length === 0 ? (
-				<div className="flex items-start gap-3 px-4 py-1 rounded-xl bg-vscode-editor-background">
-					<Cloud className="size-5 mt-4 shrink-0" />
-					<p className="text-base text-vscode-descriptionForeground mb-4">
+				<div className="flex items-center gap-3 px-4 rounded-xl bg-vscode-editor-background">
+					<Cloud className="size-5 shrink-0" />
+					<p className="text-base text-vscode-descriptionForeground">
 						{t("chat:cloudAgents.description")}
 						<button
 							className="inline-flex ml-1 cursor-pointer text-vscode-textLink-foreground hover:underline"
@@ -100,7 +100,7 @@ const CloudAgents: React.FC = () => {
 					{agents.map((agent) => (
 						<div
 							key={agent.id}
-							className="flex items-center relative group gap-2 px-4 py-2 rounded-xl bg-vscode-editor-background hover:bg-vscode-list-hoverBackground cursor-pointer transition-colors"
+							className="flex items-center relative group gap-2 px-4 py-3 rounded-xl bg-vscode-editor-background hover:bg-vscode-list-hoverBackground cursor-pointer transition-colors"
 							onClick={() => handleAgentClick(agent.id)}
 							aria-label={t("chat:cloudAgents.clickToRun", { name: agent.name })}>
 							{agent.icon ? (
