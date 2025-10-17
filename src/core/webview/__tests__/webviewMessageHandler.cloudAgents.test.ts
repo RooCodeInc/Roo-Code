@@ -194,7 +194,7 @@ describe("webviewMessageHandler - getCloudAgents", () => {
 		})
 	})
 
-	it("should handle authentication errors and show user message", async () => {
+	it("should handle authentication errors silently", async () => {
 		const authError = new AuthenticationError("Authentication required")
 
 		const mockCloudAPI = {
@@ -214,7 +214,8 @@ describe("webviewMessageHandler - getCloudAgents", () => {
 			agents: [],
 			error: "Authentication required",
 		})
-		expect(vscode.window.showErrorMessage).toHaveBeenCalledWith("common:errors.auth_required_for_cloud_agents")
+		// Should NOT show error message - handled silently
+		expect(vscode.window.showErrorMessage).not.toHaveBeenCalled()
 	})
 
 	it("should handle general errors without showing auth message", async () => {
@@ -241,7 +242,7 @@ describe("webviewMessageHandler - getCloudAgents", () => {
 		expect(vscode.window.showErrorMessage).not.toHaveBeenCalled()
 	})
 
-	it("should detect 401 errors in error message", async () => {
+	it("should handle 401 errors silently", async () => {
 		const error401 = new Error("HTTP 401: Unauthorized")
 
 		const mockCloudAPI = {
@@ -260,7 +261,7 @@ describe("webviewMessageHandler - getCloudAgents", () => {
 			agents: [],
 			error: "HTTP 401: Unauthorized",
 		})
-		// Should show auth error message for 401 errors
-		expect(vscode.window.showErrorMessage).toHaveBeenCalledWith("common:errors.auth_required_for_cloud_agents")
+		// Should NOT show error message - handled silently
+		expect(vscode.window.showErrorMessage).not.toHaveBeenCalled()
 	})
 })
