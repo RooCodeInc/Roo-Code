@@ -932,8 +932,16 @@ export const webviewMessageHandler = async (
 			break
 		case "requestVsCodeLmModels":
 			const vsCodeLmModels = await getVsCodeLmModels()
+			// Map the models to include all necessary properties for the UI
+			const mappedModels = vsCodeLmModels.map((model) => ({
+				vendor: model.vendor,
+				family: model.family,
+				version: model.version,
+				id: model.id,
+				name: model.name, // Include the name property for better display
+			}))
 			// TODO: Cache like we do for OpenRouter, etc?
-			provider.postMessageToWebview({ type: "vsCodeLmModels", vsCodeLmModels })
+			provider.postMessageToWebview({ type: "vsCodeLmModels", vsCodeLmModels: mappedModels })
 			break
 		case "requestHuggingFaceModels":
 			// TODO: Why isn't this handled by `requestRouterModels` above?
