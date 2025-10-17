@@ -16,6 +16,11 @@
 	},
 	"confirmation": {
 		"reset_state": "Are you sure you want to reset all state and secret storage in the extension? This cannot be undone.",
+		"hard_reset_electron_cache": "Are you sure you want to perform a hard reset? This will clear all Electron caches and VS Code data.",
+		"hard_reset_electron_cache_detail": "This action will:\n• Clear all VS Code caches\n• Clear all Electron caches\n• Clear IndexedDB, Local Storage, and Session Storage\n• Reset all extension settings\n\nYou will need to restart VS Code after this operation.",
+		"hard_reset_complete": "Hard reset completed. {{count}} cache directories were cleared.{{failed}}",
+		"hard_reset_some_failed": " ({{count}} directories could not be deleted)",
+		"hard_reset_no_caches_found": "No cache directories were found to clear.",
 		"delete_config_profile": "Are you sure you want to delete this configuration profile?",
 		"delete_custom_mode_with_rules": "Are you sure you want to delete this {scope} mode?\n\nThis will also delete the associated rules folder at:\n{rulesFolderPath}"
 	},
@@ -148,7 +153,8 @@
 		"yes": "Yes",
 		"no": "No",
 		"remove": "Remove",
-		"keep": "Keep"
+		"keep": "Keep",
+		"restart_vscode": "Restart VS Code"
 	},
 	"buttons": {
 		"save": "Save",

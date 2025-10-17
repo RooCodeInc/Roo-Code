@@ -84,6 +84,13 @@ export const About = ({ telemetrySetting, setTelemetrySetting, className, ...pro
 						<TriangleAlert className="p-0.5" />
 						{t("settings:footer.settings.reset")}
 					</Button>
+					<Button
+						variant="destructive"
+						onClick={() => vscode.postMessage({ type: "hardResetElectronCache" })}
+						className="w-32">
+						<TriangleAlert className="p-0.5" />
+						{t("settings:footer.settings.hardReset")}
+					</Button>
 				</div>
 			</Section>
 		</div>

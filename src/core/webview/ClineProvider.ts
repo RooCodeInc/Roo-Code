@@ -2275,6 +2275,164 @@ export class ClineProvider
 		await this.postMessageToWebview({ type: "action", action: "chatButtonClicked" })
 	}
 
+	/**
+	 * Performs a hard reset of Electron and VS Code caches to fix corrupted runtime files.
+	 * This method clears all Electron cache directories, IndexedDB, Local Storage, Session Storage,
+	 * and other cached data that may become corrupted and persist even after normal resets.
+	 *
+	 * The operation targets platform-specific cache locations:
+	 * - macOS: ~/Library/Caches/com.microsoft.VSCode*, ~/Library/Application Support/Code/*
+	 * - Windows: %APPDATA%/Code/*, %LOCALAPPDATA%/Microsoft/vscode-cpptools
+	 * - Linux: ~/.cache/Code*, ~/.config/Code/*
+	 *
+	 * After clearing caches, it also performs a regular state reset and offers to restart VS Code.
+	 *
+	 * @returns {Promise<void>} Resolves when the cache clearing operation is complete
+	 */
+	async hardResetElectronCache() {
+		const answer = await vscode.window.showInformationMessage(
+			t("common:confirmation.hard_reset_electron_cache"),
+			{ modal: true, detail: t("common:confirmation.hard_reset_electron_cache_detail") },
+			t("common:answers.yes"),
+		)
+
+		if (answer !== t("common:answers.yes")) {
+			return
+		}
+
+		const platform = process.platform
+		const homeDir = os.homedir()
+		const pathsToDelete: string[] = []
+
+		// Platform-specific cache paths
+		if (platform === "darwin") {
+			// macOS paths - includes all VS Code and Electron cache locations
+			pathsToDelete.push(
+				// VS Code caches
+				path.join(homeDir, "Library", "Caches", "com.microsoft.VSCode"),
+				path.join(homeDir, "Library", "Caches", "com.microsoft.VSCode.ShipIt"),
+				path.join(homeDir, "Library", "Caches", "com.microsoft.VSCodeInsiders"),
+				// Electron caches
+				path.join(homeDir, "Library", "Caches", "Electron"),
+				// Application Support (VS Code specific)
+				path.join(homeDir, "Library", "Application Support", "Code", "Cache"),
+				path.join(homeDir, "Library", "Application Support", "Code", "CachedData"),
+				path.join(homeDir, "Library", "Application Support", "Code", "Code Cache"),
+				path.join(homeDir, "Library", "Application Support", "Code", "GPUCache"),
+				path.join(homeDir, "Library", "Application Support", "Code", "Local Storage"),
+				path.join(homeDir, "Library", "Application Support", "Code", "Session Storage"),
+				path.join(homeDir, "Library", "Application Support", "Code", "IndexedDB"),
+				// VS Code Insiders
+				path.join(homeDir, "Library", "Application Support", "Code - Insiders", "Cache"),
+				path.join(homeDir, "Library", "Application Support", "Code - Insiders", "CachedData"),
+				path.join(homeDir, "Library", "Application Support", "Code - Insiders", "Code Cache"),
+				path.join(homeDir, "Library", "Application Support", "Code - Insiders", "GPUCache"),
+				path.join(homeDir, "Library", "Application Support", "Code - Insiders", "Local Storage"),
+				path.join(homeDir, "Library", "Application Support", "Code - Insiders", "Session Storage"),
+				path.join(homeDir, "Library", "Application Support", "Code - Insiders", "IndexedDB"),
+			)
+		} else if (platform === "win32") {
+			// Windows paths
+			const appData = process.env.APPDATA || path.join(homeDir, "AppData", "Roaming")
+			const localAppData = process.env.LOCALAPPDATA || path.join(homeDir, "AppData", "Local")
+
+			pathsToDelete.push(
+				// VS Code caches
+				path.join(localAppData, "Microsoft", "vscode-cpptools"),
+				path.join(appData, "Code", "Cache"),
+				path.join(appData, "Code", "CachedData"),
+				path.join(appData, "Code", "Code Cache"),
+				path.join(appData, "Code", "GPUCache"),
+				path.join(appData, "Code", "Local Storage"),
+				path.join(appData, "Code", "Session Storage"),
+				path.join(appData, "Code", "IndexedDB"),
+				// VS Code Insiders
+				path.join(appData, "Code - Insiders", "Cache"),
+				path.join(appData, "Code - Insiders", "CachedData"),
+				path.join(appData, "Code - Insiders", "Code Cache"),
+				path.join(appData, "Code - Insiders", "GPUCache"),
+				path.join(appData, "Code - Insiders", "Local Storage"),
+				path.join(appData, "Code - Insiders", "Session Storage"),
+				path.join(appData, "Code - Insiders", "IndexedDB"),
+			)
+		} else {
+			// Linux paths
+			const configDir = process.env.XDG_CONFIG_HOME || path.join(homeDir, ".config")
+			const cacheDir = process.env.XDG_CACHE_HOME || path.join(homeDir, ".cache")
+
+			pathsToDelete.push(
+				// VS Code caches
+				path.join(cacheDir, "Code"),
+				path.join(cacheDir, "Code - Insiders"),
+				path.join(configDir, "Code", "Cache"),
+				path.join(configDir, "Code", "CachedData"),
+				path.join(configDir, "Code", "Code Cache"),
+				path.join(configDir, "Code", "GPUCache"),
+				path.join(configDir, "Code", "Local Storage"),
+				path.join(configDir, "Code", "Session Storage"),
+				path.join(configDir, "Code", "IndexedDB"),
+				// VS Code Insiders
+				path.join(configDir, "Code - Insiders", "Cache"),
+				path.join(configDir, "Code - Insiders", "CachedData"),
+				path.join(configDir, "Code - Insiders", "Code Cache"),
+				path.join(configDir, "Code - Insiders", "GPUCache"),
+				path.join(configDir, "Code - Insiders", "Local Storage"),
+				path.join(configDir, "Code - Insiders", "Session Storage"),
+				path.join(configDir, "Code - Insiders", "IndexedDB"),
+			)
+		}
+
+		// Delete the cache directories
+		let deletedPaths: string[] = []
+		let failedPaths: string[] = []
+
+		for (const cachePath of pathsToDelete) {
+			try {
+				// Check if path exists before trying to delete
+				await fs.access(cachePath)
+				await fs.rm(cachePath, { recursive: true, force: true })
+				deletedPaths.push(cachePath)
+				this.log(`Deleted cache: ${cachePath}`)
+			} catch (error) {
+				// Path doesn't exist or couldn't be deleted
+				if (error.code !== "ENOENT") {
+					failedPaths.push(cachePath)
+					this.log(`Failed to delete cache: ${cachePath} - ${error.message}`)
+				}
+			}
+		}
+
+		// Also perform the regular reset
+		await this.contextProxy.resetAllState()
+		await this.providerSettingsManager.resetAllConfigs()
+		await this.customModesManager.resetCustomModes()
+		await this.removeClineFromStack()
+		await this.postStateToWebview()
+
+		// Show result message
+		if (deletedPaths.length > 0) {
+			const message = t("common:confirmation.hard_reset_complete", {
+				count: deletedPaths.length,
+				failed:
+					failedPaths.length > 0
+						? t("common:confirmation.hard_reset_some_failed", { count: failedPaths.length })
+						: "",
+			})
+
+			vscode.window
+				.showInformationMessage(message, { modal: false }, t("common:answers.restart_vscode"))
+				.then((selection) => {
+					if (selection === t("common:answers.restart_vscode")) {
+						vscode.commands.executeCommand("workbench.action.reloadWindow")
+					}
+				})
+		} else {
+			vscode.window.showWarningMessage(t("common:confirmation.hard_reset_no_caches_found"))
+		}
+
+		await this.postMessageToWebview({ type: "action", action: "chatButtonClicked" })
+	}
+
 	// logging
 
 	public log(message: string) {

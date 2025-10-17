@@ -64,6 +64,7 @@ export interface WebviewMessage {
 		| "importSettings"
 		| "exportSettings"
 		| "resetState"
+		| "hardResetElectronCache"
 		| "flushRouterModels"
 		| "requestRouterModels"
 		| "requestOpenAiModels"
