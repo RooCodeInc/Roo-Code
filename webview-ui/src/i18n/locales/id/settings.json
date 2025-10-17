@@ -674,6 +674,10 @@
 		"title": "Pengaturan lanjutan"
 	},
 	"advanced": {
+		"preserveHtmlEntities": {
+			"label": "Pertahankan entitas HTML",
+			"description": "Ketika diaktifkan, entitas HTML seperti &lt;, &gt;, dan &amp; akan dipertahankan apa adanya dalam pengeditan file dan perintah. Ketika dinonaktifkan, mereka akan secara otomatis dikonversi ke karakter literal mereka (<, >, &). Catatan: Model Claude selalu mempertahankan entitas terlepas dari pengaturan ini."
+		},
 		"diff": {
 			"label": "Aktifkan editing melalui diff",
 			"description": "Ketika diaktifkan, Roo akan dapat mengedit file lebih cepat dan akan secara otomatis menolak penulisan file penuh yang terpotong. Bekerja terbaik dengan model Claude 3.7 Sonnet terbaru.",

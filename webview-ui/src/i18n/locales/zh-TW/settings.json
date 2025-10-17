@@ -670,6 +670,10 @@
 		"title": "進階設定"
 	},
 	"advanced": {
+		"preserveHtmlEntities": {
+			"label": "保留 HTML 實體",
+			"description": "啟用後，HTML 實體如 &lt;、&gt; 和 &amp; 將在檔案編輯和命令中按原樣保留。停用後，它們將自動轉換為其字面字元（<、>、&）。注意：Claude 模型始終保留實體，無論此設定如何。"
+		},
 		"diff": {
 			"label": "透過差異比對編輯",
 			"description": "啟用後，Roo 可更快速地編輯檔案，並自動拒絕不完整的整檔覆寫。搭配最新的 Claude 3.7 Sonnet 模型效果最佳。",

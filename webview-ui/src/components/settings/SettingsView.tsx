@@ -195,6 +195,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		openRouterImageApiKey,
 		openRouterImageGenerationSelectedModel,
 		reasoningBlockCollapsed,
+		preserveHtmlEntities,
 	} = cachedState
 
 	const apiConfiguration = useMemo(() => cachedState.apiConfiguration ?? {}, [cachedState.apiConfiguration])
@@ -689,6 +690,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 							allowedMaxRequests={allowedMaxRequests ?? undefined}
 							allowedMaxCost={allowedMaxCost ?? undefined}
 							deniedCommands={deniedCommands}
+							preserveHtmlEntities={preserveHtmlEntities}
 							setCachedStateField={setCachedStateField}
 						/>
 					)}
