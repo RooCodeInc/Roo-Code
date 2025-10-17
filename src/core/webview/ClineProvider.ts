@@ -92,12 +92,12 @@ import { Task } from "../task/Task"
 import { getSystemPromptFilePath } from "../prompts/sections/custom-system-prompt"
 
 import { webviewMessageHandler } from "./webviewMessageHandler"
-import type { ClineMessage } from "@roo-code/types"
-import { readApiMessages, saveApiMessages, saveTaskMessages } from "../task-persistence"
+// import type { ClineMessage } from "@roo-code/types"
+// import { readApiMessages, saveApiMessages, saveTaskMessages } from "../task-persistence"
 import { getNonce } from "./getNonce"
 import { getUri } from "./getUri"
 import { ZgsmAuthCommands } from "../costrict/auth"
-import { getClientId } from "../../utils/getClientId"
+import { generateNewSessionClientId, getClientId } from "../../utils/getClientId"
 import { defaultCodebaseIndexEnabled } from "../../services/code-index/constants"
 import { CodeReviewService, ReviewTargetType } from "../costrict/code-review"
 import { defaultLang } from "../../utils/language"
@@ -2372,7 +2372,7 @@ export class ClineProvider
 				}
 			}
 
-			sendZgsmCloseWindow(vscode.env.sessionId)
+			sendZgsmCloseWindow(generateNewSessionClientId())
 			await delay(1000)
 			await vscode.commands.executeCommand("workbench.action.closeWindow")
 		} catch (error) {
@@ -2495,7 +2495,7 @@ export class ClineProvider
 		await BridgeOrchestrator.connectOrDisconnect(userInfo, enabled, {
 			...config,
 			provider: this,
-			sessionId: vscode.env.sessionId,
+			sessionId: generateNewSessionClientId(),
 			isCloudAgent: CloudService.instance.isCloudAgent,
 		})
 

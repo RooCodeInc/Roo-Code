@@ -386,11 +386,6 @@ export class CoworkflowFileWatcher implements ICoworkflowFileWatcher {
 		}
 	}
 
-	private getDocumentTypeFromUri(uri: vscode.Uri): CoworkflowDocumentType | undefined {
-		const documentInfo = this.getDocumentInfoFromUri(uri)
-		return documentInfo?.type
-	}
-
 	/**
 	 * Initialize file contexts for existing files that match the pattern
 	 */
@@ -414,15 +409,15 @@ export class CoworkflowFileWatcher implements ICoworkflowFileWatcher {
 							isActive: true,
 						})
 
-						this.errorHandler.logError(
-							this.errorHandler.createError(
-								"file_system_error",
-								"info",
-								`Initialized file context for ${documentInfo.relativePath}`,
-								undefined,
-								fileUri,
-							),
-						)
+						// this.errorHandler.logError(
+						// 	this.errorHandler.createError(
+						// 		"file_system_error",
+						// 		"info",
+						// 		`Initialized file context for ${documentInfo.relativePath}`,
+						// 		undefined,
+						// 		fileUri,
+						// 	),
+						// )
 					}
 				} catch (error) {
 					this.errorHandler.logError(

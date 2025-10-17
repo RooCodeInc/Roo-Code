@@ -38,7 +38,7 @@ import {
 	startIPCServer,
 	stopIPCServer,
 } from "./auth/ipc"
-import { getClientId } from "../../utils/getClientId"
+import { generateNewSessionClientId, getClientId } from "../../utils/getClientId"
 import ZgsmCodebaseIndexManager, { zgsmCodebaseIndexManager } from "./codebase-index"
 import { workspaceEventMonitor } from "./codebase-index/workspace-event-monitor"
 import { initGitCheckoutDetector } from "./codebase-index/git-checkout-detector"
@@ -99,12 +99,12 @@ export async function activate(
 			provider.log(`new token from other window: ${tokens.access_token}`)
 		}),
 		onZgsmLogout((sessionId: string) => {
-			if (vscode.env.sessionId === sessionId) return
+			if (generateNewSessionClientId() === sessionId) return
 			zgsmAuthService.logout(true)
 			provider.log(`logout from other window`)
 		}),
 		onCloseWindow((sessionId: string) => {
-			if (vscode.env.sessionId === sessionId) return
+			if (generateNewSessionClientId() === sessionId) return
 			vscode.commands.executeCommand("workbench.action.closeWindow")
 		}),
 	)

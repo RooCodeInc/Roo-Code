@@ -21,8 +21,25 @@ const getZgsmDirPath = (): string => {
 
 // Generates new client ID
 const generateNewClientId = (): string => {
-	// Use vscode machineId as base, append random UUID prefix if remote
-	return `${vscode?.env?.machineId}${vscode?.env?.remoteName ? `.${crypto.randomUUID().slice(0, 8)}` : ""}`
+	let machineId = vscode?.env?.machineId
+	if (!vscode?.env?.machineId || ["intellij-machine", "development-machine"].includes(vscode?.env?.machineId)) {
+		machineId = getUuid()
+	}
+	return `${machineId}${vscode?.env?.remoteName ? `.${crypto.randomUUID().slice(0, 8)}` : ""}`
+}
+
+let sessionId = ""
+// Generates new sessionId
+export const generateNewSessionClientId = (): string => {
+	if (sessionId) {
+		return sessionId
+	}
+	sessionId = vscode?.env?.sessionId
+	if (!sessionId || ["intellij-session", "development-session"].includes(sessionId)) {
+		sessionId = getUuid()
+	}
+
+	return `${sessionId}${vscode?.env?.remoteName ? `.${crypto.randomUUID().slice(0, 8)}` : ""}`
 }
 
 // Exported function to get client ID
@@ -65,4 +82,15 @@ export const getClientId = (): string => {
 		clientIdCache = fallbackId
 		return fallbackId
 	}
+}
+
+/**
+ * Generate a UUID
+ */
+export function getUuid() {
+	return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+		const r = (Math.random() * 16) | 0,
+			v = c === "x" ? r : (r & 0x3) | 0x8
+		return v.toString(16)
+	})
 }

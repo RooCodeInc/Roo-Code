@@ -108,17 +108,6 @@ export function formatTimeDifference(differenceInMilliseconds: number): string {
 }
 
 /**
- * Generate a UUID
- */
-export function getUuid() {
-	return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
-		const r = (Math.random() * 16) | 0,
-			v = c === "x" ? r : (r & 0x3) | 0x8
-		return v.toString(16)
-	})
-}
-
-/**
  * Return a random string of specified length
  */
 export function getRandomId(len = 12) {

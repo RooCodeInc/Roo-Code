@@ -8,7 +8,7 @@ import type { ClineProvider } from "../../webview/ClineProvider"
 import { getParams, retryWrapper } from "../../../utils/zgsmUtils"
 import { joinUrl } from "../../../utils/joinUrl"
 import { ZgsmAuthStatus, ZgsmAuthTokens, ZgsmLoginState, LoginTokenResponse } from "./types"
-import { getClientId } from "../../../utils/getClientId"
+import { generateNewSessionClientId, getClientId } from "../../../utils/getClientId"
 import { sendZgsmLogout } from "./ipc/client"
 import { CompletionStatusBar } from "../completion"
 import { t } from "../../../i18n"
@@ -332,7 +332,7 @@ export class ZgsmAuthService {
 		// Clear stored login information
 		await ZgsmAuthStorage.getInstance().clearAllLoginState()
 		if (!auto) {
-			sendZgsmLogout(vscode.env.sessionId)
+			sendZgsmLogout(generateNewSessionClientId())
 		}
 	}
 
