@@ -14,7 +14,18 @@ import { getTaskDirectoryPath } from "../../utils/storage"
  * We only need to ensure sensitive file payloads are NOT persisted to disk (ui_messages.json).
  * Centralizing the sanitization in the persistence layer keeps Task.ts simple and avoids scattering
  * redaction logic across multiple call-sites.
+ *
+ * Precompiled patterns are hoisted to module scope for clarity and efficiency.
+ * Precedence: more specific tags are applied first.
  */
+const FILE_CONTENT_TAG_RE = /<file_content\b[\s\S]*?<\/file_content>/gi
+const CONTENT_TAG_RE = /<content\b[^>]*>[\s\S]*?<\/content>/gi
+const FILE_TAG_RE = /<file\b[^>]*>[\s\S]*?<\/file>/gi
+const FILES_TAG_RE = /<files\b[^>]*>[\s\S]*?<\/files>/gi
+
+function hasStringText(m: ClineMessage): m is ClineMessage & { text: string } {
+	return typeof (m as any)?.text === "string"
+}
 
 function sanitizeMessageText(text?: string): string | undefined {
 	if (!text) return text
@@ -22,10 +33,10 @@ function sanitizeMessageText(text?: string): string | undefined {
 	// Scrub helper that replaces inner contents of known file payload tags with an omission marker
 	const scrub = (s: string): string => {
 		// Order matters: scrub more specific tags first
-		s = s.replace(/<file_content\b[\s\S]*?<\/file_content>/gi, "<file_content>[omitted]</file_content>")
-		s = s.replace(/<content\b[^>]*>[\s\S]*?<\/content>/gi, "<content>[omitted]</content>")
-		s = s.replace(/<file\b[^>]*>[\s\S]*?<\/file>/gi, "<file>[omitted]</file>")
-		s = s.replace(/<files\b[^>]*>[\s\S]*?<\/files>/gi, "<files>[omitted]</files>")
+		s = s.replace(FILE_CONTENT_TAG_RE, "<file_content>[omitted]</file_content>")
+		s = s.replace(CONTENT_TAG_RE, "<content>[omitted]</content>")
+		s = s.replace(FILE_TAG_RE, "<file>[omitted]</file>")
+		s = s.replace(FILES_TAG_RE, "<files>[omitted]</files>")
 		return s
 	}
 
@@ -45,8 +56,8 @@ function sanitizeMessageText(text?: string): string | undefined {
 
 function sanitizeMessages(messages: ClineMessage[]): ClineMessage[] {
 	return messages.map((m) => {
-		if (typeof (m as any).text === "string") {
-			return { ...m, text: sanitizeMessageText((m as any).text) }
+		if (hasStringText(m)) {
+			return { ...m, text: sanitizeMessageText(m.text) }
 		}
 		return m
 	})
@@ -57,6 +68,13 @@ export type ReadTaskMessagesOptions = {
 	globalStoragePath: string
 }
 
+/**
+ * Note on double-sanitization:
+ * - The canonical enforcement point is write-time via saveTaskMessages().
+ * - We also sanitize on read here as a transitional safety net to protect against any
+ *   legacy ui_messages.json that may still contain payloads from older versions.
+ *   This read-time sanitization can be removed in a future version once legacy data is unlikely.
+ */
 export async function readTaskMessages({
 	taskId,
 	globalStoragePath,
