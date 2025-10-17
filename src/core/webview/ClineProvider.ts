@@ -1457,16 +1457,13 @@ export class ClineProvider
 	// Requesty
 
 	async handleRequestyCallback(code: string) {
-		let { apiConfiguration, currentApiConfigName = "default" } = await this.getState()
-
 		const newConfiguration: ProviderSettings = {
-			...apiConfiguration,
 			apiProvider: "requesty",
 			requestyApiKey: code,
-			requestyModelId: apiConfiguration?.requestyModelId || requestyDefaultModelId,
+			requestyModelId: requestyDefaultModelId,
 		}
 
-		await this.upsertProviderProfile(currentApiConfigName, newConfiguration)
+		await this.upsertProviderProfile("Requesty", newConfiguration)
 	}
 
 	// Task history
