@@ -510,6 +510,10 @@
 		}
 	},
 	"checkpoints": {
+		"timeout": {
+			"label": "Timeout voor checkpoint-initialisatie (seconden)",
+			"description": "Maximale wachttijd voor het initialiseren van de checkpointservice. Standaard is 15 seconden. Bereik: 10-60 seconden."
+		},
 		"enable": {
 			"label": "Automatische checkpoints inschakelen",
 			"description": "Indien ingeschakeld, maakt Roo automatisch checkpoints tijdens het uitvoeren van taken, zodat je eenvoudig wijzigingen kunt bekijken of terugzetten. <0>Meer informatie</0>"

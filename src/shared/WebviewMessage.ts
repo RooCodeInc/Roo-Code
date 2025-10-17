@@ -99,6 +99,7 @@ export interface WebviewMessage {
 		| "soundVolume"
 		| "diffEnabled"
 		| "enableCheckpoints"
+		| "checkpointTimeout"
 		| "browserViewportSize"
 		| "screenshotQuality"
 		| "remoteBrowserHost"

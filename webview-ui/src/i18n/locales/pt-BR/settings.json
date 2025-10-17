@@ -510,6 +510,10 @@
 		}
 	},
 	"checkpoints": {
+		"timeout": {
+			"label": "Tempo limite para inicialização do checkpoint (segundos)",
+			"description": "Tempo máximo de espera para inicializar o serviço de checkpoint. Padrão: 15 segundos. Faixa: 10-60 segundos."
+		},
 		"enable": {
 			"label": "Ativar pontos de verificação automáticos",
 			"description": "Quando ativado, o Roo criará automaticamente pontos de verificação durante a execução de tarefas, facilitando a revisão de alterações ou o retorno a estados anteriores. <0>Saiba mais</0>"

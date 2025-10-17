@@ -510,6 +510,10 @@
 		}
 	},
 	"checkpoints": {
+		"timeout": {
+			"label": "Timeout für Checkpoint-Initialisierung (Sekunden)",
+			"description": "Maximale Wartezeit für die Initialisierung des Checkpoint-Dienstes. Standard ist 15 Sekunden. Bereich: 10-60 Sekunden."
+		},
 		"enable": {
 			"label": "Automatische Kontrollpunkte aktivieren",
 			"description": "Wenn aktiviert, erstellt Roo automatisch Kontrollpunkte während der Aufgabenausführung, was die Überprüfung von Änderungen oder die Rückkehr zu früheren Zuständen erleichtert. <0>Mehr erfahren</0>"
