@@ -768,6 +768,7 @@ export const webviewMessageHandler = async (
 				glama: {},
 				ollama: {},
 				lmstudio: {},
+				n1n: {},
 			}
 
 			const safeGetModels = async (options: GetModelsOptions): Promise<ModelRecord> => {
@@ -826,6 +827,16 @@ export const webviewMessageHandler = async (
 				modelFetchPromises.push({
 					key: "litellm",
 					options: { provider: "litellm", apiKey: litellmApiKey, baseUrl: litellmBaseUrl },
+				})
+			}
+
+			// Add n1n if API key is provided.
+			const n1nApiKey = apiConfiguration.n1nApiKey
+
+			if (n1nApiKey) {
+				modelFetchPromises.push({
+					key: "n1n",
+					options: { provider: "n1n", apiKey: n1nApiKey },
 				})
 			}
 
