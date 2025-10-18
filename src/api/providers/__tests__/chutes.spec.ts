@@ -341,6 +341,28 @@ describe("ChutesHandler", () => {
 		)
 	})
 
+	it("should return inclusionAI/Ring-1T-FP8 model with correct configuration", () => {
+		const testModelId: ChutesModelId = "inclusionAI/Ring-1T-FP8"
+		const handlerWithModel = new ChutesHandler({
+			apiModelId: testModelId,
+			chutesApiKey: "test-chutes-api-key",
+		})
+		const model = handlerWithModel.getModel()
+		expect(model.id).toBe(testModelId)
+		expect(model.info).toEqual(
+			expect.objectContaining({
+				maxTokens: 32768,
+				contextWindow: 131072,
+				supportsImages: false,
+				supportsPromptCache: false,
+				inputPrice: 1.0,
+				outputPrice: 3.0,
+				description: "Ring 1T FP8 model optimized for efficient inference with FP8 precision.",
+				temperature: 0.5, // Default temperature for non-DeepSeek models
+			}),
+		)
+	})
+
 	it("completePrompt method should return text from Chutes API", async () => {
 		const expectedResponse = "This is a test response from Chutes"
 		mockCreate.mockResolvedValueOnce({ choices: [{ message: { content: expectedResponse } }] })

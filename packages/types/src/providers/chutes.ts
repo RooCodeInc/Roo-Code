@@ -30,6 +30,7 @@ export type ChutesModelId =
 	| "Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8"
 	| "microsoft/MAI-DS-R1-FP8"
 	| "tngtech/DeepSeek-R1T-Chimera"
+	| "inclusionAI/Ring-1T-FP8"
 	| "zai-org/GLM-4.5-Air"
 	| "zai-org/GLM-4.5-FP8"
 	| "zai-org/GLM-4.5-turbo"
@@ -87,7 +88,8 @@ export const chutesModels = {
 		supportsPromptCache: false,
 		inputPrice: 0.23,
 		outputPrice: 0.9,
-		description: "DeepSeek‑V3.1‑Terminus is an update to V3.1 that improves language consistency by reducing CN/EN mix‑ups and eliminating random characters, while strengthening agent capabilities with notably better Code Agent and Search Agent performance.",
+		description:
+			"DeepSeek‑V3.1‑Terminus is an update to V3.1 that improves language consistency by reducing CN/EN mix‑ups and eliminating random characters, while strengthening agent capabilities with notably better Code Agent and Search Agent performance.",
 	},
 	"deepseek-ai/DeepSeek-V3.1-turbo": {
 		maxTokens: 32768,
@@ -96,7 +98,8 @@ export const chutesModels = {
 		supportsPromptCache: false,
 		inputPrice: 1.0,
 		outputPrice: 3.0,
-		description: "DeepSeek-V3.1-turbo is an FP8, speculative-decoding turbo variant optimized for ultra-fast single-shot queries (~200 TPS), with outputs close to the originals and solid function calling/reasoning/structured output, priced at $1/M input and $3/M output tokens, using 2× quota per request and not intended for bulk workloads.",
+		description:
+			"DeepSeek-V3.1-turbo is an FP8, speculative-decoding turbo variant optimized for ultra-fast single-shot queries (~200 TPS), with outputs close to the originals and solid function calling/reasoning/structured output, priced at $1/M input and $3/M output tokens, using 2× quota per request and not intended for bulk workloads.",
 	},
 	"deepseek-ai/DeepSeek-V3.2-Exp": {
 		maxTokens: 163840,
@@ -105,7 +108,8 @@ export const chutesModels = {
 		supportsPromptCache: false,
 		inputPrice: 0.25,
 		outputPrice: 0.35,
-		description: "DeepSeek-V3.2-Exp is an experimental LLM that introduces DeepSeek Sparse Attention to improve long‑context training and inference efficiency while maintaining performance comparable to V3.1‑Terminus.",
+		description:
+			"DeepSeek-V3.2-Exp is an experimental LLM that introduces DeepSeek Sparse Attention to improve long‑context training and inference efficiency while maintaining performance comparable to V3.1‑Terminus.",
 	},
 	"unsloth/Llama-3.3-70B-Instruct": {
 		maxTokens: 32768, // From Groq
@@ -287,6 +291,15 @@ export const chutesModels = {
 		outputPrice: 0,
 		description: "TNGTech DeepSeek R1T Chimera model.",
 	},
+	"inclusionAI/Ring-1T-FP8": {
+		maxTokens: 32768,
+		contextWindow: 131072,
+		supportsImages: false,
+		supportsPromptCache: false,
+		inputPrice: 1.0,
+		outputPrice: 3.0,
+		description: "Ring 1T FP8 model optimized for efficient inference with FP8 precision.",
+	},
 	"zai-org/GLM-4.5-Air": {
 		maxTokens: 32768,
 		contextWindow: 151329,
@@ -387,8 +400,9 @@ export const chutesModels = {
 		contextWindow: 262144,
 		supportsImages: true,
 		supportsPromptCache: false,
-		inputPrice: 0.1600,
-		outputPrice: 0.6500,
-		description: "Qwen3‑VL‑235B‑A22B‑Thinking is an open‑weight MoE vision‑language model (235B total, ~22B activated) optimized for deliberate multi‑step reasoning with strong text‑image‑video understanding and long‑context capabilities.",
+		inputPrice: 0.16,
+		outputPrice: 0.65,
+		description:
+			"Qwen3‑VL‑235B‑A22B‑Thinking is an open‑weight MoE vision‑language model (235B total, ~22B activated) optimized for deliberate multi‑step reasoning with strong text‑image‑video understanding and long‑context capabilities.",
 	},
 } as const satisfies Record<string, ModelInfo>
