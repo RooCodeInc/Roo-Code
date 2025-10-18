@@ -1319,27 +1319,19 @@ export class McpHub {
 			return aIsGlobal ? 1 : -1
 		})
 
-		// Send sorted servers to webview
-		const targetProvider: ClineProvider | undefined = this.providerRef.deref()
+		// Send sorted servers to all registered providers (all open tabs)
+		const serversToSend = sortedConnections.map((connection) => connection.server)
 
-		if (targetProvider) {
-			const serversToSend = sortedConnections.map((connection) => connection.server)
-
-			const message = {
-				type: "mcpServers" as const,
-				mcpServers: serversToSend,
-			}
-
-			try {
-				await targetProvider.postMessageToWebview(message)
-			} catch (error) {
-				console.error("[McpHub] Error calling targetProvider.postMessageToWebview:", error)
-			}
-		} else {
-			console.error(
-				"[McpHub] No target provider available (neither from getInstance nor providerRef) - cannot send mcpServers message to webview",
-			)
+		const message = {
+			type: "mcpServers" as const,
+			mcpServers: serversToSend,
 		}
+
+		// Import McpServerManager dynamically to avoid circular dependency
+		const { McpServerManager } = await import("./McpServerManager")
+
+		// Notify all registered providers to ensure all tabs are synchronized
+		McpServerManager.notifyProviders(message)
 	}
 
 	public async toggleServerDisabled(
