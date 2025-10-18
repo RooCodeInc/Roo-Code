@@ -280,7 +280,7 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 		}
 	}
 
-	async completePrompt(prompt: string): Promise<string> {
+	async completePrompt(prompt: string, metadata?: ApiHandlerCreateMessageMetadata): Promise<string> {
 		try {
 			const client = this.ensureClient()
 			const { id: modelId } = await this.fetchModel()

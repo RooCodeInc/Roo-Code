@@ -128,6 +128,8 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 			stream: true,
 			stream_options: { include_usage: true },
 			requesty: { trace_id: metadata?.taskId, extra: { mode: metadata?.mode } },
+			prompt_cache_key: metadata?.taskId,
+			safety_identifier: metadata?.safetyIdentifier,
 		}
 
 		let stream
@@ -159,7 +161,7 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 		}
 	}
 
-	async completePrompt(prompt: string): Promise<string> {
+	async completePrompt(prompt: string, metadata?: ApiHandlerCreateMessageMetadata): Promise<string> {
 		const { id: model, maxTokens: max_tokens, temperature } = await this.fetchModel()
 
 		let openAiMessages: OpenAI.Chat.ChatCompletionMessageParam[] = [{ role: "system", content: prompt }]
@@ -169,6 +171,8 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 			max_tokens,
 			messages: openAiMessages,
 			temperature: temperature,
+			prompt_cache_key: metadata?.taskId,
+			safety_identifier: metadata?.safetyIdentifier,
 		}
 
 		let response: OpenAI.Chat.ChatCompletion

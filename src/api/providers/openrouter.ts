@@ -24,7 +24,7 @@ import { getModelEndpoints } from "./fetchers/modelEndpointCache"
 
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
-import type { SingleCompletionHandler } from "../index"
+import type { ApiHandlerCreateMessageMetadata, SingleCompletionHandler } from "../index"
 import { handleOpenAIError } from "./utils/openai-error-handler"
 
 // Image generation types
@@ -101,6 +101,7 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 	override async *createMessage(
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
+		metadata?: ApiHandlerCreateMessageMetadata,
 	): AsyncGenerator<ApiStreamChunk> {
 		const model = await this.fetchModel()
 
@@ -161,6 +162,8 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 				}),
 			...(transforms && { transforms }),
 			...(reasoning && { reasoning }),
+			prompt_cache_key: metadata?.taskId,
+			safety_identifier: metadata?.safetyIdentifier,
 		}
 
 		let stream
@@ -245,7 +248,7 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		return { id, info, topP: isDeepSeekR1 ? 0.95 : undefined, ...params }
 	}
 
-	async completePrompt(prompt: string) {
+	async completePrompt(prompt: string, metadata?: ApiHandlerCreateMessageMetadata) {
 		let { id: modelId, maxTokens, temperature, reasoning } = await this.fetchModel()
 
 		const completionParams: OpenRouterChatCompletionParams = {
@@ -264,6 +267,8 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 					},
 				}),
 			...(reasoning && { reasoning }),
+			prompt_cache_key: metadata?.taskId,
+			safety_identifier: metadata?.safetyIdentifier,
 		}
 
 		let response
