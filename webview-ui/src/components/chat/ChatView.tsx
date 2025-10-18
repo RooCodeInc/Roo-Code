@@ -176,6 +176,8 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	const textAreaRef = useRef<HTMLTextAreaElement>(null)
 	const [sendingDisabled, setSendingDisabled] = useState(false)
 	const [selectedImages, setSelectedImages] = useState<string[]>([])
+	// Keep a stable ref for selected images to preserve user draft while queue drains
+	const selectedImagesRef = useRef(selectedImages)
 
 	// we need to hold on to the ask because useEffect > lastMessage will always let us know when an ask comes in and handle it, but by the time handleMessage is called, the last message might not be the ask anymore (it could be a say that followed)
 	const [clineAsk, setClineAsk] = useState<ClineAsk | undefined>(undefined)
@@ -223,6 +225,11 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	useEffect(() => {
 		inputValueRef.current = inputValue
 	}, [inputValue])
+
+	// Keep selectedImagesRef in sync with selectedImages state
+	useEffect(() => {
+		selectedImagesRef.current = selectedImages
+	}, [selectedImages])
 
 	useEffect(() => {
 		isMountedRef.current = true
@@ -594,9 +601,18 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			text = text.trim()
 
 			if (text || images.length > 0) {
-				if (sendingDisabled) {
+				// UI hardening: Prefer queuing when no active ask during model flight or transitions
+				// This helps narrow the race condition window where messages could vanish
+				const shouldQueue =
+					sendingDisabled || (messagesRef.current.length > 0 && !clineAskRef.current && isStreaming)
+
+				if (shouldQueue) {
 					try {
-						console.log("queueMessage", text, images)
+						console.log("queueMessage", text, images, {
+							sendingDisabled,
+							noActiveAsk: !clineAskRef.current,
+							isStreaming,
+						})
 						vscode.postMessage({ type: "queueMessage", text, images })
 						setInputValue("")
 						setSelectedImages([])
@@ -650,7 +666,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				handleChatReset()
 			}
 		},
-		[handleChatReset, markFollowUpAsAnswered, sendingDisabled], // messagesRef and clineAskRef are stable
+		[handleChatReset, markFollowUpAsAnswered, sendingDisabled, isStreaming], // messagesRef and clineAskRef are stable
 	)
 
 	const handleSetChatBoxMessage = useCallback(
@@ -807,9 +823,16 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 						case "newChat":
 							handleChatReset()
 							break
-						case "sendMessage":
+						case "sendMessage": {
+							// Preserve user's in-progress draft while a queued message is auto-sent
+							const preservedInput = inputValueRef.current
+							const preservedImages = selectedImagesRef.current
 							handleSendMessage(message.text ?? "", message.images ?? [])
+							// Restore the draft after programmatic send to avoid clearing while typing
+							setInputValue(preservedInput)
+							setSelectedImages(preservedImages)
 							break
+						}
 						case "setChatBoxMessage":
 							handleSetChatBoxMessage(message.text ?? "", message.images ?? [])
 							break

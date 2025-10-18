@@ -577,9 +577,25 @@ export const webviewMessageHandler = async (
 			await updateGlobalState("alwaysAllowUpdateTodoList", message.bool)
 			await provider.postStateToWebview()
 			break
-		case "askResponse":
-			provider.getCurrentTask()?.handleWebviewAskResponse(message.askResponse!, message.text, message.images)
+		case "askResponse": {
+			// Defensive routing: Check if there's an active ask before processing the response
+			// This prevents messages from vanishing when sent during the race condition window
+			const task = provider.getCurrentTask()
+			if (task) {
+				// If this is a "messageResponse" and there's no pending ask, queue it instead
+				if (message.askResponse === "messageResponse" && !task.taskAsk) {
+					// No ask is pending, route to queue to ensure message is captured
+					console.log("[webviewMessageHandler] No pending ask, routing message to queue")
+					task.messageQueueService.addMessage(message.text || "", message.images)
+					// Post state to update UI with queued message
+					await provider.postStateToWebview()
+				} else {
+					// Normal flow: there's a pending ask or it's not a messageResponse
+					task.handleWebviewAskResponse(message.askResponse!, message.text, message.images)
+				}
+			}
 			break
+		}
 		case "autoCondenseContext":
 			await updateGlobalState("autoCondenseContext", message.bool)
 			await provider.postStateToWebview()
