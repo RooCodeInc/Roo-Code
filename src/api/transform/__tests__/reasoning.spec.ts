@@ -284,6 +284,89 @@ describe("reasoning.ts", () => {
 
 			expect(result).toBeUndefined()
 		})
+
+		it("should handle models with simple on/off reasoning toggle (like grok-4-fast)", () => {
+			// Model with reasoning support but no effort or budget capabilities
+			const modelWithSimpleToggle: ModelInfo = {
+				maxTokens: 8192,
+				contextWindow: 32768,
+				supportsPromptCache: false,
+				supportedParameters: ["reasoning"],
+				supportsReasoningEffort: false,
+				supportsReasoningBudget: false,
+			}
+
+			// Test with reasoning enabled (not minimal)
+			const optionsWithReasoningEnabled = {
+				...baseOptions,
+				model: modelWithSimpleToggle,
+				reasoningEffort: "high" as ReasoningEffortWithMinimal,
+			}
+
+			const resultEnabled = getOpenRouterReasoning(optionsWithReasoningEnabled)
+			expect(resultEnabled).toEqual({ exclude: false })
+
+			// Test with reasoning disabled (minimal)
+			const optionsWithReasoningDisabled = {
+				...baseOptions,
+				model: modelWithSimpleToggle,
+				reasoningEffort: "minimal" as ReasoningEffortWithMinimal,
+			}
+
+			const resultDisabled = getOpenRouterReasoning(optionsWithReasoningDisabled)
+			expect(resultDisabled).toEqual({ exclude: true })
+
+			// Test without reasoning effort setting (should enable by default)
+			const optionsWithoutEffort = {
+				...baseOptions,
+				model: modelWithSimpleToggle,
+			}
+
+			const resultDefault = getOpenRouterReasoning(optionsWithoutEffort)
+			expect(resultDefault).toEqual({ exclude: false })
+		})
+
+		it("should not apply simple toggle logic to models with effort or budget capabilities", () => {
+			// Model with reasoning effort capability
+			const modelWithEffort: ModelInfo = {
+				maxTokens: 8192,
+				contextWindow: 32768,
+				supportsPromptCache: false,
+				supportedParameters: ["reasoning"],
+				supportsReasoningEffort: true,
+			}
+
+			const optionsWithEffort = {
+				...baseOptions,
+				model: modelWithEffort,
+				settings: { reasoningEffort: "high" as ReasoningEffortWithMinimal },
+				reasoningEffort: "high" as ReasoningEffortWithMinimal,
+			}
+
+			const resultWithEffort = getOpenRouterReasoning(optionsWithEffort)
+			// Should use effort logic, not simple toggle
+			expect(resultWithEffort).toEqual({ effort: "high" })
+
+			// Model with reasoning budget capability
+			const modelWithBudget: ModelInfo = {
+				maxTokens: 8192,
+				contextWindow: 32768,
+				supportsPromptCache: false,
+				supportedParameters: ["reasoning"],
+				supportsReasoningBudget: true,
+			}
+
+			const optionsWithBudget = {
+				...baseOptions,
+				model: modelWithBudget,
+				settings: { enableReasoningEffort: true },
+				reasoningBudget: 1000,
+			}
+
+			const resultWithBudget = getOpenRouterReasoning(optionsWithBudget)
+			// Should use budget logic, not simple toggle
+			expect(resultWithBudget).toEqual({ max_tokens: 1000 })
+		})
 	})
 
 	describe("getAnthropicReasoning", () => {

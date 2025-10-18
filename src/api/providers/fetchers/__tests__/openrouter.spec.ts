@@ -386,5 +386,76 @@ describe("OpenRouter API", () => {
 			expect(textResult.maxTokens).toBe(64000)
 			expect(imageResult.maxTokens).toBe(64000)
 		})
+
+		it("handles grok-4-fast reasoning correctly", () => {
+			const mockModel = {
+				name: "Grok 4 Fast",
+				context_length: 32768,
+				max_completion_tokens: 8192,
+			}
+
+			// Test with reasoning in supported parameters
+			const resultWithReasoning = parseOpenRouterModel({
+				id: "x-ai/grok-4-fast",
+				model: mockModel,
+				inputModality: ["text"],
+				outputModality: ["text"],
+				maxTokens: 8192,
+				supportedParameters: ["temperature", "max_tokens", "reasoning"],
+			})
+
+			expect(resultWithReasoning.supportsReasoningEffort).toBe(false)
+			expect(resultWithReasoning.supportedParameters).toContain("reasoning")
+			expect(resultWithReasoning.supportedParameters).toContain("temperature")
+			expect(resultWithReasoning.supportedParameters).toContain("max_tokens")
+
+			// Test without reasoning in supported parameters - should add it
+			const resultWithoutReasoning = parseOpenRouterModel({
+				id: "x-ai/grok-4-fast",
+				model: mockModel,
+				inputModality: ["text"],
+				outputModality: ["text"],
+				maxTokens: 8192,
+				supportedParameters: ["temperature", "max_tokens"],
+			})
+
+			expect(resultWithoutReasoning.supportsReasoningEffort).toBe(false)
+			expect(resultWithoutReasoning.supportedParameters).toContain("reasoning")
+			expect(resultWithoutReasoning.supportedParameters).toContain("temperature")
+			expect(resultWithoutReasoning.supportedParameters).toContain("max_tokens")
+
+			// Test with undefined supported parameters
+			const resultNoParams = parseOpenRouterModel({
+				id: "x-ai/grok-4-fast",
+				model: mockModel,
+				inputModality: ["text"],
+				outputModality: ["text"],
+				maxTokens: 8192,
+			})
+
+			expect(resultNoParams.supportsReasoningEffort).toBe(false)
+			expect(resultNoParams.supportedParameters).toContain("reasoning")
+		})
+
+		it("does not affect other models reasoning configuration", () => {
+			const mockModel = {
+				name: "Other Model",
+				context_length: 32768,
+				max_completion_tokens: 8192,
+			}
+
+			const result = parseOpenRouterModel({
+				id: "other/model",
+				model: mockModel,
+				inputModality: ["text"],
+				outputModality: ["text"],
+				maxTokens: 8192,
+				supportedParameters: ["temperature", "max_tokens", "reasoning"],
+			})
+
+			// Should not modify supportsReasoningEffort for other models
+			expect(result.supportsReasoningEffort).toBe(true)
+			expect(result.supportedParameters).toContain("reasoning")
+		})
 	})
 })

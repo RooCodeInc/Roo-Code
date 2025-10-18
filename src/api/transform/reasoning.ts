@@ -30,14 +30,34 @@ export const getOpenRouterReasoning = ({
 	reasoningBudget,
 	reasoningEffort,
 	settings,
-}: GetModelReasoningOptions): OpenRouterReasoningParams | undefined =>
-	shouldUseReasoningBudget({ model, settings })
-		? { max_tokens: reasoningBudget }
-		: shouldUseReasoningEffort({ model, settings })
-			? reasoningEffort
-				? { effort: reasoningEffort }
-				: undefined
-			: undefined
+}: GetModelReasoningOptions): OpenRouterReasoningParams | undefined => {
+	// Check if model should use reasoning budget
+	if (shouldUseReasoningBudget({ model, settings })) {
+		return { max_tokens: reasoningBudget }
+	}
+
+	// Check if model should use reasoning effort
+	if (shouldUseReasoningEffort({ model, settings })) {
+		return reasoningEffort ? { effort: reasoningEffort } : undefined
+	}
+
+	// Check if model supports reasoning but not effort or budget (e.g., grok-4-fast on OpenRouter)
+	// These models use a simple on/off toggle via the exclude parameter
+	if (
+		model.supportedParameters?.includes("reasoning") &&
+		!model.supportsReasoningEffort &&
+		!model.supportsReasoningBudget
+	) {
+		// If reasoning is not explicitly disabled, enable it
+		// We use exclude: false to enable reasoning, and exclude: true to disable
+		// Check both settings.reasoningEffort and the passed reasoningEffort parameter
+		const effectiveEffort = reasoningEffort || settings.reasoningEffort
+		const reasoningEnabled = effectiveEffort !== "minimal"
+		return reasoningEnabled ? { exclude: false } : { exclude: true }
+	}
+
+	return undefined
+}
 
 export const getAnthropicReasoning = ({
 	model,

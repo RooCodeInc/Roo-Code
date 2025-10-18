@@ -270,5 +270,16 @@ export const parseOpenRouterModel = ({
 		modelInfo.maxTokens = 32768
 	}
 
+	// Special handling for grok-4-fast on OpenRouter - it should use simple on/off reasoning toggle
+	// instead of reasoning effort levels (low/medium/high)
+	if (id === "x-ai/grok-4-fast") {
+		// Disable reasoning effort but keep reasoning in supportedParameters for on/off toggle
+		modelInfo.supportsReasoningEffort = false
+		// Ensure reasoning is in supportedParameters
+		if (!supportedParameters || !supportedParameters.includes("reasoning")) {
+			modelInfo.supportedParameters = [...(modelInfo.supportedParameters || []), "reasoning"]
+		}
+	}
+
 	return modelInfo
 }
