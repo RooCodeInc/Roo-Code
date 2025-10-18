@@ -240,7 +240,7 @@ export interface WebviewMessage {
 	images?: string[]
 	bool?: boolean
 	value?: number
-	commands?: string[]
+	commands?: string[] | { command: string; message?: string }[]
 	audioType?: AudioType
 	serverName?: string
 	toolName?: string

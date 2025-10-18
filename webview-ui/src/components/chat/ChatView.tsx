@@ -26,12 +26,7 @@ import { ProfileValidator } from "@roo/ProfileValidator"
 import { getLatestTodo } from "@roo/todo"
 
 import { vscode } from "@src/utils/vscode"
-import {
-	getCommandDecision,
-	CommandDecision,
-	findLongestPrefixMatch,
-	parseCommand,
-} from "@src/utils/command-validation"
+import { getCommandDecision, CommandDecision, parseCommand } from "@src/utils/command-validation"
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
 import { useSelectedModel } from "@src/components/ui/hooks/useSelectedModel"
@@ -1043,7 +1038,10 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	const getCommandDecisionForMessage = useCallback(
 		(message: ClineMessage | undefined): CommandDecision => {
 			if (message?.type !== "ask") return "ask_user"
-			return getCommandDecision(message.text || "", allowedCommands || [], deniedCommands || [])
+			// Convert deniedCommands to string array for getCommandDecision
+			const deniedCommandsArray =
+				deniedCommands?.map((cmd) => (typeof cmd === "string" ? cmd : cmd.command)) || []
+			return getCommandDecision(message.text || "", allowedCommands || [], deniedCommandsArray)
 		},
 		[allowedCommands, deniedCommands],
 	)
@@ -1064,17 +1062,32 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		[getCommandDecisionForMessage],
 	)
 
-	// Helper function to get the denied prefix for a command
-	const getDeniedPrefix = useCallback(
-		(command: string): string | null => {
+	// Helper function to get the denied command and its custom message
+	const getDeniedCommand = useCallback(
+		(command: string): { prefix: string; message?: string } | null => {
 			if (!command || !deniedCommands?.length) return null
+
+			// Normalize deniedCommands to objects
+			const normalizedDenied = deniedCommands.map((cmd) => (typeof cmd === "string" ? { command: cmd } : cmd))
 
 			// Parse the command into sub-commands and check each one
 			const subCommands = parseCommand(command)
 			for (const cmd of subCommands) {
-				const deniedMatch = findLongestPrefixMatch(cmd, deniedCommands)
-				if (deniedMatch) {
-					return deniedMatch
+				// Find longest matching denied command
+				let longestMatch: { command: string; message?: string } | null = null
+				let longestLength = 0
+
+				for (const denied of normalizedDenied) {
+					if (cmd.toLowerCase().startsWith(denied.command.toLowerCase())) {
+						if (denied.command.length > longestLength) {
+							longestMatch = denied
+							longestLength = denied.command.length
+						}
+					}
+				}
+
+				if (longestMatch) {
+					return { prefix: longestMatch.command, message: longestMatch.message }
 				}
 			}
 			return null
@@ -1597,11 +1610,13 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		const autoApproveOrReject = async () => {
 			// Check for auto-reject first (commands that should be denied)
 			if (lastMessage?.ask === "command" && isDeniedCommand(lastMessage)) {
-				// Get the denied prefix for the localized message
-				const deniedPrefix = getDeniedPrefix(lastMessage.text || "")
-				if (deniedPrefix) {
-					// Create the localized auto-deny message and send it with the rejection
-					const autoDenyMessage = tSettings("autoApprove.execute.autoDenied", { prefix: deniedPrefix })
+				// Get the denied command and its custom message
+				const deniedCommand = getDeniedCommand(lastMessage.text || "")
+				if (deniedCommand) {
+					// Use custom message if provided, otherwise use default localized message
+					const autoDenyMessage =
+						deniedCommand.message ||
+						tSettings("autoApprove.execute.autoDenied", { prefix: deniedCommand.prefix })
 
 					vscode.postMessage({
 						type: "askResponse",
@@ -1701,7 +1716,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		handleSuggestionClickInRow,
 		isAllowedCommand,
 		isDeniedCommand,
-		getDeniedPrefix,
+		getDeniedCommand,
 		tSettings,
 	])
 

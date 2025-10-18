@@ -1020,18 +1020,34 @@ export const webviewMessageHandler = async (
 			break
 		}
 		case "deniedCommands": {
-			// Validate and sanitize the commands array
+			// Validate and sanitize the commands array - now supports both strings and objects
 			const commands = message.commands ?? []
-			const validCommands = Array.isArray(commands)
-				? commands.filter((cmd) => typeof cmd === "string" && cmd.trim().length > 0)
-				: []
 
-			await updateGlobalState("deniedCommands", validCommands)
+			// Normalize to object format for consistency
+			const normalizedCommands: { command: string; message?: string }[] = []
+
+			if (Array.isArray(commands)) {
+				for (const cmd of commands) {
+					if (typeof cmd === "string" && cmd.trim().length > 0) {
+						normalizedCommands.push({ command: cmd.trim() })
+					} else if (typeof cmd === "object" && cmd !== null && "command" in cmd) {
+						const cmdObj = cmd as { command: string; message?: string }
+						if (typeof cmdObj.command === "string" && cmdObj.command.trim().length > 0) {
+							normalizedCommands.push({
+								command: cmdObj.command.trim(),
+								...(cmdObj.message ? { message: cmdObj.message } : {}),
+							})
+						}
+					}
+				}
+			}
+
+			await updateGlobalState("deniedCommands", normalizedCommands)
 
 			// Also update workspace settings.
 			await vscode.workspace
 				.getConfiguration(Package.name)
-				.update("deniedCommands", validCommands, vscode.ConfigurationTarget.Global)
+				.update("deniedCommands", normalizedCommands, vscode.ConfigurationTarget.Global)
 
 			break
 		}

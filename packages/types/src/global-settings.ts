@@ -68,7 +68,17 @@ export const globalSettingsSchema = z.object({
 	followupAutoApproveTimeoutMs: z.number().optional(),
 	alwaysAllowUpdateTodoList: z.boolean().optional(),
 	allowedCommands: z.array(z.string()).optional(),
-	deniedCommands: z.array(z.string()).optional(),
+	deniedCommands: z
+		.union([
+			z.array(z.string()),
+			z.array(
+				z.object({
+					command: z.string(),
+					message: z.string().optional(),
+				}),
+			),
+		])
+		.optional(),
 	commandExecutionTimeout: z.number().optional(),
 	commandTimeoutAllowlist: z.array(z.string()).optional(),
 	preventCompletionWithOpenTodos: z.boolean().optional(),

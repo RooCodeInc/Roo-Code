@@ -1677,8 +1677,21 @@ export class ClineProvider
 	 * Merges denied commands from global state and workspace configuration
 	 * with proper validation and deduplication
 	 */
-	private mergeDeniedCommands(globalStateCommands?: string[]): string[] {
-		return this.mergeCommandLists("deniedCommands", "denied", globalStateCommands)
+	private mergeDeniedCommands(
+		globalStateCommands?: string[] | { command: string; message?: string }[],
+	): { command: string; message?: string }[] {
+		// Handle both string[] and object[] formats
+		if (!globalStateCommands) {
+			return []
+		}
+
+		// If it's already in the new format, return as-is
+		if (globalStateCommands.length > 0 && typeof globalStateCommands[0] === "object") {
+			return globalStateCommands as { command: string; message?: string }[]
+		}
+
+		// If it's in the old string format, convert to new format for compatibility
+		return (globalStateCommands as string[]).map((cmd) => ({ command: cmd }))
 	}
 
 	/**
