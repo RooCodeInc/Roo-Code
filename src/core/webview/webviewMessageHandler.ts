@@ -9,6 +9,7 @@ import {
 	type Language,
 	type GlobalState,
 	type ClineMessage,
+	type HistoryItem,
 	type TelemetrySetting,
 	TelemetryEventName,
 	UserSettingsConfig,
@@ -673,6 +674,57 @@ export const webviewMessageHandler = async (
 				vscode.window.showErrorMessage(t("common:errors.share_task_failed"))
 			}
 			break
+		case "setTaskTitle": {
+			const ids = Array.isArray(message.ids)
+				? Array.from(
+						new Set(
+							message.ids.filter((id): id is string => typeof id === "string" && id.trim().length > 0),
+						),
+					)
+				: []
+			if (ids.length === 0) {
+				break
+			}
+
+			const rawTitle = message.text ?? ""
+			const trimmedTitle = rawTitle.trim()
+			const normalizedTitle = trimmedTitle.length > 0 ? trimmedTitle : undefined
+			const { taskHistory } = await provider.getState()
+			if (!Array.isArray(taskHistory) || taskHistory.length === 0) {
+				break
+			}
+
+			let hasUpdates = false
+			const historyById = new Map(taskHistory.map((item) => [item.id, item] as const))
+
+			for (const id of ids) {
+				const existingItem = historyById.get(id)
+				if (!existingItem) {
+					console.warn(`[setTaskTitle] Unable to locate task history item with id ${id}`)
+					continue
+				}
+
+				const normalizedExistingTitle =
+					existingItem.title && existingItem.title.trim().length > 0 ? existingItem.title.trim() : undefined
+				if (normalizedExistingTitle === normalizedTitle) {
+					continue
+				}
+
+				const updatedItem: HistoryItem = {
+					...existingItem,
+					title: normalizedTitle,
+				}
+
+				await provider.updateTaskHistory(updatedItem)
+				hasUpdates = true
+			}
+
+			if (hasUpdates) {
+				await provider.postStateToWebview()
+			}
+
+			break
+		}
 		case "showTaskWithId":
 			provider.showTaskWithId(message.text!)
 			break
@@ -1620,6 +1672,10 @@ export const webviewMessageHandler = async (
 		case "setReasoningBlockCollapsed":
 			await updateGlobalState("reasoningBlockCollapsed", message.bool ?? true)
 			// No need to call postStateToWebview here as the UI already updated optimistically
+			break
+		case "setTaskTitlesEnabled":
+			await updateGlobalState("taskTitlesEnabled", message.bool ?? false)
+			await provider.postStateToWebview()
 			break
 		case "toggleApiConfigPin":
 			if (message.text) {

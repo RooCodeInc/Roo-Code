@@ -7,7 +7,7 @@ import { useExtensionState } from "@/context/ExtensionStateContext"
 type SortOption = "newest" | "oldest" | "mostExpensive" | "mostTokens" | "mostRelevant"
 
 export const useTaskSearch = () => {
-	const { taskHistory, cwd } = useExtensionState()
+	const { taskHistory, cwd, taskTitlesEnabled = false } = useExtensionState()
 	const [searchQuery, setSearchQuery] = useState("")
 	const [sortOption, setSortOption] = useState<SortOption>("newest")
 	const [lastNonRelevantSort, setLastNonRelevantSort] = useState<SortOption | null>("newest")
@@ -33,9 +33,9 @@ export const useTaskSearch = () => {
 
 	const fzf = useMemo(() => {
 		return new Fzf(presentableTasks, {
-			selector: (item) => item.task,
+			selector: (item) => (taskTitlesEnabled && item.title ? `${item.title} ${item.task}` : item.task),
 		})
-	}, [presentableTasks])
+	}, [presentableTasks, taskTitlesEnabled])
 
 	const tasks = useMemo(() => {
 		let results = presentableTasks
@@ -44,14 +44,27 @@ export const useTaskSearch = () => {
 			const searchResults = fzf.find(searchQuery)
 			results = searchResults.map((result) => {
 				const positions = Array.from(result.positions)
-				const taskEndIndex = result.item.task.length
+				const includeTitles = taskTitlesEnabled && !!result.item.title
+				const titleLength = includeTitles ? result.item.title!.length : 0
+				const separatorLength = includeTitles ? 1 : 0
+				const taskOffset = includeTitles ? titleLength + separatorLength : 0
+				const titlePositions = includeTitles ? positions.filter((p) => p < titleLength) : []
+				const taskPositions = includeTitles
+					? positions.filter((p) => p >= taskOffset).map((p) => p - taskOffset)
+					: positions
+
+				const titleHighlight =
+					titlePositions.length > 0 && result.item.title
+						? highlightFzfMatch(result.item.title, titlePositions)
+						: undefined
+
+				const taskHighlight =
+					taskPositions.length > 0 ? highlightFzfMatch(result.item.task, taskPositions) : undefined
 
 				return {
 					...result.item,
-					highlight: highlightFzfMatch(
-						result.item.task,
-						positions.filter((p) => p < taskEndIndex),
-					),
+					titleHighlight,
+					highlight: taskHighlight,
 					workspace: result.item.workspace,
 				}
 			})
@@ -76,7 +89,7 @@ export const useTaskSearch = () => {
 					return (b.ts || 0) - (a.ts || 0)
 			}
 		})
-	}, [presentableTasks, searchQuery, fzf, sortOption])
+	}, [presentableTasks, searchQuery, fzf, sortOption, taskTitlesEnabled])
 
 	return {
 		tasks,

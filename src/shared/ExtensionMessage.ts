@@ -288,6 +288,7 @@ export type ExtensionState = Pick<
 	| "openRouterImageGenerationSelectedModel"
 	| "includeTaskHistoryInEnhance"
 	| "reasoningBlockCollapsed"
+	| "taskTitlesEnabled"
 > & {
 	version: string
 	clineMessages: ClineMessage[]
@@ -327,6 +328,7 @@ export type ExtensionState = Pick<
 	renderContext: "sidebar" | "editor"
 	settingsImportedAt?: number
 	historyPreviewCollapsed?: boolean
+	taskTitlesEnabled?: boolean
 
 	cloudUserInfo: CloudUserInfo | null
 	cloudIsAuthenticated: boolean
