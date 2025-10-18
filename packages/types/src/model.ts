@@ -14,7 +14,11 @@ export type ReasoningEffort = z.infer<typeof reasoningEffortsSchema>
  * ReasoningEffortWithMinimal
  */
 
-export const reasoningEffortWithMinimalSchema = z.union([reasoningEffortsSchema, z.literal("minimal")])
+export const reasoningEffortWithMinimalSchema = z.union([
+	reasoningEffortsSchema,
+	z.literal("minimal"),
+	z.literal("off"),
+])
 
 export type ReasoningEffortWithMinimal = z.infer<typeof reasoningEffortWithMinimalSchema>
 

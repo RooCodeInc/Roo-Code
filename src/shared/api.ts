@@ -68,6 +68,11 @@ export const shouldUseReasoningEffort = ({
 		return false
 	}
 
+	// If reasoningEffort is explicitly set to "off", reasoning should be disabled
+	if (settings?.reasoningEffort === "off") {
+		return false
+	}
+
 	// Otherwise, use reasoning if:
 	// 1. Model supports reasoning effort AND settings provide reasoning effort, OR
 	// 2. Model itself has a reasoningEffort property

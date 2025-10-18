@@ -465,6 +465,7 @@
 		},
 		"reasoningEffort": {
 			"label": "Model Reasoning Effort",
+			"off": "Off",
 			"minimal": "Minimal (Fastest)",
 			"low": "Low",
 			"medium": "Medium",

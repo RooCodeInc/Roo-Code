@@ -34,7 +34,7 @@ export const getOpenRouterReasoning = ({
 	shouldUseReasoningBudget({ model, settings })
 		? { max_tokens: reasoningBudget }
 		: shouldUseReasoningEffort({ model, settings })
-			? reasoningEffort
+			? reasoningEffort && reasoningEffort !== "off"
 				? { effort: reasoningEffort }
 				: undefined
 			: undefined
@@ -57,7 +57,7 @@ export const getOpenAiReasoning = ({
 
 	// If model has reasoning effort capability, return object even if effort is undefined
 	// This preserves the reasoning_effort field in the API call
-	if (reasoningEffort === "minimal") {
+	if (reasoningEffort === "minimal" || reasoningEffort === "off") {
 		return undefined
 	}
 
