@@ -114,6 +114,7 @@ import { Gpt5Metadata, ClineMessageWithMetadata } from "./types"
 import { MessageQueueService } from "../message-queue/MessageQueueService"
 
 import { AutoApprovalHandler } from "./AutoApprovalHandler"
+import { laminar } from "../../services/laminar/LaminarService"
 
 const MAX_EXPONENTIAL_BACKOFF_SECONDS = 600 // 10 minutes
 const DEFAULT_USAGE_COLLECTION_TIMEOUT_MS = 5000 // 5 seconds
@@ -297,6 +298,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	// Token Usage Cache
 	private tokenUsageSnapshot?: TokenUsage
 	private tokenUsageSnapshotAt?: number
+
+	// Tracing
+	private laminarSpanId?: string
 
 	constructor({
 		provider,
@@ -959,6 +963,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				if (providerProfile) {
 					await provider.setProviderProfile(providerProfile)
 				}
+
+				// Start a tracing span for this user turn
+				try {
+					this.laminarSpanId = laminar.startSpan("task.step", { taskId: this.taskId })
+				} catch {}
 
 				this.emit(RooCodeEventName.TaskUserMessage, this.taskId)
 
