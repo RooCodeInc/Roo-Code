@@ -37,6 +37,22 @@ export const openAiNativeModels = {
 			{ name: "priority", contextWindow: 400000, inputPrice: 2.5, outputPrice: 20.0, cacheReadsPrice: 0.25 },
 		],
 	},
+	"gpt-5-pro-2025-10-06": {
+		maxTokens: 128000,
+		contextWindow: 400000,
+		supportsImages: true,
+		// GPT-5 Pro does NOT support prompt caching
+		supportsPromptCache: false,
+		// Reasoning effort is not user-configurable for this model; do not expose the flag or default
+		supportsReasoningEffort: false,
+		inputPrice: 15.0,
+		outputPrice: 120.0,
+		description:
+			"GPT-5 Pro: A slow, reasoning-focused model for complex problems. Uses background mode with resilient streaming - requests may take several minutes with automatic recovery if connection drops.",
+		supportsVerbosity: true,
+		supportsTemperature: false,
+		backgroundMode: true,
+	},
 	"gpt-5-mini-2025-08-07": {
 		maxTokens: 128000,
 		contextWindow: 400000,

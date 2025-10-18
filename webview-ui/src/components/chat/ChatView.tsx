@@ -529,27 +529,49 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			return false
 		}
 
-		const isLastMessagePartial = modifiedMessages.at(-1)?.partial === true
+		// Find the last api_req_started to inspect background status + payload
+		const lastApiReqStarted = findLast(
+			modifiedMessages,
+			(message: ClineMessage) => message.say === "api_req_started",
+		)
 
+		// Extract background terminal state and cancel reason/cost if present
+		let bgDone = false
+		let cancelReason: string | null | undefined = undefined
+		let cost: any = undefined
+
+		if (lastApiReqStarted && lastApiReqStarted.say === "api_req_started") {
+			const meta: any = (lastApiReqStarted as any).metadata
+			const bgStatus = meta?.background === true ? meta?.backgroundStatus : undefined
+			bgDone = bgStatus === "completed" || bgStatus === "failed" || bgStatus === "canceled"
+
+			try {
+				if (lastApiReqStarted.text !== null && lastApiReqStarted.text !== undefined) {
+					const info = JSON.parse(lastApiReqStarted.text)
+					cost = info?.cost
+					cancelReason = info?.cancelReason
+				}
+			} catch {
+				// ignore malformed json
+			}
+		}
+
+		// If background reached a terminal state or the provider recorded a cancel reason,
+		// treat UI as not streaming regardless of partial flags or missing cost.
+		if (bgDone || cancelReason != null) {
+			return false
+		}
+
+		// Partial assistant content means streaming unless overridden by the terminal checks above.
+		const isLastMessagePartial = modifiedMessages.at(-1)?.partial === true
 		if (isLastMessagePartial) {
 			return true
-		} else {
-			const lastApiReqStarted = findLast(
-				modifiedMessages,
-				(message: ClineMessage) => message.say === "api_req_started",
-			)
+		}
 
-			if (
-				lastApiReqStarted &&
-				lastApiReqStarted.text !== null &&
-				lastApiReqStarted.text !== undefined &&
-				lastApiReqStarted.say === "api_req_started"
-			) {
-				const cost = JSON.parse(lastApiReqStarted.text).cost
-
-				if (cost === undefined) {
-					return true // API request has not finished yet.
-				}
+		// Otherwise, if the API request hasn't finished (no cost yet), consider it streaming.
+		if (lastApiReqStarted && lastApiReqStarted.say === "api_req_started") {
+			if (cost === undefined) {
+				return true
 			}
 		}
 

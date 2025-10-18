@@ -24,6 +24,20 @@ export type ApiHandlerOptions = Omit<ProviderSettings, "apiProvider"> & {
 	 * When undefined, Ollama will use the model's default num_ctx from the Modelfile.
 	 */
 	ollamaNumCtx?: number
+	/**
+	 * Opt-in for OpenAI Responses background mode when using apiProvider=openai-native.
+	 * Defaults to false when omitted.
+	 */
+	openAiNativeBackgroundMode?: boolean
+	/**
+	 * Auto-resume/poll configuration for OpenAI Responses background mode.
+	 * These are plumbed-only (no UI). Defaults are resolved in the handler.
+	 */
+	openAiNativeBackgroundAutoResume?: boolean
+	openAiNativeBackgroundResumeMaxRetries?: number
+	openAiNativeBackgroundResumeBaseDelayMs?: number
+	openAiNativeBackgroundPollIntervalMs?: number
+	openAiNativeBackgroundPollMaxMinutes?: number
 }
 
 // RouterName
