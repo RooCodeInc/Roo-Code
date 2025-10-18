@@ -1222,7 +1222,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		await this.initiateTaskLoop([
 			{
 				type: "text",
-				text: `<task>\n${task}\n</task>`,
+				text: task ?? "",
 			},
 			...imageBlocks,
 		])
