@@ -279,6 +279,89 @@ export async function presentAssistantMessage(cline: Task) {
 				progressStatus?: ToolProgressStatus,
 				isProtected?: boolean,
 			) => {
+				// Check auto-approval settings before asking user
+				const state = await cline.providerRef.deref()?.getState()
+
+				// Check if we should auto-approve based on tool type and settings
+				if (state) {
+					let shouldAutoApprove = false
+
+					// Handle tool approval
+					if (type === "tool" && partialMessage) {
+						try {
+							const toolInfo = JSON.parse(partialMessage)
+							const toolName = toolInfo.tool || block.name
+
+							// Check for read-only file operations
+							if (
+								toolName === "readFile" ||
+								toolName === "list_files" ||
+								toolName === "search_files" ||
+								toolName === "list_code_definition_names"
+							) {
+								if (toolInfo.isOutsideWorkspace) {
+									shouldAutoApprove = state.alwaysAllowReadOnlyOutsideWorkspace ?? false
+								} else {
+									shouldAutoApprove = state.alwaysAllowReadOnly ?? false
+								}
+							}
+							// Check for write file operations
+							else if (
+								toolName === "writeFile" ||
+								toolName === "write_to_file" ||
+								toolName === "apply_diff" ||
+								toolName === "insert_content" ||
+								toolName === "search_and_replace"
+							) {
+								if (isProtected) {
+									shouldAutoApprove = state.alwaysAllowWriteProtected ?? false
+								} else if (toolInfo.isOutsideWorkspace) {
+									shouldAutoApprove = state.alwaysAllowWriteOutsideWorkspace ?? false
+								} else {
+									shouldAutoApprove = state.alwaysAllowWrite ?? false
+								}
+							}
+							// Check for command execution
+							else if (toolName === "execute_command") {
+								shouldAutoApprove = state.alwaysAllowExecute ?? false
+							}
+							// Check for browser actions
+							else if (toolName === "browser_action") {
+								shouldAutoApprove = state.alwaysAllowBrowser ?? false
+							}
+							// Check for follow-up questions
+							else if (toolName === "ask_followup_question") {
+								shouldAutoApprove = state.alwaysAllowFollowupQuestions ?? false
+							}
+							// Check for todo list updates
+							else if (toolName === "update_todo_list") {
+								shouldAutoApprove = state.alwaysAllowUpdateTodoList ?? false
+							}
+						} catch (error) {
+							// If parsing fails or any error occurs, fall through to normal approval flow
+							console.debug("Error checking auto-approval settings for tool:", error)
+						}
+					}
+					// Handle command approval
+					else if (type === "command") {
+						shouldAutoApprove = state.alwaysAllowExecute ?? false
+					}
+					// Handle browser action launch
+					else if (type === "browser_action_launch") {
+						shouldAutoApprove = state.alwaysAllowBrowser ?? false
+					}
+					// Handle MCP server usage
+					else if (type === "use_mcp_server") {
+						shouldAutoApprove = state.alwaysAllowMcp ?? false
+					}
+
+					if (shouldAutoApprove) {
+						// Auto-approve without asking user
+						return true
+					}
+				}
+
+				// Normal approval flow - ask the user
 				const { response, text, images } = await cline.ask(
 					type,
 					partialMessage,
