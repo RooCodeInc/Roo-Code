@@ -6,6 +6,7 @@ import * as vscode from "vscode"
 import type { RooCodeAPI } from "@roo-code/types"
 
 import { waitFor } from "./utils"
+import * as fs from "fs"
 
 export async function run() {
 	const extension = vscode.extensions.getExtension<RooCodeAPI>("RooVeterinaryInc.roo-cline")
@@ -15,6 +16,32 @@ export async function run() {
 	}
 
 	const api = extension.isActive ? extension.exports : await extension.activate()
+
+	// Ensure OPENROUTER_API_KEY is loaded from .env.local in CI (written by workflow)
+	// __dirname at runtime is apps/vscode-e2e/out/suite, so go up two levels
+	const envPath = path.resolve(__dirname, "..", "..", ".env.local")
+	if (!process.env.OPENROUTER_API_KEY && fs.existsSync(envPath)) {
+		try {
+			const content = fs.readFileSync(envPath, "utf8")
+			for (const rawLine of content.split("\n")) {
+				const line = rawLine.trim()
+				if (!line || line.startsWith("#")) continue
+				const m = /^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)\s*$/.exec(line)
+				if (!m) continue
+				const key: string = m[1] ?? ""
+				let val: string = m[2] ?? ""
+				// Strip surrounding quotes if present
+				if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+					val = val.slice(1, -1)
+				}
+				if (key && !(key in process.env)) {
+					;(process.env as Record<string, string>)[key] = val
+				}
+			}
+		} catch {
+			// ignore env load errors; tests may still pass without API calls
+		}
+	}
 
 	await api.setConfiguration({
 		apiProvider: "openrouter" as const,

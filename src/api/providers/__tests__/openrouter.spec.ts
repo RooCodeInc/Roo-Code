@@ -320,4 +320,157 @@ describe("OpenRouterHandler", () => {
 			await expect(handler.completePrompt("test prompt")).rejects.toThrow("Unexpected error")
 		})
 	})
+
+	describe("DeepSeek V3.1 Terminus", () => {
+		it("uses extra_body for reasoning control in createMessage", async () => {
+			const handler = new OpenRouterHandler({
+				...mockOptions,
+				openRouterModelId: "deepseek/deepseek-v3.1-terminus",
+			})
+
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					yield {
+						id: "test-id",
+						choices: [{ delta: { content: "test response" } }],
+					}
+				},
+			}
+
+			const mockCreate = vitest.fn().mockResolvedValue(mockStream)
+			;(OpenAI as any).prototype.chat = {
+				completions: { create: mockCreate },
+			} as any
+
+			// Test with reasoning disabled (default)
+			await handler.createMessage("test", []).next()
+
+			expect(mockCreate).toHaveBeenCalledWith(
+				expect.objectContaining({
+					model: "deepseek/deepseek-v3.1-terminus",
+					extra_body: {
+						chat_template_kwargs: {
+							thinking: false,
+						},
+					},
+				}),
+			)
+			expect(mockCreate).not.toHaveBeenCalledWith(
+				expect.objectContaining({
+					reasoning: expect.anything(),
+				}),
+			)
+		})
+
+		it("enables thinking when reasoning is requested", async () => {
+			// Mock getModels to return a model with reasoning capability
+			const { getModels } = await import("../fetchers/modelCache")
+			vitest.mocked(getModels).mockResolvedValueOnce({
+				"deepseek/deepseek-v3.1-terminus": {
+					maxTokens: 8192,
+					contextWindow: 128000,
+					supportsImages: false,
+					supportsPromptCache: false,
+					inputPrice: 0.5,
+					outputPrice: 1.5,
+					description: "DeepSeek V3.1 Terminus",
+					reasoningEffort: "high",
+				},
+			})
+
+			const handler = new OpenRouterHandler({
+				...mockOptions,
+				openRouterModelId: "deepseek/deepseek-v3.1-terminus",
+				reasoningEffort: "high",
+			})
+
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					yield {
+						id: "test-id",
+						choices: [{ delta: { content: "test response" } }],
+					}
+				},
+			}
+
+			const mockCreate = vitest.fn().mockResolvedValue(mockStream)
+			;(OpenAI as any).prototype.chat = {
+				completions: { create: mockCreate },
+			} as any
+
+			await handler.createMessage("test", []).next()
+
+			expect(mockCreate).toHaveBeenCalledWith(
+				expect.objectContaining({
+					model: "deepseek/deepseek-v3.1-terminus",
+					extra_body: {
+						chat_template_kwargs: {
+							thinking: true,
+						},
+					},
+				}),
+			)
+		})
+
+		it("uses extra_body for reasoning control in completePrompt", async () => {
+			const handler = new OpenRouterHandler({
+				...mockOptions,
+				openRouterModelId: "deepseek/deepseek-v3.1-terminus",
+			})
+
+			const mockResponse = { choices: [{ message: { content: "test completion" } }] }
+
+			const mockCreate = vitest.fn().mockResolvedValue(mockResponse)
+			;(OpenAI as any).prototype.chat = {
+				completions: { create: mockCreate },
+			} as any
+
+			await handler.completePrompt("test prompt")
+
+			expect(mockCreate).toHaveBeenCalledWith(
+				expect.objectContaining({
+					model: "deepseek/deepseek-v3.1-terminus",
+					extra_body: {
+						chat_template_kwargs: {
+							thinking: false,
+						},
+					},
+				}),
+			)
+			expect(mockCreate).not.toHaveBeenCalledWith(
+				expect.objectContaining({
+					reasoning: expect.anything(),
+				}),
+			)
+		})
+
+		it("does not use extra_body for other models", async () => {
+			const handler = new OpenRouterHandler({
+				...mockOptions,
+				openRouterModelId: "anthropic/claude-sonnet-4",
+			})
+
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					yield {
+						id: "test-id",
+						choices: [{ delta: { content: "test response" } }],
+					}
+				},
+			}
+
+			const mockCreate = vitest.fn().mockResolvedValue(mockStream)
+			;(OpenAI as any).prototype.chat = {
+				completions: { create: mockCreate },
+			} as any
+
+			await handler.createMessage("test", []).next()
+
+			expect(mockCreate).not.toHaveBeenCalledWith(
+				expect.objectContaining({
+					extra_body: expect.anything(),
+				}),
+			)
+		})
+	})
 })
