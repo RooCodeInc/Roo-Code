@@ -5,10 +5,12 @@ import { constants as fsConstants } from "fs"
 
 import { Package } from "../shared/package"
 import { t } from "../i18n"
+import { isRunningInDevContainer, getDevContainerPersistentPath, isEphemeralStoragePath } from "./devContainer"
 
 /**
  * Gets the base storage path for conversations
  * If a custom path is configured, uses that path
+ * For Dev Containers with ephemeral storage, suggests a persistent path
  * Otherwise uses the default VSCode extension global storage path
  */
 export async function getStorageBasePath(defaultPath: string): Promise<string> {
@@ -24,8 +26,17 @@ export async function getStorageBasePath(defaultPath: string): Promise<string> {
 		return defaultPath
 	}
 
-	// If no custom path is set, use default path
+	// If no custom path is set, check for Dev Container
 	if (!customStoragePath) {
+		// Check if we're in a Dev Container with ephemeral storage
+		if (isRunningInDevContainer() && isEphemeralStoragePath(defaultPath)) {
+			// Try to get a persistent path for Dev Container
+			const persistentPath = await getDevContainerPersistentPath()
+			if (persistentPath) {
+				console.info(`Dev Container detected: Using persistent storage path ${persistentPath}`)
+				return persistentPath
+			}
+		}
 		return defaultPath
 	}
 

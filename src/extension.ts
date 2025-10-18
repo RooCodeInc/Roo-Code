@@ -31,6 +31,7 @@ import { MdmService } from "./services/mdm/MdmService"
 import { migrateSettings } from "./utils/migrateSettings"
 import { autoImportSettings } from "./utils/autoImportSettings"
 import { API } from "./extension/api"
+import { notifyDevContainerStorageSetup } from "./utils/devContainer"
 
 import {
 	handleUri,
@@ -67,6 +68,22 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	// Migrate old settings to new
 	await migrateSettings(context, outputChannel)
+
+	// Check for Dev Container and notify user about storage setup
+	const devContainerNotificationDismissed = context.globalState.get<boolean>(
+		"devContainerStorageNotificationDismissed",
+		false,
+	)
+	if (!devContainerNotificationDismissed) {
+		// Run this asynchronously so it doesn't block activation
+		setTimeout(() => {
+			notifyDevContainerStorageSetup(context).catch((error) => {
+				outputChannel.appendLine(
+					`[DevContainer] Failed to check Dev Container storage: ${error instanceof Error ? error.message : String(error)}`,
+				)
+			})
+		}, 3000) // Delay slightly to let the extension fully activate
+	}
 
 	// Initialize telemetry service.
 	const telemetryService = TelemetryService.createInstance()
