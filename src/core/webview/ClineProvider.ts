@@ -1939,6 +1939,11 @@ export class ClineProvider
 			codebaseIndexConfig: {
 				codebaseIndexEnabled: codebaseIndexConfig?.codebaseIndexEnabled ?? true,
 				codebaseIndexQdrantUrl: codebaseIndexConfig?.codebaseIndexQdrantUrl ?? "http://localhost:6333",
+				codebaseIndexValkeyHostname: codebaseIndexConfig?.codebaseIndexValkeyHostname ?? "localhost",
+				codebaseIndexValkeyPort: codebaseIndexConfig?.codebaseIndexValkeyPort ?? 6379,
+				codebaseIndexValkeyUsername: codebaseIndexConfig?.codebaseIndexValkeyUsername ?? "",
+				codebaseIndexValkeyPassword: codebaseIndexConfig?.codebaseIndexValkeyPassword ?? "",
+				codebaseIndexValkeyUseSsl: codebaseIndexConfig?.codebaseIndexValkeyUseSsl || false,
 				codebaseIndexEmbedderProvider: codebaseIndexConfig?.codebaseIndexEmbedderProvider ?? "openai",
 				codebaseIndexEmbedderBaseUrl: codebaseIndexConfig?.codebaseIndexEmbedderBaseUrl ?? "",
 				codebaseIndexEmbedderModelId: codebaseIndexConfig?.codebaseIndexEmbedderModelId ?? "",
@@ -1946,6 +1951,7 @@ export class ClineProvider
 				codebaseIndexOpenAiCompatibleBaseUrl: codebaseIndexConfig?.codebaseIndexOpenAiCompatibleBaseUrl,
 				codebaseIndexSearchMaxResults: codebaseIndexConfig?.codebaseIndexSearchMaxResults,
 				codebaseIndexSearchMinScore: codebaseIndexConfig?.codebaseIndexSearchMinScore,
+				searchProvider: codebaseIndexConfig?.searchProvider,
 			},
 			// Only set mdmCompliant if there's an actual MDM policy
 			// undefined means no MDM policy, true means compliant, false means non-compliant
@@ -2154,6 +2160,12 @@ export class ClineProvider
 				codebaseIndexEnabled: stateValues.codebaseIndexConfig?.codebaseIndexEnabled ?? true,
 				codebaseIndexQdrantUrl:
 					stateValues.codebaseIndexConfig?.codebaseIndexQdrantUrl ?? "http://localhost:6333",
+				codebaseIndexValkeyHostname:
+					stateValues.codebaseIndexConfig?.codebaseIndexValkeyHostname ?? "localhost",
+				codebaseIndexValkeyPort: stateValues.codebaseIndexConfig?.codebaseIndexValkeyPort ?? 6379,
+				codebaseIndexValkeyUsername: stateValues.codebaseIndexConfig?.codebaseIndexValkeyUsername ?? "",
+				codebaseIndexValkeyPassword: stateValues.codebaseIndexConfig?.codebaseIndexValkeyPassword ?? "",
+				codebaseIndexValkeyUseSsl: stateValues.codebaseIndexConfig?.codebaseIndexValkeyUseSsl ?? false,
 				codebaseIndexEmbedderProvider:
 					stateValues.codebaseIndexConfig?.codebaseIndexEmbedderProvider ?? "openai",
 				codebaseIndexEmbedderBaseUrl: stateValues.codebaseIndexConfig?.codebaseIndexEmbedderBaseUrl ?? "",
@@ -2164,6 +2176,7 @@ export class ClineProvider
 					stateValues.codebaseIndexConfig?.codebaseIndexOpenAiCompatibleBaseUrl,
 				codebaseIndexSearchMaxResults: stateValues.codebaseIndexConfig?.codebaseIndexSearchMaxResults,
 				codebaseIndexSearchMinScore: stateValues.codebaseIndexConfig?.codebaseIndexSearchMinScore,
+				searchProvider: stateValues.codebaseIndexConfig?.searchProvider,
 			},
 			profileThresholds: stateValues.profileThresholds ?? {},
 			includeDiagnosticMessages: stateValues.includeDiagnosticMessages ?? true,
