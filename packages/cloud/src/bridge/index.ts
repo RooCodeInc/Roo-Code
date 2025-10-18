@@ -3,4 +3,3 @@ export { type SocketTransportOptions, SocketTransport } from "./SocketTransport.
 
 export { BaseChannel } from "./BaseChannel.js"
 export { ExtensionChannel } from "./ExtensionChannel.js"
-export { TaskChannel } from "./TaskChannel.js"

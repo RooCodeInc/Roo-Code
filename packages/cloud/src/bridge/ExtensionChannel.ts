@@ -174,6 +174,36 @@ export class ExtensionChannel extends BaseChannel<
 	}
 
 	private setupListeners(): void {
+		// private readonly eventMapping: readonly TaskEventMapping[] = [
+		// 	{
+		// 		from: RooCodeEventName.Message,
+		// 		to: TaskBridgeEventName.Message,
+		// 		createPayload: (task: TaskLike, data: { action: string; message: ClineMessage }) => ({
+		// 			type: TaskBridgeEventName.Message,
+		// 			taskId: task.taskId,
+		// 			action: data.action,
+		// 			message: data.message,
+		// 		}),
+		// 	},
+		// 	{
+		// 		from: RooCodeEventName.TaskModeSwitched,
+		// 		to: TaskBridgeEventName.TaskModeSwitched,
+		// 		createPayload: (task: TaskLike, mode: string) => ({
+		// 			type: TaskBridgeEventName.TaskModeSwitched,
+		// 			taskId: task.taskId,
+		// 			mode,
+		// 		}),
+		// 	},
+		// 	{
+		// 		from: RooCodeEventName.TaskInteractive,
+		// 		to: TaskBridgeEventName.TaskInteractive,
+		// 		createPayload: (task: TaskLike, _taskId: string) => ({
+		// 			type: TaskBridgeEventName.TaskInteractive,
+		// 			taskId: task.taskId,
+		// 		}),
+		// 	},
+		// ] as const
+
 		const eventMapping = [
 			{ from: RooCodeEventName.TaskCreated, to: ExtensionBridgeEventName.TaskCreated },
 			{ from: RooCodeEventName.TaskStarted, to: ExtensionBridgeEventName.TaskStarted },

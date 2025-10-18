@@ -3,10 +3,8 @@ import os from "os"
 
 import {
 	type TaskProviderLike,
-	type TaskLike,
 	type CloudUserInfo,
 	type ExtensionBridgeCommand,
-	type TaskBridgeCommand,
 	type StaticAppProperties,
 	type GitProperties,
 	ConnectionState,
@@ -16,7 +14,6 @@ import {
 
 import { SocketTransport } from "./SocketTransport.js"
 import { ExtensionChannel } from "./ExtensionChannel.js"
-import { TaskChannel } from "./TaskChannel.js"
 
 export interface BridgeOrchestratorOptions {
 	userId: string
@@ -35,8 +32,6 @@ export interface BridgeOrchestratorOptions {
 export class BridgeOrchestrator {
 	private static instance: BridgeOrchestrator | null = null
 
-	private static pendingTask: TaskLike | null = null
-
 	// Core
 	private readonly userId: string
 	private readonly socketBridgeUrl: string
@@ -50,7 +45,6 @@ export class BridgeOrchestrator {
 	// Components
 	private socketTransport: SocketTransport
 	private extensionChannel: ExtensionChannel
-	private taskChannel: TaskChannel
 
 	// Reconnection
 	private readonly MAX_RECONNECT_ATTEMPTS = Infinity
@@ -153,22 +147,6 @@ export class BridgeOrchestrator {
 		}
 	}
 
-	/**
-	 * @TODO: What if subtasks also get spawned? We'd probably want deferred
-	 * subscriptions for those too.
-	 */
-	public static async subscribeToTask(task: TaskLike): Promise<void> {
-		const instance = BridgeOrchestrator.instance
-
-		if (instance && instance.socketTransport.isConnected()) {
-			console.log(`[BridgeOrchestrator#subscribeToTask] Subscribing to task ${task.taskId}`)
-			await instance.subscribeToTask(task)
-		} else {
-			console.log(`[BridgeOrchestrator#subscribeToTask] Deferring subscription for task ${task.taskId}`)
-			BridgeOrchestrator.pendingTask = task
-		}
-	}
-
 	private constructor(options: BridgeOrchestratorOptions) {
 		this.userId = options.userId
 		this.socketBridgeUrl = options.socketBridgeUrl
@@ -206,13 +184,6 @@ export class BridgeOrchestrator {
 			provider: this.provider,
 			isCloudAgent: this.isCloudAgent,
 		})
-
-		this.taskChannel = new TaskChannel({
-			instanceId: this.instanceId,
-			appProperties: this.appProperties,
-			gitProperties: this.gitProperties,
-			isCloudAgent: this.isCloudAgent,
-		})
 	}
 
 	private setupSocketListeners() {
@@ -235,14 +206,6 @@ export class BridgeOrchestrator {
 
 			this.extensionChannel?.handleCommand(message)
 		})
-
-		socket.on(TaskSocketEvents.RELAYED_COMMAND, (message: TaskBridgeCommand) => {
-			console.log(
-				`[BridgeOrchestrator] on(${TaskSocketEvents.RELAYED_COMMAND}) -> ${message.type} for ${message.taskId}`,
-			)
-
-			this.taskChannel.handleCommand(message)
-		})
 	}
 
 	private async handleConnect() {
@@ -254,27 +217,10 @@ export class BridgeOrchestrator {
 		}
 
 		await this.extensionChannel.onConnect(socket)
-		await this.taskChannel.onConnect(socket)
-
-		if (BridgeOrchestrator.pendingTask) {
-			console.log(
-				`[BridgeOrchestrator#handleConnect] Subscribing to task ${BridgeOrchestrator.pendingTask.taskId}`,
-			)
-
-			try {
-				await this.subscribeToTask(BridgeOrchestrator.pendingTask)
-				BridgeOrchestrator.pendingTask = null
-			} catch (error) {
-				console.error(
-					`[BridgeOrchestrator#handleConnect] subscribeToTask() failed: ${error instanceof Error ? error.message : String(error)}`,
-				)
-			}
-		}
 	}
 
 	private handleDisconnect() {
 		this.extensionChannel.onDisconnect()
-		this.taskChannel.onDisconnect()
 	}
 
 	private async handleReconnect() {
@@ -291,39 +237,6 @@ export class BridgeOrchestrator {
 		this.setupSocketListeners()
 
 		await this.extensionChannel.onReconnect(socket)
-		await this.taskChannel.onReconnect(socket)
-	}
-
-	// Task API
-
-	public async subscribeToTask(task: TaskLike): Promise<void> {
-		const socket = this.socketTransport.getSocket()
-
-		if (!socket || !this.socketTransport.isConnected()) {
-			console.warn("[BridgeOrchestrator] Cannot subscribe to task: not connected. Will retry when connected.")
-			this.taskChannel.addPendingTask(task)
-
-			if (
-				this.connectionState === ConnectionState.DISCONNECTED ||
-				this.connectionState === ConnectionState.FAILED
-			) {
-				await this.connect()
-			}
-
-			return
-		}
-
-		await this.taskChannel.subscribeToTask(task, socket)
-	}
-
-	public async unsubscribeFromTask(taskId: string): Promise<void> {
-		const socket = this.socketTransport.getSocket()
-
-		if (!socket) {
-			return
-		}
-
-		await this.taskChannel.unsubscribeFromTask(taskId, socket)
 	}
 
 	// Shared API
@@ -339,10 +252,8 @@ export class BridgeOrchestrator {
 
 	public async disconnect(): Promise<void> {
 		await this.extensionChannel.cleanup(this.socketTransport.getSocket())
-		await this.taskChannel.cleanup(this.socketTransport.getSocket())
 		await this.socketTransport.disconnect()
 		BridgeOrchestrator.instance = null
-		BridgeOrchestrator.pendingTask = null
 	}
 
 	public async reconnect(): Promise<void> {
