@@ -10,6 +10,7 @@ import {
 } from "@roo-code/types"
 
 import type { ApiHandlerOptions, ModelRecord } from "../../shared/api"
+import { calculateApiCostOpenAI } from "../../shared/cost"
 
 import { convertToOpenAiMessages } from "../transform/openai-format"
 import { ApiStreamChunk } from "../transform/stream"
@@ -196,13 +197,31 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		}
 
 		if (lastUsage) {
+			// Get model info to calculate cost locally
+			const modelInfo = this.getModel().info
+
+			// Calculate cost locally using model pricing information
+			// OpenRouter uses OpenAI-style token counting (input tokens include cached tokens)
+			const localCost = calculateApiCostOpenAI(
+				modelInfo,
+				lastUsage.prompt_tokens || 0,
+				lastUsage.completion_tokens || 0,
+				undefined, // cache creation tokens - OpenRouter doesn't distinguish this
+				lastUsage.prompt_tokens_details?.cached_tokens,
+			)
+
+			// Use locally calculated cost, but fall back to API response if our calculation fails
+			// or if model pricing info is not available
+			const apiCost = (lastUsage.cost_details?.upstream_inference_cost || 0) + (lastUsage.cost || 0)
+			const totalCost = modelInfo.inputPrice && modelInfo.outputPrice ? localCost : apiCost
+
 			yield {
 				type: "usage",
 				inputTokens: lastUsage.prompt_tokens || 0,
 				outputTokens: lastUsage.completion_tokens || 0,
 				cacheReadTokens: lastUsage.prompt_tokens_details?.cached_tokens,
 				reasoningTokens: lastUsage.completion_tokens_details?.reasoning_tokens,
-				totalCost: (lastUsage.cost_details?.upstream_inference_cost || 0) + (lastUsage.cost || 0),
+				totalCost,
 			}
 		}
 	}

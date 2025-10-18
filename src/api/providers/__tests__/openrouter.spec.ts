@@ -157,7 +157,15 @@ describe("OpenRouterHandler", () => {
 			// Verify stream chunks
 			expect(chunks).toHaveLength(2) // One text chunk and one usage chunk
 			expect(chunks[0]).toEqual({ type: "text", text: "test response" })
-			expect(chunks[1]).toEqual({ type: "usage", inputTokens: 10, outputTokens: 20, totalCost: 0.001 })
+			// Cost is now calculated locally: (3/1M * 10) + (15/1M * 20) = 0.00003 + 0.0003 = 0.00033
+			expect(chunks[1]).toEqual({
+				type: "usage",
+				inputTokens: 10,
+				outputTokens: 20,
+				cacheReadTokens: undefined,
+				reasoningTokens: undefined,
+				totalCost: expect.closeTo(0.00033, 5),
+			})
 
 			// Verify OpenAI client was called with correct parameters.
 			expect(mockCreate).toHaveBeenCalledWith(
@@ -266,6 +274,57 @@ describe("OpenRouterHandler", () => {
 
 			const generator = handler.createMessage("test", [])
 			await expect(generator.next()).rejects.toThrow("OpenRouter API Error 500: API Error")
+		})
+
+		it("calculates cost locally when OpenRouter API returns incorrect cost (issue #8650)", async () => {
+			const handler = new OpenRouterHandler({
+				...mockOptions,
+				openRouterModelId: "anthropic/claude-3.5-sonnet", // Use Claude 3.5 Sonnet as in the issue
+			})
+
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					yield {
+						id: "test-id",
+						choices: [{ delta: { content: "test" } }],
+					}
+					// Simulate the issue: OpenRouter returns incorrect cost ($0.46) for 527k input tokens
+					// Actual cost should be: (527000 * 3 / 1M) + (7700 * 15 / 1M) = 1.581 + 0.1155 = 1.6965
+					yield {
+						id: "test-id",
+						choices: [{ delta: {} }],
+						usage: {
+							prompt_tokens: 527000,
+							completion_tokens: 7700,
+							cost: 0.46, // OpenRouter's incorrect cost value
+						},
+					}
+				},
+			}
+
+			const mockCreate = vitest.fn().mockResolvedValue(mockStream)
+			;(OpenAI as any).prototype.chat = {
+				completions: { create: mockCreate },
+			} as any
+
+			const generator = handler.createMessage("test", [])
+			const chunks = []
+
+			for await (const chunk of generator) {
+				chunks.push(chunk)
+			}
+
+			// Verify that we calculate the correct cost locally
+			// Model pricing: inputPrice: 3, outputPrice: 15
+			// Cost = (527000 / 1M * 3) + (7700 / 1M * 15) = 1.581 + 0.1155 = 1.6965
+			expect(chunks[1]).toEqual({
+				type: "usage",
+				inputTokens: 527000,
+				outputTokens: 7700,
+				cacheReadTokens: undefined,
+				reasoningTokens: undefined,
+				totalCost: expect.closeTo(1.6965, 5),
+			})
 		})
 	})
 
