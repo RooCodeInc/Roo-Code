@@ -136,6 +136,7 @@ export const ChatRowContent = ({
 	const [editedContent, setEditedContent] = useState("")
 	const [editMode, setEditMode] = useState<Mode>(mode || "code")
 	const [editImages, setEditImages] = useState<string[]>([])
+	const editAreaRef = useRef<HTMLDivElement>(null)
 
 	// Handle message events for image selection during edit mode
 	useEffect(() => {
@@ -164,6 +165,26 @@ export const ChatRowContent = ({
 		// Edit mode is now handled entirely in the frontend
 		// No need to notify the backend
 	}, [message.text, message.images, mode])
+
+	// Scroll to edit area when entering edit mode
+	useEffect(() => {
+		if (!isEditing) return
+
+		let cancelled = false
+		const timeoutId = window.setTimeout(() => {
+			if (cancelled) return
+			editAreaRef.current?.scrollIntoView({
+				behavior: "smooth",
+				block: "center",
+				inline: "nearest",
+			})
+		}, 100)
+
+		return () => {
+			cancelled = true
+			window.clearTimeout(timeoutId)
+		}
+	}, [isEditing])
 
 	// Handle cancel edit
 	const handleCancelEdit = useCallback(() => {
@@ -1110,6 +1131,7 @@ export const ChatRowContent = ({
 								<span style={{ fontWeight: "bold" }}>{t("chat:feedback.youSaid")}</span>
 							</div>
 							<div
+								ref={editAreaRef}
 								className={cn(
 									"ml-6 border rounded-sm overflow-hidden whitespace-pre-wrap",
 									isEditing
