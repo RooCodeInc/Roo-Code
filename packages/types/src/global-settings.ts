@@ -146,6 +146,8 @@ export const globalSettingsSchema = z.object({
 	customSupportPrompts: customSupportPromptsSchema.optional(),
 	enhancementApiConfigId: z.string().optional(),
 	includeTaskHistoryInEnhance: z.boolean().optional(),
+	autoSummarizeLongTitles: z.boolean().optional(),
+	titleSummarizationThreshold: z.number().min(50).optional(),
 	historyPreviewCollapsed: z.boolean().optional(),
 	reasoningBlockCollapsed: z.boolean().optional(),
 	profileThresholds: z.record(z.string(), z.number()).optional(),
@@ -317,6 +319,9 @@ export const EVALS_SETTINGS: RooCodeSettings = {
 	mcpEnabled: false,
 
 	mode: "code", // "architect",
+
+	autoSummarizeLongTitles: true,
+	titleSummarizationThreshold: 150,
 
 	customModes: [],
 }
