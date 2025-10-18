@@ -48,6 +48,7 @@ describe("checkpointRestoreHandler", () => {
 		mockProvider = {
 			getCurrentTask: vi.fn(() => mockCline),
 			postMessageToWebview: vi.fn(),
+			postStateToWebview: vi.fn().mockResolvedValue(undefined),
 			getTaskWithId: vi.fn(() => ({
 				historyItem: { id: "test-task-123", messages: mockCline.clineMessages },
 			})),
@@ -56,6 +57,7 @@ describe("checkpointRestoreHandler", () => {
 			contextProxy: {
 				globalStorageUri: { fsPath: "/test/storage" },
 			},
+			isSoftReloading: false,
 		}
 
 		// Mock pWaitFor to resolve immediately

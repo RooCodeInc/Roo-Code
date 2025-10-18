@@ -22,11 +22,18 @@ export interface CheckpointRestoreConfig {
 /**
  * Handles checkpoint restoration for both delete and edit operations.
  * This consolidates the common logic while handling operation-specific behavior.
+ *
+ * The soft reload mechanism prevents UI flickering by maintaining state during
+ * checkpoint restoration operations. This ensures the chat window doesn't flash
+ * or lose scroll position when restoring to a previous checkpoint.
  */
 export async function handleCheckpointRestoreOperation(config: CheckpointRestoreConfig): Promise<void> {
 	const { provider, currentCline, messageTs, checkpoint, operation, editData } = config
 
 	try {
+		// Set soft reload flag to prevent UI flickering during checkpoint restoration
+		provider.isSoftReloading = true
+
 		// For delete operations, ensure the task is properly aborted to handle any pending ask operations
 		// This prevents "Current ask promise was ignored" errors
 		// For edit operations, we don't abort because the checkpoint restore will handle it
@@ -78,7 +85,16 @@ export async function handleCheckpointRestoreOperation(config: CheckpointRestore
 		}
 		// For edit operations, the task cancellation in checkpointRestore
 		// will trigger reinitialization, which will process pendingEditAfterRestore
+
+		// Reset soft reload flag after operation completes
+		provider.isSoftReloading = false
+
+		// Send a refresh without flickering
+		await provider.postStateToWebview()
 	} catch (error) {
+		// Reset soft reload flag on error
+		provider.isSoftReloading = false
+
 		console.error(`Error in checkpoint restore (${operation}):`, error)
 		vscode.window.showErrorMessage(
 			`Error during checkpoint restore: ${error instanceof Error ? error.message : String(error)}`,

@@ -205,6 +205,7 @@ export interface ExtensionMessage {
 	queuedMessages?: QueuedMessage[]
 	list?: string[] // For dismissedUpsells
 	organizationId?: string | null // For organizationSwitchResult
+	isSoftReload?: boolean // Flag to indicate soft reload state (cancel/checkpoint restore) to prevent UI flickering
 }
 
 export type ExtensionState = Pick<

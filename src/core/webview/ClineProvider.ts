@@ -141,6 +141,26 @@ export class ClineProvider
 	private recentTasksCache?: string[]
 	private pendingOperations: Map<string, PendingEditOperation> = new Map()
 	private static readonly PENDING_OPERATION_TIMEOUT_MS = 30000 // 30 seconds
+	private static readonly STATE_UPDATE_DEBOUNCE_MS = 50 // Default debounce delay for state updates
+
+	/**
+	 * Soft reload mechanism to prevent UI flickering during task recreation.
+	 * When true, the UI preserves its state (scroll position, input values) during updates.
+	 * This is used during cancel operations and checkpoint restoration to maintain UI stability.
+	 */
+	public isSoftReloading = false
+
+	/**
+	 * Debounce timer for state updates to prevent rapid consecutive updates
+	 * that can cause UI flickering and performance issues.
+	 */
+	private stateUpdateDebounceTimer: NodeJS.Timeout | null = null
+
+	/**
+	 * Configurable debounce delay in milliseconds, mainly for testing purposes.
+	 * In production, this uses STATE_UPDATE_DEBOUNCE_MS.
+	 */
+	private stateUpdateDebounceDelay: number = ClineProvider.STATE_UPDATE_DEBOUNCE_MS
 
 	public isViewLaunched = false
 	public settingsImportedAt?: number
@@ -582,6 +602,12 @@ export class ClineProvider
 		// Clear all pending edit operations to prevent memory leaks
 		this.clearAllPendingEditOperations()
 		this.log("Cleared pending operations")
+
+		// Clear debounce timer if it exists
+		if (this.stateUpdateDebounceTimer) {
+			clearTimeout(this.stateUpdateDebounceTimer)
+			this.stateUpdateDebounceTimer = null
+		}
 
 		if (this.view && "dispose" in this.view) {
 			this.view.dispose()
@@ -1602,14 +1628,66 @@ export class ClineProvider
 	}
 
 	async postStateToWebview() {
-		const state = await this.getStateToPostToWebview()
-		this.postMessageToWebview({ type: "state", state })
-
-		// Check MDM compliance and send user to account tab if not compliant
-		// Only redirect if there's an actual MDM policy requiring authentication
-		if (this.mdmService?.requiresCloudAuth() && !this.checkMdmCompliance()) {
-			await this.postMessageToWebview({ type: "action", action: "cloudButtonClicked" })
+		// Clear existing debounce timer if it exists
+		if (this.stateUpdateDebounceTimer) {
+			clearTimeout(this.stateUpdateDebounceTimer)
+			this.stateUpdateDebounceTimer = null
 		}
+
+		// If we're in soft reload mode, send state immediately without debouncing
+		if (this.isSoftReloading) {
+			const state = await this.getStateToPostToWebview()
+			// Include soft reload flag to prevent UI flickering
+			this.postMessageToWebview({
+				type: "state",
+				state,
+				isSoftReload: this.isSoftReloading,
+			})
+
+			// Check MDM compliance and send user to account tab if not compliant
+			// Only redirect if there's an actual MDM policy requiring authentication
+			if (this.mdmService?.requiresCloudAuth() && !this.checkMdmCompliance()) {
+				await this.postMessageToWebview({ type: "action", action: "cloudButtonClicked" })
+			}
+			return
+		}
+
+		// If debounce delay is 0 (for tests), execute immediately
+		if (this.stateUpdateDebounceDelay === 0) {
+			const state = await this.getStateToPostToWebview()
+			// Include soft reload flag to prevent UI flickering
+			this.postMessageToWebview({
+				type: "state",
+				state,
+				isSoftReload: this.isSoftReloading,
+			})
+
+			// Check MDM compliance and send user to account tab if not compliant
+			// Only redirect if there's an actual MDM policy requiring authentication
+			if (this.mdmService?.requiresCloudAuth() && !this.checkMdmCompliance()) {
+				await this.postMessageToWebview({ type: "action", action: "cloudButtonClicked" })
+			}
+			return
+		}
+
+		// Debounce state updates to prevent rapid flickering
+		this.stateUpdateDebounceTimer = setTimeout(async () => {
+			const state = await this.getStateToPostToWebview()
+			// Include soft reload flag to prevent UI flickering
+			this.postMessageToWebview({
+				type: "state",
+				state,
+				isSoftReload: this.isSoftReloading,
+			})
+
+			// Check MDM compliance and send user to account tab if not compliant
+			// Only redirect if there's an actual MDM policy requiring authentication
+			if (this.mdmService?.requiresCloudAuth() && !this.checkMdmCompliance()) {
+				await this.postMessageToWebview({ type: "action", action: "cloudButtonClicked" })
+			}
+
+			this.stateUpdateDebounceTimer = null
+		}, this.stateUpdateDebounceDelay)
 	}
 
 	/**
@@ -2595,6 +2673,9 @@ export class ClineProvider
 		// Capture the current instance to detect if rehydrate already occurred elsewhere
 		const originalInstanceId = task.instanceId
 
+		// Set soft reload flag to prevent UI flickering
+		this.isSoftReloading = true
+
 		// Begin abort (non-blocking)
 		task.abortTask()
 
@@ -2623,6 +2704,8 @@ export class ClineProvider
 			this.log(
 				`[cancelTask] Skipping rehydrate: current instance ${current.instanceId} != original ${originalInstanceId}`,
 			)
+			// Reset soft reload flag
+			this.isSoftReloading = false
 			return
 		}
 
@@ -2633,12 +2716,20 @@ export class ClineProvider
 				this.log(
 					`[cancelTask] Skipping rehydrate after final check: current instance ${currentAfterCheck.instanceId} != original ${originalInstanceId}`,
 				)
+				// Reset soft reload flag
+				this.isSoftReloading = false
 				return
 			}
 		}
 
 		// Clears task again, so we need to abortTask manually above.
 		await this.createTaskWithHistoryItem({ ...historyItem, rootTask, parentTask })
+
+		// Reset soft reload flag after task is recreated
+		this.isSoftReloading = false
+
+		// Send a refresh without flickering
+		await this.postStateToWebview()
 	}
 
 	// Clear the current task without treating it as a subtask.

@@ -418,7 +418,10 @@ describe("ClineProvider", () => {
 			onDidChangeVisibility: vi.fn().mockImplementation(() => ({ dispose: vi.fn() })),
 		} as unknown as vscode.WebviewView
 
+		// Create provider with immediate state updates for tests (no debouncing)
 		provider = new ClineProvider(mockContext, mockOutputChannel, "sidebar", new ContextProxy(mockContext))
+		// Set debounce delay to 0 for tests to ensure synchronous behavior
+		;(provider as any).stateUpdateDebounceDelay = 0
 
 		defaultTaskOptions = {
 			provider,
