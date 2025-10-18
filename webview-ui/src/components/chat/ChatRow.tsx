@@ -75,6 +75,7 @@ interface ChatRowProps {
 	onFollowUpUnmount?: () => void
 	isFollowUpAnswered?: boolean
 	editable?: boolean
+	chatMessageFontSize?: string
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
@@ -82,13 +83,29 @@ interface ChatRowContentProps extends Omit<ChatRowProps, "onHeightChange"> {}
 
 const ChatRow = memo(
 	(props: ChatRowProps) => {
-		const { isLast, onHeightChange, message } = props
+		const { isLast, onHeightChange, message, chatMessageFontSize } = props
 		// Store the previous height to compare with the current height
 		// This allows us to detect changes without causing re-renders
 		const prevHeightRef = useRef(0)
 
+		// Calculate the font size scale based on the setting
+		const fontSizeScale = useMemo(() => {
+			switch (chatMessageFontSize) {
+				case "extra-small":
+					return "90%"
+				case "small":
+					return "95%"
+				case "large":
+					return "105%"
+				case "extra-large":
+					return "110%"
+				default:
+					return "100%"
+			}
+		}, [chatMessageFontSize])
+
 		const [chatrow, { height }] = useSize(
-			<div className="px-[15px] py-[10px] pr-[6px]">
+			<div className="px-[15px] py-[10px] pr-[6px]" style={{ fontSize: fontSizeScale }}>
 				<ChatRowContent {...props} />
 			</div>,
 		)

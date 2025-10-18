@@ -6,6 +6,7 @@ describe("UISettings", () => {
 	const defaultProps = {
 		reasoningBlockCollapsed: false,
 		setCachedStateField: vi.fn(),
+		chatMessageFontSize: "default",
 	}
 
 	it("renders the collapse thinking checkbox", () => {

@@ -1,6 +1,6 @@
 import { HTMLAttributes } from "react"
 import { useAppTranslation } from "@/i18n/TranslationContext"
-import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
+import { VSCodeCheckbox, VSCodeDropdown, VSCodeOption } from "@vscode/webview-ui-toolkit/react"
 import { Glasses } from "lucide-react"
 import { telemetryClient } from "@/utils/TelemetryClient"
 
@@ -11,10 +11,16 @@ import { ExtensionStateContextType } from "@/context/ExtensionStateContext"
 
 interface UISettingsProps extends HTMLAttributes<HTMLDivElement> {
 	reasoningBlockCollapsed: boolean
+	chatMessageFontSize: string
 	setCachedStateField: SetCachedStateField<keyof ExtensionStateContextType>
 }
 
-export const UISettings = ({ reasoningBlockCollapsed, setCachedStateField, ...props }: UISettingsProps) => {
+export const UISettings = ({
+	reasoningBlockCollapsed,
+	chatMessageFontSize,
+	setCachedStateField,
+	...props
+}: UISettingsProps) => {
 	const { t } = useAppTranslation()
 
 	const handleReasoningBlockCollapsedChange = (value: boolean) => {
@@ -23,6 +29,15 @@ export const UISettings = ({ reasoningBlockCollapsed, setCachedStateField, ...pr
 		// Track telemetry event
 		telemetryClient.capture("ui_settings_collapse_thinking_changed", {
 			enabled: value,
+		})
+	}
+
+	const handleChatMessageFontSizeChange = (value: string) => {
+		setCachedStateField("chatMessageFontSize", value)
+
+		// Track telemetry event
+		telemetryClient.capture("ui_settings_chat_font_size_changed", {
+			size: value,
 		})
 	}
 
@@ -47,6 +62,24 @@ export const UISettings = ({ reasoningBlockCollapsed, setCachedStateField, ...pr
 						</VSCodeCheckbox>
 						<div className="text-vscode-descriptionForeground text-sm ml-5 mt-1">
 							{t("settings:ui.collapseThinking.description")}
+						</div>
+					</div>
+
+					{/* Chat Message Font Size Setting */}
+					<div className="flex flex-col gap-1">
+						<label className="font-medium">Chat Message Font Size</label>
+						<VSCodeDropdown
+							value={chatMessageFontSize || "default"}
+							onChange={(e: any) => handleChatMessageFontSizeChange(e.target.value)}
+							data-testid="chat-font-size-dropdown">
+							<VSCodeOption value="default">Default</VSCodeOption>
+							<VSCodeOption value="extra-small">Extra Small (90%)</VSCodeOption>
+							<VSCodeOption value="small">Small (95%)</VSCodeOption>
+							<VSCodeOption value="large">Large (105%)</VSCodeOption>
+							<VSCodeOption value="extra-large">Extra Large (110%)</VSCodeOption>
+						</VSCodeDropdown>
+						<div className="text-vscode-descriptionForeground text-sm mt-1">
+							Adjust the font size for messages in the chat view
 						</div>
 					</div>
 				</div>

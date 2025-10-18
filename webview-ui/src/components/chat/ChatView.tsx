@@ -123,6 +123,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		soundVolume,
 		cloudIsAuthenticated,
 		messageQueue = [],
+		chatMessageFontSize,
 	} = useExtensionState()
 
 	const messagesRef = useRef(messages)
@@ -1541,6 +1542,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					onBatchFileResponse={handleBatchFileResponse}
 					onFollowUpUnmount={handleFollowUpUnmount}
 					isFollowUpAnswered={messageOrGroup.isAnswered === true || messageOrGroup.ts === currentFollowUpTs}
+					chatMessageFontSize={chatMessageFontSize}
 					editable={
 						messageOrGroup.type === "ask" &&
 						messageOrGroup.ask === "tool" &&
@@ -1576,6 +1578,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			alwaysAllowUpdateTodoList,
 			enableButtons,
 			primaryButtonText,
+			chatMessageFontSize,
 		],
 	)
 

@@ -289,6 +289,7 @@ export type ExtensionState = Pick<
 	| "includeTaskHistoryInEnhance"
 	| "reasoningBlockCollapsed"
 > & {
+	chatMessageFontSize?: string
 	version: string
 	clineMessages: ClineMessage[]
 	currentTaskItem?: HistoryItem
