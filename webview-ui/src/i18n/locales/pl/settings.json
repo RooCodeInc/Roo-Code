@@ -246,6 +246,7 @@
 		"vercelAiGatewayApiKey": "Klucz API Vercel AI Gateway",
 		"getVercelAiGatewayApiKey": "Uzyskaj klucz API Vercel AI Gateway",
 		"apiKeyStorageNotice": "Klucze API są bezpiecznie przechowywane w Tajnym Magazynie VSCode",
+		"passwordStorageNotice": "Hasła są bezpiecznie przechowywane w Tajnym Magazynie VSCode",
 		"glamaApiKey": "Klucz API Glama",
 		"getGlamaApiKey": "Uzyskaj klucz API Glama",
 		"useCustomBaseUrl": "Użyj niestandardowego URL bazowego",
@@ -479,6 +480,20 @@
 			"placeholder": "Domyślnie: claude",
 			"maxTokensLabel": "Maksymalna liczba tokenów wyjściowych",
 			"maxTokensDescription": "Maksymalna liczba tokenów wyjściowych dla odpowiedzi Claude Code. Domyślnie 8000."
+		},
+		"watsonx": {
+			"platform": "Platforma",
+			"region": "Region",
+			"username": "Nazwa użytkownika",
+			"password": "Hasło",
+			"apiKey": "Klucz API",
+			"authType": "Typ uwierzytelniania",
+			"projectId": "ID projektu",
+			"urlDescription": "Wprowadź pełny adres URL instancji IBM Cloud Pak for Data",
+			"selectedEndpoint": "Wybrany punkt końcowy",
+			"retrieveModels": "Pobierz modele",
+			"retrieveSuccessful": "Modele pobrane pomyślnie",
+			"retrieveError": "Nie udało się pobrać modeli. Sprawdź swoje dane uwierzytelniające i spróbuj ponownie"
 		}
 	},
 	"browser": {
@@ -686,6 +701,9 @@
 					"multiBlock": "Strategia diff wieloblokowego pozwala na aktualizację wielu bloków kodu w pliku w jednym żądaniu."
 				}
 			},
+			"watsonx": {
+				"description": "Gdy włączone, Roo będzie w stanie edytować pliki szybciej i automatycznie odrzuci obcięte pełne zapisy plików."
+			},
 			"matchPrecision": {
 				"label": "Precyzja dopasowania",
 				"description": "Ten suwak kontroluje, jak dokładnie sekcje kodu muszą pasować podczas stosowania różnic. Niższe wartości umożliwiają bardziej elastyczne dopasowywanie, ale zwiększają ryzyko nieprawidłowych zamian. Używaj wartości poniżej 100% z najwyższą ostrożnością."
@@ -829,7 +847,17 @@
 		"providerNotAllowed": "Dostawca '{{provider}}' nie jest dozwolony przez Twoją organizację",
 		"modelNotAllowed": "Model '{{model}}' nie jest dozwolony dla dostawcy '{{provider}}' przez Twoją organizację",
 		"profileInvalid": "Ten profil zawiera dostawcę lub model, który nie jest dozwolony przez Twoją organizację",
-		"qwenCodeOauthPath": "Musisz podać prawidłową ścieżkę do poświadczeń OAuth"
+		"qwenCodeOauthPath": "Musisz podać prawidłową ścieżkę do poświadczeń OAuth",
+		"watsonx": {
+			"platform": "Musisz wybrać platformę.",
+			"region": "Musisz wybrać region.",
+			"projectId": "Musisz podać prawidłowe ID projektu.",
+			"authType": "Musisz wybrać typ uwierzytelniania.",
+			"username": "Musisz podać prawidłową nazwę użytkownika.",
+			"apiKey": "Musisz podać prawidłowy klucz API.",
+			"password": "Musisz podać prawidłowe hasło.",
+			"baseUrl": "Musisz podać prawidłowy URL IBM Cloud Pak for Data."
+		}
 	},
 	"placeholders": {
 		"apiKey": "Wprowadź klucz API...",

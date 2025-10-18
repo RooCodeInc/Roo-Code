@@ -246,6 +246,7 @@
 		"vercelAiGatewayApiKey": "Vercel AI Gateway API 키",
 		"getVercelAiGatewayApiKey": "Vercel AI Gateway API 키 받기",
 		"apiKeyStorageNotice": "API 키는 VSCode의 보안 저장소에 안전하게 저장됩니다",
+		"passwordStorageNotice": "비밀번호는 VSCode의 보안 저장소에 안전하게 저장됩니다",
 		"glamaApiKey": "Glama API 키",
 		"getGlamaApiKey": "Glama API 키 받기",
 		"useCustomBaseUrl": "사용자 정의 기본 URL 사용",
@@ -479,6 +480,20 @@
 			"placeholder": "기본값: claude",
 			"maxTokensLabel": "최대 출력 토큰",
 			"maxTokensDescription": "Claude Code 응답의 최대 출력 토큰 수. 기본값은 8000입니다."
+		},
+		"watsonx": {
+			"platform": "플랫폼",
+			"region": "지역",
+			"username": "사용자 이름",
+			"password": "비밀번호",
+			"apiKey": "API 키",
+			"authType": "인증 유형",
+			"projectId": "프로젝트 ID",
+			"urlDescription": "IBM Cloud Pak for Data 인스턴스의 전체 URL을 입력하세요",
+			"selectedEndpoint": "선택된 엔드포인트",
+			"retrieveModels": "모델 검색",
+			"retrieveSuccessful": "모델을 성공적으로 검색했습니다",
+			"retrieveError": "모델을 검색하지 못했습니다. 자격 증명을 확인하고 다시 시도하세요"
 		}
 	},
 	"browser": {
@@ -686,6 +701,9 @@
 					"multiBlock": "다중 블록 diff 전략은 하나의 요청으로 파일의 여러 코드 블록을 업데이트할 수 있습니다."
 				}
 			},
+			"watsonx": {
+				"description": "활성화되면 Roo는 파일을 더 빠르게 편집할 수 있으며 잘린 전체 파일 쓰기를 자동으로 거부합니다."
+			},
 			"matchPrecision": {
 				"label": "일치 정확도",
 				"description": "이 슬라이더는 diff를 적용할 때 코드 섹션이 얼마나 정확하게 일치해야 하는지 제어합니다. 낮은 값은 더 유연한 일치를 허용하지만 잘못된 교체 위험이 증가합니다. 100% 미만의 값은 극도로 주의해서 사용하세요."
@@ -829,7 +847,17 @@
 		"providerNotAllowed": "제공자 '{{provider}}'는 조직에서 허용되지 않습니다",
 		"modelNotAllowed": "모델 '{{model}}'은 제공자 '{{provider}}'에 대해 조직에서 허용되지 않습니다",
 		"profileInvalid": "이 프로필에는 조직에서 허용되지 않는 제공자 또는 모델이 포함되어 있습니다",
-		"qwenCodeOauthPath": "유효한 OAuth 자격 증명 경로를 제공해야 합니다"
+		"qwenCodeOauthPath": "유효한 OAuth 자격 증명 경로를 제공해야 합니다",
+		"watsonx": {
+			"platform": "플랫폼을 선택해야 합니다.",
+			"region": "리전을 선택해야 합니다.",
+			"projectId": "유효한 프로젝트 ID를 제공해야 합니다.",
+			"authType": "인증 유형을 선택해야 합니다.",
+			"username": "유효한 사용자 이름을 제공해야 합니다.",
+			"apiKey": "유효한 API 키를 제공해야 합니다.",
+			"password": "유효한 비밀번호를 제공해야 합니다.",
+			"baseUrl": "유효한 IBM Cloud Pak for Data URL을 제공해야 합니다."
+		}
 	},
 	"placeholders": {
 		"apiKey": "API 키 입력...",

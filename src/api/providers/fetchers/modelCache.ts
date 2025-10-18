@@ -24,6 +24,7 @@ import { getLMStudioModels } from "./lmstudio"
 import { getIOIntelligenceModels } from "./io-intelligence"
 import { getDeepInfraModels } from "./deepinfra"
 import { getHuggingFaceModels } from "./huggingface"
+import { getWatsonxModels } from "./ibm-watsonx"
 
 const memoryCache = new NodeCache({ stdTTL: 5 * 60, checkperiod: 5 * 60 })
 
@@ -98,6 +99,9 @@ export const getModels = async (options: GetModelsOptions): Promise<ModelRecord>
 				break
 			case "huggingface":
 				models = await getHuggingFaceModels()
+				break
+			case "ibm-watsonx":
+				models = await getWatsonxModels()
 				break
 			default: {
 				// Ensures router is exhaustively checked if RouterName is a strict union.
