@@ -48,10 +48,14 @@ export abstract class CacheStrategy {
 	}
 
 	/**
-	 * Create a cache point content block
+	 * Create a cache control content block for AWS Bedrock
+	 * According to AWS documentation, cache_control should be added as a property
+	 * within content blocks, not as a separate cachePoint block
 	 */
 	protected createCachePoint(): ContentBlock {
-		return { cachePoint: { type: "default" } } as unknown as ContentBlock
+		// For AWS Bedrock, we return a special marker that will be processed later
+		// to add cache_control to the appropriate content block
+		return { cache_control: { type: "ephemeral" } } as unknown as ContentBlock
 	}
 
 	/**
