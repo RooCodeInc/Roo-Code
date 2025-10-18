@@ -2,7 +2,14 @@
  * Defines profiles for different embedding models, including their dimensions.
  */
 
-export type EmbedderProvider = "openai" | "ollama" | "openai-compatible" | "gemini" | "mistral" | "vercel-ai-gateway" // Add other providers as needed
+export type EmbedderProvider =
+	| "openai"
+	| "ollama"
+	| "openai-compatible"
+	| "gemini"
+	| "mistral"
+	| "vercel-ai-gateway"
+	| "bedrock" // Add other providers as needed
 
 export interface EmbeddingModelProfile {
 	dimension: number
@@ -69,6 +76,15 @@ export const EMBEDDING_MODEL_PROFILES: EmbeddingModelProfiles = {
 		// Mistral models
 		"mistral/codestral-embed": { dimension: 1536, scoreThreshold: 0.4 },
 		"mistral/mistral-embed": { dimension: 1024, scoreThreshold: 0.4 },
+	},
+	bedrock: {
+		// Amazon Titan Embed models
+		"amazon.titan-embed-text-v1": { dimension: 1536, scoreThreshold: 0.4 },
+		"amazon.titan-embed-text-v2:0": { dimension: 1024, scoreThreshold: 0.4 },
+		"amazon.titan-embed-image-v1": { dimension: 1024, scoreThreshold: 0.4 },
+		// Cohere models available through Bedrock
+		"cohere.embed-english-v3": { dimension: 1024, scoreThreshold: 0.4 },
+		"cohere.embed-multilingual-v3": { dimension: 1024, scoreThreshold: 0.4 },
 	},
 }
 
@@ -162,6 +178,9 @@ export function getDefaultModelId(provider: EmbedderProvider): string {
 
 		case "vercel-ai-gateway":
 			return "openai/text-embedding-3-large"
+
+		case "bedrock":
+			return "amazon.titan-embed-text-v2:0"
 
 		default:
 			// Fallback for unknown providers

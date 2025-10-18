@@ -20,6 +20,7 @@ export class CodeIndexConfigManager {
 	private geminiOptions?: { apiKey: string }
 	private mistralOptions?: { apiKey: string }
 	private vercelAiGatewayOptions?: { apiKey: string }
+	private bedrockOptions?: { region: string; profile?: string }
 	private qdrantUrl?: string = "http://localhost:6333"
 	private qdrantApiKey?: string
 	private searchMinScore?: number
@@ -49,8 +50,13 @@ export class CodeIndexConfigManager {
 			codebaseIndexEmbedderProvider: "openai",
 			codebaseIndexEmbedderBaseUrl: "",
 			codebaseIndexEmbedderModelId: "",
+			codebaseIndexEmbedderModelDimension: undefined,
 			codebaseIndexSearchMinScore: undefined,
 			codebaseIndexSearchMaxResults: undefined,
+			codebaseIndexOpenAiCompatibleBaseUrl: "",
+			codebaseIndexOpenAiCompatibleModelDimension: undefined,
+			codebaseIndexBedrockRegion: "us-east-1",
+			codebaseIndexBedrockProfile: "",
 		}
 
 		const {
@@ -66,11 +72,13 @@ export class CodeIndexConfigManager {
 		const openAiKey = this.contextProxy?.getSecret("codeIndexOpenAiKey") ?? ""
 		const qdrantApiKey = this.contextProxy?.getSecret("codeIndexQdrantApiKey") ?? ""
 		// Fix: Read OpenAI Compatible settings from the correct location within codebaseIndexConfig
-		const openAiCompatibleBaseUrl = codebaseIndexConfig.codebaseIndexOpenAiCompatibleBaseUrl ?? ""
+		const openAiCompatibleBaseUrl = (codebaseIndexConfig as any).codebaseIndexOpenAiCompatibleBaseUrl ?? ""
 		const openAiCompatibleApiKey = this.contextProxy?.getSecret("codebaseIndexOpenAiCompatibleApiKey") ?? ""
 		const geminiApiKey = this.contextProxy?.getSecret("codebaseIndexGeminiApiKey") ?? ""
 		const mistralApiKey = this.contextProxy?.getSecret("codebaseIndexMistralApiKey") ?? ""
 		const vercelAiGatewayApiKey = this.contextProxy?.getSecret("codebaseIndexVercelAiGatewayApiKey") ?? ""
+		const bedrockRegion = (codebaseIndexConfig as any).codebaseIndexBedrockRegion ?? "us-east-1"
+		const bedrockProfile = (codebaseIndexConfig as any).codebaseIndexBedrockProfile ?? ""
 
 		// Update instance variables with configuration
 		this.codebaseIndexEnabled = codebaseIndexEnabled ?? true
@@ -80,7 +88,7 @@ export class CodeIndexConfigManager {
 		this.searchMaxResults = codebaseIndexSearchMaxResults
 
 		// Validate and set model dimension
-		const rawDimension = codebaseIndexConfig.codebaseIndexEmbedderModelDimension
+		const rawDimension = (codebaseIndexConfig as any).codebaseIndexEmbedderModelDimension
 		if (rawDimension !== undefined && rawDimension !== null) {
 			const dimension = Number(rawDimension)
 			if (!isNaN(dimension) && dimension > 0) {
@@ -108,6 +116,8 @@ export class CodeIndexConfigManager {
 			this.embedderProvider = "mistral"
 		} else if (codebaseIndexEmbedderProvider === "vercel-ai-gateway") {
 			this.embedderProvider = "vercel-ai-gateway"
+		} else if ((codebaseIndexEmbedderProvider as string) === "bedrock") {
+			this.embedderProvider = "bedrock"
 		} else {
 			this.embedderProvider = "openai"
 		}
@@ -129,6 +139,9 @@ export class CodeIndexConfigManager {
 		this.geminiOptions = geminiApiKey ? { apiKey: geminiApiKey } : undefined
 		this.mistralOptions = mistralApiKey ? { apiKey: mistralApiKey } : undefined
 		this.vercelAiGatewayOptions = vercelAiGatewayApiKey ? { apiKey: vercelAiGatewayApiKey } : undefined
+		this.bedrockOptions = bedrockRegion
+			? { region: bedrockRegion, profile: bedrockProfile || undefined }
+			: undefined
 	}
 
 	/**
@@ -147,6 +160,7 @@ export class CodeIndexConfigManager {
 			geminiOptions?: { apiKey: string }
 			mistralOptions?: { apiKey: string }
 			vercelAiGatewayOptions?: { apiKey: string }
+			bedrockOptions?: { region: string; profile?: string }
 			qdrantUrl?: string
 			qdrantApiKey?: string
 			searchMinScore?: number
@@ -167,6 +181,8 @@ export class CodeIndexConfigManager {
 			geminiApiKey: this.geminiOptions?.apiKey ?? "",
 			mistralApiKey: this.mistralOptions?.apiKey ?? "",
 			vercelAiGatewayApiKey: this.vercelAiGatewayOptions?.apiKey ?? "",
+			bedrockRegion: this.bedrockOptions?.region ?? "",
+			bedrockProfile: this.bedrockOptions?.profile ?? "",
 			qdrantUrl: this.qdrantUrl ?? "",
 			qdrantApiKey: this.qdrantApiKey ?? "",
 		}
@@ -192,6 +208,7 @@ export class CodeIndexConfigManager {
 				geminiOptions: this.geminiOptions,
 				mistralOptions: this.mistralOptions,
 				vercelAiGatewayOptions: this.vercelAiGatewayOptions,
+				bedrockOptions: this.bedrockOptions,
 				qdrantUrl: this.qdrantUrl,
 				qdrantApiKey: this.qdrantApiKey,
 				searchMinScore: this.currentSearchMinScore,
@@ -234,6 +251,11 @@ export class CodeIndexConfigManager {
 			const qdrantUrl = this.qdrantUrl
 			const isConfigured = !!(apiKey && qdrantUrl)
 			return isConfigured
+		} else if (this.embedderProvider === "bedrock") {
+			const region = this.bedrockOptions?.region
+			const qdrantUrl = this.qdrantUrl
+			const isConfigured = !!(region && qdrantUrl)
+			return isConfigured
 		}
 		return false // Should not happen if embedderProvider is always set correctly
 	}
@@ -269,6 +291,8 @@ export class CodeIndexConfigManager {
 		const prevGeminiApiKey = prev?.geminiApiKey ?? ""
 		const prevMistralApiKey = prev?.mistralApiKey ?? ""
 		const prevVercelAiGatewayApiKey = prev?.vercelAiGatewayApiKey ?? ""
+		const prevBedrockRegion = prev?.bedrockRegion ?? ""
+		const prevBedrockProfile = prev?.bedrockProfile ?? ""
 		const prevQdrantUrl = prev?.qdrantUrl ?? ""
 		const prevQdrantApiKey = prev?.qdrantApiKey ?? ""
 
@@ -307,6 +331,8 @@ export class CodeIndexConfigManager {
 		const currentGeminiApiKey = this.geminiOptions?.apiKey ?? ""
 		const currentMistralApiKey = this.mistralOptions?.apiKey ?? ""
 		const currentVercelAiGatewayApiKey = this.vercelAiGatewayOptions?.apiKey ?? ""
+		const currentBedrockRegion = this.bedrockOptions?.region ?? ""
+		const currentBedrockProfile = this.bedrockOptions?.profile ?? ""
 		const currentQdrantUrl = this.qdrantUrl ?? ""
 		const currentQdrantApiKey = this.qdrantApiKey ?? ""
 
@@ -334,6 +360,10 @@ export class CodeIndexConfigManager {
 		}
 
 		if (prevVercelAiGatewayApiKey !== currentVercelAiGatewayApiKey) {
+			return true
+		}
+
+		if (prevBedrockRegion !== currentBedrockRegion || prevBedrockProfile !== currentBedrockProfile) {
 			return true
 		}
 
@@ -395,6 +425,7 @@ export class CodeIndexConfigManager {
 			geminiOptions: this.geminiOptions,
 			mistralOptions: this.mistralOptions,
 			vercelAiGatewayOptions: this.vercelAiGatewayOptions,
+			bedrockOptions: this.bedrockOptions,
 			qdrantUrl: this.qdrantUrl,
 			qdrantApiKey: this.qdrantApiKey,
 			searchMinScore: this.currentSearchMinScore,
