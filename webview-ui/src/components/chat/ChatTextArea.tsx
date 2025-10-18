@@ -1090,13 +1090,21 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 										aria-label={t("chat:addImages")}
 										disabled={shouldDisableImages}
 										onClick={!shouldDisableImages ? onSelectImages : undefined}
+										onTouchEnd={
+											!shouldDisableImages
+												? (e) => {
+														e.preventDefault()
+														onSelectImages()
+													}
+												: undefined
+										}
 										className={cn(
 											"relative inline-flex items-center justify-center",
 											"bg-transparent border-none p-1.5",
 											"rounded-md min-w-[28px] min-h-[28px]",
 											"text-vscode-descriptionForeground hover:text-vscode-foreground",
 											"transition-all duration-1000",
-											"cursor-pointer",
+											"cursor-pointer touch-manipulation",
 											!shouldDisableImages
 												? "opacity-50 hover:opacity-100 delay-750 pointer-events-auto"
 												: "opacity-0 pointer-events-none duration-200 delay-0",
@@ -1115,13 +1123,17 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 										aria-label={t("chat:enhancePrompt")}
 										disabled={false}
 										onClick={handleEnhancePrompt}
+										onTouchEnd={(e) => {
+											e.preventDefault()
+											handleEnhancePrompt()
+										}}
 										className={cn(
 											"relative inline-flex items-center justify-center",
 											"bg-transparent border-none p-1.5",
 											"rounded-md min-w-[28px] min-h-[28px]",
 											"text-vscode-descriptionForeground hover:text-vscode-foreground",
 											"transition-all duration-1000",
-											"cursor-pointer",
+											"cursor-pointer touch-manipulation",
 											hasInputContent
 												? "opacity-50 hover:opacity-100 delay-750 pointer-events-auto"
 												: "opacity-0 pointer-events-none duration-200 delay-0",
@@ -1139,6 +1151,10 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 											aria-label={t("chat:cancel.title")}
 											disabled={false}
 											onClick={onCancel}
+											onTouchEnd={(e) => {
+												e.preventDefault()
+												onCancel?.()
+											}}
 											className={cn(
 												"relative inline-flex items-center justify-center",
 												"bg-transparent border-none p-1.5",
@@ -1148,7 +1164,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 												"hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.15)]",
 												"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
 												"active:bg-[rgba(255,255,255,0.1)]",
-												"cursor-pointer",
+												"cursor-pointer touch-manipulation",
 											)}>
 											<MessageSquareX className="w-4 h-4" />
 										</button>
@@ -1159,6 +1175,10 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 										aria-label={t("chat:sendMessage")}
 										disabled={false}
 										onClick={onSend}
+										onTouchEnd={(e) => {
+											e.preventDefault()
+											onSend()
+										}}
 										className={cn(
 											"relative inline-flex items-center justify-center",
 											"bg-transparent border-none p-1.5",
@@ -1172,7 +1192,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 												"hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.15)]",
 											"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
 											hasInputContent && "active:bg-[rgba(255,255,255,0.1)]",
-											hasInputContent && "cursor-pointer",
+											hasInputContent && "cursor-pointer touch-manipulation",
 										)}>
 										<SendHorizontal className="w-4 h-4" />
 									</button>
@@ -1244,6 +1264,10 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 								<button
 									aria-label={t("chat:stopTts")}
 									onClick={() => vscode.postMessage({ type: "stopTts" })}
+									onTouchEnd={(e) => {
+										e.preventDefault()
+										vscode.postMessage({ type: "stopTts" })
+									}}
 									className={cn(
 										"relative inline-flex items-center justify-center",
 										"bg-transparent border-none p-1.5",
@@ -1253,7 +1277,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 										"hover:opacity-100 hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.15)]",
 										"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
 										"active:bg-[rgba(255,255,255,0.1)]",
-										"cursor-pointer",
+										"cursor-pointer touch-manipulation",
 									)}>
 									<VolumeX className="w-4 h-4" />
 								</button>

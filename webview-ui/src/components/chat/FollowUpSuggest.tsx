@@ -113,8 +113,13 @@ export const FollowUpSuggest = ({
 						className="bg-vscode-editor-background rounded-sm w-full relative group">
 						<Button
 							variant="outline"
-							className="text-left whitespace-normal break-words w-full h-auto px-3 py-2 justify-start pr-8"
+							className="text-left whitespace-normal break-words w-full h-auto px-3 py-2 justify-start pr-8 touch-manipulation"
 							onClick={(event) => handleSuggestionClick(suggestion, event)}
+							onTouchEnd={(event) => {
+								// Prevent ghost clicks on mobile
+								event.preventDefault()
+								handleSuggestionClick(suggestion, event as any)
+							}}
 							aria-label={suggestion.answer}>
 							{suggestion.answer}
 							{isFirstSuggestion && countdown !== null && !suggestionSelected && !isAnswered && (
@@ -133,7 +138,7 @@ export const FollowUpSuggest = ({
 						)}
 						<StandardTooltip content={t("chat:followUpSuggest.copyToInput")}>
 							<div
-								className="absolute cursor-pointer top-2 right-3 opacity-0 group-hover:opacity-100 transition-opacity"
+								className="absolute cursor-pointer top-2 right-3 opacity-0 group-hover:opacity-100 transition-opacity touch-manipulation"
 								onClick={(e) => {
 									e.stopPropagation()
 									// Cancel the auto-approve timer when edit button is clicked
@@ -141,7 +146,18 @@ export const FollowUpSuggest = ({
 									onCancelAutoApproval?.()
 									// Simulate shift-click by directly calling the handler with shiftKey=true.
 									onSuggestionClick?.(suggestion, { ...e, shiftKey: true })
-								}}>
+								}}
+								onTouchEnd={(e) => {
+									e.stopPropagation()
+									e.preventDefault()
+									// Cancel the auto-approve timer when edit button is clicked
+									setSuggestionSelected(true)
+									onCancelAutoApproval?.()
+									// Simulate shift-click by directly calling the handler with shiftKey=true.
+									onSuggestionClick?.(suggestion, { ...e, shiftKey: true } as any)
+								}}
+								role="button"
+								tabIndex={0}>
 								<ClipboardCopy className="w-4" />
 							</div>
 						</StandardTooltip>
