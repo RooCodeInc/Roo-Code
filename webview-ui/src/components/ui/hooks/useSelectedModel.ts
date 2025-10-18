@@ -60,6 +60,7 @@ import {
 } from "@roo-code/types"
 
 import type { ModelRecord, RouterModels } from "@roo/api"
+import { applyBatchApiDiscount } from "@roo/cost"
 
 import { useRouterModels } from "./useRouterModels"
 import { useOpenRouterModelProviders } from "./useOpenRouterModelProviders"
@@ -362,7 +363,7 @@ function getSelectedModel({
 		default: {
 			provider satisfies "anthropic" | "gemini-cli" | "qwen-code" | "human-relay" | "fake-ai"
 			const id = apiConfiguration.apiModelId ?? anthropicDefaultModelId
-			const baseInfo = anthropicModels[id as keyof typeof anthropicModels]
+			let baseInfo: ModelInfo | undefined = anthropicModels[id as keyof typeof anthropicModels]
 
 			// Apply 1M context beta tier pricing for Claude Sonnet 4
 			if (
@@ -384,7 +385,7 @@ function getSelectedModel({
 				const tier = modelWithTiers.tiers?.[0]
 				if (tier) {
 					// Create a new ModelInfo object with updated values
-					const info: ModelInfo = {
+					baseInfo = {
 						...baseInfo,
 						contextWindow: tier.contextWindow,
 						inputPrice: tier.inputPrice ?? baseInfo.inputPrice,
@@ -392,8 +393,12 @@ function getSelectedModel({
 						cacheWritesPrice: tier.cacheWritesPrice ?? baseInfo.cacheWritesPrice,
 						cacheReadsPrice: tier.cacheReadsPrice ?? baseInfo.cacheReadsPrice,
 					}
-					return { id, info }
 				}
+			}
+
+			// Apply 50% discount for Batch API (applies after 1M context pricing if both enabled)
+			if (provider === "anthropic" && apiConfiguration.anthropicUseBatchApi && baseInfo) {
+				baseInfo = applyBatchApiDiscount(baseInfo)
 			}
 
 			return { id, info: baseInfo }

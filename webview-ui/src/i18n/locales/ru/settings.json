@@ -273,6 +273,8 @@
 		"anthropicUseAuthToken": "Передавать Anthropic API-ключ как Authorization-заголовок вместо X-Api-Key",
 		"anthropic1MContextBetaLabel": "Включить контекстное окно 1M (бета)",
 		"anthropic1MContextBetaDescription": "Расширяет контекстное окно до 1 миллиона токенов для Claude Sonnet 4",
+		"anthropicBatchApiLabel": "Использовать пакетный API (экономия 50%)",
+		"anthropicBatchApiDescription": "Обрабатывайте запросы асинхронно для снижения затрат на 50%. Выполнение запросов может занять от нескольких секунд до нескольких минут.",
 		"awsBedrock1MContextBetaLabel": "Включить контекстное окно 1M (бета)",
 		"awsBedrock1MContextBetaDescription": "Расширяет контекстное окно до 1 миллиона токенов для Claude Sonnet 4",
 		"cerebrasApiKey": "Cerebras API-ключ",

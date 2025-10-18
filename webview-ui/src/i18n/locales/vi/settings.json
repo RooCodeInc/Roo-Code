@@ -273,6 +273,8 @@
 		"anthropicUseAuthToken": "Truyền khóa API Anthropic dưới dạng tiêu đề Authorization thay vì X-Api-Key",
 		"anthropic1MContextBetaLabel": "Bật cửa sổ ngữ cảnh 1M (Beta)",
 		"anthropic1MContextBetaDescription": "Mở rộng cửa sổ ngữ cảnh lên 1 triệu token cho Claude Sonnet 4",
+		"anthropicBatchApiLabel": "Sử dụng API hàng loạt (tiết kiệm 50% chi phí)",
+		"anthropicBatchApiDescription": "Xử lý các yêu cầu không đồng bộ để giảm 50% chi phí. Các yêu cầu có thể mất từ vài giây đến vài phút để hoàn thành.",
 		"awsBedrock1MContextBetaLabel": "Bật cửa sổ ngữ cảnh 1M (Beta)",
 		"awsBedrock1MContextBetaDescription": "Mở rộng cửa sổ ngữ cảnh lên 1 triệu token cho Claude Sonnet 4",
 		"cerebrasApiKey": "Khóa API Cerebras",

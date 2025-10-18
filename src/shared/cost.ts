@@ -54,4 +54,17 @@ export function calculateApiCostOpenAI(
 	)
 }
 
+/**
+ * Applies 50% discount to all pricing fields for Anthropic Batch API usage
+ */
+export function applyBatchApiDiscount(info: ModelInfo): ModelInfo {
+	return {
+		...info,
+		inputPrice: typeof info.inputPrice === "number" ? info.inputPrice * 0.5 : undefined,
+		outputPrice: typeof info.outputPrice === "number" ? info.outputPrice * 0.5 : undefined,
+		cacheWritesPrice: typeof info.cacheWritesPrice === "number" ? info.cacheWritesPrice * 0.5 : undefined,
+		cacheReadsPrice: typeof info.cacheReadsPrice === "number" ? info.cacheReadsPrice * 0.5 : undefined,
+	}
+}
+
 export const parseApiPrice = (price: any) => (price ? parseFloat(price) * 1_000_000 : undefined)

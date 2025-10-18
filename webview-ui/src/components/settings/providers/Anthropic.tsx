@@ -99,6 +99,18 @@ export const Anthropic = ({ apiConfiguration, setApiConfigurationField }: Anthro
 					</div>
 				</div>
 			)}
+			<div>
+				<Checkbox
+					checked={apiConfiguration?.anthropicUseBatchApi ?? false}
+					onChange={(checked: boolean) => {
+						setApiConfigurationField("anthropicUseBatchApi", checked)
+					}}>
+					{t("settings:providers.anthropicBatchApiLabel")}
+				</Checkbox>
+				<div className="text-sm text-vscode-descriptionForeground mt-1 ml-6">
+					{t("settings:providers.anthropicBatchApiDescription")}
+				</div>
+			</div>
 		</>
 	)
 }

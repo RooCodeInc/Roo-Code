@@ -193,6 +193,7 @@ const anthropicSchema = apiModelIdProviderModelSchema.extend({
 	anthropicBaseUrl: z.string().optional(),
 	anthropicUseAuthToken: z.boolean().optional(),
 	anthropicBeta1MContext: z.boolean().optional(), // Enable 'context-1m-2025-08-07' beta for 1M context window.
+	anthropicUseBatchApi: z.boolean().optional(), // Enable batch API for 50% cost savings (async processing)
 })
 
 const claudeCodeSchema = apiModelIdProviderModelSchema.extend({

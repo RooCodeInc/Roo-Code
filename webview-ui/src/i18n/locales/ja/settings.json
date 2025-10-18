@@ -273,6 +273,8 @@
 		"anthropicUseAuthToken": "Anthropic APIキーをX-Api-Keyの代わりにAuthorizationヘッダーとして渡す",
 		"anthropic1MContextBetaLabel": "1Mコンテキストウィンドウを有効にする（ベータ版）",
 		"anthropic1MContextBetaDescription": "Claude Sonnet 4のコンテキストウィンドウを100万トークンに拡張します",
+		"anthropicBatchApiLabel": "バッチAPIを使用（50%コスト削減）",
+		"anthropicBatchApiDescription": "リクエストを非同期で処理し、コストを50%削減します。リクエストの完了には数秒から数分かかる場合があります。",
 		"awsBedrock1MContextBetaLabel": "1Mコンテキストウィンドウを有効にする（ベータ版）",
 		"awsBedrock1MContextBetaDescription": "Claude Sonnet 4のコンテキストウィンドウを100万トークンに拡張します",
 		"cerebrasApiKey": "Cerebras APIキー",
