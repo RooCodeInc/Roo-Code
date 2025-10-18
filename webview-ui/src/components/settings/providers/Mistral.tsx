@@ -7,6 +7,7 @@ import type { RouterModels } from "@roo/api"
 
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { VSCodeButtonLink } from "@src/components/common/VSCodeButtonLink"
+import { PasswordInputField } from "@src/components/ui/password-input"
 
 import { inputEventTransform } from "../transforms"
 
@@ -32,14 +33,12 @@ export const Mistral = ({ apiConfiguration, setApiConfigurationField }: MistralP
 
 	return (
 		<>
-			<VSCodeTextField
+			<PasswordInputField
 				value={apiConfiguration?.mistralApiKey || ""}
-				type="password"
-				onInput={handleInputChange("mistralApiKey")}
+				onChange={handleInputChange("mistralApiKey")}
 				placeholder={t("settings:placeholders.apiKey")}
-				className="w-full">
-				<span className="font-medium">{t("settings:providers.mistralApiKey")}</span>
-			</VSCodeTextField>
+				label={t("settings:providers.mistralApiKey")}
+				className="w-full"></PasswordInputField>
 			<div className="text-sm text-vscode-descriptionForeground -mt-2">
 				{t("settings:providers.apiKeyStorageNotice")}
 			</div>
