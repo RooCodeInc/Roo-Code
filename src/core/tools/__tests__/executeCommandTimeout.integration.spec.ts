@@ -11,10 +11,46 @@ import { TerminalRegistry } from "../../../integrations/terminal/TerminalRegistr
 vitest.mock("vscode", () => ({
 	workspace: {
 		getConfiguration: vitest.fn(),
+		createFileSystemWatcher: vitest.fn(() => ({
+			onDidCreate: vitest.fn(() => ({ dispose: vitest.fn() })),
+			onDidChange: vitest.fn(() => ({ dispose: vitest.fn() })),
+			onDidDelete: vitest.fn(() => ({ dispose: vitest.fn() })),
+			dispose: vitest.fn(),
+		})),
+	},
+	env: {
+		openExternal: vitest.fn().mockResolvedValue(true),
+		uriScheme: "vscode",
+	},
+	RelativePattern: class {
+		constructor(base: any, pattern: any) {
+			this.base = base
+			this.pattern = pattern
+		}
+		base: any
+		pattern: any
+	},
+	window: {
+		createTextEditorDecorationType: vitest.fn(() => ({ dispose: vitest.fn() })),
+		createOutputChannel: vitest.fn(() => ({
+			appendLine: vitest.fn(),
+			append: vitest.fn(),
+			clear: vitest.fn(),
+			show: vitest.fn(),
+			dispose: vitest.fn(),
+		})),
 	},
 }))
 
 vitest.mock("fs/promises")
+vitest.mock("os", () => ({
+	tmpdir: vitest.fn(() => "/tmp"),
+	homedir: vitest.fn(() => "/home/user"),
+}))
+vitest.mock("path", () => ({
+	join: vitest.fn((...args: string[]) => args.join("/")),
+	sep: "/",
+}))
 vitest.mock("../../../integrations/terminal/TerminalRegistry")
 vitest.mock("../../task/Task")
 vitest.mock("../../prompts/responses", () => ({

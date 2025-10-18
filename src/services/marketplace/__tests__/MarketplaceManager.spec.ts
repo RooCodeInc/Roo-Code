@@ -31,6 +31,10 @@ vi.mock("../../../../packages/telemetry/src/TelemetryService", () => ({
 
 // Mock vscode first
 vi.mock("vscode", () => ({
+	env: {
+		uriScheme: "vscode",
+	},
+	RelativePattern: vi.fn(),
 	workspace: {
 		workspaceFolders: [
 			{
@@ -40,11 +44,29 @@ vi.mock("vscode", () => ({
 			},
 		],
 		openTextDocument: vi.fn(),
+		getConfiguration: vi.fn(),
+		createFileSystemWatcher: vi.fn(() => ({
+			onDidChange: vi.fn(),
+			onDidCreate: vi.fn(),
+			onDidDelete: vi.fn(),
+			dispose: vi.fn(),
+		})),
 	},
 	window: {
 		showInformationMessage: vi.fn(),
 		showErrorMessage: vi.fn(),
 		showTextDocument: vi.fn(),
+		createTextEditorDecorationType: vi.fn(() => ({
+			dispose: vi.fn(),
+		})),
+		createOutputChannel: vi.fn(() => ({
+			appendLine: vi.fn(),
+			append: vi.fn(),
+			clear: vi.fn(),
+			show: vi.fn(),
+			hide: vi.fn(),
+			dispose: vi.fn(),
+		})),
 	},
 	Range: vi.fn().mockImplementation((startLine, startChar, endLine, endChar) => ({
 		start: { line: startLine, character: startChar },
@@ -71,6 +93,18 @@ vi.mock("fs/promises", () => ({
 	access: vi.fn(),
 	writeFile: vi.fn(),
 	mkdir: vi.fn(),
+}))
+
+// Mock os
+vi.mock("os", () => ({
+	tmpdir: vi.fn(() => "/tmp"),
+	homedir: vi.fn(() => "/home/user"),
+}))
+
+// Mock path
+vi.mock("path", () => ({
+	join: vi.fn((...paths) => paths.join("/")),
+	sep: "/",
 }))
 
 // Mock yaml

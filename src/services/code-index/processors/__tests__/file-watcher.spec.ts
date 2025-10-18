@@ -30,10 +30,30 @@ vi.mock("../../../glob/ignore-utils", () => ({
 	isPathInIgnoredDirectory: vi.fn().mockReturnValue(false),
 }))
 
+// Mock os
+vi.mock("os", () => ({
+	tmpdir: vi.fn(() => "/tmp"),
+	homedir: vi.fn(() => "/home/user"),
+}))
+
+// Mock path
+vi.mock("path", () => ({
+	join: vi.fn((...paths) => paths.join("/")),
+	sep: "/",
+}))
+
 // Mock vscode module
 vi.mock("vscode", () => ({
+	env: {
+		uriScheme: "vscode",
+	},
 	workspace: {
-		createFileSystemWatcher: vi.fn(),
+		createFileSystemWatcher: vi.fn(() => ({
+			onDidChange: vi.fn(),
+			onDidCreate: vi.fn(),
+			onDidDelete: vi.fn(),
+			dispose: vi.fn(),
+		})),
 		workspaceFolders: [
 			{
 				uri: {
@@ -45,6 +65,7 @@ vi.mock("vscode", () => ({
 			stat: vi.fn().mockResolvedValue({ size: 1000 }),
 			readFile: vi.fn().mockResolvedValue(Buffer.from("test content")),
 		},
+		getConfiguration: vi.fn(),
 	},
 	RelativePattern: vi.fn().mockImplementation((base, pattern) => ({ base, pattern })),
 	Uri: {
@@ -56,6 +77,20 @@ vi.mock("vscode", () => ({
 		dispose: vi.fn(),
 	})),
 	ExtensionContext: vi.fn(),
+	window: {
+		showInformationMessage: vi.fn(),
+		createTextEditorDecorationType: vi.fn(() => ({
+			dispose: vi.fn(),
+		})),
+		createOutputChannel: vi.fn(() => ({
+			appendLine: vi.fn(),
+			append: vi.fn(),
+			clear: vi.fn(),
+			show: vi.fn(),
+			hide: vi.fn(),
+			dispose: vi.fn(),
+		})),
+	},
 }))
 
 describe("FileWatcher", () => {

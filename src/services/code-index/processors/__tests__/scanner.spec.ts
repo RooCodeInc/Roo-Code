@@ -26,6 +26,10 @@ vi.mock("fs/promises", () => ({
 
 // Create a simple mock for vscode since we can't access the real one
 vi.mock("vscode", () => ({
+	env: {
+		uriScheme: "vscode",
+	},
+	RelativePattern: vi.fn(),
 	workspace: {
 		workspaceFolders: [
 			{
@@ -42,6 +46,13 @@ vi.mock("vscode", () => ({
 		fs: {
 			readFile: vi.fn().mockResolvedValue(Buffer.from("test content")),
 		},
+		getConfiguration: vi.fn(),
+		createFileSystemWatcher: vi.fn(() => ({
+			onDidChange: vi.fn(),
+			onDidCreate: vi.fn(),
+			onDidDelete: vi.fn(),
+			dispose: vi.fn(),
+		})),
 	},
 	Uri: {
 		file: vi.fn().mockImplementation((path) => path),
@@ -54,11 +65,69 @@ vi.mock("vscode", () => ({
 				},
 			},
 		},
+		showInformationMessage: vi.fn(),
+		createTextEditorDecorationType: vi.fn(() => ({
+			dispose: vi.fn(),
+		})),
+		createOutputChannel: vi.fn(() => ({
+			appendLine: vi.fn(),
+			append: vi.fn(),
+			clear: vi.fn(),
+			show: vi.fn(),
+			hide: vi.fn(),
+			dispose: vi.fn(),
+		})),
 	},
 }))
 
 vi.mock("../../../../core/ignore/RooIgnoreController")
 vi.mock("ignore")
+// Mock os
+vi.mock("os", () => ({
+	tmpdir: vi.fn(() => "/tmp"),
+	homedir: vi.fn(() => "/home/user"),
+}))
+
+// Mock path
+vi.mock("path", () => {
+	const mockPath = {
+		join: vi.fn((...paths) => paths.join("/")),
+		sep: "/",
+		extname: vi.fn((path: string) => {
+			const ext = path.split(".").pop()
+			return ext ? `.${ext}` : ""
+		}),
+		relative: vi.fn((from: string, to: string) => {
+			// Simple implementation that returns the relative path
+			const fromParts = from.split("/").filter(Boolean)
+			const toParts = to.split("/").filter(Boolean)
+
+			let i = 0
+			while (i < fromParts.length && i < toParts.length && fromParts[i] === toParts[i]) {
+				i++
+			}
+
+			const up = fromParts.length - i
+			const down = toParts.slice(i)
+
+			const upParts = Array(up).fill("..")
+			return [...upParts, ...down].join("/")
+		}),
+		normalize: vi.fn((path: string) => {
+			// Simple implementation that removes duplicate slashes and resolves . and ..
+			return path.replace(/\/+/g, "/").replace(/\/\.\//g, "/")
+		}),
+		resolve: vi.fn((...paths) => {
+			// Simple implementation that resolves paths
+			return paths.join("/")
+		}),
+	}
+
+	return {
+		default: mockPath,
+		...mockPath,
+	}
+})
 
 // Override the Jest-based mock with a vitest-compatible version
 vi.mock("../../../glob/list-files", () => ({

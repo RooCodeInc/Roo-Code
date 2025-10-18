@@ -2,10 +2,36 @@
 vi.mock("vscode", () => ({
 	workspace: {
 		getConfiguration: vi.fn(),
+		createFileSystemWatcher: vi.fn(() => ({
+			onDidCreate: vi.fn(() => ({ dispose: vi.fn() })),
+			onDidChange: vi.fn(() => ({ dispose: vi.fn() })),
+			onDidDelete: vi.fn(() => ({ dispose: vi.fn() })),
+			dispose: vi.fn(),
+		})),
 	},
 	window: {
 		showInformationMessage: vi.fn(),
 		showWarningMessage: vi.fn(),
+		createTextEditorDecorationType: vi.fn(() => ({ dispose: vi.fn() })),
+		createOutputChannel: vi.fn(() => ({
+			appendLine: vi.fn(),
+			append: vi.fn(),
+			clear: vi.fn(),
+			show: vi.fn(),
+			dispose: vi.fn(),
+		})),
+	},
+	env: {
+		openExternal: vi.fn().mockResolvedValue(true),
+		uriScheme: "vscode",
+	},
+	RelativePattern: class {
+		constructor(base: any, pattern: any) {
+			this.base = base
+			this.pattern = pattern
+		}
+		base: any
+		pattern: any
 	},
 }))
 
@@ -21,10 +47,12 @@ vi.mock("path", () => ({
 	join: vi.fn((...args: string[]) => args.join("/")),
 	isAbsolute: vi.fn((p: string) => p.startsWith("/")),
 	basename: vi.fn((p: string) => p.split("/").pop() || ""),
+	sep: "/",
 }))
 
 vi.mock("os", () => ({
 	homedir: vi.fn(() => "/home/user"),
+	tmpdir: vi.fn(() => "/tmp"),
 }))
 
 vi.mock("../fs", () => ({

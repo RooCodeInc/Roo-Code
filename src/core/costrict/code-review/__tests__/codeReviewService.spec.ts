@@ -25,7 +25,8 @@ import {
 } from "../../../../shared/codeReview"
 
 // Mock vscode
-vi.mock("vscode", () => ({
+vi.mock("vscode", async (importOriginal) => ({
+	...(await importOriginal()),
 	Uri: {
 		joinPath: vi.fn().mockReturnValue({
 			scheme: "file",
@@ -66,6 +67,16 @@ vi.mock("vscode", () => ({
 	window: {
 		createOutputChannel: vi.fn().mockReturnValue({
 			appendLine: vi.fn(),
+			dispose: vi.fn(),
+		}),
+		createTextEditorDecorationType: vi.fn().mockReturnValue({
+			setDecorationOptions: vi.fn(),
+			setGutterIconPath: vi.fn(),
+			setHoverMessage: vi.fn(),
+			setColor: vi.fn(),
+			setOverviewRulerColor: vi.fn(),
+			setInvisible: vi.fn(),
+			setZIndex: vi.fn(),
 			dispose: vi.fn(),
 		}),
 	},

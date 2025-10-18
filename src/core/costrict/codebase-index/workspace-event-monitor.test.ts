@@ -37,6 +37,8 @@ vi.mock("vscode", async (importOriginal) => {
 		},
 		window: {
 			activeTextEditor: null,
+			createTextEditorDecorationType: vi.fn(),
+			createOutputChannel: vi.fn(),
 		},
 		Uri: {
 			file: (path: string) => ({ fsPath: path }),

@@ -15,7 +15,47 @@ vi.mock("vscode", () => ({
 		getConfiguration: vi.fn(() => ({
 			get: vi.fn(),
 		})),
+		createFileSystemWatcher: vi.fn(() => ({
+			onDidCreate: vi.fn(() => ({ dispose: vi.fn() })),
+			onDidChange: vi.fn(() => ({ dispose: vi.fn() })),
+			onDidDelete: vi.fn(() => ({ dispose: vi.fn() })),
+			dispose: vi.fn(),
+		})),
 	},
+	env: {
+		openExternal: vi.fn().mockResolvedValue(true),
+		uriScheme: "vscode",
+	},
+	RelativePattern: class {
+		constructor(base: any, pattern: any) {
+			this.base = base
+			this.pattern = pattern
+		}
+		base: any
+		pattern: any
+	},
+	window: {
+		createTextEditorDecorationType: vi.fn(() => ({ dispose: vi.fn() })),
+		createOutputChannel: vi.fn(() => ({
+			appendLine: vi.fn(),
+			append: vi.fn(),
+			clear: vi.fn(),
+			show: vi.fn(),
+			dispose: vi.fn(),
+		})),
+	},
+}))
+
+// Mock os module
+vi.mock("os", () => ({
+	tmpdir: vi.fn(() => "/tmp"),
+	homedir: vi.fn(() => "/home/user"),
+}))
+
+// Mock path module
+vi.mock("path", () => ({
+	join: vi.fn((...args: string[]) => args.join("/")),
+	sep: "/",
 }))
 
 // Mock Package module

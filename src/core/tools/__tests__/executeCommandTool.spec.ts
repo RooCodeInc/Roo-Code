@@ -13,9 +13,43 @@ vitest.mock("execa", () => ({
 	execa: vitest.fn(),
 }))
 
+vitest.mock("os", () => ({
+	tmpdir: vitest.fn(() => "/tmp"),
+	homedir: vitest.fn(() => "/home/user"),
+}))
+
+vitest.mock("path", () => ({
+	join: vitest.fn((...paths) => paths.join("/")),
+	sep: "/",
+}))
+
 vitest.mock("vscode", () => ({
+	env: {
+		uriScheme: "vscode",
+	},
+	RelativePattern: vitest.fn(),
 	workspace: {
 		getConfiguration: vitest.fn(),
+		createFileSystemWatcher: vitest.fn(() => ({
+			onDidChange: vitest.fn(),
+			onDidCreate: vitest.fn(),
+			onDidDelete: vitest.fn(),
+			dispose: vitest.fn(),
+		})),
+	},
+	window: {
+		showInformationMessage: vitest.fn(),
+		createTextEditorDecorationType: vitest.fn(() => ({
+			dispose: vitest.fn(),
+		})),
+		createOutputChannel: vitest.fn(() => ({
+			appendLine: vitest.fn(),
+			append: vitest.fn(),
+			clear: vitest.fn(),
+			show: vitest.fn(),
+			hide: vitest.fn(),
+			dispose: vitest.fn(),
+		})),
 	},
 }))
 

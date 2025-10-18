@@ -92,6 +92,7 @@ export const window = {
 	onDidCloseTerminal: () => mockDisposable,
 	createTextEditorDecorationType: () => ({ dispose: () => {} }),
 	showTextDocument: () => {},
+	tabGroups: { all: [] },
 }
 
 export const commands = {

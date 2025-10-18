@@ -50,9 +50,13 @@ vi.mock("../../../utils/pathUtils", () => ({
 	isPathOutsideWorkspace: vi.fn().mockReturnValue(false),
 }))
 
-vi.mock("../../../utils/path", () => ({
-	getReadablePath: vi.fn().mockReturnValue("test/path.txt"),
-}))
+vi.mock("../../../utils/path", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("../../../utils/path")>()
+	return {
+		...actual,
+		getReadablePath: vi.fn().mockReturnValue("test/path.txt"),
+	}
+})
 
 vi.mock("../../../utils/text-normalization", () => ({
 	unescapeHtmlEntities: vi.fn().mockImplementation((content) => content),
@@ -69,17 +73,24 @@ vi.mock("../../../integrations/misc/extract-text", () => ({
 	),
 }))
 
-vi.mock("vscode", () => ({
-	window: {
-		showWarningMessage: vi.fn().mockResolvedValue(undefined),
-	},
-	env: {
-		openExternal: vi.fn(),
-	},
-	Uri: {
-		parse: vi.fn(),
-	},
-}))
+vi.mock("vscode", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("vscode")>()
+	return {
+		...actual,
+		window: {
+			...actual.window,
+			showWarningMessage: vi.fn().mockResolvedValue(undefined),
+		},
+		env: {
+			...actual.env,
+			openExternal: vi.fn(),
+		},
+		Uri: {
+			...actual.Uri,
+			parse: vi.fn(),
+		},
+	}
+})
 
 vi.mock("../../ignore/RooIgnoreController", () => ({
 	RooIgnoreController: class {

@@ -1,7 +1,35 @@
 // npx vitest run src/api/providers/__tests__/openrouter.spec.ts
 
 // Mock vscode first to avoid import errors
-vitest.mock("vscode", () => ({}))
+vitest.mock("vscode", () => ({
+	env: {
+		uriScheme: "vscode",
+	},
+	RelativePattern: vitest.fn(),
+	workspace: {
+		getConfiguration: vitest.fn(),
+		createFileSystemWatcher: vitest.fn(() => ({
+			onDidChange: vitest.fn(),
+			onDidCreate: vitest.fn(),
+			onDidDelete: vitest.fn(),
+			dispose: vitest.fn(),
+		})),
+	},
+	window: {
+		showInformationMessage: vitest.fn(),
+		createTextEditorDecorationType: vitest.fn(() => ({
+			dispose: vitest.fn(),
+		})),
+		createOutputChannel: vitest.fn(() => ({
+			appendLine: vitest.fn(),
+			append: vitest.fn(),
+			clear: vitest.fn(),
+			show: vitest.fn(),
+			hide: vitest.fn(),
+			dispose: vitest.fn(),
+		})),
+	},
+}))
 
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
@@ -13,6 +41,16 @@ import { Package } from "../../../shared/package"
 // Mock dependencies
 vitest.mock("openai")
 vitest.mock("delay", () => ({ default: vitest.fn(() => Promise.resolve()) }))
+
+vitest.mock("os", () => ({
+	tmpdir: vitest.fn(() => "/tmp"),
+	homedir: vitest.fn(() => "/home/user"),
+}))
+
+vitest.mock("path", () => ({
+	join: vitest.fn((...paths) => paths.join("/")),
+	sep: "/",
+}))
 vitest.mock("../fetchers/modelCache", () => ({
 	getModels: vitest.fn().mockImplementation(() => {
 		return Promise.resolve({

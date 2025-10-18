@@ -49,7 +49,7 @@ import { TelemetryService } from "@roo-code/telemetry"
 import { CodeReviewErrorType, type TelemetryErrorType } from "../telemetry"
 import { COSTRICT_DEFAULT_HEADERS } from "../../../shared/headers"
 import { zgsmCodebaseIndexManager } from "../codebase-index"
-import { toRelativePath } from "../../../utils/path"
+import { fileExistsAtPath } from "../../../utils/fs"
 /**
  * Code Review Service - Singleton
  *
@@ -226,7 +226,7 @@ export class CodeReviewService {
 			task.on(RooCodeEventName.TaskAskResponded, () => {
 				if (!isCompleted) {
 					const messageCount = task.clineMessages.length
-
+					console.log("TaskAskResponded", task.clineMessages)
 					let progress = 0
 					if (messageCount <= 10) {
 						progress = messageCount * 0.05
@@ -243,7 +243,7 @@ export class CodeReviewService {
 				try {
 					this.logger.info("[CodeReview] Review Task completed")
 					isCompleted = true
-					// console.log("task messages", task.clineMessages)
+					console.log("TaskCompleted", task.clineMessages)
 					const message = task.clineMessages.find(
 						(msg) => msg.type === "say" && msg.text?.includes("I-AM-CODE-REVIEW-REPORT-V1"),
 					)
@@ -258,7 +258,9 @@ export class CodeReviewService {
 								review_progress: "",
 								total: issues?.length ?? 0,
 							}
-							this.updateCachedIssues(issues)
+							this.updateCachedIssues(
+								issues.filter((issue) => fileExistsAtPath(path.resolve(provider.cwd, issue.file_path))),
+							)
 						}
 					}
 				} finally {
@@ -345,6 +347,7 @@ export class CodeReviewService {
 			review_progress: "",
 			total: 0,
 		}
+		this.commentService?.clearAllCommentThreads()
 		this.sendReviewTaskUpdateMessage(TaskStatus.INITIAL, {
 			issues: [],
 			progress: 0,

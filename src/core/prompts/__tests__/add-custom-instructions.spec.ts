@@ -126,9 +126,30 @@ vi.mock("vscode", () => ({
 	workspace: {
 		workspaceFolders: [{ uri: { fsPath: "/test/path" } }],
 		getWorkspaceFolder: vi.fn().mockReturnValue({ uri: { fsPath: "/test/path" } }),
+		createFileSystemWatcher: () => ({
+			onDidCreate: () => ({ dispose: () => {} }),
+			onDidChange: () => ({ dispose: () => {} }),
+			onDidDelete: () => ({ dispose: () => {} }),
+			dispose: () => {},
+		}),
 	},
 	window: {
 		activeTextEditor: undefined,
+		createTextEditorDecorationType: () => ({ dispose: () => {} }),
+		createOutputChannel: () => ({
+			appendLine: () => {},
+			show: () => {},
+			dispose: () => {},
+		}),
+		tabGroups: { all: [] },
+	},
+	RelativePattern: class {
+		base: any
+		pattern: any
+		constructor(base: any, pattern: any) {
+			this.base = base
+			this.pattern = pattern
+		}
 	},
 	EventEmitter: vi.fn().mockImplementation(() => ({
 		event: vi.fn(),

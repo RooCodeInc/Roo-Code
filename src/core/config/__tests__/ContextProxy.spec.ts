@@ -15,6 +15,36 @@ vi.mock("vscode", () => ({
 		Production: 2,
 		Test: 3,
 	},
+	env: {
+		openExternal: vi.fn().mockResolvedValue(true),
+		uriScheme: "vscode",
+	},
+	RelativePattern: class {
+		constructor(base: any, pattern: any) {
+			this.base = base
+			this.pattern = pattern
+		}
+		base: any
+		pattern: any
+	},
+	workspace: {
+		createFileSystemWatcher: vi.fn(() => ({
+			onDidCreate: vi.fn(() => ({ dispose: vi.fn() })),
+			onDidChange: vi.fn(() => ({ dispose: vi.fn() })),
+			onDidDelete: vi.fn(() => ({ dispose: vi.fn() })),
+			dispose: vi.fn(),
+		})),
+	},
+	window: {
+		createTextEditorDecorationType: vi.fn(() => ({ dispose: vi.fn() })),
+		createOutputChannel: vi.fn(() => ({
+			appendLine: vi.fn(),
+			append: vi.fn(),
+			clear: vi.fn(),
+			show: vi.fn(),
+			dispose: vi.fn(),
+		})),
+	},
 }))
 
 describe("ContextProxy", () => {

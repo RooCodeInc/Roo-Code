@@ -33,6 +33,7 @@ vi.mock("../../prompts/responses", () => ({
 
 vi.mock("../../../utils/path", () => ({
 	getReadablePath: vi.fn().mockReturnValue("test/path.txt"),
+	getWorkspacePath: vi.fn().mockReturnValue("/test/workspace"),
 }))
 
 vi.mock("../../ignore/RooIgnoreController", () => ({

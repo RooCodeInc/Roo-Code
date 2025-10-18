@@ -19,16 +19,6 @@ import { RooIgnoreController } from "../../ignore/RooIgnoreController"
 import { formatResponse } from "../../prompts/responses"
 import { Task } from "../../task/Task"
 
-vi.mock("vscode", () => ({
-	window: {
-		tabGroups: { all: [], onDidChangeTabs: vi.fn() },
-		visibleTextEditors: [],
-	},
-	env: {
-		language: "en-US",
-	},
-}))
-
 vi.mock("p-wait-for", () => ({
 	default: vi.fn(),
 }))
@@ -93,7 +83,7 @@ describe("getEnvironmentDetails", () => {
 				getAndClearRecentlyModifiedFiles: vi.fn().mockReturnValue([]),
 			} as unknown as FileContextTracker,
 			rooIgnoreController: {
-				filterPaths: vi.fn((paths: string[]) => paths.join("\n")),
+				filterPaths: vi.fn((paths: string[] = []) => paths.join("\n")),
 				cwd: mockCwd,
 				ignoreInstance: {},
 				disposables: [],

@@ -22,9 +22,37 @@ vi.mock("vscode", () => ({
 		showSaveDialog: vi.fn(),
 		showErrorMessage: vi.fn(),
 		showInformationMessage: vi.fn(),
+		createTextEditorDecorationType: vi.fn(() => ({ dispose: vi.fn() })),
+		createOutputChannel: vi.fn(() => ({
+			appendLine: vi.fn(),
+			append: vi.fn(),
+			clear: vi.fn(),
+			show: vi.fn(),
+			dispose: vi.fn(),
+		})),
 	},
 	Uri: {
 		file: vi.fn((filePath) => ({ fsPath: filePath })),
+	},
+	env: {
+		openExternal: vi.fn().mockResolvedValue(true),
+		uriScheme: "vscode",
+	},
+	RelativePattern: class {
+		constructor(base: any, pattern: any) {
+			this.base = base
+			this.pattern = pattern
+		}
+		base: any
+		pattern: any
+	},
+	workspace: {
+		createFileSystemWatcher: vi.fn(() => ({
+			onDidCreate: vi.fn(() => ({ dispose: vi.fn() })),
+			onDidChange: vi.fn(() => ({ dispose: vi.fn() })),
+			onDidDelete: vi.fn(() => ({ dispose: vi.fn() })),
+			dispose: vi.fn(),
+		})),
 	},
 }))
 
@@ -54,6 +82,7 @@ vi.mock("os", () => ({
 		homedir: vi.fn(() => "/mock/home"),
 	},
 	homedir: vi.fn(() => "/mock/home"),
+	tmpdir: vi.fn(() => "/tmp"),
 }))
 
 vi.mock("../../../utils/safeWriteJson")
