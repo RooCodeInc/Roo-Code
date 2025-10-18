@@ -838,6 +838,15 @@ export class ClineProvider
 				// Sends latest theme name to webview
 				await this.postMessageToWebview({ type: "theme", text: JSON.stringify(await getTheme()) })
 			}
+			if (e && e.affectsConfiguration(`${Package.name}.fontSizeMultiplier`)) {
+				const fontSizeMultiplier =
+					vscode.workspace.getConfiguration(Package.name).get<number>("fontSizeMultiplier") || 1.0
+				await this.postMessageToWebview({
+					type: "action",
+					action: "fontSizeChanged",
+					fontSizeMultiplier,
+				})
+			}
 		})
 		this.webviewDisposables.push(configDisposable)
 
@@ -1817,6 +1826,10 @@ export class ClineProvider
 			featureRoomoteControlEnabled,
 		} = await this.getState()
 
+		// Get font size multiplier from VSCode settings
+		const fontSizeMultiplier =
+			vscode.workspace.getConfiguration(Package.name).get<number>("fontSizeMultiplier") || 1.0
+
 		let cloudOrganizations: CloudOrganizationMembership[] = []
 
 		try {
@@ -1964,6 +1977,7 @@ export class ClineProvider
 			openRouterImageGenerationSelectedModel,
 			openRouterUseMiddleOutTransform,
 			featureRoomoteControlEnabled,
+			fontSizeMultiplier,
 		}
 	}
 
@@ -2195,6 +2209,8 @@ export class ClineProvider
 					return false
 				}
 			})(),
+			fontSizeMultiplier:
+				vscode.workspace.getConfiguration(Package.name).get<number>("fontSizeMultiplier") || 1.0,
 		}
 	}
 

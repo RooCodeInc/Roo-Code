@@ -262,7 +262,7 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 						alignItems: "center",
 						justifyContent: "center",
 						color: "var(--vscode-descriptionForeground)",
-						fontSize: "12px",
+						fontSize: "calc(12px * var(--roo-font-size-multiplier, 1))",
 					}}>
 					<div
 						style={{
@@ -318,7 +318,10 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 							}}>
 							<span
 								className="codicon codicon-globe"
-								style={{ fontSize: "80px", color: "var(--vscode-descriptionForeground)" }}
+								style={{
+									fontSize: "calc(80px * var(--roo-font-size-multiplier, 1))",
+									color: "var(--vscode-descriptionForeground)",
+								}}
 							/>
 						</div>
 					)}

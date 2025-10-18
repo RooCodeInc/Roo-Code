@@ -1,7 +1,7 @@
 import React, { useCallback } from "react"
 import { Slider } from "@/components/ui"
 import { useAppTranslation } from "@/i18n/TranslationContext"
-import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
+import { Checkbox } from "@/components/ui/checkbox"
 
 interface DiffSettingsControlProps {
 	diffEnabled?: boolean
@@ -17,8 +17,8 @@ export const DiffSettingsControl: React.FC<DiffSettingsControlProps> = ({
 	const { t } = useAppTranslation()
 
 	const handleDiffEnabledChange = useCallback(
-		(e: any) => {
-			onChange("diffEnabled", e.target.checked)
+		(checked: boolean) => {
+			onChange("diffEnabled", checked)
 		},
 		[onChange],
 	)
@@ -33,9 +33,10 @@ export const DiffSettingsControl: React.FC<DiffSettingsControlProps> = ({
 	return (
 		<div className="flex flex-col gap-1">
 			<div>
-				<VSCodeCheckbox checked={diffEnabled} onChange={handleDiffEnabledChange}>
+				<div className="flex items-center space-x-2">
+					<Checkbox checked={diffEnabled} onCheckedChange={handleDiffEnabledChange} />
 					<span className="font-medium">{t("settings:advanced.diff.label")}</span>
-				</VSCodeCheckbox>
+				</div>
 				<div className="text-vscode-descriptionForeground text-sm">
 					{t("settings:advanced.diff.description")}
 				</div>

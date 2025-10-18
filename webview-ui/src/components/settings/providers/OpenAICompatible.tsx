@@ -384,7 +384,7 @@ export const OpenAICompatible = ({
 						<StandardTooltip content={t("settings:providers.customModel.imageSupport.description")}>
 							<i
 								className="codicon codicon-info text-vscode-descriptionForeground"
-								style={{ fontSize: "12px" }}
+								style={{ fontSize: "calc(12px * var(--roo-font-size-multiplier, 1))" }}
 							/>
 						</StandardTooltip>
 					</div>
@@ -408,7 +408,7 @@ export const OpenAICompatible = ({
 						<StandardTooltip content={t("settings:providers.customModel.computerUse.description")}>
 							<i
 								className="codicon codicon-info text-vscode-descriptionForeground"
-								style={{ fontSize: "12px" }}
+								style={{ fontSize: "calc(12px * var(--roo-font-size-multiplier, 1))" }}
 							/>
 						</StandardTooltip>
 					</div>
@@ -432,7 +432,7 @@ export const OpenAICompatible = ({
 						<StandardTooltip content={t("settings:providers.customModel.promptCache.description")}>
 							<i
 								className="codicon codicon-info text-vscode-descriptionForeground"
-								style={{ fontSize: "12px" }}
+								style={{ fontSize: "calc(12px * var(--roo-font-size-multiplier, 1))" }}
 							/>
 						</StandardTooltip>
 					</div>
@@ -478,7 +478,7 @@ export const OpenAICompatible = ({
 							<StandardTooltip content={t("settings:providers.customModel.pricing.input.description")}>
 								<i
 									className="codicon codicon-info text-vscode-descriptionForeground"
-									style={{ fontSize: "12px" }}
+									style={{ fontSize: "calc(12px * var(--roo-font-size-multiplier, 1))" }}
 								/>
 							</StandardTooltip>
 						</div>
@@ -522,7 +522,7 @@ export const OpenAICompatible = ({
 							<StandardTooltip content={t("settings:providers.customModel.pricing.output.description")}>
 								<i
 									className="codicon codicon-info text-vscode-descriptionForeground"
-									style={{ fontSize: "12px" }}
+									style={{ fontSize: "calc(12px * var(--roo-font-size-multiplier, 1))" }}
 								/>
 							</StandardTooltip>
 						</div>
@@ -567,7 +567,7 @@ export const OpenAICompatible = ({
 										content={t("settings:providers.customModel.pricing.cacheReads.description")}>
 										<i
 											className="codicon codicon-info text-vscode-descriptionForeground"
-											style={{ fontSize: "12px" }}
+											style={{ fontSize: "calc(12px * var(--roo-font-size-multiplier, 1))" }}
 										/>
 									</StandardTooltip>
 								</div>
@@ -609,7 +609,7 @@ export const OpenAICompatible = ({
 										content={t("settings:providers.customModel.pricing.cacheWrites.description")}>
 										<i
 											className="codicon codicon-info text-vscode-descriptionForeground"
-											style={{ fontSize: "12px" }}
+											style={{ fontSize: "calc(12px * var(--roo-font-size-multiplier, 1))" }}
 										/>
 									</StandardTooltip>
 								</div>

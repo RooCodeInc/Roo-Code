@@ -275,7 +275,11 @@ export const ChatRowContent = ({
 						}}>
 						<span
 							className={`codicon codicon-${iconName}`}
-							style={{ color, fontSize: 16, marginBottom: "-1.5px" }}
+							style={{
+								color,
+								fontSize: "calc(16px * var(--roo-font-size-multiplier, 1))",
+								marginBottom: "-1.5px",
+							}}
 						/>
 					</div>
 				)
@@ -805,7 +809,7 @@ export const ChatRowContent = ({
 									backgroundColor: "var(--vscode-badge-background)",
 									borderBottom: "1px solid var(--vscode-editorGroup-border)",
 									fontWeight: "bold",
-									fontSize: "var(--vscode-font-size)",
+									fontSize: "calc(var(--vscode-font-size) * var(--roo-font-size-multiplier, 1))",
 									color: "var(--vscode-badge-foreground)",
 									display: "flex",
 									alignItems: "center",
@@ -842,7 +846,7 @@ export const ChatRowContent = ({
 									backgroundColor: "var(--vscode-badge-background)",
 									borderBottom: "1px solid var(--vscode-editorGroup-border)",
 									fontWeight: "bold",
-									fontSize: "var(--vscode-font-size)",
+									fontSize: "calc(var(--vscode-font-size) * var(--roo-font-size-multiplier, 1))",
 									color: "var(--vscode-badge-foreground)",
 									display: "flex",
 									alignItems: "center",
@@ -888,11 +892,20 @@ export const ChatRowContent = ({
 									padding: "10px 12px",
 								}}>
 								<div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-									<span style={{ fontWeight: "500", fontSize: "var(--vscode-font-size)" }}>
+									<span
+										style={{
+											fontWeight: "500",
+											fontSize:
+												"calc(var(--vscode-font-size) * var(--roo-font-size-multiplier, 1))",
+										}}>
 										/{slashCommandInfo.command}
 									</span>
 									{slashCommandInfo.source && (
-										<VSCodeBadge style={{ fontSize: "calc(var(--vscode-font-size) - 2px)" }}>
+										<VSCodeBadge
+											style={{
+												fontSize:
+													"calc((var(--vscode-font-size) - 2px) * var(--roo-font-size-multiplier, 1))",
+											}}>
 											{slashCommandInfo.source}
 										</VSCodeBadge>
 									)}
@@ -998,7 +1011,7 @@ export const ChatRowContent = ({
 										backgroundColor: "var(--vscode-badge-background)",
 										borderBottom: "1px solid var(--vscode-editorGroup-border)",
 										fontWeight: "bold",
-										fontSize: "var(--vscode-font-size)",
+										fontSize: "calc(var(--vscode-font-size) * var(--roo-font-size-multiplier, 1))",
 										color: "var(--vscode-badge-foreground)",
 										display: "flex",
 										alignItems: "center",
@@ -1293,7 +1306,8 @@ export const ChatRowContent = ({
 													<span
 														style={{
 															fontWeight: "500",
-															fontSize: "var(--vscode-font-size)",
+															fontSize:
+																"calc(var(--vscode-font-size) * var(--roo-font-size-multiplier, 1))",
 														}}>
 														/{slashCommandInfo.command}
 													</span>
@@ -1301,7 +1315,8 @@ export const ChatRowContent = ({
 														<span
 															style={{
 																color: "var(--vscode-descriptionForeground)",
-																fontSize: "var(--vscode-font-size)",
+																fontSize:
+																	"calc(var(--vscode-font-size) * var(--roo-font-size-multiplier, 1))",
 															}}>
 															{slashCommandInfo.args}
 														</span>
@@ -1311,7 +1326,8 @@ export const ChatRowContent = ({
 													<div
 														style={{
 															color: "var(--vscode-descriptionForeground)",
-															fontSize: "calc(var(--vscode-font-size) - 1px)",
+															fontSize:
+																"calc((var(--vscode-font-size) - 1px) * var(--roo-font-size-multiplier, 1))",
 														}}>
 														{slashCommandInfo.description}
 													</div>
@@ -1319,7 +1335,10 @@ export const ChatRowContent = ({
 												{slashCommandInfo.source && (
 													<div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
 														<VSCodeBadge
-															style={{ fontSize: "calc(var(--vscode-font-size) - 2px)" }}>
+															style={{
+																fontSize:
+																	"calc((var(--vscode-font-size) - 2px) * var(--roo-font-size-multiplier, 1))",
+															}}>
 															{slashCommandInfo.source}
 														</VSCodeBadge>
 													</div>

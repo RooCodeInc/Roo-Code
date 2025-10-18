@@ -27,6 +27,8 @@
 	"command.terminal.explainCommand.title": "Explain This Command",
 	"command.acceptInput.title": "Accept Input/Suggestion",
 	"command.toggleAutoApprove.title": "Toggle Auto-Approve",
+	"command.increaseFontSize.title": "Increase Font Size",
+	"command.decreaseFontSize.title": "Decrease Font Size",
 	"configuration.title": "Roo Code",
 	"commands.allowedCommands.description": "Commands that can be auto-executed when 'Always approve execute operations' is enabled",
 	"commands.deniedCommands.description": "Command prefixes that will be automatically denied without asking for approval. In case of conflicts with allowed commands, the longest prefix match takes precedence. Add * to deny all commands.",
@@ -42,5 +44,6 @@
 	"settings.useAgentRules.description": "Enable loading of AGENTS.md files for agent-specific rules (see https://agent-rules.org/)",
 	"settings.apiRequestTimeout.description": "Maximum time in seconds to wait for API responses (0 = no timeout, 1-3600s, default: 600s). Higher values are recommended for local providers like LM Studio and Ollama that may need more processing time.",
 	"settings.newTaskRequireTodos.description": "Require todos parameter when creating new tasks with the new_task tool",
-	"settings.codeIndex.embeddingBatchSize.description": "The batch size for embedding operations during code indexing. Adjust this based on your API provider's limits. Default is 60."
+	"settings.codeIndex.embeddingBatchSize.description": "The batch size for embedding operations during code indexing. Adjust this based on your API provider's limits. Default is 60.",
+	"settings.fontSizeMultiplier.description": "Font size multiplier for the RooCode interface. Adjusts all font sizes proportionally (0.5-3.0, default: 1.0)"
 }
