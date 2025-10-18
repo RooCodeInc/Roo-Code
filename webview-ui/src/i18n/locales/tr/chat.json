@@ -155,7 +155,8 @@
 			"confirm": "Onayla",
 			"cancel": "İptal",
 			"cannotUndo": "Bu işlem geri alınamaz.",
-			"restoreFilesAndTaskDescription": "Projenizin dosyalarını bu noktada alınan bir anlık görüntüye geri yükler ve bu noktadan sonraki tüm mesajları siler."
+			"restoreFilesAndTaskDescription": "Projenizin dosyalarını bu noktada alınan bir anlık görüntüye geri yükler ve bu noktadan sonraki tüm mesajları siler.",
+			"alreadyCurrent": "This checkpoint is already current"
 		},
 		"current": "Mevcut"
 	},

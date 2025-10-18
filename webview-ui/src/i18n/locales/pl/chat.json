@@ -155,7 +155,8 @@
 			"confirm": "Potwierdź",
 			"cancel": "Anuluj",
 			"cannotUndo": "Tej akcji nie można cofnąć.",
-			"restoreFilesAndTaskDescription": "Przywraca pliki Twojego projektu do zrzutu wykonanego w tym punkcie i usuwa wszystkie wiadomości po tym punkcie."
+			"restoreFilesAndTaskDescription": "Przywraca pliki Twojego projektu do zrzutu wykonanego w tym punkcie i usuwa wszystkie wiadomości po tym punkcie.",
+			"alreadyCurrent": "This checkpoint is already current"
 		},
 		"current": "Bieżący"
 	},

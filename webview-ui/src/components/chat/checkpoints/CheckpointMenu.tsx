@@ -88,18 +88,18 @@ export const CheckpointMenu = ({
 				</StandardTooltip>
 				<PopoverContent align="end" container={portalContainer}>
 					<div className="flex flex-col gap-2">
-						{!isCurrent && (
-							<div className="flex flex-col gap-1 group hover:text-foreground">
-								<Button variant="secondary" onClick={onPreview} data-testid="restore-files-btn">
-									{t("chat:checkpoint.menu.restoreFiles")}
-								</Button>
-								<div className="text-muted transition-colors group-hover:text-foreground">
-									{t("chat:checkpoint.menu.restoreFilesDescription")}
+						{isCurrent ? (
+							<div className="text-muted p-2 text-center">{t("chat:checkpoint.menu.alreadyCurrent")}</div>
+						) : (
+							<>
+								<div className="flex flex-col gap-1 group hover:text-foreground">
+									<Button variant="secondary" onClick={onPreview} data-testid="restore-files-btn">
+										{t("chat:checkpoint.menu.restoreFiles")}
+									</Button>
+									<div className="text-muted transition-colors group-hover:text-foreground">
+										{t("chat:checkpoint.menu.restoreFilesDescription")}
+									</div>
 								</div>
-							</div>
-						)}
-						{!isCurrent && (
-							<div className="flex flex-col gap-1 group hover:text-foreground">
 								<div className="flex flex-col gap-1 group hover:text-foreground">
 									{!isConfirming ? (
 										<Button
@@ -140,7 +140,7 @@ export const CheckpointMenu = ({
 										</div>
 									)}
 								</div>
-							</div>
+							</>
 						)}
 					</div>
 				</PopoverContent>

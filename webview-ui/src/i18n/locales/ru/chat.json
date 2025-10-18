@@ -150,7 +150,8 @@
 			"confirm": "Подтвердить",
 			"cancel": "Отмена",
 			"cannotUndo": "Это действие нельзя отменить.",
-			"restoreFilesAndTaskDescription": "Восстанавливает файлы проекта до состояния на момент этой точки и удаляет все сообщения после нее."
+			"restoreFilesAndTaskDescription": "Восстанавливает файлы проекта до состояния на момент этой точки и удаляет все сообщения после нее.",
+			"alreadyCurrent": "This checkpoint is already current"
 		},
 		"current": "Текущая"
 	},

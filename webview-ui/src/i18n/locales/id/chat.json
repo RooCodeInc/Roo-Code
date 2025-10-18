@@ -164,7 +164,8 @@
 			"confirm": "Konfirmasi",
 			"cancel": "Batal",
 			"cannotUndo": "Aksi ini tidak dapat dibatalkan.",
-			"restoreFilesAndTaskDescription": "Mengembalikan file proyek kamu ke snapshot yang diambil pada titik ini dan menghapus semua pesan setelah titik ini."
+			"restoreFilesAndTaskDescription": "Mengembalikan file proyek kamu ke snapshot yang diambil pada titik ini dan menghapus semua pesan setelah titik ini.",
+			"alreadyCurrent": "This checkpoint is already current"
 		},
 		"current": "Saat Ini"
 	},

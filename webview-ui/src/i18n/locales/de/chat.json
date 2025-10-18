@@ -155,7 +155,8 @@
 			"confirm": "Bestätigen",
 			"cancel": "Abbrechen",
 			"cannotUndo": "Diese Aktion kann nicht rückgängig gemacht werden.",
-			"restoreFilesAndTaskDescription": "Stellt die Dateien deines Projekts auf einen Snapshot zurück, der an diesem Punkt erstellt wurde, und löscht alle Nachrichten nach diesem Punkt."
+			"restoreFilesAndTaskDescription": "Stellt die Dateien deines Projekts auf einen Snapshot zurück, der an diesem Punkt erstellt wurde, und löscht alle Nachrichten nach diesem Punkt.",
+			"alreadyCurrent": "This checkpoint is already current"
 		},
 		"current": "Aktuell"
 	},

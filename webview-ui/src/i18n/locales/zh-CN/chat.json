@@ -155,7 +155,8 @@
 			"confirm": "确认",
 			"cancel": "取消",
 			"cannotUndo": "此操作无法撤消。",
-			"restoreFilesAndTaskDescription": "恢复文件至此时状态，并清除后续对话记录"
+			"restoreFilesAndTaskDescription": "恢复文件至此时状态，并清除后续对话记录",
+			"alreadyCurrent": "This checkpoint is already current"
 		},
 		"current": "当前"
 	},

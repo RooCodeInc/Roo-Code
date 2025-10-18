@@ -155,7 +155,8 @@
 			"confirm": "Confirmar",
 			"cancel": "Cancel·lar",
 			"cannotUndo": "Aquesta acció no es pot desfer.",
-			"restoreFilesAndTaskDescription": "Restaura els arxius del teu projecte a una instantània presa en aquest punt i elimina tots els missatges posteriors a aquest punt."
+			"restoreFilesAndTaskDescription": "Restaura els arxius del teu projecte a una instantània presa en aquest punt i elimina tots els missatges posteriors a aquest punt.",
+			"alreadyCurrent": "This checkpoint is already current"
 		},
 		"current": "Actual"
 	},

@@ -161,7 +161,8 @@
 			"confirm": "確認",
 			"cancel": "取消",
 			"cannotUndo": "此操作無法復原。",
-			"restoreFilesAndTaskDescription": "將您的專案檔案還原到此時的快照，並刪除此點之後的所有訊息。"
+			"restoreFilesAndTaskDescription": "將您的專案檔案還原到此時的快照，並刪除此點之後的所有訊息。",
+			"alreadyCurrent": "This checkpoint is already current"
 		},
 		"current": "目前"
 	},

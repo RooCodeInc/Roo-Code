@@ -158,7 +158,8 @@
 			"confirm": "Conferma",
 			"cancel": "Annulla",
 			"cannotUndo": "Questa azione non può essere annullata.",
-			"restoreFilesAndTaskDescription": "Ripristina i file del tuo progetto a uno snapshot catturato in questo punto ed elimina tutti i messaggi successivi a questo punto."
+			"restoreFilesAndTaskDescription": "Ripristina i file del tuo progetto a uno snapshot catturato in questo punto ed elimina tutti i messaggi successivi a questo punto.",
+			"alreadyCurrent": "This checkpoint is already current"
 		},
 		"current": "Corrente"
 	},

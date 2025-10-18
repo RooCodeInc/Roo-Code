@@ -155,7 +155,8 @@
 			"confirm": "確認",
 			"cancel": "キャンセル",
 			"cannotUndo": "このアクションは元に戻せません。",
-			"restoreFilesAndTaskDescription": "この時点で撮影されたスナップショットにプロジェクトのファイルを復元し、この時点以降のすべてのメッセージを削除します。"
+			"restoreFilesAndTaskDescription": "この時点で撮影されたスナップショットにプロジェクトのファイルを復元し、この時点以降のすべてのメッセージを削除します。",
+			"alreadyCurrent": "This checkpoint is already current"
 		},
 		"current": "現在"
 	},

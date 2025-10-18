@@ -155,7 +155,8 @@
 			"confirm": "확인",
 			"cancel": "취소",
 			"cannotUndo": "이 작업은 취소할 수 없습니다.",
-			"restoreFilesAndTaskDescription": "프로젝트 파일을 이 시점에 찍힌 스냅샷으로 복원하고 이 지점 이후의 모든 메시지를 삭제합니다."
+			"restoreFilesAndTaskDescription": "프로젝트 파일을 이 시점에 찍힌 스냅샷으로 복원하고 이 지점 이후의 모든 메시지를 삭제합니다.",
+			"alreadyCurrent": "This checkpoint is already current"
 		},
 		"current": "현재"
 	},

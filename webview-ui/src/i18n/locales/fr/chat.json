@@ -155,7 +155,8 @@
 			"confirm": "Confirmer",
 			"cancel": "Annuler",
 			"cannotUndo": "Cette action ne peut pas être annulée.",
-			"restoreFilesAndTaskDescription": "Restaure les fichiers de votre projet à un instantané pris à ce moment et supprime tous les messages après ce point."
+			"restoreFilesAndTaskDescription": "Restaure les fichiers de votre projet à un instantané pris à ce moment et supprime tous les messages après ce point.",
+			"alreadyCurrent": "This checkpoint is already current"
 		},
 		"current": "Actuel"
 	},

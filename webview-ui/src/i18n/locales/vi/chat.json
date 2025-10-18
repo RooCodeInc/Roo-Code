@@ -155,7 +155,8 @@
 			"confirm": "Xác nhận",
 			"cancel": "Hủy",
 			"cannotUndo": "Hành động này không thể hoàn tác.",
-			"restoreFilesAndTaskDescription": "Khôi phục các tệp dự án của bạn về bản chụp được thực hiện tại thời điểm này và xóa tất cả tin nhắn sau điểm này."
+			"restoreFilesAndTaskDescription": "Khôi phục các tệp dự án của bạn về bản chụp được thực hiện tại thời điểm này và xóa tất cả tin nhắn sau điểm này.",
+			"alreadyCurrent": "This checkpoint is already current"
 		},
 		"current": "Hiện tại"
 	},

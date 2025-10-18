@@ -155,7 +155,8 @@
 			"confirm": "Confirmar",
 			"cancel": "Cancelar",
 			"cannotUndo": "Esta acción no se puede deshacer.",
-			"restoreFilesAndTaskDescription": "Restaura los archivos de tu proyecto a una instantánea tomada en este punto y elimina todos los mensajes posteriores a este punto."
+			"restoreFilesAndTaskDescription": "Restaura los archivos de tu proyecto a una instantánea tomada en este punto y elimina todos los mensajes posteriores a este punto.",
+			"alreadyCurrent": "This checkpoint is already current"
 		},
 		"current": "Actual"
 	},

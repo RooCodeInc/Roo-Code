@@ -150,7 +150,8 @@
 			"confirm": "Bevestigen",
 			"cancel": "Annuleren",
 			"cannotUndo": "Deze actie kan niet ongedaan worden gemaakt.",
-			"restoreFilesAndTaskDescription": "Herstelt de bestanden van je project naar een momentopname die op dit punt is gemaakt en verwijdert alle berichten na dit punt."
+			"restoreFilesAndTaskDescription": "Herstelt de bestanden van je project naar een momentopname die op dit punt is gemaakt en verwijdert alle berichten na dit punt.",
+			"alreadyCurrent": "This checkpoint is already current"
 		},
 		"current": "Huidig"
 	},
