@@ -33,6 +33,8 @@
 	"commands.commandExecutionTimeout.description": "Maximum time in seconds to wait for command execution to complete before timing out (0 = no timeout, 1-600s, default: 0s)",
 	"commands.commandTimeoutAllowlist.description": "Command prefixes that are excluded from the command execution timeout. Commands matching these prefixes will run without timeout restrictions.",
 	"commands.preventCompletionWithOpenTodos.description": "Prevent task completion when there are incomplete todos in the todo list",
+	"commands.daemonCommands.description": "Additional command patterns to identify as daemon/long-running processes. These commands will be handled as background services that continue running without blocking the workflow.",
+	"commands.disableDaemonDetection.description": "Disable automatic detection of daemon/long-running processes. When disabled, all commands will wait for completion before proceeding.",
 	"settings.vsCodeLmModelSelector.description": "Settings for VSCode Language Model API",
 	"settings.vsCodeLmModelSelector.vendor.description": "The vendor of the language model (e.g. copilot)",
 	"settings.vsCodeLmModelSelector.family.description": "The family of the language model (e.g. gpt-4)",

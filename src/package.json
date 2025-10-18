@@ -377,6 +377,19 @@
 					"default": false,
 					"description": "%commands.preventCompletionWithOpenTodos.description%"
 				},
+				"roo-cline.daemonCommands": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [],
+					"description": "%commands.daemonCommands.description%"
+				},
+				"roo-cline.disableDaemonDetection": {
+					"type": "boolean",
+					"default": false,
+					"description": "%commands.disableDaemonDetection.description%"
+				},
 				"roo-cline.vsCodeLmModelSelector": {
 					"type": "object",
 					"properties": {

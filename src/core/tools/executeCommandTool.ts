@@ -17,6 +17,13 @@ import { TerminalRegistry } from "../../integrations/terminal/TerminalRegistry"
 import { Terminal } from "../../integrations/terminal/Terminal"
 import { Package } from "../../shared/package"
 import { t } from "../../i18n"
+import {
+	isDaemonCommand,
+	getDaemonMessage,
+	getServiceType,
+	addDaemonPatterns,
+	clearUserDaemonPatterns,
+} from "../../utils/daemon-detector"
 
 class ShellIntegrationError extends Error {}
 
@@ -173,6 +180,24 @@ export async function executeCommand(
 		return [false, `Working directory '${workingDir}' does not exist.`]
 	}
 
+	// Check configuration for daemon detection
+	const disableDaemonDetection = vscode.workspace
+		.getConfiguration(Package.name)
+		.get<boolean>("disableDaemonDetection", false)
+
+	// Load user-defined daemon patterns from configuration
+	if (!disableDaemonDetection) {
+		clearUserDaemonPatterns()
+		const userDaemonPatterns = vscode.workspace.getConfiguration(Package.name).get<string[]>("daemonCommands", [])
+		if (userDaemonPatterns.length > 0) {
+			addDaemonPatterns(userDaemonPatterns)
+		}
+	}
+
+	// Check if this is a daemon/long-running process
+	const isDaemon = !disableDaemonDetection && isDaemonCommand(command)
+	const serviceType = isDaemon ? getServiceType(command) : null
+
 	let message: { text?: string; images?: string[] } | undefined
 	let runInBackground = false
 	let completed = false
@@ -252,47 +277,104 @@ export async function executeCommand(
 	const process = terminal.runCommand(command, callbacks)
 	task.terminalProcess = process
 
-	// Implement command execution timeout (skip if timeout is 0).
-	if (commandExecutionTimeout > 0) {
-		let timeoutId: NodeJS.Timeout | undefined
-		let isTimedOut = false
+	// If this is a daemon process, handle it differently
+	if (isDaemon) {
+		// Wait for a short time to capture initial output and check for startup errors
+		const initialOutputTimeout = 3000 // 3 seconds to capture initial output
+		let initialOutputCaptured = false
 
-		const timeoutPromise = new Promise<void>((_, reject) => {
-			timeoutId = setTimeout(() => {
-				isTimedOut = true
-				task.terminalProcess?.abort()
-				reject(new Error(`Command execution timed out after ${commandExecutionTimeout}ms`))
-			}, commandExecutionTimeout)
+		const initialOutputPromise = new Promise<void>((resolve) => {
+			setTimeout(() => {
+				initialOutputCaptured = true
+				resolve()
+			}, initialOutputTimeout)
 		})
 
-		try {
-			await Promise.race([process, timeoutPromise])
-		} catch (error) {
-			if (isTimedOut) {
-				const status: CommandExecutionStatus = { executionId, status: "timeout" }
-				provider?.postMessageToWebview({ type: "commandExecutionStatus", text: JSON.stringify(status) })
-				await task.say("error", t("common:errors:command_timeout", { seconds: commandExecutionTimeoutSeconds }))
-				task.terminalProcess = undefined
-
-				return [
-					false,
-					`The command was terminated after exceeding a user-configured ${commandExecutionTimeoutSeconds}s timeout. Do not try to re-run the command.`,
-				]
+		// Also resolve if the process completes early (e.g., startup error)
+		const processCompletePromise = new Promise<void>((resolve) => {
+			const checkComplete = () => {
+				if (completed) {
+					resolve()
+				}
 			}
-			throw error
-		} finally {
-			if (timeoutId) {
-				clearTimeout(timeoutId)
-			}
+			// Check periodically if process completed
+			const interval = setInterval(() => {
+				checkComplete()
+				if (completed || initialOutputCaptured) {
+					clearInterval(interval)
+				}
+			}, 100)
+		})
 
+		// Wait for either initial output timeout or process completion
+		await Promise.race([initialOutputPromise, processCompletePromise])
+
+		// If the process completed quickly, it likely failed to start
+		if (completed) {
+			// Handle as normal - the process failed
 			task.terminalProcess = undefined
+		} else {
+			// Process is still running - it's a daemon
+			task.terminalProcess = undefined // Clear reference but don't abort
+
+			const daemonMessage = getDaemonMessage(command)
+			await task.say("text", daemonMessage)
+
+			return [
+				false,
+				`Started ${serviceType} in the background from '${terminal.getCurrentWorkingDirectory().toPosix()}'.\n` +
+					`The service is running and you can proceed with other tasks.\n` +
+					`Current output:\n${result}\n` +
+					`The terminal will continue to show output from this service.`,
+			]
 		}
 	} else {
-		// No timeout - just wait for the process to complete.
-		try {
-			await process
-		} finally {
-			task.terminalProcess = undefined
+		// Normal command execution with timeout handling
+		// Implement command execution timeout (skip if timeout is 0).
+		if (commandExecutionTimeout > 0) {
+			let timeoutId: NodeJS.Timeout | undefined
+			let isTimedOut = false
+
+			const timeoutPromise = new Promise<void>((_, reject) => {
+				timeoutId = setTimeout(() => {
+					isTimedOut = true
+					task.terminalProcess?.abort()
+					reject(new Error(`Command execution timed out after ${commandExecutionTimeout}ms`))
+				}, commandExecutionTimeout)
+			})
+
+			try {
+				await Promise.race([process, timeoutPromise])
+			} catch (error) {
+				if (isTimedOut) {
+					const status: CommandExecutionStatus = { executionId, status: "timeout" }
+					provider?.postMessageToWebview({ type: "commandExecutionStatus", text: JSON.stringify(status) })
+					await task.say(
+						"error",
+						t("common:errors:command_timeout", { seconds: commandExecutionTimeoutSeconds }),
+					)
+					task.terminalProcess = undefined
+
+					return [
+						false,
+						`The command was terminated after exceeding a user-configured ${commandExecutionTimeoutSeconds}s timeout. Do not try to re-run the command.`,
+					]
+				}
+				throw error
+			} finally {
+				if (timeoutId) {
+					clearTimeout(timeoutId)
+				}
+
+				task.terminalProcess = undefined
+			}
+		} else {
+			// No timeout - just wait for the process to complete.
+			try {
+				await process
+			} finally {
+				task.terminalProcess = undefined
+			}
 		}
 	}
 
