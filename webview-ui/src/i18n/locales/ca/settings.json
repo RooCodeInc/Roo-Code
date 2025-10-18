@@ -886,6 +886,10 @@
 		"collapseThinking": {
 			"label": "Replega els missatges de pensament per defecte",
 			"description": "Quan estigui activat, els blocs de pensament es replegaran per defecte fins que interactuïs amb ells"
+		},
+		"requireCtrlEnterToSend": {
+			"label": "Requereix Ctrl+Enter per enviar missatges",
+			"description": "Quan estigui activat, hauràs de prémer Ctrl+Enter per enviar missatges en lloc de només Enter"
 		}
 	}
 }

@@ -887,6 +887,10 @@
 		"collapseThinking": {
 			"label": "Comprimi i messaggi di pensiero per impostazione predefinita",
 			"description": "Se abilitato, i blocchi di pensiero verranno compressi per impostazione predefinita finché non interagisci con essi"
+		},
+		"requireCtrlEnterToSend": {
+			"label": "Richiedi Ctrl+Invio per inviare messaggi",
+			"description": "Quando abilitato, devi premere Ctrl+Invio per inviare messaggi invece di solo Invio"
 		}
 	}
 }

@@ -887,6 +887,10 @@
 		"collapseThinking": {
 			"label": "Recolher mensagens de pensamento por padrão",
 			"description": "Quando ativado, os blocos de pensamento serão recolhidos por padrão até que você interaja com eles"
+		},
+		"requireCtrlEnterToSend": {
+			"label": "Requer Ctrl+Enter para enviar mensagens",
+			"description": "Quando ativado, você deve pressionar Ctrl+Enter para enviar mensagens em vez de apenas Enter."
 		}
 	}
 }
