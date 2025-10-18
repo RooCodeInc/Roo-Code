@@ -1,6 +1,12 @@
 import { z } from "zod"
 
-import { type AuthService, type ShareVisibility, type ShareResponse, shareResponseSchema } from "@roo-code/types"
+import {
+	type AuthService,
+	type ShareVisibility,
+	type ShareResponse,
+	shareResponseSchema,
+	type NotificationEvent,
+} from "@roo-code/types"
 
 import { getRooCodeApiUrl } from "./config.js"
 import { getUserAgent } from "./utils.js"
@@ -133,5 +139,30 @@ export class CloudAPI {
 					})
 					.parse(data),
 		})
+	}
+
+	async notifyEvent(notification: NotificationEvent): Promise<{ success: boolean; error?: string }> {
+		this.log(`[CloudAPI] Sending notification for task ${notification.taskId}`)
+
+		try {
+			const response = await this.request("/api/extension/notifications", {
+				method: "POST",
+				body: JSON.stringify(notification),
+				parseResponse: (data) =>
+					z
+						.object({
+							success: z.boolean(),
+							error: z.string().optional(),
+						})
+						.parse(data),
+			})
+
+			this.log("[CloudAPI] Notification response:", response)
+			return response
+		} catch (error) {
+			this.log("[CloudAPI] Failed to send notification:", error)
+			// Return failure but don't throw - notifications are non-critical
+			return { success: false, error: error instanceof Error ? error.message : String(error) }
+		}
 	}
 }

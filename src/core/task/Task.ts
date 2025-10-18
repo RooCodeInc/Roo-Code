@@ -35,6 +35,7 @@ import {
 	isInteractiveAsk,
 	isResumableAsk,
 	QueuedMessage,
+	NotificationType,
 } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 import { CloudService, BridgeOrchestrator } from "@roo-code/cloud"
@@ -794,6 +795,77 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			askTs = Date.now()
 			this.lastMessageTs = askTs
 			await this.addToClineMessages({ ts: askTs, type: "ask", ask: type, text, isProtected })
+		}
+
+		// Send notification for approval requests (except followup which is handled separately)
+		if (
+			!partial &&
+			CloudService.isEnabled() &&
+			(type === "tool" || type === "command" || type === "browser_action_launch" || type === "use_mcp_server")
+		) {
+			try {
+				const cloudService = CloudService.instance
+				if (cloudService) {
+					const taskMode = await this.getTaskMode()
+
+					// Determine notification type and message based on ask type
+					let notificationType: NotificationType = NotificationType.ApprovalRequired
+					let notificationMessage = "Roo needs your approval"
+
+					if (type === "command") {
+						notificationMessage = "Roo wants to execute a command"
+					} else if (type === "tool") {
+						notificationMessage = "Roo wants to use a tool"
+					} else if (type === "browser_action_launch") {
+						notificationMessage = "Roo wants to launch a browser action"
+					} else if (type === "use_mcp_server") {
+						notificationMessage = "Roo wants to use an MCP server"
+					}
+
+					// Extract tool/command details from the text if available
+					if (text) {
+						try {
+							const parsed = JSON.parse(text)
+							if (parsed.tool) {
+								notificationMessage = `Roo wants to use: ${parsed.tool}`
+							} else if (type === "command" && text) {
+								// For commands, the text is usually the command itself
+								const commandPreview = text.length > 50 ? text.substring(0, 50) + "..." : text
+								notificationMessage = `Roo wants to run: ${commandPreview}`
+							}
+						} catch {
+							// If not JSON, use the text directly for commands
+							if (type === "command" && text) {
+								const commandPreview = text.length > 50 ? text.substring(0, 50) + "..." : text
+								notificationMessage = `Roo wants to run: ${commandPreview}`
+							}
+						}
+					}
+
+					// Send notification event
+					await cloudService
+						.sendNotification({
+							timestamp: Date.now(),
+							type: notificationType,
+							title: "Approval Required",
+							message: notificationMessage,
+							taskId: this.taskId,
+							metadata: {
+								askType: type,
+								content: text,
+								mode: taskMode,
+								isProtected,
+							},
+						})
+						.catch((error) => {
+							// Log error but don't fail the ask operation
+							console.error("Failed to send approval notification:", error)
+						})
+				}
+			} catch (error) {
+				// Don't let notification errors block the ask operation
+				console.error("Error sending approval notification:", error)
+			}
 		}
 
 		// The state is mutable if the message is complete and the task will

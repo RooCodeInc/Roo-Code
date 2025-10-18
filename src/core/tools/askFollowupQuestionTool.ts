@@ -2,6 +2,8 @@ import { Task } from "../task/Task"
 import { ToolUse, AskApproval, HandleError, PushToolResult, RemoveClosingTag } from "../../shared/tools"
 import { formatResponse } from "../prompts/responses"
 import { parseXml } from "../../utils/xml"
+import { NotificationType } from "@roo-code/types"
+import { CloudService } from "@roo-code/cloud"
 
 export async function askFollowupQuestionTool(
 	cline: Task,
@@ -76,6 +78,38 @@ export async function askFollowupQuestionTool(
 			}
 
 			cline.consecutiveMistakeCount = 0
+
+			// Trigger push notification if enabled
+			try {
+				if (CloudService.hasInstance() && CloudService.instance.isAuthenticated()) {
+					const userInfo = CloudService.instance.getUserInfo()
+					const taskMode = await cline.getTaskMode()
+
+					// Send notification event
+					await CloudService.instance
+						.sendNotification({
+							type: NotificationType.FollowUpQuestion,
+							taskId: cline.taskId,
+							userId: userInfo?.id,
+							organizationId: userInfo?.organizationId,
+							title: "Roo needs your input",
+							message: question,
+							timestamp: Date.now(),
+							metadata: {
+								question,
+								mode: taskMode,
+							},
+						})
+						.catch((error) => {
+							// Log error but don't fail the tool
+							console.error("Failed to send notification:", error)
+						})
+				}
+			} catch (error) {
+				// Don't fail the tool if notification fails
+				console.error("Error checking notification settings:", error)
+			}
+
 			const { text, images } = await cline.ask("followup", JSON.stringify(follow_up_json), false)
 			await cline.say("user_feedback", text ?? "", images)
 			pushToolResult(formatResponse.toolResult(`<answer>\n${text}\n</answer>`, images))

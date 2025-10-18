@@ -174,6 +174,13 @@ export type UserFeatures = z.infer<typeof userFeaturesSchema>
 export const userSettingsConfigSchema = z.object({
 	extensionBridgeEnabled: z.boolean().optional(),
 	taskSyncEnabled: z.boolean().optional(),
+	notificationSettings: z
+		.object({
+			taskCompletion: z.boolean().optional(),
+			approvalRequired: z.boolean().optional(),
+			followUpQuestions: z.boolean().optional(),
+		})
+		.optional(),
 })
 
 export type UserSettingsConfig = z.infer<typeof userSettingsConfigSchema>
@@ -599,6 +606,41 @@ export const extensionBridgeCommandSchema = z.discriminatedUnion("type", [
 export type ExtensionBridgeCommand = z.infer<typeof extensionBridgeCommandSchema>
 
 /**
+ * NotificationType
+ */
+
+export enum NotificationType {
+	TaskCompletion = "task_completion",
+	ApprovalRequired = "approval_required",
+	FollowUpQuestion = "followup_question",
+}
+
+/**
+ * NotificationEvent
+ */
+
+export interface NotificationEvent {
+	type: NotificationType
+	taskId: string
+	userId?: string
+	organizationId?: string
+	title: string
+	message: string
+	timestamp: number
+	metadata?: {
+		question?: string
+		toolName?: string
+		mode?: string
+		result?: string
+		askType?: string
+		content?: string
+		isProtected?: boolean
+		tokenUsage?: Record<string, unknown>
+		suggestions?: Array<{ answer: string; mode?: string }>
+	}
+}
+
+/**
  * TaskBridgeEvent
  */
 
@@ -606,6 +648,7 @@ export enum TaskBridgeEventName {
 	Message = RooCodeEventName.Message,
 	TaskModeSwitched = RooCodeEventName.TaskModeSwitched,
 	TaskInteractive = RooCodeEventName.TaskInteractive,
+	NotificationRequested = "notification_requested",
 }
 
 export const taskBridgeEventSchema = z.discriminatedUnion("type", [
@@ -623,6 +666,26 @@ export const taskBridgeEventSchema = z.discriminatedUnion("type", [
 	z.object({
 		type: z.literal(TaskBridgeEventName.TaskInteractive),
 		taskId: z.string(),
+	}),
+	z.object({
+		type: z.literal(TaskBridgeEventName.NotificationRequested),
+		taskId: z.string(),
+		notification: z.object({
+			type: z.nativeEnum(NotificationType),
+			taskId: z.string(),
+			userId: z.string().optional(),
+			organizationId: z.string().optional(),
+			title: z.string(),
+			message: z.string(),
+			timestamp: z.number(),
+			metadata: z
+				.object({
+					question: z.string().optional(),
+					toolName: z.string().optional(),
+					mode: z.string().optional(),
+				})
+				.optional(),
+		}),
 	}),
 ])
 

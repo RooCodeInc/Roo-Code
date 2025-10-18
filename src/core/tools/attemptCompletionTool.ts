@@ -1,8 +1,9 @@
 import Anthropic from "@anthropic-ai/sdk"
 import * as vscode from "vscode"
 
-import { RooCodeEventName } from "@roo-code/types"
+import { RooCodeEventName, NotificationType } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
+import { CloudService } from "@roo-code/cloud"
 
 import { Task } from "../task/Task"
 import {
@@ -72,6 +73,34 @@ export async function attemptCompletionTool(
 					TelemetryService.instance.captureTaskCompleted(cline.taskId)
 					cline.emit(RooCodeEventName.TaskCompleted, cline.taskId, cline.getTokenUsage(), cline.toolUsage)
 
+					// Send task completion notification
+					if (CloudService.isEnabled()) {
+						try {
+							const cloudService = CloudService.instance
+							if (cloudService) {
+								const taskMode = await cline.getTaskMode()
+								await cloudService
+									.sendNotification({
+										timestamp: Date.now(),
+										type: NotificationType.TaskCompletion,
+										title: "Task Completed",
+										message: "Task completed successfully",
+										taskId: cline.taskId,
+										metadata: {
+											result: result?.substring(0, 200), // Truncate long results
+											mode: taskMode,
+											tokenUsage: cline.getTokenUsage(),
+										},
+									})
+									.catch((error) => {
+										console.error("Failed to send task completion notification:", error)
+									})
+							}
+						} catch (error) {
+							console.error("Error sending task completion notification:", error)
+						}
+					}
+
 					await cline.ask("command", removeClosingTag("command", command), block.partial).catch(() => {})
 				}
 			} else {
@@ -94,6 +123,34 @@ export async function attemptCompletionTool(
 			await cline.say("completion_result", result, undefined, false)
 			TelemetryService.instance.captureTaskCompleted(cline.taskId)
 			cline.emit(RooCodeEventName.TaskCompleted, cline.taskId, cline.getTokenUsage(), cline.toolUsage)
+
+			// Send task completion notification
+			if (CloudService.isEnabled()) {
+				try {
+					const cloudService = CloudService.instance
+					if (cloudService) {
+						const taskMode = await cline.getTaskMode()
+						await cloudService
+							.sendNotification({
+								timestamp: Date.now(),
+								type: NotificationType.TaskCompletion,
+								title: "Task Completed",
+								message: "Task completed successfully",
+								taskId: cline.taskId,
+								metadata: {
+									result: result.substring(0, 200), // Truncate long results
+									mode: taskMode,
+									tokenUsage: cline.getTokenUsage(),
+								},
+							})
+							.catch((error) => {
+								console.error("Failed to send task completion notification:", error)
+							})
+					}
+				} catch (error) {
+					console.error("Error sending task completion notification:", error)
+				}
+			}
 
 			if (cline.parentTask) {
 				const didApprove = await askFinishSubTaskApproval()

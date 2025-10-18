@@ -15,6 +15,7 @@ import type {
 	UserSettingsConfig,
 	UserSettingsData,
 	UserFeatures,
+	NotificationEvent,
 } from "@roo-code/types"
 
 import { TaskNotFoundError } from "./errors.js"
@@ -334,6 +335,43 @@ export class CloudService extends EventEmitter<CloudServiceEvents> implements Di
 	public async canShareTask(): Promise<boolean> {
 		this.ensureInitialized()
 		return this.shareService!.canShareTask()
+	}
+
+	// Notifications
+
+	public async sendNotification(notification: NotificationEvent): Promise<{ success: boolean; error?: string }> {
+		this.ensureInitialized()
+
+		if (!this.cloudAPI) {
+			return { success: false, error: "CloudAPI not initialized" }
+		}
+
+		// Check if notifications are enabled for this type
+		const userSettings = this.getUserSettings()
+		const notificationSettings = userSettings?.settings?.notificationSettings
+
+		if (notificationSettings) {
+			// Check specific notification type settings
+			switch (notification.type) {
+				case "task_completion":
+					if (notificationSettings.taskCompletion === false) {
+						return { success: false, error: "Task completion notifications disabled" }
+					}
+					break
+				case "approval_required":
+					if (notificationSettings.approvalRequired === false) {
+						return { success: false, error: "Approval required notifications disabled" }
+					}
+					break
+				case "followup_question":
+					if (notificationSettings.followUpQuestions === false) {
+						return { success: false, error: "Follow-up question notifications disabled" }
+					}
+					break
+			}
+		}
+
+		return this.cloudAPI.notifyEvent(notification)
 	}
 
 	// Lifecycle
