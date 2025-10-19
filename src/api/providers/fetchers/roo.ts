@@ -1,5 +1,7 @@
 import axios from "axios"
 
+import { RooModelsResponseSchema } from "@roo-code/types"
+
 import type { ModelRecord } from "../../../shared/api"
 
 import { DEFAULT_HEADERS } from "../constants"
@@ -37,47 +39,50 @@ export async function getRooModels(baseUrl: string, apiKey?: string): Promise<Mo
 		// Added timeout to prevent indefinite hanging
 		const response = await axios.get(url, { headers, timeout: 10000 })
 		const models: ModelRecord = {}
-		// Process the model info from the response
-		// Expected format: { object: "list", data: [{ id, name, description, context_window, max_tokens, tags, pricing }] }
-		if (response.data && response.data.data && Array.isArray(response.data.data)) {
-			for (const model of response.data.data) {
-				const modelId = model.id
 
-				if (!modelId) continue
+		// Validate response against schema
+		const parsed = RooModelsResponseSchema.safeParse(response.data)
 
-				// Extract model data from the API response
-				const contextWindow = model.context_window || 262_144
-				const maxTokens = model.max_tokens || 16_384
-				const tags = model.tags || []
-				const pricing = model.pricing || {}
-
-				// Determine if the model supports images based on tags
-				const supportsImages = tags.includes("vision") || tags.includes("image")
-
-				// Parse pricing (API returns strings, convert to numbers)
-				// Handle both direct pricing and cache pricing if available
-				const inputPrice = pricing.input ? parseFloat(pricing.input) : 0
-				const outputPrice = pricing.output ? parseFloat(pricing.output) : 0
-				const cacheReadPrice = pricing.input_cache_read ? parseFloat(pricing.input_cache_read) : undefined
-				const cacheWritePrice = pricing.input_cache_write ? parseFloat(pricing.input_cache_write) : undefined
-
-				models[modelId] = {
-					maxTokens,
-					contextWindow,
-					supportsImages,
-					supportsPromptCache: Boolean(cacheReadPrice !== undefined || cacheWritePrice !== undefined),
-					inputPrice,
-					outputPrice,
-					cacheWritesPrice: cacheWritePrice,
-					cacheReadsPrice: cacheReadPrice,
-					description: model.description || model.name || `Model available through Roo Code Cloud`,
-					deprecated: model.deprecated || false,
-				}
-			}
-		} else {
-			// If response.data.data is not in the expected format, consider it an error.
+		if (!parsed.success) {
 			console.error("Error fetching Roo Code Cloud models: Unexpected response format", response.data)
+			console.error("Validation errors:", parsed.error.format())
 			throw new Error("Failed to fetch Roo Code Cloud models: Unexpected response format.")
+		}
+
+		// Process the validated model data
+		for (const model of parsed.data.data) {
+			const modelId = model.id
+
+			if (!modelId) continue
+
+			// Extract model data from the validated API response
+			// All required fields are guaranteed by the schema
+			const contextWindow = model.context_window
+			const maxTokens = model.max_tokens
+			const tags = model.tags || []
+			const pricing = model.pricing
+
+			// Determine if the model supports images based on tags
+			const supportsImages = tags.includes("vision")
+
+			// Parse pricing (API returns strings, convert to numbers)
+			const inputPrice = parseFloat(pricing.input)
+			const outputPrice = parseFloat(pricing.output)
+			const cacheReadPrice = pricing.input_cache_read ? parseFloat(pricing.input_cache_read) : undefined
+			const cacheWritePrice = pricing.input_cache_write ? parseFloat(pricing.input_cache_write) : undefined
+
+			models[modelId] = {
+				maxTokens,
+				contextWindow,
+				supportsImages,
+				supportsPromptCache: Boolean(cacheReadPrice !== undefined),
+				inputPrice,
+				outputPrice,
+				cacheWritesPrice: cacheWritePrice,
+				cacheReadsPrice: cacheReadPrice,
+				description: model.description || model.name,
+				deprecated: model.deprecated || false,
+			}
 		}
 
 		return models
