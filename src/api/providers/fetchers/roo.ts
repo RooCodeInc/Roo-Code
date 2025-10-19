@@ -24,33 +24,54 @@ export async function getRooModels(baseUrl: string, apiKey?: string): Promise<Mo
 		}
 
 		// Normalize the URL to ensure proper /v1/models endpoint construction
+		// Remove any trailing /v1 to avoid duplication
 		const urlObj = new URL(baseUrl)
-		urlObj.pathname = urlObj.pathname.replace(/\/+$/, "").replace(/\/+/g, "/") + "/v1/models"
+		let pathname = urlObj.pathname.replace(/\/+$/, "").replace(/\/+/g, "/")
+		// Remove trailing /v1 if present to avoid /v1/v1/models
+		if (pathname.endsWith("/v1")) {
+			pathname = pathname.slice(0, -3)
+		}
+		urlObj.pathname = pathname + "/v1/models"
 		const url = urlObj.href
 
 		// Added timeout to prevent indefinite hanging
 		const response = await axios.get(url, { headers, timeout: 10000 })
 		const models: ModelRecord = {}
-
 		// Process the model info from the response
-		// Expected format: { object: "list", data: [{ id: string, object: "model", created: number, owned_by: string }] }
+		// Expected format: { object: "list", data: [{ id, name, description, context_window, max_tokens, tags, pricing }] }
 		if (response.data && response.data.data && Array.isArray(response.data.data)) {
 			for (const model of response.data.data) {
 				const modelId = model.id
 
 				if (!modelId) continue
 
-				// For Roo Code Cloud, we provide basic model info
-				// The actual detailed model info is stored in the static rooModels definition
-				// This just confirms which models are available
+				// Extract model data from the API response
+				const contextWindow = model.context_window || 262_144
+				const maxTokens = model.max_tokens || 16_384
+				const tags = model.tags || []
+				const pricing = model.pricing || {}
+
+				// Determine if the model supports images based on tags
+				const supportsImages = tags.includes("vision") || tags.includes("image")
+
+				// Parse pricing (API returns strings, convert to numbers)
+				// Handle both direct pricing and cache pricing if available
+				const inputPrice = pricing.input ? parseFloat(pricing.input) : 0
+				const outputPrice = pricing.output ? parseFloat(pricing.output) : 0
+				const cacheReadPrice = pricing.input_cache_read ? parseFloat(pricing.input_cache_read) : undefined
+				const cacheWritePrice = pricing.input_cache_write ? parseFloat(pricing.input_cache_write) : undefined
+
 				models[modelId] = {
-					maxTokens: 16_384, // Default fallback
-					contextWindow: 262_144, // Default fallback
-					supportsImages: false,
-					supportsPromptCache: true,
-					inputPrice: 0,
-					outputPrice: 0,
-					description: `Model available through Roo Code Cloud`,
+					maxTokens,
+					contextWindow,
+					supportsImages,
+					supportsPromptCache: Boolean(cacheReadPrice !== undefined || cacheWritePrice !== undefined),
+					inputPrice,
+					outputPrice,
+					cacheWritesPrice: cacheWritePrice,
+					cacheReadsPrice: cacheReadPrice,
+					description: model.description || model.name || `Model available through Roo Code Cloud`,
+					deprecated: model.deprecated || false,
 				}
 			}
 		} else {

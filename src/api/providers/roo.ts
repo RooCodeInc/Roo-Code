@@ -1,7 +1,7 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 
-import { AuthState, rooDefaultModelId, rooModels, type RooModelId, type ModelInfo } from "@roo-code/types"
+import { AuthState, rooDefaultModelId, type ModelInfo } from "@roo-code/types"
 import { CloudService } from "@roo-code/cloud"
 
 import type { ApiHandlerOptions, ModelRecord } from "../../shared/api"
@@ -14,7 +14,7 @@ import { getModels } from "../providers/fetchers/modelCache"
 
 export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 	private authStateListener?: (state: { state: AuthState }) => void
-	private mergedModels: Record<string, ModelInfo> = rooModels as Record<string, ModelInfo>
+	private mergedModels: Record<string, ModelInfo> = {}
 	private modelsLoaded = false
 
 	constructor(options: ApiHandlerOptions) {
@@ -31,14 +31,14 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 		super({
 			...options,
 			providerName: "Roo Code Cloud",
-			baseURL,
+			baseURL: `${baseURL}/v1`, // OpenAI client needs /v1 suffix
 			apiKey: sessionToken || "unauthenticated", // Use a placeholder if no token.
 			defaultProviderModelId: rooDefaultModelId,
-			providerModels: rooModels as Record<string, ModelInfo>,
+			providerModels: {},
 			defaultTemperature: 0.7,
 		})
 
-		// Load dynamic models asynchronously
+		// Load dynamic models asynchronously - pass base URL without /v1
 		this.loadDynamicModels(baseURL, sessionToken).catch((error) => {
 			console.error("[RooHandler] Failed to load dynamic models:", error)
 		})
@@ -122,8 +122,8 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 			})
 			this.modelsLoaded = true
 
-			// Merge dynamic models with static models, preferring static model info
-			this.mergedModels = { ...dynamicModels, ...rooModels } as Record<string, ModelInfo>
+			// Use dynamic models directly - no static fallbacks needed
+			this.mergedModels = dynamicModels as Record<string, ModelInfo>
 		} catch (error) {
 			console.error("[RooHandler] Error loading dynamic models:", error)
 			// Keep using static models as fallback

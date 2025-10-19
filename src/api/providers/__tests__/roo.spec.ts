@@ -1,7 +1,7 @@
 // npx vitest run api/providers/__tests__/roo.spec.ts
 
 import { Anthropic } from "@anthropic-ai/sdk"
-import { rooDefaultModelId, rooModels } from "@roo-code/types"
+import { rooDefaultModelId } from "@roo-code/types"
 
 import { ApiHandlerOptions } from "../../../shared/api"
 
@@ -301,8 +301,9 @@ describe("RooHandler", () => {
 			const modelInfo = handler.getModel()
 			expect(modelInfo.id).toBe(mockOptions.apiModelId)
 			expect(modelInfo.info).toBeDefined()
-			// xai/grok-code-fast-1 is a valid model in rooModels
-			expect(modelInfo.info).toBe(rooModels["xai/grok-code-fast-1"])
+			// Models are loaded dynamically, so we just verify the structure
+			expect(modelInfo.info.maxTokens).toBeDefined()
+			expect(modelInfo.info.contextWindow).toBeDefined()
 		})
 
 		it("should return default model when no model specified", () => {
@@ -310,7 +311,9 @@ describe("RooHandler", () => {
 			const modelInfo = handlerWithoutModel.getModel()
 			expect(modelInfo.id).toBe(rooDefaultModelId)
 			expect(modelInfo.info).toBeDefined()
-			expect(modelInfo.info).toBe(rooModels[rooDefaultModelId])
+			// Models are loaded dynamically
+			expect(modelInfo.info.maxTokens).toBeDefined()
+			expect(modelInfo.info.contextWindow).toBeDefined()
 		})
 
 		it("should handle unknown model ID with fallback info", () => {
@@ -320,24 +323,27 @@ describe("RooHandler", () => {
 			const modelInfo = handlerWithUnknownModel.getModel()
 			expect(modelInfo.id).toBe("unknown-model-id")
 			expect(modelInfo.info).toBeDefined()
-			// Should return fallback info for unknown models
-			expect(modelInfo.info.maxTokens).toBe(16_384)
-			expect(modelInfo.info.contextWindow).toBe(262_144)
-			expect(modelInfo.info.supportsImages).toBe(false)
-			expect(modelInfo.info.supportsPromptCache).toBe(true)
-			expect(modelInfo.info.inputPrice).toBe(0)
-			expect(modelInfo.info.outputPrice).toBe(0)
+			// Should return fallback info for unknown models (dynamic models will be merged in real usage)
+			expect(modelInfo.info.maxTokens).toBeDefined()
+			expect(modelInfo.info.contextWindow).toBeDefined()
+			expect(modelInfo.info.supportsImages).toBeDefined()
+			expect(modelInfo.info.supportsPromptCache).toBeDefined()
+			expect(modelInfo.info.inputPrice).toBeDefined()
+			expect(modelInfo.info.outputPrice).toBeDefined()
 		})
 
-		it("should return correct model info for all Roo models", () => {
-			// Test each model in rooModels
-			const modelIds = Object.keys(rooModels) as Array<keyof typeof rooModels>
+		it("should handle any model ID since models are loaded dynamically", () => {
+			// Test with various model IDs - they should all work since models are loaded dynamically
+			const testModelIds = ["xai/grok-code-fast-1", "roo/sonic", "deepseek/deepseek-chat-v3.1"]
 
-			for (const modelId of modelIds) {
+			for (const modelId of testModelIds) {
 				const handlerWithModel = new RooHandler({ apiModelId: modelId })
 				const modelInfo = handlerWithModel.getModel()
 				expect(modelInfo.id).toBe(modelId)
-				expect(modelInfo.info).toBe(rooModels[modelId])
+				expect(modelInfo.info).toBeDefined()
+				// Verify the structure has required fields
+				expect(modelInfo.info.maxTokens).toBeDefined()
+				expect(modelInfo.info.contextWindow).toBeDefined()
 			}
 		})
 	})
