@@ -70,7 +70,7 @@ import { SlashCommandsSettings } from "./SlashCommandsSettings"
 import { UISettings } from "./UISettings"
 import { CondensationProviderSettings } from "./CondensationProviderSettings"
 
-export const settingsTabsContainer = "flex flex-1 overflow-hidden [&.narrow_.tab-label]:hidden"
+export const settingsTabsContainer = "flex flex-1 overflow-hidden [&.narrow_.tab-label]:hidden [&.narrow]:min-w-[300px]"
 export const settingsTabList =
 	"w-48 data-[compact=true]:w-12 flex-shrink-0 flex flex-col overflow-y-auto overflow-x-hidden border-r border-vscode-sideBar-background"
 export const settingsTabTrigger =
