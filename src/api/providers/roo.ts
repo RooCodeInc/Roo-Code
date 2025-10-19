@@ -24,22 +24,28 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 			sessionToken = CloudService.instance.authService?.getSessionToken()
 		}
 
-		const baseURL = process.env.ROO_CODE_PROVIDER_URL ?? "https://api.roocode.com/proxy"
+		let baseURL = process.env.ROO_CODE_PROVIDER_URL ?? "https://api.roocode.com/proxy"
+
+		// Ensure baseURL ends with /v1 for OpenAI client, but don't duplicate it
+		if (!baseURL.endsWith("/v1")) {
+			baseURL = `${baseURL}/v1`
+		}
 
 		// Always construct the handler, even without a valid token.
 		// The provider-proxy server will return 401 if authentication fails.
 		super({
 			...options,
 			providerName: "Roo Code Cloud",
-			baseURL: `${baseURL}/v1`, // OpenAI client needs /v1 suffix
+			baseURL, // Already has /v1 suffix
 			apiKey: sessionToken || "unauthenticated", // Use a placeholder if no token.
 			defaultProviderModelId: rooDefaultModelId,
 			providerModels: {},
 			defaultTemperature: 0.7,
 		})
 
-		// Load dynamic models asynchronously - pass base URL without /v1
-		this.loadDynamicModels(baseURL, sessionToken).catch((error) => {
+		// Load dynamic models asynchronously - strip /v1 from baseURL for fetcher
+		const fetcherBaseURL = baseURL.endsWith("/v1") ? baseURL.slice(0, -3) : baseURL
+		this.loadDynamicModels(fetcherBaseURL, sessionToken).catch((error) => {
 			console.error("[RooHandler] Failed to load dynamic models:", error)
 		})
 
