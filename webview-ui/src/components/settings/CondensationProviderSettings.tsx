@@ -284,19 +284,25 @@ export const CondensationProviderSettings: React.FC = () => {
 					{/* Provider Selection */}
 					<div className="mt-4">
 						<h4 className="mb-3 font-medium">Select Provider</h4>
-						<VSCodeRadioGroup value={defaultProviderId}>
+						<VSCodeRadioGroup
+							value={defaultProviderId}
+							onChange={(e: Event | React.FormEvent<HTMLElement>) => {
+								const target = ((e as CustomEvent)?.detail?.target ||
+									(e.target as HTMLInputElement)) as HTMLInputElement
+								handleDefaultProviderChange(target.value)
+							}}>
 							{[
-								{
-									id: "smart",
-									name: "Smart Provider",
-									description:
-										"Intelligent multi-pass condensation with configurable presets (Recommended)",
-								},
 								{
 									id: "native",
 									name: "Native Provider",
 									description:
 										"LLM-based intelligent summarization (High quality, slower, expensive)",
+								},
+								{
+									id: "smart",
+									name: "Smart Provider",
+									description:
+										"Intelligent multi-pass condensation with configurable presets (Recommended)",
 								},
 								{
 									id: "lossless",
@@ -311,9 +317,7 @@ export const CondensationProviderSettings: React.FC = () => {
 								},
 							].map((provider) => (
 								<div key={provider.id} className="mb-3">
-									<VSCodeRadio
-										value={provider.id}
-										onChange={() => handleDefaultProviderChange(provider.id)}>
+									<VSCodeRadio value={provider.id} checked={defaultProviderId === provider.id}>
 										<div className="flex items-start justify-between w-full">
 											<div className="flex-1">
 												<div className="flex items-center gap-2">
@@ -382,9 +386,13 @@ export const CondensationProviderSettings: React.FC = () => {
 									<VSCodeButton
 										appearance="secondary"
 										onClick={handleToggleAdvanced}
-										className="w-full flex items-center justify-center gap-2">
-										{showAdvanced ? <ChevronUp className="w-4" /> : <ChevronDown className="w-4" />}
-										<span>{showAdvanced ? "Hide" : "Show"} Advanced Config</span>
+										className="w-full whitespace-nowrap text-xs px-2 py-1">
+										{showAdvanced ? (
+											<ChevronUp className="w-3 inline mr-1" />
+										) : (
+											<ChevronDown className="w-3 inline mr-1" />
+										)}
+										{showAdvanced ? "Hide" : "Show"} Advanced
 									</VSCodeButton>
 								</div>
 

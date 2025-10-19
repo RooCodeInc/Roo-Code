@@ -10,5 +10,13 @@
 	},
 	// Turn off tsc task auto detection since we have the necessary tasks as npm scripts
 	"typescript.tsc.autoDetect": "off",
-	"vitest.disableWorkspaceWarning": true
+	"vitest.disableWorkspaceWarning": true,
+	// Fix for preLaunchTask with PowerShell 7 (Issue #241255)
+	// Use Windows PowerShell for automation tasks instead of pwsh.exe
+	// See: docs/guides/vscode-extension-debug-powershell-configuration.md
+	// FIXED: Removed args ["-Command"] to prevent double -Command error
+	// VSCode automatically adds -Command to tasks, so we don't specify it
+	"terminal.integrated.automationProfile.windows": {
+		"path": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
+	}
 }
