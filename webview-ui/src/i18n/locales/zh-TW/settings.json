@@ -597,6 +597,16 @@
 			"inheritDescription": "此檔案繼承全域預設閾值（{{threshold}}%）",
 			"usesGlobal": "（使用全域 {{threshold}}%）"
 		},
+		"timeInfo": {
+			"includeCurrentTime": {
+				"label": "在請求中包含當前時間",
+				"description": "啟用後，當前日期和時間將包含在每個請求發送的上下文中。這可以幫助AI提供時間感知的回應。"
+			},
+			"includeTimezone": {
+				"label": "包含時區資訊",
+				"description": "啟用後，您的時區資訊將與當前時間一起包含。僅在啟用「在請求中包含當前時間」時可用。"
+			}
+		},
 		"maxImageFileSize": {
 			"label": "最大圖片檔案大小",
 			"mb": "MB",

@@ -155,6 +155,10 @@ export interface ExtensionStateContextType extends ExtensionState {
 	includeDiagnosticMessages?: boolean
 	setIncludeDiagnosticMessages: (value: boolean) => void
 	maxDiagnosticMessages?: number
+	includeCurrentTime?: boolean
+	setIncludeCurrentTime: (value: boolean) => void
+	includeTimezone?: boolean
+	setIncludeTimezone: (value: boolean) => void
 	setMaxDiagnosticMessages: (value: number) => void
 	includeTaskHistoryInEnhance?: boolean
 	setIncludeTaskHistoryInEnhance: (value: boolean) => void
@@ -264,6 +268,8 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		alwaysAllowUpdateTodoList: true,
 		includeDiagnosticMessages: true,
 		maxDiagnosticMessages: 50,
+		includeCurrentTime: true, // Default to including current time in requests
+		includeTimezone: false, // Default to NOT including timezone
 		openRouterImageApiKey: "",
 		openRouterImageGenerationSelectedModel: "",
 	})
@@ -556,6 +562,14 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		maxDiagnosticMessages: state.maxDiagnosticMessages,
 		setMaxDiagnosticMessages: (value) => {
 			setState((prevState) => ({ ...prevState, maxDiagnosticMessages: value }))
+		},
+		includeCurrentTime: state.includeCurrentTime,
+		setIncludeCurrentTime: (value) => {
+			setState((prevState) => ({ ...prevState, includeCurrentTime: value }))
+		},
+		includeTimezone: state.includeTimezone,
+		setIncludeTimezone: (value) => {
+			setState((prevState) => ({ ...prevState, includeTimezone: value }))
 		},
 		includeTaskHistoryInEnhance,
 		setIncludeTaskHistoryInEnhance,

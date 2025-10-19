@@ -211,6 +211,8 @@ describe("mergeExtensionState", () => {
 			hasOpenedModeSelector: false, // Add the new required property
 			maxImageFileSize: 5,
 			maxTotalImageSize: 20,
+			includeCurrentTime: true,
+			includeTimezone: false,
 			remoteControlEnabled: false,
 			taskSyncEnabled: false,
 			featureRoomoteControlEnabled: false,

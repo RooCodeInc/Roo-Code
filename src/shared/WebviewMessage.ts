@@ -175,6 +175,8 @@ export interface WebviewMessage {
 		| "maxConcurrentFileReads"
 		| "includeDiagnosticMessages"
 		| "maxDiagnosticMessages"
+		| "includeCurrentTime"
+		| "includeTimezone"
 		| "searchFiles"
 		| "toggleApiConfigPin"
 		| "setHistoryPreviewCollapsed"

@@ -1613,6 +1613,14 @@ export const webviewMessageHandler = async (
 			await updateGlobalState("maxDiagnosticMessages", message.value ?? 50)
 			await provider.postStateToWebview()
 			break
+		case "includeCurrentTime":
+			await updateGlobalState("includeCurrentTime", message.bool ?? true)
+			await provider.postStateToWebview()
+			break
+		case "includeTimezone":
+			await updateGlobalState("includeTimezone", message.bool ?? false)
+			await provider.postStateToWebview()
+			break
 		case "setHistoryPreviewCollapsed": // Add the new case handler
 			await updateGlobalState("historyPreviewCollapsed", message.bool ?? false)
 			// No need to call postStateToWebview here as the UI already updated optimistically

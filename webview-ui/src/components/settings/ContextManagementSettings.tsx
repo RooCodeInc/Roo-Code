@@ -27,6 +27,8 @@ type ContextManagementSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	includeDiagnosticMessages?: boolean
 	maxDiagnosticMessages?: number
 	writeDelayMs: number
+	includeCurrentTime?: boolean
+	includeTimezone?: boolean
 	setCachedStateField: SetCachedStateField<
 		| "autoCondenseContext"
 		| "autoCondenseContextPercent"
@@ -41,6 +43,8 @@ type ContextManagementSettingsProps = HTMLAttributes<HTMLDivElement> & {
 		| "includeDiagnosticMessages"
 		| "maxDiagnosticMessages"
 		| "writeDelayMs"
+		| "includeCurrentTime"
+		| "includeTimezone"
 	>
 }
 
@@ -60,6 +64,8 @@ export const ContextManagementSettings = ({
 	includeDiagnosticMessages,
 	maxDiagnosticMessages,
 	writeDelayMs,
+	includeCurrentTime = true,
+	includeTimezone = false,
 	className,
 	...props
 }: ContextManagementSettingsProps) => {
@@ -354,6 +360,35 @@ export const ContextManagementSettings = ({
 					</div>
 					<div className="text-vscode-descriptionForeground text-sm mt-1">
 						{t("settings:contextManagement.diagnostics.delayAfterWrite.description")}
+					</div>
+				</div>
+
+				<div>
+					<VSCodeCheckbox
+						checked={includeCurrentTime}
+						onChange={(e: any) => setCachedStateField("includeCurrentTime", e.target.checked)}
+						data-testid="include-current-time-checkbox">
+						<label className="block font-medium mb-1">
+							{t("settings:contextManagement.timeInfo.includeCurrentTime.label")}
+						</label>
+					</VSCodeCheckbox>
+					<div className="text-vscode-descriptionForeground text-sm mt-1 mb-3">
+						{t("settings:contextManagement.timeInfo.includeCurrentTime.description")}
+					</div>
+				</div>
+
+				<div>
+					<VSCodeCheckbox
+						checked={includeTimezone}
+						disabled={!includeCurrentTime}
+						onChange={(e: any) => setCachedStateField("includeTimezone", e.target.checked)}
+						data-testid="include-timezone-checkbox">
+						<label className="block font-medium mb-1">
+							{t("settings:contextManagement.timeInfo.includeTimezone.label")}
+						</label>
+					</VSCodeCheckbox>
+					<div className="text-vscode-descriptionForeground text-sm mt-1 mb-3">
+						{t("settings:contextManagement.timeInfo.includeTimezone.description")}
 					</div>
 				</div>
 			</Section>

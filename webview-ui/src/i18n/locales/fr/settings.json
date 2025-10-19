@@ -605,6 +605,16 @@
 			"profileDescription": "Seuil personnalisé pour ce profil uniquement (remplace le défaut global)",
 			"inheritDescription": "Ce profil hérite du seuil par défaut global ({{threshold}}%)",
 			"usesGlobal": "(utilise global {{threshold}}%)"
+		},
+		"timeInfo": {
+			"includeCurrentTime": {
+				"label": "Inclure l'heure actuelle dans les requêtes",
+				"description": "Lorsqu'activé, la date et l'heure actuelles seront incluses dans le contexte envoyé avec chaque requête. Cela peut aider l'IA à fournir des réponses tenant compte du temps."
+			},
+			"includeTimezone": {
+				"label": "Inclure les informations de fuseau horaire",
+				"description": "Lorsqu'activé, les informations de votre fuseau horaire seront incluses avec l'heure actuelle. Disponible uniquement lorsque 'Inclure l'heure actuelle dans les requêtes' est activé."
+			}
 		}
 	},
 	"terminal": {

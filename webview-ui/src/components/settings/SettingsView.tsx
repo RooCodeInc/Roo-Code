@@ -191,6 +191,8 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		followupAutoApproveTimeoutMs,
 		includeDiagnosticMessages,
 		maxDiagnosticMessages,
+		includeCurrentTime,
+		includeTimezone,
 		includeTaskHistoryInEnhance,
 		openRouterImageApiKey,
 		openRouterImageGenerationSelectedModel,
@@ -372,6 +374,8 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 			vscode.postMessage({ type: "maxConcurrentFileReads", value: cachedState.maxConcurrentFileReads ?? 5 })
 			vscode.postMessage({ type: "includeDiagnosticMessages", bool: includeDiagnosticMessages })
 			vscode.postMessage({ type: "maxDiagnosticMessages", value: maxDiagnosticMessages ?? 50 })
+			vscode.postMessage({ type: "includeCurrentTime", bool: includeCurrentTime ?? true })
+			vscode.postMessage({ type: "includeTimezone", bool: includeTimezone ?? false })
 			vscode.postMessage({ type: "currentApiConfigName", text: currentApiConfigName })
 			vscode.postMessage({ type: "updateExperimental", values: experiments })
 			vscode.postMessage({ type: "alwaysAllowModeSwitch", bool: alwaysAllowModeSwitch })
@@ -744,6 +748,8 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 							includeDiagnosticMessages={includeDiagnosticMessages}
 							maxDiagnosticMessages={maxDiagnosticMessages}
 							writeDelayMs={writeDelayMs}
+							includeCurrentTime={includeCurrentTime}
+							includeTimezone={includeTimezone}
 							setCachedStateField={setCachedStateField}
 						/>
 					)}

@@ -597,6 +597,16 @@
 			"inheritDescription": "Questo profilo eredita la soglia predefinita globale ({{threshold}}%)",
 			"usesGlobal": "(usa globale {{threshold}}%)"
 		},
+		"timeInfo": {
+			"includeCurrentTime": {
+				"label": "Includi ora corrente nelle richieste",
+				"description": "Quando abilitato, la data e l'ora correnti verranno incluse nel contesto inviato con ogni richiesta. Questo può aiutare l'IA a fornire risposte consapevoli del tempo."
+			},
+			"includeTimezone": {
+				"label": "Includi informazioni sul fuso orario",
+				"description": "Quando abilitato, le informazioni sul tuo fuso orario verranno incluse insieme all'ora corrente. Disponibile solo quando 'Includi ora corrente nelle richieste' è abilitato."
+			}
+		},
 		"maxImageFileSize": {
 			"label": "Dimensione massima file immagine",
 			"mb": "MB",

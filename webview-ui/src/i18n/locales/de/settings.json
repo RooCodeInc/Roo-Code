@@ -596,6 +596,16 @@
 			"inheritDescription": "Dieses Profil erbt den globalen Standard-Schwellenwert ({{threshold}}%)",
 			"usesGlobal": "(verwendet global {{threshold}}%)"
 		},
+		"timeInfo": {
+			"includeCurrentTime": {
+				"label": "Aktuelle Uhrzeit in Anfragen einbeziehen",
+				"description": "Wenn aktiviert, werden das aktuelle Datum und die Uhrzeit in den Kontext aufgenommen, der mit jeder Anfrage gesendet wird. Dies kann der KI helfen, zeitbewusste Antworten zu liefern."
+			},
+			"includeTimezone": {
+				"label": "Zeitzoneninformationen einbeziehen",
+				"description": "Wenn aktiviert, werden Ihre Zeitzoneninformationen zusammen mit der aktuellen Uhrzeit einbezogen. Dies ist nur verfügbar, wenn 'Aktuelle Uhrzeit in Anfragen einbeziehen' aktiviert ist."
+			}
+		},
 		"maxImageFileSize": {
 			"label": "Maximale Bilddateigröße",
 			"mb": "MB",

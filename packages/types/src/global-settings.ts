@@ -89,6 +89,17 @@ export const globalSettingsSchema = z.object({
 	 */
 	maxDiagnosticMessages: z.number().optional(),
 
+	/**
+	 * Whether to include current time in environment details sent with each request
+	 * @default true
+	 */
+	includeCurrentTime: z.boolean().optional(),
+	/**
+	 * Whether to include timezone information when current time is included
+	 * @default false
+	 */
+	includeTimezone: z.boolean().optional(),
+
 	browserToolEnabled: z.boolean().optional(),
 	browserViewportSize: z.string().optional(),
 	screenshotQuality: z.number().optional(),
@@ -310,6 +321,9 @@ export const EVALS_SETTINGS: RooCodeSettings = {
 
 	includeDiagnosticMessages: true,
 	maxDiagnosticMessages: 50,
+
+	includeCurrentTime: true,
+	includeTimezone: false,
 
 	language: "en",
 	telemetrySetting: "enabled",

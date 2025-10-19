@@ -183,6 +183,8 @@ describe("SettingsView - Change Detection Fix", () => {
 		followupAutoApproveTimeoutMs: undefined,
 		includeDiagnosticMessages: false,
 		maxDiagnosticMessages: 50,
+		includeCurrentTime: true,
+		includeTimezone: false,
 		includeTaskHistoryInEnhance: true,
 		openRouterImageApiKey: undefined,
 		openRouterImageGenerationSelectedModel: undefined,

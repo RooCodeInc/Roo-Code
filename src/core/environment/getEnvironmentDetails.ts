@@ -30,6 +30,8 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 		terminalOutputLineLimit = 500,
 		terminalOutputCharacterLimit = DEFAULT_TERMINAL_OUTPUT_CHARACTER_LIMIT,
 		maxWorkspaceFiles = 200,
+		includeCurrentTime = true,
+		includeTimezone = false,
 	} = state ?? {}
 
 	// It could be useful for cline to know if the user went from one or no
@@ -190,15 +192,21 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 		details += terminalDetails
 	}
 
-	// Add current time information with timezone.
-	const now = new Date()
+	// Add current time information (only if enabled).
+	if (includeCurrentTime) {
+		const now = new Date()
+		details += `\n\n# Current Time\nCurrent time in ISO 8601 UTC format: ${now.toISOString()}`
 
-	const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
-	const timeZoneOffset = -now.getTimezoneOffset() / 60 // Convert to hours and invert sign to match conventional notation
-	const timeZoneOffsetHours = Math.floor(Math.abs(timeZoneOffset))
-	const timeZoneOffsetMinutes = Math.abs(Math.round((Math.abs(timeZoneOffset) - timeZoneOffsetHours) * 60))
-	const timeZoneOffsetStr = `${timeZoneOffset >= 0 ? "+" : "-"}${timeZoneOffsetHours}:${timeZoneOffsetMinutes.toString().padStart(2, "0")}`
-	details += `\n\n# Current Time\nCurrent time in ISO 8601 UTC format: ${now.toISOString()}\nUser time zone: ${timeZone}, UTC${timeZoneOffsetStr}`
+		// Add timezone information only if both includeCurrentTime and includeTimezone are enabled
+		if (includeTimezone) {
+			const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
+			const timeZoneOffset = -now.getTimezoneOffset() / 60 // Convert to hours and invert sign to match conventional notation
+			const timeZoneOffsetHours = Math.floor(Math.abs(timeZoneOffset))
+			const timeZoneOffsetMinutes = Math.abs(Math.round((Math.abs(timeZoneOffset) - timeZoneOffsetHours) * 60))
+			const timeZoneOffsetStr = `${timeZoneOffset >= 0 ? "+" : "-"}${timeZoneOffsetHours}:${timeZoneOffsetMinutes.toString().padStart(2, "0")}`
+			details += `\nUser time zone: ${timeZone}, UTC${timeZoneOffsetStr}`
+		}
+	}
 
 	// Add context tokens information.
 	const { contextTokens, totalCost } = getApiMetrics(cline.clineMessages)

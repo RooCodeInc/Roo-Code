@@ -610,6 +610,16 @@
 			"profileDescription": "Custom threshold for this profile only (overrides global default)",
 			"inheritDescription": "This profile inherits the global default threshold ({{threshold}}%)",
 			"usesGlobal": "(uses global {{threshold}}%)"
+		},
+		"timeInfo": {
+			"includeCurrentTime": {
+				"label": "Include current time in requests",
+				"description": "When enabled, the current date and time will be included in the context sent with each request. This can help the AI provide time-aware responses."
+			},
+			"includeTimezone": {
+				"label": "Include timezone information",
+				"description": "When enabled, your timezone information will be included along with the current time. This is only available when 'Include current time in requests' is enabled."
+			}
 		}
 	},
 	"terminal": {

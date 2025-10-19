@@ -606,6 +606,16 @@
 			"profileDescription": "Aangepaste drempelwaarde alleen voor dit profiel (overschrijft globale standaard)",
 			"inheritDescription": "Dit profiel erft de globale standaard drempelwaarde ({{threshold}}%)",
 			"usesGlobal": "(gebruikt globaal {{threshold}}%)"
+		},
+		"timeInfo": {
+			"includeCurrentTime": {
+				"label": "Huidige tijd opnemen in verzoeken",
+				"description": "Wanneer ingeschakeld, worden de huidige datum en tijd opgenomen in de context die met elk verzoek wordt verzonden. Dit kan de AI helpen om tijdsbewuste antwoorden te geven."
+			},
+			"includeTimezone": {
+				"label": "Tijdzone-informatie opnemen",
+				"description": "Wanneer ingeschakeld, wordt uw tijdzone-informatie samen met de huidige tijd opgenomen. Dit is alleen beschikbaar wanneer 'Huidige tijd opnemen in verzoeken' is ingeschakeld."
+			}
 		}
 	},
 	"terminal": {

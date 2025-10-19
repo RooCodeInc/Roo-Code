@@ -605,6 +605,16 @@
 			"profileDescription": "Umbral personalizado solo para este perfil (anula el predeterminado global)",
 			"inheritDescription": "Este perfil hereda el umbral predeterminado global ({{threshold}}%)",
 			"usesGlobal": "(usa global {{threshold}}%)"
+		},
+		"timeInfo": {
+			"includeCurrentTime": {
+				"label": "Incluir hora actual en las solicitudes",
+				"description": "Cuando está habilitado, la fecha y hora actual se incluirán en el contexto enviado con cada solicitud. Esto puede ayudar a la IA a proporcionar respuestas conscientes del tiempo."
+			},
+			"includeTimezone": {
+				"label": "Incluir información de zona horaria",
+				"description": "Cuando está habilitado, la información de su zona horaria se incluirá junto con la hora actual. Esto solo está disponible cuando 'Incluir hora actual en las solicitudes' está habilitado."
+			}
 		}
 	},
 	"terminal": {

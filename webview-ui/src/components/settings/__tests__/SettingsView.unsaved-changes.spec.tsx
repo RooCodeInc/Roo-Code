@@ -193,6 +193,8 @@ describe("SettingsView - Unsaved Changes Detection", () => {
 		followupAutoApproveTimeoutMs: undefined,
 		includeDiagnosticMessages: false,
 		maxDiagnosticMessages: 50,
+		includeCurrentTime: true,
+		includeTimezone: false,
 		includeTaskHistoryInEnhance: true,
 		openRouterImageApiKey: undefined,
 		openRouterImageGenerationSelectedModel: undefined,

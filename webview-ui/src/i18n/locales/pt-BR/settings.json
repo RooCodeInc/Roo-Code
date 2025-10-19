@@ -597,6 +597,16 @@
 			"inheritDescription": "Este perfil herda o limite padrão global ({{threshold}}%)",
 			"usesGlobal": "(usa global {{threshold}}%)"
 		},
+		"timeInfo": {
+			"includeCurrentTime": {
+				"label": "Incluir hora atual nas solicitações",
+				"description": "Quando ativado, a data e hora atuais serão incluídas no contexto enviado com cada solicitação. Isso pode ajudar a IA a fornecer respostas conscientes do tempo."
+			},
+			"includeTimezone": {
+				"label": "Incluir informações de fuso horário",
+				"description": "Quando ativado, as informações do seu fuso horário serão incluídas junto com a hora atual. Disponível apenas quando 'Incluir hora atual nas solicitações' está ativado."
+			}
+		},
 		"maxImageFileSize": {
 			"label": "Tamanho máximo do arquivo de imagem",
 			"mb": "MB",

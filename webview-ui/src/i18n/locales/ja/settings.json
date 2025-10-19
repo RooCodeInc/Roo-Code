@@ -597,6 +597,16 @@
 			"inheritDescription": "このプロファイルはグローバルデフォルトしきい値を継承します（{{threshold}}%）",
 			"usesGlobal": "（グローバル {{threshold}}% を使用）"
 		},
+		"timeInfo": {
+			"includeCurrentTime": {
+				"label": "リクエストに現在時刻を含める",
+				"description": "有効にすると、各リクエストと共に送信されるコンテキストに現在の日時が含まれます。これにより、AIが時間を考慮した応答を提供するのに役立ちます。"
+			},
+			"includeTimezone": {
+				"label": "タイムゾーン情報を含める",
+				"description": "有効にすると、現在時刻と共にタイムゾーン情報が含まれます。これは「リクエストに現在時刻を含める」が有効な場合にのみ使用できます。"
+			}
+		},
 		"maxImageFileSize": {
 			"label": "最大画像ファイルサイズ",
 			"mb": "MB",

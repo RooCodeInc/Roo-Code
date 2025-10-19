@@ -579,6 +579,16 @@
 			"inheritDescription": "Profil ini mewarisi ambang batas default global ({{threshold}}%)",
 			"usesGlobal": "(menggunakan global {{threshold}}%)"
 		},
+		"timeInfo": {
+			"includeCurrentTime": {
+				"label": "Sertakan waktu saat ini dalam permintaan",
+				"description": "Ketika diaktifkan, tanggal dan waktu saat ini akan disertakan dalam konteks yang dikirim dengan setiap permintaan. Ini dapat membantu AI memberikan respons yang sadar waktu."
+			},
+			"includeTimezone": {
+				"label": "Sertakan informasi zona waktu",
+				"description": "Ketika diaktifkan, informasi zona waktu Anda akan disertakan bersama dengan waktu saat ini. Ini hanya tersedia ketika 'Sertakan waktu saat ini dalam permintaan' diaktifkan."
+			}
+		},
 		"openTabs": {
 			"label": "Batas konteks tab terbuka",
 			"description": "Jumlah maksimum tab VSCode terbuka yang disertakan dalam konteks. Nilai yang lebih tinggi memberikan lebih banyak konteks tetapi meningkatkan penggunaan token."

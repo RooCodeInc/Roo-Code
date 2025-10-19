@@ -596,6 +596,16 @@
 			"inheritDescription": "Aquest perfil hereta el llindar per defecte global ({{threshold}}%)",
 			"usesGlobal": "(utilitza global {{threshold}}%)"
 		},
+		"timeInfo": {
+			"includeCurrentTime": {
+				"label": "Inclou l'hora actual a les sol·licituds",
+				"description": "Quan està activat, la data i l'hora actuals s'inclouran al context enviat amb cada sol·licitud. Això pot ajudar la IA a proporcionar respostes conscients del temps."
+			},
+			"includeTimezone": {
+				"label": "Inclou informació de zona horària",
+				"description": "Quan està activat, la informació de la vostra zona horària s'inclourà juntament amb l'hora actual. Això només està disponible quan 'Inclou l'hora actual a les sol·licituds' està activat."
+			}
+		},
 		"maxImageFileSize": {
 			"label": "Mida màxima d'arxiu d'imatge",
 			"mb": "MB",

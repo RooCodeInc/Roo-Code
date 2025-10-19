@@ -597,6 +597,16 @@
 			"inheritDescription": "Ten profil dziedziczy globalny domyślny próg ({{threshold}}%)",
 			"usesGlobal": "(używa globalnego {{threshold}}%)"
 		},
+		"timeInfo": {
+			"includeCurrentTime": {
+				"label": "Uwzględnij aktualny czas w żądaniach",
+				"description": "Gdy włączone, aktualna data i godzina zostaną uwzględnione w kontekście wysyłanym z każdym żądaniem. To może pomóc AI w dostarczaniu odpowiedzi świadomych czasu."
+			},
+			"includeTimezone": {
+				"label": "Uwzględnij informacje o strefie czasowej",
+				"description": "Gdy włączone, informacje o Twojej strefie czasowej zostaną uwzględnione wraz z aktualnym czasem. Dostępne tylko gdy 'Uwzględnij aktualny czas w żądaniach' jest włączone."
+			}
+		},
 		"maxImageFileSize": {
 			"label": "Maksymalny rozmiar pliku obrazu",
 			"mb": "MB",

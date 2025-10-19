@@ -597,6 +597,16 @@
 			"inheritDescription": "Hồ sơ này kế thừa ngưỡng mặc định toàn cục ({{threshold}}%)",
 			"usesGlobal": "(sử dụng toàn cục {{threshold}}%)"
 		},
+		"timeInfo": {
+			"includeCurrentTime": {
+				"label": "Bao gồm thời gian hiện tại trong yêu cầu",
+				"description": "Khi được bật, ngày và giờ hiện tại sẽ được bao gồm trong ngữ cảnh được gửi với mỗi yêu cầu. Điều này có thể giúp AI cung cấp các phản hồi có nhận thức về thời gian."
+			},
+			"includeTimezone": {
+				"label": "Bao gồm thông tin múi giờ",
+				"description": "Khi được bật, thông tin múi giờ của bạn sẽ được bao gồm cùng với thời gian hiện tại. Chỉ khả dụng khi 'Bao gồm thời gian hiện tại trong yêu cầu' được bật."
+			}
+		},
 		"maxImageFileSize": {
 			"label": "Kích thước tối đa của tệp hình ảnh",
 			"mb": "MB",

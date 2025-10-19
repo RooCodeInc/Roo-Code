@@ -543,6 +543,8 @@ describe("ClineProvider", () => {
 			maxReadFileLine: 500,
 			maxImageFileSize: 5,
 			maxTotalImageSize: 20,
+			includeCurrentTime: true,
+			includeTimezone: false,
 			cloudUserInfo: null,
 			organizationAllowList: ORGANIZATION_ALLOW_ALL,
 			autoCondenseContext: true,

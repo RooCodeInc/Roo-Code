@@ -597,6 +597,16 @@
 			"inheritDescription": "Bu profil küresel varsayılan eşiği miras alır ({{threshold}}%)",
 			"usesGlobal": "(küresel {{threshold}}% kullanır)"
 		},
+		"timeInfo": {
+			"includeCurrentTime": {
+				"label": "İsteklere geçerli zamanı dahil et",
+				"description": "Etkinleştirildiğinde, her istekle birlikte gönderilen bağlama geçerli tarih ve saat dahil edilecektir. Bu, yapay zekanın zamana duyarlı yanıtlar vermesine yardımcı olabilir."
+			},
+			"includeTimezone": {
+				"label": "Saat dilimi bilgisini dahil et",
+				"description": "Etkinleştirildiğinde, saat dilimi bilgileriniz geçerli zamanla birlikte dahil edilecektir. Bu yalnızca 'İsteklere geçerli zamanı dahil et' etkinleştirildiğinde kullanılabilir."
+			}
+		},
 		"maxImageFileSize": {
 			"label": "Maksimum görüntü dosyası boyutu",
 			"mb": "MB",
