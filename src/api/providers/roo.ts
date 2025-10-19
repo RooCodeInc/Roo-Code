@@ -1,18 +1,21 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 
-import { AuthState, rooDefaultModelId, rooModels, type RooModelId } from "@roo-code/types"
+import { AuthState, rooDefaultModelId, rooModels, type RooModelId, type ModelInfo } from "@roo-code/types"
 import { CloudService } from "@roo-code/cloud"
 
-import type { ApiHandlerOptions } from "../../shared/api"
+import type { ApiHandlerOptions, ModelRecord } from "../../shared/api"
 import { ApiStream } from "../transform/stream"
 
 import type { ApiHandlerCreateMessageMetadata } from "../index"
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseOpenAiCompatibleProvider } from "./base-openai-compatible-provider"
+import { getModels } from "../providers/fetchers/modelCache"
 
-export class RooHandler extends BaseOpenAiCompatibleProvider<RooModelId> {
+export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 	private authStateListener?: (state: { state: AuthState }) => void
+	private mergedModels: Record<string, ModelInfo> = rooModels as Record<string, ModelInfo>
+	private modelsLoaded = false
 
 	constructor(options: ApiHandlerOptions) {
 		let sessionToken: string | undefined = undefined
@@ -21,16 +24,23 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<RooModelId> {
 			sessionToken = CloudService.instance.authService?.getSessionToken()
 		}
 
+		const baseURL = process.env.ROO_CODE_PROVIDER_URL ?? "https://api.roocode.com/proxy"
+
 		// Always construct the handler, even without a valid token.
 		// The provider-proxy server will return 401 if authentication fails.
 		super({
 			...options,
 			providerName: "Roo Code Cloud",
-			baseURL: process.env.ROO_CODE_PROVIDER_URL ?? "https://api.roocode.com/proxy/v1",
+			baseURL,
 			apiKey: sessionToken || "unauthenticated", // Use a placeholder if no token.
 			defaultProviderModelId: rooDefaultModelId,
-			providerModels: rooModels,
+			providerModels: rooModels as Record<string, ModelInfo>,
 			defaultTemperature: 0.7,
+		})
+
+		// Load dynamic models asynchronously
+		this.loadDynamicModels(baseURL, sessionToken).catch((error) => {
+			console.error("[RooHandler] Failed to load dynamic models:", error)
 		})
 
 		if (CloudService.hasInstance()) {
@@ -103,17 +113,37 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<RooModelId> {
 		}
 	}
 
+	private async loadDynamicModels(baseURL: string, apiKey?: string): Promise<void> {
+		try {
+			const dynamicModels = await getModels({
+				provider: "roo",
+				baseUrl: baseURL,
+				apiKey,
+			})
+			this.modelsLoaded = true
+
+			// Merge dynamic models with static models, preferring static model info
+			this.mergedModels = { ...dynamicModels, ...rooModels } as Record<string, ModelInfo>
+		} catch (error) {
+			console.error("[RooHandler] Error loading dynamic models:", error)
+			// Keep using static models as fallback
+			this.modelsLoaded = false
+		}
+	}
+
 	override getModel() {
 		const modelId = this.options.apiModelId || rooDefaultModelId
-		const modelInfo = this.providerModels[modelId as RooModelId] ?? this.providerModels[rooDefaultModelId]
+
+		// Try to find the model in the merged models (which includes both static and dynamic)
+		const modelInfo = this.mergedModels[modelId]
 
 		if (modelInfo) {
-			return { id: modelId as RooModelId, info: modelInfo }
+			return { id: modelId, info: modelInfo }
 		}
 
 		// Return the requested model ID even if not found, with fallback info.
 		return {
-			id: modelId as RooModelId,
+			id: modelId,
 			info: {
 				maxTokens: 16_384,
 				contextWindow: 262_144,
