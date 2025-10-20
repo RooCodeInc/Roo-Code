@@ -6,6 +6,7 @@ export const zgsmModels = {
 	default: {
 		maxTokens: 8192,
 		contextWindow: 128_000,
+		supportsMaxTokens: false,
 		supportsImages: false,
 		supportsComputerUse: false,
 		supportsPromptCache: true,
