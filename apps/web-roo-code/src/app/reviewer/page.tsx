@@ -1,26 +1,16 @@
-import {
-	ArrowRight,
-	ChartLine,
-	Cloud,
-	Lock,
-	LucideIcon,
-	Megaphone,
-	MessageCircleQuestionMark,
-	ReplaceAll,
-	Router,
-	Share2,
-	Users,
-} from "lucide-react"
+import { ArrowRight, Blocks, BookMarked, ListChecks, LucideIcon } from "lucide-react"
 import type { Metadata } from "next"
 
 import { Button } from "@/components/ui"
 import { AnimatedBackground } from "@/components/homepage"
+import { AgentCarousel } from "@/components/reviewer/agent-carousel"
 import { SEO } from "@/lib/seo"
 import { EXTERNAL_LINKS } from "@/lib/constants"
 import Image from "next/image"
 
 const TITLE = "PR Reviewer · Roo Code Cloud"
-const DESCRIPTION = "TODO, don&apos;t merge without this."
+const DESCRIPTION =
+	"Get comprehensive AI-powered PR reviews that save you time, not tokens. Bring your own API key and leverage advanced reasoning, repository-aware analysis, and actionable feedback to keep your PR queue moving."
 const PATH = "/reviewer"
 const OG_IMAGE = SEO.ogImage
 
@@ -52,66 +42,56 @@ export const metadata: Metadata = {
 		description: DESCRIPTION,
 		images: [OG_IMAGE.url],
 	},
-	// TODO, don't merge without this.
-	keywords: [...SEO.keywords, "cloud", "subscription", "cloud agents", "AI cloud development"],
+	keywords: [
+		...SEO.keywords,
+		"PR reviewer",
+		"code review",
+		"pull request review",
+		"AI code review",
+		"GitHub PR review",
+		"automated code review",
+		"repository-aware review",
+		"bring your own key",
+		"BYOK AI",
+		"code quality",
+		"development workflow",
+		"cloud agents",
+		"AI development team",
+	],
 }
 
 interface Feature {
 	icon: LucideIcon
 	title: string
-	description: string
+	description: string | React.ReactNode
 	logos?: string[]
 }
 
-const cloudFeatures: Feature[] = [
+const howItWorks: Feature[] = [
 	{
-		icon: Router,
-		title: "Roomote Control",
-		description: "Control your IDE from anywhere and keep coding away from your computer.",
+		icon: Blocks,
+		title: "Our agents, your provider keys",
+		description: (
+			<>
+				<p>
+					We orchestrate the review, optimize the hell out of the prompts, integrate with GitHub, keep you
+					properly posted.
+				</p>
+				<p>We&apos;re thoughtful about token usage, but not incentivized to skimp to grow our margins.</p>
+			</>
+		),
 	},
 	{
-		icon: Cloud,
-		title: "Cloud Agents",
+		icon: ListChecks,
+		title: "Advanced reasoning and workflows",
 		description:
-			"Specialized agents running in the Cloud to get stuff done while you sleep, with a credit-based system that doesn't lock you in or dumb your models down.",
+			"We optimize for state-of-the-art reasoning models and leverage powerful workflows (Diff analysis → Context Gathering → Impact Mapping → Contract checks) to produce crisp, actionable comments at the right level.",
 	},
 	{
-		icon: ReplaceAll,
-		title: "Still Model-agnostic",
-		description: "Bring your own provider key — no markup, lock-in, no restrictions.",
-		logos: ["Anthropic", "OpenAI", "Gemini", "Grok", "Qwen", "Kimi", "Mistral", "Ollama"],
-	},
-	{
-		icon: ChartLine,
-		title: "Usage Analytics",
-		description: "Detailed token analytics to help you optimize your costs and usage.",
-	},
-	{
-		icon: Megaphone,
-		title: "Early Model Access",
-		description: "Get early, free access to new, stealth coding models as they become available.",
-	},
-	{
-		icon: Share2,
-		title: "Task Sharing",
-		description: "Share tasks with friends and co-workers and let them follow your work.",
-	},
-	{
-		icon: Users,
-		title: "Team Management",
+		icon: BookMarked,
+		title: "Fully repository-aware",
 		description:
-			"Manage your team and their access to tasks and resources, with centralized billing, analytics and configuration.",
-	},
-	{
-		icon: Lock,
-		title: "Secure and Private",
-		description:
-			"Your data is never used for training, and we're SOC2 Type 2 and GDPR compliant, following state-of-the-art security practices, with deep respect for your IP.",
-	},
-	{
-		icon: MessageCircleQuestionMark,
-		title: "Priority support",
-		description: "Get quick help from the people who know Roo best.",
+			"Reviews traverse code ownership, dependency graphs, and historical patterns to surface risk and deviations, not noise.",
 	},
 ]
 
@@ -157,7 +137,7 @@ export default function AgentReviewerPage() {
 									</a>
 								</Button>
 								<span className="text-sm text-center md:text-left text-muted-foreground md:ml-2">
-									(sdtop anytime)
+									(cancel anytime)
 								</span>
 							</div>
 						</div>
@@ -180,33 +160,17 @@ export default function AgentReviewerPage() {
 
 			<section className="relative overflow-hidden border-t border-border py-32">
 				<div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
-					<div className="mx-auto mb-12 md:mb-24 max-w-4xl text-center">
+					<div className="mx-auto mb-12 md:mb-24 max-w-5xl text-center">
 						<div>
 							<h2 className="text-4xl font-bold tracking-tight sm:text-5xl">
-								Roo has its priorities straight
+								Why Roo&apos;s PR Reviewer is so much better
 							</h2>
-							<p className="mt-6 text-lg text-muted-foreground"></p>
-						</div>
-					</div>
-
-					<div className="relative mx-auto md:max-w-[1200px]"></div>
-				</div>
-			</section>
-
-			<section className="relative overflow-hidden border-t border-border py-32">
-				<div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
-					<div className="mx-auto mb-12 md:mb-24 max-w-4xl text-center">
-						<div>
-							<h2 className="text-4xl font-bold tracking-tight sm:text-5xl">Power and Flexibility</h2>
-							<p className="mt-6 text-lg text-muted-foreground">
-								Code in the cloud, access free models, get usage analytics and more
-							</p>
 						</div>
 					</div>
 
 					<div className="relative mx-auto md:max-w-[1200px]">
 						<ul className="grid grid-cols-1 place-items-center gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-8">
-							{cloudFeatures.map((feature, index) => {
+							{howItWorks.map((feature, index) => {
 								const Icon = feature.icon
 								return (
 									<li
@@ -216,9 +180,9 @@ export default function AgentReviewerPage() {
 										<h3 className="mb-3 mt-3 text-xl font-semibold text-foreground">
 											{feature.title}
 										</h3>
-										<p className="leading-relaxed font-light text-muted-foreground">
+										<div className="leading-relaxed font-light text-muted-foreground space-y-2">
 											{feature.description}
-										</p>
+										</div>
 										{feature.logos && (
 											<div className="mt-4 flex flex-wrap items-center gap-4">
 												{feature.logos.map((logo) => (
@@ -237,6 +201,35 @@ export default function AgentReviewerPage() {
 								)
 							})}
 						</ul>
+					</div>
+				</div>
+			</section>
+
+			<section className="relative overflow-hidden border-t border-border py-32">
+				<div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
+					<div className="mx-auto mb-12 max-w-4xl text-center">
+						<div>
+							<h2 className="text-4xl font-bold tracking-tight sm:text-5xl">
+								The first member of a whole new team
+							</h2>
+
+							<p className="mt-6 text-lg text-muted-foreground">
+								Architecture, coding, reviewing, testing, debugging, documenting, designing –{" "}
+								<em>almost everything</em> we do today is mostly through our agents. Now we&apos;re
+								bringing them to you.
+							</p>
+							<p className="mt-2 text-lg text-muted-foreground">
+								Roo&apos;s PR Reviewer isn&apos;t yet another single-purpose tool to add to your already
+								complicated stack.
+								<br />
+								It&apos;s the first member of your AI-powered development team. More agents are shipping
+								soon.
+							</p>
+						</div>
+					</div>
+
+					<div className="relative mx-auto md:max-w-[1200px]">
+						<AgentCarousel />
 					</div>
 				</div>
 			</section>
