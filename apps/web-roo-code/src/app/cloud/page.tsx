@@ -152,7 +152,7 @@ export default function CloudPage() {
 							</div>
 						</div>
 						<div className="flex items-center justify-end mx-auto h-full mt-8 lg:mt-0">
-							<div className="md:w-[900px] md:h-[700px]  dark:bg-white relative rounded-md overflow-clip">
+							<div className="md:w-[900px] md:h-[700px] relative rounded-md overflow-clip">
 								<div className="block">
 									<Image
 										src={screenshotDark}
