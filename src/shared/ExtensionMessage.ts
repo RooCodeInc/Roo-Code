@@ -220,6 +220,7 @@ export interface ExtensionMessage {
 		preset: "conservative" | "balanced" | "aggressive"
 		customConfig?: string
 	}
+	presetConfigJson?: string
 }
 
 export type ExtensionState = Pick<
