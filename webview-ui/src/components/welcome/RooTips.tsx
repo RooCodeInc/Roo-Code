@@ -28,11 +28,7 @@ const RooTips = () => {
 				<Trans
 					i18nKey="chat:about"
 					components={{
-						DocsLink: (
-							<a href={buildDocLink("", "welcome")} target="_blank" rel="noopener noreferrer">
-								the docs
-							</a>
-						),
+						DocsLink: <span>the docs</span>,
 					}}
 				/>
 			</p>
