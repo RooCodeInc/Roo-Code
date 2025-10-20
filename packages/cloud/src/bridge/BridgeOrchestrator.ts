@@ -9,7 +9,6 @@ import {
 	type GitProperties,
 	ConnectionState,
 	ExtensionSocketEvents,
-	TaskSocketEvents,
 } from "@roo-code/types"
 
 import { SocketTransport } from "./SocketTransport.js"
@@ -196,7 +195,6 @@ export class BridgeOrchestrator {
 
 		// Remove any existing listeners first to prevent duplicates.
 		socket.off(ExtensionSocketEvents.RELAYED_COMMAND)
-		socket.off(TaskSocketEvents.RELAYED_COMMAND)
 		socket.off("connected")
 
 		socket.on(ExtensionSocketEvents.RELAYED_COMMAND, (message: ExtensionBridgeCommand) => {

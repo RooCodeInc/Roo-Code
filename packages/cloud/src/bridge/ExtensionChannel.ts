@@ -1,11 +1,14 @@
+import * as vscode from "vscode"
 import type { Socket } from "socket.io-client"
 
 import {
 	type TaskProviderLike,
 	type TaskProviderEvents,
 	type ExtensionInstance,
-	type ExtensionBridgeCommand,
 	type ExtensionBridgeEvent,
+	type ExtensionBridgeCommand,
+	type StaticAppProperties,
+	type GitProperties,
 	RooCodeEventName,
 	TaskStatus,
 	ExtensionBridgeCommandName,
@@ -14,22 +17,22 @@ import {
 	HEARTBEAT_INTERVAL_MS,
 } from "@roo-code/types"
 
-import { type BaseChannelOptions, BaseChannel } from "./BaseChannel.js"
-
-interface ExtensionChannelOptions extends BaseChannelOptions {
+interface ExtensionChannelOptions {
+	instanceId: string
+	appProperties: StaticAppProperties
+	gitProperties?: GitProperties
+	isCloudAgent: boolean
 	userId: string
 	provider: TaskProviderLike
 }
 
-/**
- * Manages the extension-level communication channel.
- * Handles extension registration, heartbeat, and extension-specific commands.
- */
-export class ExtensionChannel extends BaseChannel<
-	ExtensionBridgeCommand,
-	ExtensionSocketEvents,
-	ExtensionBridgeEvent | ExtensionInstance
-> {
+export class ExtensionChannel {
+	private socket: Socket | null = null
+	private readonly instanceId: string
+	private readonly appProperties: StaticAppProperties
+	private readonly gitProperties?: GitProperties
+	private readonly isCloudAgent: boolean
+
 	private userId: string
 	private provider: TaskProviderLike
 	private extensionInstance: ExtensionInstance
@@ -37,12 +40,10 @@ export class ExtensionChannel extends BaseChannel<
 	private eventListeners: Map<RooCodeEventName, (...args: unknown[]) => void> = new Map()
 
 	constructor(options: ExtensionChannelOptions) {
-		super({
-			instanceId: options.instanceId,
-			appProperties: options.appProperties,
-			gitProperties: options.gitProperties,
-			isCloudAgent: options.isCloudAgent,
-		})
+		this.instanceId = options.instanceId
+		this.appProperties = options.appProperties
+		this.gitProperties = options.gitProperties
+		this.isCloudAgent = options.isCloudAgent
 
 		this.userId = options.userId
 		this.provider = options.provider
@@ -62,7 +63,26 @@ export class ExtensionChannel extends BaseChannel<
 		this.setupListeners()
 	}
 
-	protected async handleCommandImplementation(command: ExtensionBridgeCommand): Promise<void> {
+	public async onConnect(socket: Socket): Promise<void> {
+		this.socket = socket
+		await this.registerInstance(socket)
+		this.startHeartbeat(socket)
+	}
+
+	public async onReconnect(socket: Socket): Promise<void> {
+		this.socket = socket
+		await this.registerInstance(socket)
+		this.startHeartbeat(socket)
+	}
+
+	public onDisconnect(): void {
+		this.socket = null
+		this.stopHeartbeat()
+	}
+
+	public async handleCommand(command: ExtensionBridgeCommand): Promise<void> {
+		await vscode.commands.executeCommand(`${this.appProperties.appName}.SidebarProvider.focus`)
+
 		if (command.instanceId !== this.instanceId) {
 			console.log(`[ExtensionChannel] command -> instance id mismatch | ${this.instanceId}`, {
 				messageInstanceId: command.instanceId,
@@ -117,24 +137,40 @@ export class ExtensionChannel extends BaseChannel<
 		}
 	}
 
-	protected async handleConnect(socket: Socket): Promise<void> {
-		await this.registerInstance(socket)
-		this.startHeartbeat(socket)
-	}
-
-	protected async handleReconnect(socket: Socket): Promise<void> {
-		await this.registerInstance(socket)
-		this.startHeartbeat(socket)
-	}
-
-	protected override handleDisconnect(): void {
-		this.stopHeartbeat()
-	}
-
-	protected async handleCleanup(socket: Socket): Promise<void> {
+	public async cleanup(socket: Socket | null): Promise<void> {
 		this.stopHeartbeat()
 		this.cleanupListeners()
-		await this.unregisterInstance(socket)
+
+		if (socket) {
+			await this.unregisterInstance(socket)
+			this.socket = null
+		}
+	}
+
+	private publish<Params extends object>(
+		eventName: ExtensionSocketEvents,
+		data: ExtensionBridgeEvent | ExtensionInstance,
+		callback?: (params: Params) => void,
+	): boolean {
+		if (!this.socket) {
+			console.error(`[${this.constructor.name}#emit] socket not available for ${eventName}`)
+			return false
+		}
+
+		try {
+			// console.log(`[${this.constructor.name}#emit] emit() -> ${eventName}`, data)
+			this.socket.emit(eventName, data, callback)
+
+			return true
+		} catch (error) {
+			console.error(
+				`[${this.constructor.name}#emit] emit() failed -> ${eventName}: ${
+					error instanceof Error ? error.message : String(error)
+				}`,
+			)
+
+			return false
+		}
 	}
 
 	private async registerInstance(_socket: Socket): Promise<void> {
@@ -174,38 +210,11 @@ export class ExtensionChannel extends BaseChannel<
 	}
 
 	private setupListeners(): void {
-		// private readonly eventMapping: readonly TaskEventMapping[] = [
-		// 	{
-		// 		from: RooCodeEventName.Message,
-		// 		to: TaskBridgeEventName.Message,
-		// 		createPayload: (task: TaskLike, data: { action: string; message: ClineMessage }) => ({
-		// 			type: TaskBridgeEventName.Message,
-		// 			taskId: task.taskId,
-		// 			action: data.action,
-		// 			message: data.message,
-		// 		}),
-		// 	},
-		// 	{
-		// 		from: RooCodeEventName.TaskModeSwitched,
-		// 		to: TaskBridgeEventName.TaskModeSwitched,
-		// 		createPayload: (task: TaskLike, mode: string) => ({
-		// 			type: TaskBridgeEventName.TaskModeSwitched,
-		// 			taskId: task.taskId,
-		// 			mode,
-		// 		}),
-		// 	},
-		// 	{
-		// 		from: RooCodeEventName.TaskInteractive,
-		// 		to: TaskBridgeEventName.TaskInteractive,
-		// 		createPayload: (task: TaskLike, _taskId: string) => ({
-		// 			type: TaskBridgeEventName.TaskInteractive,
-		// 			taskId: task.taskId,
-		// 		}),
-		// 	},
-		// ] as const
-
 		const eventMapping = [
+			// Task Provider Lifecycle (1)
 			{ from: RooCodeEventName.TaskCreated, to: ExtensionBridgeEventName.TaskCreated },
+
+			// Task Lifecycle (9)
 			{ from: RooCodeEventName.TaskStarted, to: ExtensionBridgeEventName.TaskStarted },
 			{ from: RooCodeEventName.TaskCompleted, to: ExtensionBridgeEventName.TaskCompleted },
 			{ from: RooCodeEventName.TaskAborted, to: ExtensionBridgeEventName.TaskAborted },
@@ -215,21 +224,47 @@ export class ExtensionChannel extends BaseChannel<
 			{ from: RooCodeEventName.TaskInteractive, to: ExtensionBridgeEventName.TaskInteractive },
 			{ from: RooCodeEventName.TaskResumable, to: ExtensionBridgeEventName.TaskResumable },
 			{ from: RooCodeEventName.TaskIdle, to: ExtensionBridgeEventName.TaskIdle },
+
+			// Subtask Lifecycle (3)
 			{ from: RooCodeEventName.TaskPaused, to: ExtensionBridgeEventName.TaskPaused },
 			{ from: RooCodeEventName.TaskUnpaused, to: ExtensionBridgeEventName.TaskUnpaused },
 			{ from: RooCodeEventName.TaskSpawned, to: ExtensionBridgeEventName.TaskSpawned },
+
+			// Task Execution (4)
+			{ from: RooCodeEventName.Message, to: ExtensionBridgeEventName.Message },
+			{ from: RooCodeEventName.TaskModeSwitched, to: ExtensionBridgeEventName.TaskModeSwitched },
+			{ from: RooCodeEventName.TaskAskResponded, to: ExtensionBridgeEventName.TaskAskResponded },
 			{ from: RooCodeEventName.TaskUserMessage, to: ExtensionBridgeEventName.TaskUserMessage },
+
+			// Task Analytics (2)
 			{ from: RooCodeEventName.TaskTokenUsageUpdated, to: ExtensionBridgeEventName.TaskTokenUsageUpdated },
+			{ from: RooCodeEventName.TaskToolFailed, to: ExtensionBridgeEventName.TaskToolFailed },
+
+			// Configuration Changes (2)
+			// (Not propagated currently.)
 		] as const
 
 		eventMapping.forEach(({ from, to }) => {
 			// Create and store the listener function for cleanup.
 			const listener = async (..._args: unknown[]) => {
-				this.publish(ExtensionSocketEvents.EVENT, {
-					type: to,
-					instance: await this.updateInstance(),
-					timestamp: Date.now(),
-				})
+				if (from === RooCodeEventName.Message) {
+					const [taskId, action, message] = _args as TaskProviderEvents[RooCodeEventName.Message]
+
+					this.publish(ExtensionSocketEvents.EVENT, {
+						type: to,
+						instance: await this.updateInstance(),
+						timestamp: Date.now(),
+						taskId,
+						action,
+						message,
+					})
+				} else {
+					this.publish(ExtensionSocketEvents.EVENT, {
+						type: to,
+						instance: await this.updateInstance(),
+						timestamp: Date.now(),
+					})
+				}
 			}
 
 			this.eventListeners.set(from, listener)

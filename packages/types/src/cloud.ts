@@ -421,7 +421,10 @@ export type ExtensionInstance = z.infer<typeof extensionInstanceSchema>
  */
 
 export enum ExtensionBridgeEventName {
+	// Task Provider Lifecycle (1)
 	TaskCreated = RooCodeEventName.TaskCreated,
+
+	// Task Lifecycle (9)
 	TaskStarted = RooCodeEventName.TaskStarted,
 	TaskCompleted = RooCodeEventName.TaskCompleted,
 	TaskAborted = RooCodeEventName.TaskAborted,
@@ -432,129 +435,115 @@ export enum ExtensionBridgeEventName {
 	TaskResumable = RooCodeEventName.TaskResumable,
 	TaskIdle = RooCodeEventName.TaskIdle,
 
+	// Subtask Lifecycle (3)
 	TaskPaused = RooCodeEventName.TaskPaused,
 	TaskUnpaused = RooCodeEventName.TaskUnpaused,
 	TaskSpawned = RooCodeEventName.TaskSpawned,
 
+	// Task Execution (4)
+	Message = RooCodeEventName.Message,
+	TaskModeSwitched = RooCodeEventName.TaskModeSwitched,
+	TaskAskResponded = RooCodeEventName.TaskAskResponded,
 	TaskUserMessage = RooCodeEventName.TaskUserMessage,
 
+	// Task Analytics (2)
 	TaskTokenUsageUpdated = RooCodeEventName.TaskTokenUsageUpdated,
-
-	ModeChanged = RooCodeEventName.ModeChanged,
-	ProviderProfileChanged = RooCodeEventName.ProviderProfileChanged,
-
-	InstanceRegistered = "instance_registered",
-	InstanceUnregistered = "instance_unregistered",
-	HeartbeatUpdated = "heartbeat_updated",
+	TaskToolFailed = RooCodeEventName.TaskToolFailed,
 }
 
+const extensionBridgeEventPayloadSchema = z.object({
+	instance: extensionInstanceSchema,
+	timestamp: z.number(),
+})
+
 export const extensionBridgeEventSchema = z.discriminatedUnion("type", [
+	// Task Provider Lifecycle (1)
 	z.object({
 		type: z.literal(ExtensionBridgeEventName.TaskCreated),
-		instance: extensionInstanceSchema,
-		timestamp: z.number(),
+		...extensionBridgeEventPayloadSchema.shape,
 	}),
+
+	// Task Lifecycle (9)
 	z.object({
 		type: z.literal(ExtensionBridgeEventName.TaskStarted),
-		instance: extensionInstanceSchema,
-		timestamp: z.number(),
+		...extensionBridgeEventPayloadSchema.shape,
 	}),
 	z.object({
 		type: z.literal(ExtensionBridgeEventName.TaskCompleted),
-		instance: extensionInstanceSchema,
-		timestamp: z.number(),
+		...extensionBridgeEventPayloadSchema.shape,
 	}),
 	z.object({
 		type: z.literal(ExtensionBridgeEventName.TaskAborted),
-		instance: extensionInstanceSchema,
-		timestamp: z.number(),
+		...extensionBridgeEventPayloadSchema.shape,
 	}),
 	z.object({
 		type: z.literal(ExtensionBridgeEventName.TaskFocused),
-		instance: extensionInstanceSchema,
-		timestamp: z.number(),
+		...extensionBridgeEventPayloadSchema.shape,
 	}),
 	z.object({
 		type: z.literal(ExtensionBridgeEventName.TaskUnfocused),
-		instance: extensionInstanceSchema,
-		timestamp: z.number(),
+		...extensionBridgeEventPayloadSchema.shape,
 	}),
 	z.object({
 		type: z.literal(ExtensionBridgeEventName.TaskActive),
-		instance: extensionInstanceSchema,
-		timestamp: z.number(),
+		...extensionBridgeEventPayloadSchema.shape,
 	}),
 	z.object({
 		type: z.literal(ExtensionBridgeEventName.TaskInteractive),
-		instance: extensionInstanceSchema,
-		timestamp: z.number(),
+		...extensionBridgeEventPayloadSchema.shape,
 	}),
 	z.object({
 		type: z.literal(ExtensionBridgeEventName.TaskResumable),
-		instance: extensionInstanceSchema,
-		timestamp: z.number(),
+		...extensionBridgeEventPayloadSchema.shape,
 	}),
 	z.object({
 		type: z.literal(ExtensionBridgeEventName.TaskIdle),
-		instance: extensionInstanceSchema,
-		timestamp: z.number(),
+		...extensionBridgeEventPayloadSchema.shape,
 	}),
 
+	// Subtask Lifecycle (3)
 	z.object({
 		type: z.literal(ExtensionBridgeEventName.TaskPaused),
-		instance: extensionInstanceSchema,
-		timestamp: z.number(),
+		...extensionBridgeEventPayloadSchema.shape,
 	}),
 	z.object({
 		type: z.literal(ExtensionBridgeEventName.TaskUnpaused),
-		instance: extensionInstanceSchema,
-		timestamp: z.number(),
+		...extensionBridgeEventPayloadSchema.shape,
 	}),
 	z.object({
 		type: z.literal(ExtensionBridgeEventName.TaskSpawned),
-		instance: extensionInstanceSchema,
-		timestamp: z.number(),
+		...extensionBridgeEventPayloadSchema.shape,
 	}),
 
+	// Task Execution (4)
+	z.object({
+		type: z.literal(ExtensionBridgeEventName.Message),
+		...extensionBridgeEventPayloadSchema.shape,
+		taskId: z.string(),
+		action: z.string(),
+		message: clineMessageSchema,
+	}),
+	z.object({
+		type: z.literal(ExtensionBridgeEventName.TaskModeSwitched),
+		...extensionBridgeEventPayloadSchema.shape,
+	}),
+	z.object({
+		type: z.literal(ExtensionBridgeEventName.TaskAskResponded),
+		...extensionBridgeEventPayloadSchema.shape,
+	}),
 	z.object({
 		type: z.literal(ExtensionBridgeEventName.TaskUserMessage),
-		instance: extensionInstanceSchema,
-		timestamp: z.number(),
+		...extensionBridgeEventPayloadSchema.shape,
 	}),
 
+	// Task Analytics (2)
 	z.object({
 		type: z.literal(ExtensionBridgeEventName.TaskTokenUsageUpdated),
-		instance: extensionInstanceSchema,
-		timestamp: z.number(),
-	}),
-
-	z.object({
-		type: z.literal(ExtensionBridgeEventName.ModeChanged),
-		instance: extensionInstanceSchema,
-		mode: z.string(),
-		timestamp: z.number(),
+		...extensionBridgeEventPayloadSchema.shape,
 	}),
 	z.object({
-		type: z.literal(ExtensionBridgeEventName.ProviderProfileChanged),
-		instance: extensionInstanceSchema,
-		providerProfile: z.object({ name: z.string(), provider: z.string().optional() }),
-		timestamp: z.number(),
-	}),
-
-	z.object({
-		type: z.literal(ExtensionBridgeEventName.InstanceRegistered),
-		instance: extensionInstanceSchema,
-		timestamp: z.number(),
-	}),
-	z.object({
-		type: z.literal(ExtensionBridgeEventName.InstanceUnregistered),
-		instance: extensionInstanceSchema,
-		timestamp: z.number(),
-	}),
-	z.object({
-		type: z.literal(ExtensionBridgeEventName.HeartbeatUpdated),
-		instance: extensionInstanceSchema,
-		timestamp: z.number(),
+		type: z.literal(ExtensionBridgeEventName.TaskToolFailed),
+		...extensionBridgeEventPayloadSchema.shape,
 	}),
 ])
 
@@ -568,6 +557,9 @@ export enum ExtensionBridgeCommandName {
 	StartTask = "start_task",
 	StopTask = "stop_task",
 	ResumeTask = "resume_task",
+	Message = "message",
+	ApproveAsk = "approve_ask",
+	DenyAsk = "deny_ask",
 }
 
 export const extensionBridgeCommandSchema = z.discriminatedUnion("type", [
@@ -594,55 +586,11 @@ export const extensionBridgeCommandSchema = z.discriminatedUnion("type", [
 		payload: z.object({ taskId: z.string() }),
 		timestamp: z.number(),
 	}),
-])
-
-export type ExtensionBridgeCommand = z.infer<typeof extensionBridgeCommandSchema>
-
-/**
- * TaskBridgeEvent
- */
-
-export enum TaskBridgeEventName {
-	Message = RooCodeEventName.Message,
-	TaskModeSwitched = RooCodeEventName.TaskModeSwitched,
-	TaskInteractive = RooCodeEventName.TaskInteractive,
-}
-
-export const taskBridgeEventSchema = z.discriminatedUnion("type", [
 	z.object({
-		type: z.literal(TaskBridgeEventName.Message),
-		taskId: z.string(),
-		action: z.string(),
-		message: clineMessageSchema,
-	}),
-	z.object({
-		type: z.literal(TaskBridgeEventName.TaskModeSwitched),
-		taskId: z.string(),
-		mode: z.string(),
-	}),
-	z.object({
-		type: z.literal(TaskBridgeEventName.TaskInteractive),
-		taskId: z.string(),
-	}),
-])
-
-export type TaskBridgeEvent = z.infer<typeof taskBridgeEventSchema>
-
-/**
- * TaskBridgeCommand
- */
-
-export enum TaskBridgeCommandName {
-	Message = "message",
-	ApproveAsk = "approve_ask",
-	DenyAsk = "deny_ask",
-}
-
-export const taskBridgeCommandSchema = z.discriminatedUnion("type", [
-	z.object({
-		type: z.literal(TaskBridgeCommandName.Message),
-		taskId: z.string(),
+		type: z.literal(ExtensionBridgeCommandName.Message),
+		instanceId: z.string(),
 		payload: z.object({
+			taskId: z.string(),
 			text: z.string(),
 			images: z.array(z.string()).optional(),
 			mode: z.string().optional(),
@@ -651,18 +599,20 @@ export const taskBridgeCommandSchema = z.discriminatedUnion("type", [
 		timestamp: z.number(),
 	}),
 	z.object({
-		type: z.literal(TaskBridgeCommandName.ApproveAsk),
-		taskId: z.string(),
+		type: z.literal(ExtensionBridgeCommandName.ApproveAsk),
+		instanceId: z.string(),
 		payload: z.object({
+			taskId: z.string(),
 			text: z.string().optional(),
 			images: z.array(z.string()).optional(),
 		}),
 		timestamp: z.number(),
 	}),
 	z.object({
-		type: z.literal(TaskBridgeCommandName.DenyAsk),
-		taskId: z.string(),
+		type: z.literal(ExtensionBridgeCommandName.DenyAsk),
+		instanceId: z.string(),
 		payload: z.object({
+			taskId: z.string(),
 			text: z.string().optional(),
 			images: z.array(z.string()).optional(),
 		}),
@@ -670,7 +620,7 @@ export const taskBridgeCommandSchema = z.discriminatedUnion("type", [
 	}),
 ])
 
-export type TaskBridgeCommand = z.infer<typeof taskBridgeCommandSchema>
+export type ExtensionBridgeCommand = z.infer<typeof extensionBridgeCommandSchema>
 
 /**
  * ExtensionSocketEvents
@@ -689,38 +639,6 @@ export enum ExtensionSocketEvents {
 
 	COMMAND = "extension:command", // command from user
 	RELAYED_COMMAND = "extension:relayed_command", // relay from server
-}
-
-/**
- * TaskSocketEvents
- */
-
-export enum TaskSocketEvents {
-	JOIN = "task:join",
-	LEAVE = "task:leave",
-
-	EVENT = "task:event", // event from extension task
-	RELAYED_EVENT = "task:relayed_event", // relay from server
-
-	COMMAND = "task:command", // command from user
-	RELAYED_COMMAND = "task:relayed_command", // relay from server
-}
-
-/**
- * `emit()` Response Types
- */
-
-export type JoinResponse = {
-	success: boolean
-	error?: string
-	taskId?: string
-	timestamp?: string
-}
-
-export type LeaveResponse = {
-	success: boolean
-	taskId?: string
-	timestamp?: string
 }
 
 /**
