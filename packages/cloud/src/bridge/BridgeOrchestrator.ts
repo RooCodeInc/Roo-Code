@@ -23,11 +23,6 @@ export interface BridgeOrchestratorOptions {
 	isCloudAgent: boolean
 }
 
-/**
- * Central orchestrator for the extension bridge system.
- * Coordinates communication between the VSCode extension and web application
- * through WebSocket connections and manages extension/task channels.
- */
 export class BridgeOrchestrator {
 	private static instance: BridgeOrchestrator | null = null
 
@@ -85,7 +80,7 @@ export class BridgeOrchestrator {
 		}
 	}
 
-	public static async connect(options: BridgeOrchestratorOptions) {
+	private static async connect(options: BridgeOrchestratorOptions) {
 		const instance = BridgeOrchestrator.instance
 
 		if (!instance) {
@@ -103,13 +98,10 @@ export class BridgeOrchestrator {
 				)
 			}
 		} else {
-			if (
-				instance.connectionState === ConnectionState.FAILED ||
-				instance.connectionState === ConnectionState.DISCONNECTED
-			) {
-				console.log(
-					`[BridgeOrchestrator#connectOrDisconnect] Re-connecting... (state: ${instance.connectionState})`,
-				)
+			const connectionState = instance.socketTransport.getConnectionState()
+
+			if (connectionState === ConnectionState.FAILED || connectionState === ConnectionState.DISCONNECTED) {
+				console.log(`[BridgeOrchestrator#connectOrDisconnect] Re-connecting... (state: ${connectionState})`)
 
 				instance.reconnect().catch((error) => {
 					console.error(
@@ -118,7 +110,7 @@ export class BridgeOrchestrator {
 				})
 			} else {
 				console.log(
-					`[BridgeOrchestrator#connectOrDisconnect] Already connected or connecting (state: ${instance.connectionState})`,
+					`[BridgeOrchestrator#connectOrDisconnect] Already connected or connecting (state: ${connectionState})`,
 				)
 			}
 		}
@@ -128,11 +120,10 @@ export class BridgeOrchestrator {
 		const instance = BridgeOrchestrator.instance
 
 		if (instance) {
-			try {
-				console.log(
-					`[BridgeOrchestrator#connectOrDisconnect] Disconnecting... (state: ${instance.connectionState})`,
-				)
+			const connectionState = instance.socketTransport.getConnectionState()
 
+			try {
+				console.log(`[BridgeOrchestrator#connectOrDisconnect] Disconnecting... (state: ${connectionState})`)
 				await instance.disconnect()
 			} catch (error) {
 				console.error(
@@ -237,28 +228,19 @@ export class BridgeOrchestrator {
 		await this.extensionChannel.onReconnect(socket)
 	}
 
-	// Shared API
-
-	public get connectionState(): ConnectionState {
-		return this.socketTransport.getConnectionState()
-	}
-
 	private async connect(): Promise<void> {
 		await this.socketTransport.connect()
 		this.setupSocketListeners()
 	}
 
-	public async disconnect(): Promise<void> {
+	private async disconnect(): Promise<void> {
 		await this.extensionChannel.cleanup(this.socketTransport.getSocket())
 		await this.socketTransport.disconnect()
 		BridgeOrchestrator.instance = null
 	}
 
-	public async reconnect(): Promise<void> {
+	private async reconnect(): Promise<void> {
 		await this.socketTransport.reconnect()
-
-		// After a manual reconnect, we have a new socket instance
-		// so we need to set up listeners again.
 		this.setupSocketListeners()
 	}
 }

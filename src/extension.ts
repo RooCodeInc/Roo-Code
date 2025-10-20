@@ -353,11 +353,7 @@ export async function deactivate() {
 		}
 	}
 
-	const bridge = BridgeOrchestrator.getInstance()
-
-	if (bridge) {
-		await bridge.disconnect()
-	}
+	await BridgeOrchestrator.disconnect()
 
 	await McpServerManager.cleanup(extensionContext)
 	TelemetryService.instance.shutdown()
