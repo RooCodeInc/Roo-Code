@@ -240,7 +240,7 @@ export default function AgentReviewerPage() {
 					<div className="mx-auto max-w-4xl rounded-3xl border border-border/50 bg-gradient-to-br from-blue-500/5 via-cyan-500/5 to-purple-500/5 p-8 text-center shadow-2xl backdrop-blur-xl dark:border-white/20 dark:bg-gradient-to-br dark:from-gray-800 dark:via-gray-900 dark:to-black sm:p-12">
 						<h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">Stop wasting time.</h2>
 						<p className="mx-auto mb-8 max-w-2xl text-lg text-muted-foreground">
-							Give Roo Code&apos;s PR Reviewer your model key at and turn painful reviews into a tangible
+							Give Roo Code&apos;s PR Reviewer your model key and turn painful reviews into a tangible
 							quality advantage.
 						</p>
 						<div className="flex flex-col justify-center space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0">
