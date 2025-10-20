@@ -6,7 +6,6 @@ import { back as nockBack } from "nock"
 
 import {
 	OPEN_ROUTER_PROMPT_CACHING_MODELS,
-	OPEN_ROUTER_COMPUTER_USE_MODELS,
 	OPEN_ROUTER_REASONING_BUDGET_MODELS,
 	OPEN_ROUTER_REQUIRED_REASONING_BUDGET_MODELS,
 } from "@roo-code/types"
@@ -51,21 +50,7 @@ describe("OpenRouter API", () => {
 
 			expect(ourCachingModels.sort()).toEqual(expectedCachingModels)
 
-			const excludedComputerUseModels = new Set([
-				"anthropic/claude-opus-4.1", // Not yet available in OpenRouter API
-				"anthropic/claude-sonnet-4.5", // Not yet available in OpenRouter API
-			])
-
-			const expectedComputerUseModels = Array.from(OPEN_ROUTER_COMPUTER_USE_MODELS)
-				.filter((id) => !excludedComputerUseModels.has(id))
-				.sort()
-
-			expect(
-				Object.entries(models)
-					.filter(([_, model]) => model.supportsComputerUse)
-					.map(([id, _]) => id)
-					.sort(),
-			).toEqual(expectedComputerUseModels)
+			// Computer-use specific assertions removed. We no longer track supportsComputerUse.
 
 			expect(
 				Object.entries(models)
@@ -174,7 +159,6 @@ describe("OpenRouter API", () => {
 				cacheWritesPrice: 3.75,
 				cacheReadsPrice: 0.3,
 				description: expect.any(String),
-				supportsComputerUse: true,
 				supportsReasoningBudget: false,
 				supportsReasoningEffort: false,
 				supportedParameters: ["max_tokens", "temperature", "reasoning", "include_reasoning"],
@@ -190,7 +174,6 @@ describe("OpenRouter API", () => {
 				cacheWritesPrice: 3.75,
 				cacheReadsPrice: 0.3,
 				description: expect.any(String),
-				supportsComputerUse: true,
 				supportsReasoningBudget: true,
 				requiredReasoningBudget: true,
 				supportsReasoningEffort: true,
