@@ -60,7 +60,7 @@ Roo Code adapts to how you work:
 - Custom Modes: build specialized modes for your team or workflow
 - Roomote Control: Roomote Control lets you remotely control tasks running in your local VS Code instance.
 
-Learn more: [Using Modes](https://docs.roocode.com/basic-usage/using-modes) • [Custom Modes](https://docs.roocode.com/advanced-usage/custom-modes) • [Custom Modes](https://docs.roocode.com/roo-code-cloud/roomote-control)
+Learn more: [Using Modes](https://docs.roocode.com/basic-usage/using-modes) • [Custom Modes](https://docs.roocode.com/advanced-usage/custom-modes) • [Roomote Control](https://docs.roocode.com/roo-code-cloud/roomote-control)
 
 ## Tutorial & Feature Videos
 
