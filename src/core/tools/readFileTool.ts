@@ -24,6 +24,20 @@ import {
 } from "./helpers/imageHelpers"
 import { regexSearchFiles } from "../../services/ripgrep"
 
+/**
+ * Escape XML special characters to prevent XML injection and parsing errors
+ * @param unsafe - String that may contain XML special characters
+ * @returns Escaped string safe for XML embedding
+ */
+function escapeXml(unsafe: string): string {
+	return unsafe
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;")
+		.replace(/"/g, "&quot;")
+		.replace(/'/g, "&apos;")
+}
+
 export function getReadFileToolDescription(blockName: string, blockParams: any): string {
 	// Handle both single path and multiple files via args
 	if (blockParams.args) {
@@ -96,7 +110,6 @@ async function searchPatternInFile(
 		const lines = searchResults.split("\n")
 
 		let currentMatchLines: { line: number; text: string }[] = []
-		let inMatchBlock = false
 
 		for (let i = 0; i < lines.length; i++) {
 			const line = lines[i]
@@ -131,7 +144,6 @@ async function searchPatternInFile(
 
 					currentMatchLines = []
 				}
-				inMatchBlock = false
 				continue
 			}
 
@@ -142,7 +154,6 @@ async function searchPatternInFile(
 				const lineNumber = parseInt(match[1], 10)
 				const lineText = match[2]
 				currentMatchLines.push({ line: lineNumber, text: lineText })
-				inMatchBlock = true
 			}
 		}
 
@@ -647,7 +658,81 @@ export async function readFileTool(
 					}
 				}
 
-				// Handle range reads (bypass maxReadFileLine)
+				// Handle pattern + line_range combination
+				if (fileResult.pattern && fileResult.lineRanges && fileResult.lineRanges.length > 0) {
+					// Search for pattern within specified line ranges
+					const matches = await searchPatternInFile(
+						fullPath,
+						cline.cwd,
+						fileResult.pattern,
+						cline.rooIgnoreController,
+					)
+
+					// Filter matches to only include those within specified line ranges
+					const filteredMatches = matches.filter((match) => {
+						return fileResult.lineRanges!.some(
+							(range) => match.matchLine >= range.start && match.matchLine <= range.end,
+						)
+					})
+
+					// Track file read
+					await cline.fileContextTracker.trackFileContext(relPath, "read_tool" as RecordSource)
+
+					if (filteredMatches.length === 0) {
+						const rangesStr = fileResult.lineRanges.map((r) => `${r.start}-${r.end}`).join(", ")
+						const xmlInfo = `<metadata>
+<total_lines>${totalLines}</total_lines>
+<pattern>${escapeXml(fileResult.pattern)}</pattern>
+<line_ranges>${rangesStr}</line_ranges>
+<matches_count>0</matches_count>
+</metadata>
+<notice>No matches found for pattern "${escapeXml(fileResult.pattern)}" within line ranges: ${rangesStr}</notice>`
+
+						updateFileResult(relPath, {
+							xmlContent: `<file><path>${relPath}</path>\n${xmlInfo}\n</file>`,
+						})
+						continue
+					}
+
+					// Limit results
+					const limitedMatches = filteredMatches.slice(0, 20)
+					const hasMore = filteredMatches.length > 20
+					const rangesStr = fileResult.lineRanges.map((r) => `${r.start}-${r.end}`).join(", ")
+
+					let xmlInfo = `<metadata>
+<total_lines>${totalLines}</total_lines>
+<pattern>${escapeXml(fileResult.pattern)}</pattern>
+<line_ranges>${rangesStr}</line_ranges>
+<matches_count>${filteredMatches.length}</matches_count>
+${hasMore ? `<showing_matches>20</showing_matches>` : ""}
+</metadata>\n`
+
+					// Add match results
+					limitedMatches.forEach((match) => {
+						const lineAttr = ` lines="${match.startLine}-${match.endLine}"`
+						xmlInfo += `<search_result${lineAttr}>\n${match.content}\n</search_result>\n`
+					})
+
+					// Add notice
+					const firstMatch = limitedMatches[0]
+					const exampleStart = Math.max(1, firstMatch.matchLine - 10)
+					const exampleEnd = Math.min(totalLines, firstMatch.matchLine + 10)
+
+					let notice = `Found ${filteredMatches.length} match(es) within line ranges: ${rangesStr}${hasMore ? `, showing first 20` : ""}.`
+					notice += `\n\nTo read full context around a match, use:\n`
+					notice += `<read_file>\n<args>\n  <file>\n    <path>${relPath}</path>\n`
+					notice += `    <line_range>${exampleStart}-${exampleEnd}</line_range>\n`
+					notice += `  </file>\n</args>\n</read_file>`
+
+					xmlInfo += `<notice>${notice}</notice>`
+
+					updateFileResult(relPath, {
+						xmlContent: `<file><path>${relPath}</path>\n${xmlInfo}\n</file>`,
+					})
+					continue
+				}
+
+				// Handle range reads only (no pattern search)
 				if (fileResult.lineRanges && fileResult.lineRanges.length > 0) {
 					const rangeResults: string[] = []
 					for (const range of fileResult.lineRanges) {
@@ -664,7 +749,7 @@ export async function readFileTool(
 					continue
 				}
 
-				// Handle pattern search (lightweight search mode)
+				// Handle pattern search only (entire file)
 				if (fileResult.pattern) {
 					const matches = await searchPatternInFile(
 						fullPath,
@@ -679,10 +764,10 @@ export async function readFileTool(
 					if (matches.length === 0) {
 						const xmlInfo = `<metadata>
 <total_lines>${totalLines}</total_lines>
-<pattern>${fileResult.pattern}</pattern>
+<pattern>${escapeXml(fileResult.pattern)}</pattern>
 <matches_count>0</matches_count>
 </metadata>
-<notice>No matches found for pattern "${fileResult.pattern}"</notice>`
+<notice>No matches found for pattern "${escapeXml(fileResult.pattern)}"</notice>`
 
 						updateFileResult(relPath, {
 							xmlContent: `<file><path>${relPath}</path>\n${xmlInfo}\n</file>`,
@@ -696,7 +781,7 @@ export async function readFileTool(
 
 					let xmlInfo = `<metadata>
 <total_lines>${totalLines}</total_lines>
-<pattern>${fileResult.pattern}</pattern>
+<pattern>${escapeXml(fileResult.pattern)}</pattern>
 <matches_count>${matches.length}</matches_count>
 ${hasMore ? `<showing_matches>20</showing_matches>` : ""}
 </metadata>\n`
