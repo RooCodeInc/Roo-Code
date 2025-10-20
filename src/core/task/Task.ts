@@ -2416,7 +2416,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 			// Align browser tool enablement with generateSystemPrompt: require model image support,
 			// mode to include the browser group, and the user setting to be enabled.
-			const modeConfig = getModeBySlug(mode, customModes)
+			const modeConfig = getModeBySlug(mode ?? defaultModeSlug, customModes)
 			const modeSupportsBrowser = modeConfig?.groups.some((group) => getGroupName(group) === "browser") ?? false
 
 			const canUseBrowserTool =
@@ -2430,8 +2430,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				canUseBrowserTool,
 				mcpHub,
 				this.diffStrategy,
-				browserViewportSize,
-				mode,
+				browserViewportSize ?? "900x600",
+				mode ?? defaultModeSlug,
 				customModePrompts,
 				customModes,
 				customInstructions,
