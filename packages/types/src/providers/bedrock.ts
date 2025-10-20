@@ -17,7 +17,6 @@ export const bedrockModels = {
 		maxTokens: 8192,
 		contextWindow: 200_000,
 		supportsImages: true,
-		supportsComputerUse: true,
 		supportsPromptCache: true,
 		supportsReasoningBudget: true,
 		inputPrice: 3.0,
