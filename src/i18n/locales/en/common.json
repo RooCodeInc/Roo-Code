@@ -121,7 +121,17 @@
 		"manual_url_no_query": "Invalid callback URL: missing query parameters",
 		"manual_url_missing_params": "Invalid callback URL: missing required parameters (code and state)",
 		"manual_url_auth_failed": "Manual URL authentication failed",
-		"manual_url_auth_error": "Authentication failed"
+		"manual_url_auth_error": "Authentication failed",
+		"geminiCli": {
+			"oauthLoadFailed": "Failed to load OAuth credentials. Please authenticate first: {{error}}",
+			"tokenRefreshFailed": "Failed to refresh OAuth token: {{error}}",
+			"onboardingTimeout": "Onboarding operation timed out after 60 seconds. Please try again later.",
+			"projectDiscoveryFailed": "Could not discover project ID. Make sure you're authenticated with 'gemini auth'.",
+			"rateLimitExceeded": "Rate limit exceeded. Free tier limits have been reached.",
+			"badRequest": "Bad request: {{details}}",
+			"apiError": "Gemini CLI API error: {{error}}",
+			"completionError": "Gemini CLI completion error: {{error}}"
+		}
 	},
 	"warnings": {
 		"no_terminal_content": "No terminal content selected",
