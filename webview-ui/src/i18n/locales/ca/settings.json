@@ -448,6 +448,10 @@
 			},
 			"resetDefaults": "Restablir als valors per defecte"
 		},
+		"disableStreaming": "Desactivar streaming",
+		"disableStreamingDescription": "Desactivar el streaming de resposta en temps real per als models OpenAI.",
+		"disableReasoningSummaries": "Desactivar resums de raonament",
+		"disableReasoningSummariesDescription": "Desactivar els resums de raonament en models com GPT-5.",
 		"rateLimitSeconds": {
 			"label": "Límit de freqüència",
 			"description": "Temps mínim entre sol·licituds d'API."

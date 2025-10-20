@@ -448,6 +448,10 @@
 			},
 			"resetDefaults": "डिफ़ॉल्ट पर रीसेट करें"
 		},
+		"disableStreaming": "स्ट्रीमिंग अक्षम करें",
+		"disableStreamingDescription": "OpenAI मॉडल के लिए रियल-टाइम रिस्पॉन्स स्ट्रीमिंग को अक्षम करें।",
+		"disableReasoningSummaries": "रीज़निंग सारांश अक्षम करें",
+		"disableReasoningSummariesDescription": "GPT-5 जैसे मॉडल में रीज़निंग सारांश को अक्षम करें।",
 		"rateLimitSeconds": {
 			"label": "दर सीमा",
 			"description": "API अनुरोधों के बीच न्यूनतम समय।"

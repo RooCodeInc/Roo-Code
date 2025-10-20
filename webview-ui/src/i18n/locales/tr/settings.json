@@ -448,6 +448,10 @@
 			},
 			"resetDefaults": "Varsayılanlara Sıfırla"
 		},
+		"disableStreaming": "Akışı devre dışı bırak",
+		"disableStreamingDescription": "OpenAI modelleri için gerçek zamanlı yanıt akışını devre dışı bırakın.",
+		"disableReasoningSummaries": "Akıl yürütme özetlerini devre dışı bırak",
+		"disableReasoningSummariesDescription": "GPT-5 gibi modellerde akıl yürütme özetlerini devre dışı bırakın.",
 		"rateLimitSeconds": {
 			"label": "Hız sınırı",
 			"description": "API istekleri arasındaki minimum süre."

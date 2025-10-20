@@ -448,6 +448,10 @@
 			},
 			"resetDefaults": "重設為預設值"
 		},
+		"disableStreaming": "停用串流傳輸",
+		"disableStreamingDescription": "為 OpenAI 模型停用即時回應串流傳輸。",
+		"disableReasoningSummaries": "停用推理摘要",
+		"disableReasoningSummariesDescription": "在 GPT-5 等模型中停用推理摘要。",
 		"rateLimitSeconds": {
 			"label": "速率限制",
 			"description": "API 請求間的最短時間"
