@@ -796,6 +796,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		const isMessageQueued = !this.messageQueueService.isEmpty()
 		const isStatusMutable = !partial && isBlocking && !isMessageQueued
 		let statusMutationTimeouts: NodeJS.Timeout[] = []
+		const statusMutationTimeout = 5_000
 
 		if (isStatusMutable) {
 			console.log(`Task#ask will block -> type: ${type}`)
@@ -809,7 +810,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 							this.interactiveAsk = message
 							this.emit(RooCodeEventName.TaskInteractive, this.taskId)
 						}
-					}, 1_000),
+					}, statusMutationTimeout),
 				)
 			} else if (isResumableAsk(type)) {
 				statusMutationTimeouts.push(
@@ -820,7 +821,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 							this.resumableAsk = message
 							this.emit(RooCodeEventName.TaskResumable, this.taskId)
 						}
-					}, 1_000),
+					}, statusMutationTimeout),
 				)
 			} else if (isIdleAsk(type)) {
 				statusMutationTimeouts.push(
@@ -831,7 +832,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 							this.idleAsk = message
 							this.emit(RooCodeEventName.TaskIdle, this.taskId)
 						}
-					}, 1_000),
+					}, statusMutationTimeout),
 				)
 			}
 		} else if (isMessageQueued) {
@@ -840,17 +841,19 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			const message = this.messageQueueService.dequeueMessage()
 
 			if (message) {
-				// Check if this is a tool approval ask that needs to be handled
+				// Check if this is a tool approval ask that needs to be handled.
 				if (
 					type === "tool" ||
 					type === "command" ||
 					type === "browser_action_launch" ||
 					type === "use_mcp_server"
 				) {
-					// For tool approvals, we need to approve first, then send the message if there's text/images
+					// For tool approvals, we need to approve first, then send
+					// the message if there's text/images.
 					this.handleWebviewAskResponse("yesButtonClicked", message.text, message.images)
 				} else {
-					// For other ask types (like followup), fulfill the ask directly
+					// For other ask types (like followup), fulfill the ask
+					// directly.
 					this.setMessageResponse(message.text, message.images)
 				}
 			}
