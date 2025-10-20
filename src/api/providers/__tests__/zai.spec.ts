@@ -162,6 +162,11 @@ describe("ZAiHandler", () => {
 			expect(model.info.supportsImages).toBe(true)
 			expect(model.info.contextWindow).toBe(64_000)
 		})
+
+		it("should include tiers for GLM-4.5V China model", () => {
+			const info = mainlandZAiModels["glm-4.5v"]
+			expect(info.tiers?.length).toBe(3)
+		})
 	})
 
 	describe("Default behavior", () => {

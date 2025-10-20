@@ -8,25 +8,30 @@ import {
 } from "@roo-code/types"
 
 import type { ApiHandlerOptions } from "../../shared/api"
+import type { InternationalZAiModelId, MainlandZAiModelId, ModelInfo } from "@roo-code/types"
 
 import { BaseOpenAiCompatibleProvider } from "./base-openai-compatible-provider"
 
-export class ZAiHandler extends BaseOpenAiCompatibleProvider<string> {
+type ZAiModelId = InternationalZAiModelId | MainlandZAiModelId
+
+export class ZAiHandler extends BaseOpenAiCompatibleProvider<ZAiModelId> {
 	constructor(options: ApiHandlerOptions) {
-		const isChina = zaiApiLineConfigs[options.zaiApiLine ?? "international_coding"].isChina
-		const models = (isChina ? mainlandZAiModels : internationalZAiModels) as Record<
-			string,
-			import("@roo-code/types").ModelInfo
+		const line = options.zaiApiLine ?? "international_coding"
+		const { isChina, baseUrl } = zaiApiLineConfigs[line]
+
+		const defaultModelId = isChina ? mainlandZAiDefaultModelId : internationalZAiDefaultModelId
+		const providerModels = (isChina ? mainlandZAiModels : internationalZAiModels) as unknown as Record<
+			ZAiModelId,
+			ModelInfo
 		>
-		const defaultModelId = (isChina ? mainlandZAiDefaultModelId : internationalZAiDefaultModelId) as string
 
 		super({
 			...options,
 			providerName: "Z AI",
-			baseURL: zaiApiLineConfigs[options.zaiApiLine ?? "international_coding"].baseUrl,
+			baseURL: baseUrl,
 			apiKey: options.zaiApiKey ?? "not-provided",
-			defaultProviderModelId: defaultModelId as any,
-			providerModels: models as any,
+			defaultProviderModelId: defaultModelId,
+			providerModels,
 			defaultTemperature: ZAI_DEFAULT_TEMPERATURE,
 		})
 	}

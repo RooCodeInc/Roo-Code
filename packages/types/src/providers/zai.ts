@@ -42,6 +42,7 @@ export const internationalZAiModels = {
 		outputPrice: 1.8,
 		cacheWritesPrice: 0,
 		cacheReadsPrice: 0.11,
+		// International pricing tiers for GLM-4.5V are not publicly documented as of 2025-10-20; mainland tiers are defined below.
 		description: "GLM-4.5V is Zhipu's new generation of visual reasoning models based on the MOE architecture.",
 	},
 	"glm-4.5-air": {
