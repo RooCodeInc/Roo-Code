@@ -52,7 +52,7 @@ import { t } from "../../i18n"
 import { ClineApiReqCancelReason, ClineApiReqInfo } from "../../shared/ExtensionMessage"
 import { getApiMetrics, hasTokenUsageChanged } from "../../shared/getApiMetrics"
 import { ClineAskResponse } from "../../shared/WebviewMessage"
-import { defaultModeSlug } from "../../shared/modes"
+import { defaultModeSlug, getModeBySlug, getGroupName } from "../../shared/modes"
 import { DiffStrategy } from "../../shared/tools"
 import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
 import { getModelMaxOutputTokens } from "../../shared/api"
@@ -2414,10 +2414,20 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				throw new Error("Provider not available")
 			}
 
+			// Align browser tool enablement with generateSystemPrompt: require model image support,
+			// mode to include the browser group, and the user setting to be enabled.
+			const modeConfig = getModeBySlug(mode, customModes)
+			const modeSupportsBrowser = modeConfig?.groups.some((group) => getGroupName(group) === "browser") ?? false
+
+			const canUseBrowserTool =
+				(this.api.getModel().info.supportsImages ?? false) &&
+				modeSupportsBrowser &&
+				(browserToolEnabled ?? true)
+
 			return SYSTEM_PROMPT(
 				provider.context,
 				this.cwd,
-				(this.api.getModel().info.supportsImages ?? false) && (browserToolEnabled ?? true),
+				canUseBrowserTool,
 				mcpHub,
 				this.diffStrategy,
 				browserViewportSize,

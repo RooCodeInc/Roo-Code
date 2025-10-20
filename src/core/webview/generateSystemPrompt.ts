@@ -53,7 +53,7 @@ export const generateSystemPrompt = async (provider: ClineProvider, message: Web
 		const tempApiHandler = buildApiHandler(apiConfiguration)
 		modelSupportsImages = tempApiHandler.getModel().info.supportsImages ?? false
 	} catch (error) {
-		console.error("Error checking if model supports computer use:", error)
+		console.error("Error checking if model supports images:", error)
 	}
 
 	// Check if the current mode includes the browser tool group
