@@ -2417,7 +2417,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			return SYSTEM_PROMPT(
 				provider.context,
 				this.cwd,
-				(this.api.getModel().info.supportsComputerUse ?? false) && (browserToolEnabled ?? true),
+				(this.api.getModel().info.supportsImages ?? false) && (browserToolEnabled ?? true),
 				mcpHub,
 				this.diffStrategy,
 				browserViewportSize,
