@@ -96,7 +96,7 @@ describe("ZAiHandler", () => {
 			expect(model.id).toBe(testModelId)
 			expect(model.info).toEqual(internationalZAiModels[testModelId])
 			expect(model.info.supportsImages).toBe(true)
-			expect(model.info.maxTokens).toBe(98_304)
+			expect(model.info.maxTokens).toBe(16_384)
 			expect(model.info.contextWindow).toBe(131_072)
 		})
 	})

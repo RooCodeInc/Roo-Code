@@ -2,11 +2,14 @@ import type { ModelInfo } from "../model.js"
 import { ZaiApiLine } from "../provider-settings.js"
 
 // Z AI
+// https://docs.z.ai/guides/llm/glm-4-32b-0414-128k
 // https://docs.z.ai/guides/llm/glm-4.5
+// https://docs.z.ai/guides/llm/glm-4.6
 // https://docs.z.ai/guides/overview/pricing
+// https://bigmodel.cn/pricing
 
 export type InternationalZAiModelId = keyof typeof internationalZAiModels
-export const internationalZAiDefaultModelId: InternationalZAiModelId = "glm-4.5"
+export const internationalZAiDefaultModelId: InternationalZAiModelId = "glm-4.6"
 export const internationalZAiModels = {
 	"glm-4.5": {
 		maxTokens: 98_304,
@@ -59,7 +62,7 @@ export const internationalZAiModels = {
 		maxTokens: 98_304,
 		contextWindow: 131_072,
 		supportsImages: false,
-		supportsPromptCache: false,
+		supportsPromptCache: true,
 		inputPrice: 0,
 		outputPrice: 0,
 		cacheWritesPrice: 0,
@@ -67,7 +70,7 @@ export const internationalZAiModels = {
 		description: "GLM-4.5-Flash is a free, high-speed model excellent for reasoning, coding, and agentic tasks.",
 	},
 	"glm-4.5v": {
-		maxTokens: 98_304,
+		maxTokens: 16_384,
 		contextWindow: 131_072,
 		supportsImages: true,
 		supportsPromptCache: true,
@@ -104,7 +107,7 @@ export const internationalZAiModels = {
 } as const satisfies Record<string, ModelInfo>
 
 export type MainlandZAiModelId = keyof typeof mainlandZAiModels
-export const mainlandZAiDefaultModelId: MainlandZAiModelId = "glm-4.5"
+export const mainlandZAiDefaultModelId: MainlandZAiModelId = "glm-4.6"
 export const mainlandZAiModels = {
 	"glm-4.5": {
 		maxTokens: 98_304,
@@ -117,26 +120,6 @@ export const mainlandZAiModels = {
 		cacheReadsPrice: 0.057,
 		description:
 			"GLM-4.5 is Zhipu's latest featured model. Its comprehensive capabilities in reasoning, coding, and agent reach the state-of-the-art (SOTA) level among open-source models, with a context length of up to 128k.",
-		tiers: [
-			{
-				contextWindow: 32_000,
-				inputPrice: 0.21,
-				outputPrice: 1.0,
-				cacheReadsPrice: 0.043,
-			},
-			{
-				contextWindow: 128_000,
-				inputPrice: 0.29,
-				outputPrice: 1.14,
-				cacheReadsPrice: 0.057,
-			},
-			{
-				contextWindow: Infinity,
-				inputPrice: 0.29,
-				outputPrice: 1.14,
-				cacheReadsPrice: 0.057,
-			},
-		],
 	},
 	"glm-4.5-air": {
 		maxTokens: 98_304,
@@ -149,26 +132,6 @@ export const mainlandZAiModels = {
 		cacheReadsPrice: 0.02,
 		description:
 			"GLM-4.5-Air is the lightweight version of GLM-4.5. It balances performance and cost-effectiveness, and can flexibly switch to hybrid thinking models.",
-		tiers: [
-			{
-				contextWindow: 32_000,
-				inputPrice: 0.07,
-				outputPrice: 0.4,
-				cacheReadsPrice: 0.014,
-			},
-			{
-				contextWindow: 128_000,
-				inputPrice: 0.1,
-				outputPrice: 0.6,
-				cacheReadsPrice: 0.02,
-			},
-			{
-				contextWindow: Infinity,
-				inputPrice: 0.1,
-				outputPrice: 0.6,
-				cacheReadsPrice: 0.02,
-			},
-		],
 	},
 	"glm-4.5-x": {
 		maxTokens: 98_304,
@@ -227,32 +190,6 @@ export const mainlandZAiModels = {
 		cacheReadsPrice: 0.057,
 		description:
 			"GLM-4.6 is Zhipu's newest model with an extended context window of up to 200k tokens, providing enhanced capabilities for processing longer documents and conversations.",
-		tiers: [
-			{
-				contextWindow: 32_000,
-				inputPrice: 0.21,
-				outputPrice: 1.0,
-				cacheReadsPrice: 0.043,
-			},
-			{
-				contextWindow: 128_000,
-				inputPrice: 0.29,
-				outputPrice: 1.14,
-				cacheReadsPrice: 0.057,
-			},
-			{
-				contextWindow: 200_000,
-				inputPrice: 0.29,
-				outputPrice: 1.14,
-				cacheReadsPrice: 0.057,
-			},
-			{
-				contextWindow: Infinity,
-				inputPrice: 0.29,
-				outputPrice: 1.14,
-				cacheReadsPrice: 0.057,
-			},
-		],
 	},
 } as const satisfies Record<string, ModelInfo>
 
