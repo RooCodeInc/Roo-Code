@@ -197,12 +197,12 @@ export const ZAI_DEFAULT_TEMPERATURE = 0
 
 export const zaiApiLineConfigs = {
 	international_coding: {
-		name: "International Coding Plan",
+		name: "International",
 		baseUrl: "https://api.z.ai/api/coding/paas/v4",
 		isChina: false,
 	},
 	china_coding: {
-		name: "China Coding Plan",
+		name: "China",
 		baseUrl: "https://open.bigmodel.cn/api/coding/paas/v4",
 		isChina: true,
 	},
