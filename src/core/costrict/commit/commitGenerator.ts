@@ -12,7 +12,7 @@ import { truncateOutput } from "../../../integrations/misc/extract-text"
 
 const execAsync = promisify(exec)
 
-const GIT_OUTPUT_CHAR_LIMIT = 40000
+const GIT_OUTPUT_CHAR_LIMIT = 50_000
 /**
  * Commit message generator service
  */
@@ -71,40 +71,56 @@ export class CommitMessageGenerator {
 	 */
 	private async getGitDiffStreaming(): Promise<string> {
 		return new Promise((resolve, reject) => {
-			const git = spawn("git", ["diff", "HEAD"], { cwd: this.workspaceRoot })
-			let output = ""
-			let outputSize = 0
-			const MAX_OUTPUT_SIZE = 1024 * 1024 * 10 // 10MB limit
+			// 首先检查是否有任何提交
+			execAsync("git rev-parse --verify HEAD", { cwd: this.workspaceRoot })
+				.then(() => {
+					// 有提交，使用 git diff HEAD
+					this.runGitDiff(["diff", "HEAD"], resolve, reject)
+				})
+				.catch(() => {
+					// 没有提交，使用 git diff 获取所有更改
+					this.runGitDiff(["diff"], resolve, reject)
+				})
+		})
+	}
 
-			git.stdout.on("data", (data) => {
-				const chunk = data.toString()
-				outputSize += chunk.length
+	/**
+	 * Run git diff command with specified arguments
+	 */
+	private runGitDiff(args: string[], resolve: (value: string) => void, reject: (reason?: any) => void): void {
+		const git = spawn("git", args, { cwd: this.workspaceRoot })
+		let output = ""
+		let outputSize = 0
+		const MAX_OUTPUT_SIZE = 1024 * 1024 * 10 // 10MB limit
 
-				// Check if we're approaching the size limit
-				if (outputSize > MAX_OUTPUT_SIZE) {
-					git.kill()
-					reject(new Error(`Git diff output exceeds size limit of ${MAX_OUTPUT_SIZE} bytes`))
-					return
-				}
+		git.stdout.on("data", (data) => {
+			const chunk = data.toString()
+			outputSize += chunk.length
 
-				output += chunk
-			})
+			// Check if we're approaching the size limit
+			if (outputSize > MAX_OUTPUT_SIZE) {
+				git.kill()
+				reject(new Error(`Git diff output exceeds size limit of ${MAX_OUTPUT_SIZE} bytes`))
+				return
+			}
 
-			git.stderr.on("data", (data) => {
-				console.error("Git diff stderr:", data.toString())
-			})
+			output += chunk
+		})
 
-			git.on("close", (code) => {
-				if (code === 0) {
-					resolve(output)
-				} else {
-					reject(new Error(`Git diff process exited with code ${code}`))
-				}
-			})
+		git.stderr.on("data", (data) => {
+			console.error("Git diff stderr:", data.toString())
+		})
 
-			git.on("error", (error) => {
-				reject(error)
-			})
+		git.on("close", (code) => {
+			if (code === 0) {
+				resolve(output)
+			} else {
+				reject(new Error(`Git diff process exited with code ${code}`))
+			}
+		})
+
+		git.on("error", (error) => {
+			reject(error)
 		})
 	}
 

@@ -21,7 +21,7 @@ let commitServiceInstance: CommitService | null = null
 // Execution lock to prevent concurrent calls
 let isExecuting = false
 
-export async function handleGenerateCommitMessage(provider: ClineProvider): Promise<void> {
+export async function handleGenerateCommitMessage(provider: ClineProvider, cb: any): Promise<void> {
 	const workspaceRoot = CommitService.getWorkspaceRoot()
 	if (!workspaceRoot) {
 		throw new Error(t("commit:commit.error.noWorkspace"))
@@ -48,7 +48,7 @@ export async function handleGenerateCommitMessage(provider: ClineProvider): Prom
 			commitServiceInstance.initialize(workspaceRoot, provider)
 		}
 
-		await commitServiceInstance.generateAndPopulateCommitMessage()
+		await commitServiceInstance.generateAndPopulateCommitMessage(cb)
 		isExecuting = false
 	} catch (error) {
 		// Reset instance on error to allow recovery

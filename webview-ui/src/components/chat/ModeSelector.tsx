@@ -192,7 +192,7 @@ export const ModeSelector = ({
 
 	return (
 		<Popover open={open} onOpenChange={onOpenChange} data-testid="mode-selector-root">
-			<StandardTooltip content={title}>
+			<StandardTooltip content={`${title} (${zgsmCodeMode})`}>
 				<PopoverTrigger
 					disabled={disabled}
 					data-testid="mode-selector-trigger"
@@ -209,7 +209,9 @@ export const ModeSelector = ({
 							? "bg-primary opacity-90 hover:bg-primary-hover text-vscode-button-foreground"
 							: null,
 					)}>
-					<span className="truncate">{selectedMode?.name || ""}</span>
+					<span className="truncate">
+						{selectedMode?.name || ""} ({zgsmCodeMode})
+					</span>
 				</PopoverTrigger>
 			</StandardTooltip>
 			<PopoverContent

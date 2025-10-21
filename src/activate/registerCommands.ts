@@ -319,9 +319,11 @@ const getCommandsMap = ({ context, outputChannel, provider }: RegisterCommandOpt
 			action: "toggleAutoApprove",
 		})
 	},
-	generateCommitMessage: async () => {
+	generateCommitMessage: async (e: any) => {
 		try {
-			await handleGenerateCommitMessage(provider)
+			await handleGenerateCommitMessage(provider, (mssage: string) => {
+				e.inputBox.value = mssage
+			})
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error)
 			vscode.window.showErrorMessage(`Failed to generate commit message: ${errorMessage}`)
