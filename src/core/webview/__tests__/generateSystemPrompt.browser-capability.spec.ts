@@ -12,7 +12,7 @@ vi.mock("../../prompts/system", () => ({
 }))
 
 // Mock API handler so we control model.info flags
-vi.mock("../../api", () => ({
+vi.mock("../../../api", () => ({
 	buildApiHandler: vi.fn((_config) => ({
 		getModel: () => ({
 			id: "mock-model",
@@ -33,9 +33,10 @@ vi.mock("../../api", () => ({
 const mockCustomModes = [
 	{
 		slug: "test-mode",
-		label: "Test Mode",
+		name: "Test Mode",
+		roleDefinition: "Test role",
 		description: "",
-		groups: [{ id: "browser" }], // critical: include browser group
+		groups: ["browser"], // critical: include browser group
 	},
 ]
 
