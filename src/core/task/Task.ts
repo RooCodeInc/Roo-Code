@@ -53,6 +53,7 @@ import { ClineApiReqCancelReason, ClineApiReqInfo } from "../../shared/Extension
 import { getApiMetrics, hasTokenUsageChanged } from "../../shared/getApiMetrics"
 import { ClineAskResponse } from "../../shared/WebviewMessage"
 import { defaultModeSlug, getModeBySlug, getGroupName } from "../../shared/modes"
+import { modelSupportsBrowserCapability } from "../../shared/browserCapability"
 import { DiffStrategy } from "../../shared/tools"
 import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
 import { getModelMaxOutputTokens } from "../../shared/api"
@@ -2420,7 +2421,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			const modeSupportsBrowser = modeConfig?.groups.some((group) => getGroupName(group) === "browser") ?? false
 
 			const canUseBrowserTool =
-				(this.api.getModel().info.supportsImages ?? false) &&
+				modelSupportsBrowserCapability(this.api.getModel().info, apiConfiguration) &&
 				modeSupportsBrowser &&
 				(browserToolEnabled ?? true)
 
