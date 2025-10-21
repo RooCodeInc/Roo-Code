@@ -218,10 +218,6 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				yield this.processUsageMetrics(lastUsage, modelInfo)
 			}
 		} else {
-			// Note: o1/o3/o4 models do not support streaming, non-1 temperature, or system prompts.
-			// This non-streaming branch is for general OpenAI-compatible providers that DO support system prompts.
-			// The o1/o3/o4 family is handled above in handleO3FamilyMessage(), so we still use a proper "system" role
-			// here for consistency with streaming behavior and provider expectations.
 			const systemMessage: OpenAI.Chat.ChatCompletionSystemMessageParam = {
 				role: "system",
 				content: systemPrompt,
