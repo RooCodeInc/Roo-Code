@@ -1,5 +1,6 @@
 // npx vitest src/components/settings/__tests__/CondensationProviderSettings.spec.tsx
 
+import React from "react"
 import { render, screen, fireEvent, waitFor } from "@/utils/test-utils"
 import { CondensationProviderSettings } from "../CondensationProviderSettings"
 

@@ -1,6 +1,14 @@
 import { render, screen, fireEvent } from "@testing-library/react"
-
+import { ReactElement } from "react"
 import { MaxCostInput } from "../MaxCostInput"
+
+// Wrapper component to provide React context
+const TestWrapper = ({ children }: { children: React.ReactNode }) => {
+	return children as ReactElement
+}
+
+// Custom render function with React context
+const customRender = (ui: ReactElement, options = {}) => render(ui, { wrapper: TestWrapper, ...options })
 
 vi.mock("@/utils/vscode", () => ({
 	vscode: { postMessage: vi.fn() },
@@ -24,21 +32,21 @@ describe("MaxCostInput", () => {
 	})
 
 	it("shows empty input when allowedMaxCost is undefined", () => {
-		render(<MaxCostInput allowedMaxCost={undefined} onValueChange={mockOnValueChange} />)
+		customRender(<MaxCostInput allowedMaxCost={undefined} onValueChange={mockOnValueChange} />)
 
 		const input = screen.getByPlaceholderText("Unlimited")
 		expect(input).toHaveValue("")
 	})
 
 	it("shows formatted cost value when allowedMaxCost is provided", () => {
-		render(<MaxCostInput allowedMaxCost={5.5} onValueChange={mockOnValueChange} />)
+		customRender(<MaxCostInput allowedMaxCost={5.5} onValueChange={mockOnValueChange} />)
 
 		const input = screen.getByPlaceholderText("Unlimited")
 		expect(input).toHaveValue("5.5")
 	})
 
 	it("calls onValueChange when input changes", () => {
-		render(<MaxCostInput allowedMaxCost={undefined} onValueChange={mockOnValueChange} />)
+		customRender(<MaxCostInput allowedMaxCost={undefined} onValueChange={mockOnValueChange} />)
 
 		const input = screen.getByPlaceholderText("Unlimited")
 		fireEvent.input(input, { target: { value: "10.25" } })
@@ -47,7 +55,7 @@ describe("MaxCostInput", () => {
 	})
 
 	it("calls onValueChange with undefined when input is cleared", () => {
-		render(<MaxCostInput allowedMaxCost={5.0} onValueChange={mockOnValueChange} />)
+		customRender(<MaxCostInput allowedMaxCost={5.0} onValueChange={mockOnValueChange} />)
 
 		const input = screen.getByPlaceholderText("Unlimited")
 		fireEvent.input(input, { target: { value: "" } })
@@ -56,7 +64,7 @@ describe("MaxCostInput", () => {
 	})
 
 	it("handles decimal input correctly", () => {
-		render(<MaxCostInput allowedMaxCost={undefined} onValueChange={mockOnValueChange} />)
+		customRender(<MaxCostInput allowedMaxCost={undefined} onValueChange={mockOnValueChange} />)
 
 		const input = screen.getByPlaceholderText("Unlimited")
 		fireEvent.input(input, { target: { value: "2.99" } })
@@ -65,7 +73,7 @@ describe("MaxCostInput", () => {
 	})
 
 	it("accepts zero as a valid value", () => {
-		render(<MaxCostInput allowedMaxCost={undefined} onValueChange={mockOnValueChange} />)
+		customRender(<MaxCostInput allowedMaxCost={undefined} onValueChange={mockOnValueChange} />)
 
 		const input = screen.getByPlaceholderText("Unlimited")
 		fireEvent.input(input, { target: { value: "0" } })
@@ -74,7 +82,7 @@ describe("MaxCostInput", () => {
 	})
 
 	it("allows typing decimal values starting with zero", () => {
-		render(<MaxCostInput allowedMaxCost={undefined} onValueChange={mockOnValueChange} />)
+		customRender(<MaxCostInput allowedMaxCost={undefined} onValueChange={mockOnValueChange} />)
 
 		const input = screen.getByPlaceholderText("Unlimited")
 		fireEvent.input(input, { target: { value: "0.15" } })
