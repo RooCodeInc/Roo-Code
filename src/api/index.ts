@@ -40,6 +40,7 @@ import {
 	FeatherlessHandler,
 	VercelAiGatewayHandler,
 	DeepInfraHandler,
+	HeliconeHandler,
 } from "./providers"
 import { NativeOllamaHandler } from "./providers/native-ollama"
 
@@ -99,6 +100,8 @@ export function buildApiHandler(configuration: ProviderSettings): ApiHandler {
 			return new GlamaHandler(options)
 		case "openrouter":
 			return new OpenRouterHandler(options)
+		case "helicone":
+			return new HeliconeHandler(options)
 		case "bedrock":
 			return new AwsBedrockHandler(options)
 		case "vertex":

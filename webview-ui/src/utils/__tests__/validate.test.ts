@@ -37,6 +37,7 @@ describe("Model Validation Functions", () => {
 		requesty: {},
 		unbound: {},
 		litellm: {},
+		helicone: {},
 		ollama: {},
 		lmstudio: {},
 		deepinfra: {},

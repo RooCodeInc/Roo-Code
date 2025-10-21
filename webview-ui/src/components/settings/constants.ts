@@ -21,6 +21,7 @@ import {
 	fireworksModels,
 	rooModels,
 	featherlessModels,
+	heliconeModels,
 } from "@roo-code/types"
 
 export const MODELS_BY_PROVIDER: Partial<Record<ProviderName, Record<string, ModelInfo>>> = {
@@ -44,9 +45,11 @@ export const MODELS_BY_PROVIDER: Partial<Record<ProviderName, Record<string, Mod
 	fireworks: fireworksModels,
 	roo: rooModels,
 	featherless: featherlessModels,
+	helicone: heliconeModels,
 }
 
 export const PROVIDERS = [
+	{ value: "helicone", label: "Helicone" },
 	{ value: "openrouter", label: "OpenRouter" },
 	{ value: "deepinfra", label: "DeepInfra" },
 	{ value: "anthropic", label: "Anthropic" },

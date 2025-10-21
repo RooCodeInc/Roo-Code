@@ -14,6 +14,7 @@ import {
 	fireworksModels,
 	geminiModels,
 	groqModels,
+	heliconeModels,
 	ioIntelligenceModels,
 	mistralModels,
 	moonshotModels,
@@ -129,6 +130,7 @@ export const providerNames = [
 	"gemini",
 	"gemini-cli",
 	"groq",
+	"helicone",
 	"mistral",
 	"moonshot",
 	"openai-native",
@@ -211,6 +213,13 @@ const openRouterSchema = baseProviderSettingsSchema.extend({
 	openRouterBaseUrl: z.string().optional(),
 	openRouterSpecificProvider: z.string().optional(),
 	openRouterUseMiddleOutTransform: z.boolean().optional(),
+})
+
+const heliconeSchema = baseProviderSettingsSchema.extend({
+	heliconeApiKey: z.string().optional(),
+	heliconeModelId: z.string().optional(),
+	heliconeBaseUrl: z.string().optional(),
+	heliconeSpecificProvider: z.string().optional(),
 })
 
 const bedrockSchema = apiModelIdProviderModelSchema.extend({
@@ -421,6 +430,7 @@ export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProv
 	claudeCodeSchema.merge(z.object({ apiProvider: z.literal("claude-code") })),
 	glamaSchema.merge(z.object({ apiProvider: z.literal("glama") })),
 	openRouterSchema.merge(z.object({ apiProvider: z.literal("openrouter") })),
+	heliconeSchema.merge(z.object({ apiProvider: z.literal("helicone") })),
 	bedrockSchema.merge(z.object({ apiProvider: z.literal("bedrock") })),
 	vertexSchema.merge(z.object({ apiProvider: z.literal("vertex") })),
 	openAiSchema.merge(z.object({ apiProvider: z.literal("openai") })),
@@ -462,6 +472,7 @@ export const providerSettingsSchema = z.object({
 	...claudeCodeSchema.shape,
 	...glamaSchema.shape,
 	...openRouterSchema.shape,
+	...heliconeSchema.shape,
 	...bedrockSchema.shape,
 	...vertexSchema.shape,
 	...openAiSchema.shape,
@@ -517,6 +528,7 @@ export const modelIdKeys = [
 	"apiModelId",
 	"glamaModelId",
 	"openRouterModelId",
+	"heliconeModelId",
 	"openAiModelId",
 	"ollamaModelId",
 	"lmStudioModelId",
@@ -551,6 +563,7 @@ export const modelIdKeysByProvider: Record<TypicalProvider, ModelIdKey> = {
 	"claude-code": "apiModelId",
 	glama: "glamaModelId",
 	openrouter: "openRouterModelId",
+	helicone: "apiModelId",
 	bedrock: "apiModelId",
 	vertex: "apiModelId",
 	"openai-native": "openAiModelId",
@@ -656,6 +669,7 @@ export const MODELS_BY_PROVIDER: Record<
 		models: Object.keys(geminiModels),
 	},
 	groq: { id: "groq", label: "Groq", models: Object.keys(groqModels) },
+	helicone: { id: "helicone", label: "Helicone", models: Object.keys(heliconeModels) },
 	"io-intelligence": {
 		id: "io-intelligence",
 		label: "IO Intelligence",

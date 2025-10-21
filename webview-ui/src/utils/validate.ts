@@ -43,6 +43,11 @@ function validateModelsAndKeysProvided(apiConfiguration: ProviderSettings): stri
 				return i18next.t("settings:validation.apiKey")
 			}
 			break
+		case "helicone":
+			if (!apiConfiguration.heliconeApiKey) {
+				return i18next.t("settings:validation.apiKey")
+			}
+			break
 		case "glama":
 			if (!apiConfiguration.glamaApiKey) {
 				return i18next.t("settings:validation.apiKey")

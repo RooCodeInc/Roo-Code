@@ -37,6 +37,7 @@ import {
 	rooDefaultModelId,
 	vercelAiGatewayDefaultModelId,
 	deepInfraDefaultModelId,
+	heliconeDefaultModelId,
 } from "@roo-code/types"
 
 import { vscode } from "@src/utils/vscode"
@@ -83,6 +84,7 @@ import {
 	OpenAI,
 	OpenAICompatible,
 	OpenRouter,
+	Helicone,
 	QwenCode,
 	Requesty,
 	SambaNova,
@@ -322,6 +324,7 @@ const ApiOptions = ({
 			> = {
 				deepinfra: { field: "deepInfraModelId", default: deepInfraDefaultModelId },
 				openrouter: { field: "openRouterModelId", default: openRouterDefaultModelId },
+				helicone: { field: "heliconeModelId", default: heliconeDefaultModelId },
 				glama: { field: "glamaModelId", default: glamaDefaultModelId },
 				unbound: { field: "unboundModelId", default: unboundDefaultModelId },
 				requesty: { field: "requestyModelId", default: requestyDefaultModelId },
@@ -467,6 +470,15 @@ const ApiOptions = ({
 					fromWelcomeView={fromWelcomeView}
 					organizationAllowList={organizationAllowList}
 					modelValidationError={modelValidationError}
+				/>
+			)}
+
+			{selectedProvider === "helicone" && (
+				<Helicone
+					apiConfiguration={apiConfiguration}
+					setApiConfigurationField={setApiConfigurationField}
+					// TODO [HELICONE]: add router models, selected model id,
+					// fromWelcomeView
 				/>
 			)}
 
