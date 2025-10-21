@@ -53,7 +53,7 @@ import { ClineApiReqCancelReason, ClineApiReqInfo } from "../../shared/Extension
 import { getApiMetrics, hasTokenUsageChanged } from "../../shared/getApiMetrics"
 import { ClineAskResponse } from "../../shared/WebviewMessage"
 import { defaultModeSlug, getModeBySlug, getGroupName } from "../../shared/modes"
-import { modelSupportsBrowserCapability } from "../../shared/browserCapability"
+import { computeCanUseBrowserTool } from "../../shared/browserCapability"
 import { DiffStrategy } from "../../shared/tools"
 import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
 import { getModelMaxOutputTokens } from "../../shared/api"
@@ -2420,10 +2420,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			const modeConfig = getModeBySlug(mode ?? defaultModeSlug, customModes)
 			const modeSupportsBrowser = modeConfig?.groups.some((group) => getGroupName(group) === "browser") ?? false
 
-			const canUseBrowserTool =
-				modelSupportsBrowserCapability(this.api.getModel().info, apiConfiguration) &&
-				modeSupportsBrowser &&
-				(browserToolEnabled ?? true)
+			const canUseBrowserTool = computeCanUseBrowserTool(
+				this.api.getModel().info,
+				modeSupportsBrowser,
+				browserToolEnabled,
+				apiConfiguration,
+			)
 
 			return SYSTEM_PROMPT(
 				provider.context,

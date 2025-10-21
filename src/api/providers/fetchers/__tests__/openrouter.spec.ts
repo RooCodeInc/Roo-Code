@@ -50,8 +50,6 @@ describe("OpenRouter API", () => {
 
 			expect(ourCachingModels.sort()).toEqual(expectedCachingModels)
 
-			// Computer-use specific assertions removed. We no longer track supportsComputerUse.
-
 			expect(
 				Object.entries(models)
 					.filter(([_, model]) => model.supportsReasoningEffort)
