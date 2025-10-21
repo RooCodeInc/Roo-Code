@@ -252,8 +252,8 @@ describe("FireworksHandler", () => {
 		expect(model.id).toBe(testModelId)
 		expect(model.info).toEqual(
 			expect.objectContaining({
-				maxTokens: 16384,
-				contextWindow: 128000,
+				maxTokens: 25344,
+				contextWindow: 198000,
 				supportsImages: false,
 				supportsPromptCache: false,
 				inputPrice: 0.55,

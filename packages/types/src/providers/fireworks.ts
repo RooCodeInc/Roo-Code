@@ -107,8 +107,8 @@ export const fireworksModels = {
 			"Z.ai GLM-4.5-Air with 106B total parameters and 12B active parameters. Features unified reasoning, coding, and intelligent agent capabilities.",
 	},
 	"accounts/fireworks/models/glm-4p6": {
-		maxTokens: 16384,
-		contextWindow: 128000,
+		maxTokens: 25344,
+		contextWindow: 198000,
 		supportsImages: false,
 		supportsPromptCache: false,
 		inputPrice: 0.55,
