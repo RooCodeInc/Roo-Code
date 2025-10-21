@@ -10,6 +10,7 @@ export type FireworksModelId =
 	| "accounts/fireworks/models/deepseek-v3p1"
 	| "accounts/fireworks/models/glm-4p5"
 	| "accounts/fireworks/models/glm-4p5-air"
+	| "accounts/fireworks/models/glm-4p6"
 	| "accounts/fireworks/models/gpt-oss-20b"
 	| "accounts/fireworks/models/gpt-oss-120b"
 
@@ -104,6 +105,16 @@ export const fireworksModels = {
 		outputPrice: 2.19,
 		description:
 			"Z.ai GLM-4.5-Air with 106B total parameters and 12B active parameters. Features unified reasoning, coding, and intelligent agent capabilities.",
+	},
+	"accounts/fireworks/models/glm-4p6": {
+		maxTokens: 16384,
+		contextWindow: 128000,
+		supportsImages: false,
+		supportsPromptCache: false,
+		inputPrice: 0.55,
+		outputPrice: 2.19,
+		description:
+			"Z.ai GLM-4.6 is an advanced coding model with exceptional performance on complex programming tasks. Features improved reasoning capabilities and enhanced code generation quality, making it ideal for software development workflows.",
 	},
 	"accounts/fireworks/models/gpt-oss-20b": {
 		maxTokens: 16384,

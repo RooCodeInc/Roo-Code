@@ -242,6 +242,27 @@ describe("FireworksHandler", () => {
 		)
 	})
 
+	it("should return GLM-4.6 model with correct configuration", () => {
+		const testModelId: FireworksModelId = "accounts/fireworks/models/glm-4p6"
+		const handlerWithModel = new FireworksHandler({
+			apiModelId: testModelId,
+			fireworksApiKey: "test-fireworks-api-key",
+		})
+		const model = handlerWithModel.getModel()
+		expect(model.id).toBe(testModelId)
+		expect(model.info).toEqual(
+			expect.objectContaining({
+				maxTokens: 16384,
+				contextWindow: 128000,
+				supportsImages: false,
+				supportsPromptCache: false,
+				inputPrice: 0.55,
+				outputPrice: 2.19,
+				description: expect.stringContaining("Z.ai GLM-4.6 is an advanced coding model"),
+			}),
+		)
+	})
+
 	it("should return gpt-oss-20b model with correct configuration", () => {
 		const testModelId: FireworksModelId = "accounts/fireworks/models/gpt-oss-20b"
 		const handlerWithModel = new FireworksHandler({
