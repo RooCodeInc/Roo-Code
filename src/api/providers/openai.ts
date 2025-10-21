@@ -224,8 +224,6 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			// here for consistency with streaming behavior and provider expectations.
 			const systemMessage: OpenAI.Chat.ChatCompletionSystemMessageParam = {
 				role: "system",
-				// Use "system" to match streaming behavior; many OpenAI-compatible providers treat system prompts specially
-				// (e.g., safety, formatting, or caching), and tests assert consistency across modes.
 				content: systemPrompt,
 			}
 
