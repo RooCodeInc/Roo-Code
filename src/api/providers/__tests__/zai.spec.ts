@@ -82,7 +82,7 @@ describe("ZAiHandler", () => {
 			const model = handlerWithModel.getModel()
 			expect(model.id).toBe(testModelId)
 			expect(model.info).toEqual(internationalZAiModels[testModelId])
-			expect(model.info.contextWindow).toBe(204_800)
+			expect(model.info.contextWindow).toBe(200_000)
 		})
 
 		it("should return GLM-4.5v international model with vision support", () => {
@@ -96,7 +96,7 @@ describe("ZAiHandler", () => {
 			expect(model.id).toBe(testModelId)
 			expect(model.info).toEqual(internationalZAiModels[testModelId])
 			expect(model.info.supportsImages).toBe(true)
-			expect(model.info.maxTokens).toBe(16_384)
+			expect(model.info.maxTokens).toBe(98_304)
 			expect(model.info.contextWindow).toBe(131_072)
 		})
 	})
