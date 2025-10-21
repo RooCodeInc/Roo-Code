@@ -75,7 +75,7 @@ export class ExtensionChannel {
 		this.startHeartbeat(socket)
 	}
 
-	public onDisconnect(): void {
+	public async onDisconnect(): Promise<void> {
 		this.socket = null
 		this.stopHeartbeat()
 	}

@@ -1,6 +1,8 @@
 import crypto from "crypto"
 import os from "os"
 
+import type { Socket } from "socket.io-client"
+
 import {
 	type TaskProviderLike,
 	type CloudUserInfo,
@@ -91,7 +93,7 @@ export class BridgeOrchestrator {
 				await options.provider.getTelemetryProperties()
 
 				BridgeOrchestrator.instance = new BridgeOrchestrator(options)
-				await BridgeOrchestrator.instance.connect()
+				await BridgeOrchestrator.instance.socketTransport.connect()
 			} catch (error) {
 				console.error(
 					`[BridgeOrchestrator#connectOrDisconnect] connect() failed: ${error instanceof Error ? error.message : String(error)}`,
@@ -103,7 +105,7 @@ export class BridgeOrchestrator {
 			if (connectionState === ConnectionState.FAILED || connectionState === ConnectionState.DISCONNECTED) {
 				console.log(`[BridgeOrchestrator#connectOrDisconnect] Re-connecting... (state: ${connectionState})`)
 
-				instance.reconnect().catch((error) => {
+				instance.socketTransport.reconnect().catch((error) => {
 					console.error(
 						`[BridgeOrchestrator#connectOrDisconnect] reconnect() failed: ${error instanceof Error ? error.message : String(error)}`,
 					)
@@ -124,7 +126,7 @@ export class BridgeOrchestrator {
 
 			try {
 				console.log(`[BridgeOrchestrator#connectOrDisconnect] Disconnecting... (state: ${connectionState})`)
-				await instance.disconnect()
+				await instance.socketTransport.disconnect()
 			} catch (error) {
 				console.error(
 					`[BridgeOrchestrator#connectOrDisconnect] disconnect() failed: ${error instanceof Error ? error.message : String(error)}`,
@@ -161,9 +163,18 @@ export class BridgeOrchestrator {
 				reconnectionDelay: this.RECONNECT_DELAY,
 				reconnectionDelayMax: this.RECONNECT_DELAY_MAX,
 			},
-			onConnect: () => this.handleConnect(),
-			onDisconnect: () => this.handleDisconnect(),
-			onReconnect: () => this.handleReconnect(),
+			onConnect: async (socket: Socket) => {
+				this.setupSocketListeners()
+				await this.extensionChannel.onConnect(socket)
+			},
+			onDisconnect: async () => {
+				await this.extensionChannel.onDisconnect()
+				await this.extensionChannel.cleanup(this.socketTransport.getSocket())
+			},
+			onReconnect: async (socket: Socket) => {
+				this.setupSocketListeners()
+				await this.extensionChannel.onReconnect(socket)
+			},
 		})
 
 		this.extensionChannel = new ExtensionChannel({
@@ -193,54 +204,7 @@ export class BridgeOrchestrator {
 				`[BridgeOrchestrator] on(${ExtensionSocketEvents.RELAYED_COMMAND}) -> ${message.type} for ${message.instanceId}`,
 			)
 
-			this.extensionChannel?.handleCommand(message)
+			this.extensionChannel.handleCommand(message)
 		})
-	}
-
-	private async handleConnect() {
-		const socket = this.socketTransport.getSocket()
-
-		if (!socket) {
-			console.error("[BridgeOrchestrator#handleConnect] Socket not available")
-			return
-		}
-
-		await this.extensionChannel.onConnect(socket)
-	}
-
-	private handleDisconnect() {
-		this.extensionChannel.onDisconnect()
-	}
-
-	private async handleReconnect() {
-		const socket = this.socketTransport.getSocket()
-
-		if (!socket) {
-			console.error("[BridgeOrchestrator] Socket not available after reconnect")
-			return
-		}
-
-		// Re-setup socket listeners to ensure they're properly configured
-		// after automatic reconnection (Socket.IO's built-in reconnection)
-		// The socket.off() calls in setupSocketListeners prevent duplicates
-		this.setupSocketListeners()
-
-		await this.extensionChannel.onReconnect(socket)
-	}
-
-	private async connect(): Promise<void> {
-		await this.socketTransport.connect()
-		this.setupSocketListeners()
-	}
-
-	private async disconnect(): Promise<void> {
-		await this.extensionChannel.cleanup(this.socketTransport.getSocket())
-		await this.socketTransport.disconnect()
-		BridgeOrchestrator.instance = null
-	}
-
-	private async reconnect(): Promise<void> {
-		await this.socketTransport.reconnect()
-		this.setupSocketListeners()
 	}
 }
