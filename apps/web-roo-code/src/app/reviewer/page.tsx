@@ -108,7 +108,7 @@ export default function AgentReviewerPage() {
 						<div className="flex flex-col px-4 justify-center space-y-6 sm:space-y-8">
 							<div>
 								<h1 className="text-3xl font-bold tracking-tight mt-8  md:text-left md:text-4xl lg:text-5xl lg:mt-0">
-									Get comprehensive reviews that save you time, not&nbsp;tokens.
+									Get comprehensive code reviews that save you time, not&nbsp;tokens.
 								</h1>
 								<div className="mt-4 max-w-lg space-y-4 text-base text-muted-foreground md:text-left sm:mt-6">
 									<p>
@@ -117,7 +117,7 @@ export default function AgentReviewerPage() {
 										issues.
 									</p>
 									<p>
-										Roo Code&apos;s PR Reviewer flips the model: you bring your own key and leverage
+										Roo Code&apos;s PR Reviewer flips the script: you bring your own key and leverage
 										it to the max – to find real issues, increase code quality and keep your PR
 										queue moving.
 									</p>
