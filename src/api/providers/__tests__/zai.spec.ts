@@ -84,6 +84,21 @@ describe("ZAiHandler", () => {
 			expect(model.info).toEqual(internationalZAiModels[testModelId])
 			expect(model.info.contextWindow).toBe(204_800)
 		})
+
+		it("should return GLM-4.5v international model with vision support", () => {
+			const testModelId: InternationalZAiModelId = "glm-4.5v"
+			const handlerWithModel = new ZAiHandler({
+				apiModelId: testModelId,
+				zaiApiKey: "test-zai-api-key",
+				zaiApiLine: "international_coding",
+			})
+			const model = handlerWithModel.getModel()
+			expect(model.id).toBe(testModelId)
+			expect(model.info).toEqual(internationalZAiModels[testModelId])
+			expect(model.info.supportsImages).toBe(true)
+			expect(model.info.maxTokens).toBe(16_384)
+			expect(model.info.contextWindow).toBe(131_072)
+		})
 	})
 
 	describe("China Z AI", () => {
@@ -133,6 +148,21 @@ describe("ZAiHandler", () => {
 			expect(model.id).toBe(testModelId)
 			expect(model.info).toEqual(mainlandZAiModels[testModelId])
 			expect(model.info.contextWindow).toBe(204_800)
+		})
+
+		it("should return GLM-4.5v China model with vision support", () => {
+			const testModelId: MainlandZAiModelId = "glm-4.5v"
+			const handlerWithModel = new ZAiHandler({
+				apiModelId: testModelId,
+				zaiApiKey: "test-zai-api-key",
+				zaiApiLine: "china_coding",
+			})
+			const model = handlerWithModel.getModel()
+			expect(model.id).toBe(testModelId)
+			expect(model.info).toEqual(mainlandZAiModels[testModelId])
+			expect(model.info.supportsImages).toBe(true)
+			expect(model.info.maxTokens).toBe(16_384)
+			expect(model.info.contextWindow).toBe(131_072)
 		})
 	})
 

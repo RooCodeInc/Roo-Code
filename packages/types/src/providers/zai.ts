@@ -66,6 +66,18 @@ export const internationalZAiModels = {
 		cacheReadsPrice: 0,
 		description: "GLM-4.5-Flash is a free, high-speed model excellent for reasoning, coding, and agentic tasks.",
 	},
+	"glm-4.5v": {
+		maxTokens: 16_384,
+		contextWindow: 131_072,
+		supportsImages: true,
+		supportsPromptCache: true,
+		inputPrice: 0.6,
+		outputPrice: 1.8,
+		cacheWritesPrice: 0,
+		cacheReadsPrice: 0.11,
+		description:
+			"GLM-4.5V is Z.AI's multimodal visual reasoning model (image/video/text/file input), optimized for GUI tasks, grounding, and document/video understanding.",
+	},
 	"glm-4.6": {
 		maxTokens: 98_304,
 		contextWindow: 204_800,
@@ -180,6 +192,18 @@ export const mainlandZAiModels = {
 		cacheWritesPrice: 0,
 		cacheReadsPrice: 0,
 		description: "GLM-4.5-Flash is a free, high-speed model excellent for reasoning, coding, and agentic tasks.",
+	},
+	"glm-4.5v": {
+		maxTokens: 16_384,
+		contextWindow: 131_072,
+		supportsImages: true,
+		supportsPromptCache: true,
+		inputPrice: 0.29,
+		outputPrice: 0.93,
+		cacheWritesPrice: 0,
+		cacheReadsPrice: 0.057,
+		description:
+			"GLM-4.5V is Z.AI's multimodal visual reasoning model (image/video/text/file input), optimized for GUI tasks, grounding, and document/video understanding.",
 	},
 	"glm-4.6": {
 		maxTokens: 98_304,
