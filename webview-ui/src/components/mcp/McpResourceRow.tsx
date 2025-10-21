@@ -25,7 +25,7 @@ const McpResourceRow = ({ item }: McpResourceRowProps) => {
 			</div>
 			<div
 				style={{
-					fontSize: "12px",
+					fontSize: "calc(12px * var(--roo-font-size-multiplier, 1))",
 					opacity: 0.8,
 					margin: "4px 0",
 				}}>
@@ -39,7 +39,7 @@ const McpResourceRow = ({ item }: McpResourceRowProps) => {
 			</div>
 			<div
 				style={{
-					fontSize: "12px",
+					fontSize: "calc(12px * var(--roo-font-size-multiplier, 1))",
 				}}>
 				<span style={{ opacity: 0.8 }}>Returns </span>
 				<code

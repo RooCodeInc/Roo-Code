@@ -402,7 +402,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 											style={{
 												marginRight: "6px",
 												flexShrink: 0,
-												fontSize: "14px",
+												fontSize: "calc(14px * var(--roo-font-size-multiplier, 1))",
 												marginTop: 0,
 											}}
 										/>
@@ -415,7 +415,11 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 								!option.value && (
 									<i
 										className="codicon codicon-chevron-right"
-										style={{ fontSize: "10px", flexShrink: 0, marginLeft: 8 }}
+										style={{
+											fontSize: "calc(10px * var(--roo-font-size-multiplier, 1))",
+											flexShrink: 0,
+											marginLeft: 8,
+										}}
 									/>
 								)}
 						</div>

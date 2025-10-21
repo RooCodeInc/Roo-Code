@@ -16,8 +16,8 @@ describe("UISettings", () => {
 
 	it("displays the correct initial state", () => {
 		const { getByTestId } = render(<UISettings {...defaultProps} reasoningBlockCollapsed={true} />)
-		const checkbox = getByTestId("collapse-thinking-checkbox") as HTMLInputElement
-		expect(checkbox.checked).toBe(true)
+		const checkbox = getByTestId("collapse-thinking-checkbox")
+		expect(checkbox).toHaveAttribute("data-state", "checked")
 	})
 
 	it("calls setCachedStateField when checkbox is toggled", async () => {
@@ -34,10 +34,10 @@ describe("UISettings", () => {
 
 	it("updates checkbox state when prop changes", () => {
 		const { getByTestId, rerender } = render(<UISettings {...defaultProps} reasoningBlockCollapsed={false} />)
-		const checkbox = getByTestId("collapse-thinking-checkbox") as HTMLInputElement
-		expect(checkbox.checked).toBe(false)
+		const checkbox = getByTestId("collapse-thinking-checkbox")
+		expect(checkbox).toHaveAttribute("data-state", "unchecked")
 
 		rerender(<UISettings {...defaultProps} reasoningBlockCollapsed={true} />)
-		expect(checkbox.checked).toBe(true)
+		expect(checkbox).toHaveAttribute("data-state", "checked")
 	})
 })

@@ -15,6 +15,8 @@
 	"command.terminal.explainCommand.title": "Explicar Este Comando",
 	"command.acceptInput.title": "Aceitar Entrada/Sugestão",
 	"command.toggleAutoApprove.title": "Alternar Auto-Aprovação",
+	"command.increaseFontSize.title": "Aumentar Tamanho da Fonte",
+	"command.decreaseFontSize.title": "Diminuir Tamanho da Fonte",
 	"views.activitybar.title": "Roo Code",
 	"views.contextMenu.label": "Roo Code",
 	"views.terminalMenu.label": "Roo Code",
@@ -42,5 +44,6 @@
 	"settings.useAgentRules.description": "Habilita o carregamento de arquivos AGENTS.md para regras específicas do agente (consulte https://agent-rules.org/)",
 	"settings.apiRequestTimeout.description": "Tempo máximo em segundos de espera pelas respostas da API (0 = sem tempo limite, 1-3600s, padrão: 600s). Valores mais altos são recomendados para provedores locais como LM Studio e Ollama que podem precisar de mais tempo de processamento.",
 	"settings.newTaskRequireTodos.description": "Exigir parâmetro todos ao criar novas tarefas com a ferramenta new_task",
-	"settings.codeIndex.embeddingBatchSize.description": "O tamanho do lote para operações de embedding durante a indexação de código. Ajuste isso com base nos limites do seu provedor de API. O padrão é 60."
+	"settings.codeIndex.embeddingBatchSize.description": "O tamanho do lote para operações de embedding durante a indexação de código. Ajuste isso com base nos limites do seu provedor de API. O padrão é 60.",
+	"settings.fontSizeMultiplier.description": "Multiplicador do tamanho da fonte para a interface RooCode. Ajusta todos os tamanhos de fonte proporcionalmente (0.5-3.0, padrão: 1.0)"
 }

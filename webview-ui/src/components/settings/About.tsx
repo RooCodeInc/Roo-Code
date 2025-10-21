@@ -2,7 +2,8 @@ import { HTMLAttributes } from "react"
 import { useAppTranslation } from "@/i18n/TranslationContext"
 import { Trans } from "react-i18next"
 import { Info, Download, Upload, TriangleAlert } from "lucide-react"
-import { VSCodeCheckbox, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
+import { VSCodeLink } from "@vscode/webview-ui-toolkit/react"
+import { Checkbox } from "@/components/ui/checkbox"
 
 import type { TelemetrySetting } from "@roo-code/types"
 
@@ -39,14 +40,16 @@ export const About = ({ telemetrySetting, setTelemetrySetting, className, ...pro
 
 			<Section>
 				<div>
-					<VSCodeCheckbox
-						checked={telemetrySetting !== "disabled"}
-						onChange={(e: any) => {
-							const checked = e.target.checked === true
-							setTelemetrySetting(checked ? "enabled" : "disabled")
-						}}>
-						{t("settings:footer.telemetry.label")}
-					</VSCodeCheckbox>
+					<div className="flex items-center space-x-2">
+						<Checkbox
+							checked={telemetrySetting !== "disabled"}
+							onCheckedChange={(checked) => {
+								const isChecked = checked === true
+								setTelemetrySetting(isChecked ? "enabled" : "disabled")
+							}}
+						/>
+						<span>{t("settings:footer.telemetry.label")}</span>
+					</div>
 					<p className="text-vscode-descriptionForeground text-sm mt-0">
 						<Trans
 							i18nKey="settings:footer.telemetry.description"

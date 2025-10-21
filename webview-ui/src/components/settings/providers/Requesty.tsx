@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react"
-import { VSCodeCheckbox, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
+import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
+import { Checkbox } from "@/components/ui/checkbox"
 
 import { type ProviderSettings, type OrganizationAllowList, requestyDefaultModelId } from "@roo-code/types"
 
@@ -100,18 +101,20 @@ export const Requesty = ({
 				</a>
 			)}
 
-			<VSCodeCheckbox
-				checked={requestyEndpointSelected}
-				onChange={(e: any) => {
-					const isChecked = e.target.checked === true
-					if (!isChecked) {
-						setApiConfigurationField("requestyBaseUrl", undefined)
-					}
+			<div className="flex items-center space-x-2">
+				<Checkbox
+					checked={requestyEndpointSelected}
+					onCheckedChange={(checked) => {
+						const isChecked = checked === true
+						if (!isChecked) {
+							setApiConfigurationField("requestyBaseUrl", undefined)
+						}
 
-					setRequestyEndpointSelected(isChecked)
-				}}>
-				{t("settings:providers.requestyUseCustomBaseUrl")}
-			</VSCodeCheckbox>
+						setRequestyEndpointSelected(isChecked)
+					}}
+				/>
+				<span>{t("settings:providers.requestyUseCustomBaseUrl")}</span>
+			</div>
 			{requestyEndpointSelected && (
 				<VSCodeTextField
 					value={apiConfiguration?.requestyBaseUrl || ""}

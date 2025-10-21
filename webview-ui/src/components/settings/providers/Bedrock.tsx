@@ -153,7 +153,7 @@ export const Bedrock = ({ apiConfiguration, setApiConfigurationField, selectedMo
 							<StandardTooltip content={t("settings:providers.enablePromptCachingTitle")}>
 								<i
 									className="codicon codicon-info text-vscode-descriptionForeground"
-									style={{ fontSize: "12px" }}
+									style={{ fontSize: "calc(12px * var(--roo-font-size-multiplier, 1))" }}
 								/>
 							</StandardTooltip>
 						</div>

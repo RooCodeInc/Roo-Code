@@ -26,7 +26,7 @@ const StyledMarkdown = styled.div`
 
 	code:not(pre > code) {
 		font-family: var(--vscode-editor-font-family, monospace);
-		font-size: 0.85em;
+		font-size: calc(0.85em * var(--roo-font-size-multiplier, 1));
 		filter: saturation(110%) brightness(95%);
 		color: var(--vscode-textPreformat-foreground) !important;
 		background-color: var(--vscode-textPreformat-background) !important;
@@ -46,7 +46,7 @@ const StyledMarkdown = styled.div`
 
 	/* KaTeX styling */
 	.katex {
-		font-size: 1.1em;
+		font-size: calc(1.1em * var(--roo-font-size-multiplier, 1));
 		color: var(--vscode-editor-foreground);
 		font-family: KaTeX_Main, "Times New Roman", serif;
 		line-height: 1.2;
@@ -83,7 +83,7 @@ const StyledMarkdown = styled.div`
 		"Helvetica Neue",
 		sans-serif;
 
-	font-size: var(--vscode-font-size, 13px);
+	font-size: calc(var(--vscode-font-size, 13px) * var(--roo-font-size-multiplier, 1));
 
 	p,
 	li,
@@ -147,19 +147,19 @@ const StyledMarkdown = styled.div`
 	}
 
 	h1 {
-		font-size: 1.65em;
+		font-size: calc(1.65em * var(--roo-font-size-multiplier, 1));
 		font-weight: 700;
 		margin: 1.35em 0 0.5em;
 	}
 
 	h2 {
-		font-size: 1.35em;
+		font-size: calc(1.35em * var(--roo-font-size-multiplier, 1));
 		font-weight: 500;
 		margin: 1.35em 0 0.5em;
 	}
 
 	h3 {
-		font-size: 1.2em;
+		font-size: calc(1.2em * var(--roo-font-size-multiplier, 1));
 		font-weight: 500;
 	}
 

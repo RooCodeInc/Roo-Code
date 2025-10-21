@@ -119,7 +119,7 @@ describe("ContextManagementSettings", () => {
 		render(<ContextManagementSettings {...defaultProps} includeDiagnosticMessages={true} />)
 
 		const checkbox = screen.getByTestId("include-diagnostic-messages-checkbox")
-		expect(checkbox.querySelector("input")).toBeChecked()
+		expect(checkbox).toHaveAttribute("data-state", "checked")
 
 		const slider = screen.getByTestId("max-diagnostic-messages-slider")
 		expect(slider).toBeInTheDocument()
@@ -130,7 +130,7 @@ describe("ContextManagementSettings", () => {
 		render(<ContextManagementSettings {...defaultProps} includeDiagnosticMessages={false} />)
 
 		const checkbox = screen.getByTestId("include-diagnostic-messages-checkbox")
-		expect(checkbox.querySelector("input")).not.toBeChecked()
+		expect(checkbox).toHaveAttribute("data-state", "unchecked")
 
 		// Slider should still be rendered when diagnostics are disabled
 		expect(screen.getByTestId("max-diagnostic-messages-slider")).toBeInTheDocument()
@@ -141,7 +141,7 @@ describe("ContextManagementSettings", () => {
 		const setCachedStateField = vi.fn()
 		render(<ContextManagementSettings {...defaultProps} setCachedStateField={setCachedStateField} />)
 
-		const checkbox = screen.getByTestId("include-diagnostic-messages-checkbox").querySelector("input")!
+		const checkbox = screen.getByTestId("include-diagnostic-messages-checkbox")
 		fireEvent.click(checkbox)
 
 		await waitFor(() => {
@@ -332,7 +332,7 @@ describe("ContextManagementSettings", () => {
 		// Always full read checkbox
 		const alwaysFullReadCheckbox = screen.getByTestId("max-read-file-always-full-checkbox")
 		expect(alwaysFullReadCheckbox).toBeInTheDocument()
-		expect(alwaysFullReadCheckbox).not.toBeChecked()
+		expect(alwaysFullReadCheckbox).toHaveAttribute("data-state", "unchecked")
 	})
 
 	it("updates max read file line setting", () => {
@@ -399,8 +399,7 @@ describe("ContextManagementSettings", () => {
 			render(<ContextManagementSettings {...props} />)
 
 			const checkbox = screen.getByTestId("auto-condense-context-checkbox")
-			const input = checkbox.querySelector('input[type="checkbox"]')
-			expect(input).toBeChecked()
+			expect(checkbox).toHaveAttribute("data-state", "checked")
 
 			// Toggle off
 			fireEvent.click(checkbox)
@@ -445,8 +444,7 @@ describe("ContextManagementSettings", () => {
 		render(<ContextManagementSettings {...propsWithMaxReadFileLine} />)
 
 		const checkbox = screen.getByTestId("max-read-file-always-full-checkbox")
-		const input = checkbox.querySelector('input[type="checkbox"]')
-		expect(input).toBeChecked()
+		expect(checkbox).toHaveAttribute("data-state", "checked")
 	})
 
 	it("handles boundary values for sliders", () => {
@@ -507,7 +505,7 @@ describe("ContextManagementSettings", () => {
 			expect(input).toHaveValue(-1)
 			expect(input).not.toBeDisabled() // Input is not disabled when maxReadFileLine is undefined (only when explicitly set to -1)
 			expect(checkbox).toBeInTheDocument()
-			expect(checkbox).not.toBeChecked() // Checkbox is not checked when maxReadFileLine is undefined (only when explicitly set to -1)
+			expect(checkbox).toHaveAttribute("data-state", "unchecked") // Checkbox is not checked when maxReadFileLine is undefined (only when explicitly set to -1)
 		})
 	})
 

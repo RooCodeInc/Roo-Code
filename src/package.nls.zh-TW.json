@@ -15,6 +15,8 @@
 	"command.terminal.explainCommand.title": "解釋此命令",
 	"command.acceptInput.title": "接受輸入/建議",
 	"command.toggleAutoApprove.title": "切換自動批准",
+	"command.increaseFontSize.title": "增大字體大小",
+	"command.decreaseFontSize.title": "減小字體大小",
 	"views.activitybar.title": "Roo Code",
 	"views.contextMenu.label": "Roo Code",
 	"views.terminalMenu.label": "Roo Code",
@@ -42,5 +44,6 @@
 	"settings.useAgentRules.description": "為特定於代理的規則啟用 AGENTS.md 檔案的載入（請參閱 https://agent-rules.org/）",
 	"settings.apiRequestTimeout.description": "等待 API 回應的最長時間（秒）（0 = 無超時，1-3600秒，預設值：600秒）。對於像 LM Studio 和 Ollama 這樣可能需要更多處理時間的本地提供商，建議使用更高的值。",
 	"settings.newTaskRequireTodos.description": "使用 new_task 工具建立新工作時需要 todos 參數",
-	"settings.codeIndex.embeddingBatchSize.description": "程式碼索引期間嵌入操作的批次大小。根據 API 提供商的限制調整此設定。預設值為 60。"
+	"settings.codeIndex.embeddingBatchSize.description": "程式碼索引期間嵌入操作的批次大小。根據 API 提供商的限制調整此設定。預設值為 60。",
+	"settings.fontSizeMultiplier.description": "RooCode 介面的字體大小倍數。按比例調整所有字體大小（0.5-3.0，預設值：1.0）"
 }

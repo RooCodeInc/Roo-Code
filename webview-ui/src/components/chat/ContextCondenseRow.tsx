@@ -31,7 +31,11 @@ export const ContextCondenseRow = ({ cost, prevContextTokens, newContextTokens, 
 					}}>
 					<span
 						className={`codicon codicon-check`}
-						style={{ color: "var(--vscode-charts-green)", fontSize: 16, marginBottom: "-1.5px" }}
+						style={{
+							color: "var(--vscode-charts-green)",
+							fontSize: "calc(16px * var(--roo-font-size-multiplier, 1))",
+							marginBottom: "-1.5px",
+						}}
 					/>
 				</div>
 				<div className="flex items-center gap-2 flex-grow">

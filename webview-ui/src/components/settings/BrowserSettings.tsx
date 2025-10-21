@@ -1,4 +1,4 @@
-import { VSCodeButton, VSCodeCheckbox, VSCodeTextField, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
+import { VSCodeButton, VSCodeTextField, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 import { SquareMousePointer } from "lucide-react"
 import { HTMLAttributes, useEffect, useMemo, useState } from "react"
 import { Trans } from "react-i18next"
@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { useAppTranslation } from "@/i18n/TranslationContext"
 import { vscode } from "@/utils/vscode"
 import { buildDocLink } from "@src/utils/docLinks"
+import { Checkbox } from "@/components/ui/checkbox"
 
 import { Section } from "./Section"
 import { SectionHeader } from "./SectionHeader"
@@ -108,11 +109,13 @@ export const BrowserSettings = ({
 
 			<Section>
 				<div>
-					<VSCodeCheckbox
-						checked={browserToolEnabled}
-						onChange={(e: any) => setCachedStateField("browserToolEnabled", e.target.checked)}>
+					<div className="flex items-center space-x-2">
+						<Checkbox
+							checked={browserToolEnabled}
+							onCheckedChange={(checked) => setCachedStateField("browserToolEnabled", checked === true)}
+						/>
 						<span className="font-medium">{t("settings:browser.enable.label")}</span>
-					</VSCodeCheckbox>
+					</div>
 					<div className="text-vscode-descriptionForeground text-sm mt-1">
 						<Trans i18nKey="settings:browser.enable.description">
 							<VSCodeLink
@@ -169,19 +172,22 @@ export const BrowserSettings = ({
 						</div>
 
 						<div>
-							<VSCodeCheckbox
-								checked={remoteBrowserEnabled}
-								onChange={(e: any) => {
-									// Update the global state - remoteBrowserEnabled now means "enable remote browser connection".
-									setCachedStateField("remoteBrowserEnabled", e.target.checked)
+							<div className="flex items-center space-x-2">
+								<Checkbox
+									checked={remoteBrowserEnabled}
+									onCheckedChange={(checked) => {
+										const isChecked = checked === true
+										// Update the global state - remoteBrowserEnabled now means "enable remote browser connection".
+										setCachedStateField("remoteBrowserEnabled", isChecked)
 
-									if (!e.target.checked) {
-										// If disabling remote browser, clear the custom URL.
-										setCachedStateField("remoteBrowserHost", undefined)
-									}
-								}}>
+										if (!isChecked) {
+											// If disabling remote browser, clear the custom URL.
+											setCachedStateField("remoteBrowserHost", undefined)
+										}
+									}}
+								/>
 								<label className="block font-medium mb-1">{t("settings:browser.remote.label")}</label>
-							</VSCodeCheckbox>
+							</div>
 							<div className="text-vscode-descriptionForeground text-sm mt-1">
 								{t("settings:browser.remote.description")}
 							</div>
