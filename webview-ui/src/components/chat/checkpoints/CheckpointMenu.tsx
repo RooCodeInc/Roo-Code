@@ -27,7 +27,7 @@ type CheckpointMenuProps = CheckpointMenuBaseProps & (CheckpointMenuControlledPr
 export const CheckpointMenu = ({
 	ts,
 	commitHash,
-	currentHash,
+	currentHash: _currentHash,
 	checkpoint,
 	open,
 	onOpenChange,
@@ -36,8 +36,6 @@ export const CheckpointMenu = ({
 	const [internalOpen, setInternalOpen] = useState(false)
 	const [isConfirming, setIsConfirming] = useState(false)
 	const portalContainer = useRooPortal("roo-portal")
-
-	const isCurrent = currentHash === commitHash
 
 	const previousCommitHash = checkpoint?.from
 
@@ -88,60 +86,56 @@ export const CheckpointMenu = ({
 				</StandardTooltip>
 				<PopoverContent align="end" container={portalContainer}>
 					<div className="flex flex-col gap-2">
-						{!isCurrent && (
-							<div className="flex flex-col gap-1 group hover:text-foreground">
-								<Button variant="secondary" onClick={onPreview} data-testid="restore-files-btn">
-									{t("chat:checkpoint.menu.restoreFiles")}
-								</Button>
-								<div className="text-muted transition-colors group-hover:text-foreground">
-									{t("chat:checkpoint.menu.restoreFilesDescription")}
-								</div>
+						<div className="flex flex-col gap-1 group hover:text-foreground">
+							<Button variant="secondary" onClick={onPreview} data-testid="restore-files-btn">
+								{t("chat:checkpoint.menu.restoreFiles")}
+							</Button>
+							<div className="text-muted transition-colors group-hover:text-foreground">
+								{t("chat:checkpoint.menu.restoreFilesDescription")}
 							</div>
-						)}
-						{!isCurrent && (
+						</div>
+						<div className="flex flex-col gap-1 group hover:text-foreground">
 							<div className="flex flex-col gap-1 group hover:text-foreground">
-								<div className="flex flex-col gap-1 group hover:text-foreground">
-									{!isConfirming ? (
+								{!isConfirming ? (
+									<Button
+										variant="secondary"
+										onClick={() => setIsConfirming(true)}
+										data-testid="restore-files-and-task-btn">
+										{t("chat:checkpoint.menu.restoreFilesAndTask")}
+									</Button>
+								) : (
+									<>
 										<Button
-											variant="secondary"
-											onClick={() => setIsConfirming(true)}
-											data-testid="restore-files-and-task-btn">
-											{t("chat:checkpoint.menu.restoreFilesAndTask")}
+											variant="default"
+											onClick={onRestore}
+											className="grow"
+											data-testid="confirm-restore-btn">
+											<div className="flex flex-row gap-1">
+												<CheckIcon />
+												<div>{t("chat:checkpoint.menu.confirm")}</div>
+											</div>
 										</Button>
-									) : (
-										<>
-											<Button
-												variant="default"
-												onClick={onRestore}
-												className="grow"
-												data-testid="confirm-restore-btn">
-												<div className="flex flex-row gap-1">
-													<CheckIcon />
-													<div>{t("chat:checkpoint.menu.confirm")}</div>
-												</div>
-											</Button>
-											<Button variant="secondary" onClick={() => setIsConfirming(false)}>
-												<div className="flex flex-row gap-1">
-													<Cross2Icon />
-													<div>{t("chat:checkpoint.menu.cancel")}</div>
-												</div>
-											</Button>
-										</>
-									)}
-									{isConfirming ? (
-										<div
-											data-testid="checkpoint-confirm-warning"
-											className="text-destructive font-bold">
-											{t("chat:checkpoint.menu.cannotUndo")}
-										</div>
-									) : (
-										<div className="text-muted transition-colors group-hover:text-foreground">
-											{t("chat:checkpoint.menu.restoreFilesAndTaskDescription")}
-										</div>
-									)}
-								</div>
+										<Button variant="secondary" onClick={() => setIsConfirming(false)}>
+											<div className="flex flex-row gap-1">
+												<Cross2Icon />
+												<div>{t("chat:checkpoint.menu.cancel")}</div>
+											</div>
+										</Button>
+									</>
+								)}
+								{isConfirming ? (
+									<div
+										data-testid="checkpoint-confirm-warning"
+										className="text-destructive font-bold">
+										{t("chat:checkpoint.menu.cannotUndo")}
+									</div>
+								) : (
+									<div className="text-muted transition-colors group-hover:text-foreground">
+										{t("chat:checkpoint.menu.restoreFilesAndTaskDescription")}
+									</div>
+								)}
 							</div>
-						)}
+						</div>
 					</div>
 				</PopoverContent>
 			</Popover>
