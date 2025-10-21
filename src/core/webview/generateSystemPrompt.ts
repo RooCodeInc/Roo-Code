@@ -3,7 +3,6 @@ import { WebviewMessage } from "../../shared/WebviewMessage"
 import { defaultModeSlug, getModeBySlug, getGroupName } from "../../shared/modes"
 import { buildApiHandler } from "../../api"
 import { experiments as experimentsModule, EXPERIMENT_IDS } from "../../shared/experiments"
-import { computeCanUseBrowserTool } from "../../shared/browserCapability"
 
 import { SYSTEM_PROMPT } from "../prompts/system"
 import { MultiSearchReplaceDiffStrategy } from "../diff/strategies/multi-search-replace"
@@ -61,14 +60,12 @@ export const generateSystemPrompt = async (provider: ClineProvider, message: Web
 	const modeConfig = getModeBySlug(mode, customModes)
 	const modeSupportsBrowser = modeConfig?.groups.some((group) => getGroupName(group) === "browser") ?? false
 
+	// Check if model supports browser capability (images)
+	const modelSupportsBrowser = modelInfo && (modelInfo as any)?.supportsImages === true
+
 	// Only enable browser tools if the model supports it, the mode includes browser tools,
 	// and browser tools are enabled in settings
-	const canUseBrowserTool = computeCanUseBrowserTool(
-		modelInfo,
-		modeSupportsBrowser,
-		browserToolEnabled,
-		apiConfiguration,
-	)
+	const canUseBrowserTool = modelSupportsBrowser && modeSupportsBrowser && (browserToolEnabled ?? true)
 
 	const systemPrompt = await SYSTEM_PROMPT(
 		provider.context,

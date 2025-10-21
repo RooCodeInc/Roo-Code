@@ -39,8 +39,8 @@ describe("RooTips Component", () => {
 		})
 
 		test("renders only the top two tips", () => {
-			// Ensure only the two tip links are present (docs text is no longer a link)
-			expect(screen.getAllByRole("link")).toHaveLength(2)
+			// Ensure only two tips are present plus the docs link in the Trans component (3 total links)
+			expect(screen.getAllByRole("link")).toHaveLength(3)
 		})
 	})
 })
