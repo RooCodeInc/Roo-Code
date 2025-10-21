@@ -1,20 +1,17 @@
 import type { ModelInfo } from "../model.js"
 
-// Helicone is OpenAI-compatible and uses name/provider model IDs.
-// TODO [HELICONE]: change this to claude-4.5-sonnet/anthropic as Roo Code is optimized for that
-export const heliconeDefaultModelId = "gpt-4o/openai"
+// Helicone is OpenAI-compatible
+export const heliconeDefaultModelId = "claude-4.5-sonnet"
 
 export const heliconeDefaultModelInfo: ModelInfo = {
-	maxTokens: 16_384,
-	contextWindow: 128_000,
+	maxTokens: 8192,
+	contextWindow: 200_000,
 	supportsImages: true,
+	supportsComputerUse: true,
 	supportsPromptCache: true,
-	inputPrice: 5.0,
-	outputPrice: 20.0,
-	cacheReadsPrice: 2.5,
-	description: "GPT-4o via Helicone AI Gateway.",
+	inputPrice: 3.0,
+	outputPrice: 15.0,
+	cacheWritesPrice: 3.75,
+	cacheReadsPrice: 0.3,
+	description: "Claude 4.5 Sonnet via Helicone AI Gateway.",
 }
-
-export const heliconeModels = {
-	"gpt-4o/openai": heliconeDefaultModelInfo,
-} as const

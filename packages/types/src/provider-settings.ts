@@ -14,7 +14,6 @@ import {
 	fireworksModels,
 	geminiModels,
 	groqModels,
-	heliconeModels,
 	ioIntelligenceModels,
 	mistralModels,
 	moonshotModels,
@@ -41,6 +40,7 @@ export const DEFAULT_CONSECUTIVE_MISTAKE_LIMIT = 3
  */
 
 export const dynamicProviders = [
+	"helicone",
 	"openrouter",
 	"vercel-ai-gateway",
 	"huggingface",
@@ -130,7 +130,6 @@ export const providerNames = [
 	"gemini",
 	"gemini-cli",
 	"groq",
-	"helicone",
 	"mistral",
 	"moonshot",
 	"openai-native",
@@ -219,7 +218,6 @@ const heliconeSchema = baseProviderSettingsSchema.extend({
 	heliconeApiKey: z.string().optional(),
 	heliconeModelId: z.string().optional(),
 	heliconeBaseUrl: z.string().optional(),
-	heliconeSpecificProvider: z.string().optional(),
 })
 
 const bedrockSchema = apiModelIdProviderModelSchema.extend({
@@ -563,7 +561,7 @@ export const modelIdKeysByProvider: Record<TypicalProvider, ModelIdKey> = {
 	"claude-code": "apiModelId",
 	glama: "glamaModelId",
 	openrouter: "openRouterModelId",
-	helicone: "apiModelId",
+	helicone: "heliconeModelId",
 	bedrock: "apiModelId",
 	vertex: "apiModelId",
 	"openai-native": "openAiModelId",
@@ -669,7 +667,6 @@ export const MODELS_BY_PROVIDER: Record<
 		models: Object.keys(geminiModels),
 	},
 	groq: { id: "groq", label: "Groq", models: Object.keys(groqModels) },
-	helicone: { id: "helicone", label: "Helicone", models: Object.keys(heliconeModels) },
 	"io-intelligence": {
 		id: "io-intelligence",
 		label: "IO Intelligence",
@@ -712,6 +709,7 @@ export const MODELS_BY_PROVIDER: Record<
 
 	// Dynamic providers; models pulled from remote APIs.
 	glama: { id: "glama", label: "Glama", models: [] },
+	helicone: { id: "helicone", label: "Helicone", models: [] },
 	huggingface: { id: "huggingface", label: "Hugging Face", models: [] },
 	litellm: { id: "litellm", label: "LiteLLM", models: [] },
 	openrouter: { id: "openrouter", label: "OpenRouter", models: [] },

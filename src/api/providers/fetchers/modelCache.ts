@@ -13,6 +13,7 @@ import type { RouterName, ModelRecord } from "../../../shared/api"
 import { fileExistsAtPath } from "../../../utils/fs"
 
 import { getOpenRouterModels } from "./openrouter"
+import { getHeliconeModels } from "./helicone"
 import { getVercelAiGatewayModels } from "./vercel-ai-gateway"
 import { getRequestyModels } from "./requesty"
 import { getGlamaModels } from "./glama"
@@ -63,6 +64,9 @@ export const getModels = async (options: GetModelsOptions): Promise<ModelRecord>
 
 	try {
 		switch (provider) {
+			case "helicone":
+				models = await getHeliconeModels()
+				break
 			case "openrouter":
 				models = await getOpenRouterModels()
 				break

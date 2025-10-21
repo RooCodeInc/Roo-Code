@@ -1,12 +1,7 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 
-import {
-	heliconeDefaultModelId,
-	heliconeDefaultModelInfo,
-	heliconeModels,
-	DEEP_SEEK_DEFAULT_TEMPERATURE,
-} from "@roo-code/types"
+import { heliconeDefaultModelId, heliconeDefaultModelInfo, DEEP_SEEK_DEFAULT_TEMPERATURE } from "@roo-code/types"
 
 import type { ApiHandlerOptions, ModelRecord } from "../../shared/api"
 
@@ -14,6 +9,8 @@ import { convertToOpenAiMessages } from "../transform/openai-format"
 import { ApiStreamChunk } from "../transform/stream"
 import { convertToR1Format } from "../transform/r1-format"
 import { getModelParams } from "../transform/model-params"
+
+import { getModels } from "./fetchers/modelCache"
 
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
@@ -109,12 +106,14 @@ export class HeliconeHandler extends BaseProvider implements SingleCompletionHan
 	}
 
 	public async fetchModel() {
-		this.models = heliconeModels as unknown as ModelRecord
+		const models = await getModels({ provider: "helicone" })
+		this.models = models
+
 		return this.getModel()
 	}
 
 	override getModel() {
-		const id = this.options.apiModelId ?? heliconeDefaultModelId
+		const id = this.options.heliconeModelId ?? heliconeDefaultModelId
 		const info = this.models[id] ?? heliconeDefaultModelInfo
 
 		const params = getModelParams({

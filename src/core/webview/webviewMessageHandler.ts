@@ -757,6 +757,7 @@ export const webviewMessageHandler = async (
 			const { apiConfiguration } = await provider.getState()
 
 			const routerModels: Record<RouterName, ModelRecord> = {
+				helicone: {},
 				openrouter: {},
 				"vercel-ai-gateway": {},
 				huggingface: {},
@@ -784,6 +785,7 @@ export const webviewMessageHandler = async (
 			}
 
 			const modelFetchPromises: { key: RouterName; options: GetModelsOptions }[] = [
+				{ key: "helicone", options: { provider: "helicone" } },
 				{ key: "openrouter", options: { provider: "openrouter" } },
 				{
 					key: "requesty",

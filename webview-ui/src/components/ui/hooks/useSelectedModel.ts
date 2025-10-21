@@ -58,7 +58,6 @@ import {
 	BEDROCK_1M_CONTEXT_MODEL_IDS,
 	deepInfraDefaultModelId,
 	heliconeDefaultModelId,
-	heliconeModels, // TODO [HELICONE]: create hook pulling from models registry instead
 } from "@roo-code/types"
 
 import type { ModelRecord, RouterModels } from "@roo/api"
@@ -145,8 +144,8 @@ function getSelectedModel({
 			return { id, info }
 		}
 		case "helicone": {
-			const id = apiConfiguration.apiModelId ?? heliconeDefaultModelId
-			const info = heliconeModels[id as keyof typeof heliconeModels]
+			const id = apiConfiguration.heliconeModelId ?? heliconeDefaultModelId
+			const info = routerModels.helicone[id]
 			return { id, info }
 		}
 		case "requesty": {

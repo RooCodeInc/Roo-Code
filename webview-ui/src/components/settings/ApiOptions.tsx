@@ -477,8 +477,9 @@ const ApiOptions = ({
 				<Helicone
 					apiConfiguration={apiConfiguration}
 					setApiConfigurationField={setApiConfigurationField}
-					// TODO [HELICONE]: add router models, selected model id,
-					// fromWelcomeView
+					routerModels={routerModels}
+					organizationAllowList={organizationAllowList}
+					modelValidationError={modelValidationError}
 				/>
 			)}
 

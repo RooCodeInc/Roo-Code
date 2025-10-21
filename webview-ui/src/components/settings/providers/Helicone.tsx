@@ -1,19 +1,30 @@
 import { useCallback, useState } from "react"
 import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 
-import { type ProviderSettings, heliconeDefaultModelId } from "@roo-code/types"
+import { type ProviderSettings, type OrganizationAllowList, heliconeDefaultModelId } from "@roo-code/types"
+
+import type { RouterModels } from "@roo/api"
 
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 
 import { inputEventTransform } from "../transforms"
+import { ModelPicker } from "../ModelPicker"
 
 type HeliconeProps = {
 	apiConfiguration: ProviderSettings
 	setApiConfigurationField: (field: keyof ProviderSettings, value: ProviderSettings[keyof ProviderSettings]) => void
+	routerModels?: RouterModels
+	organizationAllowList: OrganizationAllowList
+	modelValidationError?: string
 }
 
-// TODO [HELICONE]: add model selection for model registry
-export const Helicone = ({ apiConfiguration, setApiConfigurationField }: HeliconeProps) => {
+export const Helicone = ({
+	apiConfiguration,
+	setApiConfigurationField,
+	routerModels,
+	organizationAllowList,
+	modelValidationError,
+}: HeliconeProps) => {
 	const { t } = useAppTranslation()
 	const [baseUrlSelected, setBaseUrlSelected] = useState(!!apiConfiguration?.heliconeBaseUrl)
 
@@ -64,15 +75,17 @@ export const Helicone = ({ apiConfiguration, setApiConfigurationField }: Helicon
 				)}
 			</div>
 
-			<div className="mt-3">
-				<label className="block font-medium mb-1">{t("settings:providers.model")}</label>
-				<div className="text-sm text-vscode-descriptionForeground p-2 border border-vscode-input-border rounded">
-					{heliconeDefaultModelId}
-				</div>
-				<div className="text-xs text-vscode-descriptionForeground mt-1">
-					Using GPT-4o via Helicone AI Gateway
-				</div>
-			</div>
+			<ModelPicker
+				apiConfiguration={apiConfiguration}
+				setApiConfigurationField={setApiConfigurationField}
+				defaultModelId={heliconeDefaultModelId}
+				models={routerModels?.helicone ?? {}}
+				modelIdKey="heliconeModelId"
+				serviceName="Helicone"
+				serviceUrl="https://helicone.ai/models"
+				organizationAllowList={organizationAllowList}
+				errorMessage={modelValidationError}
+			/>
 		</>
 	)
 }
