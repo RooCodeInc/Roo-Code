@@ -42,6 +42,10 @@
 		"collapseThinking": {
 			"label": "Collapse Thinking messages by default",
 			"description": "When enabled, thinking blocks will be collapsed by default until you interact with them"
+		},
+		"kangarooAnimation": {
+			"label": "Use jumping Roo animation",
+			"description": "Replace the default spinner with a jumping Roo animation for progress indicators"
 		}
 	},
 	"prompts": {

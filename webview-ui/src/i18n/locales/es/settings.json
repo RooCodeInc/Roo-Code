@@ -886,6 +886,10 @@
 		"collapseThinking": {
 			"label": "Colapsar mensajes de pensamiento por defecto",
 			"description": "Cuando está activado, los bloques de pensamiento se colapsarán por defecto hasta que interactúes con ellos"
+		},
+		"kangarooAnimation": {
+			"label": "Usar animación de Roo saltando",
+			"description": "Sustituye el indicador de carga predeterminado por una animación de Roo saltando para los indicadores de progreso"
 		}
 	}
 }

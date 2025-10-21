@@ -886,6 +886,10 @@
 		"collapseThinking": {
 			"label": "Replega els missatges de pensament per defecte",
 			"description": "Quan estigui activat, els blocs de pensament es replegaran per defecte fins que interactuïs amb ells"
+		},
+		"kangarooAnimation": {
+			"label": "Utilitza l'animació de Roo que salta",
+			"description": "Substitueix el spinner per defecte per una animació de Roo que salta per als indicadors de progrés"
 		}
 	}
 }

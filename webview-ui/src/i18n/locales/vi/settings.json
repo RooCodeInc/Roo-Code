@@ -887,6 +887,10 @@
 		"collapseThinking": {
 			"label": "Thu gọn tin nhắn Suy nghĩ theo mặc định",
 			"description": "Khi được bật, các khối suy nghĩ sẽ được thu gọn theo mặc định cho đến khi bạn tương tác với chúng"
+		},
+		"kangarooAnimation": {
+			"label": "Sử dụng hoạt ảnh Roo nhảy",
+			"description": "Thay thế spinner mặc định bằng hoạt ảnh Roo nhảy cho các chỉ báo tiến trình"
 		}
 	}
 }

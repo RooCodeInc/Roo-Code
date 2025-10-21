@@ -916,6 +916,10 @@
 		"collapseThinking": {
 			"label": "Ciutkan pesan Berpikir secara default",
 			"description": "Jika diaktifkan, blok berpikir akan diciutkan secara default sampai Anda berinteraksi dengannya"
+		},
+		"kangarooAnimation": {
+			"label": "Gunakan Animasi Roo Melompat",
+			"description": "Ganti pemintal bawaan dengan animasi Roo yang melompat untuk indikator progres"
 		}
 	}
 }

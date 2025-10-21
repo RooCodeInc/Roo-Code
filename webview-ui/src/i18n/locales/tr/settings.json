@@ -887,6 +887,10 @@
 		"collapseThinking": {
 			"label": "Düşünme mesajlarını varsayılan olarak daralt",
 			"description": "Etkinleştirildiğinde, düşünme blokları siz onlarla etkileşime girene kadar varsayılan olarak daraltılır"
+		},
+		"kangarooAnimation": {
+			"label": "Zıplayan Roo Animasyonunu Kullan",
+			"description": "İlerleme göstergelerinde varsayılan döndürücüyü zıplayan Roo animasyonuyla değiştirin"
 		}
 	}
 }

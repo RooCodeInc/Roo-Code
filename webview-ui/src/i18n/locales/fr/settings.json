@@ -886,6 +886,10 @@
 		"collapseThinking": {
 			"label": "Réduire les messages de réflexion par défaut",
 			"description": "Si activé, les blocs de réflexion seront réduits par défaut jusqu'à ce que vous interagissiez avec eux"
+		},
+		"kangarooAnimation": {
+			"label": "Utiliser l'animation de Roo sautant",
+			"description": "Remplace le spinner par défaut par une animation de Roo sautant pour les indicateurs de progression"
 		}
 	}
 }

@@ -887,6 +887,10 @@
 		"collapseThinking": {
 			"label": "默认折叠“思考”消息",
 			"description": "启用后，“思考”块将默认折叠，直到您与其交互"
+		},
+		"kangarooAnimation": {
+			"label": "使用跳跃的 Roo 动画",
+			"description": "将默认旋转器替换为跳跃的 Roo 动画，用于进度指示器"
 		}
 	}
 }

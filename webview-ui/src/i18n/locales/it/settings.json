@@ -887,6 +887,10 @@
 		"collapseThinking": {
 			"label": "Comprimi i messaggi di pensiero per impostazione predefinita",
 			"description": "Se abilitato, i blocchi di pensiero verranno compressi per impostazione predefinita finché non interagisci con essi"
+		},
+		"kangarooAnimation": {
+			"label": "Usa l'animazione di Roo che salta",
+			"description": "Sostituisci lo spinner predefinito con un'animazione di Roo che salta per gli indicatori di avanzamento"
 		}
 	}
 }

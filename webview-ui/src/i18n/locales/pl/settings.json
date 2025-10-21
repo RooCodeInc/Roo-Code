@@ -887,6 +887,10 @@
 		"collapseThinking": {
 			"label": "Domyślnie zwijaj komunikaty o myśleniu",
 			"description": "Gdy włączone, bloki myślenia będą domyślnie zwinięte, dopóki nie wejdziesz z nimi w interakcję"
+		},
+		"kangarooAnimation": {
+			"label": "Użyj animacji skaczącego Roo",
+			"description": "Zastąp domyślny wskaźnik ładowania animacją skaczącego Roo dla wskaźników postępu"
 		}
 	}
 }

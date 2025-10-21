@@ -886,6 +886,10 @@
 		"collapseThinking": {
 			"label": "Gedankenblöcke standardmäßig ausblenden",
 			"description": "Wenn aktiviert, werden Gedankenblöcke standardmäßig ausgeblendet, bis du mit ihnen interagierst"
+		},
+		"kangarooAnimation": {
+			"label": "Springende Roo-Animation verwenden",
+			"description": "Den Standardspinner durch eine springende Roo-Animation für Fortschrittsanzeigen ersetzen"
 		}
 	}
 }

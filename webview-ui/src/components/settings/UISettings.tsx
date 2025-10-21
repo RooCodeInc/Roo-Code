@@ -71,10 +71,10 @@ export const UISettings = ({
 							checked={useKangarooAnimation}
 							onChange={(e: any) => handleKangarooAnimationChange(e.target.checked)}
 							data-testid="kangaroo-animation-checkbox">
-							<span className="font-medium">Use Jumping Kangaroo Animation</span>
+							<span className="font-medium">{t("settings:ui.kangarooAnimation.label")}</span>
 						</VSCodeCheckbox>
 						<div className="text-vscode-descriptionForeground text-sm ml-5 mt-1">
-							Replace the default spinner with a jumping kangaroo animation for progress indicators
+							{t("settings:ui.kangarooAnimation.description")}
 						</div>
 					</div>
 				</div>

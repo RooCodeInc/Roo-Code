@@ -887,6 +887,10 @@
 		"collapseThinking": {
 			"label": "Recolher mensagens de pensamento por padrão",
 			"description": "Quando ativado, os blocos de pensamento serão recolhidos por padrão até que você interaja com eles"
+		},
+		"kangarooAnimation": {
+			"label": "Usar animação do Roo pulando",
+			"description": "Substitua o spinner padrão por uma animação do Roo pulando nos indicadores de progresso"
 		}
 	}
 }
