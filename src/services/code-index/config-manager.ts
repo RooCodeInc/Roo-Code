@@ -73,7 +73,6 @@ export class CodeIndexConfigManager {
 			codebaseIndexValkeyHostname,
 			codebaseIndexValkeyPort,
 			codebaseIndexValkeyUsername,
-			codebaseIndexValkeyPassword,
 			codebaseIndexValkeyUseSsl,
 			codebaseIndexEmbedderProvider,
 			codebaseIndexEmbedderBaseUrl,
