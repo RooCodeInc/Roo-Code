@@ -12,6 +12,7 @@ import * as vscode from "vscode"
 import {
 	type TaskProviderLike,
 	type TaskProviderEvents,
+	type TaskEvents,
 	type GlobalState,
 	type ProviderName,
 	type ProviderSettings,
@@ -33,6 +34,7 @@ import {
 	type CloudOrganizationMembership,
 	type CreateTaskOptions,
 	type TokenUsage,
+	type ToolName,
 	RooCodeEventName,
 	requestyDefaultModelId,
 	openRouterDefaultModelId,
@@ -190,34 +192,39 @@ export class ClineProvider
 
 		this.marketplaceManager = new MarketplaceManager(this.context, this.customModesManager)
 
-		// Forward <most> task events to the provider.
+		// Forward task events to the provider.
 		// We do something fairly similar for the IPC-based API.
-		this.taskCreationCallback = (instance: Task) => {
-			this.emit(RooCodeEventName.TaskCreated, instance)
+		// We create named listener functions so we can remove them later.
+		this.taskCreationCallback = (task: Task) => {
+			// Task Provider Lifecycle (1)
+			this.emit(RooCodeEventName.TaskCreated, task)
 
-			// Create named listener functions so we can remove them later.
-			const onTaskStarted = () => this.emit(RooCodeEventName.TaskStarted, instance.taskId)
+			// Task Lifecycle (9)
+			const onTaskStarted = () => this.emit(RooCodeEventName.TaskStarted, task.taskId)
 			const onTaskCompleted = (taskId: string, tokenUsage: any, toolUsage: any) =>
 				this.emit(RooCodeEventName.TaskCompleted, taskId, tokenUsage, toolUsage)
 			const onTaskAborted = async () => {
-				this.emit(RooCodeEventName.TaskAborted, instance.taskId)
+				this.emit(RooCodeEventName.TaskAborted, task.taskId)
 
 				try {
 					// Only rehydrate on genuine streaming failures.
 					// User-initiated cancels are handled by cancelTask().
-					if (instance.abortReason === "streaming_failed") {
-						// Defensive safeguard: if another path already replaced this instance, skip
+					if (task.abortReason === "streaming_failed") {
+						// Defensive safeguard: if another path already replaced
+						// this instance, skip.
 						const current = this.getCurrentTask()
-						if (current && current.instanceId !== instance.instanceId) {
+
+						if (current && current.instanceId !== task.instanceId) {
 							this.log(
-								`[onTaskAborted] Skipping rehydrate: current instance ${current.instanceId} != aborted ${instance.instanceId}`,
+								`[onTaskAborted] Skipping rehydrate: current instance ${current.instanceId} != aborted ${task.instanceId}`,
 							)
+
 							return
 						}
 
-						const { historyItem } = await this.getTaskWithId(instance.taskId)
-						const rootTask = instance.rootTask
-						const parentTask = instance.parentTask
+						const { historyItem } = await this.getTaskWithId(task.taskId)
+						const rootTask = task.rootTask
+						const parentTask = task.parentTask
 						await this.createTaskWithHistoryItem({ ...historyItem, rootTask, parentTask })
 					}
 				} catch (error) {
@@ -228,51 +235,96 @@ export class ClineProvider
 					)
 				}
 			}
-			const onTaskFocused = () => this.emit(RooCodeEventName.TaskFocused, instance.taskId)
-			const onTaskUnfocused = () => this.emit(RooCodeEventName.TaskUnfocused, instance.taskId)
+			const onTaskFocused = () => this.emit(RooCodeEventName.TaskFocused, task.taskId)
+			const onTaskUnfocused = () => this.emit(RooCodeEventName.TaskUnfocused, task.taskId)
 			const onTaskActive = (taskId: string) => this.emit(RooCodeEventName.TaskActive, taskId)
 			const onTaskInteractive = (taskId: string) => this.emit(RooCodeEventName.TaskInteractive, taskId)
 			const onTaskResumable = (taskId: string) => this.emit(RooCodeEventName.TaskResumable, taskId)
 			const onTaskIdle = (taskId: string) => this.emit(RooCodeEventName.TaskIdle, taskId)
+
+			// Subtask Lifecycle (3)
 			const onTaskPaused = (taskId: string) => this.emit(RooCodeEventName.TaskPaused, taskId)
 			const onTaskUnpaused = (taskId: string) => this.emit(RooCodeEventName.TaskUnpaused, taskId)
 			const onTaskSpawned = (taskId: string) => this.emit(RooCodeEventName.TaskSpawned, taskId)
+
+			// Task Execution (4)
+			const onMessage = ({ action, message }: { action: "created" | "updated"; message: ClineMessage }) =>
+				this.emit(RooCodeEventName.Message, task.taskId, action, message)
+			const onTaskModeSwitched = (taskId: string, mode: string) =>
+				this.emit(RooCodeEventName.TaskModeSwitched, taskId, mode)
+			const onTaskAskResponded = () => this.emit(RooCodeEventName.TaskAskResponded, task.taskId)
 			const onTaskUserMessage = (taskId: string) => this.emit(RooCodeEventName.TaskUserMessage, taskId)
+
+			// Task Analytics (2)
 			const onTaskTokenUsageUpdated = (taskId: string, tokenUsage: TokenUsage) =>
 				this.emit(RooCodeEventName.TaskTokenUsageUpdated, taskId, tokenUsage)
+			const onTaskToolFailed = (taskId: string, tool: ToolName, error: string) =>
+				this.emit(RooCodeEventName.TaskToolFailed, taskId, tool, error)
+
+			// Configuration Changes (2)
+			// RooCodeEventName.ModeChanged
+			// RooCodeEventName.ProviderProfileChanged
+			// These don't need to be relayed since they are natively emitted
+			// by the provider.
 
 			// Attach the listeners.
-			instance.on(RooCodeEventName.TaskStarted, onTaskStarted)
-			instance.on(RooCodeEventName.TaskCompleted, onTaskCompleted)
-			instance.on(RooCodeEventName.TaskAborted, onTaskAborted)
-			instance.on(RooCodeEventName.TaskFocused, onTaskFocused)
-			instance.on(RooCodeEventName.TaskUnfocused, onTaskUnfocused)
-			instance.on(RooCodeEventName.TaskActive, onTaskActive)
-			instance.on(RooCodeEventName.TaskInteractive, onTaskInteractive)
-			instance.on(RooCodeEventName.TaskResumable, onTaskResumable)
-			instance.on(RooCodeEventName.TaskIdle, onTaskIdle)
-			instance.on(RooCodeEventName.TaskPaused, onTaskPaused)
-			instance.on(RooCodeEventName.TaskUnpaused, onTaskUnpaused)
-			instance.on(RooCodeEventName.TaskSpawned, onTaskSpawned)
-			instance.on(RooCodeEventName.TaskUserMessage, onTaskUserMessage)
-			instance.on(RooCodeEventName.TaskTokenUsageUpdated, onTaskTokenUsageUpdated)
+
+			// Task Lifecycle (9)
+			task.on(RooCodeEventName.TaskStarted, onTaskStarted)
+			task.on(RooCodeEventName.TaskCompleted, onTaskCompleted)
+			task.on(RooCodeEventName.TaskAborted, onTaskAborted)
+			task.on(RooCodeEventName.TaskFocused, onTaskFocused)
+			task.on(RooCodeEventName.TaskUnfocused, onTaskUnfocused)
+			task.on(RooCodeEventName.TaskActive, onTaskActive)
+			task.on(RooCodeEventName.TaskInteractive, onTaskInteractive)
+			task.on(RooCodeEventName.TaskResumable, onTaskResumable)
+			task.on(RooCodeEventName.TaskIdle, onTaskIdle)
+
+			// Subtask Lifecycle (3)
+			task.on(RooCodeEventName.TaskPaused, onTaskPaused)
+			task.on(RooCodeEventName.TaskUnpaused, onTaskUnpaused)
+			task.on(RooCodeEventName.TaskSpawned, onTaskSpawned)
+
+			// Task Execution (4)
+			task.on(RooCodeEventName.Message, onMessage)
+			task.on(RooCodeEventName.TaskModeSwitched, onTaskModeSwitched)
+			task.on(RooCodeEventName.TaskAskResponded, onTaskAskResponded)
+			task.on(RooCodeEventName.TaskUserMessage, onTaskUserMessage)
+
+			// Task Analytics (2)
+			task.on(RooCodeEventName.TaskTokenUsageUpdated, onTaskTokenUsageUpdated)
+			task.on(RooCodeEventName.TaskToolFailed, onTaskToolFailed)
 
 			// Store the cleanup functions for later removal.
-			this.taskEventListeners.set(instance, [
-				() => instance.off(RooCodeEventName.TaskStarted, onTaskStarted),
-				() => instance.off(RooCodeEventName.TaskCompleted, onTaskCompleted),
-				() => instance.off(RooCodeEventName.TaskAborted, onTaskAborted),
-				() => instance.off(RooCodeEventName.TaskFocused, onTaskFocused),
-				() => instance.off(RooCodeEventName.TaskUnfocused, onTaskUnfocused),
-				() => instance.off(RooCodeEventName.TaskActive, onTaskActive),
-				() => instance.off(RooCodeEventName.TaskInteractive, onTaskInteractive),
-				() => instance.off(RooCodeEventName.TaskResumable, onTaskResumable),
-				() => instance.off(RooCodeEventName.TaskIdle, onTaskIdle),
-				() => instance.off(RooCodeEventName.TaskUserMessage, onTaskUserMessage),
-				() => instance.off(RooCodeEventName.TaskPaused, onTaskPaused),
-				() => instance.off(RooCodeEventName.TaskUnpaused, onTaskUnpaused),
-				() => instance.off(RooCodeEventName.TaskSpawned, onTaskSpawned),
-				() => instance.off(RooCodeEventName.TaskTokenUsageUpdated, onTaskTokenUsageUpdated),
+			this.taskEventListeners.set(task, [
+				// Task Provider Lifecycle (1)
+				() => task.off(RooCodeEventName.TaskStarted, onTaskStarted),
+
+				// Task Lifecycle (9)
+				() => task.off(RooCodeEventName.TaskCompleted, onTaskCompleted),
+				() => task.off(RooCodeEventName.TaskAborted, onTaskAborted),
+				() => task.off(RooCodeEventName.TaskFocused, onTaskFocused),
+				() => task.off(RooCodeEventName.TaskUnfocused, onTaskUnfocused),
+				() => task.off(RooCodeEventName.TaskActive, onTaskActive),
+				() => task.off(RooCodeEventName.TaskInteractive, onTaskInteractive),
+				() => task.off(RooCodeEventName.TaskResumable, onTaskResumable),
+				() => task.off(RooCodeEventName.TaskIdle, onTaskIdle),
+				() => task.off(RooCodeEventName.TaskUserMessage, onTaskUserMessage),
+
+				// Subtask Lifecycle (3)
+				() => task.off(RooCodeEventName.TaskPaused, onTaskPaused),
+				() => task.off(RooCodeEventName.TaskUnpaused, onTaskUnpaused),
+				() => task.off(RooCodeEventName.TaskSpawned, onTaskSpawned),
+
+				// Task Execution (4)
+				() => task.off(RooCodeEventName.Message, onMessage),
+				() => task.off(RooCodeEventName.TaskModeSwitched, onTaskModeSwitched),
+				() => task.off(RooCodeEventName.TaskAskResponded, onTaskAskResponded),
+				() => task.off(RooCodeEventName.TaskUserMessage, onTaskUserMessage),
+
+				// Task Analytics (2)
+				() => task.off(RooCodeEventName.TaskTokenUsageUpdated, onTaskTokenUsageUpdated),
+				() => task.off(RooCodeEventName.TaskToolFailed, onTaskToolFailed),
 			])
 		}
 
@@ -915,7 +967,6 @@ export class ClineProvider
 			taskNumber: historyItem.number,
 			workspacePath: historyItem.workspace,
 			onCreated: this.taskCreationCallback,
-			enableBridge: BridgeOrchestrator.isEnabled(cloudUserInfo, taskSyncEnabled),
 		})
 
 		await this.addClineToStack(task)
@@ -2345,35 +2396,6 @@ export class ClineProvider
 			sessionId: vscode.env.sessionId,
 			isCloudAgent: CloudService.instance.isCloudAgent,
 		})
-
-		const bridge = BridgeOrchestrator.getInstance()
-
-		if (bridge) {
-			const currentTask = this.getCurrentTask()
-
-			if (currentTask && !currentTask.enableBridge) {
-				try {
-					currentTask.enableBridge = true
-					await BridgeOrchestrator.subscribeToTask(currentTask)
-				} catch (error) {
-					const message = `[ClineProvider#remoteControlEnabled] BridgeOrchestrator.subscribeToTask() failed: ${error instanceof Error ? error.message : String(error)}`
-					this.log(message)
-					console.error(message)
-				}
-			}
-		} else {
-			for (const task of this.clineStack) {
-				if (task.enableBridge) {
-					try {
-						await BridgeOrchestrator.getInstance()?.unsubscribeFromTask(task.taskId)
-					} catch (error) {
-						const message = `[ClineProvider#remoteControlEnabled] BridgeOrchestrator#unsubscribeFromTask() failed: ${error instanceof Error ? error.message : String(error)}`
-						this.log(message)
-						console.error(message)
-					}
-				}
-			}
-		}
 	}
 
 	/**
@@ -2560,7 +2582,6 @@ export class ClineProvider
 			parentTask,
 			taskNumber: this.clineStack.length + 1,
 			onCreated: this.taskCreationCallback,
-			enableBridge: BridgeOrchestrator.isEnabled(cloudUserInfo, remoteControlEnabled),
 			initialTodos: options.initialTodos,
 			...options,
 		})

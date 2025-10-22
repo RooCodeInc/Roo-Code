@@ -58,7 +58,10 @@ export interface TaskProviderLike {
 }
 
 export type TaskProviderEvents = {
+	// Task Provider Lifecycle (1)
 	[RooCodeEventName.TaskCreated]: [task: TaskLike]
+
+	// Task Lifecycle (9)
 	[RooCodeEventName.TaskStarted]: [taskId: string]
 	[RooCodeEventName.TaskCompleted]: [taskId: string, tokenUsage: TokenUsage, toolUsage: ToolUsage]
 	[RooCodeEventName.TaskAborted]: [taskId: string]
@@ -69,14 +72,22 @@ export type TaskProviderEvents = {
 	[RooCodeEventName.TaskResumable]: [taskId: string]
 	[RooCodeEventName.TaskIdle]: [taskId: string]
 
+	// Subtask Lifecycle (3)
 	[RooCodeEventName.TaskPaused]: [taskId: string]
 	[RooCodeEventName.TaskUnpaused]: [taskId: string]
 	[RooCodeEventName.TaskSpawned]: [taskId: string]
 
+	// Task Execution (4)
+	[RooCodeEventName.Message]: [taskId: string, action: "created" | "updated", message: ClineMessage]
+	[RooCodeEventName.TaskModeSwitched]: [taskId: string, mode: string]
+	[RooCodeEventName.TaskAskResponded]: [taskId: string]
 	[RooCodeEventName.TaskUserMessage]: [taskId: string]
 
+	// Task Analytics (2)
 	[RooCodeEventName.TaskTokenUsageUpdated]: [taskId: string, tokenUsage: TokenUsage]
+	[RooCodeEventName.TaskToolFailed]: [taskId: string, tool: ToolName, error: string]
 
+	// Configuration Changes (2)
 	[RooCodeEventName.ModeChanged]: [mode: string]
 	[RooCodeEventName.ProviderProfileChanged]: [config: { name: string; provider?: string }]
 }
@@ -130,7 +141,7 @@ export interface TaskLike {
 }
 
 export type TaskEvents = {
-	// Task Lifecycle
+	// Task Lifecycle (9)
 	[RooCodeEventName.TaskStarted]: []
 	[RooCodeEventName.TaskCompleted]: [taskId: string, tokenUsage: TokenUsage, toolUsage: ToolUsage]
 	[RooCodeEventName.TaskAborted]: []
@@ -141,18 +152,18 @@ export type TaskEvents = {
 	[RooCodeEventName.TaskResumable]: [taskId: string]
 	[RooCodeEventName.TaskIdle]: [taskId: string]
 
-	// Subtask Lifecycle
+	// Subtask Lifecycle (3)
 	[RooCodeEventName.TaskPaused]: [taskId: string]
 	[RooCodeEventName.TaskUnpaused]: [taskId: string]
 	[RooCodeEventName.TaskSpawned]: [taskId: string]
 
-	// Task Execution
+	// Task Execution (4)
 	[RooCodeEventName.Message]: [{ action: "created" | "updated"; message: ClineMessage }]
 	[RooCodeEventName.TaskModeSwitched]: [taskId: string, mode: string]
 	[RooCodeEventName.TaskAskResponded]: []
 	[RooCodeEventName.TaskUserMessage]: [taskId: string]
 
-	// Task Analytics
+	// Task Analytics (2)
 	[RooCodeEventName.TaskToolFailed]: [taskId: string, tool: ToolName, error: string]
 	[RooCodeEventName.TaskTokenUsageUpdated]: [taskId: string, tokenUsage: TokenUsage]
 }

@@ -8,7 +8,7 @@ import { toolNamesSchema, toolUsageSchema } from "./tool.js"
  */
 
 export enum RooCodeEventName {
-	// Task Provider Lifecycle
+	// Task Provider Lifecycle (1)
 	TaskCreated = "taskCreated",
 
 	// Task Lifecycle
@@ -22,26 +22,26 @@ export enum RooCodeEventName {
 	TaskResumable = "taskResumable",
 	TaskIdle = "taskIdle",
 
-	// Subtask Lifecycle
+	// Subtask Lifecycle (3)
 	TaskPaused = "taskPaused",
 	TaskUnpaused = "taskUnpaused",
 	TaskSpawned = "taskSpawned",
 
-	// Task Execution
+	// Task Execution (4)
 	Message = "message",
 	TaskModeSwitched = "taskModeSwitched",
 	TaskAskResponded = "taskAskResponded",
 	TaskUserMessage = "taskUserMessage",
 
-	// Task Analytics
+	// Task Analytics (2)
 	TaskTokenUsageUpdated = "taskTokenUsageUpdated",
 	TaskToolFailed = "taskToolFailed",
 
-	// Configuration Changes
+	// Configuration Changes (2)
 	ModeChanged = "modeChanged",
 	ProviderProfileChanged = "providerProfileChanged",
 
-	// Evals
+	// Evals (2)
 	EvalPass = "evalPass",
 	EvalFail = "evalFail",
 }

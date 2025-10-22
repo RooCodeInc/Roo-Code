@@ -5,9 +5,9 @@ import { ConnectionState, type RetryConfig } from "@roo-code/types"
 export interface SocketTransportOptions {
 	url: string
 	socketOptions: Partial<ManagerOptions & SocketOptions>
-	onConnect?: () => void | Promise<void>
-	onDisconnect?: (reason: string) => void
-	onReconnect?: () => void | Promise<void>
+	onConnect?: (socket: Socket) => Promise<void>
+	onDisconnect?: (reason: string) => Promise<void>
+	onReconnect?: (socket: Socket) => Promise<void>
 	logger?: {
 		log: (message: string, ...args: unknown[]) => void
 		error: (message: string, ...args: unknown[]) => void
@@ -126,12 +126,12 @@ export class SocketTransport {
 				this.connectionState = ConnectionState.CONNECTED
 
 				if (this.isPreviouslyConnected) {
-					if (this.options.onReconnect) {
-						await this.options.onReconnect()
+					if (this.options.onReconnect && this.socket) {
+						await this.options.onReconnect(this.socket)
 					}
 				} else {
-					if (this.options.onConnect) {
-						await this.options.onConnect()
+					if (this.options.onConnect && this.socket) {
+						await this.options.onConnect(this.socket)
 					}
 				}
 
@@ -195,8 +195,8 @@ export class SocketTransport {
 				console.log(`[SocketTransport#_connect] on(reconnect) - ${attempt}`)
 				this.connectionState = ConnectionState.CONNECTED
 
-				if (this.options.onReconnect) {
-					this.options.onReconnect()
+				if (this.options.onReconnect && this.socket) {
+					this.options.onReconnect(this.socket)
 				}
 			})
 
