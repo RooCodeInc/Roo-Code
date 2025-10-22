@@ -195,8 +195,8 @@ describe("Smart Provider Pass-Based - Integration Tests", () => {
 				// Lossless prelude should be executed
 				expect(result.metrics?.operationsApplied).toContain("lossless_prelude")
 
-				// LLM quality pass should always execute (new BALANCED logic)
-				expect(result.metrics?.operationsApplied).toContain("pass_llm-quality")
+				// Conversation-first pass should always execute (new BALANCED logic)
+				expect(result.metrics?.operationsApplied).toContain("pass_balanced-conversation-first")
 			})
 		})
 	})
@@ -251,7 +251,7 @@ describe("Smart Provider Pass-Based - Integration Tests", () => {
 				expect(result.metrics?.operationsApplied).toBeDefined()
 
 				// Aggressive passes should execute
-				expect(result.metrics?.operationsApplied).toContain("pass_suppress-ancient")
+				expect(result.metrics?.operationsApplied).toContain("pass_aggressive-suppress-old-tools")
 			})
 		})
 	})
@@ -283,8 +283,8 @@ describe("Smart Provider Pass-Based - Integration Tests", () => {
 			// Lossless prelude should be first
 			expect(operations[0]).toBe("lossless_prelude")
 
-			// LLM quality pass should be second (new BALANCED logic: LLM first)
-			expect(operations[1]).toBe("pass_llm-quality")
+			// Conversation-first pass should be second (new BALANCED logic: conversation first)
+			expect(operations[1]).toBe("pass_balanced-conversation-first")
 
 			// Further passes depend on token count after LLM pass
 			console.log(`[Pass Sequencing] Operations executed: ${operations.join(" → ")}`)
@@ -452,9 +452,9 @@ describe("Smart Provider Pass-Based - Integration Tests", () => {
 			expect(result.messages).toBeDefined()
 			expect(result.messages.length).toBeGreaterThan(0)
 
-			// The BALANCED config should have processed this with 1K token threshold
-			const llmQualityPass = BALANCED_CONFIG.passes.find((p) => p.id === "llm-quality")
-			expect(llmQualityPass?.individualConfig?.messageTokenThresholds?.toolResults).toBe(1000)
+			// The BALANCED config should have processed this with 2K token threshold
+			const conversationPass = BALANCED_CONFIG.passes.find((p) => p.id === "balanced-conversation-first")
+			expect(conversationPass?.individualConfig?.messageTokenThresholds?.toolResults).toBe(2000)
 
 			// Verify operations were applied
 			expect(result.metrics?.operationsApplied).toBeDefined()
@@ -481,7 +481,7 @@ describe("Smart Provider Pass-Based - Integration Tests", () => {
 			const result = await provider.condense(context, options)
 
 			// AGGRESSIVE should use 300-500 token thresholds
-			const suppressPass = AGGRESSIVE_CONFIG.passes.find((p) => p.id === "suppress-ancient")
+			const suppressPass = AGGRESSIVE_CONFIG.passes.find((p) => p.id === "aggressive-suppress-old-tools")
 			expect(suppressPass?.individualConfig?.messageTokenThresholds?.toolResults).toBe(300)
 
 			// Result should be heavily condensed
@@ -511,9 +511,9 @@ describe("Smart Provider Pass-Based - Integration Tests", () => {
 
 			const result = await provider.condense(context, options)
 
-			// CONSERVATIVE should use 2K token threshold (quality-first)
-			const qualityPass = CONSERVATIVE_CONFIG.passes.find((p) => p.id === "pass-1-quality")
-			expect(qualityPass?.individualConfig?.messageTokenThresholds?.toolResults).toBe(2000)
+			// CONSERVATIVE should use 4K token threshold (quality-first)
+			const qualityPass = CONSERVATIVE_CONFIG.passes.find((p) => p.id === "conservative-preserve-conversation")
+			expect(qualityPass?.individualConfig?.messageTokenThresholds?.toolResults).toBe(4000)
 
 			// Result should preserve more content
 			expect(result.messages.length).toBeGreaterThan(0)

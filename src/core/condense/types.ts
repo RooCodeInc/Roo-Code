@@ -251,6 +251,8 @@ export interface ExecutionCondition {
 	type: "always" | "conditional"
 	condition?: {
 		tokenThreshold?: number
+		reductionPercentage?: number
+		reductionRelativeTo?: "initial" | "trigger"
 	}
 }
 

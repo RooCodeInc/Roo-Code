@@ -178,15 +178,50 @@ export class SmartCondensationProvider extends BaseCondensationProvider {
 
 		// Conditional execution
 		if (pass.execution.type === "conditional" && pass.execution.condition) {
-			const { tokenThreshold } = pass.execution.condition
+			const { tokenThreshold, reductionPercentage, reductionRelativeTo } = pass.execution.condition
 
+			// Legacy absolute token threshold
 			if (tokenThreshold) {
 				const currentTokens = this.estimateMessagesTokens(currentMessages)
 				return currentTokens > tokenThreshold
 			}
+
+			// New percentage-based reduction condition
+			if (reductionPercentage !== undefined) {
+				const currentTokens = this.estimateMessagesTokens(currentMessages)
+				const initialTokens = context.prevContextTokens
+				const triggerTokens = this.getTriggerThreshold(context)
+
+				let referenceTokens: number
+				if (reductionRelativeTo === "trigger") {
+					referenceTokens = triggerTokens
+				} else {
+					// Default to "initial"
+					referenceTokens = initialTokens
+				}
+
+				// Calculate current reduction percentage
+				const currentReduction = ((referenceTokens - currentTokens) / referenceTokens) * 100
+				
+				// Execute if we haven't achieved the target reduction
+				return currentReduction < reductionPercentage
+			}
 		}
 
 		return false
+	}
+
+	/**
+	 * Get the trigger threshold for condensation
+	 */
+	private getTriggerThreshold(context: CondensationContext): number {
+		// Use profileThresholds if available, otherwise use a default
+		if (context.targetTokens) {
+			return context.targetTokens
+		}
+		
+		// Default to 80% of initial context as trigger point
+		return Math.floor(context.prevContextTokens * 0.8)
 	}
 
 	/**
