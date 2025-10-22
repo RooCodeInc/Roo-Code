@@ -1,10 +1,10 @@
-import React from "react"
+import React, { useCallback } from "react"
 import { Fzf } from "fzf"
 import { Check, X } from "lucide-react"
 
 import { type ModeConfig, type CustomModePrompts, TelemetryEventName } from "@roo-code/types"
 
-import { type Mode, filterModesByZgsmCodeMode, getAllModes } from "@roo/modes"
+import { type Mode, ZgsmCodeMode, filterModesByZgsmCodeMode, getAllModes } from "@roo/modes"
 
 import { vscode } from "@/utils/vscode"
 import { telemetryClient } from "@/utils/TelemetryClient"
@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { useAppTranslation } from "@/i18n/TranslationContext"
 import { useRooPortal } from "@/components/ui/hooks/useRooPortal"
-import { Popover, PopoverContent, PopoverTrigger, StandardTooltip } from "@/components/ui"
+import { Popover, PopoverContent, PopoverTrigger, StandardTooltip, ToggleSwitch } from "@/components/ui"
 
 import { IconButton } from "./IconButton"
 
@@ -47,9 +47,25 @@ export const ModeSelector = ({
 	const selectedItemRef = React.useRef<HTMLDivElement>(null)
 	const scrollContainerRef = React.useRef<HTMLDivElement>(null)
 	const portalContainer = useRooPortal("roo-portal")
-	const { hasOpenedModeSelector, setHasOpenedModeSelector, zgsmCodeMode } = useExtensionState()
+	const { hasOpenedModeSelector, setHasOpenedModeSelector, zgsmCodeMode, setZgsmCodeMode } = useExtensionState()
 	const { t } = useAppTranslation()
-
+	const switchMode = useCallback(
+		(slug: ZgsmCodeMode) => {
+			setZgsmCodeMode(slug)
+			vscode.postMessage({
+				type: "zgsmCodeMode",
+				text: slug,
+			})
+			vscode.postMessage({
+				type: "mode",
+				text: slug === "vibe" ? "code" : "strict",
+			})
+		},
+		[setZgsmCodeMode],
+	)
+	const handleCodeModeToggle = React.useCallback(() => {
+		switchMode(zgsmCodeMode === "vibe" ? "strict" : "vibe")
+	}, [switchMode, zgsmCodeMode])
 	const trackModeSelectorOpened = React.useCallback(() => {
 		// Track telemetry every time the mode selector is opened.
 		telemetryClient.capture(TelemetryEventName.MODE_SELECTOR_OPENED)
@@ -311,6 +327,35 @@ export const ModeSelector = ({
 									setOpen(false)
 								}}
 							/>
+							<label
+								className="flex items-center gap-2 cursor-pointer"
+								onClick={() => {
+									handleCodeModeToggle()
+								}}>
+								<span
+									className={cn(
+										"text-sm font-bold select-none",
+										zgsmCodeMode === "vibe"
+											? "text-vscode-foreground"
+											: "text-vscode-descriptionForeground opacity-50",
+									)}>
+									Vibe
+								</span>
+								<ToggleSwitch
+									checked={zgsmCodeMode === "strict"}
+									aria-label="Toggle auto-approval"
+									onChange={() => {}}
+								/>
+								<span
+									className={cn(
+										"text-sm font-bold select-none",
+										zgsmCodeMode === "strict"
+											? "text-vscode-foreground"
+											: "text-vscode-descriptionForeground opacity-50",
+									)}>
+									Strict
+								</span>
+							</label>
 						</div>
 
 						{/* Info icon and title on the right - only show info icon when search bar is visible */}
@@ -320,9 +365,9 @@ export const ModeSelector = ({
 									<span className="codicon codicon-info text-xs text-vscode-descriptionForeground opacity-70 hover:opacity-100 cursor-help" />
 								</StandardTooltip>
 							)}
-							<h4 className="m-0 font-medium text-sm text-vscode-descriptionForeground">
+							{/* <h4 className="m-0 font-medium text-sm text-vscode-descriptionForeground">
 								{t("chat:modeSelector.title")}
-							</h4>
+							</h4> */}
 						</div>
 					</div>
 				</div>
