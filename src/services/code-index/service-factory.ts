@@ -93,7 +93,23 @@ export class CodeIndexServiceFactory {
 	 */
 	public async validateEmbedder(embedder: IEmbedder): Promise<{ valid: boolean; error?: string }> {
 		try {
-			return await embedder.validateConfiguration()
+			// Add a timeout to prevent hanging when the embedder service is unavailable
+			const VALIDATION_TIMEOUT_MS = 5000 // 5 seconds timeout
+
+			const timeoutPromise = new Promise<{ valid: boolean; error: string }>((_, reject) => {
+				setTimeout(() => {
+					reject(
+						new Error(
+							"Failed to connect to the embedder service. Please check your connection settings and ensure the service is running.",
+						),
+					)
+				}, VALIDATION_TIMEOUT_MS)
+			})
+
+			const validationPromise = embedder.validateConfiguration()
+
+			// Race between validation and timeout
+			return await Promise.race([validationPromise, timeoutPromise])
 		} catch (error) {
 			// Capture telemetry for the error
 			TelemetryService.instance.captureEvent(TelemetryEventName.CODE_INDEX_ERROR, {

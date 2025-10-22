@@ -100,6 +100,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	const contextProxy = await ContextProxy.getInstance(context)
 
 	// Initialize code index managers for all workspace folders.
+	// Make initialization non-blocking to prevent extension activation from hanging
 	const codeIndexManagers: CodeIndexManager[] = []
 
 	if (vscode.workspace.workspaceFolders) {
@@ -108,16 +109,15 @@ export async function activate(context: vscode.ExtensionContext) {
 
 			if (manager) {
 				codeIndexManagers.push(manager)
+				context.subscriptions.push(manager)
 
-				try {
-					await manager.initialize(contextProxy)
-				} catch (error) {
+				// Initialize in the background without blocking extension activation
+				// This prevents the extension from getting stuck if the embedder service is unavailable
+				manager.initialize(contextProxy).catch((error) => {
 					outputChannel.appendLine(
 						`[CodeIndexManager] Error during background CodeIndexManager configuration/indexing for ${folder.uri.fsPath}: ${error.message || error}`,
 					)
-				}
-
-				context.subscriptions.push(manager)
+				})
 			}
 		}
 	}
