@@ -2308,7 +2308,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					}
 				}
 
-				await this.persistGpt5Metadata(reasoningMessage)
+				await this.persistGpt5Metadata()
 				await this.saveClineMessages()
 				await this.providerRef.deref()?.postStateToWebview()
 
@@ -2915,10 +2915,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	}
 
 	/**
-	 * Persist GPT-5 per-turn metadata (previous_response_id, instructions, reasoning_summary)
+	 * Persist GPT-5 per-turn metadata (previous_response_id only)
 	 * onto the last complete assistant say("text") message.
+	 *
+	 * Note: We do not persist system instructions or reasoning summaries.
 	 */
-	private async persistGpt5Metadata(reasoningMessage?: string): Promise<void> {
+	private async persistGpt5Metadata(): Promise<void> {
 		try {
 			const modelId = this.api.getModel().id
 			if (!modelId || !modelId.startsWith("gpt-5")) return
@@ -2937,9 +2939,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				}
 				const gpt5Metadata: Gpt5Metadata = {
 					...(msg.metadata.gpt5 ?? {}),
-					previous_response_id: lastResponseId,
-					instructions: this.lastUsedInstructions,
-					reasoning_summary: (reasoningMessage ?? "").trim() || undefined,
+					...(lastResponseId ? { previous_response_id: lastResponseId } : {}),
 				}
 				msg.metadata.gpt5 = gpt5Metadata
 			}
