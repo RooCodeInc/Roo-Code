@@ -59,7 +59,6 @@ export const modelInfoSchema = z.object({
 	supportsImages: z.boolean().optional(),
 	// `max_completion_tokens`，`max_tokens` ,undefined
 	maxTokensKey: z.string().optional(),
-	supportsComputerUse: z.boolean().optional(),
 	supportsPromptCache: z.boolean(),
 	// Capability flag to indicate whether the model supports an output verbosity parameter
 	supportsVerbosity: z.boolean().optional(),

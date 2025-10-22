@@ -52,7 +52,7 @@ import { t } from "../../i18n"
 import { ClineApiReqCancelReason, ClineApiReqInfo } from "../../shared/ExtensionMessage"
 import { getApiMetrics, hasTokenUsageChanged } from "../../shared/getApiMetrics"
 import { ClineAskResponse } from "../../shared/WebviewMessage"
-import { defaultModeSlug } from "../../shared/modes"
+import { defaultModeSlug, getModeBySlug, getGroupName } from "../../shared/modes"
 import { DiffStrategy } from "../../shared/tools"
 import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
 import { getModelMaxOutputTokens } from "../../shared/api"
@@ -2463,14 +2463,26 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				process.env.NODE_ENV === "test"
 					? ""
 					: `\n - If the question is simple (e.g., a concept explanation, term definition, or basic usage), do **not** invoke any tools, plugins, or file operations. Just provide a concise answer based on your internal knowledge, and immediately respond using the \`attempt_completion\` tool.\n - If the question is clearly informal or lacks actionable meaning (e.g., "hello", "who are you", "tell me a joke"), respond politely without attempting any deep logic or tool usage, and immediately respond using the \`attempt_completion\` tool.\n - Only use tools, plugins, or complex actions when the question explicitly involves file reading/writing/editing/creating, project scanning, debugging, implementation (e.g., writing or modifying code), or deep technical analysis.`
+
+			// Align browser tool enablement with generateSystemPrompt: require model image support,
+			// mode to include the browser group, and the user setting to be enabled.
+			const modeConfig = getModeBySlug(mode ?? defaultModeSlug, customModes)
+			const modeSupportsBrowser = modeConfig?.groups.some((group) => getGroupName(group) === "browser") ?? false
+
+			// Check if model supports browser capability (images)
+			const modelInfo = this.api.getModel().info
+			const modelSupportsBrowser = (modelInfo as any)?.supportsImages === true
+
+			const canUseBrowserTool = modelSupportsBrowser && modeSupportsBrowser && (browserToolEnabled ?? true)
+
 			return SYSTEM_PROMPT(
 				provider.context,
 				this.cwd,
-				(this.api.getModel().info.supportsComputerUse ?? false) && (browserToolEnabled ?? true),
+				canUseBrowserTool,
 				mcpHub,
 				this.diffStrategy,
-				browserViewportSize,
-				mode,
+				browserViewportSize ?? "900x600",
+				mode ?? defaultModeSlug,
 				customModePrompts,
 				customModes,
 				promptSuggestion + simpleAskSuggestion + shellSuggestion + customInstructions,

@@ -464,32 +464,6 @@ export const ZgsmAI = ({
 						<div>
 							<div className="flex items-center gap-1">
 								<Checkbox
-									checked={apiConfiguration?.zgsmAiCustomModelInfo?.supportsComputerUse ?? false}
-									onChange={handleInputChange("zgsmAiCustomModelInfo", (checked) => {
-										return {
-											...(apiConfiguration?.zgsmAiCustomModelInfo || zgsmModels.default),
-											supportsComputerUse: checked,
-										}
-									})}>
-									<span className="font-medium">
-										{t("settings:providers.customModel.computerUse.label")}
-									</span>
-								</Checkbox>
-								<StandardTooltip content={t("settings:providers.customModel.computerUse.description")}>
-									<i
-										className="codicon codicon-info text-vscode-descriptionForeground"
-										style={{ fontSize: "12px" }}
-									/>
-								</StandardTooltip>
-							</div>
-							<div className="text-sm text-vscode-descriptionForeground pt-1">
-								{t("settings:providers.customModel.computerUse.description")}
-							</div>
-						</div>
-
-						<div>
-							<div className="flex items-center gap-1">
-								<Checkbox
 									checked={apiConfiguration?.zgsmAiCustomModelInfo?.supportsPromptCache ?? false}
 									onChange={handleInputChange("zgsmAiCustomModelInfo", (checked) => {
 										return {
