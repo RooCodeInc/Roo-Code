@@ -212,6 +212,7 @@ export type ExtensionState = Pick<
 	| "currentApiConfigName"
 	| "listApiConfigMeta"
 	| "pinnedApiConfigs"
+	| "apiConfigsCustomOrder"
 	// | "lastShownAnnouncementId"
 	| "customInstructions"
 	// | "taskHistory" // Optional in GlobalSettings, required here.

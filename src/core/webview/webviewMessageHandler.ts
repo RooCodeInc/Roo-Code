@@ -1636,6 +1636,22 @@ export const webviewMessageHandler = async (
 				await provider.postStateToWebview()
 			}
 			break
+		case "setApiConfigsCustomOrder":
+			if (message.values && Array.isArray(message.values.customOrder)) {
+				const isValidOrder = message.values.customOrder.every(
+					(item: any) =>
+						typeof item === "object" &&
+						typeof item.id === "string" &&
+						typeof item.index === "number" &&
+						typeof item.pinned === "boolean",
+				)
+
+				if (isValidOrder) {
+					await updateGlobalState("apiConfigsCustomOrder", message.values.customOrder)
+					await provider.postStateToWebview()
+				}
+			}
+			break
 		case "enhancementApiConfigId":
 			await updateGlobalState("enhancementApiConfigId", message.text)
 			await provider.postStateToWebview()

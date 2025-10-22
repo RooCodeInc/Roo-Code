@@ -1,20 +1,18 @@
-import { memo, useEffect, useRef, useState } from "react"
-import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
-import { AlertTriangle } from "lucide-react"
+import { memo, useEffect, useRef, useState, useMemo, useCallback } from "react"
 
 import type { ProviderSettingsEntry, OrganizationAllowList } from "@roo-code/types"
 
 import { useAppTranslation } from "@/i18n/TranslationContext"
-import {
-	type SearchableSelectOption,
-	Button,
-	Input,
-	Dialog,
-	DialogContent,
-	DialogTitle,
-	StandardTooltip,
-	SearchableSelect,
-} from "@/components/ui"
+import { Button, Input, Dialog, DialogContent, DialogTitle, StandardTooltip } from "@/components/ui"
+import { vscode } from "@/utils/vscode"
+import { useExtensionState } from "@/context/ExtensionStateContext"
+import ConfigListItem from "./ConfigListItem"
+
+interface DragState {
+	isDragging: boolean
+	draggedIndex: number | null
+	dragOverIndex: number | null
+}
 
 interface ApiConfigManagerProps {
 	currentApiConfigName?: string
@@ -36,73 +34,90 @@ const ApiConfigManager = ({
 	onUpsertConfig,
 }: ApiConfigManagerProps) => {
 	const { t } = useAppTranslation()
+	const { apiConfigsCustomOrder: customOrder = [] } = useExtensionState()
 
-	const [isRenaming, setIsRenaming] = useState(false)
 	const [isCreating, setIsCreating] = useState(false)
-	const [inputValue, setInputValue] = useState("")
 	const [newProfileName, setNewProfileName] = useState("")
 	const [error, setError] = useState<string | null>(null)
-	const inputRef = useRef<any>(null)
+	const [dragState, setDragState] = useState<DragState>({
+		isDragging: false,
+		draggedIndex: null,
+		dragOverIndex: null,
+	})
+	const [focusedIndex, setFocusedIndex] = useState<number | null>(null)
+	const [isReorderingMode, setIsReorderingMode] = useState(false)
 	const newProfileInputRef = useRef<any>(null)
 
+	const isOnlyProfile = listApiConfigMeta?.length === 1
+
+	// Sort configs based on custom order
+	const sortedConfigs = useMemo(() => {
+		if (!customOrder || customOrder.length === 0) {
+			return listApiConfigMeta
+		}
+
+		const orderMap = new Map(customOrder.map((item) => [item.id, item.index]))
+
+		const sorted = [...listApiConfigMeta]
+		sorted.sort((a, b) => {
+			const aIndex = orderMap.get(a.id) ?? Number.MAX_SAFE_INTEGER
+			const bIndex = orderMap.get(b.id) ?? Number.MAX_SAFE_INTEGER
+			return (aIndex as number) - (bIndex as number)
+		})
+
+		return sorted
+	}, [listApiConfigMeta, customOrder])
+
 	// Check if a profile is valid based on the organization allow list
-	const isProfileValid = (profile: ProviderSettingsEntry): boolean => {
-		// If no organization allow list or allowAll is true, all profiles are valid
-		if (!organizationAllowList || organizationAllowList.allowAll) {
-			return true
-		}
+	const isProfileValid = useCallback(
+		(profile: ProviderSettingsEntry): boolean => {
+			// If no organization allow list or allowAll is true, all profiles are valid
+			if (!organizationAllowList || organizationAllowList.allowAll) {
+				return true
+			}
 
-		// Check if the provider is allowed
-		const provider = profile.apiProvider
-		if (!provider) return true
+			// Check if the provider is allowed
+			const provider = profile.apiProvider
+			if (!provider) return true
 
-		const providerConfig = organizationAllowList.providers[provider]
-		if (!providerConfig) {
-			return false
-		}
+			const providerConfig = organizationAllowList.providers[provider]
+			if (!providerConfig) {
+				return false
+			}
 
-		// If provider allows all models, profile is valid
-		return !!providerConfig.allowAll || !!(providerConfig.models && providerConfig.models.length > 0)
-	}
+			// If provider allows all models, profile is valid
+			return !!providerConfig.allowAll || !!(providerConfig.models && providerConfig.models.length > 0)
+		},
+		[organizationAllowList],
+	)
 
-	const validateName = (name: string, isNewProfile: boolean): string | null => {
-		const trimmed = name.trim()
-		if (!trimmed) return t("settings:providers.nameEmpty")
+	const validateName = useCallback(
+		(name: string, isNewProfile: boolean): string | null => {
+			const trimmed = name.trim()
+			if (!trimmed) return t("settings:providers.nameEmpty")
 
-		const nameExists = listApiConfigMeta?.some((config) => config.name.toLowerCase() === trimmed.toLowerCase())
+			const nameExists = listApiConfigMeta?.some((config) => config.name.toLowerCase() === trimmed.toLowerCase())
 
-		// For new profiles, any existing name is invalid.
-		if (isNewProfile && nameExists) {
-			return t("settings:providers.nameExists")
-		}
+			// For new profiles, any existing name is invalid.
+			if (isNewProfile && nameExists) {
+				return t("settings:providers.nameExists")
+			}
 
-		// For rename, only block if trying to rename to a different existing profile.
-		if (!isNewProfile && nameExists && trimmed.toLowerCase() !== currentApiConfigName?.toLowerCase()) {
-			return t("settings:providers.nameExists")
-		}
+			// For rename, only block if trying to rename to a different existing profile.
+			if (!isNewProfile && nameExists && trimmed.toLowerCase() !== currentApiConfigName?.toLowerCase()) {
+				return t("settings:providers.nameExists")
+			}
 
-		return null
-	}
+			return null
+		},
+		[listApiConfigMeta, currentApiConfigName, t],
+	)
 
 	const resetCreateState = () => {
 		setIsCreating(false)
 		setNewProfileName("")
 		setError(null)
 	}
-
-	const resetRenameState = () => {
-		setIsRenaming(false)
-		setInputValue("")
-		setError(null)
-	}
-
-	// Focus input when entering rename mode.
-	useEffect(() => {
-		if (isRenaming) {
-			const timeoutId = setTimeout(() => inputRef.current?.focus(), 0)
-			return () => clearTimeout(timeoutId)
-		}
-	}, [isRenaming])
 
 	// Focus input when opening new dialog.
 	useEffect(() => {
@@ -112,53 +127,170 @@ const ApiConfigManager = ({
 		}
 	}, [isCreating])
 
+	// Effect to manage focus when in reorder mode
+	useEffect(() => {
+		if (focusedIndex !== null) {
+			// Find the element at the focused index and focus it
+			const element = document.querySelector(`[data-config-item-index="${focusedIndex}"]`) as HTMLElement
+			if (element) {
+				element.focus()
+			}
+		}
+	}, [focusedIndex])
+
 	// Reset state when current profile changes.
 	useEffect(() => {
 		resetCreateState()
-		resetRenameState()
 	}, [currentApiConfigName])
 
-	const handleSelectConfig = (configName: string) => {
-		if (!configName) return
-		onSelectConfig(configName)
-	}
+	const handleSelectConfig = useCallback(
+		(configName: string) => {
+			if (!configName) return
+			onSelectConfig(configName)
+		},
+		[onSelectConfig],
+	)
+
+	const moveItem = useCallback(
+		(fromIndex: number, toIndex: number) => {
+			if (fromIndex === toIndex) return
+
+			if (fromIndex < 0 || fromIndex >= sortedConfigs.length || toIndex < 0 || toIndex >= sortedConfigs.length)
+				return
+
+			// Create a reordered array of configs
+			const reorderedConfigs = [...sortedConfigs]
+			const [movedItem] = reorderedConfigs.splice(fromIndex, 1)
+			reorderedConfigs.splice(toIndex, 0, movedItem)
+
+			// Create new order array with updated indices, preserving pinned status
+			const newOrder = reorderedConfigs.map((config, index) => {
+				const existingOrderItem = customOrder.find((item) => item.id === config.id)
+				return {
+					id: config.id,
+					index,
+					pinned: existingOrderItem?.pinned ?? false,
+				}
+			})
+
+			vscode.postMessage({
+				type: "setApiConfigsCustomOrder",
+				values: { customOrder: newOrder },
+			})
+		},
+		[sortedConfigs, customOrder],
+	)
+
+	const handleDragStart = useCallback((e: React.DragEvent, index: number) => {
+		setDragState({
+			isDragging: true,
+			draggedIndex: index,
+			dragOverIndex: null,
+		})
+		e.dataTransfer.effectAllowed = "move"
+		e.dataTransfer.setData("text/html", "")
+	}, [])
+
+	const handleDragOver = useCallback((e: React.DragEvent, index: number) => {
+		e.preventDefault()
+		e.dataTransfer.dropEffect = "move"
+
+		setDragState((prev) => {
+			// Only update if the dragOverIndex actually changed
+			if (prev.dragOverIndex !== index) {
+				return {
+					...prev,
+					dragOverIndex: index,
+				}
+			}
+			return prev
+		})
+	}, [])
+
+	// Use sorted configs as display configs
+	const displayConfigs = sortedConfigs
+
+	const handleDragEnd = useCallback(() => {
+		const { draggedIndex, dragOverIndex } = dragState
+
+		if (draggedIndex !== null && dragOverIndex !== null && draggedIndex !== dragOverIndex) {
+			moveItem(draggedIndex, dragOverIndex)
+		}
+
+		setDragState({
+			isDragging: false,
+			draggedIndex: null,
+			dragOverIndex: null,
+		})
+	}, [dragState, moveItem])
+
+	const handleKeyDown = useCallback(
+		(e: React.KeyboardEvent, displayIndex: number) => {
+			const currentConfig = displayConfigs[displayIndex]
+			if (!currentConfig) return
+
+			const totalItems = displayConfigs.length
+
+			if (e.altKey || e.metaKey) {
+				// Alt/Option + arrow keys for reordering
+				if (e.key === "ArrowUp" && displayIndex > 0) {
+					e.preventDefault()
+					moveItem(displayIndex, displayIndex - 1)
+				} else if (e.key === "ArrowDown" && displayIndex < totalItems - 1) {
+					e.preventDefault()
+					moveItem(displayIndex, displayIndex + 1)
+				}
+			} else {
+				// Plain arrow keys for navigation
+				if (e.key === "ArrowUp" && displayIndex > 0) {
+					e.preventDefault()
+					setFocusedIndex(displayIndex - 1)
+				} else if (e.key === "ArrowDown" && displayIndex < totalItems - 1) {
+					e.preventDefault()
+					setFocusedIndex(displayIndex + 1)
+				} else if (e.key === "Enter" || e.key === " ") {
+					e.preventDefault()
+					handleSelectConfig(currentConfig.name)
+				} else if (e.key === "Tab") {
+					e.preventDefault()
+					// Handle tab navigation manually
+					if (e.shiftKey && displayIndex > 0) {
+						setFocusedIndex(displayIndex - 1)
+					} else if (!e.shiftKey && displayIndex < totalItems - 1) {
+						setFocusedIndex(displayIndex + 1)
+					}
+				}
+			}
+		},
+		[displayConfigs, moveItem, handleSelectConfig],
+	)
 
 	const handleAdd = () => {
 		resetCreateState()
 		setIsCreating(true)
 	}
 
-	const handleStartRename = () => {
-		setIsRenaming(true)
-		setInputValue(currentApiConfigName || "")
-		setError(null)
+	const toggleReorderingMode = () => {
+		setIsReorderingMode(!isReorderingMode)
 	}
 
-	const handleCancel = () => {
-		resetRenameState()
-	}
+	const handleRename = useCallback(
+		(oldName: string, newName: string) => {
+			// No need to update custom order since ID doesn't change when renaming
+			onRenameConfig(oldName, newName)
+		},
+		[onRenameConfig],
+	)
 
-	const handleSave = () => {
-		const trimmedValue = inputValue.trim()
-		const error = validateName(trimmedValue, false)
+	const handleDelete = useCallback(
+		(configName: string) => {
+			if (!configName || !listApiConfigMeta || listApiConfigMeta.length <= 1) return
+			onDeleteConfig(configName)
+		},
+		[listApiConfigMeta, onDeleteConfig],
+	)
 
-		if (error) {
-			setError(error)
-			return
-		}
-
-		if (isRenaming && currentApiConfigName) {
-			if (currentApiConfigName === trimmedValue) {
-				resetRenameState()
-				return
-			}
-			onRenameConfig(currentApiConfigName, trimmedValue)
-		}
-
-		resetRenameState()
-	}
-
-	const handleNewProfileSave = () => {
+	const handleNewProfileSave = useCallback(() => {
 		const trimmedValue = newProfileName.trim()
 		const error = validateName(trimmedValue, true)
 
@@ -169,134 +301,78 @@ const ApiConfigManager = ({
 
 		onUpsertConfig(trimmedValue)
 		resetCreateState()
-	}
-
-	const handleDelete = () => {
-		if (!currentApiConfigName || !listApiConfigMeta || listApiConfigMeta.length <= 1) return
-
-		// Let the extension handle both deletion and selection.
-		onDeleteConfig(currentApiConfigName)
-	}
-
-	const isOnlyProfile = listApiConfigMeta?.length === 1
+	}, [newProfileName, validateName, onUpsertConfig])
 
 	return (
 		<div className="flex flex-col gap-1">
-			<label className="block font-medium mb-1">{t("settings:providers.configProfile")}</label>
-
-			{isRenaming ? (
-				<div data-testid="rename-form">
-					<div className="flex items-center gap-1">
-						<VSCodeTextField
-							ref={inputRef}
-							value={inputValue}
-							onInput={(e: unknown) => {
-								const target = e as { target: { value: string } }
-								setInputValue(target.target.value)
-								setError(null)
-							}}
-							placeholder={t("settings:providers.enterNewName")}
-							onKeyDown={({ key }) => {
-								if (key === "Enter" && inputValue.trim()) {
-									handleSave()
-								} else if (key === "Escape") {
-									handleCancel()
-								}
-							}}
-							className="grow"
-						/>
-						<StandardTooltip content={t("settings:common.save")}>
-							<Button
-								variant="ghost"
-								size="icon"
-								disabled={!inputValue.trim()}
-								onClick={handleSave}
-								data-testid="save-rename-button">
-								<span className="codicon codicon-check" />
-							</Button>
-						</StandardTooltip>
-						<StandardTooltip content={t("settings:common.cancel")}>
-							<Button
-								variant="ghost"
-								size="icon"
-								onClick={handleCancel}
-								data-testid="cancel-rename-button">
-								<span className="codicon codicon-close" />
-							</Button>
-						</StandardTooltip>
-					</div>
-					{error && (
-						<div className="text-vscode-descriptionForeground text-sm mt-1" data-testid="error-message">
-							{error}
-						</div>
-					)}
+			<div className="flex justify-between items-center">
+				<label className="block font-medium mb-1">{t("settings:providers.configProfile")}</label>
+				{/* Action buttons */}
+				<div className="flex items-center gap-1 mb-3">
+					<StandardTooltip
+						content={
+							isReorderingMode
+								? t("settings:providers.exitReorderMode")
+								: t("settings:providers.reorderProfiles")
+						}>
+						<Button
+							variant="ghost"
+							size="icon"
+							onClick={toggleReorderingMode}
+							data-testid="reorder-toggle-button"
+							className={
+								isReorderingMode ? "bg-vscode-button-background text-vscode-button-foreground" : ""
+							}>
+							<span className="codicon codicon-list-ordered" />
+						</Button>
+					</StandardTooltip>
+					<StandardTooltip content={t("settings:providers.addProfile")}>
+						<Button variant="ghost" size="icon" onClick={handleAdd} data-testid="add-profile-button">
+							<span className="codicon codicon-add" />
+						</Button>
+					</StandardTooltip>
 				</div>
-			) : (
-				<>
-					<div className="flex items-center gap-1">
-						<SearchableSelect
-							value={currentApiConfigName}
-							onValueChange={handleSelectConfig}
-							options={listApiConfigMeta.map((config) => {
-								const valid = isProfileValid(config)
-								return {
-									value: config.name,
-									label: config.name,
-									disabled: !valid,
-									icon: !valid ? (
-										<StandardTooltip content={t("settings:validation.profileInvalid")}>
-											<span>
-												<AlertTriangle size={16} className="mr-2 text-vscode-errorForeground" />
-											</span>
-										</StandardTooltip>
-									) : undefined,
-								} as SearchableSelectOption
-							})}
-							placeholder={t("settings:common.select")}
-							searchPlaceholder={t("settings:providers.searchPlaceholder")}
-							emptyMessage={t("settings:providers.noMatchFound")}
-							className="grow"
-							data-testid="select-component"
+			</div>
+			{/* Config list */}
+			<div
+				className="flex flex-col gap-2 max-h-[240px] overflow-y-auto overflow-x-hidden"
+				role="listbox"
+				aria-label={t("settings:providers.configProfile")}>
+				{displayConfigs.length === 0 ? (
+					<div className="py-4 px-3 text-sm text-vscode-foreground/70 text-center border border-vscode-dropdown-border rounded-md">
+						{t("settings:providers.noConfigs")}
+					</div>
+				) : (
+					displayConfigs.map((config, index) => (
+						<ConfigListItem
+							key={config.id}
+							config={config}
+							index={index}
+							isCurrentConfig={config.name === currentApiConfigName}
+							dragState={dragState}
+							isFocused={focusedIndex === index}
+							isValid={isProfileValid(config)}
+							isOnlyProfile={isOnlyProfile}
+							isReorderingMode={isReorderingMode}
+							validateName={validateName}
+							onDragStart={handleDragStart}
+							onDragEnd={handleDragEnd}
+							onDragOver={handleDragOver}
+							onSelectConfig={handleSelectConfig}
+							onKeyDown={handleKeyDown}
+							onRename={handleRename}
+							onDelete={handleDelete}
 						/>
-						<StandardTooltip content={t("settings:providers.addProfile")}>
-							<Button variant="ghost" size="icon" onClick={handleAdd} data-testid="add-profile-button">
-								<span className="codicon codicon-add" />
-							</Button>
-						</StandardTooltip>
-						{currentApiConfigName && (
-							<>
-								<StandardTooltip content={t("settings:providers.renameProfile")}>
-									<Button
-										variant="ghost"
-										size="icon"
-										onClick={handleStartRename}
-										data-testid="rename-profile-button">
-										<span className="codicon codicon-edit" />
-									</Button>
-								</StandardTooltip>
-								<StandardTooltip
-									content={
-										isOnlyProfile
-											? t("settings:providers.cannotDeleteOnlyProfile")
-											: t("settings:providers.deleteProfile")
-									}>
-									<Button
-										variant="ghost"
-										size="icon"
-										onClick={handleDelete}
-										data-testid="delete-profile-button"
-										disabled={isOnlyProfile}>
-										<span className="codicon codicon-trash" />
-									</Button>
-								</StandardTooltip>
-							</>
-						)}
-					</div>
-					<div className="text-vscode-descriptionForeground text-sm mt-1">
-						{t("settings:providers.description")}
-					</div>
-				</>
-			)}
+					))
+				)}
+			</div>
+
+			{/* Help text */}
+			<div className="text-vscode-descriptionForeground text-sm mt-2">
+				{isReorderingMode
+					? t("settings:providers.reorderModeHelpText")
+					: t("settings:providers.normalModeHelpText")}
+			</div>
 
 			<Dialog
 				open={isCreating}
