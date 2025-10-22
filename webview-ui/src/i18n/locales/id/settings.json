@@ -809,8 +809,6 @@
 	"modelInfo": {
 		"supportsImages": "Mendukung gambar",
 		"noImages": "Tidak mendukung gambar",
-		"supportsComputerUse": "Mendukung computer use",
-		"noComputerUse": "Tidak mendukung computer use",
 		"supportsPromptCache": "Mendukung prompt caching",
 		"noPromptCache": "Tidak mendukung prompt caching",
 		"contextWindow": "Jendela Konteks:",

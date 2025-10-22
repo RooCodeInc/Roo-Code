@@ -780,8 +780,6 @@
 	"modelInfo": {
 		"supportsImages": "Suporta imagens",
 		"noImages": "Não suporta imagens",
-		"supportsComputerUse": "Suporta uso do computador",
-		"noComputerUse": "Não suporta uso do computador",
 		"supportsPromptCache": "Suporta cache de prompts",
 		"noPromptCache": "Não suporta cache de prompts",
 		"contextWindow": "Janela de Contexto:",

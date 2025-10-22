@@ -780,8 +780,6 @@
 	"modelInfo": {
 		"supportsImages": "Görüntüleri destekler",
 		"noImages": "Görüntüleri desteklemez",
-		"supportsComputerUse": "Bilgisayar kullanımını destekler",
-		"noComputerUse": "Bilgisayar kullanımını desteklemez",
 		"supportsPromptCache": "İstem önbelleğini destekler",
 		"noPromptCache": "İstem önbelleğini desteklemez",
 		"contextWindow": "Bağlam Penceresi:",

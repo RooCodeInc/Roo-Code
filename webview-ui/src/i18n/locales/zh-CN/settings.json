@@ -780,8 +780,6 @@
 	"modelInfo": {
 		"supportsImages": "支持图像",
 		"noImages": "不支持图像",
-		"supportsComputerUse": "支持计算机功能调用",
-		"noComputerUse": "不支持计算机功能调用",
 		"supportsPromptCache": "支持提示缓存",
 		"noPromptCache": "不支持提示缓存",
 		"contextWindow": "上下文窗口:",

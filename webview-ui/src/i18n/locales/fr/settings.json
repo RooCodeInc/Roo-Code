@@ -777,8 +777,6 @@
 	"modelInfo": {
 		"supportsImages": "Prend en charge les images",
 		"noImages": "Ne prend pas en charge les images",
-		"supportsComputerUse": "Prend en charge l'utilisation de l'ordinateur",
-		"noComputerUse": "Ne prend pas en charge l'utilisation de l'ordinateur",
 		"supportsPromptCache": "Prend en charge la mise en cache des prompts",
 		"noPromptCache": "Ne prend pas en charge la mise en cache des prompts",
 		"contextWindow": "Fenêtre de contexte :",

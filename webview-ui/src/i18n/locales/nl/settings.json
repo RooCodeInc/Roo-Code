@@ -780,8 +780,6 @@
 	"modelInfo": {
 		"supportsImages": "Ondersteunt afbeeldingen",
 		"noImages": "Ondersteunt geen afbeeldingen",
-		"supportsComputerUse": "Ondersteunt computergebruik",
-		"noComputerUse": "Ondersteunt geen computergebruik",
 		"supportsPromptCache": "Ondersteunt prompt caching",
 		"noPromptCache": "Ondersteunt geen prompt caching",
 		"contextWindow": "Contextvenster:",

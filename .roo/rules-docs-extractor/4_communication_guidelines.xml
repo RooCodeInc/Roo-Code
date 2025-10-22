@@ -16,17 +16,6 @@
         <scenario>The user explicitly asks for options.</scenario>
       </when_to_ask>
       
-      <question_example><![CDATA[
-<ask_followup_question>
-<question>Found multiple auth systems. Which to document?</question>
-<follow_up>
-<suggest>JWT-based system (src/auth/jwt/*)</suggest>
-<suggest>OAuth2 integration (src/auth/oauth/*)</suggest>
-<suggest>Basic auth middleware (src/middleware/basic-auth.ts)</suggest>
-<suggest>All of them</suggest>
-</follow_up>
-</ask_followup_question>
-      ]]></question_example>
     </clarification>
 
     <progress_updates>
@@ -62,7 +51,7 @@
         </discovery>
       </important_findings>
       <extraction_findings>
-        <template><![CDATA[
+        <template>
 Feature extraction complete for [feature name].
 
 **Extraction Report**: `EXTRACTION-[feature].md`
@@ -79,10 +68,10 @@ Feature extraction complete for [feature name].
 - [Edge cases that should be documented]
 
 The extraction report provides comprehensive details for your documentation team.
-        ]]></template>
+        </template>
       </extraction_findings>
       <verification_findings>
-        <template><![CDATA[
+        <template>
 Documentation verification complete.
 
 **Verification Report**: `VERIFICATION-[feature].md`
@@ -101,7 +90,7 @@ Documentation verification complete.
 3. [Key missing information]
 
 See the full verification report for detailed corrections and suggestions.
-        ]]></template>
+        </template>
       </verification_findings>
     </findings_communication>
   </user_interaction>
@@ -116,7 +105,7 @@ See the full verification report for detailed corrections and suggestions.
       <code_blocks>
         <rule>Always specify language for syntax highlighting (e.g., typescript, json, bash).</rule>
         <rule>Include file paths as comments where relevant.</rule>
-        <example><![CDATA[
+        <example>
 ```typescript
 // src/auth/auth.service.ts
 export class AuthService {
@@ -125,19 +114,19 @@ export class AuthService {
   }
 }
 ```
-        ]]></example>
+        </example>
       </code_blocks>
 
       <tables>
         <rule>Use tables for structured data like configs.</rule>
         <rule>Include headers and align columns.</rule>
         <rule>Keep cell content brief.</rule>
-        <example><![CDATA[
+        <example>
 | Variable | Type | Default | Description |
 |----------|------|---------|-------------|
 | `JWT_SECRET` | string | - | Secret key for JWT signing |
 | `JWT_EXPIRATION` | string | '15m' | Token expiration time |
-        ]]></example>
+        </example>
       </tables>
 
       <lists>
@@ -180,14 +169,14 @@ export class AuthService {
       </alerts>
 
       <metadata_blocks>
-        <version_info><![CDATA[
+        <version_info>
 ---
 Feature: Authentication System
 Version: 2.1.0
 Last Updated: 2024-01-15
 Status: Stable
 ---
-        ]]></version_info>
+        </version_info>
       </metadata_blocks>
     </special_sections>
   </output_formatting>
@@ -208,15 +197,10 @@ Status: Stable
         <vocabulary>Standard programming terms.</vocabulary>
         <examples>Code snippets, implementation details.</examples>
       </audience>
-      <audience type="end_user">
+      <audience type="user">
         <tone>Instructional, step-by-step.</tone>
         <vocabulary>Simple language, no jargon.</vocabulary>
         <examples>Screenshots, real-world scenarios.</examples>
-      </audience>
-      <audience type="administrator">
-        <tone>Operational focus.</tone>
-        <vocabulary>IT/DevOps terms.</vocabulary>
-        <examples>CLI examples, configs.</examples>
       </audience>
     </audience_tone>
   </documentation_tone>
@@ -229,7 +213,7 @@ Status: Stable
       <element>Recommended next steps.</element>
     </structure>
 
-    <extraction_example><![CDATA[
+    <extraction_example>
 Feature extraction complete for the authentication system.
 
 **Extraction Report**: `EXTRACTION-authentication-system.md`
@@ -252,9 +236,9 @@ Feature extraction complete for the authentication system.
 - Error messages need user-friendly translations
 
 The extraction report contains all details needed for comprehensive documentation.
-    ]]></extraction_example>
+    </extraction_example>
 
-    <verification_example><![CDATA[
+    <verification_example>
 Documentation verification complete for the authentication system.
 
 **Verification Report**: `VERIFICATION-authentication-system.md`
@@ -271,7 +255,7 @@ Documentation verification complete for the authentication system.
 **Clarity Improvements**: 3 suggestions
 
 Please review the verification report for specific corrections needed.
-    ]]></verification_example>
+    </verification_example>
   </completion_message>
 
   <error_handling>

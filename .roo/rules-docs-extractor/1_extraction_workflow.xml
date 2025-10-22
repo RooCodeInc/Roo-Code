@@ -1,296 +1,99 @@
 <extraction_workflow>
   <mode_overview>
-    The Docs Extractor mode has two primary functions:
-    1. Extract technical and non-technical details about features to provide to documentation teams
-    2. Verify existing documentation for factual accuracy against the codebase
-    
-    This mode does not generate final documentation but provides detailed analysis and verification.
+    The Docs Extractor mode has exactly two workflow paths:
+    1) Verify provided documentation for factual accuracy against the codebase
+    2) Generate source material for user-facing docs about a requested feature or aspect of the codebase
+
+    Outputs are designed to support explanatory documentation (not merely descriptive):
+    - Capture why users need steps and why certain actions are restricted
+    - Surface constraints, limitations, and trade‑offs
+    - Provide troubleshooting playbooks (symptoms → causes → fixes → prevention)
+    - Recommend targeted visuals for complex states (not step‑by‑step screenshots)
+
+    This mode does not generate final user documentation; it produces verification and source-material reports for docs teams.
   </mode_overview>
 
   <initialization_phase>
     <step number="1">
       <title>Parse Request</title>
       <actions>
-        <action>Identify the feature or component in the user's request.</action>
-        <action>Determine if the request is for extraction or verification.</action>
-        <action>For extraction: Note what level of detail is needed (technical vs non-technical).</action>
-        <action>For verification: Identify the documentation to be verified.</action>
+        <action>Identify the feature/aspect in the user's request.</action>
+        <action>Decide path: verification vs. source-material generation.</action>
+        <action>For source-material: capture audience (user or developer) and depth (overview vs task-focused).</action>
+        <action>For verification: identify the documentation to be verified (provided text/links/files).</action>
         <action>Note any specific areas to emphasize or check.</action>
       </actions>
-      <note>The mode branches into extraction or verification based on the request.</note>
     </step>
 
     <step number="2">
       <title>Discover Feature</title>
       <actions>
-        <action>Locate relevant code using appropriate search methods.</action>
-        <action>Identify entry points and components.</action>
-        <action>Map the high-level architecture.</action>
-        <action>Use any combination of tools to understand the feature.</action>
+        <action>Locate relevant code and assets using appropriate discovery methods.</action>
+        <action>Identify entry points and key components that affect user experience.</action>
+        <action>Map the high-level workflow a user follows.</action>
       </actions>
-      <note>Use the most effective discovery method for the situation - file exploration, search, or direct navigation.</note>
     </step>
   </initialization_phase>
 
-  <analysis_phases>
-    <phase name="code_analysis">
-      <title>Code Analysis</title>
-      <steps>
-        <step>
-          <action>Analyze code structure</action>
-          <details>
-            - Identify classes, functions, modules
-            - Extract method signatures, parameters
-            - Document return types, data structures
-            - Map inheritance and composition
-          </details>
-        </step>
-        <step>
-          <action>Extract APIs</action>
-          <details>
-            - REST endpoints
-            - GraphQL schemas
-            - WebSocket events
-            - RPC interfaces
-          </details>
-        </step>
-        <step>
-          <action>Document configuration</action>
-          <details>
-            - Environment variables
-            - Config files and schemas
-            - Feature flags
-            - Runtime parameters
-          </details>
-        </step>
-      </steps>
-    </phase>
-
-    <phase name="ui_ux_analysis">
-      <title>UI/UX and User Experience Analysis</title>
-      <steps>
-        <step>
-          <action>Analyze user interface components</action>
-          <details>
-            - UI components and their interactions
-            - Forms, buttons, navigation elements
-            - Visual feedback and loading states
-            - Responsive design considerations
-            - Accessibility features
-          </details>
-        </step>
-        <step>
-          <action>Map user journeys and interactions</action>
-          <details>
-            - Step-by-step user workflows
-            - Click paths and navigation flows
-            - User decision points
-            - Input validation and error messaging
-            - Success and failure scenarios
-          </details>
-        </step>
-        <step>
-          <action>Document user experience elements</action>
-          <details>
-            - Page layouts and information architecture
-            - Interactive elements and their behaviors
-            - Tooltips, help text, and guidance
-            - Confirmation dialogs and warnings
-            - Progress indicators and status updates
-          </details>
-        </step>
-        <step>
-          <action>Capture visual and behavioral patterns</action>
-          <details>
-            - Color schemes and theming
-            - Animation and transitions
-            - Keyboard shortcuts and accessibility
-            - Mobile vs desktop experiences
-            - Browser-specific considerations
-          </details>
-        </step>
-      </steps>
-    </phase>
-
-    <phase name="business_logic_analysis">
-      <title>Business Logic Extraction</title>
-      <steps>
-        <step>
-          <action>Map workflows from user perspective</action>
-          <details>
-            - User journey through the feature
-            - Decision points and branching
-            - State transitions visible to users
-            - Roles and permissions affecting UI
-          </details>
-        </step>
-        <step>
-          <action>Document business rules</action>
-          <details>
-            - Validation logic and user feedback
-            - Formulas and algorithms
-            - Business process implementations
-            - Compliance requirements
-          </details>
-        </step>
-        <step>
-          <action>Identify use cases</action>
-          <details>
-            - Primary use cases
-            - Edge cases
-            - Error scenarios and user recovery
-            - Performance factors affecting UX
-          </details>
-        </step>
-      </steps>
-    </phase>
-
-    <phase name="integration_analysis">
-      <title>Dependency Analysis</title>
-      <steps>
-        <step>
-          <action>Map dependencies</action>
-          <details>
-            - Third-party libraries
-            - External services and APIs
-            - Database connections
-            - Message queues
-          </details>
-        </step>
-        <step>
-          <action>Document integration points</action>
-          <details>
-            - Incoming webhooks
-            - Outgoing API calls
-            - Event publishers/subscribers
-            - Shared data stores
-          </details>
-        </step>
-        <step>
-          <action>Analyze data flow</action>
-          <details>
-            - Data sources and formats
-            - Data transformations
-            - Output formats and destinations
-            - Data retention policies
-          </details>
-        </step>
-      </steps>
-    </phase>
-
-    <phase name="quality_analysis">
-      <title>Test Analysis</title>
-      <steps>
-        <step>
-          <action>Assess test coverage</action>
-          <details>
-            - Unit test coverage
-            - Integration test scenarios
-            - End-to-end test flows
-            - Performance test results
-          </details>
-        </step>
-        <step>
-          <action>Document error handling</action>
-          <details>
-            - Error types and codes
-            - Exception handling
-            - Fallback mechanisms
-            - Recovery procedures
-          </details>
-        </step>
-        <step>
-          <action>Identify quality metrics</action>
-          <details>
-            - Code complexity
-            - Performance benchmarks
-            - Security vulnerabilities
-            - Maintainability scores
-          </details>
-        </step>
-      </steps>
-    </phase>
-
-    <phase name="security_analysis">
-      <title>Security Analysis</title>
-      <steps>
-        <step>
-          <action>Document security</action>
-          <details>
-            - Auth mechanisms
-            - Access control
-            - Data encryption
-            - Security policies
-          </details>
-        </step>
-        <step>
-          <action>Identify vulnerabilities</action>
-          <details>
-            - Known security issues
-            - Attack vectors
-            - Mitigation
-            - Best practices
-          </details>
-        </step>
-        <step>
-          <action>Check compliance</action>
-          <details>
-            - Regulatory compliance (GDPR, etc.)
-            - Industry standards
-            - Audit trail requirements
-            - Data privacy
-          </details>
-        </step>
-      </steps>
-    </phase>
-  </analysis_phases>
+  <analysis_focus>
+    <area>UI components and their interactions</area>
+    <area>User workflows and decision points</area>
+    <area>Configuration that changes user-visible behavior</area>
+    <area>Error states, messages, and recovery</area>
+    <area>Benefits, limits, prerequisites, and version notes</area>
+    <area>Why this exists: user goals, constraints, and design intent</area>
+    <area>“Cannot do” boundaries: permissions, invariants, and business rules</area>
+    <area>Troubleshooting: symptoms, likely causes, diagnostics, fixes, prevention</area>
+    <area>Common pitfalls and anti‑patterns (what to avoid and why)</area>
+    <area>Decision rationale and trade‑offs that affect user choices</area>
+    <area>Complex UI states that merit visuals (criteria for screenshots/diagrams)</area>
+  </analysis_focus>
 
   <workflow_paths>
-    <path name="extraction">
-      <title>Extract Feature Details</title>
-      <description>Analyze and extract comprehensive details for documentation team</description>
+    <path name="source_material">
+      <title>Generate Source Material for User-Facing Docs</title>
+      <description>Extract concise, user-oriented facts and structure them for documentation teams.</description>
       <steps>
         <step number="1">
-          <title>Compile Technical Details</title>
+          <title>Scope and Audience</title>
           <actions>
-            <action>List all technical components and their relationships</action>
-            <action>Document APIs, data structures, and algorithms</action>
-            <action>Extract configuration options and their impacts</action>
-            <action>Identify error handling and edge cases</action>
-            <action>Note performance characteristics and limitations</action>
+            <action>Confirm the feature/aspect and intended audience.</action>
+            <action>List primary tasks the audience performs with this feature.</action>
           </actions>
         </step>
         <step number="2">
-          <title>Extract Non-Technical Information</title>
+          <title>Extract User-Facing Facts</title>
           <actions>
-            <action>Describe complete user experience and workflows</action>
-            <action>Document UI interactions and visual elements</action>
-            <action>Explain business logic in plain language</action>
-            <action>Identify user benefits and use cases</action>
-            <action>Document common scenarios with UI context</action>
-            <action>Note prerequisites and user-facing dependencies</action>
-            <action>Capture error messages and user guidance</action>
+            <action>Summarize what the feature does and key benefits.</action>
+            <action>Explain why users need this (jobs-to-be-done, outcomes) and when to use it.</action>
+            <action>Document step-by-step user workflows and UI interactions.</action>
+            <action>Capture configuration options that impact user behavior (name, default, effect).</action>
+            <action>Clarify constraints, limits, and “cannot do” cases with rationale.</action>
+            <action>Identify common pitfalls and anti-patterns; include “Do/Don’t” guidance.</action>
+            <action>List common errors with user-facing messages, diagnostics, fixes, and prevention.</action>
+            <action>Record prerequisites, permissions, and compatibility/version notes.</action>
+            <action>Flag complex states that warrant visuals (what to show and why), not every step.</action>
           </actions>
         </step>
         <step number="3">
-          <title>Create Extraction Report</title>
+          <title>Create Source Material Report</title>
           <actions>
-            <action>Organize findings into clear categories</action>
-            <action>Separate technical and non-technical information</action>
-            <action>Include code snippets and examples where helpful</action>
-            <action>Create `EXTRACTION-[feature].md` with findings</action>
-            <action>Highlight areas that need special attention in documentation</action>
+            <action>Organize findings using user-focused structure (benefits, use cases, how it works, configuration, FAQ, troubleshooting).</action>
+            <action>Include short code/UI snippets or paths where relevant.</action>
+            <action>Create `EXTRACTION-[feature].md` with findings.</action>
+            <action>Highlight items that need visuals (screenshots/diagrams).</action>
           </actions>
           <output_format>
-            - Executive summary of the feature
-            - UI/UX analysis and user experience
-            - Technical details section
-            - Non-technical/user-facing details
+            - Executive summary of the feature/aspect
+            - Why it matters (goals, value, when to use)
             - User workflows and interactions
-            - Configuration and setup information
-            - Common use cases with UI context
-            - Error handling and user guidance
-            - Potential documentation considerations
+            - Configuration and setup affecting users (with defaults and impact)
+            - Constraints and limitations (with rationale)
+            - Common scenarios and troubleshooting playbooks (symptoms → causes → fixes → prevention)
+            - Do/Don’t and anti‑patterns
+            - Recommended visuals (what complex states to illustrate and why)
+            - FAQ and tips
+            - Version/compatibility notes
           </output_format>
         </step>
       </steps>
@@ -298,44 +101,43 @@
 
     <path name="verification">
       <title>Verify Documentation Accuracy</title>
-      <description>Check existing documentation against codebase reality</description>
+      <description>Check provided documentation against codebase reality and actual UX.</description>
       <steps>
         <step number="1">
           <title>Analyze Provided Documentation</title>
           <actions>
-            <action>Parse the documentation to identify claims and descriptions</action>
-            <action>Extract technical specifications mentioned</action>
-            <action>Note user-facing features and workflows described</action>
-            <action>Identify configuration options and examples provided</action>
+            <action>Parse the documentation to identify claims and descriptions.</action>
+            <action>Extract technical or user-facing specifics mentioned.</action>
+            <action>Note workflows, configuration, and examples described.</action>
           </actions>
         </step>
         <step number="2">
           <title>Verify Against Codebase</title>
           <actions>
-            <action>Check technical claims against actual implementation</action>
-            <action>Verify API endpoints, parameters, and responses</action>
-            <action>Confirm configuration options and defaults</action>
-            <action>Validate code examples and snippets</action>
-            <action>Check if described workflows match implementation</action>
+            <action>Check claims against actual implementation and UX.</action>
+            <action>Verify endpoints/parameters if referenced.</action>
+            <action>Confirm configuration options and defaults.</action>
+            <action>Validate code snippets and examples.</action>
+            <action>Ensure described workflows match implementation.</action>
           </actions>
         </step>
         <step number="3">
           <title>Create Verification Report</title>
           <actions>
-            <action>Categorize findings by severity (Critical, Major, Minor)</action>
-            <action>List all inaccuracies with correct information</action>
-            <action>Identify missing important information</action>
-            <action>Note outdated or deprecated content</action>
-            <action>Provide specific corrections and suggestions</action>
-            <action>Create `VERIFICATION-[feature].md` with findings</action>
+            <action>Categorize findings by severity (Critical, Major, Minor).</action>
+            <action>List inaccuracies with the correct information.</action>
+            <action>Identify missing important information.</action>
+            <action>Provide specific corrections and suggestions.</action>
+            <action>Create `VERIFICATION-[feature].md` with findings.</action>
           </actions>
           <output_format>
             - Verification summary (Accurate/Needs Updates)
             - Critical inaccuracies that could mislead users
-            - Technical corrections needed
-            - Missing information that should be added
+            - Corrections and missing information
+            - Explanatory gaps (missing “why”, constraints, or decision rationale)
+            - Troubleshooting coverage gaps (missing symptoms/diagnostics/fixes/prevention)
+            - Visual recommendations (which complex states warrant screenshots/diagrams)
             - Suggestions for clarity improvements
-            - Overall recommendations
           </output_format>
         </step>
       </steps>
@@ -343,13 +145,13 @@
   </workflow_paths>
 
   <completion_criteria>
-    <for_extraction>
-      <criterion>All code paths analyzed</criterion>
-      <criterion>Technical details comprehensively extracted</criterion>
-      <criterion>Non-technical information clearly explained</criterion>
-      <criterion>Use cases and examples provided</criterion>
+    <for_source_material>
+      <criterion>Audience and scope captured</criterion>
+      <criterion>User workflows and UI interactions documented</criterion>
+      <criterion>User-impacting configuration recorded</criterion>
+      <criterion>Common errors and troubleshooting documented</criterion>
       <criterion>Report organized for documentation team use</criterion>
-    </for_extraction>
+    </for_source_material>
     <for_verification>
       <criterion>All documentation claims verified</criterion>
       <criterion>Inaccuracies identified and corrected</criterion>

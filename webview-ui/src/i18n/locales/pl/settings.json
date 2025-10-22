@@ -780,8 +780,6 @@
 	"modelInfo": {
 		"supportsImages": "Obsługuje obrazy",
 		"noImages": "Nie obsługuje obrazów",
-		"supportsComputerUse": "Obsługuje użycie komputera",
-		"noComputerUse": "Nie obsługuje użycia komputera",
 		"supportsPromptCache": "Obsługuje buforowanie podpowiedzi",
 		"noPromptCache": "Nie obsługuje buforowania podpowiedzi",
 		"contextWindow": "Okno kontekstowe:",

@@ -4,7 +4,7 @@
   </overview>
 
   <output_structure>
-    <user_focused_template><![CDATA[
+    <user_focused_template>
 # [Feature Name]
 
 [Description of what the feature does and why a user should care.]
@@ -22,7 +22,7 @@
 - [Pain point 1]
 - [Pain point 2]
 
-**With this feature]**: [Description of the new experience.]
+**With this feature**: [Description of the new experience.]
 
 ## How it Works
 
@@ -58,9 +58,9 @@
 - [Answer.]
 - [Optional tip.]
 
-    ]]></user_focused_template>
+    </user_focused_template>
 
-    <comprehensive_template><![CDATA[
+    <comprehensive_template>
 # [Feature Name] Technical Documentation
 
 ## Table of Contents
@@ -71,28 +71,27 @@
 5. Configuration
 6. User Guide
 7. Developer Guide
-8. Administrator Guide
-9. Security
-10. Performance
-11. Troubleshooting
-12. FAQ
-13. Changelog
-14. References
+8. Security
+9. Performance
+10. Troubleshooting
+11. FAQ
+12. Changelog
+13. References
 
-[This template remains available for generating detailed technical documentation.]
-    ]]></comprehensive_template>
+[Use this as an internal source-material outline for technical sections; not for final docs.]
+    </comprehensive_template>
   </output_structure>
 
   <documentation_patterns>
     <before_after>
-      <template><![CDATA[
+      <template>
 **Before**: Multiple, sequential file read requests:
 - "Read `src/app.js`?" → Approve
 - "Read `src/utils.js`?" → Approve
 - "Read `src/config.json`?" → Approve
 
 **Now**: One request to read all related files.
-      ]]></template>
+      </template>
     </before_after>
 
     <visual_separator>
@@ -101,7 +100,7 @@
     </visual_separator>
 
     <faq>
-      <template><![CDATA[
+      <template>
 ## FAQ
 
 **"Why disable this?"**
@@ -113,7 +112,7 @@
 - Roo reads approved files and works with what it has.
 - `.rooignore` files are excluded automatically.
 - Individual files can still be denied in the batch dialog.
-      ]]></template>
+      </template>
     </faq>
 
     <examples>
@@ -123,7 +122,7 @@
     </examples>
 
     <troubleshooting>
-      <template><![CDATA[
+      <template>
 ## Troubleshooting
 
 **"Too many files requested"**
@@ -134,22 +133,22 @@
 - Ensure "Enable concurrent file reads" is on in settings.
 - Verify the file limit is set correctly (default: 100).
 - Some AI models may not support this feature.
-      ]]></template>
+      </template>
     </troubleshooting>
 
     <help>
-      <template><![CDATA[
+      <template>
 ## Help
 
 - See the [FAQ](#faq) for common issues.
 - Report problems on [GitHub Issues](https://github.com/RooCodeInc/Roo-Code/issues).
 - Include reproduction steps and error messages.
-      ]]></template>
+      </template>
     </help>
   </documentation_patterns>
 
   <audience_sections>
-    <audience type="end_user">
+    <audience type="user">
       <focus>
         <area>Tutorials</area>
         <area>Use cases</area>
@@ -179,60 +178,31 @@
       </style>
     </audience>
 
-    <audience type="administrator">
-      <focus>
-        <area>Deployment</area>
-        <area>Monitoring</area>
-        <area>Security hardening</area>
-        <area>Backup and recovery</area>
-      </focus>
-      <style>
-        <guideline>Operational focus</guideline>
-        <guideline>CLI examples</guideline>
-        <guideline>Automation opportunities</guideline>
-        <guideline>Security and compliance</guideline>
-      </style>
-    </audience>
-
-    <audience type="stakeholder">
-      <focus>
-        <area>Business value</area>
-        <area>Capabilities and limits</area>
-        <area>Competitive advantages</area>
-        <area>Risk assessment</area>
-      </focus>
-      <style>
-        <guideline>Business language</guideline>
-        <guideline>Metrics and KPIs</guideline>
-        <guideline>Strategic benefits</guideline>
-        <guideline>Executive summaries</guideline>
-      </style>
-    </audience>
   </audience_sections>
 
   <metadata_patterns>
     <version_info>
-      <template><![CDATA[
+      <template>
 ### Version Compatibility
 | Component | Min | Recommended | Max | Notes |
 |-----------|-----|-------------|-----|-------|
 | [Component] | [version] | [version] | [version] | [notes] |
-      ]]></template>
+      </template>
     </version_info>
 
     <deprecation_notice>
-      <template><![CDATA[
+      <template>
 > ⚠️ **Deprecated**
 >
 > Deprecated since: [vX.Y.Z] on [date]
 > Removal target: [vA.B.C]
 > Migration: See [migration guide](#migration).
 > Replacement: [new feature/method].
-      ]]></template>
+      </template>
     </deprecation_notice>
 
     <security_warning>
-      <template><![CDATA[
+      <template>
 > 🔒 **Security Warning**
 >
 > [Description of concern]
@@ -240,24 +210,24 @@
 > - **Affected**: [versions]
 > - **Mitigation**: [steps]
 > - **References**: [links]
-      ]]></template>
+      </template>
     </security_warning>
 
     <performance_note>
-      <template><![CDATA[
+      <template>
 > ⚡ **Performance Note**
 >
 > [Description of performance consideration]
 > - **Impact**: [metrics]
 > - **Optimization**: [approach]
 > - **Trade-offs**: [considerations]
-      ]]></template>
+      </template>
     </performance_note>
   </metadata_patterns>
 
   <code_documentation_patterns>
     <api_endpoint>
-      <template><![CDATA[
+      <template>
 ### `[METHOD] /api/[path]`
 
 **Description**: [What this endpoint does]
@@ -299,11 +269,11 @@ curl -X [METHOD] https://api.example.com/[path] \
   -H "Content-Type: application/json" \
   -d '{"field": "value"}'
 ```
-      ]]></template>
+      </template>
     </api_endpoint>
 
     <function_documentation>
-      <template><![CDATA[
+      <template>
 ### `functionName(parameters)`
 
 **Purpose**: [What this function does]
@@ -326,11 +296,11 @@ const result = functionName(value1, value2);
 **Notes**:
 - [Important consideration 1]
 - [Important consideration 2]
-      ]]></template>
+      </template>
     </function_documentation>
 
     <configuration_option>
-      <template><![CDATA[
+      <template>
 ### `CONFIG_NAME`
 
 **Type**: `string | number | boolean`
@@ -352,7 +322,7 @@ config:
 ```
 
 **Impact**: [What changes when this is modified]
-      ]]></template>
+      </template>
     </configuration_option>
   </code_documentation_patterns>
 
@@ -368,20 +338,20 @@ config:
     </external_link>
 
     <related_feature>
-      <template><![CDATA[
+      <template>
 > 📌 **Related Features**
 > - [Feature A](../feature-a/README.md): [How it relates]
 > - [Feature B](../feature-b/README.md): [How it relates]
-      ]]></template>
+      </template>
     </related_feature>
 
     <see_also>
-      <template><![CDATA[
+      <template>
 > 👉 **See Also**
 > - [Related Topic 1](#anchor1)
 > - [Related Topic 2](#anchor2)
 > - [External Resource](https://example.com)
-      ]]></template>
+      </template>
     </see_also>
   </cross_reference_patterns>
 </documentation_patterns>
