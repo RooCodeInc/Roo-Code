@@ -1,4 +1,4 @@
-import { ImageResponse } from "@vercel/og"
+import { ImageResponse } from "next/og"
 import { NextRequest } from "next/server"
 
 export const runtime = "edge"
@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
 	// Preload fonts with graceful fallbacks
 	const regularFont = await loadGoogleFont("Inter", displayText)
 	const boldFont = await loadGoogleFont("Inter:wght@700", displayText)
-	const fonts: { name: string; data: ArrayBuffer; style: "normal" | "italic"; weight: number }[] = []
+	const fonts: { name: string; data: ArrayBuffer; style?: "normal" | "italic"; weight?: 400 | 700 }[] = []
 	if (regularFont) {
 		fonts.push({ name: "Inter", data: regularFont, style: "normal", weight: 400 })
 	}
