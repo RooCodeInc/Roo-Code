@@ -160,7 +160,8 @@ const result = await manager.condense(messages, apiHandler, {
     - Cost: Variable (configurable)
     - Speed: <2 seconds
     - ✅ Multi-pass architecture
-    - 60-95% reduction (preset-dependent)
+    - ✅ Qualitative context preservation approach
+    - Variable reduction (content-dependent)
     - [Full documentation](./providers/smart/README.md)
 
 **Real-World Test Fixtures:**
@@ -189,7 +190,8 @@ const result = await manager.condense(messages, apiHandler, {
 **Quality Metrics:**
 
 - ✅ 55 Smart Provider tests passing (100%)
-- ✅ 60-95% reduction (preset-dependent)
+- ✅ Qualitative context preservation (60-95% of critical content)
+- ✅ Variable reduction based on content type
 - ✅ Configurable cost/quality tradeoff
 - ✅ Complete pass-based implementation
 
