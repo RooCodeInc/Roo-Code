@@ -111,10 +111,10 @@ const Announcement = ({ hideAnnouncement }: AnnouncementProps) => {
 
 const XLink = () => (
 	<VSCodeLink
-		href="https://x.com/roo_code"
+		href="https://x.com/roocode"
 		onClick={(e) => {
 			e.preventDefault()
-			vscode.postMessage({ type: "openExternal", url: "https://x.com/roo_code" })
+			vscode.postMessage({ type: "openExternal", url: "https://x.com/roocode" })
 		}}>
 		X
 	</VSCodeLink>
