@@ -5,14 +5,15 @@ import { Button } from "@/components/ui"
 import { AnimatedBackground } from "@/components/homepage"
 import { AgentCarousel } from "@/components/reviewer/agent-carousel"
 import { SEO } from "@/lib/seo"
+import { ogImageUrl } from "@/lib/og"
 import { EXTERNAL_LINKS } from "@/lib/constants"
 import Image from "next/image"
 
-const TITLE = "PR Reviewer · Roo Code Cloud"
+const TITLE = "PR Reviewer"
 const DESCRIPTION =
 	"Get comprehensive AI-powered PR reviews that save you time, not tokens. Bring your own API key and leverage advanced reasoning, repository-aware analysis, and actionable feedback to keep your PR queue moving."
+const OG_DESCRIPTION = "AI-powered PR reviews that save you time, not tokens"
 const PATH = "/reviewer"
-const OG_IMAGE = SEO.ogImage
 
 export const metadata: Metadata = {
 	title: TITLE,
@@ -27,10 +28,10 @@ export const metadata: Metadata = {
 		siteName: SEO.name,
 		images: [
 			{
-				url: OG_IMAGE.url,
-				width: OG_IMAGE.width,
-				height: OG_IMAGE.height,
-				alt: OG_IMAGE.alt,
+				url: ogImageUrl(TITLE, OG_DESCRIPTION),
+				width: 1200,
+				height: 630,
+				alt: TITLE,
 			},
 		],
 		locale: SEO.locale,
@@ -40,7 +41,7 @@ export const metadata: Metadata = {
 		card: SEO.twitterCard,
 		title: TITLE,
 		description: DESCRIPTION,
-		images: [OG_IMAGE.url],
+		images: [ogImageUrl(TITLE, OG_DESCRIPTION)],
 	},
 	keywords: [
 		...SEO.keywords,
