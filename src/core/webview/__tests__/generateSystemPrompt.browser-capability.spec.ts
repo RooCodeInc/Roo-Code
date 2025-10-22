@@ -17,10 +17,7 @@ vi.mock("../../../api", () => ({
 		getModel: () => ({
 			id: "mock-model",
 			info: {
-				// New world: supportsImages controls browser capability
 				supportsImages: true,
-				// Legacy flag explicitly false to validate backward-compat behavior
-				supportsComputerUse: false,
 				contextWindow: 200_000,
 				maxTokens: 8192,
 				supportsPromptCache: false,
@@ -73,7 +70,7 @@ function makeProviderStub() {
 	} as any
 }
 
-describe("generateSystemPrompt browser capability (supportsImages=true, supportsComputerUse=false)", () => {
+describe("generateSystemPrompt browser capability (supportsImages=true)", () => {
 	test("passes canUseBrowserTool=true when mode has browser group and setting enabled", async () => {
 		const provider = makeProviderStub()
 		const message = { mode: "test-mode" } as any

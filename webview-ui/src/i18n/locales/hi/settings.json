@@ -769,8 +769,6 @@
 	"modelInfo": {
 		"supportsImages": "छवियों का समर्थन करता है",
 		"noImages": "छवियों का समर्थन नहीं करता है",
-		"supportsComputerUse": "कंप्यूटर उपयोग का समर्थन करता है",
-		"noComputerUse": "कंप्यूटर उपयोग का समर्थन नहीं करता है",
 		"supportsPromptCache": "प्रॉम्प्ट कैशिंग का समर्थन करता है",
 		"noPromptCache": "प्रॉम्प्ट कैशिंग का समर्थन नहीं करता है",
 		"contextWindow": "संदर्भ विंडो:",

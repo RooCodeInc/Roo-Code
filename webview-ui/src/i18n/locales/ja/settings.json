@@ -769,8 +769,6 @@
 	"modelInfo": {
 		"supportsImages": "画像をサポート",
 		"noImages": "画像をサポートしていません",
-		"supportsComputerUse": "コンピュータ使用をサポート",
-		"noComputerUse": "コンピュータ使用をサポートしていません",
 		"supportsPromptCache": "プロンプトキャッシュをサポート",
 		"noPromptCache": "プロンプトキャッシュをサポートしていません",
 		"contextWindow": "コンテキストウィンドウ:",

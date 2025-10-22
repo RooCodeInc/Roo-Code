@@ -769,8 +769,6 @@
 	"modelInfo": {
 		"supportsImages": "支援影像",
 		"noImages": "不支援影像",
-		"supportsComputerUse": "支援電腦使用",
-		"noComputerUse": "不支援電腦使用",
 		"supportsPromptCache": "支援提示快取",
 		"noPromptCache": "不支援提示快取",
 		"contextWindow": "上下文視窗:",

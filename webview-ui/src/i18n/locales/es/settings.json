@@ -768,8 +768,6 @@
 	"modelInfo": {
 		"supportsImages": "Soporta imágenes",
 		"noImages": "No soporta imágenes",
-		"supportsComputerUse": "Soporta uso del ordenador",
-		"noComputerUse": "No soporta uso del ordenador",
 		"supportsPromptCache": "Soporta caché de prompts",
 		"noPromptCache": "No soporta caché de prompts",
 		"contextWindow": "Ventana de contexto",

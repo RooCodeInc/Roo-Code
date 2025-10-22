@@ -769,8 +769,6 @@
 	"modelInfo": {
 		"supportsImages": "Hỗ trợ hình ảnh",
 		"noImages": "Không hỗ trợ hình ảnh",
-		"supportsComputerUse": "Hỗ trợ sử dụng máy tính",
-		"noComputerUse": "Không hỗ trợ sử dụng máy tính",
 		"supportsPromptCache": "Hỗ trợ bộ nhớ đệm lời nhắc",
 		"noPromptCache": "Không hỗ trợ bộ nhớ đệm lời nhắc",
 		"contextWindow": "Cửa sổ ngữ cảnh:",
