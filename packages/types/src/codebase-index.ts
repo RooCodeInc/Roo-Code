@@ -68,7 +68,6 @@ export type CodebaseIndexModels = z.infer<typeof codebaseIndexModelsSchema>
 export const codebaseIndexProviderSchema = z.object({
 	codeIndexOpenAiKey: z.string().optional(),
 	codeIndexQdrantApiKey: z.string().optional(),
-	codebaseIndexValkeyUsername: z.string().optional(),
 	codeIndexValkeyPassword: z.string().optional(),
 	codebaseIndexValkeyUseSsl: z.boolean().optional(),
 	codebaseIndexOpenAiCompatibleBaseUrl: z.string().optional(),

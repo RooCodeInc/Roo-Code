@@ -101,7 +101,6 @@ export class CodeIndexConfigManager {
 		this.valkeyPort = codebaseIndexValkeyPort ?? 6379
 		this.valkeyPassword = valkeyPassword
 		this.valkeyUsername = codebaseIndexValkeyUsername
-		this.valkeyUseSsl = codebaseIndexValkeyUseSsl || false
 		this.valkeyUseSsl = codebaseIndexValkeyUseSsl ?? false
 		this.searchMinScore = codebaseIndexSearchMinScore
 		this.searchMaxResults = codebaseIndexSearchMaxResults
@@ -273,8 +272,7 @@ export class CodeIndexConfigManager {
 			return isConfigured
 		} else if (this.embedderProvider === "vercel-ai-gateway") {
 			const apiKey = this.vercelAiGatewayOptions?.apiKey
-			const qdrantUrl = this.qdrantUrl
-			const isConfigured = !!(apiKey && qdrantUrl)
+			const isConfigured = !!(apiKey && dbUrlPresent)
 			return isConfigured
 		}
 		return false // Should not happen if embedderProvider is always set correctly
@@ -412,10 +410,6 @@ export class CodeIndexConfigManager {
 			return true
 		}
 
-		if (prevValkeyUseSsl !== currentValkeyUseSsl) {
-			return true
-		}
-
 		if (prevValkeyPassword !== currentValkeyPassword) {
 			return true
 		}
@@ -425,10 +419,6 @@ export class CodeIndexConfigManager {
 		}
 
 		if (prevValkeyUseSsl !== currentValkeyUseSsl) {
-			return true
-		}
-
-		if (currentSearchProvider != prevSearchProvider) {
 			return true
 		}
 

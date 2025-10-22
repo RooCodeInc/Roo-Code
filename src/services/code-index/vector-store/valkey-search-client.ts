@@ -59,11 +59,7 @@ export class ValkeySearchVectorStore implements IVectorStore {
 			this.client.on("error", (error: Error) => {
 				console.error("[ValkeySearch] Connection error:", error.message)
 				this.isInitializing = false
-				throw new Error(
-					t("embeddings:vectorStore.vectorError", {
-						errorMessage: error.message,
-					}),
-				)
+				this.destroy()
 			})
 
 			this.client.on("ready", () => {
@@ -73,6 +69,7 @@ export class ValkeySearchVectorStore implements IVectorStore {
 
 			this.client.on("end", () => {
 				console.log("[ValkeySearch] Connection closed")
+				this.isInitializing = false
 				this.destroy()
 			})
 

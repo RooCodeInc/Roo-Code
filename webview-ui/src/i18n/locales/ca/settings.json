@@ -76,7 +76,7 @@
 		"qdrantProvider": "Qdrant",
 		"valkeyProvider": "Cerca Valkey",
 		"qdrantUrlLabel": "URL de Qdrant",
-		"valkeyUrlLabel": "URL Valkey",
+		"valkeyUrlLabel": "URL de Valkey",
 		"valkeyUrlPlaceholder": "Introdueix l'URL del servidor Valkey",
 		"valkeyUsernameLabel": "Nom d'usuari Valkey",
 		"valkeyUsernamePlaceholder": "Introdueix el nom d'usuari Valkey (opcional)",
