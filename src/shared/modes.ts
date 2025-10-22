@@ -321,6 +321,7 @@ export async function getFullModeDetails(
 		cwd?: string
 		globalCustomInstructions?: string
 		language?: string
+		shell?: string
 	},
 ): Promise<ModeConfig> {
 	// First get the base mode config from custom modes or built-in modes
@@ -342,7 +343,7 @@ export async function getFullModeDetails(
 			options.globalCustomInstructions || "",
 			options.cwd,
 			modeSlug,
-			{ language: options.language },
+			{ language: options.language, shell: options.shell },
 		)
 	}
 

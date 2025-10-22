@@ -29,6 +29,7 @@ import {
 	markdownFormattingSection,
 } from "./sections"
 import { defaultLang } from "../../utils/language"
+import { getShell } from "../../utils/shell"
 
 // Helper function to get prompt component, filtering out empty objects
 export function getPromptComponent(
@@ -129,6 +130,7 @@ ${await addCustomInstructions(baseInstructions, globalCustomInstructions || "", 
 	language: language ?? formatLanguage(await defaultLang()),
 	rooIgnoreInstructions,
 	settings,
+	shell: getShell(),
 })}`
 
 	return basePrompt
@@ -158,13 +160,14 @@ export const SYSTEM_PROMPT = async (
 	if (!context) {
 		throw new Error("Extension context is required for generating system prompt")
 	}
-
+	const shell = getShell()
 	// Try to load custom system prompt from file
 	const variablesForPrompt: PromptVariables = {
 		workspace: cwd,
 		mode: mode,
 		language: language ?? formatLanguage(await defaultLang()),
-		shell: vscode.env.shell,
+		// shell: vscode.env.shell,
+		shell,
 		operatingSystem: os.type(),
 	}
 	const fileCustomSystemPrompt = await loadSystemPromptFile(cwd, mode, variablesForPrompt)
@@ -192,6 +195,7 @@ export const SYSTEM_PROMPT = async (
 				language: language ?? formatLanguage(await defaultLang()),
 				rooIgnoreInstructions,
 				settings,
+				shell,
 			},
 		)
 

@@ -631,7 +631,9 @@ export async function readFileTool(
 					error: `Error reading file: ${errorMsg}`,
 					xmlContent: `<file><path>${relPath}</path><error>Error reading file: ${errorMsg}</error></file>`,
 				})
-				await handleError(`reading file ${relPath}`, error instanceof Error ? error : new Error(errorMsg))
+				if (!errorMsg.toLowerCase().includes("file not found")) {
+					await handleError(`reading file ${relPath}`, error instanceof Error ? error : new Error(errorMsg))
+				}
 			}
 		}
 

@@ -33,8 +33,13 @@ async function updateBuiltInCommands() {
 				.replace(/\${/g, "\\${") // 转义模板字符串
 
 			// 查找命令定义的开始和结束位置
-			const commandStartPattern = `"${commandName}": {`
-			const commandStartIndex = targetContent.indexOf(commandStartPattern)
+			const commandStartPatterns = [`"${commandName}": {`, `${commandName}: {`]
+			let commandStartIndex = -1
+
+			for (const commandStartPattern of commandStartPatterns) {
+				commandStartIndex = targetContent.indexOf(commandStartPattern)
+				if (commandStartIndex !== -1) break
+			}
 
 			if (commandStartIndex === -1) {
 				console.log(`⚠ 未找到命令 "${commandName}" 的定义`)

@@ -5,7 +5,10 @@ import fs from "fs"
 import * as path from "path"
 import { exec } from "child_process"
 import { promisify } from "util"
-
+const shellCache = {
+	shell: "",
+	updateAt: 0,
+}
 // Security: Allowlist of approved shell executables to prevent arbitrary command execution
 const SHELL_ALLOWLIST = new Set<string>([
 	// Windows PowerShell variants
@@ -432,7 +435,10 @@ function getSafeFallbackShell(): string {
  */
 export function getShell(): string {
 	let shell: string | null = null
-
+	const updateTime = Date.now()
+	if (shellCache.shell && updateTime - shellCache.updateAt < 15000) {
+		return shellCache.shell
+	}
 	// 1. Check VS Code config first.
 	if (process.platform === "win32") {
 		// Special logic for Windows
@@ -468,7 +474,8 @@ export function getShell(): string {
 	if (!isShellAllowed(shell)) {
 		shell = getSafeFallbackShell()
 	}
-
+	shellCache.shell = shell
+	shellCache.updateAt = updateTime
 	return shell
 }
 

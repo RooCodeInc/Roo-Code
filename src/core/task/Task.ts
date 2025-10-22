@@ -114,10 +114,8 @@ import { Gpt5Metadata, ClineMessageWithMetadata } from "./types"
 import { MessageQueueService } from "../message-queue/MessageQueueService"
 
 import { AutoApprovalHandler } from "./AutoApprovalHandler"
-import { getShell } from "../../utils/shell"
 import { ErrorCodeManager } from "../costrict/error-code"
 import { ZgsmAuthService } from "../costrict/auth"
-import { attachedGlobalCustomInstructions } from "../environment/attachedGlobalCustomInstructions"
 
 const MAX_EXPONENTIAL_BACKOFF_SECONDS = 600 // 10 minutes
 const DEFAULT_USAGE_COLLECTION_TIMEOUT_MS = 5000 // 5 seconds
@@ -2477,7 +2475,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				mode ?? defaultModeSlug,
 				customModePrompts,
 				customModes,
-				attachedGlobalCustomInstructions(customInstructions),
+				customInstructions,
 				this.diffEnabled,
 				experiments,
 				enableMcpServerCreation,

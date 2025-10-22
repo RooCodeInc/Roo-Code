@@ -23,11 +23,10 @@ import { formatReminderSection } from "./reminder"
 import { getShell, getWindowsTerminalInfo } from "../../utils/shell"
 import { getOperatingSystem } from "../../utils/zgsmUtils"
 import { defaultLang } from "../../utils/language"
-import { attachedGlobalCustomInstructions } from "./attachedGlobalCustomInstructions"
 
 export async function getEnvironmentDetails(cline: Task, includeFileDetails: boolean = false) {
 	let details = ""
-
+	const shell = getShell()
 	const clineProvider = cline.providerRef.deref()
 	const state = await clineProvider?.getState()
 	const {
@@ -224,8 +223,9 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 
 	const modeDetails = await getFullModeDetails(currentMode, customModes, customModePrompts, {
 		cwd: cline.cwd,
-		globalCustomInstructions: attachedGlobalCustomInstructions(globalCustomInstructions),
+		globalCustomInstructions,
 		language: language ?? formatLanguage(await defaultLang()),
+		shell,
 	})
 
 	const formatUnsupport = (data: string[]): string => {
@@ -233,7 +233,7 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 	}
 
 	details += `\n\n# Operating System\n${getOperatingSystem()}`
-	details += `\n\n# Default Shell\n${getShell()}`
+	details += `\n\n# Default Shell\n${shell}`
 	const winTerminalInfo = await getWindowsTerminalInfo()
 
 	if (winTerminalInfo) {
