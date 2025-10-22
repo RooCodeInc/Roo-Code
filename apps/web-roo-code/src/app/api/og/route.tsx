@@ -3,19 +3,36 @@ import { NextRequest } from "next/server"
 
 export const runtime = "edge"
 
-async function loadGoogleFont(font: string, text: string) {
-	const url = `https://fonts.googleapis.com/css2?family=${font}&text=${encodeURIComponent(text)}`
-	const css = await (await fetch(url)).text()
-	const resource = css.match(/src: url\((.+)\) format\('(opentype|truetype)'\)/)
-
-	if (resource && resource[1]) {
-		const response = await fetch(resource[1])
-		if (response.status === 200) {
-			return await response.arrayBuffer()
-		}
+async function fetchWithTimeout(url: string, init?: RequestInit, timeoutMs = 3000) {
+	const controller = new AbortController()
+	const id = setTimeout(() => controller.abort(), timeoutMs)
+	try {
+		return await fetch(url, { ...init, signal: controller.signal })
+	} finally {
+		clearTimeout(id)
 	}
+}
 
-	throw new Error("failed to load font data")
+async function loadGoogleFont(font: string, text: string): Promise<ArrayBuffer | null> {
+	try {
+		const url = `https://fonts.googleapis.com/css2?family=${font}&text=${encodeURIComponent(text)}`
+		const cssRes = await fetchWithTimeout(url)
+		if (!cssRes.ok) return null
+		const css = await cssRes.text()
+
+		const match =
+			css.match(/src:\s*url\(([^)]+)\)\s*format\('(?:woff2|woff|opentype|truetype)'\)/i) ||
+			css.match(/url\(([^)]+)\)/i)
+
+		const fontUrl = match && match[1] ? match[1].replace(/^['"]|['"]$/g, "") : null
+		if (!fontUrl) return null
+
+		const res = await fetchWithTimeout(fontUrl, undefined, 5000)
+		if (!res.ok) return null
+		return await res.arrayBuffer()
+	} catch {
+		return null
+	}
 }
 
 export async function GET(request: NextRequest) {
@@ -37,6 +54,17 @@ export async function GET(request: NextRequest) {
 	const baseUrl = `${requestUrl.protocol}//${requestUrl.host}`
 	const variant = title.length % 2 === 0 ? "a" : "b"
 	const backgroundUrl = `${baseUrl}/og/base_${variant}.png`
+
+	// Preload fonts with graceful fallbacks
+	const regularFont = await loadGoogleFont("Inter", displayText)
+	const boldFont = await loadGoogleFont("Inter:wght@700", displayText)
+	const fonts: { name: string; data: ArrayBuffer; style: "normal" | "italic"; weight: number }[] = []
+	if (regularFont) {
+		fonts.push({ name: "Inter", data: regularFont, style: "normal", weight: 400 })
+	}
+	if (boldFont) {
+		fonts.push({ name: "Inter", data: boldFont, style: "normal", weight: 700 })
+	}
 
 	return new ImageResponse(
 		(
@@ -124,20 +152,7 @@ export async function GET(request: NextRequest) {
 		{
 			width: 1200,
 			height: 630,
-			fonts: [
-				{
-					name: "Inter",
-					data: await loadGoogleFont("Inter", displayText),
-					style: "normal",
-					weight: 400,
-				},
-				{
-					name: "Inter",
-					data: await loadGoogleFont("Inter:wght@700", displayText),
-					style: "normal",
-					weight: 700,
-				},
-			],
+			fonts: fonts.length ? fonts : undefined,
 			// Cache for 7 days in production, 3 seconds in development
 			headers: {
 				"Cache-Control":
