@@ -14,6 +14,13 @@ export default defineConfig({
 		environment: "jsdom",
 		include: ["src/**/*.spec.ts", "src/**/*.spec.tsx"],
 		onConsoleLog,
+		// Simplified environment options
+		environmentOptions: {
+			happyDom: {
+				resources: "usable",
+				runScripts: "dangerously",
+			},
+		},
 	},
 	resolve: {
 		alias: {
@@ -25,15 +32,17 @@ export default defineConfig({
 			vscode: path.resolve(__dirname, "./src/__mocks__/vscode.ts"),
 		},
 	},
-	// Add React support for tests
-	define: {
-		// Ensure React is available globally for tests
-		global: {},
-		// Force React to use development mode in tests
-		"process.env.NODE_ENV": JSON.stringify("development"),
-	},
 	// Optimize dependencies for better performance
 	optimizeDeps: {
 		include: ["react", "react-dom", "react-dom/client", "react-i18next"],
+		force: true,
+	},
+	// Ensure React is properly handled
+	define: {
+		"process.env.NODE_ENV": `"test"`,
+	},
+	esbuild: {
+		jsx: "automatic",
+		jsxImportSource: "react",
 	},
 })

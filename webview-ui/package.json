@@ -6,7 +6,7 @@
 		"lint": "eslint src --ext=ts,tsx --max-warnings=0",
 		"check-types": "tsc",
 		"pretest": "turbo run bundle --cwd ..",
-		"test": "vitest run --reporter=verbose || echo 'UI tests temporarily disabled due to React hook initialization issues in CI environment'",
+		"test": "vitest run --reporter=verbose",
 		"format": "prettier --write src",
 		"dev": "vite",
 		"build": "tsc -b && vite build",

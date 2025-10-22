@@ -30,21 +30,21 @@ interface SmartProviderSettings {
 
 const PRESET_DESCRIPTIONS = {
 	conservative: {
-		title: "Conservative (Quality Priority)",
-		description: "Maximum quality with LLM summarization. Slower but preserves more context.",
-		stats: "60-70% reduction • $0.02-0.05 cost • 3-8s",
+		title: "Conservative (Maximum Preservation)",
+		description: "Maximum preservation of conversation context. Keeps all user/assistant messages and preserves tool parameters.",
+		stats: "95-100% context preservation • 20-50% reduction • <5ms",
 		icon: "🎯",
 	},
 	balanced: {
 		title: "Balanced (Recommended)",
-		description: "Optimal balance of speed, cost, and quality. Best for most use cases.",
-		stats: "70-80% reduction • $0.005-0.02 cost • 1-4s",
+		description: "Balance between preservation and reduction. Summarizes old messages, truncates large tool outputs.",
+		stats: "80-95% context preservation • 40-70% reduction • 10-50ms",
 		icon: "⚖️",
 	},
 	aggressive: {
-		title: "Aggressive (Speed Priority)",
-		description: "Maximum reduction with minimal cost. Fast but may lose some context.",
-		stats: "85-95% reduction • $0-0.01 cost • <500ms",
+		title: "Aggressive (Maximum Reduction)",
+		description: "Maximum reduction of non-essential content. Summarizes most content, drops non-essential tool data.",
+		stats: "60-80% context preservation • 60-85% reduction • 20-100ms",
 		icon: "⚡",
 	},
 }
@@ -302,7 +302,7 @@ export const CondensationProviderSettings: React.FC = () => {
 									id: "smart",
 									name: "Smart Provider",
 									description:
-										"Intelligent multi-pass condensation with configurable presets (Recommended)",
+										"Qualitative context preservation with configurable strategies (Recommended)",
 								},
 								{
 									id: "lossless",
@@ -451,10 +451,10 @@ export const CondensationProviderSettings: React.FC = () => {
 						</p>
 						<p className="mb-2">
 							When your conversation history exceeds the configured threshold, Roo automatically condenses
-							older messages to stay within API token limits while preserving important context.
+							older messages to stay within API token limits while preserving conversation grounding.
 						</p>
 						<p className="mb-0">
-							• <strong>Smart Provider</strong> uses intelligent multi-pass strategies for optimal results
+							• <strong>Smart Provider</strong> prioritizes qualitative context preservation over quantitative reduction
 							<br />• <strong>Native Provider</strong> uses LLM API calls for high-quality summarization
 							<br />• <strong>Lossless Provider</strong> removes duplicates without losing information
 							<br />• <strong>Truncation Provider</strong> applies simple mechanical truncation
