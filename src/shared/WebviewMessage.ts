@@ -134,6 +134,8 @@ export interface WebviewMessage {
 		| "terminalCompressProgressBar"
 		| "mcpEnabled"
 		| "enableMcpServerCreation"
+		| "mcpMaxImagesPerResponse"
+		| "mcpMaxImageSizeMB"
 		| "remoteControlEnabled"
 		| "taskSyncEnabled"
 		| "searchCommits"

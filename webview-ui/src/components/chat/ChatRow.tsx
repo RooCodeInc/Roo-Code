@@ -1426,6 +1426,7 @@ export const ChatRowContent = ({
 										server={server}
 										useMcpServer={useMcpServer}
 										alwaysAllowMcp={alwaysAllowMcp}
+										images={message.images}
 									/>
 								)}
 							</div>

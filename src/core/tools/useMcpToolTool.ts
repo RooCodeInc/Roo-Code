@@ -5,6 +5,9 @@ import { ClineAskUseMcpServer } from "../../shared/ExtensionMessage"
 import { McpExecutionStatus } from "@roo-code/types"
 import { t } from "../../i18n"
 
+const SUPPORTED_IMAGE_TYPES = ["image/png", "image/jpeg", "image/gif", "image/webp"]
+const BASE64_REGEX = /^[A-Za-z0-9+/]*={0,2}$/
+
 interface McpToolParams {
 	server_name?: string
 	tool_name?: string
@@ -195,24 +198,107 @@ async function sendExecutionStatus(cline: Task, status: McpExecutionStatus): Pro
 	})
 }
 
-function processToolContent(toolResult: any): string {
-	if (!toolResult?.content || toolResult.content.length === 0) {
-		return ""
+/**
+ * Calculate the approximate size of a base64 encoded image in MB
+ */
+function calculateImageSizeMB(base64Data: string): number {
+	// Base64 encoding increases size by ~33%, so actual bytes = base64Length * 0.75
+	const sizeInBytes = base64Data.length * 0.75
+	return sizeInBytes / (1024 * 1024) // Convert to MB
+}
+
+async function validateAndProcessImage(item: any, maxImageSizeMB: number): Promise<string | null> {
+	if (!item.mimeType || item.data === undefined || item.data === null) {
+		console.warn("Invalid MCP ImageContent: missing data or mimeType")
+		return null
 	}
 
-	return toolResult.content
-		.map((item: any) => {
-			if (item.type === "text") {
-				return item.text
-			}
-			if (item.type === "resource") {
-				const { blob: _, ...rest } = item.resource
-				return JSON.stringify(rest, null, 2)
-			}
-			return ""
-		})
-		.filter(Boolean)
-		.join("\n\n")
+	if (!SUPPORTED_IMAGE_TYPES.includes(item.mimeType)) {
+		console.warn(`Unsupported image MIME type: ${item.mimeType}`)
+		return null
+	}
+
+	try {
+		// Validate base64 data before constructing data URL
+		if (typeof item.data !== "string" || item.data.trim() === "") {
+			console.warn("Invalid MCP ImageContent: base64 data is not a valid string")
+			return null
+		}
+
+		// Quick size check before full validation to prevent memory spikes
+		const approximateSizeMB = (item.data.length * 0.75) / (1024 * 1024)
+		if (approximateSizeMB > maxImageSizeMB * 1.5) {
+			console.warn(
+				`MCP image likely exceeds size limit based on string length: ~${approximateSizeMB.toFixed(2)}MB`,
+			)
+			return null
+		}
+
+		// Basic validation for base64 format
+		if (!BASE64_REGEX.test(item.data.replace(/\s/g, ""))) {
+			console.warn("Invalid MCP ImageContent: base64 data contains invalid characters")
+			return null
+		}
+
+		// Check image size
+		const imageSizeMB = calculateImageSizeMB(item.data)
+		if (imageSizeMB > maxImageSizeMB) {
+			console.warn(
+				`MCP image exceeds size limit: ${imageSizeMB.toFixed(2)}MB > ${maxImageSizeMB}MB. Image will be ignored.`,
+			)
+			return null
+		}
+
+		return `data:${item.mimeType};base64,${item.data}`
+	} catch (error) {
+		console.warn("Failed to process MCP image content:", error)
+		return null
+	}
+}
+
+async function processToolContent(toolResult: any, cline: Task): Promise<{ text: string; images: string[] }> {
+	if (!toolResult?.content || toolResult.content.length === 0) {
+		return { text: "", images: [] }
+	}
+
+	const textParts: string[] = []
+
+	// Get MCP settings from the extension's global state
+	const state = await cline.providerRef.deref()?.getState()
+	const maxImagesPerResponse = Math.max(1, Math.min(100, state?.mcpMaxImagesPerResponse ?? 20))
+	const maxImageSizeMB = Math.max(0.1, Math.min(50, state?.mcpMaxImageSizeMB ?? 10))
+
+	// Separate content by type for efficient processing
+	const allImageItems = toolResult.content.filter((item: any) => item.type === "image")
+	const imageItems = allImageItems.slice(0, maxImagesPerResponse) // Limit images before processing
+
+	// Check if we need to warn about exceeding the limit
+	if (allImageItems.length > maxImagesPerResponse) {
+		console.warn(
+			`MCP response contains more than ${maxImagesPerResponse} images. Additional images will be ignored to prevent performance issues.`,
+		)
+	}
+
+	// Process images in parallel
+	const validatedImages = await Promise.all(
+		imageItems.map((item: any) => validateAndProcessImage(item, maxImageSizeMB)),
+	)
+	const images = validatedImages.filter(Boolean) as string[]
+
+	// Process other content types
+	toolResult.content.forEach((item: any) => {
+		if (item.type === "text") {
+			textParts.push(item.text)
+		} else if (item.type === "resource") {
+			const { blob: _, ...rest } = item.resource
+			textParts.push(JSON.stringify(rest, null, 2))
+		}
+	})
+
+	return {
+		text: textParts.filter(Boolean).join("\n\n"),
+		images,
+	}
 }
 
 async function executeToolAndProcessResult(
@@ -236,11 +322,13 @@ async function executeToolAndProcessResult(
 	const toolResult = await cline.providerRef.deref()?.getMcpHub()?.callTool(serverName, toolName, parsedArguments)
 
 	let toolResultPretty = "(No response)"
+	let images: string[] = []
 
 	if (toolResult) {
-		const outputText = processToolContent(toolResult)
+		const { text: outputText, images: outputImages } = await processToolContent(toolResult, cline)
+		images = outputImages
 
-		if (outputText) {
+		if (outputText || images.length > 0) {
 			await sendExecutionStatus(cline, {
 				executionId,
 				status: "output",
@@ -266,8 +354,8 @@ async function executeToolAndProcessResult(
 		})
 	}
 
-	await cline.say("mcp_server_response", toolResultPretty)
-	pushToolResult(formatResponse.toolResult(toolResultPretty))
+	await cline.say("mcp_server_response", toolResultPretty, images)
+	pushToolResult(formatResponse.toolResult(toolResultPretty, images))
 }
 
 export async function useMcpToolTool(
