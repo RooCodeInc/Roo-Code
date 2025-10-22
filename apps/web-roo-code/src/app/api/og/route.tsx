@@ -35,7 +35,8 @@ export async function GET(request: NextRequest) {
 	// Dynamically get the base URL from the current request
 	// This ensures it works correctly in development, preview, and production environments
 	const baseUrl = `${requestUrl.protocol}//${requestUrl.host}`
-	const backgroundUrl = `${baseUrl}/og/base.png`
+	const variant = title.length % 2 === 0 ? "a" : "b"
+	const backgroundUrl = `${baseUrl}/og/base_${variant}.png`
 
 	return new ImageResponse(
 		(
