@@ -131,4 +131,30 @@ describe("ProviderRegistry", () => {
 
 		expect(registry1).toBe(registry2)
 	})
+
+	it("should clear all providers and configs", () => {
+		const providerA = new TestProviderA()
+		const providerB = new TestProviderB()
+
+		// Register providers
+		registry.register(providerA, { enabled: true, priority: 100 })
+		registry.register(providerB, { enabled: false, priority: 200 })
+
+		// Verify they are registered
+		expect(registry.getAllProviders()).toHaveLength(2)
+		expect(registry.getProvider("provider-a")).toBe(providerA)
+		expect(registry.getProvider("provider-b")).toBe(providerB)
+		expect(registry.getConfig("provider-a")).toBeDefined()
+		expect(registry.getConfig("provider-b")).toBeDefined()
+
+		// Clear the registry
+		registry.clear()
+
+		// Verify everything is cleared
+		expect(registry.getAllProviders()).toHaveLength(0)
+		expect(registry.getProvider("provider-a")).toBeUndefined()
+		expect(registry.getProvider("provider-b")).toBeUndefined()
+		expect(registry.getConfig("provider-a")).toBeUndefined()
+		expect(registry.getConfig("provider-b")).toBeUndefined()
+	})
 })
