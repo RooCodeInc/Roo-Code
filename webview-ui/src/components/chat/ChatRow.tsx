@@ -1281,7 +1281,7 @@ export const ChatRowContent = ({
 										/>
 									</div>
 								) : (
-									<div className="flex justify-between">
+									<div className="flex justify-between cursor-pointer">
 										<div
 											className="flex-grow px-2 py-1 wrap-anywhere rounded-lg transition-colors"
 											onClick={(e) => {
@@ -1295,7 +1295,7 @@ export const ChatRowContent = ({
 										</div>
 										<div className="flex gap-2 pr-1">
 											<div
-												className="cursor-pointer shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+												className="cursor-copy shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
 												style={{ visibility: isStreaming ? "hidden" : "visible" }}
 												onClick={(e) => {
 													e.stopPropagation()

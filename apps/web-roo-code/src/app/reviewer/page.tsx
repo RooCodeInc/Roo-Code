@@ -5,14 +5,15 @@ import { Button } from "@/components/ui"
 import { AnimatedBackground } from "@/components/homepage"
 import { AgentCarousel } from "@/components/reviewer/agent-carousel"
 import { SEO } from "@/lib/seo"
+import { ogImageUrl } from "@/lib/og"
 import { EXTERNAL_LINKS } from "@/lib/constants"
 import Image from "next/image"
 
-const TITLE = "PR Reviewer · Roo Code Cloud"
+const TITLE = "PR Reviewer"
 const DESCRIPTION =
 	"Get comprehensive AI-powered PR reviews that save you time, not tokens. Bring your own API key and leverage advanced reasoning, repository-aware analysis, and actionable feedback to keep your PR queue moving."
+const OG_DESCRIPTION = "AI-powered PR reviews that save you time, not tokens"
 const PATH = "/reviewer"
-const OG_IMAGE = SEO.ogImage
 
 export const metadata: Metadata = {
 	title: TITLE,
@@ -27,10 +28,10 @@ export const metadata: Metadata = {
 		siteName: SEO.name,
 		images: [
 			{
-				url: OG_IMAGE.url,
-				width: OG_IMAGE.width,
-				height: OG_IMAGE.height,
-				alt: OG_IMAGE.alt,
+				url: ogImageUrl(TITLE, OG_DESCRIPTION),
+				width: 1200,
+				height: 630,
+				alt: TITLE,
 			},
 		],
 		locale: SEO.locale,
@@ -40,7 +41,7 @@ export const metadata: Metadata = {
 		card: SEO.twitterCard,
 		title: TITLE,
 		description: DESCRIPTION,
-		images: [OG_IMAGE.url],
+		images: [ogImageUrl(TITLE, OG_DESCRIPTION)],
 	},
 	keywords: [
 		...SEO.keywords,
@@ -108,7 +109,7 @@ export default function AgentReviewerPage() {
 						<div className="flex flex-col px-4 justify-center space-y-6 sm:space-y-8">
 							<div>
 								<h1 className="text-3xl font-bold tracking-tight mt-8  md:text-left md:text-4xl lg:text-5xl lg:mt-0">
-									Get comprehensive reviews that save you time, not&nbsp;tokens.
+									Get comprehensive code reviews that save you time, not&nbsp;tokens.
 								</h1>
 								<div className="mt-4 max-w-lg space-y-4 text-base text-muted-foreground md:text-left sm:mt-6">
 									<p>
@@ -117,9 +118,9 @@ export default function AgentReviewerPage() {
 										issues.
 									</p>
 									<p>
-										Roo Code&apos;s PR Reviewer flips the model: you bring your own key and leverage
-										it to the max – to find real issues, increase code quality and keep your PR
-										queue moving.
+										Roo Code&apos;s PR Reviewer flips the script: you bring your own key and
+										leverage it to the max – to find real issues, increase code quality and keep
+										your PR queue moving.
 									</p>
 								</div>
 							</div>
