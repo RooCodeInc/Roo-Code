@@ -97,7 +97,7 @@
 		"years_ago": "{{count}} jaar geleden"
 	},
 	"errors": {
-		"wait_checkpoint_long_time": "Je hebt {{timeout}} seconden gewacht op de initialisatie van de checkpoint. Als je deze functie niet nodig hebt, schakel hem dan uit in de <settingsLink>instellingen.</settingsLink>",
-		"init_checkpoint_fail_long_time": "De initialisatie van de checkpoint duurde meer dan {{timeout}} seconden. De checkpointfunctie is uitgeschakeld voor deze taak. Je kunt hem uitschakelen of de wachttijd in de <settingsLink>instellingen.</settingsLink> verhogen"
+		"wait_checkpoint_long_time": "Je hebt {{timeout}} seconden gewacht op de initialisatie van de checkpoint. Als je deze functie niet nodig hebt, schakel hem dan uit in de <settingsLink>checkpoint-instellingen</settingsLink>.",
+		"init_checkpoint_fail_long_time": "De initialisatie van de checkpoint duurde meer dan {{timeout}} seconden, dus checkpoints zijn uitgeschakeld voor deze taak. Je kunt checkpoints uitschakelen of de wachttijd in de <settingsLink>checkpoint-instellingen</settingsLink> verhogen."
 	}
 }

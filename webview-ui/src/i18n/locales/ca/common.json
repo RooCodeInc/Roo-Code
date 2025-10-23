@@ -97,7 +97,7 @@
 		"years_ago": "fa {{count}} anys"
 	},
 	"errors": {
-		"wait_checkpoint_long_time": "Has esperat {{timeout}} segons per inicialitzar el punt de control. Si no necessites aquesta funció, desactiva-la a <settingsLink>la configuració.</settingsLink>",
-		"init_checkpoint_fail_long_time": "La inicialització del punt de control ha trigat més de {{timeout}} segons. La funció de punt de control s'ha desactivat per a aquesta tasca. Pots desactivar-la o augmentar el temps d'espera a <settingsLink>la configuració.</settingsLink>"
+		"wait_checkpoint_long_time": "Has esperat {{timeout}} segons per inicialitzar el punt de control. Si no necessites aquesta funció, desactiva-la a <settingsLink>la configuració del punt de control</settingsLink>.",
+		"init_checkpoint_fail_long_time": "La inicialització del punt de control ha trigat més de {{timeout}} segons, per això els punts de control estan desactivats per a aquesta tasca. Pots desactivar els punts de control o augmentar el temps d'espera a <settingsLink>la configuració del punt de control</settingsLink>."
 	}
 }

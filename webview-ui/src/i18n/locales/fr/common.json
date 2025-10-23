@@ -97,7 +97,7 @@
 		"years_ago": "il y a {{count}} ans"
 	},
 	"errors": {
-		"wait_checkpoint_long_time": "Tu as attendu {{timeout}} secondes pour l'initialisation du checkpoint. Si tu n'as pas besoin de cette fonction, désactive-la dans <settingsLink>les paramètres.</settingsLink>",
-		"init_checkpoint_fail_long_time": "L'initialisation du checkpoint a pris plus de {{timeout}} secondes. La fonction checkpoint est désactivée pour cette tâche. Tu peux la désactiver ou prolonger le délai dans <settingsLink>les paramètres.</settingsLink>"
+		"wait_checkpoint_long_time": "Tu as attendu {{timeout}} secondes pour l'initialisation du checkpoint. Si tu n'as pas besoin de cette fonction, désactive-la dans <settingsLink>les paramètres du checkpoint</settingsLink>.",
+		"init_checkpoint_fail_long_time": "L'initialisation du checkpoint a pris plus de {{timeout}} secondes, donc les checkpoints sont désactivés pour cette tâche. Tu peux désactiver les checkpoints ou prolonger le délai dans <settingsLink>les paramètres du checkpoint</settingsLink>."
 	}
 }

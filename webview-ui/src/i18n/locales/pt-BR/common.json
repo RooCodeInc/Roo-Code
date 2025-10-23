@@ -97,7 +97,7 @@
 		"years_ago": "há {{count}} anos"
 	},
 	"errors": {
-		"wait_checkpoint_long_time": "Você esperou {{timeout}} segundos para inicializar o checkpoint. Se não precisa dessa função, desative nas <settingsLink>configurações.</settingsLink>",
-		"init_checkpoint_fail_long_time": "A inicialização do checkpoint levou mais de {{timeout}} segundos. A função de checkpoint foi desativada para esta tarefa. Você pode desativar ou aumentar o tempo de espera nas <settingsLink>configurações.</settingsLink>"
+		"wait_checkpoint_long_time": "Você esperou {{timeout}} segundos para inicializar o checkpoint. Se não precisa dessa função, desative nas <settingsLink>configurações do checkpoint</settingsLink>.",
+		"init_checkpoint_fail_long_time": "A inicialização do checkpoint levou mais de {{timeout}} segundos, então os checkpoints foram desativados para esta tarefa. Você pode desativar os checkpoints ou aumentar o tempo de espera nas <settingsLink>configurações do checkpoint</settingsLink>."
 	}
 }
