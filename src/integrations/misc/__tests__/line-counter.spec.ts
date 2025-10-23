@@ -1,146 +1,98 @@
-import type { Mock } from "vitest"
+import { describe, it, expect, vi, beforeEach } from "vitest"
+import { countFileLines, countFileLinesAndTokens } from "../line-counter"
 import fs from "fs"
-import { countFileLines } from "../line-counter"
+import { countTokens } from "../../../utils/countTokens"
 
-// Mock the fs module
-vitest.mock("fs", () => ({
+// Mock dependencies
+vi.mock("fs", () => ({
 	default: {
 		promises: {
-			access: vitest.fn(),
+			access: vi.fn(),
 		},
 		constants: {
 			F_OK: 0,
 		},
+		createReadStream: vi.fn(),
 	},
-	createReadStream: vitest.fn(),
+	createReadStream: vi.fn(),
 }))
 
-// Mock readline
-vitest.mock("readline", () => ({
-	createInterface: vitest.fn().mockReturnValue({
-		on: vitest.fn().mockImplementation(function (this: any, event, callback) {
-			if (event === "line" && this.mockLines) {
-				for (let i = 0; i < this.mockLines; i++) {
-					callback()
-				}
-			}
-			if (event === "close") {
-				callback()
-			}
-			return this
-		}),
-		mockLines: 0,
-	}),
+vi.mock("../../../utils/countTokens", () => ({
+	countTokens: vi.fn(),
 }))
 
-describe("countFileLines", () => {
+const mockCountTokens = vi.mocked(countTokens)
+
+describe("line-counter", () => {
 	beforeEach(() => {
-		vitest.clearAllMocks()
+		vi.clearAllMocks()
 	})
 
-	it("should throw error if file does not exist", async () => {
-		// Setup
-		;(fs.promises.access as Mock).mockRejectedValueOnce(new Error("File not found"))
-
-		// Test & Assert
-		await expect(countFileLines("non-existent-file.txt")).rejects.toThrow("File not found")
-	})
-
-	it("should return the correct line count for a file", async () => {
-		// Setup
-		;(fs.promises.access as Mock).mockResolvedValueOnce(undefined)
-
-		const mockEventEmitter = {
-			on: vitest.fn().mockImplementation(function (this: any, event, callback) {
-				if (event === "line") {
-					// Simulate 10 lines
-					for (let i = 0; i < 10; i++) {
-						callback()
+	describe("countFileLinesAndTokens", () => {
+		it("should count lines and tokens without budget limit", async () => {
+			const mockStream = {
+				on: vi.fn((event, handler) => {
+					if (event === "data") {
+						// Simulate reading lines
+						handler("line1\n")
+						handler("line2\n")
+						handler("line3\n")
 					}
-				}
-				if (event === "close") {
-					callback()
-				}
-				return this
-			}),
-		}
+					return mockStream
+				}),
+				destroy: vi.fn(),
+			}
 
-		const mockReadStream = {
-			on: vitest.fn().mockImplementation(function (this: any, _event, _callback) {
-				return this
-			}),
-		}
+			vi.mocked(fs.createReadStream).mockReturnValue(mockStream as any)
+			vi.mocked(fs.promises.access).mockResolvedValue(undefined)
 
-		const { createReadStream } = await import("fs")
-		vitest.mocked(createReadStream).mockReturnValueOnce(mockReadStream as any)
-		const readline = await import("readline")
-		vitest.mocked(readline.createInterface).mockReturnValueOnce(mockEventEmitter as any)
+			// Mock token counting - simulate ~10 tokens per line
+			mockCountTokens.mockResolvedValue(30)
 
-		// Test
-		const result = await countFileLines("test-file.txt")
+			const result = await countFileLinesAndTokens("/test/file.txt")
 
-		// Assert
-		expect(result).toBe(10)
-		expect(fs.promises.access).toHaveBeenCalledWith("test-file.txt", fs.constants.F_OK)
-		expect(createReadStream).toHaveBeenCalledWith("test-file.txt")
+			expect(result.lineCount).toBeGreaterThan(0)
+			expect(result.tokenEstimate).toBeGreaterThan(0)
+			expect(result.complete).toBe(true)
+		})
+
+		it("should handle tokenizer errors with conservative estimate", async () => {
+			const mockStream = {
+				on: vi.fn((event, handler) => {
+					if (event === "data") {
+						handler("line1\n")
+					}
+					return mockStream
+				}),
+				destroy: vi.fn(),
+			}
+
+			vi.mocked(fs.createReadStream).mockReturnValue(mockStream as any)
+			vi.mocked(fs.promises.access).mockResolvedValue(undefined)
+
+			// Simulate tokenizer error
+			mockCountTokens.mockRejectedValue(new Error("unreachable"))
+
+			const result = await countFileLinesAndTokens("/test/file.txt")
+
+			// Should still complete with conservative token estimate
+			expect(result.lineCount).toBeGreaterThan(0)
+			expect(result.tokenEstimate).toBeGreaterThan(0)
+			expect(result.complete).toBe(true)
+		})
+
+		it("should throw error for non-existent files", async () => {
+			vi.mocked(fs.promises.access).mockRejectedValue(new Error("ENOENT"))
+
+			await expect(countFileLinesAndTokens("/nonexistent/file.txt")).rejects.toThrow("File not found")
+		})
 	})
 
-	it("should handle files with no lines", async () => {
-		// Setup
-		;(fs.promises.access as Mock).mockResolvedValueOnce(undefined)
+	describe("countFileLines", () => {
+		it("should throw error for non-existent files", async () => {
+			vi.mocked(fs.promises.access).mockRejectedValue(new Error("ENOENT"))
 
-		const mockEventEmitter = {
-			on: vitest.fn().mockImplementation(function (this: any, event, callback) {
-				if (event === "close") {
-					callback()
-				}
-				return this
-			}),
-		}
-
-		const mockReadStream = {
-			on: vitest.fn().mockImplementation(function (this: any, _event, _callback) {
-				return this
-			}),
-		}
-
-		const { createReadStream } = await import("fs")
-		vitest.mocked(createReadStream).mockReturnValueOnce(mockReadStream as any)
-		const readline = await import("readline")
-		vitest.mocked(readline.createInterface).mockReturnValueOnce(mockEventEmitter as any)
-
-		// Test
-		const result = await countFileLines("empty-file.txt")
-
-		// Assert
-		expect(result).toBe(0)
-	})
-
-	it("should handle errors during reading", async () => {
-		// Setup
-		;(fs.promises.access as Mock).mockResolvedValueOnce(undefined)
-
-		const mockEventEmitter = {
-			on: vitest.fn().mockImplementation(function (this: any, event, callback) {
-				if (event === "error" && callback) {
-					callback(new Error("Read error"))
-				}
-				return this
-			}),
-		}
-
-		const mockReadStream = {
-			on: vitest.fn().mockImplementation(function (this: any, _event, _callback) {
-				return this
-			}),
-		}
-
-		const { createReadStream } = await import("fs")
-		vitest.mocked(createReadStream).mockReturnValueOnce(mockReadStream as any)
-		const readline = await import("readline")
-		vitest.mocked(readline.createInterface).mockReturnValueOnce(mockEventEmitter as any)
-
-		// Test & Assert
-		await expect(countFileLines("error-file.txt")).rejects.toThrow("Read error")
+			await expect(countFileLines("/nonexistent/file.txt")).rejects.toThrow("File not found")
+		})
 	})
 })

@@ -1,6 +1,7 @@
 import * as fs from "fs/promises"
 import { countTokens } from "../../../utils/countTokens"
 import { Anthropic } from "@anthropic-ai/sdk"
+import { countFileLinesAndTokens } from "../../../integrations/misc/line-counter"
 
 /**
  * File size threshold (in bytes) above which token validation is triggered.
@@ -85,61 +86,89 @@ export async function validateFileTokenBudget(
 		// For files too large to tokenize entirely, read a preview instead
 		// The tokenizer (tiktoken WASM) crashes with "unreachable" errors on very large files
 		const isPreviewMode = fileSizeBytes > MAX_FILE_SIZE_FOR_TOKENIZATION
-		let content: string
 
-		if (isPreviewMode) {
-			// Read only the preview portion to avoid tokenizer crashes
-			const fileHandle = await fs.open(filePath, "r")
+		// Use streaming token counter for normal-sized files to avoid double read
+		// For previews, still use direct read since we're only reading a portion
+		let tokenCount = 0
+		let streamingSucceeded = false
+
+		if (!isPreviewMode) {
+			// Try streaming token estimation first (single pass, early exit capability)
 			try {
-				const buffer = Buffer.alloc(PREVIEW_SIZE_FOR_LARGE_FILES)
-				const { bytesRead } = await fileHandle.read(buffer, 0, PREVIEW_SIZE_FOR_LARGE_FILES, 0)
-				content = buffer.slice(0, bytesRead).toString("utf-8")
-			} finally {
-				await fileHandle.close()
-			}
-		} else {
-			// Read the entire file for normal-sized files
-			content = await fs.readFile(filePath, "utf-8")
-		}
+				const result = await countFileLinesAndTokens(filePath, {
+					budgetTokens: safeReadBudget,
+					chunkLines: 256,
+				})
+				tokenCount = result.tokenEstimate
+				streamingSucceeded = true
 
-		// Count tokens in the content with error handling for tokenizer crashes
-		let tokenCount: number
-		try {
-			const contentBlocks: Anthropic.Messages.ContentBlockParam[] = [{ type: "text", text: content }]
-			tokenCount = await countTokens(contentBlocks)
-		} catch (error) {
-			// Catch tokenizer "unreachable" errors (WASM crashes on extremely large content)
-			const errorMessage = error instanceof Error ? error.message : String(error)
-			if (errorMessage.includes("unreachable")) {
-				// Tokenizer crashed even on preview - use conservative character-based estimation
-				// Assume worst case: 2 characters = 1 token
-				const estimatedTokens = Math.ceil(content.length / 2)
-				if (estimatedTokens > safeReadBudget) {
+				// If streaming indicated we exceeded budget during scan
+				if (!result.complete) {
+					// Early exit - we know file exceeds budget without reading it all
+					const maxChars = Math.floor(safeReadBudget * 3)
 					return {
 						shouldTruncate: true,
-						maxChars: safeReadBudget, // Use budget directly as char limit
-						isPreview: true,
-						reason: `File content caused tokenizer error. Showing truncated preview to fit context budget. Use line_range to read specific sections.`,
+						maxChars,
+						reason: `File requires ${tokenCount}+ tokens but only ${safeReadBudget} tokens available in context budget`,
 					}
 				}
-				// Preview fits even with conservative estimate
-				return {
-					shouldTruncate: true,
-					maxChars: content.length,
-					isPreview: true,
-					reason: `File content caused tokenizer error but fits in context. Use line_range for specific sections.`,
-				}
+			} catch (error) {
+				// Streaming failed - will fallback to full read below
+				streamingSucceeded = false
 			}
-			// Re-throw other unexpected errors
-			throw error
+		}
+
+		// Fallback to full read + token count (for preview mode or if streaming failed)
+		if (!streamingSucceeded) {
+			let content: string
+
+			if (isPreviewMode) {
+				// Read only the preview portion to avoid tokenizer crashes
+				const fileHandle = await fs.open(filePath, "r")
+				try {
+					const buffer = Buffer.alloc(PREVIEW_SIZE_FOR_LARGE_FILES)
+					const { bytesRead } = await fileHandle.read(buffer, 0, PREVIEW_SIZE_FOR_LARGE_FILES, 0)
+					content = buffer.slice(0, bytesRead).toString("utf-8")
+				} finally {
+					await fileHandle.close()
+				}
+			} else {
+				// Read the entire file for normal-sized files
+				content = await fs.readFile(filePath, "utf-8")
+			}
+
+			// Count tokens with error handling
+			try {
+				const contentBlocks: Anthropic.Messages.ContentBlockParam[] = [{ type: "text", text: content }]
+				tokenCount = await countTokens(contentBlocks)
+			} catch (error) {
+				// Catch tokenizer "unreachable" errors
+				const errorMessage = error instanceof Error ? error.message : String(error)
+				if (errorMessage.includes("unreachable")) {
+					// Use conservative estimation: 2 chars = 1 token
+					const estimatedTokens = Math.ceil(content.length / 2)
+					if (estimatedTokens > safeReadBudget) {
+						return {
+							shouldTruncate: true,
+							maxChars: safeReadBudget,
+							isPreview: true,
+							reason: `File content caused tokenizer error. Showing truncated preview to fit context budget. Use line_range to read specific sections.`,
+						}
+					}
+					return {
+						shouldTruncate: true,
+						maxChars: content.length,
+						isPreview: true,
+						reason: `File content caused tokenizer error but fits in context. Use line_range for specific sections.`,
+					}
+				}
+				throw error
+			}
 		}
 
 		// Check if content exceeds budget
 		if (tokenCount > safeReadBudget) {
-			// Estimate character limit based on token budget
-			// Use a conservative estimate: 1 token ≈ 3 characters
 			const maxChars = Math.floor(safeReadBudget * 3)
-
 			return {
 				shouldTruncate: true,
 				maxChars,
@@ -152,10 +181,9 @@ export async function validateFileTokenBudget(
 
 		// Content fits within budget
 		if (isPreviewMode) {
-			// Even though preview fits, indicate it's a preview
 			return {
 				shouldTruncate: true,
-				maxChars: content.length,
+				maxChars: PREVIEW_SIZE_FOR_LARGE_FILES,
 				isPreview: true,
 				reason: `File is too large (${(fileSizeBytes / 1024 / 1024).toFixed(2)}MB) to read entirely. Showing preview of first ${(PREVIEW_SIZE_FOR_LARGE_FILES / 1024 / 1024).toFixed(1)}MB. Use line_range to read specific sections.`,
 			}
