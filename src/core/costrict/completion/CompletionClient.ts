@@ -246,11 +246,14 @@ export class CompletionClient {
 
 		const abortController = new AbortController()
 		this.reqs.set(cp.id, abortController)
+		// machineId
+		const client_id = getClientId()
 
 		Logger.log(`Completion [${cp.id}]: Sending API request`)
 		const headers = {
 			...COSTRICT_DEFAULT_HEADERS,
 			"X-Request-ID": uuidv7(),
+			"zgsm-client-id": client_id,
 		}
 		const repo = workspace?.name?.split(" ")[0] ?? ""
 
@@ -258,8 +261,6 @@ export class CompletionClient {
 
 		this.openai.baseURL = `${config.baseUrl}${config.completionUrl}`
 		this.openai.apiKey = config.apiKey
-		// machineId
-		const client_id = getClientId()
 		// project_dir
 		let workspaceFolder = ""
 		if (vscode.workspace.workspaceFolders) {

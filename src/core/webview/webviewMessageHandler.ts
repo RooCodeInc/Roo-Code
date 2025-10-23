@@ -3385,6 +3385,32 @@ export const webviewMessageHandler = async (
 			const { apiConfiguration } = await provider.getState()
 			const httpProxy = process.env.http_proxy || process.env.HTTP_PROXY
 			const httpsProxy = process.env.https_proxy || process.env.HTTPS_PROXY
+
+			// Get editor type information
+			const remoteName = vscode.env.remoteName
+			let editorType = ""
+			if (remoteName) {
+				// Remote connection - show the remote type (e.g., "ssh", "wsl", "dev-container", etc.)
+				editorType = `Remote (${remoteName})`
+			} else {
+				// Local editor - show the specific VS Code edition/type
+				const appName = vscode.env.appName
+				editorType = `${appName}`
+			}
+
+			// Extract request ID from error message
+			const requestIdMatch = errorMessage?.match(/RequestID:\s*([a-f0-9-]+)/i)
+			const requestId = requestIdMatch?.[1]
+
+			// Get raw error message if request ID exists and provider is zgsm
+			let rawErrorMessage = ""
+			if (requestId && apiConfiguration.apiProvider === "zgsm") {
+				const rawError = ErrorCodeManager.getInstance().getRawError(requestId)
+				if (rawError?.message) {
+					rawErrorMessage = `rawErrorMessage: ${rawError.message}`
+				}
+			}
+
 			try {
 				await vscode.env.clipboard.writeText(dedent`
 					message: ${errorMessage}
@@ -3393,8 +3419,10 @@ export const webviewMessageHandler = async (
 					${apiConfiguration.apiProvider === "zgsm" ? `BaseUrl: ${apiConfiguration.zgsmBaseUrl || ZgsmAuthConfig.getInstance().getDefaultApiBaseUrl()}` : ""}
 					vscodeVersion: ${vscode.version}
 					pluginVersion: ${Package.version}
+					editorType: ${editorType}
 					httpProxy: ${httpProxy}
 					httpsProxy: ${httpsProxy}
+					${rawErrorMessage ? `${rawErrorMessage}` : ""}
 				`)
 				vscode.window.showInformationMessage(t("common:window.success.copy_success"))
 			} catch (err) {

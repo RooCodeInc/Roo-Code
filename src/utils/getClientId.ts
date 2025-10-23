@@ -11,7 +11,14 @@ const isInvalidId = (id: string): boolean => {
 	return (
 		!id ||
 		id.trim() === "" ||
-		["intellij-machine", "development-machine", "intellij-session", "development-session"].includes(id)
+		[
+			"intellij-machine",
+			"development-machine",
+			"intellij-session",
+			"development-session",
+			"someValue.machineId",
+		].includes(id) ||
+		id.length < 64
 	)
 }
 

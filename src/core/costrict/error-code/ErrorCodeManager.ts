@@ -18,6 +18,7 @@ export interface IErrorMap {
 export class ErrorCodeManager {
 	private static instance: ErrorCodeManager
 	private errorMap: IErrorMap = {}
+	private rawErrorMap: Map<string, any> = new Map()
 	private unknownError = { message: t("apiErrors:status.unknown"), solution: t("apiErrors:solution.unknown") }
 	private provider!: ClineProvider
 
@@ -227,5 +228,32 @@ ${checkRemainingQuotaStr}
 
 	getErrorMessageByCode(code: string) {
 		return this.errorMap[code] || this.unknownError
+	}
+
+	/**
+	 * Set raw error by request ID
+	 * @param requestId Request ID
+	 * @param error Raw error object
+	 */
+	public setRawError(requestId: string, error: any): void {
+		this.rawErrorMap.set(requestId, error)
+	}
+
+	/**
+	 * Get raw error by request ID
+	 * @param requestId Request ID
+	 * @returns Raw error object or undefined
+	 */
+	public getRawError(requestId: string): any {
+		return this.rawErrorMap.get(requestId)
+	}
+
+	/**
+	 * Delete raw error by request ID
+	 * @param requestId Request ID
+	 * @returns True if error was deleted, false if not found
+	 */
+	public deleteRawError(requestId: string): boolean {
+		return this.rawErrorMap.delete(requestId)
 	}
 }
