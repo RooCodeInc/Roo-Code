@@ -148,6 +148,7 @@
 		"initializingWarning": "체크포인트 초기화 중... 시간이 너무 오래 걸리면 <settingsLink>설정</settingsLink>에서 체크포인트를 비활성화하고 작업을 다시 시작할 수 있습니다.",
 		"menu": {
 			"viewDiff": "차이점 보기",
+			"more": "더 많은 옵션",
 			"viewDiffFromInit": "모든 변경 사항 보기",
 			"viewDiffWithCurrent": "이 체크포인트 이후 변경 사항 보기",
 			"restore": "체크포인트 복원",

@@ -298,7 +298,7 @@ export async function checkpointDiff(task: Task, { ts, previousCommitHash, commi
 	const checkpoints = task.clineMessages.filter(({ say }) => say === "checkpoint_saved").map(({ text }) => text!)
 
 	if (["from-init", "full"].includes(mode) && checkpoints.length < 1) {
-		vscode.window.showInformationMessage("No first checkpoint to compare.")
+		vscode.window.showInformationMessage(t("common:errors.checkpoint_no_first"))
 		return
 	}
 
@@ -307,27 +307,27 @@ export async function checkpointDiff(task: Task, { ts, previousCommitHash, commi
 		case "checkpoint":
 			fromHash = commitHash
 			toHash = idx !== -1 && idx < checkpoints.length - 1 ? checkpoints[idx + 1] : undefined
-			title = "Changes compare with next checkpoint"
+			title = t("common:errors.checkpoint_diff_with_next")
 			break
 		case "from-init":
 			fromHash = checkpoints[0]
 			toHash = commitHash
-			title = "Changes since first checkpoint"
+			title = t("common:errors.checkpoint_diff_since_first")
 			break
 		case "to-current":
 			fromHash = commitHash
 			toHash = undefined
-			title = "Changes to current workspace"
+			title = t("common:errors.checkpoint_diff_to_current")
 			break
 		case "full":
 			fromHash = checkpoints[0]
 			toHash = undefined
-			title = "Changes since first checkpoint"
+			title = t("common:errors.checkpoint_diff_since_first")
 			break
 	}
 
 	if (!fromHash) {
-		vscode.window.showInformationMessage("No previous checkpoint to compare.")
+		vscode.window.showInformationMessage(t("common:errors.checkpoint_no_previous"))
 		return
 	}
 
@@ -335,7 +335,7 @@ export async function checkpointDiff(task: Task, { ts, previousCommitHash, commi
 		const changes = await service.getDiff({ from: fromHash, to: toHash })
 
 		if (!changes?.length) {
-			vscode.window.showInformationMessage("No changes found.")
+			vscode.window.showInformationMessage(t("common:errors.checkpoint_no_changes"))
 			return
 		}
 

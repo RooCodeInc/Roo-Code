@@ -148,6 +148,7 @@
 		"initializingWarning": "Đang khởi tạo điểm kiểm tra... Nếu quá trình này mất quá nhiều thời gian, bạn có thể vô hiệu hóa điểm kiểm tra trong <settingsLink>cài đặt</settingsLink> và khởi động lại tác vụ của bạn.",
 		"menu": {
 			"viewDiff": "Xem khác biệt",
+			"more": "Thêm tùy chọn",
 			"viewDiffFromInit": "Xem tất cả các thay đổi",
 			"viewDiffWithCurrent": "Xem các thay đổi kể từ điểm kiểm tra này",
 			"restore": "Khôi phục điểm kiểm tra",

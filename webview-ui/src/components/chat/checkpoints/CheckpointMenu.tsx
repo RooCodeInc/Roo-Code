@@ -24,7 +24,7 @@ type CheckpointMenuProps = CheckpointMenuBaseProps & (CheckpointMenuControlledPr
 export const CheckpointMenu = ({ ts, commitHash, checkpoint, onOpenChange }: CheckpointMenuProps) => {
 	const { t } = useTranslation()
 	const [internalRestoreOpen, setInternalRestoreOpen] = useState(false)
-	const [restoreConfirming, setRestoreIsConfirming] = useState(false)
+	const [restoreConfirming, setRestoreConfirming] = useState(false)
 	const [internalMoreOpen, setInternalMoreOpen] = useState(false)
 	const portalContainer = useRooPortal("roo-portal")
 
@@ -87,7 +87,7 @@ export const CheckpointMenu = ({ ts, commitHash, checkpoint, onOpenChange }: Che
 		(open: boolean) => {
 			setRestoreOpen(open)
 			if (!open) {
-				setRestoreIsConfirming(false)
+				setRestoreConfirming(false)
 			}
 		},
 		[setRestoreOpen],
@@ -104,7 +104,7 @@ export const CheckpointMenu = ({ ts, commitHash, checkpoint, onOpenChange }: Che
 				open={restoreOpen}
 				onOpenChange={(open) => {
 					handleOpenChange(open)
-					setRestoreIsConfirming(false)
+					setRestoreConfirming(false)
 				}}
 				data-testid="restore-popover">
 				<StandardTooltip content={t("chat:checkpoint.menu.restore")}>
@@ -128,7 +128,7 @@ export const CheckpointMenu = ({ ts, commitHash, checkpoint, onOpenChange }: Che
 							{!restoreConfirming ? (
 								<Button
 									variant="secondary"
-									onClick={() => setRestoreIsConfirming(true)}
+									onClick={() => setRestoreConfirming(true)}
 									data-testid="restore-files-and-task-btn">
 									{t("chat:checkpoint.menu.restoreFilesAndTask")}
 								</Button>
@@ -144,7 +144,7 @@ export const CheckpointMenu = ({ ts, commitHash, checkpoint, onOpenChange }: Che
 											<div>{t("chat:checkpoint.menu.confirm")}</div>
 										</div>
 									</Button>
-									<Button variant="secondary" onClick={() => setRestoreIsConfirming(false)}>
+									<Button variant="secondary" onClick={() => setRestoreConfirming(false)}>
 										<div className="flex flex-row gap-1">
 											<Cross2Icon />
 											<div>{t("chat:checkpoint.menu.cancel")}</div>

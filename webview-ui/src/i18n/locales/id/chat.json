@@ -157,6 +157,7 @@
 		"initializingWarning": "Masih menginisialisasi checkpoint... Jika ini terlalu lama, kamu bisa menonaktifkan checkpoint di <settingsLink>pengaturan</settingsLink> dan restart tugas.",
 		"menu": {
 			"viewDiff": "Lihat Diff",
+			"more": "Opsi lainnya",
 			"viewDiffFromInit": "Lihat Semua Perubahan",
 			"viewDiffWithCurrent": "Lihat Perubahan Sejak Checkpoint Ini",
 			"restore": "Pulihkan Checkpoint",

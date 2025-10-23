@@ -304,7 +304,7 @@ describe("Checkpoint functionality", () => {
 			})
 			expect(vscode.commands.executeCommand).toHaveBeenCalledWith(
 				"vscode.changes",
-				"Changes to current workspace",
+				"errors.checkpoint_diff_to_current",
 				expect.any(Array),
 			)
 		})
@@ -329,7 +329,7 @@ describe("Checkpoint functionality", () => {
 			})
 			expect(vscode.commands.executeCommand).toHaveBeenCalledWith(
 				"vscode.changes",
-				"Changes compare with next checkpoint",
+				"errors.checkpoint_diff_with_next",
 				expect.any(Array),
 			)
 		})
@@ -364,7 +364,7 @@ describe("Checkpoint functionality", () => {
 				mode: "to-current",
 			})
 
-			expect(vscode.window.showInformationMessage).toHaveBeenCalledWith("No changes found.")
+			expect(vscode.window.showInformationMessage).toHaveBeenCalledWith("errors.checkpoint_no_changes")
 			expect(vscode.commands.executeCommand).not.toHaveBeenCalled()
 		})
 

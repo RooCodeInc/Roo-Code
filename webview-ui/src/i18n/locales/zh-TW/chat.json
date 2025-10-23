@@ -154,6 +154,7 @@
 		"initializingWarning": "正在初始化檢查點... 如果耗時過長，您可以在<settingsLink>設定</settingsLink>中停用檢查點並重新啟動工作。",
 		"menu": {
 			"viewDiff": "檢視差異",
+			"more": "更多選項",
 			"viewDiffFromInit": "檢視所有變更",
 			"viewDiffWithCurrent": "檢視自此檢查點以來的變更",
 			"restore": "還原檢查點",

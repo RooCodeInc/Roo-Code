@@ -148,6 +148,7 @@
 		"initializingWarning": "Checkpoint wird noch initialisiert... Falls dies zu lange dauert, kannst du Checkpoints in den <settingsLink>Einstellungen</settingsLink> deaktivieren und deine Aufgabe neu starten.",
 		"menu": {
 			"viewDiff": "Unterschiede anzeigen",
+			"more": "Weitere Optionen",
 			"viewDiffFromInit": "Alle Änderungen anzeigen",
 			"viewDiffWithCurrent": "Änderungen seit diesem Checkpoint anzeigen",
 			"restore": "Checkpoint wiederherstellen",
