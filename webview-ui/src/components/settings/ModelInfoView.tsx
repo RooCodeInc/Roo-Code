@@ -50,11 +50,6 @@ export const ModelInfoView = ({
 			doesNotSupportLabel={t("settings:modelInfo.noImages")}
 		/>,
 		<ModelInfoSupportsItem
-			isSupported={modelInfo?.supportsComputerUse ?? false}
-			supportsLabel={t("settings:modelInfo.supportsComputerUse")}
-			doesNotSupportLabel={t("settings:modelInfo.noComputerUse")}
-		/>,
-		<ModelInfoSupportsItem
 			isSupported={modelInfo?.supportsPromptCache ?? false}
 			supportsLabel={t("settings:modelInfo.supportsPromptCache")}
 			doesNotSupportLabel={t("settings:modelInfo.noPromptCache")}

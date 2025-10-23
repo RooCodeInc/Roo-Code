@@ -768,8 +768,6 @@
 	"modelInfo": {
 		"supportsImages": "Prend en charge les images",
 		"noImages": "Ne prend pas en charge les images",
-		"supportsComputerUse": "Prend en charge l'utilisation de l'ordinateur",
-		"noComputerUse": "Ne prend pas en charge l'utilisation de l'ordinateur",
 		"supportsPromptCache": "Prend en charge la mise en cache des prompts",
 		"noPromptCache": "Ne prend pas en charge la mise en cache des prompts",
 		"contextWindow": "Fenêtre de contexte :",
@@ -824,6 +822,7 @@
 			"regionMismatch": "Attention : La région dans votre ARN ({{arnRegion}}) ne correspond pas à votre région sélectionnée ({{region}}). Cela peut causer des problèmes d'accès. Le fournisseur utilisera la région de l'ARN."
 		},
 		"modelAvailability": "L'ID de modèle ({{modelId}}) que vous avez fourni n'est pas disponible. Veuillez choisir un modèle différent.",
+		"modelDeprecated": "Ce modèle n'est plus disponible. Veuillez sélectionner un modèle différent.",
 		"providerNotAllowed": "Le fournisseur '{{provider}}' n'est pas autorisé par votre organisation",
 		"modelNotAllowed": "Le modèle '{{model}}' n'est pas autorisé pour le fournisseur '{{provider}}' par votre organisation",
 		"profileInvalid": "Ce profil contient un fournisseur ou un modèle qui n'est pas autorisé par votre organisation",

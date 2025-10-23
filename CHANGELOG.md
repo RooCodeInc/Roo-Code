@@ -1,5 +1,44 @@
 # Roo Code Changelog
 
+## [3.28.18] - 2025-10-17
+
+- Fix: Remove request content from UI messages to improve performance and reduce clutter (#5601 by @MuriloFP, #8594 by @multivac2x, #8690 by @hannesrudolph, PR by @mrubens)
+- Fix: Prevent file editing issues when git diff views are open (thanks @hassoncs!)
+- Fix: Add userAgent to Bedrock client for version tracking (#8660 by @ajjuaire, PR by @app/roomote)
+- Feat: Z AI now uses only two coding endpoints for better performance (#8687 by @hannesrudolph)
+- Feat: Update image generation model selection for improved quality (thanks @chrarnoldus!)
+
+## [3.28.17] - 2025-10-15
+
+- Add support for Claude Haiku 4.5 model (thanks @daniel-lxs!)
+- Fix: Update zh-TW run command title translation (thanks @PeterDaveHello!)
+
+## [3.28.16] - 2025-10-09
+
+![3.28.16 Release - Expanded Context Window](/releases/3.28.16-release.png)
+
+- feat: Add Claude Sonnet 4.5 1M context window support for Claude Code (thanks @ColbySerpa!)
+- feat: Identify cloud tasks in the extension bridge (thanks @cte!)
+- fix: Add the parent task ID in telemetry (thanks @mrubens!)
+
+## [3.28.15] - 2025-10-03
+
+![3.28.15 Release - Kangaroo Sliding Down a Chute](/releases/3.28.15-release.png)
+
+- Add new DeepSeek and GLM models with detailed descriptions to the Chutes provider (thanks @mohammad154!)
+- Fix: properly reset cost limit tracking when user clicks "Reset and Continue" (#6889 by @alecoot, PR by app/roomote)
+- Fix: improve save button activation in prompts settings (#5780 by @beccare, PR by app/roomote)
+- Fix: overeager 'there are unsaved changes' dialog in settings (thanks @brunobergher!)
+- Fix: show send button when only images are selected in chat textarea (thanks app/roomote!)
+- Fix: Claude Sonnet 4.5 compatibility improvements (thanks @mrubens!)
+- Add UsageStats schema and type for better analytics tracking (thanks app/roomote!)
+- Include reasoning messages in cloud tasks (thanks @mrubens!)
+- Security: update dependency vite to v6.3.6 (thanks app/renovate!)
+- Deprecate free grok 4 fast model (thanks @mrubens!)
+- Remove unsupported Gemini 2.5 Flash Image Preview free model (thanks @SannidhyaSah!)
+- Add structured data to the homepage for better SEO (thanks @mrubens!)
+- Update dependency glob to v11.0.3 (thanks app/renovate!)
+
 ## [3.28.14] - 2025-09-30
 
 ![3.28.14 Release - GLM-4.6 Model Support](/releases/3.28.14-release.png)

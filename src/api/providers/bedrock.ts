@@ -21,13 +21,13 @@ import {
 	BEDROCK_MAX_TOKENS,
 	BEDROCK_DEFAULT_CONTEXT,
 	AWS_INFERENCE_PROFILE_MAPPING,
-	BEDROCK_CLAUDE_SONNET_4_MODEL_ID,
 	BEDROCK_1M_CONTEXT_MODEL_IDS,
 } from "@roo-code/types"
 
 import { ApiStream } from "../transform/stream"
 import { BaseProvider } from "./base-provider"
 import { logger } from "../../utils/logging"
+import { Package } from "../../shared/package"
 import { MultiPointStrategy } from "../transform/cache-strategy/multi-point-strategy"
 import { ModelInfo as CacheModelInfo } from "../transform/cache-strategy/types"
 import { convertToBedrockConverseMessages as sharedConverter } from "../transform/bedrock-converse-format"
@@ -219,6 +219,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 		this.costModelConfig = this.getModel()
 
 		const clientConfig: BedrockRuntimeClientConfig = {
+			defaultUserAgentProvider: () => Promise.resolve([["RooCode", Package.version]]),
 			region: this.options.awsRegion,
 			// Add the endpoint configuration when specified and enabled
 			...(this.options.awsBedrockEndpoint &&
@@ -373,7 +374,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			maxTokens: modelConfig.maxTokens || (modelConfig.info.maxTokens as number),
 			temperature: modelConfig.temperature ?? (this.options.modelTemperature as number),
 		}
-	
+
 		// Check if 1M context is enabled for Claude Sonnet 4
 		// Use parseBaseModelId to handle cross-region inference prefixes
 		const baseModelId = this.parseBaseModelId(modelConfig.id)

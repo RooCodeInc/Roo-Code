@@ -1822,9 +1822,7 @@ export class ClineProvider
 		try {
 			cloudOrganizations = await CloudService.instance.getOrganizationMemberships()
 		} catch (error) {
-			console.error(
-				`[getStateToPostToWebview] failed to get cloud organizations: ${error instanceof Error ? error.message : String(error)}`,
-			)
+			// Ignore this error.
 		}
 
 		const telemetryKey = process.env.POSTHOG_API_KEY
@@ -2343,6 +2341,7 @@ export class ClineProvider
 			...config,
 			provider: this,
 			sessionId: vscode.env.sessionId,
+			isCloudAgent: CloudService.instance.isCloudAgent,
 		})
 
 		const bridge = BridgeOrchestrator.getInstance()
@@ -2756,6 +2755,7 @@ export class ClineProvider
 			language,
 			mode,
 			taskId: task?.taskId,
+			parentTaskId: task?.parentTask?.taskId,
 			apiProvider: apiConfiguration?.apiProvider,
 			modelId: task?.api?.getModel().id,
 			diffStrategy: task?.diffStrategy?.getName(),

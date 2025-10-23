@@ -769,8 +769,6 @@
 	"modelInfo": {
 		"supportsImages": "Hỗ trợ hình ảnh",
 		"noImages": "Không hỗ trợ hình ảnh",
-		"supportsComputerUse": "Hỗ trợ sử dụng máy tính",
-		"noComputerUse": "Không hỗ trợ sử dụng máy tính",
 		"supportsPromptCache": "Hỗ trợ bộ nhớ đệm lời nhắc",
 		"noPromptCache": "Không hỗ trợ bộ nhớ đệm lời nhắc",
 		"contextWindow": "Cửa sổ ngữ cảnh:",
@@ -825,6 +823,7 @@
 			"regionMismatch": "Cảnh báo: Vùng trong ARN của bạn ({{arnRegion}}) không khớp với vùng bạn đã chọn ({{region}}). Điều này có thể gây ra vấn đề truy cập. Nhà cung cấp sẽ sử dụng vùng từ ARN."
 		},
 		"modelAvailability": "ID mô hình ({{modelId}}) bạn đã cung cấp không khả dụng. Vui lòng chọn một mô hình khác.",
+		"modelDeprecated": "Mô hình này không còn khả dụng. Vui lòng chọn một mô hình khác.",
 		"providerNotAllowed": "Nhà cung cấp '{{provider}}' không được phép bởi tổ chức của bạn",
 		"modelNotAllowed": "Mô hình '{{model}}' không được phép cho nhà cung cấp '{{provider}}' bởi tổ chức của bạn",
 		"profileInvalid": "Hồ sơ này chứa một nhà cung cấp hoặc mô hình không được phép bởi tổ chức của bạn",

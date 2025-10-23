@@ -52,7 +52,7 @@ import { t } from "../../i18n"
 import { ClineApiReqCancelReason, ClineApiReqInfo } from "../../shared/ExtensionMessage"
 import { getApiMetrics, hasTokenUsageChanged } from "../../shared/getApiMetrics"
 import { ClineAskResponse } from "../../shared/WebviewMessage"
-import { defaultModeSlug } from "../../shared/modes"
+import { defaultModeSlug, getModeBySlug, getGroupName } from "../../shared/modes"
 import { DiffStrategy } from "../../shared/tools"
 import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
 import { getModelMaxOutputTokens } from "../../shared/api"
@@ -802,6 +802,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		const isMessageQueued = !this.messageQueueService.isEmpty()
 		const isStatusMutable = !partial && isBlocking && !isMessageQueued
 		let statusMutationTimeouts: NodeJS.Timeout[] = []
+		const statusMutationTimeout = 5_000
 
 		if (isStatusMutable) {
 			console.log(`Task#ask will block -> type: ${type}`)
@@ -815,7 +816,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 							this.interactiveAsk = message
 							this.emit(RooCodeEventName.TaskInteractive, this.taskId)
 						}
-					}, 1_000),
+					}, statusMutationTimeout),
 				)
 			} else if (isResumableAsk(type)) {
 				statusMutationTimeouts.push(
@@ -826,7 +827,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 							this.resumableAsk = message
 							this.emit(RooCodeEventName.TaskResumable, this.taskId)
 						}
-					}, 1_000),
+					}, statusMutationTimeout),
 				)
 			} else if (isIdleAsk(type)) {
 				statusMutationTimeouts.push(
@@ -837,7 +838,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 							this.idleAsk = message
 							this.emit(RooCodeEventName.TaskIdle, this.taskId)
 						}
-					}, 1_000),
+					}, statusMutationTimeout),
 				)
 			}
 		} else if (isMessageQueued) {
@@ -846,17 +847,19 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			const message = this.messageQueueService.dequeueMessage()
 
 			if (message) {
-				// Check if this is a tool approval ask that needs to be handled
+				// Check if this is a tool approval ask that needs to be handled.
 				if (
 					type === "tool" ||
 					type === "command" ||
 					type === "browser_action_launch" ||
 					type === "use_mcp_server"
 				) {
-					// For tool approvals, we need to approve first, then send the message if there's text/images
+					// For tool approvals, we need to approve first, then send
+					// the message if there's text/images.
 					this.handleWebviewAskResponse("yesButtonClicked", message.text, message.images)
 				} else {
-					// For other ask types (like followup), fulfill the ask directly
+					// For other ask types (like followup), fulfill the ask
+					// directly.
 					this.setMessageResponse(message.text, message.images)
 				}
 			}
@@ -1793,9 +1796,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			await this.say(
 				"api_req_started",
 				JSON.stringify({
-					request:
-						currentUserContent.map((block) => formatContentBlockToMarkdown(block)).join("\n\n") +
-						"\n\nLoading...",
 					apiProtocol,
 				}),
 			)
@@ -1835,7 +1835,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			const lastApiReqIndex = findLastIndex(this.clineMessages, (m) => m.say === "api_req_started")
 
 			this.clineMessages[lastApiReqIndex].text = JSON.stringify({
-				request: finalUserContent.map((block) => formatContentBlockToMarkdown(block)).join("\n\n"),
 				apiProtocol,
 			} satisfies ClineApiReqInfo)
 
@@ -2252,7 +2251,23 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				// Note: updateApiReqMsg() is now called from within drainStreamInBackgroundToFindAllUsage
 				// to ensure usage data is captured even when the stream is interrupted. The background task
 				// uses local variables to accumulate usage data before atomically updating the shared state.
-				await this.persistGpt5Metadata(reasoningMessage)
+
+				// Complete the reasoning message if it exists
+				// We can't use say() here because the reasoning message may not be the last message
+				// (other messages like text blocks or tool uses may have been added after it during streaming)
+				if (reasoningMessage) {
+					const lastReasoningIndex = findLastIndex(
+						this.clineMessages,
+						(m) => m.type === "say" && m.say === "reasoning",
+					)
+
+					if (lastReasoningIndex !== -1 && this.clineMessages[lastReasoningIndex].partial) {
+						this.clineMessages[lastReasoningIndex].partial = false
+						await this.updateClineMessage(this.clineMessages[lastReasoningIndex])
+					}
+				}
+
+				await this.persistGpt5Metadata()
 				await this.saveClineMessages()
 				await this.providerRef.deref()?.postStateToWebview()
 
@@ -2402,14 +2417,25 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				throw new Error("Provider not available")
 			}
 
+			// Align browser tool enablement with generateSystemPrompt: require model image support,
+			// mode to include the browser group, and the user setting to be enabled.
+			const modeConfig = getModeBySlug(mode ?? defaultModeSlug, customModes)
+			const modeSupportsBrowser = modeConfig?.groups.some((group) => getGroupName(group) === "browser") ?? false
+
+			// Check if model supports browser capability (images)
+			const modelInfo = this.api.getModel().info
+			const modelSupportsBrowser = (modelInfo as any)?.supportsImages === true
+
+			const canUseBrowserTool = modelSupportsBrowser && modeSupportsBrowser && (browserToolEnabled ?? true)
+
 			return SYSTEM_PROMPT(
 				provider.context,
 				this.cwd,
-				(this.api.getModel().info.supportsComputerUse ?? false) && (browserToolEnabled ?? true),
+				canUseBrowserTool,
 				mcpHub,
 				this.diffStrategy,
-				browserViewportSize,
-				mode,
+				browserViewportSize ?? "900x600",
+				mode ?? defaultModeSlug,
 				customModePrompts,
 				customModes,
 				customInstructions,
@@ -2838,10 +2864,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	}
 
 	/**
-	 * Persist GPT-5 per-turn metadata (previous_response_id, instructions, reasoning_summary)
+	 * Persist GPT-5 per-turn metadata (previous_response_id only)
 	 * onto the last complete assistant say("text") message.
+	 *
+	 * Note: We do not persist system instructions or reasoning summaries.
 	 */
-	private async persistGpt5Metadata(reasoningMessage?: string): Promise<void> {
+	private async persistGpt5Metadata(): Promise<void> {
 		try {
 			const modelId = this.api.getModel().id
 			if (!modelId || !modelId.startsWith("gpt-5")) return
@@ -2860,9 +2888,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				}
 				const gpt5Metadata: Gpt5Metadata = {
 					...(msg.metadata.gpt5 ?? {}),
-					previous_response_id: lastResponseId,
-					instructions: this.lastUsedInstructions,
-					reasoning_summary: (reasoningMessage ?? "").trim() || undefined,
+					...(lastResponseId ? { previous_response_id: lastResponseId } : {}),
 				}
 				msg.metadata.gpt5 = gpt5Metadata
 			}

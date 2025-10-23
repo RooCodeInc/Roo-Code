@@ -22,6 +22,7 @@ import {
 	processImageFile,
 	ImageMemoryTracker,
 } from "./helpers/imageHelpers"
+import { validateFileTokenBudget, truncateFileContent } from "./helpers/fileTokenBudget"
 
 export function getReadFileToolDescription(blockName: string, blockParams: any): string {
 	// Handle both single path and multiple files via args
@@ -594,13 +595,43 @@ export async function readFileTool(
 					continue
 				}
 
-				// Handle normal file read
-				const content = await extractTextFromFile(fullPath)
-				const lineRangeAttr = ` lines="1-${totalLines}"`
-				let xmlInfo = totalLines > 0 ? `<content${lineRangeAttr}>\n${content}</content>\n` : `<content/>`
+				// Handle normal file read with token budget validation
+				const modelInfo = cline.api.getModel().info
+				const { contextTokens } = cline.getTokenUsage()
+				const contextWindow = modelInfo.contextWindow
 
-				if (totalLines === 0) {
-					xmlInfo += `<notice>File is empty</notice>\n`
+				// Validate if file fits within token budget
+				const budgetResult = await validateFileTokenBudget(fullPath, contextWindow, contextTokens || 0)
+
+				let content = await extractTextFromFile(fullPath)
+				let xmlInfo = ""
+
+				if (budgetResult.shouldTruncate && budgetResult.maxChars !== undefined) {
+					// Truncate the content to fit budget or show preview for large files
+					const truncateResult = truncateFileContent(
+						content,
+						budgetResult.maxChars,
+						content.length,
+						budgetResult.isPreview,
+					)
+					content = truncateResult.content
+
+					// Reflect actual displayed line count after truncation (count ALL lines, including empty)
+					// Handle trailing newline: "line1\nline2\n" should be 2 lines, not 3
+					let displayedLines = content.length === 0 ? 0 : content.split(/\r?\n/).length
+					if (displayedLines > 0 && content.endsWith("\n")) {
+						displayedLines--
+					}
+					const lineRangeAttr = displayedLines > 0 ? ` lines="1-${displayedLines}"` : ""
+					xmlInfo = content.length > 0 ? `<content${lineRangeAttr}>\n${content}</content>\n` : `<content/>`
+					xmlInfo += `<notice>${truncateResult.notice}</notice>\n`
+				} else {
+					const lineRangeAttr = ` lines="1-${totalLines}"`
+					xmlInfo = totalLines > 0 ? `<content${lineRangeAttr}>\n${content}</content>\n` : `<content/>`
+
+					if (totalLines === 0) {
+						xmlInfo += `<notice>File is empty</notice>\n`
+					}
 				}
 
 				// Track file read

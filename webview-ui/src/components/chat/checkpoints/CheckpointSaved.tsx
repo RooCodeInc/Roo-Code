@@ -13,9 +13,9 @@ type CheckpointSavedProps = {
 	checkpoint?: Record<string, unknown>
 }
 
-export const CheckpointSaved = ({ checkpoint, ...props }: CheckpointSavedProps) => {
+export const CheckpointSaved = ({ checkpoint, currentHash, ...props }: CheckpointSavedProps) => {
 	const { t } = useTranslation()
-	const isCurrent = props.currentHash === props.commitHash
+	const isCurrent = currentHash === props.commitHash
 	const [isPopoverOpen, setIsPopoverOpen] = useState(false)
 	const [isClosing, setIsClosing] = useState(false)
 	const closeTimer = useRef<number | null>(null)

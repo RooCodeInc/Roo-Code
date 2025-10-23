@@ -769,8 +769,6 @@
 	"modelInfo": {
 		"supportsImages": "Obsługuje obrazy",
 		"noImages": "Nie obsługuje obrazów",
-		"supportsComputerUse": "Obsługuje użycie komputera",
-		"noComputerUse": "Nie obsługuje użycia komputera",
 		"supportsPromptCache": "Obsługuje buforowanie podpowiedzi",
 		"noPromptCache": "Nie obsługuje buforowania podpowiedzi",
 		"contextWindow": "Okno kontekstowe:",
@@ -825,6 +823,7 @@
 			"regionMismatch": "Ostrzeżenie: Region w Twoim ARN ({{arnRegion}}) nie zgadza się z wybranym regionem ({{region}}). Może to powodować problemy z dostępem. Dostawca użyje regionu z ARN."
 		},
 		"modelAvailability": "Podane ID modelu ({{modelId}}) jest niedostępne. Wybierz inny model.",
+		"modelDeprecated": "Ten model nie jest już dostępny. Wybierz inny model.",
 		"providerNotAllowed": "Dostawca '{{provider}}' nie jest dozwolony przez Twoją organizację",
 		"modelNotAllowed": "Model '{{model}}' nie jest dozwolony dla dostawcy '{{provider}}' przez Twoją organizację",
 		"profileInvalid": "Ten profil zawiera dostawcę lub model, który nie jest dozwolony przez Twoją organizację",

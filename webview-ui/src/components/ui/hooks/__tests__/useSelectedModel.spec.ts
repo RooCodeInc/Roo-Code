@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { renderHook } from "@testing-library/react"
 import type { Mock } from "vitest"
 
-import { ProviderSettings, ModelInfo, BEDROCK_CLAUDE_SONNET_4_MODEL_ID } from "@roo-code/types"
+import { ProviderSettings, ModelInfo, BEDROCK_1M_CONTEXT_MODEL_IDS } from "@roo-code/types"
 
 import { useSelectedModel } from "../useSelectedModel"
 import { useRouterModels } from "../useRouterModels"
@@ -144,7 +144,6 @@ describe("useSelectedModel", () => {
 				contextWindow: 8192,
 				supportsImages: false,
 				supportsPromptCache: false,
-				supportsComputerUse: true,
 				cacheWritesPrice: 0.1,
 				cacheReadsPrice: 0.01,
 			}
@@ -192,7 +191,6 @@ describe("useSelectedModel", () => {
 				// Fields from base model that provider doesn't have
 				contextWindow: 8192, // From base (provider doesn't override)
 				supportsPromptCache: false, // From base (provider doesn't override)
-				supportsComputerUse: true, // From base (provider doesn't have)
 				cacheWritesPrice: 0.1, // From base (provider doesn't have)
 				cacheReadsPrice: 0.01, // From base (provider doesn't have)
 
@@ -255,7 +253,6 @@ describe("useSelectedModel", () => {
 							maxTokens: 8192,
 							contextWindow: 200_000,
 							supportsImages: true,
-							supportsComputerUse: true,
 							supportsPromptCache: true,
 							inputPrice: 3.0,
 							outputPrice: 15.0,
@@ -412,7 +409,6 @@ describe("useSelectedModel", () => {
 			// Verify it inherits other properties from anthropic models
 			expect(result.current.info?.maxTokens).toBe(64_000)
 			expect(result.current.info?.contextWindow).toBe(200_000)
-			expect(result.current.info?.supportsComputerUse).toBe(true)
 		})
 
 		it("should use default claude-code model when no modelId is specified", () => {
@@ -474,28 +470,28 @@ describe("useSelectedModel", () => {
 		it("should enable 1M context window for Bedrock Claude Sonnet 4 when awsBedrock1MContext is true", () => {
 			const apiConfiguration: ProviderSettings = {
 				apiProvider: "bedrock",
-				apiModelId: BEDROCK_CLAUDE_SONNET_4_MODEL_ID,
+				apiModelId: BEDROCK_1M_CONTEXT_MODEL_IDS[0],
 				awsBedrock1MContext: true,
 			}
 
 			const wrapper = createWrapper()
 			const { result } = renderHook(() => useSelectedModel(apiConfiguration), { wrapper })
 
-			expect(result.current.id).toBe(BEDROCK_CLAUDE_SONNET_4_MODEL_ID)
+			expect(result.current.id).toBe(BEDROCK_1M_CONTEXT_MODEL_IDS[0])
 			expect(result.current.info?.contextWindow).toBe(1_000_000)
 		})
 
 		it("should use default context window for Bedrock Claude Sonnet 4 when awsBedrock1MContext is false", () => {
 			const apiConfiguration: ProviderSettings = {
 				apiProvider: "bedrock",
-				apiModelId: BEDROCK_CLAUDE_SONNET_4_MODEL_ID,
+				apiModelId: BEDROCK_1M_CONTEXT_MODEL_IDS[0],
 				awsBedrock1MContext: false,
 			}
 
 			const wrapper = createWrapper()
 			const { result } = renderHook(() => useSelectedModel(apiConfiguration), { wrapper })
 
-			expect(result.current.id).toBe(BEDROCK_CLAUDE_SONNET_4_MODEL_ID)
+			expect(result.current.id).toBe(BEDROCK_1M_CONTEXT_MODEL_IDS[0])
 			expect(result.current.info?.contextWindow).toBe(200_000)
 		})
 
