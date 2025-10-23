@@ -2186,28 +2186,36 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// Cline instance to finish aborting (error is thrown here when
 					// any function in the for loop throws due to this.abort).
 					if (!this.abandoned) {
-						// If the stream failed, there's various states the task
-						// could be in (i.e. could have streamed some tools the user
-						// may have executed), so we just resort to replicating a
-						// cancel task.
-
-						// Determine cancellation reason BEFORE aborting to ensure correct persistence
+						// Determine cancellation reason
 						const cancelReason: ClineApiReqCancelReason = this.abort ? "user_cancelled" : "streaming_failed"
 
 						const streamingFailedMessage = this.abort
 							? undefined
 							: (error.message ?? JSON.stringify(serializeError(error), null, 2))
 
-						// Persist interruption details first to both UI and API histories
+						// Clean up partial state
 						await abortStream(cancelReason, streamingFailedMessage)
 
-						// Record reason for provider to decide rehydration path
-						this.abortReason = cancelReason
+						if (this.abort) {
+							// User cancelled - abort the entire task
+							this.abortReason = cancelReason
+							await this.abortTask()
+						} else {
+							// Stream failed - log the error and retry with the same content
+							// The existing rate limiting will prevent rapid retries
+							console.error(
+								`[Task#${this.taskId}.${this.instanceId}] Stream failed, will retry: ${streamingFailedMessage}`,
+							)
 
-						// Now abort (emits TaskAborted which provider listens to)
-						await this.abortTask()
+							// Push the same content back onto the stack to retry
+							stack.push({
+								userContent: currentUserContent,
+								includeFileDetails: false,
+							})
 
-						// Do not rehydrate here; provider owns rehydration to avoid duplication races
+							// Continue to retry the request
+							continue
+						}
 					}
 				} finally {
 					this.isStreaming = false
