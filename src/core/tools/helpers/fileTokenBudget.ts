@@ -69,17 +69,6 @@ export async function validateFileTokenBudget(
 			return { shouldTruncate: false }
 		}
 
-		// Safety check: for files too large to tokenize, provide a preview instead
-		// The tokenizer (tiktoken WASM) crashes with "unreachable" errors on very large files
-		if (fileSizeBytes > MAX_FILE_SIZE_FOR_TOKENIZATION) {
-			return {
-				shouldTruncate: true,
-				maxChars: PREVIEW_SIZE_FOR_LARGE_FILES,
-				isPreview: true,
-				reason: `File is too large (${(fileSizeBytes / 1024 / 1024).toFixed(2)}MB) to read entirely. Showing preview of first ${(PREVIEW_SIZE_FOR_LARGE_FILES / 1024 / 1024).toFixed(1)}MB. Use line_range to read specific sections.`,
-			}
-		}
-
 		// Calculate available token budget
 		const remainingTokens = contextWindow - currentTokens
 		const safeReadBudget = Math.floor(remainingTokens * FILE_READ_BUDGET_PERCENT)
@@ -93,8 +82,25 @@ export async function validateFileTokenBudget(
 			}
 		}
 
-		// Read the entire file
-		const content = await fs.readFile(filePath, "utf-8")
+		// For files too large to tokenize entirely, read a preview instead
+		// The tokenizer (tiktoken WASM) crashes with "unreachable" errors on very large files
+		const isPreviewMode = fileSizeBytes > MAX_FILE_SIZE_FOR_TOKENIZATION
+		let content: string
+
+		if (isPreviewMode) {
+			// Read only the preview portion to avoid tokenizer crashes
+			const fileHandle = await fs.open(filePath, "r")
+			try {
+				const buffer = Buffer.alloc(PREVIEW_SIZE_FOR_LARGE_FILES)
+				const { bytesRead } = await fileHandle.read(buffer, 0, PREVIEW_SIZE_FOR_LARGE_FILES, 0)
+				content = buffer.slice(0, bytesRead).toString("utf-8")
+			} finally {
+				await fileHandle.close()
+			}
+		} else {
+			// Read the entire file for normal-sized files
+			content = await fs.readFile(filePath, "utf-8")
+		}
 
 		// Count tokens in the content with error handling for tokenizer crashes
 		let tokenCount: number
@@ -105,12 +111,23 @@ export async function validateFileTokenBudget(
 			// Catch tokenizer "unreachable" errors (WASM crashes on extremely large content)
 			const errorMessage = error instanceof Error ? error.message : String(error)
 			if (errorMessage.includes("unreachable")) {
-				// Tokenizer crashed - file is too large, provide preview instead
+				// Tokenizer crashed even on preview - use conservative character-based estimation
+				// Assume worst case: 2 characters = 1 token
+				const estimatedTokens = Math.ceil(content.length / 2)
+				if (estimatedTokens > safeReadBudget) {
+					return {
+						shouldTruncate: true,
+						maxChars: safeReadBudget, // Use budget directly as char limit
+						isPreview: true,
+						reason: `File content caused tokenizer error. Showing truncated preview to fit context budget. Use line_range to read specific sections.`,
+					}
+				}
+				// Preview fits even with conservative estimate
 				return {
 					shouldTruncate: true,
-					maxChars: PREVIEW_SIZE_FOR_LARGE_FILES,
+					maxChars: content.length,
 					isPreview: true,
-					reason: `File content caused tokenizer error. Showing preview of first ${(PREVIEW_SIZE_FOR_LARGE_FILES / 1024).toFixed(0)}KB. Use line_range to read specific sections.`,
+					reason: `File content caused tokenizer error but fits in context. Use line_range for specific sections.`,
 				}
 			}
 			// Re-throw other unexpected errors
@@ -126,7 +143,21 @@ export async function validateFileTokenBudget(
 			return {
 				shouldTruncate: true,
 				maxChars,
-				reason: `File requires ${tokenCount} tokens but only ${safeReadBudget} tokens available in context budget`,
+				isPreview: isPreviewMode,
+				reason: isPreviewMode
+					? `Preview of large file (${(fileSizeBytes / 1024 / 1024).toFixed(2)}MB) truncated to fit context budget. Use line_range to read specific sections.`
+					: `File requires ${tokenCount} tokens but only ${safeReadBudget} tokens available in context budget`,
+			}
+		}
+
+		// Content fits within budget
+		if (isPreviewMode) {
+			// Even though preview fits, indicate it's a preview
+			return {
+				shouldTruncate: true,
+				maxChars: content.length,
+				isPreview: true,
+				reason: `File is too large (${(fileSizeBytes / 1024 / 1024).toFixed(2)}MB) to read entirely. Showing preview of first ${(PREVIEW_SIZE_FOR_LARGE_FILES / 1024 / 1024).toFixed(1)}MB. Use line_range to read specific sections.`,
 			}
 		}
 

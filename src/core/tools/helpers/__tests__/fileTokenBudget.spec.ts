@@ -11,6 +11,7 @@ import {
 vi.mock("fs/promises", () => ({
 	stat: vi.fn(),
 	readFile: vi.fn(),
+	open: vi.fn(),
 }))
 
 vi.mock("../../../../utils/countTokens", () => ({
@@ -23,11 +24,13 @@ const { countTokens } = await import("../../../../utils/countTokens")
 
 const mockStat = vi.mocked(fs.stat)
 const mockReadFile = vi.mocked(fs.readFile)
+const mockOpen = vi.mocked(fs.open)
 const mockCountTokens = vi.mocked(countTokens)
 
 describe("fileTokenBudget", () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
+		mockOpen.mockReset()
 	})
 
 	afterEach(() => {
@@ -178,23 +181,35 @@ describe("fileTokenBudget", () => {
 			const filePath = "/test/huge-file.txt"
 			const contextWindow = 200000
 			const currentTokens = 10000
+			const previewContent = "x".repeat(PREVIEW_SIZE_FOR_LARGE_FILES)
 
 			// Mock file stats - file exceeds max tokenization size (e.g., 10MB when max is 5MB)
 			mockStat.mockResolvedValue({
 				size: MAX_FILE_SIZE_FOR_TOKENIZATION + 1000000, // 1MB over the limit
 			} as any)
 
+			// Mock file.open and read for preview
+			const mockRead = vi.fn().mockResolvedValue({
+				bytesRead: PREVIEW_SIZE_FOR_LARGE_FILES,
+			})
+			const mockClose = vi.fn().mockResolvedValue(undefined)
+			mockOpen.mockResolvedValue({
+				read: mockRead,
+				close: mockClose,
+			} as any)
+
+			// Mock token counting for the preview
+			mockCountTokens.mockResolvedValue(30000) // Preview fits within budget
+
 			const result = await validateFileTokenBudget(filePath, contextWindow, currentTokens)
 
 			expect(result.shouldTruncate).toBe(true)
-			expect(result.maxChars).toBe(PREVIEW_SIZE_FOR_LARGE_FILES)
 			expect(result.isPreview).toBe(true)
 			expect(result.reason).toContain("too large")
 			expect(result.reason).toContain("preview")
-			expect(result.reason).toContain("line_range")
-			// Should not attempt to read the file or count tokens
-			expect(mockReadFile).not.toHaveBeenCalled()
-			expect(mockCountTokens).not.toHaveBeenCalled()
+			// Should read preview and count tokens
+			expect(mockOpen).toHaveBeenCalled()
+			expect(mockCountTokens).toHaveBeenCalled()
 		})
 
 		it("should handle files exactly at MAX_FILE_SIZE_FOR_TOKENIZATION boundary", async () => {
@@ -235,12 +250,14 @@ describe("fileTokenBudget", () => {
 
 			const result = await validateFileTokenBudget(filePath, contextWindow, currentTokens)
 
-			// Should fallback to preview mode instead of crashing
+			// Should fallback with budget-based truncation instead of crashing
+			const remainingTokens = contextWindow - currentTokens
+			const safeReadBudget = Math.floor(remainingTokens * 0.6)
+
 			expect(result.shouldTruncate).toBe(true)
-			expect(result.maxChars).toBe(PREVIEW_SIZE_FOR_LARGE_FILES)
+			expect(result.maxChars).toBe(safeReadBudget) // Uses budget as char limit (conservative)
 			expect(result.isPreview).toBe(true)
 			expect(result.reason).toContain("tokenizer error")
-			expect(result.reason).toContain("preview")
 		})
 
 		it("should handle other tokenizer errors conservatively", async () => {
