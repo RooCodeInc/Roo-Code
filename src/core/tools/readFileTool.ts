@@ -619,7 +619,7 @@ export async function readFileTool(
 					// Reflect actual displayed line count after truncation (count ALL lines, including empty)
 					// Handle trailing newline: "line1\nline2\n" should be 2 lines, not 3
 					let displayedLines = content.length === 0 ? 0 : content.split(/\r?\n/).length
-					if (displayedLines > 0 && (content.endsWith("\n") || content.endsWith("\r\n"))) {
+					if (displayedLines > 0 && content.endsWith("\n")) {
 						displayedLines--
 					}
 					const lineRangeAttr = displayedLines > 0 ? ` lines="1-${displayedLines}"` : ""
