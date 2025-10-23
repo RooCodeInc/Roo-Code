@@ -151,8 +151,8 @@
 		"initializingWarning": "Inizializzazione del checkpoint in corso... Se questa operazione richiede troppo tempo, puoi disattivare i checkpoint nelle <settingsLink>impostazioni</settingsLink> e riavviare l'attività.",
 		"menu": {
 			"viewDiff": "Visualizza differenze",
-			"viewDiffFromInit": "Visualizza differenze dal primo checkpoint",
-			"viewDiffWithCurrent": "Visualizza differenze con l'area di lavoro attuale",
+			"viewDiffFromInit": "Visualizza tutte le modifiche",
+			"viewDiffWithCurrent": "Visualizza le modifiche da questo checkpoint",
 			"restore": "Ripristina checkpoint",
 			"restoreFiles": "Ripristina file",
 			"restoreFilesDescription": "Ripristina i file del tuo progetto a uno snapshot catturato in questo punto.",
