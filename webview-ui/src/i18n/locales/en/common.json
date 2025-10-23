@@ -97,7 +97,7 @@
 		"years_ago": "{{count}} years ago"
 	},
 	"errors": {
-		"wait_checkpoint_long_time": "Waited {{timeout}} seconds for checkpoint initialization. If you don't need the checkpoint feature, please turn it off in <settingsLink>settings.</settingsLink>",
-		"init_checkpoint_fail_long_time": "Checkpoint initialization has taken more than {{timeout}} seconds. Checkpoint function is disabled for this task. You can disable checkpoint or extend the waiting time in <settingsLink>settings.</settingsLink>"
+		"wait_checkpoint_long_time": "Waited {{timeout}} seconds for checkpoint initialization. If you don't need the checkpoint feature, please turn it off in <settingsLink>the checkpoint settings</settingsLink>.",
+		"init_checkpoint_fail_long_time": "Checkpoint initialization has taken more than {{timeout}} seconds, so checkpoints are disabled for this task. You can disable checkpoints or extend the waiting time in <settingsLink>the checkpoint settings</settingsLink>."
 	}
 }
