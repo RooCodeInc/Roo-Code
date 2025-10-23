@@ -3,6 +3,13 @@ import { parse } from "shell-quote"
 type ShellToken = string | { op: string } | { command: string }
 
 /**
+ * Placeholder used to protect newlines within quoted strings during command parsing.
+ * This constant is used by the protectNewlinesInQuotes function to temporarily replace
+ * newlines that appear inside quotes, preventing them from being treated as command separators.
+ */
+export const NEWLINE_PLACEHOLDER = "___NEWLINE___"
+
+/**
  * # Command Denylist Feature - Longest Prefix Match Strategy
  *
  * This module implements a sophisticated command validation system that uses the

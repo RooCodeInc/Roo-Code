@@ -13,10 +13,11 @@ import {
 	createCommandValidator,
 	containsDangerousSubstitution,
 	protectNewlinesInQuotes,
+	NEWLINE_PLACEHOLDER,
 } from "../command-validation"
 
 describe("protectNewlinesInQuotes", () => {
-	const placeholder = "___NEWLINE___"
+	const placeholder = NEWLINE_PLACEHOLDER
 
 	describe("basic quote handling", () => {
 		it("protects newlines in double quotes", () => {
