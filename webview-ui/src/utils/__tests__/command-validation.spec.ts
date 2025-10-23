@@ -12,12 +12,14 @@ import {
 	CommandValidator,
 	createCommandValidator,
 	containsDangerousSubstitution,
-	// kilocode_change start
+} from "../command-validation"
+// kilocode_change start
+import {
 	protectNewlinesInQuotes,
 	NEWLINE_PLACEHOLDER,
 	CARRIAGE_RETURN_PLACEHOLDER,
-	// kilocode_change end
-} from "../command-validation"
+} from "../command-validation-quote-protection"
+// kilocode_change end
 
 // kilocode_change start
 describe("protectNewlinesInQuotes", () => {
