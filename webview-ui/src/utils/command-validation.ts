@@ -1,9 +1,11 @@
 import { parse } from "shell-quote"
+// kilocode_change start
 import {
 	protectNewlinesInQuotes,
 	NEWLINE_PLACEHOLDER,
 	CARRIAGE_RETURN_PLACEHOLDER,
 } from "./command-validation-quote-protection"
+// kilocode_change end
 
 type ShellToken = string | { op: string } | { command: string }
 
