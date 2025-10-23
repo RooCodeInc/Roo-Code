@@ -66,7 +66,6 @@ function parseIOIntelligenceModel(model: IOIntelligenceModel): ModelInfo {
 		contextWindow,
 		supportsImages: model.supports_images_input,
 		supportsPromptCache: model.supports_prompt_cache,
-		supportsComputerUse: false, // Not supported by IO Intelligence
 		inputPrice: parseApiPrice(model.input_token_price),
 		outputPrice: parseApiPrice(model.output_token_price),
 		cacheWritesPrice: parseApiPrice(model.cache_write_token_price),
