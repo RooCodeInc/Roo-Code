@@ -291,6 +291,7 @@
 		"toggleAriaLabel": "Beralih persetujuan otomatis",
 		"disabledAriaLabel": "Persetujuan otomatis dinonaktifkan - pilih opsi terlebih dahulu",
 		"triggerLabelOff": "Persetujuan otomatis mati",
+		"triggerLabelOffShort": "Mati",
 		"triggerLabel_zero": "0 disetujui otomatis",
 		"triggerLabel_one": "1 disetujui otomatis",
 		"triggerLabel_other": "{{count}} disetujui otomatis",

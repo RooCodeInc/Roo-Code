@@ -265,6 +265,7 @@
 		"toggleAriaLabel": "Bật/tắt tự động phê duyệt",
 		"disabledAriaLabel": "Tự động phê duyệt đã tắt - trước tiên hãy chọn các tùy chọn",
 		"triggerLabelOff": "Tự động phê duyệt tắt",
+		"triggerLabelOffShort": "Tắt",
 		"triggerLabel_zero": "0 được tự động phê duyệt",
 		"triggerLabel_one": "1 được tự động phê duyệt",
 		"triggerLabel_other": "{{count}} được tự động phê duyệt",

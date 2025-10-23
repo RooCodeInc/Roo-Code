@@ -264,6 +264,7 @@
 		"toggleAriaLabel": "自動承認を切り替える",
 		"disabledAriaLabel": "自動承認が無効です - 最初にオプションを選択してください",
 		"triggerLabelOff": "自動承認オフ",
+		"triggerLabelOffShort": "オフ",
 		"triggerLabel_zero": "0個の自動承認",
 		"triggerLabel_one": "1個の自動承認済み",
 		"triggerLabel_other": "{{count}}個の自動承認済み",

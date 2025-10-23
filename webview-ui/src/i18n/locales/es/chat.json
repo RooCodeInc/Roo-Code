@@ -264,6 +264,7 @@
 		"toggleAriaLabel": "Conmutar la aprobación automática",
 		"disabledAriaLabel": "Aprobación automática deshabilitada: selecciona primero las opciones",
 		"triggerLabelOff": "Aprobación automática desactivada",
+		"triggerLabelOffShort": "Desactivado",
 		"triggerLabel_zero": "0 aprobaciones automáticas",
 		"triggerLabel_one": "1 aprobación automática",
 		"triggerLabel_other": "{{count}} aprobaciones automáticas",

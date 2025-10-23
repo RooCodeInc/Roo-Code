@@ -264,6 +264,7 @@
 		"toggleAriaLabel": "Automatische goedkeuring in-/uitschakelen",
 		"disabledAriaLabel": "Automatische goedkeuring uitgeschakeld - selecteer eerst opties",
 		"triggerLabelOff": "Automatisch goedkeuren uit",
+		"triggerLabelOffShort": "Uit",
 		"triggerLabel_zero": "0 automatisch goedgekeurd",
 		"triggerLabel_one": "1 automatisch goedgekeurd",
 		"triggerLabel_other": "{{count}} automatisch goedgekeurd",

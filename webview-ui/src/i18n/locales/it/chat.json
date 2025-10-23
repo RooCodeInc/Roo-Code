@@ -264,6 +264,7 @@
 		"toggleAriaLabel": "Attiva/disattiva approvazione automatica",
 		"disabledAriaLabel": "Approvazione automatica disabilitata - seleziona prima le opzioni",
 		"triggerLabelOff": "Approvazione automatica disattivata",
+		"triggerLabelOffShort": "Disattivata",
 		"triggerLabel_zero": "0 approvati automaticamente",
 		"triggerLabel_one": "1 approvato automaticamente",
 		"triggerLabel_other": "{{count}} approvati automaticamente",

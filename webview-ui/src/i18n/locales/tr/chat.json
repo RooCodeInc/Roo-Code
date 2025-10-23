@@ -265,6 +265,7 @@
 		"toggleAriaLabel": "Otomatik onayı aç/kapat",
 		"disabledAriaLabel": "Otomatik onay devre dışı - önce seçenekleri seçin",
 		"triggerLabelOff": "Otomatik onay kapalı",
+		"triggerLabelOffShort": "Kapalı",
 		"triggerLabel_zero": "0 otomatik onaylandı",
 		"triggerLabel_one": "1 otomatik onaylandı",
 		"triggerLabel_other": "{{count}} otomatik onaylandı",
