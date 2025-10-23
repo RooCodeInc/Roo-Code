@@ -943,11 +943,13 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			)
 
 			if (lastFollowUpIndex !== -1) {
-				// Mark this follow-up as answered
-				this.clineMessages[lastFollowUpIndex].isAnswered = true
-				// Save the updated messages
-				this.saveClineMessages().catch((error) => {
-					console.error("Failed to save answered follow-up state:", error)
+				delay(30).then(() => {
+					// Mark this follow-up as answered
+					this.clineMessages[lastFollowUpIndex].isAnswered = true
+					// Save the updated messages
+					this.saveClineMessages().catch((error) => {
+						console.error("Failed to save answered follow-up state:", error)
+					})
 				})
 			}
 		}

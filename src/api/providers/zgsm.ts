@@ -536,7 +536,7 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 				Object.assign(isAzureAiInference ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {}, {
 					headers: {
 						...this.buildHeaders(
-							{ language: metadata.language, taskId: requestId },
+							{ language: metadata?.language, taskId: requestId },
 							requestId,
 							cachedClientId,
 							cachedWorkspacePath,

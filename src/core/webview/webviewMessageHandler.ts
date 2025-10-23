@@ -1784,6 +1784,7 @@ export const webviewMessageHandler = async (
 						listApiConfigMeta = [],
 						enhancementApiConfigId,
 						includeTaskHistoryInEnhance,
+						language,
 					} = state
 
 					const currentCline = provider.getCurrentTask()
@@ -1797,6 +1798,7 @@ export const webviewMessageHandler = async (
 						includeTaskHistoryInEnhance,
 						currentClineMessages: currentCline?.clineMessages,
 						providerSettingsManager: provider.providerSettingsManager,
+						language,
 					})
 
 					if (result.success && result.enhancedText) {

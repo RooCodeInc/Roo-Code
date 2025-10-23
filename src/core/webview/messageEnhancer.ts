@@ -10,6 +10,7 @@ export interface MessageEnhancerOptions {
 	customSupportPrompts?: Record<string, any>
 	listApiConfigMeta: Array<{ id: string; name?: string }>
 	enhancementApiConfigId?: string
+	language?: string
 	includeTaskHistoryInEnhance?: boolean
 	currentClineMessages?: ClineMessage[]
 	providerSettingsManager: ProviderSettingsManager
@@ -41,6 +42,7 @@ export class MessageEnhancer {
 				includeTaskHistoryInEnhance,
 				currentClineMessages,
 				providerSettingsManager,
+				language,
 			} = options
 
 			// Determine which API configuration to use
@@ -76,7 +78,7 @@ export class MessageEnhancer {
 			)
 
 			// Call the single completion handler to get the enhanced prompt
-			const enhancedText = await singleCompletionHandler(configToUse, enhancementPrompt)
+			const enhancedText = await singleCompletionHandler(configToUse, enhancementPrompt, "", { language })
 
 			return {
 				success: true,
