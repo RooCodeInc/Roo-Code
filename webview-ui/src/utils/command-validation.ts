@@ -3,11 +3,13 @@ import { parse } from "shell-quote"
 type ShellToken = string | { op: string } | { command: string }
 
 /**
- * Placeholder used to protect newlines within quoted strings during command parsing.
- * This constant is used by the protectNewlinesInQuotes function to temporarily replace
+ * Placeholders used to protect newlines within quoted strings during command parsing.
+ * These constants are used by the protectNewlinesInQuotes function to temporarily replace
  * newlines that appear inside quotes, preventing them from being treated as command separators.
+ * We use separate placeholders for \n and \r to preserve the original line ending type.
  */
 export const NEWLINE_PLACEHOLDER = "___NEWLINE___"
+export const CARRIAGE_RETURN_PLACEHOLDER = "___CARRIAGE_RETURN___"
 
 /**
  * # Command Denylist Feature - Longest Prefix Match Strategy
@@ -130,8 +132,9 @@ export function containsDangerousSubstitution(source: string): boolean {
 }
 
 /**
- * Protect newlines inside quoted strings by replacing them with a placeholder.
+ * Protect newlines inside quoted strings by replacing them with placeholders.
  * This handles proper shell quoting rules where quotes can be concatenated.
+ * Uses separate placeholders for \n and \r to preserve the original line ending type.
  *
  * Examples:
  * - "hello\nworld" -> newline is protected (inside double quotes)
@@ -140,10 +143,15 @@ export function containsDangerousSubstitution(source: string): boolean {
  * - "hello"world -> world is NOT quoted
  *
  * @param command - The command string to process
- * @param placeholder - The placeholder string to use for protected newlines
- * @returns The command with newlines in quotes replaced by placeholder
+ * @param newlinePlaceholder - The placeholder string to use for \n characters
+ * @param carriageReturnPlaceholder - The placeholder string to use for \r characters
+ * @returns The command with newlines in quotes replaced by placeholders
  */
-export function protectNewlinesInQuotes(command: string, placeholder: string): string {
+export function protectNewlinesInQuotes(
+	command: string,
+	newlinePlaceholder: string,
+	carriageReturnPlaceholder: string,
+): string {
 	let result = ""
 	let i = 0
 
@@ -165,9 +173,13 @@ export function protectNewlinesInQuotes(command: string, placeholder: string): s
 					result += quoteChar
 					i++
 					break
-				} else if (quoteChar === "\n" || quoteChar === "\r") {
-					// Replace newline inside double quotes
-					result += placeholder
+				} else if (quoteChar === "\n") {
+					// Replace \n inside double quotes
+					result += newlinePlaceholder
+					i++
+				} else if (quoteChar === "\r") {
+					// Replace \r inside double quotes
+					result += carriageReturnPlaceholder
 					i++
 				} else {
 					result += quoteChar
@@ -189,9 +201,13 @@ export function protectNewlinesInQuotes(command: string, placeholder: string): s
 					result += quoteChar
 					i++
 					break
-				} else if (quoteChar === "\n" || quoteChar === "\r") {
-					// Replace newline inside single quotes
-					result += placeholder
+				} else if (quoteChar === "\n") {
+					// Replace \n inside single quotes
+					result += newlinePlaceholder
+					i++
+				} else if (quoteChar === "\r") {
+					// Replace \r inside single quotes
+					result += carriageReturnPlaceholder
 					i++
 				} else {
 					result += quoteChar
@@ -222,10 +238,11 @@ export function protectNewlinesInQuotes(command: string, placeholder: string): s
 export function parseCommand(command: string): string[] {
 	if (!command?.trim()) return []
 
-	// First, protect newlines inside quoted strings by replacing them with a placeholder
+	// First, protect newlines inside quoted strings by replacing them with placeholders
 	// This prevents splitting multi-line quoted strings (e.g., git commit -m "multi\nline")
-	const quotedStringPlaceholder = "___NEWLINE_IN_QUOTE___"
-	const protectedCommand = protectNewlinesInQuotes(command, quotedStringPlaceholder)
+	const newlinePlaceholder = "___NEWLINE_IN_QUOTE___"
+	const carriageReturnPlaceholder = "___CR_IN_QUOTE___"
+	const protectedCommand = protectNewlinesInQuotes(command, newlinePlaceholder, carriageReturnPlaceholder)
 
 	// Split by newlines (handle different line ending formats)
 	// This regex splits on \r\n (Windows), \n (Unix), or \r (old Mac)
@@ -241,8 +258,12 @@ export function parseCommand(command: string): string[] {
 		allCommands.push(...lineCommands)
 	}
 
-	// Restore newlines in quoted strings
-	return allCommands.map((cmd) => cmd.replace(new RegExp(quotedStringPlaceholder, "g"), "\n"))
+	// Restore newlines and carriage returns in quoted strings
+	return allCommands.map((cmd) =>
+		cmd
+			.replace(new RegExp(newlinePlaceholder, "g"), "\n")
+			.replace(new RegExp(carriageReturnPlaceholder, "g"), "\r"),
+	)
 }
 
 /**
