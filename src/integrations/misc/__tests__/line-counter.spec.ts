@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { countFileLines, countFileLinesAndTokens } from "../line-counter"
-import fs from "fs"
 import { countTokens } from "../../../utils/countTokens"
+import { Readable } from "stream"
 
 // Mock dependencies
 vi.mock("fs", () => ({
@@ -23,6 +23,11 @@ vi.mock("../../../utils/countTokens", () => ({
 
 const mockCountTokens = vi.mocked(countTokens)
 
+// Get the mocked fs module
+const fs = await import("fs")
+const mockCreateReadStream = vi.mocked(fs.createReadStream)
+const mockFsAccess = vi.mocked(fs.default.promises.access)
+
 describe("line-counter", () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
@@ -30,59 +35,54 @@ describe("line-counter", () => {
 
 	describe("countFileLinesAndTokens", () => {
 		it("should count lines and tokens without budget limit", async () => {
-			const mockStream = {
-				on: vi.fn((event, handler) => {
-					if (event === "data") {
-						// Simulate reading lines
-						handler("line1\n")
-						handler("line2\n")
-						handler("line3\n")
-					}
-					return mockStream
-				}),
-				destroy: vi.fn(),
-			}
+			// Create a proper readable stream
+			const mockStream = new Readable({
+				read() {
+					this.push("line1\n")
+					this.push("line2\n")
+					this.push("line3\n")
+					this.push(null) // End of stream
+				},
+			})
 
-			vi.mocked(fs.createReadStream).mockReturnValue(mockStream as any)
-			vi.mocked(fs.promises.access).mockResolvedValue(undefined)
+			mockCreateReadStream.mockReturnValue(mockStream as any)
+			mockFsAccess.mockResolvedValue(undefined)
 
-			// Mock token counting - simulate ~10 tokens per line
+			// Mock token counting - simulate ~10 tokens per chunk
 			mockCountTokens.mockResolvedValue(30)
 
 			const result = await countFileLinesAndTokens("/test/file.txt")
 
-			expect(result.lineCount).toBeGreaterThan(0)
-			expect(result.tokenEstimate).toBeGreaterThan(0)
+			expect(result.lineCount).toBe(3)
+			expect(result.tokenEstimate).toBe(30)
 			expect(result.complete).toBe(true)
 		})
 
 		it("should handle tokenizer errors with conservative estimate", async () => {
-			const mockStream = {
-				on: vi.fn((event, handler) => {
-					if (event === "data") {
-						handler("line1\n")
-					}
-					return mockStream
-				}),
-				destroy: vi.fn(),
-			}
+			// Create a proper readable stream
+			const mockStream = new Readable({
+				read() {
+					this.push("line1\n")
+					this.push(null)
+				},
+			})
 
-			vi.mocked(fs.createReadStream).mockReturnValue(mockStream as any)
-			vi.mocked(fs.promises.access).mockResolvedValue(undefined)
+			mockCreateReadStream.mockReturnValue(mockStream as any)
+			mockFsAccess.mockResolvedValue(undefined)
 
 			// Simulate tokenizer error
 			mockCountTokens.mockRejectedValue(new Error("unreachable"))
 
 			const result = await countFileLinesAndTokens("/test/file.txt")
 
-			// Should still complete with conservative token estimate
-			expect(result.lineCount).toBeGreaterThan(0)
+			// Should still complete with conservative token estimate (content.length)
+			expect(result.lineCount).toBe(1)
 			expect(result.tokenEstimate).toBeGreaterThan(0)
 			expect(result.complete).toBe(true)
 		})
 
 		it("should throw error for non-existent files", async () => {
-			vi.mocked(fs.promises.access).mockRejectedValue(new Error("ENOENT"))
+			mockFsAccess.mockRejectedValue(new Error("ENOENT"))
 
 			await expect(countFileLinesAndTokens("/nonexistent/file.txt")).rejects.toThrow("File not found")
 		})
@@ -90,7 +90,7 @@ describe("line-counter", () => {
 
 	describe("countFileLines", () => {
 		it("should throw error for non-existent files", async () => {
-			vi.mocked(fs.promises.access).mockRejectedValue(new Error("ENOENT"))
+			mockFsAccess.mockRejectedValue(new Error("ENOENT"))
 
 			await expect(countFileLines("/nonexistent/file.txt")).rejects.toThrow("File not found")
 		})
