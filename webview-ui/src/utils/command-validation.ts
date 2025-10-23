@@ -240,9 +240,7 @@ export function parseCommand(command: string): string[] {
 
 	// First, protect newlines inside quoted strings by replacing them with placeholders
 	// This prevents splitting multi-line quoted strings (e.g., git commit -m "multi\nline")
-	const newlinePlaceholder = "___NEWLINE_IN_QUOTE___"
-	const carriageReturnPlaceholder = "___CR_IN_QUOTE___"
-	const protectedCommand = protectNewlinesInQuotes(command, newlinePlaceholder, carriageReturnPlaceholder)
+	const protectedCommand = protectNewlinesInQuotes(command, NEWLINE_PLACEHOLDER, CARRIAGE_RETURN_PLACEHOLDER)
 
 	// Split by newlines (handle different line ending formats)
 	// This regex splits on \r\n (Windows), \n (Unix), or \r (old Mac)
@@ -261,8 +259,8 @@ export function parseCommand(command: string): string[] {
 	// Restore newlines and carriage returns in quoted strings
 	return allCommands.map((cmd) =>
 		cmd
-			.replace(new RegExp(newlinePlaceholder, "g"), "\n")
-			.replace(new RegExp(carriageReturnPlaceholder, "g"), "\r"),
+			.replace(new RegExp(NEWLINE_PLACEHOLDER, "g"), "\n")
+			.replace(new RegExp(CARRIAGE_RETURN_PLACEHOLDER, "g"), "\r"),
 	)
 }
 
