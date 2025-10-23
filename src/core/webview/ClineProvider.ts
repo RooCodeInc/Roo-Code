@@ -1822,9 +1822,7 @@ export class ClineProvider
 		try {
 			cloudOrganizations = await CloudService.instance.getOrganizationMemberships()
 		} catch (error) {
-			console.error(
-				`[getStateToPostToWebview] failed to get cloud organizations: ${error instanceof Error ? error.message : String(error)}`,
-			)
+			// Ignore this error.
 		}
 
 		const telemetryKey = process.env.POSTHOG_API_KEY
