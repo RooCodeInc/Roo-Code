@@ -616,7 +616,10 @@ export async function readFileTool(
 					)
 					content = truncateResult.content
 
-					const lineRangeAttr = ` lines="1-${totalLines}"`
+					// Reflect actual displayed line count after truncation
+					const displayedLines =
+						content.length > 0 ? content.split(/\r?\n/).filter((l) => l !== "").length || 1 : 0
+					const lineRangeAttr = displayedLines > 0 ? ` lines="1-${displayedLines}"` : ""
 					xmlInfo = content.length > 0 ? `<content${lineRangeAttr}>\n${content}</content>\n` : `<content/>`
 					xmlInfo += `<notice>${truncateResult.notice}</notice>\n`
 				} else {
