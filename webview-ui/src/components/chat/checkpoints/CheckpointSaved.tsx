@@ -84,7 +84,12 @@ export const CheckpointSaved = ({ checkpoint, currentHash, ...props }: Checkpoin
 			<div
 				data-testid="checkpoint-menu-container"
 				className={cn("h-4 -mt-2", menuVisible ? "block" : "hidden group-hover:block")}>
-				<CheckpointMenu {...props} checkpoint={metadata} onOpenChange={handlePopoverOpenChange} />
+				<CheckpointMenu
+					ts={props.ts}
+					commitHash={props.commitHash}
+					checkpoint={metadata}
+					onOpenChange={handlePopoverOpenChange}
+				/>
 			</div>
 		</div>
 	)

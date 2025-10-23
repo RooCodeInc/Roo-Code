@@ -11,7 +11,6 @@ import { Checkpoint } from "./schema"
 type CheckpointMenuBaseProps = {
 	ts: number
 	commitHash: string
-	currentHash?: string
 	checkpoint: Checkpoint
 }
 type CheckpointMenuControlledProps = {
@@ -22,7 +21,7 @@ type CheckpointMenuUncontrolledProps = {
 }
 type CheckpointMenuProps = CheckpointMenuBaseProps & (CheckpointMenuControlledProps | CheckpointMenuUncontrolledProps)
 
-export const CheckpointMenu = ({ ts, commitHash, currentHash, checkpoint, onOpenChange }: CheckpointMenuProps) => {
+export const CheckpointMenu = ({ ts, commitHash, checkpoint, onOpenChange }: CheckpointMenuProps) => {
 	const { t } = useTranslation()
 	const [internalRestoreOpen, setInternalRestoreOpen] = useState(false)
 	const [restoreConfirming, setRestoreIsConfirming] = useState(false)
