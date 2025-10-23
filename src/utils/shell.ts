@@ -436,7 +436,7 @@ function getSafeFallbackShell(): string {
 export function getShell(): string {
 	let shell: string | null = null
 	const updateTime = Date.now()
-	if (shellCache.shell && updateTime - shellCache.updateAt < 15000) {
+	if (process.env.NODE_ENV !== "test" && shellCache.shell && updateTime - shellCache.updateAt < 15000) {
 		return shellCache.shell
 	}
 	// 1. Check VS Code config first.

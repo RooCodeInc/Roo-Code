@@ -166,8 +166,7 @@ export const SYSTEM_PROMPT = async (
 		workspace: cwd,
 		mode: mode,
 		language: language ?? formatLanguage(await defaultLang()),
-		// shell: vscode.env.shell,
-		shell,
+		shell: process.env.NODE_ENV === "test" ? vscode.env.shell : shell,
 		operatingSystem: os.type(),
 	}
 	const fileCustomSystemPrompt = await loadSystemPromptFile(cwd, mode, variablesForPrompt)

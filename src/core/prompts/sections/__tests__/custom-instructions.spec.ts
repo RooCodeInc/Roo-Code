@@ -919,7 +919,7 @@ describe("addCustomInstructions", () => {
 
 		const result = await addCustomInstructions("", "", "/fake/path", "", {})
 		// When no instructions are provided, the function should still return MUST_FOLLOW_RULES
-		expect(result).toContain("**IMPORTANT:")
+		expect(result).toContain("MUST_FOLLOW_RULES:")
 		// expect(result).toContain("If in a new shell, you should `cd` to the appropriate directory")
 	})
 

@@ -146,6 +146,7 @@ describe("getEnvironmentDetails", () => {
 			cwd: mockCwd,
 			globalCustomInstructions: "test instructions",
 			language: "en",
+			shell: expect.any(String),
 		})
 
 		expect(getApiMetrics).toHaveBeenCalledWith(mockCline.clineMessages)

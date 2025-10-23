@@ -73,7 +73,9 @@ describe("MessageEnhancer", () => {
 			// Verify single completion handler was called with correct prompt
 			expect(mockSingleCompletionHandler).toHaveBeenCalledWith(
 				mockApiConfiguration,
-				expect.stringContaining("Write a function to calculate fibonacci"),
+				expect.stringContaining("Generate an enhanced version of this prompt"),
+				"",
+				{ language: undefined },
 			)
 		})
 
@@ -96,7 +98,12 @@ describe("MessageEnhancer", () => {
 				apiKey: "enhancement-key",
 				apiModelId: "claude-3",
 			}
-			expect(mockSingleCompletionHandler).toHaveBeenCalledWith(expectedConfig, expect.any(String))
+			expect(mockSingleCompletionHandler).toHaveBeenCalledWith(
+				expectedConfig,
+				expect.stringContaining("Generate an enhanced version of this prompt"),
+				"",
+				{ language: undefined },
+			)
 		})
 
 		it("should include task history when enabled", async () => {
@@ -232,10 +239,16 @@ describe("MessageEnhancer", () => {
 				listApiConfigMeta: mockListApiConfigMeta,
 				enhancementApiConfigId: "config2",
 				providerSettingsManager: mockProviderSettingsManager,
+				language: "en",
 			})
 
 			// Should use the default config
-			expect(mockSingleCompletionHandler).toHaveBeenCalledWith(mockApiConfiguration, expect.any(String))
+			expect(mockSingleCompletionHandler).toHaveBeenCalledWith(
+				mockApiConfiguration,
+				expect.stringContaining("Generate an enhanced version of this prompt"),
+				"",
+				{ language: "en" },
+			)
 		})
 
 		it("should handle empty task history gracefully", async () => {
@@ -246,6 +259,7 @@ describe("MessageEnhancer", () => {
 				includeTaskHistoryInEnhance: true,
 				currentClineMessages: [],
 				providerSettingsManager: mockProviderSettingsManager,
+				language: "en",
 			})
 
 			expect(result.success).toBe(true)
