@@ -1,5 +1,3 @@
-// kilocode_change new file
-
 /**
  * Placeholders used to protect newlines within quoted strings during command parsing.
  * These constants are used by the protectNewlinesInQuotes function to temporarily replace

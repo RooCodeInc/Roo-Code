@@ -1,5 +1,3 @@
-// kilocode_change new file
-
 // npx vitest src/utils/__tests__/command-validation-quote-protection.spec.ts
 
 import {
