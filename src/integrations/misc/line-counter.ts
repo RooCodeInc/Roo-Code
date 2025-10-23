@@ -106,8 +106,8 @@ export async function countFileLinesAndTokens(
 				const chunkTokens = await countTokens(contentBlocks)
 				tokenEstimate += chunkTokens
 			} catch (error) {
-				// On tokenizer error, use conservative estimate: 1 char ≈ 1 token
-				tokenEstimate += bufferText.length
+				// On tokenizer error, use conservative estimate: 2 char ≈ 1 token
+				tokenEstimate += Math.ceil(bufferText.length / 2)
 			}
 
 			// Check if we've exceeded budget
