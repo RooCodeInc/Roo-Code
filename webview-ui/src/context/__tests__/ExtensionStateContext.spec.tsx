@@ -235,6 +235,7 @@ describe("mergeExtensionState", () => {
 				newTaskRequireTodos: false,
 				imageGeneration: false,
 				runSlashCommand: false,
+				filesChangedOverview: false,
 			} as Record<ExperimentId, boolean>,
 		}
 
@@ -255,6 +256,7 @@ describe("mergeExtensionState", () => {
 			newTaskRequireTodos: false,
 			imageGeneration: false,
 			runSlashCommand: false,
+			filesChangedOverview: false,
 		})
 	})
 })

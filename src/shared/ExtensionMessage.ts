@@ -124,10 +124,12 @@ export interface ExtensionMessage {
 		| "showEditMessageDialog"
 		| "commands"
 		| "insertTextIntoTextarea"
+		| "filesChanged"
 		| "dismissedUpsells"
 		| "organizationSwitchResult"
 	text?: string
 	payload?: any // Add a generic payload for now, can refine later
+	filesChanged?: any // Files changed data
 	action?:
 		| "chatButtonClicked"
 		| "mcpButtonClicked"

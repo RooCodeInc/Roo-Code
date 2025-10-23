@@ -27,6 +27,9 @@ vi.mock("vscode", () => ({
 			dispose: vi.fn(),
 		}),
 		onDidChangeWorkspaceFolders: vi.fn(),
+		onDidCloseTextDocument: vi.fn().mockReturnValue({
+			dispose: vi.fn(),
+		}),
 	},
 	languages: {
 		registerCodeActionsProvider: vi.fn(),
