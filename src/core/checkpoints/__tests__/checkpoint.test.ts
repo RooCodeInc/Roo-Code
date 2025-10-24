@@ -325,7 +325,7 @@ describe("Checkpoint functionality", () => {
 			})
 			expect(vscode.commands.executeCommand).toHaveBeenCalledWith(
 				"vscode.changes",
-				"errors.checkpoint_diff_to_current",
+				"common:errors.checkpoint_diff_to_current",
 				expect.any(Array),
 			)
 		})
@@ -350,7 +350,7 @@ describe("Checkpoint functionality", () => {
 			})
 			expect(vscode.commands.executeCommand).toHaveBeenCalledWith(
 				"vscode.changes",
-				"errors.checkpoint_diff_with_next",
+				"common:errors.checkpoint_diff_with_next",
 				expect.any(Array),
 			)
 		})
@@ -385,7 +385,7 @@ describe("Checkpoint functionality", () => {
 				mode: "to-current",
 			})
 
-			expect(vscode.window.showInformationMessage).toHaveBeenCalledWith("errors.checkpoint_no_changes")
+			expect(vscode.window.showInformationMessage).toHaveBeenCalledWith("common:errors.checkpoint_no_changes")
 			expect(vscode.commands.executeCommand).not.toHaveBeenCalled()
 		})
 
