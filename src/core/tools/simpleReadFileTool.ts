@@ -19,7 +19,7 @@ import {
 	isSupportedImageFormat,
 	validateImageForProcessing,
 	processImageFile,
-} from "../costrict/wiki/imageHelpers"
+} from "./imageHelpers"
 import { DEFAULT_FILE_READ_CHARACTER_LIMIT } from "@roo-code/types"
 
 /**

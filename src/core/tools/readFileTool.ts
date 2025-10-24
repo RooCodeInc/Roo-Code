@@ -22,7 +22,7 @@ import {
 	validateImageForProcessing,
 	processImageFile,
 	ImageMemoryTracker,
-} from "../costrict/wiki/imageHelpers"
+} from "./imageHelpers"
 import { DEFAULT_FILE_READ_CHARACTER_LIMIT } from "@roo-code/types"
 
 export function getReadFileToolDescription(blockName: string, blockParams: any): string {
