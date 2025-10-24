@@ -289,6 +289,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		global: {},
 	})
 	const [includeTaskHistoryInEnhance, setIncludeTaskHistoryInEnhance] = useState(true)
+	const [prevCloudIsAuthenticated, setPrevCloudIsAuthenticated] = useState(false)
 
 	const setListApiConfigMeta = useCallback(
 		(value: ProviderSettingsEntry[]) => setState((prevState) => ({ ...prevState, listApiConfigMeta: value })),
@@ -419,6 +420,16 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 	useEffect(() => {
 		vscode.postMessage({ type: "webviewDidLaunch" })
 	}, [])
+
+	// Watch for authentication state changes and refresh Roo models
+	useEffect(() => {
+		const currentAuth = state.cloudIsAuthenticated ?? false
+		if (!prevCloudIsAuthenticated && currentAuth) {
+			// User just authenticated - refresh Roo models with the new auth token
+			vscode.postMessage({ type: "requestRooModels" })
+		}
+		setPrevCloudIsAuthenticated(currentAuth)
+	}, [state.cloudIsAuthenticated, prevCloudIsAuthenticated])
 
 	const contextValue: ExtensionStateContextType = {
 		...state,

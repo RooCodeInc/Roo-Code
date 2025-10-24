@@ -930,6 +930,39 @@ export const webviewMessageHandler = async (
 			}
 			break
 		}
+		case "requestRooModels": {
+			// Specific handler for Roo models only - flushes cache to ensure fresh auth token is used
+			try {
+				// Flush cache first to ensure fresh models with current auth state
+				await flushModels("roo")
+
+				const rooModels = await getModels({
+					provider: "roo",
+					baseUrl: process.env.ROO_CODE_PROVIDER_URL ?? "https://api.roocode.com/proxy",
+					apiKey: CloudService.hasInstance()
+						? CloudService.instance.authService?.getSessionToken()
+						: undefined,
+				})
+
+				if (Object.keys(rooModels).length > 0) {
+					provider.postMessageToWebview({
+						type: "singleRouterModelFetchResponse",
+						success: true,
+						values: { provider: "roo", models: rooModels },
+					})
+				}
+			} catch (error) {
+				// Send error response
+				const errorMessage = error instanceof Error ? error.message : String(error)
+				provider.postMessageToWebview({
+					type: "singleRouterModelFetchResponse",
+					success: false,
+					error: errorMessage,
+					values: { provider: "roo" },
+				})
+			}
+			break
+		}
 		case "requestOpenAiModels":
 			if (message?.values?.baseUrl && message?.values?.apiKey) {
 				const openAiModels = await getOpenAiModels(
