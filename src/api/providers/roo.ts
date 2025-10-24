@@ -77,7 +77,10 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 						defaultHeaders: DEFAULT_HEADERS,
 					})
 
-					// Clear models cache when logged out
+					// Flush cache and clear models when logged out
+					flushModels("roo").catch((error) => {
+						console.error("[RooHandler] Failed to flush models on logout:", error)
+					})
 					this.mergedModels = {}
 					this.modelsLoaded = false
 				}
