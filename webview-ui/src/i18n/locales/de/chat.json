@@ -264,6 +264,7 @@
 		"toggleAriaLabel": "Automatische Genehmigung umschalten",
 		"disabledAriaLabel": "Automatische Genehmigung deaktiviert - wähle zuerst Optionen aus",
 		"triggerLabelOff": "Automatische Genehmigung aus",
+		"triggerLabelOffShort": "Aus",
 		"triggerLabel_zero": "0 automatisch genehmigt",
 		"triggerLabel_one": "1 automatisch genehmigt",
 		"triggerLabel_other": "{{count}} automatisch genehmigt",

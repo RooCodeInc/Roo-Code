@@ -265,6 +265,7 @@
 		"toggleAriaLabel": "Переключить авто-утверждение",
 		"disabledAriaLabel": "Авто-утверждение отключено - сначала выберите опции",
 		"triggerLabelOff": "Авто-утверждение выкл",
+		"triggerLabelOffShort": "Выкл",
 		"triggerLabel_zero": "0 авто-утвержденных",
 		"triggerLabel_one": "1 авто-утвержден",
 		"triggerLabel_other": "{{count}} авто-утвержденных",

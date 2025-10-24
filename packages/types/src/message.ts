@@ -221,8 +221,6 @@ export const clineMessageSchema = z.object({
 			gpt5: z
 				.object({
 					previous_response_id: z.string().optional(),
-					instructions: z.string().optional(),
-					reasoning_summary: z.string().optional(),
 				})
 				.optional(),
 		})

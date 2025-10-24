@@ -201,10 +201,13 @@ function createMockCline(): any {
 		recordToolUsage: vi.fn().mockReturnValue(undefined),
 		recordToolError: vi.fn().mockReturnValue(undefined),
 		didRejectTool: false,
+		getTokenUsage: vi.fn().mockReturnValue({
+			contextTokens: 10000,
+		}),
 		// CRITICAL: Always ensure image support is enabled
 		api: {
 			getModel: vi.fn().mockReturnValue({
-				info: { supportsImages: true },
+				info: { supportsImages: true, contextWindow: 200000 },
 			}),
 		},
 	}
