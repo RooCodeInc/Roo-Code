@@ -406,6 +406,13 @@
 					"default": "",
 					"description": "%settings.autoImportSettingsPath.description%"
 				},
+				"roo-cline.maximumIndexedFilesForFileSearch": {
+					"type": "number",
+					"default": 10000,
+					"minimum": 5000,
+					"maximum": 500000,
+					"description": "%settings.maximumIndexedFilesForFileSearch.description%"
+				},
 				"roo-cline.useAgentRules": {
 					"type": "boolean",
 					"default": true,
