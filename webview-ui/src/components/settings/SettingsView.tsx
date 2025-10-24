@@ -153,6 +153,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		enableCheckpoints,
 		useZgsmCustomConfig,
 		zgsmCodebaseIndexEnabled,
+		checkpointTimeout,
 		diffEnabled,
 		experiments,
 		fuzzyMatchThreshold,
@@ -347,6 +348,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 			vscode.postMessage({ type: "enableCheckpoints", bool: enableCheckpoints })
 			vscode.postMessage({ type: "useZgsmCustomConfig", bool: useZgsmCustomConfig })
 			vscode.postMessage({ type: "zgsmCodebaseIndexEnabled", bool: zgsmCodebaseIndexEnabled })
+			vscode.postMessage({ type: "checkpointTimeout", value: checkpointTimeout })
 			vscode.postMessage({ type: "browserViewportSize", text: browserViewportSize })
 			vscode.postMessage({ type: "remoteBrowserHost", text: remoteBrowserHost })
 			vscode.postMessage({ type: "remoteBrowserEnabled", bool: remoteBrowserEnabled })
@@ -724,6 +726,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					{activeTab === "checkpoints" && (
 						<CheckpointSettings
 							enableCheckpoints={enableCheckpoints}
+							checkpointTimeout={checkpointTimeout}
 							setCachedStateField={setCachedStateField}
 						/>
 					)}

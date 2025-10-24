@@ -31,7 +31,7 @@ async function updateCospecMetadataForCheckpoint(
 	if (!isCoworkflowDocument(editFilePath)) {
 		return
 	}
-	const fileName =  path.basename(editFilePath)
+	const fileName = path.basename(editFilePath)
 	const cospecDir = path.join(workspaceDir, path.dirname(editFilePath))
 	const fileAbsPath = path.join(workspaceDir, editFilePath)
 	const metadata = await CospecMetadataManager.getMetadataOrDefault(cospecDir)
@@ -40,7 +40,7 @@ async function updateCospecMetadataForCheckpoint(
 			lastTaskId: taskId,
 			lastCheckpointId: checkpointId,
 			content: await fs.readFile(fileAbsPath, "utf-8"),
-		}
+		},
 	})
 
 	try {
@@ -50,10 +50,16 @@ async function updateCospecMetadataForCheckpoint(
 	}
 }
 
-export async function getCheckpointService(
-	task: Task,
-	{ interval = 250, timeout = 15_000 }: { interval?: number; timeout?: number } = {},
-) {
+const WARNING_THRESHOLD_MS = 5000
+
+function sendCheckpointInitWarn(task: Task, type?: "WAIT_TIMEOUT" | "INIT_TIMEOUT", timeout?: number) {
+	task.providerRef.deref()?.postMessageToWebview({
+		type: "checkpointInitWarning",
+		checkpointWarning: type && timeout ? { type, timeout } : undefined,
+	})
+}
+
+export async function getCheckpointService(task: Task, { interval = 250 }: { interval?: number } = {}) {
 	if (!task.enableCheckpoints) {
 		return undefined
 	}
@@ -63,6 +69,9 @@ export async function getCheckpointService(
 	}
 
 	const provider = task.providerRef.deref()
+
+	// Get checkpoint timeout from task settings (converted to milliseconds)
+	const checkpointTimeoutMs = task.checkpointTimeout * 1000
 
 	const log = (message: string) => {
 		console.log(message)
@@ -101,16 +110,32 @@ export async function getCheckpointService(
 		}
 
 		if (task.checkpointServiceInitializing) {
+			const checkpointInitStartTime = Date.now()
+			let warningShown = false
+
 			await pWaitFor(
 				() => {
-					console.log("[Task#getCheckpointService] waiting for service to initialize")
+					const elapsed = Date.now() - checkpointInitStartTime
+
+					// Show warning if we're past the threshold and haven't shown it yet
+					if (!warningShown && elapsed >= WARNING_THRESHOLD_MS) {
+						warningShown = true
+						sendCheckpointInitWarn(task, "WAIT_TIMEOUT", WARNING_THRESHOLD_MS / 1000)
+					}
+
+					console.log(
+						`[Task#getCheckpointService] waiting for service to initialize (${Math.round(elapsed / 1000)}s)`,
+					)
 					return !!task.checkpointService && !!task?.checkpointService?.isInitialized
 				},
-				{ interval, timeout },
+				{ interval, timeout: checkpointTimeoutMs },
 			)
 			if (!task?.checkpointService) {
+				sendCheckpointInitWarn(task, "INIT_TIMEOUT", task.checkpointTimeout)
 				task.enableCheckpoints = false
 				return undefined
+			} else {
+				sendCheckpointInitWarn(task)
 			}
 			return task.checkpointService
 		}
@@ -123,8 +148,14 @@ export async function getCheckpointService(
 		task.checkpointServiceInitializing = true
 		await checkGitInstallation(task, service, log, provider)
 		task.checkpointService = service
+		if (task.enableCheckpoints) {
+			sendCheckpointInitWarn(task)
+		}
 		return service
 	} catch (err) {
+		if (err.name === "TimeoutError" && task.enableCheckpoints) {
+			sendCheckpointInitWarn(task, "INIT_TIMEOUT", task.checkpointTimeout)
+		}
 		log(`[Task#getCheckpointService] ${err.message}`)
 		task.enableCheckpoints = false
 		task.checkpointServiceInitializing = false
@@ -167,6 +198,7 @@ async function checkGitInstallation(
 
 		service.on("checkpoint", ({ fromHash: from, toHash: to, suppressMessage }) => {
 			try {
+				sendCheckpointInitWarn(task)
 				// Always update the current checkpoint hash in the webview, including the suppress flag
 				provider?.postMessageToWebview({
 					type: "currentCheckpointUpdated",
@@ -371,14 +403,11 @@ export async function updateCospecMetadata(task: Task, editFilePath?: string) {
 				workspaceDir,
 				editFilePath,
 				task.taskId,
-				checkpointId
+				checkpointId,
 				// checkpointInfo?.checkpoint?.to as string,
 			)
 		}
 	} catch (error) {
-		console.error(
-			"[Task#updateCospecMetadataForCheckpoint] caught unexpected error, disabling checkpoints",
-			error,
-		)
+		console.error("[Task#updateCospecMetadataForCheckpoint] caught unexpected error, disabling checkpoints", error)
 	}
 }

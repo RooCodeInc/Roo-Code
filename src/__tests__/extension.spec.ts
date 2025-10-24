@@ -174,7 +174,7 @@ vi.mock("../activate", () => ({
 
 vi.mock("../i18n", () => ({
 	initializeI18n: vi.fn(),
-	t: vi.fn().mockImplementation((key: string) => key),
+	t: vi.fn((key) => key),
 }))
 
 describe("extension.ts", () => {

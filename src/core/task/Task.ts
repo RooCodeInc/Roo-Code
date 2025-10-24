@@ -35,6 +35,9 @@ import {
 	isInteractiveAsk,
 	isResumableAsk,
 	QueuedMessage,
+	DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
+	MAX_CHECKPOINT_TIMEOUT_SECONDS,
+	MIN_CHECKPOINT_TIMEOUT_SECONDS,
 } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 // import { CloudService, BridgeOrchestrator } from "@roo-code/cloud"
@@ -129,6 +132,7 @@ export interface TaskOptions extends CreateTaskOptions {
 	enableCheckpoints?: boolean
 	useZgsmCustomConfig?: boolean
 	zgsmCodebaseIndexEnabled?: boolean
+	checkpointTimeout?: number
 	enableBridge?: boolean
 	fuzzyMatchThreshold?: number
 	consecutiveMistakeLimit?: number
@@ -276,6 +280,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	// Checkpoints
 	enableCheckpoints: boolean
+	checkpointTimeout: number
 	checkpointService?: RepoPerTaskCheckpointService
 	checkpointServiceInitializing = false
 
@@ -312,6 +317,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		apiConfiguration,
 		enableDiff = false,
 		enableCheckpoints = true,
+		checkpointTimeout = DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
 		enableBridge = false,
 		fuzzyMatchThreshold = 1.0,
 		consecutiveMistakeLimit = DEFAULT_CONSECUTIVE_MISTAKE_LIMIT,
@@ -333,6 +339,21 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			throw new Error("Either historyItem or task/images must be provided")
 		}
 		this.zgsmWorkflowMode = zgsmWorkflowMode
+
+		if (
+			!checkpointTimeout ||
+			checkpointTimeout > MAX_CHECKPOINT_TIMEOUT_SECONDS ||
+			checkpointTimeout < MIN_CHECKPOINT_TIMEOUT_SECONDS
+		) {
+			throw new Error(
+				"checkpointTimeout must be between " +
+					MIN_CHECKPOINT_TIMEOUT_SECONDS +
+					" and " +
+					MAX_CHECKPOINT_TIMEOUT_SECONDS +
+					" seconds",
+			)
+		}
+
 		this.taskId = historyItem ? historyItem.id : crypto.randomUUID()
 		this.rootTaskId = historyItem ? historyItem.rootTaskId : rootTask?.taskId
 		this.parentTaskId = historyItem ? historyItem.parentTaskId : parentTask?.taskId
@@ -372,6 +393,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.globalStoragePath = provider.context.globalStorageUri.fsPath
 		this.diffViewProvider = new DiffViewProvider(this.cwd, this)
 		this.enableCheckpoints = enableCheckpoints
+		this.checkpointTimeout = checkpointTimeout
 		this.enableBridge = enableBridge
 
 		this.parentTask = parentTask
@@ -2206,29 +2228,36 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// Cline instance to finish aborting (error is thrown here when
 					// any function in the for loop throws due to this.abort).
 					if (!this.abandoned) {
-						// If the stream failed, there's various states the task
-						// could be in (i.e. could have streamed some tools the user
-						// may have executed), so we just resort to replicating a
-						// cancel task.
-
-						// Determine cancellation reason BEFORE aborting to ensure correct persistence
+						// Determine cancellation reason
 						const cancelReason: ClineApiReqCancelReason = this.abort ? "user_cancelled" : "streaming_failed"
 
 						const streamingFailedMessage = this.abort
 							? undefined
 							: (error.message ?? JSON.stringify(serializeError(error), null, 2))
 
-						// Persist interruption details first to both UI and API histories
+						// Clean up partial state
 						await abortStream(cancelReason, streamingFailedMessage)
 
-						// Record reason for provider to decide rehydration path
-						this.abortReason = cancelReason
+						if (this.abort) {
+							// User cancelled - abort the entire task
+							this.abortReason = cancelReason
+							await this.abortTask()
+						} else {
+							// Stream failed - log the error and retry with the same content
+							// The existing rate limiting will prevent rapid retries
+							console.error(
+								`[Task#${this.taskId}.${this.instanceId}] Stream failed, will retry: ${streamingFailedMessage}`,
+							)
 
-						// Now abort (emits TaskAborted which provider listens to)
-						await this.abortTask()
+							// Push the same content back onto the stack to retry
+							stack.push({
+								userContent: currentUserContent,
+								includeFileDetails: false,
+							})
 
-						this?.api?.cancelChat?.(cancelReason)
-						// Do not rehydrate here; provider owns rehydration to avoid duplication races
+							// Continue to retry the request
+							continue
+						}
 					}
 				} finally {
 					this.isStreaming = false

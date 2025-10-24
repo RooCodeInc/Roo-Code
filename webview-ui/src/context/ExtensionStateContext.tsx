@@ -11,6 +11,7 @@ import {
 	type OrganizationAllowList,
 	type CloudOrganizationMembership,
 	ORGANIZATION_ALLOW_ALL,
+	DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
 } from "@roo-code/types"
 
 import { ExtensionMessage, ExtensionState, MarketplaceInstalledMetadata, Command } from "@roo/ExtensionMessage"
@@ -96,6 +97,8 @@ export interface ExtensionStateContextType extends ExtensionState {
 	setEnableCheckpoints: (value: boolean) => void
 	setUseZgsmCustomConfig: (value: boolean) => void
 	setZgsmCodebaseIndexEnabled: (value: boolean) => void
+	checkpointTimeout: number
+	setCheckpointTimeout: (value: number) => void
 	setBrowserViewportSize: (value: string) => void
 	setFuzzyMatchThreshold: (value: number) => void
 	setWriteDelayMs: (value: number) => void
@@ -212,6 +215,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		useZgsmCustomConfig: false,
 		zgsmCodebaseIndexEnabled: true,
 		zgsmCodeMode: "vibe",
+		checkpointTimeout: DEFAULT_CHECKPOINT_TIMEOUT_SECONDS, // Default to 15 seconds
 		fuzzyMatchThreshold: 1.0,
 		language: "en", // Default fallback language (will be updated from extension)
 		writeDelayMs: 1000,
@@ -314,6 +318,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		isCodebaseReady: true,
 	})
 	const [includeTaskHistoryInEnhance, setIncludeTaskHistoryInEnhance] = useState(true)
+	const [prevCloudIsAuthenticated, setPrevCloudIsAuthenticated] = useState(false)
 
 	const setListApiConfigMeta = useCallback(
 		(value: ProviderSettingsEntry[]) => setState((prevState) => ({ ...prevState, listApiConfigMeta: value })),
@@ -476,6 +481,16 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		vscode.postMessage({ type: "webviewDidLaunch" })
 	}, [])
 
+	// Watch for authentication state changes and refresh Roo models
+	useEffect(() => {
+		const currentAuth = state.cloudIsAuthenticated ?? false
+		if (!prevCloudIsAuthenticated && currentAuth) {
+			// User just authenticated - refresh Roo models with the new auth token
+			vscode.postMessage({ type: "requestRooModels" })
+		}
+		setPrevCloudIsAuthenticated(currentAuth)
+	}, [state.cloudIsAuthenticated, prevCloudIsAuthenticated])
+
 	const contextValue: ExtensionStateContextType = {
 		...state,
 		reasoningBlockCollapsed: state.reasoningBlockCollapsed ?? true,
@@ -541,6 +556,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		setUseZgsmCustomConfig: (value) => setState((prevState) => ({ ...prevState, useZgsmCustomConfig: value })),
 		setZgsmCodebaseIndexEnabled: (value) =>
 			setState((prevState) => ({ ...prevState, zgsmCodebaseIndexEnabled: value })),
+		setCheckpointTimeout: (value) => setState((prevState) => ({ ...prevState, checkpointTimeout: value })),
 		setBrowserViewportSize: (value: string) =>
 			setState((prevState) => ({ ...prevState, browserViewportSize: value })),
 		setFuzzyMatchThreshold: (value) => setState((prevState) => ({ ...prevState, fuzzyMatchThreshold: value })),

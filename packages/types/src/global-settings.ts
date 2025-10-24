@@ -31,6 +31,21 @@ export const DEFAULT_TERMINAL_OUTPUT_CHARACTER_LIMIT = 50_000
 export const DEFAULT_FILE_READ_CHARACTER_LIMIT = 40_000
 
 /**
+ * Minimum checkpoint timeout in seconds.
+ */
+export const MIN_CHECKPOINT_TIMEOUT_SECONDS = 10
+
+/**
+ * Maximum checkpoint timeout in seconds.
+ */
+export const MAX_CHECKPOINT_TIMEOUT_SECONDS = 60
+
+/**
+ * Default checkpoint timeout in seconds.
+ */
+export const DEFAULT_CHECKPOINT_TIMEOUT_SECONDS = 15
+
+/**
  * GlobalSettings
  */
 
@@ -102,6 +117,12 @@ export const globalSettingsSchema = z.object({
 	cachedChromeHostUrl: z.string().optional(),
 
 	enableCheckpoints: z.boolean().optional(),
+	checkpointTimeout: z
+		.number()
+		.int()
+		.min(MIN_CHECKPOINT_TIMEOUT_SECONDS)
+		.max(MAX_CHECKPOINT_TIMEOUT_SECONDS)
+		.optional(),
 
 	ttsEnabled: z.boolean().optional(),
 	ttsSpeed: z.number().optional(),

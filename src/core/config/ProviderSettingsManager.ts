@@ -12,7 +12,6 @@ import {
 	DEFAULT_CONSECUTIVE_MISTAKE_LIMIT,
 	getModelId,
 	type ProviderName,
-	type RooModelId,
 } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 
@@ -25,7 +24,7 @@ type ModelMigrations = {
 
 const MODEL_MIGRATIONS: ModelMigrations = {
 	roo: {
-		"roo/code-supernova": "roo/code-supernova-1-million" as RooModelId,
+		"roo/code-supernova": "roo/code-supernova-1-million",
 	},
 } as const satisfies ModelMigrations
 

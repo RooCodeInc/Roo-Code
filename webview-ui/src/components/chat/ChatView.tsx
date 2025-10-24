@@ -190,7 +190,9 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	const [isAtBottom, setIsAtBottom] = useState(false)
 	const lastTtsRef = useRef<string>("")
 	const [wasStreaming, setWasStreaming] = useState<boolean>(false)
-	const [showCheckpointWarning, setShowCheckpointWarning] = useState<boolean>(false)
+	const [checkpointWarning, setCheckpointWarning] = useState<
+		{ type: "WAIT_TIMEOUT" | "INIT_TIMEOUT"; timeout: number } | undefined
+	>(undefined)
 	const [isCondensing, setIsCondensing] = useState<boolean>(false)
 	// const [showAnnouncementModal, setShowAnnouncementModal] = useState(false)
 	const [hoverPreviewMap, setHoverPreviewMap] = useState<Map<string, string>>(new Map())
@@ -850,6 +852,9 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 						setIsCondensing(false)
 					}
 					break
+				case "checkpointInitWarning":
+					setCheckpointWarning(message.checkpointWarning)
+					break
 			}
 			// textAreaRef.current is not explicitly required here since React
 			// guarantees that ref will be stable across re-renders, and we're
@@ -867,6 +872,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			handleSecondaryButtonClick,
 			handeSetChatBoxMessageByContext,
 			isCondensing,
+			setCheckpointWarning,
 		],
 	)
 
@@ -1458,26 +1464,12 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 
 	useEvent("wheel", handleWheel, window, { passive: true }) // passive improves scrolling performance
 
-	// Effect to handle showing the checkpoint warning after a delay
+	// Effect to clear checkpoint warning when messages appear or task changes
 	useEffect(() => {
-		// Only show the warning when there's a task but no visible messages yet
-		if (task && modifiedMessages.length === 0 && !isStreaming && !isHidden) {
-			const timer = setTimeout(() => {
-				setShowCheckpointWarning(true)
-			}, 5000) // 5 seconds
-
-			return () => clearTimeout(timer)
-		} else {
-			setShowCheckpointWarning(false)
+		if (isHidden || !task) {
+			setCheckpointWarning(undefined)
 		}
-	}, [task, modifiedMessages.length, isStreaming, isHidden])
-
-	// Effect to hide the checkpoint warning when messages appear
-	useEffect(() => {
-		if (modifiedMessages.length > 0 || isStreaming || isHidden) {
-			setShowCheckpointWarning(false)
-		}
-	}, [modifiedMessages.length, isStreaming, isHidden])
+	}, [modifiedMessages.length, isStreaming, isHidden, task])
 
 	const placeholderText = task ? t("chat:typeMessage") : t("chat:typeTask")
 
@@ -1885,9 +1877,9 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 						</div>
 					)}
 
-					{showCheckpointWarning && (
+					{checkpointWarning && (
 						<div className="px-3">
-							<CheckpointWarning />
+							<CheckpointWarning warning={checkpointWarning} />
 						</div>
 					)}
 				</>

@@ -43,6 +43,7 @@ import {
 	ORGANIZATION_ALLOW_ALL,
 	DEFAULT_MODES,
 	DEFAULT_FILE_READ_CHARACTER_LIMIT,
+	DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
 } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 import { CloudService, BridgeOrchestrator } from "@roo-code/cloud"
@@ -968,6 +969,7 @@ export class ClineProvider
 			diffEnabled: enableDiff,
 			enableCheckpoints,
 			useZgsmCustomConfig,
+			checkpointTimeout,
 			fuzzyMatchThreshold,
 			experiments,
 			cloudUserInfo,
@@ -980,6 +982,7 @@ export class ClineProvider
 			enableDiff,
 			enableCheckpoints,
 			useZgsmCustomConfig,
+			checkpointTimeout,
 			fuzzyMatchThreshold,
 			consecutiveMistakeLimit: apiConfiguration.consecutiveMistakeLimit,
 			historyItem,
@@ -1828,6 +1831,7 @@ export class ClineProvider
 			enableCheckpoints,
 			useZgsmCustomConfig,
 			zgsmCodebaseIndexEnabled,
+			checkpointTimeout,
 			taskHistory,
 			soundVolume,
 			browserViewportSize,
@@ -1905,9 +1909,7 @@ export class ClineProvider
 		// try {
 		// 	cloudOrganizations = await CloudService.instance.getOrganizationMemberships()
 		// } catch (error) {
-		// 	console.error(
-		// 		`[getStateToPostToWebview] failed to get cloud organizations: ${error instanceof Error ? error.message : String(error)}`,
-		// 	)
+		// 	// Ignore this error.
 		// }
 
 		const telemetryKey = process.env.POSTHOG_API_KEY
@@ -1956,6 +1958,7 @@ export class ClineProvider
 			enableCheckpoints: enableCheckpoints ?? true,
 			useZgsmCustomConfig: useZgsmCustomConfig ?? false,
 			zgsmCodebaseIndexEnabled: zgsmCodebaseIndexEnabled ?? true,
+			checkpointTimeout: checkpointTimeout ?? DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
 			shouldShowAnnouncement:
 				telemetrySetting !== "disabled" && lastShownAnnouncementId !== this.latestAnnouncementId,
 			allowedCommands: mergedAllowedCommands,
@@ -2184,6 +2187,7 @@ export class ClineProvider
 			enableCheckpoints: stateValues.enableCheckpoints ?? true,
 			useZgsmCustomConfig: stateValues.useZgsmCustomConfig ?? false,
 			zgsmCodebaseIndexEnabled: stateValues.zgsmCodebaseIndexEnabled ?? true,
+			checkpointTimeout: stateValues.checkpointTimeout ?? DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
 			soundVolume: stateValues.soundVolume,
 			browserViewportSize: stateValues.browserViewportSize ?? "900x600",
 			screenshotQuality: stateValues.screenshotQuality ?? 75,
@@ -2693,6 +2697,7 @@ export class ClineProvider
 			organizationAllowList,
 			diffEnabled: enableDiff,
 			enableCheckpoints,
+			checkpointTimeout,
 			fuzzyMatchThreshold,
 			experiments,
 			cloudUserInfo,
@@ -2708,6 +2713,7 @@ export class ClineProvider
 			apiConfiguration,
 			enableDiff,
 			enableCheckpoints,
+			checkpointTimeout,
 			fuzzyMatchThreshold,
 			consecutiveMistakeLimit: apiConfiguration.consecutiveMistakeLimit,
 			task: text,

@@ -19,7 +19,7 @@ import {
 	isSupportedImageFormat,
 	validateImageForProcessing,
 	processImageFile,
-} from "./imageHelpers"
+} from "./helpers/imageHelpers"
 import { DEFAULT_FILE_READ_CHARACTER_LIMIT } from "@roo-code/types"
 
 /**
