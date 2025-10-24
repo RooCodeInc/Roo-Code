@@ -1,4 +1,4 @@
-import { ModelInfo, REGION_TO_URL } from "@roo-code/types"
+import { ModelInfo, REGION_TO_URL, WATSONX_NON_INFERENCE_MODELS } from "@roo-code/types"
 import { IamAuthenticator, CloudPakForDataAuthenticator, UserOptions } from "ibm-cloud-sdk-core"
 import { WatsonXAI } from "@ibm-cloud/watsonx-ai"
 import WatsonxAiMlVml_v1 from "@ibm-cloud/watsonx-ai/dist/watsonx-ai-ml/vml_v1.js"
@@ -67,20 +67,18 @@ export async function getWatsonxModels(
 				throw new Error("Password is required for IBM Cloud Pak for Data")
 			}
 			options.serviceUrl = baseUrl
-			if (username) {
-				if (password) {
-					options.authenticator = new CloudPakForDataAuthenticator({
-						url: `${baseUrl}/icp4d-api`,
-						username: username,
-						password: password,
-					})
-				} else if (apiKey) {
-					options.authenticator = new CloudPakForDataAuthenticator({
-						url: `${baseUrl}/icp4d-api`,
-						username: username,
-						apikey: apiKey,
-					})
-				}
+			if (password) {
+				options.authenticator = new CloudPakForDataAuthenticator({
+					url: `${baseUrl}/icp4d-api`,
+					username,
+					password,
+				})
+			} else {
+				options.authenticator = new CloudPakForDataAuthenticator({
+					url: `${baseUrl}/icp4d-api`,
+					username,
+					apikey: apiKey,
+				})
 			}
 		}
 
@@ -96,39 +94,21 @@ export async function getWatsonxModels(
 				if (Array.isArray(modelsList) && modelsList.length > 0) {
 					for (const model of modelsList) {
 						const modelId = model.model_id
-						let contextWindow = 131072
-						if (model.model_limits && model.model_limits.max_sequence_length) {
-							contextWindow = model.model_limits.max_sequence_length
-						}
-						let maxTokens = Math.floor(contextWindow / 16)
-						if (
-							model.model_limits &&
-							model.training_parameters &&
-							model.training_parameters.max_output_tokens &&
-							model.training_parameters.max_output_tokens.max
-						) {
-							maxTokens = model.training_parameters.max_output_tokens.max
+
+						if (WATSONX_NON_INFERENCE_MODELS.includes(modelId as any)) {
+							continue
 						}
 
-						let description = ""
-						if (model.long_description) {
-							description = model.long_description
-						} else if (model.short_description) {
-							description = model.short_description
-						}
-						if (
-							!(
-								modelId === "meta-llama/llama-guard-3-11b-vision" ||
-								modelId === "ibm/granite-guardian-3-8b" ||
-								modelId === "ibm/granite-guardian-3-2b"
-							)
-						) {
-							knownModels[modelId] = {
-								contextWindow,
-								maxTokens,
-								supportsPromptCache: false,
-								description,
-							}
+						const contextWindow = model.model_limits?.max_sequence_length || 131072
+						const maxTokens =
+							model.training_parameters?.max_output_tokens?.max || Math.floor(contextWindow / 16)
+						const description = model.long_description || model.short_description || ""
+
+						knownModels[modelId] = {
+							contextWindow,
+							maxTokens,
+							supportsPromptCache: false,
+							description,
 						}
 					}
 				}

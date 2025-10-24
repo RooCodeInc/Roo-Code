@@ -148,32 +148,23 @@ export class WatsonxAIHandler extends BaseProvider implements SingleCompletionHa
 			const watsonxMessages = [{ role: "system", content: systemPrompt }, ...convertToOpenAiMessages(messages)]
 
 			const params = this.createTextChatParams(this.projectId!, modelId, watsonxMessages)
-			let responseText = ""
 
-			// Call the IBM watsonx API using textChat (non-streaming); can be changed to streaming..
 			const response = await this.service.textChat(params)
 
 			if (!response?.result?.choices?.[0]?.message?.content) {
 				throw new Error("Invalid or empty response from IBM watsonx API")
 			}
 
-			responseText = response.result.choices[0].message.content
+			const responseText = response.result.choices[0].message.content
 
 			yield {
 				type: "text",
 				text: responseText,
 			}
-			let usageInfo: WatsonXAI.TextChatUsage
-			usageInfo = response.result.usage || {}
 
-			let outputTokens = 0
-			if (usageInfo.completion_tokens) {
-				outputTokens = usageInfo.completion_tokens
-			} else {
-				console.error("[IBM watsonx] Failed to count output tokens:")
-			}
-
-			const inputTokens = usageInfo?.prompt_tokens || 0
+			const usageInfo = response.result.usage || {}
+			const inputTokens = usageInfo.prompt_tokens || 0
+			const outputTokens = usageInfo.completion_tokens || 0
 			const modelInfo = this.getModel().info
 			const totalCost = calculateApiCostOpenAI(modelInfo, inputTokens, outputTokens)
 
@@ -184,17 +175,18 @@ export class WatsonxAIHandler extends BaseProvider implements SingleCompletionHa
 				totalCost: totalCost,
 			}
 		} catch (error) {
-			// Extract error message and type from the error object
 			const errorMessage = error?.message || String(error)
 			const errorType = error?.type || undefined
+
 			let detailedMessage = errorMessage
 			if (errorMessage.includes("401") || errorMessage.includes("Unauthorized")) {
-				detailedMessage = `Authentication failed: ${errorMessage}. Please check your API key and credentials.`
+				detailedMessage = `Authentication failed. Please check your API key and credentials.`
 			} else if (errorMessage.includes("404")) {
-				detailedMessage = `Model or endpoint not found: ${errorMessage}. Please verify the model ID and base URL.`
+				detailedMessage = `Model or endpoint not found. Please verify the model ID and base URL.`
 			} else if (errorMessage.includes("timeout") || errorMessage.includes("ECONNREFUSED")) {
-				detailedMessage = `Connection failed: ${errorMessage}. Please check your network connection and base URL.`
+				detailedMessage = `Connection failed. Please check your network connection and base URL.`
 			}
+
 			yield {
 				type: "error",
 				error: errorType,
