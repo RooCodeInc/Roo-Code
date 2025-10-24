@@ -1,5 +1,3 @@
-import axios from "axios"
-
 import { RooModelsResponseSchema } from "@roo-code/types"
 
 import type { ModelRecord } from "../../../shared/api"
@@ -25,26 +23,34 @@ export async function getRooModels(baseUrl: string, apiKey?: string): Promise<Mo
 			headers["Authorization"] = `Bearer ${apiKey}`
 		}
 
-		// Normalize the URL to ensure proper /v1/models endpoint construction
-		// Remove any trailing /v1 to avoid duplication
-		const urlObj = new URL(baseUrl)
-		let pathname = urlObj.pathname.replace(/\/+$/, "").replace(/\/+/g, "/")
-		// Remove trailing /v1 if present to avoid /v1/v1/models
-		if (pathname.endsWith("/v1")) {
-			pathname = pathname.slice(0, -3)
-		}
-		urlObj.pathname = pathname + "/v1/models"
-		const url = urlObj.href
+		// Construct the models endpoint URL
+		// Strip trailing /v1 if present to avoid /v1/v1/models
+		const normalizedBase = baseUrl.endsWith("/v1") ? baseUrl.slice(0, -3) : baseUrl
+		const url = `${normalizedBase}/v1/models`
 
-		// Added timeout to prevent indefinite hanging
-		const response = await axios.get(url, { headers, timeout: 10000 })
+		// Use fetch with AbortController for better timeout handling
+		const controller = new AbortController()
+		const timeoutId = setTimeout(() => controller.abort(), 10000)
+
+		const response = await fetch(url, {
+			headers,
+			signal: controller.signal,
+		})
+
+		clearTimeout(timeoutId)
+
+		if (!response.ok) {
+			throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+		}
+
+		const data = await response.json()
 		const models: ModelRecord = {}
 
 		// Validate response against schema
-		const parsed = RooModelsResponseSchema.safeParse(response.data)
+		const parsed = RooModelsResponseSchema.safeParse(data)
 
 		if (!parsed.success) {
-			console.error("Error fetching Roo Code Cloud models: Unexpected response format", response.data)
+			console.error("Error fetching Roo Code Cloud models: Unexpected response format", data)
 			console.error("Validation errors:", parsed.error.format())
 			throw new Error("Failed to fetch Roo Code Cloud models: Unexpected response format.")
 		}
@@ -88,16 +94,24 @@ export async function getRooModels(baseUrl: string, apiKey?: string): Promise<Mo
 		return models
 	} catch (error: any) {
 		console.error("Error fetching Roo Code Cloud models:", error.message ? error.message : error)
-		if (axios.isAxiosError(error) && error.response) {
-			throw new Error(
-				`Failed to fetch Roo Code Cloud models: ${error.response.status} ${error.response.statusText}. Check base URL and API key.`,
-			)
-		} else if (axios.isAxiosError(error) && error.request) {
+
+		// Handle abort/timeout
+		if (error.name === "AbortError") {
+			throw new Error("Failed to fetch Roo Code Cloud models: Request timed out after 10 seconds.")
+		}
+
+		// Handle fetch errors
+		if (error.message?.includes("HTTP")) {
+			throw new Error(`Failed to fetch Roo Code Cloud models: ${error.message}. Check base URL and API key.`)
+		}
+
+		// Handle network errors
+		if (error instanceof TypeError) {
 			throw new Error(
 				"Failed to fetch Roo Code Cloud models: No response from server. Check Roo Code Cloud server status and base URL.",
 			)
-		} else {
-			throw new Error(`Failed to fetch Roo Code Cloud models: ${error.message || "An unknown error occurred."}`)
 		}
+
+		throw new Error(`Failed to fetch Roo Code Cloud models: ${error.message || "An unknown error occurred."}`)
 	}
 }
