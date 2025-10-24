@@ -944,13 +944,12 @@ export const webviewMessageHandler = async (
 						: undefined,
 				})
 
-				if (Object.keys(rooModels).length > 0) {
-					provider.postMessageToWebview({
-						type: "singleRouterModelFetchResponse",
-						success: true,
-						values: { provider: "roo", models: rooModels },
-					})
-				}
+				// Always send a response, even if no models are returned
+				provider.postMessageToWebview({
+					type: "singleRouterModelFetchResponse",
+					success: true,
+					values: { provider: "roo", models: rooModels },
+				})
 			} catch (error) {
 				// Send error response
 				const errorMessage = error instanceof Error ? error.message : String(error)
