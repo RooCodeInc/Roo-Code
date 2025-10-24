@@ -24,74 +24,76 @@ export async function getRooModels(baseUrl: string, apiKey?: string): Promise<Mo
 		}
 
 		// Construct the models endpoint URL
-		// Strip trailing /v1 if present to avoid /v1/v1/models
-		const normalizedBase = baseUrl.endsWith("/v1") ? baseUrl.slice(0, -3) : baseUrl
+		// Strip trailing /v1 or /v1/ to avoid /v1/v1/models
+		const normalizedBase = baseUrl.replace(/\/?v1\/?$/, "")
 		const url = `${normalizedBase}/v1/models`
 
 		// Use fetch with AbortController for better timeout handling
 		const controller = new AbortController()
 		const timeoutId = setTimeout(() => controller.abort(), 10000)
 
-		const response = await fetch(url, {
-			headers,
-			signal: controller.signal,
-		})
+		try {
+			const response = await fetch(url, {
+				headers,
+				signal: controller.signal,
+			})
 
-		clearTimeout(timeoutId)
-
-		if (!response.ok) {
-			throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-		}
-
-		const data = await response.json()
-		const models: ModelRecord = {}
-
-		// Validate response against schema
-		const parsed = RooModelsResponseSchema.safeParse(data)
-
-		if (!parsed.success) {
-			console.error("Error fetching Roo Code Cloud models: Unexpected response format", data)
-			console.error("Validation errors:", parsed.error.format())
-			throw new Error("Failed to fetch Roo Code Cloud models: Unexpected response format.")
-		}
-
-		// Process the validated model data
-		for (const model of parsed.data.data) {
-			const modelId = model.id
-
-			if (!modelId) continue
-
-			// Extract model data from the validated API response
-			// All required fields are guaranteed by the schema
-			const contextWindow = model.context_window
-			const maxTokens = model.max_tokens
-			const tags = model.tags || []
-			const pricing = model.pricing
-
-			// Determine if the model supports images based on tags
-			const supportsImages = tags.includes("vision")
-
-			// Parse pricing (API returns strings, convert to numbers)
-			const inputPrice = parseFloat(pricing.input)
-			const outputPrice = parseFloat(pricing.output)
-			const cacheReadPrice = pricing.input_cache_read ? parseFloat(pricing.input_cache_read) : undefined
-			const cacheWritePrice = pricing.input_cache_write ? parseFloat(pricing.input_cache_write) : undefined
-
-			models[modelId] = {
-				maxTokens,
-				contextWindow,
-				supportsImages,
-				supportsPromptCache: Boolean(cacheReadPrice !== undefined),
-				inputPrice,
-				outputPrice,
-				cacheWritesPrice: cacheWritePrice,
-				cacheReadsPrice: cacheReadPrice,
-				description: model.description || model.name,
-				deprecated: model.deprecated || false,
+			if (!response.ok) {
+				throw new Error(`HTTP ${response.status}: ${response.statusText}`)
 			}
-		}
 
-		return models
+			const data = await response.json()
+			const models: ModelRecord = {}
+
+			// Validate response against schema
+			const parsed = RooModelsResponseSchema.safeParse(data)
+
+			if (!parsed.success) {
+				console.error("Error fetching Roo Code Cloud models: Unexpected response format", data)
+				console.error("Validation errors:", parsed.error.format())
+				throw new Error("Failed to fetch Roo Code Cloud models: Unexpected response format.")
+			}
+
+			// Process the validated model data
+			for (const model of parsed.data.data) {
+				const modelId = model.id
+
+				if (!modelId) continue
+
+				// Extract model data from the validated API response
+				// All required fields are guaranteed by the schema
+				const contextWindow = model.context_window
+				const maxTokens = model.max_tokens
+				const tags = model.tags || []
+				const pricing = model.pricing
+
+				// Determine if the model supports images based on tags
+				const supportsImages = tags.includes("vision")
+
+				// Parse pricing (API returns strings, convert to numbers)
+				const inputPrice = parseFloat(pricing.input)
+				const outputPrice = parseFloat(pricing.output)
+				const cacheReadPrice = pricing.input_cache_read ? parseFloat(pricing.input_cache_read) : undefined
+				const cacheWritePrice = pricing.input_cache_write ? parseFloat(pricing.input_cache_write) : undefined
+
+				models[modelId] = {
+					maxTokens,
+					contextWindow,
+					supportsImages,
+					supportsPromptCache: Boolean(cacheReadPrice !== undefined),
+					inputPrice,
+					outputPrice,
+					cacheWritesPrice: cacheWritePrice,
+					cacheReadsPrice: cacheReadPrice,
+					description: model.description || model.name,
+					deprecated: model.deprecated || false,
+				}
+			}
+
+			return models
+		} finally {
+			clearTimeout(timeoutId)
+		}
 	} catch (error: any) {
 		console.error("Error fetching Roo Code Cloud models:", error.message ? error.message : error)
 
