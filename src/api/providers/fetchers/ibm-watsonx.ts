@@ -99,7 +99,7 @@ export async function getWatsonxModels(
 							continue
 						}
 
-						const contextWindow = model.model_limits?.max_sequence_length || 131072
+						const contextWindow = model.model_limits?.max_sequence_length || 128000
 						const maxTokens =
 							model.training_parameters?.max_output_tokens?.max || Math.floor(contextWindow / 16)
 						const description = model.long_description || model.short_description || ""
@@ -108,6 +108,7 @@ export async function getWatsonxModels(
 							contextWindow,
 							maxTokens,
 							supportsPromptCache: false,
+							supportsImages: false,
 							description,
 						}
 					}
