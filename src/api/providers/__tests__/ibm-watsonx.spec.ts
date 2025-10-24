@@ -108,7 +108,7 @@ describe("WatsonxAIHandler", () => {
 				...mockOptions,
 				watsonxPlatform: "cloudPak",
 				watsonxUsername: "test-username",
-				watsonxAuthType: "basic",
+				watsonxAuthType: "password",
 			}
 
 			expect(() => new WatsonxAIHandler(invalidOptions)).toThrow(
