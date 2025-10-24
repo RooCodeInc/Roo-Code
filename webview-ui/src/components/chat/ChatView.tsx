@@ -1589,7 +1589,10 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					onSuggestionClick={handleSuggestionClickInRow} // This was already stabilized
 					onBatchFileResponse={handleBatchFileResponse}
 					onFollowUpUnmount={handleFollowUpUnmount}
-					isFollowUpAnswered={currentFollowUpTs != null && messageOrGroup.ts <= currentFollowUpTs}
+					isFollowUpAnswered={
+						primaryButtonText === t("chat:resumeTask.title") ||
+						(currentFollowUpTs != null && messageOrGroup.ts <= currentFollowUpTs)
+					}
 					editable={
 						messageOrGroup.type === "ask" &&
 						messageOrGroup.ask === "tool" &&
@@ -1624,6 +1627,8 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			handleSuggestionClickInRow,
 			handleBatchFileResponse,
 			handleFollowUpUnmount,
+			primaryButtonText,
+			t,
 			currentFollowUpTs,
 			shouldHighlight,
 			searchResults,
@@ -1631,7 +1636,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			searchQuery,
 			alwaysAllowUpdateTodoList,
 			enableButtons,
-			primaryButtonText,
 		],
 	)
 
