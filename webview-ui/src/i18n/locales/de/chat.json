@@ -305,7 +305,7 @@
 		},
 		"cloudAgents": {
 			"heading": "Neu in der Cloud:",
-			"feature": "Wir stellen Roo Codes ersten Cloud Agent vor, den <bold>PR Reviewer</bold>.",
+			"feature": "Wir stellen Roo Code ersten Cloud Agent vor, den <bold>PR Reviewer</bold>.",
 			"description": "Er führt Roo in der Cloud aus und liefert sofort extrem hochwertige Code-Reviews. Wir haben ihn intensiv beim Aufbau von Roo eingesetzt und jetzt ist er auch für die Community verfügbar.",
 			"createAgentButton": "PR Reviewer ausprobieren"
 		},
