@@ -804,7 +804,7 @@ export class ClineProvider
 			({
 				terminalShellIntegrationTimeout = Terminal.defaultShellIntegrationTimeout,
 				terminalShellIntegrationDisabled = false,
-				terminalCommandDelay = 0,
+				terminalCommandDelay = 150,
 				terminalZshClearEolMark = true,
 				terminalZshOhMy = false,
 				terminalZshP10k = false,
@@ -1971,7 +1971,7 @@ export class ClineProvider
 			terminalOutputCharacterLimit: terminalOutputCharacterLimit ?? DEFAULT_TERMINAL_OUTPUT_CHARACTER_LIMIT,
 			terminalShellIntegrationTimeout: terminalShellIntegrationTimeout ?? Terminal.defaultShellIntegrationTimeout,
 			terminalShellIntegrationDisabled: terminalShellIntegrationDisabled ?? false,
-			terminalCommandDelay: terminalCommandDelay ?? 0,
+			terminalCommandDelay: terminalCommandDelay ?? 150,
 			terminalPowershellCounter: terminalPowershellCounter ?? false,
 			terminalZshClearEolMark: terminalZshClearEolMark ?? true,
 			terminalZshOhMy: terminalZshOhMy ?? false,
@@ -2198,7 +2198,7 @@ export class ClineProvider
 			terminalShellIntegrationTimeout:
 				stateValues.terminalShellIntegrationTimeout ?? Terminal.defaultShellIntegrationTimeout,
 			terminalShellIntegrationDisabled: stateValues.terminalShellIntegrationDisabled ?? false,
-			terminalCommandDelay: stateValues.terminalCommandDelay ?? 0,
+			terminalCommandDelay: stateValues.terminalCommandDelay ?? 150,
 			terminalPowershellCounter: stateValues.terminalPowershellCounter ?? false,
 			terminalZshClearEolMark: stateValues.terminalZshClearEolMark ?? true,
 			terminalZshOhMy: stateValues.terminalZshOhMy ?? false,

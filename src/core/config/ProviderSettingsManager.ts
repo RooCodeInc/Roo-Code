@@ -198,7 +198,7 @@ export class ProviderSettingsManager {
 
 			if (rateLimitSeconds === undefined) {
 				// Failed to get the existing value, use the default.
-				rateLimitSeconds = 1
+				rateLimitSeconds = 0
 			}
 
 			for (const [_name, apiConfig] of Object.entries(providerProfiles.apiConfigs)) {

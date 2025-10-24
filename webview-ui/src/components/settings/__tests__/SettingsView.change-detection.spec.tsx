@@ -160,7 +160,7 @@ describe("SettingsView - Change Detection Fix", () => {
 		terminalOutputCharacterLimit: 50000,
 		terminalShellIntegrationTimeout: 3000,
 		terminalShellIntegrationDisabled: false,
-		terminalCommandDelay: 0,
+		terminalCommandDelay: 150,
 		terminalPowershellCounter: false,
 		terminalZshClearEolMark: false,
 		terminalZshOhMy: false,

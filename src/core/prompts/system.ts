@@ -161,11 +161,12 @@ export const SYSTEM_PROMPT = async (
 		throw new Error("Extension context is required for generating system prompt")
 	}
 	const shell = getShell()
+	language = language ?? formatLanguage(await defaultLang())
 	// Try to load custom system prompt from file
 	const variablesForPrompt: PromptVariables = {
 		workspace: cwd,
 		mode: mode,
-		language: language ?? formatLanguage(await defaultLang()),
+		language,
 		shell: process.env.NODE_ENV === "test" ? vscode.env.shell : shell,
 		operatingSystem: os.type(),
 	}
@@ -191,7 +192,7 @@ export const SYSTEM_PROMPT = async (
 			cwd,
 			mode,
 			{
-				language: language ?? formatLanguage(await defaultLang()),
+				language,
 				rooIgnoreInstructions,
 				settings,
 				shell,

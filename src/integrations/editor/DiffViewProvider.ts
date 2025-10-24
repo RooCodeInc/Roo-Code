@@ -211,8 +211,20 @@ export class DiffViewProvider {
 			await updatedDocument.save()
 		}
 
-		await vscode.window.showTextDocument(vscode.Uri.file(absolutePath), { preview: false, preserveFocus: true })
+		const editor = await vscode.window.showTextDocument(vscode.Uri.file(absolutePath), {
+			preview: false,
+			preserveFocus: true,
+		})
+
 		await this.closeAllDiffViews()
+
+		// Position cursor at first change asynchronously to avoid blocking diagnostics
+		if (this.originalContent !== undefined && this.newContent !== undefined) {
+			// Use setTimeout to make cursor positioning non-blocking
+			setTimeout(() => {
+				this.positionCursorAtFirstChange(editor, this.originalContent!, this.newContent!)
+			}, 0)
+		}
 
 		// Getting diagnostics before and after the file edit is a better approach than
 		// automatically tracking problems in real-time. This method ensures we only
@@ -612,6 +624,23 @@ export class DiffViewProvider {
 		}
 	}
 
+	/**
+	 * Position cursor at the first change in the file
+	 * @param editor - The text editor to position cursor in
+	 * @param originalContent - Original file content
+	 * @param newContent - New file content
+	 */
+	private positionCursorAtFirstChange(editor: vscode.TextEditor, originalContent: string, newContent: string) {
+		const changedLine = getFirstChangedNewLine(originalContent, newContent)
+
+		if (changedLine !== null) {
+			const lineIndex = changedLine - 1
+			const pos = new vscode.Position(lineIndex, 0)
+			editor.selection = new vscode.Selection(pos, pos)
+			editor.revealRange(new vscode.Range(pos, pos), vscode.TextEditorRevealType.InCenter)
+		}
+	}
+
 	private stripAllBOMs(input: string): string {
 		let result = input
 		let previous
@@ -671,10 +700,17 @@ export class DiffViewProvider {
 		// When openFile is false (PREVENT_FOCUS_DISRUPTION enabled), we only open in memory
 		if (openFile) {
 			// Show the document in the editor
-			await vscode.window.showTextDocument(vscode.Uri.file(absolutePath), {
+			const editor = await vscode.window.showTextDocument(vscode.Uri.file(absolutePath), {
 				preview: false,
 				preserveFocus: true,
 			})
+
+			// Position cursor at first change asynchronously to avoid blocking diagnostics
+			if (this.originalContent !== undefined) {
+				setTimeout(() => {
+					this.positionCursorAtFirstChange(editor, this.originalContent!, content)
+				}, 0)
+			}
 		} else {
 			// Just open the document in memory to trigger diagnostics without showing it
 			const doc = await vscode.workspace.openTextDocument(vscode.Uri.file(absolutePath))
@@ -732,4 +768,25 @@ export class DiffViewProvider {
 			finalContent: content,
 		}
 	}
+}
+
+function getFirstChangedNewLine(original: string, modified: string): number | null {
+	const diffs = diff.diffLines(original, modified)
+
+	let newLine = 0
+
+	for (let i = 0; i < diffs.length; i++) {
+		const part = diffs[i]
+		const lineCount = part.value.split("\n").length - 1
+
+		if (part.added || part.removed) {
+			return newLine + 1
+		}
+
+		if (!part.removed) {
+			newLine += lineCount
+		}
+	}
+
+	return null
 }

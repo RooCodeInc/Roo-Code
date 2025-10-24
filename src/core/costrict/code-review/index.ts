@@ -80,15 +80,12 @@ export function initCodeReview(
 				return
 			}
 			reviewInstance.setProvider(visibleProvider)
-			reviewInstance.startReview(
-				[
-					{
-						type: ReviewTargetType.FOLDER,
-						file_path: "",
-					},
-				],
-				true,
-			)
+			reviewInstance.startReview([
+				{
+					type: ReviewTargetType.FOLDER,
+					file_path: "",
+				},
+			])
 		},
 		acceptIssue: async (thread: vscode.CommentThread) => {
 			const visibleProvider = await ClineProvider.getInstance()

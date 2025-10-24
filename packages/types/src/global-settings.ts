@@ -28,7 +28,7 @@ export const DEFAULT_WRITE_DELAY_MS = 1000
  * while preventing context window explosions from extremely long lines.
  */
 export const DEFAULT_TERMINAL_OUTPUT_CHARACTER_LIMIT = 50_000
-export const DEFAULT_FILE_READ_CHARACTER_LIMIT = 30_000
+export const DEFAULT_FILE_READ_CHARACTER_LIMIT = 40_000
 
 /**
  * GlobalSettings
@@ -300,7 +300,7 @@ export const EVALS_SETTINGS: RooCodeSettings = {
 	terminalOutputCharacterLimit: DEFAULT_TERMINAL_OUTPUT_CHARACTER_LIMIT,
 	maxReadCharacterLimit: DEFAULT_FILE_READ_CHARACTER_LIMIT,
 	terminalShellIntegrationTimeout: 30000,
-	terminalCommandDelay: 0,
+	terminalCommandDelay: 150,
 	terminalPowershellCounter: false,
 	terminalZshOhMy: true,
 	terminalZshClearEolMark: true,
@@ -316,7 +316,7 @@ export const EVALS_SETTINGS: RooCodeSettings = {
 
 	enableCheckpoints: false,
 
-	rateLimitSeconds: 1,
+	rateLimitSeconds: 0,
 	maxOpenTabsContext: 20,
 	maxWorkspaceFiles: 200,
 	showRooIgnoredFiles: true,

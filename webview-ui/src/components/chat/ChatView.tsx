@@ -856,17 +856,17 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			// not using its value but its reference.
 		},
 		[
-			isCondensing,
+			currentTaskItem?.id,
 			isHidden,
 			sendingDisabled,
 			enableButtons,
-			currentTaskItem,
 			handleChatReset,
 			handleSendMessage,
 			handleSetChatBoxMessage,
 			handlePrimaryButtonClick,
 			handleSecondaryButtonClick,
 			handeSetChatBoxMessageByContext,
+			isCondensing,
 		],
 	)
 
@@ -1528,7 +1528,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				setInputValue(preservedInput)
 			}
 		},
-		[handleSendMessage, setInputValue, switchToMode, alwaysAllowModeSwitch, clineAsk, markFollowUpAsAnswered],
+		[clineAsk, markFollowUpAsAnswered, alwaysAllowModeSwitch, switchToMode, handleSendMessage],
 	)
 
 	const handleBatchFileResponse = useCallback((response: { [key: string]: boolean }) => {
@@ -1550,17 +1550,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			// Find if this message is in searchResults
 			// const matchingResult = searchResults.find((result) => result.ts === messageOrGroup.ts)
 			return searchResults.find((result) => result.ts === messageOrGroup.ts) !== undefined
-			// if (!matchingResult) {
-			// 	return false
-			// }
-
-			// const plainText = messageOrGroup.text || ""
-			// const query = searchQuery.trim()
-
-			// // Check if any match in the result overlaps with this message
-			// return matchingResult.matches.some((match: Match) =>
-			// 	plainText.substring(match.start, match.end).toLowerCase().includes(query.toLowerCase()),
-			// )
 		},
 		[searchQuery],
 	)
@@ -1600,7 +1589,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					onSuggestionClick={handleSuggestionClickInRow} // This was already stabilized
 					onBatchFileResponse={handleBatchFileResponse}
 					onFollowUpUnmount={handleFollowUpUnmount}
-					isFollowUpAnswered={messageOrGroup.isAnswered === true || messageOrGroup.ts === currentFollowUpTs}
+					isFollowUpAnswered={currentFollowUpTs != null && messageOrGroup.ts <= currentFollowUpTs}
 					editable={
 						messageOrGroup.type === "ask" &&
 						messageOrGroup.ask === "tool" &&
@@ -1637,8 +1626,8 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			handleFollowUpUnmount,
 			currentFollowUpTs,
 			shouldHighlight,
-			showSearch,
 			searchResults,
+			showSearch,
 			searchQuery,
 			alwaysAllowUpdateTodoList,
 			enableButtons,
@@ -1652,6 +1641,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			autoApproveTimeoutRef.current = null
 		}
 
+		// Reset countdown when there's no ask or buttons are disabled
 		if (!clineAsk || !enableButtons) {
 			return
 		}

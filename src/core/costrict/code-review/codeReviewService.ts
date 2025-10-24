@@ -149,41 +149,13 @@ export class CodeReviewService {
 		this.recordReviewError(CodeReviewErrorType.AuthError as TelemetryErrorType)
 	}
 
-	public async startReview(targets: ReviewTarget[], isReviewRepo: boolean = false) {
+	public async startReview(targets: ReviewTarget[]) {
 		const visibleProvider = this.getProvider()
 		if (visibleProvider) {
-			const filePaths = targets.map((target) => path.join(visibleProvider.cwd, target.file_path))
-			const { zgsmCodebaseIndexEnabled, apiConfiguration } = await visibleProvider.getState()
+			const { apiConfiguration } = await visibleProvider.getState()
 			if (apiConfiguration.apiProvider !== "zgsm") {
 				vscode.window.showInformationMessage(t("common:review.tip.api_provider_not_support"))
 				return
-			}
-			if (!isReviewRepo) {
-				try {
-					const success = await vscode.window.withProgress(
-						{
-							location: vscode.ProgressLocation.Notification,
-							title: t("common:review.tip.file_check"),
-						},
-						async (progress) => {
-							const workspace = visibleProvider.cwd
-							const { success } = await zgsmCodebaseIndexManager.checkIgnoreFiles({
-								workspacePath: workspace,
-								workspaceName: path.basename(workspace),
-								filePaths,
-							})
-							progress.report({ increment: 100 })
-							return success
-						},
-					)
-					if (!success) {
-						vscode.window.showInformationMessage(t("common:review.tip.codebase_sync_ignore_file"))
-						return
-					}
-				} catch (error) {
-					vscode.window.showInformationMessage(t("common:review.tip.service_unavailable"))
-					return
-				}
 			}
 			const chatMessage = targets
 				.map((item) => {

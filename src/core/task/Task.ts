@@ -943,13 +943,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			)
 
 			if (lastFollowUpIndex !== -1) {
-				delay(30).then(() => {
-					// Mark this follow-up as answered
-					this.clineMessages[lastFollowUpIndex].isAnswered = true
-					// Save the updated messages
-					this.saveClineMessages().catch((error) => {
-						console.error("Failed to save answered follow-up state:", error)
-					})
+				// Mark this follow-up as answered
+				const item = this.clineMessages[lastFollowUpIndex]
+				item.isAnswered = !!item.partial
+				// Save the updated messages
+				this.saveClineMessages().catch((error) => {
+					console.error("Failed to save answered follow-up state:", error)
 				})
 			}
 		}
@@ -1483,26 +1482,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 
 		let newUserContent: Anthropic.Messages.ContentBlockParam[] = [...modifiedOldUserContent]
-
-		// const agoText = ((): string => {
-		// 	const timestamp = lastClineMessage?.ts ?? Date.now()
-		// 	const now = Date.now()
-		// 	const diff = now - timestamp
-		// 	const minutes = Math.floor(diff / 60000)
-		// 	const hours = Math.floor(minutes / 60)
-		// 	const days = Math.floor(hours / 24)
-
-		// 	if (days > 0) {
-		// 		return `${days} day${days > 1 ? "s" : ""} ago`
-		// 	}
-		// 	if (hours > 0) {
-		// 		return `${hours} hour${hours > 1 ? "s" : ""} ago`
-		// 	}
-		// 	if (minutes > 0) {
-		// 		return `${minutes} minute${minutes > 1 ? "s" : ""} ago`
-		// 	}
-		// 	return "just now"
-		// })()
 
 		if (responseText) {
 			newUserContent.push({

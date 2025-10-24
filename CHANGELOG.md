@@ -1,5 +1,21 @@
 # Costrict Change Log
 
+## [2.0.3]
+
+- Add mode toggle with vibe/strict options in ModeSelector (#564)
+- Fix: update isInvalidId function to include additional invalid machine ID (#567)
+- Add error tracking with raw error storage enhancement (#569)
+- Add client ID header to API requests for completion (#570)
+- Refactor code-review to simplify startReview method (#572)
+- Add cursor positioning to first change after file save (#573)
+- Update default limits and delays, refactor follow-up countdown handling (#575)
+- Fix K2 model output truncation
+- Optimized CodeReview
+- Updated workflow prompts
+- Optimized api request performance and memory usage
+- Sync roocode [last commit](https://github.com/zgsm-ai/costrict/commit/8187a8e189ae056c61bcc1271a8346eb1f44cbd0)
+- Fix known issues
+
 ## [2.0.2]
 
 - Optimized CodeReview

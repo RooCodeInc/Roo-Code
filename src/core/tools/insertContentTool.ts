@@ -176,6 +176,8 @@ export async function insertContentTool(
 		// Save the changes
 		if (isPreventFocusDisruptionEnabled) {
 			// Direct file write without diff view or opening the file
+			// Set originalContent before calling saveDirectly for cursor positioning
+			cline.diffViewProvider.originalContent = fileContent
 			await cline.diffViewProvider.saveDirectly(relPath, updatedContent, false, diagnosticsEnabled, writeDelayMs)
 		} else {
 			// Call saveChanges to update the DiffViewProvider properties

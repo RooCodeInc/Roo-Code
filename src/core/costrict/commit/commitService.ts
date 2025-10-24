@@ -43,7 +43,7 @@ export class CommitService {
 					cancellable: false,
 				},
 				async (progress) => {
-					progress.report({ increment: 50 })
+					progress.report({ increment: 80 })
 
 					// Get configuration from VSCode settings
 					const config = vscode.workspace.getConfiguration("zgsm.commit")
@@ -61,7 +61,7 @@ export class CommitService {
 						language,
 					})
 
-					progress.report({ increment: 80 })
+					progress.report({ increment: 90 })
 
 					// Populate the commit message in SCM input
 					await this.populateCommitMessage(suggestion, cb)
@@ -88,11 +88,6 @@ export class CommitService {
 		try {
 			if (cb && cb instanceof Function) {
 				cb(commitMessage)
-			} else {
-				// const gitExtension = vscode.extensions.getExtension("vscode.git")?.exports
-				// const api = gitExtension.getAPI(1)
-				// const repo = api.repositories[0]
-				// repo.inputBox.value = commitMessage
 			}
 		} catch (error) {
 			await vscode.env.clipboard.writeText(commitMessage)

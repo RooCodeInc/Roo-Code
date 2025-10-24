@@ -297,7 +297,7 @@ export const TerminalSettings = ({
 											min={0}
 											max={1000}
 											step={10}
-											value={[terminalCommandDelay ?? 0]}
+											value={[terminalCommandDelay ?? 150]}
 											onValueChange={([value]) =>
 												setCachedStateField(
 													"terminalCommandDelay",
@@ -305,7 +305,7 @@ export const TerminalSettings = ({
 												)
 											}
 										/>
-										<span className="w-10">{terminalCommandDelay ?? 50}ms</span>
+										<span className="w-10">{terminalCommandDelay ?? 150}ms</span>
 									</div>
 									<div className="text-vscode-descriptionForeground text-sm mt-1">
 										<Trans i18nKey="settings:terminal.commandDelay.description">
