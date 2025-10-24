@@ -135,8 +135,8 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 					type: "usage",
 					inputTokens: usage.prompt_tokens || 0,
 					outputTokens: usage.completion_tokens || 0,
-					cacheWriteTokens: usage.cache_creation_input_tokens || undefined,
-					cacheReadTokens: usage.prompt_tokens_details?.cached_tokens || undefined,
+					cacheWriteTokens: usage.cache_creation_input_tokens,
+					cacheReadTokens: usage.prompt_tokens_details?.cached_tokens,
 					totalCost: usage.cost ?? 0,
 				}
 			}
