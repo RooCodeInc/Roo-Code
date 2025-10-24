@@ -769,9 +769,6 @@
 					"multiBlock": "Strategia diff wieloblokowego pozwala na aktualizację wielu bloków kodu w pliku w jednym żądaniu."
 				}
 			},
-			"watsonx": {
-				"description": "Gdy włączone, Roo będzie w stanie edytować pliki szybciej i automatycznie odrzuci obcięte pełne zapisy plików."
-			},
 			"matchPrecision": {
 				"label": "Precyzja dopasowania",
 				"description": "Ten suwak kontroluje, jak dokładnie sekcje kodu muszą pasować podczas stosowania różnic. Niższe wartości umożliwiają bardziej elastyczne dopasowywanie, ale zwiększają ryzyko nieprawidłowych zamian. Używaj wartości poniżej 100% z najwyższą ostrożnością."

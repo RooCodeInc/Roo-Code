@@ -773,9 +773,6 @@
 					"multiBlock": "Strategi multi-block diff memungkinkan memperbarui beberapa blok kode dalam file dalam satu permintaan."
 				}
 			},
-			"watsonx": {
-				"description": "Ketika diaktifkan, Roo akan dapat mengedit file lebih cepat dan akan secara otomatis menolak penulisan file penuh yang terpotong."
-			},
 			"matchPrecision": {
 				"label": "Presisi pencocokan",
 				"description": "Slider ini mengontrol seberapa tepat bagian kode harus cocok saat menerapkan diff. Nilai yang lebih rendah memungkinkan pencocokan yang lebih fleksibel tetapi meningkatkan risiko penggantian yang salah. Gunakan nilai di bawah 100% dengan sangat hati-hati."

@@ -769,9 +769,6 @@
 					"multiBlock": "Chiến lược diff đa khối cho phép cập nhật nhiều khối mã trong một tệp trong một yêu cầu."
 				}
 			},
-			"watsonx": {
-				"description": "Khi được bật, Roo sẽ có thể chỉnh sửa tệp nhanh hơn và sẽ tự động từ chối ghi toàn bộ tệp bị cắt ngắn."
-			},
 			"matchPrecision": {
 				"label": "Độ chính xác khớp",
 				"description": "Thanh trượt này kiểm soát mức độ chính xác các phần mã phải khớp khi áp dụng diff. Giá trị thấp hơn cho phép khớp linh hoạt hơn nhưng tăng nguy cơ thay thế không chính xác. Sử dụng giá trị dưới 100% với sự thận trọng cao."

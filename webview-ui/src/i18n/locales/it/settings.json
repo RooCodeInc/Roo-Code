@@ -769,9 +769,6 @@
 					"multiBlock": "La strategia diff multi-blocco consente di aggiornare più blocchi di codice in un file in una singola richiesta."
 				}
 			},
-			"watsonx": {
-				"description": "Quando abilitato, Roo sarà in grado di modificare i file più velocemente e rifiuterà automaticamente scritture di file completi troncati."
-			},
 			"matchPrecision": {
 				"label": "Precisione corrispondenza",
 				"description": "Questo cursore controlla quanto precisamente le sezioni di codice devono corrispondere quando si applicano i diff. Valori più bassi consentono corrispondenze più flessibili ma aumentano il rischio di sostituzioni errate. Usa valori inferiori al 100% con estrema cautela."

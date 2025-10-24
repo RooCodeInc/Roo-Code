@@ -768,9 +768,6 @@
 					"multiBlock": "La estrategia de diff multi-bloque permite actualizar múltiples bloques de código en un archivo en una sola solicitud."
 				}
 			},
-			"watsonx": {
-				"description": "Cuando está habilitado, Roo podrá editar archivos más rápidamente y rechazará automáticamente escrituras completas de archivos truncados."
-			},
 			"matchPrecision": {
 				"label": "Precisión de coincidencia",
 				"description": "Este control deslizante controla cuán precisamente deben coincidir las secciones de código al aplicar diffs. Valores más bajos permiten coincidencias más flexibles pero aumentan el riesgo de reemplazos incorrectos. Use valores por debajo del 100% con extrema precaución."
