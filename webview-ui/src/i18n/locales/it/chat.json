@@ -297,6 +297,18 @@
 			"selectModel": "Seleziona <code>roo/code-supernova</code> dal provider Roo Code Cloud nelle Impostazioni per iniziare.",
 			"goToSettingsButton": "Vai alle Impostazioni"
 		},
+		"release": {
+			"heading": "Novità nell'Estensione:",
+			"fileReading": "Lettura intelligente dei file che evita overflow del contesto",
+			"browserUse": "Strumento browser abilitato per tutti i modelli con capacità di immagine",
+			"bugFixes": "Numerose correzioni di bug e aggiornamenti dei modelli"
+		},
+		"cloudAgents": {
+			"heading": "Novità nel Cloud:",
+			"feature": "Presentazione del primo Cloud Agent di Roo Code, il <bold>PR Reviewer</bold>.",
+			"description": "Esegue Roo nel cloud, fornendo recensioni di codice di qualità estremamente elevata istantaneamente. Lo abbiamo utilizzato intensamente per costruire Roo e ora è disponibile anche per la community.",
+			"createAgentButton": "Prova PR Reviewer"
+		},
 		"socialLinks": "Unisciti a noi su <xLink>X</xLink>, <discordLink>Discord</discordLink>, o <redditLink>r/RooCode</redditLink> 🚀"
 	},
 	"browser": {

@@ -297,6 +297,18 @@
 			"selectModel": "設定で Roo Code Cloud プロバイダーから <code>roo/code-supernova</code> を選択して開始してください。",
 			"goToSettingsButton": "設定に移動"
 		},
+		"release": {
+			"heading": "拡張機能の新機能:",
+			"fileReading": "コンテキストオーバーランを回避するインテリジェントなファイル読み取り",
+			"browserUse": "画像対応モデルすべてでブラウザ使用ツールが有効化",
+			"bugFixes": "多数のバグ修正とモデル更新"
+		},
+		"cloudAgents": {
+			"heading": "クラウドの新機能:",
+			"feature": "Roo Code初のクラウドエージェント、<bold>PRレビューア</bold>を導入します。",
+			"description": "クラウドでRooを実行し、非常に高品質なコードレビューを瞬時に提供します。Rooの開発で積極的に使用しており、現在はコミュニティでも利用可能です。",
+			"createAgentButton": "PRレビューアを試す"
+		},
 		"socialLinks": "<xLink>X</xLink>、<discordLink>Discord</discordLink>、または<redditLink>r/RooCode</redditLink>でフォローしてください 🚀"
 	},
 	"browser": {
