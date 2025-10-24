@@ -10,6 +10,16 @@ export const REGION_TO_URL: Record<string, string> = {
 	"ap-south-1": "https://ap-south-1.aws.wxai.ibm.com",
 }
 
+/**
+ * Models that are not suitable for general text inference tasks.
+ * These are typically guard/safety models used for content moderation.
+ */
+export const WATSONX_NON_INFERENCE_MODELS = [
+	"meta-llama/llama-guard-3-11b-vision",
+	"ibm/granite-guardian-3-8b",
+	"ibm/granite-guardian-3-2b",
+] as const
+
 export type WatsonxAIModelId = keyof typeof watsonxModels
 export const watsonxDefaultModelId = "ibm/granite-3-3-8b-instruct"
 
