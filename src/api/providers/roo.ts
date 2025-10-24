@@ -143,11 +143,10 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 			})
 			this.modelsLoaded = true
 
-			// Use dynamic models directly - no static fallbacks needed
 			this.mergedModels = dynamicModels as Record<string, ModelInfo>
 		} catch (error) {
 			console.error("[RooHandler] Error loading dynamic models:", error)
-			// Keep using static models as fallback
+			// Models will remain empty until successfully loaded
 			this.modelsLoaded = false
 		}
 	}
@@ -155,7 +154,7 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 	override getModel() {
 		const modelId = this.options.apiModelId || rooDefaultModelId
 
-		// Try to find the model in the merged models (which includes both static and dynamic)
+		// Try to find the model in the dynamically loaded models
 		const modelInfo = this.mergedModels[modelId]
 
 		if (modelInfo) {
