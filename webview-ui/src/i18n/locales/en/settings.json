@@ -515,6 +515,10 @@
 		}
 	},
 	"checkpoints": {
+		"timeout": {
+			"label": "Checkpoint initialization timeout (seconds)",
+			"description": "Maximum time to wait for checkpoint service initialization. Default is 15 seconds. Range: 10-60 seconds."
+		},
 		"enable": {
 			"label": "Enable automatic checkpoints",
 			"description": "When enabled, Roo will automatically create checkpoints during task execution, making it easy to review changes or revert to earlier states. <0>Learn more</0>"
@@ -773,8 +777,6 @@
 	"modelInfo": {
 		"supportsImages": "Supports images",
 		"noImages": "Does not support images",
-		"supportsComputerUse": "Supports computer use",
-		"noComputerUse": "Does not support computer use",
 		"supportsPromptCache": "Supports prompt caching",
 		"noPromptCache": "Does not support prompt caching",
 		"contextWindow": "Context Window:",

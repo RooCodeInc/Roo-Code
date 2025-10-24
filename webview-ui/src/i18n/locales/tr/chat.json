@@ -148,6 +148,9 @@
 		"initializingWarning": "Kontrol noktası hala başlatılıyor... Bu çok uzun sürerse, <settingsLink>ayarlar</settingsLink> bölümünden kontrol noktalarını devre dışı bırakabilir ve görevinizi yeniden başlatabilirsiniz.",
 		"menu": {
 			"viewDiff": "Farkları Görüntüle",
+			"more": "Daha fazla seçenek",
+			"viewDiffFromInit": "Tüm Değişiklikleri Görüntüle",
+			"viewDiffWithCurrent": "Bu Kontrol Noktasından Bu Yana Değişiklikleri Görüntüle",
 			"restore": "Kontrol Noktasını Geri Yükle",
 			"restoreFiles": "Dosyaları Geri Yükle",
 			"restoreFilesDescription": "Projenizin dosyalarını bu noktada alınan bir anlık görüntüye geri yükler.",
@@ -265,6 +268,7 @@
 		"toggleAriaLabel": "Otomatik onayı aç/kapat",
 		"disabledAriaLabel": "Otomatik onay devre dışı - önce seçenekleri seçin",
 		"triggerLabelOff": "Otomatik onay kapalı",
+		"triggerLabelOffShort": "Kapalı",
 		"triggerLabel_zero": "0 otomatik onaylandı",
 		"triggerLabel_one": "1 otomatik onaylandı",
 		"triggerLabel_other": "{{count}} otomatik onaylandı",

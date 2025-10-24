@@ -151,6 +151,9 @@
 		"initializingWarning": "Inizializzazione del checkpoint in corso... Se questa operazione richiede troppo tempo, puoi disattivare i checkpoint nelle <settingsLink>impostazioni</settingsLink> e riavviare l'attività.",
 		"menu": {
 			"viewDiff": "Visualizza differenze",
+			"more": "Altre opzioni",
+			"viewDiffFromInit": "Visualizza tutte le modifiche",
+			"viewDiffWithCurrent": "Visualizza le modifiche da questo checkpoint",
 			"restore": "Ripristina checkpoint",
 			"restoreFiles": "Ripristina file",
 			"restoreFilesDescription": "Ripristina i file del tuo progetto a uno snapshot catturato in questo punto.",
@@ -264,6 +267,7 @@
 		"toggleAriaLabel": "Attiva/disattiva approvazione automatica",
 		"disabledAriaLabel": "Approvazione automatica disabilitata - seleziona prima le opzioni",
 		"triggerLabelOff": "Approvazione automatica disattivata",
+		"triggerLabelOffShort": "Disattivata",
 		"triggerLabel_zero": "0 approvati automaticamente",
 		"triggerLabel_one": "1 approvato automaticamente",
 		"triggerLabel_other": "{{count}} approvati automaticamente",

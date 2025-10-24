@@ -148,6 +148,9 @@
 		"initializingWarning": "Đang khởi tạo điểm kiểm tra... Nếu quá trình này mất quá nhiều thời gian, bạn có thể vô hiệu hóa điểm kiểm tra trong <settingsLink>cài đặt</settingsLink> và khởi động lại tác vụ của bạn.",
 		"menu": {
 			"viewDiff": "Xem khác biệt",
+			"more": "Thêm tùy chọn",
+			"viewDiffFromInit": "Xem tất cả các thay đổi",
+			"viewDiffWithCurrent": "Xem các thay đổi kể từ điểm kiểm tra này",
 			"restore": "Khôi phục điểm kiểm tra",
 			"restoreFiles": "Khôi phục tệp",
 			"restoreFilesDescription": "Khôi phục các tệp dự án của bạn về bản chụp được thực hiện tại thời điểm này.",
@@ -265,6 +268,7 @@
 		"toggleAriaLabel": "Bật/tắt tự động phê duyệt",
 		"disabledAriaLabel": "Tự động phê duyệt đã tắt - trước tiên hãy chọn các tùy chọn",
 		"triggerLabelOff": "Tự động phê duyệt tắt",
+		"triggerLabelOffShort": "Tắt",
 		"triggerLabel_zero": "0 được tự động phê duyệt",
 		"triggerLabel_one": "1 được tự động phê duyệt",
 		"triggerLabel_other": "{{count}} được tự động phê duyệt",

@@ -148,6 +148,9 @@
 		"initializingWarning": "Encara s'està inicialitzant el punt de control... Si això triga massa, pots desactivar els punts de control a la <settingsLink>configuració</settingsLink> i reiniciar la teva tasca.",
 		"menu": {
 			"viewDiff": "Veure diferències",
+			"more": "Més opcions",
+			"viewDiffFromInit": "Veure tots els canvis",
+			"viewDiffWithCurrent": "Veure els canvis des d'aquest punt de control",
 			"restore": "Restaurar punt de control",
 			"restoreFiles": "Restaurar arxius",
 			"restoreFilesDescription": "Restaura els arxius del teu projecte a una instantània presa en aquest punt.",
@@ -264,6 +267,7 @@
 		"toggleAriaLabel": "Commuta l'aprovació automàtica",
 		"disabledAriaLabel": "Aprovació automàtica desactivada - selecciona primer les opcions",
 		"triggerLabelOff": "Aprovació automàtica desactivada",
+		"triggerLabelOffShort": "Off",
 		"triggerLabel_zero": "0 aprovacions automàtiques",
 		"triggerLabel_one": "1 aprovació automàtica",
 		"triggerLabel_other": "{{count}} aprovacions automàtiques",

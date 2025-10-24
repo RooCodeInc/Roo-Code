@@ -148,6 +148,9 @@
 		"initializingWarning": "チェックポイントの初期化中... 時間がかかりすぎる場合は、<settingsLink>設定</settingsLink>でチェックポイントを無効にしてタスクを再開できます。",
 		"menu": {
 			"viewDiff": "差分を表示",
+			"more": "その他のオプション",
+			"viewDiffFromInit": "すべての変更を表示",
+			"viewDiffWithCurrent": "このチェックポイント以降の変更を表示",
 			"restore": "チェックポイントを復元",
 			"restoreFiles": "ファイルを復元",
 			"restoreFilesDescription": "この時点で撮影されたスナップショットにプロジェクトのファイルを復元します。",
@@ -264,6 +267,7 @@
 		"toggleAriaLabel": "自動承認を切り替える",
 		"disabledAriaLabel": "自動承認が無効です - 最初にオプションを選択してください",
 		"triggerLabelOff": "自動承認オフ",
+		"triggerLabelOffShort": "オフ",
 		"triggerLabel_zero": "0個の自動承認",
 		"triggerLabel_one": "1個の自動承認済み",
 		"triggerLabel_other": "{{count}}個の自動承認済み",
