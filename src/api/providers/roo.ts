@@ -10,12 +10,10 @@ import { ApiStream } from "../transform/stream"
 import type { ApiHandlerCreateMessageMetadata } from "../index"
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseOpenAiCompatibleProvider } from "./base-openai-compatible-provider"
-import { getModels, flushModels } from "../providers/fetchers/modelCache"
+import { getModels, flushModels, getModelsFromCache } from "../providers/fetchers/modelCache"
 
 export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 	private authStateListener?: (state: { state: AuthState }) => void
-	private mergedModels: Record<string, ModelInfo> = {}
-	private modelsLoaded = false
 	private fetcherBaseURL: string
 
 	constructor(options: ApiHandlerOptions) {
@@ -77,12 +75,10 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 						defaultHeaders: DEFAULT_HEADERS,
 					})
 
-					// Flush cache and clear models when logged out
+					// Flush cache when logged out
 					flushModels("roo").catch((error) => {
 						console.error("[RooHandler] Failed to flush models on logout:", error)
 					})
-					this.mergedModels = {}
-					this.modelsLoaded = false
 				}
 			}
 
@@ -139,26 +135,23 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 
 	private async loadDynamicModels(baseURL: string, apiKey?: string): Promise<void> {
 		try {
-			const dynamicModels = await getModels({
+			// Fetch models and cache them in the shared cache
+			await getModels({
 				provider: "roo",
 				baseUrl: baseURL,
 				apiKey,
 			})
-			this.modelsLoaded = true
-
-			this.mergedModels = dynamicModels as Record<string, ModelInfo>
 		} catch (error) {
 			console.error("[RooHandler] Error loading dynamic models:", error)
-			// Models will remain empty until successfully loaded
-			this.modelsLoaded = false
 		}
 	}
 
 	override getModel() {
 		const modelId = this.options.apiModelId || rooDefaultModelId
 
-		// Try to find the model in the dynamically loaded models
-		const modelInfo = this.mergedModels[modelId]
+		// Get models from shared cache
+		const models = getModelsFromCache("roo") || {}
+		const modelInfo = models[modelId]
 
 		if (modelInfo) {
 			return { id: modelId, info: modelInfo }
