@@ -100,13 +100,13 @@ export const getModels = async (options: GetModelsOptions): Promise<ModelRecord>
 			case "huggingface":
 				models = await getHuggingFaceModels()
 				break
-			case "roo":
+			case "roo": {
 				// Roo Code Cloud provider requires baseUrl and optional apiKey
-				models = await getRooModels(
-					options.baseUrl ?? process.env.ROO_CODE_PROVIDER_URL ?? "https://api.roocode.com/proxy",
-					options.apiKey,
-				)
+				const rooBaseUrl =
+					options.baseUrl ?? process.env.ROO_CODE_PROVIDER_URL ?? "https://api.roocode.com/proxy"
+				models = await getRooModels(rooBaseUrl, options.apiKey)
 				break
+			}
 			default: {
 				// Ensures router is exhaustively checked if RouterName is a strict union.
 				const exhaustiveCheck: never = provider

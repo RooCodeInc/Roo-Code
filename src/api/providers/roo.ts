@@ -10,12 +10,13 @@ import { ApiStream } from "../transform/stream"
 import type { ApiHandlerCreateMessageMetadata } from "../index"
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseOpenAiCompatibleProvider } from "./base-openai-compatible-provider"
-import { getModels } from "../providers/fetchers/modelCache"
+import { getModels, flushModels } from "../providers/fetchers/modelCache"
 
 export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 	private authStateListener?: (state: { state: AuthState }) => void
 	private mergedModels: Record<string, ModelInfo> = {}
 	private modelsLoaded = false
+	private fetcherBaseURL: string
 
 	constructor(options: ApiHandlerOptions) {
 		let sessionToken: string | undefined = undefined
@@ -44,8 +45,8 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 		})
 
 		// Load dynamic models asynchronously - strip /v1 from baseURL for fetcher
-		const fetcherBaseURL = baseURL.endsWith("/v1") ? baseURL.slice(0, -3) : baseURL
-		this.loadDynamicModels(fetcherBaseURL, sessionToken).catch((error) => {
+		this.fetcherBaseURL = baseURL.endsWith("/v1") ? baseURL.slice(0, -3) : baseURL
+		this.loadDynamicModels(this.fetcherBaseURL, sessionToken).catch((error) => {
 			console.error("[RooHandler] Failed to load dynamic models:", error)
 		})
 
@@ -54,17 +55,31 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 
 			this.authStateListener = (state: { state: AuthState }) => {
 				if (state.state === "active-session") {
+					const newToken = cloudService.authService?.getSessionToken()
 					this.client = new OpenAI({
 						baseURL: this.baseURL,
-						apiKey: cloudService.authService?.getSessionToken() ?? "unauthenticated",
+						apiKey: newToken ?? "unauthenticated",
 						defaultHeaders: DEFAULT_HEADERS,
 					})
+
+					// Flush cache and reload models with the new auth token
+					flushModels("roo")
+						.then(() => {
+							return this.loadDynamicModels(this.fetcherBaseURL, newToken)
+						})
+						.catch((error) => {
+							console.error("[RooHandler] Failed to reload models after auth:", error)
+						})
 				} else if (state.state === "logged-out") {
 					this.client = new OpenAI({
 						baseURL: this.baseURL,
 						apiKey: "unauthenticated",
 						defaultHeaders: DEFAULT_HEADERS,
 					})
+
+					// Clear models cache when logged out
+					this.mergedModels = {}
+					this.modelsLoaded = false
 				}
 			}
 
