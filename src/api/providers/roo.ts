@@ -12,6 +12,12 @@ import { DEFAULT_HEADERS } from "./constants"
 import { BaseOpenAiCompatibleProvider } from "./base-openai-compatible-provider"
 import { getModels, flushModels, getModelsFromCache } from "../providers/fetchers/modelCache"
 
+// Extend OpenAI's CompletionUsage to include Roo specific fields
+interface RooUsage extends OpenAI.CompletionUsage {
+	cache_creation_input_tokens?: number
+	cost?: number
+}
+
 export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 	private authStateListener?: (state: { state: AuthState }) => void
 	private fetcherBaseURL: string
@@ -124,10 +130,14 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 			}
 
 			if (chunk.usage) {
+				const usage = chunk.usage as RooUsage
 				yield {
 					type: "usage",
-					inputTokens: chunk.usage.prompt_tokens || 0,
-					outputTokens: chunk.usage.completion_tokens || 0,
+					inputTokens: usage.prompt_tokens || 0,
+					outputTokens: usage.completion_tokens || 0,
+					cacheWriteTokens: usage.cache_creation_input_tokens || undefined,
+					cacheReadTokens: usage.prompt_tokens_details?.cached_tokens || undefined,
+					totalCost: usage.cost ?? 0,
 				}
 			}
 		}
