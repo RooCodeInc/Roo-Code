@@ -231,11 +231,9 @@ export interface WebviewMessage {
 		| "getDismissedUpsells"
 		| "getCondensationProviders"
 		| "setDefaultCondensationProvider"
-		| "updateCondensationProviderConfig"
 		| "updateSmartProviderSettings"
 		| "showMessage"
 	text?: string
-	message?: string
 	editedMessageContent?: string
 	tab?: "settings" | "history" | "mcp" | "modes" | "chat" | "marketplace" | "cloud"
 	disabled?: boolean
@@ -283,17 +281,10 @@ export interface WebviewMessage {
 	upsellId?: string // For dismissUpsell
 	list?: string[] // For dismissedUpsells response
 	organizationId?: string | null // For organization switching
-	// Condensation provider fields
-	providerId?: string
-	enabled?: boolean
-	priority?: number
-	// Smart provider settings
-	smartProviderSettings?: {
-		preset?: "conservative" | "balanced" | "aggressive"
-		customConfig?: string
-	}
-	// Message display
-	level?: "info" | "warning" | "error"
+	providerId?: string // For setDefaultCondensationProvider
+	smartProviderSettings?: any // For updateSmartProviderSettings
+	level?: "info" | "warning" | "error" // For showMessage
+	message?: string // For showMessage content
 	codeIndexSettings?: {
 		// Global state settings
 		codebaseIndexEnabled: boolean
