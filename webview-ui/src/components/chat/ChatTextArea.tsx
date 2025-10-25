@@ -654,9 +654,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 							const newImages = imageSrcs.slice(0, availableSlots)
 							if (imageSrcs.length > newImages.length) {
 								console.warn(
-									`只能粘贴 ${availableSlots} 张图片，已忽略剩余 ${
-										imageSrcs.length - newImages.length
-									} 张`,
+									`Only ${availableSlots} images can be pasted, ignoring ${imageSrcs.length - newImages.length} images`,
 								)
 							}
 							if (plainText) {
