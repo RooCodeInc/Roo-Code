@@ -112,19 +112,23 @@ export async function readFileIfExists(filePath: string): Promise<string | null>
 }
 
 /**
- * Gets the ordered list of .roo directories to check (global first, then project-local)
+ * Gets the ordered list of .roo directories to check hierarchically
+ * Walking from global to most specific (current directory)
  *
  * @param cwd - Current working directory (project path)
- * @returns Array of directory paths to check in order [global, project-local]
+ * @param enableHierarchical - Whether to enable hierarchical resolution (default: true)
+ * @returns Array of directory paths to check in order [global, ...parent directories, project-local]
  *
  * @example
  * ```typescript
- * // For a project at /Users/john/my-project
- * const directories = getRooDirectoriesForCwd('/Users/john/my-project')
+ * // For a project at /Users/john/mono-repo/packages/frontend
+ * const directories = getRooDirectoriesForCwd('/Users/john/mono-repo/packages/frontend')
  * // Returns:
  * // [
- * //   '/Users/john/.roo',           // Global directory
- * //   '/Users/john/my-project/.roo' // Project-local directory
+ * //   '/Users/john/.roo',                           // Global directory
+ * //   '/Users/john/mono-repo/.roo',                 // Repository root
+ * //   '/Users/john/mono-repo/packages/.roo',        // Packages folder
+ * //   '/Users/john/mono-repo/packages/frontend/.roo' // Project-local directory
  * // ]
  * ```
  *
@@ -135,23 +139,78 @@ export async function readFileIfExists(filePath: string): Promise<string | null>
  * │   ├── rules/
  * │   │   └── rules.md
  * │   └── custom-instructions.md
- * └── my-project/
- *     ├── .roo/                # Project-specific configuration
- *     │   ├── rules/
- *     │   │   └── rules.md     # Overrides global rules
- *     │   └── project-notes.md
- *     └── src/
- *         └── index.ts
+ * └── mono-repo/
+ *     ├── .roo/                # Repository-wide configuration
+ *     │   └── rules/
+ *     │       └── repo-rules.md
+ *     └── packages/
+ *         ├── .roo/            # Packages-specific configuration
+ *         │   └── rules/
+ *         │       └── packages-rules.md
+ *         └── frontend/
+ *             ├── .roo/        # Frontend-specific configuration
+ *             │   └── rules/
+ *             │       └── frontend-rules.md
+ *             └── src/
+ *                 └── index.ts
  * ```
  */
-export function getRooDirectoriesForCwd(cwd: string): string[] {
+export function getRooDirectoriesForCwd(cwd: string, enableHierarchical: boolean = true): string[] {
 	const directories: string[] = []
+	const globalDir = getGlobalRooDirectory()
+	const homeDir = os.homedir()
 
 	// Add global directory first
-	directories.push(getGlobalRooDirectory())
+	directories.push(globalDir)
 
-	// Add project-local directory second
-	directories.push(getProjectRooDirectoryForCwd(cwd))
+	if (!enableHierarchical) {
+		// Legacy behavior: only global and project-local
+		directories.push(getProjectRooDirectoryForCwd(cwd))
+		return directories
+	}
+
+	// Hierarchical resolution: walk up from cwd to find all .roo directories
+	const visitedPaths = new Set<string>()
+	let currentPath = path.resolve(cwd)
+	const hierarchicalDirs: string[] = []
+
+	// Walk up the directory tree
+	while (currentPath && currentPath !== path.dirname(currentPath)) {
+		// Avoid infinite loops
+		if (visitedPaths.has(currentPath)) {
+			break
+		}
+		visitedPaths.add(currentPath)
+
+		// Skip if we've reached the home directory (global .roo is already added)
+		if (currentPath === homeDir) {
+			break
+		}
+
+		// Check if .roo directory exists at this level
+		const rooDir = path.join(currentPath, ".roo")
+		// We'll add it regardless to allow for directories that may be created later
+		// The calling code should check for existence when reading files
+		hierarchicalDirs.push(rooDir)
+
+		// Move to parent directory
+		const parentPath = path.dirname(currentPath)
+
+		// Stop if we've reached the root or if parent is the same as current
+		if (
+			parentPath === currentPath ||
+			parentPath === "/" ||
+			(process.platform === "win32" && parentPath === path.parse(currentPath).root)
+		) {
+			break
+		}
+
+		currentPath = parentPath
+	}
+
+	// Add hierarchical directories in reverse order (from root to most specific)
+	// This ensures more specific configurations override general ones
+	directories.push(...hierarchicalDirs.reverse())
 
 	return directories
 }

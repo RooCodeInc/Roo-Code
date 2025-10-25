@@ -205,12 +205,27 @@ describe("RooConfigService", () => {
 	})
 
 	describe("getRooDirectoriesForCwd", () => {
-		it("should return directories for given cwd", () => {
+		it("should return directories for given cwd with legacy behavior", () => {
+			const cwd = "/custom/project/path"
+
+			// Test with hierarchical disabled to maintain backward compatibility
+			const result = getRooDirectoriesForCwd(cwd, false)
+
+			expect(result).toEqual([path.join("/mock/home", ".roo"), path.join(cwd, ".roo")])
+		})
+
+		it("should return hierarchical directories by default", () => {
 			const cwd = "/custom/project/path"
 
 			const result = getRooDirectoriesForCwd(cwd)
 
-			expect(result).toEqual([path.join("/mock/home", ".roo"), path.join(cwd, ".roo")])
+			// With hierarchical resolution, we get intermediate directories
+			expect(result).toEqual([
+				path.join("/mock/home", ".roo"), // Global
+				"/custom/.roo", // Parent directories
+				"/custom/project/.roo",
+				path.join(cwd, ".roo"), // Project-local
+			])
 		})
 	})
 

@@ -103,6 +103,61 @@ export class CustomModesManager {
 	}
 
 	/**
+	 * Get all .roomodes files in the hierarchy from workspace root up to parent directories
+	 * @returns Array of .roomodes file paths, ordered from most general (parent) to most specific (workspace)
+	 */
+	private async getHierarchicalRoomodes(): Promise<string[]> {
+		const workspaceFolders = vscode.workspace.workspaceFolders
+
+		if (!workspaceFolders || workspaceFolders.length === 0) {
+			return []
+		}
+
+		const workspaceRoot = getWorkspacePath()
+		const roomodesFiles: string[] = []
+		const visitedPaths = new Set<string>()
+		const homeDir = os.homedir()
+		let currentPath = path.resolve(workspaceRoot)
+
+		// Walk up the directory tree from workspace root
+		while (currentPath && currentPath !== path.dirname(currentPath)) {
+			// Avoid infinite loops
+			if (visitedPaths.has(currentPath)) {
+				break
+			}
+			visitedPaths.add(currentPath)
+
+			// Don't look for .roomodes in the home directory
+			if (currentPath === homeDir) {
+				break
+			}
+
+			// Check if .roomodes exists at this level
+			const roomodesPath = path.join(currentPath, ROOMODES_FILENAME)
+			if (await fileExistsAtPath(roomodesPath)) {
+				roomodesFiles.push(roomodesPath)
+			}
+
+			// Move to parent directory
+			const parentPath = path.dirname(currentPath)
+
+			// Stop if we've reached the root or if parent is the same as current
+			if (
+				parentPath === currentPath ||
+				parentPath === "/" ||
+				(process.platform === "win32" && parentPath === path.parse(currentPath).root)
+			) {
+				break
+			}
+
+			currentPath = parentPath
+		}
+
+		// Return in order from most general (parent) to most specific (workspace)
+		return roomodesFiles.reverse()
+	}
+
+	/**
 	 * Regex pattern for problematic characters that need to be cleaned from YAML content
 	 * Includes:
 	 * - \u00A0: Non-breaking space
@@ -293,12 +348,17 @@ export class CustomModesManager {
 					return
 				}
 
-				// Get modes from .roomodes if it exists (takes precedence)
-				const roomodesPath = await this.getWorkspaceRoomodes()
-				const roomodesModes = roomodesPath ? await this.loadModesFromFile(roomodesPath) : []
+				// Get modes from hierarchical .roomodes
+				const hierarchicalRoomodes = await this.getHierarchicalRoomodes()
+				const allRoomodesModes: ModeConfig[] = []
 
-				// Merge modes from both sources (.roomodes takes precedence)
-				const mergedModes = await this.mergeCustomModes(roomodesModes, result.data.customModes)
+				for (const roomodesPath of hierarchicalRoomodes) {
+					const modes = await this.loadModesFromFile(roomodesPath)
+					allRoomodesModes.push(...modes)
+				}
+
+				// Merge modes from all sources
+				const mergedModes = await this.mergeCustomModes(allRoomodesModes, result.data.customModes)
 				await this.context.globalState.update("customModes", mergedModes)
 				this.clearCache()
 				await this.onUpdate()
@@ -312,19 +372,28 @@ export class CustomModesManager {
 		this.disposables.push(settingsWatcher.onDidDelete(handleSettingsChange))
 		this.disposables.push(settingsWatcher)
 
-		// Watch .roomodes file - watch the path even if it doesn't exist yet
+		// Watch .roomodes files in hierarchy
 		const workspaceFolders = vscode.workspace.workspaceFolders
 		if (workspaceFolders && workspaceFolders.length > 0) {
-			const workspaceRoot = getWorkspacePath()
-			const roomodesPath = path.join(workspaceRoot, ROOMODES_FILENAME)
-			const roomodesWatcher = vscode.workspace.createFileSystemWatcher(roomodesPath)
+			// Create a generic pattern to watch all .roomodes files in the workspace tree
+			const roomodesPattern = new vscode.RelativePattern(workspaceFolders[0], "**/.roomodes")
+			const roomodesWatcher = vscode.workspace.createFileSystemWatcher(roomodesPattern)
 
 			const handleRoomodesChange = async () => {
 				try {
 					const settingsModes = await this.loadModesFromFile(settingsPath)
-					const roomodesModes = await this.loadModesFromFile(roomodesPath)
-					// .roomodes takes precedence
-					const mergedModes = await this.mergeCustomModes(roomodesModes, settingsModes)
+
+					// Get modes from hierarchical .roomodes
+					const hierarchicalRoomodes = await this.getHierarchicalRoomodes()
+					const allRoomodesModes: ModeConfig[] = []
+
+					for (const roomodesPath of hierarchicalRoomodes) {
+						const modes = await this.loadModesFromFile(roomodesPath)
+						allRoomodesModes.push(...modes)
+					}
+
+					// Merge modes from all sources
+					const mergedModes = await this.mergeCustomModes(allRoomodesModes, settingsModes)
 					await this.context.globalState.update("customModes", mergedModes)
 					this.clearCache()
 					await this.onUpdate()
@@ -335,19 +404,7 @@ export class CustomModesManager {
 
 			this.disposables.push(roomodesWatcher.onDidChange(handleRoomodesChange))
 			this.disposables.push(roomodesWatcher.onDidCreate(handleRoomodesChange))
-			this.disposables.push(
-				roomodesWatcher.onDidDelete(async () => {
-					// When .roomodes is deleted, refresh with only settings modes
-					try {
-						const settingsModes = await this.loadModesFromFile(settingsPath)
-						await this.context.globalState.update("customModes", settingsModes)
-						this.clearCache()
-						await this.onUpdate()
-					} catch (error) {
-						console.error(`[CustomModesManager] Error handling .roomodes file deletion:`, error)
-					}
-				}),
-			)
+			this.disposables.push(roomodesWatcher.onDidDelete(handleRoomodesChange))
 			this.disposables.push(roomodesWatcher)
 		}
 	}
@@ -360,37 +417,35 @@ export class CustomModesManager {
 			return this.cachedModes
 		}
 
-		// Get modes from settings file.
+		// Get modes from settings file (global)
 		const settingsPath = await this.getCustomModesFilePath()
 		const settingsModes = await this.loadModesFromFile(settingsPath)
 
-		// Get modes from .roomodes if it exists.
-		const roomodesPath = await this.getWorkspaceRoomodes()
-		const roomodesModes = roomodesPath ? await this.loadModesFromFile(roomodesPath) : []
+		// Get modes from hierarchical .roomodes files
+		const hierarchicalRoomodes = await this.getHierarchicalRoomodes()
+		const allRoomodesModes: ModeConfig[] = []
 
-		// Create maps to store modes by source.
-		const projectModes = new Map<string, ModeConfig>()
-		const globalModes = new Map<string, ModeConfig>()
-
-		// Add project modes (they take precedence).
-		for (const mode of roomodesModes) {
-			projectModes.set(mode.slug, { ...mode, source: "project" as const })
+		// Load modes from each .roomodes file in hierarchy
+		for (const roomodesPath of hierarchicalRoomodes) {
+			const modes = await this.loadModesFromFile(roomodesPath)
+			allRoomodesModes.push(...modes)
 		}
 
-		// Add global modes.
+		// Create a map to handle mode precedence (more specific overrides more general)
+		const modesMap = new Map<string, ModeConfig>()
+
+		// Add global modes first
 		for (const mode of settingsModes) {
-			if (!projectModes.has(mode.slug)) {
-				globalModes.set(mode.slug, { ...mode, source: "global" as const })
-			}
+			modesMap.set(mode.slug, { ...mode, source: "global" as const })
 		}
 
-		// Combine modes in the correct order: project modes first, then global modes.
-		const mergedModes = [
-			...roomodesModes.map((mode) => ({ ...mode, source: "project" as const })),
-			...settingsModes
-				.filter((mode) => !projectModes.has(mode.slug))
-				.map((mode) => ({ ...mode, source: "global" as const })),
-		]
+		// Add hierarchical .roomodes modes (will override global and parent modes)
+		for (const mode of allRoomodesModes) {
+			modesMap.set(mode.slug, { ...mode, source: "project" as const })
+		}
+
+		// Convert map to array
+		const mergedModes = Array.from(modesMap.values())
 
 		await this.context.globalState.update("customModes", mergedModes)
 
@@ -493,11 +548,18 @@ export class CustomModesManager {
 
 	private async refreshMergedState(): Promise<void> {
 		const settingsPath = await this.getCustomModesFilePath()
-		const roomodesPath = await this.getWorkspaceRoomodes()
-
 		const settingsModes = await this.loadModesFromFile(settingsPath)
-		const roomodesModes = roomodesPath ? await this.loadModesFromFile(roomodesPath) : []
-		const mergedModes = await this.mergeCustomModes(roomodesModes, settingsModes)
+
+		// Get modes from hierarchical .roomodes
+		const hierarchicalRoomodes = await this.getHierarchicalRoomodes()
+		const allRoomodesModes: ModeConfig[] = []
+
+		for (const roomodesPath of hierarchicalRoomodes) {
+			const modes = await this.loadModesFromFile(roomodesPath)
+			allRoomodesModes.push(...modes)
+		}
+
+		const mergedModes = await this.mergeCustomModes(allRoomodesModes, settingsModes)
 
 		await this.context.globalState.update("customModes", mergedModes)
 
