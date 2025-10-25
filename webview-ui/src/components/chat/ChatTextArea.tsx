@@ -634,11 +634,50 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 
 		const handlePaste = useCallback(
 			async (e: React.ClipboardEvent) => {
+				const hasHtml = Array.from(e.clipboardData.types).includes("text/html")
+				if (hasHtml && navigator.clipboard?.read) {
+					e.preventDefault()
+					try {
+						const clipboardItems = await navigator.clipboard.read()
+						const htmlItem = clipboardItems.find((item) => item.types.includes("text/html"))
+						if (htmlItem) {
+							const htmlBlob = await htmlItem.getType("text/html")
+							const htmlText = await htmlBlob.text()
+							const parser = new DOMParser()
+							const doc = parser.parseFromString(htmlText, "text/html")
+							const plainText = doc.body.textContent?.trim() || ""
+							const imgElements = doc.querySelectorAll("img")
+							const imageSrcs = Array.from(imgElements)
+								.map((img) => img.src)
+								.filter((src) => src.startsWith("data:image/"))
+							const availableSlots = MAX_IMAGES_PER_MESSAGE - selectedImages.length
+							const newImages = imageSrcs.slice(0, availableSlots)
+							if (imageSrcs.length > newImages.length) {
+								console.warn(
+									`只能粘贴 ${availableSlots} 张图片，已忽略剩余 ${
+										imageSrcs.length - newImages.length
+									} 张`,
+								)
+							}
+							if (plainText) {
+								const newValue =
+									inputValue.slice(0, cursorPosition) + plainText + inputValue.slice(cursorPosition)
+								setInputValue(newValue)
+								const newCursorPosition = cursorPosition + plainText.length
+								setCursorPosition(newCursorPosition)
+								setIntendedCursorPosition(newCursorPosition)
+							}
+							if (newImages.length > 0) {
+								setSelectedImages((prev) => [...prev, ...newImages])
+							}
+							return
+						}
+					} catch (err) {
+						console.warn("Rich text paste failed, falling back to legacy paste.", err)
+					}
+				}
 				const items = e.clipboardData.items
-
 				const pastedText = e.clipboardData.getData("text")
-				// Check if the pasted content is a URL, add space after so user
-				// can easily delete if they don't want it.
 				const urlRegex = /^\S+:\/\/\S+$/
 				if (urlRegex.test(pastedText.trim())) {
 					e.preventDefault()
@@ -650,39 +689,29 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					setCursorPosition(newCursorPosition)
 					setIntendedCursorPosition(newCursorPosition)
 					setShowContextMenu(false)
-
-					// Scroll to new cursor position.
 					setTimeout(() => {
 						if (textAreaRef.current) {
 							textAreaRef.current.blur()
 							textAreaRef.current.focus()
 						}
 					}, 0)
-
 					return
 				}
-
 				const acceptedTypes = ["png", "jpeg", "webp"]
-
 				const imageItems = Array.from(items).filter((item) => {
 					const [type, subtype] = item.type.split("/")
 					return type === "image" && acceptedTypes.includes(subtype)
 				})
-
 				if (!shouldDisableImages && imageItems.length > 0) {
 					e.preventDefault()
-
 					const imagePromises = imageItems.map((item) => {
 						return new Promise<string | null>((resolve) => {
 							const blob = item.getAsFile()
-
 							if (!blob) {
 								resolve(null)
 								return
 							}
-
 							const reader = new FileReader()
-
 							reader.onloadend = () => {
 								if (reader.error) {
 									console.error(t("chat:errorReadingFile"), reader.error)
@@ -692,14 +721,11 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 									resolve(typeof result === "string" ? result : null)
 								}
 							}
-
 							reader.readAsDataURL(blob)
 						})
 					})
-
 					const imageDataArray = await Promise.all(imagePromises)
 					const dataUrls = imageDataArray.filter((dataUrl): dataUrl is string => dataUrl !== null)
-
 					if (dataUrls.length > 0) {
 						setSelectedImages((prevImages) => [...prevImages, ...dataUrls].slice(0, MAX_IMAGES_PER_MESSAGE))
 					} else {
@@ -707,7 +733,18 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					}
 				}
 			},
-			[shouldDisableImages, setSelectedImages, cursorPosition, setInputValue, inputValue, t],
+			[
+				shouldDisableImages,
+				setSelectedImages,
+				cursorPosition,
+				setInputValue,
+				inputValue,
+				t,
+				selectedImages,
+				setIntendedCursorPosition,
+				setShowContextMenu,
+				setCursorPosition,
+			],
 		)
 
 		const handleMenuMouseDown = useCallback(() => {

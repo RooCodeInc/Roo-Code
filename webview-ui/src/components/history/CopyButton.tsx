@@ -7,9 +7,10 @@ import { cn } from "@/lib/utils"
 
 type CopyButtonProps = {
 	itemTask: string
+	itemImages?: string[]
 }
 
-export const CopyButton = ({ itemTask }: CopyButtonProps) => {
+export const CopyButton = ({ itemTask, itemImages = [] }: CopyButtonProps) => {
 	const { isCopied, copy } = useClipboard()
 	const { t } = useAppTranslation()
 
@@ -18,10 +19,10 @@ export const CopyButton = ({ itemTask }: CopyButtonProps) => {
 			e.stopPropagation()
 
 			if (!isCopied) {
-				copy(itemTask)
+				copy({ text: itemTask, images: itemImages })
 			}
 		},
-		[isCopied, copy, itemTask],
+		[isCopied, copy, itemTask, itemImages],
 	)
 
 	return (

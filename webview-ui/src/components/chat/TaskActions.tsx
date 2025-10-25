@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next"
 import type { HistoryItem } from "@roo-code/types"
 
 import { vscode } from "@/utils/vscode"
-import { useCopyToClipboard } from "@/utils/clipboard"
+import { useClipboard } from "@/components/ui/hooks"
 
 import { DeleteTaskDialog } from "../history/DeleteTaskDialog"
 import { IconButton } from "./IconButton"
@@ -19,7 +19,7 @@ interface TaskActionsProps {
 export const TaskActions = ({ item, buttonsDisabled }: TaskActionsProps) => {
 	const [deleteTaskId, setDeleteTaskId] = useState<string | null>(null)
 	const { t } = useTranslation()
-	const { copyWithFeedback, showCopyFeedback } = useCopyToClipboard()
+	const { isCopied: showCopyFeedback, copy } = useClipboard()
 
 	return (
 		<div className="flex flex-row items-center">
@@ -32,7 +32,13 @@ export const TaskActions = ({ item, buttonsDisabled }: TaskActionsProps) => {
 				<IconButton
 					iconClass={showCopyFeedback ? "codicon-check" : "codicon-copy"}
 					title={t("history:copyPrompt")}
-					onClick={(e) => copyWithFeedback(item.task, e)}
+					onClick={(e) => {
+						e.stopPropagation()
+						copy({
+							text: item.task,
+							images: item.images || [],
+						})
+					}}
 				/>
 			)}
 			{!!item?.size && item.size > 0 && (
