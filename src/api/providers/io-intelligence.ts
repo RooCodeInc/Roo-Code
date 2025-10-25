@@ -22,13 +22,10 @@ export class IOIntelligenceHandler extends BaseProvider implements SingleComplet
 		super()
 		this.options = options
 
-		if (!options.ioIntelligenceApiKey) {
-			throw new Error("IO Intelligence API key is required")
-		}
-
+		// API key is optional for model discovery, but required for actual API calls
 		this.client = new OpenAI({
 			baseURL: "https://api.intelligence.io.solutions/api/v1",
-			apiKey: options.ioIntelligenceApiKey,
+			apiKey: options.ioIntelligenceApiKey || "not-provided",
 			defaultHeaders: DEFAULT_HEADERS,
 		})
 	}

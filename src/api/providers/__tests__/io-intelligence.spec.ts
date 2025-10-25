@@ -168,11 +168,16 @@ describe("IOIntelligenceHandler", () => {
 		expect(handler["options"]).toEqual(mockOptions)
 	})
 
-	it("should throw error when API key is missing", () => {
+	it("should allow handler creation without API key for model fetching", () => {
 		const optionsWithoutKey = { ...mockOptions }
 		delete optionsWithoutKey.ioIntelligenceApiKey
 
-		expect(() => new IOIntelligenceHandler(optionsWithoutKey)).toThrow("IO Intelligence API key is required")
+		// Handler can be created without API key (validation happens at UI level)
+		const handlerWithoutKey = new IOIntelligenceHandler(optionsWithoutKey)
+		expect(handlerWithoutKey).toBeInstanceOf(IOIntelligenceHandler)
+		expect(handlerWithoutKey["client"]).toBeDefined()
+		// Client should have a placeholder API key
+		expect(handlerWithoutKey["client"].apiKey).toBe("not-provided")
 	})
 
 	it("should handle streaming response correctly", async () => {
