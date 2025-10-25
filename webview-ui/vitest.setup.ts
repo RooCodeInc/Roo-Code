@@ -5,6 +5,9 @@ import "@testing-library/jest-dom/vitest"
 // Configure snapshot serialization for better test stability
 import { expect } from "vitest"
 
+// Initialize snapshot client for Vitest 4.x
+// Note: SnapshotClient doesn't exist in Vitest 4.x, using alternative approach
+
 // Custom snapshot serializer for React components
 expect.addSnapshotSerializer({
 	test: (val) => val && typeof val === "object" && val.$$typeof === Symbol.for("react.element"),
