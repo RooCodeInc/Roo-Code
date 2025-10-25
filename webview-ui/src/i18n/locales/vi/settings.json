@@ -510,6 +510,10 @@
 		}
 	},
 	"checkpoints": {
+		"timeout": {
+			"label": "Thời gian chờ khởi tạo điểm kiểm tra (giây)",
+			"description": "Thời gian tối đa chờ khởi tạo dịch vụ điểm kiểm tra. Mặc định là 15 giây. Khoảng: 10-60 giây."
+		},
 		"enable": {
 			"label": "Bật điểm kiểm tra tự động",
 			"description": "Khi được bật, Roo sẽ tự động tạo các điểm kiểm tra trong quá trình thực hiện nhiệm vụ, giúp dễ dàng xem lại các thay đổi hoặc quay lại trạng thái trước đó. <0>Tìm hiểu thêm</0>"

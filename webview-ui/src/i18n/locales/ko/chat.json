@@ -148,6 +148,9 @@
 		"initializingWarning": "체크포인트 초기화 중... 시간이 너무 오래 걸리면 <settingsLink>설정</settingsLink>에서 체크포인트를 비활성화하고 작업을 다시 시작할 수 있습니다.",
 		"menu": {
 			"viewDiff": "차이점 보기",
+			"more": "더 많은 옵션",
+			"viewDiffFromInit": "모든 변경 사항 보기",
+			"viewDiffWithCurrent": "이 체크포인트 이후 변경 사항 보기",
 			"restore": "체크포인트 복원",
 			"restoreFiles": "파일 복원",
 			"restoreFilesDescription": "프로젝트 파일을 이 시점에 찍힌 스냅샷으로 복원합니다.",
@@ -264,6 +267,7 @@
 		"toggleAriaLabel": "자동 승인 전환",
 		"disabledAriaLabel": "자동 승인 비활성화됨 - 먼저 옵션을 선택하십시오",
 		"triggerLabelOff": "자동 승인 꺼짐",
+		"triggerLabelOffShort": "꺼짐",
 		"triggerLabel_zero": "0개 자동 승인됨",
 		"triggerLabel_one": "1개 자동 승인됨",
 		"triggerLabel_other": "{{count}}개 자동 승인됨",
@@ -292,6 +296,18 @@
 			"connectButton": "Roo Code Cloud에 연결",
 			"selectModel": "설정에서 Roo Code Cloud 제공업체의 <code>roo/code-supernova</code>를 선택하여 시작하세요.",
 			"goToSettingsButton": "설정으로 이동"
+		},
+		"release": {
+			"heading": "확장 프로그램의 새로운 기능:",
+			"fileReading": "컨텍스트 오버런을 방지하는 지능형 파일 읽기",
+			"browserUse": "모든 이미지 지원 모델에서 브라우저 사용 도구 활성화",
+			"bugFixes": "다수의 버그 수정 및 모델 업데이트"
+		},
+		"cloudAgents": {
+			"heading": "클라우드의 새로운 기능:",
+			"feature": "Roo Code의 첫 번째 클라우드 에이전트인 <bold>PR 리뷰어</bold>를 소개합니다.",
+			"description": "클라우드에서 Roo를 실행하여 매우 높은 품질의 코드 리뷰를 즉시 제공합니다. Roo를 구축하는 데 이를 집중적으로 사용했으며 이제 커뮤니티에서도 사용할 수 있습니다.",
+			"createAgentButton": "PR 리뷰어 사용해보기"
 		},
 		"socialLinks": "<xLink>X</xLink>, <discordLink>Discord</discordLink>, 또는 <redditLink>r/RooCode</redditLink>에서 만나요 🚀"
 	},

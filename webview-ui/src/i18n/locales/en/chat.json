@@ -154,6 +154,8 @@
 		"initializingWarning": "Still initializing checkpoint... If this takes too long, you can disable checkpoints in <settingsLink>settings</settingsLink> and restart your task.",
 		"menu": {
 			"viewDiff": "View Diff",
+			"viewDiffFromInit": "View All Changes",
+			"viewDiffWithCurrent": "View Changes Since This Checkpoint",
 			"restore": "Restore Checkpoint",
 			"restoreFiles": "Restore Files",
 			"restoreFilesDescription": "Restores your project's files back to a snapshot taken at this point.",
@@ -161,7 +163,8 @@
 			"confirm": "Confirm",
 			"cancel": "Cancel",
 			"cannotUndo": "This action cannot be undone.",
-			"restoreFilesAndTaskDescription": "Restores your project's files back to a snapshot taken at this point and deletes all messages after this point."
+			"restoreFilesAndTaskDescription": "Restores your project's files back to a snapshot taken at this point and deletes all messages after this point.",
+			"more": "More options"
 		},
 		"current": "Current"
 	},
@@ -287,6 +290,7 @@
 		"toggleAriaLabel": "Toggle auto-approval",
 		"disabledAriaLabel": "Auto-approval disabled - select options first",
 		"triggerLabelOff": "Auto-approve off",
+		"triggerLabelOffShort": "Off",
 		"triggerLabel_zero": "0 auto-approve",
 		"triggerLabel_one": "1 auto-approved",
 		"triggerLabel_other": "{{count}} auto-approved",
@@ -300,6 +304,18 @@
 			"connectButton": "Connect to Roo Code Cloud",
 			"selectModel": "Select <code>roo/code-supernova</code> from the Roo Code Cloud provider in Settings to get started.",
 			"goToSettingsButton": "Go to Settings"
+		},
+		"release": {
+			"heading": "New in the Extension:",
+			"fileReading": "Intelligent file reading that avoids context overruns",
+			"browserUse": "Browser-use tool enabled for all image-capable models",
+			"bugFixes": "Many bug fixes and model updates"
+		},
+		"cloudAgents": {
+			"heading": "New in the Cloud:",
+			"feature": "Introducing Roo Code's first Cloud Agent, the <bold>PR Reviewer</bold>.",
+			"description": "It runs Roo in the cloud, giving extremely high quality code reviews instantly. We've been using it heavily to build Roo and now it's also available to the community.",
+			"createAgentButton": "Try out PR Reviewer"
 		},
 		"socialLinks": "Join us on <xLink>X</xLink>, <discordLink>Discord</discordLink>, or <redditLink>r/RooCode</redditLink> 🚀"
 	},

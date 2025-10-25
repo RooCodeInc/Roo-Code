@@ -11,11 +11,11 @@ import {
 	DEFAULT_CONSECUTIVE_MISTAKE_LIMIT,
 	getModelId,
 	type ProviderName,
-	type RooModelId,
 } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 
 import { Mode, modes } from "../../shared/modes"
+import { buildApiHandler } from "../../api"
 
 // Type-safe model migrations mapping
 type ModelMigrations = {
@@ -24,7 +24,7 @@ type ModelMigrations = {
 
 const MODEL_MIGRATIONS: ModelMigrations = {
 	roo: {
-		"roo/code-supernova": "roo/code-supernova-1-million" as RooModelId,
+		"roo/code-supernova": "roo/code-supernova-1-million",
 	},
 } as const satisfies ModelMigrations
 
@@ -528,6 +528,31 @@ export class ProviderSettingsManager {
 				for (const name in configs) {
 					// Avoid leaking properties from other providers.
 					configs[name] = discriminatedProviderSettingsWithIdSchema.parse(configs[name])
+
+					// If it has no apiProvider, skip filtering
+					if (!configs[name].apiProvider) {
+						continue
+					}
+
+					// Try to build an API handler to get model information
+					try {
+						const apiHandler = buildApiHandler(configs[name])
+						const modelInfo = apiHandler.getModel().info
+
+						// Check if the model supports reasoning budgets
+						const supportsReasoningBudget =
+							modelInfo.supportsReasoningBudget || modelInfo.requiredReasoningBudget
+
+						// If the model doesn't support reasoning budgets, remove the token fields
+						if (!supportsReasoningBudget) {
+							delete configs[name].modelMaxTokens
+							delete configs[name].modelMaxThinkingTokens
+						}
+					} catch (error) {
+						// If we can't build the API handler or get model info, skip filtering
+						// to avoid accidental data loss from incomplete configurations
+						console.warn(`Skipping token field filtering for config '${name}': ${error}`)
+					}
 				}
 				return profiles
 			})

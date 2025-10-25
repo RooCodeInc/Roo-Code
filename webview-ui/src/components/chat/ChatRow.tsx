@@ -75,6 +75,7 @@ interface ChatRowProps {
 	onFollowUpUnmount?: () => void
 	isFollowUpAnswered?: boolean
 	editable?: boolean
+	hasCheckpoint?: boolean
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
