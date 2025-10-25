@@ -210,7 +210,11 @@ describe("RooConfigService", () => {
 
 			const result = getRooDirectoriesForCwd(cwd)
 
-			expect(result).toEqual([path.join("/mock/home", ".roo"), path.join(cwd, ".roo")])
+			expect(result).toEqual([
+				path.join("/mock/home", ".roo"),
+				path.join(cwd, ".roo"),
+				path.join(cwd, ".cospec", "openspec"),
+			])
 		})
 	})
 

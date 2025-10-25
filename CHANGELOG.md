@@ -13,7 +13,7 @@
 - Optimized CodeReview
 - Updated workflow prompts
 - Optimized api request performance and memory usage
-- Sync roocode [last commit](https://github.com/zgsm-ai/costrict/commit/8187a8e189ae056c61bcc1271a8346eb1f44cbd0)
+- Sync roocode [last commit](https://github.com/zgsm-ai/costrict/commit/ab9a48578c02f28403dd5644781ecd07d0c82a84)
 - Fix known issues
 
 ## [2.0.2]

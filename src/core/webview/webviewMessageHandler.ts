@@ -72,7 +72,7 @@ import { ErrorCodeManager } from "../costrict/error-code"
 import { writeCostrictAccessToken } from "../costrict/codebase-index/utils"
 import { workspaceEventMonitor } from "../costrict/codebase-index/workspace-event-monitor"
 import { fetchZgsmQuotaInfo, fetchZgsmInviteCode } from "../../api/providers/fetchers/zgsm"
-import { ensureProjectWikiSubtasksExists } from "../costrict/wiki/projectWikiHelpers"
+// import { ensureProjectWikiSubtasksExists } from "../costrict/wiki/projectWikiHelpers"
 
 export const webviewMessageHandler = async (
 	provider: ClineProvider,

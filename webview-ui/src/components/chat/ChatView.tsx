@@ -709,6 +709,9 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				case "use_mcp_server":
 				case "resume_task":
 				case "mistake_limit_reached":
+					if (clineAsk === "resume_task") {
+						markFollowUpAsAnswered()
+					}
 					// Only send text/images if they exist
 					if (trimmedInput || (images && images.length > 0)) {
 						vscode.postMessage({
@@ -738,7 +741,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			setClineAsk(undefined)
 			setEnableButtons(false)
 		},
-		[clineAsk, startNewTask],
+		[clineAsk, markFollowUpAsAnswered, startNewTask],
 	)
 
 	const handleSecondaryButtonClick = useCallback(

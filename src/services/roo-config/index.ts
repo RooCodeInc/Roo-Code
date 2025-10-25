@@ -61,6 +61,10 @@ export function getProjectRooDirectoryForCwd(cwd: string): string {
 	return path.join(cwd, ".roo")
 }
 
+export function getProjectCostrictSpecDirectoryForCwd(cwd: string): string {
+	return path.join(cwd, ".cospec")
+}
+
 /**
  * Checks if a directory exists
  */
@@ -152,6 +156,7 @@ export function getRooDirectoriesForCwd(cwd: string): string[] {
 
 	// Add project-local directory second
 	directories.push(getProjectRooDirectoryForCwd(cwd))
+	directories.push(path.join(getProjectCostrictSpecDirectoryForCwd(cwd), "openspec"))
 
 	return directories
 }

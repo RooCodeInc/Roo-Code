@@ -1,7 +1,11 @@
 import fs from "fs/promises"
 import * as path from "path"
 import matter from "gray-matter"
-import { getGlobalRooDirectory, getProjectRooDirectoryForCwd } from "../roo-config"
+import {
+	getGlobalRooDirectory,
+	getProjectRooDirectoryForCwd,
+	getProjectCostrictSpecDirectoryForCwd,
+} from "../roo-config"
 import { getBuiltInCommands, getBuiltInCommand } from "./built-in-commands"
 
 export interface Command {
@@ -34,6 +38,9 @@ export async function getCommands(cwd: string): Promise<Command[]> {
 	const projectDir = path.join(getProjectRooDirectoryForCwd(cwd), "commands")
 	await scanCommandDirectory(projectDir, "project", commands)
 
+	const projectSpecCommandsDir = path.join(getProjectCostrictSpecDirectoryForCwd(cwd), "openspec", "commands")
+	await scanCommandDirectory(projectSpecCommandsDir, "project", commands)
+
 	return Array.from(commands.values())
 }
 
@@ -43,6 +50,7 @@ export async function getCommands(cwd: string): Promise<Command[]> {
  */
 export async function getCommand(cwd: string, name: string): Promise<Command | undefined> {
 	// Try to find the command directly without scanning all commands
+	const projectSpecCommandsDir = path.join(getProjectCostrictSpecDirectoryForCwd(cwd), "openspec", "commands")
 	const projectDir = path.join(getProjectRooDirectoryForCwd(cwd), "commands")
 	const globalDir = path.join(getGlobalRooDirectory(), "commands")
 
@@ -50,6 +58,12 @@ export async function getCommand(cwd: string, name: string): Promise<Command | u
 	const projectCommand = await tryLoadCommand(projectDir, name, "project")
 	if (projectCommand) {
 		return projectCommand
+	}
+
+	// Check project directory first (highest priority)
+	const projectSpecCommand = await tryLoadCommand(projectSpecCommandsDir, name, "project")
+	if (projectSpecCommand) {
+		return projectSpecCommand
 	}
 
 	// Check global directory if not found in project
