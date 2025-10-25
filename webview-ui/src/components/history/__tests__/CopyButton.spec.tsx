@@ -28,6 +28,6 @@ describe("CopyButton", () => {
 		const copyButton = screen.getByRole("button")
 		fireEvent.click(copyButton)
 
-		expect(mockCopy).toHaveBeenCalledWith("Test task content")
+		expect(mockCopy).toHaveBeenCalledWith({ text: "Test task content", images: [] })
 	})
 })
