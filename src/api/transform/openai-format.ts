@@ -3,6 +3,7 @@ import OpenAI from "openai"
 
 export function convertToOpenAiMessages(
 	anthropicMessages: Anthropic.Messages.MessageParam[],
+	options?: { lmStudioFormat?: boolean },
 ): OpenAI.Chat.ChatCompletionMessageParam[] {
 	const openAiMessages: OpenAI.Chat.ChatCompletionMessageParam[] = []
 
@@ -83,9 +84,13 @@ export function convertToOpenAiMessages(
 						role: "user",
 						content: nonToolMessages.map((part) => {
 							if (part.type === "image") {
+								// LM Studio expects just the base64 data without the data URL prefix
+								const imageUrl = options?.lmStudioFormat
+									? part.source.data
+									: `data:${part.source.media_type};base64,${part.source.data}`
 								return {
 									type: "image_url",
-									image_url: { url: `data:${part.source.media_type};base64,${part.source.data}` },
+									image_url: { url: imageUrl },
 								}
 							}
 							return { type: "text", text: part.text }

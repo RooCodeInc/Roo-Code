@@ -70,6 +70,52 @@ describe("convertToOpenAiMessages", () => {
 		})
 	})
 
+	it("should handle images with LM Studio format", () => {
+		const anthropicMessages: Anthropic.Messages.MessageParam[] = [
+			{
+				role: "user",
+				content: [
+					{
+						type: "text",
+						text: "Analyze this image",
+					},
+					{
+						type: "image",
+						source: {
+							type: "base64",
+							media_type: "image/png",
+							data: "base64imagedata",
+						},
+					},
+				],
+			},
+		]
+
+		// Test default format (with data URL prefix)
+		const openAiMessages = convertToOpenAiMessages(anthropicMessages)
+		const content = openAiMessages[0].content as Array<{
+			type: string
+			text?: string
+			image_url?: { url: string }
+		}>
+		expect(content[1]).toEqual({
+			type: "image_url",
+			image_url: { url: "data:image/png;base64,base64imagedata" },
+		})
+
+		// Test LM Studio format (without data URL prefix)
+		const lmStudioMessages = convertToOpenAiMessages(anthropicMessages, { lmStudioFormat: true })
+		const lmStudioContent = lmStudioMessages[0].content as Array<{
+			type: string
+			text?: string
+			image_url?: { url: string }
+		}>
+		expect(lmStudioContent[1]).toEqual({
+			type: "image_url",
+			image_url: { url: "base64imagedata" },
+		})
+	})
+
 	it("should handle assistant messages with tool use", () => {
 		const anthropicMessages: Anthropic.Messages.MessageParam[] = [
 			{
