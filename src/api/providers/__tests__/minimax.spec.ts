@@ -209,7 +209,7 @@ describe("MiniMaxHandler", () => {
 		})
 
 		it("createMessage should pass correct parameters to MiniMax client", async () => {
-			const modelId: MinimaxModelId = ""
+			const modelId: MinimaxModelId = "MiniMax-M2"
 			const modelInfo = minimaxModels[modelId]
 			const handlerWithModel = new MiniMaxHandler({
 				apiModelId: modelId,
