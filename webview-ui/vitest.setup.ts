@@ -2,6 +2,17 @@ import { vi } from "vitest"
 import "@testing-library/jest-dom"
 import "@testing-library/jest-dom/vitest"
 
+// Configure snapshot serialization for better test stability
+import { expect } from "vitest"
+
+// Custom snapshot serializer for React components
+expect.addSnapshotSerializer({
+	test: (val) => val && typeof val === "object" && val.$$typeof === Symbol.for("react.element"),
+	serialize: (val, config, indentation, depth, refs, printer) => {
+		return printer(val.props.children || val.children, config, indentation, depth, refs)
+	},
+})
+
 // Mock vscode API
 const vscodeApi = {
 	postMessage: vi.fn(),

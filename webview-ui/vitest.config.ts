@@ -14,6 +14,12 @@ export default defineConfig({
 		environment: "jsdom",
 		include: ["src/**/*.spec.ts", "src/**/*.spec.tsx"],
 		onConsoleLog,
+		// Snapshot configuration
+		snapshotFormat: {
+			callToJSON: false,
+			escapeString: false,
+			printBasicPrototype: false,
+		},
 		// Simplified environment options
 		environmentOptions: {
 			happyDom: {
