@@ -151,6 +151,9 @@
 		"initializingWarning": "Inizializzazione del checkpoint in corso... Se questa operazione richiede troppo tempo, puoi disattivare i checkpoint nelle <settingsLink>impostazioni</settingsLink> e riavviare l'attività.",
 		"menu": {
 			"viewDiff": "Visualizza differenze",
+			"more": "Altre opzioni",
+			"viewDiffFromInit": "Visualizza tutte le modifiche",
+			"viewDiffWithCurrent": "Visualizza le modifiche da questo checkpoint",
 			"restore": "Ripristina checkpoint",
 			"restoreFiles": "Ripristina file",
 			"restoreFilesDescription": "Ripristina i file del tuo progetto a uno snapshot catturato in questo punto.",
@@ -264,6 +267,7 @@
 		"toggleAriaLabel": "Attiva/disattiva approvazione automatica",
 		"disabledAriaLabel": "Approvazione automatica disabilitata - seleziona prima le opzioni",
 		"triggerLabelOff": "Approvazione automatica disattivata",
+		"triggerLabelOffShort": "Disattivata",
 		"triggerLabel_zero": "0 approvati automaticamente",
 		"triggerLabel_one": "1 approvato automaticamente",
 		"triggerLabel_other": "{{count}} approvati automaticamente",
@@ -292,6 +296,18 @@
 			"connectButton": "Connetti a Roo Code Cloud",
 			"selectModel": "Seleziona <code>roo/code-supernova</code> dal provider Roo Code Cloud nelle Impostazioni per iniziare.",
 			"goToSettingsButton": "Vai alle Impostazioni"
+		},
+		"release": {
+			"heading": "Novità nell'Estensione:",
+			"fileReading": "Lettura intelligente dei file che evita overflow del contesto",
+			"browserUse": "Strumento browser abilitato per tutti i modelli con capacità di immagine",
+			"bugFixes": "Numerose correzioni di bug e aggiornamenti dei modelli"
+		},
+		"cloudAgents": {
+			"heading": "Novità nel Cloud:",
+			"feature": "Presentazione del primo Cloud Agent di Roo Code, il <bold>PR Reviewer</bold>.",
+			"description": "Esegue Roo nel cloud, fornendo recensioni di codice di qualità estremamente elevata istantaneamente. Lo abbiamo utilizzato intensamente per costruire Roo e ora è disponibile anche per la community.",
+			"createAgentButton": "Prova PR Reviewer"
 		},
 		"socialLinks": "Unisciti a noi su <xLink>X</xLink>, <discordLink>Discord</discordLink>, o <redditLink>r/RooCode</redditLink> 🚀"
 	},

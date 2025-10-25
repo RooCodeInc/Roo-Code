@@ -148,6 +148,9 @@
 		"initializingWarning": "正在初始化检查点...如果耗时过长，你可以在<settingsLink>设置</settingsLink>中禁用检查点并重新启动任务。",
 		"menu": {
 			"viewDiff": "查看差异",
+			"more": "更多选项",
+			"viewDiffFromInit": "查看所有更改",
+			"viewDiffWithCurrent": "查看自此检查点以来的更改",
 			"restore": "恢复检查点",
 			"restoreFiles": "恢复文件",
 			"restoreFilesDescription": "将项目文件恢复到此检查点状态",
@@ -265,6 +268,7 @@
 		"toggleAriaLabel": "切换自动批准",
 		"disabledAriaLabel": "自动批准已禁用 - 请先选择选项",
 		"triggerLabelOff": "自动批准已关闭",
+		"triggerLabelOffShort": "关闭",
 		"triggerLabel_zero": "0 个自动批准",
 		"triggerLabel_one": "1 个自动批准",
 		"triggerLabel_other": "{{count}} 个自动批准",
@@ -293,6 +297,18 @@
 			"connectButton": "连接到 Roo Code Cloud",
 			"selectModel": "在设置中从 Roo Code Cloud 提供商选择 <code>roo/code-supernova</code> 开始使用。",
 			"goToSettingsButton": "前往设置"
+		},
+		"release": {
+			"heading": "扩展新功能：",
+			"fileReading": "智能文件读取，避免上下文溢出",
+			"browserUse": "浏览器工具已为所有支持图像的模型启用",
+			"bugFixes": "大量错误修复和模型更新"
+		},
+		"cloudAgents": {
+			"heading": "云端新功能：",
+			"feature": "推出 Roo Code 首个云端 Agent，<bold>PR 审查员</bold>。",
+			"description": "在云端运行 Roo，即时提供极高质量的代码审查。我们在构建 Roo 时大量使用它，现在也向社区开放。",
+			"createAgentButton": "试用 PR 审查员"
 		},
 		"socialLinks": "在 <xLink>X</xLink>、<discordLink>Discord</discordLink> 或 <redditLink>r/RooCode</redditLink> 上关注我们 🚀"
 	},

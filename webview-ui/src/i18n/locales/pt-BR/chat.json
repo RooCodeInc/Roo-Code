@@ -148,6 +148,9 @@
 		"initializingWarning": "Ainda inicializando ponto de verificação... Se isso demorar muito, você pode desativar os pontos de verificação nas <settingsLink>configurações</settingsLink> e reiniciar sua tarefa.",
 		"menu": {
 			"viewDiff": "Ver diferenças",
+			"more": "Mais opções",
+			"viewDiffFromInit": "Ver todas as alterações",
+			"viewDiffWithCurrent": "Ver alterações desde este ponto de verificação",
 			"restore": "Restaurar ponto de verificação",
 			"restoreFiles": "Restaurar arquivos",
 			"restoreFilesDescription": "Restaura os arquivos do seu projeto para um snapshot feito neste ponto.",
@@ -264,6 +267,7 @@
 		"toggleAriaLabel": "Alternar aprovação automática",
 		"disabledAriaLabel": "Aprovação automática desativada - selecione as opções primeiro",
 		"triggerLabelOff": "Aprovação automática desativada",
+		"triggerLabelOffShort": "Desativada",
 		"triggerLabel_zero": "0 aprovados automaticamente",
 		"triggerLabel_one": "1 aprovado automaticamente",
 		"triggerLabel_other": "{{count}} aprovados automaticamente",
@@ -292,6 +296,18 @@
 			"connectButton": "Conectar ao Roo Code Cloud",
 			"selectModel": "Selecione <code>roo/code-supernova</code> do provedor Roo Code Cloud em Configurações para começar.",
 			"goToSettingsButton": "Ir para Configurações"
+		},
+		"release": {
+			"heading": "Novidades na Extensão:",
+			"fileReading": "Leitura inteligente de arquivos que evita estouro de contexto",
+			"browserUse": "Ferramenta de navegador habilitada para todos os modelos com capacidade de imagem",
+			"bugFixes": "Muitas correções de bugs e atualizações de modelos"
+		},
+		"cloudAgents": {
+			"heading": "Novidades na Nuvem:",
+			"feature": "Apresentando o primeiro Agente em Nuvem do Roo Code, o <bold>Revisor de PR</bold>.",
+			"description": "Ele executa o Roo na nuvem, fornecendo revisões de código de qualidade extremamente alta instantaneamente. Temos usado intensivamente para construir o Roo e agora também está disponível para a comunidade.",
+			"createAgentButton": "Experimentar Revisor de PR"
 		},
 		"socialLinks": "Junte-se a nós no <xLink>X</xLink>, <discordLink>Discord</discordLink>, ou <redditLink>r/RooCode</redditLink> 🚀"
 	},
