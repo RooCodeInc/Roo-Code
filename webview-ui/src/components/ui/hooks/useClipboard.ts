@@ -21,7 +21,11 @@ export function useClipboard({ timeout = 2000 }: UseClipboardProps = {}) {
 		try {
 			if (navigator.clipboard?.write && images.length > 0) {
 				const limitedImages = images.slice(0, MAX_IMAGES_PER_MESSAGE)
-				const escapedText = text.replace(/&/g, "&").replace(/</g, "<").replace(/>/g, ">").replace(/"/g, '"')
+				const escapedText = text
+					.replace(/&/g, "&amp;")
+					.replace(/</g, "&lt;")
+					.replace(/>/g, "&gt;")
+					.replace(/"/g, "&quot;")
 				const imgTags = limitedImages.map((base64) => `<img src="${base64}" />`).join("")
 				const html = `<div><p>${escapedText}</p>${imgTags}</div>`
 				const htmlBlob = new Blob([html], { type: "text/html" })
