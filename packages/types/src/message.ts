@@ -156,6 +156,7 @@ export const clineSays = [
 	"shell_integration_warning",
 	"browser_action",
 	"browser_action_result",
+	"browser_session_status",
 	"mcp_server_request_started",
 	"mcp_server_response",
 	"subtask_result",

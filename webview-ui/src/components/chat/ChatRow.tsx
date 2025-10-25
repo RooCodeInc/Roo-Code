@@ -503,7 +503,7 @@ export const ChatRowContent = ({
 								vscode.postMessage({ type: "updateTodoList", payload: { todos: updatedTodos } })
 							}
 						}}
-						editable={editable && isLast}
+						editable={!!(editable && isLast)}
 					/>
 				)
 			}
@@ -1345,6 +1345,10 @@ export const ChatRowContent = ({
 							<ImageBlock imageUri={imageInfo.imageUri} imagePath={imageInfo.imagePath} />
 						</div>
 					)
+				case "browser_action":
+				case "browser_action_result":
+					// Handled by BrowserSessionRow; prevent raw JSON (action/result) from rendering here
+					return null
 				default:
 					return (
 						<>

@@ -129,7 +129,8 @@ export async function attemptCompletionTool(
 			})
 
 			toolResults.push(...formatResponse.imageBlocks(images))
-			cline.userMessageContent.push({ type: "text", text: `${toolDescription()} Result:` })
+			const labelSuffix = images && images.length > 0 ? " (see image below)" : ""
+			cline.userMessageContent.push({ type: "text", text: `${toolDescription()} Result:${labelSuffix}` })
 			cline.userMessageContent.push(...toolResults)
 
 			return
