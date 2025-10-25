@@ -1569,6 +1569,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					/>
 				)
 			}
+			const hasCheckpoint = modifiedMessages.some((message) => message.say === "checkpoint_saved")
 
 			// regular message
 			return (
@@ -1609,6 +1610,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					shouldHighlight={shouldHighlight(messageOrGroup, searchResults, showSearch)}
 					searchResults={searchResults}
 					searchQuery={searchQuery}
+					hasCheckpoint={hasCheckpoint}
 				/>
 			)
 		},

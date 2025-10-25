@@ -1,6 +1,7 @@
 import { RooModelsResponseSchema } from "@roo-code/types"
 
 import type { ModelRecord } from "../../../shared/api"
+import { parseApiPrice } from "../../../shared/cost"
 
 import { DEFAULT_HEADERS } from "../constants"
 
@@ -71,10 +72,10 @@ export async function getRooModels(baseUrl: string, apiKey?: string): Promise<Mo
 				const supportsImages = tags.includes("vision")
 
 				// Parse pricing (API returns strings, convert to numbers)
-				const inputPrice = parseFloat(pricing.input)
-				const outputPrice = parseFloat(pricing.output)
-				const cacheReadPrice = pricing.input_cache_read ? parseFloat(pricing.input_cache_read) : undefined
-				const cacheWritePrice = pricing.input_cache_write ? parseFloat(pricing.input_cache_write) : undefined
+				const inputPrice = parseApiPrice(pricing.input)
+				const outputPrice = parseApiPrice(pricing.output)
+				const cacheReadPrice = pricing.input_cache_read ? parseApiPrice(pricing.input_cache_read) : undefined
+				const cacheWritePrice = pricing.input_cache_write ? parseApiPrice(pricing.input_cache_write) : undefined
 
 				models[modelId] = {
 					maxTokens,

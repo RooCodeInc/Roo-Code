@@ -88,6 +88,7 @@ interface ChatRowProps {
 	shouldHighlight?: boolean
 	searchResults?: SearchResult[]
 	searchQuery?: string
+	hasCheckpoint?: boolean
 }
 
 interface ChatRowContentProps extends Omit<ChatRowProps, "onHeightChange" | "searchResults" | "searchQuery"> {

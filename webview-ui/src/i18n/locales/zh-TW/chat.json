@@ -155,6 +155,9 @@
 		"initializingWarning": "正在初始化檢查點... 如果耗時過長，您可以在<settingsLink>設定</settingsLink>中停用檢查點並重新啟動工作。",
 		"menu": {
 			"viewDiff": "檢視差異",
+			"more": "更多選項",
+			"viewDiffFromInit": "檢視所有變更",
+			"viewDiffWithCurrent": "檢視自此檢查點以來的變更",
 			"restore": "還原檢查點",
 			"restoreFiles": "還原檔案",
 			"restoreFilesDescription": "將您的專案檔案還原到此時的快照。",
@@ -306,6 +309,18 @@
 			"connectButton": "連接到 Roo Code Cloud",
 			"selectModel": "在設定中從 Roo Code Cloud 提供商選擇 <code>roo/code-supernova</code> 開始使用。",
 			"goToSettingsButton": "前往設定"
+		},
+		"release": {
+			"heading": "擴充功能的新功能：",
+			"fileReading": "智慧檔案讀取，避免上下文溢位",
+			"browserUse": "為所有支援圖像的模型啟用瀏覽器使用工具",
+			"bugFixes": "許多錯誤修復和模型更新"
+		},
+		"cloudAgents": {
+			"heading": "雲端的新功能：",
+			"feature": "介紹 Roo Code 的第一個雲端代理，<bold>PR Reviewer</bold>。",
+			"description": "它在雲端執行 Roo，立即提供極高品質的程式碼審查。我們在建立 Roo 時大量使用它，現在它也可供社群使用。",
+			"createAgentButton": "試用 PR Reviewer"
 		},
 		"socialLinks": "在 <xLink>X</xLink>、<discordLink>Discord</discordLink> 或 <redditLink>r/RooCode</redditLink> 上關注我們 🚀"
 	},
