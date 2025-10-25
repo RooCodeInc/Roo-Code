@@ -160,6 +160,7 @@ export const ChatRowContent = ({
 	onSuggestionClick,
 	onFollowUpUnmount,
 	onBatchFileResponse,
+	editable,
 	isFollowUpAnswered,
 }: ChatRowContentProps) => {
 	const { t } = useTranslation()
@@ -536,11 +537,24 @@ export const ChatRowContent = ({
 			}
 			case "updateTodoList" as any: {
 				const todos = (tool as any).todos || []
-
 				// Get previous todos from the latest todos in the task context
 				const previousTodos = getPreviousTodos(clineMessages, message.ts)
 
-				return <TodoChangeDisplay previousTodos={previousTodos} newTodos={todos} />
+				return (
+					<>
+						<TodoChangeDisplay previousTodos={previousTodos} newTodos={todos} />
+						<UpdateTodoListToolBlock
+							todos={todos}
+							content={(tool as any).content}
+							onChange={(updatedTodos) => {
+								if (typeof vscode !== "undefined" && vscode?.postMessage) {
+									vscode.postMessage({ type: "updateTodoList", payload: { todos: updatedTodos } })
+								}
+							}}
+							editable={!!(editable && isLast)}
+						/>
+					</>
+				)
 			}
 			case "newFileCreated":
 				return (
@@ -1381,6 +1395,10 @@ export const ChatRowContent = ({
 							<ImageBlock imageUri={imageInfo.imageUri} imagePath={imageInfo.imagePath} />
 						</div>
 					)
+				case "browser_action":
+				case "browser_action_result":
+					// Handled by BrowserSessionRow; prevent raw JSON (action/result) from rendering here
+					return null
 				default:
 					return (
 						<>

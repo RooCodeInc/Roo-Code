@@ -1,7 +1,7 @@
 import React, { forwardRef, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { useEvent } from "react-use"
 import DynamicTextArea from "react-textarea-autosize"
-import { VolumeX, Image, WandSparkles, SendHorizontal, MessageSquareX } from "lucide-react"
+import { VolumeX, Image, WandSparkles, SendHorizontal, MessageSquareX, Globe } from "lucide-react"
 
 import { mentionRegex, mentionRegexGlobal, commandRegexGlobal, unescapeSpaces } from "@roo/context-mentions"
 import { WebviewMessage } from "@roo/WebviewMessage"
@@ -21,7 +21,7 @@ import {
 } from "@src/utils/context-mentions"
 import { cn } from "@src/lib/utils"
 import { convertToMentionPath } from "@src/utils/path-mentions"
-import { StandardTooltip } from "@src/components/ui"
+import { StandardTooltip, Button } from "@src/components/ui"
 
 import Thumbnails from "../common/Thumbnails"
 import { ModeSelector } from "./ModeSelector"
@@ -51,6 +51,9 @@ interface ChatTextAreaProps {
 	// Edit mode props
 	isEditMode?: boolean
 	onCancel?: () => void
+	// Browser session status
+	isBrowserSessionActive?: boolean
+	showBrowserDockToggle?: boolean
 }
 
 export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
@@ -71,6 +74,8 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			modeShortcutText,
 			isEditMode = false,
 			onCancel,
+			isBrowserSessionActive = false,
+			showBrowserDockToggle = false,
 		},
 		ref,
 	) => {
@@ -1236,7 +1241,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					</div>
 					<div
 						className={cn(
-							"flex flex-shrink-0 items-center gap-0.5",
+							"flex flex-shrink-0 items-center gap-0.5 h-5 leading-none",
 							!isEditMode && cloudUserInfo ? "" : "pr-2",
 						)}>
 						{isTtsPlaying && (
@@ -1257,6 +1262,30 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 									)}>
 									<VolumeX className="w-4 h-4" />
 								</button>
+							</StandardTooltip>
+						)}
+						{!isEditMode && showBrowserDockToggle && (
+							<StandardTooltip content={t("chat:browser.session")}>
+								<Button
+									variant="ghost"
+									size="sm"
+									aria-label={t("chat:browser.session")}
+									onClick={() => vscode.postMessage({ type: "openBrowserSessionPanel" })}
+									className={cn(
+										"relative h-5 w-5 p-0",
+										"text-vscode-foreground opacity-85",
+										"hover:opacity-100 hover:bg-[rgba(255,255,255,0.03)]",
+										"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
+									)}>
+									<Globe
+										className="w-4 h-4"
+										style={{
+											color: isBrowserSessionActive
+												? "#4ade80"
+												: "var(--vscode-descriptionForeground)",
+										}}
+									/>
+								</Button>
 							</StandardTooltip>
 						)}
 						{!isEditMode ? <IndexingStatusBadge /> : null}

@@ -101,6 +101,10 @@ export default defineConfig(({ mode }) => {
 			// Ensure source maps are properly included in the build
 			minify: mode === "production" ? "esbuild" : false,
 			rollupOptions: {
+				input: {
+					index: resolve(__dirname, "index.html"),
+					"browser-panel": resolve(__dirname, "browser-panel.html"),
+				},
 				output: {
 					entryFileNames: `assets/[name].js`,
 					chunkFileNames: (chunkInfo) => {

@@ -385,7 +385,28 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.autoApprovalHandler = new AutoApprovalHandler()
 
 		this.urlContentFetcher = new UrlContentFetcher(provider.context)
-		this.browserSession = new BrowserSession(provider.context)
+		this.browserSession = new BrowserSession(provider.context, (isActive: boolean) => {
+			// Add a message to indicate browser session status change
+			this.say("browser_session_status", isActive ? "Browser session opened" : "Browser session closed")
+			// Broadcast to browser panel
+			this.broadcastBrowserSessionUpdate()
+
+			// When a browser session becomes active, automatically open/reveal the Browser Session tab
+			if (isActive) {
+				try {
+					// Lazy-load to avoid circular imports at module load time
+					const { BrowserSessionPanelManager } = require("../webview/BrowserSessionPanelManager")
+					const providerRef = this.providerRef.deref()
+					if (providerRef) {
+						BrowserSessionPanelManager.getInstance(providerRef)
+							.show()
+							.catch(() => {})
+					}
+				} catch (err) {
+					console.error("[Task] Failed to auto-open Browser Session panel:", err)
+				}
+			}
+		})
 		this.diffEnabled = enableDiff
 		this.fuzzyMatchThreshold = fuzzyMatchThreshold
 		this.consecutiveMistakeLimit = consecutiveMistakeLimit ?? DEFAULT_CONSECUTIVE_MISTAKE_LIMIT
@@ -1366,6 +1387,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				contextCondense,
 			})
 		}
+
+		// Broadcast browser session updates to panel when browser-related messages are added
+		if (type === "browser_action" || type === "browser_action_result" || type === "browser_session_status") {
+			this.broadcastBrowserSessionUpdate()
+		}
 	}
 
 	async sayAndCreateMissingParamError(toolName: ToolName, paramName: string, relPath?: string) {
@@ -1785,6 +1811,16 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			this.browserSession.closeBrowser()
 		} catch (error) {
 			console.error("Error closing browser session:", error)
+		}
+		// Also close the Browser Session panel when the task is disposed
+		try {
+			const provider = this.providerRef.deref()
+			if (provider) {
+				const { BrowserSessionPanelManager } = require("../webview/BrowserSessionPanelManager")
+				BrowserSessionPanelManager.getInstance(provider).dispose()
+			}
+		} catch (error) {
+			console.error("Error closing browser session panel:", error)
 		}
 
 		try {
@@ -3486,6 +3522,41 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	public get cwd() {
 		return this.workspacePath
+	}
+
+	/**
+	 * Broadcast browser session updates to the browser panel (if open)
+	 */
+	private broadcastBrowserSessionUpdate(): void {
+		const provider = this.providerRef.deref()
+		if (!provider) {
+			return
+		}
+
+		try {
+			const { BrowserSessionPanelManager } = require("../webview/BrowserSessionPanelManager")
+			const panelManager = BrowserSessionPanelManager.getInstance(provider)
+
+			// Get browser session messages
+			const browserSessionStartIndex = this.clineMessages.findIndex(
+				(m) =>
+					m.ask === "browser_action_launch" ||
+					(m.say === "browser_session_status" && m.text?.includes("opened")),
+			)
+
+			const browserSessionMessages =
+				browserSessionStartIndex !== -1 ? this.clineMessages.slice(browserSessionStartIndex) : []
+
+			const isBrowserSessionActive = this.browserSession?.isSessionActive() ?? false
+
+			// Update the panel asynchronously
+			panelManager.updateBrowserSession(browserSessionMessages, isBrowserSessionActive).catch((error: Error) => {
+				console.error("Failed to broadcast browser session update:", error)
+			})
+		} catch (error) {
+			// Silently fail if panel manager is not available
+			console.debug("Browser panel not available for update:", error)
+		}
 	}
 
 	/**
