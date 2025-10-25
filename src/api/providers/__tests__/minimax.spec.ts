@@ -61,7 +61,7 @@ describe("MiniMaxHandler", () => {
 		})
 
 		it("should return specified model when valid model is provided", () => {
-			const testModelId: MinimaxModelId = "MiniMax-M1"
+			const testModelId: MinimaxModelId = "MiniMax-M2"
 			const handlerWithModel = new MiniMaxHandler({
 				apiModelId: testModelId,
 				minimaxApiKey: "test-minimax-api-key",
@@ -71,8 +71,8 @@ describe("MiniMaxHandler", () => {
 			expect(model.info).toEqual(minimaxModels[testModelId])
 		})
 
-		it("should return MiniMax-M1 model with correct configuration", () => {
-			const testModelId: MinimaxModelId = "MiniMax-M1"
+		it("should return MiniMax-M2 model with correct configuration", () => {
+			const testModelId: MinimaxModelId = "MiniMax-M2"
 			const handlerWithModel = new MiniMaxHandler({
 				apiModelId: testModelId,
 				minimaxApiKey: "test-minimax-api-key",
@@ -134,10 +134,10 @@ describe("MiniMaxHandler", () => {
 			expect(OpenAI).toHaveBeenCalledWith(expect.objectContaining({ apiKey: undefined }))
 		})
 
-		it("should default to MiniMax-M1 model", () => {
+		it("should default to MiniMax-M2 model", () => {
 			const handlerDefault = new MiniMaxHandler({ minimaxApiKey: "test-minimax-api-key" })
 			const model = handlerDefault.getModel()
-			expect(model.id).toBe("MiniMax-M1")
+			expect(model.id).toBe("MiniMax-M2")
 		})
 	})
 
@@ -209,7 +209,7 @@ describe("MiniMaxHandler", () => {
 		})
 
 		it("createMessage should pass correct parameters to MiniMax client", async () => {
-			const modelId: MinimaxModelId = "MiniMax-M1"
+			const modelId: MinimaxModelId = ""
 			const modelInfo = minimaxModels[modelId]
 			const handlerWithModel = new MiniMaxHandler({
 				apiModelId: modelId,
@@ -269,8 +269,8 @@ describe("MiniMaxHandler", () => {
 	})
 
 	describe("Model Configuration", () => {
-		it("should correctly configure MiniMax-M1 model properties", () => {
-			const model = minimaxModels["MiniMax-M1"]
+		it("should correctly configure MiniMax-M2 model properties", () => {
+			const model = minimaxModels["MiniMax-M2"]
 			expect(model.maxTokens).toBe(25_600)
 			expect(model.contextWindow).toBe(1_000_192)
 			expect(model.supportsImages).toBe(false)

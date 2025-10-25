@@ -17,16 +17,6 @@ export const minimaxModels = {
 		cacheWritesPrice: 0,
 		cacheReadsPrice: 0,
 	},
-	"MiniMax-M1": {
-		maxTokens: 40_000,
-		contextWindow: 1_000_000,
-		supportsImages: false,
-		supportsPromptCache: false,
-		inputPrice: 0.4,
-		outputPrice: 2.2,
-		cacheWritesPrice: 0,
-		cacheReadsPrice: 0,
-	},
 } as const satisfies Record<string, ModelInfo>
 
 export const MINIMAX_DEFAULT_TEMPERATURE = 1.0
