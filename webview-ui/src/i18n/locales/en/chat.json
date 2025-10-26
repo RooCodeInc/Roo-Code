@@ -434,6 +434,6 @@
 	},
 	"apiConfigSelector": {
 		"searchPlaceholder": "Search configuration profiles...",
-		"settings": "Configuration Profile Settings "
+		"settings": "Configuration Profile Settings"
 	}
 }
