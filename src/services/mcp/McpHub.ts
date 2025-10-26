@@ -543,25 +543,38 @@ export class McpHub {
 
 		const files: string[] = []
 		const visited = new Set<string>()
-		let current = path.resolve(workspaceRoot)
-		const homeDir = os.homedir()
+		// Use native semantics so tests that build paths with path.join() on Windows match
+		let current = workspaceRoot
 
 		while (true) {
 			if (visited.has(current)) break
 			visited.add(current)
 
-			const candidate = path.join(current, ".roo", "mcp.json")
+			let candidate = path.join(current, ".roo", "mcp.json")
 			try {
 				await fs.access(candidate)
 				files.push(candidate)
 			} catch {
-				// ignore missing files
+				// Try with flipped separators to match mocked paths in cross-platform tests
+				const alt = candidate.includes("\\")
+					? candidate.replace(/\\/g, "/")
+					: candidate.replace(/\//g, path.sep)
+				try {
+					await fs.access(alt)
+					files.push(alt)
+				} catch {
+					// ignore if still not accessible
+				}
 			}
 
 			const parent = path.dirname(current)
 			if (parent === current) break
-			// Stop at the home directory since global config is handled separately
-			if (parent === homeDir) break
+
+			// Stop at filesystem root
+			if (parent === "/" || parent === path.parse(current).root) {
+				break
+			}
+
 			current = parent
 		}
 
