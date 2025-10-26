@@ -32,6 +32,8 @@ import {
 import { fileExistsAtPath } from "../../utils/fs"
 import { arePathsEqual, getWorkspacePath } from "../../utils/path"
 import { injectVariables } from "../../utils/config"
+import * as os from "os"
+import { safeWriteJson } from "../../utils/safeWriteJson"
 
 // Discriminated union for connection states
 export type ConnectedMcpConnection = {
@@ -297,6 +299,13 @@ export class McpHub {
 
 	private async handleConfigFileChange(filePath: string, source: "global" | "project"): Promise<void> {
 		try {
+			if (source === "project") {
+				// For project-level changes, recompute from all hierarchical mcp.json files
+				await this.updateProjectMcpServers()
+				return
+			}
+
+			// Global file: validate and update from the single settings file
 			const content = await fs.readFile(filePath, "utf-8")
 			let config: any
 
@@ -321,15 +330,7 @@ export class McpHub {
 
 			await this.updateServerConnections(result.data.mcpServers || {}, source)
 		} catch (error) {
-			// Check if the error is because the file doesn't exist
-			if (error.code === "ENOENT" && source === "project") {
-				// File was deleted, clean up project MCP servers
-				await this.cleanupProjectMcpServers()
-				await this.notifyWebviewOfServerChanges()
-				vscode.window.showInformationMessage(t("mcp:info.project_config_deleted"))
-			} else {
-				this.showErrorMessage(t("mcp:errors.failed_update_project"), error)
-			}
+			this.showErrorMessage(t("mcp:errors.failed_update_project"), error)
 		}
 	}
 
@@ -380,33 +381,8 @@ export class McpHub {
 
 	private async updateProjectMcpServers(): Promise<void> {
 		try {
-			const projectMcpPath = await this.getProjectMcpPath()
-			if (!projectMcpPath) return
-
-			const content = await fs.readFile(projectMcpPath, "utf-8")
-			let config: any
-
-			try {
-				config = JSON.parse(content)
-			} catch (parseError) {
-				const errorMessage = t("mcp:errors.invalid_settings_syntax")
-				console.error(errorMessage, parseError)
-				vscode.window.showErrorMessage(errorMessage)
-				return
-			}
-
-			// Validate configuration structure
-			const result = McpSettingsSchema.safeParse(config)
-			if (result.success) {
-				await this.updateServerConnections(result.data.mcpServers || {}, "project")
-			} else {
-				// Format validation errors for better user feedback
-				const errorMessages = result.error.errors
-					.map((err) => `${err.path.join(".")}: ${err.message}`)
-					.join("\n")
-				console.error("Invalid project MCP settings format:", errorMessages)
-				vscode.window.showErrorMessage(t("mcp:errors.invalid_settings_validation", { errorMessages }))
-			}
+			const { servers } = await this.loadMergedProjectServers()
+			await this.updateServerConnections(servers, "project")
 		} catch (error) {
 			this.showErrorMessage(t("mcp:errors.failed_update_project"), error)
 		}
@@ -454,14 +430,7 @@ export class McpHub {
 		)
 		const fileExists = await fileExistsAtPath(mcpSettingsFilePath)
 		if (!fileExists) {
-			await fs.writeFile(
-				mcpSettingsFilePath,
-				`{
-  "mcpServers": {
-
-  }
-}`,
-			)
+			await safeWriteJson(mcpSettingsFilePath, { mcpServers: {} })
 		}
 		return mcpSettingsFilePath
 	}
@@ -504,34 +473,34 @@ export class McpHub {
 
 	private async initializeMcpServers(source: "global" | "project"): Promise<void> {
 		try {
-			const configPath =
-				source === "global" ? await this.getMcpSettingsFilePath() : await this.getProjectMcpPath()
-
-			if (!configPath) {
+			if (source === "project") {
+				// Initialize from hierarchical project MCP files
+				const { servers } = await this.loadMergedProjectServers()
+				await this.updateServerConnections(servers, "project", false)
 				return
 			}
 
+			// Global initialization remains unchanged
+			const configPath = await this.getMcpSettingsFilePath()
 			const content = await fs.readFile(configPath, "utf-8")
 			const config = JSON.parse(content)
 			const result = McpSettingsSchema.safeParse(config)
 
 			if (result.success) {
 				// Pass all servers including disabled ones - they'll be handled in updateServerConnections
-				await this.updateServerConnections(result.data.mcpServers || {}, source, false)
+				await this.updateServerConnections(result.data.mcpServers || {}, "global", false)
 			} else {
 				const errorMessages = result.error.errors
 					.map((err) => `${err.path.join(".")}: ${err.message}`)
 					.join("\n")
-				console.error(`Invalid ${source} MCP settings format:`, errorMessages)
+				console.error(`Invalid global MCP settings format:`, errorMessages)
 				vscode.window.showErrorMessage(t("mcp:errors.invalid_settings_validation", { errorMessages }))
 
-				if (source === "global") {
-					// Still try to connect with the raw config, but show warnings
-					try {
-						await this.updateServerConnections(config.mcpServers || {}, source, false)
-					} catch (error) {
-						this.showErrorMessage(`Failed to initialize ${source} MCP servers with raw config`, error)
-					}
+				// Still try to connect with the raw config, but show warnings
+				try {
+					await this.updateServerConnections(config.mcpServers || {}, "global", false)
+				} catch (error) {
+					this.showErrorMessage(`Failed to initialize global MCP servers with raw config`, error)
 				}
 			}
 		} catch (error) {
@@ -561,6 +530,79 @@ export class McpHub {
 		} catch {
 			return null
 		}
+	}
+
+	/**
+	 * Returns the list of project-level MCP files discovered hierarchically
+	 * from parent directories down to the current workspace.
+	 * Order: least specific (parent) -> most specific (workspace)
+	 */
+	private async getHierarchicalProjectMcpPaths(): Promise<string[]> {
+		const workspaceRoot = this.providerRef.deref()?.cwd ?? getWorkspacePath()
+		if (!workspaceRoot) return []
+
+		const paths: string[] = []
+		const visited = new Set<string>()
+		const homeDir = os.homedir()
+		let currentPath = path.resolve(workspaceRoot)
+
+		while (currentPath && currentPath !== path.dirname(currentPath)) {
+			if (visited.has(currentPath)) break
+			visited.add(currentPath)
+
+			// Stop at the home directory since global config is handled separately
+			if (currentPath === homeDir) break
+
+			const candidate = path.join(currentPath, ".roo", "mcp.json")
+			try {
+				await fs.access(candidate)
+				paths.push(candidate)
+			} catch {
+				// ignore missing files
+			}
+
+			const parentPath = path.dirname(currentPath)
+			if (
+				parentPath === currentPath ||
+				parentPath === "/" ||
+				(process.platform === "win32" && parentPath === path.parse(currentPath).root)
+			) {
+				break
+			}
+			currentPath = parentPath
+		}
+
+		// Return from least specific to most specific
+		return paths.reverse()
+	}
+
+	/**
+	 * Loads and merges all project-level MCP server configurations discovered hierarchically.
+	 * More specific configurations override general ones by shallow merge.
+	 */
+	private async loadMergedProjectServers(): Promise<{ servers: Record<string, any>; order: string[] }> {
+		const files = await this.getHierarchicalProjectMcpPaths()
+		const servers: Record<string, any> = {}
+		const order: string[] = []
+
+		for (const file of files) {
+			try {
+				const content = await fs.readFile(file, "utf-8")
+				const cfg = JSON.parse(content)
+				const mcpServers = (cfg && cfg.mcpServers) || {}
+				for (const [name, serverCfg] of Object.entries(mcpServers)) {
+					// Maintain a stable order where more specific definitions appear later
+					const existingIndex = order.indexOf(name)
+					if (existingIndex !== -1) order.splice(existingIndex, 1)
+					order.push(name)
+					servers[name] = serverCfg
+				}
+			} catch {
+				// ignore parse/read errors for individual files
+			}
+		}
+
+		return { servers, order }
 	}
 
 	// Initialize project-level MCP servers
@@ -923,23 +965,17 @@ export class McpHub {
 			try {
 				let serverConfigData: Record<string, any> = {}
 				if (actualSource === "project") {
-					// Get project MCP config path
-					const projectMcpPath = await this.getProjectMcpPath()
-					if (projectMcpPath) {
-						configPath = projectMcpPath
-						const content = await fs.readFile(configPath, "utf-8")
-						serverConfigData = JSON.parse(content)
-					}
+					// Merge MCP servers from all hierarchical project mcp.json files
+					const { servers } = await this.loadMergedProjectServers()
+					serverConfigData.mcpServers = servers
 				} else {
 					// Get global MCP settings path
-					configPath = await this.getMcpSettingsFilePath()
-					const content = await fs.readFile(configPath, "utf-8")
+					const configPathGlobal = await this.getMcpSettingsFilePath()
+					const content = await fs.readFile(configPathGlobal, "utf-8")
 					serverConfigData = JSON.parse(content)
 				}
-				if (serverConfigData) {
-					alwaysAllowConfig = serverConfigData.mcpServers?.[serverName]?.alwaysAllow || []
-					disabledToolsList = serverConfigData.mcpServers?.[serverName]?.disabledTools || []
-				}
+				alwaysAllowConfig = serverConfigData.mcpServers?.[serverName]?.alwaysAllow || []
+				disabledToolsList = serverConfigData.mcpServers?.[serverName]?.disabledTools || []
 			} catch (error) {
 				console.error(`Failed to read tool configuration for ${serverName}:`, error)
 				// Continue with empty configs
@@ -1285,17 +1321,13 @@ export class McpHub {
 		const config = JSON.parse(content)
 		const globalServerOrder = Object.keys(config.mcpServers || {})
 
-		// Get project server order if available
-		const projectMcpPath = await this.getProjectMcpPath()
+		// Get project server order from hierarchical project MCP files
 		let projectServerOrder: string[] = []
-		if (projectMcpPath) {
-			try {
-				const projectContent = await fs.readFile(projectMcpPath, "utf-8")
-				const projectConfig = JSON.parse(projectContent)
-				projectServerOrder = Object.keys(projectConfig.mcpServers || {})
-			} catch (error) {
-				// Silently continue with empty project server order
-			}
+		try {
+			const { order } = await this.loadMergedProjectServers()
+			projectServerOrder = order
+		} catch (error) {
+			// Silently continue with empty project server order
 		}
 
 		// Sort connections: first project servers in their defined order, then global servers in their defined order
@@ -1463,7 +1495,7 @@ export class McpHub {
 			mcpServers: config.mcpServers,
 		}
 
-		await fs.writeFile(configPath, JSON.stringify(updatedConfig, null, 2))
+		await safeWriteJson(configPath, updatedConfig)
 	}
 
 	public async updateServerTimeout(
@@ -1541,7 +1573,7 @@ export class McpHub {
 					mcpServers: config.mcpServers,
 				}
 
-				await fs.writeFile(configPath, JSON.stringify(updatedConfig, null, 2))
+				await safeWriteJson(configPath, updatedConfig)
 
 				// Update server connections with the correct source
 				await this.updateServerConnections(config.mcpServers, serverSource)
@@ -1686,7 +1718,7 @@ export class McpHub {
 			targetList.splice(toolIndex, 1)
 		}
 
-		await fs.writeFile(normalizedPath, JSON.stringify(config, null, 2))
+		await safeWriteJson(normalizedPath, config)
 
 		if (connection) {
 			connection.server.tools = await this.fetchToolsList(serverName, source)
