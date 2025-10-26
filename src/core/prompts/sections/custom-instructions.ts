@@ -261,6 +261,36 @@ async function loadAgentRulesFile(cwd: string): Promise<string> {
 	return ""
 }
 
+/**
+ * Detects if user instructions contain explicit requests against mock/fake data
+ */
+function detectAntiMockDataInstructions(instructions: string): boolean {
+	if (!instructions) return false
+
+	const lowerInstructions = instructions.toLowerCase()
+	const antiMockPatterns = [
+		"no mock data",
+		"no fake data",
+		"no simulation",
+		"no fallback data",
+		"no placeholder",
+		"no dummy data",
+		"no sample data",
+		"don't use mock",
+		"don't use fake",
+		"do not use mock",
+		"do not use fake",
+		"avoid mock",
+		"avoid fake",
+		"real data only",
+		"actual data only",
+		"without mock",
+		"without fake",
+	]
+
+	return antiMockPatterns.some((pattern) => lowerInstructions.includes(pattern))
+}
+
 export async function addCustomInstructions(
 	modeCustomInstructions: string,
 	globalCustomInstructions: string,
@@ -273,6 +303,11 @@ export async function addCustomInstructions(
 	} = {},
 ): Promise<string> {
 	const sections = []
+
+	// Check if user has explicitly requested no mock data
+	const hasAntiMockInstructions =
+		detectAntiMockDataInstructions(globalCustomInstructions) ||
+		detectAntiMockDataInstructions(modeCustomInstructions)
 
 	// Load mode-specific rules if mode is provided
 	let modeRuleContent = ""
@@ -319,6 +354,13 @@ export async function addCustomInstructions(
 		const languageName = isLanguage(options.language) ? LANGUAGES[options.language] : options.language
 		sections.push(
 			`Language Preference:\nYou should always speak and think in the "${languageName}" (${options.language}) language unless the user gives you instructions below to do otherwise.`,
+		)
+	}
+
+	// If user explicitly requested no mock data, add prominent reminder
+	if (hasAntiMockInstructions) {
+		sections.push(
+			`⚠️ DATA HANDLING DIRECTIVE:\nThe user has explicitly instructed NOT to use mock, fake, simulated, or fallback data. You MUST use real data sources and actual implementations only. If you cannot connect to a real data source, explain what's needed instead of creating mock data.`,
 		)
 	}
 

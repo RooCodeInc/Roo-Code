@@ -1605,3 +1605,114 @@ describe("Rules directory reading", () => {
 		expect(result).toBe("\n# Rules from .roorules:\nfallback content\n")
 	})
 })
+
+describe("anti-mock data detection", () => {
+	it("should detect and highlight when user requests no mock data in global instructions", async () => {
+		// Simulate no .roo/rules-test-mode directory
+		statMock.mockRejectedValueOnce({ code: "ENOENT" })
+
+		readFileMock.mockRejectedValue({ code: "ENOENT" })
+
+		const result = await addCustomInstructions(
+			"",
+			"Please do not use mock data, use real APIs",
+			"/test/path",
+			"test-mode",
+		)
+
+		expect(result).toContain("DATA HANDLING DIRECTIVE")
+		expect(result).toContain("explicitly instructed NOT to use mock")
+		expect(result).toContain("real data sources")
+	})
+
+	it("should detect and highlight when user requests no fake data in mode instructions", async () => {
+		// Simulate no .roo/rules-test-mode directory
+		statMock.mockRejectedValueOnce({ code: "ENOENT" })
+
+		readFileMock.mockRejectedValue({ code: "ENOENT" })
+
+		const result = await addCustomInstructions(
+			"Do not use fake data for this feature",
+			"",
+			"/test/path",
+			"test-mode",
+		)
+
+		expect(result).toContain("DATA HANDLING DIRECTIVE")
+		expect(result).toContain("explicitly instructed NOT to use mock")
+	})
+
+	it("should detect various anti-mock patterns", async () => {
+		// Simulate no .roo/rules-test-mode directory
+		statMock.mockRejectedValueOnce({ code: "ENOENT" })
+
+		readFileMock.mockRejectedValue({ code: "ENOENT" })
+
+		const patterns = [
+			"no simulation data",
+			"no fallback data",
+			"no placeholder values",
+			"no dummy data",
+			"don't use mock APIs",
+			"avoid fake responses",
+			"real data only",
+			"actual data only please",
+			"without mock implementations",
+		]
+
+		for (const pattern of patterns) {
+			const result = await addCustomInstructions("", pattern, "/test/path", "test-mode")
+			expect(result).toContain("DATA HANDLING DIRECTIVE")
+		}
+	})
+
+	it("should not add anti-mock directive when not requested", async () => {
+		// Simulate no .roo/rules-test-mode directory
+		statMock.mockRejectedValueOnce({ code: "ENOENT" })
+
+		readFileMock.mockRejectedValue({ code: "ENOENT" })
+
+		const result = await addCustomInstructions(
+			"Build a feature with sample data",
+			"Create a demo application",
+			"/test/path",
+			"test-mode",
+		)
+
+		expect(result).not.toContain("DATA HANDLING DIRECTIVE")
+		expect(result).not.toContain("explicitly instructed NOT to use mock")
+	})
+
+	it("should detect anti-mock instructions case-insensitively", async () => {
+		// Simulate no .roo/rules-test-mode directory
+		statMock.mockRejectedValueOnce({ code: "ENOENT" })
+
+		readFileMock.mockRejectedValue({ code: "ENOENT" })
+
+		const result = await addCustomInstructions("", "NO MOCK DATA please", "/test/path", "test-mode")
+
+		expect(result).toContain("DATA HANDLING DIRECTIVE")
+	})
+
+	it("should place anti-mock directive before other instructions", async () => {
+		// Simulate no .roo/rules-test-mode directory
+		statMock.mockRejectedValueOnce({ code: "ENOENT" })
+
+		readFileMock.mockRejectedValue({ code: "ENOENT" })
+
+		const result = await addCustomInstructions(
+			"Mode specific rules",
+			"No mock data. Use TypeScript",
+			"/test/path",
+			"test-mode",
+		)
+
+		const dataHandlingIndex = result.indexOf("DATA HANDLING DIRECTIVE")
+		const globalIndex = result.indexOf("Global Instructions:")
+		const modeIndex = result.indexOf("Mode-specific Instructions:")
+
+		expect(dataHandlingIndex).toBeGreaterThan(0)
+		expect(dataHandlingIndex).toBeLessThan(globalIndex)
+		expect(globalIndex).toBeLessThan(modeIndex)
+	})
+})
