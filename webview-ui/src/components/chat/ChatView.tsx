@@ -71,6 +71,13 @@ export interface ChatViewRef {
 
 export const MAX_IMAGES_PER_MESSAGE = 20 // This is the Anthropic limit.
 
+// Quote formatting helper for quoted selections
+export function asContextBlock(quote: string): string {
+	// Ensure stable, machine-readable context format
+	const lines = (quote || "").split(/\r?\n/).map((l) => `> ${l}`)
+	return `[context]\n${lines.join("\n")}\n[/context]\n\n`
+}
+
 const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0
 
 const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewProps> = (
@@ -279,6 +286,77 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	function playTts(text: string) {
 		vscode.postMessage({ type: "playTts", text })
 	}
+
+	// ---------------------------
+	// Quote selection integration
+	// ---------------------------
+
+	// Quote selection state and overlay
+	const [activeQuote, setActiveQuote] = useState<string | null>(null)
+	const [quoteOverlay, setQuoteOverlay] = useState<{ visible: boolean; x: number; y: number }>({
+		visible: false,
+		x: 0,
+		y: 0,
+	})
+
+	const getMessageHost = useCallback((node: Node | null): HTMLElement | null => {
+		let el: any = node
+		// If a text node, navigate to its element parent
+		if (el && el.nodeType === Node.TEXT_NODE) el = el.parentElement
+		return el?.closest?.("[data-message-ts]") || null
+	}, [])
+
+	const withinSingleMessage = useCallback(
+		(sel: Selection | null): boolean => {
+			if (!sel || sel.rangeCount === 0) return false
+			const range = sel.getRangeAt(0)
+			const hostA = getMessageHost(range.startContainer)
+			const hostB = getMessageHost(range.endContainer)
+			return !!hostA && hostA === hostB
+		},
+		[getMessageHost],
+	)
+
+	const hideQuoteOverlay = useCallback(() => {
+		setQuoteOverlay((o) => (o.visible ? { ...o, visible: false } : o))
+	}, [])
+
+	const handleSelectionMouseUp = useCallback(() => {
+		setTimeout(() => {
+			const sel = window.getSelection()
+			if (!sel || sel.isCollapsed || !withinSingleMessage(sel)) {
+				hideQuoteOverlay()
+				return
+			}
+			const rect = sel.getRangeAt(0).getBoundingClientRect()
+			const y = Math.max(0, rect.top - 28) // place above selection
+			const x = Math.max(0, rect.left)
+			setQuoteOverlay({ visible: true, x, y })
+		}, 0)
+	}, [hideQuoteOverlay, withinSingleMessage])
+
+	const onQuoteClick = useCallback(() => {
+		const sel = window.getSelection()
+		const text = sel ? sel.toString().trim() : ""
+		if (text) {
+			const clamped = text.length > 1000 ? text.slice(0, 1000) + "…" : text
+			setActiveQuote(clamped)
+		}
+		sel?.removeAllRanges?.()
+		hideQuoteOverlay()
+	}, [hideQuoteOverlay])
+
+	// Global listeners for selection and blur
+	useEvent("mouseup", handleSelectionMouseUp, window)
+	useEvent(
+		"selectionchange",
+		() => {
+			const sel = window.getSelection()
+			if (!sel || sel.isCollapsed || !withinSingleMessage(sel)) hideQuoteOverlay()
+		},
+		document,
+	)
+	useEvent("blur", hideQuoteOverlay, window)
 
 	useDeepCompareEffect(() => {
 		// if last message is an ask, show user ask UI
@@ -593,15 +671,19 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	 */
 	const handleSendMessage = useCallback(
 		(text: string, images: string[]) => {
-			text = text.trim()
+			const userText = (text || "").trim()
+			const prefix = activeQuote ? asContextBlock(activeQuote) : ""
+			const finalText = `${prefix}${userText}`
 
-			if (text || images.length > 0) {
+			if (finalText || images.length > 0) {
 				if (sendingDisabled) {
 					try {
-						console.log("queueMessage", text, images)
-						vscode.postMessage({ type: "queueMessage", text, images })
+						console.log("queueMessage", finalText, images)
+						vscode.postMessage({ type: "queueMessage", text: finalText, images })
 						setInputValue("")
 						setSelectedImages([])
+						// Clear quote after queueing
+						setActiveQuote(null)
 					} catch (error) {
 						console.error(
 							`Failed to queue message: ${error instanceof Error ? error.message : String(error)}`,
@@ -615,16 +697,14 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				userRespondedRef.current = true
 
 				if (messagesRef.current.length === 0) {
-					vscode.postMessage({ type: "newTask", text, images })
+					vscode.postMessage({ type: "newTask", text: finalText, images })
 				} else if (clineAskRef.current) {
 					if (clineAskRef.current === "followup") {
 						markFollowUpAsAnswered()
 					}
 
 					// Use clineAskRef.current
-					switch (
-						clineAskRef.current // Use clineAskRef.current
-					) {
+					switch (clineAskRef.current) {
 						case "followup":
 						case "tool":
 						case "browser_action_launch":
@@ -638,21 +718,22 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							vscode.postMessage({
 								type: "askResponse",
 								askResponse: "messageResponse",
-								text,
+								text: finalText,
 								images,
 							})
 							break
-						// There is no other case that a textfield should be enabled.
 					}
 				} else {
 					// This is a new message in an ongoing task.
-					vscode.postMessage({ type: "askResponse", askResponse: "messageResponse", text, images })
+					vscode.postMessage({ type: "askResponse", askResponse: "messageResponse", text: finalText, images })
 				}
 
+				// Clear quote and reset input after sending
+				setActiveQuote(null)
 				handleChatReset()
 			}
 		},
-		[handleChatReset, markFollowUpAsAnswered, sendingDisabled], // messagesRef and clineAskRef are stable
+		[handleChatReset, markFollowUpAsAnswered, sendingDisabled, activeQuote], // messagesRef and clineAskRef are stable
 	)
 
 	const handleSetChatBoxMessage = useCallback(
@@ -1413,16 +1494,22 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		}
 	}, [groupedMessages.length, scrollToBottomSmooth])
 
-	const handleWheel = useCallback((event: Event) => {
-		const wheelEvent = event as WheelEvent
+	const handleWheel = useCallback(
+		(event: Event) => {
+			const wheelEvent = event as WheelEvent
 
-		if (wheelEvent.deltaY && wheelEvent.deltaY < 0) {
-			if (scrollContainerRef.current?.contains(wheelEvent.target as Node)) {
-				// User scrolled up
-				disableAutoScrollRef.current = true
+			// Hide quote overlay on any wheel scroll
+			hideQuoteOverlay()
+
+			if (wheelEvent.deltaY && wheelEvent.deltaY < 0) {
+				if (scrollContainerRef.current?.contains(wheelEvent.target as Node)) {
+					// User scrolled up
+					disableAutoScrollRef.current = true
+				}
 			}
-		}
-	}, [])
+		},
+		[hideQuoteOverlay],
+	)
 
 	useEvent("wheel", handleWheel, window, { passive: true }) // passive improves scrolling performance
 
@@ -1720,6 +1807,22 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	// Add keyboard event handler
 	const handleKeyDown = useCallback(
 		(event: KeyboardEvent) => {
+			// Quote selection via keyboard: Cmd/Ctrl + Shift + Q
+			if ((event.metaKey || event.ctrlKey) && event.shiftKey && (event.key === "Q" || event.key === "q")) {
+				event.preventDefault()
+				const sel = window.getSelection()
+				if (sel && !sel.isCollapsed && withinSingleMessage(sel)) {
+					const text = sel.toString().trim()
+					if (text) {
+						const clamped = text.length > 1000 ? text.slice(0, 1000) + "…" : text
+						setActiveQuote(clamped)
+						sel.removeAllRanges?.()
+						hideQuoteOverlay()
+					}
+				}
+				return
+			}
+
 			// Check for Command/Ctrl + Period (with or without Shift)
 			// Using event.key to respect keyboard layouts (e.g., Dvorak)
 			if ((event.metaKey || event.ctrlKey) && event.key === ".") {
@@ -1734,7 +1837,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				}
 			}
 		},
-		[switchToNextMode, switchToPreviousMode],
+		[switchToNextMode, switchToPreviousMode, hideQuoteOverlay, withinSingleMessage],
 	)
 
 	useEffect(() => {
@@ -1983,6 +2086,20 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					}
 				}}
 			/>
+			{activeQuote && (
+				<div className="px-3">
+					<div className="flex items-start gap-2 bg-vscode-editor-background border border-vscode-editorGroup-border rounded-sm px-2 py-1 mt-1">
+						<span className="codicon codicon-quote mt-0.5"></span>
+						<div className="text-sm whitespace-pre-wrap flex-1 max-h-20 overflow-hidden">{activeQuote}</div>
+						<button
+							type="button"
+							aria-label="Dismiss quote"
+							onClick={() => setActiveQuote(null)}
+							className="codicon codicon-close text-vscode-descriptionForeground hover:text-vscode-foreground mt-0.5"
+						/>
+					</div>
+				</div>
+			)}
 			<ChatTextArea
 				ref={textAreaRef}
 				inputValue={inputValue}
@@ -2013,6 +2130,17 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 
 			<div id="roo-portal" />
 			<CloudUpsellDialog open={isUpsellOpen} onOpenChange={closeUpsell} onConnect={handleConnect} />
+
+			{quoteOverlay.visible && (
+				<button
+					type="button"
+					aria-label="Quote selection"
+					onClick={onQuoteClick}
+					className="fixed z-[1000] rounded-md min-w-[28px] min-h-[28px] flex items-center justify-center border border-[color-mix(in_srgb,var(--vscode-foreground)_15%,transparent)] shadow-md bg-[color-mix(in_srgb,var(--vscode-button-background)_100%,transparent)] text-vscode-button-foreground focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder"
+					style={{ left: `${quoteOverlay.x}px`, top: `${quoteOverlay.y}px` }}>
+					<span className="codicon codicon-quote text-[16px]" aria-hidden="true"></span>
+				</button>
+			)}
 		</div>
 	)
 }
