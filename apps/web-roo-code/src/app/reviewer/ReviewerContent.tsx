@@ -75,7 +75,8 @@ export function ReviewerContent() {
 							<div className="flex flex-col space-y-3 sm:flex-row sm:space-x-4 sm:space-y-0 md:items-center">
 								<Button
 									size="lg"
-									className="w-full sm:w-auto backdrop-blur-sm border hover:shadow-[0_0_20px_rgba(59,130,246,0.5)] transition-all duration-300">
+									className="w-full sm:w-auto backdrop-blur-sm border hover:shadow-[0_0_20px_rgba(59,130,246,0.5)] transition-all duration-300"
+									asChild>
 									<a
 										href={EXTERNAL_LINKS.CLOUD_APP_SIGNUP_PRO}
 										target="_blank"
