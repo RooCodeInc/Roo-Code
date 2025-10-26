@@ -541,39 +541,32 @@ export class McpHub {
 		const workspaceRoot = this.providerRef.deref()?.cwd ?? getWorkspacePath()
 		if (!workspaceRoot) return []
 
-		const paths: string[] = []
+		const files: string[] = []
 		const visited = new Set<string>()
+		let current = path.resolve(workspaceRoot)
 		const homeDir = os.homedir()
-		let currentPath = path.resolve(workspaceRoot)
 
-		while (currentPath && currentPath !== path.dirname(currentPath)) {
-			if (visited.has(currentPath)) break
-			visited.add(currentPath)
+		while (true) {
+			if (visited.has(current)) break
+			visited.add(current)
 
-			// Stop at the home directory since global config is handled separately
-			if (currentPath === homeDir) break
-
-			const candidate = path.join(currentPath, ".roo", "mcp.json")
+			const candidate = path.join(current, ".roo", "mcp.json")
 			try {
 				await fs.access(candidate)
-				paths.push(candidate)
+				files.push(candidate)
 			} catch {
 				// ignore missing files
 			}
 
-			const parentPath = path.dirname(currentPath)
-			if (
-				parentPath === currentPath ||
-				parentPath === "/" ||
-				(process.platform === "win32" && parentPath === path.parse(currentPath).root)
-			) {
-				break
-			}
-			currentPath = parentPath
+			const parent = path.dirname(current)
+			if (parent === current) break
+			// Stop at the home directory since global config is handled separately
+			if (parent === homeDir) break
+			current = parent
 		}
 
-		// Return from least specific to most specific
-		return paths.reverse()
+		// Return from least specific (closest to root) to most specific (workspace)
+		return files.reverse()
 	}
 
 	/**

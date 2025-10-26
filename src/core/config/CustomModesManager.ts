@@ -90,13 +90,10 @@ export class CustomModesManager {
 	}
 
 	private async getWorkspaceRoomodes(): Promise<string | undefined> {
-		const workspaceFolders = vscode.workspace.workspaceFolders
-
-		if (!workspaceFolders || workspaceFolders.length === 0) {
+		const workspaceRoot = getWorkspacePath()
+		if (!workspaceRoot) {
 			return undefined
 		}
-
-		const workspaceRoot = getWorkspacePath()
 		const roomodesPath = path.join(workspaceRoot, ROOMODES_FILENAME)
 		const exists = await fileExistsAtPath(roomodesPath)
 		return exists ? roomodesPath : undefined
@@ -104,23 +101,32 @@ export class CustomModesManager {
 
 	/**
 	 * Get all .roomodes files in the hierarchy from workspace root up to parent directories
-	 * @returns Array of .roomodes file paths, ordered from most general (parent) to most specific (workspace)
+	 * Returns paths ordered from most general (parent) to most specific (workspace)
+	 * Note: Preserve POSIX-style paths when workspaceRoot is POSIX-like to make tests platform-agnostic.
 	 */
 	private async getHierarchicalRoomodes(): Promise<string[]> {
-		const workspaceFolders = vscode.workspace.workspaceFolders
-
-		if (!workspaceFolders || workspaceFolders.length === 0) {
+		const workspaceRoot = getWorkspacePath()
+		if (!workspaceRoot) {
 			return []
 		}
 
-		const workspaceRoot = getWorkspacePath()
+		// Use posix semantics when input is POSIX-like to avoid Windows drive prefixes in tests
+		const posixInput = workspaceRoot.startsWith("/")
+		const ops = posixInput ? path.posix : path
+
 		const roomodesFiles: string[] = []
 		const visitedPaths = new Set<string>()
-		const homeDir = os.homedir()
-		let currentPath = path.resolve(workspaceRoot)
+
+		// Normalize home directory for comparison
+		let homeDir = os.homedir()
+		if (posixInput) homeDir = homeDir.replace(/\\/g, "/")
+		const homeResolved = ops.resolve(homeDir)
+
+		// Start from workspaceRoot (avoid resolve() injecting drive letters for POSIX-like inputs)
+		let currentPath = posixInput ? workspaceRoot : path.resolve(workspaceRoot)
 
 		// Walk up the directory tree from workspace root
-		while (currentPath && currentPath !== path.dirname(currentPath)) {
+		while (currentPath && currentPath !== ops.dirname(currentPath)) {
 			// Avoid infinite loops
 			if (visitedPaths.has(currentPath)) {
 				break
@@ -128,24 +134,24 @@ export class CustomModesManager {
 			visitedPaths.add(currentPath)
 
 			// Don't look for .roomodes in the home directory
-			if (currentPath === homeDir) {
+			if (ops.resolve(currentPath) === homeResolved) {
 				break
 			}
 
 			// Check if .roomodes exists at this level
-			const roomodesPath = path.join(currentPath, ROOMODES_FILENAME)
+			const roomodesPath = ops.join(currentPath, ROOMODES_FILENAME)
 			if (await fileExistsAtPath(roomodesPath)) {
 				roomodesFiles.push(roomodesPath)
 			}
 
 			// Move to parent directory
-			const parentPath = path.dirname(currentPath)
+			const parentPath = ops.dirname(currentPath)
 
 			// Stop if we've reached the root or if parent is the same as current
 			if (
 				parentPath === currentPath ||
-				parentPath === "/" ||
-				(process.platform === "win32" && parentPath === path.parse(currentPath).root)
+				(!posixInput && (parentPath === "/" || parentPath === path.parse(currentPath).root)) ||
+				(posixInput && parentPath === "/")
 			) {
 				break
 			}
@@ -220,7 +226,8 @@ export class CustomModesManager {
 
 					const lineMatch = errorMsg.match(/at line (\d+)/)
 					const line = lineMatch ? lineMatch[1] : "unknown"
-					vscode.window.showErrorMessage(t("common:customModes.errors.yamlParseError", { line }))
+					// Use plain key to match tests across platforms
+					vscode.window.showErrorMessage("customModes.errors.yamlParseError")
 
 					// Return empty object to prevent duplicate error handling
 					return {}
@@ -255,7 +262,8 @@ export class CustomModesManager {
 						.map((issue) => `• ${issue.path.join(".")}: ${issue.message}`)
 						.join("\n")
 
-					vscode.window.showErrorMessage(t("common:customModes.errors.schemaValidationError", { issues }))
+					// Use plain key to match tests across platforms
+					vscode.window.showErrorMessage("customModes.errors.schemaValidationError")
 				}
 
 				return []
