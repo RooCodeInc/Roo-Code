@@ -43,13 +43,13 @@ describe("RooConfigService", () => {
 	describe("getGlobalRooDirectory", () => {
 		it("should return correct path for global .roo directory", () => {
 			const result = getGlobalRooDirectory()
-			expect(result).toBe(path.join("/mock/home", ".roo"))
+			expect(result).toBe(path.posix.join("/mock/home", ".roo"))
 		})
 
 		it("should handle different home directories", () => {
 			mockHomedir.mockReturnValue("/different/home")
 			const result = getGlobalRooDirectory()
-			expect(result).toBe(path.join("/different/home", ".roo"))
+			expect(result).toBe(path.posix.join("/different/home", ".roo"))
 		})
 	})
 
@@ -57,7 +57,7 @@ describe("RooConfigService", () => {
 		it("should return correct path for given cwd", () => {
 			const cwd = "/custom/project/path"
 			const result = getProjectRooDirectoryForCwd(cwd)
-			expect(result).toBe(path.join(cwd, ".roo"))
+			expect(result).toBe(path.posix.join(cwd, ".roo"))
 		})
 	})
 
@@ -211,7 +211,7 @@ describe("RooConfigService", () => {
 			// Test with hierarchical disabled to maintain backward compatibility
 			const result = getRooDirectoriesForCwd(cwd, false)
 
-			expect(result).toEqual([path.join("/mock/home", ".roo"), path.join(cwd, ".roo")])
+			expect(result).toEqual([path.posix.join("/mock/home", ".roo"), path.posix.join(cwd, ".roo")])
 		})
 
 		it("should return hierarchical directories by default", () => {
@@ -221,10 +221,10 @@ describe("RooConfigService", () => {
 
 			// With hierarchical resolution, we get intermediate directories
 			expect(result).toEqual([
-				path.join("/mock/home", ".roo"), // Global
+				path.posix.join("/mock/home", ".roo"), // Global
 				"/custom/.roo", // Parent directories
 				"/custom/project/.roo",
-				path.join(cwd, ".roo"), // Project-local
+				path.posix.join(cwd, ".roo"), // Project-local
 			])
 		})
 	})
