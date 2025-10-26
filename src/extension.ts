@@ -140,6 +140,26 @@ export async function activate(context: vscode.ExtensionContext) {
 				)
 			}
 		}
+
+		// Flush and reload Roo models cache on auth state change to ensure fresh token is used
+		try {
+			const { flushModels, getModels } = await import("./api/providers/fetchers/modelCache")
+			await flushModels("roo")
+
+			// Reload models with current auth token
+			const sessionToken = cloudService?.authService?.getSessionToken()
+			await getModels({
+				provider: "roo",
+				baseUrl: process.env.ROO_CODE_PROVIDER_URL ?? "https://api.roocode.com/proxy",
+				apiKey: sessionToken,
+			})
+
+			cloudLogger(`[authStateChangedHandler] Reloaded Roo models cache for state: ${data.state}`)
+		} catch (error) {
+			cloudLogger(
+				`[authStateChangedHandler] Failed to reload Roo models cache: ${error instanceof Error ? error.message : String(error)}`,
+			)
+		}
 	}
 
 	settingsUpdatedHandler = async () => {
