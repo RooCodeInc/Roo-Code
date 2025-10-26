@@ -122,6 +122,12 @@ export interface ContextMenuQueryItem {
 	argumentHint?: string
 }
 
+export interface AdditionalSlashCommand {
+	name: string
+	description?: string
+	argumentHint?: string
+}
+
 export function getContextMenuOptions(
 	query: string,
 	selectedType: ContextMenuOptionType | null = null,
@@ -129,6 +135,7 @@ export function getContextMenuOptions(
 	dynamicSearchResults: SearchResult[] = [],
 	modes?: ModeConfig[],
 	commands?: Command[],
+	additionalCommands: AdditionalSlashCommand[] = [],
 ): ContextMenuQueryItem[] {
 	// Handle slash commands for modes and commands
 	// Only process as slash command if the query itself starts with "/" (meaning we're typing a slash command)
@@ -137,11 +144,31 @@ export function getContextMenuOptions(
 		const results: ContextMenuQueryItem[] = []
 
 		// Add command suggestions first (prioritize commands at the top)
-		if (commands?.length) {
+		if ((commands?.length ?? 0) > 0 || additionalCommands.length > 0) {
 			// Create searchable strings array for fzf
-			const searchableCommands = commands.map((command) => ({
+			const commandMap = new Map<string, Command>()
+
+			commands?.forEach((command) => {
+				commandMap.set(command.name, command)
+			})
+
+			additionalCommands.forEach((command) => {
+				if (!commandMap.has(command.name)) {
+					commandMap.set(command.name, {
+						name: command.name,
+						source: "built-in",
+						filePath: `<built-in:${command.name}>`,
+						description: command.description,
+						argumentHint: command.argumentHint,
+					})
+				}
+			})
+
+			const extendedCommands = Array.from(commandMap.values())
+
+			const searchableCommands = extendedCommands.map((command) => ({
 				original: command,
-				searchStr: command.name,
+				searchStr: [command.name, command.description, command.argumentHint].filter(Boolean).join(" "),
 			}))
 
 			// Initialize fzf instance for fuzzy search
@@ -158,7 +185,7 @@ export function getContextMenuOptions(
 						description: result.item.original.description,
 						argumentHint: result.item.original.argumentHint,
 					}))
-				: commands.map((command) => ({
+				: extendedCommands.map((command) => ({
 						type: ContextMenuOptionType.Command,
 						value: command.name,
 						slashCommand: `/${command.name}`,

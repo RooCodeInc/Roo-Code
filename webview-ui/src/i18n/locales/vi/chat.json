@@ -429,5 +429,16 @@
 	"slashCommand": {
 		"wantsToRun": "Roo muốn chạy lệnh slash",
 		"didRun": "Roo đã chạy lệnh slash"
+	},
+	"modelSelector": {
+		"currentField": "Cập nhật mô hình cho cấu hình API hiện tại",
+		"infoTitle": "Cấu hình mô hình",
+		"searchPlaceholder": "Tìm kiếm mô hình...",
+		"title": "Chọn mô hình cho hồ sơ này",
+		"settings": "Cài đặt mô hình"
+	},
+	"apiConfigSelector": {
+		"searchPlaceholder": "Tìm kiếm hồ sơ cấu hình...",
+		"settings": "Cài đặt hồ sơ cấu hình"
 	}
 }

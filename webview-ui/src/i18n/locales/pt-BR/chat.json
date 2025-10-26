@@ -428,5 +428,16 @@
 	"slashCommand": {
 		"wantsToRun": "Roo quer executar um comando slash",
 		"didRun": "Roo executou um comando slash"
+	},
+	"modelSelector": {
+		"currentField": "Atualiza o modelo para a configuração de API atual",
+		"infoTitle": "Configuração do modelo",
+		"searchPlaceholder": "Buscar modelos...",
+		"title": "Selecionar o modelo para este perfil",
+		"settings": "Configurações do modelo"
+	},
+	"apiConfigSelector": {
+		"searchPlaceholder": "Buscar perfis de configuração...",
+		"settings": "Configurações do perfil de configuração"
 	}
 }

@@ -434,5 +434,16 @@
 	"slashCommand": {
 		"wantsToRun": "Roo ingin menjalankan perintah slash",
 		"didRun": "Roo telah menjalankan perintah slash"
+	},
+	"modelSelector": {
+		"currentField": "Memperbarui model untuk konfigurasi API saat ini",
+		"infoTitle": "Konfigurasi Model",
+		"searchPlaceholder": "Cari model...",
+		"title": "Pilih model untuk profil ini",
+		"settings": "Pengaturan Model"
+	},
+	"apiConfigSelector": {
+		"searchPlaceholder": "Cari profil konfigurasi...",
+		"settings": "Pengaturan Profil Konfigurasi"
 	}
 }

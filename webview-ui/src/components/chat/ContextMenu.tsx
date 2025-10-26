@@ -10,6 +10,7 @@ import {
 	ContextMenuQueryItem,
 	getContextMenuOptions,
 	SearchResult,
+	AdditionalSlashCommand,
 } from "@src/utils/context-mentions"
 import { removeLeadingNonAlphanumeric } from "@src/utils/removeLeadingNonAlphanumeric"
 import { vscode } from "@src/utils/vscode"
@@ -30,6 +31,7 @@ interface ContextMenuProps {
 	loading?: boolean
 	dynamicSearchResults?: SearchResult[]
 	commands?: Command[]
+	additionalSlashCommands?: AdditionalSlashCommand[]
 }
 
 const ContextMenu: React.FC<ContextMenuProps> = ({
@@ -43,13 +45,22 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 	modes,
 	dynamicSearchResults = [],
 	commands = [],
+	additionalSlashCommands = [],
 }) => {
 	const [materialIconsBaseUri, setMaterialIconsBaseUri] = useState("")
 	const menuRef = useRef<HTMLDivElement>(null)
 
 	const filteredOptions = useMemo(() => {
-		return getContextMenuOptions(searchQuery, selectedType, queryItems, dynamicSearchResults, modes, commands)
-	}, [searchQuery, selectedType, queryItems, dynamicSearchResults, modes, commands])
+		return getContextMenuOptions(
+			searchQuery,
+			selectedType,
+			queryItems,
+			dynamicSearchResults,
+			modes,
+			commands,
+			additionalSlashCommands,
+		)
+	}, [additionalSlashCommands, searchQuery, selectedType, queryItems, dynamicSearchResults, modes, commands])
 
 	useEffect(() => {
 		if (menuRef.current) {

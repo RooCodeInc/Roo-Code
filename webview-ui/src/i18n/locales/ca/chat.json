@@ -428,5 +428,16 @@
 		"problems": "Problemes",
 		"terminal": "Terminal",
 		"url": "Enganxa la URL per obtenir-ne el contingut"
+	},
+	"modelSelector": {
+		"currentField": "Actualitza el model per a la configuració d'API actual",
+		"infoTitle": "Configuració del model",
+		"searchPlaceholder": "Cerca models...",
+		"title": "Selecciona el model per a aquest perfil",
+		"settings": "Configuració del model"
+	},
+	"apiConfigSelector": {
+		"searchPlaceholder": "Cerca perfils de configuració...",
+		"settings": "Paràmetres del perfil de configuració"
 	}
 }

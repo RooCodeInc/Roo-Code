@@ -284,6 +284,18 @@ Please analyze this codebase and create an AGENTS.md file containing:
 
 Remember: The goal is to create documentation that enables AI assistants to be immediately productive in this codebase, focusing on project-specific knowledge that isn't obvious from the code structure alone.`,
 	},
+	profiles: {
+		name: "profiles",
+		description: "Open the API configuration profile selector in the chat input",
+		content: `Use the /profiles command in the Roo Code chat input to open the API configuration profile selector.
+This built-in command updates the active API configuration profile in the chat UI and does not insert text into the conversation.`,
+	},
+	models: {
+		name: "models",
+		description: "Open the model picker for the active API configuration profile",
+		content: `Use /models in the Roo Code chat input to open the model picker for the active API configuration profile.
+This command lets you switch the stored model for that profile directly from the chat UI.`,
+	},
 }
 
 /**

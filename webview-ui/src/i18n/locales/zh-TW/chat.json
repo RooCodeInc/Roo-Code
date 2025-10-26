@@ -429,5 +429,16 @@
 	"slashCommand": {
 		"wantsToRun": "Roo 想要執行斜線指令",
 		"didRun": "Roo 執行了斜線指令"
+	},
+	"modelSelector": {
+		"currentField": "為目前的 API 設定更新模型",
+		"infoTitle": "模型設定",
+		"searchPlaceholder": "搜尋模型...",
+		"title": "為此設定檔選擇模型",
+		"settings": "模型設定"
+	},
+	"apiConfigSelector": {
+		"searchPlaceholder": "搜尋設定檔...",
+		"settings": "設定檔設定"
 	}
 }

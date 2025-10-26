@@ -65,6 +65,18 @@ describe("Command Autocomplete", () => {
 			expect(options[0].type).toBe(ContextMenuOptionType.NoResults)
 		})
 
+		it("should include additional slash commands", () => {
+			const options = getContextMenuOptions("/models", null, mockQueryItems, [], [], mockCommands, [
+				{ name: "models", description: "Switch models" },
+			])
+
+			const command = options.find(
+				(option) => option.type === ContextMenuOptionType.Command && option.value === "models",
+			)
+			expect(command).toBeDefined()
+			expect(command!.slashCommand).toBe("/models")
+		})
+
 		it("should handle no matching commands", () => {
 			const options = getContextMenuOptions("/nonexistent", null, mockQueryItems, [], [], mockCommands)
 

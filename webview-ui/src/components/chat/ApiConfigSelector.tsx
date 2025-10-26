@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react"
+import { useState, useMemo, useCallback, useEffect, useRef } from "react"
 import { Fzf } from "fzf"
 
 import { cn } from "@/lib/utils"
@@ -20,6 +20,8 @@ interface ApiConfigSelectorProps {
 	listApiConfigMeta: Array<{ id: string; name: string; modelId?: string }>
 	pinnedApiConfigs?: Record<string, boolean>
 	togglePinnedApiConfig: (id: string) => void
+	open?: boolean
+	onOpenChange?: (open: boolean) => void
 }
 
 export const ApiConfigSelector = ({
@@ -32,11 +34,36 @@ export const ApiConfigSelector = ({
 	listApiConfigMeta,
 	pinnedApiConfigs,
 	togglePinnedApiConfig,
+	open,
+	onOpenChange,
 }: ApiConfigSelectorProps) => {
 	const { t } = useAppTranslation()
-	const [open, setOpen] = useState(false)
+	const [internalOpen, setInternalOpen] = useState(false)
 	const [searchValue, setSearchValue] = useState("")
+	const [activeIndex, setActiveIndex] = useState(0)
+	const itemRefs = useRef<Record<string, HTMLDivElement | null>>({})
+	const contentRef = useRef<HTMLDivElement>(null)
+	const initializedActiveRef = useRef(false)
+	const previousValueRef = useRef(value)
 	const portalContainer = useRooPortal("roo-portal")
+	const isControlled = typeof open === "boolean"
+	const currentOpen = isControlled ? open : internalOpen
+
+	const setOpen = useCallback(
+		(isOpen: boolean) => {
+			if (!isControlled) {
+				setInternalOpen(isOpen)
+			}
+			onOpenChange?.(isOpen)
+		},
+		[isControlled, onOpenChange],
+	)
+
+	useEffect(() => {
+		if (!currentOpen) {
+			setSearchValue("")
+		}
+	}, [currentOpen])
 
 	// Create searchable items for fuzzy search.
 	const searchableItems = useMemo(
@@ -71,35 +98,87 @@ export const ApiConfigSelector = ({
 		return { pinnedConfigs: pinned, unpinnedConfigs: unpinned }
 	}, [filteredConfigs, pinnedApiConfigs])
 
+	const visibleConfigs = useMemo(() => [...pinnedConfigs, ...unpinnedConfigs], [pinnedConfigs, unpinnedConfigs])
+
 	const handleSelect = useCallback(
 		(configId: string) => {
 			onChange(configId)
 			setOpen(false)
 			setSearchValue("")
 		},
-		[onChange],
+		[onChange, setOpen],
 	)
+
+	useEffect(() => {
+		if (!currentOpen) {
+			initializedActiveRef.current = false
+			previousValueRef.current = value
+			return
+		}
+
+		const defaultIndex = visibleConfigs.findIndex((config) => config.id === value)
+		const shouldReset = !initializedActiveRef.current || previousValueRef.current !== value || defaultIndex === -1
+		if (shouldReset) {
+			setActiveIndex(defaultIndex >= 0 ? defaultIndex : 0)
+			initializedActiveRef.current = true
+			previousValueRef.current = value
+		}
+	}, [currentOpen, value, visibleConfigs])
+
+	useEffect(() => {
+		if (!currentOpen) return
+
+		const activeConfig = visibleConfigs[activeIndex]
+		if (activeConfig) {
+			itemRefs.current[activeConfig.id]?.scrollIntoView({ block: "nearest" })
+		}
+	}, [activeIndex, currentOpen, visibleConfigs])
+
+	useEffect(() => {
+		if (!visibleConfigs.length && activeIndex !== 0) {
+			setActiveIndex(0)
+			return
+		}
+
+		if (activeIndex >= visibleConfigs.length && visibleConfigs.length > 0) {
+			setActiveIndex(visibleConfigs.length - 1)
+		}
+	}, [activeIndex, visibleConfigs.length])
 
 	const handleEditClick = useCallback(() => {
 		vscode.postMessage({ type: "switchTab", tab: "settings" })
 		setOpen(false)
-	}, [])
+	}, [setOpen])
+
+	const registerItemRef = useCallback(
+		(id: string) => (el: HTMLDivElement | null) => {
+			itemRefs.current[id] = el
+		},
+		[],
+	)
 
 	const renderConfigItem = useCallback(
-		(config: { id: string; name: string; modelId?: string }, isPinned: boolean) => {
+		(config: { id: string; name: string; modelId?: string }, isPinned: boolean, itemIndex: number) => {
 			const isCurrentConfig = config.id === value
+			const isActive = itemIndex === activeIndex
 
 			return (
 				<div
 					key={config.id}
 					onClick={() => handleSelect(config.id)}
+					onMouseEnter={() => setActiveIndex(itemIndex)}
 					className={cn(
 						"px-3 py-1.5 text-sm cursor-pointer flex items-center group",
-						"hover:bg-vscode-list-hoverBackground",
+						isActive && !isCurrentConfig && "bg-vscode-list-hoverBackground",
 						isCurrentConfig &&
 							"bg-vscode-list-activeSelectionBackground text-vscode-list-activeSelectionForeground",
-					)}>
-					<div className="flex-1 min-w-0 flex items-center gap-1 overflow-hidden">
+					)}
+					data-active={isActive ? "true" : undefined}>
+					<div
+						ref={registerItemRef(config.id)}
+						className="flex-1 min-w-0 flex items-center gap-1 overflow-hidden"
+						role="option"
+						aria-selected={isCurrentConfig}>
 						<span className="flex-shrink-0">{config.name}</span>
 						{config.modelId && (
 							<>
@@ -138,11 +217,61 @@ export const ApiConfigSelector = ({
 				</div>
 			)
 		},
-		[value, handleSelect, t, togglePinnedApiConfig],
+		[value, handleSelect, t, togglePinnedApiConfig, activeIndex, registerItemRef],
 	)
 
+	const handleKeyDown = useCallback(
+		(event: React.KeyboardEvent) => {
+			if (!currentOpen) return
+
+			if (event.key === "Escape") {
+				event.preventDefault()
+				setOpen(false)
+				return
+			}
+
+			if (!visibleConfigs.length) {
+				return
+			}
+
+			if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+				event.preventDefault()
+				setActiveIndex((prevIndex) => {
+					if (event.key === "ArrowDown") {
+						return (prevIndex + 1) % visibleConfigs.length
+					}
+					return (prevIndex - 1 + visibleConfigs.length) % visibleConfigs.length
+				})
+				return
+			}
+
+			if (event.key === "Enter") {
+				event.preventDefault()
+				const activeConfig = visibleConfigs[activeIndex]
+				if (activeConfig) {
+					handleSelect(activeConfig.id)
+				}
+			}
+		},
+		[activeIndex, currentOpen, handleSelect, setOpen, visibleConfigs],
+	)
+
+	useEffect(() => {
+		if (!currentOpen) return
+		if (listApiConfigMeta.length <= 6) {
+			contentRef.current?.focus()
+		}
+	}, [currentOpen, listApiConfigMeta.length])
+
+	const handleSearchChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+		setSearchValue(event.target.value)
+		setActiveIndex(0)
+	}, [])
+
+	let displayIndex = 0
+
 	return (
-		<Popover open={open} onOpenChange={setOpen} data-testid="api-config-selector-root">
+		<Popover open={currentOpen} onOpenChange={setOpen} data-testid="api-config-selector-root">
 			<StandardTooltip content={title}>
 				<PopoverTrigger
 					disabled={disabled}
@@ -163,16 +292,17 @@ export const ApiConfigSelector = ({
 				align="start"
 				sideOffset={4}
 				container={portalContainer}
+				tabIndex={-1}
 				className="p-0 overflow-hidden w-[300px]">
-				<div className="flex flex-col w-full">
+				<div ref={contentRef} className="flex flex-col w-full" tabIndex={-1} onKeyDown={handleKeyDown}>
 					{/* Search input or info blurb */}
 					{listApiConfigMeta.length > 6 ? (
 						<div className="relative p-2 border-b border-vscode-dropdown-border">
 							<input
-								aria-label={t("common:ui.search_placeholder")}
+								aria-label={t("chat:apiConfigSelector.searchPlaceholder")}
 								value={searchValue}
-								onChange={(e) => setSearchValue(e.target.value)}
-								placeholder={t("common:ui.search_placeholder")}
+								onChange={handleSearchChange}
+								placeholder={t("chat:apiConfigSelector.searchPlaceholder")}
 								className="w-full h-8 px-2 py-1 text-xs bg-vscode-input-background text-vscode-input-foreground border border-vscode-input-border rounded focus:outline-0"
 								autoFocus
 							/>
@@ -202,7 +332,7 @@ export const ApiConfigSelector = ({
 						) : (
 							<div className="py-1">
 								{/* Pinned configs */}
-								{pinnedConfigs.map((config) => renderConfigItem(config, true))}
+								{pinnedConfigs.map((config) => renderConfigItem(config, true, displayIndex++))}
 
 								{/* Separator between pinned and unpinned */}
 								{pinnedConfigs.length > 0 && unpinnedConfigs.length > 0 && (
@@ -210,7 +340,7 @@ export const ApiConfigSelector = ({
 								)}
 
 								{/* Unpinned configs */}
-								{unpinnedConfigs.map((config) => renderConfigItem(config, false))}
+								{unpinnedConfigs.map((config) => renderConfigItem(config, false, displayIndex++))}
 							</div>
 						)}
 					</div>
@@ -220,9 +350,8 @@ export const ApiConfigSelector = ({
 						<div className="flex flex-row gap-1">
 							<IconButton
 								iconClass="codicon-settings-gear"
-								title={t("chat:edit")}
+								title={t("chat:apiConfigSelector.settings")}
 								onClick={handleEditClick}
-								tooltip={false}
 							/>
 						</div>
 

@@ -422,5 +422,16 @@
 		"problems": "Problems",
 		"terminal": "Terminal",
 		"url": "Paste URL to fetch contents"
+	},
+	"modelSelector": {
+		"currentField": "Updates model for the current API configuration",
+		"infoTitle": "Model Configuration",
+		"searchPlaceholder": "Search models...",
+		"title": "Select model for this profile",
+		"settings": "Model Settings"
+	},
+	"apiConfigSelector": {
+		"searchPlaceholder": "Search configuration profiles...",
+		"settings": "Configuration Profile Settings "
 	}
 }

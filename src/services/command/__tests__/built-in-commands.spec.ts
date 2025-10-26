@@ -5,8 +5,8 @@ describe("Built-in Commands", () => {
 		it("should return all built-in commands", async () => {
 			const commands = await getBuiltInCommands()
 
-			expect(commands).toHaveLength(1)
-			expect(commands.map((cmd) => cmd.name)).toEqual(expect.arrayContaining(["init"]))
+			expect(commands).toHaveLength(3)
+			expect(commands.map((cmd) => cmd.name)).toEqual(expect.arrayContaining(["init", "profiles", "models"]))
 
 			// Verify all commands have required properties
 			commands.forEach((command) => {
@@ -31,6 +31,16 @@ describe("Built-in Commands", () => {
 			expect(initCommand!.description).toBe(
 				"Analyze codebase and create concise AGENTS.md files for AI assistants",
 			)
+
+			const profilesCommand = commands.find((cmd) => cmd.name === "profiles")
+			expect(profilesCommand).toBeDefined()
+			expect(profilesCommand!.content).toContain("/profiles")
+			expect(profilesCommand!.description).toBe("Open the API configuration profile selector in the chat input")
+
+			const modelsCommand = commands.find((cmd) => cmd.name === "models")
+			expect(modelsCommand).toBeDefined()
+			expect(modelsCommand!.content).toContain("/models")
+			expect(modelsCommand!.description).toBe("Open the model picker for the active API configuration profile")
 		})
 	})
 
@@ -48,6 +58,18 @@ describe("Built-in Commands", () => {
 			)
 		})
 
+		it("should return profiles and models commands", async () => {
+			const profilesCommand = await getBuiltInCommand("profiles")
+			expect(profilesCommand).toBeDefined()
+			expect(profilesCommand!.filePath).toBe("<built-in:profiles>")
+			expect(profilesCommand!.description).toBe("Open the API configuration profile selector in the chat input")
+
+			const modelsCommand = await getBuiltInCommand("models")
+			expect(modelsCommand).toBeDefined()
+			expect(modelsCommand!.filePath).toBe("<built-in:models>")
+			expect(modelsCommand!.description).toBe("Open the model picker for the active API configuration profile")
+		})
+
 		it("should return undefined for non-existent command", async () => {
 			const nonExistentCommand = await getBuiltInCommand("non-existent")
 			expect(nonExistentCommand).toBeUndefined()
@@ -63,10 +85,10 @@ describe("Built-in Commands", () => {
 		it("should return all built-in command names", async () => {
 			const names = await getBuiltInCommandNames()
 
-			expect(names).toHaveLength(1)
-			expect(names).toEqual(expect.arrayContaining(["init"]))
+			expect(names).toHaveLength(3)
+			expect(names).toEqual(expect.arrayContaining(["init", "profiles", "models"]))
 			// Order doesn't matter since it's based on filesystem order
-			expect(names.sort()).toEqual(["init"])
+			expect(names.sort()).toEqual(["init", "models", "profiles"])
 		})
 
 		it("should return array of strings", async () => {
@@ -98,6 +120,19 @@ describe("Built-in Commands", () => {
 			expect(content).toContain("rules-debug")
 			expect(content).toContain("rules-ask")
 			expect(content).toContain("rules-architect")
+		})
+
+		it("profiles command should describe UI interaction", async () => {
+			const command = await getBuiltInCommand("profiles")
+			expect(command!.content).toContain("open the API configuration profile selector")
+			expect(command!.content).toContain("/profiles")
+		})
+
+		it("models command should mention alias and profile scope", async () => {
+			const command = await getBuiltInCommand("models")
+			const content = command!.content
+			expect(content).toContain("/models")
+			expect(content).toContain("active API configuration profile")
 		})
 	})
 })

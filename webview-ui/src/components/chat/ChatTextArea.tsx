@@ -7,6 +7,8 @@ import { mentionRegex, mentionRegexGlobal, commandRegexGlobal, unescapeSpaces } 
 import { WebviewMessage } from "@roo/WebviewMessage"
 import { Mode, getAllModes } from "@roo/modes"
 import { ExtensionMessage } from "@roo/ExtensionMessage"
+import type { ProviderName, ProviderSettings } from "@roo-code/types"
+import { modelIdKeys, modelIdKeysByProvider, isTypicalProvider } from "@roo-code/types"
 
 import { vscode } from "@src/utils/vscode"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
@@ -26,6 +28,7 @@ import { StandardTooltip } from "@src/components/ui"
 import Thumbnails from "../common/Thumbnails"
 import { ModeSelector } from "./ModeSelector"
 import { ApiConfigSelector } from "./ApiConfigSelector"
+import { ModelSelector } from "./ModelSelector"
 import { AutoApproveDropdown } from "./AutoApproveDropdown"
 import { MAX_IMAGES_PER_MESSAGE } from "./ChatView"
 import ContextMenu from "./ContextMenu"
@@ -89,6 +92,8 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			clineMessages,
 			commands,
 			cloudUserInfo,
+			apiConfiguration,
+			setApiConfiguration,
 		} = useExtensionState()
 
 		// Find the ID and display text for the currently selected API configuration.
@@ -105,6 +110,21 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 		const [fileSearchResults, setFileSearchResults] = useState<SearchResult[]>([])
 		const [searchLoading, setSearchLoading] = useState(false)
 		const [searchRequestId, setSearchRequestId] = useState<string>("")
+		const [isApiConfigSelectorOpen, setIsApiConfigSelectorOpen] = useState(false)
+		const [isModelSelectorOpen, setIsModelSelectorOpen] = useState(false)
+		const builtInSlashCommands = useMemo(
+			() => [
+				{
+					name: "profiles",
+					description: t("chat:slashCommands.profilesDescription"),
+				},
+				{
+					name: "models",
+					description: t("chat:slashCommands.modelsDescription"),
+				},
+			],
+			[t],
+		)
 
 		// Close dropdown when clicking outside.
 		useEffect(() => {
@@ -214,6 +234,90 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 		const [isEnhancingPrompt, setIsEnhancingPrompt] = useState(false)
 		const [isFocused, setIsFocused] = useState(false)
 
+		const focusInput = useCallback(() => {
+			requestAnimationFrame(() => {
+				textAreaRef.current?.focus()
+			})
+		}, [])
+
+		const handleApiConfigOpenChange = useCallback(
+			(isOpen: boolean) => {
+				setIsApiConfigSelectorOpen(isOpen)
+				if (!isOpen) {
+					focusInput()
+				}
+			},
+			[focusInput, setIsApiConfigSelectorOpen],
+		)
+
+		const handleModelSelectorOpenChange = useCallback(
+			(isOpen: boolean) => {
+				setIsModelSelectorOpen(isOpen)
+				if (!isOpen) {
+					focusInput()
+				}
+			},
+			[focusInput, setIsModelSelectorOpen],
+		)
+
+		const openProfilesCommand = useCallback(() => {
+			setShowContextMenu(false)
+			setSelectedType(null)
+			setSelectedMenuIndex(-1)
+			setSearchQuery("")
+			setInputValue("")
+			setSelectedImages([])
+			setIsApiConfigSelectorOpen(true)
+		}, [
+			setInputValue,
+			setSelectedImages,
+			setShowContextMenu,
+			setSelectedType,
+			setSelectedMenuIndex,
+			setSearchQuery,
+			setIsApiConfigSelectorOpen,
+		])
+
+		const openModelsCommand = useCallback(() => {
+			setShowContextMenu(false)
+			setSelectedType(null)
+			setSelectedMenuIndex(-1)
+			setSearchQuery("")
+			setInputValue("")
+			setSelectedImages([])
+			setIsModelSelectorOpen(true)
+		}, [
+			setInputValue,
+			setSelectedImages,
+			setShowContextMenu,
+			setSelectedType,
+			setSelectedMenuIndex,
+			setSearchQuery,
+			setIsModelSelectorOpen,
+		])
+
+		const tryHandleBuiltInSlashCommand = useCallback(
+			(rawText: string) => {
+				const trimmed = rawText.trim().toLowerCase()
+				if (!trimmed.startsWith("/")) {
+					return false
+				}
+
+				if (trimmed === "/profiles") {
+					openProfilesCommand()
+					return true
+				}
+
+				if (trimmed === "/models") {
+					openModelsCommand()
+					return true
+				}
+
+				return false
+			},
+			[openModelsCommand, openProfilesCommand],
+		)
+
 		// Use custom hook for prompt history navigation
 		const { handleHistoryNavigation, resetHistoryNavigation, resetOnInputChange } = usePromptHistory({
 			clineMessages,
@@ -308,6 +412,16 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				}
 
 				if (type === ContextMenuOptionType.Command && value) {
+					if (value === "profiles") {
+						openProfilesCommand()
+						return
+					}
+
+					if (value === "models") {
+						openModelsCommand()
+						return
+					}
+
 					// Handle command selection.
 					setSelectedMenuIndex(-1)
 					setInputValue("")
@@ -409,6 +523,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 								fileSearchResults,
 								allModes,
 								commands,
+								builtInSlashCommands,
 							)
 							const optionsLength = options.length
 
@@ -447,6 +562,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 							fileSearchResults,
 							allModes,
 							commands,
+							builtInSlashCommands,
 						)[selectedMenuIndex]
 						if (
 							selectedOption &&
@@ -469,6 +585,10 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 
 				if (event.key === "Enter" && !event.shiftKey && !isComposing) {
 					event.preventDefault()
+					const trimmed = inputValue.trim()
+					if (tryHandleBuiltInSlashCommand(trimmed)) {
+						return
+					}
 
 					// Always call onSend - let ChatView handle queueing when disabled
 					resetHistoryNavigation()
@@ -536,6 +656,8 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				handleHistoryNavigation,
 				resetHistoryNavigation,
 				commands,
+				builtInSlashCommands,
+				tryHandleBuiltInSlashCommand,
 			],
 		)
 
@@ -893,6 +1015,21 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 
 		const placeholderBottomText = `\n(${t("chat:addContext")}${shouldDisableImages ? `, ${t("chat:dragFiles")}` : `, ${t("chat:dragFilesImages")}`})`
 
+		const resolveModelField = useCallback((provider: ProviderName | undefined, config?: ProviderSettings) => {
+			if (provider && isTypicalProvider(provider) && modelIdKeysByProvider[provider]) {
+				return modelIdKeysByProvider[provider]
+			}
+
+			if (config) {
+				const existingKey = modelIdKeys.find((key) => config[key])
+				if (existingKey) {
+					return existingKey
+				}
+			}
+
+			return "apiModelId" as const
+		}, [])
+
 		// Common mode selector handler
 		const handleModeChange = useCallback(
 			(value: Mode) => {
@@ -906,6 +1043,52 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 		const handleApiConfigChange = useCallback((value: string) => {
 			vscode.postMessage({ type: "loadApiConfigurationById", text: value })
 		}, [])
+
+		const handleModelSelect = useCallback(
+			(modelId: string) => {
+				if (!apiConfiguration) {
+					setIsModelSelectorOpen(false)
+					return
+				}
+
+				const provider = apiConfiguration.apiProvider as ProviderName | undefined
+				const modelField = resolveModelField(provider, apiConfiguration)
+				const currentModel = apiConfiguration[modelField]
+
+				if (currentModel === modelId) {
+					setIsModelSelectorOpen(false)
+					return
+				}
+
+				const updatedConfiguration: ProviderSettings = {
+					...apiConfiguration,
+					[modelField]: modelId,
+				}
+
+				setApiConfiguration(updatedConfiguration)
+
+				if (currentApiConfigName) {
+					vscode.postMessage({
+						type: "saveApiConfiguration",
+						text: currentApiConfigName,
+						apiConfiguration: updatedConfiguration,
+					})
+				} else {
+					console.warn("Cannot persist model change without an active configuration name")
+				}
+
+				setIsModelSelectorOpen(false)
+			},
+			[apiConfiguration, currentApiConfigName, resolveModelField, setApiConfiguration, setIsModelSelectorOpen],
+		)
+
+		const handleSendClick = useCallback(() => {
+			const trimmed = inputValue.trim()
+			if (tryHandleBuiltInSlashCommand(trimmed)) {
+				return
+			}
+			onSend()
+		}, [inputValue, onSend, tryHandleBuiltInSlashCommand])
 
 		return (
 			<div
@@ -967,6 +1150,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 									loading={searchLoading}
 									dynamicSearchResults={fileSearchResults}
 									commands={commands}
+									additionalSlashCommands={builtInSlashCommands}
 								/>
 							</div>
 						)}
@@ -1158,7 +1342,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 									<button
 										aria-label={t("chat:sendMessage")}
 										disabled={false}
-										onClick={onSend}
+										onClick={handleSendClick}
 										className={cn(
 											"relative inline-flex items-center justify-center",
 											"bg-transparent border-none p-1.5",
@@ -1231,6 +1415,16 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 							listApiConfigMeta={listApiConfigMeta || []}
 							pinnedApiConfigs={pinnedApiConfigs}
 							togglePinnedApiConfig={togglePinnedApiConfig}
+							open={isApiConfigSelectorOpen}
+							onOpenChange={handleApiConfigOpenChange}
+						/>
+						<ModelSelector
+							apiConfiguration={apiConfiguration}
+							title={t("chat:modelSelector.title")}
+							triggerClassName="min-w-[28px] text-ellipsis overflow-hidden flex-shrink"
+							open={isModelSelectorOpen}
+							onOpenChange={handleModelSelectorOpenChange}
+							onModelSelect={(modelId) => handleModelSelect(modelId)}
 						/>
 						<AutoApproveDropdown triggerClassName="min-w-[28px] text-ellipsis overflow-hidden flex-shrink" />
 					</div>

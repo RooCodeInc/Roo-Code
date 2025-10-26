@@ -429,5 +429,16 @@
 	"slashCommand": {
 		"wantsToRun": "Roo хочет выполнить слеш-команду",
 		"didRun": "Roo выполнил слеш-команду"
+	},
+	"modelSelector": {
+		"currentField": "Обновляет модель для текущей конфигурации API",
+		"infoTitle": "Конфигурация модели",
+		"searchPlaceholder": "Поиск моделей...",
+		"title": "Выберите модель для этого профиля",
+		"settings": "Настройки модели"
+	},
+	"apiConfigSelector": {
+		"searchPlaceholder": "Поиск профилей конфигурации...",
+		"settings": "Настройки профиля конфигурации"
 	}
 }

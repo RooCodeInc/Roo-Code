@@ -429,5 +429,16 @@
 	"slashCommand": {
 		"wantsToRun": "Roo bir slash komutu çalıştırmak istiyor",
 		"didRun": "Roo bir slash komutu çalıştırdı"
+	},
+	"modelSelector": {
+		"currentField": "Geçerli API yapılandırması için modeli günceller",
+		"infoTitle": "Model Yapılandırması",
+		"searchPlaceholder": "Modelleri ara...",
+		"title": "Bu profil için modeli seç",
+		"settings": "Model Ayarları"
+	},
+	"apiConfigSelector": {
+		"searchPlaceholder": "Yapılandırma profillerini ara...",
+		"settings": "Yapılandırma Profili Ayarları"
 	}
 }

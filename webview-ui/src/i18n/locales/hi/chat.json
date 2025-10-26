@@ -428,5 +428,16 @@
 	"slashCommand": {
 		"wantsToRun": "Roo एक स्लैश कमांड चलाना चाहता है",
 		"didRun": "Roo ने एक स्लैश कमांड चलाया"
+	},
+	"modelSelector": {
+		"currentField": "वर्तमान API कॉन्फ़िगरेशन के लिए मॉडल अपडेट करता है",
+		"infoTitle": "मॉडल कॉन्फ़िगरेशन",
+		"searchPlaceholder": "मॉडलों की खोज...",
+		"title": "इस प्रोफ़ाइल के लिए मॉडल चुनें",
+		"settings": "मॉडल सेटिंग्स"
+	},
+	"apiConfigSelector": {
+		"searchPlaceholder": "कॉन्फ़िगरेशन प्रोफ़ाइल खोजें...",
+		"settings": "कॉन्फ़िगरेशन प्रोफ़ाइल सेटिंग्स"
 	}
 }

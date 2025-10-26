@@ -428,5 +428,16 @@
 	"slashCommand": {
 		"wantsToRun": "Roo가 슬래시 명령어를 실행하려고 합니다",
 		"didRun": "Roo가 슬래시 명령어를 실행했습니다"
+	},
+	"modelSelector": {
+		"currentField": "현재 API 구성에 대한 모델을 업데이트합니다",
+		"infoTitle": "모델 구성",
+		"searchPlaceholder": "모델 검색...",
+		"title": "이 프로필에 대한 모델 선택",
+		"settings": "모델 설정"
+	},
+	"apiConfigSelector": {
+		"searchPlaceholder": "구성 프로필 검색...",
+		"settings": "구성 프로필 설정"
 	}
 }

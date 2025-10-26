@@ -428,5 +428,16 @@
 	"slashCommand": {
 		"wantsToRun": "Rooはスラッシュコマンドを実行したい",
 		"didRun": "Rooはスラッシュコマンドを実行しました"
+	},
+	"modelSelector": {
+		"currentField": "現在の API 構成のモデルを更新します",
+		"infoTitle": "モデル設定",
+		"searchPlaceholder": "モデルを検索...",
+		"title": "このプロファイルのモデルを選択",
+		"settings": "モデル設定"
+	},
+	"apiConfigSelector": {
+		"searchPlaceholder": "構成プロファイルを検索...",
+		"settings": "構成プロファイルの設定"
 	}
 }

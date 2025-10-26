@@ -139,7 +139,7 @@ describe("ApiConfigSelector", () => {
 		const trigger = screen.getByTestId("dropdown-trigger")
 		fireEvent.click(trigger)
 
-		const searchInput = screen.getByPlaceholderText("common:ui.search_placeholder")
+		const searchInput = screen.getByPlaceholderText("chat:apiConfigSelector.searchPlaceholder")
 		expect(searchInput).toBeInTheDocument()
 	})
 
@@ -150,7 +150,7 @@ describe("ApiConfigSelector", () => {
 		fireEvent.click(trigger)
 
 		// Should not have search input
-		expect(screen.queryByPlaceholderText("common:ui.search_placeholder")).not.toBeInTheDocument()
+		expect(screen.queryByPlaceholderText("chat:apiConfigSelector.searchPlaceholder")).not.toBeInTheDocument()
 		// Should have info blurb
 		expect(screen.getByText("prompts:apiConfiguration.select")).toBeInTheDocument()
 	})
@@ -173,7 +173,7 @@ describe("ApiConfigSelector", () => {
 		const trigger = screen.getByTestId("dropdown-trigger")
 		fireEvent.click(trigger)
 
-		const searchInput = screen.getByPlaceholderText("common:ui.search_placeholder")
+		const searchInput = screen.getByPlaceholderText("chat:apiConfigSelector.searchPlaceholder")
 		fireEvent.change(searchInput, { target: { value: "Config 2" } })
 
 		// Wait for the filtering to take effect
@@ -203,7 +203,7 @@ describe("ApiConfigSelector", () => {
 		const trigger = screen.getByTestId("dropdown-trigger")
 		fireEvent.click(trigger)
 
-		const searchInput = screen.getByPlaceholderText("common:ui.search_placeholder")
+		const searchInput = screen.getByPlaceholderText("chat:apiConfigSelector.searchPlaceholder")
 		fireEvent.change(searchInput, { target: { value: "NonExistentConfig" } })
 
 		await waitFor(() => {
@@ -229,7 +229,7 @@ describe("ApiConfigSelector", () => {
 		const trigger = screen.getByTestId("dropdown-trigger")
 		fireEvent.click(trigger)
 
-		const searchInput = screen.getByPlaceholderText("common:ui.search_placeholder") as HTMLInputElement
+		const searchInput = screen.getByPlaceholderText("chat:apiConfigSelector.searchPlaceholder") as HTMLInputElement
 		fireEvent.change(searchInput, { target: { value: "test" } })
 
 		expect(searchInput.value).toBe("test")
@@ -337,7 +337,9 @@ describe("ApiConfigSelector", () => {
 
 		// Find the settings button by its icon class within the popover content
 		const popoverContent = screen.getByTestId("popover-content")
-		const settingsButton = popoverContent.querySelector('[aria-label="chat:edit"]') as HTMLElement
+		const settingsButton = popoverContent.querySelector(
+			'[aria-label="chat:apiConfigSelector.settings"]',
+		) as HTMLElement
 		expect(settingsButton).toBeInTheDocument()
 		fireEvent.click(settingsButton)
 
@@ -399,7 +401,7 @@ describe("ApiConfigSelector", () => {
 		fireEvent.click(trigger)
 
 		// Should render info blurb instead of search for empty list
-		expect(screen.queryByPlaceholderText("common:ui.search_placeholder")).not.toBeInTheDocument()
+		expect(screen.queryByPlaceholderText("chat:apiConfigSelector.searchPlaceholder")).not.toBeInTheDocument()
 		expect(screen.getByText("prompts:apiConfiguration.select")).toBeInTheDocument()
 		expect(screen.getByText("prompts:apiConfiguration.title")).toBeInTheDocument()
 	})
@@ -422,7 +424,7 @@ describe("ApiConfigSelector", () => {
 		const trigger = screen.getByTestId("dropdown-trigger")
 		fireEvent.click(trigger)
 
-		const searchInput = screen.getByPlaceholderText("common:ui.search_placeholder") as HTMLInputElement
+		const searchInput = screen.getByPlaceholderText("chat:apiConfigSelector.searchPlaceholder") as HTMLInputElement
 		fireEvent.change(searchInput, { target: { value: "Config" } })
 
 		// Pin a config
