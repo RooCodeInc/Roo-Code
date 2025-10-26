@@ -298,6 +298,18 @@
 			"selectModel": "Başlamak için Ayarlar'da Roo Code Cloud sağlayıcısından <code>roo/code-supernova</code>'yı seçin.",
 			"goToSettingsButton": "Ayarlar'a Git"
 		},
+		"release": {
+			"heading": "Uzantıdaki yenilikler:",
+			"fileReading": "Bağlam taşmalarını önleyen akıllı dosya okuma",
+			"browserUse": "Görüntü destekli tüm modeller için tarayıcı kullanım aracı etkinleştirildi",
+			"bugFixes": "Birçok hata düzeltmesi ve model güncellemesi"
+		},
+		"cloudAgents": {
+			"heading": "Cloud'daki yenilikler:",
+			"feature": "Roo Code'un ilk Cloud Agent'ını tanıtıyoruz, <bold>PR Reviewer</bold>.",
+			"description": "Roo'yu bulutta çalıştırarak anında son derece yüksek kaliteli kod incelemeleri sağlar. Roo'yu oluşturmak için yoğun bir şekilde kullandık ve şimdi topluluk için de kullanılabilir.",
+			"createAgentButton": "PR Reviewer'ı Dene"
+		},
 		"socialLinks": "Bize <xLink>X</xLink>, <discordLink>Discord</discordLink>, veya <redditLink>r/RooCode</redditLink>'da katılın 🚀"
 	},
 	"browser": {

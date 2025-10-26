@@ -58,34 +58,14 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 			const cloudService = CloudService.instance
 
 			this.authStateListener = (state: { state: AuthState }) => {
-				if (state.state === "active-session") {
-					const newToken = cloudService.authService?.getSessionToken()
-					this.client = new OpenAI({
-						baseURL: this.baseURL,
-						apiKey: newToken ?? "unauthenticated",
-						defaultHeaders: DEFAULT_HEADERS,
-					})
-
-					// Flush cache and reload models with the new auth token
-					flushModels("roo")
-						.then(() => {
-							return this.loadDynamicModels(this.fetcherBaseURL, newToken)
-						})
-						.catch((error) => {
-							console.error("[RooHandler] Failed to reload models after auth:", error)
-						})
-				} else if (state.state === "logged-out") {
-					this.client = new OpenAI({
-						baseURL: this.baseURL,
-						apiKey: "unauthenticated",
-						defaultHeaders: DEFAULT_HEADERS,
-					})
-
-					// Flush cache when logged out
-					flushModels("roo").catch((error) => {
-						console.error("[RooHandler] Failed to flush models on logout:", error)
-					})
-				}
+				// Update OpenAI client with current auth token
+				// Note: Model cache flush/reload is handled by extension.ts authStateChangedHandler
+				const newToken = cloudService.authService?.getSessionToken()
+				this.client = new OpenAI({
+					baseURL: this.baseURL,
+					apiKey: newToken ?? "unauthenticated",
+					defaultHeaders: DEFAULT_HEADERS,
+				})
 			}
 
 			cloudService.on("auth-state-changed", this.authStateListener)
