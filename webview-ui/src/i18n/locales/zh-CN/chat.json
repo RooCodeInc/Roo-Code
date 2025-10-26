@@ -414,7 +414,9 @@
 			"description": "确定要删除命令 \"{{name}}\" 吗？此操作无法撤销。",
 			"cancel": "取消",
 			"confirm": "删除"
-		}
+		},
+		"profilesDescription": "切换 API 配置文件",
+		"modelsDescription": "为活动配置文件切换模型"
 	},
 	"contextMenu": {
 		"noResults": "无结果",

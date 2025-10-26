@@ -414,7 +414,9 @@
 			"description": "您確定要刪除「{{name}}」命令嗎？此操作無法復原。",
 			"cancel": "取消",
 			"confirm": "刪除"
-		}
+		},
+		"profilesDescription": "切換 API 設定檔",
+		"modelsDescription": "為作用中的設定檔切換模型"
 	},
 	"contextMenu": {
 		"noResults": "沒有結果",

@@ -413,7 +413,9 @@
 			"description": "Sei sicuro di voler eliminare il comando \"{{name}}\"? Questa azione non può essere annullata.",
 			"cancel": "Annulla",
 			"confirm": "Elimina"
-		}
+		},
+		"profilesDescription": "Passa tra i profili di configurazione API",
+		"modelsDescription": "Cambia i modelli per il profilo attivo"
 	},
 	"contextMenu": {
 		"noResults": "Nessun risultato",

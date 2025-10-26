@@ -407,7 +407,9 @@
 			"description": "Are you sure you want to delete the command \"{{name}}\"? This action cannot be undone.",
 			"cancel": "Cancel",
 			"confirm": "Delete"
-		}
+		},
+		"profilesDescription": "Switch API configuration profiles",
+		"modelsDescription": "Switch models for the active profile"
 	},
 	"slashCommand": {
 		"wantsToRun": "Roo wants to run a slash command",

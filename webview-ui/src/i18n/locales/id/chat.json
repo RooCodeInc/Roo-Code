@@ -419,7 +419,9 @@
 			"description": "Apakah Anda yakin ingin menghapus perintah \"{{name}}\"? Tindakan ini tidak dapat dibatalkan.",
 			"cancel": "Batal",
 			"confirm": "Hapus"
-		}
+		},
+		"profilesDescription": "Beralih profil konfigurasi API",
+		"modelsDescription": "Beralih model untuk profil aktif"
 	},
 	"contextMenu": {
 		"noResults": "Tidak ada hasil",

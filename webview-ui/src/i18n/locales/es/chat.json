@@ -413,7 +413,9 @@
 			"description": "¿Estás seguro de que quieres eliminar el comando \"{{name}}\"? Esta acción no se puede deshacer.",
 			"cancel": "Cancelar",
 			"confirm": "Eliminar"
-		}
+		},
+		"profilesDescription": "Cambiar perfiles de configuración de API",
+		"modelsDescription": "Cambiar modelos para el perfil activo"
 	},
 	"contextMenu": {
 		"noResults": "No hay resultados",

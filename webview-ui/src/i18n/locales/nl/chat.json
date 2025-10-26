@@ -413,7 +413,9 @@
 			"description": "Weet je zeker dat je de opdracht \"{{name}}\" wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
 			"cancel": "Annuleren",
 			"confirm": "Verwijderen"
-		}
+		},
+		"profilesDescription": "Wissel tussen API-configuratieprofielen",
+		"modelsDescription": "Schakel modellen voor het actieve profiel"
 	},
 	"contextMenu": {
 		"noResults": "Geen resultaten",

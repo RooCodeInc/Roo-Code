@@ -413,7 +413,9 @@
 			"description": "Êtes-vous sûr de vouloir supprimer la commande \"{{name}}\" ? Cette action ne peut pas être annulée.",
 			"cancel": "Annuler",
 			"confirm": "Supprimer"
-		}
+		},
+		"profilesDescription": "Changer de profils de configuration de l’API",
+		"modelsDescription": "Changer de modèles pour le profil actif"
 	},
 	"contextMenu": {
 		"noResults": "Aucun résultat",

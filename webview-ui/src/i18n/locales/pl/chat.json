@@ -413,7 +413,9 @@
 			"description": "Czy na pewno chcesz usunąć polecenie \"{{name}}\"? Tej akcji nie można cofnąć.",
 			"cancel": "Anuluj",
 			"confirm": "Usuń"
-		}
+		},
+		"profilesDescription": "Przełącz profile konfiguracji API",
+		"modelsDescription": "Przełącz modele dla aktywnego profilu"
 	},
 	"contextMenu": {
 		"noResults": "Brak wyników",

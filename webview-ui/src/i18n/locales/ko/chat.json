@@ -413,7 +413,9 @@
 			"description": "\"{{name}}\" 명령을 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.",
 			"cancel": "취소",
 			"confirm": "삭제"
-		}
+		},
+		"profilesDescription": "API 구성 프로필 전환",
+		"modelsDescription": "활성 프로필의 모델 전환"
 	},
 	"contextMenu": {
 		"noResults": "결과 없음",

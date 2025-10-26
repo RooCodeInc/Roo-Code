@@ -413,7 +413,9 @@
 			"description": "Estàs segur que vols eliminar l'ordre \"{{name}}\"? Aquesta acció no es pot desfer.",
 			"cancel": "Cancel·lar",
 			"confirm": "Eliminar"
-		}
+		},
+		"profilesDescription": "Canvia els perfils de configuració de l'API",
+		"modelsDescription": "Canvia els models per al perfil actiu"
 	},
 	"queuedMessages": {
 		"title": "Missatges en cua",

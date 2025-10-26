@@ -414,7 +414,9 @@
 			"description": "Bạn có chắc chắn muốn xóa lệnh \"{{name}}\" không? Hành động này không thể hoàn tác.",
 			"cancel": "Hủy",
 			"confirm": "Xóa"
-		}
+		},
+		"profilesDescription": "Chuyển đổi hồ sơ cấu hình API",
+		"modelsDescription": "Chuyển đổi mô hình cho hồ sơ đang hoạt động"
 	},
 	"contextMenu": {
 		"noResults": "Không có kết quả",

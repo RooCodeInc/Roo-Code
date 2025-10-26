@@ -414,7 +414,9 @@
 			"description": "\"{{name}}\" komutunu silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
 			"cancel": "İptal",
 			"confirm": "Sil"
-		}
+		},
+		"profilesDescription": "API yapılandırma profilleri arasında geçiş yap",
+		"modelsDescription": "Etkin profil için modelleri değiştir"
 	},
 	"contextMenu": {
 		"noResults": "Sonuç yok",

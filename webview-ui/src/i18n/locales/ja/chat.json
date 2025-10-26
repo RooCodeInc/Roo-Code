@@ -413,7 +413,9 @@
 			"description": "\"{{name}}\" コマンドを削除してもよろしいですか？この操作は元に戻せません。",
 			"cancel": "キャンセル",
 			"confirm": "削除"
-		}
+		},
+		"profilesDescription": "API 構成プロファイルを切り替える",
+		"modelsDescription": "アクティブなプロファイルのモデルを切り替える"
 	},
 	"contextMenu": {
 		"noResults": "結果なし",
