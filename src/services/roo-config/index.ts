@@ -25,6 +25,10 @@ import fs from "fs/promises"
  */
 export function getGlobalRooDirectory(): string {
 	const homeDir = os.homedir()
+	// Preserve POSIX-style paths when the homedir is expressed as POSIX (e.g., in tests on Windows)
+	if (homeDir.startsWith("/")) {
+		return path.posix.join(homeDir, ".roo")
+	}
 	return path.join(homeDir, ".roo")
 }
 
@@ -58,7 +62,8 @@ export function getGlobalRooDirectory(): string {
  * ```
  */
 export function getProjectRooDirectoryForCwd(cwd: string): string {
-	return path.join(cwd, ".roo")
+	// If the provided cwd is POSIX-like (starts with "/"), keep POSIX semantics cross-platform
+	return cwd.startsWith("/") ? path.posix.join(cwd, ".roo") : path.join(cwd, ".roo")
 }
 
 /**
@@ -157,11 +162,20 @@ export async function readFileIfExists(filePath: string): Promise<string | null>
  */
 export function getRooDirectoriesForCwd(cwd: string, enableHierarchical: boolean = true): string[] {
 	const directories: string[] = []
+	const posixInput = cwd.startsWith("/")
+	const ops = posixInput ? path.posix : path
+
+	// Resolve global directory first and normalize for POSIX-like inputs
 	const globalDir = getGlobalRooDirectory()
-	const homeDir = os.homedir()
+	const normalizedGlobalDir =
+		posixInput && !globalDir.startsWith("/")
+			? ops.join(os.homedir().replace(/\\/g, "/"), ".roo")
+			: posixInput
+				? globalDir.replace(/\\/g, "/")
+				: globalDir
 
 	// Add global directory first
-	directories.push(globalDir)
+	directories.push(normalizedGlobalDir)
 
 	if (!enableHierarchical) {
 		// Legacy behavior: only global and project-local
@@ -171,11 +185,17 @@ export function getRooDirectoriesForCwd(cwd: string, enableHierarchical: boolean
 
 	// Hierarchical resolution: walk up from cwd to find all .roo directories
 	const visitedPaths = new Set<string>()
-	let currentPath = path.resolve(cwd)
+	// Resolve current path using the chosen ops
+	let currentPath = posixInput ? path.posix.resolve(cwd) : path.resolve(cwd)
 	const hierarchicalDirs: string[] = []
 
+	// Normalize homeDir for comparison
+	let homeDir = os.homedir()
+	if (posixInput) homeDir = homeDir.replace(/\\/g, "/")
+	const homeResolved = posixInput ? path.posix.resolve(homeDir) : path.resolve(homeDir)
+
 	// Walk up the directory tree
-	while (currentPath && currentPath !== path.dirname(currentPath)) {
+	while (currentPath && currentPath !== ops.dirname(currentPath)) {
 		// Avoid infinite loops
 		if (visitedPaths.has(currentPath)) {
 			break
@@ -183,24 +203,22 @@ export function getRooDirectoriesForCwd(cwd: string, enableHierarchical: boolean
 		visitedPaths.add(currentPath)
 
 		// Skip if we've reached the home directory (global .roo is already added)
-		if (currentPath === homeDir) {
+		if (currentPath === homeResolved) {
 			break
 		}
 
-		// Check if .roo directory exists at this level
-		const rooDir = path.join(currentPath, ".roo")
-		// We'll add it regardless to allow for directories that may be created later
-		// The calling code should check for existence when reading files
+		// Add .roo directory for this level
+		const rooDir = ops.join(currentPath, ".roo")
 		hierarchicalDirs.push(rooDir)
 
 		// Move to parent directory
-		const parentPath = path.dirname(currentPath)
+		const parentPath = ops.dirname(currentPath)
 
 		// Stop if we've reached the root or if parent is the same as current
 		if (
 			parentPath === currentPath ||
-			parentPath === "/" ||
-			(process.platform === "win32" && parentPath === path.parse(currentPath).root)
+			(!posixInput && (parentPath === "/" || parentPath === path.parse(currentPath).root)) ||
+			(posixInput && parentPath === "/")
 		) {
 			break
 		}
