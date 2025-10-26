@@ -43,13 +43,13 @@ describe("RooConfigService", () => {
 	describe("getGlobalRooDirectory", () => {
 		it("should return correct path for global .roo directory", () => {
 			const result = getGlobalRooDirectory()
-			expect(result).toBe(path.posix.join("/mock/home", ".roo"))
+			expect(path.normalize(result)).toBe(path.normalize(path.join("/mock/home", ".roo")))
 		})
 
 		it("should handle different home directories", () => {
 			mockHomedir.mockReturnValue("/different/home")
 			const result = getGlobalRooDirectory()
-			expect(result).toBe(path.posix.join("/different/home", ".roo"))
+			expect(path.normalize(result)).toBe(path.normalize(path.join("/different/home", ".roo")))
 		})
 	})
 
@@ -57,7 +57,7 @@ describe("RooConfigService", () => {
 		it("should return correct path for given cwd", () => {
 			const cwd = "/custom/project/path"
 			const result = getProjectRooDirectoryForCwd(cwd)
-			expect(result).toBe(path.posix.join(cwd, ".roo"))
+			expect(path.normalize(result)).toBe(path.normalize(path.join(cwd, ".roo")))
 		})
 	})
 
@@ -211,7 +211,9 @@ describe("RooConfigService", () => {
 			// Test with hierarchical disabled to maintain backward compatibility
 			const result = getRooDirectoriesForCwd(cwd, false)
 
-			expect(result).toEqual([path.posix.join("/mock/home", ".roo"), path.posix.join(cwd, ".roo")])
+			expect(result.map(path.normalize)).toEqual(
+				[path.join("/mock/home", ".roo"), path.join(cwd, ".roo")].map(path.normalize),
+			)
 		})
 
 		it("should return hierarchical directories by default", () => {
@@ -220,12 +222,14 @@ describe("RooConfigService", () => {
 			const result = getRooDirectoriesForCwd(cwd)
 
 			// With hierarchical resolution, we get intermediate directories
-			expect(result).toEqual([
-				path.posix.join("/mock/home", ".roo"), // Global
-				"/custom/.roo", // Parent directories
-				"/custom/project/.roo",
-				path.posix.join(cwd, ".roo"), // Project-local
-			])
+			expect(result.map(path.normalize)).toEqual(
+				[
+					path.join("/mock/home", ".roo"), // Global
+					"/custom/.roo", // Parent directories
+					"/custom/project/.roo",
+					path.join(cwd, ".roo"), // Project-local
+				].map(path.normalize),
+			)
 		})
 	})
 
