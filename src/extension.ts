@@ -40,6 +40,7 @@ import {
 	CodeActionProvider,
 } from "./activate"
 import { initializeI18n } from "./i18n"
+import { flushModels, getModels } from "./api/providers/fetchers/modelCache"
 
 /**
  * Built using https://github.com/microsoft/vscode-webview-ui-toolkit
@@ -141,24 +142,32 @@ export async function activate(context: vscode.ExtensionContext) {
 			}
 		}
 
-		// Flush and reload Roo models cache on auth state change to ensure fresh token is used
-		try {
-			const { flushModels, getModels } = await import("./api/providers/fetchers/modelCache")
-			await flushModels("roo")
+		// Handle Roo models cache based on auth state
+		const handleRooModelsCache = async () => {
+			try {
+				await flushModels("roo")
 
-			// Reload models with current auth token
-			const sessionToken = cloudService?.authService?.getSessionToken()
-			await getModels({
-				provider: "roo",
-				baseUrl: process.env.ROO_CODE_PROVIDER_URL ?? "https://api.roocode.com/proxy",
-				apiKey: sessionToken,
-			})
+				if (data.state === "active-session") {
+					// Reload models with the new auth token
+					const sessionToken = cloudService?.authService?.getSessionToken()
+					await getModels({
+						provider: "roo",
+						baseUrl: process.env.ROO_CODE_PROVIDER_URL ?? "https://api.roocode.com/proxy",
+						apiKey: sessionToken,
+					})
+					cloudLogger(`[authStateChangedHandler] Reloaded Roo models cache for active session`)
+				} else {
+					cloudLogger(`[authStateChangedHandler] Flushed Roo models cache on logout`)
+				}
+			} catch (error) {
+				cloudLogger(
+					`[authStateChangedHandler] Failed to handle Roo models cache: ${error instanceof Error ? error.message : String(error)}`,
+				)
+			}
+		}
 
-			cloudLogger(`[authStateChangedHandler] Reloaded Roo models cache for state: ${data.state}`)
-		} catch (error) {
-			cloudLogger(
-				`[authStateChangedHandler] Failed to reload Roo models cache: ${error instanceof Error ? error.message : String(error)}`,
-			)
+		if (data.state === "active-session" || data.state === "logged-out") {
+			await handleRooModelsCache()
 		}
 	}
 
