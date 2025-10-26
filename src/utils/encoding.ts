@@ -127,7 +127,7 @@ export const BINARY_MAGIC_NUMBERS = [
  * @param fileExtension Optional file extension
  * @returns The detected encoding
  */
-export async function detectEncoding(fileBuffer: Buffer, fileExtension?: string): Promise<string> {
+export async function detectEncoding(fileBuffer: Buffer, fileExtension?: string, filePath?: string): Promise<string> {
 	// 1. First check if it's a known binary file extension
 	if (fileExtension && BINARY_EXTENSIONS.has(fileExtension)) {
 		throw new Error(`Cannot read text for file type: ${fileExtension}`)
@@ -172,6 +172,8 @@ export async function detectEncoding(fileBuffer: Buffer, fileExtension?: string)
 		encoding = "utf8"
 	}
 
+	console.log(`${filePath} encoding with ${encoding}`)
+
 	return encoding
 }
 
@@ -184,7 +186,7 @@ export async function readFileWithEncodingDetection(filePath: string): Promise<s
 	const buffer = await fs.readFile(filePath)
 	const fileExtension = path.extname(filePath).toLowerCase()
 
-	const encoding = await detectEncoding(buffer, fileExtension)
+	const encoding = await detectEncoding(buffer, fileExtension, filePath)
 	return iconv.decode(buffer, encoding)
 }
 
@@ -197,7 +199,7 @@ export async function detectFileEncoding(filePath: string): Promise<string> {
 	try {
 		const buffer = await fs.readFile(filePath)
 		const fileExtension = path.extname(filePath).toLowerCase()
-		return await detectEncoding(buffer, fileExtension)
+		return await detectEncoding(buffer, fileExtension, filePath)
 	} catch (error) {
 		// File does not exist or cannot be read, default to UTF-8
 		return "utf8"
@@ -228,7 +230,7 @@ export async function isBinaryFileWithEncodingDetection(filePath: string): Promi
 		}
 		// Try to detect encoding first
 		try {
-			await detectEncoding(fileBuffer, fileExtension)
+			await detectEncoding(fileBuffer, fileExtension, filePath)
 			// If detectEncoding succeeds, it's a text file
 			return false
 		} catch (error) {
@@ -253,12 +255,15 @@ export async function writeFileWithEncodingPreservation(filePath: string, conten
 	const originalEncoding = await detectFileEncoding(filePath)
 
 	// If original file is UTF-8 or does not exist, write directly
-	if (originalEncoding === "utf8") {
+	if (!originalEncoding || ["utf8", "ascii"].includes(originalEncoding.toLocaleLowerCase())) {
+		console.log(`${filePath} encoding with utf8`)
+
 		await fs.writeFile(filePath, content, "utf8")
 		return
 	}
 
 	// Convert UTF-8 content to original file encoding
 	const encodedBuffer = iconv.encode(content, originalEncoding)
+	console.log(`${filePath} encoding with ${originalEncoding}`)
 	await fs.writeFile(filePath, encodedBuffer)
 }

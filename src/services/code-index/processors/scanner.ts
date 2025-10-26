@@ -139,7 +139,7 @@ export class DirectoryScanner implements IDirectoryScanner {
 					// Read file content with encoding detection
 					const fileBuffer = await vscode.workspace.fs.readFile(vscode.Uri.file(filePath))
 					const buffer = Buffer.from(fileBuffer)
-					const encoding = await detectEncoding(buffer)
+					const encoding = await detectEncoding(buffer, "", filePath)
 					const content = iconv.decode(buffer, encoding)
 
 					// Calculate current hash

@@ -64,7 +64,7 @@ export function readLines(filepath: string, endLine?: number, startLine?: number
 					.then(() => sampleBuffer)
 					.finally(() => fileHandle.close())
 			})
-			.then((sampleBuffer) => detectEncoding(sampleBuffer))
+			.then((sampleBuffer) => detectEncoding(sampleBuffer, "", filepath))
 			.then((encoding) => {
 				// Node.js native supported encodings
 				const nodeEncodings = ["utf8", "ascii", "latin1"]

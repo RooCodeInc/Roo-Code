@@ -1,5 +1,11 @@
 # Costrict Change Log
 
+## [2.0.4]
+
+- Add support for project spec commands from .cospec directory (#583)
+- Sync roocode [last commit](https://github.com/zgsm-ai/costrict/commit/97331bcb2edbaece9a395ae20a3db05fffef8fc5)
+- Fix known issues
+
 ## [2.0.3]
 
 - Add mode toggle with vibe/strict options in ModeSelector (#564)
