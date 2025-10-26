@@ -431,21 +431,8 @@ export class CustomModesManager {
 			allRoomodesModes.push(...modes)
 		}
 
-		// Create a map to handle mode precedence (more specific overrides more general)
-		const modesMap = new Map<string, ModeConfig>()
-
-		// Add global modes first
-		for (const mode of settingsModes) {
-			modesMap.set(mode.slug, { ...mode, source: "global" as const })
-		}
-
-		// Add hierarchical .roomodes modes (will override global and parent modes)
-		for (const mode of allRoomodesModes) {
-			modesMap.set(mode.slug, { ...mode, source: "project" as const })
-		}
-
-		// Convert map to array
-		const mergedModes = Array.from(modesMap.values())
+		// Merge with .roomodes taking precedence and preserving expected order
+		const mergedModes = await this.mergeCustomModes(allRoomodesModes, settingsModes)
 
 		await this.context.globalState.update("customModes", mergedModes)
 
