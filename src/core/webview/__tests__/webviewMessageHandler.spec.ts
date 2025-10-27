@@ -372,6 +372,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 			.mockResolvedValueOnce(mockModels) // vercel-ai-gateway
 			.mockResolvedValueOnce(mockModels) // deepinfra
 			.mockResolvedValueOnce(mockModels) // roo
+			.mockRejectedValueOnce(new Error("Cognima API error")) // cognima
 			.mockRejectedValueOnce(new Error("LiteLLM connection failed")) // litellm
 
 		await webviewMessageHandler(mockClineProvider, {
@@ -416,6 +417,13 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
 			type: "singleRouterModelFetchResponse",
 			success: false,
+			error: "Cognima API error",
+			values: { provider: "cognima" },
+		})
+
+		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
+			type: "singleRouterModelFetchResponse",
+			success: false,
 			error: "LiteLLM connection failed",
 			values: { provider: "litellm" },
 		})
@@ -431,6 +439,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 			.mockRejectedValueOnce(new Error("Vercel AI Gateway error")) // vercel-ai-gateway
 			.mockRejectedValueOnce(new Error("DeepInfra API error")) // deepinfra
 			.mockRejectedValueOnce(new Error("Roo API error")) // roo
+			.mockRejectedValueOnce(new Error("Cognima API error")) // cognima
 			.mockRejectedValueOnce(new Error("LiteLLM connection failed")) // litellm
 
 		await webviewMessageHandler(mockClineProvider, {
@@ -469,13 +478,6 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
 			type: "singleRouterModelFetchResponse",
 			success: false,
-			error: "DeepInfra API error",
-			values: { provider: "deepinfra" },
-		})
-
-		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
-			type: "singleRouterModelFetchResponse",
-			success: false,
 			error: "Vercel AI Gateway error",
 			values: { provider: "vercel-ai-gateway" },
 		})
@@ -483,8 +485,22 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
 			type: "singleRouterModelFetchResponse",
 			success: false,
+			error: "DeepInfra API error",
+			values: { provider: "deepinfra" },
+		})
+
+		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
+			type: "singleRouterModelFetchResponse",
+			success: false,
 			error: "Roo API error",
 			values: { provider: "roo" },
+		})
+
+		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
+			type: "singleRouterModelFetchResponse",
+			success: false,
+			error: "Cognima API error",
+			values: { provider: "cognima" },
 		})
 
 		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
