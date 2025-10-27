@@ -177,7 +177,6 @@ export const CheckpointMenu = ({ ts, commitHash, checkpoint, onOpenChange }: Che
 					<div className="flex flex-col gap-2">
 						<Button
 							variant="secondary"
-							className="whitespace-nowrap"
 							onClick={() => {
 								onDiffFromInit()
 								setMoreOpen(false)
@@ -187,7 +186,6 @@ export const CheckpointMenu = ({ ts, commitHash, checkpoint, onOpenChange }: Che
 						</Button>
 						<Button
 							variant="secondary"
-							className="whitespace-nowrap"
 							onClick={() => {
 								onDiffWithCurrent()
 								setMoreOpen(false)
