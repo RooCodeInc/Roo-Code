@@ -221,7 +221,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 		expect(mockGetModels).toHaveBeenCalledWith({ provider: "openrouter" })
 		expect(mockGetModels).toHaveBeenCalledWith({ provider: "requesty", apiKey: "requesty-key" })
 		expect(mockGetModels).toHaveBeenCalledWith({ provider: "glama" })
-		expect(mockGetModels).toHaveBeenCalledWith({ provider: "unbound", apiKey: "unbound-key" })
+		expect(mockGetModels).toHaveBeenCalledWith({ provider: "unbound",apiKey: "unbound-key" })
 		expect(mockGetModels).toHaveBeenCalledWith({ provider: "vercel-ai-gateway" })
 		expect(mockGetModels).toHaveBeenCalledWith({ provider: "deepinfra" })
 		expect(mockGetModels).toHaveBeenCalledWith(
@@ -230,6 +230,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 				baseUrl: expect.any(String),
 			}),
 		)
+		expect(mockGetModels).toHaveBeenCalledWith({ provider: "cognima", apiKey: undefined })
 		expect(mockGetModels).toHaveBeenCalledWith({
 			provider: "litellm",
 			apiKey: "litellm-key",
@@ -249,6 +250,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 				unbound: mockModels,
 				litellm: mockModels,
 				roo: mockModels,
+				cognima: {},
 				ollama: {},
 				lmstudio: {},
 				"vercel-ai-gateway": mockModels,
@@ -340,6 +342,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 				glama: mockModels,
 				unbound: mockModels,
 				roo: mockModels,
+				cognima: {},
 				litellm: {},
 				ollama: {},
 				lmstudio: {},
@@ -385,6 +388,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 				glama: mockModels,
 				unbound: {},
 				roo: mockModels,
+				cognima: {},
 				litellm: {},
 				ollama: {},
 				lmstudio: {},
