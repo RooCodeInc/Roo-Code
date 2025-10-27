@@ -20,7 +20,11 @@ vi.mock("@/components/ui", () => {
 			)
 		},
 		PopoverTrigger: ({ children }: any) => <div data-testid="popover-trigger">{children}</div>,
-		PopoverContent: ({ children }: any) => <div data-testid="popover-content">{children}</div>,
+		PopoverContent: ({ children, className, ...rest }: any) => (
+			<div data-testid="popover-content" className={className} {...rest}>
+				{children}
+			</div>
+		),
 	}
 })
 
