@@ -40,6 +40,7 @@ export const DEFAULT_CONSECUTIVE_MISTAKE_LIMIT = 3
 
 export const dynamicProviders = [
 	"openrouter",
+	"cognima",
 	"vercel-ai-gateway",
 	"huggingface",
 	"litellm",
@@ -122,6 +123,7 @@ export const providerNames = [
 	"cerebras",
 	"chutes",
 	"claude-code",
+	"cognima",
 	"doubao",
 	"deepseek",
 	"featherless",
@@ -352,6 +354,10 @@ const groqSchema = apiModelIdProviderModelSchema.extend({
 	groqApiKey: z.string().optional(),
 })
 
+const cognimaSchema = apiModelIdProviderModelSchema.extend({
+	cognimaApiKey: z.string().optional(),
+})
+
 const huggingFaceSchema = baseProviderSettingsSchema.extend({
 	huggingFaceApiKey: z.string().optional(),
 	huggingFaceModelId: z.string().optional(),
@@ -441,6 +447,7 @@ export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProv
 	fakeAiSchema.merge(z.object({ apiProvider: z.literal("fake-ai") })),
 	xaiSchema.merge(z.object({ apiProvider: z.literal("xai") })),
 	groqSchema.merge(z.object({ apiProvider: z.literal("groq") })),
+	cognimaSchema.merge(z.object({ apiProvider: z.literal("cognima") })),
 	huggingFaceSchema.merge(z.object({ apiProvider: z.literal("huggingface") })),
 	chutesSchema.merge(z.object({ apiProvider: z.literal("chutes") })),
 	litellmSchema.merge(z.object({ apiProvider: z.literal("litellm") })),
@@ -482,6 +489,7 @@ export const providerSettingsSchema = z.object({
 	...fakeAiSchema.shape,
 	...xaiSchema.shape,
 	...groqSchema.shape,
+	...cognimaSchema.shape,
 	...huggingFaceSchema.shape,
 	...chutesSchema.shape,
 	...litellmSchema.shape,
@@ -568,6 +576,7 @@ export const modelIdKeysByProvider: Record<TypicalProvider, ModelIdKey> = {
 	requesty: "requestyModelId",
 	xai: "apiModelId",
 	groq: "apiModelId",
+	cognima: "apiModelId",
 	chutes: "apiModelId",
 	litellm: "litellmModelId",
 	huggingface: "huggingFaceModelId",
@@ -661,6 +670,7 @@ export const MODELS_BY_PROVIDER: Record<
 		models: Object.keys(geminiModels),
 	},
 	groq: { id: "groq", label: "Groq", models: Object.keys(groqModels) },
+	"cognima": { id: "cognima", label: "Cognima", models: [] },
 	"io-intelligence": {
 		id: "io-intelligence",
 		label: "IO Intelligence",

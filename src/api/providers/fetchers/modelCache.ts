@@ -25,6 +25,7 @@ import { getIOIntelligenceModels } from "./io-intelligence"
 import { getDeepInfraModels } from "./deepinfra"
 import { getHuggingFaceModels } from "./huggingface"
 import { getRooModels } from "./roo"
+import { getCognimaModels } from "./cognima"
 
 const memoryCache = new NodeCache({ stdTTL: 5 * 60, checkperiod: 5 * 60 })
 
@@ -66,6 +67,9 @@ export const getModels = async (options: GetModelsOptions): Promise<ModelRecord>
 		switch (provider) {
 			case "openrouter":
 				models = await getOpenRouterModels()
+				break
+			case "cognima":
+				models = await getCognimaModels(options.apiKey, options.baseUrl)
 				break
 			case "requesty":
 				// Requesty models endpoint requires an API key for per-user custom policies.

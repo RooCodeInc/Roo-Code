@@ -9,6 +9,7 @@ import {
 	AnthropicHandler,
 	AwsBedrockHandler,
 	CerebrasHandler,
+	CognimaHandler,
 	OpenRouterHandler,
 	VertexHandler,
 	AnthropicVertexHandler,
@@ -139,6 +140,8 @@ export function buildApiHandler(configuration: ProviderSettings): ApiHandler {
 			return new XAIHandler(options)
 		case "groq":
 			return new GroqHandler(options)
+		case "cognima":
+			return new CognimaHandler(options)
 		case "deepinfra":
 			return new DeepInfraHandler(options)
 		case "huggingface":
