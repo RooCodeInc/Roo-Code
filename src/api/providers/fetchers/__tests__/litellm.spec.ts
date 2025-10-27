@@ -645,10 +645,11 @@ describe("getLiteLLMModels", () => {
 			maxTokens: 64000,
 			contextWindow: 200000,
 			supportsImages: true,
-			supportsComputerUse: true,
 			supportsPromptCache: false,
 			inputPrice: undefined,
 			outputPrice: undefined,
+			cacheWritesPrice: undefined,
+			cacheReadsPrice: undefined,
 			description: "claude-3-5-sonnet-4-5 via LiteLLM proxy",
 		})
 
@@ -657,10 +658,11 @@ describe("getLiteLLMModels", () => {
 			maxTokens: 8192,
 			contextWindow: 128000,
 			supportsImages: false,
-			supportsComputerUse: false,
 			supportsPromptCache: false,
 			inputPrice: undefined,
 			outputPrice: undefined,
+			cacheWritesPrice: undefined,
+			cacheReadsPrice: undefined,
 			description: "model-with-only-max-tokens via LiteLLM proxy",
 		})
 
@@ -669,10 +671,11 @@ describe("getLiteLLMModels", () => {
 			maxTokens: 16384,
 			contextWindow: 100000,
 			supportsImages: false,
-			supportsComputerUse: false,
 			supportsPromptCache: false,
 			inputPrice: undefined,
 			outputPrice: undefined,
+			cacheWritesPrice: undefined,
+			cacheReadsPrice: undefined,
 			description: "model-with-only-max-output-tokens via LiteLLM proxy",
 		})
 	})
