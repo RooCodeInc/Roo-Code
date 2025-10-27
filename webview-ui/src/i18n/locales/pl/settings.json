@@ -422,7 +422,7 @@
 			},
 			"computerUse": {
 				"label": "Użycie komputera",
-				"description": "Czy model jest w stanie wchodzić w interakcję z przeglądarką? (np. Claude Sonnet)."
+				"description": "Czy model jest w stanie wchodzić w interakcję z przeglądarką?"
 			},
 			"promptCache": {
 				"label": "Buforowanie podpowiedzi",
@@ -672,7 +672,7 @@
 	"advanced": {
 		"diff": {
 			"label": "Włącz edycję przez różnice",
-			"description": "Gdy włączone, Roo będzie w stanie edytować pliki szybciej i automatycznie odrzuci obcięte pełne zapisy plików. Działa najlepiej z najnowszymi modelami Claude Sonnet.",
+			"description": "Gdy włączone, Roo będzie w stanie edytować pliki szybciej i automatycznie odrzuci obcięte pełne zapisy plików",
 			"strategy": {
 				"label": "Strategia diff",
 				"options": {

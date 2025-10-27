@@ -422,7 +422,7 @@
 			},
 			"computerUse": {
 				"label": "Computer-Nutzung",
-				"description": "Ist dieses Modell in der Lage, mit einem Browser zu interagieren? (z.B. Claude Sonnet)"
+				"description": "Ist dieses Modell in der Lage, mit einem Browser zu interagieren?"
 			},
 			"promptCache": {
 				"label": "Prompt-Caching",
@@ -671,7 +671,7 @@
 	"advanced": {
 		"diff": {
 			"label": "Bearbeitung durch Diffs aktivieren",
-			"description": "Wenn aktiviert, kann Roo Dateien schneller bearbeiten und lehnt automatisch abgeschnittene vollständige Dateischreibvorgänge ab. Funktioniert am besten mit den neuesten Claude Sonnet-Modellen.",
+			"description": "Wenn aktiviert, kann Roo Dateien schneller bearbeiten und lehnt automatisch abgeschnittene vollständige Dateischreibvorgänge ab",
 			"strategy": {
 				"label": "Diff-Strategie",
 				"options": {

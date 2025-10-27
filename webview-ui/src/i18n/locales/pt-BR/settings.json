@@ -422,7 +422,7 @@
 			},
 			"computerUse": {
 				"label": "Uso do Computador",
-				"description": "Este modelo é capaz de interagir com um navegador? (ex. Claude Sonnet)."
+				"description": "Este modelo é capaz de interagir com um navegador?"
 			},
 			"promptCache": {
 				"label": "Cache de Prompts",
@@ -672,7 +672,7 @@
 	"advanced": {
 		"diff": {
 			"label": "Ativar edição através de diffs",
-			"description": "Quando ativado, o Roo poderá editar arquivos mais rapidamente e rejeitará automaticamente escritas completas de arquivos truncados. Funciona melhor com os modelos mais recentes Claude Sonnet.",
+			"description": "Quando ativado, o Roo poderá editar arquivos mais rapidamente e rejeitará automaticamente escritas completas de arquivos truncados",
 			"strategy": {
 				"label": "Estratégia de diff",
 				"options": {
