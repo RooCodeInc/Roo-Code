@@ -3,8 +3,6 @@ import { z } from "zod"
 
 import type { ModelInfo } from "@roo-code/types"
 
-import { parseApiPrice } from "../../../shared/cost"
-
 /**
  * CognimaModel
  */

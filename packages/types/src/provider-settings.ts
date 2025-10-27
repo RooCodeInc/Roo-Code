@@ -354,7 +354,8 @@ const groqSchema = apiModelIdProviderModelSchema.extend({
 	groqApiKey: z.string().optional(),
 })
 
-const cognimaSchema = apiModelIdProviderModelSchema.extend({
+const cognimaSchema = baseProviderSettingsSchema.extend({
+	cognimaModelId: z.string().optional(),
 	cognimaApiKey: z.string().optional(),
 })
 
@@ -536,6 +537,7 @@ export const modelIdKeys = [
 	"ioIntelligenceModelId",
 	"vercelAiGatewayModelId",
 	"deepInfraModelId",
+	"cognimaModelId",
 ] as const satisfies readonly (keyof ProviderSettings)[]
 
 export type ModelIdKey = (typeof modelIdKeys)[number]
@@ -576,7 +578,7 @@ export const modelIdKeysByProvider: Record<TypicalProvider, ModelIdKey> = {
 	requesty: "requestyModelId",
 	xai: "apiModelId",
 	groq: "apiModelId",
-	cognima: "apiModelId",
+	cognima: "cognimaModelId",
 	chutes: "apiModelId",
 	litellm: "litellmModelId",
 	huggingface: "huggingFaceModelId",

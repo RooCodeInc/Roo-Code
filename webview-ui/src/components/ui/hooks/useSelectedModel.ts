@@ -54,6 +54,7 @@ import {
 	qwenCodeDefaultModelId,
 	qwenCodeModels,
 	vercelAiGatewayDefaultModelId,
+	cognimaDefaultModelId,
 	BEDROCK_1M_CONTEXT_MODEL_IDS,
 	deepInfraDefaultModelId,
 } from "@roo-code/types"
@@ -342,6 +343,11 @@ function getSelectedModel({
 		case "vercel-ai-gateway": {
 			const id = apiConfiguration.vercelAiGatewayModelId ?? vercelAiGatewayDefaultModelId
 			const info = routerModels["vercel-ai-gateway"]?.[id]
+			return { id, info }
+		}
+		case "cognima": {
+			const id = apiConfiguration.cognimaModelId ?? cognimaDefaultModelId
+			const info = routerModels.cognima?.[id]
 			return { id, info }
 		}
 		// case "anthropic":
