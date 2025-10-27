@@ -90,6 +90,8 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 			metadata?.taskId ? { headers: { "X-Roo-Task-ID": metadata.taskId } } : undefined,
 		)
 
+		let lastUsage: RooUsage | undefined = undefined
+
 		for await (const chunk of stream) {
 			const delta = chunk.choices[0]?.delta
 
@@ -110,15 +112,18 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 			}
 
 			if (chunk.usage) {
-				const usage = chunk.usage as RooUsage
-				yield {
-					type: "usage",
-					inputTokens: usage.prompt_tokens || 0,
-					outputTokens: usage.completion_tokens || 0,
-					cacheWriteTokens: usage.cache_creation_input_tokens,
-					cacheReadTokens: usage.prompt_tokens_details?.cached_tokens,
-					totalCost: usage.cost ?? 0,
-				}
+				lastUsage = chunk.usage as RooUsage
+			}
+		}
+
+		if (lastUsage) {
+			yield {
+				type: "usage",
+				inputTokens: lastUsage.prompt_tokens || 0,
+				outputTokens: lastUsage.completion_tokens || 0,
+				cacheWriteTokens: lastUsage.cache_creation_input_tokens,
+				cacheReadTokens: lastUsage.prompt_tokens_details?.cached_tokens,
+				totalCost: lastUsage.cost ?? 0,
 			}
 		}
 	}
