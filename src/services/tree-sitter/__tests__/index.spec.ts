@@ -66,7 +66,7 @@ describe("Tree-sitter Service", () => {
 				ts: { parser: mockParser, query: mockQuery },
 				tsx: { parser: mockParser, query: mockQuery },
 			})
-			;(fs.readFile as Mock).mockResolvedValue("export class TestClass {\n  constructor() {}\n}")
+			;(fs.readFile as Mock).mockResolvedValue(Buffer.from("export class TestClass {\n  constructor() {}\n}"))
 
 			const result = await parseSourceCodeForDefinitionsTopLevel("/test/path")
 
@@ -121,7 +121,7 @@ describe("Tree-sitter Service", () => {
 
 			const fileContent = "class TestClass {\n" + "  constructor() {}\n" + "  testMethod() {}\n" + "}"
 
-			;(fs.readFile as Mock).mockResolvedValue(fileContent)
+			;(fs.readFile as Mock).mockResolvedValue(Buffer.from(fileContent))
 
 			const result = await parseSourceCodeForDefinitionsTopLevel("/test/path")
 
@@ -146,7 +146,7 @@ describe("Tree-sitter Service", () => {
 			;(loadRequiredLanguageParsers as Mock).mockResolvedValue({
 				ts: { parser: mockParser, query: mockQuery },
 			})
-			;(fs.readFile as Mock).mockResolvedValue("invalid code")
+			;(fs.readFile as Mock).mockResolvedValue(Buffer.from("invalid code"))
 
 			const result = await parseSourceCodeForDefinitionsTopLevel("/test/path")
 			expect(result).toBe("No source code definitions found.")
@@ -177,7 +177,7 @@ export const CheckboxExample = () => (
 		  </label>
 		</VSCodeCheckbox>
 );`
-			;(fs.readFile as Mock).mockResolvedValue(fixtureContent)
+			;(fs.readFile as Mock).mockResolvedValue(Buffer.from(fixtureContent))
 
 			const lines = fixtureContent.split("\n")
 
@@ -388,7 +388,7 @@ export const CheckboxExample = () => (
 				kt: { parser: mockParser, query: mockQuery },
 				kts: { parser: mockParser, query: mockQuery },
 			})
-			;(fs.readFile as Mock).mockResolvedValue("function test() {}")
+			;(fs.readFile as Mock).mockResolvedValue(Buffer.from("function test() {}"))
 
 			const result = await parseSourceCodeForDefinitionsTopLevel("/test/path")
 
@@ -431,7 +431,7 @@ export const CheckboxExample = () => (
 			;(loadRequiredLanguageParsers as Mock).mockResolvedValue({
 				ts: { parser: mockParser, query: mockQuery },
 			})
-			;(fs.readFile as Mock).mockResolvedValue("class Test {}")
+			;(fs.readFile as Mock).mockResolvedValue(Buffer.from("class Test {}"))
 
 			const result = await parseSourceCodeForDefinitionsTopLevel("/test/path")
 

@@ -11,6 +11,21 @@ import {
 	writeFileWithEncodingPreservation,
 	isBinaryFileWithEncodingDetection,
 } from "../encoding"
+import { createLogger } from "../logger"
+
+// Mock logger
+vi.mock("../logger", () => ({
+	createLogger: vi.fn(
+		() =>
+			({
+				info: vi.fn(),
+				warn: vi.fn(),
+				error: vi.fn(),
+				debug: vi.fn(),
+				dispose: vi.fn(),
+			}) as any,
+	),
+}))
 
 // Mock dependencies
 vi.mock("jschardet", () => ({
@@ -31,6 +46,7 @@ vi.mock("fs/promises", () => ({
 	default: {
 		readFile: vi.fn(),
 		writeFile: vi.fn(),
+		open: vi.fn(),
 	},
 }))
 
@@ -45,6 +61,7 @@ const mockIconv = vi.mocked(iconv)
 const mockIsBinaryFile = vi.mocked(isBinaryFile)
 const mockFs = vi.mocked(fs)
 const mockPath = vi.mocked(path)
+const mockCreateLogger = vi.mocked(createLogger)
 
 describe("encoding", () => {
 	beforeEach(() => {
@@ -99,11 +116,19 @@ describe("encoding", () => {
 				confidence: 0.6, // Below threshold 0.7
 			})
 
-			const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
+			const mockWarn = vi.fn()
+			mockCreateLogger.mockReturnValue({
+				info: vi.fn(),
+				warn: mockWarn,
+				error: vi.fn(),
+				debug: vi.fn(),
+				dispose: vi.fn(),
+			} as any)
+
 			const result = await detectEncoding(buffer, ".txt")
 
 			expect(result).toBe("utf8")
-			expect(consoleSpy).toHaveBeenCalledWith(
+			expect(mockWarn).toHaveBeenCalledWith(
 				"Low confidence encoding detection: gbk (confidence: 0.6), falling back to utf8",
 			)
 		})
@@ -190,11 +215,19 @@ describe("encoding", () => {
 				confidence: 0,
 			})
 
-			const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
+			const mockWarn = vi.fn()
+			mockCreateLogger.mockReturnValue({
+				info: vi.fn(),
+				warn: mockWarn,
+				error: vi.fn(),
+				debug: vi.fn(),
+				dispose: vi.fn(),
+			} as any)
+
 			const result = await detectEncoding(buffer, ".txt")
 
 			expect(result).toBe("utf8")
-			expect(consoleSpy).toHaveBeenCalledWith("No encoding detected, falling back to utf8")
+			expect(mockWarn).toHaveBeenCalledWith("No encoding detected, falling back to utf8")
 		})
 
 		it("should handle very small file (1 byte)", async () => {
@@ -205,11 +238,19 @@ describe("encoding", () => {
 				confidence: 0,
 			})
 
-			const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
+			const mockWarn = vi.fn()
+			mockCreateLogger.mockReturnValue({
+				info: vi.fn(),
+				warn: mockWarn,
+				error: vi.fn(),
+				debug: vi.fn(),
+				dispose: vi.fn(),
+			} as any)
+
 			const result = await detectEncoding(buffer, ".txt")
 
 			expect(result).toBe("utf8")
-			expect(consoleSpy).toHaveBeenCalledWith("No encoding detected, falling back to utf8")
+			expect(mockWarn).toHaveBeenCalledWith("No encoding detected, falling back to utf8")
 		})
 
 		it("should handle very small file (2 bytes)", async () => {
@@ -220,11 +261,19 @@ describe("encoding", () => {
 				confidence: 0.3,
 			})
 
-			const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
+			const mockWarn = vi.fn()
+			mockCreateLogger.mockReturnValue({
+				info: vi.fn(),
+				warn: mockWarn,
+				error: vi.fn(),
+				debug: vi.fn(),
+				dispose: vi.fn(),
+			} as any)
+
 			const result = await detectEncoding(buffer, ".txt")
 
 			expect(result).toBe("utf8")
-			expect(consoleSpy).toHaveBeenCalledWith(
+			expect(mockWarn).toHaveBeenCalledWith(
 				"Low confidence encoding detection: utf8 (confidence: 0.3), falling back to utf8",
 			)
 		})
@@ -237,11 +286,19 @@ describe("encoding", () => {
 				confidence: 0.5,
 			})
 
-			const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
+			const mockWarn = vi.fn()
+			mockCreateLogger.mockReturnValue({
+				info: vi.fn(),
+				warn: mockWarn,
+				error: vi.fn(),
+				debug: vi.fn(),
+				dispose: vi.fn(),
+			} as any)
+
 			const result = await detectEncoding(buffer, ".txt")
 
 			expect(result).toBe("utf8")
-			expect(consoleSpy).toHaveBeenCalledWith(
+			expect(mockWarn).toHaveBeenCalledWith(
 				"Low confidence encoding detection: gbk (confidence: 0.5), falling back to utf8",
 			)
 		})
@@ -254,11 +311,19 @@ describe("encoding", () => {
 				confidence: 0,
 			})
 
-			const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
+			const mockWarn = vi.fn()
+			mockCreateLogger.mockReturnValue({
+				info: vi.fn(),
+				warn: mockWarn,
+				error: vi.fn(),
+				debug: vi.fn(),
+				dispose: vi.fn(),
+			} as any)
+
 			const result = await detectEncoding(buffer, ".txt")
 
 			expect(result).toBe("utf8")
-			expect(consoleSpy).toHaveBeenCalledWith("No encoding detected, falling back to utf8")
+			expect(mockWarn).toHaveBeenCalledWith("No encoding detected, falling back to utf8")
 		})
 
 		it("should fallback to utf8 for unsupported encodings", async () => {
@@ -270,11 +335,19 @@ describe("encoding", () => {
 			})
 			mockIconv.encodingExists.mockReturnValue(false)
 
-			const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
+			const mockWarn = vi.fn()
+			mockCreateLogger.mockReturnValue({
+				info: vi.fn(),
+				warn: mockWarn,
+				error: vi.fn(),
+				debug: vi.fn(),
+				dispose: vi.fn(),
+			} as any)
+
 			const result = await detectEncoding(buffer, ".txt")
 
 			expect(result).toBe("utf8")
-			expect(consoleSpy).toHaveBeenCalledWith(
+			expect(mockWarn).toHaveBeenCalledWith(
 				"Unsupported encoding detected: unsupported-encoding, falling back to utf8",
 			)
 		})
@@ -288,10 +361,18 @@ describe("encoding", () => {
 			})
 			mockIconv.encodingExists.mockReturnValue(false)
 
-			const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
+			const mockWarn = vi.fn()
+			mockCreateLogger.mockReturnValue({
+				info: vi.fn(),
+				warn: mockWarn,
+				error: vi.fn(),
+				debug: vi.fn(),
+				dispose: vi.fn(),
+			} as any)
+
 			await detectEncoding(buffer, ".txt")
 
-			expect(consoleSpy).toHaveBeenCalledWith(
+			expect(mockWarn).toHaveBeenCalledWith(
 				"Unsupported encoding detected: unsupported-encoding, falling back to utf8",
 			)
 		})
@@ -383,24 +464,74 @@ describe("encoding", () => {
 				confidence: 0.9,
 			})
 
+			// Mock fs.open to return a file handle
+			const mockHandle = {
+				fd: 1,
+				writeFile: vi.fn().mockResolvedValue(undefined),
+				sync: vi.fn().mockResolvedValue(undefined),
+				close: vi.fn().mockResolvedValue(undefined),
+				appendFile: vi.fn().mockResolvedValue(undefined),
+				chown: vi.fn().mockResolvedValue(undefined),
+				chmod: vi.fn().mockResolvedValue(undefined),
+				read: vi.fn().mockResolvedValue(undefined),
+				readFile: vi.fn().mockResolvedValue(undefined),
+				stat: vi.fn().mockResolvedValue(undefined),
+				truncate: vi.fn().mockResolvedValue(undefined),
+				utimes: vi.fn().mockResolvedValue(undefined),
+				write: vi.fn().mockResolvedValue(undefined),
+				readable: true,
+				writable: true,
+			} as any
+			mockFs.open.mockResolvedValue(mockHandle)
+
 			await writeFileWithEncodingPreservation(filePath, content)
 
-			expect(mockFs.writeFile).toHaveBeenCalledWith(filePath, content, "utf8")
+			expect(mockFs.open).toHaveBeenCalledWith(filePath, "w")
+			expect(mockHandle.writeFile).toHaveBeenCalledWith(content, "utf8")
+			expect(mockHandle.sync).toHaveBeenCalled()
+			expect(mockHandle.close).toHaveBeenCalled()
 		})
 
 		it("should convert and write content for non-utf8 encoding", async () => {
 			const filePath = "/path/to/file.txt"
 			const content = "new content"
+
+			// Mock the file to exist and have gbk encoding
+			const existingBuffer = Buffer.from("existing gbk content")
+			mockFs.readFile.mockResolvedValue(existingBuffer)
 			mockIsBinaryFile.mockResolvedValue(false)
 			mockJschardet.detect.mockReturnValue({
 				encoding: "gbk",
 				confidence: 0.9,
 			})
 
+			// Mock fs.open to return a file handle
+			const mockHandle = {
+				fd: 1,
+				writeFile: vi.fn().mockResolvedValue(undefined),
+				sync: vi.fn().mockResolvedValue(undefined),
+				close: vi.fn().mockResolvedValue(undefined),
+				appendFile: vi.fn().mockResolvedValue(undefined),
+				chown: vi.fn().mockResolvedValue(undefined),
+				chmod: vi.fn().mockResolvedValue(undefined),
+				read: vi.fn().mockResolvedValue(undefined),
+				readFile: vi.fn().mockResolvedValue(undefined),
+				stat: vi.fn().mockResolvedValue(undefined),
+				truncate: vi.fn().mockResolvedValue(undefined),
+				utimes: vi.fn().mockResolvedValue(undefined),
+				write: vi.fn().mockResolvedValue(undefined),
+				readable: true,
+				writable: true,
+			} as any
+			mockFs.open.mockResolvedValue(mockHandle)
+
 			await writeFileWithEncodingPreservation(filePath, content)
 
 			expect(mockIconv.encode).toHaveBeenCalledWith(content, "gbk")
-			expect(mockFs.writeFile).toHaveBeenCalledWith(filePath, Buffer.from("encoded content"))
+			expect(mockFs.open).toHaveBeenCalledWith(filePath, "w")
+			expect(mockHandle.writeFile).toHaveBeenCalledWith(Buffer.from("encoded content"), undefined)
+			expect(mockHandle.sync).toHaveBeenCalled()
+			expect(mockHandle.close).toHaveBeenCalled()
 		})
 
 		it("should handle new file (utf8) correctly", async () => {
@@ -408,9 +539,32 @@ describe("encoding", () => {
 			const content = "new content"
 			mockFs.readFile.mockRejectedValue(new Error("File not found"))
 
+			// Mock fs.open to return a file handle
+			const mockHandle = {
+				fd: 1,
+				writeFile: vi.fn().mockResolvedValue(undefined),
+				sync: vi.fn().mockResolvedValue(undefined),
+				close: vi.fn().mockResolvedValue(undefined),
+				appendFile: vi.fn().mockResolvedValue(undefined),
+				chown: vi.fn().mockResolvedValue(undefined),
+				chmod: vi.fn().mockResolvedValue(undefined),
+				read: vi.fn().mockResolvedValue(undefined),
+				readFile: vi.fn().mockResolvedValue(undefined),
+				stat: vi.fn().mockResolvedValue(undefined),
+				truncate: vi.fn().mockResolvedValue(undefined),
+				utimes: vi.fn().mockResolvedValue(undefined),
+				write: vi.fn().mockResolvedValue(undefined),
+				readable: true,
+				writable: true,
+			} as any
+			mockFs.open.mockResolvedValue(mockHandle)
+
 			await writeFileWithEncodingPreservation(filePath, content)
 
-			expect(mockFs.writeFile).toHaveBeenCalledWith(filePath, content, "utf8")
+			expect(mockFs.open).toHaveBeenCalledWith(filePath, "w")
+			expect(mockHandle.writeFile).toHaveBeenCalledWith(content, "utf8")
+			expect(mockHandle.sync).toHaveBeenCalled()
+			expect(mockHandle.close).toHaveBeenCalled()
 		})
 	})
 

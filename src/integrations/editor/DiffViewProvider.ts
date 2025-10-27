@@ -695,6 +695,7 @@ export class DiffViewProvider {
 		// Write the content directly to the file with encoding preservation
 		await createDirectoriesForFile(absolutePath)
 		await writeFileWithEncodingPreservation(absolutePath, content)
+		await delay(100) // Wait for directories to be created
 
 		// Open the document to ensure diagnostics are loaded
 		// When openFile is false (PREVENT_FOCUS_DISRUPTION enabled), we only open in memory

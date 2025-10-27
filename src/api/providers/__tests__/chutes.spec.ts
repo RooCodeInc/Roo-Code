@@ -460,10 +460,13 @@ describe("ChutesHandler", () => {
 		const messageGenerator = handlerWithModel.createMessage(systemPrompt, messages)
 		await messageGenerator.next()
 
+		// Centralized 20% cap should apply to OpenAI-compatible providers like Chutes
+		const expectedMaxTokens = Math.min(modelInfo.maxTokens, Math.ceil(modelInfo.contextWindow * 0.2))
+
 		expect(mockCreate).toHaveBeenCalledWith(
 			expect.objectContaining({
 				model: modelId,
-				max_tokens: modelInfo.maxTokens,
+				max_tokens: expectedMaxTokens,
 				temperature: 0.5,
 				messages: expect.arrayContaining([{ role: "system", content: systemPrompt }]),
 				stream: true,

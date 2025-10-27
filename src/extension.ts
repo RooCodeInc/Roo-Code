@@ -46,6 +46,7 @@ import { getCommand } from "./utils/commands"
 import { activateCoworkflowIntegration, deactivateCoworkflowIntegration } from "./core/costrict/workflow"
 import { defaultLang } from "./utils/language"
 import { createLogger } from "./utils/logger"
+// import { flushModels, getModels } from "./api/providers/fetchers/modelCache"
 
 /**
  * Built using https://github.com/microsoft/vscode-webview-ui-toolkit
@@ -144,6 +145,33 @@ export async function activate(context: vscode.ExtensionContext) {
 	// 				`[authStateChangedHandler] remoteControlEnabled(false) failed: ${error instanceof Error ? error.message : String(error)}`,
 	// 			)
 	// 		}
+	// 	}
+	// // Handle Roo models cache based on auth state
+	// 	const handleRooModelsCache = async () => {
+	// 		try {
+	// 			await flushModels("roo")
+
+	// 			if (data.state === "active-session") {
+	// 				// Reload models with the new auth token
+	// 				const sessionToken = cloudService?.authService?.getSessionToken()
+	// 				await getModels({
+	// 					provider: "roo",
+	// 					baseUrl: process.env.ROO_CODE_PROVIDER_URL ?? "https://api.roocode.com/proxy",
+	// 					apiKey: sessionToken,
+	// 				})
+	// 				cloudLogger(`[authStateChangedHandler] Reloaded Roo models cache for active session`)
+	// 			} else {
+	// 				cloudLogger(`[authStateChangedHandler] Flushed Roo models cache on logout`)
+	// 			}
+	// 		} catch (error) {
+	// 			cloudLogger(
+	// 				`[authStateChangedHandler] Failed to handle Roo models cache: ${error instanceof Error ? error.message : String(error)}`,
+	// 			)
+	// 		}
+	// 	}
+
+	// 	if (data.state === "active-session" || data.state === "logged-out") {
+	// 		await handleRooModelsCache()
 	// 	}
 	// }
 

@@ -3,6 +3,7 @@ import * as iconv from "iconv-lite"
 import { isBinaryFile } from "isbinaryfile"
 import fs from "fs/promises"
 import path from "path"
+import { createLogger } from "./logger"
 
 // Common binary file extension list
 export const BINARY_EXTENSIONS = new Set([
@@ -134,7 +135,7 @@ export async function detectEncoding(fileBuffer: Buffer, fileExtension?: string,
 	}
 
 	// 2. Perform encoding detection
-	const detected = jschardet.detect(fileBuffer)
+	const detected = jschardet.detect(fileBuffer.subarray(0, 8192))
 	let encoding: string
 	let originalEncoding: string | undefined
 
@@ -145,7 +146,7 @@ export async function detectEncoding(fileBuffer: Buffer, fileExtension?: string,
 		originalEncoding = detected.encoding
 		// Increase confidence threshold from 0.7 to 0.9
 		if (detected.confidence < 0.7) {
-			console.warn(
+			createLogger().warn(
 				`Low confidence encoding detection: ${originalEncoding} (confidence: ${detected.confidence}), falling back to utf8`,
 			)
 			encoding = "utf8"
@@ -160,19 +161,19 @@ export async function detectEncoding(fileBuffer: Buffer, fileExtension?: string,
 				throw new Error(`Cannot read text for file type: ${fileExtension}`)
 			}
 		}
-		console.warn(`No encoding detected, falling back to utf8`)
+		createLogger().warn(`No encoding detected, falling back to utf8`)
 		encoding = "utf8"
 	}
 
 	// 4. Verify if the encoding is supported by iconv-lite
 	if (!iconv.encodingExists(encoding)) {
-		console.warn(
+		createLogger().warn(
 			`Unsupported encoding detected: ${encoding}${originalEncoding && originalEncoding !== encoding ? ` (originally detected as: ${originalEncoding})` : ""}, falling back to utf8`,
 		)
 		encoding = "utf8"
 	}
 
-	console.log(`${filePath} encoding with ${encoding}`)
+	createLogger().info(`${filePath} encoding with ${encoding}`)
 
 	return encoding
 }
@@ -255,15 +256,38 @@ export async function writeFileWithEncodingPreservation(filePath: string, conten
 	const originalEncoding = await detectFileEncoding(filePath)
 
 	// If original file is UTF-8 or does not exist, write directly
-	if (!originalEncoding || ["utf8", "ascii"].includes(originalEncoding.toLocaleLowerCase())) {
-		console.log(`${filePath} encoding with utf8`)
-
-		await fs.writeFile(filePath, content, "utf8")
+	if (!originalEncoding || ["utf-8", "utf8", "ascii"].includes(originalEncoding.toLocaleLowerCase())) {
+		await retry(() => safeWriteFile(filePath, content, "utf8"))
 		return
 	}
 
 	// Convert UTF-8 content to original file encoding
 	const encodedBuffer = iconv.encode(content, originalEncoding)
-	console.log(`${filePath} encoding with ${originalEncoding}`)
-	await fs.writeFile(filePath, encodedBuffer)
+	await retry(() => safeWriteFile(filePath, encodedBuffer))
+}
+
+async function safeWriteFile(filePath: string, data: Buffer | string, encoding?: BufferEncoding) {
+	const handle = await fs.open(filePath, "w")
+	try {
+		await handle.writeFile(data, encoding)
+		await handle.sync()
+	} finally {
+		await handle.close()
+	}
+}
+
+async function retry<T>(fn: () => Promise<T>, retries = 3, delay = 100): Promise<T> {
+	for (let i = 0; i < retries; i++) {
+		try {
+			return await fn()
+		} catch (err: any) {
+			if (["EBUSY", "EPERM", "EACCES"].includes(err.code)) {
+				if (i === retries - 1) throw err
+				await new Promise((r) => setTimeout(r, delay * (i + 1)))
+			} else {
+				throw err
+			}
+		}
+	}
+	throw new Error("unreachable")
 }
