@@ -422,7 +422,7 @@
 			},
 			"computerUse": {
 				"label": "Użycie komputera",
-				"description": "Czy model jest w stanie wchodzić w interakcję z przeglądarką? (np. Claude 3.7 Sonnet)."
+				"description": "Czy model jest w stanie wchodzić w interakcję z przeglądarką? (np. Claude Sonnet)."
 			},
 			"promptCache": {
 				"label": "Buforowanie podpowiedzi",
