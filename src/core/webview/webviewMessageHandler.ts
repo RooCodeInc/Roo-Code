@@ -770,6 +770,7 @@ export const webviewMessageHandler = async (
 				ollama: {},
 				lmstudio: {},
 				roo: {},
+				cognima: {},
 			}
 
 			const safeGetModels = async (options: GetModelsOptions): Promise<ModelRecord> => {
