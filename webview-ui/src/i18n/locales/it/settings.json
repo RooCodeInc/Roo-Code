@@ -422,7 +422,7 @@
 			},
 			"computerUse": {
 				"label": "Uso del computer",
-				"description": "Il modello è in grado di interagire con il browser? (es. Claude 3.7 Sonnet)."
+				"description": "Il modello è in grado di interagire con il browser?"
 			},
 			"promptCache": {
 				"label": "Cache dei prompt",
@@ -510,6 +510,10 @@
 		}
 	},
 	"checkpoints": {
+		"timeout": {
+			"label": "Timeout inizializzazione checkpoint (secondi)",
+			"description": "Tempo massimo di attesa per l'inizializzazione del servizio checkpoint. Predefinito: 15 secondi. Intervallo: 10-60 secondi."
+		},
 		"enable": {
 			"label": "Abilita punti di controllo automatici",
 			"description": "Quando abilitato, Roo creerà automaticamente punti di controllo durante l'esecuzione dei compiti, facilitando la revisione delle modifiche o il ritorno a stati precedenti. <0>Scopri di più</0>"
@@ -672,7 +676,7 @@
 	"advanced": {
 		"diff": {
 			"label": "Abilita modifica tramite diff",
-			"description": "Quando abilitato, Roo sarà in grado di modificare i file più velocemente e rifiuterà automaticamente scritture di file completi troncati. Funziona meglio con l'ultimo modello Claude 3.7 Sonnet.",
+			"description": "Quando abilitato, Roo sarà in grado di modificare i file più velocemente e rifiuterà automaticamente scritture di file completi troncati",
 			"strategy": {
 				"label": "Strategia diff",
 				"options": {
@@ -769,8 +773,6 @@
 	"modelInfo": {
 		"supportsImages": "Supporta immagini",
 		"noImages": "Non supporta immagini",
-		"supportsComputerUse": "Supporta uso del computer",
-		"noComputerUse": "Non supporta uso del computer",
 		"supportsPromptCache": "Supporta cache dei prompt",
 		"noPromptCache": "Non supporta cache dei prompt",
 		"contextWindow": "Finestra di contesto:",
@@ -825,6 +827,7 @@
 			"regionMismatch": "Attenzione: La regione nel tuo ARN ({{arnRegion}}) non corrisponde alla regione selezionata ({{region}}). Questo potrebbe causare problemi di accesso. Il provider utilizzerà la regione dall'ARN."
 		},
 		"modelAvailability": "L'ID modello ({{modelId}}) fornito non è disponibile. Seleziona un modello diverso.",
+		"modelDeprecated": "Questo modello non è più disponibile. Seleziona un modello diverso.",
 		"providerNotAllowed": "Il fornitore '{{provider}}' non è consentito dalla tua organizzazione",
 		"modelNotAllowed": "Il modello '{{model}}' non è consentito per il fornitore '{{provider}}' dalla tua organizzazione.",
 		"profileInvalid": "Questo profilo contiene un fornitore o un modello non consentito dalla tua organizzazione.",

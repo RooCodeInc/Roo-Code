@@ -422,7 +422,7 @@
 			},
 			"computerUse": {
 				"label": "Bilgisayar Kullanımı",
-				"description": "Bu model bir tarayıcıyla etkileşim kurabilir mi? (örn. Claude 3.7 Sonnet)"
+				"description": "Bu model bir tarayıcıyla etkileşim kurabilir mi?"
 			},
 			"promptCache": {
 				"label": "İstem Önbelleği",
@@ -510,6 +510,10 @@
 		}
 	},
 	"checkpoints": {
+		"timeout": {
+			"label": "Kontrol noktası başlatma zaman aşımı (saniye)",
+			"description": "Kontrol noktası servisini başlatmak için maksimum bekleme süresi. Varsayılan 15 saniye. Aralık: 10-60 saniye."
+		},
 		"enable": {
 			"label": "Otomatik kontrol noktalarını etkinleştir",
 			"description": "Etkinleştirildiğinde, Roo görev yürütme sırasında otomatik olarak kontrol noktaları oluşturarak değişiklikleri gözden geçirmeyi veya önceki durumlara dönmeyi kolaylaştırır. <0>Daha fazla bilgi</0>"
@@ -672,7 +676,7 @@
 	"advanced": {
 		"diff": {
 			"label": "Diff'ler aracılığıyla düzenlemeyi etkinleştir",
-			"description": "Etkinleştirildiğinde, Roo dosyaları daha hızlı düzenleyebilecek ve kesik tam dosya yazımlarını otomatik olarak reddedecektir. En son Claude 3.7 Sonnet modeliyle en iyi şekilde çalışır.",
+			"description": "Etkinleştirildiğinde, Roo dosyaları daha hızlı düzenleyebilecek ve kesik tam dosya yazımlarını otomatik olarak reddedecektir",
 			"strategy": {
 				"label": "Diff stratejisi",
 				"options": {
@@ -769,8 +773,6 @@
 	"modelInfo": {
 		"supportsImages": "Görüntüleri destekler",
 		"noImages": "Görüntüleri desteklemez",
-		"supportsComputerUse": "Bilgisayar kullanımını destekler",
-		"noComputerUse": "Bilgisayar kullanımını desteklemez",
 		"supportsPromptCache": "İstem önbelleğini destekler",
 		"noPromptCache": "İstem önbelleğini desteklemez",
 		"contextWindow": "Bağlam Penceresi:",
@@ -825,6 +827,7 @@
 			"regionMismatch": "Uyarı: ARN'nizdeki bölge ({{arnRegion}}) seçtiğiniz bölge ({{region}}) ile eşleşmiyor. Bu erişim sorunlarına neden olabilir. Sağlayıcı, ARN'deki bölgeyi kullanacak."
 		},
 		"modelAvailability": "Sağladığınız model kimliği ({{modelId}}) kullanılamıyor. Lütfen başka bir model seçin.",
+		"modelDeprecated": "Bu model artık kullanılamıyor. Lütfen farklı bir model seçin.",
 		"providerNotAllowed": "Sağlayıcı '{{provider}}' kuruluşunuz tarafından izin verilmiyor",
 		"modelNotAllowed": "Model '{{model}}' sağlayıcı '{{provider}}' için kuruluşunuz tarafından izin verilmiyor",
 		"profileInvalid": "Bu profil, kuruluşunuz tarafından izin verilmeyen bir sağlayıcı veya model içeriyor",

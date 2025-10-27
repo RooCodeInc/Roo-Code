@@ -422,7 +422,7 @@
 			},
 			"computerUse": {
 				"label": "计算机功能调用",
-				"description": "此模型是否能够与浏览器交互？（例如 Claude 3.7 Sonnet）。"
+				"description": "此模型是否能够与浏览器交互？（例如 Claude Sonnet）。"
 			},
 			"promptCache": {
 				"label": "提示缓存",
@@ -510,6 +510,10 @@
 		}
 	},
 	"checkpoints": {
+		"timeout": {
+			"label": "存档点初始化超时时间（秒）",
+			"description": "存档点服务初始化最长等待时间。默认 15 秒。范围：10-60 秒。"
+		},
 		"enable": {
 			"label": "启用自动存档点",
 			"description": "开启后自动创建任务存档点，方便回溯修改。 <0>了解更多</0>"
@@ -672,7 +676,7 @@
 	"advanced": {
 		"diff": {
 			"label": "启用diff更新",
-			"description": "启用后，Roo 将能够通过差异算法写入，避免模型输出完整文件，以降低Token消耗。与最新的 Claude 3.7 Sonnet 模型配合最佳。",
+			"description": "启用后，Roo 将能够通过差异算法写入，避免模型输出完整文件，以降低Token消耗",
 			"strategy": {
 				"label": "Diff 策略",
 				"options": {
@@ -769,8 +773,6 @@
 	"modelInfo": {
 		"supportsImages": "支持图像",
 		"noImages": "不支持图像",
-		"supportsComputerUse": "支持计算机功能调用",
-		"noComputerUse": "不支持计算机功能调用",
 		"supportsPromptCache": "支持提示缓存",
 		"noPromptCache": "不支持提示缓存",
 		"contextWindow": "上下文窗口:",
@@ -825,6 +827,7 @@
 			"regionMismatch": "警告：您的 ARN 中的区域 ({{arnRegion}}) 与您选择的区域 ({{region}}) 不匹配。这可能会导致访问问题。提供程序将使用 ARN 中的区域。"
 		},
 		"modelAvailability": "模型ID {{modelId}} 不可用，请重新选择",
+		"modelDeprecated": "此模型不再可用，请选择其他模型。",
 		"providerNotAllowed": "提供商 '{{provider}}' 不允许用于您的组织",
 		"modelNotAllowed": "模型 '{{model}}' 不允许用于提供商 '{{provider}}'，您的组织不允许",
 		"profileInvalid": "此配置文件包含您的组织不允许的提供商或模型",

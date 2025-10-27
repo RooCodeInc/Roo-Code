@@ -148,6 +148,9 @@
 		"initializingWarning": "Encara s'està inicialitzant el punt de control... Si això triga massa, pots desactivar els punts de control a la <settingsLink>configuració</settingsLink> i reiniciar la teva tasca.",
 		"menu": {
 			"viewDiff": "Veure diferències",
+			"more": "Més opcions",
+			"viewDiffFromInit": "Veure tots els canvis",
+			"viewDiffWithCurrent": "Veure els canvis des d'aquest punt de control",
 			"restore": "Restaurar punt de control",
 			"restoreFiles": "Restaurar arxius",
 			"restoreFilesDescription": "Restaura els arxius del teu projecte a una instantània presa en aquest punt.",
@@ -264,6 +267,7 @@
 		"toggleAriaLabel": "Commuta l'aprovació automàtica",
 		"disabledAriaLabel": "Aprovació automàtica desactivada - selecciona primer les opcions",
 		"triggerLabelOff": "Aprovació automàtica desactivada",
+		"triggerLabelOffShort": "Off",
 		"triggerLabel_zero": "0 aprovacions automàtiques",
 		"triggerLabel_one": "1 aprovació automàtica",
 		"triggerLabel_other": "{{count}} aprovacions automàtiques",
@@ -292,6 +296,18 @@
 			"connectButton": "Connectar a Roo Code Cloud",
 			"selectModel": "Selecciona <code>roo/code-supernova</code> del proveïdor Roo Code Cloud a Configuració per començar.",
 			"goToSettingsButton": "Anar a Configuració"
+		},
+		"release": {
+			"heading": "Novetats a l'extensió:",
+			"fileReading": "Lectura intel·ligent de fitxers que evita sobrepassaments de context",
+			"browserUse": "Eina de navegador habilitada per a tots els models amb capacitat d'imatge",
+			"bugFixes": "Moltes correccions d'errors i actualitzacions de models"
+		},
+		"cloudAgents": {
+			"heading": "Novetats al núvol:",
+			"feature": "Us presentem el primer Agent al Núvol de Roo Code, el <bold>Revisor de PR</bold>.",
+			"description": "Executa Roo al núvol, oferint revisions de codi d'altíssima qualitat a l'instant. L'hem utilitzat intensament per construir Roo i ara també està disponible per a la comunitat.",
+			"createAgentButton": "Prova el Revisor de PR"
 		},
 		"socialLinks": "Uneix-te a nosaltres a <xLink>X</xLink>, <discordLink>Discord</discordLink>, o <redditLink>r/RooCode</redditLink> 🚀"
 	},
