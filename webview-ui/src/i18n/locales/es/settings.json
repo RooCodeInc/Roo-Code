@@ -671,7 +671,7 @@
 	"advanced": {
 		"diff": {
 			"label": "Habilitar edición a través de diffs",
-			"description": "Cuando está habilitado, Roo podrá editar archivos más rápidamente y rechazará automáticamente escrituras completas de archivos truncados. Funciona mejor con el último modelo Claude Sonnet.",
+			"description": "Cuando está habilitado, Roo poderá editar archivos más rápidamente y rechazará automáticamente escrituras completas de archivos truncados. Funciona mejor con los últimos modelos Claude Sonnet.",
 			"strategy": {
 				"label": "Estrategia de diff",
 				"options": {

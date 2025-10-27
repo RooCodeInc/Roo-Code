@@ -672,7 +672,7 @@
 	"advanced": {
 		"diff": {
 			"label": "diff経由の編集を有効化",
-			"description": "有効にすると、Rooはファイルをより迅速に編集でき、切り詰められた全ファイル書き込みを自動的に拒否します。最新のClaude Sonnetモデルで最良に機能します。",
+			"description": "有効にすると、Rooはファイルをより迅速に編集でき、切り詰められた全ファイル書き込みを自動的に拒否します。最新のClaude Sonnetの各モデルで最良に機能します。",
 			"strategy": {
 				"label": "Diff戦略",
 				"options": {
