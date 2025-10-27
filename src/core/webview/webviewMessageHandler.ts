@@ -817,6 +817,13 @@ export const webviewMessageHandler = async (
 							: undefined,
 					},
 				},
+				{
+					key: "cognima",
+					options: {
+						provider: "cognima",
+						apiKey: apiConfiguration.cognimaApiKey,
+					},
+				},
 			]
 
 			// Add IO Intelligence if API key is provided.
