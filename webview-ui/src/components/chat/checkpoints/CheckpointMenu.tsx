@@ -173,7 +173,7 @@ export const CheckpointMenu = ({ ts, commitHash, checkpoint, onOpenChange }: Che
 						</Button>
 					</PopoverTrigger>
 				</StandardTooltip>
-				<PopoverContent align="end" container={portalContainer}>
+				<PopoverContent align="end" container={portalContainer} className="w-auto min-w-max">
 					<div className="flex flex-col gap-2">
 						<Button
 							variant="secondary"

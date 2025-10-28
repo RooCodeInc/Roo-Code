@@ -425,7 +425,7 @@
 			},
 			"computerUse": {
 				"label": "Bilgisayar Kullanımı",
-				"description": "Bu model bir tarayıcıyla etkileşim kurabilir mi? (örn. Claude 3.7 Sonnet)"
+				"description": "Bu model bir tarayıcıyla etkileşim kurabilir mi?"
 			},
 			"promptCache": {
 				"label": "İstem Önbelleği",
@@ -463,6 +463,7 @@
 		},
 		"reasoningEffort": {
 			"label": "Model Akıl Yürütme Çabası",
+			"none": "Yok",
 			"minimal": "Minimal (en hızlı)",
 			"high": "Yüksek",
 			"medium": "Orta",
@@ -613,6 +614,14 @@
 			"label": "Maksimum toplam görüntü boyutu",
 			"mb": "MB",
 			"description": "Tek bir read_file işleminde işlenen tüm görüntüler için maksimum kümülatif boyut sınırı (MB cinsinden). Birden çok görüntü okurken, her görüntünün boyutu toplama eklenir. Başka bir görüntü eklemek bu sınırı aşacaksa, atlanacaktır."
+		},
+		"includeCurrentTime": {
+			"label": "Mevcut zamanı bağlama dahil et",
+			"description": "Etkinleştirildiğinde, mevcut zaman ve saat dilimi bilgileri sistem istemine dahil edilecektir. Modeller zaman endişeleri nedeniyle çalışmayı durdurursa bunu devre dışı bırakın."
+		},
+		"includeCurrentCost": {
+			"label": "Mevcut maliyeti bağlama dahil et",
+			"description": "Etkinleştirildiğinde, mevcut API kullanım maliyeti sistem istemine dahil edilecektir. Modeller maliyet endişeleri nedeniyle çalışmayı durdurursa bunu devre dışı bırakın."
 		}
 	},
 	"terminal": {
@@ -679,7 +688,7 @@
 	"advanced": {
 		"diff": {
 			"label": "Diff'ler aracılığıyla düzenlemeyi etkinleştir",
-			"description": "Etkinleştirildiğinde, Roo dosyaları daha hızlı düzenleyebilecek ve kesik tam dosya yazımlarını otomatik olarak reddedecektir. En son Claude 3.7 Sonnet modeliyle en iyi şekilde çalışır.",
+			"description": "Etkinleştirildiğinde, Roo dosyaları daha hızlı düzenleyebilecek ve kesik tam dosya yazımlarını otomatik olarak reddedecektir",
 			"strategy": {
 				"label": "Diff stratejisi",
 				"options": {

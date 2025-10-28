@@ -3,7 +3,7 @@
 	"displayName": "%extension.displayName%",
 	"description": "%extension.description%",
 	"publisher": "RooVeterinaryInc",
-	"version": "3.29.0",
+	"version": "3.29.2",
 	"icon": "assets/icons/icon.png",
 	"galleryBanner": {
 		"color": "#617A91",
@@ -310,10 +310,10 @@
 		"keybindings": [
 			{
 				"command": "roo-cline.addToContext",
-				"key": "cmd+y",
-				"mac": "cmd+y",
-				"win": "ctrl+y",
-				"linux": "ctrl+y",
+				"key": "cmd+k cmd+a",
+				"mac": "cmd+k cmd+a",
+				"win": "ctrl+k ctrl+a",
+				"linux": "ctrl+k ctrl+a",
 				"when": "editorTextFocus && editorHasSelection"
 			},
 			{

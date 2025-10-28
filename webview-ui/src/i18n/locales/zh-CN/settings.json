@@ -425,7 +425,7 @@
 			},
 			"computerUse": {
 				"label": "计算机功能调用",
-				"description": "此模型是否能够与浏览器交互？（例如 Claude 3.7 Sonnet）。"
+				"description": "此模型是否能够与浏览器交互？（例如 Claude Sonnet）。"
 			},
 			"promptCache": {
 				"label": "提示缓存",
@@ -463,6 +463,7 @@
 		},
 		"reasoningEffort": {
 			"label": "模型推理强度",
+			"none": "无",
 			"minimal": "最小 (最快)",
 			"high": "高",
 			"medium": "中",
@@ -613,6 +614,14 @@
 			"label": "图片总大小上限",
 			"mb": "MB",
 			"description": "单次 read_file 操作中处理的所有图片的最大累计大小限制（MB）。读取多张图片时，每张图片的大小会累加到总大小中。如果包含另一张图片会超过此限制，则会跳过该图片。"
+		},
+		"includeCurrentTime": {
+			"label": "在上下文中包含当前时间",
+			"description": "启用后，当前时间和时区信息将包含在系统提示中。如果模型因时间问题停止工作，请禁用此选项。"
+		},
+		"includeCurrentCost": {
+			"label": "在上下文中包含当前成本",
+			"description": "启用后，当前 API 使用成本将包含在系统提示中。如果模型因成本问题停止工作，请禁用此选项。"
 		}
 	},
 	"terminal": {
@@ -679,7 +688,7 @@
 	"advanced": {
 		"diff": {
 			"label": "启用diff更新",
-			"description": "启用后，Roo 将能够通过差异算法写入，避免模型输出完整文件，以降低Token消耗。与最新的 Claude 3.7 Sonnet 模型配合最佳。",
+			"description": "启用后，Roo 将能够通过差异算法写入，避免模型输出完整文件，以降低Token消耗",
 			"strategy": {
 				"label": "Diff 策略",
 				"options": {

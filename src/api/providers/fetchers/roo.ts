@@ -71,6 +71,12 @@ export async function getRooModels(baseUrl: string, apiKey?: string): Promise<Mo
 				// Determine if the model supports images based on tags
 				const supportsImages = tags.includes("vision")
 
+				// Determine if the model supports reasoning effort based on tags
+				const supportsReasoningEffort = tags.includes("reasoning")
+
+				// Determine if the model requires reasoning effort based on tags
+				const requiredReasoningEffort = tags.includes("reasoning-required")
+
 				// Parse pricing (API returns strings, convert to numbers)
 				const inputPrice = parseApiPrice(pricing.input)
 				const outputPrice = parseApiPrice(pricing.output)
@@ -81,6 +87,8 @@ export async function getRooModels(baseUrl: string, apiKey?: string): Promise<Mo
 					maxTokens,
 					contextWindow,
 					supportsImages,
+					supportsReasoningEffort,
+					requiredReasoningEffort,
 					supportsPromptCache: Boolean(cacheReadPrice !== undefined),
 					inputPrice,
 					outputPrice,
@@ -88,6 +96,7 @@ export async function getRooModels(baseUrl: string, apiKey?: string): Promise<Mo
 					cacheReadsPrice: cacheReadPrice,
 					description: model.description || model.name,
 					deprecated: model.deprecated || false,
+					isFree: tags.includes("free"),
 				}
 			}
 

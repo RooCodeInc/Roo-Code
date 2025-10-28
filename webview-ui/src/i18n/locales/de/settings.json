@@ -425,7 +425,7 @@
 			},
 			"computerUse": {
 				"label": "Computer-Nutzung",
-				"description": "Ist dieses Modell in der Lage, mit einem Browser zu interagieren? (z.B. Claude 3.7 Sonnet)"
+				"description": "Ist dieses Modell in der Lage, mit einem Browser zu interagieren?"
 			},
 			"promptCache": {
 				"label": "Prompt-Caching",
@@ -463,6 +463,7 @@
 		},
 		"reasoningEffort": {
 			"label": "Modell-Denkaufwand",
+			"none": "Keine",
 			"minimal": "Minimal (schnellste)",
 			"high": "Hoch",
 			"medium": "Mittel",
@@ -612,6 +613,14 @@
 			"label": "Maximale Gesamtbildgröße",
 			"mb": "MB",
 			"description": "Maximales kumulatives Größenlimit (in MB) für alle Bilder, die in einer einzelnen read_file-Operation verarbeitet werden. Beim Lesen mehrerer Bilder wird die Größe jedes Bildes zur Gesamtsumme addiert. Wenn das Einbeziehen eines weiteren Bildes dieses Limit überschreiten würde, wird es übersprungen."
+		},
+		"includeCurrentTime": {
+			"label": "Aktuelle Uhrzeit in den Kontext einbeziehen",
+			"description": "Wenn aktiviert, werden die aktuelle Uhrzeit und Zeitzoneninformationen in den System-Prompt aufgenommen. Deaktiviere diese Option, wenn Modelle aufgrund von Zeitbedenken die Arbeit einstellen."
+		},
+		"includeCurrentCost": {
+			"label": "Aktuelle Kosten in den Kontext einbeziehen",
+			"description": "Wenn aktiviert, werden die aktuellen API-Nutzungskosten in den System-Prompt aufgenommen. Deaktiviere diese Option, wenn Modelle aufgrund von Kostenbedenken die Arbeit einstellen."
 		}
 	},
 	"terminal": {
@@ -678,7 +687,7 @@
 	"advanced": {
 		"diff": {
 			"label": "Bearbeitung durch Diffs aktivieren",
-			"description": "Wenn aktiviert, kann Roo Dateien schneller bearbeiten und lehnt automatisch abgeschnittene vollständige Dateischreibvorgänge ab. Funktioniert am besten mit dem neuesten Claude 3.7 Sonnet-Modell.",
+			"description": "Wenn aktiviert, kann Roo Dateien schneller bearbeiten und lehnt automatisch abgeschnittene vollständige Dateischreibvorgänge ab",
 			"strategy": {
 				"label": "Diff-Strategie",
 				"options": {

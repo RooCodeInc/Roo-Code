@@ -425,7 +425,7 @@
 			},
 			"computerUse": {
 				"label": "컴퓨터 사용",
-				"description": "이 모델이 브라우저와 상호 작용할 수 있습니까? (예: Claude 3.7 Sonnet)"
+				"description": "이 모델이 브라우저와 상호 작용할 수 있습니까?"
 			},
 			"promptCache": {
 				"label": "프롬프트 캐시",
@@ -463,6 +463,7 @@
 		},
 		"reasoningEffort": {
 			"label": "모델 추론 노력",
+			"none": "없음",
 			"minimal": "최소 (가장 빠름)",
 			"high": "높음",
 			"medium": "중간",
@@ -613,6 +614,14 @@
 			"label": "최대 총 이미지 크기",
 			"mb": "MB",
 			"description": "단일 read_file 작업에서 처리되는 모든 이미지의 최대 누적 크기 제한(MB 단위)입니다. 여러 이미지를 읽을 때 각 이미지의 크기가 총계에 추가됩니다. 다른 이미지를 포함하면 이 제한을 초과하는 경우 해당 이미지는 건너뜁니다."
+		},
+		"includeCurrentTime": {
+			"label": "컨텍스트에 현재 시간 포함",
+			"description": "활성화하면 현재 시간과 시간대 정보가 시스템 프롬프트에 포함됩니다. 시간 문제로 모델이 작동을 멈추면 비활성화하세요."
+		},
+		"includeCurrentCost": {
+			"label": "컨텍스트에 현재 비용 포함",
+			"description": "활성화하면 현재 API 사용 비용이 시스템 프롬프트에 포함됩니다. 비용 문제로 모델이 작동을 멈추면 비활성화하세요."
 		}
 	},
 	"terminal": {
@@ -679,7 +688,7 @@
 	"advanced": {
 		"diff": {
 			"label": "diff를 통한 편집 활성화",
-			"description": "활성화되면 Roo는 파일을 더 빠르게 편집할 수 있으며 잘린 전체 파일 쓰기를 자동으로 거부합니다. 최신 Claude 3.7 Sonnet 모델에서 가장 잘 작동합니다.",
+			"description": "활성화되면 Roo는 파일을 더 빠르게 편집할 수 있으며 잘린 전체 파일 쓰기를 자동으로 거부합니다",
 			"strategy": {
 				"label": "Diff 전략",
 				"options": {

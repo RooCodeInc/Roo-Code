@@ -275,6 +275,74 @@ describe("ChutesHandler", () => {
 		)
 	})
 
+	it("should return zai-org/GLM-4.6-FP8 model with correct configuration", () => {
+		const testModelId: ChutesModelId = "zai-org/GLM-4.6-FP8"
+		const handlerWithModel = new ChutesHandler({
+			apiModelId: testModelId,
+			chutesApiKey: "test-chutes-api-key",
+		})
+		const model = handlerWithModel.getModel()
+		expect(model.id).toBe(testModelId)
+		expect(model.info).toEqual(
+			expect.objectContaining({
+				maxTokens: 32768,
+				contextWindow: 202752,
+				supportsImages: false,
+				supportsPromptCache: false,
+				inputPrice: 0,
+				outputPrice: 0,
+				description:
+					"GLM-4.6 introduces major upgrades over GLM-4.5, including a longer 200K-token context window for complex tasks, stronger coding performance in benchmarks and real-world tools (such as Claude Code, Cline, Roo Code, and Kilo Code), improved reasoning with tool use during inference, more capable and efficient agent integration, and refined writing that better matches human style, readability, and natural role-play scenarios.",
+				temperature: 0.5, // Default temperature for non-DeepSeek models
+			}),
+		)
+	})
+
+	it("should return zai-org/GLM-4.6-turbo model with correct configuration", () => {
+		const testModelId: ChutesModelId = "zai-org/GLM-4.6-turbo"
+		const handlerWithModel = new ChutesHandler({
+			apiModelId: testModelId,
+			chutesApiKey: "test-chutes-api-key",
+		})
+		const model = handlerWithModel.getModel()
+		expect(model.id).toBe(testModelId)
+		expect(model.info).toEqual(
+			expect.objectContaining({
+				maxTokens: 202752,
+				contextWindow: 202752,
+				supportsImages: false,
+				supportsPromptCache: false,
+				inputPrice: 1.15,
+				outputPrice: 3.25,
+				description: "GLM-4.6-turbo model with 200K-token context window, optimized for fast inference.",
+				temperature: 0.5, // Default temperature for non-DeepSeek models
+			}),
+		)
+	})
+
+	it("should return meituan-longcat/LongCat-Flash-Thinking-FP8 model with correct configuration", () => {
+		const testModelId: ChutesModelId = "meituan-longcat/LongCat-Flash-Thinking-FP8"
+		const handlerWithModel = new ChutesHandler({
+			apiModelId: testModelId,
+			chutesApiKey: "test-chutes-api-key",
+		})
+		const model = handlerWithModel.getModel()
+		expect(model.id).toBe(testModelId)
+		expect(model.info).toEqual(
+			expect.objectContaining({
+				maxTokens: 32768,
+				contextWindow: 128000,
+				supportsImages: false,
+				supportsPromptCache: false,
+				inputPrice: 0,
+				outputPrice: 0,
+				description:
+					"LongCat Flash Thinking FP8 model with 128K context window, optimized for complex reasoning and coding tasks.",
+				temperature: 0.5, // Default temperature for non-DeepSeek models
+			}),
+		)
+	})
+
 	it("should return Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8 model with correct configuration", () => {
 		const testModelId: ChutesModelId = "Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8"
 		const handlerWithModel = new ChutesHandler({
@@ -460,10 +528,13 @@ describe("ChutesHandler", () => {
 		const messageGenerator = handlerWithModel.createMessage(systemPrompt, messages)
 		await messageGenerator.next()
 
+		// Centralized 20% cap should apply to OpenAI-compatible providers like Chutes
+		const expectedMaxTokens = Math.min(modelInfo.maxTokens, Math.ceil(modelInfo.contextWindow * 0.2))
+
 		expect(mockCreate).toHaveBeenCalledWith(
 			expect.objectContaining({
 				model: modelId,
-				max_tokens: modelInfo.maxTokens,
+				max_tokens: expectedMaxTokens,
 				temperature: 0.5,
 				messages: expect.arrayContaining([{ role: "system", content: systemPrompt }]),
 				stream: true,
