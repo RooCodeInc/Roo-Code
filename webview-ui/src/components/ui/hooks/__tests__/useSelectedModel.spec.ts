@@ -514,3 +514,109 @@ describe("useSelectedModel", () => {
 		})
 	})
 })
+
+describe("vertex provider pricing with region and [1m] tiers", () => {
+	beforeEach(() => {
+		// Keep other hooks stable/inert for Vertex path
+		;(mockUseRouterModels as any).mockReturnValue({
+			data: { openrouter: {}, requesty: {}, glama: {}, unbound: {}, litellm: {}, "io-intelligence": {} },
+			isLoading: false,
+			isError: false,
+		})
+		;(mockUseOpenRouterModelProviders as any).mockReturnValue({
+			data: {},
+			isLoading: false,
+			isError: false,
+		})
+	})
+
+	it("applies global pricing for Sonnet 4 under 200k (no [1m])", () => {
+		const apiConfiguration: ProviderSettings = {
+			apiProvider: "vertex",
+			apiModelId: "claude-sonnet-4@20250514",
+			vertexRegion: "global",
+		}
+
+		const wrapper = createWrapper()
+		const { result } = renderHook(() => useSelectedModel(apiConfiguration), { wrapper })
+
+		expect(result.current.provider).toBe("vertex")
+		expect(result.current.id).toBe("claude-sonnet-4@20250514")
+		expect(result.current.info?.inputPrice).toBe(3.0)
+		expect(result.current.info?.outputPrice).toBe(15.0)
+		expect(result.current.info?.cacheWritesPrice).toBe(3.75)
+		expect(result.current.info?.cacheReadsPrice).toBe(0.3)
+	})
+
+	it("applies global pricing for Sonnet 4 over 200k ([1m])", () => {
+		const apiConfiguration: ProviderSettings = {
+			apiProvider: "vertex",
+			apiModelId: "claude-sonnet-4@20250514[1m]",
+			vertexRegion: "global",
+		}
+
+		const wrapper = createWrapper()
+		const { result } = renderHook(() => useSelectedModel(apiConfiguration), { wrapper })
+
+		expect(result.current.provider).toBe("vertex")
+		expect(result.current.id).toBe("claude-sonnet-4@20250514[1m]")
+		expect(result.current.info?.inputPrice).toBe(6.0)
+		expect(result.current.info?.outputPrice).toBe(22.5)
+		expect(result.current.info?.cacheWritesPrice).toBe(7.5)
+		expect(result.current.info?.cacheReadsPrice).toBe(0.6)
+	})
+
+	it("applies regional pricing for Sonnet 4.5 under 200k in us-east5", () => {
+		const apiConfiguration: ProviderSettings = {
+			apiProvider: "vertex",
+			apiModelId: "claude-sonnet-4-5@20250929",
+			vertexRegion: "us-east5",
+		}
+
+		const wrapper = createWrapper()
+		const { result } = renderHook(() => useSelectedModel(apiConfiguration), { wrapper })
+
+		expect(result.current.provider).toBe("vertex")
+		expect(result.current.id).toBe("claude-sonnet-4-5@20250929")
+		expect(result.current.info?.inputPrice).toBe(3.3)
+		expect(result.current.info?.outputPrice).toBe(16.5)
+		expect(result.current.info?.cacheWritesPrice).toBe(4.13)
+		expect(result.current.info?.cacheReadsPrice).toBe(0.33)
+	})
+
+	it("applies regional pricing for Sonnet 4.5 over 200k ([1m]) in us-east5", () => {
+		const apiConfiguration: ProviderSettings = {
+			apiProvider: "vertex",
+			apiModelId: "claude-sonnet-4-5@20250929[1m]",
+			vertexRegion: "us-east5",
+		}
+
+		const wrapper = createWrapper()
+		const { result } = renderHook(() => useSelectedModel(apiConfiguration), { wrapper })
+
+		expect(result.current.provider).toBe("vertex")
+		expect(result.current.id).toBe("claude-sonnet-4-5@20250929[1m]")
+		expect(result.current.info?.inputPrice).toBe(6.6)
+		expect(result.current.info?.outputPrice).toBe(24.75)
+		expect(result.current.info?.cacheWritesPrice).toBe(8.25)
+		expect(result.current.info?.cacheReadsPrice).toBe(0.66)
+	})
+
+	it("applies global pricing for Sonnet 4.5 over 200k ([1m]) in non-regional areas (e.g., us-central1)", () => {
+		const apiConfiguration: ProviderSettings = {
+			apiProvider: "vertex",
+			apiModelId: "claude-sonnet-4-5@20250929[1m]",
+			vertexRegion: "us-central1", // treated as global pricing per rules
+		}
+
+		const wrapper = createWrapper()
+		const { result } = renderHook(() => useSelectedModel(apiConfiguration), { wrapper })
+
+		expect(result.current.provider).toBe("vertex")
+		expect(result.current.id).toBe("claude-sonnet-4-5@20250929[1m]")
+		expect(result.current.info?.inputPrice).toBe(6.0)
+		expect(result.current.info?.outputPrice).toBe(22.5)
+		expect(result.current.info?.cacheWritesPrice).toBe(7.5)
+		expect(result.current.info?.cacheReadsPrice).toBe(0.6)
+	})
+})
