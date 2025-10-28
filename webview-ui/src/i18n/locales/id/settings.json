@@ -739,10 +739,6 @@
 			"name": "Gunakan strategi unified diff eksperimental",
 			"description": "Aktifkan strategi unified diff eksperimental. Strategi ini mungkin mengurangi jumlah retry yang disebabkan oleh error model tetapi dapat menyebabkan perilaku yang tidak terduga atau edit yang salah. Hanya aktifkan jika kamu memahami risikonya dan bersedia meninjau semua perubahan dengan hati-hati."
 		},
-		"SEARCH_AND_REPLACE": {
-			"name": "Gunakan tool search and replace eksperimental",
-			"description": "Aktifkan tool search and replace eksperimental, memungkinkan Roo mengganti beberapa instance dari term pencarian dalam satu permintaan."
-		},
 		"INSERT_BLOCK": {
 			"name": "Gunakan tool insert content eksperimental",
 			"description": "Aktifkan tool insert content eksperimental, memungkinkan Roo menyisipkan konten pada nomor baris spesifik tanpa perlu membuat diff."

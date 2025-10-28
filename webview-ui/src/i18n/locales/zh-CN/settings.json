@@ -714,10 +714,6 @@
 			"name": "启用diff更新工具",
 			"description": "可减少因模型错误导致的重复尝试，但可能引发意外操作。启用前请确保理解风险并会仔细检查所有修改。"
 		},
-		"SEARCH_AND_REPLACE": {
-			"name": "启用搜索和替换工具",
-			"description": "启用实验性搜索和替换工具，允许 Roo 在一个请求中替换搜索词的多个实例。"
-		},
 		"INSERT_BLOCK": {
 			"name": "启用插入内容工具",
 			"description": "允许 Roo 在特定行号插入内容，无需处理差异。"

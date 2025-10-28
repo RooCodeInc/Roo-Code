@@ -192,8 +192,6 @@
 		"wantsToGenerateImageProtected": "Roo wants to generate an image in a protected location",
 		"didGenerateImage": "Roo generated an image",
 		"wantsToCreate": "Roo wants to create a new file",
-		"wantsToSearchReplace": "Roo wants to search and replace in this file",
-		"didSearchReplace": "Roo performed search and replace on this file",
 		"wantsToInsert": "Roo wants to insert content into this file",
 		"wantsToInsertWithLineNumber": "Roo wants to insert content into this file at line {{lineNumber}}",
 		"wantsToInsertAtEnd": "Roo wants to append content to the end of this file"

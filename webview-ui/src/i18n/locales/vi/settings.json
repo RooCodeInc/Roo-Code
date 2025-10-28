@@ -714,10 +714,6 @@
 			"name": "Sử dụng chiến lược diff thống nhất thử nghiệm",
 			"description": "Bật chiến lược diff thống nhất thử nghiệm. Chiến lược này có thể giảm số lần thử lại do lỗi mô hình nhưng có thể gây ra hành vi không mong muốn hoặc chỉnh sửa không chính xác. Chỉ bật nếu bạn hiểu rõ các rủi ro và sẵn sàng xem xét cẩn thận tất cả các thay đổi."
 		},
-		"SEARCH_AND_REPLACE": {
-			"name": "Sử dụng công cụ tìm kiếm và thay thế thử nghiệm",
-			"description": "Bật công cụ tìm kiếm và thay thế thử nghiệm, cho phép Roo thay thế nhiều phiên bản của một thuật ngữ tìm kiếm trong một yêu cầu."
-		},
 		"INSERT_BLOCK": {
 			"name": "Sử dụng công cụ chèn nội dung thử nghiệm",
 			"description": "Bật công cụ chèn nội dung thử nghiệm, cho phép Roo chèn nội dung tại số dòng cụ thể mà không cần tạo diff."
