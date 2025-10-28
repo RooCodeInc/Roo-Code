@@ -1749,9 +1749,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		interface StackItem {
 			userContent: Anthropic.Messages.ContentBlockParam[]
 			includeFileDetails: boolean
+			retryAttempt?: number
 		}
 
-		const stack: StackItem[] = [{ userContent, includeFileDetails }]
+		const stack: StackItem[] = [{ userContent, includeFileDetails, retryAttempt: 0 }]
 
 		while (stack.length > 0) {
 			const currentItem = stack.pop()!
@@ -2231,10 +2232,21 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 								`[Task#${this.taskId}.${this.instanceId}] Stream failed, will retry: ${streamingFailedMessage}`,
 							)
 
-							// Push the same content back onto the stack to retry
+							// Apply exponential backoff similar to first-chunk errors when auto-resubmit is enabled
+							const stateForBackoff = await this.providerRef.deref()?.getState()
+							if (stateForBackoff?.autoApprovalEnabled && stateForBackoff?.alwaysApproveResubmit) {
+								await this.backoffAndAnnounce(
+									currentItem.retryAttempt ?? 0,
+									error,
+									streamingFailedMessage,
+								)
+							}
+
+							// Push the same content back onto the stack to retry, incrementing the retry attempt counter
 							stack.push({
 								userContent: currentUserContent,
 								includeFileDetails: false,
+								retryAttempt: (currentItem.retryAttempt ?? 0) + 1,
 							})
 
 							// Continue to retry the request
@@ -2775,45 +2787,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					errorMsg = "Unknown error"
 				}
 
-				const baseDelay = requestDelaySeconds || 5
-				let exponentialDelay = Math.min(
-					Math.ceil(baseDelay * Math.pow(2, retryAttempt)),
-					MAX_EXPONENTIAL_BACKOFF_SECONDS,
-				)
-
-				// If the error is a 429, and the error details contain a retry delay, use that delay instead of exponential backoff
-				if (error.status === 429) {
-					const geminiRetryDetails = error.errorDetails?.find(
-						(detail: any) => detail["@type"] === "type.googleapis.com/google.rpc.RetryInfo",
-					)
-					if (geminiRetryDetails) {
-						const match = geminiRetryDetails?.retryDelay?.match(/^(\d+)s$/)
-						if (match) {
-							exponentialDelay = Number(match[1]) + 1
-						}
-					}
-				}
-
-				// Wait for the greater of the exponential delay or the rate limit delay
-				const finalDelay = Math.max(exponentialDelay, rateLimitDelay)
-
-				// Show countdown timer with exponential backoff
-				for (let i = finalDelay; i > 0; i--) {
-					await this.say(
-						"api_req_retry_delayed",
-						`${errorMsg}\n\nRetry attempt ${retryAttempt + 1}\nRetrying in ${i} seconds...`,
-						undefined,
-						true,
-					)
-					await delay(1000)
-				}
-
-				await this.say(
-					"api_req_retry_delayed",
-					`${errorMsg}\n\nRetry attempt ${retryAttempt + 1}\nRetrying now...`,
-					undefined,
-					false,
-				)
+				// Apply shared exponential backoff and countdown UX
+				await this.backoffAndAnnounce(retryAttempt, error, errorMsg)
 
 				// Delegate generator output from the recursive call with
 				// incremented retry count.
@@ -2849,6 +2824,74 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// effectively passes along all subsequent chunks from the original
 		// stream.
 		yield* iterator
+	}
+
+	// Shared exponential backoff for retries (first-chunk and mid-stream)
+	private async backoffAndAnnounce(retryAttempt: number, error: any, header?: string): Promise<void> {
+		try {
+			const state = await this.providerRef.deref()?.getState()
+			const baseDelay = state?.requestDelaySeconds || 5
+
+			let exponentialDelay = Math.min(
+				Math.ceil(baseDelay * Math.pow(2, retryAttempt)),
+				MAX_EXPONENTIAL_BACKOFF_SECONDS,
+			)
+
+			// Respect provider rate limit window
+			let rateLimitDelay = 0
+			const rateLimit = state?.apiConfiguration?.rateLimitSeconds || 0
+			if (Task.lastGlobalApiRequestTime && rateLimit > 0) {
+				const elapsed = performance.now() - Task.lastGlobalApiRequestTime
+				rateLimitDelay = Math.ceil(Math.min(rateLimit, Math.max(0, rateLimit * 1000 - elapsed) / 1000))
+			}
+
+			// Prefer RetryInfo on 429 if present
+			if (error?.status === 429) {
+				const retryInfo = error?.errorDetails?.find(
+					(d: any) => d["@type"] === "type.googleapis.com/google.rpc.RetryInfo",
+				)
+				const match = retryInfo?.retryDelay?.match?.(/^(\d+)s$/)
+				if (match) {
+					exponentialDelay = Number(match[1]) + 1
+				}
+			}
+
+			const finalDelay = Math.max(exponentialDelay, rateLimitDelay)
+			if (finalDelay <= 0) return
+
+			// Build header text; fall back to error message if none provided
+			let headerText = header
+			if (!headerText) {
+				if (error?.error?.metadata?.raw) {
+					headerText = JSON.stringify(error.error.metadata.raw, null, 2)
+				} else if (error?.message) {
+					headerText = error.message
+				} else {
+					headerText = "Unknown error"
+				}
+			}
+			headerText = headerText ? `${headerText}\n\n` : ""
+
+			// Show countdown timer with exponential backoff
+			for (let i = finalDelay; i > 0; i--) {
+				await this.say(
+					"api_req_retry_delayed",
+					`${headerText}Retry attempt ${retryAttempt + 1}\nRetrying in ${i} seconds...`,
+					undefined,
+					true,
+				)
+				await delay(1000)
+			}
+
+			await this.say(
+				"api_req_retry_delayed",
+				`${headerText}Retry attempt ${retryAttempt + 1}\nRetrying now...`,
+				undefined,
+				false,
+			)
+		} catch (err) {
+			console.error("Exponential backoff failed:", err)
+		}
 	}
 
 	// Checkpoints
