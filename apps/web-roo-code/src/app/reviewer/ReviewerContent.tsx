@@ -41,7 +41,7 @@ const workflowSteps: Feature[] = [
 		icon: MessageSquareCode,
 		title: "3. Get Comprehensive Reviews",
 		description:
-			"Every pull request gets instant, detailed feedback from a Roo Code agent highlighting issues and suggesting improvements.",
+			"Every pull request gets detailed comments in minutes from a Roo Code agent highlighting issues and suggesting improvements.",
 	},
 ]
 
@@ -145,7 +145,7 @@ export function ReviewerContent() {
 						<div>
 							<h2 className="text-4xl font-bold tracking-tight sm:text-5xl">How It Works</h2>
 							<p className="mt-6 text-lg text-muted-foreground">
-								Get started with comprehensive code reviews in three simple steps
+								Get started with AI code reviews in three simple steps
 							</p>
 						</div>
 					</div>
