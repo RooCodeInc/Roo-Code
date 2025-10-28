@@ -610,6 +610,14 @@
 			"profileDescription": "Seuil personnalisé pour ce profil uniquement (remplace le défaut global)",
 			"inheritDescription": "Ce profil hérite du seuil par défaut global ({{threshold}}%)",
 			"usesGlobal": "(utilise global {{threshold}}%)"
+		},
+		"includeCurrentTime": {
+			"label": "Inclure l'heure actuelle dans le contexte",
+			"description": "Lorsque cette option est activée, l'heure actuelle et les informations de fuseau horaire seront incluses dans le prompt système. Désactivez cette option si les modèles cessent de fonctionner en raison de problèmes liés à l'heure."
+		},
+		"includeCurrentCost": {
+			"label": "Inclure le coût actuel dans le contexte",
+			"description": "Lorsque cette option est activée, le coût d'utilisation actuel de l'API sera inclus dans le prompt système. Désactivez cette option si les modèles cessent de fonctionner en raison de problèmes de coût."
 		}
 	},
 	"terminal": {

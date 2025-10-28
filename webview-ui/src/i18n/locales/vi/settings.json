@@ -611,6 +611,14 @@
 			"label": "Kích thước tổng tối đa của hình ảnh",
 			"mb": "MB",
 			"description": "Giới hạn kích thước tích lũy tối đa (tính bằng MB) cho tất cả hình ảnh được xử lý trong một thao tác read_file duy nhất. Khi đọc nhiều hình ảnh, kích thước của mỗi hình ảnh được cộng vào tổng. Nếu việc thêm một hình ảnh khác sẽ vượt quá giới hạn này, nó sẽ bị bỏ qua."
+		},
+		"includeCurrentTime": {
+			"label": "Bao gồm thời gian hiện tại trong ngữ cảnh",
+			"description": "Khi được bật, thời gian hiện tại và thông tin múi giờ sẽ được bao gồm trong lời nhắc hệ thống. Tắt nếu các mô hình ngừng hoạt động do lo ngại về thời gian."
+		},
+		"includeCurrentCost": {
+			"label": "Bao gồm chi phí hiện tại trong ngữ cảnh",
+			"description": "Khi được bật, chi phí sử dụng API hiện tại sẽ được bao gồm trong lời nhắc hệ thống. Tắt nếu các mô hình ngừng hoạt động do lo ngại về chi phí."
 		}
 	},
 	"terminal": {

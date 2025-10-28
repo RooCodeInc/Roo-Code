@@ -611,6 +611,14 @@
 			"profileDescription": "Aangepaste drempelwaarde alleen voor dit profiel (overschrijft globale standaard)",
 			"inheritDescription": "Dit profiel erft de globale standaard drempelwaarde ({{threshold}}%)",
 			"usesGlobal": "(gebruikt globaal {{threshold}}%)"
+		},
+		"includeCurrentTime": {
+			"label": "Huidige tijd opnemen in context",
+			"description": "Indien ingeschakeld, worden de huidige tijd en tijdzone-informatie opgenomen in de systeemprompt. Schakel dit uit als modellen stoppen met werken vanwege tijdproblemen."
+		},
+		"includeCurrentCost": {
+			"label": "Huidige kosten opnemen in context",
+			"description": "Indien ingeschakeld, worden de huidige API-gebruikskosten opgenomen in de systeemprompt. Schakel dit uit als modellen stoppen met werken vanwege kostenproblemen."
 		}
 	},
 	"terminal": {

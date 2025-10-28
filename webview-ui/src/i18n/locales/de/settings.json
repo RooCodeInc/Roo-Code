@@ -610,6 +610,14 @@
 			"label": "Maximale Gesamtbildgröße",
 			"mb": "MB",
 			"description": "Maximales kumulatives Größenlimit (in MB) für alle Bilder, die in einer einzelnen read_file-Operation verarbeitet werden. Beim Lesen mehrerer Bilder wird die Größe jedes Bildes zur Gesamtsumme addiert. Wenn das Einbeziehen eines weiteren Bildes dieses Limit überschreiten würde, wird es übersprungen."
+		},
+		"includeCurrentTime": {
+			"label": "Aktuelle Uhrzeit in den Kontext einbeziehen",
+			"description": "Wenn aktiviert, werden die aktuelle Uhrzeit und Zeitzoneninformationen in den System-Prompt aufgenommen. Deaktiviere diese Option, wenn Modelle aufgrund von Zeitbedenken die Arbeit einstellen."
+		},
+		"includeCurrentCost": {
+			"label": "Aktuelle Kosten in den Kontext einbeziehen",
+			"description": "Wenn aktiviert, werden die aktuellen API-Nutzungskosten in den System-Prompt aufgenommen. Deaktiviere diese Option, wenn Modelle aufgrund von Kostenbedenken die Arbeit einstellen."
 		}
 	},
 	"terminal": {

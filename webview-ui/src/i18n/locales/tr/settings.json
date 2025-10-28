@@ -611,6 +611,14 @@
 			"label": "Maksimum toplam görüntü boyutu",
 			"mb": "MB",
 			"description": "Tek bir read_file işleminde işlenen tüm görüntüler için maksimum kümülatif boyut sınırı (MB cinsinden). Birden çok görüntü okurken, her görüntünün boyutu toplama eklenir. Başka bir görüntü eklemek bu sınırı aşacaksa, atlanacaktır."
+		},
+		"includeCurrentTime": {
+			"label": "Mevcut zamanı bağlama dahil et",
+			"description": "Etkinleştirildiğinde, mevcut zaman ve saat dilimi bilgileri sistem istemine dahil edilecektir. Modeller zaman endişeleri nedeniyle çalışmayı durdurursa bunu devre dışı bırakın."
+		},
+		"includeCurrentCost": {
+			"label": "Mevcut maliyeti bağlama dahil et",
+			"description": "Etkinleştirildiğinde, mevcut API kullanım maliyeti sistem istemine dahil edilecektir. Modeller maliyet endişeleri nedeniyle çalışmayı durdurursa bunu devre dışı bırakın."
 		}
 	},
 	"terminal": {

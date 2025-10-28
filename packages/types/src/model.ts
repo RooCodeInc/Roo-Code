@@ -78,6 +78,8 @@ export const modelInfoSchema = z.object({
 	cachableFields: z.array(z.string()).optional(),
 	// Flag to indicate if the model is deprecated and should not be used
 	deprecated: z.boolean().optional(),
+	// Flag to indicate if the model is free (no cost)
+	isFree: z.boolean().optional(),
 	/**
 	 * Service tiers with pricing information.
 	 * Each tier can have a name (for OpenAI service tiers) and pricing overrides.

@@ -611,6 +611,14 @@
 			"label": "Maksymalny całkowity rozmiar obrazów",
 			"mb": "MB",
 			"description": "Maksymalny skumulowany limit rozmiaru (w MB) dla wszystkich obrazów przetwarzanych w jednej operacji read_file. Podczas odczytu wielu obrazów rozmiar każdego obrazu jest dodawany do sumy. Jeśli dołączenie kolejnego obrazu przekroczyłoby ten limit, zostanie on pominięty."
+		},
+		"includeCurrentTime": {
+			"label": "Uwzględnij bieżący czas w kontekście",
+			"description": "Gdy włączone, bieżący czas i informacje o strefie czasowej zostaną uwzględnione w promptcie systemowym. Wyłącz, jeśli modele przestają działać z powodu problemów z czasem."
+		},
+		"includeCurrentCost": {
+			"label": "Uwzględnij bieżący koszt w kontekście",
+			"description": "Gdy włączone, bieżący koszt użycia API zostanie uwzględniony w promptcie systemowym. Wyłącz, jeśli modele przestają działać z powodu problemów z kosztami."
 		}
 	},
 	"terminal": {

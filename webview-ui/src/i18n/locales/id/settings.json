@@ -615,6 +615,14 @@
 			"label": "Ukuran total gambar maksimum",
 			"mb": "MB",
 			"description": "Batas ukuran kumulatif maksimum (dalam MB) untuk semua gambar yang diproses dalam satu operasi read_file. Saat membaca beberapa gambar, ukuran setiap gambar ditambahkan ke total. Jika menyertakan gambar lain akan melebihi batas ini, gambar tersebut akan dilewati."
+		},
+		"includeCurrentTime": {
+			"label": "Sertakan waktu saat ini dalam konteks",
+			"description": "Ketika diaktifkan, waktu saat ini dan informasi zona waktu akan disertakan dalam prompt sistem. Nonaktifkan ini jika model berhenti bekerja karena masalah waktu."
+		},
+		"includeCurrentCost": {
+			"label": "Sertakan biaya saat ini dalam konteks",
+			"description": "Ketika diaktifkan, biaya penggunaan API saat ini akan disertakan dalam prompt sistem. Nonaktifkan ini jika model berhenti bekerja karena masalah biaya."
 		}
 	},
 	"terminal": {

@@ -181,13 +181,17 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 		}
 
 		if (lastUsage) {
+			// Check if the current model is marked as free
+			const model = this.getModel()
+			const isFreeModel = model.info.isFree ?? false
+
 			yield {
 				type: "usage",
 				inputTokens: lastUsage.prompt_tokens || 0,
 				outputTokens: lastUsage.completion_tokens || 0,
 				cacheWriteTokens: lastUsage.cache_creation_input_tokens,
 				cacheReadTokens: lastUsage.prompt_tokens_details?.cached_tokens,
-				totalCost: lastUsage.cost ?? 0,
+				totalCost: isFreeModel ? 0 : (lastUsage.cost ?? 0),
 			}
 		}
 	}

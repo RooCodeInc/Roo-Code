@@ -611,6 +611,14 @@
 			"label": "Dimensione totale massima immagini",
 			"mb": "MB",
 			"description": "Limite di dimensione cumulativa massima (in MB) per tutte le immagini elaborate in una singola operazione read_file. Durante la lettura di più immagini, la dimensione di ogni immagine viene aggiunta al totale. Se l'inclusione di un'altra immagine supererebbe questo limite, verrà saltata."
+		},
+		"includeCurrentTime": {
+			"label": "Includi l'ora corrente nel contesto",
+			"description": "Se abilitato, l'ora corrente e le informazioni sul fuso orario verranno incluse nel prompt di sistema. Disabilita questa opzione se i modelli smettono di funzionare a causa di problemi di orario."
+		},
+		"includeCurrentCost": {
+			"label": "Includi il costo corrente nel contesto",
+			"description": "Se abilitato, il costo di utilizzo corrente dell'API verrà incluso nel prompt di sistema. Disabilita questa opzione se i modelli smettono di funzionare a causa di problemi di costo."
 		}
 	},
 	"terminal": {
