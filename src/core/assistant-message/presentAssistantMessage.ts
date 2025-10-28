@@ -15,7 +15,6 @@ import { shouldUseSingleFileRead } from "@roo-code/types"
 import { writeToFileTool } from "../tools/writeToFileTool"
 import { applyDiffTool } from "../tools/multiApplyDiffTool"
 import { insertContentTool } from "../tools/insertContentTool"
-import { searchAndReplaceTool } from "../tools/searchAndReplaceTool"
 import { listCodeDefinitionNamesTool } from "../tools/listCodeDefinitionNamesTool"
 import { searchFilesTool } from "../tools/searchFilesTool"
 import { browserActionTool } from "../tools/browserActionTool"
@@ -194,8 +193,6 @@ export async function presentAssistantMessage(cline: Task) {
 							block.params.file_pattern ? ` in '${block.params.file_pattern}'` : ""
 						}]`
 					case "insert_content":
-						return `[${block.name} for '${block.params.path}']`
-					case "search_and_replace":
 						return `[${block.name} for '${block.params.path}']`
 					case "list_files":
 						return `[${block.name} for '${block.params.path}']`
@@ -462,10 +459,6 @@ export async function presentAssistantMessage(cline: Task) {
 				case "insert_content":
 					await checkpointSaveAndMark(cline)
 					await insertContentTool(cline, block, askApproval, handleError, pushToolResult, removeClosingTag)
-					break
-				case "search_and_replace":
-					await checkpointSaveAndMark(cline)
-					await searchAndReplaceTool(cline, block, askApproval, handleError, pushToolResult, removeClosingTag)
 					break
 				case "read_file":
 					// Check if this model should use the simplified single-file read tool
