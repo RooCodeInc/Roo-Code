@@ -460,6 +460,7 @@
 		},
 		"reasoningEffort": {
 			"label": "Model redeneervermogen",
+			"none": "Geen",
 			"minimal": "Minimaal (Snelst)",
 			"high": "Hoog",
 			"medium": "Middel",

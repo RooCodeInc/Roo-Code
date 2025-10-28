@@ -460,6 +460,7 @@
 		},
 		"reasoningEffort": {
 			"label": "Modell-Denkaufwand",
+			"none": "Keine",
 			"minimal": "Minimal (schnellste)",
 			"high": "Hoch",
 			"medium": "Mittel",

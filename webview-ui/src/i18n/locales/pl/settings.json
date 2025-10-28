@@ -460,6 +460,7 @@
 		},
 		"reasoningEffort": {
 			"label": "Wysiłek rozumowania modelu",
+			"none": "Brak",
 			"minimal": "Minimalny (najszybszy)",
 			"high": "Wysoki",
 			"medium": "Średni",

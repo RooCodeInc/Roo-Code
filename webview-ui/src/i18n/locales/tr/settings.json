@@ -460,6 +460,7 @@
 		},
 		"reasoningEffort": {
 			"label": "Model Akıl Yürütme Çabası",
+			"none": "Yok",
 			"minimal": "Minimal (en hızlı)",
 			"high": "Yüksek",
 			"medium": "Orta",

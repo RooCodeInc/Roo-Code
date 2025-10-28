@@ -65,6 +65,7 @@ export const modelInfoSchema = z.object({
 	supportsTemperature: z.boolean().optional(),
 	requiredReasoningBudget: z.boolean().optional(),
 	supportsReasoningEffort: z.boolean().optional(),
+	requiredReasoningEffort: z.boolean().optional(),
 	supportedParameters: z.array(modelParametersSchema).optional(),
 	inputPrice: z.number().optional(),
 	outputPrice: z.number().optional(),

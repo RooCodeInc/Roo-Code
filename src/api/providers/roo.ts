@@ -6,16 +6,26 @@ import { CloudService } from "@roo-code/cloud"
 
 import type { ApiHandlerOptions, ModelRecord } from "../../shared/api"
 import { ApiStream } from "../transform/stream"
+import { getModelParams } from "../transform/model-params"
+import { convertToOpenAiMessages } from "../transform/openai-format"
+import type { RooReasoningParams } from "../transform/reasoning"
+import { getRooReasoning } from "../transform/reasoning"
 
 import type { ApiHandlerCreateMessageMetadata } from "../index"
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseOpenAiCompatibleProvider } from "./base-openai-compatible-provider"
 import { getModels, flushModels, getModelsFromCache } from "../providers/fetchers/modelCache"
+import { handleOpenAIError } from "./utils/openai-error-handler"
 
 // Extend OpenAI's CompletionUsage to include Roo specific fields
 interface RooUsage extends OpenAI.CompletionUsage {
 	cache_creation_input_tokens?: number
 	cost?: number
+}
+
+// Add custom interface for Roo params to support reasoning
+type RooChatCompletionParams = OpenAI.Chat.ChatCompletionCreateParamsStreaming & {
+	reasoning?: RooReasoningParams
 }
 
 export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
@@ -78,6 +88,51 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 		}
 	}
 
+	protected override createStream(
+		systemPrompt: string,
+		messages: Anthropic.Messages.MessageParam[],
+		metadata?: ApiHandlerCreateMessageMetadata,
+		requestOptions?: OpenAI.RequestOptions,
+	) {
+		const { id: model, info } = this.getModel()
+
+		// Get model parameters including reasoning
+		const params = getModelParams({
+			format: "openai",
+			modelId: model,
+			model: info,
+			settings: this.options,
+			defaultTemperature: this.defaultTemperature,
+		})
+
+		// Get Roo-specific reasoning parameters
+		const reasoning = getRooReasoning({
+			model: info,
+			reasoningBudget: params.reasoningBudget,
+			reasoningEffort: params.reasoningEffort,
+			settings: this.options,
+		})
+
+		const max_tokens = params.maxTokens ?? undefined
+		const temperature = params.temperature ?? this.defaultTemperature
+
+		const rooParams: RooChatCompletionParams = {
+			model,
+			max_tokens,
+			temperature,
+			messages: [{ role: "system", content: systemPrompt }, ...convertToOpenAiMessages(messages)],
+			stream: true,
+			stream_options: { include_usage: true },
+			...(reasoning && { reasoning }),
+		}
+
+		try {
+			return this.client.chat.completions.create(rooParams, requestOptions)
+		} catch (error) {
+			throw handleOpenAIError(error, this.providerName)
+		}
+	}
+
 	override async *createMessage(
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
@@ -96,17 +151,26 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 			const delta = chunk.choices[0]?.delta
 
 			if (delta) {
-				if (delta.content) {
+				// Check for reasoning content (similar to OpenRouter)
+				if ("reasoning" in delta && delta.reasoning && typeof delta.reasoning === "string") {
 					yield {
-						type: "text",
-						text: delta.content,
+						type: "reasoning",
+						text: delta.reasoning,
 					}
 				}
 
+				// Also check for reasoning_content for backward compatibility
 				if ("reasoning_content" in delta && typeof delta.reasoning_content === "string") {
 					yield {
 						type: "reasoning",
 						text: delta.reasoning_content,
+					}
+				}
+
+				if (delta.content) {
+					yield {
+						type: "text",
+						text: delta.content,
 					}
 				}
 			}
@@ -159,6 +223,7 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 				maxTokens: 16_384,
 				contextWindow: 262_144,
 				supportsImages: false,
+				supportsReasoningEffort: false,
 				supportsPromptCache: true,
 				inputPrice: 0,
 				outputPrice: 0,

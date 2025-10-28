@@ -464,6 +464,7 @@
 		},
 		"reasoningEffort": {
 			"label": "Upaya Reasoning Model",
+			"none": "Tidak Ada",
 			"minimal": "Minimal (Tercepat)",
 			"high": "Tinggi",
 			"medium": "Sedang",

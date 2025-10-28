@@ -460,6 +460,7 @@
 		},
 		"reasoningEffort": {
 			"label": "Nỗ lực suy luận của mô hình",
+			"none": "Không",
 			"minimal": "Tối thiểu (nhanh nhất)",
 			"high": "Cao",
 			"medium": "Trung bình",
