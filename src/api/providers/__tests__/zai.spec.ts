@@ -299,7 +299,7 @@ describe("ZAiHandler", () => {
 		describe("Reasoning functionality", () => {
 			it("should include thinking parameter when enableReasoningEffort is true and model supports reasoning in createMessage", async () => {
 				const handlerWithReasoning = new ZAiHandler({
-					apiModelId: "glm-4.6", // GLM-4.6 has supportsReasoning: true
+					apiModelId: "glm-4.6", // GLM-4.6 has supportsReasoningBinary: true
 					zaiApiKey: "test-zai-api-key",
 					zaiApiLine: "international_coding",
 					enableReasoningEffort: true,
@@ -331,7 +331,7 @@ describe("ZAiHandler", () => {
 
 			it("should not include thinking parameter when enableReasoningEffort is false in createMessage", async () => {
 				const handlerWithoutReasoning = new ZAiHandler({
-					apiModelId: "glm-4.6", // GLM-4.6 has supportsReasoning: true
+					apiModelId: "glm-4.6", // GLM-4.6 has supportsReasoningBinary: true
 					zaiApiKey: "test-zai-api-key",
 					zaiApiLine: "international_coding",
 					enableReasoningEffort: false,
@@ -363,7 +363,7 @@ describe("ZAiHandler", () => {
 
 			it("should not include thinking parameter when model does not support reasoning in createMessage", async () => {
 				const handlerWithNonReasoningModel = new ZAiHandler({
-					apiModelId: "glm-4-32b-0414-128k", // This model doesn't have supportsReasoning: true
+					apiModelId: "glm-4-32b-0414-128k", // This model doesn't have supportsReasoningBinary: true
 					zaiApiKey: "test-zai-api-key",
 					zaiApiLine: "international_coding",
 					enableReasoningEffort: true,
@@ -395,7 +395,7 @@ describe("ZAiHandler", () => {
 
 			it("should include thinking parameter when enableReasoningEffort is true and model supports reasoning in completePrompt", async () => {
 				const handlerWithReasoning = new ZAiHandler({
-					apiModelId: "glm-4.5", // GLM-4.5 has supportsReasoning: true
+					apiModelId: "glm-4.5", // GLM-4.5 has supportsReasoningBinary: true
 					zaiApiKey: "test-zai-api-key",
 					zaiApiLine: "international_coding",
 					enableReasoningEffort: true,
@@ -415,7 +415,7 @@ describe("ZAiHandler", () => {
 
 			it("should not include thinking parameter when enableReasoningEffort is false in completePrompt", async () => {
 				const handlerWithoutReasoning = new ZAiHandler({
-					apiModelId: "glm-4.5", // GLM-4.5 has supportsReasoning: true
+					apiModelId: "glm-4.5", // GLM-4.5 has supportsReasoningBinary: true
 					zaiApiKey: "test-zai-api-key",
 					zaiApiLine: "international_coding",
 					enableReasoningEffort: false,

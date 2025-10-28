@@ -68,7 +68,7 @@ export class ZAiHandler extends BaseOpenAiCompatibleProvider<string> {
 
 		// Add thinking parameter if reasoning is enabled and model supports it
 		const { id: modelId, info: modelInfo } = this.getModel()
-		if (this.options.enableReasoningEffort && modelInfo.supportsReasoning) {
+		if (this.options.enableReasoningEffort && modelInfo.supportsReasoningBinary) {
 			;(params as any).thinking = { type: "enabled" }
 		}
 
@@ -89,7 +89,7 @@ export class ZAiHandler extends BaseOpenAiCompatibleProvider<string> {
 
 		// Add thinking parameter if reasoning is enabled and model supports it
 		const { info: modelInfo } = this.getModel()
-		if (this.options.enableReasoningEffort && modelInfo.supportsReasoning) {
+		if (this.options.enableReasoningEffort && modelInfo.supportsReasoningBinary) {
 			;(params as any).thinking = { type: "enabled" }
 		}
 

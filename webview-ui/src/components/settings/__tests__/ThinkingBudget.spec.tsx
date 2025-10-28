@@ -77,13 +77,13 @@ describe("ThinkingBudget", () => {
 		expect(container.firstChild).toBeNull()
 	})
 
-	it("should render simple reasoning toggle when model has supportsReasoning (binary reasoning)", () => {
+	it("should render simple reasoning toggle when model has supportsReasoningBinary (binary reasoning)", () => {
 		render(
 			<ThinkingBudget
 				{...defaultProps}
 				modelInfo={{
 					...mockModelInfo,
-					supportsReasoning: true,
+					supportsReasoningBinary: true,
 					supportsReasoningBudget: false,
 					supportsReasoningEffort: false,
 				}}
