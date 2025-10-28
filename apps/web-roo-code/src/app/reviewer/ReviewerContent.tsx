@@ -1,6 +1,15 @@
 "use client"
 
-import { ArrowRight, Blocks, BookMarked, ListChecks, LucideIcon } from "lucide-react"
+import {
+	ArrowRight,
+	Blocks,
+	BookMarked,
+	ListChecks,
+	LucideIcon,
+	GitPullRequest,
+	Key,
+	MessageSquareCode,
+} from "lucide-react"
 import Image from "next/image"
 
 import { Button } from "@/components/ui"
@@ -15,6 +24,26 @@ interface Feature {
 	description: string | React.ReactNode
 	logos?: string[]
 }
+
+const workflowSteps: Feature[] = [
+	{
+		icon: GitPullRequest,
+		title: "1. Connect Your Repository",
+		description: "Link your GitHub repository and configure which branches and pull requests should be reviewed.",
+	},
+	{
+		icon: Key,
+		title: "2. Add Your API Key",
+		description:
+			"Provide your AI provider API key and set your review preferences, custom rules, and quality standards.",
+	},
+	{
+		icon: MessageSquareCode,
+		title: "3. Get Review Comments",
+		description:
+			"Every pull request gets detailed GitHub comments in minutes from a Roo Code agent highlighting issues and suggesting improvements.",
+	},
+]
 
 const howItWorks: Feature[] = [
 	{
@@ -68,7 +97,7 @@ export function ReviewerContent() {
 									<p>
 										Roo Code&apos;s PR Reviewer flips the script: you bring your own key and
 										leverage it to the max – to find real issues, increase code quality and keep
-										your PR queue moving.
+										your pull request queue moving.
 									</p>
 								</div>
 							</div>
@@ -105,6 +134,38 @@ export function ReviewerContent() {
 								</div>
 							</div>
 						</div>
+					</div>
+				</div>
+			</section>
+
+			{/* How It Works Section */}
+			<section className="relative overflow-hidden border-t border-border py-32">
+				<div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
+					<div className="mx-auto mb-12 md:mb-24 max-w-5xl text-center">
+						<div>
+							<h2 className="text-4xl font-bold tracking-tight sm:text-5xl">How It Works</h2>
+						</div>
+					</div>
+
+					<div className="relative mx-auto md:max-w-[1200px]">
+						<ul className="grid grid-cols-1 place-items-center gap-6 md:grid-cols-3 lg:gap-8">
+							{workflowSteps.map((step, index) => {
+								const Icon = step.icon
+								return (
+									<li
+										key={index}
+										className="relative h-full border border-border rounded-2xl bg-background p-8 transition-all duration-300 hover:shadow-lg">
+										<Icon className="size-6 text-foreground/80" />
+										<h3 className="mb-3 mt-3 text-xl font-semibold text-foreground">
+											{step.title}
+										</h3>
+										<div className="leading-relaxed font-light text-muted-foreground">
+											{step.description}
+										</div>
+									</li>
+								)
+							})}
+						</ul>
 					</div>
 				</div>
 			</section>

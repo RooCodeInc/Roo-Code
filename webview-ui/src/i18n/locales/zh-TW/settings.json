@@ -422,7 +422,7 @@
 			},
 			"computerUse": {
 				"label": "電腦使用",
-				"description": "此模型是否能夠與瀏覽器互動？（例如 Claude 3.7 Sonnet）"
+				"description": "此模型是否能夠與瀏覽器互動？（例如 Claude Sonnet）"
 			},
 			"promptCache": {
 				"label": "提示快取",
@@ -460,6 +460,7 @@
 		},
 		"reasoningEffort": {
 			"label": "模型推理強度",
+			"none": "無",
 			"minimal": "最小 (最快)",
 			"high": "高",
 			"medium": "中",
@@ -628,6 +629,14 @@
 			"label": "圖片總大小上限",
 			"mb": "MB",
 			"description": "單次 read_file 操作中處理的所有圖片的最大累計大小限制（MB）。讀取多張圖片時，每張圖片的大小會累加到總大小中。如果包含另一張圖片會超過此限制，則會跳過該圖片。"
+		},
+		"includeCurrentTime": {
+			"label": "在上下文中包含目前時間",
+			"description": "啟用後，目前時間和時區資訊將包含在系統提示中。如果模型因時間問題停止工作，請停用此選項。"
+		},
+		"includeCurrentCost": {
+			"label": "在上下文中包含目前成本",
+			"description": "啟用後，目前 API 使用成本將包含在系統提示中。如果模型因成本問題停止工作，請停用此選項。"
 		}
 	},
 	"terminal": {
@@ -694,7 +703,7 @@
 	"advanced": {
 		"diff": {
 			"label": "透過差異比對編輯",
-			"description": "啟用後，Roo 可更快速地編輯檔案，並自動拒絕不完整的整檔覆寫。搭配最新的 Claude 3.7 Sonnet 模型效果最佳。",
+			"description": "啟用後，Roo 可更快速地編輯檔案，並自動拒絕不完整的整檔覆寫",
 			"strategy": {
 				"label": "差異比對策略",
 				"options": {

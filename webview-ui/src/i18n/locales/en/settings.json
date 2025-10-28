@@ -421,7 +421,7 @@
 			},
 			"computerUse": {
 				"label": "Computer Use",
-				"description": "Is this model capable of interacting with a browser? (e.g. Claude 3.7 Sonnet)."
+				"description": "Is this model capable of interacting with a browser?"
 			},
 			"promptCache": {
 				"label": "Prompt Caching",
@@ -459,6 +459,7 @@
 		},
 		"reasoningEffort": {
 			"label": "Model Reasoning Effort",
+			"none": "None",
 			"minimal": "Minimal (Fastest)",
 			"low": "Low",
 			"medium": "Medium",
@@ -626,6 +627,14 @@
 			"profileDescription": "Custom threshold for this profile only (overrides global default)",
 			"inheritDescription": "This profile inherits the global default threshold ({{threshold}}%)",
 			"usesGlobal": "(uses global {{threshold}}%)"
+		},
+		"includeCurrentTime": {
+			"label": "Include current time in context",
+			"description": "When enabled, the current time and timezone information will be included in the system prompt. Disable this if models are stopping work due to time concerns."
+		},
+		"includeCurrentCost": {
+			"label": "Include current cost in context",
+			"description": "When enabled, the current API usage cost will be included in the system prompt. Disable this if models are stopping work due to cost concerns."
 		}
 	},
 	"terminal": {
@@ -692,7 +701,7 @@
 	"advanced": {
 		"diff": {
 			"label": "Enable editing through diffs",
-			"description": "When enabled, Roo will be able to edit files more quickly and will automatically reject truncated full-file writes. Works best with the latest Claude 3.7 Sonnet model.",
+			"description": "When enabled, Roo will be able to edit files more quickly and will automatically reject truncated full-file writes",
 			"strategy": {
 				"label": "Diff strategy",
 				"options": {

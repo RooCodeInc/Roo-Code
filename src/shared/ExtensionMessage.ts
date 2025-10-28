@@ -325,6 +325,8 @@ export type ExtensionState = Pick<
 	| "reasoningBlockCollapsed"
 	| "apiRequestBlockHide"
 	| "errorCode"
+	| "includeCurrentTime"
+	| "includeCurrentCost"
 > & {
 	version: string
 	clineMessages: ClineMessage[]
