@@ -162,6 +162,14 @@
 		},
 		"current": "Actuel"
 	},
+	"rateLimitRetry": {
+		"title": "Limite de débit atteinte — veuillez patienter.",
+		"waiting": "Nouvel essai dans {{seconds}}s",
+		"waitingWithAttempt": "Nouvel essai dans {{seconds}}s (tentative {{attempt}})",
+		"waitingWithAttemptMax": "Nouvel essai dans {{seconds}}s (tentative {{attempt}}/{{maxAttempts}})",
+		"retrying": "Nouvel essai en cours…",
+		"cancelled": "Nouvel essai annulé"
+	},
 	"fileOperations": {
 		"wantsToRead": "Roo veut lire ce fichier",
 		"wantsToReadOutsideWorkspace": "Roo veut lire ce fichier en dehors de l'espace de travail",

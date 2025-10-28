@@ -162,6 +162,14 @@
 		},
 		"current": "Mevcut"
 	},
+	"rateLimitRetry": {
+		"title": "Hız limiti tetiklendi — lütfen bekleyin.",
+		"waiting": "{{seconds}}s içinde tekrar deniyor",
+		"waitingWithAttempt": "{{seconds}}s içinde tekrar deniyor (deneme {{attempt}})",
+		"waitingWithAttemptMax": "{{seconds}}s içinde tekrar deniyor (deneme {{attempt}}/{{maxAttempts}})",
+		"retrying": "Şimdi tekrar deniyor…",
+		"cancelled": "Tekrar deneme iptal edildi"
+	},
 	"instructions": {
 		"wantsToFetch": "Roo mevcut göreve yardımcı olmak için ayrıntılı talimatlar almak istiyor"
 	},

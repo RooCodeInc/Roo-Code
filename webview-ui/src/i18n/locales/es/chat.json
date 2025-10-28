@@ -162,6 +162,14 @@
 		},
 		"current": "Actual"
 	},
+	"rateLimitRetry": {
+		"title": "Límite de tasa activado — por favor, espera.",
+		"waiting": "Reintentando en {{seconds}}s",
+		"waitingWithAttempt": "Reintentando en {{seconds}}s (intento {{attempt}})",
+		"waitingWithAttemptMax": "Reintentando en {{seconds}}s (intento {{attempt}}/{{maxAttempts}})",
+		"retrying": "Reintentando ahora…",
+		"cancelled": "Reintento cancelado"
+	},
 	"instructions": {
 		"wantsToFetch": "Roo quiere obtener instrucciones detalladas para ayudar con la tarea actual"
 	},

@@ -143,6 +143,14 @@
 		"cancelled": "APIリクエストキャンセル",
 		"streamingFailed": "APIストリーミング失敗"
 	},
+	"rateLimitRetry": {
+		"title": "レート制限がトリガーされました — しばらくお待ちください。",
+		"waiting": "{{seconds}}秒後に再試行",
+		"waitingWithAttempt": "{{seconds}}秒後に再試行（{{attempt}}回目）",
+		"waitingWithAttemptMax": "{{seconds}}秒後に再試行（{{attempt}}/{{maxAttempts}}回目）",
+		"retrying": "再試行中…",
+		"cancelled": "再試行キャンセル"
+	},
 	"checkpoint": {
 		"regular": "チェックポイント",
 		"initializingWarning": "チェックポイントの初期化中... 時間がかかりすぎる場合は、<settingsLink>設定</settingsLink>でチェックポイントを無効にしてタスクを再開できます。",

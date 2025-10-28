@@ -138,6 +138,14 @@
 		"cancelled": "API-verzoek geannuleerd",
 		"streamingFailed": "API-streaming mislukt"
 	},
+	"rateLimitRetry": {
+		"title": "Snelheidslimiet bereikt — even geduld a.u.b.",
+		"waiting": "Opnieuw proberen over {{seconds}}s",
+		"waitingWithAttempt": "Opnieuw proberen over {{seconds}}s (poging {{attempt}})",
+		"waitingWithAttemptMax": "Opnieuw proberen over {{seconds}}s (poging {{attempt}}/{{maxAttempts}})",
+		"retrying": "Nu opnieuw proberen…",
+		"cancelled": "Opnieuw proberen geannuleerd"
+	},
 	"checkpoint": {
 		"regular": "Checkpoint",
 		"initializingWarning": "Checkpoint wordt nog steeds geïnitialiseerd... Als dit te lang duurt, kun je checkpoints uitschakelen in de <settingsLink>instellingen</settingsLink> en je taak opnieuw starten.",

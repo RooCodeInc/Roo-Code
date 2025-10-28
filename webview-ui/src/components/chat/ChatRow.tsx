@@ -43,6 +43,8 @@ import CodebaseSearchResultsDisplay from "./CodebaseSearchResultsDisplay"
 import { appendImages } from "@src/utils/imageUtils"
 import { McpExecution } from "./McpExecution"
 import { ChatTextArea } from "./ChatTextArea"
+import { RateLimitRetryRow } from "./RateLimitRetryRow"
+export { RateLimitRetryRow } from "./RateLimitRetryRow"
 import { MAX_IMAGES_PER_MESSAGE } from "./ChatView"
 import { useSelectedModel } from "../ui/hooks/useSelectedModel"
 import {
@@ -263,7 +265,7 @@ export const ChatRowContent = ({
 					<span style={{ color: successColor, fontWeight: "bold" }}>{t("chat:taskCompleted")}</span>,
 				]
 			case "api_req_retry_delayed":
-				return []
+				return [null, null]
 			case "api_req_started":
 				const getIconSpan = (iconName: string, color: string) => (
 					<div
@@ -1205,6 +1207,11 @@ export const ChatRowContent = ({
 							</div>
 						</>
 					)
+				case "api_req_retry_delayed":
+					// Prevent multiple blocks returning, we only need a single block
+					// that's constantly updated
+					if (!isLast) return null
+					return <RateLimitRetryRow metadata={message.metadata?.rateLimitRetry} />
 				case "shell_integration_warning":
 					return <CommandExecutionError />
 				case "checkpoint_saved":

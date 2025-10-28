@@ -143,6 +143,14 @@
 		"cancelled": "API अनुरोध रद्द किया गया",
 		"streamingFailed": "API स्ट्रीमिंग विफल हुई"
 	},
+	"rateLimitRetry": {
+		"title": "दर सीमा ट्रिगर हुई — कृपया प्रतीक्षा करें।",
+		"waiting": "{{seconds}}s में पुनः प्रयास कर रहा है",
+		"waitingWithAttempt": "{{seconds}}s में पुनः प्रयास कर रहा है (प्रयास {{attempt}})",
+		"waitingWithAttemptMax": "{{seconds}}s में पुनः प्रयास कर रहा है (प्रयास {{attempt}}/{{maxAttempts}})",
+		"retrying": "अभी पुनः प्रयास कर रहा है…",
+		"cancelled": "पुनः प्रयास रद्द किया गया"
+	},
 	"checkpoint": {
 		"regular": "चेकपॉइंट",
 		"initializingWarning": "चेकपॉइंट अभी भी आरंभ हो रहा है... अगर यह बहुत समय ले रहा है, तो आप <settingsLink>सेटिंग्स</settingsLink> में चेकपॉइंट को अक्षम कर सकते हैं और अपने कार्य को पुनः आरंभ कर सकते हैं।",

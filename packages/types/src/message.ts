@@ -197,6 +197,21 @@ export const contextCondenseSchema = z.object({
 export type ContextCondense = z.infer<typeof contextCondenseSchema>
 
 /**
+ * RateLimitRetryMetadata
+ */
+export const rateLimitRetrySchema = z.object({
+	type: z.literal("rate_limit_retry"),
+	status: z.enum(["waiting", "retrying", "cancelled"]),
+	remainingSeconds: z.number().optional(),
+	attempt: z.number().optional(),
+	maxAttempts: z.number().optional(),
+	origin: z.enum(["pre_request", "retry_attempt"]).optional(),
+	detail: z.string().optional(),
+})
+
+export type RateLimitRetryMetadata = z.infer<typeof rateLimitRetrySchema>
+
+/**
  * ClineMessage
  */
 
@@ -223,6 +238,7 @@ export const clineMessageSchema = z.object({
 					previous_response_id: z.string().optional(),
 				})
 				.optional(),
+			rateLimitRetry: rateLimitRetrySchema.optional(),
 		})
 		.optional(),
 })

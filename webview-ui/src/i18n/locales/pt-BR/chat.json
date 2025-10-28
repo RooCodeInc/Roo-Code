@@ -143,6 +143,14 @@
 		"cancelled": "Requisição API cancelada",
 		"streamingFailed": "Streaming API falhou"
 	},
+	"rateLimitRetry": {
+		"title": "Limite de taxa atingido — por favor, aguarde.",
+		"waiting": "Tentando novamente em {{seconds}}s",
+		"waitingWithAttempt": "Tentando novamente em {{seconds}}s (tentativa {{attempt}})",
+		"waitingWithAttemptMax": "Tentando novamente em {{seconds}}s (tentativa {{attempt}}/{{maxAttempts}})",
+		"retrying": "Tentando novamente agora…",
+		"cancelled": "Tentativa cancelada"
+	},
 	"checkpoint": {
 		"regular": "Ponto de verificação",
 		"initializingWarning": "Ainda inicializando ponto de verificação... Se isso demorar muito, você pode desativar os pontos de verificação nas <settingsLink>configurações</settingsLink> e reiniciar sua tarefa.",

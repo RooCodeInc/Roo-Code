@@ -143,6 +143,14 @@
 		"cancelled": "Zapytanie API anulowane",
 		"streamingFailed": "Strumieniowanie API nie powiodło się"
 	},
+	"rateLimitRetry": {
+		"title": "Osiągnięto limit szybkości — proszę czekać.",
+		"waiting": "Ponawianie za {{seconds}}s",
+		"waitingWithAttempt": "Ponawianie za {{seconds}}s (próba {{attempt}})",
+		"waitingWithAttemptMax": "Ponawianie za {{seconds}}s (próba {{attempt}}/{{maxAttempts}})",
+		"retrying": "Ponawianie teraz…",
+		"cancelled": "Ponawianie anulowane"
+	},
 	"checkpoint": {
 		"regular": "Punkt kontrolny",
 		"initializingWarning": "Trwa inicjalizacja punktu kontrolnego... Jeśli to trwa zbyt długo, możesz wyłączyć punkty kontrolne w <settingsLink>ustawieniach</settingsLink> i uruchomić zadanie ponownie.",
