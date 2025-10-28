@@ -139,14 +139,11 @@ export function ReviewerContent() {
 			</section>
 
 			{/* How It Works Section */}
-			<section className="relative overflow-hidden border-t border-border py-32 bg-muted/30">
+			<section className="relative overflow-hidden border-t border-border py-32">
 				<div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
 					<div className="mx-auto mb-12 md:mb-24 max-w-5xl text-center">
 						<div>
 							<h2 className="text-4xl font-bold tracking-tight sm:text-5xl">How It Works</h2>
-							<p className="mt-6 text-lg text-muted-foreground">
-								Get started with AI code reviews in three simple steps
-							</p>
 						</div>
 					</div>
 
@@ -158,10 +155,10 @@ export function ReviewerContent() {
 									<li
 										key={index}
 										className="relative h-full border border-border rounded-2xl bg-background p-8 transition-all duration-300 hover:shadow-lg">
-										<div className="mb-4 inline-flex items-center justify-center rounded-full bg-primary/10 p-3">
-											<Icon className="size-6 text-primary" />
-										</div>
-										<h3 className="mb-3 text-xl font-semibold text-foreground">{step.title}</h3>
+										<Icon className="size-6 text-foreground/80" />
+										<h3 className="mb-3 mt-3 text-xl font-semibold text-foreground">
+											{step.title}
+										</h3>
 										<div className="leading-relaxed font-light text-muted-foreground">
 											{step.description}
 										</div>
