@@ -230,7 +230,7 @@ describe("MiniMaxHandler", () => {
 			expect(mockCreate).toHaveBeenCalledWith(
 				expect.objectContaining({
 					model: modelId,
-					max_tokens: modelInfo.maxTokens,
+					max_tokens: Math.min(modelInfo.maxTokens, Math.ceil(modelInfo.contextWindow * 0.2)),
 					temperature: 1,
 					messages: expect.arrayContaining([{ role: "system", content: systemPrompt }]),
 					stream: true,
