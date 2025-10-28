@@ -75,6 +75,7 @@ describe("getRooModels", () => {
 				cacheReadsPrice: 50, // 0.00005 * 1_000_000
 				description: "Fast coding model",
 				deprecated: false,
+				isFree: false,
 			},
 		})
 	})
@@ -122,6 +123,7 @@ describe("getRooModels", () => {
 			cacheReadsPrice: undefined,
 			description: "Model that requires reasoning",
 			deprecated: false,
+			isFree: false,
 		})
 	})
 
@@ -167,6 +169,7 @@ describe("getRooModels", () => {
 			cacheReadsPrice: undefined,
 			description: "Normal model without reasoning",
 			deprecated: false,
+			isFree: false,
 		})
 	})
 

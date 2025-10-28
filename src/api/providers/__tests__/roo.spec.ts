@@ -470,7 +470,7 @@ describe("RooHandler", () => {
 	})
 
 	describe("reasoning effort support", () => {
-		it("should not include reasoning when not enabled", async () => {
+		it("should include reasoning with enabled: false when not enabled", async () => {
 			handler = new RooHandler(mockOptions)
 			const stream = handler.createMessage(systemPrompt, messages)
 			for await (const _chunk of stream) {
@@ -483,12 +483,10 @@ describe("RooHandler", () => {
 					messages: expect.any(Array),
 					stream: true,
 					stream_options: { include_usage: true },
+					reasoning: { enabled: false },
 				}),
 				undefined,
 			)
-			// Verify reasoning is not included
-			const callArgs = mockCreate.mock.calls[0][0]
-			expect(callArgs.reasoning).toBeUndefined()
 		})
 
 		it("should include reasoning with enabled: false when explicitly disabled", async () => {
