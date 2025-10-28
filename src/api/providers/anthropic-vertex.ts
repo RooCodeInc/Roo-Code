@@ -99,8 +99,11 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 			;(params as any).thinking = thinking
 		}
 
-		// Enable 1M context beta when using [1m] variants
-		const use1m = this.options.apiModelId?.endsWith("[1m]") === true
+		// Enable 1M context beta when using [1m] variants or when explicitly enabled via settings for Sonnet 4/4.5
+		const use1m =
+			this.options.apiModelId?.endsWith("[1m]") === true ||
+			((id === "claude-sonnet-4@20250514" || id === "claude-sonnet-4-5@20250929") &&
+				this.options.anthropicBeta1MContext === true)
 
 		let stream
 		if (use1m) {
@@ -219,8 +222,11 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 				;(params as any).thinking = thinking
 			}
 
-			// Enable 1M context beta when using [1m] variants
-			const use1m = this.options.apiModelId?.endsWith("[1m]") === true
+			// Enable 1M context beta when using [1m] variants or when explicitly enabled via settings for Sonnet 4/4.5
+			const use1m =
+				this.options.apiModelId?.endsWith("[1m]") === true ||
+				((id === "claude-sonnet-4@20250514" || id === "claude-sonnet-4-5@20250929") &&
+					this.options.anthropicBeta1MContext === true)
 
 			const response = use1m
 				? await this.client.messages.create(params, { headers: { "anthropic-beta": "context-1m-2025-08-07" } })
