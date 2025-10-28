@@ -87,7 +87,6 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 			model: id,
 			max_tokens: maxTokens ?? ANTHROPIC_DEFAULT_MAX_TOKENS,
 			temperature,
-			thinking,
 			// Cache the system prompt if caching is enabled.
 			system: supportsPromptCache
 				? [{ text: systemPrompt, type: "text" as const, cache_control: { type: "ephemeral" } }]
@@ -95,8 +94,22 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 			messages: supportsPromptCache ? addCacheBreakpoints(messages) : messages,
 			stream: true,
 		}
+		// Only set thinking if defined to avoid adding an explicit undefined property
+		if (thinking) {
+			;(params as any).thinking = thinking
+		}
 
-		const stream = await this.client.messages.create(params)
+		// Enable 1M context beta when using [1m] variants
+		const use1m = this.options.apiModelId?.endsWith("[1m]") === true
+
+		let stream
+		if (use1m) {
+			stream = await this.client.messages.create(params, {
+				headers: { "anthropic-beta": "context-1m-2025-08-07" },
+			})
+		} else {
+			stream = await this.client.messages.create(params)
+		}
 
 		for await (const chunk of stream) {
 			switch (chunk.type) {
@@ -171,8 +184,10 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 		// The `:thinking` suffix indicates that the model is a "Hybrid"
 		// reasoning model and that reasoning is required to be enabled.
 		// The actual model ID honored by Anthropic's API does not have this
-		// suffix.
-		return { id: id.endsWith(":thinking") ? id.replace(":thinking", "") : id, info, ...params }
+		// suffix. Additionally, strip the optional [1m] suffix used to
+		// denote the 1M context beta variant in Roo's model list.
+		const normalizedId = id.replace(":thinking", "").replace("[1m]", "")
+		return { id: normalizedId, info, ...params }
 	}
 
 	async completePrompt(prompt: string) {
@@ -189,7 +204,6 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 				model: id,
 				max_tokens: maxTokens,
 				temperature,
-				thinking,
 				messages: [
 					{
 						role: "user",
@@ -200,8 +214,17 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 				],
 				stream: false,
 			}
+			// Only set thinking if defined to avoid adding an explicit undefined property
+			if (thinking) {
+				;(params as any).thinking = thinking
+			}
 
-			const response = await this.client.messages.create(params)
+			// Enable 1M context beta when using [1m] variants
+			const use1m = this.options.apiModelId?.endsWith("[1m]") === true
+
+			const response = use1m
+				? await this.client.messages.create(params, { headers: { "anthropic-beta": "context-1m-2025-08-07" } })
+				: await this.client.messages.create(params)
 			const content = response.content[0]
 
 			if (content.type === "text") {

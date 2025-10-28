@@ -691,28 +691,30 @@ describe("VertexHandler", () => {
 			expect(modelInfo.info.contextWindow).toBe(200_000)
 		})
 
-		it("should return 1M context window for Claude Sonnet 4", () => {
+		it("should return 1M context window for Claude Sonnet 4 [1m] variant", () => {
 			handler = new AnthropicVertexHandler({
-				apiModelId: "claude-sonnet-4@20250514",
+				apiModelId: "claude-sonnet-4@20250514[1m]",
 				vertexProjectId: "test-project",
 				vertexRegion: "us-central1",
 			})
 
 			const modelInfo = handler.getModel()
+			// The provider strips the [1m] suffix when sending to API
 			expect(modelInfo.id).toBe("claude-sonnet-4@20250514")
 			expect(modelInfo.info).toBeDefined()
 			expect(modelInfo.info.maxTokens).toBe(8192)
 			expect(modelInfo.info.contextWindow).toBe(1_000_000)
 		})
 
-		it("should return 1M context window for Claude Sonnet 4.5", () => {
+		it("should return 1M context window for Claude Sonnet 4.5 [1m] variant", () => {
 			handler = new AnthropicVertexHandler({
-				apiModelId: "claude-sonnet-4-5@20250929",
+				apiModelId: "claude-sonnet-4-5@20250929[1m]",
 				vertexProjectId: "test-project",
 				vertexRegion: "us-central1",
 			})
 
 			const modelInfo = handler.getModel()
+			// The provider strips the [1m] suffix when sending to API
 			expect(modelInfo.id).toBe("claude-sonnet-4-5@20250929")
 			expect(modelInfo.info).toBeDefined()
 			expect(modelInfo.info.maxTokens).toBe(8192)
