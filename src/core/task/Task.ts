@@ -2874,6 +2874,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 			// Show countdown timer with exponential backoff
 			for (let i = finalDelay; i > 0; i--) {
+				// Check abort flag during countdown to allow early exit
+				if (this.abort) {
+					throw new Error(`[Task#${this.taskId}] Aborted during retry countdown`)
+				}
+
 				await this.say(
 					"api_req_retry_delayed",
 					`${headerText}Retry attempt ${retryAttempt + 1}\nRetrying in ${i} seconds...`,
