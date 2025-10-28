@@ -39,9 +39,9 @@ const workflowSteps: Feature[] = [
 	},
 	{
 		icon: MessageSquareCode,
-		title: "3. Get Comprehensive Reviews",
+		title: "3. Get Review Comments",
 		description:
-			"Every pull request gets detailed comments in minutes from a Roo Code agent highlighting issues and suggesting improvements.",
+			"Every pull request gets detailed GitHub comments in minutes from a Roo Code agent highlighting issues and suggesting improvements.",
 	},
 ]
 
