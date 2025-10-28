@@ -62,9 +62,6 @@ export const SimpleThinkingBudget = ({
 		setApiConfigurationField,
 	])
 
-	// Keep enableReasoningEffort in sync only when enabling is required
-	// - Enable when a non-"none" effort is selected or the model requires it
-	// - Do NOT force-disable when "none" is selected to avoid noisy config writes and to match tests
 	useEffect(() => {
 		if (!isReasoningEffortSupported) return
 		const shouldEnable = isReasoningEffortRequired || currentReasoningEffort !== "none"
