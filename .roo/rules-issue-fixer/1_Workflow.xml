@@ -191,7 +191,6 @@
       Use appropriate tools:
       - apply_diff for targeted changes
       - write_to_file for new files
-      - search_and_replace for systematic updates
       
       After each significant change, run relevant tests:
       - execute_command to run test suites
