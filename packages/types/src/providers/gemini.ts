@@ -192,6 +192,8 @@ export const geminiModels = {
 		outputPrice: 15,
 		cacheReadsPrice: 0.625,
 		cacheWritesPrice: 4.5,
+		maxThinkingTokens: 32_768,
+		supportsReasoningBudget: true,
 		tiers: [
 			{
 				contextWindow: 200_000,
