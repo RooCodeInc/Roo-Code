@@ -250,6 +250,7 @@
 		"vercelAiGatewayApiKey": "Vercel AI Gateway API Key",
 		"getVercelAiGatewayApiKey": "Dapatkan Vercel AI Gateway API Key",
 		"apiKeyStorageNotice": "API key disimpan dengan aman di Secret Storage VSCode",
+		"passwordStorageNotice": "Kata sandi disimpan dengan aman di Secret Storage VSCode",
 		"glamaApiKey": "Glama API Key",
 		"getGlamaApiKey": "Dapatkan Glama API Key",
 		"useCustomBaseUrl": "Gunakan base URL kustom",
@@ -484,6 +485,20 @@
 			"placeholder": "Default: claude",
 			"maxTokensLabel": "Token Output Maks",
 			"maxTokensDescription": "Jumlah maksimum token output untuk respons Claude Code. Default adalah 8000."
+		},
+		"watsonx": {
+			"platform": "Platform",
+			"region": "Wilayah",
+			"username": "Nama pengguna",
+			"password": "Kata sandi",
+			"apiKey": "Kunci API",
+			"authType": "Jenis autentikasi",
+			"projectId": "ID Proyek",
+			"urlDescription": "Masukkan URL lengkap instans IBM Cloud Pak for Data Anda",
+			"selectedEndpoint": "Titik akhir yang dipilih",
+			"retrieveModels": "Ambil Model",
+			"retrieveSuccessful": "Model berhasil diambil",
+			"retrieveError": "Gagal mengambil model. Silakan periksa kredensial Anda dan coba lagi"
 		}
 	},
 	"browser": {
@@ -869,7 +884,17 @@
 		"providerNotAllowed": "Provider '{{provider}}' tidak diizinkan oleh organisasi kamu",
 		"modelNotAllowed": "Model '{{model}}' tidak diizinkan untuk provider '{{provider}}' oleh organisasi kamu",
 		"profileInvalid": "Profil ini berisi provider atau model yang tidak diizinkan oleh organisasi kamu",
-		"qwenCodeOauthPath": "Kamu harus memberikan jalur kredensial OAuth yang valid"
+		"qwenCodeOauthPath": "Kamu harus memberikan jalur kredensial OAuth yang valid",
+		"watsonx": {
+			"platform": "Kamu harus memilih platform.",
+			"region": "Kamu harus memilih region.",
+			"projectId": "Kamu harus menyediakan project ID yang valid.",
+			"authType": "Kamu harus memilih tipe autentikasi.",
+			"username": "Kamu harus menyediakan username yang valid.",
+			"apiKey": "Kamu harus menyediakan API key yang valid.",
+			"password": "Kamu harus menyediakan password yang valid.",
+			"baseUrl": "Kamu harus menyediakan URL IBM Cloud Pak for Data yang valid."
+		}
 	},
 	"placeholders": {
 		"apiKey": "Masukkan API Key...",

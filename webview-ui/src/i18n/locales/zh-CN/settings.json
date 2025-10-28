@@ -246,6 +246,7 @@
 		"vercelAiGatewayApiKey": "Vercel AI Gateway API 密钥",
 		"getVercelAiGatewayApiKey": "获取 Vercel AI Gateway API 密钥",
 		"apiKeyStorageNotice": "API 密钥安全存储在 VSCode 的密钥存储中",
+		"passwordStorageNotice": "密码安全存储在 VSCode 的密钥存储中",
 		"glamaApiKey": "Glama API 密钥",
 		"getGlamaApiKey": "获取 Glama API 密钥",
 		"useCustomBaseUrl": "使用自定义基础 URL",
@@ -480,6 +481,20 @@
 			"placeholder": "默认：claude",
 			"maxTokensLabel": "最大输出 Token",
 			"maxTokensDescription": "Claude Code 响应的最大输出 Token 数量。默认为 8000。"
+		},
+		"watsonx": {
+			"platform": "平台",
+			"region": "区域",
+			"username": "用户名",
+			"password": "密码",
+			"apiKey": "API 密钥",
+			"authType": "认证类型",
+			"projectId": "项目 ID",
+			"urlDescription": "输入您的 IBM Cloud Pak for Data 实例的完整 URL",
+			"selectedEndpoint": "已选端点",
+			"retrieveModels": "获取模型",
+			"retrieveSuccessful": "模型获取成功",
+			"retrieveError": "获取模型失败。请检查您的凭据并重试"
 		}
 	},
 	"browser": {
@@ -840,7 +855,17 @@
 		"providerNotAllowed": "提供商 '{{provider}}' 不允许用于您的组织",
 		"modelNotAllowed": "模型 '{{model}}' 不允许用于提供商 '{{provider}}'，您的组织不允许",
 		"profileInvalid": "此配置文件包含您的组织不允许的提供商或模型",
-		"qwenCodeOauthPath": "您必须提供有效的 OAuth 凭证路径"
+		"qwenCodeOauthPath": "您必须提供有效的 OAuth 凭证路径",
+		"watsonx": {
+			"platform": "您必须选择平台。",
+			"region": "您必须选择区域。",
+			"projectId": "您必须提供有效的项目 ID。",
+			"authType": "您必须选择认证类型。",
+			"username": "您必须提供有效的用户名。",
+			"apiKey": "您必须提供有效的 API 密钥。",
+			"password": "您必须提供有效的密码。",
+			"baseUrl": "您必须提供有效的 IBM Cloud Pak for Data URL。"
+		}
 	},
 	"placeholders": {
 		"apiKey": "请输入 API 密钥...",

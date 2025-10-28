@@ -246,6 +246,7 @@
 		"vercelAiGatewayApiKey": "Ключ API Vercel AI Gateway",
 		"getVercelAiGatewayApiKey": "Получить ключ API Vercel AI Gateway",
 		"apiKeyStorageNotice": "API-ключи хранятся безопасно в Secret Storage VSCode",
+		"passwordStorageNotice": "Пароли надежно хранятся в Secret Storage VSCode",
 		"glamaApiKey": "Glama API-ключ",
 		"getGlamaApiKey": "Получить Glama API-ключ",
 		"useCustomBaseUrl": "Использовать пользовательский базовый URL",
@@ -480,6 +481,20 @@
 			"placeholder": "По умолчанию: claude",
 			"maxTokensLabel": "Макс. выходных токенов",
 			"maxTokensDescription": "Максимальное количество выходных токенов для ответов Claude Code. По умолчанию 8000."
+		},
+		"watsonx": {
+			"platform": "Платформа",
+			"region": "Регион",
+			"username": "Имя пользователя",
+			"password": "Пароль",
+			"apiKey": "API-ключ",
+			"authType": "Тип аутентификации",
+			"projectId": "ID проекта",
+			"urlDescription": "Введите полный URL вашего экземпляра IBM Cloud Pak for Data",
+			"selectedEndpoint": "Выбранная конечная точка",
+			"retrieveModels": "Получить модели",
+			"retrieveSuccessful": "Модели успешно получены",
+			"retrieveError": "Не удалось получить модели. Пожалуйста, проверьте ваши учетные данные и попробуйте снова"
 		}
 	},
 	"browser": {
@@ -840,7 +855,17 @@
 		"providerNotAllowed": "Провайдер '{{provider}}' не разрешен вашей организацией",
 		"modelNotAllowed": "Модель '{{model}}' не разрешена для провайдера '{{provider}}' вашей организацией",
 		"profileInvalid": "Этот профиль содержит провайдера или модель, которые не разрешены вашей организацией",
-		"qwenCodeOauthPath": "Вы должны указать допустимый путь к учетным данным OAuth"
+		"qwenCodeOauthPath": "Вы должны указать допустимый путь к учетным данным OAuth",
+		"watsonx": {
+			"platform": "Вы должны выбрать платформу.",
+			"region": "Вы должны выбрать регион.",
+			"projectId": "Вы должны указать действительный ID проекта.",
+			"authType": "Вы должны выбрать тип аутентификации.",
+			"username": "Вы должны указать действительное имя пользователя.",
+			"apiKey": "Вы должны указать действительный API-ключ.",
+			"password": "Вы должны указать действительный пароль.",
+			"baseUrl": "Вы должны указать действительный URL IBM Cloud Pak for Data."
+		}
 	},
 	"placeholders": {
 		"apiKey": "Введите API-ключ...",

@@ -164,6 +164,16 @@ const dynamicProviderExtras = {
 	ollama: {} as {}, // eslint-disable-line @typescript-eslint/no-empty-object-type
 	lmstudio: {} as {}, // eslint-disable-line @typescript-eslint/no-empty-object-type
 	roo: {} as { apiKey?: string; baseUrl?: string },
+	"ibm-watsonx": {} as {
+		apiKey?: string
+		platform?: string
+		projectId?: string
+		baseUrl?: string
+		region?: string
+		authType?: string
+		username?: string
+		password?: string
+	},
 } as const satisfies Record<RouterName, object>
 
 // Build the dynamic options union from the map, intersected with CommonFetchParams

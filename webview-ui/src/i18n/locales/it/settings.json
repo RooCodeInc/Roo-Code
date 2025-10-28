@@ -246,6 +246,7 @@
 		"vercelAiGatewayApiKey": "Chiave API Vercel AI Gateway",
 		"getVercelAiGatewayApiKey": "Ottieni chiave API Vercel AI Gateway",
 		"apiKeyStorageNotice": "Le chiavi API sono memorizzate in modo sicuro nell'Archivio Segreto di VSCode",
+		"passwordStorageNotice": "Le password sono memorizzate in modo sicuro nell'Archivio Segreto di VSCode",
 		"glamaApiKey": "Chiave API Glama",
 		"getGlamaApiKey": "Ottieni chiave API Glama",
 		"useCustomBaseUrl": "Usa URL base personalizzato",
@@ -480,6 +481,20 @@
 			"placeholder": "Predefinito: claude",
 			"maxTokensLabel": "Token di output massimi",
 			"maxTokensDescription": "Numero massimo di token di output per le risposte di Claude Code. Il valore predefinito è 8000."
+		},
+		"watsonx": {
+			"platform": "Piattaforma",
+			"region": "Regione",
+			"username": "Nome utente",
+			"password": "Password",
+			"apiKey": "Chiave API",
+			"authType": "Tipo di autenticazione",
+			"projectId": "ID progetto",
+			"urlDescription": "Inserisci l'URL completo della tua istanza IBM Cloud Pak for Data",
+			"selectedEndpoint": "Endpoint selezionato",
+			"retrieveModels": "Recupera modelli",
+			"retrieveSuccessful": "Modelli recuperati con successo",
+			"retrieveError": "Impossibile recuperare i modelli. Controlla le tue credenziali e riprova"
 		}
 	},
 	"browser": {
@@ -840,7 +855,17 @@
 		"providerNotAllowed": "Il fornitore '{{provider}}' non è consentito dalla tua organizzazione",
 		"modelNotAllowed": "Il modello '{{model}}' non è consentito per il fornitore '{{provider}}' dalla tua organizzazione.",
 		"profileInvalid": "Questo profilo contiene un fornitore o un modello non consentito dalla tua organizzazione.",
-		"qwenCodeOauthPath": "Devi fornire un percorso valido per le credenziali OAuth"
+		"qwenCodeOauthPath": "Devi fornire un percorso valido per le credenziali OAuth",
+		"watsonx": {
+			"platform": "È necessario selezionare una piattaforma.",
+			"region": "È necessario selezionare una regione.",
+			"projectId": "È necessario fornire un ID progetto valido.",
+			"authType": "È necessario selezionare un tipo di autenticazione.",
+			"username": "È necessario fornire un nome utente valido.",
+			"apiKey": "È necessario fornire una chiave API valida.",
+			"password": "È necessario fornire una password valida.",
+			"baseUrl": "È necessario fornire un URL IBM Cloud Pak for Data valido."
+		}
 	},
 	"placeholders": {
 		"apiKey": "Inserisci chiave API...",

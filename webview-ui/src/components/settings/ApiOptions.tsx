@@ -96,6 +96,7 @@ import {
 	Featherless,
 	VercelAiGateway,
 	DeepInfra,
+	WatsonxAI,
 } from "./providers"
 
 import { MODELS_BY_PROVIDER, PROVIDERS } from "./constants"
@@ -236,6 +237,47 @@ const ApiOptions = ({
 				selectedProvider === "roo"
 			) {
 				vscode.postMessage({ type: "requestRouterModels" })
+			} else if (selectedProvider === "ibm-watsonx") {
+				const {
+					watsonxPlatform,
+					watsonxApiKey,
+					watsonxProjectId,
+					watsonxBaseUrl,
+					watsonxAuthType,
+					watsonxUsername,
+					watsonxPassword,
+					watsonxRegion,
+				} = apiConfiguration
+
+				const ibmCloudReady =
+					watsonxPlatform === "ibmCloud" && !!watsonxApiKey && !!watsonxProjectId && !!watsonxRegion
+
+				const cloudPakReady =
+					watsonxPlatform === "cloudPak" &&
+					!!watsonxBaseUrl &&
+					!!watsonxProjectId &&
+					!!watsonxUsername &&
+					((watsonxAuthType === "apiKey" && !!watsonxApiKey) ||
+						(watsonxAuthType === "password" && !!watsonxPassword))
+
+				if (ibmCloudReady || cloudPakReady) {
+					vscode.postMessage({
+						type: "requestWatsonxModels",
+						values: {
+							apiKey: apiConfiguration.watsonxApiKey,
+							projectId: apiConfiguration.watsonxProjectId,
+							platform: apiConfiguration.watsonxPlatform,
+							baseUrl:
+								apiConfiguration.watsonxPlatform === "ibmCloud"
+									? undefined
+									: apiConfiguration.watsonxBaseUrl,
+							authType: apiConfiguration.watsonxAuthType,
+							username: apiConfiguration.watsonxUsername,
+							password: apiConfiguration.watsonxPassword,
+							region: apiConfiguration.watsonxRegion,
+						},
+					})
+				}
 			}
 		},
 		250,
@@ -250,6 +292,14 @@ const ApiOptions = ({
 			apiConfiguration?.litellmApiKey,
 			apiConfiguration?.deepInfraApiKey,
 			apiConfiguration?.deepInfraBaseUrl,
+			apiConfiguration?.watsonxPlatform,
+			apiConfiguration?.watsonxApiKey,
+			apiConfiguration?.watsonxProjectId,
+			apiConfiguration?.watsonxBaseUrl,
+			apiConfiguration?.watsonxAuthType,
+			apiConfiguration?.watsonxUsername,
+			apiConfiguration?.watsonxPassword,
+			apiConfiguration?.watsonxRegion,
 			customHeaders,
 		],
 	)
@@ -363,6 +413,7 @@ const ApiOptions = ({
 				openai: { field: "openAiModelId" },
 				ollama: { field: "ollamaModelId" },
 				lmstudio: { field: "lmStudioModelId" },
+				"ibm-watsonx": { field: "watsonxModelId" },
 			}
 
 			const config = PROVIDER_MODEL_CONFIG[value]
@@ -687,7 +738,16 @@ const ApiOptions = ({
 				<Featherless apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
 			)}
 
-			{selectedProviderModels.length > 0 && (
+			{selectedProvider === "ibm-watsonx" && (
+				<WatsonxAI
+					apiConfiguration={apiConfiguration}
+					setApiConfigurationField={setApiConfigurationField}
+					organizationAllowList={organizationAllowList}
+					modelValidationError={modelValidationError}
+				/>
+			)}
+
+			{selectedProviderModels.length > 0 && selectedProvider !== "ibm-watsonx" && (
 				<>
 					<div>
 						<label className="block font-medium mb-1">{t("settings:providers.model")}</label>
