@@ -1,10 +1,10 @@
 {
-	"description": "模型上下文协议支持与本地运行的MCP服务器通信，这些服务器提供额外的工具和资源来扩展 Costrict 的功能。您可以使用<1>社区制作的服务器</1>，或者让 Costrict 创建适合您工作流程的新工具（例如，\"添加一个获取最新npm文档的工具\"）。",
+	"description": "模型上下文协议支持与本地运行的MCP服务器通信，这些服务器提供额外的工具和资源来扩展 CoStrict 的功能。您可以使用<1>社区制作的服务器</1>，或者让 CoStrict 创建适合您工作流程的新工具（例如，\"添加一个获取最新npm文档的工具\"）。",
 	"enableToggle": {
-		"description": "启用后，Costrict 将能够与MCP服务器交互以实现高级功能。如果您不使用MCP，可以禁用它以减少 Costrict 的令牌使用。"
+		"description": "启用后，CoStrict 将能够与MCP服务器交互以实现高级功能。如果您不使用MCP，可以禁用它以减少 CoStrict 的令牌使用。"
 	},
 	"enableServerCreation": {
-		"description": "启用后，Costrict 可以帮助您通过\"添加新工具到...\"等命令创建新的MCP服务器。如果您不需要创建MCP服务器，可以禁用它以减少 Costrict 的令牌使用。",
-		"hint": "提示：不需要 Costrict 创建新 MCP 服务器时建议关闭，减少 API Token 费用。"
+		"description": "启用后，CoStrict 可以帮助您通过\"添加新工具到...\"等命令创建新的MCP服务器。如果您不需要创建MCP服务器，可以禁用它以减少 CoStrict 的令牌使用。",
+		"hint": "提示：不需要 CoStrict 创建新 MCP 服务器时建议关闭，减少 API Token 费用。"
 	}
 }

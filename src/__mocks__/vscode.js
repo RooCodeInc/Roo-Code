@@ -80,7 +80,7 @@ export const window = {
 	}),
 	createTerminal: () => ({
 		exitStatus: undefined,
-		name: "Costrict",
+		name: "CoStrict",
 		processId: Promise.resolve(123),
 		creationOptions: {},
 		state: { isInteractedWith: true },

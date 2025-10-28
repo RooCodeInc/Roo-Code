@@ -105,7 +105,7 @@ const codeExamples = {
 		code: `// Code Mode
 You: Generate a React component for a user profile card
 
-Costrict: Here's a React component for a user profile card:
+CoStrict: Here's a React component for a user profile card:
 
 import React from 'react';
 
@@ -165,7 +165,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({
 // Project: E-commerce Platform
 // Request: Design the authentication system
 
-Costrict is analyzing your project...
+CoStrict is analyzing your project...
 
 📂 Recommended Architecture:
 
@@ -202,7 +202,7 @@ Would you like me to generate any of these files?`,
 		code: `// Debug Mode
 // Analyzing error: TypeError: Cannot read property 'map' of undefined
 
-Costrict has analyzed your code and found 3 issues:
+CoStrict has analyzed your code and found 3 issues:
 
 🐛 Issue #1: Null data reference
   Line 42: const items = data.items.map(item => item.name);

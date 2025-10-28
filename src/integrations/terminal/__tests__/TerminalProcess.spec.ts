@@ -7,6 +7,45 @@ import { TerminalProcess } from "../TerminalProcess"
 import { Terminal } from "../Terminal"
 import { TerminalRegistry } from "../TerminalRegistry"
 
+vi.mock("vscode", () => ({
+	workspace: {
+		getConfiguration: vi.fn().mockReturnValue({
+			get: vi.fn().mockReturnValue(null),
+		}),
+	},
+	window: {
+		createTerminal: vi.fn(),
+		onDidStartTerminalShellExecution: vi.fn(),
+		onDidEndTerminalShellExecution: vi.fn(),
+		onDidCloseTerminal: vi.fn(),
+	},
+	extensions: {
+		getExtension: vi.fn().mockReturnValue({
+			extensionUri: { fsPath: "/test/extension/path" },
+		}),
+		all: [],
+	},
+	Uri: {
+		joinPath: vi.fn((uri, ...paths) => ({ fsPath: `${uri.fsPath}/${paths.join("/")}` })),
+		file: (path: string) => ({ fsPath: path }),
+	},
+	ThemeIcon: class ThemeIcon {
+		constructor(id: string) {
+			this.id = id
+		}
+		id: string
+	},
+	env: {
+		clipboard: {
+			readText: vi.fn().mockResolvedValue(""),
+			writeText: vi.fn().mockResolvedValue(undefined),
+		},
+	},
+	commands: {
+		executeCommand: vi.fn().mockResolvedValue(undefined),
+	},
+}))
+
 vi.mock("execa", () => ({
 	execa: vi.fn(),
 }))
@@ -24,7 +63,7 @@ describe("TerminalProcess", () => {
 			shellIntegration: {
 				executeCommand: vi.fn(),
 			},
-			name: "Costrict",
+			name: "CoStrict",
 			processId: Promise.resolve(123),
 			creationOptions: {},
 			exitStatus: undefined,

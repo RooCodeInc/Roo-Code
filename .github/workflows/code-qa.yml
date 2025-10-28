@@ -1,4 +1,4 @@
-name: Code QA Costrict
+name: Code QA CoStrict
 
 on:
     workflow_dispatch:

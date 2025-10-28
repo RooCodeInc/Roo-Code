@@ -6,9 +6,9 @@
 </sub>
 </div>
 
-# 參與 Costrict 貢獻
+# 參與 CoStrict 貢獻
 
-Costrict 是一個由社群驅動的專案，我們深深重視每一份貢獻。為了簡化協作流程，我們採用 [Issue-First](#issue-first-方式) 原則，這表示所有 [Pull Request (PR)](#提交-pull-request) 必須先關聯至 GitHub Issue。請仔細閱讀本指南。
+CoStrict 是一個由社群驅動的專案，我們深深重視每一份貢獻。為了簡化協作流程，我們採用 [Issue-First](#issue-first-方式) 原則，這表示所有 [Pull Request (PR)](#提交-pull-request) 必須先關聯至 GitHub Issue。請仔細閱讀本指南。
 
 ## 目錄
 
@@ -47,7 +47,7 @@ Costrict 是一個由社群驅動的專案，我們深深重視每一份貢獻�
 
 在 PR 中請提及與這些領域的關聯。
 
-### 3. 加入 Costrict 社群
+### 3. 加入 CoStrict 社群
 
 - **替代方式：** 有經驗的貢獻者可透過 [GitHub Projects](https://github.com/zgsm-ai/costrict/projects) 直接參與。
 
@@ -74,7 +74,7 @@ Costrict 是一個由社群驅動的專案，我們深深重視每一份貢獻�
 ### 決定要做什麼
 
 - 查看 [GitHub 專案](https://github.com/zgsm-ai/costrict/projects) 中未分配的「Good First Issues」。
-- 文件相關，請訪問 [Costrict Docs](https://docs.costrict.ai/)。
+- 文件相關，請訪問 [CoStrict Docs](https://docs.costrict.ai/)。
 
 ### 回報 Bug
 
@@ -129,4 +129,4 @@ npm run install:all
 
 ## 法律聲明
 
-提交貢獻即表示你同意你的貢獻將基於 Apache 2.0 授權條款，與 Costrict 的授權一致。
+提交貢獻即表示你同意你的貢獻將基於 Apache 2.0 授權條款，與 CoStrict 的授權一致。

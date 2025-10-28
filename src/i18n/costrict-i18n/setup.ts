@@ -6,7 +6,7 @@ import { ZGSM_LANGUAGES } from "../../shared/language"
 
 // Load translations from directory
 const loadTranslationsFromDir = (dirPath: string): LanguageResources => {
-	console.log(`Loading Costrict backend translations from ${dirPath}`)
+	console.log(`Loading CoStrict backend translations from ${dirPath}`)
 	const result: LanguageResources = {}
 
 	try {
@@ -51,7 +51,7 @@ const loadTranslationsFromDir = (dirPath: string): LanguageResources => {
 
 // Load zgsm backend translations
 export const zgsmTranslations = loadTranslationsFromDir(path.join(__dirname, "i18n", "costrict-i18n", "locales"))
-console.log(`Loaded Costrict backend translations for languages: ${Object.keys(zgsmTranslations).join(", ")}`)
+console.log(`Loaded CoStrict backend translations for languages: ${Object.keys(zgsmTranslations).join(", ")}`)
 
 // Initialize i18next
 i18next.init({
@@ -83,7 +83,7 @@ export const mergeLanguageResources = (
 ): LanguageResources => {
 	const mergedTranslations: LanguageResources = {}
 
-	// Merge Costrict translations
+	// Merge CoStrict translations
 	for (const language in zgsmTranslations) {
 		if (!mergedTranslations[language]) {
 			mergedTranslations[language] = {}
@@ -97,7 +97,7 @@ export const mergeLanguageResources = (
 		}
 	}
 
-	// Add current translations that don't exist in Costrict
+	// Add current translations that don't exist in CoStrict
 	for (const language in currentTranslations) {
 		if (!mergedTranslations[language]) {
 			mergedTranslations[language] = currentTranslations[language]

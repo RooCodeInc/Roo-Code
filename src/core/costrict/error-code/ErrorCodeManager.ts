@@ -203,7 +203,7 @@ ${checkRemainingQuotaStr}
 `
 			}
 			TelemetryService.instance.captureError(`ApiError_${code}`)
-			this.provider.log(`[Costrict#apiErrors] task ${taskId}.${instanceId} Raw Error: ${rawError}`)
+			this.provider.log(`[CoStrict#apiErrors] task ${taskId}.${instanceId} Raw Error: ${rawError}`)
 			return `${t("apiErrors:request.error_details")}\n\n${message}\n\n${requestId ? `RequestID: ${requestId}\n\n` : ""}${t("apiErrors:request.solution")}\n${solution}`
 		}
 		const { message, solution } = defaultError[status] || this.unknownError
@@ -214,7 +214,7 @@ ${checkRemainingQuotaStr}
 		} else {
 			TelemetryService.instance.captureError(`ApiError_unknown`)
 		}
-		this.provider.log(`[Costrict#apiErrors] task ${taskId}.${instanceId} Raw Error: ${rawError}`)
+		this.provider.log(`[CoStrict#apiErrors] task ${taskId}.${instanceId} Raw Error: ${rawError}`)
 		return `${t("apiErrors:request.error_details")}\n\n${message}\n\n${requestId ? `RequestID: ${requestId}\n\n` : ""}${t("apiErrors:request.solution")}\n${solution}`
 	}
 	private async hashToken(token: string) {

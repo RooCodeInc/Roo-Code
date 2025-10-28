@@ -20,27 +20,27 @@ export const testimonials: Testimonial[] = [
 		name: "Luca",
 		role: "Reviewer",
 		origin: "VS Code Marketplace",
-		quote: "Costrict is an absolute game-changer! 🚀 It makes coding faster, easier, and more intuitive with its smart AI-powered suggestions, real-time debugging, and automation features. The seamless integration with VS Code is a huge plus, and the constant updates ensure it keeps getting better",
+		quote: "CoStrict is an absolute game-changer! 🚀 It makes coding faster, easier, and more intuitive with its smart AI-powered suggestions, real-time debugging, and automation features. The seamless integration with VS Code is a huge plus, and the constant updates ensure it keeps getting better",
 		stars: 5,
 	},
 	{
 		name: "Taro Woollett-Chiba",
 		role: "AI Product Lead",
 		origin: "Vendidit",
-		quote: "Easily the best AI code editor. Costrict has the best features and capabilities, along with the best development team. I swear, they're the fastest to support new models and implement useful functionality whenever users mention it... simply amazing.",
+		quote: "Easily the best AI code editor. CoStrict has the best features and capabilities, along with the best development team. I swear, they're the fastest to support new models and implement useful functionality whenever users mention it... simply amazing.",
 	},
 	{
 		name: "Can Nuri",
 		role: "Reviewer",
 		origin: "VS Code Marketplace",
-		quote: "Costrict is one of the most inspiring projects I have seen for a long time. It shapes the way I think and deal with software development.",
+		quote: "CoStrict is one of the most inspiring projects I have seen for a long time. It shapes the way I think and deal with software development.",
 		stars: 5,
 	},
 	{
 		name: "Michael",
 		role: "Reviewer",
 		origin: "VS Code Marketplace",
-		quote: "I switched from Windsurf to Costrict in January and honestly, it's been a huge upgrade. Windsurf kept making mistakes and being dumb when I ask it for things. Costrict just gets it. Projects that used to take a full day now wrap up before lunch. ",
+		quote: "I switched from Windsurf to CoStrict in January and honestly, it's been a huge upgrade. Windsurf kept making mistakes and being dumb when I ask it for things. CoStrict just gets it. Projects that used to take a full day now wrap up before lunch. ",
 		stars: 5,
 	},
 	{
@@ -75,7 +75,7 @@ export const testimonials: Testimonial[] = [
 		name: "Ryan Booth",
 		role: "Reviewer",
 		origin: "VS Code Marketplace",
-		quote: "I work inside Costrict about 60+ hours a week and usually Costrict is building something at all hours of the day. An amazing tool by an amazing team!",
+		quote: "I work inside CoStrict about 60+ hours a week and usually CoStrict is building something at all hours of the day. An amazing tool by an amazing team!",
 		stars: 5,
 	},
 	{
@@ -96,7 +96,7 @@ export const testimonials: Testimonial[] = [
 		name: "Sean McCann",
 		role: "Reviewer",
 		origin: "VS Code Marketplace",
-		quote: "Costrict is impressively capable while staying refreshingly simple. It integrates seamlessly into VS Code and handles everything from generating code to refactoring with accuracy and speed. It feels like a natural part of the workflow—no clutter, just results. Extra points for the flexibility of the different agents and the ability to customize them to fit the job.",
+		quote: "CoStrict is impressively capable while staying refreshingly simple. It integrates seamlessly into VS Code and handles everything from generating code to refactoring with accuracy and speed. It feels like a natural part of the workflow—no clutter, just results. Extra points for the flexibility of the different agents and the ability to customize them to fit the job.",
 		stars: 5,
 	},
 	{
@@ -110,7 +110,7 @@ export const testimonials: Testimonial[] = [
 		name: "Michael Scott",
 		role: "Reviewer",
 		origin: "VS Code Marketplace",
-		quote: "I've used all the IDEs and all the assistants - Costrict is hands down the best of them. It's also one of the few that lets you bring your own API keys - no subscriptions required, just pay as you need/go! Fantastic team and support as well!",
+		quote: "I've used all the IDEs and all the assistants - CoStrict is hands down the best of them. It's also one of the few that lets you bring your own API keys - no subscriptions required, just pay as you need/go! Fantastic team and support as well!",
 		stars: 5,
 	},
 ]
@@ -193,7 +193,7 @@ export function Testimonials() {
 			<div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
 				<div className="mx-auto mb-8 md:max-w-2xl text-center">
 					<h2 className="text-4xl font-bold tracking-tight sm:text-5xl">
-						Developers <em>really</em> shipping with AI are using Costrict
+						Developers <em>really</em> shipping with AI are using CoStrict
 					</h2>
 					<p className="mt-6 text-lg text-muted-foreground">
 						Join more than 1M people revolutionizing their workflow worldwide

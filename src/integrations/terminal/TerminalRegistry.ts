@@ -107,7 +107,7 @@ export class TerminalRegistry {
 
 					if (!terminal) {
 						console.error(
-							"[onDidEndTerminalShellExecution] Shell execution ended, but not from a Costrict-registered terminal:",
+							"[onDidEndTerminalShellExecution] Shell execution ended, but not from a CoStrict-registered terminal:",
 							e,
 						)
 

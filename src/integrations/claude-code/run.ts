@@ -170,7 +170,7 @@ function runProcess({
 		"stream-json",
 		"--disallowedTools",
 		claudeCodeTools,
-		// Costrict will handle recursive calls
+		// CoStrict will handle recursive calls
 		"--max-turns",
 		"1",
 	)

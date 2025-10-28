@@ -63,7 +63,7 @@ export default defineConfig(({ mode }) => {
 		"process.env.VSCODE_TEXTMATE_DEBUG": JSON.stringify(process.env.VSCODE_TEXTMATE_DEBUG),
 		"process.env.PKG_NAME": JSON.stringify(pkg.name),
 		"process.env.PKG_VERSION": JSON.stringify(pkg.version),
-		"process.env.PKG_OUTPUT_CHANNEL": JSON.stringify("Costrict"),
+		"process.env.PKG_OUTPUT_CHANNEL": JSON.stringify("CoStrict"),
 		"process.env.ZGSM_BASE_URL": JSON.stringify(process.env.ZGSM_BASE_URL || ""),
 		"process.env.ZGSM_PUBLIC_KEY": JSON.stringify(process.env.ZGSM_PUBLIC_KEY || ""),
 		...(gitSha ? { "process.env.PKG_SHA": JSON.stringify(gitSha) } : {}),

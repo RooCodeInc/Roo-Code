@@ -6,4 +6,5 @@ export interface SystemPromptSettings {
 	todoListEnabled: boolean
 	useAgentRules: boolean
 	newTaskRequireTodos: boolean
+	terminalShellIntegrationDisabled?: boolean
 }

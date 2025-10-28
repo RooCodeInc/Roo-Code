@@ -1,9 +1,9 @@
 {
 	"welcomePage": {
-		"title": "Costrict",
+		"title": "CoStrict",
 		"subtitle": "企业严肃开发的AI智能伙伴",
 		"tips1": "1. 选择函数、代码块、多文件",
-		"tips2": "2. 点击鼠标右键，找到 Costrict > Code Review 一键触发"
+		"tips2": "2. 点击鼠标右键，找到 CoStrict > Code Review 一键触发"
 	},
 	"codebase": {
 		"syncTips": "当前codebase索引同步功能被关闭，无法运行代码审查，是否开启codebase索引并继续代码审查？",

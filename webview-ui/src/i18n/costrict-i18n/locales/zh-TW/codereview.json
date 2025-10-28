@@ -1,9 +1,9 @@
 {
 	"welcomePage": {
-		"title": "Costrict",
+		"title": "CoStrict",
 		"subtitle": "企業嚴肅開發的AI智慧夥伴",
 		"tips1": "1. 選擇函數、代碼塊、多文件",
-		"tips2": "2. 點擊鼠標右鍵，找到 Costrict > Code Review 一鍵觸發"
+		"tips2": "2. 點擊鼠標右鍵，找到 CoStrict > Code Review 一鍵觸發"
 	},
 	"codebase": {
 		"syncTips": "當前codebase索引同步功能被關閉，無法運行代碼審查，是否開啟codebase索引並繼續代碼審查？",

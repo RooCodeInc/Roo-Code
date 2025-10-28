@@ -64,11 +64,12 @@ async function generatePrompt(
 	settings?: SystemPromptSettings,
 	todoList?: TodoItem[],
 	modelId?: string,
+	shell?: string,
 ): Promise<string> {
 	if (!context) {
 		throw new Error("Extension context is required for generating system prompt")
 	}
-
+	shell = shell || getShell(settings?.terminalShellIntegrationDisabled)
 	// If diff is disabled, don't pass the diffStrategy
 	const effectiveDiffStrategy = diffEnabled ? diffStrategy : undefined
 
@@ -122,7 +123,7 @@ ${modesSection}
 
 ${getRulesSection(cwd, supportsComputerUse, effectiveDiffStrategy, codeIndexManager)}
 
-${getSystemInfoSection(cwd)}
+${getSystemInfoSection(cwd, shell)}
 
 ${getObjectiveSection(codeIndexManager, experiments)}
 
@@ -130,7 +131,7 @@ ${await addCustomInstructions(baseInstructions, globalCustomInstructions || "", 
 	language: language ?? formatLanguage(await defaultLang()),
 	rooIgnoreInstructions,
 	settings,
-	shell: getShell(),
+	shell,
 })}`
 
 	return basePrompt
@@ -160,7 +161,7 @@ export const SYSTEM_PROMPT = async (
 	if (!context) {
 		throw new Error("Extension context is required for generating system prompt")
 	}
-	const shell = getShell()
+	const shell = getShell(settings?.terminalShellIntegrationDisabled)
 	language = language ?? formatLanguage(await defaultLang())
 	// Try to load custom system prompt from file
 	const variablesForPrompt: PromptVariables = {
@@ -230,5 +231,6 @@ ${customInstructions}`
 		settings,
 		todoList,
 		modelId,
+		shell,
 	)
 }

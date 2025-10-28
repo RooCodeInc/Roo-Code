@@ -23,7 +23,7 @@ function asObjectSafe(value: any): object {
 
 		return {}
 	} catch (error) {
-		console.warn("Costrict <Language Model API>: Failed to parse object:", error)
+		console.warn("CoStrict <Language Model API>: Failed to parse object:", error)
 		return {}
 	}
 }
@@ -183,7 +183,7 @@ export function extractTextCountFromMessage(message: vscode.LanguageModelChatMes
 					try {
 						text += JSON.stringify(item.input)
 					} catch (error) {
-						console.error("Costrict <Language Model API>: Failed to stringify tool call input:", error)
+						console.error("CoStrict <Language Model API>: Failed to stringify tool call input:", error)
 					}
 				}
 			}

@@ -27,13 +27,13 @@ export async function readApiMessages({
 			const parsedData = JSON.parse(fileContent)
 			if (Array.isArray(parsedData) && parsedData.length === 0) {
 				console.error(
-					`[Costrict-Debug] readApiMessages: Found API conversation history file, but it's empty (parsed as []). TaskId: ${taskId}, Path: ${filePath}`,
+					`[CoStrict-Debug] readApiMessages: Found API conversation history file, but it's empty (parsed as []). TaskId: ${taskId}, Path: ${filePath}`,
 				)
 			}
 			return parsedData
 		} catch (error) {
 			console.error(
-				`[Costrict-Debug] readApiMessages: Error parsing API conversation history file. TaskId: ${taskId}, Path: ${filePath}, Error: ${error}`,
+				`[CoStrict-Debug] readApiMessages: Error parsing API conversation history file. TaskId: ${taskId}, Path: ${filePath}, Error: ${error}`,
 			)
 			throw error
 		}
@@ -46,14 +46,14 @@ export async function readApiMessages({
 				const parsedData = JSON.parse(fileContent)
 				if (Array.isArray(parsedData) && parsedData.length === 0) {
 					console.error(
-						`[Costrict-Debug] readApiMessages: Found OLD API conversation history file (claude_messages.json), but it's empty (parsed as []). TaskId: ${taskId}, Path: ${oldPath}`,
+						`[CoStrict-Debug] readApiMessages: Found OLD API conversation history file (claude_messages.json), but it's empty (parsed as []). TaskId: ${taskId}, Path: ${oldPath}`,
 					)
 				}
 				await fs.unlink(oldPath)
 				return parsedData
 			} catch (error) {
 				console.error(
-					`[Costrict-Debug] readApiMessages: Error parsing OLD API conversation history file (claude_messages.json). TaskId: ${taskId}, Path: ${oldPath}, Error: ${error}`,
+					`[CoStrict-Debug] readApiMessages: Error parsing OLD API conversation history file (claude_messages.json). TaskId: ${taskId}, Path: ${oldPath}, Error: ${error}`,
 				)
 				// DO NOT unlink oldPath if parsing failed, throw error instead.
 				throw error
@@ -63,7 +63,7 @@ export async function readApiMessages({
 
 	// If we reach here, neither the new nor the old history file was found.
 	console.error(
-		`[Costrict-Debug] readApiMessages: API conversation history file not found for taskId: ${taskId}. Expected at: ${filePath}`,
+		`[CoStrict-Debug] readApiMessages: API conversation history file not found for taskId: ${taskId}. Expected at: ${filePath}`,
 	)
 	return []
 }

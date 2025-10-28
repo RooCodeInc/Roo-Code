@@ -1,9 +1,9 @@
 /**
  * MarketplaceViewStateManager
  *
- * This class manages the state for the marketplace view in the Costrict extensions interface.
+ * This class manages the state for the marketplace view in the CoStrict extensions interface.
  *
- * IMPORTANT: Fixed issue where the marketplace feature was causing the Costrict extensions interface
+ * IMPORTANT: Fixed issue where the marketplace feature was causing the CoStrict extensions interface
  * to switch to the browse tab and redraw it every 30 seconds. The fix prevents unnecessary tab switching
  * and redraws by:
  * 1. Only updating the UI when necessary

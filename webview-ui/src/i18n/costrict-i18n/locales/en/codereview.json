@@ -1,9 +1,9 @@
 {
 	"welcomePage": {
-		"title": "Costrict",
+		"title": "CoStrict",
 		"subtitle": "AI-Powered Strict Coding Assistant for Enterprises",
 		"tips1": "1. Select functions, code blocks, and multiple files",
-		"tips2": "2. Right-click the mouse, locate Costrict > Code Review, and trigger it with one click"
+		"tips2": "2. Right-click the mouse, locate CoStrict > Code Review, and trigger it with one click"
 	},
 	"codebase": {
 		"syncTips": "The codebase index synchronization feature is disabled, and code review cannot be run. Do you want to enable codebase index synchronization and continue code review?",

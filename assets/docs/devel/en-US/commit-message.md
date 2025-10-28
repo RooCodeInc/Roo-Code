@@ -1,4 +1,4 @@
-# Costrict Commit Message Specification
+# CoStrict Commit Message Specification
 
 We adhere to the Angular specification, which enforces precise rules for Git commit formatting to make the commit history more readable.
 

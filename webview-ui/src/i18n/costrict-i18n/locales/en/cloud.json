@@ -1,10 +1,10 @@
 {
 	"title": "Account",
-	"signIn": "Login to Costrict to start your programming journey",
-	"cloudBenefitsTitle": "Login to Costrict",
+	"signIn": "Login to CoStrict to start your programming journey",
+	"cloudBenefitsTitle": "Login to CoStrict",
 	"visitCloudWebsite": "View Account Details",
-	"remoteControlDescription": "Enable following and interacting with tasks in this workspace with Costrict",
-	"cloudBenefitWalkaway": "Follow and control tasks from anywhere with Costrict Control",
-	"remoteControl": "Costrict Control",
+	"remoteControlDescription": "Enable following and interacting with tasks in this workspace with CoStrict",
+	"cloudBenefitWalkaway": "Follow and control tasks from anywhere with CoStrict Control",
+	"remoteControl": "CoStrict Control",
 	"loginForFullFeatures": "Full functionality available after login"
 }

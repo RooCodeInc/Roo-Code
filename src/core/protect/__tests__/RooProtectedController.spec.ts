@@ -129,7 +129,7 @@ describe("RooProtectedController", () => {
 	describe("getProtectionMessage", () => {
 		it("should return appropriate protection message", () => {
 			const message = controller.getProtectionMessage()
-			expect(message).toBe("This is a Costrict configuration file and requires approval for modifications")
+			expect(message).toBe("This is a CoStrict configuration file and requires approval for modifications")
 		})
 	})
 

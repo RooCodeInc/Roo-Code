@@ -654,7 +654,7 @@ export const MODELS_BY_PROVIDER: Record<
 > = {
 	zgsm: {
 		id: "zgsm",
-		label: "Costrict",
+		label: "CoStrict",
 		models: [],
 	},
 	anthropic: {

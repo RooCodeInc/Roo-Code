@@ -1,12 +1,12 @@
 {
-	"getZgsmApiKey": "登入 Costrict",
-	"greeting": "你好，我是 Costrict！",
-	"introduction": "<strong>Costrict 嚴肅開發的AI智慧夥伴</strong>，開源免費，可私有化部署，重視效果可控、品質為先，提供AI Agent、AI CodeReview、AI Completion三大核心能力，登入即可體驗。",
+	"getZgsmApiKey": "登入 CoStrict",
+	"greeting": "你好，我是 CoStrict！",
+	"introduction": "<strong>CoStrict 嚴肅開發的AI智慧夥伴</strong>，開源免費，可私有化部署，重視效果可控、品質為先，提供AI Agent、AI CodeReview、AI Completion三大核心能力，登入即可體驗。",
 	"telemetry": {
-		"title": "幫助改進 Costrict",
-		"anonymousTelemetry": "傳送匿名錯誤和使用資料，以協助我們修復錯誤並改善擴充功能。我們絕不會傳送任何程式碼、命令提示詞、或個人資訊 (除非您使用了 Costrict)。詳細資訊請參閱我們的<privacyLink>隱私權政策</privacyLink>。"
+		"title": "幫助改進 CoStrict",
+		"anonymousTelemetry": "傳送匿名錯誤和使用資料，以協助我們修復錯誤並改善擴充功能。我們絕不會傳送任何程式碼、命令提示詞、或個人資訊 (除非您使用了 CoStrict)。詳細資訊請參閱我們的<privacyLink>隱私權政策</privacyLink>。"
 	},
-	"chooseProvider": "Costrict  需要一個 API 金鑰才能發揮魔力。",
+	"chooseProvider": "CoStrict  需要一個 API 金鑰才能發揮魔力。",
 	"vibe": {
 		"description": "氛圍編程，輕量交互模式，需求澄清與代碼生成交替進行。適配快速開發或簡單任務，若使用者具備較強提示詞能力，可高效產出高質量代碼。"
 	},

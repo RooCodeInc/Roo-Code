@@ -636,7 +636,7 @@ export class WorkspaceEventMonitor {
 		const evts = [...new Set(events.map((v) => v.eventType))].join()
 		let retryCount = 0
 		const startTime = Date.now()
-		const maxTotalRetryTime = 30000 // 30 seconds total retry time limit
+		const maxTotalRetryTime = 60000 // 60 seconds total retry time limit
 		const maxRetries = events.find((v) => v.eventType === "open_workspace") ? 5 : this.config.maxRetries // 1 retry for open_workspace, 3 retries for other events
 
 		while (retryCount <= maxRetries) {

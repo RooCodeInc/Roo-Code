@@ -6,7 +6,7 @@ export async function initErrorCodeManager(provider: ClineProvider) {
 		const errorCodeManager = ErrorCodeManager.getInstance()
 		await errorCodeManager.initialize(provider)
 	} catch (err) {
-		provider.log(`[Costrict#initErrorCodeManager] Failed to initialize error code manager: ${err}`)
+		provider.log(`[CoStrict#initErrorCodeManager] Failed to initialize error code manager: ${err}`)
 	}
 }
 

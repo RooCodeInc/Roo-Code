@@ -108,7 +108,7 @@ body:
     attributes:
       label: API Provider (optional)
       options:
-				- Costrict
+				- CoStrict
         - Anthropic
         - AWS Bedrock
         - Chutes AI

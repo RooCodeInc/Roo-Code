@@ -9,7 +9,7 @@ vi.mock("@/i18n/TranslationContext", () => ({
 			const translations: Record<string, string> = {
 				"settings:advanced.todoList.label": "Enable todo list tool",
 				"settings:advanced.todoList.description":
-					"When enabled, Costrict can create and manage todo lists to track task progress. This helps organize complex tasks into manageable steps.",
+					"When enabled, CoStrict can create and manage todo lists to track task progress. This helps organize complex tasks into manageable steps.",
 			}
 			return translations[key] || key
 		},
@@ -38,7 +38,7 @@ describe("TodoListSettingsControl", () => {
 
 		const checkbox = screen.getByRole("checkbox")
 		const label = screen.getByText("Enable todo list tool")
-		const description = screen.getByText(/When enabled, Costrict can create and manage todo lists/)
+		const description = screen.getByText(/When enabled, CoStrict can create and manage todo lists/)
 
 		expect(checkbox).toBeInTheDocument()
 		expect(checkbox).toBeChecked() // Default is true

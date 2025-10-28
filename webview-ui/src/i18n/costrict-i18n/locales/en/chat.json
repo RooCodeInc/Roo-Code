@@ -1,111 +1,111 @@
 {
-	"greeting": "What can Costrict do for you?",
+	"greeting": "What can CoStrict do for you?",
 	"aboutMe": "Thanks to the latest breakthroughs in agentic coding capabilities, I can handle complex software development tasks step-by-step. With tools that let me create & edit files, explore complex projects, use the browser, and execute terminal commands (after you grant permission), I can assist you in ways that go beyond code completion or tech support. I can even use MCP to create new tools and extend my own capabilities.",
 	"instructions": {
-		"wantsToFetch": "Costrict wants to fetch detailed instructions to assist with the current task"
+		"wantsToFetch": "CoStrict wants to fetch detailed instructions to assist with the current task"
 	},
 	"about": "AI-Powered Strict Coding Assistant for Enterprises",
-	"error": "Costrict will automatically fix",
+	"error": "CoStrict will automatically fix",
 	"text": {
-		"rooSaid": "Costrict said"
+		"rooSaid": "CoStrict said"
 	},
 	"fileOperations": {
-		"wantsToRead": "Costrict wants to read this file",
-		"wantsToReadMultiple": "Costrict wants to read multiple files",
-		"wantsToReadAndXMore": "Costrict wants to read this file and {{count}} more",
-		"wantsToReadOutsideWorkspace": "Costrict wants to read this file outside of the workspace",
-		"didRead": "Costrict read this file",
-		"wantsToEdit": "Costrict wants to edit this file",
-		"wantsToEditOutsideWorkspace": "Costrict wants to edit this file outside of the workspace",
-		"wantsToEditProtected": "Costrict wants to edit a protected configuration file",
-		"wantsToApplyBatchChanges": "Costrict wants to apply changes to multiple files",
-		"wantsToGenerateImage": "Costrict wants to generate an image",
-		"wantsToGenerateImageOutsideWorkspace": "Costrict wants to generate an image outside of the workspace",
-		"wantsToGenerateImageProtected": "Costrict wants to generate an image in a protected location",
-		"didGenerateImage": "Costrict generated an image",
-		"wantsToCreate": "Costrict wants to create a new file",
-		"wantsToSearchReplace": "Costrict wants to search and replace in this file",
-		"didSearchReplace": "Costrict performed search and replace on this file",
-		"wantsToInsert": "Costrict wants to insert content into this file",
-		"wantsToInsertWithLineNumber": "Costrict wants to insert content into this file at line {{lineNumber}}",
-		"wantsToInsertAtEnd": "Costrict wants to append content to the end of this file"
+		"wantsToRead": "CoStrict wants to read this file",
+		"wantsToReadMultiple": "CoStrict wants to read multiple files",
+		"wantsToReadAndXMore": "CoStrict wants to read this file and {{count}} more",
+		"wantsToReadOutsideWorkspace": "CoStrict wants to read this file outside of the workspace",
+		"didRead": "CoStrict read this file",
+		"wantsToEdit": "CoStrict wants to edit this file",
+		"wantsToEditOutsideWorkspace": "CoStrict wants to edit this file outside of the workspace",
+		"wantsToEditProtected": "CoStrict wants to edit a protected configuration file",
+		"wantsToApplyBatchChanges": "CoStrict wants to apply changes to multiple files",
+		"wantsToGenerateImage": "CoStrict wants to generate an image",
+		"wantsToGenerateImageOutsideWorkspace": "CoStrict wants to generate an image outside of the workspace",
+		"wantsToGenerateImageProtected": "CoStrict wants to generate an image in a protected location",
+		"didGenerateImage": "CoStrict generated an image",
+		"wantsToCreate": "CoStrict wants to create a new file",
+		"wantsToSearchReplace": "CoStrict wants to search and replace in this file",
+		"didSearchReplace": "CoStrict performed search and replace on this file",
+		"wantsToInsert": "CoStrict wants to insert content into this file",
+		"wantsToInsertWithLineNumber": "CoStrict wants to insert content into this file at line {{lineNumber}}",
+		"wantsToInsertAtEnd": "CoStrict wants to append content to the end of this file"
 	},
 	"directoryOperations": {
-		"wantsToViewTopLevel": "Costrict wants to view the top level files in this directory",
-		"didViewTopLevel": "Costrict viewed the top level files in this directory",
-		"wantsToViewTopLevelOutsideWorkspace": "Costrict wants to view the top level files in this directory (outside workspace)",
-		"didViewTopLevelOutsideWorkspace": "Costrict viewed the top level files in this directory (outside workspace)",
-		"wantsToViewRecursive": "Costrict wants to recursively view all files in this directory",
-		"didViewRecursive": "Costrict recursively viewed all files in this directory",
-		"wantsToViewRecursiveOutsideWorkspace": "Costrict wants to recursively view all files in this directory (outside workspace)",
-		"didViewRecursiveOutsideWorkspace": "Costrict recursively viewed all files in this directory (outside workspace)",
-		"wantsToViewDefinitions": "Costrict wants to view source code definition names used in this directory",
-		"didViewDefinitions": "Costrict viewed source code definition names used in this directory",
-		"wantsToViewDefinitionsOutsideWorkspace": "Costrict wants to view source code definition names used in this directory (outside workspace)",
-		"didViewDefinitionsOutsideWorkspace": "Costrict viewed source code definition names used in this directory (outside workspace)",
-		"wantsToSearch": "Costrict wants to search this directory for <code>{{regex}}</code>",
-		"didSearch": "Costrict searched this directory for <code>{{regex}}</code>",
-		"wantsToSearchOutsideWorkspace": "Costrict wants to search this directory (outside workspace) for <code>{{regex}}</code>",
-		"didSearchOutsideWorkspace": "Costrict searched this directory (outside workspace) for <code>{{regex}}</code>"
+		"wantsToViewTopLevel": "CoStrict wants to view the top level files in this directory",
+		"didViewTopLevel": "CoStrict viewed the top level files in this directory",
+		"wantsToViewTopLevelOutsideWorkspace": "CoStrict wants to view the top level files in this directory (outside workspace)",
+		"didViewTopLevelOutsideWorkspace": "CoStrict viewed the top level files in this directory (outside workspace)",
+		"wantsToViewRecursive": "CoStrict wants to recursively view all files in this directory",
+		"didViewRecursive": "CoStrict recursively viewed all files in this directory",
+		"wantsToViewRecursiveOutsideWorkspace": "CoStrict wants to recursively view all files in this directory (outside workspace)",
+		"didViewRecursiveOutsideWorkspace": "CoStrict recursively viewed all files in this directory (outside workspace)",
+		"wantsToViewDefinitions": "CoStrict wants to view source code definition names used in this directory",
+		"didViewDefinitions": "CoStrict viewed source code definition names used in this directory",
+		"wantsToViewDefinitionsOutsideWorkspace": "CoStrict wants to view source code definition names used in this directory (outside workspace)",
+		"didViewDefinitionsOutsideWorkspace": "CoStrict viewed source code definition names used in this directory (outside workspace)",
+		"wantsToSearch": "CoStrict wants to search this directory for <code>{{regex}}</code>",
+		"didSearch": "CoStrict searched this directory for <code>{{regex}}</code>",
+		"wantsToSearchOutsideWorkspace": "CoStrict wants to search this directory (outside workspace) for <code>{{regex}}</code>",
+		"didSearchOutsideWorkspace": "CoStrict searched this directory (outside workspace) for <code>{{regex}}</code>"
 	},
 	"mcp": {
-		"wantsToUseTool": "Costrict wants to use a tool on the {{serverName}} MCP server",
-		"wantsToAccessResource": "Costrict wants to access a resource on the {{serverName}} MCP server"
+		"wantsToUseTool": "CoStrict wants to use a tool on the {{serverName}} MCP server",
+		"wantsToAccessResource": "CoStrict wants to access a resource on the {{serverName}} MCP server"
 	},
 	"modes": {
-		"wantsToSwitch": "Costrict wants to switch to {{mode}} mode",
-		"wantsToSwitchWithReason": "Costrict wants to switch to {{mode}} mode because: {{reason}}",
-		"didSwitch": "Costrict switched to {{mode}} mode",
-		"didSwitchWithReason": "Costrict switched to {{mode}} mode because: {{reason}}"
+		"wantsToSwitch": "CoStrict wants to switch to {{mode}} mode",
+		"wantsToSwitchWithReason": "CoStrict wants to switch to {{mode}} mode because: {{reason}}",
+		"didSwitch": "CoStrict switched to {{mode}} mode",
+		"didSwitchWithReason": "CoStrict switched to {{mode}} mode because: {{reason}}"
 	},
 	"subtasks": {
-		"wantsToCreate": "Costrict wants to create a new subtask in {{mode}} mode",
-		"wantsToFinish": "Costrict wants to finish this subtask"
+		"wantsToCreate": "CoStrict wants to create a new subtask in {{mode}} mode",
+		"wantsToFinish": "CoStrict wants to finish this subtask"
 	},
 	"questions": {
-		"hasQuestion": "Costrict has a question"
+		"hasQuestion": "CoStrict has a question"
 	},
-	"troubleMessage": "Costrict is having trouble...",
+	"troubleMessage": "CoStrict is having trouble...",
 	"browser": {
-		"rooWantsToUse": "Costrict wants to use the browser"
+		"rooWantsToUse": "CoStrict wants to use the browser"
 	},
 	"announcement": {
-		"title": "🎉 Costrict {{version}} Released",
-		"description": "Costrict {{version}} brings new features and improvements based on your feedback.",
-		"feature1": "<bold>Message Queueing</bold>: Queue multiple messages while Costrict is working, allowing you to continue planning your workflow without interruption."
+		"title": "🎉 CoStrict {{version}} Released",
+		"description": "CoStrict {{version}} brings new features and improvements based on your feedback.",
+		"feature1": "<bold>Message Queueing</bold>: Queue multiple messages while CoStrict is working, allowing you to continue planning your workflow without interruption."
 	},
 	"onboarding": "<strong>The task list in this workspace is empty. </strong> Please enter a task below to get started.",
 	"ask": {
 		"autoApprovedRequestLimitReached": {
-			"description": "Costrict has reached the auto-approved limit of {{count}} API request(s). Would you like to reset the count and proceed with the task?"
+			"description": "CoStrict has reached the auto-approved limit of {{count}} API request(s). Would you like to reset the count and proceed with the task?"
 		},
 		"autoApprovedCostLimitReached": {
-			"description": "Costrict has reached the auto-approved cost limit of ${{count}}. Would you like to reset the cost and proceed with the task?"
+			"description": "CoStrict has reached the auto-approved cost limit of ${{count}}. Would you like to reset the cost and proceed with the task?"
 		}
 	},
 	"shellIntegration": {
-		"description": "This command is running without shell integration. You can disable this warning in <settingsLink>Costrict Settings</settingsLink> <strong>Terminal</strong>, or troubleshoot terminal integration via the link below."
+		"description": "This command is running without shell integration. You can disable this warning in <settingsLink>CoStrict Settings</settingsLink> <strong>Terminal</strong>, or troubleshoot terminal integration via the link below."
 	},
 	"task": {
-		"connectToCloudDescription": "Sign in to Costrict Cloud to share tasks"
+		"connectToCloudDescription": "Sign in to CoStrict Cloud to share tasks"
 	},
 	"modeSelector": {
-		"description": "Specialized personas that tailor Costrict's behavior."
+		"description": "Specialized personas that tailor CoStrict's behavior."
 	},
 	"codebaseSearch": {
-		"wantsToSearch": "Costrict wants to search the codebase for <code>{{query}}</code>",
-		"wantsToSearchWithPath": "Costrict wants to search the codebase for <code>{{query}}</code> in <code>{{path}}</code>"
+		"wantsToSearch": "CoStrict wants to search the codebase for <code>{{query}}</code>",
+		"wantsToSearchWithPath": "CoStrict wants to search the codebase for <code>{{query}}</code> in <code>{{path}}</code>"
 	},
 	"rooCloudCTA": {
-		"title": "Costrict Cloud Coming Soon!",
-		"description": "Run Costrict agents in the cloud, access your tasks from anywhere, collaborate with others, and more."
+		"title": "CoStrict Cloud Coming Soon!",
+		"description": "Run CoStrict agents in the cloud, access your tasks from anywhere, collaborate with others, and more."
 	},
 	"copy": {
 		"errorDetail": "Copy error detail,Contact the administrator"
 	},
 	"slashCommand": {
-		"wantsToRun": "Costrict wants to run a slash command",
-		"didRun": "Costrict ran a slash command"
+		"wantsToRun": "CoStrict wants to run a slash command",
+		"didRun": "CoStrict ran a slash command"
 	},
 	"rooTips": {
 		"test": {

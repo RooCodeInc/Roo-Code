@@ -189,7 +189,7 @@ export function WhatsNewButton() {
 									}}>
 									<div className="flex items-center justify-between gap-4">
 										<h2 className="text-xl font-bold sm:text-2xl">
-											What&apos;s New in Costrict {version}
+											What&apos;s New in CoStrict {version}
 										</h2>
 										<button
 											onClick={() => setIsOpen(false)}

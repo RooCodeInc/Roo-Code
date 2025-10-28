@@ -323,7 +323,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	// Activate coworkflow integration
 	activateCoworkflowIntegration(context)
 
-	// Allows other extensions to activate once Costrict is ready.
+	// Allows other extensions to activate once CoStrict is ready.
 	vscode.commands.executeCommand(`${Package.name}.activationCompleted`)
 
 	// Implements the `RooCodeAPI` interface.

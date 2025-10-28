@@ -171,6 +171,7 @@ export const CommandExecution = ({ executionId, text, icon, title }: CommandExec
 											vscode.postMessage({
 												type: "terminalOperation",
 												terminalOperation: "abort",
+												terminalPid: status.pid,
 											})
 										}>
 										<OctagonX className="size-4" />

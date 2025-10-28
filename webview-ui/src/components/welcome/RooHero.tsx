@@ -10,7 +10,7 @@ const RooHero = () => {
 	return (
 		<div className="flex flex-col items-center justify-center pb-0 forced-color-adjust-none">
 			<div className="mx-auto">
-				<img src={imagesBaseUri + "/logo.svg"} alt="Costrict logo" className="h-16" />
+				<img src={imagesBaseUri + "/logo.svg"} alt="CoStrict logo" className="h-16" />
 			</div>
 			<div className="title text-[16px] font-semibold text-vscode-editorInfo-foreground mb-2">
 				{t("codereview:welcomePage.title")}

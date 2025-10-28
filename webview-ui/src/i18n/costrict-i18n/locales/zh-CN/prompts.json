@@ -1,17 +1,17 @@
 {
 	"modes": {
-		"createModeHelpText": "点击+创建新的自定义模式，或者直接在聊天中让 Costrict 为您创建一个！"
+		"createModeHelpText": "点击+创建新的自定义模式，或者直接在聊天中让 CoStrict 为您创建一个！"
 	},
 	"roleDefinition": {
-		"description": "定义 Costrict 在此模式下的专业知识和个性。这个描述塑造了 Costrict 如何展示自己和处理任务。"
+		"description": "定义 CoStrict 在此模式下的专业知识和个性。这个描述塑造了 CoStrict 如何展示自己和处理任务。"
 	},
 	"globalCustomInstructions": {
-		"description": "这些指令适用于所有模式。它们提供了一组基本行为，可以通过下面的模式特定指令进行增强。\n如果您希望 Costrict 使用与编辑器显示语言（{{language}}）不同的语言思考和交流，您可以在此处指定。"
+		"description": "这些指令适用于所有模式。它们提供了一组基本行为，可以通过下面的模式特定指令进行增强。\n如果您希望 CoStrict 使用与编辑器显示语言（{{language}}）不同的语言思考和交流，您可以在此处指定。"
 	},
 	"supportPrompts": {
 		"types": {
 			"ENHANCE": {
-				"description": "使用提示增强功能获取针对您输入的定制建议或改进。这确保 Costrict 理解您的意图并提供最佳响应。可通过聊天中的✨图标使用。"
+				"description": "使用提示增强功能获取针对您输入的定制建议或改进。这确保 CoStrict 理解您的意图并提供最佳响应。可通过聊天中的✨图标使用。"
 			},
 			"ZGSM_ADD_COMMENT": {
 				"label": "添加代码注释",
@@ -55,21 +55,21 @@
 			},
 			"WORKFLOW_RQS_UPDATE": {
 				"label": "需求更新",
-				"description": "当需求文档确认更新后，Costrict 将更新相关的设计文档"
+				"description": "当需求文档确认更新后，CoStrict 将更新相关的设计文档"
 			},
 			"WORKFLOW_DESIGN_UPDATE": {
 				"label": "设计更新",
-				"description": "当设计文档确认更新后，Costrict 将更新相关的任务文档"
+				"description": "当设计文档确认更新后，CoStrict 将更新相关的任务文档"
 			},
 			"WORKFLOW_TASK_RUN_TESTS": {
 				"label": "测试案例更新",
-				"description": "当测试案例文档确认更新后，Costrict 将更新相关的任务文档"
+				"description": "当测试案例文档确认更新后，CoStrict 将更新相关的任务文档"
 			}
 		}
 	},
 	"createModeDialog": {
 		"roleDefinition": {
-			"description": "定义 Costrict 在此模式下的专业知识和个性。"
+			"description": "定义 CoStrict 在此模式下的专业知识和个性。"
 		},
 		"whenToUse": {
 			"description": "清晰描述此模式最适合的场景和任务类型"

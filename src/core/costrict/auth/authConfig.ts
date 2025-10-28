@@ -66,7 +66,7 @@ export class ZgsmAuthConfig {
 	}
 
 	/**
-	 * Get Costrict site
+	 * Get CoStrict site
 	 */
 	public getDefaultSite(): string {
 		return "https://costrict.ai"

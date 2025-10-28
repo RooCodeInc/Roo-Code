@@ -1,10 +1,10 @@
-// Build Costrict translations object
+// Build CoStrict translations object
 export const zgsmTranslations: Record<string, Record<string, any>> = {}
 
-// Dynamically load Costrict locale files
+// Dynamically load CoStrict locale files
 const zgsmLocaleFiles = import.meta.glob("./locales/**/*.json", { eager: true })
 
-// Process all Costrict locale files
+// Process all CoStrict locale files
 Object.entries(zgsmLocaleFiles).forEach(([path, module]) => {
 	// Extract language and namespace from path
 	// Example path: './locales/en/common.json' -> language: 'en', namespace: 'common'
@@ -23,7 +23,7 @@ Object.entries(zgsmLocaleFiles).forEach(([path, module]) => {
 	}
 })
 
-// console.log("Dynamically loaded Costrict translations:", Object.keys(zgsmTranslations))
+// console.log("Dynamically loaded CoStrict translations:", Object.keys(zgsmTranslations))
 
 // Merge translations function
 const mergeTranslations = (base: Record<string, any>, override: Record<string, any>): Record<string, any> => {
@@ -44,7 +44,7 @@ export const mergeLanguageResources = (
 ): Record<string, any> => {
 	const mergedTranslations: Record<string, any> = {}
 
-	// Merge Costrict translations
+	// Merge CoStrict translations
 	for (const language in zgsmTranslations) {
 		if (!mergedTranslations[language]) {
 			mergedTranslations[language] = {}
@@ -58,7 +58,7 @@ export const mergeLanguageResources = (
 		}
 	}
 
-	// Add current translations that don't exist in Costrict
+	// Add current translations that don't exist in CoStrict
 	for (const language in currentTranslations) {
 		if (!mergedTranslations[language]) {
 			mergedTranslations[language] = currentTranslations[language]

@@ -35,7 +35,7 @@ export default async function Home() {
 									The AI dev team that gets things done.
 								</h1>
 								<p className="mt-4 max-w-md text-lg text-muted-foreground text-center md:text-left sm:mt-6">
-									Costrict&apos;s specialized modes stay on task and ship great code. Open source and
+									CoStrict&apos;s specialized modes stay on task and ship great code. Open source and
 									works with any model.
 								</p>
 							</div>
@@ -47,7 +47,7 @@ export default async function Home() {
 										href="https://marketplace.visualstudio.com/items?itemName=zgsm-ai.zgsm"
 										target="_blank"
 										className="flex w-full items-center justify-center">
-										Install Costrict
+										Install CoStrict
 										<ArrowRight className="ml-2" />
 									</a>
 								</Button>

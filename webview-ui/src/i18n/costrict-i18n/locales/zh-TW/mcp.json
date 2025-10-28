@@ -1,10 +1,10 @@
 {
-	"description": "模型上下文協議（MCP）允許您與本地運行的 MCP 服務器通信，並提供額外的工具和資源來擴展 Costrict 的能力。您可以使用<1>社區創建的服務器</1>，或者要求 Costrict 創建適合您工作流程的新工具（例如，「添加一個獲取 npm 最新文檔的工具」）。",
+	"description": "模型上下文協議（MCP）允許您與本地運行的 MCP 服務器通信，並提供額外的工具和資源來擴展 CoStrict 的能力。您可以使用<1>社區創建的服務器</1>，或者要求 CoStrict 創建適合您工作流程的新工具（例如，「添加一個獲取 npm 最新文檔的工具」）。",
 	"enableToggle": {
-		"description": "啟用後，Costrict 可以與 MCP 服務器交互以獲得高級功能。如果您不使用 MCP，可以禁用它以減少 Costrict 的令牌使用。"
+		"description": "啟用後，CoStrict 可以與 MCP 服務器交互以獲得高級功能。如果您不使用 MCP，可以禁用它以減少 CoStrict 的令牌使用。"
 	},
 	"enableServerCreation": {
-		"description": "啟用後，Costrict 可以通過「為...添加新工具」等命令幫助您創建新的 MCP 服務器。如果您不需要創建 MCP 服務器，可以禁用它以減少 Costrict 的令牌使用。",
-		"hint": "提示：不需要 Costrict，建立新 MCP 伺服器時建議關閉，以減少 API Token 費用。"
+		"description": "啟用後，CoStrict 可以通過「為...添加新工具」等命令幫助您創建新的 MCP 服務器。如果您不需要創建 MCP 服務器，可以禁用它以減少 CoStrict 的令牌使用。",
+		"hint": "提示：不需要 CoStrict，建立新 MCP 伺服器時建議關閉，以減少 API Token 費用。"
 	}
 }

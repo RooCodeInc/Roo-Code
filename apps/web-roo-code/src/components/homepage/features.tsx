@@ -16,7 +16,7 @@ export const features: Feature[] = [
 		icon: Users2,
 		title: "Specialized modes",
 		description:
-			"Planning, Architecture, Debugging and beyond: Costrict's modes stay on-task and deliver. They even know when to hand off work to other modes. Create your own or download from the marketplace.",
+			"Planning, Architecture, Debugging and beyond: CoStrict's modes stay on-task and deliver. They even know when to hand off work to other modes. Create your own or download from the marketplace.",
 	},
 	{
 		icon: ReplaceAll,
@@ -28,7 +28,7 @@ export const features: Feature[] = [
 		icon: CheckCheck,
 		title: "Granular auto-approval",
 		description:
-			"Control each action and make Costrict as autonomous as you want as you build confidence. Or go YOLO and let it rip.",
+			"Control each action and make CoStrict as autonomous as you want as you build confidence. Or go YOLO and let it rip.",
 	},
 	{
 		icon: GitPullRequest,
@@ -40,7 +40,7 @@ export const features: Feature[] = [
 		icon: Keyboard,
 		title: "Highly customizable",
 		description:
-			"Fine-tune settings for Costrict to work for you, like inference context, model properties, slash commands and more.",
+			"Fine-tune settings for CoStrict to work for you, like inference context, model properties, slash commands and more.",
 	},
 	{
 		icon: Shield,

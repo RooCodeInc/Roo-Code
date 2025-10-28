@@ -718,7 +718,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 			await this.providerRef.deref()?.updateTaskHistory(historyItem)
 		} catch (error) {
-			console.error("Failed to save Costrict messages:", error)
+			console.error("Failed to save CoStrict messages:", error)
 		}
 	}
 
@@ -751,7 +751,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// simply removes the reference to this instance, but the instance is
 		// still alive until this promise resolves or rejects.)
 		if (this.abort) {
-			throw new Error(`[Costrict#ask] task ${this.taskId}.${this.instanceId} aborted`)
+			throw new Error(`[CoStrict#ask] task ${this.taskId}.${this.instanceId} aborted`)
 		}
 
 		let askTs: number
@@ -1020,11 +1020,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 	}
 
-	async handleTerminalOperation(terminalOperation: "continue" | "abort") {
+	async handleTerminalOperation(terminalOperation: "continue" | "abort", pid?: number) {
 		if (terminalOperation === "continue") {
 			this.terminalProcess?.continue()
 		} else if (terminalOperation === "abort") {
-			this.terminalProcess?.abort()
+			if (this.terminalProcess) {
+				this.terminalProcess.abort()
+			} else if (pid) {
+				process.kill(pid, "SIGKILL")
+			}
 		}
 	}
 
@@ -1116,7 +1120,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		contextCondense?: ContextCondense,
 	): Promise<undefined> {
 		if (this.abort) {
-			throw new Error(`[Costrict#say] task ${this.taskId}.${this.instanceId} aborted`)
+			throw new Error(`[CoStrict#say] task ${this.taskId}.${this.instanceId} aborted`)
 		}
 		const isRateLimitRetry = !!(type === "api_req_retry_delayed" && text && text?.startsWith("Rate limiting for"))
 
@@ -1230,7 +1234,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	async sayAndCreateMissingParamError(toolName: ToolName, paramName: string, relPath?: string) {
 		await this.say(
 			"error",
-			`Costrict tried to use ${toolName}${
+			`CoStrict tried to use ${toolName}${
 				relPath ? ` for '${relPath.toPosix()}'` : ""
 			} without value for required parameter '${paramName}'. Retrying...`,
 		)
@@ -1765,7 +1769,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			const currentIncludeFileDetails = currentItem.includeFileDetails
 
 			if (this.abort) {
-				throw new Error(`[Costrict#recursivelyMakeRooRequests] task ${this.taskId}.${this.instanceId} aborted`)
+				throw new Error(`[CoStrict#recursivelyMakeRooRequests] task ${this.taskId}.${this.instanceId} aborted`)
 			}
 
 			if (this.consecutiveMistakeLimit > 0 && this.consecutiveMistakeCount >= this.consecutiveMistakeLimit) {
@@ -2266,7 +2270,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				// Need to call here in case the stream was aborted.
 				if (this.abort || this.abandoned) {
 					throw new Error(
-						`[Costrict#recursivelyMakeRooRequests] task ${this.taskId}.${this.instanceId} aborted`,
+						`[CoStrict#recursivelyMakeRooRequests] task ${this.taskId}.${this.instanceId} aborted`,
 					)
 				}
 
@@ -2455,6 +2459,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			maxConcurrentFileReads,
 			maxReadFileLine,
 			apiConfiguration,
+			terminalShellIntegrationDisabled,
 		} = state ?? {}
 
 		return await (async () => {
@@ -2493,6 +2498,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				rooIgnoreInstructions,
 				maxReadFileLine !== -1,
 				{
+					terminalShellIntegrationDisabled,
 					maxConcurrentFileReads: maxConcurrentFileReads ?? 5,
 					todoListEnabled: apiConfiguration?.todoListEnabled ?? true,
 					useAgentRules: vscode.workspace.getConfiguration("zgsm").get<boolean>("useAgentRules") ?? true,

@@ -26,14 +26,16 @@ import { defaultLang } from "../../utils/language"
 
 export async function getEnvironmentDetails(cline: Task, includeFileDetails: boolean = false) {
 	let details = ""
-	const shell = getShell()
+	// const shell = getShell()
 	const clineProvider = cline.providerRef.deref()
 	const state = await clineProvider?.getState()
 	const {
 		terminalOutputLineLimit = 500,
 		terminalOutputCharacterLimit = DEFAULT_TERMINAL_OUTPUT_CHARACTER_LIMIT,
 		maxWorkspaceFiles = 200,
+		terminalShellIntegrationDisabled,
 	} = state ?? {}
+	const shell = getShell(terminalShellIntegrationDisabled)
 
 	// It could be useful for cline to know if the user went from one or no
 	// file to another between messages, so we always include this context.
@@ -175,9 +177,6 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 			}
 		}
 	}
-
-	// console.log(`[Task#getEnvironmentDetails] terminalDetails: ${terminalDetails}`)
-
 	// Add recently modified files section.
 	const recentlyModifiedFiles = cline.fileContextTracker.getAndClearRecentlyModifiedFiles()
 
@@ -233,12 +232,11 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 	}
 
 	details += `\n\n# Operating System\n${getOperatingSystem()}`
-	details += `\n\n# Default Shell\n${shell}`
-	const winTerminalInfo = await getWindowsTerminalInfo()
+	details += `\n\n# Current Shell\n${shell}`
+	const winTerminalInfo = getWindowsTerminalInfo(shell)
 
 	if (winTerminalInfo) {
-		const { version, name, unsupportSyntax, features } = winTerminalInfo
-		details += `\n\n# Shell Version\n${name} ${version}`
+		const { unsupportSyntax, features } = winTerminalInfo
 
 		if (unsupportSyntax) {
 			details += `\n\n## Shell Unsupport Syntax\n${formatUnsupport(unsupportSyntax)}`

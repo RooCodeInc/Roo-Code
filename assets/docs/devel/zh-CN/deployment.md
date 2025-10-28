@@ -1,6 +1,6 @@
 # 项目简介
 
-# Costrict 后端部署工具
+# CoStrict 后端部署工具
 
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Docker](https://img.shields.io/badge/docker-required-blue.svg)](https://docs.docker.com/get-docker/)
@@ -8,7 +8,7 @@
 
 ## 项目概述
 
-Costrict 后端部署工具是基于 Docker Compose 的企业级 AI 代码助手后端服务部署解决方案。该项目提供了完整的微服务架构，包含 AI 网关、身份认证、代码分析、聊天服务等核心组件，支持私有化部署和云端服务两种模式。
+CoStrict 后端部署工具是基于 Docker Compose 的企业级 AI 代码助手后端服务部署解决方案。该项目提供了完整的微服务架构，包含 AI 网关、身份认证、代码分析、聊天服务等核心组件，支持私有化部署和云端服务两种模式。
 
 ### 核心特性
 
@@ -23,7 +23,7 @@ Costrict 后端部署工具是基于 Docker Compose 的企业级 AI 代码助手
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   VSCode 插件    │────│   API Gateway   │────│   后端服务群     │
-│   (Costrict)    │    │  (Apache APISIX) │    │  (Microservices) │
+│   (CoStrict)    │    │  (Apache APISIX) │    │  (Microservices) │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
                               │                        │
                        ┌─────────────────┐    ┌─────────────────┐
@@ -152,14 +152,14 @@ http://{COSTRICT_BACKEND}:{PORT_CASDOOR}
 
 ### VSCode 插件配置
 
-1. 安装 Costrict VSCode 扩展
+1. 安装 CoStrict VSCode 扩展
 2. 打开扩展设置中的"提供商"页面
-3. 选择 API 提供商为"Costrict"
+3. 选择 API 提供商为"CoStrict"
 4. 配置后端服务地址:
     ```
-    Costrict Base URL: {COSTRICT_BACKEND_BASEURL}
+    CoStrict Base URL: {COSTRICT_BACKEND_BASEURL}
     ```
-5. 点击"登录 Costrict"完成身份验证
+5. 点击"登录 CoStrict"完成身份验证
 
 **服务访问地址**:
 
@@ -302,4 +302,4 @@ docker-compose logs postgres
 
 ---
 
-**Costrict** - 让 AI 助力您的代码开发之旅
+**CoStrict** - 让 AI 助力您的代码开发之旅

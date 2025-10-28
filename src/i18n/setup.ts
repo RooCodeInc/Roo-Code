@@ -63,7 +63,7 @@ if (!isTestEnv) {
 	}
 }
 
-// Merge Costrict translations
+// Merge CoStrict translations
 const mergedTranslations = mergeLanguageResources(translations, zgsmTranslations)
 console.log(`Merged translations:`, mergedTranslations)
 

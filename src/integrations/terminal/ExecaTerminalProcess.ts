@@ -1,6 +1,7 @@
-import { execa, ExecaError } from "execa"
+import { execa, ExecaError, Options } from "execa"
 import psTree from "ps-tree"
 import process from "process"
+import { getShell } from "../../utils/shell"
 
 import type { RooTerminal } from "./types"
 import { BaseTerminalProcess } from "./BaseTerminalProcess"
@@ -37,17 +38,14 @@ export class ExecaTerminalProcess extends BaseTerminalProcess {
 
 		try {
 			this.isHot = true
+			const isWin = process.platform === "win32"
 
-			// On Windows, do not use chcp command as it's unreliable for encoding
-			// Instead, let the system use its native encoding (GBK for Chinese Windows)
+			// On Windows, use appropriate encoding command based on shell type
 			let actualCommand = command
-			if (process.platform === "win32") {
-				// Remove chcp command that causes encoding issues
-				actualCommand = `chcp 65001 >nul 2>&1 && ${command}`
-			}
+			const shellPath = getShell()
 
-			this.subprocess = execa({
-				shell: true,
+			const opt = {
+				shell: true as string | boolean,
 				cwd: this.terminal.getCurrentWorkingDirectory(),
 				all: true,
 				encoding: "buffer",
@@ -57,7 +55,39 @@ export class ExecaTerminalProcess extends BaseTerminalProcess {
 					LANG: "en_US.UTF-8",
 					LC_ALL: "en_US.UTF-8",
 				},
-			})`${actualCommand}`
+			}
+
+			if (isWin) {
+				const shellName = shellPath.toLowerCase()
+				Object.assign(opt, {
+					shell: shellPath,
+					// encoding: "utf8"
+				})
+				// Check if it's PowerShell (pwsh.exe or powershell.exe)
+				if (shellName.includes("cmd")) {
+					this.subprocess = execa(opt as Options)`chcp 65001 >nul 2>&1 && ${command}`
+				} else if (shellName.includes("powershell") || shellName.includes("pwsh")) {
+					opt.shell = false
+					const psCommand = [
+						"[Console]::OutputEncoding = [System.Text.Encoding]::UTF8",
+						"[Console]::InputEncoding = [System.Text.Encoding]::UTF8",
+						"$env:PYTHONIOENCODING = 'utf-8'",
+						"start-sleep -milliseconds 100",
+						command,
+					].join("; ")
+					this.subprocess = execa(
+						shellPath,
+						["-NoProfile", "-NonInteractive", "-Command", psCommand],
+						opt as Options,
+					)
+				} else {
+					// Git Bash 或其他 shell，使用 Unix 风格的编码设置
+					this.subprocess = execa(shellPath, [actualCommand], opt as Options)
+				}
+			} else {
+				// On non-Windows, ensure UTF-8 encoding for Ruby, CocoaPods, etc.
+				this.subprocess = execa(opt as Options)`${actualCommand}`
+			}
 
 			this.pid = this.subprocess.pid
 

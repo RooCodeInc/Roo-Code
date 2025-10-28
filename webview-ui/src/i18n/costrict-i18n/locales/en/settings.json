@@ -1,129 +1,129 @@
 {
 	"sections": {
-		"about": "About Costrict",
+		"about": "About CoStrict",
 		"credit": {
 			"title": "Credit Usage Management",
-			"description": "Costrict officially provides multiple advanced models. Each model consumes a different amount of credits per request. Once your credits are used up, the model will no longer be available.",
+			"description": "CoStrict officially provides multiple advanced models. Each model consumes a different amount of credits per request. Once your credits are used up, the model will no longer be available.",
 			"homepage": "View Credit Usage"
 		}
 	},
 	"autoApprove": {
-		"description": "Allow Costrict to automatically perform operations without requiring approval. Enable these settings only if you fully trust the AI and understand the associated security risks.",
+		"description": "Allow CoStrict to automatically perform operations without requiring approval. Enable these settings only if you fully trust the AI and understand the associated security risks.",
 		"showAtChat": "Display options above the chat box",
 		"readOnly": {
-			"description": "When enabled, Costrict will automatically view directory contents and read files without requiring you to click the Approve button.",
+			"description": "When enabled, CoStrict will automatically view directory contents and read files without requiring you to click the Approve button.",
 			"outsideWorkspace": {
-				"description": "Allow Costrict to read files outside the current workspace without requiring approval."
+				"description": "Allow CoStrict to read files outside the current workspace without requiring approval."
 			}
 		},
 		"write": {
 			"outsideWorkspace": {
-				"description": "Allow Costrict to create and edit files outside the current workspace without requiring approval."
+				"description": "Allow CoStrict to create and edit files outside the current workspace without requiring approval."
 			},
 			"protected": {
-				"description": "Allow Costrict to create and edit protected files (like .rooignore and .roo/ config files) without requiring approval."
+				"description": "Allow CoStrict to create and edit protected files (like .rooignore and .roo/ config files) without requiring approval."
 			}
 		}
 	},
 	"providers": {
-		"getZgsmApiKey": "Login to Costrict",
+		"getZgsmApiKey": "Login to CoStrict",
 		"getZgsmApiKeyAgain": "Re-login",
-		"zgsm": "Costrict",
-		"zgsmApiKey": "Costrict API Key",
-		"zgsmBaseUrl": "Costrict Base URL",
+		"zgsm": "CoStrict",
+		"zgsmApiKey": "CoStrict API Key",
+		"zgsmBaseUrl": "CoStrict Base URL",
 		"zgsmDefaultBaseUrl": "Default: {{zgsmBaseUrl}}",
 		"lmStudio": {
-			"description": "LM Studio allows you to run models locally on your computer. For instructions on how to get started, see their <a>quickstart guide</a>. You will also need to start LM Studio's <b>local server</b> feature to use it with this extension. <span>Note:</span> Costrict uses complex prompts and works best with Claude models. Less capable models may not work as expected."
+			"description": "LM Studio allows you to run models locally on your computer. For instructions on how to get started, see their <a>quickstart guide</a>. You will also need to start LM Studio's <b>local server</b> feature to use it with this extension. <span>Note:</span> CoStrict uses complex prompts and works best with Claude models. Less capable models may not work as expected."
 		},
 		"ollama": {
-			"warning": "Note: Costrict uses complex prompts and works best with Claude models. Less capable models may not work as expected."
+			"warning": "Note: CoStrict uses complex prompts and works best with Claude models. Less capable models may not work as expected."
 		},
 		"customModel": {
-			"capabilities": "Configure the capabilities and pricing for your custom OpenAI-compatible model. Be careful when specifying the model capabilities, as they can affect how Costrict performs."
+			"capabilities": "Configure the capabilities and pricing for your custom OpenAI-compatible model. Be careful when specifying the model capabilities, as they can affect how CoStrict performs."
 		},
 		"useZgsmCustomConfig": "Use custom configuration",
 		"geminiCli": {
 			"projectIdDescription": "Specify your Google Cloud Project ID for enterprise or non-free tier access. Leave empty for automatic project discovery with personal accounts. If you encounter an API Error, it is recommended to fill in the Project ID."
 		},
 		"consecutiveMistakeLimit": {
-			"description": "Number of consecutive errors or repeated actions allowed before showing the \"Costrict is having trouble\" dialog"
+			"description": "Number of consecutive errors or repeated actions allowed before showing the \"CoStrict is having trouble\" dialog"
 		}
 	},
 	"browser": {
 		"enable": {
-			"description": "When enabled, Costrict can use a browser to interact with websites when using models that support computer use."
+			"description": "When enabled, CoStrict can use a browser to interact with websites when using models that support computer use."
 		}
 	},
 	"checkpoints": {
 		"enable": {
-			"description": "When enabled, Costrict will automatically create checkpoints during task execution, making it easy to review changes or revert to earlier states."
+			"description": "When enabled, CoStrict will automatically create checkpoints during task execution, making it easy to review changes or revert to earlier states."
 		}
 	},
 	"notifications": {
 		"sound": {
-			"description": "When enabled, Costrict will play sound effects for notifications and events."
+			"description": "When enabled, CoStrict will play sound effects for notifications and events."
 		},
 		"tts": {
-			"description": "When enabled, Costrict will read aloud its responses using text-to-speech."
+			"description": "When enabled, CoStrict will read aloud its responses using text-to-speech."
 		}
 	},
 	"contextManagement": {
 		"maxReadFile": {
-			"description": "Costrict reads this number of lines when the model omits start/end values. If this number is less than the file's total, Costrict generates a line number index of code definitions. Special cases: -1 instructs Costrict to read the entire file (without indexing), and 0 instructs it to read no lines and provides line indexes only for minimal context. Lower values minimize initial context usage, enabling precise subsequent line-range reads. Explicit start/end requests are not limited by this setting."
+			"description": "CoStrict reads this number of lines when the model omits start/end values. If this number is less than the file's total, CoStrict generates a line number index of code definitions. Special cases: -1 instructs CoStrict to read the entire file (without indexing), and 0 instructs it to read no lines and provides line indexes only for minimal context. Lower values minimize initial context usage, enabling precise subsequent line-range reads. Explicit start/end requests are not limited by this setting."
 		},
 		"maxReadCharacter": {
 			"label": "File Read Character Limit",
 			"description": "Maximum number of characters to include when reading files. This limit takes precedence over the line limit to prevent memory issues from very long lines. Output will be truncated if exceeded."
 		},
 		"autoCondenseContextPercent": {
-			"description": "When the context window reaches this threshold, Costrict will automatically condense it."
+			"description": "When the context window reaches this threshold, CoStrict will automatically condense it."
 		},
 		"autoCondenseContext": {
-			"description": "When enabled, Costrict will automatically condense the context when the threshold is reached. When disabled, you can still manually trigger context condensing."
+			"description": "When enabled, CoStrict will automatically condense the context when the threshold is reached. When disabled, you can still manually trigger context condensing."
 		}
 	},
 	"advanced": {
 		"diff": {
-			"description": "When enabled, Costrict will be able to edit files more quickly and will automatically reject truncated full-file writes. Works best with the latest Claude 3.7 Sonnet model."
+			"description": "When enabled, CoStrict will be able to edit files more quickly and will automatically reject truncated full-file writes. Works best with the latest Claude 3.7 Sonnet model."
 		},
 		"todoList": {
-			"description": "When enabled, Costrict can create and manage to-do lists to track task progress. This helps organize complex tasks into manageable steps."
+			"description": "When enabled, CoStrict can create and manage to-do lists to track task progress. This helps organize complex tasks into manageable steps."
 		}
 	},
 	"experimental": {
 		"autoCondenseContextPercent": {
-			"description": "When the context window reaches this threshold, Costrict will automatically condense it."
+			"description": "When the context window reaches this threshold, CoStrict will automatically condense it."
 		},
 		"SEARCH_AND_REPLACE": {
-			"description": "Enable the experimental search and replace tool, allowing Costrict to replace multiple instances of a search term in one request."
+			"description": "Enable the experimental search and replace tool, allowing CoStrict to replace multiple instances of a search term in one request."
 		},
 		"INSERT_BLOCK": {
-			"description": "Enable the experimental insert content tool, allowing Costrict to insert content at specific line numbers without needing to create a diff."
+			"description": "Enable the experimental insert content tool, allowing CoStrict to insert content at specific line numbers without needing to create a diff."
 		},
 		"POWER_STEERING": {
-			"description": "When enabled, Costrict will remind the model about the details of its current mode definition more frequently. This will lead to stronger adherence to role definitions and custom instructions, but will use more tokens per message."
+			"description": "When enabled, CoStrict will remind the model about the details of its current mode definition more frequently. This will lead to stronger adherence to role definitions and custom instructions, but will use more tokens per message."
 		},
 		"MULTI_SEARCH_AND_REPLACE": {
-			"description": "When enabled, Costrict will use multi block diff tool. This will try to update multiple code blocks in the file in one request."
+			"description": "When enabled, CoStrict will use multi block diff tool. This will try to update multiple code blocks in the file in one request."
 		},
 		"CONCURRENT_FILE_READS": {
-			"description": "When enabled, Costrict can read multiple files in a single request. When disabled, Costrict must read files one at a time. Disabling this can help when working with less capable models or when you want more control over file access."
+			"description": "When enabled, CoStrict can read multiple files in a single request. When disabled, CoStrict must read files one at a time. Disabling this can help when working with less capable models or when you want more control over file access."
 		},
 		"MULTI_FILE_APPLY_DIFF": {
-			"description": "When enabled, Costrict can edit multiple files in a single request. When disabled Costrict must edit files one by one. Disabling helps when using less capable models or when more precise control over file modifications is needed."
+			"description": "When enabled, CoStrict can edit multiple files in a single request. When disabled CoStrict must edit files one by one. Disabling helps when using less capable models or when more precise control over file modifications is needed."
 		},
 		"PREVENT_FOCUS_DISRUPTION": {
-			"description": "Prevent editor focus disruption when enabled. File edits happen in the background without opening diff views or stealing focus. You can continue working uninterrupted while Costrict makes changes. Files can be opened without focus to capture diagnostics or kept closed entirely."
+			"description": "Prevent editor focus disruption when enabled. File edits happen in the background without opening diff views or stealing focus. You can continue working uninterrupted while CoStrict makes changes. Files can be opened without focus to capture diagnostics or kept closed entirely."
 		},
 		"IMAGE_GENERATION": {
-			"description": "When enabled, Costrict can generate images from text prompts using OpenRouter's image generation models. Requires an OpenRouter API key to be configured."
+			"description": "When enabled, CoStrict can generate images from text prompts using OpenRouter's image generation models. Requires an OpenRouter API key to be configured."
 		},
 		"RUN_SLASH_COMMAND": {
-			"description": "When enabled, Costrict can run your slash commands to execute workflows."
+			"description": "When enabled, CoStrict can run your slash commands to execute workflows."
 		},
 		"CHAT_SEARCH": {
 			"name": "Chat History Search in Window",
-			"description": "When enabled, Costrict can search chat history in the conversation window.",
+			"description": "When enabled, CoStrict can search chat history in the conversation window.",
 			"placeholder": "Search messages",
 			"noResults": "No results found",
 			"resultsCount": "{{current}} of {{total}}",
@@ -133,22 +133,22 @@
 		}
 	},
 	"modelPicker": {
-		"automaticFetch": "The extension automatically fetches the latest list of models available on <serviceLink>{{serviceName}}</serviceLink>. If you're unsure which model to choose, Costrict works best with <defaultModelLink>{{defaultModelId}}</defaultModelLink>. You can also try searching \"free\" for no-cost options currently available."
+		"automaticFetch": "The extension automatically fetches the latest list of models available on <serviceLink>{{serviceName}}</serviceLink>. If you're unsure which model to choose, CoStrict works best with <defaultModelLink>{{defaultModelId}}</defaultModelLink>. You can also try searching \"free\" for no-cost options currently available."
 	},
 	"footer": {
 		"feedback": "If you have any questions or feedback, feel free to open an issue at <zgsmGithubLink>github.com/zgsm-ai/costrict</zgsmGithubLink>",
 		"telemetry": {
-			"description": "Help improve Costrict by sending anonymous usage data and error reports. No code, prompts, or personal information is ever sent. See our privacy policy for more details."
+			"description": "Help improve CoStrict by sending anonymous usage data and error reports. No code, prompts, or personal information is ever sent. See our privacy policy for more details."
 		}
 	},
 	"promptCaching": {
-		"description": "When checked, Costrict will not use prompt caching for this model."
+		"description": "When checked, CoStrict will not use prompt caching for this model."
 	},
 	"prompts": {
-		"description": "Configure support prompts for quick actions like enhancing prompts, explaining code, and fixing issues. These prompts help Costrict provide better support for common development tasks."
+		"description": "Configure support prompts for quick actions like enhancing prompts, explaining code, and fixing issues. These prompts help CoStrict provide better support for common development tasks."
 	},
 	"providerChangeWarning": {
-		"title": "Are you sure you want to switch from Costrict to another provider?",
+		"title": "Are you sure you want to switch from CoStrict to another provider?",
 		"description": "Advanced features such as code completion, code review, Codebase will not be available",
 		"cancelButton": "Cancel",
 		"confirmButton": "Continue"
@@ -171,7 +171,7 @@
 			"copy": "Copy",
 			"noFailedFiles": "No failed files information",
 			"rebuild": "Rebuild",
-			"onlyCostrictProviderSupport": "Only Costrict provider supports this service",
+			"onlyCostrictProviderSupport": "Only CoStrict provider supports this service",
 			"codebaseIndexDisabled": "Codebase index build is disabled",
 			"title": "Semantic Index Build",
 			"description": "To improve code completion and other features, the system automatically builds and uploads semantic indexes for model context analysis and understanding."
@@ -198,7 +198,7 @@
 		"general": {
 			"indexBuildFailed": "Index build failed",
 			"codebaseIndexBuild": "Codebase Index Build",
-			"onlyCostrictProviderSupport": "Only Costrict provider supports this service"
+			"onlyCostrictProviderSupport": "Only CoStrict provider supports this service"
 		},
 		"errors": {
 			"failedToDisableCodebaseIndex": "Failed to disable codebase index:",

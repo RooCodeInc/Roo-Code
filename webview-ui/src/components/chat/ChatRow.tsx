@@ -38,7 +38,7 @@ import { BatchDiffApproval } from "./BatchDiffApproval"
 import { ProgressIndicator } from "./ProgressIndicator"
 import { Markdown } from "./Markdown"
 import { CommandExecution } from "./CommandExecution"
-import { CommandExecutionError } from "./CommandExecutionError"
+// import { CommandExecutionError } from "./CommandExecutionError"
 import { AutoApprovedRequestLimitWarning } from "./AutoApprovedRequestLimitWarning"
 import { CondenseContextErrorRow, CondensingContextRow, ContextCondenseRow } from "./ContextCondenseRow"
 import CodebaseSearchResultsDisplay from "./CodebaseSearchResultsDisplay"
@@ -1373,7 +1373,10 @@ export const ChatRowContent = ({
 						</>
 					)
 				case "shell_integration_warning":
-					return <CommandExecutionError />
+					console.log(t("chat:shellIntegration.title"), t("chat:shellIntegration.description"))
+
+					return null
+				// return <CommandExecutionError />
 				case "checkpoint_saved":
 					return (
 						<CheckpointSaved

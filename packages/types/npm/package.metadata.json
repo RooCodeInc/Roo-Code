@@ -17,6 +17,6 @@
 		"url": "https://github.com/zgsm-ai/costrict/issues"
 	},
 	"homepage": "https://costrict.ai",
-	"keywords": ["roo", "roo-code", "costrict", "ai"],
+	"keywords": ["roo", "roo-code", "CoStrict", "ai"],
 	"files": ["dist"]
 }

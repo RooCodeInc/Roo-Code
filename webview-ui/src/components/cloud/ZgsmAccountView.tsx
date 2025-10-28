@@ -379,7 +379,7 @@ const ZgsmAccountViewComponent = ({ apiConfiguration, onDone }: AccountViewProps
 									/>
 								) : (
 									<div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-vscode-button-background to-vscode-button-hoverBackground text-vscode-button-foreground text-lg font-medium">
-										{userInfo?.name?.charAt(0) || userInfo?.email?.charAt(0) || "Costrict"}
+										{userInfo?.name?.charAt(0) || userInfo?.email?.charAt(0) || "CoStrict"}
 									</div>
 								)}
 							</div>
@@ -438,7 +438,7 @@ const ZgsmAccountViewComponent = ({ apiConfiguration, onDone }: AccountViewProps
 									maskRepeat: "no-repeat",
 									maskSize: "contain",
 								}}>
-								<img src={coLogoUri} alt="Costrict logo" className="w-10 h-10 opacity-0" />
+								<img src={coLogoUri} alt="CoStrict logo" className="w-10 h-10 opacity-0" />
 							</div>
 						</div>
 						<h2 className="text-lg font-semibold text-vscode-foreground mb-1">{t("account:signIn")}</h2>

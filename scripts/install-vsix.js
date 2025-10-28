@@ -31,10 +31,10 @@ async function main() {
 		const publisher = packageJson.publisher
 		const extensionId = `${publisher}.${name}`
 
-		console.log("\n🚀 Costrict VSIX Installer")
+		console.log("\n🚀 CoStrict VSIX Installer")
 		console.log("========================")
 		console.log("\nThis script will:")
-		console.log("1. Uninstall any existing version of the Costrict extension")
+		console.log("1. Uninstall any existing version of the CoStrict extension")
 		console.log("2. Install the newly built VSIX package")
 		console.log(`\nExtension: ${extensionId}`)
 		console.log(`VSIX file: ${vsixFileName}`)

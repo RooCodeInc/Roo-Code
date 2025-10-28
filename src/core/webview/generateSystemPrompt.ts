@@ -25,6 +25,7 @@ export const generateSystemPrompt = async (provider: ClineProvider, message: Web
 		language,
 		maxReadFileLine,
 		maxConcurrentFileReads,
+		terminalShellIntegrationDisabled,
 	} = await provider.getState()
 
 	// Check experiment to determine which diff strategy to use
@@ -85,6 +86,7 @@ export const generateSystemPrompt = async (provider: ClineProvider, message: Web
 		rooIgnoreInstructions,
 		maxReadFileLine !== -1,
 		{
+			terminalShellIntegrationDisabled,
 			maxConcurrentFileReads: maxConcurrentFileReads ?? 5,
 			todoListEnabled: apiConfiguration?.todoListEnabled ?? true,
 			useAgentRules: vscode.workspace.getConfiguration("zgsm").get<boolean>("useAgentRules") ?? true,

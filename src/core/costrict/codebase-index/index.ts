@@ -139,7 +139,7 @@ export class ZgsmCodebaseIndexManager implements ICodebaseIndexManager {
 				return
 			}
 			if (state === "needZgsm") {
-				this.log("Only Costrict provider supports this service", "info", "ZgsmCodebaseIndexManager")
+				this.log("Only CoStrict provider supports this service", "info", "ZgsmCodebaseIndexManager")
 				return
 			}
 
@@ -273,7 +273,7 @@ export class ZgsmCodebaseIndexManager implements ICodebaseIndexManager {
 		const { apiConfiguration } = await this.clineProvider.getState()
 
 		if (apiConfiguration.apiProvider !== "zgsm") {
-			const err = new Error("Only Costrict provider supports this service")
+			const err = new Error("Only CoStrict provider supports this service")
 			Object.assign(err, { __NEED_ZGSM__: true })
 			throw err
 		}

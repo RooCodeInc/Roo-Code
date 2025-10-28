@@ -37,7 +37,7 @@ vi.mock("../../../shared/package", () => ({
 		publisher: "zgsm-ai",
 		name: "zgsm",
 		version: "1.0.0",
-		outputChannel: "Costrict",
+		outputChannel: "CoStrict",
 		sha: undefined,
 	},
 }))
@@ -46,9 +46,9 @@ vi.mock("../../../i18n", () => ({
 	t: vi.fn((key: string) => {
 		const translations: Record<string, string> = {
 			"mdm.errors.cloud_auth_required":
-				"Your organization requires Costrict Cloud authentication. Please sign in to continue.",
+				"Your organization requires CoStrict Cloud authentication. Please sign in to continue.",
 			"mdm.errors.organization_mismatch":
-				"You must be authenticated with your organization's Costrict Cloud account.",
+				"You must be authenticated with your organization's CoStrict Cloud account.",
 			"mdm.errors.verification_failed": "Unable to verify organization authentication.",
 		}
 		return translations[key] || key
@@ -277,7 +277,7 @@ describe("MdmService", () => {
 
 			expect(compliance.compliant).toBe(false)
 			if (!compliance.compliant) {
-				expect(compliance.reason).toContain("Your organization requires Costrict Cloud authentication")
+				expect(compliance.reason).toContain("Your organization requires CoStrict Cloud authentication")
 			}
 		})
 
@@ -300,7 +300,7 @@ describe("MdmService", () => {
 			expect(compliance.compliant).toBe(false)
 			if (!compliance.compliant) {
 				expect(compliance.reason).toContain(
-					"You must be authenticated with your organization's Costrict Cloud account",
+					"You must be authenticated with your organization's CoStrict Cloud account",
 				)
 			}
 		})

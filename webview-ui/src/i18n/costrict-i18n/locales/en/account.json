@@ -1,15 +1,15 @@
 {
 	"title": "Account",
-	"signIn": "Login to Costrict to start your programming journey",
-	"cloudBenefitsTitle": "Login to Costrict",
+	"signIn": "Login to CoStrict to start your programming journey",
+	"cloudBenefitsTitle": "Login to CoStrict",
 	"visitCloudWebsite": "View Account Details",
-	"remoteControlDescription": "Enable following and interacting with tasks in this workspace with Costrict",
-	"cloudBenefitWalkaway": "Follow and control tasks from anywhere with Costrict Control",
-	"remoteControl": "Costrict Control",
+	"remoteControlDescription": "Enable following and interacting with tasks in this workspace with CoStrict",
+	"cloudBenefitWalkaway": "Follow and control tasks from anywhere with CoStrict Control",
+	"remoteControl": "CoStrict Control",
 	"loginForFullFeatures": "Full functionality available after login",
 	"starThanks": "Thank you for your support!",
-	"starThanksDesc": "You have starred the Costrict repository",
-	"starProject": "Support Costrict Project",
+	"starThanksDesc": "You have starred the CoStrict repository",
+	"starProject": "Support CoStrict Project",
 	"starProjectDesc": "Star our open source project to show support",
 	"starButton": "Star Now"
 }

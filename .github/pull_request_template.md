@@ -1,5 +1,5 @@
 <!--
-Thank you for contributing to Costrict!
+Thank you for contributing to CoStrict!
 
 Before submitting your PR, please ensure:
 - It's linked to an approved GitHub Issue.

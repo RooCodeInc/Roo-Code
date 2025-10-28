@@ -83,7 +83,7 @@ async function testCmdCommand(
 			executeCommand: vi.fn(),
 			cwd: vscode.Uri.file("C:\\test\\path"),
 		},
-		name: "Costrict",
+		name: "CoStrict",
 		processId: Promise.resolve(123),
 		creationOptions: {},
 		exitStatus: undefined,

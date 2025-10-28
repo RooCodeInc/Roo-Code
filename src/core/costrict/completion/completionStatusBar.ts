@@ -100,7 +100,7 @@ export class CompletionStatusBar {
 	 */
 	public static disable() {
 		if (!this.instance) this.create({ subscriptions: [] } as any)
-		this.instance.tooltip = "Only Costrict provider supports this service"
+		this.instance.tooltip = "Only CoStrict provider supports this service"
 		this.instance.text = t("common:completion.status.complete.text")
 		this.instance.show()
 	}

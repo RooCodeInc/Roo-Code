@@ -1,17 +1,17 @@
 {
 	"modes": {
-		"createModeHelpText": "Hit the + to create a new custom mode, or just ask Costrict in chat to create one for you!"
+		"createModeHelpText": "Hit the + to create a new custom mode, or just ask CoStrict in chat to create one for you!"
 	},
 	"roleDefinition": {
-		"description": "Define Costrict's expertise and personality for this mode. This description shapes how Costrict presents itself and approaches tasks."
+		"description": "Define CoStrict's expertise and personality for this mode. This description shapes how CoStrict presents itself and approaches tasks."
 	},
 	"globalCustomInstructions": {
-		"description": "These instructions apply to all modes. They provide a base set of behaviors that can be enhanced by mode-specific instructions below.\nIf you would like Costrict to think and speak in a different language than your editor display language ({{language}}), you can specify it here."
+		"description": "These instructions apply to all modes. They provide a base set of behaviors that can be enhanced by mode-specific instructions below.\nIf you would like CoStrict to think and speak in a different language than your editor display language ({{language}}), you can specify it here."
 	},
 	"supportPrompts": {
 		"types": {
 			"ENHANCE": {
-				"description": "Use prompt enhancement to get tailored suggestions or improvements for your inputs. This ensures Costrict understands your intent and provides the best possible responses. Available via the ✨ icon in chat."
+				"description": "Use prompt enhancement to get tailored suggestions or improvements for your inputs. This ensures CoStrict understands your intent and provides the best possible responses. Available via the ✨ icon in chat."
 			},
 			"ZGSM_ADD_COMMENT": {
 				"label": "Add code comments",
@@ -59,23 +59,23 @@
 			},
 			"WORKFLOW_DESIGN_UPDATE": {
 				"label": "Design Update",
-				"description": "When the design document is confirmed to be updated, Costrict will update the associated tasks document"
+				"description": "When the design document is confirmed to be updated, CoStrict will update the associated tasks document"
 			},
 			"WORKFLOW_TASK_RUN_TESTS": {
 				"label": "Test Case Update",
-				"description": "When the test case document is confirmed to be updated, Costrict will update the associated tasks document"
+				"description": "When the test case document is confirmed to be updated, CoStrict will update the associated tasks document"
 			}
 		}
 	},
 	"createModeDialog": {
 		"roleDefinition": {
-			"description": "Define Costrict's expertise and personality for this mode."
+			"description": "Define CoStrict's expertise and personality for this mode."
 		},
 		"whenToUse": {
-			"description": "Guidance for Costrict for when this mode should be used. This helps the Orchestrator choose the right mode for a task."
+			"description": "Guidance for CoStrict for when this mode should be used. This helps the Orchestrator choose the right mode for a task."
 		}
 	},
 	"whenToUse": {
-		"description": "Guidance for Costrict for when this mode should be used. This helps the Orchestrator choose the right mode for a task."
+		"description": "Guidance for CoStrict for when this mode should be used. This helps the Orchestrator choose the right mode for a task."
 	}
 }

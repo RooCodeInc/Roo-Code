@@ -7,20 +7,20 @@ import { getCodeActionCommand } from "../utils/commands"
 import { EditorUtils } from "../integrations/editor/EditorUtils"
 
 export const TITLES: Record<CodeActionName, string> = {
-	EXPLAIN: "Explain with Costrict",
-	FIX: "Fix with Costrict",
-	IMPROVE: "Improve with Costrict",
-	ADD_TO_CONTEXT: "Add to Costrict",
-	NEW_TASK: "New Costrict Task",
+	EXPLAIN: "Explain with CoStrict",
+	FIX: "Fix with CoStrict",
+	IMPROVE: "Improve with CoStrict",
+	ADD_TO_CONTEXT: "Add to CoStrict",
+	NEW_TASK: "New CoStrict Task",
 
 	// right menu and quick menu
-	ZGSM_EXPLAIN: "Costrict: Explain Code",
-	ZGSM_ADD_COMMENT: "Costrict: Add Comment",
-	ZGSM_CODE_REVIEW: "Costrict: Code Review",
-	ZGSM_ADD_DEBUG_CODE: "Costrict: Add Debug Code",
-	ZGSM_ADD_STRONG_CODE: "Costrict: Add Strong Code",
-	ZGSM_SIMPLIFY_CODE: "Costrict: Simplify Code",
-	ZGSM_PERFORMANCE: "Costrict: Performance Optimization",
+	ZGSM_EXPLAIN: "CoStrict: Explain Code",
+	ZGSM_ADD_COMMENT: "CoStrict: Add Comment",
+	ZGSM_CODE_REVIEW: "CoStrict: Code Review",
+	ZGSM_ADD_DEBUG_CODE: "CoStrict: Add Debug Code",
+	ZGSM_ADD_STRONG_CODE: "CoStrict: Add Strong Code",
+	ZGSM_SIMPLIFY_CODE: "CoStrict: Simplify Code",
+	ZGSM_PERFORMANCE: "CoStrict: Performance Optimization",
 } as const
 
 export class CodeActionProvider implements vscode.CodeActionProvider {

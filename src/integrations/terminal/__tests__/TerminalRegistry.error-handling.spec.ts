@@ -22,11 +22,56 @@ vi.mock("vscode", async (importOriginal) => {
 	const actual = await importOriginal<typeof import("vscode")>()
 	return {
 		...actual,
+		workspace: {
+			...actual.workspace,
+			getConfiguration: vi.fn().mockReturnValue({
+				get: vi.fn().mockReturnValue(null),
+			}),
+		},
 		window: {
 			...actual.window,
+			createTerminal: vi.fn(),
 			onDidCloseTerminal: vi.fn(),
 			onDidStartTerminalShellExecution: vi.fn(),
 			onDidEndTerminalShellExecution: vi.fn(),
+		},
+		extensions: {
+			getExtension: vi.fn((extensionId) => {
+				// 模拟返回扩展对象，匹配 Package.publisher 和 Package.name
+				if (extensionId && extensionId.includes("zgsm")) {
+					return {
+						extensionUri: { fsPath: "/test/extension/path" },
+					}
+				}
+				return undefined
+			}),
+			all: [],
+			onDidChange: vi.fn(),
+		},
+		Uri: {
+			...actual.Uri,
+			joinPath: vi.fn((uri, ...paths) => ({ fsPath: `${uri.fsPath}/${paths.join("/")}` })),
+			file: (path: string) => ({ fsPath: path }),
+		},
+		ThemeIcon: class ThemeIcon {
+			constructor(id: string) {
+				this.id = id
+			}
+			id: string
+		},
+		env: {
+			clipboard: {
+				readText: vi.fn().mockResolvedValue(""),
+				writeText: vi.fn().mockResolvedValue(undefined),
+			},
+			appName: "mock-app",
+			appHost: "mock-host",
+			appRoot: "/mock/app/root",
+			language: "en",
+		},
+		commands: {
+			executeCommand: vi.fn().mockResolvedValue(undefined),
+			registerCommand: vi.fn(),
 		},
 	}
 })
@@ -57,7 +102,7 @@ describe("TerminalRegistry 错误处理测试", () => {
 			(...args: any[]) =>
 				({
 					exitStatus: undefined,
-					name: "Costrict",
+					name: "CoStrict",
 					processId: Promise.resolve(123),
 					creationOptions: {},
 					state: {

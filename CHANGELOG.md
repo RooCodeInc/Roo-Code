@@ -1,4 +1,4 @@
-# Costrict Change Log
+# CoStrict Change Log
 
 ## [2.0.4]
 
@@ -51,7 +51,7 @@
 - Improve type definitions and global settings
 - Add AI-assisted review suggestion
 - Add commit model setting
-- Optimization costrict provider api performance
+- Optimization CoStrict provider api performance
 - Fix known issues
 
 ## [1.6.19]
@@ -122,7 +122,7 @@
 
 ## [1.6.11]
 
-- Adds models refresh for costrict provider
+- Adds models refresh for CoStrict provider
 - Add line navigation for file jumps in chat interface
 - Implement chat cancellation and improve search functionality
 - Enhance metrics loading and pushing logic in PrometheusTelemetryClient
@@ -345,7 +345,7 @@
 
 ## [1.4.2]
 
-- Update Costrict provider and error handling improvements
+- Update CoStrict provider and error handling improvements
 - Update vscode engine requirement to ^1.86.2
 
 ## [1.4.1]

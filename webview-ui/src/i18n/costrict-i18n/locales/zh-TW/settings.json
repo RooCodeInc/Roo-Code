@@ -1,129 +1,129 @@
 {
 	"sections": {
-		"about": "關於 Costrict",
+		"about": "關於 CoStrict",
 		"credit": {
 			"title": "Credit 用量管理",
-			"description": "Costrict 官方提供多種高級模型，不同模型每次請求所消耗的 Credit 不同，當 Credit 消耗完畢後，該模型將無法使用。",
+			"description": "CoStrict 官方提供多種高級模型，不同模型每次請求所消耗的 Credit 不同，當 Credit 消耗完畢後，該模型將無法使用。",
 			"homepage": "查看 Credit 用量"
 		}
 	},
 	"autoApprove": {
-		"description": "允許 Costrict 無需核准即執行操作。僅在您完全信任 AI 並了解相關安全風險時啟用這些設定。",
+		"description": "允許 CoStrict 無需核准即執行操作。僅在您完全信任 AI 並了解相關安全風險時啟用這些設定。",
 		"showAtChat": "將選項顯示在聊天框上方",
 		"readOnly": {
-			"description": "啟用後，Costrict 將自動檢視目錄內容和讀取檔案，無需您點選核准按鈕。",
+			"description": "啟用後，CoStrict 將自動檢視目錄內容和讀取檔案，無需您點選核准按鈕。",
 			"outsideWorkspace": {
-				"description": "允許 Costrict 在無需核准的情況下讀取目前工作區之外的檔案。"
+				"description": "允許 CoStrict 在無需核准的情況下讀取目前工作區之外的檔案。"
 			}
 		},
 		"write": {
 			"outsideWorkspace": {
-				"description": "允許 Costrict 在無需核准的情況下建立和編輯目前工作區之外的檔案。"
+				"description": "允許 CoStrict 在無需核准的情況下建立和編輯目前工作區之外的檔案。"
 			},
 			"protected": {
-				"description": "允許 Costrict 建立和編輯受保護的檔案（如 .rooignore 和 .roo/ 設定檔），無需核准。"
+				"description": "允許 CoStrict 建立和編輯受保護的檔案（如 .rooignore 和 .roo/ 設定檔），無需核准。"
 			}
 		}
 	},
 	"providers": {
-		"zgsm": "Costrict",
-		"zgsmBaseUrl": "Costrict 基礎 URL",
-		"zgsmApiKey": "Costrict API 密鑰",
-		"getZgsmApiKey": "登入 Costrict",
+		"zgsm": "CoStrict",
+		"zgsmBaseUrl": "CoStrict 基礎 URL",
+		"zgsmApiKey": "CoStrict API 密鑰",
+		"getZgsmApiKey": "登入 CoStrict",
 		"getZgsmApiKeyAgain": "重新登入",
 		"zgsmDefaultBaseUrl": "預設: {{zgsmBaseUrl}}",
 		"lmStudio": {
-			"description": "LM Studio允許您在本地電腦上運行模型。有關如何入門的說明，請參閱他們的<a>快速入門指南</a>。您還需要啟動LM Studio的<b>本地伺服器</b>功能才能在此擴展中使用它。<span>注意：</span>Costrict 使用複雜的提示，最適合與Claude模型配合使用。功能較弱的模型可能無法按預期工作。"
+			"description": "LM Studio允許您在本地電腦上運行模型。有關如何入門的說明，請參閱他們的<a>快速入門指南</a>。您還需要啟動LM Studio的<b>本地伺服器</b>功能才能在此擴展中使用它。<span>注意：</span>CoStrict 使用複雜的提示，最適合與Claude模型配合使用。功能較弱的模型可能無法按預期工作。"
 		},
 		"ollama": {
-			"warning": "注意：Costrict 使用複雜的提示，最適合與Claude模型配合使用。功能較弱的模型可能無法按預期工作。"
+			"warning": "注意：CoStrict 使用複雜的提示，最適合與Claude模型配合使用。功能較弱的模型可能無法按預期工作。"
 		},
 		"customModel": {
-			"capabilities": "配置您的自定義OpenAI兼容模型的功能和定價。在指定模型功能時要小心，因為它們會影響 Costrict 的表現。"
+			"capabilities": "配置您的自定義OpenAI兼容模型的功能和定價。在指定模型功能時要小心，因為它們會影響 CoStrict 的表現。"
 		},
 		"useZgsmCustomConfig": "使用自定義配置",
 		"geminiCli": {
 			"projectIdDescription": "若為企業或非免費方案存取，請指定您的 Google Cloud 專案 ID。如使用個人帳號並希望自動探索專案，請留空。如果您遇到 API 錯誤，建議填寫專案 ID。"
 		},
 		"consecutiveMistakeLimit": {
-			"description": "在顯示「Costrict 遇到問題」對話方塊前允許的連續錯誤或重複操作次數"
+			"description": "在顯示「CoStrict 遇到問題」對話方塊前允許的連續錯誤或重複操作次數"
 		}
 	},
 	"browser": {
 		"enable": {
-			"description": "啟用後，Costrict 可以在使用支持電腦使用的模型時使用瀏覽器與網站交互。"
+			"description": "啟用後，CoStrict 可以在使用支持電腦使用的模型時使用瀏覽器與網站交互。"
 		}
 	},
 	"checkpoints": {
 		"enable": {
-			"description": "啟用後，Costrict 將在任務執行期間自動創建檢查點，便於查看更改或恢復到早期狀態。"
+			"description": "啟用後，CoStrict 將在任務執行期間自動創建檢查點，便於查看更改或恢復到早期狀態。"
 		}
 	},
 	"notifications": {
 		"sound": {
-			"description": "啟用後，Costrict 將為通知和事件播放音效。"
+			"description": "啟用後，CoStrict 將為通知和事件播放音效。"
 		},
 		"tts": {
-			"description": "啟用後，Costrict 將使用文本轉語音功能朗讀其響應。"
+			"description": "啟用後，CoStrict 將使用文本轉語音功能朗讀其響應。"
 		}
 	},
 	"contextManagement": {
 		"maxReadFile": {
-			"description": "當模型省略開始/結束值時，Costrict 讀取此行數。如果此數字小於檔案總數，Costrict 會生成代碼定義的行號索引。特殊情況：-1指示 Costrict 讀取整個檔案（不建立索引），0指示它不讀取任何行，僅為最小上下文提供行索引。較低的值可最小化初始上下文使用，從而實現精確的後續行範圍讀取。明確的開始/結束請求不受此設定限制。"
+			"description": "當模型省略開始/結束值時，CoStrict 讀取此行數。如果此數字小於檔案總數，CoStrict 會生成代碼定義的行號索引。特殊情況：-1指示 CoStrict 讀取整個檔案（不建立索引），0指示它不讀取任何行，僅為最小上下文提供行索引。較低的值可最小化初始上下文使用，從而實現精確的後續行範圍讀取。明確的開始/結束請求不受此設定限制。"
 		},
 		"maxReadCharacter": {
 			"label": "檔案讀取字元限制",
 			"description": "檔案讀取時包含的最大字元數。此限制優先於行數限制，以防止因行過長而導致的記憶體問題。超出後，輸出將被截斷。"
 		},
 		"autoCondenseContextPercent": {
-			"description": "結束值時，Costrict 將自動壓縮它。"
+			"description": "結束值時，CoStrict 將自動壓縮它。"
 		},
 		"autoCondenseContext": {
-			"description": "結束值時，Costrict 會在達到閾值時自動壓縮上下文。停用時，您仍可手動觸發上下文壓縮。"
+			"description": "結束值時，CoStrict 會在達到閾值時自動壓縮上下文。停用時，您仍可手動觸發上下文壓縮。"
 		}
 	},
 	"advanced": {
 		"diff": {
-			"description": "啟用後，Costrict 將能夠更快地編輯檔案，並自動拒絕截斷的完整檔案寫入。最適合與最新的Claude 3.7 Sonnet模型配合使用。"
+			"description": "啟用後，CoStrict 將能夠更快地編輯檔案，並自動拒絕截斷的完整檔案寫入。最適合與最新的Claude 3.7 Sonnet模型配合使用。"
 		},
 		"todoList": {
-			"description": "啟用後，Costrict 可以建立和管理任務清單來追蹤任務進度。這有助於將複雜任務組織成可管理的步驟。"
+			"description": "啟用後，CoStrict 可以建立和管理任務清單來追蹤任務進度。這有助於將複雜任務組織成可管理的步驟。"
 		}
 	},
 	"experimental": {
 		"autoCondenseContextPercent": {
-			"description": "當上下文窗口達到此閾值時，Costrict 將自動壓縮它。"
+			"description": "當上下文窗口達到此閾值時，CoStrict 將自動壓縮它。"
 		},
 		"SEARCH_AND_REPLACE": {
-			"description": "啟用實驗性的搜索和替換工具，允許 Costrict 在一個請求中替換搜索詞的多實例。"
+			"description": "啟用實驗性的搜索和替換工具，允許 CoStrict 在一個請求中替換搜索詞的多實例。"
 		},
 		"INSERT_BLOCK": {
-			"description": "啟用實驗性的插入內容工具，允許 Costrict 在特定行號插入內容，無需創建差異。"
+			"description": "啟用實驗性的插入內容工具，允許 CoStrict 在特定行號插入內容，無需創建差異。"
 		},
 		"POWER_STEERING": {
-			"description": "啟用後，Costrict 會更頻繁地提醒模型其當前模式定義的細節。這將導致更嚴格地遵守角色定義和自定義指令，但每條消息會使用更多令牌。"
+			"description": "啟用後，CoStrict 會更頻繁地提醒模型其當前模式定義的細節。這將導致更嚴格地遵守角色定義和自定義指令，但每條消息會使用更多令牌。"
 		},
 		"PREVENT_FOCUS_DISRUPTION": {
-			"description": "啟用後可防止編輯器焦點中斷。檔案編輯會在背景進行，不會開啟 diff 檢視或搶奪焦點。您可以在 Costrict 進行變更時繼續不受干擾地工作。檔案可能會在不獲得焦點的情況下開啟以捕獲診斷，或保持完全關閉。"
+			"description": "啟用後可防止編輯器焦點中斷。檔案編輯會在背景進行，不會開啟 diff 檢視或搶奪焦點。您可以在 CoStrict 進行變更時繼續不受干擾地工作。檔案可能會在不獲得焦點的情況下開啟以捕獲診斷，或保持完全關閉。"
 		},
 		"MULTI_SEARCH_AND_REPLACE": {
-			"description": "啟用後，Costrict 將使用多區塊差異比對工具，嘗試在單一請求中更新檔案內的多個程式碼區塊。"
+			"description": "啟用後，CoStrict 將使用多區塊差異比對工具，嘗試在單一請求中更新檔案內的多個程式碼區塊。"
 		},
 		"CONCURRENT_FILE_READS": {
-			"description": "Costrict 以在單一請求中讀取多個檔案（最多 15 個檔案）。停用後，Costrict 必須逐一讀取檔案。在使用能力較弱的模型或希望對檔案存取有更多控制時，停用此功能可能會有所幫助。"
+			"description": "CoStrict 以在單一請求中讀取多個檔案（最多 15 個檔案）。停用後，CoStrict 必須逐一讀取檔案。在使用能力較弱的模型或希望對檔案存取有更多控制時，停用此功能可能會有所幫助。"
 		},
 		"MULTI_FILE_APPLY_DIFF": {
-			"description": "啟用後 Costrict 可在單個請求中編輯多個檔案。停用後 Costrict 必須逐個編輯檔案。停用此功能有助於使用能力較弱的模型或需要更精確控制檔案修改時。"
+			"description": "啟用後 CoStrict 可在單個請求中編輯多個檔案。停用後 CoStrict 必須逐個編輯檔案。停用此功能有助於使用能力較弱的模型或需要更精確控制檔案修改時。"
 		},
 		"IMAGE_GENERATION": {
-			"description": "啟用後，Costrict 可以使用 OpenRouter 的圖像生成模型從文字提示生成圖像。需要設定 OpenRouter API 金鑰。"
+			"description": "啟用後，CoStrict 可以使用 OpenRouter 的圖像生成模型從文字提示生成圖像。需要設定 OpenRouter API 金鑰。"
 		},
 		"RUN_SLASH_COMMAND": {
-			"description": "啟用後，Costrict 可以執行您的斜線命令來執行工作流程。"
+			"description": "啟用後，CoStrict 可以執行您的斜線命令來執行工作流程。"
 		},
 		"CHAT_SEARCH": {
 			"name": "視窗內聊天記錄搜尋",
-			"description": "啟用後，Costrict 可以搜尋對話視窗中的聊天記錄。",
+			"description": "啟用後，CoStrict 可以搜尋對話視窗中的聊天記錄。",
 			"placeholder": "搜尋訊息",
 			"noResults": "未找到結果",
 			"resultsCount": "{{current}} / {{total}}",
@@ -133,22 +133,22 @@
 		}
 	},
 	"modelPicker": {
-		"automaticFetch": "擴展會自動獲取<serviceLink>{{serviceName}}</serviceLink>上可用的最新模型列表。如果您不確定選擇哪個模型，Costrict 最適合與<defaultModelLink>{{defaultModelId}}</defaultModelLink>配合使用。您也可以嘗試搜索\"免費\"以查找當前可用的免費選項。"
+		"automaticFetch": "擴展會自動獲取<serviceLink>{{serviceName}}</serviceLink>上可用的最新模型列表。如果您不確定選擇哪個模型，CoStrict 最適合與<defaultModelLink>{{defaultModelId}}</defaultModelLink>配合使用。您也可以嘗試搜索\"免費\"以查找當前可用的免費選項。"
 	},
 	"footer": {
 		"feedback": "如果您有任何問題或反饋，請隨時在<zgsmGithubLink>github.com/zgsm-ai/costrict</zgsmGithubLink>上提出問題",
 		"telemetry": {
-			"description": "通過發送匿名使用數據和錯誤報告來幫助改進 Costrict。不會發送代碼、提示或個人信息。有關更多詳情，請參閱我們的隱私政策。"
+			"description": "通過發送匿名使用數據和錯誤報告來幫助改進 CoStrict。不會發送代碼、提示或個人信息。有關更多詳情，請參閱我們的隱私政策。"
 		}
 	},
 	"promptCaching": {
-		"description": "選中後，Costrict 將不會為此模型使用提示詞快取。"
+		"description": "選中後，CoStrict 將不會為此模型使用提示詞快取。"
 	},
 	"prompts": {
-		"description": "設定用於快速操作的支援提示詞，如增強提示詞、解釋程式碼和修復問題。這些提示詞幫助 Costrict 為常見開發工作提供更好的支援。"
+		"description": "設定用於快速操作的支援提示詞，如增強提示詞、解釋程式碼和修復問題。這些提示詞幫助 CoStrict 為常見開發工作提供更好的支援。"
 	},
 	"providerChangeWarning": {
-		"title": "確定從 Costrict 切換到其他提供商？",
+		"title": "確定從 CoStrict 切換到其他提供商？",
 		"description": "代碼補全、代碼審查、Codebase等高級功能將不可用",
 		"cancelButton": "取消",
 		"confirmButton": "繼續"
@@ -171,7 +171,7 @@
 			"copy": "複製",
 			"noFailedFiles": "暫無失敗檔案資訊",
 			"rebuild": "重新建置",
-			"onlyCostrictProviderSupport": "僅 Costrict 提供商支援此服務",
+			"onlyCostrictProviderSupport": "僅 CoStrict 提供商支援此服務",
 			"codebaseIndexDisabled": "Codebase 索引建置已禁用",
 			"title": "語義索引建置",
 			"description": "為提高代碼補全等功能效果，系統會自動將相關語義索引同步建置上傳，方便模型對上下文進行分析理解。"
@@ -198,7 +198,7 @@
 		"general": {
 			"indexBuildFailed": "索引建置失敗",
 			"codebaseIndexBuild": "Codebase索引建置",
-			"onlyCostrictProviderSupport": "僅 Costrict 提供商支援此服務"
+			"onlyCostrictProviderSupport": "僅 CoStrict 提供商支援此服務"
 		},
 		"errors": {
 			"failedToDisableCodebaseIndex": "Failed to disable codebase index:",

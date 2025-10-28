@@ -210,6 +210,8 @@ export async function executeCommand(
 			} catch (_error) {}
 		},
 		onCompleted: (output: string | undefined) => {
+			console.log("onCompleted output", output)
+
 			result = Terminal.compressTerminalOutput(
 				output ?? "",
 				terminalOutputLineLimit,

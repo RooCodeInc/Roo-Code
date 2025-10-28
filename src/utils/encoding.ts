@@ -173,8 +173,6 @@ export async function detectEncoding(fileBuffer: Buffer, fileExtension?: string,
 		encoding = "utf8"
 	}
 
-	createLogger().info(`${filePath} encoding with ${encoding}`)
-
 	return encoding
 }
 
@@ -253,17 +251,19 @@ export async function isBinaryFileWithEncodingDetection(filePath: string): Promi
  */
 export async function writeFileWithEncodingPreservation(filePath: string, content: string): Promise<void> {
 	// Detect original file encoding
-	const originalEncoding = await detectFileEncoding(filePath)
+	let finalEncoding = (await detectFileEncoding(filePath)) as BufferEncoding
 
 	// If original file is UTF-8 or does not exist, write directly
-	if (!originalEncoding || ["utf-8", "utf8", "ascii"].includes(originalEncoding.toLocaleLowerCase())) {
-		await retry(() => safeWriteFile(filePath, content, "utf8"))
-		return
+	if (!finalEncoding || ["utf-8", "utf8", "ascii"].includes(finalEncoding.toLocaleLowerCase())) {
+		finalEncoding = "utf8"
+		await retry(() => safeWriteFile(filePath, content, finalEncoding))
+	} else {
+		// Convert UTF-8 content to original file encoding
+		const encodedBuffer = iconv.encode(content, finalEncoding)
+		await retry(() => safeWriteFile(filePath, encodedBuffer))
 	}
 
-	// Convert UTF-8 content to original file encoding
-	const encodedBuffer = iconv.encode(content, originalEncoding)
-	await retry(() => safeWriteFile(filePath, encodedBuffer))
+	createLogger().info(`[write] ${filePath} encoding with ${finalEncoding}`)
 }
 
 async function safeWriteFile(filePath: string, data: Buffer | string, encoding?: BufferEncoding) {

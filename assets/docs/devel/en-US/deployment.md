@@ -1,6 +1,6 @@
 # Project Introduction
 
-# Costrict Backend Deployment Tool
+# CoStrict Backend Deployment Tool
 
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Docker](https://img.shields.io/badge/docker-required-blue.svg)](https://docs.docker.com/get-docker/)
@@ -8,7 +8,7 @@
 
 ## Project Overview
 
-Costrict Backend Deployment Tool is an enterprise-grade AI code assistant backend service deployment solution based on Docker Compose. This project provides a complete microservices architecture, including core components such as AI gateway, identity authentication, code analysis, chat services, supporting both private deployment and cloud service modes.
+CoStrict Backend Deployment Tool is an enterprise-grade AI code assistant backend service deployment solution based on Docker Compose. This project provides a complete microservices architecture, including core components such as AI gateway, identity authentication, code analysis, chat services, supporting both private deployment and cloud service modes.
 
 ### Core Features
 
@@ -23,7 +23,7 @@ Costrict Backend Deployment Tool is an enterprise-grade AI code assistant backen
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   VSCode Plugin │────│   API Gateway   │────│   Backend       │
-│   (Costrict)    │    │  (Apache APISIX) │    │  Services       │
+│   (CoStrict)    │    │  (Apache APISIX) │    │  Services       │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
                               │                        │
                        ┌─────────────────┐    ┌─────────────────┐
@@ -152,14 +152,14 @@ Configuration features:
 
 ### VSCode Plugin Configuration
 
-1. Install Costrict VSCode extension
+1. Install CoStrict VSCode extension
 2. Open the "Provider" page in extension settings
-3. Select API provider as "Costrict"
+3. Select API provider as "CoStrict"
 4. Configure backend service address:
     ```
-    Costrict Base URL: {COSTRICT_BACKEND_BASEURL}
+    CoStrict Base URL: {COSTRICT_BACKEND_BASEURL}
     ```
-5. Click "Login to Costrict" to complete authentication
+5. Click "Login to CoStrict" to complete authentication
 
 **Service Access Address**:
 
@@ -302,4 +302,4 @@ This project is open source under the Apache 2.0 license. See the [LICENSE](LICE
 
 ---
 
-**Costrict** - Let AI assist your code development journey
+**CoStrict** - Let AI assist your code development journey

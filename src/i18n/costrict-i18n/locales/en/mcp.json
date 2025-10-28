@@ -1,5 +1,5 @@
 {
 	"errors": {
-		"invalidJsonArgument": "Costrict tried to use {{toolName}} with an invalid JSON argument. Retrying..."
+		"invalidJsonArgument": "CoStrict tried to use {{toolName}} with an invalid JSON argument. Retrying..."
 	}
 }

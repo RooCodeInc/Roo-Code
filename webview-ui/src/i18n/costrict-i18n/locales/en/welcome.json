@@ -1,12 +1,12 @@
 {
-	"getZgsmApiKey": "Login to Costrict",
-	"introduction": "<strong>Costrict is an open-source, strict AI Coder for enterprises.</strong> It can be deployed privately, prioritizes controllable results and top-tier quality, and delivers three core capabilities — AI Agent, AI Code Review, and AI Completion. Log in to give it a try.",
-	"greeting": "Hi, I'm Costrict!",
+	"getZgsmApiKey": "Login to CoStrict",
+	"introduction": "<strong>CoStrict is an open-source, strict AI Coder for enterprises.</strong> It can be deployed privately, prioritizes controllable results and top-tier quality, and delivers three core capabilities — AI Agent, AI Code Review, and AI Completion. Log in to give it a try.",
+	"greeting": "Hi, I'm CoStrict!",
 	"telemetry": {
-		"title": "Help Improve Costrict",
-		"anonymousTelemetry": "Send anonymous error and usage data to help us fix bugs and improve the extension. No code, prompts, or personal information is ever sent (unless you connect to Costrict). See our <privacyLink>privacy policy</privacyLink> for more details."
+		"title": "Help Improve CoStrict",
+		"anonymousTelemetry": "Send anonymous error and usage data to help us fix bugs and improve the extension. No code, prompts, or personal information is ever sent (unless you connect to CoStrict). See our <privacyLink>privacy policy</privacyLink> for more details."
 	},
-	"chooseProvider": "To do its magic, Costrict needs an API key.",
+	"chooseProvider": "To do its magic, CoStrict needs an API key.",
 	"vibe": {
 		"description": "Vibe coding alternates between clarifying requirements and generating code. It is ideal for rapid development and simple tasks, and empowers developers with strong prompt engineering skills to efficiently produce high-quality code."
 	},

@@ -2,7 +2,7 @@ blank_issues_enabled: false
 contact_links:
     - name: Feature Request
       url: https://github.com/zgsm-ai/costrict/discussions/categories/feature-requests
-      about: Share and vote on feature requests for Costrict
+      about: Share and vote on feature requests for CoStrict
     - name: Leave a Review
       url: https://marketplace.visualstudio.com/items?itemName=zgsm-ai.zgsm&ssr=false#review-details
-      about: Enjoying Costrict? Leave a review here!
+      about: Enjoying CoStrict? Leave a review here!

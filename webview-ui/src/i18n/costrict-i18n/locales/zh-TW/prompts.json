@@ -1,17 +1,17 @@
 {
 	"modes": {
-		"createModeHelpText": "點選 + 建立新的自訂模式，或者在聊天中直接請 Costrict 為您建立！"
+		"createModeHelpText": "點選 + 建立新的自訂模式，或者在聊天中直接請 CoStrict 為您建立！"
 	},
 	"roleDefinition": {
-		"description": "定義此模式下 Costrict 的專業知識和個性。此描述會形塑 Costrict 如何展現自己並處理工作。"
+		"description": "定義此模式下 CoStrict 的專業知識和個性。此描述會形塑 CoStrict 如何展現自己並處理工作。"
 	},
 	"globalCustomInstructions": {
-		"description": "這些指令適用於所有模式。它們提供了一組基本行為，可以透過下方的模式專屬自訂指令來強化。\n如果您希望 Costrict 使用與編輯器顯示語言 ({{language}}) 不同的語言來思考和對話，您可以在這裡指定。"
+		"description": "這些指令適用於所有模式。它們提供了一組基本行為，可以透過下方的模式專屬自訂指令來強化。\n如果您希望 CoStrict 使用與編輯器顯示語言 ({{language}}) 不同的語言來思考和對話，您可以在這裡指定。"
 	},
 	"supportPrompts": {
 		"types": {
 			"ENHANCE": {
-				"description": "使用提示詞增強功能取得針對您輸入的客製化建議或改進。這確保 Costrict 能理解您的意圖並提供最佳的回應。可透過聊天中的 ✨ 圖示使用。"
+				"description": "使用提示詞增強功能取得針對您輸入的客製化建議或改進。這確保 CoStrict 能理解您的意圖並提供最佳的回應。可透過聊天中的 ✨ 圖示使用。"
 			},
 			"ZGSM_ADD_COMMENT": {
 				"label": "添加程式碼註釋",
@@ -55,27 +55,27 @@
 			},
 			"WORKFLOW_RQS_UPDATE": {
 				"label": "需求更新",
-				"description": "當需求文件確認更新後，Costrict 將更新相關的設計文件"
+				"description": "當需求文件確認更新後，CoStrict 將更新相關的設計文件"
 			},
 			"WORKFLOW_DESIGN_UPDATE": {
 				"label": "設計更新",
-				"description": "當設計文件確認更新後，Costrict 將更新相關的任務文件"
+				"description": "當設計文件確認更新後，CoStrict 將更新相關的任務文件"
 			},
 			"WORKFLOW_TASK_RUN_TESTS": {
 				"label": "測試案例更新",
-				"description": "當測試案例文件確認更新後，Costrict 將更新相關的任務文件"
+				"description": "當測試案例文件確認更新後，CoStrict 將更新相關的任務文件"
 			}
 		}
 	},
 	"createModeDialog": {
 		"roleDefinition": {
-			"description": "定義 Costrict 的專業領域和個性。"
+			"description": "定義 CoStrict 的專業領域和個性。"
 		},
 		"whenToUse": {
-			"description": "為 Costrict 提供何時應使用此模式的指引。這有助於「Orchestrator」為任務選擇正確的模式。"
+			"description": "為 CoStrict 提供何時應使用此模式的指引。這有助於「Orchestrator」為任務選擇正確的模式。"
 		}
 	},
 	"whenToUse": {
-		"description": "為 Costrict 提供何時應使用此模式的指引。這有助於「Orchestrator」為任務選擇正確的模式。"
+		"description": "為 CoStrict 提供何時應使用此模式的指引。這有助於「Orchestrator」為任務選擇正確的模式。"
 	}
 }

@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thank you for helping improve Costrict!
+        Thank you for helping improve CoStrict!
         Please focus on the problem and the desired behavior in plain language.
 
   - type: textarea

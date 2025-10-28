@@ -1,13 +1,13 @@
 {
 	"extension": {
-		"name": "Costrict"
+		"name": "CoStrict"
 	},
 	"storage": {
 		"path_placeholder": "D:\\CostrictCodeStorage",
 		"enter_absolute_path": "请输入绝对路径（例如：D:\\CostrictCodeStorage 或 /home/user/storage）"
 	},
 	"input": {
-		"task_prompt": "Costrict 应该做什么？"
+		"task_prompt": "CoStrict 应该做什么？"
 	},
 	"window": {
 		"success": {
@@ -19,7 +19,7 @@
 			"login_expired": "登录已过期，请重新登录。",
 			"failed_to_open_source_file": "无法打开源文件。请检查源文件是否已被删除。",
 			"failed_to_compare_or_adopt": "当前没有打开的文件，无法比较或采用。",
-			"failed_to_display_diff": "无法显示差异。请检查源文件是否已被删除。如果错误持续存在，请联系 Costrict 客服。",
+			"failed_to_display_diff": "无法显示差异。请检查源文件是否已被删除。如果错误持续存在，请联系 CoStrict 客服。",
 			"failed_to_jump_by_path": "跳转失败。文件路径为空。",
 			"failed_to_jump": "跳转失败。",
 			"failed_to_jump_by_path_not_exist": "跳转失败，文件路径不存在。文件路径：",
@@ -54,29 +54,29 @@
 	"completion": {
 		"status": {
 			"loading": {
-				"text": "$(loading~spin) Costrict - 处理中",
-				"tooltip": "Costrict - 代码补全 - 等待请求结果"
+				"text": "$(loading~spin) CoStrict - 处理中",
+				"tooltip": "CoStrict - 代码补全 - 等待请求结果"
 			},
 			"complete": {
-				"text": "$(check) Costrict",
-				"tooltip": "Costrict - 代码补全 - 已完成"
+				"text": "$(check) CoStrict",
+				"tooltip": "CoStrict - 代码补全 - 已完成"
 			},
 			"fail": {
-				"text": "$(alert) Costrict - ",
-				"tooltip": "Costrict - 代码补全 - 失败："
+				"text": "$(alert) CoStrict - ",
+				"tooltip": "CoStrict - 代码补全 - 失败："
 			},
 			"noSuggest": {
-				"text": "$(check) Costrict - 无建议",
-				"tooltip": "Costrict - 代码补全 - 无可用建议"
+				"text": "$(check) CoStrict - 无建议",
+				"tooltip": "CoStrict - 代码补全 - 无可用建议"
 			},
 			"enabled": {
-				"tooltip": "Costrict - 代码补全 - 已启用"
+				"tooltip": "CoStrict - 代码补全 - 已启用"
 			},
 			"disabled": {
-				"tooltip": "Costrict - 代码补全 - 已禁用"
+				"tooltip": "CoStrict - 代码补全 - 已禁用"
 			},
 			"login": {
-				"text": "$(loading~spin) Costrict - 登录中..."
+				"text": "$(loading~spin) CoStrict - 登录中..."
 			}
 		},
 		"code": {
@@ -110,54 +110,54 @@
 		"explain": {
 			"name": "解释代码",
 			"tip": "解释代码实现",
-			"input_prompt": "你想让 Costrict 解释什么？",
+			"input_prompt": "你想让 CoStrict 解释什么？",
 			"input_placeholder": "例如：如何处理错误？"
 		},
 		"add_comment": {
 			"name": "添加注释",
 			"tip": "添加注释到此函数",
-			"input_prompt": "你想让 Costrict 做什么？",
+			"input_prompt": "你想让 CoStrict 做什么？",
 			"input_placeholder": "例如：添加注释到代码"
 		},
 		"add_tests": {
 			"name": "生成单元测试",
 			"tip": "为函数生成单元测试",
-			"input_prompt": "你想让 Costrict 做什么？",
+			"input_prompt": "你想让 CoStrict 做什么？",
 			"input_placeholder": "例如：生成单元测试"
 		},
 		"code_review": {
 			"name": "代码审查",
 			"tip": "检查代码质量问题并提供建议",
-			"input_prompt": "你想让 Costrict 做什么？",
+			"input_prompt": "你想让 CoStrict 做什么？",
 			"input_placeholder": "例如：检查代码质量问题并对代码提出建议"
 		},
 		"add_debug_code": {
 			"name": "添加日志",
 			"tip": "在关键逻辑步骤中添加日志和调试代码来增强故障排除能力",
-			"input_prompt": "你想让 Costrict 做什么？",
+			"input_prompt": "你想让 CoStrict 做什么？",
 			"input_placeholder": "例如：在代码的关键逻辑步骤中添加日志和调试代码来增强故障排除能力"
 		},
 		"add_stronger_code": {
 			"name": "增加容错",
 			"tip": "增强鲁棒性，通过添加异常处理和参数验证",
-			"input_prompt": "你想让 Costrict 做什么？",
+			"input_prompt": "你想让 CoStrict 做什么？",
 			"input_placeholder": "例如：增强代码鲁棒性，通过添加异常处理和参数验证"
 		},
 		"simplify_code": {
 			"name": "简化代码",
 			"tip": "删除无效代码",
-			"input_prompt": "你想让 Costrict 做什么？",
+			"input_prompt": "你想让 CoStrict 做什么？",
 			"input_placeholder": "例如：删除无效代码"
 		},
 		"performance_optimization": {
 			"name": "性能优化",
 			"tip": "提高代码性能，提供修改建议，专注于效率问题",
-			"input_prompt": "你想让 Costrict 做什么？",
+			"input_prompt": "你想让 CoStrict 做什么？",
 			"input_placeholder": "例如：提高代码性能，提供修改建议，专注于效率问题"
 		},
 		"shenma_instruct_set": {
-			"tip": "Costrict 指令集",
-			"input_prompt": "你想让 Costrict 做什么？",
+			"tip": "CoStrict 指令集",
+			"input_prompt": "你想让 CoStrict 做什么？",
 			"input_placeholder": "例如：添加注释到代码"
 		}
 	},
@@ -169,7 +169,7 @@
 			"file_check": "文件检查中",
 			"login_expired": "登录已过期，请重新登录。",
 			"service_unavailable": "服务不可用，请稍后重试。",
-			"api_provider_not_support": "当前 API 提供商不支持 Code Review功能，请切换到 Costrict API 提供商。"
+			"api_provider_not_support": "当前 API 提供商不支持 Code Review功能，请切换到 CoStrict API 提供商。"
 		},
 		"statusbar": {
 			"login_expired": "获取登录信息失败，请重新登录以使用 Code Review 功能"
@@ -181,19 +181,19 @@
 	"errors": {
 		"no_assistant_responses": "API返回异常：模型没有回复任何消息。这可能是API或模型出了问题。",
 		"claudeCode": {
-			"notFound": "找不到 Claude Code 可执行文件 '{{claudePath}}'。\n\n请安装 Claude Code CLI：\n1. 访问 {{installationUrl}} 下载 Claude Code\n2. 按照操作系统的安装说明进行操作\n3. 确保 'claude' 命令在 PATH 中可用\n4. 或者在 Costrict 设置中的 'Claude Code 路径' 下设置自定义路径\n\n原始错误：{{originalError}}"
+			"notFound": "找不到 Claude Code 可执行文件 '{{claudePath}}'。\n\n请安装 Claude Code CLI：\n1. 访问 {{installationUrl}} 下载 Claude Code\n2. 按照操作系统的安装说明进行操作\n3. 确保 'claude' 命令在 PATH 中可用\n4. 或者在 CoStrict 设置中的 'Claude Code 路径' 下设置自定义路径\n\n原始错误：{{originalError}}"
 		}
 	},
 	"warnings": {
-		"auto_import_failed": "自动导入 Costrict 设置失败：{{error}}"
+		"auto_import_failed": "自动导入 CoStrict 设置失败：{{error}}"
 	},
 	"info": {
-		"auto_import_success": "已自动导入 Costrict 设置：{{filename}}"
+		"auto_import_success": "已自动导入 CoStrict 设置：{{filename}}"
 	},
 	"mdm": {
 		"errors": {
-			"cloud_auth_required": "您的组织需要 Costrict Cloud 身份验证。请登录以继续。",
-			"organization_mismatch": "您必须使用组织的 Costrict Cloud 账户进行身份验证。"
+			"cloud_auth_required": "您的组织需要 CoStrict Cloud 身份验证。请登录以继续。",
+			"organization_mismatch": "您必须使用组织的 CoStrict Cloud 账户进行身份验证。"
 		}
 	},
 	"history": {

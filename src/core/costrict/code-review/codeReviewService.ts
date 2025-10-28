@@ -791,7 +791,7 @@ export class CodeReviewService {
 				issue.id,
 				new vscode.MarkdownString(`${issue.title ? `### ${issue.title}\n\n` : ""}${message}`),
 				vscode.CommentMode.Preview,
-				{ name: "Costrict", iconPath },
+				{ name: "CoStrict", iconPath },
 				undefined,
 				"Intial",
 			),

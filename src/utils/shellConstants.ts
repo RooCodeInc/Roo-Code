@@ -11,7 +11,7 @@ export const terminalUnsupportedSyntax = {
 			"No subshell syntax like $(...) or backticks",
 		],
 	},
-	powershell5: {
+	powershell: {
 		unsupported: [
 			"No support for && and || operators",
 			"No support for ternary operator (?:)",
@@ -25,7 +25,7 @@ export const terminalUnsupportedSyntax = {
 			"Use traditional pipeline syntax with |",
 		],
 	},
-	powershell7: {
+	pwsh: {
 		unsupported: [
 			"Still limited compared to Bash for inline command substitution",
 			"Some Windows-specific modules are deprecated",
@@ -38,7 +38,7 @@ export const terminalUnsupportedSyntax = {
 			"Cross-platform support",
 		],
 	},
-	gitBash: {
+	bash: {
 		unsupported: [
 			"Does not support PowerShell cmdlets",
 			"Limited access to Windows environment variables",

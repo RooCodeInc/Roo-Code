@@ -142,6 +142,6 @@ export function mergeJson(
 	}
 }
 
-function getExtensionUri(): vscode.Uri {
+export function getExtensionUri(): vscode.Uri {
 	return vscode.extensions.getExtension(`${Package.publisher}.${Package.name}`)!.extensionUri
 }

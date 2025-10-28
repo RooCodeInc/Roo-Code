@@ -1,5 +1,5 @@
 /**
- * Utility for building Costrict documentation links with UTM telemetry.
+ * Utility for building CoStrict documentation links with UTM telemetry.
  *
  * @param path - The path after the docs root (no leading slash)
  * @param campaign - The UTM campaign context (e.g. "welcome", "provider_docs", "tips", "error_tooltip")

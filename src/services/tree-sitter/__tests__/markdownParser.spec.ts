@@ -469,11 +469,11 @@ Some content here.
 
 ## License
 
-[Apache 2.0 © 2025 Costrict, Inc.](./LICENSE)
+[Apache 2.0 © 2025 CoStrict, Inc.](./LICENSE)
 
 ---
 
-**Enjoy Costrict!** Whether you keep it on a short leash or let it roam autonomously, we can't wait to see what you build.`
+**Enjoy CoStrict!** Whether you keep it on a short leash or let it roam autonomously, we can't wait to see what you build.`
 
 		const captures = parseMarkdown(content)
 		expect(captures).toBeDefined()

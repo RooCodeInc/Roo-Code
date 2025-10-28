@@ -25,7 +25,7 @@ export function printLogo(): void {
 ██║     ██╔══██║ ╚════██║  ███╔╝ ██╔══██╗   ██║   ██║       ███╔╝
 ╚█████╗ ███████  ██║█████╔╝███   ███╗ ██║ ███████  █║████╗  ███ ╗
  ╚════╝ ╚═╝  ╚═╝╚═════╝ ╚══════╝╚═╝  ╚═╝╚══════╝  ╚════╝ ╚══════╝
-                                 by:Costrict Team
+                                 by:CoStrict Team
     vscode:       ${vscode.version}
     ${Package.publisher}.${Package.name}: ${Package.version}
     `)
