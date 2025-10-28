@@ -399,6 +399,13 @@
 			"authenticatedMessage": "Authentifié de manière sécurisée via ton compte Roo Code Cloud.",
 			"connectButton": "Se connecter à Roo Code Cloud"
 		},
+		"openAiNativeCodex": {
+			"oauthPathLabel": "Chemin des identifiants OAuth",
+			"oauthPathDescription": "Chemin vers vos identifiants auth.json de ChatGPT Codex. Par défaut {{defaultPath}} si laissé vide (Windows: C:\\\\Users\\\\USERNAME\\\\.codex\\\\auth.json).",
+			"oauthCliDescription": "ChatGPT Codex utilise vos identifiants web ChatGPT via le CLI officiel Codex. Authentifiez-vous avec le CLI Codex pour que auth.json soit créé. Si vous utilisez un emplacement personnalisé, définissez ici le chemin complet du fichier.",
+			"oauthConnectDescription": "Après l'authentification, Roo lira le token d'accès depuis auth.json et se connectera à ChatGPT Responses (Codex).",
+			"learnMoreLinkText": "En savoir plus sur ChatGPT"
+		},
 		"openRouter": {
 			"providerRouting": {
 				"title": "Routage des fournisseurs OpenRouter",
@@ -839,7 +846,8 @@
 		"providerNotAllowed": "Le fournisseur '{{provider}}' n'est pas autorisé par votre organisation",
 		"modelNotAllowed": "Le modèle '{{model}}' n'est pas autorisé pour le fournisseur '{{provider}}' par votre organisation",
 		"profileInvalid": "Ce profil contient un fournisseur ou un modèle qui n'est pas autorisé par votre organisation",
-		"qwenCodeOauthPath": "Tu dois fournir un chemin valide pour les identifiants OAuth"
+		"qwenCodeOauthPath": "Tu dois fournir un chemin valide pour les identifiants OAuth",
+		"openAiNativeCodexOauthPath": "Optionnel : Chemin vers l'auth.json de ChatGPT Codex. Quand vide, par défaut ~/.codex/auth.json."
 	},
 	"placeholders": {
 		"apiKey": "Saisissez la clé API...",

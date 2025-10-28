@@ -19,6 +19,8 @@ import {
 	openAiModelInfoSaneDefaults,
 	openAiNativeDefaultModelId,
 	openAiNativeModels,
+	openAiNativeCodexDefaultModelId,
+	openAiNativeCodexModels,
 	vertexDefaultModelId,
 	vertexModels,
 	xaiDefaultModelId,
@@ -249,6 +251,11 @@ function getSelectedModel({
 			const info = openAiNativeModels[id as keyof typeof openAiNativeModels]
 			return { id, info }
 		}
+		case "openai-native-codex": {
+			const id = apiConfiguration.apiModelId ?? openAiNativeCodexDefaultModelId
+			const info = openAiNativeCodexModels[id as keyof typeof openAiNativeCodexModels]
+			return { id, info }
+		}
 		case "mistral": {
 			const id = apiConfiguration.apiModelId ?? mistralDefaultModelId
 			const info = mistralModels[id as keyof typeof mistralModels]
@@ -348,7 +355,13 @@ function getSelectedModel({
 		// case "human-relay":
 		// case "fake-ai":
 		default: {
-			provider satisfies "anthropic" | "gemini-cli" | "qwen-code" | "human-relay" | "fake-ai"
+			provider satisfies
+				| "anthropic"
+				| "gemini-cli"
+				| "qwen-code"
+				| "human-relay"
+				| "fake-ai"
+				| "openai-native-codex"
 			const id = apiConfiguration.apiModelId ?? anthropicDefaultModelId
 			const baseInfo = anthropicModels[id as keyof typeof anthropicModels]
 
