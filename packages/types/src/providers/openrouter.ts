@@ -1,7 +1,7 @@
 import type { ModelInfo } from "../model.js"
 
 // https://openrouter.ai/models?order=newest&supported_parameters=tools
-export const openRouterDefaultModelId = "anthropic/claude-sonnet-4"
+export const openRouterDefaultModelId = "anthropic/claude-sonnet-4.5"
 
 export const openRouterDefaultModelInfo: ModelInfo = {
 	maxTokens: 8192,

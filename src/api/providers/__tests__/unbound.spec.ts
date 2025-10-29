@@ -312,7 +312,7 @@ describe("UnboundHandler", () => {
 		it("should return default model when invalid model provided", async () => {
 			const handlerWithInvalidModel = new UnboundHandler({ ...mockOptions, unboundModelId: "invalid/model" })
 			const modelInfo = await handlerWithInvalidModel.fetchModel()
-			expect(modelInfo.id).toBe("anthropic/claude-3-7-sonnet-20250219")
+			expect(modelInfo.id).toBe("anthropic/claude-sonnet-4-5")
 			expect(modelInfo.info).toBeDefined()
 		})
 	})

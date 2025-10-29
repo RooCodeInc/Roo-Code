@@ -83,7 +83,7 @@ describe("OpenRouterHandler", () => {
 		it("returns default model info when options are not provided", async () => {
 			const handler = new OpenRouterHandler({})
 			const result = await handler.fetchModel()
-			expect(result.id).toBe("anthropic/claude-sonnet-4")
+			expect(result.id).toBe("anthropic/claude-sonnet-4.5")
 			expect(result.info.supportsPromptCache).toBe(true)
 		})
 

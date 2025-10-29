@@ -367,7 +367,7 @@ describe("useSelectedModel", () => {
 			const { result } = renderHook(() => useSelectedModel(), { wrapper })
 
 			expect(result.current.provider).toBe("anthropic")
-			expect(result.current.id).toBe("claude-sonnet-4-20250514")
+			expect(result.current.id).toBe("claude-sonnet-4-5")
 			expect(result.current.info).toBeUndefined()
 		})
 	})
@@ -439,7 +439,7 @@ describe("useSelectedModel", () => {
 			const { result } = renderHook(() => useSelectedModel(apiConfiguration), { wrapper })
 
 			expect(result.current.provider).toBe("claude-code")
-			expect(result.current.id).toBe("claude-sonnet-4-20250514") // Default model
+			expect(result.current.id).toBe("claude-sonnet-4-5") // Default model
 			expect(result.current.info).toBeDefined()
 			expect(result.current.info?.supportsImages).toBe(false)
 		})
