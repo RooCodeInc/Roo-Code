@@ -36,11 +36,7 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 	private fetcherBaseURL: string
 
 	constructor(options: ApiHandlerOptions) {
-		let sessionToken: string | undefined = undefined
-
-		if (CloudService.hasInstance()) {
-			sessionToken = CloudService.instance.authService?.getSessionToken()
-		}
+		const sessionToken = getSessionToken()
 
 		let baseURL = process.env.ROO_CODE_PROVIDER_URL ?? "https://api.roocode.com/proxy"
 
@@ -55,7 +51,7 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 			...options,
 			providerName: "Roo Code Cloud",
 			baseURL, // Already has /v1 suffix
-			apiKey: getSessionToken(),
+			apiKey: sessionToken,
 			defaultProviderModelId: rooDefaultModelId,
 			providerModels: {},
 			defaultTemperature: 0.7,
@@ -175,6 +171,11 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 				totalCost: isFreeModel ? 0 : (lastUsage.cost ?? 0),
 			}
 		}
+	}
+	override async completePrompt(prompt: string): Promise<string> {
+		// Update API key before making request to ensure we use the latest session token
+		this.client.apiKey = getSessionToken()
+		return super.completePrompt(prompt)
 	}
 
 	private async loadDynamicModels(baseURL: string, apiKey?: string): Promise<void> {
