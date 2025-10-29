@@ -81,7 +81,7 @@ describe("MiniMaxHandler", () => {
 			expect(model.id).toBe(testModelId)
 			expect(model.info).toEqual(minimaxModels[testModelId])
 			expect(model.info.contextWindow).toBe(192_000)
-			expect(model.info.maxTokens).toBe(128_000)
+			expect(model.info.maxTokens).toBe(16_384)
 			expect(model.info.supportsPromptCache).toBe(false)
 		})
 	})
@@ -303,7 +303,7 @@ describe("MiniMaxHandler", () => {
 	describe("Model Configuration", () => {
 		it("should correctly configure MiniMax-M2 model properties", () => {
 			const model = minimaxModels["MiniMax-M2"]
-			expect(model.maxTokens).toBe(128_000)
+			expect(model.maxTokens).toBe(16_384)
 			expect(model.contextWindow).toBe(192_000)
 			expect(model.supportsImages).toBe(false)
 			expect(model.supportsPromptCache).toBe(false)
