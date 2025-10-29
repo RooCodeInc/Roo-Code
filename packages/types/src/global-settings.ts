@@ -231,6 +231,7 @@ export const SECRET_STATE_KEYS = [
 	"doubaoApiKey",
 	"moonshotApiKey",
 	"mistralApiKey",
+	"minimaxApiKey",
 	"unboundApiKey",
 	"requestyApiKey",
 	"xaiApiKey",

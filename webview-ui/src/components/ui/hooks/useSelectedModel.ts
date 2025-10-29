@@ -12,6 +12,8 @@ import {
 	deepSeekModels,
 	moonshotDefaultModelId,
 	moonshotModels,
+	minimaxDefaultModelId,
+	minimaxModels,
 	geminiDefaultModelId,
 	geminiModels,
 	mistralDefaultModelId,
@@ -270,6 +272,11 @@ function getSelectedModel({
 		case "moonshot": {
 			const id = apiConfiguration.apiModelId ?? moonshotDefaultModelId
 			const info = moonshotModels[id as keyof typeof moonshotModels]
+			return { id, info }
+		}
+		case "minimax": {
+			const id = apiConfiguration.apiModelId ?? minimaxDefaultModelId
+			const info = minimaxModels[id as keyof typeof minimaxModels]
 			return { id, info }
 		}
 		case "zai": {
