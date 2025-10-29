@@ -3,9 +3,18 @@ import type { ModelInfo } from "../model.js"
 // https://inference-docs.cerebras.ai/api-reference/chat-completions
 export type CerebrasModelId = keyof typeof cerebrasModels
 
-export const cerebrasDefaultModelId: CerebrasModelId = "qwen-3-coder-480b-free"
+export const cerebrasDefaultModelId: CerebrasModelId = "zai-glm-4.6"
 
 export const cerebrasModels = {
+	"zai-glm-4.6": {
+		maxTokens: 40000,
+		contextWindow: 128000,
+		supportsImages: false,
+		supportsPromptCache: false,
+		inputPrice: 0,
+		outputPrice: 0,
+		description: "Highly intelligent general-purpose model with ~2000 tokens/s",
+	},
 	"qwen-3-coder-480b-free": {
 		maxTokens: 40000,
 		contextWindow: 64000,
@@ -64,13 +73,12 @@ export const cerebrasModels = {
 		supportsReasoningEffort: true,
 	},
 	"gpt-oss-120b": {
-		maxTokens: 8000,
-		contextWindow: 64000,
+		maxTokens: 40000,
+		contextWindow: 128000,
 		supportsImages: false,
 		supportsPromptCache: false,
 		inputPrice: 0,
 		outputPrice: 0,
-		description:
-			"OpenAI GPT OSS model with ~2800 tokens/s\n\n• 64K context window\n• Excels at efficient reasoning across science, math, and coding",
+		description: "Intelligent general-purpose model with ~3000 tokens/s",
 	},
 } as const satisfies Record<string, ModelInfo>
