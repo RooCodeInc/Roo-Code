@@ -8,7 +8,7 @@ export const minimaxDefaultModelId: MinimaxModelId = "MiniMax-M2"
 
 export const minimaxModels = {
 	"MiniMax-M2": {
-		maxTokens: 128_000,
+		maxTokens: 16_384,
 		contextWindow: 192_000,
 		supportsImages: false,
 		supportsPromptCache: false,
