@@ -3,7 +3,7 @@ import type { ModelInfo } from "../model.js"
 // https://inference-docs.cerebras.ai/api-reference/chat-completions
 export type CerebrasModelId = keyof typeof cerebrasModels
 
-export const cerebrasDefaultModelId: CerebrasModelId = "zai-glm-4.6"
+export const cerebrasDefaultModelId: CerebrasModelId = "gpt-oss-120b"
 
 export const cerebrasModels = {
 	"zai-glm-4.6": {
