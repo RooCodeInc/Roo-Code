@@ -16,6 +16,8 @@ export const minimaxModels = {
 		outputPrice: 1.2,
 		cacheWritesPrice: 0,
 		cacheReadsPrice: 0,
+		description:
+			"MiniMax M2, a model born for Agents and code. At only 8% of the price of Claude Sonnet and twice the speed, it's available for free for a limited time!",
 	},
 } as const satisfies Record<string, ModelInfo>
 
