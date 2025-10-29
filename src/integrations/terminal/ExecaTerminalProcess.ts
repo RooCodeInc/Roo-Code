@@ -81,8 +81,8 @@ export class ExecaTerminalProcess extends BaseTerminalProcess {
 						opt as Options,
 					)
 				} else {
-					// Git Bash 或其他 shell，使用 Unix 风格的编码设置
-					this.subprocess = execa(shellPath, [actualCommand], opt as Options)
+					opt.shell = shellPath
+					this.subprocess = execa(opt as Options)`${actualCommand}`
 				}
 			} else {
 				// On non-Windows, ensure UTF-8 encoding for Ruby, CocoaPods, etc.
