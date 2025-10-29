@@ -28,8 +28,12 @@ type RooChatCompletionParams = OpenAI.Chat.ChatCompletionCreateParamsStreaming &
 	reasoning?: RooReasoningParams
 }
 
+function getSessionToken(): string {
+	const token = CloudService.hasInstance() ? CloudService.instance.authService?.getSessionToken() : undefined
+	return token ?? "unauthenticated"
+}
+
 export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
-	private authStateListener?: (state: { state: AuthState }) => void
 	private fetcherBaseURL: string
 
 	constructor(options: ApiHandlerOptions) {
@@ -52,7 +56,7 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 			...options,
 			providerName: "Roo Code Cloud",
 			baseURL, // Already has /v1 suffix
-			apiKey: sessionToken || "unauthenticated", // Use a placeholder if no token.
+			apiKey: getSessionToken(),
 			defaultProviderModelId: rooDefaultModelId,
 			providerModels: {},
 			defaultTemperature: 0.7,
@@ -63,29 +67,6 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 		this.loadDynamicModels(this.fetcherBaseURL, sessionToken).catch((error) => {
 			console.error("[RooHandler] Failed to load dynamic models:", error)
 		})
-
-		if (CloudService.hasInstance()) {
-			const cloudService = CloudService.instance
-
-			this.authStateListener = (state: { state: AuthState }) => {
-				// Update OpenAI client with current auth token
-				// Note: Model cache flush/reload is handled by extension.ts authStateChangedHandler
-				const newToken = cloudService.authService?.getSessionToken()
-				this.client = new OpenAI({
-					baseURL: this.baseURL,
-					apiKey: newToken ?? "unauthenticated",
-					defaultHeaders: DEFAULT_HEADERS,
-				})
-			}
-
-			cloudService.on("auth-state-changed", this.authStateListener)
-		}
-	}
-
-	dispose() {
-		if (this.authStateListener && CloudService.hasInstance()) {
-			CloudService.instance.off("auth-state-changed", this.authStateListener)
-		}
 	}
 
 	protected override createStream(
@@ -127,6 +108,7 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 		}
 
 		try {
+			this.client.apiKey = getSessionToken()
 			return this.client.chat.completions.create(rooParams, requestOptions)
 		} catch (error) {
 			throw handleOpenAIError(error, this.providerName)
