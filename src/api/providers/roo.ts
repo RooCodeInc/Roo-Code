@@ -1,7 +1,7 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 
-import { AuthState, rooDefaultModelId, type ModelInfo } from "@roo-code/types"
+import { rooDefaultModelId } from "@roo-code/types"
 import { CloudService } from "@roo-code/cloud"
 
 import type { ApiHandlerOptions, ModelRecord } from "../../shared/api"
@@ -12,9 +12,8 @@ import type { RooReasoningParams } from "../transform/reasoning"
 import { getRooReasoning } from "../transform/reasoning"
 
 import type { ApiHandlerCreateMessageMetadata } from "../index"
-import { DEFAULT_HEADERS } from "./constants"
 import { BaseOpenAiCompatibleProvider } from "./base-openai-compatible-provider"
-import { getModels, flushModels, getModelsFromCache } from "../providers/fetchers/modelCache"
+import { getModels, getModelsFromCache } from "../providers/fetchers/modelCache"
 import { handleOpenAIError } from "./utils/openai-error-handler"
 
 // Extend OpenAI's CompletionUsage to include Roo specific fields
