@@ -430,3 +430,85 @@ export const VERTEX_REGIONS = [
 	{ value: "me-central1", label: "me-central1" },
 	{ value: "africa-south1", label: "africa-south1" },
 ]
+
+// Regional pricing constants for Vertex Claude Sonnet 4.5
+export const VERTEX_SONNET_45_REGIONAL_PRICING_REGIONS = ["us-east5", "europe-west1", "asia-southeast1"] as const
+
+export type VertexRegionalPricingRegion = (typeof VERTEX_SONNET_45_REGIONAL_PRICING_REGIONS)[number] | "global"
+
+/**
+ * getVertexAdjustedModelInfo
+ *
+ * Centralizes Vertex Claude Sonnet pricing and 1M context adjustments.
+ * - Applies region-aware pricing for claude-sonnet-4-5@20250929
+ * - Applies global pricing for claude-sonnet-4@20250514
+ * - Enables 1M context window when either:
+ *   • Model id ends with "[1m]" OR
+ *   • largeInputTierEnabled is true
+ */
+export function getVertexAdjustedModelInfo(
+	id: string,
+	base: ModelInfo | undefined,
+	opts?: { region?: string; largeInputTierEnabled?: boolean },
+): ModelInfo | undefined {
+	if (!base) return undefined
+
+	const isSonnet45 = id.startsWith("claude-sonnet-4-5@20250929")
+	const isSonnet4 = id.startsWith("claude-sonnet-4@20250514")
+
+	// If not a Sonnet 4/4.5 model, return base info as-is.
+	if (!isSonnet45 && !isSonnet4) return base
+
+	const region = opts?.region ?? "global"
+	const is1m = id.endsWith("[1m]") || opts?.largeInputTierEnabled === true
+
+	const regionalSet = new Set<string>(VERTEX_SONNET_45_REGIONAL_PRICING_REGIONS)
+	const useRegionalPricing = regionalSet.has(region)
+
+	if (isSonnet45) {
+		if (is1m) {
+			// Over 200k (1M tier) with regional pricing
+			return {
+				...base,
+				contextWindow: 1_000_000,
+				inputPrice: useRegionalPricing ? 6.6 : 6.0,
+				outputPrice: useRegionalPricing ? 24.75 : 22.5,
+				cacheWritesPrice: useRegionalPricing ? 8.25 : 7.5,
+				cacheReadsPrice: useRegionalPricing ? 0.66 : 0.6,
+			}
+		}
+
+		// Under 200k with regional pricing
+		return {
+			...base,
+			contextWindow: 200_000,
+			inputPrice: useRegionalPricing ? 3.3 : 3.0,
+			outputPrice: useRegionalPricing ? 16.5 : 15.0,
+			cacheWritesPrice: useRegionalPricing ? 4.13 : 3.75,
+			cacheReadsPrice: useRegionalPricing ? 0.33 : 0.3,
+		}
+	}
+
+	// Sonnet 4 (global pricing only)
+	if (is1m) {
+		// Over 200k (1M tier)
+		return {
+			...base,
+			contextWindow: 1_000_000,
+			inputPrice: 6.0,
+			outputPrice: 22.5,
+			cacheWritesPrice: 7.5,
+			cacheReadsPrice: 0.6,
+		}
+	}
+
+	// Under 200k
+	return {
+		...base,
+		contextWindow: 200_000,
+		inputPrice: 3.0,
+		outputPrice: 15.0,
+		cacheWritesPrice: 3.75,
+		cacheReadsPrice: 0.3,
+	}
+}
