@@ -38,6 +38,7 @@ const SHELL_ALLOWLIST = new Set<string>([
 	"C:\\cygwin\\bin\\bash.exe",
 
 	// Unix/Linux/macOS - Bourne-compatible shells
+	"bash",
 	"/bin/sh",
 	"/usr/bin/sh",
 	"/bin/bash",
@@ -47,6 +48,7 @@ const SHELL_ALLOWLIST = new Set<string>([
 	"/opt/local/bin/bash",
 
 	// Z Shell
+	"zsh",
 	"/bin/zsh",
 	"/usr/bin/zsh",
 	"/usr/local/bin/zsh",

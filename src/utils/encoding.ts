@@ -165,6 +165,10 @@ export async function detectEncoding(fileBuffer: Buffer, fileExtension?: string,
 		encoding = "utf8"
 	}
 
+	if (encoding === "ascii") {
+		return "utf8"
+	}
+
 	// 4. Verify if the encoding is supported by iconv-lite
 	if (!iconv.encodingExists(encoding)) {
 		createLogger().warn(
