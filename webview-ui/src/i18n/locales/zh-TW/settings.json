@@ -346,7 +346,7 @@
 		"enablePromptCachingTitle": "啟用提示快取以提升支援的模型效能並降低成本。",
 		"cacheUsageNote": "注意：如果您沒有看到快取使用情況，請嘗試選擇其他模型，然後重新選擇您想要的模型。",
 		"vscodeLmModel": "語言模型",
-		"vscodeLmWarning": "注意：此整合功能仍處於實驗階段，各供應商的支援程度可能不同。如果出現模型不支援的錯誤，通常是供應商方面的問題。",
+		"vscodeLmWarning": "注意：透過 VS Code Language Model API 存取的模型可能由供應商封裝或微調，因此其行為可能與直接從一般供應商或路由器使用相同模型時不同。要使用「Language Model」下拉式選單中的模型，請先切換到該模型，然後在 Copilot Chat 提示中點擊「接受」；否則可能會出現 400「The requested model is not supported」等錯誤。",
 		"geminiParameters": {
 			"urlContext": {
 				"title": "啟用 URL 上下文",

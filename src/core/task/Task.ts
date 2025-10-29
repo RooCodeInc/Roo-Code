@@ -2265,6 +2265,19 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 									error,
 									streamingFailedMessage,
 								)
+
+								// Check if task was aborted during the backoff
+								if (this.abort) {
+									this.providerRef
+										.deref()
+										?.log(
+											`[Task#${this.taskId}.${this.instanceId}] Task aborted during mid-stream retry backoff`,
+										)
+									// Abort the entire task
+									this.abortReason = "user_cancelled"
+									await this.abortTask()
+									break
+								}
 							}
 
 							// Push the same content back onto the stack to retry, incrementing the retry attempt counter
@@ -2840,6 +2853,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 				// Apply shared exponential backoff and countdown UX
 				await this.backoffAndAnnounce(retryAttempt, error, errorMsg)
+
+				// CRITICAL: Check if task was aborted during the backoff countdown
+				// This prevents infinite loops when users cancel during auto-retry
+				// Without this check, the recursive call below would continue even after abort
+				if (this.abort) {
+					throw new Error(
+						`[Task#attemptApiRequest] task ${this.taskId}.${this.instanceId} aborted during retry`,
+					)
+				}
 
 				// Delegate generator output from the recursive call with
 				// incremented retry count.
