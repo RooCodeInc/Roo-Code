@@ -440,12 +440,13 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 	// Watch for authentication state changes and refresh Roo models
 	useEffect(() => {
 		const currentAuth = state.cloudIsAuthenticated ?? false
-		if (!prevCloudIsAuthenticated && currentAuth) {
-			// User just authenticated - refresh Roo models with the new auth token
+		const currentProvider = state.apiConfiguration?.apiProvider
+		if (!prevCloudIsAuthenticated && currentAuth && currentProvider === "roo") {
+			// User just authenticated and Roo is the active provider - refresh Roo models
 			vscode.postMessage({ type: "requestRooModels" })
 		}
 		setPrevCloudIsAuthenticated(currentAuth)
-	}, [state.cloudIsAuthenticated, prevCloudIsAuthenticated])
+	}, [state.cloudIsAuthenticated, prevCloudIsAuthenticated, state.apiConfiguration?.apiProvider])
 
 	const contextValue: ExtensionStateContextType = {
 		...state,
