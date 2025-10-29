@@ -73,12 +73,13 @@ export const cerebrasModels = {
 		supportsReasoningEffort: true,
 	},
 	"gpt-oss-120b": {
-		maxTokens: 40000,
-		contextWindow: 128000,
+		maxTokens: 8000,
+		contextWindow: 64000,
 		supportsImages: false,
 		supportsPromptCache: false,
 		inputPrice: 0,
 		outputPrice: 0,
-		description: "Intelligent general-purpose model with ~3000 tokens/s",
+		description:
+			"OpenAI GPT OSS model with ~2800 tokens/s\n\n• 64K context window\n• Excels at efficient reasoning across science, math, and coding",
 	},
 } as const satisfies Record<string, ModelInfo>
