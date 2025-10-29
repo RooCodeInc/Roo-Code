@@ -335,8 +335,7 @@
 			}
 		],
 		"configurationDefaults": {
-			"terminal.integrated.shellIntegration.enabled": false,
-			"terminal.integrated.shellIntegration.suggestEnabled": false
+			"terminal.integrated.shellIntegration.enabled": false
 		},
 		"configuration": {
 			"title": "%configuration.title%",
