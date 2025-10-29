@@ -2801,7 +2801,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				// Apply shared exponential backoff and countdown UX
 				await this.backoffAndAnnounce(retryAttempt, error, errorMsg)
 
-				// Check if task was aborted during the backoff
+				// CRITICAL: Check if task was aborted during the backoff countdown
+				// This prevents infinite loops when users cancel during auto-retry
+				// Without this check, the recursive call below would continue even after abort
 				if (this.abort) {
 					throw new Error(
 						`[Task#attemptApiRequest] task ${this.taskId}.${this.instanceId} aborted during retry`,
