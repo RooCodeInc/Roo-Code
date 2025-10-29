@@ -74,6 +74,11 @@ export const costrictCommandIds = [
 	// code review
 	"codeReviewButtonClicked",
 	"codeReview",
+	"codeReviewJetbrains",
+	"reviewFilesAndFoldersJetbrains",
+	"askReviewSuggestionWithAIJetbrains",
+	"acceptIssueJetbrains",
+	"rejectIssueJetbrains",
 	"reviewFilesAndFolders",
 	"reviewRepo",
 	"askReviewSuggestionWithAI",

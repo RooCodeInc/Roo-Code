@@ -196,6 +196,26 @@
 				"title": "%command.reviewRepo.title%"
 			},
 			{
+				"command": "zgsm.codeReviewJetbrains",
+				"title": "%command.codeReview.title%"
+			},
+			{
+				"command": "zgsm.reviewFilesAndFoldersJetbrains",
+				"title": "%command.codeReview.title%"
+			},
+			{
+				"command": "zgsm.askReviewSuggestionWithAIJetbrains",
+				"title": "%command.codeReview.title%"
+			},
+			{
+				"command": "zgsm.acceptIssueJetbrains",
+				"title": "%command.codeReview.title%"
+			},
+			{
+				"command": "zgsm.rejectIssueJetbrains",
+				"title": "%command.codeReview.title%"
+			},
+			{
 				"command": "zgsm.acceptIssue",
 				"title": "Accept",
 				"icon": "$(check)"

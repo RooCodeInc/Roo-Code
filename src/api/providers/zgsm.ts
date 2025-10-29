@@ -273,6 +273,7 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 			"zgsm-request-id": requestId,
 			"zgsm-client-id": clientId,
 			"zgsm-project-path": encodeURI(workspacePath),
+			"x-caller": metadata?.mode === "review" ? "review-checker" : "chat",
 		}
 	}
 

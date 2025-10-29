@@ -29,14 +29,16 @@ const FileIssueList: React.FC<FileIssueListProps> = ({ fileName, issues, onIssue
 	return (
 		<div className="w-full" style={{ opacity: allIssuesProcessed ? 0.4 : 1 }}>
 			<div className="flex justify-between pr-5">
-				<div className="flex items-center gap-2">
-					<SetiFileIcon fileName={fileName} size={16} />
-					<span>{fileName}</span>
-					<div onClick={() => setIsExpanded(!isExpanded)} className="cursor-pointer">
+				<div className="flex items-center gap-2 min-w-0 flex-1 overflow-hidden">
+					<SetiFileIcon fileName={fileName} size={16} className="flex-shrink-0" />
+					<span className="truncate" title={fileName}>
+						{fileName}
+					</span>
+					<div onClick={() => setIsExpanded(!isExpanded)} className="cursor-pointer flex-shrink-0">
 						{isExpanded ? <ChevronUpIcon /> : <ChevronDownIcon />}
 					</div>
 				</div>
-				<div className="flex items-center gap-1">
+				<div className="flex items-center gap-1 flex-shrink-0">
 					<span className="codicon codicon-bug"></span>
 					<span>{issues.length}</span>
 				</div>

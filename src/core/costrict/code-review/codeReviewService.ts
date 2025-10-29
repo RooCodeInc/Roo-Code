@@ -48,8 +48,8 @@ import type { ClineProvider } from "../../webview/ClineProvider"
 import { TelemetryService } from "@roo-code/telemetry"
 import { CodeReviewErrorType, type TelemetryErrorType } from "../telemetry"
 import { COSTRICT_DEFAULT_HEADERS } from "../../../shared/headers"
-import { zgsmCodebaseIndexManager } from "../codebase-index"
 import { fileExistsAtPath } from "../../../utils/fs"
+import { isJetbrainsPlatform } from "../../../utils/platform"
 /**
  * Code Review Service - Singleton
  *
@@ -793,7 +793,7 @@ export class CodeReviewService {
 				vscode.CommentMode.Preview,
 				{ name: "CoStrict", iconPath },
 				undefined,
-				"Intial",
+				isJetbrainsPlatform() ? issue.id : "Intial",
 			),
 		}
 	}
