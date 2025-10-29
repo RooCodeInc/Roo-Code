@@ -181,6 +181,10 @@ const baseProviderSettingsSchema = z.object({
 
 	// Model verbosity.
 	verbosity: verbosityLevelsSchema.optional(),
+
+	// Generic large input tier toggle applied across providers that define tiers
+	// When enabled, Roo will select the highest contextWindow tier (e.g. "over 200k" / "1M") if available.
+	largeInputTierEnabled: z.boolean().optional(),
 })
 
 // Several of the providers share common model config properties.

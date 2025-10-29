@@ -201,7 +201,11 @@ function getSelectedModel({
 			}
 
 			// Apply 1M context for Claude Sonnet 4 / 4.5 when enabled
-			if (BEDROCK_1M_CONTEXT_MODEL_IDS.includes(id as any) && apiConfiguration.awsBedrock1MContext && baseInfo) {
+			if (
+				BEDROCK_1M_CONTEXT_MODEL_IDS.includes(id as any) &&
+				baseInfo &&
+				(apiConfiguration.awsBedrock1MContext || apiConfiguration.largeInputTierEnabled)
+			) {
 				// Create a new ModelInfo object with updated context window
 				const info: ModelInfo = {
 					...baseInfo,
@@ -228,24 +232,25 @@ function getSelectedModel({
 			// - Sonnet 4 pricing is the same globally in all regions
 			//   • Under 200k Input Tokens:
 			//     Input: $3, Output: $15, Cache Write: $3.75, Cache Hit: $0.30
-			//   • Over 200k Input Tokens ([1m] variants):
+			//   • Over 200k Input Tokens ([1m] variants or largeInputTierEnabled):
 			//     Input: $6, Output: $22.50, Cache Write: $7.50, Cache Hit: $0.60
 			//
 			// - Sonnet 4.5 has different pricing per region and per input context size
 			//   • Global region (all regions except us-east5, europe-west1, asia-southeast1)
 			//     - Under 200k Input Tokens:
 			//       Input: $3.00, Output: $15.00, Cache Write: $3.75, Cache Hit: $0.30
-			//     - Over 200k Input Tokens ([1m] variants):
+			//     - Over 200k Input Tokens ([1m] variants or largeInputTierEnabled):
 			//       Input: $6.00, Output: $22.50, Cache Write: $7.50, Cache Hit: $0.60
 			//   • Regional (us-east5, europe-west1, asia-southeast1)
 			//     - Under 200k Input Tokens:
 			//       Input: $3.30, Output: $16.50, Cache Write: $4.13, Cache Hit: $0.33
-			//     - Over 200k Input Tokens ([1m] variants):
+			//     - Over 200k Input Tokens ([1m] variants or largeInputTierEnabled):
 			//       Input: $6.60, Output: $24.75, Cache Write: $8.25, Cache Hit: $0.66
 			//
-			// We derive "over 200k" from Roo's explicit [1m] model variants and the selected Vertex region.
+			// We derive "over 200k" from Roo's explicit [1m] model variants, the selected Vertex region,
+			// or the generic largeInputTierEnabled setting.
 			const region = apiConfiguration.vertexRegion ?? "global"
-			const is1m = id.endsWith("[1m]")
+			const is1m = id.endsWith("[1m]") || apiConfiguration.largeInputTierEnabled === true
 			const isSonnet45 = id.startsWith("claude-sonnet-4-5@20250929")
 			const isSonnet4 = id.startsWith("claude-sonnet-4@20250514")
 			const regionalPricingRegions = new Set(["us-east5", "europe-west1", "asia-southeast1"])
@@ -258,6 +263,7 @@ function getSelectedModel({
 					// Over 200k (1M beta)
 					adjustedInfo = {
 						...baseInfo,
+						contextWindow: 1_000_000,
 						inputPrice: useRegionalPricing ? (6.6 as number) : (6.0 as number),
 						outputPrice: useRegionalPricing ? (24.75 as number) : (22.5 as number),
 						cacheWritesPrice: useRegionalPricing ? (8.25 as number) : (7.5 as number),
@@ -267,6 +273,7 @@ function getSelectedModel({
 					// Under 200k
 					adjustedInfo = {
 						...baseInfo,
+						contextWindow: 200_000,
 						inputPrice: useRegionalPricing ? (3.3 as number) : (3.0 as number),
 						outputPrice: useRegionalPricing ? (16.5 as number) : (15.0 as number),
 						cacheWritesPrice: useRegionalPricing ? (4.13 as number) : (3.75 as number),
@@ -278,6 +285,7 @@ function getSelectedModel({
 					// Over 200k (1M beta) - global pricing
 					adjustedInfo = {
 						...baseInfo,
+						contextWindow: 1_000_000,
 						inputPrice: 6.0 as number,
 						outputPrice: 22.5 as number,
 						cacheWritesPrice: 7.5 as number,
@@ -287,6 +295,7 @@ function getSelectedModel({
 					// Under 200k - global pricing
 					adjustedInfo = {
 						...baseInfo,
+						contextWindow: 200_000,
 						inputPrice: 3.0 as number,
 						outputPrice: 15.0 as number,
 						cacheWritesPrice: 3.75 as number,
@@ -299,8 +308,21 @@ function getSelectedModel({
 		}
 		case "gemini": {
 			const id = apiConfiguration.apiModelId ?? geminiDefaultModelId
-			const info = geminiModels[id as keyof typeof geminiModels]
-			return { id, info }
+			const baseInfo = geminiModels[id as keyof typeof geminiModels]
+			if (baseInfo && apiConfiguration.largeInputTierEnabled && baseInfo.tiers && baseInfo.tiers.length > 0) {
+				// Select the highest contextWindow tier and apply its pricing overrides
+				const highTier = baseInfo.tiers.reduce((acc, t) => (t.contextWindow > acc.contextWindow ? t : acc))
+				const info: ModelInfo = {
+					...baseInfo,
+					contextWindow: highTier.contextWindow,
+					inputPrice: highTier.inputPrice ?? baseInfo.inputPrice,
+					outputPrice: highTier.outputPrice ?? baseInfo.outputPrice,
+					cacheWritesPrice: highTier.cacheWritesPrice ?? baseInfo.cacheWritesPrice,
+					cacheReadsPrice: highTier.cacheReadsPrice ?? baseInfo.cacheReadsPrice,
+				}
+				return { id, info }
+			}
+			return { id, info: baseInfo }
 		}
 		case "deepseek": {
 			const id = apiConfiguration.apiModelId ?? deepSeekDefaultModelId
@@ -448,7 +470,7 @@ function getSelectedModel({
 			if (
 				provider === "anthropic" &&
 				(id === "claude-sonnet-4-20250514" || id === "claude-sonnet-4-5") &&
-				apiConfiguration.anthropicBeta1MContext &&
+				(apiConfiguration.anthropicBeta1MContext || apiConfiguration.largeInputTierEnabled) &&
 				baseInfo
 			) {
 				// Type assertion since we know claude-sonnet-4-20250514 and claude-sonnet-4-5 have tiers
