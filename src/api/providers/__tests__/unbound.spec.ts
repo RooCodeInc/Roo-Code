@@ -22,6 +22,18 @@ vitest.mock("../fetchers/modelCache", () => ({
 				description: "Claude 3.5 Sonnet",
 				thinking: false,
 			},
+			"anthropic/claude-sonnet-4-5": {
+				maxTokens: 8192,
+				contextWindow: 200000,
+				supportsImages: true,
+				supportsPromptCache: true,
+				inputPrice: 3,
+				outputPrice: 15,
+				cacheWritesPrice: 3.75,
+				cacheReadsPrice: 0.3,
+				description: "Claude 4.5 Sonnet",
+				thinking: false,
+			},
 			"anthropic/claude-3-7-sonnet-20250219": {
 				maxTokens: 8192,
 				contextWindow: 200000,
