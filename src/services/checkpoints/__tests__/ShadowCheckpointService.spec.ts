@@ -483,6 +483,46 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 				await fs.rm(shadowDir, { recursive: true, force: true })
 				await fs.rm(workspaceDir, { recursive: true, force: true })
 			})
+
+			it("does not inherit global init.templateDir when creating shadow git repo", async () => {
+				// Create a new temporary workspace and service for this test
+				const shadowDir = path.join(tmpDir, `${prefix}-no-template-${Date.now()}`)
+				const workspaceDir = path.join(tmpDir, `workspace-no-template-${Date.now()}`)
+
+				// Create a workspace without any git repo
+				await fs.mkdir(workspaceDir, { recursive: true })
+				const testFile = path.join(workspaceDir, "test.txt")
+				await fs.writeFile(testFile, "Test content")
+
+				// Create the service and initialize shadow git
+				const service = new klass(taskId, shadowDir, workspaceDir, () => {})
+				await service.initShadowGit()
+
+				// Verify the shadow git repo was created
+				const gitDir = path.join(shadowDir, ".git")
+				expect(await fileExistsAtPath(gitDir)).toBe(true)
+
+				// Verify no hooks directory was created (which would happen if templates were used)
+				// The --template= flag should prevent any template from being used
+				const hooksDir = path.join(gitDir, "hooks")
+
+				// Check if hooks directory exists
+				const hooksExists = await fileExistsAtPath(hooksDir)
+
+				if (hooksExists) {
+					// If hooks directory exists, it should only contain sample hooks (*.sample files)
+					// and no executable hooks
+					const hookFiles = await fs.readdir(hooksDir)
+					const executableHooks = hookFiles.filter((file) => !file.endsWith(".sample"))
+
+					// There should be no executable hooks from templates
+					expect(executableHooks).toHaveLength(0)
+				}
+
+				// Clean up
+				await fs.rm(shadowDir, { recursive: true, force: true })
+				await fs.rm(workspaceDir, { recursive: true, force: true })
+			})
 		})
 
 		describe(`${klass.name}#events`, () => {

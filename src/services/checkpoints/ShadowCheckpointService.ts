@@ -106,7 +106,9 @@ export abstract class ShadowCheckpointService extends EventEmitter {
 			this.baseHash = await git.revparse(["HEAD"])
 		} else {
 			this.log(`[${this.constructor.name}#initShadowGit] creating shadow git repo at ${this.checkpointsDir}`)
-			await git.init()
+			// Use --template= to prevent inheriting user's global init.templateDir configuration
+			// This ensures no unwanted hooks or templates are copied to the shadow repository
+			await git.init(["--template="])
 			await git.addConfig("core.worktree", this.workspaceDir) // Sets the working tree to the current workspace.
 			await git.addConfig("commit.gpgSign", "false") // Disable commit signing for shadow repo.
 			await git.addConfig("user.name", "Roo Code")
