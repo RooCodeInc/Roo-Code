@@ -308,21 +308,34 @@ function getSelectedModel({
 		}
 		case "gemini": {
 			const id = apiConfiguration.apiModelId ?? geminiDefaultModelId
-			const baseInfo = geminiModels[id as keyof typeof geminiModels]
-			if (baseInfo && apiConfiguration.largeInputTierEnabled && baseInfo.tiers && baseInfo.tiers.length > 0) {
+			const base = geminiModels[id as keyof typeof geminiModels]
+			if (!base) {
+				return { id, info: undefined }
+			}
+
+			// Coerce to ModelInfo for consistent optional fields (tiers, cache*Price, etc.)
+			const mi = base as ModelInfo
+			const tiers = mi.tiers
+
+			if (apiConfiguration.largeInputTierEnabled && Array.isArray(tiers) && tiers.length > 0) {
 				// Select the highest contextWindow tier and apply its pricing overrides
-				const highTier = baseInfo.tiers.reduce((acc, t) => (t.contextWindow > acc.contextWindow ? t : acc))
+				type Tier = NonNullable<ModelInfo["tiers"]>[number]
+				const highTier = (tiers as Tier[]).reduce(
+					(acc: Tier, t: Tier) => (t.contextWindow > acc.contextWindow ? t : acc),
+					tiers[0] as Tier,
+				)
 				const info: ModelInfo = {
-					...baseInfo,
+					...mi,
 					contextWindow: highTier.contextWindow,
-					inputPrice: highTier.inputPrice ?? baseInfo.inputPrice,
-					outputPrice: highTier.outputPrice ?? baseInfo.outputPrice,
-					cacheWritesPrice: highTier.cacheWritesPrice ?? baseInfo.cacheWritesPrice,
-					cacheReadsPrice: highTier.cacheReadsPrice ?? baseInfo.cacheReadsPrice,
+					inputPrice: highTier.inputPrice ?? mi.inputPrice,
+					outputPrice: highTier.outputPrice ?? mi.outputPrice,
+					cacheWritesPrice: highTier.cacheWritesPrice ?? mi.cacheWritesPrice,
+					cacheReadsPrice: highTier.cacheReadsPrice ?? mi.cacheReadsPrice,
 				}
 				return { id, info }
 			}
-			return { id, info: baseInfo }
+
+			return { id, info: mi }
 		}
 		case "deepseek": {
 			const id = apiConfiguration.apiModelId ?? deepSeekDefaultModelId
