@@ -334,6 +334,10 @@
 				"label": "%views.terminalMenu.label%"
 			}
 		],
+		"configurationDefaults": {
+			"terminal.integrated.shellIntegration.enabled": false,
+			"terminal.integrated.shellIntegration.suggestEnabled": false
+		},
 		"configuration": {
 			"title": "%configuration.title%",
 			"properties": {
