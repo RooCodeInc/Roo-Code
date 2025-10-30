@@ -3,7 +3,6 @@ import { useSize } from "react-use"
 import { useTranslation, Trans } from "react-i18next"
 import deepEqual from "fast-deep-equal"
 import { VSCodeBadge } from "@vscode/webview-ui-toolkit/react"
-import { structuredPatch } from "diff"
 
 import type { ClineMessage, FollowUpData, SuggestionItem } from "@roo-code/types"
 import { Mode } from "@roo/modes"
@@ -25,6 +24,7 @@ import { ReasoningBlock } from "./ReasoningBlock"
 import Thumbnails from "../common/Thumbnails"
 import ImageBlock from "../common/ImageBlock"
 import ErrorRow from "./ErrorRow"
+import { extractUnifiedDiff } from "../../utils/diffUtils"
 
 import McpResourceRow from "../mcp/McpResourceRow"
 
@@ -193,38 +193,6 @@ function convertNewFileToUnifiedDiff(content: string, filePath?: string): string
 	}
 
 	return diff
-}
-
-/**
- * Converts Roo's SEARCH/REPLACE format to unified diff format for better readability
- */
-function convertSearchReplaceToUnifiedDiff(content: string, filePath?: string): string {
-	const blockRegex =
-		/<<<<<<?\s*SEARCH[\s\S]*?(?:^:start_line:.*\n)?(?:^:end_line:.*\n)?(?:^-------\s*\n)?([\s\S]*?)^(?:=======\s*\n)([\s\S]*?)^(?:>>>>>>> REPLACE)/gim
-
-	let hasBlocks = false
-	let combinedDiff = ""
-	const fileName = filePath || "file"
-
-	let match: RegExpExecArray | null
-	while ((match = blockRegex.exec(content)) !== null) {
-		hasBlocks = true
-		const searchContent = (match[1] ?? "").replace(/\n$/, "") // Remove trailing newline
-		const replaceContent = (match[2] ?? "").replace(/\n$/, "")
-
-		// Use the diff library to create a proper unified diff
-		const patch = structuredPatch(fileName, fileName, searchContent, replaceContent, "", "", { context: 3 })
-
-		// Convert to unified diff format
-		if (patch.hunks.length > 0) {
-			for (const hunk of patch.hunks) {
-				combinedDiff += `@@ -${hunk.oldStart},${hunk.oldLines} +${hunk.newStart},${hunk.newLines} @@\n`
-				combinedDiff += hunk.lines.join("\n") + "\n"
-			}
-		}
-	}
-
-	return hasBlocks ? combinedDiff : content
 }
 
 export const ChatRowContent = ({
@@ -449,47 +417,31 @@ export const ChatRowContent = ({
 	// Inline diff stats for edit/apply_diff/insert/search-replace/newFile asks
 	const diffTextForStats = useMemo(() => {
 		if (!tool) return ""
-		let content = ""
-		switch (tool.tool) {
-			case "editedExistingFile":
-			case "appliedDiff":
-				content = (tool.content ?? tool.diff) || ""
-				break
-			case "insertContent":
-			case "searchAndReplace":
-				content = tool.diff || ""
-				break
-			case "newFileCreated":
-				// For new files, convert to unified diff format
-				const newFileContent = tool.content || ""
-				content = convertNewFileToUnifiedDiff(newFileContent, tool.path)
-				break
-			default:
-				return ""
-		}
-		// Strip CDATA markers for proper parsing
-		return content.replace(/<!\[CDATA\[/g, "").replace(/\]\]>/g, "")
+		// Normalize to unified diff using frontend-only capture/surmise helper
+		return (
+			extractUnifiedDiff({
+				toolName: tool.tool as string,
+				path: tool.path,
+				diff: (tool as any).diff,
+				content: (tool as any).content,
+			}) || ""
+		)
 	}, [tool])
 
 	const diffStatsForInline = useMemo(() => {
 		return computeDiffStats(diffTextForStats)
 	}, [diffTextForStats])
 
-	// Clean diff content for display (remove CDATA markers and convert to unified diff)
+	// Clean diff content for display (normalize to unified diff)
 	const cleanDiffContent = useMemo(() => {
 		if (!tool) return undefined
-		const raw = (tool as any).content ?? (tool as any).diff
-		if (!raw) return undefined
-
-		// Remove CDATA markers
-		const withoutCData = raw.replace(/<!\[CDATA\[/g, "").replace(/\]\]>/g, "")
-
-		// Check if it's SEARCH/REPLACE format and convert to unified diff
-		if (/<<<<<<<?\s*SEARCH/i.test(withoutCData)) {
-			return convertSearchReplaceToUnifiedDiff(withoutCData, tool.path)
-		}
-
-		return withoutCData
+		const unified = extractUnifiedDiff({
+			toolName: tool.tool as string,
+			path: tool.path,
+			diff: (tool as any).diff,
+			content: (tool as any).content,
+		})
+		return unified || undefined
 	}, [tool])
 
 	const followUpData = useMemo(() => {
