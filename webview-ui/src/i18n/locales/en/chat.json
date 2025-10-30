@@ -317,6 +317,7 @@
 			"description": "It runs Roo in the cloud, giving extremely high quality code reviews instantly. We've been using it heavily to build Roo and now it's also available to the community.",
 			"createAgentButton": "Try out PR Reviewer"
 		},
+		"careers": "<careersLink>We're hiring</careersLink>! Join the team building the future of AI-powered development.",
 		"socialLinks": "Join us on <xLink>X</xLink>, <discordLink>Discord</discordLink>, or <redditLink>r/RooCode</redditLink> 🚀"
 	},
 	"reasoning": {

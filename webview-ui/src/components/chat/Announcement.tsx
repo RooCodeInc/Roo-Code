@@ -86,7 +86,17 @@ const Announcement = ({ hideAnnouncement }: AnnouncementProps) => {
 						</div>
 					</div>
 
+					{/* Careers Section */}
 					<div className="mt-4 text-sm text-center">
+						<Trans
+							i18nKey="chat:announcement.careers"
+							components={{
+								careersLink: <CareersLink />,
+							}}
+						/>
+					</div>
+
+					<div className="mt-2 text-sm text-center">
 						<Trans
 							i18nKey="chat:announcement.socialLinks"
 							components={{
@@ -132,6 +142,17 @@ const RedditLink = () => (
 			vscode.postMessage({ type: "openExternal", url: "https://www.reddit.com/r/RooCode/" })
 		}}>
 		r/RooCode
+	</VSCodeLink>
+)
+
+const CareersLink = () => (
+	<VSCodeLink
+		href="https://careers.roocode.com"
+		onClick={(e) => {
+			e.preventDefault()
+			vscode.postMessage({ type: "openExternal", url: "https://careers.roocode.com" })
+		}}>
+		We&apos;re hiring
 	</VSCodeLink>
 )
 
