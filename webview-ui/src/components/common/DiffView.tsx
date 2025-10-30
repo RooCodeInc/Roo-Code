@@ -92,12 +92,15 @@ const DiffView = memo(({ source }: DiffViewProps) => {
 					}}>
 					<tbody>
 						{diffLines.map((line, idx) => {
-							const bgColor =
+							// Backgrounds: tint only the content and +/- gutter, not the line-number columns
+							const contentBg =
 								line.type === "addition"
 									? "var(--vscode-diffEditor-insertedTextBackground)"
 									: line.type === "deletion"
 										? "var(--vscode-diffEditor-removedTextBackground)"
 										: "transparent"
+							// Use same tint for the +/- gutter for a cohesive band effect
+							const gutterBg = contentBg
 
 							const lineColor =
 								line.type === "addition"
@@ -107,7 +110,7 @@ const DiffView = memo(({ source }: DiffViewProps) => {
 										: "var(--vscode-editorLineNumber-foreground)"
 
 							return (
-								<tr key={idx} style={{ backgroundColor: bgColor }}>
+								<tr key={idx}>
 									{/* Old line number */}
 									<td
 										style={{
@@ -142,6 +145,7 @@ const DiffView = memo(({ source }: DiffViewProps) => {
 										style={{
 											width: "20px",
 											textAlign: "center",
+											backgroundColor: gutterBg,
 											color:
 												line.type === "addition"
 													? "var(--vscode-gitDecoration-addedResourceForeground)"
@@ -165,6 +169,7 @@ const DiffView = memo(({ source }: DiffViewProps) => {
 											fontFamily: "var(--vscode-editor-font-family)",
 											color: "var(--vscode-editor-foreground)",
 											width: "100%",
+											backgroundColor: contentBg,
 										}}>
 										{line.content}
 									</td>
