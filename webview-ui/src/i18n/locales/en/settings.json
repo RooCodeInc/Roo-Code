@@ -345,6 +345,7 @@
 		"awsSessionToken": "AWS Session Token",
 		"awsRegion": "AWS Region",
 		"awsCrossRegion": "Use cross-region inference",
+		"awsGlobalInference": "Use Global inference (auto-select optimal AWS Region)",
 		"awsBedrockVpc": {
 			"useCustomVpcEndpoint": "Use custom VPC endpoint",
 			"vpcEndpointUrlPlaceholder": "Enter VPC Endpoint URL (optional)",
