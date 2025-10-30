@@ -635,7 +635,7 @@
 		},
 		"shellIntegrationDisabled": {
 			"label": "Use Inline Terminal (recommended)",
-			"description": "Run commands in the Inline Terminal (chat) to bypasses shell profiles/integration for faster, more reliable runs. When disabled Roo uses the VS Code terminal with your shell profile, prompts, and plugins. <0>Learn more</0>"
+			"description": "Run commands in the Inline Terminal (chat) to bypass shell profiles/integration for faster, more reliable runs. When disabled Roo uses the VS Code terminal with your shell profile, prompts, and plugins. <0>Learn more</0>"
 		},
 		"commandDelay": {
 			"label": "Terminal command delay",
