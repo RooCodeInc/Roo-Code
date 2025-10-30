@@ -152,6 +152,7 @@ export const Bedrock = ({ apiConfiguration, setApiConfigurationField, selectedMo
 			{supportsGlobalInference && (
 				<Checkbox
 					checked={apiConfiguration?.awsUseGlobalInference || false}
+					disabled={apiConfiguration?.awsUseCrossRegionInference || false}
 					onChange={(checked: boolean) => {
 						// Enabling Global Inference should disable cross-region inference
 						setApiConfigurationField("awsUseGlobalInference", checked)
@@ -162,6 +163,7 @@ export const Bedrock = ({ apiConfiguration, setApiConfigurationField, selectedMo
 			)}
 			<Checkbox
 				checked={apiConfiguration?.awsUseCrossRegionInference || false}
+				disabled={apiConfiguration?.awsUseGlobalInference || false}
 				onChange={(checked: boolean) => {
 					setApiConfigurationField("awsUseCrossRegionInference", checked)
 					if (checked) setApiConfigurationField("awsUseGlobalInference", false)
