@@ -663,7 +663,7 @@
 		},
 		"zdotdir": {
 			"label": "Enable ZDOTDIR handling",
-			"description": "Turn this on when zsh shell integration fails or conflicts with your dotfiles.<0>Learn more</0>"
+			"description": "Turn this on when zsh shell integration fails or conflicts with your dotfiles. <0>Learn more</0>"
 		},
 		"inheritEnv": {
 			"label": "Inherit environment variables",
