@@ -1,5 +1,9 @@
-import { memo, useMemo } from "react"
+import { memo, useMemo, useEffect, useState } from "react"
 import { parsePatch } from "diff"
+import { toJsxRuntime } from "hast-util-to-jsx-runtime"
+import { Fragment, jsx, jsxs } from "react/jsx-runtime"
+import { getHighlighter, normalizeLanguage } from "@src/utils/highlighter"
+import { getLanguageFromPath } from "@src/utils/getLanguageFromPath"
 
 interface DiffViewProps {
 	source: string
@@ -17,7 +21,62 @@ interface DiffLine {
  * DiffView component renders unified diffs with side-by-side line numbers
  * matching VSCode's diff editor style
  */
-const DiffView = memo(({ source }: DiffViewProps) => {
+const DiffView = memo(({ source, filePath }: DiffViewProps) => {
+	// Determine language from file path and prepare highlighter
+	const normalizedLang = useMemo(() => normalizeLanguage(getLanguageFromPath(filePath || "") || "txt"), [filePath])
+	const [highlighter, setHighlighter] = useState<any>(null)
+	const isLightTheme = useMemo(
+		() => typeof document !== "undefined" && document.body.className.toLowerCase().includes("light"),
+		[],
+	)
+
+	useEffect(() => {
+		let mounted = true
+		getHighlighter(normalizedLang)
+			.then((h) => {
+				if (mounted) setHighlighter(h)
+			})
+			.catch(() => {
+				// fall back to plain text if highlighting fails
+			})
+		return () => {
+			mounted = false
+		}
+	}, [normalizedLang])
+
+	const renderHighlighted = (code: string): React.ReactNode => {
+		if (!highlighter) return code
+		try {
+			const hast: any = highlighter.codeToHast(code, {
+				lang: normalizedLang,
+				theme: isLightTheme ? "github-light" : "github-dark",
+				transformers: [
+					{
+						pre(node: any) {
+							node.properties.style = "padding:0;margin:0;background:none;"
+							return node
+						},
+						code(node: any) {
+							node.properties.class = `hljs language-${normalizedLang}`
+							return node
+						},
+					},
+				],
+			})
+
+			// Extract just the <code> children to render inline inside our table cell
+			const codeEl = hast?.children?.[0]?.children?.[0]
+			const inlineRoot =
+				codeEl && codeEl.children
+					? { type: "element", tagName: "span", properties: {}, children: codeEl.children }
+					: { type: "element", tagName: "span", properties: {}, children: hast.children || [] }
+
+			return toJsxRuntime(inlineRoot as any, { Fragment, jsx, jsxs })
+		} catch {
+			return code
+		}
+	}
+
 	// Parse diff and extract line information
 	const diffLines = useMemo(() => {
 		if (!source) return []
@@ -92,22 +151,29 @@ const DiffView = memo(({ source }: DiffViewProps) => {
 					}}>
 					<tbody>
 						{diffLines.map((line, idx) => {
-							// Backgrounds: tint only the content and +/- gutter, not the line-number columns
-							const contentBg =
+							// Use VSCode's built-in diff editor color variables with 50% opacity
+							const gutterBg =
 								line.type === "addition"
 									? "var(--vscode-diffEditor-insertedTextBackground)"
 									: line.type === "deletion"
 										? "var(--vscode-diffEditor-removedTextBackground)"
-										: "transparent"
-							// Use same tint for the +/- gutter for a cohesive band effect
-							const gutterBg = contentBg
+										: "var(--vscode-editorGroup-border)"
 
-							const lineColor =
+							const contentBgStyles =
 								line.type === "addition"
-									? "var(--vscode-gitDecoration-addedResourceForeground)"
+									? {
+											backgroundColor:
+												"color-mix(in srgb, var(--vscode-diffEditor-insertedTextBackground) 70%, transparent)",
+										}
 									: line.type === "deletion"
-										? "var(--vscode-gitDecoration-deletedResourceForeground)"
-										: "var(--vscode-editorLineNumber-foreground)"
+										? {
+												backgroundColor:
+													"color-mix(in srgb, var(--vscode-diffEditor-removedTextBackground) 70%, transparent)",
+											}
+										: {
+												backgroundColor:
+													"color-mix(in srgb, var(--vscode-editorGroup-border) 100%, transparent)",
+											}
 
 							return (
 								<tr key={idx}>
@@ -118,11 +184,10 @@ const DiffView = memo(({ source }: DiffViewProps) => {
 											textAlign: "right",
 											paddingRight: "12px",
 											paddingLeft: "8px",
-											color: lineColor,
-											opacity: 0.5,
 											userSelect: "none",
 											verticalAlign: "top",
 											whiteSpace: "nowrap",
+											backgroundColor: gutterBg,
 										}}>
 										{line.oldLineNum || ""}
 									</td>
@@ -132,33 +197,22 @@ const DiffView = memo(({ source }: DiffViewProps) => {
 											width: "45px",
 											textAlign: "right",
 											paddingRight: "12px",
-											color: lineColor,
-											opacity: 0.5,
 											userSelect: "none",
 											verticalAlign: "top",
 											whiteSpace: "nowrap",
+											backgroundColor: gutterBg,
 										}}>
 										{line.newLineNum || ""}
 									</td>
-									{/* +/- indicator */}
+									{/* Narrow colored gutter (no +/- glyph) */}
 									<td
 										style={{
-											width: "20px",
-											textAlign: "center",
+											width: "12px",
 											backgroundColor: gutterBg,
-											color:
-												line.type === "addition"
-													? "var(--vscode-gitDecoration-addedResourceForeground)"
-													: line.type === "deletion"
-														? "var(--vscode-gitDecoration-deletedResourceForeground)"
-														: "transparent",
-											userSelect: "none",
 											verticalAlign: "top",
-											paddingRight: "8px",
-										}}>
-										{line.type === "addition" ? "+" : line.type === "deletion" ? "−" : ""}
-									</td>
-									{/* Code content */}
+										}}
+									/>
+									{/* Code content (includes +/- prefix inside the code cell) */}
 									<td
 										style={{
 											paddingLeft: "4px",
@@ -169,9 +223,16 @@ const DiffView = memo(({ source }: DiffViewProps) => {
 											fontFamily: "var(--vscode-editor-font-family)",
 											color: "var(--vscode-editor-foreground)",
 											width: "100%",
-											backgroundColor: contentBg,
+											...contentBgStyles,
 										}}>
-										{line.content}
+										<span
+											style={{
+												color: line.type === "context" ? "transparent" : "#ffffff",
+												userSelect: "none",
+											}}>
+											{line.type === "addition" ? "+ " : line.type === "deletion" ? "- " : ""}
+										</span>
+										{renderHighlighted(line.content)}
 									</td>
 								</tr>
 							)
