@@ -164,8 +164,34 @@ function getSelectedModel({
 		}
 		case "xai": {
 			const id = apiConfiguration.apiModelId ?? xaiDefaultModelId
-			const info = xaiModels[id as keyof typeof xaiModels]
-			return info ? { id, info } : { id, info: undefined }
+			const dynamicInfo = routerModels.xai?.[id]
+			if (dynamicInfo) {
+				// If router-provided model lacks contextWindow, apply manual override when provided
+				const overrideCw = apiConfiguration.xaiModelContextWindow
+				const info =
+					dynamicInfo.contextWindow === undefined && typeof overrideCw === "number"
+						? { ...dynamicInfo, contextWindow: overrideCw }
+						: dynamicInfo
+				return { id, info }
+			}
+			const staticInfo = xaiModels[id as keyof typeof xaiModels]
+			// Build a complete ModelInfo fallback to satisfy UI expectations until dynamic models load
+			const info: ModelInfo = {
+				...openAiModelInfoSaneDefaults,
+				contextWindow:
+					apiConfiguration.xaiModelContextWindow ??
+					staticInfo?.contextWindow ??
+					openAiModelInfoSaneDefaults.contextWindow,
+				maxTokens: staticInfo?.maxTokens ?? openAiModelInfoSaneDefaults.maxTokens,
+				supportsPromptCache: false, // Placeholder; dynamic API will provide real value
+				supportsImages: false, // Placeholder; dynamic API will provide real value
+				description: staticInfo?.description,
+				supportsReasoningEffort:
+					staticInfo && "supportsReasoningEffort" in staticInfo
+						? staticInfo.supportsReasoningEffort
+						: undefined,
+			}
+			return { id, info }
 		}
 		case "groq": {
 			const id = apiConfiguration.apiModelId ?? groqDefaultModelId

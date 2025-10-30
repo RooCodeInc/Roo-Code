@@ -1,7 +1,7 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 
-import { type XAIModelId, xaiDefaultModelId, xaiModels } from "@roo-code/types"
+import { type XAIModelId, xaiDefaultModelId, xaiModels, type ModelInfo } from "@roo-code/types"
 
 import type { ApiHandlerOptions } from "../../shared/api"
 
@@ -13,6 +13,9 @@ import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { handleOpenAIError } from "./utils/openai-error-handler"
+import { calculateApiCostOpenAI } from "../../shared/cost"
+import type { ModelRecord } from "../../shared/api"
+import { getModels } from "./fetchers/modelCache"
 
 const XAI_DEFAULT_TEMPERATURE = 0
 
@@ -20,6 +23,7 @@ export class XAIHandler extends BaseProvider implements SingleCompletionHandler 
 	protected options: ApiHandlerOptions
 	private client: OpenAI
 	private readonly providerName = "xAI"
+	protected models: ModelRecord = {}
 
 	constructor(options: ApiHandlerOptions) {
 		super()
@@ -35,14 +39,41 @@ export class XAIHandler extends BaseProvider implements SingleCompletionHandler 
 	}
 
 	override getModel() {
-		const id =
-			this.options.apiModelId && this.options.apiModelId in xaiModels
-				? (this.options.apiModelId as XAIModelId)
-				: xaiDefaultModelId
+		// Allow any model ID (dynamic discovery) and augment with static info when available
+		const id = this.options.apiModelId ?? xaiDefaultModelId
 
-		const info = xaiModels[id]
+		const staticInfo = (xaiModels as Record<string, any>)[id as any]
+		const dynamicInfo = this.models?.[id as any]
+
+		// Build complete ModelInfo using dynamic pricing/capabilities when available
+		const info: ModelInfo = {
+			contextWindow: this.options.xaiModelContextWindow ?? staticInfo?.contextWindow,
+			maxTokens: staticInfo?.maxTokens ?? undefined,
+			supportsPromptCache: dynamicInfo?.supportsPromptCache ?? false,
+			supportsImages: dynamicInfo?.supportsImages,
+			inputPrice: dynamicInfo?.inputPrice,
+			outputPrice: dynamicInfo?.outputPrice,
+			cacheReadsPrice: dynamicInfo?.cacheReadsPrice,
+			cacheWritesPrice: dynamicInfo?.cacheWritesPrice,
+			description: staticInfo?.description,
+			supportsReasoningEffort:
+				staticInfo && "supportsReasoningEffort" in staticInfo ? staticInfo.supportsReasoningEffort : undefined,
+		}
+
 		const params = getModelParams({ format: "openai", modelId: id, model: info, settings: this.options })
 		return { id, info, ...params }
+	}
+
+	private async loadDynamicModels(): Promise<void> {
+		try {
+			this.models = await getModels({
+				provider: "xai",
+				apiKey: this.options.xaiApiKey,
+				baseUrl: (this.client as any).baseURL || "https://api.x.ai/v1",
+			})
+		} catch (error) {
+			console.error("[XAI] Error loading dynamic models:", error)
+		}
 	}
 
 	override async *createMessage(
@@ -50,6 +81,7 @@ export class XAIHandler extends BaseProvider implements SingleCompletionHandler 
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
+		await this.loadDynamicModels()
 		const { id: modelId, info: modelInfo, reasoning } = this.getModel()
 
 		// Use the OpenAI-compatible API.
@@ -98,12 +130,21 @@ export class XAIHandler extends BaseProvider implements SingleCompletionHandler 
 				const writeTokens =
 					"cache_creation_input_tokens" in chunk.usage ? (chunk.usage as any).cache_creation_input_tokens : 0
 
+				const totalCost = calculateApiCostOpenAI(
+					modelInfo,
+					chunk.usage.prompt_tokens || 0,
+					chunk.usage.completion_tokens || 0,
+					writeTokens || 0,
+					readTokens || 0,
+				)
+
 				yield {
 					type: "usage",
 					inputTokens: chunk.usage.prompt_tokens || 0,
 					outputTokens: chunk.usage.completion_tokens || 0,
 					cacheReadTokens: readTokens,
 					cacheWriteTokens: writeTokens,
+					totalCost,
 				}
 			}
 		}
