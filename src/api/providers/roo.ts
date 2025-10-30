@@ -1,7 +1,7 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 
-import { AuthState, rooDefaultModelId, type ModelInfo } from "@roo-code/types"
+import { rooDefaultModelId } from "@roo-code/types"
 import { CloudService } from "@roo-code/cloud"
 
 import type { ApiHandlerOptions, ModelRecord } from "../../shared/api"
@@ -12,9 +12,8 @@ import type { RooReasoningParams } from "../transform/reasoning"
 import { getRooReasoning } from "../transform/reasoning"
 
 import type { ApiHandlerCreateMessageMetadata } from "../index"
-import { DEFAULT_HEADERS } from "./constants"
 import { BaseOpenAiCompatibleProvider } from "./base-openai-compatible-provider"
-import { getModels, flushModels, getModelsFromCache } from "../providers/fetchers/modelCache"
+import { getModels, getModelsFromCache } from "../providers/fetchers/modelCache"
 import { handleOpenAIError } from "./utils/openai-error-handler"
 
 // Extend OpenAI's CompletionUsage to include Roo specific fields
@@ -28,16 +27,16 @@ type RooChatCompletionParams = OpenAI.Chat.ChatCompletionCreateParamsStreaming &
 	reasoning?: RooReasoningParams
 }
 
+function getSessionToken(): string {
+	const token = CloudService.hasInstance() ? CloudService.instance.authService?.getSessionToken() : undefined
+	return token ?? "unauthenticated"
+}
+
 export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
-	private authStateListener?: (state: { state: AuthState }) => void
 	private fetcherBaseURL: string
 
 	constructor(options: ApiHandlerOptions) {
-		let sessionToken: string | undefined = undefined
-
-		if (CloudService.hasInstance()) {
-			sessionToken = CloudService.instance.authService?.getSessionToken()
-		}
+		const sessionToken = getSessionToken()
 
 		let baseURL = process.env.ROO_CODE_PROVIDER_URL ?? "https://api.roocode.com/proxy"
 
@@ -52,7 +51,7 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 			...options,
 			providerName: "Roo Code Cloud",
 			baseURL, // Already has /v1 suffix
-			apiKey: sessionToken || "unauthenticated", // Use a placeholder if no token.
+			apiKey: sessionToken,
 			defaultProviderModelId: rooDefaultModelId,
 			providerModels: {},
 			defaultTemperature: 0.7,
@@ -63,29 +62,6 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 		this.loadDynamicModels(this.fetcherBaseURL, sessionToken).catch((error) => {
 			console.error("[RooHandler] Failed to load dynamic models:", error)
 		})
-
-		if (CloudService.hasInstance()) {
-			const cloudService = CloudService.instance
-
-			this.authStateListener = (state: { state: AuthState }) => {
-				// Update OpenAI client with current auth token
-				// Note: Model cache flush/reload is handled by extension.ts authStateChangedHandler
-				const newToken = cloudService.authService?.getSessionToken()
-				this.client = new OpenAI({
-					baseURL: this.baseURL,
-					apiKey: newToken ?? "unauthenticated",
-					defaultHeaders: DEFAULT_HEADERS,
-				})
-			}
-
-			cloudService.on("auth-state-changed", this.authStateListener)
-		}
-	}
-
-	dispose() {
-		if (this.authStateListener && CloudService.hasInstance()) {
-			CloudService.instance.off("auth-state-changed", this.authStateListener)
-		}
 	}
 
 	protected override createStream(
@@ -127,6 +103,7 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 		}
 
 		try {
+			this.client.apiKey = getSessionToken()
 			return this.client.chat.completions.create(rooParams, requestOptions)
 		} catch (error) {
 			throw handleOpenAIError(error, this.providerName)
@@ -194,6 +171,11 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 				totalCost: isFreeModel ? 0 : (lastUsage.cost ?? 0),
 			}
 		}
+	}
+	override async completePrompt(prompt: string): Promise<string> {
+		// Update API key before making request to ensure we use the latest session token
+		this.client.apiKey = getSessionToken()
+		return super.completePrompt(prompt)
 	}
 
 	private async loadDynamicModels(baseURL: string, apiKey?: string): Promise<void> {

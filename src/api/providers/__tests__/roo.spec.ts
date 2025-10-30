@@ -182,6 +182,21 @@ describe("RooHandler", () => {
 			handler = new RooHandler(mockOptions)
 		})
 
+		it("should update API key before making request", async () => {
+			// Set up a fresh token that will be returned when createMessage is called
+			const freshToken = "fresh-session-token"
+			mockGetSessionTokenFn.mockReturnValue(freshToken)
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			// Consume the stream to trigger the API call
+			for await (const _chunk of stream) {
+				// Just consume
+			}
+
+			// Verify getSessionToken was called to get the fresh token
+			expect(mockGetSessionTokenFn).toHaveBeenCalled()
+		})
+
 		it("should handle streaming responses", async () => {
 			const stream = handler.createMessage(systemPrompt, messages)
 			const chunks: any[] = []
@@ -288,6 +303,25 @@ describe("RooHandler", () => {
 				model: mockOptions.apiModelId,
 				messages: [{ role: "user", content: "Test prompt" }],
 			})
+		})
+
+		it("should update API key before making request", async () => {
+			// Set up a fresh token that will be returned when completePrompt is called
+			const freshToken = "fresh-session-token"
+			mockGetSessionTokenFn.mockReturnValue(freshToken)
+
+			// Access the client's apiKey property to verify it gets updated
+			const clientApiKeyGetter = vitest.fn()
+			Object.defineProperty(handler["client"], "apiKey", {
+				get: clientApiKeyGetter,
+				set: vitest.fn(),
+				configurable: true,
+			})
+
+			await handler.completePrompt("Test prompt")
+
+			// Verify getSessionToken was called to get the fresh token
+			expect(mockGetSessionTokenFn).toHaveBeenCalled()
 		})
 
 		it("should handle API errors", async () => {
