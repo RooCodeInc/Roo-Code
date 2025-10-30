@@ -25,7 +25,8 @@ export function truncateDefinitionsToLineLimit(definitions: string, maxReadFileL
 		const line = lines[i]
 
 		// Match definition format: "startLine--endLine | content" or "lineNumber | content"
-		const rangeMatch = line.match(/^(\d+)(?:--(\d+))?\s*\|/)
+		// Allow optional leading whitespace to handle indented output or CRLF artifacts
+		const rangeMatch = line.match(/^\s*(\d+)(?:--(\d+))?\s*\|/)
 
 		if (rangeMatch) {
 			const startLine = parseInt(rangeMatch[1], 10)

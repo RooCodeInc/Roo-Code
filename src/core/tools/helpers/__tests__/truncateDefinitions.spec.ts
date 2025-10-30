@@ -130,4 +130,31 @@ describe("truncateDefinitionsToLineLimit", () => {
 
 		expect(result).toBe(expected)
 	})
+
+	it("should handle definitions with leading whitespace", () => {
+		const definitions = `# test.ts
+	 10--20 | function foo() {
+	 30--40 | function bar() {
+	 50--60 | function baz() {`
+
+		const result = truncateDefinitionsToLineLimit(definitions, 25)
+		const expected = `# test.ts
+	 10--20 | function foo() {`
+
+		expect(result).toBe(expected)
+	})
+
+	it("should handle definitions with mixed whitespace patterns", () => {
+		const definitions = `# test.ts
+10--20 | function foo() {
+	 30--40 | function bar() {
+	50--60 | function baz() {`
+
+		const result = truncateDefinitionsToLineLimit(definitions, 35)
+		const expected = `# test.ts
+10--20 | function foo() {
+	 30--40 | function bar() {`
+
+		expect(result).toBe(expected)
+	})
 })
