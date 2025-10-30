@@ -472,15 +472,8 @@ export const ChatRowContent = ({
 	}, [tool])
 
 	const diffStatsForInline = useMemo(() => {
-		if (tool?.tool === "newFileCreated") {
-			// For new files, count all lines as additions
-			const content = diffTextForStats
-			if (!content) return null
-			const lines = content.split("\n").length
-			return { added: lines, removed: 0 }
-		}
 		return computeDiffStats(diffTextForStats)
-	}, [diffTextForStats, tool])
+	}, [diffTextForStats])
 
 	// Clean diff content for display (remove CDATA markers and convert to unified diff)
 	const cleanDiffContent = useMemo(() => {

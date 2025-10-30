@@ -90,4 +90,25 @@ describe("ChatRow - inline diff stats and actions", () => {
 		expect(screen.getByText("+1")).toBeInTheDocument()
 		expect(screen.getByText("-2")).toBeInTheDocument()
 	})
+
+	it("counts only added lines for newFileCreated (ignores diff headers)", () => {
+		const content = "a\nb\nc"
+		const message: any = {
+			type: "ask",
+			ask: "tool",
+			ts: Date.now(),
+			partial: false,
+			text: JSON.stringify({
+				tool: "newFileCreated",
+				path: "src/new-file.ts",
+				content,
+			}),
+		}
+
+		renderChatRow(message)
+
+		// Should only count the three content lines as additions
+		expect(screen.getByText("+3")).toBeInTheDocument()
+		expect(screen.getByText("-0")).toBeInTheDocument()
+	})
 })
