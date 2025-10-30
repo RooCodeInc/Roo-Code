@@ -40,7 +40,7 @@ export function extractUnifiedDiff(params: {
 /** Detects unified diff by presence of headers/hunks */
 function isUnifiedDiff(s: string): boolean {
 	const hasHunk = /(^|\n)@@\s+-[0-9,]+\s+\+[0-9,]+\s+@@/.test(s)
-	const hasHeaders = /(^|\n)---\s|\n\+\+\+\s/.test(s)
+	const hasHeaders = /(^|\n)---\s|(^|\n)\+\+\+\s/.test(s)
 	return hasHunk || hasHeaders
 }
 
@@ -55,12 +55,9 @@ function isSearchReplace(s: string): boolean {
 function stripCData(s: string): string {
 	return (
 		s
-			// Remove HTML-encoded and raw CDATA open
+			// Remove HTML-encoded and raw CDATA open/close (case-insensitive covers both)
 			.replace(/<!\[CDATA\[/gi, "")
-			.replace(/<!\[CDATA\[/g, "")
-			// Remove HTML-encoded and raw CDATA close
 			.replace(/\]\]>/gi, "")
-			.replace(/\]\]>/g, "")
 	)
 }
 

@@ -177,24 +177,6 @@ function computeDiffStats(diff?: string): { added: number; removed: number } | n
 	return null
 }
 
-/**
- * Converts new file content to unified diff format (all lines as additions)
- */
-function convertNewFileToUnifiedDiff(content: string, filePath?: string): string {
-	const fileName = filePath || "file"
-	const lines = content.split("\n")
-
-	let diff = `--- /dev/null\n`
-	diff += `+++ ${fileName}\n`
-	diff += `@@ -0,0 +1,${lines.length} @@\n`
-
-	for (const line of lines) {
-		diff += `+${line}\n`
-	}
-
-	return diff
-}
-
 export const ChatRowContent = ({
 	message,
 	lastModifiedMessage,
@@ -640,7 +622,7 @@ export const ChatRowContent = ({
 						<div className="pl-6">
 							<CodeAccordian
 								path={tool.path}
-								code={convertNewFileToUnifiedDiff(tool.content || "", tool.path)}
+								code={cleanDiffContent ?? ""}
 								language="diff"
 								isLoading={message.partial}
 								isExpanded={isExpanded}
