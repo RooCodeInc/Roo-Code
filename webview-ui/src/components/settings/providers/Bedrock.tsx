@@ -162,7 +162,10 @@ export const Bedrock = ({ apiConfiguration, setApiConfigurationField, selectedMo
 			)}
 			<Checkbox
 				checked={apiConfiguration?.awsUseCrossRegionInference || false}
-				onChange={handleInputChange("awsUseCrossRegionInference", noTransform)}>
+				onChange={(checked: boolean) => {
+					setApiConfigurationField("awsUseCrossRegionInference", checked)
+					if (checked) setApiConfigurationField("awsUseGlobalInference", false)
+				}}>
 				{t("settings:providers.awsCrossRegion")}
 			</Checkbox>
 			{selectedModelInfo?.supportsPromptCache && (
