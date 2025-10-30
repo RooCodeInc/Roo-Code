@@ -178,7 +178,7 @@ const CodeAccordian = ({
 				</ToolUseBlockHeader>
 			)}
 			{(!hasHeader || isExpanded) && (
-				<div className="overflow-x-auto overflow-y-hidden max-w-full">
+				<div className="overflow-x-auto overflow-y-auto max-h-[300px] max-w-full">
 					{inferredLanguage === "diff" ? (
 						<DiffView source={source} filePath={path} />
 					) : (
