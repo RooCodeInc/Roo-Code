@@ -340,6 +340,7 @@
 		"awsSessionToken": "AWS 세션 토큰",
 		"awsRegion": "AWS 리전",
 		"awsCrossRegion": "교차 리전 추론 사용",
+		"awsGlobalInference": "글로벌 추론 사용(최적의 AWS 리전 자동 선택)",
 		"awsBedrockVpc": {
 			"useCustomVpcEndpoint": "사용자 지정 VPC 엔드포인트 사용",
 			"vpcEndpointUrlPlaceholder": "VPC 엔드포인트 URL 입력 (선택사항)",

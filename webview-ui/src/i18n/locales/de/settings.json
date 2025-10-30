@@ -340,6 +340,7 @@
 		"awsSessionToken": "AWS Sitzungstoken",
 		"awsRegion": "AWS Region",
 		"awsCrossRegion": "Regionsübergreifende Inferenz verwenden",
+		"awsGlobalInference": "Globale Inferenz verwenden (optimale AWS-Region automatisch auswählen)",
 		"awsBedrockVpc": {
 			"useCustomVpcEndpoint": "Benutzerdefinierten VPC-Endpunkt verwenden",
 			"vpcEndpointUrlPlaceholder": "VPC-Endpunkt-URL eingeben (optional)",

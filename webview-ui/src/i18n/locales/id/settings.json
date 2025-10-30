@@ -344,6 +344,7 @@
 		"awsSessionToken": "AWS Session Token",
 		"awsRegion": "AWS Region",
 		"awsCrossRegion": "Gunakan cross-region inference",
+		"awsGlobalInference": "Gunakan inferensi Global (pilih Wilayah AWS optimal secara otomatis)",
 		"awsBedrockVpc": {
 			"useCustomVpcEndpoint": "Gunakan VPC endpoint kustom",
 			"vpcEndpointUrlPlaceholder": "Masukkan VPC Endpoint URL (opsional)",
