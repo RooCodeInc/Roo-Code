@@ -86,23 +86,23 @@ const Announcement = ({ hideAnnouncement }: AnnouncementProps) => {
 						</div>
 					</div>
 
-					{/* Careers Section */}
 					<div className="mt-4 text-sm text-center">
-						<Trans
-							i18nKey="chat:announcement.careers"
-							components={{
-								careersLink: <CareersLink />,
-							}}
-						/>
-					</div>
-
-					<div className="mt-2 text-sm text-center">
 						<Trans
 							i18nKey="chat:announcement.socialLinks"
 							components={{
 								xLink: <XLink />,
 								discordLink: <DiscordLink />,
 								redditLink: <RedditLink />,
+							}}
+						/>
+					</div>
+
+					{/* Careers Section */}
+					<div className="mt-2 text-sm text-center">
+						<Trans
+							i18nKey="chat:announcement.careers"
+							components={{
+								careersLink: <CareersLink />,
 							}}
 						/>
 					</div>
@@ -145,14 +145,14 @@ const RedditLink = () => (
 	</VSCodeLink>
 )
 
-const CareersLink = () => (
+const CareersLink = ({ children }: { children?: React.ReactNode }) => (
 	<VSCodeLink
 		href="https://careers.roocode.com"
 		onClick={(e) => {
 			e.preventDefault()
 			vscode.postMessage({ type: "openExternal", url: "https://careers.roocode.com" })
 		}}>
-		We&apos;re hiring
+		{children}
 	</VSCodeLink>
 )
 

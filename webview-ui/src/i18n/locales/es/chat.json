@@ -309,6 +309,7 @@
 			"description": "Ejecuta Roo en la nube, brindando revisiones de código de extremadamente alta calidad de manera instantánea. Lo hemos estado usando intensivamente para construir Roo y ahora también está disponible para la comunidad.",
 			"createAgentButton": "Probar Revisor de PR"
 		},
+		"careers": "Además, <careersLink>estamos contratando!</careersLink>",
 		"socialLinks": "Únete a nosotros en <xLink>X</xLink>, <discordLink>Discord</discordLink>, o <redditLink>r/RooCode</redditLink> 🚀"
 	},
 	"browser": {

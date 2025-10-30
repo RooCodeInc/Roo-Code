@@ -310,6 +310,7 @@
 			"description": "Nó chạy Roo trên đám mây, cung cấp đánh giá code chất lượng cực cao ngay lập tức. Chúng tôi đã sử dụng nó rất nhiều để xây dựng Roo và giờ đây nó cũng có sẵn cho cộng đồng.",
 			"createAgentButton": "Dùng thử PR Reviewer"
 		},
+		"careers": "Ngoài ra, <careersLink>chúng tôi đang tuyển dụng!</careersLink>",
 		"socialLinks": "Tham gia với chúng tôi trên <xLink>X</xLink>, <discordLink>Discord</discordLink>, hoặc <redditLink>r/RooCode</redditLink> 🚀"
 	},
 	"browser": {

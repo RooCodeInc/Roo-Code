@@ -309,6 +309,7 @@
 			"description": "Er führt Roo in der Cloud aus und liefert sofort extrem hochwertige Code-Reviews. Wir haben ihn intensiv beim Aufbau von Roo eingesetzt und jetzt ist er auch für die Community verfügbar.",
 			"createAgentButton": "PR Reviewer ausprobieren"
 		},
+		"careers": "Außerdem, <careersLink>wir stellen ein!</careersLink>",
 		"socialLinks": "Folge uns auf <xLink>X</xLink>, <discordLink>Discord</discordLink> oder <redditLink>r/RooCode</redditLink> 🚀"
 	},
 	"browser": {
