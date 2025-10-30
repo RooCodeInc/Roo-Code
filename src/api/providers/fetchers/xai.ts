@@ -77,7 +77,7 @@ export async function getXaiModels(apiKey?: string, baseUrl?: string): Promise<R
 				inputPrice: centsToDollars(m.prompt_text_token_price),
 				outputPrice: centsToDollars(m.completion_text_token_price),
 				cacheReadsPrice,
-				cacheWritesPrice: cacheReadsPrice, // xAI uses same price for reads and writes
+				cacheWritesPrice: undefined, // Leave undefined unless API exposes a distinct write price
 				description: staticInfo?.description,
 				supportsReasoningEffort:
 					staticInfo && "supportsReasoningEffort" in staticInfo

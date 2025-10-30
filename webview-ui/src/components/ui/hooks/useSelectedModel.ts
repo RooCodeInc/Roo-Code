@@ -166,10 +166,11 @@ function getSelectedModel({
 			const id = apiConfiguration.apiModelId ?? xaiDefaultModelId
 			const dynamicInfo = routerModels.xai?.[id]
 			if (dynamicInfo) {
-				// If router-provided model lacks contextWindow, apply manual override when provided
+				// If router-provided contextWindow is missing or invalid (<= 0), apply manual override when provided
 				const overrideCw = apiConfiguration.xaiModelContextWindow
 				const info =
-					dynamicInfo.contextWindow === undefined && typeof overrideCw === "number"
+					!(typeof dynamicInfo.contextWindow === "number" && dynamicInfo.contextWindow > 0) &&
+					typeof overrideCw === "number"
 						? { ...dynamicInfo, contextWindow: overrideCw }
 						: dynamicInfo
 				return { id, info }

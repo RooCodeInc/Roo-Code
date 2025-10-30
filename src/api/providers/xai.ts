@@ -89,7 +89,7 @@ export class XAIHandler extends BaseProvider implements SingleCompletionHandler 
 		try {
 			stream = await this.client.chat.completions.create({
 				model: modelId,
-				max_tokens: modelInfo.maxTokens,
+				...(typeof modelInfo.maxTokens === "number" ? { max_tokens: modelInfo.maxTokens } : {}),
 				temperature: this.options.modelTemperature ?? XAI_DEFAULT_TEMPERATURE,
 				messages: [{ role: "system", content: systemPrompt }, ...convertToOpenAiMessages(messages)],
 				stream: true,

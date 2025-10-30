@@ -166,9 +166,9 @@ export const XAI = ({
 									<VSCodeTextField
 										value={apiConfiguration?.xaiModelContextWindow?.toString() || ""}
 										onInput={handleInputChange("xaiModelContextWindow", (e) => {
-											const target = e.target as HTMLInputElement
-											const value = target.value
-											return value ? parseInt(value, 10) : undefined
+											const v = (e.target as HTMLInputElement).value.trim()
+											const n = Number(v)
+											return Number.isFinite(n) && n > 0 ? Math.floor(n) : undefined
 										})}
 										placeholder="e.g., 256000"
 										className="w-full mt-4">
