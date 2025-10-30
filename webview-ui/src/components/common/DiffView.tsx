@@ -308,7 +308,7 @@ const DiffView = memo(({ source, filePath }: DiffViewProps) => {
 											paddingLeft: "4px",
 											paddingRight: "4px",
 											backgroundColor: gutterBg,
-											color: "#ffffff",
+											color: "var(--vscode-editor-foreground)",
 											fontFamily: "var(--vscode-editor-font-family)",
 										}}>
 										{sign}
