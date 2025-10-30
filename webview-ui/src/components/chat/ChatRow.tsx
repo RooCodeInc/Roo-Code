@@ -3,6 +3,7 @@ import { useSize } from "react-use"
 import { useTranslation, Trans } from "react-i18next"
 import deepEqual from "fast-deep-equal"
 import { VSCodeBadge } from "@vscode/webview-ui-toolkit/react"
+import { structuredPatch } from "diff"
 
 import type { ClineMessage, FollowUpData, SuggestionItem } from "@roo-code/types"
 import { Mode } from "@roo/modes"
@@ -15,7 +16,6 @@ import { useExtensionState } from "@src/context/ExtensionStateContext"
 import { findMatchingResourceOrTemplate } from "@src/utils/mcp"
 import { vscode } from "@src/utils/vscode"
 import { formatPathTooltip } from "@src/utils/formatPathTooltip"
-import { getLanguageFromPath } from "@src/utils/getLanguageFromPath"
 
 import { ToolUseBlock, ToolUseBlockHeader } from "../common/ToolUseBlock"
 import UpdateTodoListToolBlock from "./UpdateTodoListToolBlock"
@@ -116,6 +116,116 @@ const ChatRow = memo(
 )
 
 export default ChatRow
+
+function computeDiffStats(diff?: string): { added: number; removed: number } | null {
+	if (!diff) return null
+
+	// Strategy 1: Unified diff (+/- lines)
+	let added = 0
+	let removed = 0
+	let sawPlusMinus = false
+	for (const line of diff.split("\n")) {
+		if (line.startsWith("+++ ") || line.startsWith("--- ") || line.startsWith("@@")) continue
+		if (line.startsWith("+")) {
+			added++
+			sawPlusMinus = true
+		} else if (line.startsWith("-")) {
+			removed++
+			sawPlusMinus = true
+		}
+	}
+	if (sawPlusMinus) {
+		if (added === 0 && removed === 0) return null
+		return { added, removed }
+	}
+
+	// Strategy 2: Roo multi-search-replace blocks
+	// Count lines in SEARCH vs REPLACE sections across all blocks
+	// Matches optional metadata lines and optional '-------' line
+	const blockRegex =
+		/<<<<<<?\s*SEARCH[\s\S]*?(?:^:start_line:.*\n)?(?:^:end_line:.*\n)?(?:^-------\s*\n)?([\s\S]*?)^(?:=======\s*\n)([\s\S]*?)^(?:>>>>>>> REPLACE)/gim
+
+	let hasBlocks = false
+	added = 0
+	removed = 0
+
+	const asLines = (s: string) => {
+		// Normalize Windows newlines and trim trailing newline so counts reflect real lines
+		const norm = s.replace(/\r\n/g, "\n")
+		if (norm === "") return 0
+		// Split, drop potential trailing empty caused by final newline
+		const parts = norm.split("\n")
+		return parts[parts.length - 1] === "" ? parts.length - 1 : parts.length
+	}
+
+	let match: RegExpExecArray | null
+	while ((match = blockRegex.exec(diff)) !== null) {
+		hasBlocks = true
+		const searchContent = match[1] ?? ""
+		const replaceContent = match[2] ?? ""
+		const searchCount = asLines(searchContent)
+		const replaceCount = asLines(replaceContent)
+		if (replaceCount > searchCount) added += replaceCount - searchCount
+		else if (searchCount > replaceCount) removed += searchCount - replaceCount
+	}
+
+	if (hasBlocks) {
+		if (added === 0 && removed === 0) return null
+		return { added, removed }
+	}
+
+	return null
+}
+
+/**
+ * Converts new file content to unified diff format (all lines as additions)
+ */
+function convertNewFileToUnifiedDiff(content: string, filePath?: string): string {
+	const fileName = filePath || "file"
+	const lines = content.split("\n")
+
+	let diff = `--- /dev/null\n`
+	diff += `+++ ${fileName}\n`
+	diff += `@@ -0,0 +1,${lines.length} @@\n`
+
+	for (const line of lines) {
+		diff += `+${line}\n`
+	}
+
+	return diff
+}
+
+/**
+ * Converts Roo's SEARCH/REPLACE format to unified diff format for better readability
+ */
+function convertSearchReplaceToUnifiedDiff(content: string, filePath?: string): string {
+	const blockRegex =
+		/<<<<<<?\s*SEARCH[\s\S]*?(?:^:start_line:.*\n)?(?:^:end_line:.*\n)?(?:^-------\s*\n)?([\s\S]*?)^(?:=======\s*\n)([\s\S]*?)^(?:>>>>>>> REPLACE)/gim
+
+	let hasBlocks = false
+	let combinedDiff = ""
+	const fileName = filePath || "file"
+
+	let match: RegExpExecArray | null
+	while ((match = blockRegex.exec(content)) !== null) {
+		hasBlocks = true
+		const searchContent = (match[1] ?? "").replace(/\n$/, "") // Remove trailing newline
+		const replaceContent = (match[2] ?? "").replace(/\n$/, "")
+
+		// Use the diff library to create a proper unified diff
+		const patch = structuredPatch(fileName, fileName, searchContent, replaceContent, "", "", { context: 3 })
+
+		// Convert to unified diff format
+		if (patch.hunks.length > 0) {
+			for (const hunk of patch.hunks) {
+				combinedDiff += `@@ -${hunk.oldStart},${hunk.oldLines} +${hunk.newStart},${hunk.newLines} @@\n`
+				combinedDiff += hunk.lines.join("\n") + "\n"
+			}
+		}
+	}
+
+	return hasBlocks ? combinedDiff : content
+}
 
 export const ChatRowContent = ({
 	message,
@@ -336,6 +446,59 @@ export const ChatRowContent = ({
 		[message.ask, message.text],
 	)
 
+	// Inline diff stats for edit/apply_diff/insert/search-replace/newFile asks
+	const diffTextForStats = useMemo(() => {
+		if (!tool) return ""
+		let content = ""
+		switch (tool.tool) {
+			case "editedExistingFile":
+			case "appliedDiff":
+				content = (tool.content ?? tool.diff) || ""
+				break
+			case "insertContent":
+			case "searchAndReplace":
+				content = tool.diff || ""
+				break
+			case "newFileCreated":
+				// For new files, convert to unified diff format
+				const newFileContent = tool.content || ""
+				content = convertNewFileToUnifiedDiff(newFileContent, tool.path)
+				break
+			default:
+				return ""
+		}
+		// Strip CDATA markers for proper parsing
+		return content.replace(/<!\[CDATA\[/g, "").replace(/\]\]>/g, "")
+	}, [tool])
+
+	const diffStatsForInline = useMemo(() => {
+		if (tool?.tool === "newFileCreated") {
+			// For new files, count all lines as additions
+			const content = diffTextForStats
+			if (!content) return null
+			const lines = content.split("\n").length
+			return { added: lines, removed: 0 }
+		}
+		return computeDiffStats(diffTextForStats)
+	}, [diffTextForStats, tool])
+
+	// Clean diff content for display (remove CDATA markers and convert to unified diff)
+	const cleanDiffContent = useMemo(() => {
+		if (!tool) return undefined
+		const raw = (tool as any).content ?? (tool as any).diff
+		if (!raw) return undefined
+
+		// Remove CDATA markers
+		const withoutCData = raw.replace(/<!\[CDATA\[/g, "").replace(/\]\]>/g, "")
+
+		// Check if it's SEARCH/REPLACE format and convert to unified diff
+		if (/<<<<<<<?\s*SEARCH/i.test(withoutCData)) {
+			return convertSearchReplaceToUnifiedDiff(withoutCData, tool.path)
+		}
+
+		return withoutCData
+	}, [tool])
+
 	const followUpData = useMemo(() => {
 		if (message.type === "ask" && message.ask === "followup" && !message.partial) {
 			return safeJsonParse<FollowUpData>(message.text)
@@ -391,12 +554,13 @@ export const ChatRowContent = ({
 						<div className="pl-6">
 							<CodeAccordian
 								path={tool.path}
-								code={tool.content ?? tool.diff}
+								code={cleanDiffContent ?? tool.content ?? tool.diff}
 								language="diff"
 								progressStatus={message.progressStatus}
 								isLoading={message.partial}
 								isExpanded={isExpanded}
 								onToggleExpand={handleToggleExpand}
+								diffStats={diffStatsForInline ?? undefined}
 							/>
 						</div>
 					</>
@@ -428,12 +592,47 @@ export const ChatRowContent = ({
 						<div className="pl-6">
 							<CodeAccordian
 								path={tool.path}
-								code={tool.diff}
+								code={cleanDiffContent ?? tool.diff}
 								language="diff"
 								progressStatus={message.progressStatus}
 								isLoading={message.partial}
 								isExpanded={isExpanded}
 								onToggleExpand={handleToggleExpand}
+								diffStats={diffStatsForInline ?? undefined}
+							/>
+						</div>
+					</>
+				)
+			case "searchAndReplace":
+				return (
+					<>
+						<div style={headerStyle}>
+							{tool.isProtected ? (
+								<span
+									className="codicon codicon-lock"
+									style={{ color: "var(--vscode-editorWarning-foreground)", marginBottom: "-1.5px" }}
+								/>
+							) : (
+								toolIcon("replace")
+							)}
+							<span style={{ fontWeight: "bold" }}>
+								{tool.isProtected && message.type === "ask"
+									? t("chat:fileOperations.wantsToEditProtected")
+									: message.type === "ask"
+										? t("chat:fileOperations.wantsToSearchReplace")
+										: t("chat:fileOperations.didSearchReplace")}
+							</span>
+						</div>
+						<div className="pl-6">
+							<CodeAccordian
+								path={tool.path}
+								code={cleanDiffContent ?? tool.diff}
+								language="diff"
+								progressStatus={message.progressStatus}
+								isLoading={message.partial}
+								isExpanded={isExpanded}
+								onToggleExpand={handleToggleExpand}
+								diffStats={diffStatsForInline ?? undefined}
 							/>
 						</div>
 					</>
@@ -496,12 +695,13 @@ export const ChatRowContent = ({
 						<div className="pl-6">
 							<CodeAccordian
 								path={tool.path}
-								code={tool.content}
-								language={getLanguageFromPath(tool.path || "") || "log"}
+								code={convertNewFileToUnifiedDiff(tool.content || "", tool.path)}
+								language="diff"
 								isLoading={message.partial}
 								isExpanded={isExpanded}
 								onToggleExpand={handleToggleExpand}
 								onJumpToFile={() => vscode.postMessage({ type: "openFile", text: "./" + tool.path })}
+								diffStats={diffStatsForInline ?? undefined}
 							/>
 						</div>
 					</>
