@@ -667,7 +667,7 @@
 		},
 		"inheritEnv": {
 			"label": "Inherit environment variables",
-			"description": "Turn this to inherit environment variables from the parent VS Code process.<0>Learn more</0>"
+			"description": "Turn this on to inherit environment variables from the parent VS Code process.<0>Learn more</0>"
 		}
 	},
 	"advancedSettings": {
