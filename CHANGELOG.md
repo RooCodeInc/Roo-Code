@@ -1,5 +1,22 @@
 # CoStrict Change Log
 
+## [2.0.5]
+
+- Optimized request sending speed
+- Reduced file read/write handle usage
+- Optimized shell/non-shell integration compatibility and command execution efficiency
+- Updated brand name to CoStrict
+- Compatible with [jetbrains codereview](https://github.com/zgsm-ai/costrict-jetbrains-agent)
+- Added review mode request headers
+- Optimized static file size
+- Optimized conversation memory usage
+- Fixed background silent editing Chinese encoding issues
+- Optimized shell integration prompts
+- Optimized readfile prompts
+- Optimized tool logs
+- Sync roocode [last commit](https://github.com/zgsm-ai/costrict/commit/ff0c65af10064cc63626ce500800a8c388a1c6b4)
+- Fix known issues
+
 ## [2.0.4]
 
 - Add support for project spec commands from .cospec directory (#583)

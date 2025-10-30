@@ -382,6 +382,7 @@ export class AICompletionProvider implements InlineCompletionItemProvider, Dispo
 					error.message === "Request was aborted."
 				) {
 					Logger.info(`Completion [${cp.id}]: The request has been cancelled.`)
+					CompletionStatusBar.noSuggest()
 				} else {
 					Logger.error(`Completion [${cp.id}]: Failed to get completion content`, error)
 					this.recordError(CodeCompletionError.ApiError as TelemetryErrorType)
