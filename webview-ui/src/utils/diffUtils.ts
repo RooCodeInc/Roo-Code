@@ -125,20 +125,22 @@ export function convertSearchReplaceToUnifiedDiff(content: string, filePath?: st
 	return hasBlocks ? unified : content
 }
 
-/** Build a unified diff for a brand new file (all content lines are additions) */
+/** Build a unified diff for a brand new file (all content lines are additions).
+ * Trailing newline is ignored for line counting and emission.
+ */
 export function convertNewFileToUnifiedDiff(content: string, filePath?: string): string {
 	const fileName = filePath || "file"
 	// Normalize EOLs to keep counts consistent
 	const normalized = content.replace(/\r\n/g, "\n")
-	const lines = normalized.split("\n")
+	const parts = normalized.split("\n")
+	// Drop trailing empty item produced by a final newline so we count only real content lines
+	const contentLines = parts[parts.length - 1] === "" ? parts.slice(0, -1) : parts
 
 	let diff = `--- /dev/null\n`
 	diff += `+++ ${fileName}\n`
-	diff += `@@ -0,0 +1,${normalized === "" ? 0 : lines.length} @@\n`
+	diff += `@@ -0,0 +1,${contentLines.length} @@\n`
 
-	for (const line of lines) {
-		// Preserve final newline behavior: if content ended with newline, split will produce trailing ""
-		// which is still okay to emit as "+", it represents a blank line.
+	for (const line of contentLines) {
 		diff += `+${line}\n`
 	}
 

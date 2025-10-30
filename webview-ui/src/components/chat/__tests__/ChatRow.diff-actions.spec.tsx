@@ -111,4 +111,25 @@ describe("ChatRow - inline diff stats and actions", () => {
 		expect(screen.getByText("+3")).toBeInTheDocument()
 		expect(screen.getByText("-0")).toBeInTheDocument()
 	})
+
+	it("counts only added lines for newFileCreated with trailing newline", () => {
+		const content = "a\nb\nc\n"
+		const message: any = {
+			type: "ask",
+			ask: "tool",
+			ts: Date.now(),
+			partial: false,
+			text: JSON.stringify({
+				tool: "newFileCreated",
+				path: "src/new-file.ts",
+				content,
+			}),
+		}
+
+		renderChatRow(message)
+
+		// Trailing newline should not increase the added count
+		expect(screen.getByText("+3")).toBeInTheDocument()
+		expect(screen.getByText("-0")).toBeInTheDocument()
+	})
 })
