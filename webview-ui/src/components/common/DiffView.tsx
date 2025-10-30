@@ -13,8 +13,9 @@ interface DiffViewProps {
 interface DiffLine {
 	oldLineNum: number | null
 	newLineNum: number | null
-	type: "context" | "addition" | "deletion"
+	type: "context" | "addition" | "deletion" | "gap"
 	content: string
+	hiddenCount?: number
 }
 
 /**
@@ -88,7 +89,24 @@ const DiffView = memo(({ source, filePath }: DiffViewProps) => {
 			const lines: DiffLine[] = []
 			const patch = patches[0]
 
+			let prevHunk: any = null
 			for (const hunk of patch.hunks) {
+				// Insert a compact "hidden lines" separator between hunks
+				if (prevHunk) {
+					const gapNew = hunk.newStart - (prevHunk.newStart + prevHunk.newLines)
+					const gapOld = hunk.oldStart - (prevHunk.oldStart + prevHunk.oldLines)
+					const hidden = Math.max(gapNew, gapOld)
+					if (hidden > 0) {
+						lines.push({
+							oldLineNum: null,
+							newLineNum: null,
+							type: "gap",
+							content: "",
+							hiddenCount: hidden,
+						})
+					}
+				}
+
 				let oldLine = hunk.oldStart
 				let newLine = hunk.newStart
 
@@ -124,6 +142,8 @@ const DiffView = memo(({ source, filePath }: DiffViewProps) => {
 						newLine++
 					}
 				}
+
+				prevHunk = hunk
 			}
 
 			return lines
@@ -151,6 +171,70 @@ const DiffView = memo(({ source, filePath }: DiffViewProps) => {
 					}}>
 					<tbody>
 						{diffLines.map((line, idx) => {
+							// Render compact separator between hunks
+							if (line.type === "gap") {
+								const gapBg = "color-mix(in srgb, var(--vscode-editorGroup-border) 100%, transparent)"
+								return (
+									<tr key={idx}>
+										<td
+											style={{
+												width: "45px",
+												textAlign: "right",
+												paddingRight: "12px",
+												paddingLeft: "8px",
+												userSelect: "none",
+												verticalAlign: "top",
+												whiteSpace: "nowrap",
+												backgroundColor: gapBg,
+											}}
+										/>
+										<td
+											style={{
+												width: "45px",
+												textAlign: "right",
+												paddingRight: "12px",
+												userSelect: "none",
+												verticalAlign: "top",
+												whiteSpace: "nowrap",
+												backgroundColor: gapBg,
+											}}
+										/>
+										<td
+											style={{
+												width: "12px",
+												backgroundColor: gapBg,
+												verticalAlign: "top",
+											}}
+										/>
+										{/* +/- column (empty for gap) */}
+										<td
+											style={{
+												width: "16px",
+												textAlign: "center",
+												userSelect: "none",
+												backgroundColor: gapBg,
+											}}
+										/>
+										<td
+											style={{
+												paddingLeft: "4px",
+												paddingRight: "12px",
+												whiteSpace: "pre-wrap",
+												overflowWrap: "anywhere",
+												wordBreak: "break-word",
+												fontFamily: "var(--vscode-editor-font-family)",
+												color: "var(--vscode-descriptionForeground)",
+												width: "100%",
+												textAlign: "center",
+												fontStyle: "italic",
+												backgroundColor: gapBg,
+											}}>
+											{`${line.hiddenCount ?? 0} hidden lines`}
+										</td>
+									</tr>
+								)
+							}
+
 							// Use VSCode's built-in diff editor color variables with 50% opacity
 							const gutterBg =
 								line.type === "addition"
@@ -175,6 +259,8 @@ const DiffView = memo(({ source, filePath }: DiffViewProps) => {
 													"color-mix(in srgb, var(--vscode-editorGroup-border) 100%, transparent)",
 											}
 
+							const sign = line.type === "addition" ? "+" : line.type === "deletion" ? "-" : ""
+
 							return (
 								<tr key={idx}>
 									{/* Old line number */}
@@ -182,8 +268,8 @@ const DiffView = memo(({ source, filePath }: DiffViewProps) => {
 										style={{
 											width: "45px",
 											textAlign: "right",
-											paddingRight: "12px",
-											paddingLeft: "8px",
+											paddingRight: "4px",
+											paddingLeft: "4px",
 											userSelect: "none",
 											verticalAlign: "top",
 											whiteSpace: "nowrap",
@@ -196,7 +282,7 @@ const DiffView = memo(({ source, filePath }: DiffViewProps) => {
 										style={{
 											width: "45px",
 											textAlign: "right",
-											paddingRight: "12px",
+											paddingRight: "4px",
 											userSelect: "none",
 											verticalAlign: "top",
 											whiteSpace: "nowrap",
@@ -204,7 +290,7 @@ const DiffView = memo(({ source, filePath }: DiffViewProps) => {
 										}}>
 										{line.newLineNum || ""}
 									</td>
-									{/* Narrow colored gutter (no +/- glyph) */}
+									{/* Narrow colored gutter */}
 									<td
 										style={{
 											width: "12px",
@@ -212,7 +298,22 @@ const DiffView = memo(({ source, filePath }: DiffViewProps) => {
 											verticalAlign: "top",
 										}}
 									/>
-									{/* Code content (includes +/- prefix inside the code cell) */}
+									{/* +/- fixed column to prevent wrapping into it */}
+									<td
+										style={{
+											width: "16px",
+											textAlign: "center",
+											userSelect: "none",
+											whiteSpace: "nowrap",
+											paddingLeft: "4px",
+											paddingRight: "4px",
+											backgroundColor: gutterBg,
+											color: "#ffffff",
+											fontFamily: "var(--vscode-editor-font-family)",
+										}}>
+										{sign}
+									</td>
+									{/* Code content (no +/- prefix here) */}
 									<td
 										style={{
 											paddingLeft: "4px",
@@ -225,13 +326,6 @@ const DiffView = memo(({ source, filePath }: DiffViewProps) => {
 											width: "100%",
 											...contentBgStyles,
 										}}>
-										<span
-											style={{
-												color: line.type === "context" ? "transparent" : "#ffffff",
-												userSelect: "none",
-											}}>
-											{line.type === "addition" ? "+ " : line.type === "deletion" ? "- " : ""}
-										</span>
 										{renderHighlighted(line.content)}
 									</td>
 								</tr>
