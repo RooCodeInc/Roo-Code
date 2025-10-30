@@ -651,7 +651,7 @@
 		},
 		"zshClearEolMark": {
 			"label": "Clear ZSH EOL mark",
-			"description": "Turn this on when you see stray % at the end of lines or parsing looks wrong; it omits Zsh’s end‑of‑line mark (%).  <0>Learn more</0>"
+			"description": "Turn this on when you see stray % at the end of lines or parsing looks wrong; it omits Zsh’s end‑of‑line mark (%). <0>Learn more</0>"
 		},
 		"zshOhMy": {
 			"label": "Enable Oh My Zsh integration",
