@@ -55,11 +55,11 @@ function isSearchReplace(s: string): boolean {
 function stripCData(s: string): string {
 	return (
 		s
-			// HTML-encoded CDATA open
+			// HTML-encoded CDATA open -> raw, then strip raw
 			.replace(/<!\[CDATA\[/g, "<![CDATA[")
-			// CDATA open
 			.replace(/<!\[CDATA\[/g, "")
-			// CDATA close (both encoded and raw)
+			// HTML-encoded CDATA close -> raw, then strip raw
+			.replace(/\]\]>/g, "]]>")
 			.replace(/\]\]>/g, "")
 	)
 }
