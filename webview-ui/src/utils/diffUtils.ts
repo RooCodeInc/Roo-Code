@@ -71,7 +71,7 @@ function stripCData(s: string): string {
 export function convertSearchReplaceToUnifiedDiff(content: string, filePath?: string): string {
 	// Backend-compatible regex: captures :start_line: and :end_line:, optional '-------', and SEARCH/REPLACE bodies
 	const blockRegex =
-		/(?:^|\n)(?<!\\)<<<<<<< SEARCH>?\s*\n((?:\:start_line:\s*(\d+)\s*\n))?((?:\:end_line:\s*(\d+)\s*\n))?((?<!\\)-------\s*\n)?([\s\S]*?)(?:\n)?(?:(?<=\n)(?<!\\)=======\s*\n)([\s\S]*?)(?:\n)?(?:(?<=\n)(?<!\\)>>>>>>> REPLACE)(?=\n|$)/g
+		/(?:^|\n)(?<!\\)<<<<<<< SEARCH>?\s*\n((?::start_line:\s*(\d+)\s*\n))?((?::end_line:\s*(\d+)\s*\n))?((?<!\\)-------\s*\n)?([\s\S]*?)(?:\n)?(?:(?<=\n)(?<!\\)=======\s*\n)([\s\S]*?)(?:\n)?(?:(?<=\n)(?<!\\)>>>>>>> REPLACE)(?=\n|$)/g
 
 	const fileName = filePath || "file"
 	let hasBlocks = false
