@@ -108,6 +108,16 @@ export async function* runClaudeCode(
 			}
 
 			const errorOutput = (processState.error as any)?.message || processState.stderrLogs?.trim()
+
+			// Check for authentication errors in stderr or error output
+			if (errorOutput && isAuthenticationError(errorOutput)) {
+				throw new Error(
+					t("common:errors.claudeCode.authenticationError", {
+						originalError: errorOutput,
+					}),
+				)
+			}
+
 			throw new Error(
 				`Claude Code process exited with code ${exitCode}.${errorOutput ? ` Error output: ${errorOutput}` : ""}`,
 			)
@@ -272,4 +282,27 @@ function createClaudeCodeNotFoundError(claudePath: string, originalError: Error)
 	const error = new Error(errorMessage)
 	error.name = "ClaudeCodeNotFoundError"
 	return error
+}
+
+/**
+ * Checks if an error message indicates an authentication issue
+ */
+function isAuthenticationError(message: string): boolean {
+	const authErrorPatterns = [
+		"authentication failed",
+		"unauthorized",
+		"not authenticated",
+		"login required",
+		"invalid api key",
+		"api key expired",
+		"credential",
+		"auth error",
+		"403",
+		"401",
+		"please authenticate",
+		"claude login",
+	]
+
+	const lowerMessage = message.toLowerCase()
+	return authErrorPatterns.some((pattern) => lowerMessage.includes(pattern))
 }

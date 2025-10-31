@@ -82,7 +82,24 @@ export class ClaudeCodeHandler extends BaseProvider implements ApiHandler {
 
 						const error = this.attemptParse(errorMessage)
 						if (!error) {
+							// Check for authentication errors in raw message
+							if (this.isAuthenticationError(content.text)) {
+								throw new Error(
+									t("common:errors.claudeCode.authenticationError", {
+										originalError: content.text,
+									}),
+								)
+							}
 							throw new Error(content.text)
+						}
+
+						// Check for authentication-related errors
+						if (this.isAuthenticationError(error.error?.message || errorMessage)) {
+							throw new Error(
+								t("common:errors.claudeCode.authenticationError", {
+									originalError: error.error?.message || errorMessage,
+								}),
+							)
 						}
 
 						if (error.error.message.includes("Invalid model name")) {
@@ -171,5 +188,23 @@ export class ClaudeCodeHandler extends BaseProvider implements ApiHandler {
 		} catch (err) {
 			return null
 		}
+	}
+
+	private isAuthenticationError(message: string): boolean {
+		const authErrorPatterns = [
+			"authentication failed",
+			"unauthorized",
+			"not authenticated",
+			"login required",
+			"invalid api key",
+			"api key expired",
+			"credential",
+			"auth error",
+			"403",
+			"401",
+		]
+
+		const lowerMessage = message.toLowerCase()
+		return authErrorPatterns.some((pattern) => lowerMessage.includes(pattern))
 	}
 }

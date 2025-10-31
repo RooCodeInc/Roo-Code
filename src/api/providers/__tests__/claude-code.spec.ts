@@ -1,10 +1,25 @@
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { ClaudeCodeHandler } from "../claude-code"
 import { ApiHandlerOptions } from "../../../shared/api"
 import { ClaudeCodeMessage } from "../../../integrations/claude-code/types"
+import { runClaudeCode } from "../../../integrations/claude-code/run"
+import { t } from "../../../i18n"
 
 // Mock the runClaudeCode function
 vi.mock("../../../integrations/claude-code/run", () => ({
 	runClaudeCode: vi.fn(),
+}))
+
+vi.mock("../../../i18n", () => ({
+	t: vi.fn((key: string, options?: any) => {
+		if (key === "common:errors.claudeCode.authenticationError") {
+			return `Claude Code authentication failed. Original error: ${options?.originalError || "unknown"}`
+		}
+		if (key === "common:errors.claudeCode.apiKeyModelPlanMismatch") {
+			return "API keys and subscription plans allow different models. Make sure the selected model is included in your plan."
+		}
+		return key
+	}),
 }))
 
 // Mock the message filter
@@ -12,7 +27,6 @@ vi.mock("../../../integrations/claude-code/message-filter", () => ({
 	filterMessagesForClaudeCode: vi.fn((messages) => messages),
 }))
 
-const { runClaudeCode } = await import("../../../integrations/claude-code/run")
 const { filterMessagesForClaudeCode } = await import("../../../integrations/claude-code/message-filter")
 const mockRunClaudeCode = vi.mocked(runClaudeCode)
 const mockFilterMessages = vi.mocked(filterMessagesForClaudeCode)
@@ -561,5 +575,153 @@ describe("ClaudeCodeHandler", () => {
 		expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining("tool_use is not supported yet"))
 
 		consoleSpy.mockRestore()
+	})
+})
+
+describe("ClaudeCodeHandler Authentication Error Handling", () => {
+	let handler: ClaudeCodeHandler
+
+	beforeEach(() => {
+		vi.clearAllMocks()
+		handler = new ClaudeCodeHandler({
+			claudeCodePath: "claude",
+			apiModelId: "claude-3-5-sonnet-20241022",
+		} as ApiHandlerOptions)
+	})
+
+	afterEach(() => {
+		vi.clearAllMocks()
+	})
+
+	it("should detect and handle authentication errors from API response", async () => {
+		const mockGenerator = async function* (): AsyncGenerator<ClaudeCodeMessage | string> {
+			yield {
+				type: "assistant" as const,
+				message: {
+					id: "msg_123",
+					type: "message",
+					role: "assistant",
+					model: "claude-3-5-sonnet-20241022",
+					content: [
+						{
+							type: "text",
+							text: 'API Error: 401 {"error":{"message":"Authentication failed. Please login with claude login"}}',
+						},
+					],
+					stop_reason: "stop",
+					stop_sequence: null,
+					usage: {
+						input_tokens: 100,
+						output_tokens: 50,
+						cache_read_input_tokens: 0,
+						cache_creation_input_tokens: 0,
+					},
+				} as any,
+				session_id: "session_123",
+			}
+		}
+
+		mockRunClaudeCode.mockReturnValue(mockGenerator())
+
+		const messages: any[] = [{ role: "user", content: "test" }]
+		const generator = handler.createMessage("system", messages)
+
+		await expect(async () => {
+			for await (const _ of generator) {
+				// consume generator
+			}
+		}).rejects.toThrow("Claude Code authentication failed")
+	})
+
+	it("should detect various authentication error patterns", async () => {
+		const authErrorMessages = [
+			"API Error: 403 Unauthorized",
+			"API Error: Invalid API key",
+			"API Error: Credential expired",
+			"API Error: Login required",
+			"API Error: Not authenticated",
+		]
+
+		for (const errorMessage of authErrorMessages) {
+			const mockGenerator = async function* (): AsyncGenerator<ClaudeCodeMessage | string> {
+				yield {
+					type: "assistant" as const,
+					message: {
+						id: "msg_123",
+						type: "message",
+						role: "assistant",
+						model: "claude-3-5-sonnet-20241022",
+						content: [
+							{
+								type: "text",
+								text: errorMessage,
+							},
+						],
+						stop_reason: "stop",
+						stop_sequence: null,
+						usage: {
+							input_tokens: 100,
+							output_tokens: 50,
+							cache_read_input_tokens: 0,
+							cache_creation_input_tokens: 0,
+						},
+					} as any,
+					session_id: "session_123",
+				}
+			}
+
+			mockRunClaudeCode.mockReturnValue(mockGenerator())
+
+			const messages: any[] = [{ role: "user", content: "test" }]
+			const generator = handler.createMessage("system", messages)
+
+			await expect(async () => {
+				for await (const _ of generator) {
+					// consume generator
+				}
+			}).rejects.toThrow("Claude Code authentication failed")
+
+			vi.clearAllMocks()
+		}
+	})
+
+	it("should not treat non-authentication errors as authentication errors", async () => {
+		const mockGenerator = async function* (): AsyncGenerator<ClaudeCodeMessage | string> {
+			yield {
+				type: "assistant" as const,
+				message: {
+					id: "msg_123",
+					type: "message",
+					role: "assistant",
+					model: "claude-3-5-sonnet-20241022",
+					content: [
+						{
+							type: "text",
+							text: "API Error: 500 Internal Server Error",
+						},
+					],
+					stop_reason: "stop",
+					stop_sequence: null,
+					usage: {
+						input_tokens: 100,
+						output_tokens: 50,
+						cache_read_input_tokens: 0,
+						cache_creation_input_tokens: 0,
+					},
+				} as any,
+				session_id: "session_123",
+			}
+		}
+
+		mockRunClaudeCode.mockReturnValue(mockGenerator())
+
+		const messages: any[] = [{ role: "user", content: "test" }]
+		const generator = handler.createMessage("system", messages)
+
+		await expect(async () => {
+			for await (const _ of generator) {
+				// consume generator
+			}
+		}).rejects.toThrow("API Error: 500 Internal Server Error")
 	})
 })
