@@ -296,6 +296,23 @@ export class QdrantVectorStore implements IVectorStore {
 	 * Creates payload indexes for the collection, handling errors gracefully.
 	 */
 	private async _createPayloadIndexes(): Promise<void> {
+		// Create index for the 'type' field to enable metadata filtering
+		try {
+			await this.client.createPayloadIndex(this.collectionName, {
+				field_name: "type",
+				field_schema: "keyword",
+			})
+		} catch (indexError: any) {
+			const errorMessage = (indexError?.message || "").toLowerCase()
+			if (!errorMessage.includes("already exists")) {
+				console.warn(
+					`[QdrantVectorStore] Could not create payload index for type on ${this.collectionName}. Details:`,
+					indexError?.message || indexError,
+				)
+			}
+		}
+
+		// Create indexes for pathSegments fields
 		for (let i = 0; i <= 4; i++) {
 			try {
 				await this.client.createPayloadIndex(this.collectionName, {
