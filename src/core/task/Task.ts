@@ -3040,8 +3040,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	}
 
 	/**
-	 * Process any queued messages by dequeuing and submitting them one at a time.
-	 * Each message will trigger a full task cycle with LLM interaction.
+	 * Process any queued messages by dequeuing and submitting them.
+	 * This ensures that queued user messages are sent when appropriate,
+	 * preventing them from getting stuck in the queue.
+	 *
+	 * @param context - Context string for logging (e.g., the calling tool name)
 	 */
 	public processQueuedMessages(): void {
 		try {
