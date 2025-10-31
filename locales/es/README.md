@@ -86,10 +86,10 @@ code --install-extension bin/zgsm-<version>.vsix
     ```sh
     pnpm vsix
     ```
-2.  Se generará un archivo `.vsix` en el directorio `bin/` (p. ej., `bin/roo-cline-<version>.vsix`).
+2.  Se generará un archivo `.vsix` en el directorio `bin/` (p. ej., `bin/zgsm-<version>.vsix`).
 3.  Instálalo manualmente usando la CLI de VSCode:
     ```sh
-    code --install-extension bin/roo-cline-<version>.vsix
+    code --install-extension bin/zgsm-<version>.vsix
     ```
 
 ---

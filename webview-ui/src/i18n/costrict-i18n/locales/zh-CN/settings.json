@@ -94,9 +94,6 @@
 		"autoCondenseContextPercent": {
 			"description": "当上下文窗口达到此阈值时，CoStrict 将自动压缩它。"
 		},
-		"SEARCH_AND_REPLACE": {
-			"description": "启用实验性的搜索和替换工具，允许 CoStrict 在一个请求中替换搜索词的多实例。"
-		},
 		"INSERT_BLOCK": {
 			"description": "启用实验性的插入内容工具，允许 CoStrict 在特定行号插入内容，无需创建差异。"
 		},

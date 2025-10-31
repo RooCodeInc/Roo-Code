@@ -2268,11 +2268,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 								// Check if task was aborted during the backoff
 								if (this.abort) {
-									this.providerRef
-										.deref()
-										?.log(
-											`[Task#${this.taskId}.${this.instanceId}] Task aborted during mid-stream retry backoff`,
-										)
+									console.log(
+										`[Task#${this.taskId}.${this.instanceId}] Task aborted during mid-stream retry backoff`,
+									)
 									// Abort the entire task
 									this.abortReason = "user_cancelled"
 									await this.abortTask()

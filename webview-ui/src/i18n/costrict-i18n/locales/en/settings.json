@@ -94,9 +94,6 @@
 		"autoCondenseContextPercent": {
 			"description": "When the context window reaches this threshold, CoStrict will automatically condense it."
 		},
-		"SEARCH_AND_REPLACE": {
-			"description": "Enable the experimental search and replace tool, allowing CoStrict to replace multiple instances of a search term in one request."
-		},
 		"INSERT_BLOCK": {
 			"description": "Enable the experimental insert content tool, allowing CoStrict to insert content at specific line numbers without needing to create a diff."
 		},

@@ -86,10 +86,10 @@ code --install-extension bin/zgsm-<version>.vsix
     ```sh
     pnpm vsix
     ```
-2.  將在 `bin/` 目錄中產生一個 `.vsix` 檔案（例如 `bin/roo-cline-<version>.vsix`）。
+2.  將在 `bin/` 目錄中產生一個 `.vsix` 檔案（例如 `bin/zgsm-<version>.vsix`）。
 3.  使用 VSCode CLI 手動安裝
     ```sh
-    code --install-extension bin/roo-cline-<version>.vsix
+    code --install-extension bin/zgsm-<version>.vsix
     ```
 
 ---

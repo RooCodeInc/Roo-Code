@@ -322,6 +322,7 @@
 			"description": "它在雲端執行 Roo，立即提供極高品質的程式碼審查。我們在建立 Roo 時大量使用它，現在它也可供社群使用。",
 			"createAgentButton": "試用 PR Reviewer"
 		},
+		"careers": "此外，<careersLink>我們正在招募！</careersLink>",
 		"socialLinks": "在 <xLink>X</xLink>、<discordLink>Discord</discordLink> 或 <redditLink>r/RooCode</redditLink> 上關注我們 🚀"
 	},
 	"reasoning": {

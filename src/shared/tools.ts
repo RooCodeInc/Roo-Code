@@ -55,15 +55,10 @@ export const toolParamNames = [
 	"follow_up",
 	"task",
 	"size",
-	"search",
-	"replace",
-	"use_regex",
-	"ignore_case",
+	"query",
 	"args",
 	"start_line",
 	"end_line",
-	"query",
-	"args",
 	"todos",
 	"prompt",
 	"image",
@@ -165,12 +160,6 @@ export interface RunSlashCommandToolUse extends ToolUse {
 	params: Partial<Pick<Record<ToolParamName, string>, "command" | "args">>
 }
 
-export interface SearchAndReplaceToolUse extends ToolUse {
-	name: "search_and_replace"
-	params: Required<Pick<Record<ToolParamName, string>, "path" | "search" | "replace">> &
-		Partial<Pick<Record<ToolParamName, string>, "use_regex" | "ignore_case" | "start_line" | "end_line">>
-}
-
 export interface GenerateImageToolUse extends ToolUse {
 	name: "generate_image"
 	params: Partial<Pick<Record<ToolParamName, string>, "prompt" | "path" | "image">>
@@ -199,7 +188,6 @@ export const TOOL_DISPLAY_NAMES: Record<ToolName, string> = {
 	switch_mode: "switch modes",
 	new_task: "create new task",
 	insert_content: "insert content",
-	search_and_replace: "search and replace",
 	codebase_search: "codebase search",
 	update_todo_list: "update todo list",
 	run_slash_command: "run slash command",
@@ -219,7 +207,7 @@ export const TOOL_GROUPS: Record<ToolGroup, ToolGroupConfig> = {
 		],
 	},
 	edit: {
-		tools: ["apply_diff", "write_to_file", "insert_content", "search_and_replace", "generate_image"],
+		tools: ["apply_diff", "write_to_file", "insert_content", "generate_image"],
 	},
 	browser: {
 		tools: ["browser_action"],

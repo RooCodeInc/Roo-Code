@@ -66,6 +66,7 @@
 	"settings.customStoragePath.description": "自定义存储路径。留空以使用默认位置。支持绝对路径（例如：'D:\\CostrictCodeStorage'）",
 	"settings.enableCodeActions.description": "启用 CoStrict 快速修复",
 	"settings.autoImportSettingsPath.description": "CoStrict 配置文件的路径，用于在扩展启动时自动导入。支持绝对路径和相对于主目录的路径（例如 '~/Documents/costrict-settings.json'）。留空以禁用自动导入。",
+	"settings.maximumIndexedFilesForFileSearch.description": "为 @ 文件搜索功能建立索引时要索引的最大文件数。较大的值在大型项目中提供更好的搜索结果，但可能占用更多内存。默认值：10,000。",
 	"settings.useAgentRules.description": "为特定于代理的规则启用 AGENTS.md 文件的加载（请参阅 https://agent-rules.org/）",
 	"settings.autoCommit.description": "在接受大模型的变更后，自动提交当前变更文件",
 	"settings.apiResponseRenderMode.description": "API 响应渲染速度模式（fast = 最小延迟，medium = 平衡模式，slow = 最大兼容性）。更高的值提供更好的兼容性但可能感觉响应较慢。",

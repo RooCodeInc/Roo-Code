@@ -313,6 +313,7 @@
 			"description": "在云端运行 Roo，即时提供极高质量的代码审查。我们在构建 Roo 时大量使用它，现在也向社区开放。",
 			"createAgentButton": "试用 PR 审查员"
 		},
+		"careers": "此外，<careersLink>我们正在招聘！</careersLink>",
 		"socialLinks": "在 <xLink>X</xLink>、<discordLink>Discord</discordLink> 或 <redditLink>r/RooCode</redditLink> 上关注我们 🚀"
 	},
 	"browser": {

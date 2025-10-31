@@ -115,13 +115,13 @@ export async function activate(context: vscode.ExtensionContext) {
 	// 		if (manager) {
 	// 			codeIndexManagers.push(manager)
 
-	// 			try {
-	// 				await manager.initialize(contextProxy)
-	// 			} catch (error) {
-	// 				outputChannel.appendLine(
-	// 					`[CodeIndexManager] Error during background CodeIndexManager configuration/indexing for ${folder.uri.fsPath}: ${error.message || error}`,
-	// 				)
-	// 			}
+	// // Initialize in background; do not block extension activation
+	// void manager.initialize(contextProxy).catch((error) => {
+	// 	const message = error instanceof Error ? error.message : String(error)
+	// 	outputChannel.appendLine(
+	// 		`[CodeIndexManager] Error during background CodeIndexManager configuration/indexing for ${folder.uri.fsPath}: ${message}`,
+	// 	)
+	// })
 
 	// 			context.subscriptions.push(manager)
 	// 		}

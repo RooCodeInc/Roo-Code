@@ -1036,14 +1036,9 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 
 			const tool = JSON.parse(message.text)
 
-			return [
-				"editedExistingFile",
-				"appliedDiff",
-				"newFileCreated",
-				"searchAndReplace",
-				"insertContent",
-				"generateImage",
-			].includes(tool.tool)
+			return ["editedExistingFile", "appliedDiff", "newFileCreated", "insertContent", "generateImage"].includes(
+				tool.tool,
+			)
 		}
 
 		return false
