@@ -1373,7 +1373,7 @@ export const ChatRowContent = ({
 						</>
 					)
 				case "shell_integration_warning":
-					console.log(t("chat:shellIntegration.title"), t("chat:shellIntegration.description"))
+					// console.log(t("chat:shellIntegration.title"), t("chat:shellIntegration.description"))
 
 					return null
 				// return <CommandExecutionError />
