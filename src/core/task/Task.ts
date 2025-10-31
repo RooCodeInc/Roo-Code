@@ -3040,14 +3040,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	}
 
 	/**
-	 * Process any queued messages by dequeuing and submitting them.
-	 * This drains ALL queued messages to prevent them from getting stuck.
-	 * Messages are processed with microtask delays to avoid blocking.
+	 * Process any queued messages by dequeuing and submitting them one at a time.
+	 * Each message will trigger a full task cycle with LLM interaction.
 	 */
 	public processQueuedMessages(): void {
 		try {
-			// Drain all queued messages, not just one
-			while (!this.messageQueueService.isEmpty()) {
+			if (!this.messageQueueService.isEmpty()) {
 				const queued = this.messageQueueService.dequeueMessage()
 				if (queued) {
 					setTimeout(() => {
