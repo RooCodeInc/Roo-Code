@@ -53,7 +53,7 @@ export function onConsentChange(callback: (consented: boolean) => void): () => v
  */
 export function handleConsentAccept(): void {
 	if (typeof window !== "undefined" && posthog.__loaded) {
-		// User accepted - ensure cookie tracking is enabled
+		// User accepted - ensure localStorage+cookie persistence is enabled
 		posthog.opt_in_capturing()
 		posthog.set_config({
 			persistence: "localStorage+cookie",

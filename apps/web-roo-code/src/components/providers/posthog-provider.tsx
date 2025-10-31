@@ -4,6 +4,7 @@ import { usePathname, useSearchParams } from "next/navigation"
 import posthog from "posthog-js"
 import { PostHogProvider as OriginalPostHogProvider } from "posthog-js/react"
 import { useEffect, Suspense } from "react"
+import { hasConsent } from "@/lib/analytics/consent-manager"
 
 function PageViewTracker() {
 	const pathname = usePathname()
@@ -49,7 +50,10 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
 				)
 			}
 
-			// Initialize PostHog with cookieless mode support
+			// Check if user has already consented to cookies
+			const userHasConsented = hasConsent()
+
+			// Initialize PostHog with appropriate persistence based on consent
 			posthog.init(posthogKey, {
 				api_host: posthogHost || "https://us.i.posthog.com",
 				capture_pageview: false, // We handle pageview tracking manually
@@ -61,7 +65,7 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
 				save_referrer: true, // Save referrer information
 				save_campaign_params: true, // Save UTM parameters
 				respect_dnt: true, // Respect Do Not Track
-				persistence: "memory", // Default persistence with cookies
+				persistence: userHasConsented ? "localStorage+cookie" : "memory", // Use localStorage if consented, otherwise memory-only
 				opt_out_capturing_by_default: false, // Start tracking immediately
 			})
 		}
