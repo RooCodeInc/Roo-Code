@@ -6,6 +6,7 @@ import { type ProviderSettings, type ModelInfo, BEDROCK_REGIONS, BEDROCK_1M_CONT
 
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, StandardTooltip } from "@src/components/ui"
+import { PasswordInputField } from "@src/components/ui/password-input"
 
 import { inputEventTransform, noTransform } from "../transforms"
 
@@ -77,14 +78,12 @@ export const Bedrock = ({ apiConfiguration, setApiConfigurationField, selectedMo
 				{t("settings:providers.apiKeyStorageNotice")}
 			</div>
 			{apiConfiguration?.awsUseApiKey ? (
-				<VSCodeTextField
+				<PasswordInputField
 					value={apiConfiguration?.awsApiKey || ""}
-					type="password"
-					onInput={handleInputChange("awsApiKey")}
+					onChange={handleInputChange("awsApiKey")}
 					placeholder={t("settings:placeholders.apiKey")}
-					className="w-full">
-					<label className="block font-medium mb-1">{t("settings:providers.awsApiKey")}</label>
-				</VSCodeTextField>
+					label={t("settings:providers.awsApiKey")}
+					className="w-full"></PasswordInputField>
 			) : apiConfiguration?.awsUseProfile ? (
 				<VSCodeTextField
 					value={apiConfiguration?.awsProfile || ""}
@@ -95,30 +94,24 @@ export const Bedrock = ({ apiConfiguration, setApiConfigurationField, selectedMo
 				</VSCodeTextField>
 			) : (
 				<>
-					<VSCodeTextField
+					<PasswordInputField
 						value={apiConfiguration?.awsAccessKey || ""}
-						type="password"
-						onInput={handleInputChange("awsAccessKey")}
+						onChange={handleInputChange("awsAccessKey")}
 						placeholder={t("settings:placeholders.accessKey")}
-						className="w-full">
-						<label className="block font-medium mb-1">{t("settings:providers.awsAccessKey")}</label>
-					</VSCodeTextField>
-					<VSCodeTextField
+						label={t("settings:providers.awsAccessKey")}
+						className="w-full"></PasswordInputField>
+					<PasswordInputField
 						value={apiConfiguration?.awsSecretKey || ""}
-						type="password"
-						onInput={handleInputChange("awsSecretKey")}
+						onChange={handleInputChange("awsSecretKey")}
 						placeholder={t("settings:placeholders.secretKey")}
-						className="w-full">
-						<label className="block font-medium mb-1">{t("settings:providers.awsSecretKey")}</label>
-					</VSCodeTextField>
-					<VSCodeTextField
+						label={t("settings:providers.awsSecretKey")}
+						className="w-full"></PasswordInputField>
+					<PasswordInputField
 						value={apiConfiguration?.awsSessionToken || ""}
-						type="password"
-						onInput={handleInputChange("awsSessionToken")}
+						onChange={handleInputChange("awsSessionToken")}
 						placeholder={t("settings:placeholders.sessionToken")}
-						className="w-full">
-						<label className="block font-medium mb-1">{t("settings:providers.awsSessionToken")}</label>
-					</VSCodeTextField>
+						label={t("settings:providers.awsSessionToken")}
+						className="w-full"></PasswordInputField>
 				</>
 			)}
 			<div>
