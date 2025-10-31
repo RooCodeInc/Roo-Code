@@ -562,8 +562,8 @@
 			"description": "Wenn aktiviert, werden Dateien, die mit Mustern in .rooignore übereinstimmen, in Listen mit einem Schlosssymbol angezeigt. Wenn deaktiviert, werden diese Dateien vollständig aus Dateilisten und Suchen ausgeblendet."
 		},
 		"maxConcurrentFileReads": {
-			"label": "Concurrent file reads limit",
-			"description": "Maximum number of files the 'read_file' tool can process concurrently. Higher values may speed up reading multiple small files but increase memory usage."
+			"label": "Gleichzeitige Dateilesungen Limit",
+			"description": "Maximale Anzahl von Dateien, die das 'read_file'-Tool gleichzeitig verarbeiten kann. Höhere Werte können das Lesen mehrerer kleiner Dateien beschleunigen, erhöhen aber den Speicherverbrauch."
 		},
 		"maxReadFile": {
 			"label": "Schwellenwert für automatische Dateilesekürzung",
@@ -614,55 +614,55 @@
 		},
 		"advanced": {
 			"label": "Terminal-Einstellungen: Erweitert",
-			"description": "Die folgenden Optionen erfordern möglicherweise einen Terminal-Neustart, um die Einstellung zu übernehmen."
+			"description": "Diese Einstellungen gelten nur, wenn 'Inline-Terminal verwenden' deaktiviert ist."
 		},
 		"outputLineLimit": {
 			"label": "Terminal-Ausgabelimit",
-			"description": "Maximale Anzahl von Zeilen, die in der Terminal-Ausgabe bei der Ausführung von Befehlen enthalten sein sollen. Bei Überschreitung werden Zeilen aus der Mitte entfernt, wodurch Token gespart werden. <0>Mehr erfahren</0>"
+			"description": "Behält erste und letzte Zeilen und verwirft die mittleren, um unter dem Limit zu bleiben. Niedriger für Token-Ersparnis; höher für mehr Details aus der Mitte für Roo. Roo sieht einen Platzhalter, wo Inhalt übersprungen wird.<0>Mehr erfahren</0>"
 		},
 		"outputCharacterLimit": {
 			"label": "Terminal-Zeichenlimit",
-			"description": "Maximale Anzahl von Zeichen, die in die Terminalausgabe bei der Ausführung von Befehlen aufgenommen werden sollen. Dieses Limit hat Vorrang vor dem Zeilenlimit, um Speicherprobleme durch extrem lange Zeilen zu vermeiden. Bei Überschreitung wird die Ausgabe abgeschnitten. <0>Mehr erfahren</0>"
+			"description": "Überschreibt das Zeilenlimit, um Speicherprobleme durch eine harte Obergrenze für die Ausgabegröße zu vermeiden. Bei Überschreitung behält es Anfang und Ende und zeigt Roo einen Platzhalter, wo Inhalt übersprungen wird. <0>Mehr erfahren</0>"
 		},
 		"shellIntegrationTimeout": {
-			"label": "Terminal-Shell-Integrationszeit-Limit",
-			"description": "Maximale Wartezeit für die Shell-Integration, bevor Befehle ausgeführt werden. Für Benutzer mit langen Shell-Startzeiten musst du diesen Wert möglicherweise erhöhen, wenn du Fehler vom Typ \"Shell Integration Unavailable\" im Terminal siehst. <0>Mehr erfahren</0>"
+			"label": "Terminal-Shell-Integrations-Timeout",
+			"description": "Wie lange auf VS Code Shell-Integration gewartet wird, bevor Befehle ausgeführt werden. Erhöhe den Wert, wenn deine Shell langsam startet oder du 'Shell-Integration nicht verfügbar'-Fehler siehst. <0>Mehr erfahren</0>"
 		},
 		"shellIntegrationDisabled": {
-			"label": "Terminal-Shell-Integration deaktivieren",
-			"description": "Aktiviere dies, wenn Terminalbefehle nicht korrekt funktionieren oder du Fehler wie 'Shell Integration Unavailable' siehst. Dies verwendet eine einfachere Methode zur Ausführung von Befehlen und umgeht einige erweiterte Terminalfunktionen. <0>Mehr erfahren</0>"
+			"label": "Inline-Terminal verwenden (empfohlen)",
+			"description": "Führe Befehle im Inline-Terminal (Chat) aus, um Shell-Profile/Integration für schnellere, zuverlässigere Läufe zu umgehen. Wenn deaktiviert, nutzt Roo das VS Code-Terminal mit deinem Shell-Profil, Prompts und Plugins. <0>Mehr erfahren</0>"
 		},
 		"commandDelay": {
 			"label": "Terminal-Befehlsverzögerung",
-			"description": "Verzögerung in Millisekunden, die nach der Befehlsausführung hinzugefügt wird. Die Standardeinstellung von 0 deaktiviert die Verzögerung vollständig. Dies kann dazu beitragen, dass die Befehlsausgabe in Terminals mit Timing-Problemen vollständig erfasst wird. In den meisten Terminals wird dies durch Setzen von `PROMPT_COMMAND='sleep N'` und Powershell fügt `start-sleep` am Ende jedes Befehls hinzu. Ursprünglich war dies eine Lösung für VSCode-Bug#237208 und ist möglicherweise nicht mehr erforderlich. <0>Mehr erfahren</0>"
+			"description": "Fügt nach jedem Befehl eine kurze Pause hinzu, damit das VS Code-Terminal alle Ausgaben leeren kann (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). Verwende dies nur, wenn du fehlende Tail-Ausgabe siehst; sonst lass es bei 0. Nur VS Code-Terminal. <0>Mehr erfahren</0>"
 		},
 		"compressProgressBar": {
 			"label": "Fortschrittsbalken-Ausgabe komprimieren",
-			"description": "Wenn aktiviert, verarbeitet diese Option Terminal-Ausgaben mit Wagenrücklaufzeichen (\\r), um zu simulieren, wie ein echtes Terminal Inhalte anzeigen würde. Dies entfernt Zwischenzustände von Fortschrittsbalken und behält nur den Endzustand bei, wodurch Kontextraum für relevantere Informationen gespart wird. <0>Mehr erfahren</0>"
+			"description": "Klappt Fortschrittsbalken/Spinner zusammen, sodass nur der Endzustand erhalten bleibt (spart Token). <0>Mehr erfahren</0>"
 		},
 		"powershellCounter": {
 			"label": "PowerShell-Zähler-Workaround aktivieren",
-			"description": "Wenn aktiviert, fügt einen Zähler zu PowerShell-Befehlen hinzu, um die korrekte Befehlsausführung sicherzustellen. Dies hilft bei PowerShell-Terminals, die Probleme mit der Ausgabeerfassung haben könnten. <0>Mehr erfahren</0>"
+			"description": "Schalte dies ein, wenn PowerShell-Ausgabe fehlt oder dupliziert wird; es fügt jedem Befehl einen kleinen Zähler hinzu, um die Ausgabe zu stabilisieren. Lass es ausgeschaltet, wenn die Ausgabe bereits korrekt aussieht. <0>Mehr erfahren</0>"
 		},
 		"zshClearEolMark": {
-			"label": "ZSH-Zeilenende-Markierung löschen",
-			"description": "Wenn aktiviert, wird die ZSH-Zeilenende-Markierung durch Setzen von PROMPT_EOL_MARK='' gelöscht. Dies verhindert Probleme bei der Interpretation der Befehlsausgabe, wenn diese mit Sonderzeichen wie '%' endet. <0>Mehr erfahren</0>"
+			"label": "ZSH-EOL-Markierung löschen",
+			"description": "Schalte dies ein, wenn du verirrte % am Zeilenende siehst oder das Parsen falsch aussieht; es lässt Zshs Zeilenende-Markierung (%) weg. <0>Mehr erfahren</0>"
 		},
 		"zshOhMy": {
 			"label": "Oh My Zsh-Integration aktivieren",
-			"description": "Wenn aktiviert, wird ITERM_SHELL_INTEGRATION_INSTALLED=Yes gesetzt, um die Shell-Integrationsfunktionen von Oh My Zsh zu aktivieren. Das Anwenden dieser Einstellung erfordert möglicherweise einen Neustart der IDE. <0>Mehr erfahren</0>"
+			"description": "Schalte dies ein, wenn dein Oh My Zsh-Theme/Plugins Shell-Integration erwarten; es setzt ITERM_SHELL_INTEGRATION_INSTALLED=Yes. Schalte dies aus, um das Setzen dieser Variable zu vermeiden. Nur VS Code-Terminal (zsh). Benötigt ggf. IDE-Neustart. <0>Mehr erfahren</0>"
 		},
 		"zshP10k": {
 			"label": "Powerlevel10k-Integration aktivieren",
-			"description": "Wenn aktiviert, wird POWERLEVEL9K_INSTANT_PROMPT=quiet gesetzt, um die Powerlevel10k-Integration zu aktivieren. Dies kann die Leistung verbessern, indem der Prompt sofort angezeigt wird. <0>Mehr erfahren</0>"
+			"description": "Schalte dies ein, wenn du Powerlevel10k-Shell-Integration verwendest. <0>Mehr erfahren</0>"
 		},
 		"zdotdir": {
-			"label": "ZDOTDIR Handhabung aktivieren",
-			"description": "Wenn aktiviert, wird ein temporäres Verzeichnis für ZDOTDIR erstellt, um die Zsh-Shell-Integration ordnungsgemäß zu handhaben. Dies stellt sicher, dass die VSCode-Shell-Integration mit Zsh korrekt funktioniert, während deine Zsh-Konfiguration erhalten bleibt. <0>Mehr erfahren</0>"
+			"label": "ZDOTDIR-Handhabung aktivieren",
+			"description": "Schalte dies ein, wenn zsh-Shell-Integration fehlschlägt oder mit deinen Dotfiles kollidiert. <0>Mehr erfahren</0>"
 		},
 		"inheritEnv": {
 			"label": "Umgebungsvariablen erben",
-			"description": "Wenn aktiviert, erbt das Terminal Umgebungsvariablen aus dem übergeordneten Prozess von VSCode, wie z.B. benutzerdefinierte Shell-Integrationseinstellungen. Dies schaltet direkt die globale VSCode-Einstellung `terminal.integrated.inheritEnv` um. <0>Mehr erfahren</0>"
+			"description": "Schalte dies ein, um Umgebungsvariablen vom übergeordneten VS Code-Prozess zu erben. <0>Mehr erfahren</0>"
 		}
 	},
 	"advancedSettings": {

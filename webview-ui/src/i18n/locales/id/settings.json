@@ -619,55 +619,55 @@
 		},
 		"advanced": {
 			"label": "Pengaturan Terminal: Lanjutan",
-			"description": "Opsi berikut mungkin memerlukan restart terminal untuk menerapkan pengaturan."
+			"description": "Pengaturan ini hanya berlaku ketika 'Gunakan Terminal Inline' dinonaktifkan."
 		},
 		"outputLineLimit": {
-			"label": "Batas output terminal",
-			"description": "Jumlah maksimum baris yang disertakan dalam output terminal saat mengeksekusi perintah. Ketika terlampaui, baris akan dihapus dari tengah, menghemat token. <0>Pelajari lebih lanjut</0>"
+			"label": "Batas keluaran terminal",
+			"description": "Menyimpan baris pertama dan terakhir dan membuang yang tengah agar tetap di bawah batas. Turunkan untuk menghemat token; naikkan untuk memberi Roo lebih banyak detail tengah. Roo melihat placeholder di mana konten dilewati.<0>Pelajari lebih lanjut</0>"
 		},
 		"outputCharacterLimit": {
 			"label": "Batas karakter terminal",
-			"description": "Jumlah maksimum karakter yang akan disertakan dalam output terminal saat menjalankan perintah. Batas ini lebih diutamakan daripada batas baris untuk mencegah masalah memori dari baris yang sangat panjang. Ketika terlampaui, output akan dipotong. <0>Pelajari lebih lanjut</0>"
+			"description": "Override batas baris untuk mencegah masalah memori dengan memberlakukan cap keras pada ukuran output. Jika terlampaui, simpan awal dan akhir lalu tampilkan placeholder ke Roo di mana konten dilewati. <0>Pelajari lebih lanjut</0>"
 		},
 		"shellIntegrationTimeout": {
 			"label": "Timeout integrasi shell terminal",
-			"description": "Waktu maksimum untuk menunggu integrasi shell menginisialisasi sebelum mengeksekusi perintah. Untuk pengguna dengan waktu startup shell yang lama, nilai ini mungkin perlu ditingkatkan jika kamu melihat error \"Shell Integration Unavailable\" di terminal. <0>Pelajari lebih lanjut</0>"
+			"description": "Waktu tunggu integrasi shell VS Code sebelum menjalankan perintah. Naikkan jika shell lambat start atau muncul error 'Shell Integration Unavailable'. <0>Pelajari lebih lanjut</0>"
 		},
 		"shellIntegrationDisabled": {
-			"label": "Nonaktifkan integrasi shell terminal",
-			"description": "Aktifkan ini jika perintah terminal tidak bekerja dengan benar atau kamu melihat error 'Shell Integration Unavailable'. Ini menggunakan metode yang lebih sederhana untuk menjalankan perintah, melewati beberapa fitur terminal lanjutan. <0>Pelajari lebih lanjut</0>"
+			"label": "Gunakan Terminal Inline (disarankan)",
+			"description": "Jalankan perintah di Terminal Inline (obrolan) untuk melewati profil/integrasi shell untuk proses lebih cepat dan andal. Saat dinonaktifkan, Roo menggunakan terminal VS Code dengan profil shell, prompt, dan plugin Anda. <0>Pelajari lebih lanjut</0>"
 		},
 		"commandDelay": {
 			"label": "Delay perintah terminal",
-			"description": "Delay dalam milidetik untuk ditambahkan setelah eksekusi perintah. Pengaturan default 0 menonaktifkan delay sepenuhnya. Ini dapat membantu memastikan output perintah sepenuhnya ditangkap di terminal dengan masalah timing. Di sebagian besar terminal ini diimplementasikan dengan mengatur `PROMPT_COMMAND='sleep N'` dan Powershell menambahkan `start-sleep` di akhir setiap perintah. Awalnya adalah workaround untuk VSCode bug#237208 dan mungkin tidak diperlukan. <0>Pelajari lebih lanjut</0>"
+			"description": "Tambahkan jeda singkat setelah setiap perintah agar VS Code terminal bisa flush semua output (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). Gunakan hanya jika output ekor hilang; jika tidak biarkan di 0. Hanya VS Code terminal. <0>Pelajari lebih lanjut</0>"
 		},
 		"compressProgressBar": {
-			"label": "Kompres output progress bar",
-			"description": "Ketika diaktifkan, memproses output terminal dengan carriage return (\\r) untuk mensimulasikan bagaimana terminal nyata akan menampilkan konten. Ini menghapus state progress bar intermediate, hanya mempertahankan state final, yang menghemat ruang konteks untuk informasi yang lebih relevan. <0>Pelajari lebih lanjut</0>"
+			"label": "Kompres keluaran bilah kemajuan",
+			"description": "Menciutkan bilah kemajuan/spinner sehingga hanya status akhir yang disimpan (menghemat token). <0>Pelajari lebih lanjut</0>"
 		},
 		"powershellCounter": {
-			"label": "Aktifkan workaround counter PowerShell",
-			"description": "Ketika diaktifkan, menambahkan counter ke perintah PowerShell untuk memastikan eksekusi perintah yang tepat. Ini membantu dengan terminal PowerShell yang mungkin memiliki masalah dengan penangkapan output perintah. <0>Pelajari lebih lanjut</0>"
+			"label": "Aktifkan solusi penghitung PowerShell",
+			"description": "Aktifkan saat keluaran PowerShell hilang atau digandakan; menambahkan penghitung kecil ke setiap perintah untuk menstabilkan keluaran. Biarkan nonaktif jika keluaran sudah terlihat benar. <0>Pelajari lebih lanjut</0>"
 		},
 		"zshClearEolMark": {
-			"label": "Hapus ZSH EOL mark",
-			"description": "Ketika diaktifkan, menghapus ZSH end-of-line mark dengan mengatur PROMPT_EOL_MARK=''. Ini mencegah masalah dengan interpretasi output perintah ketika output berakhir dengan karakter khusus seperti '%'. <0>Pelajari lebih lanjut</0>"
+			"label": "Hapus tanda EOL ZSH",
+			"description": "Aktifkan saat Anda melihat % liar di akhir baris atau penguraian terlihat salah; menghilangkan tanda akhir baris (%) Zsh. <0>Pelajari lebih lanjut</0>"
 		},
 		"zshOhMy": {
 			"label": "Aktifkan integrasi Oh My Zsh",
-			"description": "Ketika diaktifkan, mengatur ITERM_SHELL_INTEGRATION_INSTALLED=Yes untuk mengaktifkan fitur integrasi shell Oh My Zsh. Menerapkan pengaturan ini mungkin memerlukan restart IDE. <0>Pelajari lebih lanjut</0>"
+			"description": "Aktifkan saat tema/plugin Oh My Zsh Anda mengharapkan integrasi shell; menyetel ITERM_SHELL_INTEGRATION_INSTALLED=Yes. Nonaktifkan untuk menghindari penyetelan variabel tersebut. Hanya terminal VS Code (zsh). Mungkin perlu memulai ulang IDE. <0>Pelajari lebih lanjut</0>"
 		},
 		"zshP10k": {
 			"label": "Aktifkan integrasi Powerlevel10k",
-			"description": "Ketika diaktifkan, mengatur POWERLEVEL9K_TERM_SHELL_INTEGRATION=true untuk mengaktifkan fitur integrasi shell Powerlevel10k. <0>Pelajari lebih lanjut</0>"
+			"description": "Aktifkan saat menggunakan integrasi shell Powerlevel10k. <0>Pelajari lebih lanjut</0>"
 		},
 		"zdotdir": {
 			"label": "Aktifkan penanganan ZDOTDIR",
-			"description": "Ketika diaktifkan, membuat direktori sementara untuk ZDOTDIR untuk menangani integrasi shell zsh dengan benar. Ini memastikan integrasi shell VSCode bekerja dengan benar dengan zsh sambil mempertahankan konfigurasi zsh kamu. <0>Pelajari lebih lanjut</0>"
+			"description": "Aktifkan saat integrasi shell zsh gagal atau bertentangan dengan dotfile Anda. <0>Pelajari lebih lanjut</0>"
 		},
 		"inheritEnv": {
-			"label": "Warisi variabel environment",
-			"description": "Ketika diaktifkan, terminal akan mewarisi variabel environment dari proses parent VSCode, seperti pengaturan integrasi shell yang didefinisikan user-profile. Ini secara langsung mengalihkan pengaturan global VSCode `terminal.integrated.inheritEnv`. <0>Pelajari lebih lanjut</0>"
+			"label": "Warisi variabel lingkungan",
+			"description": "Aktifkan untuk mewarisi variabel lingkungan dari proses induk VS Code. <0>Pelajari lebih lanjut</0>"
 		}
 	},
 	"advancedSettings": {

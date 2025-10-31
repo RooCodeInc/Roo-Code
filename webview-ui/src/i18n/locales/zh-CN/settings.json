@@ -615,55 +615,55 @@
 		},
 		"advanced": {
 			"label": "终端设置：高级",
-			"description": "以下选项可能需要重启终端才能应用设置"
+			"description": "这些设置仅在「使用内联终端」禁用时适用。"
 		},
 		"outputLineLimit": {
 			"label": "终端输出限制",
-			"description": "执行命令时在终端输出中包含的最大行数。超过时将从中间删除行，节省 token。 <0>了解更多</0>"
+			"description": "保留首尾行并丢弃中间行以保持在限制内。降低可节省 token；提高可为 Roo 提供更多中间细节。Roo 看到内容被跳过的占位符。<0>了解更多</0>"
 		},
 		"outputCharacterLimit": {
 			"label": "终端字符限制",
-			"description": "执行命令时在终端输出中包含的最大字符数。此限制优先于行数限制，以防止因行过长而导致的内存问题。超出后，输出将被截断。 <0>了解更多</0>"
+			"description": "通过强制限制输出大小来覆盖行限制以防止内存问题。如果超出，保留开头和结尾并向 Roo 显示内容被跳过的占位符。<0>了解更多</0>"
 		},
 		"shellIntegrationTimeout": {
-			"label": "终端初始化等待时间",
-			"description": "执行命令前等待 Shell 集成初始化的最长时间。对于 Shell 启动时间较长的用户，如果在终端中看到\"Shell Integration Unavailable\"错误，可能需要增加此值。 <0>了解更多</0>"
+			"label": "终端 shell 集成超时",
+			"description": "运行命令前等待 VS Code shell 集成的时间。如果 shell 启动缓慢或看到 'Shell Integration Unavailable' 错误，请提高此值。<0>了解更多</0>"
 		},
 		"shellIntegrationDisabled": {
-			"label": "禁用终端 Shell 集成",
-			"description": "如果终端命令无法正常工作或看到 'Shell Integration Unavailable' 错误，请启用此项。这将使用更简单的方法运行命令，绕过一些高级终端功能。 <0>了解更多</0>"
+			"label": "使用内联终端（推荐）",
+			"description": "在内联终端（聊天）中运行命令以绕过 shell 配置文件/集成，实现更快、更可靠的运行。禁用时，Roo 使用 VS Code 终端及您的 shell 配置文件、提示和插件。<0>了解更多</0>"
 		},
 		"commandDelay": {
 			"label": "终端命令延迟",
-			"description": "命令执行后添加的延迟时间（毫秒）。默认设置为 0 时完全禁用延迟。这可以帮助确保在有计时问题的终端中完全捕获命令输出。在大多数终端中，这是通过设置 `PROMPT_COMMAND='sleep N'` 实现的，而 PowerShell 会在每个命令末尾添加 `start-sleep`。最初是为了解决 VSCode 错误#237208，现在可能不再需要。 <0>了解更多</0>"
+			"description": "在每个命令后添加短暂暂停，以便 VS Code 终端刷新所有输出（bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep）。仅在看到缺少尾部输出时使用；否则保持为 0。仅 VS Code 终端。<0>了解更多</0>"
 		},
 		"compressProgressBar": {
 			"label": "压缩进度条输出",
-			"description": "启用后，将处理包含回车符 (\\r) 的终端输出，模拟真实终端显示内容的方式。这会移除进度条的中间状态，只保留最终状态，为更重要的信息节省上下文空间。 <0>了解更多</0>"
+			"description": "折叠进度条/旋转器，仅保留最终状态（节省 token）。<0>了解更多</0>"
 		},
 		"powershellCounter": {
 			"label": "启用 PowerShell 计数器解决方案",
-			"description": "启用后，会在 PowerShell 命令中添加计数器以确保命令正确执行。这有助于解决可能存在输出捕获问题的 PowerShell 终端。 <0>了解更多</0>"
+			"description": "当 PowerShell 输出丢失或重复时启用此选项；它会为每个命令附加一个小计数器以稳定输出。如果输出已正常，请保持关闭。<0>了解更多</0>"
 		},
 		"zshClearEolMark": {
-			"label": "清除 ZSH 行尾标记",
-			"description": "启用后，通过设置 PROMPT_EOL_MARK='' 清除 ZSH 行尾标记。这可以防止命令输出以特殊字符（如 '%'）结尾时的解析问题。 <0>了解更多</0>"
+			"label": "清除 ZSH EOL 标记",
+			"description": "当您在行尾看到零散的 % 或解析看起来错误时启用此选项；它会省略 Zsh 的行尾标记（%）。<0>了解更多</0>"
 		},
 		"zshOhMy": {
 			"label": "启用 Oh My Zsh 集成",
-			"description": "启用后，设置 ITERM_SHELL_INTEGRATION_INSTALLED=Yes 以启用 Oh My Zsh shell 集成功能。应用此设置可能需要重启 IDE。 <0>了解更多</0>"
+			"description": "当您的 Oh My Zsh 主题/插件期望 shell 集成时启用此选项；它会设置 ITERM_SHELL_INTEGRATION_INSTALLED=Yes。关闭此选项以避免设置该变量。仅 VS Code 终端（zsh）。可能需要重启 IDE。<0>了解更多</0>"
 		},
 		"zshP10k": {
 			"label": "启用 Powerlevel10k 集成",
-			"description": "启用后，设置 POWERLEVEL9K_TERM_SHELL_INTEGRATION=true 以启用 Powerlevel10k shell 集成功能。 <0>了解更多</0>"
+			"description": "使用 Powerlevel10k shell 集成时启用此选项。<0>了解更多</0>"
 		},
 		"zdotdir": {
 			"label": "启用 ZDOTDIR 处理",
-			"description": "启用后将创建临时目录用于 ZDOTDIR，以正确处理 zsh shell 集成。这确保 VSCode shell 集成能与 zsh 正常工作，同时保留您的 zsh 配置。 <0>了解更多</0>"
+			"description": "当 zsh shell 集成失败或与您的 dotfiles 冲突时启用此选项。<0>了解更多</0>"
 		},
 		"inheritEnv": {
 			"label": "继承环境变量",
-			"description": "启用后，终端将从 VSCode 父进程继承环境变量，如用户配置文件中定义的 shell 集成设置。这直接切换 VSCode 全局设置 `terminal.integrated.inheritEnv`。 <0>了解更多</0>"
+			"description": "启用此选项以从父 VS Code 进程继承环境变量。<0>了解更多</0>"
 		}
 	},
 	"advancedSettings": {

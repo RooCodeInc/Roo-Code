@@ -615,55 +615,55 @@
 		},
 		"advanced": {
 			"label": "Terminal Ayarları: Gelişmiş",
-			"description": "Aşağıdaki seçeneklerin uygulanması için terminalin yeniden başlatılması gerekebilir."
+			"description": "Bu ayarlar yalnızca 'Satır İçi Terminal Kullan' devre dışı bırakıldığında geçerlidir."
 		},
 		"outputLineLimit": {
-			"label": "Terminal çıktısı sınırı",
-			"description": "Komutları yürütürken terminal çıktısına dahil edilecek maksimum satır sayısı. Aşıldığında, token tasarrufu sağlayarak satırlar ortadan kaldırılacaktır. <0>Daha fazla bilgi</0>"
+			"label": "Terminal çıktı sınırı",
+			"description": "Sınırın altında kalmak için ilk ve son satırları tutar ve ortadakileri atar. Jetonları kaydetmek için düşürün; Roo'ya daha fazla orta ayrıntı vermek için yükseltin. Roo, içeriğin atlandığı yerde bir yer tutucu görür.<0>Daha fazla bilgi edinin</0>"
 		},
 		"outputCharacterLimit": {
 			"label": "Terminal karakter sınırı",
-			"description": "Komutları yürütürken terminal çıktısına dahil edilecek maksimum karakter sayısı. Bu sınır, aşırı uzun satırlardan kaynaklanan bellek sorunlarını önlemek için satır sınırına göre önceliklidir. Aşıldığında, çıktı kesilir. <0>Daha fazla bilgi edinin</0>"
+			"description": "Çıktı boyutuna katı bir üst sınır uygulayarak bellek sorunlarını önlemek için satır sınırını geçersiz kılar. Aşılırsa, başlangıcı ve sonu tutar ve içeriğin atlandığı yerde Roo'ya bir yer tutucu gösterir. <0>Daha fazla bilgi edinin</0>"
 		},
 		"shellIntegrationTimeout": {
-			"label": "Terminal kabuk entegrasyonu zaman aşımı",
-			"description": "Komutları yürütmeden önce kabuk entegrasyonunun başlatılması için beklenecek maksimum süre. Kabuk başlatma süresi uzun olan kullanıcılar için, terminalde \"Shell Integration Unavailable\" hatalarını görürseniz bu değerin artırılması gerekebilir. <0>Daha fazla bilgi</0>"
+			"label": "Terminal shell entegrasyon timeout",
+			"description": "Komut çalıştırmadan önce VS Code shell entegrasyonunu bekleme süresi. Shell yavaş başlıyorsa veya 'Shell Integration Unavailable' hatası görüyorsanız artırın. <0>Daha fazla bilgi edinin</0>"
 		},
 		"shellIntegrationDisabled": {
-			"label": "Terminal kabuk entegrasyonunu devre dışı bırak",
-			"description": "Terminal komutları düzgün çalışmıyorsa veya 'Shell Integration Unavailable' hataları görüyorsanız bunu etkinleştirin. Bu, bazı gelişmiş terminal özelliklerini atlayarak komutları çalıştırmak için daha basit bir yöntem kullanır. <0>Daha fazla bilgi</0>"
+			"label": "Satır İçi Terminal Kullan (önerilir)",
+			"description": "Daha hızlı, daha güvenilir çalıştırmalar için kabuk profillerini/entegrasyonunu atlamak için Satır İçi Terminal'de (sohbet) komutları çalıştırın. Devre dışı bırakıldığında Roo, kabuk profiliniz, istemleriniz ve eklentilerinizle VS Code terminalini kullanır. <0>Daha fazla bilgi edinin</0>"
 		},
 		"commandDelay": {
-			"label": "Terminal komut gecikmesi",
-			"description": "Komut yürütmesinden sonra eklenecek gecikme süresi (milisaniye). 0 varsayılan ayarı gecikmeyi tamamen devre dışı bırakır. Bu, zamanlama sorunları olan terminallerde komut çıktısının tam olarak yakalanmasını sağlamaya yardımcı olabilir. Çoğu terminalde bu, `PROMPT_COMMAND='sleep N'` ayarlanarak uygulanır ve PowerShell her komutun sonuna `start-sleep` ekler. Başlangıçta VSCode hata#237208 için bir geçici çözümdü ve gerekli olmayabilir. <0>Daha fazla bilgi</0>"
+			"label": "Terminal komut delay",
+			"description": "VS Code terminalin tüm outputu flush edebilmesi için her komuttan sonra kısa pause ekler (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). Sadece tail output eksikse kullan; yoksa 0'da bırak. Sadece VS Code terminal. <0>Daha fazla bilgi edinin</0>"
 		},
 		"compressProgressBar": {
 			"label": "İlerleme çubuğu çıktısını sıkıştır",
-			"description": "Etkinleştirildiğinde, satır başı karakteri (\\r) içeren terminal çıktısını işleyerek gerçek bir terminalin içeriği nasıl göstereceğini simüle eder. Bu, ilerleme çubuğunun ara durumlarını kaldırır, yalnızca son durumu korur ve daha alakalı bilgiler için bağlam alanından tasarruf sağlar. <0>Daha fazla bilgi</0>"
+			"description": "İlerleme çubukları/spinner'ları daraltır, sadece son durumu tutar (token tasarrufu). <0>Daha fazla bilgi edinin</0>"
 		},
 		"powershellCounter": {
 			"label": "PowerShell sayaç geçici çözümünü etkinleştir",
-			"description": "Etkinleştirildiğinde, komutların doğru şekilde yürütülmesini sağlamak için PowerShell komutlarına bir sayaç ekler. Bu, çıktı yakalama sorunları yaşayabilecek PowerShell terminallerinde yardımcı olur. <0>Daha fazla bilgi</0>"
+			"description": "PowerShell çıktısı eksik veya yineleniyorsa bunu açın; çıktıyı stabilize etmek için her komuta küçük bir sayaç ekler. Çıktı zaten doğru görünüyorsa bunu kapalı tutun. <0>Daha fazla bilgi edinin</0>"
 		},
 		"zshClearEolMark": {
-			"label": "ZSH satır sonu işaretini temizle",
-			"description": "Etkinleştirildiğinde, PROMPT_EOL_MARK='' ayarlanarak ZSH satır sonu işaretini temizler. Bu, '%' gibi özel karakterlerle biten komut çıktılarının yorumlanmasında sorun yaşanmasını önler. <0>Daha fazla bilgi</0>"
+			"label": "ZSH EOL işaretini temizle",
+			"description": "Satırların sonunda başıboş % gördüğünüzde veya ayrıştırma yanlış göründüğünde bunu açın; Zsh'nin satır sonu işaretini (%) atlar. <0>Daha fazla bilgi edinin</0>"
 		},
 		"zshOhMy": {
 			"label": "Oh My Zsh entegrasyonunu etkinleştir",
-			"description": "Etkinleştirildiğinde, Oh My Zsh kabuk entegrasyon özelliklerini etkinleştirmek için ITERM_SHELL_INTEGRATION_INSTALLED=Yes ayarlar. Bu ayarın uygulanması IDE'nin yeniden başlatılmasını gerektirebilir. <0>Daha fazla bilgi</0>"
+			"description": "Oh My Zsh temanız/eklentileriniz kabuk entegrasyonu beklediğinde bunu açın; ITERM_SHELL_INTEGRATION_INSTALLED=Yes ayarlar. Bu değişkeni ayarlamaktan kaçınmak için bunu kapatın. Yalnızca VS Code terminali (zsh). IDE'yi yeniden başlatmanız gerekebilir. <0>Daha fazla bilgi edinin</0>"
 		},
 		"zshP10k": {
 			"label": "Powerlevel10k entegrasyonunu etkinleştir",
-			"description": "Etkinleştirildiğinde, Powerlevel10k kabuk entegrasyon özelliklerini etkinleştirmek için POWERLEVEL9K_TERM_SHELL_INTEGRATION=true ayarlar. <0>Daha fazla bilgi</0>"
+			"description": "Powerlevel10k kabuk entegrasyonunu kullanırken bunu açın. <0>Daha fazla bilgi edinin</0>"
 		},
 		"zdotdir": {
 			"label": "ZDOTDIR işlemeyi etkinleştir",
-			"description": "Etkinleştirildiğinde, zsh kabuğu entegrasyonunu düzgün şekilde işlemek için ZDOTDIR için geçici bir dizin oluşturur. Bu, zsh yapılandırmanızı korurken VSCode kabuk entegrasyonunun zsh ile düzgün çalışmasını sağlar. <0>Daha fazla bilgi</0>"
+			"description": "zsh kabuk entegrasyonu başarısız olduğunda veya dotfiles'larınızla çakıştığında bunu açın. <0>Daha fazla bilgi edinin</0>"
 		},
 		"inheritEnv": {
 			"label": "Ortam değişkenlerini devral",
-			"description": "Etkinleştirildiğinde, terminal VSCode üst işleminden ortam değişkenlerini devralır, örneğin kullanıcı profilinde tanımlanan kabuk entegrasyon ayarları gibi. Bu, VSCode'un global ayarı olan `terminal.integrated.inheritEnv` değerini doğrudan değiştirir. <0>Daha fazla bilgi</0>"
+			"description": "Ana VS Code işleminden ortam değişkenlerini devralmak için bunu açın. <0>Daha fazla bilgi edinin</0>"
 		}
 	},
 	"advancedSettings": {
