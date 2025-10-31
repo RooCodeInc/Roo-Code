@@ -2232,14 +2232,32 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 								`[Task#${this.taskId}.${this.instanceId}] Stream failed, will retry: ${streamingFailedMessage}`,
 							)
 
+							// Check if this is a local LLM connection error (common with Jan.ai, LM Studio, etc.)
+							const isConnectionError =
+								streamingFailedMessage?.toLowerCase().includes("connection") ||
+								streamingFailedMessage?.toLowerCase().includes("tcp") ||
+								streamingFailedMessage?.toLowerCase().includes("proxy") ||
+								streamingFailedMessage?.toLowerCase().includes("502")
+
+							// Get current mode for context
+							const currentMode = await this.getTaskMode()
+							const isOrchestratorMode = currentMode === "orchestrator"
+
 							// Apply exponential backoff similar to first-chunk errors when auto-resubmit is enabled
 							const stateForBackoff = await this.providerRef.deref()?.getState()
 							if (stateForBackoff?.autoApprovalEnabled && stateForBackoff?.alwaysApproveResubmit) {
-								await this.backoffAndAnnounce(
-									currentItem.retryAttempt ?? 0,
-									error,
-									streamingFailedMessage,
-								)
+								// Provide more helpful message for local LLM errors
+								let enhancedMessage = streamingFailedMessage
+								if (isConnectionError) {
+									enhancedMessage =
+										`Connection to local LLM failed${isOrchestratorMode ? " (Orchestrator mode may exceed model capacity)" : ""}. Please ensure:\n` +
+										`1. Your local LLM server (Jan.ai/LM Studio) is running\n` +
+										`2. The model is loaded and ready\n` +
+										`3. The API endpoint is correctly configured\n\n` +
+										`Original error: ${streamingFailedMessage}`
+								}
+
+								await this.backoffAndAnnounce(currentItem.retryAttempt ?? 0, error, enhancedMessage)
 
 								// Check if task was aborted during the backoff
 								if (this.abort) {
@@ -2251,6 +2269,20 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 									await this.abortTask()
 									break
 								}
+							}
+
+							// For connection errors after multiple retries, provide guidance
+							const maxConnectionRetries = 2
+							if (isConnectionError && (currentItem.retryAttempt ?? 0) >= maxConnectionRetries) {
+								await this.say(
+									"error",
+									`Persistent connection issues with local LLM detected. ${isOrchestratorMode ? "Orchestrator mode requires substantial model capacity. " : ""}Please:\n` +
+										`1. Restart your local LLM server\n` +
+										`2. ${isOrchestratorMode ? "Consider switching to a simpler mode or using a cloud-based model" : "Check your model is properly loaded"}\n` +
+										`3. Verify firewall/antivirus isn't blocking connections`,
+								)
+								// Don't retry further for persistent connection issues
+								break
 							}
 
 							// Push the same content back onto the stack to retry, incrementing the retry attempt counter
@@ -2395,15 +2427,93 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// If there's no assistant_responses, that means we got no text
 					// or tool_use content blocks from API which we should assume is
 					// an error.
-					await this.say(
-						"error",
-						"Unexpected API Response: The language model did not provide any assistant messages. This may indicate an issue with the API or the model's output.",
-					)
 
-					await this.addToApiConversationHistory({
-						role: "assistant",
-						content: [{ type: "text", text: "Failure: I did not provide a response." }],
-					})
+					// Track empty response retries
+					const emptyResponseRetryKey = "emptyResponseRetries"
+					const maxEmptyResponseRetries = 3
+					const currentRetries = (currentItem as any)[emptyResponseRetryKey] || 0
+
+					// Get current mode to provide better error context
+					const currentMode = await this.getTaskMode()
+					const isOrchestratorMode = currentMode === "orchestrator"
+
+					if (currentRetries < maxEmptyResponseRetries) {
+						// Log the retry attempt
+						console.warn(
+							`[Task#${this.taskId}] Empty response from model (attempt ${currentRetries + 1}/${maxEmptyResponseRetries})` +
+								(isOrchestratorMode
+									? " in Orchestrator mode - may be due to model limitations with complex prompts"
+									: ""),
+						)
+
+						// Provide user feedback about the retry
+						const retryMessage = isOrchestratorMode
+							? `The model returned an empty response. This can happen with local models in Orchestrator mode due to complex prompts. Retrying with simplified approach (attempt ${currentRetries + 1}/${maxEmptyResponseRetries})...`
+							: `The model returned an empty response. Retrying (attempt ${currentRetries + 1}/${maxEmptyResponseRetries})...`
+
+						await this.say("api_req_retry_delayed", retryMessage, undefined, false)
+
+						// For Orchestrator mode on retry, suggest switching to a simpler mode
+						let modifiedUserContent = [...currentUserContent]
+						if (isOrchestratorMode && currentRetries >= 1) {
+							// Add a hint to simplify the response
+							modifiedUserContent.push({
+								type: "text",
+								text: "\n\n[System: The model is having difficulty with complex orchestration. Please provide a simpler, more direct response focusing on the immediate task.]",
+							})
+						}
+
+						// Add a small delay before retry to avoid rapid-fire requests
+						await delay(2000)
+
+						// Push retry onto stack with incremented counter
+						stack.push({
+							userContent: modifiedUserContent,
+							includeFileDetails: false,
+							retryAttempt: currentItem.retryAttempt,
+							[emptyResponseRetryKey]: currentRetries + 1,
+						} as any)
+
+						continue
+					} else {
+						// After max retries, provide helpful error message
+						const errorMessage = isOrchestratorMode
+							? "The model repeatedly failed to provide a response. This often happens with local LLM models in Orchestrator mode due to the complexity of multi-step planning. Consider:\n" +
+								"1. Switching to a simpler mode like 'code' or 'architect'\n" +
+								"2. Using a more capable model (GPT-4, Claude, etc.)\n" +
+								"3. Ensuring your local model has sufficient context window (40k+ tokens recommended for Orchestrator mode)"
+							: "The model repeatedly failed to provide a response. This may indicate:\n" +
+								"1. Model compatibility issues with the current prompt format\n" +
+								"2. Insufficient model context window for the conversation\n" +
+								"3. Network or API connectivity problems\n" +
+								"Please try a different model or simplify your request."
+
+						await this.say("error", errorMessage)
+
+						// Add to conversation history to maintain state
+						await this.addToApiConversationHistory({
+							role: "assistant",
+							content: [
+								{
+									type: "text",
+									text: "I was unable to generate a response after multiple attempts. Please try a different approach or model.",
+								},
+							],
+						})
+
+						// For Orchestrator mode, suggest mode switch
+						if (isOrchestratorMode) {
+							const { response } = await this.ask(
+								"mistake_limit_reached",
+								"The Orchestrator mode is having difficulty with this model. Would you like to switch to a simpler mode like 'code' or continue with a different approach?",
+							)
+
+							if (response === "messageResponse") {
+								// User provided guidance, continue
+								continue
+							}
+						}
+					}
 				}
 
 				// If we reach here without continuing, return false (will always be false for now)
