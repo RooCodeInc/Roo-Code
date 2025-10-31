@@ -30,8 +30,9 @@ export const handleUri = async (uri: vscode.Uri) => {
 		}
 		case "/requesty": {
 			const code = query.get("code")
+			const baseUrl = query.get("baseUrl")
 			if (code) {
-				await visibleProvider.handleRequestyCallback(code)
+				await visibleProvider.handleRequestyCallback(code, baseUrl)
 			}
 			break
 		}

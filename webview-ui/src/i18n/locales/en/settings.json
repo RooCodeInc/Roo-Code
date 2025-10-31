@@ -269,7 +269,7 @@
 			"success": "Models list refreshed successfully!",
 			"error": "Failed to refresh models list. Please try again."
 		},
-		"getRequestyApiKey": "Get Requesty API Key",
+		"getRequestyApiKey": "Create new Requesty API Key",
 		"getRequestyBaseUrl": "Base URL",
 		"requestyUseCustomBaseUrl": "Use custom base URL",
 		"openRouterTransformsText": "Compress prompts and message chains to the context size (<a>OpenRouter Transforms</a>)",
