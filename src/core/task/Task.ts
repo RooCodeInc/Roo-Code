@@ -74,7 +74,7 @@ import { RooTerminalProcess } from "../../integrations/terminal/types"
 import { TerminalRegistry } from "../../integrations/terminal/TerminalRegistry"
 
 // utils
-import { calculateApiCostAnthropic } from "../../shared/cost"
+import { calculateApiCostAnthropic, calculateApiCostOpenAI } from "../../shared/cost"
 import { getWorkspacePath } from "../../utils/path"
 
 // prompts
@@ -1886,21 +1886,35 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					}
 
 					const existingData = JSON.parse(this.clineMessages[lastApiReqIndex].text || "{}")
+
+					// Calculate total tokens and cost using provider-aware function
+					const modelId = getModelId(this.apiConfiguration)
+					const apiProtocol = getApiProtocol(this.apiConfiguration.apiProvider, modelId)
+
+					const costResult =
+						apiProtocol === "anthropic"
+							? calculateApiCostAnthropic(
+									this.api.getModel().info,
+									inputTokens,
+									outputTokens,
+									cacheWriteTokens,
+									cacheReadTokens,
+								)
+							: calculateApiCostOpenAI(
+									this.api.getModel().info,
+									inputTokens,
+									outputTokens,
+									cacheWriteTokens,
+									cacheReadTokens,
+								)
+
 					this.clineMessages[lastApiReqIndex].text = JSON.stringify({
 						...existingData,
-						tokensIn: inputTokens,
-						tokensOut: outputTokens,
+						tokensIn: costResult.totalInputTokens,
+						tokensOut: costResult.totalOutputTokens,
 						cacheWrites: cacheWriteTokens,
 						cacheReads: cacheReadTokens,
-						cost:
-							totalCost ??
-							calculateApiCostAnthropic(
-								this.api.getModel().info,
-								inputTokens,
-								outputTokens,
-								cacheWriteTokens,
-								cacheReadTokens,
-							),
+						cost: totalCost ?? costResult.totalCost,
 						cancelReason,
 						streamingFailedMessage,
 					} satisfies ClineApiReqInfo)
@@ -2104,21 +2118,34 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 									await this.updateClineMessage(apiReqMessage)
 								}
 
-								// Capture telemetry
+								// Capture telemetry with provider-aware cost calculation
+								const modelId = getModelId(this.apiConfiguration)
+								const apiProtocol = getApiProtocol(this.apiConfiguration.apiProvider, modelId)
+
+								// Use the appropriate cost function based on the API protocol
+								const costResult =
+									apiProtocol === "anthropic"
+										? calculateApiCostAnthropic(
+												this.api.getModel().info,
+												tokens.input,
+												tokens.output,
+												tokens.cacheWrite,
+												tokens.cacheRead,
+											)
+										: calculateApiCostOpenAI(
+												this.api.getModel().info,
+												tokens.input,
+												tokens.output,
+												tokens.cacheWrite,
+												tokens.cacheRead,
+											)
+
 								TelemetryService.instance.captureLlmCompletion(this.taskId, {
-									inputTokens: tokens.input,
-									outputTokens: tokens.output,
+									inputTokens: costResult.totalInputTokens,
+									outputTokens: costResult.totalOutputTokens,
 									cacheWriteTokens: tokens.cacheWrite,
 									cacheReadTokens: tokens.cacheRead,
-									cost:
-										tokens.total ??
-										calculateApiCostAnthropic(
-											this.api.getModel().info,
-											tokens.input,
-											tokens.output,
-											tokens.cacheWrite,
-											tokens.cacheRead,
-										),
+									cost: tokens.total ?? costResult.totalCost,
 								})
 							}
 						}
