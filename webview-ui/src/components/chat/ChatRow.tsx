@@ -15,7 +15,6 @@ import { useExtensionState } from "@src/context/ExtensionStateContext"
 import { findMatchingResourceOrTemplate } from "@src/utils/mcp"
 import { vscode } from "@src/utils/vscode"
 import { removeLeadingNonAlphanumeric } from "@src/utils/removeLeadingNonAlphanumeric"
-import { getLanguageFromPath } from "@src/utils/getLanguageFromPath"
 
 import { ToolUseBlock, ToolUseBlockHeader } from "../common/ToolUseBlock"
 import UpdateTodoListToolBlock from "./UpdateTodoListToolBlock"
@@ -25,6 +24,7 @@ import { ReasoningBlock } from "./ReasoningBlock"
 import Thumbnails from "../common/Thumbnails"
 import ImageBlock from "../common/ImageBlock"
 import ErrorRow from "./ErrorRow"
+import { extractUnifiedDiff } from "../../utils/diffUtils"
 
 import McpResourceRow from "../mcp/McpResourceRow"
 
@@ -115,6 +115,66 @@ const ChatRow = memo(
 )
 
 export default ChatRow
+
+function computeDiffStats(diff?: string): { added: number; removed: number } | null {
+	if (!diff) return null
+
+	// Strategy 1: Unified diff (+/- lines)
+	let added = 0
+	let removed = 0
+	let sawPlusMinus = false
+	for (const line of diff.split("\n")) {
+		if (line.startsWith("+++ ") || line.startsWith("--- ") || line.startsWith("@@")) continue
+		if (line.startsWith("+")) {
+			added++
+			sawPlusMinus = true
+		} else if (line.startsWith("-")) {
+			removed++
+			sawPlusMinus = true
+		}
+	}
+	if (sawPlusMinus) {
+		if (added === 0 && removed === 0) return null
+		return { added, removed }
+	}
+
+	// Strategy 2: Roo multi-search-replace blocks
+	// Count lines in SEARCH vs REPLACE sections across all blocks
+	// Matches optional metadata lines and optional '-------' line
+	const blockRegex =
+		/<<<<<<?\s*SEARCH[\s\S]*?(?:^:start_line:.*\n)?(?:^:end_line:.*\n)?(?:^-------\s*\n)?([\s\S]*?)^(?:=======\s*\n)([\s\S]*?)^(?:>>>>>>> REPLACE)/gim
+
+	let hasBlocks = false
+	added = 0
+	removed = 0
+
+	const asLines = (s: string) => {
+		// Normalize Windows newlines and trim trailing newline so counts reflect real lines
+		const norm = s.replace(/\r\n/g, "\n")
+		if (norm === "") return 0
+		// Split, drop potential trailing empty caused by final newline
+		const parts = norm.split("\n")
+		return parts[parts.length - 1] === "" ? parts.length - 1 : parts.length
+	}
+
+	let match: RegExpExecArray | null
+	while ((match = blockRegex.exec(diff)) !== null) {
+		hasBlocks = true
+		const searchContent = match[1] ?? ""
+		const replaceContent = match[2] ?? ""
+		const searchCount = asLines(searchContent)
+		const replaceCount = asLines(replaceContent)
+		if (replaceCount > searchCount) added += replaceCount - searchCount
+		else if (searchCount > replaceCount) removed += searchCount - replaceCount
+	}
+
+	if (hasBlocks) {
+		if (added === 0 && removed === 0) return null
+		return { added, removed }
+	}
+
+	return null
+}
 
 export const ChatRowContent = ({
 	message,
@@ -335,6 +395,36 @@ export const ChatRowContent = ({
 		[message.ask, message.text],
 	)
 
+	// Inline diff stats for edit/apply_diff/insert/search-replace/newFile asks
+	const diffTextForStats = useMemo(() => {
+		if (!tool) return ""
+		// Normalize to unified diff using frontend-only capture/surmise helper
+		return (
+			extractUnifiedDiff({
+				toolName: tool.tool as string,
+				path: tool.path,
+				diff: (tool as any).diff,
+				content: (tool as any).content,
+			}) || ""
+		)
+	}, [tool])
+
+	const diffStatsForInline = useMemo(() => {
+		return computeDiffStats(diffTextForStats)
+	}, [diffTextForStats])
+
+	// Clean diff content for display (normalize to unified diff)
+	const cleanDiffContent = useMemo(() => {
+		if (!tool) return undefined
+		const unified = extractUnifiedDiff({
+			toolName: tool.tool as string,
+			path: tool.path,
+			diff: (tool as any).diff,
+			content: (tool as any).content,
+		})
+		return unified || undefined
+	}, [tool])
+
 	const followUpData = useMemo(() => {
 		if (message.type === "ask" && message.ask === "followup" && !message.partial) {
 			return safeJsonParse<FollowUpData>(message.text)
@@ -390,12 +480,13 @@ export const ChatRowContent = ({
 						<div className="pl-6">
 							<CodeAccordian
 								path={tool.path}
-								code={tool.content ?? tool.diff}
+								code={cleanDiffContent ?? tool.content ?? tool.diff}
 								language="diff"
 								progressStatus={message.progressStatus}
 								isLoading={message.partial}
 								isExpanded={isExpanded}
 								onToggleExpand={handleToggleExpand}
+								diffStats={diffStatsForInline ?? undefined}
 							/>
 						</div>
 					</>
@@ -427,12 +518,13 @@ export const ChatRowContent = ({
 						<div className="pl-6">
 							<CodeAccordian
 								path={tool.path}
-								code={tool.diff}
+								code={cleanDiffContent ?? tool.diff}
 								language="diff"
 								progressStatus={message.progressStatus}
 								isLoading={message.partial}
 								isExpanded={isExpanded}
 								onToggleExpand={handleToggleExpand}
+								diffStats={diffStatsForInline ?? undefined}
 							/>
 						</div>
 					</>
@@ -460,12 +552,13 @@ export const ChatRowContent = ({
 						<div className="pl-6">
 							<CodeAccordian
 								path={tool.path}
-								code={tool.diff}
+								code={cleanDiffContent ?? tool.diff}
 								language="diff"
 								progressStatus={message.progressStatus}
 								isLoading={message.partial}
 								isExpanded={isExpanded}
 								onToggleExpand={handleToggleExpand}
+								diffStats={diffStatsForInline ?? undefined}
 							/>
 						</div>
 					</>
@@ -528,12 +621,13 @@ export const ChatRowContent = ({
 						<div className="pl-6">
 							<CodeAccordian
 								path={tool.path}
-								code={tool.content}
-								language={getLanguageFromPath(tool.path || "") || "log"}
+								code={cleanDiffContent ?? ""}
+								language="diff"
 								isLoading={message.partial}
 								isExpanded={isExpanded}
 								onToggleExpand={handleToggleExpand}
 								onJumpToFile={() => vscode.postMessage({ type: "openFile", text: "./" + tool.path })}
+								diffStats={diffStatsForInline ?? undefined}
 							/>
 						</div>
 					</>
