@@ -378,8 +378,8 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 			})
 		})
 
-		describe(`${klass.name}#hasNestedGitRepositories`, () => {
-			it("throws error when nested git repositories are detected during initialization", async () => {
+		describe(`${klass.name}#nestedGitRepositories`, () => {
+			it("succeeds when nested git repositories are detected and excludes them from checkpoints", async () => {
 				// Create a new temporary workspace and service for this test.
 				const shadowDir = path.join(tmpDir, `${prefix}-nested-git-${Date.now()}`)
 				const workspaceDir = path.join(tmpDir, `workspace-nested-git-${Date.now()}`)
@@ -435,13 +435,33 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 					}
 				})
 
-				const service = new klass(taskId, shadowDir, workspaceDir, () => {})
+				const logMessages: string[] = []
+				const service = new klass(taskId, shadowDir, workspaceDir, (msg: string) => logMessages.push(msg))
 
-				// Verify that initialization throws an error when nested git repos are detected
-				// The error message now includes the specific path of the nested repository
-				await expect(service.initShadowGit()).rejects.toThrowError(
-					/Checkpoints are disabled because a nested git repository was detected at:/,
-				)
+				// Verify that initialization succeeds even with nested git repos
+				await expect(service.initShadowGit()).resolves.not.toThrow()
+				expect(service.isInitialized).toBe(true)
+
+				// Modify files in both main workspace and nested repo
+				await fs.writeFile(mainFile, "Modified content in main repo")
+				await fs.writeFile(nestedFile, "Modified content in nested repo")
+
+				// Save a checkpoint
+				const checkpoint = await service.saveCheckpoint("Test with nested repos")
+				expect(checkpoint?.commit).toBeTruthy()
+
+				// Verify that only the main file was included in the checkpoint
+				const diff = await service.getDiff({ to: checkpoint!.commit })
+				const mainFileChange = diff.find((change) => change.paths.relative === "main-file.txt")
+				const nestedFileChange = diff.find((change) => change.paths.relative.includes("nested-file.txt"))
+
+				expect(mainFileChange).toBeDefined()
+				expect(mainFileChange?.content.after).toBe("Modified content in main repo")
+				expect(nestedFileChange).toBeUndefined() // Nested repo changes should be excluded
+
+				// Verify that the log includes information about excluding nested repos
+				const excludeLog = logMessages.find((msg) => msg.includes("excluding") && msg.includes("nested repos"))
+				expect(excludeLog).toBeDefined()
 
 				// Clean up.
 				vitest.restoreAllMocks()
@@ -477,6 +497,17 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 				// Verify that initialization succeeds when no nested git repos are detected
 				await expect(service.initShadowGit()).resolves.not.toThrow()
 				expect(service.isInitialized).toBe(true)
+
+				// Modify the main file and save a checkpoint
+				await fs.writeFile(mainFile, "Modified content")
+				const checkpoint = await service.saveCheckpoint("Test without nested repos")
+				expect(checkpoint?.commit).toBeTruthy()
+
+				// Verify the change was included in the checkpoint
+				const diff = await service.getDiff({ to: checkpoint!.commit })
+				expect(diff).toHaveLength(1)
+				expect(diff[0].paths.relative).toBe("main-file.txt")
+				expect(diff[0].content.after).toBe("Modified content")
 
 				// Clean up.
 				vitest.restoreAllMocks()
