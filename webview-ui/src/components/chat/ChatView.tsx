@@ -596,16 +596,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			text = text.trim()
 
 			if (text || images.length > 0) {
-				// Debug: Log state when user attempts to send
-				console.debug("[ChatView.handleSendMessage]", {
-					isStreaming,
-					sendingDisabled,
-					clineAsk: clineAskRef.current,
-					textLen: text.length,
-					imageCount: images.length,
-					queueLength: messageQueue.length,
-				})
-
 				// Queue message if:
 				// - Task is busy (sendingDisabled)
 				// - API request in progress (isStreaming)
