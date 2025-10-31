@@ -3041,14 +3041,13 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	/**
 	 * Process any queued messages by dequeuing and submitting them.
-	 * This ensures that queued user messages are sent when appropriate,
-	 * preventing them from getting stuck in the queue.
-	 *
-	 * @param context - Context string for logging (e.g., the calling tool name)
+	 * This drains ALL queued messages to prevent them from getting stuck.
+	 * Messages are processed with microtask delays to avoid blocking.
 	 */
 	public processQueuedMessages(): void {
 		try {
-			if (!this.messageQueueService.isEmpty()) {
+			// Drain all queued messages, not just one
+			while (!this.messageQueueService.isEmpty()) {
 				const queued = this.messageQueueService.dequeueMessage()
 				if (queued) {
 					setTimeout(() => {
