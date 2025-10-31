@@ -11,6 +11,7 @@ import {
 	type OrganizationAllowList,
 	type CloudOrganizationMembership,
 	ORGANIZATION_ALLOW_ALL,
+	DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
 } from "@roo-code/types"
 
 import { ExtensionMessage, ExtensionState, MarketplaceInstalledMetadata, Command } from "@roo/ExtensionMessage"
@@ -88,6 +89,8 @@ export interface ExtensionStateContextType extends ExtensionState {
 	setTtsSpeed: (value: number) => void
 	setDiffEnabled: (value: boolean) => void
 	setEnableCheckpoints: (value: boolean) => void
+	checkpointTimeout: number
+	setCheckpointTimeout: (value: number) => void
 	setBrowserViewportSize: (value: string) => void
 	setFuzzyMatchThreshold: (value: number) => void
 	setWriteDelayMs: (value: number) => void
@@ -158,6 +161,10 @@ export interface ExtensionStateContextType extends ExtensionState {
 	setMaxDiagnosticMessages: (value: number) => void
 	includeTaskHistoryInEnhance?: boolean
 	setIncludeTaskHistoryInEnhance: (value: boolean) => void
+	includeCurrentTime?: boolean
+	setIncludeCurrentTime: (value: boolean) => void
+	includeCurrentCost?: boolean
+	setIncludeCurrentCost: (value: boolean) => void
 }
 
 export const ExtensionStateContext = createContext<ExtensionStateContextType | undefined>(undefined)
@@ -197,6 +204,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		ttsSpeed: 1.0,
 		diffEnabled: false,
 		enableCheckpoints: true,
+		checkpointTimeout: DEFAULT_CHECKPOINT_TIMEOUT_SECONDS, // Default to 15 seconds
 		fuzzyMatchThreshold: 1.0,
 		language: "en", // Default language code
 		writeDelayMs: 1000,
@@ -266,6 +274,8 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		maxDiagnosticMessages: 50,
 		openRouterImageApiKey: "",
 		openRouterImageGenerationSelectedModel: "",
+		includeCurrentTime: true,
+		includeCurrentCost: true,
 	})
 
 	const [didHydrateState, setDidHydrateState] = useState(false)
@@ -285,6 +295,9 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		global: {},
 	})
 	const [includeTaskHistoryInEnhance, setIncludeTaskHistoryInEnhance] = useState(true)
+	const [prevCloudIsAuthenticated, setPrevCloudIsAuthenticated] = useState(false)
+	const [includeCurrentTime, setIncludeCurrentTime] = useState(true)
+	const [includeCurrentCost, setIncludeCurrentCost] = useState(true)
 
 	const setListApiConfigMeta = useCallback(
 		(value: ProviderSettingsEntry[]) => setState((prevState) => ({ ...prevState, listApiConfigMeta: value })),
@@ -321,6 +334,14 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 					// Update includeTaskHistoryInEnhance if present in state message
 					if ((newState as any).includeTaskHistoryInEnhance !== undefined) {
 						setIncludeTaskHistoryInEnhance((newState as any).includeTaskHistoryInEnhance)
+					}
+					// Update includeCurrentTime if present in state message
+					if ((newState as any).includeCurrentTime !== undefined) {
+						setIncludeCurrentTime((newState as any).includeCurrentTime)
+					}
+					// Update includeCurrentCost if present in state message
+					if ((newState as any).includeCurrentCost !== undefined) {
+						setIncludeCurrentCost((newState as any).includeCurrentCost)
 					}
 					// Handle marketplace data if present in state message
 					if (newState.marketplaceItems !== undefined) {
@@ -416,6 +437,17 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		vscode.postMessage({ type: "webviewDidLaunch" })
 	}, [])
 
+	// Watch for authentication state changes and refresh Roo models
+	useEffect(() => {
+		const currentAuth = state.cloudIsAuthenticated ?? false
+		const currentProvider = state.apiConfiguration?.apiProvider
+		if (!prevCloudIsAuthenticated && currentAuth && currentProvider === "roo") {
+			// User just authenticated and Roo is the active provider - refresh Roo models
+			vscode.postMessage({ type: "requestRooModels" })
+		}
+		setPrevCloudIsAuthenticated(currentAuth)
+	}, [state.cloudIsAuthenticated, prevCloudIsAuthenticated, state.apiConfiguration?.apiProvider])
+
 	const contextValue: ExtensionStateContextType = {
 		...state,
 		reasoningBlockCollapsed: state.reasoningBlockCollapsed ?? true,
@@ -473,6 +505,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		setTtsSpeed: (value) => setState((prevState) => ({ ...prevState, ttsSpeed: value })),
 		setDiffEnabled: (value) => setState((prevState) => ({ ...prevState, diffEnabled: value })),
 		setEnableCheckpoints: (value) => setState((prevState) => ({ ...prevState, enableCheckpoints: value })),
+		setCheckpointTimeout: (value) => setState((prevState) => ({ ...prevState, checkpointTimeout: value })),
 		setBrowserViewportSize: (value: string) =>
 			setState((prevState) => ({ ...prevState, browserViewportSize: value })),
 		setFuzzyMatchThreshold: (value) => setState((prevState) => ({ ...prevState, fuzzyMatchThreshold: value })),
@@ -559,6 +592,10 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		},
 		includeTaskHistoryInEnhance,
 		setIncludeTaskHistoryInEnhance,
+		includeCurrentTime,
+		setIncludeCurrentTime,
+		includeCurrentCost,
+		setIncludeCurrentCost,
 	}
 
 	return <ExtensionStateContext.Provider value={contextValue}>{children}</ExtensionStateContext.Provider>

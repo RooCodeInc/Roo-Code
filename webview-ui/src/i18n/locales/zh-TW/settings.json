@@ -297,6 +297,9 @@
 		"getZaiApiKey": "取得 Z AI API 金鑰",
 		"zaiEntrypoint": "Z AI 服務端點",
 		"zaiEntrypointDescription": "請根據您的位置選擇適當的 API 服務端點。如果您在中國，請選擇 open.bigmodel.cn。否則，請選擇 api.z.ai。",
+		"minimaxApiKey": "MiniMax API 金鑰",
+		"getMiniMaxApiKey": "取得 MiniMax API 金鑰",
+		"minimaxBaseUrl": "MiniMax 服務端點",
 		"geminiApiKey": "Gemini API 金鑰",
 		"getGroqApiKey": "取得 Groq API 金鑰",
 		"groqApiKey": "Groq API 金鑰",
@@ -346,7 +349,7 @@
 		"enablePromptCachingTitle": "啟用提示快取以提升支援的模型效能並降低成本。",
 		"cacheUsageNote": "注意：如果您沒有看到快取使用情況，請嘗試選擇其他模型，然後重新選擇您想要的模型。",
 		"vscodeLmModel": "語言模型",
-		"vscodeLmWarning": "注意：此整合功能仍處於實驗階段，各供應商的支援程度可能不同。如果出現模型不支援的錯誤，通常是供應商方面的問題。",
+		"vscodeLmWarning": "注意：透過 VS Code Language Model API 存取的模型可能由供應商封裝或微調，因此其行為可能與直接從一般供應商或路由器使用相同模型時不同。要使用「Language Model」下拉式選單中的模型，請先切換到該模型，然後在 Copilot Chat 提示中點擊「接受」；否則可能會出現 400「The requested model is not supported」等錯誤。",
 		"geminiParameters": {
 			"urlContext": {
 				"title": "啟用 URL 上下文",
@@ -422,7 +425,7 @@
 			},
 			"computerUse": {
 				"label": "電腦使用",
-				"description": "此模型是否能夠與瀏覽器互動？（例如 Claude 3.7 Sonnet）"
+				"description": "此模型是否能夠與瀏覽器互動？（例如 Claude Sonnet）"
 			},
 			"promptCache": {
 				"label": "提示快取",
@@ -460,6 +463,7 @@
 		},
 		"reasoningEffort": {
 			"label": "模型推理強度",
+			"none": "無",
 			"minimal": "最小 (最快)",
 			"high": "高",
 			"medium": "中",
@@ -510,6 +514,10 @@
 		}
 	},
 	"checkpoints": {
+		"timeout": {
+			"label": "檢查點初始化逾時（秒）",
+			"description": "檢查點服務初始化的最長等待時間。預設為 15 秒。範圍：10-60 秒。"
+		},
 		"enable": {
 			"label": "啟用自動檢查點",
 			"description": "啟用後，Roo 將在工作執行期間自動建立檢查點，使審核變更或回到早期狀態變得容易。 <0>了解更多</0>"
@@ -606,6 +614,14 @@
 			"label": "圖片總大小上限",
 			"mb": "MB",
 			"description": "單次 read_file 操作中處理的所有圖片的最大累計大小限制（MB）。讀取多張圖片時，每張圖片的大小會累加到總大小中。如果包含另一張圖片會超過此限制，則會跳過該圖片。"
+		},
+		"includeCurrentTime": {
+			"label": "在上下文中包含目前時間",
+			"description": "啟用後，目前時間和時區資訊將包含在系統提示中。如果模型因時間問題停止工作，請停用此選項。"
+		},
+		"includeCurrentCost": {
+			"label": "在上下文中包含目前成本",
+			"description": "啟用後，目前 API 使用成本將包含在系統提示中。如果模型因成本問題停止工作，請停用此選項。"
 		}
 	},
 	"terminal": {
@@ -672,7 +688,7 @@
 	"advanced": {
 		"diff": {
 			"label": "透過差異比對編輯",
-			"description": "啟用後，Roo 可更快速地編輯檔案，並自動拒絕不完整的整檔覆寫。搭配最新的 Claude 3.7 Sonnet 模型效果最佳。",
+			"description": "啟用後，Roo 可更快速地編輯檔案，並自動拒絕不完整的整檔覆寫",
 			"strategy": {
 				"label": "差異比對策略",
 				"options": {
@@ -700,10 +716,6 @@
 		"DIFF_STRATEGY_UNIFIED": {
 			"name": "使用實驗性統一差異比對策略",
 			"description": "啟用實驗性的統一差異比對策略。此策略可能減少因模型錯誤而導致的重試次數，但也可能導致意外行為或錯誤的編輯。請務必了解風險，並願意仔細檢查所有變更後再啟用。"
-		},
-		"SEARCH_AND_REPLACE": {
-			"name": "使用實驗性搜尋與取代工具",
-			"description": "啟用實驗性的搜尋與取代工具，允許 Roo 在單一請求中取代多個符合的內容。"
 		},
 		"INSERT_BLOCK": {
 			"name": "使用實驗性插入內容工具",
@@ -769,8 +781,6 @@
 	"modelInfo": {
 		"supportsImages": "支援影像",
 		"noImages": "不支援影像",
-		"supportsComputerUse": "支援電腦使用",
-		"noComputerUse": "不支援電腦使用",
 		"supportsPromptCache": "支援提示快取",
 		"noPromptCache": "不支援提示快取",
 		"contextWindow": "上下文視窗:",

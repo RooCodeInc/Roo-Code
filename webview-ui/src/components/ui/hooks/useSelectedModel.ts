@@ -12,6 +12,8 @@ import {
 	deepSeekModels,
 	moonshotDefaultModelId,
 	moonshotModels,
+	minimaxDefaultModelId,
+	minimaxModels,
 	geminiDefaultModelId,
 	geminiModels,
 	mistralDefaultModelId,
@@ -51,7 +53,6 @@ import {
 	ioIntelligenceDefaultModelId,
 	ioIntelligenceModels,
 	rooDefaultModelId,
-	rooModels,
 	qwenCodeDefaultModelId,
 	qwenCodeModels,
 	vercelAiGatewayDefaultModelId,
@@ -237,8 +238,13 @@ function getSelectedModel({
 			const info = moonshotModels[id as keyof typeof moonshotModels]
 			return { id, info }
 		}
+		case "minimax": {
+			const id = apiConfiguration.apiModelId ?? minimaxDefaultModelId
+			const info = minimaxModels[id as keyof typeof minimaxModels]
+			return { id, info }
+		}
 		case "zai": {
-			const isChina = apiConfiguration.zaiApiLine === "china"
+			const isChina = apiConfiguration.zaiApiLine === "china_coding"
 			const models = isChina ? mainlandZAiModels : internationalZAiModels
 			const defaultModelId = isChina ? mainlandZAiDefaultModelId : internationalZAiDefaultModelId
 			const id = apiConfiguration.apiModelId ?? defaultModelId
@@ -330,21 +336,10 @@ function getSelectedModel({
 			return { id, info }
 		}
 		case "roo": {
-			const requestedId = apiConfiguration.apiModelId
-
-			// Check if the requested model exists in rooModels
-			if (requestedId && rooModels[requestedId as keyof typeof rooModels]) {
-				return {
-					id: requestedId,
-					info: rooModels[requestedId as keyof typeof rooModels],
-				}
-			}
-
-			// Fallback to default model if requested model doesn't exist or is not specified
-			return {
-				id: rooDefaultModelId,
-				info: rooModels[rooDefaultModelId as keyof typeof rooModels],
-			}
+			// Roo is a dynamic provider - models are loaded from API
+			const id = apiConfiguration.apiModelId ?? rooDefaultModelId
+			const info = routerModels.roo[id]
+			return { id, info }
 		}
 		case "qwen-code": {
 			const id = apiConfiguration.apiModelId ?? qwenCodeDefaultModelId

@@ -297,6 +297,9 @@
 		"getZaiApiKey": "Lấy khóa API Z AI",
 		"zaiEntrypoint": "Điểm vào Z AI",
 		"zaiEntrypointDescription": "Vui lòng chọn điểm vào API phù hợp dựa trên vị trí của bạn. Nếu bạn ở Trung Quốc, hãy chọn open.bigmodel.cn. Ngược lại, hãy chọn api.z.ai.",
+		"minimaxApiKey": "Khóa API MiniMax",
+		"getMiniMaxApiKey": "Lấy khóa API MiniMax",
+		"minimaxBaseUrl": "Điểm vào MiniMax",
 		"geminiApiKey": "Khóa API Gemini",
 		"getGroqApiKey": "Lấy khóa API Groq",
 		"groqApiKey": "Khóa API Groq",
@@ -346,7 +349,7 @@
 		"enablePromptCachingTitle": "Bật bộ nhớ đệm lời nhắc để cải thiện hiệu suất và giảm chi phí cho các mô hình được hỗ trợ.",
 		"cacheUsageNote": "Lưu ý: Nếu bạn không thấy việc sử dụng bộ nhớ đệm, hãy thử chọn một mô hình khác và sau đó chọn lại mô hình mong muốn của bạn.",
 		"vscodeLmModel": "Mô hình ngôn ngữ",
-		"vscodeLmWarning": "Lưu ý: Đây là tích hợp thử nghiệm và hỗ trợ nhà cung cấp có thể khác nhau. Nếu bạn nhận được lỗi về mô hình không được hỗ trợ, đó là vấn đề từ phía nhà cung cấp.",
+		"vscodeLmWarning": "Lưu ý: Các mô hình truy cập qua VS Code Language Model API có thể được nhà cung cấp bao bọc hoặc tinh chỉnh, vì vậy hành vi có thể khác so với khi dùng trực tiếp cùng mô hình từ nhà cung cấp hoặc router thông thường. Để dùng một mô hình trong menu «Language Model», trước tiên hãy chuyển sang mô hình đó rồi nhấp «Chấp nhận» trong lời nhắc Copilot Chat; nếu không bạn có thể gặp lỗi như 400 «The requested model is not supported».",
 		"geminiParameters": {
 			"urlContext": {
 				"title": "Bật ngữ cảnh URL",
@@ -422,7 +425,7 @@
 			},
 			"computerUse": {
 				"label": "Sử dụng máy tính",
-				"description": "Mô hình này có khả năng tương tác với trình duyệt không? (ví dụ: Claude 3.7 Sonnet)."
+				"description": "Mô hình này có khả năng tương tác với trình duyệt không?"
 			},
 			"promptCache": {
 				"label": "Bộ nhớ đệm lời nhắc",
@@ -460,6 +463,7 @@
 		},
 		"reasoningEffort": {
 			"label": "Nỗ lực suy luận của mô hình",
+			"none": "Không",
 			"minimal": "Tối thiểu (nhanh nhất)",
 			"high": "Cao",
 			"medium": "Trung bình",
@@ -510,6 +514,10 @@
 		}
 	},
 	"checkpoints": {
+		"timeout": {
+			"label": "Thời gian chờ khởi tạo điểm kiểm tra (giây)",
+			"description": "Thời gian tối đa chờ khởi tạo dịch vụ điểm kiểm tra. Mặc định là 15 giây. Khoảng: 10-60 giây."
+		},
 		"enable": {
 			"label": "Bật điểm kiểm tra tự động",
 			"description": "Khi được bật, Roo sẽ tự động tạo các điểm kiểm tra trong quá trình thực hiện nhiệm vụ, giúp dễ dàng xem lại các thay đổi hoặc quay lại trạng thái trước đó. <0>Tìm hiểu thêm</0>"
@@ -606,6 +614,14 @@
 			"label": "Kích thước tổng tối đa của hình ảnh",
 			"mb": "MB",
 			"description": "Giới hạn kích thước tích lũy tối đa (tính bằng MB) cho tất cả hình ảnh được xử lý trong một thao tác read_file duy nhất. Khi đọc nhiều hình ảnh, kích thước của mỗi hình ảnh được cộng vào tổng. Nếu việc thêm một hình ảnh khác sẽ vượt quá giới hạn này, nó sẽ bị bỏ qua."
+		},
+		"includeCurrentTime": {
+			"label": "Bao gồm thời gian hiện tại trong ngữ cảnh",
+			"description": "Khi được bật, thời gian hiện tại và thông tin múi giờ sẽ được bao gồm trong lời nhắc hệ thống. Tắt nếu các mô hình ngừng hoạt động do lo ngại về thời gian."
+		},
+		"includeCurrentCost": {
+			"label": "Bao gồm chi phí hiện tại trong ngữ cảnh",
+			"description": "Khi được bật, chi phí sử dụng API hiện tại sẽ được bao gồm trong lời nhắc hệ thống. Tắt nếu các mô hình ngừng hoạt động do lo ngại về chi phí."
 		}
 	},
 	"terminal": {
@@ -672,7 +688,7 @@
 	"advanced": {
 		"diff": {
 			"label": "Bật chỉnh sửa qua diff",
-			"description": "Khi được bật, Roo sẽ có thể chỉnh sửa tệp nhanh hơn và sẽ tự động từ chối ghi toàn bộ tệp bị cắt ngắn. Hoạt động tốt nhất với mô hình Claude 3.7 Sonnet mới nhất.",
+			"description": "Khi được bật, Roo sẽ có thể chỉnh sửa tệp nhanh hơn và sẽ tự động từ chối ghi toàn bộ tệp bị cắt ngắn",
 			"strategy": {
 				"label": "Chiến lược diff",
 				"options": {
@@ -700,10 +716,6 @@
 		"DIFF_STRATEGY_UNIFIED": {
 			"name": "Sử dụng chiến lược diff thống nhất thử nghiệm",
 			"description": "Bật chiến lược diff thống nhất thử nghiệm. Chiến lược này có thể giảm số lần thử lại do lỗi mô hình nhưng có thể gây ra hành vi không mong muốn hoặc chỉnh sửa không chính xác. Chỉ bật nếu bạn hiểu rõ các rủi ro và sẵn sàng xem xét cẩn thận tất cả các thay đổi."
-		},
-		"SEARCH_AND_REPLACE": {
-			"name": "Sử dụng công cụ tìm kiếm và thay thế thử nghiệm",
-			"description": "Bật công cụ tìm kiếm và thay thế thử nghiệm, cho phép Roo thay thế nhiều phiên bản của một thuật ngữ tìm kiếm trong một yêu cầu."
 		},
 		"INSERT_BLOCK": {
 			"name": "Sử dụng công cụ chèn nội dung thử nghiệm",
@@ -769,8 +781,6 @@
 	"modelInfo": {
 		"supportsImages": "Hỗ trợ hình ảnh",
 		"noImages": "Không hỗ trợ hình ảnh",
-		"supportsComputerUse": "Hỗ trợ sử dụng máy tính",
-		"noComputerUse": "Không hỗ trợ sử dụng máy tính",
 		"supportsPromptCache": "Hỗ trợ bộ nhớ đệm lời nhắc",
 		"noPromptCache": "Không hỗ trợ bộ nhớ đệm lời nhắc",
 		"contextWindow": "Cửa sổ ngữ cảnh:",

@@ -40,6 +40,7 @@ import {
 	CodeActionProvider,
 } from "./activate"
 import { initializeI18n } from "./i18n"
+import { flushModels, getModels } from "./api/providers/fetchers/modelCache"
 
 /**
  * Built using https://github.com/microsoft/vscode-webview-ui-toolkit
@@ -109,13 +110,13 @@ export async function activate(context: vscode.ExtensionContext) {
 			if (manager) {
 				codeIndexManagers.push(manager)
 
-				try {
-					await manager.initialize(contextProxy)
-				} catch (error) {
+				// Initialize in background; do not block extension activation
+				void manager.initialize(contextProxy).catch((error) => {
+					const message = error instanceof Error ? error.message : String(error)
 					outputChannel.appendLine(
-						`[CodeIndexManager] Error during background CodeIndexManager configuration/indexing for ${folder.uri.fsPath}: ${error.message || error}`,
+						`[CodeIndexManager] Error during background CodeIndexManager configuration/indexing for ${folder.uri.fsPath}: ${message}`,
 					)
-				}
+				})
 
 				context.subscriptions.push(manager)
 			}
@@ -139,6 +140,34 @@ export async function activate(context: vscode.ExtensionContext) {
 					`[authStateChangedHandler] remoteControlEnabled(false) failed: ${error instanceof Error ? error.message : String(error)}`,
 				)
 			}
+		}
+
+		// Handle Roo models cache based on auth state
+		const handleRooModelsCache = async () => {
+			try {
+				await flushModels("roo")
+
+				if (data.state === "active-session") {
+					// Reload models with the new auth token
+					const sessionToken = cloudService?.authService?.getSessionToken()
+					await getModels({
+						provider: "roo",
+						baseUrl: process.env.ROO_CODE_PROVIDER_URL ?? "https://api.roocode.com/proxy",
+						apiKey: sessionToken,
+					})
+					cloudLogger(`[authStateChangedHandler] Reloaded Roo models cache for active session`)
+				} else {
+					cloudLogger(`[authStateChangedHandler] Flushed Roo models cache on logout`)
+				}
+			} catch (error) {
+				cloudLogger(
+					`[authStateChangedHandler] Failed to handle Roo models cache: ${error instanceof Error ? error.message : String(error)}`,
+				)
+			}
+		}
+
+		if (data.state === "active-session" || data.state === "logged-out") {
+			await handleRooModelsCache()
 		}
 	}
 

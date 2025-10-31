@@ -297,6 +297,9 @@
 		"getZaiApiKey": "Obter chave de API Z AI",
 		"zaiEntrypoint": "Ponto de entrada Z AI",
 		"zaiEntrypointDescription": "Selecione o ponto de entrada da API apropriado com base na sua localização. Se você estiver na China, escolha open.bigmodel.cn. Caso contrário, escolha api.z.ai.",
+		"minimaxApiKey": "Chave de API MiniMax",
+		"getMiniMaxApiKey": "Obter chave de API MiniMax",
+		"minimaxBaseUrl": "Ponto de entrada MiniMax",
 		"geminiApiKey": "Chave de API Gemini",
 		"getGroqApiKey": "Obter chave de API Groq",
 		"groqApiKey": "Chave de API Groq",
@@ -346,7 +349,7 @@
 		"enablePromptCachingTitle": "Ativar cache de prompts para melhorar o desempenho e reduzir custos para modelos suportados.",
 		"cacheUsageNote": "Nota: Se você não vir o uso do cache, tente selecionar um modelo diferente e depois selecionar novamente o modelo desejado.",
 		"vscodeLmModel": "Modelo de Linguagem",
-		"vscodeLmWarning": "Nota: Esta é uma integração muito experimental e o suporte do provedor pode variar. Se você receber um erro sobre um modelo não ser suportado, isso é um problema do lado do provedor.",
+		"vscodeLmWarning": "Observação: Modelos acessados pela VS Code Language Model API podem ser encapsulados ou ajustados pelo provedor, portanto o comportamento pode diferir do uso direto do mesmo modelo em um provedor ou roteador típico. Para usar um modelo no menu suspenso «Language Model», primeiro altere para esse modelo e depois clique em «Aceitar» no prompt do Copilot Chat; caso contrário, você pode ver um erro como 400 «The requested model is not supported».",
 		"geminiParameters": {
 			"urlContext": {
 				"title": "Ativar contexto de URL",
@@ -422,7 +425,7 @@
 			},
 			"computerUse": {
 				"label": "Uso do Computador",
-				"description": "Este modelo é capaz de interagir com um navegador? (ex. Claude 3.7 Sonnet)."
+				"description": "Este modelo é capaz de interagir com um navegador?"
 			},
 			"promptCache": {
 				"label": "Cache de Prompts",
@@ -460,6 +463,7 @@
 		},
 		"reasoningEffort": {
 			"label": "Esforço de raciocínio do modelo",
+			"none": "Nenhum",
 			"minimal": "Mínimo (mais rápido)",
 			"high": "Alto",
 			"medium": "Médio",
@@ -510,6 +514,10 @@
 		}
 	},
 	"checkpoints": {
+		"timeout": {
+			"label": "Tempo limite para inicialização do checkpoint (segundos)",
+			"description": "Tempo máximo de espera para inicializar o serviço de checkpoint. Padrão: 15 segundos. Faixa: 10-60 segundos."
+		},
 		"enable": {
 			"label": "Ativar pontos de verificação automáticos",
 			"description": "Quando ativado, o Roo criará automaticamente pontos de verificação durante a execução de tarefas, facilitando a revisão de alterações ou o retorno a estados anteriores. <0>Saiba mais</0>"
@@ -606,6 +614,14 @@
 			"label": "Tamanho total máximo da imagem",
 			"mb": "MB",
 			"description": "Limite máximo de tamanho cumulativo (em MB) para todas as imagens processadas em uma única operação read_file. Ao ler várias imagens, o tamanho de cada imagem é adicionado ao total. Se incluir outra imagem exceder esse limite, ela será ignorada."
+		},
+		"includeCurrentTime": {
+			"label": "Incluir hora atual no contexto",
+			"description": "Quando ativado, a hora atual e as informações de fuso horário serão incluídas no prompt do sistema. Desative se os modelos pararem de funcionar por problemas de tempo."
+		},
+		"includeCurrentCost": {
+			"label": "Incluir custo atual no contexto",
+			"description": "Quando ativado, o custo de uso atual da API será incluído no prompt do sistema. Desative se os modelos pararem de funcionar por problemas de custo."
 		}
 	},
 	"terminal": {
@@ -672,7 +688,7 @@
 	"advanced": {
 		"diff": {
 			"label": "Ativar edição através de diffs",
-			"description": "Quando ativado, o Roo poderá editar arquivos mais rapidamente e rejeitará automaticamente escritas completas de arquivos truncados. Funciona melhor com o modelo mais recente Claude 3.7 Sonnet.",
+			"description": "Quando ativado, o Roo poderá editar arquivos mais rapidamente e rejeitará automaticamente escritas completas de arquivos truncados",
 			"strategy": {
 				"label": "Estratégia de diff",
 				"options": {
@@ -700,10 +716,6 @@
 		"DIFF_STRATEGY_UNIFIED": {
 			"name": "Usar estratégia diff unificada experimental",
 			"description": "Ativar a estratégia diff unificada experimental. Esta estratégia pode reduzir o número de novas tentativas causadas por erros do modelo, mas pode causar comportamento inesperado ou edições incorretas. Ative apenas se compreender os riscos e estiver disposto a revisar cuidadosamente todas as alterações."
-		},
-		"SEARCH_AND_REPLACE": {
-			"name": "Usar ferramenta de busca e substituição experimental",
-			"description": "Ativar a ferramenta de busca e substituição experimental, permitindo que o Roo substitua várias instâncias de um termo de busca em uma única solicitação."
 		},
 		"INSERT_BLOCK": {
 			"name": "Usar ferramenta de inserção de conteúdo experimental",
@@ -769,8 +781,6 @@
 	"modelInfo": {
 		"supportsImages": "Suporta imagens",
 		"noImages": "Não suporta imagens",
-		"supportsComputerUse": "Suporta uso do computador",
-		"noComputerUse": "Não suporta uso do computador",
 		"supportsPromptCache": "Suporta cache de prompts",
 		"noPromptCache": "Não suporta cache de prompts",
 		"contextWindow": "Janela de Contexto:",

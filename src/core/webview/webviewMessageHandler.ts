@@ -12,6 +12,7 @@ import {
 	type TelemetrySetting,
 	TelemetryEventName,
 	UserSettingsConfig,
+	DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
 } from "@roo-code/types"
 import { CloudService } from "@roo-code/cloud"
 import { TelemetryService } from "@roo-code/telemetry"
@@ -768,6 +769,7 @@ export const webviewMessageHandler = async (
 				glama: {},
 				ollama: {},
 				lmstudio: {},
+				roo: {},
 			}
 
 			const safeGetModels = async (options: GetModelsOptions): Promise<ModelRecord> => {
@@ -802,6 +804,16 @@ export const webviewMessageHandler = async (
 						provider: "deepinfra",
 						apiKey: apiConfiguration.deepInfraApiKey,
 						baseUrl: apiConfiguration.deepInfraBaseUrl,
+					},
+				},
+				{
+					key: "roo",
+					options: {
+						provider: "roo",
+						baseUrl: process.env.ROO_CODE_PROVIDER_URL ?? "https://api.roocode.com/proxy",
+						apiKey: CloudService.hasInstance()
+							? CloudService.instance.authService?.getSessionToken()
+							: undefined,
 					},
 				},
 			]
@@ -915,6 +927,38 @@ export const webviewMessageHandler = async (
 			} catch (error) {
 				// Silently fail - user hasn't configured LM Studio yet.
 				console.debug("LM Studio models fetch failed:", error)
+			}
+			break
+		}
+		case "requestRooModels": {
+			// Specific handler for Roo models only - flushes cache to ensure fresh auth token is used
+			try {
+				// Flush cache first to ensure fresh models with current auth state
+				await flushModels("roo")
+
+				const rooModels = await getModels({
+					provider: "roo",
+					baseUrl: process.env.ROO_CODE_PROVIDER_URL ?? "https://api.roocode.com/proxy",
+					apiKey: CloudService.hasInstance()
+						? CloudService.instance.authService?.getSessionToken()
+						: undefined,
+				})
+
+				// Always send a response, even if no models are returned
+				provider.postMessageToWebview({
+					type: "singleRouterModelFetchResponse",
+					success: true,
+					values: { provider: "roo", models: rooModels },
+				})
+			} catch (error) {
+				// Send error response
+				const errorMessage = error instanceof Error ? error.message : String(error)
+				provider.postMessageToWebview({
+					type: "singleRouterModelFetchResponse",
+					success: false,
+					error: errorMessage,
+					values: { provider: "roo" },
+				})
 			}
 			break
 		}
@@ -1262,6 +1306,11 @@ export const webviewMessageHandler = async (
 			await updateGlobalState("enableCheckpoints", enableCheckpoints)
 			await provider.postStateToWebview()
 			break
+		case "checkpointTimeout":
+			const checkpointTimeout = message.value ?? DEFAULT_CHECKPOINT_TIMEOUT_SECONDS
+			await updateGlobalState("checkpointTimeout", checkpointTimeout)
+			await provider.postStateToWebview()
+			break
 		case "browserViewportSize":
 			const browserViewportSize = message.text ?? "900x600"
 			await updateGlobalState("browserViewportSize", browserViewportSize)
@@ -1607,6 +1656,14 @@ export const webviewMessageHandler = async (
 			// Only apply default if the value is truly undefined (not false)
 			const includeValue = message.bool !== undefined ? message.bool : true
 			await updateGlobalState("includeDiagnosticMessages", includeValue)
+			await provider.postStateToWebview()
+			break
+		case "includeCurrentTime":
+			await updateGlobalState("includeCurrentTime", message.bool ?? true)
+			await provider.postStateToWebview()
+			break
+		case "includeCurrentCost":
+			await updateGlobalState("includeCurrentCost", message.bool ?? true)
 			await provider.postStateToWebview()
 			break
 		case "maxDiagnosticMessages":
@@ -2663,18 +2720,26 @@ export const webviewMessageHandler = async (
 					return
 				}
 				if (manager.isFeatureEnabled && manager.isFeatureConfigured) {
-					if (!manager.isInitialized) {
-						await manager.initialize(provider.contextProxy)
-					}
+					// Mimic extension startup behavior: initialize first, which will
+					// check if Qdrant container is active and reuse existing collection
+					await manager.initialize(provider.contextProxy)
 
-					// startIndexing now handles error recovery internally
-					manager.startIndexing()
-
-					// If startIndexing recovered from error, we need to reinitialize
-					if (!manager.isInitialized) {
-						await manager.initialize(provider.contextProxy)
-						// Try starting again after initialization
+					// Only call startIndexing if we're in a state that requires it
+					// (e.g., Standby or Error). If already Indexed or Indexing, the
+					// initialize() call above will have already started the watcher.
+					const currentState = manager.state
+					if (currentState === "Standby" || currentState === "Error") {
+						// startIndexing now handles error recovery internally
 						manager.startIndexing()
+
+						// If startIndexing recovered from error, we need to reinitialize
+						if (!manager.isInitialized) {
+							await manager.initialize(provider.contextProxy)
+							// Try starting again after initialization
+							if (manager.state === "Standby" || manager.state === "Error") {
+								manager.startIndexing()
+							}
+						}
 					}
 				}
 			} catch (error) {

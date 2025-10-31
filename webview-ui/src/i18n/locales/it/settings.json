@@ -297,6 +297,9 @@
 		"getZaiApiKey": "Ottieni chiave API Z AI",
 		"zaiEntrypoint": "Punto di ingresso Z AI",
 		"zaiEntrypointDescription": "Si prega di selezionare il punto di ingresso API appropriato in base alla propria posizione. Se ti trovi in Cina, scegli open.bigmodel.cn. Altrimenti, scegli api.z.ai.",
+		"minimaxApiKey": "Chiave API MiniMax",
+		"getMiniMaxApiKey": "Ottieni chiave API MiniMax",
+		"minimaxBaseUrl": "Punto di ingresso MiniMax",
 		"geminiApiKey": "Chiave API Gemini",
 		"getGroqApiKey": "Ottieni chiave API Groq",
 		"groqApiKey": "Chiave API Groq",
@@ -346,7 +349,7 @@
 		"enablePromptCachingTitle": "Abilita la cache dei prompt per migliorare le prestazioni e ridurre i costi per i modelli supportati.",
 		"cacheUsageNote": "Nota: Se non vedi l'utilizzo della cache, prova a selezionare un modello diverso e poi seleziona nuovamente il modello desiderato.",
 		"vscodeLmModel": "Modello linguistico",
-		"vscodeLmWarning": "Nota: Questa è un'integrazione molto sperimentale e il supporto del fornitore varierà. Se ricevi un errore relativo a un modello non supportato, si tratta di un problema del fornitore.",
+		"vscodeLmWarning": "Nota: I modelli accessibili tramite la VS Code Language Model API possono essere incapsulati o perfezionati dal provider, quindi il comportamento può differire dall’uso diretto dello stesso modello presso un provider o router tipico. Per usare un modello dal menu a discesa «Language Model», passa prima a quel modello e poi fai clic su «Accetta» nell’avviso di Copilot Chat; in caso contrario potresti visualizzare un errore come 400 «The requested model is not supported».",
 		"geminiParameters": {
 			"urlContext": {
 				"title": "Abilita contesto URL",
@@ -422,7 +425,7 @@
 			},
 			"computerUse": {
 				"label": "Uso del computer",
-				"description": "Il modello è in grado di interagire con il browser? (es. Claude 3.7 Sonnet)."
+				"description": "Il modello è in grado di interagire con il browser?"
 			},
 			"promptCache": {
 				"label": "Cache dei prompt",
@@ -460,6 +463,7 @@
 		},
 		"reasoningEffort": {
 			"label": "Sforzo di ragionamento del modello",
+			"none": "Nessuno",
 			"minimal": "Minimo (più veloce)",
 			"high": "Alto",
 			"medium": "Medio",
@@ -510,6 +514,10 @@
 		}
 	},
 	"checkpoints": {
+		"timeout": {
+			"label": "Timeout inizializzazione checkpoint (secondi)",
+			"description": "Tempo massimo di attesa per l'inizializzazione del servizio checkpoint. Predefinito: 15 secondi. Intervallo: 10-60 secondi."
+		},
 		"enable": {
 			"label": "Abilita punti di controllo automatici",
 			"description": "Quando abilitato, Roo creerà automaticamente punti di controllo durante l'esecuzione dei compiti, facilitando la revisione delle modifiche o il ritorno a stati precedenti. <0>Scopri di più</0>"
@@ -606,6 +614,14 @@
 			"label": "Dimensione totale massima immagini",
 			"mb": "MB",
 			"description": "Limite di dimensione cumulativa massima (in MB) per tutte le immagini elaborate in una singola operazione read_file. Durante la lettura di più immagini, la dimensione di ogni immagine viene aggiunta al totale. Se l'inclusione di un'altra immagine supererebbe questo limite, verrà saltata."
+		},
+		"includeCurrentTime": {
+			"label": "Includi l'ora corrente nel contesto",
+			"description": "Se abilitato, l'ora corrente e le informazioni sul fuso orario verranno incluse nel prompt di sistema. Disabilita questa opzione se i modelli smettono di funzionare a causa di problemi di orario."
+		},
+		"includeCurrentCost": {
+			"label": "Includi il costo corrente nel contesto",
+			"description": "Se abilitato, il costo di utilizzo corrente dell'API verrà incluso nel prompt di sistema. Disabilita questa opzione se i modelli smettono di funzionare a causa di problemi di costo."
 		}
 	},
 	"terminal": {
@@ -672,7 +688,7 @@
 	"advanced": {
 		"diff": {
 			"label": "Abilita modifica tramite diff",
-			"description": "Quando abilitato, Roo sarà in grado di modificare i file più velocemente e rifiuterà automaticamente scritture di file completi troncati. Funziona meglio con l'ultimo modello Claude 3.7 Sonnet.",
+			"description": "Quando abilitato, Roo sarà in grado di modificare i file più velocemente e rifiuterà automaticamente scritture di file completi troncati",
 			"strategy": {
 				"label": "Strategia diff",
 				"options": {
@@ -700,10 +716,6 @@
 		"DIFF_STRATEGY_UNIFIED": {
 			"name": "Usa strategia diff unificata sperimentale",
 			"description": "Abilita la strategia diff unificata sperimentale. Questa strategia potrebbe ridurre il numero di tentativi causati da errori del modello, ma può causare comportamenti imprevisti o modifiche errate. Abilitala solo se comprendi i rischi e sei disposto a rivedere attentamente tutte le modifiche."
-		},
-		"SEARCH_AND_REPLACE": {
-			"name": "Usa strumento di ricerca e sostituzione sperimentale",
-			"description": "Abilita lo strumento di ricerca e sostituzione sperimentale, consentendo a Roo di sostituire più istanze di un termine di ricerca in una singola richiesta."
 		},
 		"INSERT_BLOCK": {
 			"name": "Usa strumento di inserimento contenuti sperimentale",
@@ -769,8 +781,6 @@
 	"modelInfo": {
 		"supportsImages": "Supporta immagini",
 		"noImages": "Non supporta immagini",
-		"supportsComputerUse": "Supporta uso del computer",
-		"noComputerUse": "Non supporta uso del computer",
 		"supportsPromptCache": "Supporta cache dei prompt",
 		"noPromptCache": "Non supporta cache dei prompt",
 		"contextWindow": "Finestra di contesto:",

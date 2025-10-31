@@ -148,6 +148,9 @@
 		"initializingWarning": "Todavía inicializando el punto de control... Si esto tarda demasiado, puedes desactivar los puntos de control en la <settingsLink>configuración</settingsLink> y reiniciar tu tarea.",
 		"menu": {
 			"viewDiff": "Ver diferencias",
+			"more": "Más opciones",
+			"viewDiffFromInit": "Ver todos los cambios",
+			"viewDiffWithCurrent": "Ver cambios desde este punto de control",
 			"restore": "Restaurar punto de control",
 			"restoreFiles": "Restaurar archivos",
 			"restoreFilesDescription": "Restaura los archivos de tu proyecto a una instantánea tomada en este punto.",
@@ -264,6 +267,7 @@
 		"toggleAriaLabel": "Conmutar la aprobación automática",
 		"disabledAriaLabel": "Aprobación automática deshabilitada: selecciona primero las opciones",
 		"triggerLabelOff": "Aprobación automática desactivada",
+		"triggerLabelOffShort": "Desactivado",
 		"triggerLabel_zero": "0 aprobaciones automáticas",
 		"triggerLabel_one": "1 aprobación automática",
 		"triggerLabel_other": "{{count}} aprobaciones automáticas",
@@ -293,6 +297,19 @@
 			"selectModel": "Selecciona <code>roo/code-supernova</code> del proveedor Roo Code Cloud en Configuración para comenzar.",
 			"goToSettingsButton": "Ir a Configuración"
 		},
+		"release": {
+			"heading": "Novedades en la Extensión:",
+			"fileReading": "Lectura inteligente de archivos que evita desbordamientos de contexto",
+			"browserUse": "Herramienta de navegador habilitada para todos los modelos con capacidad de imagen",
+			"bugFixes": "Numerosas correcciones de errores y actualizaciones de modelos"
+		},
+		"cloudAgents": {
+			"heading": "Novedades en la Nube:",
+			"feature": "Presentamos el primer Agente en la Nube de Roo Code, el <bold>Revisor de PR</bold>.",
+			"description": "Ejecuta Roo en la nube, brindando revisiones de código de extremadamente alta calidad de manera instantánea. Lo hemos estado usando intensivamente para construir Roo y ahora también está disponible para la comunidad.",
+			"createAgentButton": "Probar Revisor de PR"
+		},
+		"careers": "Además, <careersLink>¡estamos contratando!</careersLink>",
 		"socialLinks": "Únete a nosotros en <xLink>X</xLink>, <discordLink>Discord</discordLink>, o <redditLink>r/RooCode</redditLink> 🚀"
 	},
 	"browser": {

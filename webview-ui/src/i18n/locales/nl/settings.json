@@ -297,6 +297,9 @@
 		"getZaiApiKey": "Z AI API-sleutel ophalen",
 		"zaiEntrypoint": "Z AI-ingangspunt",
 		"zaiEntrypointDescription": "Selecteer het juiste API-ingangspunt op basis van uw locatie. Als u zich in China bevindt, kies dan open.bigmodel.cn. Anders kiest u api.z.ai.",
+		"minimaxApiKey": "MiniMax API-sleutel",
+		"getMiniMaxApiKey": "MiniMax API-sleutel ophalen",
+		"minimaxBaseUrl": "MiniMax-ingangspunt",
 		"geminiApiKey": "Gemini API-sleutel",
 		"getGroqApiKey": "Groq API-sleutel ophalen",
 		"groqApiKey": "Groq API-sleutel",
@@ -346,7 +349,7 @@
 		"enablePromptCachingTitle": "Schakel prompt caching in om de prestaties te verbeteren en de kosten te verlagen voor ondersteunde modellen.",
 		"cacheUsageNote": "Let op: als je geen cachegebruik ziet, probeer dan een ander model te selecteren en vervolgens weer je gewenste model.",
 		"vscodeLmModel": "Taalmodel",
-		"vscodeLmWarning": "Let op: dit is een zeer experimentele integratie en ondersteuning door providers kan variëren. Krijg je een foutmelding dat een model niet wordt ondersteund, dan ligt dat aan de provider.",
+		"vscodeLmWarning": "Let op: Modellen die via de VS Code Language Model API worden benaderd kunnen door de provider worden verpakt of fijn‑afgesteld, waardoor het gedrag kan afwijken van het rechtstreeks gebruiken van hetzelfde model bij een typische provider of router. Om een model uit de keuzelijst ‘Language Model’ te gebruiken, schakel eerst naar dat model en klik vervolgens op ‘Accepteren’ in de Copilot Chat‑prompt; anders kun je een fout zien zoals 400 ‘The requested model is not supported’.",
 		"geminiParameters": {
 			"urlContext": {
 				"title": "URL-context inschakelen",
@@ -422,7 +425,7 @@
 			},
 			"computerUse": {
 				"label": "Computergebruik",
-				"description": "Kan dit model met een browser werken? (bijv. Claude 3.7 Sonnet)."
+				"description": "Kan dit model met een browser werken?"
 			},
 			"promptCache": {
 				"label": "Prompt caching",
@@ -460,6 +463,7 @@
 		},
 		"reasoningEffort": {
 			"label": "Model redeneervermogen",
+			"none": "Geen",
 			"minimal": "Minimaal (Snelst)",
 			"high": "Hoog",
 			"medium": "Middel",
@@ -510,6 +514,10 @@
 		}
 	},
 	"checkpoints": {
+		"timeout": {
+			"label": "Timeout voor checkpoint-initialisatie (seconden)",
+			"description": "Maximale wachttijd voor het initialiseren van de checkpointservice. Standaard is 15 seconden. Bereik: 10-60 seconden."
+		},
 		"enable": {
 			"label": "Automatische checkpoints inschakelen",
 			"description": "Indien ingeschakeld, maakt Roo automatisch checkpoints tijdens het uitvoeren van taken, zodat je eenvoudig wijzigingen kunt bekijken of terugzetten. <0>Meer informatie</0>"
@@ -606,6 +614,14 @@
 			"profileDescription": "Aangepaste drempelwaarde alleen voor dit profiel (overschrijft globale standaard)",
 			"inheritDescription": "Dit profiel erft de globale standaard drempelwaarde ({{threshold}}%)",
 			"usesGlobal": "(gebruikt globaal {{threshold}}%)"
+		},
+		"includeCurrentTime": {
+			"label": "Huidige tijd opnemen in context",
+			"description": "Indien ingeschakeld, worden de huidige tijd en tijdzone-informatie opgenomen in de systeemprompt. Schakel dit uit als modellen stoppen met werken vanwege tijdproblemen."
+		},
+		"includeCurrentCost": {
+			"label": "Huidige kosten opnemen in context",
+			"description": "Indien ingeschakeld, worden de huidige API-gebruikskosten opgenomen in de systeemprompt. Schakel dit uit als modellen stoppen met werken vanwege kostenproblemen."
 		}
 	},
 	"terminal": {
@@ -672,7 +688,7 @@
 	"advanced": {
 		"diff": {
 			"label": "Bewerken via diffs inschakelen",
-			"description": "Indien ingeschakeld kan Roo sneller bestanden bewerken en worden afgekorte volledige-bestandswijzigingen automatisch geweigerd. Werkt het beste met het nieuwste Claude 3.7 Sonnet-model.",
+			"description": "Indien ingeschakeld kan Roo sneller bestanden bewerken en worden afgekorte volledige-bestandswijzigingen automatisch geweigerd",
 			"strategy": {
 				"label": "Diff-strategie",
 				"options": {
@@ -700,10 +716,6 @@
 		"DIFF_STRATEGY_UNIFIED": {
 			"name": "Experimentele unified diff-strategie gebruiken",
 			"description": "Schakel de experimentele unified diff-strategie in. Deze strategie kan het aantal herhalingen door model fouten verminderen, maar kan onverwacht gedrag of onjuiste bewerkingen veroorzaken. Alleen inschakelen als je de risico's begrijpt en wijzigingen zorgvuldig wilt controleren."
-		},
-		"SEARCH_AND_REPLACE": {
-			"name": "Experimentele zoek-en-vervang-tool gebruiken",
-			"description": "Schakel de experimentele zoek-en-vervang-tool in, waarmee Roo meerdere instanties van een zoekterm in één verzoek kan vervangen."
 		},
 		"INSERT_BLOCK": {
 			"name": "Experimentele inhoud-invoeg-tool gebruiken",
@@ -769,8 +781,6 @@
 	"modelInfo": {
 		"supportsImages": "Ondersteunt afbeeldingen",
 		"noImages": "Ondersteunt geen afbeeldingen",
-		"supportsComputerUse": "Ondersteunt computergebruik",
-		"noComputerUse": "Ondersteunt geen computergebruik",
 		"supportsPromptCache": "Ondersteunt prompt caching",
 		"noPromptCache": "Ondersteunt geen prompt caching",
 		"contextWindow": "Contextvenster:",

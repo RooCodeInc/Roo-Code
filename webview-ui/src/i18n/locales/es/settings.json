@@ -297,6 +297,9 @@
 		"getZaiApiKey": "Obtener clave API de Z AI",
 		"zaiEntrypoint": "Punto de entrada de Z AI",
 		"zaiEntrypointDescription": "Por favor, seleccione el punto de entrada de API apropiado según su ubicación. Si está en China, elija open.bigmodel.cn. De lo contrario, elija api.z.ai.",
+		"minimaxApiKey": "Clave API de MiniMax",
+		"getMiniMaxApiKey": "Obtener clave API de MiniMax",
+		"minimaxBaseUrl": "Punto de entrada de MiniMax",
 		"geminiApiKey": "Clave API de Gemini",
 		"getGroqApiKey": "Obtener clave API de Groq",
 		"groqApiKey": "Clave API de Groq",
@@ -346,7 +349,7 @@
 		"enablePromptCachingTitle": "Habilitar el caché de prompts para mejorar el rendimiento y reducir costos para modelos compatibles.",
 		"cacheUsageNote": "Nota: Si no ve el uso del caché, intente seleccionar un modelo diferente y luego seleccionar nuevamente su modelo deseado.",
 		"vscodeLmModel": "Modelo de lenguaje",
-		"vscodeLmWarning": "Nota: Esta es una integración muy experimental y el soporte del proveedor variará. Si recibe un error sobre un modelo no compatible, es un problema del proveedor.",
+		"vscodeLmWarning": "Nota: Los modelos a los que se accede a través de la API de modelos de lenguaje de VS Code pueden estar envueltos o ajustados por el proveedor, por lo que su comportamiento puede diferir del uso directo del mismo modelo desde un proveedor o enrutador típico. Para usar un modelo del menú desplegable «Language Model», primero cambia a ese modelo y luego haz clic en «Aceptar» en el aviso de Copilot Chat; de lo contrario, puedes ver un error como 400 «The requested model is not supported».",
 		"geminiParameters": {
 			"urlContext": {
 				"title": "Habilitar contexto de URL",
@@ -422,7 +425,7 @@
 			},
 			"computerUse": {
 				"label": "Uso del ordenador",
-				"description": "¿Es este modelo capaz de interactuar con un navegador? (ej. Claude 3.7 Sonnet)"
+				"description": "¿Es este modelo capaz de interactuar con un navegador?"
 			},
 			"promptCache": {
 				"label": "Caché de prompts",
@@ -460,6 +463,7 @@
 		},
 		"reasoningEffort": {
 			"label": "Esfuerzo de razonamiento del modelo",
+			"none": "Ninguno",
 			"minimal": "Mínimo (el más rápido)",
 			"high": "Alto",
 			"medium": "Medio",
@@ -510,6 +514,10 @@
 		}
 	},
 	"checkpoints": {
+		"timeout": {
+			"label": "Tiempo de espera para inicializar el punto de control (segundos)",
+			"description": "Tiempo máximo de espera para inicializar el servicio de puntos de control. El valor por defecto es 15 segundos. Rango: 10-60 segundos."
+		},
 		"enable": {
 			"label": "Habilitar puntos de control automáticos",
 			"description": "Cuando está habilitado, Roo creará automáticamente puntos de control durante la ejecución de tareas, facilitando la revisión de cambios o la reversión a estados anteriores. <0>Más información</0>"
@@ -605,6 +613,14 @@
 			"profileDescription": "Umbral personalizado solo para este perfil (anula el predeterminado global)",
 			"inheritDescription": "Este perfil hereda el umbral predeterminado global ({{threshold}}%)",
 			"usesGlobal": "(usa global {{threshold}}%)"
+		},
+		"includeCurrentTime": {
+			"label": "Incluir hora actual en el contexto",
+			"description": "Cuando está habilitado, la hora actual y la información de la zona horaria se incluirán en el prompt del sistema. Deshabilítelo si los modelos dejan de funcionar por problemas de tiempo."
+		},
+		"includeCurrentCost": {
+			"label": "Incluir costo actual en el contexto",
+			"description": "Cuando está habilitado, el costo de uso actual de la API se incluirá en el prompt del sistema. Deshabilítelo si los modelos dejan de funcionar por problemas de costos."
 		}
 	},
 	"terminal": {
@@ -671,7 +687,7 @@
 	"advanced": {
 		"diff": {
 			"label": "Habilitar edición a través de diffs",
-			"description": "Cuando está habilitado, Roo podrá editar archivos más rápidamente y rechazará automáticamente escrituras completas de archivos truncados. Funciona mejor con el último modelo Claude 3.7 Sonnet.",
+			"description": "Cuando está habilitado, Roo podrá editar archivos más rápidamente y rechazará automáticamente escrituras completas de archivos truncados",
 			"strategy": {
 				"label": "Estrategia de diff",
 				"options": {
@@ -699,10 +715,6 @@
 		"DIFF_STRATEGY_UNIFIED": {
 			"name": "Usar estrategia de diff unificada experimental",
 			"description": "Habilitar la estrategia de diff unificada experimental. Esta estrategia podría reducir el número de reintentos causados por errores del modelo, pero puede causar comportamientos inesperados o ediciones incorrectas. Habilítela solo si comprende los riesgos y está dispuesto a revisar cuidadosamente todos los cambios."
-		},
-		"SEARCH_AND_REPLACE": {
-			"name": "Usar herramienta experimental de búsqueda y reemplazo",
-			"description": "Habilitar la herramienta experimental de búsqueda y reemplazo, permitiendo a Roo reemplazar múltiples instancias de un término de búsqueda en una sola solicitud."
 		},
 		"INSERT_BLOCK": {
 			"name": "Usar herramienta experimental de inserción de contenido",
@@ -768,8 +780,6 @@
 	"modelInfo": {
 		"supportsImages": "Soporta imágenes",
 		"noImages": "No soporta imágenes",
-		"supportsComputerUse": "Soporta uso del ordenador",
-		"noComputerUse": "No soporta uso del ordenador",
 		"supportsPromptCache": "Soporta caché de prompts",
 		"noPromptCache": "No soporta caché de prompts",
 		"contextWindow": "Ventana de contexto",

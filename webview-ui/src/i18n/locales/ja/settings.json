@@ -297,6 +297,9 @@
 		"getZaiApiKey": "Z AI APIキーを取得",
 		"zaiEntrypoint": "Z AI エントリーポイント",
 		"zaiEntrypointDescription": "お住まいの地域に応じて適切な API エントリーポイントを選択してください。中国にお住まいの場合は open.bigmodel.cn を選択してください。それ以外の場合は api.z.ai を選択してください。",
+		"minimaxApiKey": "MiniMax APIキー",
+		"getMiniMaxApiKey": "MiniMax APIキーを取得",
+		"minimaxBaseUrl": "MiniMax エントリーポイント",
 		"geminiApiKey": "Gemini APIキー",
 		"getGroqApiKey": "Groq APIキーを取得",
 		"groqApiKey": "Groq APIキー",
@@ -346,7 +349,7 @@
 		"enablePromptCachingTitle": "サポートされているモデルのパフォーマンスを向上させ、コストを削減するためにプロンプトキャッシュを有効化します。",
 		"cacheUsageNote": "注意：キャッシュの使用が表示されない場合は、別のモデルを選択してから希望のモデルを再度選択してみてください。",
 		"vscodeLmModel": "言語モデル",
-		"vscodeLmWarning": "注意：これは非常に実験的な統合であり、プロバイダーのサポートは異なります。モデルがサポートされていないというエラーが表示された場合、それはプロバイダー側の問題です。",
+		"vscodeLmWarning": "注意: VS Code Language Model API を通じて利用されるモデルは、プロバイダーによってラップまたは微調整されている場合があります。したがって、一般的なプロバイダーやルーターから同じモデルを直接使用する場合と挙動が異なることがあります。『Language Model』ドロップダウンのモデルを使用するには、まずそのモデルに切り替え、Copilot Chat のプロンプトで『承認』をクリックしてください。そうしないと、400『The requested model is not supported』などのエラーが表示されることがあります。",
 		"geminiParameters": {
 			"urlContext": {
 				"title": "URLコンテキストを有効にする",
@@ -422,7 +425,7 @@
 			},
 			"computerUse": {
 				"label": "コンピューター使用",
-				"description": "このモデルはブラウザとの対話が可能ですか？（例：Claude 3.7 Sonnet）"
+				"description": "このモデルはブラウザとの対話が可能ですか？"
 			},
 			"promptCache": {
 				"label": "プロンプトキャッシュ",
@@ -460,6 +463,7 @@
 		},
 		"reasoningEffort": {
 			"label": "モデル推論の労力",
+			"none": "なし",
 			"minimal": "最小 (最速)",
 			"high": "高",
 			"medium": "中",
@@ -510,6 +514,10 @@
 		}
 	},
 	"checkpoints": {
+		"timeout": {
+			"label": "チェックポイント初期化タイムアウト（秒）",
+			"description": "チェックポイントサービスの初期化を待つ最大時間。デフォルトは15秒。範囲：10～60秒。"
+		},
 		"enable": {
 			"label": "自動チェックポイントを有効化",
 			"description": "有効にすると、Rooはタスク実行中に自動的にチェックポイントを作成し、変更の確認や以前の状態への復帰を容易にします。 <0>詳細情報</0>"
@@ -606,6 +614,14 @@
 			"label": "最大合計画像サイズ",
 			"mb": "MB",
 			"description": "単一のread_file操作で処理されるすべての画像の累積サイズ制限（MB単位）。複数の画像を読み取る際、各画像のサイズが合計に加算されます。別の画像を含めるとこの制限を超える場合、その画像はスキップされます。"
+		},
+		"includeCurrentTime": {
+			"label": "現在の時刻をコンテキストに含める",
+			"description": "有効にすると、現在の時刻とタイムゾーン情報がシステムプロンプトに含まれます。モデルが時間に関する懸念で動作を停止する場合は無効にしてください。"
+		},
+		"includeCurrentCost": {
+			"label": "現在のコストをコンテキストに含める",
+			"description": "有効にすると、現在のAPI使用コストがシステムプロンプトに含まれます。モデルがコストに関する懸念で動作を停止する場合は無効にしてください。"
 		}
 	},
 	"terminal": {
@@ -672,7 +688,7 @@
 	"advanced": {
 		"diff": {
 			"label": "diff経由の編集を有効化",
-			"description": "有効にすると、Rooはファイルをより迅速に編集でき、切り詰められた全ファイル書き込みを自動的に拒否します。最新のClaude 3.7 Sonnetモデルで最良に機能します。",
+			"description": "有効にすると、Rooはファイルをより迅速に編集でき、切り詰められた全ファイル書き込みを自動的に拒否します。",
 			"strategy": {
 				"label": "Diff戦略",
 				"options": {
@@ -700,10 +716,6 @@
 		"DIFF_STRATEGY_UNIFIED": {
 			"name": "実験的な統合diff戦略を使用する",
 			"description": "実験的な統合diff戦略を有効にします。この戦略はモデルエラーによる再試行の回数を減らす可能性がありますが、予期しない動作や不正確な編集を引き起こす可能性があります。リスクを理解し、すべての変更を注意深く確認する準備がある場合にのみ有効にしてください。"
-		},
-		"SEARCH_AND_REPLACE": {
-			"name": "実験的な検索と置換ツールを使用する",
-			"description": "実験的な検索と置換ツールを有効にし、Rooが1つのリクエストで検索語の複数のインスタンスを置き換えることを可能にします。"
 		},
 		"INSERT_BLOCK": {
 			"name": "実験的なコンテンツ挿入ツールを使用する",
@@ -769,8 +781,6 @@
 	"modelInfo": {
 		"supportsImages": "画像をサポート",
 		"noImages": "画像をサポートしていません",
-		"supportsComputerUse": "コンピュータ使用をサポート",
-		"noComputerUse": "コンピュータ使用をサポートしていません",
 		"supportsPromptCache": "プロンプトキャッシュをサポート",
 		"noPromptCache": "プロンプトキャッシュをサポートしていません",
 		"contextWindow": "コンテキストウィンドウ:",
