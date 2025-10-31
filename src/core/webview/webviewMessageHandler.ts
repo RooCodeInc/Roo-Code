@@ -879,7 +879,11 @@ export const webviewMessageHandler = async (
 				}
 			})
 
-			provider.postMessageToWebview({ type: "routerModels", routerModels })
+			provider.postMessageToWebview({
+				type: "routerModels",
+				routerModels,
+				values: providerFilter ? { provider: requestedProvider } : undefined,
+			})
 			break
 		case "requestOllamaModels": {
 			// Specific handler for Ollama models only.
