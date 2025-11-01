@@ -16,6 +16,7 @@ export const minimaxModels = {
 		outputPrice: 1.2,
 		cacheWritesPrice: 0,
 		cacheReadsPrice: 0,
+		preserveReasoning: true,
 		description:
 			"MiniMax M2, a model born for Agents and code, featuring Top-tier Coding Capabilities, Powerful Agentic Performance, and Ultimate Cost-Effectiveness & Speed.",
 	},
