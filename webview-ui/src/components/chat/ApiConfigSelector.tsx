@@ -194,26 +194,37 @@ export const ApiConfigSelector = ({
 					)}
 
 					{/* Config list */}
-					<div className="max-h-[300px] overflow-y-auto">
-						{filteredConfigs.length === 0 && searchValue ? (
-							<div className="py-2 px-3 text-sm text-vscode-foreground/70">
-								{t("common:ui.no_results")}
-							</div>
-						) : (
-							<div className="py-1">
-								{/* Pinned configs */}
-								{pinnedConfigs.map((config) => renderConfigItem(config, true))}
+					{filteredConfigs.length === 0 && searchValue ? (
+						<div className="py-2 px-3 text-sm text-vscode-foreground/70">{t("common:ui.no_results")}</div>
+					) : (
+						<>
+							{/* Pinned configs - fixed at top, not scrollable */}
+							{pinnedConfigs.length > 0 && (
+								<div className="py-1">
+									{pinnedConfigs.map((config) => renderConfigItem(config, true))}
+								</div>
+							)}
 
-								{/* Separator between pinned and unpinned */}
-								{pinnedConfigs.length > 0 && unpinnedConfigs.length > 0 && (
-									<div className="mx-1 my-1 h-px bg-vscode-dropdown-foreground/10" />
-								)}
+							{/* Separator between pinned and unpinned */}
+							{pinnedConfigs.length > 0 && unpinnedConfigs.length > 0 && (
+								<div className="mx-1 my-1 h-px bg-vscode-dropdown-foreground/10" />
+							)}
 
-								{/* Unpinned configs */}
-								{unpinnedConfigs.map((config) => renderConfigItem(config, false))}
-							</div>
-						)}
-					</div>
+							{/* Unpinned configs - scrollable */}
+							{unpinnedConfigs.length > 0 && (
+								<div
+									className="overflow-y-auto py-1"
+									style={{
+										maxHeight:
+											pinnedConfigs.length > 0
+												? `calc(300px - ${pinnedConfigs.length * 36}px)`
+												: "300px",
+									}}>
+									{unpinnedConfigs.map((config) => renderConfigItem(config, false))}
+								</div>
+							)}
+						</>
+					)}
 
 					{/* Bottom bar with buttons on left and title on right */}
 					<div className="flex flex-row items-center justify-between px-2 py-2 border-t border-vscode-dropdown-border">

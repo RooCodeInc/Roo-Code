@@ -435,4 +435,114 @@ describe("ApiConfigSelector", () => {
 		// Search value should be maintained
 		expect(searchInput.value).toBe("Config")
 	})
+
+	test("pinned configs remain fixed at top while unpinned configs scroll", () => {
+		// Create a list with many configs to test scrolling
+		const manyConfigs = Array.from({ length: 15 }, (_, i) => ({
+			id: `config${i + 1}`,
+			name: `Config ${i + 1}`,
+			modelId: `model-${i + 1}`,
+		}))
+
+		const props = {
+			...defaultProps,
+			listApiConfigMeta: manyConfigs,
+			pinnedApiConfigs: {
+				config1: true,
+				config2: true,
+				config3: true,
+			},
+		}
+
+		render(<ApiConfigSelector {...props} />)
+
+		const trigger = screen.getByTestId("dropdown-trigger")
+		fireEvent.click(trigger)
+
+		const popoverContent = screen.getByTestId("popover-content")
+
+		// Check for Config 1, 2, 3 being visible (pinned) - use getAllByText since there might be multiple
+		expect(screen.getAllByText("Config 1").length).toBeGreaterThan(0)
+		expect(screen.getAllByText("Config 2").length).toBeGreaterThan(0)
+		expect(screen.getAllByText("Config 3").length).toBeGreaterThan(0)
+
+		// Find all containers with py-1 class
+		const configContainers = popoverContent.querySelectorAll(".py-1")
+
+		// Should have 2 containers: one for pinned (non-scrollable) and one for unpinned (scrollable)
+		expect(configContainers.length).toBeGreaterThanOrEqual(1)
+
+		// Find the non-scrollable container (pinned configs)
+		let pinnedContainer: Element | null = null
+		let unpinnedContainer: Element | null = null
+
+		configContainers.forEach((container) => {
+			if (container.classList.contains("overflow-y-auto")) {
+				unpinnedContainer = container
+			} else {
+				pinnedContainer = container
+			}
+		})
+
+		// Verify pinned container exists and contains the pinned configs
+		if (pinnedContainer) {
+			const elements = (pinnedContainer as Element).querySelectorAll(".flex-shrink-0")
+			const pinnedConfigTexts = Array.from(elements)
+				.map((el) => (el as Element).textContent)
+				.filter((text) => text?.startsWith("Config"))
+
+			expect(pinnedConfigTexts).toContain("Config 1")
+			expect(pinnedConfigTexts).toContain("Config 2")
+			expect(pinnedConfigTexts).toContain("Config 3")
+		}
+
+		// Verify unpinned container exists and is scrollable
+		expect(unpinnedContainer).toBeInTheDocument()
+		if (unpinnedContainer) {
+			expect((unpinnedContainer as Element).classList.contains("overflow-y-auto")).toBe(true)
+			// Check that the unpinned container has the correct max-height
+			expect((unpinnedContainer as Element).getAttribute("style")).toContain("max-height")
+		}
+
+		// Verify separator exists between pinned and unpinned
+		const separator = popoverContent.querySelector(".h-px")
+		expect(separator).toBeInTheDocument()
+	})
+
+	test("displays all configs in scrollable container when no configs are pinned", () => {
+		const manyConfigs = Array.from({ length: 10 }, (_, i) => ({
+			id: `config${i + 1}`,
+			name: `Config ${i + 1}`,
+			modelId: `model-${i + 1}`,
+		}))
+
+		const props = {
+			...defaultProps,
+			listApiConfigMeta: manyConfigs,
+			pinnedApiConfigs: {}, // No pinned configs
+		}
+
+		render(<ApiConfigSelector {...props} />)
+
+		const trigger = screen.getByTestId("dropdown-trigger")
+		fireEvent.click(trigger)
+
+		const popoverContent = screen.getByTestId("popover-content")
+
+		// Should have only one scrollable container with all configs
+		const scrollableContainer = popoverContent.querySelector(".overflow-y-auto.py-1")
+		expect(scrollableContainer).toBeInTheDocument()
+
+		// Check max-height is 300px when no pinned configs
+		expect(scrollableContainer?.getAttribute("style")).toContain("max-height")
+		expect(scrollableContainer?.getAttribute("style")).toContain("300px")
+
+		// All configs should be in the scrollable container
+		const allConfigRows = scrollableContainer?.querySelectorAll(".group")
+		expect(allConfigRows?.length).toBe(10)
+
+		// No separator should exist
+		const separator = popoverContent.querySelector(".h-px.bg-vscode-dropdown-foreground\\/10")
+		expect(separator).not.toBeInTheDocument()
+	})
 })
