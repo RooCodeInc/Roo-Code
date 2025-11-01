@@ -889,8 +889,8 @@
 			"description": "Gdy włączone, bloki myślenia będą domyślnie zwinięte, dopóki nie wejdziesz z nimi w interakcję"
 		},
 		"requireCtrlEnterToSend": {
-			"label": "Wymaga Ctrl+Enter, aby wysłać wiadomości",
-			"description": "Po włączeniu musisz nacisnąć Ctrl+Enter, aby wysłać wiadomości zamiast tylko Enter."
+			"label": "Wymaga {primaryMod}+Enter, aby wysłać wiadomości",
+			"description": "Po włączeniu musisz nacisnąć {primaryMod}+Enter, aby wysłać wiadomości zamiast tylko Enter."
 		}
 	}
 }

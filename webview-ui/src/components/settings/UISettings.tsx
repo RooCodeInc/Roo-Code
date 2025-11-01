@@ -1,5 +1,6 @@
 import { HTMLAttributes } from "react"
 import { useAppTranslation } from "@/i18n/TranslationContext"
+import { getPrimaryModifierKey } from "@/utils/platform"
 import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
 import { Glasses } from "lucide-react"
 import { telemetryClient } from "@/utils/TelemetryClient"
@@ -71,10 +72,14 @@ export const UISettings = ({
 							checked={requireCtrlEnterToSend ?? false}
 							onChange={(e: any) => handleRequireCtrlEnterToSendChange(e.target.checked)}
 							data-testid="ctrl-enter-checkbox">
-							<span className="font-medium">{t("settings:ui.requireCtrlEnterToSend.label")}</span>
+							<span className="font-medium">
+								{t("settings:ui.requireCtrlEnterToSend.label", { primaryMod: getPrimaryModifierKey() })}
+							</span>
 						</VSCodeCheckbox>
 						<div className="text-vscode-descriptionForeground text-sm ml-5 mt-1">
-							{t("settings:ui.requireCtrlEnterToSend.description")}
+							{t("settings:ui.requireCtrlEnterToSend.description", {
+								primaryMod: getPrimaryModifierKey(),
+							})}
 						</div>
 					</div>
 				</div>

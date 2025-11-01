@@ -889,8 +889,8 @@
 			"description": "有効にすると、操作するまで思考ブロックがデフォルトで折りたたまれます"
 		},
 		"requireCtrlEnterToSend": {
-			"label": "メッセージ送信にCtrl+Enterを必須にする",
-			"description": "有効にすると、EnterキーだけでなくCtrl+Enterを押す必要があります"
+			"label": "メッセージ送信に{primaryMod}+Enterを必須にする",
+			"description": "有効にすると、Enterキーだけでなく{primaryMod}+Enterを押す必要があります"
 		}
 	}
 }

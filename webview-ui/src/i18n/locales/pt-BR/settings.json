@@ -889,8 +889,8 @@
 			"description": "Quando ativado, os blocos de pensamento serão recolhidos por padrão até que você interaja com eles"
 		},
 		"requireCtrlEnterToSend": {
-			"label": "Requer Ctrl+Enter para enviar mensagens",
-			"description": "Quando ativado, você deve pressionar Ctrl+Enter para enviar mensagens em vez de apenas Enter."
+			"label": "Requer {primaryMod}+Enter para enviar mensagens",
+			"description": "Quando ativado, você deve pressionar {primaryMod}+Enter para enviar mensagens em vez de apenas Enter."
 		}
 	}
 }

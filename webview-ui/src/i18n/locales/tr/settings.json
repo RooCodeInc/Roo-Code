@@ -889,8 +889,8 @@
 			"description": "Etkinleştirildiğinde, düşünme blokları siz onlarla etkileşime girene kadar varsayılan olarak daraltılır"
 		},
 		"requireCtrlEnterToSend": {
-			"label": "Mesaj göndermek için Ctrl+Enter gerektirir",
-			"description": "Etkinleştirildiğinde, sadece Enter yerine mesaj göndermek için Ctrl+Enter tuşuna basmanız gerekir."
+			"label": "Mesaj göndermek için {primaryMod}+Enter gerektirir",
+			"description": "Etkinleştirildiğinde, sadece Enter yerine mesaj göndermek için {primaryMod}+Enter tuşuna basmanız gerekir."
 		}
 	}
 }

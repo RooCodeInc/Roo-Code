@@ -889,8 +889,8 @@
 			"description": "Indien ingeschakeld, worden denkblokken standaard samengevouwen totdat je ermee interageert"
 		},
 		"requireCtrlEnterToSend": {
-			"label": "Vereis Ctrl+Enter om berichten te verzenden",
-			"description": "Wanneer ingeschakeld, moet u Ctrl+Enter indrukken om berichten te verzenden in plaats van alleen Enter"
+			"label": "Vereis {primaryMod}+Enter om berichten te verzenden",
+			"description": "Wanneer ingeschakeld, moet u {primaryMod}+Enter indrukken om berichten te verzenden in plaats van alleen Enter"
 		}
 	}
 }

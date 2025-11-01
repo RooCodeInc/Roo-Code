@@ -918,8 +918,8 @@
 			"description": "Jika diaktifkan, blok berpikir akan diciutkan secara default sampai Anda berinteraksi dengannya"
 		},
 		"requireCtrlEnterToSend": {
-			"label": "Wajib Ctrl+Enter untuk mengirim pesan",
-			"description": "Saat aktif, Anda harus menekan Ctrl+Enter untuk mengirim pesan, bukan hanya Enter"
+			"label": "Wajib {primaryMod}+Enter untuk mengirim pesan",
+			"description": "Saat aktif, Anda harus menekan {primaryMod}+Enter untuk mengirim pesan, bukan hanya Enter"
 		}
 	}
 }

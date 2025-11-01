@@ -11,6 +11,7 @@ import { ExtensionMessage } from "@roo/ExtensionMessage"
 import { vscode } from "@src/utils/vscode"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
 import { useAppTranslation } from "@src/i18n/TranslationContext"
+import { getSendMessageKeyCombination } from "@src/utils/platform"
 import {
 	ContextMenuOptionType,
 	getContextMenuOptions,
@@ -1161,7 +1162,13 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 										</button>
 									</StandardTooltip>
 								)}
-								<StandardTooltip content={t("chat:sendMessage")}>
+								<StandardTooltip
+									content={
+										requireCtrlEnterToSend
+											? t("chat:sendMessage") +
+												` (${t("chat:pressToSend", { keyCombination: getSendMessageKeyCombination() })})`
+											: t("chat:sendMessage")
+									}>
 									<button
 										aria-label={t("chat:sendMessage")}
 										disabled={false}
@@ -1199,6 +1206,22 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 										pointerEvents: "none",
 									}}>
 									{placeholderBottomText}
+								</div>
+							)}
+							{requireCtrlEnterToSend && (
+								<div
+									className={cn(
+										"absolute left-2 z-30 flex items-center h-8 font-vscode-font-family text-vscode-editor-font-size leading-vscode-editor-line-height",
+										isEditMode ? "pr-20" : "pr-9",
+									)}
+									style={{
+										bottom: "0.25rem",
+										color: "color-mix(in oklab, var(--vscode-descriptionForeground) 70%, transparent)",
+										userSelect: "none",
+										pointerEvents: "none",
+										fontSize: "0.75rem",
+									}}>
+									{t("chat:pressToSend", { keyCombination: getSendMessageKeyCombination() })}
 								</div>
 							)}
 						</div>

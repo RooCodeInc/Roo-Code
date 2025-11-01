@@ -888,8 +888,8 @@
 			"description": "Cuando está activado, los bloques de pensamiento se colapsarán por defecto hasta que interactúes con ellos"
 		},
 		"requireCtrlEnterToSend": {
-			"label": "Requerir Ctrl+Enter para enviar mensajes",
-			"description": "Cuando está habilitado, debes presionar Ctrl+Enter para enviar mensajes en lugar de solo Enter"
+			"label": "Requerir {primaryMod}+Enter para enviar mensajes",
+			"description": "Cuando está habilitado, debes presionar {primaryMod}+Enter para enviar mensajes en lugar de solo Enter"
 		}
 	}
 }
