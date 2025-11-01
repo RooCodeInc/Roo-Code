@@ -6,6 +6,7 @@ import { removeLeadingNonAlphanumeric } from "@src/utils/removeLeadingNonAlphanu
 
 import { ToolUseBlock, ToolUseBlockHeader } from "./ToolUseBlock"
 import CodeBlock from "./CodeBlock"
+import { StandardTooltip } from "../ui/standard-tooltip"
 
 interface CodeAccordianProps {
 	path?: string
@@ -44,7 +45,9 @@ const CodeAccordian = ({
 					{header ? (
 						<div className="flex items-center">
 							<span className="codicon codicon-server mr-1.5"></span>
-							<span className="whitespace-nowrap overflow-hidden text-ellipsis mr-2">{header}</span>
+							<StandardTooltip content={header} side="top" align="start" className="text-wrap max-w-[min(300px,100vw)]">
+								<span className="whitespace-nowrap overflow-hidden text-ellipsis mr-2">{header}</span>
+							</StandardTooltip>
 						</div>
 					) : isFeedback ? (
 						<div className="flex items-center">
@@ -56,9 +59,11 @@ const CodeAccordian = ({
 					) : (
 						<>
 							{path?.startsWith(".") && <span>.</span>}
-							<span className="whitespace-nowrap overflow-hidden text-ellipsis text-left mr-2 rtl">
-								{removeLeadingNonAlphanumeric(path ?? "") + "\u200E"}
-							</span>
+							<StandardTooltip content={removeLeadingNonAlphanumeric(path ?? "") + "\u200E"} side="top" align="start" className="text-wrap max-w-[min(300px,100vw)]">
+								<span className="whitespace-nowrap overflow-hidden text-ellipsis text-left mr-2 rtl">
+									{removeLeadingNonAlphanumeric(path ?? "") + "\u200E"}
+								</span>
+							</StandardTooltip>
 						</>
 					)}
 					<div className="flex-grow-1" />
