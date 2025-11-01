@@ -770,6 +770,7 @@ export const webviewMessageHandler = async (
 				ollama: {},
 				lmstudio: {},
 				roo: {},
+				xai: {},
 			}
 
 			const safeGetModels = async (options: GetModelsOptions): Promise<ModelRecord> => {
@@ -825,6 +826,15 @@ export const webviewMessageHandler = async (
 				modelFetchPromises.push({
 					key: "io-intelligence",
 					options: { provider: "io-intelligence", apiKey: ioIntelligenceApiKey },
+				})
+			}
+
+			// Add xAI if API key is provided.
+			const xaiApiKey = apiConfiguration.xaiApiKey
+			if (xaiApiKey) {
+				modelFetchPromises.push({
+					key: "xai",
+					options: { provider: "xai", apiKey: xaiApiKey, baseUrl: "https://api.x.ai/v1" },
 				})
 			}
 
