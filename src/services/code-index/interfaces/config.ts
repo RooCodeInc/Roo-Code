@@ -15,6 +15,7 @@ export interface CodeIndexConfig {
 	geminiOptions?: { apiKey: string }
 	mistralOptions?: { apiKey: string }
 	vercelAiGatewayOptions?: { apiKey: string }
+	openRouterOptions?: { apiKey: string; baseUrl?: string }
 	qdrantUrl?: string
 	qdrantApiKey?: string
 	searchMinScore?: number
@@ -37,6 +38,8 @@ export type PreviousConfigSnapshot = {
 	geminiApiKey?: string
 	mistralApiKey?: string
 	vercelAiGatewayApiKey?: string
+	openRouterApiKey?: string
+	openRouterBaseUrl?: string
 	qdrantUrl?: string
 	qdrantApiKey?: string
 }

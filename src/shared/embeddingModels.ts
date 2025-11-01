@@ -2,7 +2,14 @@
  * Defines profiles for different embedding models, including their dimensions.
  */
 
-export type EmbedderProvider = "openai" | "ollama" | "openai-compatible" | "gemini" | "mistral" | "vercel-ai-gateway" // Add other providers as needed
+export type EmbedderProvider =
+	| "openai"
+	| "ollama"
+	| "openai-compatible"
+	| "gemini"
+	| "mistral"
+	| "vercel-ai-gateway"
+	| "openrouter" // Add other providers as needed
 
 export interface EmbeddingModelProfile {
 	dimension: number
@@ -69,6 +76,19 @@ export const EMBEDDING_MODEL_PROFILES: EmbeddingModelProfiles = {
 		// Mistral models
 		"mistral/codestral-embed": { dimension: 1536, scoreThreshold: 0.4 },
 		"mistral/mistral-embed": { dimension: 1024, scoreThreshold: 0.4 },
+	},
+	openrouter: {
+		// OpenAI models available via OpenRouter
+		"openai/text-embedding-3-small": { dimension: 1536, scoreThreshold: 0.4 },
+		"openai/text-embedding-3-large": { dimension: 3072, scoreThreshold: 0.4 },
+		"openai/text-embedding-ada-002": { dimension: 1536, scoreThreshold: 0.4 },
+		// Cohere models
+		"cohere/embed-english-v3.0": { dimension: 1024, scoreThreshold: 0.4 },
+		"cohere/embed-multilingual-v3.0": { dimension: 1024, scoreThreshold: 0.4 },
+		// Voyage models
+		"voyage/voyage-embeddings-v3": { dimension: 1024, scoreThreshold: 0.4 },
+		"voyage/voyage-3": { dimension: 1024, scoreThreshold: 0.4 },
+		"voyage/voyage-3-lite": { dimension: 512, scoreThreshold: 0.4 },
 	},
 }
 
@@ -162,6 +182,9 @@ export function getDefaultModelId(provider: EmbedderProvider): string {
 
 		case "vercel-ai-gateway":
 			return "openai/text-embedding-3-large"
+
+		case "openrouter":
+			return "openai/text-embedding-3-small"
 
 		default:
 			// Fallback for unknown providers
