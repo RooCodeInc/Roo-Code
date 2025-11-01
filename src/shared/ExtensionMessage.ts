@@ -208,7 +208,6 @@ export interface ExtensionMessage {
 	queuedMessages?: QueuedMessage[]
 	list?: string[] // For dismissedUpsells
 	organizationId?: string | null // For organizationSwitchResult
-	data?: any // For usagePreviewData
 }
 
 export type ExtensionState = Pick<
