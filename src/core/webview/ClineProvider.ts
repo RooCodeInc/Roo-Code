@@ -95,6 +95,7 @@ import type { ClineMessage } from "@roo-code/types"
 import { readApiMessages, saveApiMessages, saveTaskMessages } from "../task-persistence"
 import { getNonce } from "./getNonce"
 import { getUri } from "./getUri"
+import { TitleSummarizer } from "./titleSummarizer"
 
 /**
  * https://github.com/microsoft/vscode-webview-ui-toolkit-samples/blob/main/default/weather-webview/src/providers/WeatherViewProvider.ts
@@ -2595,7 +2596,69 @@ export class ClineProvider
 			`[createTask] ${task.parentTask ? "child" : "parent"} task ${task.taskId}.${task.instanceId} instantiated`,
 		)
 
+		// Trigger asynchronous title summarization for long task messages
+		const autoSummarize = this.contextProxy.getValue("autoSummarizeLongTitles") ?? true
+		const threshold = this.contextProxy.getValue("titleSummarizationThreshold") ?? 150
+
+		if (autoSummarize && text && text.length > threshold) {
+			this.summarizeTaskTitle(task.taskId, text).catch((error: unknown) => {
+				this.log(`Failed to summarize task title: ${error instanceof Error ? error.message : String(error)}`)
+			})
+		}
+
 		return task
+	}
+
+	/**
+	 * Summarize long task titles asynchronously and update the task history
+	 * @param taskId - The ID of the task to update
+	 * @param originalText - The original task text to summarize
+	 */
+	private async summarizeTaskTitle(taskId: string, originalText: string): Promise<void> {
+		try {
+			// Get the current state to check for API configuration
+			const state = await this.getState()
+
+			// Get the configurable threshold
+			const threshold = this.contextProxy.getValue("titleSummarizationThreshold") ?? 150
+
+			// Try to summarize the title
+			const result = await TitleSummarizer.summarizeTitle({
+				text: originalText,
+				apiConfiguration: state.apiConfiguration,
+				customSupportPrompts: state.customSupportPrompts,
+				enhancementApiConfigId: state.enhancementApiConfigId,
+				listApiConfigMeta: state.listApiConfigMeta,
+				providerSettingsManager: this.providerSettingsManager,
+				maxLength: threshold,
+			})
+
+			// If summarization succeeded and produced a shorter title, update the task history
+			if (result.success && result.summarizedTitle && result.summarizedTitle.length < originalText.length) {
+				const history = this.getGlobalState("taskHistory") ?? []
+				const taskHistoryItem = history.find((item) => item.id === taskId)
+
+				if (taskHistoryItem) {
+					// Update the task field with the summarized version
+					taskHistoryItem.task = result.summarizedTitle
+
+					// Update the history
+					await this.updateTaskHistory(taskHistoryItem)
+
+					// Capture telemetry
+					TitleSummarizer.captureTelemetry(taskId, originalText.length, result.summarizedTitle.length)
+
+					this.log(
+						`Task title summarized from ${originalText.length} to ${result.summarizedTitle.length} characters`,
+					)
+				}
+			} else if (!result.success && result.error) {
+				this.log(`Title summarization failed: ${result.error}`)
+			}
+		} catch (error) {
+			// Silently fail - title summarization is not critical
+			this.log(`Title summarization error: ${error instanceof Error ? error.message : String(error)}`)
+		}
 	}
 
 	public async cancelTask(): Promise<void> {

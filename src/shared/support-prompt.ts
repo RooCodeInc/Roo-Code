@@ -44,6 +44,7 @@ type SupportPromptType =
 	| "TERMINAL_FIX"
 	| "TERMINAL_EXPLAIN"
 	| "NEW_TASK"
+	| "SUMMARIZE_TITLE"
 
 const supportPromptConfigs: Record<SupportPromptType, SupportPromptConfig> = {
 	ENHANCE: {
@@ -173,6 +174,19 @@ Please provide:
 	},
 	NEW_TASK: {
 		template: `\${userInput}`,
+	},
+	SUMMARIZE_TITLE: {
+		template: `Create a clear, concise title (under 150 characters) that captures the essence of this task:
+
+<task_description>
+\${userInput}
+</task_description>
+
+IMPORTANT:
+- Keep it under 150 characters
+- Be specific and descriptive
+- No quotes or special formatting
+- Reply with ONLY the title, nothing else`,
 	},
 } as const
 
