@@ -64,8 +64,8 @@ export const generateSystemPrompt = async (provider: ClineProvider, message: Web
 	const modelSupportsBrowser = modelInfo && (modelInfo as any)?.supportsImages === true
 
 	// Only enable browser tools if the model supports it, the mode includes browser tools,
-	// and browser tools are enabled in settings
-	const canUseBrowserTool = modelSupportsBrowser && modeSupportsBrowser && (browserToolEnabled ?? true)
+	// and browser tools are enabled in settings (default to OFF when unset)
+	const canUseBrowserTool = modelSupportsBrowser && modeSupportsBrowser && (browserToolEnabled ?? false)
 
 	const systemPrompt = await SYSTEM_PROMPT(
 		provider.context,

@@ -3,6 +3,7 @@ import type { GlobalSettings } from "@roo-code/types"
 import { useAppTranslation } from "@/i18n/TranslationContext"
 import { cn } from "@/lib/utils"
 import { Button, StandardTooltip } from "@/components/ui"
+import { useExtensionState } from "@/context/ExtensionStateContext"
 
 type AutoApproveToggles = Pick<
 	GlobalSettings,
@@ -107,10 +108,15 @@ type AutoApproveToggleProps = AutoApproveToggles & {
 
 export const AutoApproveToggle = ({ onToggle, ...props }: AutoApproveToggleProps) => {
 	const { t } = useAppTranslation()
+	const { browserToolEnabled } = useExtensionState()
+
+	const visibleConfigs = Object.values(autoApproveSettingsConfig).filter(
+		(cfg) => browserToolEnabled || cfg.key !== "alwaysAllowBrowser",
+	)
 
 	return (
 		<div className={cn("flex flex-row flex-wrap gap-2 py-2")}>
-			{Object.values(autoApproveSettingsConfig).map(({ key, descriptionKey, labelKey, icon, testId }) => (
+			{visibleConfigs.map(({ key, descriptionKey, labelKey, icon, testId }) => (
 				<StandardTooltip key={key} content={t(descriptionKey || "")}>
 					<Button
 						variant={props[key] ? "default" : "outline"}

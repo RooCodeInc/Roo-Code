@@ -1611,7 +1611,7 @@ export const webviewMessageHandler = async (
 			await provider.postStateToWebview()
 			break
 		case "browserToolEnabled":
-			await updateGlobalState("browserToolEnabled", message.bool ?? true)
+			await updateGlobalState("browserToolEnabled", message.bool ?? false)
 			await provider.postStateToWebview()
 			break
 		case "language":
