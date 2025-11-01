@@ -162,7 +162,7 @@ describe("processUserContentMentions", () => {
 			})
 		})
 
-		it("should not process text blocks without task or feedback tags", async () => {
+		it("should process text blocks without special tags", async () => {
 			const userContent = [
 				{
 					type: "text" as const,
@@ -177,8 +177,11 @@ describe("processUserContentMentions", () => {
 				fileContextTracker: mockFileContextTracker,
 			})
 
-			expect(parseMentions).not.toHaveBeenCalled()
-			expect(result[0]).toEqual(userContent[0])
+			expect(parseMentions).toHaveBeenCalled()
+			expect(result[0]).toEqual({
+				type: "text",
+				text: "parsed: Regular text without special tags",
+			})
 		})
 
 		it("should process tool_result blocks with string content", async () => {
@@ -230,7 +233,7 @@ describe("processUserContentMentions", () => {
 				fileContextTracker: mockFileContextTracker,
 			})
 
-			expect(parseMentions).toHaveBeenCalledTimes(1)
+			expect(parseMentions).toHaveBeenCalledTimes(2)
 			expect(result[0]).toEqual({
 				type: "tool_result",
 				tool_use_id: "123",
@@ -241,7 +244,7 @@ describe("processUserContentMentions", () => {
 					},
 					{
 						type: "text",
-						text: "Regular text",
+						text: "parsed: Regular text",
 					},
 				],
 			})
