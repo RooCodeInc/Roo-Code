@@ -1082,4 +1082,186 @@ describe("OpenAICompatibleEmbedder", () => {
 			expect(result.error).toBe("embeddings:validation.configurationError")
 		})
 	})
+
+	describe("DeepInfra provider detection and handling", () => {
+		it("should detect DeepInfra URLs with deepinfra.com domain", () => {
+			const embedder = new OpenAICompatibleEmbedder(
+				"https://api.deepinfra.com/v1/openai",
+				testApiKey,
+				"Qwen/Qwen3-Embedding-0.6B",
+			)
+
+			// Check the provider type is correctly detected
+			expect(embedder["providerType"]).toBe("deepinfra")
+		})
+
+		it("should detect DeepInfra URLs with deepinfra.ai domain", () => {
+			const embedder = new OpenAICompatibleEmbedder(
+				"https://api.deepinfra.ai/v1/openai",
+				testApiKey,
+				"Qwen/Qwen3-Embedding-0.6B",
+			)
+
+			// Check the provider type is correctly detected
+			expect(embedder["providerType"]).toBe("deepinfra")
+		})
+
+		it("should detect standard providers for non-DeepInfra URLs", () => {
+			const embedder = new OpenAICompatibleEmbedder("https://api.openai.com/v1", testApiKey, testModelId)
+
+			// Check the provider type is correctly detected
+			expect(embedder["providerType"]).toBe("standard")
+		})
+
+		it("should send float encoding format for DeepInfra", async () => {
+			const embedder = new OpenAICompatibleEmbedder(
+				"https://api.deepinfra.com/v1/openai",
+				testApiKey,
+				"Qwen/Qwen3-Embedding-0.6B",
+			)
+
+			// Mock response with float array
+			const mockResponse = {
+				data: [{ embedding: [0.1, 0.2, 0.3] }],
+				usage: { prompt_tokens: 10, total_tokens: 15 },
+			}
+			mockEmbeddingsCreate.mockResolvedValue(mockResponse)
+
+			await embedder.createEmbeddings(["test text"])
+
+			// Verify that 'float' encoding format was used
+			expect(mockEmbeddingsCreate).toHaveBeenCalledWith({
+				input: ["test text"],
+				model: "Qwen/Qwen3-Embedding-0.6B",
+				encoding_format: "float",
+			})
+		})
+
+		it("should send base64 encoding format for standard providers", async () => {
+			const embedder = new OpenAICompatibleEmbedder("https://api.openai.com/v1", testApiKey, testModelId)
+
+			// Mock response with base64 string
+			const testEmbedding = new Float32Array([0.1, 0.2, 0.3])
+			const base64String = Buffer.from(testEmbedding.buffer).toString("base64")
+			const mockResponse = {
+				data: [{ embedding: base64String }],
+				usage: { prompt_tokens: 10, total_tokens: 15 },
+			}
+			mockEmbeddingsCreate.mockResolvedValue(mockResponse)
+
+			await embedder.createEmbeddings(["test text"])
+
+			// Verify that 'base64' encoding format was used
+			expect(mockEmbeddingsCreate).toHaveBeenCalledWith({
+				input: ["test text"],
+				model: testModelId,
+				encoding_format: "base64",
+			})
+		})
+
+		it("should handle float array responses from DeepInfra", async () => {
+			const embedder = new OpenAICompatibleEmbedder(
+				"https://api.deepinfra.com/v1/openai",
+				testApiKey,
+				"Qwen/Qwen3-Embedding-0.6B",
+			)
+
+			// Mock response with float array (DeepInfra format)
+			const mockResponse = {
+				data: [{ embedding: [0.1, 0.2, 0.3] }, { embedding: [0.4, 0.5, 0.6] }],
+				usage: { prompt_tokens: 20, total_tokens: 25 },
+			}
+			mockEmbeddingsCreate.mockResolvedValue(mockResponse)
+
+			const result = await embedder.createEmbeddings(["text1", "text2"])
+
+			// Verify the embeddings are correctly processed
+			expect(result.embeddings).toEqual([
+				[0.1, 0.2, 0.3],
+				[0.4, 0.5, 0.6],
+			])
+			expect(result.usage).toEqual({
+				promptTokens: 20,
+				totalTokens: 25,
+			})
+		})
+
+		it("should handle base64 responses from standard providers", async () => {
+			const embedder = new OpenAICompatibleEmbedder("https://api.openai.com/v1", testApiKey, testModelId)
+
+			// Create base64 encoded embeddings
+			const embedding1 = new Float32Array([0.1, 0.2, 0.3])
+			const embedding2 = new Float32Array([0.4, 0.5, 0.6])
+			const base64String1 = Buffer.from(embedding1.buffer).toString("base64")
+			const base64String2 = Buffer.from(embedding2.buffer).toString("base64")
+
+			const mockResponse = {
+				data: [{ embedding: base64String1 }, { embedding: base64String2 }],
+				usage: { prompt_tokens: 20, total_tokens: 25 },
+			}
+			mockEmbeddingsCreate.mockResolvedValue(mockResponse)
+
+			const result = await embedder.createEmbeddings(["text1", "text2"])
+
+			// Verify the embeddings are correctly decoded from base64
+			expect(result.embeddings[0][0]).toBeCloseTo(0.1, 5)
+			expect(result.embeddings[0][1]).toBeCloseTo(0.2, 5)
+			expect(result.embeddings[0][2]).toBeCloseTo(0.3, 5)
+			expect(result.embeddings[1][0]).toBeCloseTo(0.4, 5)
+			expect(result.embeddings[1][1]).toBeCloseTo(0.5, 5)
+			expect(result.embeddings[1][2]).toBeCloseTo(0.6, 5)
+			expect(result.usage).toEqual({
+				promptTokens: 20,
+				totalTokens: 25,
+			})
+		})
+
+		it("should validate DeepInfra configuration with float format", async () => {
+			const embedder = new OpenAICompatibleEmbedder(
+				"https://api.deepinfra.com/v1/openai",
+				testApiKey,
+				"Qwen/Qwen3-Embedding-0.6B",
+			)
+
+			const mockResponse = {
+				data: [{ embedding: [0.1, 0.2, 0.3] }],
+				usage: { prompt_tokens: 2, total_tokens: 2 },
+			}
+			mockEmbeddingsCreate.mockResolvedValue(mockResponse)
+
+			const result = await embedder.validateConfiguration()
+
+			expect(result.valid).toBe(true)
+			expect(result.error).toBeUndefined()
+			expect(mockEmbeddingsCreate).toHaveBeenCalledWith({
+				input: ["test"],
+				model: "Qwen/Qwen3-Embedding-0.6B",
+				encoding_format: "float",
+			})
+		})
+
+		it("should use float format for DeepInfra with full endpoint URLs", async () => {
+			const fullUrl = "https://api.deepinfra.com/v1/openai/embeddings"
+			const embedder = new OpenAICompatibleEmbedder(fullUrl, testApiKey, "Qwen/Qwen3-Embedding-0.6B")
+
+			global.fetch = vitest.fn().mockResolvedValueOnce({
+				ok: true,
+				status: 200,
+				json: async () => ({
+					data: [{ embedding: [0.1, 0.2, 0.3] }],
+					usage: { prompt_tokens: 10, total_tokens: 15 },
+				}),
+			} as any)
+
+			await embedder.createEmbeddings(["test"])
+
+			// Verify the request body contains float encoding format
+			expect(global.fetch).toHaveBeenCalledWith(
+				fullUrl,
+				expect.objectContaining({
+					body: expect.stringContaining('"encoding_format":"float"'),
+				}),
+			)
+		})
+	})
 })

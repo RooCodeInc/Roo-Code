@@ -18,6 +18,7 @@ export class QdrantVectorStore implements IVectorStore {
 	private readonly collectionName: string
 	private readonly qdrantUrl: string = "http://localhost:6333"
 	private readonly workspacePath: string
+	private vectorName?: string // Track if collection uses named vectors
 
 	/**
 	 * Creates a new Qdrant vector store
@@ -153,6 +154,7 @@ export class QdrantVectorStore implements IVectorStore {
 
 			if (collectionInfo === null) {
 				// Collection info not retrieved (assume not found or inaccessible), create it
+				// Using unnamed vector configuration (default vector)
 				await this.client.createCollection(this.collectionName, {
 					vectors: {
 						size: this.vectorSize,
@@ -167,21 +169,53 @@ export class QdrantVectorStore implements IVectorStore {
 				})
 				created = true
 			} else {
-				// Collection exists, check vector size
+				// Collection exists, check vector configuration
 				const vectorsConfig = collectionInfo.config?.params?.vectors
-				let existingVectorSize: number
+				let existingVectorSize: number = 0 // Initialize with default value
+				let hasNamedVectors = false
+				let vectorNames: string[] = []
 
-				if (typeof vectorsConfig === "number") {
+				// Check if collection uses named vectors
+				if (typeof vectorsConfig === "object" && vectorsConfig && !Array.isArray(vectorsConfig)) {
+					// Check if this is a named vector configuration
+					const vectorKeys = Object.keys(vectorsConfig)
+					if (vectorKeys.length > 0 && !("size" in vectorsConfig)) {
+						// This is a named vector configuration
+						hasNamedVectors = true
+						vectorNames = vectorKeys
+						console.log(`[QdrantVectorStore] Collection uses named vectors: ${vectorNames.join(", ")}`)
+
+						// Use the first vector name (or look for a specific one)
+						this.vectorName = vectorNames[0]
+
+						// Get the size from the named vector
+						const namedVectorConfig = (vectorsConfig as any)[this.vectorName]
+						if (namedVectorConfig && typeof namedVectorConfig === "object" && "size" in namedVectorConfig) {
+							existingVectorSize = namedVectorConfig.size
+							console.log(
+								`[QdrantVectorStore] Using named vector '${this.vectorName}' with size ${existingVectorSize}`,
+							)
+						} else {
+							console.warn(
+								`[QdrantVectorStore] Could not determine size for named vector '${this.vectorName}'`,
+							)
+							existingVectorSize = 0
+						}
+					} else if ("size" in vectorsConfig) {
+						// This is an unnamed vector with object configuration
+						existingVectorSize = (vectorsConfig as any).size
+						this.vectorName = undefined
+					} else {
+						// Unknown object configuration
+						existingVectorSize = 0
+					}
+				} else if (typeof vectorsConfig === "number") {
 					existingVectorSize = vectorsConfig
-				} else if (
-					vectorsConfig &&
-					typeof vectorsConfig === "object" &&
-					"size" in vectorsConfig &&
-					typeof vectorsConfig.size === "number"
-				) {
-					existingVectorSize = vectorsConfig.size
+					this.vectorName = undefined
 				} else {
-					existingVectorSize = 0 // Fallback for unknown configuration
+					// Fallback for unknown configuration
+					existingVectorSize = 0
+					this.vectorName = undefined
 				}
 
 				if (existingVectorSize === this.vectorSize) {
@@ -296,6 +330,23 @@ export class QdrantVectorStore implements IVectorStore {
 	 * Creates payload indexes for the collection, handling errors gracefully.
 	 */
 	private async _createPayloadIndexes(): Promise<void> {
+		// Create index for the "type" field (used to filter out metadata documents)
+		try {
+			await this.client.createPayloadIndex(this.collectionName, {
+				field_name: "type",
+				field_schema: "keyword",
+			})
+		} catch (indexError: any) {
+			const errorMessage = (indexError?.message || "").toLowerCase()
+			if (!errorMessage.includes("already exists")) {
+				console.warn(
+					`[QdrantVectorStore] Could not create payload index for 'type' on ${this.collectionName}. Details:`,
+					indexError?.message || indexError,
+				)
+			}
+		}
+
+		// Create indexes for path segments (for directory filtering)
 		for (let i = 0; i <= 4; i++) {
 			try {
 				await this.client.createPayloadIndex(this.collectionName, {
@@ -327,6 +378,9 @@ export class QdrantVectorStore implements IVectorStore {
 	): Promise<void> {
 		try {
 			const processedPoints = points.map((point) => {
+				// Handle named vs unnamed vectors
+				const vector = this.vectorName ? { [this.vectorName]: point.vector } : point.vector
+
 				if (point.payload?.filePath) {
 					const segments = point.payload.filePath.split(path.sep).filter(Boolean)
 					const pathSegments = segments.reduce(
@@ -337,14 +391,19 @@ export class QdrantVectorStore implements IVectorStore {
 						{},
 					)
 					return {
-						...point,
+						id: point.id,
+						vector: vector,
 						payload: {
 							...point.payload,
 							pathSegments,
 						},
 					}
 				}
-				return point
+				return {
+					id: point.id,
+					vector: vector,
+					payload: point.payload,
+				}
 			})
 
 			await this.client.upsert(this.collectionName, {
@@ -386,6 +445,13 @@ export class QdrantVectorStore implements IVectorStore {
 		maxResults?: number,
 	): Promise<VectorStoreSearchResult[]> {
 		try {
+			// Validate query vector dimension
+			if (queryVector.length !== this.vectorSize) {
+				const errorMsg = `[QdrantVectorStore] Query vector dimension mismatch. Expected ${this.vectorSize}, got ${queryVector.length}. This usually happens when switching between embedding models with different dimensions. Please reindex your codebase.`
+				console.error(errorMsg)
+				throw new Error(errorMsg)
+			}
+
 			let filter:
 				| {
 						must: Array<{ key: string; match: { value: string } }>
@@ -426,8 +492,8 @@ export class QdrantVectorStore implements IVectorStore {
 				? { ...filter, must_not: [...(filter.must_not || []), ...metadataExclusion.must_not] }
 				: metadataExclusion
 
-			const searchRequest = {
-				query: queryVector,
+			// Build search request based on whether collection uses named vectors
+			const searchRequest: any = {
 				filter: mergedFilter,
 				score_threshold: minScore ?? DEFAULT_SEARCH_MIN_SCORE,
 				limit: maxResults ?? DEFAULT_MAX_SEARCH_RESULTS,
@@ -440,12 +506,38 @@ export class QdrantVectorStore implements IVectorStore {
 				},
 			}
 
+			// Add query vector with appropriate format
+			if (this.vectorName) {
+				// Use named vector format
+				searchRequest.query = {
+					[this.vectorName]: queryVector,
+				}
+			} else {
+				// Use unnamed vector format
+				searchRequest.query = queryVector
+			}
+
+			// Validate vector for invalid values
+			const hasInvalidValues = queryVector.some((v) => !isFinite(v))
+			if (hasInvalidValues) {
+				console.error(`[QdrantVectorStore] WARNING: Query vector contains invalid values (NaN or Infinity)`)
+				const invalidIndices = queryVector.map((v, i) => (!isFinite(v) ? i : -1)).filter((i) => i >= 0)
+				console.error(
+					`[QdrantVectorStore] Invalid value indices: ${invalidIndices.slice(0, 10).join(", ")}${invalidIndices.length > 10 ? "..." : ""}`,
+				)
+			}
+
 			const operationResult = await this.client.query(this.collectionName, searchRequest)
 			const filteredPoints = operationResult.points.filter((p) => this.isPayloadValid(p.payload))
 
 			return filteredPoints as VectorStoreSearchResult[]
-		} catch (error) {
+		} catch (error: any) {
 			console.error("Failed to search points:", error)
+
+			// Extract error details for better debugging
+			if (error?.status === 400 && error.data) {
+				console.error("[QdrantVectorStore] Qdrant error details:", JSON.stringify(error.data))
+			}
 			throw error
 		}
 	}
