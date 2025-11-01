@@ -93,7 +93,7 @@ describe("File-Based Custom System Prompt", () => {
 				},
 			}
 
-			const prompt = await SYSTEM_PROMPT(
+			const result = await SYSTEM_PROMPT(
 				mockContext,
 				"test/path", // Using a relative path without leading slash
 				false, // supportsImages
@@ -113,10 +113,10 @@ describe("File-Based Custom System Prompt", () => {
 			)
 
 			// Should contain default sections
-			expect(prompt).toContain("TOOL USE")
-			expect(prompt).toContain("CAPABILITIES")
-			expect(prompt).toContain("MODES")
-			expect(prompt).toContain("Test role definition")
+			expect(result.systemPrompt).toContain("TOOL USE")
+			expect(result.systemPrompt).toContain("CAPABILITIES")
+			expect(result.systemPrompt).toContain("MODES")
+			expect(result.systemPrompt).toContain("Test role definition")
 		},
 	)
 
@@ -131,7 +131,7 @@ describe("File-Based Custom System Prompt", () => {
 			return Promise.reject({ code: "ENOENT" })
 		})
 
-		const prompt = await SYSTEM_PROMPT(
+		const result = await SYSTEM_PROMPT(
 			mockContext,
 			"test/path", // Using a relative path without leading slash
 			false, // supportsImages
@@ -151,12 +151,12 @@ describe("File-Based Custom System Prompt", () => {
 		)
 
 		// Should contain role definition and file-based system prompt
-		expect(prompt).toContain(modes[0].roleDefinition)
-		expect(prompt).toContain(fileCustomSystemPrompt)
+		expect(result.systemPrompt).toContain(modes[0].roleDefinition)
+		expect(result.systemPrompt).toContain(fileCustomSystemPrompt)
 
 		// Should not contain any of the default sections
-		expect(prompt).not.toContain("CAPABILITIES")
-		expect(prompt).not.toContain("MODES")
+		expect(result.systemPrompt).not.toContain("CAPABILITIES")
+		expect(result.systemPrompt).not.toContain("MODES")
 	})
 
 	it("should combine file-based system prompt with role definition and custom instructions", async () => {
@@ -177,7 +177,7 @@ describe("File-Based Custom System Prompt", () => {
 			},
 		}
 
-		const prompt = await SYSTEM_PROMPT(
+		const result = await SYSTEM_PROMPT(
 			mockContext,
 			"test/path", // Using a relative path without leading slash
 			false, // supportsImages
@@ -197,11 +197,11 @@ describe("File-Based Custom System Prompt", () => {
 		)
 
 		// Should contain custom role definition and file-based system prompt
-		expect(prompt).toContain(customRoleDefinition)
-		expect(prompt).toContain(fileCustomSystemPrompt)
+		expect(result.systemPrompt).toContain(customRoleDefinition)
+		expect(result.systemPrompt).toContain(fileCustomSystemPrompt)
 
 		// Should not contain any of the default sections
-		expect(prompt).not.toContain("CAPABILITIES")
-		expect(prompt).not.toContain("MODES")
+		expect(result.systemPrompt).not.toContain("CAPABILITIES")
+		expect(result.systemPrompt).not.toContain("MODES")
 	})
 })

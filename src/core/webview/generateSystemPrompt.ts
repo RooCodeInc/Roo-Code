@@ -67,7 +67,16 @@ export const generateSystemPrompt = async (provider: ClineProvider, message: Web
 	// and browser tools are enabled in settings
 	const canUseBrowserTool = modelSupportsBrowser && modeSupportsBrowser && (browserToolEnabled ?? true)
 
-	const systemPrompt = await SYSTEM_PROMPT(
+	// Check if the provider supports native tools (checks both capability and user setting)
+	let useNativeTools = false
+	try {
+		const tempApiHandler = buildApiHandler(apiConfiguration)
+		useNativeTools = tempApiHandler.supportsNativeTools()
+	} catch (error) {
+		// If we can't build the API handler, default to false
+	}
+
+	const { systemPrompt } = await SYSTEM_PROMPT(
 		provider.context,
 		cwd,
 		canUseBrowserTool,
@@ -92,6 +101,9 @@ export const generateSystemPrompt = async (provider: ClineProvider, message: Web
 				.getConfiguration("roo-cline")
 				.get<boolean>("newTaskRequireTodos", false),
 		},
+		undefined, // todoList
+		undefined, // modelId
+		useNativeTools,
 	)
 
 	return systemPrompt

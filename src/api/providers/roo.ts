@@ -1,3 +1,4 @@
+import * as vscode from "vscode"
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 
@@ -10,6 +11,8 @@ import { getModelParams } from "../transform/model-params"
 import { convertToOpenAiMessages } from "../transform/openai-format"
 import type { RooReasoningParams } from "../transform/reasoning"
 import { getRooReasoning } from "../transform/reasoning"
+import { ToolCallProcessor } from "../transform/tool-call-processor"
+import { toolSpecToOpenAITool, type ToolSpec } from "../transform/tool-converters"
 
 import type { ApiHandlerCreateMessageMetadata } from "../index"
 import { BaseOpenAiCompatibleProvider } from "./base-openai-compatible-provider"
@@ -34,6 +37,7 @@ function getSessionToken(): string {
 
 export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 	private fetcherBaseURL: string
+	private toolCallProcessor: ToolCallProcessor
 
 	constructor(options: ApiHandlerOptions) {
 		const sessionToken = getSessionToken()
@@ -57,6 +61,8 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 			defaultTemperature: 0.7,
 		})
 
+		this.toolCallProcessor = new ToolCallProcessor()
+
 		// Load dynamic models asynchronously - strip /v1 from baseURL for fetcher
 		this.fetcherBaseURL = baseURL.endsWith("/v1") ? baseURL.slice(0, -3) : baseURL
 		this.loadDynamicModels(this.fetcherBaseURL, sessionToken).catch((error) => {
@@ -69,6 +75,7 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 		requestOptions?: OpenAI.RequestOptions,
+		tools?: ToolSpec[],
 	) {
 		const { id: model, info } = this.getModel()
 
@@ -92,6 +99,10 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 		const max_tokens = params.maxTokens ?? undefined
 		const temperature = params.temperature ?? this.defaultTemperature
 
+		// Convert tools to OpenAI format if provided
+		const openAITools = tools?.map(toolSpecToOpenAITool)
+		const nativeToolsOn = openAITools && openAITools.length > 0
+
 		const rooParams: RooChatCompletionParams = {
 			model,
 			max_tokens,
@@ -100,6 +111,10 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 			stream: true,
 			stream_options: { include_usage: true },
 			...(reasoning && { reasoning }),
+			...(nativeToolsOn && {
+				tools: openAITools,
+				tool_choice: "auto" as const,
+			}),
 		}
 
 		try {
@@ -114,15 +129,21 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
+		tools?: ToolSpec[],
 	): ApiStream {
+		// Reset tool call processor for new message
+		this.toolCallProcessor.reset()
+
 		const stream = await this.createStream(
 			systemPrompt,
 			messages,
 			metadata,
 			metadata?.taskId ? { headers: { "X-Roo-Task-ID": metadata.taskId } } : undefined,
+			tools,
 		)
 
 		let lastUsage: RooUsage | undefined = undefined
+		const nativeToolsOn = tools && tools.length > 0
 
 		for await (const chunk of stream) {
 			const delta = chunk.choices[0]?.delta
@@ -141,6 +162,13 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 					yield {
 						type: "reasoning",
 						text: delta.reasoning_content,
+					}
+				}
+
+				// Handle native tool calls
+				if (nativeToolsOn && delta.tool_calls) {
+					for (const toolCallChunk of this.toolCallProcessor.processToolCallDeltas(delta.tool_calls)) {
+						yield toolCallChunk
 					}
 				}
 

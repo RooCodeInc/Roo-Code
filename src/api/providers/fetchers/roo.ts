@@ -83,6 +83,9 @@ export async function getRooModels(baseUrl: string, apiKey?: string): Promise<Mo
 				const cacheReadPrice = pricing.input_cache_read ? parseApiPrice(pricing.input_cache_read) : undefined
 				const cacheWritePrice = pricing.input_cache_write ? parseApiPrice(pricing.input_cache_write) : undefined
 
+				// Determine if the model supports native tools based on tags
+				const supportsNativeToolCalling = tags.includes("tool-use")
+
 				models[modelId] = {
 					maxTokens,
 					contextWindow,
@@ -90,6 +93,7 @@ export async function getRooModels(baseUrl: string, apiKey?: string): Promise<Mo
 					supportsReasoningEffort,
 					requiredReasoningEffort,
 					supportsPromptCache: Boolean(cacheReadPrice !== undefined),
+					supportsNativeToolCalling,
 					inputPrice,
 					outputPrice,
 					cacheWritesPrice: cacheWritePrice,

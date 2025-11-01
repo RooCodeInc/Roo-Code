@@ -14,6 +14,7 @@ import type { ApiHandlerOptions } from "../../shared/api"
 
 import { ApiStream } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
+import { toolSpecToAnthropicTool, type ToolSpec } from "../transform/tool-converters"
 
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
@@ -40,6 +41,7 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
+		tools?: ToolSpec[],
 	): ApiStream {
 		let stream: AnthropicStream<Anthropic.Messages.RawMessageStreamEvent>
 		const cacheControl: CacheControlEphemeral = { type: "ephemeral" }
@@ -52,6 +54,10 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 		) {
 			betas.push("context-1m-2025-08-07")
 		}
+
+		// Convert tools to Anthropic format if provided
+		const anthropicTools = tools?.map(toolSpecToAnthropicTool)
+		const nativeToolsOn = anthropicTools && anthropicTools.length > 0
 
 		switch (modelId) {
 			case "claude-sonnet-4-5":
@@ -107,6 +113,7 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 							return message
 						}),
 						stream: true,
+						tools: nativeToolsOn ? anthropicTools : undefined,
 					},
 					(() => {
 						// prompt caching: https://x.com/alexalbert__/status/1823751995901272068
@@ -151,6 +158,7 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 		let outputTokens = 0
 		let cacheWriteTokens = 0
 		let cacheReadTokens = 0
+		const lastStartedToolCall = { id: "", name: "", arguments: "" }
 
 		for await (const chunk of stream) {
 			switch (chunk.type) {
@@ -202,6 +210,14 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 
 							yield { type: "reasoning", text: chunk.content_block.thinking }
 							break
+						case "tool_use":
+							// Convert Anthropic tool_use to OpenAI-compatible format
+							if (chunk.content_block.id && chunk.content_block.name) {
+								lastStartedToolCall.id = chunk.content_block.id
+								lastStartedToolCall.name = chunk.content_block.name
+								lastStartedToolCall.arguments = ""
+							}
+							break
 						case "text":
 							// We may receive multiple text blocks, in which
 							// case just insert a line break between them.
@@ -218,6 +234,21 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 						case "thinking_delta":
 							yield { type: "reasoning", text: chunk.delta.thinking }
 							break
+						case "input_json_delta":
+							// Stream tool arguments as they arrive
+							if (lastStartedToolCall.id && lastStartedToolCall.name && chunk.delta.partial_json) {
+								yield {
+									type: "tool_calls",
+									tool_call: {
+										function: {
+											id: lastStartedToolCall.id,
+											name: lastStartedToolCall.name,
+											arguments: chunk.delta.partial_json,
+										},
+									},
+								}
+							}
+							break
 						case "text_delta":
 							yield { type: "text", text: chunk.delta.text }
 							break
@@ -225,6 +256,10 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 
 					break
 				case "content_block_stop":
+					// Reset tool call state when block ends
+					lastStartedToolCall.id = ""
+					lastStartedToolCall.name = ""
+					lastStartedToolCall.arguments = ""
 					break
 			}
 		}

@@ -1,3 +1,4 @@
+import * as vscode from "vscode"
 import OpenAI from "openai"
 
 import type { ModelInfo } from "@roo-code/types"

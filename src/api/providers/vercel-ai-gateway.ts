@@ -13,6 +13,8 @@ import { ApiHandlerOptions } from "../../shared/api"
 import { ApiStream } from "../transform/stream"
 import { convertToOpenAiMessages } from "../transform/openai-format"
 import { addCacheBreakpoints } from "../transform/caching/vercel-ai-gateway"
+import { ToolCallProcessor } from "../transform/tool-call-processor"
+import { toolSpecToOpenAITool, type ToolSpec } from "../transform/tool-converters"
 
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { RouterProvider } from "./router-provider"
@@ -24,6 +26,8 @@ interface VercelAiGatewayUsage extends OpenAI.CompletionUsage {
 }
 
 export class VercelAiGatewayHandler extends RouterProvider implements SingleCompletionHandler {
+	private toolCallProcessor: ToolCallProcessor
+
 	constructor(options: ApiHandlerOptions) {
 		super({
 			options,
@@ -34,13 +38,22 @@ export class VercelAiGatewayHandler extends RouterProvider implements SingleComp
 			defaultModelId: vercelAiGatewayDefaultModelId,
 			defaultModelInfo: vercelAiGatewayDefaultModelInfo,
 		})
+		this.toolCallProcessor = new ToolCallProcessor()
 	}
 
 	override async *createMessage(
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
+		tools?: ToolSpec[],
 	): ApiStream {
+		// Reset tool call processor for new message
+		this.toolCallProcessor.reset()
+
+		// Convert tools to OpenAI format if provided
+		const openAITools = tools?.map(toolSpecToOpenAITool)
+		const nativeToolsOn = openAITools && openAITools.length > 0
+
 		const { id: modelId, info } = await this.fetchModel()
 
 		const openAiMessages: OpenAI.Chat.ChatCompletionMessageParam[] = [
@@ -60,12 +73,26 @@ export class VercelAiGatewayHandler extends RouterProvider implements SingleComp
 				: undefined,
 			max_completion_tokens: info.maxTokens,
 			stream: true,
+			// Add native tool calling support
+			...(nativeToolsOn && {
+				tools: openAITools,
+				tool_choice: "auto" as const,
+				parallel_tool_calls: false,
+			}),
 		}
 
 		const completion = await this.client.chat.completions.create(body)
 
 		for await (const chunk of completion) {
 			const delta = chunk.choices[0]?.delta
+
+			// Handle native tool calls
+			if (nativeToolsOn && delta?.tool_calls) {
+				for (const toolCallChunk of this.toolCallProcessor.processToolCallDeltas(delta.tool_calls)) {
+					yield toolCallChunk
+				}
+			}
+
 			if (delta?.content) {
 				yield {
 					type: "text",

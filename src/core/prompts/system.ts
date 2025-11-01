@@ -1,21 +1,23 @@
 import * as vscode from "vscode"
 import * as os from "os"
 
-import type { ModeConfig, PromptComponent, CustomModePrompts, TodoItem } from "@roo-code/types"
+import type { ModeConfig, PromptComponent, CustomModePrompts, TodoItem, ToolName } from "@roo-code/types"
 
 import type { SystemPromptSettings } from "./types"
 
 import { Mode, modes, defaultModeSlug, getModeBySlug, getGroupName, getModeSelection } from "../../shared/modes"
-import { DiffStrategy } from "../../shared/tools"
+import { DiffStrategy, TOOL_GROUPS, ALWAYS_AVAILABLE_TOOLS } from "../../shared/tools"
 import { formatLanguage } from "../../shared/language"
 import { isEmpty } from "../../utils/object"
 
 import { McpHub } from "../../services/mcp/McpHub"
 import { CodeIndexManager } from "../../services/code-index/manager"
+import type { ToolSpec } from "../../api/transform/tool-converters"
+import { getToolSpecs } from "./tool-specs"
 
 import { PromptVariables, loadSystemPromptFile } from "./sections/custom-system-prompt"
 
-import { getToolDescriptionsForMode } from "./tools"
+import { getToolDescriptionsForMode, filterToolsByAvailability } from "./tools"
 import {
 	getRulesSection,
 	getSystemInfoSection,
@@ -153,7 +155,8 @@ export const SYSTEM_PROMPT = async (
 	settings?: SystemPromptSettings,
 	todoList?: TodoItem[],
 	modelId?: string,
-): Promise<string> => {
+	useNativeTools?: boolean,
+): Promise<{ systemPrompt: string; tools?: ToolSpec[] }> => {
 	if (!context) {
 		throw new Error("Extension context is required for generating system prompt")
 	}
@@ -195,17 +198,19 @@ export const SYSTEM_PROMPT = async (
 		)
 
 		// For file-based prompts, don't include the tool sections
-		return `${roleDefinition}
+		return {
+			systemPrompt: `${roleDefinition}
 
 ${fileCustomSystemPrompt}
 
-${customInstructions}`
+${customInstructions}`,
+		}
 	}
 
 	// If diff is disabled, don't pass the diffStrategy
 	const effectiveDiffStrategy = diffEnabled ? diffStrategy : undefined
 
-	return generatePrompt(
+	const basePrompt = await generatePrompt(
 		context,
 		cwd,
 		supportsComputerUse,
@@ -226,4 +231,40 @@ ${customInstructions}`
 		todoList,
 		modelId,
 	)
+
+	// If native tools are enabled, build tool specifications and return them with the prompt
+	if (useNativeTools) {
+		// Get tool names for the current mode by iterating through its groups
+		const toolNames: ToolName[] = []
+
+		currentMode.groups.forEach((group) => {
+			const groupName = getGroupName(group)
+			// Get tools from the centralized TOOL_GROUPS registry
+			const groupConfig = TOOL_GROUPS[groupName]
+			if (groupConfig) {
+				toolNames.push(...(groupConfig.tools as ToolName[]))
+			}
+		})
+
+		// Add always-available tools
+		toolNames.push(...ALWAYS_AVAILABLE_TOOLS)
+
+		// Remove duplicates
+		const uniqueToolNames = [...new Set(toolNames)]
+
+		// Apply centralized filtering to ensure consistency with XML tool mode
+		const codeIndexManager = CodeIndexManager.getInstance(context, cwd)
+		const filteredTools = filterToolsByAvailability(uniqueToolNames, codeIndexManager, settings, experiments)
+
+		// Get tool specifications
+		const tools = getToolSpecs(filteredTools)
+
+		return {
+			systemPrompt: basePrompt,
+			tools,
+		}
+	}
+
+	// For XML-based tools, return without tool specs
+	return { systemPrompt: basePrompt }
 }

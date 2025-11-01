@@ -91,6 +91,9 @@ import { type AssistantMessageContent, presentAssistantMessage } from "../assist
 import { AssistantMessageParser } from "../assistant-message/AssistantMessageParser"
 import { truncateConversationIfNeeded } from "../sliding-window"
 import { ClineProvider } from "../webview/ClineProvider"
+import { ToolUseHandler } from "../../api/transform/tool-use-handler"
+import type { ToolSpec } from "../../api/transform/tool-converters"
+import { ensureToolResultsFollowToolUse } from "../context/ensureToolResultsFollowToolUse"
 import { MultiSearchReplaceDiffStrategy } from "../diff/strategies/multi-search-replace"
 import { MultiFileSearchReplaceDiffStrategy } from "../diff/strategies/multi-file-search-replace"
 import {
@@ -299,6 +302,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	private lastUsedInstructions?: string
 	private skipPrevResponseIdOnce: boolean = false
 
+	// Native Tool Calling
+	private useNativeToolCalls: boolean = false
+	private toolUseHandler: ToolUseHandler
+
 	// Token Usage Cache
 	private tokenUsageSnapshot?: TokenUsage
 	private tokenUsageSnapshotAt?: number
@@ -404,6 +411,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		// Initialize the assistant message parser.
 		this.assistantMessageParser = new AssistantMessageParser()
+
+		// Initialize the tool use handler for native tool calling
+		this.toolUseHandler = new ToolUseHandler()
 
 		this.messageQueueService = new MessageQueueService()
 
@@ -1957,6 +1967,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				this.presentAssistantMessageLocked = false
 				this.presentAssistantMessageHasPendingUpdates = false
 				this.assistantMessageParser.reset()
+				this.toolUseHandler.reset()
 
 				await this.diffViewProvider.reset()
 
@@ -2012,6 +2023,35 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 									pendingGroundingSources.push(...chunk.sources)
 								}
 								break
+							case "tool_calls": {
+								if (!chunk.tool_call) {
+									break
+								}
+
+								// Accumulate tool use blocks in proper Anthropic format
+								this.toolUseHandler.processToolUseDelta({
+									id: chunk.tool_call.function?.id,
+									type: "tool_use",
+									name: chunk.tool_call.function?.name,
+									input: chunk.tool_call.function?.arguments,
+								})
+
+								const prevLength = this.assistantMessageContent.length
+
+								// Combine any text content with tool uses
+								const textContent = assistantMessage.trim()
+								const textBlocks: AssistantMessageContent[] = textContent
+									? [{ type: "text", content: textContent, partial: false }]
+									: []
+								const toolBlocks = this.toolUseHandler.getPartialToolUsesAsContent()
+								this.assistantMessageContent = [...textBlocks, ...toolBlocks]
+
+								if (this.assistantMessageContent.length > prevLength) {
+									this.userMessageContentReady = false
+								}
+								presentAssistantMessage(this)
+								break
+							}
 							case "text": {
 								assistantMessage += chunk.text
 
@@ -2317,9 +2357,33 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				// Can't just do this b/c a tool could be in the middle of executing.
 				// this.assistantMessageContent.forEach((e) => (e.partial = false))
 
-				// Now that the stream is complete, finalize any remaining partial content blocks
-				this.assistantMessageParser.finalizeContentBlocks()
-				this.assistantMessageContent = this.assistantMessageParser.getContentBlocks()
+				// Finalize any remaining tool calls at the end of the stream
+				if (this.useNativeToolCalls) {
+					// For native tool calls, mark all pending tool uses as complete
+					const prevLength = this.assistantMessageContent.length
+
+					// Get finalized tool uses and mark them as complete
+					const textContent = assistantMessage.trim()
+					const textBlocks: AssistantMessageContent[] = textContent
+						? [{ type: "text", content: textContent, partial: false }]
+						: []
+
+					// Get all finalized tool uses and mark as complete
+					const toolBlocks = this.toolUseHandler
+						.getPartialToolUsesAsContent()
+						.map((block) => ({ ...block, partial: false }))
+
+					this.assistantMessageContent = [...textBlocks, ...toolBlocks]
+
+					if (this.assistantMessageContent.length > prevLength) {
+						this.userMessageContentReady = false
+					}
+					presentAssistantMessage(this)
+				} else {
+					// XML-based tools: use the existing parser
+					this.assistantMessageParser.finalizeContentBlocks()
+					this.assistantMessageContent = this.assistantMessageParser.getContentBlocks()
+				}
 
 				if (partialBlocks.length > 0) {
 					// If there is content to update then it will complete and
@@ -2362,7 +2426,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				// able to save the assistant's response.
 				let didEndLoop = false
 
-				if (assistantMessage.length > 0) {
+				if (assistantMessage.length > 0 || this.useNativeToolCalls) {
 					// Display grounding sources to the user if they exist
 					if (pendingGroundingSources.length > 0) {
 						const citationLinks = pendingGroundingSources.map((source, i) => `[${i + 1}](${source.url})`)
@@ -2373,9 +2437,44 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						})
 					}
 
+					// Build assistant message content
+					let assistantContent: Array<Anthropic.Messages.TextBlockParam | Anthropic.ToolUseBlockParam>
+
+					if (this.useNativeToolCalls) {
+						// Get finalized tool use blocks from the handler
+						const toolUseBlocks = this.toolUseHandler.getAllFinalizedToolUses()
+
+						// Log finalized native tool calls
+						if (toolUseBlocks.length > 0) {
+							console.log(
+								`[NATIVE_TOOL_CALL] Finalized ${toolUseBlocks.length} tool(s):`,
+								toolUseBlocks.map((t) => `${t.name}(id:${t.id})`).join(", "),
+							)
+						}
+
+						// Build content array with text (if any) and tool use blocks
+						assistantContent = []
+
+						// Only add text block if there's actual text
+						if (assistantMessage.trim().length > 0) {
+							assistantContent.push({
+								type: "text",
+								text: assistantMessage,
+							})
+						}
+
+						// Append tool use blocks if any exist
+						if (toolUseBlocks.length > 0) {
+							assistantContent.push(...toolUseBlocks)
+						}
+					} else {
+						// XML-based tools: just text
+						assistantContent = [{ type: "text", text: assistantMessage }]
+					}
+
 					await this.addToApiConversationHistory({
 						role: "assistant",
-						content: [{ type: "text", text: assistantMessage }],
+						content: assistantContent,
 					})
 
 					TelemetryService.instance.captureConversationMessage(this.taskId, "assistant")
@@ -2450,7 +2549,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		return false
 	}
 
-	private async getSystemPrompt(): Promise<string> {
+	private async getSystemPromptAndTools(): Promise<{ systemPrompt: string; tools?: ToolSpec[] }> {
 		const { mcpEnabled } = (await this.providerRef.deref()?.getState()) ?? {}
 		let mcpHub: McpHub | undefined
 		if (mcpEnabled ?? true) {
@@ -2492,53 +2591,60 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			apiConfiguration,
 		} = state ?? {}
 
-		return await (async () => {
-			const provider = this.providerRef.deref()
+		const provider = this.providerRef.deref()
 
-			if (!provider) {
-				throw new Error("Provider not available")
-			}
+		if (!provider) {
+			throw new Error("Provider not available")
+		}
 
-			// Align browser tool enablement with generateSystemPrompt: require model image support,
-			// mode to include the browser group, and the user setting to be enabled.
-			const modeConfig = getModeBySlug(mode ?? defaultModeSlug, customModes)
-			const modeSupportsBrowser = modeConfig?.groups.some((group) => getGroupName(group) === "browser") ?? false
+		// Align browser tool enablement with generateSystemPrompt: require model image support,
+		// mode to include the browser group, and the user setting to be enabled.
+		const modeConfig = getModeBySlug(mode ?? defaultModeSlug, customModes)
+		const modeSupportsBrowser = modeConfig?.groups.some((group) => getGroupName(group) === "browser") ?? false
 
-			// Check if model supports browser capability (images)
-			const modelInfo = this.api.getModel().info
-			const modelSupportsBrowser = (modelInfo as any)?.supportsImages === true
+		// Check if model supports browser capability (images)
+		const modelInfo = this.api.getModel().info
+		const modelSupportsBrowser = (modelInfo as any)?.supportsImages === true
 
-			const canUseBrowserTool = modelSupportsBrowser && modeSupportsBrowser && (browserToolEnabled ?? true)
+		const canUseBrowserTool = modelSupportsBrowser && modeSupportsBrowser && (browserToolEnabled ?? true)
 
-			return SYSTEM_PROMPT(
-				provider.context,
-				this.cwd,
-				canUseBrowserTool,
-				mcpHub,
-				this.diffStrategy,
-				browserViewportSize ?? "900x600",
-				mode ?? defaultModeSlug,
-				customModePrompts,
-				customModes,
-				customInstructions,
-				this.diffEnabled,
-				experiments,
-				enableMcpServerCreation,
-				language,
-				rooIgnoreInstructions,
-				maxReadFileLine !== -1,
-				{
-					maxConcurrentFileReads: maxConcurrentFileReads ?? 5,
-					todoListEnabled: apiConfiguration?.todoListEnabled ?? true,
-					useAgentRules: vscode.workspace.getConfiguration("roo-cline").get<boolean>("useAgentRules") ?? true,
-					newTaskRequireTodos: vscode.workspace
-						.getConfiguration("roo-cline")
-						.get<boolean>("newTaskRequireTodos", false),
-				},
-				undefined, // todoList
-				this.api.getModel().id,
-			)
-		})()
+		// Check if this provider supports native tools (checks both capability and user setting)
+		const useNativeTools = this.api.supportsNativeTools()
+
+		return await SYSTEM_PROMPT(
+			provider.context,
+			this.cwd,
+			canUseBrowserTool,
+			mcpHub,
+			this.diffStrategy,
+			browserViewportSize ?? "900x600",
+			mode ?? defaultModeSlug,
+			customModePrompts,
+			customModes,
+			customInstructions,
+			this.diffEnabled,
+			experiments,
+			enableMcpServerCreation,
+			language,
+			rooIgnoreInstructions,
+			maxReadFileLine !== -1,
+			{
+				maxConcurrentFileReads: maxConcurrentFileReads ?? 5,
+				todoListEnabled: apiConfiguration?.todoListEnabled ?? true,
+				useAgentRules: vscode.workspace.getConfiguration("roo-cline").get<boolean>("useAgentRules") ?? true,
+				newTaskRequireTodos: vscode.workspace
+					.getConfiguration("roo-cline")
+					.get<boolean>("newTaskRequireTodos", false),
+			},
+			undefined, // todoList
+			this.api.getModel().id,
+			useNativeTools,
+		)
+	}
+
+	private async getSystemPrompt(): Promise<string> {
+		const result = await this.getSystemPromptAndTools()
+		return result.systemPrompt
 	}
 
 	private getCurrentProfileId(state: any): string {
@@ -2671,8 +2777,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// requests — even from new subtasks — will honour the provider's rate-limit.
 		Task.lastGlobalApiRequestTime = performance.now()
 
-		const systemPrompt = await this.getSystemPrompt()
+		const { systemPrompt, tools } = await this.getSystemPromptAndTools()
 		this.lastUsedInstructions = systemPrompt
+		this.useNativeToolCalls = !!tools?.length
+
 		const { contextTokens } = this.getTokenUsage()
 
 		if (contextTokens) {
@@ -2734,6 +2842,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			({ role, content }) => ({ role, content }),
 		)
 
+		// Ensure tool results follow tool uses when using native tool calling
+		if (this.useNativeToolCalls) {
+			ensureToolResultsFollowToolUse(cleanConversationHistory)
+		}
+
 		// Check auto-approval limits
 		const approvalResult = await this.autoApprovalHandler.checkAutoApprovalLimits(
 			state,
@@ -2787,7 +2900,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			this.skipPrevResponseIdOnce = false
 		}
 
-		const stream = this.api.createMessage(systemPrompt, cleanConversationHistory, metadata)
+		const stream = this.api.createMessage(systemPrompt, cleanConversationHistory, metadata, tools)
 		const iterator = stream[Symbol.asyncIterator]()
 
 		try {

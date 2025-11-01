@@ -19,6 +19,8 @@ import { convertToR1Format } from "../transform/r1-format"
 import { convertToSimpleMessages } from "../transform/simple-format"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
+import { ToolCallProcessor } from "../transform/tool-call-processor"
+import { toolSpecToOpenAITool, type ToolSpec } from "../transform/tool-converters"
 
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
@@ -33,10 +35,12 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 	protected options: ApiHandlerOptions
 	private client: OpenAI
 	private readonly providerName = "OpenAI"
+	private toolCallProcessor: ToolCallProcessor
 
 	constructor(options: ApiHandlerOptions) {
 		super()
 		this.options = options
+		this.toolCallProcessor = new ToolCallProcessor()
 
 		const baseURL = this.options.openAiBaseUrl ?? "https://api.openai.com/v1"
 		const apiKey = this.options.openAiApiKey ?? "not-provided"
@@ -84,7 +88,15 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
+		tools?: ToolSpec[],
 	): ApiStream {
+		// Reset tool call processor for new message
+		this.toolCallProcessor.reset()
+
+		// Convert tools to OpenAI format if provided
+		const openAITools = tools?.map(toolSpecToOpenAITool)
+		const nativeToolsOn = openAITools && openAITools.length > 0
+
 		const { info: modelInfo, reasoning } = this.getModel()
 		const modelUrl = this.options.openAiBaseUrl ?? ""
 		const modelId = this.options.openAiModelId ?? ""
@@ -164,6 +176,12 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				stream: true as const,
 				...(isGrokXAI ? {} : { stream_options: { include_usage: true } }),
 				...(reasoning && reasoning),
+				// Add native tool calling support
+				...(nativeToolsOn && {
+					tools: openAITools,
+					tool_choice: "auto" as const,
+					parallel_tool_calls: false,
+				}),
 			}
 
 			// Add max_tokens if needed
@@ -192,6 +210,13 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 			for await (const chunk of stream) {
 				const delta = chunk.choices[0]?.delta ?? {}
+
+				// Handle native tool calls
+				if (nativeToolsOn && delta.tool_calls) {
+					for (const toolCallChunk of this.toolCallProcessor.processToolCallDeltas(delta.tool_calls)) {
+						yield toolCallChunk
+					}
+				}
 
 				if (delta.content) {
 					for (const chunk of matcher.update(delta.content)) {

@@ -18,13 +18,15 @@ import { addCacheBreakpoints as addAnthropicCacheBreakpoints } from "../transfor
 import { addCacheBreakpoints as addGeminiCacheBreakpoints } from "../transform/caching/gemini"
 import type { OpenRouterReasoningParams } from "../transform/reasoning"
 import { getModelParams } from "../transform/model-params"
+import { ToolCallProcessor } from "../transform/tool-call-processor"
+import { toolSpecToOpenAITool, type ToolSpec } from "../transform/tool-converters"
 
 import { getModels } from "./fetchers/modelCache"
 import { getModelEndpoints } from "./fetchers/modelEndpointCache"
 
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
-import type { SingleCompletionHandler } from "../index"
+import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { handleOpenAIError } from "./utils/openai-error-handler"
 
 // Image generation types
@@ -87,6 +89,7 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 	protected models: ModelRecord = {}
 	protected endpoints: ModelRecord = {}
 	private readonly providerName = "OpenRouter"
+	private toolCallProcessor: ToolCallProcessor
 
 	constructor(options: ApiHandlerOptions) {
 		super()
@@ -96,12 +99,22 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		const apiKey = this.options.openRouterApiKey ?? "not-provided"
 
 		this.client = new OpenAI({ baseURL, apiKey, defaultHeaders: DEFAULT_HEADERS })
+		this.toolCallProcessor = new ToolCallProcessor()
 	}
 
 	override async *createMessage(
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
+		metadata?: ApiHandlerCreateMessageMetadata,
+		tools?: ToolSpec[],
 	): AsyncGenerator<ApiStreamChunk> {
+		// Reset tool call processor for new message
+		this.toolCallProcessor.reset()
+
+		// Convert tools to OpenAI format if provided
+		const openAITools = tools?.map(toolSpecToOpenAITool)
+		const nativeToolsOn = openAITools && openAITools.length > 0
+
 		const model = await this.fetchModel()
 
 		let { id: modelId, maxTokens, temperature, topP, reasoning } = model
@@ -161,6 +174,12 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 				}),
 			...(transforms && { transforms }),
 			...(reasoning && { reasoning }),
+			// Add native tool calling support
+			...(nativeToolsOn && {
+				tools: openAITools,
+				tool_choice: "auto" as const,
+				parallel_tool_calls: false,
+			}),
 		}
 
 		let stream
@@ -181,6 +200,13 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 			}
 
 			const delta = chunk.choices[0]?.delta
+
+			// Handle native tool calls
+			if (nativeToolsOn && delta?.tool_calls) {
+				for (const toolCallChunk of this.toolCallProcessor.processToolCallDeltas(delta.tool_calls)) {
+					yield toolCallChunk
+				}
+			}
 
 			if ("reasoning" in delta && delta.reasoning && typeof delta.reasoning === "string") {
 				yield { type: "reasoning", text: delta.reasoning }

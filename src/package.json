@@ -430,6 +430,11 @@
 					"default": false,
 					"description": "%settings.newTaskRequireTodos.description%"
 				},
+				"roo-cline.nativeToolCalling": {
+					"type": "boolean",
+					"default": false,
+					"description": "Enable native tool calling (using provider's built-in tool format) instead of XML-based tools. This is more efficient but experimental."
+				},
 				"roo-cline.codeIndex.embeddingBatchSize": {
 					"type": "number",
 					"default": 60,
@@ -469,6 +474,7 @@
 		"@roo-code/ipc": "workspace:^",
 		"@roo-code/telemetry": "workspace:^",
 		"@roo-code/types": "workspace:^",
+		"@streamparser/json": "^0.0.22",
 		"@vscode/codicons": "^0.0.36",
 		"async-mutex": "^0.5.0",
 		"axios": "^1.12.0",

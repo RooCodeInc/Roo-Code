@@ -288,7 +288,7 @@ vi.mock("../../../shared/modes", () => ({
 }))
 
 vi.mock("../../prompts/system", () => ({
-	SYSTEM_PROMPT: vi.fn().mockResolvedValue("mocked system prompt"),
+	SYSTEM_PROMPT: vi.fn().mockResolvedValue({ systemPrompt: "mocked system prompt" }),
 	codeMode: "code",
 }))
 
@@ -297,6 +297,7 @@ vi.mock("../../../api", () => ({
 		getModel: vi.fn().mockReturnValue({
 			id: "claude-3-sonnet",
 		}),
+		supportsNativeTools: vi.fn().mockReturnValue(false),
 	}),
 }))
 

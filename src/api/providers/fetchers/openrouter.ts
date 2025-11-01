@@ -210,6 +210,7 @@ export const parseOpenRouterModel = ({
 		contextWindow: model.context_length,
 		supportsImages: inputModality?.includes("image") ?? false,
 		supportsPromptCache,
+		supportsNativeToolCalling: supportedParameters?.includes("tools") ?? false,
 		inputPrice: parseApiPrice(model.pricing?.prompt),
 		outputPrice: parseApiPrice(model.pricing?.completion),
 		cacheWritesPrice,

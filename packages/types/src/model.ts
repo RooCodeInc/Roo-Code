@@ -58,6 +58,8 @@ export const modelInfoSchema = z.object({
 	contextWindow: z.number(),
 	supportsImages: z.boolean().optional(),
 	supportsPromptCache: z.boolean(),
+	// Capability flag to indicate whether the model supports native tool calling
+	supportsNativeToolCalling: z.boolean().optional(),
 	// Capability flag to indicate whether the model supports an output verbosity parameter
 	supportsVerbosity: z.boolean().optional(),
 	supportsReasoningBudget: z.boolean().optional(),

@@ -6,8 +6,8 @@ import { generateSystemPrompt } from "../generateSystemPrompt"
 // Mock SYSTEM_PROMPT to capture its third argument (browser capability flag)
 vi.mock("../../prompts/system", () => ({
 	SYSTEM_PROMPT: vi.fn(async (_ctx, _cwd, canUseBrowserTool: boolean) => {
-		// return a simple string to satisfy return type
-		return `SYSTEM_PROMPT:${canUseBrowserTool}`
+		// return object with systemPrompt to match new return type
+		return { systemPrompt: `SYSTEM_PROMPT:${canUseBrowserTool}` }
 	}),
 }))
 
@@ -23,6 +23,7 @@ vi.mock("../../../api", () => ({
 				supportsPromptCache: false,
 			},
 		}),
+		supportsNativeTools: () => false,
 	})),
 }))
 

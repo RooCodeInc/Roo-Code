@@ -20,6 +20,8 @@ import { calculateApiCostOpenAI } from "../../shared/cost"
 
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
+import { ToolCallProcessor } from "../transform/tool-call-processor"
+import { toolSpecToOpenAITool, type ToolSpec } from "../transform/tool-converters"
 
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
@@ -39,6 +41,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 	private responseIdResolver: ((value: string | undefined) => void) | undefined
 	// Resolved service tier from Responses API (actual tier used by OpenAI)
 	private lastServiceTier: ServiceTier | undefined
+	private toolCallProcessor: ToolCallProcessor
 
 	// Event types handled by the shared event processor to avoid duplication
 	private readonly coreHandledEventTypes = new Set<string>([
@@ -63,6 +66,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		}
 		const apiKey = this.options.openAiNativeApiKey ?? "not-provided"
 		this.client = new OpenAI({ baseURL: this.options.openAiNativeBaseUrl, apiKey })
+		this.toolCallProcessor = new ToolCallProcessor()
 	}
 
 	private normalizeUsage(usage: any, model: OpenAiNativeModel): ApiStreamUsageChunk | undefined {
@@ -141,11 +145,19 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
+		tools?: ToolSpec[],
 	): ApiStream {
+		// Reset tool call processor for new message
+		this.toolCallProcessor.reset()
+
 		const model = this.getModel()
 
+		// Convert tools to OpenAI format if provided
+		const openAITools = tools?.map(toolSpecToOpenAITool)
+		const nativeToolsOn = openAITools && openAITools.length > 0
+
 		// Use Responses API for ALL models
-		yield* this.handleResponsesApiMessage(model, systemPrompt, messages, metadata)
+		yield* this.handleResponsesApiMessage(model, systemPrompt, messages, metadata, tools)
 	}
 
 	private async *handleResponsesApiMessage(
@@ -153,6 +165,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
+		tools?: ToolSpec[],
 	): ApiStream {
 		// Reset resolved tier for this request; will be set from response if present
 		this.lastServiceTier = undefined
@@ -215,10 +228,11 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			verbosity,
 			reasoningEffort,
 			metadata,
+			tools,
 		)
 
 		// Make the request (pass systemPrompt and messages for potential retry)
-		yield* this.executeRequest(requestBody, model, metadata, systemPrompt, messages)
+		yield* this.executeRequest(requestBody, model, metadata, systemPrompt, messages, tools)
 	}
 
 	private buildRequestBody(
@@ -229,7 +243,11 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		verbosity: any,
 		reasoningEffort: ReasoningEffortWithMinimal | undefined,
 		metadata?: ApiHandlerCreateMessageMetadata,
+		tools?: ToolSpec[],
 	): any {
+		// Convert tools to OpenAI format if provided
+		const openAITools = tools?.map(toolSpecToOpenAITool)
+		const nativeToolsOn = openAITools && openAITools.length > 0
 		// Build a request body (also used for fallback)
 		// Ensure we explicitly pass max_output_tokens for GPT‑5 based on Roo's reserved model response calculation
 		// so requests do not default to very large limits (e.g., 120k).
@@ -245,6 +263,8 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			store?: boolean
 			instructions?: string
 			service_tier?: ServiceTier
+			tools?: any[]
+			tool_choice?: "auto" | "none"
 		}
 
 		// Validate requested tier against model support; if not supported, omit.
@@ -290,6 +310,12 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			body.text = { verbosity: (verbosity || "medium") as VerbosityLevel }
 		}
 
+		// Add native tool calling support
+		if (nativeToolsOn) {
+			body.tools = openAITools
+			body.tool_choice = "auto" as const
+		}
+
 		return body
 	}
 
@@ -299,6 +325,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		metadata?: ApiHandlerCreateMessageMetadata,
 		systemPrompt?: string,
 		messages?: Anthropic.Messages.MessageParam[],
+		tools?: ToolSpec[],
 	): ApiStream {
 		try {
 			// Use the official SDK
@@ -311,7 +338,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			}
 
 			for await (const event of stream) {
-				for await (const outChunk of this.processEvent(event, model)) {
+				for await (const outChunk of this.processEvent(event, model, !!tools?.length)) {
 					yield outChunk
 				}
 			}
@@ -352,25 +379,33 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 							metadata,
 							systemPrompt,
 							messages,
+							tools,
 						)
 						return
 					}
 
 					for await (const event of retryStream) {
-						for await (const outChunk of this.processEvent(event, model)) {
+						for await (const outChunk of this.processEvent(event, model, !!tools?.length)) {
 							yield outChunk
 						}
 					}
 					return
 				} catch (retryErr) {
 					// If retry also fails, fall back to SSE
-					yield* this.makeGpt5ResponsesAPIRequest(retryRequestBody, model, metadata, systemPrompt, messages)
+					yield* this.makeGpt5ResponsesAPIRequest(
+						retryRequestBody,
+						model,
+						metadata,
+						systemPrompt,
+						messages,
+						tools,
+					)
 					return
 				}
 			}
 
 			// For other errors, fallback to manual SSE via fetch
-			yield* this.makeGpt5ResponsesAPIRequest(requestBody, model, metadata, systemPrompt, messages)
+			yield* this.makeGpt5ResponsesAPIRequest(requestBody, model, metadata, systemPrompt, messages, tools)
 		}
 	}
 
@@ -461,6 +496,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		metadata?: ApiHandlerCreateMessageMetadata,
 		systemPrompt?: string,
 		messages?: Anthropic.Messages.MessageParam[],
+		tools?: ToolSpec[],
 	): ApiStream {
 		const apiKey = this.options.openAiNativeApiKey ?? "not-provided"
 		const baseUrl = this.options.openAiNativeBaseUrl || "https://api.openai.com"
@@ -541,7 +577,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 					}
 
 					// Handle the successful retry response
-					yield* this.handleStreamResponse(retryResponse.body, model)
+					yield* this.handleStreamResponse(retryResponse.body, model, tools)
 					return
 				}
 
@@ -585,7 +621,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			}
 
 			// Handle streaming response
-			yield* this.handleStreamResponse(response.body, model)
+			yield* this.handleStreamResponse(response.body, model, tools)
 		} catch (error) {
 			if (error instanceof Error) {
 				// Re-throw with the original error message if it's already formatted
@@ -648,7 +684,12 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 	 * and yields structured data chunks (`ApiStream`). It handles a wide variety of event types,
 	 * including text deltas, reasoning, usage data, and various status/tool events.
 	 */
-	private async *handleStreamResponse(body: ReadableStream<Uint8Array>, model: OpenAiNativeModel): ApiStream {
+	private async *handleStreamResponse(
+		body: ReadableStream<Uint8Array>,
+		model: OpenAiNativeModel,
+		tools?: ToolSpec[],
+	): ApiStream {
+		const nativeToolsOn = tools && tools.length > 0
 		const reader = body.getReader()
 		const decoder = new TextDecoder()
 		let buffer = ""
@@ -686,7 +727,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 
 							// Delegate standard event types to the shared processor to avoid duplication
 							if (parsed?.type && this.coreHandledEventTypes.has(parsed.type)) {
-								for await (const outChunk of this.processEvent(parsed, model)) {
+								for await (const outChunk of this.processEvent(parsed, model, !!tools?.length)) {
 									// Track whether we've emitted any content so fallback handling can decide appropriately
 									if (outChunk.type === "text" || outChunk.type === "reasoning") {
 										hasContent = true
@@ -1097,7 +1138,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 	/**
 	 * Shared processor for Responses API events.
 	 */
-	private async *processEvent(event: any, model: OpenAiNativeModel): ApiStream {
+	private async *processEvent(event: any, model: OpenAiNativeModel, nativeToolsOn: boolean = false): ApiStream {
 		// Persist response id for conversation continuity when available
 		if (event?.response?.id) {
 			this.resolveResponseId(event.response.id)
@@ -1151,6 +1192,16 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 							yield { type: "text", text: content.text }
 						}
 					}
+				} else if (nativeToolsOn && item.type === "function_call" && item.function) {
+					// Handle function call in output items (native tool calling)
+					for (const toolCallChunk of this.toolCallProcessor.processToolCallDeltas([
+						{
+							id: item.id,
+							function: item.function,
+						},
+					])) {
+						yield toolCallChunk
+					}
 				}
 			}
 			return
@@ -1162,6 +1213,16 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			const usageData = this.normalizeUsage(usage, model)
 			if (usageData) {
 				yield usageData
+			}
+			return
+		}
+
+		// Handle tool call deltas from standard Chat Completions format
+		if (nativeToolsOn && event?.choices?.[0]?.delta?.tool_calls) {
+			for (const toolCallChunk of this.toolCallProcessor.processToolCallDeltas(
+				event.choices[0].delta.tool_calls,
+			)) {
+				yield toolCallChunk
 			}
 			return
 		}

@@ -190,7 +190,7 @@ describe("addCustomInstructions", () => {
 	})
 
 	it("should generate correct prompt for architect mode", async () => {
-		const prompt = await SYSTEM_PROMPT(
+		const result = await SYSTEM_PROMPT(
 			mockContext,
 			"/test/path",
 			false, // supportsImages
@@ -209,11 +209,13 @@ describe("addCustomInstructions", () => {
 			undefined, // partialReadsEnabled
 		)
 
-		expect(prompt).toMatchFileSnapshot("./__snapshots__/add-custom-instructions/architect-mode-prompt.snap")
+		expect(result.systemPrompt).toMatchFileSnapshot(
+			"./__snapshots__/add-custom-instructions/architect-mode-prompt.snap",
+		)
 	})
 
 	it("should generate correct prompt for ask mode", async () => {
-		const prompt = await SYSTEM_PROMPT(
+		const result = await SYSTEM_PROMPT(
 			mockContext,
 			"/test/path",
 			false, // supportsImages
@@ -232,13 +234,13 @@ describe("addCustomInstructions", () => {
 			undefined, // partialReadsEnabled
 		)
 
-		expect(prompt).toMatchFileSnapshot("./__snapshots__/add-custom-instructions/ask-mode-prompt.snap")
+		expect(result.systemPrompt).toMatchFileSnapshot("./__snapshots__/add-custom-instructions/ask-mode-prompt.snap")
 	})
 
 	it("should include MCP server creation info when enabled", async () => {
 		const mockMcpHub = createMockMcpHub(true)
 
-		const prompt = await SYSTEM_PROMPT(
+		const result = await SYSTEM_PROMPT(
 			mockContext,
 			"/test/path",
 			false, // supportsImages
@@ -257,14 +259,16 @@ describe("addCustomInstructions", () => {
 			undefined, // partialReadsEnabled
 		)
 
-		expect(prompt).toContain("Creating an MCP Server")
-		expect(prompt).toMatchFileSnapshot("./__snapshots__/add-custom-instructions/mcp-server-creation-enabled.snap")
+		expect(result.systemPrompt).toContain("Creating an MCP Server")
+		expect(result.systemPrompt).toMatchFileSnapshot(
+			"./__snapshots__/add-custom-instructions/mcp-server-creation-enabled.snap",
+		)
 	})
 
 	it("should exclude MCP server creation info when disabled", async () => {
 		const mockMcpHub = createMockMcpHub(false)
 
-		const prompt = await SYSTEM_PROMPT(
+		const result = await SYSTEM_PROMPT(
 			mockContext,
 			"/test/path",
 			false, // supportsImages
@@ -283,12 +287,14 @@ describe("addCustomInstructions", () => {
 			undefined, // partialReadsEnabled
 		)
 
-		expect(prompt).not.toContain("Creating an MCP Server")
-		expect(prompt).toMatchFileSnapshot("./__snapshots__/add-custom-instructions/mcp-server-creation-disabled.snap")
+		expect(result.systemPrompt).not.toContain("Creating an MCP Server")
+		expect(result.systemPrompt).toMatchFileSnapshot(
+			"./__snapshots__/add-custom-instructions/mcp-server-creation-disabled.snap",
+		)
 	})
 
 	it("should include partial read instructions when partialReadsEnabled is true", async () => {
-		const prompt = await SYSTEM_PROMPT(
+		const result = await SYSTEM_PROMPT(
 			mockContext,
 			"/test/path",
 			false, // supportsImages
@@ -307,7 +313,9 @@ describe("addCustomInstructions", () => {
 			true, // partialReadsEnabled
 		)
 
-		expect(prompt).toMatchFileSnapshot("./__snapshots__/add-custom-instructions/partial-reads-enabled.snap")
+		expect(result.systemPrompt).toMatchFileSnapshot(
+			"./__snapshots__/add-custom-instructions/partial-reads-enabled.snap",
+		)
 	})
 
 	it("should prioritize mode-specific rules for code mode", async () => {

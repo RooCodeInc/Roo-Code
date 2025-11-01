@@ -94,6 +94,10 @@ export class HumanRelayHandler implements ApiHandler, SingleCompletionHandler {
 
 		return response
 	}
+
+	supportsNativeTools(): boolean {
+		return false
+	}
 }
 
 /**

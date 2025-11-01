@@ -62,5 +62,8 @@
 			"form-data": ">=4.0.4",
 			"bluebird": ">=3.7.2"
 		}
+	},
+	"dependencies": {
+		"@streamparser/json": "^0.0.22"
 	}
 }

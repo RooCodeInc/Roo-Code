@@ -204,7 +204,7 @@ describe("SYSTEM_PROMPT", () => {
 	})
 
 	it("should maintain consistent system prompt", async () => {
-		const prompt = await SYSTEM_PROMPT(
+		const result = await SYSTEM_PROMPT(
 			mockContext,
 			"/test/path",
 			false, // supportsImages
@@ -223,11 +223,11 @@ describe("SYSTEM_PROMPT", () => {
 			undefined, // partialReadsEnabled
 		)
 
-		expect(prompt).toMatchFileSnapshot("./__snapshots__/system-prompt/consistent-system-prompt.snap")
+		expect(result.systemPrompt).toMatchFileSnapshot("./__snapshots__/system-prompt/consistent-system-prompt.snap")
 	})
 
 	it("should include browser actions when supportsImages is true", async () => {
-		const prompt = await SYSTEM_PROMPT(
+		const result = await SYSTEM_PROMPT(
 			mockContext,
 			"/test/path",
 			true, // supportsImages
@@ -246,13 +246,13 @@ describe("SYSTEM_PROMPT", () => {
 			undefined, // partialReadsEnabled
 		)
 
-		expect(prompt).toMatchFileSnapshot("./__snapshots__/system-prompt/with-computer-use-support.snap")
+		expect(result.systemPrompt).toMatchFileSnapshot("./__snapshots__/system-prompt/with-computer-use-support.snap")
 	})
 
 	it("should include MCP server info when mcpHub is provided", async () => {
 		mockMcpHub = createMockMcpHub(true)
 
-		const prompt = await SYSTEM_PROMPT(
+		const result = await SYSTEM_PROMPT(
 			mockContext,
 			"/test/path",
 			false,
@@ -271,11 +271,11 @@ describe("SYSTEM_PROMPT", () => {
 			undefined, // partialReadsEnabled
 		)
 
-		expect(prompt).toMatchFileSnapshot("./__snapshots__/system-prompt/with-mcp-hub-provided.snap")
+		expect(result.systemPrompt).toMatchFileSnapshot("./__snapshots__/system-prompt/with-mcp-hub-provided.snap")
 	})
 
 	it("should explicitly handle undefined mcpHub", async () => {
-		const prompt = await SYSTEM_PROMPT(
+		const result = await SYSTEM_PROMPT(
 			mockContext,
 			"/test/path",
 			false,
@@ -294,11 +294,11 @@ describe("SYSTEM_PROMPT", () => {
 			undefined, // partialReadsEnabled
 		)
 
-		expect(prompt).toMatchFileSnapshot("./__snapshots__/system-prompt/with-undefined-mcp-hub.snap")
+		expect(result.systemPrompt).toMatchFileSnapshot("./__snapshots__/system-prompt/with-undefined-mcp-hub.snap")
 	})
 
 	it("should handle different browser viewport sizes", async () => {
-		const prompt = await SYSTEM_PROMPT(
+		const result = await SYSTEM_PROMPT(
 			mockContext,
 			"/test/path",
 			false,
@@ -317,11 +317,13 @@ describe("SYSTEM_PROMPT", () => {
 			undefined, // partialReadsEnabled
 		)
 
-		expect(prompt).toMatchFileSnapshot("./__snapshots__/system-prompt/with-different-viewport-size.snap")
+		expect(result.systemPrompt).toMatchFileSnapshot(
+			"./__snapshots__/system-prompt/with-different-viewport-size.snap",
+		)
 	})
 
 	it("should include diff strategy tool description when diffEnabled is true", async () => {
-		const prompt = await SYSTEM_PROMPT(
+		const result = await SYSTEM_PROMPT(
 			mockContext,
 			"/test/path",
 			false,
@@ -340,12 +342,12 @@ describe("SYSTEM_PROMPT", () => {
 			undefined, // partialReadsEnabled
 		)
 
-		expect(prompt).toContain("apply_diff")
-		expect(prompt).toMatchFileSnapshot("./__snapshots__/system-prompt/with-diff-enabled-true.snap")
+		expect(result.systemPrompt).toContain("apply_diff")
+		expect(result.systemPrompt).toMatchFileSnapshot("./__snapshots__/system-prompt/with-diff-enabled-true.snap")
 	})
 
 	it("should exclude diff strategy tool description when diffEnabled is false", async () => {
-		const prompt = await SYSTEM_PROMPT(
+		const result = await SYSTEM_PROMPT(
 			mockContext,
 			"/test/path",
 			false, // supportsImages
@@ -364,12 +366,12 @@ describe("SYSTEM_PROMPT", () => {
 			undefined, // partialReadsEnabled
 		)
 
-		expect(prompt).not.toContain("apply_diff")
-		expect(prompt).toMatchFileSnapshot("./__snapshots__/system-prompt/with-diff-enabled-false.snap")
+		expect(result.systemPrompt).not.toContain("apply_diff")
+		expect(result.systemPrompt).toMatchFileSnapshot("./__snapshots__/system-prompt/with-diff-enabled-false.snap")
 	})
 
 	it("should exclude diff strategy tool description when diffEnabled is undefined", async () => {
-		const prompt = await SYSTEM_PROMPT(
+		const result = await SYSTEM_PROMPT(
 			mockContext,
 			"/test/path",
 			false,
@@ -388,8 +390,10 @@ describe("SYSTEM_PROMPT", () => {
 			undefined, // partialReadsEnabled
 		)
 
-		expect(prompt).not.toContain("apply_diff")
-		expect(prompt).toMatchFileSnapshot("./__snapshots__/system-prompt/with-diff-enabled-undefined.snap")
+		expect(result.systemPrompt).not.toContain("apply_diff")
+		expect(result.systemPrompt).toMatchFileSnapshot(
+			"./__snapshots__/system-prompt/with-diff-enabled-undefined.snap",
+		)
 	})
 
 	it("should include vscode language in custom instructions", async () => {
@@ -420,7 +424,7 @@ describe("SYSTEM_PROMPT", () => {
 			dispose: vi.fn(),
 		}))
 
-		const prompt = await SYSTEM_PROMPT(
+		const result = await SYSTEM_PROMPT(
 			mockContext,
 			"/test/path",
 			false,
@@ -439,8 +443,8 @@ describe("SYSTEM_PROMPT", () => {
 			undefined, // partialReadsEnabled
 		)
 
-		expect(prompt).toContain("Language Preference:")
-		expect(prompt).toContain('You should always speak and think in the "es" language')
+		expect(result.systemPrompt).toContain("Language Preference:")
+		expect(result.systemPrompt).toContain('You should always speak and think in the "es" language')
 
 		// Reset mock
 		vscode.env = { language: "en" }
@@ -481,7 +485,7 @@ describe("SYSTEM_PROMPT", () => {
 			},
 		]
 
-		const prompt = await SYSTEM_PROMPT(
+		const result = await SYSTEM_PROMPT(
 			mockContext,
 			"/test/path",
 			false,
@@ -501,11 +505,13 @@ describe("SYSTEM_PROMPT", () => {
 		)
 
 		// Role definition should be at the top
-		expect(prompt.indexOf("Custom role definition")).toBeLessThan(prompt.indexOf("TOOL USE"))
+		expect(result.systemPrompt.indexOf("Custom role definition")).toBeLessThan(
+			result.systemPrompt.indexOf("TOOL USE"),
+		)
 
 		// Custom instructions should be at the bottom
-		const customInstructionsIndex = prompt.indexOf("Custom mode instructions")
-		const userInstructionsHeader = prompt.indexOf("USER'S CUSTOM INSTRUCTIONS")
+		const customInstructionsIndex = result.systemPrompt.indexOf("Custom mode instructions")
+		const userInstructionsHeader = result.systemPrompt.indexOf("USER'S CUSTOM INSTRUCTIONS")
 		expect(customInstructionsIndex).toBeGreaterThan(-1)
 		expect(userInstructionsHeader).toBeGreaterThan(-1)
 		expect(customInstructionsIndex).toBeGreaterThan(userInstructionsHeader)
@@ -519,7 +525,7 @@ describe("SYSTEM_PROMPT", () => {
 			},
 		}
 
-		const prompt = await SYSTEM_PROMPT(
+		const result = await SYSTEM_PROMPT(
 			mockContext,
 			"/test/path",
 			false,
@@ -539,9 +545,11 @@ describe("SYSTEM_PROMPT", () => {
 		)
 
 		// Role definition from promptComponent should be at the top
-		expect(prompt.indexOf("Custom prompt role definition")).toBeLessThan(prompt.indexOf("TOOL USE"))
+		expect(result.systemPrompt.indexOf("Custom prompt role definition")).toBeLessThan(
+			result.systemPrompt.indexOf("TOOL USE"),
+		)
 		// Should not contain the default mode's role definition
-		expect(prompt).not.toContain(modes[0].roleDefinition)
+		expect(result.systemPrompt).not.toContain(modes[0].roleDefinition)
 	})
 
 	it("should fallback to modeConfig roleDefinition when promptComponent has no roleDefinition", async () => {
@@ -552,7 +560,7 @@ describe("SYSTEM_PROMPT", () => {
 			},
 		}
 
-		const prompt = await SYSTEM_PROMPT(
+		const result = await SYSTEM_PROMPT(
 			mockContext,
 			"/test/path",
 			false,
@@ -572,7 +580,9 @@ describe("SYSTEM_PROMPT", () => {
 		)
 
 		// Should use the default mode's role definition
-		expect(prompt.indexOf(modes[0].roleDefinition)).toBeLessThan(prompt.indexOf("TOOL USE"))
+		expect(result.systemPrompt.indexOf(modes[0].roleDefinition)).toBeLessThan(
+			result.systemPrompt.indexOf("TOOL USE"),
+		)
 	})
 
 	it("should exclude update_todo_list tool when todoListEnabled is false", async () => {
@@ -583,7 +593,7 @@ describe("SYSTEM_PROMPT", () => {
 			newTaskRequireTodos: false,
 		}
 
-		const prompt = await SYSTEM_PROMPT(
+		const result = await SYSTEM_PROMPT(
 			mockContext,
 			"/test/path",
 			false,
@@ -604,7 +614,7 @@ describe("SYSTEM_PROMPT", () => {
 		)
 
 		// Should not contain the tool description
-		expect(prompt).not.toContain("## update_todo_list")
+		expect(result.systemPrompt).not.toContain("## update_todo_list")
 		// Mode instructions will still reference the tool with a fallback to markdown
 	})
 
@@ -616,7 +626,7 @@ describe("SYSTEM_PROMPT", () => {
 			newTaskRequireTodos: false,
 		}
 
-		const prompt = await SYSTEM_PROMPT(
+		const result = await SYSTEM_PROMPT(
 			mockContext,
 			"/test/path",
 			false,
@@ -636,8 +646,8 @@ describe("SYSTEM_PROMPT", () => {
 			settings, // settings
 		)
 
-		expect(prompt).toContain("update_todo_list")
-		expect(prompt).toContain("## update_todo_list")
+		expect(result.systemPrompt).toContain("update_todo_list")
+		expect(result.systemPrompt).toContain("## update_todo_list")
 	})
 
 	it("should include update_todo_list tool when todoListEnabled is undefined", async () => {
@@ -648,7 +658,7 @@ describe("SYSTEM_PROMPT", () => {
 			newTaskRequireTodos: false,
 		}
 
-		const prompt = await SYSTEM_PROMPT(
+		const result = await SYSTEM_PROMPT(
 			mockContext,
 			"/test/path",
 			false,
@@ -668,8 +678,8 @@ describe("SYSTEM_PROMPT", () => {
 			settings, // settings
 		)
 
-		expect(prompt).toContain("update_todo_list")
-		expect(prompt).toContain("## update_todo_list")
+		expect(result.systemPrompt).toContain("update_todo_list")
+		expect(result.systemPrompt).toContain("## update_todo_list")
 	})
 
 	afterAll(() => {

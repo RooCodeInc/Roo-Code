@@ -69,6 +69,7 @@ describe("getRooModels", () => {
 				supportsReasoningEffort: true,
 				requiredReasoningEffort: false,
 				supportsPromptCache: true,
+				supportsNativeToolCalling: false,
 				inputPrice: 100, // 0.0001 * 1_000_000
 				outputPrice: 200, // 0.0002 * 1_000_000
 				cacheWritesPrice: 100, // 0.0001 * 1_000_000
@@ -117,6 +118,7 @@ describe("getRooModels", () => {
 			supportsReasoningEffort: true,
 			requiredReasoningEffort: true,
 			supportsPromptCache: false,
+			supportsNativeToolCalling: false,
 			inputPrice: 100, // 0.0001 * 1_000_000
 			outputPrice: 200, // 0.0002 * 1_000_000
 			cacheWritesPrice: undefined,
@@ -163,6 +165,7 @@ describe("getRooModels", () => {
 			supportsReasoningEffort: false,
 			requiredReasoningEffort: false,
 			supportsPromptCache: false,
+			supportsNativeToolCalling: false,
 			inputPrice: 100, // 0.0001 * 1_000_000
 			outputPrice: 200, // 0.0002 * 1_000_000
 			cacheWritesPrice: undefined,

@@ -3,6 +3,7 @@ import { Anthropic } from "@anthropic-ai/sdk"
 import type { ProviderSettings, ModelInfo } from "@roo-code/types"
 
 import { ApiStream } from "./transform/stream"
+import type { ToolSpec } from "./transform/tool-converters"
 
 import {
 	GlamaHandler,
@@ -73,6 +74,7 @@ export interface ApiHandler {
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
+		tools?: ToolSpec[],
 	): ApiStream
 
 	getModel(): { id: string; info: ModelInfo }
@@ -86,6 +88,15 @@ export interface ApiHandler {
 	 * @returns A promise resolving to the token count
 	 */
 	countTokens(content: Array<Anthropic.Messages.ContentBlockParam>): Promise<number>
+
+	/**
+	 * Returns whether this provider supports native tool calling
+	 * Providers that support native tools can receive tool specifications and
+	 * handle them in their native format instead of using XML-based tools
+	 *
+	 * @returns true if the provider supports native tool calling, false otherwise
+	 */
+	supportsNativeTools(): boolean
 }
 
 export function buildApiHandler(configuration: ProviderSettings): ApiHandler {

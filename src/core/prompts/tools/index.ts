@@ -3,6 +3,7 @@ import type { ToolName, ModeConfig } from "@roo-code/types"
 import { TOOL_GROUPS, ALWAYS_AVAILABLE_TOOLS, DiffStrategy } from "../../../shared/tools"
 import { McpHub } from "../../../services/mcp/McpHub"
 import { Mode, getModeConfig, isToolAllowedForMode, getGroupName } from "../../../shared/modes"
+import { CodeIndexManager } from "../../../services/code-index/manager"
 
 import { ToolArgs } from "./types"
 import { getExecuteCommandDescription } from "./execute-command"
@@ -26,7 +27,50 @@ import { getCodebaseSearchDescription } from "./codebase-search"
 import { getUpdateTodoListDescription } from "./update-todo-list"
 import { getRunSlashCommandDescription } from "./run-slash-command"
 import { getGenerateImageDescription } from "./generate-image"
-import { CodeIndexManager } from "../../../services/code-index/manager"
+
+/**
+ * Filters a list of tool names based on feature flags, settings, and experiments.
+ * This ensures consistent tool availability across XML and native tool modes.
+ */
+export function filterToolsByAvailability(
+	tools: ToolName[],
+	codeIndexManager: CodeIndexManager | undefined,
+	settings?: Record<string, any>,
+	experiments?: Record<string, boolean>,
+): ToolName[] {
+	return tools.filter((tool) => {
+		// Conditionally exclude codebase_search if feature is disabled or not configured
+		if (tool === "codebase_search") {
+			if (
+				!codeIndexManager ||
+				!(
+					codeIndexManager.isFeatureEnabled &&
+					codeIndexManager.isFeatureConfigured &&
+					codeIndexManager.isInitialized
+				)
+			) {
+				return false
+			}
+		}
+
+		// Conditionally exclude update_todo_list if disabled in settings
+		if (tool === "update_todo_list" && settings?.todoListEnabled === false) {
+			return false
+		}
+
+		// Conditionally exclude generate_image if experiment is not enabled
+		if (tool === "generate_image" && !experiments?.imageGeneration) {
+			return false
+		}
+
+		// Conditionally exclude run_slash_command if experiment is not enabled
+		if (tool === "run_slash_command" && !experiments?.runSlashCommand) {
+			return false
+		}
+
+		return true
+	})
+}
 
 // Map of tool names to their description functions
 const toolDescriptionMap: Record<string, (args: ToolArgs) => string | undefined> = {
@@ -118,31 +162,17 @@ export function getToolDescriptionsForMode(
 	// Add always available tools
 	ALWAYS_AVAILABLE_TOOLS.forEach((tool) => tools.add(tool))
 
-	// Conditionally exclude codebase_search if feature is disabled or not configured
-	if (
-		!codeIndexManager ||
-		!(codeIndexManager.isFeatureEnabled && codeIndexManager.isFeatureConfigured && codeIndexManager.isInitialized)
-	) {
-		tools.delete("codebase_search")
-	}
-
-	// Conditionally exclude update_todo_list if disabled in settings
-	if (settings?.todoListEnabled === false) {
-		tools.delete("update_todo_list")
-	}
-
-	// Conditionally exclude generate_image if experiment is not enabled
-	if (!experiments?.imageGeneration) {
-		tools.delete("generate_image")
-	}
-
-	// Conditionally exclude run_slash_command if experiment is not enabled
-	if (!experiments?.runSlashCommand) {
-		tools.delete("run_slash_command")
-	}
+	// Apply consistent filtering across all tool modes
+	const filteredTools = filterToolsByAvailability(
+		Array.from(tools) as ToolName[],
+		codeIndexManager,
+		settings,
+		experiments,
+	)
+	const filteredToolsSet = new Set(filteredTools)
 
 	// Map tool descriptions for allowed tools
-	const descriptions = Array.from(tools).map((toolName) => {
+	const descriptions = Array.from(filteredToolsSet).map((toolName) => {
 		const descriptionFn = toolDescriptionMap[toolName]
 		if (!descriptionFn) {
 			return undefined
