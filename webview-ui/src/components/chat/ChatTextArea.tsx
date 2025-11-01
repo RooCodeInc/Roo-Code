@@ -124,28 +124,33 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				const message = event.data
 
 				if (message.type === "enhancedPrompt") {
-					if (message.text && textAreaRef.current) {
-						try {
-							// Use execCommand to replace text while preserving undo history
-							if (document.execCommand) {
-								// Use native browser methods to preserve undo stack
-								const textarea = textAreaRef.current
+					// Only handle the enhanced prompt if it's for this specific textarea instance
+					// Edit mode textareas have context "edit", main textarea has context "main"
+					const expectedContext = isEditMode ? "edit" : "main"
+					if (message.context === expectedContext) {
+						if (message.text && textAreaRef.current) {
+							try {
+								// Use execCommand to replace text while preserving undo history
+								if (document.execCommand) {
+									// Use native browser methods to preserve undo stack
+									const textarea = textAreaRef.current
 
-								// Focus the textarea to ensure it's the active element
-								textarea.focus()
+									// Focus the textarea to ensure it's the active element
+									textarea.focus()
 
-								// Select all text first
-								textarea.select()
-								document.execCommand("insertText", false, message.text)
-							} else {
+									// Select all text first
+									textarea.select()
+									document.execCommand("insertText", false, message.text)
+								} else {
+									setInputValue(message.text)
+								}
+							} catch {
 								setInputValue(message.text)
 							}
-						} catch {
-							setInputValue(message.text)
 						}
-					}
 
-					setIsEnhancingPrompt(false)
+						setIsEnhancingPrompt(false)
+					}
 				} else if (message.type === "insertTextIntoTextarea") {
 					if (message.text && textAreaRef.current) {
 						// Insert the command text at the current cursor position
@@ -196,7 +201,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 
 			window.addEventListener("message", messageHandler)
 			return () => window.removeEventListener("message", messageHandler)
-		}, [setInputValue, searchRequestId, inputValue])
+		}, [setInputValue, searchRequestId, inputValue, isEditMode])
 
 		const [isDraggingOver, setIsDraggingOver] = useState(false)
 		const [textAreaBaseHeight, setTextAreaBaseHeight] = useState<number | undefined>(undefined)
@@ -239,11 +244,13 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 
 			if (trimmedInput) {
 				setIsEnhancingPrompt(true)
-				vscode.postMessage({ type: "enhancePrompt" as const, text: trimmedInput })
+				// Include context to identify which textarea is requesting enhancement
+				const context = isEditMode ? "edit" : "main"
+				vscode.postMessage({ type: "enhancePrompt" as const, text: trimmedInput, context })
 			} else {
 				setInputValue(t("chat:enhancePromptDescription"))
 			}
-		}, [inputValue, setInputValue, t])
+		}, [inputValue, setInputValue, t, isEditMode])
 
 		const allModes = useMemo(() => getAllModes(customModes), [customModes])
 
