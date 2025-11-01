@@ -291,7 +291,7 @@ describe("useSelectedModel", () => {
 	})
 
 	describe("loading and error states", () => {
-		it("should return loading state when router models are loading", () => {
+		it("should NOT set loading when router models are loading but provider is static (anthropic)", () => {
 			mockUseRouterModels.mockReturnValue({
 				data: undefined,
 				isLoading: true,
@@ -307,10 +307,11 @@ describe("useSelectedModel", () => {
 			const wrapper = createWrapper()
 			const { result } = renderHook(() => useSelectedModel(), { wrapper })
 
-			expect(result.current.isLoading).toBe(true)
+			// With static provider default (anthropic), useSelectedModel gates router fetches, so loading should be false
+			expect(result.current.isLoading).toBe(false)
 		})
 
-		it("should return loading state when open router model providers are loading", () => {
+		it("should NOT set loading when openrouter provider metadata is loading but provider is static (anthropic)", () => {
 			mockUseRouterModels.mockReturnValue({
 				data: { openrouter: {}, requesty: {}, glama: {}, unbound: {}, litellm: {}, "io-intelligence": {} },
 				isLoading: false,
@@ -326,10 +327,11 @@ describe("useSelectedModel", () => {
 			const wrapper = createWrapper()
 			const { result } = renderHook(() => useSelectedModel(), { wrapper })
 
-			expect(result.current.isLoading).toBe(true)
+			// With static provider default (anthropic), openrouter providers are irrelevant, so loading should be false
+			expect(result.current.isLoading).toBe(false)
 		})
 
-		it("should return error state when either hook has an error", () => {
+		it("should NOT set error when hooks error but provider is static (anthropic)", () => {
 			mockUseRouterModels.mockReturnValue({
 				data: undefined,
 				isLoading: false,
@@ -345,7 +347,8 @@ describe("useSelectedModel", () => {
 			const wrapper = createWrapper()
 			const { result } = renderHook(() => useSelectedModel(), { wrapper })
 
-			expect(result.current.isError).toBe(true)
+			// Error from gated routerModels should not bubble for static provider default
+			expect(result.current.isError).toBe(false)
 		})
 	})
 
