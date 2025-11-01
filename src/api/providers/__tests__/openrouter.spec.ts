@@ -1,8 +1,5 @@
 // npx vitest run src/api/providers/__tests__/openrouter.spec.ts
 
-// Mock vscode first to avoid import errors
-vitest.mock("vscode", () => ({}))
-
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 
@@ -63,6 +60,7 @@ describe("OpenRouterHandler", () => {
 				"X-Title": "Roo Code",
 				"User-Agent": `RooCode/${Package.version}`,
 			},
+			timeout: 600000,
 		})
 	})
 

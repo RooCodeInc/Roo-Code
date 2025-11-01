@@ -61,6 +61,7 @@ describe("RequestyHandler", () => {
 				"X-Title": "Roo Code",
 				"User-Agent": `RooCode/${Package.version}`,
 			},
+			timeout: 600000,
 		})
 	})
 
@@ -76,6 +77,7 @@ describe("RequestyHandler", () => {
 				"X-Title": "Roo Code",
 				"User-Agent": `RooCode/${Package.version}`,
 			},
+			timeout: 600000,
 		})
 	})
 

@@ -34,6 +34,7 @@ import { convertToBedrockConverseMessages as sharedConverter } from "../transfor
 import { getModelParams } from "../transform/model-params"
 import { shouldUseReasoningBudget } from "../../shared/api"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
+import { getApiRequestTimeout } from "./utils/timeout-config"
 
 /************************************************************************************
  *
@@ -399,17 +400,17 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			...(thinkingEnabled && { anthropic_version: "bedrock-2023-05-31" }),
 		}
 
-		// Create AbortController with 10 minute timeout
+		// Create AbortController with configured timeout
 		const controller = new AbortController()
 		let timeoutId: NodeJS.Timeout | undefined
+		const timeoutMs = getApiRequestTimeout()
 
 		try {
-			timeoutId = setTimeout(
-				() => {
+			if (timeoutMs !== 0) {
+				timeoutId = setTimeout(() => {
 					controller.abort()
-				},
-				10 * 60 * 1000,
-			)
+				}, timeoutMs)
+			}
 
 			const command = new ConverseStreamCommand(payload)
 			const response = await this.client.send(command, {
@@ -667,8 +668,18 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 				inferenceConfig,
 			}
 
+			const controller = new AbortController()
+			let timeoutId: NodeJS.Timeout | undefined
+			const timeoutMs = getApiRequestTimeout()
+
+			if (timeoutMs !== 0) {
+				timeoutId = setTimeout(() => {
+					controller.abort()
+				}, timeoutMs)
+			}
+
 			const command = new ConverseCommand(payload)
-			const response = await this.client.send(command)
+			const response = await this.client.send(command, { abortSignal: controller.signal })
 
 			if (
 				response?.output?.message?.content &&
@@ -677,6 +688,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 				response.output.message.content[0].text.trim().length > 0
 			) {
 				try {
+					if (timeoutId) clearTimeout(timeoutId)
 					return response.output.message.content[0].text
 				} catch (parseError) {
 					logger.error("Failed to parse Bedrock response", {
@@ -685,6 +697,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 					})
 				}
 			}
+			if (timeoutId) clearTimeout(timeoutId)
 			return ""
 		} catch (error) {
 			// Use the extracted error handling method for all errors
