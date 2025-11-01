@@ -359,7 +359,8 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 	): OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming {
 		const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming = {
 			model: modelId,
-			temperature: this.options.modelTemperature ?? (isDeepseekReasoner ? DEEP_SEEK_DEFAULT_TEMPERATURE : 0),
+			temperature:
+				this.options.modelTemperature ?? (isDeepseekReasoner ? DEEP_SEEK_DEFAULT_TEMPERATURE : undefined),
 			messages,
 			stream: true as const,
 			...(isGrokXAI ? {} : { stream_options: { include_usage: true } }),
