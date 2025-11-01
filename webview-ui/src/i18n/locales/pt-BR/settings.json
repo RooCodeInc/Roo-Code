@@ -677,6 +677,10 @@
 			"label": "Ativar gerenciamento do ZDOTDIR",
 			"description": "Quando ativado, cria um diretório temporário para o ZDOTDIR para lidar corretamente com a integração do shell zsh. Isso garante que a integração do shell do VSCode funcione corretamente com o zsh enquanto preserva sua configuração do zsh. <0>Saiba mais</0>"
 		},
+		"preferredProfile": {
+			"label": "Perfil de terminal preferido",
+			"description": "Selecione qual perfil de terminal do VSCode o Roo deve usar ao criar terminais. Escolha 'Padrão' para usar o comportamento padrão do VSCode, ou selecione um perfil específico para substituir o shell padrão. <0>Saiba mais</0>"
+		},
 		"inheritEnv": {
 			"label": "Herdar variáveis de ambiente",
 			"description": "Quando ativado, o terminal herda variáveis de ambiente do processo pai do VSCode, como configurações de integração do shell definidas no perfil do usuário. Isso alterna diretamente a configuração global do VSCode `terminal.integrated.inheritEnv`. <0>Saiba mais</0>"

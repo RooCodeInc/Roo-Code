@@ -127,6 +127,7 @@ export interface ExtensionMessage {
 		| "insertTextIntoTextarea"
 		| "dismissedUpsells"
 		| "organizationSwitchResult"
+		| "terminalProfiles"
 	text?: string
 	payload?: any // Add a generic payload for now, can refine later
 	// Checkpoint warning message
@@ -211,6 +212,12 @@ export interface ExtensionMessage {
 	queuedMessages?: QueuedMessage[]
 	list?: string[] // For dismissedUpsells
 	organizationId?: string | null // For organizationSwitchResult
+	profiles?: Array<{
+		name: string
+		displayName: string
+		shellPath?: string
+		isDefault?: boolean
+	}> // For terminalProfiles
 }
 
 export type ExtensionState = Pick<
@@ -270,6 +277,7 @@ export type ExtensionState = Pick<
 	| "terminalZshP10k"
 	| "terminalZdotdir"
 	| "terminalCompressProgressBar"
+	| "terminalPreferredProfile"
 	| "diagnosticsEnabled"
 	| "diffEnabled"
 	| "fuzzyMatchThreshold"

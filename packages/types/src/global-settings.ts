@@ -153,6 +153,7 @@ export const globalSettingsSchema = z.object({
 	terminalZshP10k: z.boolean().optional(),
 	terminalZdotdir: z.boolean().optional(),
 	terminalCompressProgressBar: z.boolean().optional(),
+	terminalPreferredProfile: z.string().optional(),
 
 	diagnosticsEnabled: z.boolean().optional(),
 
