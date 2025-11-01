@@ -150,15 +150,15 @@ describe("git utils", () => {
 				["git --version", { stdout: "git version 2.39.2", stderr: "" }],
 				["git rev-parse --git-dir", { stdout: ".git", stderr: "" }],
 				[
-					'git log -n 10 --format="%H%n%h%n%s%n%an%n%ad" --date=short --grep="test" --regexp-ignore-case',
+					'git log -n 15 --format="%H%n%h%n%s%n%an%n%ad" --date=short --grep="test" --regexp-ignore-case',
 					{ stdout: mockCommitData, stderr: "" },
 				],
 			])
 
 			vitest.mocked(exec).mockImplementation((command: string, options: any, callback: any) => {
-				// Find matching response
+				// Find matching response using simple string contains
 				for (const [cmd, response] of responses) {
-					if (command === cmd) {
+					if (command.includes(cmd.replace(/-n \d+/, "-n 15"))) {
 						callback(null, response)
 						return {} as any
 					}
@@ -182,7 +182,7 @@ describe("git utils", () => {
 			expect(vitest.mocked(exec)).toHaveBeenCalledWith("git --version", {}, expect.any(Function))
 			expect(vitest.mocked(exec)).toHaveBeenCalledWith("git rev-parse --git-dir", { cwd }, expect.any(Function))
 			expect(vitest.mocked(exec)).toHaveBeenCalledWith(
-				'git log -n 10 --format="%H%n%h%n%s%n%an%n%ad" --date=short --grep="test" --regexp-ignore-case',
+				'git log -n 15 --format="%H%n%h%n%s%n%an%n%ad" --date=short --grep="test" --regexp-ignore-case',
 				{ cwd },
 				expect.any(Function),
 			)
@@ -234,24 +234,24 @@ describe("git utils", () => {
 				["git --version", { stdout: "git version 2.39.2", stderr: "" }],
 				["git rev-parse --git-dir", { stdout: ".git", stderr: "" }],
 				[
-					'git log -n 10 --format="%H%n%h%n%s%n%an%n%ad" --date=short --grep="abc123" --regexp-ignore-case',
+					'git log -n 15 --format="%H%n%h%n%s%n%an%n%ad" --date=short --grep="abc123" --regexp-ignore-case',
 					{ stdout: "", stderr: "" },
 				],
 				[
-					'git log -n 10 --format="%H%n%h%n%s%n%an%n%ad" --date=short --author-date-order abc123',
+					'git log -n 15 --format="%H%n%h%n%s%n%an%n%ad" --date=short --author-date-order abc123',
 					{ stdout: mockCommitData, stderr: "" },
 				],
 			])
 
 			vitest.mocked(exec).mockImplementation((command: string, options: any, callback: any) => {
+				// Find matching response using simple string contains
 				for (const [cmd, response] of responses) {
-					if (command === cmd) {
+					if (command.includes(cmd.replace(/-n \d+/, "-n 15"))) {
 						callback(null, response)
 						return {} as any
 					}
 				}
-				callback(new Error("Unexpected command"))
-				return {} as any
+				callback(new Error(`Unexpected command: ${command}`))
 			})
 
 			const result = await searchCommits("abc123", cwd)

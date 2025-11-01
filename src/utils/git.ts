@@ -247,9 +247,9 @@ export async function searchCommits(query: string, cwd: string): Promise<GitComm
 			return []
 		}
 
-		// Search commits by hash or message, limiting to 10 results
+		// Search commits by hash or message, limiting to 15 results
 		const { stdout } = await execAsync(
-			`git log -n 10 --format="%H%n%h%n%s%n%an%n%ad" --date=short ` + `--grep="${query}" --regexp-ignore-case`,
+			`git log -n 15 --format="%H%n%h%n%s%n%an%n%ad" --date=short ` + `--grep="${query}" --regexp-ignore-case`,
 			{ cwd },
 		)
 
@@ -257,7 +257,7 @@ export async function searchCommits(query: string, cwd: string): Promise<GitComm
 		if (!output.trim() && /^[a-f0-9]+$/i.test(query)) {
 			// If no results from grep search and query looks like a hash, try searching by hash
 			const { stdout: hashStdout } = await execAsync(
-				`git log -n 10 --format="%H%n%h%n%s%n%an%n%ad" --date=short ` + `--author-date-order ${query}`,
+				`git log -n 15 --format="%H%n%h%n%s%n%an%n%ad" --date=short ` + `--author-date-order ${query}`,
 				{ cwd },
 			).catch(() => ({ stdout: "" }))
 
