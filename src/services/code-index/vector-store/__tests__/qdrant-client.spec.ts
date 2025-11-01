@@ -542,14 +542,18 @@ describe("QdrantVectorStore", () => {
 			})
 			expect(mockQdrantClientInstance.deleteCollection).not.toHaveBeenCalled()
 
-			// Verify payload index creation
+			// Verify payload index creation - 'type' field first, then pathSegments
+			expect(mockQdrantClientInstance.createPayloadIndex).toHaveBeenCalledWith(expectedCollectionName, {
+				field_name: "type",
+				field_schema: "keyword",
+			})
 			for (let i = 0; i <= 4; i++) {
 				expect(mockQdrantClientInstance.createPayloadIndex).toHaveBeenCalledWith(expectedCollectionName, {
 					field_name: `pathSegments.${i}`,
 					field_schema: "keyword",
 				})
 			}
-			expect(mockQdrantClientInstance.createPayloadIndex).toHaveBeenCalledTimes(5)
+			expect(mockQdrantClientInstance.createPayloadIndex).toHaveBeenCalledTimes(6)
 		})
 		it("should not create a new collection if one exists with matching vectorSize and return false", async () => {
 			// Mock getCollection to return existing collection info with matching vector size
@@ -572,14 +576,18 @@ describe("QdrantVectorStore", () => {
 			expect(mockQdrantClientInstance.createCollection).not.toHaveBeenCalled()
 			expect(mockQdrantClientInstance.deleteCollection).not.toHaveBeenCalled()
 
-			// Verify payload index creation still happens
+			// Verify payload index creation still happens - 'type' field first, then pathSegments
+			expect(mockQdrantClientInstance.createPayloadIndex).toHaveBeenCalledWith(expectedCollectionName, {
+				field_name: "type",
+				field_schema: "keyword",
+			})
 			for (let i = 0; i <= 4; i++) {
 				expect(mockQdrantClientInstance.createPayloadIndex).toHaveBeenCalledWith(expectedCollectionName, {
 					field_name: `pathSegments.${i}`,
 					field_schema: "keyword",
 				})
 			}
-			expect(mockQdrantClientInstance.createPayloadIndex).toHaveBeenCalledTimes(5)
+			expect(mockQdrantClientInstance.createPayloadIndex).toHaveBeenCalledTimes(6)
 		})
 		it("should recreate collection if it exists but vectorSize mismatches and return true", async () => {
 			const differentVectorSize = 768
@@ -625,14 +633,18 @@ describe("QdrantVectorStore", () => {
 				},
 			})
 
-			// Verify payload index creation
+			// Verify payload index creation - 'type' field first, then pathSegments
+			expect(mockQdrantClientInstance.createPayloadIndex).toHaveBeenCalledWith(expectedCollectionName, {
+				field_name: "type",
+				field_schema: "keyword",
+			})
 			for (let i = 0; i <= 4; i++) {
 				expect(mockQdrantClientInstance.createPayloadIndex).toHaveBeenCalledWith(expectedCollectionName, {
 					field_name: `pathSegments.${i}`,
 					field_schema: "keyword",
 				})
 			}
-			expect(mockQdrantClientInstance.createPayloadIndex).toHaveBeenCalledTimes(5)
+			expect(mockQdrantClientInstance.createPayloadIndex).toHaveBeenCalledTimes(6)
 			;(console.warn as any).mockRestore() // Restore console.warn
 		})
 		it("should log warning for non-404 errors but still create collection", async () => {
@@ -646,7 +658,7 @@ describe("QdrantVectorStore", () => {
 			expect(mockQdrantClientInstance.getCollection).toHaveBeenCalledTimes(1)
 			expect(mockQdrantClientInstance.createCollection).toHaveBeenCalledTimes(1)
 			expect(mockQdrantClientInstance.deleteCollection).not.toHaveBeenCalled()
-			expect(mockQdrantClientInstance.createPayloadIndex).toHaveBeenCalledTimes(5)
+			expect(mockQdrantClientInstance.createPayloadIndex).toHaveBeenCalledTimes(6)
 			expect(console.warn).toHaveBeenCalledWith(
 				expect.stringContaining(`Warning during getCollectionInfo for "${expectedCollectionName}"`),
 				genericError.message,
@@ -693,11 +705,16 @@ describe("QdrantVectorStore", () => {
 			expect(result).toBe(true)
 			expect(mockQdrantClientInstance.createCollection).toHaveBeenCalledTimes(1)
 
-			// Verify all payload index creations were attempted
-			expect(mockQdrantClientInstance.createPayloadIndex).toHaveBeenCalledTimes(5)
+			// Verify all payload index creations were attempted (6: type + 5 pathSegments)
+			expect(mockQdrantClientInstance.createPayloadIndex).toHaveBeenCalledTimes(6)
 
-			// Verify warnings were logged for each failed index
-			expect(console.warn).toHaveBeenCalledTimes(5)
+			// Verify warnings were logged for each failed index (now 6)
+			expect(console.warn).toHaveBeenCalledTimes(6)
+			// Verify warning for 'type' index
+			expect(console.warn).toHaveBeenCalledWith(
+				expect.stringContaining(`Could not create payload index for type`),
+				indexError.message,
+			)
 			for (let i = 0; i <= 4; i++) {
 				expect(console.warn).toHaveBeenCalledWith(
 					expect.stringContaining(`Could not create payload index for pathSegments.${i}`),
@@ -826,7 +843,7 @@ describe("QdrantVectorStore", () => {
 			expect(mockQdrantClientInstance.getCollection).toHaveBeenCalledTimes(2)
 			expect(mockQdrantClientInstance.deleteCollection).toHaveBeenCalledTimes(1)
 			expect(mockQdrantClientInstance.createCollection).toHaveBeenCalledTimes(1)
-			expect(mockQdrantClientInstance.createPayloadIndex).toHaveBeenCalledTimes(5)
+			expect(mockQdrantClientInstance.createPayloadIndex).toHaveBeenCalledTimes(6)
 			;(console.warn as any).mockRestore()
 		})
 
@@ -923,7 +940,7 @@ describe("QdrantVectorStore", () => {
 					on_disk: true,
 				},
 			})
-			expect(mockQdrantClientInstance.createPayloadIndex).toHaveBeenCalledTimes(5)
+			expect(mockQdrantClientInstance.createPayloadIndex).toHaveBeenCalledTimes(6)
 			;(console.warn as any).mockRestore()
 		})
 
