@@ -92,21 +92,24 @@ export async function presentAssistantMessage(cline: Task) {
 
 			if (content) {
 				// Have to do this for partial and complete since sending
-				// content in thinking tags to markdown renderer will
+				// content in reasoning tags to markdown renderer will
 				// automatically be removed.
-				// Remove end substrings of <thinking or </thinking (below xml
-				// parsing is only for opening tags).
-				// Tthis is done with the xml parsing below now, but keeping
-				// here for reference.
-				// content = content.replace(/<\/?t(?:h(?:i(?:n(?:k(?:i(?:n(?:g)?)?)?$/, "")
 				//
-				// Remove all instances of <thinking> (with optional line break
-				// after) and </thinking> (with optional line break before).
+				// Remove all instances of reasoning tags: <think>, <thinking>, <reasoning>, <thought>
+				// (with optional line break after opening tags) and their closing tags
+				// (with optional line break before closing tags).
 				// - Needs to be separate since we dont want to remove the line
 				//   break before the first tag.
 				// - Needs to happen before the xml parsing below.
-				content = content.replace(/<thinking>\s?/g, "")
-				content = content.replace(/\s?<\/thinking>/g, "")
+				const reasoningTags = ["think", "thinking", "reasoning", "thought"]
+				reasoningTags.forEach((tag) => {
+					// Remove opening tags with optional line break after
+					const openingRegex = new RegExp(`<${tag}>\\s?`, "g")
+					content = content.replace(openingRegex, "")
+					// Remove closing tags with optional line break before
+					const closingRegex = new RegExp(`\\s?<\\/${tag}>`, "g")
+					content = content.replace(closingRegex, "")
+				})
 
 				// Remove partial XML tag at the very end of the content (for
 				// tool use and thinking tags), Prevents scrollview from
@@ -135,14 +138,20 @@ export async function presentAssistantMessage(cline: Task) {
 						// (letters and underscores only).
 						const isLikelyTagName = /^[a-zA-Z_]+$/.test(tagContent)
 
+						// Check if it's a partial reasoning tag
+						const reasoningTags = ["think", "thinking", "reasoning", "thought"]
+						const isPartialReasoningTag = reasoningTags.some(
+							(tag) => tag.startsWith(tagContent) || tagContent.startsWith(tag),
+						)
+
 						// Preemptively remove < or </ to keep from these
 						// artifacts showing up in chat (also handles closing
-						// thinking tags).
+						// reasoning tags).
 						const isOpeningOrClosing = possibleTag === "<" || possibleTag === "</"
 
 						// If the tag is incomplete and at the end, remove it
 						// from the content.
-						if (isOpeningOrClosing || isLikelyTagName) {
+						if (isOpeningOrClosing || isLikelyTagName || isPartialReasoningTag) {
 							content = content.slice(0, lastOpenBracketIndex).trim()
 						}
 					}

@@ -12,7 +12,7 @@ import {
 
 import type { ApiHandlerOptions } from "../../shared/api"
 
-import { XmlMatcher } from "../../utils/xml-matcher"
+import { ReasoningXmlMatcher } from "../../utils/reasoning-xml-matcher"
 
 import { convertToOpenAiMessages } from "../transform/openai-format"
 import { convertToR1Format } from "../transform/r1-format"
@@ -179,8 +179,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				throw handleOpenAIError(error, this.providerName)
 			}
 
-			const matcher = new XmlMatcher(
-				"think",
+			const matcher = new ReasoningXmlMatcher(
 				(chunk) =>
 					({
 						type: chunk.matched ? "reasoning" : "text",

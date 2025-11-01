@@ -5,7 +5,7 @@ import { ApiStream } from "../transform/stream"
 import { BaseProvider } from "./base-provider"
 import type { ApiHandlerOptions } from "../../shared/api"
 import { getOllamaModels } from "./fetchers/ollama"
-import { XmlMatcher } from "../../utils/xml-matcher"
+import { ReasoningXmlMatcher } from "../../utils/reasoning-xml-matcher"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 
 interface OllamaChatOptions {
@@ -179,8 +179,7 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 			...convertToOllamaMessages(messages),
 		]
 
-		const matcher = new XmlMatcher(
-			"think",
+		const matcher = new ReasoningXmlMatcher(
 			(chunk) =>
 				({
 					type: chunk.matched ? "reasoning" : "text",

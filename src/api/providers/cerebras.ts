@@ -6,7 +6,7 @@ import type { ApiHandlerOptions } from "../../shared/api"
 import { calculateApiCostOpenAI } from "../../shared/cost"
 import { ApiStream } from "../transform/stream"
 import { convertToOpenAiMessages } from "../transform/openai-format"
-import { XmlMatcher } from "../../utils/xml-matcher"
+import { ReasoningXmlMatcher } from "../../utils/reasoning-xml-matcher"
 
 import type { ApiHandlerCreateMessageMetadata, SingleCompletionHandler } from "../index"
 import { BaseProvider } from "./base-provider"
@@ -187,9 +187,8 @@ export class CerebrasHandler extends BaseProvider implements SingleCompletionHan
 				throw new Error(t("common:errors.cerebras.noResponseBody"))
 			}
 
-			// Initialize XmlMatcher to parse <think>...</think> tags
-			const matcher = new XmlMatcher(
-				"think",
+			// Initialize ReasoningXmlMatcher to parse reasoning tags
+			const matcher = new ReasoningXmlMatcher(
 				(chunk) =>
 					({
 						type: chunk.matched ? "reasoning" : "text",
@@ -228,7 +227,7 @@ export class CerebrasHandler extends BaseProvider implements SingleCompletionHan
 								if (parsed.choices?.[0]?.delta?.content) {
 									const content = parsed.choices[0].delta.content
 
-									// Use XmlMatcher to parse <think>...</think> tags
+									// Use ReasoningXmlMatcher to parse reasoning tags
 									for (const chunk of matcher.update(content)) {
 										yield chunk
 									}

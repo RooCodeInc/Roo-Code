@@ -1,9 +1,14 @@
-import { DEEP_SEEK_DEFAULT_TEMPERATURE, type FeatherlessModelId, featherlessDefaultModelId, featherlessModels } from "@roo-code/types"
+import {
+	DEEP_SEEK_DEFAULT_TEMPERATURE,
+	type FeatherlessModelId,
+	featherlessDefaultModelId,
+	featherlessModels,
+} from "@roo-code/types"
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 
 import type { ApiHandlerOptions } from "../../shared/api"
-import { XmlMatcher } from "../../utils/xml-matcher"
+import { ReasoningXmlMatcher } from "../../utils/reasoning-xml-matcher"
 import { convertToR1Format } from "../transform/r1-format"
 import { convertToOpenAiMessages } from "../transform/openai-format"
 import { ApiStream } from "../transform/stream"
@@ -53,8 +58,7 @@ export class FeatherlessHandler extends BaseOpenAiCompatibleProvider<Featherless
 				messages: convertToR1Format([{ role: "user", content: systemPrompt }, ...messages]),
 			})
 
-			const matcher = new XmlMatcher(
-				"think",
+			const matcher = new ReasoningXmlMatcher(
 				(chunk) =>
 					({
 						type: chunk.matched ? "reasoning" : "text",
