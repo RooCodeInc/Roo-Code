@@ -39,6 +39,7 @@ export class OpenAICompatibleEmbedder implements IEmbedder {
 	private readonly apiKey: string
 	private readonly isFullUrl: boolean
 	private readonly maxItemTokens: number
+	private readonly providerType: "deepinfra" | "standard"
 
 	// Global rate limiting state shared across all instances
 	private static globalRateLimitState = {
@@ -82,7 +83,23 @@ export class OpenAICompatibleEmbedder implements IEmbedder {
 		this.defaultModelId = modelId || getDefaultModelId("openai-compatible")
 		// Cache the URL type check for performance
 		this.isFullUrl = this.isFullEndpointUrl(baseUrl)
+		// Cache the provider type detection for performance
+		this.providerType = this.detectProviderType(baseUrl)
 		this.maxItemTokens = maxItemTokens || MAX_ITEM_TOKENS
+	}
+
+	/**
+	 * Detects the provider type based on the URL pattern.
+	 * DeepInfra requires 'float' encoding format while others use 'base64'.
+	 * @param url The API URL to analyze
+	 * @returns 'deepinfra' for DeepInfra endpoints, 'standard' for others
+	 */
+	private detectProviderType(url: string): "deepinfra" | "standard" {
+		// DeepInfra URLs contain 'deepinfra.com' or 'deepinfra.ai'
+		const deepInfraPatterns = [/deepinfra\.com/i, /deepinfra\.ai/i]
+
+		const isDeepInfra = deepInfraPatterns.some((pattern) => pattern.test(url))
+		return isDeepInfra ? "deepinfra" : "standard"
 	}
 
 	/**
@@ -204,6 +221,9 @@ export class OpenAICompatibleEmbedder implements IEmbedder {
 		batchTexts: string[],
 		model: string,
 	): Promise<OpenAIEmbeddingResponse> {
+		// Use appropriate encoding format based on provider
+		const encodingFormat = this.providerType === "deepinfra" ? "float" : "base64"
+
 		const response = await fetch(url, {
 			method: "POST",
 			headers: {
@@ -216,7 +236,7 @@ export class OpenAICompatibleEmbedder implements IEmbedder {
 			body: JSON.stringify({
 				input: batchTexts,
 				model: model,
-				encoding_format: "base64",
+				encoding_format: encodingFormat,
 			}),
 		})
 
@@ -259,6 +279,8 @@ export class OpenAICompatibleEmbedder implements IEmbedder {
 	): Promise<{ embeddings: number[][]; usage: { promptTokens: number; totalTokens: number } }> {
 		// Use cached value for performance
 		const isFullUrl = this.isFullUrl
+		// Use appropriate encoding format based on provider
+		const encodingFormat = this.providerType === "deepinfra" ? "float" : "base64"
 
 		for (let attempts = 0; attempts < MAX_RETRIES; attempts++) {
 			// Check global rate limit before attempting request
@@ -272,19 +294,18 @@ export class OpenAICompatibleEmbedder implements IEmbedder {
 					response = await this.makeDirectEmbeddingRequest(this.baseUrl, batchTexts, model)
 				} else {
 					// Use OpenAI SDK for base URLs
+					// DeepInfra requires 'float' encoding, others use 'base64'
 					response = (await this.embeddingsClient.embeddings.create({
 						input: batchTexts,
 						model: model,
-						// OpenAI package (as of v4.78.1) has a parsing issue that truncates embedding dimensions to 256
-						// when processing numeric arrays, which breaks compatibility with models using larger dimensions.
-						// By requesting base64 encoding, we bypass the package's parser and handle decoding ourselves.
-						encoding_format: "base64",
+						encoding_format: encodingFormat as any,
 					})) as OpenAIEmbeddingResponse
 				}
 
-				// Convert base64 embeddings to float32 arrays
+				// Process embeddings based on response format
 				const processedEmbeddings = response.data.map((item: EmbeddingItem) => {
 					if (typeof item.embedding === "string") {
+						// Base64 encoded response (standard OpenAI-compatible)
 						const buffer = Buffer.from(item.embedding, "base64")
 
 						// Create Float32Array view over the buffer
@@ -294,7 +315,26 @@ export class OpenAICompatibleEmbedder implements IEmbedder {
 							...item,
 							embedding: Array.from(float32Array),
 						}
+					} else if (Array.isArray(item.embedding)) {
+						// Float array response (DeepInfra)
+						// Ensure all values are valid numbers
+						const cleanedEmbedding = item.embedding.map((v: any) => {
+							const num = typeof v === "number" ? v : Number(v)
+							if (!isFinite(num)) {
+								console.error(
+									`[OpenAICompatibleEmbedder] WARNING: Invalid embedding value detected: ${v}`,
+								)
+								return 0 // Replace invalid values with 0
+							}
+							return num
+						})
+						return {
+							...item,
+							embedding: cleanedEmbedding,
+						}
 					}
+					// Fallback for unexpected formats
+					console.error(`[OpenAICompatibleEmbedder] Unexpected embedding format: ${typeof item.embedding}`)
 					return item
 				})
 
@@ -366,6 +406,8 @@ export class OpenAICompatibleEmbedder implements IEmbedder {
 				// Test with a minimal embedding request
 				const testTexts = ["test"]
 				const modelToUse = this.defaultModelId
+				// Use appropriate encoding format based on provider
+				const encodingFormat = this.providerType === "deepinfra" ? "float" : "base64"
 
 				let response: OpenAIEmbeddingResponse
 
@@ -377,7 +419,7 @@ export class OpenAICompatibleEmbedder implements IEmbedder {
 					response = (await this.embeddingsClient.embeddings.create({
 						input: testTexts,
 						model: modelToUse,
-						encoding_format: "base64",
+						encoding_format: encodingFormat as any,
 					})) as OpenAIEmbeddingResponse
 				}
 
