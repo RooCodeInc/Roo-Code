@@ -2717,7 +2717,7 @@ describe("ClineProvider - Router Models", () => {
 				lmstudio: {},
 				"vercel-ai-gateway": mockModels,
 				huggingface: {},
-				"io-intelligence": {},
+				"io-intelligence": mockModels,
 			},
 		})
 	})
@@ -2751,6 +2751,7 @@ describe("ClineProvider - Router Models", () => {
 			.mockResolvedValueOnce(mockModels) // vercel-ai-gateway success
 			.mockResolvedValueOnce(mockModels) // deepinfra success
 			.mockResolvedValueOnce(mockModels) // roo success
+			.mockResolvedValueOnce(mockModels) // io-intelligence success
 			.mockRejectedValueOnce(new Error("LiteLLM connection failed")) // litellm fail
 
 		await messageHandler({ type: "requestRouterModels" })
@@ -2770,7 +2771,7 @@ describe("ClineProvider - Router Models", () => {
 				litellm: {},
 				"vercel-ai-gateway": mockModels,
 				huggingface: {},
-				"io-intelligence": {},
+				"io-intelligence": mockModels,
 			},
 		})
 
@@ -2885,7 +2886,7 @@ describe("ClineProvider - Router Models", () => {
 				lmstudio: {},
 				"vercel-ai-gateway": mockModels,
 				huggingface: {},
-				"io-intelligence": {},
+				"io-intelligence": mockModels,
 			},
 		})
 	})

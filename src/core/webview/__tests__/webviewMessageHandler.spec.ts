@@ -253,7 +253,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 				lmstudio: {},
 				"vercel-ai-gateway": mockModels,
 				huggingface: {},
-				"io-intelligence": {},
+				"io-intelligence": mockModels,
 			},
 		})
 	})
@@ -345,7 +345,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 				lmstudio: {},
 				"vercel-ai-gateway": mockModels,
 				huggingface: {},
-				"io-intelligence": {},
+				"io-intelligence": mockModels,
 			},
 		})
 	})
@@ -369,6 +369,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 			.mockResolvedValueOnce(mockModels) // vercel-ai-gateway
 			.mockResolvedValueOnce(mockModels) // deepinfra
 			.mockResolvedValueOnce(mockModels) // roo
+			.mockResolvedValueOnce(mockModels) // io-intelligence
 			.mockRejectedValueOnce(new Error("LiteLLM connection failed")) // litellm
 
 		await webviewMessageHandler(mockClineProvider, {
@@ -390,7 +391,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 				lmstudio: {},
 				"vercel-ai-gateway": mockModels,
 				huggingface: {},
-				"io-intelligence": {},
+				"io-intelligence": mockModels,
 			},
 		})
 
@@ -427,6 +428,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 			.mockRejectedValueOnce(new Error("Vercel AI Gateway error")) // vercel-ai-gateway
 			.mockRejectedValueOnce(new Error("DeepInfra API error")) // deepinfra
 			.mockRejectedValueOnce(new Error("Roo API error")) // roo
+			.mockRejectedValueOnce(new Error("IO Intelligence API error")) // io-intelligence
 			.mockRejectedValueOnce(new Error("LiteLLM connection failed")) // litellm
 
 		await webviewMessageHandler(mockClineProvider, {
@@ -481,6 +483,13 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 			success: false,
 			error: "Roo API error",
 			values: { provider: "roo" },
+		})
+
+		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
+			type: "singleRouterModelFetchResponse",
+			success: false,
+			error: "IO Intelligence API error",
+			values: { provider: "io-intelligence" },
 		})
 
 		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
