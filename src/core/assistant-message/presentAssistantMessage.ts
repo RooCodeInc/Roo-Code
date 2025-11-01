@@ -149,7 +149,30 @@ export async function presentAssistantMessage(cline: Task) {
 				}
 			}
 
-			await cline.say("text", content, undefined, block.partial)
+			// Attach minimal telemetry metadata about function_calls normalization to the text message (no PII)
+			const normalized = cline.assistantMessageParser.functionCallsNormalized
+			const toolNamesEncountered = Array.from(
+				cline.assistantMessageParser.functionCallsToolNamesEncountered || [],
+			)
+			const modelIdForMeta = cline.api.getModel().id
+
+			await cline.say(
+				"text",
+				content,
+				undefined,
+				block.partial,
+				undefined,
+				undefined,
+				normalized
+					? {
+							metadata: {
+								function_calls_normalized: true,
+								toolNamesEncountered,
+								modelId: modelIdForMeta,
+							},
+						}
+					: undefined,
+			)
 			break
 		}
 		case "tool_use":

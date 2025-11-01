@@ -1,10 +1,14 @@
 import { type ToolName, toolNames } from "@roo-code/types"
 
 import { TextContent, ToolUse, ToolParamName, toolParamNames } from "../../shared/tools"
+import { normalizeFunctionCallsXml } from "./functionCallsNormalizer"
 
 export type AssistantMessageContent = TextContent | ToolUse
 
 export function parseAssistantMessage(assistantMessage: string): AssistantMessageContent[] {
+	// Pre-normalize VSCode-LM function_calls/invoke XML to native tool XML
+	assistantMessage = normalizeFunctionCallsXml(assistantMessage)
+
 	let contentBlocks: AssistantMessageContent[] = []
 	let currentTextContent: TextContent | undefined = undefined
 	let currentTextContentStartIndex = 0
@@ -24,12 +28,15 @@ export function parseAssistantMessage(assistantMessage: string): AssistantMessag
 			const paramClosingTag = `</${currentParamName}>`
 			if (currentParamValue.endsWith(paramClosingTag)) {
 				// End of param value.
-				// Don't trim content parameters to preserve newlines, but strip first and last newline only
+				// Preserve args exactly; content preserves newlines except first/last; others trimmed
 				const paramValue = currentParamValue.slice(0, -paramClosingTag.length)
-				currentToolUse.params[currentParamName] =
-					currentParamName === "content"
-						? paramValue.replace(/^\n/, "").replace(/\n$/, "")
-						: paramValue.trim()
+				if (currentParamName === "content") {
+					currentToolUse.params[currentParamName] = paramValue.replace(/^\n/, "").replace(/\n$/, "")
+				} else if (currentParamName === "args") {
+					currentToolUse.params[currentParamName] = paramValue
+				} else {
+					currentToolUse.params[currentParamName] = paramValue.trim()
+				}
 				currentParamName = undefined
 				continue
 			} else {
@@ -147,8 +154,13 @@ export function parseAssistantMessage(assistantMessage: string): AssistantMessag
 			// Tool call has a parameter that was not completed.
 			// Don't trim content parameters to preserve newlines, but strip first and last newline only
 			const paramValue = accumulator.slice(currentParamValueStartIndex)
-			currentToolUse.params[currentParamName] =
-				currentParamName === "content" ? paramValue.replace(/^\n/, "").replace(/\n$/, "") : paramValue.trim()
+			if (currentParamName === "content") {
+				currentToolUse.params[currentParamName] = paramValue.replace(/^\n/, "").replace(/\n$/, "")
+			} else if (currentParamName === "args") {
+				currentToolUse.params[currentParamName] = paramValue
+			} else {
+				currentToolUse.params[currentParamName] = paramValue.trim()
+			}
 		}
 
 		contentBlocks.push(currentToolUse)

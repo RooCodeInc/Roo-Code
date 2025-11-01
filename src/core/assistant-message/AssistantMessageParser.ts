@@ -1,6 +1,7 @@
 import { type ToolName, toolNames } from "@roo-code/types"
 import { TextContent, ToolUse, ToolParamName, toolParamNames } from "../../shared/tools"
 import { AssistantMessageContent } from "./parseAssistantMessage"
+import { FunctionCallsStreamingNormalizer } from "./functionCallsNormalizer"
 
 /**
  * Parser for assistant messages. Maintains state between chunks
@@ -17,6 +18,11 @@ export class AssistantMessageParser {
 	private readonly MAX_ACCUMULATOR_SIZE = 1024 * 1024 // 1MB limit
 	private readonly MAX_PARAM_LENGTH = 1024 * 100 // 100KB per parameter limit
 	private accumulator = ""
+	// VSCode-LM function_calls/invoke streaming normalizer
+	private normalizer = new FunctionCallsStreamingNormalizer()
+	// Minimal telemetry flags (readable by caller if needed)
+	public functionCallsNormalized = false
+	public functionCallsToolNamesEncountered = new Set<string>()
 
 	/**
 	 * Initialize a new AssistantMessageParser instance.
@@ -37,6 +43,10 @@ export class AssistantMessageParser {
 		this.currentParamName = undefined
 		this.currentParamValueStartIndex = 0
 		this.accumulator = ""
+		// Reset normalizer and telemetry
+		this.normalizer.reset()
+		this.functionCallsNormalized = false
+		this.functionCallsToolNamesEncountered.clear()
 	}
 
 	/**
@@ -52,14 +62,24 @@ export class AssistantMessageParser {
 	 * @param chunk The new chunk of text to process.
 	 */
 	public processChunk(chunk: string): AssistantMessageContent[] {
-		if (this.accumulator.length + chunk.length > this.MAX_ACCUMULATOR_SIZE) {
+		// Pre-normalize VSCode-LM function_calls/invoke XML to native tool XML
+		const normalizedChunk = this.normalizer.process(chunk)
+		// Collect minimal telemetry
+		if (this.normalizer.normalizedInLastChunk) {
+			this.functionCallsNormalized = true
+		}
+		for (const name of this.normalizer.toolNamesEncountered) {
+			this.functionCallsToolNamesEncountered.add(name)
+		}
+
+		if (this.accumulator.length + normalizedChunk.length > this.MAX_ACCUMULATOR_SIZE) {
 			throw new Error("Assistant message exceeds maximum allowed size")
 		}
 		// Store the current length of the accumulator before adding the new chunk
 		const accumulatorStartLength = this.accumulator.length
 
-		for (let i = 0; i < chunk.length; i++) {
-			const char = chunk[i]
+		for (let i = 0; i < normalizedChunk.length; i++) {
+			const char = normalizedChunk[i]
 			this.accumulator += char
 			const currentPosition = accumulatorStartLength + i
 
@@ -78,10 +98,16 @@ export class AssistantMessageParser {
 					// End of param value.
 					// Do not trim content parameters to preserve newlines, but strip first and last newline only
 					const paramValue = currentParamValue.slice(0, -paramClosingTag.length)
-					this.currentToolUse.params[this.currentParamName] =
-						this.currentParamName === "content"
-							? paramValue.replace(/^\n/, "").replace(/\n$/, "")
-							: paramValue.trim()
+					if (this.currentParamName === "content") {
+						this.currentToolUse.params[this.currentParamName] = paramValue
+							.replace(/^\n/, "")
+							.replace(/\n$/, "")
+					} else if (this.currentParamName === "args") {
+						// Preserve args exactly, including whitespace/newlines
+						this.currentToolUse.params[this.currentParamName] = paramValue
+					} else {
+						this.currentToolUse.params[this.currentParamName] = paramValue.trim()
+					}
 					this.currentParamName = undefined
 					continue
 				} else {

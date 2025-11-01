@@ -392,3 +392,69 @@ describe("AssistantMessageParser (streaming)", () => {
 		})
 	})
 })
+
+// VSCode-LM function_calls normalizer tests (streaming)
+describe("VSCode-LM function_calls normalizer (streaming)", () => {
+	it("should normalize single invoke with args preserved", () => {
+		const parser = new AssistantMessageParser()
+		const argsXml = "<file><path>src/a.ts</path></file>"
+		const message = `<function_calls><invoke name="read_file"><args>${argsXml}</args></invoke></function_calls>`
+		const result = streamChunks(parser, message).filter((block) => !isEmptyTextContent(block))
+		expect(result).toHaveLength(1)
+		const toolUse = result[0] as ToolUse
+		expect(toolUse.type).toBe("tool_use")
+		expect(toolUse.name).toBe("read_file")
+		expect(toolUse.params.args).toBe(argsXml)
+		expect(toolUse.partial).toBe(false)
+	})
+
+	it("should handle multiple invokes with surrounding text", () => {
+		const parser = new AssistantMessageParser()
+		const args1 = "<file><path>file1.ts</path></file>"
+		const args2 = "<file><path>file2.ts</path></file>"
+		const message = `Before <function_calls><invoke name="read_file"><args>${args1}</args></invoke></function_calls> Middle <function_calls><invoke name="read_file"><args>${args2}</args></invoke></function_calls> After`
+		const result = streamChunks(parser, message)
+		expect(result).toHaveLength(5)
+
+		expect(result[0].type).toBe("text")
+		expect((result[0] as TextContent).content).toBe("Before")
+
+		const toolUse1 = result[1] as ToolUse
+		expect(toolUse1.type).toBe("tool_use")
+		expect(toolUse1.name).toBe("read_file")
+		expect(toolUse1.params.args).toBe(args1)
+
+		expect(result[2].type).toBe("text")
+		expect((result[2] as TextContent).content).toBe("Middle")
+
+		const toolUse2 = result[3] as ToolUse
+		expect(toolUse2.type).toBe("tool_use")
+		expect(toolUse2.name).toBe("read_file")
+		expect(toolUse2.params.args).toBe(args2)
+
+		expect(result[4].type).toBe("text")
+		expect((result[4] as TextContent).content).toBe("After")
+	})
+
+	it("should pass through unknown invoke as text and not create tool_use", () => {
+		const parser = new AssistantMessageParser()
+		const message = `<function_calls><invoke name="unknown_tool"><args><x>y</x></args></invoke></function_calls>`
+		const result = streamChunks(parser, message)
+		expect(result).toHaveLength(1)
+		const text = result[0] as TextContent
+		expect(text.type).toBe("text")
+		expect(text.content).toContain('<invoke name="unknown_tool">')
+	})
+
+	it("should preserve multi-file args xml exactly", () => {
+		const parser = new AssistantMessageParser()
+		const argsXml = "<file><path>a.ts</path></file><file><path>b.ts</path></file>"
+		const message = `<function_calls><invoke name="read_file"><args>${argsXml}</args></invoke></function_calls>`
+		const result = streamChunks(parser, message).filter((block) => !isEmptyTextContent(block))
+		expect(result).toHaveLength(1)
+		const toolUse = result[0] as ToolUse
+		expect(toolUse.type).toBe("tool_use")
+		expect(toolUse.name).toBe("read_file")
+		expect(toolUse.params.args).toBe(argsXml)
+	})
+})
