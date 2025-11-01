@@ -314,6 +314,7 @@
 		"countdownDisplay": "{{count}}с"
 	},
 	"browser": {
+		"session": "Сеанс браузера",
 		"rooWantsToUse": "Roo хочет использовать браузер",
 		"consoleLogs": "Логи консоли",
 		"noNewLogs": "(Новых логов нет)",
@@ -330,8 +331,10 @@
 			"launch": "Открыть браузер по адресу {{url}}",
 			"click": "Клик ({{coordinate}})",
 			"type": "Ввести \"{{text}}\"",
+			"press": "Нажать {{key}}",
 			"scrollDown": "Прокрутить вниз",
 			"scrollUp": "Прокрутить вверх",
+			"hover": "Навести ({{coordinate}})",
 			"close": "Закрыть браузер"
 		}
 	},

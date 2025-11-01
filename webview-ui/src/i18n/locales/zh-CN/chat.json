@@ -314,6 +314,7 @@
 		"socialLinks": "在 <xLink>X</xLink>、<discordLink>Discord</discordLink> 或 <redditLink>r/RooCode</redditLink> 上关注我们 🚀"
 	},
 	"browser": {
+		"session": "浏览器会话",
 		"rooWantsToUse": "Roo想使用浏览器",
 		"consoleLogs": "控制台日志",
 		"noNewLogs": "(没有新日志)",
@@ -330,8 +331,10 @@
 			"launch": "访问 {{url}}",
 			"click": "点击 ({{coordinate}})",
 			"type": "输入 \"{{text}}\"",
+			"press": "按 {{key}}",
 			"scrollDown": "向下滚动",
 			"scrollUp": "向上滚动",
+			"hover": "悬停 ({{coordinate}})",
 			"close": "关闭浏览器"
 		}
 	},

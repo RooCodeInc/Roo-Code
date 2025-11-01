@@ -7,6 +7,40 @@ import {
 	ClineSayBrowserAction,
 } from "../../shared/ExtensionMessage"
 import { formatResponse } from "../prompts/responses"
+import { Anthropic } from "@anthropic-ai/sdk"
+
+/**
+ * Parses coordinate string and scales from image dimensions to viewport dimensions
+ * The LLM examines the screenshot it receives (which may be downscaled by the API)
+ * and reports coordinates in format: "x,y@widthxheight" where widthxheight is what the LLM observed
+ *
+ * Format: "x,y@widthxheight" (required)
+ * Returns: scaled coordinate string "x,y" in viewport coordinates
+ * Throws: Error if format is invalid or missing image dimensions
+ */
+function scaleCoordinate(coordinate: string, viewportWidth: number, viewportHeight: number): string {
+	// Parse coordinate with required image dimensions (accepts both 'x' and ',' as dimension separators)
+	const match = coordinate.match(/^\s*(\d+)\s*,\s*(\d+)\s*@\s*(\d+)\s*[x,]\s*(\d+)\s*$/)
+
+	if (!match) {
+		throw new Error(
+			`Invalid coordinate format: "${coordinate}". ` +
+				`Expected format: "x,y@widthxheight" (e.g., "450,300@1024x768")`,
+		)
+	}
+
+	const [, xStr, yStr, imgWidthStr, imgHeightStr] = match
+	const x = parseInt(xStr, 10)
+	const y = parseInt(yStr, 10)
+	const imgWidth = parseInt(imgWidthStr, 10)
+	const imgHeight = parseInt(imgHeightStr, 10)
+
+	// Scale coordinates from image dimensions to viewport dimensions
+	const scaledX = Math.round((x / imgWidth) * viewportWidth)
+	const scaledY = Math.round((y / imgHeight) * viewportHeight)
+
+	return `${scaledX},${scaledY}`
+}
 
 export async function browserActionTool(
 	cline: Task,
@@ -29,7 +63,7 @@ export async function browserActionTool(
 			cline.consecutiveMistakeCount++
 			cline.recordToolError("browser_action")
 			pushToolResult(await cline.sayAndCreateMissingParamError("browser_action", "action"))
-			await cline.browserSession.closeBrowser()
+			// Do not close the browser on parameter validation errors
 		}
 
 		return
@@ -46,6 +80,7 @@ export async function browserActionTool(
 						action: action as BrowserAction,
 						coordinate: removeClosingTag("coordinate", coordinate),
 						text: removeClosingTag("text", text),
+						size: removeClosingTag("size", size),
 					} satisfies ClineSayBrowserAction),
 					undefined,
 					block.partial,
@@ -61,7 +96,7 @@ export async function browserActionTool(
 					cline.consecutiveMistakeCount++
 					cline.recordToolError("browser_action")
 					pushToolResult(await cline.sayAndCreateMissingParamError("browser_action", "url"))
-					await cline.browserSession.closeBrowser()
+					// Do not close the browser on parameter validation errors
 					return
 				}
 
@@ -75,27 +110,63 @@ export async function browserActionTool(
 				// NOTE: It's okay that we call cline message since the partial inspect_site is finished streaming.
 				// The only scenario we have to avoid is sending messages WHILE a partial message exists at the end of the messages array.
 				// For example the api_req_finished message would interfere with the partial message, so we needed to remove that.
-				// await cline.say("inspect_site_result", "") // No result, starts the loading spinner waiting for result
-				await cline.say("browser_action_result", "") // Starts loading spinner
+
+				// Launch browser first (this triggers "Browser session opened" status message)
 				await cline.browserSession.launchBrowser()
+
+				// Create browser_action say message AFTER launching so status appears first
+				await cline.say(
+					"browser_action",
+					JSON.stringify({
+						action: "launch" as BrowserAction,
+						text: url,
+					} satisfies ClineSayBrowserAction),
+					undefined,
+					false,
+				)
+
 				browserActionResult = await cline.browserSession.navigateToUrl(url)
 			} else {
+				// Variables to hold validated and processed parameters
+				let processedCoordinate = coordinate
+
 				if (action === "click" || action === "hover") {
 					if (!coordinate) {
 						cline.consecutiveMistakeCount++
 						cline.recordToolError("browser_action")
 						pushToolResult(await cline.sayAndCreateMissingParamError("browser_action", "coordinate"))
-						await cline.browserSession.closeBrowser()
+						// Do not close the browser on parameter validation errors
 						return // can't be within an inner switch
+					}
+
+					// Get viewport dimensions from the browser session
+					const viewportSize = cline.browserSession.getViewportSize()
+					const viewportWidth = viewportSize.width || 900 // default to 900 if not available
+					const viewportHeight = viewportSize.height || 600 // default to 600 if not available
+
+					// Scale coordinate from image dimensions to viewport dimensions
+					try {
+						processedCoordinate = scaleCoordinate(coordinate, viewportWidth, viewportHeight)
+					} catch (error) {
+						cline.consecutiveMistakeCount++
+						cline.recordToolError("browser_action")
+						pushToolResult(
+							await cline.sayAndCreateMissingParamError(
+								"browser_action",
+								"coordinate",
+								error instanceof Error ? error.message : String(error),
+							),
+						)
+						return
 					}
 				}
 
-				if (action === "type") {
+				if (action === "type" || action === "press") {
 					if (!text) {
 						cline.consecutiveMistakeCount++
 						cline.recordToolError("browser_action")
 						pushToolResult(await cline.sayAndCreateMissingParamError("browser_action", "text"))
-						await cline.browserSession.closeBrowser()
+						// Do not close the browser on parameter validation errors
 						return
 					}
 				}
@@ -105,7 +176,7 @@ export async function browserActionTool(
 						cline.consecutiveMistakeCount++
 						cline.recordToolError("browser_action")
 						pushToolResult(await cline.sayAndCreateMissingParamError("browser_action", "size"))
-						await cline.browserSession.closeBrowser()
+						// Do not close the browser on parameter validation errors
 						return
 					}
 				}
@@ -118,6 +189,7 @@ export async function browserActionTool(
 						action: action as BrowserAction,
 						coordinate,
 						text,
+						size,
 					} satisfies ClineSayBrowserAction),
 					undefined,
 					false,
@@ -125,13 +197,16 @@ export async function browserActionTool(
 
 				switch (action) {
 					case "click":
-						browserActionResult = await cline.browserSession.click(coordinate!)
+						browserActionResult = await cline.browserSession.click(processedCoordinate!)
 						break
 					case "hover":
-						browserActionResult = await cline.browserSession.hover(coordinate!)
+						browserActionResult = await cline.browserSession.hover(processedCoordinate!)
 						break
 					case "type":
 						browserActionResult = await cline.browserSession.type(text!)
+						break
+					case "press":
+						browserActionResult = await cline.browserSession.press(text!)
 						break
 					case "scroll_down":
 						browserActionResult = await cline.browserSession.scrollDown()
@@ -153,21 +228,48 @@ export async function browserActionTool(
 				case "click":
 				case "hover":
 				case "type":
+				case "press":
 				case "scroll_down":
 				case "scroll_up":
-				case "resize":
+				case "resize": {
 					await cline.say("browser_action_result", JSON.stringify(browserActionResult))
 
-					pushToolResult(
-						formatResponse.toolResult(
-							`The browser action has been executed. The console logs and screenshot have been captured for your analysis.\n\nConsole logs:\n${
-								browserActionResult?.logs || "(No new logs)"
-							}\n\n(REMEMBER: if you need to proceed to using non-\`browser_action\` tools or launch a new browser, you MUST first close cline browser. For example, if after analyzing the logs and screenshot you need to edit a file, you must first close the browser before you can use the write_to_file tool.)`,
-							browserActionResult?.screenshot ? [browserActionResult.screenshot] : [],
-						),
-					)
+					const images = browserActionResult?.screenshot ? [browserActionResult.screenshot] : []
+
+					let messageText = `The browser action has been executed.`
+
+					messageText += `\n\n**CRITICAL**: When providing click/hover coordinates:`
+					messageText += `\n1. Screenshot dimensions != Browser viewport dimensions`
+					messageText += `\n2. Measure x,y on the screenshot image you see below`
+					messageText += `\n3. Use format: <coordinate>x,y@WIDTHxHEIGHT</coordinate> where WIDTHxHEIGHT is the EXACT pixel size of the screenshot image`
+					messageText += `\n4. Never use the browser viewport size for WIDTHxHEIGHT - it is only for reference and is often larger than the screenshot`
+					messageText += `\n5. Screenshots are often downscaled - always use the dimensions you see in the image`
+					messageText += `\nExample: Viewport 1280x800, screenshot 1000x625, click (500,300) -> <coordinate>500,300@1000x625</coordinate>`
+
+					// Include browser viewport dimensions (for reference only)
+					if (browserActionResult?.viewportWidth && browserActionResult?.viewportHeight) {
+						messageText += `\n\nBrowser viewport: ${browserActionResult.viewportWidth}x${browserActionResult.viewportHeight}`
+					}
+
+					// Include cursor position if available
+					if (browserActionResult?.currentMousePosition) {
+						messageText += `\nCursor position: ${browserActionResult.currentMousePosition}`
+					}
+
+					messageText += `\n\nConsole logs:\n${browserActionResult?.logs || "(No new logs)"}\n`
+
+					if (images.length > 0) {
+						const blocks = [
+							...formatResponse.imageBlocks(images),
+							{ type: "text", text: messageText } as Anthropic.TextBlockParam,
+						]
+						pushToolResult(blocks)
+					} else {
+						pushToolResult(messageText)
+					}
 
 					break
+				}
 				case "close":
 					pushToolResult(
 						formatResponse.toolResult(
@@ -181,7 +283,7 @@ export async function browserActionTool(
 			return
 		}
 	} catch (error) {
-		await cline.browserSession.closeBrowser() // if any error occurs, the browser session is terminated
+		// Keep the browser session alive on errors; report the error without terminating the session
 		await handleError("executing browser action", error)
 		return
 	}

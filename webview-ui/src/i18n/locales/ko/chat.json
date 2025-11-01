@@ -313,6 +313,7 @@
 		"socialLinks": "<xLink>X</xLink>, <discordLink>Discord</discordLink>, 또는 <redditLink>r/RooCode</redditLink>에서 만나요 🚀"
 	},
 	"browser": {
+		"session": "브라우저 세션",
 		"rooWantsToUse": "Roo가 브라우저를 사용하고 싶어합니다",
 		"consoleLogs": "콘솔 로그",
 		"noNewLogs": "(새 로그 없음)",
@@ -329,8 +330,10 @@
 			"launch": "{{url}}에서 브라우저 실행",
 			"click": "클릭 ({{coordinate}})",
 			"type": "입력 \"{{text}}\"",
+			"press": "{{key}} 누르기",
 			"scrollDown": "아래로 스크롤",
 			"scrollUp": "위로 스크롤",
+			"hover": "가리키기 ({{coordinate}})",
 			"close": "브라우저 닫기"
 		}
 	},

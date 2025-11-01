@@ -313,6 +313,7 @@
 		"socialLinks": "<xLink>X</xLink>、<discordLink>Discord</discordLink>、または<redditLink>r/RooCode</redditLink>でフォローしてください 🚀"
 	},
 	"browser": {
+		"session": "ブラウザセッション",
 		"rooWantsToUse": "Rooはブラウザを使用したい",
 		"consoleLogs": "コンソールログ",
 		"noNewLogs": "(新しいログはありません)",
@@ -329,8 +330,10 @@
 			"launch": "{{url}} でブラウザを起動",
 			"click": "クリック ({{coordinate}})",
 			"type": "入力 \"{{text}}\"",
+			"press": "{{key}}を押す",
 			"scrollDown": "下にスクロール",
 			"scrollUp": "上にスクロール",
+			"hover": "ホバー ({{coordinate}})",
 			"close": "ブラウザを閉じる"
 		}
 	},

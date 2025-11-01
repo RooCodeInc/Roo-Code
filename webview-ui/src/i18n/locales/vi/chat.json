@@ -314,6 +314,7 @@
 		"socialLinks": "Tham gia với chúng tôi trên <xLink>X</xLink>, <discordLink>Discord</discordLink>, hoặc <redditLink>r/RooCode</redditLink> 🚀"
 	},
 	"browser": {
+		"session": "Phiên trình duyệt",
 		"rooWantsToUse": "Roo muốn sử dụng trình duyệt",
 		"consoleLogs": "Nhật ký bảng điều khiển",
 		"noNewLogs": "(Không có nhật ký mới)",
@@ -330,8 +331,10 @@
 			"launch": "Khởi chạy trình duyệt tại {{url}}",
 			"click": "Nhấp ({{coordinate}})",
 			"type": "Gõ \"{{text}}\"",
+			"press": "Nhấn {{key}}",
 			"scrollDown": "Cuộn xuống",
 			"scrollUp": "Cuộn lên",
+			"hover": "Di chuột ({{coordinate}})",
 			"close": "Đóng trình duyệt"
 		}
 	},

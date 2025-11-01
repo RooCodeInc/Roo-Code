@@ -244,6 +244,38 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 		}
 	}
 
+	// Add browser session status - Always show to prevent LLM from trying browser actions when no session is active
+	const isBrowserActive = cline.browserSession.isSessionActive()
+
+	// Build viewport info for status (prefer actual viewport if available, else fallback to configured setting)
+	const configuredViewport = (state?.browserViewportSize as string | undefined) ?? "900x600"
+	let configuredWidth: number | undefined
+	let configuredHeight: number | undefined
+	if (configuredViewport.includes("x")) {
+		const parts = configuredViewport.split("x").map((v) => Number(v))
+		configuredWidth = parts[0]
+		configuredHeight = parts[1]
+	}
+
+	let actualWidth: number | undefined
+	let actualHeight: number | undefined
+	// Use optional chaining to avoid issues with tests that stub browserSession
+	const vp = isBrowserActive ? (cline.browserSession as any).getViewportSize?.() : undefined
+	if (vp) {
+		actualWidth = vp.width
+		actualHeight = vp.height
+	}
+
+	const width = actualWidth ?? configuredWidth
+	const height = actualHeight ?? configuredHeight
+	const viewportInfo = isBrowserActive && width && height ? `\nCurrent viewport size: ${width}x${height} pixels.` : ""
+
+	details += `\n# Browser Session Status\n${
+		isBrowserActive
+			? "Active - A browser session is currently open and ready for browser_action commands"
+			: "Inactive - Browser is not launched. Using any browser action except the browser_action with action='launch' to start a new session will result in an error."
+	}${viewportInfo}\n`
+
 	if (includeFileDetails) {
 		details += `\n\n# Current Workspace Directory (${cline.cwd.toPosix()}) Files\n`
 		const isDesktop = arePathsEqual(cline.cwd, path.join(os.homedir(), "Desktop"))

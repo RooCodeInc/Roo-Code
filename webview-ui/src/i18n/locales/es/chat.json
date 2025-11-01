@@ -313,6 +313,7 @@
 		"socialLinks": "Únete a nosotros en <xLink>X</xLink>, <discordLink>Discord</discordLink>, o <redditLink>r/RooCode</redditLink> 🚀"
 	},
 	"browser": {
+		"session": "Sesión del navegador",
 		"rooWantsToUse": "Roo quiere usar el navegador",
 		"consoleLogs": "Registros de la consola",
 		"noNewLogs": "(No hay nuevos registros)",
@@ -329,8 +330,10 @@
 			"launch": "Iniciar navegador en {{url}}",
 			"click": "Clic ({{coordinate}})",
 			"type": "Escribir \"{{text}}\"",
+			"press": "Pulsar {{key}}",
 			"scrollDown": "Desplazar hacia abajo",
 			"scrollUp": "Desplazar hacia arriba",
+			"hover": "Flotar ({{coordinate}})",
 			"close": "Cerrar navegador"
 		}
 	},

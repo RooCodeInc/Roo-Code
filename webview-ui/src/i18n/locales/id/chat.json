@@ -334,6 +334,7 @@
 		"countdownDisplay": "{{count}}dtk"
 	},
 	"browser": {
+		"session": "Sesi Browser",
 		"rooWantsToUse": "Roo ingin menggunakan browser",
 		"consoleLogs": "Log Konsol",
 		"noNewLogs": "(Tidak ada log baru)",
@@ -350,8 +351,10 @@
 			"launch": "Luncurkan browser di {{url}}",
 			"click": "Klik ({{coordinate}})",
 			"type": "Ketik \"{{text}}\"",
+			"press": "Tekan {{key}}",
 			"scrollDown": "Gulir ke bawah",
 			"scrollUp": "Gulir ke atas",
+			"hover": "Arahkan ({{coordinate}})",
 			"close": "Tutup browser"
 		}
 	},

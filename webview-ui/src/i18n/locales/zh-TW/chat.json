@@ -332,6 +332,7 @@
 		"countdownDisplay": "{{count}} 秒"
 	},
 	"browser": {
+		"session": "瀏覽器會話",
 		"rooWantsToUse": "Roo 想要使用瀏覽器",
 		"consoleLogs": "主控台記錄",
 		"noNewLogs": "（沒有新記錄）",
@@ -348,8 +349,10 @@
 			"launch": "在 {{url}} 啟動瀏覽器",
 			"click": "點選 ({{coordinate}})",
 			"type": "輸入「{{text}}」",
+			"press": "按下 {{key}}",
 			"scrollDown": "向下捲動",
 			"scrollUp": "向上捲動",
+			"hover": "懸停 ({{coordinate}})",
 			"close": "關閉瀏覽器"
 		}
 	},

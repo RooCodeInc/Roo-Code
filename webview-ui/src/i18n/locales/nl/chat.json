@@ -313,6 +313,7 @@
 		"countdownDisplay": "{{count}}s"
 	},
 	"browser": {
+		"session": "Browsersessie",
 		"rooWantsToUse": "Roo wil de browser gebruiken",
 		"consoleLogs": "Console-logboeken",
 		"noNewLogs": "(Geen nieuwe logboeken)",
@@ -329,8 +330,10 @@
 			"launch": "Browser starten op {{url}}",
 			"click": "Klik ({{coordinate}})",
 			"type": "Typ \"{{text}}\"",
+			"press": "Druk op {{key}}",
 			"scrollDown": "Scroll naar beneden",
 			"scrollUp": "Scroll naar boven",
+			"hover": "Zweven ({{coordinate}})",
 			"close": "Browser sluiten"
 		}
 	},

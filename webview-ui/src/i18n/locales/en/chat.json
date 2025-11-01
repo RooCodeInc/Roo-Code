@@ -328,6 +328,7 @@
 		"countdownDisplay": "{{count}}s"
 	},
 	"browser": {
+		"session": "Browser Session",
 		"rooWantsToUse": "Roo wants to use the browser",
 		"consoleLogs": "Console Logs",
 		"noNewLogs": "(No new logs)",
@@ -340,12 +341,13 @@
 		},
 		"sessionStarted": "Browser Session Started",
 		"actions": {
-			"title": "Browse Action: ",
 			"launch": "Launch browser at {{url}}",
 			"click": "Click ({{coordinate}})",
 			"type": "Type \"{{text}}\"",
+			"press": "Press {{key}}",
 			"scrollDown": "Scroll down",
 			"scrollUp": "Scroll up",
+			"hover": "Hover ({{coordinate}})",
 			"close": "Close browser"
 		}
 	},
