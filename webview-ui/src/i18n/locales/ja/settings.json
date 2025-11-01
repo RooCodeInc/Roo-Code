@@ -340,6 +340,7 @@
 		"awsSessionToken": "AWSセッショントークン",
 		"awsRegion": "AWSリージョン",
 		"awsCrossRegion": "クロスリージョン推論を使用",
+		"awsGlobalInference": "グローバル推論を使用する（最適なAWSリージョンを自動選択）",
 		"awsBedrockVpc": {
 			"useCustomVpcEndpoint": "カスタムVPCエンドポイントを使用",
 			"vpcEndpointUrlPlaceholder": "VPCエンドポイントURLを入力（任意）",

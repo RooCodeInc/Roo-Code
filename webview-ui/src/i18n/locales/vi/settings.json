@@ -340,6 +340,7 @@
 		"awsSessionToken": "Token phiên AWS",
 		"awsRegion": "Vùng AWS",
 		"awsCrossRegion": "Sử dụng suy luận liên vùng",
+		"awsGlobalInference": "Sử dụng suy luận toàn cầu (tự động chọn Khu vực AWS tối ưu)",
 		"awsBedrockVpc": {
 			"useCustomVpcEndpoint": "Sử dụng điểm cuối VPC tùy chỉnh",
 			"vpcEndpointUrlPlaceholder": "Nhập URL điểm cuối VPC (tùy chọn)",

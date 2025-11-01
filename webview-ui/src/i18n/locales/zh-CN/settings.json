@@ -340,6 +340,7 @@
 		"awsSessionToken": "AWS 会话Token",
 		"awsRegion": "AWS 区域",
 		"awsCrossRegion": "使用跨区域推理",
+		"awsGlobalInference": "使用全局推理（自动选择最佳 AWS 区域）",
 		"awsBedrockVpc": {
 			"useCustomVpcEndpoint": "使用自定义 VPC 端点",
 			"vpcEndpointUrlPlaceholder": "输入 VPC 端点 URL（可选）",

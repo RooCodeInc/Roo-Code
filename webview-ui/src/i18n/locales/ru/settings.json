@@ -340,6 +340,7 @@
 		"awsSessionToken": "AWS Session Token",
 		"awsRegion": "Регион AWS",
 		"awsCrossRegion": "Использовать кросс-региональный вывод",
+		"awsGlobalInference": "Использовать глобальный вывод (автоматический выбор оптимального региона AWS)",
 		"awsBedrockVpc": {
 			"useCustomVpcEndpoint": "Использовать пользовательскую конечную точку VPC",
 			"vpcEndpointUrlPlaceholder": "Введите URL конечной точки VPC (опционально)",
