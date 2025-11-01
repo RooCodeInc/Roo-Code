@@ -91,6 +91,8 @@ const extensions = [
 	"erb",
 	// Visual Basic .NET
 	"vb",
+	// Julia
+	"jl",
 ].map((e) => `.${e}`)
 
 export { extensions }
