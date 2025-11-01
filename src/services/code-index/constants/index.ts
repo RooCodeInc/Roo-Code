@@ -24,7 +24,12 @@ export const MAX_PENDING_BATCHES = 20 // Maximum number of batches to accumulate
 
 /**OpenAI Embedder */
 export const MAX_BATCH_TOKENS = 100000
-export const MAX_ITEM_TOKENS = 8191
+// NOTE: Conservative limit of 512 tokens
+// to ensure compatibility with all (most?) embedding models
+// Many models (e5-large, bge-large-en-v1.5) only support 512 tokens max
+// TODO: Consider implementing model-specific token limits in embeddingModels.ts?
+// Some models support higher limits: Qwen3-Embedding (8192), embeddinggemma (2048)
+export const MAX_ITEM_TOKENS = 512
 export const BATCH_PROCESSING_CONCURRENCY = 10
 
 /**Gemini Embedder */

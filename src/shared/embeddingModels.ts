@@ -46,13 +46,45 @@ export const EMBEDDING_MODEL_PROFILES: EmbeddingModelProfiles = {
 			queryPrefix: "Represent this query for searching relevant code: ",
 		},
 		// DeepInfra models
-		"Qwen/Qwen3-Embedding-0.6B": { dimension: 1024, scoreThreshold: 0.4 },
-		"Qwen/Qwen3-Embedding-4B": { dimension: 2560, scoreThreshold: 0.4 },
-		"Qwen/Qwen3-Embedding-8B": { dimension: 4096, scoreThreshold: 0.4 },
-		"intfloat/multilingual-e5-large-instruct": { dimension: 1024, scoreThreshold: 0.4 },
-		"google/embeddinggemma-300m": { dimension: 768, scoreThreshold: 0.4 },
+		"Qwen/Qwen3-Embedding-0.6B": {
+			dimension: 1024,
+			scoreThreshold: 0.4,
+			queryPrefix:
+				"Instruct: Given a code search query, retrieve relevant code snippets that answer the query\nQuery: ",
+		},
+		"Qwen/Qwen3-Embedding-4B": {
+			dimension: 2560,
+			scoreThreshold: 0.4,
+			queryPrefix:
+				"Instruct: Given a code search query, retrieve relevant code snippets that answer the query\nQuery: ",
+		},
+		"Qwen/Qwen3-Embedding-8B": {
+			dimension: 4096,
+			scoreThreshold: 0.4,
+			queryPrefix:
+				"Instruct: Given a code search query, retrieve relevant code snippets that answer the query\nQuery: ",
+		},
+		"intfloat/multilingual-e5-large-instruct": {
+			dimension: 1024,
+			scoreThreshold: 0.4,
+			queryPrefix:
+				"Instruct: Given a code search query, retrieve relevant code snippets that answer the query\nQuery: ",
+		},
+		"intfloat/multilingual-e5-large": {
+			dimension: 1024,
+			scoreThreshold: 0.4,
+		},
+		"google/embeddinggemma-300m": {
+			dimension: 768,
+			scoreThreshold: 0.4,
+			queryPrefix: "task: code retrieval | query: ",
+		},
 		"BAAI/bge-m3": { dimension: 1024, scoreThreshold: 0.4 },
-		"BAAI/bge-large-en-v1.5": { dimension: 1024, scoreThreshold: 0.4 },
+		"BAAI/bge-large-en-v1.5": {
+			dimension: 1024,
+			scoreThreshold: 0.4,
+			queryPrefix: "Represent this sentence for searching relevant passages: ",
+		},
 	},
 	gemini: {
 		"text-embedding-004": { dimension: 768 },
