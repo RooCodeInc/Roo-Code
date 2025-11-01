@@ -7,6 +7,9 @@ import {
 	type GroundingMetadata,
 } from "@google/genai"
 import type { JWTInput } from "google-auth-library"
+import * as os from "os"
+import * as path from "path"
+import * as fs from "fs"
 
 import { type ModelInfo, type GeminiModelId, geminiDefaultModelId, geminiModels } from "@roo-code/types"
 
@@ -56,8 +59,47 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 						googleAuthOptions: { keyFile: this.options.vertexKeyFile },
 					})
 				: isVertex
-					? new GoogleGenAI({ vertexai: true, project, location })
+					? this.createVertexClient(project, location)
 					: new GoogleGenAI({ apiKey })
+	}
+
+	private createVertexClient(project: string, location: string): GoogleGenAI {
+		// Check for Application Default Credentials file on Windows
+		const adcPath = this.getADCPath()
+
+		if (adcPath && fs.existsSync(adcPath)) {
+			console.log("Using Application Default Credentials from:", adcPath)
+			return new GoogleGenAI({
+				vertexai: true,
+				project,
+				location,
+				googleAuthOptions: {
+					keyFile: adcPath,
+				},
+			})
+		}
+
+		// Fallback to default ADC behavior
+		return new GoogleGenAI({ vertexai: true, project, location })
+	}
+
+	private getADCPath(): string | null {
+		// Check for ADC in standard locations
+		const platform = os.platform()
+		const homeDir = os.homedir()
+
+		if (platform === "win32") {
+			// Windows: %APPDATA%\gcloud\application_default_credentials.json
+			const appData = process.env.APPDATA
+			if (appData) {
+				return path.join(appData, "gcloud", "application_default_credentials.json")
+			}
+		} else {
+			// Unix/Mac: ~/.config/gcloud/application_default_credentials.json
+			return path.join(homeDir, ".config", "gcloud", "application_default_credentials.json")
+		}
+
+		return null
 	}
 
 	async *createMessage(
@@ -154,11 +196,124 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 				}
 			}
 		} catch (error) {
+			// Check if this is an authentication error
+			if (error instanceof Error && error.message.includes("Could not refresh access token")) {
+				console.log("Authentication error detected, attempting to refresh credentials...")
+
+				// Try to refresh the client with new credentials
+				const refreshed = await this.refreshVertexClient()
+				if (refreshed) {
+					try {
+						// Retry the request with refreshed credentials
+						const result = await this.client.models.generateContentStream(params)
+
+						let lastUsageMetadata: GenerateContentResponseUsageMetadata | undefined
+						let pendingGroundingMetadata: GroundingMetadata | undefined
+
+						for await (const chunk of result) {
+							// Process candidates and their parts to separate thoughts from content
+							if (chunk.candidates && chunk.candidates.length > 0) {
+								const candidate = chunk.candidates[0]
+
+								if (candidate.groundingMetadata) {
+									pendingGroundingMetadata = candidate.groundingMetadata
+								}
+
+								if (candidate.content && candidate.content.parts) {
+									for (const part of candidate.content.parts) {
+										if (part.thought) {
+											// This is a thinking/reasoning part
+											if (part.text) {
+												yield { type: "reasoning", text: part.text }
+											}
+										} else {
+											// This is regular content
+											if (part.text) {
+												yield { type: "text", text: part.text }
+											}
+										}
+									}
+								}
+							}
+
+							// Fallback to the original text property if no candidates structure
+							else if (chunk.text) {
+								yield { type: "text", text: chunk.text }
+							}
+
+							if (chunk.usageMetadata) {
+								lastUsageMetadata = chunk.usageMetadata
+							}
+						}
+
+						if (pendingGroundingMetadata) {
+							const sources = this.extractGroundingSources(pendingGroundingMetadata)
+							if (sources.length > 0) {
+								yield { type: "grounding", sources }
+							}
+						}
+
+						if (lastUsageMetadata) {
+							const inputTokens = lastUsageMetadata.promptTokenCount ?? 0
+							const outputTokens = lastUsageMetadata.candidatesTokenCount ?? 0
+							const cacheReadTokens = lastUsageMetadata.cachedContentTokenCount
+							const reasoningTokens = lastUsageMetadata.thoughtsTokenCount
+
+							yield {
+								type: "usage",
+								inputTokens,
+								outputTokens,
+								cacheReadTokens,
+								reasoningTokens,
+								totalCost: this.calculateCost({ info, inputTokens, outputTokens, cacheReadTokens }),
+							}
+						}
+
+						return // Success after retry
+					} catch (retryError) {
+						// Retry also failed
+						if (retryError instanceof Error) {
+							throw new Error(t("common:errors.gemini.generate_stream", { error: retryError.message }))
+						}
+						throw retryError
+					}
+				}
+			}
+
 			if (error instanceof Error) {
 				throw new Error(t("common:errors.gemini.generate_stream", { error: error.message }))
 			}
 
 			throw error
+		}
+	}
+
+	private async refreshVertexClient(): Promise<boolean> {
+		try {
+			// Try to get a fresh token using gcloud CLI
+			const { execSync } = await import("child_process")
+
+			try {
+				// Check if gcloud is available and get a fresh token
+				execSync("gcloud auth application-default print-access-token", {
+					encoding: "utf8",
+					stdio: "pipe",
+				})
+
+				// If we can get a token, recreate the client
+				const project = this.options.vertexProjectId ?? "not-provided"
+				const location = this.options.vertexRegion ?? "not-provided"
+
+				this.client = this.createVertexClient(project, location)
+				console.log("Successfully refreshed Vertex AI client with new credentials")
+				return true
+			} catch (execError) {
+				console.error("Failed to refresh token using gcloud CLI:", execError)
+				return false
+			}
+		} catch (importError) {
+			console.error("Failed to import child_process:", importError)
+			return false
 		}
 	}
 
@@ -246,6 +401,61 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 
 			return text
 		} catch (error) {
+			// Check if this is an authentication error
+			if (error instanceof Error && error.message.includes("Could not refresh access token")) {
+				console.log("Authentication error detected in completePrompt, attempting to refresh credentials...")
+
+				// Try to refresh the client with new credentials
+				const refreshed = await this.refreshVertexClient()
+				if (refreshed) {
+					try {
+						// Retry the request with refreshed credentials
+						const { id: model } = this.getModel()
+
+						const tools: GenerateContentConfig["tools"] = []
+						if (this.options.enableUrlContext) {
+							tools.push({ urlContext: {} })
+						}
+						if (this.options.enableGrounding) {
+							tools.push({ googleSearch: {} })
+						}
+						const promptConfig: GenerateContentConfig = {
+							httpOptions: this.options.googleGeminiBaseUrl
+								? { baseUrl: this.options.googleGeminiBaseUrl }
+								: undefined,
+							temperature: this.options.modelTemperature ?? 0,
+							...(tools.length > 0 ? { tools } : {}),
+						}
+
+						const result = await this.client.models.generateContent({
+							model,
+							contents: [{ role: "user", parts: [{ text: prompt }] }],
+							config: promptConfig,
+						})
+
+						let text = result.text ?? ""
+
+						const candidate = result.candidates?.[0]
+						if (candidate?.groundingMetadata) {
+							const citations = this.extractCitationsOnly(candidate.groundingMetadata)
+							if (citations) {
+								text += `\n\n${t("common:errors.gemini.sources")} ${citations}`
+							}
+						}
+
+						return text
+					} catch (retryError) {
+						// Retry also failed
+						if (retryError instanceof Error) {
+							throw new Error(
+								t("common:errors.gemini.generate_complete_prompt", { error: retryError.message }),
+							)
+						}
+						throw retryError
+					}
+				}
+			}
+
 			if (error instanceof Error) {
 				throw new Error(t("common:errors.gemini.generate_complete_prompt", { error: error.message }))
 			}
