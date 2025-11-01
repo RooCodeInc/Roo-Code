@@ -55,6 +55,8 @@ const availableGroups = (Object.keys(TOOL_GROUPS) as ToolGroup[]).filter((group)
 
 type ModeSource = "global" | "project"
 
+type ImportModeResult = { type: 'importModeResult'; success: boolean; slug?: string; error?: string }
+
 type ModesViewProps = {
 	onDone: () => void
 }
@@ -185,6 +187,28 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 		},
 		[visualMode, switchMode],
 	)
+
+	// Keep latest handleModeSwitch and customModes available inside window message handler
+	const handleModeSwitchRef = useRef(handleModeSwitch)
+	useEffect(() => {
+		handleModeSwitchRef.current = handleModeSwitch
+	}, [handleModeSwitch])
+
+	const customModesRef = useRef(customModes)
+	useEffect(() => {
+		customModesRef.current = customModes
+	}, [customModes])
+
+	// Keep latest switchMode available inside window message handler
+	const switchModeRef = useRef(switchMode)
+	useEffect(() => {
+		switchModeRef.current = switchMode
+	}, [switchMode])
+
+	// Sync visualMode with backend mode changes to prevent desync
+	useEffect(() => {
+		setVisualMode(mode)
+	}, [mode])
 
 	// Handler for popover open state change
 	const onOpenChange = useCallback((open: boolean) => {
@@ -460,7 +484,21 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 				setIsImporting(false)
 				setShowImportDialog(false)
 
-				if (!message.success) {
+				if (message.success) {
+					const { slug } = message as ImportModeResult
+					if (slug) {
+						// Try switching using the freshest mode list available
+						const all = getAllModes(customModesRef.current)
+						const importedMode = all.find((m) => m.slug === slug)
+						if (importedMode) {
+							handleModeSwitchRef.current(importedMode)
+						} else {
+							// Fallback: switch by slug to keep backend in sync and update visual selection
+							setVisualMode(slug)
+							switchModeRef.current?.(slug)
+						}
+					}
+				} else {
 					// Only log error if it's not a cancellation
 					if (message.error !== "cancelled") {
 						console.error("Failed to import mode:", message.error)
