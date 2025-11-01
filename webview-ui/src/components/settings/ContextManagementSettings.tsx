@@ -24,6 +24,7 @@ type ContextManagementSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	maxTotalImageSize?: number
 	maxConcurrentFileReads?: number
 	profileThresholds?: Record<string, number>
+	condensingApiConfigId?: string
 	includeDiagnosticMessages?: boolean
 	maxDiagnosticMessages?: number
 	writeDelayMs: number
@@ -40,6 +41,7 @@ type ContextManagementSettingsProps = HTMLAttributes<HTMLDivElement> & {
 		| "maxTotalImageSize"
 		| "maxConcurrentFileReads"
 		| "profileThresholds"
+		| "condensingApiConfigId"
 		| "includeDiagnosticMessages"
 		| "maxDiagnosticMessages"
 		| "writeDelayMs"
@@ -61,6 +63,7 @@ export const ContextManagementSettings = ({
 	maxTotalImageSize,
 	maxConcurrentFileReads,
 	profileThresholds = {},
+	condensingApiConfigId,
 	includeDiagnosticMessages,
 	maxDiagnosticMessages,
 	writeDelayMs,
@@ -398,6 +401,40 @@ export const ContextManagementSettings = ({
 					data-testid="auto-condense-context-checkbox">
 					<span className="font-medium">{t("settings:contextManagement.autoCondenseContext.name")}</span>
 				</VSCodeCheckbox>
+
+				{/* API Configuration dropdown - shown regardless of auto-condense state */}
+				<div className="mt-4">
+					<label className="block font-medium mb-1">
+						{t("prompts:supportPrompts.condense.apiConfiguration")}
+					</label>
+					<Select
+						value={condensingApiConfigId || "-"}
+						onValueChange={(value) => {
+							const newConfigId = value === "-" ? "" : value
+							setCachedStateField("condensingApiConfigId", newConfigId)
+							vscode.postMessage({
+								type: "condensingApiConfigId",
+								text: newConfigId,
+							})
+						}}
+						data-testid="condensing-api-config-select">
+						<SelectTrigger className="w-full">
+							<SelectValue placeholder={t("prompts:supportPrompts.condense.useCurrentConfig")} />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="-">{t("prompts:supportPrompts.condense.useCurrentConfig")}</SelectItem>
+							{(listApiConfigMeta || []).map((config) => (
+								<SelectItem key={config.id} value={config.id}>
+									{config.name}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+					<div className="text-sm text-vscode-descriptionForeground mt-1">
+						{t("prompts:supportPrompts.condense.apiConfigDescription")}
+					</div>
+				</div>
+
 				{autoCondenseContext && (
 					<div className="flex flex-col gap-3 pl-3 border-l-2 border-vscode-button-background">
 						<div className="flex items-center gap-4 font-bold">
