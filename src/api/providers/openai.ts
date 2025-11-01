@@ -99,12 +99,12 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			return
 		}
 
-		if (this.options.openAiStreamingEnabled ?? true) {
-			let systemMessage: OpenAI.Chat.ChatCompletionSystemMessageParam = {
-				role: "system",
-				content: systemPrompt,
-			}
+		let systemMessage: OpenAI.Chat.ChatCompletionSystemMessageParam = {
+			role: "system",
+			content: systemPrompt,
+		}
 
+		if (this.options.openAiStreamingEnabled ?? true) {
 			let convertedMessages
 
 			if (deepseekReasoner) {
@@ -218,12 +218,6 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				yield this.processUsageMetrics(lastUsage, modelInfo)
 			}
 		} else {
-			// o1 for instance doesnt support streaming, non-1 temp, or system prompt
-			const systemMessage: OpenAI.Chat.ChatCompletionUserMessageParam = {
-				role: "user",
-				content: systemPrompt,
-			}
-
 			const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {
 				model: modelId,
 				messages: deepseekReasoner
