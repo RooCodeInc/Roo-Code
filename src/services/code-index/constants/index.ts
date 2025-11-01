@@ -29,7 +29,7 @@ export const MAX_BATCH_TOKENS = 100000
 // Many models (e5-large, bge-large-en-v1.5) only support 512 tokens max
 // TODO: Consider implementing model-specific token limits in embeddingModels.ts?
 // Some models support higher limits: Qwen3-Embedding (8192), embeddinggemma (2048)
-export const MAX_ITEM_TOKENS = 512
+export const MAX_ITEM_TOKENS = 511
 export const BATCH_PROCESSING_CONCURRENCY = 10
 
 /**Gemini Embedder */
