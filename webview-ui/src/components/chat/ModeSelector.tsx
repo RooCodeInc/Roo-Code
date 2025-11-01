@@ -198,7 +198,7 @@ export const ModeSelector = ({
 					disabled={disabled}
 					data-testid="mode-selector-trigger"
 					className={cn(
-						"inline-flex items-center relative whitespace-nowrap px-1.5 py-1 text-xs",
+						"inline-flex items-center gap-1 relative whitespace-nowrap px-1.5 py-1 text-xs",
 						"bg-transparent border border-[rgba(255,255,255,0.08)] rounded-md text-vscode-foreground",
 						"transition-all duration-150 focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder focus-visible:ring-inset",
 						disabled
@@ -269,7 +269,12 @@ export const ModeSelector = ({
 											)}
 											data-testid="mode-selector-item">
 											<div className="flex-1 min-w-0">
-												<div className="font-bold truncate">{mode.name}</div>
+												<div className="flex items-center gap-1.5">
+													<span className="font-bold truncate">{mode.name}</span>
+													<span className="text-[10px] px-1 py-0.5 rounded bg-vscode-badge-background text-vscode-badge-foreground">
+														{mode.source || "global"}
+													</span>
+												</div>
 												{mode.description && (
 													<div className="text-xs text-vscode-descriptionForeground truncate">
 														{mode.description}
