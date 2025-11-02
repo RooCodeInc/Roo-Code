@@ -5,7 +5,7 @@ import Script from "next/script"
 import { hasConsent, onConsentChange } from "@/lib/analytics/consent-manager"
 
 // Google Ads Conversion ID
-const GTM_ID = "AW-17391954825"
+const GADS_ID = "AW-17391954825"
 
 /**
  * Google Analytics Provider with Consent Mode v2
@@ -31,11 +31,12 @@ export function GoogleAnalyticsProvider({ children }: { children: React.ReactNod
 				personalization_storage: "denied",
 				security_storage: "granted", // Always granted for security
 				wait_for_update: 2000, // Wait up to 2 seconds for consent update
-				// Enable cookieless pings for conversion measurement
-				// This allows Google Ads to measure conversions without cookies
-				url_passthrough: true, // Pass click information via URL parameters
-				ads_data_redaction: true, // Redact ads data when consent is denied
 			})
+
+			// Enable cookieless pings for conversion measurement
+			// These must be set separately with gtag 'set' command
+			window.gtag("set", "ads_data_redaction", true) // Redact ads data when consent is denied
+			window.gtag("set", "url_passthrough", true) // Pass click information via URL parameters
 
 			// Check initial consent status and update if already consented
 			if (hasConsent()) {
@@ -63,28 +64,28 @@ export function GoogleAnalyticsProvider({ children }: { children: React.ReactNod
 				personalization_storage: consented ? "granted" : "denied",
 			})
 
-			console.log(`Google Consent Mode updated: ${consented ? "granted" : "denied"}`)
+			if (process.env.NODE_ENV === "development") {
+				console.log(`Google Consent Mode updated: ${consented ? "granted" : "denied"}`)
+			}
 		}
 	}
 
 	return (
 		<>
-			{/* Google tag (gtag.js) - Loads immediately for Consent Mode v2 */}
+			{/* Google tag (gtag.js) - Loads with Consent Mode v2 */}
 			<Script
-				src={`https://www.googletagmanager.com/gtag/js?id=${GTM_ID}`}
+				src={`https://www.googletagmanager.com/gtag/js?id=${GADS_ID}`}
 				strategy="afterInteractive"
 				onLoad={() => {
-					console.log("Google Analytics loaded with Consent Mode v2")
+					if (process.env.NODE_ENV === "development") {
+						console.log("Google Analytics loaded with Consent Mode v2")
+					}
 				}}
 			/>
-			<Script id="google-analytics-consent-mode" strategy="afterInteractive">
+			<Script id="google-ads-config" strategy="afterInteractive">
 				{`
-					window.dataLayer = window.dataLayer || [];
-					function gtag(){dataLayer.push(arguments);}
-					gtag('js', new Date());
-					
-					// Configure with enhanced measurement and cookieless pings
-					gtag('config', '${GTM_ID}', {
+					// Configure Google Ads with enhanced measurement
+					gtag('config', '${GADS_ID}', {
 						allow_google_signals: false, // Disable by default, enabled when consent granted
 						allow_ad_personalization_signals: false, // Disable by default
 						// Enable enhanced conversions for better measurement

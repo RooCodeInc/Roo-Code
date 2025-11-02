@@ -72,7 +72,10 @@ export function handleConsentAccept(): void {
 				functionality_storage: "granted",
 				personalization_storage: "granted",
 			})
-			console.log("User accepted cookies - Google Consent Mode updated to granted")
+
+			if (process.env.NODE_ENV === "development") {
+				console.log("User accepted cookies - Google Consent Mode updated to granted")
+			}
 		}
 	}
 	dispatchConsentEvent(true)
@@ -94,7 +97,10 @@ export function handleConsentReject(): void {
 				functionality_storage: "denied",
 				personalization_storage: "denied",
 			})
-			console.log("User rejected cookies - Google Consent Mode updated to denied")
+
+			if (process.env.NODE_ENV === "development") {
+				console.log("User rejected cookies - Google Consent Mode updated to denied")
+			}
 		}
 	}
 	// User rejected - stick to cookieless mode

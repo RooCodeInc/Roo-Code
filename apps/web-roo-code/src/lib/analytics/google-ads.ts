@@ -23,7 +23,9 @@ export function trackGoogleAdsConversion() {
 			transaction_id: `${Date.now()}`, // Unique ID to prevent duplicates
 		})
 
-		console.log("Google Ads conversion tracked with Consent Mode v2")
+		if (process.env.NODE_ENV === "development") {
+			console.log("Google Ads conversion tracked with Consent Mode v2")
+		}
 	}
 }
 
