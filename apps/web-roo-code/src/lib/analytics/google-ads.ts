@@ -43,18 +43,3 @@ export function trackPageViewForRemarketing() {
 		})
 	}
 }
-
-/**
- * Initialize enhanced conversions for better measurement
- * This should be called once when the app initializes
- */
-export function initializeEnhancedConversions() {
-	if (typeof window !== "undefined" && window.gtag) {
-		// Enable enhanced conversions for better measurement accuracy
-		// This works with Consent Mode v2 to provide better conversion modeling
-		window.gtag("set", "user_data", {
-			// User data will only be sent if consent is granted
-			// Otherwise, Google uses conversion modeling
-		})
-	}
-}

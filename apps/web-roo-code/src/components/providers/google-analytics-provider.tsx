@@ -31,12 +31,10 @@ export function GoogleAnalyticsProvider({ children }: { children: React.ReactNod
 				personalization_storage: "denied",
 				security_storage: "granted", // Always granted for security
 				wait_for_update: 2000, // Wait up to 2 seconds for consent update
+				// Enable cookieless pings for conversion measurement
+				url_passthrough: true, // Pass click information via URL parameters
+				ads_data_redaction: true, // Redact ads data when consent is denied
 			})
-
-			// Enable cookieless pings for conversion measurement
-			// These must be set separately with gtag 'set' command
-			window.gtag("set", "ads_data_redaction", true) // Redact ads data when consent is denied
-			window.gtag("set", "url_passthrough", true) // Pass click information via URL parameters
 
 			// Check initial consent status and update if already consented
 			if (hasConsent()) {
@@ -84,10 +82,12 @@ export function GoogleAnalyticsProvider({ children }: { children: React.ReactNod
 			/>
 			<Script id="google-ads-config" strategy="afterInteractive">
 				{`
+					gtag('js', new Date());
+					
 					// Configure Google Ads with enhanced measurement
 					gtag('config', '${GADS_ID}', {
-						allow_google_signals: false, // Disable by default, enabled when consent granted
-						allow_ad_personalization_signals: false, // Disable by default
+						allow_google_signals: false,
+						allow_ad_personalization_signals: false,
 						// Enable enhanced conversions for better measurement
 						enhanced_conversions: {
 							automatic: true
