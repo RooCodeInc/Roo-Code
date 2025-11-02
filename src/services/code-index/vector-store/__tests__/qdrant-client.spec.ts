@@ -50,7 +50,7 @@ describe("QdrantVectorStore", () => {
 	const mockWorkspacePath = "/test/workspace"
 	const mockQdrantUrl = "http://mock-qdrant:6333"
 	const mockApiKey = "test-api-key"
-	const mockVectorSize = 1536
+	const mockVectorSize = 3
 	const mockHashedPath = "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6" // Needs to be long enough
 	const expectedCollectionName = `ws-${mockHashedPath.substring(0, 16)}`
 
