@@ -1,70 +1,99 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import Script from "next/script"
 import { hasConsent, onConsentChange } from "@/lib/analytics/consent-manager"
 
-// Google Tag Manager ID
+// Google Ads Conversion ID
 const GTM_ID = "AW-17391954825"
 
 /**
- * Google Analytics Provider
- * Only loads Google Tag Manager after user gives consent
+ * Google Analytics Provider with Consent Mode v2
+ * Implements advanced consent mode with cookieless pings
  */
 export function GoogleAnalyticsProvider({ children }: { children: React.ReactNode }) {
-	const [shouldLoad, setShouldLoad] = useState(false)
-
 	useEffect(() => {
-		// Check initial consent status
-		if (hasConsent()) {
-			setShouldLoad(true)
-			initializeGoogleAnalytics()
+		// Initialize dataLayer and gtag immediately for consent mode
+		if (typeof window !== "undefined") {
+			window.dataLayer = window.dataLayer || []
+			window.gtag = function (...args: unknown[]) {
+				window.dataLayer.push(args)
+			}
+
+			// Set default consent state for Consent Mode v2
+			// This must be called before any Google tags load
+			window.gtag("consent", "default", {
+				ad_storage: "denied",
+				ad_user_data: "denied",
+				ad_personalization: "denied",
+				analytics_storage: "denied",
+				functionality_storage: "denied",
+				personalization_storage: "denied",
+				security_storage: "granted", // Always granted for security
+				wait_for_update: 2000, // Wait up to 2 seconds for consent update
+				// Enable cookieless pings for conversion measurement
+				// This allows Google Ads to measure conversions without cookies
+				url_passthrough: true, // Pass click information via URL parameters
+				ads_data_redaction: true, // Redact ads data when consent is denied
+			})
+
+			// Check initial consent status and update if already consented
+			if (hasConsent()) {
+				updateConsentState(true)
+			}
 		}
 
 		// Listen for consent changes
 		const unsubscribe = onConsentChange((consented) => {
-			if (consented && !shouldLoad) {
-				setShouldLoad(true)
-				initializeGoogleAnalytics()
-			}
+			updateConsentState(consented)
 		})
 
 		return unsubscribe
-	}, [shouldLoad])
+	}, [])
 
-	const initializeGoogleAnalytics = () => {
-		// Initialize the dataLayer and gtag function
-		if (typeof window !== "undefined") {
-			window.dataLayer = window.dataLayer || []
-			window.gtag = function (...args: GtagArgs) {
-				window.dataLayer.push(args)
-			}
-			window.gtag("js", new Date())
-			window.gtag("config", GTM_ID)
+	const updateConsentState = (consented: boolean) => {
+		if (typeof window !== "undefined" && window.gtag) {
+			// Update consent state based on user choice
+			window.gtag("consent", "update", {
+				ad_storage: consented ? "granted" : "denied",
+				ad_user_data: consented ? "granted" : "denied",
+				ad_personalization: consented ? "granted" : "denied",
+				analytics_storage: consented ? "granted" : "denied",
+				functionality_storage: consented ? "granted" : "denied",
+				personalization_storage: consented ? "granted" : "denied",
+			})
+
+			console.log(`Google Consent Mode updated: ${consented ? "granted" : "denied"}`)
 		}
-	}
-
-	// Only render Google Analytics scripts if consent is given
-	if (!shouldLoad) {
-		return <>{children}</>
 	}
 
 	return (
 		<>
-			{/* Google tag (gtag.js) - Only loads after consent */}
+			{/* Google tag (gtag.js) - Loads immediately for Consent Mode v2 */}
 			<Script
 				src={`https://www.googletagmanager.com/gtag/js?id=${GTM_ID}`}
 				strategy="afterInteractive"
 				onLoad={() => {
-					console.log("Google Analytics loaded with consent")
+					console.log("Google Analytics loaded with Consent Mode v2")
 				}}
 			/>
-			<Script id="google-analytics-init" strategy="afterInteractive">
+			<Script id="google-analytics-consent-mode" strategy="afterInteractive">
 				{`
 					window.dataLayer = window.dataLayer || [];
 					function gtag(){dataLayer.push(arguments);}
 					gtag('js', new Date());
-					gtag('config', '${GTM_ID}');
+					
+					// Configure with enhanced measurement and cookieless pings
+					gtag('config', '${GTM_ID}', {
+						allow_google_signals: false, // Disable by default, enabled when consent granted
+						allow_ad_personalization_signals: false, // Disable by default
+						// Enable enhanced conversions for better measurement
+						enhanced_conversions: {
+							automatic: true
+						},
+						// Send page view for cookieless measurement
+						send_page_view: true
+					});
 				`}
 			</Script>
 			{children}
@@ -72,21 +101,10 @@ export function GoogleAnalyticsProvider({ children }: { children: React.ReactNod
 	)
 }
 
-// Type definitions for Google Analytics
-type GtagArgs = ["js", Date] | ["config", string, GtagConfig?] | ["event", string, GtagEventParameters?]
-
-interface GtagConfig {
-	[key: string]: unknown
-}
-
-interface GtagEventParameters {
-	[key: string]: unknown
-}
-
 // Declare global types for TypeScript
 declare global {
 	interface Window {
-		dataLayer: GtagArgs[]
-		gtag: (...args: GtagArgs) => void
+		dataLayer: unknown[]
+		gtag: (...args: unknown[]) => void
 	}
 }
