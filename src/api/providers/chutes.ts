@@ -28,21 +28,22 @@ export class ChutesHandler extends RouterProvider implements SingleCompletionHan
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
 	): OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming {
-		const {
-			id: model,
-			info: { maxTokens: max_tokens },
-		} = this.getModel()
+		const { id: model, info } = this.getModel()
 
-		const temperature = this.options.modelTemperature ?? this.getModel().info.temperature
-
-		return {
+		const params: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming = {
 			model,
-			max_tokens,
-			temperature,
+			max_tokens: info.maxTokens,
 			messages: [{ role: "system", content: systemPrompt }, ...convertToOpenAiMessages(messages)],
 			stream: true,
 			stream_options: { include_usage: true },
 		}
+
+		// Only add temperature if model supports it
+		if (this.supportsTemperature(model)) {
+			params.temperature = this.options.modelTemperature ?? info.temperature
+		}
+
+		return params
 	}
 
 	override async *createMessage(
@@ -112,15 +113,22 @@ export class ChutesHandler extends RouterProvider implements SingleCompletionHan
 	}
 
 	async completePrompt(prompt: string): Promise<string> {
-		const { id: modelId, info } = await this.fetchModel()
+		const model = await this.fetchModel()
+		const { id: modelId, info } = this.getModel()
 
 		try {
-			const response = await this.client.chat.completions.create({
+			const requestParams: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {
 				model: modelId,
 				messages: [{ role: "user", content: prompt }],
 				max_tokens: info.maxTokens,
-				temperature: this.options.modelTemperature ?? 0,
-			})
+			}
+
+			// Only add temperature if model supports it
+			if (this.supportsTemperature(modelId)) {
+				requestParams.temperature = this.options.modelTemperature ?? info.temperature ?? 0
+			}
+
+			const response = await this.client.chat.completions.create(requestParams)
 			return response.choices[0]?.message.content || ""
 		} catch (error) {
 			if (error instanceof Error) {

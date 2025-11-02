@@ -46,7 +46,7 @@ export async function getChutesModels(apiKey?: string): Promise<Record<string, M
 			models[m.id] = info
 		}
 	} catch (error) {
-		console.error(`Error fetching Chutes models: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`)
+		console.error(`Error fetching Chutes models: ${error instanceof Error ? error.message : String(error)}`)
 	}
 
 	return models
