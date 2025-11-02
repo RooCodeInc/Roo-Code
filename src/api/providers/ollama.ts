@@ -5,7 +5,7 @@ import { type ModelInfo, openAiModelInfoSaneDefaults, DEEP_SEEK_DEFAULT_TEMPERAT
 
 import type { ApiHandlerOptions } from "../../shared/api"
 
-import { XmlMatcher } from "../../utils/xml-matcher"
+import { ReasoningXmlMatcher } from "../../utils/reasoning-xml-matcher"
 
 import { convertToOpenAiMessages } from "../transform/openai-format"
 import { convertToR1Format } from "../transform/r1-format"
@@ -68,8 +68,7 @@ export class OllamaHandler extends BaseProvider implements SingleCompletionHandl
 		} catch (error) {
 			throw handleOpenAIError(error, this.providerName)
 		}
-		const matcher = new XmlMatcher(
-			"think",
+		const matcher = new ReasoningXmlMatcher(
 			(chunk) =>
 				({
 					type: chunk.matched ? "reasoning" : "text",
