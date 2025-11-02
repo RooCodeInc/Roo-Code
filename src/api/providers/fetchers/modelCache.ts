@@ -25,6 +25,7 @@ import { getIOIntelligenceModels } from "./io-intelligence"
 import { getDeepInfraModels } from "./deepinfra"
 import { getHuggingFaceModels } from "./huggingface"
 import { getRooModels } from "./roo"
+import { getChutesModels } from "./chutes"
 
 const memoryCache = new NodeCache({ stdTTL: 5 * 60, checkperiod: 5 * 60 })
 
@@ -107,6 +108,9 @@ export const getModels = async (options: GetModelsOptions): Promise<ModelRecord>
 				models = await getRooModels(rooBaseUrl, options.apiKey)
 				break
 			}
+			case "chutes":
+				models = await getChutesModels(options.apiKey)
+				break
 			default: {
 				// Ensures router is exhaustively checked if RouterName is a strict union.
 				const exhaustiveCheck: never = provider

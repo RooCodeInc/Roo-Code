@@ -45,6 +45,16 @@ export type ChutesModelId =
 
 export const chutesDefaultModelId: ChutesModelId = "deepseek-ai/DeepSeek-R1-0528"
 
+export const chutesDefaultModelInfo: ModelInfo = {
+	maxTokens: 32768,
+	contextWindow: 163840,
+	supportsImages: false,
+	supportsPromptCache: false,
+	inputPrice: 0,
+	outputPrice: 0,
+	description: "DeepSeek R1 0528 model.",
+}
+
 export const chutesModels = {
 	"deepseek-ai/DeepSeek-R1-0528": {
 		maxTokens: 32768,

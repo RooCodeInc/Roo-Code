@@ -1,4 +1,4 @@
-import { DEEP_SEEK_DEFAULT_TEMPERATURE, type ChutesModelId, chutesDefaultModelId, chutesModels } from "@roo-code/types"
+import { DEEP_SEEK_DEFAULT_TEMPERATURE, chutesDefaultModelId, chutesDefaultModelInfo } from "@roo-code/types"
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 
@@ -7,19 +7,20 @@ import { XmlMatcher } from "../../utils/xml-matcher"
 import { convertToR1Format } from "../transform/r1-format"
 import { convertToOpenAiMessages } from "../transform/openai-format"
 import { ApiStream } from "../transform/stream"
+import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 
-import { BaseOpenAiCompatibleProvider } from "./base-openai-compatible-provider"
+import { RouterProvider } from "./router-provider"
 
-export class ChutesHandler extends BaseOpenAiCompatibleProvider<ChutesModelId> {
+export class ChutesHandler extends RouterProvider implements SingleCompletionHandler {
 	constructor(options: ApiHandlerOptions) {
 		super({
-			...options,
-			providerName: "Chutes",
+			options,
+			name: "chutes",
 			baseURL: "https://llm.chutes.ai/v1",
 			apiKey: options.chutesApiKey,
-			defaultProviderModelId: chutesDefaultModelId,
-			providerModels: chutesModels,
-			defaultTemperature: 0.5,
+			modelId: options.apiModelId,
+			defaultModelId: chutesDefaultModelId,
+			defaultModelInfo: chutesDefaultModelInfo,
 		})
 	}
 
@@ -44,8 +45,12 @@ export class ChutesHandler extends BaseOpenAiCompatibleProvider<ChutesModelId> {
 		}
 	}
 
-	override async *createMessage(systemPrompt: string, messages: Anthropic.Messages.MessageParam[]): ApiStream {
-		const model = this.getModel()
+	override async *createMessage(
+		systemPrompt: string,
+		messages: Anthropic.Messages.MessageParam[],
+		metadata?: ApiHandlerCreateMessageMetadata,
+	): ApiStream {
+		const model = await this.fetchModel()
 
 		if (model.id.includes("DeepSeek-R1")) {
 			const stream = await this.client.chat.completions.create({
@@ -85,7 +90,43 @@ export class ChutesHandler extends BaseOpenAiCompatibleProvider<ChutesModelId> {
 				yield processedChunk
 			}
 		} else {
-			yield* super.createMessage(systemPrompt, messages)
+			// For non-DeepSeek-R1 models, use standard OpenAI streaming
+			const stream = await this.client.chat.completions.create(this.getCompletionParams(systemPrompt, messages))
+
+			for await (const chunk of stream) {
+				const delta = chunk.choices[0]?.delta
+
+				if (delta?.content) {
+					yield { type: "text", text: delta.content }
+				}
+
+				if (chunk.usage) {
+					yield {
+						type: "usage",
+						inputTokens: chunk.usage.prompt_tokens || 0,
+						outputTokens: chunk.usage.completion_tokens || 0,
+					}
+				}
+			}
+		}
+	}
+
+	async completePrompt(prompt: string): Promise<string> {
+		const { id: modelId, info } = await this.fetchModel()
+
+		try {
+			const response = await this.client.chat.completions.create({
+				model: modelId,
+				messages: [{ role: "user", content: prompt }],
+				max_tokens: info.maxTokens,
+				temperature: this.options.modelTemperature ?? 0,
+			})
+			return response.choices[0]?.message.content || ""
+		} catch (error) {
+			if (error instanceof Error) {
+				throw new Error(`Chutes completion error: ${error.message}`)
+			}
+			throw error
 		}
 	}
 
@@ -96,7 +137,7 @@ export class ChutesHandler extends BaseOpenAiCompatibleProvider<ChutesModelId> {
 			...model,
 			info: {
 				...model.info,
-				temperature: isDeepSeekR1 ? DEEP_SEEK_DEFAULT_TEMPERATURE : this.defaultTemperature,
+				temperature: isDeepSeekR1 ? DEEP_SEEK_DEFAULT_TEMPERATURE : 0.5,
 			},
 		}
 	}
