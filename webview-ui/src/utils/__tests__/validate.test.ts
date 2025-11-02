@@ -44,6 +44,7 @@ describe("Model Validation Functions", () => {
 		"vercel-ai-gateway": {},
 		huggingface: {},
 		roo: {},
+		chutes: {},
 	}
 
 	const allowAllOrganization: OrganizationAllowList = {

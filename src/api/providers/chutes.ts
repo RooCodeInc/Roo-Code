@@ -3,6 +3,7 @@ import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 
 import type { ApiHandlerOptions } from "../../shared/api"
+import { getModelMaxOutputTokens } from "../../shared/api"
 import { XmlMatcher } from "../../utils/xml-matcher"
 import { convertToR1Format } from "../transform/r1-format"
 import { convertToOpenAiMessages } from "../transform/openai-format"
@@ -30,9 +31,18 @@ export class ChutesHandler extends RouterProvider implements SingleCompletionHan
 	): OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming {
 		const { id: model, info } = this.getModel()
 
+		// Centralized cap: clamp to 20% of the context window (unless provider-specific exceptions apply)
+		const max_tokens =
+			getModelMaxOutputTokens({
+				modelId: model,
+				model: info,
+				settings: this.options,
+				format: "openai",
+			}) ?? undefined
+
 		const params: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming = {
 			model,
-			max_tokens: info.maxTokens,
+			max_tokens,
 			messages: [{ role: "system", content: systemPrompt }, ...convertToOpenAiMessages(messages)],
 			stream: true,
 			stream_options: { include_usage: true },
@@ -114,18 +124,29 @@ export class ChutesHandler extends RouterProvider implements SingleCompletionHan
 
 	async completePrompt(prompt: string): Promise<string> {
 		const model = await this.fetchModel()
-		const { id: modelId, info } = this.getModel()
+		const { id: modelId, info } = model
 
 		try {
+			// Centralized cap: clamp to 20% of the context window (unless provider-specific exceptions apply)
+			const max_tokens =
+				getModelMaxOutputTokens({
+					modelId,
+					model: info,
+					settings: this.options,
+					format: "openai",
+				}) ?? undefined
+
 			const requestParams: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {
 				model: modelId,
 				messages: [{ role: "user", content: prompt }],
-				max_tokens: info.maxTokens,
+				max_tokens,
 			}
 
 			// Only add temperature if model supports it
 			if (this.supportsTemperature(modelId)) {
-				requestParams.temperature = this.options.modelTemperature ?? info.temperature ?? 0
+				const isDeepSeekR1 = modelId.includes("DeepSeek-R1")
+				const defaultTemperature = isDeepSeekR1 ? DEEP_SEEK_DEFAULT_TEMPERATURE : 0.5
+				requestParams.temperature = this.options.modelTemperature ?? defaultTemperature
 			}
 
 			const response = await this.client.chat.completions.create(requestParams)

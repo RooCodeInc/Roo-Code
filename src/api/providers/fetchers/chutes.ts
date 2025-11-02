@@ -5,12 +5,15 @@ import { type ModelInfo } from "@roo-code/types"
 
 import { DEFAULT_HEADERS } from "../constants"
 
-// Chutes models endpoint follows OpenAI /models shape
+// Chutes models endpoint follows OpenAI /models shape with additional fields
 const ChutesModelSchema = z.object({
 	id: z.string(),
 	object: z.literal("model").optional(),
 	owned_by: z.string().optional(),
 	created: z.number().optional(),
+	context_length: z.number(),
+	max_model_len: z.number(),
+	input_modalities: z.array(z.string()),
 })
 
 const ChutesModelsResponseSchema = z.object({ data: z.array(ChutesModelSchema) })
@@ -28,15 +31,15 @@ export async function getChutesModels(apiKey?: string): Promise<Record<string, M
 		const data = parsed.success ? parsed.data.data : response.data?.data || []
 
 		for (const m of data as Array<z.infer<typeof ChutesModelSchema>>) {
-			// Set reasonable defaults for Chutes models
-			// Context window and max tokens can be refined based on actual API responses
-			const contextWindow = 128000
-			const maxTokens = 32768
+			// Extract from API response (all fields are required)
+			const contextWindow = m.context_length
+			const maxTokens = m.max_model_len
+			const supportsImages = m.input_modalities.includes("image")
 
 			const info: ModelInfo = {
 				maxTokens,
 				contextWindow,
-				supportsImages: false,
+				supportsImages,
 				supportsPromptCache: false,
 				inputPrice: 0,
 				outputPrice: 0,

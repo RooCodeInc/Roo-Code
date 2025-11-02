@@ -824,6 +824,10 @@ export const webviewMessageHandler = async (
 							: undefined,
 					},
 				},
+				{
+					key: "chutes",
+					options: { provider: "chutes", apiKey: apiConfiguration.chutesApiKey },
+				},
 			]
 
 			// IO Intelligence is conditional on api key

@@ -3,12 +3,7 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 
-import {
-	type ChutesModelId,
-	chutesDefaultModelId,
-	chutesDefaultModelInfo,
-	DEEP_SEEK_DEFAULT_TEMPERATURE,
-} from "@roo-code/types"
+import { chutesDefaultModelId, chutesDefaultModelInfo, DEEP_SEEK_DEFAULT_TEMPERATURE } from "@roo-code/types"
 
 import { ChutesHandler } from "../chutes"
 
@@ -165,7 +160,7 @@ describe("ChutesHandler", () => {
 	})
 
 	it("should return specified model when valid model is provided", async () => {
-		const testModelId: ChutesModelId = "deepseek-ai/DeepSeek-R1"
+		const testModelId = "deepseek-ai/DeepSeek-R1"
 		const handlerWithModel = new ChutesHandler({
 			apiModelId: testModelId,
 			chutesApiKey: "test-chutes-api-key",
@@ -239,7 +234,7 @@ describe("ChutesHandler", () => {
 	})
 
 	it("should apply DeepSeek default temperature for R1 models", () => {
-		const testModelId: ChutesModelId = "deepseek-ai/DeepSeek-R1"
+		const testModelId = "deepseek-ai/DeepSeek-R1"
 		const handlerWithModel = new ChutesHandler({
 			apiModelId: testModelId,
 			chutesApiKey: "test-chutes-api-key",
@@ -249,7 +244,7 @@ describe("ChutesHandler", () => {
 	})
 
 	it("should use default temperature for non-DeepSeek models", () => {
-		const testModelId: ChutesModelId = "unsloth/Llama-3.3-70B-Instruct"
+		const testModelId = "unsloth/Llama-3.3-70B-Instruct"
 		const handlerWithModel = new ChutesHandler({
 			apiModelId: testModelId,
 			chutesApiKey: "test-chutes-api-key",

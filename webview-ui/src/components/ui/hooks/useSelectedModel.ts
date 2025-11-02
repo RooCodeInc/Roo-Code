@@ -27,7 +27,6 @@ import {
 	xaiModels,
 	groqModels,
 	groqDefaultModelId,
-	chutesModels,
 	chutesDefaultModelId,
 	vscodeLlmModels,
 	vscodeLlmDefaultModelId,
@@ -203,7 +202,7 @@ function getSelectedModel({
 		}
 		case "chutes": {
 			const id = apiConfiguration.apiModelId ?? chutesDefaultModelId
-			const info = chutesModels[id as keyof typeof chutesModels]
+			const info = routerModels.chutes[id]
 			return { id, info }
 		}
 		case "bedrock": {
