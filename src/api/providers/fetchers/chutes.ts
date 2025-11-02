@@ -14,7 +14,6 @@ const ChutesModelSchema = z.object({
 	context_length: z.number(),
 	max_model_len: z.number(),
 	input_modalities: z.array(z.string()),
-	supported_features: z.array(z.string()).optional(),
 })
 
 const ChutesModelsResponseSchema = z.object({ data: z.array(ChutesModelSchema) })
@@ -36,14 +35,12 @@ export async function getChutesModels(apiKey?: string): Promise<Record<string, M
 			const contextWindow = m.context_length
 			const maxTokens = m.max_model_len
 			const supportsImages = m.input_modalities.includes("image")
-			const supportsReasoningBinary = m.supported_features?.includes("reasoning") ?? false
 
 			const info: ModelInfo = {
 				maxTokens,
 				contextWindow,
 				supportsImages,
 				supportsPromptCache: false,
-				supportsReasoningBinary,
 				inputPrice: 0,
 				outputPrice: 0,
 				description: `Chutes AI model: ${m.id}`,

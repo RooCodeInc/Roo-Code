@@ -53,11 +53,6 @@ export class ChutesHandler extends RouterProvider implements SingleCompletionHan
 			params.temperature = this.options.modelTemperature ?? info.temperature
 		}
 
-		// Add thinking parameter if reasoning is enabled and model supports it
-		if (this.options.enableReasoningEffort && info.supportsReasoningBinary) {
-			;(params as any).thinking = { type: "enabled" }
-		}
-
 		return params
 	}
 
