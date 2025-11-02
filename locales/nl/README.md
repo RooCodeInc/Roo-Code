@@ -35,7 +35,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-  </details>
+    </details>
 
 ---
 
@@ -88,6 +88,8 @@ Meer info: [Modi gebruiken](https://docs.roocode.com/basic-usage/using-modes) �
 ---
 
 ## Lokale setup & ontwikkeling
+
+0. **Open in de Dev Container (aanbevolen):** Nadat je de repository hebt gekloond, open je deze in VS Code en voer je "Reopen in Container" uit zodat de ontwikkeling plaatsvindt binnen de meegeleverde `.devcontainer`-omgeving. Zo zijn de juiste Node.js- en pnpm-versies beschikbaar zonder extra handmatige configuratie.
 
 1. **Kloon** de repo:
 

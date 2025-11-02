@@ -35,7 +35,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-  </details>
+    </details>
 
 ---
 
@@ -88,6 +88,8 @@ Roo Code 适应您的工作方式，而不是相反：
 ---
 
 ## 本地设置与开发
+
+0. **在 Dev Container 中打开（推荐）：** 克隆仓库后，在 VS Code 中打开并运行“Reopen in Container”，在提供的 `.devcontainer` 环境中进行开发。这样无需额外的手动设置即可使用正确的 Node.js 和 pnpm 版本。
 
 1. **克隆**仓库：
 

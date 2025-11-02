@@ -1,0 +1,23 @@
+{
+	"name": "Roo Code",
+	"image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+	"features": {
+		"ghcr.io/devcontainers/features/node:1": {
+			"version": "20.19.2",
+			"pnpm": "10.8.1"
+		}
+	},
+	"mounts": ["source=${localEnv:HOME}/.pnpm-store,target=/home/vscode/.pnpm-store,type=bind"],
+	"forwardPorts": [5173],
+	"postCreateCommand": "corepack enable && corepack prepare pnpm@10.8.1 --activate && pnpm install",
+	"updateContentCommand": "pnpm install",
+	"customizations": {
+		"vscode": {
+			"settings": {
+				"npm.packageManager": "pnpm"
+			},
+			"extensions": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode", "ms-vscode.vscode-typescript-next"]
+		}
+	},
+	"remoteUser": "vscode"
+}

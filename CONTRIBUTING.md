@@ -94,6 +94,8 @@ All contributions start with a GitHub Issue using our skinny templates.
 
 ### Development Setup
 
+0. **Open in the Dev Container:** After cloning, use VS Code's **“Reopen in Container”** command to start the workspace inside the repository's `.devcontainer`. This prepares the correct Node.js and pnpm toolchain automatically.
+
 1. **Fork & Clone:**
 
 ```

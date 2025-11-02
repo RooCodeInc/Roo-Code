@@ -35,7 +35,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-  </details>
+    </details>
 
 ---
 
@@ -88,6 +88,8 @@ Roo Code는 당신의 작업 방식에 맞춰 적응합니다.
 ---
 
 ## 로컬 설정 및 개발
+
+0. **Dev Container에서 열기(권장):** 저장소를 클론한 후 VS Code에서 열고 "Reopen in Container"를 실행하여 제공된 `.devcontainer` 환경에서 개발하세요. 그러면 추가 수동 설정 없이 올바른 Node.js 및 pnpm 버전을 사용할 수 있습니다.
 
 1. **리포지토리 복제**:
 

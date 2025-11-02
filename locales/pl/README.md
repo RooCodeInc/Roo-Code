@@ -35,7 +35,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-  </details>
+    </details>
 
 ---
 
@@ -88,6 +88,8 @@ Więcej: [Korzystanie z trybów](https://docs.roocode.com/basic-usage/using-mode
 ---
 
 ## Konfiguracja lokalna i programowanie
+
+0. **Otwórz w Dev Containerze (zalecane):** Po sklonowaniu repozytorium otwórz je w VS Code i uruchom "Reopen in Container", aby pracować w dostarczonym środowisku `.devcontainer`. Dzięki temu odpowiednie wersje Node.js i pnpm będą dostępne bez dodatkowej ręcznej konfiguracji.
 
 1. **Sklonuj** repozytorium:
 

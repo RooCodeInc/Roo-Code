@@ -35,7 +35,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-  </details>
+    </details>
 
 ---
 
@@ -88,6 +88,8 @@ Daha fazla: [Modları kullanma](https://docs.roocode.com/basic-usage/using-modes
 ---
 
 ## Yerel Kurulum ve Geliştirme
+
+0. **Dev Container'da açın (önerilir):** Depoyu klonladıktan sonra VS Code'da açın ve sağlanan `.devcontainer` ortamında çalışmak için "Reopen in Container" komutunu çalıştırın. Böylece ek manuel kurulum gerekmeden doğru Node.js ve pnpm sürümleri hazır olur.
 
 1. **Depoyu klonlayın**:
 

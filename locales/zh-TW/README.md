@@ -35,7 +35,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-  </details>
+    </details>
 
 ---
 
@@ -88,6 +88,8 @@ Roo Code 適應您的工作方式，而不是相反：
 ---
 
 ## 本地設定與開發
+
+0. **在 Dev Container 中開啟（建議）：** 完成倉庫複製後，請在 VS Code 中開啟並執行「Reopen in Container」，於提供的 `.devcontainer` 環境中開發。如此一來便能在無需額外手動設定的情況下使用正確的 Node.js 與 pnpm 版本。
 
 1. **複製**儲存庫：
 

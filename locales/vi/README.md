@@ -35,7 +35,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-  </details>
+    </details>
 
 ---
 
@@ -88,6 +88,8 @@ Xem thêm: [Sử dụng Chế độ](https://docs.roocode.com/basic-usage/using-
 ---
 
 ## Cài đặt và phát triển cục bộ
+
+0. **Mở trong Dev Container (được khuyến nghị):** Sau khi nhân bản kho, hãy mở nó trong VS Code và chạy "Reopen in Container" để phát triển trong môi trường `.devcontainer` được cung cấp. Điều này đảm bảo các phiên bản Node.js và pnpm phù hợp luôn sẵn sàng mà không cần cấu hình thủ công bổ sung.
 
 1. **Sao chép** kho lưu trữ:
 

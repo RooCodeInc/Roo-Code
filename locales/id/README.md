@@ -35,7 +35,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-  </details>
+    </details>
 
 ---
 
@@ -88,6 +88,8 @@ Pelajari lebih lanjut: [Menggunakan Mode](https://docs.roocode.com/basic-usage/u
 ---
 
 ## Pengaturan & Pengembangan Lokal
+
+0. **Buka di Dev Container (disarankan):** Setelah mengkloning repositori, buka di VS Code dan jalankan "Reopen in Container" agar pengembangan berlangsung di dalam lingkungan `.devcontainer` yang disediakan. Dengan begitu versi Node.js dan pnpm yang tepat sudah tersedia tanpa konfigurasi manual tambahan.
 
 1. **Clone** repo:
 

@@ -35,7 +35,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-  </details>
+    </details>
 
 ---
 
@@ -88,6 +88,8 @@ Roo Codeは、あなたの働き方に合わせるように適応します。
 ---
 
 ## ローカルセットアップと開発
+
+0. **Dev Container で開く（推奨）:** リポジトリをクローンしたら、VS Code で開いて「Reopen in Container」を実行し、提供されている `.devcontainer` 環境内で開発してください。これにより、追加の手動設定なしで正しい Node.js と pnpm のバージョンが利用できます。
 
 1. **リポジトリをクローンする**:
 

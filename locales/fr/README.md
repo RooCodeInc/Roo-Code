@@ -35,7 +35,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-  </details>
+    </details>
 
 ---
 
@@ -88,6 +88,8 @@ En savoir plus : [Utiliser les Modes](https://docs.roocode.com/basic-usage/using
 ---
 
 ## Configuration et développement local
+
+0. **Ouvrez-le dans le Dev Container (recommandé) :** Après avoir cloné le dépôt, ouvrez-le dans VS Code et exécutez "Reopen in Container" afin de développer dans l'environnement `.devcontainer` fourni. Cela garantit que les bonnes versions de Node.js et de pnpm sont disponibles sans configuration manuelle supplémentaire.
 
 1. **Clonez** le dépôt :
 
