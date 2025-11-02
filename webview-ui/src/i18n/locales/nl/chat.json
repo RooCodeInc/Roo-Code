@@ -294,6 +294,7 @@
 			"description": "Het draait Roo in de cloud en geeft direct zeer hoogwaardige codebeoordelingen. We hebben het intensief gebruikt om Roo te bouwen en nu is het ook beschikbaar voor de community.",
 			"createAgentButton": "Probeer PR Reviewer"
 		},
+		"careers": "Ook, <careersLink>we nemen aan!</careersLink>",
 		"socialLinks": "Sluit je bij ons aan op <xLink>X</xLink>, <discordLink>Discord</discordLink>, of <redditLink>r/RooCode</redditLink> 🚀"
 	},
 	"reasoning": {

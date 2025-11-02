@@ -309,6 +309,7 @@
 			"description": "クラウドでRooを実行し、非常に高品質なコードレビューを瞬時に提供します。Rooの開発で積極的に使用しており、現在はコミュニティでも利用可能です。",
 			"createAgentButton": "PRレビューアを試す"
 		},
+		"careers": "また、<careersLink>採用中です！</careersLink>",
 		"socialLinks": "<xLink>X</xLink>、<discordLink>Discord</discordLink>、または<redditLink>r/RooCode</redditLink>でフォローしてください 🚀"
 	},
 	"browser": {

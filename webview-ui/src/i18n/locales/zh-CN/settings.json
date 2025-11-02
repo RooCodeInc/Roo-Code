@@ -293,6 +293,9 @@
 		"moonshotApiKey": "Moonshot API 密钥",
 		"getMoonshotApiKey": "获取 Moonshot API 密钥",
 		"moonshotBaseUrl": "Moonshot 服务站点",
+		"minimaxApiKey": "MiniMax API 密钥",
+		"getMiniMaxApiKey": "获取 MiniMax API 密钥",
+		"minimaxBaseUrl": "MiniMax 服务站点",
 		"zaiApiKey": "Z AI API 密钥",
 		"getZaiApiKey": "获取 Z AI API 密钥",
 		"zaiEntrypoint": "Z AI 服务站点",
@@ -346,7 +349,7 @@
 		"enablePromptCachingTitle": "开启提示缓存可提升性能并节省成本",
 		"cacheUsageNote": "提示：若未显示缓存使用情况，请切换模型后重新选择",
 		"vscodeLmModel": "VSCode LM 模型",
-		"vscodeLmWarning": "注意：这是一个非常实验性的集成，提供商支持会有所不同。如果您收到有关不支持模型的错误，则这是提供商方面的问题。",
+		"vscodeLmWarning": "注意：通过 VS Code Language Model API 访问的模型可能由提供商进行封装或微调，因此其行为可能与直接从常见提供商或路由器使用同一模型时不同。要使用「Language Model」下拉列表中的模型，请先切换到该模型，然后在 Copilot Chat 提示中点击「接受」；否则可能会出现 400「The requested model is not supported」等错误。",
 		"geminiParameters": {
 			"urlContext": {
 				"title": "启用 URL 上下文",
@@ -422,7 +425,7 @@
 			},
 			"computerUse": {
 				"label": "计算机功能调用",
-				"description": "此模型是否能够与浏览器交互？（例如 Claude 3.7 Sonnet）。"
+				"description": "此模型是否能够与浏览器交互？（例如 Claude Sonnet）。"
 			},
 			"promptCache": {
 				"label": "提示缓存",
@@ -460,6 +463,7 @@
 		},
 		"reasoningEffort": {
 			"label": "模型推理强度",
+			"none": "无",
 			"minimal": "最小 (最快)",
 			"high": "高",
 			"medium": "中",
@@ -610,6 +614,14 @@
 			"label": "图片总大小上限",
 			"mb": "MB",
 			"description": "单次 read_file 操作中处理的所有图片的最大累计大小限制（MB）。读取多张图片时，每张图片的大小会累加到总大小中。如果包含另一张图片会超过此限制，则会跳过该图片。"
+		},
+		"includeCurrentTime": {
+			"label": "在上下文中包含当前时间",
+			"description": "启用后，当前时间和时区信息将包含在系统提示中。如果模型因时间问题停止工作，请禁用此选项。"
+		},
+		"includeCurrentCost": {
+			"label": "在上下文中包含当前成本",
+			"description": "启用后，当前 API 使用成本将包含在系统提示中。如果模型因成本问题停止工作，请禁用此选项。"
 		}
 	},
 	"terminal": {
@@ -676,7 +688,7 @@
 	"advanced": {
 		"diff": {
 			"label": "启用diff更新",
-			"description": "启用后，Roo 将能够通过差异算法写入，避免模型输出完整文件，以降低Token消耗。与最新的 Claude 3.7 Sonnet 模型配合最佳。",
+			"description": "启用后，Roo 将能够通过差异算法写入，避免模型输出完整文件，以降低Token消耗",
 			"strategy": {
 				"label": "Diff 策略",
 				"options": {
@@ -704,10 +716,6 @@
 		"DIFF_STRATEGY_UNIFIED": {
 			"name": "启用diff更新工具",
 			"description": "可减少因模型错误导致的重复尝试，但可能引发意外操作。启用前请确保理解风险并会仔细检查所有修改。"
-		},
-		"SEARCH_AND_REPLACE": {
-			"name": "启用搜索和替换工具",
-			"description": "启用实验性搜索和替换工具，允许 Roo 在一个请求中替换搜索词的多个实例。"
 		},
 		"INSERT_BLOCK": {
 			"name": "启用插入内容工具",

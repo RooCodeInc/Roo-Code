@@ -309,6 +309,7 @@
 			"description": "Il exécute Roo dans le cloud, offrant des revues de code d'une qualité exceptionnelle instantanément. Nous l'utilisons intensivement pour développer Roo et il est désormais aussi disponible pour la communauté.",
 			"createAgentButton": "Essayer le Réviseur de PR"
 		},
+		"careers": "Aussi, <careersLink>on recrute !</careersLink>",
 		"socialLinks": "Rejoins-nous sur <xLink>X</xLink>, <discordLink>Discord</discordLink>, ou <redditLink>r/RooCode</redditLink> 🚀"
 	},
 	"browser": {

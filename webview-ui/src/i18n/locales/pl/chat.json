@@ -309,6 +309,7 @@
 			"description": "Uruchamia Roo w chmurze, zapewniając natychmiastowe recenzje kodu o wyjątkowo wysokiej jakości. Intensywnie używaliśmy go do budowania Roo i teraz jest również dostępny dla społeczności.",
 			"createAgentButton": "Wypróbuj PR Reviewer"
 		},
+		"careers": "Dodatkowo, <careersLink>zatrudniamy!</careersLink>",
 		"socialLinks": "Dołącz do nas na <xLink>X</xLink>, <discordLink>Discord</discordLink>, lub <redditLink>r/RooCode</redditLink> 🚀"
 	},
 	"browser": {

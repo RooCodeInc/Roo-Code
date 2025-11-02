@@ -321,6 +321,7 @@
 			"description": "Ini menjalankan Roo di cloud, memberikan tinjauan kode berkualitas sangat tinggi secara instan. Kami telah menggunakannya secara intensif untuk membangun Roo dan sekarang juga tersedia untuk komunitas.",
 			"createAgentButton": "Coba PR Reviewer"
 		},
+		"careers": "Juga, <careersLink>kami sedang merekrut!</careersLink>",
 		"socialLinks": "Bergabunglah dengan kami di <xLink>X</xLink>, <discordLink>Discord</discordLink>, atau <redditLink>r/RooCode</redditLink> 🚀"
 	},
 	"reasoning": {

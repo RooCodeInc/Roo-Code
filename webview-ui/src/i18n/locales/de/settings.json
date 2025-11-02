@@ -297,6 +297,9 @@
 		"getZaiApiKey": "Z AI API-Schlüssel erhalten",
 		"zaiEntrypoint": "Z AI Einstiegspunkt",
 		"zaiEntrypointDescription": "Bitte wählen Sie den entsprechenden API-Einstiegspunkt basierend auf Ihrem Standort. Wenn Sie sich in China befinden, wählen Sie open.bigmodel.cn. Andernfalls wählen Sie api.z.ai.",
+		"minimaxApiKey": "MiniMax API-Schlüssel",
+		"getMiniMaxApiKey": "MiniMax API-Schlüssel erhalten",
+		"minimaxBaseUrl": "MiniMax-Einstiegspunkt",
 		"geminiApiKey": "Gemini API-Schlüssel",
 		"getGroqApiKey": "Groq API-Schlüssel erhalten",
 		"groqApiKey": "Groq API-Schlüssel",
@@ -346,7 +349,7 @@
 		"enablePromptCachingTitle": "Prompt-Caching aktivieren, um die Leistung zu verbessern und Kosten für unterstützte Modelle zu reduzieren.",
 		"cacheUsageNote": "Hinweis: Wenn Sie keine Cache-Nutzung sehen, versuchen Sie ein anderes Modell auszuwählen und dann Ihr gewünschtes Modell erneut auszuwählen.",
 		"vscodeLmModel": "Sprachmodell",
-		"vscodeLmWarning": "Hinweis: Dies ist eine sehr experimentelle Integration und die Anbieterunterstützung variiert. Wenn Sie einen Fehler über ein nicht unterstütztes Modell erhalten, liegt das Problem auf Anbieterseite.",
+		"vscodeLmWarning": "Hinweis: Über die VS Code Language Model API abgerufene Modelle können vom Anbieter ummantelt oder feinabgestimmt sein. Daher kann sich ihr Verhalten von der direkten Nutzung desselben Modells bei einem typischen Anbieter oder Router unterscheiden. Um ein Modell aus der Auswahlliste „Language Model“ zu verwenden, wechsle zunächst zu diesem Modell und klicke dann im Copilot‑Chat auf „Akzeptieren“; andernfalls kann ein Fehler wie 400 „The requested model is not supported“ auftreten.",
 		"geminiParameters": {
 			"urlContext": {
 				"title": "URL-Kontext aktivieren",
@@ -422,7 +425,7 @@
 			},
 			"computerUse": {
 				"label": "Computer-Nutzung",
-				"description": "Ist dieses Modell in der Lage, mit einem Browser zu interagieren? (z.B. Claude 3.7 Sonnet)"
+				"description": "Ist dieses Modell in der Lage, mit einem Browser zu interagieren?"
 			},
 			"promptCache": {
 				"label": "Prompt-Caching",
@@ -460,6 +463,7 @@
 		},
 		"reasoningEffort": {
 			"label": "Modell-Denkaufwand",
+			"none": "Keine",
 			"minimal": "Minimal (schnellste)",
 			"high": "Hoch",
 			"medium": "Mittel",
@@ -609,6 +613,14 @@
 			"label": "Maximale Gesamtbildgröße",
 			"mb": "MB",
 			"description": "Maximales kumulatives Größenlimit (in MB) für alle Bilder, die in einer einzelnen read_file-Operation verarbeitet werden. Beim Lesen mehrerer Bilder wird die Größe jedes Bildes zur Gesamtsumme addiert. Wenn das Einbeziehen eines weiteren Bildes dieses Limit überschreiten würde, wird es übersprungen."
+		},
+		"includeCurrentTime": {
+			"label": "Aktuelle Uhrzeit in den Kontext einbeziehen",
+			"description": "Wenn aktiviert, werden die aktuelle Uhrzeit und Zeitzoneninformationen in den System-Prompt aufgenommen. Deaktiviere diese Option, wenn Modelle aufgrund von Zeitbedenken die Arbeit einstellen."
+		},
+		"includeCurrentCost": {
+			"label": "Aktuelle Kosten in den Kontext einbeziehen",
+			"description": "Wenn aktiviert, werden die aktuellen API-Nutzungskosten in den System-Prompt aufgenommen. Deaktiviere diese Option, wenn Modelle aufgrund von Kostenbedenken die Arbeit einstellen."
 		}
 	},
 	"terminal": {
@@ -675,7 +687,7 @@
 	"advanced": {
 		"diff": {
 			"label": "Bearbeitung durch Diffs aktivieren",
-			"description": "Wenn aktiviert, kann Roo Dateien schneller bearbeiten und lehnt automatisch abgeschnittene vollständige Dateischreibvorgänge ab. Funktioniert am besten mit dem neuesten Claude 3.7 Sonnet-Modell.",
+			"description": "Wenn aktiviert, kann Roo Dateien schneller bearbeiten und lehnt automatisch abgeschnittene vollständige Dateischreibvorgänge ab",
 			"strategy": {
 				"label": "Diff-Strategie",
 				"options": {
@@ -703,10 +715,6 @@
 		"DIFF_STRATEGY_UNIFIED": {
 			"name": "Experimentelle einheitliche Diff-Strategie verwenden",
 			"description": "Aktiviere die experimentelle einheitliche Diff-Strategie. Diese Strategie könnte die Anzahl der durch Modellfehler verursachten Wiederholungsversuche reduzieren, kann aber zu unerwartetem Verhalten oder falschen Bearbeitungen führen. Aktiviere sie nur, wenn du die Risiken verstehst und bereit bist, alle Änderungen sorgfältig zu überprüfen."
-		},
-		"SEARCH_AND_REPLACE": {
-			"name": "Experimentelles Such- und Ersetzungswerkzeug verwenden",
-			"description": "Aktiviere das experimentelle Such- und Ersetzungswerkzeug, mit dem Roo mehrere Instanzen eines Suchbegriffs in einer Anfrage ersetzen kann."
 		},
 		"INSERT_BLOCK": {
 			"name": "Experimentelles Inhalts-Einfügewerkzeug verwenden",

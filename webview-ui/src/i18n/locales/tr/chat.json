@@ -310,6 +310,7 @@
 			"description": "Roo'yu bulutta çalıştırarak anında son derece yüksek kaliteli kod incelemeleri sağlar. Roo'yu oluşturmak için yoğun bir şekilde kullandık ve şimdi topluluk için de kullanılabilir.",
 			"createAgentButton": "PR Reviewer'ı Dene"
 		},
+		"careers": "Ayrıca, <careersLink>işe alım yapıyoruz!</careersLink>",
 		"socialLinks": "Bize <xLink>X</xLink>, <discordLink>Discord</discordLink>, veya <redditLink>r/RooCode</redditLink>'da katılın 🚀"
 	},
 	"browser": {

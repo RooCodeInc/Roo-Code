@@ -1,5 +1,48 @@
 # Roo Code Changelog
 
+## [3.29.5] - 2025-11-01
+
+- Fix: Resolve Qdrant codebase_search error by adding keyword index for type field (#8963 by @rossdonald, PR by @app/roomote)
+- Fix cost and token tracking between provider styles to ensure accurate usage metrics (thanks @mrubens!)
+
+## [3.29.4] - 2025-10-30
+
+- Feat: Add Minimax Provider (thanks @Maosghoul!)
+- Fix: prevent infinite loop when canceling during auto-retry (#8901 by @mini2s, PR by @app/roomote)
+- Fix: Enhanced codebase index recovery and reuse ('Start Indexing' button now reuses existing Qdrant index) (#8129 by @jaroslaw-weber, PR by @heyseth)
+- Fix: make code index initialization non-blocking at activation (#8777 by @cjlawson02, PR by @daniel-lxs)
+- Fix: remove search_and_replace tool from codebase (#8891 by @hannesrudolph, PR by @app/roomote)
+- Fix: custom modes under custom path not showing (#8122 by @hannesrudolph, PR by @elianiva)
+- Fix: prevent MCP server restart when toggling tool permissions (#8231 by @hannesrudolph, PR by @heyseth)
+- Fix: truncate type definition to match max read line (#8149 by @chenxluo, PR by @elianiva)
+- Fix: auto-sync enableReasoningEffort with reasoning dropdown selection (thanks @daniel-lxs!)
+- Fix: Gate auth-driven Roo model refresh to active provider only (thanks @daniel-lxs!)
+- Prevent a noisy cloud agent exception (thanks @cte!)
+- Feat: improve @ file search for large projects (#5721 by @Naituw, PR by @daniel-lxs)
+- Feat: add zai-glm-4.6 model to Cerebras and set gpt-oss-120b as default (thanks @kevint-cerebras!)
+- Feat: rename MCP Errors tab to Logs for mixed-level messages (#8893 by @hannesrudolph, PR by @app/roomote)
+- docs(vscode-lm): clarify VS Code LM API integration warning (thanks @hannesrudolph!)
+
+## [3.29.3] - 2025-10-28
+
+- Update Gemini models with latest 09-2025 versions including Gemini 2.5 Pro and Flash (#8485 by @cleacos, PR by @roomote)
+- Add reasoning support for Z.ai GLM binary thinking mode (#8465 by @BeWater799, PR by @daniel-lxs)
+- Enable reasoning in Roo provider (thanks @mrubens!)
+- Add settings to configure time and cost display in system prompt (#8450 by @jaxnb, PR by @roomote)
+- Fix: Use max_output_tokens when available in LiteLLM fetcher (#8454 by @fabb, PR by @roomote)
+- Fix: Process queued messages after context condensing completes (#8477 by @JosXa, PR by @roomote)
+- Fix: Use monotonic clock for rate limiting to prevent timing issues (#7770 by @intermarkec, PR by @chrarnoldus)
+- Fix: Resolve checkpoint menu popover overflow (thanks @daniel-lxs!)
+- Fix: LiteLLM test failures after merge (thanks @daniel-lxs!)
+- Improve UX: Focus textbox and add newlines after adding to context (thanks @mrubens!)
+
+## [3.29.2] - 2025-10-27
+
+- Add support for LongCat-Flash-Thinking-FP8 models in Chutes AI provider (#8425 by @leakless21, PR by @roomote)
+- Fix: Remove specific Claude model version from settings descriptions to avoid outdated references (#8435 by @rwydaegh, PR by @roomote)
+- Fix: Correct caching logic in Roo provider to improve performance (thanks @mrubens!)
+- Fix: Ensure free models don't display pricing information in the UI (thanks @mrubens!)
+
 ## [3.29.1] - 2025-10-26
 
 ![3.29.1 Release - Window Cleaning](/releases/3.29.1-release.png)
