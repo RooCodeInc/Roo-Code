@@ -58,6 +58,7 @@ import {
 	vercelAiGatewayDefaultModelId,
 	BEDROCK_1M_CONTEXT_MODEL_IDS,
 	deepInfraDefaultModelId,
+	isDynamicProvider,
 } from "@roo-code/types"
 
 import type { ModelRecord, RouterModels } from "@roo/api"
@@ -73,24 +74,38 @@ export const useSelectedModel = (apiConfiguration?: ProviderSettings) => {
 	const lmStudioModelId = provider === "lmstudio" ? apiConfiguration?.lmStudioModelId : undefined
 	const ollamaModelId = provider === "ollama" ? apiConfiguration?.ollamaModelId : undefined
 
-	const routerModels = useRouterModels()
+	// Only fetch router models for dynamic providers
+	const shouldFetchRouterModels = isDynamicProvider(provider)
+	const routerModels = useRouterModels({
+		provider: shouldFetchRouterModels ? provider : undefined,
+		enabled: shouldFetchRouterModels,
+	})
+
 	const openRouterModelProviders = useOpenRouterModelProviders(openRouterModelId)
 	const lmStudioModels = useLmStudioModels(lmStudioModelId)
 	const ollamaModels = useOllamaModels(ollamaModelId)
 
+	// Compute readiness only for the data actually needed for the selected provider
+	const needRouterModels = shouldFetchRouterModels
+	const needOpenRouterProviders = provider === "openrouter"
+	const needLmStudio = typeof lmStudioModelId !== "undefined"
+	const needOllama = typeof ollamaModelId !== "undefined"
+
+	const isReady =
+		(!needLmStudio || typeof lmStudioModels.data !== "undefined") &&
+		(!needOllama || typeof ollamaModels.data !== "undefined") &&
+		(!needRouterModels || typeof routerModels.data !== "undefined") &&
+		(!needOpenRouterProviders || typeof openRouterModelProviders.data !== "undefined")
+
 	const { id, info } =
-		apiConfiguration &&
-		(typeof lmStudioModelId === "undefined" || typeof lmStudioModels.data !== "undefined") &&
-		(typeof ollamaModelId === "undefined" || typeof ollamaModels.data !== "undefined") &&
-		typeof routerModels.data !== "undefined" &&
-		typeof openRouterModelProviders.data !== "undefined"
+		apiConfiguration && isReady
 			? getSelectedModel({
 					provider,
 					apiConfiguration,
-					routerModels: routerModels.data,
-					openRouterModelProviders: openRouterModelProviders.data,
-					lmStudioModels: lmStudioModels.data,
-					ollamaModels: ollamaModels.data,
+					routerModels: (routerModels.data || {}) as RouterModels,
+					openRouterModelProviders: (openRouterModelProviders.data || {}) as Record<string, ModelInfo>,
+					lmStudioModels: (lmStudioModels.data || undefined) as ModelRecord | undefined,
+					ollamaModels: (ollamaModels.data || undefined) as ModelRecord | undefined,
 				})
 			: { id: anthropicDefaultModelId, info: undefined }
 
@@ -99,13 +114,15 @@ export const useSelectedModel = (apiConfiguration?: ProviderSettings) => {
 		id,
 		info,
 		isLoading:
-			routerModels.isLoading ||
-			openRouterModelProviders.isLoading ||
-			(apiConfiguration?.lmStudioModelId && lmStudioModels!.isLoading),
+			(needRouterModels && routerModels.isLoading) ||
+			(needOpenRouterProviders && openRouterModelProviders.isLoading) ||
+			(needLmStudio && lmStudioModels!.isLoading) ||
+			(needOllama && ollamaModels!.isLoading),
 		isError:
-			routerModels.isError ||
-			openRouterModelProviders.isError ||
-			(apiConfiguration?.lmStudioModelId && lmStudioModels!.isError),
+			(needRouterModels && routerModels.isError) ||
+			(needOpenRouterProviders && openRouterModelProviders.isError) ||
+			(needLmStudio && lmStudioModels!.isError) ||
+			(needOllama && ollamaModels!.isError),
 	}
 }
 

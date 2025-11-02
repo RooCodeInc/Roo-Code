@@ -1,5 +1,10 @@
 # Roo Code Changelog
 
+## [3.29.5] - 2025-11-01
+
+- Fix: Resolve Qdrant codebase_search error by adding keyword index for type field (#8963 by @rossdonald, PR by @app/roomote)
+- Fix cost and token tracking between provider styles to ensure accurate usage metrics (thanks @mrubens!)
+
 ## [3.29.4] - 2025-10-30
 
 - Feat: Add Minimax Provider (thanks @Maosghoul!)
