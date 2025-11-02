@@ -67,7 +67,7 @@ export const CheckpointSaved = ({ checkpoint, currentHash, ...props }: Checkpoin
 	}
 
 	return (
-		<div className="group flex items-center justify-between gap-2 pt-2 pb-3 ">
+		<div className="group flex items-center justify-between gap-2 pt-2 pb-3 cursor-pointer">
 			<div className="flex items-center gap-2 text-blue-400 whitespace-nowrap">
 				<GitCommitVertical className="w-4" />
 				<span className="font-semibold">{t("chat:checkpoint.regular")}</span>

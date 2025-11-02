@@ -158,8 +158,9 @@ vi.mock("react-i18next", () => ({
 }))
 
 interface ChatTextAreaProps {
-	onSend: (value: string) => void
+	onSend: () => void
 	inputValue?: string
+	setInputValue?: (value: string) => void
 	sendingDisabled?: boolean
 	placeholderText?: string
 	selectedImages?: string[]
@@ -187,9 +188,19 @@ vi.mock("../ChatTextArea", () => {
 				<input
 					ref={mockInputRef}
 					type="text"
+					value={props.inputValue || ""}
 					onChange={(e) => {
-						// With message queueing, onSend is always called (it handles queueing internally)
-						props.onSend(e.target.value)
+						// Use parent's setInputValue if available
+						if (props.setInputValue) {
+							props.setInputValue(e.target.value)
+						}
+					}}
+					onKeyDown={(e) => {
+						// Only call onSend when Enter is pressed (simulating real behavior)
+						if (e.key === "Enter" && !e.shiftKey) {
+							e.preventDefault()
+							props.onSend()
+						}
 					}}
 					data-sending-disabled={props.sendingDisabled}
 				/>
