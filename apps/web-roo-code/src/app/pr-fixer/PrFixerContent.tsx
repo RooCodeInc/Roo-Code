@@ -35,9 +35,8 @@ const workflowSteps: Feature[] = [
 		icon: Wrench,
 		title: "3. Get clean scoped commits",
 		description: (
-			<>
-				The agent proposes targeted changes and pushes concise commits or patch suggestions you (or{" "}
-				<Link href="/pr-reviewer">PR Reviewer</Link>) can review and merge quickly.
+			The agent proposes targeted changes and pushes concise commits or patch suggestions you (or{" "}
+			<Link href="/pr-reviewer">PR Reviewer</Link>) can review and merge quickly.
 			</>
 		),
 	},
