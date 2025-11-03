@@ -635,7 +635,7 @@
 		},
 		"advanced": {
 			"label": "Terminal Ayarları: Gelişmiş",
-			"description": "Bu ayarlar yalnızca 'Satır İçi Terminal Kullan' devre dışı bırakıldığında geçerlidir."
+			"description": "Bu ayarlar yalnızca 'Satır İçi Terminal Kullan' devre dışı bırakıldığında geçerlidir. Sadece VS Code terminalini etkiler ve IDE'nin yeniden başlatılmasını gerektirebilir."
 		},
 		"outputLineLimit": {
 			"label": "Terminal çıktı sınırı",
@@ -655,7 +655,7 @@
 		},
 		"commandDelay": {
 			"label": "Terminal komut delay",
-			"description": "VS Code terminalin tüm outputu flush edebilmesi için her komuttan sonra kısa pause ekler (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). Sadece tail output eksikse kullan; yoksa 0'da bırak. Sadece VS Code terminal. <0>Daha fazla bilgi edinin</0>"
+			"description": "VS Code terminalin tüm outputu flush edebilmesi için her komuttan sonra kısa pause ekler (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). Sadece tail output eksikse kullan; yoksa 0'da bırak. <0>Daha fazla bilgi edinin</0>"
 		},
 		"compressProgressBar": {
 			"label": "İlerleme çubuğu çıktısını sıkıştır",
@@ -671,7 +671,7 @@
 		},
 		"zshOhMy": {
 			"label": "Oh My Zsh entegrasyonunu etkinleştir",
-			"description": "Oh My Zsh temanız/eklentileriniz kabuk entegrasyonu beklediğinde bunu açın; ITERM_SHELL_INTEGRATION_INSTALLED=Yes ayarlar. Bu değişkeni ayarlamaktan kaçınmak için bunu kapatın. Yalnızca VS Code terminali (zsh). IDE'yi yeniden başlatmanız gerekebilir. <0>Daha fazla bilgi edinin</0>"
+			"description": "Oh My Zsh temanız/eklentileriniz kabuk entegrasyonu beklediğinde bunu açın; ITERM_SHELL_INTEGRATION_INSTALLED=Yes ayarlar. Bu değişkeni ayarlamaktan kaçınmak için bunu kapatın. <0>Daha fazla bilgi edinin</0>"
 		},
 		"zshP10k": {
 			"label": "Powerlevel10k entegrasyonunu etkinleştir",

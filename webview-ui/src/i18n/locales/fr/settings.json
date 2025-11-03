@@ -634,7 +634,7 @@
 		},
 		"advanced": {
 			"label": "Paramètres du terminal : Avancé",
-			"description": "Ces paramètres s'appliquent uniquement lorsque 'Utiliser le terminal en ligne' est désactivé."
+			"description": "Ces paramètres s'appliquent uniquement lorsque 'Utiliser le terminal en ligne' est désactivé. Ils affectent uniquement le terminal VS Code et peuvent nécessiter un redémarrage de l'IDE."
 		},
 		"outputLineLimit": {
 			"label": "Limite de sortie du terminal",
@@ -654,7 +654,7 @@
 		},
 		"commandDelay": {
 			"label": "Délai de commande du terminal",
-			"description": "Ajoute une courte pause après chaque commande pour que le terminal VS Code puisse vider toute la sortie (bash/zsh : PROMPT_COMMAND sleep ; PowerShell : start-sleep). Utilisez uniquement si vous voyez une sortie de fin manquante ; sinon laissez à 0. Terminal VS Code uniquement. <0>En savoir plus</0>"
+			"description": "Ajoute une courte pause après chaque commande pour que le terminal VS Code puisse vider toute la sortie (bash/zsh : PROMPT_COMMAND sleep ; PowerShell : start-sleep). Utilisez uniquement si vous voyez une sortie de fin manquante ; sinon laissez à 0. <0>En savoir plus</0>"
 		},
 		"compressProgressBar": {
 			"label": "Compresser la sortie de barre de progression",
@@ -670,7 +670,7 @@
 		},
 		"zshOhMy": {
 			"label": "Activer l'intégration Oh My Zsh",
-			"description": "Activez lorsque votre thème/plugins Oh My Zsh attendent l'intégration du shell ; définit ITERM_SHELL_INTEGRATION_INSTALLED=Yes. Désactivez pour éviter de définir cette variable. Terminal VS Code (zsh) uniquement. Peut nécessiter un redémarrage de l'IDE. <0>En savoir plus</0>"
+			"description": "Activez lorsque votre thème/plugins Oh My Zsh attendent l'intégration du shell ; définit ITERM_SHELL_INTEGRATION_INSTALLED=Yes. Désactivez pour éviter de définir cette variable. <0>En savoir plus</0>"
 		},
 		"zshP10k": {
 			"label": "Activer l'intégration Powerlevel10k",

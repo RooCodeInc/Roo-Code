@@ -635,7 +635,7 @@
 		},
 		"advanced": {
 			"label": "终端设置：高级",
-			"description": "这些设置仅在「使用内联终端」禁用时适用。"
+			"description": "这些设置仅在「使用内联终端」禁用时适用。仅影响 VS Code 终端，可能需要重启 IDE。"
 		},
 		"outputLineLimit": {
 			"label": "终端输出限制",
@@ -655,7 +655,7 @@
 		},
 		"commandDelay": {
 			"label": "终端命令延迟",
-			"description": "在每个命令后添加短暂暂停，以便 VS Code 终端刷新所有输出（bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep）。仅在看到缺少尾部输出时使用；否则保持为 0。仅 VS Code 终端。<0>了解更多</0>"
+			"description": "在每个命令后添加短暂暂停，以便 VS Code 终端刷新所有输出（bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep）。仅在看到缺少尾部输出时使用；否则保持为 0。<0>了解更多</0>"
 		},
 		"compressProgressBar": {
 			"label": "压缩进度条输出",
@@ -671,7 +671,7 @@
 		},
 		"zshOhMy": {
 			"label": "启用 Oh My Zsh 集成",
-			"description": "当您的 Oh My Zsh 主题/插件期望 shell 集成时启用此选项；它会设置 ITERM_SHELL_INTEGRATION_INSTALLED=Yes。关闭此选项以避免设置该变量。仅 VS Code 终端（zsh）。可能需要重启 IDE。<0>了解更多</0>"
+			"description": "当您的 Oh My Zsh 主题/插件期望 shell 集成时启用此选项；它会设置 ITERM_SHELL_INTEGRATION_INSTALLED=Yes。关闭此选项以避免设置该变量。<0>了解更多</0>"
 		},
 		"zshP10k": {
 			"label": "启用 Powerlevel10k 集成",

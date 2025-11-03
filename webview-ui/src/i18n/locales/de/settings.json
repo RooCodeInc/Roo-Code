@@ -634,7 +634,7 @@
 		},
 		"advanced": {
 			"label": "Terminal-Einstellungen: Erweitert",
-			"description": "Diese Einstellungen gelten nur, wenn 'Inline-Terminal verwenden' deaktiviert ist."
+			"description": "Diese Einstellungen gelten nur, wenn 'Inline-Terminal verwenden' deaktiviert ist. Sie betreffen nur das VS Code-Terminal und können einen IDE-Neustart erfordern."
 		},
 		"outputLineLimit": {
 			"label": "Terminal-Ausgabelimit",
@@ -654,7 +654,7 @@
 		},
 		"commandDelay": {
 			"label": "Terminal-Befehlsverzögerung",
-			"description": "Fügt nach jedem Befehl eine kurze Pause hinzu, damit das VS Code-Terminal alle Ausgaben leeren kann (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). Verwende dies nur, wenn du fehlende Tail-Ausgabe siehst; sonst lass es bei 0. Nur VS Code-Terminal. <0>Mehr erfahren</0>"
+			"description": "Fügt nach jedem Befehl eine kurze Pause hinzu, damit das VS Code-Terminal alle Ausgaben leeren kann (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). Verwende dies nur, wenn du fehlende Tail-Ausgabe siehst; sonst lass es bei 0. <0>Mehr erfahren</0>"
 		},
 		"compressProgressBar": {
 			"label": "Fortschrittsbalken-Ausgabe komprimieren",
@@ -670,7 +670,7 @@
 		},
 		"zshOhMy": {
 			"label": "Oh My Zsh-Integration aktivieren",
-			"description": "Schalte dies ein, wenn dein Oh My Zsh-Theme/Plugins Shell-Integration erwarten; es setzt ITERM_SHELL_INTEGRATION_INSTALLED=Yes. Schalte dies aus, um das Setzen dieser Variable zu vermeiden. Nur VS Code-Terminal (zsh). Benötigt ggf. IDE-Neustart. <0>Mehr erfahren</0>"
+			"description": "Schalte dies ein, wenn dein Oh My Zsh-Theme/Plugins Shell-Integration erwarten; es setzt ITERM_SHELL_INTEGRATION_INSTALLED=Yes. Schalte dies aus, um das Setzen dieser Variable zu vermeiden. <0>Mehr erfahren</0>"
 		},
 		"zshP10k": {
 			"label": "Powerlevel10k-Integration aktivieren",

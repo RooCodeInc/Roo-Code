@@ -635,7 +635,7 @@
 		},
 		"advanced": {
 			"label": "Cài đặt Terminal: Nâng cao",
-			"description": "Các cài đặt này chỉ áp dụng khi 'Sử dụng Terminal nội tuyến' bị tắt."
+			"description": "Các cài đặt này chỉ áp dụng khi 'Sử dụng Terminal nội tuyến' bị tắt. Chỉ ảnh hưởng đến terminal VS Code và có thể yêu cầu khởi động lại IDE."
 		},
 		"outputLineLimit": {
 			"label": "Giới hạn đầu ra của terminal",
@@ -655,7 +655,7 @@
 		},
 		"commandDelay": {
 			"label": "Delay lệnh terminal",
-			"description": "Thêm khoảng dừng ngắn sau mỗi lệnh để VS Code terminal flush tất cả output (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). Chỉ dùng nếu thiếu tail output; nếu không để ở 0. Chỉ VS Code terminal. <0>Tìm hiểu thêm</0>"
+			"description": "Thêm khoảng dừng ngắn sau mỗi lệnh để VS Code terminal flush tất cả output (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). Chỉ dùng nếu thiếu tail output; nếu không để ở 0. <0>Tìm hiểu thêm</0>"
 		},
 		"compressProgressBar": {
 			"label": "Nén đầu ra thanh tiến trình",
@@ -671,7 +671,7 @@
 		},
 		"zshOhMy": {
 			"label": "Bật tích hợp Oh My Zsh",
-			"description": "Bật tính năng này khi chủ đề/plugin Oh My Zsh của bạn mong đợi tích hợp shell; nó sẽ đặt ITERM_SHELL_INTEGRATION_INSTALLED=Yes. Tắt tính năng này để tránh đặt biến đó. Chỉ dành cho terminal VS Code (zsh). Có thể yêu cầu khởi động lại IDE. <0>Tìm hiểu thêm</0>"
+			"description": "Bật tính năng này khi chủ đề/plugin Oh My Zsh của bạn mong đợi tích hợp shell; nó sẽ đặt ITERM_SHELL_INTEGRATION_INSTALLED=Yes. Tắt tính năng này để tránh đặt biến đó. <0>Tìm hiểu thêm</0>"
 		},
 		"zshP10k": {
 			"label": "Bật tích hợp Powerlevel10k",

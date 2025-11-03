@@ -639,7 +639,7 @@
 		},
 		"advanced": {
 			"label": "Pengaturan Terminal: Lanjutan",
-			"description": "Pengaturan ini hanya berlaku ketika 'Gunakan Terminal Inline' dinonaktifkan."
+			"description": "Pengaturan ini hanya berlaku ketika 'Gunakan Terminal Inline' dinonaktifkan. Hanya mempengaruhi terminal VS Code dan mungkin memerlukan restart IDE."
 		},
 		"outputLineLimit": {
 			"label": "Batas keluaran terminal",
@@ -659,7 +659,7 @@
 		},
 		"commandDelay": {
 			"label": "Delay perintah terminal",
-			"description": "Tambahkan jeda singkat setelah setiap perintah agar VS Code terminal bisa flush semua output (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). Gunakan hanya jika output ekor hilang; jika tidak biarkan di 0. Hanya VS Code terminal. <0>Pelajari lebih lanjut</0>"
+			"description": "Tambahkan jeda singkat setelah setiap perintah agar VS Code terminal bisa flush semua output (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). Gunakan hanya jika output ekor hilang; jika tidak biarkan di 0. <0>Pelajari lebih lanjut</0>"
 		},
 		"compressProgressBar": {
 			"label": "Kompres keluaran bilah kemajuan",
@@ -675,7 +675,7 @@
 		},
 		"zshOhMy": {
 			"label": "Aktifkan integrasi Oh My Zsh",
-			"description": "Aktifkan saat tema/plugin Oh My Zsh Anda mengharapkan integrasi shell; menyetel ITERM_SHELL_INTEGRATION_INSTALLED=Yes. Nonaktifkan untuk menghindari penyetelan variabel tersebut. Hanya terminal VS Code (zsh). Mungkin perlu memulai ulang IDE. <0>Pelajari lebih lanjut</0>"
+			"description": "Aktifkan saat tema/plugin Oh My Zsh Anda mengharapkan integrasi shell; menyetel ITERM_SHELL_INTEGRATION_INSTALLED=Yes. Nonaktifkan untuk menghindari penyetelan variabel tersebut. <0>Pelajari lebih lanjut</0>"
 		},
 		"zshP10k": {
 			"label": "Aktifkan integrasi Powerlevel10k",

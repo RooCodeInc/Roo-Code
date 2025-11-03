@@ -635,7 +635,7 @@
 		},
 		"advanced": {
 			"label": "Terminalinstellingen: Geavanceerd",
-			"description": "Deze instellingen gelden alleen wanneer 'Inline Terminal gebruiken' is uitgeschakeld."
+			"description": "Deze instellingen gelden alleen wanneer 'Inline Terminal gebruiken' is uitgeschakeld. Ze beïnvloeden alleen de VS Code-terminal en kunnen een IDE-herstart vereisen."
 		},
 		"outputLineLimit": {
 			"label": "Terminaluitvoerlimiet",
@@ -655,7 +655,7 @@
 		},
 		"commandDelay": {
 			"label": "Terminal-commandovertraging",
-			"description": "Voegt korte pauze toe na elk commando zodat VS Code-terminal alle uitvoer kan flushen (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). Gebruik alleen als je ontbrekende tail-uitvoer ziet; anders op 0 laten. Alleen VS Code-terminal. <0>Meer informatie</0>"
+			"description": "Voegt korte pauze toe na elk commando zodat VS Code-terminal alle uitvoer kan flushen (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). Gebruik alleen als je ontbrekende tail-uitvoer ziet; anders op 0 laten. <0>Meer informatie</0>"
 		},
 		"compressProgressBar": {
 			"label": "Voortgangsbalk-uitvoer comprimeren",
@@ -671,7 +671,7 @@
 		},
 		"zshOhMy": {
 			"label": "Oh My Zsh-integratie inschakelen",
-			"description": "Schakel in wanneer je Oh My Zsh-thema/plugins shell-integratie verwachten; stelt ITERM_SHELL_INTEGRATION_INSTALLED=Yes in. Schakel uit om instellen van die variabele te vermijden. Alleen VS Code-terminal (zsh). Kan IDE-herstart vereisen. <0>Meer informatie</0>"
+			"description": "Schakel in wanneer je Oh My Zsh-thema/plugins shell-integratie verwachten; stelt ITERM_SHELL_INTEGRATION_INSTALLED=Yes in. Schakel uit om instellen van die variabele te vermijden. <0>Meer informatie</0>"
 		},
 		"zshP10k": {
 			"label": "Powerlevel10k-integratie inschakelen",

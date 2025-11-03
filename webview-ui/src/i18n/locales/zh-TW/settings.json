@@ -635,7 +635,7 @@
 		},
 		"advanced": {
 			"label": "終端機設定：進階",
-			"description": "這些設定僅在「使用內嵌終端機」停用時適用。"
+			"description": "這些設定僅在「使用內嵌終端機」停用時適用。僅影響 VS Code 終端機，可能需要重啟 IDE。"
 		},
 		"outputLineLimit": {
 			"label": "終端機輸出限制",
@@ -655,7 +655,7 @@
 		},
 		"commandDelay": {
 			"label": "終端機命令延遲",
-			"description": "在每個命令後新增短暫暫停，以便 VS Code 終端機刷新所有輸出（bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep）。僅在看到缺少尾部輸出時使用；否則保持為 0。僅 VS Code 終端機。<0>了解更多</0>"
+			"description": "在每個命令後新增短暫暫停，以便 VS Code 終端機刷新所有輸出（bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep）。僅在看到缺少尾部輸出時使用；否則保持為 0。<0>了解更多</0>"
 		},
 		"compressProgressBar": {
 			"label": "壓縮進度條輸出",
@@ -671,7 +671,7 @@
 		},
 		"zshOhMy": {
 			"label": "啟用 Oh My Zsh 整合",
-			"description": "當您的 Oh My Zsh 主題/外掛程式期望 shell 整合時啟用此選項；它會設定 ITERM_SHELL_INTEGRATION_INSTALLED=Yes。關閉此選項以避免設定該變數。僅 VS Code 終端機（zsh）。可能需要重啟 IDE。<0>了解更多</0>"
+			"description": "當您的 Oh My Zsh 主題/外掛程式期望 shell 整合時啟用此選項；它會設定 ITERM_SHELL_INTEGRATION_INSTALLED=Yes。關閉此選項以避免設定該變數。<0>了解更多</0>"
 		},
 		"zshP10k": {
 			"label": "啟用 Powerlevel10k 整合",
