@@ -50,6 +50,7 @@ import { Package } from "../../shared/package"
 import { findLast } from "../../shared/array"
 import { supportPrompt } from "../../shared/support-prompt"
 import { GlobalFileNames } from "../../shared/globalFileNames"
+import { safeJsonParse } from "../../shared/safeJsonParse"
 import type { ExtensionMessage, ExtensionState, MarketplaceInstalledMetadata } from "../../shared/ExtensionMessage"
 import { Mode, defaultModeSlug, getModeBySlug } from "../../shared/modes"
 import { experimentDefault } from "../../shared/experiments"
@@ -2665,9 +2666,12 @@ export class ClineProvider
 
 			if (lastApiReqStartedIndex !== -1) {
 				const lastApiReqStarted = task.clineMessages[lastApiReqStartedIndex]
-				const apiReqInfo = JSON.parse(lastApiReqStarted.text || "{}")
+				const apiReqInfo = safeJsonParse<{ cost?: number; cancelReason?: string }>(
+					lastApiReqStarted.text || "{}",
+					{},
+				)
 
-				if (apiReqInfo.cost === undefined && apiReqInfo.cancelReason === undefined) {
+				if (apiReqInfo && apiReqInfo.cost === undefined && apiReqInfo.cancelReason === undefined) {
 					apiReqInfo.cancelReason = "user_cancelled"
 					lastApiReqStarted.text = JSON.stringify(apiReqInfo)
 					await task.overwriteClineMessages([...task.clineMessages])

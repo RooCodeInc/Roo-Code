@@ -1353,24 +1353,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// (abandoned = false), we keep the instance alive but set abort = true.
 		// We only clear these flags after the user confirms they want to resume,
 		// preventing the old stream from continuing if abort was set.
-		this.abort = false
-		this.abandoned = false
-		this.abortReason = undefined
-		this.didFinishAbortingStream = false
-		this.isStreaming = false
-
-		// Reset streaming-local fields to avoid stale state from previous stream
-		this.currentStreamingContentIndex = 0
-		this.currentStreamingDidCheckpoint = false
-		this.assistantMessageContent = []
-		this.didCompleteReadingStream = false
-		this.userMessageContent = []
-		this.userMessageContentReady = false
-		this.didRejectTool = false
-		this.didAlreadyUseTool = false
-		this.presentAssistantMessageLocked = false
-		this.presentAssistantMessageHasPendingUpdates = false
-		this.assistantMessageParser.reset()
+		this.resetAbortAndStreamingState()
 
 		let responseText: string | undefined
 		let responseImages: string[] | undefined
@@ -1551,6 +1534,33 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	}
 
 	/**
+	 * Resets abort flags and streaming state to allow task resumption.
+	 * Centralizes the state reset logic used after user confirms task resumption.
+	 *
+	 * @private
+	 */
+	private resetAbortAndStreamingState(): void {
+		this.abort = false
+		this.abandoned = false
+		this.abortReason = undefined
+		this.didFinishAbortingStream = false
+		this.isStreaming = false
+
+		// Reset streaming-local fields to avoid stale state from previous stream
+		this.currentStreamingContentIndex = 0
+		this.currentStreamingDidCheckpoint = false
+		this.assistantMessageContent = []
+		this.didCompleteReadingStream = false
+		this.userMessageContent = []
+		this.userMessageContentReady = false
+		this.didRejectTool = false
+		this.didAlreadyUseTool = false
+		this.presentAssistantMessageLocked = false
+		this.presentAssistantMessageHasPendingUpdates = false
+		this.assistantMessageParser.reset()
+	}
+
+	/**
 	 * Present a resumable ask on an aborted task without rehydrating.
 	 * Used by soft-interrupt (cancelTask) to show Resume/Terminate UI.
 	 * Selects the appropriate ask type based on the last relevant message.
@@ -1574,24 +1584,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// If user clicked Resume (not Terminate), reset abort flags and continue
 		if (response === "yesButtonClicked" || response === "messageResponse") {
 			// Reset abort flags to allow the loop to continue
-			this.abort = false
-			this.abandoned = false
-			this.abortReason = undefined
-			this.didFinishAbortingStream = false
-			this.isStreaming = false
-
-			// Reset streaming-local fields to avoid stale state from previous stream
-			this.currentStreamingContentIndex = 0
-			this.currentStreamingDidCheckpoint = false
-			this.assistantMessageContent = []
-			this.didCompleteReadingStream = false
-			this.userMessageContent = []
-			this.userMessageContentReady = false
-			this.didRejectTool = false
-			this.didAlreadyUseTool = false
-			this.presentAssistantMessageLocked = false
-			this.presentAssistantMessageHasPendingUpdates = false
-			this.assistantMessageParser.reset()
+			this.resetAbortAndStreamingState()
 
 			// Prepare content for resuming the task loop
 			let userContent: Anthropic.Messages.ContentBlockParam[] = []
