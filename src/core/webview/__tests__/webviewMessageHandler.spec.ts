@@ -272,12 +272,14 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 				unbound: mockModels,
 				litellm: mockModels,
 				roo: mockModels,
+				chutes: mockModels,
 				ollama: {},
 				lmstudio: {},
 				"vercel-ai-gateway": mockModels,
 				huggingface: {},
 				"io-intelligence": {},
 			},
+			values: undefined,
 		})
 	})
 
@@ -379,6 +381,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 				glama: mockModels,
 				unbound: mockModels,
 				roo: mockModels,
+				chutes: mockModels,
 				litellm: {},
 				ollama: {},
 				lmstudio: {},
@@ -386,6 +389,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 				huggingface: {},
 				"io-intelligence": {},
 			},
+			values: undefined,
 		})
 	})
 
@@ -409,44 +413,18 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 			.mockResolvedValueOnce(mockModels) // vercel-ai-gateway
 			.mockResolvedValueOnce(mockModels) // deepinfra
 			.mockResolvedValueOnce(mockModels) // roo
+			.mockRejectedValueOnce(new Error("Chutes API error")) // chutes
 			.mockRejectedValueOnce(new Error("LiteLLM connection failed")) // litellm
 
 		await webviewMessageHandler(mockClineProvider, {
 			type: "requestRouterModels",
 		})
 
-		// Verify ZGSM models message is sent first
+		// Verify zgsmModels message is sent first
 		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
 			type: "zgsmModels",
-			openAiModels: ["model-1"],
 			fullResponseData: [mockModels["model-1"]],
-		})
-
-		// Verify successful providers are included
-		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
-			type: "routerModels",
-			routerModels: {
-				zgsm: mockModels,
-				deepinfra: mockModels,
-				openrouter: mockModels,
-				requesty: {},
-				glama: mockModels,
-				unbound: {},
-				roo: mockModels,
-				litellm: {},
-				ollama: {},
-				lmstudio: {},
-				"vercel-ai-gateway": mockModels,
-				huggingface: {},
-				"io-intelligence": {},
-			},
-		})
-
-		// Verify ZGSM models message is sent first
-		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
-			type: "zgsmModels",
 			openAiModels: ["model-1"],
-			fullResponseData: [mockModels["model-1"]],
 		})
 
 		// Verify error messages were sent for failed providers
@@ -467,8 +445,37 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
 			type: "singleRouterModelFetchResponse",
 			success: false,
+			error: "Chutes API error",
+			values: { provider: "chutes" },
+		})
+
+		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
+			type: "singleRouterModelFetchResponse",
+			success: false,
 			error: "LiteLLM connection failed",
 			values: { provider: "litellm" },
+		})
+
+		// Verify final routerModels response includes successful providers and empty objects for failed ones
+		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
+			type: "routerModels",
+			routerModels: {
+				deepinfra: mockModels,
+				openrouter: mockModels,
+				requesty: {},
+				glama: mockModels,
+				unbound: {},
+				roo: mockModels,
+				chutes: {},
+				litellm: {},
+				ollama: {},
+				lmstudio: {},
+				"vercel-ai-gateway": mockModels,
+				huggingface: {},
+				"io-intelligence": {},
+				zgsm: mockModels, // Add zgsm to the expected results
+			},
+			values: undefined,
 		})
 	})
 
@@ -483,6 +490,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 			.mockRejectedValueOnce(new Error("Vercel AI Gateway error")) // vercel-ai-gateway
 			.mockRejectedValueOnce(new Error("DeepInfra API error")) // deepinfra
 			.mockRejectedValueOnce(new Error("Roo API error")) // roo
+			.mockRejectedValueOnce(new Error("Chutes API error")) // chutes
 			.mockRejectedValueOnce(new Error("LiteLLM connection failed")) // litellm
 
 		await webviewMessageHandler(mockClineProvider, {
@@ -537,6 +545,13 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 			success: false,
 			error: "Roo API error",
 			values: { provider: "roo" },
+		})
+
+		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
+			type: "singleRouterModelFetchResponse",
+			success: false,
+			error: "Chutes API error",
+			values: { provider: "chutes" },
 		})
 
 		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({

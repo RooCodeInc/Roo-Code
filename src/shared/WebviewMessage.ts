@@ -318,6 +318,7 @@ export interface WebviewMessage {
 			| "gemini"
 			| "mistral"
 			| "vercel-ai-gateway"
+			| "openrouter"
 		codebaseIndexEmbedderBaseUrl?: string
 		codebaseIndexEmbedderModelId: string
 		codebaseIndexEmbedderModelDimension?: number // Generic dimension for all providers
@@ -332,6 +333,7 @@ export interface WebviewMessage {
 		codebaseIndexGeminiApiKey?: string
 		codebaseIndexMistralApiKey?: string
 		codebaseIndexVercelAiGatewayApiKey?: string
+		codebaseIndexOpenRouterApiKey?: string
 	}
 	issueId?: string
 }

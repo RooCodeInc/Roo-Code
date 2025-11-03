@@ -687,7 +687,13 @@ const ApiOptions = ({
 			)}
 
 			{selectedProvider === "chutes" && (
-				<Chutes apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
+				<Chutes
+					apiConfiguration={apiConfiguration}
+					setApiConfigurationField={setApiConfigurationField}
+					routerModels={routerModels}
+					organizationAllowList={organizationAllowList}
+					modelValidationError={modelValidationError}
+				/>
 			)}
 
 			{selectedProvider === "litellm" && (
