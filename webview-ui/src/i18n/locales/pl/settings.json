@@ -767,9 +767,6 @@
 					"standard": "Standardowa strategia diff stosuje zmiany do jednego bloku kodu na raz.",
 					"unified": "Strategia diff ujednoliconego stosuje wiele podejść do zastosowania różnic i wybiera najlepsze podejście.",
 					"multiBlock": "Strategia diff wieloblokowego pozwala na aktualizację wielu bloków kodu w pliku w jednym żądaniu."
-				},
-				"watsonx": {
-					"description": "Gdy włączone, Roo będzie w stanie edytować pliki szybciej i automatycznie odrzuci obcięte pełne zapisy plików."
 				}
 			},
 			"matchPrecision": {
