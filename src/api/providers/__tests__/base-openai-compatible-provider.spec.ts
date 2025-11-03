@@ -228,6 +228,106 @@ describe("BaseOpenAiCompatibleProvider", () => {
 		})
 	})
 
+	describe("reasoning_content field", () => {
+		it("should filter out whitespace-only reasoning_content", async () => {
+			mockCreate.mockImplementationOnce(() => {
+				return {
+					[Symbol.asyncIterator]: () => ({
+						next: vi
+							.fn()
+							.mockResolvedValueOnce({
+								done: false,
+								value: { choices: [{ delta: { reasoning_content: "\n" } }] },
+							})
+							.mockResolvedValueOnce({
+								done: false,
+								value: { choices: [{ delta: { reasoning_content: "   " } }] },
+							})
+							.mockResolvedValueOnce({
+								done: false,
+								value: { choices: [{ delta: { reasoning_content: "\t\n  " } }] },
+							})
+							.mockResolvedValueOnce({
+								done: false,
+								value: { choices: [{ delta: { content: "Regular content" } }] },
+							})
+							.mockResolvedValueOnce({ done: true }),
+					}),
+				}
+			})
+
+			const stream = handler.createMessage("system prompt", [])
+			const chunks = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			// Should only have the regular content, not the whitespace-only reasoning
+			expect(chunks).toEqual([{ type: "text", text: "Regular content" }])
+		})
+
+		it("should yield non-empty reasoning_content", async () => {
+			mockCreate.mockImplementationOnce(() => {
+				return {
+					[Symbol.asyncIterator]: () => ({
+						next: vi
+							.fn()
+							.mockResolvedValueOnce({
+								done: false,
+								value: { choices: [{ delta: { reasoning_content: "Thinking step 1" } }] },
+							})
+							.mockResolvedValueOnce({
+								done: false,
+								value: { choices: [{ delta: { reasoning_content: "\n" } }] },
+							})
+							.mockResolvedValueOnce({
+								done: false,
+								value: { choices: [{ delta: { reasoning_content: "Thinking step 2" } }] },
+							})
+							.mockResolvedValueOnce({ done: true }),
+					}),
+				}
+			})
+
+			const stream = handler.createMessage("system prompt", [])
+			const chunks = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			// Should only yield the non-empty reasoning content
+			expect(chunks).toEqual([
+				{ type: "reasoning", text: "Thinking step 1" },
+				{ type: "reasoning", text: "Thinking step 2" },
+			])
+		})
+
+		it("should handle reasoning_content with leading/trailing whitespace", async () => {
+			mockCreate.mockImplementationOnce(() => {
+				return {
+					[Symbol.asyncIterator]: () => ({
+						next: vi
+							.fn()
+							.mockResolvedValueOnce({
+								done: false,
+								value: { choices: [{ delta: { reasoning_content: "  content with spaces  " } }] },
+							})
+							.mockResolvedValueOnce({ done: true }),
+					}),
+				}
+			})
+
+			const stream = handler.createMessage("system prompt", [])
+			const chunks = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			// Should yield reasoning with spaces (only pure whitespace is filtered)
+			expect(chunks).toEqual([{ type: "reasoning", text: "  content with spaces  " }])
+		})
+	})
+
 	describe("Basic functionality", () => {
 		it("should create stream with correct parameters", async () => {
 			mockCreate.mockImplementationOnce(() => {
