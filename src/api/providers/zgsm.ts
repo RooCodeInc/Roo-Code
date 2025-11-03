@@ -176,6 +176,8 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 				})
 			}
 			let stream
+			let selectedLlm: string | undefined
+			let selectReason: string | undefined
 			try {
 				this.logger.info(`[RequestID]:`, requestId)
 				const { data, response } = await this.client.chat.completions
@@ -189,20 +191,31 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 					.withResponse()
 				this.logger.info(`[ResponseID]:`, response.headers.get("x-request-id"))
 
-				stream = data
 				if (this.options.zgsmModelId === autoModeModelId) {
+					selectedLlm = response.headers.get("x-select-llm") || ""
+					selectReason = response.headers.get("x-select-reason") || ""
+
+					if (selectedLlm) {
+						this.logger.info(`[Selected LLM]:`, selectedLlm)
+					}
+					if (selectReason) {
+						this.logger.info(`[Select Reason]:`, selectReason)
+					}
+
 					const userInputHeader = response.headers.get("x-user-input")
 					if (userInputHeader) {
 						const decodedUserInput = Buffer.from(userInputHeader, "base64").toString("utf-8")
 						this.logger.info(`[x-user-input]: ${decodedUserInput}`)
 					}
 				}
+
+				stream = data
 			} catch (error) {
 				throw handleOpenAIError(error, this.providerName)
 			}
 
 			// 6. Optimize stream processing - use batch processing and buffer
-			yield* this.handleOptimizedStream(stream, modelInfo)
+			yield* this.handleOptimizedStream(stream, modelInfo, selectedLlm, selectReason)
 		} else {
 			// Non-streaming processing
 			const requestOptions = this.buildNonStreamingRequestOptions(
@@ -406,6 +419,8 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 	private async *handleOptimizedStream(
 		stream: AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>,
 		modelInfo: ModelInfo,
+		selectedLlm?: string,
+		selectReason?: string,
 	): ApiStream {
 		const matcher = new XmlMatcher(
 			"think",
@@ -422,6 +437,14 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 		const contentBuffer: string[] = []
 		let time = Date.now()
 		let isPrinted = false
+
+		// Yield selected LLM info if available (for Auto model mode)
+		if (selectedLlm && this.options.zgsmModelId === autoModeModelId) {
+			yield {
+				type: "text",
+				text: `[Selected LLM: ${selectedLlm}${selectReason ? ` (${selectReason})` : ""}]`,
+			}
+		}
 
 		// chunk
 		for await (const chunk of stream) {

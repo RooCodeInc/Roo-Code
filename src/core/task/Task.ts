@@ -2038,6 +2038,36 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 								}
 								break
 							case "text": {
+								// Check if it is Selected LLM information (only in Auto model mode).
+								if (
+									this.apiConfiguration.zgsmModelId === "Auto" &&
+									chunk.text?.startsWith("[Selected LLM:")
+								) {
+									// Extract Selected LLM and Reason information and update the api_req_started message.
+									const match = chunk.text.match(/\[Selected LLM:\s*([^\]]+)\]/)
+									if (match && lastApiReqIndex >= 0 && this.clineMessages[lastApiReqIndex]) {
+										const existingData = JSON.parse(
+											this.clineMessages[lastApiReqIndex].text || "{}",
+										)
+										// Parse the model name and reason
+										const fullInfo = match[1]
+										const reasonMatch = fullInfo.match(/^(.+?)\s*\((.+?)\)$/)
+										const selectedLlm = reasonMatch ? reasonMatch[1].trim() : fullInfo.trim()
+										const selectReason = reasonMatch ? reasonMatch[2].trim() : undefined
+
+										this.clineMessages[lastApiReqIndex].text = JSON.stringify({
+											...existingData,
+											selectedLlm,
+											selectReason,
+										} satisfies ClineApiReqInfo)
+										// Save the selection information but do not add it to the assistant message to avoid it being processed by the parser.
+										console.log(
+											`[Auto Model] Selected: ${selectedLlm}${selectReason ? ` (${selectReason})` : ""}`,
+										)
+										break
+									}
+								}
+
 								assistantMessage += chunk.text
 
 								// Parse raw assistant message chunk into content blocks.

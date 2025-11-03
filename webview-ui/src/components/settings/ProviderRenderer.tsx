@@ -53,7 +53,15 @@ const ProviderRenderer: React.FC<ProviderRendererProps> = ({
 		switch (message.type) {
 			case "zgsmModels": {
 				const updatedModels = message.openAiModels ?? []
-				setOpenAiModels(Object.fromEntries(updatedModels.map((item) => [item, zgsmModels.default])))
+				const { fullResponseData = [] } = message
+				setOpenAiModels(
+					Object.fromEntries(
+						updatedModels.map((item) => [
+							item,
+							fullResponseData.find((itm) => itm.id === item) || zgsmModels.default,
+						]),
+					),
+				)
 				break
 			}
 			case "openAiModels": {

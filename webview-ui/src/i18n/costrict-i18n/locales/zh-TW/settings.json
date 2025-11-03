@@ -201,5 +201,10 @@
 			"failedToDisableCodebaseIndex": "Failed to disable codebase index:",
 			"failedToCopyToClipboard": "Failed to copy to clipboard:"
 		}
+	},
+	"autoMode": {
+		"discountTitle": "auto模式折扣",
+		"discount": "{{discount}} 折扣",
+		"consumptionTitle": "使用該模型消耗的credit"
 	}
 }

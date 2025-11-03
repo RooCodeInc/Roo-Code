@@ -201,5 +201,10 @@
 			"failedToDisableCodebaseIndex": "Failed to disable codebase index:",
 			"failedToCopyToClipboard": "Failed to copy to clipboard:"
 		}
+	},
+	"autoMode": {
+		"discountTitle": "auto mode discount",
+		"discount": "{{discount}} discount",
+		"consumptionTitle": "Credit consumed using this model"
 	}
 }

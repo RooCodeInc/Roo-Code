@@ -1,5 +1,14 @@
 # CoStrict Change Log
 
+## [2.0.6]
+
+- Optimized auto completion
+- simplify custom instructions
+- Updated zgsm provider default temperature
+- Optimized logging
+- Sync roocode [last commit](https://github.com/zgsm-ai/costrict/commit/ca10cba3c4634d8b15e83423ea7abb374a3f82b6)
+- Fix known issues
+
 ## [2.0.5]
 
 - Optimized request sending speed

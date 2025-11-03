@@ -128,5 +128,9 @@
 			"description": "根据项目代码，分析并生成可执行的测试方案。",
 			"initPrompt": "生成当前项目的测试方案"
 		}
+	},
+	"autoMode": {
+		"selectedLlm": "选择模型：{{selectedLlm}}",
+		"selectReason": "选择原因：{{selectReason}}"
 	}
 }

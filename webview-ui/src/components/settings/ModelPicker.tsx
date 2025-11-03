@@ -304,26 +304,50 @@ export const ModelPicker = ({
 									)}
 								</CommandEmpty>
 								<CommandGroup>
-									{modelIds.map((model) => (
-										<CommandItem
-											key={model}
-											value={model}
-											onSelect={onSelect}
-											data-testid={`model-option-${model}`}
-											className={
-												model === "Auto" ? "border-b border-vscode-dropdown-border" : ""
-											}>
-											<span className="truncate" title={model}>
-												{model}
-											</span>
-											<Check
+									{modelIds.map((model) => {
+										const modelInfo = models?.[model]
+										const creditConsumption = modelInfo?.creditConsumption
+										const creditDiscount = modelInfo?.creditDiscount
+
+										return (
+											<CommandItem
+												key={model}
+												value={model}
+												onSelect={onSelect}
+												data-testid={`model-option-${model}`}
 												className={cn(
-													"size-4 p-0.5 ml-auto",
-													model === selectedModelId ? "opacity-100" : "opacity-0",
-												)}
-											/>
-										</CommandItem>
-									))}
+													model === "Auto" ? "border-b border-vscode-dropdown-border" : "",
+												)}>
+												<Check
+													className={cn(
+														"size-4 p-0.5",
+														model === selectedModelId ? "opacity-100" : "opacity-0",
+													)}
+												/>
+												<span className="truncate" title={model}>
+													{model}
+												</span>
+												{model === "Auto"
+													? creditDiscount && (
+															<span
+																className="ml-auto text-xs text-vscode-foreground bg-vscode-statusBarItem-prominentBackground px-1.5 py-0.5 rounded border border-vscode-button-border"
+																title={t("settings:autoMode.discountTitle")}>
+																{t("settings:autoMode.discount", {
+																	discount: `🎯 ${creditDiscount * 100}%`,
+																})}
+															</span>
+														)
+													: creditConsumption &&
+														creditConsumption !== -1 && (
+															<span
+																className="ml-auto text-sm text-vscode-descriptionForeground"
+																title={t("settings:autoMode.consumptionTitle")}>
+																{creditConsumption}x credit
+															</span>
+														)}
+											</CommandItem>
+										)
+									})}
 								</CommandGroup>
 							</CommandList>
 							{searchValue && !modelIds.includes(searchValue) && (

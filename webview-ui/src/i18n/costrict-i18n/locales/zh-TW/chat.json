@@ -128,5 +128,9 @@
 			"description": "根據項目代碼，分析並生成可執行的測試方案。",
 			"initPrompt": "生成當前項目的測試方案"
 		}
+	},
+	"autoMode": {
+		"selectedLlm": "選擇模型：{{selectedLlm}}",
+		"selectReason": "選擇原因：{{selectReason}}"
 	}
 }

@@ -125,5 +125,9 @@
 			"description": "Generates executable test solutions based on analysis of project code.",
 			"initPrompt": "Generate test solution for the current project"
 		}
+	},
+	"autoMode": {
+		"selectedLlm": "Select model: {{selectedLlm}}",
+		"selectReason": "Select reason: {{selectReason}}"
 	}
 }

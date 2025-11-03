@@ -8,12 +8,29 @@ vi.mock("vscode", () => ({
 		showErrorMessage: vi.fn(),
 		showWarningMessage: vi.fn(),
 		showInformationMessage: vi.fn(),
+		createTextEditorDecorationType: vi.fn(() => ({
+			dispose: vi.fn(),
+		})),
+		createOutputChannel: vi.fn(() => ({
+			appendLine: vi.fn(),
+			append: vi.fn(),
+			clear: vi.fn(),
+			show: vi.fn(),
+			hide: vi.fn(),
+			dispose: vi.fn(),
+		})),
 	},
 	workspace: {
 		workspaceFolders: undefined,
 		getConfiguration: vi.fn(() => ({
 			get: vi.fn(),
 			update: vi.fn(),
+		})),
+		createFileSystemWatcher: vi.fn(() => ({
+			onDidCreate: vi.fn(),
+			onDidChange: vi.fn(),
+			onDidDelete: vi.fn(),
+			dispose: vi.fn(),
 		})),
 	},
 	env: {
@@ -32,6 +49,7 @@ vi.mock("vscode", () => ({
 		Workspace: 2,
 		WorkspaceFolder: 3,
 	},
+	RelativePattern: vi.fn().mockImplementation((base, pattern) => ({ base, pattern })),
 }))
 
 // Mock modelCache getModels/flushModels used by the handler
