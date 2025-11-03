@@ -651,7 +651,7 @@
 		},
 		"advanced": {
 			"label": "Terminal Settings: Advanced",
-			"description": "These settings apply only when 'Use Inline Terminal' is disabled."
+			"description": "These settings apply only when 'Use Inline Terminal' is disabled. They affect the VS Code terminal only and may require restarting the IDE."
 		},
 		"outputLineLimit": {
 			"label": "Terminal output limit",
@@ -671,7 +671,7 @@
 		},
 		"commandDelay": {
 			"label": "Terminal command delay",
-			"description": "Adds a short pause after each command so the VS Code terminal can flush all output (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). Use only if you see missing tail output; otherwise leave at 0. VS Code terminal only."
+			"description": "Adds a short pause after each command so the VS Code terminal can flush all output (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). Use only if you see missing tail output; otherwise leave at 0."
 		},
 		"compressProgressBar": {
 			"label": "Compress progress bar output",
@@ -687,7 +687,7 @@
 		},
 		"zshOhMy": {
 			"label": "Enable Oh My Zsh integration",
-			"description": "Turn this on when your Oh My Zsh theme/plugins expect shell integration; it sets ITERM_SHELL_INTEGRATION_INSTALLED=Yes. Turn this off to avoid setting that variable. VS Code terminal (zsh) only. May require restarting the IDE."
+			"description": "Turn this on when your Oh My Zsh theme/plugins expect shell integration; it sets ITERM_SHELL_INTEGRATION_INSTALLED=Yes. Turn this off to avoid setting that variable. "
 		},
 		"zshP10k": {
 			"label": "Enable Powerlevel10k integration",

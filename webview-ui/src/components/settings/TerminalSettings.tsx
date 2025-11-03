@@ -213,7 +213,7 @@ export const TerminalSettings = ({
 								<Trans i18nKey="settings:terminal.shellIntegrationDisabled.description">
 									<VSCodeLink
 										href={buildDocLink(
-											"features/shell-integration#disable-terminal-shell-integration",
+											"features/shell-integration#use-inline-terminal-recommended",
 											"settings_terminal_shell_integration_disabled",
 										)}
 										style={{ display: "inline" }}>
