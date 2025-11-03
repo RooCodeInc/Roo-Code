@@ -13,7 +13,6 @@ interface DiffSettingsControlProps {
 export const DiffSettingsControl: React.FC<DiffSettingsControlProps> = ({
 	diffEnabled = true,
 	fuzzyMatchThreshold = 1.0,
-	provider,
 	onChange,
 }) => {
 	const { t } = useAppTranslation()
@@ -39,9 +38,7 @@ export const DiffSettingsControl: React.FC<DiffSettingsControlProps> = ({
 					<span className="font-medium">{t("settings:advanced.diff.label")}</span>
 				</VSCodeCheckbox>
 				<div className="text-vscode-descriptionForeground text-sm">
-					{provider === "ibm-watsonx"
-						? t("settings:advanced.diff.watsonx.description")
-						: t("settings:advanced.diff.description")}
+					{t("settings:advanced.diff.description")}
 				</div>
 			</div>
 
