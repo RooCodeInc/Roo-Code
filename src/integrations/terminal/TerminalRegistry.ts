@@ -311,27 +311,14 @@ export class TerminalRegistry {
 	 * @returns The Terminal object, or undefined if not found
 	 */
 	private static getTerminalByVSCETerminal(vsceTerminal: vscode.Terminal): RooTerminal | undefined {
-		if (!vsceTerminal) {
+		const found = this.terminals.find((t) => t instanceof Terminal && t.terminal === vsceTerminal)
+
+		if (found?.isClosed()) {
+			this.removeTerminal(found.id)
 			return undefined
 		}
 
-		try {
-			const found = this.terminals.find((t) => t instanceof Terminal && t.terminal === vsceTerminal)
-
-			if (!found) {
-				return undefined
-			}
-
-			if (found.isClosed()) {
-				this.removeTerminal(found.id)
-				return undefined
-			}
-
-			return found
-		} catch (error) {
-			console.error("[TerminalRegistry] Error in getTerminalByVSCETerminal:", error)
-			return undefined
-		}
+		return found
 	}
 
 	private static removeTerminal(id: number) {
