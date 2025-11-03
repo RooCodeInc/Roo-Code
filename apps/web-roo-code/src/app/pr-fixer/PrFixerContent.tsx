@@ -35,8 +35,9 @@ const workflowSteps: Feature[] = [
 		icon: Wrench,
 		title: "3. Get clean scoped commits",
 		description: (
-			The agent proposes targeted changes and pushes concise commits or patch suggestions you (or{" "}
-			<Link href="/pr-reviewer">PR Reviewer</Link>) can review and merge quickly.
+			<>
+				The agent proposes targeted changes and pushes concise commits or patch suggestions you (or{" "}
+				<Link href="/pr-reviewer">PR Reviewer</Link>) can review and merge quickly.
 			</>
 		),
 	},
@@ -80,7 +81,7 @@ export function PrFixerContent() {
 								<div className="mt-4 max-w-lg space-y-4 text-base text-muted-foreground md:text-left sm:mt-6">
 									<p>
 										Roo Code{"'"}s PR Fixer applies high-quality changes to your PRs, right from
-						GitHub. Invoke via a PR comment and it will read the entire comment history to
+										GitHub. Invoke via a PR comment and it will read the entire comment history to
 										understand context, agreements, and tradeoffs — then implement the right fix.
 									</p>
 									<p>
