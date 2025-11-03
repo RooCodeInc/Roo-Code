@@ -53,23 +53,25 @@ export const VSCodeLM = ({ apiConfiguration, setApiConfigurationField }: VSCodeL
 				<label className="block font-medium mb-1">{t("settings:providers.vscodeLmModel")}</label>
 				{vsCodeLmModels.length > 0 ? (
 					<Select
-						value={
-							apiConfiguration?.vsCodeLmModelSelector
-								? `${apiConfiguration.vsCodeLmModelSelector.vendor ?? ""}/${apiConfiguration.vsCodeLmModelSelector.family ?? ""}`
-								: ""
-						}
+						value={apiConfiguration?.vsCodeLmModelSelector?.id || ""}
 						onValueChange={handleInputChange("vsCodeLmModelSelector", (value) => {
-							const [vendor, family] = value.split("/")
-							return { vendor, family }
+							// Find the selected model to get all its properties
+							const selectedModel = vsCodeLmModels.find((model) => model.id === value)
+							if (selectedModel) {
+								return {
+									id: selectedModel.id,
+									vendor: selectedModel.vendor,
+									family: selectedModel.family,
+								}
+							}
+							return { id: value }
 						})}>
 						<SelectTrigger className="w-full">
 							<SelectValue placeholder={t("settings:common.select")} />
 						</SelectTrigger>
 						<SelectContent>
 							{vsCodeLmModels.map((model) => (
-								<SelectItem
-									key={`${model.vendor}/${model.family}`}
-									value={`${model.vendor}/${model.family}`}>
+								<SelectItem key={model.id || `${model.vendor}/${model.family}`} value={model.id || ""}>
 									{`${model.vendor} - ${model.family}`}
 								</SelectItem>
 							))}

@@ -111,14 +111,35 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 	 */
 	async createClient(selector: vscode.LanguageModelChatSelector): Promise<vscode.LanguageModelChat> {
 		try {
+			// If we have an ID, try to find the specific model by ID first
+			if (selector.id) {
+				// Get all available models
+				const allModels = await vscode.lm.selectChatModels({})
+
+				// Find the model with the matching ID
+				const modelById = allModels.find((model) => model.id === selector.id)
+
+				if (modelById) {
+					console.debug(`Roo Code <Language Model API>: Found model by ID: ${modelById.id}`)
+					return modelById
+				} else {
+					console.warn(
+						`Roo Code <Language Model API>: Model with ID '${selector.id}' not found, falling back to selector`,
+					)
+				}
+			}
+
+			// Fallback to selector-based selection
 			const models = await vscode.lm.selectChatModels(selector)
 
 			// Use first available model or create a minimal model object
 			if (models && Array.isArray(models) && models.length > 0) {
+				console.debug(`Roo Code <Language Model API>: Selected model: ${models[0].id}`)
 				return models[0]
 			}
 
 			// Create a minimal model if no models are available
+			console.warn(`Roo Code <Language Model API>: No models available, creating fallback model`)
 			return {
 				id: "default-lm",
 				name: "Default Language Model",
@@ -363,17 +384,38 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 		try {
 			// Create the response stream with minimal required options
 			const requestOptions: vscode.LanguageModelChatRequestOptions = {
-				justification: `Roo Code would like to use '${client.name}' from '${client.vendor}', Click 'Allow' to proceed.`,
+				justification: `Roo Code would like to use '${client.name || client.id}' from '${client.vendor}'. Click 'Allow' to proceed.`,
 			}
 
 			// Note: Tool support is currently provided by the VSCode Language Model API directly
 			// Extensions can register tools using vscode.lm.registerTool()
 
-			const response: vscode.LanguageModelChatResponse = await client.sendRequest(
-				vsCodeLmMessages,
-				requestOptions,
-				this.currentRequestCancellation.token,
-			)
+			let response: vscode.LanguageModelChatResponse
+			try {
+				response = await client.sendRequest(
+					vsCodeLmMessages,
+					requestOptions,
+					this.currentRequestCancellation.token,
+				)
+			} catch (error) {
+				// Check if this is a model approval error
+				if (error instanceof Error) {
+					if (
+						error.message.includes("model_not_supported") ||
+						error.message.includes("Model is not supported")
+					) {
+						throw new Error(
+							"Model not approved. Please select the model in settings, then click 'Allow' when prompted by VS Code to approve access to the language model.",
+						)
+					} else if (error.message.includes("cancelled") || error.message.includes("Cancelled")) {
+						throw new Error(
+							"Model access was cancelled. Please approve access to use the VS Code Language Model API.",
+						)
+					}
+				}
+				// Re-throw the original error if it's not a known approval issue
+				throw error
+			}
 
 			// Consume the stream and handle both text and tool call chunks
 			for await (const chunk of response.stream) {
@@ -566,7 +608,16 @@ const VSCODE_LM_STATIC_BLACKLIST: string[] = ["claude-3.7-sonnet", "claude-3.7-s
 export async function getVsCodeLmModels() {
 	try {
 		const models = (await vscode.lm.selectChatModels({})) || []
-		return models.filter((model) => !VSCODE_LM_STATIC_BLACKLIST.includes(model.id))
+		// Filter blacklisted models and ensure all required fields are present
+		return models
+			.filter((model) => !VSCODE_LM_STATIC_BLACKLIST.includes(model.id))
+			.map((model) => ({
+				id: model.id,
+				vendor: model.vendor,
+				family: model.family,
+				name: model.name,
+				version: model.version,
+			}))
 	} catch (error) {
 		console.error(
 			`Error fetching VS Code LM models: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`,

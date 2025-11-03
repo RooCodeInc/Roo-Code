@@ -120,6 +120,25 @@ describe("VsCodeLmHandler", () => {
 			})
 		})
 
+		it("should select model by ID when ID is provided", async () => {
+			const mockModel = { ...mockLanguageModelChat, id: "specific-model-id" }
+			// Mock returning multiple models when fetching all
+			;(vscode.lm.selectChatModels as Mock).mockResolvedValueOnce([
+				{ ...mockLanguageModelChat, id: "other-model" },
+				mockModel,
+				{ ...mockLanguageModelChat, id: "another-model" },
+			])
+
+			const client = await handler["createClient"]({
+				id: "specific-model-id",
+			})
+
+			expect(client).toBeDefined()
+			expect(client.id).toBe("specific-model-id")
+			// When selecting by ID, we fetch all models first
+			expect(vscode.lm.selectChatModels).toHaveBeenCalledWith({})
+		})
+
 		it("should return default client when no models available", async () => {
 			;(vscode.lm.selectChatModels as Mock).mockResolvedValueOnce([])
 
