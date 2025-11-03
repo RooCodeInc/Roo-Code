@@ -121,7 +121,6 @@ export const providerNames = [
 	"anthropic",
 	"bedrock",
 	"cerebras",
-	"chutes",
 	"claude-code",
 	"doubao",
 	"deepseek",

@@ -1,7 +1,7 @@
 import axios from "axios"
 import { z } from "zod"
 
-import { type ModelInfo } from "@roo-code/types"
+import { type ModelInfo, chutesModels } from "@roo-code/types"
 
 import { DEFAULT_HEADERS } from "../constants"
 
@@ -23,7 +23,9 @@ export async function getChutesModels(apiKey?: string): Promise<Record<string, M
 	if (apiKey) headers["Authorization"] = `Bearer ${apiKey}`
 
 	const url = "https://llm.chutes.ai/v1/models"
-	const models: Record<string, ModelInfo> = {}
+
+	// Start with hardcoded models as the base
+	const models: Record<string, ModelInfo> = { ...chutesModels }
 
 	try {
 		const response = await axios.get(url, { headers })
@@ -46,10 +48,12 @@ export async function getChutesModels(apiKey?: string): Promise<Record<string, M
 				description: `Chutes AI model: ${m.id}`,
 			}
 
+			// Union: dynamic models override hardcoded ones if they have the same ID
 			models[m.id] = info
 		}
 	} catch (error) {
 		console.error(`Error fetching Chutes models: ${error instanceof Error ? error.message : String(error)}`)
+		// On error, still return hardcoded models
 	}
 
 	return models
