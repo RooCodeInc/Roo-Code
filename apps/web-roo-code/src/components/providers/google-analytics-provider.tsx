@@ -37,7 +37,8 @@ export function GoogleAnalyticsProvider({ children }: { children: React.ReactNod
 		})
 
 		return unsubscribe
-	}, [shouldLoad])
+		// eslint-disable-next-line react-hooks/exhaustive-deps -- shouldLoad intentionally omitted to prevent re-initialization loop
+	}, [])
 
 	const initializeConsentDefaults = () => {
 		// Set up consent defaults before gtag loads (Consent Mode v2 requirement)
