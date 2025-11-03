@@ -124,8 +124,11 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 				}
 			}
 
-			if (delta && "reasoning_content" in delta && delta.reasoning_content) {
-				yield { type: "reasoning", text: (delta.reasoning_content as string | undefined) || "" }
+			if (delta && "reasoning_content" in delta) {
+				const reasoning_content = (delta.reasoning_content as string | undefined) || ""
+				if (reasoning_content?.trim()) {
+					yield { type: "reasoning", text: reasoning_content }
+				}
 			}
 
 			if (chunk.usage) {
