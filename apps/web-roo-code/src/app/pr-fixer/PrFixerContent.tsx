@@ -81,7 +81,7 @@ export function PrFixerContent() {
 								<div className="mt-4 max-w-lg space-y-4 text-base text-muted-foreground md:text-left sm:mt-6">
 									<p>
 										Roo Code{"'"}s PR Fixer applies high-quality changes to your PRs, right from
-										GitHub. Invoke via PR a comment and it will read the entire comment history to
+						GitHub. Invoke via a PR comment and it will read the entire comment history to
 										understand context, agreements, and tradeoffs — then implement the right fix.
 									</p>
 									<p>
