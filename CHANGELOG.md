@@ -1,5 +1,12 @@
 # CoStrict Change Log
 
+## [2.0.7]
+
+- Delete legacy api and add timeout handling
+- Add auto discount
+- Sync roocode [last commit](https://github.com/zgsm-ai/costrict/commit/5fb36d9c852f412d05e2e980b8af11b28ef30a3f)
+- Fix known issues
+
 ## [2.0.6]
 
 - Optimized auto completion

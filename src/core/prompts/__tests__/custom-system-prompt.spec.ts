@@ -64,7 +64,7 @@ import { SYSTEM_PROMPT } from "../system"
 import { defaultModeSlug, modes } from "../../../shared/modes"
 import * as vscode from "vscode"
 import * as fs from "fs/promises"
-import { toPosixFixed } from "./utils"
+import { toPosix as toPosixFixed } from "./utils"
 
 // Get the mocked fs module
 const mockedFs = vi.mocked(fs)

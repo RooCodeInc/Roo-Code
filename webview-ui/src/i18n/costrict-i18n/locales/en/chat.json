@@ -127,7 +127,7 @@
 		}
 	},
 	"autoMode": {
-		"selectedLlm": "Select model: {{selectedLlm}}",
+		"selectedLlm": "Auto model: {{selectedLlm}}",
 		"selectReason": "Select reason: {{selectReason}}"
 	}
 }

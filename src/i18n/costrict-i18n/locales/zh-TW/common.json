@@ -169,7 +169,8 @@
 			"file_check": "文件檢查中",
 			"login_expired": "登入已過期，請重新登入。",
 			"service_unavailable": "服務不可用，請稍後重試。",
-			"api_provider_not_support": "當前 API 提供商不支持 Code Review 功能，請切換到 CoStrict API 提供商。"
+			"api_provider_not_support": "當前 API 提供商不支持 Code Review 功能，請切換到 CoStrict API 提供商。",
+			"task_timeout": "任務執行超時，已自動取消"
 		},
 		"statusbar": {
 			"login_expired": "無法取得登入資訊。請重新登入以使用 Code Review 服務。"

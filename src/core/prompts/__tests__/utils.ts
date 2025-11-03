@@ -5,8 +5,3 @@ import { PathLike } from "fs"
 export function toPosix(filePath: PathLike | fs.FileHandle) {
 	return filePath.toString().toPosix()
 }
-
-// Fixed version of toPosix function to avoid calling non-existent toPosix method
-export function toPosixFixed(filePath: PathLike | fs.FileHandle): string {
-	return filePath.toString().replace(/\\/g, "/")
-}

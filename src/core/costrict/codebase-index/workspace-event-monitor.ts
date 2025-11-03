@@ -424,7 +424,6 @@ export class WorkspaceEventMonitor {
 			return
 		}
 
-		this.log.info(`[WorkspaceEventMonitor] Triggering modify event`)
 		const eventKey = `modify:${filePath}`
 		const eventData: WorkspaceEventData = {
 			eventType: "modify_file",

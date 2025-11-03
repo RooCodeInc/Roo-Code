@@ -169,7 +169,8 @@
 			"file_check": "File checking in progress",
 			"login_expired": "Login has expired, please log in again.",
 			"service_unavailable": "Service unavailable, please try again later.",
-			"api_provider_not_support": "The current API provider does not support the Code Review function, please switch to the CoStrict API provider."
+			"api_provider_not_support": "The current API provider does not support the Code Review function, please switch to the CoStrict API provider.",
+			"task_timeout": "Task execution timed out, has been automatically canceled"
 		},
 		"statusbar": {
 			"login_expired": "Failed to get login information. Please log in again to use the code review."

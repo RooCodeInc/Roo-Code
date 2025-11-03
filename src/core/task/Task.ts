@@ -305,7 +305,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	didAlreadyUseTool = false
 	didCompleteReadingStream = false
 	assistantMessageParser: AssistantMessageParser
-	private lastUsedInstructions?: string
+	// private lastUsedInstructions?: string
 	private skipPrevResponseIdOnce: boolean = false
 
 	// Token Usage Cache
@@ -2728,7 +2728,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		Task.lastGlobalApiRequestTime = performance.now()
 
 		const systemPrompt = await this.getSystemPrompt()
-		this.lastUsedInstructions = systemPrompt
+		// this.lastUsedInstructions = systemPrompt
 		const { contextTokens } = this.getTokenUsage()
 
 		if (contextTokens) {

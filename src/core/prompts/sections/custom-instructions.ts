@@ -274,7 +274,7 @@ export async function addCustomInstructions(
 	} = {},
 ): Promise<string> {
 	const sections = []
-	// globalCustomInstructions+
+
 	// Load mode-specific rules if mode is provided
 	let modeRuleContent = ""
 	let usedRuleFile = ""

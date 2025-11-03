@@ -48,43 +48,23 @@ export class TerminalRegistry {
 		try {
 			const startDisposable = vscode.window.onDidStartTerminalShellExecution?.(
 				async (e: vscode.TerminalShellExecutionStartEvent) => {
-					try {
-						// API兼容性检查
-						if (!vscode.window.onDidStartTerminalShellExecution) {
-							return
-						}
+					// Get a handle to the stream as early as possible:
+					const stream = e.execution.read()
+					const terminal = this.getTerminalByVSCETerminal(e.terminal)
 
-						// 增强验证
-						if (!e?.execution || !e?.terminal || e.terminal.exitStatus !== undefined) {
-							return
-						}
+					console.info("[onDidStartTerminalShellExecution]", {
+						command: e.execution?.commandLine?.value,
+						terminalId: terminal?.id,
+					})
 
-						// 安全读取流
-						let stream
-						try {
-							stream = e.execution.read()
-							if (!stream) return
-						} catch (streamError) {
-							console.error("[TerminalRegistry] Stream read failed:", streamError)
-							return
-						}
-
-						// 安全获取终端
-						const terminal = this.getTerminalByVSCETerminal(e.terminal)
-						if (!terminal || terminal.isClosed()) {
-							return
-						}
-
-						const commandLine = e.execution?.commandLine?.value || "<unknown>"
-
-						try {
-							terminal.setActiveStream(stream)
-							terminal.busy = true
-						} catch (terminalError) {
-							console.error("[TerminalRegistry] Set stream failed:", terminalError)
-						}
-					} catch (error) {
-						console.error("[TerminalRegistry] Unexpected error:", error)
+					if (terminal) {
+						terminal.setActiveStream(stream)
+						terminal.busy = true // Mark terminal as busy when shell execution starts
+					} else {
+						console.error(
+							"[onDidStartTerminalShellExecution] Shell execution started, but not from a Roo-registered terminal:",
+							e,
+						)
 					}
 				},
 			)

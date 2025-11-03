@@ -127,6 +127,10 @@
 			"previous": "Previous result",
 			"next": "Next result",
 			"close": "Close search"
+		},
+		"ALWAYS_INCLUDE_FILE_DETAILS": {
+			"name": "Enable Directory Details",
+			"description": "When enabled, CoStrict will include directory details in the context window."
 		}
 	},
 	"modelPicker": {

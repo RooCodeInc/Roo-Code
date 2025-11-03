@@ -15,17 +15,10 @@ import * as vscode from "vscode"
 import path from "node:path"
 import type { AxiosRequestConfig } from "axios"
 import { v7 as uuidv7 } from "uuid"
-import { RooCodeEventName } from "@roo-code/types"
+import { RooCodeEventName, type TaskEvents } from "@roo-code/types"
 
 import { ReviewTask } from "./types"
-import {
-	createReviewTaskAPI,
-	getReviewResultsAPI,
-	updateIssueStatusAPI,
-	cancelReviewTaskAPI,
-	getPrompt,
-	reportIssue,
-} from "./api"
+import { updateIssueStatusAPI, getPrompt, reportIssue } from "./api"
 import { ReviewComment } from "./reviewComment"
 import { ZgsmAuthConfig, ZgsmAuthService } from "../auth"
 
@@ -66,7 +59,6 @@ export class CodeReviewService {
 
 	// Task management
 	private currentTask: ReviewTask | null = null
-	private taskAbortController: AbortController | null = null
 
 	// Issue management and caching
 	private cachedIssues: Map<string, ReviewIssue> = new Map()
@@ -78,6 +70,52 @@ export class CodeReviewService {
 	 */
 	private constructor() {
 		this.logger = createLogger(Package.outputChannel)
+	}
+
+	/**
+	 * Update task state uniformly
+	 */
+	private updateTaskState(updates: Partial<ReviewTask>): void {
+		if (!this.currentTask) {
+			this.currentTask = {
+				taskId: "",
+				isCompleted: false,
+				progress: 0,
+				review_progress: "",
+				total: 0,
+			}
+		}
+
+		this.currentTask = { ...this.currentTask, ...updates }
+
+		// Send unified status update message
+		this.sendReviewTaskUpdateMessage(this.getTaskStatusFromState(), {
+			issues: this.getAllCachedIssues(),
+			progress: this.currentTask.progress,
+			error: this.currentTask.error?.message,
+		})
+	}
+
+	/**
+	 * Get task status from current task state
+	 */
+	private getTaskStatusFromState(): TaskStatus {
+		if (!this.currentTask) return TaskStatus.INITIAL
+		if (this.currentTask.error) return TaskStatus.ERROR
+		if (this.currentTask.isCompleted) return TaskStatus.COMPLETED
+		if (this.currentTask.progress > 0) return TaskStatus.RUNNING
+		return TaskStatus.INITIAL
+	}
+
+	/**
+	 * Handle task timeout
+	 */
+	private handleTaskTimeout(): void {
+		this.logger.info("[CodeReview] Task timeout")
+		this.updateTaskState({
+			error: new Error(t("common:review.tip.task_timeout")),
+			isCompleted: true,
+		})
 	}
 
 	/**
@@ -113,9 +151,6 @@ export class CodeReviewService {
 	 */
 	setCommentService(commentService: CommentService | null): void {
 		this.commentService = commentService
-	}
-	private async getClientId(): Promise<string> {
-		return getClientId()
 	}
 
 	private async getRequestOptions(): Promise<AxiosRequestConfig> {
@@ -174,160 +209,135 @@ export class CodeReviewService {
 
 	public async createReviewTask(message: string, targets: ReviewTarget[]) {
 		const provider = this.getProvider()
-		if (provider) {
-			this.reset()
-			let isCompleted = false
-			const task = await provider.createTask(message, undefined, undefined, undefined, { mode: "review" })
-			provider.postMessageToWebview({
-				type: "action",
-				action: "codeReviewButtonClicked",
-			})
-			task.on(RooCodeEventName.TaskStarted, () => {
-				this.sendReviewTaskUpdateMessage(TaskStatus.RUNNING, {
-					issues: [],
-					progress: 0,
-				})
-			})
-			task.on(RooCodeEventName.TaskToolFailed, () => {
-				this.sendReviewTaskUpdateMessage(TaskStatus.ERROR, {
-					issues: [],
-					progress: 0,
-					error: t("common:review.tip.service_unavailable"),
-				})
-			})
-			task.on(RooCodeEventName.TaskAskResponded, () => {
-				if (!isCompleted) {
-					const messageCount = task.clineMessages.length
-					console.log("TaskAskResponded", task.clineMessages)
-					let progress = 0
-					if (messageCount <= 10) {
-						progress = messageCount * 0.05
-					} else {
-						progress = Math.min(0.5 + (messageCount - 10) * 0.02, 0.95)
-					}
-					this.sendReviewTaskUpdateMessage(TaskStatus.RUNNING, {
-						issues: [],
-						progress: Math.round(progress * 100) / 100,
-					})
-				}
-			})
-			task.on(RooCodeEventName.TaskCompleted, async () => {
-				try {
-					this.logger.info("[CodeReview] Review Task completed")
-					isCompleted = true
-					console.log("TaskCompleted", task.clineMessages)
-					const message = task.clineMessages.find(
-						(msg) => msg.type === "say" && msg.text?.includes("I-AM-CODE-REVIEW-REPORT-V1"),
-					)
-					if (message?.text) {
-						const { issues, review_task_id } = await this.getIssues(message.text, targets)
-						if (issues) {
-							this.currentTask = {
-								...this.currentTask,
-								taskId: review_task_id,
-								isCompleted: true,
-								progress: 1,
-								review_progress: "",
-								total: issues?.length ?? 0,
-							}
-							this.updateCachedIssues(
-								issues.filter((issue) => fileExistsAtPath(path.resolve(provider.cwd, issue.file_path))),
-							)
-						}
-					}
-				} finally {
-					this.completeTask()
-					await provider.removeClineFromStack()
-					await provider.refreshWorkspace()
-				}
-			})
+		if (!provider) {
+			return
 		}
+
+		this.reset()
+
+		this.updateTaskState({
+			isCompleted: false,
+			progress: 0.001, // use 0.001 to indicate running
+			total: 0,
+		})
+
+		const task = await provider.createTask(message, undefined, undefined, undefined, { mode: "review" })
+		provider.postMessageToWebview({
+			type: "action",
+			action: "codeReviewButtonClicked",
+		})
+
+		const timeoutId = setTimeout(
+			() => {
+				this.handleTaskTimeout()
+			},
+			15 * 60 * 1000,
+		)
+
+		this.updateTaskState({ timeoutId })
+
+		const registerHandler = <K extends keyof TaskEvents>(
+			event: K,
+			handler: (...args: TaskEvents[K]) => void | Promise<void>,
+		) => {
+			task.on(event, handler as any)
+		}
+
+		registerHandler(RooCodeEventName.TaskStarted, () => {
+			this.updateTaskState({
+				isCompleted: false,
+				progress: 0.001, // use 0.001 to indicate running
+			})
+		})
+
+		registerHandler(RooCodeEventName.TaskAskResponded, () => {
+			const messageCount = task.clineMessages.length
+			let progress = 0
+			if (messageCount <= 10) {
+				progress = messageCount * 0.05
+			} else {
+				progress = Math.min(0.5 + (messageCount - 10) * 0.02, 0.95)
+			}
+			this.updateTaskState({
+				progress: Math.round(progress * 100) / 100,
+			})
+		})
+
+		registerHandler(RooCodeEventName.TaskCompleted, async () => {
+			try {
+				this.logger.info("[CodeReview] Review Task completed")
+
+				const message = task.clineMessages.find(
+					(msg) => msg.type === "say" && msg.text?.includes("I-AM-CODE-REVIEW-REPORT-V1"),
+				)
+
+				if (message?.text) {
+					const { issues, review_task_id } = await this.getIssues(message.text, targets)
+					if (issues) {
+						this.updateCachedIssues(
+							issues.filter((issue) => fileExistsAtPath(path.resolve(provider.cwd, issue.file_path))),
+						)
+						this.updateTaskState({
+							taskId: review_task_id,
+							isCompleted: true,
+							progress: 1,
+							total: issues.length,
+						})
+					}
+				}
+			} catch (error) {
+				this.logger.error("[CodeReview] Failed to complete task:", error)
+				this.updateTaskState({
+					error: error as Error,
+					isCompleted: true,
+				})
+			} finally {
+				clearTimeout(timeoutId)
+				await provider.removeClineFromStack()
+				await provider.refreshWorkspace()
+			}
+		})
+
+		registerHandler(RooCodeEventName.TaskResumable, () => {
+			this.updateTaskState({
+				error: new Error(t("common:review.tip.service_unavailable")),
+				isCompleted: true,
+			})
+		})
+
+		registerHandler(RooCodeEventName.TaskIdle, () => {
+			this.updateTaskState({
+				error: new Error(t("common:review.tip.service_unavailable")),
+				isCompleted: true,
+			})
+		})
 	}
 	// ===== Task Management Methods =====
 
-	/**
-	 * Start a new review task
-	 *
-	 * @param targets - Review targets array
-	 */
-	async startReviewTask(targets: ReviewTarget[]): Promise<void> {
-		// Validate input
-		if (!targets || targets.length === 0) {
-			throw new Error("At least one review target is required")
-		}
-
-		// Abort current task if exists
-		this.abortCurrentTask()
-		this.commentService?.clearAllCommentThreads()
-
-		// Create new AbortController for this task
-		this.taskAbortController = new AbortController()
-
-		// Get workspace information from ClineProvider
-		const workspace = this.clineProvider?.cwd || ""
-		const clientId = await this.getClientId()
-		const requestOptions = await this.getRequestOptions()
-		try {
-			// Call API to create review task
-			const requestParams = {
-				client_id: clientId,
-				workspace,
-				targets,
-			}
-			this.logger.info("Starting code review task")
-			// Send task started message with unified event
-			this.sendReviewTaskUpdateMessage(TaskStatus.RUNNING, {
-				issues: [],
-				progress: 0,
-			})
-			const taskResponse = await createReviewTaskAPI(requestParams, {
-				...requestOptions,
-				signal: this.taskAbortController.signal,
-			})
-
-			// Create ReviewTask object
-			this.currentTask = {
-				taskId: taskResponse.data.review_task_id,
-				isCompleted: false,
-				progress: 0,
-				review_progress: "",
-				total: targets.length,
-			}
-
-			this.logger.info(`Code Review task created,taskId: ${taskResponse.data.review_task_id}`)
-			// Start polling for results
-			this.startPolling(this.currentTask.taskId, clientId)
-		} catch (error) {
-			// Clean up on error
-			this.taskAbortController = null
-			this.currentTask = null
-			this.logger.error(error)
-			if (error.name === "AuthError") {
-				await this.handleAuthError()
-				return
-			}
-			this.pushErrorToWebview(new Error(t("common:review.tip.service_unavailable")))
-			this.recordReviewError(CodeReviewErrorType.StartReviewError as TelemetryErrorType)
-		}
-	}
 	public reset() {
-		this.abortCurrentTask()
-		this.currentTask = {
+		if (this.currentTask) {
+			if (this.currentTask.timeoutId) {
+				clearTimeout(this.currentTask.timeoutId)
+			}
+		}
+
+		this.updateTaskState({
 			taskId: "",
 			isCompleted: false,
 			progress: 0,
 			review_progress: "",
 			total: 0,
-		}
-		this.commentService?.clearAllCommentThreads()
-		this.sendReviewTaskUpdateMessage(TaskStatus.INITIAL, {
-			issues: [],
-			progress: 0,
+			error: undefined,
+			timeoutId: undefined,
 		})
+
+		this.clearCache()
+		this.currentActiveIssueId = null
+		this.commentService?.clearAllCommentThreads()
 	}
 
 	public async getIssues(report: string, targets: ReviewTarget[]) {
-		const clientId = await this.getClientId()
+		const clientId = getClientId()
 		const workspace = this.clineProvider?.cwd || ""
 		const requestOptions = await this.getRequestOptions()
 		try {
@@ -449,7 +459,6 @@ export class CodeReviewService {
 			)
 			const result = await updateIssueStatusAPI(issueId, this.currentTask.taskId, status, {
 				...requestOptions,
-				signal: this.taskAbortController?.signal,
 			})
 
 			// Check if API call was successful
@@ -507,24 +516,6 @@ export class CodeReviewService {
 	// ===== State Query Methods =====
 
 	/**
-	 * Get current active task
-	 *
-	 * @returns Current task or null if none
-	 */
-	getCurrentTask(): ReviewTask | null {
-		return this.currentTask
-	}
-
-	/**
-	 * Get current active issue ID
-	 *
-	 * @returns Current active issue ID or null
-	 */
-	getCurrentActiveIssueId(): string | null {
-		return this.currentActiveIssueId
-	}
-
-	/**
 	 * Get cached issue by ID
 	 *
 	 * @param issueId - Issue ID to retrieve
@@ -563,30 +554,6 @@ export class CodeReviewService {
 		return Array.from(this.cachedIssues.values())
 	}
 
-	/**
-	 * Get task progress information
-	 *
-	 * @returns Progress object or null if no task
-	 */
-	public getTaskProgress(): { current: number; total: number } | null {
-		if (!this.currentTask) {
-			return null
-		}
-		return {
-			current: this.currentTask.progress,
-			total: this.currentTask.total,
-		}
-	}
-
-	/**
-	 * Check if task is currently running
-	 *
-	 * @returns True if task is running
-	 */
-	public isTaskRunning(): boolean {
-		return this.currentTask !== null && !this.currentTask.isCompleted
-	}
-
 	public async askWithAI(id: string) {
 		const provider = this.getProvider()
 		if (!provider) {
@@ -616,91 +583,6 @@ export class CodeReviewService {
 	// ===== Polling Methods =====
 
 	/**
-	 * Start polling for review results
-	 *
-	 * @param taskId - Task ID to poll for
-	 */
-	private async startPolling(taskId: string, clientId: string): Promise<void> {
-		let offset = 0
-		const pollInterval = 2000 // 2 seconds
-		const requestOptions = await this.getRequestOptions()
-		this.logger.info("Starting polling for review results")
-		while (this.currentTask && !this.currentTask.isCompleted) {
-			// Check if task was aborted
-			if (this.taskAbortController?.signal.aborted) {
-				this.logger.info("Polling aborted")
-				break
-			}
-
-			try {
-				// Call API to get incremental results
-				const { data } = await getReviewResultsAPI(taskId, offset, clientId, {
-					...requestOptions,
-					signal: this.taskAbortController?.signal,
-				})
-				const { issues, is_done, progress, review_progress, total, next_offset, is_task_failed, error_msg } =
-					data
-
-				// Process new issues if any
-				let shouldUpdateMessage = false
-				if (issues.length > 0) {
-					this.updateCachedIssues(issues)
-					shouldUpdateMessage = true
-				}
-				// Update task progress
-				if (this.currentTask) {
-					this.currentTask.progress = progress
-					this.currentTask.total = total
-					this.currentTask.review_progress = review_progress
-					shouldUpdateMessage = true
-				}
-				// Check if task is completed
-				if (is_done) {
-					if (is_task_failed) {
-						throw new Error(error_msg)
-					}
-					this.completeTask()
-					break
-				}
-
-				// Send unified update message if needed (only once)
-				if (shouldUpdateMessage) {
-					this.sendReviewTaskUpdateMessage(TaskStatus.RUNNING, {
-						issues: this.getAllCachedIssues(),
-						progress,
-						reviewProgress: review_progress,
-					})
-				}
-
-				// Update offset for next iteration
-				offset = next_offset
-
-				// Wait before next poll
-				await this.delay(pollInterval)
-			} catch (error: any) {
-				// Handle AbortError silently
-				if (error.name === "AbortError") {
-					break
-				}
-				if (error.name === "AuthError") {
-					await this.handleAuthError()
-					break
-				}
-				this.recordReviewError(CodeReviewErrorType.FetchResultError as TelemetryErrorType)
-				// Send error message to webview with unified event
-				this.sendReviewTaskUpdateMessage(TaskStatus.ERROR, {
-					issues: this.getAllCachedIssues(),
-					progress: this.currentTask?.progress || 0,
-					error: error.message,
-				})
-
-				this.handlePollingError(error)
-				break
-			}
-		}
-	}
-
-	/**
 	 * Complete current task
 	 */
 	private completeTask(): void {
@@ -715,26 +597,6 @@ export class CodeReviewService {
 			issues: this.getAllCachedIssues(),
 			progress: this.currentTask.progress,
 		})
-	}
-
-	/**
-	 * Handle polling errors
-	 *
-	 * @param error - Error that occurred during polling
-	 */
-	private handlePollingError(error: any): void {
-		this.logger.error("Polling error:", error)
-		// TODO: Implement retry logic or error recovery if needed
-	}
-
-	/**
-	 * Delay execution for specified milliseconds
-	 *
-	 * @param ms - Milliseconds to delay
-	 * @returns Promise that resolves after delay
-	 */
-	private async delay(ms: number): Promise<void> {
-		return new Promise((resolve) => setTimeout(resolve, ms))
 	}
 
 	// ===== Private Helper Methods =====
@@ -782,14 +644,13 @@ export class CodeReviewService {
 			"logo.svg",
 		)
 		const cwd = this.clineProvider!.cwd
-		let message = issue.message.replace(/\\n/g, "\n").replace(/\\t/g, "\t")
 		return {
 			issueId: issue.id,
 			fileUri: vscode.Uri.file(path.resolve(cwd, issue.file_path)),
 			range: new vscode.Range(issue.start_line - 1, 0, issue.end_line - 1, Number.MAX_SAFE_INTEGER),
 			comment: new ReviewComment(
 				issue.id,
-				new vscode.MarkdownString(`${issue.title ? `### ${issue.title}\n\n` : ""}${message}`),
+				new vscode.MarkdownString(`${issue.title ? `### ${issue.title}\n\n` : ""}${issue.message}`),
 				vscode.CommentMode.Preview,
 				{ name: "CoStrict", iconPath },
 				undefined,
@@ -828,7 +689,6 @@ export class CodeReviewService {
 
 	public dispose(): void {
 		this.currentTask = null
-		this.taskAbortController = null
 		this.cachedIssues.clear()
 		this.currentActiveIssueId = null
 		this.commentService?.dispose()

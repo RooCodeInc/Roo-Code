@@ -195,13 +195,6 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 					selectedLlm = response.headers.get("x-select-llm") || ""
 					selectReason = response.headers.get("x-select-reason") || ""
 
-					if (selectedLlm) {
-						this.logger.info(`[Selected LLM]:`, selectedLlm)
-					}
-					if (selectReason) {
-						this.logger.info(`[Select Reason]:`, selectReason)
-					}
-
 					const userInputHeader = response.headers.get("x-user-input")
 					if (userInputHeader) {
 						const decodedUserInput = Buffer.from(userInputHeader, "base64").toString("utf-8")

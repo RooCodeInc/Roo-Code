@@ -127,6 +127,10 @@
 			"previous": "上一個結果",
 			"next": "下一個結果",
 			"close": "關閉搜尋"
+		},
+		"ALWAYS_INCLUDE_FILE_DETAILS": {
+			"name": "目錄信息增強",
+			"description": "啟用後，CoStrict 將始終包含項目目錄詳細信息。"
 		}
 	},
 	"modelPicker": {

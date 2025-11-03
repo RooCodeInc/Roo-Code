@@ -12,36 +12,14 @@ Usage:
 <cwd>Working directory path (optional)</cwd>
 </execute_command>
 
-### Multi-command execution by terminal type:
-- **cmd.exe**: Use \`&&\` to chain commands. E.g. \`mkdir demo && cd demo && dir\`
-- **powershell.exe**: Use \`; \` (semicolon) to separate commands. E.g. \`mkdir demo; cd demo; Get-ChildItem\`
-- **pwsh.exe** (PowerShell Core): Same as powershell. Use \`; \` (semicolon) or line breaks.
-
-### Examples:
-#### Run dev server (cross-platform)
+Example: Requesting to execute npm run dev
 <execute_command>
 <command>npm run dev</command>
 </execute_command>
 
-#### Requesting to execute ls in a specific directory if directed
+Example: Requesting to execute ls in a specific directory if directed
 <execute_command>
 <command>ls -la</command>
 <cwd>/home/user/projects</cwd>
-</execute_command>
-
-#### [cmd.exe] Create and enter directory, then list contents
-<execute_command>
-<command>mkdir demo && cd demo && dir</command>
-</execute_command>
-
-#### [powershell.exe] Create and enter directory, then list contents
-<execute_command>
-<command>mkdir demo; cd demo; Get-ChildItem</command>
-</execute_command>
-
-#### [pwsh.exe] Run multiple commands
-<execute_command>
-<command>New-Item -ItemType Directory demo; Set-Location demo; Get-ChildItem</command>
-</execute_command>
-`
+</execute_command>`
 }

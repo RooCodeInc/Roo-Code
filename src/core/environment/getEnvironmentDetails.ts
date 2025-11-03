@@ -32,7 +32,7 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 	const {
 		terminalOutputLineLimit = 500,
 		terminalOutputCharacterLimit = DEFAULT_TERMINAL_OUTPUT_CHARACTER_LIMIT,
-		maxWorkspaceFiles = 200,
+		maxWorkspaceFiles = 300,
 		terminalShellIntegrationDisabled,
 	} = state ?? {}
 	const shell = getShell(terminalShellIntegrationDisabled)
@@ -267,7 +267,7 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 		}
 	}
 
-	if (includeFileDetails) {
+	if (includeFileDetails || Experiments.isEnabled(experiments ?? {}, EXPERIMENT_IDS.ALWAYS_INCLUDE_FILE_DETAILS)) {
 		details += `\n\n# Current Workspace Directory (${cline.cwd.toPosix()}) Files\n`
 		const isDesktop = arePathsEqual(cline.cwd, path.join(os.homedir(), "Desktop"))
 
@@ -276,7 +276,7 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 			// permission popup.
 			details += "(Desktop files not shown automatically. Use list_files to explore if needed.)"
 		} else {
-			const maxFiles = maxWorkspaceFiles ?? 200
+			const maxFiles = maxWorkspaceFiles ?? 300
 
 			// Early return for limit of 0
 			if (maxFiles === 0) {

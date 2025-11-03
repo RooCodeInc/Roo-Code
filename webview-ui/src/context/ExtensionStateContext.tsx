@@ -249,7 +249,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		autoApprovalEnabled: false,
 		customModes: [],
 		maxOpenTabsContext: 20,
-		maxWorkspaceFiles: 200,
+		maxWorkspaceFiles: 300,
 		cwd: "",
 		browserToolEnabled: true,
 		telemetrySetting: "disabled",

@@ -130,7 +130,7 @@
 		}
 	},
 	"autoMode": {
-		"selectedLlm": "選擇模型：{{selectedLlm}}",
+		"selectedLlm": "Auto 模型：{{selectedLlm}}",
 		"selectReason": "選擇原因：{{selectReason}}"
 	}
 }
