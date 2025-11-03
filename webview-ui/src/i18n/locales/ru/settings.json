@@ -55,6 +55,9 @@
 		"vercelAiGatewayProvider": "Vercel AI Gateway",
 		"vercelAiGatewayApiKeyLabel": "Ключ API",
 		"vercelAiGatewayApiKeyPlaceholder": "Введите свой API-ключ Vercel AI Gateway",
+		"openRouterProvider": "OpenRouter",
+		"openRouterApiKeyLabel": "Ключ API OpenRouter",
+		"openRouterApiKeyPlaceholder": "Введите свой ключ API OpenRouter",
 		"mistralProvider": "Mistral",
 		"mistralApiKeyLabel": "Ключ API:",
 		"mistralApiKeyPlaceholder": "Введите свой API-ключ Mistral",
@@ -124,7 +127,8 @@
 			"vercelAiGatewayApiKeyRequired": "Требуется API-ключ Vercel AI Gateway",
 			"ollamaBaseUrlRequired": "Требуется базовый URL Ollama",
 			"baseUrlRequired": "Требуется базовый URL",
-			"modelDimensionMinValue": "Размерность модели должна быть больше 0"
+			"modelDimensionMinValue": "Размерность модели должна быть больше 0",
+			"openRouterApiKeyRequired": "Требуется ключ API OpenRouter"
 		},
 		"advancedConfigLabel": "Расширенная конфигурация",
 		"searchMinScoreLabel": "Порог оценки поиска",

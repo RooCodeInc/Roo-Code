@@ -55,6 +55,9 @@
 		"vercelAiGatewayProvider": "Vercel AI Gateway",
 		"vercelAiGatewayApiKeyLabel": "API Key",
 		"vercelAiGatewayApiKeyPlaceholder": "Masukkan kunci API Vercel AI Gateway Anda",
+		"openRouterProvider": "OpenRouter",
+		"openRouterApiKeyLabel": "Kunci API OpenRouter",
+		"openRouterApiKeyPlaceholder": "Masukkan kunci API OpenRouter Anda",
 		"mistralProvider": "Mistral",
 		"mistralApiKeyLabel": "Kunci API:",
 		"mistralApiKeyPlaceholder": "Masukkan kunci API Mistral Anda",
@@ -124,7 +127,8 @@
 			"vercelAiGatewayApiKeyRequired": "Kunci API Vercel AI Gateway diperlukan",
 			"ollamaBaseUrlRequired": "URL dasar Ollama diperlukan",
 			"baseUrlRequired": "URL dasar diperlukan",
-			"modelDimensionMinValue": "Dimensi model harus lebih besar dari 0"
+			"modelDimensionMinValue": "Dimensi model harus lebih besar dari 0",
+			"openRouterApiKeyRequired": "Kunci API OpenRouter diperlukan"
 		},
 		"advancedConfigLabel": "Konfigurasi Lanjutan",
 		"searchMinScoreLabel": "Ambang Batas Skor Pencarian",

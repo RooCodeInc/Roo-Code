@@ -58,6 +58,9 @@
 		"vercelAiGatewayProvider": "Vercel AI Gateway",
 		"vercelAiGatewayApiKeyLabel": "Klucz API",
 		"vercelAiGatewayApiKeyPlaceholder": "Wprowadź swój klucz API Vercel AI Gateway",
+		"openRouterProvider": "OpenRouter",
+		"openRouterApiKeyLabel": "Klucz API OpenRouter",
+		"openRouterApiKeyPlaceholder": "Wprowadź swój klucz API OpenRouter",
 		"openaiCompatibleProvider": "Kompatybilny z OpenAI",
 		"openAiKeyLabel": "Klucz API OpenAI",
 		"openAiKeyPlaceholder": "Wprowadź swój klucz API OpenAI",
@@ -124,7 +127,8 @@
 			"vercelAiGatewayApiKeyRequired": "Klucz API Vercel AI Gateway jest wymagany",
 			"ollamaBaseUrlRequired": "Wymagany jest bazowy adres URL Ollama",
 			"baseUrlRequired": "Wymagany jest bazowy adres URL",
-			"modelDimensionMinValue": "Wymiar modelu musi być większy niż 0"
+			"modelDimensionMinValue": "Wymiar modelu musi być większy niż 0",
+			"openRouterApiKeyRequired": "Wymagany jest klucz API OpenRouter"
 		},
 		"advancedConfigLabel": "Konfiguracja zaawansowana",
 		"searchMinScoreLabel": "Próg wyniku wyszukiwania",

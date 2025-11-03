@@ -69,6 +69,9 @@
 		"vercelAiGatewayProvider": "Vercel AI Gateway",
 		"vercelAiGatewayApiKeyLabel": "API Key",
 		"vercelAiGatewayApiKeyPlaceholder": "Enter your Vercel AI Gateway API key",
+		"openRouterProvider": "OpenRouter",
+		"openRouterApiKeyLabel": "OpenRouter API Key",
+		"openRouterApiKeyPlaceholder": "Enter your OpenRouter API key",
 		"openaiCompatibleProvider": "OpenAI Compatible",
 		"openAiKeyLabel": "OpenAI API Key",
 		"openAiKeyPlaceholder": "Enter your OpenAI API key",
@@ -135,6 +138,7 @@
 			"geminiApiKeyRequired": "Gemini API key is required",
 			"mistralApiKeyRequired": "Mistral API key is required",
 			"vercelAiGatewayApiKeyRequired": "Vercel AI Gateway API key is required",
+			"openRouterApiKeyRequired": "OpenRouter API key is required",
 			"ollamaBaseUrlRequired": "Ollama base URL is required",
 			"baseUrlRequired": "Base URL is required",
 			"modelDimensionMinValue": "Model dimension must be greater than 0"

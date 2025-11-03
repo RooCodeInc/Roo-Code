@@ -58,6 +58,9 @@
 		"vercelAiGatewayProvider": "Vercel AI Gateway",
 		"vercelAiGatewayApiKeyLabel": "Khóa API",
 		"vercelAiGatewayApiKeyPlaceholder": "Nhập khóa API Vercel AI Gateway của bạn",
+		"openRouterProvider": "OpenRouter",
+		"openRouterApiKeyLabel": "Khóa API OpenRouter",
+		"openRouterApiKeyPlaceholder": "Nhập khóa API OpenRouter của bạn",
 		"openaiCompatibleProvider": "Tương thích OpenAI",
 		"openAiKeyLabel": "Khóa API OpenAI",
 		"openAiKeyPlaceholder": "Nhập khóa API OpenAI của bạn",
@@ -124,7 +127,8 @@
 			"vercelAiGatewayApiKeyRequired": "Cần có khóa API Vercel AI Gateway",
 			"ollamaBaseUrlRequired": "Yêu cầu URL cơ sở Ollama",
 			"baseUrlRequired": "Yêu cầu URL cơ sở",
-			"modelDimensionMinValue": "Kích thước mô hình phải lớn hơn 0"
+			"modelDimensionMinValue": "Kích thước mô hình phải lớn hơn 0",
+			"openRouterApiKeyRequired": "Yêu cầu khóa API OpenRouter"
 		},
 		"advancedConfigLabel": "Cấu hình nâng cao",
 		"searchMinScoreLabel": "Ngưỡng điểm tìm kiếm",

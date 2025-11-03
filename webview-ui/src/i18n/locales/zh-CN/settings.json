@@ -60,6 +60,9 @@
 		"vercelAiGatewayProvider": "Vercel AI Gateway",
 		"vercelAiGatewayApiKeyLabel": "API 密钥",
 		"vercelAiGatewayApiKeyPlaceholder": "输入您的 Vercel AI Gateway API 密钥",
+		"openRouterProvider": "OpenRouter",
+		"openRouterApiKeyLabel": "OpenRouter API 密钥",
+		"openRouterApiKeyPlaceholder": "输入您的 OpenRouter API 密钥",
 		"mistralProvider": "Mistral",
 		"mistralApiKeyLabel": "API 密钥:",
 		"mistralApiKeyPlaceholder": "输入您的 Mistral API 密钥",
@@ -124,7 +127,8 @@
 			"vercelAiGatewayApiKeyRequired": "需要 Vercel AI Gateway API 密钥",
 			"ollamaBaseUrlRequired": "需要 Ollama 基础 URL",
 			"baseUrlRequired": "需要基础 URL",
-			"modelDimensionMinValue": "模型维度必须大于 0"
+			"modelDimensionMinValue": "模型维度必须大于 0",
+			"openRouterApiKeyRequired": "OpenRouter API 密钥是必需的"
 		},
 		"advancedConfigLabel": "高级配置",
 		"searchMinScoreLabel": "搜索分数阈值",

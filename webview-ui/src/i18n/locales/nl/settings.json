@@ -55,6 +55,9 @@
 		"vercelAiGatewayProvider": "Vercel AI Gateway",
 		"vercelAiGatewayApiKeyLabel": "API-sleutel",
 		"vercelAiGatewayApiKeyPlaceholder": "Voer uw Vercel AI Gateway API-sleutel in",
+		"openRouterProvider": "OpenRouter",
+		"openRouterApiKeyLabel": "OpenRouter API-sleutel",
+		"openRouterApiKeyPlaceholder": "Voer uw OpenRouter API-sleutel in",
 		"mistralProvider": "Mistral",
 		"mistralApiKeyLabel": "API-sleutel:",
 		"mistralApiKeyPlaceholder": "Voer uw Mistral API-sleutel in",
@@ -124,7 +127,8 @@
 			"vercelAiGatewayApiKeyRequired": "Vercel AI Gateway API-sleutel is vereist",
 			"ollamaBaseUrlRequired": "Ollama basis-URL is vereist",
 			"baseUrlRequired": "Basis-URL is vereist",
-			"modelDimensionMinValue": "Modelafmeting moet groter zijn dan 0"
+			"modelDimensionMinValue": "Modelafmeting moet groter zijn dan 0",
+			"openRouterApiKeyRequired": "OpenRouter API-sleutel is vereist"
 		},
 		"advancedConfigLabel": "Geavanceerde configuratie",
 		"searchMinScoreLabel": "Zoekscore drempel",

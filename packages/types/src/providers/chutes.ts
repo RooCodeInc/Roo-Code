@@ -417,3 +417,5 @@ export const chutesModels = {
 			"Qwen3‑VL‑235B‑A22B‑Thinking is an open‑weight MoE vision‑language model (235B total, ~22B activated) optimized for deliberate multi‑step reasoning with strong text‑image‑video understanding and long‑context capabilities.",
 	},
 } as const satisfies Record<string, ModelInfo>
+
+export const chutesDefaultModelInfo: ModelInfo = chutesModels[chutesDefaultModelId]

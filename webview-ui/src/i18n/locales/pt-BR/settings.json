@@ -55,6 +55,9 @@
 		"vercelAiGatewayProvider": "Vercel AI Gateway",
 		"vercelAiGatewayApiKeyLabel": "Chave de API",
 		"vercelAiGatewayApiKeyPlaceholder": "Digite sua chave de API do Vercel AI Gateway",
+		"openRouterProvider": "OpenRouter",
+		"openRouterApiKeyLabel": "Chave de API do OpenRouter",
+		"openRouterApiKeyPlaceholder": "Digite sua chave de API do OpenRouter",
 		"mistralProvider": "Mistral",
 		"mistralApiKeyLabel": "Chave de API:",
 		"mistralApiKeyPlaceholder": "Digite sua chave de API da Mistral",
@@ -124,7 +127,8 @@
 			"vercelAiGatewayApiKeyRequired": "A chave de API do Vercel AI Gateway é obrigatória",
 			"ollamaBaseUrlRequired": "A URL base do Ollama é obrigatória",
 			"baseUrlRequired": "A URL base é obrigatória",
-			"modelDimensionMinValue": "A dimensão do modelo deve ser maior que 0"
+			"modelDimensionMinValue": "A dimensão do modelo deve ser maior que 0",
+			"openRouterApiKeyRequired": "Chave API do OpenRouter é obrigatória"
 		},
 		"advancedConfigLabel": "Configuração Avançada",
 		"searchMinScoreLabel": "Limite de pontuação de busca",

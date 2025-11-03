@@ -58,6 +58,9 @@
 		"vercelAiGatewayProvider": "Vercel AI Gateway",
 		"vercelAiGatewayApiKeyLabel": "API Anahtarı",
 		"vercelAiGatewayApiKeyPlaceholder": "Vercel AI Gateway API anahtarınızı girin",
+		"openRouterProvider": "OpenRouter",
+		"openRouterApiKeyLabel": "OpenRouter API Anahtarı",
+		"openRouterApiKeyPlaceholder": "OpenRouter API anahtarınızı girin",
 		"openaiCompatibleProvider": "OpenAI Uyumlu",
 		"openAiKeyLabel": "OpenAI API Anahtarı",
 		"openAiKeyPlaceholder": "OpenAI API anahtarınızı girin",
@@ -124,7 +127,8 @@
 			"vercelAiGatewayApiKeyRequired": "Vercel AI Gateway API anahtarı gereklidir",
 			"ollamaBaseUrlRequired": "Ollama temel URL'si gereklidir",
 			"baseUrlRequired": "Temel URL'si gereklidir",
-			"modelDimensionMinValue": "Model boyutu 0'dan büyük olmalıdır"
+			"modelDimensionMinValue": "Model boyutu 0'dan büyük olmalıdır",
+			"openRouterApiKeyRequired": "OpenRouter API anahtarı gereklidir"
 		},
 		"advancedConfigLabel": "Gelişmiş Yapılandırma",
 		"searchMinScoreLabel": "Arama Skoru Eşiği",
