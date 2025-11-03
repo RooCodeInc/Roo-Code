@@ -23,7 +23,7 @@ const workflowSteps: Feature[] = [
 	{
 		icon: GitPullRequest,
 		title: "1. Connect your GitHub repositories",
-		description: "Pick in which repos the PR Fixer can work on by pushing to ongoing branches.",
+		description: "Pick which repos the PR Fixer can work on by pushing to ongoing branches.",
 	},
 	{
 		icon: MessageSquareCode,
