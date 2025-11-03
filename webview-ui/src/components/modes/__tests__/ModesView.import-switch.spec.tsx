@@ -4,6 +4,7 @@ import { render, waitFor } from "@/utils/test-utils"
 import ModesView from "../ModesView"
 import { ExtensionStateContext } from "@src/context/ExtensionStateContext"
 import { vscode } from "@src/utils/vscode"
+import { defaultModeSlug } from "@roo/modes"
 
 // Mock vscode API
 vitest.mock("@src/utils/vscode", () => ({
@@ -94,11 +95,11 @@ describe("ModesView Import Auto-Switch", () => {
 
 		window.dispatchEvent(new MessageEvent("message", importMessage))
 
-		// Wait for the fallback to architect mode
+		// Wait for the fallback to default mode (architect)
 		await waitFor(() => {
 			expect(vscode.postMessage).toHaveBeenCalledWith({
 				type: "mode",
-				text: "architect",
+				text: defaultModeSlug,
 			})
 		})
 	})

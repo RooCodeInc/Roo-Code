@@ -495,9 +495,9 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 						if (importedMode) {
 							handleModeSwitchRef.current(importedMode)
 						} else {
-							// Fallback: slug not yet in state (race condition) - select architect mode
-							setVisualMode("architect")
-							switchModeRef.current?.("architect")
+							// Fallback: slug not yet in state (race condition) - select default mode
+							setVisualMode(defaultModeSlug)
+							switchModeRef.current?.(defaultModeSlug)
 						}
 					}
 				} else {
