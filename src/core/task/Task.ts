@@ -2339,7 +2339,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					let finalAssistantMessage = assistantMessage
 					if (reasoningMessage && this.api.getModel().info.preserveReasoning) {
 						// Prepend reasoning in XML tags to the assistant message so it's included in API history
-						finalAssistantMessage = `<thinking>${reasoningMessage}</thinking>\n${assistantMessage}`
+						finalAssistantMessage = `<think>${reasoningMessage}</think>\n${assistantMessage}`
 					}
 
 					await this.addToApiConversationHistory({

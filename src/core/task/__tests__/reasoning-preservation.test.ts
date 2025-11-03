@@ -142,7 +142,7 @@ describe("Task reasoning preservation", () => {
 		// Simulate what happens in the streaming loop when preserveReasoning is true
 		let finalAssistantMessage = assistantMessage
 		if (reasoningMessage && task.api.getModel().info.preserveReasoning) {
-			finalAssistantMessage = `<thinking>${reasoningMessage}</thinking>\n${assistantMessage}`
+			finalAssistantMessage = `<think>${reasoningMessage}</think>\n${assistantMessage}`
 		}
 
 		await (task as any).addToApiConversationHistory({
@@ -150,21 +150,21 @@ describe("Task reasoning preservation", () => {
 			content: [{ type: "text", text: finalAssistantMessage }],
 		})
 
-		// Verify that reasoning was prepended in <thinking> tags to the assistant message
+		// Verify that reasoning was prepended in <think> tags to the assistant message
 		expect(addToApiHistorySpy).toHaveBeenCalledWith({
 			role: "assistant",
 			content: [
 				{
 					type: "text",
-					text: "<thinking>Let me think about this step by step. First, I need to...</thinking>\nHere is my response to your question.",
+					text: "<think>Let me think about this step by step. First, I need to...</think>\nHere is my response to your question.",
 				},
 			],
 		})
 
 		// Verify the API conversation history contains the message with reasoning
 		expect(task.apiConversationHistory).toHaveLength(1)
-		expect(task.apiConversationHistory[0].content[0].text).toContain("<thinking>")
-		expect(task.apiConversationHistory[0].content[0].text).toContain("</thinking>")
+		expect(task.apiConversationHistory[0].content[0].text).toContain("<think>")
+		expect(task.apiConversationHistory[0].content[0].text).toContain("</think>")
 		expect(task.apiConversationHistory[0].content[0].text).toContain("Here is my response to your question.")
 		expect(task.apiConversationHistory[0].content[0].text).toContain(
 			"Let me think about this step by step. First, I need to...",
@@ -207,7 +207,7 @@ describe("Task reasoning preservation", () => {
 		// Simulate what happens in the streaming loop when preserveReasoning is false
 		let finalAssistantMessage = assistantMessage
 		if (reasoningMessage && task.api.getModel().info.preserveReasoning) {
-			finalAssistantMessage = `<thinking>${reasoningMessage}</thinking>\n${assistantMessage}`
+			finalAssistantMessage = `<think>${reasoningMessage}</think>\n${assistantMessage}`
 		}
 
 		await (task as any).addToApiConversationHistory({
@@ -224,7 +224,7 @@ describe("Task reasoning preservation", () => {
 		// Verify the API conversation history does NOT contain reasoning
 		expect(task.apiConversationHistory).toHaveLength(1)
 		expect(task.apiConversationHistory[0].content[0].text).toBe("Here is my response to your question.")
-		expect(task.apiConversationHistory[0].content[0].text).not.toContain("<thinking>")
+		expect(task.apiConversationHistory[0].content[0].text).not.toContain("<think>")
 	})
 
 	it("should handle empty reasoning message gracefully when preserveReasoning is true", async () => {
@@ -262,7 +262,7 @@ describe("Task reasoning preservation", () => {
 		// Simulate what happens in the streaming loop
 		let finalAssistantMessage = assistantMessage
 		if (reasoningMessage && task.api.getModel().info.preserveReasoning) {
-			finalAssistantMessage = `<thinking>${reasoningMessage}</thinking>\n${assistantMessage}`
+			finalAssistantMessage = `<think>${reasoningMessage}</think>\n${assistantMessage}`
 		}
 
 		await (task as any).addToApiConversationHistory({
@@ -278,7 +278,7 @@ describe("Task reasoning preservation", () => {
 
 		// Verify the message doesn't contain reasoning tags
 		expect(task.apiConversationHistory[0].content[0].text).toBe("Here is my response.")
-		expect(task.apiConversationHistory[0].content[0].text).not.toContain("<thinking>")
+		expect(task.apiConversationHistory[0].content[0].text).not.toContain("<think>")
 	})
 
 	it("should handle undefined preserveReasoning (defaults to false)", async () => {
@@ -313,7 +313,7 @@ describe("Task reasoning preservation", () => {
 		// Simulate what happens in the streaming loop
 		let finalAssistantMessage = assistantMessage
 		if (reasoningMessage && task.api.getModel().info.preserveReasoning) {
-			finalAssistantMessage = `<thinking>${reasoningMessage}</thinking>\n${assistantMessage}`
+			finalAssistantMessage = `<think>${reasoningMessage}</think>\n${assistantMessage}`
 		}
 
 		await (task as any).addToApiConversationHistory({
@@ -323,6 +323,6 @@ describe("Task reasoning preservation", () => {
 
 		// Verify reasoning was NOT prepended (undefined defaults to false)
 		expect(task.apiConversationHistory[0].content[0].text).toBe("Here is my response.")
-		expect(task.apiConversationHistory[0].content[0].text).not.toContain("<thinking>")
+		expect(task.apiConversationHistory[0].content[0].text).not.toContain("<think>")
 	})
 })
