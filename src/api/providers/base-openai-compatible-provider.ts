@@ -4,6 +4,7 @@ import OpenAI from "openai"
 import type { ModelInfo } from "@roo-code/types"
 
 import { type ApiHandlerOptions, getModelMaxOutputTokens } from "../../shared/api"
+import { XmlMatcher } from "../../utils/xml-matcher"
 import { ApiStream } from "../transform/stream"
 import { convertToOpenAiMessages } from "../transform/openai-format"
 
@@ -105,13 +106,21 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 	): ApiStream {
 		const stream = await this.createStream(systemPrompt, messages, metadata)
 
+		const matcher = new XmlMatcher(
+			"think",
+			(chunk) =>
+				({
+					type: chunk.matched ? "reasoning" : "text",
+					text: chunk.data,
+				}) as const,
+		)
+
 		for await (const chunk of stream) {
 			const delta = chunk.choices[0]?.delta
 
 			if (delta?.content) {
-				yield {
-					type: "text",
-					text: delta.content,
+				for (const processedChunk of matcher.update(delta.content)) {
+					yield processedChunk
 				}
 			}
 
@@ -126,6 +135,11 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 					outputTokens: chunk.usage.completion_tokens || 0,
 				}
 			}
+		}
+
+		// Process any remaining content
+		for (const processedChunk of matcher.final()) {
+			yield processedChunk
 		}
 	}
 
