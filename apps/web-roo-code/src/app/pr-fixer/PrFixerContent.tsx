@@ -37,7 +37,7 @@ const workflowSteps: Feature[] = [
 		description: (
 			<>
 				The agent proposes targeted changes and pushes concise commits or patch suggestions you (or{" "}
-				<Link href="/pr-reviewer">PR Reviewer</Link>) can review and merge quickly.,
+				<Link href="/pr-reviewer">PR Reviewer</Link>) can review and merge quickly.
 			</>
 		),
 	},
