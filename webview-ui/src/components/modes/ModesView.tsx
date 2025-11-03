@@ -20,6 +20,7 @@ import {
 	getCustomInstructions,
 	getAllModes,
 	findModeBySlug as findCustomModeBySlug,
+	defaultModeSlug,
 } from "@roo/modes"
 import { TOOL_GROUPS } from "@roo/tools"
 
@@ -55,7 +56,7 @@ const availableGroups = (Object.keys(TOOL_GROUPS) as ToolGroup[]).filter((group)
 
 type ModeSource = "global" | "project"
 
-type ImportModeResult = { type: 'importModeResult'; success: boolean; slug?: string; error?: string }
+type ImportModeResult = { type: "importModeResult"; success: boolean; slug?: string; error?: string }
 
 type ModesViewProps = {
 	onDone: () => void
@@ -188,19 +189,20 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 		[visualMode, switchMode],
 	)
 
-	// Keep latest handleModeSwitch and customModes available inside window message handler
+	// Refs to track latest state/functions for message handler (which has no dependencies)
 	const handleModeSwitchRef = useRef(handleModeSwitch)
+	const customModesRef = useRef(customModes)
+	const switchModeRef = useRef(switchMode)
+
+	// Update refs when dependencies change
 	useEffect(() => {
 		handleModeSwitchRef.current = handleModeSwitch
 	}, [handleModeSwitch])
 
-	const customModesRef = useRef(customModes)
 	useEffect(() => {
 		customModesRef.current = customModes
 	}, [customModes])
 
-	// Keep latest switchMode available inside window message handler
-	const switchModeRef = useRef(switchMode)
 	useEffect(() => {
 		switchModeRef.current = switchMode
 	}, [switchMode])
@@ -493,9 +495,9 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 						if (importedMode) {
 							handleModeSwitchRef.current(importedMode)
 						} else {
-							// Fallback: switch by slug to keep backend in sync and update visual selection
-							setVisualMode(slug)
-							switchModeRef.current?.(slug)
+							// Fallback: slug not yet in state (race condition) - select architect mode
+							setVisualMode("architect")
+							switchModeRef.current?.("architect")
 						}
 					}
 				} else {

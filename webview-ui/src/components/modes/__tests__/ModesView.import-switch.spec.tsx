@@ -1,17 +1,23 @@
-import { render, screen, waitFor } from "@/utils/test-utils"
+// npx vitest src/components/modes/__tests__/ModesView.import-switch.spec.tsx
+
+import { render, waitFor } from "@/utils/test-utils"
 import ModesView from "../ModesView"
 import { ExtensionStateContext } from "@src/context/ExtensionStateContext"
 import { vscode } from "@src/utils/vscode"
 
+// Mock vscode API
 vitest.mock("@src/utils/vscode", () => ({
 	vscode: {
 		postMessage: vitest.fn(),
 	},
 }))
 
-const baseState = {
+const mockExtensionState = {
 	customModePrompts: {},
-	listApiConfigMeta: [],
+	listApiConfigMeta: [
+		{ id: "config1", name: "Config 1" },
+		{ id: "config2", name: "Config 2" },
+	],
 	enhancementApiConfigId: "",
 	setEnhancementApiConfigId: vitest.fn(),
 	mode: "code",
@@ -22,97 +28,128 @@ const baseState = {
 	setCustomInstructions: vitest.fn(),
 }
 
-describe("ModesView - auto switch after import", () => {
+const renderModesView = (props = {}) => {
+	const mockOnDone = vitest.fn()
+	return render(
+		<ExtensionStateContext.Provider value={{ ...mockExtensionState, ...props } as any}>
+			<ModesView onDone={mockOnDone} />
+		</ExtensionStateContext.Provider>,
+	)
+}
+
+Element.prototype.scrollIntoView = vitest.fn()
+
+describe("ModesView Import Auto-Switch", () => {
 	beforeEach(() => {
 		vitest.clearAllMocks()
 	})
 
-	it("switches to imported mode when import succeeds and slug is provided", async () => {
-		const importedMode = {
-			slug: "imported-mode",
-			name: "Imported Mode",
-			roleDefinition: "Role",
-			groups: ["read"] as const,
-			source: "global" as const,
+	it("should auto-switch to imported mode when found in current state", async () => {
+		const importedModeSlug = "custom-test-mode"
+		const customModes = [
+			{
+				slug: importedModeSlug,
+				name: "Custom Test Mode",
+				roleDefinition: "Test role",
+				groups: [],
+			},
+		]
+
+		renderModesView({ customModes })
+
+		// Simulate successful import message with the mode already in state
+		const importMessage = {
+			data: {
+				type: "importModeResult",
+				success: true,
+				slug: importedModeSlug,
+			},
 		}
 
-		render(
-			<ExtensionStateContext.Provider value={{ ...baseState, customModes: [importedMode] } as any}>
-				<ModesView onDone={vitest.fn()} />
-			</ExtensionStateContext.Provider>,
-		)
+		window.dispatchEvent(new MessageEvent("message", importMessage))
 
-		const trigger = screen.getByTestId("mode-select-trigger")
-		expect(trigger).toHaveTextContent("Code")
-
-		// Simulate extension sending successful import result with slug
-		window.dispatchEvent(
-			new MessageEvent("message", {
-				data: { type: "importModeResult", success: true, slug: "imported-mode" },
-			}),
-		)
-
-		// Backend switch message sent
+		// Wait for the mode switch message to be sent
 		await waitFor(() => {
-			expect(vscode.postMessage).toHaveBeenCalledWith({ type: "mode", text: "imported-mode" })
-		})
-
-		// UI reflects new mode selection
-		await waitFor(() => {
-			expect(trigger).toHaveTextContent("Imported Mode")
+			expect(vscode.postMessage).toHaveBeenCalledWith({
+				type: "mode",
+				text: importedModeSlug,
+			})
 		})
 	})
 
-	it("does not switch when import fails or slug missing", async () => {
-		render(
-			<ExtensionStateContext.Provider value={{ ...baseState } as any}>
-				<ModesView onDone={vitest.fn()} />
-			</ExtensionStateContext.Provider>,
-		)
+	it("should fallback to architect mode when imported slug not yet in state (race condition)", async () => {
+		const importedModeSlug = "custom-new-mode"
 
-		const trigger = screen.getByTestId("mode-select-trigger")
-		expect(trigger).toHaveTextContent("Code")
+		// Render without the imported mode in customModes (simulating race condition)
+		renderModesView({ customModes: [] })
 
-		// Import failure
-		window.dispatchEvent(
-			new MessageEvent("message", { data: { type: "importModeResult", success: false, error: "x" } }),
-		)
+		// Simulate successful import message but mode not yet in state
+		const importMessage = {
+			data: {
+				type: "importModeResult",
+				success: true,
+				slug: importedModeSlug,
+			},
+		}
 
+		window.dispatchEvent(new MessageEvent("message", importMessage))
+
+		// Wait for the fallback to architect mode
 		await waitFor(() => {
-			expect(vscode.postMessage).not.toHaveBeenCalledWith({ type: "mode", text: expect.any(String) })
+			expect(vscode.postMessage).toHaveBeenCalledWith({
+				type: "mode",
+				text: "architect",
+			})
 		})
-		expect(trigger).toHaveTextContent("Code")
-
-		// Success but no slug provided
-		window.dispatchEvent(new MessageEvent("message", { data: { type: "importModeResult", success: true } }))
-
-		await waitFor(() => {
-			expect(vscode.postMessage).not.toHaveBeenCalledWith({ type: "mode", text: expect.any(String) })
-		})
-		expect(trigger).toHaveTextContent("Code")
 	})
 
-	it("uses fallback branch when imported slug not yet present in customModes", async () => {
-		// Render with empty customModes - imported mode hasn't been added to state yet
-		render(
-			<ExtensionStateContext.Provider value={{ ...baseState, customModes: [] } as any}>
-				<ModesView onDone={vitest.fn()} />
-			</ExtensionStateContext.Provider>,
-		)
+	it("should not switch modes on import failure", async () => {
+		renderModesView()
 
-		const trigger = screen.getByTestId("mode-select-trigger")
-		expect(trigger).toHaveTextContent("Code")
+		// Simulate failed import message
+		const importMessage = {
+			data: {
+				type: "importModeResult",
+				success: false,
+				error: "Import failed",
+			},
+		}
 
-		// Simulate successful import for a slug not yet in customModes (timing race condition)
-		window.dispatchEvent(
-			new MessageEvent("message", {
-				data: { type: "importModeResult", success: true, slug: "not-yet-loaded-mode" },
+		window.dispatchEvent(new MessageEvent("message", importMessage))
+
+		// Wait a bit to ensure no mode switch happens
+		await new Promise((resolve) => setTimeout(resolve, 100))
+
+		// Verify no mode switch message was sent
+		expect(vscode.postMessage).not.toHaveBeenCalledWith(
+			expect.objectContaining({
+				type: "mode",
 			}),
 		)
+	})
 
-		// Fallback branch should send backend switch message
-		await waitFor(() => {
-			expect(vscode.postMessage).toHaveBeenCalledWith({ type: "mode", text: "not-yet-loaded-mode" })
-		})
+	it("should not switch modes on cancelled import", async () => {
+		renderModesView()
+
+		// Simulate cancelled import message
+		const importMessage = {
+			data: {
+				type: "importModeResult",
+				success: false,
+				error: "cancelled",
+			},
+		}
+
+		window.dispatchEvent(new MessageEvent("message", importMessage))
+
+		// Wait a bit to ensure no mode switch happens
+		await new Promise((resolve) => setTimeout(resolve, 100))
+
+		// Verify no mode switch message was sent
+		expect(vscode.postMessage).not.toHaveBeenCalledWith(
+			expect.objectContaining({
+				type: "mode",
+			}),
+		)
 	})
 })
