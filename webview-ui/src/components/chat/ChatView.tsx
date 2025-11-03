@@ -1133,6 +1133,23 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	}, [])
 	useEvent("wheel", handleWheel, window, { passive: true })
 
+	// Also disable sticky follow when the chat container is scrolled away from bottom
+	useEffect(() => {
+		const el = scrollContainerRef.current
+		if (!el) return
+		const onScroll = () => {
+			// Consider near-bottom within a small threshold consistent with Virtuoso settings
+			const nearBottom = Math.abs(el.scrollHeight - el.scrollTop - el.clientHeight) < 10
+			if (!nearBottom) {
+				stickyFollowRef.current = false
+			}
+			// Keep UI button state in sync with scroll position
+			setShowScrollToBottom(!nearBottom)
+		}
+		el.addEventListener("scroll", onScroll, { passive: true })
+		return () => el.removeEventListener("scroll", onScroll)
+	}, [])
+
 	// Effect to clear checkpoint warning when messages appear or task changes
 	useEffect(() => {
 		if (isHidden || !task) {
@@ -1439,12 +1456,11 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							followOutput="smooth"
 							atBottomStateChange={(isAtBottom: boolean) => {
 								setIsAtBottom(isAtBottom)
+								setShowScrollToBottom(!isAtBottom)
 								if (!isAtBottom && stickyFollowRef.current) {
 									// While in sticky mode, force-pin as streaming increases height
 									scrollToBottomAuto()
-									return
 								}
-								setShowScrollToBottom(!isAtBottom)
 							}}
 							atBottomThreshold={10}
 							initialTopMostItemIndex={groupedMessages.length - 1}
@@ -1469,6 +1485,8 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 											stickyFollowRef.current = true
 											// Pin immediately to avoid lag during fast streaming
 											scrollToBottomAuto()
+											// Hide button immediately to prevent flash
+											setShowScrollToBottom(false)
 										}}>
 										<span className="codicon codicon-chevron-down"></span>
 									</Button>
