@@ -1453,14 +1453,11 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							increaseViewportBy={{ top: 3_000, bottom: 1000 }}
 							data={groupedMessages}
 							itemContent={itemContent}
-							followOutput="smooth"
+							followOutput={(isAtBottom: boolean) => isAtBottom || stickyFollowRef.current}
 							atBottomStateChange={(isAtBottom: boolean) => {
 								setIsAtBottom(isAtBottom)
+								// Only show the scroll-to-bottom button if not at bottom
 								setShowScrollToBottom(!isAtBottom)
-								if (!isAtBottom && stickyFollowRef.current) {
-									// While in sticky mode, force-pin as streaming increases height
-									scrollToBottomAuto()
-								}
 							}}
 							atBottomThreshold={10}
 							initialTopMostItemIndex={groupedMessages.length - 1}
