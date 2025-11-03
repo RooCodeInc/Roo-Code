@@ -10,7 +10,7 @@ import { EXTERNAL_LINKS } from "@/lib/constants"
 import { trackGoogleAdsConversion } from "@/lib/analytics/google-ads"
 
 // Workaround for next/image choking on these for some reason
-import hero from "/public/heroes/agent-reviewer.png"
+import hero from "/public/heroes/agent-pr-fixer.png"
 
 interface Feature {
 	icon: LucideIcon
@@ -22,20 +22,24 @@ interface Feature {
 const workflowSteps: Feature[] = [
 	{
 		icon: GitPullRequest,
-		title: "1. Work in your PR",
-		description: "Open a pull request like usual. The PR Fixer seamlessly integrates into your existing workflow.",
+		title: "1. Connect your Github repositories",
+		description: "Pick in which repos the PR Fixer can work on by pushing to ongoing branches.",
 	},
 	{
 		icon: MessageSquareCode,
 		title: "2. Invoke from a comment",
 		description:
-			'Ask the agent to fix issues directly from GitHub PR comments (e.g. "roo: fix these review comments"). It’s fully aware of the entire comment history and latest diffs.',
+			'Ask the agent to fix issues directly from GitHub PR comments (e.g. "@roomote: fix these review comments"). It’s fully aware of the entire comment history and latest diffs and focuses on fixing them – not random changes to your code.',
 	},
 	{
 		icon: Wrench,
-		title: "3. Clean, scoped commits",
-		description:
-			"The agent proposes targeted changes and pushes concise commits or patch suggestions you can review and merge quickly.",
+		title: "3. Get clean scoped commits",
+		description: (
+			<>
+				The agent proposes targeted changes and pushes concise commits or patch suggestions you (or{" "}
+				<Link href="/pr-reviewer">PR Reviewer</Link>) can review and merge quickly.,
+			</>
+		),
 	},
 ]
 
@@ -70,32 +74,32 @@ export function PrFixerContent() {
 						<div className="flex flex-col px-4 justify-center space-y-6 sm:space-y-8">
 							<div>
 								<h1 className="text-3xl font-bold tracking-tight mt-8  md:text-left md:text-4xl lg:text-5xl lg:mt-0">
-									Turn review feedback into clean commits — automatically.
+									<Wrench className="size-12 mb-4" />
+									State-of-the-art fixes for the comments on your PRs.
 								</h1>
-
-								{/* Cross-agent link */}
-								<div className="mt-3">
-									<Link
-										href="/reviewer"
-										className="inline-flex items-center rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1 text-sm text-blue-600 backdrop-blur-sm transition-colors hover:bg-blue-500/20 dark:text-blue-400"
-										aria-label="Works great with PR Reviewer">
-										Works great with PR Reviewer
-										<ArrowRight className="ml-2 h-4 w-4" />
-									</Link>
-								</div>
 
 								<div className="mt-4 max-w-lg space-y-4 text-base text-muted-foreground md:text-left sm:mt-6">
 									<p>
 										Roo Code{"'"}s PR Fixer applies high-quality changes to your PRs, right from
-										GitHub. You can invoke it via PR comments and it will read the entire comment
-										history to understand context, agreements, and tradeoffs — then implement the
-										right fix.
+										GitHub. Invoke via PR a comment and it will read the entire comment history to
+										understand context, agreements, and tradeoffs — then implement the right fix.
 									</p>
 									<p>
-										Because it{"'"}s repository- and diff-aware, it keeps changes tight, follows
-										conventions, and plays nicely with your CI. You bring the model key; we
-										orchestrate smart, efficient workflows.
+										As always, you bring the model key; we orchestrate smart, efficient workflows.
 									</p>
+								</div>
+
+								{/* Cross-agent link */}
+								<div className="mt-6 flex flex-col md:flex-row md:items-center gap-2">
+									Works great with
+									<Link
+										href="/reviewer"
+										className="flex p-4 items-center rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1 text-sm text-blue-600 backdrop-blur-sm transition-colors hover:bg-blue-500/20 dark:text-blue-400"
+										aria-label="Works great with PR Reviewer">
+										<GitPullRequest className="size-4 mr-2" />
+										PR Reviewer Agent
+										<ArrowRight className="ml-2 h-4 w-4" />
+									</Link>
 								</div>
 							</div>
 
@@ -121,14 +125,14 @@ export function PrFixerContent() {
 						</div>
 
 						<div className="flex items-center justify-end mx-auto h-full mt-8 lg:mt-0">
-							<div className="md:w-[800px] md:h-[474px] relative overflow-clip">
+							<div className="md:w-[670px] md:h-[600px] relative overflow-clip">
 								<div className="block">
 									<Image
 										src={hero}
 										alt="Example of a PR Fixer applying changes from review comments"
 										className="max-w-full h-auto"
 										width={800}
-										height={474}
+										height={711}
 									/>
 								</div>
 							</div>

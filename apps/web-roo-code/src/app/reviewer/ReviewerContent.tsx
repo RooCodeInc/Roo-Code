@@ -9,6 +9,7 @@ import {
 	GitPullRequest,
 	Key,
 	MessageSquareCode,
+	Wrench,
 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
@@ -87,17 +88,10 @@ export function ReviewerContent() {
 						<div className="flex flex-col px-4 justify-center space-y-6 sm:space-y-8">
 							<div>
 								<h1 className="text-3xl font-bold tracking-tight mt-8  md:text-left md:text-4xl lg:text-5xl lg:mt-0">
+									<GitPullRequest className="size-12 mb-4" />
 									Get comprehensive code reviews that save you time, not&nbsp;tokens.
 								</h1>
-								<div className="mt-3">
-									<Link
-										href="/pr-fixer"
-										className="inline-flex items-center rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1 text-sm text-blue-600 backdrop-blur-sm transition-colors hover:bg-blue-500/20 dark:text-blue-400"
-										aria-label="Works great with PR Fixer">
-										Works great with PR Fixer
-										<ArrowRight className="ml-2 h-4 w-4" />
-									</Link>
-								</div>
+
 								<div className="mt-4 max-w-lg space-y-4 text-base text-muted-foreground md:text-left sm:mt-6">
 									<p>
 										Regular AI code review tools cap model usage to protect their margins from fixed
@@ -109,6 +103,19 @@ export function ReviewerContent() {
 										leverage it to the max – to find real issues, increase code quality and keep
 										your pull request queue moving.
 									</p>
+								</div>
+
+								{/* Cross-agent link */}
+								<div className="mt-6 flex flex-col md:flex-row md:items-center gap-2">
+									Works great with
+									<Link
+										href="/pr-fixer"
+										className="flex p-4 items-center rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1 text-sm text-blue-600 backdrop-blur-sm transition-colors hover:bg-blue-500/20 dark:text-blue-400"
+										aria-label="Works great with PR Fixer">
+										<Wrench className="size-4 mr-2" />
+										PR Fixer Agent
+										<ArrowRight className="ml-2 h-4 w-4" />
+									</Link>
 								</div>
 							</div>
 							<div className="flex flex-col space-y-3 sm:flex-row sm:space-x-4 sm:space-y-0 md:items-center">
