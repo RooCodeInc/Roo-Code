@@ -173,7 +173,8 @@ const DiffView = memo(({ source, filePath }: DiffViewProps) => {
 						{diffLines.map((line, idx) => {
 							// Render compact separator between hunks
 							if (line.type === "gap") {
-								const gapBg = "color-mix(in srgb, var(--vscode-editorGroup-border) 100%, transparent)"
+								// Match the header/container background tone
+								const gapBg = "var(--vscode-editor-background)"
 								return (
 									<tr key={idx}>
 										<td
@@ -217,15 +218,13 @@ const DiffView = memo(({ source, filePath }: DiffViewProps) => {
 										/>
 										<td
 											style={{
-												paddingLeft: "4px",
 												paddingRight: "12px",
 												whiteSpace: "pre-wrap",
 												overflowWrap: "anywhere",
 												wordBreak: "break-word",
 												fontFamily: "var(--vscode-editor-font-family)",
-												color: "var(--vscode-descriptionForeground)",
 												width: "100%",
-												textAlign: "center",
+												textAlign: "left",
 												fontStyle: "italic",
 												backgroundColor: gapBg,
 											}}>

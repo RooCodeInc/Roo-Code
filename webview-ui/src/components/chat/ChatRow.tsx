@@ -399,13 +399,16 @@ export const ChatRowContent = ({
 	// Inline diff stats for edit/apply_diff/insert/search-replace/newFile asks
 	const diffTextForStats = useMemo(() => {
 		if (!tool) return ""
-		// Normalize to unified diff using frontend-only capture/surmise helper
+		// For appliedDiff, backend provides unified diff; do not fallback/normalize
+		if ((tool as any).tool === "appliedDiff") {
+			return ((tool as any).content as string) || ""
+		}
 		return (
 			extractUnifiedDiff({
 				toolName: tool.tool as string,
 				path: tool.path,
-				diff: (tool as any).diff,
-				content: (tool as any).content,
+				diff: (tool as any).content,
+				content: (tool as any).diff,
 			}) || ""
 		)
 	}, [tool])
@@ -417,11 +420,15 @@ export const ChatRowContent = ({
 	// Clean diff content for display (normalize to unified diff)
 	const cleanDiffContent = useMemo(() => {
 		if (!tool) return undefined
+		// For appliedDiff, show backend's unified diff directly
+		if ((tool as any).tool === "appliedDiff") {
+			return ((tool as any).content as string) || undefined
+		}
 		const unified = extractUnifiedDiff({
 			toolName: tool.tool as string,
 			path: tool.path,
-			diff: (tool as any).diff,
-			content: (tool as any).content,
+			diff: (tool as any).content,
+			content: (tool as any).diff,
 		})
 		return unified || undefined
 	}, [tool])

@@ -140,6 +140,9 @@ export async function applyDiffToolLegacy(
 			cline.consecutiveMistakeCount = 0
 			cline.consecutiveMistakeCountForApplyDiff.delete(relPath)
 
+			// Generate backend-unified diff for display in chat/webview
+			const unifiedPatch = formatResponse.createPrettyPatch(relPath, originalContent, diffResult.content)
+
 			// Check if preventFocusDisruption experiment is enabled
 			const provider = cline.providerRef.deref()
 			const state = await provider?.getState()
@@ -158,6 +161,7 @@ export async function applyDiffToolLegacy(
 				const completeMessage = JSON.stringify({
 					...sharedMessageProps,
 					diff: diffContent,
+					content: unifiedPatch,
 					isProtected: isWriteProtected,
 				} satisfies ClineSayTool)
 
@@ -194,6 +198,7 @@ export async function applyDiffToolLegacy(
 				const completeMessage = JSON.stringify({
 					...sharedMessageProps,
 					diff: diffContent,
+					content: unifiedPatch,
 					isProtected: isWriteProtected,
 				} satisfies ClineSayTool)
 

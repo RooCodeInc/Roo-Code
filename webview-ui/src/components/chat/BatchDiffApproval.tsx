@@ -1,6 +1,5 @@
 import React, { memo, useState } from "react"
 import CodeAccordian from "../common/CodeAccordian"
-import { extractUnifiedDiff } from "../../utils/diffUtils"
 
 interface FileDiff {
 	path: string
@@ -57,14 +56,8 @@ export const BatchDiffApproval = memo(({ files = [], ts }: BatchDiffApprovalProp
 		<div className="pt-[5px]">
 			<div className="flex flex-col gap-0 border border-border rounded-md p-1">
 				{files.map((file) => {
-					// Normalize to unified diff and compute stats
-					const rawCombined = file.diffs?.map((d) => d.content).join("\n\n") || file.content
-					const unified = extractUnifiedDiff({
-						toolName: "appliedDiff",
-						path: file.path,
-						diff: rawCombined,
-						content: undefined,
-					})
+					// Use backend-provided unified diff only. No client-side fallback for apply_diff batches.
+					const unified = file.content || ""
 					const stats = computeUnifiedStats(unified)
 
 					return (
