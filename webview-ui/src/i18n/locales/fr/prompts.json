@@ -143,6 +143,10 @@
 			"NEW_TASK": {
 				"label": "Démarrer une nouvelle tâche",
 				"description": "Démarre une nouvelle tâche avec ton entrée. Disponible dans la palette de commandes."
+			},
+			"CREATE_PR": {
+				"label": "Créer une Pull Request",
+				"description": "Génère des instructions pour préparer, réviser et créer une PR en utilisant le CLI de GitHub. Vous pouvez personnaliser ce modèle."
 			}
 		}
 	},

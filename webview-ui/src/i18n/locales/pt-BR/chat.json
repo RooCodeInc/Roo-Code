@@ -40,7 +40,7 @@
 		"tooltip": "Tentar a operação novamente"
 	},
 	"startNewTask": {
-		"title": "Iniciar nova tarefa",
+		"title": "Nova Tarefa",
 		"tooltip": "Começar uma nova tarefa"
 	},
 	"proceedAnyways": {
@@ -59,6 +59,10 @@
 	"approve": {
 		"title": "Aprovar",
 		"tooltip": "Aprovar esta ação"
+	},
+	"createPR": {
+		"title": "Criar PR",
+		"tooltip": "Crie um pull request a partir das suas alterações"
 	},
 	"runCommand": {
 		"title": "Comando",

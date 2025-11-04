@@ -44,6 +44,7 @@ type SupportPromptType =
 	| "TERMINAL_FIX"
 	| "TERMINAL_EXPLAIN"
 	| "NEW_TASK"
+	| "CREATE_PR"
 
 const supportPromptConfigs: Record<SupportPromptType, SupportPromptConfig> = {
 	ENHANCE: {
@@ -173,6 +174,61 @@ Please provide:
 	},
 	NEW_TASK: {
 		template: `\${userInput}`,
+	},
+	CREATE_PR: {
+		template: `<task>
+Stage and commit any outstanding changes, then review the changes made in this branch versus main/master and create a pull request using the gh CLI.
+</task>
+
+<instructions>
+1. Check if there are any unstaged/uncommitted changes:
+	  - Run: git status
+	  - If changes exist, stage and commit them with a descriptive message
+
+2. Identify the base branch (main or master):
+	  - Check which exists: git branch --list main master
+	  - Use the one that exists as base branch
+
+3. Get current branch name:
+	  - Run: git branch --show-current
+
+4. Analyze all changes between current branch and base:
+	  - Run: git diff <base-branch>...HEAD
+	  - Also get commit messages: git log <base-branch>..HEAD --oneline
+
+5. Generate PR title and description:
+	  - Analyze the diff and commit messages
+	  - Create concise, descriptive title (50 chars max)
+	  - Write clear PR description explaining:
+	    * What changed and why
+	    * Key implementation details
+	    * Any breaking changes or important notes
+
+6. Get repository info:
+	  - Extract from: git remote get-url origin
+	  - Parse to get org/repo format
+
+7. Check if gh CLI is installed:
+	  - Run: gh --version
+	  - If not found, use ask_followup_question tool to ask the user if they want to install gh CLI
+	  - If the user agrees, follow one of the installation methods depending on their OS:
+	    * macOS: brew install gh
+	    * Windows: winget install GitHub.cli
+	    * Linux: See https://github.com/cli/cli#installation
+	    * After install: gh auth login
+
+8. Create the pull request:
+	  - Run: gh pr create --repo <org/repo> --head <current-branch> --title "<generated-title>" --body "<generated-description>"
+	  
+9. After successful PR creation:
+	  - Extract PR URL from gh output
+	  - Present success message with:
+	    * Link to the created PR
+	    * Offer to have it reviewed by Roo Code Cloud's PR Reviewer agent
+	    * Link: https://roocode.com/reviewer
+
+If gh CLI is not installed or authenticated, use ask_followup_question tool to confirm with the user before proceeding with installation instructions.
+</instructions>`,
 	},
 } as const
 

@@ -143,6 +143,10 @@
 			"NEW_TASK": {
 				"label": "Rozpocznij nowe zadanie",
 				"description": "Rozpocznij nowe zadanie z wprowadzonymi danymi. Dostępne w palecie poleceń."
+			},
+			"CREATE_PR": {
+				"label": "Utwórz Pull Request",
+				"description": "Wygeneruj instrukcje dotyczące przygotowania, przeglądu i utworzenia PR za pomocą GitHub CLI. Możesz dostosować ten szablon."
 			}
 		}
 	},

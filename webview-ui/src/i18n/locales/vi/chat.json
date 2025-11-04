@@ -40,7 +40,7 @@
 		"tooltip": "Thử lại thao tác"
 	},
 	"startNewTask": {
-		"title": "Bắt đầu nhiệm vụ mới",
+		"title": "Nhiệm vụ mới",
 		"tooltip": "Bắt đầu một nhiệm vụ mới"
 	},
 	"proceedAnyways": {
@@ -59,6 +59,10 @@
 	"approve": {
 		"title": "Phê duyệt",
 		"tooltip": "Phê duyệt hành động này"
+	},
+	"createPR": {
+		"title": "Tạo PR",
+		"tooltip": "Tạo một pull request từ các thay đổi của bạn"
 	},
 	"runCommand": {
 		"title": "Lệnh",

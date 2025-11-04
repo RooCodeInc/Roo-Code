@@ -40,7 +40,7 @@
 		"tooltip": "작업 다시 시도"
 	},
 	"startNewTask": {
-		"title": "새 작업 시작",
+		"title": "새 작업",
 		"tooltip": "새 작업 시작하기"
 	},
 	"proceedAnyways": {
@@ -59,6 +59,10 @@
 	"approve": {
 		"title": "승인",
 		"tooltip": "이 작업 승인"
+	},
+	"createPR": {
+		"title": "PR 생성",
+		"tooltip": "변경 사항으로 풀 리퀘스트를 생성합니다"
 	},
 	"runCommand": {
 		"title": "명령",

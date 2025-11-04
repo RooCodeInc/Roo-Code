@@ -35,7 +35,7 @@
 		"tooltip": "再次嘗試操作"
 	},
 	"startNewTask": {
-		"title": "開始新工作",
+		"title": "新工作",
 		"tooltip": "開始一項新工作"
 	},
 	"proceedAnyways": {
@@ -59,6 +59,10 @@
 	"approve": {
 		"title": "核准",
 		"tooltip": "核准此操作"
+	},
+	"createPR": {
+		"title": "建立 PR",
+		"tooltip": "從您的變更建立拉取請求"
 	},
 	"read-batch": {
 		"approve": {

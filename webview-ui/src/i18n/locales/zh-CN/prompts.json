@@ -140,6 +140,10 @@
 			"NEW_TASK": {
 				"label": "新任务",
 				"description": "控制开始新任务时的用户提示词。可在首页对话框中使用。"
+			},
+			"CREATE_PR": {
+				"label": "创建拉取请求",
+				"description": "生成使用 GitHub CLI 来暂存、审查和创建 PR 的说明。你可以自定义此模板。"
 			}
 		}
 	},

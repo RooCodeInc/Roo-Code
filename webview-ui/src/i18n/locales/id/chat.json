@@ -38,7 +38,7 @@
 		"tooltip": "Coba operasi lagi"
 	},
 	"startNewTask": {
-		"title": "Mulai Tugas Baru",
+		"title": "Tugas Baru",
 		"tooltip": "Mulai tugas baru"
 	},
 	"reportBug": {
@@ -65,6 +65,10 @@
 	"approve": {
 		"title": "Setujui",
 		"tooltip": "Setujui aksi ini"
+	},
+	"createPR": {
+		"title": "Buat PR",
+		"tooltip": "Buat pull request dari perubahan Anda"
 	},
 	"read-batch": {
 		"approve": {

@@ -40,7 +40,7 @@
 		"tooltip": "Versuch erneut starten"
 	},
 	"startNewTask": {
-		"title": "Neue Aufgabe starten",
+		"title": "Neue Aufgabe",
 		"tooltip": "Beginne eine neue Aufgabe"
 	},
 	"proceedAnyways": {
@@ -59,6 +59,10 @@
 	"approve": {
 		"title": "Genehmigen",
 		"tooltip": "Diese Aktion genehmigen"
+	},
+	"createPR": {
+		"title": "PR erstellen",
+		"tooltip": "Erstelle einen Pull Request aus deinen Änderungen"
 	},
 	"runCommand": {
 		"title": "Befehl",

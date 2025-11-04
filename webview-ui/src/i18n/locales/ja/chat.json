@@ -40,7 +40,7 @@
 		"tooltip": "操作を再試行"
 	},
 	"startNewTask": {
-		"title": "新しいタスクを開始",
+		"title": "新規タスク",
 		"tooltip": "新しいタスクを開始"
 	},
 	"proceedAnyways": {
@@ -59,6 +59,10 @@
 	"approve": {
 		"title": "承認",
 		"tooltip": "このアクションを承認"
+	},
+	"createPR": {
+		"title": "PRを作成",
+		"tooltip": "変更からプルリクエストを作成します"
 	},
 	"runCommand": {
 		"title": "コマンド",
