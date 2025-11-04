@@ -120,7 +120,7 @@ export function AgentLandingContent({ content }: { content: AgentPageContent }) 
 									}}>
 									<div className="block">
 										<Image
-											src={content.hero.image.src || content.hero.image.url!}
+											src={content.hero.image.url}
 											alt={content.hero.image.alt || "Hero image"}
 											className="max-w-full h-auto"
 											width={content.hero.image.width}

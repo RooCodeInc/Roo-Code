@@ -1,5 +1,3 @@
-import { StaticImageData } from "next/image"
-
 /**
  * Supported icon names that can be used in agent page content.
  * These strings are mapped to actual Lucide components in the client.
@@ -31,8 +29,7 @@ export interface AgentPageContent {
 		heading: string
 		paragraphs: string[]
 		image?: {
-			url?: string
-			src?: StaticImageData
+			url: string
 			width: number
 			height: number
 			alt?: string

@@ -17,7 +17,7 @@ export const content: AgentPageContent = {
 			"As always, you bring the model key; we orchestrate smart, efficient workflows.",
 		],
 		image: {
-			src: hero,
+			url: hero.src,
 			width: 800,
 			height: 711,
 			alt: "Example of a PR Fixer applying changes from review comments",
