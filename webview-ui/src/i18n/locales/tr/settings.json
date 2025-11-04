@@ -250,6 +250,7 @@
 		"vercelAiGatewayApiKey": "Vercel AI Gateway API Anahtarı",
 		"getVercelAiGatewayApiKey": "Vercel AI Gateway API Anahtarı Al",
 		"apiKeyStorageNotice": "API anahtarları VSCode'un Gizli Depolamasında güvenli bir şekilde saklanır",
+		"passwordStorageNotice": "Parolalar VSCode'un Gizli Depolamasında güvenli bir şekilde saklanır",
 		"glamaApiKey": "Glama API Anahtarı",
 		"getGlamaApiKey": "Glama API Anahtarı Al",
 		"useCustomBaseUrl": "Özel temel URL kullan",
@@ -487,6 +488,20 @@
 			"placeholder": "Varsayılan: claude",
 			"maxTokensLabel": "Maksimum Çıktı Token sayısı",
 			"maxTokensDescription": "Claude Code yanıtları için maksimum çıktı token sayısı. Varsayılan 8000'dir."
+		},
+		"watsonx": {
+			"platform": "Platform",
+			"region": "Bölge",
+			"username": "Kullanıcı adı",
+			"password": "Şifre",
+			"apiKey": "API Anahtarı",
+			"authType": "Kimlik doğrulama türü",
+			"projectId": "Proje Kimliği",
+			"urlDescription": "IBM Cloud Pak for Data örneğinizin tam URL'sini girin",
+			"selectedEndpoint": "Seçilen uç nokta",
+			"retrieveModels": "Modelleri Al",
+			"retrieveSuccessful": "Modeller başarıyla alındı",
+			"retrieveError": "Modeller alınamadı. Lütfen kimlik bilgilerinizi kontrol edin ve tekrar deneyin"
 		}
 	},
 	"browser": {
@@ -843,7 +858,17 @@
 		"providerNotAllowed": "Sağlayıcı '{{provider}}' kuruluşunuz tarafından izin verilmiyor",
 		"modelNotAllowed": "Model '{{model}}' sağlayıcı '{{provider}}' için kuruluşunuz tarafından izin verilmiyor",
 		"profileInvalid": "Bu profil, kuruluşunuz tarafından izin verilmeyen bir sağlayıcı veya model içeriyor",
-		"qwenCodeOauthPath": "Geçerli bir OAuth kimlik bilgileri yolu sağlamalısın"
+		"qwenCodeOauthPath": "Geçerli bir OAuth kimlik bilgileri yolu sağlamalısın",
+		"watsonx": {
+			"platform": "Bir platform seçmelisiniz.",
+			"region": "Bir bölge seçmelisiniz.",
+			"projectId": "Geçerli bir proje kimliği sağlamalısınız.",
+			"authType": "Bir kimlik doğrulama türü seçmelisiniz.",
+			"username": "Geçerli bir kullanıcı adı sağlamalısınız.",
+			"apiKey": "Geçerli bir API anahtarı sağlamalısınız.",
+			"password": "Geçerli bir parola sağlamalısınız.",
+			"baseUrl": "Geçerli bir IBM Cloud Pak for Data URL'si sağlamalısınız."
+		}
 	},
 	"placeholders": {
 		"apiKey": "API anahtarını girin...",

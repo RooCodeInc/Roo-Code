@@ -250,6 +250,7 @@
 		"vercelAiGatewayApiKey": "Khóa API Vercel AI Gateway",
 		"getVercelAiGatewayApiKey": "Lấy khóa API Vercel AI Gateway",
 		"apiKeyStorageNotice": "Khóa API được lưu trữ an toàn trong Bộ lưu trữ bí mật của VSCode",
+		"passwordStorageNotice": "Mật khẩu được lưu trữ an toàn trong Bộ lưu trữ bí mật của VSCode",
 		"glamaApiKey": "Khóa API Glama",
 		"getGlamaApiKey": "Lấy khóa API Glama",
 		"useCustomBaseUrl": "Sử dụng URL cơ sở tùy chỉnh",
@@ -487,6 +488,20 @@
 			"placeholder": "Mặc định: claude",
 			"maxTokensLabel": "Số token đầu ra tối đa",
 			"maxTokensDescription": "Số lượng token đầu ra tối đa cho các phản hồi của Claude Code. Mặc định là 8000."
+		},
+		"watsonx": {
+			"platform": "Nền tảng",
+			"region": "Khu vực",
+			"username": "Tên người dùng",
+			"password": "Mật khẩu",
+			"apiKey": "Khóa API",
+			"authType": "Loại xác thực",
+			"projectId": "ID dự án",
+			"urlDescription": "Nhập URL đầy đủ của phiên bản IBM Cloud Pak for Data của bạn",
+			"selectedEndpoint": "Điểm cuối đã chọn",
+			"retrieveModels": "Lấy mô hình",
+			"retrieveSuccessful": "Lấy mô hình thành công",
+			"retrieveError": "Không thể lấy mô hình. Vui lòng kiểm tra thông tin đăng nhập của bạn và thử lại"
 		}
 	},
 	"browser": {
@@ -843,7 +858,17 @@
 		"providerNotAllowed": "Nhà cung cấp '{{provider}}' không được phép bởi tổ chức của bạn",
 		"modelNotAllowed": "Mô hình '{{model}}' không được phép cho nhà cung cấp '{{provider}}' bởi tổ chức của bạn",
 		"profileInvalid": "Hồ sơ này chứa một nhà cung cấp hoặc mô hình không được phép bởi tổ chức của bạn",
-		"qwenCodeOauthPath": "Bạn phải cung cấp đường dẫn thông tin xác thực OAuth hợp lệ"
+		"qwenCodeOauthPath": "Bạn phải cung cấp đường dẫn thông tin xác thực OAuth hợp lệ",
+		"watsonx": {
+			"platform": "Bạn phải chọn một nền tảng.",
+			"region": "Bạn phải chọn một khu vực.",
+			"projectId": "Bạn phải cung cấp ID dự án hợp lệ.",
+			"authType": "Bạn phải chọn một loại xác thực.",
+			"username": "Bạn phải cung cấp tên người dùng hợp lệ.",
+			"apiKey": "Bạn phải cung cấp khóa API hợp lệ.",
+			"password": "Bạn phải cung cấp mật khẩu hợp lệ.",
+			"baseUrl": "Bạn phải cung cấp URL IBM Cloud Pak for Data hợp lệ."
+		}
 	},
 	"placeholders": {
 		"apiKey": "Nhập khóa API...",

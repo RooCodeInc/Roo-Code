@@ -6,6 +6,7 @@ import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
 interface DiffSettingsControlProps {
 	diffEnabled?: boolean
 	fuzzyMatchThreshold?: number
+	provider?: string
 	onChange: (field: "diffEnabled" | "fuzzyMatchThreshold", value: any) => void
 }
 

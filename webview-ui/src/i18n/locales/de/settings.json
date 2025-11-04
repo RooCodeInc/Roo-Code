@@ -252,6 +252,7 @@
 		"doubaoApiKey": "Doubao API-Schlüssel",
 		"getDoubaoApiKey": "Doubao API-Schlüssel erhalten",
 		"apiKeyStorageNotice": "API-Schlüssel werden sicher im VSCode Secret Storage gespeichert",
+		"passwordStorageNotice": "Passwörter werden sicher im VSCode Secret Storage gespeichert",
 		"glamaApiKey": "Glama API-Schlüssel",
 		"getGlamaApiKey": "Glama API-Schlüssel erhalten",
 		"useCustomBaseUrl": "Benutzerdefinierte Basis-URL verwenden",
@@ -487,6 +488,20 @@
 			"placeholder": "Standard: claude",
 			"maxTokensLabel": "Maximale Ausgabe-Tokens",
 			"maxTokensDescription": "Maximale Anzahl an Ausgabe-Tokens für Claude Code-Antworten. Standard ist 8000."
+		},
+		"watsonx": {
+			"platform": "Plattform",
+			"region": "Region",
+			"username": "Benutzername",
+			"password": "Passwort",
+			"apiKey": "API-Schlüssel",
+			"authType": "Authentifizierungstyp",
+			"projectId": "Projekt-ID",
+			"urlDescription": "Geben Sie die vollständige URL Ihrer IBM Cloud Pak for Data-Instanz ein",
+			"selectedEndpoint": "Ausgewählter Endpunkt",
+			"retrieveModels": "Modelle abrufen",
+			"retrieveSuccessful": "Modelle erfolgreich abgerufen",
+			"retrieveError": "Modelle konnten nicht abgerufen werden. Bitte überprüfen Sie Ihre Anmeldedaten und versuchen Sie es erneut"
 		}
 	},
 	"browser": {
@@ -842,7 +857,17 @@
 		"providerNotAllowed": "Anbieter '{{provider}}' ist von deiner Organisation nicht erlaubt",
 		"modelNotAllowed": "Modell '{{model}}' ist für Anbieter '{{provider}}' von deiner Organisation nicht erlaubt",
 		"profileInvalid": "Dieses Profil enthält einen Anbieter oder ein Modell, das von deiner Organisation nicht erlaubt ist",
-		"qwenCodeOauthPath": "Du musst einen gültigen OAuth-Anmeldedaten-Pfad angeben"
+		"qwenCodeOauthPath": "Du musst einen gültigen OAuth-Anmeldedaten-Pfad angeben",
+		"watsonx": {
+			"platform": "Sie müssen eine Plattform auswählen.",
+			"region": "Sie müssen eine Region auswählen.",
+			"projectId": "Sie müssen eine gültige Projekt-ID angeben.",
+			"authType": "Sie müssen einen Authentifizierungstyp auswählen.",
+			"username": "Sie müssen einen gültigen Benutzernamen angeben.",
+			"apiKey": "Sie müssen einen gültigen API-Schlüssel angeben.",
+			"password": "Sie müssen ein gültiges Passwort angeben.",
+			"baseUrl": "Sie müssen eine gültige IBM Cloud Pak for Data URL angeben."
+		}
 	},
 	"placeholders": {
 		"apiKey": "API-Schlüssel eingeben...",

@@ -45,6 +45,7 @@ describe("Model Validation Functions", () => {
 		huggingface: {},
 		roo: {},
 		chutes: {},
+		"ibm-watsonx": {},
 	}
 
 	const allowAllOrganization: OrganizationAllowList = {

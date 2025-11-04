@@ -255,6 +255,7 @@
 		"vercelAiGatewayApiKey": "Vercel AI Gateway API Key",
 		"getVercelAiGatewayApiKey": "Get Vercel AI Gateway API Key",
 		"apiKeyStorageNotice": "API keys are stored securely in VSCode's Secret Storage",
+		"passwordStorageNotice": "Passwords are stored securely in VSCode's Secret Storage",
 		"glamaApiKey": "Glama API Key",
 		"getGlamaApiKey": "Get Glama API Key",
 		"useCustomBaseUrl": "Use custom base URL",
@@ -492,6 +493,20 @@
 			"placeholder": "Default: claude",
 			"maxTokensLabel": "Max Output Tokens",
 			"maxTokensDescription": "Maximum number of output tokens for Claude Code responses. Default is 8000."
+		},
+		"watsonx": {
+			"platform": "Platform",
+			"region": "Region",
+			"username": "Username",
+			"password": "Password",
+			"apiKey": "API Key",
+			"authType": "Authentication type",
+			"projectId": "Project ID",
+			"urlDescription": "Enter the full URL of your IBM Cloud Pak for Data instance",
+			"selectedEndpoint": "Selected endpoint",
+			"retrieveModels": "Retrieve Models",
+			"retrieveSuccessful": "Models retrieved successfully",
+			"retrieveError": "Failed to retrieve models. Please check your credentials and try again"
 		}
 	},
 	"browser": {
@@ -847,7 +862,17 @@
 		"providerNotAllowed": "Provider '{{provider}}' is not allowed by your organization",
 		"modelNotAllowed": "Model '{{model}}' is not allowed for provider '{{provider}}' by your organization",
 		"profileInvalid": "This profile contains a provider or model that is not allowed by your organization",
-		"qwenCodeOauthPath": "You must provide a valid OAuth credentials path."
+		"qwenCodeOauthPath": "You must provide a valid OAuth credentials path.",
+		"watsonx": {
+			"platform": "You must select a platform.",
+			"region": "You must select a region.",
+			"projectId": "You must provide a valid project ID.",
+			"authType": "You must select an authentication type.",
+			"username": "You must provide a valid username.",
+			"apiKey": "You must provide a valid API key.",
+			"password": "You must provide a valid password.",
+			"baseUrl": "You must provide a valid IBM Cloud Pak for Data URL."
+		}
 	},
 	"placeholders": {
 		"apiKey": "Enter API Key...",
