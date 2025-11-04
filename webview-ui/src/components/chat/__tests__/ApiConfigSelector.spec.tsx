@@ -461,32 +461,23 @@ describe("ApiConfigSelector", () => {
 
 		const popoverContent = screen.getByTestId("popover-content")
 
-		// Check for Config 1, 2, 3 being visible (pinned) - use getAllByText since there might be multiple
+		// Should have a single scroll container with max-h-[300px] and overflow-y-auto
+		const scrollContainer = popoverContent.querySelector(".max-h-\\[300px\\].overflow-y-auto")
+		expect(scrollContainer).toBeInTheDocument()
+
+		// Check for pinned configs sticky header
+		const pinnedStickyHeader = scrollContainer?.querySelector(".sticky.top-0.z-10.bg-vscode-dropdown-background")
+		expect(pinnedStickyHeader).toBeInTheDocument()
+		expect(pinnedStickyHeader).toHaveAttribute("aria-label", "Pinned configurations")
+
+		// Check for Config 1, 2, 3 being visible in the sticky header (pinned)
 		expect(screen.getAllByText("Config 1").length).toBeGreaterThan(0)
 		expect(screen.getAllByText("Config 2").length).toBeGreaterThan(0)
 		expect(screen.getAllByText("Config 3").length).toBeGreaterThan(0)
 
-		// Find all containers with py-1 class
-		const configContainers = popoverContent.querySelectorAll(".py-1")
-
-		// Should have 2 containers: one for pinned (non-scrollable) and one for unpinned (scrollable)
-		expect(configContainers.length).toBeGreaterThanOrEqual(1)
-
-		// Find the non-scrollable container (pinned configs)
-		let pinnedContainer: Element | null = null
-		let unpinnedContainer: Element | null = null
-
-		configContainers.forEach((container) => {
-			if (container.classList.contains("overflow-y-auto")) {
-				unpinnedContainer = container
-			} else {
-				pinnedContainer = container
-			}
-		})
-
-		// Verify pinned container exists and contains the pinned configs
-		if (pinnedContainer) {
-			const elements = (pinnedContainer as Element).querySelectorAll(".flex-shrink-0")
+		// Verify pinned container contains the pinned configs
+		if (pinnedStickyHeader) {
+			const elements = pinnedStickyHeader.querySelectorAll(".flex-shrink-0")
 			const pinnedConfigTexts = Array.from(elements)
 				.map((el) => (el as Element).textContent)
 				.filter((text) => text?.startsWith("Config"))
@@ -496,17 +487,12 @@ describe("ApiConfigSelector", () => {
 			expect(pinnedConfigTexts).toContain("Config 3")
 		}
 
-		// Verify unpinned container exists and is scrollable
-		expect(unpinnedContainer).toBeInTheDocument()
-		if (unpinnedContainer) {
-			expect((unpinnedContainer as Element).classList.contains("overflow-y-auto")).toBe(true)
-			// Check that the unpinned container has the correct max-height
-			expect((unpinnedContainer as Element).getAttribute("style")).toContain("max-height")
-		}
+		// Check for unpinned configs section
+		const unpinnedSection = scrollContainer?.querySelector('[aria-label="All configurations"]')
+		expect(unpinnedSection).toBeInTheDocument()
 
-		// Verify separator exists between pinned and unpinned
-		const separator = popoverContent.querySelector(".h-px")
-		expect(separator).toBeInTheDocument()
+		// Verify separator exists as border on pinned section when unpinned configs exist
+		expect(pinnedStickyHeader).toHaveClass("border-b")
 	})
 
 	test("displays all configs in scrollable container when no configs are pinned", () => {
@@ -529,20 +515,24 @@ describe("ApiConfigSelector", () => {
 
 		const popoverContent = screen.getByTestId("popover-content")
 
-		// Should have only one scrollable container with all configs
-		const scrollableContainer = popoverContent.querySelector(".overflow-y-auto.py-1")
-		expect(scrollableContainer).toBeInTheDocument()
+		// Should have a single scroll container with max-h-[300px] and overflow-y-auto
+		const scrollContainer = popoverContent.querySelector(".max-h-\\[300px\\].overflow-y-auto")
+		expect(scrollContainer).toBeInTheDocument()
 
-		// Check max-height is 300px when no pinned configs
-		expect(scrollableContainer?.getAttribute("style")).toContain("max-height")
-		expect(scrollableContainer?.getAttribute("style")).toContain("300px")
+		// No pinned section should exist when no configs are pinned
+		const pinnedSection = scrollContainer?.querySelector(".sticky.top-0")
+		expect(pinnedSection).not.toBeInTheDocument()
 
-		// All configs should be in the scrollable container
-		const allConfigRows = scrollableContainer?.querySelectorAll(".group")
+		// Should have unpinned configs section with all configs
+		const unpinnedSection = scrollContainer?.querySelector('[aria-label="All configurations"]')
+		expect(unpinnedSection).toBeInTheDocument()
+
+		// All configs should be in the unpinned section
+		const allConfigRows = unpinnedSection?.querySelectorAll(".group")
 		expect(allConfigRows?.length).toBe(10)
 
-		// No separator should exist
-		const separator = popoverContent.querySelector(".h-px.bg-vscode-dropdown-foreground\\/10")
-		expect(separator).not.toBeInTheDocument()
+		// No separator should exist when no pinned configs (no sticky header exists)
+		const stickyHeader = scrollContainer?.querySelector(".sticky.top-0")
+		expect(stickyHeader).not.toBeInTheDocument()
 	})
 })
