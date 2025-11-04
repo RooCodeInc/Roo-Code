@@ -112,7 +112,10 @@ export function PrFixerContent() {
 										href={EXTERNAL_LINKS.CLOUD_APP_SIGNUP_PRO}
 										target="_blank"
 										rel="noopener noreferrer"
-										onClick={trackGoogleAdsConversion}
+										onClick={(e) => {
+											e.preventDefault()
+											trackGoogleAdsConversion(EXTERNAL_LINKS.CLOUD_APP_SIGNUP_PRO)
+										}}
 										className="flex w-full items-center justify-center">
 										Start 14-day Free Trial
 										<ArrowRight className="ml-2" />
@@ -225,7 +228,10 @@ export function PrFixerContent() {
 									href={EXTERNAL_LINKS.CLOUD_APP_SIGNUP_PRO}
 									target="_blank"
 									rel="noopener noreferrer"
-									onClick={trackGoogleAdsConversion}
+									onClick={(e) => {
+										e.preventDefault()
+										trackGoogleAdsConversion(EXTERNAL_LINKS.CLOUD_APP_SIGNUP_PRO)
+									}}
 									className="flex items-center justify-center">
 									Start 14-day Free Trial
 									<ArrowRight className="ml-2 h-4 w-4" />
