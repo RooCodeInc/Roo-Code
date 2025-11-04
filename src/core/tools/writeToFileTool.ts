@@ -204,7 +204,10 @@ export async function writeToFileTool(
 
 				const completeMessage = JSON.stringify({
 					...sharedMessageProps,
-					content: newContent,
+					content: fileExists ? undefined : newContent,
+					diff: fileExists
+						? formatResponse.createPrettyPatch(relPath, cline.diffViewProvider.originalContent, newContent)
+						: undefined,
 				} satisfies ClineSayTool)
 
 				const didApprove = await askApproval("tool", completeMessage, undefined, isWriteProtected)
