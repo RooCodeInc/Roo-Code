@@ -57,7 +57,6 @@ export function GoogleAnalyticsProvider({ children }: { children: React.ReactNod
 				functionality_storage: "denied",
 				personalization_storage: "denied",
 				security_storage: "granted", // Always granted for security
-				wait_for_update: 500, // Wait 500ms for consent before sending data
 			})
 
 			// Enable cookieless pings for Google Ads
@@ -76,6 +75,9 @@ export function GoogleAnalyticsProvider({ children }: { children: React.ReactNod
 				functionality_storage: "granted",
 				personalization_storage: "granted",
 			})
+
+			// Re-initialize config to flush queued events and enable tracking
+			window.gtag("config", GTM_ID)
 		}
 	}
 
