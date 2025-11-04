@@ -31,6 +31,7 @@ describe("Amazon Bedrock Inference Profiles", () => {
 		it("should contain all expected region mappings", () => {
 			expect(AWS_INFERENCE_PROFILE_MAPPING).toEqual([
 				["ap-southeast-2", "au."],
+				["ap-southeast-4", "au."],
 				["ap-northeast-", "jp."],
 				["us-gov-", "ug."],
 				["us-", "us."],
@@ -79,8 +80,9 @@ describe("Amazon Bedrock Inference Profiles", () => {
 
 		it("should return correct prefix for Asia Pacific regions", () => {
 			const handler = createHandler()
-			// Australia (Sydney) gets au. prefix
+			// Australia regions (Sydney and Melbourne) get au. prefix
 			expect((handler as any).constructor.getPrefixForRegion("ap-southeast-2")).toBe("au.")
+			expect((handler as any).constructor.getPrefixForRegion("ap-southeast-4")).toBe("au.")
 			// Japan regions (Tokyo and Osaka) get jp. prefix
 			expect((handler as any).constructor.getPrefixForRegion("ap-northeast-1")).toBe("jp.")
 			expect((handler as any).constructor.getPrefixForRegion("ap-northeast-3")).toBe("jp.")

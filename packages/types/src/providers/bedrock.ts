@@ -401,8 +401,9 @@ export const BEDROCK_DEFAULT_CONTEXT = 128_000
 // https://docs.aws.amazon.com/bedrock/latest/userguide/inference-profiles-support.html
 // This mapping is pre-ordered by pattern length (descending) to ensure more specific patterns match first
 export const AWS_INFERENCE_PROFILE_MAPPING: Array<[string, string]> = [
-	// Australia region (Sydney) → au. inference profile (most specific - 14 chars)
+	// Australia regions (Sydney and Melbourne) → au. inference profile (most specific - 14 chars)
 	["ap-southeast-2", "au."],
+	["ap-southeast-4", "au."],
 	// Japan regions (Tokyo and Osaka) → jp. inference profile (13 chars)
 	["ap-northeast-", "jp."],
 	// US Government Cloud → ug. inference profile (7 chars)
