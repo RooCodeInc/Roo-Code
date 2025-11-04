@@ -7,7 +7,7 @@ export const cerebrasDefaultModelId: CerebrasModelId = "gpt-oss-120b"
 
 export const cerebrasModels = {
 	"zai-glm-4.6": {
-		maxTokens: 40960,
+		maxTokens: 16384, // consistent with their other models
 		contextWindow: 131072,
 		supportsImages: false,
 		supportsPromptCache: false,
