@@ -1,5 +1,6 @@
 import React, { memo, useState } from "react"
 import CodeAccordian from "../common/CodeAccordian"
+import { computeUnifiedDiffStats } from "../../utils/diffStats"
 
 interface FileDiff {
 	path: string
@@ -16,27 +17,6 @@ interface BatchDiffApprovalProps {
 	files: FileDiff[]
 	ts: number
 }
-
-/** Compute +/− from a unified diff (ignores headers/hunk lines) */
-function computeUnifiedStats(diff?: string): { added: number; removed: number } | null {
-	if (!diff) return null
-	let added = 0
-	let removed = 0
-	let saw = false
-	for (const line of diff.split("\n")) {
-		if (line.startsWith("+++ ") || line.startsWith("--- ") || line.startsWith("@@")) continue
-		if (line.startsWith("+")) {
-			added++
-			saw = true
-		} else if (line.startsWith("-")) {
-			removed++
-			saw = true
-		}
-	}
-	return saw && (added > 0 || removed > 0) ? { added, removed } : null
-}
-
-/* keep placeholder (legacy) – replaced by computeUnifiedStats after normalization */
 
 export const BatchDiffApproval = memo(({ files = [], ts }: BatchDiffApprovalProps) => {
 	const [expandedFiles, setExpandedFiles] = useState<Record<string, boolean>>({})
@@ -58,7 +38,7 @@ export const BatchDiffApproval = memo(({ files = [], ts }: BatchDiffApprovalProp
 				{files.map((file) => {
 					// Use backend-provided unified diff only. No client-side fallback for apply_diff batches.
 					const unified = file.content || ""
-					const stats = computeUnifiedStats(unified)
+					const stats = computeUnifiedDiffStats(unified)
 
 					return (
 						<div key={`${file.path}-${ts}`}>

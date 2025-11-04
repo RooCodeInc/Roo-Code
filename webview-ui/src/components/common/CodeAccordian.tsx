@@ -8,6 +8,7 @@ import { ToolUseBlock, ToolUseBlockHeader } from "./ToolUseBlock"
 import CodeBlock from "./CodeBlock"
 import { PathTooltip } from "../ui/PathTooltip"
 import DiffView from "./DiffView"
+import { computeDiffStats } from "../../utils/diffStats"
 
 interface CodeAccordianProps {
 	path?: string
@@ -22,61 +23,6 @@ interface CodeAccordianProps {
 	onJumpToFile?: () => void
 	// New props for diff stats
 	diffStats?: { added: number; removed: number }
-}
-
-// Fallback computation of + / - counts from code (supports both unified diff and Roo's multi-search-replace blocks)
-function computeDiffStatsFromCode(diff?: string): { added: number; removed: number } | null {
-	if (!diff) return null
-
-	// Strategy 1: unified diff markers
-	let added = 0
-	let removed = 0
-	let sawPlusMinus = false
-	for (const line of diff.split("\n")) {
-		if (line.startsWith("+++ ") || line.startsWith("--- ") || line.startsWith("@@")) continue
-		if (line.startsWith("+")) {
-			added++
-			sawPlusMinus = true
-		} else if (line.startsWith("-")) {
-			removed++
-			sawPlusMinus = true
-		}
-	}
-	if (sawPlusMinus) {
-		if (added === 0 && removed === 0) return null
-		return { added, removed }
-	}
-
-	// Strategy 2: Roo multi-search-replace blocks
-	const blockRegex =
-		/<<<<<<?\s*SEARCH[\s\S]*?(?:^:start_line:.*\n)?(?:^:end_line:.*\n)?(?:^-------\s*\n)?([\s\S]*?)^(?:=======\s*\n)([\s\S]*?)^(?:>>>>>>> REPLACE)/gim
-
-	const asLines = (s: string) => {
-		const norm = (s || "").replace(/\r\n/g, "\n")
-		if (!norm) return 0
-		const parts = norm.split("\n")
-		return parts[parts.length - 1] === "" ? parts.length - 1 : parts.length
-	}
-
-	let hasBlocks = false
-	added = 0
-	removed = 0
-
-	let match: RegExpExecArray | null
-	while ((match = blockRegex.exec(diff)) !== null) {
-		hasBlocks = true
-		const searchCount = asLines(match[1] ?? "")
-		const replaceCount = asLines(match[2] ?? "")
-		if (replaceCount > searchCount) added += replaceCount - searchCount
-		else if (searchCount > replaceCount) removed += searchCount - replaceCount
-	}
-
-	if (hasBlocks) {
-		if (added === 0 && removed === 0) return null
-		return { added, removed }
-	}
-
-	return null
 }
 
 const CodeAccordian = ({
@@ -100,7 +46,7 @@ const CodeAccordian = ({
 	const derivedStats = useMemo(() => {
 		if (diffStats && (diffStats.added > 0 || diffStats.removed > 0)) return diffStats
 		if ((language || inferredLanguage) && (language || inferredLanguage) === "diff") {
-			return computeDiffStatsFromCode(source || code || "")
+			return computeDiffStats(source || code || "")
 		}
 		return null
 	}, [diffStats, language, inferredLanguage, source, code])

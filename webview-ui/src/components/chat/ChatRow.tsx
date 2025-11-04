@@ -25,6 +25,7 @@ import Thumbnails from "../common/Thumbnails"
 import ImageBlock from "../common/ImageBlock"
 import ErrorRow from "./ErrorRow"
 import { extractUnifiedDiff } from "../../utils/diffUtils"
+import { computeDiffStats } from "../../utils/diffStats"
 
 import McpResourceRow from "../mcp/McpResourceRow"
 
@@ -116,66 +117,6 @@ const ChatRow = memo(
 )
 
 export default ChatRow
-
-function computeDiffStats(diff?: string): { added: number; removed: number } | null {
-	if (!diff) return null
-
-	// Strategy 1: Unified diff (+/- lines)
-	let added = 0
-	let removed = 0
-	let sawPlusMinus = false
-	for (const line of diff.split("\n")) {
-		if (line.startsWith("+++ ") || line.startsWith("--- ") || line.startsWith("@@")) continue
-		if (line.startsWith("+")) {
-			added++
-			sawPlusMinus = true
-		} else if (line.startsWith("-")) {
-			removed++
-			sawPlusMinus = true
-		}
-	}
-	if (sawPlusMinus) {
-		if (added === 0 && removed === 0) return null
-		return { added, removed }
-	}
-
-	// Strategy 2: Roo multi-search-replace blocks
-	// Count lines in SEARCH vs REPLACE sections across all blocks
-	// Matches optional metadata lines and optional '-------' line
-	const blockRegex =
-		/<<<<<<?\s*SEARCH[\s\S]*?(?:^:start_line:.*\n)?(?:^:end_line:.*\n)?(?:^-------\s*\n)?([\s\S]*?)^(?:=======\s*\n)([\s\S]*?)^(?:>>>>>>> REPLACE)/gim
-
-	let hasBlocks = false
-	added = 0
-	removed = 0
-
-	const asLines = (s: string) => {
-		// Normalize Windows newlines and trim trailing newline so counts reflect real lines
-		const norm = s.replace(/\r\n/g, "\n")
-		if (norm === "") return 0
-		// Split, drop potential trailing empty caused by final newline
-		const parts = norm.split("\n")
-		return parts[parts.length - 1] === "" ? parts.length - 1 : parts.length
-	}
-
-	let match: RegExpExecArray | null
-	while ((match = blockRegex.exec(diff)) !== null) {
-		hasBlocks = true
-		const searchContent = match[1] ?? ""
-		const replaceContent = match[2] ?? ""
-		const searchCount = asLines(searchContent)
-		const replaceCount = asLines(replaceContent)
-		if (replaceCount > searchCount) added += replaceCount - searchCount
-		else if (searchCount > replaceCount) removed += searchCount - replaceCount
-	}
-
-	if (hasBlocks) {
-		if (added === 0 && removed === 0) return null
-		return { added, removed }
-	}
-
-	return null
-}
 
 export const ChatRowContent = ({
 	message,

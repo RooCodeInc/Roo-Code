@@ -26,10 +26,11 @@ const DiffView = memo(({ source, filePath }: DiffViewProps) => {
 	// Determine language from file path and prepare highlighter
 	const normalizedLang = useMemo(() => normalizeLanguage(getLanguageFromPath(filePath || "") || "txt"), [filePath])
 	const [highlighter, setHighlighter] = useState<any>(null)
-	const isLightTheme = useMemo(
-		() => typeof document !== "undefined" && document.body.className.toLowerCase().includes("light"),
-		[],
-	)
+	const isLightTheme = useMemo(() => {
+		if (typeof document === "undefined") return false
+		const cls = document.body.className
+		return /\bvscode-light\b|\bvscode-high-contrast-light\b/i.test(cls)
+	}, [])
 
 	useEffect(() => {
 		let mounted = true
@@ -45,8 +46,14 @@ const DiffView = memo(({ source, filePath }: DiffViewProps) => {
 		}
 	}, [normalizedLang])
 
+	// Disable syntax highlighting for large diffs (performance optimization)
+	const shouldHighlight = useMemo(() => {
+		const lineCount = source.split("\n").length
+		return lineCount <= 1000 // Only highlight diffs with <= 1000 lines
+	}, [source])
+
 	const renderHighlighted = (code: string): React.ReactNode => {
-		if (!highlighter) return code
+		if (!highlighter || !shouldHighlight) return code
 		try {
 			const hast: any = highlighter.codeToHast(code, {
 				lang: normalizedLang,
@@ -87,7 +94,15 @@ const DiffView = memo(({ source, filePath }: DiffViewProps) => {
 			if (!patches || patches.length === 0) return []
 
 			const lines: DiffLine[] = []
-			const patch = patches[0]
+			const patch = filePath
+				? (patches.find((p) =>
+						[p.newFileName, p.oldFileName].some(
+							(n) => typeof n === "string" && (n === filePath || n?.endsWith("/" + filePath)),
+						),
+					) ?? patches[0])
+				: patches[0]
+
+			if (!patch) return []
 
 			let prevHunk: any = null
 			for (const hunk of patch.hunks) {
@@ -151,7 +166,7 @@ const DiffView = memo(({ source, filePath }: DiffViewProps) => {
 			console.error("[DiffView] Failed to parse diff:", error)
 			return []
 		}
-	}, [source])
+	}, [source, filePath])
 
 	return (
 		<div

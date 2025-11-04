@@ -44,7 +44,10 @@ function isUnifiedDiff(s: string): boolean {
 function stripCData(s: string): string {
 	return (
 		s
-			// Remove HTML-encoded and raw CDATA open/close (case-insensitive covers both)
+			// First, normalize HTML-encoded CDATA markers to raw
+			.replace(/&lt;!\[CDATA\[/gi, "<![CDATA[")
+			.replace(/\]\]&gt;/gi, "]]>")
+			// Then strip raw markers
 			.replace(/<!\[CDATA\[/gi, "")
 			.replace(/\]\]>/gi, "")
 	)
@@ -61,9 +64,10 @@ function convertNewFileToUnifiedDiff(content: string, filePath?: string): string
 	// Drop trailing empty item produced by a final newline so we count only real content lines
 	const contentLines = parts[parts.length - 1] === "" ? parts.slice(0, -1) : parts
 
+	const count = contentLines.length
 	let diff = `--- /dev/null\n`
 	diff += `+++ ${fileName}\n`
-	diff += `@@ -0,0 +1,${contentLines.length} @@\n`
+	diff += `@@ -0,0 +${count ? 1 : 0},${count} @@\n`
 
 	for (const line of contentLines) {
 		diff += `+${line}\n`
