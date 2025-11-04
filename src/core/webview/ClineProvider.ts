@@ -149,6 +149,12 @@ export class ClineProvider
 	private uiUpdatePaused: boolean = false
 	private pendingState: ExtensionState | null = null
 
+	// Resumption gating (hotfix)
+	// When true, provider.cancelTask() will not schedule presentResumableAsk
+	private suppressResumeAsk: boolean = false
+	// Deduplicate presentResumableAsk scheduling per taskId
+	private resumeAskScheduledForTaskId?: string
+
 	public isViewLaunched = false
 	public settingsImportedAt?: number
 	public readonly latestAnnouncementId = "nov-2025-v3.30.0-pr-fixer" // v3.30.0 PR Fixer announcement
@@ -1641,6 +1647,14 @@ export class ClineProvider
 		}
 	}
 
+	/**
+	 * Hotfix: Suppress scheduling of the "Present Resume/Terminate" ask in cancel path.
+	 * Used to prevent overlap with checkpoint restore or other resumption flows.
+	 */
+	public setSuppressResumeAsk(suppress: boolean): void {
+		this.suppressResumeAsk = suppress
+	}
+
 	async postStateToWebview() {
 		const state = await this.getStateToPostToWebview()
 
@@ -2695,18 +2709,54 @@ export class ClineProvider
 		// Update UI immediately to reflect current state
 		await this.postStateToWebview()
 
-		// Schedule non-blocking resumption to present "Resume Task" ask
+		// Schedule non-blocking resumption to present "Resume Task" ask.
+		// Hotfix gating: suppress and dedupe to avoid concurrent resumptions.
+		if (this.suppressResumeAsk) {
+			console.log(
+				`[cancelTask] suppressResumeAsk=true; skipping resumable ask scheduling for ${task.taskId}.${task.instanceId}`,
+			)
+			return
+		}
+
+		// Deduplicate scheduling for the same task
+		if (this.resumeAskScheduledForTaskId === task.taskId) {
+			console.log(`[cancelTask] resume ask already scheduled for ${task.taskId}.${task.instanceId}`)
+			return
+		}
+		this.resumeAskScheduledForTaskId = task.taskId
+
 		// Use setImmediate to avoid blocking the webview handler
 		setImmediate(() => {
-			if (task && !task.abandoned) {
+			try {
+				// Re-check suppression at callback time
+				if (this.suppressResumeAsk) {
+					this.resumeAskScheduledForTaskId = undefined
+					return
+				}
+
+				// Guard against task switch or abandonment
+				const current = this.getCurrentTask()
+				if (!current || current.taskId !== task.taskId || current.abandoned) {
+					this.resumeAskScheduledForTaskId = undefined
+					return
+				}
+
 				// Present a resume ask without rehydrating - just show the Resume/Terminate UI
-				task.presentResumableAsk().catch((error) => {
-					console.error(
-						`[cancelTask] Failed to present resume ask: ${
-							error instanceof Error ? error.message : String(error)
-						}`,
-					)
-				})
+				current
+					.presentResumableAsk()
+					.catch((error) => {
+						console.error(
+							`[cancelTask] Failed to present resume ask: ${
+								error instanceof Error ? error.message : String(error)
+							}`,
+						)
+					})
+					.finally(() => {
+						this.resumeAskScheduledForTaskId = undefined
+					})
+			} catch (e) {
+				this.resumeAskScheduledForTaskId = undefined
+				throw e
 			}
 		})
 	}

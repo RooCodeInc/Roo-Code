@@ -1034,6 +1034,7 @@ export const webviewMessageHandler = async (
 
 			if (result.success) {
 				// Begin transaction to buffer state updates
+				provider.setSuppressResumeAsk(true)
 				provider.beginStateTransaction()
 
 				try {
@@ -1053,6 +1054,7 @@ export const webviewMessageHandler = async (
 				} finally {
 					// End transaction and post consolidated state
 					await provider.endStateTransaction()
+					provider.setSuppressResumeAsk(false)
 				}
 			}
 

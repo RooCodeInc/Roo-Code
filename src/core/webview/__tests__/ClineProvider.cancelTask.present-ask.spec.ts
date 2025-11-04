@@ -57,4 +57,28 @@ describe("ClineProvider.cancelTask - schedules presentResumableAsk", () => {
 		await Promise.resolve()
 		expect(mockTask.presentResumableAsk).toHaveBeenCalledTimes(1)
 	})
+
+	it("skips scheduling when suppressResumeAsk is true", async () => {
+		// Arrange
+		provider.setSuppressResumeAsk(true)
+
+		// Act
+		await (provider as any).cancelTask()
+
+		// Assert
+		vi.runAllTimers()
+		await Promise.resolve()
+		expect(mockTask.presentResumableAsk).not.toHaveBeenCalled()
+	})
+
+	it("dedupes multiple cancelTask calls for same taskId", async () => {
+		// Act: call cancel twice rapidly
+		await (provider as any).cancelTask()
+		await (provider as any).cancelTask()
+
+		// Assert
+		vi.runAllTimers()
+		await Promise.resolve()
+		expect(mockTask.presentResumableAsk).toHaveBeenCalledTimes(1)
+	})
 })
