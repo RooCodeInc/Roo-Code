@@ -173,6 +173,15 @@ export async function writeToFileTool(
 
 			if (isPreventFocusDisruptionEnabled) {
 				// Direct file write without diff view
+				// Set up diffViewProvider properties needed for diff generation and saveDirectly
+				cline.diffViewProvider.editType = fileExists ? "modify" : "create"
+				if (fileExists) {
+					const absolutePath = path.resolve(cline.cwd, relPath)
+					cline.diffViewProvider.originalContent = await fs.readFile(absolutePath, "utf-8")
+				} else {
+					cline.diffViewProvider.originalContent = ""
+				}
+
 				// Check for code omissions before proceeding
 				if (detectCodeOmission(cline.diffViewProvider.originalContent || "", newContent, predictedLineCount)) {
 					if (cline.diffStrategy) {
@@ -214,15 +223,6 @@ export async function writeToFileTool(
 
 				if (!didApprove) {
 					return
-				}
-
-				// Set up diffViewProvider properties needed for saveDirectly
-				cline.diffViewProvider.editType = fileExists ? "modify" : "create"
-				if (fileExists) {
-					const absolutePath = path.resolve(cline.cwd, relPath)
-					cline.diffViewProvider.originalContent = await fs.readFile(absolutePath, "utf-8")
-				} else {
-					cline.diffViewProvider.originalContent = ""
 				}
 
 				// Save directly without showing diff view or opening the file
