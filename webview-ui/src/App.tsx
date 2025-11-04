@@ -79,6 +79,7 @@ const App = () => {
 		cloudOrganizations,
 		renderContext,
 		mdmCompliant,
+		accentColor,
 	} = useExtensionState()
 
 	// Create a persistent state manager
@@ -233,6 +234,18 @@ const App = () => {
 			}
 		}, [renderContext]),
 	)
+
+	// Apply accent color to CSS custom property
+	useEffect(() => {
+		if (accentColor) {
+			document.documentElement.style.setProperty("--accent", accentColor)
+			document.documentElement.style.setProperty("--color-accent", accentColor)
+		} else {
+			// Reset to default when no accent color is set
+			document.documentElement.style.removeProperty("--accent")
+			document.documentElement.style.removeProperty("--color-accent")
+		}
+	}, [accentColor])
 	// Track marketplace tab views
 	useEffect(() => {
 		if (tab === "marketplace") {

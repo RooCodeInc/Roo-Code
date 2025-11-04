@@ -791,6 +791,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					{activeTab === "ui" && (
 						<UISettings
 							reasoningBlockCollapsed={reasoningBlockCollapsed ?? true}
+							accentColor={extensionState.accentColor}
 							setCachedStateField={setCachedStateField}
 						/>
 					)}
