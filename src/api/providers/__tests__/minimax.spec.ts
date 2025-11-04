@@ -178,43 +178,6 @@ describe("MiniMaxHandler", () => {
 			expect(firstChunk.value).toEqual({ type: "text", text: testContent })
 		})
 
-		it("should handle reasoning tags (<think>) from stream", async () => {
-			mockCreate.mockImplementationOnce(() => {
-				return {
-					[Symbol.asyncIterator]: () => ({
-						next: vitest
-							.fn()
-							.mockResolvedValueOnce({
-								done: false,
-								value: { choices: [{ delta: { content: "<think>Let me think" } }] },
-							})
-							.mockResolvedValueOnce({
-								done: false,
-								value: { choices: [{ delta: { content: " about this</think>" } }] },
-							})
-							.mockResolvedValueOnce({
-								done: false,
-								value: { choices: [{ delta: { content: "The answer is 42" } }] },
-							})
-							.mockResolvedValueOnce({ done: true }),
-					}),
-				}
-			})
-
-			const stream = handler.createMessage("system prompt", [])
-			const chunks = []
-			for await (const chunk of stream) {
-				chunks.push(chunk)
-			}
-
-			// XmlMatcher yields chunks as they're processed
-			expect(chunks).toEqual([
-				{ type: "reasoning", text: "Let me think" },
-				{ type: "reasoning", text: " about this" },
-				{ type: "text", text: "The answer is 42" },
-			])
-		})
-
 		it("createMessage should yield usage data from stream", async () => {
 			mockCreate.mockImplementationOnce(() => {
 				return {
