@@ -888,7 +888,5 @@
 		"requireCtrlEnterToSend": {
 			"label": "Requiert {primaryMod}+Entrée pour envoyer des messages",
 			"description": "Lorsqu'activé, vous devez appuyer sur {primaryMod}+Entrée pour envoyer des messages au lieu de simplement Entrée"
-			"description": "Lorsqu'activé, vous devez appuyer sur Ctrl+Entrée pour envoyer des messages au lieu de simplement Entrée"
-		}
 	}
 }
