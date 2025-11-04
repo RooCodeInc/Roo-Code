@@ -1,0 +1,283 @@
+"use client"
+
+import {
+	ArrowRight,
+	Blocks,
+	BookMarked,
+	ListChecks,
+	LucideIcon,
+	GitPullRequest,
+	Key,
+	MessageSquareCode,
+} from "lucide-react"
+import Image from "next/image"
+
+import { Button } from "@/components/ui"
+import { AnimatedBackground } from "@/components/homepage"
+import { AgentCarousel } from "@/components/reviewer/agent-carousel"
+import { EXTERNAL_LINKS } from "@/lib/constants"
+import { trackGoogleAdsConversion } from "@/lib/analytics/google-ads"
+
+interface Feature {
+	icon: LucideIcon
+	title: string
+	description: string | React.ReactNode
+	logos?: string[]
+}
+
+const workflowSteps: Feature[] = [
+	{
+		icon: GitPullRequest,
+		title: "1. Connect Your Repository",
+		description: "Link your GitHub repository and configure which branches and pull requests should be reviewed.",
+	},
+	{
+		icon: Key,
+		title: "2. Add Your API Key",
+		description:
+			"Provide your AI provider API key and set your review preferences, custom rules, and quality standards.",
+	},
+	{
+		icon: MessageSquareCode,
+		title: "3. Get Review Comments",
+		description:
+			"Every pull request gets detailed GitHub comments in minutes from a Roo Code agent highlighting issues and suggesting improvements.",
+	},
+]
+
+const howItWorks: Feature[] = [
+	{
+		icon: Blocks,
+		title: "Bring your own key, get uncompromised reviews",
+		description: (
+			<>
+				<p>
+					Most AI review tools use fixed pricing, which means they skimp on tokens to protect their margins.
+					That leads to shallow analysis and missed issues.
+				</p>
+				<p>
+					With Roo, you bring your own API key. We optimize prompts for depth, not cost-cutting, so reviews
+					focus on real problems like business logic, security vulnerabilities, and architectural issues.
+				</p>
+			</>
+		),
+	},
+	{
+		icon: ListChecks,
+		title: "Advanced reasoning that understands what matters",
+		description:
+			"We leverage state-of-the-art reasoning models with sophisticated workflows: diff analysis, context gathering, impact mapping, and contract validation. This catches the subtle bugs that surface-level tools miss—misunderstood requirements, edge cases, and integration risks.",
+	},
+	{
+		icon: BookMarked,
+		title: "Repository-aware, not snippet-aware",
+		description:
+			"Roo analyzes your entire codebase context—dependency graphs, code ownership, team conventions, and historical patterns. It understands how changes interact with existing systems, not just whether individual lines look correct.",
+	},
+]
+
+// Workaround for next/image choking on these for some reason
+import hero from "/public/heroes/agent-reviewer.png"
+
+export function PRReviewerContent() {
+	return (
+		<>
+			<section className="relative flex md:h-[calc(70vh-theme(spacing.12))] items-center overflow-hidden">
+				<AnimatedBackground />
+				<div className="container relative flex items-center h-full z-10 mx-auto px-4 sm:px-6 lg:px-8">
+					<div className="grid h-full relative gap-4 md:gap-20 lg:grid-cols-2">
+						<div className="flex flex-col px-4 justify-center space-y-6 sm:space-y-8">
+							<div>
+								<h1 className="text-3xl font-bold tracking-tight mt-8  md:text-left md:text-4xl lg:text-5xl lg:mt-0">
+									Code reviews that catch what other AI&nbsp;tools&nbsp;miss.
+								</h1>
+								<div className="mt-4 max-w-lg space-y-4 text-base text-muted-foreground md:text-left sm:mt-6">
+									<p>
+										AI code review tools often catch syntax errors and style issues while missing
+										the bugs that actually matter: logic flaws, security vulnerabilities, and
+										misunderstood requirements.
+									</p>
+									<p>
+										Roo Code&apos;s PR Reviewer uses advanced reasoning models and full repository
+										context to find the issues that slip through—before they reach production.
+									</p>
+								</div>
+							</div>
+							<div className="flex flex-col space-y-3 sm:flex-row sm:space-x-4 sm:space-y-0 md:items-center">
+								<Button
+									size="lg"
+									className="w-full sm:w-auto backdrop-blur-sm border hover:shadow-[0_0_20px_rgba(59,130,246,0.5)] transition-all duration-300"
+									asChild>
+									<a
+										href={EXTERNAL_LINKS.CLOUD_APP_SIGNUP_PRO}
+										target="_blank"
+										rel="noopener noreferrer"
+										onClick={trackGoogleAdsConversion}
+										className="flex w-full items-center justify-center">
+										Start 14-day Free Trial
+										<ArrowRight className="ml-2" />
+									</a>
+								</Button>
+								<span className="text-sm text-center md:text-left text-muted-foreground md:ml-2">
+									(cancel anytime)
+								</span>
+							</div>
+						</div>
+						<div className="flex items-center justify-end mx-auto h-full mt-8 lg:mt-0">
+							<div className="md:w-[800px] md:h-[474px] relative overflow-clip">
+								<div className="block">
+									<Image
+										src={hero}
+										alt="Example of a code review generated by Roo Code PR Reviewer"
+										className="max-w-full h-auto"
+										width={800}
+										height={474}
+									/>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			{/* How It Works Section */}
+			<section className="relative overflow-hidden border-t border-border py-32">
+				<div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
+					<div className="mx-auto mb-12 md:mb-24 max-w-5xl text-center">
+						<div>
+							<h2 className="text-4xl font-bold tracking-tight sm:text-5xl">How It Works</h2>
+						</div>
+					</div>
+
+					<div className="relative mx-auto md:max-w-[1200px]">
+						<ul className="grid grid-cols-1 place-items-center gap-6 md:grid-cols-3 lg:gap-8">
+							{workflowSteps.map((step, index) => {
+								const Icon = step.icon
+								return (
+									<li
+										key={index}
+										className="relative h-full border border-border rounded-2xl bg-background p-8 transition-all duration-300 hover:shadow-lg">
+										<Icon className="size-6 text-foreground/80" />
+										<h3 className="mb-3 mt-3 text-xl font-semibold text-foreground">
+											{step.title}
+										</h3>
+										<div className="leading-relaxed font-light text-muted-foreground">
+											{step.description}
+										</div>
+									</li>
+								)
+							})}
+						</ul>
+					</div>
+				</div>
+			</section>
+
+			<section className="relative overflow-hidden border-t border-border py-32">
+				<div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
+					<div className="mx-auto mb-12 md:mb-24 max-w-5xl text-center">
+						<div>
+							<h2 className="text-4xl font-bold tracking-tight sm:text-5xl">
+								Why Roo&apos;s PR Reviewer is different
+							</h2>
+						</div>
+					</div>
+
+					<div className="relative mx-auto md:max-w-[1200px]">
+						<ul className="grid grid-cols-1 place-items-center gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-8">
+							{howItWorks.map((feature, index) => {
+								const Icon = feature.icon
+								return (
+									<li
+										key={index}
+										className="relative h-full border border-border rounded-2xl bg-background p-8 transition-all duration-300">
+										<Icon className="size-6 text-foreground/80" />
+										<h3 className="mb-3 mt-3 text-xl font-semibold text-foreground">
+											{feature.title}
+										</h3>
+										<div className="leading-relaxed font-light text-muted-foreground space-y-2">
+											{feature.description}
+										</div>
+										{feature.logos && (
+											<div className="mt-4 flex flex-wrap items-center gap-4">
+												{feature.logos.map((logo) => (
+													<Image
+														key={logo}
+														width={20}
+														height={20}
+														className="w-5 h-5 overflow-clip opacity-50 dark:invert"
+														src={`/logos/${logo.toLowerCase()}.svg`}
+														alt={`${logo} Logo`}
+													/>
+												))}
+											</div>
+										)}
+									</li>
+								)
+							})}
+						</ul>
+					</div>
+				</div>
+			</section>
+
+			<section className="relative overflow-hidden border-t border-border py-32">
+				<div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
+					<div className="mx-auto mb-12 max-w-4xl text-center">
+						<div>
+							<h2 className="text-4xl font-bold tracking-tight sm:text-5xl">
+								The first member of a whole new team
+							</h2>
+
+							<p className="mt-6 text-lg text-muted-foreground">
+								Architecture, coding, reviewing, testing, debugging, documenting, designing –{" "}
+								<em>almost everything</em> we do today is mostly through our agents. Now we&apos;re
+								bringing them to you.
+							</p>
+							<p className="mt-2 text-lg text-muted-foreground">
+								Roo&apos;s PR Reviewer isn&apos;t yet another single-purpose tool to add to your already
+								complicated stack.
+								<br />
+								It&apos;s the first member of your AI-powered development team. More agents are shipping
+								soon.
+							</p>
+						</div>
+					</div>
+
+					<div className="relative mx-auto md:max-w-[1200px]">
+						<AgentCarousel />
+					</div>
+				</div>
+			</section>
+
+			{/* CTA Section */}
+			<section className="py-20">
+				<div className="container mx-auto px-4 sm:px-6 lg:px-8">
+					<div className="mx-auto max-w-4xl rounded-3xl border border-border/50 bg-gradient-to-br from-blue-500/5 via-cyan-500/5 to-purple-500/5 p-8 text-center shadow-2xl backdrop-blur-xl dark:border-white/20 dark:bg-gradient-to-br dark:from-gray-800 dark:via-gray-900 dark:to-black sm:p-12">
+						<h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
+							Ready for better code reviews?
+						</h2>
+						<p className="mx-auto mb-8 max-w-2xl text-lg text-muted-foreground">
+							Start finding the issues that matter with AI-powered reviews built for depth, not
+							cost-cutting.
+						</p>
+						<div className="flex flex-col justify-center space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0">
+							<Button
+								size="lg"
+								className="bg-black text-white hover:bg-gray-800 hover:shadow-lg hover:shadow-black/20 dark:bg-white dark:text-black dark:hover:bg-gray-200 dark:hover:shadow-white/20 transition-all duration-300"
+								asChild>
+								<a
+									href={EXTERNAL_LINKS.CLOUD_APP_SIGNUP_PRO}
+									target="_blank"
+									rel="noopener noreferrer"
+									onClick={trackGoogleAdsConversion}
+									className="flex items-center justify-center">
+									Start 14-day Free Trial
+									<ArrowRight className="ml-2 h-4 w-4" />
+								</a>
+							</Button>
+						</div>
+					</div>
+				</div>
+			</section>
+		</>
+	)
+}
