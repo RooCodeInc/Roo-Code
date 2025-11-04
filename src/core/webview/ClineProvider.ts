@@ -858,7 +858,13 @@ export class ClineProvider
 	}
 
 	public async createTaskWithHistoryItem(historyItem: HistoryItem & { rootTask?: Task; parentTask?: Task }) {
-		await this.removeClineFromStack()
+		// Check if we're rehydrating the current task to avoid flicker
+		const currentTask = this.getCurrentTask()
+		const isRehydratingCurrentTask = currentTask && currentTask.taskId === historyItem.id
+
+		if (!isRehydratingCurrentTask) {
+			await this.removeClineFromStack()
+		}
 
 		// If the history item has a saved mode, restore it and its associated API configuration.
 		if (historyItem.mode) {
@@ -932,11 +938,35 @@ export class ClineProvider
 			enableBridge: BridgeOrchestrator.isEnabled(cloudUserInfo, taskSyncEnabled),
 		})
 
-		await this.addClineToStack(task)
+		if (isRehydratingCurrentTask) {
+			// Replace the current task in-place to avoid UI flicker
+			const stackIndex = this.clineStack.length - 1
 
-		this.log(
-			`[createTaskWithHistoryItem] ${task.parentTask ? "child" : "parent"} task ${task.taskId}.${task.instanceId} instantiated`,
-		)
+			// Remove event listeners from the old task
+			const oldTask = this.clineStack[stackIndex]
+			const cleanupFunctions = this.taskEventListeners.get(oldTask)
+			if (cleanupFunctions) {
+				cleanupFunctions.forEach((cleanup) => cleanup())
+				this.taskEventListeners.delete(oldTask)
+			}
+
+			// Replace the task in the stack
+			this.clineStack[stackIndex] = task
+			task.emit(RooCodeEventName.TaskFocused)
+
+			// Perform preparation tasks and set up event listeners
+			await this.performPreparationTasks(task)
+
+			this.log(
+				`[createTaskWithHistoryItem] rehydrated task ${task.taskId}.${task.instanceId} in-place (flicker-free)`,
+			)
+		} else {
+			await this.addClineToStack(task)
+
+			this.log(
+				`[createTaskWithHistoryItem] ${task.parentTask ? "child" : "parent"} task ${task.taskId}.${task.instanceId} instantiated`,
+			)
+		}
 
 		// Check if there's a pending edit after checkpoint restoration
 		const operationId = `task-${task.taskId}`
