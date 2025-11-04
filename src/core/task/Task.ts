@@ -737,8 +737,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// deallocated. (Although we set Cline = undefined in provider, that
 		// simply removes the reference to this instance, but the instance is
 		// still alive until this promise resolves or rejects.)
-		// Exception: Allow resume asks even when aborted for soft-interrupt UX
-		if (this.abort && type !== "resume_task" && type !== "resume_completed_task") {
+		if (this.abort) {
 			throw new Error(`[RooCode#ask] task ${this.taskId}.${this.instanceId} aborted`)
 		}
 
@@ -1256,7 +1255,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		])
 	}
 
-	public async resumeTaskFromHistory() {
+	private async resumeTaskFromHistory() {
 		if (this.enableBridge) {
 			try {
 				await BridgeOrchestrator.subscribeToTask(this)
@@ -1347,13 +1346,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.isInitialized = true
 
 		const { response, text, images } = await this.ask(askType) // Calls `postStateToWebview`.
-
-		// Reset abort flags AFTER user responds to resume ask.
-		// This is critical for the cancel → resume flow: when a task is soft-aborted
-		// (abandoned = false), we keep the instance alive but set abort = true.
-		// We only clear these flags after the user confirms they want to resume,
-		// preventing the old stream from continuing if abort was set.
-		this.resetAbortAndStreamingState()
 
 		let responseText: string | undefined
 		let responseImages: string[] | undefined
@@ -1533,86 +1525,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		await this.initiateTaskLoop(newUserContent)
 	}
 
-	/**
-	 * Resets abort flags and streaming state to allow task resumption.
-	 * Centralizes the state reset logic used after user confirms task resumption.
-	 *
-	 * @private
-	 */
-	private resetAbortAndStreamingState(): void {
-		this.abort = false
-		this.abandoned = false
-		this.abortReason = undefined
-		this.didFinishAbortingStream = false
-		this.isStreaming = false
-
-		// Reset streaming-local fields to avoid stale state from previous stream
-		this.currentStreamingContentIndex = 0
-		this.currentStreamingDidCheckpoint = false
-		this.assistantMessageContent = []
-		this.didCompleteReadingStream = false
-		this.userMessageContent = []
-		this.userMessageContentReady = false
-		this.didRejectTool = false
-		this.didAlreadyUseTool = false
-		this.presentAssistantMessageLocked = false
-		this.presentAssistantMessageHasPendingUpdates = false
-		this.assistantMessageParser.reset()
-	}
-
-	/**
-	 * Present a resumable ask on an aborted task without rehydrating.
-	 * Used by soft-interrupt (cancelTask) to show Resume/Terminate UI.
-	 * Selects the appropriate ask type based on the last relevant message.
-	 * If the user clicks Resume, resets abort flags and continues the task loop.
-	 */
-	public async presentResumableAsk(): Promise<void> {
-		const lastClineMessage = this.clineMessages
-			.slice()
-			.reverse()
-			.find((m) => !(m.ask === "resume_task" || m.ask === "resume_completed_task"))
-
-		let askType: ClineAsk
-		if (lastClineMessage?.ask === "completion_result") {
-			askType = "resume_completed_task"
-		} else {
-			askType = "resume_task"
-		}
-
-		const { response, text, images } = await this.ask(askType)
-
-		// If user clicked Resume (not Terminate), reset abort flags and continue
-		if (response === "yesButtonClicked" || response === "messageResponse") {
-			// Reset abort flags to allow the loop to continue
-			this.resetAbortAndStreamingState()
-
-			// Prepare content for resuming the task loop
-			let userContent: Anthropic.Messages.ContentBlockParam[] = []
-
-			if (response === "messageResponse" && text) {
-				// User provided additional instructions
-				await this.say("user_feedback", text, images)
-				userContent.push({
-					type: "text",
-					text: `\n\nNew instructions for task continuation:\n<user_message>\n${text}\n</user_message>`,
-				})
-				if (images && images.length > 0) {
-					userContent.push(...formatResponse.imageBlocks(images))
-				}
-			} else {
-				// Simple resume with no new instructions
-				userContent.push({
-					type: "text",
-					text: "[TASK RESUMPTION] Resuming task...",
-				})
-			}
-
-			// Continue the task loop
-			await this.initiateTaskLoop(userContent)
-		}
-		// If user clicked Terminate (noButtonClicked), do nothing - task stays aborted
-	}
-
 	public async abortTask(isAbandoned = false) {
 		// Aborting task
 
@@ -1624,17 +1536,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.abort = true
 		this.emit(RooCodeEventName.TaskAborted)
 
-		// Only dispose if this is a hard abort (abandoned)
-		// For soft abort (user cancel), keep the instance alive so we can present a resumable ask
-		if (isAbandoned) {
-			try {
-				this.dispose() // Call the centralized dispose method
-			} catch (error) {
-				console.error(`Error during task ${this.taskId}.${this.instanceId} disposal:`, error)
-				// Don't rethrow - we want abort to always succeed
-			}
+		try {
+			this.dispose() // Call the centralized dispose method
+		} catch (error) {
+			console.error(`Error during task ${this.taskId}.${this.instanceId} disposal:`, error)
+			// Don't rethrow - we want abort to always succeed
 		}
-
 		// Save the countdown message in the automatic retry or other content.
 		try {
 			// Save the countdown message in the automatic retry or other content.

@@ -1722,12 +1722,12 @@ describe("Cline", () => {
 			// Mock the dispose method to track cleanup
 			const disposeSpy = vi.spyOn(task, "dispose").mockImplementation(() => {})
 
-			// Call abortTask (soft cancel - same path as UI Cancel button)
+			// Call abortTask
 			await task.abortTask()
 
-			// Verify the same behavior as Cancel button: soft abort sets abort flag but does not dispose
+			// Verify the same behavior as Cancel button
 			expect(task.abort).toBe(true)
-			expect(disposeSpy).not.toHaveBeenCalled()
+			expect(disposeSpy).toHaveBeenCalled()
 		})
 
 		it("should work with TaskLike interface", async () => {
@@ -1771,8 +1771,8 @@ describe("Cline", () => {
 			// Spy on console.error to verify error is logged
 			const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
 
-			// abortTask should not throw even if dispose fails (hard abort triggers dispose)
-			await expect(task.abortTask(true)).resolves.not.toThrow()
+			// abortTask should not throw even if dispose fails
+			await expect(task.abortTask()).resolves.not.toThrow()
 
 			// Verify error was logged
 			expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining("Error during task"), mockError)
