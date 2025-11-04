@@ -14,7 +14,7 @@ import { safeJsonParse } from "@roo/safeJsonParse"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
 import { findMatchingResourceOrTemplate } from "@src/utils/mcp"
 import { vscode } from "@src/utils/vscode"
-import { removeLeadingNonAlphanumeric } from "@src/utils/removeLeadingNonAlphanumeric"
+import { formatPathTooltip } from "@src/utils/formatPathTooltip"
 import { getLanguageFromPath } from "@src/utils/getLanguageFromPath"
 
 import { ToolUseBlock, ToolUseBlockHeader } from "../common/ToolUseBlock"
@@ -61,6 +61,7 @@ import {
 	MessageCircle,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { PathTooltip } from "../ui/PathTooltip"
 
 interface ChatRowProps {
 	message: ClineMessage
@@ -552,10 +553,11 @@ export const ChatRowContent = ({
 									className="group"
 									onClick={() => vscode.postMessage({ type: "openFile", text: tool.content })}>
 									{tool.path?.startsWith(".") && <span>.</span>}
-									<span className="whitespace-nowrap overflow-hidden text-ellipsis text-left mr-2 rtl">
-										{removeLeadingNonAlphanumeric(tool.path ?? "") + "\u200E"}
-										{tool.reason}
-									</span>
+									<PathTooltip content={formatPathTooltip(tool.path, tool.reason)}>
+										<span className="whitespace-nowrap overflow-hidden text-ellipsis text-left mr-2 rtl">
+											{formatPathTooltip(tool.path, tool.reason)}
+										</span>
+									</PathTooltip>
 									<div style={{ flexGrow: 1 }}></div>
 									<SquareArrowOutUpRight
 										className="w-4 shrink-0 codicon codicon-link-external opacity-0 group-hover:opacity-100 transition-opacity"
