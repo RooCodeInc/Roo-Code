@@ -439,7 +439,7 @@ export const ChatRowContent = ({
 				style={{ color: "var(--vscode-foreground)", marginBottom: "-1.5px" }}></span>
 		)
 
-		switch (tool.tool) {
+		switch (tool.tool as string) {
 			case "editedExistingFile":
 			case "appliedDiff":
 				// Check if this is a batch diff request
