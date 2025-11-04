@@ -942,8 +942,19 @@ export class ClineProvider
 			// Replace the current task in-place to avoid UI flicker
 			const stackIndex = this.clineStack.length - 1
 
-			// Remove event listeners from the old task
+			// Properly dispose of the old task to ensure garbage collection
 			const oldTask = this.clineStack[stackIndex]
+
+			// Abort the old task to stop running processes and mark as abandoned
+			try {
+				await oldTask.abortTask(true)
+			} catch (e) {
+				this.log(
+					`[createTaskWithHistoryItem] abortTask() failed for old task ${oldTask.taskId}.${oldTask.instanceId}: ${e.message}`,
+				)
+			}
+
+			// Remove event listeners from the old task
 			const cleanupFunctions = this.taskEventListeners.get(oldTask)
 			if (cleanupFunctions) {
 				cleanupFunctions.forEach((cleanup) => cleanup())

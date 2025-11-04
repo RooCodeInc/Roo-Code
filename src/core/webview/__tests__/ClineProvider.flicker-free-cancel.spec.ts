@@ -175,6 +175,7 @@ describe("ClineProvider flicker-free cancel", () => {
 			instanceId: "instance-1",
 			emit: vi.fn(),
 			abortTask: vi.fn().mockResolvedValue(undefined),
+			abandoned: false,
 			dispose: vi.fn(),
 			on: vi.fn(),
 			off: vi.fn(),
