@@ -48,10 +48,13 @@
 		"providerLabel": "임베딩 제공자",
 		"selectProviderPlaceholder": "제공자 선택",
 		"openaiProvider": "OpenAI",
+		"openRouterProvider": "OpenRouter",
 		"ollamaProvider": "Ollama",
 		"geminiProvider": "Gemini",
 		"geminiApiKeyLabel": "API 키:",
 		"geminiApiKeyPlaceholder": "Gemini API 키를 입력하세요",
+		"openRouterApiKeyLabel": "OpenRouter API 키",
+		"openRouterApiKeyPlaceholder": "OpenRouter API 키를 입력하세요",
 		"mistralProvider": "Mistral",
 		"mistralApiKeyLabel": "API 키:",
 		"mistralApiKeyPlaceholder": "Mistral API 키를 입력하세요",
@@ -120,6 +123,7 @@
 			"modelIdRequired": "모델 ID가 필요합니다",
 			"modelDimensionRequired": "모델 차원이 필요합니다",
 			"geminiApiKeyRequired": "Gemini API 키가 필요합니다",
+			"openRouterApiKeyRequired": "OpenRouter API 키가 필요합니다",
 			"mistralApiKeyRequired": "Mistral API 키가 필요합니다",
 			"vercelAiGatewayApiKeyRequired": "Vercel AI Gateway API 키가 필요합니다",
 			"ollamaBaseUrlRequired": "Ollama 기본 URL이 필요합니다",
@@ -293,6 +297,9 @@
 		"moonshotApiKey": "Moonshot API 키",
 		"getMoonshotApiKey": "Moonshot API 키 받기",
 		"moonshotBaseUrl": "Moonshot 엔트리포인트",
+		"minimaxApiKey": "MiniMax API 키",
+		"getMiniMaxApiKey": "MiniMax API 키 받기",
+		"minimaxBaseUrl": "MiniMax 엔트리포인트",
 		"zaiApiKey": "Z AI API 키",
 		"getZaiApiKey": "Z AI API 키 받기",
 		"zaiEntrypoint": "Z AI 엔트리포인트",
@@ -460,6 +467,7 @@
 		},
 		"reasoningEffort": {
 			"label": "모델 추론 노력",
+			"none": "없음",
 			"minimal": "최소 (가장 빠름)",
 			"high": "높음",
 			"medium": "중간",
@@ -513,6 +521,10 @@
 		"enable": {
 			"label": "자동 체크포인트 활성화",
 			"description": "활성화되면 Roo는 작업 실행 중에 자동으로 체크포인트를 생성하여 변경 사항을 검토하거나 이전 상태로 되돌리기 쉽게 합니다. <0>더 알아보기</0>"
+		},
+		"timeout": {
+			"label": "체크포인트 초기화 시간 초과 (초)",
+			"description": "체크포인트 서비스 초기화를 기다리는 최대 시간입니다. 기본값은 15초입니다. 범위: 10-60초."
 		}
 	},
 	"notifications": {
@@ -532,6 +544,14 @@
 		"autoCondenseContextPercent": {
 			"label": "지능적 컨텍스트 압축을 트리거하는 임계값",
 			"description": "컨텍스트 창이 이 임계값에 도달하면 Roo가 자동으로 압축합니다."
+		},
+		"includeCurrentTime": {
+			"label": "컨텍스트에 현재 시간 포함",
+			"description": "활성화하면 현재 시간 및 시간대 정보가 시스템 프롬프트에 포함됩니다. 시간 문제로 모델이 작동을 멈추는 경우 이 설정을 비활성화하세요."
+		},
+		"includeCurrentCost": {
+			"label": "컨텍스트에 현재 비용 포함",
+			"description": "활성화하면 현재 API 사용 비용이 시스템 프롬프트에 포함됩니다. 비용 문제로 모델이 작동을 멈추는 경우 이 설정을 비활성화하세요."
 		},
 		"condensingApiConfiguration": {
 			"label": "컨텍스트 압축을 위한 API 설정",
