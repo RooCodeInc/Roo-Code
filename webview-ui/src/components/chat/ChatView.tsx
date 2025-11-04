@@ -61,6 +61,7 @@ import ChatSearch from "./ChatSearch"
 // import { useCloudUpsell } from "@src/hooks/useCloudUpsell"
 // import { Cloud } from "lucide-react"
 // import CloudAgents from "../cloud/CloudAgents"
+import { safeJsonParse } from "../../../../src/shared/safeJsonParse"
 
 export interface ChatViewProps {
 	isHidden: boolean
@@ -547,10 +548,21 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				lastApiReqStarted.text !== undefined &&
 				lastApiReqStarted.say === "api_req_started"
 			) {
-				const cost = JSON.parse(lastApiReqStarted.text).cost
+				const info = safeJsonParse(lastApiReqStarted.text)
 
-				if (cost === undefined) {
-					return true // API request has not finished yet.
+				// If cancelReason is defined, the stream has been cancelled (terminal state)
+				if (typeof info === "object" && info !== null) {
+					if ("cancelReason" in info && info.cancelReason !== undefined) {
+						return false
+					}
+
+					// Otherwise, check if cost is defined to determine if streaming is complete
+					if ("cost" in info && info.cost !== undefined) {
+						return false // API request has finished.
+					}
+
+					// If we have api_req_started without cost or cancelReason, streaming is in progress
+					return true
 				}
 			}
 		}

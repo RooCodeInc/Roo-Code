@@ -1124,18 +1124,26 @@ export const webviewMessageHandler = async (
 			const result = checkoutRestorePayloadSchema.safeParse(message.payload)
 
 			if (result.success) {
-				await provider.cancelTask()
+				// Begin transaction to buffer state updates
+				provider.beginStateTransaction()
 
 				try {
-					await pWaitFor(() => provider.getCurrentTask()?.isInitialized === true, { timeout: 3_000 })
-				} catch (error) {
-					vscode.window.showErrorMessage(t("common:errors.checkpoint_timeout"))
-				}
+					await provider.cancelTask()
 
-				try {
-					await provider.getCurrentTask()?.checkpointRestore(result.data)
-				} catch (error) {
-					vscode.window.showErrorMessage(t("common:errors.checkpoint_failed"))
+					try {
+						await pWaitFor(() => provider.getCurrentTask()?.isInitialized === true, { timeout: 3_000 })
+					} catch (error) {
+						vscode.window.showErrorMessage(t("common:errors.checkpoint_timeout"))
+					}
+
+					try {
+						await provider.getCurrentTask()?.checkpointRestore(result.data)
+					} catch (error) {
+						vscode.window.showErrorMessage(t("common:errors.checkpoint_failed"))
+					}
+				} finally {
+					// End transaction and post consolidated state
+					await provider.endStateTransaction()
 				}
 			}
 
