@@ -358,7 +358,7 @@ function getSelectedModel({
 		}
 		case "vercel-ai-gateway": {
 			const id = getValidatedModelId(
-				apiConfiguration.vercelAiGatewayModelId ?? defaultModelId,
+				apiConfiguration.vercelAiGatewayModelId,
 				routerModels["vercel-ai-gateway"],
 				defaultModelId,
 			)
