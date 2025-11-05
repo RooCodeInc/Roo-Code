@@ -100,7 +100,7 @@ describe("HistoryPreview", () => {
 		const { container } = render(<HistoryPreview />)
 
 		// Should render the container but no task items
-		expect(container.firstChild).toHaveClass("flex", "flex-col", "gap-3")
+		expect(container.firstChild).toHaveClass("flex", "flex-col", "gap-1")
 		expect(screen.queryByTestId(/task-item-/)).not.toBeInTheDocument()
 	})
 
@@ -226,6 +226,6 @@ describe("HistoryPreview", () => {
 
 		const { container } = render(<HistoryPreview />)
 
-		expect(container.firstChild).toHaveClass("flex", "flex-col", "gap-3")
+		expect(container.firstChild).toHaveClass("flex", "flex-col", "gap-1")
 	})
 })

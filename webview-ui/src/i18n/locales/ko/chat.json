@@ -103,6 +103,10 @@
 		"customizableModes": {
 			"title": "사용자 정의 모드",
 			"description": "고유한 동작과 할당된 모델을 가진 전문 페르소나"
+		},
+		"modelAgnostic": {
+			"title": "Bring your own model",
+			"description": "Use your own provider key or even run local inference — no markup, lock-in, no restrictions"
 		}
 	},
 	"selectMode": "상호작용 모드 선택",
@@ -429,5 +433,6 @@
 	"slashCommand": {
 		"wantsToRun": "Roo가 슬래시 명령어를 실행하려고 합니다",
 		"didRun": "Roo가 슬래시 명령어를 실행했습니다"
-	}
+	},
+	"docs": "Check our <DocsLink>docs</DocsLink> to learn more."
 }

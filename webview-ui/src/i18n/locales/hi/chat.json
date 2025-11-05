@@ -103,6 +103,10 @@
 		"customizableModes": {
 			"title": "अनुकूलन योग्य मोड",
 			"description": "विशिष्ट प्रोफाइल अपने व्यवहार और निर्धारित मॉडल के साथ"
+		},
+		"modelAgnostic": {
+			"title": "Bring your own model",
+			"description": "Use your own provider key or even run local inference — no markup, lock-in, no restrictions"
 		}
 	},
 	"selectMode": "इंटरैक्शन मोड चुनें",
@@ -429,5 +433,6 @@
 	"slashCommand": {
 		"wantsToRun": "Roo एक स्लैश कमांड चलाना चाहता है",
 		"didRun": "Roo ने एक स्लैश कमांड चलाया"
-	}
+	},
+	"docs": "Check our <DocsLink>docs</DocsLink> to learn more."
 }

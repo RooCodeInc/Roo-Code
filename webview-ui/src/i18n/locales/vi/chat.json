@@ -103,6 +103,10 @@
 		"customizableModes": {
 			"title": "Chế độ tùy chỉnh",
 			"description": "Các nhân vật chuyên biệt với hành vi riêng và mô hình được chỉ định"
+		},
+		"modelAgnostic": {
+			"title": "Bring your own model",
+			"description": "Use your own provider key or even run local inference — no markup, lock-in, no restrictions"
 		}
 	},
 	"selectMode": "Chọn chế độ tương tác",
@@ -430,5 +434,6 @@
 	"slashCommand": {
 		"wantsToRun": "Roo muốn chạy lệnh slash",
 		"didRun": "Roo đã chạy lệnh slash"
-	}
+	},
+	"docs": "Check our <DocsLink>docs</DocsLink> to learn more."
 }

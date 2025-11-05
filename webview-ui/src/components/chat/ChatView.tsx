@@ -44,7 +44,6 @@ import { CloudUpsellDialog } from "@src/components/cloud/CloudUpsellDialog"
 
 import TelemetryBanner from "../common/TelemetryBanner"
 import VersionIndicator from "../common/VersionIndicator"
-import { useTaskSearch } from "../history/useTaskSearch"
 import HistoryPreview from "../history/HistoryPreview"
 import Announcement from "./Announcement"
 import BrowserSessionRow from "./BrowserSessionRow"
@@ -118,7 +117,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		customModes,
 		telemetrySetting,
 		hasSystemPromptOverride,
-		historyPreviewCollapsed, // Added historyPreviewCollapsed
 		soundEnabled,
 		soundVolume,
 		cloudIsAuthenticated,
@@ -130,20 +128,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	useEffect(() => {
 		messagesRef.current = messages
 	}, [messages])
-
-	const { tasks } = useTaskSearch()
-
-	// Initialize expanded state based on the persisted setting (default to expanded if undefined)
-	const [isExpanded, setIsExpanded] = useState(
-		historyPreviewCollapsed === undefined ? true : !historyPreviewCollapsed,
-	)
-
-	const toggleExpanded = useCallback(() => {
-		const newState = !isExpanded
-		setIsExpanded(newState)
-		// Send message to extension to persist the new collapsed state
-		vscode.postMessage({ type: "setHistoryPreviewCollapsed", bool: !newState })
-	}, [isExpanded])
 
 	// Leaving this less safe version here since if the first message is not a
 	// task, then the extension is in a bad state and needs to be debugged (see
@@ -1810,53 +1794,35 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					)}
 				</>
 			) : (
-				<div className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-4 relative">
-					{/* Moved Task Bar Header Here */}
-					{tasks.length !== 0 && (
-						<div className="flex text-vscode-descriptionForeground w-full mx-auto px-5 pt-3">
-							<div className="flex items-center gap-1 cursor-pointer" onClick={toggleExpanded}>
-								{tasks.length < 10 && (
-									<span className={`font-medium text-xs `}>{t("history:recentTasks")}</span>
-								)}
-								<span
-									className={`codicon  ${isExpanded ? "codicon-eye" : "codicon-eye-closed"} scale-90`}
-								/>
-							</div>
-						</div>
-					)}
-					<div
-						className={` w-full flex flex-col gap-4 m-auto ${isExpanded && tasks.length > 0 ? "mt-0" : ""} px-3.5 min-[370px]:px-10 pt-5 transition-all duration-300`}>
-						{/* Version indicator in top-right corner - only on welcome screen */}
+				<div className="flex flex-col h-full justify-center p-6 min-h-0 overflow-y-auto gap-4 relative">
+					<div className="flex flex-col items-start gap-2 justify-center max-w-md h-full">
 						<VersionIndicator
 							onClick={() => setShowAnnouncementModal(true)}
 							className="absolute top-2 right-3 z-10"
 						/>
-
-						<RooHero />
-
-						<div className="mb-2.5">
-							{cloudIsAuthenticated || taskHistory.length < 4 ? (
-								<RooTips />
-							) : (
-								<>
-									<DismissibleUpsell
-										upsellId="taskList"
-										icon={<Cloud className="size-4 mt-0.5 shrink-0" />}
-										onClick={() => openUpsell()}
-										dismissOnClick={false}
-										className="bg-vscode-editor-background p-4 !text-base">
-										<Trans
-											i18nKey="cloud:upsell.taskList"
-											components={{
-												learnMoreLink: <VSCodeLink href="#" />,
-											}}
-										/>
-									</DismissibleUpsell>
-								</>
-							)}
+						<div className="flex flex-col gap-4 w-full">
+							<RooHero />
+							{/* Show RooTips when authenticated or when user is new */}
+							{(cloudIsAuthenticated || taskHistory.length < 4) && <RooTips />}
+							{/* Everyone should see their task history if any */}
+							{taskHistory.length > 0 && <HistoryPreview />}
 						</div>
-						{/* Show the task history preview if expanded and tasks exist */}
-						{taskHistory.length > 0 && isExpanded && <HistoryPreview />}
+						{/* Logged out users should see a one-time upsell, but not for brand new users */}
+						{!cloudIsAuthenticated && taskHistory.length >= 4 && (
+							<DismissibleUpsell
+								upsellId="taskList"
+								icon={<Cloud className="size-5 mt-0.5 shrink-0" />}
+								onClick={() => openUpsell()}
+								dismissOnClick={false}
+								className="!bg-vscode-editor-background mt-6 border-border rounded-xl pl-4 pr-3 py-3 !text-base">
+								<Trans
+									i18nKey="cloud:upsell.taskList"
+									components={{
+										learnMoreLink: <VSCodeLink href="#" />,
+									}}
+								/>
+							</DismissibleUpsell>
+						)}
 					</div>
 				</div>
 			)}

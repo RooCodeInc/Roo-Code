@@ -103,6 +103,10 @@
 		"customizableModes": {
 			"title": "Özelleştirilebilir Modlar",
 			"description": "Kendi davranışları ve atanmış modelleri ile özelleştirilmiş kişilikler"
+		},
+		"modelAgnostic": {
+			"title": "Bring your own model",
+			"description": "Use your own provider key or even run local inference — no markup, lock-in, no restrictions"
 		}
 	},
 	"selectMode": "Etkileşim modunu seçin",
@@ -430,5 +434,6 @@
 	"slashCommand": {
 		"wantsToRun": "Roo bir slash komutu çalıştırmak istiyor",
 		"didRun": "Roo bir slash komutu çalıştırdı"
-	}
+	},
+	"docs": "Check our <DocsLink>docs</DocsLink> to learn more."
 }

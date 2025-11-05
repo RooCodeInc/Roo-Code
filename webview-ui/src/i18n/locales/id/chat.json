@@ -117,6 +117,10 @@
 		"customizableModes": {
 			"title": "Mode yang Dapat Disesuaikan",
 			"description": "Persona khusus dengan perilaku dan model yang ditugaskan sendiri"
+		},
+		"modelAgnostic": {
+			"title": "Bring your own model",
+			"description": "Use your own provider key or even run local inference — no markup, lock-in, no restrictions"
 		}
 	},
 	"selectMode": "Pilih mode untuk interaksi",
@@ -435,5 +439,6 @@
 	"slashCommand": {
 		"wantsToRun": "Roo ingin menjalankan perintah slash",
 		"didRun": "Roo telah menjalankan perintah slash"
-	}
+	},
+	"docs": "Check our <DocsLink>docs</DocsLink> to learn more."
 }

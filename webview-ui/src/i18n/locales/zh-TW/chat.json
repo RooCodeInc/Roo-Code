@@ -114,6 +114,10 @@
 		"customizableModes": {
 			"title": "可自訂模式",
 			"description": "具有專屬行為和指定模型的特定角色"
+		},
+		"modelAgnostic": {
+			"title": "Bring your own model",
+			"description": "Use your own provider key or even run local inference — no markup, lock-in, no restrictions"
 		}
 	},
 	"selectMode": "選擇互動模式",
@@ -430,5 +434,6 @@
 	"slashCommand": {
 		"wantsToRun": "Roo 想要執行斜線指令",
 		"didRun": "Roo 執行了斜線指令"
-	}
+	},
+	"docs": "Check our <DocsLink>docs</DocsLink> to learn more."
 }

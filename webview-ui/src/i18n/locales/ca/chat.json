@@ -103,6 +103,10 @@
 		"customizableModes": {
 			"title": "Modes personalitzables",
 			"description": "Personalitats especialitzades amb comportaments propis i models assignats"
+		},
+		"modelAgnostic": {
+			"title": "Bring your own model",
+			"description": "Use your own provider key or even run local inference — no markup, lock-in, no restrictions"
 		}
 	},
 	"selectMode": "Selecciona el mode d'interacció",
@@ -429,5 +433,6 @@
 		"problems": "Problemes",
 		"terminal": "Terminal",
 		"url": "Enganxa la URL per obtenir-ne el contingut"
-	}
+	},
+	"docs": "Check our <DocsLink>docs</DocsLink> to learn more."
 }

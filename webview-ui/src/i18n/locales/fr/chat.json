@@ -103,6 +103,10 @@
 		"customizableModes": {
 			"title": "Modes personnalisables",
 			"description": "Des personas spécialisés avec leurs propres comportements et modèles assignés"
+		},
+		"modelAgnostic": {
+			"title": "Bring your own model",
+			"description": "Use your own provider key or even run local inference — no markup, lock-in, no restrictions"
 		}
 	},
 	"selectMode": "Sélectionner le mode d'interaction",
@@ -429,5 +433,6 @@
 	"slashCommand": {
 		"wantsToRun": "Roo veut exécuter une commande slash",
 		"didRun": "Roo a exécuté une commande slash"
-	}
+	},
+	"docs": "Check our <DocsLink>docs</DocsLink> to learn more."
 }
