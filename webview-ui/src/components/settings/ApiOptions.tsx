@@ -235,7 +235,8 @@ const ApiOptions = ({
 			} else if (
 				selectedProvider === "litellm" ||
 				selectedProvider === "deepinfra" ||
-				selectedProvider === "roo"
+				selectedProvider === "roo" ||
+				selectedProvider === "xai"
 			) {
 				vscode.postMessage({ type: "requestRouterModels" })
 			}
@@ -252,6 +253,7 @@ const ApiOptions = ({
 			apiConfiguration?.litellmApiKey,
 			apiConfiguration?.deepInfraApiKey,
 			apiConfiguration?.deepInfraBaseUrl,
+			apiConfiguration?.xaiApiKey,
 			customHeaders,
 		],
 	)
@@ -609,7 +611,14 @@ const ApiOptions = ({
 			)}
 
 			{selectedProvider === "xai" && (
-				<XAI apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
+				<XAI
+					apiConfiguration={apiConfiguration}
+					setApiConfigurationField={setApiConfigurationField}
+					routerModels={routerModels}
+					refetchRouterModels={refetchRouterModels}
+					organizationAllowList={organizationAllowList}
+					modelValidationError={modelValidationError}
+				/>
 			)}
 
 			{selectedProvider === "groq" && (
@@ -700,7 +709,7 @@ const ApiOptions = ({
 				<Featherless apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
 			)}
 
-			{selectedProviderModels.length > 0 && (
+			{selectedProvider !== "xai" && selectedProviderModels.length > 0 && (
 				<>
 					<div>
 						<label className="block font-medium mb-1">{t("settings:providers.model")}</label>

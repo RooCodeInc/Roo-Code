@@ -12,20 +12,15 @@ function calculateApiCostInternal(
 	outputTokens: number,
 	cacheCreationInputTokens: number,
 	cacheReadInputTokens: number,
-	totalInputTokens: number,
-	totalOutputTokens: number,
-): ApiCostResult {
+	totalInputTokens: number, // kept for potential future use
+	totalOutputTokens: number, // kept for potential future use
+): number {
 	const cacheWritesCost = ((modelInfo.cacheWritesPrice || 0) / 1_000_000) * cacheCreationInputTokens
 	const cacheReadsCost = ((modelInfo.cacheReadsPrice || 0) / 1_000_000) * cacheReadInputTokens
 	const baseInputCost = ((modelInfo.inputPrice || 0) / 1_000_000) * inputTokens
 	const outputCost = ((modelInfo.outputPrice || 0) / 1_000_000) * outputTokens
 	const totalCost = cacheWritesCost + cacheReadsCost + baseInputCost + outputCost
-
-	return {
-		totalInputTokens,
-		totalOutputTokens,
-		totalCost,
-	}
+	return totalCost
 }
 
 // For Anthropic compliant usage, the input tokens count does NOT include the
@@ -36,7 +31,7 @@ export function calculateApiCostAnthropic(
 	outputTokens: number,
 	cacheCreationInputTokens?: number,
 	cacheReadInputTokens?: number,
-): ApiCostResult {
+): number {
 	const cacheCreation = cacheCreationInputTokens || 0
 	const cacheRead = cacheReadInputTokens || 0
 
@@ -62,7 +57,7 @@ export function calculateApiCostOpenAI(
 	outputTokens: number,
 	cacheCreationInputTokens?: number,
 	cacheReadInputTokens?: number,
-): ApiCostResult {
+): number {
 	const cacheCreationInputTokensNum = cacheCreationInputTokens || 0
 	const cacheReadInputTokensNum = cacheReadInputTokens || 0
 	const nonCachedInputTokens = Math.max(0, inputTokens - cacheCreationInputTokensNum - cacheReadInputTokensNum)
@@ -80,4 +75,8 @@ export function calculateApiCostOpenAI(
 	)
 }
 
-export const parseApiPrice = (price: any) => (price ? parseFloat(price) * 1_000_000 : undefined)
+export const parseApiPrice = (price: any) => {
+	if (price == null) return undefined
+	const parsed = parseFloat(price)
+	return isNaN(parsed) ? undefined : parsed * 1_000_000
+}

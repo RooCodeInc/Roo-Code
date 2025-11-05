@@ -1910,11 +1910,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 					this.clineMessages[lastApiReqIndex].text = JSON.stringify({
 						...existingData,
-						tokensIn: costResult.totalInputTokens,
-						tokensOut: costResult.totalOutputTokens,
+						tokensIn: inputTokens,
+						tokensOut: outputTokens,
 						cacheWrites: cacheWriteTokens,
 						cacheReads: cacheReadTokens,
-						cost: totalCost ?? costResult.totalCost,
+						cost: totalCost ?? costResult,
 						cancelReason,
 						streamingFailedMessage,
 					} satisfies ClineApiReqInfo)
@@ -2141,11 +2141,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 											)
 
 								TelemetryService.instance.captureLlmCompletion(this.taskId, {
-									inputTokens: costResult.totalInputTokens,
-									outputTokens: costResult.totalOutputTokens,
+									inputTokens: tokens.input,
+									outputTokens: tokens.output,
 									cacheWriteTokens: tokens.cacheWrite,
 									cacheReadTokens: tokens.cacheRead,
-									cost: tokens.total ?? costResult.totalCost,
+									cost: tokens.total ?? costResult,
 								})
 							}
 						}

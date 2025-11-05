@@ -21,7 +21,6 @@ import {
 	sambaNovaModels,
 	vertexModels,
 	vscodeLlmModels,
-	xaiModels,
 	internationalZAiModels,
 	minimaxModels,
 } from "./providers/index.js"
@@ -50,6 +49,7 @@ export const dynamicProviders = [
 	"glama",
 	"roo",
 	"chutes",
+	"xai",
 ] as const
 
 export type DynamicProvider = (typeof dynamicProviders)[number]
@@ -137,7 +137,6 @@ export const providerNames = [
 	"roo",
 	"sambanova",
 	"vertex",
-	"xai",
 	"zai",
 ] as const
 
@@ -354,6 +353,7 @@ const fakeAiSchema = baseProviderSettingsSchema.extend({
 
 const xaiSchema = apiModelIdProviderModelSchema.extend({
 	xaiApiKey: z.string().optional(),
+	xaiModelContextWindow: z.number().int().min(1).optional(),
 })
 
 const groqSchema = apiModelIdProviderModelSchema.extend({
@@ -709,7 +709,7 @@ export const MODELS_BY_PROVIDER: Record<
 		label: "VS Code LM API",
 		models: Object.keys(vscodeLlmModels),
 	},
-	xai: { id: "xai", label: "xAI (Grok)", models: Object.keys(xaiModels) },
+	xai: { id: "xai", label: "xAI (Grok)", models: [] },
 	zai: { id: "zai", label: "Zai", models: Object.keys(internationalZAiModels) },
 
 	// Dynamic providers; models pulled from remote APIs.

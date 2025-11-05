@@ -777,6 +777,7 @@ export const webviewMessageHandler = async (
 						lmstudio: {},
 						roo: {},
 						chutes: {},
+						xai: {},
 					}
 
 			const safeGetModels = async (options: GetModelsOptions): Promise<ModelRecord> => {
@@ -835,6 +836,14 @@ export const webviewMessageHandler = async (
 				candidates.push({
 					key: "io-intelligence",
 					options: { provider: "io-intelligence", apiKey: apiConfiguration.ioIntelligenceApiKey },
+				})
+			}
+
+			// Add xAI if API key is provided.
+			if (apiConfiguration.xaiApiKey) {
+				candidates.push({
+					key: "xai",
+					options: { provider: "xai", apiKey: apiConfiguration.xaiApiKey, baseUrl: "https://api.x.ai/v1" },
 				})
 			}
 

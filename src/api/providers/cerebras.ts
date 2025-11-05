@@ -331,7 +331,7 @@ export class CerebrasHandler extends BaseProvider implements SingleCompletionHan
 		const { info } = this.getModel()
 		// Use actual token usage from the last request
 		const { inputTokens, outputTokens } = this.lastUsage
-		const { totalCost } = calculateApiCostOpenAI(info, inputTokens, outputTokens)
+		const totalCost = calculateApiCostOpenAI(info, inputTokens, outputTokens)
 		return totalCost
 	}
 }

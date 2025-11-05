@@ -57,7 +57,12 @@ describe("XAIHandler", () => {
 	it("should return default model when no model is specified", () => {
 		const model = handler.getModel()
 		expect(model.id).toBe(xaiDefaultModelId)
-		expect(model.info).toEqual(xaiModels[xaiDefaultModelId])
+		expect(model.info).toMatchObject({
+			contextWindow: xaiModels[xaiDefaultModelId].contextWindow,
+			maxTokens: xaiModels[xaiDefaultModelId].maxTokens,
+			description: xaiModels[xaiDefaultModelId].description,
+		})
+		expect(model.info.supportsPromptCache).toBe(false) // Placeholder until dynamic data loads
 	})
 
 	test("should return specified model when valid model is provided", () => {
@@ -66,7 +71,12 @@ describe("XAIHandler", () => {
 		const model = handlerWithModel.getModel()
 
 		expect(model.id).toBe(testModelId)
-		expect(model.info).toEqual(xaiModels[testModelId])
+		expect(model.info).toMatchObject({
+			contextWindow: xaiModels[testModelId].contextWindow,
+			maxTokens: xaiModels[testModelId].maxTokens,
+			description: xaiModels[testModelId].description,
+		})
+		expect(model.info.supportsPromptCache).toBe(false) // Placeholder until dynamic data loads
 	})
 
 	it("should include reasoning_effort parameter for mini models", async () => {
@@ -234,12 +244,13 @@ describe("XAIHandler", () => {
 
 		// Verify the usage data
 		expect(firstChunk.done).toBe(false)
-		expect(firstChunk.value).toEqual({
+		expect(firstChunk.value).toMatchObject({
 			type: "usage",
 			inputTokens: 10,
 			outputTokens: 20,
 			cacheReadTokens: 5,
 			cacheWriteTokens: 15,
+			totalCost: expect.any(Number),
 		})
 	})
 

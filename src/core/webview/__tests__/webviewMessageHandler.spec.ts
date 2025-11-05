@@ -255,6 +255,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 				"vercel-ai-gateway": mockModels,
 				huggingface: {},
 				"io-intelligence": {},
+				xai: {},
 			},
 			values: undefined,
 		})
@@ -349,6 +350,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 				"vercel-ai-gateway": mockModels,
 				huggingface: {},
 				"io-intelligence": {},
+				xai: {},
 			},
 			values: undefined,
 		})
@@ -380,7 +382,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 			type: "requestRouterModels",
 		})
 
-		// Verify error messages were sent for failed providers (these come first)
+		// Verify error messages were sent for failed providers
 		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
 			type: "singleRouterModelFetchResponse",
 			success: false,
@@ -426,6 +428,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 				"vercel-ai-gateway": mockModels,
 				huggingface: {},
 				"io-intelligence": {},
+				xai: {},
 			},
 			values: undefined,
 		})

@@ -165,7 +165,7 @@ export class LiteLLMHandler extends RouterProvider implements SingleCompletionHa
 					(lastUsage as any).prompt_cache_hit_tokens ||
 					0
 
-				const { totalCost } = calculateApiCostOpenAI(
+				const totalCost = calculateApiCostOpenAI(
 					info,
 					lastUsage.prompt_tokens || 0,
 					lastUsage.completion_tokens || 0,

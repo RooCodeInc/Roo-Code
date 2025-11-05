@@ -553,6 +553,32 @@ describe("ApiOptions", () => {
 			expect(screen.getByTestId("litellm-refresh-models")).toBeInTheDocument()
 		})
 
+		it("hides generic Model picker when provider is xai", () => {
+			renderApiOptions({
+				apiConfiguration: {
+					apiProvider: "xai",
+				},
+			})
+			// The generic "Model" label should be absent for xai (uses provider-specific picker)
+			expect(screen.queryByText("Model")).not.toBeInTheDocument()
+		})
+
+		it("disables xAI refresh and hides ModelPicker when no API key", () => {
+			renderApiOptions({
+				apiConfiguration: {
+					apiProvider: "xai",
+					xaiApiKey: "",
+				},
+			})
+			// Generic Model picker should be hidden for xAI
+			expect(screen.queryByText("Model")).not.toBeInTheDocument()
+			// If the provider-specific refresh button is present, it should be disabled without a key
+			const btn = screen.queryByTestId("xai-refresh-models")
+			if (btn) {
+				expect(btn).toBeDisabled()
+			}
+		})
+
 		it("does not render LiteLLM component when other provider is selected", () => {
 			renderApiOptions({
 				apiConfiguration: {

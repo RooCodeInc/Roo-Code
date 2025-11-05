@@ -230,7 +230,7 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 		}
 
 		if (inputTokens > 0 || outputTokens > 0 || cacheWriteTokens > 0 || cacheReadTokens > 0) {
-			const { totalCost } = calculateApiCostAnthropic(
+			const totalCost = calculateApiCostAnthropic(
 				this.getModel().info,
 				inputTokens,
 				outputTokens,

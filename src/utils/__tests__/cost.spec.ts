@@ -22,9 +22,7 @@ describe("Cost Utility", () => {
 			// Input cost: (3.0 / 1_000_000) * 1000 = 0.003
 			// Output cost: (15.0 / 1_000_000) * 500 = 0.0075
 			// Total: 0.003 + 0.0075 = 0.0105
-			expect(result.totalCost).toBe(0.0105)
-			expect(result.totalInputTokens).toBe(1000)
-			expect(result.totalOutputTokens).toBe(500)
+			expect(result).toBe(0.0105)
 		})
 
 		it("should handle cache writes cost", () => {
@@ -34,9 +32,7 @@ describe("Cost Utility", () => {
 			// Output cost: (15.0 / 1_000_000) * 500 = 0.0075
 			// Cache writes: (3.75 / 1_000_000) * 2000 = 0.0075
 			// Total: 0.003 + 0.0075 + 0.0075 = 0.018
-			expect(result.totalCost).toBeCloseTo(0.018, 6)
-			expect(result.totalInputTokens).toBe(3000) // 1000 + 2000
-			expect(result.totalOutputTokens).toBe(500)
+			expect(result).toBeCloseTo(0.018, 6)
 		})
 
 		it("should handle cache reads cost", () => {
@@ -46,9 +42,7 @@ describe("Cost Utility", () => {
 			// Output cost: (15.0 / 1_000_000) * 500 = 0.0075
 			// Cache reads: (0.3 / 1_000_000) * 3000 = 0.0009
 			// Total: 0.003 + 0.0075 + 0.0009 = 0.0114
-			expect(result.totalCost).toBe(0.0114)
-			expect(result.totalInputTokens).toBe(4000) // 1000 + 3000
-			expect(result.totalOutputTokens).toBe(500)
+			expect(result).toBe(0.0114)
 		})
 
 		it("should handle all cost components together", () => {
@@ -59,9 +53,7 @@ describe("Cost Utility", () => {
 			// Cache writes: (3.75 / 1_000_000) * 2000 = 0.0075
 			// Cache reads: (0.3 / 1_000_000) * 3000 = 0.0009
 			// Total: 0.003 + 0.0075 + 0.0075 + 0.0009 = 0.0189
-			expect(result.totalCost).toBe(0.0189)
-			expect(result.totalInputTokens).toBe(6000) // 1000 + 2000 + 3000
-			expect(result.totalOutputTokens).toBe(500)
+			expect(result).toBe(0.0189)
 		})
 
 		it("should handle missing prices gracefully", () => {
@@ -72,16 +64,12 @@ describe("Cost Utility", () => {
 			}
 
 			const result = calculateApiCostAnthropic(modelWithoutPrices, 1000, 500, 2000, 3000)
-			expect(result.totalCost).toBe(0)
-			expect(result.totalInputTokens).toBe(6000) // 1000 + 2000 + 3000
-			expect(result.totalOutputTokens).toBe(500)
+			expect(result).toBe(0)
 		})
 
 		it("should handle zero tokens", () => {
 			const result = calculateApiCostAnthropic(mockModelInfo, 0, 0, 0, 0)
-			expect(result.totalCost).toBe(0)
-			expect(result.totalInputTokens).toBe(0)
-			expect(result.totalOutputTokens).toBe(0)
+			expect(result).toBe(0)
 		})
 
 		it("should handle undefined cache values", () => {
@@ -90,9 +78,7 @@ describe("Cost Utility", () => {
 			// Input cost: (3.0 / 1_000_000) * 1000 = 0.003
 			// Output cost: (15.0 / 1_000_000) * 500 = 0.0075
 			// Total: 0.003 + 0.0075 = 0.0105
-			expect(result.totalCost).toBe(0.0105)
-			expect(result.totalInputTokens).toBe(1000)
-			expect(result.totalOutputTokens).toBe(500)
+			expect(result).toBe(0.0105)
 		})
 
 		it("should handle missing cache prices", () => {
@@ -108,9 +94,7 @@ describe("Cost Utility", () => {
 			// Input cost: (3.0 / 1_000_000) * 1000 = 0.003
 			// Output cost: (15.0 / 1_000_000) * 500 = 0.0075
 			// Total: 0.003 + 0.0075 = 0.0105
-			expect(result.totalCost).toBe(0.0105)
-			expect(result.totalInputTokens).toBe(6000) // 1000 + 2000 + 3000
-			expect(result.totalOutputTokens).toBe(500)
+			expect(result).toBe(0.0105)
 		})
 	})
 
@@ -131,9 +115,7 @@ describe("Cost Utility", () => {
 			// Input cost: (3.0 / 1_000_000) * 1000 = 0.003
 			// Output cost: (15.0 / 1_000_000) * 500 = 0.0075
 			// Total: 0.003 + 0.0075 = 0.0105
-			expect(result.totalCost).toBe(0.0105)
-			expect(result.totalInputTokens).toBe(1000)
-			expect(result.totalOutputTokens).toBe(500)
+			expect(result).toBe(0.0105)
 		})
 
 		it("should handle cache writes cost", () => {
@@ -143,9 +125,7 @@ describe("Cost Utility", () => {
 			// Output cost: (15.0 / 1_000_000) * 500 = 0.0075
 			// Cache writes: (3.75 / 1_000_000) * 2000 = 0.0075
 			// Total: 0.003 + 0.0075 + 0.0075 = 0.018
-			expect(result.totalCost).toBeCloseTo(0.018, 6)
-			expect(result.totalInputTokens).toBe(3000) // Total already includes cache
-			expect(result.totalOutputTokens).toBe(500)
+			expect(result).toBeCloseTo(0.018, 6)
 		})
 
 		it("should handle cache reads cost", () => {
@@ -155,9 +135,7 @@ describe("Cost Utility", () => {
 			// Output cost: (15.0 / 1_000_000) * 500 = 0.0075
 			// Cache reads: (0.3 / 1_000_000) * 3000 = 0.0009
 			// Total: 0.003 + 0.0075 + 0.0009 = 0.0114
-			expect(result.totalCost).toBe(0.0114)
-			expect(result.totalInputTokens).toBe(4000) // Total already includes cache
-			expect(result.totalOutputTokens).toBe(500)
+			expect(result).toBe(0.0114)
 		})
 
 		it("should handle all cost components together", () => {
@@ -168,9 +146,7 @@ describe("Cost Utility", () => {
 			// Cache writes: (3.75 / 1_000_000) * 2000 = 0.0075
 			// Cache reads: (0.3 / 1_000_000) * 3000 = 0.0009
 			// Total: 0.003 + 0.0075 + 0.0075 + 0.0009 = 0.0189
-			expect(result.totalCost).toBe(0.0189)
-			expect(result.totalInputTokens).toBe(6000) // Total already includes cache
-			expect(result.totalOutputTokens).toBe(500)
+			expect(result).toBe(0.0189)
 		})
 
 		it("should handle missing prices gracefully", () => {
@@ -181,16 +157,12 @@ describe("Cost Utility", () => {
 			}
 
 			const result = calculateApiCostOpenAI(modelWithoutPrices, 1000, 500, 2000, 3000)
-			expect(result.totalCost).toBe(0)
-			expect(result.totalInputTokens).toBe(1000) // Total already includes cache
-			expect(result.totalOutputTokens).toBe(500)
+			expect(result).toBe(0)
 		})
 
 		it("should handle zero tokens", () => {
 			const result = calculateApiCostOpenAI(mockModelInfo, 0, 0, 0, 0)
-			expect(result.totalCost).toBe(0)
-			expect(result.totalInputTokens).toBe(0)
-			expect(result.totalOutputTokens).toBe(0)
+			expect(result).toBe(0)
 		})
 
 		it("should handle undefined cache values", () => {
@@ -199,9 +171,7 @@ describe("Cost Utility", () => {
 			// Input cost: (3.0 / 1_000_000) * 1000 = 0.003
 			// Output cost: (15.0 / 1_000_000) * 500 = 0.0075
 			// Total: 0.003 + 0.0075 = 0.0105
-			expect(result.totalCost).toBe(0.0105)
-			expect(result.totalInputTokens).toBe(1000)
-			expect(result.totalOutputTokens).toBe(500)
+			expect(result).toBe(0.0105)
 		})
 
 		it("should handle missing cache prices", () => {
@@ -217,9 +187,7 @@ describe("Cost Utility", () => {
 			// Input cost: (3.0 / 1_000_000) * (6000 - 2000 - 3000) = 0.003
 			// Output cost: (15.0 / 1_000_000) * 500 = 0.0075
 			// Total: 0.003 + 0.0075 = 0.0105
-			expect(result.totalCost).toBe(0.0105)
-			expect(result.totalInputTokens).toBe(6000) // Total already includes cache
-			expect(result.totalOutputTokens).toBe(500)
+			expect(result).toBe(0.0105)
 		})
 	})
 })

@@ -26,6 +26,7 @@ import { getDeepInfraModels } from "./deepinfra"
 import { getHuggingFaceModels } from "./huggingface"
 import { getRooModels } from "./roo"
 import { getChutesModels } from "./chutes"
+import { getXaiModels } from "./xai"
 
 const memoryCache = new NodeCache({ stdTTL: 5 * 60, checkperiod: 5 * 60 })
 
@@ -101,6 +102,9 @@ export const getModels = async (options: GetModelsOptions): Promise<ModelRecord>
 			case "huggingface":
 				models = await getHuggingFaceModels()
 				break
+			case "xai":
+				models = await getXaiModels(options.apiKey, options.baseUrl)
+				break
 			case "roo": {
 				// Roo Code Cloud provider requires baseUrl and optional apiKey
 				const rooBaseUrl =
@@ -121,7 +125,7 @@ export const getModels = async (options: GetModelsOptions): Promise<ModelRecord>
 		// Cache the fetched models (even if empty, to signify a successful fetch with no models).
 		memoryCache.set(provider, models)
 
-		await writeModels(provider, models).catch((err) =>
+		await writeModels(provider, models || {}).catch((err) =>
 			console.error(`[getModels] Error writing ${provider} models to file cache:`, err),
 		)
 

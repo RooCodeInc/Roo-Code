@@ -2720,6 +2720,7 @@ describe("ClineProvider - Router Models", () => {
 				"vercel-ai-gateway": mockModels,
 				huggingface: {},
 				"io-intelligence": {},
+				xai: {},
 			},
 			values: undefined,
 		})
@@ -2776,6 +2777,7 @@ describe("ClineProvider - Router Models", () => {
 				"vercel-ai-gateway": mockModels,
 				huggingface: {},
 				"io-intelligence": {},
+				xai: {},
 			},
 			values: undefined,
 		})
@@ -2900,6 +2902,7 @@ describe("ClineProvider - Router Models", () => {
 				"vercel-ai-gateway": mockModels,
 				huggingface: {},
 				"io-intelligence": {},
+				xai: {},
 			},
 			values: undefined,
 		})
