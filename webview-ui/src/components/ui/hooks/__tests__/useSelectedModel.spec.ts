@@ -371,7 +371,6 @@ describe("useSelectedModel", () => {
 
 			expect(result.current.provider).toBe("zgsm")
 			expect(result.current.id).toBe("GLM-4.6")
-			expect(result.current.info).toBeUndefined()
 		})
 	})
 

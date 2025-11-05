@@ -1285,8 +1285,9 @@ export const ChatRowContent = ({
 										</div>
 										<div className="flex gap-2 pr-1">
 											<div
-												className="cursor-copy shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+												className="cursor-pointer shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
 												style={{ visibility: isStreaming ? "hidden" : "visible" }}
+												title={t("history:copyPrompt")}
 												onClick={(e) => {
 													e.stopPropagation()
 													// handleEditClick()
@@ -1311,6 +1312,7 @@ export const ChatRowContent = ({
 											<div
 												className="cursor-pointer shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
 												style={{ visibility: isStreaming ? "hidden" : "visible" }}
+												title={t("common:confirmation.deleteMessage")}
 												onClick={(e) => {
 													e.stopPropagation()
 													vscode.postMessage({ type: "deleteMessage", value: message.ts })

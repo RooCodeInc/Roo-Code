@@ -172,6 +172,7 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 				Object.assign(requestOptions, {
 					extra_body: {
 						prompt_mode: "strict",
+						mode: metadata?.mode,
 					},
 				})
 			}
