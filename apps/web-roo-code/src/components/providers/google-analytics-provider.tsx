@@ -22,19 +22,12 @@ export function GoogleAnalyticsProvider({ children }: { children: React.ReactNod
 
 		// Listen for consent changes
 		const unsubscribe = onConsentChange((consented) => {
-			if (consented && !shouldLoad) {
+			if (consented) {
 				setShouldLoad(true)
 			}
 		})
 
 		return unsubscribe
-	}, [shouldLoad])
-
-	useEffect(() => {
-		// Initialize dataLayer as early as possible (Google's recommended pattern)
-		if (typeof window !== "undefined") {
-			window.dataLayer = window.dataLayer || []
-		}
 	}, [])
 
 	return (
