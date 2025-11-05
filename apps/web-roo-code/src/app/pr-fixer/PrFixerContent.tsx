@@ -1,24 +1,16 @@
 "use client"
 
-import {
-	ArrowRight,
-	Blocks,
-	BookMarked,
-	ListChecks,
-	LucideIcon,
-	GitPullRequest,
-	Key,
-	MessageSquareCode,
-	Wrench,
-} from "lucide-react"
+import { ArrowRight, GitPullRequest, History, Key, MessageSquareCode, Wrench, type LucideIcon } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 
 import { Button } from "@/components/ui"
 import { AnimatedBackground } from "@/components/homepage"
-import { AgentCarousel } from "@/components/reviewer/agent-carousel"
 import { EXTERNAL_LINKS } from "@/lib/constants"
 import { trackGoogleAdsConversion } from "@/lib/analytics/google-ads"
+
+// Workaround for next/image choking on these for some reason
+import hero from "/public/heroes/agent-pr-fixer.png"
 
 interface Feature {
 	icon: LucideIcon
@@ -30,55 +22,49 @@ interface Feature {
 const workflowSteps: Feature[] = [
 	{
 		icon: GitPullRequest,
-		title: "1. Connect Your Repository",
-		description: "Link your GitHub repository and configure which branches and pull requests should be reviewed.",
-	},
-	{
-		icon: Key,
-		title: "2. Add Your API Key",
-		description:
-			"Provide your AI provider API key and set your review preferences, custom rules, and quality standards.",
+		title: "1. Connect your GitHub repositories",
+		description: "Pick which repos the PR Fixer can work on by pushing to ongoing branches.",
 	},
 	{
 		icon: MessageSquareCode,
-		title: "3. Get Review Comments",
+		title: "2. Invoke from a comment",
 		description:
-			"Every pull request gets detailed GitHub comments in minutes from a Roo Code agent highlighting issues and suggesting improvements.",
+			'Ask the agent to fix issues directly from GitHub PR comments (e.g. "@roomote: fix these review comments"). It’s fully aware of the entire comment history and latest diffs and focuses on fixing them – not random changes to your code.',
+	},
+	{
+		icon: Wrench,
+		title: "3. Get clean scoped commits",
+		description: (
+			<>
+				The agent proposes targeted changes and pushes concise commits or patch suggestions you (or{" "}
+				<Link href="/pr-reviewer">PR Reviewer</Link>) can review and merge quickly.
+			</>
+		),
 	},
 ]
 
 const howItWorks: Feature[] = [
 	{
-		icon: Blocks,
-		title: "Our agents, your provider keys",
-		description: (
-			<>
-				<p>
-					We orchestrate the review, optimize the hell out of the prompts, integrate with GitHub, keep you
-					properly posted.
-				</p>
-				<p>We&apos;re thoughtful about token usage, but not incentivized to skimp to grow our margins.</p>
-			</>
-		),
+		icon: History,
+		title: "Comment-history aware",
+		description:
+			"Understands the entire conversation on the PR – previous reviews, your replies, follow-ups – and uses that context to produce accurate fixes.",
 	},
 	{
-		icon: ListChecks,
-		title: "Advanced reasoning and workflows",
+		icon: Key,
+		title: "Bring your own key",
 		description:
-			"We optimize for state-of-the-art reasoning models and leverage powerful workflows (Diff analysis → Context Gathering → Impact Mapping → Contract checks) to produce crisp, actionable comments at the right level.",
+			"Use your preferred models at full strength. We optimize prompts and execution without capping your model to protect our margins.",
 	},
 	{
-		icon: BookMarked,
-		title: "Fully repository-aware",
+		icon: GitPullRequest,
+		title: "Repository- and diff-aware",
 		description:
-			"Reviews traverse code ownership, dependency graphs, and historical patterns to surface risk and deviations, not noise.",
+			"Analyzes the full repo context and the latest diff to ensure fixes align with project conventions and pass checks.",
 	},
 ]
 
-// Workaround for next/image choking on these for some reason
-import hero from "/public/heroes/agent-reviewer.png"
-
-export function ReviewerContent() {
+export function PrFixerContent() {
 	return (
 		<>
 			<section className="relative flex md:h-[calc(70vh-theme(spacing.12))] items-center overflow-hidden">
@@ -88,20 +74,18 @@ export function ReviewerContent() {
 						<div className="flex flex-col px-4 justify-center space-y-6 sm:space-y-8">
 							<div>
 								<h1 className="text-3xl font-bold tracking-tight mt-8  md:text-left md:text-4xl lg:text-5xl lg:mt-0">
-									<GitPullRequest className="size-12 mb-4" />
-									Get comprehensive code reviews that save you time, not&nbsp;tokens.
+									<Wrench className="size-12 mb-4" />
+									State-of-the-art fixes for the comments on your PRs.
 								</h1>
 
 								<div className="mt-4 max-w-lg space-y-4 text-base text-muted-foreground md:text-left sm:mt-6">
 									<p>
-										Regular AI code review tools cap model usage to protect their margins from fixed
-										monthly prices. That leads to shallow prompts, limited context, and missed
-										issues.
+										Roo Code{"'"}s PR Fixer applies high-quality changes to your PRs, right from
+										GitHub. Invoke via a PR comment and it will read the entire comment history to
+										understand context, agreements, and tradeoffs — then implement the right fix.
 									</p>
 									<p>
-										Roo Code&apos;s PR Reviewer flips the script: you bring your own key and
-										leverage it to the max – to find real issues, increase code quality and keep
-										your pull request queue moving.
+										As always, you bring the model key; we orchestrate smart, efficient workflows.
 									</p>
 								</div>
 
@@ -109,15 +93,16 @@ export function ReviewerContent() {
 								<div className="mt-6 flex flex-col md:flex-row md:items-center gap-2">
 									Works great with
 									<Link
-										href="/pr-fixer"
+										href="/reviewer"
 										className="flex p-4 items-center rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1 text-sm text-blue-600 backdrop-blur-sm transition-colors hover:bg-blue-500/20 dark:text-blue-400"
-										aria-label="Works great with PR Fixer">
-										<Wrench className="size-4 mr-2" />
-										PR Fixer Agent
+										aria-label="Works great with PR Reviewer">
+										<GitPullRequest className="size-4 mr-2" />
+										PR Reviewer Agent
 										<ArrowRight className="ml-2 h-4 w-4" />
 									</Link>
 								</div>
 							</div>
+
 							<div className="flex flex-col space-y-3 sm:flex-row sm:space-x-4 sm:space-y-0 md:items-center">
 								<Button
 									size="lg"
@@ -138,15 +123,16 @@ export function ReviewerContent() {
 								</span>
 							</div>
 						</div>
+
 						<div className="flex items-center justify-end mx-auto h-full mt-8 lg:mt-0">
-							<div className="md:w-[800px] md:h-[474px] relative overflow-clip">
+							<div className="md:w-[670px] md:h-[600px] relative overflow-clip">
 								<div className="block">
 									<Image
 										src={hero}
-										alt="Example of a code review generated by Roo Code PR Reviewer"
+										alt="Example of a PR Fixer applying changes from review comments"
 										className="max-w-full h-auto"
 										width={800}
-										height={474}
+										height={711}
 									/>
 								</div>
 							</div>
@@ -192,7 +178,7 @@ export function ReviewerContent() {
 					<div className="mx-auto mb-12 md:mb-24 max-w-5xl text-center">
 						<div>
 							<h2 className="text-4xl font-bold tracking-tight sm:text-5xl">
-								Why Roo&apos;s PR Reviewer is so much better
+								Why Roo Code{"'"}s PR Fixer is different
 							</h2>
 						</div>
 					</div>
@@ -212,20 +198,6 @@ export function ReviewerContent() {
 										<div className="leading-relaxed font-light text-muted-foreground space-y-2">
 											{feature.description}
 										</div>
-										{feature.logos && (
-											<div className="mt-4 flex flex-wrap items-center gap-4">
-												{feature.logos.map((logo) => (
-													<Image
-														key={logo}
-														width={20}
-														height={20}
-														className="w-5 h-5 overflow-clip opacity-50 dark:invert"
-														src={`/logos/${logo.toLowerCase()}.svg`}
-														alt={`${logo} Logo`}
-													/>
-												))}
-											</div>
-										)}
 									</li>
 								)
 							})}
@@ -234,43 +206,15 @@ export function ReviewerContent() {
 				</div>
 			</section>
 
-			<section className="relative overflow-hidden border-t border-border py-32">
-				<div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
-					<div className="mx-auto mb-12 max-w-4xl text-center">
-						<div>
-							<h2 className="text-4xl font-bold tracking-tight sm:text-5xl">
-								The first member of a whole new team
-							</h2>
-
-							<p className="mt-6 text-lg text-muted-foreground">
-								Architecture, coding, reviewing, testing, debugging, documenting, designing –{" "}
-								<em>almost everything</em> we do today is mostly through our agents. Now we&apos;re
-								bringing them to you.
-							</p>
-							<p className="mt-2 text-lg text-muted-foreground">
-								Roo&apos;s PR Reviewer isn&apos;t yet another single-purpose tool to add to your already
-								complicated stack.
-								<br />
-								It&apos;s the first member of your AI-powered development team. More agents are shipping
-								soon.
-							</p>
-						</div>
-					</div>
-
-					<div className="relative mx-auto md:max-w-[1200px]">
-						<AgentCarousel />
-					</div>
-				</div>
-			</section>
-
 			{/* CTA Section */}
 			<section className="py-20">
 				<div className="container mx-auto px-4 sm:px-6 lg:px-8">
 					<div className="mx-auto max-w-4xl rounded-3xl border border-border/50 bg-gradient-to-br from-blue-500/5 via-cyan-500/5 to-purple-500/5 p-8 text-center shadow-2xl backdrop-blur-xl dark:border-white/20 dark:bg-gradient-to-br dark:from-gray-800 dark:via-gray-900 dark:to-black sm:p-12">
-						<h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">Stop wasting time.</h2>
+						<h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
+							Ship fixes, not follow-ups.
+						</h2>
 						<p className="mx-auto mb-8 max-w-2xl text-lg text-muted-foreground">
-							Give Roo Code&apos;s PR Reviewer your model key and turn painful reviews into a tangible
-							quality advantage.
+							Let Roo Code{"'"}s PR Fixer turn your review feedback into clean, ready-to-merge commits.
 						</p>
 						<div className="flex flex-col justify-center space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0">
 							<Button

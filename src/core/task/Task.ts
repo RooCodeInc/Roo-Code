@@ -2373,9 +2373,16 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						})
 					}
 
+					// Check if we should preserve reasoning in the assistant message
+					let finalAssistantMessage = assistantMessage
+					if (reasoningMessage && this.api.getModel().info.preserveReasoning) {
+						// Prepend reasoning in XML tags to the assistant message so it's included in API history
+						finalAssistantMessage = `<think>${reasoningMessage}</think>\n${assistantMessage}`
+					}
+
 					await this.addToApiConversationHistory({
 						role: "assistant",
-						content: [{ type: "text", text: assistantMessage }],
+						content: [{ type: "text", text: finalAssistantMessage }],
 					})
 
 					TelemetryService.instance.captureConversationMessage(this.taskId, "assistant")

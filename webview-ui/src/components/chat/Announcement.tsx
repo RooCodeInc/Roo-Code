@@ -44,9 +44,9 @@ const Announcement = ({ hideAnnouncement }: AnnouncementProps) => {
 					<div className="mb-4">
 						<p className="mb-3">{t("chat:announcement.release.heading")}</p>
 						<ul className="list-disc list-inside text-sm space-y-1">
-							<li>{t("chat:announcement.release.fileReading")}</li>
-							<li>{t("chat:announcement.release.browserUse")}</li>
-							<li>{t("chat:announcement.release.bugFixes")}</li>
+							<li>{t("chat:announcement.release.openRouterEmbeddings")}</li>
+							<li>{t("chat:announcement.release.chutesDynamic")}</li>
+							<li>{t("chat:announcement.release.queuedMessagesFix")}</li>
 						</ul>
 					</div>
 
@@ -59,7 +59,7 @@ const Announcement = ({ hideAnnouncement }: AnnouncementProps) => {
 
 						<div className="mb-3">
 							<Trans
-								i18nKey="chat:announcement.cloudAgents.feature"
+								i18nKey="chat:announcement.cloudAgents.prFixer"
 								components={{
 									bold: <b />,
 								}}
@@ -67,7 +67,7 @@ const Announcement = ({ hideAnnouncement }: AnnouncementProps) => {
 						</div>
 
 						<p className="mb-3 text-sm text-vscode-descriptionForeground">
-							{t("chat:announcement.cloudAgents.description")}
+							{t("chat:announcement.cloudAgents.prFixerDescription")}
 						</p>
 
 						<div className="mt-4">
@@ -75,13 +75,13 @@ const Announcement = ({ hideAnnouncement }: AnnouncementProps) => {
 								onClick={() => {
 									vscode.postMessage({
 										type: "openExternal",
-										url: "https://roocode.com/reviewer?utm_source=roocode&utm_medium=extension&utm_campaign=announcement",
+										url: "https://roocode.com/pr-fixer?utm_source=roocode&utm_medium=extension&utm_campaign=announcement",
 									})
 									setOpen(false)
 									hideAnnouncement()
 								}}
 								className="w-full">
-								{t("chat:announcement.cloudAgents.createAgentButton")}
+								{t("chat:announcement.cloudAgents.tryPrFixerButton")}
 							</Button>
 						</div>
 					</div>
