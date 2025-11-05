@@ -24,8 +24,8 @@ const RooTips = () => {
 	const { t } = useTranslation("chat")
 
 	return (
-		<div className="flex flex-col gap-2 mb-4 max-w-[450px] font-light text-vscode-descriptionForeground">
-			<p className="my-0 pr-8">
+		<div className="flex flex-col gap-2 mb-4 max-w-[500px] text-vscode-descriptionForeground">
+			<p className="my-0 pr-2">
 				<Trans i18nKey="chat:about" />
 			</p>
 			<div className="gap-4">
