@@ -2,9 +2,10 @@ import { memo } from "react"
 
 import { ToolUseBlock, ToolUseBlockHeader } from "../common/ToolUseBlock"
 import { vscode } from "@src/utils/vscode"
-import { removeLeadingNonAlphanumeric } from "@src/utils/removeLeadingNonAlphanumeric"
 import { getJumpLine } from "@/utils/path-mentions"
 import { FilePermissionItem } from "@roo-code/types"
+import { formatPathTooltip } from "@src/utils/formatPathTooltip"
+import { PathTooltip } from "../ui/PathTooltip"
 
 export interface BatchFilePermissionProps {
 	files: FilePermissionItem[]
@@ -35,10 +36,18 @@ export const BatchFilePermission = memo(({ files = [], onPermissionResponse, ts 
 										})
 									}}>
 									{file.path?.startsWith(".") && <span>.</span>}
-									<span className="whitespace-nowrap overflow-hidden text-ellipsis text-left mr-2 rtl">
-										{removeLeadingNonAlphanumeric(file.path ?? "") + "\u200E"}
-										{file.lineSnippet && ` ${file.lineSnippet}`}
-									</span>
+									<PathTooltip
+										content={formatPathTooltip(
+											file.path,
+											file.lineSnippet ? ` ${file.lineSnippet}` : undefined,
+										)}>
+										<span className="whitespace-nowrap overflow-hidden text-ellipsis text-left mr-2 rtl">
+											{formatPathTooltip(
+												file.path,
+												file.lineSnippet ? ` ${file.lineSnippet}` : undefined,
+											)}
+										</span>
+									</PathTooltip>
 									<div className="flex-grow"></div>
 									<span className="codicon codicon-link-external text-[13.5px] my-[1px]" />
 								</ToolUseBlockHeader>

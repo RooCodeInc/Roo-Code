@@ -4,7 +4,7 @@ import type { ModelInfo } from "../model.js"
 
 export type BedrockModelId = keyof typeof bedrockModels
 
-export const bedrockDefaultModelId: BedrockModelId = "anthropic.claude-sonnet-4-20250514-v1:0"
+export const bedrockDefaultModelId: BedrockModelId = "anthropic.claude-sonnet-4-5-20250929-v1:0"
 
 export const bedrockDefaultPromptRouterModelId: BedrockModelId = "anthropic.claude-3-sonnet-20240229-v1:0"
 

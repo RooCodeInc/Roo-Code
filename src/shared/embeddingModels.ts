@@ -86,7 +86,7 @@ export const EMBEDDING_MODEL_PROFILES: EmbeddingModelProfiles = {
 		"google/gemini-embedding-001": { dimension: 3072, scoreThreshold: 0.4 },
 		// Mistral models via OpenRouter
 		"mistralai/mistral-embed-2312": { dimension: 1024, scoreThreshold: 0.4 },
-		"mistralai/codestral-embed-2505": { dimension: 3072, scoreThreshold: 0.4 },
+		"mistralai/codestral-embed-2505": { dimension: 1536, scoreThreshold: 0.4 },
 		// Qwen models via OpenRouter
 		"qwen/qwen3-embedding-8b": { dimension: 4096, scoreThreshold: 0.4 },
 	},

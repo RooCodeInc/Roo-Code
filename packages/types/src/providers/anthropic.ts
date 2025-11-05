@@ -3,7 +3,7 @@ import type { ModelInfo } from "../model.js"
 // https://docs.anthropic.com/en/docs/about-claude/models
 
 export type AnthropicModelId = keyof typeof anthropicModels
-export const anthropicDefaultModelId: AnthropicModelId = "claude-sonnet-4-20250514"
+export const anthropicDefaultModelId: AnthropicModelId = "claude-sonnet-4-5"
 
 export const anthropicModels = {
 	"claude-sonnet-4-5": {
@@ -49,7 +49,7 @@ export const anthropicModels = {
 		],
 	},
 	"claude-opus-4-1-20250805": {
-		maxTokens: 8192,
+		maxTokens: 32_000, // Overridden to 8k if `enableReasoningEffort` is false.
 		contextWindow: 200_000,
 		supportsImages: true,
 		supportsPromptCache: true,
