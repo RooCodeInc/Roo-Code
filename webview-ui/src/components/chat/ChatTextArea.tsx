@@ -1,7 +1,7 @@
 import React, { forwardRef, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { useEvent } from "react-use"
 import DynamicTextArea from "react-textarea-autosize"
-import { VolumeX, Image, WandSparkles, SendHorizontal, MessageSquareX, Globe } from "lucide-react"
+import { VolumeX, Image, WandSparkles, SendHorizontal, MessageSquareX } from "lucide-react"
 
 import { mentionRegex, mentionRegexGlobal, commandRegexGlobal, unescapeSpaces } from "@roo/context-mentions"
 import { WebviewMessage } from "@roo/WebviewMessage"
@@ -21,7 +21,7 @@ import {
 } from "@src/utils/context-mentions"
 import { cn } from "@src/lib/utils"
 import { convertToMentionPath } from "@src/utils/path-mentions"
-import { StandardTooltip, Button } from "@src/components/ui"
+import { StandardTooltip } from "@src/components/ui"
 
 import Thumbnails from "../common/Thumbnails"
 import { ModeSelector } from "./ModeSelector"
@@ -1264,32 +1264,14 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 								</button>
 							</StandardTooltip>
 						)}
-						{!isEditMode && showBrowserDockToggle && (
-							<StandardTooltip content={t("chat:browser.session")}>
-								<Button
-									variant="ghost"
-									size="sm"
-									aria-label={t("chat:browser.session")}
-									onClick={() => vscode.postMessage({ type: "openBrowserSessionPanel" })}
-									className={cn(
-										"relative h-5 w-5 p-0",
-										"text-vscode-foreground opacity-85",
-										"hover:opacity-100 hover:bg-[rgba(255,255,255,0.03)]",
-										"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
-									)}>
-									<Globe
-										className="w-4 h-4"
-										style={{
-											color: isBrowserSessionActive
-												? "#4ade80"
-												: "var(--vscode-descriptionForeground)",
-										}}
-									/>
-								</Button>
-							</StandardTooltip>
-						)}
 						{!isEditMode ? <IndexingStatusBadge /> : null}
 						{!isEditMode && cloudUserInfo && <CloudAccountSwitcher />}
+						{/* keep props referenced after moving browser button */}
+						<div
+							className="hidden"
+							data-browser-session-active={isBrowserSessionActive}
+							data-show-browser-dock-toggle={showBrowserDockToggle}
+						/>
 					</div>
 				</div>
 			</div>
