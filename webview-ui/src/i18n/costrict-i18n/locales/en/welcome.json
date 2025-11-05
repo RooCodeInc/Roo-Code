@@ -11,7 +11,7 @@
 		"description": "Vibe coding alternates between clarifying requirements and generating code. It is ideal for rapid development and simple tasks, and empowers developers with strong prompt engineering skills to efficiently produce high-quality code."
 	},
 	"strict": {
-		"description": "Strict coding workflow: clarify requirements → design → task decomposition → test, self-verify, self-repair. Ideal for complex tasks, strict coding employs a standard workflow to ensure the quality of the result delivered by AI is top-notch. High token consumption."
+		"description": "Strict coding workflow: clarify requirements → design → task decomposition → test, self-verify, self-repair. Ideal for complex tasks (High token consumption)."
 	},
 	"developmentMode": "Development Mode",
 	"commonFeatures": "Common Features"

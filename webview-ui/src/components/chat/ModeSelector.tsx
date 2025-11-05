@@ -82,9 +82,12 @@ export const ModeSelector = ({
 		const allModes = filterModesByZgsmCodeMode(getAllModes(customModes), zgsmCodeMode)
 		return allModes.map((mode) => ({
 			...mode,
-			description: customModePrompts?.[mode.slug]?.description ?? mode.description,
+			description:
+				t(`modes:descriptions.${mode.slug}`, {
+					defaultValue: customModePrompts?.[mode.slug]?.description,
+				}) ?? mode.description,
 		}))
-	}, [customModes, zgsmCodeMode, customModePrompts])
+	}, [customModes, zgsmCodeMode, t, customModePrompts])
 
 	// Find the selected mode.
 	const selectedMode = React.useMemo(() => modes.find((mode) => mode.slug === value), [modes, value])
@@ -208,7 +211,7 @@ export const ModeSelector = ({
 
 	return (
 		<Popover open={open} onOpenChange={onOpenChange} data-testid="mode-selector-root">
-			<StandardTooltip content={`${title} (${zgsmCodeMode})`}>
+			<StandardTooltip content={`${title}${title ? ` (${zgsmCodeMode})` : ""}`}>
 				<PopoverTrigger
 					disabled={disabled}
 					data-testid="mode-selector-trigger"
@@ -226,7 +229,8 @@ export const ModeSelector = ({
 							: null,
 					)}>
 					<span className="truncate">
-						{selectedMode?.name || ""} ({zgsmCodeMode})
+						{selectedMode?.name || t("chat:selectMode")}
+						{selectedMode?.name ? ` (${zgsmCodeMode})` : ""}
 					</span>
 				</PopoverTrigger>
 			</StandardTooltip>

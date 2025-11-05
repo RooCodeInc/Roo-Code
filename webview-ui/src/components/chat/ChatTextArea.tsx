@@ -1345,7 +1345,11 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 						)}>
 						<ModeSelector
 							value={mode}
-							title={mode ? `${t("chat:modeSelector.title")}: ${mode}` : t("chat:selectMode")}
+							title={
+								mode
+									? `${t("chat:modeSelector.title")}: ${mode.charAt(0).toUpperCase() + mode.slice(1)}`
+									: t("chat:selectMode")
+							}
 							onChange={handleModeChange}
 							triggerClassName="min-w-[28px] text-ellipsis overflow-hidden flex-shrink"
 							modeShortcutText={modeShortcutText}

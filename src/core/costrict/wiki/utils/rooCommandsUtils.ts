@@ -1,5 +1,5 @@
 import * as path from "path"
-import { getGlobalCommandsDir } from "../wiki-prompts/subtasks/constants"
+import { getGlobalCommandsDir } from "../wiki-prompts/common/constants"
 
 /**
  * Check if the path is the .roo/commands directory or its subdirectory

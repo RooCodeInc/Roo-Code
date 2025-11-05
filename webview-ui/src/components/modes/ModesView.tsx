@@ -919,7 +919,13 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 							value={(() => {
 								const customMode = findModeBySlug(visualMode, customModes)
 								const prompt = customModePrompts?.[visualMode] as PromptComponent
-								return customMode?.description ?? prompt?.description ?? getDescription(visualMode)
+								return (
+									customMode?.description ??
+									t(`modes:descriptions.${visualMode}`, {
+										defaultValue: prompt?.description,
+									}) ??
+									getDescription(visualMode)
+								)
 							})()}
 							onChange={(e) => {
 								const value =

@@ -187,7 +187,7 @@ const CodeReviewContent: React.FC<CodeReviewContentProps> = ({ issues, taskStatu
 
 	return (
 		<div className="flex flex-col h-full">
-			{(taskStatus === TaskStatus.COMPLETED || (taskStatus === TaskStatus.ERROR && issues.length !== 0)) && (
+			{taskStatus === TaskStatus.COMPLETED && (
 				<div className="px-5 mb-4">
 					<div className="flex justify-between items-center flex-shrink-0">
 						<TaskSummary issues={filteredIssues} />

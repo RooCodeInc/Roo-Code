@@ -18,6 +18,7 @@ import * as path from "path"
 import * as vscode from "vscode"
 import { z } from "zod"
 import { t } from "../../i18n"
+import * as https from "https"
 
 import { ClineProvider } from "../../core/webview/ClineProvider"
 import { GlobalFileNames } from "../../shared/globalFileNames"
@@ -619,6 +620,20 @@ export class McpHub {
 		return state.mcpEnabled ?? true
 	}
 
+	private shouldIgnoreCertificateErrors(): boolean {
+		return process.env.IGNORE_MCP_SSL_CHECK === "1"
+	}
+
+	private createIgnoreCertificateAgent(): https.Agent | undefined {
+		if (!this.shouldIgnoreCertificateErrors()) {
+			return undefined
+		}
+
+		return new https.Agent({
+			rejectUnauthorized: false,
+		})
+	}
+
 	private async connectToServer(
 		name: string,
 		config: z.infer<typeof ServerConfigSchema>,
@@ -743,10 +758,17 @@ export class McpHub {
 				}
 			} else if (configInjected.type === "streamable-http") {
 				// Streamable HTTP connection
+				const requestInit: RequestInit = {
+					headers: configInjected.headers,
+				}
+
+				const ignoreCertAgent = this.createIgnoreCertificateAgent()
+				if (ignoreCertAgent) {
+					;(requestInit as any).agent = ignoreCertAgent
+				}
+
 				transport = new StreamableHTTPClientTransport(new URL(configInjected.url), {
-					requestInit: {
-						headers: configInjected.headers,
-					},
+					requestInit,
 				})
 
 				// Set up Streamable HTTP specific error handling
@@ -780,10 +802,18 @@ export class McpHub {
 					withCredentials: configInjected.headers?.["Authorization"] ? true : false, // Enable credentials if Authorization header exists
 					fetch: (url: string | URL, init: RequestInit) => {
 						const headers = new Headers({ ...(init?.headers || {}), ...(configInjected.headers || {}) })
-						return fetch(url, {
+
+						const fetchOptions: RequestInit = {
 							...init,
 							headers,
-						})
+						}
+
+						const ignoreCertAgent = this.createIgnoreCertificateAgent()
+						if (ignoreCertAgent) {
+							;(fetchOptions as any).agent = ignoreCertAgent
+						}
+
+						return fetch(url, fetchOptions)
 					},
 				}
 				global.EventSource = ReconnectingEventSource

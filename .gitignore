@@ -49,3 +49,5 @@ logs
 
 # Qdrant
 qdrant_storage/
+.cospec
+.roo/rules/generated_rules.md

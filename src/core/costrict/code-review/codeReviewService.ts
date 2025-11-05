@@ -86,7 +86,11 @@ export class CodeReviewService {
 			}
 		}
 
-		this.currentTask = { ...this.currentTask, ...updates }
+		if (updates.isCompleted === true && updates.error === undefined) {
+			this.currentTask = { ...this.currentTask, ...updates, error: undefined }
+		} else {
+			this.currentTask = { ...this.currentTask, ...updates }
+		}
 
 		// Send unified status update message
 		this.sendReviewTaskUpdateMessage(this.getTaskStatusFromState(), {
@@ -282,6 +286,7 @@ export class CodeReviewService {
 							isCompleted: true,
 							progress: 1,
 							total: issues.length,
+							error: undefined,
 						})
 					}
 				}
@@ -591,6 +596,7 @@ export class CodeReviewService {
 		}
 
 		this.currentTask.isCompleted = true
+		this.currentTask.error = undefined
 
 		// Send task completed message with unified event
 		this.sendReviewTaskUpdateMessage(TaskStatus.COMPLETED, {

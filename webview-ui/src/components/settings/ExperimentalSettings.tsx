@@ -83,6 +83,25 @@ export const ExperimentalSettings = ({
 								/>
 							)
 						}
+						if (config[0] === "ALWAYS_INCLUDE_FILE_DETAILS") {
+							return (
+								<ExperimentalFeature
+									key={config[0]}
+									experimentKey={config[0]}
+									enabled={
+										experiments[EXPERIMENT_IDS[config[0] as keyof typeof EXPERIMENT_IDS]] ??
+										apiConfiguration?.apiProvider === "zgsm"
+									}
+									onChange={(enabled) =>
+										setExperimentEnabled(
+											EXPERIMENT_IDS[config[0] as keyof typeof EXPERIMENT_IDS],
+											enabled,
+										)
+									}
+								/>
+							)
+						}
+
 						return (
 							<ExperimentalFeature
 								key={config[0]}

@@ -15,7 +15,7 @@ type _AssertExperimentIds = AssertEqual<Equals<ExperimentId, Values<typeof EXPER
 type ExperimentKey = Keys<typeof EXPERIMENT_IDS>
 
 interface ExperimentConfig {
-	enabled: boolean
+	enabled?: boolean
 }
 
 export const experimentConfigsMap: Record<ExperimentKey, ExperimentConfig> = {
@@ -25,7 +25,7 @@ export const experimentConfigsMap: Record<ExperimentKey, ExperimentConfig> = {
 	IMAGE_GENERATION: { enabled: false },
 	RUN_SLASH_COMMAND: { enabled: false },
 	CHAT_SEARCH: { enabled: false },
-	ALWAYS_INCLUDE_FILE_DETAILS: { enabled: false },
+	ALWAYS_INCLUDE_FILE_DETAILS: { enabled: undefined },
 }
 
 export const experimentDefault = Object.fromEntries(

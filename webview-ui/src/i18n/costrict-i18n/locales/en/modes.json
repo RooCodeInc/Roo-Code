@@ -1,0 +1,15 @@
+{
+	"descriptions": {
+		"strict": "Coordinate tasks across multiple modes in 'Strict' coding mode",
+		"requirements": "Output standardized requirement documents, clarify project goals, functional boundaries, and acceptance criteria, and provide a basis for subsequent design and development",
+		"task": "Based on the requirement document and design document, decompose into executable, trackable small tasks, clarify task goals, dependencies, and timelines, and ensure project delivery",
+		"test": "Design, execute, and fix software test cases.",
+		"testguide": "Analyze and generate a testing plan",
+		"review": "Review code and identify potential issues",
+		"code": "Write, modify, and refactor code",
+		"architect": "Plan and design before implementation",
+		"ask": "Get answers and explanations",
+		"debug": "Diagnose and fix software issues",
+		"orchestrator": "Coordinate tasks across multiple modes"
+	}
+}

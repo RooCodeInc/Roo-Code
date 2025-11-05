@@ -1,21 +1,24 @@
 import { promises as fs } from "fs"
 import * as path from "path"
-import { formatError, subtaskDir, SUBTASK_FILENAMES } from "./wiki-prompts/subtasks/constants"
-import { PROJECT_OVERVIEW_ANALYSIS_TEMPLATE } from "./wiki-prompts/subtasks/01_Project_Overview_Analysis"
-import { OVERALL_ARCHITECTURE_ANALYSIS_TEMPLATE } from "./wiki-prompts/subtasks/02_Overall_Architecture_Analysis"
-import { SERVICE_DEPENDENCIES_ANALYSIS_TEMPLATE } from "./wiki-prompts/subtasks/03_Service_Dependencies_Analysis"
-import { DATA_FLOW_INTEGRATION_ANALYSIS_TEMPLATE } from "./wiki-prompts/subtasks/04_Data_Flow_Integration_Analysis"
-import { SERVICE_ANALYSIS_TEMPLATE } from "./wiki-prompts/subtasks/05_Service_Analysis_Template"
-import { DATABASE_SCHEMA_ANALYSIS_TEMPLATE } from "./wiki-prompts/subtasks/06_Database_Schema_Analysis"
-import { API_INTERFACE_ANALYSIS_TEMPLATE } from "./wiki-prompts/subtasks/07_API_Interface_Analysis"
-import { DEPLOY_ANALYSIS_TEMPLATE } from "./wiki-prompts/subtasks/08_Deploy_Analysis"
-import { DEVELOP_TEST_ANALYSIS_TEMPLATE } from "./wiki-prompts/subtasks/09_Develop_Test_Analysis"
-import { PROJECT_RULES_GENERATION_TEMPLATE } from "./wiki-prompts/subtasks/11_Project_Rules_Generation"
+import { formatError, SUBTASK_FILENAMES, subtaskDir } from "./wiki-prompts/common/constants"
 import { ILogger, createLogger } from "../../../utils/logger"
-import { INDEX_GENERATION_TEMPLATE } from "./wiki-prompts/subtasks/10_Index_Generation"
+import { PROJECT_BASIC_ANALYZE_AGENT_TEMPLATE } from "./wiki-prompts/subtasks/01_project-basic-analyze-agent"
+import { GENERATE_THINK_CATALOGUE_TEMPLATE } from "./wiki-prompts/subtasks/02_catalogue-design-agent"
+import { DOCUMENT_GENERATION_AGENT_TEMPLATE } from "./wiki-prompts/subtasks/03_document-generate-agent"
+import { INDEX_GENERATION_AGENT_TEMPLATE } from "./wiki-prompts/subtasks/04_index-generation-agent"
 
 export const projectWikiCommandName = "project-wiki"
-export const projectWikiCommandDescription = `Perform an in-depth analysis of the project and create a comprehensive project wiki.`
+export const projectWikiCommandDescription = `执行项目深度分析并创建全面的项目技术文档（v2版本）`
+
+
+// Template data mapping for subtasks only
+const SUBTASK_TEMPLATES = {
+	[SUBTASK_FILENAMES.PROJECT_CLASSIFICATION_AGENT]: PROJECT_BASIC_ANALYZE_AGENT_TEMPLATE,
+	[SUBTASK_FILENAMES.THINK_CATALOGUE_AGENT]: GENERATE_THINK_CATALOGUE_TEMPLATE,
+	[SUBTASK_FILENAMES.DOCUMENT_GENERATION_AGENT]: DOCUMENT_GENERATION_AGENT_TEMPLATE,
+	[SUBTASK_FILENAMES.INDEX_GENERATION_AGENT]: INDEX_GENERATION_AGENT_TEMPLATE,
+}
+
 
 // 创建 logger 实例，但允许在测试时被替换
 let logger: ILogger = createLogger()
@@ -23,21 +26,6 @@ let logger: ILogger = createLogger()
 // 导出 logger setter 以便测试时可以替换
 export function setLogger(testLogger: ILogger): void {
 	logger = testLogger
-}
-
-// Template data mapping for subtasks only
-const SUBTASK_TEMPLATES = {
-	[SUBTASK_FILENAMES.PROJECT_OVERVIEW_TASK_FILE]: PROJECT_OVERVIEW_ANALYSIS_TEMPLATE,
-	[SUBTASK_FILENAMES.OVERALL_ARCHITECTURE_TASK_FILE]: OVERALL_ARCHITECTURE_ANALYSIS_TEMPLATE,
-	[SUBTASK_FILENAMES.SERVICE_DEPENDENCIES_TASK_FILE]: SERVICE_DEPENDENCIES_ANALYSIS_TEMPLATE,
-	[SUBTASK_FILENAMES.DATA_FLOW_INTEGRATION_TASK_FILE]: DATA_FLOW_INTEGRATION_ANALYSIS_TEMPLATE,
-	[SUBTASK_FILENAMES.SERVICE_ANALYSIS_TASK_FILE]: SERVICE_ANALYSIS_TEMPLATE,
-	[SUBTASK_FILENAMES.DATABASE_SCHEMA_TASK_FILE]: DATABASE_SCHEMA_ANALYSIS_TEMPLATE,
-	[SUBTASK_FILENAMES.API_INTERFACE_TASK_FILE]: API_INTERFACE_ANALYSIS_TEMPLATE,
-	[SUBTASK_FILENAMES.DEPLOY_ANALYSIS_TASK_FILE]: DEPLOY_ANALYSIS_TEMPLATE,
-	[SUBTASK_FILENAMES.Develop_TEST_ANALYSIS_TASK_FILE]: DEVELOP_TEST_ANALYSIS_TEMPLATE,
-	[SUBTASK_FILENAMES.INDEX_GENERATION_TASK_FILE]: INDEX_GENERATION_TEMPLATE,
-	[SUBTASK_FILENAMES.PROJECT_RULES_TASK_FILE]: PROJECT_RULES_GENERATION_TEMPLATE,
 }
 
 export async function ensureProjectWikiSubtasksExists() {

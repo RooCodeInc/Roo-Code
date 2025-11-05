@@ -1,5 +1,6 @@
 import { Command } from "./commands"
 import { PROJECT_WIKI_TEMPLATE } from "../../core/costrict/wiki/wiki-prompts/project_wiki"
+import { RULES_GENERATION_TEMPLATE } from "../../core/costrict/wiki/wiki-prompts/generate_rules"
 
 interface BuiltInCommandDefinition {
 	name: string
@@ -304,6 +305,11 @@ description: "测试驱动开发"
 		description: "Perform an in-depth analysis of the project and create a comprehensive project wiki.",
 		content: PROJECT_WIKI_TEMPLATE("${workspaceFolder}/"),
 	},
+  "generate-rules": {
+    name: "generate-rules",
+    description: "Extract project-specific coding rules to improve code generation accuracy",
+    content: RULES_GENERATION_TEMPLATE("${workspaceFolder}"),
+  }
 }
 
 /**
