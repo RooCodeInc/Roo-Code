@@ -96,17 +96,17 @@
 		"placeholder": "Edit your message..."
 	},
 	"scrollToBottom": "Scroll to bottom of chat",
-	"about": "Roo Code is a whole AI dev team in your editor.",
-	"docs": "Check our <DocsLink>docs</DocsLink> to learn more.",
-	"onboarding": "Your task list in this workspace is empty.",
+	"about": "Roo is a whole AI dev team in your editor",
+	"docs": "Check our <DocsLink>docs</DocsLink> to get started",
+	"onboarding": "What would you like to do?",
 	"rooTips": {
 		"customizableModes": {
-			"title": "Customizable modes",
+			"title": "Customizable modes that don't swerve",
 			"description": "Specialized personas that stay on-task and deliver."
 		},
 		"modelAgnostic": {
-			"title": "Bring your own model",
-			"description": "Use your own provider key or even run local inference — no markup, lock-in, no restrictions"
+			"title": "Bring your own model, no markup or lock-in",
+			"description": "Use your own provider key or even run local inference — Roo doesn't charge for it"
 		}
 	},
 	"selectMode": "Select mode for interaction",
