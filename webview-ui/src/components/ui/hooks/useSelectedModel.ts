@@ -137,7 +137,7 @@ function getSelectedModel({
 	switch (provider) {
 		case "openrouter": {
 			const id = getValidatedModelId(apiConfiguration.openRouterModelId, routerModels.openrouter, defaultModelId)
-			let info = routerModels.openrouter[id]
+			let info = routerModels.openrouter?.[id]
 			const specificProvider = apiConfiguration.openRouterSpecificProvider
 
 			if (specificProvider && openRouterModelProviders[specificProvider]) {
@@ -153,22 +153,22 @@ function getSelectedModel({
 		}
 		case "requesty": {
 			const id = getValidatedModelId(apiConfiguration.requestyModelId, routerModels.requesty, defaultModelId)
-			const info = routerModels.requesty[id]
+			const info = routerModels.requesty?.[id]
 			return { id, info }
 		}
 		case "glama": {
 			const id = getValidatedModelId(apiConfiguration.glamaModelId, routerModels.glama, defaultModelId)
-			const info = routerModels.glama[id]
+			const info = routerModels.glama?.[id]
 			return { id, info }
 		}
 		case "unbound": {
 			const id = getValidatedModelId(apiConfiguration.unboundModelId, routerModels.unbound, defaultModelId)
-			const info = routerModels.unbound[id]
+			const info = routerModels.unbound?.[id]
 			return { id, info }
 		}
 		case "litellm": {
 			const id = getValidatedModelId(apiConfiguration.litellmModelId, routerModels.litellm, defaultModelId)
-			const info = routerModels.litellm[id]
+			const info = routerModels.litellm?.[id]
 			return { id, info }
 		}
 		case "xai": {
@@ -193,7 +193,7 @@ function getSelectedModel({
 		}
 		case "chutes": {
 			const id = getValidatedModelId(apiConfiguration.apiModelId, routerModels.chutes, defaultModelId)
-			const info = routerModels.chutes[id]
+			const info = routerModels.chutes?.[id]
 			return { id, info }
 		}
 		case "bedrock": {
@@ -348,7 +348,7 @@ function getSelectedModel({
 		}
 		case "roo": {
 			const id = getValidatedModelId(apiConfiguration.apiModelId, routerModels.roo, defaultModelId)
-			const info = routerModels.roo[id]
+			const info = routerModels.roo?.[id]
 			return { id, info }
 		}
 		case "qwen-code": {
