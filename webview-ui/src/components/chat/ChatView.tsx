@@ -1808,9 +1808,9 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							{taskHistory.length > 0 && <HistoryPreview />}
 						</div>
 						{/* Logged out users should see a one-time upsell, but not for brand new users */}
-						{!cloudIsAuthenticated && taskHistory.length >= 4 && (
+						{!cloudIsAuthenticated && taskHistory.length >= 6 && (
 							<DismissibleUpsell
-								upsellId="taskList"
+								upsellId="taskList2"
 								icon={<Cloud className="size-5 mt-0.5 shrink-0" />}
 								onClick={() => openUpsell()}
 								dismissOnClick={false}
