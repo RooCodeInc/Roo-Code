@@ -49,7 +49,7 @@ export const anthropicModels = {
 		],
 	},
 	"claude-opus-4-1-20250805": {
-		maxTokens: 8192,
+		maxTokens: 32_000, // Overridden to 8k if `enableReasoningEffort` is false.
 		contextWindow: 200_000,
 		supportsImages: true,
 		supportsPromptCache: true,
