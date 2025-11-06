@@ -18,8 +18,8 @@ const RooHero = () => {
 					maskRepeat: "no-repeat",
 					maskSize: "contain",
 				}}
-				className="mx-auto  hover:animate-bounce">
-				<img src={imagesBaseUri + "/roo-logo.svg"} alt="Roo logo" className="h-8 opacity-0 " />
+				className="mx-auto hover:animate-bounce">
+				<img src={imagesBaseUri + "/roo-logo.svg"} alt="Roo logo" className="h-8 opacity-0" />
 			</div>
 		</div>
 	)
