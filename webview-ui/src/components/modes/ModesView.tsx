@@ -635,27 +635,6 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 								</Button>
 							</StandardTooltip>
 
-							<StandardTooltip content={t("prompts:exportMode.title")}>
-								<Button
-									variant="ghost"
-									size="icon"
-									onClick={() => {
-										const currentMode = getCurrentMode()
-										if (currentMode?.slug && !isExporting) {
-											setIsExporting(true)
-											vscode.postMessage({
-												type: "exportMode",
-												slug: currentMode.slug,
-											})
-										}
-									}}
-									disabled={isExporting}
-									title={t("prompts:exportMode.title")}
-									data-testid="export-mode-toolbar-button">
-									<Upload className="h-4 w-4" />
-								</Button>
-							</StandardTooltip>
-
 							<StandardTooltip content={t("prompts:modes.importMode")}>
 								<Button
 									variant="ghost"
@@ -777,6 +756,26 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 								</Command>
 							</PopoverContent>
 						</Popover>
+						<StandardTooltip content={t("prompts:exportMode.title")}>
+							<Button
+								variant="ghost"
+								size="icon"
+								onClick={() => {
+									const currentMode = getCurrentMode()
+									if (currentMode?.slug && !isExporting) {
+										setIsExporting(true)
+										vscode.postMessage({
+											type: "exportMode",
+											slug: currentMode.slug,
+										})
+									}
+								}}
+								disabled={isExporting}
+								title={t("prompts:exportMode.title")}
+								data-testid="export-mode-toolbar-button">
+								<Upload className="h-4 w-4" />
+							</Button>
+						</StandardTooltip>
 					</div>
 					{/* API Configuration - Moved Here */}
 					<div className="mb-3">
