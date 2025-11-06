@@ -327,8 +327,8 @@ describe("LiteLLMHandler", () => {
 			}
 			handler = new LiteLLMHandler(optionsWithGPT5)
 
-			// Force fetchModel to return undefined maxTokens
-			vi.spyOn(handler as any, "fetchModel").mockResolvedValue({
+			// Force getModel to return undefined maxTokens
+			vi.spyOn(handler as any, "getModel").mockReturnValue({
 				id: "gpt-5",
 				info: { ...litellmDefaultModelInfo, maxTokens: undefined },
 			})
@@ -370,8 +370,8 @@ describe("LiteLLMHandler", () => {
 			}
 			handler = new LiteLLMHandler(optionsWithGPT5)
 
-			// Force fetchModel to return undefined maxTokens
-			vi.spyOn(handler as any, "fetchModel").mockResolvedValue({
+			// Force getModel to return undefined maxTokens
+			vi.spyOn(handler as any, "getModel").mockReturnValue({
 				id: "gpt-5",
 				info: { ...litellmDefaultModelInfo, maxTokens: undefined },
 			})
@@ -385,6 +385,50 @@ describe("LiteLLMHandler", () => {
 			const createCall = mockCreate.mock.calls[0][0]
 			expect(createCall.max_tokens).toBeUndefined()
 			expect(createCall.max_completion_tokens).toBeUndefined()
+		})
+	})
+
+	// Phase 2: getModel priority tests
+	describe("LiteLLMHandler getModel priority", () => {
+		it("prefers options.resolvedModelInfo over cache and default", () => {
+			const resolved = {
+				maxTokens: 2468,
+				contextWindow: 135790,
+				supportsImages: false,
+				supportsPromptCache: true,
+			}
+			const handler = new LiteLLMHandler({
+				litellmApiKey: "k",
+				litellmBaseUrl: "http://localhost:4000",
+				litellmModelId: "gpt-4",
+				resolvedModelInfo: resolved,
+			} as any)
+			const model = handler.getModel()
+			expect(model.id).toBe("gpt-4")
+			expect(model.info).toBe(resolved)
+		})
+
+		it("uses memory cache when no resolvedModelInfo", () => {
+			const handler = new LiteLLMHandler({
+				litellmApiKey: "k",
+				litellmBaseUrl: "http://localhost:4000",
+				litellmModelId: "llama-3",
+			} as any)
+			;(handler as any).models = {
+				"llama-3": { maxTokens: 5000, contextWindow: 90000, supportsImages: false, supportsPromptCache: false },
+			}
+			const model = handler.getModel()
+			expect(model.info.maxTokens).toBe(5000)
+		})
+
+		it("falls back to default when neither persisted nor cache", () => {
+			const handler = new LiteLLMHandler({
+				litellmApiKey: "k",
+				litellmBaseUrl: "http://localhost:4000",
+				litellmModelId: "unknown/model",
+			} as any)
+			const model = handler.getModel()
+			expect(model.info).toEqual(expect.objectContaining({ contextWindow: expect.any(Number) }))
 		})
 	})
 })

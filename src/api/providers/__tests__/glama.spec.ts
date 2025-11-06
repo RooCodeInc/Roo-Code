@@ -225,8 +225,44 @@ describe("GlamaHandler", () => {
 		it("should return default model when invalid model provided", async () => {
 			const handlerWithInvalidModel = new GlamaHandler({ ...mockOptions, glamaModelId: "invalid/model" })
 			const modelInfo = await handlerWithInvalidModel.fetchModel()
-			expect(modelInfo.id).toBe("anthropic/claude-3-7-sonnet")
+			// Priority now preserves requested id with default info
+			expect(modelInfo.id).toBe("invalid/model")
 			expect(modelInfo.info).toBeDefined()
 		})
+	})
+})
+
+// Phase 2: getModel priority tests
+describe("GlamaHandler getModel priority", () => {
+	it("prefers options.resolvedModelInfo over cache and default", () => {
+		const resolved = { maxTokens: 1111, contextWindow: 222222, supportsImages: true, supportsPromptCache: true }
+		const handler = new GlamaHandler({
+			glamaApiKey: "k",
+			glamaModelId: "anthropic/claude-3-7-sonnet",
+			resolvedModelInfo: resolved,
+		} as any)
+		const model = handler.getModel()
+		expect(model.id).toBe("anthropic/claude-3-7-sonnet")
+		expect(model.info).toBe(resolved)
+	})
+
+	it("uses memory cache when no resolvedModelInfo", () => {
+		const handler = new GlamaHandler({ glamaApiKey: "k", glamaModelId: "openai/gpt-4o" } as any)
+		;(handler as any).models = {
+			"openai/gpt-4o": {
+				maxTokens: 3333,
+				contextWindow: 444444,
+				supportsImages: true,
+				supportsPromptCache: false,
+			},
+		}
+		const model = handler.getModel()
+		expect(model.info.maxTokens).toBe(3333)
+	})
+
+	it("falls back to default when neither persisted nor cache", () => {
+		const handler = new GlamaHandler({ glamaApiKey: "k", glamaModelId: "unknown/model" } as any)
+		const model = handler.getModel()
+		expect(model.info).toEqual(expect.objectContaining({ contextWindow: expect.any(Number) }))
 	})
 })

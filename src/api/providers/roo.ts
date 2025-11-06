@@ -194,15 +194,23 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 	override getModel() {
 		const modelId = this.options.apiModelId || rooDefaultModelId
 
-		// Get models from shared cache
+		// 1) Persisted
+		if (this.options.resolvedModelInfo) {
+			console.log("[model-cache] source:", "persisted")
+			return { id: modelId, info: this.options.resolvedModelInfo }
+		}
+
+		// 2) Shared cache
 		const models = getModelsFromCache("roo") || {}
 		const modelInfo = models[modelId]
+
+		console.log("[model-cache] source:", modelInfo ? "memory-cache" : "default-fallback")
 
 		if (modelInfo) {
 			return { id: modelId, info: modelInfo }
 		}
 
-		// Return the requested model ID even if not found, with fallback info.
+		// 3) Fallback defaults
 		return {
 			id: modelId,
 			info: {

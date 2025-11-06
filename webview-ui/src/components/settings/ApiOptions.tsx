@@ -232,12 +232,6 @@ const ApiOptions = ({
 				vscode.postMessage({ type: "requestLmStudioModels" })
 			} else if (selectedProvider === "vscode-lm") {
 				vscode.postMessage({ type: "requestVsCodeLmModels" })
-			} else if (
-				selectedProvider === "litellm" ||
-				selectedProvider === "deepinfra" ||
-				selectedProvider === "roo"
-			) {
-				vscode.postMessage({ type: "requestRouterModels" })
 			}
 		},
 		250,

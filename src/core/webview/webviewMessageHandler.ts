@@ -52,6 +52,7 @@ import { openMention } from "../mentions"
 import { getWorkspacePath } from "../../utils/path"
 import { Mode, defaultModeSlug } from "../../shared/modes"
 import { getModels, flushModels } from "../../api/providers/fetchers/modelCache"
+import { flushModelProviders } from "../../api/providers/fetchers/modelEndpointCache"
 import { GetModelsOptions } from "../../shared/api"
 import { generateSystemPrompt } from "./generateSystemPrompt"
 import { getCommand } from "../../utils/commands"
@@ -750,10 +751,111 @@ export const webviewMessageHandler = async (
 		case "resetState":
 			await provider.resetState()
 			break
-		case "flushRouterModels":
-			const routerNameFlush: RouterName = toRouterName(message.text)
-			await flushModels(routerNameFlush)
+		case "flushRouterModels": {
+			try {
+				const { apiConfiguration, currentApiConfigName = "default" } = await provider.getState()
+				const providerName = apiConfiguration?.apiProvider
+				const router: RouterName = providerName ? toRouterName(providerName) : toRouterName(message.text)
+
+				// Determine selected modelId from provider profile
+				let selectedModelId: string | undefined
+				try {
+					const { modelIdKeysByProvider } = await import("@roo-code/types")
+					const key = providerName ? (modelIdKeysByProvider as any)[providerName] : undefined
+					selectedModelId = key ? (apiConfiguration as any)[key] : (apiConfiguration as any)?.apiModelId
+				} catch {
+					selectedModelId = (apiConfiguration as any)?.apiModelId
+				}
+
+				// Flush caches (memory + file)
+				await flushModels(router)
+				if (selectedModelId) {
+					await flushModelProviders(router, selectedModelId)
+				}
+				console.log("[model-cache/refresh] Flushed memory+file cache for", router)
+
+				// Build options for refetch
+				const buildOptions = (): GetModelsOptions => {
+					switch (router) {
+						case "requesty":
+							return {
+								provider: "requesty",
+								apiKey: (apiConfiguration as any).requestyApiKey,
+								baseUrl: (apiConfiguration as any).requestyBaseUrl,
+							}
+						case "glama":
+							return { provider: "glama" }
+						case "unbound":
+							return { provider: "unbound", apiKey: (apiConfiguration as any).unboundApiKey }
+						case "litellm":
+							return {
+								provider: "litellm",
+								apiKey: (apiConfiguration as any).litellmApiKey,
+								baseUrl: (apiConfiguration as any).litellmBaseUrl,
+							}
+						case "deepinfra":
+							return {
+								provider: "deepinfra",
+								apiKey: (apiConfiguration as any).deepInfraApiKey,
+								baseUrl: (apiConfiguration as any).deepInfraBaseUrl,
+							}
+						case "io-intelligence":
+							return {
+								provider: "io-intelligence",
+								apiKey: (apiConfiguration as any).ioIntelligenceApiKey,
+							}
+						case "vercel-ai-gateway":
+							return { provider: "vercel-ai-gateway" }
+						case "openrouter":
+							return { provider: "openrouter" }
+						case "roo":
+							return {
+								provider: "roo",
+								baseUrl: process.env.ROO_CODE_PROVIDER_URL ?? "https://api.roocode.com/proxy",
+								apiKey: CloudService.hasInstance()
+									? CloudService.instance.authService?.getSessionToken()
+									: undefined,
+							}
+						case "chutes":
+							return { provider: "chutes", apiKey: (apiConfiguration as any).chutesApiKey }
+						case "ollama":
+							return {
+								provider: "ollama",
+								baseUrl: (apiConfiguration as any).ollamaBaseUrl,
+								apiKey: (apiConfiguration as any).ollamaApiKey,
+							}
+						case "lmstudio":
+							return { provider: "lmstudio", baseUrl: (apiConfiguration as any).lmStudioBaseUrl }
+						case "huggingface":
+							return { provider: "huggingface" }
+						default:
+							return { provider: router }
+					}
+				}
+
+				// Refetch fresh models to warm caches
+				const options = buildOptions()
+				const models = await getModels(options)
+
+				// Persist resolvedModelInfo for selected model if available
+				if (selectedModelId && models && models[selectedModelId]) {
+					const info = models[selectedModelId] as any
+					const updatedConfig = { ...apiConfiguration, resolvedModelInfo: info }
+					await provider.upsertProviderProfile(currentApiConfigName || "default", updatedConfig, true)
+					console.log("[model-cache/refresh] Persisted resolvedModelInfo for", router, selectedModelId)
+				}
+
+				await provider.postMessageToWebview({ type: "flushRouterModelsResult", success: true })
+			} catch (error) {
+				console.warn("[model-cache/refresh] Refresh failed:", error)
+				await provider.postMessageToWebview({
+					type: "flushRouterModelsResult",
+					success: false,
+					error: error instanceof Error ? error.message : String(error),
+				})
+			}
 			break
+		}
 		case "requestRouterModels":
 			const { apiConfiguration } = await provider.getState()
 

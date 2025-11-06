@@ -102,7 +102,7 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
 	): AsyncGenerator<ApiStreamChunk> {
-		const model = await this.fetchModel()
+		const model = this.getModel()
 
 		let { id: modelId, maxTokens, temperature, topP, reasoning } = model
 
@@ -225,7 +225,15 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 
 	override getModel() {
 		const id = this.options.openRouterModelId ?? openRouterDefaultModelId
-		let info = this.models[id] ?? openRouterDefaultModelInfo
+
+		// Priority: 1) persisted (resolvedModelInfo), 2) memory cache, 3) default fallback
+		console.log(
+			"[model-cache] source:",
+			this.options.resolvedModelInfo ? "persisted" : this.models[id] ? "memory-cache" : "default-fallback",
+		)
+
+		let info =
+			(this.options.resolvedModelInfo as any) ?? (this.models[id] as any) ?? (openRouterDefaultModelInfo as any)
 
 		// If a specific provider is requested, use the endpoint for that provider.
 		if (this.options.openRouterSpecificProvider && this.endpoints[this.options.openRouterSpecificProvider]) {
@@ -246,7 +254,7 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 	}
 
 	async completePrompt(prompt: string) {
-		let { id: modelId, maxTokens, temperature, reasoning } = await this.fetchModel()
+		let { id: modelId, maxTokens, temperature, reasoning } = this.getModel()
 
 		const completionParams: OpenRouterChatCompletionParams = {
 			model: modelId,

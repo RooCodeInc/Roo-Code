@@ -23,14 +23,25 @@ export class IOIntelligenceHandler extends BaseOpenAiCompatibleProvider<IOIntell
 	override getModel() {
 		const modelId = this.options.ioIntelligenceModelId || (ioIntelligenceDefaultModelId as IOIntelligenceModelId)
 
-		const modelInfo =
-			this.providerModels[modelId as IOIntelligenceModelId] ?? this.providerModels[ioIntelligenceDefaultModelId]
+		const info =
+			(this.options.resolvedModelInfo as any) ??
+			this.providerModels[modelId as IOIntelligenceModelId] ??
+			this.providerModels[ioIntelligenceDefaultModelId]
 
-		if (modelInfo) {
-			return { id: modelId as IOIntelligenceModelId, info: modelInfo }
+		console.log(
+			"[model-cache] source:",
+			this.options.resolvedModelInfo
+				? "persisted"
+				: this.providerModels[modelId as IOIntelligenceModelId]
+					? "memory-cache"
+					: "default-fallback",
+		)
+
+		if (info) {
+			return { id: modelId as IOIntelligenceModelId, info }
 		}
 
-		// Return the requested model ID even if not found, with fallback info.
+		// Fallback safety
 		return {
 			id: modelId as IOIntelligenceModelId,
 			info: {

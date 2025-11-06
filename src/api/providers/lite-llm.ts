@@ -43,7 +43,7 @@ export class LiteLLMHandler extends RouterProvider implements SingleCompletionHa
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
-		const { id: modelId, info } = await this.fetchModel()
+		const { id: modelId, info } = this.getModel()
 
 		const openAiMessages = convertToOpenAiMessages(messages)
 
@@ -193,7 +193,7 @@ export class LiteLLMHandler extends RouterProvider implements SingleCompletionHa
 	}
 
 	async completePrompt(prompt: string): Promise<string> {
-		const { id: modelId, info } = await this.fetchModel()
+		const { id: modelId, info } = this.getModel()
 
 		// Check if this is a GPT-5 model that requires max_completion_tokens instead of max_tokens
 		const isGPT5Model = this.isGpt5(modelId)

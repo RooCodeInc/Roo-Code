@@ -41,7 +41,7 @@ export class VercelAiGatewayHandler extends RouterProvider implements SingleComp
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
-		const { id: modelId, info } = await this.fetchModel()
+		const { id: modelId, info } = this.getModel()
 
 		const openAiMessages: OpenAI.Chat.ChatCompletionMessageParam[] = [
 			{ role: "system", content: systemPrompt },
@@ -88,7 +88,7 @@ export class VercelAiGatewayHandler extends RouterProvider implements SingleComp
 	}
 
 	async completePrompt(prompt: string): Promise<string> {
-		const { id: modelId, info } = await this.fetchModel()
+		const { id: modelId, info } = this.getModel()
 
 		try {
 			const requestOptions: OpenAI.Chat.ChatCompletionCreateParams = {

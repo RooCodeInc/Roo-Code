@@ -630,4 +630,49 @@ describe("RooHandler", () => {
 			)
 		})
 	})
+
+	// Phase 2: getModel priority tests
+	describe("RooHandler getModel priority", () => {
+		it("prefers options.resolvedModelInfo over shared cache and default", () => {
+			const resolved = {
+				maxTokens: 4096,
+				contextWindow: 131072,
+				supportsImages: false,
+				supportsReasoningEffort: true,
+				supportsPromptCache: true,
+				inputPrice: 0,
+				outputPrice: 0,
+			}
+			const handler = new RooHandler({
+				apiModelId: "xai/grok-code-fast-1",
+				resolvedModelInfo: resolved,
+			} as any)
+			const model = handler.getModel()
+			expect(model.id).toBe("xai/grok-code-fast-1")
+			expect(model.info).toBe(resolved)
+		})
+
+		it("uses shared cache when no resolvedModelInfo", async () => {
+			const handler = new RooHandler({ apiModelId: "xai/grok-code-fast-1" } as any)
+			const model = handler.getModel()
+			expect(model.info).toEqual(
+				expect.objectContaining({
+					contextWindow: 262144,
+					supportsPromptCache: true,
+				}),
+			)
+		})
+
+		it("falls back to default when neither persisted nor cache", () => {
+			const handler = new RooHandler({ apiModelId: "unknown/model" } as any)
+			const model = handler.getModel()
+			expect(model.info).toEqual(
+				expect.objectContaining({
+					maxTokens: 16384,
+					contextWindow: 262144,
+					supportsPromptCache: true,
+				}),
+			)
+		})
+	})
 })

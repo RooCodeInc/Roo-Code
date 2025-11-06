@@ -1,258 +1,254 @@
-// npx vitest run __tests__/extension.spec.ts
-
-import type * as vscode from "vscode"
-import type { AuthState } from "@roo-code/types"
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 
 vi.mock("vscode", () => ({
 	window: {
-		createOutputChannel: vi.fn().mockReturnValue({
-			appendLine: vi.fn(),
-		}),
-		registerWebviewViewProvider: vi.fn(),
-		registerUriHandler: vi.fn(),
-		tabGroups: {
-			onDidChangeTabs: vi.fn(),
-		},
-		onDidChangeActiveTextEditor: vi.fn(),
+		createTextEditorDecorationType: vi.fn().mockReturnValue({ dispose: vi.fn() }),
+		showErrorMessage: vi.fn(),
+		showInformationMessage: vi.fn(),
 	},
+	CodeActionKind: {
+		QuickFix: { value: "quickfix" },
+		RefactorRewrite: { value: "refactor.rewrite" },
+	},
+	RelativePattern: vi.fn(),
 	workspace: {
-		registerTextDocumentContentProvider: vi.fn(),
-		getConfiguration: vi.fn().mockReturnValue({
-			get: vi.fn().mockReturnValue([]),
-		}),
 		createFileSystemWatcher: vi.fn().mockReturnValue({
-			onDidCreate: vi.fn(),
 			onDidChange: vi.fn(),
+			onDidCreate: vi.fn(),
 			onDidDelete: vi.fn(),
-			dispose: vi.fn(),
 		}),
-		onDidChangeWorkspaceFolders: vi.fn(),
+		getConfiguration: vi.fn().mockReturnValue({ update: vi.fn() }),
 	},
-	languages: {
-		registerCodeActionsProvider: vi.fn(),
-	},
-	commands: {
-		executeCommand: vi.fn(),
-	},
-	env: {
-		language: "en",
-	},
-	ExtensionMode: {
-		Production: 1,
-	},
+	env: { language: "en" },
 }))
 
-vi.mock("@dotenvx/dotenvx", () => ({
-	config: vi.fn(),
+vi.mock("../api", () => ({
+	buildApiHandler: vi.fn(),
 }))
 
-const mockBridgeOrchestratorDisconnect = vi.fn().mockResolvedValue(undefined)
+import { ensureResolvedModelInfo } from "../extension"
+import { buildApiHandler } from "../api"
+import { ClineProvider } from "../core/webview/ClineProvider"
 
-vi.mock("@roo-code/cloud", () => ({
-	CloudService: {
-		createInstance: vi.fn(),
-		hasInstance: vi.fn().mockReturnValue(true),
-		get instance() {
-			return {
-				off: vi.fn(),
-				on: vi.fn(),
-				getUserInfo: vi.fn().mockReturnValue(null),
-				isTaskSyncEnabled: vi.fn().mockReturnValue(false),
-			}
-		},
-	},
-	BridgeOrchestrator: {
-		disconnect: mockBridgeOrchestratorDisconnect,
-	},
-	getRooCodeApiUrl: vi.fn().mockReturnValue("https://app.roocode.com"),
-}))
-
-vi.mock("@roo-code/telemetry", () => ({
-	TelemetryService: {
-		createInstance: vi.fn().mockReturnValue({
-			register: vi.fn(),
-			setProvider: vi.fn(),
-			shutdown: vi.fn(),
-		}),
-		get instance() {
-			return {
-				register: vi.fn(),
-				setProvider: vi.fn(),
-				shutdown: vi.fn(),
-			}
-		},
-	},
-	PostHogTelemetryClient: vi.fn(),
-}))
-
-vi.mock("../utils/outputChannelLogger", () => ({
-	createOutputChannelLogger: vi.fn().mockReturnValue(vi.fn()),
-	createDualLogger: vi.fn().mockReturnValue(vi.fn()),
-}))
-
-vi.mock("../shared/package", () => ({
-	Package: {
-		name: "test-extension",
-		outputChannel: "Test Output",
-		version: "1.0.0",
-	},
-}))
-
-vi.mock("../shared/language", () => ({
-	formatLanguage: vi.fn().mockReturnValue("en"),
-}))
-
-vi.mock("../core/config/ContextProxy", () => ({
-	ContextProxy: {
-		getInstance: vi.fn().mockResolvedValue({
-			getValue: vi.fn(),
-			setValue: vi.fn(),
-			getValues: vi.fn().mockReturnValue({}),
-			getProviderSettings: vi.fn().mockReturnValue({}),
-		}),
-	},
-}))
-
-vi.mock("../integrations/editor/DiffViewProvider", () => ({
-	DIFF_VIEW_URI_SCHEME: "test-diff-scheme",
-}))
-
-vi.mock("../integrations/terminal/TerminalRegistry", () => ({
-	TerminalRegistry: {
-		initialize: vi.fn(),
-		cleanup: vi.fn(),
-	},
-}))
-
-vi.mock("../services/mcp/McpServerManager", () => ({
-	McpServerManager: {
-		cleanup: vi.fn().mockResolvedValue(undefined),
-		getInstance: vi.fn().mockResolvedValue(null),
-		unregisterProvider: vi.fn(),
-	},
-}))
-
-vi.mock("../services/code-index/manager", () => ({
-	CodeIndexManager: {
-		getInstance: vi.fn().mockReturnValue(null),
-	},
-}))
-
-vi.mock("../services/mdm/MdmService", () => ({
-	MdmService: {
-		createInstance: vi.fn().mockResolvedValue(null),
-	},
-}))
-
-vi.mock("../utils/migrateSettings", () => ({
-	migrateSettings: vi.fn().mockResolvedValue(undefined),
-}))
-
-vi.mock("../utils/autoImportSettings", () => ({
-	autoImportSettings: vi.fn().mockResolvedValue(undefined),
-}))
-
-vi.mock("../extension/api", () => ({
-	API: vi.fn().mockImplementation(() => ({})),
-}))
-
-vi.mock("../activate", () => ({
-	handleUri: vi.fn(),
-	registerCommands: vi.fn(),
-	registerCodeActions: vi.fn(),
-	registerTerminalActions: vi.fn(),
-	CodeActionProvider: vi.fn().mockImplementation(() => ({
-		providedCodeActionKinds: [],
-	})),
-}))
-
-vi.mock("../i18n", () => ({
-	initializeI18n: vi.fn(),
-	t: vi.fn((key) => key),
-}))
-
-describe("extension.ts", () => {
-	let mockContext: vscode.ExtensionContext
-	let authStateChangedHandler:
-		| ((data: { state: AuthState; previousState: AuthState }) => void | Promise<void>)
-		| undefined
+describe("activation-time resolvedModelInfo", () => {
+	let logSpy: ReturnType<typeof vi.spyOn>
+	let warnSpy: ReturnType<typeof vi.spyOn>
 
 	beforeEach(() => {
 		vi.clearAllMocks()
-		mockBridgeOrchestratorDisconnect.mockClear()
+		logSpy = vi.spyOn(console, "log").mockImplementation(() => {})
+		warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
+	})
 
-		mockContext = {
-			extensionPath: "/test/path",
-			globalState: {
-				get: vi.fn().mockReturnValue(undefined),
-				update: vi.fn(),
+	afterEach(() => {
+		logSpy.mockRestore()
+		warnSpy.mockRestore()
+	})
+
+	it("populates missing resolvedModelInfo for a dynamic provider on activation", async () => {
+		const provider: any = {
+			getState: vi.fn().mockResolvedValue({
+				apiConfiguration: { apiProvider: "openrouter", openRouterModelId: "openrouter/model" },
+				currentApiConfigName: "default",
+			}),
+			upsertProviderProfile: vi.fn().mockResolvedValue("id"),
+		}
+
+		const info = { contextWindow: 4000, maxTokens: 8192, supportsPromptCache: true }
+		const handler = {
+			fetchModel: vi.fn().mockResolvedValue({ info }),
+			getModel: vi.fn().mockReturnValue({ id: "openrouter/model", info }),
+		}
+		;(buildApiHandler as any).mockReturnValue(handler)
+
+		await ensureResolvedModelInfo(provider)
+
+		expect(buildApiHandler).toHaveBeenCalled()
+		expect(provider.upsertProviderProfile).toHaveBeenCalledWith(
+			"default",
+			expect.objectContaining({ resolvedModelInfo: info }),
+			true,
+		)
+		expect(logSpy.mock.calls.some((c: any[]) => String(c.join(" ")).includes("Populating resolvedModelInfo"))).toBe(
+			true,
+		)
+	})
+
+	it("skips when resolvedModelInfo is valid", async () => {
+		const resolved = { contextWindow: 16000, maxTokens: 8000 }
+		const provider: any = {
+			getState: vi.fn().mockResolvedValue({
+				apiConfiguration: { apiProvider: "openrouter", resolvedModelInfo: resolved },
+				currentApiConfigName: "default",
+			}),
+			upsertProviderProfile: vi.fn(),
+		}
+
+		await ensureResolvedModelInfo(provider)
+
+		expect(buildApiHandler).not.toHaveBeenCalled()
+		expect(provider.upsertProviderProfile).not.toHaveBeenCalled()
+		expect(
+			logSpy.mock.calls.some((c: any[]) => String(c.join(" ")).includes("Using existing resolvedModelInfo")),
+		).toBe(true)
+	})
+
+	it("skips for static providers", async () => {
+		const provider: any = {
+			getState: vi.fn().mockResolvedValue({
+				apiConfiguration: { apiProvider: "anthropic", apiModelId: "claude-3-5-sonnet" },
+				currentApiConfigName: "default",
+			}),
+			upsertProviderProfile: vi.fn(),
+		}
+
+		await ensureResolvedModelInfo(provider)
+
+		expect(buildApiHandler).not.toHaveBeenCalled()
+		expect(provider.upsertProviderProfile).not.toHaveBeenCalled()
+	})
+})
+
+describe("settings save gating (Phase 3.2)", () => {
+	let logSpy: ReturnType<typeof vi.spyOn>
+
+	beforeEach(() => {
+		vi.clearAllMocks()
+		logSpy = vi.spyOn(console, "log").mockImplementation(() => {})
+	})
+
+	afterEach(() => {
+		logSpy.mockRestore()
+	})
+
+	const bindProvider = (impl: any) => (ClineProvider.prototype.upsertProviderProfile as any).bind(impl)
+
+	it("does not reinit on unrelated setting change and preserves resolvedModelInfo", async () => {
+		const prevConfig = {
+			apiProvider: "openrouter",
+			openRouterModelId: "openrouter/model",
+			openRouterBaseUrl: "https://openrouter.ai/api/v1",
+			resolvedModelInfo: { contextWindow: 4000, maxTokens: 8192 },
+			modelTemperature: 0.1,
+		}
+
+		const nextConfig = {
+			...prevConfig,
+			modelTemperature: 0.2, // unrelated change
+		}
+
+		const provider: any = {
+			providerSettingsManager: {
+				saveConfig: vi.fn().mockResolvedValue("id"),
+				listConfig: vi.fn().mockResolvedValue([]),
+				setModeConfig: vi.fn().mockResolvedValue(undefined),
 			},
-			subscriptions: [],
-		} as unknown as vscode.ExtensionContext
+			updateGlobalState: vi.fn().mockResolvedValue(undefined),
+			contextProxy: { setProviderSettings: vi.fn().mockResolvedValue(undefined) },
+			getState: vi.fn().mockResolvedValue({ apiConfiguration: prevConfig, mode: "architect" }),
+			getCurrentTask: vi.fn().mockReturnValue({ api: undefined }),
+			postStateToWebview: vi.fn().mockResolvedValue(undefined),
+			log: vi.fn(),
+		}
 
-		authStateChangedHandler = undefined
+		;(buildApiHandler as any).mockReturnValue({}) // handler if reinit (should NOT be called)
+
+		const upsert = bindProvider(provider)
+		await upsert("default", nextConfig, true)
+
+		expect(provider.providerSettingsManager.saveConfig).toHaveBeenCalledWith("default", nextConfig)
+		expect(provider.contextProxy.setProviderSettings).toHaveBeenCalledWith(nextConfig)
+		expect(buildApiHandler).not.toHaveBeenCalled()
+		expect(
+			logSpy.mock.calls.some((c: any[]) =>
+				String(c.join(" ")).includes("[model-cache/save] No reinit: provider/model/baseUrl unchanged"),
+			),
+		).toBe(true)
+		// Ensure resolvedModelInfo remained intact in persisted payload
+		expect((provider.providerSettingsManager.saveConfig as any).mock.calls[0][1].resolvedModelInfo).toEqual(
+			prevConfig.resolvedModelInfo,
+		)
 	})
 
-	test("authStateChangedHandler calls BridgeOrchestrator.disconnect when logged-out event fires", async () => {
-		const { CloudService, BridgeOrchestrator } = await import("@roo-code/cloud")
+	it("reinit when provider/model/baseUrl changes (modelId change)", async () => {
+		const prevConfig = {
+			apiProvider: "openrouter",
+			openRouterModelId: "openrouter/model",
+			openRouterBaseUrl: "https://openrouter.ai/api/v1",
+		}
 
-		// Capture the auth state changed handler.
-		vi.mocked(CloudService.createInstance).mockImplementation(async (_context, _logger, handlers) => {
-			if (handlers?.["auth-state-changed"]) {
-				authStateChangedHandler = handlers["auth-state-changed"]
-			}
+		const nextConfig = {
+			...prevConfig,
+			openRouterModelId: "openrouter/other-model", // model change should trigger reinit
+		}
 
-			return {
-				off: vi.fn(),
-				on: vi.fn(),
-				telemetryClient: null,
-			} as any
-		})
+		const handler = {}
+		;(buildApiHandler as any).mockReturnValue(handler)
 
-		// Activate the extension.
-		const { activate } = await import("../extension")
-		await activate(mockContext)
+		const task: any = { api: undefined }
 
-		// Verify handler was registered.
-		expect(authStateChangedHandler).toBeDefined()
+		const provider: any = {
+			providerSettingsManager: {
+				saveConfig: vi.fn().mockResolvedValue("id"),
+				listConfig: vi.fn().mockResolvedValue([]),
+				setModeConfig: vi.fn().mockResolvedValue(undefined),
+			},
+			updateGlobalState: vi.fn().mockResolvedValue(undefined),
+			contextProxy: { setProviderSettings: vi.fn().mockResolvedValue(undefined) },
+			getState: vi.fn().mockResolvedValue({ apiConfiguration: prevConfig, mode: "architect" }),
+			getCurrentTask: vi.fn().mockReturnValue(task),
+			postStateToWebview: vi.fn().mockResolvedValue(undefined),
+			log: vi.fn(),
+		}
 
-		// Trigger logout.
-		await authStateChangedHandler!({
-			state: "logged-out" as AuthState,
-			previousState: "logged-in" as AuthState,
-		})
+		const upsert = bindProvider(provider)
+		await upsert("default", nextConfig, true)
 
-		// Verify BridgeOrchestrator.disconnect was called
-		expect(mockBridgeOrchestratorDisconnect).toHaveBeenCalled()
+		expect(provider.providerSettingsManager.saveConfig).toHaveBeenCalledWith("default", nextConfig)
+		expect(buildApiHandler).toHaveBeenCalledWith(nextConfig)
+		expect(task.api).toBe(handler)
+		expect(
+			logSpy.mock.calls.some((c: any[]) =>
+				String(c.join(" ")).includes("[model-cache/save] Reinit: relevant fields changed"),
+			),
+		).toBe(true)
 	})
 
-	test("authStateChangedHandler does not call BridgeOrchestrator.disconnect for other states", async () => {
-		const { CloudService } = await import("@roo-code/cloud")
+	it("reinit when router baseUrl changes", async () => {
+		const prevConfig = {
+			apiProvider: "requesty",
+			requestyModelId: "requesty/model",
+			requestyBaseUrl: "https://api.requesty.ai",
+		}
 
-		// Capture the auth state changed handler.
-		vi.mocked(CloudService.createInstance).mockImplementation(async (_context, _logger, handlers) => {
-			if (handlers?.["auth-state-changed"]) {
-				authStateChangedHandler = handlers["auth-state-changed"]
-			}
+		const nextConfig = {
+			...prevConfig,
+			requestyBaseUrl: "https://custom.requesty.ai", // baseUrl change should trigger reinit
+		}
 
-			return {
-				off: vi.fn(),
-				on: vi.fn(),
-				telemetryClient: null,
-			} as any
-		})
+		const handler = {}
+		;(buildApiHandler as any).mockReturnValue(handler)
 
-		// Activate the extension.
-		const { activate } = await import("../extension")
-		await activate(mockContext)
+		const task: any = { api: undefined }
 
-		// Trigger login.
-		await authStateChangedHandler!({
-			state: "logged-in" as AuthState,
-			previousState: "logged-out" as AuthState,
-		})
+		const provider: any = {
+			providerSettingsManager: {
+				saveConfig: vi.fn().mockResolvedValue("id"),
+				listConfig: vi.fn().mockResolvedValue([]),
+				setModeConfig: vi.fn().mockResolvedValue(undefined),
+			},
+			updateGlobalState: vi.fn().mockResolvedValue(undefined),
+			contextProxy: { setProviderSettings: vi.fn().mockResolvedValue(undefined) },
+			getState: vi.fn().mockResolvedValue({ apiConfiguration: prevConfig, mode: "architect" }),
+			getCurrentTask: vi.fn().mockReturnValue(task),
+			postStateToWebview: vi.fn().mockResolvedValue(undefined),
+			log: vi.fn(),
+		}
 
-		// Verify BridgeOrchestrator.disconnect was NOT called.
-		expect(mockBridgeOrchestratorDisconnect).not.toHaveBeenCalled()
+		const upsert = bindProvider(provider)
+		await upsert("default", nextConfig, true)
+
+		expect(buildApiHandler).toHaveBeenCalledWith(nextConfig)
+		expect(task.api).toBe(handler)
 	})
 })

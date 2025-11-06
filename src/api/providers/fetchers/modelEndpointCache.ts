@@ -12,7 +12,7 @@ import { fileExistsAtPath } from "../../../utils/fs"
 
 import { getOpenRouterModelEndpoints } from "./openrouter"
 
-const memoryCache = new NodeCache({ stdTTL: 5 * 60, checkperiod: 5 * 60 })
+const memoryCache = new NodeCache({ stdTTL: 0, checkperiod: 5 * 60 })
 
 const getCacheKey = (router: RouterName, modelId: string) => sanitize(`${router}_${modelId}`)
 
@@ -79,5 +79,19 @@ export const getModelEndpoints = async ({
 	return modelProviders ?? {}
 }
 
-export const flushModelProviders = async (router: RouterName, modelId: string) =>
-	memoryCache.del(getCacheKey(router, modelId))
+export const flushModelProviders = async (router: RouterName, modelId: string) => {
+	// Clear in-memory cache for this (router, modelId) key
+	const key = getCacheKey(router, modelId)
+	memoryCache.del(key)
+
+	// Best-effort delete of persisted file cache (ignore ENOENT)
+	try {
+		const filename = `${key}_endpoints.json`
+		const cacheDir = await getCacheDirectoryPath(ContextProxy.instance.globalStorageUri.fsPath)
+		const filePath = path.join(cacheDir, filename)
+
+		await fs.unlink(filePath).catch(() => {})
+	} catch (err) {
+		console.error(`[flushModelProviders] failed to delete persisted endpoints cache for ${key}:`, err)
+	}
+}

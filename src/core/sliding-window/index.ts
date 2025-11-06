@@ -142,8 +142,17 @@ export async function truncateConversationIfNeeded({
 	}
 	// If no specific threshold is found for the profile, fall back to global setting
 
+	// Debug: log context window and thresholds for sliding-window checks
+	console.log(
+		`[sliding-window] check: contextWindow=${contextWindow}, prevContextTokens=${prevContextTokens}, reservedTokens=${reservedTokens}, allowedTokens=${allowedTokens}, effectiveThreshold=${effectiveThreshold}, autoCondenseContext=${autoCondenseContext}`,
+	)
+
 	if (autoCondenseContext) {
 		const contextPercent = (100 * prevContextTokens) / contextWindow
+		// Debug: log auto-condense threshold check with current context window
+		console.log(
+			`[sliding-window] auto-condense check: contextWindow=${contextWindow}, contextPercent=${contextPercent.toFixed(2)}%, threshold=${effectiveThreshold}%, allowedTokens=${allowedTokens}`,
+		)
 		if (contextPercent >= effectiveThreshold || prevContextTokens > allowedTokens) {
 			// Attempt to intelligently condense the context
 			const result = await summarizeConversation(
@@ -166,6 +175,10 @@ export async function truncateConversationIfNeeded({
 	}
 
 	// Fall back to sliding window truncation if needed
+	// Debug: log fallback sliding-window check with current context window
+	console.log(
+		`[sliding-window] fallback check: contextWindow=${contextWindow}, prevContextTokens=${prevContextTokens}, allowedTokens=${allowedTokens}`,
+	)
 	if (prevContextTokens > allowedTokens) {
 		const truncatedMessages = truncateConversation(messages, 0.5, taskId)
 		return { messages: truncatedMessages, prevContextTokens, summary: "", cost, error }

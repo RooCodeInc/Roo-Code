@@ -112,6 +112,7 @@ export interface ExtensionMessage {
 		| "authenticatedUser"
 		| "condenseTaskContextResponse"
 		| "singleRouterModelFetchResponse"
+		| "flushRouterModelsResult"
 		| "indexingStatusUpdate"
 		| "indexCleared"
 		| "codebaseIndexConfig"

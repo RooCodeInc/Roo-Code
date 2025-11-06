@@ -38,7 +38,7 @@ export class GlamaHandler extends RouterProvider implements SingleCompletionHand
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
-		const { id: modelId, info } = await this.fetchModel()
+		const { id: modelId, info } = this.getModel()
 
 		const openAiMessages: OpenAI.Chat.ChatCompletionMessageParam[] = [
 			{ role: "system", content: systemPrompt },
@@ -117,7 +117,7 @@ export class GlamaHandler extends RouterProvider implements SingleCompletionHand
 	}
 
 	async completePrompt(prompt: string): Promise<string> {
-		const { id: modelId, info } = await this.fetchModel()
+		const { id: modelId, info } = this.getModel()
 
 		try {
 			const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {

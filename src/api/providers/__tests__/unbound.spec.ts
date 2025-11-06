@@ -324,8 +324,44 @@ describe("UnboundHandler", () => {
 		it("should return default model when invalid model provided", async () => {
 			const handlerWithInvalidModel = new UnboundHandler({ ...mockOptions, unboundModelId: "invalid/model" })
 			const modelInfo = await handlerWithInvalidModel.fetchModel()
-			expect(modelInfo.id).toBe("anthropic/claude-sonnet-4-5")
+			// Priority now preserves requested id with default info
+			expect(modelInfo.id).toBe("invalid/model")
 			expect(modelInfo.info).toBeDefined()
 		})
+	})
+})
+
+// Phase 2: getModel priority tests
+describe("UnboundHandler getModel priority", () => {
+	it("prefers options.resolvedModelInfo over cache and default", () => {
+		const resolved = { maxTokens: 7777, contextWindow: 888888, supportsImages: false, supportsPromptCache: true }
+		const handler = new UnboundHandler({
+			unboundApiKey: "k",
+			unboundModelId: "anthropic/claude-3-5-sonnet-20241022",
+			resolvedModelInfo: resolved,
+		} as any)
+		const model = handler.getModel()
+		expect(model.id).toBe("anthropic/claude-3-5-sonnet-20241022")
+		expect(model.info).toBe(resolved)
+	})
+
+	it("uses memory cache when no resolvedModelInfo", () => {
+		const handler = new UnboundHandler({ unboundApiKey: "k", unboundModelId: "openai/gpt-4o" } as any)
+		;(handler as any).models = {
+			"openai/gpt-4o": {
+				maxTokens: 9999,
+				contextWindow: 128000,
+				supportsImages: true,
+				supportsPromptCache: false,
+			},
+		}
+		const model = handler.getModel()
+		expect(model.info.maxTokens).toBe(9999)
+	})
+
+	it("falls back to default when neither persisted nor cache", () => {
+		const handler = new UnboundHandler({ unboundApiKey: "k", unboundModelId: "unknown/model" } as any)
+		const model = handler.getModel()
+		expect(model.info).toEqual(expect.objectContaining({ contextWindow: expect.any(Number) }))
 	})
 })

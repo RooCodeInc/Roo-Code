@@ -5,6 +5,8 @@ import { ExtensionMessage } from "@roo/ExtensionMessage"
 
 import { vscode } from "@src/utils/vscode"
 
+let warnedAutoFetchDisabled = false
+
 type UseRouterModelsOptions = {
 	provider?: string // single provider filter (e.g. "roo")
 	enabled?: boolean // gate fetching entirely
@@ -54,9 +56,17 @@ const getRouterModels = async (provider?: string) =>
 
 export const useRouterModels = (opts: UseRouterModelsOptions = {}) => {
 	const provider = opts.provider || undefined
+	const enabled = Boolean(opts.enabled)
+
+	// Trace once when auto-fetch is disabled (Phase 5.1)
+	if (!enabled && !warnedAutoFetchDisabled) {
+		console.log("[model-cache/ui] auto-fetch disabled; relying on explicit refresh")
+		warnedAutoFetchDisabled = true
+	}
+
 	return useQuery({
 		queryKey: ["routerModels", provider || "all"],
 		queryFn: () => getRouterModels(provider),
-		enabled: opts.enabled !== false,
+		enabled,
 	})
 }

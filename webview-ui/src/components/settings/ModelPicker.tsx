@@ -25,6 +25,8 @@ import { useEscapeKey } from "@src/hooks/useEscapeKey"
 
 import { ModelInfoView } from "./ModelInfoView"
 import { ApiErrorMessage } from "./ApiErrorMessage"
+import { vscode } from "@src/utils/vscode"
+import type { ExtensionMessage } from "@roo/ExtensionMessage"
 
 type ModelIdKey = keyof Pick<
 	ProviderSettings,
@@ -71,6 +73,8 @@ export const ModelPicker = ({
 
 	const [open, setOpen] = useState(false)
 	const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false)
+	const [refreshStatus, setRefreshStatus] = useState<"idle" | "loading" | "success" | "error">("idle")
+	const [refreshError, setRefreshError] = useState<string | undefined>()
 	const isInitialized = useRef(false)
 	const searchInputRef = useRef<HTMLInputElement>(null)
 	const selectTimeoutRef = useRef<NodeJS.Timeout | null>(null)
@@ -112,6 +116,12 @@ export const ModelPicker = ({
 			setOpen(false)
 			setApiConfigurationField(modelIdKey, modelId)
 
+			// Persist resolvedModelInfo immediately if available from cached models
+			if (models && models[modelId]) {
+				setApiConfigurationField("resolvedModelInfo", models[modelId], false)
+				console.log("[model-cache/ui] persisted resolvedModelInfo from cached models")
+			}
+
 			// Clear any existing timeout
 			if (selectTimeoutRef.current) {
 				clearTimeout(selectTimeoutRef.current)
@@ -120,7 +130,7 @@ export const ModelPicker = ({
 			// Delay to ensure the popover is closed before setting the search value.
 			selectTimeoutRef.current = setTimeout(() => setSearchValue(""), 100)
 		},
-		[modelIdKey, setApiConfigurationField],
+		[modelIdKey, setApiConfigurationField, models],
 	)
 
 	const onOpenChange = useCallback((open: boolean) => {
@@ -152,6 +162,26 @@ export const ModelPicker = ({
 		isInitialized.current = true
 	}, [modelIds, setApiConfigurationField, modelIdKey, selectedModelId, defaultModelId])
 
+	// Listen for refresh result messages
+	useEffect(() => {
+		const handler = (event: MessageEvent) => {
+			const message = event.data as ExtensionMessage
+			if (message.type === "flushRouterModelsResult") {
+				if (message.success) {
+					setRefreshStatus("success")
+					setRefreshError(undefined)
+					// Reset after brief success indication
+					setTimeout(() => setRefreshStatus("idle"), 1500)
+				} else {
+					setRefreshStatus("error")
+					setRefreshError(message.error || "Refresh failed")
+				}
+			}
+		}
+		window.addEventListener("message", handler)
+		return () => window.removeEventListener("message", handler)
+	}, [])
+
 	// Cleanup timeouts on unmount to prevent test flakiness
 	useEffect(() => {
 		return () => {
@@ -170,7 +200,26 @@ export const ModelPicker = ({
 	return (
 		<>
 			<div>
-				<label className="block font-medium mb-1">{t("settings:modelPicker.label")}</label>
+				<div className="flex items-center justify-between mb-1">
+					<label className="block font-medium">{t("settings:modelPicker.label")}</label>
+					<button
+						type="button"
+						onClick={() => {
+							setRefreshStatus("loading")
+							setRefreshError(undefined)
+							vscode.postMessage({ type: "flushRouterModels" })
+							console.log("[model-cache/ui] refresh requested")
+						}}
+						disabled={refreshStatus === "loading"}
+						className="h-7 px-2 text-xs rounded border border-vscode-button-border text-vscode-foreground bg-transparent hover:bg-vscode-list-hoverBackground disabled:opacity-60">
+						{refreshStatus === "loading"
+							? "Refreshing…"
+							: refreshStatus === "success"
+								? "Refreshed"
+								: "Refresh"}
+					</button>
+				</div>
+				{refreshStatus === "error" && refreshError && <ApiErrorMessage errorMessage={refreshError} />}
 				<Popover open={open} onOpenChange={onOpenChange}>
 					<PopoverTrigger asChild>
 						<Button

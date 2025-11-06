@@ -179,6 +179,8 @@ const baseProviderSettingsSchema = z.object({
 	reasoningEffort: reasoningEffortWithMinimalSchema.optional(),
 	modelMaxTokens: z.number().optional(),
 	modelMaxThinkingTokens: z.number().optional(),
+	// Persisted resolved model metadata (Phase 1 Step 1)
+	resolvedModelInfo: modelInfoSchema.optional(),
 
 	// Model verbosity.
 	verbosity: verbosityLevelsSchema.optional(),

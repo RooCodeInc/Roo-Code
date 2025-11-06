@@ -2106,11 +2106,13 @@ describe("ClineProvider", () => {
 				apiConfiguration: testApiConfig,
 			})
 
-			// Verify error handling
-			expect(mockOutputChannel.appendLine).toHaveBeenCalledWith(
+			// With reinit now gated on provider/model/baseUrl changes, no reinit occurs here.
+			// Therefore buildApiHandler is not called and no error is logged or shown.
+			expect(buildApiHandler as any).not.toHaveBeenCalled()
+			expect(mockOutputChannel.appendLine).not.toHaveBeenCalledWith(
 				expect.stringContaining("Error create new api configuration"),
 			)
-			expect(vscode.window.showErrorMessage).toHaveBeenCalledWith("errors.create_api_config")
+			expect(vscode.window.showErrorMessage).not.toHaveBeenCalledWith("errors.create_api_config")
 
 			// Verify state was still updated
 			expect(mockContext.globalState.update).toHaveBeenCalledWith("listApiConfigMeta", [

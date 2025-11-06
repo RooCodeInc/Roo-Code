@@ -115,6 +115,9 @@ export async function getOpenRouterModels(options?: ApiHandlerOptions): Promise<
 				continue
 			}
 
+			console.log(
+				`[openrouter] fetched model ${id}: context_length=${model.context_length}, max_completion_tokens=${top_provider?.max_completion_tokens ?? "n/a"}`,
+			)
 			models[id] = parseOpenRouterModel({
 				id,
 				model,
@@ -161,6 +164,9 @@ export async function getOpenRouterModelEndpoints(
 		}
 
 		for (const endpoint of endpoints) {
+			console.log(
+				`[openrouter] fetched model ${id} endpoint ${endpoint.tag ?? endpoint.provider_name}: context_length=${endpoint.context_length}, max_completion_tokens=${endpoint.max_completion_tokens ?? "n/a"}`,
+			)
 			models[endpoint.tag ?? endpoint.provider_name] = parseOpenRouterModel({
 				id,
 				model: endpoint,

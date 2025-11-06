@@ -67,7 +67,11 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 
 	override getModel() {
 		const id = this.options.requestyModelId ?? requestyDefaultModelId
-		const info = this.models[id] ?? requestyDefaultModelInfo
+		const info = this.options.resolvedModelInfo ?? this.models[id] ?? requestyDefaultModelInfo
+		console.log(
+			"[model-cache] source:",
+			this.options.resolvedModelInfo ? "persisted" : this.models[id] ? "memory-cache" : "default-fallback",
+		)
 
 		const params = getModelParams({
 			format: "anthropic",
@@ -111,7 +115,7 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 			temperature,
 			reasoningEffort: reasoning_effort,
 			reasoning: thinking,
-		} = await this.fetchModel()
+		} = this.getModel()
 
 		const openAiMessages: OpenAI.Chat.ChatCompletionMessageParam[] = [
 			{ role: "system", content: systemPrompt },
@@ -160,7 +164,7 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 	}
 
 	async completePrompt(prompt: string): Promise<string> {
-		const { id: model, maxTokens: max_tokens, temperature } = await this.fetchModel()
+		const { id: model, maxTokens: max_tokens, temperature } = this.getModel()
 
 		let openAiMessages: OpenAI.Chat.ChatCompletionMessageParam[] = [{ role: "system", content: prompt }]
 

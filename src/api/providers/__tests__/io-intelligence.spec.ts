@@ -274,6 +274,40 @@ describe("IOIntelligenceHandler", () => {
 		})
 	})
 
+	// Phase 2: getModel priority tests
+	describe("IOIntelligenceHandler getModel priority", () => {
+		it("prefers options.resolvedModelInfo over provider models", () => {
+			const resolved = {
+				maxTokens: 5001,
+				contextWindow: 999999,
+				supportsImages: true,
+				supportsPromptCache: false,
+			}
+			const handler = new IOIntelligenceHandler({
+				ioIntelligenceApiKey: "k",
+				ioIntelligenceModelId: "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
+				resolvedModelInfo: resolved,
+			} as any)
+			const model = handler.getModel()
+			expect(model.id).toBe("meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8")
+			expect(model.info).toBe(resolved)
+		})
+
+		it("uses provider models when no resolvedModelInfo", () => {
+			const handler = new IOIntelligenceHandler({
+				ioIntelligenceApiKey: "k",
+				ioIntelligenceModelId: "openai/gpt-oss-120b",
+			} as any)
+			const model = handler.getModel()
+			expect(model.info).toEqual(
+				expect.objectContaining({
+					contextWindow: expect.any(Number),
+					supportsPromptCache: expect.any(Boolean),
+				}),
+			)
+		})
+	})
+
 	it("should use default model when no model is specified", () => {
 		const handlerWithoutModel = new IOIntelligenceHandler({
 			...mockOptions,

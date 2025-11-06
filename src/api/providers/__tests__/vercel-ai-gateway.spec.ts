@@ -359,6 +359,52 @@ describe("VercelAiGatewayHandler", () => {
 		})
 	})
 
+	// Phase 2: getModel priority tests
+	describe("VercelAiGatewayHandler getModel priority", () => {
+		it("prefers options.resolvedModelInfo over cache and default", () => {
+			const resolved = {
+				maxTokens: 64000,
+				contextWindow: 200000,
+				supportsImages: true,
+				supportsPromptCache: true,
+			}
+			const handler = new VercelAiGatewayHandler({
+				vercelAiGatewayApiKey: "k",
+				vercelAiGatewayModelId: "anthropic/claude-sonnet-4",
+				resolvedModelInfo: resolved,
+			} as any)
+			const model = handler.getModel()
+			expect(model.id).toBe("anthropic/claude-sonnet-4")
+			expect(model.info).toBe(resolved)
+		})
+
+		it("uses memory cache when no resolvedModelInfo", () => {
+			const handler = new VercelAiGatewayHandler({
+				vercelAiGatewayApiKey: "k",
+				vercelAiGatewayModelId: "openai/gpt-4o",
+			} as any)
+			;(handler as any).models = {
+				"openai/gpt-4o": {
+					maxTokens: 16000,
+					contextWindow: 128000,
+					supportsImages: true,
+					supportsPromptCache: false,
+				},
+			}
+			const model = handler.getModel()
+			expect(model.info.maxTokens).toBe(16000)
+		})
+
+		it("falls back to default when neither persisted nor cache", () => {
+			const handler = new VercelAiGatewayHandler({
+				vercelAiGatewayApiKey: "k",
+				vercelAiGatewayModelId: "unknown/model",
+			} as any)
+			const model = handler.getModel()
+			expect(model.info).toEqual(expect.objectContaining({ contextWindow: expect.any(Number) }))
+		})
+	})
+
 	describe("temperature support", () => {
 		it("applies temperature for supported models", async () => {
 			const handler = new VercelAiGatewayHandler({

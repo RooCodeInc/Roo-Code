@@ -12,7 +12,8 @@ try {
 	console.warn("Failed to load environment variables:", e)
 }
 
-import type { CloudUserInfo, AuthState } from "@roo-code/types"
+import type { CloudUserInfo, AuthState, ModelInfo } from "@roo-code/types"
+import { isDynamicProvider } from "@roo-code/types"
 import { CloudService, BridgeOrchestrator } from "@roo-code/cloud"
 import { TelemetryService, PostHogTelemetryClient } from "@roo-code/telemetry"
 
@@ -31,6 +32,7 @@ import { MdmService } from "./services/mdm/MdmService"
 import { migrateSettings } from "./utils/migrateSettings"
 import { autoImportSettings } from "./utils/autoImportSettings"
 import { API } from "./extension/api"
+import { buildApiHandler } from "./api"
 
 import {
 	handleUri,
@@ -42,6 +44,60 @@ import {
 import { initializeI18n } from "./i18n"
 import { flushModels, getModels } from "./api/providers/fetchers/modelCache"
 
+/**
+ * Phase 3: activation-time self-healing population of resolvedModelInfo
+ * Only activation wiring and persistence via existing API profile path.
+ */
+export async function ensureResolvedModelInfo(provider: ClineProvider): Promise<void> {
+	try {
+		const state = await provider.getState()
+		const apiConfiguration = state.apiConfiguration
+		const providerName = apiConfiguration?.apiProvider
+
+		// Process only dynamic providers
+		if (!providerName || !isDynamicProvider(providerName)) {
+			return
+		}
+
+		// If resolvedModelInfo exists and is valid, skip
+		const existing = apiConfiguration?.resolvedModelInfo as ModelInfo | undefined
+		if (existing && typeof existing.contextWindow === "number" && typeof (existing as any).maxTokens === "number") {
+			console.log("[model-cache] Using existing resolvedModelInfo for", providerName)
+			return
+		}
+
+		console.log("[model-cache] Populating resolvedModelInfo for", providerName)
+
+		// Build handler and resolve model info (prefer fetchModel() if available)
+		const handler = buildApiHandler(apiConfiguration)
+		let info: ModelInfo | undefined
+
+		const maybeFetch = (handler as any)?.fetchModel
+		if (typeof maybeFetch === "function") {
+			const fetched = await maybeFetch.call(handler)
+			if (fetched && typeof fetched === "object") {
+				if ("info" in fetched && (fetched as any).info) {
+					info = (fetched as any).info as ModelInfo
+				} else if ("contextWindow" in fetched) {
+					info = fetched as ModelInfo
+				}
+			}
+		}
+
+		if (!info) {
+			info = handler.getModel().info
+		}
+
+		if (info) {
+			const profileName = state.currentApiConfigName || "default"
+			const updatedConfig = { ...apiConfiguration, resolvedModelInfo: info }
+			// Persist via same path as settings saves
+			await provider.upsertProviderProfile(profileName, updatedConfig, true)
+		}
+	} catch (error) {
+		console.warn("[model-cache] Failed to populate resolvedModelInfo:", error)
+	}
+}
 /**
  * Built using https://github.com/microsoft/vscode-webview-ui-toolkit
  *
@@ -253,6 +309,9 @@ export async function activate(context: vscode.ExtensionContext) {
 			`[AutoImport] Error during auto-import: ${error instanceof Error ? error.message : String(error)}`,
 		)
 	}
+
+	// Activation-time self-healing for resolvedModelInfo (non-blocking)
+	void ensureResolvedModelInfo(provider)
 
 	registerCommands({ context, outputChannel, provider })
 

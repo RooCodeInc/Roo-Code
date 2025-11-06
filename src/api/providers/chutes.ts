@@ -61,7 +61,7 @@ export class ChutesHandler extends RouterProvider implements SingleCompletionHan
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
-		const model = await this.fetchModel()
+		const model = this.getModel()
 
 		if (model.id.includes("DeepSeek-R1")) {
 			const stream = await this.client.chat.completions.create({
@@ -127,7 +127,7 @@ export class ChutesHandler extends RouterProvider implements SingleCompletionHan
 	}
 
 	async completePrompt(prompt: string): Promise<string> {
-		const model = await this.fetchModel()
+		const model = this.getModel()
 		const { id: modelId, info } = model
 
 		try {

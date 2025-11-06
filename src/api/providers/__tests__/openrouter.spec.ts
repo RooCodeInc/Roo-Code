@@ -9,6 +9,8 @@ import OpenAI from "openai"
 import { OpenRouterHandler } from "../openrouter"
 import { ApiHandlerOptions } from "../../../shared/api"
 import { Package } from "../../../shared/package"
+import { getModels } from "../fetchers/modelCache"
+import { getModelEndpoints } from "../fetchers/modelEndpointCache"
 
 // Mock dependencies
 vitest.mock("openai")
@@ -54,6 +56,9 @@ vitest.mock("../fetchers/modelCache", () => ({
 		})
 	}),
 }))
+vitest.mock("../fetchers/modelEndpointCache", () => ({
+	getModelEndpoints: vitest.fn().mockResolvedValue({}),
+}))
 
 describe("OpenRouterHandler", () => {
 	const mockOptions: ApiHandlerOptions = {
@@ -75,6 +80,54 @@ describe("OpenRouterHandler", () => {
 				"X-Title": "Roo Code",
 				"User-Agent": `RooCode/${Package.version}`,
 			},
+		})
+	})
+
+	describe("getModel priority and caching", () => {
+		it("uses options.resolvedModelInfo when provided (persisted)", () => {
+			const handler = new OpenRouterHandler({
+				openRouterApiKey: "test-key",
+				openRouterModelId: "anthropic/claude-sonnet-4",
+				resolvedModelInfo: {
+					maxTokens: 12345,
+					contextWindow: 99999,
+					supportsPromptCache: false,
+				} as any,
+			})
+
+			const logSpy = vitest.spyOn(console, "log").mockImplementation(() => {})
+			const model = handler.getModel()
+			expect(model.id).toBe("anthropic/claude-sonnet-4")
+			expect(model.info.maxTokens).toBe(12345)
+			expect(logSpy).toHaveBeenCalledWith("[model-cache] source:", "persisted")
+			logSpy.mockRestore()
+		})
+
+		it("falls back to memory cache when persisted is absent", () => {
+			const handler = new OpenRouterHandler({
+				openRouterApiKey: "test-key",
+				openRouterModelId: "custom/model",
+			})
+			;(handler as any).models = {
+				"custom/model": { maxTokens: 7777, contextWindow: 42424, supportsPromptCache: false },
+			}
+
+			const logSpy = vitest.spyOn(console, "log").mockImplementation(() => {})
+			const model = handler.getModel()
+			expect(model.id).toBe("custom/model")
+			expect(model.info.maxTokens).toBe(7777)
+			expect(logSpy).toHaveBeenCalledWith("[model-cache] source:", "memory-cache")
+			logSpy.mockRestore()
+		})
+
+		it("falls back to openRouterDefaultModelInfo when both are absent", () => {
+			const handler = new OpenRouterHandler({})
+			const logSpy = vitest.spyOn(console, "log").mockImplementation(() => {})
+			const model = handler.getModel()
+			expect(model.id).toBe("anthropic/claude-sonnet-4.5")
+			expect(model.info.supportsPromptCache).toBe(true)
+			expect(logSpy).toHaveBeenCalledWith("[model-cache] source:", "default-fallback")
+			logSpy.mockRestore()
 		})
 	})
 

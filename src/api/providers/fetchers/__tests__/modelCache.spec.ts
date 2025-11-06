@@ -12,10 +12,25 @@ vi.mock("node-cache", () => {
 })
 
 // Mock fs/promises to avoid file system operations
-vi.mock("fs/promises", () => ({
-	writeFile: vi.fn().mockResolvedValue(undefined),
-	readFile: vi.fn().mockResolvedValue("{}"),
-	mkdir: vi.fn().mockResolvedValue(undefined),
+vi.mock("fs/promises", () => {
+	const mod = {
+		writeFile: vi.fn().mockResolvedValue(undefined),
+		readFile: vi.fn().mockResolvedValue("{}"),
+		mkdir: vi.fn().mockResolvedValue(undefined),
+		// Default to "file exists"; individual tests will override readFile content as needed
+		access: vi.fn().mockResolvedValue(undefined),
+		unlink: vi.fn().mockResolvedValue(undefined),
+		rename: vi.fn().mockResolvedValue(undefined),
+	}
+	return { ...mod, default: mod }
+})
+
+// Provide stable paths for caches during tests
+vi.mock("../../../../core/config/ContextProxy", () => ({
+	ContextProxy: { instance: { globalStorageUri: { fsPath: "/tmp" } } },
+}))
+vi.mock("../../../../utils/storage", () => ({
+	getCacheDirectoryPath: vi.fn().mockResolvedValue("/tmp/cache"),
 }))
 
 // Mock all the model fetchers
@@ -28,7 +43,8 @@ vi.mock("../io-intelligence")
 
 // Then imports
 import type { Mock } from "vitest"
-import { getModels } from "../modelCache"
+import { getModels, flushModels } from "../modelCache"
+import { flushModelProviders } from "../modelEndpointCache"
 import { getLiteLLMModels } from "../litellm"
 import { getOpenRouterModels } from "../openrouter"
 import { getRequestyModels } from "../requesty"
@@ -48,8 +64,22 @@ const DUMMY_UNBOUND_KEY = "unbound-key-for-testing"
 const DUMMY_IOINTELLIGENCE_KEY = "io-intelligence-key-for-testing"
 
 describe("getModels with new GetModelsOptions", () => {
-	beforeEach(() => {
-		vi.clearAllMocks()
+	beforeEach(async () => {
+		vi.resetAllMocks()
+
+		// Re-prime mocked storage/helper modules after resetAllMocks clears implementations
+		const storage = await import("../../../../utils/storage")
+		;(storage.getCacheDirectoryPath as unknown as Mock).mockResolvedValue("/tmp/cache")
+
+		const ctx = await import("../../../../core/config/ContextProxy")
+		;(ctx as any).ContextProxy = { instance: { globalStorageUri: { fsPath: "/tmp" } } }
+
+		// Ensure memory cache does not leak across tests
+		await Promise.all(
+			["litellm", "openrouter", "requesty", "glama", "unbound", "io-intelligence"].map((r) =>
+				flushModels(r as any),
+			),
+		)
 	})
 
 	it("calls getLiteLLMModels with correct parameters", async () => {
@@ -62,6 +92,9 @@ describe("getModels with new GetModelsOptions", () => {
 			},
 		}
 		mockGetLiteLLMModels.mockResolvedValue(mockModels)
+
+		const fsp = await import("fs/promises")
+		;(fsp.readFile as unknown as Mock).mockResolvedValueOnce(JSON.stringify(mockModels))
 
 		const result = await getModels({
 			provider: "litellm",
@@ -84,6 +117,9 @@ describe("getModels with new GetModelsOptions", () => {
 		}
 		mockGetOpenRouterModels.mockResolvedValue(mockModels)
 
+		const fsp = await import("fs/promises")
+		;(fsp.readFile as unknown as Mock).mockResolvedValueOnce(JSON.stringify(mockModels))
+
 		const result = await getModels({ provider: "openrouter" })
 
 		expect(mockGetOpenRouterModels).toHaveBeenCalled()
@@ -100,6 +136,9 @@ describe("getModels with new GetModelsOptions", () => {
 			},
 		}
 		mockGetRequestyModels.mockResolvedValue(mockModels)
+
+		const fsp = await import("fs/promises")
+		;(fsp.readFile as unknown as Mock).mockResolvedValueOnce(JSON.stringify(mockModels))
 
 		const result = await getModels({ provider: "requesty", apiKey: DUMMY_REQUESTY_KEY })
 
@@ -118,6 +157,9 @@ describe("getModels with new GetModelsOptions", () => {
 		}
 		mockGetGlamaModels.mockResolvedValue(mockModels)
 
+		const fsp = await import("fs/promises")
+		;(fsp.readFile as unknown as Mock).mockResolvedValueOnce(JSON.stringify(mockModels))
+
 		const result = await getModels({ provider: "glama" })
 
 		expect(mockGetGlamaModels).toHaveBeenCalled()
@@ -134,6 +176,9 @@ describe("getModels with new GetModelsOptions", () => {
 			},
 		}
 		mockGetUnboundModels.mockResolvedValue(mockModels)
+
+		const fsp = await import("fs/promises")
+		;(fsp.readFile as unknown as Mock).mockResolvedValueOnce(JSON.stringify(mockModels))
 
 		const result = await getModels({ provider: "unbound", apiKey: DUMMY_UNBOUND_KEY })
 
@@ -152,13 +197,111 @@ describe("getModels with new GetModelsOptions", () => {
 		}
 		mockGetIOIntelligenceModels.mockResolvedValue(mockModels)
 
+		const fsp = await import("fs/promises")
+		;(fsp.readFile as unknown as Mock).mockResolvedValueOnce(JSON.stringify(mockModels))
+
 		const result = await getModels({ provider: "io-intelligence", apiKey: DUMMY_IOINTELLIGENCE_KEY })
 
 		expect(mockGetIOIntelligenceModels).toHaveBeenCalled()
 		expect(result).toEqual(mockModels)
 	})
 
+	describe("explicit flush and no auto-expiration", () => {
+		it("flushModels clears memory and attempts to delete file cache", async () => {
+			const fsUtils = await import("../../../../utils/fs")
+			const existsSpy = vi.spyOn(fsUtils, "fileExistsAtPath").mockResolvedValue(true)
+
+			const fsp = await import("fs/promises")
+			const def = (fsp as any).default ?? (fsp as any)
+			const unlink = def.unlink as unknown as Mock
+			unlink.mockClear()
+
+			// Act
+			await flushModels("openrouter")
+
+			// Assert file deletion attempted with expected filename pattern
+			expect(unlink).toHaveBeenCalled()
+			const [[calledPath]] = (unlink as unknown as { mock: { calls: [string][] } }).mock.calls
+			expect(String(calledPath)).toContain("openrouter_models.json")
+
+			existsSpy.mockRestore()
+		})
+
+		it("flushModelProviders clears memory and attempts to delete endpoints file cache", async () => {
+			const fsUtils = await import("../../../../utils/fs")
+			const existsSpy = vi.spyOn(fsUtils, "fileExistsAtPath").mockResolvedValue(true)
+
+			const fsp = await import("fs/promises")
+			const def = (fsp as any).default ?? (fsp as any)
+			const unlink = def.unlink as unknown as Mock
+			unlink.mockClear()
+
+			await flushModelProviders("openrouter", "test-model")
+
+			// Assert endpoints file deletion attempted with expected filename pattern
+			expect(unlink).toHaveBeenCalled()
+			const calls = (unlink as any).mock.calls.map((c: any[]) => String(c[0]))
+			expect(calls.some((p: string) => p.includes("openrouter_test-model_endpoints.json"))).toBe(true)
+
+			existsSpy.mockRestore()
+		})
+
+		it("does not auto-expire cached entries after previous TTL window", async () => {
+			vi.useFakeTimers()
+			vi.resetModules()
+
+			// Use real NodeCache for this re-import
+			vi.unmock("node-cache")
+
+			const expectedModels = {
+				"test/model": {
+					maxTokens: 1024,
+					contextWindow: 8192,
+					supportsPromptCache: false,
+				},
+			}
+
+			// Lightweight mocks to avoid real FS and VSCode context
+			vi.doMock("fs/promises", () => ({
+				writeFile: vi.fn().mockResolvedValue(undefined),
+				readFile: vi.fn().mockResolvedValue(JSON.stringify(expectedModels)),
+				mkdir: vi.fn().mockResolvedValue(undefined),
+				access: vi.fn().mockResolvedValue(undefined),
+				unlink: vi.fn().mockResolvedValue(undefined),
+				rename: vi.fn().mockResolvedValue(undefined),
+			}))
+			vi.doMock("../../../../utils/safeWriteJson", () => ({
+				safeWriteJson: vi.fn().mockResolvedValue(undefined),
+			}))
+			vi.doMock("../../../../core/config/ContextProxy", () => ({
+				ContextProxy: { instance: { globalStorageUri: { fsPath: "/tmp" } } },
+			}))
+			vi.doMock("../../../../utils/storage", () => ({
+				getCacheDirectoryPath: vi.fn().mockResolvedValue("/tmp/cache"),
+			}))
+			vi.doMock("../openrouter", () => ({
+				getOpenRouterModels: vi.fn().mockResolvedValue(expectedModels),
+			}))
+
+			const { getModels, getModelsFromCache } = await import("../modelCache")
+
+			await getModels({ provider: "openrouter" })
+			expect(getModelsFromCache("openrouter")).toEqual(expectedModels)
+
+			// Advance beyond the old TTL (5 minutes)
+			vi.advanceTimersByTime(6 * 60 * 1000)
+
+			// Value should still be present (no auto-expiry)
+			expect(getModelsFromCache("openrouter")).toEqual(expectedModels)
+
+			vi.useRealTimers()
+		})
+	})
+
 	it("handles errors and re-throws them", async () => {
+		// Ensure no leftover implementation from previous tests
+		mockGetLiteLLMModels.mockReset()
+
 		const expectedError = new Error("LiteLLM connection failed")
 		mockGetLiteLLMModels.mockRejectedValue(expectedError)
 

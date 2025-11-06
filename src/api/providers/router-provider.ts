@@ -62,10 +62,12 @@ export abstract class RouterProvider extends BaseProvider {
 
 	override getModel(): { id: string; info: ModelInfo } {
 		const id = this.modelId ?? this.defaultModelId
-
-		return this.models[id]
-			? { id, info: this.models[id] }
-			: { id: this.defaultModelId, info: this.defaultModelInfo }
+		const info = this.options.resolvedModelInfo ?? this.models[id] ?? this.defaultModelInfo
+		console.log(
+			"[model-cache] source:",
+			this.options.resolvedModelInfo ? "persisted" : this.models[id] ? "memory-cache" : "default-fallback",
+		)
+		return { id, info }
 	}
 
 	protected supportsTemperature(modelId: string): boolean {

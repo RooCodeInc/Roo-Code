@@ -42,6 +42,7 @@ import {
 	ORGANIZATION_ALLOW_ALL,
 	DEFAULT_MODES,
 	DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
+	modelIdKeysByProvider,
 } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 import { CloudService, BridgeOrchestrator, getRooCodeApiUrl } from "@roo-code/cloud"
@@ -1301,26 +1302,58 @@ export class ClineProvider
 		activate: boolean = true,
 	): Promise<string | undefined> {
 		try {
-			// TODO: Do we need to be calling `activateProfile`? It's not
-			// clear to me what the source of truth should be; in some cases
-			// we rely on the `ContextProxy`'s data store and in other cases
-			// we rely on the `ProviderSettingsManager`'s data store. It might
-			// be simpler to unify these two.
+			// Read previous state for change detection
+			const prevState = await this.getState()
+			const prev = (prevState?.apiConfiguration ?? {}) as ProviderSettings
+			const next = providerSettings ?? ({} as ProviderSettings)
+
+			// Determine relevant keys for change detection
+			const providerChanged = (prev.apiProvider || undefined) !== (next.apiProvider || undefined)
+
+			const providerName = next.apiProvider as ProviderName | undefined
+			const modelKey = providerName
+				? modelIdKeysByProvider[providerName as keyof typeof modelIdKeysByProvider]
+				: undefined
+
+			const normalize = (v: unknown) => {
+				if (v === null || v === undefined) return undefined
+				const s = String(v).trim()
+				return s.length ? s : undefined
+			}
+
+			const modelChanged = modelKey
+				? normalize((prev as any)[modelKey]) !== normalize((next as any)[modelKey])
+				: false
+
+			// Base URL keys for router-compatible providers
+			const baseUrlKey: keyof ProviderSettings | undefined = (() => {
+				switch (providerName) {
+					case "openrouter":
+						return "openRouterBaseUrl"
+					case "requesty":
+						return "requestyBaseUrl"
+					case "litellm":
+						return "litellmBaseUrl"
+					case "deepinfra":
+						return "deepInfraBaseUrl"
+					default:
+						return undefined
+				}
+			})()
+
+			const baseUrlChanged = baseUrlKey
+				? normalize((prev as any)[baseUrlKey]) !== normalize((next as any)[baseUrlKey])
+				: false
+
+			const shouldReinit = providerChanged || modelChanged || baseUrlChanged
+
+			// Persist configuration first
 			const id = await this.providerSettingsManager.saveConfig(name, providerSettings)
 
 			if (activate) {
-				const { mode } = await this.getState()
+				const { mode } = prevState
 
-				// These promises do the following:
-				// 1. Adds or updates the list of provider profiles.
-				// 2. Sets the current provider profile.
-				// 3. Sets the current mode's provider profile.
-				// 4. Copies the provider settings to the context.
-				//
-				// Note: 1, 2, and 4 can be done in one `ContextProxy` call:
-				// this.contextProxy.setValues({ ...providerSettings, listApiConfigMeta: ..., currentApiConfigName: ... })
-				// We should probably switch to that and verify that it works.
-				// I left the original implementation in just to be safe.
+				// Keep state in sync regardless of reinit
 				await Promise.all([
 					this.updateGlobalState("listApiConfigMeta", await this.providerSettingsManager.listConfig()),
 					this.updateGlobalState("currentApiConfigName", name),
@@ -1328,12 +1361,16 @@ export class ClineProvider
 					this.contextProxy.setProviderSettings(providerSettings),
 				])
 
-				// Change the provider for the current task.
-				// TODO: We should rename `buildApiHandler` for clarity (e.g. `getProviderClient`).
-				const task = this.getCurrentTask()
-
-				if (task) {
-					task.api = buildApiHandler(providerSettings)
+				// Only rebuild API handler if relevant fields changed
+				if (shouldReinit) {
+					console.log("[model-cache/save] Reinit: relevant fields changed")
+					const task = this.getCurrentTask()
+					if (task) {
+						// Lightweight re-init (no forced fetch)
+						task.api = buildApiHandler(providerSettings)
+					}
+				} else {
+					console.log("[model-cache/save] No reinit: provider/model/baseUrl unchanged")
 				}
 			} else {
 				await this.updateGlobalState("listApiConfigMeta", await this.providerSettingsManager.listConfig())

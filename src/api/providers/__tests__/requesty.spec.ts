@@ -237,3 +237,32 @@ describe("RequestyHandler", () => {
 		})
 	})
 })
+
+// Phase 2: getModel priority tests
+describe("RequestyHandler getModel priority", () => {
+	it("prefers options.resolvedModelInfo over cache and default", () => {
+		const resolved = { maxTokens: 1234, contextWindow: 55555, supportsImages: false, supportsPromptCache: true }
+		const handler = new RequestyHandler({
+			requestyModelId: "coding/claude-4-sonnet",
+			resolvedModelInfo: resolved,
+		} as any)
+		const model = handler.getModel()
+		expect(model.id).toBe("coding/claude-4-sonnet")
+		expect(model.info).toBe(resolved)
+	})
+
+	it("uses memory cache when no resolvedModelInfo", () => {
+		const handler = new RequestyHandler({ requestyModelId: "router/model" } as any)
+		;(handler as any).models = {
+			"router/model": { maxTokens: 2345, contextWindow: 64000, supportsImages: true, supportsPromptCache: false },
+		}
+		const model = handler.getModel()
+		expect(model.info.maxTokens).toBe(2345)
+	})
+
+	it("falls back to default when neither persisted nor cache", () => {
+		const handler = new RequestyHandler({ requestyModelId: "unknown/model" } as any)
+		const model = handler.getModel()
+		expect(model.info).toEqual(expect.objectContaining({ contextWindow: expect.any(Number) }))
+	})
+})

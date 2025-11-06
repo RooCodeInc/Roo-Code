@@ -27,7 +27,7 @@ import { getHuggingFaceModels } from "./huggingface"
 import { getRooModels } from "./roo"
 import { getChutesModels } from "./chutes"
 
-const memoryCache = new NodeCache({ stdTTL: 5 * 60, checkperiod: 5 * 60 })
+const memoryCache = new NodeCache({ stdTTL: 0, checkperiod: 5 * 60 })
 
 async function writeModels(router: RouterName, data: ModelRecord) {
 	const filename = `${router}_models.json`
@@ -145,7 +145,19 @@ export const getModels = async (options: GetModelsOptions): Promise<ModelRecord>
  * @param router - The router to flush models for.
  */
 export const flushModels = async (router: RouterName) => {
+	// Clear in-memory cache
 	memoryCache.del(router)
+
+	// Best-effort delete of persisted file cache (ignore ENOENT)
+	try {
+		const filename = `${router}_models.json`
+		const cacheDir = await getCacheDirectoryPath(ContextProxy.instance.globalStorageUri.fsPath)
+		const filePath = path.join(cacheDir, filename)
+
+		await fs.unlink(filePath).catch(() => {})
+	} catch (err) {
+		console.error(`[flushModels] failed to delete persisted cache for ${router}:`, err)
+	}
 }
 
 export function getModelsFromCache(provider: ProviderName) {

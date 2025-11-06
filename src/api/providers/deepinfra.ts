@@ -40,7 +40,11 @@ export class DeepInfraHandler extends RouterProvider implements SingleCompletion
 
 	override getModel() {
 		const id = this.options.deepInfraModelId ?? deepInfraDefaultModelId
-		const info = this.models[id] ?? deepInfraDefaultModelInfo
+		const info = this.options.resolvedModelInfo ?? this.models[id] ?? deepInfraDefaultModelInfo
+		console.log(
+			"[model-cache] source:",
+			this.options.resolvedModelInfo ? "persisted" : this.models[id] ? "memory-cache" : "default-fallback",
+		)
 
 		const params = getModelParams({
 			format: "openai",
@@ -57,9 +61,8 @@ export class DeepInfraHandler extends RouterProvider implements SingleCompletion
 		messages: Anthropic.Messages.MessageParam[],
 		_metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
-		// Ensure we have up-to-date model metadata
-		await this.fetchModel()
-		const { id: modelId, info, reasoningEffort: reasoning_effort } = await this.fetchModel()
+		// Use current model metadata synchronously
+		const { id: modelId, info, reasoningEffort: reasoning_effort } = this.getModel()
 		let prompt_cache_key = undefined
 		if (info.supportsPromptCache && _metadata?.taskId) {
 			prompt_cache_key = _metadata.taskId
@@ -107,7 +110,6 @@ export class DeepInfraHandler extends RouterProvider implements SingleCompletion
 	}
 
 	async completePrompt(prompt: string): Promise<string> {
-		await this.fetchModel()
 		const { id: modelId, info } = this.getModel()
 
 		const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {

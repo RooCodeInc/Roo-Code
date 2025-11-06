@@ -249,11 +249,45 @@ describe("ChutesHandler", () => {
 			apiModelId: testModelId,
 			chutesApiKey: "test-chutes-api-key",
 		})
-		// Note: getModel() returns fallback default without calling fetchModel
-		// Since we haven't called fetchModel, it returns the default chutesDefaultModelId
-		// which is DeepSeek-R1-0528, therefore temperature will be DEEP_SEEK_DEFAULT_TEMPERATURE
+		// With new priority behavior, id stays as requested; non-DeepSeek defaults to 0.5
 		const model = handlerWithModel.getModel()
-		// The default model is DeepSeek-R1, so it returns DEEP_SEEK_DEFAULT_TEMPERATURE
+		expect(model.info.temperature).toBe(0.5)
+	})
+})
+
+// Phase 2: getModel priority tests
+describe("ChutesHandler getModel priority", () => {
+	it("prefers options.resolvedModelInfo over cache and default", () => {
+		const resolved = { maxTokens: 1024, contextWindow: 131072, supportsImages: false, supportsPromptCache: false }
+		const handler = new ChutesHandler({
+			chutesApiKey: "k",
+			apiModelId: "deepseek-ai/DeepSeek-R1-0528",
+			resolvedModelInfo: resolved,
+		} as any)
+		const model = handler.getModel()
+		expect(model.id).toBe("deepseek-ai/DeepSeek-R1-0528")
+		// Info includes resolved fields plus provider temperature decoration
+		expect(model.info).toEqual(expect.objectContaining(resolved))
 		expect(model.info.temperature).toBe(DEEP_SEEK_DEFAULT_TEMPERATURE)
+	})
+
+	it("uses memory cache when no resolvedModelInfo", () => {
+		const handler = new ChutesHandler({ chutesApiKey: "k", apiModelId: "unsloth/Llama-3.3-70B-Instruct" } as any)
+		;(handler as any).models = {
+			"unsloth/Llama-3.3-70B-Instruct": {
+				maxTokens: 2048,
+				contextWindow: 262144,
+				supportsImages: false,
+				supportsPromptCache: false,
+			},
+		}
+		const model = handler.getModel()
+		expect(model.info.maxTokens).toBe(2048)
+	})
+
+	it("falls back to default when neither persisted nor cache", () => {
+		const handler = new ChutesHandler({ chutesApiKey: "k", apiModelId: "unknown/model" } as any)
+		const model = handler.getModel()
+		expect(model.info).toEqual(expect.objectContaining({ contextWindow: expect.any(Number) }))
 	})
 })
