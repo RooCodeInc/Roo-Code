@@ -8,7 +8,6 @@ import { ToolUseBlock, ToolUseBlockHeader } from "./ToolUseBlock"
 import CodeBlock from "./CodeBlock"
 import { PathTooltip } from "../ui/PathTooltip"
 import DiffView from "./DiffView"
-import { computeDiffStats } from "../../utils/diffStats"
 
 interface CodeAccordianProps {
 	path?: string
@@ -42,14 +41,11 @@ const CodeAccordian = ({
 	const source = useMemo(() => code.trim(), [code])
 	const hasHeader = Boolean(path || isFeedback || header)
 
-	// Derive diff stats from code when not provided
+	// Use provided diff stats only (render-only)
 	const derivedStats = useMemo(() => {
 		if (diffStats && (diffStats.added > 0 || diffStats.removed > 0)) return diffStats
-		if ((language || inferredLanguage) && (language || inferredLanguage) === "diff") {
-			return computeDiffStats(source || code || "")
-		}
 		return null
-	}, [diffStats, language, inferredLanguage, source, code])
+	}, [diffStats])
 
 	const hasValidStats = Boolean(derivedStats && (derivedStats.added > 0 || derivedStats.removed > 0))
 

@@ -1,12 +1,12 @@
 import React, { memo, useState } from "react"
 import CodeAccordian from "../common/CodeAccordian"
-import { computeUnifiedDiffStats } from "../../utils/diffStats"
 
 interface FileDiff {
 	path: string
 	changeCount: number
 	key: string
 	content: string
+	diffStats?: { added: number; removed: number }
 	diffs?: Array<{
 		content: string
 		startLine?: number
@@ -36,9 +36,8 @@ export const BatchDiffApproval = memo(({ files = [], ts }: BatchDiffApprovalProp
 		<div className="pt-[5px]">
 			<div className="flex flex-col gap-0 border border-border rounded-md p-1">
 				{files.map((file) => {
-					// Use backend-provided unified diff only. No client-side fallback for apply_diff batches.
+					// Use backend-provided unified diff only. Stats also provided by backend.
 					const unified = file.content || ""
-					const stats = computeUnifiedDiffStats(unified)
 
 					return (
 						<div key={`${file.path}-${ts}`}>
@@ -48,7 +47,7 @@ export const BatchDiffApproval = memo(({ files = [], ts }: BatchDiffApprovalProp
 								language="diff"
 								isExpanded={expandedFiles[file.path] || false}
 								onToggleExpand={() => handleToggleExpand(file.path)}
-								diffStats={stats ?? undefined}
+								diffStats={file.diffStats ?? undefined}
 							/>
 						</div>
 					)

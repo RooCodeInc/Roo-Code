@@ -24,8 +24,6 @@ import { ReasoningBlock } from "./ReasoningBlock"
 import Thumbnails from "../common/Thumbnails"
 import ImageBlock from "../common/ImageBlock"
 import ErrorRow from "./ErrorRow"
-import { extractUnifiedDiff } from "../../utils/diffUtils"
-import { computeDiffStats } from "../../utils/diffStats"
 
 import McpResourceRow from "../mcp/McpResourceRow"
 
@@ -337,33 +335,10 @@ export const ChatRowContent = ({
 		[message.ask, message.text],
 	)
 
-	// Inline diff stats for edit/apply_diff/insert/search-replace/newFile asks
-	const diffTextForStats = useMemo(() => {
-		if (!tool) return ""
-		return (
-			extractUnifiedDiff({
-				toolName: tool.tool as string,
-				path: tool.path,
-				diff: (tool as any).content ?? (tool as any).diff,
-				content: (tool as any).diff,
-			}) || ""
-		)
-	}, [tool])
-
-	const diffStatsForInline = useMemo(() => {
-		return computeDiffStats(diffTextForStats)
-	}, [diffTextForStats])
-
-	// Clean diff content for display (normalize to unified diff)
-	const cleanDiffContent = useMemo(() => {
+	// Unified diff content (provided by backend when relevant)
+	const unifiedDiff = useMemo(() => {
 		if (!tool) return undefined
-		const unified = extractUnifiedDiff({
-			toolName: tool.tool as string,
-			path: tool.path,
-			diff: (tool as any).content ?? (tool as any).diff,
-			content: (tool as any).diff,
-		})
-		return unified || undefined
+		return ((tool as any).content ?? (tool as any).diff) as string | undefined
 	}, [tool])
 
 	const followUpData = useMemo(() => {
@@ -421,13 +396,13 @@ export const ChatRowContent = ({
 						<div className="pl-6">
 							<CodeAccordian
 								path={tool.path}
-								code={cleanDiffContent ?? tool.content ?? tool.diff}
+								code={unifiedDiff ?? tool.content ?? tool.diff}
 								language="diff"
 								progressStatus={message.progressStatus}
 								isLoading={message.partial}
 								isExpanded={isExpanded}
 								onToggleExpand={handleToggleExpand}
-								diffStats={diffStatsForInline ?? undefined}
+								diffStats={(tool as any).diffStats ?? undefined}
 							/>
 						</div>
 					</>
@@ -459,13 +434,13 @@ export const ChatRowContent = ({
 						<div className="pl-6">
 							<CodeAccordian
 								path={tool.path}
-								code={cleanDiffContent ?? tool.diff}
+								code={unifiedDiff ?? tool.diff}
 								language="diff"
 								progressStatus={message.progressStatus}
 								isLoading={message.partial}
 								isExpanded={isExpanded}
 								onToggleExpand={handleToggleExpand}
-								diffStats={diffStatsForInline ?? undefined}
+								diffStats={(tool as any).diffStats ?? undefined}
 							/>
 						</div>
 					</>
@@ -493,13 +468,13 @@ export const ChatRowContent = ({
 						<div className="pl-6">
 							<CodeAccordian
 								path={tool.path}
-								code={cleanDiffContent ?? tool.diff}
+								code={unifiedDiff ?? tool.diff}
 								language="diff"
 								progressStatus={message.progressStatus}
 								isLoading={message.partial}
 								isExpanded={isExpanded}
 								onToggleExpand={handleToggleExpand}
-								diffStats={diffStatsForInline ?? undefined}
+								diffStats={(tool as any).diffStats ?? undefined}
 							/>
 						</div>
 					</>
@@ -562,13 +537,13 @@ export const ChatRowContent = ({
 						<div className="pl-6">
 							<CodeAccordian
 								path={tool.path}
-								code={cleanDiffContent ?? ""}
+								code={unifiedDiff ?? ""}
 								language="diff"
 								isLoading={message.partial}
 								isExpanded={isExpanded}
 								onToggleExpand={handleToggleExpand}
 								onJumpToFile={() => vscode.postMessage({ type: "openFile", text: "./" + tool.path })}
-								diffStats={diffStatsForInline ?? undefined}
+								diffStats={(tool as any).diffStats ?? undefined}
 							/>
 						</div>
 					</>

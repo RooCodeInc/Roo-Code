@@ -13,6 +13,7 @@ import { fileExistsAtPath } from "../../utils/fs"
 import { RecordSource } from "../context-tracking/FileContextTrackerTypes"
 import { unescapeHtmlEntities } from "../../utils/text-normalization"
 import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
+import { computeDiffStats, sanitizeUnifiedDiff } from "../diff/stats"
 
 export async function applyDiffToolLegacy(
 	cline: Task,
@@ -141,7 +142,9 @@ export async function applyDiffToolLegacy(
 			cline.consecutiveMistakeCountForApplyDiff.delete(relPath)
 
 			// Generate backend-unified diff for display in chat/webview
-			const unifiedPatch = formatResponse.createPrettyPatch(relPath, originalContent, diffResult.content)
+			const unifiedPatchRaw = formatResponse.createPrettyPatch(relPath, originalContent, diffResult.content)
+			const unifiedPatch = sanitizeUnifiedDiff(unifiedPatchRaw)
+			const diffStats = computeDiffStats(unifiedPatch) || undefined
 
 			// Check if preventFocusDisruption experiment is enabled
 			const provider = cline.providerRef.deref()
@@ -162,6 +165,7 @@ export async function applyDiffToolLegacy(
 					...sharedMessageProps,
 					diff: diffContent,
 					content: unifiedPatch,
+					diffStats,
 					isProtected: isWriteProtected,
 				} satisfies ClineSayTool)
 
@@ -199,6 +203,7 @@ export async function applyDiffToolLegacy(
 					...sharedMessageProps,
 					diff: diffContent,
 					content: unifiedPatch,
+					diffStats,
 					isProtected: isWriteProtected,
 				} satisfies ClineSayTool)
 

@@ -12,6 +12,7 @@ import { fileExistsAtPath } from "../../utils/fs"
 import { insertGroups } from "../diff/insert-groups"
 import { DEFAULT_WRITE_DELAY_MS } from "@roo-code/types"
 import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
+import { convertNewFileToUnifiedDiff, computeDiffStats, sanitizeUnifiedDiff } from "../diff/stats"
 
 export async function insertContentTool(
 	cline: Task,
@@ -101,7 +102,7 @@ export async function insertContentTool(
 		cline.diffViewProvider.originalContent = fileContent
 		const lines = fileExists ? fileContent.split("\n") : []
 
-		const updatedContent = insertGroups(lines, [
+		let updatedContent = insertGroups(lines, [
 			{
 				index: lineNumber - 1,
 				elements: content.split("\n"),
@@ -118,31 +119,31 @@ export async function insertContentTool(
 			EXPERIMENT_IDS.PREVENT_FOCUS_DISRUPTION,
 		)
 
-		// For consistency with writeToFileTool, handle new files differently
-		let diff: string | undefined
-		let approvalContent: string | undefined
-
+		// Build unified diff for display (normalize EOLs only for diff generation)
+		let unified: string
 		if (fileExists) {
-			// For existing files, generate diff and check for changes
-			diff = formatResponse.createPrettyPatch(relPath, fileContent, updatedContent)
-			if (!diff) {
+			const oldForDiff = fileContent.replace(/\r\n/g, "\n")
+			const newForDiff = updatedContent.replace(/\r\n/g, "\n")
+			unified = formatResponse.createPrettyPatch(relPath, oldForDiff, newForDiff)
+			if (!unified) {
 				pushToolResult(`No changes needed for '${relPath}'`)
 				return
 			}
-			approvalContent = undefined
 		} else {
-			// For new files, skip diff generation and provide full content
-			diff = undefined
-			approvalContent = updatedContent
+			const newForDiff = updatedContent.replace(/\r\n/g, "\n")
+			unified = convertNewFileToUnifiedDiff(newForDiff, relPath)
 		}
+		unified = sanitizeUnifiedDiff(unified)
+		const diffStats = computeDiffStats(unified) || undefined
 
 		// Prepare the approval message (same for both flows)
 		const completeMessage = JSON.stringify({
 			...sharedMessageProps,
-			diff,
-			content: approvalContent,
+			// Send unified diff as content for render-only webview
+			content: unified,
 			lineNumber: lineNumber,
 			isProtected: isWriteProtected,
+			diffStats,
 		} satisfies ClineSayTool)
 
 		// Show diff view if focus disruption prevention is disabled

@@ -61,6 +61,7 @@ describe("ChatRow - inline diff stats and actions", () => {
 				tool: "editedExistingFile",
 				path: "src/file.ts",
 				diff,
+				diffStats: { added: 1, removed: 1 },
 			}),
 		}
 
@@ -82,6 +83,7 @@ describe("ChatRow - inline diff stats and actions", () => {
 				tool: "searchAndReplace",
 				path: "src/file.ts",
 				diff,
+				diffStats: { added: 1, removed: 2 },
 			}),
 		}
 
@@ -102,6 +104,7 @@ describe("ChatRow - inline diff stats and actions", () => {
 				tool: "newFileCreated",
 				path: "src/new-file.ts",
 				content,
+				diffStats: { added: 3, removed: 0 },
 			}),
 		}
 
@@ -123,6 +126,7 @@ describe("ChatRow - inline diff stats and actions", () => {
 				tool: "newFileCreated",
 				path: "src/new-file.ts",
 				content,
+				diffStats: { added: 3, removed: 0 },
 			}),
 		}
 

@@ -15,6 +15,7 @@ import { unescapeHtmlEntities } from "../../utils/text-normalization"
 import { parseXmlForDiff } from "../../utils/xml"
 import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
 import { applyDiffToolLegacy } from "./applyDiffTool"
+import { computeDiffStats, sanitizeUnifiedDiff } from "../diff/stats"
 
 interface DiffOperation {
 	path: string
@@ -288,6 +289,7 @@ Original error: ${errorMessage}`
 				changeCount: number
 				key: string
 				content: string
+				diffStats?: { added: number; removed: number }
 				diffs?: Array<{ content: string; startLine?: number }>
 			}> = []
 
@@ -314,11 +316,14 @@ Original error: ${errorMessage}`
 					unified = ""
 				}
 
+				const unifiedSanitized = sanitizeUnifiedDiff(unified)
+				const stats = computeDiffStats(unifiedSanitized) || undefined
 				batchDiffs.push({
 					path: readablePath,
 					changeCount,
 					key: `${readablePath} (${changeText})`,
-					content: unified,
+					content: unifiedSanitized,
+					diffStats: stats,
 					diffs: opResult.diffItems?.map((item) => ({
 						content: item.content,
 						startLine: item.startLine,
@@ -576,11 +581,13 @@ ${errorDetails ? `\nTechnical details:\n${errorDetails}\n` : ""}
 				if (operationsToApprove.length === 1) {
 					// Prepare common data for single file operation
 					const diffContents = diffItems.map((item) => item.content).join("\n\n")
-					const unifiedPatch = formatResponse.createPrettyPatch(relPath, beforeContent!, originalContent!)
+					const unifiedPatchRaw = formatResponse.createPrettyPatch(relPath, beforeContent!, originalContent!)
+					const unifiedPatch = sanitizeUnifiedDiff(unifiedPatchRaw)
 					const operationMessage = JSON.stringify({
 						...sharedMessageProps,
 						diff: diffContents,
 						content: unifiedPatch,
+						diffStats: computeDiffStats(unifiedPatch) || undefined,
 					} satisfies ClineSayTool)
 
 					let toolProgressStatus
