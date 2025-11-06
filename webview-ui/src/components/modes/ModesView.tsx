@@ -337,6 +337,13 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 		}
 	}, [isCreateModeDialogOpen, resetFormState])
 
+	// Ensure import dialog defaults to "project" each open
+	useEffect(() => {
+		if (showImportDialog) {
+			setImportLevel("project")
+		}
+	}, [showImportDialog])
+
 	// Helper function to generate a unique slug from a name
 	const generateSlug = useCallback((name: string, attempt = 0): string => {
 		const baseSlug = name
