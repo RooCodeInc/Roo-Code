@@ -19,7 +19,7 @@ export const minimaxModels = {
 		cacheReadsPrice: 0.03,
 		preserveReasoning: true,
 		description:
-			"MiniMax M2 (Limited-time Free), a model born for Agents and code, featuring Top-tier Coding Capabilities, Powerful Agentic Performance, and Ultimate Cost-Effectiveness & Speed.",
+			"MiniMax M2, a model born for Agents and code, featuring Top-tier Coding Capabilities, Powerful Agentic Performance, and Ultimate Cost-Effectiveness & Speed.",
 	},
 	"MiniMax-M2-Stable": {
 		maxTokens: 16_384,
