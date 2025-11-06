@@ -93,7 +93,7 @@ describe("useSelectedModel", () => {
 			})
 		})
 
-		it("should use only specific provider info when base model info is missing", () => {
+		it("should fall back to default when configured model doesn't exist in available models", () => {
 			const specificProviderInfo: ModelInfo = {
 				maxTokens: 8192,
 				contextWindow: 16384,
@@ -106,7 +106,18 @@ describe("useSelectedModel", () => {
 
 			mockUseRouterModels.mockReturnValue({
 				data: {
-					openrouter: {},
+					openrouter: {
+						"anthropic/claude-sonnet-4.5": {
+							maxTokens: 8192,
+							contextWindow: 200_000,
+							supportsImages: true,
+							supportsPromptCache: true,
+							inputPrice: 3.0,
+							outputPrice: 15.0,
+							cacheWritesPrice: 3.75,
+							cacheReadsPrice: 0.3,
+						},
+					},
 					requesty: {},
 					glama: {},
 					unbound: {},
@@ -127,15 +138,29 @@ describe("useSelectedModel", () => {
 
 			const apiConfiguration: ProviderSettings = {
 				apiProvider: "openrouter",
-				openRouterModelId: "test-model",
+				openRouterModelId: "test-model", // This model doesn't exist in available models
 				openRouterSpecificProvider: "test-provider",
 			}
 
 			const wrapper = createWrapper()
 			const { result } = renderHook(() => useSelectedModel(apiConfiguration), { wrapper })
 
-			expect(result.current.id).toBe("test-model")
-			expect(result.current.info).toEqual(specificProviderInfo)
+			// Should fall back to provider default since "test-model" doesn't exist
+			expect(result.current.id).toBe("anthropic/claude-sonnet-4.5")
+			// Should still use specific provider info for the default model if specified
+			expect(result.current.info).toEqual({
+				...{
+					maxTokens: 8192,
+					contextWindow: 200_000,
+					supportsImages: true,
+					supportsPromptCache: true,
+					inputPrice: 3.0,
+					outputPrice: 15.0,
+					cacheWritesPrice: 3.75,
+					cacheReadsPrice: 0.3,
+				},
+				...specificProviderInfo,
+			})
 		})
 
 		it("should demonstrate the merging behavior validates the comment about missing fields", () => {
@@ -244,12 +269,12 @@ describe("useSelectedModel", () => {
 			expect(result.current.info).toEqual(baseModelInfo)
 		})
 
-		it("should fall back to default when both base and specific provider info are missing", () => {
+		it("should fall back to default when configured model and provider don't exist", () => {
 			mockUseRouterModels.mockReturnValue({
 				data: {
 					openrouter: {
-						"anthropic/claude-sonnet-4": {
-							// Default model
+						"anthropic/claude-sonnet-4.5": {
+							// Default model - using correct default model name
 							maxTokens: 8192,
 							contextWindow: 200_000,
 							supportsImages: true,
@@ -285,8 +310,19 @@ describe("useSelectedModel", () => {
 			const wrapper = createWrapper()
 			const { result } = renderHook(() => useSelectedModel(apiConfiguration), { wrapper })
 
-			expect(result.current.id).toBe("non-existent-model")
-			expect(result.current.info).toBeUndefined()
+			// Should fall back to provider default since "non-existent-model" doesn't exist
+			expect(result.current.id).toBe("anthropic/claude-sonnet-4.5")
+			// Should use base model info since provider doesn't exist
+			expect(result.current.info).toEqual({
+				maxTokens: 8192,
+				contextWindow: 200_000,
+				supportsImages: true,
+				supportsPromptCache: true,
+				inputPrice: 3.0,
+				outputPrice: 15.0,
+				cacheWritesPrice: 3.75,
+				cacheReadsPrice: 0.3,
+			})
 		})
 	})
 
