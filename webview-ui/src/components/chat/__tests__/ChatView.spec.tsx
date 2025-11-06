@@ -1319,39 +1319,20 @@ describe("ChatView - DismissibleUpsell Display Tests", () => {
 		expect(queryByTestId("dismissible-upsell")).not.toBeInTheDocument()
 	})
 
-	it("shows DismissibleUpsell when user is not authenticated and has run 4 or more tasks", async () => {
+	it("shows DismissibleUpsell when user is not authenticated and has run 6 or more tasks", async () => {
 		const { getByTestId } = renderChatView()
 
 		// Hydrate state with user not authenticated and 4 tasks
 		mockPostMessage({
 			cloudIsAuthenticated: false,
 			taskHistory: [
-				{ id: "1", ts: Date.now() - 3000 },
-				{ id: "2", ts: Date.now() - 2000 },
-				{ id: "3", ts: Date.now() - 1000 },
-				{ id: "4", ts: Date.now() },
-			],
-			clineMessages: [], // No active task
-		})
-
-		// Wait for component to render and show DismissibleUpsell
-		await waitFor(() => {
-			expect(getByTestId("dismissible-upsell")).toBeInTheDocument()
-		})
-	})
-
-	it("shows DismissibleUpsell when user is not authenticated and has run 5 tasks", async () => {
-		const { getByTestId } = renderChatView()
-
-		// Hydrate state with user not authenticated and 5 tasks
-		mockPostMessage({
-			cloudIsAuthenticated: false,
-			taskHistory: [
-				{ id: "1", ts: Date.now() - 4000 },
-				{ id: "2", ts: Date.now() - 3000 },
-				{ id: "3", ts: Date.now() - 2000 },
-				{ id: "4", ts: Date.now() - 1000 },
-				{ id: "5", ts: Date.now() },
+				{ id: "1", ts: Date.now() - 6000 },
+				{ id: "2", ts: Date.now() - 5000 },
+				{ id: "3", ts: Date.now() - 4000 },
+				{ id: "4", ts: Date.now() - 3000 },
+				{ id: "5", ts: Date.now() - 2000 },
+				{ id: "6", ts: Date.now() - 1000 },
+				{ id: "7", ts: Date.now() },
 			],
 			clineMessages: [], // No active task
 		})
@@ -1415,7 +1396,7 @@ describe("ChatView - DismissibleUpsell Display Tests", () => {
 		expect(getByTestId("roo-tips")).toBeInTheDocument()
 	})
 
-	it("shows RooTips when user has fewer than 4 tasks (instead of DismissibleUpsell)", () => {
+	it("shows RooTips when user has fewer than 6 tasks (instead of DismissibleUpsell)", () => {
 		const { queryByTestId, getByTestId } = renderChatView()
 
 		// Hydrate state with user not authenticated but fewer than 4 tasks

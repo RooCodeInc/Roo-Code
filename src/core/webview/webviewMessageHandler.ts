@@ -2044,40 +2044,45 @@ export const webviewMessageHandler = async (
 			break
 		case "updateCustomMode":
 			if (message.modeConfig) {
-				// Check if this is a new mode or an update to an existing mode
-				const existingModes = await provider.customModesManager.getCustomModes()
-				const isNewMode = !existingModes.some((mode) => mode.slug === message.modeConfig?.slug)
+				try {
+					// Check if this is a new mode or an update to an existing mode
+					const existingModes = await provider.customModesManager.getCustomModes()
+					const isNewMode = !existingModes.some((mode) => mode.slug === message.modeConfig?.slug)
 
-				await provider.customModesManager.updateCustomMode(message.modeConfig.slug, message.modeConfig)
-				// Update state after saving the mode
-				const customModes = await provider.customModesManager.getCustomModes()
-				await updateGlobalState("customModes", customModes)
-				await updateGlobalState("mode", message.modeConfig.slug)
-				await provider.postStateToWebview()
+					await provider.customModesManager.updateCustomMode(message.modeConfig.slug, message.modeConfig)
+					// Update state after saving the mode
+					const customModes = await provider.customModesManager.getCustomModes()
+					await updateGlobalState("customModes", customModes)
+					await updateGlobalState("mode", message.modeConfig.slug)
+					await provider.postStateToWebview()
 
-				// Track telemetry for custom mode creation or update
-				if (TelemetryService.hasInstance()) {
-					if (isNewMode) {
-						// This is a new custom mode
-						TelemetryService.instance.captureCustomModeCreated(
-							message.modeConfig.slug,
-							message.modeConfig.name,
-						)
-					} else {
-						// Determine which setting was changed by comparing objects
-						const existingMode = existingModes.find((mode) => mode.slug === message.modeConfig?.slug)
-						const changedSettings = existingMode
-							? Object.keys(message.modeConfig).filter(
-									(key) =>
-										JSON.stringify((existingMode as Record<string, unknown>)[key]) !==
-										JSON.stringify((message.modeConfig as Record<string, unknown>)[key]),
-								)
-							: []
+					// Track telemetry for custom mode creation or update
+					if (TelemetryService.hasInstance()) {
+						if (isNewMode) {
+							// This is a new custom mode
+							TelemetryService.instance.captureCustomModeCreated(
+								message.modeConfig.slug,
+								message.modeConfig.name,
+							)
+						} else {
+							// Determine which setting was changed by comparing objects
+							const existingMode = existingModes.find((mode) => mode.slug === message.modeConfig?.slug)
+							const changedSettings = existingMode
+								? Object.keys(message.modeConfig).filter(
+										(key) =>
+											JSON.stringify((existingMode as Record<string, unknown>)[key]) !==
+											JSON.stringify((message.modeConfig as Record<string, unknown>)[key]),
+									)
+								: []
 
-						if (changedSettings.length > 0) {
-							TelemetryService.instance.captureModeSettingChanged(changedSettings[0])
+							if (changedSettings.length > 0) {
+								TelemetryService.instance.captureModeSettingChanged(changedSettings[0])
+							}
 						}
 					}
+				} catch (error) {
+					// Error already shown to user by updateCustomMode
+					// Just prevent unhandled rejection and skip state updates
 				}
 			}
 			break
@@ -2285,10 +2290,11 @@ export const webviewMessageHandler = async (
 						await updateGlobalState("customModes", customModes)
 						await provider.postStateToWebview()
 
-						// Send success message to webview
+						// Send success message to webview, include the imported slug so UI can switch
 						provider.postMessageToWebview({
 							type: "importModeResult",
 							success: true,
+							slug: result.slug,
 						})
 
 						// Show success message

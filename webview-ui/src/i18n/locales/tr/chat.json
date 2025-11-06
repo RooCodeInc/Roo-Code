@@ -85,24 +85,17 @@
 		"tooltip": "Mevcut işlemi iptal et"
 	},
 	"scrollToBottom": "Sohbetin altına kaydır",
-	"about": "AI yardımıyla kod oluşturun, yeniden düzenleyin ve hatalarını ayıklayın. Daha fazla bilgi edinmek için <DocsLink>belgelerimize</DocsLink> göz atın.",
-	"onboarding": "<strong>Bu çalışma alanındaki görev listeniz boş.</strong> Aşağıya bir görev yazarak başlayın. Nasıl başlayacağınızdan emin değil misiniz? Roo'nun sizin için neler yapabileceği hakkında daha fazla bilgiyi <DocsLink>belgelerde</DocsLink> okuyun.",
+	"about": "Roo Code, düzenleyicinizdeki bütün bir yapay zeka geliştirme ekibidir.",
+	"docs": "Daha fazla bilgi için <DocsLink>belgelerimize</DocsLink> göz atın.",
+	"onboarding": "Bu çalışma alanındaki görev listeniz boş.",
 	"rooTips": {
-		"boomerangTasks": {
-			"title": "Görev Orkestrasyonu",
-			"description": "Görevleri daha küçük, yönetilebilir parçalara ayırın."
-		},
-		"stickyModels": {
-			"title": "Yapışkan Modlar",
-			"description": "Her mod, en son kullandığınız modeli hatırlar"
-		},
-		"tools": {
-			"title": "Araçlar",
-			"description": "AI'nın web'e göz atarak, komutlar çalıştırarak ve daha fazlasını yaparak sorunları çözmesine izin verin."
-		},
 		"customizableModes": {
-			"title": "Özelleştirilebilir Modlar",
-			"description": "Kendi davranışları ve atanmış modelleri ile özelleştirilmiş kişilikler"
+			"title": "Özelleştirilebilir modlar",
+			"description": "Göreve odaklanan ve sonuç veren özel kişilikler."
+		},
+		"modelAgnostic": {
+			"title": "Kendi modelinizi getirin",
+			"description": "Kendi sağlayıcı anahtarınızı kullanın veya hatta yerel çıkarım yapın — ek ücret yok, kilitlenme yok, kısıtlama yok"
 		}
 	},
 	"selectMode": "Etkileşim modunu seçin",
@@ -300,15 +293,15 @@
 		},
 		"release": {
 			"heading": "Uzantıdaki yenilikler:",
-			"fileReading": "Bağlam taşmalarını önleyen akıllı dosya okuma",
-			"browserUse": "Görüntü destekli tüm modeller için tarayıcı kullanım aracı etkinleştirildi",
-			"bugFixes": "Birçok hata düzeltmesi ve model güncellemesi"
+			"openRouterEmbeddings": "OpenRouter gömme modelleri desteği",
+			"chutesDynamic": "Chutes artık en son modelleri dinamik olarak yüklüyor",
+			"queuedMessagesFix": "Sıradaki mesajların kaybolması için düzeltmeler"
 		},
 		"cloudAgents": {
 			"heading": "Cloud'daki yenilikler:",
-			"feature": "Roo Code'un ilk Cloud Agent'ını tanıtıyoruz, <bold>PR Reviewer</bold>.",
-			"description": "Roo'yu bulutta çalıştırarak anında son derece yüksek kaliteli kod incelemeleri sağlar. Roo'yu oluşturmak için yoğun bir şekilde kullandık ve şimdi topluluk için de kullanılabilir.",
-			"createAgentButton": "PR Reviewer'ı Dene"
+			"prFixer": "PR Reviewer'ı tamamlamak için <bold>PR Fixer</bold> bulut ajanını tanıtıyoruz.",
+			"prFixerDescription": "Roo Code'un PR Fixer'ı, PR'larınıza doğrudan GitHub'dan yüksek kaliteli değişiklikler uygular. Bir PR yorumu aracılığıyla çağırın ve bağlamı, anlaşmaları ve ödünleri anlamak için tüm yorum geçmişini okuyacak - sonra doğru düzeltmeyi uygulayacaktır.",
+			"tryPrFixerButton": "PR Fixer'ı Dene"
 		},
 		"careers": "Ayrıca, <careersLink>işe alım yapıyoruz!</careersLink>",
 		"socialLinks": "Bize <xLink>X</xLink>, <discordLink>Discord</discordLink>, veya <redditLink>r/RooCode</redditLink>'da katılın 🚀"
@@ -430,5 +423,6 @@
 	"slashCommand": {
 		"wantsToRun": "Roo bir slash komutu çalıştırmak istiyor",
 		"didRun": "Roo bir slash komutu çalıştırdı"
-	}
+	},
+	"docs": "Check our <DocsLink>docs</DocsLink> to learn more."
 }

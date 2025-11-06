@@ -85,24 +85,17 @@
 		"tooltip": "Cancelar a operação atual"
 	},
 	"scrollToBottom": "Rolar para o final do chat",
-	"about": "Gere, refatore e depure código com assistência de IA. Confira nossa <DocsLink>documentação</DocsLink> para saber mais.",
-	"onboarding": "<strong>Sua lista de tarefas neste espaço de trabalho está vazia.</strong> Comece digitando uma tarefa abaixo. Não sabe como começar? Leia mais sobre o que o Roo pode fazer por você nos <DocsLink>documentos</DocsLink>.",
+	"about": "Roo Code é uma equipe inteira de desenvolvimento de IA em seu editor.",
+	"docs": "Confira nossa <DocsLink>documentação</DocsLink> para saber mais.",
+	"onboarding": "Sua lista de tarefas neste espaço de trabalho está vazia.",
 	"rooTips": {
-		"boomerangTasks": {
-			"title": "Orquestração de Tarefas",
-			"description": "Divida as tarefas em partes menores e gerenciáveis."
-		},
-		"stickyModels": {
-			"title": "Modos Fixos",
-			"description": "Cada modo lembra o seu último modelo usado"
-		},
-		"tools": {
-			"title": "Ferramentas",
-			"description": "Permita que a IA resolva problemas navegando na web, executando comandos e muito mais."
-		},
 		"customizableModes": {
 			"title": "Modos personalizáveis",
-			"description": "Personas especializadas com comportamentos próprios e modelos atribuídos"
+			"description": "Personas especializadas que mantêm o foco na tarefa e entregam resultados."
+		},
+		"modelAgnostic": {
+			"title": "Traga seu próprio modelo",
+			"description": "Use sua própria chave de provedor ou até mesmo execute inferência local — sem acréscimos, sem aprisionamento, sem restrições"
 		}
 	},
 	"selectMode": "Selecionar modo de interação",
@@ -299,15 +292,15 @@
 		},
 		"release": {
 			"heading": "Novidades na Extensão:",
-			"fileReading": "Leitura inteligente de arquivos que evita estouro de contexto",
-			"browserUse": "Ferramenta de navegador habilitada para todos os modelos com capacidade de imagem",
-			"bugFixes": "Muitas correções de bugs e atualizações de modelos"
+			"openRouterEmbeddings": "Suporte para modelos de embedding do OpenRouter",
+			"chutesDynamic": "Chutes agora carrega os modelos mais recentes dinamicamente",
+			"queuedMessagesFix": "Correções para mensagens enfileiradas que se perdiam"
 		},
 		"cloudAgents": {
 			"heading": "Novidades na Nuvem:",
-			"feature": "Apresentando o primeiro Agente em Nuvem do Roo Code, o <bold>Revisor de PR</bold>.",
-			"description": "Ele executa o Roo na nuvem, fornecendo revisões de código de qualidade extremamente alta instantaneamente. Temos usado intensivamente para construir o Roo e agora também está disponível para a comunidade.",
-			"createAgentButton": "Experimentar Revisor de PR"
+			"prFixer": "Apresentando o agente em nuvem <bold>PR Fixer</bold> para complementar o Revisor de PR.",
+			"prFixerDescription": "O PR Fixer do Roo Code aplica alterações de alta qualidade aos seus PRs, diretamente do GitHub. Invoque via comentário de PR e ele lerá todo o histórico de comentários para entender contexto, acordos e compromissos - depois implementa a correção certa.",
+			"tryPrFixerButton": "Experimentar PR Fixer"
 		},
 		"careers": "Além disso, <careersLink>estamos contratando!</careersLink>",
 		"socialLinks": "Junte-se a nós no <xLink>X</xLink>, <discordLink>Discord</discordLink>, ou <redditLink>r/RooCode</redditLink> 🚀"
@@ -429,5 +422,6 @@
 	"slashCommand": {
 		"wantsToRun": "Roo quer executar um comando slash",
 		"didRun": "Roo executou um comando slash"
-	}
+	},
+	"docs": "Check our <DocsLink>docs</DocsLink> to learn more."
 }

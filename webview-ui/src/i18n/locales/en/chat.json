@@ -96,24 +96,17 @@
 		"placeholder": "Edit your message..."
 	},
 	"scrollToBottom": "Scroll to bottom of chat",
-	"about": "Generate, refactor, and debug code with AI assistance. Check out our <DocsLink>documentation</DocsLink> to learn more.",
-	"onboarding": "Your task list in this workspace is empty.",
+	"about": "Roo is a whole AI dev team in your editor",
+	"docs": "Check our <DocsLink>docs</DocsLink> to get started",
+	"onboarding": "What would you like to do?",
 	"rooTips": {
-		"boomerangTasks": {
-			"title": "Task Orchestration",
-			"description": "Split tasks into smaller, manageable parts"
-		},
-		"stickyModels": {
-			"title": "Sticky Models",
-			"description": "Each mode remembers your last used model"
-		},
-		"tools": {
-			"title": "Tools",
-			"description": "Allow the AI to solve problems by browsing the web, running commands, and more"
-		},
 		"customizableModes": {
-			"title": "Customizable Modes",
-			"description": "Specialized personas with their own behaviors and assigned models"
+			"title": "Customizable modes that don't swerve",
+			"description": "Specialized personas that stay on-task and deliver."
+		},
+		"modelAgnostic": {
+			"title": "Bring your own model, no markup or lock-in",
+			"description": "Use your own provider key or even run local inference — Roo doesn't charge for it"
 		}
 	},
 	"selectMode": "Select mode for interaction",
@@ -305,15 +298,15 @@
 		},
 		"release": {
 			"heading": "New in the Extension:",
-			"fileReading": "Intelligent file reading that avoids context overruns",
-			"browserUse": "Browser-use tool enabled for all image-capable models",
-			"bugFixes": "Many bug fixes and model updates"
+			"openRouterEmbeddings": "Support for OpenRouter embedding models",
+			"chutesDynamic": "Chutes now loads the latest models dynamically",
+			"queuedMessagesFix": "Fixes for queued messages getting lost"
 		},
 		"cloudAgents": {
 			"heading": "New in the Cloud:",
-			"feature": "Introducing Roo Code's first Cloud Agent, the <bold>PR Reviewer</bold>.",
-			"description": "It runs Roo in the cloud, giving extremely high quality code reviews instantly. We've been using it heavily to build Roo and now it's also available to the community.",
-			"createAgentButton": "Try out PR Reviewer"
+			"prFixer": "Introducing the <bold>PR Fixer</bold> cloud agent to complement the PR Reviewer.",
+			"prFixerDescription": "The PR Fixer applies high-quality changes to your PRs, right from GitHub. Invoke via a PR comment and it will read the entire comment history to understand context, agreements, and tradeoffs - then implement the right fix.",
+			"tryPrFixerButton": "Try PR Fixer"
 		},
 		"careers": "Also, <careersLink>we're hiring!</careersLink>",
 		"socialLinks": "Join us on <xLink>X</xLink>, <discordLink>Discord</discordLink>, or <redditLink>r/RooCode</redditLink> 🚀"
