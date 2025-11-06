@@ -18,7 +18,6 @@ import * as path from "path"
 import * as vscode from "vscode"
 import { z } from "zod"
 import { t } from "../../i18n"
-import * as https from "https"
 
 import { ClineProvider } from "../../core/webview/ClineProvider"
 import { GlobalFileNames } from "../../shared/globalFileNames"
@@ -620,20 +619,6 @@ export class McpHub {
 		return state.mcpEnabled ?? true
 	}
 
-	private shouldIgnoreCertificateErrors(): boolean {
-		return process.env.IGNORE_MCP_SSL_CHECK === "1"
-	}
-
-	private createIgnoreCertificateAgent(protocol?: string): https.Agent | undefined {
-		if (protocol === "http:" || !this.shouldIgnoreCertificateErrors()) {
-			return undefined
-		}
-
-		return new https.Agent({
-			rejectUnauthorized: false,
-		})
-	}
-
 	private async connectToServer(
 		name: string,
 		config: z.infer<typeof ServerConfigSchema>,
@@ -665,7 +650,7 @@ export class McpHub {
 		try {
 			const client = new Client(
 				{
-					name: "CoStrict",
+					name: "Roo Code",
 					version: this.providerRef.deref()?.context.extension?.packageJSON?.version ?? "1.0.0",
 				},
 				{
@@ -756,98 +741,74 @@ export class McpHub {
 				} else {
 					console.error(`No stderr stream for ${name}`)
 				}
-			} else if (["streamable-http", "sse"].includes(configInjected.type)) {
-				const _fetch = (url: string | URL, init?: RequestInit) => {
-					const headers = new Headers({ ...(init?.headers || {}), ...(configInjected.headers || {}) })
-					let protocol = ""
-					const fetchOptions: RequestInit = {
-						...init,
-						headers,
-					}
-					if (url instanceof URL) {
-						protocol = url.protocol
-					} else if (typeof url === "string") {
-						protocol = url.startsWith("https:") ? "https:" : "http:"
-					}
+			} else if (configInjected.type === "streamable-http") {
+				// Streamable HTTP connection
+				transport = new StreamableHTTPClientTransport(new URL(configInjected.url), {
+					requestInit: {
+						headers: configInjected.headers,
+					},
+				})
 
-					const ignoreCertAgent = this.createIgnoreCertificateAgent(protocol)
-					if (ignoreCertAgent) {
-						;(fetchOptions as any).agent = ignoreCertAgent
+				// Set up Streamable HTTP specific error handling
+				transport.onerror = async (error) => {
+					console.error(`Transport error for "${name}" (streamable-http):`, error)
+					const connection = this.findConnection(name, source)
+					if (connection) {
+						connection.server.status = "disconnected"
+						this.appendErrorMessage(connection, error instanceof Error ? error.message : `${error}`)
 					}
-
-					return fetch(url, fetchOptions)
+					await this.notifyWebviewOfServerChanges()
 				}
 
-				if (configInjected.type === "streamable-http") {
-					// Streamable HTTP connection
-					const requestInit: RequestInit = {
+				transport.onclose = async () => {
+					const connection = this.findConnection(name, source)
+					if (connection) {
+						connection.server.status = "disconnected"
+					}
+					await this.notifyWebviewOfServerChanges()
+				}
+			} else if (configInjected.type === "sse") {
+				// SSE connection
+				const sseOptions = {
+					requestInit: {
 						headers: configInjected.headers,
-					}
+					},
+				}
+				// Configure ReconnectingEventSource options
+				const reconnectingEventSourceOptions = {
+					max_retry_time: 5000, // Maximum retry time in milliseconds
+					withCredentials: configInjected.headers?.["Authorization"] ? true : false, // Enable credentials if Authorization header exists
+					fetch: (url: string | URL, init: RequestInit) => {
+						const headers = new Headers({ ...(init?.headers || {}), ...(configInjected.headers || {}) })
+						return fetch(url, {
+							...init,
+							headers,
+						})
+					},
+				}
+				global.EventSource = ReconnectingEventSource
+				transport = new SSEClientTransport(new URL(configInjected.url), {
+					...sseOptions,
+					eventSourceInit: reconnectingEventSourceOptions,
+				})
 
-					transport = new StreamableHTTPClientTransport(new URL(configInjected.url), {
-						requestInit,
-						fetch: _fetch,
-					})
+				// Set up SSE specific error handling
+				transport.onerror = async (error) => {
+					console.error(`Transport error for "${name}":`, error)
+					const connection = this.findConnection(name, source)
+					if (connection) {
+						connection.server.status = "disconnected"
+						this.appendErrorMessage(connection, error instanceof Error ? error.message : `${error}`)
+					}
+					await this.notifyWebviewOfServerChanges()
+				}
 
-					// Set up Streamable HTTP specific error handling
-					transport.onerror = async (error) => {
-						console.error(`Transport error for "${name}" (streamable-http):`, error)
-						const connection = this.findConnection(name, source)
-						if (connection) {
-							connection.server.status = "disconnected"
-							this.appendErrorMessage(connection, error instanceof Error ? error.message : `${error}`)
-						}
-						await this.notifyWebviewOfServerChanges()
+				transport.onclose = async () => {
+					const connection = this.findConnection(name, source)
+					if (connection) {
+						connection.server.status = "disconnected"
 					}
-
-					transport.onclose = async () => {
-						const connection = this.findConnection(name, source)
-						if (connection) {
-							connection.server.status = "disconnected"
-						}
-						await this.notifyWebviewOfServerChanges()
-					}
-				} else if (configInjected.type === "sse") {
-					// SSE connection
-					const sseOptions = {
-						requestInit: {
-							headers: configInjected.headers,
-						},
-					}
-					// Configure ReconnectingEventSource options
-					const reconnectingEventSourceOptions = {
-						max_retry_time: 5000, // Maximum retry time in milliseconds
-						withCredentials: configInjected.headers?.["Authorization"] ? true : false, // Enable credentials if Authorization header exists
-						fetch: _fetch,
-					}
-					global.EventSource = ReconnectingEventSource
-
-					transport = new SSEClientTransport(new URL(configInjected.url), {
-						...sseOptions,
-						eventSourceInit: reconnectingEventSourceOptions,
-					})
-
-					// Set up SSE specific error handling
-					transport.onerror = async (error) => {
-						console.error(`Transport error for "${name}":`, error)
-						const connection = this.findConnection(name, source)
-						if (connection) {
-							connection.server.status = "disconnected"
-							this.appendErrorMessage(connection, error instanceof Error ? error.message : `${error}`)
-						}
-						await this.notifyWebviewOfServerChanges()
-					}
-
-					transport.onclose = async () => {
-						const connection = this.findConnection(name, source)
-						if (connection) {
-							connection.server.status = "disconnected"
-						}
-						await this.notifyWebviewOfServerChanges()
-					}
-				} else {
-					// Should not happen if validateServerConfig is correct
-					throw new Error(`Unsupported MCP server type: ${(configInjected as any).type}`)
+					await this.notifyWebviewOfServerChanges()
 				}
 			} else {
 				// Should not happen if validateServerConfig is correct
@@ -1715,7 +1676,7 @@ export class McpHub {
 			timeout = 60 * 1000
 		}
 
-		const result = await connection.client.request(
+		return (await connection.client.request(
 			{
 				method: "tools/call",
 				params: {
@@ -1727,17 +1688,7 @@ export class McpHub {
 			{
 				timeout,
 			},
-		)
-
-		if (result && typeof result === "object" && "result" in result) {
-			return result as McpToolCallResponse
-		}
-
-		return {
-			_meta: result._meta,
-			content: result.content as McpToolCallResponse["content"],
-			isError: result.isError,
-		}
+		)) as McpToolCallResponse
 	}
 
 	/**
