@@ -2429,15 +2429,69 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// If there's no assistant_responses, that means we got no text
 					// or tool_use content blocks from API which we should assume is
 					// an error.
-					await this.say(
-						"error",
-						"Unexpected API Response: The language model did not provide any assistant messages. This may indicate an issue with the API or the model's output.",
-					)
 
-					await this.addToApiConversationHistory({
-						role: "assistant",
-						content: [{ type: "text", text: "Failure: I did not provide a response." }],
-					})
+					// Check if we should auto-retry or prompt the user
+					const state = await this.providerRef.deref()?.getState()
+					if (state?.autoApprovalEnabled && state?.alwaysApproveResubmit) {
+						// Auto-retry with backoff - don't persist failure message when retrying
+						const errorMsg =
+							"Unexpected API Response: The language model did not provide any assistant messages. This may indicate an issue with the API or the model's output."
+
+						await this.backoffAndAnnounce(
+							currentItem.retryAttempt ?? 0,
+							new Error("Empty assistant response"),
+							errorMsg,
+						)
+
+						// Check if task was aborted during the backoff
+						if (this.abort) {
+							console.log(
+								`[Task#${this.taskId}.${this.instanceId}] Task aborted during empty-assistant retry backoff`,
+							)
+							break
+						}
+
+						// Push the same content back onto the stack to retry, incrementing the retry attempt counter
+						stack.push({
+							userContent: currentUserContent,
+							includeFileDetails: false,
+							retryAttempt: (currentItem.retryAttempt ?? 0) + 1,
+						})
+
+						// Continue to retry the request
+						continue
+					} else {
+						// Prompt the user for retry decision
+						const { response } = await this.ask(
+							"api_req_failed",
+							"The model returned no assistant messages. This may indicate an issue with the API or the model's output.",
+						)
+
+						if (response === "yesButtonClicked") {
+							await this.say("api_req_retried")
+
+							// Push the same content back to retry
+							stack.push({
+								userContent: currentUserContent,
+								includeFileDetails: false,
+								retryAttempt: (currentItem.retryAttempt ?? 0) + 1,
+							})
+
+							// Continue to retry the request
+							continue
+						} else {
+							// User declined to retry - persist error and failure message
+							await this.say(
+								"error",
+								"Unexpected API Response: The language model did not provide any assistant messages. This may indicate an issue with the API or the model's output.",
+							)
+
+							await this.addToApiConversationHistory({
+								role: "assistant",
+								content: [{ type: "text", text: "Failure: I did not provide a response." }],
+							})
+						}
+					}
 				}
 
 				// If we reach here without continuing, return false (will always be false for now)
