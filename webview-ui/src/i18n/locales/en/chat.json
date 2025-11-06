@@ -421,5 +421,9 @@
 		"problems": "Problems",
 		"terminal": "Terminal",
 		"url": "Paste URL to fetch contents"
+	},
+	"todo": {
+		"partial": "{{completed}} of {{total}} to-dos done",
+		"complete": "{{total}} to-dos done"
 	}
 }

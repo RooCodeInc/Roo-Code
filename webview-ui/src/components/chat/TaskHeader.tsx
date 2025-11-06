@@ -91,7 +91,7 @@ const TaskHeader = ({
 			<button
 				disabled={buttonsDisabled}
 				onClick={() => currentTaskItem && handleCondenseContext(currentTaskItem.id)}
-				className="shrink-0 min-h-[20px] min-w-[20px] p-[2px] cursor-pointer disabled:cursor-not-allowed opacity-85 hover:opacity-100 bg-transparent border-none rounded-md">
+				className="shrink-0 min-h-[20px] min-w-[20px] p-[2px] cursor-pointer disabled:cursor-not-allowed opacity-85 hover:opacity-100 bg-transparent border-none rounded-2xl">
 				<FoldVertical size={16} />
 			</button>
 		</StandardTooltip>
@@ -112,13 +112,18 @@ const TaskHeader = ({
 			)}
 			<div
 				className={cn(
-					"px-2.5 pt-2.5 pb-2 flex flex-col gap-1.5 relative z-1 cursor-pointer",
+					"px-2.5 py-2.5 flex flex-col gap-1.5 relative z-1",
 					"bg-vscode-input-background hover:bg-vscode-input-background/90",
 					"text-vscode-foreground/80 hover:text-vscode-foreground",
-					"shadow-sm shadow-black/30 rounded-md",
-					hasTodos && "border-b-0",
+					"shadow-sm shadow-black/30",
+					"rounded-xl",
 				)}
 				onClick={(e) => {
+					// Don't expand if clicking on todos section
+					if (e.target instanceof Element && e.target.closest("[data-todo-list]")) {
+						return
+					}
+
 					// Don't expand if clicking on buttons or interactive elements
 					if (
 						e.target instanceof Element &&
@@ -218,7 +223,7 @@ const TaskHeader = ({
 							className="text-vscode-font-size overflow-y-auto break-words break-anywhere relative">
 							<div
 								ref={textRef}
-								className="overflow-auto max-h-80 whitespace-pre-wrap break-words break-anywhere cursor-text"
+								className="overflow-auto max-h-80 whitespace-pre-wrap break-words break-anywhere cursor-text border-l-2 border-foreground/20 pl-2 py-0.5"
 								style={{
 									display: "-webkit-box",
 									WebkitLineClamp: "unset",
@@ -229,7 +234,7 @@ const TaskHeader = ({
 						</div>
 						{task.images && task.images.length > 0 && <Thumbnails images={task.images} />}
 
-						<div className="border-t border-b border-vscode-panel-border/50 py-4 mt-2 mb-1">
+						<div className="py-4 mt-2 mb-1">
 							<table className="w-full">
 								<tbody>
 									{contextWindow > 0 && (
@@ -325,8 +330,14 @@ const TaskHeader = ({
 						</div>
 					</>
 				)}
+				{/* Todo list - always shown at bottom when todos exist */}
+				{hasTodos && (
+					<TodoListDisplay
+						todos={todos ?? (task as any)?.tool?.todos ?? []}
+						isParentExpanded={isTaskExpanded}
+					/>
+				)}
 			</div>
-			<TodoListDisplay todos={todos ?? (task as any)?.tool?.todos ?? []} />
 			<CloudUpsellDialog open={isOpen} onOpenChange={closeUpsell} onConnect={handleConnect} />
 		</div>
 	)
