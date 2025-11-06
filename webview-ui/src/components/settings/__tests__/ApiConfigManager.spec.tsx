@@ -378,73 +378,21 @@ describe("ApiConfigManager", () => {
 			listApiConfigMeta: mockConfigsForReordering,
 		}
 
-		it("should render reorder toggle button", () => {
+		it("shows reset-to-alphabetical button", () => {
 			render(<ApiConfigManager {...reorderingProps} />)
-
-			const reorderButton = screen.getByTestId("reorder-toggle-button")
-			expect(reorderButton).toBeInTheDocument()
+			const resetBtn = screen.getByTestId("reset-to-alphabetical-button")
+			expect(resetBtn).toBeInTheDocument()
 		})
 
-		it("should toggle reordering mode when reorder button is clicked", () => {
+		it("always shows reorder help text in settings", () => {
 			render(<ApiConfigManager {...reorderingProps} />)
-
-			const reorderButton = screen.getByTestId("reorder-toggle-button")
-
-			// Initially not in reordering mode
-			expect(reorderButton).not.toHaveClass("bg-vscode-button-background")
-
-			// Click to enter reordering mode
-			fireEvent.click(reorderButton)
-			expect(reorderButton).toHaveClass("bg-vscode-button-background")
-
-			// Click again to exit reordering mode
-			fireEvent.click(reorderButton)
-			expect(reorderButton).not.toHaveClass("bg-vscode-button-background")
-		})
-
-		it("should show different help text based on reordering mode", () => {
-			render(<ApiConfigManager {...reorderingProps} />)
-
-			const reorderButton = screen.getByTestId("reorder-toggle-button")
-
-			// Initially shows normal help text
-			expect(screen.getByText("settings:providers.normalModeHelpText")).toBeInTheDocument()
-
-			// Enter reordering mode
-			fireEvent.click(reorderButton)
 			expect(screen.getByText("settings:providers.reorderModeHelpText")).toBeInTheDocument()
 		})
 
-		it("should show checkmark for current config when not in reordering mode", () => {
+		it("allows click selection while reordering", () => {
 			render(<ApiConfigManager {...reorderingProps} />)
-
-			// Should show checkmark for current config
-			const checkmarks = screen.getAllByText("", { selector: ".codicon-check" })
-			expect(checkmarks.length).toBeGreaterThan(0)
-		})
-
-		it("should disable regular click behavior in reordering mode", () => {
-			render(<ApiConfigManager {...reorderingProps} />)
-
-			const reorderButton = screen.getByTestId("reorder-toggle-button")
 			const configItems = screen.getAllByRole("option")
-
-			// Enter reordering mode
-			fireEvent.click(reorderButton)
-
-			// Click on a config item should not trigger selection
 			fireEvent.click(configItems[1])
-			expect(mockOnSelectConfig).not.toHaveBeenCalled()
-		})
-
-		it("should allow regular click behavior when not in reordering mode", () => {
-			render(<ApiConfigManager {...reorderingProps} />)
-
-			const configItems = screen.getAllByRole("option")
-
-			// Click on a config item should trigger selection
-			// The actual order depends on the sorting logic, so let's just test that clicking works
-			fireEvent.click(configItems[0])
 			expect(mockOnSelectConfig).toHaveBeenCalled()
 		})
 	})

@@ -200,7 +200,7 @@ const ConfigListItem = memo(function ConfigListItemComponent({
 						}
 					: undefined
 			}
-			onClick={isReorderingMode ? undefined : () => onSelectConfig(config.name)}
+			onClick={() => onSelectConfig(config.name)}
 			onKeyDown={(e) => {
 				onKeyDown(e, index)
 				if (!isReorderingMode && (e.key === "Enter" || e.key === " ")) {

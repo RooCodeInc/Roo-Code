@@ -45,7 +45,8 @@ const ApiConfigManager = ({
 		dragOverIndex: null,
 	})
 	const [focusedIndex, setFocusedIndex] = useState<number | null>(null)
-	const [isReorderingMode, setIsReorderingMode] = useState(false)
+	// Always allow reordering in Settings per design feedback
+	const isReorderingMode = true
 	const newProfileInputRef = useRef<any>(null)
 
 	const isOnlyProfile = listApiConfigMeta?.length === 1
@@ -270,9 +271,7 @@ const ApiConfigManager = ({
 		setIsCreating(true)
 	}
 
-	const toggleReorderingMode = () => {
-		setIsReorderingMode(!isReorderingMode)
-	}
+	// Removed explicit toggle; reordering is always enabled
 
 	const handleRename = useCallback(
 		(oldName: string, newName: string) => {
@@ -309,21 +308,18 @@ const ApiConfigManager = ({
 				<label className="block font-medium mb-1">{t("settings:providers.configProfile")}</label>
 				{/* Action buttons */}
 				<div className="flex items-center gap-1 mb-3">
-					<StandardTooltip
-						content={
-							isReorderingMode
-								? t("settings:providers.exitReorderMode")
-								: t("settings:providers.reorderProfiles")
-						}>
+					<StandardTooltip content="Reset to Alphabetical">
 						<Button
 							variant="ghost"
 							size="icon"
-							onClick={toggleReorderingMode}
-							data-testid="reorder-toggle-button"
-							className={
-								isReorderingMode ? "bg-vscode-button-background text-vscode-button-foreground" : ""
-							}>
-							<span className="codicon codicon-list-ordered" />
+							onClick={() =>
+								vscode.postMessage({
+									type: "setApiConfigsCustomOrder",
+									values: { customOrder: [] },
+								})
+							}
+							data-testid="reset-to-alphabetical-button">
+							<span className="codicon codicon-discard" />
 						</Button>
 					</StandardTooltip>
 					<StandardTooltip content={t("settings:providers.addProfile")}>
@@ -369,9 +365,7 @@ const ApiConfigManager = ({
 
 			{/* Help text */}
 			<div className="text-vscode-descriptionForeground text-sm mt-2">
-				{isReorderingMode
-					? t("settings:providers.reorderModeHelpText")
-					: t("settings:providers.normalModeHelpText")}
+				{t("settings:providers.reorderModeHelpText")}
 			</div>
 
 			<Dialog

@@ -88,8 +88,6 @@ const ConfigItem = ({ config, isPinned, index, value, onSelect, togglePinnedApiC
 	)
 }
 
-type SortMode = "alphabetical" | "custom"
-
 interface ApiConfigSelectorProps {
 	value: string
 	displayName: string
@@ -100,8 +98,6 @@ interface ApiConfigSelectorProps {
 	listApiConfigMeta: Array<{ id: string; name: string; modelId?: string }>
 	pinnedApiConfigs?: Record<string, boolean>
 	togglePinnedApiConfig: (id: string) => void
-	onSortModeChange?: (mode: SortMode) => void
-	onCustomOrderChange?: (order: Array<{ id: string; index: number; pinned: boolean }>) => void
 }
 
 export const ApiConfigSelector = ({
@@ -114,52 +110,33 @@ export const ApiConfigSelector = ({
 	listApiConfigMeta,
 	pinnedApiConfigs,
 	togglePinnedApiConfig,
-	onSortModeChange,
-	onCustomOrderChange,
 }: ApiConfigSelectorProps) => {
 	const { t } = useAppTranslation()
 	const { apiConfigsCustomOrder: customOrder = [] } = useExtensionState()
 	const [open, setOpen] = useState(false)
 	const [searchValue, setSearchValue] = useState("")
 
-	const [sortMode, setSortMode] = useState<SortMode>("alphabetical")
+	// No explicit sort mode in Chat; use custom order if available, otherwise alphabetical
 
 	const portalContainer = useRooPortal("roo-portal")
 
-	// Sort configs based on sort mode
+	// Sort configs: prefer saved custom order; otherwise alphabetical
 	const sortedConfigs = useMemo(() => {
 		const sorted = [...listApiConfigMeta]
 
-		switch (sortMode) {
-			case "alphabetical":
-				sorted.sort((a, b) => a.name.localeCompare(b.name))
-				break
-			case "custom":
-				if (customOrder && customOrder.length > 0) {
-					// Sort by custom order, with unordered items at the end
-					const orderMap = new Map(customOrder.map((item) => [item.id, item.index]))
-					sorted.sort((a, b) => {
-						const aIndex = orderMap.get(a.id) ?? Number.MAX_SAFE_INTEGER
-						const bIndex = orderMap.get(b.id) ?? Number.MAX_SAFE_INTEGER
-						return (aIndex as number) - (bIndex as number)
-					})
-				}
-				break
+		if (customOrder && customOrder.length > 0) {
+			const orderMap = new Map(customOrder.map((item) => [item.id, item.index]))
+			sorted.sort((a, b) => {
+				const aIndex = orderMap.get(a.id) ?? Number.MAX_SAFE_INTEGER
+				const bIndex = orderMap.get(b.id) ?? Number.MAX_SAFE_INTEGER
+				return (aIndex as number) - (bIndex as number)
+			})
+		} else {
+			sorted.sort((a, b) => a.name.localeCompare(b.name))
 		}
 
 		return sorted
-	}, [listApiConfigMeta, sortMode, customOrder])
-
-	// Current visible order for callbacks when switching to custom
-	const currentOrder = useMemo(
-		() =>
-			sortedConfigs.map((config, index) => ({
-				id: config.id,
-				index,
-				pinned: Boolean(pinnedApiConfigs?.[config.id]),
-			})),
-		[sortedConfigs, pinnedApiConfigs],
-	)
+	}, [listApiConfigMeta, customOrder])
 
 	// Filter configs based on search.
 	const filteredConfigs = useMemo(() => {
@@ -192,22 +169,6 @@ export const ApiConfigSelector = ({
 		vscode.postMessage({ type: "switchTab", tab: "settings" })
 		setOpen(false)
 	}, [])
-
-	const handleSortModeChange = useCallback(
-		(mode: SortMode) => {
-			setSortMode(mode)
-			onSortModeChange?.(mode)
-			if (mode === "custom") {
-				// Persist current visible order as custom order baseline
-				vscode.postMessage({
-					type: "setApiConfigsCustomOrder",
-					values: { customOrder: currentOrder },
-				})
-				onCustomOrderChange?.(currentOrder)
-			}
-		},
-		[onSortModeChange, onCustomOrderChange, currentOrder],
-	)
 
 	return (
 		<Popover open={open} onOpenChange={setOpen} data-testid="api-config-selector-root">
@@ -312,34 +273,7 @@ export const ApiConfigSelector = ({
 
 					{/* Bottom bar with controls */}
 					<div className="flex flex-col border-t border-vscode-dropdown-border">
-						{/* Sort controls */}
-						<div className="flex items-center justify-between px-2 py-1.5 border-b border-vscode-dropdown-border">
-							<div className="flex items-center gap-2">
-								<span className="text-xs text-vscode-descriptionForeground">
-									{t("chat:apiConfigSelector.sort")}
-								</span>
-								<div className="flex items-center gap-1">
-									{(["alphabetical", "custom"] as const).map((mode) => (
-										<Button
-											key={mode}
-											variant="ghost"
-											size="sm"
-											aria-label={`${t("chat:apiConfigSelector.sort")} ${mode === "alphabetical" ? t("chat:apiConfigSelector.alphabetical") : t("chat:apiConfigSelector.custom")}`}
-											aria-pressed={sortMode === mode}
-											onClick={() => handleSortModeChange(mode)}
-											className={cn(
-												"h-6 px-2 text-xs",
-												sortMode === mode &&
-													"bg-vscode-button-background text-vscode-button-foreground",
-											)}>
-											{mode === "alphabetical"
-												? t("chat:apiConfigSelector.alphabetical")
-												: t("chat:apiConfigSelector.custom")}
-										</Button>
-									))}
-								</div>
-							</div>
-						</div>
+						{/* No sort controls in Chat dropdown per design feedback */}
 
 						{/* Bottom bar with settings and title */}
 						<div className="flex flex-row items-center justify-between px-2 py-2">
