@@ -294,6 +294,8 @@ export type ExtensionState = Pick<
 	| "openRouterImageGenerationSelectedModel"
 	| "includeTaskHistoryInEnhance"
 	| "reasoningBlockCollapsed"
+	| "includeCurrentTime"
+	| "includeCurrentCost"
 > & {
 	version: string
 	clineMessages: ClineMessage[]
@@ -377,7 +379,6 @@ export interface ClineSayTool {
 		| "switchMode"
 		| "newTask"
 		| "finishTask"
-		| "searchAndReplace"
 		| "insertContent"
 		| "generateImage"
 		| "imageGenerated"
@@ -392,12 +393,6 @@ export interface ClineSayTool {
 	isOutsideWorkspace?: boolean
 	isProtected?: boolean
 	additionalFileCount?: number // Number of additional files in the same read_file request
-	search?: string
-	replace?: string
-	useRegex?: boolean
-	ignoreCase?: boolean
-	startLine?: number
-	endLine?: number
 	lineNumber?: number
 	query?: string
 	batchFiles?: Array<{

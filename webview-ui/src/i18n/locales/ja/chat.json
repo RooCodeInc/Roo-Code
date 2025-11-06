@@ -299,16 +299,17 @@
 		},
 		"release": {
 			"heading": "拡張機能の新機能:",
-			"fileReading": "コンテキストオーバーランを回避するインテリジェントなファイル読み取り",
-			"browserUse": "画像対応モデルすべてでブラウザ使用ツールが有効化",
-			"bugFixes": "多数のバグ修正とモデル更新"
+			"openRouterEmbeddings": "OpenRouter埋め込みモデルのサポート",
+			"chutesDynamic": "Chutesが最新モデルを動的にロード",
+			"queuedMessagesFix": "キューメッセージが失われる問題の修正"
 		},
 		"cloudAgents": {
 			"heading": "クラウドの新機能:",
-			"feature": "Roo Code初のクラウドエージェント、<bold>PRレビューア</bold>を導入します。",
-			"description": "クラウドでRooを実行し、非常に高品質なコードレビューを瞬時に提供します。Rooの開発で積極的に使用しており、現在はコミュニティでも利用可能です。",
-			"createAgentButton": "PRレビューアを試す"
+			"prFixer": "PRレビューアを補完するクラウドエージェント<bold>PR Fixer</bold>を導入します。",
+			"prFixerDescription": "Roo CodeのPR FixerはGitHubから直接、高品質な変更をPRに適用します。PRコメントから呼び出すと、コメント履歴全体を読んでコンテキスト、合意、トレードオフを理解し、適切な修正を実装します。",
+			"tryPrFixerButton": "PR Fixerを試す"
 		},
+		"careers": "また、<careersLink>採用中です！</careersLink>",
 		"socialLinks": "<xLink>X</xLink>、<discordLink>Discord</discordLink>、または<redditLink>r/RooCode</redditLink>でフォローしてください 🚀"
 	},
 	"browser": {

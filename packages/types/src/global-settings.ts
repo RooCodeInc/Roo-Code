@@ -94,6 +94,17 @@ export const globalSettingsSchema = z.object({
 	maxConcurrentFileReads: z.number().optional(),
 
 	/**
+	 * Whether to include current time in the environment details
+	 * @default true
+	 */
+	includeCurrentTime: z.boolean().optional(),
+	/**
+	 * Whether to include current cost in the environment details
+	 * @default true
+	 */
+	includeCurrentCost: z.boolean().optional(),
+
+	/**
 	 * Whether to include diagnostic messages (errors, warnings) in tool outputs
 	 * @default true
 	 */
@@ -207,6 +218,7 @@ export const SECRET_STATE_KEYS = [
 	"doubaoApiKey",
 	"moonshotApiKey",
 	"mistralApiKey",
+	"minimaxApiKey",
 	"unboundApiKey",
 	"requestyApiKey",
 	"xaiApiKey",
@@ -220,6 +232,7 @@ export const SECRET_STATE_KEYS = [
 	"codebaseIndexGeminiApiKey",
 	"codebaseIndexMistralApiKey",
 	"codebaseIndexVercelAiGatewayApiKey",
+	"codebaseIndexOpenRouterApiKey",
 	"huggingFaceApiKey",
 	"sambaNovaApiKey",
 	"zaiApiKey",

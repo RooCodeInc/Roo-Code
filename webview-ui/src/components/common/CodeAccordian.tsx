@@ -2,10 +2,11 @@ import { memo, useMemo } from "react"
 import { VSCodeProgressRing } from "@vscode/webview-ui-toolkit/react"
 import { type ToolProgressStatus } from "@roo-code/types"
 import { getLanguageFromPath } from "@src/utils/getLanguageFromPath"
-import { removeLeadingNonAlphanumeric } from "@src/utils/removeLeadingNonAlphanumeric"
+import { formatPathTooltip } from "@src/utils/formatPathTooltip"
 
 import { ToolUseBlock, ToolUseBlockHeader } from "./ToolUseBlock"
 import CodeBlock from "./CodeBlock"
+import { PathTooltip } from "../ui/PathTooltip"
 
 interface CodeAccordianProps {
 	path?: string
@@ -44,7 +45,9 @@ const CodeAccordian = ({
 					{header ? (
 						<div className="flex items-center">
 							<span className="codicon codicon-server mr-1.5"></span>
-							<span className="whitespace-nowrap overflow-hidden text-ellipsis mr-2">{header}</span>
+							<PathTooltip content={header}>
+								<span className="whitespace-nowrap overflow-hidden text-ellipsis mr-2">{header}</span>
+							</PathTooltip>
 						</div>
 					) : isFeedback ? (
 						<div className="flex items-center">
@@ -56,9 +59,11 @@ const CodeAccordian = ({
 					) : (
 						<>
 							{path?.startsWith(".") && <span>.</span>}
-							<span className="whitespace-nowrap overflow-hidden text-ellipsis text-left mr-2 rtl">
-								{removeLeadingNonAlphanumeric(path ?? "") + "\u200E"}
-							</span>
+							<PathTooltip content={formatPathTooltip(path)}>
+								<span className="whitespace-nowrap overflow-hidden text-ellipsis text-left mr-2 rtl">
+									{formatPathTooltip(path)}
+								</span>
+							</PathTooltip>
 						</>
 					)}
 					<div className="flex-grow-1" />

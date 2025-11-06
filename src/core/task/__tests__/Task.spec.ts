@@ -148,6 +148,18 @@ vi.mock("../../environment/getEnvironmentDetails", () => ({
 
 vi.mock("../../ignore/RooIgnoreController")
 
+vi.mock("../../condense", async (importOriginal) => {
+	const actual = (await importOriginal()) as any
+	return {
+		...actual,
+		summarizeConversation: vi.fn().mockResolvedValue({
+			messages: [{ role: "user", content: [{ type: "text", text: "continued" }], ts: Date.now() }],
+			summary: "summary",
+			cost: 0,
+			newContextTokens: 1,
+		}),
+	}
+})
 // Mock storagePathManager to prevent dynamic import issues.
 vi.mock("../../../utils/storage", () => ({
 	getTaskDirectoryPath: vi
@@ -1094,9 +1106,9 @@ describe("Cline", () => {
 				await parentIterator.next()
 
 				// Simulate time passing (more than rate limit)
-				const originalDateNow = Date.now
-				const mockTime = Date.now() + (mockApiConfig.rateLimitSeconds + 1) * 1000
-				Date.now = vi.fn(() => mockTime)
+				const originalPerformanceNow = performance.now
+				const mockTime = performance.now() + (mockApiConfig.rateLimitSeconds + 1) * 1000
+				performance.now = vi.fn(() => mockTime)
 
 				// Create a subtask after time has passed
 				const child = new Task({
@@ -1117,8 +1129,8 @@ describe("Cline", () => {
 				// Verify no rate limiting was applied
 				expect(mockDelay).not.toHaveBeenCalled()
 
-				// Restore Date.now
-				Date.now = originalDateNow
+				// Restore performance.now
+				performance.now = originalPerformanceNow
 			})
 
 			it("should share rate limiting across multiple subtasks", async () => {
@@ -1821,5 +1833,126 @@ describe("Cline", () => {
 				consoleErrorSpy.mockRestore()
 			})
 		})
+	})
+})
+
+describe("Queued message processing after condense", () => {
+	function createProvider(): any {
+		const storageUri = { fsPath: path.join(os.tmpdir(), "test-storage") }
+		const ctx = {
+			globalState: {
+				get: vi.fn().mockImplementation((_key: keyof GlobalState) => undefined),
+				update: vi.fn().mockResolvedValue(undefined),
+				keys: vi.fn().mockReturnValue([]),
+			},
+			globalStorageUri: storageUri,
+			workspaceState: {
+				get: vi.fn().mockImplementation((_key) => undefined),
+				update: vi.fn().mockResolvedValue(undefined),
+				keys: vi.fn().mockReturnValue([]),
+			},
+			secrets: {
+				get: vi.fn().mockResolvedValue(undefined),
+				store: vi.fn().mockResolvedValue(undefined),
+				delete: vi.fn().mockResolvedValue(undefined),
+			},
+			extensionUri: { fsPath: "/mock/extension/path" },
+			extension: { packageJSON: { version: "1.0.0" } },
+		} as unknown as vscode.ExtensionContext
+
+		const output = {
+			appendLine: vi.fn(),
+			append: vi.fn(),
+			clear: vi.fn(),
+			show: vi.fn(),
+			hide: vi.fn(),
+			dispose: vi.fn(),
+		}
+
+		const provider = new ClineProvider(ctx, output as any, "sidebar", new ContextProxy(ctx)) as any
+		provider.postMessageToWebview = vi.fn().mockResolvedValue(undefined)
+		provider.postStateToWebview = vi.fn().mockResolvedValue(undefined)
+		provider.getState = vi.fn().mockResolvedValue({})
+		return provider
+	}
+
+	const apiConfig: ProviderSettings = {
+		apiProvider: "anthropic",
+		apiModelId: "claude-3-5-sonnet-20241022",
+		apiKey: "test-api-key",
+	} as any
+
+	it("processes queued message after condense completes", async () => {
+		const provider = createProvider()
+		const task = new Task({
+			provider,
+			apiConfiguration: apiConfig,
+			task: "initial task",
+			startTask: false,
+		})
+
+		// Make condense fast + deterministic
+		vi.spyOn(task as any, "getSystemPrompt").mockResolvedValue("system")
+		const submitSpy = vi.spyOn(task, "submitUserMessage").mockResolvedValue(undefined)
+
+		// Queue a message during condensing
+		task.messageQueueService.addMessage("queued text", ["img1.png"])
+
+		// Use fake timers to capture setTimeout(0) in processQueuedMessages
+		vi.useFakeTimers()
+		await task.condenseContext()
+
+		// Flush the microtask that submits the queued message
+		vi.runAllTimers()
+		vi.useRealTimers()
+
+		expect(submitSpy).toHaveBeenCalledWith("queued text", ["img1.png"])
+		expect(task.messageQueueService.isEmpty()).toBe(true)
+	})
+
+	it("does not cross-drain queues between separate tasks", async () => {
+		const providerA = createProvider()
+		const providerB = createProvider()
+
+		const taskA = new Task({
+			provider: providerA,
+			apiConfiguration: apiConfig,
+			task: "task A",
+			startTask: false,
+		})
+		const taskB = new Task({
+			provider: providerB,
+			apiConfiguration: apiConfig,
+			task: "task B",
+			startTask: false,
+		})
+
+		vi.spyOn(taskA as any, "getSystemPrompt").mockResolvedValue("system")
+		vi.spyOn(taskB as any, "getSystemPrompt").mockResolvedValue("system")
+
+		const spyA = vi.spyOn(taskA, "submitUserMessage").mockResolvedValue(undefined)
+		const spyB = vi.spyOn(taskB, "submitUserMessage").mockResolvedValue(undefined)
+
+		taskA.messageQueueService.addMessage("A message")
+		taskB.messageQueueService.addMessage("B message")
+
+		// Condense in task A should only drain A's queue
+		vi.useFakeTimers()
+		await taskA.condenseContext()
+		vi.runAllTimers()
+		vi.useRealTimers()
+
+		expect(spyA).toHaveBeenCalledWith("A message", undefined)
+		expect(spyB).not.toHaveBeenCalled()
+		expect(taskB.messageQueueService.isEmpty()).toBe(false)
+
+		// Now condense in task B should drain B's queue
+		vi.useFakeTimers()
+		await taskB.condenseContext()
+		vi.runAllTimers()
+		vi.useRealTimers()
+
+		expect(spyB).toHaveBeenCalledWith("B message", undefined)
+		expect(taskB.messageQueueService.isEmpty()).toBe(true)
 	})
 })

@@ -299,16 +299,17 @@
 		},
 		"release": {
 			"heading": "Novidades na Extensão:",
-			"fileReading": "Leitura inteligente de arquivos que evita estouro de contexto",
-			"browserUse": "Ferramenta de navegador habilitada para todos os modelos com capacidade de imagem",
-			"bugFixes": "Muitas correções de bugs e atualizações de modelos"
+			"openRouterEmbeddings": "Suporte para modelos de embedding do OpenRouter",
+			"chutesDynamic": "Chutes agora carrega os modelos mais recentes dinamicamente",
+			"queuedMessagesFix": "Correções para mensagens enfileiradas que se perdiam"
 		},
 		"cloudAgents": {
 			"heading": "Novidades na Nuvem:",
-			"feature": "Apresentando o primeiro Agente em Nuvem do Roo Code, o <bold>Revisor de PR</bold>.",
-			"description": "Ele executa o Roo na nuvem, fornecendo revisões de código de qualidade extremamente alta instantaneamente. Temos usado intensivamente para construir o Roo e agora também está disponível para a comunidade.",
-			"createAgentButton": "Experimentar Revisor de PR"
+			"prFixer": "Apresentando o agente em nuvem <bold>PR Fixer</bold> para complementar o Revisor de PR.",
+			"prFixerDescription": "O PR Fixer do Roo Code aplica alterações de alta qualidade aos seus PRs, diretamente do GitHub. Invoque via comentário de PR e ele lerá todo o histórico de comentários para entender contexto, acordos e compromissos - depois implementa a correção certa.",
+			"tryPrFixerButton": "Experimentar PR Fixer"
 		},
+		"careers": "Além disso, <careersLink>estamos contratando!</careersLink>",
 		"socialLinks": "Junte-se a nós no <xLink>X</xLink>, <discordLink>Discord</discordLink>, ou <redditLink>r/RooCode</redditLink> 🚀"
 	},
 	"browser": {

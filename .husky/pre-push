@@ -18,6 +18,16 @@ fi
 
 $pnpm_cmd run check-types
 
+# Load .env.local if it exists
+if [ -f ".env.local" ]; then
+  export $(grep -v '^#' .env.local | xargs)
+fi
+
+# Run tests if RUN_TESTS_ON_PUSH is set to true
+if [ "$RUN_TESTS_ON_PUSH" = "true" ]; then
+  $pnpm_cmd run test
+fi
+
 # Check for new changesets.
 NEW_CHANGESETS=$(find .changeset -name "*.md" ! -name "README.md" | wc -l | tr -d ' ')
 echo "Changeset files: $NEW_CHANGESETS"

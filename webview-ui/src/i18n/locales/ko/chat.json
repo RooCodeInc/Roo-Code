@@ -299,16 +299,17 @@
 		},
 		"release": {
 			"heading": "확장 프로그램의 새로운 기능:",
-			"fileReading": "컨텍스트 오버런을 방지하는 지능형 파일 읽기",
-			"browserUse": "모든 이미지 지원 모델에서 브라우저 사용 도구 활성화",
-			"bugFixes": "다수의 버그 수정 및 모델 업데이트"
+			"openRouterEmbeddings": "OpenRouter 임베딩 모델 지원",
+			"chutesDynamic": "Chutes가 이제 최신 모델을 동적으로 로드합니다",
+			"queuedMessagesFix": "대기 중인 메시지가 손실되는 문제 수정"
 		},
 		"cloudAgents": {
 			"heading": "클라우드의 새로운 기능:",
-			"feature": "Roo Code의 첫 번째 클라우드 에이전트인 <bold>PR 리뷰어</bold>를 소개합니다.",
-			"description": "클라우드에서 Roo를 실행하여 매우 높은 품질의 코드 리뷰를 즉시 제공합니다. Roo를 구축하는 데 이를 집중적으로 사용했으며 이제 커뮤니티에서도 사용할 수 있습니다.",
-			"createAgentButton": "PR 리뷰어 사용해보기"
+			"prFixer": "PR 리뷰어를 보완하는 <bold>PR Fixer</bold> 클라우드 에이전트를 소개합니다.",
+			"prFixerDescription": "Roo Code의 PR Fixer는 GitHub에서 직접 PR에 고품질 변경사항을 적용합니다. PR 댓글을 통해 호출하면 전체 댓글 기록을 읽어 컨텍스트, 합의사항 및 트레이드오프를 이해한 다음 올바른 수정을 구현합니다.",
+			"tryPrFixerButton": "PR Fixer 사용해보기"
 		},
+		"careers": "그리고, <careersLink>채용 중입니다!</careersLink>",
 		"socialLinks": "<xLink>X</xLink>, <discordLink>Discord</discordLink>, 또는 <redditLink>r/RooCode</redditLink>에서 만나요 🚀"
 	},
 	"browser": {

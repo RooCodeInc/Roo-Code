@@ -300,16 +300,17 @@
 		},
 		"release": {
 			"heading": "Uzantıdaki yenilikler:",
-			"fileReading": "Bağlam taşmalarını önleyen akıllı dosya okuma",
-			"browserUse": "Görüntü destekli tüm modeller için tarayıcı kullanım aracı etkinleştirildi",
-			"bugFixes": "Birçok hata düzeltmesi ve model güncellemesi"
+			"openRouterEmbeddings": "OpenRouter gömme modelleri desteği",
+			"chutesDynamic": "Chutes artık en son modelleri dinamik olarak yüklüyor",
+			"queuedMessagesFix": "Sıradaki mesajların kaybolması için düzeltmeler"
 		},
 		"cloudAgents": {
 			"heading": "Cloud'daki yenilikler:",
-			"feature": "Roo Code'un ilk Cloud Agent'ını tanıtıyoruz, <bold>PR Reviewer</bold>.",
-			"description": "Roo'yu bulutta çalıştırarak anında son derece yüksek kaliteli kod incelemeleri sağlar. Roo'yu oluşturmak için yoğun bir şekilde kullandık ve şimdi topluluk için de kullanılabilir.",
-			"createAgentButton": "PR Reviewer'ı Dene"
+			"prFixer": "PR Reviewer'ı tamamlamak için <bold>PR Fixer</bold> bulut ajanını tanıtıyoruz.",
+			"prFixerDescription": "Roo Code'un PR Fixer'ı, PR'larınıza doğrudan GitHub'dan yüksek kaliteli değişiklikler uygular. Bir PR yorumu aracılığıyla çağırın ve bağlamı, anlaşmaları ve ödünleri anlamak için tüm yorum geçmişini okuyacak - sonra doğru düzeltmeyi uygulayacaktır.",
+			"tryPrFixerButton": "PR Fixer'ı Dene"
 		},
+		"careers": "Ayrıca, <careersLink>işe alım yapıyoruz!</careersLink>",
 		"socialLinks": "Bize <xLink>X</xLink>, <discordLink>Discord</discordLink>, veya <redditLink>r/RooCode</redditLink>'da katılın 🚀"
 	},
 	"browser": {

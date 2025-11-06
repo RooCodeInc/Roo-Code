@@ -299,16 +299,17 @@
 		},
 		"release": {
 			"heading": "Novetats a l'extensió:",
-			"fileReading": "Lectura intel·ligent de fitxers que evita sobrepassaments de context",
-			"browserUse": "Eina de navegador habilitada per a tots els models amb capacitat d'imatge",
-			"bugFixes": "Moltes correccions d'errors i actualitzacions de models"
+			"openRouterEmbeddings": "Suport per a models d'incrustació d'OpenRouter",
+			"chutesDynamic": "Chutes ara carrega els últims models de forma dinàmica",
+			"queuedMessagesFix": "Correccions per a missatges en cua que es perden"
 		},
 		"cloudAgents": {
 			"heading": "Novetats al núvol:",
-			"feature": "Us presentem el primer Agent al Núvol de Roo Code, el <bold>Revisor de PR</bold>.",
-			"description": "Executa Roo al núvol, oferint revisions de codi d'altíssima qualitat a l'instant. L'hem utilitzat intensament per construir Roo i ara també està disponible per a la comunitat.",
-			"createAgentButton": "Prova el Revisor de PR"
+			"prFixer": "Presentem l'agent al núvol <bold>PR Fixer</bold> per complementar el Revisor de PR.",
+			"prFixerDescription": "El PR Fixer de Roo Code aplica canvis d'alta qualitat a les teves PR directament des de GitHub. Invoca'l mitjançant un comentari a la PR i llegirà tot l'historial de comentaris per entendre el context, els acords i els compromisos, i després implementarà la solució correcta.",
+			"tryPrFixerButton": "Prova el PR Fixer"
 		},
+		"careers": "A més, <careersLink>estem contractant!</careersLink>",
 		"socialLinks": "Uneix-te a nosaltres a <xLink>X</xLink>, <discordLink>Discord</discordLink>, o <redditLink>r/RooCode</redditLink> 🚀"
 	},
 	"browser": {

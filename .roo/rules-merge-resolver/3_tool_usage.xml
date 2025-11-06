@@ -13,7 +13,7 @@
     </priority>
     
     <priority level="3">
-      <tool>apply_diff or search_and_replace</tool>
+      <tool>apply_diff</tool>
       <when>To resolve conflicts by replacing conflicted sections</when>
       <why>Precise editing of specific conflict blocks</why>
     </priority>
@@ -127,25 +127,6 @@ function mergedImplementation() {
       ]]></example>
     </tool>
 
-    <tool name="search_and_replace">
-      <best_practices>
-        <practice>Use for simple conflict resolutions</practice>
-        <practice>Enable regex mode for complex patterns</practice>
-        <practice>Always escape special characters</practice>
-      </best_practices>
-      
-      <example><![CDATA[
-<search_and_replace>
-<path>src/config.ts</path>
-<search>\<<<<<<< HEAD[\s\S]*?\>>>>>>> \w+</search>
-<replace>// Resolved configuration
-const config = {
-  // Merged settings from both branches
-}</replace>
-<use_regex>true</use_regex>
-</search_and_replace>
-      ]]></example>
-    </tool>
   </tool_specific_guidance>
 
   <tool_combination_patterns>
@@ -215,7 +196,7 @@ const config = {
     <scenario name="malformed_conflicts">
       <description>Conflict markers are incomplete or nested</description>
       <approach>
-        Use search_and_replace with careful regex patterns
+        Use apply_diff with precise search blocks; split into multiple targeted edits if needed
         Manual inspection may be required
       </approach>
     </scenario>
@@ -232,7 +213,7 @@ const config = {
       <description>Code contains literal conflict marker strings</description>
       <approach>
         Extra careful escaping in diffs
-        Consider using search_and_replace with precise patterns
+        Prefer apply_diff with precise search blocks
       </approach>
     </scenario>
   </error_handling>

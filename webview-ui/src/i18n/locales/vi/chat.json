@@ -300,16 +300,17 @@
 		},
 		"release": {
 			"heading": "Mới trong Extension:",
-			"fileReading": "Đọc tệp thông minh tránh tràn ngữ cảnh",
-			"browserUse": "Công cụ sử dụng trình duyệt được kích hoạt cho tất cả các mô hình hỗ trợ hình ảnh",
-			"bugFixes": "Nhiều bản sửa lỗi và cập nhật mô hình"
+			"openRouterEmbeddings": "Hỗ trợ các mô hình nhúng OpenRouter",
+			"chutesDynamic": "Chutes giờ đây tải các mô hình mới nhất một cách động",
+			"queuedMessagesFix": "Sửa lỗi tin nhắn trong hàng đợi bị mất"
 		},
 		"cloudAgents": {
 			"heading": "Mới trên Cloud:",
-			"feature": "Giới thiệu Cloud Agent đầu tiên của Roo Code, <bold>PR Reviewer</bold>.",
-			"description": "Nó chạy Roo trên đám mây, cung cấp đánh giá code chất lượng cực cao ngay lập tức. Chúng tôi đã sử dụng nó rất nhiều để xây dựng Roo và giờ đây nó cũng có sẵn cho cộng đồng.",
-			"createAgentButton": "Dùng thử PR Reviewer"
+			"prFixer": "Giới thiệu agent đám mây <bold>PR Fixer</bold> để bổ sung cho PR Reviewer.",
+			"prFixerDescription": "PR Fixer của Roo Code áp dụng các thay đổi chất lượng cao cho PR của bạn, ngay từ GitHub. Gọi qua bình luận PR và nó sẽ đọc toàn bộ lịch sử bình luận để hiểu ngữ cảnh, thỏa thuận và đánh đổi - sau đó triển khai bản sửa lỗi phù hợp.",
+			"tryPrFixerButton": "Dùng thử PR Fixer"
 		},
+		"careers": "Ngoài ra, <careersLink>chúng tôi đang tuyển dụng!</careersLink>",
 		"socialLinks": "Tham gia với chúng tôi trên <xLink>X</xLink>, <discordLink>Discord</discordLink>, hoặc <redditLink>r/RooCode</redditLink> 🚀"
 	},
 	"browser": {

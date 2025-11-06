@@ -192,8 +192,6 @@
 		"wantsToGenerateImageProtected": "Roo wants to generate an image in a protected location",
 		"didGenerateImage": "Roo generated an image",
 		"wantsToCreate": "Roo wants to create a new file",
-		"wantsToSearchReplace": "Roo wants to search and replace in this file",
-		"didSearchReplace": "Roo performed search and replace on this file",
 		"wantsToInsert": "Roo wants to insert content into this file",
 		"wantsToInsertWithLineNumber": "Roo wants to insert content into this file at line {{lineNumber}}",
 		"wantsToInsertAtEnd": "Roo wants to append content to the end of this file"
@@ -307,16 +305,17 @@
 		},
 		"release": {
 			"heading": "New in the Extension:",
-			"fileReading": "Intelligent file reading that avoids context overruns",
-			"browserUse": "Browser-use tool enabled for all image-capable models",
-			"bugFixes": "Many bug fixes and model updates"
+			"openRouterEmbeddings": "Support for OpenRouter embedding models",
+			"chutesDynamic": "Chutes now loads the latest models dynamically",
+			"queuedMessagesFix": "Fixes for queued messages getting lost"
 		},
 		"cloudAgents": {
 			"heading": "New in the Cloud:",
-			"feature": "Introducing Roo Code's first Cloud Agent, the <bold>PR Reviewer</bold>.",
-			"description": "It runs Roo in the cloud, giving extremely high quality code reviews instantly. We've been using it heavily to build Roo and now it's also available to the community.",
-			"createAgentButton": "Try out PR Reviewer"
+			"prFixer": "Introducing the <bold>PR Fixer</bold> cloud agent to complement the PR Reviewer.",
+			"prFixerDescription": "The PR Fixer applies high-quality changes to your PRs, right from GitHub. Invoke via a PR comment and it will read the entire comment history to understand context, agreements, and tradeoffs - then implement the right fix.",
+			"tryPrFixerButton": "Try PR Fixer"
 		},
+		"careers": "Also, <careersLink>we're hiring!</careersLink>",
 		"socialLinks": "Join us on <xLink>X</xLink>, <discordLink>Discord</discordLink>, or <redditLink>r/RooCode</redditLink> 🚀"
 	},
 	"reasoning": {

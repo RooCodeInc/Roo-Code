@@ -311,16 +311,17 @@
 		},
 		"release": {
 			"heading": "Baru di Ekstensi:",
-			"fileReading": "Pembacaan file cerdas yang menghindari kelebihan konteks",
-			"browserUse": "Tool penggunaan browser diaktifkan untuk semua model yang mendukung gambar",
-			"bugFixes": "Banyak perbaikan bug dan pembaruan model"
+			"openRouterEmbeddings": "Dukungan untuk model embedding OpenRouter",
+			"chutesDynamic": "Chutes sekarang memuat model terbaru secara dinamis",
+			"queuedMessagesFix": "Perbaikan untuk pesan antrian yang hilang"
 		},
 		"cloudAgents": {
 			"heading": "Baru di Cloud:",
-			"feature": "Memperkenalkan Agen Cloud pertama Roo Code, <bold>PR Reviewer</bold>.",
-			"description": "Ini menjalankan Roo di cloud, memberikan tinjauan kode berkualitas sangat tinggi secara instan. Kami telah menggunakannya secara intensif untuk membangun Roo dan sekarang juga tersedia untuk komunitas.",
-			"createAgentButton": "Coba PR Reviewer"
+			"prFixer": "Memperkenalkan agen cloud <bold>PR Fixer</bold> untuk melengkapi PR Reviewer.",
+			"prFixerDescription": "PR Fixer dari Roo Code menerapkan perubahan berkualitas tinggi ke PR Anda, langsung dari GitHub. Panggil melalui komentar PR dan ia akan membaca seluruh riwayat komentar untuk memahami konteks, kesepakatan, dan trade-off - kemudian menerapkan perbaikan yang tepat.",
+			"tryPrFixerButton": "Coba PR Fixer"
 		},
+		"careers": "Juga, <careersLink>kami sedang merekrut!</careersLink>",
 		"socialLinks": "Bergabunglah dengan kami di <xLink>X</xLink>, <discordLink>Discord</discordLink>, atau <redditLink>r/RooCode</redditLink> 🚀"
 	},
 	"reasoning": {

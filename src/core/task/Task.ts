@@ -74,7 +74,7 @@ import { RooTerminalProcess } from "../../integrations/terminal/types"
 import { TerminalRegistry } from "../../integrations/terminal/TerminalRegistry"
 
 // utils
-import { calculateApiCostAnthropic } from "../../shared/cost"
+import { calculateApiCostAnthropic, calculateApiCostOpenAI } from "../../shared/cost"
 import { getWorkspacePath } from "../../utils/path"
 
 // prompts
@@ -1075,6 +1075,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			{ isNonInteractive: true } /* options */,
 			contextCondense,
 		)
+
+		// Process any queued messages after condensing completes
+		this.processQueuedMessages()
 	}
 
 	async say(
@@ -1746,9 +1749,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		interface StackItem {
 			userContent: Anthropic.Messages.ContentBlockParam[]
 			includeFileDetails: boolean
+			retryAttempt?: number
 		}
 
-		const stack: StackItem[] = [{ userContent, includeFileDetails }]
+		const stack: StackItem[] = [{ userContent, includeFileDetails, retryAttempt: 0 }]
 
 		while (stack.length > 0) {
 			const currentItem = stack.pop()!
@@ -1882,21 +1886,35 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					}
 
 					const existingData = JSON.parse(this.clineMessages[lastApiReqIndex].text || "{}")
+
+					// Calculate total tokens and cost using provider-aware function
+					const modelId = getModelId(this.apiConfiguration)
+					const apiProtocol = getApiProtocol(this.apiConfiguration.apiProvider, modelId)
+
+					const costResult =
+						apiProtocol === "anthropic"
+							? calculateApiCostAnthropic(
+									this.api.getModel().info,
+									inputTokens,
+									outputTokens,
+									cacheWriteTokens,
+									cacheReadTokens,
+								)
+							: calculateApiCostOpenAI(
+									this.api.getModel().info,
+									inputTokens,
+									outputTokens,
+									cacheWriteTokens,
+									cacheReadTokens,
+								)
+
 					this.clineMessages[lastApiReqIndex].text = JSON.stringify({
 						...existingData,
-						tokensIn: inputTokens,
-						tokensOut: outputTokens,
+						tokensIn: costResult.totalInputTokens,
+						tokensOut: costResult.totalOutputTokens,
 						cacheWrites: cacheWriteTokens,
 						cacheReads: cacheReadTokens,
-						cost:
-							totalCost ??
-							calculateApiCostAnthropic(
-								this.api.getModel().info,
-								inputTokens,
-								outputTokens,
-								cacheWriteTokens,
-								cacheReadTokens,
-							),
+						cost: totalCost ?? costResult.totalCost,
 						cancelReason,
 						streamingFailedMessage,
 					} satisfies ClineApiReqInfo)
@@ -2056,7 +2074,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 					const drainStreamInBackgroundToFindAllUsage = async (apiReqIndex: number) => {
 						const timeoutMs = DEFAULT_USAGE_COLLECTION_TIMEOUT_MS
-						const startTime = Date.now()
+						const startTime = performance.now()
 						const modelId = getModelId(this.apiConfiguration)
 
 						// Local variables to accumulate usage data without affecting the main flow
@@ -2100,21 +2118,34 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 									await this.updateClineMessage(apiReqMessage)
 								}
 
-								// Capture telemetry
+								// Capture telemetry with provider-aware cost calculation
+								const modelId = getModelId(this.apiConfiguration)
+								const apiProtocol = getApiProtocol(this.apiConfiguration.apiProvider, modelId)
+
+								// Use the appropriate cost function based on the API protocol
+								const costResult =
+									apiProtocol === "anthropic"
+										? calculateApiCostAnthropic(
+												this.api.getModel().info,
+												tokens.input,
+												tokens.output,
+												tokens.cacheWrite,
+												tokens.cacheRead,
+											)
+										: calculateApiCostOpenAI(
+												this.api.getModel().info,
+												tokens.input,
+												tokens.output,
+												tokens.cacheWrite,
+												tokens.cacheRead,
+											)
+
 								TelemetryService.instance.captureLlmCompletion(this.taskId, {
-									inputTokens: tokens.input,
-									outputTokens: tokens.output,
+									inputTokens: costResult.totalInputTokens,
+									outputTokens: costResult.totalOutputTokens,
 									cacheWriteTokens: tokens.cacheWrite,
 									cacheReadTokens: tokens.cacheRead,
-									cost:
-										tokens.total ??
-										calculateApiCostAnthropic(
-											this.api.getModel().info,
-											tokens.input,
-											tokens.output,
-											tokens.cacheWrite,
-											tokens.cacheRead,
-										),
+									cost: tokens.total ?? costResult.totalCost,
 								})
 							}
 						}
@@ -2127,7 +2158,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 							// Use the same iterator that the main loop was using
 							while (!item.done) {
 								// Check for timeout
-								if (Date.now() - startTime > timeoutMs) {
+								if (performance.now() - startTime > timeoutMs) {
 									console.warn(
 										`[Background Usage Collection] Timed out after ${timeoutMs}ms for model: ${modelId}, processed ${chunkCount} chunks`,
 									)
@@ -2228,10 +2259,32 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 								`[Task#${this.taskId}.${this.instanceId}] Stream failed, will retry: ${streamingFailedMessage}`,
 							)
 
-							// Push the same content back onto the stack to retry
+							// Apply exponential backoff similar to first-chunk errors when auto-resubmit is enabled
+							const stateForBackoff = await this.providerRef.deref()?.getState()
+							if (stateForBackoff?.autoApprovalEnabled && stateForBackoff?.alwaysApproveResubmit) {
+								await this.backoffAndAnnounce(
+									currentItem.retryAttempt ?? 0,
+									error,
+									streamingFailedMessage,
+								)
+
+								// Check if task was aborted during the backoff
+								if (this.abort) {
+									console.log(
+										`[Task#${this.taskId}.${this.instanceId}] Task aborted during mid-stream retry backoff`,
+									)
+									// Abort the entire task
+									this.abortReason = "user_cancelled"
+									await this.abortTask()
+									break
+								}
+							}
+
+							// Push the same content back onto the stack to retry, incrementing the retry attempt counter
 							stack.push({
 								userContent: currentUserContent,
 								includeFileDetails: false,
+								retryAttempt: (currentItem.retryAttempt ?? 0) + 1,
 							})
 
 							// Continue to retry the request
@@ -2320,9 +2373,16 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						})
 					}
 
+					// Check if we should preserve reasoning in the assistant message
+					let finalAssistantMessage = assistantMessage
+					if (reasoningMessage && this.api.getModel().info.preserveReasoning) {
+						// Prepend reasoning in XML tags to the assistant message so it's included in API history
+						finalAssistantMessage = `<think>${reasoningMessage}</think>\n${assistantMessage}`
+					}
+
 					await this.addToApiConversationHistory({
 						role: "assistant",
-						content: [{ type: "text", text: assistantMessage }],
+						content: [{ type: "text", text: finalAssistantMessage }],
 					})
 
 					TelemetryService.instance.captureConversationMessage(this.taskId, "assistant")
@@ -2598,10 +2658,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// Use the shared timestamp so that subtasks respect the same rate-limit
 		// window as their parent tasks.
 		if (Task.lastGlobalApiRequestTime) {
-			const now = Date.now()
+			const now = performance.now()
 			const timeSinceLastRequest = now - Task.lastGlobalApiRequestTime
 			const rateLimit = apiConfiguration?.rateLimitSeconds || 0
-			rateLimitDelay = Math.ceil(Math.max(0, rateLimit * 1000 - timeSinceLastRequest) / 1000)
+			rateLimitDelay = Math.ceil(Math.min(rateLimit, Math.max(0, rateLimit * 1000 - timeSinceLastRequest) / 1000))
 		}
 
 		// Only show rate limiting message if we're not retrying. If retrying, we'll include the delay there.
@@ -2616,7 +2676,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		// Update last request time before making the request so that subsequent
 		// requests — even from new subtasks — will honour the provider's rate-limit.
-		Task.lastGlobalApiRequestTime = Date.now()
+		Task.lastGlobalApiRequestTime = performance.now()
 
 		const systemPrompt = await this.getSystemPrompt()
 		this.lastUsedInstructions = systemPrompt
@@ -2772,45 +2832,17 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					errorMsg = "Unknown error"
 				}
 
-				const baseDelay = requestDelaySeconds || 5
-				let exponentialDelay = Math.min(
-					Math.ceil(baseDelay * Math.pow(2, retryAttempt)),
-					MAX_EXPONENTIAL_BACKOFF_SECONDS,
-				)
+				// Apply shared exponential backoff and countdown UX
+				await this.backoffAndAnnounce(retryAttempt, error, errorMsg)
 
-				// If the error is a 429, and the error details contain a retry delay, use that delay instead of exponential backoff
-				if (error.status === 429) {
-					const geminiRetryDetails = error.errorDetails?.find(
-						(detail: any) => detail["@type"] === "type.googleapis.com/google.rpc.RetryInfo",
+				// CRITICAL: Check if task was aborted during the backoff countdown
+				// This prevents infinite loops when users cancel during auto-retry
+				// Without this check, the recursive call below would continue even after abort
+				if (this.abort) {
+					throw new Error(
+						`[Task#attemptApiRequest] task ${this.taskId}.${this.instanceId} aborted during retry`,
 					)
-					if (geminiRetryDetails) {
-						const match = geminiRetryDetails?.retryDelay?.match(/^(\d+)s$/)
-						if (match) {
-							exponentialDelay = Number(match[1]) + 1
-						}
-					}
 				}
-
-				// Wait for the greater of the exponential delay or the rate limit delay
-				const finalDelay = Math.max(exponentialDelay, rateLimitDelay)
-
-				// Show countdown timer with exponential backoff
-				for (let i = finalDelay; i > 0; i--) {
-					await this.say(
-						"api_req_retry_delayed",
-						`${errorMsg}\n\nRetry attempt ${retryAttempt + 1}\nRetrying in ${i} seconds...`,
-						undefined,
-						true,
-					)
-					await delay(1000)
-				}
-
-				await this.say(
-					"api_req_retry_delayed",
-					`${errorMsg}\n\nRetry attempt ${retryAttempt + 1}\nRetrying now...`,
-					undefined,
-					false,
-				)
 
 				// Delegate generator output from the recursive call with
 				// incremented retry count.
@@ -2846,6 +2878,79 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// effectively passes along all subsequent chunks from the original
 		// stream.
 		yield* iterator
+	}
+
+	// Shared exponential backoff for retries (first-chunk and mid-stream)
+	private async backoffAndAnnounce(retryAttempt: number, error: any, header?: string): Promise<void> {
+		try {
+			const state = await this.providerRef.deref()?.getState()
+			const baseDelay = state?.requestDelaySeconds || 5
+
+			let exponentialDelay = Math.min(
+				Math.ceil(baseDelay * Math.pow(2, retryAttempt)),
+				MAX_EXPONENTIAL_BACKOFF_SECONDS,
+			)
+
+			// Respect provider rate limit window
+			let rateLimitDelay = 0
+			const rateLimit = state?.apiConfiguration?.rateLimitSeconds || 0
+			if (Task.lastGlobalApiRequestTime && rateLimit > 0) {
+				const elapsed = performance.now() - Task.lastGlobalApiRequestTime
+				rateLimitDelay = Math.ceil(Math.min(rateLimit, Math.max(0, rateLimit * 1000 - elapsed) / 1000))
+			}
+
+			// Prefer RetryInfo on 429 if present
+			if (error?.status === 429) {
+				const retryInfo = error?.errorDetails?.find(
+					(d: any) => d["@type"] === "type.googleapis.com/google.rpc.RetryInfo",
+				)
+				const match = retryInfo?.retryDelay?.match?.(/^(\d+)s$/)
+				if (match) {
+					exponentialDelay = Number(match[1]) + 1
+				}
+			}
+
+			const finalDelay = Math.max(exponentialDelay, rateLimitDelay)
+			if (finalDelay <= 0) return
+
+			// Build header text; fall back to error message if none provided
+			let headerText = header
+			if (!headerText) {
+				if (error?.error?.metadata?.raw) {
+					headerText = JSON.stringify(error.error.metadata.raw, null, 2)
+				} else if (error?.message) {
+					headerText = error.message
+				} else {
+					headerText = "Unknown error"
+				}
+			}
+			headerText = headerText ? `${headerText}\n\n` : ""
+
+			// Show countdown timer with exponential backoff
+			for (let i = finalDelay; i > 0; i--) {
+				// Check abort flag during countdown to allow early exit
+				if (this.abort) {
+					throw new Error(`[Task#${this.taskId}] Aborted during retry countdown`)
+				}
+
+				await this.say(
+					"api_req_retry_delayed",
+					`${headerText}Retry attempt ${retryAttempt + 1}\nRetrying in ${i} seconds...`,
+					undefined,
+					true,
+				)
+				await delay(1000)
+			}
+
+			await this.say(
+				"api_req_retry_delayed",
+				`${headerText}Retry attempt ${retryAttempt + 1}\nRetrying now...`,
+				undefined,
+				false,
+			)
+		} catch (err) {
+			console.error("Exponential backoff failed:", err)
+		}
 	}
 
 	// Checkpoints

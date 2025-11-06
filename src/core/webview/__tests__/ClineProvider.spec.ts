@@ -2701,6 +2701,7 @@ describe("ClineProvider - Router Models", () => {
 			apiKey: "litellm-key",
 			baseUrl: "http://localhost:4000",
 		})
+		expect(getModels).toHaveBeenCalledWith({ provider: "chutes" })
 
 		// Verify response was sent
 		expect(mockPostMessage).toHaveBeenCalledWith({
@@ -2712,6 +2713,7 @@ describe("ClineProvider - Router Models", () => {
 				glama: mockModels,
 				unbound: mockModels,
 				roo: mockModels,
+				chutes: mockModels,
 				litellm: mockModels,
 				ollama: {},
 				lmstudio: {},
@@ -2719,6 +2721,7 @@ describe("ClineProvider - Router Models", () => {
 				huggingface: {},
 				"io-intelligence": {},
 			},
+			values: undefined,
 		})
 	})
 
@@ -2751,6 +2754,7 @@ describe("ClineProvider - Router Models", () => {
 			.mockResolvedValueOnce(mockModels) // vercel-ai-gateway success
 			.mockResolvedValueOnce(mockModels) // deepinfra success
 			.mockResolvedValueOnce(mockModels) // roo success
+			.mockRejectedValueOnce(new Error("Chutes API error")) // chutes fail
 			.mockRejectedValueOnce(new Error("LiteLLM connection failed")) // litellm fail
 
 		await messageHandler({ type: "requestRouterModels" })
@@ -2765,6 +2769,7 @@ describe("ClineProvider - Router Models", () => {
 				glama: mockModels,
 				unbound: {},
 				roo: mockModels,
+				chutes: {},
 				ollama: {},
 				lmstudio: {},
 				litellm: {},
@@ -2772,6 +2777,7 @@ describe("ClineProvider - Router Models", () => {
 				huggingface: {},
 				"io-intelligence": {},
 			},
+			values: undefined,
 		})
 
 		// Verify error messages were sent for failed providers
@@ -2794,6 +2800,13 @@ describe("ClineProvider - Router Models", () => {
 			success: false,
 			error: "Unbound API error",
 			values: { provider: "unbound" },
+		})
+
+		expect(mockPostMessage).toHaveBeenCalledWith({
+			type: "singleRouterModelFetchResponse",
+			success: false,
+			error: "Chutes API error",
+			values: { provider: "chutes" },
 		})
 
 		expect(mockPostMessage).toHaveBeenCalledWith({
@@ -2880,6 +2893,7 @@ describe("ClineProvider - Router Models", () => {
 				glama: mockModels,
 				unbound: mockModels,
 				roo: mockModels,
+				chutes: mockModels,
 				litellm: {},
 				ollama: {},
 				lmstudio: {},
@@ -2887,6 +2901,7 @@ describe("ClineProvider - Router Models", () => {
 				huggingface: {},
 				"io-intelligence": {},
 			},
+			values: undefined,
 		})
 	})
 

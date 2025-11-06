@@ -284,16 +284,17 @@
 		},
 		"release": {
 			"heading": "Nieuw in de extensie:",
-			"fileReading": "Intelligent bestanden lezen dat contextoverloop voorkomt",
-			"browserUse": "Browsertool ingeschakeld voor alle modellen met afbeeldingscapaciteit",
-			"bugFixes": "Veel bugfixes en modelupdates"
+			"openRouterEmbeddings": "Ondersteuning voor OpenRouter embedding-modellen",
+			"chutesDynamic": "Chutes laadt nu dynamisch de nieuwste modellen",
+			"queuedMessagesFix": "Oplossingen voor berichten in de wachtrij die verloren gaan"
 		},
 		"cloudAgents": {
 			"heading": "Nieuw in de Cloud:",
-			"feature": "Maak kennis met de eerste Cloud Agent van Roo Code, de <bold>PR Reviewer</bold>.",
-			"description": "Het draait Roo in de cloud en geeft direct zeer hoogwaardige codebeoordelingen. We hebben het intensief gebruikt om Roo te bouwen en nu is het ook beschikbaar voor de community.",
-			"createAgentButton": "Probeer PR Reviewer"
+			"prFixer": "Introductie van de <bold>PR Fixer</bold> cloud-agent als aanvulling op de PR Reviewer.",
+			"prFixerDescription": "De PR Fixer van Roo Code past hoogwaardige wijzigingen toe op je PR's, direct vanuit GitHub. Roep het aan via een PR-opmerking en het leest de volledige opmerkingengeschiedenis om context, afspraken en afwegingen te begrijpen - en implementeert vervolgens de juiste oplossing.",
+			"tryPrFixerButton": "Probeer PR Fixer"
 		},
+		"careers": "Ook, <careersLink>we nemen aan!</careersLink>",
 		"socialLinks": "Sluit je bij ons aan op <xLink>X</xLink>, <discordLink>Discord</discordLink>, of <redditLink>r/RooCode</redditLink> 🚀"
 	},
 	"reasoning": {

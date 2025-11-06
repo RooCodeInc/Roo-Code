@@ -300,16 +300,17 @@
 		},
 		"release": {
 			"heading": "扩展新功能：",
-			"fileReading": "智能文件读取，避免上下文溢出",
-			"browserUse": "浏览器工具已为所有支持图像的模型启用",
-			"bugFixes": "大量错误修复和模型更新"
+			"openRouterEmbeddings": "支持 OpenRouter 嵌入模型",
+			"chutesDynamic": "Chutes 现在动态加载最新模型",
+			"queuedMessagesFix": "修复队列消息丢失问题"
 		},
 		"cloudAgents": {
 			"heading": "云端新功能：",
-			"feature": "推出 Roo Code 首个云端 Agent，<bold>PR 审查员</bold>。",
-			"description": "在云端运行 Roo，即时提供极高质量的代码审查。我们在构建 Roo 时大量使用它，现在也向社区开放。",
-			"createAgentButton": "试用 PR 审查员"
+			"prFixer": "推出 <bold>PR Fixer</bold> 云端 Agent 以补充 PR 审查员。",
+			"prFixerDescription": "Roo Code 的 PR Fixer 直接在 GitHub 上为你的 PR 应用高质量更改。通过 PR 评论调用，它会读取整个评论历史以理解上下文、协议和权衡 - 然后实施正确的修复。",
+			"tryPrFixerButton": "试用 PR Fixer"
 		},
+		"careers": "此外，<careersLink>我们正在招聘！</careersLink>",
 		"socialLinks": "在 <xLink>X</xLink>、<discordLink>Discord</discordLink> 或 <redditLink>r/RooCode</redditLink> 上关注我们 🚀"
 	},
 	"browser": {
