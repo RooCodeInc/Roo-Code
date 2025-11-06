@@ -16,6 +16,7 @@ import { findMatchingResourceOrTemplate } from "@src/utils/mcp"
 import { vscode } from "@src/utils/vscode"
 import { formatPathTooltip } from "@src/utils/formatPathTooltip"
 import { getLanguageFromPath } from "@src/utils/getLanguageFromPath"
+import { labelForBackgroundStatus } from "@src/utils/backgroundStatus"
 
 import { ToolUseBlock, ToolUseBlockHeader } from "../common/ToolUseBlock"
 import UpdateTodoListToolBlock from "./UpdateTodoListToolBlock"
@@ -281,12 +282,33 @@ export const ChatRowContent = ({
 						/>
 					</div>
 				)
+				// Background mode UI label/icon handling
+				const meta: any = message.metadata
+				const isBackground = meta?.background === true
+				const bgStatus = meta?.backgroundStatus as
+					| "queued"
+					| "in_progress"
+					| "reconnecting"
+					| "polling"
+					| "completed"
+					| "failed"
+					| "canceled"
+					| undefined
+				const bgDone =
+					isBackground && (bgStatus === "completed" || bgStatus === "failed" || bgStatus === "canceled")
+				const label = isBackground ? labelForBackgroundStatus(bgStatus) : undefined
 				return [
 					apiReqCancelReason !== null && apiReqCancelReason !== undefined ? (
 						apiReqCancelReason === "user_cancelled" ? (
 							getIconSpan("error", cancelledColor)
 						) : (
 							getIconSpan("error", errorColor)
+						)
+					) : bgDone ? (
+						bgStatus === "completed" ? (
+							getIconSpan("arrow-swap", normalColor)
+						) : (
+							getIconSpan("error", bgStatus === "canceled" ? cancelledColor : errorColor)
 						)
 					) : cost !== null && cost !== undefined ? (
 						getIconSpan("arrow-swap", normalColor)
@@ -296,7 +318,9 @@ export const ChatRowContent = ({
 						<ProgressIndicator />
 					),
 					apiReqCancelReason !== null && apiReqCancelReason !== undefined ? (
-						apiReqCancelReason === "user_cancelled" ? (
+						isBackground && label ? (
+							<span style={{ color: normalColor }}>{label}</span>
+						) : apiReqCancelReason === "user_cancelled" ? (
 							<span style={{ color: normalColor, fontWeight: "bold" }}>
 								{t("chat:apiRequest.cancelled")}
 							</span>
@@ -305,6 +329,8 @@ export const ChatRowContent = ({
 								{t("chat:apiRequest.streamingFailed")}
 							</span>
 						)
+					) : label ? (
+						<span style={{ color: normalColor }}>{label}</span>
 					) : cost !== null && cost !== undefined ? (
 						<span style={{ color: normalColor }}>{t("chat:apiRequest.title")}</span>
 					) : apiRequestFailedMessage ? (
@@ -999,8 +1025,14 @@ export const ChatRowContent = ({
 					)
 				case "api_req_started":
 					// Determine if the API request is in progress
+					const bgMeta: any = message.metadata
+					const bgStatus = bgMeta?.background === true ? bgMeta?.backgroundStatus : undefined
+					const bgDone = bgStatus === "completed" || bgStatus === "failed" || bgStatus === "canceled"
 					const isApiRequestInProgress =
-						apiReqCancelReason === undefined && apiRequestFailedMessage === undefined && cost === undefined
+						apiReqCancelReason === undefined &&
+						apiRequestFailedMessage === undefined &&
+						cost === undefined &&
+						!bgDone
 
 					return (
 						<>

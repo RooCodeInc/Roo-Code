@@ -65,6 +65,9 @@ export const modelInfoSchema = z.object({
 	supportsReasoningBinary: z.boolean().optional(),
 	// Capability flag to indicate whether the model supports temperature parameter
 	supportsTemperature: z.boolean().optional(),
+	// When true, this model must be invoked using Responses background mode.
+	// Providers should auto-enable background:true, stream:true, and store:true.
+	backgroundMode: z.boolean().optional(),
 	requiredReasoningBudget: z.boolean().optional(),
 	supportsReasoningEffort: z.boolean().optional(),
 	requiredReasoningEffort: z.boolean().optional(),
