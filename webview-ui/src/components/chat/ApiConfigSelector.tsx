@@ -100,6 +100,8 @@ interface ApiConfigSelectorProps {
 	listApiConfigMeta: Array<{ id: string; name: string; modelId?: string }>
 	pinnedApiConfigs?: Record<string, boolean>
 	togglePinnedApiConfig: (id: string) => void
+	onSortModeChange?: (mode: SortMode) => void
+	onCustomOrderChange?: (order: Array<{ id: string; index: number; pinned: boolean }>) => void
 }
 
 export const ApiConfigSelector = ({
@@ -112,6 +114,8 @@ export const ApiConfigSelector = ({
 	listApiConfigMeta,
 	pinnedApiConfigs,
 	togglePinnedApiConfig,
+	onSortModeChange,
+	onCustomOrderChange,
 }: ApiConfigSelectorProps) => {
 	const { t } = useAppTranslation()
 	const { apiConfigsCustomOrder: customOrder = [] } = useExtensionState()
@@ -146,6 +150,17 @@ export const ApiConfigSelector = ({
 		return sorted
 	}, [listApiConfigMeta, sortMode, customOrder])
 
+	// Current visible order for callbacks when switching to custom
+	const currentOrder = useMemo(
+		() =>
+			sortedConfigs.map((config, index) => ({
+				id: config.id,
+				index,
+				pinned: Boolean(pinnedApiConfigs?.[config.id]),
+			})),
+		[sortedConfigs, pinnedApiConfigs],
+	)
+
 	// Filter configs based on search.
 	const filteredConfigs = useMemo(() => {
 		if (!searchValue) {
@@ -177,6 +192,22 @@ export const ApiConfigSelector = ({
 		vscode.postMessage({ type: "switchTab", tab: "settings" })
 		setOpen(false)
 	}, [])
+
+	const handleSortModeChange = useCallback(
+		(mode: SortMode) => {
+			setSortMode(mode)
+			onSortModeChange?.(mode)
+			if (mode === "custom") {
+				// Persist current visible order as custom order baseline
+				vscode.postMessage({
+					type: "setApiConfigsCustomOrder",
+					values: { customOrder: currentOrder },
+				})
+				onCustomOrderChange?.(currentOrder)
+			}
+		},
+		[onSortModeChange, onCustomOrderChange, currentOrder],
+	)
 
 	return (
 		<Popover open={open} onOpenChange={setOpen} data-testid="api-config-selector-root">
@@ -230,54 +261,54 @@ export const ApiConfigSelector = ({
 						</div>
 					)}
 
-				{/* Config list - single scroll container with a11y attributes and sticky pinned structure */}
-				{filteredConfigs.length === 0 && searchValue ? (
-					<div className="py-2 px-3 text-sm text-vscode-foreground/70">{t("common:ui.no_results")}</div>
-				) : (
-					<div
-						className="max-h-[300px] overflow-y-auto"
-						role="listbox"
-						aria-label={t("prompts:apiConfiguration.select")}>
-						{/* Pinned configs - sticky header */}
-						{pinnedConfigs.length > 0 && (
-							<div
-								className={cn(
-									"sticky top-0 z-10 bg-vscode-dropdown-background py-1",
-									unpinnedConfigs.length > 0 && "border-b border-vscode-dropdown-foreground/10",
-								)}
-								aria-label="Pinned configurations">
-								{pinnedConfigs.map((config, index) => (
-									<ConfigItem
-										key={config.id}
-										config={config}
-										isPinned
-										index={index}
-										value={value}
-										onSelect={handleSelect}
-										togglePinnedApiConfig={togglePinnedApiConfig}
-									/>
-								))}
-							</div>
-						)}
+					{/* Config list - single scroll container with a11y attributes and sticky pinned structure */}
+					{filteredConfigs.length === 0 && searchValue ? (
+						<div className="py-2 px-3 text-sm text-vscode-foreground/70">{t("common:ui.no_results")}</div>
+					) : (
+						<div
+							className="max-h-[300px] overflow-y-auto"
+							role="listbox"
+							aria-label={t("prompts:apiConfiguration.select")}>
+							{/* Pinned configs - sticky header */}
+							{pinnedConfigs.length > 0 && (
+								<div
+									className={cn(
+										"sticky top-0 z-10 bg-vscode-dropdown-background py-1",
+										unpinnedConfigs.length > 0 && "border-b border-vscode-dropdown-foreground/10",
+									)}
+									aria-label="Pinned configurations">
+									{pinnedConfigs.map((config, index) => (
+										<ConfigItem
+											key={config.id}
+											config={config}
+											isPinned
+											index={index}
+											value={value}
+											onSelect={handleSelect}
+											togglePinnedApiConfig={togglePinnedApiConfig}
+										/>
+									))}
+								</div>
+							)}
 
-						{/* Unpinned configs */}
-						{unpinnedConfigs.length > 0 && (
-							<div className="py-1" aria-label="All configurations">
-								{unpinnedConfigs.map((config, index) => (
-									<ConfigItem
-										key={config.id}
-										config={config}
-										isPinned={false}
-										index={pinnedConfigs.length + index}
-										value={value}
-										onSelect={handleSelect}
-										togglePinnedApiConfig={togglePinnedApiConfig}
-									/>
-								))}
-							</div>
-						)}
-					</div>
-				)}
+							{/* Unpinned configs */}
+							{unpinnedConfigs.length > 0 && (
+								<div className="py-1" aria-label="All configurations">
+									{unpinnedConfigs.map((config, index) => (
+										<ConfigItem
+											key={config.id}
+											config={config}
+											isPinned={false}
+											index={pinnedConfigs.length + index}
+											value={value}
+											onSelect={handleSelect}
+											togglePinnedApiConfig={togglePinnedApiConfig}
+										/>
+									))}
+								</div>
+							)}
+						</div>
+					)}
 
 					{/* Bottom bar with controls */}
 					<div className="flex flex-col border-t border-vscode-dropdown-border">
@@ -295,7 +326,7 @@ export const ApiConfigSelector = ({
 											size="sm"
 											aria-label={`${t("chat:apiConfigSelector.sort")} ${mode === "alphabetical" ? t("chat:apiConfigSelector.alphabetical") : t("chat:apiConfigSelector.custom")}`}
 											aria-pressed={sortMode === mode}
-											onClick={() => setSortMode(mode)}
+											onClick={() => handleSortModeChange(mode)}
 											className={cn(
 												"h-6 px-2 text-xs",
 												sortMode === mode &&

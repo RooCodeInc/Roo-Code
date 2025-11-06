@@ -205,6 +205,7 @@ const ConfigListItem = memo(function ConfigListItemComponent({
 				onKeyDown(e, index)
 				if (!isReorderingMode && (e.key === "Enter" || e.key === " ")) {
 					e.preventDefault()
+					e.stopPropagation()
 					onSelectConfig(config.name)
 				}
 			}}

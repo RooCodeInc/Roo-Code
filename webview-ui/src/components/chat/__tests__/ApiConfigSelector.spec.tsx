@@ -436,6 +436,33 @@ describe("ApiConfigSelector", () => {
 		expect(searchInput.value).toBe("Config")
 	})
 
+	test("calls onSortModeChange when switching sort mode", () => {
+		const mockOnSortModeChange = vi.fn()
+		render(<ApiConfigSelector {...defaultProps} onSortModeChange={mockOnSortModeChange} />)
+
+		const trigger = screen.getByTestId("dropdown-trigger")
+		fireEvent.click(trigger)
+
+		const customButton = screen.getByText("chat:apiConfigSelector.custom")
+		fireEvent.click(customButton)
+
+		expect(mockOnSortModeChange).toHaveBeenCalledWith("custom")
+	})
+
+	test("persists custom order when switching to custom sort", () => {
+		render(<ApiConfigSelector {...defaultProps} />)
+
+		const trigger = screen.getByTestId("dropdown-trigger")
+		fireEvent.click(trigger)
+
+		const customButton = screen.getByText("chat:apiConfigSelector.custom")
+		fireEvent.click(customButton)
+
+		expect(vi.mocked(vscode.postMessage)).toHaveBeenCalledWith(
+			expect.objectContaining({ type: "setApiConfigsCustomOrder" }),
+		)
+	})
+
 	test("switches between sort modes", () => {
 		render(<ApiConfigSelector {...defaultProps} />)
 
