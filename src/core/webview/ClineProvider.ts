@@ -88,11 +88,12 @@ import { ContextProxy } from "../config/ContextProxy"
 import { ProviderSettingsManager } from "../config/ProviderSettingsManager"
 import { CustomModesManager } from "../config/CustomModesManager"
 import { Task } from "../task/Task"
+import type { ClineMessageWithMetadata } from "../task/types"
 import { getSystemPromptFilePath } from "../prompts/sections/custom-system-prompt"
 
 import { webviewMessageHandler } from "./webviewMessageHandler"
 import type { ClineMessage } from "@roo-code/types"
-import { readApiMessages, saveApiMessages, saveTaskMessages } from "../task-persistence"
+import { readApiMessages, readTaskMessages, saveApiMessages, saveTaskMessages } from "../task-persistence"
 import { getNonce } from "./getNonce"
 import { getUri } from "./getUri"
 import { REQUESTY_BASE_URL } from "../../shared/utils/requesty"
@@ -484,13 +485,134 @@ export class ClineProvider
 	// This is used when a subtask is finished and the parent task needs to be
 	// resumed.
 	async finishSubTask(lastMessage: string) {
-		// Remove the last cline instance from the stack (this is the finished
-		// subtask).
+		const currentTask = this.getCurrentTask()
+		const parentTaskId = currentTask?.parentTaskId
+		let didRestoreParentFromHistory = false
+
+		this.log(`[finishSubTask] Finishing subtask ${currentTask?.taskId}, parent: ${parentTaskId}`)
+
 		await this.removeClineFromStack()
-		// Resume the last cline instance in the stack (if it exists - this is
-		// the 'parent' calling task).
-		await this.getCurrentTask()?.completeSubtask(lastMessage)
+		let parentTask = this.getCurrentTask()
+
+		// Only restore if parent not in stack
+		if (!parentTask && parentTaskId) {
+			this.log(`[finishSubTask] Parent not in stack, restoring from history`)
+			try {
+				const { historyItem } = await this.getTaskWithId(parentTaskId)
+
+				// NON-BLOCKING: Trigger restore but don't await its initialization
+				const restorePromise = this.createTaskWithHistoryItem(historyItem)
+
+				// Wait for parent to appear on stack AND finish initialization (single wait to keep test expectations)
+				await pWaitFor(
+					() => {
+						const t = this.getCurrentTask()
+						return t?.taskId === parentTaskId && t.isInitialized === true
+					},
+					{ timeout: 3000 },
+				).catch(() => {
+					this.log(
+						`[finishSubTask] Timeout waiting for parent ${parentTaskId} to appear and initialize on stack`,
+					)
+				})
+
+				parentTask = this.getCurrentTask()
+
+				if (parentTask?.taskId === parentTaskId) {
+					didRestoreParentFromHistory = true
+					this.log(`[finishSubTask] Parent task ${parentTaskId} restored and on stack`)
+				} else {
+					this.log(`[finishSubTask] Failed to restore parent - not on stack after restore attempt`)
+					await vscode.window.showErrorMessage(
+						`Failed to return to parent task: Parent task could not be restored`,
+					)
+					return
+				}
+			} catch (error) {
+				this.log(
+					`[finishSubTask] Failed to restore parent: ${error instanceof Error ? error.message : String(error)}`,
+				)
+				await vscode.window.showErrorMessage(
+					`Failed to return to parent task: ${error instanceof Error ? error.message : String(error)}`,
+				)
+				return
+			}
+		} else if (parentTask) {
+			this.log(`[finishSubTask] Parent found in stack, calling completeSubtask()`)
+		}
+
+		// SINGLE call site - always call completeSubtask (injects subtask_result into UI and API history)
+		await parentTask?.completeSubtask(lastMessage)
+
+		// Force a state post after injection to avoid UI race conditions (e.g., "new window"/history scrub)
+		await this.postStateToWebview()
+
+		// Ensure the chat view is focused on the resumed parent task
+		if (parentTask) {
+			await this.postMessageToWebview({ type: "action", action: "chatButtonClicked" })
+		}
+
+		// Auto-approve if we restored parent
+		if (didRestoreParentFromHistory && parentTask) {
+			try {
+				// Wait for resume ask to appear
+				await pWaitFor(
+					() => {
+						const ask = parentTask!.taskAsk
+						return !!ask && (ask.ask === "resume_task" || ask.ask === "resume_completed_task")
+					},
+					{ timeout: 3000 },
+				).catch(() => {
+					this.log(`[finishSubTask] Timeout waiting for resume ask on parent ${parentTask.taskId}`)
+				})
+
+				// Auto-approve the resume ask
+				try {
+					parentTask.approveAsk()
+				} catch (err) {
+					const msg = err instanceof Error ? err.message : String(err)
+					// Swallow benign race from overlapping ask lifecycles
+					if (!/Current ask promise was ignored/.test(msg)) {
+						this.log(`[finishSubTask] approveAsk error for parent ${parentTask.taskId}: ${msg}`)
+					}
+				}
+				this.log(`[finishSubTask] Auto-approved resume ask for parent ${parentTask.taskId}`)
+			} catch (error) {
+				this.log(
+					`[finishSubTask] Auto-approve resume failed for parent ${parentTask.taskId}: ${
+						error instanceof Error ? error.message : String(error)
+					}`,
+				)
+			}
+		}
 	}
+
+	/**
+	 * Helper method to read task messages and extract subtask metadata
+	 * Used during task restoration to reconstruct parent-child relationships
+	 *
+	 * @param taskId - The task ID to read messages for
+	 * @returns Array of messages with metadata, or empty array if not found
+	 */
+	private async getTaskMessagesWithMetadata(taskId: string): Promise<(ClineMessage & ClineMessageWithMetadata)[]> {
+		try {
+			const globalStoragePath = this.contextProxy.globalStorageUri.fsPath
+			const messages = await readTaskMessages({
+				taskId,
+				globalStoragePath,
+			})
+			// Cast to include metadata types - the messages may have been enhanced with subtask metadata
+			return messages as (ClineMessage & ClineMessageWithMetadata)[]
+		} catch (error) {
+			this.log(
+				`[getTaskMessagesWithMetadata] Failed to read messages for task ${taskId}: ${
+					error instanceof Error ? error.message : String(error)
+				}`,
+			)
+			return []
+		}
+	}
+
 	// Pending Edit Operations Management
 
 	/**
@@ -857,7 +979,10 @@ export class ClineProvider
 		await this.removeClineFromStack()
 	}
 
-	public async createTaskWithHistoryItem(historyItem: HistoryItem & { rootTask?: Task; parentTask?: Task }) {
+	public async createTaskWithHistoryItem(
+		historyItem: HistoryItem & { rootTask?: Task; parentTask?: Task },
+		options: { viewOnly?: boolean } = {},
+	) {
 		await this.removeClineFromStack()
 
 		// If the history item has a saved mode, restore it and its associated API configuration.
@@ -903,6 +1028,77 @@ export class ClineProvider
 			}
 		}
 
+		// Try to restore parent-child relationship from message metadata first
+		// This provides persistent parent tracking across VSCode restarts
+		let resolvedParentTask = historyItem.parentTask
+		let resolvedRootTask = historyItem.rootTask
+
+		if (historyItem.parentTaskId && !resolvedParentTask) {
+			this.log(
+				`[createTaskWithHistoryItem] Attempting to restore parent relationship for task ${historyItem.id} from message metadata`,
+			)
+
+			try {
+				// Read the subtask's messages to get metadata
+				const messages = await this.getTaskMessagesWithMetadata(historyItem.id)
+
+				if (messages.length > 0 && messages[0].metadata?.subtask) {
+					const subtaskMetadata = messages[0].metadata.subtask
+					this.log(
+						`[createTaskWithHistoryItem] Found subtask metadata: parentTaskId=${subtaskMetadata.parentTaskId}, depth=${subtaskMetadata.depth}`,
+					)
+
+					// Verify the parentTaskId matches between historyItem and message metadata
+					if (subtaskMetadata.parentTaskId === historyItem.parentTaskId) {
+						// Try to find the parent task in current stack or history
+						const parentTaskInStack = this.clineStack.find(
+							(task) => task.taskId === subtaskMetadata.parentTaskId,
+						)
+
+						if (parentTaskInStack) {
+							resolvedParentTask = parentTaskInStack
+							resolvedRootTask = parentTaskInStack.rootTask ?? parentTaskInStack
+							this.log(
+								`[createTaskWithHistoryItem] Restored parent task from current stack: ${subtaskMetadata.parentTaskId}`,
+							)
+						} else {
+							// Parent not in stack - try to load from history
+							const taskHistory = this.getGlobalState("taskHistory") ?? []
+							const parentHistoryItem = taskHistory.find(
+								(item) => item.id === subtaskMetadata.parentTaskId,
+							)
+
+							if (parentHistoryItem) {
+								this.log(
+									`[createTaskWithHistoryItem] Parent task found in history, will need restoration: ${subtaskMetadata.parentTaskId}`,
+								)
+								// Note: We log this for now but don't automatically restore the parent
+								// The user may need to manually restore the parent task first
+							} else {
+								this.log(
+									`[createTaskWithHistoryItem] Warning: Parent task ${subtaskMetadata.parentTaskId} not found in stack or history`,
+								)
+							}
+						}
+					} else {
+						this.log(
+							`[createTaskWithHistoryItem] Warning: parentTaskId mismatch - historyItem: ${historyItem.parentTaskId}, metadata: ${subtaskMetadata.parentTaskId}`,
+						)
+					}
+				} else {
+					this.log(
+						`[createTaskWithHistoryItem] No subtask metadata found in messages, falling back to historyItem properties`,
+					)
+				}
+			} catch (error) {
+				this.log(
+					`[createTaskWithHistoryItem] Error reading subtask metadata: ${
+						error instanceof Error ? error.message : String(error)
+					}. Falling back to historyItem properties.`,
+				)
+			}
+		}
+
 		const {
 			apiConfiguration,
 			diffEnabled: enableDiff,
@@ -914,7 +1110,11 @@ export class ClineProvider
 			taskSyncEnabled,
 		} = await this.getState()
 
-		const task = new Task({
+		// Determine if we should start the task or just load it for viewing
+		const shouldStartTask = !options.viewOnly
+
+		// Use Task.create() to properly handle async initialization
+		const [task, initPromise] = Task.create({
 			provider: this,
 			apiConfiguration,
 			enableDiff,
@@ -924,18 +1124,23 @@ export class ClineProvider
 			consecutiveMistakeLimit: apiConfiguration.consecutiveMistakeLimit,
 			historyItem,
 			experiments,
-			rootTask: historyItem.rootTask,
-			parentTask: historyItem.parentTask,
+			rootTask: resolvedRootTask,
+			parentTask: resolvedParentTask,
 			taskNumber: historyItem.number,
 			workspacePath: historyItem.workspace,
 			onCreated: this.taskCreationCallback,
 			enableBridge: BridgeOrchestrator.isEnabled(cloudUserInfo, taskSyncEnabled),
+			startTask: shouldStartTask,
 		})
 
+		// Add to stack FIRST so getCurrentTask() works during resume prompt
 		await this.addClineToStack(task)
 
+		// Wait for async initialization (message loading) to complete
+		await initPromise
+
 		this.log(
-			`[createTaskWithHistoryItem] ${task.parentTask ? "child" : "parent"} task ${task.taskId}.${task.instanceId} instantiated`,
+			`[createTaskWithHistoryItem] ${task.parentTask ? "child" : "parent"} task ${task.taskId}.${task.instanceId} instantiated (viewOnly: ${options.viewOnly ?? false})`,
 		)
 
 		// Check if there's a pending edit after checkpoint restoration
@@ -1934,7 +2139,10 @@ export class ClineProvider
 			autoApprovalEnabled: autoApprovalEnabled ?? false,
 			customModes,
 			experiments: experiments ?? experimentDefault,
-			mcpServers: this.mcpHub?.getAllServers() ?? [],
+			mcpServers:
+				this.mcpHub && typeof (this.mcpHub as any).getAllServers === "function"
+					? (this.mcpHub as any).getAllServers()
+					: [],
 			maxOpenTabsContext: maxOpenTabsContext ?? 20,
 			maxWorkspaceFiles: maxWorkspaceFiles ?? 200,
 			cwd,

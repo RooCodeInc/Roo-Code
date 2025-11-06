@@ -207,8 +207,8 @@ vi.mock("../../../integrations/workspace/WorkspaceTracker", () => {
 	}
 })
 
-vi.mock("../../task/Task", () => ({
-	Task: vi
+vi.mock("../../task/Task", () => {
+	const TaskConstructor = vi
 		.fn()
 		.mockImplementation(
 			(_provider, _apiConfiguration, _customInstructions, _diffEnabled, _fuzzyMatchThreshold, _task, taskId) => ({
@@ -225,9 +225,29 @@ vi.mock("../../task/Task", () => ({
 				setRootTask: vi.fn(),
 				taskId: taskId || "test-task-id",
 				emit: vi.fn(),
+				isInitialized: false,
 			}),
-		),
-}))
+		)
+
+	// Add static create method
+	const createMethod = vi.fn().mockImplementation((options: any) => {
+		const instance = new TaskConstructor(options)
+		// Mock the initialization promise
+		const initPromise = Promise.resolve()
+		// Set isInitialized after a microtask to simulate async initialization
+		initPromise.then(() => {
+			instance.isInitialized = true
+		})
+		return [instance, initPromise]
+	})
+
+	// Assign static method to constructor
+	const TaskMock = Object.assign(TaskConstructor, {
+		create: createMethod,
+	})
+
+	return { Task: TaskMock }
+})
 
 vi.mock("../../../integrations/misc/extract-text", () => ({
 	extractTextFromFile: vi.fn().mockImplementation(async (_filePath: string) => {
