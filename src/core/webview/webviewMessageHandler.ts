@@ -1404,8 +1404,9 @@ export const webviewMessageHandler = async (
 			await provider.postStateToWebview()
 			break
 		case "useZgsmCustomConfig":
-			const useZgsmCustomConfig = message.bool ?? true
+			const useZgsmCustomConfig = message.bool ?? false
 			await updateGlobalState("useZgsmCustomConfig", useZgsmCustomConfig)
+			await provider.postStateToWebview()
 			break
 		case "checkpointTimeout":
 			const checkpointTimeout = message.value ?? DEFAULT_CHECKPOINT_TIMEOUT_SECONDS

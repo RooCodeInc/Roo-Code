@@ -392,16 +392,15 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 			vscode.postMessage({ type: "updateCondensingPrompt", text: customCondensingPrompt || "" })
 			vscode.postMessage({ type: "updateSupportPrompt", values: customSupportPrompts || {} })
 			vscode.postMessage({ type: "includeTaskHistoryInEnhance", bool: includeTaskHistoryInEnhance ?? true })
+			vscode.postMessage({ type: "setReasoningBlockCollapsed", bool: reasoningBlockCollapsed ?? true })
+			vscode.postMessage({ type: "setApiRequestBlockHide", bool: apiRequestBlockHide ?? true })
+			vscode.postMessage({ type: "includeCurrentTime", bool: includeCurrentTime ?? true })
+			vscode.postMessage({ type: "includeCurrentCost", bool: includeCurrentCost ?? true })
 			vscode.postMessage({
 				type: "upsertApiConfiguration",
 				text: currentApiConfigName,
 				apiConfiguration: { ...apiConfiguration, useZgsmCustomConfig, zgsmCodebaseIndexEnabled },
 			})
-			vscode.postMessage({ type: "setReasoningBlockCollapsed", bool: reasoningBlockCollapsed ?? true })
-			vscode.postMessage({ type: "setApiRequestBlockHide", bool: apiRequestBlockHide ?? true })
-			vscode.postMessage({ type: "includeCurrentTime", bool: includeCurrentTime ?? true })
-			vscode.postMessage({ type: "includeCurrentCost", bool: includeCurrentCost ?? true })
-			vscode.postMessage({ type: "upsertApiConfiguration", text: currentApiConfigName, apiConfiguration })
 			vscode.postMessage({ type: "telemetrySetting", text: telemetrySetting })
 			vscode.postMessage({ type: "profileThresholds", values: profileThresholds })
 			vscode.postMessage({ type: "openRouterImageApiKey", text: openRouterImageApiKey })
