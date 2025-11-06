@@ -124,6 +124,7 @@
 	--color-vscode-titleBar-inactiveForeground: var(--vscode-titleBar-inactiveForeground);
 
 	--color-vscode-charts-green: var(--vscode-charts-green);
+	--color-vscode-charts-red: var(--vscode-charts-red);
 	--color-vscode-charts-yellow: var(--vscode-charts-yellow);
 
 	--color-vscode-inputValidation-infoForeground: var(--vscode-inputValidation-infoForeground);

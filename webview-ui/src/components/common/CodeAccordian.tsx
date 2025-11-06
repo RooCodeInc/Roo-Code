@@ -82,12 +82,8 @@ const CodeAccordian = ({
 					{/* Prefer diff stats over generic progress indicator if available */}
 					{hasValidStats ? (
 						<div className="flex items-center gap-2 mr-1">
-							<span className="text-xs font-medium" style={{ color: "var(--vscode-charts-green)" }}>
-								+{derivedStats!.added}
-							</span>
-							<span className="text-xs font-medium" style={{ color: "var(--vscode-charts-red)" }}>
-								-{derivedStats!.removed}
-							</span>
+							<span className="text-xs font-medium text-vscode-charts-green">+{derivedStats!.added}</span>
+							<span className="text-xs font-medium text-vscode-charts-red">-{derivedStats!.removed}</span>
 						</div>
 					) : (
 						progressStatus &&

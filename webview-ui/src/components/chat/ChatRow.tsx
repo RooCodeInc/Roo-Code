@@ -338,7 +338,7 @@ export const ChatRowContent = ({
 	// Unified diff content (provided by backend when relevant)
 	const unifiedDiff = useMemo(() => {
 		if (!tool) return undefined
-		return ((tool as any).content ?? (tool as any).diff) as string | undefined
+		return (tool.content ?? tool.diff) as string | undefined
 	}, [tool])
 
 	const followUpData = useMemo(() => {
@@ -402,7 +402,7 @@ export const ChatRowContent = ({
 								isLoading={message.partial}
 								isExpanded={isExpanded}
 								onToggleExpand={handleToggleExpand}
-								diffStats={(tool as any).diffStats ?? undefined}
+								diffStats={tool.diffStats}
 							/>
 						</div>
 					</>
@@ -440,7 +440,7 @@ export const ChatRowContent = ({
 								isLoading={message.partial}
 								isExpanded={isExpanded}
 								onToggleExpand={handleToggleExpand}
-								diffStats={(tool as any).diffStats ?? undefined}
+								diffStats={tool.diffStats}
 							/>
 						</div>
 					</>
@@ -474,7 +474,7 @@ export const ChatRowContent = ({
 								isLoading={message.partial}
 								isExpanded={isExpanded}
 								onToggleExpand={handleToggleExpand}
-								diffStats={(tool as any).diffStats ?? undefined}
+								diffStats={tool.diffStats}
 							/>
 						</div>
 					</>
@@ -506,7 +506,7 @@ export const ChatRowContent = ({
 				return (
 					<UpdateTodoListToolBlock
 						todos={todos}
-						content={(tool as any).content}
+						content={tool.content}
 						onChange={(updatedTodos) => {
 							if (typeof vscode !== "undefined" && vscode?.postMessage) {
 								vscode.postMessage({ type: "updateTodoList", payload: { todos: updatedTodos } })
@@ -543,7 +543,7 @@ export const ChatRowContent = ({
 								isExpanded={isExpanded}
 								onToggleExpand={handleToggleExpand}
 								onJumpToFile={() => vscode.postMessage({ type: "openFile", text: "./" + tool.path })}
-								diffStats={(tool as any).diffStats ?? undefined}
+								diffStats={tool.diffStats}
 							/>
 						</div>
 					</>
