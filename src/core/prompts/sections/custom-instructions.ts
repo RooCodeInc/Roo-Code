@@ -284,9 +284,9 @@ export async function addCustomInstructions(
 		process.env.NODE_ENV === "test"
 			? []
 			: [
-					`- **IMPORTANT: Only use tools, plugins, or complex actions when the question explicitly involves file reading/writing/editing/creating, project scanning, debugging, implementation (e.g., writing or modifying code), or deep technical analysis.**`,
+					// `- **IMPORTANT: Only use tools, plugins, or complex actions when the question explicitly involves file reading/writing/editing/creating, project scanning, debugging, implementation (e.g., writing or modifying code), or deep technical analysis.**`,
 					`- **IMPORTANT: If the question is clearly informal or lacks actionable meaning (e.g., "hello", "who are you", "tell me a joke"), respond politely without attempting any deep logic or tool usage, and immediately respond using the \`attempt_completion\` tool.**`,
-					`- **IMPORTANT: If the file is not found, use \`ask_followup_question\` to inform the user and get two suggest: Skip or Create**`,
+					`- **IMPORTANT: If the file or folder is not found, use \`ask_followup_question\` to inform the user and get two suggest: Skip or Create**`,
 					shellPath
 						? `- **IMPORTANT: Always use the system's default shell (defined by ${shellPath}) when executing commands. Review <environment_details> to adapt commands to the user’s environment, and make sure all execution and output use UTF-8 encoding. **`
 						: "",
@@ -391,7 +391,7 @@ USER'S CUSTOM INSTRUCTIONS
 The following additional instructions are provided by the user, and should be followed to the best of your ability without interfering with the TOOL USE guidelines.
 
 ${joinedSections}`
-		: `MUST_FOLLOW_RULES:\n${mustRules.join("\n")}`
+		: `${mustRules.join("\n")}`
 }
 
 /**

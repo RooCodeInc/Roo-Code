@@ -157,6 +157,7 @@ export class ErrorCodeManager {
 			403: { message: rawError || t("apiErrors:status.403"), solution: t("apiErrors:solution.403") },
 			404: { message: isHtml ? t("apiErrors:status.404") : rawError, solution: t("apiErrors:solution.404") },
 			429: { message: rawError || t("apiErrors:status.429"), solution: t("apiErrors:solution.429") },
+			413: { message: rawError || t("apiErrors:status.413"), solution: t("apiErrors:solution.413") },
 			500: { message: isHtml ? t("apiErrors:status.500") : rawError, solution: t("apiErrors:solution.500") },
 			502: { message: isHtml ? t("apiErrors:status.502") : rawError, solution: t("apiErrors:solution.502") },
 			503: { message: isHtml ? t("apiErrors:status.503") : rawError, solution: t("apiErrors:solution.503") },
