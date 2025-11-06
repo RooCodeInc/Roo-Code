@@ -490,3 +490,28 @@ input[cmdk-input]:focus {
 	transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 	transition-duration: 150ms;
 }
+
+/* DiffView code font: use VS Code editor font and enable ligatures */
+.diff-view,
+.diff-view pre,
+.diff-view code,
+.diff-view .hljs {
+	font-family:
+		var(--vscode-editor-font-family), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+		"Courier New", monospace;
+	font-variant-ligatures: contextual;
+	font-feature-settings:
+		"calt" 1,
+		"liga" 1;
+}
+
+/* DiffView background tints via CSS classes instead of inline styles */
+.diff-content-inserted {
+	background-color: color-mix(in srgb, var(--vscode-diffEditor-insertedTextBackground) 70%, transparent);
+}
+.diff-content-removed {
+	background-color: color-mix(in srgb, var(--vscode-diffEditor-removedTextBackground) 70%, transparent);
+}
+.diff-content-context {
+	background-color: color-mix(in srgb, var(--vscode-editorGroup-border) 100%, transparent);
+}
