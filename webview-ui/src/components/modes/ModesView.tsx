@@ -113,15 +113,6 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 	// Display list that overlays optimistic names
 	const displayModes = (modes || []).map((m) => (localRenames[m.slug] ? { ...m, name: localRenames[m.slug] } : m))
 
-	// Track latest custom modes for import/diff logic
-	const customModesRef = useRef<readonly ModeConfig[] | undefined>(customModes)
-	useEffect(() => {
-		customModesRef.current = customModes
-	}, [customModes])
-
-	// Snapshot of modes before import to detect the newly imported one
-	const prevModesForImportRef = useRef<readonly ModeConfig[] | undefined>(undefined)
-
 	// Direct update functions
 	const updateAgentPrompt = useCallback(
 		(mode: Mode, promptData: PromptComponent) => {
@@ -541,18 +532,8 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 					if (message.error !== "cancelled") {
 						console.error("Failed to import mode:", message.error)
 					}
-				} else {
-					// On successful import, select the newly imported mode
-					const before = prevModesForImportRef.current || []
-					const after = customModesRef.current || []
-					const added = after.find((m) => !before.some((b) => b.slug === m.slug))
-					const targetSlug = added?.slug || "code"
-					if (targetSlug) {
-						setVisualMode(targetSlug)
-						switchMode(targetSlug)
-						checkRulesDirectory(targetSlug)
-					}
 				}
+				// Note: Auto-select after import will be handled by PR #9003
 			} else if (message.type === "checkRulesDirectoryResult") {
 				setHasRulesToExport((prev) => ({
 					...prev,
@@ -1700,8 +1681,6 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 												'input[name="importLevel"]:checked',
 											) as HTMLInputElement
 										)?.value as "global" | "project"
-										// Snapshot modes before import to detect the newly imported one
-										prevModesForImportRef.current = customModesRef.current
 										setIsImporting(true)
 										vscode.postMessage({
 											type: "importMode",
