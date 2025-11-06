@@ -113,7 +113,7 @@ import {
 } from "../checkpoints"
 import { processUserContentMentions } from "../mentions/processUserContentMentions"
 import { getMessagesSinceLastSummary, summarizeConversation } from "../condense"
-import { Gpt5Metadata, ClineMessageWithMetadata } from "./types"
+import { Gpt5Metadata, SubtaskMetadata, ClineMessageWithMetadata } from "./types"
 import { MessageQueueService } from "../message-queue/MessageQueueService"
 
 import { AutoApprovalHandler } from "./AutoApprovalHandler"
@@ -303,6 +303,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	private tokenUsageSnapshot?: TokenUsage
 	private tokenUsageSnapshotAt?: number
 
+	// Subtask Tracking
+	private subtaskDepth: number = 0
+	private parentMessageId?: string
+
 	constructor({
 		provider,
 		apiConfiguration,
@@ -347,6 +351,20 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.rootTaskId = historyItem ? historyItem.rootTaskId : rootTask?.taskId
 		this.parentTaskId = historyItem ? historyItem.parentTaskId : parentTask?.taskId
 		this.childTaskId = undefined
+
+		// Capture subtask metadata if this is a subtask (has a parent)
+		if (parentTask) {
+			// Get the last message timestamp from parent for return navigation
+			const parentMessages = parentTask.clineMessages
+			const lastMessageTs = parentMessages.length > 0 ? parentMessages[parentMessages.length - 1].ts : undefined
+			this.parentMessageId = lastMessageTs !== undefined ? String(lastMessageTs) : undefined
+			// Increment depth from parent (parent depth + 1)
+			this.subtaskDepth = (parentTask.subtaskDepth ?? 0) + 1
+			
+			console.log(
+				`[Task#${this.taskId}] Subtask created with depth=${this.subtaskDepth}, parentTaskId=${this.parentTaskId}, parentMessageId=${this.parentMessageId}`
+			)
+		}
 
 		this.metadata = {
 			task: historyItem ? historyItem.task : task,
@@ -1345,7 +1363,23 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		this.isInitialized = true
 
-		const { response, text, images } = await this.ask(askType) // Calls `postStateToWebview`.
+		// Present resume ask; tolerate races where another path already resolved it
+		let askResult: { response: ClineAskResponse; text?: string; images?: string[] }
+		try {
+			askResult = await this.ask(askType) // Calls `postStateToWebview`.
+		} catch (error) {
+			const msg = error instanceof Error ? error.message : String(error)
+			if (msg.includes("Current ask promise was ignored")) {
+				// Treat as implicit approval (parent restore/auto-approve already handled it)
+				console.warn("[Task#resumeTaskFromHistory] Resume ask promise ignored; treating as auto-approved")
+				askResult = { response: "yesButtonClicked" as ClineAskResponse }
+					// images/text intentionally undefined
+			} else {
+				throw error
+			}
+		}
+
+		const { response, text, images } = askResult
 
 		let responseText: string | undefined
 		let responseImages: string[] | undefined
@@ -1686,7 +1720,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// this is the result of what it has done add the message to the chat
 		// history and to the webview ui.
 		try {
-			await this.say("subtask_result", lastMessage)
+			// Inject subtask_result without updating lastMessageTs to avoid interfering with any pending resume ask.
+			await this.say("subtask_result", lastMessage, undefined, false, undefined, undefined, { isNonInteractive: true })
 
 			await this.addToApiConversationHistory({
 				role: "user",
@@ -2350,6 +2385,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				}
 
 				await this.persistGpt5Metadata()
+				await this.persistSubtaskMetadata()
 				await this.saveClineMessages()
 				await this.providerRef.deref()?.postStateToWebview()
 
@@ -3032,6 +3068,49 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 	}
 
+	/**
+	 * Persist subtask metadata onto the first message of a subtask.
+	 * This enables the subtask to track its parent relationship across VSCode restarts.
+	 *
+	 * The metadata includes:
+	 * - parentTaskId: UUID of the parent task
+	 * - parentMessageId: Timestamp of parent's last message (for return navigation)
+	 * - depth: Nesting level in task hierarchy
+	 * - requiresReturn: Flag indicating this subtask should return to parent
+	 */
+	private async persistSubtaskMetadata(): Promise<void> {
+		try {
+			// Only persist if this is actually a subtask (has a parent)
+			if (!this.parentTaskId) {
+				return
+			}
+
+			// Attach metadata to the first message (which marks the subtask creation)
+			if (this.clineMessages.length > 0) {
+				const firstMsg = this.clineMessages[0] as ClineMessage & ClineMessageWithMetadata
+				if (!firstMsg.metadata) {
+					firstMsg.metadata = {}
+				}
+
+				const subtaskMetadata: SubtaskMetadata = {
+					parentTaskId: this.parentTaskId,
+					parentMessageId: this.parentMessageId,
+					depth: this.subtaskDepth,
+					requiresReturn: true,
+				}
+
+				firstMsg.metadata.subtask = subtaskMetadata
+
+				console.log(
+					`[Task#${this.taskId}] Attached subtask metadata to first message: depth=${this.subtaskDepth}, parentTaskId=${this.parentTaskId}`
+				)
+			}
+		} catch (error) {
+			console.error(`[Task#${this.taskId}] Error persisting subtask metadata:`, error)
+			// Non-fatal error in metadata persistence
+		}
+	}
+
 	// Getters
 
 	public get taskStatus(): TaskStatus {
@@ -3094,6 +3173,69 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			}
 		} catch (e) {
 			console.error(`[Task] Queue processing error:`, e)
+		}
+	}
+
+	/**
+	 * Verifies that the parent task still exists and is accessible.
+	 * This is critical for subtask completion to ensure we can safely return to the parent.
+	 *
+	 * @returns true if parent exists and is accessible, false otherwise
+	 */
+	public async verifyParentExists(): Promise<boolean> {
+		console.log(`[Task#${this.taskId}] verifyParentExists() called`)
+		
+		// Check if this task has a parent
+		if (!this.parentTaskId) {
+			console.log(`[Task#${this.taskId}] No parentTaskId - not a subtask`)
+			return false
+		}
+
+		try {
+			// First, try to get parent metadata from the first message
+			const messages = await this.getSavedClineMessages()
+			
+			if (messages.length === 0) {
+				console.warn(`[Task#${this.taskId}] No messages found for subtask`)
+				return false
+			}
+
+			const firstMsg = messages[0] as ClineMessage & ClineMessageWithMetadata
+			const subtaskMetadata = firstMsg.metadata?.subtask
+
+			if (!subtaskMetadata?.parentTaskId) {
+				console.warn(`[Task#${this.taskId}] No parent metadata found in first message (legacy subtask?)`)
+				// Fall back to checking if parentTaskId property exists
+				if (!this.parentTaskId) {
+					return false
+				}
+			}
+
+			// Use the parent task ID from metadata, or fall back to the property
+			const parentId = subtaskMetadata?.parentTaskId || this.parentTaskId
+
+			// Check if parent task directory exists
+			const parentTaskPath = path.join(
+				this.globalStoragePath,
+				"tasks",
+				parentId
+			)
+
+			console.log(`[Task#${this.taskId}] Checking parent task path: ${parentTaskPath}`)
+
+			// Use fs.promises for async file operations
+			const fs = await import("fs/promises")
+			await fs.access(parentTaskPath)
+			
+			console.log(`[Task#${this.taskId}] Parent task verified - exists at ${parentTaskPath}`)
+			return true
+		} catch (error) {
+			// If fs.access throws, the parent doesn't exist or isn't accessible
+			console.error(
+				`[Task#${this.taskId}] Parent task verification failed:`,
+				error instanceof Error ? error.message : String(error)
+			)
+			return false
 		}
 	}
 }

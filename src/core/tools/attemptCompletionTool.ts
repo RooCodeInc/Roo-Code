@@ -95,15 +95,46 @@ export async function attemptCompletionTool(
 			TelemetryService.instance.captureTaskCompleted(cline.taskId)
 			cline.emit(RooCodeEventName.TaskCompleted, cline.taskId, cline.getTokenUsage(), cline.toolUsage)
 
-			if (cline.parentTask) {
+			if (cline.parentTaskId) {
+				console.log(`[attemptCompletion] Subtask completion requested for task ${cline.taskId}`)
+				console.log(`[attemptCompletion] Parent task ID: ${cline.parentTaskId}`)
+				
+				// Verify that the parent task still exists before attempting to return
+				const parentExists = await cline.verifyParentExists()
+				console.log(`[attemptCompletion] Parent verification result: ${parentExists ? 'PASS' : 'FAIL'}`)
+				
+				if (!parentExists) {
+					// Parent no longer exists - notify user and abort return
+					await cline.say(
+						"error",
+						"⚠️ Cannot return to parent task - parent no longer exists.\n\n" +
+						"This subtask will remain orphaned. You can:\n" +
+						"• Continue working in this task\n" +
+						"• Create a new task\n" +
+						"• Manually switch to another task from the history"
+					)
+					console.error(
+						`[attemptCompletion] Task ${cline.taskId} orphaned - parent ${cline.parentTaskId} not found`
+					)
+					// Don't attempt completion that would fail - let user decide next action
+					return
+				}
+
 				const didApprove = await askFinishSubTaskApproval()
 
 				if (!didApprove) {
 					return
 				}
 
-				// tell the provider to remove the current subtask and resume the previous task in the stack
+				console.log(`[attemptCompletion] Returning to parent task ${cline.parentTaskId}`)
+	
+				// Return the completion content as a tool result for the child task before finishing
+				pushToolResult(formatResponse.toolResult(result))
+	
+				// Remove the current subtask and resume the parent task
+				// The task stack automatically makes the parent active again
 				await cline.providerRef.deref()?.finishSubTask(result)
+	
 				return
 			}
 
