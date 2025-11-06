@@ -49,6 +49,7 @@ export const moonshotModels = {
 		cacheWritesPrice: 0, // $0 per million tokens (cache miss)
 		cacheReadsPrice: 0.15, // $0.15 per million tokens (cache hit)
 		supportsTemperature: true, // Default temperature: 1.0
+		preserveReasoning: true,
 		defaultTemperature: 1.0,
 		description: `The kimi-k2-thinking model is a general-purpose agentic reasoning model developed by Moonshot AI. Thanks to its strength in deep reasoning and multi-turn tool use, it can solve even the hardest problems.`,
 	},
