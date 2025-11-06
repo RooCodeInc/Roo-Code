@@ -82,7 +82,7 @@ class ChannelLogger implements ILogger {
 	) {
 		// Reuse externally injected OutputChannel; create one if not provided
 		this.channel = opts.channel ?? vscode.window.createOutputChannel(name)
-		this.level = opts.level ?? LogLevel.Debug
+		this.level = opts.level ?? (process.env.NODE_ENV === "development" ? LogLevel.Debug : LogLevel.Info)
 		this.enabled = opts.enabled ?? true
 		this.timeFn = opts.timeFn ?? (() => new Date().toLocaleString())
 	}

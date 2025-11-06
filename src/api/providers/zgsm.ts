@@ -195,8 +195,9 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 				if (this.options.zgsmModelId === autoModeModelId) {
 					selectedLlm = response.headers.get("x-select-llm") || ""
 					selectReason = response.headers.get("x-select-reason") || ""
+					const isDev = process.env.NODE_ENV === "development"
 
-					const userInputHeader = response.headers.get("x-user-input")
+					const userInputHeader = isDev ? response.headers.get("x-user-input") : null
 					if (userInputHeader) {
 						const decodedUserInput = Buffer.from(userInputHeader, "base64").toString("utf-8")
 						this.logger.info(`[x-user-input]: ${decodedUserInput}`)
@@ -431,6 +432,7 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 		const contentBuffer: string[] = []
 		let time = Date.now()
 		let isPrinted = false
+		const isDev = process.env.NODE_ENV === "development"
 
 		// Yield selected LLM info if available (for Auto model mode)
 		if (selectedLlm && this.options.zgsmModelId === autoModeModelId) {
@@ -447,7 +449,7 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 			// Cache content for batch processing
 			if (delta.content) {
 				contentBuffer.push(delta.content)
-				if (!isPrinted && chunk.model && this.options.zgsmModelId === autoModeModelId) {
+				if (isDev && !isPrinted && chunk.model && this.options.zgsmModelId === autoModeModelId) {
 					this.logger.info(`[Current Model]: ${chunk.model}`)
 					isPrinted = true
 				}

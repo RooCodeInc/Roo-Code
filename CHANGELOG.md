@@ -1,5 +1,18 @@
 # CoStrict Change Log
 
+## [2.0.8]
+
+- Add mode parameter to ZgsmAiHandler
+- Optimized codereview error handle
+- Update wiki to v2
+- Update file detail
+- Optimized tools prompts
+- Optimized shell config
+- Fix eliminate UI flicker during task cancellation
+- Update internationalization of agents
+- Sync roocode [last commit](https://github.com/zgsm-ai/costrict/commit/6965e5c791b4514f8f83b881a08091b4d2fbaa9a)
+- Fix known issues
+
 ## [2.0.7]
 
 - Delete legacy api and add timeout handling

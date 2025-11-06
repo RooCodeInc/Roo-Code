@@ -45,15 +45,27 @@ export class MetricsSerializer {
 					}
 				} else if (metric instanceof Histogram) {
 					const sumMetrics = metricData.values.filter((v) => v.metricName?.endsWith("_sum"))
-
+					let HistogramLogs: { [key: string]: number[] } | null = null
 					sumMetrics.forEach((sumValue) => {
 						if (sumValue && sumValue.value > 0) {
 							metric.observe(sumValue.labels, sumValue.value)
-							this.logger.debug(
-								`[MetricsSerializer] Histogram sum for ${metricData.name} loaded with value: ${sumValue.value}`,
-							)
+							if (HistogramLogs === null) {
+								HistogramLogs = {}
+							}
+							if (HistogramLogs[metricData.name]) {
+								HistogramLogs[metricData.name].push(sumValue.value)
+							} else {
+								HistogramLogs[metricData.name] = [sumValue.value]
+							}
 						}
 					})
+					// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+					HistogramLogs &&
+						Object.keys(HistogramLogs).forEach((name) => {
+							this.logger.debug(
+								`[MetricsSerializer] Histogram sum for ${name} loaded with value: ${HistogramLogs![name].join()}`,
+							)
+						})
 				} else if (metric instanceof Gauge) {
 					for (const item of metricData.values) {
 						metric.set(item.labels, item.value)

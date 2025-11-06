@@ -86,7 +86,7 @@ describe("useZgsmUserInfo", () => {
 
 		await waitFor(() => {
 			expect(result.current.userInfo).toEqual({
-				id: "user123",
+				id: undefined,
 				name: "testuser",
 				picture: "https://example.com/avatar.png",
 				email: "test@example.com",

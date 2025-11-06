@@ -73,6 +73,7 @@ export class CompletionClient {
 
 			throw new Error(OPENAI_CLIENT_NOT_INITIALIZED)
 		}
+		// console.time("Completion response timeout");
 
 		try {
 			const response = await client.doCallApi(cp, scores, latestCompletion)
@@ -106,6 +107,7 @@ export class CompletionClient {
 			if (client) {
 				client.reqs.delete(cp.id)
 			}
+			// console.timeEnd("Completion response timeout");
 		}
 	}
 
@@ -155,7 +157,8 @@ export class CompletionClient {
 				...COSTRICT_DEFAULT_HEADERS,
 				"X-Request-ID": uuidv7(),
 			},
-			timeout: 4500
+			timeout: 5000,
+			maxRetries: 0,
 		})
 
 		if (!this.openai) {

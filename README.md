@@ -66,7 +66,7 @@ Communicate via [GitHub Issues](https://github.com/zgsm-ai/costrict/issues/new/c
 
 ## License
 
-[Apache 2.0 © 2025 Sangfor, Inc.](./LICENSE)
+[Apache 2.0 © 2025 CoStrict, Inc.](./LICENSE)
 
 ## Star History
 

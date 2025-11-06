@@ -147,7 +147,7 @@ export class WorkspaceEventMonitor {
 	 * Handle VSCode close event
 	 */
 	public handleVSCodeClose() {
-		this.log.info("[WorkspaceEventMonitor] VSCode close event detected")
+		this.log.debug("[WorkspaceEventMonitor] VSCode close event detected")
 
 		// Send workspace close events
 		ZgsmCodebaseIndexManager.getInstance().client?.publishSyncWorkspaceEvents({
@@ -170,7 +170,7 @@ export class WorkspaceEventMonitor {
 	 * Destroy event monitor
 	 */
 	public async dispose() {
-		this.log.info("[WorkspaceEventMonitor] Starting to destroy event monitor")
+		this.log.debug("[WorkspaceEventMonitor] Starting to destroy event monitor")
 		// Cancel timers
 		if (this.flushTimer) {
 			clearTimeout(this.flushTimer)
@@ -183,7 +183,7 @@ export class WorkspaceEventMonitor {
 
 		// Clean up document content cache
 		this.documentContentCache.clear()
-		this.log.info("[WorkspaceEventMonitor] Document content cache cleared")
+		this.log.debug("[WorkspaceEventMonitor] Document content cache cleared")
 
 		// Send remaining events
 		if (this.eventBuffer.size > 0) {
@@ -191,7 +191,7 @@ export class WorkspaceEventMonitor {
 		}
 
 		this.isInitialized = false
-		this.log.info("[WorkspaceEventMonitor] Event monitor disposed")
+		this.log.debug("[WorkspaceEventMonitor] Event monitor disposed")
 	}
 
 	/**
@@ -420,7 +420,7 @@ export class WorkspaceEventMonitor {
 		} else if (oldHash !== nowHash) {
 			this.documentContentCache.set(filePath, { contentHash: nowHash })
 		} else {
-			this.log.info(`[WorkspaceEventMonitor] Document content unchanged, skipping event trigger`)
+			this.log.debug(`[WorkspaceEventMonitor] Document content unchanged, skipping event trigger`)
 			return
 		}
 

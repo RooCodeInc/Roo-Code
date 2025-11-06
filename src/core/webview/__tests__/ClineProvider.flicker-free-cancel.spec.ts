@@ -1,9 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import * as vscode from "vscode"
 
 import { ClineProvider } from "../ClineProvider"
 import { Task } from "../../task/Task"
-import { ContextProxy } from "../../config/ContextProxy"
 import type { ProviderSettings, HistoryItem } from "@roo-code/types"
 
 // Mock dependencies
@@ -17,6 +15,12 @@ vi.mock("vscode", () => {
 			})),
 			workspaceFolders: [],
 			onDidChangeConfiguration: vi.fn(() => mockDisposable),
+			createFileSystemWatcher: vi.fn(() => ({
+				onDidCreate: vi.fn(),
+				onDidChange: vi.fn(),
+				onDidDelete: vi.fn(),
+				dispose: vi.fn(),
+			})),
 		},
 		env: {
 			uriScheme: "vscode",
@@ -35,10 +39,15 @@ vi.mock("vscode", () => {
 				dispose: vi.fn(),
 			}),
 			onDidChangeActiveTextEditor: vi.fn(() => mockDisposable),
+			createOutputChannel: vi.fn().mockReturnValue({
+				appendLine: vi.fn(),
+				dispose: vi.fn(),
+			}),
 		},
 		Uri: {
 			file: vi.fn().mockReturnValue({ toString: () => "file://test" }),
 		},
+		RelativePattern: vi.fn((base, pattern) => ({ base, pattern })),
 	}
 })
 

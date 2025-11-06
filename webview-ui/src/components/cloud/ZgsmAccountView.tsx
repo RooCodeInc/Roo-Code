@@ -11,6 +11,9 @@ import { telemetryClient } from "@src/utils/TelemetryClient"
 import { useEvent } from "react-use"
 import { ExtensionMessage } from "@roo/ExtensionMessage"
 import { useZgsmUserInfo } from "@src/hooks/useZgsmUserInfo"
+import { useCopyToClipboard } from "@src/utils/clipboard"
+import { ClipboardCopy } from "lucide-react"
+import { StandardTooltip } from "../ui"
 
 type AccountViewProps = {
 	apiConfiguration?: ProviderSettings
@@ -239,12 +242,12 @@ const QuotaInfoDisplay = memo(
 
 const ZgsmAccountViewComponent = ({ apiConfiguration, onDone }: AccountViewProps) => {
 	const { t } = useAppTranslation()
+	const { copyWithFeedback } = useCopyToClipboard()
 	const [quotaInfo, setQuotaInfo] = useState<QuotaInfo>()
 	const [inviteCodeInfo, setInviteCodeInfo] = useState<InviteCodeInfo>()
 	const [showQuotaInfo, setShowQuotaInfo] = useState(false)
 	const [isLoadingQuota, setIsLoadingQuota] = useState(false)
 	const { userInfo, logoPic, hash } = useZgsmUserInfo(apiConfiguration?.zgsmAccessToken)
-	console.log("New Credit hash: ", hash)
 
 	// Cache static resource URI
 	const coLogoUri = useMemo(() => (window as any).COSTRICT_BASE_URI + "/logo.svg", [])
@@ -392,7 +395,19 @@ const ZgsmAccountViewComponent = ({ apiConfiguration, onDone }: AccountViewProps
 								<p className="text-xs text-vscode-descriptionForeground mb-1">{userInfo?.email}</p>
 							)}
 							{userInfo.id && (
-								<h2 className="text-xs text-vscode-descriptionForeground mb-1">ID: {userInfo.id}</h2>
+								<h2 className="text-xs text-vscode-descriptionForeground mb-1 flex items-center gap-1 whitespace-nowrap">
+									ID: {userInfo.id}
+									<StandardTooltip content={t("common:mermaid.buttons.copy")}>
+										<ClipboardCopy
+											onClick={(e) => {
+												e.stopPropagation()
+												copyWithFeedback(userInfo.id || "")
+											}}
+											aria-label="Copy message icon"
+											className="cursor-pointer w-[14px] -translate-y-0.5"
+										/>
+									</StandardTooltip>
+								</h2>
 							)}
 							{/* Star status card */}
 							{quotaInfo?.is_star != null && (

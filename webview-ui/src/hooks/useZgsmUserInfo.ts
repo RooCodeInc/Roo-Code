@@ -106,12 +106,17 @@ export function useZgsmUserInfo(tokenOrConfig?: string | ProviderSettings): Zgsm
 			try {
 				const parsedJwt = parseJwt(token)
 
+				const id = parsedJwt.universal_id
 				const userInfo: ZgsmUserInfo = {
-					id: parsedJwt.universal_id || parsedJwt.id,
-					name: parsedJwt?.properties?.oauth_GitHub_username || parsedJwt.id || parsedJwt.phone,
+					id,
+					name:
+						parsedJwt?.properties?.oauth_GitHub_username ||
+						fixEncoding(parsedJwt.displayName) ||
+						parsedJwt.phone ||
+						(id ? `user_${id}`.slice(0, 10) : id),
 					picture: parsedJwt.avatar || parsedJwt?.properties?.oauth_GitHub_avatarUrl,
 					email: parsedJwt.email || parsedJwt?.properties?.oauth_GitHub_email,
-					phone: parsedJwt.phone,
+					phone: parsedJwt.phone || parsedJwt.phone_number,
 					organizationName: parsedJwt.organizationName,
 					organizationImageUrl: parsedJwt.organizationImageUrl,
 				}
@@ -151,4 +156,19 @@ export function useZgsmUserInfo(tokenOrConfig?: string | ProviderSettings): Zgsm
 	}, [tokenOrConfig])
 
 	return data
+}
+
+function fixEncoding(name?: string) {
+	try {
+		const misencodedPattern = /[\x80-\xFF]+/
+		if (!name || !misencodedPattern.test(name)) {
+			return name
+		}
+
+		const bytes = Array.from(name, (c) => c.charCodeAt(0))
+		return new TextDecoder("utf-8").decode(new Uint8Array(bytes))
+	} catch (error) {
+		console.error(error)
+		return name
+	}
 }

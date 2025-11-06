@@ -41,7 +41,7 @@ export const COMPLETION_CONST = {
 	codeCompletionLogUploadOnce: false, // Whether to upload code completion logs only once
 	suggestionDelay: 300, // Delay from user input to trigger request
 	lineRejectedDelayIncrement: 1000, // Delay increment after rejection on the same line (increase wait time after rejection to reduce interference)
-	lineRejectedDelayMax: 3000, // Maximum delay after rejection on the same line
+	lineRejectedDelayMax: 1000, // Maximum delay after rejection on the same line
 	manualTriggerDelay: 50, // Delay for manual completion trigger
 	feedbackInterval: 5000, // Feedback timer interval
 	collectInterval: 5000, // Timer interval for collecting code snippets

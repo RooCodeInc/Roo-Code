@@ -86,7 +86,7 @@ Costrict项目采用 Github Forking 工作流：[Costrict项目代码贡献流�
 
 ## 版权声明
 
-[Apache 2.0 © 2025 Sangfor, Inc.](./LICENSE)
+[Apache 2.0 © 2025 CoStrict, Inc.](./LICENSE)
 
 ## Star History
 
