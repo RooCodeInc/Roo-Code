@@ -634,6 +634,39 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 									<span className="codicon codicon-extensions"></span>
 								</Button>
 							</StandardTooltip>
+
+							<StandardTooltip content={t("prompts:exportMode.title")}>
+								<Button
+									variant="ghost"
+									size="icon"
+									onClick={() => {
+										const currentMode = getCurrentMode()
+										if (currentMode?.slug && !isExporting) {
+											setIsExporting(true)
+											vscode.postMessage({
+												type: "exportMode",
+												slug: currentMode.slug,
+											})
+										}
+									}}
+									disabled={isExporting}
+									title={t("prompts:exportMode.title")}
+									data-testid="export-mode-toolbar-button">
+									<Upload className="h-4 w-4" />
+								</Button>
+							</StandardTooltip>
+
+							<StandardTooltip content={t("prompts:modes.importMode")}>
+								<Button
+									variant="ghost"
+									size="icon"
+									onClick={() => setShowImportDialog(true)}
+									disabled={isImporting}
+									title={t("prompts:modes.importMode")}
+									data-testid="import-mode-toolbar-button">
+									<Download className="h-4 w-4" />
+								</Button>
+							</StandardTooltip>
 						</div>
 					</div>
 
@@ -1258,41 +1291,6 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 								<span className="codicon codicon-copy"></span>
 							</Button>
 						</StandardTooltip>
-					</div>
-
-					{/* Export/Import Mode Buttons */}
-					<div className="flex items-center gap-2">
-						{/* Export button - visible when any mode is selected */}
-						{getCurrentMode() && (
-							<Button
-								variant="primary"
-								onClick={() => {
-									const currentMode = getCurrentMode()
-									if (currentMode?.slug && !isExporting) {
-										setIsExporting(true)
-										vscode.postMessage({
-											type: "exportMode",
-											slug: currentMode.slug,
-										})
-									}
-								}}
-								disabled={isExporting}
-								title={t("prompts:exportMode.title")}
-								data-testid="export-mode-button">
-								<Upload className="h-4 w-4" />
-								{isExporting ? t("prompts:exportMode.exporting") : t("prompts:exportMode.title")}
-							</Button>
-						)}
-						{/* Import button - always visible */}
-						<Button
-							variant="primary"
-							onClick={() => setShowImportDialog(true)}
-							disabled={isImporting}
-							title={t("prompts:modes.importMode")}
-							data-testid="import-mode-button">
-							<Download className="h-4 w-4" />
-							{isImporting ? t("prompts:importMode.importing") : t("prompts:modes.importMode")}
-						</Button>
 					</div>
 
 					{/* Advanced Features Disclosure */}
