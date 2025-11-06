@@ -6,7 +6,6 @@ import { useRooPortal } from "@/components/ui/hooks/useRooPortal"
 import { Popover, PopoverContent, PopoverTrigger, StandardTooltip } from "@/components/ui"
 import { vscode } from "@/utils/vscode"
 import { Button } from "@/components/ui"
-import { useExtensionState } from "@/context/ExtensionStateContext"
 
 import { IconButton } from "./IconButton"
 import { useAppTranslation } from "@/i18n/TranslationContext"
@@ -112,7 +111,6 @@ export const ApiConfigSelector = ({
 	togglePinnedApiConfig,
 }: ApiConfigSelectorProps) => {
 	const { t } = useAppTranslation()
-	const { apiConfigsCustomOrder: customOrder = [] } = useExtensionState()
 	const [open, setOpen] = useState(false)
 	const [searchValue, setSearchValue] = useState("")
 
@@ -120,23 +118,12 @@ export const ApiConfigSelector = ({
 
 	const portalContainer = useRooPortal("roo-portal")
 
-	// Sort configs: prefer saved custom order; otherwise alphabetical
+	// Sort configs alphabetically (case-insensitive, natural A–Z)
 	const sortedConfigs = useMemo(() => {
 		const sorted = [...listApiConfigMeta]
-
-		if (customOrder && customOrder.length > 0) {
-			const orderMap = new Map(customOrder.map((item) => [item.id, item.index]))
-			sorted.sort((a, b) => {
-				const aIndex = orderMap.get(a.id) ?? Number.MAX_SAFE_INTEGER
-				const bIndex = orderMap.get(b.id) ?? Number.MAX_SAFE_INTEGER
-				return (aIndex as number) - (bIndex as number)
-			})
-		} else {
-			sorted.sort((a, b) => a.name.localeCompare(b.name))
-		}
-
+		sorted.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base", numeric: true }))
 		return sorted
-	}, [listApiConfigMeta, customOrder])
+	}, [listApiConfigMeta])
 
 	// Filter configs based on search.
 	const filteredConfigs = useMemo(() => {
