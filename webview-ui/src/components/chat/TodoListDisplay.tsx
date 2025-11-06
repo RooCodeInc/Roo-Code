@@ -10,7 +10,7 @@ function getTodoIcon(status: TodoStatus | null) {
 		case "completed":
 			return <Check className={`size-3 mt-1 shrink-0`} />
 		case "in_progress":
-			return <ArrowRight className="size-3 mt-1 text-vscode-charts-green shrink-0" />
+			return <ArrowRight className="size-3 mt-1 text-shrink-0" />
 		default:
 			return <SquareDashed className="size-3 mt-1 shrink-0" />
 	}
@@ -56,17 +56,15 @@ export function TodoListDisplay({ todos }: { todos: any[]; isParentExpanded?: bo
 	return (
 		<div data-todo-list className="mt-1 -mx-2 border-t border-foreground/10 overflow-hidden">
 			<div
-				className="flex items-center gap-2 pt-2 pb-1 px-2 cursor-pointer select-none"
+				className={cn(
+					"flex items-center gap-2 pt-2 pb-1 px-2 cursor-pointer select-none",
+					mostImportantTodo?.status === "in_progress" && isCollapsed
+						? "text-vscode-charts-yellow"
+						: "text-vscode-foreground",
+				)}
 				onClick={() => setIsCollapsed((v) => !v)}>
 				<ListChecks className="size-3 shrink-0" />
-				<span
-					className={cn(
-						"flex-1 overflow-hidden text-ellipsis whitespace-nowrap",
-						mostImportantTodo?.status === "in_progress" && isCollapsed
-							? "bg-gradient-to-r from-5% from-foreground/30 via-foreground to-95% to-foreground/30 text-transparent bg-clip-text animate-gradient-text"
-							: "text-vscode-foreground",
-						"hover:text-vscode-foreground",
-					)}>
+				<span className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
 					{isCollapsed
 						? allCompleted
 							? t("chat:todo.complete", { total: completedCount })
@@ -83,14 +81,14 @@ export function TodoListDisplay({ todos }: { todos: any[]; isParentExpanded?: bo
 			{!isCollapsed && (
 				<ul ref={ulRef} className="list-none max-h-[300px] overflow-y-auto mt-2 -mb-1 pb-0 px-2 cursor-default">
 					{todos.map((todo: any, idx: number) => {
-						const icon = getTodoIcon(todo.status as TodoStatus, "expanded")
+						const icon = getTodoIcon(todo.status as TodoStatus)
 						return (
 							<li
 								key={todo.id || todo.content}
 								ref={(el) => (itemRefs.current[idx] = el)}
 								className={cn(
 									"font-light flex flex-row gap-2 items-start min-h-[20px] leading-normal mb-2",
-									todo.status === "in_progress" && "text-vscode-charts-green",
+									todo.status === "in_progress" && "text-vscode-charts-yellow",
 									todo.status !== "in_progress" && todo.status !== "completed" && "opacity-60",
 								)}>
 								{icon}
