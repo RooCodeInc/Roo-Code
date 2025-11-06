@@ -87,6 +87,7 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 	const [isExporting, setIsExporting] = useState(false)
 	const [isImporting, setIsImporting] = useState(false)
 	const [showImportDialog, setShowImportDialog] = useState(false)
+	const [importLevel, setImportLevel] = useState<"global" | "project">("project")
 	const [hasRulesToExport, setHasRulesToExport] = useState<Record<string, boolean>>({})
 	const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 	const [modeToDelete, setModeToDelete] = useState<{
@@ -1180,7 +1181,7 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 							return (
 								customMode?.customInstructions ??
 								prompt?.customInstructions ??
-								getCustomInstructions(mode, customModes)
+								getCustomInstructions(visualMode, customModes)
 							)
 						})()}
 						onChange={(e) => {
@@ -1201,7 +1202,7 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 								const existingPrompt = customModePrompts?.[visualMode] as PromptComponent
 								updateAgentPrompt(visualMode, {
 									...existingPrompt,
-									customInstructions: value.trim(),
+									customInstructions: value.trim() || undefined,
 								})
 							}
 						}}
@@ -1649,7 +1650,8 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 									name="importLevel"
 									value="project"
 									className="mt-1"
-									defaultChecked
+									checked={importLevel === "project"}
+									onChange={() => setImportLevel("project")}
 								/>
 								<div>
 									<div className="font-medium">{t("prompts:importMode.project.label")}</div>
@@ -1659,7 +1661,14 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 								</div>
 							</label>
 							<label className="flex items-start gap-2 cursor-pointer">
-								<input type="radio" name="importLevel" value="global" className="mt-1" />
+								<input
+									type="radio"
+									name="importLevel"
+									value="global"
+									className="mt-1"
+									checked={importLevel === "global"}
+									onChange={() => setImportLevel("global")}
+								/>
 								<div>
 									<div className="font-medium">{t("prompts:importMode.global.label")}</div>
 									<div className="text-xs text-vscode-descriptionForeground">
@@ -1676,15 +1685,10 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 								variant="primary"
 								onClick={() => {
 									if (!isImporting) {
-										const selectedLevel = (
-											document.querySelector(
-												'input[name="importLevel"]:checked',
-											) as HTMLInputElement
-										)?.value as "global" | "project"
 										setIsImporting(true)
 										vscode.postMessage({
 											type: "importMode",
-											source: selectedLevel || "project",
+											source: importLevel,
 										})
 									}
 								}}
@@ -1707,9 +1711,6 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 							type: "deleteCustomMode",
 							slug: modeToDelete.slug,
 						})
-						// After deleting, switch to default mode
-						setVisualMode("code")
-						switchMode("code")
 						setShowDeleteConfirm(false)
 						setModeToDelete(null)
 					}
