@@ -108,7 +108,6 @@ async function generatePrompt(
 					settings,
 					enableMcpServerCreation,
 					modelId,
-					effectiveProtocol,
 				)}`
 			: ""
 

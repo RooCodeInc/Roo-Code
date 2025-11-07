@@ -1,29 +1,11 @@
 import { ToolProtocol } from "@roo-code/types"
 
 /**
- * Internal tool protocol state management.
+ * Current tool protocol setting.
  * This is code-only and not exposed through VS Code settings.
+ * To switch protocols, edit this constant directly in the source code.
  */
-let currentProtocol: ToolProtocol = "xml"
-
-/**
- * Sets the current tool protocol.
- * This is an internal API and should not be called by external code.
- *
- * @param protocol - The tool protocol to set ('xml' or 'native')
- */
-export function setToolProtocol(protocol: ToolProtocol): void {
-	currentProtocol = protocol
-}
-
-/**
- * Gets the current tool protocol.
- *
- * @returns The current tool protocol
- */
-export function getToolProtocol(): ToolProtocol {
-	return currentProtocol
-}
+const CURRENT_TOOL_PROTOCOL: ToolProtocol = "xml" // change to 'native' to enable native protocol
 
 /**
  * Resolves the effective tool protocol.
@@ -31,5 +13,5 @@ export function getToolProtocol(): ToolProtocol {
  * @returns The effective tool protocol (defaults to "xml")
  */
 export function resolveToolProtocol(): ToolProtocol {
-	return currentProtocol
+	return CURRENT_TOOL_PROTOCOL
 }

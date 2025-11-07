@@ -1,4 +1,4 @@
-import type { ToolName, ModeConfig, ToolProtocol } from "@roo-code/types"
+import type { ToolName, ModeConfig } from "@roo-code/types"
 
 import { TOOL_GROUPS, ALWAYS_AVAILABLE_TOOLS, DiffStrategy } from "../../../shared/tools"
 import { McpHub } from "../../../services/mcp/McpHub"
@@ -74,7 +74,6 @@ export function getToolDescriptionsForMode(
 	settings?: Record<string, any>,
 	enableMcpServerCreation?: boolean,
 	modelId?: string,
-	protocol: ToolProtocol = "xml",
 ): string {
 	const config = getModeConfig(mode, customModes)
 	const args: ToolArgs = {
