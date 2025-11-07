@@ -270,6 +270,19 @@ export class API extends EventEmitter<RooCodeEvents> implements RooCodeAPI {
 				this.emit(RooCodeEventName.TaskSpawned, task.taskId, childTaskId)
 			})
 
+			// NEW: Delegation events
+			task.on(RooCodeEventName.TaskDelegated as any, (childTaskId: string) => {
+				;(this.emit as any)(RooCodeEventName.TaskDelegated, task.taskId, childTaskId)
+			})
+
+			task.on(RooCodeEventName.TaskDelegationCompleted as any, (childTaskId: string, summary: string) => {
+				;(this.emit as any)(RooCodeEventName.TaskDelegationCompleted, task.taskId, childTaskId, summary)
+			})
+
+			task.on(RooCodeEventName.TaskDelegationResumed as any, () => {
+				;(this.emit as any)(RooCodeEventName.TaskDelegationResumed, task.taskId, task.childTaskId || "")
+			})
+
 			// Task Execution
 
 			task.on(RooCodeEventName.Message, async (message) => {

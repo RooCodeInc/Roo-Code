@@ -119,8 +119,29 @@ export class NewTaskTool extends BaseTool<"new_task"> {
 				task.checkpointSave(true)
 			}
 
-			// Preserve the current mode so we can resume with it later.
-			task.pausedModeSlug = (await provider.getState()).mode ?? defaultModeSlug
+			// Experiment-gated delegation flow
+			const stateAfter = await provider.getState()
+			const { experiments: exps = {} } = stateAfter ?? {}
+			const { EXPERIMENT_IDS, experiments } = await import("../../shared/experiments")
+
+			const useMetadataSubtasks = experiments.isEnabled(exps as any, EXPERIMENT_IDS.METADATA_DRIVEN_SUBTASKS)
+
+			if (useMetadataSubtasks) {
+				// NEW: Delegate parent and open child as sole active task
+				const child = await (provider as any).delegateParentAndOpenChild({
+					parentTaskId: task.taskId,
+					message: unescapedMessage,
+					initialTodos: todoItems,
+					mode,
+				})
+
+				// Reflect delegation in tool result (no pause/unpause, no wait)
+				pushToolResult(`Delegated to child task ${child.taskId}`)
+				return
+			}
+
+			// LEGACY: Preserve paused mode for restoration and spawn/pause flow
+			task.pausedModeSlug = stateAfter.mode ?? defaultModeSlug
 
 			const newTask = await task.startSubtask(unescapedMessage, todoItems, mode)
 

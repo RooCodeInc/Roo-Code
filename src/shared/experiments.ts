@@ -6,6 +6,9 @@ export const EXPERIMENT_IDS = {
 	PREVENT_FOCUS_DISRUPTION: "preventFocusDisruption",
 	IMAGE_GENERATION: "imageGeneration",
 	RUN_SLASH_COMMAND: "runSlashCommand",
+
+	// NEW: Metadata-driven subtasks
+	METADATA_DRIVEN_SUBTASKS: "metadataDrivenSubtasks",
 } as const satisfies Record<string, ExperimentId>
 
 type _AssertExperimentIds = AssertEqual<Equals<ExperimentId, Values<typeof EXPERIMENT_IDS>>>
@@ -22,6 +25,9 @@ export const experimentConfigsMap: Record<ExperimentKey, ExperimentConfig> = {
 	PREVENT_FOCUS_DISRUPTION: { enabled: false },
 	IMAGE_GENERATION: { enabled: false },
 	RUN_SLASH_COMMAND: { enabled: false },
+
+	// NEW
+	METADATA_DRIVEN_SUBTASKS: { enabled: false },
 }
 
 export const experimentDefault = Object.fromEntries(

@@ -238,6 +238,7 @@ describe("mergeExtensionState", () => {
 				imageGeneration: false,
 				runSlashCommand: false,
 				nativeToolCalling: false,
+				metadataDrivenSubtasks: false,
 			} as Record<ExperimentId, boolean>,
 			checkpointTimeout: DEFAULT_CHECKPOINT_TIMEOUT_SECONDS + 5,
 		}
@@ -260,6 +261,7 @@ describe("mergeExtensionState", () => {
 			imageGeneration: false,
 			runSlashCommand: false,
 			nativeToolCalling: false,
+			metadataDrivenSubtasks: false,
 		})
 	})
 })

@@ -188,18 +188,35 @@ export class ExtensionChannel extends BaseChannel<
 			{ from: RooCodeEventName.TaskPaused, to: ExtensionBridgeEventName.TaskPaused },
 			{ from: RooCodeEventName.TaskUnpaused, to: ExtensionBridgeEventName.TaskUnpaused },
 			{ from: RooCodeEventName.TaskSpawned, to: ExtensionBridgeEventName.TaskSpawned },
+
+			// NEW: Delegation events
+			{ from: RooCodeEventName.TaskDelegated, to: ExtensionBridgeEventName.TaskDelegated },
+			{ from: RooCodeEventName.TaskDelegationCompleted, to: ExtensionBridgeEventName.TaskDelegationCompleted },
+			{ from: RooCodeEventName.TaskDelegationResumed, to: ExtensionBridgeEventName.TaskDelegationResumed },
+
 			{ from: RooCodeEventName.TaskUserMessage, to: ExtensionBridgeEventName.TaskUserMessage },
 			{ from: RooCodeEventName.TaskTokenUsageUpdated, to: ExtensionBridgeEventName.TaskTokenUsageUpdated },
 		] as const
 
 		eventMapping.forEach(({ from, to }) => {
 			// Create and store the listener function for cleanup.
-			const listener = async (..._args: unknown[]) => {
-				this.publish(ExtensionSocketEvents.EVENT, {
+			const listener = async (...args: unknown[]) => {
+				const baseEvent: any = {
 					type: to,
 					instance: await this.updateInstance(),
 					timestamp: Date.now(),
-				})
+				}
+
+				// Add payload for delegation events
+				if (to === ExtensionBridgeEventName.TaskDelegationCompleted) {
+					const [parentTaskId, childTaskId, summary] = args as [string, string, string]
+					baseEvent.payload = { parentTaskId, childTaskId, summary }
+				} else if (to === ExtensionBridgeEventName.TaskDelegationResumed) {
+					const [parentTaskId, childTaskId] = args as [string, string]
+					baseEvent.payload = { parentTaskId, childTaskId }
+				}
+
+				this.publish(ExtensionSocketEvents.EVENT, baseEvent)
 			}
 
 			this.eventListeners.set(from, listener)

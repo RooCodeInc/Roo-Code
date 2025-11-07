@@ -165,7 +165,12 @@
 		"canceled": "Task error: It was stopped and canceled by the user.",
 		"deleted": "Task failure: It was stopped and deleted by the user.",
 		"incomplete": "Task #{{taskNumber}} (Incomplete)",
-		"no_messages": "Task #{{taskNumber}} (No messages)"
+		"no_messages": "Task #{{taskNumber}} (No messages)",
+
+		"delegated": "Delegated to subtask",
+		"delegated_to": "Delegated to task {{childId}}",
+		"delegation_completed": "Subtask completed, resuming parent",
+		"awaiting_child": "Awaiting child task {{childId}}"
 	},
 	"interruption": {
 		"responseInterruptedByUser": "Response interrupted by user",

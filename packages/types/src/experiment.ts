@@ -12,6 +12,8 @@ export const experimentIds = [
 	"preventFocusDisruption",
 	"imageGeneration",
 	"runSlashCommand",
+	// NEW
+	"metadataDrivenSubtasks",
 ] as const
 
 export const experimentIdsSchema = z.enum(experimentIds)
@@ -28,6 +30,7 @@ export const experimentsSchema = z.object({
 	preventFocusDisruption: z.boolean().optional(),
 	imageGeneration: z.boolean().optional(),
 	runSlashCommand: z.boolean().optional(),
+	metadataDrivenSubtasks: z.boolean().optional(),
 })
 
 export type Experiments = z.infer<typeof experimentsSchema>
