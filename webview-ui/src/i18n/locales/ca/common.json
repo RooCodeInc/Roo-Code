@@ -99,5 +99,11 @@
 	"errors": {
 		"wait_checkpoint_long_time": "Has esperat {{timeout}} segons per inicialitzar el punt de control. Si no necessites aquesta funció, desactiva-la a <settingsLink>la configuració del punt de control</settingsLink>.",
 		"init_checkpoint_fail_long_time": "La inicialització del punt de control ha trigat més de {{timeout}} segons, per això els punts de control estan desactivats per a aquesta tasca. Pots desactivar els punts de control o augmentar el temps d'espera a <settingsLink>la configuració del punt de control</settingsLink>."
+	},
+	"tasks": {
+		"delegated": "Delegat a subtasca",
+		"delegated_to": "Delegat a la tasca {{childId}}",
+		"delegation_completed": "Subtasca completada, reprenent la tasca principal",
+		"awaiting_child": "Esperant la tasca filla {{childId}}"
 	}
 }
