@@ -10,7 +10,7 @@ function getTodoIcon(status: TodoStatus | null) {
 		case "completed":
 			return <Check className={`size-3 mt-1 shrink-0`} />
 		case "in_progress":
-			return <ArrowRight className="size-3 mt-1 text-shrink-0" />
+			return <ArrowRight className="size-3 mt-1 shrink-0" />
 		default:
 			return <SquareDashed className="size-3 mt-1 shrink-0" />
 	}
