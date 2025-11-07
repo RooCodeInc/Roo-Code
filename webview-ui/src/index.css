@@ -482,20 +482,6 @@ input[cmdk-input]:focus {
 	animation: pulse 1.5s ease-in-out infinite;
 }
 
-@keyframes gradient-text {
-	0% {
-		background-position: 0% 1000px;
-	}
-	100% {
-		background-position: -1000px 0;
-	}
-}
-
-.animate-gradient-text {
-	background-size: 500px auto;
-	animation: gradient-text 3s linear infinite;
-}
-
 /* Transition utilities */
 .transition-all {
 	transition-property: all;
