@@ -74,6 +74,15 @@ const mockSayAndCreateMissingParamError = vi.fn()
 const mockStartSubtask = vi
 	.fn<(message: string, todoItems: any[], mode: string) => Promise<MockClineInstance>>()
 	.mockResolvedValue({ taskId: "mock-subtask-id" })
+
+// Adapter to satisfy legacy expectations while exercising new delegation path
+const mockDelegateParentAndOpenChild = vi.fn(
+	async (args: { parentTaskId: string; message: string; initialTodos: any[]; mode: string }) => {
+		// Call legacy spy so existing expectations still pass
+		await mockStartSubtask(args.message, args.initialTodos, args.mode)
+		return { taskId: "child-1" }
+	},
+)
 const mockCheckpointSave = vi.fn()
 
 // Mock the Cline instance and its methods/properties
@@ -93,6 +102,7 @@ const mockCline = {
 		deref: vi.fn(() => ({
 			getState: vi.fn(() => ({ customModes: [], mode: "ask" })),
 			handleModeSwitch: vi.fn(),
+			delegateParentAndOpenChild: mockDelegateParentAndOpenChild,
 		})),
 	},
 }
@@ -157,7 +167,7 @@ describe("newTaskTool", () => {
 		)
 
 		// Verify side effects
-		expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("Successfully created new task"))
+		expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("Delegated to child task"))
 	})
 
 	it("should not un-escape single escaped \@", async () => {
@@ -270,7 +280,7 @@ describe("newTaskTool", () => {
 		expect(mockStartSubtask).toHaveBeenCalledWith("Test message", [], "code")
 
 		// Should complete successfully
-		expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("Successfully created new task"))
+		expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("Delegated to child task"))
 	})
 
 	it("should work with todos parameter when provided", async () => {
@@ -303,7 +313,7 @@ describe("newTaskTool", () => {
 			"code",
 		)
 
-		expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("Successfully created new task"))
+		expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("Delegated to child task"))
 	})
 
 	it("should error when mode parameter is missing", async () => {
@@ -423,7 +433,7 @@ describe("newTaskTool", () => {
 			expect(mockStartSubtask).toHaveBeenCalledWith("Test message", [], "code")
 
 			// Should complete successfully
-			expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("Successfully created new task"))
+			expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("Delegated to child task"))
 		})
 
 		it("should REQUIRE todos when VSCode setting is enabled", async () => {
@@ -505,7 +515,7 @@ describe("newTaskTool", () => {
 			)
 
 			// Should complete successfully
-			expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("Successfully created new task"))
+			expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("Delegated to child task"))
 		})
 
 		it("should work with empty todos string when VSCode setting is enabled", async () => {
@@ -542,7 +552,7 @@ describe("newTaskTool", () => {
 			expect(mockStartSubtask).toHaveBeenCalledWith("Test message", [], "code")
 
 			// Should complete successfully
-			expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("Successfully created new task"))
+			expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("Delegated to child task"))
 		})
 
 		it("should check VSCode setting with Package.name configuration key", async () => {
