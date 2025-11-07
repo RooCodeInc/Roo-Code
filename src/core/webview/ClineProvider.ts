@@ -501,7 +501,9 @@ export class ClineProvider
 				const { historyItem } = await this.getTaskWithId(parentTaskId)
 
 				// NON-BLOCKING: Trigger restore but don't await its initialization
-				const restorePromise = this.createTaskWithHistoryItem(historyItem)
+				const restorePromise = this.createTaskWithHistoryItem(historyItem).catch((err) => {
+					this.log(`[finishSubTask] createTaskWithHistoryItem failed: ${err instanceof Error ? err.message : String(err)}`)
+				})
 
 				// Wait for parent to appear on stack AND finish initialization (single wait to keep test expectations)
 				await pWaitFor(
@@ -979,7 +981,10 @@ export class ClineProvider
 		await this.removeClineFromStack()
 	}
 
-	public async createTaskWithHistoryItem(historyItem: HistoryItem & { rootTask?: Task; parentTask?: Task }) {
+	public async createTaskWithHistoryItem(
+		historyItem: HistoryItem & { rootTask?: Task; parentTask?: Task },
+		options: { viewOnly?: boolean } = {}
+	) {
 		// Check if we're rehydrating the current task to avoid flicker
 		const currentTask = this.getCurrentTask()
 		const isRehydratingCurrentTask = currentTask && currentTask.taskId === historyItem.id
@@ -1114,7 +1119,7 @@ export class ClineProvider
 		} = await this.getState()
 
 		// Determine if we should start the task or just load it for viewing
-		const shouldStartTask = !options.viewOnly
+		const shouldStartTask = !options?.viewOnly
 
 		// Use Task.create() to properly handle async initialization
 		const [task, initPromise] = Task.create({
