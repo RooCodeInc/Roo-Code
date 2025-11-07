@@ -169,7 +169,12 @@
 		"canceled": "Erro na tarefa: Foi interrompida e cancelada pelo usuário.",
 		"deleted": "Falha na tarefa: Foi interrompida e excluída pelo usuário.",
 		"incomplete": "Tarefa #{{taskNumber}} (Incompleta)",
-		"no_messages": "Tarefa #{{taskNumber}} (Sem mensagens)"
+		"no_messages": "Tarefa #{{taskNumber}} (Sem mensagens)",
+
+		"delegated": "Delegada para subtarefa",
+		"delegated_to": "Delegada para tarefa {{childId}}",
+		"delegation_completed": "Subtarefa concluída, retomando tarefa pai",
+		"awaiting_child": "Aguardando tarefa filha {{childId}}"
 	},
 	"interruption": {
 		"responseInterruptedByUser": "Resposta interrompida pelo usuário",

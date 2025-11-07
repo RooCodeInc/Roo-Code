@@ -165,7 +165,12 @@
 		"canceled": "작업 오류: 사용자에 의해 중지 및 취소되었습니다.",
 		"deleted": "작업 실패: 사용자에 의해 중지 및 삭제되었습니다.",
 		"incomplete": "작업 #{{taskNumber}} (미완료)",
-		"no_messages": "작업 #{{taskNumber}} (메시지 없음)"
+		"no_messages": "작업 #{{taskNumber}} (메시지 없음)",
+
+		"delegated": "하위 작업에 위임됨",
+		"delegated_to": "작업 {{childId}}에 위임됨",
+		"delegation_completed": "하위 작업 완료, 상위 작업 재개",
+		"awaiting_child": "자식 작업 {{childId}} 대기 중"
 	},
 	"interruption": {
 		"responseInterruptedByUser": "사용자에 의해 응답이 중단됨",

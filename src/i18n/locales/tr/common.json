@@ -165,7 +165,12 @@
 		"canceled": "Görev hatası: Kullanıcı tarafından durduruldu ve iptal edildi.",
 		"deleted": "Görev başarısız: Kullanıcı tarafından durduruldu ve silindi.",
 		"incomplete": "Görev #{{taskNumber}} (Tamamlanmamış)",
-		"no_messages": "Görev #{{taskNumber}} (Mesaj yok)"
+		"no_messages": "Görev #{{taskNumber}} (Mesaj yok)",
+
+		"delegated": "Alt göreve devredildi",
+		"delegated_to": "Görev {{childId}}'ye devredildi",
+		"delegation_completed": "Alt görev tamamlandı, üst görev devam ediyor",
+		"awaiting_child": "Alt görev {{childId}} bekleniyor"
 	},
 	"interruption": {
 		"responseInterruptedByUser": "Yanıt kullanıcı tarafından kesildi",

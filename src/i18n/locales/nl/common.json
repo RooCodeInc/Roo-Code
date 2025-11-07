@@ -165,7 +165,12 @@
 		"canceled": "Taakfout: gestopt en geannuleerd door gebruiker.",
 		"deleted": "Taakfout: gestopt en verwijderd door gebruiker.",
 		"incomplete": "Taak #{{taskNumber}} (Onvolledig)",
-		"no_messages": "Taak #{{taskNumber}} (Geen berichten)"
+		"no_messages": "Taak #{{taskNumber}} (Geen berichten)",
+
+		"delegated": "Gedelegeerd naar subtaak",
+		"delegated_to": "Gedelegeerd naar taak {{childId}}",
+		"delegation_completed": "Subtaak voltooid, bovenliggende taak wordt hervat",
+		"awaiting_child": "Wacht op onderliggende taak {{childId}}"
 	},
 	"interruption": {
 		"responseInterruptedByUser": "Reactie onderbroken door gebruiker",

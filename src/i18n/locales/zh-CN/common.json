@@ -170,7 +170,12 @@
 		"canceled": "任务错误：它已被用户停止并取消。",
 		"deleted": "任务失败：它已被用户停止并删除。",
 		"incomplete": "任务 #{{taskNumber}} (未完成)",
-		"no_messages": "任务 #{{taskNumber}} (无消息)"
+		"no_messages": "任务 #{{taskNumber}} (无消息)",
+
+		"delegated": "已委托给子任务",
+		"delegated_to": "已委托给任务 {{childId}}",
+		"delegation_completed": "子任务完成，恢复父任务",
+		"awaiting_child": "等待子任务 {{childId}}"
 	},
 	"interruption": {
 		"responseInterruptedByUser": "响应被用户中断",

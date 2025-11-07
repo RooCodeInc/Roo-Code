@@ -165,7 +165,12 @@
 		"canceled": "Errore attività: È stata interrotta e annullata dall'utente.",
 		"deleted": "Fallimento attività: È stata interrotta ed eliminata dall'utente.",
 		"incomplete": "Attività #{{taskNumber}} (Incompleta)",
-		"no_messages": "Attività #{{taskNumber}} (Nessun messaggio)"
+		"no_messages": "Attività #{{taskNumber}} (Nessun messaggio)",
+
+		"delegated": "Delegata a sottoattività",
+		"delegated_to": "Delegata all'attività {{childId}}",
+		"delegation_completed": "Sottoattività completata, ripresa attività padre",
+		"awaiting_child": "In attesa dell'attività figlia {{childId}}"
 	},
 	"interruption": {
 		"responseInterruptedByUser": "Risposta interrotta dall'utente",
