@@ -57,8 +57,8 @@ vi.mock("vscode", () => ({
 // Create a counter for unique task IDs.
 let taskIdCounter = 0
 
-vi.mock("../../task/Task", () => ({
-	Task: vi.fn().mockImplementation((options) => ({
+vi.mock("../../task/Task", () => {
+	const TaskMock: any = vi.fn().mockImplementation((options) => ({
 		taskId: options.taskId || `test-task-id-${++taskIdCounter}`,
 		saveClineMessages: vi.fn(),
 		clineMessages: [],
@@ -73,8 +73,17 @@ vi.mock("../../task/Task", () => ({
 		setRootTask: vi.fn(),
 		emit: vi.fn(),
 		parentTask: options.parentTask,
-	})),
-}))
+	}))
+	
+	// Add Task.create() static method
+	TaskMock.create = vi.fn().mockImplementation((options) => {
+		const task = new TaskMock(options)
+		const initPromise = Promise.resolve()
+		return [task, initPromise]
+	})
+	
+	return { Task: TaskMock }
+})
 
 vi.mock("../../prompts/sections/custom-instructions")
 
