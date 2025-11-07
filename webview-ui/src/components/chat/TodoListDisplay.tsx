@@ -57,7 +57,7 @@ export function TodoListDisplay({ todos }: { todos: any[]; isParentExpanded?: bo
 		<div data-todo-list className="mt-1 -mx-2 border-t border-foreground/10 overflow-hidden">
 			<div
 				className={cn(
-					"flex items-center gap-2 pt-2 pb-1 px-2 cursor-pointer select-none",
+					"flex items-center gap-2 pt-2 px-2 cursor-pointer select-none",
 					mostImportantTodo?.status === "in_progress" && isCollapsed
 						? "text-vscode-charts-yellow"
 						: "text-vscode-foreground",
@@ -92,7 +92,7 @@ export function TodoListDisplay({ todos }: { todos: any[]; isParentExpanded?: bo
 									todo.status !== "in_progress" && todo.status !== "completed" && "opacity-60",
 								)}>
 								{icon}
-								<span className="break-words">{todo.content}</span>
+								<span>{todo.content}</span>
 							</li>
 						)
 					})}

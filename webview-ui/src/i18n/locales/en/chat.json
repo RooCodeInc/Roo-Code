@@ -424,6 +424,9 @@
 	},
 	"todo": {
 		"partial": "{{completed}} of {{total}} to-dos done",
-		"complete": "{{total}} to-dos done"
+		"complete": "{{total}} to-dos done",
+		"updated": "Updated the to-do list",
+		"completed": "Completed",
+		"started": "Started"
 	}
 }
