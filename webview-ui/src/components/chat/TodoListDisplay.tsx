@@ -54,10 +54,10 @@ export function TodoListDisplay({ todos }: { todos: any[]; isParentExpanded?: bo
 	const allCompleted = completedCount === totalCount && totalCount > 0
 
 	return (
-		<div data-todo-list className="mt-1 -mx-2 border-t border-foreground/10 overflow-hidden">
+		<div data-todo-list className="mt-1 -mx-2.5 border-t border-vscode-sideBar-background overflow-hidden">
 			<div
 				className={cn(
-					"flex items-center gap-2 pt-2 px-2 cursor-pointer select-none",
+					"flex items-center gap-2 pt-2 px-2.5 cursor-pointer select-none",
 					mostImportantTodo?.status === "in_progress" && isCollapsed
 						? "text-vscode-charts-yellow"
 						: "text-vscode-foreground",
