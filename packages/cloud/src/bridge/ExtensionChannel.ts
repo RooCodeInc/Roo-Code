@@ -201,22 +201,36 @@ export class ExtensionChannel extends BaseChannel<
 		eventMapping.forEach(({ from, to }) => {
 			// Create and store the listener function for cleanup.
 			const listener = async (...args: unknown[]) => {
-				const baseEvent: any = {
+				const baseEvent: {
+					type: ExtensionBridgeEventName
+					instance: ExtensionInstance
+					timestamp: number
+				} = {
 					type: to,
 					instance: await this.updateInstance(),
 					timestamp: Date.now(),
 				}
 
-				// Add payload for delegation events
+				let eventToPublish: ExtensionBridgeEvent
+
+				// Add payload for delegation events while avoiding `any`
 				if (to === ExtensionBridgeEventName.TaskDelegationCompleted) {
 					const [parentTaskId, childTaskId, summary] = args as [string, string, string]
-					baseEvent.payload = { parentTaskId, childTaskId, summary }
+					eventToPublish = {
+						...(baseEvent as unknown as ExtensionBridgeEvent),
+						payload: { parentTaskId, childTaskId, summary },
+					} as unknown as ExtensionBridgeEvent
 				} else if (to === ExtensionBridgeEventName.TaskDelegationResumed) {
 					const [parentTaskId, childTaskId] = args as [string, string]
-					baseEvent.payload = { parentTaskId, childTaskId }
+					eventToPublish = {
+						...(baseEvent as unknown as ExtensionBridgeEvent),
+						payload: { parentTaskId, childTaskId },
+					} as unknown as ExtensionBridgeEvent
+				} else {
+					eventToPublish = baseEvent as unknown as ExtensionBridgeEvent
 				}
 
-				this.publish(ExtensionSocketEvents.EVENT, baseEvent)
+				this.publish(ExtensionSocketEvents.EVENT, eventToPublish)
 			}
 
 			this.eventListeners.set(from, listener)

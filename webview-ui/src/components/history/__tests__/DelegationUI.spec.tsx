@@ -2,7 +2,6 @@ import React from "react"
 import { render, screen, fireEvent } from "@/utils/test-utils"
 
 import TaskItem from "../TaskItem"
-import HistoryPreview from "../HistoryPreview"
 import { vscode } from "@src/utils/vscode"
 
 vi.mock("@src/utils/vscode")
