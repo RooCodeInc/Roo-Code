@@ -1,5 +1,16 @@
 # CoStrict Change Log
 
+## [2.0.9]
+
+- Update userinfo
+- Optimize tools prompts
+- Add 413 error handle
+- Update mcp handle
+- Optimize auto completion
+- Optimize log output
+- Sync roocode [last commit](https://github.com/zgsm-ai/costrict/commit/63b4a785c1f31a4fc1c05968ae58d9dc02453e24)
+- Fix known issues
+
 ## [2.0.8]
 
 - Add mode parameter to ZgsmAiHandler
