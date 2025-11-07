@@ -165,7 +165,12 @@
 		"canceled": "工作錯誤：它已被使用者停止並取消。",
 		"deleted": "工作失敗：它已被使用者停止並刪除。",
 		"incomplete": "工作 #{{taskNumber}} (未完成)",
-		"no_messages": "工作 #{{taskNumber}} (無訊息)"
+		"no_messages": "工作 #{{taskNumber}} (無訊息)",
+
+		"delegated": "已委派至子工作",
+		"delegated_to": "已委派至工作 {{childId}}",
+		"delegation_completed": "子工作完成，恢復父工作",
+		"awaiting_child": "等待子工作 {{childId}}"
 	},
 	"interruption": {
 		"responseInterruptedByUser": "回應被使用者中斷",

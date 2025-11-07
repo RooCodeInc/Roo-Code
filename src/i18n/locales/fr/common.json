@@ -165,7 +165,12 @@
 		"canceled": "Erreur de tâche : Elle a été arrêtée et annulée par l'utilisateur.",
 		"deleted": "Échec de la tâche : Elle a été arrêtée et supprimée par l'utilisateur.",
 		"incomplete": "Tâche #{{taskNumber}} (Incomplète)",
-		"no_messages": "Tâche #{{taskNumber}} (Aucun message)"
+		"no_messages": "Tâche #{{taskNumber}} (Aucun message)",
+
+		"delegated": "Déléguée à une sous-tâche",
+		"delegated_to": "Déléguée à la tâche {{childId}}",
+		"delegation_completed": "Sous-tâche terminée, reprise de la tâche parente",
+		"awaiting_child": "En attente de la tâche enfant {{childId}}"
 	},
 	"interruption": {
 		"responseInterruptedByUser": "Réponse interrompue par l'utilisateur",

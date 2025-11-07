@@ -165,7 +165,12 @@
 		"canceled": "Lỗi nhiệm vụ: Nó đã bị dừng và hủy bởi người dùng.",
 		"deleted": "Nhiệm vụ thất bại: Nó đã bị dừng và xóa bởi người dùng.",
 		"incomplete": "Nhiệm vụ #{{taskNumber}} (Chưa hoàn thành)",
-		"no_messages": "Nhiệm vụ #{{taskNumber}} (Không có tin nhắn)"
+		"no_messages": "Nhiệm vụ #{{taskNumber}} (Không có tin nhắn)",
+
+		"delegated": "Đã ủy quyền cho tác vụ con",
+		"delegated_to": "Đã ủy quyền cho tác vụ {{childId}}",
+		"delegation_completed": "Tác vụ con hoàn thành, tiếp tục tác vụ cha",
+		"awaiting_child": "Đang chờ tác vụ con {{childId}}"
 	},
 	"interruption": {
 		"responseInterruptedByUser": "Phản hồi bị gián đoạn bởi người dùng",

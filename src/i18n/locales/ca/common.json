@@ -169,7 +169,12 @@
 		"canceled": "Error de tasca: Ha estat aturada i cancel·lada per l'usuari.",
 		"deleted": "Fallada de tasca: Ha estat aturada i eliminada per l'usuari.",
 		"incomplete": "Tasca #{{taskNumber}} (Incompleta)",
-		"no_messages": "Tasca #{{taskNumber}} (Sense missatges)"
+		"no_messages": "Tasca #{{taskNumber}} (Sense missatges)",
+
+		"delegated": "Delegada a subtasca",
+		"delegated_to": "Delegada a tasca {{childId}}",
+		"delegation_completed": "Subtasca completada, reprenent tasca pare",
+		"awaiting_child": "Esperant tasca filla {{childId}}"
 	},
 	"interruption": {
 		"responseInterruptedByUser": "Resposta interrompuda per l'usuari",

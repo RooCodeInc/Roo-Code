@@ -165,7 +165,12 @@
 		"canceled": "Aufgabenfehler: Die Aufgabe wurde vom Benutzer gestoppt und abgebrochen.",
 		"deleted": "Aufgabenfehler: Die Aufgabe wurde vom Benutzer gestoppt und gelöscht.",
 		"incomplete": "Aufgabe #{{taskNumber}} (Unvollständig)",
-		"no_messages": "Aufgabe #{{taskNumber}} (Keine Nachrichten)"
+		"no_messages": "Aufgabe #{{taskNumber}} (Keine Nachrichten)",
+
+		"delegated": "An Unteraufgabe delegiert",
+		"delegated_to": "An Aufgabe {{childId}} delegiert",
+		"delegation_completed": "Unteraufgabe abgeschlossen, übergeordnete Aufgabe wird fortgesetzt",
+		"awaiting_child": "Warte auf untergeordnete Aufgabe {{childId}}"
 	},
 	"interruption": {
 		"responseInterruptedByUser": "Antwort vom Benutzer unterbrochen",

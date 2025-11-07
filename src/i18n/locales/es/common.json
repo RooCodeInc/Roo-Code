@@ -165,7 +165,12 @@
 		"canceled": "Error de tarea: Fue detenida y cancelada por el usuario.",
 		"deleted": "Fallo de tarea: Fue detenida y eliminada por el usuario.",
 		"incomplete": "Tarea #{{taskNumber}} (Incompleta)",
-		"no_messages": "Tarea #{{taskNumber}} (Sin mensajes)"
+		"no_messages": "Tarea #{{taskNumber}} (Sin mensajes)",
+
+		"delegated": "Delegada a subtarea",
+		"delegated_to": "Delegada a tarea {{childId}}",
+		"delegation_completed": "Subtarea completada, reanudando tarea padre",
+		"awaiting_child": "Esperando tarea hija {{childId}}"
 	},
 	"interruption": {
 		"responseInterruptedByUser": "Respuesta interrumpida por el usuario",

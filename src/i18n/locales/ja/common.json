@@ -165,7 +165,12 @@
 		"canceled": "タスクエラー：ユーザーによって停止およびキャンセルされました。",
 		"deleted": "タスク失敗：ユーザーによって停止および削除されました。",
 		"incomplete": "タスク #{{taskNumber}} (未完了)",
-		"no_messages": "タスク #{{taskNumber}} (メッセージなし)"
+		"no_messages": "タスク #{{taskNumber}} (メッセージなし)",
+
+		"delegated": "サブタスクに委任",
+		"delegated_to": "タスク {{childId}} に委任",
+		"delegation_completed": "サブタスク完了、親タスクを再開",
+		"awaiting_child": "子タスク {{childId}} を待機中"
 	},
 	"interruption": {
 		"responseInterruptedByUser": "ユーザーによって応答が中断されました",

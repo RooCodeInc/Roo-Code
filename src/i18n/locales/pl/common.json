@@ -165,7 +165,12 @@
 		"canceled": "Błąd zadania: Zostało zatrzymane i anulowane przez użytkownika.",
 		"deleted": "Niepowodzenie zadania: Zostało zatrzymane i usunięte przez użytkownika.",
 		"incomplete": "Zadanie #{{taskNumber}} (Niekompletne)",
-		"no_messages": "Zadanie #{{taskNumber}} (Brak wiadomości)"
+		"no_messages": "Zadanie #{{taskNumber}} (Brak wiadomości)",
+
+		"delegated": "Delegowane do podzadania",
+		"delegated_to": "Delegowane do zadania {{childId}}",
+		"delegation_completed": "Podzadanie ukończone, wznawianie zadania nadrzędnego",
+		"awaiting_child": "Oczekiwanie na zadanie podrzędne {{childId}}"
 	},
 	"interruption": {
 		"responseInterruptedByUser": "Odpowiedź przerwana przez użytkownika",

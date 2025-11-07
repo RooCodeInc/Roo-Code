@@ -165,7 +165,12 @@
 		"canceled": "टास्क त्रुटि: इसे उपयोगकर्ता द्वारा रोका और रद्द किया गया था।",
 		"deleted": "टास्क विफलता: इसे उपयोगकर्ता द्वारा रोका और हटाया गया था।",
 		"incomplete": "टास्क #{{taskNumber}} (अधूरा)",
-		"no_messages": "टास्क #{{taskNumber}} (कोई संदेश नहीं)"
+		"no_messages": "टास्क #{{taskNumber}} (कोई संदेश नहीं)",
+
+		"delegated": "उप-कार्य को सौंपा गया",
+		"delegated_to": "कार्य {{childId}} को सौंपा गया",
+		"delegation_completed": "उप-कार्य पूर्ण, मुख्य कार्य जारी",
+		"awaiting_child": "चाइल्ड कार्य {{childId}} की प्रतीक्षा में"
 	},
 	"interruption": {
 		"responseInterruptedByUser": "उपयोगकर्ता द्वारा प्रतिक्रिया बाधित",
