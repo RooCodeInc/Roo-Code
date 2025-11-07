@@ -771,7 +771,7 @@ export class ClineProvider
 		})
 
 		// Set up webview options with proper resource roots
-		const resourceRoots = [this.contextProxy.extensionUri]
+		const resourceRoots = [this.contextProxy.extensionUri, this.contextProxy.globalStorageUri]
 
 		// Add workspace folders to allow access to workspace files
 		if (vscode.workspace.workspaceFolders) {
@@ -1094,7 +1094,7 @@ export class ClineProvider
 			"default-src 'none'",
 			`font-src ${webview.cspSource} data:`,
 			`style-src ${webview.cspSource} 'unsafe-inline' https://* http://${localServerUrl} http://0.0.0.0:${localPort}`,
-			`img-src ${webview.cspSource} https://storage.googleapis.com https://img.clerk.com data:`,
+			`img-src ${webview.cspSource} https://*.vscode-cdn.net https://storage.googleapis.com https://img.clerk.com data:`,
 			`media-src ${webview.cspSource}`,
 			`script-src 'unsafe-eval' ${webview.cspSource} https://* https://*.posthog.com http://${localServerUrl} http://0.0.0.0:${localPort} 'nonce-${nonce}'`,
 			`connect-src ${webview.cspSource} https://* https://*.posthog.com ws://${localServerUrl} ws://0.0.0.0:${localPort} http://${localServerUrl} http://0.0.0.0:${localPort}`,
@@ -1179,7 +1179,7 @@ export class ClineProvider
             <meta charset="utf-8">
             <meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no">
             <meta name="theme-color" content="#000000">
-            <meta http-equiv="Content-Security-Policy" content="default-src 'none'; font-src ${webview.cspSource} data:; style-src ${webview.cspSource} 'unsafe-inline'; img-src ${webview.cspSource} https://storage.googleapis.com https://img.clerk.com data:; media-src ${webview.cspSource}; script-src ${webview.cspSource} 'wasm-unsafe-eval' 'nonce-${nonce}' https://us-assets.i.posthog.com 'strict-dynamic'; connect-src ${webview.cspSource} https://openrouter.ai https://api.requesty.ai https://us.i.posthog.com https://us-assets.i.posthog.com;">
+            <meta http-equiv="Content-Security-Policy" content="default-src 'none'; font-src ${webview.cspSource} data:; style-src ${webview.cspSource} 'unsafe-inline'; img-src ${webview.cspSource} https://*.vscode-cdn.net https://storage.googleapis.com https://img.clerk.com data:; media-src ${webview.cspSource}; script-src ${webview.cspSource} 'wasm-unsafe-eval' 'nonce-${nonce}' https://us-assets.i.posthog.com 'strict-dynamic'; connect-src ${webview.cspSource} https://openrouter.ai https://api.requesty.ai https://us.i.posthog.com https://us-assets.i.posthog.com;">
             <link rel="stylesheet" type="text/css" href="${stylesUri}">
 			<link href="${codiconsUri}" rel="stylesheet" />
 			<script nonce="${nonce}">
@@ -2867,37 +2867,43 @@ export class ClineProvider
 	}
 
 	/**
-	 * Convert a file path to a webview-accessible URI
-	 * This method safely converts file paths to URIs that can be loaded in the webview
+	 * Convert a file path to a webview-accessible URI.
+	 * Safely returns a string and does not throw; logs errors and falls back to a file: URI when conversion is not possible.
 	 *
 	 * @param filePath - The absolute file path to convert
-	 * @returns The webview URI string, or the original file URI if conversion fails
-	 * @throws {Error} When webview is not available
-	 * @throws {TypeError} When file path is invalid
+	 * @returns The webview URI string when a webview is available; otherwise a file: URI string
 	 */
 	public convertToWebviewUri(filePath: string): string {
 		try {
-			const fileUri = vscode.Uri.file(filePath)
-
-			// Check if we have a webview available
+			// If a webview is available, generate a URI relative to an allowed localResourceRoot when possible.
 			if (this.view?.webview) {
+				let fileUri: vscode.Uri
+
+				// Prefer mapping under globalStorageUri to guarantee allow-list match for localResourceRoots
+				const gsRoot = this.contextProxy?.globalStorageUri?.fsPath
+				if (gsRoot && filePath.startsWith(gsRoot)) {
+					// Build a URI under the globalStorage root using joinPath
+					const rel = path.relative(gsRoot, filePath)
+					const segments = rel.split(path.sep).filter(Boolean)
+					fileUri = vscode.Uri.joinPath(this.contextProxy.globalStorageUri, ...segments)
+				} else {
+					// Fallback to direct file URI
+					fileUri = vscode.Uri.file(filePath)
+				}
+
 				const webviewUri = this.view.webview.asWebviewUri(fileUri)
 				return webviewUri.toString()
 			}
 
-			// Specific error for no webview available
-			const error = new Error("No webview available for URI conversion")
-			console.error(error.message)
-			// Fallback to file URI if no webview available
-			return fileUri.toString()
+			// No webview available; fallback to file URI
+			console.error("No webview available for URI conversion")
+			return vscode.Uri.file(filePath).toString()
 		} catch (error) {
-			// More specific error handling
 			if (error instanceof TypeError) {
 				console.error("Invalid file path provided for URI conversion:", error)
 			} else {
 				console.error("Failed to convert to webview URI:", error)
 			}
-			// Return file URI as fallback
 			return vscode.Uri.file(filePath).toString()
 		}
 	}

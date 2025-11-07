@@ -311,6 +311,10 @@ export async function executeCommand(
 		const { text, images } = message
 		await task.say("user_feedback", text, images)
 
+		// Get base64 from the just-stored message for API call
+		const lastMessage = task.clineMessages.at(-1)
+		const base64Images = lastMessage?.imagesBase64
+
 		return [
 			true,
 			formatResponse.toolResult(
@@ -320,7 +324,7 @@ export async function executeCommand(
 					`The user provided the following feedback:`,
 					`<feedback>\n${text}\n</feedback>`,
 				].join("\n"),
-				images,
+				base64Images,
 			),
 		]
 	} else if (completed || exitDetails) {

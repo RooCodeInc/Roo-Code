@@ -82,7 +82,12 @@ export async function accessMcpResourceTool(
 			})
 
 			await cline.say("mcp_server_response", resourceResultPretty, images)
-			pushToolResult(formatResponse.toolResult(resourceResultPretty, images))
+
+			// Get base64 from the just-stored message for API call
+			// Note: MCP images are already base64, but say() will store them in both formats
+			const lastMessage = cline.clineMessages.at(-1)
+			const base64Images = lastMessage?.imagesBase64
+			pushToolResult(formatResponse.toolResult(resourceResultPretty, base64Images))
 
 			return
 		}

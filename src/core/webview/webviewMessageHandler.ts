@@ -37,7 +37,12 @@ import { checkExistKey } from "../../shared/checkExistApiConfig"
 import { experimentDefault } from "../../shared/experiments"
 import { Terminal } from "../../integrations/terminal/Terminal"
 import { openFile } from "../../integrations/misc/open-file"
-import { openImage, saveImage } from "../../integrations/misc/image-handler"
+import {
+	openImage,
+	saveImage,
+	savePastedImageToTemp,
+	importImageToGlobalStorage,
+} from "../../integrations/misc/image-handler"
 import { selectImages } from "../../integrations/misc/process-images"
 import { getTheme } from "../../integrations/theme/getTheme"
 import { discoverChromeHostUrl, tryChromeHostUrl } from "../../services/browser/browserDiscovery"
@@ -615,13 +620,24 @@ export const webviewMessageHandler = async (
 			await provider.postStateToWebview()
 			break
 		case "selectImages":
-			const images = await selectImages()
-			await provider.postMessageToWebview({
-				type: "selectedImages",
-				images,
-				context: message.context,
-				messageTs: message.messageTs,
-			})
+			// Copy selected images into global storage and return webview-safe URIs
+			{
+				const pickedPaths = await selectImages()
+				const results = await Promise.all(
+					(pickedPaths || []).map((p) => importImageToGlobalStorage(p, provider)),
+				)
+				// Ensure URIs are derived via current webview context if available
+				const images = results
+					.filter((r): r is { imagePath: string; imageUri: string } => !!r)
+					.map((r) => provider?.convertToWebviewUri?.(r.imagePath) ?? r.imageUri)
+
+				await provider.postMessageToWebview({
+					type: "selectedImages",
+					images,
+					context: message.context,
+					messageTs: message.messageTs,
+				})
+			}
 			break
 		case "exportCurrentTask":
 			const currentTaskId = provider.getCurrentTask()?.taskId
@@ -3193,6 +3209,27 @@ export const webviewMessageHandler = async (
 				type: "dismissedUpsells",
 				list: dismissedUpsells,
 			})
+			break
+		}
+		case "savePastedImage": {
+			// Save pasted image to temporary file and return path and URI
+			if (message.dataUri) {
+				const result = await savePastedImageToTemp(message.dataUri, provider)
+				if (result) {
+					await provider.postMessageToWebview({
+						type: "pastedImageSaved",
+						imagePath: result.imagePath,
+						imageUri: result.imageUri,
+						requestId: message.requestId,
+					})
+				} else {
+					await provider.postMessageToWebview({
+						type: "pastedImageSaved",
+						error: "Failed to save pasted image",
+						requestId: message.requestId,
+					})
+				}
+			}
 			break
 		}
 	}

@@ -268,7 +268,8 @@ export const openClineInNewTab = async ({ context, outputChannel }: Omit<Registe
 	const newPanel = vscode.window.createWebviewPanel(ClineProvider.tabPanelId, "Roo Code", targetCol, {
 		enableScripts: true,
 		retainContextWhenHidden: true,
-		localResourceRoots: [context.extensionUri],
+		// Allow webview to load images saved under globalStorageUri
+		localResourceRoots: [context.extensionUri, context.globalStorageUri],
 	})
 
 	// Save as tab type panel.

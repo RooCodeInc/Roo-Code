@@ -460,7 +460,7 @@ describe("ClineProvider", () => {
 
 		expect(mockWebviewView.webview.options).toEqual({
 			enableScripts: true,
-			localResourceRoots: [mockContext.extensionUri],
+			localResourceRoots: [mockContext.extensionUri, mockContext.globalStorageUri],
 		})
 
 		expect(mockWebviewView.webview.html).toContain("<!DOCTYPE html>")
@@ -479,7 +479,7 @@ describe("ClineProvider", () => {
 
 		expect(mockWebviewView.webview.options).toEqual({
 			enableScripts: true,
-			localResourceRoots: [mockContext.extensionUri],
+			localResourceRoots: [mockContext.extensionUri, mockContext.globalStorageUri],
 		})
 
 		expect(mockWebviewView.webview.html).toContain("<!DOCTYPE html>")

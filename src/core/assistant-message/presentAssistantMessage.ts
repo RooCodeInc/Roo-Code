@@ -288,7 +288,12 @@ export async function presentAssistantMessage(cline: Task) {
 					// Handle both messageResponse and noButtonClicked with text.
 					if (text) {
 						await cline.say("user_feedback", text, images)
-						pushToolResult(formatResponse.toolResult(formatResponse.toolDeniedWithFeedback(text), images))
+						// Get base64 from the just-stored message for API call
+						const lastMessage = cline.clineMessages.at(-1)
+						const base64Images = lastMessage?.imagesBase64
+						pushToolResult(
+							formatResponse.toolResult(formatResponse.toolDeniedWithFeedback(text), base64Images),
+						)
 					} else {
 						pushToolResult(formatResponse.toolDenied())
 					}
@@ -299,7 +304,12 @@ export async function presentAssistantMessage(cline: Task) {
 				// Handle yesButtonClicked with text.
 				if (text) {
 					await cline.say("user_feedback", text, images)
-					pushToolResult(formatResponse.toolResult(formatResponse.toolApprovedWithFeedback(text), images))
+					// Get base64 from the just-stored message for API call
+					const lastMessage = cline.clineMessages.at(-1)
+					const base64Images = lastMessage?.imagesBase64
+					pushToolResult(
+						formatResponse.toolResult(formatResponse.toolApprovedWithFeedback(text), base64Images),
+					)
 				}
 
 				return true
@@ -393,17 +403,21 @@ export async function presentAssistantMessage(cline: Task) {
 					)
 
 					if (response === "messageResponse") {
-						// Add user feedback to userContent.
+						// Add user feedback to chat (stores both formats)
+						await cline.say("user_feedback", text, images)
+
+						// Get base64 from the just-stored message for API call
+						const lastMessage = cline.clineMessages.at(-1)
+						const base64Images = lastMessage?.imagesBase64
+
+						// Add user feedback to userContent for API
 						cline.userMessageContent.push(
 							{
 								type: "text" as const,
 								text: `Tool repetition limit reached. User feedback: ${text}`,
 							},
-							...formatResponse.imageBlocks(images),
+							...formatResponse.imageBlocks(base64Images),
 						)
-
-						// Add user feedback to chat.
-						await cline.say("user_feedback", text, images)
 
 						// Track tool repetition in telemetry.
 						TelemetryService.instance.captureConsecutiveMistakeError(cline.taskId)

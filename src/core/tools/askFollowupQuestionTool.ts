@@ -78,7 +78,11 @@ export async function askFollowupQuestionTool(
 			cline.consecutiveMistakeCount = 0
 			const { text, images } = await cline.ask("followup", JSON.stringify(follow_up_json), false)
 			await cline.say("user_feedback", text ?? "", images)
-			pushToolResult(formatResponse.toolResult(`<answer>\n${text}\n</answer>`, images))
+
+			// Get base64 from the just-stored message for API call
+			const lastMessage = cline.clineMessages.at(-1)
+			const base64Images = lastMessage?.imagesBase64
+			pushToolResult(formatResponse.toolResult(`<answer>\n${text}\n</answer>`, base64Images))
 
 			return
 		}

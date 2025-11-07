@@ -121,6 +121,11 @@ export async function attemptCompletionTool(
 			}
 
 			await cline.say("user_feedback", text ?? "", images)
+
+			// Get base64 from the just-stored message for API call
+			const lastMessage = cline.clineMessages.at(-1)
+			const base64Images = lastMessage?.imagesBase64
+
 			const toolResults: (Anthropic.TextBlockParam | Anthropic.ImageBlockParam)[] = []
 
 			toolResults.push({
@@ -128,7 +133,7 @@ export async function attemptCompletionTool(
 				text: `The user has provided feedback on the results. Consider their input to continue the task, and then attempt completion again.\n<feedback>\n${text}\n</feedback>`,
 			})
 
-			toolResults.push(...formatResponse.imageBlocks(images))
+			toolResults.push(...formatResponse.imageBlocks(base64Images))
 			cline.userMessageContent.push({ type: "text", text: `${toolDescription()} Result:` })
 			cline.userMessageContent.push(...toolResults)
 

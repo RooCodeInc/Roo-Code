@@ -408,10 +408,14 @@ export async function readFileTool(
 
 			const { response, text, images } = await cline.ask("tool", completeMessage, false)
 
+			let feedbackBase64Images: string[] | undefined
 			if (response !== "yesButtonClicked") {
 				// Handle both messageResponse and noButtonClicked with text
 				if (text) {
 					await cline.say("user_feedback", text, images)
+					// Get base64 from the just-stored message
+					const lastMessage = cline.clineMessages.at(-1)
+					feedbackBase64Images = lastMessage?.imagesBase64
 				}
 				cline.didRejectTool = true
 
@@ -419,18 +423,21 @@ export async function readFileTool(
 					status: "denied",
 					xmlContent: `<file><path>${relPath}</path><status>Denied by user</status></file>`,
 					feedbackText: text,
-					feedbackImages: images,
+					feedbackImages: feedbackBase64Images,
 				})
 			} else {
 				// Handle yesButtonClicked with text
 				if (text) {
 					await cline.say("user_feedback", text, images)
+					// Get base64 from the just-stored message
+					const lastMessage = cline.clineMessages.at(-1)
+					feedbackBase64Images = lastMessage?.imagesBase64
 				}
 
 				updateFileResult(relPath, {
 					status: "approved",
 					feedbackText: text,
-					feedbackImages: images,
+					feedbackImages: feedbackBase64Images,
 				})
 			}
 		}
