@@ -16,6 +16,7 @@ import { unescapeHtmlEntities } from "../../utils/text-normalization"
 import { parseXmlForDiff } from "../../utils/xml"
 import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
 import { applyDiffToolLegacy } from "./applyDiffTool"
+import { computeDiffStats, sanitizeUnifiedDiff } from "../diff/stats"
 
 interface DiffOperation {
 	path: string
@@ -283,31 +284,70 @@ Original error: ${errorMessage}`
 				(opResult) => cline.rooProtectedController?.isWriteProtected(opResult.path) || false,
 			)
 
-			// Prepare batch diff data
-			const batchDiffs = operationsToApprove.map((opResult) => {
+			// Stream batch diffs progressively for better UX
+			const batchDiffs: Array<{
+				path: string
+				changeCount: number
+				key: string
+				content: string
+				diffStats?: { added: number; removed: number }
+				diffs?: Array<{ content: string; startLine?: number }>
+			}> = []
+
+			for (const opResult of operationsToApprove) {
 				const readablePath = getReadablePath(cline.cwd, opResult.path)
 				const changeCount = opResult.diffItems?.length || 0
 				const changeText = changeCount === 1 ? "1 change" : `${changeCount} changes`
 
-				return {
+				let unified = ""
+				try {
+					const original = await fs.readFile(opResult.absolutePath!, "utf-8")
+					const processed = !cline.api.getModel().id.includes("claude")
+						? (opResult.diffItems || []).map((item) => ({
+								...item,
+								content: item.content ? unescapeHtmlEntities(item.content) : item.content,
+							}))
+						: opResult.diffItems || []
+
+					const applyRes =
+						(await cline.diffStrategy?.applyDiff(original, processed)) ?? ({ success: false } as any)
+					const newContent = applyRes.success && applyRes.content ? applyRes.content : original
+					unified = formatResponse.createPrettyPatch(opResult.path, original, newContent)
+				} catch {
+					unified = ""
+				}
+
+				const unifiedSanitized = sanitizeUnifiedDiff(unified)
+				const stats = computeDiffStats(unifiedSanitized) || undefined
+				batchDiffs.push({
 					path: readablePath,
 					changeCount,
 					key: `${readablePath} (${changeText})`,
-					content: opResult.path, // Full relative path
+					content: unifiedSanitized,
+					diffStats: stats,
 					diffs: opResult.diffItems?.map((item) => ({
 						content: item.content,
 						startLine: item.startLine,
 					})),
-				}
-			})
+				})
 
+				// Send a partial update after each file preview is ready
+				const partialMessage = JSON.stringify({
+					tool: "appliedDiff",
+					batchDiffs,
+					isProtected: hasProtectedFiles,
+				} satisfies ClineSayTool)
+				await cline.ask("tool", partialMessage, true).catch(() => {})
+			}
+
+			// Final approval message (non-partial)
 			const completeMessage = JSON.stringify({
 				tool: "appliedDiff",
 				batchDiffs,
 				isProtected: hasProtectedFiles,
 			} satisfies ClineSayTool)
 
-			const { response, text, images } = await cline.ask("tool", completeMessage, hasProtectedFiles)
+			const { response, text, images } = await cline.ask("tool", completeMessage, false)
 
 			// Process batch response
 			if (response === "yesButtonClicked") {
@@ -419,6 +459,8 @@ Original error: ${errorMessage}`
 
 			try {
 				let originalContent: string | null = await readFileWithEncodingDetection(absolutePath)
+				// let originalContent: string | null = await fs.readFile(absolutePath, "utf-8")
+				let beforeContent: string | null = originalContent
 				let successCount = 0
 				let formattedError = ""
 
@@ -541,9 +583,13 @@ ${errorDetails ? `\nTechnical details:\n${errorDetails}\n` : ""}
 				if (operationsToApprove.length === 1) {
 					// Prepare common data for single file operation
 					const diffContents = diffItems.map((item) => item.content).join("\n\n")
+					const unifiedPatchRaw = formatResponse.createPrettyPatch(relPath, beforeContent!, originalContent!)
+					const unifiedPatch = sanitizeUnifiedDiff(unifiedPatchRaw)
 					const operationMessage = JSON.stringify({
 						...sharedMessageProps,
 						diff: diffContents,
+						content: unifiedPatch,
+						diffStats: computeDiffStats(unifiedPatch) || undefined,
 					} satisfies ClineSayTool)
 
 					let toolProgressStatus

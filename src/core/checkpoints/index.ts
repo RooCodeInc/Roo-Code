@@ -24,7 +24,7 @@ import { isCoworkflowDocument } from "../costrict/workflow/commands"
  */
 async function updateCospecMetadataForCheckpoint(
 	workspaceDir: string,
-	editFilePath: string, // 这里时 ai 通过编辑的 文件路径
+	editFilePath: string,
 	taskId: string,
 	checkpointId: string,
 ): Promise<void> {

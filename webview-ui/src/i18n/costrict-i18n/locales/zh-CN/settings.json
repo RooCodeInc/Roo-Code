@@ -46,7 +46,7 @@
 			"projectIdDescription": "为企业或非免费套餐访问指定您的 Google Cloud 项目 ID。如使用个人账号并希望自动发现项目，请留空。如果您遇到 API 错误，建议填写项目ID。"
 		},
 		"consecutiveMistakeLimit": {
-			"description": "在显示“CoStrict 遇到问题”对话框前允许的连续错误或重复操作次数"
+			"description": "在显示“CoStrict 遇到问题”对话框前允许的连续错误或重复操作次数。设置为 0 可禁用此安全机制（它将永远不会触发）。"
 		}
 	},
 	"browser": {

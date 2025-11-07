@@ -46,7 +46,7 @@
 			"projectIdDescription": "若為企業或非免費方案存取，請指定您的 Google Cloud 專案 ID。如使用個人帳號並希望自動探索專案，請留空。如果您遇到 API 錯誤，建議填寫專案 ID。"
 		},
 		"consecutiveMistakeLimit": {
-			"description": "在顯示「CoStrict 遇到問題」對話方塊前允許的連續錯誤或重複操作次數"
+			"description": "在顯示「CoStrict 遇到問題」對話方塊前允許的連續錯誤或重複操作次數。設定為 0 可停用此安全機制（永不觸發）。"
 		}
 	},
 	"browser": {

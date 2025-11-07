@@ -19,6 +19,7 @@ import { RecordSource } from "../context-tracking/FileContextTrackerTypes"
 import { unescapeHtmlEntities } from "../../utils/text-normalization"
 import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
 import { CodeReviewService } from "../costrict/code-review"
+import { computeDiffStats, sanitizeUnifiedDiff } from "../diff/stats"
 
 export async function applyDiffToolLegacy(
 	cline: Task,
@@ -146,6 +147,11 @@ export async function applyDiffToolLegacy(
 			cline.consecutiveMistakeCount = 0
 			cline.consecutiveMistakeCountForApplyDiff.delete(relPath)
 
+			// Generate backend-unified diff for display in chat/webview
+			const unifiedPatchRaw = formatResponse.createPrettyPatch(relPath, originalContent, diffResult.content)
+			const unifiedPatch = sanitizeUnifiedDiff(unifiedPatchRaw)
+			const diffStats = computeDiffStats(unifiedPatch) || undefined
+
 			// Check if preventFocusDisruption experiment is enabled
 			const provider = cline.providerRef.deref()
 			const state = await provider?.getState()
@@ -182,6 +188,8 @@ export async function applyDiffToolLegacy(
 				const completeMessage = JSON.stringify({
 					...sharedMessageProps,
 					diff: diffContent,
+					content: unifiedPatch,
+					diffStats,
 					isProtected: isWriteProtected,
 				} satisfies ClineSayTool)
 
@@ -219,6 +227,8 @@ export async function applyDiffToolLegacy(
 				const completeMessage = JSON.stringify({
 					...sharedMessageProps,
 					diff: diffContent,
+					content: unifiedPatch,
+					diffStats,
 					isProtected: isWriteProtected,
 				} satisfies ClineSayTool)
 

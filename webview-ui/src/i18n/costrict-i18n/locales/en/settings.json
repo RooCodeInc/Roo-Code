@@ -46,7 +46,7 @@
 			"projectIdDescription": "Specify your Google Cloud Project ID for enterprise or non-free tier access. Leave empty for automatic project discovery with personal accounts. If you encounter an API Error, it is recommended to fill in the Project ID."
 		},
 		"consecutiveMistakeLimit": {
-			"description": "Number of consecutive errors or repeated actions allowed before showing the \"CoStrict is having trouble\" dialog"
+			"description": "Number of consecutive errors or repeated actions allowed before showing the \"CoStrict is having trouble\" dialog. Set to 0 to disable this safety mechanism (it will never trigger)."
 		}
 	},
 	"browser": {

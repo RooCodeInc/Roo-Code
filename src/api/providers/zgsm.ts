@@ -167,14 +167,10 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 				isGrokXAI,
 				reasoning,
 				modelInfo,
+				metadata,
 			)
 			if (fromWorkflow) {
-				Object.assign(requestOptions, {
-					extra_body: {
-						prompt_mode: "strict",
-						mode: metadata?.mode,
-					},
-				})
+				requestOptions.extra_body.prompt_mode = "strict"
 			}
 			let stream
 			let selectedLlm: string | undefined
@@ -220,13 +216,10 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 				deepseekReasoner,
 				enabledLegacyFormat,
 				modelInfo,
+				metadata,
 			)
 			if (fromWorkflow) {
-				Object.assign(requestOptions, {
-					extra_body: {
-						prompt_mode: "strict",
-					},
-				})
+				requestOptions.extra_body.prompt_mode = "strict"
 			}
 			let response
 			try {
@@ -364,7 +357,8 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 		isGrokXAI: boolean,
 		reasoning: any,
 		modelInfo: ModelInfo,
-	): OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming {
+		metadata?: ApiHandlerCreateMessageMetadata,
+	): OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming & { extra_body: any } {
 		const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming = {
 			model: modelId,
 			temperature:
@@ -373,10 +367,13 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 			stream: true as const,
 			...(isGrokXAI ? {} : { stream_options: { include_usage: true } }),
 			...(reasoning && reasoning),
+			extra_body: {
+				mode: metadata?.mode,
+			},
 		}
 
 		this.addMaxTokensIfNeeded(requestOptions, modelInfo)
-		return requestOptions
+		return requestOptions as OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming & { extra_body: any }
 	}
 
 	/**
@@ -389,7 +386,8 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 		isDeepseekReasoner: boolean,
 		isLegacyFormat: boolean,
 		modelInfo: ModelInfo,
-	): OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming {
+		metadata?: ApiHandlerCreateMessageMetadata,
+	): OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming & { extra_body: any } {
 		const systemMessage: OpenAI.Chat.ChatCompletionUserMessageParam = {
 			role: "user",
 			content: systemPrompt,
@@ -405,7 +403,7 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 		}
 
 		this.addMaxTokensIfNeeded(requestOptions, modelInfo)
-		return requestOptions
+		return requestOptions as OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming & { extra_body: any }
 	}
 
 	/**
@@ -536,18 +534,15 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 		if (systemPrompt) {
 			messages.unshift({ role: "system", content: systemPrompt })
 		}
-		const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {
+		const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming & { extra_body: any } = {
 			model: metadata?.modelId || model.id,
 			messages: messages,
 			temperature: 0.9,
 			max_tokens: metadata?.maxLength ?? 300,
-		}
-
-		Object.assign(requestOptions, {
 			extra_body: {
 				prompt_mode: "raw",
 			},
-		})
+		}
 
 		// Add max_tokens if needed
 		this.addMaxTokensIfNeeded(requestOptions, modelInfo)

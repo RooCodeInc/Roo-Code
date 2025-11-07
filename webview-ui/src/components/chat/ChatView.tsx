@@ -396,7 +396,8 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							break
 						case "completion_result":
 							// extension waiting for feedback. but we can just present a new task button
-							if (!isPartial) {
+							// Only play celebration sound if there are no queued messages
+							if (!isPartial && messageQueue.length === 0) {
 								playSound("celebration")
 							}
 							setSendingDisabled(isPartial)
@@ -465,7 +466,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	}, [messages.length])
 
 	useEffect(() => {
-		// Reset UI states
+		// Reset UI states only when task changes
 		setExpandedRows({})
 		everVisibleMessagesTsRef.current.clear() // Clear for new task
 		setCurrentFollowUpTs(null) // Clear follow-up answered state for new task
