@@ -161,7 +161,6 @@ export const ChatRowContent = ({
 	onFollowUpUnmount,
 	onBatchFileResponse,
 	isFollowUpAnswered,
-	// editable, // Not currently used
 }: ChatRowContentProps) => {
 	const { t } = useTranslation()
 
