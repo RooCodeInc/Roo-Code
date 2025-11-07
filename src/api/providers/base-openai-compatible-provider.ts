@@ -116,7 +116,15 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 		)
 
 		for await (const chunk of stream) {
-			const delta = chunk.choices[0]?.delta
+			// Check for provider-specific error responses (e.g., MiniMax base_resp)
+			const chunkAny = chunk as any
+			if (chunkAny.base_resp?.status_code && chunkAny.base_resp.status_code !== 0) {
+				throw new Error(
+					`${this.providerName} API Error (${chunkAny.base_resp.status_code}): ${chunkAny.base_resp.status_msg || "Unknown error"}`,
+				)
+			}
+
+			const delta = chunk.choices?.[0]?.delta
 
 			if (delta?.content) {
 				for (const processedChunk of matcher.update(delta.content)) {
@@ -155,7 +163,15 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 				messages: [{ role: "user", content: prompt }],
 			})
 
-			return response.choices[0]?.message.content || ""
+			// Check for provider-specific error responses (e.g., MiniMax base_resp)
+			const responseAny = response as any
+			if (responseAny.base_resp?.status_code && responseAny.base_resp.status_code !== 0) {
+				throw new Error(
+					`${this.providerName} API Error (${responseAny.base_resp.status_code}): ${responseAny.base_resp.status_msg || "Unknown error"}`,
+				)
+			}
+
+			return response.choices?.[0]?.message.content || ""
 		} catch (error) {
 			throw handleOpenAIError(error, this.providerName)
 		}
