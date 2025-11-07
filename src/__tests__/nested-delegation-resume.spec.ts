@@ -2,7 +2,6 @@
 
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { RooCodeEventName } from "@roo-code/types"
-import { EXPERIMENT_IDS } from "../shared/experiments"
 
 // vscode mock for Task/Provider imports
 vi.mock("vscode", () => {
@@ -123,10 +122,6 @@ describe("Nested delegation resume (A → B → C)", () => {
 
 		const provider = {
 			contextProxy: { globalStorageUri: { fsPath: "/tmp" } },
-			// Experiment flag ON
-			getState: vi.fn().mockResolvedValue({
-				experiments: { [EXPERIMENT_IDS.METADATA_DRIVEN_SUBTASKS]: true },
-			}),
 			getTaskWithId,
 			emit: emitSpy,
 			getCurrentTask: vi.fn(() => (currentActiveId ? ({ taskId: currentActiveId } as any) : undefined)),

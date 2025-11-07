@@ -2,7 +2,6 @@
 
 import { describe, it, expect, vi } from "vitest"
 import { RooCodeEventName } from "@roo-code/types"
-import { EXPERIMENT_IDS } from "../shared/experiments"
 import { ClineProvider } from "../core/webview/ClineProvider"
 
 describe("ClineProvider.delegateParentAndOpenChild()", () => {
@@ -27,8 +26,6 @@ describe("ClineProvider.delegateParentAndOpenChild()", () => {
 
 		const provider = {
 			emit: providerEmit,
-			// Experiment flag ON
-			getState: vi.fn().mockResolvedValue({ experiments: { [EXPERIMENT_IDS.METADATA_DRIVEN_SUBTASKS]: true } }),
 			getCurrentTask: vi.fn(() => parentTask),
 			removeClineFromStack,
 			createTask,
@@ -71,20 +68,5 @@ describe("ClineProvider.delegateParentAndOpenChild()", () => {
 
 		// Mode switch
 		expect(handleModeSwitch).toHaveBeenCalledWith("code")
-	})
-
-	it("throws when experiment flag is OFF", async () => {
-		const provider = {
-			getState: vi.fn().mockResolvedValue({ experiments: { [EXPERIMENT_IDS.METADATA_DRIVEN_SUBTASKS]: false } }),
-		} as unknown as ClineProvider
-
-		await expect(
-			(ClineProvider.prototype as any).delegateParentAndOpenChild.call(provider, {
-				parentTaskId: "p",
-				message: "m",
-				initialTodos: [],
-				mode: "code",
-			}),
-		).rejects.toThrow(/gated by METADATA_DRIVEN_SUBTASKS/)
 	})
 })

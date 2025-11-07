@@ -261,7 +261,7 @@ describe("Checkpoint delegation abort noise prevention", () => {
 		const createTaskSpy = vi.fn().mockResolvedValue({ taskId: "child-x" })
 
 		const provider: any = {
-			getState: vi.fn().mockResolvedValue({ experiments: { metadataDrivenSubtasks: true } }),
+			getState: vi.fn().mockResolvedValue({ experiments: {} }),
 			getCurrentTask: vi.fn(() => ({ taskId: "parent-x" })),
 			removeClineFromStack: removeSpy,
 			createTask: createTaskSpy,
@@ -297,7 +297,7 @@ describe("Checkpoint delegation abort noise prevention", () => {
 		const removeSpy = vi.fn().mockRejectedValue(disposalError)
 
 		const provider: any = {
-			getState: vi.fn().mockResolvedValue({ experiments: { metadataDrivenSubtasks: true } }),
+			getState: vi.fn().mockResolvedValue({ experiments: {} }),
 			getCurrentTask: vi.fn(() => ({ taskId: "parent-y" })),
 			removeClineFromStack: removeSpy,
 			createTask: vi.fn().mockResolvedValue({ taskId: "child-y" }),

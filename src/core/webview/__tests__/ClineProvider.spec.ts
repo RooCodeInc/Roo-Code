@@ -614,14 +614,12 @@ describe("ClineProvider", () => {
 			await provider.resolveWebviewView(mockWebviewView)
 		})
 
-		test("calls clearTask when there is no parent task", async () => {
+		test("calls clearTask (delegation handled via metadata)", async () => {
 			// Setup a single task without parent
 			const mockCline = new Task(defaultTaskOptions)
-			// No need to set parentTask - it's undefined by default
 
 			// Mock the provider methods
 			const clearTaskSpy = vi.spyOn(provider, "clearTask").mockResolvedValue(undefined)
-			const finishSubTaskSpy = vi.spyOn(provider, "finishSubTask").mockResolvedValue(undefined)
 			const postStateToWebviewSpy = vi.spyOn(provider, "postStateToWebview").mockResolvedValue(undefined)
 
 			// Add task to stack
@@ -633,25 +631,22 @@ describe("ClineProvider", () => {
 			// Trigger clearTask message
 			await messageHandler({ type: "clearTask" })
 
-			// Verify clearTask was called (not finishSubTask)
+			// Verify clearTask was called
 			expect(clearTaskSpy).toHaveBeenCalled()
-			expect(finishSubTaskSpy).not.toHaveBeenCalled()
 			expect(postStateToWebviewSpy).toHaveBeenCalled()
 		})
 
-		test("calls finishSubTask when there is a parent task", async () => {
+		test("calls clearTask even with parent task (delegation via metadata)", async () => {
 			// Setup parent and child tasks
 			const parentTask = new Task(defaultTaskOptions)
 			const childTask = new Task(defaultTaskOptions)
 
-			// Set up parent-child relationship by setting the parentTask property
-			// The mock allows us to set properties directly
+			// Set up parent-child relationship
 			;(childTask as any).parentTask = parentTask
 			;(childTask as any).rootTask = parentTask
 
 			// Mock the provider methods
 			const clearTaskSpy = vi.spyOn(provider, "clearTask").mockResolvedValue(undefined)
-			const finishSubTaskSpy = vi.spyOn(provider, "finishSubTask").mockResolvedValue(undefined)
 			const postStateToWebviewSpy = vi.spyOn(provider, "postStateToWebview").mockResolvedValue(undefined)
 
 			// Add both tasks to stack (parent first, then child)
@@ -664,9 +659,8 @@ describe("ClineProvider", () => {
 			// Trigger clearTask message
 			await messageHandler({ type: "clearTask" })
 
-			// Verify finishSubTask was called (not clearTask)
-			expect(finishSubTaskSpy).toHaveBeenCalledWith(expect.stringContaining("canceled"))
-			expect(clearTaskSpy).not.toHaveBeenCalled()
+			// Verify clearTask was called (delegation happens via metadata, not finishSubTask)
+			expect(clearTaskSpy).toHaveBeenCalled()
 			expect(postStateToWebviewSpy).toHaveBeenCalled()
 		})
 
@@ -675,7 +669,6 @@ describe("ClineProvider", () => {
 
 			// Mock the provider methods
 			const clearTaskSpy = vi.spyOn(provider, "clearTask").mockResolvedValue(undefined)
-			const finishSubTaskSpy = vi.spyOn(provider, "finishSubTask").mockResolvedValue(undefined)
 			const postStateToWebviewSpy = vi.spyOn(provider, "postStateToWebview").mockResolvedValue(undefined)
 
 			// Get the message handler
@@ -686,21 +679,17 @@ describe("ClineProvider", () => {
 
 			// When there's no current task, clearTask is still called (it handles the no-task case internally)
 			expect(clearTaskSpy).toHaveBeenCalled()
-			expect(finishSubTaskSpy).not.toHaveBeenCalled()
-			// State should still be posted
 			expect(postStateToWebviewSpy).toHaveBeenCalled()
 		})
 
-		test("correctly identifies subtask scenario for issue #4602", async () => {
-			// This test specifically validates the fix for issue #4602
-			// where canceling during API retry was incorrectly treating a single task as a subtask
+		test("correctly identifies task scenario for issue #4602", async () => {
+			// This test validates the fix for issue #4602
+			// where canceling during API retry correctly uses clearTask
 
 			const mockCline = new Task(defaultTaskOptions)
-			// No parent task by default - no need to explicitly set
 
 			// Mock the provider methods
 			const clearTaskSpy = vi.spyOn(provider, "clearTask").mockResolvedValue(undefined)
-			const finishSubTaskSpy = vi.spyOn(provider, "finishSubTask").mockResolvedValue(undefined)
 
 			// Add only one task to stack
 			await provider.addClineToStack(mockCline)
@@ -714,9 +703,8 @@ describe("ClineProvider", () => {
 			// Trigger clearTask message (simulating cancel during API retry)
 			await messageHandler({ type: "clearTask" })
 
-			// The fix ensures clearTask is called, not finishSubTask
+			// clearTask should be called (delegation handled via metadata)
 			expect(clearTaskSpy).toHaveBeenCalled()
-			expect(finishSubTaskSpy).not.toHaveBeenCalled()
 		})
 	})
 

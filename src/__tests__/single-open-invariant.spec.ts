@@ -3,7 +3,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { ClineProvider } from "../core/webview/ClineProvider"
 import { API } from "../extension/api"
-import { EXPERIMENT_IDS } from "../shared/experiments"
 import * as ProfileValidatorMod from "../shared/ProfileValidator"
 
 // Mock Task class used by ClineProvider to avoid heavy startup
@@ -33,7 +32,7 @@ describe("Single-open-task invariant", () => {
 		vi.restoreAllMocks()
 	})
 
-	it("User-initiated create: flag ON -> closes existing before opening new", async () => {
+	it("User-initiated create: closes existing before opening new", async () => {
 		// Allow profile
 		vi.spyOn(ProfileValidatorMod.ProfileValidator, "isProfileAllowed").mockReturnValue(true)
 
@@ -45,7 +44,6 @@ describe("Single-open-task invariant", () => {
 			clineStack: [{ taskId: "existing-1" }],
 			setValues: vi.fn(),
 			getState: vi.fn().mockResolvedValue({
-				experiments: { [EXPERIMENT_IDS.METADATA_DRIVEN_SUBTASKS]: true },
 				apiConfiguration: { apiProvider: "anthropic", consecutiveMistakeLimit: 0 },
 				organizationAllowList: "*",
 				diffEnabled: false,
@@ -75,49 +73,6 @@ describe("Single-open-task invariant", () => {
 		await (ClineProvider.prototype as any).createTask.call(provider, "New task")
 
 		expect(removeClineFromStack).toHaveBeenCalledTimes(1)
-		expect(addClineToStack).toHaveBeenCalledTimes(1)
-	})
-
-	it("User-initiated create: flag OFF -> does NOT auto-close existing", async () => {
-		vi.spyOn(ProfileValidatorMod.ProfileValidator, "isProfileAllowed").mockReturnValue(true)
-
-		const removeClineFromStack = vi.fn().mockResolvedValue(undefined)
-		const addClineToStack = vi.fn().mockResolvedValue(undefined)
-
-		const provider = {
-			clineStack: [{ taskId: "existing-1" }],
-			setValues: vi.fn(),
-			getState: vi.fn().mockResolvedValue({
-				experiments: { [EXPERIMENT_IDS.METADATA_DRIVEN_SUBTASKS]: false },
-				apiConfiguration: { apiProvider: "anthropic", consecutiveMistakeLimit: 0 },
-				organizationAllowList: "*",
-				diffEnabled: false,
-				enableCheckpoints: true,
-				checkpointTimeout: 60,
-				fuzzyMatchThreshold: 1.0,
-				cloudUserInfo: null,
-				remoteControlEnabled: false,
-			}),
-			removeClineFromStack,
-			addClineToStack,
-			setProviderProfile: vi.fn(),
-			log: vi.fn(),
-			getStateToPostToWebview: vi.fn(),
-			providerSettingsManager: { getModeConfigId: vi.fn(), listConfig: vi.fn() },
-			customModesManager: { getCustomModes: vi.fn().mockResolvedValue([]) },
-			taskCreationCallback: vi.fn(),
-			contextProxy: {
-				extensionUri: {},
-				setValue: vi.fn(),
-				getValue: vi.fn(),
-				setProviderSettings: vi.fn(),
-				getProviderSettings: vi.fn(() => ({})),
-			},
-		} as unknown as ClineProvider
-
-		await (ClineProvider.prototype as any).createTask.call(provider, "New task")
-
-		expect(removeClineFromStack).not.toHaveBeenCalled()
 		expect(addClineToStack).toHaveBeenCalledTimes(1)
 	})
 
