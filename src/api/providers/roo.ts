@@ -115,61 +115,72 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
-		const stream = await this.createStream(
-			systemPrompt,
-			messages,
-			metadata,
-			metadata?.taskId ? { headers: { "X-Roo-Task-ID": metadata.taskId } } : undefined,
-		)
+		try {
+			const stream = await this.createStream(
+				systemPrompt,
+				messages,
+				metadata,
+				metadata?.taskId ? { headers: { "X-Roo-Task-ID": metadata.taskId } } : undefined,
+			)
 
-		let lastUsage: RooUsage | undefined = undefined
+			let lastUsage: RooUsage | undefined = undefined
 
-		for await (const chunk of stream) {
-			const delta = chunk.choices[0]?.delta
+			for await (const chunk of stream) {
+				const delta = chunk.choices[0]?.delta
 
-			if (delta) {
-				// Check for reasoning content (similar to OpenRouter)
-				if ("reasoning" in delta && delta.reasoning && typeof delta.reasoning === "string") {
-					yield {
-						type: "reasoning",
-						text: delta.reasoning,
+				if (delta) {
+					// Check for reasoning content (similar to OpenRouter)
+					if ("reasoning" in delta && delta.reasoning && typeof delta.reasoning === "string") {
+						yield {
+							type: "reasoning",
+							text: delta.reasoning,
+						}
+					}
+
+					// Also check for reasoning_content for backward compatibility
+					if ("reasoning_content" in delta && typeof delta.reasoning_content === "string") {
+						yield {
+							type: "reasoning",
+							text: delta.reasoning_content,
+						}
+					}
+
+					if (delta.content) {
+						yield {
+							type: "text",
+							text: delta.content,
+						}
 					}
 				}
 
-				// Also check for reasoning_content for backward compatibility
-				if ("reasoning_content" in delta && typeof delta.reasoning_content === "string") {
-					yield {
-						type: "reasoning",
-						text: delta.reasoning_content,
-					}
-				}
-
-				if (delta.content) {
-					yield {
-						type: "text",
-						text: delta.content,
-					}
+				if (chunk.usage) {
+					lastUsage = chunk.usage as RooUsage
 				}
 			}
 
-			if (chunk.usage) {
-				lastUsage = chunk.usage as RooUsage
-			}
-		}
+			if (lastUsage) {
+				// Check if the current model is marked as free
+				const model = this.getModel()
+				const isFreeModel = model.info.isFree ?? false
 
-		if (lastUsage) {
-			// Check if the current model is marked as free
-			const model = this.getModel()
-			const isFreeModel = model.info.isFree ?? false
-
-			yield {
-				type: "usage",
-				inputTokens: lastUsage.prompt_tokens || 0,
-				outputTokens: lastUsage.completion_tokens || 0,
-				cacheWriteTokens: lastUsage.cache_creation_input_tokens,
-				cacheReadTokens: lastUsage.prompt_tokens_details?.cached_tokens,
-				totalCost: isFreeModel ? 0 : (lastUsage.cost ?? 0),
+				yield {
+					type: "usage",
+					inputTokens: lastUsage.prompt_tokens || 0,
+					outputTokens: lastUsage.completion_tokens || 0,
+					cacheWriteTokens: lastUsage.cache_creation_input_tokens,
+					cacheReadTokens: lastUsage.prompt_tokens_details?.cached_tokens,
+					totalCost: isFreeModel ? 0 : (lastUsage.cost ?? 0),
+				}
 			}
+		} catch (error) {
+			// Log streaming errors with context
+			console.error("[RooHandler] Error during message streaming:", {
+				error: error instanceof Error ? error.message : String(error),
+				stack: error instanceof Error ? error.stack : undefined,
+				modelId: this.options.apiModelId,
+				hasTaskId: Boolean(metadata?.taskId),
+			})
+			throw error
 		}
 	}
 	override async completePrompt(prompt: string): Promise<string> {
@@ -187,7 +198,13 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 				apiKey,
 			})
 		} catch (error) {
-			console.error("[RooHandler] Error loading dynamic models:", error)
+			// Enhanced error logging with more context
+			console.error("[RooHandler] Error loading dynamic models:", {
+				error: error instanceof Error ? error.message : String(error),
+				stack: error instanceof Error ? error.stack : undefined,
+				baseURL,
+				hasApiKey: Boolean(apiKey),
+			})
 		}
 	}
 
