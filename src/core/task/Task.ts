@@ -228,6 +228,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	abortReason?: ClineApiReqCancelReason
 	isInitialized = false
 	isPaused: boolean = false
+	/**
+	 * @deprecated Legacy subtask pause/wait flow only. For metadata-driven subtasks
+	 * (METADATA_DRIVEN_SUBTASKS experiment), the parent's mode is persisted in historyItem.mode
+	 * and restored via createTaskWithHistoryItem() rather than stored in-memory during pause.
+	 */
 	pausedModeSlug: string = defaultModeSlug
 	private pauseInterval: NodeJS.Timeout | undefined
 
@@ -1495,7 +1500,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				text: `<task>\n${task}\n</task>`,
 			},
 			...imageBlocks,
-		])
+		]).catch((error) => {
+			// Swallow loop rejection when the task was intentionally abandoned/aborted
+			// during delegation or user cancellation to prevent unhandled rejections.
+			if (this.abandoned === true || this.abortReason === "user_cancelled") {
+				return
+			}
+			throw error
+		})
 	}
 
 	private async resumeTaskFromHistory() {
@@ -1925,6 +1937,32 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			throw new Error("Provider not available")
 		}
 
+		// Experiment-gated: metadata-driven delegation path
+		try {
+			const state = await provider.getState()
+			const useMetadataSubtasks = experiments.isEnabled(
+				state.experiments ?? ({} as any),
+				EXPERIMENT_IDS.METADATA_DRIVEN_SUBTASKS,
+			)
+
+			if (useMetadataSubtasks) {
+				// NEW: Delegate parent and open child.
+				// DOES NOT set isPaused, childTaskId, or touch pausedModeSlug.
+				// DOES NOT call waitForSubtask() or emit TaskPaused/TaskUnpaused events.
+				// Parent is closed and re-opened via metadata-driven flow instead.
+				const child = await (provider as any).delegateParentAndOpenChild({
+					parentTaskId: this.taskId,
+					message,
+					initialTodos,
+					mode,
+				})
+				return child
+			}
+		} catch {
+			// Non-fatal: fall through to legacy behavior on any error
+		}
+
+		// LEGACY: Existing pause-and-wait flow (only used when flag OFF)
 		const newTask = await provider.createTask(message, undefined, this, { initialTodos })
 
 		if (newTask) {
@@ -1941,9 +1979,16 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		return newTask
 	}
 
-	// Used when a sub-task is launched and the parent task is waiting for it to
-	// finish.
-	// TBD: Add a timeout to prevent infinite waiting.
+	/**
+	 * @deprecated Legacy subtask pause/wait flow only. Used when parent task waits
+	 * for a child subtask to complete using the pause-and-poll approach.
+	 *
+	 * For metadata-driven subtasks (METADATA_DRIVEN_SUBTASKS experiment), use
+	 * provider.delegateParentAndOpenChild() instead, which closes the parent
+	 * and reopens it via provider.reopenParentFromDelegation() when the child completes.
+	 *
+	 * This method is only called when the experiment flag is OFF.
+	 */
 	public async waitForSubtask() {
 		await new Promise<void>((resolve) => {
 			this.pauseInterval = setInterval(() => {
@@ -1998,6 +2043,51 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 			throw error
 		}
+	}
+
+	/**
+	 * Resume parent task after delegation completion without showing resume ask.
+	 * Used in metadata-driven subtask flow (METADATA_DRIVEN_SUBTASKS experiment).
+	 *
+	 * This method:
+	 * - Clears any pending ask states
+	 * - Resets abort and streaming flags
+	 * - Ensures next API call includes full context
+	 * - Immediately continues task loop without user interaction
+	 */
+	public async resumeAfterDelegation(): Promise<void> {
+		// Clear any ask states that might have been set during history load
+		this.idleAsk = undefined
+		this.resumableAsk = undefined
+		this.interactiveAsk = undefined
+
+		// Reset abort and streaming state to ensure clean continuation
+		this.abort = false
+		this.abandoned = false
+		this.abortReason = undefined
+		this.didFinishAbortingStream = false
+		this.isStreaming = false
+		this.isWaitingForFirstChunk = false
+
+		// Ensure next API call includes full context after delegation
+		this.skipPrevResponseIdOnce = true
+
+		// Mark as initialized and active
+		this.isInitialized = true
+		this.emit(RooCodeEventName.TaskActive, this.taskId)
+
+		// Load conversation history if not already loaded
+		if (this.apiConversationHistory.length === 0) {
+			this.apiConversationHistory = await this.getSavedApiConversationHistory()
+		}
+
+		// Continue task loop with minimal resume content
+		await this.initiateTaskLoop([
+			{
+				type: "text",
+				text: "[DELEGATION RESUMED] Continuing after subtask completion...",
+			},
+		])
 	}
 
 	// Task Loop
@@ -2085,22 +2175,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				this.consecutiveMistakeCount = 0
 			}
 
+			// LEGACY: Pause-wait flow only (for experiment flag OFF)
 			// In this Cline request loop, we need to check if this task instance
 			// has been asked to wait for a subtask to finish before continuing.
 			const provider = this.providerRef.deref()
 
 			if (this.isPaused && provider) {
-				provider.log(`[subtasks] paused ${this.taskId}.${this.instanceId}`)
+				provider.log(`[legacy-subtasks] paused ${this.taskId}.${this.instanceId}`)
 				await this.waitForSubtask()
-				provider.log(`[subtasks] resumed ${this.taskId}.${this.instanceId}`)
-
-				// After subtask completes, completeSubtask has pushed content to userMessageContent.
-				// Copy it to currentUserContent so it gets sent to the API in this iteration.
-				if (this.userMessageContent.length > 0) {
-					currentUserContent.push(...this.userMessageContent)
-					this.userMessageContent = []
-				}
-
+				provider.log(`[legacy-subtasks] resumed ${this.taskId}.${this.instanceId}`)
 				const currentMode = (await provider.getState())?.mode ?? defaultModeSlug
 
 				if (currentMode !== this.pausedModeSlug) {
@@ -2111,7 +2194,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					await delay(500)
 
 					provider.log(
-						`[subtasks] task ${this.taskId}.${this.instanceId} has switched back to '${this.pausedModeSlug}' from '${currentMode}'`,
+						`[legacy-subtasks] task ${this.taskId}.${this.instanceId} has switched back to '${this.pausedModeSlug}' from '${currentMode}'`,
 					)
 				}
 			}

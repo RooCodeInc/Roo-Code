@@ -613,3 +613,78 @@ describe("newTaskTool", () => {
 
 	// Add more tests for error handling (invalid mode, approval denied) if needed
 })
+
+describe("newTaskTool delegation flow (experiment ON)", () => {
+	it("delegates to provider and does not call legacy startSubtask", async () => {
+		// Arrange: enable experiment and stub provider delegation
+		const providerSpy = {
+			getState: vi.fn().mockResolvedValue({
+				mode: "ask",
+				experiments: { metadataDrivenSubtasks: true },
+			}),
+			delegateParentAndOpenChild: vi.fn().mockResolvedValue({ taskId: "child-1" }),
+			handleModeSwitch: vi.fn(),
+		} as any
+
+		// Use a fresh local cline instance to avoid cross-test interference
+		const localStartSubtask = vi.fn()
+		const localEmit = vi.fn()
+		const localCline = {
+			ask: vi.fn(),
+			sayAndCreateMissingParamError: mockSayAndCreateMissingParamError,
+			emit: localEmit,
+			recordToolError: mockRecordToolError,
+			consecutiveMistakeCount: 0,
+			isPaused: false,
+			pausedModeSlug: "ask",
+			taskId: "mock-parent-task-id",
+			enableCheckpoints: false,
+			checkpointSave: mockCheckpointSave,
+			startSubtask: localStartSubtask,
+			providerRef: {
+				deref: vi.fn(() => providerSpy),
+			},
+		}
+
+		const block: ToolUse = {
+			type: "tool_use",
+			name: "new_task",
+			params: {
+				mode: "code",
+				message: "Do something",
+				// no todos -> should default to []
+			},
+			partial: false,
+		}
+
+		// Act
+		await newTaskTool(
+			localCline as any,
+			block,
+			mockAskApproval,
+			mockHandleError,
+			mockPushToolResult,
+			mockRemoveClosingTag,
+		)
+
+		// Assert: provider method called with correct params
+		expect(providerSpy.delegateParentAndOpenChild).toHaveBeenCalledWith({
+			parentTaskId: "mock-parent-task-id",
+			message: "Do something",
+			initialTodos: [],
+			mode: "code",
+		})
+
+		// Assert: legacy path not used
+		expect(localStartSubtask).not.toHaveBeenCalled()
+
+		// Assert: no pause/unpause events emitted in delegation path
+		const pauseEvents = (localEmit as any).mock.calls.filter(
+			(c: any[]) => c[0] === "taskPaused" || c[0] === "taskUnpaused",
+		)
+		expect(pauseEvents.length).toBe(0)
+
+		// Assert: tool result reflects delegation
+		expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("Delegated to child task child-1"))
+	})
+})

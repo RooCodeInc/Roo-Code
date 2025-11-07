@@ -73,6 +73,11 @@ export type TaskProviderEvents = {
 	[RooCodeEventName.TaskUnpaused]: [taskId: string]
 	[RooCodeEventName.TaskSpawned]: [taskId: string]
 
+	// NEW: Delegation events (provider-level)
+	[RooCodeEventName.TaskDelegated]: [parentTaskId: string, childTaskId: string]
+	[RooCodeEventName.TaskDelegationCompleted]: [parentTaskId: string, childTaskId: string, summary: string]
+	[RooCodeEventName.TaskDelegationResumed]: [parentTaskId: string, childTaskId: string]
+
 	[RooCodeEventName.TaskUserMessage]: [taskId: string]
 
 	[RooCodeEventName.TaskTokenUsageUpdated]: [taskId: string, tokenUsage: TokenUsage]

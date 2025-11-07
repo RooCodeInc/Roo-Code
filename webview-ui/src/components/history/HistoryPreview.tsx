@@ -1,7 +1,8 @@
-import { memo } from "react"
+import { memo, useContext } from "react"
 
 import { vscode } from "@src/utils/vscode"
 import { useAppTranslation } from "@src/i18n/TranslationContext"
+import { ExtensionStateContext } from "@/context/ExtensionStateContext"
 
 import { useTaskSearch } from "./useTaskSearch"
 import TaskItem from "./TaskItem"
@@ -9,6 +10,8 @@ import TaskItem from "./TaskItem"
 const HistoryPreview = () => {
 	const { tasks } = useTaskSearch()
 	const { t } = useAppTranslation()
+	const extensionState = useContext(ExtensionStateContext)
+	const currentTaskItem = extensionState?.currentTaskItem
 
 	const handleViewAllHistory = () => {
 		vscode.postMessage({ type: "switchTab", tab: "history" })
@@ -28,7 +31,12 @@ const HistoryPreview = () => {
 			{tasks.length !== 0 && (
 				<>
 					{tasks.slice(0, 4).map((item) => (
-						<TaskItem key={item.id} item={item} variant="compact" />
+						<TaskItem
+							key={item.id}
+							item={item}
+							variant="compact"
+							isFocused={item.id === (currentTaskItem?.id || "")}
+						/>
 					))}
 				</>
 			)}

@@ -172,6 +172,12 @@ async function checkGitInstallation(
 					suppressMessage: !!suppressMessage,
 				})
 
+				// Guard: skip say if task is already aborted or abandoned
+				if (task.abandoned || task.abort) {
+					log("[Task#getCheckpointService] skipping checkpoint_saved say (task aborted/abandoned)")
+					return
+				}
+
 				// Always create the chat message but include the suppress flag in the payload
 				// so the chatview can choose not to render it while keeping it in history.
 				task.say(
@@ -183,8 +189,14 @@ async function checkGitInstallation(
 					undefined,
 					{ isNonInteractive: true },
 				).catch((err) => {
-					log("[Task#getCheckpointService] caught unexpected error in say('checkpoint_saved')")
-					console.error(err)
+					// Swallow abort errors silently - they're expected during task disposal
+					const isAbortError = err?.message?.includes("aborted") || err?.message?.includes("abandoned")
+					if (isAbortError) {
+						log("[Task#getCheckpointService] checkpoint_saved say aborted (expected during disposal)")
+					} else {
+						log("[Task#getCheckpointService] caught unexpected error in say('checkpoint_saved')")
+						console.error(err)
+					}
 				})
 			} catch (err) {
 				log("[Task#getCheckpointService] caught unexpected error in on('checkpoint'), disabling checkpoints")
