@@ -119,11 +119,11 @@ const TaskHeader = ({
 			)}
 			<div
 				className={cn(
-					"px-2.5 py-2.5 flex flex-col gap-1.5 relative z-1",
-					"bg-vscode-input-background",
+					"px-3 pt-2.5 pb-2 flex flex-col gap-1.5 relative z-1 cursor-pointer",
+					"bg-vscode-input-background hover:bg-vscode-input-background/90",
 					"text-vscode-foreground/80 hover:text-vscode-foreground",
-					"shadow-lg shadow-vscode-sideBar-background/50",
-					"rounded-xl",
+					"shadow-lg shadow-vscode-sideBar-background/50 rounded-xl",
+					hasTodos && "border-b-0",
 				)}
 				onClick={(e) => {
 					// Don't expand if clicking on todos section
@@ -182,7 +182,7 @@ const TaskHeader = ({
 				</div>
 				{!isTaskExpanded && contextWindow > 0 && (
 					<div
-						className="flex items-center gap-2 text-sm cursor-default"
+						className="flex items-center gap-2 text-sm text-muted-foreground/70"
 						onClick={(e) => e.stopPropagation()}>
 						<Coins className="size-3 shrink-0" />
 						<StandardTooltip
@@ -354,12 +354,7 @@ const TaskHeader = ({
 					</>
 				)}
 				{/* Todo list - always shown at bottom when todos exist */}
-				{hasTodos && (
-					<TodoListDisplay
-						todos={todos ?? (task as any)?.tool?.todos ?? []}
-						isParentExpanded={isTaskExpanded}
-					/>
-				)}
+				{hasTodos && <TodoListDisplay todos={todos ?? (task as any)?.tool?.todos ?? []} />}
 			</div>
 			<CloudUpsellDialog open={isOpen} onOpenChange={closeUpsell} onConnect={handleConnect} />
 		</div>

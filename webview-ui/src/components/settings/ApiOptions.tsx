@@ -807,6 +807,7 @@ const ApiOptions = ({
 								value={apiConfiguration.modelTemperature}
 								onChange={handleInputChange("modelTemperature", noTransform)}
 								maxValue={2}
+								defaultValue={selectedModelInfo?.defaultTemperature}
 							/>
 						)}
 						<RateLimitSecondsControl

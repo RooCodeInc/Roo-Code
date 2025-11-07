@@ -16,6 +16,7 @@ import { detectCodeOmission } from "../../integrations/editor/detect-omission"
 import { unescapeHtmlEntities } from "../../utils/text-normalization"
 import { DEFAULT_WRITE_DELAY_MS } from "@roo-code/types"
 import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
+import { convertNewFileToUnifiedDiff, computeDiffStats, sanitizeUnifiedDiff } from "../diff/stats"
 
 export async function writeToFileTool(
 	cline: Task,
@@ -173,6 +174,15 @@ export async function writeToFileTool(
 
 			if (isPreventFocusDisruptionEnabled) {
 				// Direct file write without diff view
+				// Set up diffViewProvider properties needed for diff generation and saveDirectly
+				cline.diffViewProvider.editType = fileExists ? "modify" : "create"
+				if (fileExists) {
+					const absolutePath = path.resolve(cline.cwd, relPath)
+					cline.diffViewProvider.originalContent = await fs.readFile(absolutePath, "utf-8")
+				} else {
+					cline.diffViewProvider.originalContent = ""
+				}
+
 				// Check for code omissions before proceeding
 				if (detectCodeOmission(cline.diffViewProvider.originalContent || "", newContent, predictedLineCount)) {
 					if (cline.diffStrategy) {
@@ -202,24 +212,21 @@ export async function writeToFileTool(
 					}
 				}
 
+				// Build unified diff for both existing and new files
+				let unified = fileExists
+					? formatResponse.createPrettyPatch(relPath, cline.diffViewProvider.originalContent, newContent)
+					: convertNewFileToUnifiedDiff(newContent, relPath)
+				unified = sanitizeUnifiedDiff(unified)
 				const completeMessage = JSON.stringify({
 					...sharedMessageProps,
-					content: newContent,
+					content: unified,
+					diffStats: computeDiffStats(unified) || undefined,
 				} satisfies ClineSayTool)
 
 				const didApprove = await askApproval("tool", completeMessage, undefined, isWriteProtected)
 
 				if (!didApprove) {
 					return
-				}
-
-				// Set up diffViewProvider properties needed for saveDirectly
-				cline.diffViewProvider.editType = fileExists ? "modify" : "create"
-				if (fileExists) {
-					const absolutePath = path.resolve(cline.cwd, relPath)
-					cline.diffViewProvider.originalContent = await fs.readFile(absolutePath, "utf-8")
-				} else {
-					cline.diffViewProvider.originalContent = ""
 				}
 
 				// Save directly without showing diff view or opening the file
@@ -275,12 +282,15 @@ export async function writeToFileTool(
 					}
 				}
 
+				// Build unified diff for both existing and new files
+				let unified = fileExists
+					? formatResponse.createPrettyPatch(relPath, cline.diffViewProvider.originalContent, newContent)
+					: convertNewFileToUnifiedDiff(newContent, relPath)
+				unified = sanitizeUnifiedDiff(unified)
 				const completeMessage = JSON.stringify({
 					...sharedMessageProps,
-					content: fileExists ? undefined : newContent,
-					diff: fileExists
-						? formatResponse.createPrettyPatch(relPath, cline.diffViewProvider.originalContent, newContent)
-						: undefined,
+					content: unified,
+					diffStats: computeDiffStats(unified) || undefined,
 				} satisfies ClineSayTool)
 
 				const didApprove = await askApproval("tool", completeMessage, undefined, isWriteProtected)
