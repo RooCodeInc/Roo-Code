@@ -42,6 +42,7 @@ import {
 	ORGANIZATION_ALLOW_ALL,
 	DEFAULT_MODES,
 	DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
+	getModelId,
 } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 import { CloudService, BridgeOrchestrator, getRooCodeApiUrl } from "@roo-code/cloud"
@@ -1344,7 +1345,19 @@ export class ClineProvider
 				// TODO: We should rename `buildApiHandler` for clarity (e.g. `getProviderClient`).
 				const task = this.getCurrentTask()
 
-				if (task) {
+				if (task && task.apiConfiguration) {
+					// Only rebuild API handler if provider or model actually changed
+					// to avoid triggering unnecessary context condensing
+					const currentProvider = task.apiConfiguration.apiProvider
+					const newProvider = providerSettings.apiProvider
+					const currentModelId = getModelId(task.apiConfiguration)
+					const newModelId = getModelId(providerSettings)
+
+					if (currentProvider !== newProvider || currentModelId !== newModelId) {
+						task.api = buildApiHandler(providerSettings)
+					}
+				} else if (task) {
+					// Fallback: rebuild if apiConfiguration is not available
 					task.api = buildApiHandler(providerSettings)
 				}
 			} else {
@@ -1405,7 +1418,19 @@ export class ClineProvider
 		// Change the provider for the current task.
 		const task = this.getCurrentTask()
 
-		if (task) {
+		if (task && task.apiConfiguration) {
+			// Only rebuild API handler if provider or model actually changed
+			// to avoid triggering unnecessary context condensing
+			const currentProvider = task.apiConfiguration.apiProvider
+			const newProvider = providerSettings.apiProvider
+			const currentModelId = getModelId(task.apiConfiguration)
+			const newModelId = getModelId(providerSettings)
+
+			if (currentProvider !== newProvider || currentModelId !== newModelId) {
+				task.api = buildApiHandler(providerSettings)
+			}
+		} else if (task) {
+			// Fallback: rebuild if apiConfiguration is not available
 			task.api = buildApiHandler(providerSettings)
 		}
 
