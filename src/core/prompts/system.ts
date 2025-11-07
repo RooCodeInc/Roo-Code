@@ -88,29 +88,37 @@ async function generatePrompt(
 
 	const codeIndexManager = CodeIndexManager.getInstance(context, cwd)
 
+	// Determine the effective protocol (defaults to 'xml')
+	const effectiveProtocol = settings?.toolProtocol || "xml"
+
+	// Build tools catalog section only for XML protocol
+	const toolsCatalog =
+		effectiveProtocol === "xml"
+			? `\n\n${getToolDescriptionsForMode(
+					mode,
+					cwd,
+					supportsComputerUse,
+					codeIndexManager,
+					effectiveDiffStrategy,
+					browserViewportSize,
+					shouldIncludeMcp ? mcpHub : undefined,
+					customModeConfigs,
+					experiments,
+					partialReadsEnabled,
+					settings,
+					enableMcpServerCreation,
+					modelId,
+					effectiveProtocol,
+				)}`
+			: ""
+
 	const basePrompt = `${roleDefinition}
 
 ${markdownFormattingSection()}
 
-${getSharedToolUseSection()}
+${getSharedToolUseSection(effectiveProtocol)}${toolsCatalog}
 
-${getToolDescriptionsForMode(
-	mode,
-	cwd,
-	supportsComputerUse,
-	codeIndexManager,
-	effectiveDiffStrategy,
-	browserViewportSize,
-	shouldIncludeMcp ? mcpHub : undefined,
-	customModeConfigs,
-	experiments,
-	partialReadsEnabled,
-	settings,
-	enableMcpServerCreation,
-	modelId,
-)}
-
-${getToolUseGuidelinesSection(codeIndexManager)}
+${getToolUseGuidelinesSection(codeIndexManager, effectiveProtocol)}
 
 ${mcpServersSection}
 
@@ -118,7 +126,7 @@ ${getCapabilitiesSection(cwd, supportsComputerUse, shouldIncludeMcp ? mcpHub : u
 
 ${modesSection}
 
-${getRulesSection(cwd, supportsComputerUse, effectiveDiffStrategy, codeIndexManager)}
+${getRulesSection(cwd, supportsComputerUse, effectiveDiffStrategy, codeIndexManager, settings)}
 
 ${getSystemInfoSection(cwd)}
 

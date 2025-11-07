@@ -1,4 +1,14 @@
-export function getSharedToolUseSection(): string {
+import { ToolProtocol } from "@roo-code/types"
+
+export function getSharedToolUseSection(protocol: ToolProtocol = "xml"): string {
+	if (protocol === "native") {
+		return `====
+
+TOOL USE
+
+You have access to a set of tools that are executed upon the user's approval. Use the provider-native tool-calling mechanism. Do not include XML markup or examples.`
+	}
+
 	return `====
 
 TOOL USE

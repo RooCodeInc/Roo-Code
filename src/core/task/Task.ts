@@ -80,6 +80,7 @@ import { getWorkspacePath } from "../../utils/path"
 // prompts
 import { formatResponse } from "../prompts/responses"
 import { SYSTEM_PROMPT } from "../prompts/system"
+import { resolveToolProtocol } from "../prompts/toolProtocolResolver"
 
 // core modules
 import { ToolRepetitionDetector } from "../tools/ToolRepetitionDetector"
@@ -2595,6 +2596,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					newTaskRequireTodos: vscode.workspace
 						.getConfiguration("roo-cline")
 						.get<boolean>("newTaskRequireTodos", false),
+					toolProtocol: resolveToolProtocol(),
 				},
 				undefined, // todoList
 				this.api.getModel().id,

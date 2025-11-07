@@ -368,15 +368,22 @@ export async function addCustomInstructions(
 
 	const joinedSections = sections.join("\n\n")
 
+	const effectiveProtocol = options.settings?.toolProtocol || "xml"
+
+	const skipXmlReferences = effectiveProtocol === "native"
+
 	return joinedSections
 		? `
 ====
 
 USER'S CUSTOM INSTRUCTIONS
 
-The following additional instructions are provided by the user, and should be followed to the best of your ability without interfering with the TOOL USE guidelines.
+The following additional instructions are provided by the user, and should be followed to the best of your ability${
+				skipXmlReferences ? "." : " without interfering with the TOOL USE guidelines."
+			}
 
-${joinedSections}`
+${joinedSections}
+`
 		: ""
 }
 
