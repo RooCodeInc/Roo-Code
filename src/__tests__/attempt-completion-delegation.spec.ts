@@ -164,7 +164,11 @@ describe("ClineProvider.reopenParentFromDelegation()", () => {
 		const returnedParentInstance: any = {
 			resumeAfterDelegation: vi.fn().mockResolvedValue(undefined),
 		}
-		const createTaskWithHistoryItem = vi.fn().mockResolvedValue(returnedParentInstance)
+		const createTaskWithHistoryItem = vi.fn().mockResolvedValue({
+			...returnedParentInstance,
+			overwriteClineMessages: vi.fn().mockResolvedValue(undefined),
+			overwriteApiConversationHistory: vi.fn().mockResolvedValue(undefined),
+		})
 		const updateTaskHistory = vi.fn().mockResolvedValue(undefined)
 
 		const mockHistoryItem = {
@@ -316,6 +320,8 @@ describe("Event ordering and history injection assertions", () => {
 			removeClineFromStack: vi.fn().mockResolvedValue(undefined),
 			createTaskWithHistoryItem: vi.fn().mockResolvedValue({
 				resumeAfterDelegation: vi.fn().mockResolvedValue(undefined),
+				overwriteClineMessages: vi.fn().mockResolvedValue(undefined),
+				overwriteApiConversationHistory: vi.fn().mockResolvedValue(undefined),
 			}),
 			updateTaskHistory: vi.fn().mockResolvedValue([]),
 		} as unknown as ClineProvider
@@ -356,6 +362,8 @@ describe("Event ordering and history injection assertions", () => {
 			removeClineFromStack: vi.fn().mockResolvedValue(undefined),
 			createTaskWithHistoryItem: vi.fn().mockResolvedValue({
 				resumeAfterDelegation: vi.fn().mockResolvedValue(undefined),
+				overwriteClineMessages: vi.fn().mockResolvedValue(undefined),
+				overwriteApiConversationHistory: vi.fn().mockResolvedValue(undefined),
 			}),
 			updateTaskHistory: vi.fn().mockResolvedValue([]),
 		} as unknown as ClineProvider
@@ -421,6 +429,8 @@ describe("Event ordering and history injection assertions", () => {
 			removeClineFromStack: vi.fn().mockResolvedValue(undefined),
 			createTaskWithHistoryItem: vi.fn().mockResolvedValue({
 				resumeAfterDelegation: vi.fn().mockResolvedValue(undefined),
+				overwriteClineMessages: vi.fn().mockResolvedValue(undefined),
+				overwriteApiConversationHistory: vi.fn().mockResolvedValue(undefined),
 			}),
 			updateTaskHistory: vi.fn().mockResolvedValue([]),
 		} as unknown as ClineProvider
@@ -457,6 +467,8 @@ describe("Event ordering and history injection assertions", () => {
 		const parentInstance: any = {
 			taskId: "p5",
 			resumeAfterDelegation: resumeSpy,
+			overwriteClineMessages: vi.fn().mockResolvedValue(undefined),
+			overwriteApiConversationHistory: vi.fn().mockResolvedValue(undefined),
 		}
 
 		const provider = {
@@ -515,6 +527,8 @@ describe("Event ordering and history injection assertions", () => {
 			removeClineFromStack: vi.fn().mockResolvedValue(undefined),
 			createTaskWithHistoryItem: vi.fn().mockResolvedValue({
 				resumeAfterDelegation: vi.fn().mockResolvedValue(undefined),
+				overwriteClineMessages: vi.fn().mockResolvedValue(undefined),
+				overwriteApiConversationHistory: vi.fn().mockResolvedValue(undefined),
 			}),
 			updateTaskHistory: vi.fn().mockResolvedValue([]),
 		} as unknown as ClineProvider
@@ -569,6 +583,8 @@ describe("Parent auto-resume after delegation (no resume ask)", () => {
 		const parentInstance: any = {
 			taskId: "parent-7",
 			resumeAfterDelegation: resumeAfterDelegationSpy,
+			overwriteClineMessages: vi.fn().mockResolvedValue(undefined),
+			overwriteApiConversationHistory: vi.fn().mockResolvedValue(undefined),
 			skipPrevResponseIdOnce: false,
 		}
 
