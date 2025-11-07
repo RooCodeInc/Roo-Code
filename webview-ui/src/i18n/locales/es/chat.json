@@ -85,24 +85,17 @@
 		"tooltip": "Cancelar la operación actual"
 	},
 	"scrollToBottom": "Desplazarse al final del chat",
-	"about": "Genera, refactoriza y depura código con asistencia de IA. Consulta nuestra <DocsLink>documentación</DocsLink> para obtener más información.",
-	"onboarding": "<strong>Tu lista de tareas en este espacio de trabajo está vacía.</strong> Comienza escribiendo una tarea abajo. ¿No estás seguro cómo empezar? Lee más sobre lo que Roo puede hacer por ti en <DocsLink>la documentación</DocsLink>.",
+	"about": "Roo Code es todo un equipo de desarrollo de IA en tu editor.",
+	"docs": "Consulta nuestra <DocsLink>documentación</DocsLink> para saber más.",
+	"onboarding": "Tu lista de tareas en este espacio de trabajo está vacía.",
 	"rooTips": {
-		"boomerangTasks": {
-			"title": "Orquestación de Tareas",
-			"description": "Divide las tareas en partes más pequeñas y manejables."
-		},
-		"stickyModels": {
-			"title": "Modos persistentes",
-			"description": "Cada modo recuerda tu último modelo utilizado"
-		},
-		"tools": {
-			"title": "Herramientas",
-			"description": "Permite que la IA resuelva problemas navegando por la web, ejecutando comandos y mucho más."
-		},
 		"customizableModes": {
 			"title": "Modos personalizables",
-			"description": "Personalidades especializadas con sus propios comportamientos y modelos asignados"
+			"description": "Personajes especializados que se mantienen en la tarea y cumplen."
+		},
+		"modelAgnostic": {
+			"title": "Trae tu propio modelo",
+			"description": "Usa tu propia clave de proveedor o incluso ejecuta inferencia local — sin sobrecostes, sin ataduras, sin restricciones"
 		}
 	},
 	"selectMode": "Seleccionar modo de interacción",
@@ -429,5 +422,6 @@
 	"slashCommand": {
 		"wantsToRun": "Roo quiere ejecutar un comando slash",
 		"didRun": "Roo ejecutó un comando slash"
-	}
+	},
+	"docs": "Check our <DocsLink>docs</DocsLink> to learn more."
 }

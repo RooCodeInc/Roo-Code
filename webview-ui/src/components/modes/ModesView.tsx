@@ -20,6 +20,7 @@ import {
 	getCustomInstructions,
 	getAllModes,
 	findModeBySlug as findCustomModeBySlug,
+	defaultModeSlug,
 } from "@roo/modes"
 import { TOOL_GROUPS } from "@roo/tools"
 
@@ -54,6 +55,8 @@ import { useEscapeKey } from "@src/hooks/useEscapeKey"
 const availableGroups = (Object.keys(TOOL_GROUPS) as ToolGroup[]).filter((group) => !TOOL_GROUPS[group].alwaysAvailable)
 
 type ModeSource = "global" | "project"
+
+type ImportModeResult = { type: "importModeResult"; success: boolean; slug?: string; error?: string }
 
 type ModesViewProps = {
 	onDone: () => void
@@ -185,6 +188,29 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 		},
 		[visualMode, switchMode],
 	)
+
+	// Refs to track latest state/functions for message handler (which has no dependencies)
+	const handleModeSwitchRef = useRef(handleModeSwitch)
+	const customModesRef = useRef(customModes)
+	const switchModeRef = useRef(switchMode)
+
+	// Update refs when dependencies change
+	useEffect(() => {
+		handleModeSwitchRef.current = handleModeSwitch
+	}, [handleModeSwitch])
+
+	useEffect(() => {
+		customModesRef.current = customModes
+	}, [customModes])
+
+	useEffect(() => {
+		switchModeRef.current = switchMode
+	}, [switchMode])
+
+	// Sync visualMode with backend mode changes to prevent desync
+	useEffect(() => {
+		setVisualMode(mode)
+	}, [mode])
 
 	// Handler for popover open state change
 	const onOpenChange = useCallback((open: boolean) => {
@@ -460,7 +486,21 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 				setIsImporting(false)
 				setShowImportDialog(false)
 
-				if (!message.success) {
+				if (message.success) {
+					const { slug } = message as ImportModeResult
+					if (slug) {
+						// Try switching using the freshest mode list available
+						const all = getAllModes(customModesRef.current)
+						const importedMode = all.find((m) => m.slug === slug)
+						if (importedMode) {
+							handleModeSwitchRef.current(importedMode)
+						} else {
+							// Fallback: slug not yet in state (race condition) - select default mode
+							setVisualMode(defaultModeSlug)
+							switchModeRef.current?.(defaultModeSlug)
+						}
+					}
+				} else {
 					// Only log error if it's not a cancellation
 					if (message.error !== "cancelled") {
 						console.error("Failed to import mode:", message.error)

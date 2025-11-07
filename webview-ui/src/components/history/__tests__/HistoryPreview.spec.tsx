@@ -100,11 +100,11 @@ describe("HistoryPreview", () => {
 		const { container } = render(<HistoryPreview />)
 
 		// Should render the container but no task items
-		expect(container.firstChild).toHaveClass("flex", "flex-col", "gap-3")
+		expect(container.firstChild).toHaveClass("flex", "flex-col", "gap-1")
 		expect(screen.queryByTestId(/task-item-/)).not.toBeInTheDocument()
 	})
 
-	it("renders up to 3 tasks when tasks are available", () => {
+	it("renders up to 4 tasks when tasks are available", () => {
 		mockUseTaskSearch.mockReturnValue({
 			tasks: mockTasks,
 			searchQuery: "",
@@ -123,7 +123,7 @@ describe("HistoryPreview", () => {
 		expect(screen.getByTestId("task-item-task-1")).toBeInTheDocument()
 		expect(screen.getByTestId("task-item-task-2")).toBeInTheDocument()
 		expect(screen.getByTestId("task-item-task-3")).toBeInTheDocument()
-		expect(screen.queryByTestId("task-item-task-4")).not.toBeInTheDocument()
+		expect(screen.getByTestId("task-item-task-4")).toBeInTheDocument()
 		expect(screen.queryByTestId("task-item-task-5")).not.toBeInTheDocument()
 		expect(screen.queryByTestId("task-item-task-6")).not.toBeInTheDocument()
 	})
@@ -226,6 +226,6 @@ describe("HistoryPreview", () => {
 
 		const { container } = render(<HistoryPreview />)
 
-		expect(container.firstChild).toHaveClass("flex", "flex-col", "gap-3")
+		expect(container.firstChild).toHaveClass("flex", "flex-col", "gap-1")
 	})
 })

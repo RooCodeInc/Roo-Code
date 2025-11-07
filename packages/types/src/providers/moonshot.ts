@@ -39,6 +39,20 @@ export const moonshotModels = {
 		cacheReadsPrice: 0.6, // $0.60 per million tokens (cache hit)
 		description: `Kimi K2 Turbo is a high-speed version of the state-of-the-art Kimi K2 mixture-of-experts (MoE) language model, with the same 32 billion activated parameters and 1 trillion total parameters, optimized for output speeds of up to 60 tokens per second, peaking at 100 tokens per second.`,
 	},
+	"kimi-k2-thinking": {
+		maxTokens: 16_000, // Recommended ≥ 16,000
+		contextWindow: 262_144, // 262,144 tokens
+		supportsImages: false, // Text-only (no image/vision support)
+		supportsPromptCache: true,
+		inputPrice: 0.6, // $0.60 per million tokens (cache miss)
+		outputPrice: 2.5, // $2.50 per million tokens
+		cacheWritesPrice: 0, // $0 per million tokens (cache miss)
+		cacheReadsPrice: 0.15, // $0.15 per million tokens (cache hit)
+		supportsTemperature: true, // Default temperature: 1.0
+		preserveReasoning: true,
+		defaultTemperature: 1.0,
+		description: `The kimi-k2-thinking model is a general-purpose agentic reasoning model developed by Moonshot AI. Thanks to its strength in deep reasoning and multi-turn tool use, it can solve even the hardest problems.`,
+	},
 } as const satisfies Record<string, ModelInfo>
 
 export const MOONSHOT_DEFAULT_TEMPERATURE = 0.6
