@@ -423,5 +423,12 @@
 		"wantsToRun": "Rooはスラッシュコマンドを実行したい",
 		"didRun": "Rooはスラッシュコマンドを実行しました"
 	},
-	"docs": "Check our <DocsLink>docs</DocsLink> to learn more."
+	"docs": "Check our <DocsLink>docs</DocsLink> to learn more.",
+	"todo": {
+		"partial": "{{total}}件中{{completed}}件のTo-Doが完了",
+		"complete": "{{total}}件のTo-Doが完了",
+		"updated": "To-Doリストを更新しました",
+		"completed": "完了",
+		"started": "開始"
+	}
 }

@@ -423,5 +423,12 @@
 		"wantsToRun": "Roo एक स्लैश कमांड चलाना चाहता है",
 		"didRun": "Roo ने एक स्लैश कमांड चलाया"
 	},
-	"docs": "Check our <DocsLink>docs</DocsLink> to learn more."
+	"docs": "Check our <DocsLink>docs</DocsLink> to learn more.",
+	"todo": {
+		"partial": "{{total}} में से {{completed}} टू-डू हो गए",
+		"complete": "{{total}} टू-डू हो गए",
+		"updated": "टू-डू सूची अपडेट की गई",
+		"completed": "पूरा हुआ",
+		"started": "शुरू हुआ"
+	}
 }

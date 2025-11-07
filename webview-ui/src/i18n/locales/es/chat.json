@@ -423,5 +423,12 @@
 		"wantsToRun": "Roo quiere ejecutar un comando slash",
 		"didRun": "Roo ejecutó un comando slash"
 	},
-	"docs": "Check our <DocsLink>docs</DocsLink> to learn more."
+	"docs": "Check our <DocsLink>docs</DocsLink> to learn more.",
+	"todo": {
+		"partial": "{{completed}} de {{total}} tareas pendientes realizadas",
+		"complete": "{{total}} tareas pendientes realizadas",
+		"updated": "Se actualizó la lista de tareas pendientes",
+		"completed": "Completado",
+		"started": "Iniciado"
+	}
 }

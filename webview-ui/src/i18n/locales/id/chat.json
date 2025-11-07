@@ -429,5 +429,12 @@
 		"wantsToRun": "Roo ingin menjalankan perintah slash",
 		"didRun": "Roo telah menjalankan perintah slash"
 	},
-	"docs": "Check our <DocsLink>docs</DocsLink> to learn more."
+	"docs": "Check our <DocsLink>docs</DocsLink> to learn more.",
+	"todo": {
+		"partial": "{{completed}} dari {{total}} to-do selesai",
+		"complete": "{{total}} to-do selesai",
+		"updated": "Memperbarui daftar to-do",
+		"completed": "Selesai",
+		"started": "Dimulai"
+	}
 }

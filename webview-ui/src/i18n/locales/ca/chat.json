@@ -423,5 +423,12 @@
 		"terminal": "Terminal",
 		"url": "Enganxa la URL per obtenir-ne el contingut"
 	},
-	"docs": "Check our <DocsLink>docs</DocsLink> to learn more."
+	"docs": "Check our <DocsLink>docs</DocsLink> to learn more.",
+	"todo": {
+		"partial": "{{completed}} de {{total}} tasques pendents fetes",
+		"complete": "{{total}} tasques pendents fetes",
+		"updated": "S'ha actualitzat la llista de tasques pendents",
+		"completed": "Completat",
+		"started": "Iniciat"
+	}
 }
