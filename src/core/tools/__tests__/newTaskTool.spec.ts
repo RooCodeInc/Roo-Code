@@ -614,13 +614,13 @@ describe("newTaskTool", () => {
 	// Add more tests for error handling (invalid mode, approval denied) if needed
 })
 
-describe("newTaskTool delegation flow (experiment ON)", () => {
+describe("newTaskTool delegation flow", () => {
 	it("delegates to provider and does not call legacy startSubtask", async () => {
-		// Arrange: enable experiment and stub provider delegation
+		// Arrange: stub provider delegation
 		const providerSpy = {
 			getState: vi.fn().mockResolvedValue({
 				mode: "ask",
-				experiments: { metadataDrivenSubtasks: true },
+				experiments: {},
 			}),
 			delegateParentAndOpenChild: vi.fn().mockResolvedValue({ taskId: "child-1" }),
 			handleModeSwitch: vi.fn(),

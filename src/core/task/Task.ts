@@ -228,13 +228,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	abortReason?: ClineApiReqCancelReason
 	isInitialized = false
 	isPaused: boolean = false
-	/**
-	 * @deprecated Legacy subtask pause/wait flow only. For metadata-driven subtasks
-	 * (METADATA_DRIVEN_SUBTASKS experiment), the parent's mode is persisted in historyItem.mode
-	 * and restored via createTaskWithHistoryItem() rather than stored in-memory during pause.
-	 */
-	pausedModeSlug: string = defaultModeSlug
-	private pauseInterval: NodeJS.Timeout | undefined
 
 	// API
 	apiConfiguration: ProviderSettings
@@ -1855,12 +1848,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			console.error("Error removing event listeners:", error)
 		}
 
-		// Stop waiting for child task completion.
-		if (this.pauseInterval) {
-			clearInterval(this.pauseInterval)
-			this.pauseInterval = undefined
-		}
-
 		if (this.enableBridge) {
 			BridgeOrchestrator.getInstance()
 				?.unsubscribeFromTask(this.taskId)
@@ -1937,117 +1924,17 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			throw new Error("Provider not available")
 		}
 
-		// Experiment-gated: metadata-driven delegation path
-		try {
-			const state = await provider.getState()
-			const useMetadataSubtasks = experiments.isEnabled(
-				state.experiments ?? ({} as any),
-				EXPERIMENT_IDS.METADATA_DRIVEN_SUBTASKS,
-			)
-
-			if (useMetadataSubtasks) {
-				// NEW: Delegate parent and open child.
-				// DOES NOT set isPaused, childTaskId, or touch pausedModeSlug.
-				// DOES NOT call waitForSubtask() or emit TaskPaused/TaskUnpaused events.
-				// Parent is closed and re-opened via metadata-driven flow instead.
-				const child = await (provider as any).delegateParentAndOpenChild({
-					parentTaskId: this.taskId,
-					message,
-					initialTodos,
-					mode,
-				})
-				return child
-			}
-		} catch {
-			// Non-fatal: fall through to legacy behavior on any error
-		}
-
-		// LEGACY: Existing pause-and-wait flow (only used when flag OFF)
-		const newTask = await provider.createTask(message, undefined, this, { initialTodos })
-
-		if (newTask) {
-			this.isPaused = true // Pause parent.
-			this.childTaskId = newTask.taskId
-
-			await provider.handleModeSwitch(mode) // Set child's mode.
-			await delay(500) // Allow mode change to take effect.
-
-			this.emit(RooCodeEventName.TaskPaused, this.taskId)
-			this.emit(RooCodeEventName.TaskSpawned, newTask.taskId)
-		}
-
-		return newTask
-	}
-
-	/**
-	 * @deprecated Legacy subtask pause/wait flow only. Used when parent task waits
-	 * for a child subtask to complete using the pause-and-poll approach.
-	 *
-	 * For metadata-driven subtasks (METADATA_DRIVEN_SUBTASKS experiment), use
-	 * provider.delegateParentAndOpenChild() instead, which closes the parent
-	 * and reopens it via provider.reopenParentFromDelegation() when the child completes.
-	 *
-	 * This method is only called when the experiment flag is OFF.
-	 */
-	public async waitForSubtask() {
-		await new Promise<void>((resolve) => {
-			this.pauseInterval = setInterval(() => {
-				if (!this.isPaused) {
-					clearInterval(this.pauseInterval)
-					this.pauseInterval = undefined
-					resolve()
-				}
-			}, 1000)
-		})
-	}
-
-	public async completeSubtask(lastMessage: string) {
-		this.isPaused = false
-		this.childTaskId = undefined
-
-		this.emit(RooCodeEventName.TaskUnpaused, this.taskId)
-
-		// Fake an answer from the subtask that it has completed running and
-		// this is the result of what it has done add the message to the chat
-		// history and to the webview ui.
-		try {
-			await this.say("subtask_result", lastMessage)
-
-			// Check if using native protocol to determine how to add the subtask result
-			const modelInfo = this.api.getModel().info
-			const toolProtocol = resolveToolProtocol(this.apiConfiguration, modelInfo)
-
-			if (toolProtocol === "native" && this.pendingNewTaskToolCallId) {
-				// For native protocol, push the actual tool_result with the subtask's real result.
-				// NewTaskTool deferred pushing the tool_result until now so that the parent task
-				// gets useful information about what the subtask actually accomplished.
-				this.userMessageContent.push({
-					type: "tool_result",
-					tool_use_id: this.pendingNewTaskToolCallId,
-					content: `[new_task completed] Result: ${lastMessage}`,
-				} as Anthropic.ToolResultBlockParam)
-
-				// Clear the pending tool call ID
-				this.pendingNewTaskToolCallId = undefined
-			} else {
-				// For XML protocol (or if no pending tool call ID), add as a separate user message
-				await this.addToApiConversationHistory({
-					role: "user",
-					content: [{ type: "text", text: `[new_task completed] Result: ${lastMessage}` }],
-				})
-			}
-		} catch (error) {
-			this.providerRef
-				.deref()
-				?.log(`Error failed to add reply from subtask into conversation of parent task, error: ${error}`)
-
-			throw error
-		}
+		const child = await (provider as any).delegateParentAndOpenChild({
+			parentTaskId: this.taskId,
+			message,
+			initialTodos,
+			mode,
+		return child
 	}
 
 	/**
 	 * Resume parent task after delegation completion without showing resume ask.
-	 * Used in metadata-driven subtask flow (METADATA_DRIVEN_SUBTASKS experiment).
+	 * Used in metadata-driven subtask flow.
 	 *
 	 * This method:
 	 * - Clears any pending ask states
@@ -2175,30 +2062,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				this.consecutiveMistakeCount = 0
 			}
 
-			// LEGACY: Pause-wait flow only (for experiment flag OFF)
-			// In this Cline request loop, we need to check if this task instance
-			// has been asked to wait for a subtask to finish before continuing.
-			const provider = this.providerRef.deref()
-
-			if (this.isPaused && provider) {
-				provider.log(`[legacy-subtasks] paused ${this.taskId}.${this.instanceId}`)
-				await this.waitForSubtask()
-				provider.log(`[legacy-subtasks] resumed ${this.taskId}.${this.instanceId}`)
-				const currentMode = (await provider.getState())?.mode ?? defaultModeSlug
-
-				if (currentMode !== this.pausedModeSlug) {
-					// The mode has changed, we need to switch back to the paused mode.
-					await provider.handleModeSwitch(this.pausedModeSlug)
-
-					// Delay to allow mode change to take effect before next tool is executed.
-					await delay(500)
-
-					provider.log(
-						`[legacy-subtasks] task ${this.taskId}.${this.instanceId} has switched back to '${this.pausedModeSlug}' from '${currentMode}'`,
-					)
-				}
-			}
-
 			// Getting verbose details is an expensive operation, it uses ripgrep to
 			// top-down build file structure of project which for large projects can
 			// take a few seconds. For the best UX we show a placeholder api_req_started
@@ -2277,7 +2140,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			} satisfies ClineApiReqInfo)
 
 			await this.saveClineMessages()
-			await provider?.postStateToWebview()
+			await this.providerRef.deref()?.postStateToWebview()
 
 			try {
 				let cacheWriteTokens = 0

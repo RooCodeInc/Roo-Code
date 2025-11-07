@@ -2,7 +2,6 @@
 
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import type { TodoItem } from "@roo-code/types"
-import { EXPERIMENT_IDS } from "../shared/experiments"
 
 // Mock formatResponse
 vi.mock("../core/prompts/responses", () => ({
@@ -42,11 +41,8 @@ describe("attempt_completion with preventCompletionWithOpenTodos - delegation fl
 		vi.mocked(vscode.workspace.getConfiguration).mockImplementation(mockGetConfiguration)
 	})
 
-	it("Flag ON + Setting ON: blocks completion when child has incomplete todos", async () => {
+	it("Setting ON: blocks completion when child has incomplete todos", async () => {
 		const provider = {
-			getState: vi.fn().mockResolvedValue({
-				experiments: { [EXPERIMENT_IDS.METADATA_DRIVEN_SUBTASKS]: true },
-			}),
 			reopenParentFromDelegation: vi.fn(),
 		} as any
 
@@ -107,11 +103,8 @@ describe("attempt_completion with preventCompletionWithOpenTodos - delegation fl
 		expect(provider.reopenParentFromDelegation).not.toHaveBeenCalled()
 	})
 
-	it("Flag ON + Setting OFF: allows completion even with incomplete todos (legacy behavior in new flow)", async () => {
+	it("Setting OFF: allows completion even with incomplete todos", async () => {
 		const provider = {
-			getState: vi.fn().mockResolvedValue({
-				experiments: { [EXPERIMENT_IDS.METADATA_DRIVEN_SUBTASKS]: true },
-			}),
 			reopenParentFromDelegation: vi.fn().mockResolvedValue(undefined),
 		} as any
 
@@ -173,132 +166,8 @@ describe("attempt_completion with preventCompletionWithOpenTodos - delegation fl
 		})
 	})
 
-	it("Flag OFF + Setting ON: blocks completion in legacy flow when todos incomplete", async () => {
+	it("Setting ON: allows completion when all todos completed", async () => {
 		const provider = {
-			getState: vi.fn().mockResolvedValue({
-				experiments: { [EXPERIMENT_IDS.METADATA_DRIVEN_SUBTASKS]: false },
-			}),
-			finishSubTask: vi.fn().mockResolvedValue(undefined),
-		} as any
-
-		const parentTask = { taskId: "p3", emit: vi.fn() }
-		const cline = {
-			taskId: "c3",
-			parentTask,
-			providerRef: { deref: () => provider },
-			consecutiveMistakeCount: 0,
-			recordToolError: vi.fn(),
-			todoList: [{ id: "1", content: "Task", status: "in_progress" }] as TodoItem[],
-			say: vi.fn().mockResolvedValue(undefined),
-			emit: vi.fn(),
-			gettokenUsage: vi.fn(() => ({})),
-			toolUsage: {},
-			clineMessages: [],
-			userMessageContent: [],
-		} as unknown as Task
-
-		// Setting ON
-		mockGetConfiguration.mockReturnValue({
-			get: vi.fn((key: string, defaultValue: any) => {
-				if (key === "preventCompletionWithOpenTodos") return true
-				return defaultValue
-			}),
-		})
-
-		const pushToolResult = vi.fn()
-		const block = {
-			type: "tool_use",
-			name: "attempt_completion",
-			params: { result: "Legacy done" },
-			partial: false,
-		} as any
-
-		await attemptCompletionTool(
-			cline,
-			block,
-			vi.fn(),
-			vi.fn(),
-			pushToolResult,
-			vi.fn((_, v?: string) => v ?? ""),
-			() => "desc",
-			vi.fn(async () => true),
-		)
-
-		// Must block (setting ON + incomplete todos)
-		expect(cline.consecutiveMistakeCount).toBe(1)
-		expect(cline.recordToolError).toHaveBeenCalledWith("attempt_completion")
-		expect(pushToolResult).toHaveBeenCalledWith(
-			expect.stringContaining("Cannot complete task while there are incomplete todos"),
-		)
-
-		// Legacy finishSubTask should NOT be called (blocked before)
-		expect(provider.finishSubTask).not.toHaveBeenCalled()
-	})
-
-	it("Flag OFF + Setting OFF: allows completion in legacy flow with incomplete todos", async () => {
-		const provider = {
-			getState: vi.fn().mockResolvedValue({
-				experiments: { [EXPERIMENT_IDS.METADATA_DRIVEN_SUBTASKS]: false },
-			}),
-			finishSubTask: vi.fn().mockResolvedValue(undefined),
-		} as any
-
-		const parentTask = { taskId: "p4", emit: vi.fn() }
-		const cline = {
-			taskId: "c4",
-			parentTask,
-			providerRef: { deref: () => provider },
-			consecutiveMistakeCount: 0,
-			recordToolError: vi.fn(),
-			todoList: [{ id: "1", content: "Task", status: "pending" }] as TodoItem[],
-			say: vi.fn().mockResolvedValue(undefined),
-			emit: vi.fn(),
-			getTokenUsage: vi.fn(() => ({})),
-			toolUsage: {},
-			clineMessages: [],
-			userMessageContent: [],
-		} as unknown as Task
-
-		// Setting OFF
-		mockGetConfiguration.mockReturnValue({
-			get: vi.fn((key: string, defaultValue: any) => {
-				if (key === "preventCompletionWithOpenTodos") return false
-				return defaultValue
-			}),
-		})
-
-		const pushToolResult = vi.fn()
-		const block = {
-			type: "tool_use",
-			name: "attempt_completion",
-			params: { result: "Legacy result" },
-			partial: false,
-		} as any
-
-		await attemptCompletionTool(
-			cline,
-			block,
-			vi.fn(),
-			vi.fn(),
-			pushToolResult,
-			vi.fn((_, v?: string) => v ?? ""),
-			() => "desc",
-			vi.fn(async () => true),
-		)
-
-		// Should NOT block
-		expect(cline.consecutiveMistakeCount).toBe(0)
-		expect(cline.recordToolError).not.toHaveBeenCalled()
-
-		// Legacy finishSubTask should be called
-		expect(provider.finishSubTask).toHaveBeenCalledWith("Legacy result")
-	})
-
-	it("Setting ON: allows completion when all todos completed (both flows)", async () => {
-		const providerNew = {
-			getState: vi.fn().mockResolvedValue({
-				experiments: { [EXPERIMENT_IDS.METADATA_DRIVEN_SUBTASKS]: true },
-			}),
 			reopenParentFromDelegation: vi.fn().mockResolvedValue(undefined),
 		} as any
 
@@ -306,7 +175,7 @@ describe("attempt_completion with preventCompletionWithOpenTodos - delegation fl
 		const cline = {
 			taskId: "c5",
 			parentTask,
-			providerRef: { deref: () => providerNew },
+			providerRef: { deref: () => provider },
 			consecutiveMistakeCount: 0,
 			recordToolError: vi.fn(),
 			todoList: [
@@ -352,14 +221,11 @@ describe("attempt_completion with preventCompletionWithOpenTodos - delegation fl
 		expect(cline.recordToolError).not.toHaveBeenCalled()
 
 		// Delegation should proceed
-		expect(providerNew.reopenParentFromDelegation).toHaveBeenCalled()
+		expect(provider.reopenParentFromDelegation).toHaveBeenCalled()
 	})
 
 	it("Setting ON: allows completion when todo list is empty or undefined", async () => {
 		const provider = {
-			getState: vi.fn().mockResolvedValue({
-				experiments: { [EXPERIMENT_IDS.METADATA_DRIVEN_SUBTASKS]: true },
-			}),
 			reopenParentFromDelegation: vi.fn().mockResolvedValue(undefined),
 		} as any
 
@@ -442,9 +308,6 @@ describe("attempt_completion with preventCompletionWithOpenTodos - delegation fl
 
 	it("Setting ON: blocks execution order is before delegation/legacy logic", async () => {
 		const provider = {
-			getState: vi.fn().mockResolvedValue({
-				experiments: { [EXPERIMENT_IDS.METADATA_DRIVEN_SUBTASKS]: true },
-			}),
 			reopenParentFromDelegation: vi.fn(),
 		} as any
 
@@ -494,7 +357,6 @@ describe("attempt_completion with preventCompletionWithOpenTodos - delegation fl
 		expect(pushToolResult).toHaveBeenCalledWith(
 			expect.stringContaining("Cannot complete task while there are incomplete todos"),
 		)
-		expect(provider.getState).not.toHaveBeenCalled()
 		expect(provider.reopenParentFromDelegation).not.toHaveBeenCalled()
 
 		// Verify say NOT called (blocked early)

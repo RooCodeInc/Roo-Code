@@ -41,14 +41,13 @@ import type { Task } from "../core/task/Task"
 import { readTaskMessages } from "../core/task-persistence/taskMessages"
 import { readApiMessages, saveApiMessages, saveTaskMessages } from "../core/task-persistence"
 
-describe("attemptCompletionTool - metadata-driven completion gating", () => {
+describe("attemptCompletionTool - metadata-driven completion", () => {
 	beforeEach(() => {
 		vi.restoreAllMocks()
 	})
 
-	it("Flag ON: calls provider.reopenParentFromDelegation and does NOT call finishSubTask or emit legacy events", async () => {
+	it("Calls provider.reopenParentFromDelegation and does NOT call finishSubTask or emit legacy events", async () => {
 		const provider = {
-			getState: vi.fn().mockResolvedValue({ experiments: { metadataDrivenSubtasks: true } }),
 			reopenParentFromDelegation: vi.fn().mockResolvedValue(undefined),
 			finishSubTask: vi.fn(),
 		} as any
@@ -105,49 +104,7 @@ describe("attemptCompletionTool - metadata-driven completion gating", () => {
 		expect(parentEmitted).not.toContain(RooCodeEventName.TaskUnpaused)
 	})
 
-	it("Flag OFF: preserves legacy finishSubTask path", async () => {
-		const provider = {
-			getState: vi.fn().mockResolvedValue({ experiments: { metadataDrivenSubtasks: false } }),
-			reopenParentFromDelegation: vi.fn(),
-			finishSubTask: vi.fn().mockResolvedValue(undefined),
-		} as any
-
-		const cline = {
-			taskId: "child-2",
-			parentTask: { taskId: "parent-2" },
-			providerRef: { deref: () => provider },
-			say: vi.fn().mockResolvedValue(undefined),
-			emit: vi.fn(),
-			getTokenUsage: vi.fn(() => ({})),
-			toolUsage: {},
-			clineMessages: [],
-			userMessageContent: [],
-			consecutiveMistakeCount: 0,
-		} as unknown as Task
-
-		const block = {
-			type: "tool_use",
-			name: "attempt_completion",
-			params: { result: "Legacy result" },
-			partial: false,
-		} as any
-
-		await attemptCompletionTool(
-			cline,
-			block,
-			vi.fn(),
-			vi.fn(),
-			vi.fn(),
-			vi.fn((_, v?: string) => v ?? ""),
-			() => "desc",
-			vi.fn(async () => true),
-		)
-
-		expect(provider.finishSubTask).toHaveBeenCalledWith("Legacy result")
-		expect(provider.reopenParentFromDelegation).not.toHaveBeenCalled()
-	})
-
-	it("Flag ON: uses parentTaskId from metadata when parent reference is missing", async () => {
+	it("Uses parentTaskId from metadata when parent reference is missing", async () => {
 		const provider = {
 			getState: vi.fn().mockResolvedValue({ experiments: { metadataDrivenSubtasks: true } }),
 			reopenParentFromDelegation: vi.fn().mockResolvedValue(undefined),
@@ -270,38 +227,6 @@ describe("ClineProvider.reopenParentFromDelegation()", () => {
 
 		// Auto-resume should be called
 		expect(returnedParentInstance.resumeAfterDelegation).toHaveBeenCalledTimes(1)
-	})
-})
-
-describe("ClineProvider.finishSubTask() legacy guard", () => {
-	it("Flag ON: throws error when called (should use reopenParentFromDelegation instead)", async () => {
-		const provider = {
-			getState: vi.fn().mockResolvedValue({ experiments: { metadataDrivenSubtasks: true } }),
-			removeClineFromStack: vi.fn(),
-			getCurrentTask: vi.fn(),
-		} as unknown as ClineProvider
-
-		await expect((ClineProvider.prototype as any).finishSubTask.call(provider, "result")).rejects.toThrow(
-			/Legacy method called with METADATA_DRIVEN_SUBTASKS enabled/,
-		)
-	})
-
-	it("Flag OFF: preserves legacy behavior without throwing", async () => {
-		const mockParentTask = {
-			completeSubtask: vi.fn().mockResolvedValue(undefined),
-		}
-
-		const provider = {
-			getState: vi.fn().mockResolvedValue({ experiments: { metadataDrivenSubtasks: false } }),
-			removeClineFromStack: vi.fn().mockResolvedValue(undefined),
-			getCurrentTask: vi.fn(() => mockParentTask),
-		} as unknown as ClineProvider
-
-		await expect(
-			(ClineProvider.prototype as any).finishSubTask.call(provider, "legacy result"),
-		).resolves.toBeUndefined()
-
-		expect(mockParentTask.completeSubtask).toHaveBeenCalledWith("legacy result")
 	})
 })
 

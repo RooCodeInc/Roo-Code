@@ -171,8 +171,9 @@ export class API extends EventEmitter<RooCodeEvents> implements RooCodeAPI {
 		return this.sidebarProvider.getCurrentTaskStack()
 	}
 
-	public async clearCurrentTask(lastMessage?: string) {
-		await this.sidebarProvider.finishSubTask(lastMessage ?? "")
+	public async clearCurrentTask(_lastMessage?: string) {
+		// Legacy finishSubTask removed; clear current by closing active task instance.
+		await this.sidebarProvider.removeClineFromStack()
 		await this.sidebarProvider.postStateToWebview()
 	}
 

@@ -1,7 +1,6 @@
 // npx vitest run __tests__/ipc-start-new-task-during-delegation.spec.ts
 
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { EXPERIMENT_IDS } from "../shared/experiments"
 import * as ProfileValidatorMod from "../shared/ProfileValidator"
 
 // Mock Task class to avoid heavy initialization
@@ -32,7 +31,7 @@ describe("IPC StartNewTask during delegation - single-open-task invariant", () =
 		vi.restoreAllMocks()
 	})
 
-	it("Flag ON: createTask with no parentTask closes existing task (single-open invariant)", async () => {
+	it("createTask with no parentTask closes existing task (single-open invariant)", async () => {
 		vi.spyOn(ProfileValidatorMod.ProfileValidator, "isProfileAllowed").mockReturnValue(true)
 
 		const removeClineFromStack = vi.fn().mockResolvedValue(undefined)
@@ -43,7 +42,6 @@ describe("IPC StartNewTask during delegation - single-open-task invariant", () =
 			clineStack: [mockCurrentTask],
 			setValues: vi.fn().mockResolvedValue(undefined),
 			getState: vi.fn().mockResolvedValue({
-				experiments: { [EXPERIMENT_IDS.METADATA_DRIVEN_SUBTASKS]: true },
 				apiConfiguration: { apiProvider: "anthropic", consecutiveMistakeLimit: 0 },
 				organizationAllowList: "*",
 				diffEnabled: false,
@@ -90,7 +88,7 @@ describe("IPC StartNewTask during delegation - single-open-task invariant", () =
 		expect(removeOrder).toBeLessThan(addOrder)
 	})
 
-	it("Flag ON: createTask with parentTask does NOT enforce single-open (child of running parent)", async () => {
+	it("createTask with parentTask does NOT enforce single-open (child of running parent)", async () => {
 		vi.spyOn(ProfileValidatorMod.ProfileValidator, "isProfileAllowed").mockReturnValue(true)
 
 		const removeClineFromStack = vi.fn().mockResolvedValue(undefined)
@@ -101,7 +99,6 @@ describe("IPC StartNewTask during delegation - single-open-task invariant", () =
 			clineStack: [parentTask],
 			setValues: vi.fn().mockResolvedValue(undefined),
 			getState: vi.fn().mockResolvedValue({
-				experiments: { [EXPERIMENT_IDS.METADATA_DRIVEN_SUBTASKS]: true },
 				apiConfiguration: { apiProvider: "anthropic", consecutiveMistakeLimit: 0 },
 				organizationAllowList: "*",
 				diffEnabled: false,
@@ -143,59 +140,7 @@ describe("IPC StartNewTask during delegation - single-open-task invariant", () =
 		expect(addClineToStack).toHaveBeenCalledTimes(1)
 	})
 
-	it("Flag OFF: createTask does NOT enforce single-open invariant (legacy behavior)", async () => {
-		vi.spyOn(ProfileValidatorMod.ProfileValidator, "isProfileAllowed").mockReturnValue(true)
-
-		const removeClineFromStack = vi.fn().mockResolvedValue(undefined)
-		const addClineToStack = vi.fn().mockResolvedValue(undefined)
-		const existingTask = { taskId: "legacy-1" }
-
-		const provider = {
-			clineStack: [existingTask],
-			setValues: vi.fn().mockResolvedValue(undefined),
-			getState: vi.fn().mockResolvedValue({
-				experiments: { [EXPERIMENT_IDS.METADATA_DRIVEN_SUBTASKS]: false },
-				apiConfiguration: { apiProvider: "anthropic", consecutiveMistakeLimit: 0 },
-				organizationAllowList: "*",
-				diffEnabled: false,
-				enableCheckpoints: true,
-				checkpointTimeout: 60,
-				fuzzyMatchThreshold: 1.0,
-				cloudUserInfo: null,
-				remoteControlEnabled: false,
-			}),
-			removeClineFromStack,
-			addClineToStack,
-			setProviderProfile: vi.fn(),
-			log: vi.fn(),
-			getStateToPostToWebview: vi.fn(),
-			providerSettingsManager: { getModeConfigId: vi.fn(), listConfig: vi.fn() },
-			customModesManager: { getCustomModes: vi.fn().mockResolvedValue([]) },
-			taskCreationCallback: vi.fn(),
-			contextProxy: {
-				extensionUri: {},
-				setValue: vi.fn(),
-				getValue: vi.fn(),
-				setProviderSettings: vi.fn(),
-				getProviderSettings: vi.fn(() => ({})),
-			},
-		} as unknown as ClineProvider
-
-		await (ClineProvider.prototype as any).createTask.call(
-			provider,
-			"Legacy new task",
-			undefined,
-			undefined,
-			{},
-			{},
-		)
-
-		// Legacy: does NOT auto-close existing task
-		expect(removeClineFromStack).not.toHaveBeenCalled()
-		expect(addClineToStack).toHaveBeenCalledTimes(1)
-	})
-
-	it("Flag ON: external IPC start does not corrupt delegation metadata relationships", async () => {
+	it("External IPC start does not corrupt delegation metadata relationships", async () => {
 		vi.spyOn(ProfileValidatorMod.ProfileValidator, "isProfileAllowed").mockReturnValue(true)
 
 		const getTaskWithId = vi.fn().mockResolvedValue({
@@ -221,7 +166,7 @@ describe("IPC StartNewTask during delegation - single-open-task invariant", () =
 			clineStack: [currentChild],
 			setValues: vi.fn().mockResolvedValue(undefined),
 			getState: vi.fn().mockResolvedValue({
-				experiments: { [EXPERIMENT_IDS.METADATA_DRIVEN_SUBTASKS]: true },
+				experiments: {},
 				apiConfiguration: { apiProvider: "anthropic", consecutiveMistakeLimit: 0 },
 				organizationAllowList: "*",
 				diffEnabled: false,
@@ -267,19 +212,19 @@ describe("IPC StartNewTask during delegation - single-open-task invariant", () =
 		expect(getTaskWithId).not.toHaveBeenCalled()
 	})
 
-	it("Flag ON: experiment check failure falls back to legacy behavior gracefully", async () => {
+	it("Handles missing experiments gracefully (single-open always enforced)", async () => {
 		vi.spyOn(ProfileValidatorMod.ProfileValidator, "isProfileAllowed").mockReturnValue(true)
 
 		const removeClineFromStack = vi.fn().mockResolvedValue(undefined)
 		const addClineToStack = vi.fn().mockResolvedValue(undefined)
 		const existingTask = { taskId: "fallback-1" }
 
-		// Mock getState to succeed but return experiments: undefined to simulate failed experiment lookup
+		// Mock getState to succeed but return experiments: undefined
 		const provider = {
 			clineStack: [existingTask],
 			setValues: vi.fn().mockResolvedValue(undefined),
 			getState: vi.fn().mockResolvedValue({
-				experiments: undefined, // Simulates experiment check failure
+				experiments: undefined,
 				apiConfiguration: { apiProvider: "anthropic", consecutiveMistakeLimit: 0 },
 				organizationAllowList: "*",
 				diffEnabled: false,
@@ -306,16 +251,16 @@ describe("IPC StartNewTask during delegation - single-open-task invariant", () =
 			},
 		} as unknown as ClineProvider
 
-		// Should not throw; falls back to legacy (no flag = no auto-close)
+		// Should not throw and enforce single-open-task
 		await expect(
 			(ClineProvider.prototype as any).createTask.call(provider, "Task", undefined, undefined, {}, {}),
 		).resolves.toBeDefined()
 
-		// Fallback: no auto-close (legacy behavior when experiment check fails)
-		expect(removeClineFromStack).not.toHaveBeenCalled()
+		// Single-open-task always enforced (no experiment flag needed)
+		expect(removeClineFromStack).toHaveBeenCalledTimes(1)
 	})
 
-	it("Flag ON: single-open enforced when stack has multiple tasks but top is NOT subtask", async () => {
+	it("Single-open enforced when stack has multiple tasks but top is NOT subtask", async () => {
 		vi.spyOn(ProfileValidatorMod.ProfileValidator, "isProfileAllowed").mockReturnValue(true)
 
 		const removeClineFromStack = vi.fn().mockResolvedValue(undefined)
@@ -327,7 +272,7 @@ describe("IPC StartNewTask during delegation - single-open-task invariant", () =
 			clineStack: [task1, task2],
 			setValues: vi.fn().mockResolvedValue(undefined),
 			getState: vi.fn().mockResolvedValue({
-				experiments: { [EXPERIMENT_IDS.METADATA_DRIVEN_SUBTASKS]: true },
+				experiments: {},
 				apiConfiguration: { apiProvider: "anthropic", consecutiveMistakeLimit: 0 },
 				organizationAllowList: "*",
 				diffEnabled: false,

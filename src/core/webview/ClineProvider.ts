@@ -53,7 +53,7 @@ import { supportPrompt } from "../../shared/support-prompt"
 import { GlobalFileNames } from "../../shared/globalFileNames"
 import type { ExtensionMessage, ExtensionState, MarketplaceInstalledMetadata } from "../../shared/ExtensionMessage"
 import { Mode, defaultModeSlug, getModeBySlug } from "../../shared/modes"
-import { experimentDefault, experiments as experimentUtils, EXPERIMENT_IDS } from "../../shared/experiments"
+import { experimentDefault } from "../../shared/experiments"
 import { formatLanguage } from "../../shared/language"
 import { WebviewMessage } from "../../shared/WebviewMessage"
 import { EMBEDDING_MODEL_PROFILES } from "../../shared/embeddingModels"
@@ -484,38 +484,6 @@ export class ClineProvider
 		return this.clineStack.map((cline) => cline.taskId)
 	}
 
-	/**
-	 * @deprecated Legacy subtask pause/wait flow only. Used when a child subtask
-	 * completes to resume the paused parent task.
-	 *
-	 * For metadata-driven subtasks (METADATA_DRIVEN_SUBTASKS experiment), use
-	 * provider.reopenParentFromDelegation() instead, which re-opens the parent
-	 * from history with injected result rather than resuming in-memory.
-	 *
-	 * This method should only be called when the experiment flag is OFF.
-	 */
-	async finishSubTask(lastMessage: string) {
-		// Guard: ensure this legacy path is only used when flag is OFF
-		const state = await this.getState()
-		const useMetadataSubtasks = experimentUtils.isEnabled(
-			state.experiments ?? {},
-			EXPERIMENT_IDS.METADATA_DRIVEN_SUBTASKS,
-		)
-
-		if (useMetadataSubtasks) {
-			throw new Error(
-				"[finishSubTask] Legacy method called with METADATA_DRIVEN_SUBTASKS enabled. " +
-					"Use reopenParentFromDelegation() instead.",
-			)
-		}
-
-		// LEGACY: Remove the last cline instance from the stack (this is the finished
-		// subtask).
-		await this.removeClineFromStack()
-		// LEGACY: Resume the last cline instance in the stack (if it exists - this is
-		// the 'parent' calling task).
-		await this.getCurrentTask()?.completeSubtask(lastMessage)
-	}
 	// Pending Edit Operations Management
 
 	/**
@@ -1690,9 +1658,8 @@ export class ClineProvider
 
 			// remove task from stack if it's the current task
 			if (id === this.getCurrentTask()?.taskId) {
-				// if we found the taskid to delete - call finish to abort this task and allow a new task to be started,
-				// if we are deleting a subtask and parent task is still waiting for subtask to finish - it allows the parent to resume (this case should neve exist)
-				await this.finishSubTask(t("common:tasks.deleted"))
+				// Close the current task instance; delegation flows will be handled via metadata if applicable.
+				await this.removeClineFromStack()
 			}
 
 			// delete task from the task history state
@@ -2729,18 +2696,13 @@ export class ClineProvider
 			remoteControlEnabled,
 		} = await this.getState()
 
-		// Single-open-task invariant (Phase 3)
-		// Only enforce for user-initiated top-level tasks (no parentTask) when experiment flag is ON.
-		try {
-			const useMetadataDrivenSubtasks = experimentUtils.isEnabled(
-				(experiments ?? {}) as any,
-				EXPERIMENT_IDS.METADATA_DRIVEN_SUBTASKS,
-			)
-			if (useMetadataDrivenSubtasks && !parentTask) {
+		// Single-open-task invariant: always enforce for user-initiated top-level tasks
+		if (!parentTask) {
+			try {
 				await this.removeClineFromStack()
+			} catch {
+				// Non-fatal
 			}
-		} catch {
-			// Non-fatal: if experiment check fails, proceed with legacy behavior
 		}
 
 		if (!ProfileValidator.isProfileAllowed(apiConfiguration, organizationAllowList)) {
@@ -3015,15 +2977,7 @@ export class ClineProvider
 	}): Promise<Task> {
 		const { parentTaskId, message, initialTodos, mode } = params
 
-		// Experiment gating: only enabled behind METADATA_DRIVEN_SUBTASKS
-		const state = await this.getState()
-		const useMetadataDrivenSubtasks = experimentUtils.isEnabled(
-			state.experiments ?? {},
-			EXPERIMENT_IDS.METADATA_DRIVEN_SUBTASKS,
-		)
-		if (!useMetadataDrivenSubtasks) {
-			throw new Error("delegateParentAndOpenChild is gated by METADATA_DRIVEN_SUBTASKS experiment")
-		}
+		// Metadata-driven delegation is always enabled
 
 		// 1) Get parent (must be current task)
 		const parent = this.getCurrentTask()
