@@ -259,12 +259,13 @@ describe("ClineProvider - API Handler Rebuild Guard", () => {
 					openRouterModelId: "openai/gpt-4",
 				},
 			})
-			mockTask.api = {
+			const originalApi = {
 				getModel: vi.fn().mockReturnValue({
 					id: "openai/gpt-4",
 					info: { contextWindow: 128000 },
 				}),
-			} as any
+			}
+			mockTask.api = originalApi as any
 
 			await provider.addClineToStack(mockTask)
 
@@ -286,8 +287,8 @@ describe("ClineProvider - API Handler Rebuild Guard", () => {
 
 			// Verify buildApiHandler was NOT called since provider/model unchanged
 			expect(buildApiHandlerMock).not.toHaveBeenCalled()
-			// Verify the task's api property was NOT reassigned
-			expect(mockTask.api).toBe(mockTask.api) // Same reference
+			// Verify the task's api property was NOT reassigned (still same reference)
+			expect(mockTask.api).toBe(originalApi)
 		})
 
 		test("rebuilds API handler when provider changes", async () => {
@@ -393,12 +394,13 @@ describe("ClineProvider - API Handler Rebuild Guard", () => {
 					openRouterModelId: "openai/gpt-4",
 				},
 			})
-			mockTask.api = {
+			const originalApi = {
 				getModel: vi.fn().mockReturnValue({
 					id: "openai/gpt-4",
 					info: { contextWindow: 128000 },
 				}),
-			} as any
+			}
+			mockTask.api = originalApi as any
 
 			await provider.addClineToStack(mockTask)
 
@@ -416,6 +418,8 @@ describe("ClineProvider - API Handler Rebuild Guard", () => {
 
 			// Verify buildApiHandler was NOT called
 			expect(buildApiHandlerMock).not.toHaveBeenCalled()
+			// Verify the API reference wasn't changed
+			expect(mockTask.api).toBe(originalApi)
 		})
 
 		test("rebuilds API handler when provider changes", async () => {
