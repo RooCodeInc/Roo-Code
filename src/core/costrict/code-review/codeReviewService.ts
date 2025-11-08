@@ -271,9 +271,9 @@ export class CodeReviewService {
 			try {
 				this.logger.info("[CodeReview] Review Task completed")
 
-				const message = task.clineMessages.find(
-					(msg) => msg.type === "say" && msg.text?.includes("I-AM-CODE-REVIEW-REPORT-V1"),
-				)
+				const message = [...task.clineMessages]
+					.reverse()
+					.find((msg) => msg.type === "say" && msg.text?.includes("I-AM-CODE-REVIEW-REPORT-V1"))
 
 				if (message?.text) {
 					const { issues, review_task_id } = await this.getIssues(message.text, targets)
