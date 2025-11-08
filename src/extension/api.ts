@@ -280,8 +280,8 @@ export class API extends EventEmitter<RooCodeEvents> implements RooCodeAPI {
 				;(this.emit as any)(RooCodeEventName.TaskDelegationCompleted, task.taskId, childTaskId, summary)
 			})
 
-			task.on(RooCodeEventName.TaskDelegationResumed as any, () => {
-				;(this.emit as any)(RooCodeEventName.TaskDelegationResumed, task.taskId, task.childTaskId || "")
+			task.on(RooCodeEventName.TaskDelegationResumed as any, (childTaskId: string) => {
+				;(this.emit as any)(RooCodeEventName.TaskDelegationResumed, task.taskId, childTaskId)
 			})
 
 			// Task Execution
