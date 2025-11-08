@@ -436,5 +436,12 @@
 		"description": "您还没有创建任何云代理。",
 		"createFirst": "创建您的第一个",
 		"clickToRun": "点击运行 {{name}}"
+	},
+	"todo": {
+		"partial": "已完成 {{completed}} / {{total}} 个待办事项",
+		"complete": "已完成 {{total}} 个待办事项",
+		"updated": "已更新待办事项列表",
+		"completed": "已完成",
+		"started": "已开始"
 	}
 }

@@ -22,6 +22,8 @@ import { languagesSchema } from "./vscode.js"
  */
 export const DEFAULT_WRITE_DELAY_MS = 1000
 
+export const MAX_WORKSPACE_FILES = 200
+
 /**
  * Default terminal output character limit constant.
  * This provides a reasonable default that aligns with typical terminal usage
@@ -352,7 +354,7 @@ export const EVALS_SETTINGS: RooCodeSettings = {
 
 	rateLimitSeconds: 0,
 	maxOpenTabsContext: 20,
-	maxWorkspaceFiles: 300,
+	maxWorkspaceFiles: MAX_WORKSPACE_FILES,
 	showRooIgnoredFiles: true,
 	maxReadFileLine: 500, // -1 to enable full file reading.
 

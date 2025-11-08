@@ -279,6 +279,34 @@ describe("MiniMaxHandler", () => {
 				undefined,
 			)
 		})
+
+		it("should handle streaming chunks with null choices array", async () => {
+			const testContent = "Content after null choices"
+
+			mockCreate.mockImplementationOnce(() => {
+				return {
+					[Symbol.asyncIterator]: () => ({
+						next: vitest
+							.fn()
+							.mockResolvedValueOnce({
+								done: false,
+								value: { choices: null },
+							})
+							.mockResolvedValueOnce({
+								done: false,
+								value: { choices: [{ delta: { content: testContent } }] },
+							})
+							.mockResolvedValueOnce({ done: true }),
+					}),
+				}
+			})
+
+			const stream = handler.createMessage("system prompt", [])
+			const firstChunk = await stream.next()
+
+			expect(firstChunk.done).toBe(false)
+			expect(firstChunk.value).toEqual({ type: "text", text: testContent })
+		})
 	})
 
 	describe("Model Configuration", () => {

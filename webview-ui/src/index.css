@@ -388,14 +388,18 @@ vscode-dropdown::part(listbox) {
 }
 
 .mention-context-highlight {
-	background-color: color-mix(in srgb, var(--vscode-badge-foreground) 30%, transparent);
-	border-radius: 3px;
+	background-color: color-mix(in srgb, var(--vscode-badge-foreground) 15%, transparent);
+	border-radius: 6px;
+	padding: 1px 4px;
+	font-family: var(--font-mono);
 }
 
 .mention-context-highlight-with-shadow {
-	background-color: color-mix(in srgb, var(--vscode-badge-foreground) 30%, transparent);
+	background-color: color-mix(in srgb, var(--vscode-badge-foreground) 15%, transparent);
 	border-radius: 3px;
+	padding: 1px 4px;
 	box-shadow: 0 0 0 0.5px color-mix(in srgb, var(--vscode-badge-foreground) 30%, transparent);
+	font-family: var(--font-mono);
 }
 
 /**

@@ -7,9 +7,11 @@ import { vscode } from "@/utils/vscode"
 import { useCopyToClipboard } from "@/utils/clipboard"
 
 import { DeleteTaskDialog } from "../history/DeleteTaskDialog"
-import { IconButton } from "./IconButton"
 import { ShareButton } from "./ShareButton"
 // import { CloudTaskButton } from "./CloudTaskButton"
+// import { CloudTaskButton } from "./CloudTaskButton"
+import { CopyIcon, DownloadIcon, Trash2Icon } from "lucide-react"
+import { LucideIconButton } from "./LucideIconButton"
 
 interface TaskActionsProps {
 	item?: HistoryItem
@@ -19,40 +21,38 @@ interface TaskActionsProps {
 export const TaskActions = ({ item, buttonsDisabled }: TaskActionsProps) => {
 	const [deleteTaskId, setDeleteTaskId] = useState<string | null>(null)
 	const { t } = useTranslation()
-	const { copyWithFeedback, showCopyFeedback } = useCopyToClipboard()
+	const { copyWithFeedback } = useCopyToClipboard()
 
 	return (
-		<div className="flex flex-row items-center">
-			<IconButton
-				iconClass="codicon-desktop-download"
+		<div className="flex flex-row items-center -ml-0.5 mt-1 gap-1">
+			<LucideIconButton
+				icon={DownloadIcon}
 				title={t("chat:task.export")}
 				onClick={() => vscode.postMessage({ type: "exportCurrentTask" })}
 			/>
+
 			{item?.task && (
-				<IconButton
-					iconClass={showCopyFeedback ? "codicon-check" : "codicon-copy"}
+				<LucideIconButton
+					icon={CopyIcon}
 					title={t("history:copyPrompt")}
 					onClick={(e) => copyWithFeedback(item.task, e)}
 				/>
 			)}
 			{!!item?.size && item.size > 0 && (
 				<>
-					<div className="flex items-center">
-						<IconButton
-							iconClass="codicon-trash"
-							title={t("chat:task.delete")}
-							disabled={buttonsDisabled}
-							onClick={(e) => {
-								e.stopPropagation()
-
-								if (e.shiftKey) {
-									vscode.postMessage({ type: "deleteTaskWithId", text: item.id })
-								} else {
-									setDeleteTaskId(item.id)
-								}
-							}}
-						/>
-					</div>
+					<LucideIconButton
+						icon={Trash2Icon}
+						title={t("chat:task.delete")}
+						disabled={buttonsDisabled}
+						onClick={(e) => {
+							e.stopPropagation()
+							if (e.shiftKey) {
+								vscode.postMessage({ type: "deleteTaskWithId", text: item.id })
+							} else {
+								setDeleteTaskId(item.id)
+							}
+						}}
+					/>
 					{deleteTaskId && (
 						<DeleteTaskDialog
 							taskId={deleteTaskId}
@@ -63,9 +63,11 @@ export const TaskActions = ({ item, buttonsDisabled }: TaskActionsProps) => {
 				</>
 			)}
 			<div style={{ display: "none" }}>
-				<ShareButton item={item} disabled={false} showLabel={false} />
+				<ShareButton item={item} disabled={false} />
 			</div>
 			{/* <CloudTaskButton item={item} disabled={buttonsDisabled} /> */}
+			{/* <ShareButton item={item} disabled={false} />
+			<CloudTaskButton item={item} disabled={buttonsDisabled} /> */}
 		</div>
 	)
 }

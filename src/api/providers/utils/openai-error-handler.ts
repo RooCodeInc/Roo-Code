@@ -16,6 +16,14 @@ export function handleOpenAIError(error: any, providerName: string): Error & { s
 
 	if (error instanceof Error) {
 		const msg = error.message || ""
+
+		// Log the original error details for debugging
+		console.error(`[${providerName}] API error:`, {
+			message: msg,
+			name: error.name,
+			stack: error.stack,
+		})
+
 		// Invalid character/ByteString conversion error in API key
 		if (msg.includes("Cannot convert argument to a ByteString")) {
 			error = new Error(i18n.t("common:errors.api.invalidKeyInvalidChars"))
@@ -35,4 +43,7 @@ export function handleOpenAIError(error: any, providerName: string): Error & { s
 	}
 
 	return error as Error & { status?: number }
+	// // Non-Error: wrap with provider-specific prefix
+	// console.error(`[${providerName}] Non-Error exception:`, error)
+	// return new Error(`${providerName} completion error: ${String(error)}`)
 }

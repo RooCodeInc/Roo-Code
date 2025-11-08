@@ -436,5 +436,12 @@
 		"description": "您尚未建立任何雲端代理程式。",
 		"createFirst": "建立您的第一個",
 		"clickToRun": "點擊以執行 {{name}}"
+	},
+	"todo": {
+		"partial": "已完成 {{completed}} / {{total}} 個待辦事項",
+		"complete": "已完成 {{total}} 個待辦事項",
+		"updated": "已更新待辦事項列表",
+		"completed": "已完成",
+		"started": "已開始"
 	}
 }

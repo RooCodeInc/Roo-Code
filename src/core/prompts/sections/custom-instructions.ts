@@ -284,12 +284,12 @@ export async function addCustomInstructions(
 		process.env.NODE_ENV === "test"
 			? []
 			: [
-					`- **IMPORTANT: If the file or folder is not found, use \`ask_followup_question\` to inform the user and get two suggest: Skip or Create**`,
+					"# MUST_FOLLOW_RULES:\n",
 					shellPath
-						? `- **IMPORTANT: Always use the system's default shell (defined by ${shellPath}) when executing commands. Review <environment_details> to adapt commands to the user's environment, and make sure all execution and output use UTF-8 encoding. **`
+						? `- **IMPORTANT: Always use the system's default shell (defined by ${shellPath}) when executing commands. Review \`<environment_details>\` to adapt commands to the user's environment, and make sure all execution and output use UTF-8 encoding. **`
 						: "",
-					`- **IMPORTANT: For every response, you must select and use exactly one appropriate tool from the following: ${toolNames.map((toolName) => `\`${toolName}\``).join("、")}.Direct text replies are not allowed.**`,
-					`- **IMPORTANT: If the question is clearly informal or lacks actionable meaning (e.g., "hello", "who are you", "tell me a joke"), answer immediately with \`attempt_completion\` tool.**`,
+					`- **IMPORTANT: If the user message is clearly unrelated to the current task (e.g., idle chat, nonsense, jokes), do not process further. Immediately use \`attempt_completion\`.**`,
+					`- **IMPORTANT: If the file or folder is not found, use \`ask_followup_question\` to inform the user and get two suggest: Skip or Create**`,
 					`- **IMPORTANT: If creating a new file, use tool \`write_to_file\`.**`,
 					`- **IMPORTANT: If edit file, always prioritize \`apply_diff\`, then \`insert_content\`, and use \`write_to_file\` only as the last option.**`,
 				]
@@ -393,7 +393,7 @@ USER'S CUSTOM INSTRUCTIONS
 The following additional instructions are provided by the user, and should be followed to the best of your ability without interfering with the TOOL USE guidelines.
 
 ${joinedSections}`
-		: `\n\nMUST_FOLLOW_RULES:\n\n${mustRules.join("\n\n")}`
+		: `${mustRules.join("\n\n")}`
 }
 
 /**

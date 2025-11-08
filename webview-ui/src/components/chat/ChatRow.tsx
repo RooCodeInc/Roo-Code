@@ -21,6 +21,7 @@ import { Button } from "@src/components/ui"
 
 import { ToolUseBlock, ToolUseBlockHeader } from "../common/ToolUseBlock"
 import UpdateTodoListToolBlock from "./UpdateTodoListToolBlock"
+import { TodoChangeDisplay } from "./TodoChangeDisplay"
 import CodeAccordian from "../common/CodeAccordian"
 import MarkdownBlock from "../common/MarkdownBlock"
 import { ReasoningBlock } from "./ReasoningBlock"
@@ -71,6 +72,39 @@ import { getJumpLine } from "@/utils/path-mentions"
 import { useZgsmUserInfo } from "@/hooks/useZgsmUserInfo"
 import { format } from "date-fns"
 import { PathTooltip } from "../ui/PathTooltip"
+
+// Helper function to get previous todos before a specific message
+function getPreviousTodos(messages: ClineMessage[], currentMessageTs: number): any[] {
+	// Find the previous updateTodoList message before the current one
+	const previousUpdateIndex = messages
+		.slice()
+		.reverse()
+		.findIndex((msg) => {
+			if (msg.ts >= currentMessageTs) return false
+			if (msg.type === "ask" && msg.ask === "tool") {
+				try {
+					const tool = JSON.parse(msg.text || "{}")
+					return tool.tool === "updateTodoList"
+				} catch {
+					return false
+				}
+			}
+			return false
+		})
+
+	if (previousUpdateIndex !== -1) {
+		const previousMessage = messages.slice().reverse()[previousUpdateIndex]
+		try {
+			const tool = JSON.parse(previousMessage.text || "{}")
+			return tool.todos || []
+		} catch {
+			return []
+		}
+	}
+
+	// If no previous updateTodoList message, return empty array
+	return []
+}
 
 interface ChatRowProps {
 	message: ClineMessage
@@ -155,12 +189,19 @@ export const ChatRowContent = ({
 	onBatchFileResponse,
 	// isFollowUpAnswered,
 	isFollowUpAnswered,
-	editable,
+	// editable,
 	searchQuery,
 }: ChatRowContentProps) => {
 	const { t } = useTranslation()
-	const { mcpServers, alwaysAllowMcp, currentCheckpoint, mode, apiConfiguration, apiRequestBlockHide } =
-		useExtensionState()
+	const {
+		mcpServers,
+		alwaysAllowMcp,
+		currentCheckpoint,
+		mode,
+		apiConfiguration,
+		clineMessages,
+		apiRequestBlockHide,
+	} = useExtensionState()
 	const { logoPic, userInfo } = useZgsmUserInfo(apiConfiguration?.zgsmAccessToken)
 	const { info: model } = useSelectedModel(apiConfiguration)
 	const [showCopySuccess, setShowCopySuccess] = useState(false)
@@ -573,18 +614,10 @@ export const ChatRowContent = ({
 			}
 			case "updateTodoList" as any: {
 				const todos = (tool as any).todos || []
-				return (
-					<UpdateTodoListToolBlock
-						todos={todos}
-						content={tool.content}
-						onChange={(updatedTodos) => {
-							if (typeof vscode !== "undefined" && vscode?.postMessage) {
-								vscode.postMessage({ type: "updateTodoList", payload: { todos: updatedTodos } })
-							}
-						}}
-						editable={editable && isLast}
-					/>
-				)
+				// Get previous todos from the latest todos in the task context
+				const previousTodos = getPreviousTodos(clineMessages, message.ts)
+
+				return <TodoChangeDisplay previousTodos={previousTodos} newTodos={todos} />
 			}
 			case "newFileCreated":
 				return (

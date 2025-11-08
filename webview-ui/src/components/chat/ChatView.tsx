@@ -1592,6 +1592,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					onFollowUpUnmount={handleFollowUpUnmount}
 					isFollowUpAnswered={
 						primaryButtonText === t("chat:resumeTask.title") ||
+						primaryButtonText === t("chat:startNewTask.title") ||
 						(currentFollowUpTs != null && messageOrGroup.ts <= currentFollowUpTs)
 					}
 					editable={

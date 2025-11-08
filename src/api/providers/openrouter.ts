@@ -305,7 +305,8 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		}
 
 		try {
-			const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+			const baseURL = this.options.openRouterBaseUrl || "https://openrouter.ai/api/v1"
+			const response = await fetch(`${baseURL}/chat/completions`, {
 				method: "POST",
 				headers: {
 					Authorization: `Bearer ${apiKey}`,

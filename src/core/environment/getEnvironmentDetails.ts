@@ -6,7 +6,7 @@ import pWaitFor from "p-wait-for"
 import delay from "delay"
 
 import type { ExperimentId } from "@roo-code/types"
-import { DEFAULT_TERMINAL_OUTPUT_CHARACTER_LIMIT } from "@roo-code/types"
+import { DEFAULT_TERMINAL_OUTPUT_CHARACTER_LIMIT, MAX_WORKSPACE_FILES } from "@roo-code/types"
 
 import { EXPERIMENT_IDS, experiments as Experiments } from "../../shared/experiments"
 import { formatLanguage } from "../../shared/language"
@@ -32,7 +32,7 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 	const {
 		terminalOutputLineLimit = 500,
 		terminalOutputCharacterLimit = DEFAULT_TERMINAL_OUTPUT_CHARACTER_LIMIT,
-		maxWorkspaceFiles = 300,
+		maxWorkspaceFiles = MAX_WORKSPACE_FILES,
 		terminalShellIntegrationDisabled,
 	} = state ?? {}
 	const shell = getShell(terminalShellIntegrationDisabled)
@@ -276,7 +276,7 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 			// permission popup.
 			details += "(Desktop files not shown automatically. Use list_files to explore if needed.)"
 		} else {
-			const maxFiles = maxWorkspaceFiles ?? 300
+			const maxFiles = maxWorkspaceFiles ?? MAX_WORKSPACE_FILES
 
 			// Early return for limit of 0
 			if (maxFiles === 0) {

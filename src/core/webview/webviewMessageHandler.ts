@@ -15,6 +15,7 @@ import {
 	ModelInfo,
 	UserSettingsConfig,
 	DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
+	MAX_WORKSPACE_FILES,
 } from "@roo-code/types"
 import { CloudService } from "@roo-code/cloud"
 import { TelemetryService } from "@roo-code/telemetry"
@@ -1708,7 +1709,7 @@ export const webviewMessageHandler = async (
 			await provider.postStateToWebview()
 			break
 		case "maxWorkspaceFiles":
-			const fileCount = Math.min(Math.max(0, message.value ?? 200), 500)
+			const fileCount = Math.min(Math.max(0, message.value ?? MAX_WORKSPACE_FILES), 500)
 			await updateGlobalState("maxWorkspaceFiles", fileCount)
 			await provider.postStateToWebview()
 			break

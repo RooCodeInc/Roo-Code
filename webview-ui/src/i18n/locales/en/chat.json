@@ -427,5 +427,12 @@
 		"description": "You haven’t created any Cloud Agents yet.",
 		"createFirst": "Create your first",
 		"clickToRun": "Click to run {{name}}"
+	},
+	"todo": {
+		"partial": "{{completed}} of {{total}} to-dos done",
+		"complete": "{{total}} to-dos done",
+		"updated": "Updated the to-do list",
+		"completed": "Completed",
+		"started": "Started"
 	}
 }
