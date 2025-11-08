@@ -62,6 +62,19 @@ export const SimpleThinkingBudget = ({
 		setApiConfigurationField,
 	])
 
+	useEffect(() => {
+		if (!isReasoningEffortSupported) return
+		const shouldEnable = isReasoningEffortRequired || currentReasoningEffort !== "none"
+		if (shouldEnable && apiConfiguration.enableReasoningEffort !== true) {
+			setApiConfigurationField("enableReasoningEffort", true, false)
+		}
+	}, [
+		isReasoningEffortSupported,
+		isReasoningEffortRequired,
+		currentReasoningEffort,
+		apiConfiguration.enableReasoningEffort,
+		setApiConfigurationField,
+	])
 	if (!modelInfo || !isReasoningEffortSupported) {
 		return null
 	}

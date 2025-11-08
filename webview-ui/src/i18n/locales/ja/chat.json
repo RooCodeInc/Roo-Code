@@ -85,24 +85,17 @@
 		"tooltip": "現在の操作をキャンセル"
 	},
 	"scrollToBottom": "チャットの最下部にスクロール",
-	"about": "AI支援でコードを生成、リファクタリング、デバッグします。詳細については、<DocsLink>ドキュメント</DocsLink>をご覧ください。",
-	"onboarding": "最新のエージェント型コーディング能力の進歩により、複雑なソフトウェア開発タスクをステップバイステップで処理できます。ファイルの作成や編集、複雑なプロジェクトの探索、ブラウザの使用、ターミナルコマンドの実行（許可後）を可能にするツールにより、コード補完や技術サポート以上の方法であなたをサポートできます。MCPを使用して新しいツールを作成し、自分の能力を拡張することもできます。",
+	"about": "Roo Codeは、エディタに常駐するAI開発チームです。",
+	"docs": "詳細については、<DocsLink>ドキュメント</DocsLink>をご確認ください。",
+	"onboarding": "このワークスペースのタスクリストは空です。",
 	"rooTips": {
-		"boomerangTasks": {
-			"title": "タスクオーケストレーション",
-			"description": "タスクをより小さく、管理しやすい部分に分割します。"
-		},
-		"stickyModels": {
-			"title": "スティッキーモード",
-			"description": "各モードは、最後に使用したモデルを記憶しています"
-		},
-		"tools": {
-			"title": "ツール",
-			"description": "AIがWebの閲覧、コマンドの実行などによって問題を解決できるようにします。"
-		},
 		"customizableModes": {
 			"title": "カスタマイズ可能なモード",
-			"description": "独自の動作と割り当てられたモデルを持つ専門的なペルソナ"
+			"description": "タスクに集中し、成果を出す専門のペルソナ。"
+		},
+		"modelAgnostic": {
+			"title": "独自のモデルを持ち込む",
+			"description": "独自のプロバイダーキーを使用したり、ローカルで推論を実行したりできます — マークアップ、ロックイン、制限はありません"
 		}
 	},
 	"selectMode": "対話モードを選択",
@@ -299,16 +292,17 @@
 		},
 		"release": {
 			"heading": "拡張機能の新機能:",
-			"fileReading": "コンテキストオーバーランを回避するインテリジェントなファイル読み取り",
-			"browserUse": "画像対応モデルすべてでブラウザ使用ツールが有効化",
-			"bugFixes": "多数のバグ修正とモデル更新"
+			"openRouterEmbeddings": "OpenRouter埋め込みモデルのサポート",
+			"chutesDynamic": "Chutesが最新モデルを動的にロード",
+			"queuedMessagesFix": "キューメッセージが失われる問題の修正"
 		},
 		"cloudAgents": {
 			"heading": "クラウドの新機能:",
-			"feature": "Roo Code初のクラウドエージェント、<bold>PRレビューア</bold>を導入します。",
-			"description": "クラウドでRooを実行し、非常に高品質なコードレビューを瞬時に提供します。Rooの開発で積極的に使用しており、現在はコミュニティでも利用可能です。",
-			"createAgentButton": "PRレビューアを試す"
+			"prFixer": "PRレビューアを補完するクラウドエージェント<bold>PR Fixer</bold>を導入します。",
+			"prFixerDescription": "Roo CodeのPR FixerはGitHubから直接、高品質な変更をPRに適用します。PRコメントから呼び出すと、コメント履歴全体を読んでコンテキスト、合意、トレードオフを理解し、適切な修正を実装します。",
+			"tryPrFixerButton": "PR Fixerを試す"
 		},
+		"careers": "また、<careersLink>採用中です！</careersLink>",
 		"socialLinks": "<xLink>X</xLink>、<discordLink>Discord</discordLink>、または<redditLink>r/RooCode</redditLink>でフォローしてください 🚀"
 	},
 	"browser": {
@@ -428,5 +422,13 @@
 	"slashCommand": {
 		"wantsToRun": "Rooはスラッシュコマンドを実行したい",
 		"didRun": "Rooはスラッシュコマンドを実行しました"
+	},
+	"docs": "Check our <DocsLink>docs</DocsLink> to learn more.",
+	"todo": {
+		"partial": "{{total}}件中{{completed}}件のTo-Doが完了",
+		"complete": "{{total}}件のTo-Doが完了",
+		"updated": "To-Doリストを更新しました",
+		"completed": "完了",
+		"started": "開始"
 	}
 }
