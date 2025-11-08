@@ -4,6 +4,7 @@ export type ApiStreamChunk =
 	| ApiStreamTextChunk
 	| ApiStreamUsageChunk
 	| ApiStreamReasoningChunk
+	| ApiStreamReasoningDetailsChunk
 	| ApiStreamGroundingChunk
 	| ApiStreamError
 
@@ -21,6 +22,11 @@ export interface ApiStreamTextChunk {
 export interface ApiStreamReasoningChunk {
 	type: "reasoning"
 	text: string
+}
+
+export interface ApiStreamReasoningDetailsChunk {
+	type: "reasoning_details"
+	reasoning_details: any // OpenRouter specific format
 }
 
 export interface ApiStreamUsageChunk {
