@@ -17,6 +17,7 @@ import {
 } from "../../shared/tools"
 import { formatResponse } from "../prompts/responses"
 import { Package } from "../../shared/package"
+import { laminar } from "../../services/laminar/LaminarService"
 
 export async function attemptCompletionTool(
 	cline: Task,
@@ -72,6 +73,14 @@ export async function attemptCompletionTool(
 					TelemetryService.instance.captureTaskCompleted(cline.taskId)
 					cline.emit(RooCodeEventName.TaskCompleted, cline.taskId, cline.getTokenUsage(), cline.toolUsage)
 
+					// End current task.step span if active
+					try {
+						if ((cline as any).laminarSpanId) {
+							laminar.endSpan((cline as any).laminarSpanId)
+							;(cline as any).laminarSpanId = undefined
+						}
+					} catch {}
+
 					await cline.ask("command", removeClosingTag("command", command), block.partial).catch(() => {})
 				}
 			} else {
@@ -94,6 +103,14 @@ export async function attemptCompletionTool(
 			await cline.say("completion_result", result, undefined, false)
 			TelemetryService.instance.captureTaskCompleted(cline.taskId)
 			cline.emit(RooCodeEventName.TaskCompleted, cline.taskId, cline.getTokenUsage(), cline.toolUsage)
+
+			// End current task.step span if active
+			try {
+				if ((cline as any).laminarSpanId) {
+					laminar.endSpan((cline as any).laminarSpanId)
+					;(cline as any).laminarSpanId = undefined
+				}
+			} catch {}
 
 			if (cline.parentTask) {
 				const didApprove = await askFinishSubTaskApproval()
