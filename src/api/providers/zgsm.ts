@@ -72,6 +72,7 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 				baseURL: this.baseURL,
 				apiKey,
 				timeout,
+				maxRetries: 1,
 				defaultHeaders: this.headers,
 				defaultQuery: { "api-version": this.options.azureApiVersion || "2024-05-01-preview" },
 			})
@@ -82,6 +83,7 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 				baseURL: this.baseURL,
 				apiKey,
 				timeout,
+				maxRetries: 1,
 				apiVersion: this.options.azureApiVersion || azureOpenAiDefaultApiVersion,
 				defaultHeaders: this.headers,
 			})
@@ -90,6 +92,7 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 				baseURL: this.baseURL,
 				apiKey,
 				timeout,
+				maxRetries: 1,
 				defaultHeaders: this.headers,
 			})
 		}

@@ -99,6 +99,40 @@ export class AssistantMessageParser {
 				const toolUseClosingTag = `</${this.currentToolUse.name}>`
 				if (currentToolValue.endsWith(toolUseClosingTag)) {
 					// End of a tool use.
+
+					// Special handling for attempt_completion tool without result tag
+					if (this.currentToolUse.name === "attempt_completion") {
+						const resultStartTag = "<result>"
+						const resultEndTag = "</result>"
+
+						// Check if result tags are present
+						const hasResultStartTag = currentToolValue.includes(resultStartTag)
+						const hasResultEndTag = currentToolValue.includes(resultEndTag)
+
+						if (!hasResultStartTag && !hasResultEndTag) {
+							// No result tags found, treat entire content as result
+							// Remove the opening and closing attempt_completion tags
+							const openingTag = "<attempt_completion>"
+							const cleanedContent = currentToolValue
+								.replace(new RegExp(`^${openingTag.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`), "")
+								.replace(new RegExp(`${toolUseClosingTag.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`), "")
+								.trim()
+							if (cleanedContent) {
+								this.currentToolUse.params.result = cleanedContent
+							}
+						} else if (hasResultStartTag && hasResultEndTag) {
+							// Both tags present, extract content between them
+							const resultStartIndex = currentToolValue.indexOf(resultStartTag) + resultStartTag.length
+							const resultEndIndex = currentToolValue.indexOf(resultEndTag)
+
+							if (resultStartIndex !== -1 && resultEndIndex !== -1 && resultEndIndex > resultStartIndex) {
+								this.currentToolUse.params.result = currentToolValue
+									.slice(resultStartIndex, resultEndIndex)
+									.trim()
+							}
+						}
+					}
+
 					this.currentToolUse.partial = false
 
 					this.currentToolUse = undefined

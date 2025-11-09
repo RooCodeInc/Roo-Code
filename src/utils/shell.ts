@@ -5,10 +5,10 @@ import fs from "fs"
 import * as path from "path"
 
 let pwshInstalled = false
-// const shellCache = {
-// 	shell: "",
-// 	updateAt: 0,
-// }
+const shellCache = {
+	shell: "",
+	updateAt: 0,
+}
 // Security: Allowlist of approved shell executables to prevent arbitrary command execution
 const SHELL_ALLOWLIST = new Set<string>([
 	// Windows PowerShell variants
@@ -376,10 +376,10 @@ function getSafeFallbackShell(): string {
  */
 export function getShell(terminalShellIntegrationDisabled = false): string {
 	let shell: string | null = null
-	// const updateTime = Date.now()
-	// if (process.env.NODE_ENV !== "test" && shellCache.shell && updateTime - shellCache.updateAt < 5000) {
-	// 	return shellCache.shell
-	// }
+	const updateTime = Date.now()
+	if (process.env.NODE_ENV !== "test" && shellCache.shell && updateTime - shellCache.updateAt < 5000) {
+		return shellCache.shell
+	}
 	// 1. Check VS Code config first.
 	if (process.platform === "win32") {
 		// Special logic for Windows
@@ -411,8 +411,8 @@ export function getShell(terminalShellIntegrationDisabled = false): string {
 	if (!isShellAllowed(shell)) {
 		shell = getSafeFallbackShell()
 	}
-	// shellCache.shell = shell
-	// shellCache.updateAt = updateTime
+	shellCache.shell = shell
+	shellCache.updateAt = updateTime
 	return shell
 }
 

@@ -377,6 +377,92 @@ describe("AssistantMessageParser (streaming)", () => {
 			)
 			expect(textAfter).toBeDefined()
 		})
+
+		describe("attempt_completion compatibility", () => {
+			it("should parse attempt_completion with proper result tags", () => {
+				const message = `<attempt_completion>
+<result>
+Task completed successfully
+</result>
+</attempt_completion>`
+				const result = streamChunks(parser, message).filter((block) => !isEmptyTextContent(block))
+				expect(result).toHaveLength(1)
+				const toolUse = result[0] as ToolUse
+				expect(toolUse.type).toBe("tool_use")
+				expect(toolUse.name).toBe("attempt_completion")
+				expect(toolUse.params.result).toBe("Task completed successfully")
+				expect(toolUse.partial).toBe(false)
+			})
+
+			it("should parse attempt_completion without result tags", () => {
+				const message = `<attempt_completion>Task completed successfully</attempt_completion>`
+				const result = streamChunks(parser, message).filter((block) => !isEmptyTextContent(block))
+				expect(result).toHaveLength(1)
+				const toolUse = result[0] as ToolUse
+				expect(toolUse.type).toBe("tool_use")
+				expect(toolUse.name).toBe("attempt_completion")
+				expect(toolUse.params.result).toBe("Task completed successfully")
+				expect(toolUse.partial).toBe(false)
+			})
+
+			it("should parse attempt_completion without result tags and with whitespace", () => {
+				const message = `<attempt_completion>
+	Task completed with details
+</attempt_completion>`
+				const result = streamChunks(parser, message).filter((block) => !isEmptyTextContent(block))
+				expect(result).toHaveLength(1)
+				const toolUse = result[0] as ToolUse
+				expect(toolUse.type).toBe("tool_use")
+				expect(toolUse.name).toBe("attempt_completion")
+				expect(toolUse.params.result).toBe("Task completed with details")
+				expect(toolUse.partial).toBe(false)
+			})
+
+			it("should parse attempt_completion with mixed content and result tags", () => {
+				const message = `<attempt_completion>
+Some prefix text
+<result>
+The actual result
+</result>
+Some suffix text
+</attempt_completion>`
+				const result = streamChunks(parser, message).filter((block) => !isEmptyTextContent(block))
+				expect(result).toHaveLength(1)
+				const toolUse = result[0] as ToolUse
+				expect(toolUse.type).toBe("tool_use")
+				expect(toolUse.name).toBe("attempt_completion")
+				expect(toolUse.params.result).toBe("The actual result")
+				expect(toolUse.partial).toBe(false)
+			})
+
+			it("should handle empty attempt_completion without result tags", () => {
+				const message = `<attempt_completion></attempt_completion>`
+				const result = streamChunks(parser, message).filter((block) => !isEmptyTextContent(block))
+				expect(result).toHaveLength(1)
+				const toolUse = result[0] as ToolUse
+				expect(toolUse.type).toBe("tool_use")
+				expect(toolUse.name).toBe("attempt_completion")
+				expect(toolUse.params.result).toBeUndefined()
+				expect(toolUse.partial).toBe(false)
+			})
+
+			it("should not affect other tools when processing attempt_completion", () => {
+				const message = `<attempt_completion>Task completed</attempt_completion>
+<read_file><path>src/file.ts</path></read_file>`
+				const result = streamChunks(parser, message).filter((block) => !isEmptyTextContent(block))
+				expect(result).toHaveLength(2)
+
+				const attemptCompletion = result[0] as ToolUse
+				expect(attemptCompletion.type).toBe("tool_use")
+				expect(attemptCompletion.name).toBe("attempt_completion")
+				expect(attemptCompletion.params.result).toBe("Task completed")
+
+				const readfile = result[1] as ToolUse
+				expect(readfile.type).toBe("tool_use")
+				expect(readfile.name).toBe("read_file")
+				expect(readfile.params.path).toBe("src/file.ts")
+			})
+		})
 	})
 
 	describe("finalizeContentBlocks", () => {

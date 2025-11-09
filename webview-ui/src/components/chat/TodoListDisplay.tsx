@@ -63,8 +63,12 @@ export function TodoListDisplay({ todos }: { todos: any[] }) {
 						: "text-vscode-foreground",
 				)}
 				onClick={() => setIsCollapsed((v) => !v)}>
-				<ListChecks className="size-3 shrink-0" />
-				<span className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
+				<ListChecks className={cn("size-3 shrink-0", allCompleted ? "text-vscode-charts-green" : "")} />
+				<span
+					className={cn(
+						"flex-1 overflow-hidden text-ellipsis whitespace-nowrap",
+						allCompleted ? "text-vscode-charts-green" : "",
+					)}>
 					{isCollapsed
 						? allCompleted
 							? t("chat:todo.complete", { total: completedCount })
