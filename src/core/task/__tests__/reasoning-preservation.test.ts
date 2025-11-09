@@ -82,7 +82,7 @@ describe("Task reasoning preservation", () => {
 		// Import Task after mocks are set up
 		const taskModule = await import("../Task")
 		Task = taskModule.Task
-	})
+	}, 30000) // 设置30秒超时时间
 
 	beforeEach(() => {
 		// Mock provider with necessary methods

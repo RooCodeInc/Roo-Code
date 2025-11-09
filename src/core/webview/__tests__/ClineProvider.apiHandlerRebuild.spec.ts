@@ -45,6 +45,7 @@ vi.mock("vscode", () => ({
 		joinPath: vi.fn(),
 		file: vi.fn(),
 	},
+	RelativePattern: vi.fn((base, pattern) => ({ base, pattern })),
 	commands: {
 		executeCommand: vi.fn().mockResolvedValue(undefined),
 	},
@@ -53,6 +54,11 @@ vi.mock("vscode", () => ({
 		showWarningMessage: vi.fn(),
 		showErrorMessage: vi.fn(),
 		onDidChangeActiveTextEditor: vi.fn(() => ({ dispose: vi.fn() })),
+		createOutputChannel: vi.fn().mockReturnValue({
+			appendLine: vi.fn(),
+			dispose: vi.fn(),
+			show: vi.fn(),
+		}),
 	},
 	workspace: {
 		getConfiguration: vi.fn().mockReturnValue({
@@ -62,6 +68,12 @@ vi.mock("vscode", () => ({
 		onDidChangeConfiguration: vi.fn().mockImplementation(() => ({
 			dispose: vi.fn(),
 		})),
+		createFileSystemWatcher: vi.fn().mockReturnValue({
+			onDidCreate: vi.fn(),
+			onDidChange: vi.fn(),
+			onDidDelete: vi.fn(),
+			dispose: vi.fn(),
+		}),
 	},
 	env: {
 		uriScheme: "vscode",

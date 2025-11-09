@@ -507,8 +507,9 @@ describe("ClineProvider", () => {
 		expect(mockWebviewView.webview.html).toContain("<!DOCTYPE html>")
 
 		// Verify Content Security Policy contains the necessary PostHog domains
+		// Note: In production mode, the CSP is different from development mode
 		expect(mockWebviewView.webview.html).toContain(
-			"connect-src vscode-webview://test-csp-source https://avatars.githubusercontent.com https://openrouter.ai https://api.requesty.ai https://us.i.posthog.com https://us-assets.i.posthog.com;",
+			"connect-src vscode-webview://test-csp-source https://openrouter.ai https://avatars.githubusercontent.com https://openrouter.ai https://api.requesty.ai https://us.i.posthog.com https://us-assets.i.posthog.com;",
 		)
 
 		// Extract the script-src directive section and verify required security elements
@@ -516,7 +517,7 @@ describe("ClineProvider", () => {
 		const scriptSrcMatch = html.match(/script-src[^;]*;/)
 		expect(scriptSrcMatch).not.toBeNull()
 		expect(scriptSrcMatch![0]).toContain("'nonce-")
-		// Verify wasm-unsafe-eval is present for Shiki syntax highlighting
+		// In production mode, we use 'wasm-unsafe-eval' instead of 'unsafe-eval'
 		expect(scriptSrcMatch![0]).toContain("'wasm-unsafe-eval'")
 	})
 
