@@ -47,13 +47,13 @@ export function AgentLandingContent({ content }: { content: AgentPageContent }) 
 	return (
 		<>
 			{/* Hero Section */}
-			<section className="relative flex md:h-[calc(70vh-theme(spacing.12))] items-center overflow-hidden">
+			<section className="relative flex min-h-screen md:min-h-[calc(70vh-theme(spacing.12))] items-center overflow-hidden py-12 md:py-0">
 				<AnimatedBackground />
 				<div className="container relative flex items-center h-full z-10 mx-auto px-4 sm:px-6 lg:px-8">
-					<div className="grid h-full relative gap-4 md:gap-20 lg:grid-cols-2">
-						<div className="flex flex-col px-4 justify-center space-y-6 sm:space-y-8">
+					<div className="grid h-full relative gap-8 md:gap-12 lg:gap-20 lg:grid-cols-2">
+						<div className="flex flex-col justify-center space-y-6 sm:space-y-8">
 							<div>
-								<h1 className="text-3xl font-bold tracking-tight mt-8 md:text-left md:text-4xl lg:text-5xl lg:mt-0">
+								<h1 className="text-3xl font-bold tracking-tight md:text-left md:text-4xl lg:text-5xl">
 									{content.hero.icon &&
 										(() => {
 											const Icon = getIcon(content.hero.icon)
@@ -62,7 +62,7 @@ export function AgentLandingContent({ content }: { content: AgentPageContent }) 
 									{content.hero.heading}
 								</h1>
 
-								<div className="mt-4 max-w-lg space-y-4 text-base text-muted-foreground md:text-left sm:mt-6">
+								<div className="mt-4 max-w-full lg:max-w-lg space-y-4 text-base text-muted-foreground md:text-left sm:mt-6">
 									{content.hero.paragraphs.map((paragraph, index) => (
 										<p key={index}>{paragraph}</p>
 									))}
@@ -110,23 +110,16 @@ export function AgentLandingContent({ content }: { content: AgentPageContent }) 
 						</div>
 
 						{content.hero.image && (
-							<div className="flex items-center justify-end mx-auto h-full mt-8 lg:mt-0">
-								<div
-									className="relative overflow-clip"
-									style={{
-										width: `${content.hero.image.width}px`,
-										height: `${content.hero.image.height}px`,
-										maxWidth: "100%",
-									}}>
-									<div className="block">
-										<Image
-											src={content.hero.image.url}
-											alt={content.hero.image.alt || "Hero image"}
-											className="max-w-full h-auto"
-											width={content.hero.image.width}
-											height={content.hero.image.height}
-										/>
-									</div>
+							<div className="flex items-center justify-center lg:justify-end mx-auto h-full w-full">
+								<div className="relative w-full max-w-full overflow-hidden rounded-lg">
+									<Image
+										src={content.hero.image.url}
+										alt={content.hero.image.alt || "Hero image"}
+										className="w-full h-auto"
+										width={content.hero.image.width}
+										height={content.hero.image.height}
+										priority
+									/>
 								</div>
 							</div>
 						)}
