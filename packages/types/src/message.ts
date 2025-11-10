@@ -46,7 +46,21 @@ export type ClineAsk = z.infer<typeof clineAskSchema>
 
 // Needs classification:
 // - `followup`
-// - `command_output
+
+/**
+ * NonBlockingAsk
+ *
+ * Asks that should not block task execution. These are informational or optional
+ * asks where the task can proceed even without an immediate user response.
+ */
+
+export const nonBlockingAsks = ["command_output"] as const satisfies readonly ClineAsk[]
+
+export type NonBlockingAsk = (typeof nonBlockingAsks)[number]
+
+export function isNonBlockingAsk(ask: ClineAsk): ask is NonBlockingAsk {
+	return (nonBlockingAsks as readonly ClineAsk[]).includes(ask)
+}
 
 /**
  * IdleAsk

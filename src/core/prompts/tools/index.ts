@@ -148,10 +148,12 @@ export function getToolDescriptionsForMode(
 			return undefined
 		}
 
-		return descriptionFn({
+		const description = descriptionFn({
 			...args,
 			toolOptions: undefined, // No tool options in group-based approach
 		})
+
+		return description
 	})
 
 	return `# Tools\n\n${descriptions.filter(Boolean).join("\n\n")}`

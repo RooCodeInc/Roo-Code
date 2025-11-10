@@ -1,6 +1,11 @@
+import { ToolProtocol, TOOL_PROTOCOL } from "@roo-code/types"
 import { CodeIndexManager } from "../../../services/code-index/manager"
+import { isNativeProtocol } from "../toolProtocolResolver"
 
-export function getToolUseGuidelinesSection(codeIndexManager?: CodeIndexManager): string {
+export function getToolUseGuidelinesSection(
+	codeIndexManager?: CodeIndexManager,
+	protocol: ToolProtocol = TOOL_PROTOCOL.XML,
+): string {
 	const isCodebaseSearchAvailable =
 		codeIndexManager &&
 		codeIndexManager.isFeatureEnabled &&
@@ -34,7 +39,11 @@ export function getToolUseGuidelinesSection(codeIndexManager?: CodeIndexManager)
 	guidelinesList.push(
 		`${itemNumber++}. If multiple actions are needed, use one tool at a time per message to accomplish the task iteratively, with each tool use being informed by the result of the previous tool use. Do not assume the outcome of any tool use. Each step must be informed by the previous step's result.`,
 	)
-	guidelinesList.push(`${itemNumber++}. Formulate your tool use using the XML format specified for each tool.`)
+
+	// Protocol-specific guideline - only add for XML protocol
+	if (!isNativeProtocol(protocol)) {
+		guidelinesList.push(`${itemNumber++}. Formulate your tool use using the XML format specified for each tool.`)
+	}
 	guidelinesList.push(`${itemNumber++}. After each tool use, the user will respond with the result of that tool use. This result will provide you with the necessary information to continue your task or make further decisions. This response may include:
   - Information about whether the tool succeeded or failed, along with any reasons for failure.
   - Linter errors that may have arisen due to the changes you made, which you'll need to address.

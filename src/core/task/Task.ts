@@ -33,6 +33,7 @@ import {
 	isIdleAsk,
 	isInteractiveAsk,
 	isResumableAsk,
+	isNonBlockingAsk,
 	QueuedMessage,
 	DEFAULT_CONSECUTIVE_MISTAKE_LIMIT,
 	DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
@@ -80,6 +81,7 @@ import { getWorkspacePath } from "../../utils/path"
 // prompts
 import { formatResponse } from "../prompts/responses"
 import { SYSTEM_PROMPT } from "../prompts/system"
+import { resolveToolProtocol } from "../prompts/toolProtocolResolver"
 
 // core modules
 import { ToolRepetitionDetector } from "../tools/ToolRepetitionDetector"
@@ -830,7 +832,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// block (via the `pWaitFor`).
 		const isBlocking = !(this.askResponse !== undefined || this.lastMessageTs !== askTs)
 		const isMessageQueued = !this.messageQueueService.isEmpty()
-		const isStatusMutable = !partial && isBlocking && !isMessageQueued
+		// Non-blocking asks should not mutate task status since they don't actually block execution
+		const isStatusMutable = !partial && isBlocking && !isMessageQueued && !isNonBlockingAsk(type)
 		let statusMutationTimeouts: NodeJS.Timeout[] = []
 		const statusMutationTimeout = 5_000
 
@@ -892,7 +895,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// the message if there's text/images.
 					this.handleWebviewAskResponse("yesButtonClicked", message.text, message.images)
 				} else {
-					// For other ask types (like followup), fulfill the ask
+					// For other ask types (like followup or command_output), fulfill the ask
 					// directly.
 					this.setMessageResponse(message.text, message.images)
 				}
@@ -2618,6 +2621,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					newTaskRequireTodos: vscode.workspace
 						.getConfiguration("roo-cline")
 						.get<boolean>("newTaskRequireTodos", false),
+					toolProtocol: resolveToolProtocol(),
 				},
 				undefined, // todoList
 				this.api.getModel().id,
