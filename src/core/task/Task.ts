@@ -729,10 +729,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		progressStatus?: ToolProgressStatus,
 		isProtected?: boolean,
 	): Promise<{ response: ClineAskResponse; text?: string; images?: string[] }> {
-		console.log(
-			`Task#ask: type -> ${type} (text = ${text}, partial = ${partial}, progressStatus = ${progressStatus}, isProtected = ${isProtected})`,
-		)
-
 		// If this Cline instance was aborted by the provider, then the only
 		// thing keeping us alive is a promise still running in the background,
 		// in which case we don't want to send its result to the webview as it
@@ -943,7 +939,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	handleWebviewAskResponse(askResponse: ClineAskResponse, text?: string, images?: string[]) {
 		this.askResponse = askResponse
-		console.log(`Task#handleWebviewAskResponse: askResponse -> ${askResponse} (text = ${text})`)
 		this.askResponseText = text
 		this.askResponseImages = images
 
