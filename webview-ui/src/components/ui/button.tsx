@@ -9,9 +9,8 @@ const buttonVariants = cva(
 	{
 		variants: {
 			variant: {
-				primary: "border border-vscode-input-border bg-primary text-primary-foreground hover:bg-primary/90",
-				secondary:
-					"border border-vscode-input-border bg-secondary text-secondary-foreground hover:bg-secondary/80",
+				primary: "bg-primary text-primary-foreground hover:bg-primary/70",
+				secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/70",
 				ghost: "hover:bg-accent hover:text-accent-foreground",
 				destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
 				outline:
