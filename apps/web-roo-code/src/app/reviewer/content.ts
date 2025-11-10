@@ -10,10 +10,10 @@ export const content: AgentPageContent = {
 	agentName: "PR Reviewer",
 	hero: {
 		icon: "GitPullRequest",
-		heading: "Get comprehensive code reviews that save you time, not tokens.",
+		heading: "Code reviews that catch what other AI tools (and most humans) miss.",
 		paragraphs: [
-			"Regular AI code review tools cap model usage to protect their margins from fixed monthly prices. That leads to shallow prompts, limited context, and missed issues.",
-			"Roo Code's PR Reviewer flips the script: you bring your own key and leverage it to the max – to find real issues, increase code quality and keep your pull request queue moving.",
+			"Run-of-the-mill, token-saving AI code review tools will surely catch syntax errors and style issues, but they'll usually miss the bugs that actually matter: logic flaws, security vulnerabilities, and misunderstood requirements.",
+			"Roo Code's PR Reviewer uses advanced reasoning models and full repository context to find the issues that slip through—before they reach production.",
 		],
 		image: {
 			url: hero.src,
@@ -60,34 +60,33 @@ export const content: AgentPageContent = {
 		],
 	},
 	whyBetter: {
-		heading: "Why Roo's PR Reviewer is so much better",
+		heading: "Why Roo's PR Reviewer is different",
 		features: [
 			{
-				title: "Our agents, your provider keys",
+				title: "Bring your own key, get uncompromised reviews",
 				paragraphs: [
-					"We orchestrate the review, optimize the hell out of the prompts, integrate with GitHub, keep you properly posted.",
-					"We're thoughtful about token usage, but not incentivized to skimp to grow our margins.",
+					"Most AI review tools use fixed pricing, which means they skimp on tokens to protect their margins. That leads to shallow analysis and missed issues.",
+					"With Roo, you bring your own API key. We optimize prompts for depth, not cost-cutting, so reviews focus on real problems like business logic, security vulnerabilities, and architectural issues.",
 				],
 				icon: "Blocks",
 			},
 			{
-				title: "Advanced reasoning and workflows",
+				title: "Advanced reasoning that understands what matters",
 				description:
-					"We optimize for state-of-the-art reasoning models and leverage powerful workflows (Diff analysis → Context Gathering → Impact Mapping → Contract checks) to produce crisp, actionable comments at the right level.",
+					"We leverage state-of-the-art reasoning models with sophisticated workflows: diff analysis, context gathering, impact mapping, and contract validation. This catches the subtle bugs that surface-level tools miss—misunderstood requirements, edge cases, and integration risks.",
 				icon: "ListChecks",
 			},
 			{
-				title: "Fully repository-aware",
+				title: "Repository-aware, not snippet-aware",
 				description:
-					"Reviews traverse code ownership, dependency graphs, and historical patterns to surface risk and deviations, not noise.",
+					"Roo analyzes your entire codebase context—dependency graphs, code ownership, team conventions, and historical patterns. It understands how changes interact with existing systems, not just whether individual lines look correct.",
 				icon: "BookMarked",
 			},
 		],
 	},
 	cta: {
-		heading: "Stop wasting time.",
-		description:
-			"Give Roo Code's PR Reviewer your model key and turn painful reviews into a tangible quality advantage.",
+		heading: "Ready for better code reviews?",
+		description: "Start finding the issues that matter with AI-powered reviews built for depth, not cost-cutting.",
 		buttonText: "Start 14-day Free Trial",
 	},
 }
