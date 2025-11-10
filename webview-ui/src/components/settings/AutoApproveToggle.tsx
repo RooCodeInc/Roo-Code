@@ -113,7 +113,7 @@ export const AutoApproveToggle = ({ onToggle, ...props }: AutoApproveToggleProps
 			{Object.values(autoApproveSettingsConfig).map(({ key, descriptionKey, labelKey, icon, testId }) => (
 				<StandardTooltip key={key} content={t(descriptionKey || "")}>
 					<Button
-						variant={props[key] ? "default" : "outline"}
+						variant={props[key] ? "primary" : "outline"}
 						onClick={() => onToggle(key, !props[key])}
 						aria-label={t(labelKey)}
 						aria-pressed={!!props[key]}
