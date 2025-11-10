@@ -116,7 +116,7 @@ import { processUserContentMentions } from "../mentions/processUserContentMentio
 import { getMessagesSinceLastSummary, summarizeConversation } from "../condense"
 import { Gpt5Metadata, ClineMessageWithMetadata } from "./types"
 import { MessageQueueService } from "../message-queue/MessageQueueService"
-import { AutoApprovalHandler, isAutoApproved } from "../auto-approval"
+import { AutoApprovalHandler, checkAutoApproval } from "../auto-approval"
 
 const MAX_EXPONENTIAL_BACKOFF_SECONDS = 600 // 10 minutes
 const DEFAULT_USAGE_COLLECTION_TIMEOUT_MS = 5000 // 5 seconds
@@ -826,10 +826,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// Automatically approve if the ask according to the user's settings.
 		const provider = this.providerRef.deref()
 		const state = provider ? await provider.getState() : undefined
-		const isApproved = state ? await isAutoApproved({ state, ask: type, text, isProtected }) : false
+		const approval = state ? await checkAutoApproval({ state, ask: type, text, isProtected }) : false
 
-		if (isApproved) {
+		if (approval === "approve") {
 			this.approveAsk()
+		} else if (approval === "deny") {
+			this.denyAsk()
 		}
 
 		// The state is mutable if the message is complete and the task will
@@ -837,7 +839,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		const isBlocking = !(this.askResponse !== undefined || this.lastMessageTs !== askTs)
 		const isMessageQueued = !this.messageQueueService.isEmpty()
 
-		const isStatusMutable = !partial && isBlocking && !isMessageQueued && !isApproved
+		const isStatusMutable = !partial && isBlocking && !isMessageQueued && approval === "ask"
 		let statusMutationTimeouts: NodeJS.Timeout[] = []
 		const statusMutationTimeout = 5_000
 

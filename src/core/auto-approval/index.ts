@@ -29,7 +29,9 @@ export type AutoApprovalStateOptions =
 	| "allowedCommands" // For `alwaysAllowExecute`.
 	| "deniedCommands"
 
-export async function isAutoApproved({
+export type CheckAutoApprovalResult = "approve" | "deny" | "ask"
+
+export async function checkAutoApproval({
 	state,
 	ask,
 	text,
@@ -39,28 +41,28 @@ export async function isAutoApproved({
 	ask: ClineAsk
 	text?: string
 	isProtected?: boolean
-}): Promise<boolean> {
+}): Promise<CheckAutoApprovalResult> {
 	if (isNonBlockingAsk(ask)) {
-		return true
+		return "approve"
 	}
 
 	if (!state.autoApprovalEnabled) {
-		return false
+		return "ask"
 	}
 
 	// Note: The `alwaysApproveResubmit` check is already handled in `Task`.
 
 	if (ask === "followup") {
-		return state.alwaysAllowFollowupQuestions === true
+		return state.alwaysAllowFollowupQuestions === true ? "approve" : "ask"
 	}
 
 	if (ask === "browser_action_launch") {
-		return state.alwaysAllowBrowser === true
+		return state.alwaysAllowBrowser === true ? "approve" : "ask"
 	}
 
 	if (ask === "use_mcp_server") {
 		if (!text) {
-			return false
+			return "ask"
 		}
 
 		try {
@@ -68,25 +70,34 @@ export async function isAutoApproved({
 
 			if (mcpServerUse.type === "use_mcp_tool") {
 				return state.alwaysAllowMcp === true && isMcpToolAlwaysAllowed(mcpServerUse, state.mcpServers)
+					? "approve"
+					: "ask"
 			} else if (mcpServerUse.type === "access_mcp_resource") {
-				return state.alwaysAllowMcp === true
+				return state.alwaysAllowMcp === true ? "approve" : "ask"
 			}
 		} catch (error) {
-			return false
+			return "ask"
 		}
 
-		return false
+		return "ask"
 	}
 
 	if (ask === "command") {
 		if (!text) {
-			return false
+			return "ask"
 		}
 
-		return (
-			state.alwaysAllowExecute === true &&
-			getCommandDecision(text, state.allowedCommands || [], state.deniedCommands || []) === "auto_approve"
-		)
+		if (state.alwaysAllowExecute === true) {
+			const decision = getCommandDecision(text, state.allowedCommands || [], state.deniedCommands || [])
+
+			if (decision === "auto_approve") {
+				return "approve"
+			} else if (decision === "auto_deny") {
+				return "deny"
+			} else {
+				return "ask"
+			}
+		}
 	}
 
 	if (ask === "tool") {
@@ -99,50 +110,50 @@ export async function isAutoApproved({
 		}
 
 		if (!tool) {
-			return false
+			return "ask"
 		}
 
 		if (tool.tool === "updateTodoList") {
-			return state.alwaysAllowUpdateTodoList === true
+			return state.alwaysAllowUpdateTodoList === true ? "approve" : "ask"
 		}
 
 		if (tool?.tool === "fetchInstructions") {
 			if (tool.content === "create_mode") {
-				return state.alwaysAllowModeSwitch === true
+				return state.alwaysAllowModeSwitch === true ? "approve" : "ask"
 			}
 
 			if (tool.content === "create_mcp_server") {
-				return state.alwaysAllowMcp === true
+				return state.alwaysAllowMcp === true ? "approve" : "ask"
 			}
 		}
 
 		if (tool?.tool === "switchMode") {
-			return state.alwaysAllowModeSwitch === true
+			return state.alwaysAllowModeSwitch === true ? "approve" : "ask"
 		}
 
 		if (["newTask", "finishTask"].includes(tool?.tool)) {
-			return state.alwaysAllowSubtasks === true
+			return state.alwaysAllowSubtasks === true ? "approve" : "ask"
 		}
 
 		const isOutsideWorkspace = !!tool.isOutsideWorkspace
 
 		if (isReadOnlyToolAction(tool)) {
-			return (
-				state.alwaysAllowReadOnly === true &&
+			return state.alwaysAllowReadOnly === true &&
 				(!isOutsideWorkspace || state.alwaysAllowReadOnlyOutsideWorkspace === true)
-			)
+				? "approve"
+				: "ask"
 		}
 
 		if (isWriteToolAction(tool)) {
-			return (
-				state.alwaysAllowWrite === true &&
+			return state.alwaysAllowWrite === true &&
 				(!isOutsideWorkspace || state.alwaysAllowWriteOutsideWorkspace === true) &&
 				(!isProtected || state.alwaysAllowWriteProtected === true)
-			)
+				? "approve"
+				: "ask"
 		}
 	}
 
-	return false
+	return "ask"
 }
 
 export { AutoApprovalHandler } from "./AutoApprovalHandler"
