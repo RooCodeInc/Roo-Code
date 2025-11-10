@@ -179,6 +179,7 @@ export async function executeCommand(
 	let result: string = ""
 	let exitDetails: ExitCodeDetails | undefined
 	let shellIntegrationError: string | undefined
+	let hasAskedForCommandOutput = false
 
 	const terminalProvider = terminalShellIntegrationDisabled ? "execa" : "vscode"
 	const provider = await task.providerRef.deref()
@@ -195,9 +196,12 @@ export async function executeCommand(
 			const status: CommandExecutionStatus = { executionId, status: "output", output: compressedOutput }
 			provider?.postMessageToWebview({ type: "commandExecutionStatus", text: JSON.stringify(status) })
 
-			if (runInBackground) {
+			if (runInBackground || hasAskedForCommandOutput) {
 				return
 			}
+
+			// Mark that we've asked to prevent multiple concurrent asks
+			hasAskedForCommandOutput = true
 
 			try {
 				const { response, text, images } = await task.ask("command_output", "")
@@ -207,7 +211,9 @@ export async function executeCommand(
 					message = { text, images }
 					process.continue()
 				}
-			} catch (_error) {}
+			} catch (_error) {
+				// Silently handle ask errors (e.g., "Current ask promise was ignored")
+			}
 		},
 		onCompleted: (output: string | undefined) => {
 			result = Terminal.compressTerminalOutput(
@@ -220,7 +226,6 @@ export async function executeCommand(
 			completed = true
 		},
 		onShellExecutionStarted: (pid: number | undefined) => {
-			console.log(`[executeCommand] onShellExecutionStarted: ${pid}`)
 			const status: CommandExecutionStatus = { executionId, status: "started", pid, command }
 			provider?.postMessageToWebview({ type: "commandExecutionStatus", text: JSON.stringify(status) })
 		},
