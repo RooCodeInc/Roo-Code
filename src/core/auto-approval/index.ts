@@ -1,4 +1,4 @@
-import type { ClineAsk, McpServerUse } from "@roo-code/types"
+import { type ClineAsk, type McpServerUse, isNonBlockingAsk } from "@roo-code/types"
 
 import type { ClineSayTool, ExtensionState } from "../../shared/ExtensionMessage"
 
@@ -40,7 +40,7 @@ export async function isAutoApproved({
 	text?: string
 	isProtected?: boolean
 }): Promise<boolean> {
-	if (ask === "command_output" || ask === "api_req_failed") {
+	if (isNonBlockingAsk(ask)) {
 		return true
 	}
 
