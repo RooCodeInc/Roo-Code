@@ -6,10 +6,12 @@ Description: Request to execute a CLI command on the system. Use this when you n
 Parameters:
 - command: (required) The CLI command to execute. This should be valid for the current operating system. Ensure the command is properly formatted and does not contain any harmful instructions.
 - cwd: (optional) The working directory to execute the command in (default: ${args.cwd})
+- background: (optional) Set to "true" to run the command in the background without requiring user interaction. The command will run without blocking, and its output will still be streamed to the terminal UI. This is useful for long-running processes like development servers.
 Usage:
 <execute_command>
 <command>Your command here</command>
 <cwd>Working directory path (optional)</cwd>
+<background>true or false (optional)</background>
 </execute_command>
 
 Example: Requesting to execute npm run dev
@@ -21,5 +23,11 @@ Example: Requesting to execute ls in a specific directory if directed
 <execute_command>
 <command>ls -la</command>
 <cwd>/home/user/projects</cwd>
+</execute_command>
+
+Example: Running a development server in the background
+<execute_command>
+<command>npm run dev</command>
+<background>true</background>
 </execute_command>`
 }

@@ -451,4 +451,186 @@ describe("executeCommand", () => {
 			expect(mockTerminalInstance.getCurrentWorkingDirectory).toHaveBeenCalled()
 		})
 	})
+
+	describe("Background Command Execution", () => {
+		it("should run command in background when background=true", async () => {
+			// Mock the terminal process that doesn't require user interaction
+			const mockBackgroundProcess: any = Promise.resolve()
+			mockBackgroundProcess.continue = vitest.fn()
+
+			mockTerminal.runCommand.mockImplementation((command: string, callbacks: RooTerminalCallbacks) => {
+				// Simulate normal command execution
+				setTimeout(() => {
+					// First output triggers the background behavior
+					callbacks.onLine("Command running in background...", mockBackgroundProcess)
+				}, 50)
+
+				// Simulate completion after a delay (but we won't wait for it)
+				setTimeout(() => {
+					callbacks.onCompleted("Background command completed", mockBackgroundProcess)
+					callbacks.onShellExecutionComplete({ exitCode: 0 }, mockBackgroundProcess)
+				}, 200)
+
+				return mockBackgroundProcess
+			})
+
+			// Mock ask method to verify it's NOT called when background=true
+			mockTask.ask = vitest.fn()
+
+			const options: ExecuteCommandOptions = {
+				executionId: "test-123",
+				command: "npm run dev",
+				background: true,
+				terminalShellIntegrationDisabled: false,
+				terminalOutputLineLimit: 500,
+			}
+
+			// Execute
+			const [rejected, result] = await executeCommand(mockTask, options)
+
+			// Verify - when background=true, command returns immediately
+			expect(rejected).toBe(false)
+			// The output when background is true shows it's running in background
+			expect(result).toContain("Command is running in the background")
+			expect(result).toContain("will continue running without blocking")
+			// Verify that the ask method was NOT called (no user interaction)
+			expect(mockTask.ask).not.toHaveBeenCalled()
+			// Continue is called automatically when onLine is triggered
+			expect(mockBackgroundProcess.continue).toHaveBeenCalled()
+		})
+
+		it("should require user interaction when background=false (default)", async () => {
+			// Mock process that requires user interaction
+			const mockInteractiveProcess: any = Promise.resolve()
+			mockInteractiveProcess.continue = vitest.fn()
+
+			let hasCalledOnLine = false
+			let storedCallbacks: RooTerminalCallbacks
+
+			mockTerminal.runCommand.mockImplementation((command: string, callbacks: RooTerminalCallbacks) => {
+				storedCallbacks = callbacks
+
+				// Simulate output after a delay
+				setTimeout(() => {
+					if (!hasCalledOnLine) {
+						hasCalledOnLine = true
+						callbacks.onLine("Command output...", mockInteractiveProcess)
+					}
+				}, 0)
+
+				return mockInteractiveProcess
+			})
+
+			// Mock ask method to simulate user interaction
+			mockTask.ask = vitest.fn().mockImplementation(async () => {
+				// Complete the command after user provides feedback
+				setTimeout(() => {
+					if (storedCallbacks) {
+						storedCallbacks.onCompleted("Interactive command completed", mockInteractiveProcess)
+						storedCallbacks.onShellExecutionComplete({ exitCode: 0 }, mockInteractiveProcess)
+					}
+				}, 0)
+
+				// Return user feedback
+				return {
+					response: "messageResponse",
+					text: "continue",
+					images: undefined,
+				}
+			})
+
+			const options: ExecuteCommandOptions = {
+				executionId: "test-123",
+				command: "npm run dev",
+				background: false, // explicitly set to false
+				terminalShellIntegrationDisabled: false,
+				terminalOutputLineLimit: 500,
+			}
+
+			// Execute
+			const [rejected, result] = await executeCommand(mockTask, options)
+
+			// Verify
+			expect(rejected).toBe(true) // User provided feedback
+			expect(mockTask.ask).toHaveBeenCalledWith("command_output", "")
+			expect(mockInteractiveProcess.continue).toHaveBeenCalled()
+			expect(result).toContain("continue") // User feedback should be in result
+		})
+
+		it("should handle background=true with command timeout (should not timeout as it returns immediately)", async () => {
+			// Mock a long-running background process
+			let processResolve: any
+			const mockLongRunningProcess: any = new Promise((resolve) => {
+				processResolve = resolve
+			})
+			mockLongRunningProcess.continue = vitest.fn()
+			mockLongRunningProcess.abort = vitest.fn()
+
+			mockTerminal.runCommand.mockImplementation((command: string, callbacks: RooTerminalCallbacks) => {
+				// Simulate output after a delay
+				setTimeout(() => {
+					callbacks.onLine("Starting long-running process...", mockLongRunningProcess)
+				}, 50)
+				// Don't complete - simulate a long-running process
+				return mockLongRunningProcess
+			})
+
+			const options: ExecuteCommandOptions = {
+				executionId: "test-123",
+				command: "npm run dev",
+				background: true,
+				commandExecutionTimeout: 50, // 50ms timeout - but should not apply to background commands
+				terminalShellIntegrationDisabled: false,
+				terminalOutputLineLimit: 500,
+			}
+
+			// Execute
+			const [rejected, result] = await executeCommand(mockTask, options)
+
+			// Verify command returned immediately without timeout
+			expect(rejected).toBe(false)
+			expect(result).toContain("Command is running in the background")
+			// Should NOT be aborted as background commands don't wait for completion
+			expect(mockLongRunningProcess.abort).not.toHaveBeenCalled()
+
+			// Clean up
+			if (processResolve) processResolve()
+		})
+
+		it("should parse background parameter from string 'true'", async () => {
+			// This test verifies the string parsing in executeCommandTool.ts
+			// The actual parsing happens in executeCommandTool, not executeCommand
+			// So we just verify that background boolean is handled correctly
+
+			mockTerminal.runCommand.mockImplementation((command: string, callbacks: RooTerminalCallbacks) => {
+				setTimeout(() => {
+					callbacks.onLine("Background task output", mockProcess)
+				}, 50)
+				// The completion handlers won't be called before we return
+				setTimeout(() => {
+					callbacks.onCompleted("Done", mockProcess)
+					callbacks.onShellExecutionComplete({ exitCode: 0 }, mockProcess)
+				}, 200)
+				return mockProcess
+			})
+
+			const options: ExecuteCommandOptions = {
+				executionId: "test-123",
+				command: "echo test",
+				background: true, // This would be parsed from "true" string in executeCommandTool
+				terminalShellIntegrationDisabled: false,
+				terminalOutputLineLimit: 500,
+			}
+
+			// Execute
+			const [rejected, result] = await executeCommand(mockTask, options)
+
+			// Verify - background=true means command returns immediately
+			expect(rejected).toBe(false)
+			expect(result).toContain("Command is running in the background")
+			expect(result).toContain("will continue running without blocking")
+			// Process.continue is called when onLine is triggered
+			expect(mockProcess.continue).toHaveBeenCalled()
+		})
+	})
 })

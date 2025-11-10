@@ -52,6 +52,7 @@ export const toolParamNames = [
 	"mode",
 	"message",
 	"cwd",
+	"background",
 	"follow_up",
 	"task",
 	"size",
@@ -77,7 +78,7 @@ export interface ToolUse {
 export interface ExecuteCommandToolUse extends ToolUse {
 	name: "execute_command"
 	// Pick<Record<ToolParamName, string>, "command"> makes "command" required, but Partial<> makes it optional
-	params: Partial<Pick<Record<ToolParamName, string>, "command" | "cwd">>
+	params: Partial<Pick<Record<ToolParamName, string>, "command" | "cwd" | "background">>
 }
 
 export interface ReadFileToolUse extends ToolUse {

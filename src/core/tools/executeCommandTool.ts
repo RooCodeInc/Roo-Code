@@ -30,6 +30,7 @@ export async function executeCommandTool(
 ) {
 	let command: string | undefined = block.params.command
 	const customCwd: string | undefined = block.params.cwd
+	const background: string | undefined = block.params.background
 
 	try {
 		if (block.partial) {
@@ -86,10 +87,14 @@ export async function executeCommandTool(
 			// Convert seconds to milliseconds for internal use, but skip timeout if command is allowlisted
 			const commandExecutionTimeout = isCommandAllowlisted ? 0 : commandExecutionTimeoutSeconds * 1000
 
+			// Parse background parameter as boolean
+			const runInBackground = background?.toLowerCase() === "true"
+
 			const options: ExecuteCommandOptions = {
 				executionId,
 				command,
 				customCwd,
+				background: runInBackground,
 				terminalShellIntegrationDisabled,
 				terminalOutputLineLimit,
 				terminalOutputCharacterLimit,
@@ -137,6 +142,7 @@ export type ExecuteCommandOptions = {
 	executionId: string
 	command: string
 	customCwd?: string
+	background?: boolean
 	terminalShellIntegrationDisabled?: boolean
 	terminalOutputLineLimit?: number
 	terminalOutputCharacterLimit?: number
@@ -149,6 +155,7 @@ export async function executeCommand(
 		executionId,
 		command,
 		customCwd,
+		background = false,
 		terminalShellIntegrationDisabled = true,
 		terminalOutputLineLimit = 500,
 		terminalOutputCharacterLimit = DEFAULT_TERMINAL_OUTPUT_CHARACTER_LIMIT,
@@ -174,7 +181,7 @@ export async function executeCommand(
 	}
 
 	let message: { text?: string; images?: string[] } | undefined
-	let runInBackground = false
+	let runInBackground = background
 	let completed = false
 	let result: string = ""
 	let exitDetails: ExitCodeDetails | undefined
@@ -196,6 +203,8 @@ export async function executeCommand(
 			provider?.postMessageToWebview({ type: "commandExecutionStatus", text: JSON.stringify(status) })
 
 			if (runInBackground) {
+				// When running in background, automatically continue without user interaction
+				process.continue()
 				return
 			}
 
@@ -251,6 +260,21 @@ export async function executeCommand(
 
 	const process = terminal.runCommand(command, callbacks)
 	task.terminalProcess = process
+
+	// If background=true, return immediately without waiting for process to complete
+	if (background) {
+		// Give a brief moment for initial output to be captured
+		await delay(100)
+
+		return [
+			false,
+			[
+				`Command is running in the background in terminal from '${terminal.getCurrentWorkingDirectory().toPosix()}'.`,
+				result && result.length > 0 ? `Initial output:\n${result}\n` : "",
+				"The command will continue running without blocking. You will be updated on the terminal status and new output in the future.",
+			].join("\n"),
+		]
+	}
 
 	// Implement command execution timeout (skip if timeout is 0).
 	if (commandExecutionTimeout > 0) {
@@ -316,7 +340,7 @@ export async function executeCommand(
 			formatResponse.toolResult(
 				[
 					`Command is still running in terminal from '${terminal.getCurrentWorkingDirectory().toPosix()}'.`,
-					result.length > 0 ? `Here's the output so far:\n${result}\n` : "\n",
+					result && result.length > 0 ? `Here's the output so far:\n${result}\n` : "\n",
 					`The user provided the following feedback:`,
 					`<feedback>\n${text}\n</feedback>`,
 				].join("\n"),
@@ -356,7 +380,7 @@ export async function executeCommand(
 			false,
 			[
 				`Command is still running in terminal ${workingDir ? ` from '${workingDir.toPosix()}'` : ""}.`,
-				result.length > 0 ? `Here's the output so far:\n${result}\n` : "\n",
+				result && result.length > 0 ? `Here's the output so far:\n${result}\n` : "\n",
 				"You will be updated on the terminal status and new output in the future.",
 			].join("\n"),
 		]
