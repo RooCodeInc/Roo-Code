@@ -905,7 +905,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				} else {
 					// For other ask types (like followup or command_output), fulfill the ask
 					// directly.
-					this.setMessageResponse(message.text, message.images)
+					this.handleWebviewAskResponse("messageResponse", message.text, message.images)
 				}
 			}
 		}
@@ -939,10 +939,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		this.emit(RooCodeEventName.TaskAskResponded)
 		return result
-	}
-
-	public setMessageResponse(text: string, images?: string[]) {
-		this.handleWebviewAskResponse("messageResponse", text, images)
 	}
 
 	handleWebviewAskResponse(askResponse: ClineAskResponse, text?: string, images?: string[]) {
