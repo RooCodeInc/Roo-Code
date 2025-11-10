@@ -5,6 +5,7 @@ import { McpHub } from "../../../services/mcp/McpHub"
 import { Mode, getModeConfig, isToolAllowedForMode, getGroupName } from "../../../shared/modes"
 
 import { ToolArgs } from "./types"
+import { getToolSelectionAnalyzer, type SmartToolSelectionConfig } from "./ToolSelectionAnalyzer"
 import { getExecuteCommandDescription } from "./execute-command"
 import { getReadFileDescription } from "./read-file"
 import { getSimpleReadFileDescription } from "./simple-read-file"
@@ -74,6 +75,7 @@ export function getToolDescriptionsForMode(
 	settings?: Record<string, any>,
 	enableMcpServerCreation?: boolean,
 	modelId?: string,
+	userQuery?: string,
 ): string {
 	const config = getModeConfig(mode, customModes)
 	const args: ToolArgs = {
@@ -141,8 +143,24 @@ export function getToolDescriptionsForMode(
 		tools.delete("run_slash_command")
 	}
 
-	// Map tool descriptions for allowed tools
-	const descriptions = Array.from(tools).map((toolName) => {
+	// Apply smart tool selection if enabled and query is provided
+	let selectedTools = Array.from(tools)
+
+	if (userQuery && settings?.smartToolSelection !== false) {
+		const smartSelectionConfig: SmartToolSelectionConfig = {
+			enabled: settings?.smartToolSelection?.enabled ?? true,
+			minTools: settings?.smartToolSelection?.minTools ?? 6,
+			maxTools: settings?.smartToolSelection?.maxTools ?? 12,
+			defaultComplexityThreshold: settings?.smartToolSelection?.threshold ?? 0.7,
+		}
+
+		const analyzer = getToolSelectionAnalyzer(smartSelectionConfig)
+		const modeConfig = getModeConfig(mode, customModes)
+		selectedTools = analyzer.selectTools(userQuery, modeConfig, tools as Set<ToolName>, customModes)
+	}
+
+	// Map tool descriptions for selected tools
+	const descriptions = selectedTools.map((toolName) => {
 		const descriptionFn = toolDescriptionMap[toolName]
 		if (!descriptionFn) {
 			return undefined

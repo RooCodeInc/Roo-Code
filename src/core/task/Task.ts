@@ -2560,6 +2560,31 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			apiConfiguration,
 		} = state ?? {}
 
+		// Extract the most recent user query from the conversation history
+		let userQuery: string | undefined
+		if (this.apiConversationHistory.length > 0) {
+			// Find the last user message in the conversation
+			const lastUserMessage = [...this.apiConversationHistory].reverse().find((msg) => msg.role === "user")
+
+			if (lastUserMessage && Array.isArray(lastUserMessage.content)) {
+				// Extract text content from the user message
+				const textContents = lastUserMessage.content
+					.filter((block) => block.type === "text")
+					.map((block) => (block as any).text || "")
+
+				// Combine all text content to form the query
+				if (textContents.length > 0) {
+					userQuery = textContents.join(" ").trim()
+					// Remove task tags if present
+					userQuery = userQuery.replace(/<\/?task>/g, "").trim()
+					// Limit length to prevent overly long queries
+					if (userQuery.length > 500) {
+						userQuery = userQuery.substring(0, 500) + "..."
+					}
+				}
+			}
+		}
+
 		return await (async () => {
 			const provider = this.providerRef.deref()
 
@@ -2602,9 +2627,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					newTaskRequireTodos: vscode.workspace
 						.getConfiguration("roo-cline")
 						.get<boolean>("newTaskRequireTodos", false),
+					// Smart tool selection configuration
+					smartToolSelectionEnabled: apiConfiguration?.smartToolSelectionEnabled ?? true,
+					smartToolSelectionMinTools: apiConfiguration?.smartToolSelectionMinTools ?? 6,
+					smartToolSelectionMaxTools: apiConfiguration?.smartToolSelectionMaxTools ?? 12,
 				},
 				undefined, // todoList
 				this.api.getModel().id,
+				userQuery, // Pass the extracted user query for smart tool selection
 			)
 		})()
 	}

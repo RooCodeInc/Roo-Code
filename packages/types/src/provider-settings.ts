@@ -182,6 +182,11 @@ const baseProviderSettingsSchema = z.object({
 
 	// Model verbosity.
 	verbosity: verbosityLevelsSchema.optional(),
+
+	// Smart tool selection.
+	smartToolSelectionEnabled: z.boolean().optional(),
+	smartToolSelectionMinTools: z.number().min(1).max(20).optional(),
+	smartToolSelectionMaxTools: z.number().min(1).max(20).optional(),
 })
 
 // Several of the providers share common model config properties.

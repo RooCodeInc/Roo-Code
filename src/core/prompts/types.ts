@@ -6,4 +6,8 @@ export interface SystemPromptSettings {
 	todoListEnabled: boolean
 	useAgentRules: boolean
 	newTaskRequireTodos: boolean
+	// Smart tool selection settings
+	smartToolSelectionEnabled?: boolean
+	smartToolSelectionMinTools?: number
+	smartToolSelectionMaxTools?: number
 }
