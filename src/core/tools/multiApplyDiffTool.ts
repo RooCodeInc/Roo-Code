@@ -192,11 +192,7 @@ Original error: ${errorMessage}`
 		// Neither new XML args nor old path/diff params are sufficient
 		cline.consecutiveMistakeCount++
 		cline.recordToolError("apply_diff")
-		const errorMsg = await cline.sayAndCreateMissingParamError(
-			"apply_diff",
-			"args (or legacy 'path' and 'diff' parameters)",
-		)
-		pushToolResult(errorMsg)
+		pushToolResult(formatResponse.applyDiffMissingParamError(false))
 		cline.processQueuedMessages()
 		return
 	}
@@ -205,14 +201,7 @@ Original error: ${errorMessage}`
 	if (Object.keys(operationsMap).length === 0) {
 		cline.consecutiveMistakeCount++
 		cline.recordToolError("apply_diff")
-		pushToolResult(
-			await cline.sayAndCreateMissingParamError(
-				"apply_diff",
-				usingLegacyParams
-					? "legacy 'path' and 'diff' (must be valid and non-empty)"
-					: "args (must contain at least one valid file element)",
-			),
-		)
+		pushToolResult(formatResponse.applyDiffMissingParamError(usingLegacyParams))
 		cline.processQueuedMessages()
 		return
 	}

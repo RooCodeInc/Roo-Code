@@ -36,6 +36,64 @@ Otherwise, if you have not completed the task and do not need additional informa
 	missingToolParameterError: (paramName: string) =>
 		`Missing value for required parameter '${paramName}'. Please retry with complete response.\n\n${toolUseInstructionsReminder}`,
 
+	applyDiffMissingParamError: (isLegacyMode: boolean) => {
+		const errorType = isLegacyMode
+			? "legacy 'path' and 'diff' (must be valid and non-empty)"
+			: "args (must contain at least one valid file element)"
+
+		const example = isLegacyMode
+			? `# Example for apply_diff (legacy mode):
+
+<apply_diff>
+<path>src/example.js</path>
+<diff>
+<<<<<<< SEARCH
+:start_line:10
+-------
+const oldFunction = () => {
+    return "old value";
+};
+=======
+const newFunction = () => {
+    return "new value";
+};
+>>>>>>> REPLACE
+</diff>
+</apply_diff>`
+			: `# Example for apply_diff:
+
+<apply_diff>
+<args>
+  <file>
+    <path>src/example.js</path>
+    <diff>
+      <content>
+<<<<<<< SEARCH
+:start_line:10
+-------
+const oldFunction = () => {
+    return "old value";
+};
+=======
+const newFunction = () => {
+    return "new value";
+};
+>>>>>>> REPLACE
+      </content>
+      <start_line>10</start_line>
+    </diff>
+  </file>
+</args>
+</apply_diff>`
+
+		return `Missing value for required parameter '${errorType}'. Please retry with complete response.
+
+${example}
+
+Note: The search content must match the file content EXACTLY, including whitespace and indentation.
+Use the read_file tool first if you need to verify the current file content.`
+	},
+
 	lineCountTruncationError: (actualLineCount: number, isNewFile: boolean, diffStrategyEnabled: boolean = false) => {
 		const truncationMessage = `Note: Your response may have been truncated because it exceeded your output limit. You wrote ${actualLineCount} lines of content, but the line_count parameter was either missing or not included in your response.`
 
