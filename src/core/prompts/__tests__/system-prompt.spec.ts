@@ -789,9 +789,10 @@ describe("SYSTEM_PROMPT", () => {
 		expect(prompt).not.toContain("<actual_tool_name>")
 		expect(prompt).not.toContain("</actual_tool_name>")
 
-		// Should contain Tool Use Guidelines section with native wording
+		// Should contain Tool Use Guidelines section without format-specific guidance
 		expect(prompt).toContain("Tool Use Guidelines")
-		expect(prompt).toContain("provider's native tool-calling mechanism")
+		// Should NOT contain any protocol-specific formatting instructions
+		expect(prompt).not.toContain("provider's native tool-calling mechanism")
 		expect(prompt).not.toContain("XML format specified for each tool")
 
 		// Should NOT contain # Tools catalog at all in native mode

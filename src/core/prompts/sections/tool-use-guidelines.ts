@@ -40,12 +40,8 @@ export function getToolUseGuidelinesSection(
 		`${itemNumber++}. If multiple actions are needed, use one tool at a time per message to accomplish the task iteratively, with each tool use being informed by the result of the previous tool use. Do not assume the outcome of any tool use. Each step must be informed by the previous step's result.`,
 	)
 
-	// Protocol-specific guideline
-	if (isNativeProtocol(protocol)) {
-		guidelinesList.push(
-			`${itemNumber++}. Formulate your tool call using the provider's native tool-calling mechanism.`,
-		)
-	} else {
+	// Protocol-specific guideline - only add for XML protocol
+	if (!isNativeProtocol(protocol)) {
 		guidelinesList.push(`${itemNumber++}. Formulate your tool use using the XML format specified for each tool.`)
 	}
 	guidelinesList.push(`${itemNumber++}. After each tool use, the user will respond with the result of that tool use. This result will provide you with the necessary information to continue your task or make further decisions. This response may include:
