@@ -20,6 +20,8 @@ import updateTodoList from "./update_todo_list"
 import writeToFile from "./write_to_file"
 import { apply_diff_single_file, apply_diff_multi_file } from "./apply_diff"
 
+export { getMcpServerTools } from "./mcp_server"
+
 export const nativeTools = [
 	apply_diff_single_file,
 	apply_diff_multi_file,
