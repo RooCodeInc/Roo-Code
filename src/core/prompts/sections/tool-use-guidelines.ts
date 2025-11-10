@@ -1,9 +1,10 @@
-import { ToolProtocol } from "@roo-code/types"
+import { ToolProtocol, TOOL_PROTOCOL } from "@roo-code/types"
 import { CodeIndexManager } from "../../../services/code-index/manager"
+import { isNativeProtocol } from "../toolProtocolResolver"
 
 export function getToolUseGuidelinesSection(
 	codeIndexManager?: CodeIndexManager,
-	protocol: ToolProtocol = "xml",
+	protocol: ToolProtocol = TOOL_PROTOCOL.XML,
 ): string {
 	const isCodebaseSearchAvailable =
 		codeIndexManager &&
@@ -40,7 +41,7 @@ export function getToolUseGuidelinesSection(
 	)
 
 	// Protocol-specific guideline
-	if (protocol === "native") {
+	if (isNativeProtocol(protocol)) {
 		guidelinesList.push(
 			`${itemNumber++}. Formulate your tool call using the provider's native tool-calling mechanism.`,
 		)

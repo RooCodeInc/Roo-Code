@@ -6,6 +6,7 @@ import { Dirent } from "fs"
 import { isLanguage } from "@roo-code/types"
 
 import type { SystemPromptSettings } from "../types"
+import { getEffectiveProtocol, isNativeProtocol } from "../toolProtocolResolver"
 
 import { LANGUAGES } from "../../../shared/language"
 import { getRooDirectoriesForCwd, getGlobalRooDirectory } from "../../../services/roo-config"
@@ -368,9 +369,7 @@ export async function addCustomInstructions(
 
 	const joinedSections = sections.join("\n\n")
 
-	const effectiveProtocol = options.settings?.toolProtocol || "xml"
-
-	const skipXmlReferences = effectiveProtocol === "native"
+	const effectiveProtocol = getEffectiveProtocol(options.settings)
 
 	return joinedSections
 		? `
@@ -379,7 +378,7 @@ export async function addCustomInstructions(
 USER'S CUSTOM INSTRUCTIONS
 
 The following additional instructions are provided by the user, and should be followed to the best of your ability${
-				skipXmlReferences ? "." : " without interfering with the TOOL USE guidelines."
+				isNativeProtocol(effectiveProtocol) ? "." : " without interfering with the TOOL USE guidelines."
 			}
 
 ${joinedSections}

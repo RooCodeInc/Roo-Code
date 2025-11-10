@@ -3,7 +3,7 @@ import * as path from "path"
 import * as diff from "diff"
 import { RooIgnoreController, LOCK_TEXT_SYMBOL } from "../ignore/RooIgnoreController"
 import { RooProtectedController } from "../protect/RooProtectedController"
-import { resolveToolProtocol } from "./toolProtocolResolver"
+import { resolveToolProtocol, isNativeProtocol } from "./toolProtocolResolver"
 import { ToolProtocol } from "@roo-code/types"
 
 export const formatResponse = {
@@ -21,9 +21,7 @@ export const formatResponse = {
 		`Access to ${path} is blocked by the .rooignore file settings. You must try to continue in the task without using this file, or ask the user to update the .rooignore file.`,
 
 	noToolsUsed: (protocol?: ToolProtocol) => {
-		const effectiveProtocol = protocol ?? resolveToolProtocol()
-		const instructions =
-			effectiveProtocol === "native" ? toolUseInstructionsReminderNative : toolUseInstructionsReminder
+		const instructions = getToolInstructionsReminder(protocol)
 
 		return `[ERROR] You did not use a tool in your previous response! Please retry with a tool use.
 
@@ -41,9 +39,7 @@ Otherwise, if you have not completed the task and do not need additional informa
 		`You seem to be having trouble proceeding. The user has provided the following feedback to help guide you:\n<feedback>\n${feedback}\n</feedback>`,
 
 	missingToolParameterError: (paramName: string, protocol?: ToolProtocol) => {
-		const effectiveProtocol = protocol ?? resolveToolProtocol()
-		const instructions =
-			effectiveProtocol === "native" ? toolUseInstructionsReminderNative : toolUseInstructionsReminder
+		const instructions = getToolInstructionsReminder(protocol)
 
 		return `Missing value for required parameter '${paramName}'. Please retry with complete response.\n\n${instructions}`
 	},
@@ -82,9 +78,7 @@ Otherwise, if you have not completed the task and do not need additional informa
 			`RECOMMENDED APPROACH:\n` +
 			`${existingFileApproaches.join("\n")}\n`
 
-		const effectiveProtocol = protocol ?? resolveToolProtocol()
-		const instructions =
-			effectiveProtocol === "native" ? toolUseInstructionsReminderNative : toolUseInstructionsReminder
+		const instructions = getToolInstructionsReminder(protocol)
 
 		return `${isNewFile ? newFileGuidance : existingFileGuidance}\n${instructions}`
 	},
@@ -247,3 +241,14 @@ const toolUseInstructionsReminderNative = `# Reminder: Instructions for Tool Use
 Tools are invoked using the platform's native tool calling mechanism. Each tool requires specific parameters as defined in the tool descriptions. Refer to the tool definitions provided in your system instructions for the correct parameter structure and usage examples.
 
 Always ensure you provide all required parameters for the tool you wish to use.`
+
+/**
+ * Gets the appropriate tool use instructions reminder based on the protocol.
+ *
+ * @param protocol - Optional tool protocol, falls back to default if not provided
+ * @returns The tool use instructions reminder text
+ */
+function getToolInstructionsReminder(protocol?: ToolProtocol): string {
+	const effectiveProtocol = protocol ?? resolveToolProtocol()
+	return isNativeProtocol(effectiveProtocol) ? toolUseInstructionsReminderNative : toolUseInstructionsReminder
+}

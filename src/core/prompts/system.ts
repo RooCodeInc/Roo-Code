@@ -16,6 +16,7 @@ import { CodeIndexManager } from "../../services/code-index/manager"
 import { PromptVariables, loadSystemPromptFile } from "./sections/custom-system-prompt"
 
 import { getToolDescriptionsForMode } from "./tools"
+import { getEffectiveProtocol, isNativeProtocol } from "./toolProtocolResolver"
 import {
 	getRulesSection,
 	getSystemInfoSection,
@@ -28,6 +29,7 @@ import {
 	addCustomInstructions,
 	markdownFormattingSection,
 } from "./sections"
+import { TOOL_PROTOCOL } from "@roo-code/types"
 
 // Helper function to get prompt component, filtering out empty objects
 export function getPromptComponent(
@@ -89,27 +91,26 @@ async function generatePrompt(
 	const codeIndexManager = CodeIndexManager.getInstance(context, cwd)
 
 	// Determine the effective protocol (defaults to 'xml')
-	const effectiveProtocol = settings?.toolProtocol || "xml"
+	const effectiveProtocol = getEffectiveProtocol(settings)
 
 	// Build tools catalog section only for XML protocol
-	const toolsCatalog =
-		effectiveProtocol === "xml"
-			? `\n\n${getToolDescriptionsForMode(
-					mode,
-					cwd,
-					supportsComputerUse,
-					codeIndexManager,
-					effectiveDiffStrategy,
-					browserViewportSize,
-					shouldIncludeMcp ? mcpHub : undefined,
-					customModeConfigs,
-					experiments,
-					partialReadsEnabled,
-					settings,
-					enableMcpServerCreation,
-					modelId,
-				)}`
-			: ""
+	const toolsCatalog = isNativeProtocol(effectiveProtocol)
+		? ""
+		: `\n\n${getToolDescriptionsForMode(
+				mode,
+				cwd,
+				supportsComputerUse,
+				codeIndexManager,
+				effectiveDiffStrategy,
+				browserViewportSize,
+				shouldIncludeMcp ? mcpHub : undefined,
+				customModeConfigs,
+				experiments,
+				partialReadsEnabled,
+				settings,
+				enableMcpServerCreation,
+				modelId,
+			)}`
 
 	const basePrompt = `${roleDefinition}
 
