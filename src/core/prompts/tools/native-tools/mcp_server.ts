@@ -25,23 +25,6 @@ export function getMcpServerTools(mcpHub?: McpHub): OpenAI.Chat.ChatCompletionTo
 				continue
 			}
 
-			// Ensure parameters is a valid FunctionParameters object, even if inputSchema is undefined
-			const parameters = {
-				type: "object",
-				properties: {
-					server_name: {
-						type: "string",
-						const: server.name,
-					},
-					tool_name: {
-						type: "string",
-						const: tool.name,
-					},
-				},
-				required: ["server_name", "tool_name", "toolInputProps"],
-				additionalProperties: false,
-			} as OpenAI.FunctionParameters
-
 			const originalSchema = tool.inputSchema as Record<string, any> | undefined
 			const toolInputPropsRaw = originalSchema?.properties ?? {}
 			const toolInputRequired = (originalSchema?.required ?? []) as string[]
@@ -79,12 +62,23 @@ export function getMcpServerTools(mcpHub?: McpHub): OpenAI.Chat.ChatCompletionTo
 				toolInputPropsSchema.required = sanitizedRequired
 			}
 
-			parameters.properties = {
-				toolInputProps: toolInputPropsSchema,
-				...(parameters.properties as Record<string, any>), //putting this second ensures it overrides anything in the tool def.
-			}
-
-			//Add the server_name and tool_name properties
+			// Build parameters with all properties defined before adding required array
+			const parameters = {
+				type: "object",
+				properties: {
+					toolInputProps: toolInputPropsSchema,
+					server_name: {
+						type: "string",
+						const: server.name,
+					},
+					tool_name: {
+						type: "string",
+						const: tool.name,
+					},
+				},
+				required: ["server_name", "tool_name", "toolInputProps"],
+				additionalProperties: false,
+			} as OpenAI.FunctionParameters
 
 			// The description matches what the MCP server provides as guidance.
 			// Use triple underscores as separator to allow underscores in tool names
