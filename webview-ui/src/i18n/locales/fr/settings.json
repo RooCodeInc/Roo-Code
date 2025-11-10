@@ -900,7 +900,11 @@
 	"ui": {
 		"collapseThinking": {
 			"label": "Réduire les messages de réflexion par défaut",
-			"description": "Si activé, les blocs de réflexion seront réduits par défaut jusqu'à ce que vous interagissiez avec eux"
+			"description": "Lorsque cette option est activée, les blocs de réflexion seront réduits par défaut jusqu'à ce que vous interagissiez avec eux"
+		},
+		"requireCtrlEnterToSend": {
+			"label": "Requiert {primaryMod}+Entrée pour envoyer des messages",
+			"description": "Lorsqu'activé, vous devez appuyer sur {primaryMod}+Entrée pour envoyer des messages au lieu de simplement Entrée"
 		}
 	}
 }

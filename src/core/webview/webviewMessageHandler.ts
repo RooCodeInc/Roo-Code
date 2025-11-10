@@ -1684,6 +1684,10 @@ export const webviewMessageHandler = async (
 			await updateGlobalState("reasoningBlockCollapsed", message.bool ?? true)
 			// No need to call postStateToWebview here as the UI already updated optimistically
 			break
+		case "requireCtrlEnterToSend":
+			await updateGlobalState("requireCtrlEnterToSend", message.bool)
+			// No need to call postStateToWebview here as the UI already updated optimistically
+			break
 		case "toggleApiConfigPin":
 			if (message.text) {
 				const currentPinned = getGlobalState("pinnedApiConfigs") ?? {}

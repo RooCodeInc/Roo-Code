@@ -11,6 +11,7 @@ import { ExtensionMessage } from "@roo/ExtensionMessage"
 import { vscode } from "@src/utils/vscode"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
 import { useAppTranslation } from "@src/i18n/TranslationContext"
+import { getSendMessageKeyCombination } from "@src/utils/platform"
 import {
 	ContextMenuOptionType,
 	getContextMenuOptions,
@@ -89,6 +90,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			clineMessages,
 			commands,
 			cloudUserInfo,
+			requireCtrlEnterToSend,
 		} = useExtensionState()
 
 		// Find the ID and display text for the currently selected API configuration.
@@ -468,6 +470,11 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				}
 
 				if (event.key === "Enter" && !event.shiftKey && !isComposing) {
+					// If Ctrl+Enter is required but neither Ctrl nor Meta (Cmd) key is pressed, don't send
+					if (requireCtrlEnterToSend && !event.ctrlKey && !event.metaKey) {
+						return
+					}
+
 					event.preventDefault()
 
 					// Always call onSend - let ChatView handle queueing when disabled
@@ -536,6 +543,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				handleHistoryNavigation,
 				resetHistoryNavigation,
 				commands,
+				requireCtrlEnterToSend,
 			],
 		)
 
@@ -995,11 +1003,8 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 									"font-vscode-font-family",
 									"text-vscode-editor-font-size",
 									"leading-vscode-editor-line-height",
-									isFocused
-										? "border border-vscode-focusBorder outline outline-vscode-focusBorder"
-										: isDraggingOver
-											? "border-2 border-dashed border-vscode-focusBorder"
-											: "border border-transparent",
+									"border-none",
+									"outline-none",
 									"pl-2",
 									"py-2",
 									isEditMode ? "pr-20" : "pr-9",
@@ -1154,7 +1159,13 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 										</button>
 									</StandardTooltip>
 								)}
-								<StandardTooltip content={t("chat:sendMessage")}>
+								<StandardTooltip
+									content={
+										requireCtrlEnterToSend
+											? t("chat:sendMessage") +
+												` (${t("chat:pressToSend", { keyCombination: getSendMessageKeyCombination() })})`
+											: t("chat:sendMessage")
+									}>
 									<button
 										aria-label={t("chat:sendMessage")}
 										disabled={false}

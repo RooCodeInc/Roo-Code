@@ -1,5 +1,6 @@
 import { HTMLAttributes } from "react"
 import { useAppTranslation } from "@/i18n/TranslationContext"
+import { getPrimaryModifierKey } from "@/utils/platform"
 import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
 import { Glasses } from "lucide-react"
 import { telemetryClient } from "@/utils/TelemetryClient"
@@ -11,10 +12,16 @@ import { ExtensionStateContextType } from "@/context/ExtensionStateContext"
 
 interface UISettingsProps extends HTMLAttributes<HTMLDivElement> {
 	reasoningBlockCollapsed: boolean
+	requireCtrlEnterToSend?: boolean
 	setCachedStateField: SetCachedStateField<keyof ExtensionStateContextType>
 }
 
-export const UISettings = ({ reasoningBlockCollapsed, setCachedStateField, ...props }: UISettingsProps) => {
+export const UISettings = ({
+	reasoningBlockCollapsed,
+	requireCtrlEnterToSend,
+	setCachedStateField,
+	...props
+}: UISettingsProps) => {
 	const { t } = useAppTranslation()
 
 	const handleReasoningBlockCollapsedChange = (value: boolean) => {
@@ -22,6 +29,15 @@ export const UISettings = ({ reasoningBlockCollapsed, setCachedStateField, ...pr
 
 		// Track telemetry event
 		telemetryClient.capture("ui_settings_collapse_thinking_changed", {
+			enabled: value,
+		})
+	}
+
+	const handleRequireCtrlEnterToSendChange = (value: boolean) => {
+		setCachedStateField("requireCtrlEnterToSend", value)
+
+		// Track telemetry event
+		telemetryClient.capture("ui_settings_ctrl_enter_changed", {
 			enabled: value,
 		})
 	}
@@ -47,6 +63,27 @@ export const UISettings = ({ reasoningBlockCollapsed, setCachedStateField, ...pr
 						</VSCodeCheckbox>
 						<div className="text-vscode-descriptionForeground text-sm ml-5 mt-1">
 							{t("settings:ui.collapseThinking.description")}
+						</div>
+					</div>
+
+					{/* Require Ctrl+Enter to Send Setting */}
+					<div className="flex flex-col gap-1">
+						<VSCodeCheckbox
+							checked={requireCtrlEnterToSend ?? false}
+							onChange={(e: any) => handleRequireCtrlEnterToSendChange(e.target.checked)}
+							data-testid="ctrl-enter-checkbox">
+							<span className="font-medium">
+								{t("settings:ui.requireCtrlEnterToSend.label", {
+									primaryMod: getPrimaryModifierKey(),
+									interpolation: { prefix: "{", suffix: "}" },
+								})}
+							</span>
+						</VSCodeCheckbox>
+						<div className="text-vscode-descriptionForeground text-sm ml-5 mt-1">
+							{t("settings:ui.requireCtrlEnterToSend.description", {
+								primaryMod: getPrimaryModifierKey(),
+								interpolation: { prefix: "{", suffix: "}" },
+							})}
 						</div>
 					</div>
 				</div>
