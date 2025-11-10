@@ -33,7 +33,6 @@ import {
 	isIdleAsk,
 	isInteractiveAsk,
 	isResumableAsk,
-	isNonBlockingAsk,
 	QueuedMessage,
 	DEFAULT_CONSECUTIVE_MISTAKE_LIMIT,
 	DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
@@ -828,12 +827,21 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			await this.addToClineMessages({ ts: askTs, type: "ask", ask: type, text, isProtected })
 		}
 
+		// Automatically approve if the ask according to the user's settings.
+		const provider = this.providerRef.deref()
+		const state = provider ? await provider.getState() : undefined
+		const isApproved = state ? await isAutoApproved({ state, ask: type, text, isProtected }) : false
+
+		if (isApproved) {
+			this.approveAsk()
+		}
+
 		// The state is mutable if the message is complete and the task will
 		// block (via the `pWaitFor`).
 		const isBlocking = !(this.askResponse !== undefined || this.lastMessageTs !== askTs)
 		const isMessageQueued = !this.messageQueueService.isEmpty()
-		// Non-blocking asks should not mutate task status since they don't actually block execution
-		const isStatusMutable = !partial && isBlocking && !isMessageQueued && !isNonBlockingAsk(type)
+
+		const isStatusMutable = !partial && isBlocking && !isMessageQueued && !isApproved
 		let statusMutationTimeouts: NodeJS.Timeout[] = []
 		const statusMutationTimeout = 5_000
 
@@ -900,14 +908,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					this.setMessageResponse(message.text, message.images)
 				}
 			}
-		}
-
-		const provider = this.providerRef.deref()
-		const state = provider ? await provider.getState() : undefined
-		const isApproved = state ? await isAutoApproved({ state, ask: type, text, isProtected }) : false
-
-		if (isApproved) {
-			this.approveAsk()
 		}
 
 		// Wait for askResponse to be set.
