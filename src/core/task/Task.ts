@@ -34,6 +34,7 @@ import {
 	isIdleAsk,
 	isInteractiveAsk,
 	isResumableAsk,
+	isNonBlockingAsk,
 	QueuedMessage,
 	DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
 	MAX_CHECKPOINT_TIMEOUT_SECONDS,
@@ -821,13 +822,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// block (via the `pWaitFor`).
 		const isBlocking = !(this.askResponse !== undefined || this.lastMessageTs !== askTs)
 		const isMessageQueued = !this.messageQueueService.isEmpty()
-		const isStatusMutable = !partial && isBlocking && !isMessageQueued
+		// Non-blocking asks should not mutate task status since they don't actually block execution
+		const isStatusMutable = !partial && isBlocking && !isMessageQueued && !isNonBlockingAsk(type)
 		let statusMutationTimeouts: NodeJS.Timeout[] = []
 		const statusMutationTimeout = 5_000
 
 		if (isStatusMutable) {
-			console.log(`Task#ask will block -> type: ${type}`)
-
 			if (isInteractiveAsk(type)) {
 				statusMutationTimeouts.push(
 					setTimeout(() => {
@@ -879,14 +879,21 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// the message if there's text/images.
 					this.handleWebviewAskResponse("yesButtonClicked", message.text, message.images)
 				} else {
-					// For other ask types (like followup), fulfill the ask
+					// For other ask types (like followup or command_output), fulfill the ask
 					// directly.
 					this.setMessageResponse(message.text, message.images)
 				}
 			}
 		}
 
-		// Wait for askResponse to be set.
+		// Non-blocking asks return immediately without waiting
+		// The ask message is created in the UI, but the task doesn't wait for a response
+		// This prevents blocking in cloud/headless environments
+		if (isNonBlockingAsk(type)) {
+			return { response: "yesButtonClicked" as ClineAskResponse, text: undefined, images: undefined }
+		}
+
+		// Wait for askResponse to be set
 		await pWaitFor(() => this.askResponse !== undefined || this.lastMessageTs !== askTs, { interval: 100 })
 
 		if (this.lastMessageTs !== askTs) {
