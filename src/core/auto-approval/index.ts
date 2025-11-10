@@ -60,7 +60,7 @@ export async function isAutoApproved({
 			const mcpServerUse = JSON.parse(text) as McpServerUse
 
 			if (mcpServerUse.type === "use_mcp_tool") {
-				return state.alwaysAllowMcp === true && isMcpToolAlwaysAllowed(text, state.mcpServers)
+				return state.alwaysAllowMcp === true && isMcpToolAlwaysAllowed(mcpServerUse, state.mcpServers)
 			} else if (mcpServerUse.type === "access_mcp_resource") {
 				return state.alwaysAllowMcp === true
 			}

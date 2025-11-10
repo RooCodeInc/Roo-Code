@@ -1,8 +1,7 @@
 import { GlobalState, ClineMessage } from "@roo-code/types"
 
-import { AutoApprovalHandler } from "../../auto-approval/AutoApprovalHandler"
+import { AutoApprovalHandler } from "../AutoApprovalHandler"
 
-// Mock getApiMetrics
 vi.mock("../../../shared/getApiMetrics", () => ({
 	getApiMetrics: vi.fn(),
 }))
