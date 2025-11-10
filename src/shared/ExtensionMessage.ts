@@ -383,6 +383,7 @@ export interface ClineSayTool {
 		| "generateImage"
 		| "imageGenerated"
 		| "runSlashCommand"
+		| "updateTodoList"
 	path?: string
 	diff?: string
 	content?: string

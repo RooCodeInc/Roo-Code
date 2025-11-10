@@ -28,13 +28,13 @@ import {
 	TelemetryEventName,
 	TaskStatus,
 	TodoItem,
-	DEFAULT_CONSECUTIVE_MISTAKE_LIMIT,
 	getApiProtocol,
 	getModelId,
 	isIdleAsk,
 	isInteractiveAsk,
 	isResumableAsk,
 	QueuedMessage,
+	DEFAULT_CONSECUTIVE_MISTAKE_LIMIT,
 	DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
 	MAX_CHECKPOINT_TIMEOUT_SECONDS,
 	MIN_CHECKPOINT_TIMEOUT_SECONDS,
@@ -69,7 +69,7 @@ import { RepoPerTaskCheckpointService } from "../../services/checkpoints"
 
 // integrations
 import { DiffViewProvider } from "../../integrations/editor/DiffViewProvider"
-import { findToolName, formatContentBlockToMarkdown } from "../../integrations/misc/export-markdown"
+import { findToolName } from "../../integrations/misc/export-markdown"
 import { RooTerminalProcess } from "../../integrations/terminal/types"
 import { TerminalRegistry } from "../../integrations/terminal/TerminalRegistry"
 
@@ -115,8 +115,7 @@ import { processUserContentMentions } from "../mentions/processUserContentMentio
 import { getMessagesSinceLastSummary, summarizeConversation } from "../condense"
 import { Gpt5Metadata, ClineMessageWithMetadata } from "./types"
 import { MessageQueueService } from "../message-queue/MessageQueueService"
-
-import { AutoApprovalHandler } from "./AutoApprovalHandler"
+import { AutoApprovalHandler, isAutoApproved } from "../auto-approval"
 
 const MAX_EXPONENTIAL_BACKOFF_SECONDS = 600 // 10 minutes
 const DEFAULT_USAGE_COLLECTION_TIMEOUT_MS = 5000 // 5 seconds
@@ -729,6 +728,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		progressStatus?: ToolProgressStatus,
 		isProtected?: boolean,
 	): Promise<{ response: ClineAskResponse; text?: string; images?: string[] }> {
+		console.log(
+			`Task#ask: type -> ${type} (text = ${text}, partial = ${partial}, progressStatus = ${progressStatus}, isProtected = ${isProtected})`,
+		)
+
 		// If this Cline instance was aborted by the provider, then the only
 		// thing keeping us alive is a promise still running in the background,
 		// in which case we don't want to send its result to the webview as it
@@ -761,13 +764,16 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// saves, and only post parts of partial message instead of
 					// whole array in new listener.
 					this.updateClineMessage(lastMessage)
+					// console.log("Task#ask: current ask promise was ignored (#1)")
 					throw new Error("Current ask promise was ignored (#1)")
 				} else {
 					// This is a new partial message, so add it with partial
 					// state.
 					askTs = Date.now()
 					this.lastMessageTs = askTs
+					console.log(`Task#ask: new partial ask -> ${type} @ ${askTs}`)
 					await this.addToClineMessages({ ts: askTs, type: "ask", ask: type, text, partial, isProtected })
+					// console.log("Task#ask: current ask promise was ignored (#2)")
 					throw new Error("Current ask promise was ignored (#2)")
 				}
 			} else {
@@ -790,6 +796,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// So in this case we must make sure that the message ts is
 					// never altered after first setting it.
 					askTs = lastMessage.ts
+					console.log(`Task#ask: updating previous partial ask -> ${type} @ ${askTs}`)
 					this.lastMessageTs = askTs
 					lastMessage.text = text
 					lastMessage.partial = false
@@ -803,6 +810,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					this.askResponseText = undefined
 					this.askResponseImages = undefined
 					askTs = Date.now()
+					console.log(`Task#ask: new complete ask -> ${type} @ ${askTs}`)
 					this.lastMessageTs = askTs
 					await this.addToClineMessages({ ts: askTs, type: "ask", ask: type, text, isProtected })
 				}
@@ -813,6 +821,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			this.askResponseText = undefined
 			this.askResponseImages = undefined
 			askTs = Date.now()
+			console.log(`Task#ask: new complete ask -> ${type} @ ${askTs}`)
 			this.lastMessageTs = askTs
 			await this.addToClineMessages({ ts: askTs, type: "ask", ask: type, text, isProtected })
 		}
@@ -825,8 +834,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		let statusMutationTimeouts: NodeJS.Timeout[] = []
 		const statusMutationTimeout = 5_000
 
-		if (isStatusMutable) {
+		if (isBlocking) {
 			console.log(`Task#ask will block -> type: ${type}`)
+		}
+
+		if (isStatusMutable) {
+			console.log(`Task#ask: status is mutable -> type: ${type}`)
 
 			if (isInteractiveAsk(type)) {
 				statusMutationTimeouts.push(
@@ -863,7 +876,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				)
 			}
 		} else if (isMessageQueued) {
-			console.log("Task#ask will process message queue")
+			console.log(`Task#ask: will process message queue -> type: ${type}`)
 
 			const message = this.messageQueueService.dequeueMessage()
 
@@ -886,6 +899,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			}
 		}
 
+		const provider = this.providerRef.deref()
+		const state = provider ? await provider.getState() : undefined
+		const isApproved = state ? await isAutoApproved({ state, ask: type, text, isProtected }) : false
+
+		if (isApproved) {
+			this.approveAsk()
+		}
+
 		// Wait for askResponse to be set.
 		await pWaitFor(() => this.askResponse !== undefined || this.lastMessageTs !== askTs, { interval: 100 })
 
@@ -893,6 +914,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			// Could happen if we send multiple asks in a row i.e. with
 			// command_output. It's important that when we know an ask could
 			// fail, it is handled gracefully.
+			console.log("Task#ask: current ask promise was ignored")
 			throw new Error("Current ask promise was ignored")
 		}
 
@@ -922,6 +944,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	handleWebviewAskResponse(askResponse: ClineAskResponse, text?: string, images?: string[]) {
 		this.askResponse = askResponse
+		console.log(`Task#handleWebviewAskResponse: askResponse -> ${askResponse} (text = ${text})`)
 		this.askResponseText = text
 		this.askResponseImages = images
 
