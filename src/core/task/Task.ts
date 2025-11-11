@@ -823,15 +823,24 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			await this.addToClineMessages({ ts: askTs, type: "ask", ask: type, text, isProtected })
 		}
 
+		let timeouts: NodeJS.Timeout[] = []
+
 		// Automatically approve if the ask according to the user's settings.
 		const provider = this.providerRef.deref()
 		const state = provider ? await provider.getState() : undefined
-		const approval = state ? await checkAutoApproval({ state, ask: type, text, isProtected }) : false
+		const approval = await checkAutoApproval({ state, ask: type, text, isProtected })
 
-		if (approval === "approve") {
+		if (approval.decision === "approve") {
 			this.approveAsk()
-		} else if (approval === "deny") {
+		} else if (approval.decision === "deny") {
 			this.denyAsk()
+		} else if (approval.decision === "timeout") {
+			timeouts.push(
+				setTimeout(() => {
+					const { askResponse, text, images } = approval.fn()
+					this.handleWebviewAskResponse(askResponse, text, images)
+				}, approval.timeout),
+			)
 		}
 
 		// The state is mutable if the message is complete and the task will
@@ -839,9 +848,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		const isBlocking = !(this.askResponse !== undefined || this.lastMessageTs !== askTs)
 		const isMessageQueued = !this.messageQueueService.isEmpty()
 
-		const isStatusMutable = !partial && isBlocking && !isMessageQueued && approval === "ask"
-		let statusMutationTimeouts: NodeJS.Timeout[] = []
-		const statusMutationTimeout = 5_000
+		const isStatusMutable = !partial && isBlocking && !isMessageQueued && approval.decision === "ask"
 
 		if (isBlocking) {
 			console.log(`Task#ask will block -> type: ${type}`)
@@ -849,20 +856,22 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		if (isStatusMutable) {
 			console.log(`Task#ask: status is mutable -> type: ${type}`)
+			const statusMutationTimeout = 2_000
 
 			if (isInteractiveAsk(type)) {
-				statusMutationTimeouts.push(
+				timeouts.push(
 					setTimeout(() => {
 						const message = this.findMessageByTimestamp(askTs)
 
 						if (message) {
 							this.interactiveAsk = message
 							this.emit(RooCodeEventName.TaskInteractive, this.taskId)
+							provider?.postMessageToWebview({ type: "interactionRequired" })
 						}
 					}, statusMutationTimeout),
 				)
 			} else if (isResumableAsk(type)) {
-				statusMutationTimeouts.push(
+				timeouts.push(
 					setTimeout(() => {
 						const message = this.findMessageByTimestamp(askTs)
 
@@ -873,7 +882,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					}, statusMutationTimeout),
 				)
 			} else if (isIdleAsk(type)) {
-				statusMutationTimeouts.push(
+				timeouts.push(
 					setTimeout(() => {
 						const message = this.findMessageByTimestamp(askTs)
 
@@ -925,7 +934,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.askResponseImages = undefined
 
 		// Cancel the timeouts if they are still running.
-		statusMutationTimeouts.forEach((timeout) => clearTimeout(timeout))
+		timeouts.forEach((timeout) => clearTimeout(timeout))
 
 		// Switch back to an active state.
 		if (this.idleAsk || this.resumableAsk || this.interactiveAsk) {

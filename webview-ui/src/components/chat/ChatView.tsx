@@ -199,43 +199,40 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		[apiConfiguration, organizationAllowList],
 	)
 
-	// UI layout depends on the last 2 messages
-	// (since it relies on the content of these messages, we are deep comparing. i.e. the button state after hitting button sets enableButtons to false, and this effect otherwise would have to true again even if messages didn't change
+	// UI layout depends on the last 2 messages (since it relies on the content
+	// of these messages, we are deep comparing) i.e. the button state after
+	// hitting button sets enableButtons to false,  and this effect otherwise
+	// would have to true again even if messages didn't change.
 	const lastMessage = useMemo(() => messages.at(-1), [messages])
 	const secondLastMessage = useMemo(() => messages.at(-2), [messages])
 
-	// Setup sound hooks with use-sound
 	const volume = typeof soundVolume === "number" ? soundVolume : 0.5
-	const soundConfig = {
-		volume,
-		// useSound expects 'disabled' property, not 'soundEnabled'
-		soundEnabled,
-	}
+	const [playNotification] = useSound(`${audioBaseUri}/notification.wav`, { volume, soundEnabled })
+	const [playCelebration] = useSound(`${audioBaseUri}/celebration.wav`, { volume, soundEnabled })
+	const [playProgressLoop] = useSound(`${audioBaseUri}/progress_loop.wav`, { volume, soundEnabled })
 
-	const getAudioUrl = (path: string) => `${audioBaseUri}/${path}`
+	const playSound = useCallback(
+		(audioType: AudioType) => {
+			if (!soundEnabled) {
+				return
+			}
 
-	// Use the getAudioUrl helper function
-	const [playNotification] = useSound(getAudioUrl("notification.wav"), soundConfig)
-	const [playCelebration] = useSound(getAudioUrl("celebration.wav"), soundConfig)
-	const [playProgressLoop] = useSound(getAudioUrl("progress_loop.wav"), soundConfig)
-
-	function playSound(audioType: AudioType) {
-		// Play the appropriate sound based on type
-		// The disabled state is handled by the useSound hook configuration
-		switch (audioType) {
-			case "notification":
-				playNotification()
-				break
-			case "celebration":
-				playCelebration()
-				break
-			case "progress_loop":
-				playProgressLoop()
-				break
-			default:
-				console.warn(`Unknown audio type: ${audioType}`)
-		}
-	}
+			switch (audioType) {
+				case "notification":
+					playNotification()
+					break
+				case "celebration":
+					playCelebration()
+					break
+				case "progress_loop":
+					playProgressLoop()
+					break
+				default:
+					console.warn(`Unknown audio type: ${audioType}`)
+			}
+		},
+		[soundEnabled, playNotification, playCelebration, playProgressLoop],
+	)
 
 	function playTts(text: string) {
 		vscode.postMessage({ type: "playTts", text })
@@ -269,9 +266,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							setSecondaryButtonText(t("chat:startNewTask.title"))
 							break
 						case "followup":
-							if (!isPartial) {
-								playSound("notification")
-							}
 							setSendingDisabled(isPartial)
 							setClineAsk("followup")
 							// setting enable buttons to `false` would trigger a focus grab when
@@ -283,7 +277,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							setSecondaryButtonText(undefined)
 							break
 						case "tool":
-							playSound("notification")
 							setSendingDisabled(isPartial)
 							setClineAsk("tool")
 							setEnableButtons(!isPartial)
@@ -317,7 +310,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							}
 							break
 						case "browser_action_launch":
-							playSound("notification")
 							setSendingDisabled(isPartial)
 							setClineAsk("browser_action_launch")
 							setEnableButtons(!isPartial)
@@ -325,7 +317,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							setSecondaryButtonText(t("chat:reject.title"))
 							break
 						case "command":
-							playSound("notification")
 							setSendingDisabled(isPartial)
 							setClineAsk("command")
 							setEnableButtons(!isPartial)
@@ -340,7 +331,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							setSecondaryButtonText(t("chat:killCommand.title"))
 							break
 						case "use_mcp_server":
-							playSound("notification")
 							setSendingDisabled(isPartial)
 							setClineAsk("use_mcp_server")
 							setEnableButtons(!isPartial)
@@ -348,8 +338,8 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							setSecondaryButtonText(t("chat:reject.title"))
 							break
 						case "completion_result":
-							// extension waiting for feedback. but we can just present a new task button
-							// Only play celebration sound if there are no queued messages
+							// Extension waiting for feedback, but we can just present a new task button.
+							// Only play celebration sound if there are no queued messages.
 							if (!isPartial && messageQueue.length === 0) {
 								playSound("celebration")
 							}
@@ -792,6 +782,9 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				case "checkpointInitWarning":
 					setCheckpointWarning(message.checkpointWarning)
 					break
+				case "interactionRequired":
+					playSound("notification")
+					break
 			}
 			// textAreaRef.current is not explicitly required here since React
 			// guarantees that ref will be stable across re-renders, and we're
@@ -809,6 +802,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			handlePrimaryButtonClick,
 			handleSecondaryButtonClick,
 			setCheckpointWarning,
+			playSound,
 		],
 	)
 
