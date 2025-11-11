@@ -60,8 +60,6 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 
 		const fileEntries: FileEntry[] = []
 
-		// Note: Native protocol is handled by passing typed args directly to execute() via BaseTool.handle()
-
 		// XML args format
 		if (argsXmlTag) {
 			const parsed = parseXml(argsXmlTag) as any

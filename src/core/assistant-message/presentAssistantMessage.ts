@@ -525,7 +525,12 @@ export async function presentAssistantMessage(cline: Task) {
 					await fetchInstructionsTool(cline, block, askApproval, handleError, pushToolResult)
 					break
 				case "list_files":
-					await listFilesTool(cline, block, askApproval, handleError, pushToolResult, removeClosingTag)
+					await listFilesTool.handle(cline, block as ToolUse<"list_files">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+						removeClosingTag,
+					})
 					break
 				case "codebase_search":
 					await codebaseSearchTool(cline, block, askApproval, handleError, pushToolResult, removeClosingTag)
