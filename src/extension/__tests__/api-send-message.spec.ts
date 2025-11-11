@@ -5,7 +5,76 @@ import { API } from "../api"
 import { ClineProvider } from "../../core/webview/ClineProvider"
 import { TaskCommandName } from "@roo-code/types"
 
-vi.mock("vscode")
+vi.mock("vscode", () => ({
+	workspace: {
+		workspaceFolders: [{ uri: { fsPath: "/mock/workspace" } }],
+		getWorkspaceFolder: () => ({ uri: { fsPath: "/mock/workspace" } }),
+		onDidChangeWorkspaceFolders: () => ({ dispose: () => {} }),
+		getConfiguration: () => ({
+			get: () => null,
+		}),
+		createFileSystemWatcher: (pattern: any) => ({
+			onDidCreate: (callback: any) => ({ dispose: () => {} }),
+			onDidChange: (callback: any) => ({ dispose: () => {} }),
+			onDidDelete: (callback: any) => ({ dispose: () => {} }),
+			dispose: () => {},
+			pattern: pattern,
+		}),
+		fs: {
+			readFile: () => Promise.resolve(new Uint8Array()),
+			writeFile: () => Promise.resolve(),
+			stat: () => Promise.resolve({ type: 1, ctime: 0, mtime: 0, size: 0 }),
+		},
+		openTextDocument: () => {},
+	},
+	window: {
+		activeTextEditor: null,
+		onDidChangeActiveTextEditor: () => ({ dispose: () => {} }),
+		showErrorMessage: () => Promise.resolve(),
+		showWarningMessage: () => Promise.resolve(),
+		showInformationMessage: () => Promise.resolve(),
+		createOutputChannel: () => ({
+			appendLine: () => {},
+			append: () => {},
+			clear: () => {},
+			show: () => {},
+			dispose: () => {},
+		}),
+		createTextEditorDecorationType: () => ({ dispose: () => {} }),
+	},
+	commands: {
+		registerCommand: () => ({ dispose: () => {} }),
+		executeCommand: () => Promise.resolve(),
+	},
+	languages: {
+		createDiagnosticCollection: () => ({
+			set: () => {},
+			delete: () => {},
+			clear: () => {},
+			dispose: () => {},
+		}),
+	},
+	extensions: {
+		getExtension: () => null,
+	},
+	env: {
+		openExternal: () => Promise.resolve(),
+		uriScheme: "vscode",
+	},
+	Uri: {
+		file: (path: any) => ({ fsPath: path, path, scheme: "file" }),
+		parse: (path: any) => ({ fsPath: path, path, scheme: "file" }),
+	},
+	RelativePattern: class {
+		base: any
+		pattern: any
+		constructor(base: any, pattern: any) {
+			this.base = base
+			this.pattern = pattern
+		}
+	},
+	Disposable: { dispose: () => {} },
+}))
 vi.mock("../../core/webview/ClineProvider")
 
 describe("API - SendMessage Command", () => {
@@ -106,7 +175,7 @@ describe("API - SendMessage Command", () => {
 	})
 
 	it("should log SendMessage command when processed via IPC", async () => {
-		// This test verifies the logging behavior when the command comes through IPC
+		// This test verifies the logging behavior when command comes through IPC
 		// We need to simulate the IPC handler directly since we can't easily test the full IPC flow
 
 		const messageText = "Test message from IPC"
@@ -115,7 +184,7 @@ describe("API - SendMessage Command", () => {
 			images: undefined,
 		}
 
-		// Simulate the IPC command handler calling sendMessage
+		// Simulate IPC command handler calling sendMessage
 		mockLog(`[API] SendMessage -> ${commandData.text}`)
 		await api.sendMessage(commandData.text, commandData.images)
 

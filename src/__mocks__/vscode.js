@@ -51,9 +51,9 @@ export const workspace = {
 		get: () => null,
 	}),
 	createFileSystemWatcher: (pattern) => ({
-		onDidCreate: () => mockDisposable,
-		onDidChange: () => mockDisposable,
-		onDidDelete: () => mockDisposable,
+		onDidCreate: (callback) => mockDisposable,
+		onDidChange: (callback) => mockDisposable,
+		onDidDelete: (callback) => mockDisposable,
 		dispose: () => {},
 		pattern: pattern,
 	}),
