@@ -24,7 +24,7 @@ import { accessMcpResourceTool } from "../tools/accessMcpResourceTool"
 import { askFollowupQuestionTool } from "../tools/askFollowupQuestionTool"
 import { switchModeTool } from "../tools/switchModeTool"
 import { attemptCompletionTool, AttemptCompletionCallbacks } from "../tools/AttemptCompletionTool"
-import { newTaskTool } from "../tools/newTaskTool"
+import { newTaskTool } from "../tools/NewTaskTool"
 
 import { updateTodoListTool } from "../tools/updateTodoListTool"
 import { runSlashCommandTool } from "../tools/runSlashCommandTool"
@@ -581,7 +581,12 @@ export async function presentAssistantMessage(cline: Task) {
 					await switchModeTool(cline, block, askApproval, handleError, pushToolResult, removeClosingTag)
 					break
 				case "new_task":
-					await newTaskTool(cline, block, askApproval, handleError, pushToolResult, removeClosingTag)
+					await newTaskTool.handle(cline, block as ToolUse<"new_task">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+						removeClosingTag,
+					})
 					break
 				case "attempt_completion": {
 					const completionCallbacks: AttemptCompletionCallbacks = {
