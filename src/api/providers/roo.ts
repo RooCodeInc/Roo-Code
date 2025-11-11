@@ -100,6 +100,8 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 			stream: true,
 			stream_options: { include_usage: true },
 			...(reasoning && { reasoning }),
+			...(metadata?.tools && { tools: metadata.tools }),
+			...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
 		}
 
 		try {
@@ -124,9 +126,19 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 			)
 
 			let lastUsage: RooUsage | undefined = undefined
+			// Accumulate tool calls by index - similar to how reasoning accumulates
+			const toolCallAccumulator = new Map<number, { id: string; name: string; arguments: string }>()
 
 			for await (const chunk of stream) {
 				const delta = chunk.choices[0]?.delta
+				const finishReason = chunk.choices[0]?.finish_reason
+
+				console.log(`[NATIVE_TOOL] RooHandler chunk:`, {
+					hasChoices: !!chunk.choices?.length,
+					hasDelta: !!delta,
+					finishReason,
+					deltaKeys: delta ? Object.keys(delta) : [],
+				})
 
 				if (delta) {
 					// Check for reasoning content (similar to OpenRouter)
@@ -145,12 +157,71 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 						}
 					}
 
+					// Check for tool calls in delta
+					if ("tool_calls" in delta && Array.isArray(delta.tool_calls)) {
+						console.log(
+							`[NATIVE_TOOL] RooHandler: Received tool_calls in delta, count:`,
+							delta.tool_calls.length,
+						)
+						for (const toolCall of delta.tool_calls) {
+							const index = toolCall.index
+							const existing = toolCallAccumulator.get(index)
+
+							if (existing) {
+								// Accumulate arguments for existing tool call
+								if (toolCall.function?.arguments) {
+									console.log(
+										`[NATIVE_TOOL] RooHandler: Accumulating arguments for index ${index}:`,
+										toolCall.function.arguments,
+									)
+									existing.arguments += toolCall.function.arguments
+								}
+							} else {
+								// Start new tool call accumulation
+								console.log(`[NATIVE_TOOL] RooHandler: Starting new tool call at index ${index}:`, {
+									id: toolCall.id,
+									name: toolCall.function?.name,
+									hasArguments: !!toolCall.function?.arguments,
+								})
+								toolCallAccumulator.set(index, {
+									id: toolCall.id || "",
+									name: toolCall.function?.name || "",
+									arguments: toolCall.function?.arguments || "",
+								})
+							}
+						}
+						console.log(`[NATIVE_TOOL] RooHandler: Current accumulator size:`, toolCallAccumulator.size)
+					}
+
 					if (delta.content) {
 						yield {
 							type: "text",
 							text: delta.content,
 						}
 					}
+				}
+
+				// When finish_reason is 'tool_calls', yield all accumulated tool calls
+				if (finishReason === "tool_calls" && toolCallAccumulator.size > 0) {
+					console.log(
+						`[NATIVE_TOOL] RooHandler: finish_reason is 'tool_calls', yielding ${toolCallAccumulator.size} tool calls`,
+					)
+					for (const [index, toolCall] of toolCallAccumulator.entries()) {
+						console.log(`[NATIVE_TOOL] RooHandler: Yielding tool call ${index}:`, {
+							id: toolCall.id,
+							name: toolCall.name,
+							arguments: toolCall.arguments,
+						})
+						yield {
+							type: "tool_call",
+							id: toolCall.id,
+							name: toolCall.name,
+							arguments: toolCall.arguments,
+						}
+					}
+					// Clear accumulator after yielding
+					toolCallAccumulator.clear()
+					console.log(`[NATIVE_TOOL] RooHandler: Cleared tool call accumulator`)
 				}
 
 				if (chunk.usage) {
@@ -221,6 +292,17 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 		}
 	}
 
+	/**
+	 * Check if a model ID supports native tool calling.
+	 * This is a fallback for models loaded dynamically that don't have explicit support flags.
+	 */
+	private supportsNativeTools(modelId: string): boolean {
+		// List of model IDs known to support native tools
+		const nativeToolModels = ["openai/gpt-5"]
+
+		return nativeToolModels.some((model) => modelId.includes(model))
+	}
+
 	override getModel() {
 		const modelId = this.options.apiModelId || rooDefaultModelId
 
@@ -229,6 +311,10 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 		const modelInfo = models[modelId]
 
 		if (modelInfo) {
+			// If model info exists but doesn't have supportsNativeTools set, check our list
+			if (modelInfo.supportsNativeTools === undefined) {
+				modelInfo.supportsNativeTools = this.supportsNativeTools(modelId)
+			}
 			return { id: modelId, info: modelInfo }
 		}
 
@@ -241,6 +327,7 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 				supportsImages: false,
 				supportsReasoningEffort: false,
 				supportsPromptCache: true,
+				supportsNativeTools: this.supportsNativeTools(modelId),
 				inputPrice: 0,
 				outputPrice: 0,
 			},

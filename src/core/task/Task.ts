@@ -38,6 +38,7 @@ import {
 	DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
 	MAX_CHECKPOINT_TIMEOUT_SECONDS,
 	MIN_CHECKPOINT_TIMEOUT_SECONDS,
+	TOOL_PROTOCOL,
 } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 import { CloudService, BridgeOrchestrator } from "@roo-code/cloud"
@@ -81,6 +82,7 @@ import { getWorkspacePath } from "../../utils/path"
 import { formatResponse } from "../prompts/responses"
 import { SYSTEM_PROMPT } from "../prompts/system"
 import { resolveToolProtocol } from "../prompts/toolProtocolResolver"
+import { nativeTools } from "../prompts/tools/native-tools"
 
 // core modules
 import { ToolRepetitionDetector } from "../tools/ToolRepetitionDetector"
@@ -90,6 +92,7 @@ import { RooIgnoreController } from "../ignore/RooIgnoreController"
 import { RooProtectedController } from "../protect/RooProtectedController"
 import { type AssistantMessageContent, presentAssistantMessage } from "../assistant-message"
 import { AssistantMessageParser } from "../assistant-message/AssistantMessageParser"
+import { NativeToolCallParser } from "../assistant-message/NativeToolCallParser"
 import { manageContext } from "../context-management"
 import { ClineProvider } from "../webview/ClineProvider"
 import { MultiSearchReplaceDiffStrategy } from "../diff/strategies/multi-search-replace"
@@ -1993,6 +1996,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 							continue
 						}
 
+						// Log all chunk types to see what's coming through
+						console.log(`[NATIVE_TOOL] Stream chunk type:`, chunk.type)
+						if (chunk.type === "tool_call") {
+							console.log(`[NATIVE_TOOL] Stream received tool_call chunk!`)
+						}
+
 						switch (chunk.type) {
 							case "reasoning": {
 								reasoningMessage += chunk.text
@@ -2024,6 +2033,48 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 									pendingGroundingSources.push(...chunk.sources)
 								}
 								break
+							case "tool_call": {
+								console.log(`[NATIVE_TOOL] Received tool_call chunk:`, JSON.stringify(chunk, null, 2))
+
+								// Convert native tool call to ToolUse format
+								const toolUse = NativeToolCallParser.parseToolCall({
+									id: chunk.id,
+									name: chunk.name,
+									arguments: chunk.arguments,
+								})
+
+								if (!toolUse) {
+									console.error(
+										`[NATIVE_TOOL] Failed to parse tool call for task ${this.taskId}:`,
+										chunk,
+									)
+									break
+								}
+
+								console.log(`[NATIVE_TOOL] Parsed to ToolUse:`, JSON.stringify(toolUse, null, 2))
+								console.log(
+									`[NATIVE_TOOL] Current assistantMessageContent length before:`,
+									this.assistantMessageContent.length,
+								)
+
+								// Add the tool use to assistant message content
+								this.assistantMessageContent.push(toolUse)
+
+								console.log(
+									`[NATIVE_TOOL] Current assistantMessageContent length after:`,
+									this.assistantMessageContent.length,
+								)
+								console.log(`[NATIVE_TOOL] Setting userMessageContentReady to false`)
+
+								// Mark that we have new content to process
+								this.userMessageContentReady = false
+
+								console.log(`[NATIVE_TOOL] Calling presentAssistantMessage`)
+
+								// Present the tool call to user
+								presentAssistantMessage(this)
+								break
+							}
 							case "text": {
 								assistantMessage += chunk.text
 
@@ -2837,10 +2888,35 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			throw new Error("Auto-approval limit reached and user did not approve continuation")
 		}
 
+		// Determine if we should include native tools based on:
+		// 1. Tool protocol is set to NATIVE
+		// 2. Model supports native tools
+		const toolProtocol = resolveToolProtocol()
+		const modelInfo = this.api.getModel().info
+		const shouldIncludeTools = toolProtocol === TOOL_PROTOCOL.NATIVE && (modelInfo.supportsNativeTools ?? false)
+
+		console.log(`[NATIVE_TOOL] Tool inclusion check:`, {
+			toolProtocol,
+			isNative: toolProtocol === TOOL_PROTOCOL.NATIVE,
+			supportsNativeTools: modelInfo.supportsNativeTools,
+			shouldIncludeTools,
+			modelId: this.api.getModel().id,
+			nativeToolsCount: shouldIncludeTools ? nativeTools.length : 0,
+		})
+
 		const metadata: ApiHandlerCreateMessageMetadata = {
 			mode: mode,
 			taskId: this.taskId,
+			// Include tools and tool protocol when using native protocol and model supports it
+			...(shouldIncludeTools ? { tools: nativeTools, tool_choice: "auto", toolProtocol } : {}),
 		}
+
+		console.log(`[NATIVE_TOOL] API request metadata:`, {
+			hasTools: !!metadata.tools,
+			toolCount: metadata.tools?.length,
+			toolChoice: metadata.tool_choice,
+			toolProtocol: metadata.toolProtocol,
+		})
 
 		// The provider accepts reasoning items alongside standard messages; cast to the expected parameter type.
 		const stream = this.api.createMessage(

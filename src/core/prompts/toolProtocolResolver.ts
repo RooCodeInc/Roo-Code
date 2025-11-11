@@ -6,7 +6,7 @@ import type { SystemPromptSettings } from "./types"
  * This is code-only and not exposed through VS Code settings.
  * To switch protocols, edit this constant directly in the source code.
  */
-const CURRENT_TOOL_PROTOCOL: ToolProtocol = TOOL_PROTOCOL.XML // change to TOOL_PROTOCOL.NATIVE to enable native protocol
+const CURRENT_TOOL_PROTOCOL: ToolProtocol = TOOL_PROTOCOL.NATIVE // change to TOOL_PROTOCOL.NATIVE to enable native protocol
 
 /**
  * Resolves the effective tool protocol.

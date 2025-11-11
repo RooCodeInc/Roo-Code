@@ -84,6 +84,8 @@ export const modelInfoSchema = z.object({
 	deprecated: z.boolean().optional(),
 	// Flag to indicate if the model is free (no cost)
 	isFree: z.boolean().optional(),
+	// Flag to indicate if the model supports native tool calling (OpenAI-style function calling)
+	supportsNativeTools: z.boolean().optional(),
 	/**
 	 * Service tiers with pricing information.
 	 * Each tier can have a name (for OpenAI service tiers) and pricing overrides.
