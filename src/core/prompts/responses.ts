@@ -3,6 +3,8 @@ import * as path from "path"
 import * as diff from "diff"
 import { RooIgnoreController, LOCK_TEXT_SYMBOL } from "../ignore/RooIgnoreController"
 import { RooProtectedController } from "../protect/RooProtectedController"
+import { resolveToolProtocol, isNativeProtocol } from "./toolProtocolResolver"
+import { ToolProtocol } from "@roo-code/types"
 
 export const formatResponse = {
 	toolDenied: () => `The user denied this operation.`,
@@ -18,25 +20,36 @@ export const formatResponse = {
 	rooIgnoreError: (path: string) =>
 		`Access to ${path} is blocked by the .rooignore file settings. You must try to continue in the task without using this file, or ask the user to update the .rooignore file.`,
 
-	noToolsUsed: () =>
-		`[ERROR] You did not use a tool in your previous response! Please retry with a tool use.
+	noToolsUsed: (protocol?: ToolProtocol) => {
+		const instructions = getToolInstructionsReminder(protocol)
 
-${toolUseInstructionsReminder}
+		return `[ERROR] You did not use a tool in your previous response! Please retry with a tool use.
+
+${instructions}
 
 # Next Steps
 
-If you have completed the user's task, use the attempt_completion tool. 
-If you require additional information from the user, use the ask_followup_question tool. 
-Otherwise, if you have not completed the task and do not need additional information, then proceed with the next step of the task. 
-(This is an automated message, so do not respond to it conversationally.)`,
+If you have completed the user's task, use the attempt_completion tool.
+If you require additional information from the user, use the ask_followup_question tool.
+Otherwise, if you have not completed the task and do not need additional information, then proceed with the next step of the task.
+(This is an automated message, so do not respond to it conversationally.)`
+	},
 
 	tooManyMistakes: (feedback?: string) =>
 		`You seem to be having trouble proceeding. The user has provided the following feedback to help guide you:\n<feedback>\n${feedback}\n</feedback>`,
 
-	missingToolParameterError: (paramName: string) =>
-		`Missing value for required parameter '${paramName}'. Please retry with complete response.\n\n${toolUseInstructionsReminder}`,
+	missingToolParameterError: (paramName: string, protocol?: ToolProtocol) => {
+		const instructions = getToolInstructionsReminder(protocol)
 
-	lineCountTruncationError: (actualLineCount: number, isNewFile: boolean, diffStrategyEnabled: boolean = false) => {
+		return `Missing value for required parameter '${paramName}'. Please retry with complete response.\n\n${instructions}`
+	},
+
+	lineCountTruncationError: (
+		actualLineCount: number,
+		isNewFile: boolean,
+		diffStrategyEnabled: boolean = false,
+		protocol?: ToolProtocol,
+	) => {
 		const truncationMessage = `Note: Your response may have been truncated because it exceeded your output limit. You wrote ${actualLineCount} lines of content, but the line_count parameter was either missing or not included in your response.`
 
 		const newFileGuidance =
@@ -65,7 +78,9 @@ Otherwise, if you have not completed the task and do not need additional informa
 			`RECOMMENDED APPROACH:\n` +
 			`${existingFileApproaches.join("\n")}\n`
 
-		return `${isNewFile ? newFileGuidance : existingFileGuidance}\n${toolUseInstructionsReminder}`
+		const instructions = getToolInstructionsReminder(protocol)
+
+		return `${isNewFile ? newFileGuidance : existingFileGuidance}\n${instructions}`
 	},
 
 	invalidMcpToolArgumentError: (serverName: string, toolName: string) =>
@@ -220,3 +235,20 @@ I have completed the task...
 </attempt_completion>
 
 Always use the actual tool name as the XML tag name for proper parsing and execution.`
+
+const toolUseInstructionsReminderNative = `# Reminder: Instructions for Tool Use
+
+Tools are invoked using the platform's native tool calling mechanism. Each tool requires specific parameters as defined in the tool descriptions. Refer to the tool definitions provided in your system instructions for the correct parameter structure and usage examples.
+
+Always ensure you provide all required parameters for the tool you wish to use.`
+
+/**
+ * Gets the appropriate tool use instructions reminder based on the protocol.
+ *
+ * @param protocol - Optional tool protocol, falls back to default if not provided
+ * @returns The tool use instructions reminder text
+ */
+function getToolInstructionsReminder(protocol?: ToolProtocol): string {
+	const effectiveProtocol = protocol ?? resolveToolProtocol()
+	return isNativeProtocol(effectiveProtocol) ? toolUseInstructionsReminderNative : toolUseInstructionsReminder
+}
