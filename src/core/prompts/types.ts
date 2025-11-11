@@ -1,3 +1,5 @@
+import { ToolProtocol } from "@roo-code/types"
+
 /**
  * Settings passed to system prompt generation functions
  */
@@ -6,4 +8,5 @@ export interface SystemPromptSettings {
 	todoListEnabled: boolean
 	useAgentRules: boolean
 	newTaskRequireTodos: boolean
+	toolProtocol?: ToolProtocol
 }

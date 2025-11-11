@@ -54,3 +54,17 @@ export const toolUsageSchema = z.record(
 )
 
 export type ToolUsage = z.infer<typeof toolUsageSchema>
+
+/**
+ * Tool protocol constants
+ */
+export const TOOL_PROTOCOL = {
+	XML: "xml",
+	NATIVE: "native",
+} as const
+
+/**
+ * Tool protocol type for system prompt generation
+ * Derived from TOOL_PROTOCOL constants to ensure type safety
+ */
+export type ToolProtocol = (typeof TOOL_PROTOCOL)[keyof typeof TOOL_PROTOCOL]
