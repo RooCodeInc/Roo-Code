@@ -111,7 +111,6 @@ const QuotaInfoDisplay = memo(
 		quotaInfo,
 		showQuotaInfo,
 		t,
-		handleGetMoreQuota,
 	}: {
 		quotaInfo: QuotaInfo
 		showQuotaInfo: boolean
@@ -219,11 +218,6 @@ const QuotaInfoDisplay = memo(
 							<span className="text-xs text-vscode-descriptionForeground font-medium">
 								{t("cloud:quota.usedQuota")}
 							</span>
-							<span
-								className="text-[10px] font-medium bg-gradient-to-br from-blue-400 to-blue-600 px-1 py-0.5 rounded-full cursor-pointer select-none text-white flex items-center gap-1"
-								onClick={handleGetMoreQuota}>
-								{t("cloud:quota.getMoreQuota")} 🎁
-							</span>
 						</div>
 						<div className="flex items-baseline gap-1">
 							<span className="text-sm font-bold text-vscode-foreground group-hover:text-vscode-focusBorder transition-colors">
@@ -268,7 +262,7 @@ const ZgsmAccountViewComponent = ({ apiConfiguration, onDone }: AccountViewProps
 	const handleVisitCloudWebsite = useCallback(() => {
 		// Send telemetry for cloud website visit
 		telemetryClient.capture(TelemetryEventName.ACCOUNT_CONNECT_CLICKED)
-		const cloudUrl = `${apiConfiguration?.zgsmBaseUrl?.trim() || "https://zgsm.sangfor.com"}/credit/manager?state=${hash}`
+		const cloudUrl = `${apiConfiguration?.zgsmBaseUrl?.trim() || "https://zgsm.sangfor.com"}/credit/manager?state=${hash}&tab=usage`
 		vscode.postMessage({ type: "openExternal", url: cloudUrl })
 	}, [apiConfiguration?.zgsmBaseUrl, hash])
 
@@ -281,6 +275,11 @@ const ZgsmAccountViewComponent = ({ apiConfiguration, onDone }: AccountViewProps
 	const handleStarRepository = useCallback(() => {
 		vscode.postMessage({ type: "openExternal", url: "https://github.com/zgsm-ai/costrict" })
 	}, [])
+
+	const handlePurchaseQuota = useCallback(() => {
+		const cloudUrl = `${apiConfiguration?.zgsmBaseUrl?.trim() || "https://zgsm.sangfor.com"}/credit/manager?state=${hash}&tab=subscription`
+		vscode.postMessage({ type: "openExternal", url: cloudUrl })
+	}, [apiConfiguration?.zgsmBaseUrl, hash])
 
 	const onMessage = useCallback(
 		(event: MessageEvent) => {
@@ -409,6 +408,18 @@ const ZgsmAccountViewComponent = ({ apiConfiguration, onDone }: AccountViewProps
 									</StandardTooltip>
 								</h2>
 							)}
+							<div className="w-full flex gap-2 mt-4 justify-center">
+								<span
+									className="text-[10px] font-medium bg-gradient-to-br border border-[var(--vscode-editorWidget-border)] bg-[var(--vscode-editorWidget-background)] text-[var(--vscode-editor-foreground)] px-2 py-1 rounded-full cursor-pointer select-none flex items-center gap-1"
+									onClick={handlePurchaseQuota}>
+									{t("account:purchaseQuota")}
+								</span>
+								<span
+									className="text-[10px] font-medium bg-gradient-to-br border border-[var(--vscode-editorWidget-border)] bg-[var(--vscode-editorWidget-background)] text-[var(--vscode-editor-foreground)] px-2 py-1 rounded-full cursor-pointer select-none flex items-center gap-1"
+									onClick={handleGetMoreQuota}>
+									{t("account:joinActivityForQuota")}
+								</span>
+							</div>
 							{/* Star status card */}
 							{quotaInfo?.is_star != null && (
 								<StarStatusCard quotaInfo={quotaInfo} onStarRepository={handleStarRepository} _t={t} />

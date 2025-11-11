@@ -37,6 +37,13 @@
 			"creditUsageStats": "Credit 用量統計",
 			"viewDetails": "查看詳情"
 		},
+		"activitiesStr": {
+			"participate": "Y您可以參與",
+			"operationalActivities": "營運活動",
+			"or": "或",
+			"purchaseQuota": "購買配額",
+			"getCreditLimit": "獲取額度"
+		},
 		"undefined": "1.請檢查網路連線\n2.請檢查代理與防火牆\n3.請聯絡管理員",
 		"unknown": "1. 請稍後再試\n2. 嘗試更換模型\n3. 聯絡管理員"
 	},

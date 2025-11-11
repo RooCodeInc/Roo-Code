@@ -11,5 +11,7 @@
 	"starThanksDesc": "You have starred the CoStrict repository",
 	"starProject": "Support CoStrict Project",
 	"starProjectDesc": "Star our open source project to show support",
-	"starButton": "Star Now"
+	"starButton": "Star Now",
+	"purchaseQuota": "💰 Purchase more quotas",
+	"joinActivityForQuota": "🎁 Obtain quotas"
 }

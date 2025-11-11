@@ -1,5 +1,15 @@
 # CoStrict Change Log
 
+## [2.0.10]
+
+- Update todolist ui
+- Enhance attempt_completion parsing
+- Optimize message retrieval
+- Update error message
+- Optimized tools prompts
+- Sync roocode [last commit](https://github.com/zgsm-ai/costrict/commit/4da9c3adb171dd83aed93039d686c466f1b9a378)
+- Fix known issues
+
 ## [2.0.9]
 
 - Update userinfo

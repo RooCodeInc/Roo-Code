@@ -37,6 +37,13 @@
 			"creditUsageStats": "Credit usage statistics",
 			"viewDetails": "View details"
 		},
+		"activitiesStr": {
+			"participate": "You can participate ",
+			"operationalActivities": "Operational activities",
+			"or": "or",
+			"purchaseQuota": "Purchase quota",
+			"getCreditLimit": "Get credit limit"
+		},
 		"undefined": "1. Check your network connection\n2. Check your proxy/firewall\n3. Contact the administrator",
 		"unknown": "1. Please try again later\n2. Try switching models\n3. Contact the administrator"
 	},

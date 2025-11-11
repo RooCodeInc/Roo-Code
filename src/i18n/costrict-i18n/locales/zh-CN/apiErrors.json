@@ -37,6 +37,13 @@
 			"creditUsageStats": "Credit 用量统计",
 			"viewDetails": "查看详情"
 		},
+		"activitiesStr": {
+			"participate": "您可以参与 ",
+			"operationalActivities": "运营活动",
+			"or": "或",
+			"purchaseQuota": "购买配额",
+			"getCreditLimit": "获取额度"
+		},
 		"undefined": "1.请检查网络连接\n2.请检查代理和防火墙\n3.请联系管理员",
 		"unknown": "1.请稍后重试\n2.请尝试切换其他模型\n3.请联系管理员"
 	},

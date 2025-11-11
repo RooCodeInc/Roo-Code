@@ -11,5 +11,7 @@
 	"starThanksDesc": "您已为 CoStrict 仓库点赞",
 	"starProject": "支持 CoStrict 项目",
 	"starProjectDesc": "为我们的开源项目点赞支持",
-	"starButton": "去点赞"
+	"starButton": "去点赞",
+	"purchaseQuota": "💰 购买更多配额",
+	"joinActivityForQuota": "🎁 参与运营活动获取配额"
 }

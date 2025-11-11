@@ -182,26 +182,10 @@ export class ErrorCodeManager {
 				message = defaultError["401"].message
 				solution = defaultError["401"].solution
 				error.status = status = 401
-			} else if (code === "ai-gateway.insufficient_quota" || code === "ai-gateway.star_required") {
-				const hash = await this.hashToken(apiConfiguration.zgsmAccessToken || "")
-				const baseurl = apiConfiguration.zgsmBaseUrl || ZgsmAuthConfig.getInstance().getDefaultLoginBaseUrl()
-				const isQuota = code === "ai-gateway.insufficient_quota"
-
-				const solution1 = isQuota
-					? t("apiErrors:solution.ai-gateway.insufficientCredits")
-					: t("apiErrors:solution.ai-gateway.pleaseStarProject")
-				const solution2 = isQuota
-					? t("apiErrors:solution.ai-gateway.quotaAcquisition")
-					: t("apiErrors:solution.ai-gateway.howToStar")
-
-				const checkRemainingQuotaStr = !isQuota
-					? `${t("apiErrors:solution.quota-check.checkRemainingQuota")} “ <a href='${baseurl}/credit/manager/credits?state=${hash}' style="font-size: 12px;color:#0078d4;text-decoration: none;">${t("apiErrors:solution.quota-check.creditUsageStats")}</a> ” ${t("apiErrors:solution.quota-check.viewDetails")}`
-					: ""
-
-				solution = `
-<span style="color:#E64545;font-size: 12px;">${solution1}</span> <a href='${baseurl}/credit/manager/md-preview?state=${hash}' style="font-size: 12px;color:#0078d4;text-decoration: none;">${solution2}</a>
-${checkRemainingQuotaStr}
-`
+			} else if (code === "ai-gateway.insufficient_quota") {
+				solution = await this.handleInsufficientQuotaError(apiConfiguration)
+			} else if (code === "ai-gateway.star_required") {
+				solution = await this.handleStarRequiredError(apiConfiguration)
 			}
 			TelemetryService.instance.captureError(`ApiError_${code}`)
 			this.provider.log(`[CoStrict#apiErrors] task ${taskId}.${instanceId} Raw Error: ${rawError}`)
@@ -218,6 +202,47 @@ ${checkRemainingQuotaStr}
 		this.provider.log(`[CoStrict#apiErrors] task ${taskId}.${instanceId} Raw Error: ${rawError}`)
 		return `${t("apiErrors:request.error_details")}\n\n${message}\n\n${requestId ? `RequestID: ${requestId}\n\n` : ""}${t("apiErrors:request.solution")}\n${solution}`
 	}
+
+	/**
+	 * Handling insufficient quota errors
+	 * @param apiConfiguration api config
+	 * @returns string
+	 */
+	private async handleInsufficientQuotaError(apiConfiguration: any): Promise<string> {
+		const hash = await this.hashToken(apiConfiguration.zgsmAccessToken || "")
+		const baseurl = apiConfiguration.zgsmBaseUrl || ZgsmAuthConfig.getInstance().getDefaultLoginBaseUrl()
+
+		const solution1 = t("apiErrors:solution.ai-gateway.insufficientCredits")
+		const solution2 = t("apiErrors:solution.ai-gateway.quotaAcquisition")
+
+		const activitiesStr = `${t("apiErrors:solution.activitiesStr.participate")}<a href='${baseurl}/credit/manager/?state=${hash}&tab=activity' style="font-size: 12px;color:#0078d4;text-decoration: none;">${t("apiErrors:solution.activitiesStr.operationalActivities")}</a> ${t("apiErrors:solution.activitiesStr.or")} <a href='${baseurl}/credit/manager/?state=${hash}&tab=subscription' style="font-size: 12px;color:#0078d4;text-decoration: none;">${t("apiErrors:solution.activitiesStr.purchaseQuota")}</a> ${t("apiErrors:solution.activitiesStr.getCreditLimit")}`
+
+		return `
+<span style="color:#E64545;font-size: 12px;">${solution1}</span> <a href='${baseurl}/credit/manager/md-preview' style="font-size: 12px;color:#0078d4;text-decoration: none;">${solution2}</a>
+\n${activitiesStr}
+`
+	}
+
+	/**
+	 * Handling errors that require starring
+	 * @param apiConfiguration api config
+	 * @returns string
+	 */
+	private async handleStarRequiredError(apiConfiguration: any): Promise<string> {
+		const hash = await this.hashToken(apiConfiguration.zgsmAccessToken || "")
+		const baseurl = apiConfiguration.zgsmBaseUrl || ZgsmAuthConfig.getInstance().getDefaultLoginBaseUrl()
+
+		const solution1 = t("apiErrors:solution.ai-gateway.pleaseStarProject")
+		const solution2 = t("apiErrors:solution.ai-gateway.howToStar")
+
+		const checkRemainingQuotaStr = `${t("apiErrors:solution.quota-check.checkRemainingQuota")} " <a href='${baseurl}/credit/manager/?state=${hash}&tab=usage' style="font-size: 12px;color:#0078d4;text-decoration: none;">${t("apiErrors:solution.quota-check.creditUsageStats")}</a> " ${t("apiErrors:solution.quota-check.viewDetails")}`
+
+		return `
+<span style="color:#E64545;font-size: 12px;">${solution1}</span> <a href='${baseurl}/credit/manager/md-preview' style="font-size: 12px;color:#0078d4;text-decoration: none;">${solution2}</a>
+\n${checkRemainingQuotaStr}
+`
+	}
+
 	private async hashToken(token: string) {
 		const encoder = new TextEncoder()
 		const data = encoder.encode(token)
