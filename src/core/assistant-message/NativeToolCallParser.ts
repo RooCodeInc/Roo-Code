@@ -76,9 +76,17 @@ export class NativeToolCallParser {
 			let nativeArgs: (TName extends keyof NativeToolArgs ? NativeToolArgs[TName] : never) | undefined = undefined
 
 			if (toolCall.name === "read_file") {
-				const files = args.files
-				if (Array.isArray(files)) {
-					nativeArgs = files as TName extends keyof NativeToolArgs ? NativeToolArgs[TName] : never
+				// Handle both single-file and multi-file formats
+				if (args.files && Array.isArray(args.files)) {
+					// Multi-file format: {"files": [{path: "...", line_ranges: [...]}, ...]}
+					nativeArgs = args.files as TName extends keyof NativeToolArgs ? NativeToolArgs[TName] : never
+				} else if (args.path) {
+					// Single-file format: {"path": "..."} - convert to array format
+					const fileEntry: FileEntry = {
+						path: args.path,
+						lineRanges: [],
+					}
+					nativeArgs = [fileEntry] as TName extends keyof NativeToolArgs ? NativeToolArgs[TName] : never
 				}
 			}
 			// Add more tools here as they are migrated to native protocol
