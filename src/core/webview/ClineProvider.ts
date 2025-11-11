@@ -145,6 +145,10 @@ export class ClineProvider
 	private pendingOperations: Map<string, PendingEditOperation> = new Map()
 	private static readonly PENDING_OPERATION_TIMEOUT_MS = 30000 // 30 seconds
 
+	private cloudOrganizationsCache: CloudOrganizationMembership[] | null = null
+	private cloudOrganizationsCacheTimestamp: number | null = null
+	private static readonly CLOUD_ORGANIZATIONS_CACHE_DURATION_MS = 5 * 60 * 1000 // 5 minutes
+
 	public isViewLaunched = false
 	public settingsImportedAt?: number
 	public readonly latestAnnouncementId = "nov-2025-v3.30.0-pr-fixer" // v3.30.0 PR Fixer announcement
@@ -1918,7 +1922,19 @@ export class ClineProvider
 
 		try {
 			if (!CloudService.instance.isCloudAgent) {
-				cloudOrganizations = await CloudService.instance.getOrganizationMemberships()
+				const now = Date.now()
+
+				if (
+					this.cloudOrganizationsCache !== null &&
+					this.cloudOrganizationsCacheTimestamp !== null &&
+					now - this.cloudOrganizationsCacheTimestamp < ClineProvider.CLOUD_ORGANIZATIONS_CACHE_DURATION_MS
+				) {
+					cloudOrganizations = this.cloudOrganizationsCache!
+				} else {
+					cloudOrganizations = await CloudService.instance.getOrganizationMemberships()
+					this.cloudOrganizationsCache = cloudOrganizations
+					this.cloudOrganizationsCacheTimestamp = now
+				}
 			}
 		} catch (error) {
 			// Ignore this error.

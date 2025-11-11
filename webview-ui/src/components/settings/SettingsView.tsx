@@ -27,7 +27,12 @@ import {
 	Glasses,
 } from "lucide-react"
 
-import type { ProviderSettings, ExperimentId, TelemetrySetting } from "@roo-code/types"
+import {
+	type ProviderSettings,
+	type ExperimentId,
+	type TelemetrySetting,
+	DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
+} from "@roo-code/types"
 
 import { vscode } from "@src/utils/vscode"
 import { cn } from "@src/lib/utils"
@@ -320,84 +325,98 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 	const isSettingValid = !errorMessage
 
 	const handleSubmit = () => {
+		console.log(`handleSubmit: isSettingValid = ${isSettingValid}, allowedMaxRequests = ${allowedMaxRequests}`)
+
 		if (isSettingValid) {
-			vscode.postMessage({ type: "language", text: language })
-			vscode.postMessage({ type: "alwaysAllowReadOnly", bool: alwaysAllowReadOnly })
 			vscode.postMessage({
-				type: "alwaysAllowReadOnlyOutsideWorkspace",
-				bool: alwaysAllowReadOnlyOutsideWorkspace,
+				type: "updateSettings",
+				updatedSettings: {
+					language,
+					alwaysAllowReadOnly: alwaysAllowReadOnly ?? undefined,
+					alwaysAllowReadOnlyOutsideWorkspace: alwaysAllowReadOnlyOutsideWorkspace ?? undefined,
+					alwaysAllowWrite: alwaysAllowWrite ?? undefined,
+					alwaysAllowWriteOutsideWorkspace: alwaysAllowWriteOutsideWorkspace ?? undefined,
+					alwaysAllowWriteProtected: alwaysAllowWriteProtected ?? undefined,
+					alwaysAllowExecute: alwaysAllowExecute ?? undefined,
+					alwaysAllowBrowser: alwaysAllowBrowser ?? undefined,
+					alwaysAllowMcp,
+					alwaysAllowModeSwitch,
+					allowedCommands: allowedCommands ?? [],
+					deniedCommands: deniedCommands ?? [],
+					allowedMaxRequests: allowedMaxRequests ?? undefined,
+					allowedMaxCost: allowedMaxCost ?? undefined,
+					autoCondenseContext,
+					autoCondenseContextPercent,
+					browserToolEnabled: browserToolEnabled ?? true,
+					soundEnabled: soundEnabled ?? true,
+					soundVolume: soundVolume ?? 0.5,
+					ttsEnabled,
+					ttsSpeed,
+					diffEnabled: diffEnabled ?? true,
+					enableCheckpoints: enableCheckpoints ?? false,
+					checkpointTimeout: checkpointTimeout ?? DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
+					browserViewportSize: browserViewportSize ?? "900x600",
+					remoteBrowserHost: remoteBrowserEnabled ? remoteBrowserHost : undefined,
+					remoteBrowserEnabled: remoteBrowserEnabled ?? false,
+					fuzzyMatchThreshold: fuzzyMatchThreshold ?? 1.0,
+					writeDelayMs,
+					screenshotQuality: screenshotQuality ?? 75,
+					terminalOutputLineLimit: terminalOutputLineLimit ?? 500,
+					terminalOutputCharacterLimit: terminalOutputCharacterLimit ?? 50_000,
+					terminalShellIntegrationTimeout: terminalShellIntegrationTimeout ?? 30_000,
+					terminalShellIntegrationDisabled,
+					terminalCommandDelay,
+					terminalPowershellCounter,
+					terminalZshClearEolMark,
+					terminalZshOhMy,
+					terminalZshP10k,
+					terminalZdotdir,
+					terminalCompressProgressBar,
+					mcpEnabled,
+					alwaysApproveResubmit: alwaysApproveResubmit ?? false,
+					requestDelaySeconds: requestDelaySeconds ?? 5,
+					maxOpenTabsContext: Math.min(Math.max(0, maxOpenTabsContext ?? 20), 500),
+					maxWorkspaceFiles: Math.min(Math.max(0, maxWorkspaceFiles ?? 200), 500),
+					showRooIgnoredFiles: showRooIgnoredFiles ?? true,
+					maxReadFileLine: maxReadFileLine ?? -1,
+					maxImageFileSize: maxImageFileSize ?? 5,
+					maxTotalImageSize: maxTotalImageSize ?? 20,
+					maxConcurrentFileReads: cachedState.maxConcurrentFileReads ?? 5,
+					includeDiagnosticMessages:
+						includeDiagnosticMessages !== undefined ? includeDiagnosticMessages : true,
+					maxDiagnosticMessages: maxDiagnosticMessages ?? 50,
+					alwaysAllowSubtasks,
+					alwaysAllowUpdateTodoList,
+					alwaysAllowFollowupQuestions: alwaysAllowFollowupQuestions ?? false,
+					followupAutoApproveTimeoutMs,
+					condensingApiConfigId: condensingApiConfigId || "",
+					includeTaskHistoryInEnhance: includeTaskHistoryInEnhance ?? true,
+					reasoningBlockCollapsed: reasoningBlockCollapsed ?? true,
+					includeCurrentTime: includeCurrentTime ?? true,
+					includeCurrentCost: includeCurrentCost ?? true,
+					profileThresholds,
+				},
 			})
-			vscode.postMessage({ type: "alwaysAllowWrite", bool: alwaysAllowWrite })
-			vscode.postMessage({ type: "alwaysAllowWriteOutsideWorkspace", bool: alwaysAllowWriteOutsideWorkspace })
-			vscode.postMessage({ type: "alwaysAllowWriteProtected", bool: alwaysAllowWriteProtected })
-			vscode.postMessage({ type: "alwaysAllowExecute", bool: alwaysAllowExecute })
-			vscode.postMessage({ type: "alwaysAllowBrowser", bool: alwaysAllowBrowser })
-			vscode.postMessage({ type: "alwaysAllowMcp", bool: alwaysAllowMcp })
-			vscode.postMessage({ type: "allowedCommands", commands: allowedCommands ?? [] })
-			vscode.postMessage({ type: "deniedCommands", commands: deniedCommands ?? [] })
-			vscode.postMessage({ type: "allowedMaxRequests", value: allowedMaxRequests ?? undefined })
-			vscode.postMessage({ type: "allowedMaxCost", value: allowedMaxCost ?? undefined })
-			vscode.postMessage({ type: "autoCondenseContext", bool: autoCondenseContext })
-			vscode.postMessage({ type: "autoCondenseContextPercent", value: autoCondenseContextPercent })
-			vscode.postMessage({ type: "browserToolEnabled", bool: browserToolEnabled })
-			vscode.postMessage({ type: "soundEnabled", bool: soundEnabled })
-			vscode.postMessage({ type: "ttsEnabled", bool: ttsEnabled })
-			vscode.postMessage({ type: "ttsSpeed", value: ttsSpeed })
-			vscode.postMessage({ type: "soundVolume", value: soundVolume })
-			vscode.postMessage({ type: "diffEnabled", bool: diffEnabled })
-			vscode.postMessage({ type: "enableCheckpoints", bool: enableCheckpoints })
-			vscode.postMessage({ type: "checkpointTimeout", value: checkpointTimeout })
-			vscode.postMessage({ type: "browserViewportSize", text: browserViewportSize })
-			vscode.postMessage({ type: "remoteBrowserHost", text: remoteBrowserHost })
-			vscode.postMessage({ type: "remoteBrowserEnabled", bool: remoteBrowserEnabled })
-			vscode.postMessage({ type: "fuzzyMatchThreshold", value: fuzzyMatchThreshold ?? 1.0 })
-			vscode.postMessage({ type: "writeDelayMs", value: writeDelayMs })
-			vscode.postMessage({ type: "screenshotQuality", value: screenshotQuality ?? 75 })
-			vscode.postMessage({ type: "terminalOutputLineLimit", value: terminalOutputLineLimit ?? 500 })
-			vscode.postMessage({ type: "terminalOutputCharacterLimit", value: terminalOutputCharacterLimit ?? 50000 })
-			vscode.postMessage({ type: "terminalShellIntegrationTimeout", value: terminalShellIntegrationTimeout })
-			vscode.postMessage({ type: "terminalShellIntegrationDisabled", bool: terminalShellIntegrationDisabled })
-			vscode.postMessage({ type: "terminalCommandDelay", value: terminalCommandDelay })
-			vscode.postMessage({ type: "terminalPowershellCounter", bool: terminalPowershellCounter })
-			vscode.postMessage({ type: "terminalZshClearEolMark", bool: terminalZshClearEolMark })
-			vscode.postMessage({ type: "terminalZshOhMy", bool: terminalZshOhMy })
-			vscode.postMessage({ type: "terminalZshP10k", bool: terminalZshP10k })
-			vscode.postMessage({ type: "terminalZdotdir", bool: terminalZdotdir })
-			vscode.postMessage({ type: "terminalCompressProgressBar", bool: terminalCompressProgressBar })
-			vscode.postMessage({ type: "mcpEnabled", bool: mcpEnabled })
-			vscode.postMessage({ type: "alwaysApproveResubmit", bool: alwaysApproveResubmit })
-			vscode.postMessage({ type: "requestDelaySeconds", value: requestDelaySeconds })
-			vscode.postMessage({ type: "maxOpenTabsContext", value: maxOpenTabsContext })
-			vscode.postMessage({ type: "maxWorkspaceFiles", value: maxWorkspaceFiles ?? 200 })
-			vscode.postMessage({ type: "showRooIgnoredFiles", bool: showRooIgnoredFiles })
-			vscode.postMessage({ type: "maxReadFileLine", value: maxReadFileLine ?? -1 })
-			vscode.postMessage({ type: "maxImageFileSize", value: maxImageFileSize ?? 5 })
-			vscode.postMessage({ type: "maxTotalImageSize", value: maxTotalImageSize ?? 20 })
-			vscode.postMessage({ type: "maxConcurrentFileReads", value: cachedState.maxConcurrentFileReads ?? 5 })
-			vscode.postMessage({ type: "includeDiagnosticMessages", bool: includeDiagnosticMessages })
-			vscode.postMessage({ type: "maxDiagnosticMessages", value: maxDiagnosticMessages ?? 50 })
-			vscode.postMessage({ type: "currentApiConfigName", text: currentApiConfigName })
+
+			// These have more complex logic so they aren't (yet) handled
+			// by the `updateSettings` message.
 			vscode.postMessage({ type: "updateExperimental", values: experiments })
-			vscode.postMessage({ type: "alwaysAllowModeSwitch", bool: alwaysAllowModeSwitch })
-			vscode.postMessage({ type: "alwaysAllowSubtasks", bool: alwaysAllowSubtasks })
-			vscode.postMessage({ type: "alwaysAllowFollowupQuestions", bool: alwaysAllowFollowupQuestions })
-			vscode.postMessage({ type: "alwaysAllowUpdateTodoList", bool: alwaysAllowUpdateTodoList })
-			vscode.postMessage({ type: "followupAutoApproveTimeoutMs", value: followupAutoApproveTimeoutMs })
-			vscode.postMessage({ type: "condensingApiConfigId", text: condensingApiConfigId || "" })
 			vscode.postMessage({ type: "updateCondensingPrompt", text: customCondensingPrompt || "" })
 			vscode.postMessage({ type: "updateSupportPrompt", values: customSupportPrompts || {} })
-			vscode.postMessage({ type: "includeTaskHistoryInEnhance", bool: includeTaskHistoryInEnhance ?? true })
-			vscode.postMessage({ type: "setReasoningBlockCollapsed", bool: reasoningBlockCollapsed ?? true })
-			vscode.postMessage({ type: "includeCurrentTime", bool: includeCurrentTime ?? true })
-			vscode.postMessage({ type: "includeCurrentCost", bool: includeCurrentCost ?? true })
 			vscode.postMessage({ type: "upsertApiConfiguration", text: currentApiConfigName, apiConfiguration })
 			vscode.postMessage({ type: "telemetrySetting", text: telemetrySetting })
-			vscode.postMessage({ type: "profileThresholds", values: profileThresholds })
+
+			// These update secret values rather than global state so they
+			// aren't (yet) handled by the `updateSettings` message.
+			// I'm not sure why`openRouterImageGenerationSelectedModel` is
+			// a secret value rather than global state; we should consider
+			// changing that.
 			vscode.postMessage({ type: "openRouterImageApiKey", text: openRouterImageApiKey })
 			vscode.postMessage({
 				type: "openRouterImageGenerationSelectedModel",
 				text: openRouterImageGenerationSelectedModel,
 			})
+
 			setChangeDetected(false)
 		}
 	}

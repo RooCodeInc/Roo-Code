@@ -1,4 +1,4 @@
-import { HTMLAttributes, useState } from "react"
+import { HTMLAttributes, useEffect, useState } from "react"
 import { X, CheckCheck } from "lucide-react"
 import { Trans } from "react-i18next"
 import { Package } from "@roo/package"
@@ -99,7 +99,7 @@ export const AutoApproveSettings = ({
 			const newCommands = [...currentCommands, commandInput]
 			setCachedStateField("allowedCommands", newCommands)
 			setCommandInput("")
-			vscode.postMessage({ type: "allowedCommands", commands: newCommands })
+			vscode.postMessage({ type: "updateSettings", updatedSettings: { allowedCommands: newCommands } })
 		}
 	}
 
@@ -110,9 +110,13 @@ export const AutoApproveSettings = ({
 			const newCommands = [...currentCommands, deniedCommandInput]
 			setCachedStateField("deniedCommands", newCommands)
 			setDeniedCommandInput("")
-			vscode.postMessage({ type: "deniedCommands", commands: newCommands })
+			vscode.postMessage({ type: "updateSettings", updatedSettings: { deniedCommands: newCommands } })
 		}
 	}
+
+	useEffect(() => {
+		console.log(`useEffect: allowedMaxRequests = ${allowedMaxRequests}, allowedMaxCost = ${allowedMaxCost}`)
+	}, [allowedMaxRequests, allowedMaxCost])
 
 	return (
 		<div {...props}>
@@ -341,7 +345,11 @@ export const AutoApproveSettings = ({
 									onClick={() => {
 										const newCommands = (allowedCommands ?? []).filter((_, i) => i !== index)
 										setCachedStateField("allowedCommands", newCommands)
-										vscode.postMessage({ type: "allowedCommands", commands: newCommands })
+
+										vscode.postMessage({
+											type: "updateSettings",
+											updatedSettings: { allowedCommands: newCommands },
+										})
 									}}>
 									<div className="flex flex-row items-center gap-1">
 										<div>{cmd}</div>
@@ -392,7 +400,11 @@ export const AutoApproveSettings = ({
 									onClick={() => {
 										const newCommands = (deniedCommands ?? []).filter((_, i) => i !== index)
 										setCachedStateField("deniedCommands", newCommands)
-										vscode.postMessage({ type: "deniedCommands", commands: newCommands })
+
+										vscode.postMessage({
+											type: "updateSettings",
+											updatedSettings: { deniedCommands: newCommands },
+										})
 									}}>
 									<div className="flex flex-row items-center gap-1">
 										<div>{cmd}</div>

@@ -89,8 +89,11 @@ export const CommandExecution = ({ executionId, text, icon, title }: CommandExec
 
 		setAllowedCommands(newAllowed)
 		setDeniedCommands(newDenied)
-		vscode.postMessage({ type: "allowedCommands", commands: newAllowed })
-		vscode.postMessage({ type: "deniedCommands", commands: newDenied })
+
+		vscode.postMessage({
+			type: "updateSettings",
+			updatedSettings: { allowedCommands: newAllowed, deniedCommands: newDenied },
+		})
 	}
 
 	const handleDenyPatternChange = (pattern: string) => {
@@ -100,8 +103,11 @@ export const CommandExecution = ({ executionId, text, icon, title }: CommandExec
 
 		setAllowedCommands(newAllowed)
 		setDeniedCommands(newDenied)
-		vscode.postMessage({ type: "allowedCommands", commands: newAllowed })
-		vscode.postMessage({ type: "deniedCommands", commands: newDenied })
+
+		vscode.postMessage({
+			type: "updateSettings",
+			updatedSettings: { allowedCommands: newAllowed, deniedCommands: newDenied },
+		})
 	}
 
 	const onMessage = useCallback(
