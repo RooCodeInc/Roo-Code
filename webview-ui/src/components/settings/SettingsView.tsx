@@ -325,8 +325,6 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 	const isSettingValid = !errorMessage
 
 	const handleSubmit = () => {
-		console.log(`handleSubmit: isSettingValid = ${isSettingValid}, allowedMaxRequests = ${allowedMaxRequests}`)
-
 		if (isSettingValid) {
 			vscode.postMessage({
 				type: "updateSettings",
