@@ -27,38 +27,38 @@ export class ListFilesTool extends BaseTool<"list_files"> {
 		}
 	}
 
-	async execute(params: ListFilesParams, cline: Task, callbacks: ToolCallbacks): Promise<void> {
+	async execute(params: ListFilesParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
 		const { path: relDirPath, recursive } = params
 		const { askApproval, handleError, pushToolResult, removeClosingTag } = callbacks
 
 		try {
 			if (!relDirPath) {
-				cline.consecutiveMistakeCount++
-				cline.recordToolError("list_files")
-				pushToolResult(await cline.sayAndCreateMissingParamError("list_files", "path"))
+				task.consecutiveMistakeCount++
+				task.recordToolError("list_files")
+				pushToolResult(await task.sayAndCreateMissingParamError("list_files", "path"))
 				return
 			}
 
-			cline.consecutiveMistakeCount = 0
+			task.consecutiveMistakeCount = 0
 
-			const absolutePath = path.resolve(cline.cwd, relDirPath)
+			const absolutePath = path.resolve(task.cwd, relDirPath)
 			const isOutsideWorkspace = isPathOutsideWorkspace(absolutePath)
 
 			const [files, didHitLimit] = await listFiles(absolutePath, recursive || false, 200)
-			const { showRooIgnoredFiles = false } = (await cline.providerRef.deref()?.getState()) ?? {}
+			const { showRooIgnoredFiles = false } = (await task.providerRef.deref()?.getState()) ?? {}
 
 			const result = formatResponse.formatFilesList(
 				absolutePath,
 				files,
 				didHitLimit,
-				cline.rooIgnoreController,
+				task.rooIgnoreController,
 				showRooIgnoredFiles,
-				cline.rooProtectedController,
+				task.rooProtectedController,
 			)
 
 			const sharedMessageProps: ClineSayTool = {
 				tool: !recursive ? "listFilesTopLevel" : "listFilesRecursive",
-				path: getReadablePath(cline.cwd, relDirPath),
+				path: getReadablePath(task.cwd, relDirPath),
 				isOutsideWorkspace,
 			}
 
@@ -75,22 +75,22 @@ export class ListFilesTool extends BaseTool<"list_files"> {
 		}
 	}
 
-	override async handlePartial(cline: Task, block: ToolUse<"list_files">): Promise<void> {
+	override async handlePartial(task: Task, block: ToolUse<"list_files">): Promise<void> {
 		const relDirPath: string | undefined = block.params.path
 		const recursiveRaw: string | undefined = block.params.recursive
 		const recursive = recursiveRaw?.toLowerCase() === "true"
 
-		const absolutePath = relDirPath ? path.resolve(cline.cwd, relDirPath) : cline.cwd
+		const absolutePath = relDirPath ? path.resolve(task.cwd, relDirPath) : task.cwd
 		const isOutsideWorkspace = isPathOutsideWorkspace(absolutePath)
 
 		const sharedMessageProps: ClineSayTool = {
 			tool: !recursive ? "listFilesTopLevel" : "listFilesRecursive",
-			path: getReadablePath(cline.cwd, this.removeClosingTag("path", relDirPath, block.partial)),
+			path: getReadablePath(task.cwd, this.removeClosingTag("path", relDirPath, block.partial)),
 			isOutsideWorkspace,
 		}
 
 		const partialMessage = JSON.stringify({ ...sharedMessageProps, content: "" } satisfies ClineSayTool)
-		await cline.ask("tool", partialMessage, block.partial).catch(() => {})
+		await task.ask("tool", partialMessage, block.partial).catch(() => {})
 	}
 
 	private removeClosingTag(tag: string, text: string | undefined, isPartial: boolean): string {

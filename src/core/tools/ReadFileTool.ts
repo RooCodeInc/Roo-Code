@@ -111,24 +111,21 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 		return fileEntries
 	}
 
-	async execute(fileEntries: FileEntry[], cline: Task, callbacks: ToolCallbacks): Promise<void> {
-		console.log(`[NATIVE_TOOL] ReadFileTool.execute() called for task ${cline.taskId}`)
+	async execute(fileEntries: FileEntry[], task: Task, callbacks: ToolCallbacks): Promise<void> {
+		console.log(`[NATIVE_TOOL] ReadFileTool.execute() called for task ${task.taskId}`)
 		console.log(`[NATIVE_TOOL] File entries:`, JSON.stringify(fileEntries, null, 2))
 
 		const { handleError, pushToolResult } = callbacks
 
 		if (fileEntries.length === 0) {
-			cline.consecutiveMistakeCount++
-			cline.recordToolError("read_file")
-			const errorMsg = await cline.sayAndCreateMissingParamError(
-				"read_file",
-				"args (containing valid file paths)",
-			)
+			task.consecutiveMistakeCount++
+			task.recordToolError("read_file")
+			const errorMsg = await task.sayAndCreateMissingParamError("read_file", "args (containing valid file paths)")
 			pushToolResult(`<files><error>${errorMsg}</error></files>`)
 			return
 		}
 
-		const modelInfo = cline.api.getModel().info
+		const modelInfo = task.api.getModel().info
 		const supportsImages = modelInfo.supportsImages ?? false
 
 		const fileResults: FileResult[] = fileEntries.map((entry) => ({
@@ -149,7 +146,7 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 
 			for (const fileResult of fileResults) {
 				const relPath = fileResult.path
-				const fullPath = path.resolve(cline.cwd, relPath)
+				const fullPath = path.resolve(task.cwd, relPath)
 
 				if (fileResult.lineRanges) {
 					let hasRangeError = false
@@ -181,9 +178,9 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 				}
 
 				if (fileResult.status === "pending") {
-					const accessAllowed = cline.rooIgnoreController?.validateAccess(relPath)
+					const accessAllowed = task.rooIgnoreController?.validateAccess(relPath)
 					if (!accessAllowed) {
-						await cline.say("rooignore_error", relPath)
+						await task.say("rooignore_error", relPath)
 						const errorMsg = formatResponse.rooIgnoreError(relPath)
 						updateFileResult(relPath, {
 							status: "blocked",
@@ -198,11 +195,11 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 			}
 
 			if (filesToApprove.length > 1) {
-				const { maxReadFileLine = -1 } = (await cline.providerRef.deref()?.getState()) ?? {}
+				const { maxReadFileLine = -1 } = (await task.providerRef.deref()?.getState()) ?? {}
 
 				const batchFiles = filesToApprove.map((fileResult) => {
 					const relPath = fileResult.path
-					const fullPath = path.resolve(cline.cwd, relPath)
+					const fullPath = path.resolve(task.cwd, relPath)
 					const isOutsideWorkspace = isPathOutsideWorkspace(fullPath)
 
 					let lineSnippet = ""
@@ -217,17 +214,17 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 						lineSnippet = t("tools:readFile.maxLines", { max: maxReadFileLine })
 					}
 
-					const readablePath = getReadablePath(cline.cwd, relPath)
+					const readablePath = getReadablePath(task.cwd, relPath)
 					const key = `${readablePath}${lineSnippet ? ` (${lineSnippet})` : ""}`
 
 					return { path: readablePath, lineSnippet, isOutsideWorkspace, key, content: fullPath }
 				})
 
 				const completeMessage = JSON.stringify({ tool: "readFile", batchFiles } satisfies ClineSayTool)
-				const { response, text, images } = await cline.ask("tool", completeMessage, false)
+				const { response, text, images } = await task.ask("tool", completeMessage, false)
 
 				if (response === "yesButtonClicked") {
-					if (text) await cline.say("user_feedback", text, images)
+					if (text) await task.say("user_feedback", text, images)
 					filesToApprove.forEach((fileResult) => {
 						updateFileResult(fileResult.path, {
 							status: "approved",
@@ -236,8 +233,8 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 						})
 					})
 				} else if (response === "noButtonClicked") {
-					if (text) await cline.say("user_feedback", text, images)
-					cline.didRejectTool = true
+					if (text) await task.say("user_feedback", text, images)
+					task.didRejectTool = true
 					filesToApprove.forEach((fileResult) => {
 						updateFileResult(fileResult.path, {
 							status: "denied",
@@ -266,10 +263,10 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 							}
 						})
 
-						if (hasAnyDenial) cline.didRejectTool = true
+						if (hasAnyDenial) task.didRejectTool = true
 					} catch (error) {
 						console.error("Failed to parse individual permissions:", error)
-						cline.didRejectTool = true
+						task.didRejectTool = true
 						filesToApprove.forEach((fileResult) => {
 							updateFileResult(fileResult.path, {
 								status: "denied",
@@ -281,9 +278,9 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 			} else if (filesToApprove.length === 1) {
 				const fileResult = filesToApprove[0]
 				const relPath = fileResult.path
-				const fullPath = path.resolve(cline.cwd, relPath)
+				const fullPath = path.resolve(task.cwd, relPath)
 				const isOutsideWorkspace = isPathOutsideWorkspace(fullPath)
-				const { maxReadFileLine = -1 } = (await cline.providerRef.deref()?.getState()) ?? {}
+				const { maxReadFileLine = -1 } = (await task.providerRef.deref()?.getState()) ?? {}
 
 				let lineSnippet = ""
 				if (fileResult.lineRanges && fileResult.lineRanges.length > 0) {
@@ -299,17 +296,17 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 
 				const completeMessage = JSON.stringify({
 					tool: "readFile",
-					path: getReadablePath(cline.cwd, relPath),
+					path: getReadablePath(task.cwd, relPath),
 					isOutsideWorkspace,
 					content: fullPath,
 					reason: lineSnippet,
 				} satisfies ClineSayTool)
 
-				const { response, text, images } = await cline.ask("tool", completeMessage, false)
+				const { response, text, images } = await task.ask("tool", completeMessage, false)
 
 				if (response !== "yesButtonClicked") {
-					if (text) await cline.say("user_feedback", text, images)
-					cline.didRejectTool = true
+					if (text) await task.say("user_feedback", text, images)
+					task.didRejectTool = true
 					updateFileResult(relPath, {
 						status: "denied",
 						xmlContent: `<file><path>${relPath}</path><status>Denied by user</status></file>`,
@@ -317,13 +314,13 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 						feedbackImages: images,
 					})
 				} else {
-					if (text) await cline.say("user_feedback", text, images)
+					if (text) await task.say("user_feedback", text, images)
 					updateFileResult(relPath, { status: "approved", feedbackText: text, feedbackImages: images })
 				}
 			}
 
 			const imageMemoryTracker = new ImageMemoryTracker()
-			const state = await cline.providerRef.deref()?.getState()
+			const state = await task.providerRef.deref()?.getState()
 			const {
 				maxReadFileLine = -1,
 				maxImageFileSize = DEFAULT_MAX_IMAGE_FILE_SIZE_MB,
@@ -334,7 +331,7 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 				if (fileResult.status !== "approved") continue
 
 				const relPath = fileResult.path
-				const fullPath = path.resolve(cline.cwd, relPath)
+				const fullPath = path.resolve(task.cwd, relPath)
 
 				try {
 					const [totalLines, isBinary] = await Promise.all([countFileLines(fullPath), isBinaryFile(fullPath)])
@@ -354,10 +351,7 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 								)
 
 								if (!validationResult.isValid) {
-									await cline.fileContextTracker.trackFileContext(
-										relPath,
-										"read_tool" as RecordSource,
-									)
+									await task.fileContextTracker.trackFileContext(relPath, "read_tool" as RecordSource)
 									updateFileResult(relPath, {
 										xmlContent: `<file><path>${relPath}</path>\n<notice>${validationResult.notice}</notice>\n</file>`,
 									})
@@ -366,7 +360,7 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 
 								const imageResult = await processImageFile(fullPath)
 								imageMemoryTracker.addMemoryUsage(imageResult.sizeInMB)
-								await cline.fileContextTracker.trackFileContext(relPath, "read_tool" as RecordSource)
+								await task.fileContextTracker.trackFileContext(relPath, "read_tool" as RecordSource)
 
 								updateFileResult(relPath, {
 									xmlContent: `<file><path>${relPath}</path>\n<notice>${imageResult.notice}</notice>\n</file>`,
@@ -420,7 +414,7 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 						try {
 							const defResult = await parseSourceCodeDefinitionsForFile(
 								fullPath,
-								cline.rooIgnoreController,
+								task.rooIgnoreController,
 							)
 							if (defResult) {
 								let xmlInfo = `<notice>Showing only ${maxReadFileLine} of ${totalLines} total lines. Use line_range if you need to read more lines</notice>\n`
@@ -448,7 +442,7 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 						try {
 							const defResult = await parseSourceCodeDefinitionsForFile(
 								fullPath,
-								cline.rooIgnoreController,
+								task.rooIgnoreController,
 							)
 							if (defResult) {
 								const truncatedDefs = truncateDefinitionsToLineLimit(defResult, maxReadFileLine)
@@ -470,8 +464,8 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 						continue
 					}
 
-					const modelInfo = cline.api.getModel().info
-					const { contextTokens } = cline.getTokenUsage()
+					const modelInfo = task.api.getModel().info
+					const { contextTokens } = task.getTokenUsage()
 					const contextWindow = modelInfo.contextWindow
 
 					const budgetResult = await validateFileTokenBudget(fullPath, contextWindow, contextTokens || 0)
@@ -505,7 +499,7 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 						}
 					}
 
-					await cline.fileContextTracker.trackFileContext(relPath, "read_tool" as RecordSource)
+					await task.fileContextTracker.trackFileContext(relPath, "read_tool" as RecordSource)
 
 					updateFileResult(relPath, { xmlContent: `<file><path>${relPath}</path>\n${xmlInfo}</file>` })
 				} catch (error) {
@@ -534,7 +528,7 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 			if (deniedWithFeedback && deniedWithFeedback.feedbackText) {
 				statusMessage = formatResponse.toolDeniedWithFeedback(deniedWithFeedback.feedbackText)
 				feedbackImages = deniedWithFeedback.feedbackImages || []
-			} else if (cline.didRejectTool) {
+			} else if (task.didRejectTool) {
 				statusMessage = formatResponse.toolDenied()
 			} else {
 				const approvedWithFeedback = fileResults.find(
@@ -549,7 +543,7 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 
 			const allImages = [...feedbackImages, ...fileImageUrls]
 
-			const finalModelSupportsImages = cline.api.getModel().info.supportsImages ?? false
+			const finalModelSupportsImages = task.api.getModel().info.supportsImages ?? false
 			const imagesToInclude = finalModelSupportsImages ? allImages : []
 
 			if (statusMessage || imagesToInclude.length > 0) {
@@ -662,7 +656,7 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 		return `[${blockName} with missing path/args/files]`
 	}
 
-	override async handlePartial(cline: Task, block: ToolUse<"read_file">): Promise<void> {
+	override async handlePartial(task: Task, block: ToolUse<"read_file">): Promise<void> {
 		const argsXmlTag = block.params.args
 		const legacyPath = block.params.path
 
@@ -675,17 +669,17 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 			filePath = legacyPath
 		}
 
-		const fullPath = filePath ? path.resolve(cline.cwd, filePath) : ""
+		const fullPath = filePath ? path.resolve(task.cwd, filePath) : ""
 		const sharedMessageProps: ClineSayTool = {
 			tool: "readFile",
-			path: getReadablePath(cline.cwd, filePath),
+			path: getReadablePath(task.cwd, filePath),
 			isOutsideWorkspace: filePath ? isPathOutsideWorkspace(fullPath) : false,
 		}
 		const partialMessage = JSON.stringify({
 			...sharedMessageProps,
 			content: undefined,
 		} satisfies ClineSayTool)
-		await cline.ask("tool", partialMessage, block.partial).catch(() => {})
+		await task.ask("tool", partialMessage, block.partial).catch(() => {})
 	}
 }
 

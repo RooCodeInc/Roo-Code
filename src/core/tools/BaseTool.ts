@@ -65,10 +65,10 @@ export abstract class BaseTool<TName extends ToolName> {
 	 * the tool's operation.
 	 *
 	 * @param params - Typed parameters
-	 * @param cline - Task instance with state and API access
+	 * @param task - Task instance with state and API access
 	 * @param callbacks - Tool execution callbacks (approval, error handling, results)
 	 */
-	abstract execute(params: ToolParams<TName>, cline: Task, callbacks: ToolCallbacks): Promise<void>
+	abstract execute(params: ToolParams<TName>, task: Task, callbacks: ToolCallbacks): Promise<void>
 
 	/**
 	 * Handle partial (streaming) tool messages.
@@ -76,10 +76,10 @@ export abstract class BaseTool<TName extends ToolName> {
 	 * Default implementation does nothing. Tools that support streaming
 	 * partial messages should override this.
 	 *
-	 * @param cline - Task instance
+	 * @param task - Task instance
 	 * @param block - Partial ToolUse block
 	 */
-	async handlePartial(cline: Task, block: ToolUse<TName>): Promise<void> {
+	async handlePartial(task: Task, block: ToolUse<TName>): Promise<void> {
 		// Default: no-op for partial messages
 		// Tools can override to show streaming UI updates
 	}
@@ -92,11 +92,11 @@ export abstract class BaseTool<TName extends ToolName> {
 	 * 2. Parameter parsing (parseLegacy for XML, or use nativeArgs directly)
 	 * 3. Core execution (execute)
 	 *
-	 * @param cline - Task instance
+	 * @param task - Task instance
 	 * @param block - ToolUse block from assistant message
 	 * @param callbacks - Tool execution callbacks
 	 */
-	async handle(cline: Task, block: ToolUse<TName>, callbacks: ToolCallbacks): Promise<void> {
+	async handle(task: Task, block: ToolUse<TName>, callbacks: ToolCallbacks): Promise<void> {
 		console.log(`[NATIVE_TOOL] BaseTool.handle called for tool: ${this.name}`)
 		console.log(
 			`[NATIVE_TOOL] Block:`,
@@ -110,7 +110,7 @@ export abstract class BaseTool<TName extends ToolName> {
 		// Handle partial messages
 		if (block.partial) {
 			console.log(`[NATIVE_TOOL] Block is partial, calling handlePartial`)
-			await this.handlePartial(cline, block)
+			await this.handlePartial(task, block)
 			return
 		}
 
@@ -138,7 +138,7 @@ export abstract class BaseTool<TName extends ToolName> {
 		console.log(`[NATIVE_TOOL] Parsed params:`, JSON.stringify(params, null, 2))
 		console.log(`[NATIVE_TOOL] Calling execute()`)
 		// Execute with typed parameters
-		await this.execute(params, cline, callbacks)
+		await this.execute(params, task, callbacks)
 		console.log(`[NATIVE_TOOL] Execute completed`)
 	}
 }

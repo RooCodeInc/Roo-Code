@@ -30,7 +30,7 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 		}
 	}
 
-	async execute(params: AttemptCompletionParams, cline: Task, callbacks: AttemptCompletionCallbacks): Promise<void> {
+	async execute(params: AttemptCompletionParams, task: Task, callbacks: AttemptCompletionCallbacks): Promise<void> {
 		const { result } = params
 		const { handleError, pushToolResult, askFinishSubTaskApproval, toolDescription } = callbacks
 
@@ -38,11 +38,11 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 			.getConfiguration(Package.name)
 			.get<boolean>("preventCompletionWithOpenTodos", false)
 
-		const hasIncompleteTodos = cline.todoList && cline.todoList.some((todo) => todo.status !== "completed")
+		const hasIncompleteTodos = task.todoList && task.todoList.some((todo) => todo.status !== "completed")
 
 		if (preventCompletionWithOpenTodos && hasIncompleteTodos) {
-			cline.consecutiveMistakeCount++
-			cline.recordToolError("attempt_completion")
+			task.consecutiveMistakeCount++
+			task.recordToolError("attempt_completion")
 
 			pushToolResult(
 				formatResponse.toolError(
@@ -55,37 +55,37 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 
 		try {
 			if (!result) {
-				cline.consecutiveMistakeCount++
-				cline.recordToolError("attempt_completion")
-				pushToolResult(await cline.sayAndCreateMissingParamError("attempt_completion", "result"))
+				task.consecutiveMistakeCount++
+				task.recordToolError("attempt_completion")
+				pushToolResult(await task.sayAndCreateMissingParamError("attempt_completion", "result"))
 				return
 			}
 
-			cline.consecutiveMistakeCount = 0
+			task.consecutiveMistakeCount = 0
 
-			await cline.say("completion_result", result, undefined, false)
-			TelemetryService.instance.captureTaskCompleted(cline.taskId)
-			cline.emit(RooCodeEventName.TaskCompleted, cline.taskId, cline.getTokenUsage(), cline.toolUsage)
+			await task.say("completion_result", result, undefined, false)
+			TelemetryService.instance.captureTaskCompleted(task.taskId)
+			task.emit(RooCodeEventName.TaskCompleted, task.taskId, task.getTokenUsage(), task.toolUsage)
 
-			if (cline.parentTask) {
+			if (task.parentTask) {
 				const didApprove = await askFinishSubTaskApproval()
 
 				if (!didApprove) {
 					return
 				}
 
-				await cline.providerRef.deref()?.finishSubTask(result)
+				await task.providerRef.deref()?.finishSubTask(result)
 				return
 			}
 
-			const { response, text, images } = await cline.ask("completion_result", "", false)
+			const { response, text, images } = await task.ask("completion_result", "", false)
 
 			if (response === "yesButtonClicked") {
 				pushToolResult("")
 				return
 			}
 
-			await cline.say("user_feedback", text ?? "", images)
+			await task.say("user_feedback", text ?? "", images)
 			const toolResults: (Anthropic.TextBlockParam | Anthropic.ImageBlockParam)[] = []
 
 			toolResults.push({
@@ -94,41 +94,41 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 			})
 
 			toolResults.push(...formatResponse.imageBlocks(images))
-			cline.userMessageContent.push({ type: "text", text: `${toolDescription()} Result:` })
-			cline.userMessageContent.push(...toolResults)
+			task.userMessageContent.push({ type: "text", text: `${toolDescription()} Result:` })
+			task.userMessageContent.push(...toolResults)
 		} catch (error) {
 			await handleError("inspecting site", error as Error)
 		}
 	}
 
-	override async handlePartial(cline: Task, block: ToolUse<"attempt_completion">): Promise<void> {
+	override async handlePartial(task: Task, block: ToolUse<"attempt_completion">): Promise<void> {
 		const result: string | undefined = block.params.result
 		const command: string | undefined = block.params.command
 
-		const lastMessage = cline.clineMessages.at(-1)
+		const lastMessage = task.clineMessages.at(-1)
 
 		if (command) {
 			if (lastMessage && lastMessage.ask === "command") {
-				await cline
+				await task
 					.ask("command", this.removeClosingTag("command", command, block.partial), block.partial)
 					.catch(() => {})
 			} else {
-				await cline.say(
+				await task.say(
 					"completion_result",
 					this.removeClosingTag("result", result, block.partial),
 					undefined,
 					false,
 				)
 
-				TelemetryService.instance.captureTaskCompleted(cline.taskId)
-				cline.emit(RooCodeEventName.TaskCompleted, cline.taskId, cline.getTokenUsage(), cline.toolUsage)
+				TelemetryService.instance.captureTaskCompleted(task.taskId)
+				task.emit(RooCodeEventName.TaskCompleted, task.taskId, task.getTokenUsage(), task.toolUsage)
 
-				await cline
+				await task
 					.ask("command", this.removeClosingTag("command", command, block.partial), block.partial)
 					.catch(() => {})
 			}
 		} else {
-			await cline.say(
+			await task.say(
 				"completion_result",
 				this.removeClosingTag("result", result, block.partial),
 				undefined,

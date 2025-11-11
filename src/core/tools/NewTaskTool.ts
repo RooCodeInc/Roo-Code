@@ -28,28 +28,28 @@ export class NewTaskTool extends BaseTool<"new_task"> {
 		}
 	}
 
-	async execute(params: NewTaskParams, cline: Task, callbacks: ToolCallbacks): Promise<void> {
+	async execute(params: NewTaskParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
 		const { mode, message, todos } = params
 		const { askApproval, handleError, pushToolResult } = callbacks
 
 		try {
 			// Validate required parameters.
 			if (!mode) {
-				cline.consecutiveMistakeCount++
-				cline.recordToolError("new_task")
-				pushToolResult(await cline.sayAndCreateMissingParamError("new_task", "mode"))
+				task.consecutiveMistakeCount++
+				task.recordToolError("new_task")
+				pushToolResult(await task.sayAndCreateMissingParamError("new_task", "mode"))
 				return
 			}
 
 			if (!message) {
-				cline.consecutiveMistakeCount++
-				cline.recordToolError("new_task")
-				pushToolResult(await cline.sayAndCreateMissingParamError("new_task", "message"))
+				task.consecutiveMistakeCount++
+				task.recordToolError("new_task")
+				pushToolResult(await task.sayAndCreateMissingParamError("new_task", "message"))
 				return
 			}
 
 			// Get the VSCode setting for requiring todos.
-			const provider = cline.providerRef.deref()
+			const provider = task.providerRef.deref()
 
 			if (!provider) {
 				pushToolResult(formatResponse.toolError("Provider reference lost"))
@@ -67,9 +67,9 @@ export class NewTaskTool extends BaseTool<"new_task"> {
 			// Check if todos are required based on VSCode setting.
 			// Note: `undefined` means not provided, empty string is valid.
 			if (requireTodos && todos === undefined) {
-				cline.consecutiveMistakeCount++
-				cline.recordToolError("new_task")
-				pushToolResult(await cline.sayAndCreateMissingParamError("new_task", "todos"))
+				task.consecutiveMistakeCount++
+				task.recordToolError("new_task")
+				pushToolResult(await task.sayAndCreateMissingParamError("new_task", "todos"))
 				return
 			}
 
@@ -79,14 +79,14 @@ export class NewTaskTool extends BaseTool<"new_task"> {
 				try {
 					todoItems = parseMarkdownChecklist(todos)
 				} catch (error) {
-					cline.consecutiveMistakeCount++
-					cline.recordToolError("new_task")
+					task.consecutiveMistakeCount++
+					task.recordToolError("new_task")
 					pushToolResult(formatResponse.toolError("Invalid todos format: must be a markdown checklist"))
 					return
 				}
 			}
 
-			cline.consecutiveMistakeCount = 0
+			task.consecutiveMistakeCount = 0
 
 			// Un-escape one level of backslashes before '@' for hierarchical subtasks
 			// Un-escape one level: \\@ -> \@ (removes one backslash for hierarchical subtasks)
@@ -115,14 +115,14 @@ export class NewTaskTool extends BaseTool<"new_task"> {
 
 			// Provider is guaranteed to be defined here due to earlier check.
 
-			if (cline.enableCheckpoints) {
-				cline.checkpointSave(true)
+			if (task.enableCheckpoints) {
+				task.checkpointSave(true)
 			}
 
 			// Preserve the current mode so we can resume with it later.
-			cline.pausedModeSlug = (await provider.getState()).mode ?? defaultModeSlug
+			task.pausedModeSlug = (await provider.getState()).mode ?? defaultModeSlug
 
-			const newTask = await cline.startSubtask(unescapedMessage, todoItems, mode)
+			const newTask = await task.startSubtask(unescapedMessage, todoItems, mode)
 
 			if (!newTask) {
 				pushToolResult(t("tools:newTask.errors.policy_restriction"))
@@ -140,7 +140,7 @@ export class NewTaskTool extends BaseTool<"new_task"> {
 		}
 	}
 
-	override async handlePartial(cline: Task, block: ToolUse<"new_task">): Promise<void> {
+	override async handlePartial(task: Task, block: ToolUse<"new_task">): Promise<void> {
 		const mode: string | undefined = block.params.mode
 		const message: string | undefined = block.params.message
 		const todos: string | undefined = block.params.todos
@@ -152,7 +152,7 @@ export class NewTaskTool extends BaseTool<"new_task"> {
 			todos: this.removeClosingTag("todos", todos, block.partial),
 		})
 
-		await cline.ask("tool", partialMessage, block.partial).catch(() => {})
+		await task.ask("tool", partialMessage, block.partial).catch(() => {})
 	}
 
 	private removeClosingTag(tag: string, text: string | undefined, isPartial: boolean): string {
