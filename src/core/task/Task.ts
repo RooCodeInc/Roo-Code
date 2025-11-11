@@ -2597,7 +2597,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			const modelInfo = this.api.getModel().info
 			const modelSupportsBrowser = (modelInfo as any)?.supportsImages === true
 
-			const canUseBrowserTool = modelSupportsBrowser && modeSupportsBrowser && (browserToolEnabled ?? true)
+			const canUseBrowserTool = modelSupportsBrowser && modeSupportsBrowser && (browserToolEnabled ?? false)
 
 			return SYSTEM_PROMPT(
 				provider.context,
