@@ -180,6 +180,11 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 			let selectReason: string | undefined
 			try {
 				this.logger.info(`[RequestID]:`, requestId)
+
+				if (metadata?.onRequestHeadersReady && typeof metadata.onRequestHeadersReady === "function") {
+					metadata.onRequestHeadersReady(_headers)
+				}
+
 				const { data, response } = await this.client.chat.completions
 					.create(
 						requestOptions,

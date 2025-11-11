@@ -69,6 +69,7 @@ export interface ApiHandlerCreateMessageMetadata {
 	 * @default true
 	 */
 	store?: boolean
+	onRequestHeadersReady?: (headers: Record<string, string>) => void
 }
 
 export interface ApiHandler {
