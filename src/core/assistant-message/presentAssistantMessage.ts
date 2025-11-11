@@ -5,11 +5,11 @@ import type { ToolName, ClineAsk, ToolProgressStatus } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 
 import { defaultModeSlug, getModeBySlug } from "../../shared/modes"
-import type { ToolParamName, ToolResponse } from "../../shared/tools"
+import type { ToolParamName, ToolResponse, ToolUse } from "../../shared/tools"
 
 import { fetchInstructionsTool } from "../tools/fetchInstructionsTool"
 import { listFilesTool } from "../tools/listFilesTool"
-import { getReadFileToolDescription, readFileTool } from "../tools/readFileTool"
+import { readFileTool } from "../tools/ReadFileTool"
 import { getSimpleReadFileToolDescription, simpleReadFileTool } from "../tools/simpleReadFileTool"
 import { shouldUseSingleFileRead } from "@roo-code/types"
 import { writeToFileTool } from "../tools/writeToFileTool"
@@ -163,7 +163,12 @@ export async function presentAssistantMessage(cline: Task) {
 						if (shouldUseSingleFileRead(modelId)) {
 							return getSimpleReadFileToolDescription(block.name, block.params)
 						} else {
-							return getReadFileToolDescription(block.name, block.params)
+							// Prefer native typed args when available; fall back to legacy params
+							// Check if nativeArgs exists and is an array (native protocol)
+							if (Array.isArray(block.nativeArgs)) {
+								return readFileTool.getReadFileToolDescription(block.name, block.nativeArgs)
+							}
+							return readFileTool.getReadFileToolDescription(block.name, block.params)
 						}
 					case "fetch_instructions":
 						return `[${block.name} for '${block.params.task}']`
@@ -473,7 +478,13 @@ export async function presentAssistantMessage(cline: Task) {
 							removeClosingTag,
 						)
 					} else {
-						await readFileTool(cline, block, askApproval, handleError, pushToolResult, removeClosingTag)
+						// Type assertion is safe here because we're in the "read_file" case
+						await readFileTool.handle(cline, block as ToolUse<"read_file">, {
+							askApproval,
+							handleError,
+							pushToolResult,
+							removeClosingTag,
+						})
 					}
 					break
 				case "fetch_instructions":

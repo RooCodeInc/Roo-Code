@@ -1,19 +1,32 @@
 import { type ToolName, toolNames } from "@roo-code/types"
-import { type ToolUse, type ToolParamName, toolParamNames } from "../../shared/tools"
+import { type ToolUse, type ToolParamName, toolParamNames, type NativeToolArgs } from "../../shared/tools"
+import type { FileEntry } from "../tools/ReadFileTool"
 
 /**
  * Parser for native tool calls (OpenAI-style function calling).
  * Converts native tool call format to ToolUse format for compatibility
  * with existing tool execution infrastructure.
+ *
+ * For tools with refactored parsers (e.g., read_file), this parser provides
+ * typed arguments via nativeArgs. Tool-specific handlers should consume
+ * nativeArgs directly rather than relying on synthesized legacy params.
  */
 export class NativeToolCallParser {
 	/**
 	 * Convert a native tool call chunk to a ToolUse object.
 	 *
+	 * For refactored tools (read_file, etc.), native arguments are properly typed
+	 * based on the NativeToolArgs type map. For tools not yet migrated, nativeArgs
+	 * will be undefined and the tool will use parseLegacy() for backward compatibility.
+	 *
 	 * @param toolCall - The native tool call from the API stream
-	 * @returns A ToolUse object compatible with existing tool handlers
+	 * @returns A properly typed ToolUse object
 	 */
-	public static parseToolCall(toolCall: { id: string; name: string; arguments: string }): ToolUse | null {
+	public static parseToolCall<TName extends ToolName>(toolCall: {
+		id: string
+		name: TName
+		arguments: string
+	}): ToolUse<TName> | null {
 		console.log(`[NATIVE_TOOL] Parser received:`, {
 			id: toolCall.id,
 			name: toolCall.name,
@@ -35,11 +48,16 @@ export class NativeToolCallParser {
 			const args = JSON.parse(toolCall.arguments)
 			console.log(`[NATIVE_TOOL] Parsed args:`, args)
 
-			// Convert arguments to params format
+			// Convert arguments to params format (for backward-compat/UI), but primary path uses nativeArgs
 			const params: Partial<Record<ToolParamName, string>> = {}
 
 			for (const [key, value] of Object.entries(args)) {
 				console.log(`[NATIVE_TOOL] Processing param: ${key} =`, value)
+
+				// For read_file native calls, do not synthesize params.files – nativeArgs carries typed data
+				if (toolCall.name === "read_file" && key === "files") {
+					continue
+				}
 
 				// Validate parameter name
 				if (!toolParamNames.includes(key as ToolParamName)) {
@@ -48,17 +66,29 @@ export class NativeToolCallParser {
 					continue
 				}
 
-				// Convert value to string if it isn't already
+				// Keep legacy string params for compatibility (not used by native execution path)
 				const stringValue = typeof value === "string" ? value : JSON.stringify(value)
 				params[key as ToolParamName] = stringValue
 				console.log(`[NATIVE_TOOL] Added param: ${key} = "${stringValue}"`)
 			}
 
-			const result = {
+			// Build typed nativeArgs for tools that support it
+			let nativeArgs: (TName extends keyof NativeToolArgs ? NativeToolArgs[TName] : never) | undefined = undefined
+
+			if (toolCall.name === "read_file") {
+				const files = args.files
+				if (Array.isArray(files)) {
+					nativeArgs = files as TName extends keyof NativeToolArgs ? NativeToolArgs[TName] : never
+				}
+			}
+			// Add more tools here as they are migrated to native protocol
+
+			const result: ToolUse<TName> = {
 				type: "tool_use" as const,
-				name: toolCall.name as ToolName,
+				name: toolCall.name,
 				params,
 				partial: false, // Native tool calls are always complete when yielded
+				nativeArgs,
 			}
 
 			console.log(`[NATIVE_TOOL] Parser returning ToolUse:`, result)

@@ -2039,7 +2039,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 								// Convert native tool call to ToolUse format
 								const toolUse = NativeToolCallParser.parseToolCall({
 									id: chunk.id,
-									name: chunk.name,
+									name: chunk.name as ToolName,
 									arguments: chunk.arguments,
 								})
 
