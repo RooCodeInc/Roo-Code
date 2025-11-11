@@ -2520,10 +2520,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 					// Check if we should auto-retry or prompt the user
 					const state = await this.providerRef.deref()?.getState()
+					const errorMsg = t("common:errors.unexpected_api_response")
 					if (state?.autoApprovalEnabled && state?.alwaysApproveResubmit) {
 						// Auto-retry with backoff - don't persist failure message when retrying
-						const errorMsg = t("common:errors.unexpected_api_response")
-
 						await this.backoffAndAnnounce(
 							currentItem.retryAttempt ?? 0,
 							new Error("Empty assistant response"),
@@ -2549,10 +2548,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						continue
 					} else {
 						// Prompt the user for retry decision
-						const { response } = await this.ask(
-							"api_req_failed",
-							"The model returned no assistant messages. This may indicate an issue with the API or the model's output.",
-						)
+						const { response } = await this.ask("api_req_failed", errorMsg)
 
 						if (response === "yesButtonClicked") {
 							await this.say("api_req_retried")
@@ -2568,10 +2564,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 							continue
 						} else {
 							// User declined to retry - persist error and failure message
-							await this.say(
-								"error",
-								"Unexpected API Response: The language model did not provide any assistant messages. This may indicate an issue with the API or the model's output.",
-							)
+							await this.say("error", errorMsg)
 
 							await this.addToApiConversationHistory({
 								role: "assistant",
