@@ -43,6 +43,34 @@
 	},
 	"codeIndex": {
 		"title": "コードベースのインデックス作成",
+		"performanceProfileLabel": "インデックス作成パフォーマンスプロファイル",
+		"mode": {
+			"label": "インデックスモード",
+			"description": "Roo がコードベースをどの程度積極的にスキャンし、埋め込みを生成するかを制御します。",
+			"auto": "自動（推奨設定を使用）",
+			"normal": "標準（速度とリソース使用のバランス）",
+			"lowResource": "低リソース（ローカル環境や低スペック環境向け）",
+			"recommendedLowResource": "低リソース用デフォルトを適用",
+			"recommendedLowResource.tooltip": "低性能マシンやローカルモデル向けに推奨。並列度とチャンクサイズを下げ、組み込み ignore を有効のままにします。",
+			"recommendedNormal": "標準デフォルトを適用",
+			"recommendedNormal.tooltip": "一般的なマシン向け。高い並列度と大きなチャンクを使用し、組み込み ignore を有効のままにします。"
+		},
+		"maxParallelFileReads": {
+			"label": "最大並列ファイル読み取り数",
+			"description": "インデックス作成中に同時に読み取るファイル数を制限します。低速ディスクや制約のある環境では値を下げてください。"
+		},
+		"maxParallelEmbeddings": {
+			"label": "最大並列埋め込み数",
+			"description": "同時に送信する埋め込みリクエスト数を制限します。高い値はインデックス作成を高速化しますが、CPU/GPU とメモリ負荷を増やします。"
+		},
+		"chunkSizeTokens": {
+			"label": "チャンクサイズ（トークン）",
+			"description": "各埋め込みチャンクに含めるトークン数を制御します。小さいチャンクは検索精度を高めますがリクエスト数が増え、大きいチャンクはリクエスト数を減らしますが精度が低下する場合があります。"
+		},
+		"enableBuiltInIgnore": {
+			"label": "組み込み ignore パターンを有効にする",
+			"description": "node_modules やビルド成果物などの大きくノイズになりやすいディレクトリを自動的に除外し、インデックス作成を安定かつ高速に保ちます。"
+		},
 		"enableLabel": "コードベースのインデックス作成を有効化",
 		"enableDescription": "コードのインデックス作成を有効にして、検索とコンテキストの理解を向上させます",
 		"providerLabel": "埋め込みプロバイダー",

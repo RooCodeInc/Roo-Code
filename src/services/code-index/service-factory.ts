@@ -164,7 +164,14 @@ export class CodeIndexServiceFactory {
 		parser: ICodeParser,
 		ignoreInstance: Ignore,
 	): DirectoryScanner {
-		// Get the configurable batch size from VSCode settings
+		/**
+		 * Derive effective batch size from:
+		 * - roo-cline.codeIndex.embeddingBatchSize (legacy setting) as a base
+		 * - then let CodeIndexConfig (via getCodeIndexConfig in manager) clamp behavior based on mode
+		 *
+		 * We keep this factory thin: it only reads the existing VS Code setting with a sensible default.
+		 * Low-resource specifics (auto / caps) remain centralized in src/services/code-index/config.ts.
+		 */
 		let batchSize: number
 		try {
 			batchSize = vscode.workspace
@@ -174,6 +181,7 @@ export class CodeIndexServiceFactory {
 			// In test environment, vscode.workspace might not be available
 			batchSize = BATCH_SEGMENT_THRESHOLD
 		}
+
 		return new DirectoryScanner(embedder, vectorStore, parser, this.cacheManager, ignoreInstance, batchSize)
 	}
 

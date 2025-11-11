@@ -33,7 +33,8 @@
 		"ui": "UI",
 		"experimental": "Experimental",
 		"language": "Language",
-		"about": "About Roo Code"
+		"about": "About Roo Code",
+		"codeIndex": "Codebase Indexing"
 	},
 	"slashCommands": {
 		"description": "Manage your slash commands to quickly execute custom workflows and actions. <DocsLink>Learn more</DocsLink>"
@@ -50,6 +51,34 @@
 	"codeIndex": {
 		"title": "Codebase Indexing",
 		"description": "Configure codebase indexing settings to enable semantic search of your project. <0>Learn more</0>",
+		"performanceProfileLabel": "Indexing performance profile",
+		"mode": {
+			"label": "Indexing mode",
+			"description": "Choose how aggressively Roo scans and embeds your codebase.",
+			"auto": "Auto (use recommended settings)",
+			"normal": "Normal (balanced speed and resource usage)",
+			"lowResource": "Low-resource (safer for CPU / memory constrained or local setups)",
+			"recommendedLowResource": "Use low-resource defaults",
+			"recommendedLowResource.tooltip": "Recommended for low-end machines or local models. Reduces concurrency and chunk size while keeping built-in ignore enabled.",
+			"recommendedNormal": "Use normal defaults",
+			"recommendedNormal.tooltip": "Recommended for typical machines. Uses higher concurrency and larger chunks with built-in ignore enabled."
+		},
+		"maxParallelFileReads": {
+			"label": "Max parallel file reads",
+			"description": "Limits concurrent filesystem reads during indexing. Lower on HDD/slow SSD or when using local models."
+		},
+		"maxParallelEmbeddings": {
+			"label": "Max parallel embeddings",
+			"description": "Limits concurrent embedding requests. Set lower for local CPU/GPU models to avoid freezes."
+		},
+		"chunkSizeTokens": {
+			"label": "Chunk size (tokens)",
+			"description": "Controls how many tokens are grouped into one embedding chunk. Smaller chunks improve recall but increase requests; larger chunks reduce requests but may be less precise."
+		},
+		"enableBuiltInIgnore": {
+			"label": "Enable built-in ignore",
+			"description": "Skip heavy and irrelevant paths (node_modules, builds, media, archives, etc.) to reduce indexing time and resource usage."
+		},
 		"statusTitle": "Status",
 		"enableLabel": "Enable Codebase Indexing",
 		"enableDescription": "Enable code indexing for improved search and context understanding",

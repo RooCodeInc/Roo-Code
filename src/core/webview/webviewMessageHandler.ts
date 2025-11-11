@@ -1658,6 +1658,48 @@ export const webviewMessageHandler = async (
 			await updateGlobalState("maxConcurrentFileReads", valueToSave)
 			await provider.postStateToWebview()
 			break
+		case "codeIndexMode":
+			{
+				const raw = message.text || "auto"
+				const mode = raw === "normal" || raw === "lowResource" ? raw : "auto"
+				await vscode.workspace
+					.getConfiguration("rooCode.codeIndex")
+					.update("mode", mode, vscode.ConfigurationTarget.Global)
+				provider.getCurrentWorkspaceCodeIndexManager()?.handleSettingsChange()
+			}
+			break
+		case "codeIndexMaxParallelFileReads":
+			if (typeof message.value === "number") {
+				await vscode.workspace
+					.getConfiguration("rooCode.codeIndex")
+					.update("maxParallelFileReads", message.value, vscode.ConfigurationTarget.Global)
+				provider.getCurrentWorkspaceCodeIndexManager()?.handleSettingsChange()
+			}
+			break
+		case "codeIndexMaxParallelEmbeddings":
+			if (typeof message.value === "number") {
+				await vscode.workspace
+					.getConfiguration("rooCode.codeIndex")
+					.update("maxParallelEmbeddings", message.value, vscode.ConfigurationTarget.Global)
+				provider.getCurrentWorkspaceCodeIndexManager()?.handleSettingsChange()
+			}
+			break
+		case "codeIndexChunkSizeTokens":
+			if (typeof message.value === "number") {
+				await vscode.workspace
+					.getConfiguration("rooCode.codeIndex")
+					.update("chunkSizeTokens", message.value, vscode.ConfigurationTarget.Global)
+				provider.getCurrentWorkspaceCodeIndexManager()?.handleSettingsChange()
+			}
+			break
+		case "codeIndexEnableBuiltInIgnore":
+			if (typeof message.bool === "boolean") {
+				await vscode.workspace
+					.getConfiguration("rooCode.codeIndex")
+					.update("enableBuiltInIgnore", message.bool, vscode.ConfigurationTarget.Global)
+				provider.getCurrentWorkspaceCodeIndexManager()?.handleSettingsChange()
+			}
+			break
 		case "includeDiagnosticMessages":
 			// Only apply default if the value is truly undefined (not false)
 			const includeValue = message.bool !== undefined ? message.bool : true
@@ -2517,6 +2559,7 @@ export const webviewMessageHandler = async (
 				// Save global state settings atomically
 				const globalStateConfig = {
 					...currentConfig,
+					// Provider + search config
 					codebaseIndexEnabled: settings.codebaseIndexEnabled,
 					codebaseIndexQdrantUrl: settings.codebaseIndexQdrantUrl,
 					codebaseIndexEmbedderProvider: settings.codebaseIndexEmbedderProvider,
@@ -2530,6 +2573,42 @@ export const webviewMessageHandler = async (
 
 				// Save global state first
 				await updateGlobalState("codebaseIndexConfig", globalStateConfig)
+
+				// Persist intensity profile (rooCode.codeIndex.*) if provided
+				const codeIndexConfig = vscode.workspace.getConfiguration("rooCode.codeIndex")
+				if (typeof settings.codeIndexMode === "string") {
+					const raw = settings.codeIndexMode
+					const mode = raw === "normal" || raw === "lowResource" ? raw : "auto"
+					await codeIndexConfig.update("mode", mode, vscode.ConfigurationTarget.Global)
+				}
+				if (typeof settings.codeIndexMaxParallelFileReads === "number") {
+					await codeIndexConfig.update(
+						"maxParallelFileReads",
+						settings.codeIndexMaxParallelFileReads,
+						vscode.ConfigurationTarget.Global,
+					)
+				}
+				if (typeof settings.codeIndexMaxParallelEmbeddings === "number") {
+					await codeIndexConfig.update(
+						"maxParallelEmbeddings",
+						settings.codeIndexMaxParallelEmbeddings,
+						vscode.ConfigurationTarget.Global,
+					)
+				}
+				if (typeof settings.codeIndexChunkSizeTokens === "number") {
+					await codeIndexConfig.update(
+						"chunkSizeTokens",
+						settings.codeIndexChunkSizeTokens,
+						vscode.ConfigurationTarget.Global,
+					)
+				}
+				if (typeof settings.codeIndexEnableBuiltInIgnore === "boolean") {
+					await codeIndexConfig.update(
+						"enableBuiltInIgnore",
+						settings.codeIndexEnableBuiltInIgnore,
+						vscode.ConfigurationTarget.Global,
+					)
+				}
 
 				// Save secrets directly using context proxy
 				if (settings.codeIndexOpenAiKey !== undefined) {
@@ -2573,7 +2652,15 @@ export const webviewMessageHandler = async (
 				await provider.postMessageToWebview({
 					type: "codeIndexSettingsSaved",
 					success: true,
-					settings: globalStateConfig,
+					settings: {
+						...globalStateConfig,
+						// Also echo current intensity profile snapshot for the webview
+						codeIndexMode: codeIndexConfig.get<string>("mode"),
+						codeIndexMaxParallelFileReads: codeIndexConfig.get<number>("maxParallelFileReads"),
+						codeIndexMaxParallelEmbeddings: codeIndexConfig.get<number>("maxParallelEmbeddings"),
+						codeIndexChunkSizeTokens: codeIndexConfig.get<number>("chunkSizeTokens"),
+						codeIndexEnableBuiltInIgnore: codeIndexConfig.get<boolean>("enableBuiltInIgnore"),
+					},
 				})
 
 				// Update webview state

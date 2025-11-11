@@ -43,6 +43,34 @@
 	},
 	"codeIndex": {
 		"title": "程式碼庫索引",
+		"performanceProfileLabel": "索引效能設定檔",
+		"mode": {
+			"label": "索引模式",
+			"description": "決定 Roo 多積極地掃描程式碼庫並建立嵌入。",
+			"auto": "自動（使用建議設定）",
+			"normal": "一般（在速度與資源使用間取得平衡）",
+			"lowResource": "低資源（適用於有限 CPU/記憶體或本機環境）",
+			"recommendedLowResource": "套用低資源預設值",
+			"recommendedLowResource.tooltip": "建議用於效能較弱的機器或本機模型。降低平行度與 chunk 大小，並啟用內建忽略規則。",
+			"recommendedNormal": "套用一般預設值",
+			"recommendedNormal.tooltip": "建議用於多數機器。使用較高平行度與較大 chunk，並啟用內建忽略規則。"
+		},
+		"maxParallelFileReads": {
+			"label": "最大平行檔案讀取數",
+			"description": "限制可同時索引的檔案數量。較高數值可加快索引速度，但也可能增加磁碟 I/O 與記憶體使用。"
+		},
+		"maxParallelEmbeddings": {
+			"label": "最大平行嵌入請求數",
+			"description": "限制同時送出的嵌入請求數。對本機 CPU/GPU 模型而言，數值過高可能導致系統凍結。"
+		},
+		"chunkSizeTokens": {
+			"label": "Chunk 大小（Token）",
+			"description": "控制每個嵌入 Chunk 中包含的 Token 數量。較小的 Chunk 提升搜尋召回率但增加請求數；較大的 Chunk 降低請求數但可能降低精準度。"
+		},
+		"enableBuiltInIgnore": {
+			"label": "啟用內建忽略規則",
+			"description": "自動排除 node_modules、建置輸出等常見不必要路徑，以提升索引效能與穩定性。"
+		},
 		"enableLabel": "啟用程式碼庫索引",
 		"enableDescription": "啟用程式碼索引以改進搜尋和上下文理解",
 		"providerLabel": "嵌入提供者",

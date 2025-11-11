@@ -43,6 +43,35 @@
 	},
 	"codeIndex": {
 		"title": "Indexação de Código",
+		"description": "Configure as opções de indexação da base de código para habilitar a busca semântica no seu projeto. <0>Saiba mais</0>",
+		"performanceProfileLabel": "Perfil de desempenho da indexação",
+		"mode": {
+			"label": "Modo de indexação",
+			"description": "Define quão agressivamente o Roo analisa e gera embeddings da sua base de código.",
+			"auto": "Auto (usar configurações recomendadas)",
+			"normal": "Normal (equilíbrio entre velocidade e uso de recursos)",
+			"lowResource": "Baixo recurso (mais seguro para máquinas/modos locais limitados)",
+			"recommendedLowResource": "Usar padrões de baixo recurso",
+			"recommendedLowResource.tooltip": "Recomendado para máquinas fracas ou modelos locais. Reduz concorrência e tamanho dos chunks mantendo o ignore interno ativado.",
+			"recommendedNormal": "Usar padrões normais",
+			"recommendedNormal.tooltip": "Recomendado para a maioria dos ambientes. Usa maior concorrência e chunks maiores com ignore interno ativado."
+		},
+		"maxParallelFileReads": {
+			"label": "Leituras de arquivos paralelas máximas",
+			"description": "Limita leituras simultâneas do sistema de arquivos durante a indexação. Reduza em HDD/SSD lentos ou com modelos locais."
+		},
+		"maxParallelEmbeddings": {
+			"label": "Embeddings paralelos máximos",
+			"description": "Limita solicitações de embedding simultâneas. Use valores menores com modelos locais em CPU/GPU para evitar travamentos."
+		},
+		"chunkSizeTokens": {
+			"label": "Tamanho do chunk (tokens)",
+			"description": "Controla quantos tokens são agrupados em um único chunk de embedding. Chunks menores melhoram o recall mas aumentam as requisições; chunks maiores reduzem requisições mas podem ser menos precisos."
+		},
+		"enableBuiltInIgnore": {
+			"label": "Ativar ignore interno",
+			"description": "Ignora caminhos pesados/irrelevantes (node_modules, builds, mídias, arquivos compactados etc.) para reduzir tempo e recursos de indexação."
+		},
 		"enableLabel": "Ativar Indexação de Código",
 		"enableDescription": "Ative a indexação de código para pesquisa e compreensão de contexto aprimoradas",
 		"providerLabel": "Provedor de Embeddings",

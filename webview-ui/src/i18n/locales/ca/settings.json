@@ -43,6 +43,34 @@
 	},
 	"codeIndex": {
 		"title": "Indexació de codi",
+		"performanceProfileLabel": "Perfil de rendiment d'indexació",
+		"mode": {
+			"label": "Mode d'indexació",
+			"description": "Defineix com d'agressivament Roo analitza i crea embeddings de la teva base de codi.",
+			"auto": "Auto (utilitzar la configuració recomanada)",
+			"normal": "Normal (equilibri entre velocitat i ús de recursos)",
+			"lowResource": "Baixes recursos (més segur per a màquines o entorns locals limitats)",
+			"recommendedLowResource": "Aplicar valors per defecte de baixes recursos",
+			"recommendedLowResource.tooltip": "Recomanat per a màquines poc potents o models locals. Redueix la concurrència i la mida dels chunks mantenint l'ignore integrat actiu.",
+			"recommendedNormal": "Aplicar valors normals per defecte",
+			"recommendedNormal.tooltip": "Recomanat per a la majoria de màquines. Utilitza més concurrència i chunks més grans amb l'ignore integrat actiu."
+		},
+		"maxParallelFileReads": {
+			"label": "Màxim de lectures de fitxer en paral·lel",
+			"description": "Limita quants fitxers es llegeixen simultàniament durant la indexació. Redueix-ho en discos lents o entorns limitats."
+		},
+		"maxParallelEmbeddings": {
+			"label": "Màxim d'embeddings en paral·lel",
+			"description": "Limita el nombre de sol·licituds d'embeddings en paral·lel. Valors alts acceleren la indexació però augmenten la càrrega de CPU/GPU i memòria."
+		},
+		"chunkSizeTokens": {
+			"label": "Mida del chunk (tokens)",
+			"description": "Controla quants tokens hi ha a cada chunk d'embedding. Chunks petits milloren la qualitat de la cerca però incrementen el nombre de sol·licituds; chunks grans redueixen sol·licituds però poden ser menys precisos."
+		},
+		"enableBuiltInIgnore": {
+			"label": "Habilitar patrons d'ignore integrats",
+			"description": "Exclou automàticament node_modules, artefactes de build i altres directoris grans o irrellevants per mantenir la indexació ràpida i estable."
+		},
 		"enableLabel": "Habilitar indexació de codi",
 		"enableDescription": "Habilita la indexació de codi per millorar la cerca i la comprensió del context",
 		"providerLabel": "Proveïdor d'embeddings",

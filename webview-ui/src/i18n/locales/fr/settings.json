@@ -33,7 +33,8 @@
 		"ui": "UI",
 		"experimental": "Expérimental",
 		"language": "Langue",
-		"about": "À propos de Roo Code"
+		"about": "À propos de Roo Code",
+		"codeIndex": "Indexation de la base de code"
 	},
 	"slashCommands": {
 		"description": "Gérez vos commandes slash pour exécuter rapidement des flux de travail et des actions personnalisées. <DocsLink>En savoir plus</DocsLink>"
@@ -43,6 +44,34 @@
 	},
 	"codeIndex": {
 		"title": "Indexation de la base de code",
+		"performanceProfileLabel": "Profil de performance d'indexation",
+		"mode": {
+			"label": "Mode d'indexation",
+			"description": "Définit à quel point Roo analyse et embarque votre base de code de manière agressive.",
+			"auto": "Auto (utiliser les paramètres recommandés)",
+			"normal": "Normal (équilibre entre vitesse et ressources)",
+			"lowResource": "Faible ressources (plus sûr pour machines modestes ou environnements locaux)",
+			"recommendedLowResource": "Appliquer les valeurs faible ressources",
+			"recommendedLowResource.tooltip": "Recommandé pour les machines peu puissantes ou les modèles locaux. Réduit la parallélisation et la taille des chunks tout en gardant l'ignore intégré activé.",
+			"recommendedNormal": "Appliquer les valeurs normales par défaut",
+			"recommendedNormal.tooltip": "Recommandé pour la plupart des machines. Utilise plus de parallélisme et des chunks plus grands avec l'ignore intégré activé."
+		},
+		"maxParallelFileReads": {
+			"label": "Lectures de fichiers parallèles max",
+			"description": "Limite le nombre de fichiers lus simultanément pendant l'indexation. Réduisez pour disques/VM lents."
+		},
+		"maxParallelEmbeddings": {
+			"label": "Embeddings parallèles max",
+			"description": "Limite le nombre de requêtes d'embedding parallèles. Des valeurs élevées accélèrent l'indexation mais augmentent la charge CPU/GPU et mémoire."
+		},
+		"chunkSizeTokens": {
+			"label": "Taille de chunk (tokens)",
+			"description": "Contrôle le nombre de tokens par chunk d'embedding. Des chunks plus petits améliorent la qualité de recherche mais augmentent le nombre de requêtes ; des chunks plus grands réduisent les requêtes mais peuvent être moins précis."
+		},
+		"enableBuiltInIgnore": {
+			"label": "Activer les patterns d'ignore intégrés",
+			"description": "Ignore automatiquement node_modules, artefacts de build et autres répertoires volumineux/non pertinents pour garder l'indexation rapide et stable."
+		},
 		"description": "Configurez les paramètres d'indexation de la base de code pour activer la recherche sémantique dans votre projet. <0>En savoir plus</0>",
 		"statusTitle": "Statut",
 		"enableLabel": "Activer l'indexation de la base de code",

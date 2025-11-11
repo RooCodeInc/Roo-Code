@@ -27,6 +27,12 @@ import { vscode } from "@src/utils/vscode"
 import { convertTextMateToHljs } from "@src/utils/textMateToHljs"
 
 export interface ExtensionStateContextType extends ExtensionState {
+	// Code index performance profile settings (cached in webview state; persisted via VS Code settings via messages)
+	codeIndexMode?: "auto" | "normal" | "lowResource"
+	codeIndexMaxParallelFileReads?: number
+	codeIndexMaxParallelEmbeddings?: number
+	codeIndexChunkSizeTokens?: number
+	codeIndexEnableBuiltInIgnore?: boolean
 	historyPreviewCollapsed?: boolean // Add the new state property
 	didHydrateState: boolean
 	showWelcome: boolean

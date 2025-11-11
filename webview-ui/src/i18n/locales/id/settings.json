@@ -43,6 +43,34 @@
 	},
 	"codeIndex": {
 		"title": "Pengindeksan Codebase",
+		"performanceProfileLabel": "Profil performa pengindeksan",
+		"mode": {
+			"label": "Mode pengindeksan",
+			"description": "Menentukan seberapa agresif Roo memindai dan membuat embedding untuk codebase kamu.",
+			"auto": "Otomatis (gunakan pengaturan yang direkomendasikan)",
+			"normal": "Normal (seimbang antara kecepatan dan penggunaan resource)",
+			"lowResource": "Rendah sumber daya (lebih aman untuk mesin lemah atau setup lokal)",
+			"recommendedLowResource": "Gunakan default low-resource",
+			"recommendedLowResource.tooltip": "Direkomendasikan untuk mesin spek rendah atau model lokal. Mengurangi paralelisme dan ukuran chunk dengan ignore bawaan tetap aktif.",
+			"recommendedNormal": "Gunakan default normal",
+			"recommendedNormal.tooltip": "Direkomendasikan untuk sebagian besar mesin. Menggunakan paralelisme lebih tinggi dan chunk lebih besar dengan ignore bawaan aktif."
+		},
+		"maxParallelFileReads": {
+			"label": "Maksimum pembacaan file paralel",
+			"description": "Membatasi jumlah file yang dibaca secara bersamaan saat pengindeksan. Turunkan untuk disk lambat atau lingkungan terbatas."
+		},
+		"maxParallelEmbeddings": {
+			"label": "Maksimum embedding paralel",
+			"description": "Membatasi jumlah permintaan embedding paralel. Nilai tinggi mempercepat pengindeksan tetapi meningkatkan beban CPU/GPU dan memori."
+		},
+		"chunkSizeTokens": {
+			"label": "Ukuran chunk (token)",
+			"description": "Mengontrol jumlah token per chunk embedding. Chunk kecil meningkatkan kualitas pencarian tetapi menambah jumlah permintaan; chunk besar mengurangi permintaan namun bisa kurang presisi."
+		},
+		"enableBuiltInIgnore": {
+			"label": "Aktifkan pola ignore bawaan",
+			"description": "Secara otomatis mengabaikan node_modules, artefak build, dan direktori besar/tidak relevan lainnya untuk menjaga pengindeksan tetap cepat dan stabil."
+		},
 		"enableLabel": "Aktifkan Pengindeksan Codebase",
 		"enableDescription": "Aktifkan pengindeksan kode untuk pencarian dan pemahaman konteks yang lebih baik",
 		"providerLabel": "Provider Embeddings",

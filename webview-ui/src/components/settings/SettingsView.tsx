@@ -68,6 +68,7 @@ import { Section } from "./Section"
 import PromptsSettings from "./PromptsSettings"
 import { SlashCommandsSettings } from "./SlashCommandsSettings"
 import { UISettings } from "./UISettings"
+import { CodeIndexSettings } from "./CodeIndexSettings"
 
 export const settingsTabsContainer = "flex flex-1 overflow-hidden [&.narrow_.tab-label]:hidden"
 export const settingsTabList =
@@ -93,6 +94,7 @@ const sectionNames = [
 	"ui",
 	"experimental",
 	"language",
+	"codeIndex",
 	"about",
 ] as const
 
@@ -198,6 +200,11 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		reasoningBlockCollapsed,
 		includeCurrentTime,
 		includeCurrentCost,
+		codeIndexMode,
+		codeIndexMaxParallelFileReads,
+		codeIndexMaxParallelEmbeddings,
+		codeIndexChunkSizeTokens,
+		codeIndexEnableBuiltInIgnore,
 	} = cachedState
 
 	const apiConfiguration = useMemo(() => cachedState.apiConfiguration ?? {}, [cachedState.apiConfiguration])
@@ -398,6 +405,29 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 				type: "openRouterImageGenerationSelectedModel",
 				text: openRouterImageGenerationSelectedModel,
 			})
+
+			// Code Index performance profile settings
+			vscode.postMessage({
+				type: "codeIndexMode",
+				text: codeIndexMode || "auto",
+			})
+			vscode.postMessage({
+				type: "codeIndexMaxParallelFileReads",
+				value: codeIndexMaxParallelFileReads ?? 16,
+			})
+			vscode.postMessage({
+				type: "codeIndexMaxParallelEmbeddings",
+				value: codeIndexMaxParallelEmbeddings ?? 4,
+			})
+			vscode.postMessage({
+				type: "codeIndexChunkSizeTokens",
+				value: codeIndexChunkSizeTokens ?? 2048,
+			})
+			vscode.postMessage({
+				type: "codeIndexEnableBuiltInIgnore",
+				bool: codeIndexEnableBuiltInIgnore ?? true,
+			})
+
 			setChangeDetected(false)
 		}
 	}
@@ -487,6 +517,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 			{ id: "ui", icon: Glasses },
 			{ id: "experimental", icon: FlaskConical },
 			{ id: "language", icon: Globe },
+			{ id: "codeIndex", icon: Database },
 			{ id: "about", icon: Info },
 		],
 		[], // No dependencies needed now
@@ -814,6 +845,28 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					{/* Language Section */}
 					{activeTab === "language" && (
 						<LanguageSettings language={language || "en"} setCachedStateField={setCachedStateField} />
+					)}
+
+					{/* Code Index Section */}
+					{activeTab === "codeIndex" && (
+						<Section>
+							<SectionHeader>
+								<div className="flex items-center gap-2">
+									<Database className="w-4" />
+									<div>{t("settings:sections.codeIndex")}</div>
+								</div>
+							</SectionHeader>
+							<CodeIndexSettings
+								mode={codeIndexMode || "auto"}
+								maxParallelFileReads={codeIndexMaxParallelFileReads ?? 16}
+								maxParallelEmbeddings={codeIndexMaxParallelEmbeddings ?? 4}
+								chunkSizeTokens={codeIndexChunkSizeTokens ?? 2048}
+								// Built-in ignore: optional curated pattern set for code index only.
+								// Uses rooCode.codeIndex.enableBuiltInIgnore and is disabled by default.
+								enableBuiltInIgnore={codeIndexEnableBuiltInIgnore ?? false}
+								setCachedStateField={setCachedStateField}
+							/>
+						</Section>
 					)}
 
 					{/* About Section */}

@@ -25,6 +25,31 @@ vi.mock("vscode", () => {
 				onDidDelete: vi.fn().mockReturnValue({ dispose: vi.fn() }),
 				dispose: vi.fn(),
 			}),
+			getConfiguration: vi.fn((section?: string) => {
+				if (section === "rooCode.codeIndex") {
+					return {
+						get: vi.fn((key: string) => {
+							switch (key) {
+								case "mode":
+									return "auto"
+								case "maxParallelFileReads":
+									return 16
+								case "maxParallelEmbeddings":
+									return 4
+								case "chunkSizeTokens":
+									return 2048
+								case "enableBuiltInIgnore":
+									return true
+								default:
+									return undefined
+							}
+						}),
+					}
+				}
+				return {
+					get: vi.fn(() => undefined),
+				}
+			}),
 		},
 		RelativePattern: vi.fn().mockImplementation((base, pattern) => ({ base, pattern })),
 	}

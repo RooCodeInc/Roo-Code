@@ -65,6 +65,13 @@ interface LocalCodeIndexSettings {
 	codebaseIndexSearchMaxResults?: number
 	codebaseIndexSearchMinScore?: number
 
+	// Intensity profile settings (rooCode.codeIndex.*)
+	codeIndexMode?: "auto" | "normal" | "lowResource"
+	codeIndexMaxParallelFileReads?: number
+	codeIndexMaxParallelEmbeddings?: number
+	codeIndexChunkSizeTokens?: number
+	codeIndexEnableBuiltInIgnore?: boolean
+
 	// Secret settings (start empty, will be loaded separately)
 	codeIndexOpenAiKey?: string
 	codeIndexQdrantApiKey?: string
@@ -175,6 +182,7 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 	const [open, setOpen] = useState(false)
 	const [isAdvancedSettingsOpen, setIsAdvancedSettingsOpen] = useState(false)
 	const [isSetupSettingsOpen, setIsSetupSettingsOpen] = useState(false)
+	const [isIndexingProfileOpen, setIsIndexingProfileOpen] = useState(false)
 
 	const [indexingStatus, setIndexingStatus] = useState<IndexingStatus>(externalIndexingStatus)
 
@@ -198,6 +206,14 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 		codebaseIndexEmbedderModelDimension: undefined,
 		codebaseIndexSearchMaxResults: CODEBASE_INDEX_DEFAULTS.DEFAULT_SEARCH_RESULTS,
 		codebaseIndexSearchMinScore: CODEBASE_INDEX_DEFAULTS.DEFAULT_SEARCH_MIN_SCORE,
+
+		// Intensity profile defaults mirror SettingsView fallbacks
+		codeIndexMode: "auto",
+		codeIndexMaxParallelFileReads: 16,
+		codeIndexMaxParallelEmbeddings: 4,
+		codeIndexChunkSizeTokens: 2048,
+		codeIndexEnableBuiltInIgnore: true,
+
 		codeIndexOpenAiKey: "",
 		codeIndexQdrantApiKey: "",
 		codebaseIndexOpenAiCompatibleBaseUrl: "",
@@ -222,7 +238,7 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 	// Initialize settings from global state
 	useEffect(() => {
 		if (codebaseIndexConfig) {
-			const settings = {
+			const settings: LocalCodeIndexSettings = {
 				codebaseIndexEnabled: codebaseIndexConfig.codebaseIndexEnabled ?? true,
 				codebaseIndexQdrantUrl: codebaseIndexConfig.codebaseIndexQdrantUrl || "",
 				codebaseIndexEmbedderProvider: codebaseIndexConfig.codebaseIndexEmbedderProvider || "openai",
@@ -234,6 +250,15 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 					codebaseIndexConfig.codebaseIndexSearchMaxResults ?? CODEBASE_INDEX_DEFAULTS.DEFAULT_SEARCH_RESULTS,
 				codebaseIndexSearchMinScore:
 					codebaseIndexConfig.codebaseIndexSearchMinScore ?? CODEBASE_INDEX_DEFAULTS.DEFAULT_SEARCH_MIN_SCORE,
+
+				// Intensity profile: hydrate from state if present, otherwise use sane defaults
+				codeIndexMode: (codebaseIndexConfig as any).codeIndexMode || "auto",
+				codeIndexMaxParallelFileReads: (codebaseIndexConfig as any).codeIndexMaxParallelFileReads ?? 16,
+				codeIndexMaxParallelEmbeddings: (codebaseIndexConfig as any).codeIndexMaxParallelEmbeddings ?? 4,
+				codeIndexChunkSizeTokens: (codebaseIndexConfig as any).codeIndexChunkSizeTokens ?? 2048,
+				// Respect explicit user setting; default to false if unset to keep behavior predictable.
+				codeIndexEnableBuiltInIgnore: (codebaseIndexConfig as any).codeIndexEnableBuiltInIgnore ?? false,
+
 				codeIndexOpenAiKey: "",
 				codeIndexQdrantApiKey: "",
 				codebaseIndexOpenAiCompatibleBaseUrl: codebaseIndexConfig.codebaseIndexOpenAiCompatibleBaseUrl || "",
@@ -503,6 +528,29 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 
 	// Use the shared ESC key handler hook - respects unsaved changes logic
 	useEscapeKey(open, handlePopoverClose)
+	const handleModeChange = useCallback((value: "auto" | "normal" | "lowResource") => {
+		setCurrentSettings((prev) => {
+			const updated = { ...prev, codeIndexMode: value }
+
+			// Automatically apply presets when mode is changed
+			if (value === "lowResource") {
+				// Profile for weak machines / local models (including your i5)
+				updated.codeIndexMaxParallelFileReads = 3
+				updated.codeIndexMaxParallelEmbeddings = 1
+				updated.codeIndexChunkSizeTokens = 512
+			} else if (value === "normal") {
+				// Standard profile for normal machines
+				updated.codeIndexMaxParallelFileReads = 12
+				updated.codeIndexMaxParallelEmbeddings = 4
+				updated.codeIndexChunkSizeTokens = 2048
+			}
+			// For "auto" mode, keep current values or defaults
+
+			return updated
+		})
+	}, [])
+
+	const _handleModeChange = handleModeChange
 
 	const handleSaveSettings = () => {
 		// Validate settings before saving
@@ -1269,6 +1317,176 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 											</p>
 										)}
 									</div>
+								</div>
+							)}
+						</div>
+
+						{/* Indexing Performance Profile Disclosure */}
+						<div className="mt-4">
+							<button
+								onClick={() => setIsIndexingProfileOpen((prev: boolean) => !prev)}
+								className="flex items-center text-xs text-vscode-foreground hover:text-vscode-textLink-foreground focus:outline-none"
+								aria-expanded={isIndexingProfileOpen}>
+								<span
+									className={`codicon codicon-${
+										isIndexingProfileOpen ? "chevron-down" : "chevron-right"
+									} mr-1`}></span>
+								<span className="text-base font-semibold">
+									{t("settings:codeIndex.performanceProfileLabel", {
+										defaultValue: "Indexing performance profile",
+									})}
+								</span>
+							</button>
+
+							{isIndexingProfileOpen && (
+								<div className="mt-4 space-y-4">
+									{/* Indexing mode select */}
+									<div className="space-y-2">
+										<div className="flex items-center gap-2">
+											<label className="text-sm font-medium">
+												{t("settings:codeIndex.mode.label")}
+											</label>
+											<StandardTooltip content={t("settings:codeIndex.mode.description")}>
+												<span className="codicon codicon-info text-xs text-vscode-descriptionForeground cursor-help" />
+											</StandardTooltip>
+										</div>
+										<Select
+											value={currentSettings.codeIndexMode || "auto"}
+											onValueChange={handleModeChange}>
+											<SelectTrigger className="w-full">
+												<SelectValue />
+											</SelectTrigger>
+											<SelectContent>
+												<SelectItem value="auto">
+													{t("settings:codeIndex.mode.auto")}
+												</SelectItem>
+												<SelectItem value="normal">
+													{t("settings:codeIndex.mode.normal")}
+												</SelectItem>
+												<SelectItem value="lowResource">
+													{t("settings:codeIndex.mode.lowResource")}
+												</SelectItem>
+											</SelectContent>
+										</Select>
+									</div>
+
+									{/* Recommended profile buttons */}
+									<div className="flex flex-wrap gap-2">
+										<StandardTooltip
+											content={t("settings:codeIndex.mode.recommendedLowResource.tooltip")}>
+											<VSCodeButton
+												appearance="secondary"
+												type="button"
+												onClick={() => {
+													setCurrentSettings((prev) => ({
+														...prev,
+														codeIndexMode: "lowResource",
+														codeIndexMaxParallelFileReads: 3,
+														codeIndexMaxParallelEmbeddings: 1,
+														codeIndexChunkSizeTokens: 512,
+													}))
+												}}>
+												{t("settings:codeIndex.mode.recommendedLowResource")}
+											</VSCodeButton>
+										</StandardTooltip>
+										<StandardTooltip
+											content={t("settings:codeIndex.mode.recommendedNormal.tooltip")}>
+											<VSCodeButton
+												appearance="secondary"
+												type="button"
+												onClick={() => {
+													setCurrentSettings((prev) => ({
+														...prev,
+														codeIndexMode: "normal",
+														codeIndexMaxParallelFileReads: 12,
+														codeIndexMaxParallelEmbeddings: 4,
+														codeIndexChunkSizeTokens: 2048,
+													}))
+												}}>
+												{t("settings:codeIndex.mode.recommendedNormal")}
+											</VSCodeButton>
+										</StandardTooltip>
+									</div>
+
+									{/* Max parallel file reads */}
+									<div className="space-y-1">
+										<div className="flex items-center gap-2">
+											<label className="text-sm font-medium">
+												{t("settings:codeIndex.maxParallelFileReads.label")}
+											</label>
+											<StandardTooltip
+												content={t("settings:codeIndex.maxParallelFileReads.description")}>
+												<span className="codicon codicon-info text-xs text-vscode-descriptionForeground cursor-help" />
+											</StandardTooltip>
+										</div>
+										<VSCodeTextField
+											type={"number" as any}
+											inputMode="numeric"
+											value={(currentSettings.codeIndexMaxParallelFileReads ?? 16).toString()}
+											onInput={(e: any) =>
+												updateSetting(
+													"codeIndexMaxParallelFileReads",
+													parseInt(e.target.value, 10) || 0,
+												)
+											}
+											className="w-full"
+										/>
+									</div>
+
+									{/* Max parallel embeddings */}
+									<div className="space-y-1">
+										<div className="flex items-center gap-2">
+											<label className="text-sm font-medium">
+												{t("settings:codeIndex.maxParallelEmbeddings.label")}
+											</label>
+											<StandardTooltip
+												content={t("settings:codeIndex.maxParallelEmbeddings.description")}>
+												<span className="codicon codicon-info text-xs text-vscode-descriptionForeground cursor-help" />
+											</StandardTooltip>
+										</div>
+										<VSCodeTextField
+											type={"number" as any}
+											inputMode="numeric"
+											value={(currentSettings.codeIndexMaxParallelEmbeddings ?? 4).toString()}
+											onInput={(e: any) =>
+												updateSetting(
+													"codeIndexMaxParallelEmbeddings",
+													parseInt(e.target.value, 10) || 0,
+												)
+											}
+											className="w-full"
+										/>
+									</div>
+
+									{/* Chunk size (tokens) */}
+									<div className="space-y-1">
+										<div className="flex items-center gap-2">
+											<label className="text-sm font-medium">
+												{t("settings:codeIndex.chunkSizeTokens.label")}
+											</label>
+											<StandardTooltip
+												content={t("settings:codeIndex.chunkSizeTokens.description")}>
+												<span className="codicon codicon-info text-xs text-vscode-descriptionForeground cursor-help" />
+											</StandardTooltip>
+										</div>
+										<VSCodeTextField
+											type={"number" as any}
+											inputMode="numeric"
+											value={(currentSettings.codeIndexChunkSizeTokens ?? 2048).toString()}
+											onInput={(e: any) =>
+												updateSetting(
+													"codeIndexChunkSizeTokens",
+													parseInt(e.target.value, 10) || 0,
+												)
+											}
+											className="w-full"
+										/>
+									</div>
+
+									{/* Built-in ignore is configured only via main Settings.
+										We intentionally do NOT duplicate the toggle here to avoid confusion:
+										use .rooignore for custom rules and the dedicated setting
+										'Enable built-in ignore' in Settings for the curated pattern set. */}
 								</div>
 							)}
 						</div>

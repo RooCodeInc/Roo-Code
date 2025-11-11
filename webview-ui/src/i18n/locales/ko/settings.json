@@ -33,7 +33,8 @@
 		"ui": "UI",
 		"experimental": "실험적",
 		"language": "언어",
-		"about": "Roo Code 정보"
+		"about": "Roo Code 정보",
+		"codeIndex": "코드베이스 인덱싱"
 	},
 	"slashCommands": {
 		"description": "사용자 지정 워크플로와 작업을 신속하게 실행하기 위해 슬래시 명령을 관리합니다. <DocsLink>더 알아보기</DocsLink>"
@@ -43,6 +44,34 @@
 	},
 	"codeIndex": {
 		"title": "코드베이스 인덱싱",
+		"performanceProfileLabel": "인덱싱 성능 프로필",
+		"mode": {
+			"label": "인덱싱 모드",
+			"description": "Roo가 코드베이스를 얼마나 적극적으로 스캔하고 임베딩을 생성할지 결정합니다.",
+			"auto": "자동 (추천 설정 사용)",
+			"normal": "일반 (속도와 리소스 사용의 균형)",
+			"lowResource": "저리소스 (제한된 CPU/메모리 또는 로컬 환경에 안전)",
+			"recommendedLowResource": "저리소스 기본값 적용",
+			"recommendedLowResource.tooltip": "성능이 낮은 머신이나 로컬 모델에 추천됩니다. 병렬 처리와 청크 크기를 줄이고, 내장 ignore를 활성화합니다.",
+			"recommendedNormal": "일반 기본값 적용",
+			"recommendedNormal.tooltip": "대부분의 머신에 추천됩니다. 더 높은 병렬 처리와 큰 청크를 사용하며, 내장 ignore가 활성화됩니다."
+		},
+		"maxParallelFileReads": {
+			"label": "최대 병렬 파일 읽기",
+			"description": "동시에 인덱싱할 수 있는 파일 수를 제한합니다. 값이 높을수록 인덱싱 속도가 빨라지지만 디스크 I/O와 메모리 사용량이 증가할 수 있습니다."
+		},
+		"maxParallelEmbeddings": {
+			"label": "최대 병렬 임베딩",
+			"description": "동시에 전송되는 임베딩 요청 수를 제한합니다. 로컬 CPU/GPU 모델 사용 시 값이 너무 높으면 시스템이 멈출 수 있으므로 주의하세요."
+		},
+		"chunkSizeTokens": {
+			"label": "청크 크기 (토큰)",
+			"description": "각 임베딩 청크에 포함될 토큰 수를 제어합니다. 더 작은 청크는 검색 품질을 높일 수 있지만 요청 수가 증가하고, 더 큰 청크는 요청 수를 줄이지만 정밀도가 떨어질 수 있습니다."
+		},
+		"enableBuiltInIgnore": {
+			"label": "내장 무시 패턴 사용",
+			"description": "node_modules, 빌드 디렉터리 등 일반적으로 불필요한 경로를 자동으로 제외하여 인덱싱 성능을 향상시킵니다."
+		},
 		"enableLabel": "코드베이스 인덱싱 활성화",
 		"enableDescription": "향상된 검색 및 컨텍스트 이해를 위해 코드 인덱싱 활성화",
 		"providerLabel": "임베딩 제공자",

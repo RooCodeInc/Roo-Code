@@ -436,6 +436,39 @@
 					"minimum": 1,
 					"maximum": 200,
 					"description": "%settings.codeIndex.embeddingBatchSize.description%"
+				},
+				"rooCode.codeIndex.mode": {
+					"type": "string",
+					"enum": [
+						"auto",
+						"normal",
+						"lowResource"
+					],
+					"default": "auto",
+					"description": "Indexing mode for the codebase indexer. 'Auto' detects your machine and chooses safe limits. 'Low resource' keeps indexing lightweight."
+				},
+				"rooCode.codeIndex.maxParallelFileReads": {
+					"type": "number",
+					"default": 16,
+					"minimum": 1,
+					"description": "Maximum parallel file reads during codebase indexing. Lower this to reduce disk and CPU pressure."
+				},
+				"rooCode.codeIndex.maxParallelEmbeddings": {
+					"type": "number",
+					"default": 4,
+					"minimum": 1,
+					"description": "Maximum concurrent embedding requests during codebase indexing. Lower this when using local models."
+				},
+				"rooCode.codeIndex.chunkSizeTokens": {
+					"type": "number",
+					"default": 2048,
+					"minimum": 128,
+					"description": "Target token size for code chunks sent to the embedder. Smaller values reduce memory/CPU usage."
+				},
+				"rooCode.codeIndex.enableBuiltInIgnore": {
+					"type": "boolean",
+					"default": false,
+					"description": "Enable an additional built-in curated ignore list (node_modules, build artifacts, media, archives, etc.) used only by codebase indexing, on top of your existing ignore configuration (.rooignore, etc.). Custom ignore rules should be configured via .rooignore."
 				}
 			}
 		}

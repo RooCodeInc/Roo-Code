@@ -219,6 +219,12 @@ export interface WebviewMessage {
 		| "checkRulesDirectoryResult"
 		| "saveCodeIndexSettingsAtomic"
 		| "requestCodeIndexSecretStatus"
+		// Code index performance profile settings (SettingsView -> extension)
+		| "codeIndexMode"
+		| "codeIndexMaxParallelFileReads"
+		| "codeIndexMaxParallelEmbeddings"
+		| "codeIndexChunkSizeTokens"
+		| "codeIndexEnableBuiltInIgnore"
 		| "requestCommands"
 		| "openCommandFile"
 		| "deleteCommand"
@@ -299,6 +305,13 @@ export interface WebviewMessage {
 		codebaseIndexOpenAiCompatibleBaseUrl?: string
 		codebaseIndexSearchMaxResults?: number
 		codebaseIndexSearchMinScore?: number
+
+		// Intensity profile settings (rooCode.codeIndex.*)
+		codeIndexMode?: "auto" | "normal" | "lowResource"
+		codeIndexMaxParallelFileReads?: number
+		codeIndexMaxParallelEmbeddings?: number
+		codeIndexChunkSizeTokens?: number
+		codeIndexEnableBuiltInIgnore?: boolean
 
 		// Secret settings
 		codeIndexOpenAiKey?: string

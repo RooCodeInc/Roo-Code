@@ -9,6 +9,13 @@ import { TelemetryService } from "@roo-code/telemetry"
 import { TelemetryEventName } from "@roo-code/types"
 import { t } from "../../i18n"
 
+export interface CodeIndexOrchestratorOptions {
+	maxParallelFileReads: number
+	maxParallelEmbeddings: number
+	chunkSizeTokens: number
+	builtInIgnorePatterns: string[]
+}
+
 /**
  * Manages the code indexing workflow, coordinating between different services and managers.
  */
@@ -24,6 +31,7 @@ export class CodeIndexOrchestrator {
 		private readonly vectorStore: IVectorStore,
 		private readonly scanner: DirectoryScanner,
 		private readonly fileWatcher: IFileWatcher,
+		private readonly options?: CodeIndexOrchestratorOptions,
 	) {}
 
 	/**

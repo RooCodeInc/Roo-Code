@@ -8,6 +8,7 @@ import { CodeIndexServiceFactory } from "./service-factory"
 import { CodeIndexSearchService } from "./search-service"
 import { CodeIndexOrchestrator } from "./orchestrator"
 import { CacheManager } from "./cache-manager"
+import { getCodeIndexConfig } from "./config"
 import { RooIgnoreController } from "../../core/ignore/RooIgnoreController"
 import fs from "fs/promises"
 import ignore from "ignore"
@@ -348,7 +349,9 @@ export class CodeIndexManager {
 			throw new Error(errorMessage)
 		}
 
-		// (Re)Initialize orchestrator
+		// (Re)Initialize orchestrator with low-resource aware config
+		const indexConfig = getCodeIndexConfig()
+
 		this._orchestrator = new CodeIndexOrchestrator(
 			this._configManager!,
 			this._stateManager,
@@ -357,6 +360,12 @@ export class CodeIndexManager {
 			vectorStore,
 			scanner,
 			fileWatcher,
+			{
+				maxParallelFileReads: indexConfig.maxParallelFileReads,
+				maxParallelEmbeddings: indexConfig.maxParallelEmbeddings,
+				chunkSizeTokens: indexConfig.chunkSizeTokens,
+				builtInIgnorePatterns: indexConfig.builtInIgnorePatterns,
+			},
 		)
 
 		// (Re)Initialize search service

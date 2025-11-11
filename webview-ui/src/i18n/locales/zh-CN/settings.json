@@ -43,6 +43,34 @@
 	},
 	"codeIndex": {
 		"title": "代码库索引",
+		"performanceProfileLabel": "索引性能配置",
+		"mode": {
+			"label": "索引模式",
+			"description": "控制 Roo 扫描代码库和生成向量嵌入的激进程度。",
+			"auto": "自动（使用推荐配置）",
+			"normal": "正常（在速度与资源使用之间平衡）",
+			"lowResource": "低资源（适用于受限 CPU/内存或本地环境）",
+			"recommendedLowResource": "应用低资源推荐值",
+			"recommendedLowResource.tooltip": "推荐用于性能较弱机器或本地模型。降低并行度和分块大小，并启用内置忽略规则。",
+			"recommendedNormal": "应用正常推荐值",
+			"recommendedNormal.tooltip": "推荐用于大多数机器。使用更高并行度和更大分块，并启用内置忽略规则。"
+		},
+		"maxParallelFileReads": {
+			"label": "最大并行文件读取数",
+			"description": "限制同时进行索引的文件数量。较高的值可以加快索引，但会增加磁盘 I/O 和内存占用。"
+		},
+		"maxParallelEmbeddings": {
+			"label": "最大并行嵌入请求数",
+			"description": "限制同时发送的嵌入请求数量。本地 CPU/GPU 模型上设置过高可能导致系统卡顿。"
+		},
+		"chunkSizeTokens": {
+			"label": "分块大小（Token）",
+			"description": "控制每个嵌入分块中包含的 Token 数。较小分块可以提高召回率但增加请求次数；较大分块减少请求次数但可能降低精度。"
+		},
+		"enableBuiltInIgnore": {
+			"label": "启用内置忽略规则",
+			"description": "自动排除 node_modules、构建输出等常见无关路径，以提升索引性能和稳定性。"
+		},
 		"description": "配置代码库索引设置以启用项目的语义搜索。<0>了解更多</0>",
 		"statusTitle": "状态",
 		"enableLabel": "启用代码库索引",

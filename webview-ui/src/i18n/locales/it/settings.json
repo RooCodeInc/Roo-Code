@@ -43,6 +43,35 @@
 	},
 	"codeIndex": {
 		"title": "Indicizzazione del codice",
+		"description": "Configura le impostazioni di indicizzazione della base di codice per abilitare la ricerca semantica del progetto. <0>Scopri di più</0>",
+		"performanceProfileLabel": "Profilo prestazioni indicizzazione",
+		"mode": {
+			"label": "Modalità di indicizzazione",
+			"description": "Definisce quanto aggressivamente Roo analizza e crea embedding della tua base di codice.",
+			"auto": "Auto (usa impostazioni raccomandate)",
+			"normal": "Normale (equilibrio tra velocità e risorse)",
+			"lowResource": "Basse risorse (più sicuro per macchine/modelli locali limitati)",
+			"recommendedLowResource": "Usa valori predefiniti a basse risorse",
+			"recommendedLowResource.tooltip": "Raccomandato per macchine poco potenti o modelli locali. Riduce la concorrenza e la dimensione dei chunk mantenendo attivo l'ignore integrato.",
+			"recommendedNormal": "Usa valori predefiniti normali",
+			"recommendedNormal.tooltip": "Raccomandato per la maggior parte delle macchine. Usa maggiore concorrenza e chunk più grandi con ignore integrato abilitato."
+		},
+		"maxParallelFileReads": {
+			"label": "Letture di file parallele massime",
+			"description": "Limita le letture concorrenti del filesystem durante l'indicizzazione. Riduci su HDD/SSD lenti o con modelli locali."
+		},
+		"maxParallelEmbeddings": {
+			"label": "Embeddings paralleli massimi",
+			"description": "Limita le richieste di embedding concorrenti. Imposta valori più bassi per modelli locali su CPU/GPU per evitare blocchi."
+		},
+		"chunkSizeTokens": {
+			"label": "Dimensione chunk (token)",
+			"description": "Controlla quanti token vengono raggruppati in un singolo chunk di embedding. Chunk più piccoli migliorano il recall ma aumentano le richieste; chunk più grandi riducono le richieste ma possono essere meno precisi."
+		},
+		"enableBuiltInIgnore": {
+			"label": "Abilita ignore integrato",
+			"description": "Salta percorsi pesanti/irrilevanti (node_modules, build, media, archivi, ecc.) per ridurre tempo e risorse di indicizzazione."
+		},
 		"enableLabel": "Abilita indicizzazione del codice",
 		"enableDescription": "Abilita l'indicizzazione del codice per una ricerca e una comprensione del contesto migliorate",
 		"providerLabel": "Fornitore di embedding",

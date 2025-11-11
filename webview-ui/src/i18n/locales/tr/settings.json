@@ -43,6 +43,34 @@
 	},
 	"codeIndex": {
 		"title": "Kod Tabanı İndeksleme",
+		"performanceProfileLabel": "Indeksleme performans profili",
+		"mode": {
+			"label": "Indeksleme modu",
+			"description": "Roo'nun kod tabanınızı ne kadar agresif tarayıp embedding oluşturacağını belirler.",
+			"auto": "Otomatik (önerilen ayarları kullan)",
+			"normal": "Normal (hız ve kaynak kullanımı dengeli)",
+			"lowResource": "Düşük kaynak (sınırlı CPU/bellek veya yerel kurulumlar için daha güvenli)",
+			"recommendedLowResource": "Düşük kaynak varsayılanlarını uygula",
+			"recommendedLowResource.tooltip": "Düşük güçlü makineler veya yerel modeller için önerilir. Paralelliği ve chunk boyutunu düşürür, yerleşik yok sayma etkin kalır.",
+			"recommendedNormal": "Normal varsayılanları uygula",
+			"recommendedNormal.tooltip": "Çoğu makine için önerilir. Daha yüksek paralellik ve daha büyük chunk'lar kullanır, yerleşik yok sayma etkin kalır."
+		},
+		"maxParallelFileReads": {
+			"label": "Maksimum paralel dosya okuma",
+			"description": "Aynı anda indekslenebilecek dosya sayısını sınırlar. Daha yüksek değerler indeksi hızlandırır, ancak disk I/O ve bellek kullanımını artırabilir."
+		},
+		"maxParallelEmbeddings": {
+			"label": "Maksimum paralel embedding",
+			"description": "Aynı anda gönderilen embedding isteklerinin sayısını sınırlar. Yerel CPU/GPU modelleriyle çok yüksek değerler donmalara yol açabilir."
+		},
+		"chunkSizeTokens": {
+			"label": "Chunk boyutu (token)",
+			"description": "Her embedding chunk'ında kaç token olacağını kontrol eder. Daha küçük chunk'lar daha iyi geri çağırma sağlayabilir ancak istek sayısını artırır; daha büyük chunk'lar istek sayısını azaltır fakat hassasiyeti düşürebilir."
+		},
+		"enableBuiltInIgnore": {
+			"label": "Yerleşik yok sayma desenlerini kullan",
+			"description": "node_modules, build klasörleri ve diğer gereksiz yolları otomatik olarak hariç tutarak indeksleme performansını iyileştirir."
+		},
 		"enableLabel": "Kod Tabanı İndekslemeyi Etkinleştir",
 		"enableDescription": "Geliştirilmiş arama ve bağlam anlayışı için kod indekslemeyi etkinleştirin",
 		"providerLabel": "Gömme Sağlayıcısı",

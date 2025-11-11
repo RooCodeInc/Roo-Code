@@ -33,7 +33,8 @@
 		"ui": "UI",
 		"experimental": "Experimental",
 		"language": "Idioma",
-		"about": "Acerca de Roo Code"
+		"about": "Acerca de Roo Code",
+		"codeIndex": "Indexación de la base de código"
 	},
 	"slashCommands": {
 		"description": "Gestiona tus comandos de barra para ejecutar rápidamente flujos de trabajo y acciones personalizadas. <DocsLink>Saber más</DocsLink>"
@@ -44,6 +45,34 @@
 	"codeIndex": {
 		"title": "Indexación de código",
 		"description": "Configura los ajustes de indexación de código para habilitar búsqueda semántica en tu proyecto. <0>Más información</0>",
+		"performanceProfileLabel": "Perfil de rendimiento de indexación",
+		"mode": {
+			"label": "Modo de indexación",
+			"description": "Define qué tan agresivamente Roo analiza y genera embeddings de tu base de código.",
+			"auto": "Auto (usar configuración recomendada)",
+			"normal": "Normal (equilibrio entre velocidad y recursos)",
+			"lowResource": "Bajo recursos (más seguro para CPU/memoria limitadas o entornos locales)",
+			"recommendedLowResource": "Usar valores predeterminados de bajo recurso",
+			"recommendedLowResource.tooltip": "Recomendado para equipos poco potentes o modelos locales. Reduce la concurrencia y el tamaño de los fragmentos manteniendo activo el ignore integrado.",
+			"recommendedNormal": "Usar valores predeterminados normales",
+			"recommendedNormal.tooltip": "Recomendado para la mayoría de equipos. Usa mayor concurrencia y fragmentos más grandes con el ignore integrado habilitado."
+		},
+		"maxParallelFileReads": {
+			"label": "Lecturas de archivos paralelas máximas",
+			"description": "Limita las lecturas concurrentes del sistema de archivos durante la indexación. Reduce en HDD/SSD lentos o con modelos locales."
+		},
+		"maxParallelEmbeddings": {
+			"label": "Embeddings paralelos máximos",
+			"description": "Limita las solicitudes de embedding concurrentes. Usa valores más bajos con modelos locales en CPU/GPU para evitar bloqueos."
+		},
+		"chunkSizeTokens": {
+			"label": "Tamaño de fragmento (tokens)",
+			"description": "Controla cuántos tokens se agrupan en un fragmento de embedding. Fragmentos pequeños mejoran el recall pero aumentan las solicitudes; fragmentos grandes reducen solicitudes pero pueden ser menos precisos."
+		},
+		"enableBuiltInIgnore": {
+			"label": "Habilitar ignore integrado",
+			"description": "Omitir rutas pesadas e irrelevantes (node_modules, builds, media, archivos comprimidos, etc.) para reducir el tiempo y recursos de indexación."
+		},
 		"statusTitle": "Estado",
 		"enableLabel": "Habilitar indexación de código",
 		"enableDescription": "Habilita la indexación de código para mejorar la búsqueda y la comprensión del contexto",

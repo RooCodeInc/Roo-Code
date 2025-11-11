@@ -43,6 +43,35 @@
 	},
 	"codeIndex": {
 		"title": "Codebase indexering",
+		"description": "Configureer codebase-indexeringsinstellingen om semantisch zoeken voor je project in te schakelen. <0>Meer informatie</0>",
+		"performanceProfileLabel": "Indexeringsprestatieprofiel",
+		"mode": {
+			"label": "Indexeringsmodus",
+			"description": "Bepaalt hoe agressief Roo je codebase scant en embeddings aanmaakt.",
+			"auto": "Auto (aanbevolen instellingen gebruiken)",
+			"normal": "Normaal (balans tussen snelheid en middelengebruik)",
+			"lowResource": "Laag vermogen (veiliger voor beperkte CPU/geheugen of lokale setups)",
+			"recommendedLowResource": "Laag-vermogen standaardwaarden gebruiken",
+			"recommendedLowResource.tooltip": "Aanbevolen voor minder krachtige machines of lokale modellen. Verlaagt parallelle taken en chunk-grootte met ingebouwde ignore ingeschakeld.",
+			"recommendedNormal": "Normale standaardwaarden gebruiken",
+			"recommendedNormal.tooltip": "Aanbevolen voor de meeste machines. Gebruikt hogere paralleliteit en grotere chunks met ingebouwde ignore ingeschakeld."
+		},
+		"maxParallelFileReads": {
+			"label": "Maximaal parallelle bestandslezingen",
+			"description": "Beperkt gelijktijdige bestandslezingen tijdens indexering. Verlaag op HDD/langzame SSD of bij lokale modellen."
+		},
+		"maxParallelEmbeddings": {
+			"label": "Maximaal parallelle embeddings",
+			"description": "Beperkt gelijktijdige embedding-verzoeken. Stel lager in voor lokale CPU/GPU-modellen om vastlopers te voorkomen."
+		},
+		"chunkSizeTokens": {
+			"label": "Chunkgrootte (tokens)",
+			"description": "Bepaalt hoeveel tokens in één embedding-chunk worden gegroepeerd. Kleinere chunks verbeteren recall maar verhogen het aantal verzoeken; grotere chunks verlagen verzoeken maar kunnen minder precies zijn."
+		},
+		"enableBuiltInIgnore": {
+			"label": "Ingebouwde ignore inschakelen",
+			"description": "Sla zware en irrelevante paden (node_modules, builds, media, archieven, etc.) over om indexeringstijd en resourcegebruik te verlagen."
+		},
 		"enableLabel": "Codebase indexering inschakelen",
 		"enableDescription": "Code-indexering inschakelen voor verbeterde zoekresultaten en contextbegrip",
 		"providerLabel": "Embeddings provider",

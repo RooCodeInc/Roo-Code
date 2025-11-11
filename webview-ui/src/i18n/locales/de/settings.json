@@ -33,7 +33,8 @@
 		"ui": "UI",
 		"experimental": "Experimentell",
 		"language": "Sprache",
-		"about": "Über Roo Code"
+		"about": "Über Roo Code",
+		"codeIndex": "Codebase-Indexierung"
 	},
 	"slashCommands": {
 		"description": "Verwalte deine Slash-Befehle, um benutzerdefinierte Workflows und Aktionen schnell auszuführen. <DocsLink>Mehr erfahren</DocsLink>"
@@ -44,6 +45,34 @@
 	"codeIndex": {
 		"title": "Codebase-Indexierung",
 		"description": "Konfiguriere Codebase-Indexierungseinstellungen, um semantische Suche in deinem Projekt zu aktivieren. <0>Mehr erfahren</0>",
+		"performanceProfileLabel": "Indexierungs-Leistungsprofil",
+		"mode": {
+			"label": "Indexierungsmodus",
+			"description": "Bestimmt, wie aggressiv Roo deine Codebase scannt und Embeddings erstellt.",
+			"auto": "Auto (empfohlene Einstellungen verwenden)",
+			"normal": "Normal (ausgewogen zwischen Geschwindigkeit und Ressourcenverbrauch)",
+			"lowResource": "Ressourcenschonend (für schwächere Rechner oder lokale Setups)",
+			"recommendedLowResource": "Schonende Standardwerte verwenden",
+			"recommendedLowResource.tooltip": "Empfohlen für leistungsschwache Maschinen oder lokale Modelle. Reduziert Parallelität und Chunk-Größe bei aktiviertem integriertem Ignore.",
+			"recommendedNormal": "Normale Standardwerte verwenden",
+			"recommendedNormal.tooltip": "Empfohlen für typische Maschinen. Nutzt höhere Parallelität und größere Chunks bei aktiviertem integriertem Ignore."
+		},
+		"maxParallelFileReads": {
+			"label": "Maximale parallele Dateilesungen",
+			"description": "Begrenzt gleichzeitige Dateizugriffe während der Indexierung. Niedriger einstellen bei HDD/langsamen SSDs oder lokalen Modellen."
+		},
+		"maxParallelEmbeddings": {
+			"label": "Maximale parallele Embeddings",
+			"description": "Begrenzt gleichzeitige Embedding-Anfragen. Für lokale CPU/GPU-Modelle niedriger setzen, um Freezes zu vermeiden."
+		},
+		"chunkSizeTokens": {
+			"label": "Chunk-Größe (Tokens)",
+			"description": "Steuert, wie viele Tokens in einem Embedding-Chunk zusammengefasst werden. Kleinere Chunks verbessern Recall, erhöhen aber die Anzahl der Anfragen; größere Chunks reduzieren Anfragen, können aber ungenauer sein."
+		},
+		"enableBuiltInIgnore": {
+			"label": "Integrierte Ignore-Liste aktivieren",
+			"description": "Überspringt große/irrelevante Pfade (node_modules, Builds, Medien, Archive etc.), um Indexierungszeit und Ressourcenverbrauch zu reduzieren."
+		},
 		"statusTitle": "Status",
 		"enableLabel": "Codebase-Indexierung aktivieren",
 		"enableDescription": "Aktiviere die Code-Indizierung für eine verbesserte Suche und ein besseres Kontextverständnis",

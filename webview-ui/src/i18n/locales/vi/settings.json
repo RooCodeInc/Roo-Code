@@ -43,6 +43,34 @@
 	},
 	"codeIndex": {
 		"title": "Lập chỉ mục mã nguồn",
+		"performanceProfileLabel": "Hồ sơ hiệu năng lập chỉ mục",
+		"mode": {
+			"label": "Chế độ lập chỉ mục",
+			"description": "Xác định mức độ tích cực khi Roo quét và tạo embedding cho codebase.",
+			"auto": "Tự động (dùng cấu hình khuyến nghị)",
+			"normal": "Bình thường (cân bằng giữa tốc độ và tài nguyên)",
+			"lowResource": "Tài nguyên thấp (an toàn hơn cho CPU/bộ nhớ hạn chế hoặc môi trường cục bộ)",
+			"recommendedLowResource": "Dùng giá trị mặc định tài nguyên thấp",
+			"recommendedLowResource.tooltip": "Khuyến nghị cho máy yếu hoặc mô hình cục bộ. Giảm song song và kích thước chunk, bật bộ lọc bỏ qua tích hợp.",
+			"recommendedNormal": "Dùng giá trị mặc định bình thường",
+			"recommendedNormal.tooltip": "Khuyến nghị cho hầu hết máy. Dùng song song cao hơn và chunk lớn hơn với bộ lọc bỏ qua tích hợp được bật."
+		},
+		"maxParallelFileReads": {
+			"label": "Số lần đọc file song song tối đa",
+			"description": "Giới hạn số file có thể được lập chỉ mục cùng lúc. Giá trị cao hơn tăng tốc độ nhưng cũng tăng I/O và sử dụng bộ nhớ."
+		},
+		"maxParallelEmbeddings": {
+			"label": "Số embedding song song tối đa",
+			"description": "Giới hạn số yêu cầu embedding được gửi cùng lúc. Với mô hình cục bộ CPU/GPU, đặt quá cao có thể làm treo hệ thống."
+		},
+		"chunkSizeTokens": {
+			"label": "Kích thước chunk (token)",
+			"description": "Điều khiển số token trong mỗi chunk embedding. Chunk nhỏ cải thiện chất lượng tìm kiếm nhưng tăng số yêu cầu; chunk lớn giảm số yêu cầu nhưng có thể kém chính xác hơn."
+		},
+		"enableBuiltInIgnore": {
+			"label": "Bật mẫu bỏ qua tích hợp",
+			"description": "Tự động loại trừ node_modules, thư mục build và các đường dẫn không cần thiết khác để cải thiện hiệu năng lập chỉ mục."
+		},
 		"enableLabel": "Bật lập chỉ mục mã nguồn",
 		"enableDescription": "Bật lập chỉ mục mã để cải thiện tìm kiếm và sự hiểu biết về ngữ cảnh",
 		"providerLabel": "Nhà cung cấp nhúng",
