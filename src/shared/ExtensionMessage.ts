@@ -142,6 +142,7 @@ export interface ExtensionMessage {
 		| "reviewPagePayload"
 		| "dismissedUpsells"
 		| "organizationSwitchResult"
+		| "interactionRequired"
 	text?: string
 	payload?: any // Add a generic payload for now, can refine later
 	// Checkpoint warning message
@@ -415,6 +416,7 @@ export interface ClineSayTool {
 		| "generateImage"
 		| "imageGenerated"
 		| "runSlashCommand"
+		| "updateTodoList"
 	path?: string
 	diff?: string
 	content?: string

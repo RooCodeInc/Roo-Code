@@ -6,6 +6,7 @@ import { Dirent } from "fs"
 import { isLanguage, toolNames } from "@roo-code/types"
 
 import type { SystemPromptSettings } from "../types"
+import { getEffectiveProtocol, isNativeProtocol } from "../toolProtocolResolver"
 
 import { LANGUAGES } from "../../../shared/language"
 import { getRooDirectoriesForCwd, getGlobalRooDirectory } from "../../../services/roo-config"
@@ -387,13 +388,17 @@ export async function addCustomInstructions(
 	sections.push(...mustRules)
 	const joinedSections = sections.join("\n").trim()
 
+	const effectiveProtocol = getEffectiveProtocol(options.settings)
+
 	return joinedSections
 		? `
 ====
 
 USER'S CUSTOM INSTRUCTIONS
 
-The following additional instructions are provided by the user, and should be followed to the best of your ability without interfering with the TOOL USE guidelines.
+The following additional instructions are provided by the user, and should be followed to the best of your ability${
+				isNativeProtocol(effectiveProtocol) ? "." : " without interfering with the TOOL USE guidelines."
+			}
 
 ${joinedSections}`
 		: `${mustRules.join("\n\n")}`

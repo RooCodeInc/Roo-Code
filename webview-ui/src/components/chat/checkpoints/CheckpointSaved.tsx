@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, useEffect } from "react"
+import { useMemo, useRef, /*useState*/ useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { cn } from "@/lib/utils"
 
@@ -16,8 +16,8 @@ type CheckpointSavedProps = {
 export const CheckpointSaved = ({ checkpoint, currentHash, ...props }: CheckpointSavedProps) => {
 	const { t } = useTranslation()
 	const isCurrent = currentHash === props.commitHash
-	const [isPopoverOpen, setIsPopoverOpen] = useState(false)
-	const [isClosing, setIsClosing] = useState(false)
+	// const [isPopoverOpen, setIsPopoverOpen] = useState(false)
+	// const [isClosing, setIsClosing] = useState(false)
 	const closeTimer = useRef<number | null>(null)
 
 	useEffect(() => {
@@ -30,23 +30,21 @@ export const CheckpointSaved = ({ checkpoint, currentHash, ...props }: Checkpoin
 	}, [])
 
 	const handlePopoverOpenChange = (open: boolean) => {
-		setIsPopoverOpen(open)
+		// setIsPopoverOpen(open)
 		if (open) {
-			setIsClosing(false)
+			// setIsClosing(false)
 			if (closeTimer.current) {
 				window.clearTimeout(closeTimer.current)
 				closeTimer.current = null
 			}
 		} else {
-			setIsClosing(true)
+			// setIsClosing(true)
 			closeTimer.current = window.setTimeout(() => {
-				setIsClosing(false)
+				// setIsClosing(false)
 				closeTimer.current = null
 			}, 200) // keep menu visible briefly to avoid popover jump
 		}
 	}
-
-	const menuVisible = isPopoverOpen || isClosing
 
 	const metadata = useMemo(() => {
 		if (!checkpoint) {
@@ -81,9 +79,7 @@ export const CheckpointSaved = ({ checkpoint, currentHash, ...props }: Checkpoin
 				}}></span>
 
 			{/* Keep menu visible while popover is open or briefly after close to prevent jump */}
-			<div
-				data-testid="checkpoint-menu-container"
-				className={cn("h-4 -mt-2", menuVisible ? "block" : "hidden group-hover:block")}>
+			<div data-testid="checkpoint-menu-container" className={cn("h-4 -mt-2 block")}>
 				<CheckpointMenu
 					ts={props.ts}
 					commitHash={props.commitHash}

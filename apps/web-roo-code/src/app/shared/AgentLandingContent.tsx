@@ -19,7 +19,6 @@ import { Button } from "@/components/ui"
 import { AnimatedBackground } from "@/components/homepage"
 import { AgentCarousel } from "@/components/reviewer/agent-carousel"
 import { EXTERNAL_LINKS } from "@/lib/constants"
-import { trackGoogleAdsConversion } from "@/lib/analytics/google-ads"
 import { type AgentPageContent, type IconName } from "./agent-page-content"
 
 /**
@@ -97,7 +96,6 @@ export function AgentLandingContent({ content }: { content: AgentPageContent }) 
 										href={EXTERNAL_LINKS.CLOUD_APP_SIGNUP_PRO}
 										target="_blank"
 										rel="noopener noreferrer"
-										onClick={trackGoogleAdsConversion}
 										className="flex w-full items-center justify-center">
 										{content.hero.cta.buttonText}
 										<ArrowRight className="ml-2" />
@@ -219,7 +217,6 @@ export function AgentLandingContent({ content }: { content: AgentPageContent }) 
 									href={EXTERNAL_LINKS.CLOUD_APP_SIGNUP_PRO}
 									target="_blank"
 									rel="noopener noreferrer"
-									onClick={trackGoogleAdsConversion}
 									className="flex items-center justify-center">
 									{content.cta.buttonText}
 									<ArrowRight className="ml-2 h-4 w-4" />
