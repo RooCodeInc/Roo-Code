@@ -33,6 +33,7 @@ import {
 	isIdleAsk,
 	isInteractiveAsk,
 	isResumableAsk,
+	isNonBlockingAsk,
 	QueuedMessage,
 	DEFAULT_CONSECUTIVE_MISTAKE_LIMIT,
 	DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
@@ -748,6 +749,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		progressStatus?: ToolProgressStatus,
 		isProtected?: boolean,
 	): Promise<{ response: ClineAskResponse; text?: string; images?: string[] }> {
+		console.log(`[NATIVE_TOOL] Task.ask() called with type: ${type}, partial: ${partial}`)
+		console.log(`[NATIVE_TOOL] Text preview:`, text?.substring(0, 100))
+
 		// If this Cline instance was aborted by the provider, then the only
 		// thing keeping us alive is a promise still running in the background,
 		// in which case we don't want to send its result to the webview as it
@@ -757,6 +761,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// simply removes the reference to this instance, but the instance is
 		// still alive until this promise resolves or rejects.)
 		if (this.abort) {
+			console.log(`[NATIVE_TOOL] Task.ask() aborted`)
 			throw new Error(`[RooCode#ask] task ${this.taskId}.${this.instanceId} aborted`)
 		}
 
@@ -832,6 +837,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				}
 			}
 		} else {
+			console.log(`[NATIVE_TOOL] Creating new non-partial ask message`)
 			// This is a new non-partial message, so add it like normal.
 			this.askResponse = undefined
 			this.askResponseText = undefined
@@ -839,6 +845,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			askTs = Date.now()
 			console.log(`Task#ask: new complete ask -> ${type} @ ${askTs}`)
 			this.lastMessageTs = askTs
+			console.log(`[NATIVE_TOOL] Adding ask message to clineMessages with ts: ${askTs}`)
 			await this.addToClineMessages({ ts: askTs, type: "ask", ask: type, text, isProtected })
 		}
 
@@ -936,8 +943,20 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			}
 		}
 
-		// Wait for askResponse to be set.
+		// Non-blocking asks return immediately without waiting
+		// The ask message is created in the UI, but the task doesn't wait for a response
+		// This prevents blocking in cloud/headless environments
+		if (isNonBlockingAsk(type)) {
+			console.log(`[NATIVE_TOOL] Non-blocking ask type, returning immediately`)
+			return { response: "yesButtonClicked" as ClineAskResponse, text: undefined, images: undefined }
+		}
+
+		console.log(`[NATIVE_TOOL] Waiting for askResponse to be set...`)
+		// Wait for askResponse to be set
 		await pWaitFor(() => this.askResponse !== undefined || this.lastMessageTs !== askTs, { interval: 100 })
+		console.log(
+			`[NATIVE_TOOL] Wait completed. askResponse: ${this.askResponse}, lastMessageTs changed: ${this.lastMessageTs !== askTs}`,
+		)
 
 		if (this.lastMessageTs !== askTs) {
 			// Could happen if we send multiple asks in a row i.e. with
@@ -2474,18 +2493,28 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// 	this.userMessageContentReady = true
 					// }
 
+					console.log(`[NATIVE_TOOL] Waiting for userMessageContentReady...`)
 					await pWaitFor(() => this.userMessageContentReady)
+					console.log(`[NATIVE_TOOL] userMessageContentReady is now true!`)
+					console.log(`[NATIVE_TOOL] userMessageContent length: ${this.userMessageContent.length}`)
 
 					// If the model did not tool use, then we need to tell it to
 					// either use a tool or attempt_completion.
 					const didToolUse = this.assistantMessageContent.some((block) => block.type === "tool_use")
+					console.log(`[NATIVE_TOOL] didToolUse: ${didToolUse}`)
 
 					if (!didToolUse) {
+						console.log(`[NATIVE_TOOL] No tool use detected, adding noToolsUsed message`)
 						this.userMessageContent.push({ type: "text", text: formatResponse.noToolsUsed() })
 						this.consecutiveMistakeCount++
 					}
 
 					if (this.userMessageContent.length > 0) {
+						console.log(`[NATIVE_TOOL] Pushing userMessageContent back onto stack for next API request`)
+						console.log(
+							`[NATIVE_TOOL] userMessageContent:`,
+							JSON.stringify(this.userMessageContent.slice(0, 2), null, 2),
+						)
 						stack.push({
 							userContent: [...this.userMessageContent], // Create a copy to avoid mutation issues
 							includeFileDetails: false, // Subsequent iterations don't need file details
@@ -2493,7 +2522,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 						// Add periodic yielding to prevent blocking
 						await new Promise((resolve) => setImmediate(resolve))
+					} else {
+						console.log(`[NATIVE_TOOL] userMessageContent is empty, not pushing to stack`)
 					}
+					console.log(`[NATIVE_TOOL] Continuing to next iteration...`)
 					// Continue to next iteration instead of setting didEndLoop from recursive call
 					continue
 				} else {

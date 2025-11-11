@@ -97,8 +97,19 @@ export abstract class BaseTool<TName extends ToolName> {
 	 * @param callbacks - Tool execution callbacks
 	 */
 	async handle(cline: Task, block: ToolUse<TName>, callbacks: ToolCallbacks): Promise<void> {
+		console.log(`[NATIVE_TOOL] BaseTool.handle called for tool: ${this.name}`)
+		console.log(
+			`[NATIVE_TOOL] Block:`,
+			JSON.stringify(
+				{ name: block.name, partial: block.partial, hasNativeArgs: block.nativeArgs !== undefined },
+				null,
+				2,
+			),
+		)
+
 		// Handle partial messages
 		if (block.partial) {
+			console.log(`[NATIVE_TOOL] Block is partial, calling handlePartial`)
 			await this.handlePartial(cline, block)
 			return
 		}
@@ -107,21 +118,27 @@ export abstract class BaseTool<TName extends ToolName> {
 		let params: ToolParams<TName>
 		try {
 			if (block.nativeArgs !== undefined) {
+				console.log(`[NATIVE_TOOL] Using native args:`, JSON.stringify(block.nativeArgs, null, 2))
 				// Native protocol: typed args provided by NativeToolCallParser
 				// TypeScript knows nativeArgs is properly typed based on TName
 				params = block.nativeArgs as ToolParams<TName>
 			} else {
+				console.log(`[NATIVE_TOOL] Using legacy params parsing`)
 				// XML/legacy protocol: parse string params into typed params
 				params = this.parseLegacy(block.params)
 			}
 		} catch (error) {
+			console.error(`[NATIVE_TOOL] Error parsing parameters:`, error)
 			const errorMessage = `Failed to parse ${this.name} parameters: ${error instanceof Error ? error.message : String(error)}`
 			await callbacks.handleError(`parsing ${this.name} args`, new Error(errorMessage))
 			callbacks.pushToolResult(`<error>${errorMessage}</error>`)
 			return
 		}
 
+		console.log(`[NATIVE_TOOL] Parsed params:`, JSON.stringify(params, null, 2))
+		console.log(`[NATIVE_TOOL] Calling execute()`)
 		// Execute with typed parameters
 		await this.execute(params, cline, callbacks)
+		console.log(`[NATIVE_TOOL] Execute completed`)
 	}
 }
