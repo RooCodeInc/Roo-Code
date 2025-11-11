@@ -108,6 +108,16 @@ export class NativeToolCallParser {
 					}
 					break
 
+				case "insert_content":
+					if (args.path !== undefined && args.line !== undefined && args.content !== undefined) {
+						nativeArgs = {
+							path: args.path,
+							line: typeof args.line === "number" ? args.line : parseInt(String(args.line), 10),
+							content: args.content,
+						} as TName extends keyof NativeToolArgs ? NativeToolArgs[TName] : never
+					}
+					break
+
 				default:
 					break
 			}

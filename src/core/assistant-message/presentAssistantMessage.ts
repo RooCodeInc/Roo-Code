@@ -14,7 +14,7 @@ import { getSimpleReadFileToolDescription, simpleReadFileTool } from "../tools/s
 import { shouldUseSingleFileRead } from "@roo-code/types"
 import { writeToFileTool } from "../tools/writeToFileTool"
 import { applyDiffTool } from "../tools/multiApplyDiffTool"
-import { insertContentTool } from "../tools/insertContentTool"
+import { insertContentTool } from "../tools/InsertContentTool"
 import { listCodeDefinitionNamesTool } from "../tools/listCodeDefinitionNamesTool"
 import { searchFilesTool } from "../tools/searchFilesTool"
 import { browserActionTool } from "../tools/browserActionTool"
@@ -512,7 +512,12 @@ export async function presentAssistantMessage(cline: Task) {
 				}
 				case "insert_content":
 					await checkpointSaveAndMark(cline)
-					await insertContentTool(cline, block, askApproval, handleError, pushToolResult, removeClosingTag)
+					await insertContentTool.handle(cline, block as ToolUse<"insert_content">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+						removeClosingTag,
+					})
 					break
 				case "read_file":
 					console.log(`[NATIVE_TOOL] Processing read_file tool use in presentAssistantMessage`)
