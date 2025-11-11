@@ -12,6 +12,7 @@ import type { ApiHandlerCreateMessageMetadata, SingleCompletionHandler } from ".
 import { BaseProvider } from "./base-provider"
 import { DEFAULT_HEADERS } from "./constants"
 import { t } from "../../i18n"
+import { getApiRequestTimeout } from "./utils/timeout-config"
 
 const CEREBRAS_BASE_URL = "https://api.cerebras.ai/v1"
 const CEREBRAS_DEFAULT_TEMPERATURE = 0
@@ -146,128 +147,143 @@ export class CerebrasHandler extends BaseProvider implements SingleCompletionHan
 		}
 
 		try {
-			const response = await fetch(`${CEREBRAS_BASE_URL}/chat/completions`, {
-				method: "POST",
-				headers: {
-					...DEFAULT_HEADERS,
-					"Content-Type": "application/json",
-					Authorization: `Bearer ${this.apiKey}`,
-				},
-				body: JSON.stringify(requestBody),
-			})
-
-			if (!response.ok) {
-				const errorText = await response.text()
-
-				let errorMessage = "Unknown error"
-				try {
-					const errorJson = JSON.parse(errorText)
-					errorMessage = errorJson.error?.message || errorJson.message || JSON.stringify(errorJson, null, 2)
-				} catch {
-					errorMessage = errorText || `HTTP ${response.status}`
-				}
-
-				// Provide more actionable error messages
-				if (response.status === 401) {
-					throw new Error(t("common:errors.cerebras.authenticationFailed"))
-				} else if (response.status === 403) {
-					throw new Error(t("common:errors.cerebras.accessForbidden"))
-				} else if (response.status === 429) {
-					throw new Error(t("common:errors.cerebras.rateLimitExceeded"))
-				} else if (response.status >= 500) {
-					throw new Error(t("common:errors.cerebras.serverError", { status: response.status }))
-				} else {
-					throw new Error(
-						t("common:errors.cerebras.genericError", { status: response.status, message: errorMessage }),
-					)
-				}
-			}
-
-			if (!response.body) {
-				throw new Error(t("common:errors.cerebras.noResponseBody"))
-			}
-
-			// Initialize XmlMatcher to parse <think>...</think> tags
-			const matcher = new XmlMatcher(
-				"think",
-				(chunk) =>
-					({
-						type: chunk.matched ? "reasoning" : "text",
-						text: chunk.data,
-					}) as const,
-			)
-
-			const reader = response.body.getReader()
-			const decoder = new TextDecoder()
-			let buffer = ""
-			let inputTokens = 0
-			let outputTokens = 0
-
+			const controller = new AbortController()
+			let timeout = getApiRequestTimeout()
+			let timer: NodeJS.Timeout | undefined
 			try {
-				while (true) {
-					const { done, value } = await reader.read()
-					if (done) break
+				if (timeout !== 0) {
+					timer = setTimeout(() => controller.abort(), timeout)
+				}
+				const response = await fetch(`${CEREBRAS_BASE_URL}/chat/completions`, {
+					method: "POST",
+					headers: {
+						...DEFAULT_HEADERS,
+						"Content-Type": "application/json",
+						Authorization: `Bearer ${this.apiKey}`,
+					},
+					body: JSON.stringify(requestBody),
+					signal: controller.signal,
+				})
 
-					buffer += decoder.decode(value, { stream: true })
-					const lines = buffer.split("\n")
-					buffer = lines.pop() || "" // Keep the last incomplete line in the buffer
+				if (!response.ok) {
+					const errorText = await response.text()
 
-					for (const line of lines) {
-						if (line.trim() === "") continue
+					let errorMessage = "Unknown error"
+					try {
+						const errorJson = JSON.parse(errorText)
+						errorMessage =
+							errorJson.error?.message || errorJson.message || JSON.stringify(errorJson, null, 2)
+					} catch {
+						errorMessage = errorText || `HTTP ${response.status}`
+					}
 
-						try {
-							if (line.startsWith("data: ")) {
-								const jsonStr = line.slice(6).trim()
-								if (jsonStr === "[DONE]") {
-									continue
-								}
-
-								const parsed = JSON.parse(jsonStr)
-
-								// Handle text content - parse for thinking tokens
-								if (parsed.choices?.[0]?.delta?.content) {
-									const content = parsed.choices[0].delta.content
-
-									// Use XmlMatcher to parse <think>...</think> tags
-									for (const chunk of matcher.update(content)) {
-										yield chunk
-									}
-								}
-
-								// Handle usage information if available
-								if (parsed.usage) {
-									inputTokens = parsed.usage.prompt_tokens || 0
-									outputTokens = parsed.usage.completion_tokens || 0
-								}
-							}
-						} catch (error) {
-							// Silently ignore malformed streaming data lines
-						}
+					// Provide more actionable error messages
+					if (response.status === 401) {
+						throw new Error(t("common:errors.cerebras.authenticationFailed"))
+					} else if (response.status === 403) {
+						throw new Error(t("common:errors.cerebras.accessForbidden"))
+					} else if (response.status === 429) {
+						throw new Error(t("common:errors.cerebras.rateLimitExceeded"))
+					} else if (response.status >= 500) {
+						throw new Error(t("common:errors.cerebras.serverError", { status: response.status }))
+					} else {
+						throw new Error(
+							t("common:errors.cerebras.genericError", {
+								status: response.status,
+								message: errorMessage,
+							}),
+						)
 					}
 				}
+
+				if (!response.body) {
+					throw new Error(t("common:errors.cerebras.noResponseBody"))
+				}
+
+				// Initialize XmlMatcher to parse <think>...</think> tags
+				const matcher = new XmlMatcher(
+					"think",
+					(chunk) =>
+						({
+							type: chunk.matched ? "reasoning" : "text",
+							text: chunk.data,
+						}) as const,
+				)
+
+				const reader = response.body.getReader()
+				const decoder = new TextDecoder()
+				let buffer = ""
+				let inputTokens = 0
+				let outputTokens = 0
+
+				try {
+					while (true) {
+						const { done, value } = await reader.read()
+						if (done) break
+
+						buffer += decoder.decode(value, { stream: true })
+						const lines = buffer.split("\n")
+						buffer = lines.pop() || "" // Keep the last incomplete line in the buffer
+
+						for (const line of lines) {
+							if (line.trim() === "") continue
+
+							try {
+								if (line.startsWith("data: ")) {
+									const jsonStr = line.slice(6).trim()
+									if (jsonStr === "[DONE]") {
+										continue
+									}
+
+									const parsed = JSON.parse(jsonStr)
+
+									// Handle text content - parse for thinking tokens
+									if (parsed.choices?.[0]?.delta?.content) {
+										const content = parsed.choices[0].delta.content
+
+										// Use XmlMatcher to parse <think>...</think> tags
+										for (const chunk of matcher.update(content)) {
+											yield chunk
+										}
+									}
+
+									// Handle usage information if available
+									if (parsed.usage) {
+										inputTokens = parsed.usage.prompt_tokens || 0
+										outputTokens = parsed.usage.completion_tokens || 0
+									}
+								}
+							} catch (error) {
+								// Silently ignore malformed streaming data lines
+							}
+						}
+					}
+				} finally {
+					reader.releaseLock()
+				}
+
+				// Process any remaining content in the matcher
+				for (const chunk of matcher.final()) {
+					yield chunk
+				}
+
+				// Provide token usage estimate if not available from API
+				if (inputTokens === 0 || outputTokens === 0) {
+					const inputText = systemPrompt + cerebrasMessages.map((m) => m.content).join("")
+					inputTokens = inputTokens || Math.ceil(inputText.length / 4) // Rough estimate: 4 chars per token
+					outputTokens = outputTokens || Math.ceil((max_tokens || 1000) / 10) // Rough estimate
+				}
+
+				// Store usage for cost calculation
+				this.lastUsage = { inputTokens, outputTokens }
+
+				yield {
+					type: "usage",
+					inputTokens,
+					outputTokens,
+				}
 			} finally {
-				reader.releaseLock()
-			}
-
-			// Process any remaining content in the matcher
-			for (const chunk of matcher.final()) {
-				yield chunk
-			}
-
-			// Provide token usage estimate if not available from API
-			if (inputTokens === 0 || outputTokens === 0) {
-				const inputText = systemPrompt + cerebrasMessages.map((m) => m.content).join("")
-				inputTokens = inputTokens || Math.ceil(inputText.length / 4) // Rough estimate: 4 chars per token
-				outputTokens = outputTokens || Math.ceil((max_tokens || 1000) / 10) // Rough estimate
-			}
-
-			// Store usage for cost calculation
-			this.lastUsage = { inputTokens, outputTokens }
-
-			yield {
-				type: "usage",
-				inputTokens,
-				outputTokens,
+				if (timer) clearTimeout(timer)
 			}
 		} catch (error) {
 			if (error instanceof Error) {

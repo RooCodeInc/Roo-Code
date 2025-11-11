@@ -36,10 +36,12 @@ export class OllamaHandler extends BaseProvider implements SingleCompletionHandl
 			headers["Authorization"] = `Bearer ${this.options.ollamaApiKey}`
 		}
 
+		const timeout = getApiRequestTimeout()
+
 		this.client = new OpenAI({
 			baseURL: (this.options.ollamaBaseUrl || "http://localhost:11434") + "/v1",
 			apiKey: apiKey,
-			timeout: getApiRequestTimeout(),
+			timeout,
 			defaultHeaders: headers,
 		})
 	}
