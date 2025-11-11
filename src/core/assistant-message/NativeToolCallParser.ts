@@ -75,21 +75,33 @@ export class NativeToolCallParser {
 			// Build typed nativeArgs for tools that support it
 			let nativeArgs: (TName extends keyof NativeToolArgs ? NativeToolArgs[TName] : never) | undefined = undefined
 
-			if (toolCall.name === "read_file") {
-				// Handle both single-file and multi-file formats
-				if (args.files && Array.isArray(args.files)) {
-					// Multi-file format: {"files": [{path: "...", line_ranges: [...]}, ...]}
-					nativeArgs = args.files as TName extends keyof NativeToolArgs ? NativeToolArgs[TName] : never
-				} else if (args.path) {
-					// Single-file format: {"path": "..."} - convert to array format
-					const fileEntry: FileEntry = {
-						path: args.path,
-						lineRanges: [],
+			switch (toolCall.name) {
+				case "read_file":
+					// Handle both single-file and multi-file formats
+					if (args.files && Array.isArray(args.files)) {
+						// Multi-file format: {"files": [{path: "...", line_ranges: [...]}, ...]}
+						nativeArgs = args.files as TName extends keyof NativeToolArgs ? NativeToolArgs[TName] : never
+					} else if (args.path) {
+						// Single-file format: {"path": "..."} - convert to array format
+						const fileEntry: FileEntry = {
+							path: args.path,
+							lineRanges: [],
+						}
+						nativeArgs = [fileEntry] as TName extends keyof NativeToolArgs ? NativeToolArgs[TName] : never
 					}
-					nativeArgs = [fileEntry] as TName extends keyof NativeToolArgs ? NativeToolArgs[TName] : never
-				}
+					break
+
+				case "attempt_completion":
+					if (args.result) {
+						nativeArgs = { result: args.result } as TName extends keyof NativeToolArgs
+							? NativeToolArgs[TName]
+							: never
+					}
+					break
+
+				default:
+					break
 			}
-			// Add more tools here as they are migrated to native protocol
 
 			const result: ToolUse<TName> = {
 				type: "tool_use" as const,

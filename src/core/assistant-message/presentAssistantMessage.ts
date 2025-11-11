@@ -23,7 +23,7 @@ import { useMcpToolTool } from "../tools/useMcpToolTool"
 import { accessMcpResourceTool } from "../tools/accessMcpResourceTool"
 import { askFollowupQuestionTool } from "../tools/askFollowupQuestionTool"
 import { switchModeTool } from "../tools/switchModeTool"
-import { attemptCompletionTool } from "../tools/attemptCompletionTool"
+import { attemptCompletionTool, AttemptCompletionCallbacks } from "../tools/AttemptCompletionTool"
 import { newTaskTool } from "../tools/newTaskTool"
 
 import { updateTodoListTool } from "../tools/updateTodoListTool"
@@ -578,18 +578,22 @@ export async function presentAssistantMessage(cline: Task) {
 				case "new_task":
 					await newTaskTool(cline, block, askApproval, handleError, pushToolResult, removeClosingTag)
 					break
-				case "attempt_completion":
-					await attemptCompletionTool(
-						cline,
-						block,
+				case "attempt_completion": {
+					const completionCallbacks: AttemptCompletionCallbacks = {
 						askApproval,
 						handleError,
 						pushToolResult,
 						removeClosingTag,
-						toolDescription,
 						askFinishSubTaskApproval,
+						toolDescription,
+					}
+					await attemptCompletionTool.handle(
+						cline,
+						block as ToolUse<"attempt_completion">,
+						completionCallbacks,
 					)
 					break
+				}
 				case "run_slash_command":
 					await runSlashCommandTool(cline, block, askApproval, handleError, pushToolResult, removeClosingTag)
 					break
