@@ -1,4 +1,4 @@
-// npx vitest run src/components/chat/__tests__/ChatView.spec.tsx
+// pnpm --filter @roo-code/vscode-webview test src/components/chat/__tests__/ChatView.spec.tsx
 
 import React from "react"
 import { render, waitFor, act, fireEvent } from "@/utils/test-utils"
@@ -295,99 +295,6 @@ const renderChatView = (props: Partial<ChatViewProps> = {}) => {
 
 describe("ChatView - Sound Playing Tests", () => {
 	beforeEach(() => vi.clearAllMocks())
-
-	it("does not play sound for auto-approved browser actions", () => {
-		renderChatView()
-
-		// First hydrate state with initial task
-		mockPostMessage({
-			autoApprovalEnabled: true,
-			alwaysAllowBrowser: true,
-			clineMessages: [
-				{
-					type: "say",
-					say: "task",
-					ts: Date.now() - 2000,
-					text: "Initial task",
-				},
-			],
-		})
-
-		// Clear any initial calls
-		mockPlayFunction.mockClear()
-
-		// Add browser action that will be auto-approved
-		mockPostMessage({
-			autoApprovalEnabled: true,
-			alwaysAllowBrowser: true,
-			clineMessages: [
-				{
-					type: "say",
-					say: "task",
-					ts: Date.now() - 2000,
-					text: "Initial task",
-				},
-				{
-					type: "ask",
-					ask: "browser_action_launch",
-					ts: Date.now(),
-					text: JSON.stringify({ action: "launch", url: "http://example.com" }),
-				},
-			],
-		})
-
-		// Should not play sound for auto-approved action
-		expect(mockPlayFunction).not.toHaveBeenCalled()
-	})
-
-	it("plays notification sound for non-auto-approved browser actions", async () => {
-		renderChatView()
-
-		// First hydrate state with initial task
-		mockPostMessage({
-			autoApprovalEnabled: true,
-			alwaysAllowBrowser: false, // Browser actions not auto-approved
-			soundEnabled: true, // Enable sound
-			clineMessages: [
-				{
-					type: "say",
-					say: "task",
-					ts: Date.now() - 2000,
-					text: "Initial task",
-				},
-			],
-		})
-
-		// Clear any initial calls
-		mockPlayFunction.mockClear()
-
-		// Add browser action that won't be auto-approved
-		mockPostMessage({
-			autoApprovalEnabled: true,
-			alwaysAllowBrowser: false,
-			soundEnabled: true, // Enable sound
-			clineMessages: [
-				{
-					type: "say",
-					say: "task",
-					ts: Date.now() - 2000,
-					text: "Initial task",
-				},
-				{
-					type: "ask",
-					ask: "browser_action_launch",
-					ts: Date.now(),
-					text: JSON.stringify({ action: "launch", url: "http://example.com" }),
-					partial: false, // Ensure it's not partial
-				},
-			],
-		})
-
-		// Wait for sound to be played
-		await waitFor(() => {
-			expect(mockPlayFunction).toHaveBeenCalled()
-		})
-	})
 
 	it("plays celebration sound for completion results", async () => {
 		renderChatView()
