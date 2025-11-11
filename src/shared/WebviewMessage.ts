@@ -1,6 +1,7 @@
 import { z } from "zod"
 
 import {
+	type RooCodeSettings,
 	type ProviderSettings,
 	type PromptComponent,
 	type ModeConfig,
@@ -9,7 +10,6 @@ import {
 	type ShareVisibility,
 	type QueuedMessage,
 	marketplaceItemSchema,
-	GlobalState,
 } from "@roo-code/types"
 
 import { Mode } from "./modes"
@@ -99,12 +99,10 @@ export interface WebviewMessage {
 		| "setApiConfigPassword"
 		| "mode"
 		| "updatePrompt"
-		| "updateSupportPrompt"
 		| "getSystemPrompt"
 		| "copySystemPrompt"
 		| "systemPrompt"
 		| "enhancementApiConfigId"
-		| "updateExperimental"
 		| "autoApprovalEnabled"
 		| "updateCustomMode"
 		| "deleteCustomMode"
@@ -161,8 +159,6 @@ export interface WebviewMessage {
 		| "insertTextIntoTextarea"
 		| "showMdmAuthRequiredNotification"
 		| "imageGenerationSettings"
-		| "openRouterImageApiKey"
-		| "openRouterImageGenerationSelectedModel"
 		| "queueMessage"
 		| "removeQueuedMessage"
 		| "editQueuedMessage"
@@ -245,7 +241,7 @@ export interface WebviewMessage {
 		codebaseIndexVercelAiGatewayApiKey?: string
 		codebaseIndexOpenRouterApiKey?: string
 	}
-	updatedSettings?: GlobalState
+	updatedSettings?: RooCodeSettings
 }
 
 export const checkoutDiffPayloadSchema = z.object({

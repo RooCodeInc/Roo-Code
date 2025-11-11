@@ -12,6 +12,9 @@ import {
 	type TelemetrySetting,
 	type UserSettingsConfig,
 	TelemetryEventName,
+	RooCodeSettings,
+	Experiments,
+	ExperimentId,
 } from "@roo-code/types"
 import { CloudService } from "@roo-code/cloud"
 import { TelemetryService } from "@roo-code/telemetry"
@@ -601,9 +604,22 @@ export const webviewMessageHandler = async (
 						if (mcpHub) {
 							await mcpHub.handleMcpEnabledChange(newValue as boolean)
 						}
+					} else if (key === "experiments") {
+						if (!value) {
+							continue
+						}
+
+						newValue = {
+							...(getGlobalState("experiments") ?? experimentDefault),
+							...(value as Record<ExperimentId, boolean>),
+						}
+					} else if (key === "customSupportPrompts") {
+						if (!value) {
+							continue
+						}
 					}
 
-					await updateGlobalState(key as keyof GlobalState, newValue as GlobalState[keyof GlobalState])
+					await provider.contextProxy.setValue(key as keyof RooCodeSettings, newValue)
 				}
 
 				await provider.postStateToWebview()
@@ -1352,22 +1368,6 @@ export const webviewMessageHandler = async (
 		case "mode":
 			await provider.handleModeSwitch(message.text as Mode)
 			break
-		case "updateSupportPrompt":
-			try {
-				if (!message?.values) {
-					return
-				}
-
-				// Replace all prompts with the new values from the cached state
-				await updateGlobalState("customSupportPrompts", message.values)
-				await provider.postStateToWebview()
-			} catch (error) {
-				provider.log(
-					`Error update support prompt: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`,
-				)
-				vscode.window.showErrorMessage(t("common:errors.update_support_prompt"))
-			}
-			break
 		case "updatePrompt":
 			if (message.promptMode && message.customPrompt !== undefined) {
 				const existingPrompts = getGlobalState("customModePrompts") ?? {}
@@ -1428,15 +1428,6 @@ export const webviewMessageHandler = async (
 			break
 		}
 
-		case "openRouterImageApiKey":
-			await provider.contextProxy.setValue("openRouterImageApiKey", message.text)
-			await provider.postStateToWebview()
-			break
-		case "openRouterImageGenerationSelectedModel":
-			await provider.contextProxy.setValue("openRouterImageGenerationSelectedModel", message.text)
-			await provider.postStateToWebview()
-			break
-
 		case "hasOpenedModeSelector":
 			await updateGlobalState("hasOpenedModeSelector", message.bool ?? true)
 			await provider.postStateToWebview()
@@ -1463,11 +1454,12 @@ export const webviewMessageHandler = async (
 			break
 
 		case "updateCondensingPrompt":
-			// Store the condensing prompt in customSupportPrompts["CONDENSE"] instead of customCondensingPrompt
+			// Store the condensing prompt in customSupportPrompts["CONDENSE"]
+			// instead of customCondensingPrompt.
 			const currentSupportPrompts = getGlobalState("customSupportPrompts") ?? {}
 			const updatedSupportPrompts = { ...currentSupportPrompts, CONDENSE: message.text }
 			await updateGlobalState("customSupportPrompts", updatedSupportPrompts)
-			// Also update the old field for backward compatibility during migration
+			// Also update the old field for backward compatibility during migration.
 			await updateGlobalState("customCondensingPrompt", message.text)
 			await provider.postStateToWebview()
 			break
@@ -1755,21 +1747,7 @@ export const webviewMessageHandler = async (
 				vscode.window.showErrorMessage(t("common:errors.list_api_config"))
 			}
 			break
-		case "updateExperimental": {
-			if (!message.values) {
-				break
-			}
 
-			const updatedExperiments = {
-				...(getGlobalState("experiments") ?? experimentDefault),
-				...message.values,
-			}
-
-			await updateGlobalState("experiments", updatedExperiments)
-
-			await provider.postStateToWebview()
-			break
-		}
 		case "updateMcpTimeout":
 			if (message.serverName && typeof message.timeout === "number") {
 				try {
@@ -2119,8 +2097,10 @@ export const webviewMessageHandler = async (
 			if (wasPreviouslyOptedIn && !isOptedIn && TelemetryService.hasInstance()) {
 				TelemetryService.instance.captureTelemetrySettingsChanged(previousSetting, telemetrySetting)
 			}
+
 			// Update the telemetry state
 			await updateGlobalState("telemetrySetting", telemetrySetting)
+
 			if (TelemetryService.hasInstance()) {
 				TelemetryService.instance.updateTelemetryState(isOptedIn)
 			}

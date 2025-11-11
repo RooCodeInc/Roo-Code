@@ -290,20 +290,20 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 
 	const setOpenRouterImageApiKey = useCallback((apiKey: string) => {
 		setCachedState((prevState) => {
-			// Only set change detected if value actually changed
 			if (prevState.openRouterImageApiKey !== apiKey) {
 				setChangeDetected(true)
 			}
+
 			return { ...prevState, openRouterImageApiKey: apiKey }
 		})
 	}, [])
 
 	const setImageGenerationSelectedModel = useCallback((model: string) => {
 		setCachedState((prevState) => {
-			// Only set change detected if value actually changed
 			if (prevState.openRouterImageGenerationSelectedModel !== model) {
 				setChangeDetected(true)
 			}
+
 			return { ...prevState, openRouterImageGenerationSelectedModel: model }
 		})
 	}, [])
@@ -341,8 +341,11 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					alwaysAllowModeSwitch,
 					allowedCommands: allowedCommands ?? [],
 					deniedCommands: deniedCommands ?? [],
-					allowedMaxRequests: allowedMaxRequests ?? undefined,
-					allowedMaxCost: allowedMaxCost ?? undefined,
+					// Note that we use `null` instead of `undefined` since `JSON.stringify`
+					// will omit `undefined` when serializing the object and passing it to the
+					// extension host. We may need to do the same for other nullable fields.
+					allowedMaxRequests: allowedMaxRequests ?? null,
+					allowedMaxCost: allowedMaxCost ?? null,
 					autoCondenseContext,
 					autoCondenseContextPercent,
 					browserToolEnabled: browserToolEnabled ?? true,
@@ -393,27 +396,18 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					includeCurrentTime: includeCurrentTime ?? true,
 					includeCurrentCost: includeCurrentCost ?? true,
 					profileThresholds,
+					openRouterImageApiKey,
+					openRouterImageGenerationSelectedModel,
+					experiments,
+					customSupportPrompts,
 				},
 			})
 
 			// These have more complex logic so they aren't (yet) handled
 			// by the `updateSettings` message.
-			vscode.postMessage({ type: "updateExperimental", values: experiments })
 			vscode.postMessage({ type: "updateCondensingPrompt", text: customCondensingPrompt || "" })
-			vscode.postMessage({ type: "updateSupportPrompt", values: customSupportPrompts || {} })
 			vscode.postMessage({ type: "upsertApiConfiguration", text: currentApiConfigName, apiConfiguration })
 			vscode.postMessage({ type: "telemetrySetting", text: telemetrySetting })
-
-			// These update secret values rather than global state so they
-			// aren't (yet) handled by the `updateSettings` message.
-			// I'm not sure why`openRouterImageGenerationSelectedModel` is
-			// a secret value rather than global state; we should consider
-			// changing that.
-			vscode.postMessage({ type: "openRouterImageApiKey", text: openRouterImageApiKey })
-			vscode.postMessage({
-				type: "openRouterImageGenerationSelectedModel",
-				text: openRouterImageGenerationSelectedModel,
-			})
 
 			setChangeDetected(false)
 		}
