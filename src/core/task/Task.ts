@@ -28,14 +28,13 @@ import {
 	TelemetryEventName,
 	TaskStatus,
 	TodoItem,
-	DEFAULT_CONSECUTIVE_MISTAKE_LIMIT,
 	getApiProtocol,
 	getModelId,
 	isIdleAsk,
 	isInteractiveAsk,
 	isResumableAsk,
-	isNonBlockingAsk,
 	QueuedMessage,
+	DEFAULT_CONSECUTIVE_MISTAKE_LIMIT,
 	DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
 	MAX_CHECKPOINT_TIMEOUT_SECONDS,
 	MIN_CHECKPOINT_TIMEOUT_SECONDS,
@@ -70,7 +69,7 @@ import { RepoPerTaskCheckpointService } from "../../services/checkpoints"
 
 // integrations
 import { DiffViewProvider } from "../../integrations/editor/DiffViewProvider"
-import { findToolName, formatContentBlockToMarkdown } from "../../integrations/misc/export-markdown"
+import { findToolName } from "../../integrations/misc/export-markdown"
 import { RooTerminalProcess } from "../../integrations/terminal/types"
 import { TerminalRegistry } from "../../integrations/terminal/TerminalRegistry"
 
@@ -117,8 +116,7 @@ import { processUserContentMentions } from "../mentions/processUserContentMentio
 import { getMessagesSinceLastSummary, summarizeConversation } from "../condense"
 import { Gpt5Metadata, ClineMessageWithMetadata } from "./types"
 import { MessageQueueService } from "../message-queue/MessageQueueService"
-
-import { AutoApprovalHandler } from "./AutoApprovalHandler"
+import { AutoApprovalHandler, checkAutoApproval } from "../auto-approval"
 
 const MAX_EXPONENTIAL_BACKOFF_SECONDS = 600 // 10 minutes
 const DEFAULT_USAGE_COLLECTION_TIMEOUT_MS = 5000 // 5 seconds
@@ -763,13 +761,16 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// saves, and only post parts of partial message instead of
 					// whole array in new listener.
 					this.updateClineMessage(lastMessage)
+					// console.log("Task#ask: current ask promise was ignored (#1)")
 					throw new Error("Current ask promise was ignored (#1)")
 				} else {
 					// This is a new partial message, so add it with partial
 					// state.
 					askTs = Date.now()
 					this.lastMessageTs = askTs
+					console.log(`Task#ask: new partial ask -> ${type} @ ${askTs}`)
 					await this.addToClineMessages({ ts: askTs, type: "ask", ask: type, text, partial, isProtected })
+					// console.log("Task#ask: current ask promise was ignored (#2)")
 					throw new Error("Current ask promise was ignored (#2)")
 				}
 			} else {
@@ -792,6 +793,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// So in this case we must make sure that the message ts is
 					// never altered after first setting it.
 					askTs = lastMessage.ts
+					console.log(`Task#ask: updating previous partial ask -> ${type} @ ${askTs}`)
 					this.lastMessageTs = askTs
 					lastMessage.text = text
 					lastMessage.partial = false
@@ -805,6 +807,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					this.askResponseText = undefined
 					this.askResponseImages = undefined
 					askTs = Date.now()
+					console.log(`Task#ask: new complete ask -> ${type} @ ${askTs}`)
 					this.lastMessageTs = askTs
 					await this.addToClineMessages({ ts: askTs, type: "ask", ask: type, text, isProtected })
 				}
@@ -815,33 +818,60 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			this.askResponseText = undefined
 			this.askResponseImages = undefined
 			askTs = Date.now()
+			console.log(`Task#ask: new complete ask -> ${type} @ ${askTs}`)
 			this.lastMessageTs = askTs
 			await this.addToClineMessages({ ts: askTs, type: "ask", ask: type, text, isProtected })
+		}
+
+		let timeouts: NodeJS.Timeout[] = []
+
+		// Automatically approve if the ask according to the user's settings.
+		const provider = this.providerRef.deref()
+		const state = provider ? await provider.getState() : undefined
+		const approval = await checkAutoApproval({ state, ask: type, text, isProtected })
+
+		if (approval.decision === "approve") {
+			this.approveAsk()
+		} else if (approval.decision === "deny") {
+			this.denyAsk()
+		} else if (approval.decision === "timeout") {
+			timeouts.push(
+				setTimeout(() => {
+					const { askResponse, text, images } = approval.fn()
+					this.handleWebviewAskResponse(askResponse, text, images)
+				}, approval.timeout),
+			)
 		}
 
 		// The state is mutable if the message is complete and the task will
 		// block (via the `pWaitFor`).
 		const isBlocking = !(this.askResponse !== undefined || this.lastMessageTs !== askTs)
 		const isMessageQueued = !this.messageQueueService.isEmpty()
-		// Non-blocking asks should not mutate task status since they don't actually block execution
-		const isStatusMutable = !partial && isBlocking && !isMessageQueued && !isNonBlockingAsk(type)
-		let statusMutationTimeouts: NodeJS.Timeout[] = []
-		const statusMutationTimeout = 5_000
+
+		const isStatusMutable = !partial && isBlocking && !isMessageQueued && approval.decision === "ask"
+
+		if (isBlocking) {
+			console.log(`Task#ask will block -> type: ${type}`)
+		}
 
 		if (isStatusMutable) {
+			console.log(`Task#ask: status is mutable -> type: ${type}`)
+			const statusMutationTimeout = 2_000
+
 			if (isInteractiveAsk(type)) {
-				statusMutationTimeouts.push(
+				timeouts.push(
 					setTimeout(() => {
 						const message = this.findMessageByTimestamp(askTs)
 
 						if (message) {
 							this.interactiveAsk = message
 							this.emit(RooCodeEventName.TaskInteractive, this.taskId)
+							provider?.postMessageToWebview({ type: "interactionRequired" })
 						}
 					}, statusMutationTimeout),
 				)
 			} else if (isResumableAsk(type)) {
-				statusMutationTimeouts.push(
+				timeouts.push(
 					setTimeout(() => {
 						const message = this.findMessageByTimestamp(askTs)
 
@@ -852,7 +882,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					}, statusMutationTimeout),
 				)
 			} else if (isIdleAsk(type)) {
-				statusMutationTimeouts.push(
+				timeouts.push(
 					setTimeout(() => {
 						const message = this.findMessageByTimestamp(askTs)
 
@@ -864,7 +894,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				)
 			}
 		} else if (isMessageQueued) {
-			console.log("Task#ask will process message queue")
+			console.log(`Task#ask: will process message queue -> type: ${type}`)
 
 			const message = this.messageQueueService.dequeueMessage()
 
@@ -882,25 +912,19 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				} else {
 					// For other ask types (like followup or command_output), fulfill the ask
 					// directly.
-					this.setMessageResponse(message.text, message.images)
+					this.handleWebviewAskResponse("messageResponse", message.text, message.images)
 				}
 			}
 		}
 
-		// Non-blocking asks return immediately without waiting
-		// The ask message is created in the UI, but the task doesn't wait for a response
-		// This prevents blocking in cloud/headless environments
-		if (isNonBlockingAsk(type)) {
-			return { response: "yesButtonClicked" as ClineAskResponse, text: undefined, images: undefined }
-		}
-
-		// Wait for askResponse to be set
+		// Wait for askResponse to be set.
 		await pWaitFor(() => this.askResponse !== undefined || this.lastMessageTs !== askTs, { interval: 100 })
 
 		if (this.lastMessageTs !== askTs) {
 			// Could happen if we send multiple asks in a row i.e. with
 			// command_output. It's important that when we know an ask could
 			// fail, it is handled gracefully.
+			console.log("Task#ask: current ask promise was ignored")
 			throw new Error("Current ask promise was ignored")
 		}
 
@@ -910,7 +934,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.askResponseImages = undefined
 
 		// Cancel the timeouts if they are still running.
-		statusMutationTimeouts.forEach((timeout) => clearTimeout(timeout))
+		timeouts.forEach((timeout) => clearTimeout(timeout))
 
 		// Switch back to an active state.
 		if (this.idleAsk || this.resumableAsk || this.interactiveAsk) {
@@ -922,10 +946,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		this.emit(RooCodeEventName.TaskAskResponded)
 		return result
-	}
-
-	public setMessageResponse(text: string, images?: string[]) {
-		this.handleWebviewAskResponse("messageResponse", text, images)
 	}
 
 	handleWebviewAskResponse(askResponse: ClineAskResponse, text?: string, images?: string[]) {
