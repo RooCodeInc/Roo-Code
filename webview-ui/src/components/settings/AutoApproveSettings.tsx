@@ -1,4 +1,4 @@
-import { HTMLAttributes, useEffect, useState } from "react"
+import { HTMLAttributes, useState } from "react"
 import { X, CheckCheck } from "lucide-react"
 import { Trans } from "react-i18next"
 import { Package } from "@roo/package"
@@ -113,10 +113,6 @@ export const AutoApproveSettings = ({
 			vscode.postMessage({ type: "updateSettings", updatedSettings: { deniedCommands: newCommands } })
 		}
 	}
-
-	useEffect(() => {
-		console.log(`useEffect: allowedMaxRequests = ${allowedMaxRequests}, allowedMaxCost = ${allowedMaxCost}`)
-	}, [allowedMaxRequests, allowedMaxCost])
 
 	return (
 		<div {...props}>
