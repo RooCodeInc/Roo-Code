@@ -2069,6 +2069,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 								// Mark that we have new content to process
 								this.userMessageContentReady = false
 
+								// Set assistantMessage to non-empty to prevent "no assistant messages" error
+								// Tool calls are tracked separately in assistantMessageContent
+								if (!assistantMessage) {
+									assistantMessage = JSON.stringify({
+										tool: chunk.name,
+										arguments: chunk.arguments,
+									})
+								}
+
 								console.log(`[NATIVE_TOOL] Calling presentAssistantMessage`)
 
 								// Present the tool call to user
