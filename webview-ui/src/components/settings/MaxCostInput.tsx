@@ -1,5 +1,4 @@
 import { useTranslation } from "react-i18next"
-import { vscode } from "@/utils/vscode"
 import { useCallback } from "react"
 import { FormattedTextField, unlimitedDecimalFormatter } from "../common/FormattedTextField"
 
@@ -14,7 +13,6 @@ export function MaxCostInput({ allowedMaxCost, onValueChange }: MaxCostInputProp
 	const handleValueChange = useCallback(
 		(value: number | undefined) => {
 			onValueChange(value)
-			vscode.postMessage({ type: "allowedMaxCost", value })
 		},
 		[onValueChange],
 	)
