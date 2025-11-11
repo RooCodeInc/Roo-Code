@@ -706,11 +706,11 @@ export class WebAuthService extends EventEmitter<AuthServiceEvents> implements A
 
 		if (response.ok) {
 			return clerkOrganizationMembershipsSchema.parse(await response.json()).response
-		} else {
-			this.log(`[auth] Failed to get organization memberships: ${response.status} ${response.statusText}`)
 		}
 
-		return []
+		const errorMessage = `Failed to get organization memberships: ${response.status} ${response.statusText}`
+		this.log(`[auth] ${errorMessage}`)
+		throw new Error(errorMessage)
 	}
 
 	private async getOrganizationMetadata(
