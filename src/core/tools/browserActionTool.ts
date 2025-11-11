@@ -148,6 +148,32 @@ export async function browserActionTool(
 				}
 			}
 
+			// Clean up old browser screenshots from API conversation history to prevent memory accumulation
+			// Only keep the latest screenshot - old ones are no longer needed by the model
+			if (browserActionResult?.screenshot) {
+				const apiHistory = cline.apiConversationHistory
+				for (let i = apiHistory.length - 1; i >= 0; i--) {
+					const message = apiHistory[i]
+					if (Array.isArray(message.content)) {
+						// Filter out old screenshot image blocks
+						message.content = message.content.filter((block) => {
+							// Remove base64 image blocks (browser screenshots)
+							// Keep text blocks and other content
+							if (
+								block.type === "image" &&
+								"source" in block &&
+								block.source.type === "base64" &&
+								(block.source.media_type === "image/webp" || block.source.media_type === "image/png")
+							) {
+								// This is likely an old browser screenshot - remove it
+								return false
+							}
+							return true
+						})
+					}
+				}
+			}
+
 			switch (action) {
 				case "launch":
 				case "click":
