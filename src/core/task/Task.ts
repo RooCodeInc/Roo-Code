@@ -2410,7 +2410,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 				// Now that the stream is complete, finalize any remaining partial content blocks
 				this.assistantMessageParser.finalizeContentBlocks()
-				this.assistantMessageContent = this.assistantMessageParser.getContentBlocks()
+
+				// Preserve tool_use blocks that were added via native protocol (not parsed from text)
+				// These come from tool_call chunks and are added directly to assistantMessageContent
+				const nativeToolBlocks = this.assistantMessageContent.filter((block) => block.type === "tool_use")
+				const parsedBlocks = this.assistantMessageParser.getContentBlocks()
+
+				// Merge: parser blocks + native tool blocks that aren't in parser
+				this.assistantMessageContent = [...parsedBlocks, ...nativeToolBlocks]
 
 				if (partialBlocks.length > 0) {
 					// If there is content to update then it will complete and

@@ -77,6 +77,7 @@ export type ToolProtocol = "xml" | "native"
 export type NativeToolArgs = {
 	read_file: FileEntry[]
 	attempt_completion: { result: string }
+	execute_command: { command: string; cwd?: string }
 	// Add more tools as they are migrated to native protocol
 }
 

@@ -95,7 +95,25 @@ export async function presentAssistantMessage(cline: Task) {
 		return
 	}
 
-	const block = cloneDeep(cline.assistantMessageContent[cline.currentStreamingContentIndex]) // need to create copy bc while stream is updating the array, it could be updating the reference block properties too
+	console.log(`[NATIVE_TOOL] About to clone block at index ${cline.currentStreamingContentIndex}`)
+	console.log(
+		`[NATIVE_TOOL] Block exists:`,
+		cline.assistantMessageContent[cline.currentStreamingContentIndex] !== undefined,
+	)
+
+	let block: any
+	try {
+		block = cloneDeep(cline.assistantMessageContent[cline.currentStreamingContentIndex]) // need to create copy bc while stream is updating the array, it could be updating the reference block properties too
+		console.log(`[NATIVE_TOOL] Block cloned successfully`)
+	} catch (error) {
+		console.error(`[NATIVE_TOOL] ERROR cloning block:`, error)
+		console.error(
+			`[NATIVE_TOOL] Block content:`,
+			JSON.stringify(cline.assistantMessageContent[cline.currentStreamingContentIndex], null, 2),
+		)
+		cline.presentAssistantMessageLocked = false
+		return
+	}
 	console.log(
 		`[NATIVE_TOOL] Processing block at index ${cline.currentStreamingContentIndex}:`,
 		JSON.stringify(
@@ -252,6 +270,8 @@ export async function presentAssistantMessage(cline: Task) {
 						return `[${block.name} for '${block.params.command}'${block.params.args ? ` with args: ${block.params.args}` : ""}]`
 					case "generate_image":
 						return `[${block.name} for '${block.params.path}']`
+					default:
+						return `[${block.name}]`
 				}
 			}
 
@@ -452,6 +472,7 @@ export async function presentAssistantMessage(cline: Task) {
 				}
 			}
 
+			console.log(`[NATIVE_TOOL] About to enter tool switch statement for tool: ${block.name}`)
 			switch (block.name) {
 				case "write_to_file":
 					await checkpointSaveAndMark(cline)
@@ -552,7 +573,14 @@ export async function presentAssistantMessage(cline: Task) {
 					await browserActionTool(cline, block, askApproval, handleError, pushToolResult, removeClosingTag)
 					break
 				case "execute_command":
-					await executeCommandTool(cline, block, askApproval, handleError, pushToolResult, removeClosingTag)
+					console.log(`[NATIVE_TOOL] execute_command case matched, calling executeCommandTool.handle()`)
+					await executeCommandTool.handle(cline, block as ToolUse<"execute_command">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+						removeClosingTag,
+					})
+					console.log(`[NATIVE_TOOL] executeCommandTool.handle() completed`)
 					break
 				case "use_mcp_tool":
 					await useMcpToolTool(cline, block, askApproval, handleError, pushToolResult, removeClosingTag)

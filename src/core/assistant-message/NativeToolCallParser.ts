@@ -99,6 +99,15 @@ export class NativeToolCallParser {
 					}
 					break
 
+				case "execute_command":
+					if (args.command) {
+						nativeArgs = {
+							command: args.command,
+							cwd: args.cwd,
+						} as TName extends keyof NativeToolArgs ? NativeToolArgs[TName] : never
+					}
+					break
+
 				default:
 					break
 			}
