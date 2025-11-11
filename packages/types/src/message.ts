@@ -43,25 +43,6 @@ export const clineAsks = [
 export const clineAskSchema = z.enum(clineAsks)
 
 export type ClineAsk = z.infer<typeof clineAskSchema>
-
-// Needs classification:
-// - `followup`
-
-/**
- * NonBlockingAsk
- *
- * Asks that should not block task execution. These are informational or optional
- * asks where the task can proceed even without an immediate user response.
- */
-
-export const nonBlockingAsks = ["command_output"] as const satisfies readonly ClineAsk[]
-
-export type NonBlockingAsk = (typeof nonBlockingAsks)[number]
-
-export function isNonBlockingAsk(ask: ClineAsk): ask is NonBlockingAsk {
-	return (nonBlockingAsks as readonly ClineAsk[]).includes(ask)
-}
-
 /**
  * IdleAsk
  *
@@ -114,6 +95,21 @@ export type InteractiveAsk = (typeof interactiveAsks)[number]
 
 export function isInteractiveAsk(ask: ClineAsk): ask is InteractiveAsk {
 	return (interactiveAsks as readonly ClineAsk[]).includes(ask)
+}
+
+/**
+ * NonBlockingAsk
+ *
+ * Asks that are not associated with an actual approval, and are only used
+ * to update chat messages.
+ */
+
+export const nonBlockingAsks = ["command_output"] as const satisfies readonly ClineAsk[]
+
+export type NonBlockingAsk = (typeof nonBlockingAsks)[number]
+
+export function isNonBlockingAsk(ask: ClineAsk): ask is NonBlockingAsk {
+	return (nonBlockingAsks as readonly ClineAsk[]).includes(ask)
 }
 
 /**
