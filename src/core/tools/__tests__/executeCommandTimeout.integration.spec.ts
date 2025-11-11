@@ -3,7 +3,7 @@
 
 import * as vscode from "vscode"
 import * as fs from "fs/promises"
-import { executeCommandInTerminal, executeCommandTool, ExecuteCommandOptions } from "../executeCommandTool"
+import { executeCommandInTerminal, executeCommandTool, ExecuteCommandOptions } from "../ExecuteCommandTool"
 import { Task } from "../../task/Task"
 import { TerminalRegistry } from "../../../integrations/terminal/TerminalRegistry"
 

@@ -4,7 +4,7 @@
 import * as path from "path"
 import * as fs from "fs/promises"
 
-import { ExecuteCommandOptions } from "../executeCommandTool"
+import { ExecuteCommandOptions } from "../ExecuteCommandTool"
 import { TerminalRegistry } from "../../../integrations/terminal/TerminalRegistry"
 import { Terminal } from "../../../integrations/terminal/Terminal"
 import { ExecaTerminal } from "../../../integrations/terminal/ExecaTerminal"
@@ -21,7 +21,7 @@ vitest.mock("../../../integrations/terminal/Terminal")
 vitest.mock("../../../integrations/terminal/ExecaTerminal")
 
 // Import the actual executeCommand function (not mocked)
-import { executeCommandInTerminal } from "../executeCommandTool"
+import { executeCommandInTerminal } from "../ExecuteCommandTool"
 
 // Tests for the executeCommand function
 describe("executeCommand", () => {

@@ -38,7 +38,7 @@ vitest.mock("../../task/Task")
 vitest.mock("../../prompts/responses")
 
 // Import the module
-import * as executeCommandModule from "../executeCommandTool"
+import * as executeCommandModule from "../ExecuteCommandTool"
 const { executeCommandTool } = executeCommandModule
 
 describe("executeCommandTool", () => {
