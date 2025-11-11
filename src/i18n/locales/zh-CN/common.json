@@ -141,6 +141,7 @@
 		"api": {
 			"invalidKeyInvalidChars": "API 密钥包含无效字符。"
 		},
+		"unexpected_api_response": "意外的API响应：语言模型未提供任何助手消息。这可能表明API或模型输出存在问题。",
 		"manual_url_empty": "请输入有效的回调 URL",
 		"manual_url_no_query": "无效的回调 URL：缺少查询参数",
 		"manual_url_missing_params": "无效的回调 URL：缺少必需参数（code 和 state）",

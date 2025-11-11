@@ -2522,8 +2522,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					const state = await this.providerRef.deref()?.getState()
 					if (state?.autoApprovalEnabled && state?.alwaysApproveResubmit) {
 						// Auto-retry with backoff - don't persist failure message when retrying
-						const errorMsg =
-							"Unexpected API Response: The language model did not provide any assistant messages. This may indicate an issue with the API or the model's output."
+						const errorMsg = t("common:errors.unexpected_api_response")
 
 						await this.backoffAndAnnounce(
 							currentItem.retryAttempt ?? 0,

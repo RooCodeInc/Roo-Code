@@ -135,6 +135,7 @@
 		"api": {
 			"invalidKeyInvalidChars": "API 金鑰包含無效字元。"
 		},
+		"unexpected_api_response": "意外的API響應：語言模型未提供任何助手訊息。這可能表明API或模型輸出存在問題。",
 		"manual_url_empty": "請輸入有效的回呼 URL",
 		"manual_url_no_query": "無效的回呼 URL：缺少查詢參數",
 		"manual_url_missing_params": "無效的回呼 URL：缺少必要參數（code 和 state）",

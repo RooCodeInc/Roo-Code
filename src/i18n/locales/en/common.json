@@ -136,6 +136,7 @@
 		"api": {
 			"invalidKeyInvalidChars": "API key contains invalid characters."
 		},
+		"unexpected_api_response": "Unexpected API Response: The language model did not provide any assistant messages. This may indicate an issue with the API or the model's output.",
 		"manual_url_empty": "Please enter a valid callback URL",
 		"manual_url_no_query": "Invalid callback URL: missing query parameters",
 		"manual_url_missing_params": "Invalid callback URL: missing required parameters (code and state)",
