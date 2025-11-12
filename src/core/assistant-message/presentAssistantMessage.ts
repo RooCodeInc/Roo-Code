@@ -480,7 +480,12 @@ export async function presentAssistantMessage(cline: Task) {
 					await writeToFileTool(cline, block, askApproval, handleError, pushToolResult, removeClosingTag)
 					break
 				case "update_todo_list":
-					await updateTodoListTool(cline, block, askApproval, handleError, pushToolResult, removeClosingTag)
+					await updateTodoListTool.handle(cline, block as ToolUse<"update_todo_list">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+						removeClosingTag,
+					})
 					break
 				case "apply_diff": {
 					await checkpointSaveAndMark(cline)
@@ -617,7 +622,12 @@ export async function presentAssistantMessage(cline: Task) {
 					console.log(`[NATIVE_TOOL] executeCommandTool.handle() completed`)
 					break
 				case "use_mcp_tool":
-					await useMcpToolTool(cline, block, askApproval, handleError, pushToolResult, removeClosingTag)
+					await useMcpToolTool.handle(cline, block as ToolUse<"use_mcp_tool">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+						removeClosingTag,
+					})
 					break
 				case "access_mcp_resource":
 					await accessMcpResourceTool(

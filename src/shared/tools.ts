@@ -94,6 +94,8 @@ export type NativeToolArgs = {
 	run_slash_command: { command: string; args?: string }
 	search_files: { path: string; regex: string; file_pattern?: string | null }
 	switch_mode: { mode_slug: string; reason: string }
+	update_todo_list: { todos: string }
+	use_mcp_tool: { server_name: string; tool_name: string; arguments?: Record<string, unknown> }
 	// Add more tools as they are migrated to native protocol
 }
 

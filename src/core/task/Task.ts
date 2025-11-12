@@ -5,6 +5,7 @@ import crypto from "crypto"
 import EventEmitter from "events"
 
 import { Anthropic } from "@anthropic-ai/sdk"
+import OpenAI from "openai"
 import delay from "delay"
 import pWaitFor from "p-wait-for"
 import { serializeError } from "serialize-error"
@@ -2943,20 +2944,33 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		const modelInfo = this.api.getModel().info
 		const shouldIncludeTools = toolProtocol === TOOL_PROTOCOL.NATIVE && (modelInfo.supportsNativeTools ?? false)
 
+		// Build complete tools array: native tools + dynamic MCP tools
+		let allTools: OpenAI.Chat.ChatCompletionTool[] = nativeTools
+		if (shouldIncludeTools) {
+			const { getMcpServerTools } = await import("../prompts/tools/native-tools")
+			const provider = this.providerRef.deref()
+			const mcpHub = provider?.getMcpHub()
+			const mcpTools = getMcpServerTools(mcpHub)
+			allTools = [...nativeTools, ...mcpTools]
+			console.log(`[NATIVE_TOOL] Added ${mcpTools.length} dynamic MCP tools to the tools array`)
+		}
+
 		console.log(`[NATIVE_TOOL] Tool inclusion check:`, {
 			toolProtocol,
 			isNative: toolProtocol === TOOL_PROTOCOL.NATIVE,
 			supportsNativeTools: modelInfo.supportsNativeTools,
 			shouldIncludeTools,
 			modelId: this.api.getModel().id,
-			nativeToolsCount: shouldIncludeTools ? nativeTools.length : 0,
+			nativeToolsCount: nativeTools.length,
+			mcpToolsCount: shouldIncludeTools ? allTools.length - nativeTools.length : 0,
+			totalToolsCount: shouldIncludeTools ? allTools.length : 0,
 		})
 
 		const metadata: ApiHandlerCreateMessageMetadata = {
 			mode: mode,
 			taskId: this.taskId,
 			// Include tools and tool protocol when using native protocol and model supports it
-			...(shouldIncludeTools ? { tools: nativeTools, tool_choice: "auto", toolProtocol } : {}),
+			...(shouldIncludeTools ? { tools: allTools, tool_choice: "auto", toolProtocol } : {}),
 		}
 
 		console.log(`[NATIVE_TOOL] API request metadata:`, {

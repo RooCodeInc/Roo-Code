@@ -81,17 +81,22 @@ async function generatePrompt(
 	const hasMcpServers = mcpHub && mcpHub.getServers().length > 0
 	const shouldIncludeMcp = hasMcpGroup && hasMcpServers
 
-	const [modesSection, mcpServersSection] = await Promise.all([
-		getModesSection(context),
-		shouldIncludeMcp
-			? getMcpServersSection(mcpHub, effectiveDiffStrategy, enableMcpServerCreation)
-			: Promise.resolve(""),
-	])
-
 	const codeIndexManager = CodeIndexManager.getInstance(context, cwd)
 
 	// Determine the effective protocol (defaults to 'xml')
 	const effectiveProtocol = getEffectiveProtocol(settings)
+
+	const [modesSection, mcpServersSection] = await Promise.all([
+		getModesSection(context),
+		shouldIncludeMcp
+			? getMcpServersSection(
+					mcpHub,
+					effectiveDiffStrategy,
+					enableMcpServerCreation,
+					!isNativeProtocol(effectiveProtocol),
+				)
+			: Promise.resolve(""),
+	])
 
 	// Build tools catalog section only for XML protocol
 	const toolsCatalog = isNativeProtocol(effectiveProtocol)

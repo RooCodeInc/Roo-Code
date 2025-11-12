@@ -5,6 +5,7 @@ export async function getMcpServersSection(
 	mcpHub?: McpHub,
 	diffStrategy?: DiffStrategy,
 	enableMcpServerCreation?: boolean,
+	includeToolDescriptions: boolean = true,
 ): Promise<string> {
 	if (!mcpHub) {
 		return ""
@@ -16,17 +17,20 @@ export async function getMcpServersSection(
 					.getServers()
 					.filter((server) => server.status === "connected")
 					.map((server) => {
-						const tools = server.tools
-							?.filter((tool) => tool.enabledForPrompt !== false)
-							?.map((tool) => {
-								const schemaStr = tool.inputSchema
-									? `    Input Schema:
+						// Only include tool descriptions when using XML protocol
+						const tools = includeToolDescriptions
+							? server.tools
+									?.filter((tool) => tool.enabledForPrompt !== false)
+									?.map((tool) => {
+										const schemaStr = tool.inputSchema
+											? `    Input Schema:
 		${JSON.stringify(tool.inputSchema, null, 2).split("\n").join("\n    ")}`
-									: ""
+											: ""
 
-								return `- ${tool.name}: ${tool.description}\n${schemaStr}`
-							})
-							.join("\n\n")
+										return `- ${tool.name}: ${tool.description}\n${schemaStr}`
+									})
+									.join("\n\n")
+							: undefined
 
 						const templates = server.resourceTemplates
 							?.map((template) => `- ${template.uriTemplate} (${template.name}): ${template.description}`)
