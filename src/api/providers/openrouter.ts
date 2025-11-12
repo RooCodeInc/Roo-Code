@@ -24,7 +24,7 @@ import { getModelEndpoints } from "./fetchers/modelEndpointCache"
 
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
-import type { SingleCompletionHandler } from "../index"
+import type { ApiHandlerCreateMessageMetadata, SingleCompletionHandler } from "../index"
 import { handleOpenAIError } from "./utils/openai-error-handler"
 
 // Image generation types
@@ -96,11 +96,44 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		const apiKey = this.options.openRouterApiKey ?? "not-provided"
 
 		this.client = new OpenAI({ baseURL, apiKey, defaultHeaders: DEFAULT_HEADERS })
+
+		// Load models asynchronously to populate cache before getModel() is called
+		this.loadDynamicModels().catch((error) => {
+			console.error("[OpenRouterHandler] Failed to load dynamic models:", error)
+		})
+	}
+
+	private async loadDynamicModels(): Promise<void> {
+		try {
+			const [models, endpoints] = await Promise.all([
+				getModels({ provider: "openrouter" }),
+				getModelEndpoints({
+					router: "openrouter",
+					modelId: this.options.openRouterModelId,
+					endpoint: this.options.openRouterSpecificProvider,
+				}),
+			])
+
+			this.models = models
+			this.endpoints = endpoints
+
+			console.log(`[NATIVE_TOOL_OR] OpenRouterHandler.loadDynamicModels():`, {
+				modelId: this.options.openRouterModelId,
+				hasModels: Object.keys(models).length > 0,
+				hasEndpoints: Object.keys(endpoints).length > 0,
+			})
+		} catch (error) {
+			console.error("[OpenRouterHandler] Error loading dynamic models:", {
+				error: error instanceof Error ? error.message : String(error),
+				stack: error instanceof Error ? error.stack : undefined,
+			})
+		}
 	}
 
 	override async *createMessage(
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
+		metadata?: ApiHandlerCreateMessageMetadata,
 	): AsyncGenerator<ApiStreamChunk> {
 		const model = await this.fetchModel()
 
@@ -159,8 +192,11 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 						allow_fallbacks: false,
 					},
 				}),
+			parallel_tool_calls: false, // Ensure only one tool call at a time
 			...(transforms && { transforms }),
 			...(reasoning && { reasoning }),
+			...(metadata?.tools && { tools: metadata.tools }),
+			...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
 		}
 
 		let stream
@@ -171,6 +207,7 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		}
 
 		let lastUsage: CompletionUsage | undefined = undefined
+		const toolCallAccumulator = new Map<number, { id: string; name: string; arguments: string }>()
 
 		for await (const chunk of stream) {
 			// OpenRouter returns an error object instead of the OpenAI SDK throwing an error.
@@ -181,13 +218,82 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 			}
 
 			const delta = chunk.choices[0]?.delta
+			const finishReason = chunk.choices[0]?.finish_reason
 
-			if ("reasoning" in delta && delta.reasoning && typeof delta.reasoning === "string") {
-				yield { type: "reasoning", text: delta.reasoning }
+			console.log(`[NATIVE_TOOL] OpenRouterHandler chunk:`, {
+				hasChoices: !!chunk.choices?.length,
+				hasDelta: !!delta,
+				finishReason,
+				deltaKeys: delta ? Object.keys(delta) : [],
+			})
+
+			if (delta) {
+				if ("reasoning" in delta && delta.reasoning && typeof delta.reasoning === "string") {
+					yield { type: "reasoning", text: delta.reasoning }
+				}
+
+				// Check for tool calls in delta
+				if ("tool_calls" in delta && Array.isArray(delta.tool_calls)) {
+					console.log(
+						`[NATIVE_TOOL] OpenRouterHandler: Received tool_calls in delta, count:`,
+						delta.tool_calls.length,
+					)
+					for (const toolCall of delta.tool_calls) {
+						const index = toolCall.index
+						const existing = toolCallAccumulator.get(index)
+
+						if (existing) {
+							// Accumulate arguments for existing tool call
+							if (toolCall.function?.arguments) {
+								console.log(
+									`[NATIVE_TOOL] OpenRouterHandler: Accumulating arguments for index ${index}:`,
+									toolCall.function.arguments,
+								)
+								existing.arguments += toolCall.function.arguments
+							}
+						} else {
+							// Start new tool call accumulation
+							console.log(`[NATIVE_TOOL] OpenRouterHandler: Starting new tool call at index ${index}:`, {
+								id: toolCall.id,
+								name: toolCall.function?.name,
+								hasArguments: !!toolCall.function?.arguments,
+							})
+							toolCallAccumulator.set(index, {
+								id: toolCall.id || "",
+								name: toolCall.function?.name || "",
+								arguments: toolCall.function?.arguments || "",
+							})
+						}
+					}
+					console.log(`[NATIVE_TOOL] OpenRouterHandler: Current accumulator size:`, toolCallAccumulator.size)
+				}
+
+				if (delta.content) {
+					yield { type: "text", text: delta.content }
+				}
 			}
 
-			if (delta?.content) {
-				yield { type: "text", text: delta.content }
+			// When finish_reason is 'tool_calls', yield all accumulated tool calls
+			if (finishReason === "tool_calls" && toolCallAccumulator.size > 0) {
+				console.log(
+					`[NATIVE_TOOL] OpenRouterHandler: finish_reason is 'tool_calls', yielding ${toolCallAccumulator.size} tool calls`,
+				)
+				for (const toolCall of toolCallAccumulator.values()) {
+					console.log(`[NATIVE_TOOL] OpenRouterHandler: Yielding tool call:`, {
+						id: toolCall.id,
+						name: toolCall.name,
+						arguments: toolCall.arguments,
+					})
+					yield {
+						type: "tool_call",
+						id: toolCall.id,
+						name: toolCall.name,
+						arguments: toolCall.arguments,
+					}
+				}
+				// Clear accumulator after yielding
+				toolCallAccumulator.clear()
+				console.log(`[NATIVE_TOOL] OpenRouterHandler: Cleared tool call accumulator`)
 			}
 
 			if (chunk.usage) {
@@ -220,7 +326,39 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		this.models = models
 		this.endpoints = endpoints
 
+		console.log(`[NATIVE_TOOL_OR] OpenRouterHandler.fetchModel():`, {
+			modelId: this.options.openRouterModelId,
+			hasModels: Object.keys(models).length > 0,
+			hasEndpoints: Object.keys(endpoints).length > 0,
+			modelKeys: Object.keys(models).slice(0, 5),
+		})
+
 		return this.getModel()
+	}
+
+	/**
+	 * Check if a model ID supports native tool calling.
+	 * This is a fallback for models that aren't in cache yet or don't have explicit support flags.
+	 */
+	private supportsNativeTools(modelId: string): boolean {
+		// Most major models on OpenRouter support native tools
+		// See: https://openrouter.ai/models?order=newest&supported_parameters=tools
+		const knownNativeToolModels = [
+			"anthropic/",
+			"openai/gpt-4",
+			"openai/gpt-5",
+			"openai/o1",
+			"openai/o3",
+			"google/gemini",
+			"meta-llama/",
+			"mistralai/",
+			"cohere/",
+			"deepseek/",
+			"qwen/",
+			"minimax/",
+		]
+
+		return knownNativeToolModels.some((prefix) => modelId.includes(prefix))
 	}
 
 	override getModel() {
@@ -230,6 +368,11 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		// If a specific provider is requested, use the endpoint for that provider.
 		if (this.options.openRouterSpecificProvider && this.endpoints[this.options.openRouterSpecificProvider]) {
 			info = this.endpoints[this.options.openRouterSpecificProvider]
+		}
+
+		// If model info doesn't have supportsNativeTools set, check our fallback list
+		if (info.supportsNativeTools === undefined) {
+			info.supportsNativeTools = this.supportsNativeTools(id)
 		}
 
 		const isDeepSeekR1 = id.startsWith("deepseek/deepseek-r1") || id === "perplexity/sonar-reasoning"

@@ -28,6 +28,7 @@ describe("OpenRouter API", () => {
 				description: expect.any(String),
 				supportsReasoningBudget: false,
 				supportsReasoningEffort: false,
+				supportsNativeTools: true,
 				supportedParameters: ["max_tokens", "temperature", "reasoning", "include_reasoning"],
 			})
 
@@ -44,6 +45,7 @@ describe("OpenRouter API", () => {
 				supportsReasoningBudget: true,
 				requiredReasoningBudget: true,
 				supportsReasoningEffort: true,
+				supportsNativeTools: true,
 				supportedParameters: ["max_tokens", "temperature", "reasoning", "include_reasoning"],
 			})
 
@@ -96,6 +98,7 @@ describe("OpenRouter API", () => {
 					cacheReadsPrice: 0.31,
 					description: undefined,
 					supportsReasoningEffort: undefined,
+					supportsNativeTools: undefined,
 					supportedParameters: undefined,
 				},
 				"google-ai-studio": {
@@ -110,6 +113,7 @@ describe("OpenRouter API", () => {
 					cacheReadsPrice: 0.31,
 					description: undefined,
 					supportsReasoningEffort: undefined,
+					supportsNativeTools: undefined,
 					supportedParameters: undefined,
 				},
 			})

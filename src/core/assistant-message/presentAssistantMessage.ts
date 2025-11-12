@@ -1,5 +1,6 @@
 import cloneDeep from "clone-deep"
 import { serializeError } from "serialize-error"
+import { Anthropic } from "@anthropic-ai/sdk"
 
 import type { ToolName, ClineAsk, ToolProgressStatus } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
@@ -305,12 +306,50 @@ export async function presentAssistantMessage(cline: Task) {
 			}
 
 			const pushToolResult = (content: ToolResponse) => {
-				cline.userMessageContent.push({ type: "text", text: `${toolDescription()} Result:` })
+				// Check if we're using native tool protocol
+				const toolProtocol = resolveToolProtocol()
+				const isNative = isNativeProtocol(toolProtocol)
 
-				if (typeof content === "string") {
-					cline.userMessageContent.push({ type: "text", text: content || "(tool did not return anything)" })
+				// Get the tool call ID if this is a native tool call
+				const toolCallId = (block as any).id
+
+				if (isNative && toolCallId) {
+					// For native protocol, add as tool_result block
+					let resultContent: string
+					if (typeof content === "string") {
+						resultContent = content || "(tool did not return anything)"
+					} else {
+						// Convert array of content blocks to string for tool result
+						// Tool results in OpenAI format only support strings
+						resultContent = content
+							.map((item) => {
+								if (item.type === "text") {
+									return item.text
+								} else if (item.type === "image") {
+									return "(image content)"
+								}
+								return ""
+							})
+							.join("\n")
+					}
+
+					cline.userMessageContent.push({
+						type: "tool_result",
+						tool_use_id: toolCallId,
+						content: resultContent,
+					} as Anthropic.ToolResultBlockParam)
 				} else {
-					cline.userMessageContent.push(...content)
+					// For XML protocol, add as text blocks (legacy behavior)
+					cline.userMessageContent.push({ type: "text", text: `${toolDescription()} Result:` })
+
+					if (typeof content === "string") {
+						cline.userMessageContent.push({
+							type: "text",
+							text: content || "(tool did not return anything)",
+						})
+					} else {
+						cline.userMessageContent.push(...content)
+					}
 				}
 
 				// Once a tool result has been collected, ignore all other tool

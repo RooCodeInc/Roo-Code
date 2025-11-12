@@ -294,7 +294,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	assistantMessageContent: AssistantMessageContent[] = []
 	presentAssistantMessageLocked = false
 	presentAssistantMessageHasPendingUpdates = false
-	userMessageContent: (Anthropic.TextBlockParam | Anthropic.ImageBlockParam)[] = []
+	userMessageContent: (Anthropic.TextBlockParam | Anthropic.ImageBlockParam | Anthropic.ToolResultBlockParam)[] = []
 	userMessageContentReady = false
 	didRejectTool = false
 	didAlreadyUseTool = false
@@ -2071,7 +2071,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 									break
 								}
 
-								console.log(`[NATIVE_TOOL] Parsed to ToolUse:`, JSON.stringify(toolUse, null, 2))
+								// Store the tool call ID on the ToolUse object for later reference
+								// This is needed to create tool_result blocks that reference the correct tool_use_id
+								toolUse.id = chunk.id
+
+								console.log(
+									`[NATIVE_TOOL] Parsed to ToolUse with id:`,
+									JSON.stringify(toolUse, null, 2),
+								)
 								console.log(
 									`[NATIVE_TOOL] Current assistantMessageContent length before:`,
 									this.assistantMessageContent.length,
@@ -2088,19 +2095,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 								// Mark that we have new content to process
 								this.userMessageContentReady = false
-
-								// Set assistantMessage to non-empty to prevent "no assistant messages" error
-								// Tool calls are tracked separately in assistantMessageContent
-								if (!assistantMessage) {
-									assistantMessage = JSON.stringify(
-										{
-											tool: chunk.name,
-											arguments: chunk.arguments,
-										},
-										null,
-										2,
-									)
-								}
 
 								console.log(`[NATIVE_TOOL] Calling presentAssistantMessage`)
 
@@ -2482,9 +2476,35 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						finalAssistantMessage = `<think>${reasoningMessage}</think>\n${assistantMessage}`
 					}
 
+					// Build the assistant message content array
+					const assistantContent: Array<Anthropic.TextBlockParam | Anthropic.ToolUseBlockParam> = []
+
+					// Add text content if present
+					if (finalAssistantMessage) {
+						assistantContent.push({
+							type: "text" as const,
+							text: finalAssistantMessage,
+						})
+					}
+
+					// Add tool_use blocks with their IDs for native protocol
+					const toolUseBlocks = this.assistantMessageContent.filter((block) => block.type === "tool_use")
+					for (const toolUse of toolUseBlocks) {
+						// Get the tool call ID that was stored during parsing
+						const toolCallId = (toolUse as any).id
+						if (toolCallId) {
+							assistantContent.push({
+								type: "tool_use" as const,
+								id: toolCallId,
+								name: toolUse.name,
+								input: toolUse.nativeArgs || toolUse.params,
+							})
+						}
+					}
+
 					await this.addToApiConversationHistory({
 						role: "assistant",
-						content: [{ type: "text", text: finalAssistantMessage }],
+						content: assistantContent,
 					})
 
 					TelemetryService.instance.captureConversationMessage(this.taskId, "assistant")
@@ -2956,25 +2976,13 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			const mcpHub = provider?.getMcpHub()
 			const mcpTools = getMcpServerTools(mcpHub)
 			allTools = [...nativeTools, ...mcpTools]
-			console.log(`[NATIVE_TOOL] Added ${mcpTools.length} dynamic MCP tools to the tools array`)
 		}
-
-		console.log(`[NATIVE_TOOL] Tool inclusion check:`, {
-			toolProtocol,
-			isNative: toolProtocol === TOOL_PROTOCOL.NATIVE,
-			supportsNativeTools: modelInfo.supportsNativeTools,
-			shouldIncludeTools,
-			modelId: this.api.getModel().id,
-			nativeToolsCount: nativeTools.length,
-			mcpToolsCount: shouldIncludeTools ? allTools.length - nativeTools.length : 0,
-			totalToolsCount: shouldIncludeTools ? allTools.length : 0,
-		})
 
 		const metadata: ApiHandlerCreateMessageMetadata = {
 			mode: mode,
 			taskId: this.taskId,
 			// Include tools and tool protocol when using native protocol and model supports it
-			...(shouldIncludeTools ? { tools: allTools, tool_choice: "required", toolProtocol } : {}),
+			...(shouldIncludeTools ? { tools: allTools, tool_choice: "auto", toolProtocol } : {}),
 		}
 
 		console.log(`[NATIVE_TOOL] API request metadata:`, {

@@ -107,6 +107,7 @@ export type NativeToolArgs = {
  */
 export interface ToolUse<TName extends ToolName = ToolName> {
 	type: "tool_use"
+	id?: string // Optional ID to track tool calls
 	name: TName
 	// params is a partial record, allowing only some or none of the possible parameters to be used
 	params: Partial<Record<ToolParamName, string>>
