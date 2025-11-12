@@ -3,10 +3,9 @@
 import { useEffect, useMemo, useState } from "react"
 import { AnimatedBackground } from "@/components/homepage"
 import { ModelCard } from "./components/model-card"
-import { SearchBar } from "./components/search-bar"
-import { SortDropdown } from "./components/sort-dropdown"
 import { Model, ModelWithTotalPrice, ModelsResponse, SortOption } from "@/lib/types/models"
 import Link from "next/link"
+import { ChevronDown, CircleX, Loader, LoaderCircle, Search } from "lucide-react"
 
 const API_URL = "https://api.roocode.com/proxy/v1/models"
 
@@ -141,10 +140,36 @@ export default function ProviderPricingPage() {
 					<div className="mx-auto max-w-4xl">
 						<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 							<div className="flex-1">
-								<SearchBar value={searchQuery} onChange={setSearchQuery} />
+								<div className="relative">
+									<Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+									<input
+										type="text"
+										placeholder="Search models..."
+										value={searchQuery}
+										onChange={(e) => setSearchQuery(e.target.value)}
+										className="w-full rounded-full border border-input bg-background px-10 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+									/>
+
+									<div className="text-sm cursor-default text-muted-foreground absolute bg-background right-0 top-0 m-0.5 px-3 py-2 rounded-full">
+										{filteredAndSortedModels.length} of {models.length} models
+									</div>
+								</div>
 							</div>
 							<div className="flex-shrink-0">
-								<SortDropdown value={sortOption} onChange={setSortOption} />
+								<div className="flex items-center gap-2 relative">
+									<select
+										id="sort"
+										value={sortOption}
+										onChange={(e) => setSortOption(e.target.value as SortOption)}
+										className="rounded-full cursor-pointer border border-input bg-background hover:bg-muted pl-4 pr-9 py-2.5 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 relative appearance-none">
+										<option value="alphabetical">Alphabetical</option>
+										<option value="price-asc">Price: Low to High</option>
+										<option value="price-desc">Price: High to Low</option>
+										<option value="context-window-asc">Context Window: Small to Large</option>
+										<option value="context-window-desc">Context Window: Large to Small</option>
+									</select>
+									<ChevronDown className="size-4 absolute right-3" />
+								</div>
 							</div>
 						</div>
 					</div>
@@ -156,30 +181,35 @@ export default function ProviderPricingPage() {
 				<div className="container mx-auto px-4 sm:px-6 lg:px-8">
 					<div className="mx-auto max-w-6xl">
 						{loading && (
-							<div className="text-center py-12">
-								<p className="text-lg text-muted-foreground">Loading models...</p>
+							<div className="text-center pt-12 space-y-2 mb-4">
+								<LoaderCircle className="size-8 text-muted-foreground mx-auto animate-spin" />
+								<p className="text-lg">Loading model list...</p>
 							</div>
 						)}
 
 						{error && (
-							<div className="text-center py-12">
-								<p className="text-lg text-red-500">Error: {error}</p>
+							<div className="text-center pt-12 space-y-2">
+								<CircleX className="size-8 text-muted-foreground mx-auto mb-4" />
+								<p className="text-l">Oops, couldn&apos;t load the model list.</p>
+								<p className="text-muted-foreground">Try again in a bit please.</p>
 							</div>
 						)}
 
 						{!loading && !error && filteredAndSortedModels.length === 0 && (
-							<div className="text-center py-12">
-								<p className="text-lg text-muted-foreground">
-									No models found matching your search criteria.
+							<div className="text-center pt-12 space-y-2">
+								<Loader className="size-8 text-muted-foreground mx-auto mb-4" />
+								<p className="text-lg">No models match your search.</p>
+								<p className="text-muted-foreground">
+									Keep in mind we don&apos;t have every model under the sun – only the ones we think
+									are worth using.
+									<br />
+									You can always use a third-party provider to access a wider selection.
 								</p>
 							</div>
 						)}
 
 						{!loading && !error && filteredAndSortedModels.length > 0 && (
 							<>
-								<div className="mb-4 text-sm text-muted-foreground">
-									Showing {filteredAndSortedModels.length} of {models.length} models
-								</div>
 								<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 									{filteredAndSortedModels.map((model) => (
 										<ModelCard key={model.id} model={model} />
