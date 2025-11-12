@@ -1,64 +1,66 @@
 import path from "path"
 
 import { Task } from "../task/Task"
-import { ToolUse, AskApproval, HandleError, PushToolResult, RemoveClosingTag } from "../../shared/tools"
 import { ClineSayTool } from "../../shared/ExtensionMessage"
 import { getReadablePath } from "../../utils/path"
 import { isPathOutsideWorkspace } from "../../utils/pathUtils"
 import { regexSearchFiles } from "../../services/ripgrep"
+import { BaseTool, ToolCallbacks } from "./BaseTool"
+import type { ToolUse } from "../../shared/tools"
 
-export async function searchFilesTool(
-	cline: Task,
-	block: ToolUse,
-	askApproval: AskApproval,
-	handleError: HandleError,
-	pushToolResult: PushToolResult,
-	removeClosingTag: RemoveClosingTag,
-) {
-	const relDirPath: string | undefined = block.params.path
-	const regex: string | undefined = block.params.regex
-	const filePattern: string | undefined = block.params.file_pattern
+interface SearchFilesParams {
+	path: string
+	regex: string
+	file_pattern?: string | null
+}
 
-	const absolutePath = relDirPath ? path.resolve(cline.cwd, relDirPath) : cline.cwd
-	const isOutsideWorkspace = isPathOutsideWorkspace(absolutePath)
+export class SearchFilesTool extends BaseTool<"search_files"> {
+	readonly name = "search_files" as const
 
-	const sharedMessageProps: ClineSayTool = {
-		tool: "searchFiles",
-		path: getReadablePath(cline.cwd, removeClosingTag("path", relDirPath)),
-		regex: removeClosingTag("regex", regex),
-		filePattern: removeClosingTag("file_pattern", filePattern),
-		isOutsideWorkspace,
+	parseLegacy(params: Partial<Record<string, string>>): SearchFilesParams {
+		return {
+			path: params.path || "",
+			regex: params.regex || "",
+			file_pattern: params.file_pattern || undefined,
+		}
 	}
 
-	try {
-		if (block.partial) {
-			const partialMessage = JSON.stringify({ ...sharedMessageProps, content: "" } satisfies ClineSayTool)
-			await cline.ask("tool", partialMessage, block.partial).catch(() => {})
+	async execute(params: SearchFilesParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
+		const { askApproval, handleError, pushToolResult } = callbacks
+
+		const relDirPath = params.path
+		const regex = params.regex
+		const filePattern = params.file_pattern || undefined
+
+		if (!relDirPath) {
+			task.consecutiveMistakeCount++
+			task.recordToolError("search_files")
+			pushToolResult(await task.sayAndCreateMissingParamError("search_files", "path"))
 			return
-		} else {
-			if (!relDirPath) {
-				cline.consecutiveMistakeCount++
-				cline.recordToolError("search_files")
-				pushToolResult(await cline.sayAndCreateMissingParamError("search_files", "path"))
-				return
-			}
+		}
 
-			if (!regex) {
-				cline.consecutiveMistakeCount++
-				cline.recordToolError("search_files")
-				pushToolResult(await cline.sayAndCreateMissingParamError("search_files", "regex"))
-				return
-			}
+		if (!regex) {
+			task.consecutiveMistakeCount++
+			task.recordToolError("search_files")
+			pushToolResult(await task.sayAndCreateMissingParamError("search_files", "regex"))
+			return
+		}
 
-			cline.consecutiveMistakeCount = 0
+		task.consecutiveMistakeCount = 0
 
-			const results = await regexSearchFiles(
-				cline.cwd,
-				absolutePath,
-				regex,
-				filePattern,
-				cline.rooIgnoreController,
-			)
+		const absolutePath = path.resolve(task.cwd, relDirPath)
+		const isOutsideWorkspace = isPathOutsideWorkspace(absolutePath)
+
+		const sharedMessageProps: ClineSayTool = {
+			tool: "searchFiles",
+			path: getReadablePath(task.cwd, relDirPath),
+			regex: regex,
+			filePattern: filePattern,
+			isOutsideWorkspace,
+		}
+
+		try {
+			const results = await regexSearchFiles(task.cwd, absolutePath, regex, filePattern, task.rooIgnoreController)
 
 			const completeMessage = JSON.stringify({ ...sharedMessageProps, content: results } satisfies ClineSayTool)
 			const didApprove = await askApproval("tool", completeMessage)
@@ -68,11 +70,50 @@ export async function searchFilesTool(
 			}
 
 			pushToolResult(results)
-
-			return
+		} catch (error) {
+			await handleError("searching files", error as Error)
 		}
-	} catch (error) {
-		await handleError("searching files", error)
-		return
+	}
+
+	override async handlePartial(task: Task, block: ToolUse<"search_files">): Promise<void> {
+		const relDirPath = block.params.path
+		const regex = block.params.regex
+		const filePattern = block.params.file_pattern
+
+		const absolutePath = relDirPath ? path.resolve(task.cwd, relDirPath) : task.cwd
+		const isOutsideWorkspace = isPathOutsideWorkspace(absolutePath)
+
+		const sharedMessageProps: ClineSayTool = {
+			tool: "searchFiles",
+			path: getReadablePath(task.cwd, this.removeClosingTag("path", relDirPath, block.partial)),
+			regex: this.removeClosingTag("regex", regex, block.partial),
+			filePattern: this.removeClosingTag("file_pattern", filePattern, block.partial),
+			isOutsideWorkspace,
+		}
+
+		const partialMessage = JSON.stringify({ ...sharedMessageProps, content: "" } satisfies ClineSayTool)
+		await task.ask("tool", partialMessage, block.partial).catch(() => {})
+	}
+
+	private removeClosingTag(tag: string, text: string | undefined, isPartial: boolean): string {
+		if (!isPartial) {
+			return text || ""
+		}
+
+		if (!text) {
+			return ""
+		}
+
+		const tagRegex = new RegExp(
+			`\\s?<\/?${tag
+				.split("")
+				.map((char) => `(?:${char})?`)
+				.join("")}$`,
+			"g",
+		)
+
+		return text.replace(tagRegex, "")
 	}
 }
+
+export const searchFilesTool = new SearchFilesTool()

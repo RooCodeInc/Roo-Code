@@ -591,7 +591,12 @@ export async function presentAssistantMessage(cline: Task) {
 					})
 					break
 				case "search_files":
-					await searchFilesTool(cline, block, askApproval, handleError, pushToolResult, removeClosingTag)
+					await searchFilesTool.handle(cline, block as ToolUse<"search_files">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+						removeClosingTag,
+					})
 					break
 				case "browser_action":
 					await browserActionTool.handle(cline, block as ToolUse<"browser_action">, {

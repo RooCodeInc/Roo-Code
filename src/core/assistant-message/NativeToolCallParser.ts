@@ -192,6 +192,16 @@ export class NativeToolCallParser {
 					}
 					break
 
+				case "search_files":
+					if (args.path !== undefined && args.regex !== undefined) {
+						nativeArgs = {
+							path: args.path,
+							regex: args.regex,
+							file_pattern: args.file_pattern,
+						} as TName extends keyof NativeToolArgs ? NativeToolArgs[TName] : never
+					}
+					break
+
 				default:
 					break
 			}

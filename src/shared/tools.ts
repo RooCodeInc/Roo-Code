@@ -92,6 +92,7 @@ export type NativeToolArgs = {
 	generate_image: GenerateImageParams
 	list_code_definition_names: { path: string }
 	run_slash_command: { command: string; args?: string }
+	search_files: { path: string; regex: string; file_pattern?: string | null }
 	// Add more tools as they are migrated to native protocol
 }
 
