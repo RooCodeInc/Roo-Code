@@ -660,7 +660,12 @@ export async function presentAssistantMessage(cline: Task) {
 					break
 				}
 				case "run_slash_command":
-					await runSlashCommandTool(cline, block, askApproval, handleError, pushToolResult, removeClosingTag)
+					await runSlashCommandTool.handle(cline, block as ToolUse<"run_slash_command">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+						removeClosingTag,
+					})
 					break
 				case "generate_image":
 					await checkpointSaveAndMark(cline)

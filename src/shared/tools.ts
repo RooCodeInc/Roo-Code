@@ -91,6 +91,7 @@ export type NativeToolArgs = {
 	fetch_instructions: { task: string }
 	generate_image: GenerateImageParams
 	list_code_definition_names: { path: string }
+	run_slash_command: { command: string; args?: string }
 	// Add more tools as they are migrated to native protocol
 }
 

@@ -1,45 +1,47 @@
 import { Task } from "../task/Task"
-import { ToolUse, AskApproval, HandleError, PushToolResult, RemoveClosingTag } from "../../shared/tools"
 import { formatResponse } from "../prompts/responses"
 import { getCommand, getCommandNames } from "../../services/command/commands"
 import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
+import { BaseTool, ToolCallbacks } from "./BaseTool"
+import type { ToolUse } from "../../shared/tools"
 
-export async function runSlashCommandTool(
-	task: Task,
-	block: ToolUse,
-	askApproval: AskApproval,
-	handleError: HandleError,
-	pushToolResult: PushToolResult,
-	removeClosingTag: RemoveClosingTag,
-) {
-	// Check if run slash command experiment is enabled
-	const provider = task.providerRef.deref()
-	const state = await provider?.getState()
-	const isRunSlashCommandEnabled = experiments.isEnabled(state?.experiments ?? {}, EXPERIMENT_IDS.RUN_SLASH_COMMAND)
+interface RunSlashCommandParams {
+	command: string
+	args?: string
+}
 
-	if (!isRunSlashCommandEnabled) {
-		pushToolResult(
-			formatResponse.toolError(
-				"Run slash command is an experimental feature that must be enabled in settings. Please enable 'Run Slash Command' in the Experimental Settings section.",
-			),
-		)
-		return
+export class RunSlashCommandTool extends BaseTool<"run_slash_command"> {
+	readonly name = "run_slash_command" as const
+
+	parseLegacy(params: Partial<Record<string, string>>): RunSlashCommandParams {
+		return {
+			command: params.command || "",
+			args: params.args,
+		}
 	}
 
-	const commandName: string | undefined = block.params.command
-	const args: string | undefined = block.params.args
+	async execute(params: RunSlashCommandParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
+		const { command: commandName, args } = params
+		const { askApproval, handleError, pushToolResult } = callbacks
 
-	try {
-		if (block.partial) {
-			const partialMessage = JSON.stringify({
-				tool: "runSlashCommand",
-				command: removeClosingTag("command", commandName),
-				args: removeClosingTag("args", args),
-			})
+		// Check if run slash command experiment is enabled
+		const provider = task.providerRef.deref()
+		const state = await provider?.getState()
+		const isRunSlashCommandEnabled = experiments.isEnabled(
+			state?.experiments ?? {},
+			EXPERIMENT_IDS.RUN_SLASH_COMMAND,
+		)
 
-			await task.ask("tool", partialMessage, block.partial).catch(() => {})
+		if (!isRunSlashCommandEnabled) {
+			pushToolResult(
+				formatResponse.toolError(
+					"Run slash command is an experimental feature that must be enabled in settings. Please enable 'Run Slash Command' in the Experimental Settings section.",
+				),
+			)
 			return
-		} else {
+		}
+
+		try {
 			if (!commandName) {
 				task.consecutiveMistakeCount++
 				task.recordToolError("run_slash_command")
@@ -98,11 +100,43 @@ export async function runSlashCommandTool(
 
 			// Return the command content as the tool result
 			pushToolResult(result)
-
-			return
+		} catch (error) {
+			await handleError("running slash command", error as Error)
 		}
-	} catch (error) {
-		await handleError("running slash command", error)
-		return
+	}
+
+	override async handlePartial(task: Task, block: ToolUse<"run_slash_command">): Promise<void> {
+		const commandName: string | undefined = block.params.command
+		const args: string | undefined = block.params.args
+
+		const partialMessage = JSON.stringify({
+			tool: "runSlashCommand",
+			command: this.removeClosingTag("command", commandName, block.partial),
+			args: this.removeClosingTag("args", args, block.partial),
+		})
+
+		await task.ask("tool", partialMessage, block.partial).catch(() => {})
+	}
+
+	private removeClosingTag(tag: string, text: string | undefined, isPartial: boolean): string {
+		if (!isPartial) {
+			return text || ""
+		}
+
+		if (!text) {
+			return ""
+		}
+
+		const tagRegex = new RegExp(
+			`\\s?<\/?${tag
+				.split("")
+				.map((char) => `(?:${char})?`)
+				.join("")}$`,
+			"g",
+		)
+
+		return text.replace(tagRegex, "")
 	}
 }
+
+export const runSlashCommandTool = new RunSlashCommandTool()

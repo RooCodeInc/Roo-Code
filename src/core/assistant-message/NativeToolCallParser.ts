@@ -183,6 +183,15 @@ export class NativeToolCallParser {
 					}
 					break
 
+				case "run_slash_command":
+					if (args.command !== undefined) {
+						nativeArgs = {
+							command: args.command,
+							args: args.args,
+						} as TName extends keyof NativeToolArgs ? NativeToolArgs[TName] : never
+					}
+					break
+
 				default:
 					break
 			}
