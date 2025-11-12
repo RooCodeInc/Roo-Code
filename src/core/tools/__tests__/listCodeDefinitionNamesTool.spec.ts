@@ -1,7 +1,7 @@
 // npx vitest src/core/tools/__tests__/listCodeDefinitionNamesTool.spec.ts
 
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { listCodeDefinitionNamesTool } from "../listCodeDefinitionNamesTool"
+import { listCodeDefinitionNamesTool } from "../ListCodeDefinitionNamesTool"
 import { Task } from "../../task/Task"
 import { ToolUse } from "../../../shared/tools"
 import * as treeSitter from "../../../services/tree-sitter"

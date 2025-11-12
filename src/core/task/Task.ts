@@ -88,7 +88,7 @@ import { nativeTools } from "../prompts/tools/native-tools"
 
 // core modules
 import { ToolRepetitionDetector } from "../tools/ToolRepetitionDetector"
-import { restoreTodoListForTask } from "../tools/updateTodoListTool"
+import { restoreTodoListForTask } from "../tools/UpdateTodoListTool"
 import { FileContextTracker } from "../context-tracking/FileContextTracker"
 import { RooIgnoreController } from "../ignore/RooIgnoreController"
 import { RooProtectedController } from "../protect/RooProtectedController"
@@ -2092,10 +2092,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 								// Set assistantMessage to non-empty to prevent "no assistant messages" error
 								// Tool calls are tracked separately in assistantMessageContent
 								if (!assistantMessage) {
-									assistantMessage = JSON.stringify({
-										tool: chunk.name,
-										arguments: chunk.arguments,
-									})
+									assistantMessage = JSON.stringify(
+										{
+											tool: chunk.name,
+											arguments: chunk.arguments,
+										},
+										null,
+										2,
+									)
 								}
 
 								console.log(`[NATIVE_TOOL] Calling presentAssistantMessage`)

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { runSlashCommandTool } from "../runSlashCommandTool"
+import { runSlashCommandTool } from "../RunSlashCommandTool"
 import { Task } from "../../task/Task"
 import { formatResponse } from "../../prompts/responses"
 import { getCommand, getCommandNames } from "../../../services/command/commands"

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { generateImageTool } from "../generateImageTool"
+import { generateImageTool } from "../GenerateImageTool"
 import { ToolUse } from "../../../shared/tools"
 import { Task } from "../../task/Task"
 import * as fs from "fs/promises"
