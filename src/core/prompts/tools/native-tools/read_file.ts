@@ -1,6 +1,6 @@
 import type OpenAI from "openai"
 
-export const read_file_multi = {
+export const read_file = {
 	type: "function",
 	function: {
 		name: "read_file",
@@ -37,27 +37,6 @@ export const read_file_multi = {
 				},
 			},
 			required: ["files"],
-			additionalProperties: false,
-		},
-	},
-} satisfies OpenAI.Chat.ChatCompletionTool
-
-export const read_file_single = {
-	type: "function",
-	function: {
-		name: "read_file",
-		description:
-			'Request to read the contents of a file. The tool outputs line-numbered content (e.g. "1 | const x = 1") for easy reference when discussing code.',
-		strict: true,
-		parameters: {
-			type: "object",
-			properties: {
-				path: {
-					type: "string",
-					description: "Path to the file to read, relative to the workspace",
-				},
-			},
-			required: ["path"],
 			additionalProperties: false,
 		},
 	},

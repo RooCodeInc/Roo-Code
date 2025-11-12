@@ -336,31 +336,6 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		return this.getModel()
 	}
 
-	/**
-	 * Check if a model ID supports native tool calling.
-	 * This is a fallback for models that aren't in cache yet or don't have explicit support flags.
-	 */
-	private supportsNativeTools(modelId: string): boolean {
-		// Most major models on OpenRouter support native tools
-		// See: https://openrouter.ai/models?order=newest&supported_parameters=tools
-		const knownNativeToolModels = [
-			"anthropic/",
-			"openai/gpt-4",
-			"openai/gpt-5",
-			"openai/o1",
-			"openai/o3",
-			"google/gemini",
-			"meta-llama/",
-			"mistralai/",
-			"cohere/",
-			"deepseek/",
-			"qwen/",
-			"minimax/",
-		]
-
-		return knownNativeToolModels.some((prefix) => modelId.includes(prefix))
-	}
-
 	override getModel() {
 		const id = this.options.openRouterModelId ?? openRouterDefaultModelId
 		let info = this.models[id] ?? openRouterDefaultModelInfo
@@ -368,11 +343,6 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		// If a specific provider is requested, use the endpoint for that provider.
 		if (this.options.openRouterSpecificProvider && this.endpoints[this.options.openRouterSpecificProvider]) {
 			info = this.endpoints[this.options.openRouterSpecificProvider]
-		}
-
-		// If model info doesn't have supportsNativeTools set, check our fallback list
-		if (info.supportsNativeTools === undefined) {
-			info.supportsNativeTools = this.supportsNativeTools(id)
 		}
 
 		const isDeepSeekR1 = id.startsWith("deepseek/deepseek-r1") || id === "perplexity/sonar-reasoning"
